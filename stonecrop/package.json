@@ -1,0 +1,31 @@
+{
+  "name": "@sedum/stonecrop",
+  "version": "0.1.0",
+  "description": "schema helper",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "localforage": "^1.9.0",
+    "overmind": "^28.0.1",
+    "overmind-vue": "^28.0.3",
+    "vue": "^3.0.5",
+    "vue-router": "4"
+  },
+  "devDependencies": {
+    "cypress": "^8.1.0",
+    "@cypress/vue": "~2.2.3",
+    "@cypress/vite-dev-server": "~2.0.3",
+    "@vitejs/plugin-vue": "^1.2.5",
+    "@vue/compiler-sfc": "^3.0.8",
+    "miragejs": "^0.1.41",
+    "node-sass": "^6.0.1",
+    "sass": "^1.35.1",
+    "sass-loader": "^12.1.0",
+    "vite": "^2.3.8",
+    "vue-template-compiler": "^2.6.14"
+  },
+  "scripts": {
+    "dev": "vite serve dev/ -c dev/vite.config.js -d",
+    "build": "vite build dev/ -c dev/vite.config.js -d"
+  }
+}

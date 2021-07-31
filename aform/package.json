@@ -1,0 +1,34 @@
+{
+  "name": "@sedum/aform",
+  "version": "0.1.0",
+  "main": "dist/aform.es.js",
+  "module": "dist/aform.es.js",
+  "umd": "dist/aform.umd.js",
+  "license": "MIT",
+  "scripts": {
+    "dev": "vite serve dev/ -c dev/vite.config.js -d",
+    "build": "vite build -c dev/vite.config.js -d"
+  },
+  "files": [
+    "dist/*",
+    "src/**/*.vue"
+  ],
+  "dependencies": {
+    "uuid": "^8.3.2",
+    "vue": "^3.0.5"
+  },
+  "peerDependencies": {
+    "@sedum/atable": "^0.1.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^1.2.5",
+    "@vue/compiler-sfc": "^3.0.8",
+    "vite": "^2.3.8",
+    "cypress": "^8.1.0",
+    "@cypress/vue": "~2.2.3",
+    "@cypress/vite-dev-server": "~2.0.3"
+  },
+  "engines": {
+    "node" : ">=14.17.3"
+  }
+}

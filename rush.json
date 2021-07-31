@@ -1,0 +1,67 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/rush.schema.json",
+  "rushVersion": "5.50.0",
+  "pnpmVersion": "6.10.3",
+  "nodeSupportedVersionRange": ">=14.17.0 <15.0.0", // this is v14 LTS
+  "approvedPackagesPolicy":{
+    "reviewCategories": [
+      "production",
+      "tool",
+      "prototype",
+      "documentation"
+    ],
+    "ignoredNpmScopes": [ "@types" ]
+  },
+  "gitPolicy": {},
+  "repository": {
+    "url": "https://github.com/sedum-io/",
+    "defaultBranch": "develop",
+    "defaultRemote": "origin"
+  },
+  "eventHooks": {
+    "preRushInstall": [],
+    "postRushInstall": [],
+    "preRushBuild": [],
+    "postRushBuild": []
+  },
+  "variants": [],
+  "telemetryEnabled": false,
+  "hotfixChangeEnabled": false,
+  "projects": [
+    {
+      "packageName": "@sedum/stonecrop",
+      "projectFolder": "stonecrop",
+      "reviewCategory": "prototype"
+    },
+    {
+      "packageName": "@sedum/atable",
+      "projectFolder": "atable",
+      "reviewCategory": "prototype"
+    },
+    {
+      "packageName": "@sedum/aform",
+      "projectFolder": "aform",
+      "reviewCategory": "prototype"
+    },
+    {
+      "packageName": "@sedum/desktop",
+      "projectFolder": "desktop",
+      "reviewCategory": "prototype"
+    },
+    // {
+    //   "packageName": "@sedum/beam",
+    //   "projectFolder": "beam",
+    //   "reviewCategory": "prototype"
+    // },
+    // {
+    //   "packageName": "@sedum/themes",
+    //   "projectFolder": "themes",
+    //   "reviewCategory": "prototype"
+    // },
+    // {
+    //   "packageName": "@sedum/docs",
+    //   "projectFolder": "docs",
+    //   "reviewCategory": "documentation"
+    // }
+  ]
+}

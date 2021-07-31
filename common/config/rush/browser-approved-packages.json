@@ -1,0 +1,98 @@
+// DO NOT ADD COMMENTS IN THIS FILE.  They will be lost when the Rush tool resaves it.
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/approved-packages.schema.json",
+  "packages": [
+    {
+      "name": "@cypress/vite-dev-server",
+      "allowedCategories": [ "documentation", "prototype" ]
+    },
+    {
+      "name": "@cypress/vue",
+      "allowedCategories": [ "documentation", "prototype" ]
+    },
+    {
+      "name": "@sedum/atable",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "@vitejs/plugin-vue",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "@vue/compiler-sfc",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "cypress",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "localforage",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "miragejs",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "node-sass",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "overmind",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "overmind-vue",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "portal-vue",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "sass",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "sass-loader",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "ts-node",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "tsc",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "typescript",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "uuid",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "vite",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "vite-plugin-vue2",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "vue",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "vue-router",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "vue-template-compiler",
+      "allowedCategories": [ "prototype" ]
+    }
+  ]
+}

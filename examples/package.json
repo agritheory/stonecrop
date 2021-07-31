@@ -1,0 +1,11 @@
+{
+  "name": "@sedum/examples",
+  "version": "0.1.0",
+  "description": "Example App(s) for the Stonecrop framework",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "cypress": "^8.0.0",
+    "verdaccio": "^5.1.2"
+  }
+}
