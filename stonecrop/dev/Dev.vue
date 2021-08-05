@@ -1,18 +1,10 @@
 <template>
-	<Layout
-		class="aform-main"
-		:schema="schema"
-		:data="data"
-		:key="id"
-	/>
-	
+	<h1>Test</h1>
 </template>
 <script>
-import Layout from './../src/components/Layout.vue'
 
 export default {
 	name: "Dev",
-	components: { AForm },
 	data() {
 		return {
 			schema : {}
@@ -24,7 +16,6 @@ export default {
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap');
-@import url('../lib/theme/aform.css');
 html {
 	font-family: Arimo, sans-serif;
 	font-size: 11pt;

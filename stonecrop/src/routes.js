@@ -1,9 +1,5 @@
 import VueRouter from 'vue-router'
 
-import Home from './components/Home.vue'
-import TableView from './components/TableView.vue'
-import FormView from './components/FormView.vue'
-
 export const routes = [
   { 
 		path: '/',
@@ -14,7 +10,7 @@ export const routes = [
 	},
 	{ 
 		path: '/home',
-		component: Home,
+		component: '<div><h1>HOME</h1></div>',
 		props: true
 	},
 	{ 
@@ -23,11 +19,11 @@ export const routes = [
 	},
 	{
 		path: '/:table',
-		component: TableView,
+		component: '<div><h1>TABLE</h1></div>',
 	},
 	{
 		path: '/:table/:id',
-		component: FormView,
+		component: '<div><h1>FORM</h1></div>',
 	}
 ]
 
