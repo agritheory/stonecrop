@@ -3,11 +3,13 @@
 		
 	</dialog>
 </template>
-<script lang="ts">
-export default {
+<script>
+import { defineComponent } from 'vue'
+
+export default defineComponent({
 	name: 'CommandPalette',
 	setup(props, context) {
 		return {}
 	},
-}
+})
 </script>

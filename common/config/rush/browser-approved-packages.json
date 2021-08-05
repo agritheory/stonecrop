@@ -11,6 +11,10 @@
       "allowedCategories": [ "documentation", "prototype" ]
     },
     {
+      "name": "@sedum/aform",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
       "name": "@sedum/atable",
       "allowedCategories": [ "prototype" ]
     },

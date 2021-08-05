@@ -1,10 +1,10 @@
-const vue =require('@vitejs/plugin-vue')
-const path = require('path')
+import vue from '@vitejs/plugin-vue'
+import { resolve} from 'path'
 
 module.exports = {
 	build: {
 		lib: {
-			entry: path.resolve(__dirname, '../src/index.js'),
+			entry: resolve(__dirname, '../src/index.js'),
 			name: 'AForm'
 		},
 		rollupOptions: {

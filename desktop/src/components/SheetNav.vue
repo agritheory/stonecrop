@@ -81,7 +81,9 @@
 	</footer>
 </template>
 <script>
-export default {
+import { defineComponent } from 'vue'
+
+export default defineComponent({
 	name: 'SheetNav',
 	data(){
 		return {
@@ -122,7 +124,7 @@ export default {
 	mounted(){
 		this.breadcrumbs = this.$props.breadcrumbs || []
 	}
-}
+})
 </script>
 <style scoped>
 footer {
