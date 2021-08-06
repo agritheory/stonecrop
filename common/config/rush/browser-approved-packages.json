@@ -11,11 +11,23 @@
       "allowedCategories": [ "documentation", "prototype" ]
     },
     {
+      "name": "@miragejs/graphql",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
       "name": "@sedum/aform",
       "allowedCategories": [ "prototype" ]
     },
     {
       "name": "@sedum/atable",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "@sedum/desktop",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "@sedum/stonecrop",
       "allowedCategories": [ "prototype" ]
     },
     {

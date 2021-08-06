@@ -5,7 +5,7 @@ module.exports = {
 	build: {
 		lib: {
 			entry: resolve(__dirname, '../src/index.js'),
-			name: 'AForm'
+			name: 'Stonecrop'
 		},
 		rollupOptions: {
 			external: ['vue'],
@@ -14,7 +14,8 @@ module.exports = {
 					vue: 'Vue'
 				}
 			}
-		}
+		},
+		outDir: './../dist/',
 	},
 	plugins: [vue()],
 	optimizeDeps: {

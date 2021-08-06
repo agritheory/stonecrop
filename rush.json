@@ -51,6 +51,11 @@
       "projectFolder": "desktop",
       "reviewCategory": "prototype"
     },
+    {
+      "packageName": "@sedum/examples",
+      "projectFolder": "examples",
+      "reviewCategory": "prototype"
+    },
     // {
     //   "packageName": "@sedum/beam",
     //   "projectFolder": "beam",
