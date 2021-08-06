@@ -1,0 +1,25 @@
+:root {
+    --brand-color: #34495E;
+    --header-border-color: #34495E;
+    --header-text-color: #ffffff;
+    --row-color-zebra-light: #ECF8F3;
+    --row-color-zebra-dark: #D9F1E6;
+    --cell-border-color: #ffffff;
+    --cell-text-color: #34495E;
+    --active-cell-background: #ffffff;
+    --active-cell-outline: #41B883;
+    --required-border: #B84277;
+    --table-font-size: 11pt;
+    --border-collapsed: none;
+}
+
+.atable {
+    font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-size: var(--table-font-size);
+}
+
+body {
+    background: #ffffff;
+}

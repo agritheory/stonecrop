@@ -1,0 +1,32 @@
+{
+  "name": "@sedum/atable",
+  "version": "0.1.0",
+  "description": "",
+  "main": "dist/atable.es.js",
+  "module": "dist/atable.es.js",
+  "umd": "dist/atable.umd.js",
+  "files": [
+    "dist/*",
+    "src/**/*.vue"
+  ],
+  "scripts": {
+    "dev": "vite serve dev/ -c dev/vite.config.js -d",
+    "build": "vite build dev/ -c dev/vite.config.js -d"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "uuid": "^8.3.2",
+    "vue": "^3.0.5"
+  },
+  "devDependencies": {
+    "@cypress/vite-dev-server": "~2.0.3",
+    "@cypress/vue": "^3.0.0-beta.4",
+    "@vitejs/plugin-vue": "^1.3.0",
+    "@vue/compiler-sfc": "^3.1.5",
+    "cypress": "^8.1.0",
+    "vite": "^2.4.4"
+  },
+  "engines": {
+    "node" : ">=14.17.3"
+  }
+}

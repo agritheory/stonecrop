@@ -1,0 +1,25 @@
+:root {
+    /* --brand-color: #3fb2bf; */
+    --brand-color: #2f99a8;
+    --header-border-color: #ffffff;
+    --header-text-color: #ffffff;
+    --row-color-zebra-light: #f5f5f5;
+    --row-color-zebra-dark: #e5e5e5;
+    --cell-border-color: #ffffff;
+    --cell-text-color: #3a3c41;
+    --focus-cell-background: #f5f5f5;;
+    --focus-cell-outline: #2f99a8;
+    --active-cell-background: #f5f5f5;
+    --active-cell-outline: #2f99a8;
+    --scrollbar-handle-color: #2f99a8;
+    --required-border: #e63c28;
+    --table-font-size: 12pt;
+    --border-collapsed: collapse;
+}
+
+.atable {
+    font-family: Expressway, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-size: var(--table-font-size);
+}

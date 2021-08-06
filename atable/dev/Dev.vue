@@ -1,0 +1,152 @@
+<template>
+	<div id="app">
+		<ATable
+			:columns="coa.columns"
+			:rows="coa.rows"
+			:config="coa.config"
+		/>
+		<br>
+		<hr>
+		<br>
+		<ATable
+			:columns="http_logs.columns"
+			:rows="http_logs.rows"
+			:config="http_logs.config"
+		/>	
+	</div>
+</template>
+
+<script>
+/* eslint-disable */
+
+import ADate from './ADate.vue'
+import coa_data from './assets/sample_data/coa.json'
+import http_data from './assets/sample_data/http_logs.json'
+
+export default {
+	name: 'Dev',
+	data() {
+		return {
+			coa: {
+				columns: [
+					{
+						label: "Number",
+						name: "account_number",
+						type: "Data",
+						align: 'Left',
+						edit: false,
+						width: '10ch',
+					},
+					{
+						label: "Account",
+						name: "account_title",
+						type: "Data",
+						align: 'Left',
+						edit: true,
+						width: '50ch',
+					},
+					{
+						label: "Balance",
+						name: "balance",
+						type: "Data",
+						align: 'Left',
+						edit: false,
+						width: '20ch',
+						format: value => {return value.title}
+					}
+				],
+				config: { numberedRows: false, treeView: true },
+				rows: coa_data
+			},
+			http_logs: {
+				columns: [
+					{
+						label: "Home Page",
+						name: "home_page",
+						type: "Data",
+						align: 'Left',
+						edit: false,
+						width: '35ch',
+						format: value => {return value.title}
+					},
+					{
+						label: "HTTP Method",
+						name: "http_method",
+						type: "Data",
+						align: 'Left',
+						edit: true,
+						width: '20ch',
+					},
+					{
+						label: "IP Address",
+						name: "ip_address",
+						type: "Data",
+						align: 'Left',
+						edit: false,
+						width: '20ch',
+					},
+					{
+						label: "Status",
+						name: "status",
+						type: "Data",
+						align: 'Left',
+						edit: true,
+						width: '35ch',
+					},
+					{
+						label: "Report Date",
+						name: "report_date",
+						type: "component",
+						align: 'Center',
+						edit: true,
+						width: '25ch',
+						component: ($event, rowIndex, colIndex, parent, tableid) => { renderSomething(event, rowIndex, colIndex, parent, tableid) },
+						format: value => { return (new Date(Number(value)).toLocaleDateString('en-US')) }
+					},
+				],
+				config: { numberedRows: true, treeView: false },
+				rows: http_data
+			}
+		}
+	},
+	mounted(){
+	}
+}
+
+function renderSomething(event, rowIndex, colIndex, parent, tableid){
+	const DatePicker = app.extend(ADate)
+	let dateModal = new DatePicker({
+		parent: parent,
+		propsData: { event, rowIndex, colIndex, tableid }
+	}).$mount()
+	event.target.appendChild(dateModal.$el)
+
+}
+
+</script>
+
+<style>
+@import './assets/atable.css';
+
+body {
+	background-color: var(--demo-app-background);
+	font-family: var(--atable-font-family);
+}
+
+.atable {
+	font-family: var(--atable-font-family);
+}
+
+.tab {
+	display: inline-block;
+	width: 10ch;
+	border-width: 1px;
+	border-style: solid;
+	border-color: var(--header-border-color);
+	text-align: center;
+	padding: 5px;
+	background-color: var(--brand-color);
+	color: var(--header-text-color);
+	font-family: var(--atable-font-family);
+}
+</style>

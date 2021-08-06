@@ -1,0 +1,28 @@
+:root {
+    --brand-color: #827553;
+    --header-border-color: #ffffff;
+    --header-text-color: #ffffff;
+    --row-color-zebra-light: #eeeeee;
+    --row-color-zebra-dark: #dddddd;
+    --cell-border-color: #ffffff;
+    --cell-text-color: #3a3c41;
+    --focus-cell-background: #ffffff;
+    --focus-cell-outline: #827553;
+    --active-cell-background: #ffffff;
+    --active-cell-outline: #e6a92d;
+    --cell-modified-background: #e6a92d;
+    --required-border: #e63c28;
+    --table-font-size: 11pt;
+}
+
+.atable {
+    font-family: Gotham, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-size: var(--table-font-size);
+}
+
+/* body {
+    background: rgb(130,117,83);
+    background: linear-gradient(260deg, rgba(130,117,83,1) 0%, rgba(221,221,221,1) 100%);
+} */

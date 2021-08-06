@@ -1,0 +1,31 @@
+@import url('https://fonts.googleapis.com/css?family=Roboto+Condensed');
+
+:root {
+    --brand-color: #3a3c41;
+    --header-border-color: #666666;
+    --header-text-color: #ffffff;
+    --row-color-zebra-light: #3a3c41;
+    --row-color-zebra-dark: #3a3c41;
+    --cell-border-color: #666666;
+    --cell-text-color: #dddddd;
+    --focus-cell-background: #3a3c41;;
+    --focus-cell-outline: #dddddd;
+    --active-cell-background: #3a3c41;
+    --active-cell-outline: #dddddd;
+    --required-border: #e63c28;
+    --table-font-size: 12pt;
+    --border-collapsed: collapse;
+}
+
+.atable {
+    font-family: Roboto, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-size: var(--table-font-size);
+}
+
+body {
+    background-color: #3a3c41;
+    font-family: Roboto, Arial, sans-serif;
+    color: #dddddd;
+}
