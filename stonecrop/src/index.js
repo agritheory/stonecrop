@@ -1,8 +1,7 @@
-import VueRouter from 'vue-router'
 import { createOvermind } from 'overmind'
 import { createPlugin } from 'overmind-vue'
 import { config } from './overmind'
-import { router, routerConfig } from './routes.js'
+import { router } from './routes.js'
 
 // import { hooks } from './hooks'
 
@@ -12,7 +11,7 @@ function install(app, options) {
 	const overmind = createOvermind(config)
 	const OvermindPlugin = createPlugin(overmind)
 	app.use(OvermindPlugin)
-	app.use(VueRouter)
+	app.use(router)
 }
 
 

@@ -2,7 +2,7 @@
   "name": "@sedum/atable",
   "version": "0.1.0",
   "description": "",
-  "main": "dist/atable.es.js",
+  "main": "dist/atable.umd.js",
   "module": "dist/atable.es.js",
   "umd": "dist/atable.umd.js",
   "files": [
@@ -28,5 +28,11 @@
   },
   "engines": {
     "node" : ">=14.17.3"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/atable.es.js",
+      "require": "./dist/atable.umd.js"
+    }
   }
 }

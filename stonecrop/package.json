@@ -9,7 +9,7 @@
     "overmind": "^28.0.1",
     "overmind-vue": "^28.0.3",
     "vue": "^3.0.5",
-    "vue-router": "4"
+    "vue-router": "^4"
   },
   "devDependencies": {
     "@sedum/atable": "workspace:~0.1.0",
