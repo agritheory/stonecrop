@@ -8,19 +8,19 @@ These packages in combination create an application that creates a schema driven
 Visit sedum.io/stonecrop
 
 ## To Do
- - Move desktop components out of Stonecrop and into Desktop
  - Make Beam components compatible with AForm API
  - Build and example project with things
+	- 
  
 ## Getting Started
  This project has the following system dependencies:
- - pnpm ^6.10.3 [link]()
- - rush ^5.50.0 [link]()
- - nvm and node ^14.7: `nvm install --lts && nvm use --lts`
+ - pnpm ^6.10.3 [link](https://pnpm.io/)
+ - rush ^5.50.0 [link](https://rushjs.io/)
+ - nvm and node ^14.17: `nvm install --lts && nvm use --lts`
+ - Overmind Devtools for VSCode [link](https://marketplace.visualstudio.com/items?itemName=christianalfoni.overmind-devtools-vscode) (recommended)
  
-This is a guess for now
 ```bash
-git clone {{url}} stonecrop
+git clone stonecrop
 # or 
 git pull
 cd stonecrop
@@ -37,5 +37,7 @@ rushx dev
  - AForm
  - Beam (Mobile-specific components )
  - Desktop (Desktop/ SPA components)
- - Themes
+ - Themes (including icon fonts)
+ - HTTP Client
+ - GraphQL Client
  - Print (TBD)

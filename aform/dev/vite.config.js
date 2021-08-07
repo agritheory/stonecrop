@@ -15,7 +15,7 @@ module.exports = {
 				}
 			}
 		},
-		outDir: './../dist/'
+		outDir: './dist/'
 	},
 	plugins: [vue()]
 }

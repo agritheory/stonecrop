@@ -51,17 +51,40 @@ importers:
       vite: 2.4.4
       vue-router: 4.0.10_vue@3.1.5
 
+  ../../beam:
+    specifiers:
+      '@cypress/vite-dev-server': ~2.0.3
+      '@cypress/vue': ^3.0.0-beta.4
+      '@vitejs/plugin-vue': ^1.3.0
+      '@vue/compiler-sfc': ^3.1.5
+      cypress: ^8.1.0
+      portal-vue: ~3.0.0-beta.0
+      vite: ^2.4.4
+      vue: ^3.0.5
+      vue-router: ^4
+    dependencies:
+      portal-vue: 3.0.0-beta.0_vue@3.1.5
+      vue: 3.1.5
+    devDependencies:
+      '@cypress/vite-dev-server': 2.0.5_vite@2.4.4
+      '@cypress/vue': 3.0.3_cypress@8.2.0+vue@3.1.5
+      '@vitejs/plugin-vue': 1.3.0_@vue+compiler-sfc@3.1.5
+      '@vue/compiler-sfc': 3.1.5_vue@3.1.5
+      cypress: 8.2.0
+      vite: 2.4.4
+      vue-router: 4.0.10_vue@3.1.5
+
   ../../desktop:
     specifiers:
       '@vitejs/plugin-vue': ^1.3.0
       '@vue/compiler-sfc': ^3.1.5
-      portal-vue: ^2.1.7
+      portal-vue: ~3.0.0-beta.0
       vite: ^2.4.4
       vue: ^3.0.5
       vue-router: ^4
       vue-template-compiler: ^2.6.14
     dependencies:
-      portal-vue: 2.1.7_vue@3.1.5
+      portal-vue: 3.0.0-beta.0_vue@3.1.5
       vue: 3.1.5
       vue-router: 4.0.10_vue@3.1.5
     devDependencies:
@@ -1906,10 +1929,11 @@ packages:
     resolution: {integrity: sha1-7RQaasBDqEnqWISY59yosVMw6Qw=}
     engines: {node: '>=0.10.0'}
 
-  /portal-vue/2.1.7_vue@3.1.5:
-    resolution: {integrity: sha512-+yCno2oB3xA7irTt0EU5Ezw22L2J51uKAacE/6hMPMoO/mx3h4rXFkkBkT4GFsMDv/vEe8TNKC3ujJJ0PTwb6g==}
+  /portal-vue/3.0.0-beta.0_vue@3.1.5:
+    resolution: {integrity: sha512-ktV+Q0fwlsjeF+2xGebMxrN6xH8yMdmbLzYbd2OfcgU4OmzSmkj6iP3kBQRGa+7A5WZlqCHWaFfecNs9Igsv9w==}
+    engines: {node: '>=14'}
     peerDependencies:
-      vue: ^2.5.18
+      vue: ^3.0.4
     dependencies:
       vue: 3.1.5
     dev: false

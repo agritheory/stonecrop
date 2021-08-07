@@ -5,7 +5,7 @@ module.exports = {
 	build: {
 		lib: {
 			entry: path.resolve(__dirname, '../src/index.js'),
-			name: '@sedum/atable'
+			name: '@sedum/aform'
 		},
 		rollupOptions: {
 			external: ['vue'],
@@ -15,7 +15,7 @@ module.exports = {
 				}
 			}
 		},
-		outDir: './../dist/'
+		outDir: '../dist/'
 	},
 	plugins: [vue()]
 }
