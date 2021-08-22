@@ -2,24 +2,22 @@ import { createOvermind } from 'overmind'
 import { createPlugin } from 'overmind-vue'
 import { config } from './overmind'
 import { router } from './routes.js'
+import StonecropConfigLoader from './configLoader'
 
-// import { hooks } from './hooks'
 
-// let rathad = new Rathad(hooks)
+// let bloom = new Bloom()
 
 function install(app, options) {
 	const overmind = createOvermind(config)
 	const OvermindPlugin = createPlugin(overmind)
 	app.use(OvermindPlugin)
 	app.use(router)
-}
+	const config = new StonecropConfigLoader()
+	// app.use(bloom)
+	// app.use(caulis)
 
-
-if (typeof window !== "undefined" && window.Vue) {
-  install(window.Vue)
 }
 
 export default {
-  version: "0.1.0",
-  install,
+  install
 }

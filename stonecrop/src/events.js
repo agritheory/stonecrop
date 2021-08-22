@@ -1,4 +1,4 @@
-export default class Rathad {
+export default class Bloom {
 	constructor(events=[], hooks={}){
 		this.hooks = {
 			'onAppLoad': [],
