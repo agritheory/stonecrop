@@ -8,9 +8,13 @@ These packages in combination create an application that creates a schema driven
 Visit sedum.io/stonecrop
 
 ## To Do
+ - Build and example project with some real features
+	- Get Overmind working with stonecrop.config.js
+	- Create a theme-able design with (s)css classes and color variables
+	- Get CRUD-type data updates to work with MirageJS
  - Make Beam components compatible with AForm API
- - Build and example project with things
-	- 
+	
+
  
 ## Getting Started
  This project has the following system dependencies:
