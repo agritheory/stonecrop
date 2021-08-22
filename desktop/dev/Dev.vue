@@ -17,10 +17,4 @@ html, body {
 	font-family: Arimo, sans-serif;
 	font-size: 11pt;
 }
-.rathad-content {
-	padding-left: 1ch;
-}
-.rathad-nav {
-	padding-left: 1ch;
-}
 </style>

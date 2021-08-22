@@ -24,5 +24,8 @@
       "import": "./dist/desktop.es.js",
       "require": "./dist/desktop.umd.js"
     }
-  }
+  },
+  "files": [
+    "dist/*.css"
+  ]
 }
