@@ -20,4 +20,5 @@ app.use(aform)
 app.use(stonecrop)
 app.use(desktop)
 
+
 app.mount('#app')

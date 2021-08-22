@@ -1,0 +1,42 @@
+[
+	{
+		"fieldname": "first_name",
+		"fieldtype": "ATextInput",
+		"label": "First Name"
+	},
+	{
+		"fieldname": "middle_name",
+		"component": "ATextInput",
+		"label": "Middle Name"
+	},
+	{
+		"fieldname": "last_name",
+		"component": "ATextInput",
+		"label": "Last Name"
+	},
+	{
+		"fieldname": "age",
+		"component": "ANumericInput",
+		"label": "Age"
+	},
+	{
+		"fieldname": "first_name",
+		"fieldtype": "ATextInput",
+		"label": "First Name"
+	},
+	{
+		"fieldname": "middle_name",
+		"component": "ATextInput",
+		"label": "Middle Name"
+	},
+	{
+		"fieldname": "last_name",
+		"component": "ATextInput",
+		"label": "Last Name"
+	},
+	{
+		"fieldname": "age",
+		"component": "ANumericInput",
+		"label": "Age"
+	}
+]

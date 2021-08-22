@@ -1,3 +1,5 @@
+// import stonecrophttpclient from 'stonecrophttpclient'
+
 // expected keys
 let config = {}
 
@@ -10,7 +12,19 @@ config.app = {
 }
 
 config.routes = {}
-config.events = {}
+config.events = {
+	server: {
+
+	},
+	client: {
+
+	},
+	common: {
+		
+	}
+}
+config.client = stonecrophttpclient
+config.customComponents = []
 
 
 export default { config }
