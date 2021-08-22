@@ -1,5 +1,5 @@
 <template>
-<ATableModal
+<div
 	:event="event"
 	:colIndex="colIndex"
 	:rowIndex="rowIndex"
@@ -14,13 +14,11 @@
     >
     <tr>
     <td
-        :style="{width: dayWidth}"
         @click="previousMonth"
 				tabindex="-1"
     > &lt; </td>
     <th colspan="5"> {{ monthAndYear }} </th>
     <td 
-        :style="{width: dayWidth}"
         @click="nextMonth"
 				tabindex="-1"
     > &gt; </td>
@@ -28,7 +26,6 @@
     <tr v-for="i in 6" :key="i">
 			<td v-for="j in 7"
 				:key="(((i - 1) * 7) + j)"
-				:style="{width: dayWidth}"
 				:class="{
 					'todaysdate': today(current[((i - 1) * 7) +j]), 
 					'selecteddate': isSelectedDate(current[((i - 1) * 7) +j])
@@ -39,18 +36,18 @@
 			</td>
     </tr>
     </table>
-</ATableModal>
+</div>
 </template>
 <script>
-import { ATableModal } from '../src/'
-import {ref, defineComponent, inject, computed } from 'vue'
+import {ref, reactive, defineComponent, inject, computed, onMounted, watchEffect } from 'vue'
 
 export default defineComponent({
 	name: "ADate",
-	components: { ATableModal },
+	// components: { ATableModal },
 	props: ['event', "colIndex", "rowIndex", "indent", "tableid"],
 	setup(props, context) {
 		const TableData = inject(props.tableid)
+		console.log(TableData)
 		const todaysDate = new Date()
 		let currentMonth = reactive(todaysDate.getMonth())
 		let currentYear = reactive(todaysDate.getFullYear())
@@ -143,28 +140,27 @@ export default defineComponent({
 </script>
 <style scoped>
 .adate {
-    border: 2px;
-    border-style: solid;
-    border-color: var(--focus-cell-outline);
-    position: absolute;
-    z-index: 100;
-    font-family: Gotham, Arial, sans-serif;
-    font-size: var(--table-font-size);
-    display: inline-table;
-    background-color: var(--row-color-zebra-light);
-    color: var(--cell-text-color);
-    outline: none;
+	border: 2px solid var(--focus-cell-outline);
+	position: absolute;
+	z-index: 100;
+	font-size: var(--table-font-size);
+	display: inline-table;
+	background-color: var(--row-color-zebra-light);
+	color: var(--cell-text-color);
+	outline: none;
+	width: calc(100% - 4px);
 }
 .adate tr {
-    height: 1.15rem;
-    text-align: center;
-    vertical-align: middle;
+	height: 1.15rem;
+	text-align: center;
+	vertical-align: middle;
 }
 .adate td {
-    border: 2px solid transparent;
+	border: 2px solid transparent;
+	min-width: 2.25ch; /* this doesn't zoom correctly */
 }
 .adate td:hover {
-    border: 2px solid var(--focus-cell-outline);
+	border: 2px solid var(--focus-cell-outline);
 }
 button {
   background-color: var(--row-color-zebra-light);
@@ -176,17 +172,17 @@ button {
   font-size: var(--table-font-size);
 }
 .dateheader {
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+	font-weight: 700;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
 }
 .adate .todaysdate {
-    border-bottom-color: var(--focus-cell-outline);
+	border-bottom-color: var(--focus-cell-outline);
 }
 
 .adate .selecteddate {
-    border: 2px solid var(--focus-cell-outline);
+	border: 2px solid var(--focus-cell-outline);
 }
 
 </style>

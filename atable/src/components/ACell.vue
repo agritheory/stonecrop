@@ -27,7 +27,7 @@
   />
 </template>
 <script>
-import {ref, defineComponent, inject, computed, watch } from 'vue'
+import {ref, defineComponent, inject, computed, watch, resolveDynamicComponent, h, render } from 'vue'
 
 export default defineComponent({
 	name: "ACell",
@@ -67,10 +67,68 @@ export default defineComponent({
 				// TableData.columns[props.colIndex].mask(event)
 			}
 			if(TableData.columns[props.colIndex].hasOwnProperty('component')){
-				TableData.columns[props.colIndex].component(event, props.rowIndex, props.colIndex, this, TableData.id)
+				if(resolveDynamicComponent(TableData.columns[props.colIndex].component)){
+					TableData.modal.component = this.$root.$.appContext.components[TableData.columns[props.colIndex].component]
+					TableData.modal.visible = true
+					TableData.modal.colIndex = props.colIndex
+					TableData.modal.rowIndex = props.rowIndex
+					TableData.modal.event = event
+					TableData.modal.parent = this
+					// // this.$root.$.appContext.components[TableData.columns[props.colIndex].component]
+					// // render component as vNode and mount i					
+						// this.$root.$.appContext.components[TableData.columns[props.colIndex].component],
+						// {
+						// 	props: {
+						// 		event: event, 
+						// 		rowIndex: props.rowIndex,
+						// 		colIndex: props.colIndex,
+						// 		parent: this,
+						// 		tableid: props.tableid
+						// 	},
+						// 	app: this.$root.$
+						// }
+					// event.target.appendChild(el?.childNodes[0])
+				}
 			}
 			return event
 		}
+
+// function renderSomething(event, rowIndex, colIndex, parent, tableid){
+// 	const DatePicker = app.extend(ADate)
+// 	let dateModal = new DatePicker({
+// 		parent: parent,
+// 		propsData: { event, rowIndex, colIndex, tableid }
+// 	}).$mount()
+// 	event.target.appendChild(dateModal.$el)
+// }
+
+
+
+
+// 	function dynamicMount(component, { props, children, element, app } = {}){
+// 		let el = element
+// 		let vNode = h(component, props, children)
+
+// 		if(app && app._context){
+// 			vNode.appContext = app._context
+// 		}
+// 		if(el){
+// 			render(vNode, el)
+// 		}	else if(typeof document !== 'undefined' ){
+// 			render(vNode, el = document.createElement('div'))
+// 		}
+
+// 		const destroy = () => {
+// 			if (el){
+// 				render(null, el)
+// 			}
+// 			el = null
+// 			vNode = null
+// 		}
+
+// 		return { vNode, destroy, el }
+// 	}
+
 
 		const updateData = function(event){
 			if(event){
@@ -79,10 +137,9 @@ export default defineComponent({
 					TableData.setCellData(props.rowIndex, props.colIndex, event.target.innerHTML)
 				}
 				cellModified = true
-				console.log('cellmodified', cellModified)
+				// console.log('cellmodified', cellModified)
 			}
 		}
-
 
 		// watch(
 		// 	() => { TableData.display[props.colIndex + ":" + props.rowIndex].modified},

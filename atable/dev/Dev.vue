@@ -1,25 +1,22 @@
 <template>
-	<div id="app">
-		<ATable
-			:columns="coa.columns"
-			:rows="coa.rows"
-			:config="coa.config"
-		/>
-		<br>
-		<hr>
-		<br>
-		<ATable
-			:columns="http_logs.columns"
-			:rows="http_logs.rows"
-			:config="http_logs.config"
-		/>	
-	</div>
+<!-- <ATable
+		:columns="coa.columns"
+		:rows="coa.rows"
+		:config="coa.config"
+	/>
+	<br>
+	<hr>
+	<br> -->
+	<ATable
+		:columns="http_logs.columns"
+		:rows="http_logs.rows"
+		:config="http_logs.config"
+	/>	
 </template>
 
 <script>
 /* eslint-disable */
 
-import ADate from './ADate.vue'
 import coa_data from './assets/sample_data/coa.json'
 import http_data from './assets/sample_data/http_logs.json'
 
@@ -100,7 +97,7 @@ export default {
 						align: 'Center',
 						edit: true,
 						width: '25ch',
-						component: ($event, rowIndex, colIndex, parent, tableid) => { renderSomething(event, rowIndex, colIndex, parent, tableid) },
+						component: 'ADate',
 						format: value => { return (new Date(Number(value)).toLocaleDateString('en-US')) }
 					},
 				],
@@ -113,15 +110,21 @@ export default {
 	}
 }
 
-function renderSomething(event, rowIndex, colIndex, parent, tableid){
-	const DatePicker = app.extend(ADate)
-	let dateModal = new DatePicker({
-		parent: parent,
-		propsData: { event, rowIndex, colIndex, tableid }
-	}).$mount()
-	event.target.appendChild(dateModal.$el)
+// function renderSomething(event, rowIndex, colIndex, parent, tableid){
+// 	// https://github.com/pearofducks/mount-vue-component/blob/master/index.js
+// 	// vendor and make this into a utility function 
+// 	const DatePicker = defineComponent({
+// 		extends: ADate,
+// 		parent: parent,
+// 		// propsData: { event, rowIndex, colIndex, tableid }
+// 	})
 
-}
+// 	console.log(DatePicker)
+// 	let dateModal = h(DatePicker, { event, rowIndex, colIndex, tableid })
+// 	event.target.appendChild(dateModal)
+
+
+// }
 
 </script>
 

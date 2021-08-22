@@ -8,6 +8,7 @@
     tabindex="-1"
     @click="handleInput"
     @input="handleInput"
+		v-show="isVisible"
   >
     <slot />
   </div>
@@ -18,57 +19,65 @@ export default {
 	props: {
 		"event": {
 			type: MouseEvent,
-			required: true
+			required: false
 		},
 		"colIndex": {
 			type: Number,
-			required: true,
+			required: false,
 			default: 0
 		},
 		"rowIndex": {
 			type: Number,
-			required: true,
+			required: false,
 			default: 0
 		},
 		"tableid": {
 			type: String,
-			required: true,
+			required: false,
 			default: () => {return undefined}
 		}
 	},
 	data(){
-		return {modal: {left: '', top: '', width: ''}}
-	},
-	created() {
-		const domRect = this.$props.event.target.getBoundingClientRect()
-		this.modal.left = (domRect.left - 2) + 'px'
-		this.modal.top = (domRect.top + domRect.height - 2) + 'px' 
-		this.modal.width = (domRect.width - 4) + 'px' // subtract padding
-		window.addEventListener('click', this.clickOutside)
+		return {
+			modal: {
+				left: '', top: '', width: '', parent: '', 
+			},
+			isVisible: false
+		}
 	},
 	methods: {
 		handleInput(event){
 			event.stopPropagation()
 		},
 		clickOutside(event){
-			if(!this.$el.parentElement.contains(event.target)){
-				this.destroy()
+			console.log('click outside')
+			if(!this.modal.parent.contains(event.target)){
+				console.log('click outside')
+				this.isVisible = false
 			} else {
 				event.stopPropagation()
 			}
 			event.target.blur()
 		},
-		destroy(){
-			window.removeEventListener('click', this.clickOutside, false)
-			this.$emit('change', this.cellData)
-			this.$el.parentElement.removeChild(this.$el)
-		},
+	},
+	watch: {
+		event(){
+			console.log('event', this.$props.event)
+			if(this.$props.event !== undefined) {
+				this.isVisible = true
+				const domRect = this.$props.event.target.getBoundingClientRect()
+				this.modal.left = (domRect.left) + 'px'
+				this.modal.top = (domRect.top + domRect.height) + 'px' 
+				this.modal.width = (domRect.width) + 'px' // subtract padding
+				this.modal.parent = this.$props.event.target
+				window.addEventListener('click', this.clickOutside)
+			}
+		}
 	}
 }
 </script>
 <style scoped>
 .amodal {
-	border-width: 0px;
 	z-index: 100;
 	position: absolute;
 }

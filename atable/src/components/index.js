@@ -9,6 +9,12 @@ export default class TableDataStore {
 		this.config = reactive(config)
 		this.table = table === undefined ? reactive(this.createTableObject(rows)) : table
 		this.display = this.createDisplayObject(display)
+		this.modal = reactive({
+			visible: false,
+			rowIndex: undefined,
+			colIndex: undefined,
+			event: undefined,
+		})
 	}
 
 	createTableObject(rows){
@@ -69,4 +75,8 @@ export default class TableDataStore {
 		this.table[colIndex + ":" + rowIndex] = value
 		return this.table[colIndex + ":" + rowIndex]
 	}
+
+	// modal(component, colIndex, rowIndex){
+
+	// }
 }

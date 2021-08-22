@@ -35,10 +35,25 @@
       </ARow>
     </tbody>
     <slot name="footer" />
+		<ATableModal
+			:colIndex="TableData.modal.colIndex"
+			:rowIndex="TableData.modal.rowIndex"
+			:event="TableData.modal.event"
+			:tableid="TableData.id"
+			style="{border: 1px solid var(--brand-color);}"
+		>
+			<component
+				:is="TableData.modal.component"	
+				:colIndex="TableData.modal.colIndex"
+				:rowIndex="TableData.modal.rowIndex"
+				:event="TableData.modal.event"
+				:tableid="TableData.id"
+			/>
+		</ATableModal>
   </table>
 </template>
 <script>
-import { defineComponent, reactive, provide, nextTick } from 'vue'
+import { defineComponent, ref, provide, nextTick } from 'vue'
 
 import TableDataStore from './index.js'
 import ARow from "./ARow.vue"
@@ -70,7 +85,7 @@ export default defineComponent({
 		}
 	},
 	setup(props, context) {
-		let displayRows = reactive([])
+		let displayRows = ref([])
 		let TableData = new TableDataStore(props.id, props.columns, props.rows, props.config)
 		if(TableData.config.treeView === true){
 			TableData.rows.forEach((row, index) => {
@@ -300,6 +315,23 @@ export default defineComponent({
 			document.getSelection().collapseToEnd()
 		}
 
+		var modal = ref({
+			event: undefined,
+			colIndex: undefined,
+			rowIndex: undefined,
+			component: '',
+			tableid: TableData.id
+		})
+
+		function showModal(component, event, colIndex, rowIndex, tableid){
+			modal.event = event
+			modal.colIndex = colIndex
+			modal.rowIndex = rowIndex
+			modal.tableid = tableid
+			modal.component = component
+		}
+
+
 		return {
 			TableData,
 			displayRows,
@@ -323,6 +355,7 @@ export default defineComponent({
 			upCell,
 			downCell,
 			moveCursorToEnd,
+			modal
 			// updateData,
 		}
 	}
