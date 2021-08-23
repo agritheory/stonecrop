@@ -1,6 +1,5 @@
 <template>
   <div>
-    <label :for="uuid">{{ label }} </label>
     <input
       :value="value"
       :required="required"
@@ -8,6 +7,7 @@
       :disabled="readOnly"
       @input="update($event.target.value)"
     />
+    <label :for="uuid">{{ label }} </label>
     <p v-show="validation.errorMessage" v-html="validation.errorMessage"></p>
   </div>
 </template>
@@ -53,23 +53,46 @@ div {
   margin: 0rem;
   margin-right: 1ch;
 }
+
 input {
-  width: 100%;
+  width: calc(100% - 1ch);
   outline: 1px solid transparent;
   border: 1px solid var(--primary-color);
-  padding: 0rem;
-  margin: 0rem;
+  padding: 1ch 0.5ch 0.5ch 1ch;
+  margin: calc(1.15rem / 2) 0 0 0;
   min-height: 1.15rem;
+  /* border-radius: 0.25rem;  /* don't like, but it's here */
 }
 p, label {
-  width: 100%;
   display: block;
   min-height: 1.15rem;
   padding: 0rem;
   margin: 0rem;
   border: 1px solid transparent;
+  margin-bottom: 0.25rem;
 }
+
+p {
+  width: 100%;
+  color: red;
+  font-size: 85%
+}
+
+label {
+  z-index: 2;
+  font-size: 80%;
+  position: absolute;
+  background: white;
+  margin: calc(-1.5rem - calc(2.15rem / 2)) 0 0 1ch;
+  padding: 0 0 0 0.25ch;
+}
+
 input:focus {
-  outline: 1px solid var(--primary-color);
+ outline: 1px solid var(--primary-color);
+}
+
+input:focus + label {
+  color: var(--primary-color);
+  font-weight: bold;
 }
 </style>

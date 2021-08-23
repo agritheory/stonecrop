@@ -19,5 +19,5 @@ function install(app, options) {
 }
 
 export default {
-	default: install
+	install
 }
