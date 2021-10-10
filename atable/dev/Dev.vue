@@ -1,5 +1,5 @@
 <template>
-<!-- <ATable
+	<!-- <ATable
 		:columns="coa.columns"
 		:rows="coa.rows"
 		:config="coa.config"
@@ -90,16 +90,16 @@ export default {
 						edit: true,
 						width: '35ch',
 					},
-					{
-						label: "Report Date",
-						name: "report_date",
-						type: "component",
-						align: 'Center',
-						edit: true,
-						width: '25ch',
-						component: 'ADate',
-						format: value => { return (new Date(Number(value)).toLocaleDateString('en-US')) }
-					},
+					// {
+					// 	label: "Report Date",
+					// 	name: "report_date",
+					// 	type: "component",
+					// 	align: 'Center',
+					// 	edit: true,
+					// 	width: '25ch',
+					// 	component: 'ADate',
+					// 	format: value => { return (new Date(Number(value)).toLocaleDateString('en-US')) }
+					// },
 				],
 				config: { numberedRows: true, treeView: false },
 				rows: http_data
@@ -129,27 +129,7 @@ export default {
 </script>
 
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap');
 @import './assets/atable.css';
 
-body {
-	background-color: var(--demo-app-background);
-	font-family: var(--atable-font-family);
-}
-
-.atable {
-	font-family: var(--atable-font-family);
-}
-
-.tab {
-	display: inline-block;
-	width: 10ch;
-	border-width: 1px;
-	border-style: solid;
-	border-color: var(--header-border-color);
-	text-align: center;
-	padding: 5px;
-	background-color: var(--brand-color);
-	color: var(--header-text-color);
-	font-family: var(--atable-font-family);
-}
 </style>

@@ -1,7 +1,7 @@
 <template>
 <fieldset
 >
-	<label
+	<legend
 		@click="toggleCollapse($event)"
 		@submit="toggleCollapse($event)"
 	>
@@ -11,7 +11,7 @@
 			:collapsed="collapsed"
 			
 		/>
-	</label>
+	</legend>
 	<AForm 
 		v-show="!collapsed"
 		:schema="schema"
@@ -52,7 +52,7 @@ fieldset{
 	border: 1px solid transparent;
 	border-bottom: 1px solid var(--primary-color);
 }
-label {
+legend {
 	width: 100%;
 	height: 1.15rem;
 	border: 1px solid transparent;

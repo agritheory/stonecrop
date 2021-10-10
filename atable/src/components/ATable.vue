@@ -126,7 +126,7 @@ export default defineComponent({
 			if(indent && colKey === 0 && indent > 0){ 
 				return (indent * 1) + 'ch'
 			} else {
-				return 'inherit'
+				return null
 			}
 		}
 
@@ -366,6 +366,7 @@ export default defineComponent({
 table {
   display: table;
   border-collapse: var(--border-collapsed);
+	caret-color: var(--brand-color);
 }
 th {
   background-color: var(--brand-color);
@@ -393,6 +394,8 @@ td {
   color: var(--cell-text-color);
   text-overflow: ellipsis;
   overflow: hidden;
+	padding-left: 0.1ch;
+	padding-right: 01.ch;
 }
 th:focus{
   outline: none;

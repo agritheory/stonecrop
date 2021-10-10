@@ -84,7 +84,7 @@ label {
   position: absolute;
   background: white;
   margin: calc(-1.5rem - calc(2.15rem / 2)) 0 0 1ch;
-  padding: 0 0 0 0.25ch;
+  padding: 0 0.25ch 0 0.25ch;
 }
 
 input:focus {
