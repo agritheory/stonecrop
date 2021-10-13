@@ -2,7 +2,7 @@ import { v4 } from "uuid"
 import { computed, reactive, ref } from 'vue'
 
 export default class TableDataStore {
-	constructor(id = undefined, columns = [], rows = [], config = {}, table = undefined, display = undefined) {
+	constructor(id = undefined, columns = [], rows = [], config = {}, table = {}, display = {}) {
 		this.id = id === undefined ? v4() : id
 		this.rows = rows
 		this.columns = reactive(columns)
