@@ -11,7 +11,7 @@
   ],
   "scripts": {
     "dev": "vite serve dev/ -c dev/vite.config.js -d",
-    "build": "vite build dev/ -c dev/vite.config.js -d"
+    "build": "vite build dev/ -c dev/vite.config.js -d --emptyOutDir true"
   },
   "license": "MIT",
   "dependencies": {

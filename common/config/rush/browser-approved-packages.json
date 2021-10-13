@@ -87,6 +87,10 @@
       "allowedCategories": [ "prototype" ]
     },
     {
+      "name": "unstorage",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
       "name": "uuid",
       "allowedCategories": [ "prototype" ]
     },

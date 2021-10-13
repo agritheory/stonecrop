@@ -56,11 +56,11 @@
       "projectFolder": "examples",
       "reviewCategory": "prototype"
     },
-    {
-      "packageName": "@sedum/beam",
-      "projectFolder": "beam",
-      "reviewCategory": "prototype"
-    },
+    // {
+    //   "packageName": "@sedum/beam",
+    //   "projectFolder": "beam",
+    //   "reviewCategory": "prototype"
+    // },
     // {
     //   "packageName": "@sedum/themes",
     //   "projectFolder": "themes",

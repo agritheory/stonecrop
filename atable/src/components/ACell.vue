@@ -28,7 +28,7 @@
   />
 </template>
 <script>
-import {ref, defineComponent, inject, computed, watch, resolveDynamicComponent, h, render } from 'vue'
+import {ref, defineComponent, inject, computed, watch, resolveDynamicComponent } from 'vue'
 
 export default defineComponent({
 	name: "ACell",
@@ -54,7 +54,7 @@ export default defineComponent({
 		
 		let cellModified = ref(false)
 
-		const displayValue = computed((initialData) => { 
+		const displayValue = computed(() => { 
 			if(TableData.columns[props.colIndex].format !== undefined){
 				return TableData.columns[props.colIndex].format(TableData.cellData(props.rowIndex, props.colIndex))
 			} else {

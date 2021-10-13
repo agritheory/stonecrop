@@ -42,15 +42,15 @@ export default {
 						edit: true,
 						width: '50ch',
 					},
-					{
-						label: "Balance",
-						name: "balance",
-						type: "Data",
-						align: 'Left',
-						edit: false,
-						width: '20ch',
-						format: value => {return value.title}
-					}
+					// {
+					// 	label: "Balance",
+					// 	name: "balance",
+					// 	type: "Data",
+					// 	align: 'Left',
+					// 	edit: false,
+					// 	width: '20ch',
+					// 	format: (value) => {return value.title}
+					// }
 				],
 				config: { numberedRows: false, treeView: true },
 				rows: coa_data
@@ -64,7 +64,7 @@ export default {
 						align: 'Left',
 						edit: false,
 						width: '35ch',
-						format: value => {return value.title}
+						// format: value => {return value.title}
 					},
 					{
 						label: "HTTP Method",
@@ -90,16 +90,16 @@ export default {
 						edit: true,
 						width: '35ch',
 					},
-					// {
-					// 	label: "Report Date",
-					// 	name: "report_date",
-					// 	type: "component",
-					// 	align: 'Center',
-					// 	edit: true,
-					// 	width: '25ch',
-					// 	component: 'ADate',
-					// 	format: value => { return (new Date(Number(value)).toLocaleDateString('en-US')) }
-					// },
+					{
+						label: "Report Date",
+						name: "report_date",
+						type: "component",
+						align: 'Center',
+						edit: true,
+						width: '25ch',
+						component: 'ADate',
+						// format: value => { return (new Date(Number(value)).toLocaleDateString('en-US')) }
+					},
 				],
 				config: { numberedRows: true, treeView: false },
 				rows: http_data

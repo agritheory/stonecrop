@@ -19,11 +19,12 @@ export default class TableDataStore {
 
 	createTableObject(rows){
 		let table = {}
-		for (let [rowIndex, row] of this.rows.entries()){
-			for (let [colIndex, col] of this.columns.entries()){
+		this.columns.forEach((column, colIndex) => {
+			rows.forEach((row, rowIndex) => {
 				table[`${colIndex}:${rowIndex}`] = rows[rowIndex][this.columns[colIndex].name]
-			}
-		}
+			})
+		})
+		console.log(table)
 		return table
 	}
 
