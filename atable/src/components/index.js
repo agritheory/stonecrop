@@ -19,35 +19,39 @@ export default class TableDataStore {
 
 	createTableObject(rows){
 		let table = {}
-		this.columns.forEach((column, colIndex) => {
-			rows.forEach((row, rowIndex) => {
-				table[colIndex + ":" + rowIndex] = rows[rowIndex][this.columns[colIndex].name]
-			})
-		})
+		for (let [rowIndex, row] of this.rows.entries()){
+			for (let [colIndex, col] of this.columns.entries()){
+				table[`${colIndex}:${rowIndex}`] = rows[rowIndex][this.columns[colIndex].name]
+			}
+		}
 		return table
 	}
+
 	createDisplayObject(display){
-		let defaultDisplay = {}
-		if(this.config.treeView === true){
-			defaultDisplay = {
-				modified: ref(false),
-				open: ref(false),
-				isParent: false,
-				isRoot: false,
-			}
-		} else {
-			defaultDisplay = { modified: false }
-		}
+		let defaultDisplay = { modified: false }
 		if(display !== undefined && display.hasOwnProperty("0:0")){
 			return display
 		} else if(display !== undefined && display.hasOwnProperty("default")){
-			 defaultDisplay = display.default
+			defaultDisplay = display.default
 		}
-		display = {}
-		Object.keys(this.table).forEach((key) => {
-			display[key] = defaultDisplay
-		})
-		return display
+		// 
+		let parents = new Set()
+		for (let rowIndex = this.rows.length - 1; rowIndex >= 0; rowIndex--) {
+			let row = this.rows[rowIndex]
+			if(row.parent){
+				parents.add(row.parent)
+			}
+			defaultDisplay[rowIndex] = {
+				modified: false,
+				open: (row.parent !== null && row.parent !== undefined) ? false : true,
+				isParent: parents.has(rowIndex) ? true : false,
+				parent: row.parent,
+				isRoot: (row.parent !== null && row.parent !== undefined) ? false : true,
+				indent: row.indent || null,
+				childrenOpen: false
+			}	
+		}
+		return reactive(defaultDisplay)
 	}
 
 	get zeroColumn() {
@@ -65,18 +69,29 @@ export default class TableDataStore {
 	}
 
 	cellData(rowIndex, colIndex) {
-		return this.table[colIndex + ":" + rowIndex]
+		return this.table[`${colIndex}:${rowIndex}`]
 	}
 
 	setCellData(rowIndex, colIndex, value) {
-		if(this.table[colIndex + ":" + rowIndex] !== value){
-			this.display[colIndex + ":" + rowIndex].modified = true
+		if(this.table[`${colIndex}:${rowIndex}`] !== value){
+			this.display[`${colIndex}:${rowIndex}`].modified = true
 		}
-		this.table[colIndex + ":" + rowIndex] = value
-		return this.table[colIndex + ":" + rowIndex]
+		this.table[`${colIndex}:${rowIndex}`] = value
+		return this.table[`${colIndex}:${rowIndex}`]
+	}
+	
+	toggleRowExpand(rowIndex){
+		if(!this.config.treeView) { return }
+		
+		this.display[rowIndex].childrenOpen = !this.display[rowIndex].childrenOpen
+		for (let index = this.rows.length - 1; index >= 0; index--) {
+			if(this.display[index].parent === rowIndex){
+				this.display[index].open = !this.display[index].open
+				if(this.display[index].childrenOpen){
+					this.toggleRowExpand(index)
+				}
+			}
+		}
 	}
 
-	// modal(component, colIndex, rowIndex){
-
-	// }
 }

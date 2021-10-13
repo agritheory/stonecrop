@@ -1,6 +1,6 @@
 <template>
   <tr
-    v-show="!TableData.config.treeView || $parent.rowExpand(rowIndex)"
+    v-show="rowVisible()"
   >
     <td 
       v-if="TableData.config.numberedRows"
@@ -27,7 +27,7 @@
         'border-color': 'var(--header-border-color)',
         'user-select': 'none'
       }"
-      @click="toggleRowExpand($event, rowIndex)"
+      @click="toggleRowExpand(rowIndex)"
     >
       {{ getRowExpandSymbol() }}
     </td>
@@ -39,7 +39,7 @@
   </tr>
 </template>
 <script>
-import { ref, defineComponent, inject } from 'vue'
+import { defineComponent, inject, computed, watch } from 'vue'
 
 export default defineComponent({
 	name: "ARow",
@@ -54,11 +54,6 @@ export default defineComponent({
 			required: true,
 			default: 0
 		},
-		"isParent": {
-			type: Boolean,
-			default: false
-		},
-
 		"tableid": {
 			type: String,
 			required: true,
@@ -66,26 +61,45 @@ export default defineComponent({
 		}
 	},
 	setup(props, context) {
-		let open = ref(false)
 		const TableData = inject(props.tableid)
-		const getRowExpandSymbol = function(){
-			if(this.isParent && !this.open){
+
+		function getRowExpandSymbol() {
+			if(!TableData.config.treeView){
+				return ""
+			}
+
+
+			if(TableData.display[props.rowIndex].isRoot && !TableData.display[props.rowIndex].childrenOpen){
 				return "+"
-			}if(this.isParent && this.open){
+			}
+			if(TableData.display[props.rowIndex].isRoot && TableData.display[props.rowIndex].childrenOpen){
+				return "-"
+			}
+			if(TableData.display[props.rowIndex].isParent && !TableData.display[props.rowIndex].childrenOpen){
+				return "+"
+			} else if(TableData.display[props.rowIndex].isParent && TableData.display[props.rowIndex].childrenOpen){
 				return "-"
 			} else {
 				return ""
 			}
 		}
-		const toggleRowExpand = function(event, rowIndex){
-			if(this.open){
-				this.$parent.toggleRowCollapseDeep(event, rowIndex)
-			} else {
-				this.$parent.toggleRowExpand(event, rowIndex)
+
+		function rowVisible(){
+			if(!TableData.config.treeView){
+				return true
 			}
-			this.open = !this.open
+			if(TableData.display[props.rowIndex].isRoot){
+				return true
+			} else {
+				return TableData.display[props.rowIndex].open
+			}
 		}
-		return {open, TableData, getRowExpandSymbol, toggleRowExpand}
+
+		function toggleRowExpand(rowIndex){
+			TableData.toggleRowExpand(rowIndex)
+		}
+
+		return { TableData, getRowExpandSymbol, toggleRowExpand, rowVisible }
 	}
 })
 </script>

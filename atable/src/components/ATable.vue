@@ -10,11 +10,9 @@
     <tbody>
       <ARow
         v-for="(row, rowIndex) in TableData.rows" 
-        :key="row.id"
+        :key="row.id || v4()"
         :row="row"
-        :row-index="rowIndex"
-        :is-parent="TableData.config.treeView === true ? displayRows[rowIndex].isParent : null"
-        :is-open="TableData.config.treeView === true ? displayRows[rowIndex].open : null"
+        :rowIndex="rowIndex"
         :tableid="TableData.id"
       >
         <ACell
@@ -24,12 +22,11 @@
           :col="col"
           tabindex="0"
           spellcheck="false"
-          :row-index="rowIndex"
-          :col-index="colIndex + Number(TableData.zeroColumn === true ? 0 : -1)"
+          :rowIndex="rowIndex"
+          :colIndex="colIndex + Number(TableData.zeroColumn === true ? 0 : -1)"
           :style="{
             'text-align': col.align !== undefined ? col.align.toLowerCase() : 'center',
             'min-width': col.width !== undefined ? col.width : '40ch',
-            'padding-left': getIndent(colIndex, TableData.rows[rowIndex].indent)
           }"
         />
       </ARow>
@@ -53,17 +50,19 @@
   </table>
 </template>
 <script>
+import { v4 } from "uuid"
 import { defineComponent, ref, provide, nextTick } from 'vue'
 
 import TableDataStore from './index.js'
 import ARow from "./ARow.vue"
 import ACell from "./ACell.vue"
 import ATableHeader from "./ATableHeader.vue"
+import ATableModal from "./ATableModal.vue"
 
 export default defineComponent({
 	name: "ATable",
 	components: {
-		ARow, ATableHeader, ACell
+		ATableModal, ARow, ATableHeader, ACell
 	},
 	props: {
 		"columns": {
@@ -85,23 +84,9 @@ export default defineComponent({
 		}
 	},
 	setup(props, context) {
-		let displayRows = ref([])
 		let TableData = new TableDataStore(props.id, props.columns, props.rows, props.config)
-		if(TableData.config.treeView === true){
-			TableData.rows.forEach((row, index) => {
-				displayRows.push({
-					open: false,
-					isParent: false,
-					isRoot: row.parent === null || row.parent === undefined
-				})
-				if(row.parent !== null && row.parent !== undefined){
-					displayRows[row.parent].isParent = true
-				}
-			})
-		}
-
+		
 		provide(TableData.id, TableData)
-		// const TableData = inject(props.tableid)
 
 		const formatCell = function(event = undefined, column = undefined, cellData = undefined){
 			let colIndex = undefined
@@ -128,34 +113,6 @@ export default defineComponent({
 			} else {
 				return null
 			}
-		}
-
-		const toggleRowExpandDeep = function(event, rowIndex){
-			toggleRowExpand(event, rowIndex)
-		}
-
-		const toggleRowCollapseDeep = function(event, rowIndex){
-			if(!TableData.config.treeView) { return }
-			TableData.rows.forEach((row, index) => {
-				if(row.parent === rowIndex){
-					if(displayRows[index].isParent){
-						toggleRowCollapseDeep(event, index)
-					}
-					displayRows[index].open = false
-				}
-			})
-		}
-		
-		const toggleRowExpand = function(event, rowIndex){
-			TableData.rows.forEach((row, index) => {
-				if(row.parent === rowIndex){
-					displayRows[index].open = !displayRows[index].open
-				}
-			})
-		}
-
-		const rowExpand = function(rowIndex){
-			return displayRows[rowIndex].isRoot || displayRows[rowIndex].open
 		}
 
 		function enterNav(event){
@@ -239,8 +196,9 @@ export default defineComponent({
 			let cell = undefined
 			if (tableEl.rows.length !== rowIndex) { // not bottom row
 				cell = tableEl.rows[rowIndex].cells[cellIndex]
-				if (TableData.config.treeView === true && displayRows[rowIndex].open === false) {
-					toggleRowExpand(event, rowIndex - 1)
+				if (TableData.config.treeView === true && TableData.display[rowIndex].open === false) {
+					// toggleRowExpand(event, rowIndex - 1)
+					TableData.toggleRowExpand(rowIndex - 1)
 				}
 			} else {
 				cell = event.target
@@ -257,8 +215,8 @@ export default defineComponent({
 			let cell = undefined
 			if (rowIndex !== 1) { // not top row, exclude headers
 				cell = table.rows[rowIndex - 2].cells[cellIndex]
-				if (TableData.config.treeView === true && displayRows[rowIndex - 2].open === false) {
-					toggleRowExpand(event, TableData.rows[rowIndex - 2].parent)
+				if (TableData.config.treeView === true && TableData.display[rowIndex - 2].open === false) {
+					TableData.toggleRowExpand(TableData.display[rowIndex - 2].parent)
 				}
 			} else {
 				cell = event.target
@@ -279,8 +237,8 @@ export default defineComponent({
 					// if row is hidden, expand
 				} else {  // focus on first cell of next row
 					nextCellEl = tableEl.rows[rowIndex].cells[TableData.zeroColumn === true ? 1 : 0]
-					if (TableData.config.treeView === true && displayRows[rowIndex].open === false) {
-						toggleRowExpand(event, rowIndex - 1)
+					if (TableData.config.treeView === true && TableData.display[rowIndex].open === false) {
+						TableData.toggleRowExpand(rowIndex - 1)
 					}
 				}
 			} else {
@@ -299,7 +257,8 @@ export default defineComponent({
 			if (cellIndex === (TableData.zeroColumn === true ? 1 : 0)) { // first column
 				if (rowIndex !== 1) { // not top row, exclude headers
 					prevCellEl = tableEl.rows[rowIndex - 2].cells[tableEl.rows[rowIndex - 2].cells.length - 1]
-					toggleRowExpand(event, rowIndex - 2)
+					// toggleRowExpand(event, rowIndex - 2)
+					TableData.toggleRowExpand(rowIndex - 2)
 				} else { // top row, stay trapped in top left cell
 					return
 				}
@@ -334,14 +293,8 @@ export default defineComponent({
 
 		return {
 			TableData,
-			displayRows,
-			// handleInput,
+			v4,
 			formatCell,
-			getIndent,
-			rowExpand,
-			toggleRowExpand,
-			toggleRowExpandDeep,
-			toggleRowCollapseDeep,
 			enterNav,
 			tabNav,
 			downArrowNav,
@@ -356,7 +309,6 @@ export default defineComponent({
 			downCell,
 			moveCursorToEnd,
 			modal
-			// updateData,
 		}
 	}
 })
@@ -369,12 +321,14 @@ table {
 	caret-color: var(--brand-color);
 }
 th {
+	box-sizing: border-box;
   background-color: var(--brand-color);
   border-width: 1px;
   border-style: solid;
   border-color: var(--header-border-color);
   border-radius: 0px;
   color: var(--header-text-color);
+
 }
 tr {
   background-color: var(--row-color-zebra-light);
@@ -382,33 +336,5 @@ tr {
 }
 tr:nth-child(even) {
   background-color: var(--row-color-zebra-dark);
-}
-td {
-  border: 1px;
-  border-style: solid;
-  border-color: var(--cell-border-color);
-  border-radius: 0px;
-  margin: 0px;
-  outline: none;
-  box-shadow: none;
-  color: var(--cell-text-color);
-  text-overflow: ellipsis;
-  overflow: hidden;
-	padding-left: 0.1ch;
-	padding-right: 01.ch;
-}
-th:focus{
-  outline: none;
-}
-td:focus, td:focus-within {
-  background-color: var(--focus-cell-background);
-  outline-width: 2px;
-  outline-style: solid; 
-  outline-color: var(--focus-cell-outline);
-  box-shadow: none;
-  overflow: hidden;
-  min-height: 1.15em;
-  max-height: 1.15em;
-  overflow: hidden;
 }
 </style>

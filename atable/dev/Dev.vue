@@ -1,17 +1,17 @@
 <template>
-	<!-- <ATable
+	<ATable
 		:columns="coa.columns"
 		:rows="coa.rows"
 		:config="coa.config"
 	/>
-	<br>
+	<!-- <br>
 	<hr>
 	<br> -->
-	<ATable
+	<!-- <ATable
 		:columns="http_logs.columns"
 		:rows="http_logs.rows"
 		:config="http_logs.config"
-	/>	
+	/>	 -->
 </template>
 
 <script>

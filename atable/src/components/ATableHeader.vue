@@ -53,6 +53,8 @@ th {
 	border-color: var(--header-border-color);
 	border-radius: 0px;
 	color: var(--header-text-color);
+	padding-left: 0.5ch;
+	padding-right: 0.5ch;
 }
 th:focus{
 	outline: none;

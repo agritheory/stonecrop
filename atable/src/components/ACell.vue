@@ -8,7 +8,8 @@
       'text-align': textAlign,
       'width': cellWidth,
 			'background-color': cellModified === false ? 'inherit' : 'var(--cell-modified-color)',
-			'font-weight': cellModified === false ? 'inherit' : 'bold'
+			'font-weight': cellModified === false ? 'inherit' : 'bold',
+			'padding-left': getIndent(colIndex, TableData.display[rowIndex]?.indent),
     }"
 		@focus="onFocus($event)"
 		@paste="onChange($event)"
@@ -74,61 +75,10 @@ export default defineComponent({
 					TableData.modal.rowIndex = props.rowIndex
 					TableData.modal.event = event
 					TableData.modal.parent = this
-					// // this.$root.$.appContext.components[TableData.columns[props.colIndex].component]
-					// // render component as vNode and mount i					
-						// this.$root.$.appContext.components[TableData.columns[props.colIndex].component],
-						// {
-						// 	props: {
-						// 		event: event, 
-						// 		rowIndex: props.rowIndex,
-						// 		colIndex: props.colIndex,
-						// 		parent: this,
-						// 		tableid: props.tableid
-						// 	},
-						// 	app: this.$root.$
-						// }
-					// event.target.appendChild(el?.childNodes[0])
 				}
 			}
 			return event
 		}
-
-// function renderSomething(event, rowIndex, colIndex, parent, tableid){
-// 	const DatePicker = app.extend(ADate)
-// 	let dateModal = new DatePicker({
-// 		parent: parent,
-// 		propsData: { event, rowIndex, colIndex, tableid }
-// 	}).$mount()
-// 	event.target.appendChild(dateModal.$el)
-// }
-
-
-
-
-// 	function dynamicMount(component, { props, children, element, app } = {}){
-// 		let el = element
-// 		let vNode = h(component, props, children)
-
-// 		if(app && app._context){
-// 			vNode.appContext = app._context
-// 		}
-// 		if(el){
-// 			render(vNode, el)
-// 		}	else if(typeof document !== 'undefined' ){
-// 			render(vNode, el = document.createElement('div'))
-// 		}
-
-// 		const destroy = () => {
-// 			if (el){
-// 				render(null, el)
-// 			}
-// 			el = null
-// 			vNode = null
-// 		}
-
-// 		return { vNode, destroy, el }
-// 	}
-
 
 		const updateData = function(event){
 			if(event){
@@ -140,20 +90,6 @@ export default defineComponent({
 				// console.log('cellmodified', cellModified)
 			}
 		}
-
-		// watch(
-		// 	() => { TableData.display[props.colIndex + ":" + props.rowIndex].modified},
-		// 	() => { cellModified = } 
-		// )
-		// let cellModified = function() { return TableData.display[props.colIndex + ":" + props.rowIndex].modified }
-
-		// const cellModified = function(colIndex, rowIndex) {
-		// 	if(TableData.display[colIndex + ":" + rowIndex].modified === true){
-		// 		return 'var(--cell-modified-background)'
-		// 	} else {
-		// 		return 'inherit'
-		// 	}
-		// }
 
 		const textAlign = computed(() => {
 			return TableData.columns[props.colIndex].align !== undefined ? TableData.columns[props.colIndex].align.toLowerCase() : 'center'
@@ -176,19 +112,49 @@ export default defineComponent({
 				event.target.dispatchEvent(new Event("change"))
 				cellModified = true
 			}
-			// console.log(cellModified)
+			console.log(cellModified)
+		}
+
+		const getIndent = function(colKey, indent){
+			if(indent && colKey === 0 && indent > 0){ 
+				return (indent * 1) + 'ch'
+			} else {
+				return 'inherit'
+			}
 		}
 
 		watch(cellModified, () => { console.log(currentData)})
 
-		// watch((cellModified) => {
-
-		// })
-
-		// watchEffect((cellModified))
-
-		return { TableData, updateData, displayValue, handleInput, cellModified, textAlign, cellWidth, onFocus, onChange}
+		return { TableData, updateData, displayValue, handleInput, cellModified, textAlign, cellWidth, onFocus, onChange, getIndent}
 	}
 })
 
 </script>
+<style scoped>
+td {
+  border: 1px;
+  border-style: solid;
+  border-color: var(--cell-border-color);
+  border-radius: 0px;
+	box-sizing: border-box;
+  margin: 0px;
+  outline: none;
+  box-shadow: none;
+  color: var(--cell-text-color);
+  text-overflow: ellipsis;
+  overflow: hidden;
+	padding-left: 0.5ch;
+	padding-right: 0.5ch;
+}
+td:focus, td:focus-within {
+  background-color: var(--focus-cell-background);
+  outline-width: 2px;
+  outline-style: solid; 
+  outline-color: var(--focus-cell-outline);
+  box-shadow: none;
+  overflow: hidden;
+  min-height: 1.15em;
+  max-height: 1.15em;
+  overflow: hidden;
+}
+</style>
