@@ -54,11 +54,11 @@ export default defineComponent({
 		
 		let cellModified = ref(false)
 
-		const displayValue = computed(() => { 
+		const displayValue = computed(() => {
 			if(TableData.columns[props.colIndex].format !== undefined){
-				return TableData.columns[props.colIndex].format(TableData.cellData(props.rowIndex, props.colIndex))
+				return TableData.columns[props.colIndex].format(TableData.cellData(props.colIndex, props.rowIndex))
 			} else {
-				return TableData.cellData(props.rowIndex, props.colIndex)
+				return TableData.cellData(props.colIndex, props.rowIndex)
 			}
 		})
 
@@ -87,7 +87,6 @@ export default defineComponent({
 					TableData.setCellData(props.rowIndex, props.colIndex, event.target.innerHTML)
 				}
 				cellModified = true
-				// console.log('cellmodified', cellModified)
 			}
 		}
 
@@ -100,8 +99,6 @@ export default defineComponent({
 		})
 
 		let currentData = ''
-		// const cellRef = ref(props.colIndex + ':' + props.rowIndex)
-		
 		const onFocus = function(event){
 			currentData = event.target.innerText
 			// console.log(currentData)
@@ -110,9 +107,9 @@ export default defineComponent({
 			if(event.target.innerHTML !== currentData){
 				currentData = event.target.innerText
 				event.target.dispatchEvent(new Event("change"))
-				cellModified = true
+				cellModified = true // set display instead
 			}
-			console.log(cellModified)
+			console.log('cellModified', cellModified)
 		}
 
 		const getIndent = function(colKey, indent){

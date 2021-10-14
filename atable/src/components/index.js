@@ -2,12 +2,12 @@ import { v4 } from "uuid"
 import { computed, reactive, ref } from 'vue'
 
 export default class TableDataStore {
-	constructor(id = undefined, columns = [], rows = [], config = {}, table = {}, display = {}) {
+	constructor(id = undefined, columns = [], rows = [], config = {}, table = undefined, display = undefined) {
 		this.id = id === undefined ? v4() : id
 		this.rows = rows
 		this.columns = reactive(columns)
 		this.config = reactive(config)
-		this.table = table === undefined ? reactive(this.createTableObject(rows)) : table
+		this.table = table === undefined ? reactive(this.createTableObject()) : table
 		this.display = this.createDisplayObject(display)
 		this.modal = reactive({
 			visible: false,
@@ -17,14 +17,13 @@ export default class TableDataStore {
 		})
 	}
 
-	createTableObject(rows){
+	createTableObject(){
 		let table = {}
-		this.columns.forEach((column, colIndex) => {
-			rows.forEach((row, rowIndex) => {
-				table[`${colIndex}:${rowIndex}`] = rows[rowIndex][this.columns[colIndex].name]
-			})
-		})
-		console.log(table)
+		for (const [colIndex, column] of this.columns.entries()){
+			for (const [rowIndex, row] of this.rows.entries()){
+				table[`${colIndex}:${rowIndex}`] = row[column.name]
+			}
+		}
 		return table
 	}
 
@@ -35,7 +34,7 @@ export default class TableDataStore {
 		} else if(display !== undefined && display.hasOwnProperty("default")){
 			defaultDisplay = display.default
 		}
-		// 
+		
 		let parents = new Set()
 		for (let rowIndex = this.rows.length - 1; rowIndex >= 0; rowIndex--) {
 			let row = this.rows[rowIndex]
@@ -69,7 +68,7 @@ export default class TableDataStore {
 		})
 	}
 
-	cellData(rowIndex, colIndex) {
+	cellData(colIndex, rowIndex) {
 		return this.table[`${colIndex}:${rowIndex}`]
 	}
 

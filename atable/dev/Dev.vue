@@ -1,17 +1,17 @@
 <template>
-	<ATable
+	<!-- <ATable
 		:columns="coa.columns"
 		:rows="coa.rows"
 		:config="coa.config"
-	/>
+	/> -->
 	<!-- <br>
 	<hr>
 	<br> -->
-	<!-- <ATable
+	<ATable
 		:columns="http_logs.columns"
 		:rows="http_logs.rows"
 		:config="http_logs.config"
-	/>	 -->
+	/>	
 </template>
 
 <script>
@@ -42,15 +42,15 @@ export default {
 						edit: true,
 						width: '50ch',
 					},
-					// {
-					// 	label: "Balance",
-					// 	name: "balance",
-					// 	type: "Data",
-					// 	align: 'Left',
-					// 	edit: false,
-					// 	width: '20ch',
-					// 	format: (value) => {return value.title}
-					// }
+					{
+						label: "Balance",
+						name: "balance",
+						type: "Data",
+						align: 'Left',
+						edit: false,
+						width: '20ch',
+						format: (value) => {return value.title}
+					}
 				],
 				config: { numberedRows: false, treeView: true },
 				rows: coa_data
@@ -64,7 +64,7 @@ export default {
 						align: 'Left',
 						edit: false,
 						width: '35ch',
-						// format: value => {return value.title}
+						format: value => {return value.title}
 					},
 					{
 						label: "HTTP Method",
@@ -98,34 +98,15 @@ export default {
 						edit: true,
 						width: '25ch',
 						component: 'ADate',
-						// format: value => { return (new Date(Number(value)).toLocaleDateString('en-US')) }
+						format: value => { return (new Date(Number(value)).toLocaleDateString('en-US')) }
 					},
 				],
 				config: { numberedRows: true, treeView: false },
 				rows: http_data
 			}
 		}
-	},
-	mounted(){
 	}
 }
-
-// function renderSomething(event, rowIndex, colIndex, parent, tableid){
-// 	// https://github.com/pearofducks/mount-vue-component/blob/master/index.js
-// 	// vendor and make this into a utility function 
-// 	const DatePicker = defineComponent({
-// 		extends: ADate,
-// 		parent: parent,
-// 		// propsData: { event, rowIndex, colIndex, tableid }
-// 	})
-
-// 	console.log(DatePicker)
-// 	let dateModal = h(DatePicker, { event, rowIndex, colIndex, tableid })
-// 	event.target.appendChild(dateModal)
-
-
-// }
-
 </script>
 
 <style>

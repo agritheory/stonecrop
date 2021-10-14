@@ -67,8 +67,6 @@ export default defineComponent({
 			if(!TableData.config.treeView){
 				return ""
 			}
-
-
 			if(TableData.display[props.rowIndex].isRoot && !TableData.display[props.rowIndex].childrenOpen){
 				return "+"
 			}
