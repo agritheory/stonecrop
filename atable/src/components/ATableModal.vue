@@ -8,18 +8,21 @@
     tabindex="-1"
     @click="handleInput"
     @input="handleInput"
-		v-show="isVisible"
+		v-show="TableData.modal.visible"
   >
     <slot />
   </div>
 </template>
 <script>
-export default {
-	name: 'ATableModal',
+import { ref, defineComponent, inject, watch } from 'vue'
+import { v4 } from "uuid"
+
+export default defineComponent({
+	name: "ATableModal",
 	props: {
 		"event": {
-			type: MouseEvent,
-			required: false
+			type: String,
+			required: false,
 		},
 		"colIndex": {
 			type: Number,
@@ -37,44 +40,33 @@ export default {
 			default: () => {return undefined}
 		}
 	},
-	data(){
-		return {
-			modal: {
-				left: '', top: '', width: '', parent: '', 
-			},
-			isVisible: false
-		}
-	},
-	methods: {
-		handleInput(event){
+	setup(props, context){
+		const TableData = inject(props.tableid)
+
+		let modal = ref({left: 0, top: 0, width: 0})
+
+		function handleInput(event){
 			event.stopPropagation()
-		},
-		clickOutside(event){
-			console.log('click outside')
-			if(!this.modal.parent.contains(event.target)){
+		}
+
+		function clickOutside(event){
+			if(TableData.modal.parent.contains(event.target)){
 				console.log('click outside')
-				this.isVisible = false
+				TableData.modal.visible = false
 			} else {
 				event.stopPropagation()
 			}
 			event.target.blur()
-		},
-	},
-	watch: {
-		event(){
-			console.log('event', this.$props.event)
-			if(this.$props.event !== undefined) {
-				this.isVisible = true
-				const domRect = this.$props.event.target.getBoundingClientRect()
-				this.modal.left = (domRect.left) + 'px'
-				this.modal.top = (domRect.top + domRect.height) + 'px' 
-				this.modal.width = (domRect.width) + 'px' // subtract padding
-				this.modal.parent = this.$props.event.target
-				window.addEventListener('click', this.clickOutside)
-			}
 		}
+
+		watch(TableData.modal, () => {
+			console.log(TableData.modal)
+			window.addEventListener('click', clickOutside)
+		})
+
+		return { TableData, handleInput, modal}
 	}
-}
+})
 </script>
 <style scoped>
 .amodal {

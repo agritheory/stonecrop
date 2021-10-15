@@ -47,7 +47,7 @@ export default defineComponent({
 	props: ['event', "colIndex", "rowIndex", "indent", "tableid"],
 	setup(props, context) {
 		const TableData = inject(props.tableid)
-		console.log(TableData)
+		// console.log(TableData)
 		const todaysDate = new Date()
 		let currentMonth = reactive(todaysDate.getMonth())
 		let currentYear = reactive(todaysDate.getFullYear())

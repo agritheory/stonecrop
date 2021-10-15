@@ -13,7 +13,10 @@ export default class TableDataStore {
 			visible: false,
 			rowIndex: undefined,
 			colIndex: undefined,
-			event: undefined,
+			event: ref(v4()),
+			top: undefined,
+			left: undefined,
+			width: undefined
 		})
 	}
 

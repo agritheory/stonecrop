@@ -9,7 +9,7 @@
     </slot>
     <tbody>
       <ARow
-        v-for="(row, rowIndex) in TableData.rows" 
+        v-for="(row, rowIndex) in TableData.rows"
         :key="row.id || v4()"
         :row="row"
         :rowIndex="rowIndex"
