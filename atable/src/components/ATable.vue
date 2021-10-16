@@ -35,15 +35,18 @@
 		<ATableModal
 			:colIndex="TableData.modal.colIndex"
 			:rowIndex="TableData.modal.rowIndex"
-			:event="TableData.modal.event"
 			:tableid="TableData.id"
-			style="{border: 1px solid var(--brand-color);}"
+			v-show="TableData.modal.visible"
+    	:style="{
+				left: TableData.modal.left + 'px', 
+				top: TableData.modal.top + 'px',
+				width: TableData.modal.width + 'px'
+			}"
 		>
 			<component
 				:is="TableData.modal.component"	
 				:colIndex="TableData.modal.colIndex"
 				:rowIndex="TableData.modal.rowIndex"
-				:event="TableData.modal.event"
 				:tableid="TableData.id"
 			/>
 		</ATableModal>
@@ -274,22 +277,20 @@ export default defineComponent({
 			document.getSelection().collapseToEnd()
 		}
 
-		var modal = ref({
-			event: undefined,
-			colIndex: undefined,
-			rowIndex: undefined,
-			component: '',
-			tableid: TableData.id
-		})
-
-		function showModal(component, event, colIndex, rowIndex, tableid){
-			modal.event = event
-			modal.colIndex = colIndex
-			modal.rowIndex = rowIndex
-			modal.tableid = tableid
-			modal.component = component
+		function clickOutside(event){
+			if(!TableData.modal.parent){ return }
+			if(TableData.modal.parent.contains(event.target)){
+			} else {
+				if(!TableData.modal.visible){
+					return
+				} else {
+					// call set data
+					TableData.modal.visible = false
+				}
+			}
 		}
 
+		window.addEventListener('click', clickOutside)
 
 		return {
 			TableData,
@@ -308,7 +309,6 @@ export default defineComponent({
 			upCell,
 			downCell,
 			moveCursorToEnd,
-			modal
 		}
 	}
 })

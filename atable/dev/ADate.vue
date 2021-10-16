@@ -39,7 +39,7 @@
 </div>
 </template>
 <script>
-import {ref, reactive, defineComponent, inject, computed, onMounted, watchEffect } from 'vue'
+import {ref, reactive, defineComponent, inject, computed, onMounted, watchEffect, shallowRef } from 'vue'
 
 export default defineComponent({
 	name: "ADate",
@@ -49,11 +49,11 @@ export default defineComponent({
 		const TableData = inject(props.tableid)
 		// console.log(TableData)
 		const todaysDate = new Date()
-		let currentMonth = reactive(todaysDate.getMonth())
-		let currentYear = reactive(todaysDate.getFullYear())
+		let currentMonth = ref(todaysDate.getMonth())
+		let currentYear = ref(todaysDate.getFullYear())
 
-		let currentDate = ref('')
-		let selectedDate = ref(TableData.cellData(props.rowIndex, props.colIndex))
+		let currentDate = shallowRef(TableData.cellData(props.rowIndex, props.colIndex))
+		let selectedDate = shallowRef(TableData.cellData(props.rowIndex, props.colIndex))
 		let current = reactive([])
 		let width = ref('')
 

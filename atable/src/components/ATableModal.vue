@@ -2,28 +2,19 @@
   <div
     ref="amodal"
     class="amodal"
-    :style="{
-      left: modal.left, top: modal.top, width: modal.width
-    }"
     tabindex="-1"
     @click="handleInput"
     @input="handleInput"
-		v-show="TableData.modal.visible"
   >
-    <slot />
+		<slot />
   </div>
 </template>
 <script>
-import { ref, defineComponent, inject, watch } from 'vue'
-import { v4 } from "uuid"
+import { defineComponent, inject, computed } from 'vue'
 
 export default defineComponent({
 	name: "ATableModal",
 	props: {
-		"event": {
-			type: String,
-			required: false,
-		},
 		"colIndex": {
 			type: Number,
 			required: false,
@@ -36,40 +27,34 @@ export default defineComponent({
 		},
 		"tableid": {
 			type: String,
-			required: false,
-			default: () => {return undefined}
+			required: false
 		}
 	},
-	setup(props, context){
+	setup(props){
 		const TableData = inject(props.tableid)
-
-		let modal = ref({left: 0, top: 0, width: 0})
 
 		function handleInput(event){
 			event.stopPropagation()
 		}
 
-		function clickOutside(event){
-			if(TableData.modal.parent.contains(event.target)){
-				console.log('click outside')
-				TableData.modal.visible = false
-			} else {
-				event.stopPropagation()
-			}
-			event.target.blur()
-		}
+		// const cellBackgroundColor = computed(() => {
+		// 	console.log('cellBGColor')
+		// 	if(TableData.modal.parent){
+		// 		let computedstyle = window.getComputedStyle(TableData.modal.parent)
+		// 		console.log('computedstyle.backgroundColor', computedstyle.backgroundColor)
+		// 		return 'blue'
+		// 	} else {
+		// 		return 'inherit'
+		// 	}
+		// })
 
-		watch(TableData.modal, () => {
-			console.log(TableData.modal)
-			window.addEventListener('click', clickOutside)
-		})
 
-		return { TableData, handleInput, modal}
+		return { TableData, handleInput }
 	}
 })
 </script>
 <style scoped>
-.amodal {
+div {
 	z-index: 100;
 	position: absolute;
 }

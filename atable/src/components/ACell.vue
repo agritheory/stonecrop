@@ -71,16 +71,16 @@ export default defineComponent({
 			if(TableData.columns[props.colIndex].hasOwnProperty('component')){
 				if(resolveDynamicComponent(TableData.columns[props.colIndex].component)){
 					const domRect = event.target.getBoundingClientRect()
-					TableData.modal.component = shallowRef(this.$root.$.appContext.components[TableData.columns[props.colIndex].component])
 					TableData.modal.visible = true
 					TableData.modal.colIndex = props.colIndex
 					TableData.modal.rowIndex = props.rowIndex
-					TableData.modal.event = v4()
 					TableData.modal.parent = event.target
 					TableData.modal.top = domRect.top + domRect.height
 					TableData.modal.left = domRect.left
 					TableData.modal.width = cellWidth
+					TableData.modal.component = TableData.columns[props.colIndex].component
 				}
+				console.log(event.target)
 			}
 			return event
 		}

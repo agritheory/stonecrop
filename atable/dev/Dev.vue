@@ -1,17 +1,17 @@
 <template>
-	<!-- <ATable
+	<ATable
 		:columns="coa.columns"
 		:rows="coa.rows"
 		:config="coa.config"
-	/> -->
+	/>
 	<!-- <br>
 	<hr>
 	<br> -->
-	<ATable
+	<!-- <ATable
 		:columns="http_logs.columns"
 		:rows="http_logs.rows"
 		:config="http_logs.config"
-	/>	
+	/>	 -->
 </template>
 
 <script>
@@ -49,7 +49,8 @@ export default {
 						align: 'Left',
 						edit: false,
 						width: '20ch',
-						format: (value) => {return value.title}
+						format: (value) => {return value.title},
+						component: 'TestModalComponent'
 					}
 				],
 				config: { numberedRows: false, treeView: true },
@@ -74,22 +75,22 @@ export default {
 						edit: true,
 						width: '20ch',
 					},
-					{
-						label: "IP Address",
-						name: "ip_address",
-						type: "Data",
-						align: 'Left',
-						edit: false,
-						width: '20ch',
-					},
-					{
-						label: "Status",
-						name: "status",
-						type: "Data",
-						align: 'Left',
-						edit: true,
-						width: '35ch',
-					},
+					// {
+					// 	label: "IP Address",
+					// 	name: "ip_address",
+					// 	type: "Data",
+					// 	align: 'Left',
+					// 	edit: false,
+					// 	width: '20ch',
+					// },
+					// {
+					// 	label: "Status",
+					// 	name: "status",
+					// 	type: "Data",
+					// 	align: 'Left',
+					// 	edit: true,
+					// 	width: '35ch',
+					// },
 					{
 						label: "Report Date",
 						name: "report_date",
