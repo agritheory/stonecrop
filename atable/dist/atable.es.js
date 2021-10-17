@@ -1,1 +1,759 @@
-import{reactive as e,computed as t,defineComponent as n,inject as o,withDirectives as a,openBlock as l,createElementBlock as r,normalizeStyle as d,toDisplayString as i,createCommentVNode as s,renderSlot as c,vShow as p,ref as u,watch as f,resolveDynamicComponent as g,withKeys as w,createElementVNode as m,Fragment as b,renderList as h,createTextVNode as x,provide as I,nextTick as v,resolveComponent as y,createVNode as T,createBlock as $,withCtx as D}from"vue";var C,E=new Uint8Array(16);function A(){if(!C&&!(C="undefined"!=typeof crypto&&crypto.getRandomValues&&crypto.getRandomValues.bind(crypto)||"undefined"!=typeof msCrypto&&"function"==typeof msCrypto.getRandomValues&&msCrypto.getRandomValues.bind(msCrypto)))throw new Error("crypto.getRandomValues() not supported. See https://github.com/uuidjs/uuid#getrandomvalues-not-supported");return C(E)}var R=/^(?:[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}|00000000-0000-0000-0000-000000000000)$/i;function N(e){return"string"==typeof e&&R.test(e)}for(var O=[],k=0;k<256;++k)O.push((k+256).toString(16).substr(1));function V(e,t,n){var o=(e=e||{}).random||(e.rng||A)();if(o[6]=15&o[6]|64,o[8]=63&o[8]|128,t){n=n||0;for(var a=0;a<16;++a)t[n+a]=o[a];return t}return function(e){var t=arguments.length>1&&void 0!==arguments[1]?arguments[1]:0,n=(O[e[t+0]]+O[e[t+1]]+O[e[t+2]]+O[e[t+3]]+"-"+O[e[t+4]]+O[e[t+5]]+"-"+O[e[t+6]]+O[e[t+7]]+"-"+O[e[t+8]]+O[e[t+9]]+"-"+O[e[t+10]]+O[e[t+11]]+O[e[t+12]]+O[e[t+13]]+O[e[t+14]]+O[e[t+15]]).toLowerCase();if(!N(n))throw TypeError("Stringified UUID is invalid");return n}(o)}class M{constructor(t,n=[],o=[],a={},l,r){this.id=void 0===t?V():t,this.rows=o,this.columns=e(n),this.config=e(a),this.table=void 0===l?e(this.createTableObject()):l,this.display=this.createDisplayObject(r),this.modal=e({visible:!1,rowIndex:void 0,colIndex:void 0,event:void 0,top:void 0,left:void 0,width:void 0})}createTableObject(){let e={};for(const[t,n]of this.columns.entries())for(const[o,a]of this.rows.entries())e[`${t}:${o}`]=a[n.name];return e}createDisplayObject(t){let n=Object.assign({},{modified:!1});if(void 0!==t&&t.hasOwnProperty("0:0"))return t;void 0!==t&&t.hasOwnProperty("default")&&(n=t.default);let o=new Set;for(let e=this.rows.length-1;e>=0;e--){let t=this.rows[e];t.parent&&o.add(t.parent),n[e]={modified:!1,open:null===t.parent||void 0===t.parent,isParent:!!o.has(e),parent:t.parent,isRoot:null===t.parent||void 0===t.parent,indent:t.indent||null,childrenOpen:!1}}return e(n)}get zeroColumn(){return!(!this.config.numberedRows&&!this.config.treeView)}get numberedRowWidth(){t((()=>String(Math.ceil(this.rows.length/100)+1)+"ch"))}cellData(e,t){return this.table[`${e}:${t}`]}setCellData(e,t,n){return this.table[`${t}:${e}`]!==n&&(this.display[`${t}:${e}`].modified=!0),this.table[`${t}:${e}`]=n,this.table[`${t}:${e}`]}toggleRowExpand(e){if(this.config.treeView){this.display[e].childrenOpen=!this.display[e].childrenOpen;for(let t=this.rows.length-1;t>=0;t--)this.display[t].parent===e&&(this.display[t].open=!this.display[t].open,this.display[t].childrenOpen&&this.toggleRowExpand(t))}}}const P=n({name:"ARow",props:{row:{type:Object,required:!0,default:()=>({})},rowIndex:{type:Number,required:!0,default:0},tableid:{type:String,required:!0,default:()=>{}}},setup(e){const t=o(e.tableid);return{TableData:t,getRowExpandSymbol:function(){return t.config.treeView?t.display[e.rowIndex].isRoot&&!t.display[e.rowIndex].childrenOpen?"+":t.display[e.rowIndex].isRoot&&t.display[e.rowIndex].childrenOpen?"-":t.display[e.rowIndex].isParent&&!t.display[e.rowIndex].childrenOpen?"+":t.display[e.rowIndex].isParent&&t.display[e.rowIndex].childrenOpen?"-":"":""},toggleRowExpand:function(e){t.toggleRowExpand(e)},rowVisible:function(){return!t.config.treeView||(!!t.display[e.rowIndex].isRoot||t.display[e.rowIndex].open)}}}});P.render=function(e,t,n,o,u,f){return a((l(),r("tr",null,[e.TableData.config.numberedRows?(l(),r("td",{key:0,style:d({width:"TableData.numberedRowWidth","text-align":"center","background-color":"var(--brand-color)",color:"var(--header-text-color)","font-weight":"bold","border-color":"var(--header-border-color)","user-select":"none"})},i(e.rowIndex+1),5)):s("",!0),e.TableData.config.treeView?(l(),r("td",{key:1,style:d({width:"2ch","text-align":"center","background-color":"var(--brand-color)",color:"var(--header-text-color)","font-weight":"bold","border-color":"var(--header-border-color)","user-select":"none"}),onClick:t[0]||(t[0]=t=>e.toggleRowExpand(e.rowIndex))},i(e.getRowExpandSymbol()),5)):s("",!0),e.TableData.config.numberedRows||e.TableData.config.treeView?s("",!0):c(e.$slots,"indexCell",{key:2}),c(e.$slots,"default")],512)),[[p,e.rowVisible()]])};const S=n({name:"ACell",props:{colIndex:{type:Number,required:!0,default:0},rowIndex:{type:Number,required:!0,default:0},tableid:{type:String,required:!0,default:()=>{}}},setup(e){const n=o(e.tableid);let a=u(!1);const l=t((()=>void 0!==n.columns[e.colIndex].format?n.columns[e.colIndex].format(n.cellData(e.colIndex,e.rowIndex)):n.cellData(e.colIndex,e.rowIndex))),r=t((()=>void 0!==n.columns[e.colIndex].align?n.columns[e.colIndex].align.toLowerCase():"center")),d=t((()=>void 0!==n.columns[e.colIndex].width?n.columns[e.colIndex].width:"40ch"));let i="";return f(a,(()=>{console.log(i)})),{TableData:n,updateData:function(t){t&&(void 0===n.columns[e.colIndex].component&&n.setCellData(e.rowIndex,e.colIndex,t.target.innerHTML),a=!0)},displayValue:l,handleInput:function(t){if(void 0!==n.columns[e.colIndex].mask&&console.log("masking function"),n.columns[e.colIndex].hasOwnProperty("component")){if(g(n.columns[e.colIndex].component)){const o=t.target.getBoundingClientRect();n.modal.visible=!0,n.modal.colIndex=e.colIndex,n.modal.rowIndex=e.rowIndex,n.modal.parent=t.target,n.modal.top=o.top+o.height,n.modal.left=o.left,n.modal.width=d,n.modal.component=n.columns[e.colIndex].component}console.log(t.target)}return t},cellModified:a,textAlign:r,cellWidth:d,onFocus:function(e){i=e.target.innerText},onChange:function(e){e.target.innerHTML!==i&&(i=e.target.innerText,e.target.dispatchEvent(new Event("change")),a=!0),console.log("cellModified",a)},getIndent:function(e,t){return t&&0===e&&t>0?1*t+"ch":"inherit"}}}}),q=["contenteditable","innerHTML"];S.render=function(e,t,n,o,a,i){var s;return l(),r("td",{ref:"colIndex + ':' + rowIndex",contenteditable:!0===e.TableData.columns[e.colIndex].edit,tabindex:0,spellcheck:!1,style:d({"text-align":e.textAlign,width:e.cellWidth,"background-color":!1===e.cellModified?"inherit":"var(--cell-modified-color)","font-weight":!1===e.cellModified?"inherit":"bold","padding-left":e.getIndent(e.colIndex,null==(s=e.TableData.display[e.rowIndex])?void 0:s.indent)}),onFocus:t[0]||(t[0]=t=>e.onFocus(t)),onPaste:t[1]||(t[1]=t=>e.onChange(t)),onBlur:t[2]||(t[2]=t=>e.onChange(t)),onInput:t[3]||(t[3]=t=>e.onChange(t)),onKeydown:[t[4]||(t[4]=w(((...t)=>e.$parent.$parent.enterNav&&e.$parent.$parent.enterNav(...t)),["enter"])),t[5]||(t[5]=w(((...t)=>e.$parent.$parent.tabNav&&e.$parent.$parent.tabNav(...t)),["tab"])),t[6]||(t[6]=w(((...t)=>e.$parent.$parent.endNav&&e.$parent.$parent.endNav(...t)),["end"])),t[7]||(t[7]=w(((...t)=>e.$parent.$parent.homeNav&&e.$parent.$parent.homeNav(...t)),["home"])),t[8]||(t[8]=w(((...t)=>e.$parent.$parent.downArrowNav&&e.$parent.$parent.downArrowNav(...t)),["down"])),t[9]||(t[9]=w(((...t)=>e.$parent.$parent.upArrowNav&&e.$parent.$parent.upArrowNav(...t)),["up"])),t[10]||(t[10]=w(((...t)=>e.$parent.$parent.leftArrowNav&&e.$parent.$parent.leftArrowNav(...t)),["left"])),t[11]||(t[11]=w(((...t)=>e.$parent.$parent.rightArrowNav&&e.$parent.$parent.rightArrowNav(...t)),["right"]))],onClick:t[12]||(t[12]=(...t)=>e.handleInput&&e.handleInput(...t)),innerHTML:e.displayValue},null,44,q)},S.__scopeId="data-v-f81c70ec";const L=n({name:"ATableHeader",props:{columns:{type:Array,required:!0},config:{type:Object,default:()=>({})},tableid:{type:String,required:!0,default:()=>{}}},setup:e=>({TableData:o(e.tableid)})}),H={key:0},_={tabindex:"-1"};L.render=function(e,t,n,o,a,p){return e.columns.length?(l(),r("thead",H,[m("tr",_,[e.TableData.zeroColumn?(l(),r("th",{key:0,style:d({"min-width":e.TableData.numberedRowWidth})},null,4)):s("",!0),(l(!0),r(b,null,h(e.columns,((t,n)=>(l(),r("th",{key:n,tabindex:"-1",style:d({"text-align":void 0!==t.align?t.align.toLowerCase():"center","min-width":void 0!==t.width?t.width:"40ch"})},[c(e.$slots,"default",{},(()=>[x(i(void 0!==t.label?t.label:String.fromCharCode(n+97).toUpperCase()),1)]),!0)],4)))),128))])])):s("",!0)},L.__scopeId="data-v-bf1b4a04";const j=n({name:"ATableModal",props:{colIndex:{type:Number,required:!1,default:0},rowIndex:{type:Number,required:!1,default:0},tableid:{type:String,required:!1}},setup:e=>({TableData:o(e.tableid),handleInput:function(e){e.stopPropagation()}})});j.render=function(e,t,n,o,a,d){return l(),r("div",{ref:"amodal",class:"amodal",tabindex:"-1",onClick:t[0]||(t[0]=(...t)=>e.handleInput&&e.handleInput(...t)),onInput:t[1]||(t[1]=(...t)=>e.handleInput&&e.handleInput(...t))},[c(e.$slots,"default",{},void 0,!0)],544)},j.__scopeId="data-v-5e464449";const z=n({name:"ATable",components:{ATableModal:j,ARow:P,ATableHeader:L,ACell:S},props:{columns:{type:Array,required:!0},rows:{type:Array,required:!1,default:()=>[]},config:{type:Object,default:()=>({})},tableid:{type:String,default:()=>{}}},setup(e){let t=new M(e.id,e.columns,e.rows,e.config);I(t.id,t);function n(e){const n=e.target.cellIndex,o=e.target.parentElement.rowIndex,a=e.target.parentElement.parentElement;let l;a.rows.length!==o?(l=a.rows[o].cells[n],!0===t.config.treeView&&!1===t.display[o].open&&t.toggleRowExpand(o-1)):l=e.target,v((function(){l.focus()}))}function o(e){const n=e.target.cellIndex,o=e.target.parentElement.rowIndex,a=e.target.parentElement.parentElement;let l;1!==o?(l=a.rows[o-2].cells[n],!0===t.config.treeView&&!1===t.display[o-2].open&&t.toggleRowExpand(t.display[o-2].parent)):l=e.target,v((function(){l.focus()}))}function a(e){let n;const o=e.target.cellIndex,a=e.target.parentElement.rowIndex,l=e.target.parentElement.parentElement;l.rows[a-1].cells.length-1===o?l.rows.length===a?n=l.rows[0].cells[!0===t.zeroColumn?1:0]:(n=l.rows[a].cells[!0===t.zeroColumn?1:0],!0===t.config.treeView&&!1===t.display[a].open&&t.toggleRowExpand(a-1)):n=l.rows[a-1].cells[o+1],v((function(){n.focus()}))}function l(e){let n;const o=e.target.cellIndex,a=e.target.parentElement.rowIndex,l=e.target.parentElement.parentElement;if(o===(!0===t.zeroColumn?1:0)){if(1===a)return;n=l.rows[a-2].cells[l.rows[a-2].cells.length-1],t.toggleRowExpand(a-2)}else n=l.rows[a-1].cells[o-1];n.focus()}return window.addEventListener("click",(function(e){if(t.modal.parent)if(t.modal.parent.contains(e.target));else{if(!t.modal.visible)return;t.modal.visible=!1}})),{TableData:t,v4:V,formatCell:function(e,n,o){let a;if(e?a=e.target.cellIndex+(!0===t.zeroColumn?-1:0):n&&o&&(a=t.columns.indexOf(n)),n||!("format"in t.columns[a]))return o&&"format"in n?n.format(o):(o&&n.type.toLowerCase(),o);e.target.innerHTML=t.columns[a].format(e.target.innerHTML)},enterNav:function(e){e.preventDefault(),e.stopPropagation(),!0===e.shiftKey?o(e):n(e)},tabNav:function(e){e.preventDefault(),e.stopPropagation(),!0===e.shiftKey?l(e):a(e)},downArrowNav:function(e){!0!==e.shiftKey&&(e.preventDefault(),e.stopPropagation(),n(e))},upArrowNav:function(e){!0!==e.shiftKey&&(e.preventDefault(),e.stopPropagation(),o(e))},leftArrowNav:function(e){!0!==e.shiftKey&&(e.preventDefault(),e.stopPropagation(),l(e))},rightArrowNav:function(e){!0!==e.shiftKey&&(e.preventDefault(),e.stopPropagation(),a(e))},homeNav:function(e){let n;const o=e.target.cellIndex,a=e.target.parentElement.rowIndex,l=e.target.parentElement.parentElement;o!==(!0===t.config.numberedRows?1:0)&&(n=l.rows[a-1].cells[!0===t.zeroColumn?1:0],n.focus())},endNav:function(e){let n;const o=e.target.cellIndex,a=e.target.parentElement.rowIndex,l=e.target.parentElement.parentElement;l.rows[a-1].cells.length-1!==o&&(n=l.rows[a-1].cells[t.columns.length-(!0===t.zeroColumn?0:1)],n.focus())},prevCell:l,nextCell:a,upCell:o,downCell:n,moveCursorToEnd:function(e){e.focus(),document.execCommand("selectAll",!1,null),document.getSelection().collapseToEnd()}}}}),K={class:"atable"};z.render=function(e,t,n,o,i,s){const u=y("ATableHeader"),f=y("ACell"),w=y("ARow"),x=y("ATableModal");return l(),r("table",K,[c(e.$slots,"tableheader",{},(()=>[T(u,{columns:e.TableData.columns,config:e.TableData.config,tableid:e.TableData.id},null,8,["columns","config","tableid"])]),!0),m("tbody",null,[(l(!0),r(b,null,h(e.TableData.rows,((t,n)=>(l(),$(w,{key:t.id||e.v4(),row:t,rowIndex:n,tableid:e.TableData.id},{default:D((()=>[(l(!0),r(b,null,h(e.TableData.columns,((t,o)=>(l(),$(f,{key:o,tableid:e.TableData.id,col:t,tabindex:"0",spellcheck:"false",rowIndex:n,colIndex:o+Number(!0===e.TableData.zeroColumn?0:-1),style:d({"text-align":void 0!==t.align?t.align.toLowerCase():"center","min-width":void 0!==t.width?t.width:"40ch"})},null,8,["tableid","col","rowIndex","colIndex","style"])))),128))])),_:2},1032,["row","rowIndex","tableid"])))),128))]),c(e.$slots,"footer",{},void 0,!0),a(T(x,{colIndex:e.TableData.modal.colIndex,rowIndex:e.TableData.modal.rowIndex,tableid:e.TableData.id,style:d({left:e.TableData.modal.left+"px",top:e.TableData.modal.top+"px","max-width":e.TableData.modal.width+"px"})},{default:D((()=>[(l(),$(g(e.TableData.modal.component),{colIndex:e.TableData.modal.colIndex,rowIndex:e.TableData.modal.rowIndex,tableid:e.TableData.id},null,8,["colIndex","rowIndex","tableid"]))])),_:1},8,["colIndex","rowIndex","tableid","style"]),[[p,e.TableData.modal.visible]])])},z.__scopeId="data-v-455a3966";var W={install:function(e,t){e.component("ATable",z),e.component("ATableHeader",L),e.component("ATableModal",j)}};export{W as default};
+import { reactive, computed, defineComponent, inject, withDirectives, openBlock, createElementBlock, normalizeStyle, toDisplayString, createCommentVNode, renderSlot, vShow, ref, watch, resolveDynamicComponent, withKeys, createElementVNode, Fragment, renderList, createTextVNode, provide, nextTick, resolveComponent, createVNode, createBlock, withCtx } from "vue";
+var getRandomValues;
+var rnds8 = new Uint8Array(16);
+function rng() {
+  if (!getRandomValues) {
+    getRandomValues = typeof crypto !== "undefined" && crypto.getRandomValues && crypto.getRandomValues.bind(crypto) || typeof msCrypto !== "undefined" && typeof msCrypto.getRandomValues === "function" && msCrypto.getRandomValues.bind(msCrypto);
+    if (!getRandomValues) {
+      throw new Error("crypto.getRandomValues() not supported. See https://github.com/uuidjs/uuid#getrandomvalues-not-supported");
+    }
+  }
+  return getRandomValues(rnds8);
+}
+var REGEX = /^(?:[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}|00000000-0000-0000-0000-000000000000)$/i;
+function validate(uuid) {
+  return typeof uuid === "string" && REGEX.test(uuid);
+}
+var byteToHex = [];
+for (var i = 0; i < 256; ++i) {
+  byteToHex.push((i + 256).toString(16).substr(1));
+}
+function stringify(arr) {
+  var offset = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : 0;
+  var uuid = (byteToHex[arr[offset + 0]] + byteToHex[arr[offset + 1]] + byteToHex[arr[offset + 2]] + byteToHex[arr[offset + 3]] + "-" + byteToHex[arr[offset + 4]] + byteToHex[arr[offset + 5]] + "-" + byteToHex[arr[offset + 6]] + byteToHex[arr[offset + 7]] + "-" + byteToHex[arr[offset + 8]] + byteToHex[arr[offset + 9]] + "-" + byteToHex[arr[offset + 10]] + byteToHex[arr[offset + 11]] + byteToHex[arr[offset + 12]] + byteToHex[arr[offset + 13]] + byteToHex[arr[offset + 14]] + byteToHex[arr[offset + 15]]).toLowerCase();
+  if (!validate(uuid)) {
+    throw TypeError("Stringified UUID is invalid");
+  }
+  return uuid;
+}
+function v4(options, buf, offset) {
+  options = options || {};
+  var rnds = options.random || (options.rng || rng)();
+  rnds[6] = rnds[6] & 15 | 64;
+  rnds[8] = rnds[8] & 63 | 128;
+  if (buf) {
+    offset = offset || 0;
+    for (var i = 0; i < 16; ++i) {
+      buf[offset + i] = rnds[i];
+    }
+    return buf;
+  }
+  return stringify(rnds);
+}
+class TableDataStore {
+  constructor(id = void 0, columns = [], rows = [], config = {}, table = void 0, display = void 0) {
+    this.id = id === void 0 ? v4() : id;
+    this.rows = rows;
+    this.columns = reactive(columns);
+    this.config = reactive(config);
+    this.table = table === void 0 ? reactive(this.createTableObject()) : table;
+    this.display = this.createDisplayObject(display);
+    this.modal = reactive({
+      visible: false,
+      rowIndex: void 0,
+      colIndex: void 0,
+      event: void 0,
+      top: void 0,
+      left: void 0,
+      width: void 0
+    });
+  }
+  createTableObject() {
+    let table = {};
+    for (const [colIndex, column] of this.columns.entries()) {
+      for (const [rowIndex, row] of this.rows.entries()) {
+        table[`${colIndex}:${rowIndex}`] = row[column.name];
+      }
+    }
+    return table;
+  }
+  createDisplayObject(display) {
+    let defaultDisplay = Object.assign({}, { modified: false });
+    if (display !== void 0 && display.hasOwnProperty("0:0")) {
+      return display;
+    } else if (display !== void 0 && display.hasOwnProperty("default")) {
+      defaultDisplay = display.default;
+    }
+    let parents = new Set();
+    for (let rowIndex = this.rows.length - 1; rowIndex >= 0; rowIndex--) {
+      let row = this.rows[rowIndex];
+      if (row.parent) {
+        parents.add(row.parent);
+      }
+      defaultDisplay[rowIndex] = {
+        modified: false,
+        open: row.parent !== null && row.parent !== void 0 ? false : true,
+        isParent: parents.has(rowIndex) ? true : false,
+        parent: row.parent,
+        isRoot: row.parent !== null && row.parent !== void 0 ? false : true,
+        indent: row.indent || null,
+        childrenOpen: false
+      };
+    }
+    return reactive(defaultDisplay);
+  }
+  get zeroColumn() {
+    if (this.config.numberedRows || this.config.treeView) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+  get numberedRowWidth() {
+    computed(() => {
+      return String(Math.ceil(this.rows.length / 100) + 1) + "ch";
+    });
+  }
+  cellData(colIndex, rowIndex) {
+    return this.table[`${colIndex}:${rowIndex}`];
+  }
+  setCellData(rowIndex, colIndex, value) {
+    if (this.table[`${colIndex}:${rowIndex}`] !== value) {
+      this.display[`${colIndex}:${rowIndex}`].modified = true;
+    }
+    this.table[`${colIndex}:${rowIndex}`] = value;
+    return this.table[`${colIndex}:${rowIndex}`];
+  }
+  toggleRowExpand(rowIndex) {
+    if (!this.config.treeView) {
+      return;
+    }
+    this.display[rowIndex].childrenOpen = !this.display[rowIndex].childrenOpen;
+    for (let index2 = this.rows.length - 1; index2 >= 0; index2--) {
+      if (this.display[index2].parent === rowIndex) {
+        this.display[index2].open = !this.display[index2].open;
+        if (this.display[index2].childrenOpen) {
+          this.toggleRowExpand(index2);
+        }
+      }
+    }
+  }
+}
+const _sfc_main$4 = defineComponent({
+  name: "ARow",
+  props: {
+    "row": {
+      type: Object,
+      required: true,
+      default: () => {
+        return {};
+      }
+    },
+    "rowIndex": {
+      type: Number,
+      required: true,
+      default: 0
+    },
+    "tableid": {
+      type: String,
+      required: true,
+      default: () => {
+        return void 0;
+      }
+    }
+  },
+  setup(props) {
+    const TableData = inject(props.tableid);
+    function getRowExpandSymbol() {
+      if (!TableData.config.treeView) {
+        return "";
+      }
+      if (TableData.display[props.rowIndex].isRoot && !TableData.display[props.rowIndex].childrenOpen) {
+        return "+";
+      }
+      if (TableData.display[props.rowIndex].isRoot && TableData.display[props.rowIndex].childrenOpen) {
+        return "-";
+      }
+      if (TableData.display[props.rowIndex].isParent && !TableData.display[props.rowIndex].childrenOpen) {
+        return "+";
+      } else if (TableData.display[props.rowIndex].isParent && TableData.display[props.rowIndex].childrenOpen) {
+        return "-";
+      } else {
+        return "";
+      }
+    }
+    function rowVisible() {
+      if (!TableData.config.treeView) {
+        return true;
+      }
+      if (TableData.display[props.rowIndex].isRoot) {
+        return true;
+      } else {
+        return TableData.display[props.rowIndex].open;
+      }
+    }
+    function toggleRowExpand(rowIndex) {
+      TableData.toggleRowExpand(rowIndex);
+    }
+    return { TableData, getRowExpandSymbol, toggleRowExpand, rowVisible };
+  }
+});
+function _sfc_render$4(_ctx, _cache, $props, $setup, $data, $options) {
+  return withDirectives((openBlock(), createElementBlock("tr", null, [
+    _ctx.TableData.config.numberedRows ? (openBlock(), createElementBlock("td", {
+      key: 0,
+      style: normalizeStyle({
+        "width": "TableData.numberedRowWidth",
+        "text-align": "center",
+        "background-color": "var(--brand-color)",
+        "color": "var(--header-text-color)",
+        "font-weight": "bold",
+        "border-color": "var(--header-border-color)",
+        "user-select": "none"
+      })
+    }, toDisplayString(_ctx.rowIndex + 1), 5)) : createCommentVNode("", true),
+    _ctx.TableData.config.treeView ? (openBlock(), createElementBlock("td", {
+      key: 1,
+      style: normalizeStyle({
+        "width": "2ch",
+        "text-align": "center",
+        "background-color": "var(--brand-color)",
+        "color": "var(--header-text-color)",
+        "font-weight": "bold",
+        "border-color": "var(--header-border-color)",
+        "user-select": "none"
+      }),
+      onClick: _cache[0] || (_cache[0] = ($event) => _ctx.toggleRowExpand(_ctx.rowIndex))
+    }, toDisplayString(_ctx.getRowExpandSymbol()), 5)) : createCommentVNode("", true),
+    !_ctx.TableData.config.numberedRows && !_ctx.TableData.config.treeView ? renderSlot(_ctx.$slots, "indexCell", { key: 2 }) : createCommentVNode("", true),
+    renderSlot(_ctx.$slots, "default")
+  ], 512)), [
+    [vShow, _ctx.rowVisible()]
+  ]);
+}
+_sfc_main$4.render = _sfc_render$4;
+var ACell_vue_vue_type_style_index_0_scoped_true_lang = "\ntd[data-v-f81c70ec] {\n  border: 1px;\n  border-style: solid;\n  border-color: var(--cell-border-color);\n  border-radius: 0px;\n	box-sizing: border-box;\n  margin: 0px;\n  outline: none;\n  box-shadow: none;\n  color: var(--cell-text-color);\n  text-overflow: ellipsis;\n  overflow: hidden;\n	padding-left: 0.5ch;\n	padding-right: 0.5ch;\n}\ntd[data-v-f81c70ec]:focus, td[data-v-f81c70ec]:focus-within {\n  background-color: var(--focus-cell-background);\n  outline-width: 2px;\n  outline-style: solid; \n  outline-color: var(--focus-cell-outline);\n  box-shadow: none;\n  overflow: hidden;\n  min-height: 1.15em;\n  max-height: 1.15em;\n  overflow: hidden;\n}\n";
+const _sfc_main$3 = defineComponent({
+  name: "ACell",
+  props: {
+    "colIndex": {
+      type: Number,
+      required: true,
+      default: 0
+    },
+    "rowIndex": {
+      type: Number,
+      required: true,
+      default: 0
+    },
+    "tableid": {
+      type: String,
+      required: true,
+      default: () => {
+        return void 0;
+      }
+    }
+  },
+  setup(props) {
+    const TableData = inject(props.tableid);
+    let cellModified = ref(false);
+    const displayValue = computed(() => {
+      if (TableData.columns[props.colIndex].format !== void 0) {
+        return TableData.columns[props.colIndex].format(TableData.cellData(props.colIndex, props.rowIndex));
+      } else {
+        return TableData.cellData(props.colIndex, props.rowIndex);
+      }
+    });
+    const handleInput = function(event) {
+      if (TableData.columns[props.colIndex].mask !== void 0) {
+        console.log("masking function");
+      }
+      if (TableData.columns[props.colIndex].hasOwnProperty("component")) {
+        if (resolveDynamicComponent(TableData.columns[props.colIndex].component)) {
+          const domRect = event.target.getBoundingClientRect();
+          TableData.modal.visible = true;
+          TableData.modal.colIndex = props.colIndex;
+          TableData.modal.rowIndex = props.rowIndex;
+          TableData.modal.parent = event.target;
+          TableData.modal.top = domRect.top + domRect.height;
+          TableData.modal.left = domRect.left;
+          TableData.modal.width = cellWidth;
+          TableData.modal.component = TableData.columns[props.colIndex].component;
+        }
+        console.log(event.target);
+      }
+      return event;
+    };
+    const updateData = function(event) {
+      if (event) {
+        if (TableData.columns[props.colIndex].component === void 0) {
+          TableData.setCellData(props.rowIndex, props.colIndex, event.target.innerHTML);
+        }
+        cellModified = true;
+      }
+    };
+    const textAlign = computed(() => {
+      return TableData.columns[props.colIndex].align !== void 0 ? TableData.columns[props.colIndex].align.toLowerCase() : "center";
+    });
+    const cellWidth = computed(() => {
+      return TableData.columns[props.colIndex].width !== void 0 ? TableData.columns[props.colIndex].width : "40ch";
+    });
+    let currentData = "";
+    const onFocus = function(event) {
+      currentData = event.target.innerText;
+    };
+    const onChange = function(event) {
+      if (event.target.innerHTML !== currentData) {
+        currentData = event.target.innerText;
+        event.target.dispatchEvent(new Event("change"));
+        cellModified = true;
+      }
+      console.log("cellModified", cellModified);
+    };
+    const getIndent = function(colKey, indent) {
+      if (indent && colKey === 0 && indent > 0) {
+        return indent * 1 + "ch";
+      } else {
+        return "inherit";
+      }
+    };
+    watch(cellModified, () => {
+      console.log(currentData);
+    });
+    return { TableData, updateData, displayValue, handleInput, cellModified, textAlign, cellWidth, onFocus, onChange, getIndent };
+  }
+});
+const _hoisted_1$2 = ["contenteditable", "innerHTML"];
+function _sfc_render$3(_ctx, _cache, $props, $setup, $data, $options) {
+  var _a;
+  return openBlock(), createElementBlock("td", {
+    ref: "colIndex + ':' + rowIndex",
+    contenteditable: _ctx.TableData.columns[_ctx.colIndex].edit === true ? true : false,
+    tabindex: 0,
+    spellcheck: false,
+    style: normalizeStyle({
+      "text-align": _ctx.textAlign,
+      "width": _ctx.cellWidth,
+      "background-color": _ctx.cellModified === false ? "inherit" : "var(--cell-modified-color)",
+      "font-weight": _ctx.cellModified === false ? "inherit" : "bold",
+      "padding-left": _ctx.getIndent(_ctx.colIndex, (_a = _ctx.TableData.display[_ctx.rowIndex]) == null ? void 0 : _a.indent)
+    }),
+    onFocus: _cache[0] || (_cache[0] = ($event) => _ctx.onFocus($event)),
+    onPaste: _cache[1] || (_cache[1] = ($event) => _ctx.onChange($event)),
+    onBlur: _cache[2] || (_cache[2] = ($event) => _ctx.onChange($event)),
+    onInput: _cache[3] || (_cache[3] = ($event) => _ctx.onChange($event)),
+    onKeydown: [
+      _cache[4] || (_cache[4] = withKeys((...args) => _ctx.$parent.$parent.enterNav && _ctx.$parent.$parent.enterNav(...args), ["enter"])),
+      _cache[5] || (_cache[5] = withKeys((...args) => _ctx.$parent.$parent.tabNav && _ctx.$parent.$parent.tabNav(...args), ["tab"])),
+      _cache[6] || (_cache[6] = withKeys((...args) => _ctx.$parent.$parent.endNav && _ctx.$parent.$parent.endNav(...args), ["end"])),
+      _cache[7] || (_cache[7] = withKeys((...args) => _ctx.$parent.$parent.homeNav && _ctx.$parent.$parent.homeNav(...args), ["home"])),
+      _cache[8] || (_cache[8] = withKeys((...args) => _ctx.$parent.$parent.downArrowNav && _ctx.$parent.$parent.downArrowNav(...args), ["down"])),
+      _cache[9] || (_cache[9] = withKeys((...args) => _ctx.$parent.$parent.upArrowNav && _ctx.$parent.$parent.upArrowNav(...args), ["up"])),
+      _cache[10] || (_cache[10] = withKeys((...args) => _ctx.$parent.$parent.leftArrowNav && _ctx.$parent.$parent.leftArrowNav(...args), ["left"])),
+      _cache[11] || (_cache[11] = withKeys((...args) => _ctx.$parent.$parent.rightArrowNav && _ctx.$parent.$parent.rightArrowNav(...args), ["right"]))
+    ],
+    onClick: _cache[12] || (_cache[12] = (...args) => _ctx.handleInput && _ctx.handleInput(...args)),
+    innerHTML: _ctx.displayValue
+  }, null, 44, _hoisted_1$2);
+}
+_sfc_main$3.render = _sfc_render$3;
+_sfc_main$3.__scopeId = "data-v-f81c70ec";
+var ATableHeader_vue_vue_type_style_index_0_scoped_true_lang = "\nth[data-v-bf1b4a04] {\n	background-color: var(--brand-color);\n	border-width: 0px;\n	border-style: solid;\n	border-color: var(--header-border-color);\n	border-radius: 0px;\n	color: var(--header-text-color);\n	padding-left: 0.5ch;\n	padding-right: 0.5ch;\n}\nth[data-v-bf1b4a04]:focus{\n	outline: none;\n}\n";
+const _sfc_main$2 = defineComponent({
+  name: "ATableHeader",
+  props: {
+    "columns": {
+      type: Array,
+      required: true
+    },
+    "config": {
+      type: Object,
+      default: () => {
+        return {};
+      }
+    },
+    "tableid": {
+      type: String,
+      required: true,
+      default: () => {
+        return void 0;
+      }
+    }
+  },
+  setup(props) {
+    const TableData = inject(props.tableid);
+    return { TableData };
+  }
+});
+const _hoisted_1$1 = { key: 0 };
+const _hoisted_2 = { tabindex: "-1" };
+function _sfc_render$2(_ctx, _cache, $props, $setup, $data, $options) {
+  return _ctx.columns.length ? (openBlock(), createElementBlock("thead", _hoisted_1$1, [
+    createElementVNode("tr", _hoisted_2, [
+      _ctx.TableData.zeroColumn ? (openBlock(), createElementBlock("th", {
+        key: 0,
+        style: normalizeStyle({ "min-width": _ctx.TableData.numberedRowWidth })
+      }, null, 4)) : createCommentVNode("", true),
+      (openBlock(true), createElementBlock(Fragment, null, renderList(_ctx.columns, (column, colKey) => {
+        return openBlock(), createElementBlock("th", {
+          key: colKey,
+          tabindex: "-1",
+          style: normalizeStyle({
+            "text-align": column.align !== void 0 ? column.align.toLowerCase() : "center",
+            "min-width": column.width !== void 0 ? column.width : "40ch"
+          })
+        }, [
+          renderSlot(_ctx.$slots, "default", {}, () => [
+            createTextVNode(toDisplayString(column.label !== void 0 ? column.label : String.fromCharCode(colKey + 97).toUpperCase()), 1)
+          ], true)
+        ], 4);
+      }), 128))
+    ])
+  ])) : createCommentVNode("", true);
+}
+_sfc_main$2.render = _sfc_render$2;
+_sfc_main$2.__scopeId = "data-v-bf1b4a04";
+var ATableModal_vue_vue_type_style_index_0_scoped_true_lang = "\ndiv[data-v-5e464449] {\n	z-index: 100;\n	position: absolute;\n	background-color: var(--row-color-zebra-dark);\n	/* margin: 0px;\n  outline: none;\n  box-shadow: none;\n  color: var(--cell-text-color);\n  text-overflow: ellipsis;\n  overflow: hidden;\n	padding-left: 0.5ch;\n	padding-right: 0.5ch;\n	font-size: var(--table-font-size); */\n}\n";
+const _sfc_main$1 = defineComponent({
+  name: "ATableModal",
+  props: {
+    "colIndex": {
+      type: Number,
+      required: false,
+      default: 0
+    },
+    "rowIndex": {
+      type: Number,
+      required: false,
+      default: 0
+    },
+    "tableid": {
+      type: String,
+      required: false
+    }
+  },
+  setup(props) {
+    const TableData = inject(props.tableid);
+    function handleInput(event) {
+      event.stopPropagation();
+    }
+    return { TableData, handleInput };
+  }
+});
+function _sfc_render$1(_ctx, _cache, $props, $setup, $data, $options) {
+  return openBlock(), createElementBlock("div", {
+    ref: "amodal",
+    class: "amodal",
+    tabindex: "-1",
+    onClick: _cache[0] || (_cache[0] = (...args) => _ctx.handleInput && _ctx.handleInput(...args)),
+    onInput: _cache[1] || (_cache[1] = (...args) => _ctx.handleInput && _ctx.handleInput(...args))
+  }, [
+    renderSlot(_ctx.$slots, "default", {}, void 0, true)
+  ], 544);
+}
+_sfc_main$1.render = _sfc_render$1;
+_sfc_main$1.__scopeId = "data-v-5e464449";
+var ATable_vue_vue_type_style_index_0_scoped_true_lang = "\ntable[data-v-455a3966] {\n  display: table;\n  border-collapse: var(--border-collapsed);\n	caret-color: var(--brand-color);\n}\nth[data-v-455a3966] {\n	box-sizing: border-box;\n  background-color: var(--brand-color);\n  border-width: 1px;\n  border-style: solid;\n  border-color: var(--header-border-color);\n  border-radius: 0px;\n  color: var(--header-text-color);\n}\ntr[data-v-455a3966] {\n  background-color: var(--row-color-zebra-light);\n  outline: none;\n}\ntr[data-v-455a3966]:nth-child(even) {\n  background-color: var(--row-color-zebra-dark);\n}\n";
+const _sfc_main = defineComponent({
+  name: "ATable",
+  components: {
+    ATableModal: _sfc_main$1,
+    ARow: _sfc_main$4,
+    ATableHeader: _sfc_main$2,
+    ACell: _sfc_main$3
+  },
+  props: {
+    "columns": {
+      type: Array,
+      required: true
+    },
+    "rows": {
+      type: Array,
+      required: false,
+      default: () => {
+        return [];
+      }
+    },
+    "config": {
+      type: Object,
+      default: () => {
+        return {};
+      }
+    },
+    "tableid": {
+      type: String,
+      default: () => {
+        return void 0;
+      }
+    }
+  },
+  setup(props) {
+    let TableData = new TableDataStore(props.id, props.columns, props.rows, props.config);
+    provide(TableData.id, TableData);
+    const formatCell = function(event = void 0, column = void 0, cellData = void 0) {
+      let colIndex = void 0;
+      if (event) {
+        colIndex = event.target.cellIndex + (TableData.zeroColumn === true ? -1 : 0);
+      } else if (column && cellData) {
+        colIndex = TableData.columns.indexOf(column);
+      }
+      if (!column && "format" in TableData.columns[colIndex]) {
+        event.target.innerHTML = TableData.columns[colIndex].format(event.target.innerHTML);
+      } else if (cellData && "format" in column) {
+        return column.format(cellData);
+      } else if (cellData && column.type.toLowerCase() in ["int", "decimal", "float", "number", "percent"]) {
+        return cellData;
+      } else {
+        return cellData;
+      }
+    };
+    function enterNav(event) {
+      event.preventDefault();
+      event.stopPropagation();
+      if (event.shiftKey === true) {
+        upCell(event);
+      } else {
+        downCell(event);
+      }
+    }
+    function tabNav(event) {
+      event.preventDefault();
+      event.stopPropagation();
+      if (event.shiftKey === true) {
+        prevCell(event);
+      } else {
+        nextCell(event);
+      }
+    }
+    function downArrowNav(event) {
+      if (event.shiftKey !== true) {
+        event.preventDefault();
+        event.stopPropagation();
+        downCell(event);
+      }
+    }
+    function upArrowNav(event) {
+      if (event.shiftKey !== true) {
+        event.preventDefault();
+        event.stopPropagation();
+        upCell(event);
+      }
+    }
+    function leftArrowNav(event) {
+      if (event.shiftKey !== true) {
+        event.preventDefault();
+        event.stopPropagation();
+        prevCell(event);
+      }
+    }
+    function rightArrowNav(event) {
+      if (event.shiftKey !== true) {
+        event.preventDefault();
+        event.stopPropagation();
+        nextCell(event);
+      }
+    }
+    function endNav(event) {
+      let nextCellEl = void 0;
+      const cellIndex = event.target.cellIndex;
+      const rowIndex = event.target.parentElement.rowIndex;
+      const tableEl = event.target.parentElement.parentElement;
+      if (tableEl.rows[rowIndex - 1].cells.length - 1 === cellIndex) {
+        return;
+      } else {
+        nextCellEl = tableEl.rows[rowIndex - 1].cells[TableData.columns.length - (TableData.zeroColumn === true ? 0 : 1)];
+      }
+      nextCellEl.focus();
+    }
+    function homeNav(event) {
+      let nextCellEl = void 0;
+      const cellIndex = event.target.cellIndex;
+      const rowIndex = event.target.parentElement.rowIndex;
+      const tableEl = event.target.parentElement.parentElement;
+      if (cellIndex === (TableData.config.numberedRows === true ? 1 : 0)) {
+        return;
+      } else {
+        nextCellEl = tableEl.rows[rowIndex - 1].cells[TableData.zeroColumn === true ? 1 : 0];
+      }
+      nextCellEl.focus();
+    }
+    function downCell(event) {
+      const cellIndex = event.target.cellIndex;
+      const rowIndex = event.target.parentElement.rowIndex;
+      const tableEl = event.target.parentElement.parentElement;
+      let cell = void 0;
+      if (tableEl.rows.length !== rowIndex) {
+        cell = tableEl.rows[rowIndex].cells[cellIndex];
+        if (TableData.config.treeView === true && TableData.display[rowIndex].open === false) {
+          TableData.toggleRowExpand(rowIndex - 1);
+        }
+      } else {
+        cell = event.target;
+      }
+      nextTick(function() {
+        cell.focus();
+      });
+    }
+    function upCell(event) {
+      const cellIndex = event.target.cellIndex;
+      const rowIndex = event.target.parentElement.rowIndex;
+      const table = event.target.parentElement.parentElement;
+      let cell = void 0;
+      if (rowIndex !== 1) {
+        cell = table.rows[rowIndex - 2].cells[cellIndex];
+        if (TableData.config.treeView === true && TableData.display[rowIndex - 2].open === false) {
+          TableData.toggleRowExpand(TableData.display[rowIndex - 2].parent);
+        }
+      } else {
+        cell = event.target;
+      }
+      nextTick(function() {
+        cell.focus();
+      });
+    }
+    function nextCell(event) {
+      let nextCellEl = void 0;
+      const cellIndex = event.target.cellIndex;
+      const rowIndex = event.target.parentElement.rowIndex;
+      const tableEl = event.target.parentElement.parentElement;
+      if (tableEl.rows[rowIndex - 1].cells.length - 1 === cellIndex) {
+        if (tableEl.rows.length === rowIndex) {
+          nextCellEl = tableEl.rows[0].cells[TableData.zeroColumn === true ? 1 : 0];
+        } else {
+          nextCellEl = tableEl.rows[rowIndex].cells[TableData.zeroColumn === true ? 1 : 0];
+          if (TableData.config.treeView === true && TableData.display[rowIndex].open === false) {
+            TableData.toggleRowExpand(rowIndex - 1);
+          }
+        }
+      } else {
+        nextCellEl = tableEl.rows[rowIndex - 1].cells[cellIndex + 1];
+      }
+      nextTick(function() {
+        nextCellEl.focus();
+      });
+    }
+    function prevCell(event) {
+      let prevCellEl = void 0;
+      const cellIndex = event.target.cellIndex;
+      const rowIndex = event.target.parentElement.rowIndex;
+      const tableEl = event.target.parentElement.parentElement;
+      if (cellIndex === (TableData.zeroColumn === true ? 1 : 0)) {
+        if (rowIndex !== 1) {
+          prevCellEl = tableEl.rows[rowIndex - 2].cells[tableEl.rows[rowIndex - 2].cells.length - 1];
+          TableData.toggleRowExpand(rowIndex - 2);
+        } else {
+          return;
+        }
+      } else {
+        prevCellEl = tableEl.rows[rowIndex - 1].cells[cellIndex - 1];
+      }
+      prevCellEl.focus();
+    }
+    function moveCursorToEnd(target) {
+      target.focus();
+      document.execCommand("selectAll", false, null);
+      document.getSelection().collapseToEnd();
+    }
+    function clickOutside(event) {
+      if (!TableData.modal.parent) {
+        return;
+      }
+      if (TableData.modal.parent.contains(event.target))
+        ;
+      else {
+        if (!TableData.modal.visible) {
+          return;
+        } else {
+          TableData.modal.visible = false;
+        }
+      }
+    }
+    window.addEventListener("click", clickOutside);
+    return {
+      TableData,
+      v4,
+      formatCell,
+      enterNav,
+      tabNav,
+      downArrowNav,
+      upArrowNav,
+      leftArrowNav,
+      rightArrowNav,
+      homeNav,
+      endNav,
+      prevCell,
+      nextCell,
+      upCell,
+      downCell,
+      moveCursorToEnd
+    };
+  }
+});
+const _hoisted_1 = { class: "atable" };
+function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _component_ATableHeader = resolveComponent("ATableHeader");
+  const _component_ACell = resolveComponent("ACell");
+  const _component_ARow = resolveComponent("ARow");
+  const _component_ATableModal = resolveComponent("ATableModal");
+  return openBlock(), createElementBlock("table", _hoisted_1, [
+    renderSlot(_ctx.$slots, "tableheader", {}, () => [
+      createVNode(_component_ATableHeader, {
+        columns: _ctx.TableData.columns,
+        config: _ctx.TableData.config,
+        tableid: _ctx.TableData.id
+      }, null, 8, ["columns", "config", "tableid"])
+    ], true),
+    createElementVNode("tbody", null, [
+      (openBlock(true), createElementBlock(Fragment, null, renderList(_ctx.TableData.rows, (row, rowIndex) => {
+        return openBlock(), createBlock(_component_ARow, {
+          key: row.id || _ctx.v4(),
+          row,
+          rowIndex,
+          tableid: _ctx.TableData.id
+        }, {
+          default: withCtx(() => [
+            (openBlock(true), createElementBlock(Fragment, null, renderList(_ctx.TableData.columns, (col, colIndex) => {
+              return openBlock(), createBlock(_component_ACell, {
+                key: colIndex,
+                tableid: _ctx.TableData.id,
+                col,
+                tabindex: "0",
+                spellcheck: "false",
+                rowIndex,
+                colIndex: colIndex + Number(_ctx.TableData.zeroColumn === true ? 0 : -1),
+                style: normalizeStyle({
+                  "text-align": col.align !== void 0 ? col.align.toLowerCase() : "center",
+                  "min-width": col.width !== void 0 ? col.width : "40ch"
+                })
+              }, null, 8, ["tableid", "col", "rowIndex", "colIndex", "style"]);
+            }), 128))
+          ]),
+          _: 2
+        }, 1032, ["row", "rowIndex", "tableid"]);
+      }), 128))
+    ]),
+    renderSlot(_ctx.$slots, "footer", {}, void 0, true),
+    withDirectives(createVNode(_component_ATableModal, {
+      colIndex: _ctx.TableData.modal.colIndex,
+      rowIndex: _ctx.TableData.modal.rowIndex,
+      tableid: _ctx.TableData.id,
+      style: normalizeStyle({
+        left: _ctx.TableData.modal.left + "px",
+        top: _ctx.TableData.modal.top + "px",
+        "max-width": _ctx.TableData.modal.width + "px"
+      })
+    }, {
+      default: withCtx(() => [
+        (openBlock(), createBlock(resolveDynamicComponent(_ctx.TableData.modal.component), {
+          colIndex: _ctx.TableData.modal.colIndex,
+          rowIndex: _ctx.TableData.modal.rowIndex,
+          tableid: _ctx.TableData.id
+        }, null, 8, ["colIndex", "rowIndex", "tableid"]))
+      ]),
+      _: 1
+    }, 8, ["colIndex", "rowIndex", "tableid", "style"]), [
+      [vShow, _ctx.TableData.modal.visible]
+    ])
+  ]);
+}
+_sfc_main.render = _sfc_render;
+_sfc_main.__scopeId = "data-v-455a3966";
+function install(app, options) {
+  app.component("ATable", _sfc_main);
+  app.component("ATableHeader", _sfc_main$2);
+  app.component("ATableModal", _sfc_main$1);
+}
+var index = {
+  install
+};
+export { index as default };
