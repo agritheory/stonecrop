@@ -31,7 +31,7 @@ export default class TableDataStore {
 	}
 
 	createDisplayObject(display){
-		let defaultDisplay = { modified: false }
+		let defaultDisplay = Object.assign({}, { modified: false })
 		if(display !== undefined && display.hasOwnProperty("0:0")){
 			return display
 		} else if(display !== undefined && display.hasOwnProperty("default")){
