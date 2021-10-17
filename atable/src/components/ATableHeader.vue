@@ -39,7 +39,7 @@ export default defineComponent({
 			default: () => {return undefined}
 		}
 	},
-	setup(props, context) {
+	setup(props) {
 		const TableData = inject(props.tableid)
 		return { TableData }
 	}

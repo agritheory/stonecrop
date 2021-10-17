@@ -31,7 +31,7 @@ export default {
 <style scoped>
 input {
 	position: relative;
-	width: calc(100% - 4px);
+	/* width: calc(100% - 4px); */
 	border: 1px;
   border-style: solid;
   border-color: var(--cell-border-color);
@@ -40,5 +40,6 @@ input {
 	background-color: inherit;
 	outline: none;
 	min-height: 1.15em;
+	font-size: var(--table-font-size);
 }
 </style>

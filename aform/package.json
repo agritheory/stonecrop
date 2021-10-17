@@ -7,7 +7,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "vite serve dev/ -c dev/vite.config.js -d",
-    "build": "vite build -c dev/vite.config.js -d --emptyOutDir true"
+    "build": "vite build -c ./dev/vite.config.js -d --emptyOutDir true"
   },
   "files": [
     "dist/*",

@@ -40,7 +40,7 @@
     	:style="{
 				left: TableData.modal.left + 'px', 
 				top: TableData.modal.top + 'px',
-				width: TableData.modal.width + 'px'
+				'max-width': TableData.modal.width + 'px'
 			}"
 		>
 			<component
@@ -54,7 +54,7 @@
 </template>
 <script>
 import { v4 } from "uuid"
-import { defineComponent, ref, provide, nextTick } from 'vue'
+import { defineComponent, provide, nextTick } from 'vue'
 
 import TableDataStore from './index.js'
 import ARow from "./ARow.vue"
@@ -86,7 +86,7 @@ export default defineComponent({
 			default: () => {return undefined}
 		}
 	},
-	setup(props, context) {
+	setup(props) {
 		let TableData = new TableDataStore(props.id, props.columns, props.rows, props.config)
 		
 		provide(TableData.id, TableData)
@@ -328,7 +328,6 @@ th {
   border-color: var(--header-border-color);
   border-radius: 0px;
   color: var(--header-text-color);
-
 }
 tr {
   background-color: var(--row-color-zebra-light);

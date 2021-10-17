@@ -8,7 +8,7 @@ import { defineComponent } from 'vue'
 
 export default defineComponent({
 	name: 'CommandPalette',
-	setup(props, context) {
+	setup() {
 		return {}
 	},
 })

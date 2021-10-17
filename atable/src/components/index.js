@@ -1,5 +1,5 @@
 import { v4 } from "uuid"
-import { computed, reactive, ref } from 'vue'
+import { computed, reactive } from 'vue'
 
 export default class TableDataStore {
 	constructor(id = undefined, columns = [], rows = [], config = {}, table = undefined, display = undefined) {

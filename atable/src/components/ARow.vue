@@ -39,7 +39,7 @@
   </tr>
 </template>
 <script>
-import { defineComponent, inject, computed, watch } from 'vue'
+import { defineComponent, inject } from 'vue'
 
 export default defineComponent({
 	name: "ARow",
@@ -60,7 +60,7 @@ export default defineComponent({
 			default: () => {return undefined}
 		}
 	},
-	setup(props, context) {
+	setup(props) {
 		const TableData = inject(props.tableid)
 
 		function getRowExpandSymbol() {

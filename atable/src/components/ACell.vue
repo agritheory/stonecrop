@@ -28,8 +28,7 @@
   />
 </template>
 <script>
-import {ref, shallowRef, defineComponent, inject, computed, watch, resolveDynamicComponent } from 'vue'
-import { v4 } from "uuid"
+import {ref, defineComponent, inject, computed, watch, resolveDynamicComponent } from 'vue'
 
 export default defineComponent({
 	name: "ACell",
@@ -50,7 +49,7 @@ export default defineComponent({
 			default: () => {return undefined}
 		}
 	},
-	setup(props, context) {
+	setup(props) {
 		const TableData = inject(props.tableid)
 		
 		let cellModified = ref(false)
