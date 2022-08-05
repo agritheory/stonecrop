@@ -43,6 +43,10 @@
       "allowedCategories": [ "prototype" ]
     },
     {
+      "name": "histoire",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
       "name": "localforage",
       "allowedCategories": [ "prototype" ]
     },
