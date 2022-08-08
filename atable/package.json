@@ -10,26 +10,27 @@
     "src/**/*.vue"
   ],
   "scripts": {
-    "dev": "vite serve dev/ -c dev/vite.config.js -d",
-    "build": "vite build dev/ -c dev/vite.config.js -d --emptyOutDir true"
+    "dev": "vite serve dev/ -c dev/vite.config.ts -d",
+    "build": "vite build dev/ -c dev/vite.config.ts -d --emptyOutDir true"
   },
   "license": "MIT",
   "dependencies": {
     "uuid": "^8.3.2",
-    "vue": "^3.2.16"
+    "vue": "^3.2.37"
   },
   "devDependencies": {
     "@cypress/vite-dev-server": "~2.0.3",
     "@cypress/vue": "^3.0.0-beta.4",
-    "@vitejs/plugin-vue": "^1.3.0",
-    "@vue/compiler-sfc": "^3.2.20",
+    "@vitejs/plugin-vue": "2.3.3",
+    "@vue/compiler-sfc": "^3.2.37",
     "cypress": "^8.1.0",
-    "vite": "^2.4.4",
+    "vite": "2.9.14",
     "vue-router": "^4",
-    "histoire": "~0.8.1"
+    "histoire": "~0.9.1",
+    "@histoire/plugin-vue": "~0.9.1"
   },
   "engines": {
-    "node" : ">=14.17.3"
+    "node" : ">=16.13.0"
   },
   "exports": {
     ".": {

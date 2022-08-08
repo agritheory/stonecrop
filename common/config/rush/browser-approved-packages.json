@@ -11,6 +11,10 @@
       "allowedCategories": [ "documentation", "prototype" ]
     },
     {
+      "name": "@histoire/plugin-vue",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
       "name": "@miragejs/graphql",
       "allowedCategories": [ "prototype" ]
     },
