@@ -3,15 +3,18 @@
   "version": "0.1.0",
   "description": "",
   "main": "dist/atable.umd.js",
-  "module": "dist/atable.es.js",
+  "module": "dist/atable.mjs",
   "umd": "dist/atable.umd.js",
   "files": [
     "dist/*",
     "src/**/*.vue"
   ],
   "scripts": {
-    "dev": "vite serve dev/ -c dev/vite.config.ts -d",
-    "build": "vite build dev/ -c dev/vite.config.ts -d --emptyOutDir true"
+    "dev": "vite serve dev/ -c vite.config.ts -d",
+    "build": "vite build dev/ -c vite.config.ts -d --emptyOutDir true",
+    "story:dev": "histoire dev",
+    "story:build": "histoire build",
+    "story:preview": "histoire preview"
   },
   "license": "MIT",
   "dependencies": {
@@ -21,10 +24,9 @@
   "devDependencies": {
     "@cypress/vite-dev-server": "~2.0.3",
     "@cypress/vue": "^3.0.0-beta.4",
-    "@vitejs/plugin-vue": "2.3.3",
-    "@vue/compiler-sfc": "^3.2.37",
+    "@vitejs/plugin-vue": "^3.0.1",
     "cypress": "^8.1.0",
-    "vite": "2.9.14",
+    "vite": "^3.0.4",
     "vue-router": "^4",
     "histoire": "~0.9.1",
     "@histoire/plugin-vue": "~0.9.1"
@@ -34,7 +36,7 @@
   },
   "exports": {
     ".": {
-      "import": "./dist/atable.es.js",
+      "import": "./dist/atable.mjs",
       "require": "./dist/atable.umd.js"
     }
   }
