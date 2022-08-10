@@ -5,10 +5,10 @@
 </template>
 
 <script lang="ts" setup>
-import { default as data } from "../assets/sample_data/coa.json";
-
 import { ref } from "vue";
-import ATable from "../src/components/ATable.vue";
+
+import data from "@/assets/sample_data/coa.json";
+import ATable from "@/components/ATable.vue";
 
 const coa = ref({
   rows: data,
@@ -48,5 +48,5 @@ const coa = ref({
 
 <style>
 @import url("https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap");
-@import "../assets/atable.css";
+@import "@/assets/atable.css";
 </style>

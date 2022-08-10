@@ -11,11 +11,8 @@
     "jsx": "preserve",
     "baseUrl": ".",
     "paths": {
-      "src/*": [
+      "@/*": [
         "src/*"
-      ],
-      "assets/*": [
-        "assets/*"
       ],
     }
   },
@@ -23,5 +20,8 @@
     "env.d.ts",
     "src/**/*",
     "src/**/*.vue"
+  ],
+  "exclude": [
+    "node_modules"
   ]
 }

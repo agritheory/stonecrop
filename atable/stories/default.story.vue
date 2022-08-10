@@ -9,13 +9,13 @@
 </template>
 
 <script lang="ts" setup>
-import http_data from "../assets/sample_data/http_logs.json";
-
 import { ref } from "vue";
-import ATable from "../src/components/ATable.vue";
+
+import data from "@/assets/sample_data/http_logs.json";
+import ATable from "@/components/ATable.vue";
 
 const http_logs = ref({
-  rows: http_data,
+  rows: data,
   columns: [
     {
       label: "Home Page",
@@ -71,5 +71,5 @@ const http_logs = ref({
 
 <style>
 @import url("https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap");
-@import "../assets/atable.css";
+@import "@/assets/atable.css";
 </style>
