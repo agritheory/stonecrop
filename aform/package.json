@@ -1,8 +1,8 @@
 {
   "name": "@sedum/aform",
   "version": "0.1.0",
-  "main": "dist/aform.es.js",
-  "module": "dist/aform.es.js",
+  "main": "dist/aform.mjs",
+  "module": "dist/aform.mjs",
   "umd": "dist/aform.umd.js",
   "license": "MIT",
   "scripts": {
@@ -21,9 +21,8 @@
     "@sedum/atable": "workspace:*"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^1.3.0",
-    "@vue/compiler-sfc": "^3.2.20",
-    "vite": "^2.4.4",
+    "@vitejs/plugin-vue": "^3.0.1",
+    "vite": "^3.0.5",
     "cypress": "^8.1.0",
     "@cypress/vue": "^3.0.0-beta.4",
     "@cypress/vite-dev-server": "~2.0.3",
@@ -31,11 +30,11 @@
     "histoire": "~0.8.1"
   },
   "engines": {
-    "node" : ">=14.17.3"
+    "node" : ">=16.13.0"
   },
   "exports": {
     ".": {
-      "import": "./dist/aform.es.js",
+      "import": "./dist/aform.mjs",
       "require": "./dist/aform.umd.js"
     }
   }

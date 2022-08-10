@@ -12,9 +12,8 @@
     "@sedum/atable": "workspace:~0.1.0",
     "@sedum/aform": "workspace:~0.1.0",
     "@sedum/stonecrop": "workspace:~0.1.0",
-    "vite": "^2.4.4",
-    "@vitejs/plugin-vue": "^1.3.0",
-    "@vue/compiler-sfc": "^3.2.20",
+    "vite": "^3.0.5",
+    "@vitejs/plugin-vue": "^3.0.1",
     "vue": "^3.2.16",
     "@sedum/desktop": "workspace:~0.1.0",
     "uuid": "~8.3.2"
@@ -25,7 +24,7 @@
     "build": ""
   },
   "devDependencies": {
-    "vite": "^2.4.4",
+    "vite": "^3.0.5",
     "vue-router": "^4",
     "miragejs": "~0.1.42",
     "histoire": "~0.8.1"

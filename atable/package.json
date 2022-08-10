@@ -10,8 +10,9 @@
     "src/**/*.vue"
   ],
   "scripts": {
-    "dev": "vite serve dev/ -c vite.config.ts -d",
-    "build": "vite build dev/ -c vite.config.ts -d --emptyOutDir true",
+    "dev": "vite",
+    "build": "vite build --emptyOutDir true",
+    "preview": "vite preview",
     "story:dev": "histoire dev",
     "story:build": "histoire build",
     "story:preview": "histoire preview"
@@ -26,7 +27,7 @@
     "@cypress/vue": "^3.0.0-beta.4",
     "@vitejs/plugin-vue": "^3.0.1",
     "cypress": "^8.1.0",
-    "vite": "^3.0.4",
+    "vite": "^3.0.5",
     "vue-router": "^4",
     "histoire": "~0.9.1",
     "@histoire/plugin-vue": "~0.9.1"
