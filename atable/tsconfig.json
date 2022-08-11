@@ -3,10 +3,12 @@
     "target": "es2017",
     "module": "esnext",
     "lib": [
+      "dom",
       "esnext"
     ],
     "moduleResolution": "node",
     "esModuleInterop": true,
+    "isolatedModules": true,
     "resolveJsonModule": true,
     "jsx": "preserve",
     "baseUrl": ".",

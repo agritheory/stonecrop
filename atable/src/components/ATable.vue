@@ -2,326 +2,385 @@
   <table class="atable">
     <slot name="tableheader">
       <ATableHeader
-        :columns="TableData.columns"
-        :config="TableData.config"
-        :tableid="TableData.id"
+        :columns="tableData.columns"
+        :config="tableData.config"
+        :tableid="tableData.id"
       />
     </slot>
     <tbody>
       <ARow
-        v-for="(row, rowIndex) in TableData.rows"
+        v-for="(row, rowIndex) in tableData.rows"
         :key="row.id || v4()"
         :row="row"
         :rowIndex="rowIndex"
-        :tableid="TableData.id"
+        :tableid="tableData.id"
       >
         <ACell
-          v-for="(col, colIndex) in TableData.columns"
+          v-for="(col, colIndex) in tableData.columns"
           :key="colIndex"
-          :tableid="TableData.id"
+          :tableid="tableData.id"
           :col="col"
           tabindex="0"
           spellcheck="false"
           :rowIndex="rowIndex"
-          :colIndex="colIndex + Number(TableData.zeroColumn === true ? 0 : -1)"
+          :colIndex="colIndex + (tableData.zeroColumn ? 0 : -1)"
           :style="{
-            'text-align': col.align !== undefined ? col.align.toLowerCase() : 'center',
-            'min-width': col.width !== undefined ? col.width : '40ch',
+            'text-align': col?.align?.toLowerCase() || 'center',
+            'min-width': col?.width || '40ch',
           }"
         />
       </ARow>
     </tbody>
     <slot name="footer" />
-		<ATableModal
-			:colIndex="TableData.modal.colIndex"
-			:rowIndex="TableData.modal.rowIndex"
-			:tableid="TableData.id"
-			v-show="TableData.modal.visible"
-    	:style="{
-				left: TableData.modal.left + 'px', 
-				top: TableData.modal.top + 'px',
-				'max-width': TableData.modal.width + 'px'
-			}"
-		>
-			<component
-				:is="TableData.modal.component"	
-				:colIndex="TableData.modal.colIndex"
-				:rowIndex="TableData.modal.rowIndex"
-				:tableid="TableData.id"
-			/>
-		</ATableModal>
+    <ATableModal
+      :colIndex="tableData.modal.colIndex"
+      :rowIndex="tableData.modal.rowIndex"
+      :tableid="tableData.id"
+      v-show="tableData.modal.visible"
+      :style="{
+        left: tableData.modal.left + 'px',
+        top: tableData.modal.top + 'px',
+        'max-width': tableData.modal.width + 'px',
+      }"
+    >
+      <component
+        :is="tableData.modal.component"
+        :colIndex="tableData.modal.colIndex"
+        :rowIndex="tableData.modal.rowIndex"
+        :tableid="tableData.id"
+      />
+    </ATableModal>
   </table>
 </template>
-<script>
-import { v4 } from "uuid"
-import { defineComponent, provide, nextTick } from 'vue'
 
-import TableDataStore from './index.js'
-import ARow from "./ARow.vue"
-import ACell from "./ACell.vue"
-import ATableHeader from "./ATableHeader.vue"
-import ATableModal from "./ATableModal.vue"
+<script lang="ts">
+import { v4 } from "uuid";
+import { defineComponent, provide, nextTick } from "vue";
+
+import TableDataStore, { TableColumn } from "./index";
+import ACell from "./ACell.vue";
+import ARow from "./ARow.vue";
+import ATableHeader from "./ATableHeader.vue";
+import ATableModal from "./ATableModal.vue";
 
 export default defineComponent({
-	name: "ATable",
-	components: {
-		ATableModal, ARow, ATableHeader, ACell
-	},
-	props: {
-		"columns": {
-			type: Array,
-			required: true,
-		},
-		"rows": {
-			type: Array,
-			required: false,
-			default: () => {return []}
-		},
-		"config": {
-			type: Object,
-			default: () => {return {}}
-		},
-		"tableid": {
-			type: String,
-			default: () => {return undefined}
-		}
-	},
-	setup(props) {
-		let TableData = new TableDataStore(props.id, props.columns, props.rows, props.config)
-		
-		provide(TableData.id, TableData)
+  name: "ATable",
+  components: {
+    ATableModal,
+    ARow,
+    ATableHeader,
+    ACell,
+  },
+  props: {
+    id: {
+      type: String,
+    },
+    columns: {
+      type: Array,
+      required: true,
+    },
+    rows: {
+      type: Array,
+      default: [],
+    },
+    config: {
+      type: Object,
+      default: {},
+    },
+    tableid: {
+      type: String,
+    },
+  },
+  setup(props) {
+    let tableData = new TableDataStore(
+      props.id,
+      props.columns,
+      props.rows,
+      props.config
+    );
 
-		const formatCell = function(event = undefined, column = undefined, cellData = undefined){
-			let colIndex = undefined
-			if(event){
-				colIndex = event.target.cellIndex + (TableData.zeroColumn === true ? -1 : 0)
-			} else if (column && cellData) { 
-				colIndex = TableData.columns.indexOf(column)
-			}
-			if(!column && 'format' in TableData.columns[colIndex]){
-				event.target.innerHTML = TableData.columns[colIndex].format(event.target.innerHTML)
-			} else if (cellData && 'format' in column){
-				return column.format(cellData)
-			} else if (cellData && column.type.toLowerCase() in ['int', 'decimal', 'float', 'number', 'percent']){
-				return cellData
-				// TODO: number formatting 
-			} else {
-				return cellData
-			}
-		}
+    provide(tableData.id, tableData);
 
-		const getIndent = function(colKey, indent){
-			if(indent && colKey === 0 && indent > 0){ 
-				return (indent * 1) + 'ch'
-			} else {
-				return null
-			}
-		}
+    const formatCell = (
+      // TODO: (typing) what kind of event are we catching here?
+      event?: Event,
+      column?: TableColumn,
+      cellData?: any
+    ) => {
+      let colIndex: number;
+      if (event) {
+        colIndex = event.target.cellIndex + (tableData.zeroColumn ? -1 : 0);
+      } else if (column && cellData) {
+        colIndex = tableData.columns.indexOf(column);
+      }
 
-		function enterNav(event){
-			event.preventDefault()
-			event.stopPropagation()
-			if (event.shiftKey === true) {
-				upCell(event)
-			} else { downCell(event) }
-		}
+      if (!column && "format" in tableData.columns[colIndex]) {
+        event.target.innerHTML = tableData.columns[colIndex].format(
+          event.target.innerHTML
+        );
+      } else if (cellData && "format" in column) {
+        return column.format(cellData);
+      } else if (
+        cellData &&
+        column.type.toLowerCase() in
+          ["int", "decimal", "float", "number", "percent"]
+      ) {
+        return cellData;
+        // TODO: number formatting
+      } else {
+        return cellData;
+      }
+    };
 
-		function tabNav(event){
-			event.preventDefault()
-			event.stopPropagation()
-			if (event.shiftKey === true) {
-				prevCell(event)
-			} else { nextCell(event) }
-		}
+    const getIndent = (colKey: number, indent: number) => {
+      if (indent && colKey === 0 && indent > 0) {
+        return indent * 1 + "ch";
+      } else {
+        return null;
+      }
+    };
 
-		function downArrowNav(event){
-			if (event.shiftKey !== true) {
-				event.preventDefault()
-				event.stopPropagation()
-				downCell(event)
-			}
-		}
+    const enterNav = (event: KeyboardEvent) => {
+      event.preventDefault();
+      event.stopPropagation();
+      event.shiftKey ? upCell(event) : downCell(event);
+    };
 
-		function upArrowNav(event){
-			if (event.shiftKey !== true) {
-				event.preventDefault()
-				event.stopPropagation()
-				upCell(event)
-			}
-		}
+    const tabNav = (event: KeyboardEvent) => {
+      event.preventDefault();
+      event.stopPropagation();
+      event.shiftKey ? prevCell(event) : nextCell(event);
+    };
 
-		function leftArrowNav(event){
-			if (event.shiftKey !== true) {
-				event.preventDefault()
-				event.stopPropagation()
-				prevCell(event)
-			}
-		}
+    const downArrowNav = (event: KeyboardEvent) => {
+      if (!event.shiftKey) {
+        event.preventDefault();
+        event.stopPropagation();
+        downCell(event);
+      }
+    };
 
-		function rightArrowNav(event){
-			if (event.shiftKey !== true) {
-				event.preventDefault()
-				event.stopPropagation()
-				nextCell(event)
-			}
-		}
+    const upArrowNav = (event: KeyboardEvent) => {
+      if (!event.shiftKey) {
+        event.preventDefault();
+        event.stopPropagation();
+        upCell(event);
+      }
+    };
 
-		function endNav(event){
-			let nextCellEl = undefined
-			const cellIndex = event.target.cellIndex
-			const rowIndex = event.target.parentElement.rowIndex
-			const tableEl = event.target.parentElement.parentElement
-			if (tableEl.rows[rowIndex - 1].cells.length - 1 === cellIndex) { // last column
-				return
-			} else {
-				nextCellEl = tableEl.rows[rowIndex - 1].cells[TableData.columns.length - (TableData.zeroColumn === true ? 0 : 1)] // last cell
-			}
-			nextCellEl.focus()
-		}
+    const leftArrowNav = (event: KeyboardEvent) => {
+      if (!event.shiftKey) {
+        event.preventDefault();
+        event.stopPropagation();
+        prevCell(event);
+      }
+    };
 
-		function homeNav(event){
-			let nextCellEl = undefined
-			const cellIndex = event.target.cellIndex
-			const rowIndex = event.target.parentElement.rowIndex
-			const tableEl = event.target.parentElement.parentElement
-			if (cellIndex === (TableData.config.numberedRows === true ? 1 : 0)) { // TODO: zeroColumn // first column
-				return
-			} else {
-				nextCellEl = tableEl.rows[rowIndex - 1].cells[TableData.zeroColumn === true ? 1 : 0] // last cell
-			}
-			nextCellEl.focus()
-		}
+    const rightArrowNav = (event: KeyboardEvent) => {
+      if (!event.shiftKey) {
+        event.preventDefault();
+        event.stopPropagation();
+        nextCell(event);
+      }
+    };
 
-		function downCell(event){
-			const cellIndex = event.target.cellIndex
-			const rowIndex = event.target.parentElement.rowIndex
-			const tableEl = event.target.parentElement.parentElement
-			let cell = undefined
-			if (tableEl.rows.length !== rowIndex) { // not bottom row
-				cell = tableEl.rows[rowIndex].cells[cellIndex]
-				if (TableData.config.treeView === true && TableData.display[rowIndex].open === false) {
-					// toggleRowExpand(event, rowIndex - 1)
-					TableData.toggleRowExpand(rowIndex - 1)
-				}
-			} else {
-				cell = event.target
-			}
-			nextTick(function () {
-				cell.focus()
-			})
-		}
+    // TODO: (typing) is this not a keyboard event?
+    const endNav = (event: KeyboardEvent) => {
+      let nextCellEl = undefined;
+      const cellIndex = event.target.cellIndex;
+      const rowIndex = event.target.parentElement.rowIndex;
+      const tableEl = event.target.parentElement.parentElement;
+      if (tableEl.rows[rowIndex - 1].cells.length - 1 === cellIndex) {
+        // last column
+        return;
+      } else {
+        nextCellEl =
+          tableEl.rows[rowIndex - 1].cells[
+            tableData.columns.length - (tableData.zeroColumn === true ? 0 : 1)
+          ]; // last cell
+      }
+      nextCellEl.focus();
+    };
 
-		function upCell(event){
-			const cellIndex = event.target.cellIndex
-			const rowIndex = event.target.parentElement.rowIndex
-			const table = event.target.parentElement.parentElement
-			let cell = undefined
-			if (rowIndex !== 1) { // not top row, exclude headers
-				cell = table.rows[rowIndex - 2].cells[cellIndex]
-				if (TableData.config.treeView === true && TableData.display[rowIndex - 2].open === false) {
-					TableData.toggleRowExpand(TableData.display[rowIndex - 2].parent)
-				}
-			} else {
-				cell = event.target
-			}
-			nextTick(function () {
-				cell.focus()
-			})
-		}
+    // TODO: (typing) is this not a keyboard event?
+    const homeNav = (event: KeyboardEvent) => {
+      let nextCellEl = undefined;
+      const cellIndex = event.target.cellIndex;
+      const rowIndex = event.target.parentElement.rowIndex;
+      const tableEl = event.target.parentElement.parentElement;
+      if (cellIndex === (tableData.config.numberedRows === true ? 1 : 0)) {
+        // TODO: zeroColumn // first column
+        return;
+      } else {
+        nextCellEl =
+          tableEl.rows[rowIndex - 1].cells[
+            tableData.zeroColumn === true ? 1 : 0
+          ]; // last cell
+      }
+      nextCellEl.focus();
+    };
 
-		function nextCell(event){
-			let nextCellEl = undefined
-			const cellIndex = event.target.cellIndex
-			const rowIndex = event.target.parentElement.rowIndex
-			const tableEl = event.target.parentElement.parentElement
-			if (tableEl.rows[rowIndex - 1].cells.length - 1 === cellIndex) { // last column
-				if (tableEl.rows.length === rowIndex) {
-					nextCellEl = tableEl.rows[0].cells[TableData.zeroColumn === true ? 1 : 0] // go to top left cell
-					// if row is hidden, expand
-				} else {  // focus on first cell of next row
-					nextCellEl = tableEl.rows[rowIndex].cells[TableData.zeroColumn === true ? 1 : 0]
-					if (TableData.config.treeView === true && TableData.display[rowIndex].open === false) {
-						TableData.toggleRowExpand(rowIndex - 1)
-					}
-				}
-			} else {
-				nextCellEl = tableEl.rows[rowIndex - 1].cells[cellIndex + 1] // next cell
-			}
-			nextTick(function () {
-				nextCellEl.focus()
-			})
-		}
+    // TODO: (typing) is this not a keyboard event?
+    const downCell = (event: KeyboardEvent) => {
+      const cellIndex = event.target.cellIndex;
+      const rowIndex = event.target.parentElement.rowIndex;
+      const tableEl = event.target.parentElement.parentElement;
+      let cell = undefined;
+      if (tableEl.rows.length !== rowIndex) {
+        // not bottom row
+        cell = tableEl.rows[rowIndex].cells[cellIndex];
+        if (
+          tableData.config.treeView === true &&
+          tableData.display[rowIndex].open === false
+        ) {
+          // toggleRowExpand(event, rowIndex - 1)
+          tableData.toggleRowExpand(rowIndex - 1);
+        }
+      } else {
+        cell = event.target;
+      }
+      nextTick(() => {
+        cell.focus();
+      });
+    };
 
-		function prevCell(event){
-			let prevCellEl = undefined
-			const cellIndex = event.target.cellIndex
-			const rowIndex = event.target.parentElement.rowIndex
-			const tableEl = event.target.parentElement.parentElement
-			if (cellIndex === (TableData.zeroColumn === true ? 1 : 0)) { // first column
-				if (rowIndex !== 1) { // not top row, exclude headers
-					prevCellEl = tableEl.rows[rowIndex - 2].cells[tableEl.rows[rowIndex - 2].cells.length - 1]
-					// toggleRowExpand(event, rowIndex - 2)
-					TableData.toggleRowExpand(rowIndex - 2)
-				} else { // top row, stay trapped in top left cell
-					return
-				}
-			} else {
-				prevCellEl = tableEl.rows[rowIndex - 1].cells[cellIndex - 1] // previous cell
-			}
-			prevCellEl.focus()
-		}
+    // TODO: (typing) is this not a keyboard event?
+    const upCell = (event: KeyboardEvent) => {
+      const cellIndex = event.target.cellIndex;
+      const rowIndex = event.target.parentElement.rowIndex;
+      const table = event.target.parentElement.parentElement;
+      let cell = undefined;
+      if (rowIndex !== 1) {
+        // not top row, exclude headers
+        cell = table.rows[rowIndex - 2].cells[cellIndex];
+        if (
+          tableData.config.treeView === true &&
+          tableData.display[rowIndex - 2].open === false
+        ) {
+          tableData.toggleRowExpand(tableData.display[rowIndex - 2].parent);
+        }
+      } else {
+        cell = event.target;
+      }
+      nextTick(() => {
+        cell.focus();
+      });
+    };
 
-		function moveCursorToEnd(target) {
-			target.focus()
-			document.execCommand('selectAll', false, null)
-			document.getSelection().collapseToEnd()
-		}
+    // TODO: (typing) is this not a keyboard event?
+    const nextCell = (event: KeyboardEvent) => {
+      let nextCellEl = undefined;
+      const cellIndex = event.target.cellIndex;
+      const rowIndex = event.target.parentElement.rowIndex;
+      const tableEl = event.target.parentElement.parentElement;
+      if (tableEl.rows[rowIndex - 1].cells.length - 1 === cellIndex) {
+        // last column
+        if (tableEl.rows.length === rowIndex) {
+          nextCellEl =
+            tableEl.rows[0].cells[tableData.zeroColumn === true ? 1 : 0]; // go to top left cell
+          // if row is hidden, expand
+        } else {
+          // focus on first cell of next row
+          nextCellEl =
+            tableEl.rows[rowIndex].cells[tableData.zeroColumn === true ? 1 : 0];
+          if (
+            tableData.config.treeView === true &&
+            tableData.display[rowIndex].open === false
+          ) {
+            tableData.toggleRowExpand(rowIndex - 1);
+          }
+        }
+      } else {
+        nextCellEl = tableEl.rows[rowIndex - 1].cells[cellIndex + 1]; // next cell
+      }
+      nextTick(() => {
+        nextCellEl.focus();
+      });
+    };
 
-		function clickOutside(event){
-			if(!TableData.modal.parent){ return }
-			if(TableData.modal.parent.contains(event.target)){
-			} else {
-				if(!TableData.modal.visible){
-					return
-				} else {
-					// call set data
-					TableData.modal.visible = false
-				}
-			}
-		}
+    // TODO: (typing) is this not a keyboard event?
+    const prevCell = (event: KeyboardEvent) => {
+      let prevCellEl = undefined;
+      const cellIndex = event.target.cellIndex;
+      const rowIndex = event.target.parentElement.rowIndex;
+      const tableEl = event.target.parentElement.parentElement;
+      if (cellIndex === (tableData.zeroColumn === true ? 1 : 0)) {
+        // first column
+        if (rowIndex !== 1) {
+          // not top row, exclude headers
+          prevCellEl =
+            tableEl.rows[rowIndex - 2].cells[
+              tableEl.rows[rowIndex - 2].cells.length - 1
+            ];
+          // toggleRowExpand(event, rowIndex - 2)
+          tableData.toggleRowExpand(rowIndex - 2);
+        } else {
+          // top row, stay trapped in top left cell
+          return;
+        }
+      } else {
+        prevCellEl = tableEl.rows[rowIndex - 1].cells[cellIndex - 1]; // previous cell
+      }
+      prevCellEl.focus();
+    };
 
-		window.addEventListener('click', clickOutside)
+    const moveCursorToEnd = (target: HTMLElement) => {
+      target.focus();
+      document.execCommand("selectAll", false, null);
+      document.getSelection().collapseToEnd();
+    };
 
-		return {
-			TableData,
-			v4,
-			formatCell,
-			enterNav,
-			tabNav,
-			downArrowNav,
-			upArrowNav,
-			leftArrowNav,
-			rightArrowNav,
-			homeNav,
-			endNav,
-			prevCell,
-			nextCell,
-			upCell,
-			downCell,
-			moveCursorToEnd,
-		}
-	}
-})
+    const clickOutside = (event: MouseEvent) => {
+      if (!tableData.modal.parent) {
+        return;
+      }
 
+      // TODO: (typing) possible bug?
+      if (tableData.modal.parent.contains(event.target)) {
+      } else {
+        if (!tableData.modal.visible) {
+          return;
+        } else {
+          // call set data
+          tableData.modal.visible = false;
+        }
+      }
+    };
+
+    window.addEventListener("click", clickOutside);
+
+    return {
+      downArrowNav,
+      downCell,
+      endNav,
+      enterNav,
+      formatCell,
+      getIndent,
+      homeNav,
+      leftArrowNav,
+      moveCursorToEnd,
+      nextCell,
+      prevCell,
+      rightArrowNav,
+      tableData,
+      tabNav,
+      upArrowNav,
+      upCell,
+      v4,
+    };
+  },
+});
 </script>
+
 <style scoped>
 table {
   display: table;
   border-collapse: var(--border-collapsed);
-	caret-color: var(--brand-color);
+  caret-color: var(--brand-color);
 }
+
 th {
-	box-sizing: border-box;
+  box-sizing: border-box;
   background-color: var(--brand-color);
   border-width: 1px;
   border-style: solid;
@@ -329,10 +388,12 @@ th {
   border-radius: 0px;
   color: var(--header-text-color);
 }
+
 tr {
   background-color: var(--row-color-zebra-light);
   outline: none;
 }
+
 tr:nth-child(even) {
   background-color: var(--row-color-zebra-dark);
 }
