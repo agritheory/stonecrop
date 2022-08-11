@@ -10,7 +10,7 @@ function rng() {
   }
   return getRandomValues(rnds8);
 }
-var REGEX = /^(?:[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}|00000000-0000-0000-0000-000000000000)$/i;
+const REGEX = /^(?:[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}|00000000-0000-0000-0000-000000000000)$/i;
 function validate(uuid) {
   return typeof uuid === "string" && REGEX.test(uuid);
 }
@@ -74,7 +74,7 @@ class TableDataStore {
     } else if (display !== void 0 && display.hasOwnProperty("default")) {
       defaultDisplay = display.default;
     }
-    let parents = new Set();
+    let parents = /* @__PURE__ */ new Set();
     for (let rowIndex = this.rows.length - 1; rowIndex >= 0; rowIndex--) {
       let row = this.rows[rowIndex];
       if (row.parent) {
@@ -129,6 +129,13 @@ class TableDataStore {
     }
   }
 }
+const _export_sfc = (sfc, props) => {
+  const target = sfc.__vccOpts || sfc;
+  for (const [key, val] of props) {
+    target[key] = val;
+  }
+  return target;
+};
 const _sfc_main$4 = defineComponent({
   name: "ARow",
   props: {
@@ -221,8 +228,8 @@ function _sfc_render$4(_ctx, _cache, $props, $setup, $data, $options) {
     [vShow, _ctx.rowVisible()]
   ]);
 }
-_sfc_main$4.render = _sfc_render$4;
-var ACell_vue_vue_type_style_index_0_scoped_true_lang = "\ntd[data-v-f81c70ec] {\n  border: 1px;\n  border-style: solid;\n  border-color: var(--cell-border-color);\n  border-radius: 0px;\n	box-sizing: border-box;\n  margin: 0px;\n  outline: none;\n  box-shadow: none;\n  color: var(--cell-text-color);\n  text-overflow: ellipsis;\n  overflow: hidden;\n	padding-left: 0.5ch;\n	padding-right: 0.5ch;\n}\ntd[data-v-f81c70ec]:focus, td[data-v-f81c70ec]:focus-within {\n  background-color: var(--focus-cell-background);\n  outline-width: 2px;\n  outline-style: solid; \n  outline-color: var(--focus-cell-outline);\n  box-shadow: none;\n  overflow: hidden;\n  min-height: 1.15em;\n  max-height: 1.15em;\n  overflow: hidden;\n}\n";
+const ARow = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["render", _sfc_render$4]]);
+const ACell_vue_vue_type_style_index_0_scoped_49bfe190_lang = "";
 const _sfc_main$3 = defineComponent({
   name: "ACell",
   props: {
@@ -346,9 +353,8 @@ function _sfc_render$3(_ctx, _cache, $props, $setup, $data, $options) {
     innerHTML: _ctx.displayValue
   }, null, 44, _hoisted_1$2);
 }
-_sfc_main$3.render = _sfc_render$3;
-_sfc_main$3.__scopeId = "data-v-f81c70ec";
-var ATableHeader_vue_vue_type_style_index_0_scoped_true_lang = "\nth[data-v-bf1b4a04] {\n	background-color: var(--brand-color);\n	border-width: 0px;\n	border-style: solid;\n	border-color: var(--header-border-color);\n	border-radius: 0px;\n	color: var(--header-text-color);\n	padding-left: 0.5ch;\n	padding-right: 0.5ch;\n}\nth[data-v-bf1b4a04]:focus{\n	outline: none;\n}\n";
+const ACell = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["render", _sfc_render$3], ["__scopeId", "data-v-49bfe190"]]);
+const ATableHeader_vue_vue_type_style_index_0_scoped_c9ae228b_lang = "";
 const _sfc_main$2 = defineComponent({
   name: "ATableHeader",
   props: {
@@ -401,9 +407,8 @@ function _sfc_render$2(_ctx, _cache, $props, $setup, $data, $options) {
     ])
   ])) : createCommentVNode("", true);
 }
-_sfc_main$2.render = _sfc_render$2;
-_sfc_main$2.__scopeId = "data-v-bf1b4a04";
-var ATableModal_vue_vue_type_style_index_0_scoped_true_lang = "\ndiv[data-v-5e464449] {\n	z-index: 100;\n	position: absolute;\n	background-color: var(--row-color-zebra-dark);\n	/* margin: 0px;\n  outline: none;\n  box-shadow: none;\n  color: var(--cell-text-color);\n  text-overflow: ellipsis;\n  overflow: hidden;\n	padding-left: 0.5ch;\n	padding-right: 0.5ch;\n	font-size: var(--table-font-size); */\n}\n";
+const ATableHeader = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["render", _sfc_render$2], ["__scopeId", "data-v-c9ae228b"]]);
+const ATableModal_vue_vue_type_style_index_0_scoped_07d01e97_lang = "";
 const _sfc_main$1 = defineComponent({
   name: "ATableModal",
   props: {
@@ -441,16 +446,15 @@ function _sfc_render$1(_ctx, _cache, $props, $setup, $data, $options) {
     renderSlot(_ctx.$slots, "default", {}, void 0, true)
   ], 544);
 }
-_sfc_main$1.render = _sfc_render$1;
-_sfc_main$1.__scopeId = "data-v-5e464449";
-var ATable_vue_vue_type_style_index_0_scoped_true_lang = "\ntable[data-v-455a3966] {\n  display: table;\n  border-collapse: var(--border-collapsed);\n	caret-color: var(--brand-color);\n}\nth[data-v-455a3966] {\n	box-sizing: border-box;\n  background-color: var(--brand-color);\n  border-width: 1px;\n  border-style: solid;\n  border-color: var(--header-border-color);\n  border-radius: 0px;\n  color: var(--header-text-color);\n}\ntr[data-v-455a3966] {\n  background-color: var(--row-color-zebra-light);\n  outline: none;\n}\ntr[data-v-455a3966]:nth-child(even) {\n  background-color: var(--row-color-zebra-dark);\n}\n";
+const ATableModal = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["render", _sfc_render$1], ["__scopeId", "data-v-07d01e97"]]);
+const ATable_vue_vue_type_style_index_0_scoped_1a51c8d8_lang = "";
 const _sfc_main = defineComponent({
   name: "ATable",
   components: {
-    ATableModal: _sfc_main$1,
-    ARow: _sfc_main$4,
-    ATableHeader: _sfc_main$2,
-    ACell: _sfc_main$3
+    ATableModal,
+    ARow,
+    ATableHeader,
+    ACell
   },
   props: {
     "columns": {
@@ -746,14 +750,15 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     ])
   ]);
 }
-_sfc_main.render = _sfc_render;
-_sfc_main.__scopeId = "data-v-455a3966";
+const ATable = /* @__PURE__ */ _export_sfc(_sfc_main, [["render", _sfc_render], ["__scopeId", "data-v-1a51c8d8"]]);
 function install(app, options) {
-  app.component("ATable", _sfc_main);
-  app.component("ATableHeader", _sfc_main$2);
-  app.component("ATableModal", _sfc_main$1);
+  app.component("ATable", ATable);
+  app.component("ATableHeader", ATableHeader);
+  app.component("ATableModal", ATableModal);
 }
-var index = {
+const index = {
   install
 };
-export { index as default };
+export {
+  index as default
+};

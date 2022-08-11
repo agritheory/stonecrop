@@ -5,7 +5,7 @@
   "pnpmOptions": {
     "useWorkspaces": true
   },
-  "nodeSupportedVersionRange": ">=14.17.0 <15.0.0", // this is v14 LTS
+  "nodeSupportedVersionRange": ">=16.13.0 <17.0.0", // this is v16 LTS
   "approvedPackagesPolicy":{
     "reviewCategories": [
       "production",
