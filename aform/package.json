@@ -27,7 +27,7 @@
     "@cypress/vue": "^3.0.0-beta.4",
     "@cypress/vite-dev-server": "~2.0.3",
     "vue-router": "^4",
-    "histoire": "~0.8.1"
+    "histoire": "~0.9.6"
   },
   "engines": {
     "node" : ">=16.13.0"
