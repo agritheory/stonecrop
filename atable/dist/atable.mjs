@@ -1,4 +1,4 @@
-import { reactive, computed, defineComponent, inject, ref, watch, resolveDynamicComponent, openBlock, createElementBlock, normalizeStyle, withKeys, withDirectives, toDisplayString, createCommentVNode, renderSlot, vShow, createElementVNode, Fragment, renderList, createTextVNode, provide, nextTick, resolveComponent, createVNode, createBlock, withCtx } from "vue";
+import { reactive, computed, defineComponent, inject, ref, resolveDynamicComponent, openBlock, createElementBlock, normalizeStyle, withKeys, withDirectives, toDisplayString, createCommentVNode, renderSlot, vShow, createElementVNode, Fragment, renderList, createTextVNode, provide, nextTick, resolveComponent, createVNode, createBlock, withCtx } from "vue";
 var getRandomValues;
 var rnds8 = new Uint8Array(16);
 function rng() {
@@ -41,7 +41,7 @@ function v4(options, buf, offset) {
   return stringify(rnds);
 }
 class TableDataStore {
-  constructor(id = void 0, columns = [], rows = [], config = {}, table = void 0, display = void 0) {
+  constructor(id, columns, rows, config, table, display) {
     this.id = id || v4();
     this.rows = rows;
     this.columns = reactive(columns);
@@ -117,7 +117,111 @@ class TableDataStore {
     }
   }
 }
-const ACell_vue_vue_type_style_index_0_scoped_49bfe190_lang = "";
+const _sfc_main$4 = defineComponent({
+  name: "ACell",
+  props: {
+    colIndex: {
+      type: Number,
+      required: true
+    },
+    rowIndex: {
+      type: Number,
+      required: true
+    },
+    tableid: {
+      type: String,
+      required: true
+    }
+  },
+  setup(props) {
+    var _a;
+    const tableData = inject(props.tableid);
+    let cellModified = ref(false);
+    const displayValue = computed(() => {
+      if (tableData.columns[props.colIndex].format) {
+        return tableData.columns[props.colIndex].format(tableData.cellData(props.colIndex, props.rowIndex));
+      } else {
+        return tableData.cellData(props.colIndex, props.rowIndex);
+      }
+    });
+    const handleInput = (event) => {
+      if (tableData.columns[props.colIndex].mask)
+        ;
+      if (tableData.columns[props.colIndex].hasOwnProperty("component")) {
+        if (resolveDynamicComponent(tableData.columns[props.colIndex].component)) {
+          const target = event.target;
+          const domRect = target.getBoundingClientRect();
+          tableData.modal.visible = true;
+          tableData.modal.colIndex = props.colIndex;
+          tableData.modal.rowIndex = props.rowIndex;
+          tableData.modal.parent = target;
+          tableData.modal.top = domRect.top + domRect.height;
+          tableData.modal.left = domRect.left;
+          tableData.modal.width = cellWidth.value;
+          tableData.modal.component = tableData.columns[props.colIndex].component;
+        }
+      }
+      return event;
+    };
+    const updateData = (event) => {
+      if (event) {
+        if (!tableData.columns[props.colIndex].component) {
+          const target = event.target;
+          tableData.setCellData(props.rowIndex, props.colIndex, target.innerHTML);
+        }
+        cellModified.value = true;
+      }
+    };
+    const textAlign = computed(() => {
+      var _a2;
+      return ((_a2 = tableData.columns[props.colIndex].align) == null ? void 0 : _a2.toLowerCase()) || "center";
+    });
+    const cellWidth = computed(() => {
+      return tableData.columns[props.colIndex].width || "40ch";
+    });
+    let currentData = "";
+    const onFocus = (event) => {
+      const target = event.target;
+      currentData = target.innerText;
+    };
+    const onChange = (event) => {
+      const target = event.target;
+      if (target.innerHTML !== currentData) {
+        currentData = target.innerText;
+        target.dispatchEvent(new Event("change"));
+        cellModified.value = true;
+      }
+    };
+    const getIndent = (colKey, indent) => {
+      if (indent && colKey === 0 && indent > 0) {
+        return indent * 1 + "ch";
+      } else {
+        return "inherit";
+      }
+    };
+    const cellStyle = {
+      ["text-align"]: textAlign,
+      ["width"]: cellWidth,
+      ["background-color"]: !cellModified.value ? "inherit" : "var(--cell-modified-color)",
+      ["font-weight"]: !cellModified.value ? "inherit" : "bold",
+      ["padding-left"]: getIndent(props.colIndex, (_a = tableData.display[props.rowIndex]) == null ? void 0 : _a.indent)
+    };
+    return {
+      cellModified,
+      cellStyle,
+      cellWidth,
+      displayValue,
+      getIndent,
+      handleInput,
+      onChange,
+      onFocus,
+      tableData,
+      textAlign,
+      updateData
+    };
+  }
+});
+const ACell_vue_vue_type_style_index_0_scoped_73b85fe5_lang = "";
 const _export_sfc = (sfc, props) => {
   const target = sfc.__vccOpts || sfc;
   for (const [key, val] of props) {
@@ -125,111 +229,14 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const _sfc_main$4 = defineComponent({
-  name: "ACell",
-  props: {
-    "colIndex": {
-      type: Number,
-      required: true,
-      default: 0
-    },
-    "rowIndex": {
-      type: Number,
-      required: true,
-      default: 0
-    },
-    "tableid": {
-      type: String,
-      required: true,
-      default: () => {
-        return void 0;
-      }
-    }
-  },
-  setup(props) {
-    const TableData = inject(props.tableid);
-    let cellModified = ref(false);
-    const displayValue = computed(() => {
-      if (TableData.columns[props.colIndex].format !== void 0) {
-        return TableData.columns[props.colIndex].format(TableData.cellData(props.colIndex, props.rowIndex));
-      } else {
-        return TableData.cellData(props.colIndex, props.rowIndex);
-      }
-    });
-    const handleInput = function(event) {
-      if (TableData.columns[props.colIndex].mask !== void 0) {
-        console.log("masking function");
-      }
-      if (TableData.columns[props.colIndex].hasOwnProperty("component")) {
-        if (resolveDynamicComponent(TableData.columns[props.colIndex].component)) {
-          const domRect = event.target.getBoundingClientRect();
-          TableData.modal.visible = true;
-          TableData.modal.colIndex = props.colIndex;
-          TableData.modal.rowIndex = props.rowIndex;
-          TableData.modal.parent = event.target;
-          TableData.modal.top = domRect.top + domRect.height;
-          TableData.modal.left = domRect.left;
-          TableData.modal.width = cellWidth;
-          TableData.modal.component = TableData.columns[props.colIndex].component;
-        }
-        console.log(event.target);
-      }
-      return event;
-    };
-    const updateData = function(event) {
-      if (event) {
-        if (TableData.columns[props.colIndex].component === void 0) {
-          TableData.setCellData(props.rowIndex, props.colIndex, event.target.innerHTML);
-        }
-        cellModified = true;
-      }
-    };
-    const textAlign = computed(() => {
-      return TableData.columns[props.colIndex].align !== void 0 ? TableData.columns[props.colIndex].align.toLowerCase() : "center";
-    });
-    const cellWidth = computed(() => {
-      return TableData.columns[props.colIndex].width !== void 0 ? TableData.columns[props.colIndex].width : "40ch";
-    });
-    let currentData = "";
-    const onFocus = function(event) {
-      currentData = event.target.innerText;
-    };
-    const onChange = function(event) {
-      if (event.target.innerHTML !== currentData) {
-        currentData = event.target.innerText;
-        event.target.dispatchEvent(new Event("change"));
-        cellModified = true;
-      }
-      console.log("cellModified", cellModified);
-    };
-    const getIndent = function(colKey, indent) {
-      if (indent && colKey === 0 && indent > 0) {
-        return indent * 1 + "ch";
-      } else {
-        return "inherit";
-      }
-    };
-    watch(cellModified, () => {
-      console.log(currentData);
-    });
-    return { TableData, updateData, displayValue, handleInput, cellModified, textAlign, cellWidth, onFocus, onChange, getIndent };
-  }
-});
 const _hoisted_1$2 = ["contenteditable", "innerHTML"];
 function _sfc_render$4(_ctx, _cache, $props, $setup, $data, $options) {
-  var _a;
   return openBlock(), createElementBlock("td", {
     ref: "colIndex + ':' + rowIndex",
-    contenteditable: _ctx.TableData.columns[_ctx.colIndex].edit === true ? true : false,
+    contenteditable: _ctx.tableData.columns[_ctx.colIndex].edit === true ? true : false,
     tabindex: 0,
     spellcheck: false,
-    style: normalizeStyle({
-      "text-align": _ctx.textAlign,
-      "width": _ctx.cellWidth,
-      "background-color": _ctx.cellModified === false ? "inherit" : "var(--cell-modified-color)",
-      "font-weight": _ctx.cellModified === false ? "inherit" : "bold",
-      "padding-left": _ctx.getIndent(_ctx.colIndex, (_a = _ctx.TableData.display[_ctx.rowIndex]) == null ? void 0 : _a.indent)
-    }),
+    style: normalizeStyle(_ctx.cellStyle),
     onFocus: _cache[0] || (_cache[0] = ($event) => _ctx.onFocus($event)),
     onPaste: _cache[1] || (_cache[1] = ($event) => _ctx.onChange($event)),
     onBlur: _cache[2] || (_cache[2] = ($event) => _ctx.onChange($event)),
@@ -248,7 +255,7 @@ function _sfc_render$4(_ctx, _cache, $props, $setup, $data, $options) {
     innerHTML: _ctx.displayValue
   }, null, 44, _hoisted_1$2);
 }
-const ACell = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["render", _sfc_render$4], ["__scopeId", "data-v-49bfe190"]]);
+const ACell = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["render", _sfc_render$4], ["__scopeId", "data-v-73b85fe5"]]);
 const _sfc_main$3 = defineComponent({
   name: "ARow",
   props: {
@@ -396,7 +403,7 @@ function _sfc_render$2(_ctx, _cache, $props, $setup, $data, $options) {
   ])) : createCommentVNode("", true);
 }
 const ATableHeader = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["render", _sfc_render$2], ["__scopeId", "data-v-c9ae228b"]]);
-const ATableModal_vue_vue_type_style_index_0_scoped_07d01e97_lang = "";
+const ATableModal_vue_vue_type_style_index_0_scoped_354d2376_lang = "";
 const _sfc_main$1 = defineComponent({
   name: "ATableModal",
   props: {
@@ -434,14 +441,14 @@ function _sfc_render$1(_ctx, _cache, $props, $setup, $data, $options) {
     renderSlot(_ctx.$slots, "default", {}, void 0, true)
   ], 544);
 }
-const ATableModal = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["render", _sfc_render$1], ["__scopeId", "data-v-07d01e97"]]);
+const ATableModal = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["render", _sfc_render$1], ["__scopeId", "data-v-354d2376"]]);
 const _sfc_main = defineComponent({
   name: "ATable",
   components: {
-    ATableModal,
+    ACell,
     ARow,
     ATableHeader,
-    ACell
+    ATableModal
   },
   props: {
     id: {
@@ -468,13 +475,14 @@ const _sfc_main = defineComponent({
     provide(tableData.id, tableData);
     const formatCell = (event, column, cellData) => {
       let colIndex;
+      const target = event == null ? void 0 : event.target;
       if (event) {
-        colIndex = event.target.cellIndex + (tableData.zeroColumn ? -1 : 0);
+        colIndex = target.cellIndex + (tableData.zeroColumn ? -1 : 0);
       } else if (column && cellData) {
         colIndex = tableData.columns.indexOf(column);
       }
       if (!column && "format" in tableData.columns[colIndex]) {
-        event.target.innerHTML = tableData.columns[colIndex].format(event.target.innerHTML);
+        target.innerHTML = tableData.columns[colIndex].format(target.innerHTML);
       } else if (cellData && "format" in column) {
         return column.format(cellData);
       } else if (cellData && column.type.toLowerCase() in ["int", "decimal", "float", "number", "percent"]) {
@@ -529,100 +537,110 @@ const _sfc_main = defineComponent({
       }
     };
     const endNav = (event) => {
-      let nextCellEl = void 0;
-      const cellIndex = event.target.cellIndex;
-      const rowIndex = event.target.parentElement.rowIndex;
-      const tableEl = event.target.parentElement.parentElement;
-      if (tableEl.rows[rowIndex - 1].cells.length - 1 === cellIndex) {
+      let $nextCell;
+      const $cell = event.target;
+      const cellIndex = $cell.cellIndex;
+      const $row = $cell.parentElement;
+      const rowIndex = $row.rowIndex;
+      const $table = $row.parentElement;
+      if ($table.rows[rowIndex - 1].cells.length - 1 === cellIndex) {
         return;
-      } else {
-        nextCellEl = tableEl.rows[rowIndex - 1].cells[tableData.columns.length - (tableData.zeroColumn === true ? 0 : 1)];
       }
-      nextCellEl.focus();
+      $nextCell = $table.rows[rowIndex - 1].cells[tableData.columns.length - (tableData.zeroColumn ? 0 : 1)];
+      $nextCell.focus();
     };
     const homeNav = (event) => {
-      let nextCellEl = void 0;
-      const cellIndex = event.target.cellIndex;
-      const rowIndex = event.target.parentElement.rowIndex;
-      const tableEl = event.target.parentElement.parentElement;
-      if (cellIndex === (tableData.config.numberedRows === true ? 1 : 0)) {
+      let $nextCell;
+      const $cell = event.target;
+      const cellIndex = $cell.cellIndex;
+      const $row = $cell.parentElement;
+      const rowIndex = $row.rowIndex;
+      const $table = $row.parentElement;
+      if (cellIndex === (tableData.config.numberedRows ? 1 : 0)) {
         return;
-      } else {
-        nextCellEl = tableEl.rows[rowIndex - 1].cells[tableData.zeroColumn === true ? 1 : 0];
       }
-      nextCellEl.focus();
+      $nextCell = $table.rows[rowIndex - 1].cells[tableData.zeroColumn ? 1 : 0];
+      $nextCell.focus();
     };
     const downCell = (event) => {
-      const cellIndex = event.target.cellIndex;
-      const rowIndex = event.target.parentElement.rowIndex;
-      const tableEl = event.target.parentElement.parentElement;
-      let cell = void 0;
-      if (tableEl.rows.length !== rowIndex) {
-        cell = tableEl.rows[rowIndex].cells[cellIndex];
+      let $nextCell;
+      const $cell = event.target;
+      const cellIndex = $cell.cellIndex;
+      const $row = $cell.parentElement;
+      const rowIndex = $row.rowIndex;
+      const $table = $row.parentElement;
+      if ($table.rows.length !== rowIndex) {
+        $nextCell = $table.rows[rowIndex].cells[cellIndex];
         if (tableData.config.treeView === true && tableData.display[rowIndex].open === false) {
           tableData.toggleRowExpand(rowIndex - 1);
         }
       } else {
-        cell = event.target;
+        $nextCell = event.target;
       }
       nextTick(() => {
-        cell.focus();
+        $nextCell.focus();
       });
     };
     const upCell = (event) => {
-      const cellIndex = event.target.cellIndex;
-      const rowIndex = event.target.parentElement.rowIndex;
-      const table = event.target.parentElement.parentElement;
-      let cell = void 0;
+      let $nextCell;
+      const $cell = event.target;
+      const cellIndex = $cell.cellIndex;
+      const $row = $cell.parentElement;
+      const rowIndex = $row.rowIndex;
+      const $table = $row.parentElement;
       if (rowIndex !== 1) {
-        cell = table.rows[rowIndex - 2].cells[cellIndex];
+        $nextCell = $table.rows[rowIndex - 2].cells[cellIndex];
         if (tableData.config.treeView === true && tableData.display[rowIndex - 2].open === false) {
           tableData.toggleRowExpand(tableData.display[rowIndex - 2].parent);
         }
       } else {
-        cell = event.target;
+        $nextCell = event.target;
       }
       nextTick(() => {
-        cell.focus();
+        $nextCell.focus();
       });
     };
     const nextCell = (event) => {
-      let nextCellEl = void 0;
-      const cellIndex = event.target.cellIndex;
-      const rowIndex = event.target.parentElement.rowIndex;
-      const tableEl = event.target.parentElement.parentElement;
-      if (tableEl.rows[rowIndex - 1].cells.length - 1 === cellIndex) {
-        if (tableEl.rows.length === rowIndex) {
-          nextCellEl = tableEl.rows[0].cells[tableData.zeroColumn === true ? 1 : 0];
+      let $nextCell;
+      const $cell = event.target;
+      const cellIndex = $cell.cellIndex;
+      const $row = $cell.parentElement;
+      const rowIndex = $row.rowIndex;
+      const $table = $row.parentElement;
+      if ($table.rows[rowIndex - 1].cells.length - 1 === cellIndex) {
+        if ($table.rows.length === rowIndex) {
+          $nextCell = $table.rows[0].cells[tableData.zeroColumn === true ? 1 : 0];
         } else {
-          nextCellEl = tableEl.rows[rowIndex].cells[tableData.zeroColumn === true ? 1 : 0];
+          $nextCell = $table.rows[rowIndex].cells[tableData.zeroColumn === true ? 1 : 0];
           if (tableData.config.treeView === true && tableData.display[rowIndex].open === false) {
             tableData.toggleRowExpand(rowIndex - 1);
           }
         }
       } else {
-        nextCellEl = tableEl.rows[rowIndex - 1].cells[cellIndex + 1];
+        $nextCell = $table.rows[rowIndex - 1].cells[cellIndex + 1];
       }
       nextTick(() => {
-        nextCellEl.focus();
+        $nextCell.focus();
       });
     };
     const prevCell = (event) => {
-      let prevCellEl = void 0;
-      const cellIndex = event.target.cellIndex;
-      const rowIndex = event.target.parentElement.rowIndex;
-      const tableEl = event.target.parentElement.parentElement;
+      let $prevCell;
+      const $cell = event.target;
+      const cellIndex = $cell.cellIndex;
+      const $row = $cell.parentElement;
+      const rowIndex = $row.rowIndex;
+      const $table = $row.parentElement;
       if (cellIndex === (tableData.zeroColumn === true ? 1 : 0)) {
         if (rowIndex !== 1) {
-          prevCellEl = tableEl.rows[rowIndex - 2].cells[tableEl.rows[rowIndex - 2].cells.length - 1];
+          $prevCell = $table.rows[rowIndex - 2].cells[$table.rows[rowIndex - 2].cells.length - 1];
           tableData.toggleRowExpand(rowIndex - 2);
         } else {
           return;
         }
       } else {
-        prevCellEl = tableEl.rows[rowIndex - 1].cells[cellIndex - 1];
+        $prevCell = $table.rows[rowIndex - 1].cells[cellIndex - 1];
       }
-      prevCellEl.focus();
+      $prevCell.focus();
     };
     const moveCursorToEnd = (target) => {
       target.focus();
@@ -630,15 +648,9 @@ const _sfc_main = defineComponent({
       document.getSelection().collapseToEnd();
     };
     const clickOutside = (event) => {
-      if (!tableData.modal.parent) {
-        return;
-      }
-      if (tableData.modal.parent.contains(event.target))
-        ;
-      else {
-        if (!tableData.modal.visible) {
-          return;
-        } else {
+      var _a;
+      if (!((_a = tableData.modal.parent) == null ? void 0 : _a.contains(event.target))) {
+        if (tableData.modal.visible) {
           tableData.modal.visible = false;
         }
       }
@@ -665,7 +677,7 @@ const _sfc_main = defineComponent({
     };
   }
 });
-const ATable_vue_vue_type_style_index_0_scoped_b3eb10a5_lang = "";
+const ATable_vue_vue_type_style_index_0_scoped_c23f2d30_lang = "";
 const _hoisted_1 = { class: "atable" };
 function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   const _component_ATableHeader = resolveComponent("ATableHeader");
@@ -734,7 +746,7 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     ])
   ]);
 }
-const ATable = /* @__PURE__ */ _export_sfc(_sfc_main, [["render", _sfc_render], ["__scopeId", "data-v-b3eb10a5"]]);
+const ATable = /* @__PURE__ */ _export_sfc(_sfc_main, [["render", _sfc_render], ["__scopeId", "data-v-c23f2d30"]]);
 function install(app, options) {
   app.component("ATable", ATable);
   app.component("ATableHeader", ATableHeader);

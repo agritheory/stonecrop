@@ -38,10 +38,8 @@ export default defineComponent({
 		}
 
 		// const cellBackgroundColor = computed(() => {
-		// 	console.log('cellBGColor')
 		// 	if(TableData.modal.parent){
 		// 		let computedstyle = window.getComputedStyle(TableData.modal.parent)
-		// 		console.log('computedstyle.backgroundColor', computedstyle.backgroundColor)
 		// 		return 'blue'
 		// 	} else {
 		// 		return 'inherit'

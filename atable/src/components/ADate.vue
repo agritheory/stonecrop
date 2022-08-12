@@ -18,7 +18,7 @@
 				tabindex="-1"
     > &lt; </td>
     <th colspan="5"> {{ monthAndYear }} </th>
-    <td 
+    <td
         @click="nextMonth"
 				tabindex="-1"
     > &gt; </td>
@@ -27,7 +27,7 @@
 			<td v-for="j in 7"
 				:key="(((i - 1) * 7) + j)"
 				:class="{
-					'todaysdate': today(current[((i - 1) * 7) +j]), 
+					'todaysdate': today(current[((i - 1) * 7) +j]),
 					'selecteddate': isSelectedDate(current[((i - 1) * 7) +j])
 				}"
 				@click="selectDate($event, ((i - 1) * 7) +j)"
@@ -47,7 +47,6 @@ export default defineComponent({
 	props: ['event', "colIndex", "rowIndex", "indent", "tableid"],
 	setup(props, context) {
 		const TableData = inject(props.tableid)
-		// console.log(TableData)
 		const todaysDate = new Date()
 		let currentMonth = ref(todaysDate.getMonth())
 		let currentYear = ref(todaysDate.getFullYear())
