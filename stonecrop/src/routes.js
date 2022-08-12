@@ -1,21 +1,21 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
 export const routes = [
-  { 
+	{
 		path: '/',
 		component: {
-			template: '<div><br>Login</div>'
+			template: '<div><br>Login</div>',
 		},
-		props: true
+		props: true,
 	},
-	{ 
+	{
 		path: '/home',
 		component: '<div><h1>HOME</h1></div>',
-		props: true
+		props: true,
 	},
-	{ 
+	{
 		path: '/404',
-		component: {template: '<h1>404</h1>'},
+		component: { template: '<h1>404</h1>' },
 	},
 	{
 		path: '/:table',
@@ -24,22 +24,21 @@ export const routes = [
 	{
 		path: '/:table/:id',
 		component: '<div><h1>FORM</h1></div>',
-	}
+	},
 ]
 
 export const router = createRouter({
 	history: createWebHistory(),
-  routes: routes,
+	routes: routes,
 })
 
 // router.beforeResolve((to, from, next) => {
 //   console.log(to, from, next)
 // })
 
-
 export const routerConfig = {
 	mode: 'history',
-  routes: routes,
+	routes: routes,
 }
 
-export default {routerConfig}
+export default { routerConfig }

@@ -1,31 +1,29 @@
 <template>
-<input
-	placeholder="test component"
-/>
+	<input placeholder="test component" />
 </template>
 
 <script>
 export default {
 	name: 'TestModalComponent',
 	props: {
-		"colIndex": {
+		colIndex: {
 			type: Number,
 			required: false,
-			default: 0
+			default: 0,
 		},
-		"rowIndex": {
+		rowIndex: {
 			type: Number,
 			required: false,
-			default: 0
+			default: 0,
 		},
-		"tableid": {
+		tableid: {
 			type: String,
-			required: false
-		}
+			required: false,
+		},
 	},
 	data() {
-		return {dummyData: ''}
-	}
+		return { dummyData: '' }
+	},
 }
 </script>
 <style scoped>
@@ -33,9 +31,9 @@ input {
 	position: relative;
 	/* width: calc(100% - 4px); */
 	border: 1px;
-  border-style: solid;
-  border-color: var(--cell-border-color);
-  border-radius: 0px;
+	border-style: solid;
+	border-color: var(--cell-border-color);
+	border-radius: 0px;
 	box-sizing: border-box;
 	background-color: inherit;
 	outline: none;

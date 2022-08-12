@@ -1,10 +1,9 @@
 <template>
-<SheetNav />
+	<SheetNav />
 </template>
 <script>
-
 export default {
-	name: "Dev",
+	name: 'Dev',
 }
 </script>
 <style>
@@ -12,7 +11,8 @@ export default {
 * {
 	margin: 0;
 }
-html, body {
+html,
+body {
 	height: 100%;
 	font-family: Arimo, sans-serif;
 	font-size: 11pt;

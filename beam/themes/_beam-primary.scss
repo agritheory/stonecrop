@@ -5,7 +5,7 @@
 	padding-bottom: 2.5em;
 	display: flex;
 	flex-direction: column;
-	flex: 1 0 auto; 
+	flex: 1 0 auto;
 }
 
 .beam__listitem {
@@ -24,7 +24,7 @@
 	font-size: 150%;
 	max-width: calc(100vw - 10ch);
 	white-space: nowrap;
-  overflow: hidden;
+	overflow: hidden;
 	text-overflow: ellipsis;
 	display: flex;
 	flex: 0 1 auto;
@@ -34,13 +34,13 @@
 	margin: 0;
 	max-width: calc(100vw - 10ch);
 	white-space: nowrap;
-  overflow: hidden;
+	overflow: hidden;
 	text-overflow: ellipsis;
 	display: flex;
 	flex: 0 1 auto;
 }
 
-.beam__listitem:focus{
+.beam__listitem:focus {
 	border-bottom: 2px solid transparent;
 	outline: 2px solid $brand-primary;
 }
@@ -52,13 +52,11 @@
 }
 .beam__itemcount span {
 	margin: 0;
-	padding:0;
+	padding: 0;
 	outline: none;
 }
 
 .beam__item_check {
-
-
 }
 
 .beam__listanchor {
@@ -81,7 +79,6 @@
 	padding-left: 1ch;
 	padding-right: 1ch;
 
-
 	.home-icon {
 		font-size: 200%;
 		border: 1px solid transparent;
@@ -95,7 +92,7 @@
 		border: 1px solid $brand-primary;
 	}
 
-	.nav-title{
+	.nav-title {
 		display: inline-block;
 		border: 1px solid transparent;
 		max-width: 33%;
@@ -124,7 +121,8 @@
 		transition: outline-offset 200ms ease;
 	}
 
-	.navbar-action:hover, .navbar-action:active {
+	.navbar-action:hover,
+	.navbar-action:active {
 		outline: 2px solid $brand-dark;
 		outline-offset: -4px;
 		transition: outline-offset 200ms ease;
@@ -136,7 +134,7 @@
 	min-height: 3em;
 	max-height: 3em;
 	color: $brand-dark;
-	position: fixed; 
+	position: fixed;
 	bottom: 0;
 	left: 0;
 	right: 0;
@@ -148,7 +146,7 @@
 	padding-left: 1ch;
 	padding-right: 1ch;
 	align-items: center;
-	
+
 	.footer-action-wrapper {
 		max-width: 100%;
 		width: 100%;
@@ -169,11 +167,10 @@
 		transition: outline-offset 200ms ease;
 	}
 
-	.footer-action:hover, .footer-action:active {
+	.footer-action:hover,
+	.footer-action:active {
 		outline: 2px solid $brand-primary;
 		outline-offset: -4px;
 		transition: outline-offset 200ms ease;
 	}
-
-
 }

@@ -15,7 +15,8 @@
 	--atable-font-family: 'Arimo', sans-serif;
 }
 
-html, body {
+html,
+body {
 	font-family: var(--atable-font-family);
 }
 

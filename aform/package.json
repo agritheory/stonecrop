@@ -1,41 +1,41 @@
 {
-  "name": "@sedum/aform",
-  "version": "0.1.0",
-  "main": "dist/aform.mjs",
-  "module": "dist/aform.mjs",
-  "umd": "dist/aform.umd.js",
-  "license": "MIT",
-  "scripts": {
-    "dev": "vite serve dev/ -c dev/vite.config.js -d",
-    "build": "vite build -c ./dev/vite.config.js -d --emptyOutDir true"
-  },
-  "files": [
-    "dist/*",
-    "src/**/*.vue"
-  ],
-  "dependencies": {
-    "uuid": "^8.3.2",
-    "vue": "^3.2.16"
-  },
-  "peerDependencies": {
-    "@sedum/atable": "workspace:*"
-  },
-  "devDependencies": {
-    "@vitejs/plugin-vue": "^3.0.1",
-    "vite": "^3.0.5",
-    "cypress": "^8.1.0",
-    "@cypress/vue": "^3.0.0-beta.4",
-    "@cypress/vite-dev-server": "~2.0.3",
-    "vue-router": "^4",
-    "histoire": "~0.9.6"
-  },
-  "engines": {
-    "node" : ">=16.13.0"
-  },
-  "exports": {
-    ".": {
-      "import": "./dist/aform.mjs",
-      "require": "./dist/aform.umd.js"
-    }
-  }
+	"name": "@sedum/aform",
+	"version": "0.1.0",
+	"main": "dist/aform.mjs",
+	"module": "dist/aform.mjs",
+	"umd": "dist/aform.umd.js",
+	"license": "MIT",
+	"scripts": {
+		"dev": "vite serve dev/ -c dev/vite.config.js -d",
+		"build": "vite build -c ./dev/vite.config.js -d --emptyOutDir true"
+	},
+	"files": [
+		"dist/*",
+		"src/**/*.vue"
+	],
+	"dependencies": {
+		"uuid": "^8.3.2",
+		"vue": "^3.2.16"
+	},
+	"peerDependencies": {
+		"@sedum/atable": "workspace:*"
+	},
+	"devDependencies": {
+		"@vitejs/plugin-vue": "^3.0.1",
+		"vite": "^3.0.5",
+		"cypress": "^8.1.0",
+		"@cypress/vue": "^3.0.0-beta.4",
+		"@cypress/vite-dev-server": "~2.0.3",
+		"vue-router": "^4",
+		"histoire": "~0.9.6"
+	},
+	"engines": {
+		"node": ">=16.13.0"
+	},
+	"exports": {
+		".": {
+			"import": "./dist/aform.mjs",
+			"require": "./dist/aform.umd.js"
+		}
+	}
 }

@@ -1,7 +1,7 @@
 {
 	"name": "@sedum/docs",
 	"dependencies": {
-	  "@cypress/vue": "~2.2.3",
-	  "@cypress/vite-dev-server": "~2.0.3"
+		"@cypress/vue": "~2.2.3",
+		"@cypress/vite-dev-server": "~2.0.3"
 	}
 }

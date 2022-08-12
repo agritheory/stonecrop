@@ -1,16 +1,12 @@
 <template>
-	<button
-		class="collapse-button"
-		:class="collapsed ? 'rotated' : 'unrotated'"
-	>×</button>
+	<button class="collapse-button" :class="collapsed ? 'rotated' : 'unrotated'">×</button>
 </template>
 <script>
 import { ref, defineComponent } from 'vue'
 
 export default defineComponent({
 	props: ['collapsed'],
-	setup(props, context){
-	}
+	setup(props, context) {},
 })
 </script>
 <style scoped>
@@ -21,7 +17,7 @@ export default defineComponent({
 	font-size: 150%;
 	text-align: center;
 	border: none;
-	margin-top: -.5rem; 
+	margin-top: -0.5rem;
 }
 .rotated {
 	transform: rotate(45deg);

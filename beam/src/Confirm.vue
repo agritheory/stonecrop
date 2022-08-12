@@ -1,28 +1,22 @@
 <template>
 	<div>
 		Would you like to continue?<br />
-		<button
-			@click="confirmModal"
-		>Yes</button>
-		<br>
-		<button
-			@click="closeModal"
-		>No</button>
+		<button @click="confirmModal">Yes</button>
+		<br />
+		<button @click="closeModal">No</button>
 	</div>
 </template>
 <script>
 export default {
-	name: "ConfirmDialog",
+	name: 'ConfirmDialog',
 	methods: {
-		confirmModal(){
+		confirmModal() {
 			this.$emit('confirmmodal')
 		},
-		closeModal(){
+		closeModal() {
 			this.$emit('closemodal')
-		}
-	}
+		},
+	},
 }
 </script>
-<style scoped>
-
-</style>
+<style scoped></style>

@@ -5,19 +5,19 @@
 // import FormView from './components/FormView.vue'
 
 // export const routes = [
-//   { 
+//   {
 // 		path: '/',
 // 		component: {
 // 			template: '<div><br>Login</div>'
 // 		},
 // 		props: true
 // 	},
-// 	{ 
+// 	{
 // 		path: '/home',
 // 		component: Home,
 // 		props: true
 // 	},
-// 	{ 
+// 	{
 // 		path: '/404',
 // 		component: {template: '<h1>404</h1>'},
 // 	},

@@ -13,18 +13,11 @@ config.app = {
 
 config.routes = {}
 config.events = {
-	server: {
-
-	},
-	client: {
-
-	},
-	common: {
-		
-	}
+	server: {},
+	client: {},
+	common: {},
 }
 config.client = stonecrophttpclient
 config.customComponents = []
-
 
 export default { config }
