@@ -1,12 +1,12 @@
 export default class Bloom {
-	constructor(events=[], hooks={}){
+	constructor(events = [], hooks = {}) {
 		this.hooks = {
-			'onAppLoad': [],
-			'beforeRouteChange': [],
-			'afterRouteChange': [],
+			onAppLoad: [],
+			beforeRouteChange: [],
+			afterRouteChange: [],
 		}
 		events.forEach(eventName => {
-			if(!this.hooks[eventName]){
+			if (!this.hooks[eventName]) {
 				this.addEvent(eventName)
 			}
 		})
@@ -16,23 +16,27 @@ export default class Bloom {
 			})
 		}
 	}
-	
-	addEvent(eventName, doctype=null){
-		if(doctype){
-			if(!this.hooks[doctype][eventName]){
+
+	addEvent(eventName, doctype = null) {
+		if (doctype) {
+			if (!this.hooks[doctype][eventName]) {
 				this.hooks[doctype][eventName] = []
-				this.prototype[doctype][eventName] = function() { this.on(`${eventName}`) }
-			}	
+				this.prototype[doctype][eventName] = function () {
+					this.on(`${eventName}`)
+				}
+			}
 		} else {
-			if(!this.hooks[eventName]){
+			if (!this.hooks[eventName]) {
 				this.hooks[eventName] = []
-				this.prototype[eventName] = function() { this.on(`${eventName}`) }
+				this.prototype[eventName] = function () {
+					this.on(`${eventName}`)
+				}
 			}
 		}
 	}
 
-	addHook(hook, func, order=-1){
-		if(this.hooks[hook]){
+	addHook(hook, func, order = -1) {
+		if (this.hooks[hook]) {
 			this.hooks[hook].splice(order, 0, func)
 		}
 	}
@@ -46,16 +50,16 @@ export default class Bloom {
 		})
 		return result
 	}
-	
-	onAppLoad(){
+
+	onAppLoad() {
 		on('onAppLoad')
 	}
 
-	beforeRouteChange(){
+	beforeRouteChange() {
 		on('beforeRouteChange')
 	}
 
-	afterRouteChange(){
+	afterRouteChange() {
 		on('afterRouteChange')
 	}
 }
