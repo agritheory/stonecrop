@@ -1,44 +1,44 @@
 {
-  "name": "@sedum/atable",
-  "version": "0.1.0",
-  "description": "",
-  "main": "dist/atable.umd.js",
-  "module": "dist/atable.mjs",
-  "umd": "dist/atable.umd.js",
-  "files": [
-    "dist/*",
-    "src/**/*.vue"
-  ],
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build --emptyOutDir true",
-    "preview": "vite preview",
-    "story:dev": "histoire dev",
-    "story:build": "histoire build",
-    "story:preview": "histoire preview"
-  },
-  "license": "MIT",
-  "dependencies": {
-    "uuid": "^8.3.2",
-    "vue": "^3.2.37"
-  },
-  "devDependencies": {
-    "@cypress/vite-dev-server": "~2.0.3",
-    "@cypress/vue": "^3.0.0-beta.4",
-    "@vitejs/plugin-vue": "^3.0.1",
-    "cypress": "^8.1.0",
-    "vite": "^3.0.5",
-    "vue-router": "^4",
-    "histoire": "~0.9.6",
-    "@histoire/plugin-vue": "~0.9.6"
-  },
-  "engines": {
-    "node" : ">=16.13.0"
-  },
-  "exports": {
-    ".": {
-      "import": "./dist/atable.mjs",
-      "require": "./dist/atable.umd.js"
-    }
-  }
+	"name": "@sedum/atable",
+	"version": "0.1.0",
+	"description": "",
+	"main": "dist/atable.umd.js",
+	"module": "dist/atable.mjs",
+	"umd": "dist/atable.umd.js",
+	"files": [
+		"dist/*",
+		"src/**/*.vue"
+	],
+	"scripts": {
+		"dev": "vite",
+		"build": "vite build --emptyOutDir true",
+		"preview": "vite preview",
+		"story:dev": "histoire dev",
+		"story:build": "histoire build",
+		"story:preview": "histoire preview"
+	},
+	"license": "MIT",
+	"dependencies": {
+		"uuid": "^8.3.2",
+		"vue": "^3.2.37"
+	},
+	"devDependencies": {
+		"@cypress/vite-dev-server": "~2.0.3",
+		"@cypress/vue": "^3.0.0-beta.4",
+		"@vitejs/plugin-vue": "^3.0.1",
+		"cypress": "^8.1.0",
+		"vite": "^3.0.5",
+		"vue-router": "^4",
+		"histoire": "~0.9.6",
+		"@histoire/plugin-vue": "~0.9.6"
+	},
+	"engines": {
+		"node": ">=16.13.0"
+	},
+	"exports": {
+		".": {
+			"import": "./dist/atable.mjs",
+			"require": "./dist/atable.umd.js"
+		}
+	}
 }

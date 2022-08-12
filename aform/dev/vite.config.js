@@ -1,21 +1,21 @@
 import vue from '@vitejs/plugin-vue'
-import { resolve} from 'path'
+import { resolve } from 'path'
 
 module.exports = {
 	build: {
 		lib: {
 			entry: resolve(__dirname, '../src/index.js'),
-			name: 'AForm'
+			name: 'AForm',
 		},
 		rollupOptions: {
 			external: ['vue'],
 			output: {
 				globals: {
-					vue: 'Vue'
-				}
-			}
+					vue: 'Vue',
+				},
+			},
 		},
-		outDir: './dist/'
+		outDir: './dist/',
 	},
-	plugins: [vue()]
+	plugins: [vue()],
 }

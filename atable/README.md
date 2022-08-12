@@ -1,32 +1,36 @@
 # ATable
 
 ## User Guide
+
 <details><summary>Key navigation</summary>
 
-|   |   |
-|:--|:--|
-|Enter|downCell|
-|Tab|nextCell|
-|Shift + Enter|upCell|
-|Shift+ Tab|prevCell|
-|&#8592; | prevCell|
-|&#8593;| upCell|
-|&#8594;| nextCell|
-|&#8595;| downCell|
-|Home | lastCell|
-|End | firstCell|
+|               |           |
+| :------------ | :-------- |
+| Enter         | downCell  |
+| Tab           | nextCell  |
+| Shift + Enter | upCell    |
+| Shift+ Tab    | prevCell  |
+| &#8592;       | prevCell  |
+| &#8593;       | upCell    |
+| &#8594;       | nextCell  |
+| &#8595;       | downCell  |
+| Home          | lastCell  |
+| End           | firstCell |
+
 </details>
 
 ## Column API
+
 The primary API for ATable is the column object.
- - title: String
- - name: required, a String reference to the column, must follow rules for valid JS variable naming
- - type: String, one of the valid data types, full ist below
- - align: String: 'left', 'right' or 'center'
- - edit: Boolean, indicates if the field is editable
- - width: String, default of '40ch', used to indicate the width of the cell
- - mask: a custom mask for the field, serveral are provided with types by default
- - options: used with 'Select', 'Currency', and 'Quantity' fields detailed below
+
+- title: String
+- name: required, a String reference to the column, must follow rules for valid JS variable naming
+- type: String, one of the valid data types, full ist below
+- align: String: 'left', 'right' or 'center'
+- edit: Boolean, indicates if the field is editable
+- width: String, default of '40ch', used to indicate the width of the cell
+- mask: a custom mask for the field, serveral are provided with types by default
+- options: used with 'Select', 'Currency', and 'Quantity' fields detailed below
 
 ```js
           {
@@ -59,7 +63,8 @@ The primary API for ATable is the column object.
 
 ## Column Data Types
 
-V 0.1: 
+V 0.1:
+
 - Data/ Text (unformatted text)
 - Number (can be backed by int, decimal or float)
 - Hyperlink
@@ -70,8 +75,8 @@ V 0.1:
 - Select/ Datalist/ Combobox
 
 V > 0.2:
-- Rich Text Editor 
+
+- Rich Text Editor
 - Image
 - File
 - Diagram
-

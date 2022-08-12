@@ -5,7 +5,7 @@ import ListAnchor from './ListAnchor.vue'
 import ItemCount from './ItemCount.vue'
 import ItemCheck from './ItemCheck.vue'
 import ScanInput from './ScanInput.vue'
-import ActionFooter from "./ActionFooter.vue"
+import ActionFooter from './ActionFooter.vue'
 import BeamModal from './BeamModal.vue'
 import BeamModalOutlet from './BeamModalOutlet.vue'
 import ConfirmDialog from './Confirm.vue'
@@ -22,46 +22,46 @@ const components = [
 	ActionFooter,
 	BeamModal,
 	ConfirmDialog,
-	BeamModalOutlet
+	BeamModalOutlet,
 ]
 
 const install = function (Vue, opts = {}) {
 	Vue.use(PortalVue)
-	components.forEach((component) => {
+	components.forEach(component => {
 		Vue.component(component.name, component)
 	})
 }
 
-if (typeof window !== "undefined" && window.Vue) {
-  install(window.Vue)
+if (typeof window !== 'undefined' && window.Vue) {
+	install(window.Vue)
 }
 
 export {
-  Navbar,
-  ListView,
-  ListItem,
-  ListAnchor,
-  ItemCount,
-  ItemCheck,
-  ScanInput,
-  ActionFooter,
+	Navbar,
+	ListView,
+	ListItem,
+	ListAnchor,
+	ItemCount,
+	ItemCheck,
+	ScanInput,
+	ActionFooter,
 	BeamModal,
 	ConfirmDialog,
-	BeamModalOutlet
-};
+	BeamModalOutlet,
+}
 
 export default {
-  version: "0.1.0",
-  install,
+	version: '0.1.0',
+	install,
 	Navbar,
-  ListView,
-  ListItem,
-  ListAnchor,
-  ItemCount,
-  ItemCheck,
-  ScanInput,
-  ActionFooter,
+	ListView,
+	ListItem,
+	ListAnchor,
+	ItemCount,
+	ItemCheck,
+	ScanInput,
+	ActionFooter,
 	BeamModal,
 	ConfirmDialog,
-	BeamModalOutlet
+	BeamModalOutlet,
 }

@@ -1,31 +1,31 @@
 {
-  "name": "@sedum/desktop",
-  "version": "0.1.0",
-  "description": "desktop specific components for Stonecrop UI",
-  "main": "index.js",
-  "license": "MIT",
-  "dependencies": {
-    "portal-vue": "~3.0.0-beta.0",
-    "vue": "^3.2.16",
-    "vue-router": "^4"
-  },
-  "devDependencies": {
-    "@vitejs/plugin-vue": "^3.0.1",
-    "vite": "^3.0.5",
-    "vue-template-compiler": "^2.6.14",
-    "histoire": "~0.9.6"
-  },
-  "scripts": {
-    "dev": "vite serve dev/ -c dev/vite.config.js -d",
-    "build": "vite build dev/ -c dev/vite.config.js -d --emptyOutDir true"
-  },
-  "exports": {
-    ".": {
-      "import": "./dist/desktop.mjs",
-      "require": "./dist/desktop.umd.js"
-    }
-  },
-  "files": [
-    "dist/*.css"
-  ]
+	"name": "@sedum/desktop",
+	"version": "0.1.0",
+	"description": "desktop specific components for Stonecrop UI",
+	"main": "index.js",
+	"license": "MIT",
+	"dependencies": {
+		"portal-vue": "~3.0.0-beta.0",
+		"vue": "^3.2.16",
+		"vue-router": "^4"
+	},
+	"devDependencies": {
+		"@vitejs/plugin-vue": "^3.0.1",
+		"vite": "^3.0.5",
+		"vue-template-compiler": "^2.6.14",
+		"histoire": "~0.9.6"
+	},
+	"scripts": {
+		"dev": "vite serve dev/ -c dev/vite.config.js -d",
+		"build": "vite build dev/ -c dev/vite.config.js -d --emptyOutDir true"
+	},
+	"exports": {
+		".": {
+			"import": "./dist/desktop.mjs",
+			"require": "./dist/desktop.umd.js"
+		}
+	},
+	"files": [
+		"dist/*.css"
+	]
 }

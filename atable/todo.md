@@ -1,9 +1,10 @@
 # ATable (component)
 
 ### Version 0.1
+
 - ⬢ Row Number => ignore in navigation
 - ⬢ Bind data back to parent
-- ⬢ Tab, Enter, Shift+Tab, Shift+Enter 
+- ⬢ Tab, Enter, Shift+Tab, Shift+Enter
 - ⬢ Home and End key navigation
 - ⬢ Arrows key navigation
 - ⬢ "Required" cell formatting and API
@@ -11,6 +12,7 @@
 - ⬢ Refactor CSS to variables and create a style guide
 
 ### Version 0.2
+
 - ⬡ Custom collection inputs:
   - ⬢ Create a new element and then destroy it
   - ⬢ Prevent default on input - only allow editing in modal context
@@ -29,6 +31,7 @@
 - ⬢ Generic masking (function in column object)
 
 ### Version 0.3
+
 - ⬡ Better sandbox app with multiple styles and data sets
   - ⬡ Financials (excel)
   - ⬡ Inbox (dark)
@@ -48,6 +51,7 @@
 - ⬡ Date Range (don't build it 'til I need it)
 
 ### Later versions
+
 - ⬡ Copy / paste
 - ⬡ Pagination
 - ⬡ Collapsible row groups
@@ -55,6 +59,7 @@
   - ⬡ Indent/ nest
 
 ### Framework
+
 - ⬡ Expand, Insert, Delete, Duplicate, Drag with icons (un-tabbable column)
 - ⬡ Skeleton
 - ⬡ Drag-able rows
@@ -63,6 +68,7 @@
   - ⬡ Check box/ bulk actions
 
 ### Application components
+
 - ⬢ Split Input (Quantity/ Currency)
 - ⬡ Map (multiple layers)
 - ⬡ Note/ Editorjs component
@@ -70,12 +76,13 @@
 - ⬡ Contact
 
 ### Styling
+
 - ⬡ Check these defaults for color contrast https://webaim.org/resources/contrastchecker/
 - ⬡ Create demo page with a top nav bar with these styles
- - ⬢ Angler (Gold + Gotham)
- - ⬢ Parsimony (turquoise/ rgb(63, 178, 191) + Expressway)
- - ⬢ AgriTheory/ TimeKeeper (Rust + Muli, gray background)
- - ⬢ Lawg (Blues and greens, mix in some serifs)
- - ⬢ Excel styling for the plebians
- - ⬢ Ubuntu (purples and oranges with Ubuntu font, gradient background) 
- - ⬢ Dark
+- ⬢ Angler (Gold + Gotham)
+- ⬢ Parsimony (turquoise/ rgb(63, 178, 191) + Expressway)
+- ⬢ AgriTheory/ TimeKeeper (Rust + Muli, gray background)
+- ⬢ Lawg (Blues and greens, mix in some serifs)
+- ⬢ Excel styling for the plebians
+- ⬢ Ubuntu (purples and oranges with Ubuntu font, gradient background)
+- ⬢ Dark

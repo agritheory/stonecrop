@@ -1,7 +1,5 @@
 <template>
-	<dialog>
-		
-	</dialog>
+	<dialog></dialog>
 </template>
 <script>
 import { defineComponent } from 'vue'

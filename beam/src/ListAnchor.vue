@@ -7,14 +7,12 @@
 export default {
 	name: 'ListAnchor',
 	props: {
-    to: {
-      type: String,
+		to: {
+			type: String,
 			required: false,
-			default: ""
-    },
-	}
+			default: '',
+		},
+	},
 }
 </script>
-<style scoped lang="scss">
-
-</style>
+<style scoped lang="scss"></style>

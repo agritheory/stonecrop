@@ -1,11 +1,5 @@
 <template>
-	<div
-		ref="amodal"
-		class="amodal"
-		tabindex="-1"
-		@click="handleInput"
-		@input="handleInput"
-	>
+	<div ref="amodal" class="amodal" tabindex="-1" @click="handleInput" @input="handleInput">
 		<slot />
 	</div>
 </template>
@@ -13,27 +7,27 @@
 import { defineComponent, inject, computed } from 'vue'
 
 export default defineComponent({
-	name: "ATableModal",
+	name: 'ATableModal',
 	props: {
-		"colIndex": {
+		colIndex: {
 			type: Number,
 			required: false,
-			default: 0
+			default: 0,
 		},
-		"rowIndex": {
+		rowIndex: {
 			type: Number,
 			required: false,
-			default: 0
+			default: 0,
 		},
-		"tableid": {
+		tableid: {
 			type: String,
-			required: false
-		}
+			required: false,
+		},
 	},
-	setup(props){
+	setup(props) {
 		const TableData = inject(props.tableid)
 
-		function handleInput(event){
+		function handleInput(event) {
 			event.stopPropagation()
 		}
 
@@ -48,9 +42,8 @@ export default defineComponent({
 		// 	}
 		// })
 
-
 		return { TableData, handleInput }
-	}
+	},
 })
 </script>
 <style scoped>

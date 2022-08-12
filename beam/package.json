@@ -1,36 +1,36 @@
 {
-  "name": "@sedum/beam",
-  "version": "0.1.0",
-  "license": "MIT",
-  "scripts": {
-    "dev": "vite serve dev/ -c dev/vite.config.js -d",
-    "build": "vite build dev/ -c dev/vite.config.js -d",
-    "serve": "vite preview"
-  },
-  "dependencies": {
-    "portal-vue": "~3.0.0-beta.0",
-    "vue": "^3.2.16"
-  },
-  "devDependencies": {
-    "@vitejs/plugin-vue": "^3.0.1",
-    "vite": "^3.0.5",
-    "cypress": "^8.1.0",
-    "@cypress/vue": "^3.0.0-beta.4",
-    "@cypress/vite-dev-server": "~2.0.3",
-    "vue-router": "^4"
-  },
-  "engines": {
-    "node" : ">=16.13.0"
-  },
-  "files": [
-    "dist"
-  ],
-  "main": "./dist/beam-ui.umd.js",
-  "module": "./dist/beam-ui.es.js",
-  "exports": {
-    ".": {
-      "import": "./dist/beam-ui.es.js",
-      "require": "./dist/beam-ui.umd.js"
-    }
-  }
+	"name": "@sedum/beam",
+	"version": "0.1.0",
+	"license": "MIT",
+	"scripts": {
+		"dev": "vite serve dev/ -c dev/vite.config.js -d",
+		"build": "vite build dev/ -c dev/vite.config.js -d",
+		"serve": "vite preview"
+	},
+	"dependencies": {
+		"portal-vue": "~3.0.0-beta.0",
+		"vue": "^3.2.16"
+	},
+	"devDependencies": {
+		"@vitejs/plugin-vue": "^3.0.1",
+		"vite": "^3.0.5",
+		"cypress": "^8.1.0",
+		"@cypress/vue": "^3.0.0-beta.4",
+		"@cypress/vite-dev-server": "~2.0.3",
+		"vue-router": "^4"
+	},
+	"engines": {
+		"node": ">=16.13.0"
+	},
+	"files": [
+		"dist"
+	],
+	"main": "./dist/beam-ui.umd.js",
+	"module": "./dist/beam-ui.es.js",
+	"exports": {
+		".": {
+			"import": "./dist/beam-ui.es.js",
+			"require": "./dist/beam-ui.umd.js"
+		}
+	}
 }

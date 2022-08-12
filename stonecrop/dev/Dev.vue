@@ -3,12 +3,12 @@
 </template>
 <script>
 export default {
-name: 'Dev',
-data() {
-	return {
-		schema: {},
-	}
-},
+	name: 'Dev',
+	data() {
+		return {
+			schema: {},
+		}
+	},
 }
 </script>
 

@@ -18,6 +18,5 @@ module.exports = {
 		outDir: '../dist/',
 	},
 	plugins: [vue()],
-	optimizeDeps: { exclude: ['@sedum/atable', '@sedum/aform'],
-	},
-};
+	optimizeDeps: { exclude: ['@sedum/atable', '@sedum/aform'] },
+}
