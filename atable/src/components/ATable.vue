@@ -20,8 +20,8 @@
 					:rowIndex="rowIndex"
 					:colIndex="colIndex + (tableData.zeroColumn ? 0 : -1)"
 					:style="{
-						'text-align': col?.align?.toLowerCase() || 'center',
-						'min-width': col?.width || '40ch',
+						textAlign: col?.align?.toLowerCase() || 'center',
+						minWidth: col?.width || '40ch',
 					}" />
 			</ARow>
 		</tbody>
@@ -34,7 +34,7 @@
 			:style="{
 				left: tableData.modal.left + 'px',
 				top: tableData.modal.top + 'px',
-				'max-width': tableData.modal.width + 'px',
+				maxWidth: tableData.modal.width + 'px',
 			}">
 			<component
 				:is="tableData.modal.component"
@@ -49,7 +49,7 @@
 import { v4 } from 'uuid'
 import { defineComponent, nextTick, PropType, provide } from 'vue'
 
-import { TableColumn, TableRow } from 'types'
+import { TableColumn, TableConfig, TableRow } from 'types'
 import TableDataStore from '.'
 import ACell from './ACell.vue'
 import ARow from './ARow.vue'
@@ -77,7 +77,7 @@ export default defineComponent({
 			default: [],
 		},
 		config: {
-			type: Object,
+			type: Object as PropType<TableConfig>,
 			default: {},
 		},
 		tableid: {
@@ -102,7 +102,7 @@ export default defineComponent({
 				target.innerHTML = tableData.columns[colIndex].format(target.innerHTML)
 			} else if (cellData && 'format' in column) {
 				return column.format(cellData)
-			} else if (cellData && column.type.toLowerCase() in ['int', 'decimal', 'float', 'number', 'percent'])  {
+			} else if (cellData && column.type.toLowerCase() in ['int', 'decimal', 'float', 'number', 'percent']) {
 				return cellData
 				// TODO: number formatting
 			} else {
@@ -124,7 +124,7 @@ export default defineComponent({
 			event.shiftKey ? upCell(event) : downCell(event)
 		}
 
-		const tabNav = (event: KeyboardEvent) =>  {
+		const tabNav = (event: KeyboardEvent) => {
 			event.preventDefault()
 			event.stopPropagation()
 			event.shiftKey ? prevCell(event) : nextCell(event)
@@ -165,41 +165,36 @@ export default defineComponent({
 		const endNav = (event: KeyboardEvent) => {
 			const $cell = event.target as HTMLTableCellElement
 			const cellIndex = $cell.cellIndex
-
 			const $row = $cell.parentElement as HTMLTableRowElement
 			const rowIndex = $row.rowIndex
 			const $table = $row.parentElement as HTMLTableElement
 
-			if ($table.rows[rowIndex - 1].cells.length - 1 === cellIndex) {
+			const $lastRow = $table.rows[rowIndex - 1]
+			if ($lastRow.cells.length - 1 !== cellIndex) {
 				// last column
-				return
+				const $nextCell = $lastRow.cells[tableData.columns.length - (tableData.zeroColumn ? 0 : 1)] // last cell
+				$nextCell.focus()
 			}
-
-			const $nextCell = $table.rows[rowIndex - 1].cells[tableData.columns.length - (tableData.zeroColumn ? 0 : 1)] // last cell
-			$nextCell.focus()
 		}
 
 		const homeNav = (event: KeyboardEvent) => {
 			const $cell = event.target as HTMLTableCellElement
 			const cellIndex = $cell.cellIndex
-
 			const $row = $cell.parentElement as HTMLTableRowElement
 			const rowIndex = $row.rowIndex
 			const $table = $row.parentElement as HTMLTableElement
 
-			if (cellIndex === (tableData.config.numberedRows ? 1 : 0)) {
+			const $lastRow = $table.rows[rowIndex - 1]
+			if (cellIndex !== (tableData.config.numberedRows ? 1 : 0)) {
 				// TODO: zeroColumn // first column
-				return
+				const $nextCell = $lastRow.cells[tableData.zeroColumn ? 1 : 0] // last cell
+				$nextCell.focus()
 			}
-
-			const $nextCell = $table.rows[rowIndex - 1].cells[tableData.zeroColumn ? 1 : 0] // last cell
-			$nextCell.focus()
 		}
 
 		const downCell = (event: KeyboardEvent) => {
 			const $cell = event.target as HTMLTableCellElement
 			const cellIndex = $cell.cellIndex
-
 			const $row = $cell.parentElement as HTMLTableRowElement
 			const rowIndex = $row.rowIndex
 			const $table = $row.parentElement as HTMLTableElement
@@ -222,7 +217,6 @@ export default defineComponent({
 		const upCell = (event: KeyboardEvent) => {
 			const $cell = event.target as HTMLTableCellElement
 			const cellIndex = $cell.cellIndex
-
 			const $row = $cell.parentElement as HTMLTableRowElement
 			const rowIndex = $row.rowIndex
 			const $table = $row.parentElement as HTMLTableElement
@@ -244,13 +238,13 @@ export default defineComponent({
 		const nextCell = (event: KeyboardEvent) => {
 			const $cell = event.target as HTMLTableCellElement
 			const cellIndex = $cell.cellIndex
-
 			const $row = $cell.parentElement as HTMLTableRowElement
 			const rowIndex = $row.rowIndex
 			const $table = $row.parentElement as HTMLTableElement
 
 			let $nextCell: HTMLTableCellElement
-			if ($table.rows[rowIndex - 1].cells.length - 1 === cellIndex) {
+			const $lastRow = $table.rows[rowIndex - 1]
+			if ($lastRow.cells.length - 1 === cellIndex) {
 				// last column
 				if ($table.rows.length === rowIndex) {
 					$nextCell = $table.rows[0].cells[tableData.zeroColumn ? 1 : 0] // go to top left cell
@@ -263,7 +257,7 @@ export default defineComponent({
 					}
 				}
 			} else {
-				$nextCell = $table.rows[rowIndex - 1].cells[cellIndex + 1] // next cell
+				$nextCell = $lastRow.cells[cellIndex + 1] // next cell
 			}
 
 			nextTick(() => {
@@ -274,17 +268,18 @@ export default defineComponent({
 		const prevCell = (event: KeyboardEvent) => {
 			const $cell = event.target as HTMLTableCellElement
 			const cellIndex = $cell.cellIndex
-
 			const $row = $cell.parentElement as HTMLTableRowElement
 			const rowIndex = $row.rowIndex
 			const $table = $row.parentElement as HTMLTableElement
 
 			let $prevCell: HTMLTableCellElement
+			const $lastRow = $table.rows[rowIndex - 1]
+			const $secondLastRow = $table.rows[rowIndex - 2]
 			if (cellIndex === (tableData.zeroColumn ? 1 : 0)) {
 				// first column
 				if (rowIndex !== 1) {
 					// not top row, exclude headers
-					$prevCell = $table.rows[rowIndex - 2].cells[$table.rows[rowIndex - 2].cells.length - 1]
+					$prevCell = $secondLastRow.cells[$secondLastRow.cells.length - 1]
 					// toggleRowExpand(event, rowIndex - 2)
 					tableData.toggleRowExpand(rowIndex - 2)
 				} else {
@@ -292,7 +287,7 @@ export default defineComponent({
 					return
 				}
 			} else {
-				$prevCell = $table.rows[rowIndex - 1].cells[cellIndex - 1] // previous cell
+				$prevCell = $lastRow.cells[cellIndex - 1] // previous cell
 			}
 
 			$prevCell.focus()
@@ -334,7 +329,7 @@ export default defineComponent({
 			upCell,
 			v4,
 		}
-	},,
+	},
 })
 </script>
 

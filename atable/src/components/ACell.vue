@@ -1,7 +1,7 @@
 <template>
 	<td
 		ref="colIndex + ':' + rowIndex"
-		:contenteditable="tableData.columns[colIndex].edit === true ? true : false"
+		:contenteditable="tableData.columns[colIndex].edit"
 		:tabindex="0"
 		:spellcheck="false"
 		:style="cellStyle"
@@ -22,7 +22,7 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, inject, ref, resolveDynamicComponent, StyleValue } from 'vue'
+import { computed, CSSProperties, defineComponent, inject, ref, resolveDynamicComponent } from 'vue'
 import TableDataStore from '.'
 
 export default defineComponent({
@@ -47,10 +47,11 @@ export default defineComponent({
 		let cellModified = ref(false)
 
 		const displayValue = computed(() => {
+			const data = tableData.cellData(props.colIndex, props.rowIndex)
 			if (tableData.columns[props.colIndex].format) {
-				return tableData.columns[props.colIndex].format(tableData.cellData(props.colIndex, props.rowIndex))
+				return tableData.columns[props.colIndex].format(data)
 			} else {
-				return tableData.cellData(props.colIndex, props.rowIndex)
+				return data
 			}
 		})
 
@@ -89,7 +90,7 @@ export default defineComponent({
 		}
 
 		const textAlign = computed(() => {
-			return tableData.columns[props.colIndex].align?.toLowerCase() || 'center'
+			return tableData.columns[props.colIndex].align || 'center'
 		})
 
 		const cellWidth = computed(() => {
@@ -119,12 +120,12 @@ export default defineComponent({
 			}
 		}
 
-		const cellStyle: StyleValue = {
-			['text-align' as any]: textAlign,
-			['width' as any]: cellWidth,
-			['background-color' as any]: !cellModified.value ? 'inherit' : 'var(--cell-modified-color)',
-			['font-weight' as any]: !cellModified.value ? 'inherit' : 'bold',
-			['padding-left' as any]: getIndent(props.colIndex, tableData.display[props.rowIndex]?.indent),
+		const cellStyle: CSSProperties = {
+			textAlign: textAlign.value,
+			width: cellWidth.value,
+			backgroundColor: !cellModified.value ? 'inherit' : 'var(--cell-modified-color)',
+			fontWeight: !cellModified.value ? 'inherit' : 'bold',
+			paddingLeft: getIndent(props.colIndex, tableData.display[props.rowIndex]?.indent),
 		}
 
 		return {

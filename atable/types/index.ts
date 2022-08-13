@@ -1,7 +1,7 @@
 export type TableColumn = {
 	name: string
 
-	align?: string
+	align?: CanvasTextAlign
 	component?: string
 	edit?: boolean
 	label?: string
@@ -18,16 +18,19 @@ export type TableConfig = {
 }
 
 export type TableDisplay = {
-	default?: {
-		[key: string]: any
-		modified: boolean
-	}
+	childrenOpen?: boolean
+	indent?: number
+	isParent?: boolean
+	isRoot?: boolean
+	modified?: boolean
+	open?: boolean
+	parent?: number
 }
 
 export type TableRow = {
-	[key: string]: string
-	indent?: string
-	parent?: string
+	[key: string]: any
+	indent?: number
+	parent?: number
 }
 
 export type TableModal = {

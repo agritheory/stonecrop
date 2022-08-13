@@ -1,4 +1,4 @@
-import { defineComponent as b, resolveComponent as f, openBlock as i, createElementBlock as a, createElementVNode as o, withKeys as l, normalizeClass as S, normalizeStyle as s, createVNode as u, withCtx as m, withDirectives as k, vModelText as V, Fragment as w, renderList as C, createTextVNode as $, toDisplayString as I, pushScopeId as B, popScopeId as H } from "vue";
+import { defineComponent as b, resolveComponent as y, openBlock as i, createElementBlock as a, createElementVNode as o, withKeys as l, normalizeClass as S, normalizeStyle as s, createVNode as u, withCtx as m, withDirectives as k, vModelText as V, Fragment as w, renderList as C, createTextVNode as $, toDisplayString as I, pushScopeId as B, popScopeId as H } from "vue";
 const h = (t, e) => {
   const r = t.__vccOpts || t;
   for (const [d, p] of e)
@@ -41,7 +41,7 @@ const h = (t, e) => {
   mounted() {
     this.breadcrumbs = this.$props.breadcrumbs || [];
   }
-}), g = (t) => (B("data-v-982d980c"), t = t(), H(), t), z = { class: "tabs" }, N = { tabindex: "0" }, K = /* @__PURE__ */ g(() => /* @__PURE__ */ o("svg", {
+}), g = (t) => (B("data-v-41651c7f"), t = t(), H(), t), z = { class: "tabs" }, N = { tabindex: "0" }, K = /* @__PURE__ */ g(() => /* @__PURE__ */ o("svg", {
   version: "1.1",
   id: "Capa_1",
   xmlns: "http://www.w3.org/2000/svg",
@@ -55,14 +55,14 @@ const h = (t, e) => {
   /* @__PURE__ */ o("g", null, [
     /* @__PURE__ */ o("path", {
       style: { fill: "#010002" },
-      d: `M351.191,401.923H72.901c-4.487,0-8.129-3.633-8.129-8.129V242.262l-56.664-0.114\r
-								c-3.284-0.008-6.243-1.992-7.495-5.023c-1.252-3.04-0.553-6.527,1.764-8.852L206.104,24.546c1.853-1.845,4.503-2.666,7.047-2.276\r
-								c2.414,0.39,4.511,1.845,5.731,3.942l47.43,47.43V58.499c0-4.487,3.633-8.129,8.129-8.129h47.755c4.495,0,8.129,3.642,8.129,8.129\r
-								v79.156l91.39,91.398c2.325,2.325,3.024,5.828,1.764,8.868c-1.26,3.032-4.227,5.007-7.511,5.007c-0.008,0-0.008,0-0.016,0\r
-								l-56.64-0.114v150.98C359.32,398.29,355.686,401.923,351.191,401.923z M81.03,385.666h262.033V234.67\r
-								c0-2.162,0.854-4.235,2.39-5.755c1.528-1.52,3.585-2.374,5.739-2.374c0.008,0,0.008,0,0.016,0l45.105,0.089l-79.855-79.863\r
-								c-1.528-1.528-2.382-3.593-2.382-5.747V66.628h-31.498v26.645c0,3.284-1.975,6.251-5.015,7.511\r
-								c-3.032,1.268-6.527,0.569-8.86-1.764l-57.038-57.038l-183.95,183.95l45.203,0.089c4.487,0.008,8.112,3.642,8.112,8.129\r
+      d: `M351.191,401.923H72.901c-4.487,0-8.129-3.633-8.129-8.129V242.262l-56.664-0.114
+								c-3.284-0.008-6.243-1.992-7.495-5.023c-1.252-3.04-0.553-6.527,1.764-8.852L206.104,24.546c1.853-1.845,4.503-2.666,7.047-2.276
+								c2.414,0.39,4.511,1.845,5.731,3.942l47.43,47.43V58.499c0-4.487,3.633-8.129,8.129-8.129h47.755c4.495,0,8.129,3.642,8.129,8.129
+								v79.156l91.39,91.398c2.325,2.325,3.024,5.828,1.764,8.868c-1.26,3.032-4.227,5.007-7.511,5.007c-0.008,0-0.008,0-0.016,0
+								l-56.64-0.114v150.98C359.32,398.29,355.686,401.923,351.191,401.923z M81.03,385.666h262.033V234.67
+								c0-2.162,0.854-4.235,2.39-5.755c1.528-1.52,3.585-2.374,5.739-2.374c0.008,0,0.008,0,0.016,0l45.105,0.089l-79.855-79.863
+								c-1.528-1.528-2.382-3.593-2.382-5.747V66.628h-31.498v26.645c0,3.284-1.975,6.251-5.015,7.511
+								c-3.032,1.268-6.527,0.569-8.86-1.764l-57.038-57.038l-183.95,183.95l45.203,0.089c4.487,0.008,8.112,3.642,8.112,8.129
 								C81.03,234.149,81.03,385.666,81.03,385.666z`
     })
   ])
@@ -78,7 +78,7 @@ const h = (t, e) => {
   D
 ];
 function x(t, e, r, d, p, v) {
-  const c = f("router-link");
+  const c = y("router-link");
   return i(), a("footer", null, [
     o("ul", z, [
       o("li", {
@@ -132,8 +132,8 @@ function x(t, e, r, d, p, v) {
           ])
         ])
       ], 36),
-      (i(!0), a(w, null, C(t.breadcrumbs, (n, y) => (i(), a("li", {
-        key: y,
+      (i(!0), a(w, null, C(t.breadcrumbs, (n, f) => (i(), a("li", {
+        key: f,
         style: s({ display: t.breadcrumbsVisibile ? "block" : "none" })
       }, [
         u(c, {
@@ -149,7 +149,7 @@ function x(t, e, r, d, p, v) {
     ])
   ]);
 }
-const E = /* @__PURE__ */ h(T, [["render", x], ["__scopeId", "data-v-982d980c"]]), L = b({
+const E = /* @__PURE__ */ h(T, [["render", x], ["__scopeId", "data-v-41651c7f"]]), L = b({
   name: "CommandPalette",
   setup() {
     return {};

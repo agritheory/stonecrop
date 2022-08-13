@@ -1,50 +1,49 @@
 <template>
 	<thead v-if="columns.length">
 		<tr tabindex="-1">
-			<th v-if="TableData.zeroColumn" :style="{ 'min-width': TableData.numberedRowWidth }" />
+			<th v-if="tableData.zeroColumn" :style="{ minWidth: tableData.numberedRowWidth.value }" />
 			<th
 				v-for="(column, colKey) in columns"
 				:key="colKey"
 				tabindex="-1"
 				:style="{
-					'text-align': column.align !== undefined ? column.align.toLowerCase() : 'center',
-					'min-width': column.width !== undefined ? column.width : '40ch',
+					textAlign: column.align?.toLowerCase() || 'center',
+					minWidth: column.width || '40ch',
 				}">
-				<slot>{{ column.label !== undefined ? column.label : String.fromCharCode(colKey + 97).toUpperCase() }}</slot>
+				<slot>{{ column.label || String.fromCharCode(colKey + 97).toUpperCase() }}</slot>
 			</th>
 		</tr>
 	</thead>
 </template>
-<script>
-import { defineComponent, inject } from 'vue'
+
+<script lang="ts">
+import { defineComponent, inject, PropType } from 'vue'
+
+import { TableColumn, TableConfig } from 'types'
+import TableDataStore from '.'
 
 export default defineComponent({
 	name: 'ATableHeader',
 	props: {
 		columns: {
-			type: Array,
+			type: Array as PropType<TableColumn[]>,
 			required: true,
 		},
 		config: {
-			type: Object,
-			default: () => {
-				return {}
-			},
+			type: Object as PropType<TableConfig>,
+			default: {},
 		},
 		tableid: {
 			type: String,
-			required: true,
-			default: () => {
-				return undefined
-			},
 		},
 	},
 	setup(props) {
-		const TableData = inject(props.tableid)
-		return { TableData }
+		const tableData = inject<TableDataStore>(props.tableid)
+		return { tableData }
 	},
 })
 </script>
+
 <style scoped>
 th {
 	background-color: var(--brand-color);

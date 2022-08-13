@@ -9,8 +9,7 @@ export default class TableDataStore {
 	columns: TableColumn[]
 	config: TableConfig
 	table: { [key: string]: any }
-	// TODO: (typing) what is the actual display type?
-	display: TableDisplay | TableDisplay['default']
+	display: TableDisplay[]
 	modal: TableModal
 
 	constructor(
@@ -19,7 +18,7 @@ export default class TableDataStore {
 		rows?: TableRow[],
 		config?: TableConfig,
 		table?: { [key: string]: any },
-		display?: TableDisplay
+		display?: TableDisplay[]
 	) {
 		this.id = id || v4()
 		this.rows = rows
@@ -40,12 +39,13 @@ export default class TableDataStore {
 		return table
 	}
 
-	createDisplayObject(display?: TableDisplay) {
-		let defaultDisplay: TableDisplay['default'] = Object.assign({}, { modified: false })
+	createDisplayObject(display?: TableDisplay[]) {
+		let defaultDisplay: TableDisplay[] = [Object.assign({}, { modified: false })]
 
 		if (display?.hasOwnProperty('0:0')) {
 			return display
 		} else if (display?.hasOwnProperty('default')) {
+			// TODO: (typing) what is the possible input here for 'default'?
 			defaultDisplay = display.default
 		}
 
@@ -57,14 +57,13 @@ export default class TableDataStore {
 				parents.add(row.parent)
 			}
 
-			// TODO: (typing) is defaultDisplay an object or array?
 			defaultDisplay[rowIndex] = {
 				childrenOpen: false,
 				indent: row.indent || null,
 				isParent: parents.has(rowIndex),
-				isRoot: !Boolean(row.parent),
+				isRoot: row.parent === null || row.parent === undefined,
 				modified: false,
-				open: !Boolean(row.parent),
+				open: row.parent === null || row.parent === undefined,
 				parent: row.parent,
 			}
 		}
