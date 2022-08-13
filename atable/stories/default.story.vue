@@ -8,6 +8,7 @@
 import { ref } from 'vue'
 
 import data from '@/assets/sample_data/http_logs.json'
+import ADate from '@/components/ADate.vue'
 import ATable from '@/components/ATable.vue'
 
 const http_logs = ref({
@@ -55,7 +56,7 @@ const http_logs = ref({
 			align: 'center',
 			edit: true,
 			width: '25ch',
-			component: 'ADate',
+			component: ADate,
 			format: value => {
 				return new Date(Number(value)).toLocaleDateString('en-US')
 			},

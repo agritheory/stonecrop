@@ -1,5 +1,5 @@
 
-td[data-v-d46b37bb] {
+td[data-v-a7ef2d4f] {
 	border: 1px;
 	border-style: solid;
 	border-color: var(--cell-border-color);
@@ -14,8 +14,8 @@ td[data-v-d46b37bb] {
 	padding-left: 0.5ch;
 	padding-right: 0.5ch;
 }
-td[data-v-d46b37bb]:focus,
-td[data-v-d46b37bb]:focus-within {
+td[data-v-a7ef2d4f]:focus,
+td[data-v-a7ef2d4f]:focus-within {
 	background-color: var(--focus-cell-background);
 	outline-width: 2px;
 	outline-style: solid;

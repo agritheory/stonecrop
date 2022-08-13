@@ -97,7 +97,7 @@ class TableDataStore {
   }
   setCellData(rowIndex, colIndex, value) {
     if (this.table[`${colIndex}:${rowIndex}`] !== value) {
-      this.display[`${colIndex}:${rowIndex}`].modified = true;
+      this.display[rowIndex].modified = true;
     }
     this.table[`${colIndex}:${rowIndex}`] = value;
     return this.table[`${colIndex}:${rowIndex}`];
@@ -148,7 +148,7 @@ const _sfc_main$4 = defineComponent({
     const handleInput = (event) => {
       if (tableData.columns[props.colIndex].mask)
         ;
-      if (tableData.columns[props.colIndex].hasOwnProperty("component")) {
+      if (tableData.columns[props.colIndex].component) {
         if (resolveDynamicComponent(tableData.columns[props.colIndex].component)) {
           const target = event.target;
           const domRect = target.getBoundingClientRect();
@@ -221,7 +221,7 @@ const _sfc_main$4 = defineComponent({
     };
   }
 });
-const ACell_vue_vue_type_style_index_0_scoped_d46b37bb_lang = "";
+const ACell_vue_vue_type_style_index_0_scoped_a7ef2d4f_lang = "";
 const _export_sfc = (sfc, props) => {
   const target = sfc.__vccOpts || sfc;
   for (const [key, val] of props) {
@@ -255,7 +255,7 @@ function _sfc_render$4(_ctx, _cache, $props, $setup, $data, $options) {
     innerHTML: _ctx.displayValue
   }, null, 44, _hoisted_1$2);
 }
-const ACell = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["render", _sfc_render$4], ["__scopeId", "data-v-d46b37bb"]]);
+const ACell = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["render", _sfc_render$4], ["__scopeId", "data-v-a7ef2d4f"]]);
 const _sfc_main$3 = defineComponent({
   name: "ARow",
   props: {

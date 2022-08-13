@@ -13,151 +13,181 @@
 				<th colspan="5">{{ monthAndYear }}</th>
 				<td @click="nextMonth" tabindex="-1">&gt;</td>
 			</tr>
-			<tr v-for="i in 6" :key="i">
+			<tr v-for="rowNo in numberOfRows" :key="rowNo">
 				<td
-					v-for="j in 7"
-					:key="(i - 1) * 7 + j"
+					v-for="colNo in numberOfColumns"
+					:key="(rowNo - 1) * numberOfColumns + colNo"
 					:class="{
-						todaysdate: today(current[(i - 1) * 7 + j]),
-						selecteddate: isSelectedDate(current[(i - 1) * 7 + j]),
+						todaysdate: today(currentDates[(rowNo - 1) * numberOfColumns + colNo]),
+						selecteddate: isSelectedDate(currentDates[(rowNo - 1) * numberOfColumns + colNo]),
 					}"
-					@click="selectDate($event, (i - 1) * 7 + j)">
-					{{ new Date(current[(i - 1) * 7 + j]).getDate() }}
+					@click="selectDate($event, (rowNo - 1) * numberOfColumns + colNo)">
+					{{ new Date(currentDates[(rowNo - 1) * numberOfColumns + colNo]).getDate() }}
 				</td>
 			</tr>
 		</table>
 	</div>
 </template>
-<script>
-import { ref, reactive, defineComponent, inject, computed, onMounted, watchEffect, shallowRef } from 'vue'
+
+<script lang="ts">
+import { computed, defineComponent, inject, onMounted, ref, shallowRef, watch } from 'vue'
+
+import TableDataStore from '.'
 
 export default defineComponent({
 	name: 'ADate',
 	// components: { ATableModal },
-	props: ['event', 'colIndex', 'rowIndex', 'indent', 'tableid'],
+	props: {
+		colIndex: {
+			type: Number,
+			default: 0,
+		},
+		rowIndex: {
+			type: Number,
+			default: 0,
+		},
+		tableid: {
+			type: String,
+		},
+		event: {
+			type: Event,
+		},
+		indent: {
+			type: Number,
+			default: 0,
+		},
+	},
 	setup(props, context) {
-		const TableData = inject(props.tableid)
+		const tableData = inject<TableDataStore>(props.tableid)
+
+		const numberOfRows = 6
+		const numberOfColumns = 7
+
 		const todaysDate = new Date()
 		let currentMonth = ref(todaysDate.getMonth())
 		let currentYear = ref(todaysDate.getFullYear())
 
-		let currentDate = shallowRef(TableData.cellData(props.rowIndex, props.colIndex))
-		let selectedDate = shallowRef(TableData.cellData(props.rowIndex, props.colIndex))
-		let current = reactive([])
+		let selectedDate = ref<string | number | Date>(tableData.cellData(props.colIndex, props.rowIndex))
+		let currentDates = ref<number[]>([])
 		let width = ref('')
 
-		const renderMonth = function () {
-			const firstOfMonth = new Date(currentYear + '-' + (currentMonth + 1) + '-01')
+		const renderMonth = () => {
+			const firstOfMonth = new Date(currentYear.value, currentMonth.value, 1)
 			const monthStartWeekday = firstOfMonth.getDay()
 			const calendarStartDay = firstOfMonth.setDate(firstOfMonth.getDate() - monthStartWeekday)
 			for (let i of Array(43).keys()) {
-				// FIX ME
-				current.push(reactive(calendarStartDay + i * 84000000))
-				// this.$set(this.current, i, calendarStartDay + (i * 84000000))
+				currentDates.value.push(calendarStartDay + i * 84000000)
 			}
 		}
 
-		const handlePageDown = function () {
-			if (event.shiftKey === true) {
-				previousYear()
+		const handlePageDown = (event: KeyboardEvent) => {
+			event.shiftKey ? previousYear() : previousMonth()
+		}
+
+		const handlePageUp = (event: KeyboardEvent) => {
+			event.shiftKey ? nextYear() : nextMonth()
+		}
+
+		const previousYear = () => {
+			currentYear.value -= 1
+		}
+
+		const nextYear = () => {
+			currentYear.value += 1
+		}
+
+		const previousMonth = () => {
+			if (currentMonth.value == 0) {
+				currentMonth.value = 11
+				currentYear.value -= 1
 			} else {
-				previousMonth()
+				currentMonth.value -= 1
 			}
 		}
 
-		const handlePageUp = function () {
-			if (event.shiftKey === true) {
-				nextYear()
+		const nextMonth = () => {
+			if (currentMonth.value == 11) {
+				currentMonth.value = 0
+				currentYear.value += 1
 			} else {
-				nextMonth()
+				currentMonth.value += 1
 			}
 		}
 
-		const previousYear = function () {
-			currentYear -= 1
-		}
-		const nextYear = function () {
-			currentYear += 1
-		}
-		const previousMonth = function () {
-			if (currentMonth == 0) {
-				currentMonth = 11
-				currentYear -= 1
-			} else {
-				currentMonth -= 1
-			}
-		}
-
-		const nextMonth = function () {
-			if (currentMonth == 11) {
-				currentMonth = 0
-				currentYear += 1
-			} else {
-				currentMonth += 1
-			}
-		}
-
-		const today = function (day) {
+		const today = (day: string | number | Date) => {
 			let todaysDate = new Date().setUTCHours(0, 0, 0, 0)
-			if (currentMonth !== new Date(todaysDate).getMonth()) {
+			if (currentMonth.value !== new Date(todaysDate).getMonth()) {
 				return
 			}
-			return new Date(todaysDate).toDateString() === new Date(day).toDateString() ? true : null
+			return new Date(todaysDate).toDateString() === new Date(day).toDateString()
 		}
 
-		const isSelectedDate = function (day) {
-			return new Date(day).toDateString() === new Date(selectedDate).toDateString() ? true : null
+		const isSelectedDate = function (day: string | number | Date) {
+			return new Date(day).toDateString() === new Date(selectedDate.value).toDateString()
 		}
 
-		const selectDate = function (event, currentIndex) {
-			selectedDate = current[currentIndex]
-			updateData(event)
+		const selectDate = function (event: Event, currentIndex: number) {
+			selectedDate.value = currentDates.value[currentIndex]
+			updateData()
 			event.preventDefault()
 			event.stopPropagation()
-			context.refs.adatepicker.destroy()
+			// TODO: (typing) figure out a way to close datepicker
+			// context.refs.adatepicker.destroy()
 		}
+
 		const updateData = function () {
-			let value = new Date(Number(selectedDate)).toLocaleDateString('en-US')
-			TableData.setCellData(props.rowIndex, props.colIndex, selectedDate)
+			tableData.setCellData(props.rowIndex, props.colIndex, selectedDate.value)
 		}
+
 		onMounted(() => {
 			renderMonth()
 		})
 
 		const dayWidth = computed(() => {
-			return width.value.replace('px', '') / 7 - 1 + 'px'
-		})
-		const monthAndYear = computed(() => {
-			return new Date(currentYear, currentMonth, 1).toLocaleDateString(undefined, { year: 'numeric', month: 'long' })
+			return Number(width.value.replace('px', '')) / (numberOfColumns - 1) + 'px'
 		})
 
-		watchEffect(currentMonth => {
+		const monthAndYear = computed(() => {
+			return new Date(currentYear.value, currentMonth.value, 1).toLocaleDateString(undefined, {
+				year: 'numeric',
+				month: 'long',
+			})
+		})
+
+		watch(currentMonth, () => {
+			currentDates.value = []
 			renderMonth()
 		})
-		watchEffect(currentYear => {
+
+		watch(currentYear, () => {
+			currentDates.value = []
 			renderMonth()
 		})
 
 		return {
-			TableData,
-			currentDate,
-			selectedDate,
+			currentDates,
 			currentMonth,
 			currentYear,
-			current,
-			width,
-			today,
-			monthAndYear,
-			previousMonth,
-			nextMonth,
 			dayWidth,
+			handlePageDown,
+			handlePageUp,
 			isSelectedDate,
+			monthAndYear,
+			nextMonth,
+			numberOfRows,
+			numberOfColumns,
+			previousMonth,
 			selectDate,
+			selectedDate,
+			tableData,
+			today,
 			updateData,
+			width,
 		}
 	},
 })
 </script>
+
 <style scoped>
 .adate {
 	border: 2px solid var(--focus-cell-outline);

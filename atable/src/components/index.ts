@@ -87,7 +87,7 @@ export default class TableDataStore {
 
 	setCellData(rowIndex: number, colIndex: number, value: any) {
 		if (this.table[`${colIndex}:${rowIndex}`] !== value) {
-			this.display[`${colIndex}:${rowIndex}`].modified = true
+			this.display[rowIndex].modified = true
 		}
 		this.table[`${colIndex}:${rowIndex}`] = value
 		return this.table[`${colIndex}:${rowIndex}`]

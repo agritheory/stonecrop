@@ -60,7 +60,7 @@ export default defineComponent({
 				// tableData.columns[props.colIndex].mask(event)
 			}
 
-			if (tableData.columns[props.colIndex].hasOwnProperty('component')) {
+			if (tableData.columns[props.colIndex].component) {
 				if (resolveDynamicComponent(tableData.columns[props.colIndex].component)) {
 					const target = event.target as HTMLElement
 					const domRect = target.getBoundingClientRect()
