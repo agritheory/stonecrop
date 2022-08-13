@@ -1,116 +1,122 @@
 .sheet-nav-footer {
-	position:fixed;
-	bottom:0px;
-	width:100%;
+	position: fixed;
+	bottom: 0px;
+	width: 100%;
 	background-color: transparent;
 	height: 2rem;
 	z-index: 100;
 	text-align: left;
 	font-size: 100%;
 	display: flex;
-  justify-content: right;
-	padding-bottom: .2rem;
+	justify-content: right;
+	padding-bottom: 0.2rem;
 }
 
-.tabs li { 
-  /* Makes a horizontal row */
-  float: left; 
-	list-style-type:none;
-  /* So the psueudo elements can be
+.tabs li {
+	/* Makes a horizontal row */
+	float: left;
+	list-style-type: none;
+	/* So the psueudo elements can be
      abs. positioned inside */
-  position: relative;
+	position: relative;
 }
-.tabs a { 
-  float: left; 
-  padding: 1ch 4ch 4ch 4ch;
-  text-decoration: none;
-  color: black;
-  background: #AAA;
+.tabs a {
+	float: left;
+	padding: 1ch 4ch 4ch 4ch;
+	text-decoration: none;
+	color: black;
+	background: #aaa;
 	outline: 2px solid inherit;
 	outline-offset: -2px;
-  
-  /* Only round the top corners */
-  -webkit-border-top-left-radius: 15px;
-  -webkit-border-top-right-radius: 15px;
-  -moz-border-radius-topleft: 15px;
-  -moz-border-radius-topright: 15px;
-  border-top-left-radius: 15px;
-  border-top-right-radius: 15px; 
+
+	/* Only round the top corners */
+	-webkit-border-top-left-radius: 15px;
+	-webkit-border-top-right-radius: 15px;
+	-moz-border-radius-topleft: 15px;
+	-moz-border-radius-topright: 15px;
+	border-top-left-radius: 15px;
+	border-top-right-radius: 15px;
 }
 .tabs .router-link-active {
-  /* Highest, active tab is on top */
-  z-index: 3;
+	/* Highest, active tab is on top */
+	z-index: 3;
 }
-.router-link-active { 
-  /* Colors when tab is active */
-  background: #827553;
-  color: black; 
+.router-link-active {
+	/* Colors when tab is active */
+	background: #827553;
+	color: black;
 	box-shadow: #999;
-
 }
-.tabs li:before, .tabs li:after, 
-.tabs li a:before, .tabs li a:after {
-  /* All pseudo elements are 
+.tabs li:before,
+.tabs li:after,
+.tabs li a:before,
+.tabs li a:after {
+	/* All pseudo elements are 
      abs. positioned and on bottom */
-  position: absolute;
-  bottom: 0;
-	
+	position: absolute;
+	bottom: 0;
 }
 /* Only the first, last, and active
    tabs need pseudo elements at all */
-.tabs li:last-child:after,   .tabs li:last-child a:after,
-.tabs li:first-child:before, .tabs li:first-child a:before,
-.tabs .router-link-active:after,   .tabs .router-link-active:before, 
-.tabs .router-link-active a:after, .tabs .router-link-active a:before {
-  content: "";
-	
+.tabs li:last-child:after,
+.tabs li:last-child a:after,
+.tabs li:first-child:before,
+.tabs li:first-child a:before,
+.tabs .router-link-active:after,
+.tabs .router-link-active:before,
+.tabs .router-link-active a:after,
+.tabs .router-link-active a:before {
+	content: '';
 }
-.tabs .router-link-active:before, .tabs .router-link-active:after {
-  background: transparent;
-  
-  /* Squares below circles */
-  z-index: 1;
+.tabs .router-link-active:before,
+.tabs .router-link-active:after {
+	background: transparent;
+
+	/* Squares below circles */
+	z-index: 1;
 }
 /* Squares */
-.tabs li:before, .tabs li:after {
-  background: transparent;
-  width: 10px;
-  height: 10px;
+.tabs li:before,
+.tabs li:after {
+	background: transparent;
+	width: 10px;
+	height: 10px;
 }
 .tabs li:before {
-  left: -10px;      
+	left: -10px;
 }
-.tabs li:after { 
-  right: -10px;
+.tabs li:after {
+	right: -10px;
 }
 /* Circles */
-.tabs li a:after, .tabs li a:before {
-  width: 20px; 
-  height: 20px;
-  /* Circles are circular */
-  -webkit-border-radius: 10px;
-  -moz-border-radius:    10px;
-  border-radius:         10px;
-  background: transparent;
-  
-  /* Circles over squares */
-  z-index: 2;
+.tabs li a:after,
+.tabs li a:before {
+	width: 20px;
+	height: 20px;
+	/* Circles are circular */
+	-webkit-border-radius: 10px;
+	-moz-border-radius: 10px;
+	border-radius: 10px;
+	background: transparent;
+
+	/* Circles over squares */
+	z-index: 2;
 }
-.tabs .router-link-active a:after, .tabs .router-link-active a:before {
-  background: transparent;
+.tabs .router-link-active a:after,
+.tabs .router-link-active a:before {
+	background: transparent;
 }
 /* First and last tabs have different
    outside color needs */
 .tabs li:first-child.router-link-active a:before,
 .tabs li:last-child.router-link-active a:after {
-  background: transparent;
+	background: transparent;
 }
 .tabs li a:before {
-  left: -20px;
+	left: -20px;
 }
 .tabs li a:after {
-  right: -20px;
-	
+	right: -20px;
 }
 .hidebreadcrumbs a {
 	width: 1ch;
@@ -140,9 +146,11 @@
 	-o-transform: rotate(0deg);
 	transition: transform 250ms;
 }
-a:active, a:hover, a:focus {
+a:active,
+a:hover,
+a:focus {
 	outline: 2px solid black;
-	z-index: 3
+	z-index: 3;
 }
 .hometab a {
 	width: 1ch;
@@ -153,7 +161,7 @@ a:active, a:hover, a:focus {
 	padding-top: 6px;
 	text-align: center;
 }
-.hometab svg{
+.hometab svg {
 	height: 14pt;
 	width: 14pt;
 }
@@ -167,7 +175,7 @@ a:active, a:hover, a:focus {
 	font-size: 150%;
 	align-items: center;
 }
-.searchtab svg{
+.searchtab svg {
 	padding-left: 0.25ch;
 }
 .searchtab input {

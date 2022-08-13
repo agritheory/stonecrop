@@ -9,12 +9,8 @@
 			v-model="item.count.count"
 			:denominator="item.count.of"
 			:uom="item.count.uom"
-			:editable="true"
-		/>
-		<ItemCheck
-			v-if="item.hasOwnProperty('checked')"
-			v-model="item.checked"
-		/>
+			:editable="true" />
+		<ItemCheck v-if="item.hasOwnProperty('checked')" v-model="item.checked" />
 	</li>
 </template>
 <script>
@@ -25,13 +21,13 @@ export default {
 	name: 'ListItem',
 	components: {
 		ItemCount,
-		ItemCheck
+		ItemCheck,
 	},
 	props: {
 		item: {
 			type: Object,
-			required: true
-		}
-	}
+			required: true,
+		},
+	},
 }
 </script>

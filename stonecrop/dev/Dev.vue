@@ -2,16 +2,14 @@
 	<h1>Test</h1>
 </template>
 <script>
-
 export default {
-	name: "Dev",
+	name: 'Dev',
 	data() {
 		return {
-			schema : {}
+			schema: {},
 		}
 	},
 }
-
 </script>
 
 <style>
@@ -25,7 +23,7 @@ nav {
 	display: flex;
 	/* flex-direction: row; */
 	flex-direction: row-reverse;
-	align-items:center;
+	align-items: center;
 	border-bottom: 2px solid var(--primary-color);
 	margin: 0px;
 	padding-left: 1ch;

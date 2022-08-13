@@ -102,7 +102,7 @@ export default defineComponent({
 				target.innerHTML = tableData.columns[colIndex].format(target.innerHTML)
 			} else if (cellData && 'format' in column) {
 				return column.format(cellData)
-			} else if (cellData && column.type.toLowerCase() in ['int', 'decimal', 'float', 'number', 'percent']) {
+			} else if (cellData && column.type.toLowerCase() in ['int', 'decimal', 'float', 'number', 'percent'])  {
 				return cellData
 				// TODO: number formatting
 			} else {
@@ -124,7 +124,7 @@ export default defineComponent({
 			event.shiftKey ? upCell(event) : downCell(event)
 		}
 
-		const tabNav = (event: KeyboardEvent) => {
+		const tabNav = (event: KeyboardEvent) =>  {
 			event.preventDefault()
 			event.stopPropagation()
 			event.shiftKey ? prevCell(event) : nextCell(event)
@@ -334,7 +334,7 @@ export default defineComponent({
 			upCell,
 			v4,
 		}
-	},
+	},,
 })
 </script>
 

@@ -6,16 +6,12 @@ var __createBinding =
 	(Object.create
 		? function (o, m, k, k2) {
 				if (k2 === undefined) k2 = k
-				var desc = Object.getOwnPropertyDescriptor(m, k)
-				if (!desc || ('get' in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-					desc = {
-						enumerable: true,
-						get: function () {
-							return m[k]
-						},
-					}
-				}
-				Object.defineProperty(o, k2, desc)
+				Object.defineProperty(o, k2, {
+					enumerable: true,
+					get: function () {
+						return m[k]
+					},
+				})
 		  }
 		: function (o, m, k, k2) {
 				if (k2 === undefined) k2 = k
@@ -36,8 +32,7 @@ var __importStar =
 		if (mod && mod.__esModule) return mod
 		var result = {}
 		if (mod != null)
-			for (var k in mod)
-				if (k !== 'default' && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k)
+			for (var k in mod) if (k !== 'default' && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k)
 		__setModuleDefault(result, mod)
 		return result
 	}
@@ -103,9 +98,9 @@ function _parsePackageSpecifier(rawPackageSpecifier) {
  *
  * IMPORTANT: THIS CODE SHOULD BE KEPT UP TO DATE WITH Utilities.copyAndTrimNpmrcFile()
  */
-function _copyAndTrimNpmrcFile(logger, sourceNpmrcPath, targetNpmrcPath) {
-	logger.info(`Transforming ${sourceNpmrcPath}`) // Verbose
-	logger.info(`  --> "${targetNpmrcPath}"`)
+function _copyAndTrimNpmrcFile(sourceNpmrcPath, targetNpmrcPath) {
+	console.log(`Transforming ${sourceNpmrcPath}`) // Verbose
+	console.log(`  --> "${targetNpmrcPath}"`)
 	let npmrcFileLines = fs.readFileSync(sourceNpmrcPath).toString().split('\n')
 	npmrcFileLines = npmrcFileLines.map(line => (line || '').trim())
 	const resultLines = []
@@ -148,15 +143,15 @@ function _copyAndTrimNpmrcFile(logger, sourceNpmrcPath, targetNpmrcPath) {
  *
  * IMPORTANT: THIS CODE SHOULD BE KEPT UP TO DATE WITH Utilities._syncNpmrc()
  */
-function _syncNpmrc(logger, sourceNpmrcFolder, targetNpmrcFolder, useNpmrcPublish) {
+function _syncNpmrc(sourceNpmrcFolder, targetNpmrcFolder, useNpmrcPublish) {
 	const sourceNpmrcPath = path.join(sourceNpmrcFolder, !useNpmrcPublish ? '.npmrc' : '.npmrc-publish')
 	const targetNpmrcPath = path.join(targetNpmrcFolder, '.npmrc')
 	try {
 		if (fs.existsSync(sourceNpmrcPath)) {
-			_copyAndTrimNpmrcFile(logger, sourceNpmrcPath, targetNpmrcPath)
+			_copyAndTrimNpmrcFile(sourceNpmrcPath, targetNpmrcPath)
 		} else if (fs.existsSync(targetNpmrcPath)) {
 			// If the source .npmrc doesn't exist and there is one in the target, delete the one in the target
-			logger.info(`Deleting ${targetNpmrcPath}`) // Verbose
+			console.log(`Deleting ${targetNpmrcPath}`) // Verbose
 			fs.unlinkSync(targetNpmrcPath)
 		}
 	} catch (e) {
@@ -232,7 +227,7 @@ function _getRushTempFolder(rushCommonFolder) {
 /**
  * Resolve a package specifier to a static version
  */
-function _resolvePackageVersion(logger, rushCommonFolder, { name, version }) {
+function _resolvePackageVersion(rushCommonFolder, { name, version }) {
 	if (!version) {
 		version = '*' // If no version is specified, use the latest version
 	}
@@ -245,7 +240,7 @@ function _resolvePackageVersion(logger, rushCommonFolder, { name, version }) {
 		try {
 			const rushTempFolder = _getRushTempFolder(rushCommonFolder)
 			const sourceNpmrcFolder = path.join(rushCommonFolder, 'config', 'rush')
-			_syncNpmrc(logger, sourceNpmrcFolder, rushTempFolder)
+			_syncNpmrc(sourceNpmrcFolder, rushTempFolder)
 			const npmPath = getNpmPath()
 			// This returns something that looks like:
 			//  @microsoft/rush@3.0.0 '3.0.0'
@@ -365,9 +360,9 @@ function _createPackageJson(packageInstallFolder, name, version) {
 /**
  * Run "npm install" in the package install folder.
  */
-function _installPackage(logger, packageInstallFolder, name, version) {
+function _installPackage(packageInstallFolder, name, version) {
 	try {
-		logger.info(`Installing ${name}...`)
+		console.log(`Installing ${name}...`)
 		const npmPath = getNpmPath()
 		const result = childProcess.spawnSync(npmPath, ['install'], {
 			stdio: 'inherit',
@@ -377,7 +372,7 @@ function _installPackage(logger, packageInstallFolder, name, version) {
 		if (result.status !== 0) {
 			throw new Error('"npm install" encountered an error')
 		}
-		logger.info(`Successfully installed ${name}@${version}`)
+		console.log(`Successfully installed ${name}@${version}`)
 	} catch (e) {
 		throw new Error(`Unable to install package: ${e}`)
 	}
@@ -401,7 +396,7 @@ function _writeFlagFile(packageInstallFolder) {
 		throw new Error(`Unable to create installed.flag file in ${packageInstallFolder}`)
 	}
 }
-function installAndRun(logger, packageName, packageVersion, packageBinName, packageBinArgs) {
+function installAndRun(packageName, packageVersion, packageBinName, packageBinArgs) {
 	const rushJsonFolder = findRushJsonFolder()
 	const rushCommonFolder = path.join(rushJsonFolder, 'common')
 	const rushTempFolder = _getRushTempFolder(rushCommonFolder)
@@ -410,14 +405,14 @@ function installAndRun(logger, packageName, packageVersion, packageBinName, pack
 		// The package isn't already installed
 		_cleanInstallFolder(rushTempFolder, packageInstallFolder)
 		const sourceNpmrcFolder = path.join(rushCommonFolder, 'config', 'rush')
-		_syncNpmrc(logger, sourceNpmrcFolder, packageInstallFolder)
+		_syncNpmrc(sourceNpmrcFolder, packageInstallFolder)
 		_createPackageJson(packageInstallFolder, packageName, packageVersion)
-		_installPackage(logger, packageInstallFolder, packageName, packageVersion)
+		_installPackage(packageInstallFolder, packageName, packageVersion)
 		_writeFlagFile(packageInstallFolder)
 	}
 	const statusMessage = `Invoking "${packageBinName} ${packageBinArgs.join(' ')}"`
 	const statusMessageLine = new Array(statusMessage.length + 1).join('-')
-	logger.info(os.EOL + statusMessage + os.EOL + statusMessageLine + os.EOL)
+	console.log(os.EOL + statusMessage + os.EOL + statusMessageLine + os.EOL)
 	const binPath = _getBinPath(packageInstallFolder, packageBinName)
 	const binFolderPath = path.resolve(packageInstallFolder, NODE_MODULES_FOLDER_NAME, '.bin')
 	// Windows environment variables are case-insensitive.  Instead of using SpawnSyncOptions.env, we need to
@@ -447,13 +442,13 @@ function installAndRun(logger, packageName, packageVersion, packageBinName, pack
 	}
 }
 exports.installAndRun = installAndRun
-function runWithErrorAndStatusCode(logger, fn) {
+function runWithErrorAndStatusCode(fn) {
 	process.exitCode = 1
 	try {
 		const exitCode = fn()
 		process.exitCode = exitCode
 	} catch (e) {
-		logger.error(os.EOL + os.EOL + e.toString() + os.EOL + os.EOL)
+		console.error(os.EOL + os.EOL + e.toString() + os.EOL + os.EOL)
 	}
 }
 exports.runWithErrorAndStatusCode = runWithErrorAndStatusCode
@@ -478,17 +473,16 @@ function _run() {
 		console.log('Example: install-run.js qrcode@1.2.2 qrcode https://rushjs.io')
 		process.exit(1)
 	}
-	const logger = { info: console.log, error: console.error }
-	runWithErrorAndStatusCode(logger, () => {
+	runWithErrorAndStatusCode(() => {
 		const rushJsonFolder = findRushJsonFolder()
 		const rushCommonFolder = _ensureAndJoinPath(rushJsonFolder, 'common')
 		const packageSpecifier = _parsePackageSpecifier(rawPackageSpecifier)
 		const name = packageSpecifier.name
-		const version = _resolvePackageVersion(logger, rushCommonFolder, packageSpecifier)
+		const version = _resolvePackageVersion(rushCommonFolder, packageSpecifier)
 		if (packageSpecifier.version !== version) {
 			console.log(`Resolved to ${name}@${version}`)
 		}
-		return installAndRun(logger, name, version, packageBinName, packageBinArgs)
+		return installAndRun(name, version, packageBinName, packageBinArgs)
 	})
 }
 _run()

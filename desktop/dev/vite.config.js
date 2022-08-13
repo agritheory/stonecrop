@@ -5,17 +5,17 @@ module.exports = {
 	build: {
 		lib: {
 			entry: resolve(__dirname, '../src/index.js'),
-			name: '@sedum/desktop'
+			name: '@sedum/desktop',
 		},
 		rollupOptions: {
 			external: ['vue'],
 			output: {
 				globals: {
-					vue: 'Vue'
-				}
-			}
+					vue: 'Vue',
+				},
+			},
 		},
 		outDir: '../dist/',
 	},
-	plugins: [vue()]
+	plugins: [vue()],
 }

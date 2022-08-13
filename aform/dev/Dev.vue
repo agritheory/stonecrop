@@ -1,16 +1,9 @@
 <template>
-<nav>
-	<button class="aform-primary-action">SWITCH COLOR</button>
-	<button 
-		@click="changeSchema"
-	class="aform-primary-action">SWITCH SCHEMA</button>
-</nav>
-	<AForm
-		class="aform-main"
-		:schema="schema"
-		:data="data"
-		:key="id"
-	/>
+	<nav>
+		<button class="aform-primary-action">SWITCH COLOR</button>
+		<button @click="changeSchema" class="aform-primary-action">SWITCH SCHEMA</button>
+	</nav>
+	<AForm class="aform-main" :schema="schema" :data="data" :key="id" />
 </template>
 <script>
 import basic_form_schema from './assets/basic_form_schema.json'
@@ -19,10 +12,10 @@ import basic_table_schema from './assets/basic_table_schema.json'
 import fieldset_table_schema from './assets/fieldset_table_schema.json'
 
 export default {
-	name: "Dev",
+	name: 'Dev',
 	data() {
 		return {
-			schema : basic_form_schema,
+			schema: basic_form_schema,
 			id: 0,
 			data: [],
 			color: '',
@@ -30,18 +23,17 @@ export default {
 		}
 	},
 	methods: {
-		changeSchema(){
+		changeSchema() {
 			let schemas = [basic_fieldset_schema, basic_form_schema, basic_table_schema, fieldset_table_schema]
-			this.schemaIndex = this.schemaIndex + 1 
-			if(this.schemaIndex == schemas.length){
+			this.schemaIndex = this.schemaIndex + 1
+			if (this.schemaIndex == schemas.length) {
 				this.schemaIndex = 0
 			}
 			this.id = this.schemaIndex
 			this.schema = schemas[this.schemaIndex]
-		}
-	}
+		},
+	},
 }
-
 </script>
 
 <style>
@@ -56,7 +48,7 @@ nav {
 	display: flex;
 	/* flex-direction: row; */
 	flex-direction: row-reverse;
-	align-items:center;
+	align-items: center;
 	border-bottom: 2px solid var(--primary-color);
 	margin: 0px;
 	padding-left: 1ch;

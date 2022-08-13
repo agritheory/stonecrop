@@ -1,8 +1,8 @@
 // import { resolve } from 'path'
 
 export default class StonecropConfigLoader {
-	constructor(configPath=undefined){
-		if(configPath === undefined){
+	constructor(configPath = undefined) {
+		if (configPath === undefined) {
 			// use cwd
 			// import(resolve('./stonecrop.config.js'))
 			// .then(config => {
@@ -11,23 +11,14 @@ export default class StonecropConfigLoader {
 			// })
 		} else {
 			// use path provided
-			import(resolve(configPath))
-			.then(config => {
+			import(resolve(configPath)).then(config => {
 				console.log(config)
 				// this.config = {}
 			})
 		}
 	}
-	loadRoutes(){
-
-	}
-	loadEvents(){
-
-	}
-	loadClient(){
-
-	}
-	loadCustomComponents(){
-
-	}
+	loadRoutes() {}
+	loadEvents() {}
+	loadClient() {}
+	loadCustomComponents() {}
 }

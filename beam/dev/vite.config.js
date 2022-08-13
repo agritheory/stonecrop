@@ -3,13 +3,12 @@ import { resolve } from 'path'
 import vue from '@vitejs/plugin-vue'
 
 const resolveSCSSPath = () => {
-  if(__dirname.endsWith('dev')){
-    return resolve(__dirname, 'variables.scss')
-  } else if(__dirname.endsWith('src')){
-    return resolve(__dirname, './../dev/variables.scss')
-  }
+	if (__dirname.endsWith('dev')) {
+		return resolve(__dirname, 'variables.scss')
+	} else if (__dirname.endsWith('src')) {
+		return resolve(__dirname, './../dev/variables.scss')
+	}
 }
-
 
 module.exports = {
 	css: {
@@ -20,17 +19,17 @@ module.exports = {
 	build: {
 		lib: {
 			entry: resolve(__dirname, '../src/index.js'),
-			name: '@sedum/beam'
+			name: '@sedum/beam',
 		},
 		rollupOptions: {
 			external: ['vue'],
 			output: {
 				globals: {
-					vue: 'Vue'
-				}
-			}
+					vue: 'Vue',
+				},
+			},
 		},
-		outDir: '../dist/'
+		outDir: '../dist/',
 	},
-	plugins: [vue()]
+	plugins: [vue()],
 }

@@ -1,24 +1,11 @@
 <template>
-<fieldset
->
-	<legend
-		@click="toggleCollapse($event)"
-		@submit="toggleCollapse($event)"
-	>
-		{{ label }}
-		<CollapseButton	
-			v-if="collapsible"
-			:collapsed="collapsed"
-			
-		/>
-	</legend>
-	<AForm 
-		v-show="!collapsed"
-		:schema="schema"
-		:data="formData"
-	/>
-	
-</fieldset>
+	<fieldset>
+		<legend @click="toggleCollapse($event)" @submit="toggleCollapse($event)">
+			{{ label }}
+			<CollapseButton v-if="collapsible" :collapsed="collapsed" />
+		</legend>
+		<AForm v-show="!collapsed" :schema="schema" :data="formData" />
+	</fieldset>
 </template>
 <script>
 import { ref, defineComponent } from 'vue'
@@ -29,24 +16,24 @@ export default defineComponent({
 	name: 'AFieldset',
 	components: { AForm, CollapseButton },
 	props: ['value', 'schema', 'key', 'label', 'collapsible'],
-	setup (props, context) {
+	setup(props, context) {
 		const formData = ref(props.data || {})
 		let collapsed = ref(false)
 		let collapsible = ref(props.collapsible)
 
-		function toggleCollapse(e){
+		function toggleCollapse(e) {
 			e.preventDefault()
-			if(!collapsible){
+			if (!collapsible) {
 				return
 			}
 			collapsed.value = !collapsed.value
 		}
 		return { formData, collapsed, toggleCollapse, collapsible }
-	}
+	},
 })
 </script>
 <style scoped>
-fieldset{
+fieldset {
 	width: 100%;
 	margin-right: 2ch;
 	border: 1px solid transparent;
@@ -56,7 +43,7 @@ legend {
 	width: 100%;
 	height: 1.15rem;
 	border: 1px solid transparent;
-	padding-bottom: .5rem;
+	padding-bottom: 0.5rem;
 	font-size: 110%;
 	font-weight: 600;
 	user-select: none;
