@@ -13,11 +13,16 @@
 		"@vitejs/plugin-vue": "^3.0.1",
 		"vite": "^3.0.5",
 		"vue-template-compiler": "^2.6.14",
-		"histoire": "~0.9.6"
+		"histoire": "~0.9.6",
+		"@histoire/plugin-vue": "~0.9.6"
 	},
 	"scripts": {
-		"dev": "vite serve dev/ -c dev/vite.config.js -d",
-		"build": "vite build dev/ -c dev/vite.config.js -d --emptyOutDir true"
+		"dev": "vite",
+		"build": "vite build --emptyOutDir true",
+		"preview": "vite preview",
+		"story:dev": "histoire dev",
+		"story:build": "histoire build",
+		"story:preview": "histoire preview"
 	},
 	"exports": {
 		".": {
