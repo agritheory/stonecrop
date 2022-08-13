@@ -1,2792 +1,2792 @@
 [
-    {
-        "apr": {
-            "amount": 159,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "aug": {
-            "amount": 148,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "dec": {
-            "amount": 211,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "feb": {
-            "amount": 86,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "item": {
-            "title": "Canistel",
-            "value": "890512da-0558-4104-84e7-720e1c7e112b"
-        },
-        "jan": {
-            "amount": 218,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "jul": {
-            "amount": 165,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "jun": {
-            "amount": 155,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "mar": {
-            "amount": 292,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "may": {
-            "amount": 211,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "nov": {
-            "amount": 187,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "oct": {
-            "amount": 251,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "sep": {
-            "amount": 166,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        }
-    },
-    {
-        "apr": {
-            "amount": 298,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "aug": {
-            "amount": 129,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "dec": {
-            "amount": 83,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "feb": {
-            "amount": 66,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "item": {
-            "title": "Partridgeberry",
-            "value": "2b12f0e1-b2d6-4250-aa5a-1d1b70a06245"
-        },
-        "jan": {
-            "amount": 161,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "jul": {
-            "amount": 248,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "jun": {
-            "amount": 215,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "mar": {
-            "amount": 291,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "may": {
-            "amount": 96,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "nov": {
-            "amount": 99,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "oct": {
-            "amount": 100,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "sep": {
-            "amount": 229,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        }
-    },
-    {
-        "apr": {
-            "amount": 187,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "aug": {
-            "amount": 293,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "dec": {
-            "amount": 223,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "feb": {
-            "amount": 149,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "item": {
-            "title": "Cluster fig",
-            "value": "fe94cb46-2890-4206-b43f-de1b5edff32c"
-        },
-        "jan": {
-            "amount": 204,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "jul": {
-            "amount": 138,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "jun": {
-            "amount": 79,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "mar": {
-            "amount": 84,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "may": {
-            "amount": 295,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "nov": {
-            "amount": 190,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "oct": {
-            "amount": 90,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "sep": {
-            "amount": 85,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        }
-    },
-    {
-        "apr": {
-            "amount": 73,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "aug": {
-            "amount": 124,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "dec": {
-            "amount": 286,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "feb": {
-            "amount": 162,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "item": {
-            "title": "Triphasia brassii",
-            "value": "cd0eee8b-c927-43e1-8fcc-26076727d497"
-        },
-        "jan": {
-            "amount": 241,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "jul": {
-            "amount": 284,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "jun": {
-            "amount": 170,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "mar": {
-            "amount": 225,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "may": {
-            "amount": 154,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "nov": {
-            "amount": 295,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "oct": {
-            "amount": 141,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "sep": {
-            "amount": 234,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        }
-    },
-    {
-        "apr": {
-            "amount": 160,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "aug": {
-            "amount": 187,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "dec": {
-            "amount": 149,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "feb": {
-            "amount": 71,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "item": {
-            "title": "Bilimbi",
-            "value": "dec2bd1c-7592-4613-b3bd-fc7b9f6d5a04"
-        },
-        "jan": {
-            "amount": 181,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "jul": {
-            "amount": 203,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "jun": {
-            "amount": 170,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "mar": {
-            "amount": 150,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "may": {
-            "amount": 243,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "nov": {
-            "amount": 278,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "oct": {
-            "amount": 138,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "sep": {
-            "amount": 267,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        }
-    },
-    {
-        "apr": {
-            "amount": 123,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "aug": {
-            "amount": 137,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "dec": {
-            "amount": 286,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "feb": {
-            "amount": 264,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "item": {
-            "title": "Hippophae",
-            "value": "f111b95c-97bd-468e-a39e-7b04f6cd4856"
-        },
-        "jan": {
-            "amount": 225,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "jul": {
-            "amount": 130,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "jun": {
-            "amount": 146,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "mar": {
-            "amount": 184,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "may": {
-            "amount": 117,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "nov": {
-            "amount": 289,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "oct": {
-            "amount": 248,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "sep": {
-            "amount": 133,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        }
-    },
-    {
-        "apr": {
-            "amount": 222,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "aug": {
-            "amount": 91,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "dec": {
-            "amount": 118,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "feb": {
-            "amount": 120,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "item": {
-            "title": "Cocky apple",
-            "value": "a7b7886f-de92-4b3e-98ca-86a3321be3bc"
-        },
-        "jan": {
-            "amount": 206,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "jul": {
-            "amount": 224,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "jun": {
-            "amount": 87,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "mar": {
-            "amount": 105,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "may": {
-            "amount": 140,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "nov": {
-            "amount": 141,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "oct": {
-            "amount": 190,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "sep": {
-            "amount": 84,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        }
-    },
-    {
-        "apr": {
-            "amount": 233,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "aug": {
-            "amount": 142,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "dec": {
-            "amount": 208,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "feb": {
-            "amount": 207,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "item": {
-            "title": "Candlenut",
-            "value": "a952ae29-5e42-49e8-9ae2-fa0faad1ce3f"
-        },
-        "jan": {
-            "amount": 173,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "jul": {
-            "amount": 116,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "jun": {
-            "amount": 258,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "mar": {
-            "amount": 162,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "may": {
-            "amount": 143,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "nov": {
-            "amount": 146,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "oct": {
-            "amount": 188,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "sep": {
-            "amount": 224,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        }
-    },
-    {
-        "apr": {
-            "amount": 158,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "aug": {
-            "amount": 167,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "dec": {
-            "amount": 273,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "feb": {
-            "amount": 190,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "item": {
-            "title": "Pentadiplandra",
-            "value": "55435b4c-5fa9-4762-a7d7-e12abb5ed969"
-        },
-        "jan": {
-            "amount": 235,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "jul": {
-            "amount": 278,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "jun": {
-            "amount": 169,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "mar": {
-            "amount": 213,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "may": {
-            "amount": 242,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "nov": {
-            "amount": 60,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "oct": {
-            "amount": 140,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "sep": {
-            "amount": 170,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        }
-    },
-    {
-        "apr": {
-            "amount": 240,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "aug": {
-            "amount": 116,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "dec": {
-            "amount": 69,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "feb": {
-            "amount": 291,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "item": {
-            "title": "Berberis",
-            "value": "50107194-af2f-4492-8e09-118df925171f"
-        },
-        "jan": {
-            "amount": 289,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "jul": {
-            "amount": 281,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "jun": {
-            "amount": 122,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "mar": {
-            "amount": 103,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "may": {
-            "amount": 292,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "nov": {
-            "amount": 285,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "oct": {
-            "amount": 135,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "sep": {
-            "amount": 264,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        }
-    },
-    {
-        "apr": {
-            "amount": 143,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "aug": {
-            "amount": 216,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "dec": {
-            "amount": 91,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "feb": {
-            "amount": 213,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "item": {
-            "title": "Blackcurrant",
-            "value": "91da5022-8459-4c41-be47-f8dd0aeb4679"
-        },
-        "jan": {
-            "amount": 211,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "jul": {
-            "amount": 176,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "jun": {
-            "amount": 144,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "mar": {
-            "amount": 296,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "may": {
-            "amount": 194,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "nov": {
-            "amount": 78,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "oct": {
-            "amount": 129,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "sep": {
-            "amount": 68,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        }
-    },
-    {
-        "apr": {
-            "amount": 170,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "aug": {
-            "amount": 234,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "dec": {
-            "amount": 225,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "feb": {
-            "amount": 75,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "item": {
-            "title": "Loquat",
-            "value": "46ba0522-c1aa-471c-8477-3fb4fce23de0"
-        },
-        "jan": {
-            "amount": 163,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "jul": {
-            "amount": 296,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "jun": {
-            "amount": 234,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "mar": {
-            "amount": 84,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "may": {
-            "amount": 158,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "nov": {
-            "amount": 293,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "oct": {
-            "amount": 140,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "sep": {
-            "amount": 98,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        }
-    },
-    {
-        "apr": {
-            "amount": 105,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "aug": {
-            "amount": 209,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "dec": {
-            "amount": 138,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "feb": {
-            "amount": 220,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "item": {
-            "title": "Melon pear",
-            "value": "7e0ad4ce-2022-459b-8266-ef1eb485cf34"
-        },
-        "jan": {
-            "amount": 141,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "jul": {
-            "amount": 229,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "jun": {
-            "amount": 276,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "mar": {
-            "amount": 292,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "may": {
-            "amount": 93,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "nov": {
-            "amount": 199,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "oct": {
-            "amount": 108,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "sep": {
-            "amount": 183,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        }
-    },
-    {
-        "apr": {
-            "amount": 182,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "aug": {
-            "amount": 271,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "dec": {
-            "amount": 192,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "feb": {
-            "amount": 147,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "item": {
-            "title": "Genip",
-            "value": "2bbf16cf-88ae-4473-9362-22131e8da673"
-        },
-        "jan": {
-            "amount": 62,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "jul": {
-            "amount": 233,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "jun": {
-            "amount": 205,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "mar": {
-            "amount": 76,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "may": {
-            "amount": 161,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "nov": {
-            "amount": 103,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "oct": {
-            "amount": 61,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "sep": {
-            "amount": 134,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        }
-    },
-    {
-        "apr": {
-            "amount": 106,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "aug": {
-            "amount": 277,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "dec": {
-            "amount": 131,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "feb": {
-            "amount": 61,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "item": {
-            "title": "Blueberry",
-            "value": "6bc43975-0b89-4cab-997c-86ecbf533cfc"
-        },
-        "jan": {
-            "amount": 265,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "jul": {
-            "amount": 192,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "jun": {
-            "amount": 137,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "mar": {
-            "amount": 87,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "may": {
-            "amount": 290,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "nov": {
-            "amount": 113,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "oct": {
-            "amount": 114,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "sep": {
-            "amount": 145,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        }
-    },
-    {
-        "apr": {
-            "amount": 140,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "aug": {
-            "amount": 284,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "dec": {
-            "amount": 123,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "feb": {
-            "amount": 299,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "item": {
-            "title": "Betel nut",
-            "value": "2ecfd63d-b4d3-4825-a372-9658e82eacff"
-        },
-        "jan": {
-            "amount": 237,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "jul": {
-            "amount": 81,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "jun": {
-            "amount": 280,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "mar": {
-            "amount": 236,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "may": {
-            "amount": 208,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "nov": {
-            "amount": 279,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "oct": {
-            "amount": 275,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "sep": {
-            "amount": 149,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        }
-    },
-    {
-        "apr": {
-            "amount": 112,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "aug": {
-            "amount": 194,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "dec": {
-            "amount": 71,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "feb": {
-            "amount": 120,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "item": {
-            "title": "Dragonfrui",
-            "value": "97ad0220-4f06-48de-9b2b-68c12fd2d6ed"
-        },
-        "jan": {
-            "amount": 116,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "jul": {
-            "amount": 88,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "jun": {
-            "amount": 167,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "mar": {
-            "amount": 128,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "may": {
-            "amount": 80,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "nov": {
-            "amount": 133,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "oct": {
-            "amount": 295,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "sep": {
-            "amount": 77,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        }
-    },
-    {
-        "apr": {
-            "amount": 299,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "aug": {
-            "amount": 299,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "dec": {
-            "amount": 134,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "feb": {
-            "amount": 63,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "item": {
-            "title": "Citron",
-            "value": "6336cedc-86c3-4604-8dc8-86e9cc5f8bbc"
-        },
-        "jan": {
-            "amount": 208,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "jul": {
-            "amount": 275,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "jun": {
-            "amount": 141,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "mar": {
-            "amount": 253,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "may": {
-            "amount": 115,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "nov": {
-            "amount": 277,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "oct": {
-            "amount": 153,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "sep": {
-            "amount": 199,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        }
-    },
-    {
-        "apr": {
-            "amount": 251,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "aug": {
-            "amount": 169,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "dec": {
-            "amount": 185,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "feb": {
-            "amount": 112,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "item": {
-            "title": "Gambooge",
-            "value": "7716413b-cd59-47d4-884d-3b10c3caf213"
-        },
-        "jan": {
-            "amount": 251,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "jul": {
-            "amount": 279,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "jun": {
-            "amount": 68,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "mar": {
-            "amount": 250,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "may": {
-            "amount": 176,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "nov": {
-            "amount": 207,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "oct": {
-            "amount": 184,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "sep": {
-            "amount": 158,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        }
-    },
-    {
-        "apr": {
-            "amount": 184,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "aug": {
-            "amount": 178,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "dec": {
-            "amount": 134,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "feb": {
-            "amount": 170,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "item": {
-            "title": "Amelanchier",
-            "value": "f74eff97-4bd0-4338-b607-49213cf4c7dd"
-        },
-        "jan": {
-            "amount": 293,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "jul": {
-            "amount": 247,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "jun": {
-            "amount": 155,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "mar": {
-            "amount": 143,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "may": {
-            "amount": 266,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "nov": {
-            "amount": 208,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "oct": {
-            "amount": 262,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "sep": {
-            "amount": 139,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        }
-    },
-    {
-        "apr": {
-            "amount": 277,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "aug": {
-            "amount": 213,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "dec": {
-            "amount": 217,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "feb": {
-            "amount": 231,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "item": {
-            "title": "Damson plum",
-            "value": "882b8b99-b20a-46e4-b4e7-b84d7d10c1b9"
-        },
-        "jan": {
-            "amount": 238,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "jul": {
-            "amount": 169,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "jun": {
-            "amount": 153,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "mar": {
-            "amount": 143,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "may": {
-            "amount": 246,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "nov": {
-            "amount": 149,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "oct": {
-            "amount": 73,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "sep": {
-            "amount": 204,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        }
-    },
-    {
-        "apr": {
-            "amount": 183,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "aug": {
-            "amount": 285,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "dec": {
-            "amount": 285,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "feb": {
-            "amount": 97,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "item": {
-            "title": "Youngberry",
-            "value": "e2b93246-39c5-4aa2-811d-a900f4c0c60e"
-        },
-        "jan": {
-            "amount": 221,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "jul": {
-            "amount": 249,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "jun": {
-            "amount": 234,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "mar": {
-            "amount": 245,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "may": {
-            "amount": 264,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "nov": {
-            "amount": 222,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "oct": {
-            "amount": 260,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "sep": {
-            "amount": 259,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        }
-    },
-    {
-        "apr": {
-            "amount": 124,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "aug": {
-            "amount": 254,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "dec": {
-            "amount": 212,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "feb": {
-            "amount": 255,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "item": {
-            "title": "Berberis vulgaris",
-            "value": "aaabf643-149c-48ad-a6ba-5f2d42f68bb7"
-        },
-        "jan": {
-            "amount": 298,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "jul": {
-            "amount": 236,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "jun": {
-            "amount": 73,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "mar": {
-            "amount": 274,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "may": {
-            "amount": 290,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "nov": {
-            "amount": 230,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "oct": {
-            "amount": 164,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "sep": {
-            "amount": 62,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        }
-    },
-    {
-        "apr": {
-            "amount": 120,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "aug": {
-            "amount": 261,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "dec": {
-            "amount": 265,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "feb": {
-            "amount": 176,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "item": {
-            "title": "Cocoplum",
-            "value": "8c35b436-08c0-4de4-a51b-cdc01ac8b420"
-        },
-        "jan": {
-            "amount": 171,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "jul": {
-            "amount": 81,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "jun": {
-            "amount": 63,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "mar": {
-            "amount": 172,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "may": {
-            "amount": 70,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "nov": {
-            "amount": 298,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "oct": {
-            "amount": 244,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "sep": {
-            "amount": 227,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        }
-    },
-    {
-        "apr": {
-            "amount": 107,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "aug": {
-            "amount": 90,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "dec": {
-            "amount": 74,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "feb": {
-            "amount": 165,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "item": {
-            "title": "Barbadine",
-            "value": "2f1fe55e-286f-45e8-85f6-e9223b12ce71"
-        },
-        "jan": {
-            "amount": 143,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "jul": {
-            "amount": 162,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "jun": {
-            "amount": 199,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "mar": {
-            "amount": 251,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "may": {
-            "amount": 246,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "nov": {
-            "amount": 200,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "oct": {
-            "amount": 259,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "sep": {
-            "amount": 224,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        }
-    },
-    {
-        "apr": {
-            "amount": 166,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "aug": {
-            "amount": 102,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "dec": {
-            "amount": 224,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "feb": {
-            "amount": 249,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "item": {
-            "title": "Honeydew",
-            "value": "cfad5922-13ce-4e43-ac15-78452f721c80"
-        },
-        "jan": {
-            "amount": 142,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "jul": {
-            "amount": 164,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "jun": {
-            "amount": 235,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "mar": {
-            "amount": 67,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "may": {
-            "amount": 145,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "nov": {
-            "amount": 225,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "oct": {
-            "amount": 297,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "sep": {
-            "amount": 154,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        }
-    },
-    {
-        "apr": {
-            "amount": 203,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "aug": {
-            "amount": 68,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "dec": {
-            "amount": 114,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "feb": {
-            "amount": 121,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "item": {
-            "title": "Highbush cranberry",
-            "value": "890e2c17-ae44-4e42-a680-358c0fbfe392"
-        },
-        "jan": {
-            "amount": 264,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "jul": {
-            "amount": 94,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "jun": {
-            "amount": 208,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "mar": {
-            "amount": 150,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "may": {
-            "amount": 133,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "nov": {
-            "amount": 211,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "oct": {
-            "amount": 83,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "sep": {
-            "amount": 140,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        }
-    },
-    {
-        "apr": {
-            "amount": 263,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "aug": {
-            "amount": 284,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "dec": {
-            "amount": 166,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "feb": {
-            "amount": 244,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "item": {
-            "title": "Bilberry",
-            "value": "bb275397-c052-4ccf-a6ba-7dd0473f3a5f"
-        },
-        "jan": {
-            "amount": 265,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "jul": {
-            "amount": 258,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "jun": {
-            "amount": 78,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "mar": {
-            "amount": 274,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "may": {
-            "amount": 270,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "nov": {
-            "amount": 212,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "oct": {
-            "amount": 114,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "sep": {
-            "amount": 294,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        }
-    },
-    {
-        "apr": {
-            "amount": 189,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "aug": {
-            "amount": 69,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "dec": {
-            "amount": 254,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "feb": {
-            "amount": 180,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "item": {
-            "title": "Dwarf dangleberry",
-            "value": "4efdf003-bda2-4fa7-a37c-8acc695f6d18"
-        },
-        "jan": {
-            "amount": 152,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "jul": {
-            "amount": 185,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "jun": {
-            "amount": 163,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "mar": {
-            "amount": 179,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "may": {
-            "amount": 71,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "nov": {
-            "amount": 210,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "oct": {
-            "amount": 187,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "sep": {
-            "amount": 207,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        }
-    },
-    {
-        "apr": {
-            "amount": 294,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "aug": {
-            "amount": 110,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "dec": {
-            "amount": 123,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "feb": {
-            "amount": 237,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "item": {
-            "title": "Boysenberry",
-            "value": "ad4504c8-b64d-4832-bed2-f84ae6af94c4"
-        },
-        "jan": {
-            "amount": 69,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "jul": {
-            "amount": 145,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "jun": {
-            "amount": 126,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "mar": {
-            "amount": 263,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "may": {
-            "amount": 255,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "nov": {
-            "amount": 192,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "oct": {
-            "amount": 233,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        },
-        "sep": {
-            "amount": 258,
-            "uom": {
-                "title": "bag",
-                "value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
-            }
-        }
-    },
-    {
-        "apr": {
-            "amount": 262,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "aug": {
-            "amount": 245,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "dec": {
-            "amount": 257,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "feb": {
-            "amount": 61,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "item": {
-            "title": "Chokeberry",
-            "value": "65c57517-ea72-4af2-a5f0-99f0fd800f42"
-        },
-        "jan": {
-            "amount": 282,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "jul": {
-            "amount": 115,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "jun": {
-            "amount": 278,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "mar": {
-            "amount": 236,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "may": {
-            "amount": 288,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "nov": {
-            "amount": 64,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "oct": {
-            "amount": 204,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        },
-        "sep": {
-            "amount": 68,
-            "uom": {
-                "title": "box",
-                "value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
-            }
-        }
-    }
+	{
+		"apr": {
+			"amount": 159,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"aug": {
+			"amount": 148,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"dec": {
+			"amount": 211,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"feb": {
+			"amount": 86,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"item": {
+			"title": "Canistel",
+			"value": "890512da-0558-4104-84e7-720e1c7e112b"
+		},
+		"jan": {
+			"amount": 218,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"jul": {
+			"amount": 165,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"jun": {
+			"amount": 155,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"mar": {
+			"amount": 292,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"may": {
+			"amount": 211,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"nov": {
+			"amount": 187,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"oct": {
+			"amount": 251,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"sep": {
+			"amount": 166,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		}
+	},
+	{
+		"apr": {
+			"amount": 298,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"aug": {
+			"amount": 129,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"dec": {
+			"amount": 83,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"feb": {
+			"amount": 66,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"item": {
+			"title": "Partridgeberry",
+			"value": "2b12f0e1-b2d6-4250-aa5a-1d1b70a06245"
+		},
+		"jan": {
+			"amount": 161,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"jul": {
+			"amount": 248,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"jun": {
+			"amount": 215,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"mar": {
+			"amount": 291,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"may": {
+			"amount": 96,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"nov": {
+			"amount": 99,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"oct": {
+			"amount": 100,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"sep": {
+			"amount": 229,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		}
+	},
+	{
+		"apr": {
+			"amount": 187,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"aug": {
+			"amount": 293,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"dec": {
+			"amount": 223,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"feb": {
+			"amount": 149,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"item": {
+			"title": "Cluster fig",
+			"value": "fe94cb46-2890-4206-b43f-de1b5edff32c"
+		},
+		"jan": {
+			"amount": 204,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"jul": {
+			"amount": 138,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"jun": {
+			"amount": 79,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"mar": {
+			"amount": 84,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"may": {
+			"amount": 295,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"nov": {
+			"amount": 190,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"oct": {
+			"amount": 90,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"sep": {
+			"amount": 85,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		}
+	},
+	{
+		"apr": {
+			"amount": 73,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"aug": {
+			"amount": 124,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"dec": {
+			"amount": 286,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"feb": {
+			"amount": 162,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"item": {
+			"title": "Triphasia brassii",
+			"value": "cd0eee8b-c927-43e1-8fcc-26076727d497"
+		},
+		"jan": {
+			"amount": 241,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"jul": {
+			"amount": 284,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"jun": {
+			"amount": 170,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"mar": {
+			"amount": 225,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"may": {
+			"amount": 154,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"nov": {
+			"amount": 295,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"oct": {
+			"amount": 141,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"sep": {
+			"amount": 234,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		}
+	},
+	{
+		"apr": {
+			"amount": 160,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"aug": {
+			"amount": 187,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"dec": {
+			"amount": 149,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"feb": {
+			"amount": 71,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"item": {
+			"title": "Bilimbi",
+			"value": "dec2bd1c-7592-4613-b3bd-fc7b9f6d5a04"
+		},
+		"jan": {
+			"amount": 181,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"jul": {
+			"amount": 203,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"jun": {
+			"amount": 170,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"mar": {
+			"amount": 150,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"may": {
+			"amount": 243,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"nov": {
+			"amount": 278,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"oct": {
+			"amount": 138,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"sep": {
+			"amount": 267,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		}
+	},
+	{
+		"apr": {
+			"amount": 123,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"aug": {
+			"amount": 137,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"dec": {
+			"amount": 286,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"feb": {
+			"amount": 264,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"item": {
+			"title": "Hippophae",
+			"value": "f111b95c-97bd-468e-a39e-7b04f6cd4856"
+		},
+		"jan": {
+			"amount": 225,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"jul": {
+			"amount": 130,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"jun": {
+			"amount": 146,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"mar": {
+			"amount": 184,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"may": {
+			"amount": 117,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"nov": {
+			"amount": 289,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"oct": {
+			"amount": 248,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"sep": {
+			"amount": 133,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		}
+	},
+	{
+		"apr": {
+			"amount": 222,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"aug": {
+			"amount": 91,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"dec": {
+			"amount": 118,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"feb": {
+			"amount": 120,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"item": {
+			"title": "Cocky apple",
+			"value": "a7b7886f-de92-4b3e-98ca-86a3321be3bc"
+		},
+		"jan": {
+			"amount": 206,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"jul": {
+			"amount": 224,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"jun": {
+			"amount": 87,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"mar": {
+			"amount": 105,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"may": {
+			"amount": 140,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"nov": {
+			"amount": 141,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"oct": {
+			"amount": 190,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"sep": {
+			"amount": 84,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		}
+	},
+	{
+		"apr": {
+			"amount": 233,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"aug": {
+			"amount": 142,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"dec": {
+			"amount": 208,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"feb": {
+			"amount": 207,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"item": {
+			"title": "Candlenut",
+			"value": "a952ae29-5e42-49e8-9ae2-fa0faad1ce3f"
+		},
+		"jan": {
+			"amount": 173,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"jul": {
+			"amount": 116,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"jun": {
+			"amount": 258,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"mar": {
+			"amount": 162,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"may": {
+			"amount": 143,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"nov": {
+			"amount": 146,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"oct": {
+			"amount": 188,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"sep": {
+			"amount": 224,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		}
+	},
+	{
+		"apr": {
+			"amount": 158,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"aug": {
+			"amount": 167,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"dec": {
+			"amount": 273,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"feb": {
+			"amount": 190,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"item": {
+			"title": "Pentadiplandra",
+			"value": "55435b4c-5fa9-4762-a7d7-e12abb5ed969"
+		},
+		"jan": {
+			"amount": 235,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"jul": {
+			"amount": 278,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"jun": {
+			"amount": 169,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"mar": {
+			"amount": 213,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"may": {
+			"amount": 242,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"nov": {
+			"amount": 60,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"oct": {
+			"amount": 140,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"sep": {
+			"amount": 170,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		}
+	},
+	{
+		"apr": {
+			"amount": 240,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"aug": {
+			"amount": 116,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"dec": {
+			"amount": 69,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"feb": {
+			"amount": 291,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"item": {
+			"title": "Berberis",
+			"value": "50107194-af2f-4492-8e09-118df925171f"
+		},
+		"jan": {
+			"amount": 289,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"jul": {
+			"amount": 281,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"jun": {
+			"amount": 122,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"mar": {
+			"amount": 103,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"may": {
+			"amount": 292,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"nov": {
+			"amount": 285,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"oct": {
+			"amount": 135,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"sep": {
+			"amount": 264,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		}
+	},
+	{
+		"apr": {
+			"amount": 143,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"aug": {
+			"amount": 216,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"dec": {
+			"amount": 91,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"feb": {
+			"amount": 213,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"item": {
+			"title": "Blackcurrant",
+			"value": "91da5022-8459-4c41-be47-f8dd0aeb4679"
+		},
+		"jan": {
+			"amount": 211,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"jul": {
+			"amount": 176,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"jun": {
+			"amount": 144,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"mar": {
+			"amount": 296,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"may": {
+			"amount": 194,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"nov": {
+			"amount": 78,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"oct": {
+			"amount": 129,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"sep": {
+			"amount": 68,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		}
+	},
+	{
+		"apr": {
+			"amount": 170,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"aug": {
+			"amount": 234,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"dec": {
+			"amount": 225,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"feb": {
+			"amount": 75,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"item": {
+			"title": "Loquat",
+			"value": "46ba0522-c1aa-471c-8477-3fb4fce23de0"
+		},
+		"jan": {
+			"amount": 163,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"jul": {
+			"amount": 296,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"jun": {
+			"amount": 234,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"mar": {
+			"amount": 84,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"may": {
+			"amount": 158,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"nov": {
+			"amount": 293,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"oct": {
+			"amount": 140,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"sep": {
+			"amount": 98,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		}
+	},
+	{
+		"apr": {
+			"amount": 105,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"aug": {
+			"amount": 209,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"dec": {
+			"amount": 138,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"feb": {
+			"amount": 220,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"item": {
+			"title": "Melon pear",
+			"value": "7e0ad4ce-2022-459b-8266-ef1eb485cf34"
+		},
+		"jan": {
+			"amount": 141,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"jul": {
+			"amount": 229,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"jun": {
+			"amount": 276,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"mar": {
+			"amount": 292,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"may": {
+			"amount": 93,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"nov": {
+			"amount": 199,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"oct": {
+			"amount": 108,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"sep": {
+			"amount": 183,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		}
+	},
+	{
+		"apr": {
+			"amount": 182,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"aug": {
+			"amount": 271,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"dec": {
+			"amount": 192,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"feb": {
+			"amount": 147,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"item": {
+			"title": "Genip",
+			"value": "2bbf16cf-88ae-4473-9362-22131e8da673"
+		},
+		"jan": {
+			"amount": 62,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"jul": {
+			"amount": 233,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"jun": {
+			"amount": 205,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"mar": {
+			"amount": 76,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"may": {
+			"amount": 161,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"nov": {
+			"amount": 103,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"oct": {
+			"amount": 61,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"sep": {
+			"amount": 134,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		}
+	},
+	{
+		"apr": {
+			"amount": 106,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"aug": {
+			"amount": 277,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"dec": {
+			"amount": 131,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"feb": {
+			"amount": 61,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"item": {
+			"title": "Blueberry",
+			"value": "6bc43975-0b89-4cab-997c-86ecbf533cfc"
+		},
+		"jan": {
+			"amount": 265,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"jul": {
+			"amount": 192,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"jun": {
+			"amount": 137,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"mar": {
+			"amount": 87,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"may": {
+			"amount": 290,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"nov": {
+			"amount": 113,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"oct": {
+			"amount": 114,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"sep": {
+			"amount": 145,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		}
+	},
+	{
+		"apr": {
+			"amount": 140,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"aug": {
+			"amount": 284,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"dec": {
+			"amount": 123,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"feb": {
+			"amount": 299,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"item": {
+			"title": "Betel nut",
+			"value": "2ecfd63d-b4d3-4825-a372-9658e82eacff"
+		},
+		"jan": {
+			"amount": 237,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"jul": {
+			"amount": 81,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"jun": {
+			"amount": 280,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"mar": {
+			"amount": 236,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"may": {
+			"amount": 208,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"nov": {
+			"amount": 279,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"oct": {
+			"amount": 275,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"sep": {
+			"amount": 149,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		}
+	},
+	{
+		"apr": {
+			"amount": 112,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"aug": {
+			"amount": 194,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"dec": {
+			"amount": 71,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"feb": {
+			"amount": 120,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"item": {
+			"title": "Dragonfrui",
+			"value": "97ad0220-4f06-48de-9b2b-68c12fd2d6ed"
+		},
+		"jan": {
+			"amount": 116,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"jul": {
+			"amount": 88,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"jun": {
+			"amount": 167,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"mar": {
+			"amount": 128,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"may": {
+			"amount": 80,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"nov": {
+			"amount": 133,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"oct": {
+			"amount": 295,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"sep": {
+			"amount": 77,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		}
+	},
+	{
+		"apr": {
+			"amount": 299,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"aug": {
+			"amount": 299,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"dec": {
+			"amount": 134,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"feb": {
+			"amount": 63,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"item": {
+			"title": "Citron",
+			"value": "6336cedc-86c3-4604-8dc8-86e9cc5f8bbc"
+		},
+		"jan": {
+			"amount": 208,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"jul": {
+			"amount": 275,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"jun": {
+			"amount": 141,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"mar": {
+			"amount": 253,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"may": {
+			"amount": 115,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"nov": {
+			"amount": 277,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"oct": {
+			"amount": 153,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"sep": {
+			"amount": 199,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		}
+	},
+	{
+		"apr": {
+			"amount": 251,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"aug": {
+			"amount": 169,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"dec": {
+			"amount": 185,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"feb": {
+			"amount": 112,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"item": {
+			"title": "Gambooge",
+			"value": "7716413b-cd59-47d4-884d-3b10c3caf213"
+		},
+		"jan": {
+			"amount": 251,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"jul": {
+			"amount": 279,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"jun": {
+			"amount": 68,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"mar": {
+			"amount": 250,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"may": {
+			"amount": 176,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"nov": {
+			"amount": 207,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"oct": {
+			"amount": 184,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"sep": {
+			"amount": 158,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		}
+	},
+	{
+		"apr": {
+			"amount": 184,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"aug": {
+			"amount": 178,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"dec": {
+			"amount": 134,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"feb": {
+			"amount": 170,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"item": {
+			"title": "Amelanchier",
+			"value": "f74eff97-4bd0-4338-b607-49213cf4c7dd"
+		},
+		"jan": {
+			"amount": 293,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"jul": {
+			"amount": 247,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"jun": {
+			"amount": 155,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"mar": {
+			"amount": 143,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"may": {
+			"amount": 266,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"nov": {
+			"amount": 208,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"oct": {
+			"amount": 262,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"sep": {
+			"amount": 139,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		}
+	},
+	{
+		"apr": {
+			"amount": 277,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"aug": {
+			"amount": 213,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"dec": {
+			"amount": 217,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"feb": {
+			"amount": 231,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"item": {
+			"title": "Damson plum",
+			"value": "882b8b99-b20a-46e4-b4e7-b84d7d10c1b9"
+		},
+		"jan": {
+			"amount": 238,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"jul": {
+			"amount": 169,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"jun": {
+			"amount": 153,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"mar": {
+			"amount": 143,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"may": {
+			"amount": 246,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"nov": {
+			"amount": 149,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"oct": {
+			"amount": 73,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"sep": {
+			"amount": 204,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		}
+	},
+	{
+		"apr": {
+			"amount": 183,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"aug": {
+			"amount": 285,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"dec": {
+			"amount": 285,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"feb": {
+			"amount": 97,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"item": {
+			"title": "Youngberry",
+			"value": "e2b93246-39c5-4aa2-811d-a900f4c0c60e"
+		},
+		"jan": {
+			"amount": 221,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"jul": {
+			"amount": 249,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"jun": {
+			"amount": 234,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"mar": {
+			"amount": 245,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"may": {
+			"amount": 264,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"nov": {
+			"amount": 222,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"oct": {
+			"amount": 260,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"sep": {
+			"amount": 259,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		}
+	},
+	{
+		"apr": {
+			"amount": 124,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"aug": {
+			"amount": 254,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"dec": {
+			"amount": 212,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"feb": {
+			"amount": 255,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"item": {
+			"title": "Berberis vulgaris",
+			"value": "aaabf643-149c-48ad-a6ba-5f2d42f68bb7"
+		},
+		"jan": {
+			"amount": 298,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"jul": {
+			"amount": 236,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"jun": {
+			"amount": 73,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"mar": {
+			"amount": 274,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"may": {
+			"amount": 290,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"nov": {
+			"amount": 230,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"oct": {
+			"amount": 164,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"sep": {
+			"amount": 62,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		}
+	},
+	{
+		"apr": {
+			"amount": 120,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"aug": {
+			"amount": 261,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"dec": {
+			"amount": 265,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"feb": {
+			"amount": 176,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"item": {
+			"title": "Cocoplum",
+			"value": "8c35b436-08c0-4de4-a51b-cdc01ac8b420"
+		},
+		"jan": {
+			"amount": 171,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"jul": {
+			"amount": 81,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"jun": {
+			"amount": 63,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"mar": {
+			"amount": 172,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"may": {
+			"amount": 70,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"nov": {
+			"amount": 298,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"oct": {
+			"amount": 244,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"sep": {
+			"amount": 227,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		}
+	},
+	{
+		"apr": {
+			"amount": 107,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"aug": {
+			"amount": 90,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"dec": {
+			"amount": 74,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"feb": {
+			"amount": 165,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"item": {
+			"title": "Barbadine",
+			"value": "2f1fe55e-286f-45e8-85f6-e9223b12ce71"
+		},
+		"jan": {
+			"amount": 143,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"jul": {
+			"amount": 162,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"jun": {
+			"amount": 199,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"mar": {
+			"amount": 251,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"may": {
+			"amount": 246,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"nov": {
+			"amount": 200,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"oct": {
+			"amount": 259,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"sep": {
+			"amount": 224,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		}
+	},
+	{
+		"apr": {
+			"amount": 166,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"aug": {
+			"amount": 102,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"dec": {
+			"amount": 224,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"feb": {
+			"amount": 249,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"item": {
+			"title": "Honeydew",
+			"value": "cfad5922-13ce-4e43-ac15-78452f721c80"
+		},
+		"jan": {
+			"amount": 142,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"jul": {
+			"amount": 164,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"jun": {
+			"amount": 235,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"mar": {
+			"amount": 67,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"may": {
+			"amount": 145,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"nov": {
+			"amount": 225,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"oct": {
+			"amount": 297,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"sep": {
+			"amount": 154,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		}
+	},
+	{
+		"apr": {
+			"amount": 203,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"aug": {
+			"amount": 68,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"dec": {
+			"amount": 114,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"feb": {
+			"amount": 121,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"item": {
+			"title": "Highbush cranberry",
+			"value": "890e2c17-ae44-4e42-a680-358c0fbfe392"
+		},
+		"jan": {
+			"amount": 264,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"jul": {
+			"amount": 94,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"jun": {
+			"amount": 208,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"mar": {
+			"amount": 150,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"may": {
+			"amount": 133,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"nov": {
+			"amount": 211,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"oct": {
+			"amount": 83,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"sep": {
+			"amount": 140,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		}
+	},
+	{
+		"apr": {
+			"amount": 263,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"aug": {
+			"amount": 284,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"dec": {
+			"amount": 166,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"feb": {
+			"amount": 244,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"item": {
+			"title": "Bilberry",
+			"value": "bb275397-c052-4ccf-a6ba-7dd0473f3a5f"
+		},
+		"jan": {
+			"amount": 265,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"jul": {
+			"amount": 258,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"jun": {
+			"amount": 78,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"mar": {
+			"amount": 274,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"may": {
+			"amount": 270,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"nov": {
+			"amount": 212,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"oct": {
+			"amount": 114,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"sep": {
+			"amount": 294,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		}
+	},
+	{
+		"apr": {
+			"amount": 189,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"aug": {
+			"amount": 69,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"dec": {
+			"amount": 254,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"feb": {
+			"amount": 180,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"item": {
+			"title": "Dwarf dangleberry",
+			"value": "4efdf003-bda2-4fa7-a37c-8acc695f6d18"
+		},
+		"jan": {
+			"amount": 152,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"jul": {
+			"amount": 185,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"jun": {
+			"amount": 163,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"mar": {
+			"amount": 179,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"may": {
+			"amount": 71,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"nov": {
+			"amount": 210,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"oct": {
+			"amount": 187,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"sep": {
+			"amount": 207,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		}
+	},
+	{
+		"apr": {
+			"amount": 294,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"aug": {
+			"amount": 110,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"dec": {
+			"amount": 123,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"feb": {
+			"amount": 237,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"item": {
+			"title": "Boysenberry",
+			"value": "ad4504c8-b64d-4832-bed2-f84ae6af94c4"
+		},
+		"jan": {
+			"amount": 69,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"jul": {
+			"amount": 145,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"jun": {
+			"amount": 126,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"mar": {
+			"amount": 263,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"may": {
+			"amount": 255,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"nov": {
+			"amount": 192,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"oct": {
+			"amount": 233,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		},
+		"sep": {
+			"amount": 258,
+			"uom": {
+				"title": "bag",
+				"value": "c2cbc91a-f846-4e8d-9d2d-85d286da6000"
+			}
+		}
+	},
+	{
+		"apr": {
+			"amount": 262,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"aug": {
+			"amount": 245,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"dec": {
+			"amount": 257,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"feb": {
+			"amount": 61,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"item": {
+			"title": "Chokeberry",
+			"value": "65c57517-ea72-4af2-a5f0-99f0fd800f42"
+		},
+		"jan": {
+			"amount": 282,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"jul": {
+			"amount": 115,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"jun": {
+			"amount": 278,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"mar": {
+			"amount": 236,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"may": {
+			"amount": 288,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"nov": {
+			"amount": 64,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"oct": {
+			"amount": 204,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		},
+		"sep": {
+			"amount": 68,
+			"uom": {
+				"title": "box",
+				"value": "48f8c503-9f05-45a6-a168-c641d6dab4e4"
+			}
+		}
+	}
 ]
