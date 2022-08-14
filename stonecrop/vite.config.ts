@@ -15,7 +15,7 @@ export default defineConfig({
 		minify: false,
 		lib: {
 			entry: resolve(projectRootDir, 'src/index.js'),
-			name: '@sedum/atable',
+			name: '@sedum/stonecrop',
 		},
 		rollupOptions: {
 			external: ['vue'],
