@@ -51,10 +51,10 @@ import { defineComponent, nextTick, PropType, provide } from 'vue'
 
 import { TableColumn, TableConfig, TableRow } from 'types'
 import TableDataStore from '.'
-import ACell from './ACell.vue'
-import ARow from './ARow.vue'
-import ATableHeader from './ATableHeader.vue'
-import ATableModal from './ATableModal.vue'
+import ACell from '@/components/ACell.vue'
+import ARow from '@/components/ARow.vue'
+import ATableHeader from '@/components/ATableHeader.vue'
+import ATableModal from '@/components/ATableModal.vue'
 
 export default defineComponent({
 	name: 'ATable',
@@ -112,53 +112,53 @@ export default defineComponent({
 
 		const getIndent = (colKey: number, indent: number) => {
 			if (indent && colKey === 0 && indent > 0) {
-				return indent * 1 + 'ch'
+				return `${indent}ch`
 			} else {
 				return null
 			}
 		}
 
-		const enterNav = (event: KeyboardEvent) => {
+		const enterNav = async (event: KeyboardEvent) => {
 			event.preventDefault()
 			event.stopPropagation()
-			event.shiftKey ? upCell(event) : downCell(event)
+			event.shiftKey ? await upCell(event) : await downCell(event)
 		}
 
-		const tabNav = (event: KeyboardEvent) => {
+		const tabNav = async (event: KeyboardEvent) => {
 			event.preventDefault()
 			event.stopPropagation()
-			event.shiftKey ? prevCell(event) : nextCell(event)
+			event.shiftKey ? await prevCell(event) : await nextCell(event)
 		}
 
-		const downArrowNav = (event: KeyboardEvent) => {
+		const downArrowNav = async (event: KeyboardEvent) => {
 			if (!event.shiftKey) {
 				event.preventDefault()
 				event.stopPropagation()
-				downCell(event)
+				await downCell(event)
 			}
 		}
 
-		const upArrowNav = (event: KeyboardEvent) => {
+		const upArrowNav = async (event: KeyboardEvent) => {
 			if (!event.shiftKey) {
 				event.preventDefault()
 				event.stopPropagation()
-				upCell(event)
+				await upCell(event)
 			}
 		}
 
-		const leftArrowNav = (event: KeyboardEvent) => {
+		const leftArrowNav = async (event: KeyboardEvent) => {
 			if (!event.shiftKey) {
 				event.preventDefault()
 				event.stopPropagation()
-				prevCell(event)
+				await prevCell(event)
 			}
 		}
 
-		const rightArrowNav = (event: KeyboardEvent) => {
+		const rightArrowNav = async (event: KeyboardEvent) => {
 			if (!event.shiftKey) {
 				event.preventDefault()
 				event.stopPropagation()
-				nextCell(event)
+				await nextCell(event)
 			}
 		}
 
@@ -192,7 +192,7 @@ export default defineComponent({
 			}
 		}
 
-		const downCell = (event: KeyboardEvent) => {
+		const downCell = async (event: KeyboardEvent) => {
 			const $cell = event.target as HTMLTableCellElement
 			const cellIndex = $cell.cellIndex
 			const $row = $cell.parentElement as HTMLTableRowElement
@@ -209,12 +209,11 @@ export default defineComponent({
 				}
 			}
 
-			nextTick(() => {
-				$nextCell.focus()
-			})
+			await nextTick()
+			$nextCell.focus()
 		}
 
-		const upCell = (event: KeyboardEvent) => {
+		const upCell = async (event: KeyboardEvent) => {
 			const $cell = event.target as HTMLTableCellElement
 			const cellIndex = $cell.cellIndex
 			const $row = $cell.parentElement as HTMLTableRowElement
@@ -230,12 +229,11 @@ export default defineComponent({
 				}
 			}
 
-			nextTick(() => {
-				$nextCell.focus()
-			})
+			await nextTick()
+			$nextCell.focus()
 		}
 
-		const nextCell = (event: KeyboardEvent) => {
+		const nextCell = async (event: KeyboardEvent) => {
 			const $cell = event.target as HTMLTableCellElement
 			const cellIndex = $cell.cellIndex
 			const $row = $cell.parentElement as HTMLTableRowElement
@@ -260,12 +258,11 @@ export default defineComponent({
 				$nextCell = $lastRow.cells[cellIndex + 1] // next cell
 			}
 
-			nextTick(() => {
-				$nextCell.focus()
-			})
+			await nextTick()
+			$nextCell.focus()
 		}
 
-		const prevCell = (event: KeyboardEvent) => {
+		const prevCell = async (event: KeyboardEvent) => {
 			const $cell = event.target as HTMLTableCellElement
 			const cellIndex = $cell.cellIndex
 			const $row = $cell.parentElement as HTMLTableRowElement
@@ -290,6 +287,7 @@ export default defineComponent({
 				$prevCell = $lastRow.cells[cellIndex - 1] // previous cell
 			}
 
+			await nextTick()
 			$prevCell.focus()
 		}
 

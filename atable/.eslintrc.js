@@ -8,6 +8,8 @@ module.exports = {
 	// Must use parserOptions instead of "parser" to allow vue-eslint-parser to keep working
 	// `parser: 'vue-eslint-parser'` is already included with any 'plugin:vue/**' config and should be omitted
 	parserOptions: {
+		tsconfigRootDir: __dirname,
+		project: ['./tsconfig.json'],
 		parser: require.resolve('@typescript-eslint/parser'),
 		extraFileExtensions: ['.vue'],
 	},
@@ -20,6 +22,7 @@ module.exports = {
 		// https://github.com/typescript-eslint/typescript-eslint/tree/master/packages/eslint-plugin#usage
 		// ESLint typescript rules
 		'plugin:@typescript-eslint/recommended',
+		'plugin:@typescript-eslint/recommended-requiring-type-checking',
 
 		// Uncomment any of the lines below to choose desired strictness,
 		// but leave only one uncommented!
@@ -54,5 +57,9 @@ module.exports = {
 		'vue/multi-word-component-names': 'off',
 		'vue/no-deprecated-slot-attribute': 'off',
 		'@typescript-eslint/no-explicit-any': 'off',
+		'@typescript-eslint/no-unsafe-assignment': 'off',
+		'@typescript-eslint/no-unsafe-return': 'off',
 	},
+
+	ignorePatterns: ['.eslintrc.js', '*.config.ts', 'node_modules/', 'dist/'],
 }

@@ -114,7 +114,7 @@ export default defineComponent({
 
 		const getIndent = (colKey: number, indent: number) => {
 			if (indent && colKey === 0 && indent > 0) {
-				return indent * 1 + 'ch'
+				return `${indent}ch`
 			} else {
 				return 'inherit'
 			}

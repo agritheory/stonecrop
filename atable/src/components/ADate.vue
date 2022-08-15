@@ -67,7 +67,7 @@ export default defineComponent({
 		let currentMonth = ref(todaysDate.getMonth())
 		let currentYear = ref(todaysDate.getFullYear())
 
-		let selectedDate = ref<string | number | Date>(tableData.cellData(props.colIndex, props.rowIndex))
+		let selectedDate = ref(tableData.cellData<string | number | Date>(props.colIndex, props.rowIndex))
 		let currentDates = ref<number[]>([])
 		let width = ref('')
 
@@ -144,7 +144,8 @@ export default defineComponent({
 		})
 
 		const dayWidth = computed(() => {
-			return Number(width.value.replace('px', '')) / (numberOfColumns - 1) + 'px'
+			const widthValue = Number(width.value.replace('px', ''))
+			return `${widthValue / (numberOfColumns - 1)}px`
 		})
 
 		const monthAndYear = computed(() => {

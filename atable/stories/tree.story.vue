@@ -36,7 +36,7 @@ const coa = ref({
 			align: 'left',
 			edit: false,
 			width: '20ch',
-			format: value => {
+			format: (value: { title?: string; value?: any }) => {
 				return value.title
 			},
 			component: 'TestModalComponent',

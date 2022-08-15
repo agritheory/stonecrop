@@ -21,7 +21,7 @@ const http_logs = ref({
 			align: 'left',
 			edit: false,
 			width: '35ch',
-			format: value => {
+			format: (value: { title?: string; value?: any }) => {
 				return value.title
 			},
 		},
@@ -57,7 +57,7 @@ const http_logs = ref({
 			edit: true,
 			width: '25ch',
 			component: ADate,
-			format: value => {
+			format: (value: number) => {
 				return new Date(Number(value)).toLocaleDateString('en-US')
 			},
 		},

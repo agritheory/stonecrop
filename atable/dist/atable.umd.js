@@ -64,10 +64,12 @@
     }
     createDisplayObject(display) {
       let defaultDisplay = [Object.assign({}, { modified: false })];
-      if ("0:0" in display) {
-        return display;
-      } else if ("default" in display) {
-        defaultDisplay = display.default;
+      if (display) {
+        if ("0:0" in display) {
+          return display;
+        } else if ("default" in display) {
+          defaultDisplay = display.default;
+        }
       }
       const parents = /* @__PURE__ */ new Set();
       for (let rowIndex = this.rows.length - 1; rowIndex >= 0; rowIndex--) {
@@ -197,7 +199,7 @@
       };
       const getIndent = (colKey, indent) => {
         if (indent && colKey === 0 && indent > 0) {
-          return indent * 1 + "ch";
+          return `${indent}ch`;
         } else {
           return "inherit";
         }
@@ -224,7 +226,7 @@
       };
     }
   });
-  const ACell_vue_vue_type_style_index_0_scoped_a7ef2d4f_lang = "";
+  const ACell_vue_vue_type_style_index_0_scoped_f343c8d8_lang = "";
   const _export_sfc = (sfc, props) => {
     const target = sfc.__vccOpts || sfc;
     for (const [key, val] of props) {
@@ -258,7 +260,7 @@
       innerHTML: _ctx.displayValue
     }, null, 44, _hoisted_1$2);
   }
-  const ACell = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["render", _sfc_render$4], ["__scopeId", "data-v-a7ef2d4f"]]);
+  const ACell = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["render", _sfc_render$4], ["__scopeId", "data-v-f343c8d8"]]);
   const _sfc_main$3 = vue.defineComponent({
     name: "ARow",
     props: {
@@ -425,7 +427,7 @@
       return { tableData, handleInput };
     }
   });
-  const ATableModal_vue_vue_type_style_index_0_scoped_25016cc4_lang = "";
+  const ATableModal_vue_vue_type_style_index_0_scoped_33741903_lang = "";
   function _sfc_render$1(_ctx, _cache, $props, $setup, $data, $options) {
     return vue.openBlock(), vue.createElementBlock("div", {
       ref: "amodal",
@@ -437,7 +439,7 @@
       vue.renderSlot(_ctx.$slots, "default", {}, void 0, true)
     ], 544);
   }
-  const ATableModal = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["render", _sfc_render$1], ["__scopeId", "data-v-25016cc4"]]);
+  const ATableModal = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["render", _sfc_render$1], ["__scopeId", "data-v-33741903"]]);
   const _sfc_main = vue.defineComponent({
     name: "ATable",
     components: {
@@ -489,47 +491,47 @@
       };
       const getIndent = (colKey, indent) => {
         if (indent && colKey === 0 && indent > 0) {
-          return indent * 1 + "ch";
+          return `${indent}ch`;
         } else {
           return null;
         }
       };
-      const enterNav = (event) => {
+      const enterNav = async (event) => {
         event.preventDefault();
         event.stopPropagation();
-        event.shiftKey ? upCell(event) : downCell(event);
+        event.shiftKey ? await upCell(event) : await downCell(event);
       };
-      const tabNav = (event) => {
+      const tabNav = async (event) => {
         event.preventDefault();
         event.stopPropagation();
-        event.shiftKey ? prevCell(event) : nextCell(event);
+        event.shiftKey ? await prevCell(event) : await nextCell(event);
       };
-      const downArrowNav = (event) => {
+      const downArrowNav = async (event) => {
         if (!event.shiftKey) {
           event.preventDefault();
           event.stopPropagation();
-          downCell(event);
+          await downCell(event);
         }
       };
-      const upArrowNav = (event) => {
+      const upArrowNav = async (event) => {
         if (!event.shiftKey) {
           event.preventDefault();
           event.stopPropagation();
-          upCell(event);
+          await upCell(event);
         }
       };
-      const leftArrowNav = (event) => {
+      const leftArrowNav = async (event) => {
         if (!event.shiftKey) {
           event.preventDefault();
           event.stopPropagation();
-          prevCell(event);
+          await prevCell(event);
         }
       };
-      const rightArrowNav = (event) => {
+      const rightArrowNav = async (event) => {
         if (!event.shiftKey) {
           event.preventDefault();
           event.stopPropagation();
-          nextCell(event);
+          await nextCell(event);
         }
       };
       const endNav = (event) => {
@@ -556,7 +558,7 @@
           $nextCell.focus();
         }
       };
-      const downCell = (event) => {
+      const downCell = async (event) => {
         const $cell = event.target;
         const cellIndex = $cell.cellIndex;
         const $row = $cell.parentElement;
@@ -569,11 +571,10 @@
             tableData.toggleRowExpand(rowIndex - 1);
           }
         }
-        vue.nextTick(() => {
-          $nextCell.focus();
-        });
+        await vue.nextTick();
+        $nextCell.focus();
       };
-      const upCell = (event) => {
+      const upCell = async (event) => {
         const $cell = event.target;
         const cellIndex = $cell.cellIndex;
         const $row = $cell.parentElement;
@@ -586,11 +587,10 @@
             tableData.toggleRowExpand(tableData.display[rowIndex - 2].parent);
           }
         }
-        vue.nextTick(() => {
-          $nextCell.focus();
-        });
+        await vue.nextTick();
+        $nextCell.focus();
       };
-      const nextCell = (event) => {
+      const nextCell = async (event) => {
         const $cell = event.target;
         const cellIndex = $cell.cellIndex;
         const $row = $cell.parentElement;
@@ -610,11 +610,10 @@
         } else {
           $nextCell = $lastRow.cells[cellIndex + 1];
         }
-        vue.nextTick(() => {
-          $nextCell.focus();
-        });
+        await vue.nextTick();
+        $nextCell.focus();
       };
-      const prevCell = (event) => {
+      const prevCell = async (event) => {
         const $cell = event.target;
         const cellIndex = $cell.cellIndex;
         const $row = $cell.parentElement;
@@ -633,6 +632,7 @@
         } else {
           $prevCell = $lastRow.cells[cellIndex - 1];
         }
+        await vue.nextTick();
         $prevCell.focus();
       };
       const moveCursorToEnd = (target) => {
@@ -670,7 +670,7 @@
       };
     }
   });
-  const ATable_vue_vue_type_style_index_0_scoped_512776fb_lang = "";
+  const ATable_vue_vue_type_style_index_0_scoped_bda6844d_lang = "";
   const _hoisted_1 = { class: "atable" };
   function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     const _component_ATableHeader = vue.resolveComponent("ATableHeader");
@@ -739,7 +739,7 @@
       ])
     ]);
   }
-  const ATable = /* @__PURE__ */ _export_sfc(_sfc_main, [["render", _sfc_render], ["__scopeId", "data-v-512776fb"]]);
+  const ATable = /* @__PURE__ */ _export_sfc(_sfc_main, [["render", _sfc_render], ["__scopeId", "data-v-bda6844d"]]);
   function install(app) {
     app.component("ATable", ATable);
     app.component("ATableHeader", ATableHeader);

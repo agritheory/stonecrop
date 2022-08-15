@@ -43,11 +43,13 @@ export default class TableDataStore {
 		let defaultDisplay: TableDisplay[] = [Object.assign({}, { modified: false })]
 
 		// TODO: (typing) what is the type of `display` here?
-		if ('0:0' in display) {
-			return display
-		} else if ('default' in display) {
-			// TODO: (typing) what is the possible input here for 'default'?
-			defaultDisplay = display.default
+		if (display) {
+			if ('0:0' in display) {
+				return display
+			} else if ('default' in display) {
+				// TODO: (typing) what is the possible input here for 'default'?
+				defaultDisplay = display.default
+			}
 		}
 
 		// TODO: (typing) is this type correct for the parent set?
@@ -82,7 +84,7 @@ export default class TableDataStore {
 		})
 	}
 
-	cellData(colIndex: number, rowIndex: number) {
+	cellData<T>(colIndex: number, rowIndex: number): T {
 		return this.table[`${colIndex}:${rowIndex}`]
 	}
 
