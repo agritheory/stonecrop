@@ -5,7 +5,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, inject, computed } from 'vue'
+import { defineComponent, inject } from 'vue'
 
 import TableDataStore from '.'
 
@@ -32,7 +32,7 @@ export default defineComponent({
 		}
 
 		// const cellBackgroundColor = computed(() => {
-		// 	if(tableData.modal.parent){
+		// 	if (tableData.modal.parent) {
 		// 		let computedstyle = window.getComputedStyle(tableData.modal.parent)
 		// 		return 'blue'
 		// 	} else {

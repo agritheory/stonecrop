@@ -35,6 +35,14 @@
 			"allowedCategories": ["prototype"]
 		},
 		{
+			"name": "@typescript-eslint/eslint-plugin",
+			"allowedCategories": ["prototype"]
+		},
+		{
+			"name": "@typescript-eslint/parser",
+			"allowedCategories": ["prototype"]
+		},
+		{
 			"name": "@vitejs/plugin-vue",
 			"allowedCategories": ["prototype"]
 		},
@@ -44,6 +52,18 @@
 		},
 		{
 			"name": "cypress",
+			"allowedCategories": ["prototype"]
+		},
+		{
+			"name": "eslint",
+			"allowedCategories": ["prototype"]
+		},
+		{
+			"name": "eslint-config-prettier",
+			"allowedCategories": ["prototype"]
+		},
+		{
+			"name": "eslint-plugin-vue",
 			"allowedCategories": ["prototype"]
 		},
 		{
@@ -72,6 +92,14 @@
 		},
 		{
 			"name": "portal-vue",
+			"allowedCategories": ["prototype"]
+		},
+		{
+			"name": "prettier",
+			"allowedCategories": ["prototype"]
+		},
+		{
+			"name": "pretty-quick",
 			"allowedCategories": ["prototype"]
 		},
 		{

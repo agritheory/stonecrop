@@ -30,7 +30,7 @@ export default class TableDataStore {
 	}
 
 	createTableObject() {
-		let table = {}
+		const table = {}
 		for (const [colIndex, column] of this.columns.entries()) {
 			for (const [rowIndex, row] of this.rows.entries()) {
 				table[`${colIndex}:${rowIndex}`] = row[column.name]
@@ -42,17 +42,18 @@ export default class TableDataStore {
 	createDisplayObject(display?: TableDisplay[]) {
 		let defaultDisplay: TableDisplay[] = [Object.assign({}, { modified: false })]
 
-		if (display?.hasOwnProperty('0:0')) {
+		// TODO: (typing) what is the type of `display` here?
+		if ('0:0' in display) {
 			return display
-		} else if (display?.hasOwnProperty('default')) {
+		} else if ('default' in display) {
 			// TODO: (typing) what is the possible input here for 'default'?
 			defaultDisplay = display.default
 		}
 
 		// TODO: (typing) is this type correct for the parent set?
-		let parents = new Set<string | number>()
+		const parents = new Set<string | number>()
 		for (let rowIndex = this.rows.length - 1; rowIndex >= 0; rowIndex--) {
-			let row = this.rows[rowIndex]
+			const row = this.rows[rowIndex]
 			if (row.parent) {
 				parents.add(row.parent)
 			}

@@ -8,8 +8,8 @@ export type TableColumn = {
 	type?: string
 	width?: string
 
-	format?: Function
-	mask?: Function
+	format?: (value: any) => any
+	mask?: (value: any) => any
 }
 
 export type TableConfig = {

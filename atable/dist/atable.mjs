@@ -51,7 +51,7 @@ class TableDataStore {
     this.modal = reactive({ visible: false });
   }
   createTableObject() {
-    let table = {};
+    const table = {};
     for (const [colIndex, column] of this.columns.entries()) {
       for (const [rowIndex, row] of this.rows.entries()) {
         table[`${colIndex}:${rowIndex}`] = row[column.name];
@@ -61,14 +61,14 @@ class TableDataStore {
   }
   createDisplayObject(display) {
     let defaultDisplay = [Object.assign({}, { modified: false })];
-    if (display == null ? void 0 : display.hasOwnProperty("0:0")) {
+    if ("0:0" in display) {
       return display;
-    } else if (display == null ? void 0 : display.hasOwnProperty("default")) {
+    } else if ("default" in display) {
       defaultDisplay = display.default;
     }
-    let parents = /* @__PURE__ */ new Set();
+    const parents = /* @__PURE__ */ new Set();
     for (let rowIndex = this.rows.length - 1; rowIndex >= 0; rowIndex--) {
-      let row = this.rows[rowIndex];
+      const row = this.rows[rowIndex];
       if (row.parent) {
         parents.add(row.parent);
       }
@@ -359,7 +359,7 @@ const _sfc_main$2 = defineComponent({
     },
     config: {
       type: Object,
-      default: {}
+      default: () => new Object()
     },
     tableid: {
       type: String
@@ -370,7 +370,7 @@ const _sfc_main$2 = defineComponent({
     return { tableData };
   }
 });
-const ATableHeader_vue_vue_type_style_index_0_scoped_43b3d399_lang = "";
+const ATableHeader_vue_vue_type_style_index_0_scoped_80fa6b2a_lang = "";
 const _hoisted_1$1 = { key: 0 };
 const _hoisted_2 = { tabindex: "-1" };
 function _sfc_render$2(_ctx, _cache, $props, $setup, $data, $options) {
@@ -398,7 +398,7 @@ function _sfc_render$2(_ctx, _cache, $props, $setup, $data, $options) {
     ])
   ])) : createCommentVNode("", true);
 }
-const ATableHeader = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["render", _sfc_render$2], ["__scopeId", "data-v-43b3d399"]]);
+const ATableHeader = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["render", _sfc_render$2], ["__scopeId", "data-v-80fa6b2a"]]);
 const _sfc_main$1 = defineComponent({
   name: "ATableModal",
   props: {
@@ -422,7 +422,7 @@ const _sfc_main$1 = defineComponent({
     return { tableData, handleInput };
   }
 });
-const ATableModal_vue_vue_type_style_index_0_scoped_3ae4926d_lang = "";
+const ATableModal_vue_vue_type_style_index_0_scoped_25016cc4_lang = "";
 function _sfc_render$1(_ctx, _cache, $props, $setup, $data, $options) {
   return openBlock(), createElementBlock("div", {
     ref: "amodal",
@@ -434,7 +434,7 @@ function _sfc_render$1(_ctx, _cache, $props, $setup, $data, $options) {
     renderSlot(_ctx.$slots, "default", {}, void 0, true)
   ], 544);
 }
-const ATableModal = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["render", _sfc_render$1], ["__scopeId", "data-v-3ae4926d"]]);
+const ATableModal = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["render", _sfc_render$1], ["__scopeId", "data-v-25016cc4"]]);
 const _sfc_main = defineComponent({
   name: "ATable",
   components: {
@@ -453,11 +453,11 @@ const _sfc_main = defineComponent({
     },
     rows: {
       type: Array,
-      default: []
+      default: () => []
     },
     config: {
       type: Object,
-      default: {}
+      default: () => new Object()
     },
     tableid: {
       type: String
@@ -667,7 +667,7 @@ const _sfc_main = defineComponent({
     };
   }
 });
-const ATable_vue_vue_type_style_index_0_scoped_609aa02b_lang = "";
+const ATable_vue_vue_type_style_index_0_scoped_512776fb_lang = "";
 const _hoisted_1 = { class: "atable" };
 function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   const _component_ATableHeader = resolveComponent("ATableHeader");
@@ -736,8 +736,8 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     ])
   ]);
 }
-const ATable = /* @__PURE__ */ _export_sfc(_sfc_main, [["render", _sfc_render], ["__scopeId", "data-v-609aa02b"]]);
-function install(app, options) {
+const ATable = /* @__PURE__ */ _export_sfc(_sfc_main, [["render", _sfc_render], ["__scopeId", "data-v-512776fb"]]);
+function install(app) {
   app.component("ATable", ATable);
   app.component("ATableHeader", ATableHeader);
   app.component("ATableModal", ATableModal);

@@ -31,7 +31,7 @@ export default defineComponent({
 		},
 		config: {
 			type: Object as PropType<TableConfig>,
-			default: {},
+			default: () => new Object(),
 		},
 		tableid: {
 			type: String,

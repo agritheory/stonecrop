@@ -74,11 +74,11 @@ export default defineComponent({
 		},
 		rows: {
 			type: Array as PropType<TableRow[]>,
-			default: [],
+			default: () => [],
 		},
 		config: {
 			type: Object as PropType<TableConfig>,
-			default: {},
+			default: () => new Object(),
 		},
 		tableid: {
 			type: String,

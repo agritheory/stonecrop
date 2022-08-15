@@ -30,7 +30,7 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, inject, onMounted, ref, shallowRef, watch } from 'vue'
+import { computed, defineComponent, inject, onMounted, ref, watch } from 'vue'
 
 import TableDataStore from '.'
 
@@ -57,7 +57,7 @@ export default defineComponent({
 			default: 0,
 		},
 	},
-	setup(props, context) {
+	setup(props /* context */) {
 		const tableData = inject<TableDataStore>(props.tableid)
 
 		const numberOfRows = 6

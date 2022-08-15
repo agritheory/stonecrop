@@ -6,6 +6,7 @@ module.exports = {
 	htmlWhitespaceSensitivity: 'css',
 	insertPragma: false,
 	jsxSingleQuote: false,
+	printWidth: 120,
 	proseWrap: 'preserve',
 	quoteProps: 'as-needed',
 	requirePragma: false,
@@ -15,5 +16,4 @@ module.exports = {
 	trailingComma: 'es5',
 	useTabs: true,
 	vueIndentScriptAndStyle: false,
-	printWidth: 120,
 }
