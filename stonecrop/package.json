@@ -7,7 +7,7 @@
 	"dependencies": {
 		"overmind": "^28.0.1",
 		"overmind-vue": "^28.0.3",
-		"vue": "^3.2.16",
+		"vue": "^3.2.37",
 		"vue-router": "^4",
 		"unstorage": "~0.2.7"
 	},
@@ -24,7 +24,8 @@
 		"vite": "^3.0.5",
 		"vue-template-compiler": "^2.6.14",
 		"vue-router": "^4",
-		"histoire": "~0.9.6"
+		"histoire": "~0.10.2",
+		"@histoire/plugin-vue": "~0.10.2"
 	},
 	"scripts": {
 		"dev": "vite serve dev/ -c dev/vite.config.js -d",

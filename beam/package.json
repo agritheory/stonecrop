@@ -9,7 +9,7 @@
 	},
 	"dependencies": {
 		"portal-vue": "~3.0.0-beta.0",
-		"vue": "^3.2.16"
+		"vue": "^3.2.37"
 	},
 	"devDependencies": {
 		"@vitejs/plugin-vue": "^3.0.1",
