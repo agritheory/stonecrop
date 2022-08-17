@@ -1,35 +1,47 @@
 <template>
 	<form>
 		<component
-			v-for="(component, key) in schema"
-			:is="deriveComponent(component)"
+			v-for="(componentObj, key) in schema"
+			:is="deriveComponent(componentObj)"
 			:key="key"
-			:schema="component"
-			v-bind="componentProps(component)"
-			:value="formData[component.fieldname]">
+			:schema="componentObj"
+			v-bind="componentProps(componentObj)"
+			:value="formData[componentObj.fieldname]">
 		</component>
 	</form>
 </template>
-<script>
-import { defineComponent, ref } from 'vue'
+
+<script lang="ts">
+import { defineComponent, PropType, ref } from 'vue'
+
+import { SchemaTypes } from 'types'
 
 export default defineComponent({
 	name: 'AForm',
-	props: ['data', 'schema', 'key'],
-	setup(props, context) {
+	props: {
+		schema: {
+			type: Array as PropType<SchemaTypes[]>,
+			required: true,
+		},
+		data: {
+			type: Array,
+			required: true,
+		},
+		formId: {
+			type: Number,
+		},
+	},
+	setup(props) {
 		const formData = ref(props.data || {})
-		function deriveComponent(schema) {
-			if (schema.component) {
-				return schema.component
-			}
-			if (schema.fieldtype) {
-				return schema.fieldtype
-			}
+
+		const deriveComponent = (componentObj: SchemaTypes) => {
+			return componentObj.component || componentObj.fieldtype || 'ATextInput'
 		}
-		function componentProps(component) {
+
+		const componentProps = (componentObj: SchemaTypes) => {
 			let propsToPass = {}
-			for (const [key, value] of Object.entries(component)) {
-				if (key != 'component' && key != 'fieldtype') {
+			for (const [key, value] of Object.entries(componentObj)) {
+				if (!['component', 'fieldtype'].includes(key)) {
 					propsToPass[key] = value
 				}
 			}
@@ -39,6 +51,7 @@ export default defineComponent({
 	},
 })
 </script>
+
 <style scoped>
 form {
 	display: flex;

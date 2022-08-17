@@ -1,19 +1,20 @@
 <template>
 	<div>
-		<input :value="value" :required="required" :id="uuid" :disabled="readOnly" @input="update($event.target.value)" />
+		<input :value="value" :required="required" :id="uuid" :disabled="readOnly" @input="update" />
 		<label :for="uuid">{{ label }} </label>
 		<p v-show="validation.errorMessage" v-html="validation.errorMessage"></p>
 	</div>
 </template>
 
-<script>
-export default {
+<script lang="ts">
+import { defineComponent } from 'vue'
+
+export default defineComponent({
 	name: 'ATextInput',
 	props: {
 		value: { required: false },
 		required: {
 			type: Boolean,
-			default: false,
 		},
 		label: {
 			type: String,
@@ -21,7 +22,6 @@ export default {
 		},
 		readOnly: {
 			type: Boolean,
-			default: false,
 		},
 		uuid: {
 			type: Number,
@@ -32,13 +32,17 @@ export default {
 			default: () => ({ errorMessage: '&nbsp;' }),
 		},
 	},
-	methods: {
-		update(value) {
-			this.$emit('update:value', value)
-		},
+	setup(props, context) {
+		const update = (event: InputEvent) => {
+			const value = (event.target as HTMLInputElement).value
+			context.emit('update:value', value)
+		}
+
+		return { update }
 	},
-}
+})
 </script>
+
 <style scoped>
 div {
 	min-width: 40ch;
