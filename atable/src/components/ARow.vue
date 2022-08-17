@@ -1,38 +1,20 @@
 <template>
 	<tr v-show="rowVisible()">
-		<td
-			v-if="TableData.config.numberedRows"
-			:style="{
-				width: 'TableData.numberedRowWidth',
-				'text-align': 'center',
-				'background-color': 'var(--brand-color)',
-				color: 'var(--header-text-color)',
-				'font-weight': 'bold',
-				'border-color': 'var(--header-border-color)',
-				'user-select': 'none',
-			}">
+		<td v-if="tableData.config.numberedRows" :style="numberedRowStyle">
 			{{ rowIndex + 1 }}
 		</td>
-		<td
-			v-if="TableData.config.treeView"
-			:style="{
-				width: '2ch',
-				'text-align': 'center',
-				'background-color': 'var(--brand-color)',
-				color: 'var(--header-text-color)',
-				'font-weight': 'bold',
-				'border-color': 'var(--header-border-color)',
-				'user-select': 'none',
-			}"
-			@click="toggleRowExpand(rowIndex)">
+		<td v-if="tableData.config.treeView" :style="treeRowStyle" @click="toggleRowExpand(rowIndex)">
 			{{ getRowExpandSymbol() }}
 		</td>
-		<slot v-if="!TableData.config.numberedRows && !TableData.config.treeView" name="indexCell" />
+		<slot v-if="!tableData.config.numberedRows && !tableData.config.treeView" name="indexCell" />
 		<slot />
 	</tr>
 </template>
-<script>
-import { defineComponent, inject } from 'vue'
+
+<script lang="ts">
+import { CSSProperties, defineComponent, inject } from 'vue'
+
+import TableDataStore from '.'
 
 export default defineComponent({
 	name: 'ARow',
@@ -58,43 +40,65 @@ export default defineComponent({
 		},
 	},
 	setup(props) {
-		const TableData = inject(props.tableid)
+		const tableData = inject<TableDataStore>(props.tableid)
 
-		function getRowExpandSymbol() {
-			if (!TableData.config.treeView) {
+		const numberedRowStyle: CSSProperties = {
+			backgroundColor: 'var(--brand-color)',
+			borderColor: 'var(--header-border-color)',
+			color: 'var(--header-text-color)',
+			fontWeight: 'bold',
+			textAlign: 'center',
+			userSelect: 'none',
+			width: tableData.numberedRowWidth.value,
+		}
+
+		const treeRowStyle: CSSProperties = {
+			backgroundColor: 'var(--brand-color)',
+			borderColor: 'var(--header-border-color)',
+			color: 'var(--header-text-color)',
+			fontWeight: 'bold',
+			textAlign: 'center',
+			userSelect: 'none',
+			width: '2ch',
+		}
+
+		const getRowExpandSymbol = () => {
+			if (!tableData.config.treeView) {
 				return ''
 			}
-			if (TableData.display[props.rowIndex].isRoot && !TableData.display[props.rowIndex].childrenOpen) {
-				return '+'
+
+			if (tableData.display[props.rowIndex].isRoot) {
+				if (tableData.display[props.rowIndex].childrenOpen) {
+					return '-'
+				} else {
+					return '+'
+				}
 			}
-			if (TableData.display[props.rowIndex].isRoot && TableData.display[props.rowIndex].childrenOpen) {
-				return '-'
-			}
-			if (TableData.display[props.rowIndex].isParent && !TableData.display[props.rowIndex].childrenOpen) {
-				return '+'
-			} else if (TableData.display[props.rowIndex].isParent && TableData.display[props.rowIndex].childrenOpen) {
-				return '-'
+
+			if (tableData.display[props.rowIndex].isParent) {
+				if (tableData.display[props.rowIndex].childrenOpen) {
+					return '-'
+				} else {
+					return '+'
+				}
 			} else {
 				return ''
 			}
 		}
 
-		function rowVisible() {
-			if (!TableData.config.treeView) {
+		const rowVisible = () => {
+			if (!tableData.config.treeView) {
 				return true
 			}
-			if (TableData.display[props.rowIndex].isRoot) {
-				return true
-			} else {
-				return TableData.display[props.rowIndex].open
-			}
+
+			return tableData.display[props.rowIndex].isRoot || tableData.display[props.rowIndex].open
 		}
 
-		function toggleRowExpand(rowIndex) {
-			TableData.toggleRowExpand(rowIndex)
+		const toggleRowExpand = (rowIndex: number) => {
+			tableData.toggleRowExpand(rowIndex)
 		}
 
-		return { TableData, getRowExpandSymbol, toggleRowExpand, rowVisible }
+		return { getRowExpandSymbol, numberedRowStyle, rowVisible, tableData, toggleRowExpand, treeRowStyle }
 	},
 })
 </script>

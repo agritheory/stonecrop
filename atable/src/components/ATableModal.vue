@@ -3,49 +3,48 @@
 		<slot />
 	</div>
 </template>
-<script>
-import { defineComponent, inject, computed } from 'vue'
+
+<script lang="ts">
+import { defineComponent, inject } from 'vue'
+
+import TableDataStore from '.'
 
 export default defineComponent({
 	name: 'ATableModal',
 	props: {
 		colIndex: {
 			type: Number,
-			required: false,
 			default: 0,
 		},
 		rowIndex: {
 			type: Number,
-			required: false,
 			default: 0,
 		},
 		tableid: {
 			type: String,
-			required: false,
 		},
 	},
 	setup(props) {
-		const TableData = inject(props.tableid)
+		const tableData = inject<TableDataStore>(props.tableid)
 
-		function handleInput(event) {
+		const handleInput = (event: Event) => {
 			event.stopPropagation()
 		}
 
 		// const cellBackgroundColor = computed(() => {
-		// 	console.log('cellBGColor')
-		// 	if(TableData.modal.parent){
-		// 		let computedstyle = window.getComputedStyle(TableData.modal.parent)
-		// 		console.log('computedstyle.backgroundColor', computedstyle.backgroundColor)
+		// 	if (tableData.modal.parent) {
+		// 		let computedstyle = window.getComputedStyle(tableData.modal.parent)
 		// 		return 'blue'
 		// 	} else {
 		// 		return 'inherit'
 		// 	}
 		// })
 
-		return { TableData, handleInput }
+		return { tableData, handleInput }
 	},
 })
 </script>
+
 <style scoped>
 div {
 	z-index: 100;

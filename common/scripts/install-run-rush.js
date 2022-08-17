@@ -6,12 +6,16 @@ var __createBinding =
 	(Object.create
 		? function (o, m, k, k2) {
 				if (k2 === undefined) k2 = k
-				Object.defineProperty(o, k2, {
-					enumerable: true,
-					get: function () {
-						return m[k]
-					},
-				})
+				var desc = Object.getOwnPropertyDescriptor(m, k)
+				if (!desc || ('get' in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+					desc = {
+						enumerable: true,
+						get: function () {
+							return m[k]
+						},
+					}
+				}
+				Object.defineProperty(o, k2, desc)
 		  }
 		: function (o, m, k, k2) {
 				if (k2 === undefined) k2 = k
@@ -32,7 +36,8 @@ var __importStar =
 		if (mod && mod.__esModule) return mod
 		var result = {}
 		if (mod != null)
-			for (var k in mod) if (k !== 'default' && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k)
+			for (var k in mod)
+				if (k !== 'default' && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k)
 		__setModuleDefault(result, mod)
 		return result
 	}
@@ -52,13 +57,13 @@ const fs = __importStar(require('fs'))
 const install_run_1 = require('./install-run')
 const PACKAGE_NAME = '@microsoft/rush'
 const RUSH_PREVIEW_VERSION = 'RUSH_PREVIEW_VERSION'
-function _getRushVersion() {
+function _getRushVersion(logger) {
 	const rushPreviewVersion = process.env[RUSH_PREVIEW_VERSION]
 	if (rushPreviewVersion !== undefined) {
-		console.log(`Using Rush version from environment variable ${RUSH_PREVIEW_VERSION}=${rushPreviewVersion}`)
+		logger.info(`Using Rush version from environment variable ${RUSH_PREVIEW_VERSION}=${rushPreviewVersion}`)
 		return rushPreviewVersion
 	}
-	const rushJsonFolder = install_run_1.findRushJsonFolder()
+	const rushJsonFolder = (0, install_run_1.findRushJsonFolder)()
 	const rushJsonPath = path.join(rushJsonFolder, install_run_1.RUSH_JSON_FILENAME)
 	try {
 		const rushJsonContents = fs.readFileSync(rushJsonPath, 'utf-8')
@@ -87,7 +92,27 @@ function _run() {
 	if (!nodePath || !scriptPath) {
 		throw new Error('Unexpected exception: could not detect node path or script path')
 	}
-	if (process.argv.length < 3) {
+	let commandFound = false
+	let logger = { info: console.log, error: console.error }
+	for (const arg of packageBinArgs) {
+		if (arg === '-q' || arg === '--quiet') {
+			// The -q/--quiet flag is supported by both `rush` and `rushx`, and will suppress
+			// any normal informational/diagnostic information printed during startup.
+			//
+			// To maintain the same user experience, the install-run* scripts pass along this
+			// flag but also use it to suppress any diagnostic information normally printed
+			// to stdout.
+			logger = {
+				info: () => {},
+				error: console.error,
+			}
+		} else if (!arg.startsWith('-') || arg === '-h' || arg === '--help') {
+			// We either found something that looks like a command (i.e. - doesn't start with a "-"),
+			// or we found the -h/--help flag, which can be run without a command
+			commandFound = true
+		}
+	}
+	if (!commandFound) {
 		console.log(`Usage: ${scriptName} <command> [args...]`)
 		if (scriptName === 'install-run-rush.js') {
 			console.log(`Example: ${scriptName} build --to myproject`)
@@ -96,10 +121,10 @@ function _run() {
 		}
 		process.exit(1)
 	}
-	install_run_1.runWithErrorAndStatusCode(() => {
-		const version = _getRushVersion()
-		console.log(`The rush.json configuration requests Rush version ${version}`)
-		return install_run_1.installAndRun(PACKAGE_NAME, version, bin, packageBinArgs)
+	;(0, install_run_1.runWithErrorAndStatusCode)(logger, () => {
+		const version = _getRushVersion(logger)
+		logger.info(`The rush.json configuration requests Rush version ${version}`)
+		return (0, install_run_1.installAndRun)(logger, PACKAGE_NAME, version, bin, packageBinArgs)
 	})
 }
 _run()

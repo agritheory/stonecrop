@@ -1,16 +1,10 @@
 <template>
 	<td
 		ref="colIndex + ':' + rowIndex"
-		:contenteditable="TableData.columns[colIndex].edit === true ? true : false"
+		:contenteditable="tableData.columns[colIndex].edit"
 		:tabindex="0"
 		:spellcheck="false"
-		:style="{
-			'text-align': textAlign,
-			width: cellWidth,
-			'background-color': cellModified === false ? 'inherit' : 'var(--cell-modified-color)',
-			'font-weight': cellModified === false ? 'inherit' : 'bold',
-			'padding-left': getIndent(colIndex, TableData.display[rowIndex]?.indent),
-		}"
+		:style="cellStyle"
 		@focus="onFocus($event)"
 		@paste="onChange($event)"
 		@blur="onChange($event)"
@@ -26,8 +20,10 @@
 		@click="handleInput"
 		v-html="displayValue" />
 </template>
-<script>
-import { ref, defineComponent, inject, computed, watch, resolveDynamicComponent } from 'vue'
+
+<script lang="ts">
+import { computed, CSSProperties, defineComponent, inject, ref, resolveDynamicComponent } from 'vue'
+import TableDataStore from '.'
 
 export default defineComponent({
 	name: 'ACell',
@@ -35,117 +31,120 @@ export default defineComponent({
 		colIndex: {
 			type: Number,
 			required: true,
-			default: 0,
 		},
 		rowIndex: {
 			type: Number,
 			required: true,
-			default: 0,
 		},
 		tableid: {
 			type: String,
 			required: true,
-			default: () => {
-				return undefined
-			},
 		},
 	},
 	setup(props) {
-		const TableData = inject(props.tableid)
+		const tableData = inject<TableDataStore>(props.tableid)
 
 		let cellModified = ref(false)
 
 		const displayValue = computed(() => {
-			if (TableData.columns[props.colIndex].format !== undefined) {
-				return TableData.columns[props.colIndex].format(TableData.cellData(props.colIndex, props.rowIndex))
+			const data = tableData.cellData(props.colIndex, props.rowIndex)
+			if (tableData.columns[props.colIndex].format) {
+				return tableData.columns[props.colIndex].format(data)
 			} else {
-				return TableData.cellData(props.colIndex, props.rowIndex)
+				return data
 			}
 		})
 
-		const handleInput = function (event) {
-			if (TableData.columns[props.colIndex].mask !== undefined) {
-				console.log('masking function')
-				// TableData.columns[props.colIndex].mask(event)
+		const handleInput = (event: MouseEvent) => {
+			if (tableData.columns[props.colIndex].mask) {
+				// tableData.columns[props.colIndex].mask(event)
 			}
-			if (TableData.columns[props.colIndex].hasOwnProperty('component')) {
-				if (resolveDynamicComponent(TableData.columns[props.colIndex].component)) {
-					const domRect = event.target.getBoundingClientRect()
-					TableData.modal.visible = true
-					TableData.modal.colIndex = props.colIndex
-					TableData.modal.rowIndex = props.rowIndex
-					TableData.modal.parent = event.target
-					TableData.modal.top = domRect.top + domRect.height
-					TableData.modal.left = domRect.left
-					TableData.modal.width = cellWidth
-					TableData.modal.component = TableData.columns[props.colIndex].component
+
+			if (tableData.columns[props.colIndex].component) {
+				if (resolveDynamicComponent(tableData.columns[props.colIndex].component)) {
+					const target = event.target as HTMLElement
+					const domRect = target.getBoundingClientRect()
+					tableData.modal.visible = true
+					tableData.modal.colIndex = props.colIndex
+					tableData.modal.rowIndex = props.rowIndex
+					tableData.modal.parent = target
+					tableData.modal.top = domRect.top + domRect.height
+					tableData.modal.left = domRect.left
+					tableData.modal.width = cellWidth.value
+					tableData.modal.component = tableData.columns[props.colIndex].component
 				}
-				console.log(event.target)
 			}
+
 			return event
 		}
 
-		const updateData = function (event) {
+		const updateData = (event: Event) => {
 			if (event) {
 				// custom components need to handle their own updateData, this is the default
-				if (TableData.columns[props.colIndex].component === undefined) {
-					TableData.setCellData(props.rowIndex, props.colIndex, event.target.innerHTML)
+				if (!tableData.columns[props.colIndex].component) {
+					const target = event.target as HTMLElement
+					tableData.setCellData(props.rowIndex, props.colIndex, target.innerHTML)
 				}
-				cellModified = true
+				cellModified.value = true
 			}
 		}
 
 		const textAlign = computed(() => {
-			return TableData.columns[props.colIndex].align !== undefined
-				? TableData.columns[props.colIndex].align.toLowerCase()
-				: 'center'
+			return tableData.columns[props.colIndex].align || 'center'
 		})
 
 		const cellWidth = computed(() => {
-			return TableData.columns[props.colIndex].width !== undefined ? TableData.columns[props.colIndex].width : '40ch'
+			return tableData.columns[props.colIndex].width || '40ch'
 		})
 
 		let currentData = ''
-		const onFocus = function (event) {
-			currentData = event.target.innerText
-			// console.log(currentData)
-		}
-		const onChange = function (event) {
-			if (event.target.innerHTML !== currentData) {
-				currentData = event.target.innerText
-				event.target.dispatchEvent(new Event('change'))
-				cellModified = true // set display instead
-			}
-			console.log('cellModified', cellModified)
+		const onFocus = (event: FocusEvent) => {
+			const target = event.target as HTMLElement
+			currentData = target.innerText
 		}
 
-		const getIndent = function (colKey, indent) {
+		const onChange = (event: ClipboardEvent | FocusEvent | Event) => {
+			const target = event.target as HTMLElement
+			if (target.innerHTML !== currentData) {
+				currentData = target.innerText
+				target.dispatchEvent(new Event('change'))
+				cellModified.value = true // set display instead
+			}
+		}
+
+		const getIndent = (colKey: number, indent: number) => {
 			if (indent && colKey === 0 && indent > 0) {
-				return indent * 1 + 'ch'
+				return `${indent}ch`
 			} else {
 				return 'inherit'
 			}
 		}
 
-		watch(cellModified, () => {
-			console.log(currentData)
-		})
+		const cellStyle: CSSProperties = {
+			textAlign: textAlign.value,
+			width: cellWidth.value,
+			backgroundColor: !cellModified.value ? 'inherit' : 'var(--cell-modified-color)',
+			fontWeight: !cellModified.value ? 'inherit' : 'bold',
+			paddingLeft: getIndent(props.colIndex, tableData.display[props.rowIndex]?.indent),
+		}
 
 		return {
-			TableData,
-			updateData,
-			displayValue,
-			handleInput,
 			cellModified,
-			textAlign,
+			cellStyle,
 			cellWidth,
-			onFocus,
-			onChange,
+			displayValue,
 			getIndent,
+			handleInput,
+			onChange,
+			onFocus,
+			tableData,
+			textAlign,
+			updateData,
 		}
 	},
 })
 </script>
+
 <style scoped>
 td {
 	border: 1px;
@@ -162,6 +161,7 @@ td {
 	padding-left: 0.5ch;
 	padding-right: 0.5ch;
 }
+
 td:focus,
 td:focus-within {
 	background-color: var(--focus-cell-background);

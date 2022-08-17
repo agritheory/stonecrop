@@ -8,6 +8,7 @@
 import { ref } from 'vue'
 
 import data from '@/assets/sample_data/http_logs.json'
+import ADate from '@/components/ADate.vue'
 import ATable from '@/components/ATable.vue'
 
 const http_logs = ref({
@@ -17,10 +18,10 @@ const http_logs = ref({
 			label: 'Home Page',
 			name: 'home_page',
 			type: 'Data',
-			align: 'Left',
+			align: 'left',
 			edit: false,
 			width: '35ch',
-			format: value => {
+			format: (value: { title?: string; value?: any }) => {
 				return value.title
 			},
 		},
@@ -28,7 +29,7 @@ const http_logs = ref({
 			label: 'HTTP Method',
 			name: 'http_method',
 			type: 'Data',
-			align: 'Left',
+			align: 'left',
 			edit: true,
 			width: '20ch',
 		},
@@ -36,7 +37,7 @@ const http_logs = ref({
 		//   label: "IP Address",
 		//   name: "ip_address",
 		//   type: "Data",
-		//   align: 'Left',
+		//   align: 'left',
 		//   edit: false,
 		//   width: '20ch',
 		// },
@@ -44,7 +45,7 @@ const http_logs = ref({
 		//   label: "Status",
 		//   name: "status",
 		//   type: "Data",
-		//   align: 'Left',
+		//   align: 'left',
 		//   edit: true,
 		//   width: '35ch',
 		// },
@@ -52,11 +53,11 @@ const http_logs = ref({
 			label: 'Report Date',
 			name: 'report_date',
 			type: 'component',
-			align: 'Center',
+			align: 'center',
 			edit: true,
 			width: '25ch',
-			component: 'ADate',
-			format: value => {
+			component: ADate,
+			format: (value: number) => {
 				return new Date(Number(value)).toLocaleDateString('en-US')
 			},
 		},

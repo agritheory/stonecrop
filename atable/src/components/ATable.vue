@@ -1,106 +1,105 @@
 <template>
 	<table class="atable">
 		<slot name="tableheader">
-			<ATableHeader :columns="TableData.columns" :config="TableData.config" :tableid="TableData.id" />
+			<ATableHeader :columns="tableData.columns" :config="tableData.config" :tableid="tableData.id" />
 		</slot>
 		<tbody>
 			<ARow
-				v-for="(row, rowIndex) in TableData.rows"
+				v-for="(row, rowIndex) in tableData.rows"
 				:key="row.id || v4()"
 				:row="row"
 				:rowIndex="rowIndex"
-				:tableid="TableData.id">
+				:tableid="tableData.id">
 				<ACell
-					v-for="(col, colIndex) in TableData.columns"
+					v-for="(col, colIndex) in tableData.columns"
 					:key="colIndex"
-					:tableid="TableData.id"
+					:tableid="tableData.id"
 					:col="col"
 					tabindex="0"
 					spellcheck="false"
 					:rowIndex="rowIndex"
-					:colIndex="colIndex + Number(TableData.zeroColumn === true ? 0 : -1)"
+					:colIndex="colIndex + (tableData.zeroColumn ? 0 : -1)"
 					:style="{
-						'text-align': col.align !== undefined ? col.align.toLowerCase() : 'center',
-						'min-width': col.width !== undefined ? col.width : '40ch',
+						textAlign: col?.align?.toLowerCase() || 'center',
+						minWidth: col?.width || '40ch',
 					}" />
 			</ARow>
 		</tbody>
 		<slot name="footer" />
 		<ATableModal
-			:colIndex="TableData.modal.colIndex"
-			:rowIndex="TableData.modal.rowIndex"
-			:tableid="TableData.id"
-			v-show="TableData.modal.visible"
+			:colIndex="tableData.modal.colIndex"
+			:rowIndex="tableData.modal.rowIndex"
+			:tableid="tableData.id"
+			v-show="tableData.modal.visible"
 			:style="{
-				left: TableData.modal.left + 'px',
-				top: TableData.modal.top + 'px',
-				'max-width': TableData.modal.width + 'px',
+				left: tableData.modal.left + 'px',
+				top: tableData.modal.top + 'px',
+				maxWidth: tableData.modal.width + 'px',
 			}">
 			<component
-				:is="TableData.modal.component"
-				:colIndex="TableData.modal.colIndex"
-				:rowIndex="TableData.modal.rowIndex"
-				:tableid="TableData.id" />
+				:is="tableData.modal.component"
+				:colIndex="tableData.modal.colIndex"
+				:rowIndex="tableData.modal.rowIndex"
+				:tableid="tableData.id" />
 		</ATableModal>
 	</table>
 </template>
-<script>
-import { v4 } from 'uuid'
-import { defineComponent, provide, nextTick } from 'vue'
 
-import TableDataStore from './index.js'
-import ARow from './ARow.vue'
-import ACell from './ACell.vue'
-import ATableHeader from './ATableHeader.vue'
-import ATableModal from './ATableModal.vue'
+<script lang="ts">
+import { v4 } from 'uuid'
+import { defineComponent, nextTick, PropType, provide } from 'vue'
+
+import { TableColumn, TableConfig, TableRow } from 'types'
+import TableDataStore from '.'
+import ACell from '@/components/ACell.vue'
+import ARow from '@/components/ARow.vue'
+import ATableHeader from '@/components/ATableHeader.vue'
+import ATableModal from '@/components/ATableModal.vue'
 
 export default defineComponent({
 	name: 'ATable',
 	components: {
-		ATableModal,
+		ACell,
 		ARow,
 		ATableHeader,
-		ACell,
+		ATableModal,
 	},
 	props: {
+		id: {
+			type: String,
+		},
 		columns: {
-			type: Array,
+			type: Array as PropType<TableColumn[]>,
 			required: true,
 		},
 		rows: {
-			type: Array,
-			required: false,
-			default: () => {
-				return []
-			},
+			type: Array as PropType<TableRow[]>,
+			default: () => [],
 		},
 		config: {
-			type: Object,
-			default: () => {
-				return {}
-			},
+			type: Object as PropType<TableConfig>,
+			default: () => new Object(),
 		},
 		tableid: {
 			type: String,
-			default: () => {
-				return undefined
-			},
 		},
 	},
 	setup(props) {
-		let TableData = new TableDataStore(props.id, props.columns, props.rows, props.config)
+		let tableData = new TableDataStore(props.id, props.columns, props.rows, props.config)
 
-		provide(TableData.id, TableData)
+		provide(tableData.id, tableData)
 
-		const formatCell = function (event = undefined, column = undefined, cellData = undefined) {
-			let colIndex = undefined
+		const formatCell = (event?: KeyboardEvent, column?: TableColumn, cellData?: any) => {
+			let colIndex: number
+			const target = event?.target as HTMLTableCellElement
 			if (event) {
-				colIndex = event.target.cellIndex + (TableData.zeroColumn === true ? -1 : 0)
+				colIndex = target.cellIndex + (tableData.zeroColumn ? -1 : 0)
 			} else if (column && cellData) {
-				colIndex = TableData.columns.indexOf(column)
+				colIndex = tableData.columns.indexOf(column)
 			}
-			if (!column && 'format' in TableData.columns[colIndex]) {
-				event.target.innerHTML = TableData.columns[colIndex].format(event.target.innerHTML)
+
+			if (!column && 'format' in tableData.columns[colIndex]) {
+				target.innerHTML = tableData.columns[colIndex].format(target.innerHTML)
 			} else if (cellData && 'format' in column) {
 				return column.format(cellData)
 			} else if (cellData && column.type.toLowerCase() in ['int', 'decimal', 'float', 'number', 'percent']) {
@@ -111,198 +110,198 @@ export default defineComponent({
 			}
 		}
 
-		const getIndent = function (colKey, indent) {
+		const getIndent = (colKey: number, indent: number) => {
 			if (indent && colKey === 0 && indent > 0) {
-				return indent * 1 + 'ch'
+				return `${indent}ch`
 			} else {
 				return null
 			}
 		}
 
-		function enterNav(event) {
+		const enterNav = async (event: KeyboardEvent) => {
 			event.preventDefault()
 			event.stopPropagation()
-			if (event.shiftKey === true) {
-				upCell(event)
-			} else {
-				downCell(event)
-			}
+			event.shiftKey ? await upCell(event) : await downCell(event)
 		}
 
-		function tabNav(event) {
+		const tabNav = async (event: KeyboardEvent) => {
 			event.preventDefault()
 			event.stopPropagation()
-			if (event.shiftKey === true) {
-				prevCell(event)
-			} else {
-				nextCell(event)
-			}
+			event.shiftKey ? await prevCell(event) : await nextCell(event)
 		}
 
-		function downArrowNav(event) {
-			if (event.shiftKey !== true) {
+		const downArrowNav = async (event: KeyboardEvent) => {
+			if (!event.shiftKey) {
 				event.preventDefault()
 				event.stopPropagation()
-				downCell(event)
+				await downCell(event)
 			}
 		}
 
-		function upArrowNav(event) {
-			if (event.shiftKey !== true) {
+		const upArrowNav = async (event: KeyboardEvent) => {
+			if (!event.shiftKey) {
 				event.preventDefault()
 				event.stopPropagation()
-				upCell(event)
+				await upCell(event)
 			}
 		}
 
-		function leftArrowNav(event) {
-			if (event.shiftKey !== true) {
+		const leftArrowNav = async (event: KeyboardEvent) => {
+			if (!event.shiftKey) {
 				event.preventDefault()
 				event.stopPropagation()
-				prevCell(event)
+				await prevCell(event)
 			}
 		}
 
-		function rightArrowNav(event) {
-			if (event.shiftKey !== true) {
+		const rightArrowNav = async (event: KeyboardEvent) => {
+			if (!event.shiftKey) {
 				event.preventDefault()
 				event.stopPropagation()
-				nextCell(event)
+				await nextCell(event)
 			}
 		}
 
-		function endNav(event) {
-			let nextCellEl = undefined
-			const cellIndex = event.target.cellIndex
-			const rowIndex = event.target.parentElement.rowIndex
-			const tableEl = event.target.parentElement.parentElement
-			if (tableEl.rows[rowIndex - 1].cells.length - 1 === cellIndex) {
+		const endNav = (event: KeyboardEvent) => {
+			const $cell = event.target as HTMLTableCellElement
+			const cellIndex = $cell.cellIndex
+			const $row = $cell.parentElement as HTMLTableRowElement
+			const rowIndex = $row.rowIndex
+			const $table = $row.parentElement as HTMLTableElement
+
+			const $lastRow = $table.rows[rowIndex - 1]
+			if ($lastRow.cells.length - 1 !== cellIndex) {
 				// last column
-				return
-			} else {
-				nextCellEl =
-					tableEl.rows[rowIndex - 1].cells[TableData.columns.length - (TableData.zeroColumn === true ? 0 : 1)] // last cell
+				const $nextCell = $lastRow.cells[tableData.columns.length - (tableData.zeroColumn ? 0 : 1)] // last cell
+				$nextCell.focus()
 			}
-			nextCellEl.focus()
 		}
 
-		function homeNav(event) {
-			let nextCellEl = undefined
-			const cellIndex = event.target.cellIndex
-			const rowIndex = event.target.parentElement.rowIndex
-			const tableEl = event.target.parentElement.parentElement
-			if (cellIndex === (TableData.config.numberedRows === true ? 1 : 0)) {
+		const homeNav = (event: KeyboardEvent) => {
+			const $cell = event.target as HTMLTableCellElement
+			const cellIndex = $cell.cellIndex
+			const $row = $cell.parentElement as HTMLTableRowElement
+			const rowIndex = $row.rowIndex
+			const $table = $row.parentElement as HTMLTableElement
+
+			const $lastRow = $table.rows[rowIndex - 1]
+			if (cellIndex !== (tableData.config.numberedRows ? 1 : 0)) {
 				// TODO: zeroColumn // first column
-				return
-			} else {
-				nextCellEl = tableEl.rows[rowIndex - 1].cells[TableData.zeroColumn === true ? 1 : 0] // last cell
+				const $nextCell = $lastRow.cells[tableData.zeroColumn ? 1 : 0] // last cell
+				$nextCell.focus()
 			}
-			nextCellEl.focus()
 		}
 
-		function downCell(event) {
-			const cellIndex = event.target.cellIndex
-			const rowIndex = event.target.parentElement.rowIndex
-			const tableEl = event.target.parentElement.parentElement
-			let cell = undefined
-			if (tableEl.rows.length !== rowIndex) {
+		const downCell = async (event: KeyboardEvent) => {
+			const $cell = event.target as HTMLTableCellElement
+			const cellIndex = $cell.cellIndex
+			const $row = $cell.parentElement as HTMLTableRowElement
+			const rowIndex = $row.rowIndex
+			const $table = $row.parentElement as HTMLTableElement
+
+			let $nextCell = event.target as HTMLTableCellElement
+			if ($table.rows.length !== rowIndex) {
 				// not bottom row
-				cell = tableEl.rows[rowIndex].cells[cellIndex]
-				if (TableData.config.treeView === true && TableData.display[rowIndex].open === false) {
+				$nextCell = $table.rows[rowIndex].cells[cellIndex]
+				if (tableData.config.treeView && !tableData.display[rowIndex].open) {
 					// toggleRowExpand(event, rowIndex - 1)
-					TableData.toggleRowExpand(rowIndex - 1)
+					tableData.toggleRowExpand(rowIndex - 1)
 				}
-			} else {
-				cell = event.target
 			}
-			nextTick(function () {
-				cell.focus()
-			})
+
+			await nextTick()
+			$nextCell.focus()
 		}
 
-		function upCell(event) {
-			const cellIndex = event.target.cellIndex
-			const rowIndex = event.target.parentElement.rowIndex
-			const table = event.target.parentElement.parentElement
-			let cell = undefined
+		const upCell = async (event: KeyboardEvent) => {
+			const $cell = event.target as HTMLTableCellElement
+			const cellIndex = $cell.cellIndex
+			const $row = $cell.parentElement as HTMLTableRowElement
+			const rowIndex = $row.rowIndex
+			const $table = $row.parentElement as HTMLTableElement
+
+			let $nextCell = event.target as HTMLTableCellElement
 			if (rowIndex !== 1) {
 				// not top row, exclude headers
-				cell = table.rows[rowIndex - 2].cells[cellIndex]
-				if (TableData.config.treeView === true && TableData.display[rowIndex - 2].open === false) {
-					TableData.toggleRowExpand(TableData.display[rowIndex - 2].parent)
+				$nextCell = $table.rows[rowIndex - 2].cells[cellIndex]
+				if (tableData.config.treeView && !tableData.display[rowIndex - 2].open) {
+					tableData.toggleRowExpand(tableData.display[rowIndex - 2].parent)
 				}
-			} else {
-				cell = event.target
 			}
-			nextTick(function () {
-				cell.focus()
-			})
+
+			await nextTick()
+			$nextCell.focus()
 		}
 
-		function nextCell(event) {
-			let nextCellEl = undefined
-			const cellIndex = event.target.cellIndex
-			const rowIndex = event.target.parentElement.rowIndex
-			const tableEl = event.target.parentElement.parentElement
-			if (tableEl.rows[rowIndex - 1].cells.length - 1 === cellIndex) {
+		const nextCell = async (event: KeyboardEvent) => {
+			const $cell = event.target as HTMLTableCellElement
+			const cellIndex = $cell.cellIndex
+			const $row = $cell.parentElement as HTMLTableRowElement
+			const rowIndex = $row.rowIndex
+			const $table = $row.parentElement as HTMLTableElement
+
+			let $nextCell: HTMLTableCellElement
+			const $lastRow = $table.rows[rowIndex - 1]
+			if ($lastRow.cells.length - 1 === cellIndex) {
 				// last column
-				if (tableEl.rows.length === rowIndex) {
-					nextCellEl = tableEl.rows[0].cells[TableData.zeroColumn === true ? 1 : 0] // go to top left cell
+				if ($table.rows.length === rowIndex) {
+					$nextCell = $table.rows[0].cells[tableData.zeroColumn ? 1 : 0] // go to top left cell
 					// if row is hidden, expand
 				} else {
 					// focus on first cell of next row
-					nextCellEl = tableEl.rows[rowIndex].cells[TableData.zeroColumn === true ? 1 : 0]
-					if (TableData.config.treeView === true && TableData.display[rowIndex].open === false) {
-						TableData.toggleRowExpand(rowIndex - 1)
+					$nextCell = $table.rows[rowIndex].cells[tableData.zeroColumn ? 1 : 0]
+					if (tableData.config.treeView && !tableData.display[rowIndex].open) {
+						tableData.toggleRowExpand(rowIndex - 1)
 					}
 				}
 			} else {
-				nextCellEl = tableEl.rows[rowIndex - 1].cells[cellIndex + 1] // next cell
+				$nextCell = $lastRow.cells[cellIndex + 1] // next cell
 			}
-			nextTick(function () {
-				nextCellEl.focus()
-			})
+
+			await nextTick()
+			$nextCell.focus()
 		}
 
-		function prevCell(event) {
-			let prevCellEl = undefined
-			const cellIndex = event.target.cellIndex
-			const rowIndex = event.target.parentElement.rowIndex
-			const tableEl = event.target.parentElement.parentElement
-			if (cellIndex === (TableData.zeroColumn === true ? 1 : 0)) {
+		const prevCell = async (event: KeyboardEvent) => {
+			const $cell = event.target as HTMLTableCellElement
+			const cellIndex = $cell.cellIndex
+			const $row = $cell.parentElement as HTMLTableRowElement
+			const rowIndex = $row.rowIndex
+			const $table = $row.parentElement as HTMLTableElement
+
+			let $prevCell: HTMLTableCellElement
+			const $lastRow = $table.rows[rowIndex - 1]
+			const $secondLastRow = $table.rows[rowIndex - 2]
+			if (cellIndex === (tableData.zeroColumn ? 1 : 0)) {
 				// first column
 				if (rowIndex !== 1) {
 					// not top row, exclude headers
-					prevCellEl = tableEl.rows[rowIndex - 2].cells[tableEl.rows[rowIndex - 2].cells.length - 1]
+					$prevCell = $secondLastRow.cells[$secondLastRow.cells.length - 1]
 					// toggleRowExpand(event, rowIndex - 2)
-					TableData.toggleRowExpand(rowIndex - 2)
+					tableData.toggleRowExpand(rowIndex - 2)
 				} else {
 					// top row, stay trapped in top left cell
 					return
 				}
 			} else {
-				prevCellEl = tableEl.rows[rowIndex - 1].cells[cellIndex - 1] // previous cell
+				$prevCell = $lastRow.cells[cellIndex - 1] // previous cell
 			}
-			prevCellEl.focus()
+
+			await nextTick()
+			$prevCell.focus()
 		}
 
-		function moveCursorToEnd(target) {
+		const moveCursorToEnd = (target: HTMLElement) => {
 			target.focus()
 			document.execCommand('selectAll', false, null)
 			document.getSelection().collapseToEnd()
 		}
 
-		function clickOutside(event) {
-			if (!TableData.modal.parent) {
-				return
-			}
-			if (TableData.modal.parent.contains(event.target)) {
-			} else {
-				if (!TableData.modal.visible) {
-					return
-				} else {
+		const clickOutside = (event: MouseEvent) => {
+			if (!tableData.modal.parent?.contains(event.target as HTMLElement)) {
+				if (tableData.modal.visible) {
 					// call set data
-					TableData.modal.visible = false
+					tableData.modal.visible = false
 				}
 			}
 		}
@@ -310,32 +309,35 @@ export default defineComponent({
 		window.addEventListener('click', clickOutside)
 
 		return {
-			TableData,
-			v4,
-			formatCell,
-			enterNav,
-			tabNav,
 			downArrowNav,
-			upArrowNav,
-			leftArrowNav,
-			rightArrowNav,
-			homeNav,
-			endNav,
-			prevCell,
-			nextCell,
-			upCell,
 			downCell,
+			endNav,
+			enterNav,
+			formatCell,
+			getIndent,
+			homeNav,
+			leftArrowNav,
 			moveCursorToEnd,
+			nextCell,
+			prevCell,
+			rightArrowNav,
+			tableData,
+			tabNav,
+			upArrowNav,
+			upCell,
+			v4,
 		}
 	},
 })
 </script>
+
 <style scoped>
 table {
 	display: table;
 	border-collapse: var(--border-collapsed);
 	caret-color: var(--brand-color);
 }
+
 th {
 	box-sizing: border-box;
 	background-color: var(--brand-color);
@@ -345,10 +347,12 @@ th {
 	border-radius: 0px;
 	color: var(--header-text-color);
 }
+
 tr {
 	background-color: var(--row-color-zebra-light);
 	outline: none;
 }
+
 tr:nth-child(even) {
 	background-color: var(--row-color-zebra-dark);
 }

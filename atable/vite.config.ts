@@ -14,8 +14,8 @@ export default defineConfig({
 	build: {
 		minify: false,
 		lib: {
-			entry: resolve(projectRootDir, 'src/index.js'),
-			name: '@sedum/aform',
+			entry: resolve(projectRootDir, 'src/index.ts'),
+			name: '@sedum/atable',
 		},
 		rollupOptions: {
 			external: ['vue'],

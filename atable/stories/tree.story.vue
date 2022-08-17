@@ -17,7 +17,7 @@ const coa = ref({
 			label: 'Number',
 			name: 'account_number',
 			type: 'Data',
-			align: 'Left',
+			align: 'left',
 			edit: false,
 			width: '10ch',
 		},
@@ -25,7 +25,7 @@ const coa = ref({
 			label: 'Account',
 			name: 'account_title',
 			type: 'Data',
-			align: 'Left',
+			align: 'left',
 			edit: true,
 			width: '50ch',
 		},
@@ -33,10 +33,10 @@ const coa = ref({
 			label: 'Balance',
 			name: 'balance',
 			type: 'Data',
-			align: 'Left',
+			align: 'left',
 			edit: false,
 			width: '20ch',
-			format: value => {
+			format: (value: { title?: string; value?: any }) => {
 				return value.title
 			},
 			component: 'TestModalComponent',
