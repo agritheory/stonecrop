@@ -1,14 +1,6 @@
 {
+	"extends": "../tsconfig.json",
 	"compilerOptions": {
-		"target": "es2017",
-		"module": "esnext",
-		"lib": ["dom", "dom.iterable", "esnext"],
-		"moduleResolution": "node",
-		"esModuleInterop": true,
-		"isolatedModules": true,
-		"resolveJsonModule": true,
-		"skipLibCheck": true,
-		"jsx": "preserve",
 		"baseUrl": ".",
 		"paths": {
 			"@/*": ["src/*"],
@@ -22,7 +14,7 @@
 		"src/**/*.vue",
 		"stories/**/*.story.vue",
 		"tests/**/*.ts",
-		"tests/**/*.vue"
-	],
-	"exclude": ["node_modules"]
+		"tests/**/*.vue",
+		"types/**/*.ts"
+	]
 }

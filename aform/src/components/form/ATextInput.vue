@@ -1,13 +1,13 @@
 <template>
 	<div>
-		<input :value="value" :required="required" :id="uuid" :disabled="readOnly" @input="update" />
+		<input v-model="inputText" :required="required" :id="uuid" :disabled="readOnly" @input="update" v-mask="mask" />
 		<label :for="uuid">{{ label }} </label>
 		<p v-show="validation.errorMessage" v-html="validation.errorMessage"></p>
 	</div>
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
+import { defineComponent, DirectiveBinding, ref } from 'vue'
 
 export default defineComponent({
 	name: 'ATextInput',
@@ -24,8 +24,11 @@ export default defineComponent({
 			type: Boolean,
 		},
 		uuid: {
-			type: Number,
-			default: 0,
+			type: String,
+		},
+		mask: {
+			type: String,
+			default: '##/##/####',
 		},
 		validation: {
 			type: Object,
@@ -33,12 +36,29 @@ export default defineComponent({
 		},
 	},
 	setup(props, context) {
+		const inputText = ref(props.value)
 		const update = (event: InputEvent) => {
 			const value = (event.target as HTMLInputElement).value
 			context.emit('update:value', value)
 		}
 
-		return { update }
+		return { inputText, update }
+	},
+	directives: {
+		mask: (el: HTMLInputElement, binding: DirectiveBinding<string>, vnode, prevVnode) => {
+			const mask = binding.value
+			const reverseMask = mask.split('').reverse().join('')
+			const inputText = el.value
+
+			// let replacement = reverseMask
+			// for (const char of inputText) {
+			// 	if (!['#', '/'].includes(char)) {
+			// 		replacement = replacement.replace('#', char)
+			// 	}
+			// }
+
+			// el.value = replacement.split('').reverse().join('')
+		},
 	},
 })
 </script>

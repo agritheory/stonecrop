@@ -20,8 +20,7 @@ export default defineComponent({
 			type: Boolean,
 		},
 		uuid: {
-			type: Number,
-			default: 0,
+			type: String,
 		},
 		validation: {
 			type: Object,

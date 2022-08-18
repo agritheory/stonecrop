@@ -6,8 +6,9 @@ import ANumericInput from '@/components/form/ANumericInput.vue'
 import ATextInput from '@/components/form/ATextInput.vue'
 
 export const setupVue3 = defineSetupVue3(({ app }) => {
-	app.component('AForm', AForm)
+	// TODO: (histoire) figure out how to import ATable for stories
 	app.component('AFieldset', AFieldset)
+	app.component('AForm', AForm)
 	app.component('ANumericInput', ANumericInput)
 	app.component('ATextInput', ATextInput)
 })
