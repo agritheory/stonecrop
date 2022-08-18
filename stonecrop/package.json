@@ -8,7 +8,9 @@
 		"vue": "^3.2.16",
 		"vue-router": "^4",
 		"pinia": "~2.0.18",
-		"immutable": "~4.1.0"
+		"immutable": "~4.1.0",
+		"pinia-shared-state": "~0.2.8",
+		"pinia-undo": "~0.1.4"
 	},
 	"devDependencies": {
 		"@sedum/atable": "workspace:~0.1.0",

@@ -1,6 +1,11 @@
 <template>
 	<Story title="default">
-		<pre>test</pre>
+		<pre>
+			{{ }}
+
+
+
+		</pre>
 	</Story>
 </template>
 

@@ -30,3 +30,7 @@ app.doctype.schema.field.value.field.value <Store> // a "sub-form"
 app.doctype.schema.field.value.field[0].value <Store> // also a "sub-form", likely representing a table or list
 ```
 
+It may make sense to use [automatic injection aliasing](https://vuejs.org/guide/components/provide-inject.html#inject) at the doctype level
+
+
+
