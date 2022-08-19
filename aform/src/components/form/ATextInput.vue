@@ -1,18 +1,29 @@
 <template>
 	<div>
-		<input v-model="inputText" :required="required" :id="uuid" :disabled="readOnly" @input="update" v-mask="mask" />
+		<input
+			v-model="inputText"
+			:id="uuid"
+			:disabled="readOnly"
+			:required="required"
+			:maxlength="mask ? maskFilled && mask.length : undefined"
+			@input="update"
+			v-mask="mask" />
 		<label :for="uuid">{{ label }} </label>
 		<p v-show="validation.errorMessage" v-html="validation.errorMessage"></p>
 	</div>
 </template>
 
 <script lang="ts">
-import { defineComponent, DirectiveBinding, ref } from 'vue'
+import { defineComponent, PropType, ref } from 'vue'
+
+import { useStringMask } from '@/directives/mask'
 
 export default defineComponent({
 	name: 'ATextInput',
 	props: {
-		value: { required: false },
+		value: {
+			type: null as unknown as PropType<string | number>,
+		},
 		required: {
 			type: Boolean,
 		},
@@ -28,7 +39,6 @@ export default defineComponent({
 		},
 		mask: {
 			type: String,
-			default: '##/##/####',
 		},
 		validation: {
 			type: Object,
@@ -37,28 +47,17 @@ export default defineComponent({
 	},
 	setup(props, context) {
 		const inputText = ref(props.value)
+		const maskFilled = ref(false)
+
 		const update = (event: InputEvent) => {
 			const value = (event.target as HTMLInputElement).value
 			context.emit('update:value', value)
 		}
 
-		return { inputText, update }
+		return { inputText, maskFilled, update }
 	},
 	directives: {
-		mask: (el: HTMLInputElement, binding: DirectiveBinding<string>, vnode, prevVnode) => {
-			const mask = binding.value
-			const reverseMask = mask.split('').reverse().join('')
-			const inputText = el.value
-
-			// let replacement = reverseMask
-			// for (const char of inputText) {
-			// 	if (!['#', '/'].includes(char)) {
-			// 		replacement = replacement.replace('#', char)
-			// 	}
-			// }
-
-			// el.value = replacement.split('').reverse().join('')
-		},
+		mask: useStringMask,
 	},
 })
 </script>

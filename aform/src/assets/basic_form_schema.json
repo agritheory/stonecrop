@@ -20,23 +20,21 @@
 		"label": "Age"
 	},
 	{
-		"fieldname": "first_name",
+		"fieldname": "date",
 		"fieldtype": "ATextInput",
-		"label": "First Name"
+		"label": "Date",
+		"mask": "##/##/####"
 	},
 	{
-		"fieldname": "middle_name",
-		"component": "ATextInput",
-		"label": "Middle Name"
+		"fieldname": "phone",
+		"fieldtype": "ATextInput",
+		"label": "Phone",
+		"mask": "(###) ###-####"
 	},
 	{
-		"fieldname": "last_name",
-		"component": "ATextInput",
-		"label": "Last Name"
-	},
-	{
-		"fieldname": "age",
-		"component": "ANumericInput",
-		"label": "Age"
+		"fieldname": "card",
+		"fieldtype": "ATextInput",
+		"label": "Card",
+		"mask": "#### #### #### ####"
 	}
 ]

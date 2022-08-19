@@ -9,6 +9,7 @@ export type FormSchema = BasicSchema & {
 	fieldname: string
 	fieldtype: string
 	label: string
+	mask?: string
 }
 
 export type TableSchema = BasicSchema & {
