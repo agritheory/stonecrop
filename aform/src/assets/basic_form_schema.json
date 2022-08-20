@@ -26,15 +26,15 @@
 		"mask": "##/##/####"
 	},
 	{
-		"fieldname": "phone",
-		"fieldtype": "ATextInput",
-		"label": "Phone",
-		"mask": "(###) ###-####"
-	},
-	{
 		"fieldname": "card",
 		"fieldtype": "ATextInput",
 		"label": "Card",
 		"mask": "#### #### #### ####"
+	},
+	{
+		"fieldname": "phone",
+		"fieldtype": "ATextInput",
+		"label": "Phone",
+		"mask": "(locale) => { if (locale === 'en-US') { return '(###) ###-####' } else if (locale === 'en-IN') { return '####-######'} }"
 	}
 ]

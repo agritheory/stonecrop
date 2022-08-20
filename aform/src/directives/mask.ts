@@ -1,8 +1,22 @@
 import { DirectiveBinding } from 'vue'
 
 export function useStringMask(el: HTMLInputElement, binding: DirectiveBinding<string>) {
-	const mask = binding.value
+	let mask = binding.value
 	if (!mask) return
+
+	// process mask if it's a function
+	try {
+		// TODO: replace with state management
+		const locale = binding.instance.locale
+		// eslint-disable-next-line @typescript-eslint/no-implied-eval
+		const maskFn = Function(`"use strict";return (${mask})`)()
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-call
+		mask = maskFn(locale)
+	} catch (error) {
+		if (error instanceof ReferenceError) {
+			// assume mask is a string
+		}
+	}
 
 	// get initial mask values
 	const maskToken = '#'
@@ -30,9 +44,9 @@ export function useStringMask(el: HTMLInputElement, binding: DirectiveBinding<st
 			}
 		}
 
-		// TODO: this feels very opinionated
-		// maybe needs some kind of state management?
-		// another easier way could be to emit back to instance
+		// TODO: this is very opinionated;
+		// most likely fixed with state management;
+		// a better way could be to emit back to instance;
 		if (binding.instance.maskFilled) {
 			binding.instance.maskFilled = !replacement.includes(maskToken)
 		}

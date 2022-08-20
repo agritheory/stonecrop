@@ -35,7 +35,7 @@ export default defineComponent({
 		const formData = ref(props.data || {})
 
 		const deriveComponent = (componentObj: SchemaTypes) => {
-			return componentObj.component || componentObj.fieldtype || 'ATextInput'
+			return componentObj.component || componentObj.fieldtype
 		}
 
 		const componentProps = (componentObj: SchemaTypes) => {
@@ -47,6 +47,7 @@ export default defineComponent({
 			}
 			return propsToPass
 		}
+
 		return { deriveComponent, formData, componentProps }
 	},
 })

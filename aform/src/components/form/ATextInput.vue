@@ -14,7 +14,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, ref } from 'vue'
+import { defineComponent, inject, PropType, ref } from 'vue'
 
 import { useStringMask } from '@/directives/mask'
 
@@ -49,12 +49,15 @@ export default defineComponent({
 		const inputText = ref(props.value)
 		const maskFilled = ref(false)
 
+		// TODO: replace with state management
+		const locale = inject<string>('locale')
+
 		const update = (event: InputEvent) => {
 			const value = (event.target as HTMLInputElement).value
 			context.emit('update:value', value)
 		}
 
-		return { inputText, maskFilled, update }
+		return { inputText, locale, maskFilled, update }
 	},
 	directives: {
 		mask: useStringMask,

@@ -1,7 +1,23 @@
 <template>
 	<Story title="default">
-		<Variant title="Form">
-			<AForm class="aform-main" :schema="basic_form_schema" :data="data" :formId="id" />
+		<Variant title="Form" :setup-app="formSetup">
+			<AForm class="aform-main" :schema="basic_form_schema" :data="data" :formId="id" :key="formKey" />
+
+			<template #controls>
+				<HstRadio
+					v-model="locale"
+					title="Locale"
+					:options="[
+						{
+							label: 'United States',
+							value: 'en-US',
+						},
+						{
+							label: 'India',
+							value: 'en-IN',
+						},
+					]" />
+			</template>
 		</Variant>
 		<Variant title="Table">
 			<AForm class="aform-main" :schema="basic_table_schema" :data="data" :formId="id" />
@@ -16,7 +32,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { App, ref, watch } from 'vue'
 
 import basic_form_schema from '@/assets/basic_form_schema.json'
 import basic_fieldset_schema from '@/assets/basic_fieldset_schema.json'
@@ -25,7 +41,19 @@ import fieldset_table_schema from '@/assets/fieldset_table_schema.json'
 
 const id = ref(0)
 const data = ref([])
+const locale = ref('en-US')
 // TODO: const color = ref('')
+
+// TODO: replace with state management
+const formKey = ref(0)
+watch(locale, () => {
+	// re-render form when locale is changed
+	formKey.value++
+})
+
+const formSetup = ({ app }: { app: App }) => {
+	app.provide('locale', locale)
+}
 </script>
 
 <style>
