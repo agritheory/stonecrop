@@ -2,7 +2,7 @@
 	<form>
 		<component
 			v-for="(componentObj, key) in schema"
-			:is="deriveComponent(componentObj)"
+			:is="componentObj.component"
 			:key="key"
 			:schema="componentObj"
 			v-bind="componentProps(componentObj)"
@@ -34,10 +34,6 @@ export default defineComponent({
 	setup(props) {
 		const formData = ref(props.data || {})
 
-		const deriveComponent = (componentObj: SchemaTypes) => {
-			return componentObj.component || componentObj.fieldtype
-		}
-
 		const componentProps = (componentObj: SchemaTypes) => {
 			let propsToPass = {}
 			for (const [key, value] of Object.entries(componentObj)) {
@@ -48,7 +44,7 @@ export default defineComponent({
 			return propsToPass
 		}
 
-		return { deriveComponent, formData, componentProps }
+		return { formData, componentProps }
 	},
 })
 </script>

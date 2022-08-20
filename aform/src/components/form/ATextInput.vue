@@ -4,8 +4,8 @@
 			v-model="inputText"
 			:id="uuid"
 			:disabled="readOnly"
-			:required="required"
 			:maxlength="mask ? maskFilled && mask.length : undefined"
+			:required="required"
 			@input="update"
 			v-mask="mask" />
 		<label :for="uuid">{{ label }} </label>
@@ -16,28 +16,33 @@
 <script lang="ts">
 import { defineComponent, inject, PropType, ref } from 'vue'
 
+import { FormSchema } from 'types'
 import { useStringMask } from '@/directives/mask'
 
 export default defineComponent({
 	name: 'ATextInput',
 	props: {
-		value: {
-			type: null as unknown as PropType<string | number>,
-		},
-		required: {
-			type: Boolean,
+		schema: {
+			type: Object as PropType<FormSchema>,
+			required: true,
 		},
 		label: {
 			type: String,
 			required: true,
 		},
+		value: {
+			type: null as unknown as PropType<string | number>,
+		},
+		mask: {
+			type: String,
+		},
+		required: {
+			type: Boolean,
+		},
 		readOnly: {
 			type: Boolean,
 		},
 		uuid: {
-			type: String,
-		},
-		mask: {
 			type: String,
 		},
 		validation: {

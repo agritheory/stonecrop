@@ -1,7 +1,7 @@
 [
 	{
 		"fieldname": "first_name",
-		"fieldtype": "ATextInput",
+		"component": "ATextInput",
 		"label": "First Name"
 	},
 	{
@@ -21,19 +21,20 @@
 	},
 	{
 		"fieldname": "date",
-		"fieldtype": "ATextInput",
-		"label": "Date",
-		"mask": "##/##/####"
+		"fieldtype": "Date",
+		"component": "ATextInput",
+		"label": "Date"
 	},
 	{
 		"fieldname": "card",
-		"fieldtype": "ATextInput",
-		"label": "Card",
-		"mask": "#### #### #### ####"
+		"fieldtype": "Card",
+		"component": "ATextInput",
+		"label": "Card"
 	},
 	{
 		"fieldname": "phone",
-		"fieldtype": "ATextInput",
+		"fieldtype": "Phone",
+		"component": "ATextInput",
 		"label": "Phone",
 		"mask": "(locale) => { if (locale === 'en-US') { return '(###) ###-####' } else if (locale === 'en-IN') { return '####-######'} }"
 	}

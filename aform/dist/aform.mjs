@@ -1,4 +1,4 @@
-import { defineComponent, ref, openBlock, createElementBlock, Fragment, renderList, createBlock, resolveDynamicComponent, mergeProps, normalizeClass, resolveComponent, createElementVNode, createTextVNode, toDisplayString, createCommentVNode, withDirectives, createVNode, vShow } from "vue";
+import { defineComponent, ref, openBlock, createElementBlock, Fragment, renderList, createBlock, resolveDynamicComponent, mergeProps, normalizeClass, resolveComponent, createElementVNode, createTextVNode, toDisplayString, createCommentVNode, withDirectives, createVNode, vShow, inject, resolveDirective, vModelText } from "vue";
 const _sfc_main$4 = defineComponent({
   name: "AForm",
   props: {
@@ -16,9 +16,6 @@ const _sfc_main$4 = defineComponent({
   },
   setup(props) {
     const formData = ref(props.data || {});
-    const deriveComponent = (componentObj) => {
-      return componentObj.component || componentObj.fieldtype || "ATextInput";
-    };
     const componentProps = (componentObj) => {
       let propsToPass = {};
       for (const [key, value] of Object.entries(componentObj)) {
@@ -28,10 +25,10 @@ const _sfc_main$4 = defineComponent({
       }
       return propsToPass;
     };
-    return { deriveComponent, formData, componentProps };
+    return { formData, componentProps };
   }
 });
-const AForm_vue_vue_type_style_index_0_scoped_db6dce0e_lang = "";
+const AForm_vue_vue_type_style_index_0_scoped_56233342_lang = "";
 const _export_sfc = (sfc, props) => {
   const target = sfc.__vccOpts || sfc;
   for (const [key, val] of props) {
@@ -42,7 +39,7 @@ const _export_sfc = (sfc, props) => {
 function _sfc_render$4(_ctx, _cache, $props, $setup, $data, $options) {
   return openBlock(), createElementBlock("form", null, [
     (openBlock(true), createElementBlock(Fragment, null, renderList(_ctx.schema, (componentObj, key) => {
-      return openBlock(), createBlock(resolveDynamicComponent(_ctx.deriveComponent(componentObj)), mergeProps({
+      return openBlock(), createBlock(resolveDynamicComponent(componentObj.component), mergeProps({
         key,
         schema: componentObj
       }, _ctx.componentProps(componentObj), {
@@ -51,7 +48,7 @@ function _sfc_render$4(_ctx, _cache, $props, $setup, $data, $options) {
     }), 128))
   ]);
 }
-const AForm = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["render", _sfc_render$4], ["__scopeId", "data-v-db6dce0e"]]);
+const AForm = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["render", _sfc_render$4], ["__scopeId", "data-v-56233342"]]);
 const _sfc_main$3 = defineComponent({
   props: {
     collapsed: {
@@ -137,8 +134,7 @@ const _sfc_main$1 = defineComponent({
       type: Boolean
     },
     uuid: {
-      type: Number,
-      default: 0
+      type: String
     },
     validation: {
       type: Object,
@@ -166,23 +162,106 @@ function _sfc_render$1(_ctx, _cache, $props, $setup, $data, $options) {
   }, null, 8, ["label", "readOnly", "uuid", "validation", "modelValue"]);
 }
 const ANumericInput = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["render", _sfc_render$1]]);
+const NAMED_MASKS = {
+  date: "##/##/####",
+  datetime: "####/##/## ##:##",
+  time: "##:##",
+  fulltime: "##:##:##",
+  phone: "(###) ### - ####",
+  card: "#### #### #### ####"
+};
+function extractMaskFn(mask) {
+  try {
+    return Function(`"use strict";return (${mask})`)();
+  } catch (error) {
+  }
+}
+function getMask(binding) {
+  var _a;
+  let mask = binding.value;
+  if (mask) {
+    const maskFn = extractMaskFn(mask);
+    if (maskFn) {
+      const locale = binding.instance.locale;
+      mask = maskFn(locale);
+    }
+  } else {
+    const schema = binding.instance.schema;
+    const fieldType = (_a = schema.fieldtype) == null ? void 0 : _a.toLowerCase();
+    if (fieldType && NAMED_MASKS[fieldType]) {
+      mask = NAMED_MASKS[fieldType];
+    }
+  }
+  return mask;
+}
+function unmaskInput(input, maskToken) {
+  if (!maskToken) {
+    maskToken = "#";
+  }
+  let unmaskedInput = input;
+  const maskChars = [maskToken, "/", "-", "(", ")", " "];
+  for (const char of maskChars) {
+    unmaskedInput = unmaskedInput.replaceAll(char, "");
+  }
+  return unmaskedInput;
+}
+function fillMask(input, mask, maskToken) {
+  if (!maskToken) {
+    maskToken = "#";
+  }
+  let replacement = mask;
+  for (const inputChar of input) {
+    const replaceIndex = replacement.indexOf(maskToken);
+    if (replaceIndex !== -1) {
+      const prefix = replacement.substring(0, replaceIndex);
+      const suffix = replacement.substring(replaceIndex + 1);
+      replacement = prefix + inputChar + suffix;
+    }
+  }
+  return replacement.slice(0, mask.length);
+}
+function useStringMask(el, binding) {
+  const mask = getMask(binding);
+  if (!mask)
+    return;
+  const maskToken = "#";
+  const inputText = el.value;
+  const unmaskedInput = unmaskInput(inputText, maskToken);
+  if (unmaskedInput) {
+    const replacement = fillMask(unmaskedInput, mask, maskToken);
+    if (binding.instance.maskFilled) {
+      binding.instance.maskFilled = !replacement.includes(maskToken);
+    }
+    el.value = replacement;
+  } else {
+    el.value = mask;
+  }
+}
 const _sfc_main = defineComponent({
   name: "ATextInput",
   props: {
-    value: { required: false },
-    required: {
-      type: Boolean
+    schema: {
+      type: Object,
+      required: true
     },
     label: {
       type: String,
       required: true
     },
+    value: {
+      type: null
+    },
+    mask: {
+      type: String
+    },
+    required: {
+      type: Boolean
+    },
     readOnly: {
       type: Boolean
     },
     uuid: {
-      type: Number,
-      default: 0
+      type: String
     },
     validation: {
       type: Object,
@@ -190,26 +269,37 @@ const _sfc_main = defineComponent({
     }
   },
   setup(props, context) {
+    const inputText = ref(props.value);
+    const maskFilled = ref(false);
+    const locale = inject("locale");
     const update = (event) => {
       const value = event.target.value;
       context.emit("update:value", value);
     };
-    return { update };
+    return { inputText, locale, maskFilled, update };
+  },
+  directives: {
+    mask: useStringMask
   }
 });
-const ATextInput_vue_vue_type_style_index_0_scoped_1da3a261_lang = "";
-const _hoisted_1 = ["value", "required", "id", "disabled"];
+const ATextInput_vue_vue_type_style_index_0_scoped_92383a54_lang = "";
+const _hoisted_1 = ["id", "disabled", "maxlength", "required"];
 const _hoisted_2 = ["for"];
 const _hoisted_3 = ["innerHTML"];
 function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _directive_mask = resolveDirective("mask");
   return openBlock(), createElementBlock("div", null, [
-    createElementVNode("input", {
-      value: _ctx.value,
-      required: _ctx.required,
+    withDirectives(createElementVNode("input", {
+      "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => _ctx.inputText = $event),
       id: _ctx.uuid,
       disabled: _ctx.readOnly,
-      onInput: _cache[0] || (_cache[0] = (...args) => _ctx.update && _ctx.update(...args))
-    }, null, 40, _hoisted_1),
+      maxlength: _ctx.mask ? _ctx.maskFilled && _ctx.mask.length : void 0,
+      required: _ctx.required,
+      onInput: _cache[1] || (_cache[1] = (...args) => _ctx.update && _ctx.update(...args))
+    }, null, 40, _hoisted_1), [
+      [vModelText, _ctx.inputText],
+      [_directive_mask, _ctx.mask]
+    ]),
     createElementVNode("label", { for: _ctx.uuid }, toDisplayString(_ctx.label), 9, _hoisted_2),
     withDirectives(createElementVNode("p", {
       innerHTML: _ctx.validation.errorMessage
@@ -218,7 +308,7 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     ])
   ]);
 }
-const ATextInput = /* @__PURE__ */ _export_sfc(_sfc_main, [["render", _sfc_render], ["__scopeId", "data-v-1da3a261"]]);
+const ATextInput = /* @__PURE__ */ _export_sfc(_sfc_main, [["render", _sfc_render], ["__scopeId", "data-v-92383a54"]]);
 function install(app) {
   app.component("AForm", AForm);
   app.component("AFieldset", AFieldset);

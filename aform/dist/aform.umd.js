@@ -19,9 +19,6 @@
     },
     setup(props) {
       const formData = vue.ref(props.data || {});
-      const deriveComponent = (componentObj) => {
-        return componentObj.component || componentObj.fieldtype || "ATextInput";
-      };
       const componentProps = (componentObj) => {
         let propsToPass = {};
         for (const [key, value] of Object.entries(componentObj)) {
@@ -31,10 +28,10 @@
         }
         return propsToPass;
       };
-      return { deriveComponent, formData, componentProps };
+      return { formData, componentProps };
     }
   });
-  const AForm_vue_vue_type_style_index_0_scoped_db6dce0e_lang = "";
+  const AForm_vue_vue_type_style_index_0_scoped_56233342_lang = "";
   const _export_sfc = (sfc, props) => {
     const target = sfc.__vccOpts || sfc;
     for (const [key, val] of props) {
@@ -45,7 +42,7 @@
   function _sfc_render$4(_ctx, _cache, $props, $setup, $data, $options) {
     return vue.openBlock(), vue.createElementBlock("form", null, [
       (vue.openBlock(true), vue.createElementBlock(vue.Fragment, null, vue.renderList(_ctx.schema, (componentObj, key) => {
-        return vue.openBlock(), vue.createBlock(vue.resolveDynamicComponent(_ctx.deriveComponent(componentObj)), vue.mergeProps({
+        return vue.openBlock(), vue.createBlock(vue.resolveDynamicComponent(componentObj.component), vue.mergeProps({
           key,
           schema: componentObj
         }, _ctx.componentProps(componentObj), {
@@ -54,7 +51,7 @@
       }), 128))
     ]);
   }
-  const AForm = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["render", _sfc_render$4], ["__scopeId", "data-v-db6dce0e"]]);
+  const AForm = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["render", _sfc_render$4], ["__scopeId", "data-v-56233342"]]);
   const _sfc_main$3 = vue.defineComponent({
     props: {
       collapsed: {
@@ -140,8 +137,7 @@
         type: Boolean
       },
       uuid: {
-        type: Number,
-        default: 0
+        type: String
       },
       validation: {
         type: Object,
@@ -169,23 +165,106 @@
     }, null, 8, ["label", "readOnly", "uuid", "validation", "modelValue"]);
   }
   const ANumericInput = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["render", _sfc_render$1]]);
+  const NAMED_MASKS = {
+    date: "##/##/####",
+    datetime: "####/##/## ##:##",
+    time: "##:##",
+    fulltime: "##:##:##",
+    phone: "(###) ### - ####",
+    card: "#### #### #### ####"
+  };
+  function extractMaskFn(mask) {
+    try {
+      return Function(`"use strict";return (${mask})`)();
+    } catch (error) {
+    }
+  }
+  function getMask(binding) {
+    var _a;
+    let mask = binding.value;
+    if (mask) {
+      const maskFn = extractMaskFn(mask);
+      if (maskFn) {
+        const locale = binding.instance.locale;
+        mask = maskFn(locale);
+      }
+    } else {
+      const schema = binding.instance.schema;
+      const fieldType = (_a = schema.fieldtype) == null ? void 0 : _a.toLowerCase();
+      if (fieldType && NAMED_MASKS[fieldType]) {
+        mask = NAMED_MASKS[fieldType];
+      }
+    }
+    return mask;
+  }
+  function unmaskInput(input, maskToken) {
+    if (!maskToken) {
+      maskToken = "#";
+    }
+    let unmaskedInput = input;
+    const maskChars = [maskToken, "/", "-", "(", ")", " "];
+    for (const char of maskChars) {
+      unmaskedInput = unmaskedInput.replaceAll(char, "");
+    }
+    return unmaskedInput;
+  }
+  function fillMask(input, mask, maskToken) {
+    if (!maskToken) {
+      maskToken = "#";
+    }
+    let replacement = mask;
+    for (const inputChar of input) {
+      const replaceIndex = replacement.indexOf(maskToken);
+      if (replaceIndex !== -1) {
+        const prefix = replacement.substring(0, replaceIndex);
+        const suffix = replacement.substring(replaceIndex + 1);
+        replacement = prefix + inputChar + suffix;
+      }
+    }
+    return replacement.slice(0, mask.length);
+  }
+  function useStringMask(el, binding) {
+    const mask = getMask(binding);
+    if (!mask)
+      return;
+    const maskToken = "#";
+    const inputText = el.value;
+    const unmaskedInput = unmaskInput(inputText, maskToken);
+    if (unmaskedInput) {
+      const replacement = fillMask(unmaskedInput, mask, maskToken);
+      if (binding.instance.maskFilled) {
+        binding.instance.maskFilled = !replacement.includes(maskToken);
+      }
+      el.value = replacement;
+    } else {
+      el.value = mask;
+    }
+  }
   const _sfc_main = vue.defineComponent({
     name: "ATextInput",
     props: {
-      value: { required: false },
-      required: {
-        type: Boolean
+      schema: {
+        type: Object,
+        required: true
       },
       label: {
         type: String,
         required: true
       },
+      value: {
+        type: null
+      },
+      mask: {
+        type: String
+      },
+      required: {
+        type: Boolean
+      },
       readOnly: {
         type: Boolean
       },
       uuid: {
-        type: Number,
-        default: 0
+        type: String
       },
       validation: {
         type: Object,
@@ -193,26 +272,37 @@
       }
     },
     setup(props, context) {
+      const inputText = vue.ref(props.value);
+      const maskFilled = vue.ref(false);
+      const locale = vue.inject("locale");
       const update = (event) => {
         const value = event.target.value;
         context.emit("update:value", value);
       };
-      return { update };
+      return { inputText, locale, maskFilled, update };
+    },
+    directives: {
+      mask: useStringMask
     }
   });
-  const ATextInput_vue_vue_type_style_index_0_scoped_1da3a261_lang = "";
-  const _hoisted_1 = ["value", "required", "id", "disabled"];
+  const ATextInput_vue_vue_type_style_index_0_scoped_92383a54_lang = "";
+  const _hoisted_1 = ["id", "disabled", "maxlength", "required"];
   const _hoisted_2 = ["for"];
   const _hoisted_3 = ["innerHTML"];
   function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
+    const _directive_mask = vue.resolveDirective("mask");
     return vue.openBlock(), vue.createElementBlock("div", null, [
-      vue.createElementVNode("input", {
-        value: _ctx.value,
-        required: _ctx.required,
+      vue.withDirectives(vue.createElementVNode("input", {
+        "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => _ctx.inputText = $event),
         id: _ctx.uuid,
         disabled: _ctx.readOnly,
-        onInput: _cache[0] || (_cache[0] = (...args) => _ctx.update && _ctx.update(...args))
-      }, null, 40, _hoisted_1),
+        maxlength: _ctx.mask ? _ctx.maskFilled && _ctx.mask.length : void 0,
+        required: _ctx.required,
+        onInput: _cache[1] || (_cache[1] = (...args) => _ctx.update && _ctx.update(...args))
+      }, null, 40, _hoisted_1), [
+        [vue.vModelText, _ctx.inputText],
+        [_directive_mask, _ctx.mask]
+      ]),
       vue.createElementVNode("label", { for: _ctx.uuid }, vue.toDisplayString(_ctx.label), 9, _hoisted_2),
       vue.withDirectives(vue.createElementVNode("p", {
         innerHTML: _ctx.validation.errorMessage
@@ -221,7 +311,7 @@
       ])
     ]);
   }
-  const ATextInput = /* @__PURE__ */ _export_sfc(_sfc_main, [["render", _sfc_render], ["__scopeId", "data-v-1da3a261"]]);
+  const ATextInput = /* @__PURE__ */ _export_sfc(_sfc_main, [["render", _sfc_render], ["__scopeId", "data-v-92383a54"]]);
   function install(app) {
     app.component("AForm", AForm);
     app.component("AFieldset", AFieldset);
