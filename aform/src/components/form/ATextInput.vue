@@ -49,7 +49,7 @@ export default defineComponent({
 		const inputText = ref(props.value)
 		const maskFilled = ref(false)
 
-		// TODO: replace with state management
+		// TODO: (state) replace with state management
 		const locale = inject<string>('locale')
 
 		const update = (event: InputEvent) => {

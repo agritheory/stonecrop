@@ -42,9 +42,9 @@ import fieldset_table_schema from '@/assets/fieldset_table_schema.json'
 const id = ref(0)
 const data = ref([])
 const locale = ref('en-US')
-// TODO: const color = ref('')
+// TODO: (histoire) const color = ref('')
 
-// TODO: replace with state management
+// TODO: (state) replace with state management
 const formKey = ref(0)
 watch(locale, () => {
 	// re-render form when locale is changed
