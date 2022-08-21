@@ -51,6 +51,10 @@
       "allowedCategories": [ "prototype" ]
     },
     {
+      "name": "@vueuse/core",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
       "name": "cypress",
       "allowedCategories": [ "prototype" ]
     },
@@ -100,6 +104,10 @@
     },
     {
       "name": "pinia-shared-state",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "pinia-undo",
       "allowedCategories": [ "prototype" ]
     },
     {

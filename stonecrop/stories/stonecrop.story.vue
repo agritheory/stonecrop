@@ -1,15 +1,11 @@
 <template>
-	<Story title="default">
-		<pre>
-			{{ }}
-
-
-
-		</pre>
+	<Story title="Home">
+		<Home/>
 	</Story>
 </template>
 
 <script lang="ts" setup>
+import Home from '@/Home.vue'
 
 </script>
 

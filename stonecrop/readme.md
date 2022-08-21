@@ -32,5 +32,10 @@ app.doctype.schema.field.value.field[0].value <Store> // also a "sub-form", like
 
 It may make sense to use [automatic injection aliasing](https://vuejs.org/guide/components/provide-inject.html#inject) at the doctype level
 
+The user navigates to a doctype (http://local.app/doctype).
+The doctype schema, events and hooks are fetched from the server if they don't already exist in localstorage
+
+Automatically detect component schema/events/hooks via composable
+
 
 
