@@ -99,9 +99,30 @@ export default defineComponent({
 			}
 
 			if (!column && 'format' in tableData.columns[colIndex]) {
-				target.innerHTML = tableData.columns[colIndex].format(target.innerHTML)
+				// TODO: (utils) create helper to extract format from string
+				const format = tableData.columns[colIndex].format
+				if (typeof format === 'function') {
+					return format(target.innerHTML)
+				} else if (typeof format === 'string') {
+					// parse format function from string
+					// eslint-disable-next-line @typescript-eslint/no-implied-eval
+					const formatFn: (args: any) => any = Function(`"use strict";return (${format})`)()
+					return formatFn(target.innerHTML)
+				} else {
+					return target.innerHTML
+				}
 			} else if (cellData && 'format' in column) {
-				return column.format(cellData)
+				const format = column.format
+				if (typeof format === 'function') {
+					return format(cellData)
+				} else if (typeof format === 'string') {
+					// parse format function from string
+					// eslint-disable-next-line @typescript-eslint/no-implied-eval
+					const formatFn: (args: any) => any = Function(`"use strict";return (${format})`)()
+					return formatFn(cellData)
+				} else {
+					return cellData
+				}
 			} else if (cellData && column.type.toLowerCase() in ['int', 'decimal', 'float', 'number', 'percent']) {
 				return cellData
 				// TODO: number formatting

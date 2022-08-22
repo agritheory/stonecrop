@@ -8,10 +8,7 @@
 		"isolatedModules": true,
 		"resolveJsonModule": true,
 		"skipLibCheck": true,
-		"jsx": "preserve",
+		"jsx": "preserve"
 	},
-	"exclude": [
-		"node_modules",
-		"**/*.spec.ts"
-	]
+	"exclude": ["node_modules", "**/*.spec.ts"]
 }

@@ -1,4 +1,244 @@
-import { reactive, computed, defineComponent, inject, ref, resolveDynamicComponent, openBlock, createElementBlock, normalizeStyle, withKeys, withDirectives, toDisplayString, createCommentVNode, renderSlot, vShow, createElementVNode, Fragment, renderList, createTextVNode, provide, nextTick, resolveComponent, createVNode, createBlock, withCtx } from "vue";
+import { defineComponent, inject, ref, computed, resolveDynamicComponent, openBlock, createElementBlock, normalizeStyle, withKeys, toDisplayString, withDirectives, createCommentVNode, renderSlot, vShow, reactive, createElementVNode, Fragment, renderList, createTextVNode, provide, nextTick, resolveComponent, createVNode, createBlock, withCtx } from "vue";
+const _sfc_main$4 = defineComponent({
+  name: "ACell",
+  props: {
+    colIndex: {
+      type: Number,
+      required: true
+    },
+    rowIndex: {
+      type: Number,
+      required: true
+    },
+    tableid: {
+      type: String,
+      required: true
+    }
+  },
+  setup(props) {
+    var _a;
+    const tableData = inject(props.tableid);
+    let cellModified = ref(false);
+    const displayValue = computed(() => {
+      const data = tableData.cellData(props.colIndex, props.rowIndex);
+      if (tableData.columns[props.colIndex].format) {
+        const format = tableData.columns[props.colIndex].format;
+        if (typeof format === "function") {
+          return format(data);
+        } else if (typeof format === "string") {
+          const formatFn = Function(`"use strict";return (${format})`)();
+          return formatFn(data);
+        } else {
+          return data;
+        }
+      } else {
+        return data;
+      }
+    });
+    const handleInput = (event) => {
+      if (tableData.columns[props.colIndex].mask)
+        ;
+      if (tableData.columns[props.colIndex].component) {
+        if (resolveDynamicComponent(tableData.columns[props.colIndex].component)) {
+          const target = event.target;
+          const domRect = target.getBoundingClientRect();
+          tableData.modal.visible = true;
+          tableData.modal.colIndex = props.colIndex;
+          tableData.modal.rowIndex = props.rowIndex;
+          tableData.modal.parent = target;
+          tableData.modal.top = domRect.top + domRect.height;
+          tableData.modal.left = domRect.left;
+          tableData.modal.width = cellWidth.value;
+          tableData.modal.component = tableData.columns[props.colIndex].component;
+        }
+      }
+      return event;
+    };
+    const updateData = (event) => {
+      if (event) {
+        if (!tableData.columns[props.colIndex].component) {
+          const target = event.target;
+          tableData.setCellData(props.rowIndex, props.colIndex, target.innerHTML);
+        }
+        cellModified.value = true;
+      }
+    };
+    const textAlign = computed(() => {
+      return tableData.columns[props.colIndex].align || "center";
+    });
+    const cellWidth = computed(() => {
+      return tableData.columns[props.colIndex].width || "40ch";
+    });
+    let currentData = "";
+    const onFocus = (event) => {
+      const target = event.target;
+      currentData = target.innerText;
+    };
+    const onChange = (event) => {
+      const target = event.target;
+      if (target.innerHTML !== currentData) {
+        currentData = target.innerText;
+        target.dispatchEvent(new Event("change"));
+        cellModified.value = true;
+      }
+    };
+    const getIndent = (colKey, indent) => {
+      if (indent && colKey === 0 && indent > 0) {
+        return `${indent}ch`;
+      } else {
+        return "inherit";
+      }
+    };
+    const cellStyle = {
+      textAlign: textAlign.value,
+      width: cellWidth.value,
+      backgroundColor: !cellModified.value ? "inherit" : "var(--cell-modified-color)",
+      fontWeight: !cellModified.value ? "inherit" : "bold",
+      paddingLeft: getIndent(props.colIndex, (_a = tableData.display[props.rowIndex]) == null ? void 0 : _a.indent)
+    };
+    return {
+      cellModified,
+      cellStyle,
+      cellWidth,
+      displayValue,
+      getIndent,
+      handleInput,
+      onChange,
+      onFocus,
+      tableData,
+      textAlign,
+      updateData
+    };
+  }
+});
+const ACell_vue_vue_type_style_index_0_scoped_b3900ea6_lang = "";
+const _export_sfc = (sfc, props) => {
+  const target = sfc.__vccOpts || sfc;
+  for (const [key, val] of props) {
+    target[key] = val;
+  }
+  return target;
+};
+const _hoisted_1$2 = ["contenteditable"];
+function _sfc_render$4(_ctx, _cache, $props, $setup, $data, $options) {
+  return openBlock(), createElementBlock("td", {
+    ref: "colIndex + ':' + rowIndex",
+    contenteditable: _ctx.tableData.columns[_ctx.colIndex].edit,
+    tabindex: 0,
+    spellcheck: false,
+    style: normalizeStyle(_ctx.cellStyle),
+    onFocus: _cache[0] || (_cache[0] = ($event) => _ctx.onFocus($event)),
+    onPaste: _cache[1] || (_cache[1] = ($event) => _ctx.onChange($event)),
+    onBlur: _cache[2] || (_cache[2] = ($event) => _ctx.onChange($event)),
+    onInput: _cache[3] || (_cache[3] = ($event) => _ctx.onChange($event)),
+    onKeydown: [
+      _cache[4] || (_cache[4] = withKeys((...args) => _ctx.$parent.$parent.enterNav && _ctx.$parent.$parent.enterNav(...args), ["enter"])),
+      _cache[5] || (_cache[5] = withKeys((...args) => _ctx.$parent.$parent.tabNav && _ctx.$parent.$parent.tabNav(...args), ["tab"])),
+      _cache[6] || (_cache[6] = withKeys((...args) => _ctx.$parent.$parent.endNav && _ctx.$parent.$parent.endNav(...args), ["end"])),
+      _cache[7] || (_cache[7] = withKeys((...args) => _ctx.$parent.$parent.homeNav && _ctx.$parent.$parent.homeNav(...args), ["home"])),
+      _cache[8] || (_cache[8] = withKeys((...args) => _ctx.$parent.$parent.downArrowNav && _ctx.$parent.$parent.downArrowNav(...args), ["down"])),
+      _cache[9] || (_cache[9] = withKeys((...args) => _ctx.$parent.$parent.upArrowNav && _ctx.$parent.$parent.upArrowNav(...args), ["up"])),
+      _cache[10] || (_cache[10] = withKeys((...args) => _ctx.$parent.$parent.leftArrowNav && _ctx.$parent.$parent.leftArrowNav(...args), ["left"])),
+      _cache[11] || (_cache[11] = withKeys((...args) => _ctx.$parent.$parent.rightArrowNav && _ctx.$parent.$parent.rightArrowNav(...args), ["right"]))
+    ],
+    onClick: _cache[12] || (_cache[12] = (...args) => _ctx.handleInput && _ctx.handleInput(...args))
+  }, toDisplayString(_ctx.displayValue), 45, _hoisted_1$2);
+}
+const ACell = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["render", _sfc_render$4], ["__scopeId", "data-v-b3900ea6"]]);
+const _sfc_main$3 = defineComponent({
+  name: "ARow",
+  props: {
+    row: {
+      type: Object,
+      required: true,
+      default: () => {
+        return {};
+      }
+    },
+    rowIndex: {
+      type: Number,
+      required: true,
+      default: 0
+    },
+    tableid: {
+      type: String,
+      required: true,
+      default: () => {
+        return void 0;
+      }
+    }
+  },
+  setup(props) {
+    const tableData = inject(props.tableid);
+    const numberedRowStyle = {
+      backgroundColor: "var(--brand-color)",
+      borderColor: "var(--header-border-color)",
+      color: "var(--header-text-color)",
+      fontWeight: "bold",
+      textAlign: "center",
+      userSelect: "none",
+      width: tableData.numberedRowWidth.value
+    };
+    const treeRowStyle = {
+      backgroundColor: "var(--brand-color)",
+      borderColor: "var(--header-border-color)",
+      color: "var(--header-text-color)",
+      fontWeight: "bold",
+      textAlign: "center",
+      userSelect: "none",
+      width: "2ch"
+    };
+    const getRowExpandSymbol = () => {
+      if (!tableData.config.treeView) {
+        return "";
+      }
+      if (tableData.display[props.rowIndex].isRoot) {
+        if (tableData.display[props.rowIndex].childrenOpen) {
+          return "-";
+        } else {
+          return "+";
+        }
+      }
+      if (tableData.display[props.rowIndex].isParent) {
+        if (tableData.display[props.rowIndex].childrenOpen) {
+          return "-";
+        } else {
+          return "+";
+        }
+      } else {
+        return "";
+      }
+    };
+    const rowVisible = () => {
+      if (!tableData.config.treeView) {
+        return true;
+      }
+      return tableData.display[props.rowIndex].isRoot || tableData.display[props.rowIndex].open;
+    };
+    const toggleRowExpand = (rowIndex) => {
+      tableData.toggleRowExpand(rowIndex);
+    };
+    return { getRowExpandSymbol, numberedRowStyle, rowVisible, tableData, toggleRowExpand, treeRowStyle };
+  }
+});
+function _sfc_render$3(_ctx, _cache, $props, $setup, $data, $options) {
+  return withDirectives((openBlock(), createElementBlock("tr", null, [
+    _ctx.tableData.config.numberedRows ? (openBlock(), createElementBlock("td", {
+      key: 0,
+      style: normalizeStyle(_ctx.numberedRowStyle)
+    }, toDisplayString(_ctx.rowIndex + 1), 5)) : createCommentVNode("", true),
+    _ctx.tableData.config.treeView ? (openBlock(), createElementBlock("td", {
+      key: 1,
+      style: normalizeStyle(_ctx.treeRowStyle),
+      onClick: _cache[0] || (_cache[0] = ($event) => _ctx.toggleRowExpand(_ctx.rowIndex))
+    }, toDisplayString(_ctx.getRowExpandSymbol()), 5)) : createCommentVNode("", true),
+    !_ctx.tableData.config.numberedRows && !_ctx.tableData.config.treeView ? renderSlot(_ctx.$slots, "indexCell", { key: 2 }) : createCommentVNode("", true),
+    renderSlot(_ctx.$slots, "default")
+  ], 512)), [
+    [vShow, _ctx.rowVisible()]
+  ]);
+}
+const ARow = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["render", _sfc_render$3]]);
 var getRandomValues;
 var rnds8 = new Uint8Array(16);
 function rng() {
@@ -109,249 +349,16 @@ class TableDataStore {
       return;
     }
     this.display[rowIndex].childrenOpen = !this.display[rowIndex].childrenOpen;
-    for (let index2 = this.rows.length - 1; index2 >= 0; index2--) {
-      if (this.display[index2].parent === rowIndex) {
-        this.display[index2].open = !this.display[index2].open;
-        if (this.display[index2].childrenOpen) {
-          this.toggleRowExpand(index2);
+    for (let index = this.rows.length - 1; index >= 0; index--) {
+      if (this.display[index].parent === rowIndex) {
+        this.display[index].open = !this.display[index].open;
+        if (this.display[index].childrenOpen) {
+          this.toggleRowExpand(index);
         }
       }
     }
   }
 }
-const _sfc_main$4 = defineComponent({
-  name: "ACell",
-  props: {
-    colIndex: {
-      type: Number,
-      required: true
-    },
-    rowIndex: {
-      type: Number,
-      required: true
-    },
-    tableid: {
-      type: String,
-      required: true
-    }
-  },
-  setup(props) {
-    var _a;
-    const tableData = inject(props.tableid);
-    let cellModified = ref(false);
-    const displayValue = computed(() => {
-      const data = tableData.cellData(props.colIndex, props.rowIndex);
-      if (tableData.columns[props.colIndex].format) {
-        return tableData.columns[props.colIndex].format(data);
-      } else {
-        return data;
-      }
-    });
-    const handleInput = (event) => {
-      if (tableData.columns[props.colIndex].mask)
-        ;
-      if (tableData.columns[props.colIndex].component) {
-        if (resolveDynamicComponent(tableData.columns[props.colIndex].component)) {
-          const target = event.target;
-          const domRect = target.getBoundingClientRect();
-          tableData.modal.visible = true;
-          tableData.modal.colIndex = props.colIndex;
-          tableData.modal.rowIndex = props.rowIndex;
-          tableData.modal.parent = target;
-          tableData.modal.top = domRect.top + domRect.height;
-          tableData.modal.left = domRect.left;
-          tableData.modal.width = cellWidth.value;
-          tableData.modal.component = tableData.columns[props.colIndex].component;
-        }
-      }
-      return event;
-    };
-    const updateData = (event) => {
-      if (event) {
-        if (!tableData.columns[props.colIndex].component) {
-          const target = event.target;
-          tableData.setCellData(props.rowIndex, props.colIndex, target.innerHTML);
-        }
-        cellModified.value = true;
-      }
-    };
-    const textAlign = computed(() => {
-      return tableData.columns[props.colIndex].align || "center";
-    });
-    const cellWidth = computed(() => {
-      return tableData.columns[props.colIndex].width || "40ch";
-    });
-    let currentData = "";
-    const onFocus = (event) => {
-      const target = event.target;
-      currentData = target.innerText;
-    };
-    const onChange = (event) => {
-      const target = event.target;
-      if (target.innerHTML !== currentData) {
-        currentData = target.innerText;
-        target.dispatchEvent(new Event("change"));
-        cellModified.value = true;
-      }
-    };
-    const getIndent = (colKey, indent) => {
-      if (indent && colKey === 0 && indent > 0) {
-        return `${indent}ch`;
-      } else {
-        return "inherit";
-      }
-    };
-    const cellStyle = {
-      textAlign: textAlign.value,
-      width: cellWidth.value,
-      backgroundColor: !cellModified.value ? "inherit" : "var(--cell-modified-color)",
-      fontWeight: !cellModified.value ? "inherit" : "bold",
-      paddingLeft: getIndent(props.colIndex, (_a = tableData.display[props.rowIndex]) == null ? void 0 : _a.indent)
-    };
-    return {
-      cellModified,
-      cellStyle,
-      cellWidth,
-      displayValue,
-      getIndent,
-      handleInput,
-      onChange,
-      onFocus,
-      tableData,
-      textAlign,
-      updateData
-    };
-  }
-});
-const ACell_vue_vue_type_style_index_0_scoped_f343c8d8_lang = "";
-const _export_sfc = (sfc, props) => {
-  const target = sfc.__vccOpts || sfc;
-  for (const [key, val] of props) {
-    target[key] = val;
-  }
-  return target;
-};
-const _hoisted_1$2 = ["contenteditable", "innerHTML"];
-function _sfc_render$4(_ctx, _cache, $props, $setup, $data, $options) {
-  return openBlock(), createElementBlock("td", {
-    ref: "colIndex + ':' + rowIndex",
-    contenteditable: _ctx.tableData.columns[_ctx.colIndex].edit,
-    tabindex: 0,
-    spellcheck: false,
-    style: normalizeStyle(_ctx.cellStyle),
-    onFocus: _cache[0] || (_cache[0] = ($event) => _ctx.onFocus($event)),
-    onPaste: _cache[1] || (_cache[1] = ($event) => _ctx.onChange($event)),
-    onBlur: _cache[2] || (_cache[2] = ($event) => _ctx.onChange($event)),
-    onInput: _cache[3] || (_cache[3] = ($event) => _ctx.onChange($event)),
-    onKeydown: [
-      _cache[4] || (_cache[4] = withKeys((...args) => _ctx.$parent.$parent.enterNav && _ctx.$parent.$parent.enterNav(...args), ["enter"])),
-      _cache[5] || (_cache[5] = withKeys((...args) => _ctx.$parent.$parent.tabNav && _ctx.$parent.$parent.tabNav(...args), ["tab"])),
-      _cache[6] || (_cache[6] = withKeys((...args) => _ctx.$parent.$parent.endNav && _ctx.$parent.$parent.endNav(...args), ["end"])),
-      _cache[7] || (_cache[7] = withKeys((...args) => _ctx.$parent.$parent.homeNav && _ctx.$parent.$parent.homeNav(...args), ["home"])),
-      _cache[8] || (_cache[8] = withKeys((...args) => _ctx.$parent.$parent.downArrowNav && _ctx.$parent.$parent.downArrowNav(...args), ["down"])),
-      _cache[9] || (_cache[9] = withKeys((...args) => _ctx.$parent.$parent.upArrowNav && _ctx.$parent.$parent.upArrowNav(...args), ["up"])),
-      _cache[10] || (_cache[10] = withKeys((...args) => _ctx.$parent.$parent.leftArrowNav && _ctx.$parent.$parent.leftArrowNav(...args), ["left"])),
-      _cache[11] || (_cache[11] = withKeys((...args) => _ctx.$parent.$parent.rightArrowNav && _ctx.$parent.$parent.rightArrowNav(...args), ["right"]))
-    ],
-    onClick: _cache[12] || (_cache[12] = (...args) => _ctx.handleInput && _ctx.handleInput(...args)),
-    innerHTML: _ctx.displayValue
-  }, null, 44, _hoisted_1$2);
-}
-const ACell = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["render", _sfc_render$4], ["__scopeId", "data-v-f343c8d8"]]);
-const _sfc_main$3 = defineComponent({
-  name: "ARow",
-  props: {
-    row: {
-      type: Object,
-      required: true,
-      default: () => {
-        return {};
-      }
-    },
-    rowIndex: {
-      type: Number,
-      required: true,
-      default: 0
-    },
-    tableid: {
-      type: String,
-      required: true,
-      default: () => {
-        return void 0;
-      }
-    }
-  },
-  setup(props) {
-    const tableData = inject(props.tableid);
-    const numberedRowStyle = {
-      backgroundColor: "var(--brand-color)",
-      borderColor: "var(--header-border-color)",
-      color: "var(--header-text-color)",
-      fontWeight: "bold",
-      textAlign: "center",
-      userSelect: "none",
-      width: tableData.numberedRowWidth.value
-    };
-    const treeRowStyle = {
-      backgroundColor: "var(--brand-color)",
-      borderColor: "var(--header-border-color)",
-      color: "var(--header-text-color)",
-      fontWeight: "bold",
-      textAlign: "center",
-      userSelect: "none",
-      width: "2ch"
-    };
-    const getRowExpandSymbol = () => {
-      if (!tableData.config.treeView) {
-        return "";
-      }
-      if (tableData.display[props.rowIndex].isRoot) {
-        if (tableData.display[props.rowIndex].childrenOpen) {
-          return "-";
-        } else {
-          return "+";
-        }
-      }
-      if (tableData.display[props.rowIndex].isParent) {
-        if (tableData.display[props.rowIndex].childrenOpen) {
-          return "-";
-        } else {
-          return "+";
-        }
-      } else {
-        return "";
-      }
-    };
-    const rowVisible = () => {
-      if (!tableData.config.treeView) {
-        return true;
-      }
-      return tableData.display[props.rowIndex].isRoot || tableData.display[props.rowIndex].open;
-    };
-    const toggleRowExpand = (rowIndex) => {
-      tableData.toggleRowExpand(rowIndex);
-    };
-    return { getRowExpandSymbol, numberedRowStyle, rowVisible, tableData, toggleRowExpand, treeRowStyle };
-  }
-});
-function _sfc_render$3(_ctx, _cache, $props, $setup, $data, $options) {
-  return withDirectives((openBlock(), createElementBlock("tr", null, [
-    _ctx.tableData.config.numberedRows ? (openBlock(), createElementBlock("td", {
-      key: 0,
-      style: normalizeStyle(_ctx.numberedRowStyle)
-    }, toDisplayString(_ctx.rowIndex + 1), 5)) : createCommentVNode("", true),
-    _ctx.tableData.config.treeView ? (openBlock(), createElementBlock("td", {
-      key: 1,
-      style: normalizeStyle(_ctx.treeRowStyle),
-      onClick: _cache[0] || (_cache[0] = ($event) => _ctx.toggleRowExpand(_ctx.rowIndex))
-    }, toDisplayString(_ctx.getRowExpandSymbol()), 5)) : createCommentVNode("", true),
-    !_ctx.tableData.config.numberedRows && !_ctx.tableData.config.treeView ? renderSlot(_ctx.$slots, "indexCell", { key: 2 }) : createCommentVNode("", true),
-    renderSlot(_ctx.$slots, "default")
-  ], 512)), [
-    [vShow, _ctx.rowVisible()]
-  ]);
-}
-const ARow = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["render", _sfc_render$3]]);
 const _sfc_main$2 = defineComponent({
   name: "ATableHeader",
   props: {
@@ -477,9 +484,25 @@ const _sfc_main = defineComponent({
         colIndex = tableData.columns.indexOf(column);
       }
       if (!column && "format" in tableData.columns[colIndex]) {
-        target.innerHTML = tableData.columns[colIndex].format(target.innerHTML);
+        const format = tableData.columns[colIndex].format;
+        if (typeof format === "function") {
+          return format(target.innerHTML);
+        } else if (typeof format === "string") {
+          const formatFn = Function(`"use strict";return (${format})`)();
+          return formatFn(target.innerHTML);
+        } else {
+          return target.innerHTML;
+        }
       } else if (cellData && "format" in column) {
-        return column.format(cellData);
+        const format = column.format;
+        if (typeof format === "function") {
+          return format(cellData);
+        } else if (typeof format === "string") {
+          const formatFn = Function(`"use strict";return (${format})`)();
+          return formatFn(cellData);
+        } else {
+          return cellData;
+        }
       } else if (cellData && column.type.toLowerCase() in ["int", "decimal", "float", "number", "percent"]) {
         return cellData;
       } else {
@@ -667,7 +690,7 @@ const _sfc_main = defineComponent({
     };
   }
 });
-const ATable_vue_vue_type_style_index_0_scoped_bda6844d_lang = "";
+const ATable_vue_vue_type_style_index_0_scoped_544295ff_lang = "";
 const _hoisted_1 = { class: "atable" };
 function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   const _component_ATableHeader = resolveComponent("ATableHeader");
@@ -736,15 +759,19 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     ])
   ]);
 }
-const ATable = /* @__PURE__ */ _export_sfc(_sfc_main, [["render", _sfc_render], ["__scopeId", "data-v-bda6844d"]]);
+const ATable = /* @__PURE__ */ _export_sfc(_sfc_main, [["render", _sfc_render], ["__scopeId", "data-v-544295ff"]]);
 function install(app) {
+  app.component("ACell", ACell);
+  app.component("ARow", ARow);
   app.component("ATable", ATable);
   app.component("ATableHeader", ATableHeader);
   app.component("ATableModal", ATableModal);
 }
-const index = {
-  install
-};
 export {
-  index as default
+  ACell,
+  ARow,
+  ATable,
+  ATableHeader,
+  ATableModal,
+  install
 };

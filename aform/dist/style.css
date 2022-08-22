@@ -53,14 +53,14 @@ legend[data-v-2ee1d08c] {
 	float: right;
 }
 
-div[data-v-92383a54] {
+div[data-v-58bab3b3] {
 	min-width: 40ch;
 	border: 1px solid transparent;
 	padding: 0rem;
 	margin: 0rem;
 	margin-right: 1ch;
 }
-input[data-v-92383a54] {
+input[data-v-58bab3b3] {
 	width: calc(100% - 1ch);
 	outline: 1px solid transparent;
 	border: 1px solid var(--primary-color);
@@ -69,8 +69,8 @@ input[data-v-92383a54] {
 	min-height: 1.15rem;
 	/* border-radius: 0.25rem;  don't like, but it's here */
 }
-p[data-v-92383a54],
-label[data-v-92383a54] {
+p[data-v-58bab3b3],
+label[data-v-58bab3b3] {
 	display: block;
 	min-height: 1.15rem;
 	padding: 0rem;
@@ -78,12 +78,12 @@ label[data-v-92383a54] {
 	border: 1px solid transparent;
 	margin-bottom: 0.25rem;
 }
-p[data-v-92383a54] {
+p[data-v-58bab3b3] {
 	width: 100%;
 	color: red;
 	font-size: 85%;
 }
-label[data-v-92383a54] {
+label[data-v-58bab3b3] {
 	z-index: 2;
 	font-size: 80%;
 	position: absolute;
@@ -91,10 +91,10 @@ label[data-v-92383a54] {
 	margin: calc(-1.5rem - calc(2.15rem / 2)) 0 0 1ch;
 	padding: 0 0.25ch 0 0.25ch;
 }
-input[data-v-92383a54]:focus {
+input[data-v-58bab3b3]:focus {
 	outline: 1px solid var(--primary-color);
 }
-input:focus + label[data-v-92383a54] {
+input:focus + label[data-v-58bab3b3] {
 	color: var(--primary-color);
 	font-weight: bold;
 }

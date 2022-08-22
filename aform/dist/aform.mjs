@@ -271,7 +271,7 @@ const _sfc_main = defineComponent({
   setup(props, context) {
     const inputText = ref(props.value);
     const maskFilled = ref(false);
-    const locale = inject("locale");
+    const locale = inject("locale", "");
     const update = (event) => {
       const value = event.target.value;
       context.emit("update:value", value);
@@ -282,7 +282,7 @@ const _sfc_main = defineComponent({
     mask: useStringMask
   }
 });
-const ATextInput_vue_vue_type_style_index_0_scoped_92383a54_lang = "";
+const ATextInput_vue_vue_type_style_index_0_scoped_58bab3b3_lang = "";
 const _hoisted_1 = ["id", "disabled", "maxlength", "required"];
 const _hoisted_2 = ["for"];
 const _hoisted_3 = ["innerHTML"];
@@ -308,7 +308,7 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     ])
   ]);
 }
-const ATextInput = /* @__PURE__ */ _export_sfc(_sfc_main, [["render", _sfc_render], ["__scopeId", "data-v-92383a54"]]);
+const ATextInput = /* @__PURE__ */ _export_sfc(_sfc_main, [["render", _sfc_render], ["__scopeId", "data-v-58bab3b3"]]);
 function install(app) {
   app.component("AForm", AForm);
   app.component("AFieldset", AFieldset);

@@ -20,11 +20,9 @@
 		"src/**/*.vue"
 	],
 	"dependencies": {
+		"@sedum/atable": "workspace:*",
 		"uuid": "^8.3.2",
 		"vue": "^3.2.37"
-	},
-	"peerDependencies": {
-		"@sedum/atable": "workspace:*"
 	},
 	"devDependencies": {
 		"@cypress/vite-dev-server": "~2.0.3",

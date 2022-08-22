@@ -55,7 +55,7 @@ export default defineComponent({
 		const maskFilled = ref(false)
 
 		// TODO: (state) replace with state management
-		const locale = inject<string>('locale')
+		const locale = inject<string>('locale', '')
 
 		const update = (event: InputEvent) => {
 			const value = (event.target as HTMLInputElement).value
