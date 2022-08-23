@@ -1,4 +1,213 @@
-import { defineComponent, ref, openBlock, createElementBlock, Fragment, renderList, createBlock, resolveDynamicComponent, mergeProps, normalizeClass, resolveComponent, createElementVNode, createTextVNode, toDisplayString, createCommentVNode, withDirectives, createVNode, vShow, inject, resolveDirective, vModelText } from "vue";
+import { defineComponent, resolveComponent, openBlock, createBlock, withCtx, createElementVNode, inject, ref, onMounted, computed, watch, createElementBlock, withKeys, toDisplayString, Fragment, renderList, normalizeClass, resolveDynamicComponent, mergeProps, createTextVNode, createCommentVNode, withDirectives, createVNode, vShow, resolveDirective, vModelText } from "vue";
+const _sfc_main$6 = defineComponent({
+  name: "AComboBox",
+  props: ["event", "cellData", "tableID"]
+});
+const _export_sfc = (sfc, props) => {
+  const target = sfc.__vccOpts || sfc;
+  for (const [key, val] of props) {
+    target[key] = val;
+  }
+  return target;
+};
+const _hoisted_1$2 = /* @__PURE__ */ createElementVNode("div", null, [
+  /* @__PURE__ */ createElementVNode("input", { type: "text" }),
+  /* @__PURE__ */ createElementVNode("input", { type: "text" }),
+  /* @__PURE__ */ createElementVNode("input", { type: "text" })
+], -1);
+function _sfc_render$6(_ctx, _cache, $props, $setup, $data, $options) {
+  const _component_ATableModal = resolveComponent("ATableModal");
+  return openBlock(), createBlock(_component_ATableModal, {
+    event: _ctx.event,
+    cellData: _ctx.cellData,
+    class: "amodal"
+  }, {
+    default: withCtx(() => [
+      _hoisted_1$2
+    ]),
+    _: 1
+  }, 8, ["event", "cellData"]);
+}
+const AComboBox = /* @__PURE__ */ _export_sfc(_sfc_main$6, [["render", _sfc_render$6]]);
+const _sfc_main$5 = defineComponent({
+  name: "ADate",
+  props: {
+    colIndex: {
+      type: Number,
+      default: 0
+    },
+    rowIndex: {
+      type: Number,
+      default: 0
+    },
+    tableid: {
+      type: String
+    },
+    event: {
+      type: Event
+    },
+    indent: {
+      type: Number,
+      default: 0
+    }
+  },
+  setup(props) {
+    const tableData = inject(props.tableid);
+    const numberOfRows = 6;
+    const numberOfColumns = 7;
+    const todaysDate = new Date();
+    let currentMonth = ref(todaysDate.getMonth());
+    let currentYear = ref(todaysDate.getFullYear());
+    let selectedDate = ref(tableData.cellData(props.colIndex, props.rowIndex));
+    let currentDates = ref([]);
+    let width = ref("");
+    const renderMonth = () => {
+      const firstOfMonth = new Date(currentYear.value, currentMonth.value, 1);
+      const monthStartWeekday = firstOfMonth.getDay();
+      const calendarStartDay = firstOfMonth.setDate(firstOfMonth.getDate() - monthStartWeekday);
+      for (let i of Array(43).keys()) {
+        currentDates.value.push(calendarStartDay + i * 84e6);
+      }
+    };
+    const handlePageDown = (event) => {
+      event.shiftKey ? previousYear() : previousMonth();
+    };
+    const handlePageUp = (event) => {
+      event.shiftKey ? nextYear() : nextMonth();
+    };
+    const previousYear = () => {
+      currentYear.value -= 1;
+    };
+    const nextYear = () => {
+      currentYear.value += 1;
+    };
+    const previousMonth = () => {
+      if (currentMonth.value == 0) {
+        currentMonth.value = 11;
+        currentYear.value -= 1;
+      } else {
+        currentMonth.value -= 1;
+      }
+    };
+    const nextMonth = () => {
+      if (currentMonth.value == 11) {
+        currentMonth.value = 0;
+        currentYear.value += 1;
+      } else {
+        currentMonth.value += 1;
+      }
+    };
+    const today = (day) => {
+      let todaysDate2 = new Date().setUTCHours(0, 0, 0, 0);
+      if (currentMonth.value !== new Date(todaysDate2).getMonth()) {
+        return;
+      }
+      return new Date(todaysDate2).toDateString() === new Date(day).toDateString();
+    };
+    const isSelectedDate = function(day) {
+      return new Date(day).toDateString() === new Date(selectedDate.value).toDateString();
+    };
+    const selectDate = function(event, currentIndex) {
+      selectedDate.value = currentDates.value[currentIndex];
+      updateData();
+      event.preventDefault();
+      event.stopPropagation();
+    };
+    const updateData = function() {
+      tableData.setCellData(props.rowIndex, props.colIndex, selectedDate.value);
+    };
+    onMounted(() => {
+      renderMonth();
+    });
+    const dayWidth = computed(() => {
+      const widthValue = Number(width.value.replace("px", ""));
+      return `${widthValue / (numberOfColumns - 1)}px`;
+    });
+    const monthAndYear = computed(() => {
+      return new Date(currentYear.value, currentMonth.value, 1).toLocaleDateString(void 0, {
+        year: "numeric",
+        month: "long"
+      });
+    });
+    watch(currentMonth, () => {
+      currentDates.value = [];
+      renderMonth();
+    });
+    watch(currentYear, () => {
+      currentDates.value = [];
+      renderMonth();
+    });
+    return {
+      currentDates,
+      currentMonth,
+      currentYear,
+      dayWidth,
+      handlePageDown,
+      handlePageUp,
+      isSelectedDate,
+      monthAndYear,
+      nextMonth,
+      numberOfRows,
+      numberOfColumns,
+      previousMonth,
+      selectDate,
+      selectedDate,
+      tableData,
+      today,
+      updateData,
+      width
+    };
+  }
+});
+const ADate_vue_vue_type_style_index_0_scoped_059b9e78_lang = "";
+const _hoisted_1$1 = ["event", "colIndex", "rowIndex", "tableid"];
+const _hoisted_2$1 = { colspan: "5" };
+const _hoisted_3$1 = ["onClick"];
+function _sfc_render$5(_ctx, _cache, $props, $setup, $data, $options) {
+  return openBlock(), createElementBlock("div", {
+    event: _ctx.event,
+    colIndex: _ctx.colIndex,
+    rowIndex: _ctx.rowIndex,
+    tableid: _ctx.tableid,
+    class: "adate",
+    tabindex: "0",
+    ref: "adatepicker"
+  }, [
+    createElementVNode("table", {
+      onKeydown: [
+        _cache[2] || (_cache[2] = withKeys((...args) => _ctx.handlePageDown && _ctx.handlePageDown(...args), ["page-down"])),
+        _cache[3] || (_cache[3] = withKeys((...args) => _ctx.handlePageUp && _ctx.handlePageUp(...args), ["page-up"]))
+      ]
+    }, [
+      createElementVNode("tr", null, [
+        createElementVNode("td", {
+          onClick: _cache[0] || (_cache[0] = (...args) => _ctx.previousMonth && _ctx.previousMonth(...args)),
+          tabindex: "-1"
+        }, "<"),
+        createElementVNode("th", _hoisted_2$1, toDisplayString(_ctx.monthAndYear), 1),
+        createElementVNode("td", {
+          onClick: _cache[1] || (_cache[1] = (...args) => _ctx.nextMonth && _ctx.nextMonth(...args)),
+          tabindex: "-1"
+        }, ">")
+      ]),
+      (openBlock(true), createElementBlock(Fragment, null, renderList(_ctx.numberOfRows, (rowNo) => {
+        return openBlock(), createElementBlock("tr", { key: rowNo }, [
+          (openBlock(true), createElementBlock(Fragment, null, renderList(_ctx.numberOfColumns, (colNo) => {
+            return openBlock(), createElementBlock("td", {
+              key: (rowNo - 1) * _ctx.numberOfColumns + colNo,
+              class: normalizeClass({
+                todaysdate: _ctx.today(_ctx.currentDates[(rowNo - 1) * _ctx.numberOfColumns + colNo]),
+                selecteddate: _ctx.isSelectedDate(_ctx.currentDates[(rowNo - 1) * _ctx.numberOfColumns + colNo])
+              }),
+              onClick: ($event) => _ctx.selectDate($event, (rowNo - 1) * _ctx.numberOfColumns + colNo)
+            }, toDisplayString(new Date(_ctx.currentDates[(rowNo - 1) * _ctx.numberOfColumns + colNo]).getDate()), 11, _hoisted_3$1);
+          }), 128))
+        ]);
+      }), 128))
+    ], 32)
+  ], 8, _hoisted_1$1);
+}
+const ADate = /* @__PURE__ */ _export_sfc(_sfc_main$5, [["render", _sfc_render$5], ["__scopeId", "data-v-059b9e78"]]);
 const _sfc_main$4 = defineComponent({
   name: "AForm",
   props: {
@@ -29,13 +238,6 @@ const _sfc_main$4 = defineComponent({
   }
 });
 const AForm_vue_vue_type_style_index_0_scoped_56233342_lang = "";
-const _export_sfc = (sfc, props) => {
-  const target = sfc.__vccOpts || sfc;
-  for (const [key, val] of props) {
-    target[key] = val;
-  }
-  return target;
-};
 function _sfc_render$4(_ctx, _cache, $props, $setup, $data, $options) {
   return openBlock(), createElementBlock("form", null, [
     (openBlock(true), createElementBlock(Fragment, null, renderList(_ctx.schema, (componentObj, key) => {
@@ -182,11 +384,11 @@ function getMask(binding) {
   if (mask) {
     const maskFn = extractMaskFn(mask);
     if (maskFn) {
-      const locale = binding.instance.locale;
+      const locale = binding.instance["locale"];
       mask = maskFn(locale);
     }
   } else {
-    const schema = binding.instance.schema;
+    const schema = binding.instance["schema"];
     const fieldType = (_a = schema.fieldtype) == null ? void 0 : _a.toLowerCase();
     if (fieldType && NAMED_MASKS[fieldType]) {
       mask = NAMED_MASKS[fieldType];
@@ -229,8 +431,8 @@ function useStringMask(el, binding) {
   const unmaskedInput = unmaskInput(inputText, maskToken);
   if (unmaskedInput) {
     const replacement = fillMask(unmaskedInput, mask, maskToken);
-    if (binding.instance.maskFilled) {
-      binding.instance.maskFilled = !replacement.includes(maskToken);
+    if (binding.instance["maskFilled"]) {
+      binding.instance["maskFilled"] = !replacement.includes(maskToken);
     }
     el.value = replacement;
   } else {
@@ -310,14 +512,19 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 const ATextInput = /* @__PURE__ */ _export_sfc(_sfc_main, [["render", _sfc_render], ["__scopeId", "data-v-58bab3b3"]]);
 function install(app) {
+  app.component("ACombobox", AComboBox);
+  app.component("ADate", ADate);
   app.component("AForm", AForm);
   app.component("AFieldset", AFieldset);
   app.component("ANumericInput", ANumericInput);
   app.component("ATextInput", ATextInput);
 }
-const index = {
-  install
-};
 export {
-  index as default
+  AComboBox,
+  ADate,
+  AFieldset,
+  AForm,
+  ANumericInput,
+  ATextInput,
+  install
 };

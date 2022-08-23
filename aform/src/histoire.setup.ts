@@ -8,7 +8,7 @@ import ATextInput from '@/components/form/ATextInput.vue'
 import { ATable, ATableHeader, ATableModal } from '@sedum/atable'
 
 export const setupVue3 = defineSetupVue3(({ app }) => {
-	// TODO: (typing) add typing for ATable
+	// TODO: (typing) add typing for ATable components
 	app.component('AFieldset', AFieldset)
 	app.component('AForm', AForm)
 	app.component('ANumericInput', ANumericInput)

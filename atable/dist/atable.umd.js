@@ -303,12 +303,10 @@
       return table;
     }
     createDisplayObject(display) {
-      let defaultDisplay = [Object.assign({}, { modified: false })];
+      const defaultDisplay = [Object.assign({}, { modified: false })];
       if (display) {
         if ("0:0" in display) {
           return display;
-        } else if ("default" in display) {
-          defaultDisplay = display.default;
         }
       }
       const parents = /* @__PURE__ */ new Set();
@@ -775,6 +773,7 @@
   exports2.ATable = ATable;
   exports2.ATableHeader = ATableHeader;
   exports2.ATableModal = ATableModal;
+  exports2.TableDataStore = TableDataStore;
   exports2.install = install;
   Object.defineProperties(exports2, { __esModule: { value: true }, [Symbol.toStringTag]: { value: "Module" } });
 });

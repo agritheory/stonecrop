@@ -300,12 +300,10 @@ class TableDataStore {
     return table;
   }
   createDisplayObject(display) {
-    let defaultDisplay = [Object.assign({}, { modified: false })];
+    const defaultDisplay = [Object.assign({}, { modified: false })];
     if (display) {
       if ("0:0" in display) {
         return display;
-      } else if ("default" in display) {
-        defaultDisplay = display.default;
       }
     }
     const parents = /* @__PURE__ */ new Set();
@@ -773,5 +771,6 @@ export {
   ATable,
   ATableHeader,
   ATableModal,
+  TableDataStore,
   install
 };

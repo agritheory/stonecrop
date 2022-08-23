@@ -4,10 +4,15 @@
 	"main": "dist/aform.mjs",
 	"module": "dist/aform.mjs",
 	"umd": "dist/aform.umd.js",
+	"types": "src/index",
+	"files": [
+		"dist/*",
+		"src/**/*.vue"
+	],
 	"license": "MIT",
 	"scripts": {
 		"dev": "vite",
-		"build": "vite build --emptyOutDir true",
+		"build": "tsc -b && vite build --emptyOutDir true",
 		"preview": "vite preview",
 		"story:dev": "histoire dev",
 		"story:build": "histoire build",
@@ -15,19 +20,18 @@
 		"lint": "eslint . --ext .ts,.vue",
 		"pretty-quick": "pretty-quick --staged"
 	},
-	"files": [
-		"dist/*",
-		"src/**/*.vue"
-	],
 	"dependencies": {
-		"@sedum/atable": "workspace:*",
 		"uuid": "^8.3.2",
 		"vue": "^3.2.37"
+	},
+	"peerDependencies": {
+		"@sedum/atable": "workspace:*"
 	},
 	"devDependencies": {
 		"@cypress/vite-dev-server": "~2.0.3",
 		"@cypress/vue": "~3.0.0-beta.4",
 		"@histoire/plugin-vue": "~0.10.2",
+		"@sedum/atable": "workspace:*",
 		"@types/uuid": "~8.3.4",
 		"@typescript-eslint/eslint-plugin": "~5.33.0",
 		"@typescript-eslint/parser": "~5.33.0",

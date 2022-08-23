@@ -1,5 +1,6 @@
 {
 	"compilerOptions": {
+		"rootDir": ".",
 		"target": "es2017",
 		"module": "esnext",
 		"lib": ["dom", "dom.iterable", "esnext"],
@@ -10,5 +11,9 @@
 		"skipLibCheck": true,
 		"jsx": "preserve"
 	},
-	"exclude": ["node_modules", "**/*.spec.ts"]
+	"exclude": ["node_modules", "**/*.spec.ts"],
+	"references": [
+		{ "path": "./aform" },
+		{ "path": "./atable" }
+	]
 }

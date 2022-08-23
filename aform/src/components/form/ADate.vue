@@ -32,7 +32,7 @@
 <script lang="ts">
 import { computed, defineComponent, inject, onMounted, ref, watch } from 'vue'
 
-import TableDataStore from '.'
+import { TableDataStore } from '@sedum/atable'
 
 export default defineComponent({
 	name: 'ADate',
