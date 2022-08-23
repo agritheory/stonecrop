@@ -1,7 +1,7 @@
 <template>
 	<div id="home">
 		<h1>Home</h1>
-		<pre> {{ state }} </pre>
+		<pre> {{ useState }} </pre>
 	</div>
 </template>
 <script setup lang="ts">
@@ -11,6 +11,6 @@ const useState = createGlobalState(() =>
 		name: 'Banana',
 		color: 'Yellow',
 		size: 'Medium',
-	}),
+	})
 )
 </script>
