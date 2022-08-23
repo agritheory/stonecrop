@@ -1,32 +1,34 @@
-import { Map, Record, OrderedSet } from 'immutable'
-// import Machine from 'xstate'
-// import store type from pinia
-
-export class Stonecrop {
-	constructor(schema, events, hooks, value){
+export class Registry {
+	constructor(schemaLoader){
 		// singleton
-		if(Stonecrop._root){
-			return Stonecrop._root
+		if(Registry._root){
+			return Registry._root
 		}
-		Stonecrop._root = this
-		this.name = 'Stonecrop'
-		this.schema = schema
-		this.events = events
-		this.hooks = new OrderedSet(hooks)
-		this.value = value
-		this.registry = new Map()
-		// 
-		return new Proxy(this, {
-			get: (object, key, proxy) => {
-				if (['schema', 'events', 'hooks', 'value'].indexOf(key) == -1) {
-					return this.registry[key]
-				} else {
-					return this[key]
-				}
-			}
-		})
+		Registry._root = this
+		this.name = 'Registry'
+		this.schemaLoader = schemaLoader
+		
+		// NOTE: I don't think this is needed
+		// return new Proxy(this, {
+		// 	get: (object, key, proxy) => {
+		// 		if (['schema', 'events', 'hooks', 'value'].indexOf(key) == -1) {
+		// 			return this.schema[key]
+		// 		} else {
+		// 			return this[key]
+		// 		}
+		// 	}
+		// })
 	}
-	addDoctype(doctype){
-		this.registry = this.registry.update(doctype.name, doctype)
+	loadDoctypeSchema(doctype){ // doctype class
+		if(doctype.schemaLoader){
+			return doctype.schemaLoader()
+		}
+		return this.schemaLoader(doctype.doctype)
+	}
+	addDoctype(doctype){ // Doctype class
+		if(!doctype.doctype in this){
+			doctype.registry = this
+			this[doctype.doctype] = doctype
+		}
 	}
 }

@@ -1,16 +1,14 @@
 <template>
 	<div id="home">
 		<h1>Home</h1>
-		<pre> {{ useState }} </pre>
+		<pre>{{ state }}</pre>
+		<hr>
+		<pre> {{ state.name }}</pre>
 	</div>
 </template>
 <script setup lang="ts">
-import { createGlobalState, useStorage } from '@vueuse/core'
-const useState = createGlobalState(() =>
-	useStorage('stonecrop', {
-		name: 'Banana',
-		color: 'Yellow',
-		size: 'Medium',
-	})
-)
+import { useStonecrop } from '@/composable.js'
+
+let state = useStonecrop()
+
 </script>

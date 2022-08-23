@@ -37,5 +37,11 @@ The doctype schema, events and hooks are fetched from the server if they don't a
 
 Automatically detect component schema/events/hooks via composable
 
+# Base Classes
+The Doctype aligns with a row, record or object in a database. It is required to specify its schema, a Finite State Machine that informs its workflow and a set of functions that are triggered by that FSM's state transitions.
+
+Registry is a map of all Doctypes, lazy loaded and is responsible for routing within the application
+
+Stem is a composable singleton that wraps Registry and provides application level state management
 
 

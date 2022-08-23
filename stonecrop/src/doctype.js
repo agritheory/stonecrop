@@ -1,15 +1,13 @@
-import { Map, Record, OrderedSet } from 'immutable'
-// import Machine from 'xstate'
-// import store type from pinia
-
 export class Doctype {
-	constructor(name, schema, events, hooks, value) {
-		this.name = name
-		this.slug = name.replace(/([a-z])([A-Z])/g, "$1-$2").replace(/[\s_]+/g, '-').toLowerCase() // kebab case
-		this.schema = new Record(schema)
+	constructor(doctype, schema, events, hooks) {
+		this.doctype = doctype // string
+		this.schema = schema
 		this.events = events // new Machine()
-		this.hooks = new OrderedSet(hooks)
-		this.value = value
+		this.hooks = hooks
+		this.registry = null // gets assigned when added to registry, not when constructed
+	}
+	get slug(){
+		return this.doctype.replace(/([a-z])([A-Z])/g, "$1-$2").replace(/[\s_]+/g, '-').toLowerCase() // kebab case
 	}
 }
 
