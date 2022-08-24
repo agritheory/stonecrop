@@ -1,188 +1,530 @@
-import { defineComponent as f, ref as c, openBlock as u, createElementBlock as i, Fragment as C, renderList as $, createBlock as v, resolveDynamicComponent as I, mergeProps as h, normalizeClass as B, resolveComponent as m, createElementVNode as _, createTextVNode as F, toDisplayString as y, createCommentVNode as k, withDirectives as b, createVNode as O, vShow as g } from "vue";
-const p = (e, n) => {
-  const t = e.__vccOpts || e;
-  for (const [r, l] of n)
-    t[r] = l;
-  return t;
-}, T = f({
-  name: "AForm",
-  props: ["data", "schema", "key"],
-  setup(e, n) {
-    const t = c(e.data || {});
-    function r(a) {
-      if (a.component)
-        return a.component;
-      if (a.fieldtype)
-        return a.fieldtype;
+import { defineComponent, resolveComponent, openBlock, createBlock, withCtx, createElementVNode, inject, ref, onMounted, computed, watch, createElementBlock, withKeys, toDisplayString, Fragment, renderList, normalizeClass, resolveDynamicComponent, mergeProps, createTextVNode, createCommentVNode, withDirectives, createVNode, vShow, resolveDirective, vModelText } from "vue";
+const _sfc_main$6 = defineComponent({
+  name: "AComboBox",
+  props: ["event", "cellData", "tableID"]
+});
+const _export_sfc = (sfc, props) => {
+  const target = sfc.__vccOpts || sfc;
+  for (const [key, val] of props) {
+    target[key] = val;
+  }
+  return target;
+};
+const _hoisted_1$2 = /* @__PURE__ */ createElementVNode("div", null, [
+  /* @__PURE__ */ createElementVNode("input", { type: "text" }),
+  /* @__PURE__ */ createElementVNode("input", { type: "text" }),
+  /* @__PURE__ */ createElementVNode("input", { type: "text" })
+], -1);
+function _sfc_render$6(_ctx, _cache, $props, $setup, $data, $options) {
+  const _component_ATableModal = resolveComponent("ATableModal");
+  return openBlock(), createBlock(_component_ATableModal, {
+    event: _ctx.event,
+    cellData: _ctx.cellData,
+    class: "amodal"
+  }, {
+    default: withCtx(() => [
+      _hoisted_1$2
+    ]),
+    _: 1
+  }, 8, ["event", "cellData"]);
+}
+const AComboBox = /* @__PURE__ */ _export_sfc(_sfc_main$6, [["render", _sfc_render$6]]);
+const _sfc_main$5 = defineComponent({
+  name: "ADate",
+  props: {
+    colIndex: {
+      type: Number,
+      default: 0
+    },
+    rowIndex: {
+      type: Number,
+      default: 0
+    },
+    tableid: {
+      type: String
+    },
+    event: {
+      type: Event
+    },
+    indent: {
+      type: Number,
+      default: 0
     }
-    function l(a) {
-      let o = {};
-      for (const [s, d] of Object.entries(a))
-        s != "component" && s != "fieldtype" && (o[s] = d);
-      return o;
-    }
-    return { deriveComponent: r, formData: t, componentProps: l };
+  },
+  setup(props) {
+    const tableData = inject(props.tableid);
+    const numberOfRows = 6;
+    const numberOfColumns = 7;
+    const todaysDate = new Date();
+    let currentMonth = ref(todaysDate.getMonth());
+    let currentYear = ref(todaysDate.getFullYear());
+    let selectedDate = ref(tableData.cellData(props.colIndex, props.rowIndex));
+    let currentDates = ref([]);
+    let width = ref("");
+    const renderMonth = () => {
+      const firstOfMonth = new Date(currentYear.value, currentMonth.value, 1);
+      const monthStartWeekday = firstOfMonth.getDay();
+      const calendarStartDay = firstOfMonth.setDate(firstOfMonth.getDate() - monthStartWeekday);
+      for (let i of Array(43).keys()) {
+        currentDates.value.push(calendarStartDay + i * 84e6);
+      }
+    };
+    const handlePageDown = (event) => {
+      event.shiftKey ? previousYear() : previousMonth();
+    };
+    const handlePageUp = (event) => {
+      event.shiftKey ? nextYear() : nextMonth();
+    };
+    const previousYear = () => {
+      currentYear.value -= 1;
+    };
+    const nextYear = () => {
+      currentYear.value += 1;
+    };
+    const previousMonth = () => {
+      if (currentMonth.value == 0) {
+        currentMonth.value = 11;
+        currentYear.value -= 1;
+      } else {
+        currentMonth.value -= 1;
+      }
+    };
+    const nextMonth = () => {
+      if (currentMonth.value == 11) {
+        currentMonth.value = 0;
+        currentYear.value += 1;
+      } else {
+        currentMonth.value += 1;
+      }
+    };
+    const today = (day) => {
+      let todaysDate2 = new Date().setUTCHours(0, 0, 0, 0);
+      if (currentMonth.value !== new Date(todaysDate2).getMonth()) {
+        return;
+      }
+      return new Date(todaysDate2).toDateString() === new Date(day).toDateString();
+    };
+    const isSelectedDate = function(day) {
+      return new Date(day).toDateString() === new Date(selectedDate.value).toDateString();
+    };
+    const selectDate = function(event, currentIndex) {
+      selectedDate.value = currentDates.value[currentIndex];
+      updateData();
+      event.preventDefault();
+      event.stopPropagation();
+    };
+    const updateData = function() {
+      tableData.setCellData(props.rowIndex, props.colIndex, selectedDate.value);
+    };
+    onMounted(() => {
+      renderMonth();
+    });
+    const dayWidth = computed(() => {
+      const widthValue = Number(width.value.replace("px", ""));
+      return `${widthValue / (numberOfColumns - 1)}px`;
+    });
+    const monthAndYear = computed(() => {
+      return new Date(currentYear.value, currentMonth.value, 1).toLocaleDateString(void 0, {
+        year: "numeric",
+        month: "long"
+      });
+    });
+    watch(currentMonth, () => {
+      currentDates.value = [];
+      renderMonth();
+    });
+    watch(currentYear, () => {
+      currentDates.value = [];
+      renderMonth();
+    });
+    return {
+      currentDates,
+      currentMonth,
+      currentYear,
+      dayWidth,
+      handlePageDown,
+      handlePageUp,
+      isSelectedDate,
+      monthAndYear,
+      nextMonth,
+      numberOfRows,
+      numberOfColumns,
+      previousMonth,
+      selectDate,
+      selectedDate,
+      tableData,
+      today,
+      updateData,
+      width
+    };
   }
 });
-function q(e, n, t, r, l, a) {
-  return u(), i("form", null, [
-    (u(!0), i(C, null, $(e.schema, (o, s) => (u(), v(I(e.deriveComponent(o)), h({
-      key: s,
-      schema: o
-    }, e.componentProps(o), {
-      value: e.formData[o.fieldname]
-    }), null, 16, ["schema", "value"]))), 128))
+const ADate_vue_vue_type_style_index_0_scoped_059b9e78_lang = "";
+const _hoisted_1$1 = ["event", "colIndex", "rowIndex", "tableid"];
+const _hoisted_2$1 = { colspan: "5" };
+const _hoisted_3$1 = ["onClick"];
+function _sfc_render$5(_ctx, _cache, $props, $setup, $data, $options) {
+  return openBlock(), createElementBlock("div", {
+    event: _ctx.event,
+    colIndex: _ctx.colIndex,
+    rowIndex: _ctx.rowIndex,
+    tableid: _ctx.tableid,
+    class: "adate",
+    tabindex: "0",
+    ref: "adatepicker"
+  }, [
+    createElementVNode("table", {
+      onKeydown: [
+        _cache[2] || (_cache[2] = withKeys((...args) => _ctx.handlePageDown && _ctx.handlePageDown(...args), ["page-down"])),
+        _cache[3] || (_cache[3] = withKeys((...args) => _ctx.handlePageUp && _ctx.handlePageUp(...args), ["page-up"]))
+      ]
+    }, [
+      createElementVNode("tr", null, [
+        createElementVNode("td", {
+          onClick: _cache[0] || (_cache[0] = (...args) => _ctx.previousMonth && _ctx.previousMonth(...args)),
+          tabindex: "-1"
+        }, "<"),
+        createElementVNode("th", _hoisted_2$1, toDisplayString(_ctx.monthAndYear), 1),
+        createElementVNode("td", {
+          onClick: _cache[1] || (_cache[1] = (...args) => _ctx.nextMonth && _ctx.nextMonth(...args)),
+          tabindex: "-1"
+        }, ">")
+      ]),
+      (openBlock(true), createElementBlock(Fragment, null, renderList(_ctx.numberOfRows, (rowNo) => {
+        return openBlock(), createElementBlock("tr", { key: rowNo }, [
+          (openBlock(true), createElementBlock(Fragment, null, renderList(_ctx.numberOfColumns, (colNo) => {
+            return openBlock(), createElementBlock("td", {
+              key: (rowNo - 1) * _ctx.numberOfColumns + colNo,
+              class: normalizeClass({
+                todaysdate: _ctx.today(_ctx.currentDates[(rowNo - 1) * _ctx.numberOfColumns + colNo]),
+                selecteddate: _ctx.isSelectedDate(_ctx.currentDates[(rowNo - 1) * _ctx.numberOfColumns + colNo])
+              }),
+              onClick: ($event) => _ctx.selectDate($event, (rowNo - 1) * _ctx.numberOfColumns + colNo)
+            }, toDisplayString(new Date(_ctx.currentDates[(rowNo - 1) * _ctx.numberOfColumns + colNo]).getDate()), 11, _hoisted_3$1);
+          }), 128))
+        ]);
+      }), 128))
+    ], 32)
+  ], 8, _hoisted_1$1);
+}
+const ADate = /* @__PURE__ */ _export_sfc(_sfc_main$5, [["render", _sfc_render$5], ["__scopeId", "data-v-059b9e78"]]);
+const _sfc_main$4 = defineComponent({
+  name: "AForm",
+  props: {
+    schema: {
+      type: Array,
+      required: true
+    },
+    data: {
+      type: Array,
+      required: true
+    },
+    formId: {
+      type: Number
+    }
+  },
+  setup(props) {
+    const formData = ref(props.data || {});
+    const componentProps = (componentObj) => {
+      let propsToPass = {};
+      for (const [key, value] of Object.entries(componentObj)) {
+        if (!["component", "fieldtype"].includes(key)) {
+          propsToPass[key] = value;
+        }
+      }
+      return propsToPass;
+    };
+    return { formData, componentProps };
+  }
+});
+const AForm_vue_vue_type_style_index_0_scoped_56233342_lang = "";
+function _sfc_render$4(_ctx, _cache, $props, $setup, $data, $options) {
+  return openBlock(), createElementBlock("form", null, [
+    (openBlock(true), createElementBlock(Fragment, null, renderList(_ctx.schema, (componentObj, key) => {
+      return openBlock(), createBlock(resolveDynamicComponent(componentObj.component), mergeProps({
+        key,
+        schema: componentObj
+      }, _ctx.componentProps(componentObj), {
+        value: _ctx.formData[componentObj.fieldname]
+      }), null, 16, ["schema", "value"]);
+    }), 128))
   ]);
 }
-const A = /* @__PURE__ */ p(T, [["render", q], ["__scopeId", "data-v-3a64d70a"]]);
-const x = f({
-  props: ["collapsed"],
-  setup(e, n) {
+const AForm = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["render", _sfc_render$4], ["__scopeId", "data-v-56233342"]]);
+const _sfc_main$3 = defineComponent({
+  props: {
+    collapsed: {
+      type: Boolean,
+      required: true
+    }
   }
 });
-function N(e, n, t, r, l, a) {
-  return u(), i("button", {
-    class: B(["collapse-button", e.collapsed ? "rotated" : "unrotated"])
+const CollapseButton_vue_vue_type_style_index_0_scoped_5f720483_lang = "";
+function _sfc_render$3(_ctx, _cache, $props, $setup, $data, $options) {
+  return openBlock(), createElementBlock("button", {
+    class: normalizeClass(["collapse-button", _ctx.collapsed ? "rotated" : "unrotated"])
   }, "\xD7", 2);
 }
-const D = /* @__PURE__ */ p(x, [["render", N], ["__scopeId", "data-v-83102534"]]);
-const V = f({
+const CollapseButton = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["render", _sfc_render$3], ["__scopeId", "data-v-5f720483"]]);
+const _sfc_main$2 = defineComponent({
   name: "AFieldset",
-  components: { AForm: A, CollapseButton: D },
-  props: ["value", "schema", "key", "label", "collapsible"],
-  setup(e, n) {
-    const t = c(e.data || {});
-    let r = c(!1), l = c(e.collapsible);
-    function a(o) {
-      o.preventDefault(), l && (r.value = !r.value);
+  components: { AForm, CollapseButton },
+  props: {
+    schema: {
+      type: Array,
+      required: true
+    },
+    label: {
+      type: String,
+      required: true
+    },
+    collapsible: {
+      type: Boolean
+    },
+    value: { required: false }
+  },
+  setup(props) {
+    const formData = ref(props.data || []);
+    let collapsed = ref(false);
+    let collapsible = ref(props.collapsible);
+    function toggleCollapse(e) {
+      e.preventDefault();
+      if (!collapsible.value) {
+        return;
+      }
+      collapsed.value = !collapsed.value;
     }
-    return { formData: t, collapsed: r, toggleCollapse: a, collapsible: l };
+    return { formData, collapsed, toggleCollapse };
   }
 });
-function M(e, n, t, r, l, a) {
-  const o = m("CollapseButton"), s = m("AForm");
-  return u(), i("fieldset", null, [
-    _("legend", {
-      onClick: n[0] || (n[0] = (d) => e.toggleCollapse(d)),
-      onSubmit: n[1] || (n[1] = (d) => e.toggleCollapse(d))
+const AFieldset_vue_vue_type_style_index_0_scoped_2ee1d08c_lang = "";
+function _sfc_render$2(_ctx, _cache, $props, $setup, $data, $options) {
+  const _component_CollapseButton = resolveComponent("CollapseButton");
+  const _component_AForm = resolveComponent("AForm");
+  return openBlock(), createElementBlock("fieldset", null, [
+    createElementVNode("legend", {
+      onClick: _cache[0] || (_cache[0] = ($event) => _ctx.toggleCollapse($event)),
+      onSubmit: _cache[1] || (_cache[1] = ($event) => _ctx.toggleCollapse($event))
     }, [
-      F(y(e.label) + " ", 1),
-      e.collapsible ? (u(), v(o, {
+      createTextVNode(toDisplayString(_ctx.label) + " ", 1),
+      _ctx.collapsible ? (openBlock(), createBlock(_component_CollapseButton, {
         key: 0,
-        collapsed: e.collapsed
-      }, null, 8, ["collapsed"])) : k("", !0)
+        collapsed: _ctx.collapsed
+      }, null, 8, ["collapsed"])) : createCommentVNode("", true)
     ], 32),
-    b(O(s, {
-      schema: e.schema,
-      data: e.formData
+    withDirectives(createVNode(_component_AForm, {
+      schema: _ctx.schema,
+      data: _ctx.formData
     }, null, 8, ["schema", "data"]), [
-      [g, !e.collapsed]
+      [vShow, !_ctx.collapsed]
     ])
   ]);
 }
-const S = /* @__PURE__ */ p(V, [["render", M], ["__scopeId", "data-v-2ec614f8"]]), P = {
+const AFieldset = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["render", _sfc_render$2], ["__scopeId", "data-v-2ee1d08c"]]);
+const _sfc_main$1 = defineComponent({
   name: "ANumericInput",
   props: {
-    value: { required: !1 },
+    value: { required: false },
     required: {
-      type: Boolean,
-      default: !1
+      type: Boolean
     },
     label: {
       type: String,
-      required: !0
+      required: true
     },
     readOnly: {
-      type: Boolean,
-      default: !1
+      type: Boolean
     },
     uuid: {
-      type: Number,
-      default: 0
+      type: String
     },
     validation: {
       type: Object,
       default: () => ({ errorMessage: "&nbsp;" })
     }
   },
-  data() {
-    return {
-      amount: ""
+  setup(props, context) {
+    const amount = ref("");
+    const update = (event) => {
+      const value = event.target.value;
+      context.emit("update:value", value);
     };
-  },
-  methods: {
-    update(e) {
-      this.$emit("update:value", e);
-    }
+    return { amount, update };
   }
-};
-function j(e, n, t, r, l, a) {
-  const o = m("ATextInput");
-  return u(), v(o, {
-    label: t.label,
-    readOnly: t.readOnly,
-    uuid: t.uuid,
-    validation: t.validation,
-    modelValue: l.amount,
-    "onUpdate:modelValue": n[0] || (n[0] = (s) => l.amount = s)
+});
+function _sfc_render$1(_ctx, _cache, $props, $setup, $data, $options) {
+  const _component_ATextInput = resolveComponent("ATextInput");
+  return openBlock(), createBlock(_component_ATextInput, {
+    label: _ctx.label,
+    readOnly: _ctx.readOnly,
+    uuid: _ctx.uuid,
+    validation: _ctx.validation,
+    modelValue: _ctx.amount,
+    "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => _ctx.amount = $event)
   }, null, 8, ["label", "readOnly", "uuid", "validation", "modelValue"]);
 }
-const L = /* @__PURE__ */ p(P, [["render", j]]);
-const w = {
+const ANumericInput = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["render", _sfc_render$1]]);
+const NAMED_MASKS = {
+  date: "##/##/####",
+  datetime: "####/##/## ##:##",
+  time: "##:##",
+  fulltime: "##:##:##",
+  phone: "(###) ### - ####",
+  card: "#### #### #### ####"
+};
+function extractMaskFn(mask) {
+  try {
+    return Function(`"use strict";return (${mask})`)();
+  } catch (error) {
+  }
+}
+function getMask(binding) {
+  var _a;
+  let mask = binding.value;
+  if (mask) {
+    const maskFn = extractMaskFn(mask);
+    if (maskFn) {
+      const locale = binding.instance["locale"];
+      mask = maskFn(locale);
+    }
+  } else {
+    const schema = binding.instance["schema"];
+    const fieldType = (_a = schema.fieldtype) == null ? void 0 : _a.toLowerCase();
+    if (fieldType && NAMED_MASKS[fieldType]) {
+      mask = NAMED_MASKS[fieldType];
+    }
+  }
+  return mask;
+}
+function unmaskInput(input, maskToken) {
+  if (!maskToken) {
+    maskToken = "#";
+  }
+  let unmaskedInput = input;
+  const maskChars = [maskToken, "/", "-", "(", ")", " "];
+  for (const char of maskChars) {
+    unmaskedInput = unmaskedInput.replaceAll(char, "");
+  }
+  return unmaskedInput;
+}
+function fillMask(input, mask, maskToken) {
+  if (!maskToken) {
+    maskToken = "#";
+  }
+  let replacement = mask;
+  for (const inputChar of input) {
+    const replaceIndex = replacement.indexOf(maskToken);
+    if (replaceIndex !== -1) {
+      const prefix = replacement.substring(0, replaceIndex);
+      const suffix = replacement.substring(replaceIndex + 1);
+      replacement = prefix + inputChar + suffix;
+    }
+  }
+  return replacement.slice(0, mask.length);
+}
+function useStringMask(el, binding) {
+  const mask = getMask(binding);
+  if (!mask)
+    return;
+  const maskToken = "#";
+  const inputText = el.value;
+  const unmaskedInput = unmaskInput(inputText, maskToken);
+  if (unmaskedInput) {
+    const replacement = fillMask(unmaskedInput, mask, maskToken);
+    if (binding.instance["maskFilled"]) {
+      binding.instance["maskFilled"] = !replacement.includes(maskToken);
+    }
+    el.value = replacement;
+  } else {
+    el.value = mask;
+  }
+}
+const _sfc_main = defineComponent({
   name: "ATextInput",
   props: {
-    value: { required: !1 },
-    required: {
-      type: Boolean,
-      default: !1
+    schema: {
+      type: Object,
+      required: true
     },
     label: {
       type: String,
-      required: !0
+      required: true
+    },
+    value: {
+      type: null
+    },
+    mask: {
+      type: String
+    },
+    required: {
+      type: Boolean
     },
     readOnly: {
-      type: Boolean,
-      default: !1
+      type: Boolean
     },
     uuid: {
-      type: Number,
-      default: 0
+      type: String
     },
     validation: {
       type: Object,
       default: () => ({ errorMessage: "&nbsp;" })
     }
   },
-  methods: {
-    update(e) {
-      this.$emit("update:value", e);
-    }
+  setup(props, context) {
+    const inputText = ref(props.value);
+    const maskFilled = ref(false);
+    const locale = inject("locale", "");
+    const update = (event) => {
+      const value = event.target.value;
+      context.emit("update:value", value);
+    };
+    return { inputText, locale, maskFilled, update };
+  },
+  directives: {
+    mask: useStringMask
   }
-}, E = ["value", "required", "id", "disabled"], H = ["for"], z = ["innerHTML"];
-function U(e, n, t, r, l, a) {
-  return u(), i("div", null, [
-    _("input", {
-      value: t.value,
-      required: t.required,
-      id: t.uuid,
-      disabled: t.readOnly,
-      onInput: n[0] || (n[0] = (o) => a.update(o.target.value))
-    }, null, 40, E),
-    _("label", { for: t.uuid }, y(t.label), 9, H),
-    b(_("p", {
-      innerHTML: t.validation.errorMessage
-    }, null, 8, z), [
-      [g, t.validation.errorMessage]
+});
+const ATextInput_vue_vue_type_style_index_0_scoped_58bab3b3_lang = "";
+const _hoisted_1 = ["id", "disabled", "maxlength", "required"];
+const _hoisted_2 = ["for"];
+const _hoisted_3 = ["innerHTML"];
+function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _directive_mask = resolveDirective("mask");
+  return openBlock(), createElementBlock("div", null, [
+    withDirectives(createElementVNode("input", {
+      "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => _ctx.inputText = $event),
+      id: _ctx.uuid,
+      disabled: _ctx.readOnly,
+      maxlength: _ctx.mask ? _ctx.maskFilled && _ctx.mask.length : void 0,
+      required: _ctx.required,
+      onInput: _cache[1] || (_cache[1] = (...args) => _ctx.update && _ctx.update(...args))
+    }, null, 40, _hoisted_1), [
+      [vModelText, _ctx.inputText],
+      [_directive_mask, _ctx.mask]
+    ]),
+    createElementVNode("label", { for: _ctx.uuid }, toDisplayString(_ctx.label), 9, _hoisted_2),
+    withDirectives(createElementVNode("p", {
+      innerHTML: _ctx.validation.errorMessage
+    }, null, 8, _hoisted_3), [
+      [vShow, _ctx.validation.errorMessage]
     ])
   ]);
 }
-const G = /* @__PURE__ */ p(w, [["render", U], ["__scopeId", "data-v-a2a13589"]]);
-function J(e, n) {
-  e.component("AForm", A), e.component("AFieldset", S), e.component("ANumericInput", L), e.component("ATextInput", G);
+const ATextInput = /* @__PURE__ */ _export_sfc(_sfc_main, [["render", _sfc_render], ["__scopeId", "data-v-58bab3b3"]]);
+function install(app) {
+  app.component("ACombobox", AComboBox);
+  app.component("ADate", ADate);
+  app.component("AForm", AForm);
+  app.component("AFieldset", AFieldset);
+  app.component("ANumericInput", ANumericInput);
+  app.component("ATextInput", ATextInput);
 }
-const Q = {
-  install: J
-};
 export {
-  Q as default
+  AComboBox,
+  ADate,
+  AFieldset,
+  AForm,
+  ANumericInput,
+  ATextInput,
+  install
 };

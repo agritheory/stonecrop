@@ -1,124 +1,4 @@
-import { reactive, computed, defineComponent, inject, ref, resolveDynamicComponent, openBlock, createElementBlock, normalizeStyle, withKeys, withDirectives, toDisplayString, createCommentVNode, renderSlot, vShow, createElementVNode, Fragment, renderList, createTextVNode, provide, nextTick, resolveComponent, createVNode, createBlock, withCtx } from "vue";
-var getRandomValues;
-var rnds8 = new Uint8Array(16);
-function rng() {
-  if (!getRandomValues) {
-    getRandomValues = typeof crypto !== "undefined" && crypto.getRandomValues && crypto.getRandomValues.bind(crypto) || typeof msCrypto !== "undefined" && typeof msCrypto.getRandomValues === "function" && msCrypto.getRandomValues.bind(msCrypto);
-    if (!getRandomValues) {
-      throw new Error("crypto.getRandomValues() not supported. See https://github.com/uuidjs/uuid#getrandomvalues-not-supported");
-    }
-  }
-  return getRandomValues(rnds8);
-}
-const REGEX = /^(?:[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}|00000000-0000-0000-0000-000000000000)$/i;
-function validate(uuid) {
-  return typeof uuid === "string" && REGEX.test(uuid);
-}
-var byteToHex = [];
-for (var i = 0; i < 256; ++i) {
-  byteToHex.push((i + 256).toString(16).substr(1));
-}
-function stringify(arr) {
-  var offset = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : 0;
-  var uuid = (byteToHex[arr[offset + 0]] + byteToHex[arr[offset + 1]] + byteToHex[arr[offset + 2]] + byteToHex[arr[offset + 3]] + "-" + byteToHex[arr[offset + 4]] + byteToHex[arr[offset + 5]] + "-" + byteToHex[arr[offset + 6]] + byteToHex[arr[offset + 7]] + "-" + byteToHex[arr[offset + 8]] + byteToHex[arr[offset + 9]] + "-" + byteToHex[arr[offset + 10]] + byteToHex[arr[offset + 11]] + byteToHex[arr[offset + 12]] + byteToHex[arr[offset + 13]] + byteToHex[arr[offset + 14]] + byteToHex[arr[offset + 15]]).toLowerCase();
-  if (!validate(uuid)) {
-    throw TypeError("Stringified UUID is invalid");
-  }
-  return uuid;
-}
-function v4(options, buf, offset) {
-  options = options || {};
-  var rnds = options.random || (options.rng || rng)();
-  rnds[6] = rnds[6] & 15 | 64;
-  rnds[8] = rnds[8] & 63 | 128;
-  if (buf) {
-    offset = offset || 0;
-    for (var i = 0; i < 16; ++i) {
-      buf[offset + i] = rnds[i];
-    }
-    return buf;
-  }
-  return stringify(rnds);
-}
-class TableDataStore {
-  constructor(id, columns, rows, config, table, display) {
-    this.id = id || v4();
-    this.rows = rows;
-    this.columns = reactive(columns);
-    this.config = reactive(config);
-    this.table = table || reactive(this.createTableObject());
-    this.display = this.createDisplayObject(display);
-    this.modal = reactive({ visible: false });
-  }
-  createTableObject() {
-    const table = {};
-    for (const [colIndex, column] of this.columns.entries()) {
-      for (const [rowIndex, row] of this.rows.entries()) {
-        table[`${colIndex}:${rowIndex}`] = row[column.name];
-      }
-    }
-    return table;
-  }
-  createDisplayObject(display) {
-    let defaultDisplay = [Object.assign({}, { modified: false })];
-    if (display) {
-      if ("0:0" in display) {
-        return display;
-      } else if ("default" in display) {
-        defaultDisplay = display.default;
-      }
-    }
-    const parents = /* @__PURE__ */ new Set();
-    for (let rowIndex = this.rows.length - 1; rowIndex >= 0; rowIndex--) {
-      const row = this.rows[rowIndex];
-      if (row.parent) {
-        parents.add(row.parent);
-      }
-      defaultDisplay[rowIndex] = {
-        childrenOpen: false,
-        indent: row.indent || null,
-        isParent: parents.has(rowIndex),
-        isRoot: row.parent === null || row.parent === void 0,
-        modified: false,
-        open: row.parent === null || row.parent === void 0,
-        parent: row.parent
-      };
-    }
-    return reactive(defaultDisplay);
-  }
-  get zeroColumn() {
-    return this.config.numberedRows || this.config.treeView;
-  }
-  get numberedRowWidth() {
-    return computed(() => {
-      return String(Math.ceil(this.rows.length / 100) + 1) + "ch";
-    });
-  }
-  cellData(colIndex, rowIndex) {
-    return this.table[`${colIndex}:${rowIndex}`];
-  }
-  setCellData(rowIndex, colIndex, value) {
-    if (this.table[`${colIndex}:${rowIndex}`] !== value) {
-      this.display[rowIndex].modified = true;
-    }
-    this.table[`${colIndex}:${rowIndex}`] = value;
-    return this.table[`${colIndex}:${rowIndex}`];
-  }
-  toggleRowExpand(rowIndex) {
-    if (!this.config.treeView) {
-      return;
-    }
-    this.display[rowIndex].childrenOpen = !this.display[rowIndex].childrenOpen;
-    for (let index2 = this.rows.length - 1; index2 >= 0; index2--) {
-      if (this.display[index2].parent === rowIndex) {
-        this.display[index2].open = !this.display[index2].open;
-        if (this.display[index2].childrenOpen) {
-          this.toggleRowExpand(index2);
-        }
-      }
-    }
-  }
-}
+import { defineComponent, inject, ref, computed, resolveDynamicComponent, openBlock, createElementBlock, normalizeStyle, withKeys, toDisplayString, withDirectives, createCommentVNode, renderSlot, vShow, reactive, createElementVNode, Fragment, renderList, createTextVNode, provide, nextTick, resolveComponent, createVNode, createBlock, withCtx } from "vue";
 const _sfc_main$4 = defineComponent({
   name: "ACell",
   props: {
@@ -142,7 +22,15 @@ const _sfc_main$4 = defineComponent({
     const displayValue = computed(() => {
       const data = tableData.cellData(props.colIndex, props.rowIndex);
       if (tableData.columns[props.colIndex].format) {
-        return tableData.columns[props.colIndex].format(data);
+        const format = tableData.columns[props.colIndex].format;
+        if (typeof format === "function") {
+          return format(data);
+        } else if (typeof format === "string") {
+          const formatFn = Function(`"use strict";return (${format})`)();
+          return formatFn(data);
+        } else {
+          return data;
+        }
       } else {
         return data;
       }
@@ -223,7 +111,7 @@ const _sfc_main$4 = defineComponent({
     };
   }
 });
-const ACell_vue_vue_type_style_index_0_scoped_f343c8d8_lang = "";
+const ACell_vue_vue_type_style_index_0_scoped_b3900ea6_lang = "";
 const _export_sfc = (sfc, props) => {
   const target = sfc.__vccOpts || sfc;
   for (const [key, val] of props) {
@@ -231,7 +119,7 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const _hoisted_1$2 = ["contenteditable", "innerHTML"];
+const _hoisted_1$2 = ["contenteditable"];
 function _sfc_render$4(_ctx, _cache, $props, $setup, $data, $options) {
   return openBlock(), createElementBlock("td", {
     ref: "colIndex + ':' + rowIndex",
@@ -253,11 +141,10 @@ function _sfc_render$4(_ctx, _cache, $props, $setup, $data, $options) {
       _cache[10] || (_cache[10] = withKeys((...args) => _ctx.$parent.$parent.leftArrowNav && _ctx.$parent.$parent.leftArrowNav(...args), ["left"])),
       _cache[11] || (_cache[11] = withKeys((...args) => _ctx.$parent.$parent.rightArrowNav && _ctx.$parent.$parent.rightArrowNav(...args), ["right"]))
     ],
-    onClick: _cache[12] || (_cache[12] = (...args) => _ctx.handleInput && _ctx.handleInput(...args)),
-    innerHTML: _ctx.displayValue
-  }, null, 44, _hoisted_1$2);
+    onClick: _cache[12] || (_cache[12] = (...args) => _ctx.handleInput && _ctx.handleInput(...args))
+  }, toDisplayString(_ctx.displayValue), 45, _hoisted_1$2);
 }
-const ACell = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["render", _sfc_render$4], ["__scopeId", "data-v-f343c8d8"]]);
+const ACell = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["render", _sfc_render$4], ["__scopeId", "data-v-b3900ea6"]]);
 const _sfc_main$3 = defineComponent({
   name: "ARow",
   props: {
@@ -352,6 +239,124 @@ function _sfc_render$3(_ctx, _cache, $props, $setup, $data, $options) {
   ]);
 }
 const ARow = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["render", _sfc_render$3]]);
+var getRandomValues;
+var rnds8 = new Uint8Array(16);
+function rng() {
+  if (!getRandomValues) {
+    getRandomValues = typeof crypto !== "undefined" && crypto.getRandomValues && crypto.getRandomValues.bind(crypto) || typeof msCrypto !== "undefined" && typeof msCrypto.getRandomValues === "function" && msCrypto.getRandomValues.bind(msCrypto);
+    if (!getRandomValues) {
+      throw new Error("crypto.getRandomValues() not supported. See https://github.com/uuidjs/uuid#getrandomvalues-not-supported");
+    }
+  }
+  return getRandomValues(rnds8);
+}
+const REGEX = /^(?:[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}|00000000-0000-0000-0000-000000000000)$/i;
+function validate(uuid) {
+  return typeof uuid === "string" && REGEX.test(uuid);
+}
+var byteToHex = [];
+for (var i = 0; i < 256; ++i) {
+  byteToHex.push((i + 256).toString(16).substr(1));
+}
+function stringify(arr) {
+  var offset = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : 0;
+  var uuid = (byteToHex[arr[offset + 0]] + byteToHex[arr[offset + 1]] + byteToHex[arr[offset + 2]] + byteToHex[arr[offset + 3]] + "-" + byteToHex[arr[offset + 4]] + byteToHex[arr[offset + 5]] + "-" + byteToHex[arr[offset + 6]] + byteToHex[arr[offset + 7]] + "-" + byteToHex[arr[offset + 8]] + byteToHex[arr[offset + 9]] + "-" + byteToHex[arr[offset + 10]] + byteToHex[arr[offset + 11]] + byteToHex[arr[offset + 12]] + byteToHex[arr[offset + 13]] + byteToHex[arr[offset + 14]] + byteToHex[arr[offset + 15]]).toLowerCase();
+  if (!validate(uuid)) {
+    throw TypeError("Stringified UUID is invalid");
+  }
+  return uuid;
+}
+function v4(options, buf, offset) {
+  options = options || {};
+  var rnds = options.random || (options.rng || rng)();
+  rnds[6] = rnds[6] & 15 | 64;
+  rnds[8] = rnds[8] & 63 | 128;
+  if (buf) {
+    offset = offset || 0;
+    for (var i = 0; i < 16; ++i) {
+      buf[offset + i] = rnds[i];
+    }
+    return buf;
+  }
+  return stringify(rnds);
+}
+class TableDataStore {
+  constructor(id, columns, rows, config, table, display) {
+    this.id = id || v4();
+    this.rows = rows;
+    this.columns = reactive(columns);
+    this.config = reactive(config);
+    this.table = table || reactive(this.createTableObject());
+    this.display = this.createDisplayObject(display);
+    this.modal = reactive({ visible: false });
+  }
+  createTableObject() {
+    const table = {};
+    for (const [colIndex, column] of this.columns.entries()) {
+      for (const [rowIndex, row] of this.rows.entries()) {
+        table[`${colIndex}:${rowIndex}`] = row[column.name];
+      }
+    }
+    return table;
+  }
+  createDisplayObject(display) {
+    const defaultDisplay = [Object.assign({}, { modified: false })];
+    if (display) {
+      if ("0:0" in display) {
+        return display;
+      }
+    }
+    const parents = /* @__PURE__ */ new Set();
+    for (let rowIndex = this.rows.length - 1; rowIndex >= 0; rowIndex--) {
+      const row = this.rows[rowIndex];
+      if (row.parent) {
+        parents.add(row.parent);
+      }
+      defaultDisplay[rowIndex] = {
+        childrenOpen: false,
+        indent: row.indent || null,
+        isParent: parents.has(rowIndex),
+        isRoot: row.parent === null || row.parent === void 0,
+        modified: false,
+        open: row.parent === null || row.parent === void 0,
+        parent: row.parent
+      };
+    }
+    return reactive(defaultDisplay);
+  }
+  get zeroColumn() {
+    return this.config.numberedRows || this.config.treeView;
+  }
+  get numberedRowWidth() {
+    return computed(() => {
+      return String(Math.ceil(this.rows.length / 100) + 1) + "ch";
+    });
+  }
+  cellData(colIndex, rowIndex) {
+    return this.table[`${colIndex}:${rowIndex}`];
+  }
+  setCellData(rowIndex, colIndex, value) {
+    if (this.table[`${colIndex}:${rowIndex}`] !== value) {
+      this.display[rowIndex].modified = true;
+    }
+    this.table[`${colIndex}:${rowIndex}`] = value;
+    return this.table[`${colIndex}:${rowIndex}`];
+  }
+  toggleRowExpand(rowIndex) {
+    if (!this.config.treeView) {
+      return;
+    }
+    this.display[rowIndex].childrenOpen = !this.display[rowIndex].childrenOpen;
+    for (let index = this.rows.length - 1; index >= 0; index--) {
+      if (this.display[index].parent === rowIndex) {
+        this.display[index].open = !this.display[index].open;
+        if (this.display[index].childrenOpen) {
+          this.toggleRowExpand(index);
+        }
+      }
+    }
+  }
+}
 const _sfc_main$2 = defineComponent({
   name: "ATableHeader",
   props: {
@@ -477,9 +482,25 @@ const _sfc_main = defineComponent({
         colIndex = tableData.columns.indexOf(column);
       }
       if (!column && "format" in tableData.columns[colIndex]) {
-        target.innerHTML = tableData.columns[colIndex].format(target.innerHTML);
+        const format = tableData.columns[colIndex].format;
+        if (typeof format === "function") {
+          return format(target.innerHTML);
+        } else if (typeof format === "string") {
+          const formatFn = Function(`"use strict";return (${format})`)();
+          return formatFn(target.innerHTML);
+        } else {
+          return target.innerHTML;
+        }
       } else if (cellData && "format" in column) {
-        return column.format(cellData);
+        const format = column.format;
+        if (typeof format === "function") {
+          return format(cellData);
+        } else if (typeof format === "string") {
+          const formatFn = Function(`"use strict";return (${format})`)();
+          return formatFn(cellData);
+        } else {
+          return cellData;
+        }
       } else if (cellData && column.type.toLowerCase() in ["int", "decimal", "float", "number", "percent"]) {
         return cellData;
       } else {
@@ -667,7 +688,7 @@ const _sfc_main = defineComponent({
     };
   }
 });
-const ATable_vue_vue_type_style_index_0_scoped_bda6844d_lang = "";
+const ATable_vue_vue_type_style_index_0_scoped_544295ff_lang = "";
 const _hoisted_1 = { class: "atable" };
 function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   const _component_ATableHeader = resolveComponent("ATableHeader");
@@ -736,15 +757,20 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     ])
   ]);
 }
-const ATable = /* @__PURE__ */ _export_sfc(_sfc_main, [["render", _sfc_render], ["__scopeId", "data-v-bda6844d"]]);
+const ATable = /* @__PURE__ */ _export_sfc(_sfc_main, [["render", _sfc_render], ["__scopeId", "data-v-544295ff"]]);
 function install(app) {
+  app.component("ACell", ACell);
+  app.component("ARow", ARow);
   app.component("ATable", ATable);
   app.component("ATableHeader", ATableHeader);
   app.component("ATableModal", ATableModal);
 }
-const index = {
-  install
-};
 export {
-  index as default
+  ACell,
+  ARow,
+  ATable,
+  ATableHeader,
+  ATableModal,
+  TableDataStore,
+  install
 };

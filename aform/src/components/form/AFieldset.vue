@@ -7,31 +7,46 @@
 		<AForm v-show="!collapsed" :schema="schema" :data="formData" />
 	</fieldset>
 </template>
-<script>
+
+<script lang="ts">
 import { ref, defineComponent } from 'vue'
-import CollapseButton from './../base/CollapseButton.vue'
-import AForm from './../AForm.vue'
+import CollapseButton from '@/components/base/CollapseButton.vue'
+import AForm from '@/components/AForm.vue'
 
 export default defineComponent({
 	name: 'AFieldset',
 	components: { AForm, CollapseButton },
-	props: ['value', 'schema', 'key', 'label', 'collapsible'],
-	setup(props, context) {
-		const formData = ref(props.data || {})
+	props: {
+		schema: {
+			type: Array,
+			required: true,
+		},
+		label: {
+			type: String,
+			required: true,
+		},
+		collapsible: {
+			type: Boolean,
+		},
+		value: { required: false },
+	},
+	setup(props) {
+		const formData = ref(props.data || [])
 		let collapsed = ref(false)
 		let collapsible = ref(props.collapsible)
 
-		function toggleCollapse(e) {
+		function toggleCollapse(e: Event) {
 			e.preventDefault()
-			if (!collapsible) {
+			if (!collapsible.value) {
 				return
 			}
 			collapsed.value = !collapsed.value
 		}
-		return { formData, collapsed, toggleCollapse, collapsible }
+		return { formData, collapsed, toggleCollapse }
 	},
 })
 </script>
+
 <style scoped>
 fieldset {
 	width: 100%;

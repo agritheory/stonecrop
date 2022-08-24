@@ -17,8 +17,9 @@
 		@keydown.up="$parent.$parent.upArrowNav"
 		@keydown.left="$parent.$parent.leftArrowNav"
 		@keydown.right="$parent.$parent.rightArrowNav"
-		@click="handleInput"
-		v-html="displayValue" />
+		@click="handleInput">
+		{{ displayValue }}
+	</td>
 </template>
 
 <script lang="ts">
@@ -47,9 +48,19 @@ export default defineComponent({
 		let cellModified = ref(false)
 
 		const displayValue = computed(() => {
-			const data = tableData.cellData(props.colIndex, props.rowIndex)
+			const data = tableData.cellData<any>(props.colIndex, props.rowIndex)
 			if (tableData.columns[props.colIndex].format) {
-				return tableData.columns[props.colIndex].format(data)
+				const format = tableData.columns[props.colIndex].format
+				if (typeof format === 'function') {
+					return format(data)
+				} else if (typeof format === 'string') {
+					// parse format function from string
+					// eslint-disable-next-line @typescript-eslint/no-implied-eval
+					const formatFn: (args: any) => any = Function(`"use strict";return (${format})`)()
+					return formatFn(data)
+				} else {
+					return data
+				}
 			} else {
 				return data
 			}

@@ -1,14 +1,16 @@
 <template>
 	<ATextInput :label="label" :readOnly="readOnly" :uuid="uuid" :validation="validation" v-model="amount" />
 </template>
-<script>
-export default {
+
+<script lang="ts">
+import { defineComponent, ref } from 'vue'
+
+export default defineComponent({
 	name: 'ANumericInput',
 	props: {
 		value: { required: false },
 		required: {
 			type: Boolean,
-			default: false,
 		},
 		label: {
 			type: String,
@@ -16,27 +18,24 @@ export default {
 		},
 		readOnly: {
 			type: Boolean,
-			default: false,
 		},
 		uuid: {
-			type: Number,
-			default: 0,
+			type: String,
 		},
 		validation: {
 			type: Object,
 			default: () => ({ errorMessage: '&nbsp;' }),
 		},
 	},
-	data() {
-		return {
-			amount: '',
+	setup(props, context) {
+		const amount = ref('')
+
+		const update = (event: InputEvent) => {
+			const value = (event.target as HTMLInputElement).value
+			context.emit('update:value', value)
 		}
+
+		return { amount, update }
 	},
-	methods: {
-		update(value) {
-			this.$emit('update:value', value)
-		},
-	},
-}
+})
 </script>
-<style scoped></style>

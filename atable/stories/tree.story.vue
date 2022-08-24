@@ -8,7 +8,6 @@
 import { ref } from 'vue'
 
 import data from '@/assets/sample_data/coa.json'
-import ATable from '@/components/ATable.vue'
 
 const coa = ref({
 	rows: data,

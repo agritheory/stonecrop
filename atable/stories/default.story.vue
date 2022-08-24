@@ -7,9 +7,8 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
 
+import { TableColumn } from 'types'
 import data from '@/assets/sample_data/http_logs.json'
-import ADate from '@/components/ADate.vue'
-import ATable from '@/components/ATable.vue'
 
 const http_logs = ref({
 	rows: data,
@@ -56,12 +55,12 @@ const http_logs = ref({
 			align: 'center',
 			edit: true,
 			width: '25ch',
-			component: ADate,
+			component: 'ADate',
 			format: (value: number) => {
 				return new Date(Number(value)).toLocaleDateString('en-US')
 			},
 		},
-	],
+	] as TableColumn[],
 	config: { numberedRows: true, treeView: false },
 })
 </script>

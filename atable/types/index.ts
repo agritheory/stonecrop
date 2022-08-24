@@ -8,7 +8,7 @@ export type TableColumn = {
 	type?: string
 	width?: string
 
-	format?: (value: any) => any
+	format?: string | ((value: any) => any)
 	mask?: (value: any) => any
 }
 
