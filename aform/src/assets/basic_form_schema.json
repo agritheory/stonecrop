@@ -1,7 +1,7 @@
 [
 	{
 		"fieldname": "first_name",
-		"fieldtype": "ATextInput",
+		"component": "ATextInput",
 		"label": "First Name"
 	},
 	{
@@ -20,23 +20,22 @@
 		"label": "Age"
 	},
 	{
-		"fieldname": "first_name",
-		"fieldtype": "ATextInput",
-		"label": "First Name"
-	},
-	{
-		"fieldname": "middle_name",
+		"fieldname": "date",
+		"fieldtype": "Date",
 		"component": "ATextInput",
-		"label": "Middle Name"
+		"label": "Date"
 	},
 	{
-		"fieldname": "last_name",
+		"fieldname": "card",
+		"fieldtype": "Card",
 		"component": "ATextInput",
-		"label": "Last Name"
+		"label": "Card"
 	},
 	{
-		"fieldname": "age",
-		"component": "ANumericInput",
-		"label": "Age"
+		"fieldname": "phone",
+		"fieldtype": "Phone",
+		"component": "ATextInput",
+		"label": "Phone",
+		"mask": "(locale) => { if (locale === 'en-US') { return '(###) ###-####' } else if (locale === 'en-IN') { return '####-######'} }"
 	}
 ]

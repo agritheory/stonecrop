@@ -1,7 +1,7 @@
 import { v4 } from 'uuid'
 import { computed, reactive } from 'vue'
 
-import { TableDisplay, TableRow, TableColumn, TableConfig, TableModal } from 'types'
+import { TableDisplay, TableRow, TableColumn, TableConfig, TableModal } from '../../types'
 
 export default class TableDataStore {
 	id: string
@@ -40,16 +40,17 @@ export default class TableDataStore {
 	}
 
 	createDisplayObject(display?: TableDisplay[]) {
-		let defaultDisplay: TableDisplay[] = [Object.assign({}, { modified: false })]
+		const defaultDisplay: TableDisplay[] = [Object.assign({}, { modified: false })]
 
 		// TODO: (typing) what is the type of `display` here?
 		if (display) {
 			if ('0:0' in display) {
 				return display
-			} else if ('default' in display) {
-				// TODO: (typing) what is the possible input here for 'default'?
-				defaultDisplay = display.default
 			}
+			// else if ('default' in display) {
+			// 	// TODO: (typing) what is the possible input here for 'default'?
+			// 	defaultDisplay = display.default
+			// }
 		}
 
 		// TODO: (typing) is this type correct for the parent set?

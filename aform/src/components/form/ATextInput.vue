@@ -1,44 +1,75 @@
 <template>
 	<div>
-		<input :value="value" :required="required" :id="uuid" :disabled="readOnly" @input="update($event.target.value)" />
+		<input
+			v-model="inputText"
+			:id="uuid"
+			:disabled="readOnly"
+			:maxlength="mask ? maskFilled && mask.length : undefined"
+			:required="required"
+			@input="update"
+			v-mask="mask" />
 		<label :for="uuid">{{ label }} </label>
 		<p v-show="validation.errorMessage" v-html="validation.errorMessage"></p>
 	</div>
 </template>
 
-<script>
-export default {
+<script lang="ts">
+import { defineComponent, inject, PropType, ref } from 'vue'
+
+import { FormSchema } from 'types'
+import { useStringMask } from '@/directives/mask'
+
+export default defineComponent({
 	name: 'ATextInput',
 	props: {
-		value: { required: false },
-		required: {
-			type: Boolean,
-			default: false,
+		schema: {
+			type: Object as PropType<FormSchema>,
+			required: true,
 		},
 		label: {
 			type: String,
 			required: true,
 		},
+		value: {
+			type: null as unknown as PropType<string | number>,
+		},
+		mask: {
+			type: String,
+		},
+		required: {
+			type: Boolean,
+		},
 		readOnly: {
 			type: Boolean,
-			default: false,
 		},
 		uuid: {
-			type: Number,
-			default: 0,
+			type: String,
 		},
 		validation: {
 			type: Object,
 			default: () => ({ errorMessage: '&nbsp;' }),
 		},
 	},
-	methods: {
-		update(value) {
-			this.$emit('update:value', value)
-		},
+	setup(props, context) {
+		const inputText = ref(props.value)
+		const maskFilled = ref(false)
+
+		// TODO: (state) replace with state management
+		const locale = inject<string>('locale', '')
+
+		const update = (event: InputEvent) => {
+			const value = (event.target as HTMLInputElement).value
+			context.emit('update:value', value)
+		}
+
+		return { inputText, locale, maskFilled, update }
 	},
-}
+	directives: {
+		mask: useStringMask,
+	},
+})
 </script>
+
 <style scoped>
 div {
 	min-width: 40ch;
