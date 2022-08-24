@@ -13,8 +13,6 @@ This project has the following system dependencies:
 - [`pnpm`](https://pnpm.io/) (using yarn or npm will break packages)
 - [`rush`](https://rushjs.io/)
 - `nvm` and `node v16`: `nvm install --lts && nvm use --lts`
-- `prettier` and `pretty-quick`: `pnpm install prettier && pnpm install pretty-quick`
-- (TODO): rush auto-installer scripts for prettier, pretty quick and/or tslint
 
 ```bash
 git clone stonecrop
@@ -32,7 +30,4 @@ rushx story:dev
 
 # Stage changes and run linters
 rushx lint
-
-# Format changes before committing
-rushx pretty-quick
 ```
