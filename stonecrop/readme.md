@@ -32,12 +32,7 @@ app.doctype.schema.field.value.field[0].value <Store> // also a "sub-form", like
 
 It may make sense to use [automatic injection aliasing](https://vuejs.org/guide/components/provide-inject.html#inject) at the doctype level
 
-The user navigates to a doctype (http://local.app/doctype).
-The doctype schema, events and hooks are fetched from the server if they don't already exist in localstorage
-
-Automatically detect component schema/events/hooks via composable
-
-# Base Classes
+## Base Classes
 The Doctype aligns with a row, record or object in a database. It is required to specify its schema, a Finite State Machine that informs its workflow and a set of functions that are triggered by that FSM's state transitions.
 
 Registry is a map of all Doctypes, lazy loaded and is responsible for routing within the application
@@ -45,3 +40,23 @@ Registry is a map of all Doctypes, lazy loaded and is responsible for routing wi
 Stem is a composable singleton that wraps Registry and provides application level state management
 
 
+## Story/ Network diagram
+#### **Doctype | Record Story**
+
+- User is redirected after successful login
+- Base URL is configured at app level to serve a navigation page
+- User navigates to list view of `doctype`
+- Table component loads existing records of `doctype` from schema; record-level schema is added to registry with web worker
+- User navigates to specific record of `doctype`: schema is loaded from registry, data is loaded from server
+- User mutates data, changes are persisted to server/ DB per FSM
+
+#### **App Level**
+- User is redirected after successful login
+- Base URL is configured at app level to serve a navigation page
+- User opens command palette from lower-right-docked tab interface
+- User can search for `doctype` by name or other server-enabled capabilities
+
+#### **Low Code**
+- User can define `doctype` and schema from UI
+- Fields are shown as rows in a table
+- FSM is shown as an editable diagram that validates itself

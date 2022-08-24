@@ -8,7 +8,7 @@
 <script lang="ts" setup>
 import { Registry } from '@/registry.js'
 
-// let reg = new Registry()
+let reg = new Registry()
 // reg.addDocType
 
 
