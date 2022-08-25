@@ -1,5 +1,59 @@
-
-.adate[data-v-059b9e78] {
+@import url('https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap');
+[data-v-e0bca036]:root {
+	--primary-color: #3c5014;
+	--primary-text-color: #f7f7e9;
+	--font-size: 11pt;
+	font-family: Arimo, Arial, sans-serif;
+	--brand-color: #3c5014;
+	--header-border-color: #ffffff;
+	--header-text-color: #ffffff;
+	--row-color-zebra-light: #eeeeee;
+	--row-color-zebra-dark: #dddddd;
+	--cell-border-color: #ffffff;
+	--cell-text-color: #3a3c41;
+	--focus-cell-background: #ffffff;
+	--focus-cell-outline: #827553;
+	--active-cell-background: #ffffff;
+	--active-cell-outline: #e6a92d;
+	--required-border: #e63c28;
+	--table-font-size: 11pt;
+	--atable-font-family: 'Arimo', sans-serif;
+	/* #a5460d
+	#3a3c41
+	#c3b9a0
+	#e6a92d
+	#4a1539
+	#3c5014
+	#f7f7e9
+	#e63c28
+	#827553 */
+}
+.aform-primary-action[data-v-e0bca036] {
+	font-size: 100%;
+	text-align: center;
+	min-height: 2em;
+	padding: 0.25rem 1rem 0.25rem 1rem;
+	border: 1px solid var(--primary-color);
+	color: var(--primary-text-color);
+	background-color: var(--primary-color);
+	outline: 2px solid var(--primary-text-color);
+	transition: outline-offset 200ms ease;
+	font-size: var(--font-size);
+	margin: 0.5ch;
+}
+.aform-primary-action[data-v-e0bca036]:hover,
+.aform-primary-action[data-v-e0bca036]:active {
+	outline: 2px solid var(--primary-text-color);
+	outline-offset: -4px;
+	transition: outline-offset 200ms ease;
+}
+.atable[data-v-e0bca036] {
+	font-family: var(--atable-font-family);
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	font-size: var(--table-font-size);
+}
+.adate[data-v-e0bca036] {
 	border: 2px solid var(--focus-cell-outline);
 	position: absolute;
 	z-index: 100;
@@ -10,19 +64,46 @@
 	outline: none;
 	width: calc(100% - 4px);
 }
-.adate tr[data-v-059b9e78] {
+.adate tr[data-v-e0bca036] {
 	height: 1.15rem;
 	text-align: center;
 	vertical-align: middle;
 }
-.adate td[data-v-059b9e78] {
+.adate td[data-v-e0bca036] {
 	border: 2px solid transparent;
 	min-width: 2.25ch; /* this doesn't zoom correctly */
 }
-.adate td[data-v-059b9e78]:hover {
+.adate td[data-v-e0bca036]:hover {
 	border: 2px solid var(--focus-cell-outline);
 }
-button[data-v-059b9e78] {
+.adate td[data-v-e0bca036] {
+	border: 1px;
+	border-style: solid;
+	border-color: var(--cell-border-color);
+	border-radius: 0px;
+	box-sizing: border-box;
+	margin: 0px;
+	outline: none;
+	box-shadow: none;
+	color: var(--cell-text-color);
+	text-overflow: ellipsis;
+	overflow: hidden;
+	padding-left: 0.5ch;
+	padding-right: 0.5ch;
+}
+.adate td[data-v-e0bca036]:focus,
+.adate td[data-v-e0bca036]:focus-within {
+	background-color: var(--focus-cell-background);
+	outline-width: 2px;
+	outline-style: solid;
+	outline-color: var(--focus-cell-outline);
+	box-shadow: none;
+	overflow: hidden;
+	min-height: 1.15em;
+	max-height: 1.15em;
+	overflow: hidden;
+}
+button[data-v-e0bca036] {
 	background-color: var(--row-color-zebra-light);
 	border: none;
 	padding: 0px;
@@ -31,16 +112,16 @@ button[data-v-059b9e78] {
 	outline: none;
 	font-size: var(--table-font-size);
 }
-.dateheader[data-v-059b9e78] {
+.dateheader[data-v-e0bca036] {
 	font-weight: 700;
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
 }
-.adate .todaysdate[data-v-059b9e78] {
+.adate .todaysdate[data-v-e0bca036] {
 	border-bottom-color: var(--focus-cell-outline);
 }
-.adate .selecteddate[data-v-059b9e78] {
+.adate .selecteddate[data-v-e0bca036] {
 	border: 2px solid var(--focus-cell-outline);
 }
 

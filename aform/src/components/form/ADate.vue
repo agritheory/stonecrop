@@ -14,14 +14,34 @@
 				<td @click="nextMonth" tabindex="-1">&gt;</td>
 			</tr>
 			<tr v-for="rowNo in numberOfRows" :key="rowNo">
+				<!-- TODO: (style) remove inline styling and replace with theme package -->
 				<td
 					v-for="colNo in numberOfColumns"
 					:key="(rowNo - 1) * numberOfColumns + colNo"
+					:contenteditable="tableData.columns[colIndex].edit"
+					:tabindex="0"
+					:spellcheck="false"
+					:style="{
+						border: isSelectedDate(currentDates[(rowNo - 1) * numberOfColumns + colNo])
+							? '2px solid var(--focus-cell-outline)'
+							: 'none',
+						borderBottomColor: today(currentDates[(rowNo - 1) * numberOfColumns + colNo])
+							? 'var(--focus-cell-outline)'
+							: 'none',
+					}"
+					@click="selectDate($event, (rowNo - 1) * numberOfColumns + colNo)"
+					@keydown.enter="enterNav"
+					@keydown.tab="tabNav"
+					@keydown.end="endNav"
+					@keydown.home="homeNav"
+					@keydown.down="downArrowNav"
+					@keydown.up="upArrowNav"
+					@keydown.left="leftArrowNav"
+					@keydown.right="rightArrowNav"
 					:class="{
 						todaysdate: today(currentDates[(rowNo - 1) * numberOfColumns + colNo]),
 						selecteddate: isSelectedDate(currentDates[(rowNo - 1) * numberOfColumns + colNo]),
-					}"
-					@click="selectDate($event, (rowNo - 1) * numberOfColumns + colNo)">
+					}">
 					{{ new Date(currentDates[(rowNo - 1) * numberOfColumns + colNo]).getDate() }}
 				</td>
 			</tr>
@@ -30,9 +50,9 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, inject, onMounted, ref, watch } from 'vue'
+import { computed, CSSProperties, defineComponent, inject, onMounted, ref, watch } from 'vue'
 
-import { TableDataStore } from '@sedum/atable'
+import { TableDataStore, useKeyboardNav } from '@sedum/atable'
 
 export default defineComponent({
 	name: 'ADate',
@@ -59,6 +79,10 @@ export default defineComponent({
 	},
 	setup(props /* context */) {
 		const tableData = inject<TableDataStore>(props.tableid)
+
+		// TODO: (state) figure out how to pass table data to nav composable
+		const { enterNav, tabNav, endNav, homeNav, downArrowNav, upArrowNav, leftArrowNav, rightArrowNav } =
+			useKeyboardNav(tableData)
 
 		const numberOfRows = 6
 		const numberOfColumns = 7
@@ -115,11 +139,10 @@ export default defineComponent({
 		}
 
 		const today = (day: string | number | Date) => {
-			let todaysDate = new Date().setUTCHours(0, 0, 0, 0)
-			if (currentMonth.value !== new Date(todaysDate).getMonth()) {
+			if (currentMonth.value !== todaysDate.getMonth()) {
 				return
 			}
-			return new Date(todaysDate).toDateString() === new Date(day).toDateString()
+			return todaysDate.toDateString() === new Date(day).toDateString()
 		}
 
 		const isSelectedDate = function (day: string | number | Date) {
@@ -155,6 +178,10 @@ export default defineComponent({
 			})
 		})
 
+		const cellStyle: CSSProperties = {
+			border: '2px solid var(--focus-cell-outline)',
+		}
+
 		watch(currentMonth, () => {
 			currentDates.value = []
 			renderMonth()
@@ -166,22 +193,31 @@ export default defineComponent({
 		})
 
 		return {
+			cellStyle,
 			currentDates,
 			currentMonth,
 			currentYear,
 			dayWidth,
+			downArrowNav,
+			endNav,
+			enterNav,
 			handlePageDown,
 			handlePageUp,
+			homeNav,
 			isSelectedDate,
+			leftArrowNav,
 			monthAndYear,
 			nextMonth,
-			numberOfRows,
 			numberOfColumns,
+			numberOfRows,
 			previousMonth,
+			rightArrowNav,
 			selectDate,
 			selectedDate,
 			tableData,
+			tabNav,
 			today,
+			upArrowNav,
 			updateData,
 			width,
 		}
@@ -190,6 +226,8 @@ export default defineComponent({
 </script>
 
 <style scoped>
+@import '@/theme/aform.css';
+
 .adate {
 	border: 2px solid var(--focus-cell-outline);
 	position: absolute;
@@ -201,18 +239,51 @@ export default defineComponent({
 	outline: none;
 	width: calc(100% - 4px);
 }
+
 .adate tr {
 	height: 1.15rem;
 	text-align: center;
 	vertical-align: middle;
 }
+
 .adate td {
 	border: 2px solid transparent;
 	min-width: 2.25ch; /* this doesn't zoom correctly */
 }
+
 .adate td:hover {
 	border: 2px solid var(--focus-cell-outline);
 }
+
+.adate td {
+	border: 1px;
+	border-style: solid;
+	border-color: var(--cell-border-color);
+	border-radius: 0px;
+	box-sizing: border-box;
+	margin: 0px;
+	outline: none;
+	box-shadow: none;
+	color: var(--cell-text-color);
+	text-overflow: ellipsis;
+	overflow: hidden;
+	padding-left: 0.5ch;
+	padding-right: 0.5ch;
+}
+
+.adate td:focus,
+.adate td:focus-within {
+	background-color: var(--focus-cell-background);
+	outline-width: 2px;
+	outline-style: solid;
+	outline-color: var(--focus-cell-outline);
+	box-shadow: none;
+	overflow: hidden;
+	min-height: 1.15em;
+	max-height: 1.15em;
+	overflow: hidden;
+}
+
 button {
 	background-color: var(--row-color-zebra-light);
 	border: none;
@@ -222,12 +293,14 @@ button {
 	outline: none;
 	font-size: var(--table-font-size);
 }
+
 .dateheader {
 	font-weight: 700;
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
 }
+
 .adate .todaysdate {
 	border-bottom-color: var(--focus-cell-outline);
 }

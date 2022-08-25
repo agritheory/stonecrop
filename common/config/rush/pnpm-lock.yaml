@@ -65,8 +65,6 @@ importers:
       eslint-config-prettier: ~8.5.0
       eslint-plugin-vue: ~9.3.0
       histoire: ~0.10.2
-      prettier: ~2.7.1
-      pretty-quick: ~3.1.3
       typescript: ~4.7.4
       uuid: ~8.3.2
       vite: ~3.0.5
@@ -89,8 +87,6 @@ importers:
       eslint-config-prettier: 8.5.0_eslint@8.22.0
       eslint-plugin-vue: 9.3.0_eslint@8.22.0
       histoire: 0.10.4_vite@3.0.9
-      prettier: 2.7.1
-      pretty-quick: 3.1.3_prettier@2.7.1
       typescript: 4.7.4
       vite: 3.0.9
       vue-router: 4.1.3_vue@3.2.37

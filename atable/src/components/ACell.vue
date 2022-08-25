@@ -9,14 +9,14 @@
 		@paste="onChange($event)"
 		@blur="onChange($event)"
 		@input="onChange($event)"
-		@keydown.enter="$parent.$parent.enterNav"
-		@keydown.tab="$parent.$parent.tabNav"
-		@keydown.end="$parent.$parent.endNav"
-		@keydown.home="$parent.$parent.homeNav"
-		@keydown.down="$parent.$parent.downArrowNav"
-		@keydown.up="$parent.$parent.upArrowNav"
-		@keydown.left="$parent.$parent.leftArrowNav"
-		@keydown.right="$parent.$parent.rightArrowNav"
+		@keydown.enter="enterNav"
+		@keydown.tab="tabNav"
+		@keydown.end="endNav"
+		@keydown.home="homeNav"
+		@keydown.down="downArrowNav"
+		@keydown.up="upArrowNav"
+		@keydown.left="leftArrowNav"
+		@keydown.right="rightArrowNav"
 		@click="handleInput">
 		{{ displayValue }}
 	</td>
@@ -24,6 +24,8 @@
 
 <script lang="ts">
 import { computed, CSSProperties, defineComponent, inject, ref, resolveDynamicComponent } from 'vue'
+
+import { useKeyboardNav } from '@/composables/keyboard'
 import TableDataStore from '.'
 
 export default defineComponent({
@@ -44,6 +46,8 @@ export default defineComponent({
 	},
 	setup(props) {
 		const tableData = inject<TableDataStore>(props.tableid)
+		const { enterNav, tabNav, endNav, homeNav, downArrowNav, upArrowNav, leftArrowNav, rightArrowNav } =
+			useKeyboardNav(tableData)
 
 		let cellModified = ref(false)
 
@@ -68,6 +72,7 @@ export default defineComponent({
 
 		const handleInput = (event: MouseEvent) => {
 			if (tableData.columns[props.colIndex].mask) {
+				// TODO: add masking to cell values
 				// tableData.columns[props.colIndex].mask(event)
 			}
 
@@ -85,8 +90,6 @@ export default defineComponent({
 					tableData.modal.component = tableData.columns[props.colIndex].component
 				}
 			}
-
-			return event
 		}
 
 		const updateData = (event: Event) => {
@@ -144,12 +147,20 @@ export default defineComponent({
 			cellStyle,
 			cellWidth,
 			displayValue,
+			downArrowNav,
+			endNav,
+			enterNav,
 			getIndent,
 			handleInput,
+			homeNav,
+			leftArrowNav,
 			onChange,
 			onFocus,
+			rightArrowNav,
 			tableData,
+			tabNav,
 			textAlign,
+			upArrowNav,
 			updateData,
 		}
 	},
