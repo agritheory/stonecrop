@@ -1,17 +1,14 @@
 <template>
 	<Story title="Home">
-		<Home/>
+		<Home />
 	</Story>
 </template>
 
 <script lang="ts" setup>
-import Home from '@/Home.vue'
-
+import Home from '@/components/Home.vue'
 </script>
 
-<style>
-</style>
+<style></style>
 
 <!-- enter documentation here -->
-<docs lang="md">
-</docs>
+<docs lang="md"></docs>

@@ -1,34 +1,37 @@
+import Records from '@/components/Records.vue'
+import Doctype from '@/components/Doctype.vue'
+
 export class Registry {
-	constructor(schemaLoader){
+	constructor(schemaLoader, router) {
 		// singleton
-		if(Registry._root){
+		if (Registry._root) {
 			return Registry._root
 		}
 		Registry._root = this
 		this.name = 'Registry'
 		this.schemaLoader = schemaLoader
-		
-		// NOTE: I don't think this is needed
-		// return new Proxy(this, {
-		// 	get: (object, key, proxy) => {
-		// 		if (['schema', 'events', 'hooks', 'value'].indexOf(key) == -1) {
-		// 			return this.schema[key]
-		// 		} else {
-		// 			return this[key]
-		// 		}
-		// 	}
-		// })
+		this.router = router
 	}
-	loadDoctypeSchema(doctype){ // doctype class
-		if(doctype.schemaLoader){
+	loadDoctypeSchema(doctype) {
+		// doctype class
+		if (doctype.schemaLoader) {
 			return doctype.schemaLoader()
 		}
 		return this.schemaLoader(doctype.doctype)
 	}
-	addDoctype(doctype){ // Doctype class
-		if(!doctype.doctype in this){
+	addDoctype(doctype) {
+		// Doctype class
+		if (!doctype.doctype in this) {
 			doctype.registry = this
 			this[doctype.doctype] = doctype
+		}
+		if (!this.router.hasRoute(doctype.slug)) {
+			router.addRoute({
+				path: `/${doctype.slug}`,
+				name: doctype.slug,
+				component: doctype.schema.recordsComponent || Records,
+			})
+			router.addRoute({ path: `/${doctype.slug}:id`, component: doctype.schema.component || Doctype })
 		}
 	}
 }
