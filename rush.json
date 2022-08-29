@@ -6,7 +6,7 @@
 		"useWorkspaces": true
 	},
 	"approvedPackagesPolicy": {
-		"reviewCategories": ["production", "tool", "prototype", "documentation"],
+		"reviewCategories": ["production", "tool", "prototype", "documentation", "utilities"],
 		"ignoredNpmScopes": ["@types"]
 	},
 	"gitPolicy": {},
@@ -53,6 +53,11 @@
 			"packageName": "@sedum/examples",
 			"projectFolder": "examples",
 			"reviewCategory": "prototype"
+		},
+		{
+			"packageName": "@sedum/utilities",
+			"projectFolder": "utilities",
+			"reviewCategory": "utilities"
 		}
 		// {
 		//   "packageName": "@sedum/beam",

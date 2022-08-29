@@ -1,9 +1,9 @@
 <template>
 	<tr v-show="rowVisible()">
-		<td v-if="tableData.config.numberedRows" :style="numberedRowStyle">
+		<td v-if="tableData.config.numberedRows" id="row-index" :style="numberedRowStyle">
 			{{ rowIndex + 1 }}
 		</td>
-		<td v-if="tableData.config.treeView" :style="treeRowStyle" @click="toggleRowExpand(rowIndex)">
+		<td v-if="tableData.config.treeView" id="row-index" :style="treeRowStyle" @click="toggleRowExpand(rowIndex)">
 			{{ getRowExpandSymbol() }}
 		</td>
 		<slot v-if="!tableData.config.numberedRows && !tableData.config.treeView" name="indexCell" />

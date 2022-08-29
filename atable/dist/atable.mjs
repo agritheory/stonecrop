@@ -1,159 +1,14 @@
-import { nextTick, defineComponent, inject, ref, computed, resolveDynamicComponent, openBlock, createElementBlock, normalizeStyle, withKeys, toDisplayString, withDirectives, createCommentVNode, renderSlot, vShow, reactive, createElementVNode, Fragment, renderList, createTextVNode, provide, resolveComponent, createVNode, createBlock, withCtx } from "vue";
-function useKeyboardNav(tableData) {
-  const enterNav = async (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    event.shiftKey ? await upCell(event) : await downCell(event);
-  };
-  const tabNav = async (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    event.shiftKey ? await prevCell(event) : await nextCell(event);
-  };
-  const downArrowNav = async (event) => {
-    if (!event.shiftKey) {
-      event.preventDefault();
-      event.stopPropagation();
-      await downCell(event);
-    }
-  };
-  const upArrowNav = async (event) => {
-    if (!event.shiftKey) {
-      event.preventDefault();
-      event.stopPropagation();
-      await upCell(event);
-    }
-  };
-  const leftArrowNav = async (event) => {
-    if (!event.shiftKey) {
-      event.preventDefault();
-      event.stopPropagation();
-      await prevCell(event);
-    }
-  };
-  const rightArrowNav = async (event) => {
-    if (!event.shiftKey) {
-      event.preventDefault();
-      event.stopPropagation();
-      await nextCell(event);
-    }
-  };
-  const endNav = (event) => {
-    const $cell = event.target;
-    const cellIndex = $cell.cellIndex;
-    const $row = $cell.parentElement;
-    const rowIndex = $row.rowIndex;
-    const $table = $row.parentElement;
-    const $lastRow = $table.rows[rowIndex - 1];
-    if ($lastRow.cells.length - 1 !== cellIndex) {
-      const $nextCell = $lastRow.cells[tableData.columns.length - (tableData.zeroColumn ? 0 : 1)];
-      $nextCell.focus();
-    }
-  };
-  const homeNav = (event) => {
-    const $cell = event.target;
-    const cellIndex = $cell.cellIndex;
-    const $row = $cell.parentElement;
-    const rowIndex = $row.rowIndex;
-    const $table = $row.parentElement;
-    const $lastRow = $table.rows[rowIndex - 1];
-    if (cellIndex !== (tableData.config.numberedRows ? 1 : 0)) {
-      const $nextCell = $lastRow.cells[tableData.zeroColumn ? 1 : 0];
-      $nextCell.focus();
-    }
-  };
-  const downCell = async (event) => {
-    const $cell = event.target;
-    const cellIndex = $cell.cellIndex;
-    const $row = $cell.parentElement;
-    const rowIndex = $row.rowIndex;
-    const $table = $row.parentElement;
-    let $nextCell = event.target;
-    if ($table.rows.length !== rowIndex) {
-      $nextCell = $table.rows[rowIndex].cells[cellIndex];
-      if (tableData.config.treeView && !tableData.display[rowIndex].open) {
-        tableData.toggleRowExpand(rowIndex - 1);
-      }
-    }
-    await nextTick();
-    $nextCell.focus();
-  };
-  const upCell = async (event) => {
-    const $cell = event.target;
-    const cellIndex = $cell.cellIndex;
-    const $row = $cell.parentElement;
-    const rowIndex = $row.rowIndex;
-    const $table = $row.parentElement;
-    let $nextCell = event.target;
-    if (rowIndex !== 1) {
-      $nextCell = $table.rows[rowIndex - 2].cells[cellIndex];
-      if (tableData.config.treeView && !tableData.display[rowIndex - 2].open) {
-        tableData.toggleRowExpand(tableData.display[rowIndex - 2].parent);
-      }
-    }
-    await nextTick();
-    $nextCell.focus();
-  };
-  const nextCell = async (event) => {
-    const $cell = event.target;
-    const cellIndex = $cell.cellIndex;
-    const $row = $cell.parentElement;
-    const rowIndex = $row.rowIndex;
-    const $table = $row.parentElement;
-    let $nextCell;
-    const $lastRow = $table.rows[rowIndex - 1];
-    if ($lastRow.cells.length - 1 === cellIndex) {
-      if ($table.rows.length === rowIndex) {
-        $nextCell = $table.rows[0].cells[tableData.zeroColumn ? 1 : 0];
+import { defineComponent, inject, ref, onMounted, computed, resolveDynamicComponent, openBlock, createElementBlock, normalizeStyle, toDisplayString, withDirectives, createCommentVNode, renderSlot, vShow, reactive, createElementVNode, Fragment, renderList, createTextVNode, provide, resolveComponent, createVNode, createBlock, withCtx } from "vue";
+function useKeyboardNav(element, handlers) {
+  for (const [event, config] of Object.entries(handlers)) {
+    if (config.default !== true) {
+      if (config.listener) {
+        element.addEventListener(event, config.listener, config.options);
       } else {
-        $nextCell = $table.rows[rowIndex].cells[tableData.zeroColumn ? 1 : 0];
-        if (tableData.config.treeView && !tableData.display[rowIndex].open) {
-          tableData.toggleRowExpand(rowIndex - 1);
-        }
+        throw new Error(`Missing listener for event: '${event}'`);
       }
-    } else {
-      $nextCell = $lastRow.cells[cellIndex + 1];
     }
-    await nextTick();
-    $nextCell.focus();
-  };
-  const prevCell = async (event) => {
-    debugger;
-    const $cell = event.target;
-    const cellIndex = $cell.cellIndex;
-    const $row = $cell.parentElement;
-    const rowIndex = $row.rowIndex;
-    const $table = $row.parentElement;
-    let $prevCell;
-    const $lastRow = $table.rows[rowIndex - 1];
-    const $secondLastRow = $table.rows[rowIndex - 2];
-    if (cellIndex === (tableData.zeroColumn ? 1 : 0)) {
-      if (rowIndex !== 1) {
-        $prevCell = $secondLastRow.cells[$secondLastRow.cells.length - 1];
-        tableData.toggleRowExpand(rowIndex - 2);
-      } else {
-        return;
-      }
-    } else {
-      $prevCell = $lastRow.cells[cellIndex - 1];
-    }
-    await nextTick();
-    $prevCell.focus();
-  };
-  return {
-    downArrowNav,
-    downCell,
-    endNav,
-    enterNav,
-    homeNav,
-    leftArrowNav,
-    nextCell,
-    prevCell,
-    rightArrowNav,
-    tabNav,
-    upArrowNav,
-    upCell
-  };
+  }
 }
 const _sfc_main$4 = defineComponent({
   name: "ACell",
@@ -174,7 +29,20 @@ const _sfc_main$4 = defineComponent({
   setup(props) {
     var _a;
     const tableData = inject(props.tableid);
-    const { enterNav, tabNav, endNav, homeNav, downArrowNav, upArrowNav, leftArrowNav, rightArrowNav } = useKeyboardNav(tableData);
+    const cell = ref("");
+    onMounted(() => {
+      useKeyboardNav(cell.value, {
+        keydown: {
+          listener: (event) => {
+            if (event.key === "Tab") {
+              event.preventDefault();
+              event.stopPropagation();
+              console.log(event);
+            }
+          }
+        }
+      });
+    });
     let cellModified = ref(false);
     const displayValue = computed(() => {
       const data = tableData.cellData(props.colIndex, props.rowIndex);
@@ -226,15 +94,17 @@ const _sfc_main$4 = defineComponent({
       return tableData.columns[props.colIndex].width || "40ch";
     });
     let currentData = "";
-    const onFocus = (event) => {
-      const target = event.target;
-      currentData = target.innerText;
+    const onFocus = () => {
+      currentData = cell.value.innerText;
+      cell.value.tabIndex = 0;
     };
     const onChange = (event) => {
-      const target = event.target;
-      if (target.innerHTML !== currentData) {
-        currentData = target.innerText;
-        target.dispatchEvent(new Event("change"));
+      if (event.type === "blur") {
+        cell.value.tabIndex = -1;
+      }
+      if (cell.value.innerHTML !== currentData) {
+        currentData = cell.value.innerText;
+        cell.value.dispatchEvent(new Event("change"));
         cellModified.value = true;
       }
     };
@@ -253,29 +123,22 @@ const _sfc_main$4 = defineComponent({
       paddingLeft: getIndent(props.colIndex, (_a = tableData.display[props.rowIndex]) == null ? void 0 : _a.indent)
     };
     return {
+      cell,
       cellModified,
       cellStyle,
       cellWidth,
       displayValue,
-      downArrowNav,
-      endNav,
-      enterNav,
       getIndent,
       handleInput,
-      homeNav,
-      leftArrowNav,
       onChange,
       onFocus,
-      rightArrowNav,
       tableData,
-      tabNav,
       textAlign,
-      upArrowNav,
       updateData
     };
   }
 });
-const ACell_vue_vue_type_style_index_0_scoped_32475309_lang = "";
+const ACell_vue_vue_type_style_index_0_scoped_9a059093_lang = "";
 const _export_sfc = (sfc, props) => {
   const target = sfc.__vccOpts || sfc;
   for (const [key, val] of props) {
@@ -283,32 +146,23 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const _hoisted_1$2 = ["contenteditable"];
+const _hoisted_1$2 = ["data-index", "contenteditable"];
 function _sfc_render$4(_ctx, _cache, $props, $setup, $data, $options) {
   return openBlock(), createElementBlock("td", {
-    ref: "colIndex + ':' + rowIndex",
+    ref: "cell",
+    "data-index": _ctx.colIndex + ":" + _ctx.rowIndex,
     contenteditable: _ctx.tableData.columns[_ctx.colIndex].edit,
-    tabindex: 0,
+    tabindex: -1,
     spellcheck: false,
     style: normalizeStyle(_ctx.cellStyle),
-    onFocus: _cache[0] || (_cache[0] = ($event) => _ctx.onFocus($event)),
+    onFocus: _cache[0] || (_cache[0] = (...args) => _ctx.onFocus && _ctx.onFocus(...args)),
     onPaste: _cache[1] || (_cache[1] = ($event) => _ctx.onChange($event)),
     onBlur: _cache[2] || (_cache[2] = ($event) => _ctx.onChange($event)),
     onInput: _cache[3] || (_cache[3] = ($event) => _ctx.onChange($event)),
-    onKeydown: [
-      _cache[4] || (_cache[4] = withKeys((...args) => _ctx.enterNav && _ctx.enterNav(...args), ["enter"])),
-      _cache[5] || (_cache[5] = withKeys((...args) => _ctx.tabNav && _ctx.tabNav(...args), ["tab"])),
-      _cache[6] || (_cache[6] = withKeys((...args) => _ctx.endNav && _ctx.endNav(...args), ["end"])),
-      _cache[7] || (_cache[7] = withKeys((...args) => _ctx.homeNav && _ctx.homeNav(...args), ["home"])),
-      _cache[8] || (_cache[8] = withKeys((...args) => _ctx.downArrowNav && _ctx.downArrowNav(...args), ["down"])),
-      _cache[9] || (_cache[9] = withKeys((...args) => _ctx.upArrowNav && _ctx.upArrowNav(...args), ["up"])),
-      _cache[10] || (_cache[10] = withKeys((...args) => _ctx.leftArrowNav && _ctx.leftArrowNav(...args), ["left"])),
-      _cache[11] || (_cache[11] = withKeys((...args) => _ctx.rightArrowNav && _ctx.rightArrowNav(...args), ["right"]))
-    ],
-    onClick: _cache[12] || (_cache[12] = (...args) => _ctx.handleInput && _ctx.handleInput(...args))
+    onClick: _cache[4] || (_cache[4] = (...args) => _ctx.handleInput && _ctx.handleInput(...args))
   }, toDisplayString(_ctx.displayValue), 45, _hoisted_1$2);
 }
-const ACell = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["render", _sfc_render$4], ["__scopeId", "data-v-32475309"]]);
+const ACell = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["render", _sfc_render$4], ["__scopeId", "data-v-9a059093"]]);
 const _sfc_main$3 = defineComponent({
   name: "ARow",
   props: {
@@ -693,7 +547,7 @@ const _sfc_main = defineComponent({
     };
   }
 });
-const ATable_vue_vue_type_style_index_0_scoped_0b4b3f27_lang = "";
+const ATable_vue_vue_type_style_index_0_scoped_2fd0bf54_lang = "";
 const _hoisted_1 = { class: "atable" };
 function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   const _component_ATableHeader = resolveComponent("ATableHeader");
@@ -723,7 +577,6 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
                 key: colIndex,
                 tableid: _ctx.tableData.id,
                 col,
-                tabindex: "0",
                 spellcheck: "false",
                 rowIndex,
                 colIndex: colIndex + (_ctx.tableData.zeroColumn ? 0 : -1),
@@ -762,7 +615,7 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     ])
   ]);
 }
-const ATable = /* @__PURE__ */ _export_sfc(_sfc_main, [["render", _sfc_render], ["__scopeId", "data-v-0b4b3f27"]]);
+const ATable = /* @__PURE__ */ _export_sfc(_sfc_main, [["render", _sfc_render], ["__scopeId", "data-v-2fd0bf54"]]);
 function install(app) {
   app.component("ACell", ACell);
   app.component("ARow", ARow);
@@ -777,6 +630,5 @@ export {
   ATableHeader,
   ATableModal,
   TableDataStore,
-  install,
-  useKeyboardNav
+  install
 };

@@ -1,154 +1,158 @@
 // DO NOT ADD COMMENTS IN THIS FILE.  They will be lost when the Rush tool resaves it.
 {
-	"$schema": "https://developer.microsoft.com/json-schemas/rush/v5/approved-packages.schema.json",
-	"packages": [
-		{
-			"name": "@cypress/vite-dev-server",
-			"allowedCategories": ["documentation", "prototype"]
-		},
-		{
-			"name": "@cypress/vue",
-			"allowedCategories": ["documentation", "prototype"]
-		},
-		{
-			"name": "@histoire/plugin-vue",
-			"allowedCategories": ["prototype"]
-		},
-		{
-			"name": "@miragejs/graphql",
-			"allowedCategories": ["prototype"]
-		},
-		{
-			"name": "@sedum/aform",
-			"allowedCategories": ["prototype"]
-		},
-		{
-			"name": "@sedum/atable",
-			"allowedCategories": ["prototype"]
-		},
-		{
-			"name": "@sedum/desktop",
-			"allowedCategories": ["prototype"]
-		},
-		{
-			"name": "@sedum/stonecrop",
-			"allowedCategories": ["prototype"]
-		},
-		{
-			"name": "@typescript-eslint/eslint-plugin",
-			"allowedCategories": ["prototype"]
-		},
-		{
-			"name": "@typescript-eslint/parser",
-			"allowedCategories": ["prototype"]
-		},
-		{
-			"name": "@vitejs/plugin-vue",
-			"allowedCategories": ["prototype"]
-		},
-		{
-			"name": "@vue/compiler-sfc",
-			"allowedCategories": ["prototype"]
-		},
-		{
-			"name": "cypress",
-			"allowedCategories": ["prototype"]
-		},
-		{
-			"name": "eslint",
-			"allowedCategories": ["prototype"]
-		},
-		{
-			"name": "eslint-config-prettier",
-			"allowedCategories": ["prototype"]
-		},
-		{
-			"name": "eslint-plugin-vue",
-			"allowedCategories": ["prototype"]
-		},
-		{
-			"name": "histoire",
-			"allowedCategories": ["prototype"]
-		},
-		{
-			"name": "localforage",
-			"allowedCategories": ["prototype"]
-		},
-		{
-			"name": "miragejs",
-			"allowedCategories": ["prototype"]
-		},
-		{
-			"name": "node-sass",
-			"allowedCategories": ["prototype"]
-		},
-		{
-			"name": "overmind",
-			"allowedCategories": ["prototype"]
-		},
-		{
-			"name": "overmind-vue",
-			"allowedCategories": ["prototype"]
-		},
-		{
-			"name": "portal-vue",
-			"allowedCategories": ["prototype"]
-		},
-		{
-			"name": "prettier",
-			"allowedCategories": ["prototype"]
-		},
-		{
-			"name": "pretty-quick",
-			"allowedCategories": ["prototype"]
-		},
-		{
-			"name": "sass",
-			"allowedCategories": ["prototype"]
-		},
-		{
-			"name": "sass-loader",
-			"allowedCategories": ["prototype"]
-		},
-		{
-			"name": "ts-node",
-			"allowedCategories": ["prototype"]
-		},
-		{
-			"name": "tsc",
-			"allowedCategories": ["prototype"]
-		},
-		{
-			"name": "typescript",
-			"allowedCategories": ["prototype"]
-		},
-		{
-			"name": "unstorage",
-			"allowedCategories": ["prototype"]
-		},
-		{
-			"name": "uuid",
-			"allowedCategories": ["prototype"]
-		},
-		{
-			"name": "vite",
-			"allowedCategories": ["prototype"]
-		},
-		{
-			"name": "vite-plugin-vue2",
-			"allowedCategories": ["prototype"]
-		},
-		{
-			"name": "vue",
-			"allowedCategories": ["prototype"]
-		},
-		{
-			"name": "vue-router",
-			"allowedCategories": ["prototype"]
-		},
-		{
-			"name": "vue-template-compiler",
-			"allowedCategories": ["prototype"]
-		}
-	]
+  "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/approved-packages.schema.json",
+  "packages": [
+    {
+      "name": "@cypress/vite-dev-server",
+      "allowedCategories": [ "documentation", "prototype", "utilities" ]
+    },
+    {
+      "name": "@cypress/vue",
+      "allowedCategories": [ "documentation", "prototype", "utilities" ]
+    },
+    {
+      "name": "@histoire/plugin-vue",
+      "allowedCategories": [ "prototype", "utilities" ]
+    },
+    {
+      "name": "@miragejs/graphql",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "@sedum/aform",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "@sedum/atable",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "@sedum/desktop",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "@sedum/stonecrop",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "@sedum/utilities",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "@typescript-eslint/eslint-plugin",
+      "allowedCategories": [ "prototype", "utilities" ]
+    },
+    {
+      "name": "@typescript-eslint/parser",
+      "allowedCategories": [ "prototype", "utilities" ]
+    },
+    {
+      "name": "@vitejs/plugin-vue",
+      "allowedCategories": [ "prototype", "utilities" ]
+    },
+    {
+      "name": "@vue/compiler-sfc",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "cypress",
+      "allowedCategories": [ "prototype", "utilities" ]
+    },
+    {
+      "name": "eslint",
+      "allowedCategories": [ "prototype", "utilities" ]
+    },
+    {
+      "name": "eslint-config-prettier",
+      "allowedCategories": [ "prototype", "utilities" ]
+    },
+    {
+      "name": "eslint-plugin-vue",
+      "allowedCategories": [ "prototype", "utilities" ]
+    },
+    {
+      "name": "histoire",
+      "allowedCategories": [ "prototype", "utilities" ]
+    },
+    {
+      "name": "localforage",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "miragejs",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "node-sass",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "overmind",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "overmind-vue",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "portal-vue",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "prettier",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "pretty-quick",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "sass",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "sass-loader",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "ts-node",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "tsc",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "typescript",
+      "allowedCategories": [ "prototype", "utilities" ]
+    },
+    {
+      "name": "unstorage",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "uuid",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "vite",
+      "allowedCategories": [ "prototype", "utilities" ]
+    },
+    {
+      "name": "vite-plugin-vue2",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "vue",
+      "allowedCategories": [ "prototype", "utilities" ]
+    },
+    {
+      "name": "vue-router",
+      "allowedCategories": [ "prototype", "utilities" ]
+    },
+    {
+      "name": "vue-template-compiler",
+      "allowedCategories": [ "prototype" ]
+    }
+  ]
 }

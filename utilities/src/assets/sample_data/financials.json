@@ -1,0 +1,252 @@
+[
+	{
+		"apr": {
+			"amount": 1398.66,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		},
+		"aug": {
+			"amount": 1138.14,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		},
+		"dec": {
+			"amount": 1856.15,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		},
+		"feb": {
+			"amount": 1424.52,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		},
+		"jan": {
+			"amount": 1015.35,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		},
+		"jul": {
+			"amount": 1566.39,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		},
+		"jun": {
+			"amount": 1283.41,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		},
+		"mar": {
+			"amount": 1531.34,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		},
+		"may": {
+			"amount": 1887.4,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		},
+		"nov": {
+			"amount": 1956.31,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		},
+		"oct": {
+			"amount": 1713.27,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		},
+		"sep": {
+			"amount": 1897.52,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		}
+	},
+	{
+		"apr": {
+			"amount": 1897.94,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		},
+		"aug": {
+			"amount": 1726.03,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		},
+		"dec": {
+			"amount": 1388.59,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		},
+		"feb": {
+			"amount": 1676.47,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		},
+		"jan": {
+			"amount": 1270.53,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		},
+		"jul": {
+			"amount": 1035.76,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		},
+		"jun": {
+			"amount": 1767.74,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		},
+		"mar": {
+			"amount": 1624.02,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		},
+		"may": {
+			"amount": 1215.63,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		},
+		"nov": {
+			"amount": 1714.17,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		},
+		"oct": {
+			"amount": 1103.52,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		},
+		"sep": {
+			"amount": 1057.07,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		}
+	},
+	{
+		"apr": {
+			"amount": 1894.29,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		},
+		"aug": {
+			"amount": 1429.06,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		},
+		"dec": {
+			"amount": 1694.95,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		},
+		"feb": {
+			"amount": 1735.92,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		},
+		"jan": {
+			"amount": 1284.3,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		},
+		"jul": {
+			"amount": 1800.34,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		},
+		"jun": {
+			"amount": 1980.6,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		},
+		"mar": {
+			"amount": 1386.47,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		},
+		"may": {
+			"amount": 1175.29,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		},
+		"nov": {
+			"amount": 1770.82,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		},
+		"oct": {
+			"amount": 1133.65,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		},
+		"sep": {
+			"amount": 1498.36,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		}
+	},
+	{
+		"apr": {
+			"amount": 1604.14,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		},
+		"aug": {
+			"amount": 1602.14,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		},
+		"dec": {
+			"amount": 1318.55,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		},
+		"feb": {
+			"amount": 1777.49,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		},
+		"jan": {
+			"amount": 1116.34,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		},
+		"jul": {
+			"amount": 1146.53,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		},
+		"jun": {
+			"amount": 1199.22,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		},
+		"mar": {
+			"amount": 1853.05,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		},
+		"may": {
+			"amount": 1292.17,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		},
+		"nov": {
+			"amount": 1571.77,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		},
+		"oct": {
+			"amount": 1009.96,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		},
+		"sep": {
+			"amount": 1920.11,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		}
+	},
+	{
+		"apr": {
+			"amount": 1552.49,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		},
+		"aug": {
+			"amount": 1207.85,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		},
+		"dec": {
+			"amount": 1232.77,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		},
+		"feb": {
+			"amount": 1894.04,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		},
+		"jan": {
+			"amount": 1666.28,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		},
+		"jul": {
+			"amount": 1052.35,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		},
+		"jun": {
+			"amount": 1162.05,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		},
+		"mar": {
+			"amount": 1810.21,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		},
+		"may": {
+			"amount": 1238.63,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		},
+		"nov": {
+			"amount": 1808.61,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		},
+		"oct": {
+			"amount": 1614.95,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		},
+		"sep": {
+			"amount": 1612.58,
+			"currency": { "title": "USD", "value": "dd4a74f1-e6a3-4aa3-a902-1b54048fa760" }
+		}
+	}
+]

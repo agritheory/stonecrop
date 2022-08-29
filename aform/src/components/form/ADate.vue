@@ -9,9 +9,9 @@
 		ref="adatepicker">
 		<table @keydown.page-down="handlePageDown" @keydown.page-up="handlePageUp">
 			<tr>
-				<td @click="previousMonth" tabindex="-1">&lt;</td>
+				<td @click="previousMonth" :tabindex="-1">&lt;</td>
 				<th colspan="5">{{ monthAndYear }}</th>
-				<td @click="nextMonth" tabindex="-1">&gt;</td>
+				<td @click="nextMonth" :tabindex="-1">&gt;</td>
 			</tr>
 			<tr v-for="rowNo in numberOfRows" :key="rowNo">
 				<!-- TODO: (style) remove inline styling and replace with theme package -->
@@ -29,7 +29,7 @@
 							? 'var(--focus-cell-outline)'
 							: 'none',
 					}"
-					@click="selectDate($event, (rowNo - 1) * numberOfColumns + colNo)"
+					@click.prevent.stop="selectDate($event, (rowNo - 1) * numberOfColumns + colNo)"
 					@keydown.enter="enterNav"
 					@keydown.tab="tabNav"
 					@keydown.end="endNav"
@@ -52,7 +52,8 @@
 <script lang="ts">
 import { computed, CSSProperties, defineComponent, inject, onMounted, ref, watch } from 'vue'
 
-import { TableDataStore, useKeyboardNav } from '@sedum/atable'
+import { TableDataStore } from '@sedum/atable'
+import { useKeyboardNav } from '@sedum/utilities'
 
 export default defineComponent({
 	name: 'ADate',
@@ -145,20 +146,18 @@ export default defineComponent({
 			return todaysDate.toDateString() === new Date(day).toDateString()
 		}
 
-		const isSelectedDate = function (day: string | number | Date) {
+		const isSelectedDate = (day: string | number | Date) => {
 			return new Date(day).toDateString() === new Date(selectedDate.value).toDateString()
 		}
 
-		const selectDate = function (event: Event, currentIndex: number) {
+		const selectDate = (event: Event, currentIndex: number) => {
 			selectedDate.value = currentDates.value[currentIndex]
 			updateData()
-			event.preventDefault()
-			event.stopPropagation()
 			// TODO: (typing) figure out a way to close datepicker
 			// context.refs.adatepicker.destroy()
 		}
 
-		const updateData = function () {
+		const updateData = () => {
 			tableData.setCellData(props.rowIndex, props.colIndex, selectedDate.value)
 		}
 

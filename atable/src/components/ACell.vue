@@ -1,31 +1,25 @@
 <template>
 	<td
-		ref="colIndex + ':' + rowIndex"
+		ref="cell"
+		:data-index="colIndex + ':' + rowIndex"
+		:data-editable="tableData.columns[colIndex].edit"
 		:contenteditable="tableData.columns[colIndex].edit"
-		:tabindex="0"
+		:tabindex="-1"
 		:spellcheck="false"
 		:style="cellStyle"
-		@focus="onFocus($event)"
-		@paste="onChange($event)"
-		@blur="onChange($event)"
-		@input="onChange($event)"
-		@keydown.enter="enterNav"
-		@keydown.tab="tabNav"
-		@keydown.end="endNav"
-		@keydown.home="homeNav"
-		@keydown.down="downArrowNav"
-		@keydown.up="upArrowNav"
-		@keydown.left="leftArrowNav"
-		@keydown.right="rightArrowNav"
+		@focus="onFocus"
+		@paste="onChange"
+		@blur="onChange"
+		@input="onChange"
 		@click="handleInput">
 		{{ displayValue }}
 	</td>
 </template>
 
 <script lang="ts">
-import { computed, CSSProperties, defineComponent, inject, ref, resolveDynamicComponent } from 'vue'
+import { computed, CSSProperties, defineComponent, inject, onMounted, ref, resolveDynamicComponent } from 'vue'
 
-import { useKeyboardNav } from '@/composables/keyboard'
+import { useKeyboardNav } from '@sedum/utilities'
 import TableDataStore from '.'
 
 export default defineComponent({
@@ -46,11 +40,57 @@ export default defineComponent({
 	},
 	setup(props) {
 		const tableData = inject<TableDataStore>(props.tableid)
-		const { enterNav, tabNav, endNav, homeNav, downArrowNav, upArrowNav, leftArrowNav, rightArrowNav } =
-			useKeyboardNav(tableData)
+
+		const cell = ref<HTMLTableCellElement>('')
+		onMounted(() => {
+			useKeyboardNav(cell.value, {
+				keydown: {
+					listener: (event: KeyboardEvent) => {
+						if (event.key === 'Tab') {
+							event.preventDefault()
+							event.stopPropagation()
+
+							if (event.shiftKey) {
+								const $prevCell = cell.value.previousElementSibling as HTMLTableCellElement
+								if ($prevCell && $prevCell.id !== 'row-index') {
+									$prevCell.focus()
+								} else {
+									const $prevRow = cell.value.parentElement?.previousElementSibling as HTMLTableRowElement
+									if ($prevRow) {
+										const $prevRowCells = Array.from($prevRow.children)
+										$prevRowCells.reverse()
+										for (const $cell of $prevRowCells) {
+											if ($cell.id !== 'row-index') {
+												;($cell as HTMLTableCellElement).focus()
+												break
+											}
+										}
+									}
+								}
+							} else {
+								const $nextCell = cell.value.nextElementSibling as HTMLTableCellElement
+								if ($nextCell) {
+									$nextCell.focus()
+								} else {
+									const $nextRow = cell.value.parentElement?.nextElementSibling as HTMLTableRowElement
+									if ($nextRow) {
+										const $nextRowCells = Array.from($nextRow.children)
+										for (const $cell of $nextRowCells) {
+											if ($cell.id !== 'row-index') {
+												;($cell as HTMLTableCellElement).focus()
+												break
+											}
+										}
+									}
+								}
+							}
+						}
+					},
+				},
+			})
+		})
 
 		let cellModified = ref(false)
-
 		const displayValue = computed(() => {
 			const data = tableData.cellData<any>(props.colIndex, props.rowIndex)
 			if (tableData.columns[props.colIndex].format) {
@@ -70,7 +110,7 @@ export default defineComponent({
 			}
 		})
 
-		const handleInput = (event: MouseEvent) => {
+		const handleInput = () => {
 			if (tableData.columns[props.colIndex].mask) {
 				// TODO: add masking to cell values
 				// tableData.columns[props.colIndex].mask(event)
@@ -78,12 +118,11 @@ export default defineComponent({
 
 			if (tableData.columns[props.colIndex].component) {
 				if (resolveDynamicComponent(tableData.columns[props.colIndex].component)) {
-					const target = event.target as HTMLElement
-					const domRect = target.getBoundingClientRect()
+					const domRect = cell.value.getBoundingClientRect()
 					tableData.modal.visible = true
 					tableData.modal.colIndex = props.colIndex
 					tableData.modal.rowIndex = props.rowIndex
-					tableData.modal.parent = target
+					tableData.modal.parent = cell.value
 					tableData.modal.top = domRect.top + domRect.height
 					tableData.modal.left = domRect.left
 					tableData.modal.width = cellWidth.value
@@ -96,8 +135,7 @@ export default defineComponent({
 			if (event) {
 				// custom components need to handle their own updateData, this is the default
 				if (!tableData.columns[props.colIndex].component) {
-					const target = event.target as HTMLElement
-					tableData.setCellData(props.rowIndex, props.colIndex, target.innerHTML)
+					tableData.setCellData(props.rowIndex, props.colIndex, cell.value.innerHTML)
 				}
 				cellModified.value = true
 			}
@@ -112,16 +150,19 @@ export default defineComponent({
 		})
 
 		let currentData = ''
-		const onFocus = (event: FocusEvent) => {
-			const target = event.target as HTMLElement
-			currentData = target.innerText
+		const onFocus = () => {
+			currentData = cell.value.innerText
+			cell.value.tabIndex = 0
 		}
 
 		const onChange = (event: ClipboardEvent | FocusEvent | Event) => {
-			const target = event.target as HTMLElement
-			if (target.innerHTML !== currentData) {
-				currentData = target.innerText
-				target.dispatchEvent(new Event('change'))
+			if (event.type === 'blur') {
+				cell.value.tabIndex = -1
+			}
+
+			if (cell.value.innerHTML !== currentData) {
+				currentData = cell.value.innerText
+				cell.value.dispatchEvent(new Event('change'))
 				cellModified.value = true // set display instead
 			}
 		}
@@ -143,24 +184,17 @@ export default defineComponent({
 		}
 
 		return {
+			cell,
 			cellModified,
 			cellStyle,
 			cellWidth,
 			displayValue,
-			downArrowNav,
-			endNav,
-			enterNav,
 			getIndent,
 			handleInput,
-			homeNav,
-			leftArrowNav,
 			onChange,
 			onFocus,
-			rightArrowNav,
 			tableData,
-			tabNav,
 			textAlign,
-			upArrowNav,
 			updateData,
 		}
 	},

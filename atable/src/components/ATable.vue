@@ -15,7 +15,6 @@
 					:key="colIndex"
 					:tableid="tableData.id"
 					:col="col"
-					tabindex="0"
 					spellcheck="false"
 					:rowIndex="rowIndex"
 					:colIndex="colIndex + (tableData.zeroColumn ? 0 : -1)"

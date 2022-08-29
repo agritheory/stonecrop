@@ -20,6 +20,7 @@
 		"lint": "eslint . --ext .ts,.vue"
 	},
 	"dependencies": {
+		"@sedum/utilities": "workspace:*",
 		"uuid": "~8.3.2",
 		"vue": "~3.2.37"
 	},
