@@ -1,5 +1,5 @@
 
-td[data-v-9a059093] {
+td[data-v-03fd16de] {
 	border: 1px;
 	border-style: solid;
 	border-color: var(--cell-border-color);
@@ -14,8 +14,8 @@ td[data-v-9a059093] {
 	padding-left: 0.5ch;
 	padding-right: 0.5ch;
 }
-td[data-v-9a059093]:focus,
-td[data-v-9a059093]:focus-within {
+td[data-v-03fd16de]:focus,
+td[data-v-03fd16de]:focus-within {
 	background-color: var(--focus-cell-background);
 	outline-width: 2px;
 	outline-style: solid;
@@ -56,12 +56,12 @@ div[data-v-33741903] {
 	font-size: var(--table-font-size); */
 }
 
-table[data-v-2fd0bf54] {
+table[data-v-63b7d924] {
 	display: table;
 	border-collapse: var(--border-collapsed);
 	caret-color: var(--brand-color);
 }
-th[data-v-2fd0bf54] {
+th[data-v-63b7d924] {
 	box-sizing: border-box;
 	background-color: var(--brand-color);
 	border-width: 1px;
@@ -70,10 +70,10 @@ th[data-v-2fd0bf54] {
 	border-radius: 0px;
 	color: var(--header-text-color);
 }
-tr[data-v-2fd0bf54] {
+tr[data-v-63b7d924] {
 	background-color: var(--row-color-zebra-light);
 	outline: none;
 }
-tr[data-v-2fd0bf54]:nth-child(even) {
+tr[data-v-63b7d924]:nth-child(even) {
 	background-color: var(--row-color-zebra-dark);
 }

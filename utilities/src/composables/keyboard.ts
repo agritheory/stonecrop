@@ -1,19 +1,41 @@
-import { nextTick } from 'vue'
+import { nextTick, onMounted, onUnmounted } from 'vue'
 
 import { KeyboardNavigationOptions } from 'types'
 
-export function useKeyboardNav(element: Element, handlers: KeyboardNavigationOptions) {
-	for (const [event, config] of Object.entries(handlers)) {
-		if (config.default !== true) {
-			if (config.listener) {
-				element.addEventListener(event, config.listener, config.options)
+export function useKeyboardNav(options: KeyboardNavigationOptions) {
+	onMounted(() => {
+		for (const [event, config] of Object.entries(options.handlers)) {
+			if (config.default !== true) {
+				if (!config.listener) {
+					throw new Error(`Missing listener for event: '${event}'`)
+				}
+
+				const elements: Element[] = []
+				if (Array.isArray(options.elements.value)) {
+					for (const element of options.elements.value) {
+						if (element instanceof Element) {
+							elements.push(element)
+						} else {
+							// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+							elements.push(element.$el)
+						}
+					}
+				} else {
+					elements.push(options.elements.value)
+				}
+
+				for (const element of elements) {
+					element.addEventListener(event, config.listener, config.options)
+				}
 			} else {
-				throw new Error(`Missing listener for event: '${event}'`)
+				// TODO: add default event listeners
 			}
-		} else {
-			// TODO: add default event listeners
 		}
-	}
+	})
+
+	onUnmounted(() => {
+		// TODO: copy onMounted logic once it's ready
+	})
 }
 
 // export function useKeyboardNav(tableData: any) {

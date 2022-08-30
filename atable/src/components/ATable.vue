@@ -12,6 +12,7 @@
 				:tableid="tableData.id">
 				<ACell
 					v-for="(col, colIndex) in tableData.columns"
+					ref="cells"
 					:key="colIndex"
 					:tableid="tableData.id"
 					:col="col"
@@ -46,7 +47,7 @@
 
 <script lang="ts">
 import { v4 } from 'uuid'
-import { defineComponent, PropType, provide } from 'vue'
+import { defineComponent, PropType, provide, ref } from 'vue'
 
 import { TableColumn, TableConfig, TableRow } from 'types'
 import TableDataStore from '.'
@@ -54,6 +55,7 @@ import ACell from '@/components/ACell.vue'
 import ARow from '@/components/ARow.vue'
 import ATableHeader from '@/components/ATableHeader.vue'
 import ATableModal from '@/components/ATableModal.vue'
+import { useKeyboardNav } from '@sedum/utilities'
 
 export default defineComponent({
 	name: 'ATable',
@@ -87,6 +89,58 @@ export default defineComponent({
 		let tableData = new TableDataStore(props.id, props.columns, props.rows, props.config)
 
 		provide(tableData.id, tableData)
+
+		const cells = ref([])
+
+		useKeyboardNav({
+			elements: cells,
+			handlers: {
+				keydown: {
+					listener: (event: KeyboardEvent) => {
+						const target = event.target as HTMLTableCellElement
+						if (event.key === 'Tab') {
+							event.preventDefault()
+							event.stopPropagation()
+
+							if (event.shiftKey) {
+								const $prevCell = target.previousElementSibling as HTMLTableCellElement
+								if ($prevCell && $prevCell.id !== 'row-index') {
+									$prevCell.focus()
+								} else {
+									const $prevRow = target.parentElement?.previousElementSibling as HTMLTableRowElement
+									if ($prevRow) {
+										const $prevRowCells = Array.from($prevRow.children)
+										$prevRowCells.reverse()
+										for (const $cell of $prevRowCells) {
+											if ($cell.id !== 'row-index') {
+												;($cell as HTMLTableCellElement).focus()
+												break
+											}
+										}
+									}
+								}
+							} else {
+								const $nextCell = target.nextElementSibling as HTMLTableCellElement
+								if ($nextCell) {
+									$nextCell.focus()
+								} else {
+									const $nextRow = target.parentElement?.nextElementSibling as HTMLTableRowElement
+									if ($nextRow) {
+										const $nextRowCells = Array.from($nextRow.children)
+										for (const $cell of $nextRowCells) {
+											if ($cell.id !== 'row-index') {
+												;($cell as HTMLTableCellElement).focus()
+												break
+											}
+										}
+									}
+								}
+							}
+						}
+					},
+				},
+			},
+		})
 
 		const formatCell = (event?: KeyboardEvent, column?: TableColumn, cellData?: any) => {
 			let colIndex: number
@@ -148,6 +202,7 @@ export default defineComponent({
 		window.addEventListener('click', clickOutside)
 
 		return {
+			cells,
 			formatCell,
 			moveCursorToEnd,
 			tableData,

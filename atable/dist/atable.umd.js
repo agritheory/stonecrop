@@ -2,17 +2,6 @@
   typeof exports === "object" && typeof module !== "undefined" ? factory(exports, require("vue")) : typeof define === "function" && define.amd ? define(["exports", "vue"], factory) : (global = typeof globalThis !== "undefined" ? globalThis : global || self, factory(global["@sedum/atable"] = {}, global.Vue));
 })(this, function(exports2, vue) {
   "use strict";
-  function useKeyboardNav(element, handlers) {
-    for (const [event, config] of Object.entries(handlers)) {
-      if (config.default !== true) {
-        if (config.listener) {
-          element.addEventListener(event, config.listener, config.options);
-        } else {
-          throw new Error(`Missing listener for event: '${event}'`);
-        }
-      }
-    }
-  }
   const _sfc_main$4 = vue.defineComponent({
     name: "ACell",
     props: {
@@ -33,19 +22,6 @@
       var _a;
       const tableData = vue.inject(props.tableid);
       const cell = vue.ref("");
-      vue.onMounted(() => {
-        useKeyboardNav(cell.value, {
-          keydown: {
-            listener: (event) => {
-              if (event.key === "Tab") {
-                event.preventDefault();
-                event.stopPropagation();
-                console.log(event);
-              }
-            }
-          }
-        });
-      });
       let cellModified = vue.ref(false);
       const displayValue = vue.computed(() => {
         const data = tableData.cellData(props.colIndex, props.rowIndex);
@@ -63,17 +39,16 @@
           return data;
         }
       });
-      const handleInput = (event) => {
+      const handleInput = () => {
         if (tableData.columns[props.colIndex].mask)
           ;
         if (tableData.columns[props.colIndex].component) {
           if (vue.resolveDynamicComponent(tableData.columns[props.colIndex].component)) {
-            const target = event.target;
-            const domRect = target.getBoundingClientRect();
+            const domRect = cell.value.getBoundingClientRect();
             tableData.modal.visible = true;
             tableData.modal.colIndex = props.colIndex;
             tableData.modal.rowIndex = props.rowIndex;
-            tableData.modal.parent = target;
+            tableData.modal.parent = cell.value;
             tableData.modal.top = domRect.top + domRect.height;
             tableData.modal.left = domRect.left;
             tableData.modal.width = cellWidth.value;
@@ -84,8 +59,7 @@
       const updateData = (event) => {
         if (event) {
           if (!tableData.columns[props.colIndex].component) {
-            const target = event.target;
-            tableData.setCellData(props.rowIndex, props.colIndex, target.innerHTML);
+            tableData.setCellData(props.rowIndex, props.colIndex, cell.value.innerHTML);
           }
           cellModified.value = true;
         }
@@ -141,7 +115,7 @@
       };
     }
   });
-  const ACell_vue_vue_type_style_index_0_scoped_9a059093_lang = "";
+  const ACell_vue_vue_type_style_index_0_scoped_03fd16de_lang = "";
   const _export_sfc = (sfc, props) => {
     const target = sfc.__vccOpts || sfc;
     for (const [key, val] of props) {
@@ -149,23 +123,25 @@
     }
     return target;
   };
-  const _hoisted_1$2 = ["data-index", "contenteditable"];
+  const _hoisted_1$2 = ["data-colindex", "data-rowindex", "data-editable", "contenteditable"];
   function _sfc_render$4(_ctx, _cache, $props, $setup, $data, $options) {
     return vue.openBlock(), vue.createElementBlock("td", {
       ref: "cell",
-      "data-index": _ctx.colIndex + ":" + _ctx.rowIndex,
+      "data-colindex": _ctx.colIndex,
+      "data-rowindex": _ctx.rowIndex,
+      "data-editable": _ctx.tableData.columns[_ctx.colIndex].edit,
       contenteditable: _ctx.tableData.columns[_ctx.colIndex].edit,
       tabindex: -1,
       spellcheck: false,
       style: vue.normalizeStyle(_ctx.cellStyle),
       onFocus: _cache[0] || (_cache[0] = (...args) => _ctx.onFocus && _ctx.onFocus(...args)),
-      onPaste: _cache[1] || (_cache[1] = ($event) => _ctx.onChange($event)),
-      onBlur: _cache[2] || (_cache[2] = ($event) => _ctx.onChange($event)),
-      onInput: _cache[3] || (_cache[3] = ($event) => _ctx.onChange($event)),
+      onPaste: _cache[1] || (_cache[1] = (...args) => _ctx.onChange && _ctx.onChange(...args)),
+      onBlur: _cache[2] || (_cache[2] = (...args) => _ctx.onChange && _ctx.onChange(...args)),
+      onInput: _cache[3] || (_cache[3] = (...args) => _ctx.onChange && _ctx.onChange(...args)),
       onClick: _cache[4] || (_cache[4] = (...args) => _ctx.handleInput && _ctx.handleInput(...args))
     }, vue.toDisplayString(_ctx.displayValue), 45, _hoisted_1$2);
   }
-  const ACell = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["render", _sfc_render$4], ["__scopeId", "data-v-9a059093"]]);
+  const ACell = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["render", _sfc_render$4], ["__scopeId", "data-v-03fd16de"]]);
   const _sfc_main$3 = vue.defineComponent({
     name: "ARow",
     props: {
@@ -246,10 +222,12 @@
     return vue.withDirectives((vue.openBlock(), vue.createElementBlock("tr", null, [
       _ctx.tableData.config.numberedRows ? (vue.openBlock(), vue.createElementBlock("td", {
         key: 0,
+        id: "row-index",
         style: vue.normalizeStyle(_ctx.numberedRowStyle)
       }, vue.toDisplayString(_ctx.rowIndex + 1), 5)) : vue.createCommentVNode("", true),
       _ctx.tableData.config.treeView ? (vue.openBlock(), vue.createElementBlock("td", {
         key: 1,
+        id: "row-index",
         style: vue.normalizeStyle(_ctx.treeRowStyle),
         onClick: _cache[0] || (_cache[0] = ($event) => _ctx.toggleRowExpand(_ctx.rowIndex))
       }, vue.toDisplayString(_ctx.getRowExpandSymbol()), 5)) : vue.createCommentVNode("", true),
@@ -463,6 +441,34 @@
     ], 544);
   }
   const ATableModal = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["render", _sfc_render$1], ["__scopeId", "data-v-33741903"]]);
+  function useKeyboardNav(options) {
+    vue.onMounted(() => {
+      for (const [event, config] of Object.entries(options.handlers)) {
+        if (config.default !== true) {
+          if (!config.listener) {
+            throw new Error(`Missing listener for event: '${event}'`);
+          }
+          const elements = [];
+          if (Array.isArray(options.elements.value)) {
+            for (const element of options.elements.value) {
+              if (element instanceof Element) {
+                elements.push(element);
+              } else {
+                elements.push(element.$el);
+              }
+            }
+          } else {
+            elements.push(options.elements.value);
+          }
+          for (const element of elements) {
+            element.addEventListener(event, config.listener, config.options);
+          }
+        }
+      }
+    });
+    vue.onUnmounted(() => {
+    });
+  }
   const _sfc_main = vue.defineComponent({
     name: "ATable",
     components: {
@@ -494,6 +500,56 @@
     setup(props) {
       let tableData = new TableDataStore(props.id, props.columns, props.rows, props.config);
       vue.provide(tableData.id, tableData);
+      const cells = vue.ref([]);
+      useKeyboardNav({
+        elements: cells,
+        handlers: {
+          keydown: {
+            listener: (event) => {
+              var _a, _b;
+              const target = event.target;
+              if (event.key === "Tab") {
+                event.preventDefault();
+                event.stopPropagation();
+                if (event.shiftKey) {
+                  const $prevCell = target.previousElementSibling;
+                  if ($prevCell && $prevCell.id !== "row-index") {
+                    $prevCell.focus();
+                  } else {
+                    const $prevRow = (_a = target.parentElement) == null ? void 0 : _a.previousElementSibling;
+                    if ($prevRow) {
+                      const $prevRowCells = Array.from($prevRow.children);
+                      $prevRowCells.reverse();
+                      for (const $cell of $prevRowCells) {
+                        if ($cell.id !== "row-index") {
+                          $cell.focus();
+                          break;
+                        }
+                      }
+                    }
+                  }
+                } else {
+                  const $nextCell = target.nextElementSibling;
+                  if ($nextCell) {
+                    $nextCell.focus();
+                  } else {
+                    const $nextRow = (_b = target.parentElement) == null ? void 0 : _b.nextElementSibling;
+                    if ($nextRow) {
+                      const $nextRowCells = Array.from($nextRow.children);
+                      for (const $cell of $nextRowCells) {
+                        if ($cell.id !== "row-index") {
+                          $cell.focus();
+                          break;
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      });
       const formatCell = (event, column, cellData) => {
         let colIndex;
         const target = event == null ? void 0 : event.target;
@@ -543,6 +599,7 @@
       };
       window.addEventListener("click", clickOutside);
       return {
+        cells,
         formatCell,
         moveCursorToEnd,
         tableData,
@@ -550,7 +607,7 @@
       };
     }
   });
-  const ATable_vue_vue_type_style_index_0_scoped_2fd0bf54_lang = "";
+  const ATable_vue_vue_type_style_index_0_scoped_63b7d924_lang = "";
   const _hoisted_1 = { class: "atable" };
   function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     const _component_ATableHeader = vue.resolveComponent("ATableHeader");
@@ -577,6 +634,8 @@
               (vue.openBlock(true), vue.createElementBlock(vue.Fragment, null, vue.renderList(_ctx.tableData.columns, (col, colIndex) => {
                 var _a;
                 return vue.openBlock(), vue.createBlock(_component_ACell, {
+                  ref_for: true,
+                  ref: "cells",
                   key: colIndex,
                   tableid: _ctx.tableData.id,
                   col,
@@ -618,7 +677,7 @@
       ])
     ]);
   }
-  const ATable = /* @__PURE__ */ _export_sfc(_sfc_main, [["render", _sfc_render], ["__scopeId", "data-v-2fd0bf54"]]);
+  const ATable = /* @__PURE__ */ _export_sfc(_sfc_main, [["render", _sfc_render], ["__scopeId", "data-v-63b7d924"]]);
   function install(app) {
     app.component("ACell", ACell);
     app.component("ARow", ARow);

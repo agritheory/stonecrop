@@ -1,15 +1,4 @@
-import { defineComponent, inject, ref, onMounted, computed, resolveDynamicComponent, openBlock, createElementBlock, normalizeStyle, toDisplayString, withDirectives, createCommentVNode, renderSlot, vShow, reactive, createElementVNode, Fragment, renderList, createTextVNode, provide, resolveComponent, createVNode, createBlock, withCtx } from "vue";
-function useKeyboardNav(element, handlers) {
-  for (const [event, config] of Object.entries(handlers)) {
-    if (config.default !== true) {
-      if (config.listener) {
-        element.addEventListener(event, config.listener, config.options);
-      } else {
-        throw new Error(`Missing listener for event: '${event}'`);
-      }
-    }
-  }
-}
+import { defineComponent, inject, ref, computed, resolveDynamicComponent, openBlock, createElementBlock, normalizeStyle, toDisplayString, withDirectives, createCommentVNode, renderSlot, vShow, reactive, createElementVNode, Fragment, renderList, createTextVNode, onMounted, onUnmounted, provide, resolveComponent, createVNode, createBlock, withCtx } from "vue";
 const _sfc_main$4 = defineComponent({
   name: "ACell",
   props: {
@@ -30,19 +19,6 @@ const _sfc_main$4 = defineComponent({
     var _a;
     const tableData = inject(props.tableid);
     const cell = ref("");
-    onMounted(() => {
-      useKeyboardNav(cell.value, {
-        keydown: {
-          listener: (event) => {
-            if (event.key === "Tab") {
-              event.preventDefault();
-              event.stopPropagation();
-              console.log(event);
-            }
-          }
-        }
-      });
-    });
     let cellModified = ref(false);
     const displayValue = computed(() => {
       const data = tableData.cellData(props.colIndex, props.rowIndex);
@@ -60,17 +36,16 @@ const _sfc_main$4 = defineComponent({
         return data;
       }
     });
-    const handleInput = (event) => {
+    const handleInput = () => {
       if (tableData.columns[props.colIndex].mask)
         ;
       if (tableData.columns[props.colIndex].component) {
         if (resolveDynamicComponent(tableData.columns[props.colIndex].component)) {
-          const target = event.target;
-          const domRect = target.getBoundingClientRect();
+          const domRect = cell.value.getBoundingClientRect();
           tableData.modal.visible = true;
           tableData.modal.colIndex = props.colIndex;
           tableData.modal.rowIndex = props.rowIndex;
-          tableData.modal.parent = target;
+          tableData.modal.parent = cell.value;
           tableData.modal.top = domRect.top + domRect.height;
           tableData.modal.left = domRect.left;
           tableData.modal.width = cellWidth.value;
@@ -81,8 +56,7 @@ const _sfc_main$4 = defineComponent({
     const updateData = (event) => {
       if (event) {
         if (!tableData.columns[props.colIndex].component) {
-          const target = event.target;
-          tableData.setCellData(props.rowIndex, props.colIndex, target.innerHTML);
+          tableData.setCellData(props.rowIndex, props.colIndex, cell.value.innerHTML);
         }
         cellModified.value = true;
       }
@@ -138,7 +112,7 @@ const _sfc_main$4 = defineComponent({
     };
   }
 });
-const ACell_vue_vue_type_style_index_0_scoped_9a059093_lang = "";
+const ACell_vue_vue_type_style_index_0_scoped_03fd16de_lang = "";
 const _export_sfc = (sfc, props) => {
   const target = sfc.__vccOpts || sfc;
   for (const [key, val] of props) {
@@ -146,23 +120,25 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const _hoisted_1$2 = ["data-index", "contenteditable"];
+const _hoisted_1$2 = ["data-colindex", "data-rowindex", "data-editable", "contenteditable"];
 function _sfc_render$4(_ctx, _cache, $props, $setup, $data, $options) {
   return openBlock(), createElementBlock("td", {
     ref: "cell",
-    "data-index": _ctx.colIndex + ":" + _ctx.rowIndex,
+    "data-colindex": _ctx.colIndex,
+    "data-rowindex": _ctx.rowIndex,
+    "data-editable": _ctx.tableData.columns[_ctx.colIndex].edit,
     contenteditable: _ctx.tableData.columns[_ctx.colIndex].edit,
     tabindex: -1,
     spellcheck: false,
     style: normalizeStyle(_ctx.cellStyle),
     onFocus: _cache[0] || (_cache[0] = (...args) => _ctx.onFocus && _ctx.onFocus(...args)),
-    onPaste: _cache[1] || (_cache[1] = ($event) => _ctx.onChange($event)),
-    onBlur: _cache[2] || (_cache[2] = ($event) => _ctx.onChange($event)),
-    onInput: _cache[3] || (_cache[3] = ($event) => _ctx.onChange($event)),
+    onPaste: _cache[1] || (_cache[1] = (...args) => _ctx.onChange && _ctx.onChange(...args)),
+    onBlur: _cache[2] || (_cache[2] = (...args) => _ctx.onChange && _ctx.onChange(...args)),
+    onInput: _cache[3] || (_cache[3] = (...args) => _ctx.onChange && _ctx.onChange(...args)),
     onClick: _cache[4] || (_cache[4] = (...args) => _ctx.handleInput && _ctx.handleInput(...args))
   }, toDisplayString(_ctx.displayValue), 45, _hoisted_1$2);
 }
-const ACell = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["render", _sfc_render$4], ["__scopeId", "data-v-9a059093"]]);
+const ACell = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["render", _sfc_render$4], ["__scopeId", "data-v-03fd16de"]]);
 const _sfc_main$3 = defineComponent({
   name: "ARow",
   props: {
@@ -243,10 +219,12 @@ function _sfc_render$3(_ctx, _cache, $props, $setup, $data, $options) {
   return withDirectives((openBlock(), createElementBlock("tr", null, [
     _ctx.tableData.config.numberedRows ? (openBlock(), createElementBlock("td", {
       key: 0,
+      id: "row-index",
       style: normalizeStyle(_ctx.numberedRowStyle)
     }, toDisplayString(_ctx.rowIndex + 1), 5)) : createCommentVNode("", true),
     _ctx.tableData.config.treeView ? (openBlock(), createElementBlock("td", {
       key: 1,
+      id: "row-index",
       style: normalizeStyle(_ctx.treeRowStyle),
       onClick: _cache[0] || (_cache[0] = ($event) => _ctx.toggleRowExpand(_ctx.rowIndex))
     }, toDisplayString(_ctx.getRowExpandSymbol()), 5)) : createCommentVNode("", true),
@@ -460,6 +438,34 @@ function _sfc_render$1(_ctx, _cache, $props, $setup, $data, $options) {
   ], 544);
 }
 const ATableModal = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["render", _sfc_render$1], ["__scopeId", "data-v-33741903"]]);
+function useKeyboardNav(options) {
+  onMounted(() => {
+    for (const [event, config] of Object.entries(options.handlers)) {
+      if (config.default !== true) {
+        if (!config.listener) {
+          throw new Error(`Missing listener for event: '${event}'`);
+        }
+        const elements = [];
+        if (Array.isArray(options.elements.value)) {
+          for (const element of options.elements.value) {
+            if (element instanceof Element) {
+              elements.push(element);
+            } else {
+              elements.push(element.$el);
+            }
+          }
+        } else {
+          elements.push(options.elements.value);
+        }
+        for (const element of elements) {
+          element.addEventListener(event, config.listener, config.options);
+        }
+      }
+    }
+  });
+  onUnmounted(() => {
+  });
+}
 const _sfc_main = defineComponent({
   name: "ATable",
   components: {
@@ -491,6 +497,56 @@ const _sfc_main = defineComponent({
   setup(props) {
     let tableData = new TableDataStore(props.id, props.columns, props.rows, props.config);
     provide(tableData.id, tableData);
+    const cells = ref([]);
+    useKeyboardNav({
+      elements: cells,
+      handlers: {
+        keydown: {
+          listener: (event) => {
+            var _a, _b;
+            const target = event.target;
+            if (event.key === "Tab") {
+              event.preventDefault();
+              event.stopPropagation();
+              if (event.shiftKey) {
+                const $prevCell = target.previousElementSibling;
+                if ($prevCell && $prevCell.id !== "row-index") {
+                  $prevCell.focus();
+                } else {
+                  const $prevRow = (_a = target.parentElement) == null ? void 0 : _a.previousElementSibling;
+                  if ($prevRow) {
+                    const $prevRowCells = Array.from($prevRow.children);
+                    $prevRowCells.reverse();
+                    for (const $cell of $prevRowCells) {
+                      if ($cell.id !== "row-index") {
+                        $cell.focus();
+                        break;
+                      }
+                    }
+                  }
+                }
+              } else {
+                const $nextCell = target.nextElementSibling;
+                if ($nextCell) {
+                  $nextCell.focus();
+                } else {
+                  const $nextRow = (_b = target.parentElement) == null ? void 0 : _b.nextElementSibling;
+                  if ($nextRow) {
+                    const $nextRowCells = Array.from($nextRow.children);
+                    for (const $cell of $nextRowCells) {
+                      if ($cell.id !== "row-index") {
+                        $cell.focus();
+                        break;
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    });
     const formatCell = (event, column, cellData) => {
       let colIndex;
       const target = event == null ? void 0 : event.target;
@@ -540,6 +596,7 @@ const _sfc_main = defineComponent({
     };
     window.addEventListener("click", clickOutside);
     return {
+      cells,
       formatCell,
       moveCursorToEnd,
       tableData,
@@ -547,7 +604,7 @@ const _sfc_main = defineComponent({
     };
   }
 });
-const ATable_vue_vue_type_style_index_0_scoped_2fd0bf54_lang = "";
+const ATable_vue_vue_type_style_index_0_scoped_63b7d924_lang = "";
 const _hoisted_1 = { class: "atable" };
 function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   const _component_ATableHeader = resolveComponent("ATableHeader");
@@ -574,6 +631,8 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
             (openBlock(true), createElementBlock(Fragment, null, renderList(_ctx.tableData.columns, (col, colIndex) => {
               var _a;
               return openBlock(), createBlock(_component_ACell, {
+                ref_for: true,
+                ref: "cells",
                 key: colIndex,
                 tableid: _ctx.tableData.id,
                 col,
@@ -615,7 +674,7 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     ])
   ]);
 }
-const ATable = /* @__PURE__ */ _export_sfc(_sfc_main, [["render", _sfc_render], ["__scopeId", "data-v-2fd0bf54"]]);
+const ATable = /* @__PURE__ */ _export_sfc(_sfc_main, [["render", _sfc_render], ["__scopeId", "data-v-63b7d924"]]);
 function install(app) {
   app.component("ACell", ACell);
   app.component("ARow", ARow);
