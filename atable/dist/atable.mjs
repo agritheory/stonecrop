@@ -1,22 +1,15 @@
-import { defineComponent, inject, ref, computed, resolveDynamicComponent, openBlock, createElementBlock, normalizeStyle, toDisplayString, withDirectives, createCommentVNode, renderSlot, vShow, reactive, createElementVNode, Fragment, renderList, createTextVNode, onMounted, onUnmounted, provide, resolveComponent, createVNode, createBlock, withCtx } from "vue";
-const _sfc_main$4 = defineComponent({
-  name: "ACell",
+import { defineComponent, inject, ref, computed, openBlock, createElementBlock, unref, toDisplayString, resolveDynamicComponent, withDirectives, createCommentVNode, renderSlot, vShow, reactive, createElementVNode, normalizeStyle, Fragment, renderList, createTextVNode, onMounted, onUnmounted, provide, createVNode, createBlock, withCtx } from "vue";
+const _hoisted_1$2 = ["data-colindex", "data-rowindex", "data-editable", "contenteditable"];
+const _sfc_main$4 = /* @__PURE__ */ defineComponent({
+  __name: "ACell",
   props: {
-    colIndex: {
-      type: Number,
-      required: true
-    },
-    rowIndex: {
-      type: Number,
-      required: true
-    },
-    tableid: {
-      type: String,
-      required: true
-    }
+    colIndex: null,
+    rowIndex: null,
+    tableid: null
   },
-  setup(props) {
+  setup(__props) {
     var _a;
+    const props = __props;
     const tableData = inject(props.tableid);
     const cell = ref("");
     let cellModified = ref(false);
@@ -53,14 +46,6 @@ const _sfc_main$4 = defineComponent({
         }
       }
     };
-    const updateData = (event) => {
-      if (event) {
-        if (!tableData.columns[props.colIndex].component) {
-          tableData.setCellData(props.rowIndex, props.colIndex, cell.value.innerHTML);
-        }
-        cellModified.value = true;
-      }
-    };
     const textAlign = computed(() => {
       return tableData.columns[props.colIndex].align || "center";
     });
@@ -70,12 +55,8 @@ const _sfc_main$4 = defineComponent({
     let currentData = "";
     const onFocus = () => {
       currentData = cell.value.innerText;
-      cell.value.tabIndex = 0;
     };
-    const onChange = (event) => {
-      if (event.type === "blur") {
-        cell.value.tabIndex = -1;
-      }
+    const onChange = () => {
       if (cell.value.innerHTML !== currentData) {
         currentData = cell.value.innerText;
         cell.value.dispatchEvent(new Event("change"));
@@ -96,23 +77,27 @@ const _sfc_main$4 = defineComponent({
       fontWeight: !cellModified.value ? "inherit" : "bold",
       paddingLeft: getIndent(props.colIndex, (_a = tableData.display[props.rowIndex]) == null ? void 0 : _a.indent)
     };
-    return {
-      cell,
-      cellModified,
-      cellStyle,
-      cellWidth,
-      displayValue,
-      getIndent,
-      handleInput,
-      onChange,
-      onFocus,
-      tableData,
-      textAlign,
-      updateData
+    return (_ctx, _cache) => {
+      return openBlock(), createElementBlock("td", {
+        ref_key: "cell",
+        ref: cell,
+        "data-colindex": __props.colIndex,
+        "data-rowindex": __props.rowIndex,
+        "data-editable": unref(tableData).columns[__props.colIndex].edit,
+        contenteditable: unref(tableData).columns[__props.colIndex].edit,
+        tabindex: -1,
+        spellcheck: false,
+        style: cellStyle,
+        onFocus,
+        onPaste: onChange,
+        onBlur: onChange,
+        onInput: onChange,
+        onClick: handleInput
+      }, toDisplayString(unref(displayValue)), 41, _hoisted_1$2);
     };
   }
 });
-const ACell_vue_vue_type_style_index_0_scoped_03fd16de_lang = "";
+const ACell_vue_vue_type_style_index_0_scoped_9d92b651_lang = "";
 const _export_sfc = (sfc, props) => {
   const target = sfc.__vccOpts || sfc;
   for (const [key, val] of props) {
@@ -120,49 +105,16 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const _hoisted_1$2 = ["data-colindex", "data-rowindex", "data-editable", "contenteditable"];
-function _sfc_render$4(_ctx, _cache, $props, $setup, $data, $options) {
-  return openBlock(), createElementBlock("td", {
-    ref: "cell",
-    "data-colindex": _ctx.colIndex,
-    "data-rowindex": _ctx.rowIndex,
-    "data-editable": _ctx.tableData.columns[_ctx.colIndex].edit,
-    contenteditable: _ctx.tableData.columns[_ctx.colIndex].edit,
-    tabindex: -1,
-    spellcheck: false,
-    style: normalizeStyle(_ctx.cellStyle),
-    onFocus: _cache[0] || (_cache[0] = (...args) => _ctx.onFocus && _ctx.onFocus(...args)),
-    onPaste: _cache[1] || (_cache[1] = (...args) => _ctx.onChange && _ctx.onChange(...args)),
-    onBlur: _cache[2] || (_cache[2] = (...args) => _ctx.onChange && _ctx.onChange(...args)),
-    onInput: _cache[3] || (_cache[3] = (...args) => _ctx.onChange && _ctx.onChange(...args)),
-    onClick: _cache[4] || (_cache[4] = (...args) => _ctx.handleInput && _ctx.handleInput(...args))
-  }, toDisplayString(_ctx.displayValue), 45, _hoisted_1$2);
-}
-const ACell = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["render", _sfc_render$4], ["__scopeId", "data-v-03fd16de"]]);
-const _sfc_main$3 = defineComponent({
-  name: "ARow",
+const ACell = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-9d92b651"]]);
+const _sfc_main$3 = /* @__PURE__ */ defineComponent({
+  __name: "ARow",
   props: {
-    row: {
-      type: Object,
-      required: true,
-      default: () => {
-        return {};
-      }
-    },
-    rowIndex: {
-      type: Number,
-      required: true,
-      default: 0
-    },
-    tableid: {
-      type: String,
-      required: true,
-      default: () => {
-        return void 0;
-      }
-    }
+    row: null,
+    rowIndex: null,
+    tableid: null
   },
-  setup(props) {
+  setup(__props) {
+    const props = __props;
     const tableData = inject(props.tableid);
     const numberedRowStyle = {
       backgroundColor: "var(--brand-color)",
@@ -212,29 +164,29 @@ const _sfc_main$3 = defineComponent({
     const toggleRowExpand = (rowIndex) => {
       tableData.toggleRowExpand(rowIndex);
     };
-    return { getRowExpandSymbol, numberedRowStyle, rowVisible, tableData, toggleRowExpand, treeRowStyle };
+    return (_ctx, _cache) => {
+      return withDirectives((openBlock(), createElementBlock("tr", null, [
+        unref(tableData).config.numberedRows ? (openBlock(), createElementBlock("td", {
+          key: 0,
+          id: "row-index",
+          tabIndex: -1,
+          style: numberedRowStyle
+        }, toDisplayString(__props.rowIndex + 1), 1)) : createCommentVNode("", true),
+        unref(tableData).config.treeView ? (openBlock(), createElementBlock("td", {
+          key: 1,
+          id: "row-index",
+          tabIndex: -1,
+          style: treeRowStyle,
+          onClick: _cache[0] || (_cache[0] = ($event) => toggleRowExpand(__props.rowIndex))
+        }, toDisplayString(getRowExpandSymbol()), 1)) : createCommentVNode("", true),
+        !unref(tableData).config.numberedRows && !unref(tableData).config.treeView ? renderSlot(_ctx.$slots, "indexCell", { key: 2 }) : createCommentVNode("", true),
+        renderSlot(_ctx.$slots, "default")
+      ], 512)), [
+        [vShow, rowVisible()]
+      ]);
+    };
   }
 });
-function _sfc_render$3(_ctx, _cache, $props, $setup, $data, $options) {
-  return withDirectives((openBlock(), createElementBlock("tr", null, [
-    _ctx.tableData.config.numberedRows ? (openBlock(), createElementBlock("td", {
-      key: 0,
-      id: "row-index",
-      style: normalizeStyle(_ctx.numberedRowStyle)
-    }, toDisplayString(_ctx.rowIndex + 1), 5)) : createCommentVNode("", true),
-    _ctx.tableData.config.treeView ? (openBlock(), createElementBlock("td", {
-      key: 1,
-      id: "row-index",
-      style: normalizeStyle(_ctx.treeRowStyle),
-      onClick: _cache[0] || (_cache[0] = ($event) => _ctx.toggleRowExpand(_ctx.rowIndex))
-    }, toDisplayString(_ctx.getRowExpandSymbol()), 5)) : createCommentVNode("", true),
-    !_ctx.tableData.config.numberedRows && !_ctx.tableData.config.treeView ? renderSlot(_ctx.$slots, "indexCell", { key: 2 }) : createCommentVNode("", true),
-    renderSlot(_ctx.$slots, "default")
-  ], 512)), [
-    [vShow, _ctx.rowVisible()]
-  ]);
-}
-const ARow = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["render", _sfc_render$3]]);
 var getRandomValues;
 var rnds8 = new Uint8Array(16);
 function rng() {
@@ -376,7 +328,7 @@ const _sfc_main$2 = defineComponent({
 const ATableHeader_vue_vue_type_style_index_0_scoped_80fa6b2a_lang = "";
 const _hoisted_1$1 = { key: 0 };
 const _hoisted_2 = { tabindex: "-1" };
-function _sfc_render$2(_ctx, _cache, $props, $setup, $data, $options) {
+function _sfc_render$1(_ctx, _cache, $props, $setup, $data, $options) {
   return _ctx.columns.length ? (openBlock(), createElementBlock("thead", _hoisted_1$1, [
     createElementVNode("tr", _hoisted_2, [
       _ctx.tableData.zeroColumn ? (openBlock(), createElementBlock("th", {
@@ -401,7 +353,7 @@ function _sfc_render$2(_ctx, _cache, $props, $setup, $data, $options) {
     ])
   ])) : createCommentVNode("", true);
 }
-const ATableHeader = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["render", _sfc_render$2], ["__scopeId", "data-v-80fa6b2a"]]);
+const ATableHeader = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["render", _sfc_render$1], ["__scopeId", "data-v-80fa6b2a"]]);
 const _sfc_main$1 = defineComponent({
   name: "ATableModal",
   props: {
@@ -426,7 +378,7 @@ const _sfc_main$1 = defineComponent({
   }
 });
 const ATableModal_vue_vue_type_style_index_0_scoped_33741903_lang = "";
-function _sfc_render$1(_ctx, _cache, $props, $setup, $data, $options) {
+function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return openBlock(), createElementBlock("div", {
     ref: "amodal",
     class: "amodal",
@@ -437,155 +389,156 @@ function _sfc_render$1(_ctx, _cache, $props, $setup, $data, $options) {
     renderSlot(_ctx.$slots, "default", {}, void 0, true)
   ], 544);
 }
-const ATableModal = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["render", _sfc_render$1], ["__scopeId", "data-v-33741903"]]);
-function useKeyboardNav(options) {
-  onMounted(() => {
-    for (const [event, config] of Object.entries(options.handlers)) {
-      if (config.default !== true) {
-        if (!config.listener) {
-          throw new Error(`Missing listener for event: '${event}'`);
-        }
-        const elements = [];
-        if (Array.isArray(options.elements.value)) {
-          for (const element of options.elements.value) {
-            if (element instanceof Element) {
-              elements.push(element);
-            } else {
-              elements.push(element.$el);
+const ATableModal = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["render", _sfc_render], ["__scopeId", "data-v-33741903"]]);
+const defaultEventMap = {
+  focus: {
+    listener: (event) => {
+      const target = event.target;
+      target.tabIndex = 0;
+    }
+  },
+  blur: {
+    listener: (event) => {
+      const target = event.target;
+      target.tabIndex = -1;
+    }
+  },
+  keydown: {
+    listener: (event) => {
+      var _a, _b;
+      const target = event.target;
+      if (event.key === "Tab") {
+        let $navCell;
+        if (event.shiftKey) {
+          const $prevCell = target.previousElementSibling;
+          if ($prevCell) {
+            $navCell = $prevCell;
+          } else {
+            const $prevRow = (_a = target.parentElement) == null ? void 0 : _a.previousElementSibling;
+            if ($prevRow) {
+              const $prevRowCells = Array.from($prevRow.children);
+              $prevRowCells.reverse();
+              $navCell = $prevRowCells[0];
             }
           }
         } else {
-          elements.push(options.elements.value);
+          const $nextCell = target.nextElementSibling;
+          if ($nextCell) {
+            $navCell = $nextCell;
+          } else {
+            const $nextRow = (_b = target.parentElement) == null ? void 0 : _b.nextElementSibling;
+            if ($nextRow) {
+              const $nextRowCells = Array.from($nextRow.children);
+              $navCell = $nextRowCells[0];
+            }
+          }
         }
-        for (const element of elements) {
-          element.addEventListener(event, config.listener, config.options);
+        if ($navCell) {
+          event.preventDefault();
+          event.stopPropagation();
+          $navCell.focus();
+        }
+      }
+    }
+  }
+};
+function useKeyboardNav(options) {
+  const getSelectors = (option) => {
+    let selectors = [];
+    if (typeof option.selectors === "string") {
+      selectors = Array.from(document.querySelectorAll(option.selectors));
+    } else if (option.selectors instanceof Element) {
+      selectors.push(option.selectors);
+    } else {
+      if (Array.isArray(option.selectors.value)) {
+        for (const element of option.selectors.value) {
+          if (element instanceof Element) {
+            selectors.push(element);
+          } else {
+            selectors.push(element.$el);
+          }
+        }
+      } else {
+        selectors.push(option.selectors.value);
+      }
+    }
+    return selectors;
+  };
+  const getEventListener = (event, config) => {
+    let eventListener, eventOptions;
+    if (config.default !== true) {
+      if (!config.listener) {
+        throw new Error(`Missing listener for event: '${event}'`);
+      }
+      eventListener = config.listener;
+      eventOptions = config.options;
+    } else {
+      const eventMap = defaultEventMap[event];
+      if (eventMap) {
+        if (!eventMap.listener) {
+          throw new Error(`Missing default event listener for event: '${event}'`);
+        }
+        eventListener = eventMap.listener;
+        eventOptions = eventMap.options;
+      } else {
+        throw new Error(`Missing default event map for event: '${event}'`);
+      }
+    }
+    return { eventListener, eventOptions };
+  };
+  onMounted(() => {
+    for (const option of options) {
+      const selectors = getSelectors(option);
+      if (selectors.length === 0) {
+        continue;
+      }
+      for (const [event, config] of Object.entries(option.handlers)) {
+        const { eventListener, eventOptions } = getEventListener(event, config);
+        for (const element of selectors) {
+          element.addEventListener(event, eventListener, eventOptions);
         }
       }
     }
   });
   onUnmounted(() => {
+    for (const option of options) {
+      const selectors = getSelectors(option);
+      if (selectors.length === 0) {
+        continue;
+      }
+      for (const [event, config] of Object.entries(option.handlers)) {
+        const { eventListener, eventOptions } = getEventListener(event, config);
+        for (const element of selectors) {
+          element.removeEventListener(event, eventListener, eventOptions);
+        }
+      }
+    }
   });
 }
-const _sfc_main = defineComponent({
-  name: "ATable",
-  components: {
-    ACell,
-    ARow,
-    ATableHeader,
-    ATableModal
-  },
+const _hoisted_1 = { class: "atable" };
+const _sfc_main = /* @__PURE__ */ defineComponent({
+  __name: "ATable",
   props: {
-    id: {
-      type: String
-    },
-    columns: {
-      type: Array,
-      required: true
-    },
-    rows: {
-      type: Array,
-      default: () => []
-    },
-    config: {
-      type: Object,
-      default: () => new Object()
-    },
-    tableid: {
-      type: String
-    }
+    id: null,
+    columns: null,
+    rows: { default: () => [] },
+    config: { default: () => new Object() },
+    tableid: null
   },
-  setup(props) {
+  setup(__props) {
+    const props = __props;
     let tableData = new TableDataStore(props.id, props.columns, props.rows, props.config);
     provide(tableData.id, tableData);
-    const cells = ref([]);
-    useKeyboardNav({
-      elements: cells,
-      handlers: {
-        keydown: {
-          listener: (event) => {
-            var _a, _b;
-            const target = event.target;
-            if (event.key === "Tab") {
-              event.preventDefault();
-              event.stopPropagation();
-              if (event.shiftKey) {
-                const $prevCell = target.previousElementSibling;
-                if ($prevCell && $prevCell.id !== "row-index") {
-                  $prevCell.focus();
-                } else {
-                  const $prevRow = (_a = target.parentElement) == null ? void 0 : _a.previousElementSibling;
-                  if ($prevRow) {
-                    const $prevRowCells = Array.from($prevRow.children);
-                    $prevRowCells.reverse();
-                    for (const $cell of $prevRowCells) {
-                      if ($cell.id !== "row-index") {
-                        $cell.focus();
-                        break;
-                      }
-                    }
-                  }
-                }
-              } else {
-                const $nextCell = target.nextElementSibling;
-                if ($nextCell) {
-                  $nextCell.focus();
-                } else {
-                  const $nextRow = (_b = target.parentElement) == null ? void 0 : _b.nextElementSibling;
-                  if ($nextRow) {
-                    const $nextRowCells = Array.from($nextRow.children);
-                    for (const $cell of $nextRowCells) {
-                      if ($cell.id !== "row-index") {
-                        $cell.focus();
-                        break;
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
+    useKeyboardNav([
+      {
+        selectors: "td",
+        handlers: {
+          focus: { default: true },
+          blur: { default: true },
+          keydown: { default: true }
         }
       }
-    });
-    const formatCell = (event, column, cellData) => {
-      let colIndex;
-      const target = event == null ? void 0 : event.target;
-      if (event) {
-        colIndex = target.cellIndex + (tableData.zeroColumn ? -1 : 0);
-      } else if (column && cellData) {
-        colIndex = tableData.columns.indexOf(column);
-      }
-      if (!column && "format" in tableData.columns[colIndex]) {
-        const format = tableData.columns[colIndex].format;
-        if (typeof format === "function") {
-          return format(target.innerHTML);
-        } else if (typeof format === "string") {
-          const formatFn = Function(`"use strict";return (${format})`)();
-          return formatFn(target.innerHTML);
-        } else {
-          return target.innerHTML;
-        }
-      } else if (cellData && "format" in column) {
-        const format = column.format;
-        if (typeof format === "function") {
-          return format(cellData);
-        } else if (typeof format === "string") {
-          const formatFn = Function(`"use strict";return (${format})`)();
-          return formatFn(cellData);
-        } else {
-          return cellData;
-        }
-      } else if (cellData && column.type.toLowerCase() in ["int", "decimal", "float", "number", "percent"]) {
-        return cellData;
-      } else {
-        return cellData;
-      }
-    };
-    const moveCursorToEnd = (target) => {
-      target.focus();
-      document.execCommand("selectAll", false, null);
-      document.getSelection().collapseToEnd();
-    };
+    ]);
     const clickOutside = (event) => {
       var _a;
       if (!((_a = tableData.modal.parent) == null ? void 0 : _a.contains(event.target))) {
@@ -595,96 +548,82 @@ const _sfc_main = defineComponent({
       }
     };
     window.addEventListener("click", clickOutside);
-    return {
-      cells,
-      formatCell,
-      moveCursorToEnd,
-      tableData,
-      v4
+    return (_ctx, _cache) => {
+      return openBlock(), createElementBlock("table", _hoisted_1, [
+        renderSlot(_ctx.$slots, "tableheader", {}, () => [
+          createVNode(ATableHeader, {
+            columns: unref(tableData).columns,
+            config: unref(tableData).config,
+            tableid: unref(tableData).id
+          }, null, 8, ["columns", "config", "tableid"])
+        ], true),
+        createElementVNode("tbody", null, [
+          (openBlock(true), createElementBlock(Fragment, null, renderList(unref(tableData).rows, (row, rowIndex) => {
+            return openBlock(), createBlock(_sfc_main$3, {
+              key: row.id || unref(v4)(),
+              row,
+              rowIndex,
+              tableid: unref(tableData).id
+            }, {
+              default: withCtx(() => [
+                (openBlock(true), createElementBlock(Fragment, null, renderList(unref(tableData).columns, (col, colIndex) => {
+                  var _a;
+                  return openBlock(), createBlock(ACell, {
+                    key: colIndex,
+                    tableid: unref(tableData).id,
+                    col,
+                    spellcheck: "false",
+                    rowIndex,
+                    colIndex: colIndex + (unref(tableData).zeroColumn ? 0 : -1),
+                    style: normalizeStyle({
+                      textAlign: ((_a = col == null ? void 0 : col.align) == null ? void 0 : _a.toLowerCase()) || "center",
+                      minWidth: (col == null ? void 0 : col.width) || "40ch"
+                    })
+                  }, null, 8, ["tableid", "col", "rowIndex", "colIndex", "style"]);
+                }), 128))
+              ]),
+              _: 2
+            }, 1032, ["row", "rowIndex", "tableid"]);
+          }), 128))
+        ]),
+        renderSlot(_ctx.$slots, "footer", {}, void 0, true),
+        withDirectives(createVNode(ATableModal, {
+          colIndex: unref(tableData).modal.colIndex,
+          rowIndex: unref(tableData).modal.rowIndex,
+          tableid: unref(tableData).id,
+          style: normalizeStyle({
+            left: unref(tableData).modal.left + "px",
+            top: unref(tableData).modal.top + "px",
+            maxWidth: unref(tableData).modal.width + "px"
+          })
+        }, {
+          default: withCtx(() => [
+            (openBlock(), createBlock(resolveDynamicComponent(unref(tableData).modal.component), {
+              colIndex: unref(tableData).modal.colIndex,
+              rowIndex: unref(tableData).modal.rowIndex,
+              tableid: unref(tableData).id
+            }, null, 8, ["colIndex", "rowIndex", "tableid"]))
+          ]),
+          _: 1
+        }, 8, ["colIndex", "rowIndex", "tableid", "style"]), [
+          [vShow, unref(tableData).modal.visible]
+        ])
+      ]);
     };
   }
 });
-const ATable_vue_vue_type_style_index_0_scoped_63b7d924_lang = "";
-const _hoisted_1 = { class: "atable" };
-function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
-  const _component_ATableHeader = resolveComponent("ATableHeader");
-  const _component_ACell = resolveComponent("ACell");
-  const _component_ARow = resolveComponent("ARow");
-  const _component_ATableModal = resolveComponent("ATableModal");
-  return openBlock(), createElementBlock("table", _hoisted_1, [
-    renderSlot(_ctx.$slots, "tableheader", {}, () => [
-      createVNode(_component_ATableHeader, {
-        columns: _ctx.tableData.columns,
-        config: _ctx.tableData.config,
-        tableid: _ctx.tableData.id
-      }, null, 8, ["columns", "config", "tableid"])
-    ], true),
-    createElementVNode("tbody", null, [
-      (openBlock(true), createElementBlock(Fragment, null, renderList(_ctx.tableData.rows, (row, rowIndex) => {
-        return openBlock(), createBlock(_component_ARow, {
-          key: row.id || _ctx.v4(),
-          row,
-          rowIndex,
-          tableid: _ctx.tableData.id
-        }, {
-          default: withCtx(() => [
-            (openBlock(true), createElementBlock(Fragment, null, renderList(_ctx.tableData.columns, (col, colIndex) => {
-              var _a;
-              return openBlock(), createBlock(_component_ACell, {
-                ref_for: true,
-                ref: "cells",
-                key: colIndex,
-                tableid: _ctx.tableData.id,
-                col,
-                spellcheck: "false",
-                rowIndex,
-                colIndex: colIndex + (_ctx.tableData.zeroColumn ? 0 : -1),
-                style: normalizeStyle({
-                  textAlign: ((_a = col == null ? void 0 : col.align) == null ? void 0 : _a.toLowerCase()) || "center",
-                  minWidth: (col == null ? void 0 : col.width) || "40ch"
-                })
-              }, null, 8, ["tableid", "col", "rowIndex", "colIndex", "style"]);
-            }), 128))
-          ]),
-          _: 2
-        }, 1032, ["row", "rowIndex", "tableid"]);
-      }), 128))
-    ]),
-    renderSlot(_ctx.$slots, "footer", {}, void 0, true),
-    withDirectives(createVNode(_component_ATableModal, {
-      colIndex: _ctx.tableData.modal.colIndex,
-      rowIndex: _ctx.tableData.modal.rowIndex,
-      tableid: _ctx.tableData.id,
-      style: normalizeStyle({
-        left: _ctx.tableData.modal.left + "px",
-        top: _ctx.tableData.modal.top + "px",
-        maxWidth: _ctx.tableData.modal.width + "px"
-      })
-    }, {
-      default: withCtx(() => [
-        (openBlock(), createBlock(resolveDynamicComponent(_ctx.tableData.modal.component), {
-          colIndex: _ctx.tableData.modal.colIndex,
-          rowIndex: _ctx.tableData.modal.rowIndex,
-          tableid: _ctx.tableData.id
-        }, null, 8, ["colIndex", "rowIndex", "tableid"]))
-      ]),
-      _: 1
-    }, 8, ["colIndex", "rowIndex", "tableid", "style"]), [
-      [vShow, _ctx.tableData.modal.visible]
-    ])
-  ]);
-}
-const ATable = /* @__PURE__ */ _export_sfc(_sfc_main, [["render", _sfc_render], ["__scopeId", "data-v-63b7d924"]]);
+const ATable_vue_vue_type_style_index_0_scoped_fa8a6b24_lang = "";
+const ATable = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-fa8a6b24"]]);
 function install(app) {
   app.component("ACell", ACell);
-  app.component("ARow", ARow);
+  app.component("ARow", _sfc_main$3);
   app.component("ATable", ATable);
   app.component("ATableHeader", ATableHeader);
   app.component("ATableModal", ATableModal);
 }
 export {
   ACell,
-  ARow,
+  _sfc_main$3 as ARow,
   ATable,
   ATableHeader,
   ATableModal,

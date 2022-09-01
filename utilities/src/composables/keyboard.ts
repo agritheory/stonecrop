@@ -1,40 +1,142 @@
 import { nextTick, onMounted, onUnmounted } from 'vue'
 
-import { KeyboardNavigationOptions } from 'types'
+import { KeyboardHandlerConfig, KeyboardNavigationOptions } from 'types'
 
-export function useKeyboardNav(options: KeyboardNavigationOptions) {
-	onMounted(() => {
-		for (const [event, config] of Object.entries(options.handlers)) {
-			if (config.default !== true) {
-				if (!config.listener) {
-					throw new Error(`Missing listener for event: '${event}'`)
-				}
-
-				const elements: Element[] = []
-				if (Array.isArray(options.elements.value)) {
-					for (const element of options.elements.value) {
-						if (element instanceof Element) {
-							elements.push(element)
-						} else {
-							// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-							elements.push(element.$el)
+const defaultEventMap = {
+	focus: {
+		listener: (event: FocusEvent) => {
+			const target = event.target as HTMLTableCellElement
+			target.tabIndex = 0
+		},
+	},
+	blur: {
+		listener: (event: FocusEvent) => {
+			const target = event.target as HTMLTableCellElement
+			target.tabIndex = -1
+		},
+	},
+	keydown: {
+		listener: (event: KeyboardEvent) => {
+			const target = event.target as HTMLTableCellElement
+			if (event.key === 'Tab') {
+				let $navCell: HTMLTableCellElement | undefined
+				if (event.shiftKey) {
+					const $prevCell = target.previousElementSibling as HTMLTableCellElement
+					if ($prevCell) {
+						$navCell = $prevCell
+					} else {
+						const $prevRow = target.parentElement?.previousElementSibling as HTMLTableRowElement
+						if ($prevRow) {
+							const $prevRowCells = Array.from($prevRow.children)
+							$prevRowCells.reverse()
+							$navCell = $prevRowCells[0] as HTMLTableCellElement
 						}
 					}
 				} else {
-					elements.push(options.elements.value)
+					const $nextCell = target.nextElementSibling as HTMLTableCellElement
+					if ($nextCell) {
+						$navCell = $nextCell
+					} else {
+						const $nextRow = target.parentElement?.nextElementSibling as HTMLTableRowElement
+						if ($nextRow) {
+							const $nextRowCells = Array.from($nextRow.children)
+							$navCell = $nextRowCells[0] as HTMLTableCellElement
+						}
+					}
 				}
 
-				for (const element of elements) {
-					element.addEventListener(event, config.listener, config.options)
+				if ($navCell) {
+					event.preventDefault()
+					event.stopPropagation()
+					$navCell.focus()
+				}
+			}
+		},
+	},
+}
+
+export function useKeyboardNav(options: KeyboardNavigationOptions[]) {
+	const getSelectors = (option: KeyboardNavigationOptions) => {
+		// generate a list of selector(s)
+		let selectors: Element[] = []
+		if (typeof option.selectors === 'string') {
+			selectors = Array.from(document.querySelectorAll(option.selectors))
+		} else if (option.selectors instanceof Element) {
+			selectors.push(option.selectors)
+		} else {
+			if (Array.isArray(option.selectors.value)) {
+				for (const element of option.selectors.value) {
+					if (element instanceof Element) {
+						selectors.push(element)
+					} else {
+						// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+						selectors.push(element.$el)
+					}
 				}
 			} else {
-				// TODO: add default event listeners
+				selectors.push(option.selectors.value)
+			}
+		}
+
+		return selectors
+	}
+
+	const getEventListener = (event: string, config: KeyboardHandlerConfig) => {
+		let eventListener: KeyboardHandlerConfig['listener'], eventOptions: KeyboardHandlerConfig['options']
+		if (config.default !== true) {
+			if (!config.listener) {
+				throw new Error(`Missing listener for event: '${event}'`)
+			}
+
+			eventListener = config.listener
+			eventOptions = config.options
+		} else {
+			const eventMap: KeyboardHandlerConfig | undefined = defaultEventMap[event]
+			if (eventMap) {
+				if (!eventMap.listener) {
+					throw new Error(`Missing default event listener for event: '${event}'`)
+				}
+
+				eventListener = eventMap.listener
+				eventOptions = eventMap.options
+			} else {
+				throw new Error(`Missing default event map for event: '${event}'`)
+			}
+		}
+
+		return { eventListener, eventOptions }
+	}
+
+	onMounted(() => {
+		for (const option of options) {
+			const selectors = getSelectors(option)
+			if (selectors.length === 0) {
+				continue
+			}
+
+			for (const [event, config] of Object.entries(option.handlers)) {
+				const { eventListener, eventOptions } = getEventListener(event, config)
+				for (const element of selectors) {
+					element.addEventListener(event, eventListener, eventOptions)
+				}
 			}
 		}
 	})
 
 	onUnmounted(() => {
-		// TODO: copy onMounted logic once it's ready
+		for (const option of options) {
+			const selectors = getSelectors(option)
+			if (selectors.length === 0) {
+				continue
+			}
+
+			for (const [event, config] of Object.entries(option.handlers)) {
+				const { eventListener, eventOptions } = getEventListener(event, config)
+				for (const element of selectors) {
+					element.removeEventListener(event, eventListener, eventOptions)
+				}
+			}
+		}
 	})
 }
 
