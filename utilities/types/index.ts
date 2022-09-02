@@ -11,6 +11,6 @@ export type KeyboardHandlerOptions = {
 }
 
 export type KeyboardNavigationOptions = {
-	selectors: keyof HTMLElementTagNameMap | Element | Ref<Element> | Ref<Element[]> | Ref<ComponentPublicInstance[]>
+	selectors: string | Element | Ref<Element> | Ref<Element[]> | Ref<ComponentPublicInstance[]>
 	handlers: KeyboardHandlerOptions
 }

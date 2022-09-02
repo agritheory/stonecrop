@@ -1,8 +1,8 @@
 import { nextTick, onMounted, onUnmounted } from 'vue'
 
-import { KeyboardHandlerConfig, KeyboardNavigationOptions } from 'types'
+import { KeyboardHandlerConfig, KeyboardHandlerOptions, KeyboardNavigationOptions } from 'types'
 
-const defaultEventMap = {
+const defaultEventMap: KeyboardHandlerOptions = {
 	focus: {
 		listener: (event: FocusEvent) => {
 			const target = event.target as HTMLTableCellElement
@@ -18,6 +18,8 @@ const defaultEventMap = {
 	keydown: {
 		listener: (event: KeyboardEvent) => {
 			const target = event.target as HTMLTableCellElement
+
+			// handle tab navigation
 			if (event.key === 'Tab') {
 				let $navCell: HTMLTableCellElement | undefined
 				if (event.shiftKey) {
@@ -42,6 +44,46 @@ const defaultEventMap = {
 							const $nextRowCells = Array.from($nextRow.children)
 							$navCell = $nextRowCells[0] as HTMLTableCellElement
 						}
+					}
+				}
+
+				if ($navCell) {
+					event.preventDefault()
+					event.stopPropagation()
+					$navCell.focus()
+				}
+			}
+
+			// handle arrow navigation
+			if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
+				let $navCell: HTMLTableCellElement | undefined
+				if (event.key === 'ArrowUp') {
+					const $prevRow = target.parentElement?.previousElementSibling as HTMLTableRowElement
+					if ($prevRow) {
+						const $prevRowCells = Array.from($prevRow.children)
+						const $prevCell = $prevRowCells[target.cellIndex]
+						if ($prevCell) {
+							$navCell = $prevCell as HTMLTableCellElement
+						}
+					}
+				} else if (event.key === 'ArrowDown') {
+					const $nextRow = target.parentElement?.nextElementSibling as HTMLTableRowElement
+					if ($nextRow) {
+						const $nextRowCells = Array.from($nextRow.children)
+						const $nextCell = $nextRowCells[target.cellIndex]
+						if ($nextCell) {
+							$navCell = $nextCell as HTMLTableCellElement
+						}
+					}
+				} else if (event.key === 'ArrowLeft') {
+					const $prevCell = target.previousElementSibling as HTMLTableCellElement
+					if ($prevCell) {
+						$navCell = $prevCell
+					}
+				} else if (event.key === 'ArrowRight') {
+					const $nextCell = target.nextElementSibling as HTMLTableCellElement
+					if ($nextCell) {
+						$navCell = $nextCell
 					}
 				}
 

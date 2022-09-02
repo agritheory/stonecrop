@@ -17,7 +17,7 @@
     },
     keydown: {
       listener: (event) => {
-        var _a, _b;
+        var _a, _b, _c, _d;
         const target = event.target;
         if (event.key === "Tab") {
           let $navCell;
@@ -43,6 +43,43 @@
                 const $nextRowCells = Array.from($nextRow.children);
                 $navCell = $nextRowCells[0];
               }
+            }
+          }
+          if ($navCell) {
+            event.preventDefault();
+            event.stopPropagation();
+            $navCell.focus();
+          }
+        }
+        if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.key)) {
+          let $navCell;
+          if (event.key === "ArrowUp") {
+            const $prevRow = (_c = target.parentElement) == null ? void 0 : _c.previousElementSibling;
+            if ($prevRow) {
+              const $prevRowCells = Array.from($prevRow.children);
+              const $prevCell = $prevRowCells[target.cellIndex];
+              if ($prevCell) {
+                $navCell = $prevCell;
+              }
+            }
+          } else if (event.key === "ArrowDown") {
+            const $nextRow = (_d = target.parentElement) == null ? void 0 : _d.nextElementSibling;
+            if ($nextRow) {
+              const $nextRowCells = Array.from($nextRow.children);
+              const $nextCell = $nextRowCells[target.cellIndex];
+              if ($nextCell) {
+                $navCell = $nextCell;
+              }
+            }
+          } else if (event.key === "ArrowLeft") {
+            const $prevCell = target.previousElementSibling;
+            if ($prevCell) {
+              $navCell = $prevCell;
+            }
+          } else if (event.key === "ArrowRight") {
+            const $nextCell = target.nextElementSibling;
+            if ($nextCell) {
+              $navCell = $nextCell;
             }
           }
           if ($navCell) {
