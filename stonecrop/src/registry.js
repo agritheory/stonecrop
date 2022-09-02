@@ -1,26 +1,27 @@
 import Records from '@/components/Records.vue'
 import Doctype from '@/components/Doctype.vue'
 
-export class Registry {
-	constructor(schemaLoader, router) {
+export default class Registry {
+	constructor(router, schemaLoader = undefined) {
+		// type: Vue router, function or undefined
 		// singleton
 		if (Registry._root) {
 			return Registry._root
 		}
 		Registry._root = this
 		this.name = 'Registry'
-		this.schemaLoader = schemaLoader
 		this.router = router
+		this.schemaLoader = schemaLoader
 	}
 	loadDoctypeSchema(doctype) {
-		// doctype class
+		// type: doctype class
 		if (doctype.schemaLoader) {
 			return doctype.schemaLoader()
 		}
 		return this.schemaLoader(doctype.doctype)
 	}
 	addDoctype(doctype) {
-		// Doctype class
+		// type: Doctype class
 		if (!doctype.doctype in this) {
 			doctype.registry = this
 			this[doctype.doctype] = doctype

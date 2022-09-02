@@ -6482,12 +6482,16 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
   }
 });
 const routes = [
-  { path: "/", component: _sfc_main }
+  { path: "/", component: _sfc_main },
+  { path: "/:doctype", component: loadDoctypeSchema }
 ];
 const router = createRouter({
   history: createWebHashHistory(),
   routes
 });
+const loadDoctypeSchema = () => {
+  Promise.resolve({});
+};
 const Stonecrop = {
   install(app, options) {
     app.use(router);

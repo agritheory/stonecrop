@@ -1,4 +1,4 @@
-export class Doctype {
+export default class Doctype {
 	constructor(doctype, schema, events, hooks, component = undefined, recordsComponent = undefined) {
 		this.doctype = doctype // string
 		this.schema = schema

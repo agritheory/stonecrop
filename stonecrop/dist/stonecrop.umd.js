@@ -6485,12 +6485,16 @@ ${JSON.stringify(newTargetLocation, null, 2)}
     }
   });
   const routes = [
-    { path: "/", component: _sfc_main }
+    { path: "/", component: _sfc_main },
+    { path: "/:doctype", component: loadDoctypeSchema }
   ];
   const router = createRouter({
     history: createWebHashHistory(),
     routes
   });
+  const loadDoctypeSchema = () => {
+    Promise.resolve({});
+  };
   const Stonecrop = {
     install(app, options) {
       app.use(router);
