@@ -30,14 +30,6 @@
 							: 'none',
 					}"
 					@click.prevent.stop="selectDate($event, (rowNo - 1) * numberOfColumns + colNo)"
-					@keydown.enter="enterNav"
-					@keydown.tab="tabNav"
-					@keydown.end="endNav"
-					@keydown.home="homeNav"
-					@keydown.down="downArrowNav"
-					@keydown.up="upArrowNav"
-					@keydown.left="leftArrowNav"
-					@keydown.right="rightArrowNav"
 					:class="{
 						todaysdate: today(currentDates[(rowNo - 1) * numberOfColumns + colNo]),
 						selecteddate: isSelectedDate(currentDates[(rowNo - 1) * numberOfColumns + colNo]),
@@ -49,178 +41,133 @@
 	</div>
 </template>
 
-<script lang="ts">
-import { computed, CSSProperties, defineComponent, inject, onMounted, ref, watch } from 'vue'
+<script setup lang="ts">
+import { computed, inject, onMounted, ref, watch } from 'vue'
 
 import { TableDataStore } from '@sedum/atable'
 import { useKeyboardNav } from '@sedum/utilities'
 
-export default defineComponent({
-	name: 'ADate',
-	// components: { ATableModal },
-	props: {
-		colIndex: {
-			type: Number,
-			default: 0,
-		},
-		rowIndex: {
-			type: Number,
-			default: 0,
-		},
-		tableid: {
-			type: String,
-		},
-		event: {
-			type: Event,
-		},
-		indent: {
-			type: Number,
-			default: 0,
+const props = defineProps<{
+	colIndex?: number
+	rowIndex?: number
+	tableid?: string
+	event?: Event
+	indent?: number
+}>()
+
+const tableData = inject<TableDataStore>(props.tableid)
+
+useKeyboardNav([
+	{
+		selectors: 'td',
+		handlers: {
+			focus: { default: true },
+			blur: { default: true },
+			keydown: { default: true },
 		},
 	},
-	setup(props /* context */) {
-		const tableData = inject<TableDataStore>(props.tableid)
+])
 
-		// TODO: (state) figure out how to pass table data to nav composable
-		const { enterNav, tabNav, endNav, homeNav, downArrowNav, upArrowNav, leftArrowNav, rightArrowNav } =
-			useKeyboardNav(tableData)
+const numberOfRows = 6
+const numberOfColumns = 7
 
-		const numberOfRows = 6
-		const numberOfColumns = 7
+const todaysDate = new Date()
+let currentMonth = ref(todaysDate.getMonth())
+let currentYear = ref(todaysDate.getFullYear())
 
-		const todaysDate = new Date()
-		let currentMonth = ref(todaysDate.getMonth())
-		let currentYear = ref(todaysDate.getFullYear())
+let selectedDate = ref(tableData.cellData<string | number | Date>(props.colIndex, props.rowIndex))
+let currentDates = ref<number[]>([])
+let width = ref('')
 
-		let selectedDate = ref(tableData.cellData<string | number | Date>(props.colIndex, props.rowIndex))
-		let currentDates = ref<number[]>([])
-		let width = ref('')
+onMounted(() => {
+	renderMonth()
+})
 
-		const renderMonth = () => {
-			const firstOfMonth = new Date(currentYear.value, currentMonth.value, 1)
-			const monthStartWeekday = firstOfMonth.getDay()
-			const calendarStartDay = firstOfMonth.setDate(firstOfMonth.getDate() - monthStartWeekday)
-			for (let i of Array(43).keys()) {
-				currentDates.value.push(calendarStartDay + i * 84000000)
-			}
-		}
+watch(currentMonth, () => {
+	currentDates.value = []
+	renderMonth()
+})
 
-		const handlePageDown = (event: KeyboardEvent) => {
-			event.shiftKey ? previousYear() : previousMonth()
-		}
+watch(currentYear, () => {
+	currentDates.value = []
+	renderMonth()
+})
 
-		const handlePageUp = (event: KeyboardEvent) => {
-			event.shiftKey ? nextYear() : nextMonth()
-		}
+const renderMonth = () => {
+	const firstOfMonth = new Date(currentYear.value, currentMonth.value, 1)
+	const monthStartWeekday = firstOfMonth.getDay()
+	const calendarStartDay = firstOfMonth.setDate(firstOfMonth.getDate() - monthStartWeekday)
+	for (let i of Array(43).keys()) {
+		currentDates.value.push(calendarStartDay + i * 84000000)
+	}
+}
 
-		const previousYear = () => {
-			currentYear.value -= 1
-		}
+const handlePageDown = (event: KeyboardEvent) => {
+	event.shiftKey ? previousYear() : previousMonth()
+}
 
-		const nextYear = () => {
-			currentYear.value += 1
-		}
+const handlePageUp = (event: KeyboardEvent) => {
+	event.shiftKey ? nextYear() : nextMonth()
+}
 
-		const previousMonth = () => {
-			if (currentMonth.value == 0) {
-				currentMonth.value = 11
-				currentYear.value -= 1
-			} else {
-				currentMonth.value -= 1
-			}
-		}
+const previousYear = () => {
+	currentYear.value -= 1
+}
 
-		const nextMonth = () => {
-			if (currentMonth.value == 11) {
-				currentMonth.value = 0
-				currentYear.value += 1
-			} else {
-				currentMonth.value += 1
-			}
-		}
+const nextYear = () => {
+	currentYear.value += 1
+}
 
-		const today = (day: string | number | Date) => {
-			if (currentMonth.value !== todaysDate.getMonth()) {
-				return
-			}
-			return todaysDate.toDateString() === new Date(day).toDateString()
-		}
+const previousMonth = () => {
+	if (currentMonth.value == 0) {
+		currentMonth.value = 11
+		currentYear.value -= 1
+	} else {
+		currentMonth.value -= 1
+	}
+}
 
-		const isSelectedDate = (day: string | number | Date) => {
-			return new Date(day).toDateString() === new Date(selectedDate.value).toDateString()
-		}
+const nextMonth = () => {
+	if (currentMonth.value == 11) {
+		currentMonth.value = 0
+		currentYear.value += 1
+	} else {
+		currentMonth.value += 1
+	}
+}
 
-		const selectDate = (event: Event, currentIndex: number) => {
-			selectedDate.value = currentDates.value[currentIndex]
-			updateData()
-			// TODO: (typing) figure out a way to close datepicker
-			// context.refs.adatepicker.destroy()
-		}
+const today = (day: string | number | Date) => {
+	if (currentMonth.value !== todaysDate.getMonth()) {
+		return
+	}
+	return todaysDate.toDateString() === new Date(day).toDateString()
+}
 
-		const updateData = () => {
-			tableData.setCellData(props.rowIndex, props.colIndex, selectedDate.value)
-		}
+const isSelectedDate = (day: string | number | Date) => {
+	return new Date(day).toDateString() === new Date(selectedDate.value).toDateString()
+}
 
-		onMounted(() => {
-			renderMonth()
-		})
+const selectDate = (event: Event, currentIndex: number) => {
+	selectedDate.value = currentDates.value[currentIndex]
+	updateData()
+	// TODO: (typing) figure out a way to close datepicker
+	// context.refs.adatepicker.destroy()
+}
 
-		const dayWidth = computed(() => {
-			const widthValue = Number(width.value.replace('px', ''))
-			return `${widthValue / (numberOfColumns - 1)}px`
-		})
+const updateData = () => {
+	tableData.setCellData(props.rowIndex, props.colIndex, selectedDate.value)
+}
 
-		const monthAndYear = computed(() => {
-			return new Date(currentYear.value, currentMonth.value, 1).toLocaleDateString(undefined, {
-				year: 'numeric',
-				month: 'long',
-			})
-		})
+const dayWidth = computed(() => {
+	const widthValue = Number(width.value.replace('px', ''))
+	return `${widthValue / (numberOfColumns - 1)}px`
+})
 
-		const cellStyle: CSSProperties = {
-			border: '2px solid var(--focus-cell-outline)',
-		}
-
-		watch(currentMonth, () => {
-			currentDates.value = []
-			renderMonth()
-		})
-
-		watch(currentYear, () => {
-			currentDates.value = []
-			renderMonth()
-		})
-
-		return {
-			cellStyle,
-			currentDates,
-			currentMonth,
-			currentYear,
-			dayWidth,
-			downArrowNav,
-			endNav,
-			enterNav,
-			handlePageDown,
-			handlePageUp,
-			homeNav,
-			isSelectedDate,
-			leftArrowNav,
-			monthAndYear,
-			nextMonth,
-			numberOfColumns,
-			numberOfRows,
-			previousMonth,
-			rightArrowNav,
-			selectDate,
-			selectedDate,
-			tableData,
-			tabNav,
-			today,
-			upArrowNav,
-			updateData,
-			width,
-		}
-	},
+const monthAndYear = computed(() => {
+	return new Date(currentYear.value, currentMonth.value, 1).toLocaleDateString(undefined, {
+		year: 'numeric',
+		month: 'long',
+	})
 })
 </script>
 

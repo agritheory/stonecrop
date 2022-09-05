@@ -29,7 +29,7 @@ const props = defineProps<{
 }>()
 
 const tableData = inject<TableDataStore>(props.tableid)
-const cell = ref<HTMLTableCellElement>('')
+const cell = ref<HTMLTableCellElement>(null)
 
 let cellModified = ref(false)
 const displayValue = computed(() => {
@@ -96,7 +96,7 @@ const onFocus = () => {
 }
 
 const onChange = () => {
-	if (cell.value.innerHTML !== currentData) {
+	if (cell.value && cell.value.innerHTML !== currentData) {
 		currentData = cell.value.innerText
 		cell.value.dispatchEvent(new Event('change'))
 		cellModified.value = true // set display instead
