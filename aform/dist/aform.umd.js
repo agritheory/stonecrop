@@ -123,22 +123,34 @@
   };
   function useKeyboardNav(options) {
     const getSelectors = (option) => {
-      let selectors = [];
-      if (typeof option.selectors === "string") {
-        selectors = Array.from(document.querySelectorAll(option.selectors));
-      } else if (option.selectors instanceof Element) {
-        selectors.push(option.selectors);
-      } else {
-        if (Array.isArray(option.selectors.value)) {
-          for (const element of option.selectors.value) {
-            if (element instanceof Element) {
-              selectors.push(element);
-            } else {
-              selectors.push(element.$el);
-            }
-          }
+      let $parent = null;
+      if (option.parent) {
+        if (typeof option.parent === "string") {
+          $parent = document.querySelector(option.parent);
+        } else if (option.parent instanceof Element) {
+          $parent = option.parent;
         } else {
-          selectors.push(option.selectors.value);
+          $parent = option.parent.value;
+        }
+      }
+      let selectors = [];
+      if (option.selectors) {
+        if (typeof option.selectors === "string") {
+          selectors = $parent ? Array.from($parent.querySelectorAll(option.selectors)) : Array.from(document.querySelectorAll(option.selectors));
+        } else if (option.selectors instanceof Element) {
+          selectors.push(option.selectors);
+        } else {
+          if (Array.isArray(option.selectors.value)) {
+            for (const element of option.selectors.value) {
+              if (element instanceof Element) {
+                selectors.push(element);
+              } else {
+                selectors.push(element.$el);
+              }
+            }
+          } else {
+            selectors.push(option.selectors.value);
+          }
         }
       }
       return selectors;
@@ -243,8 +255,8 @@
         const firstOfMonth = new Date(currentYear.value, currentMonth.value, 1);
         const monthStartWeekday = firstOfMonth.getDay();
         const calendarStartDay = firstOfMonth.setDate(firstOfMonth.getDate() - monthStartWeekday);
-        for (let i of Array(43).keys()) {
-          currentDates.value.push(calendarStartDay + i * 84e6);
+        for (let dayIndex of Array(43).keys()) {
+          currentDates.value.push(calendarStartDay + dayIndex * 864e5);
         }
       };
       const handlePageDown = (event) => {
@@ -354,8 +366,8 @@
       };
     }
   });
-  const ADate_vue_vue_type_style_index_0_scoped_1c930b47_lang = "";
-  const ADate = /* @__PURE__ */ _export_sfc(_sfc_main$5, [["__scopeId", "data-v-1c930b47"]]);
+  const ADate_vue_vue_type_style_index_0_scoped_2a73e6c5_lang = "";
+  const ADate = /* @__PURE__ */ _export_sfc(_sfc_main$5, [["__scopeId", "data-v-2a73e6c5"]]);
   const _sfc_main$4 = vue.defineComponent({
     name: "AForm",
     props: {

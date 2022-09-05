@@ -97,8 +97,8 @@ const renderMonth = () => {
 	const firstOfMonth = new Date(currentYear.value, currentMonth.value, 1)
 	const monthStartWeekday = firstOfMonth.getDay()
 	const calendarStartDay = firstOfMonth.setDate(firstOfMonth.getDate() - monthStartWeekday)
-	for (let i of Array(43).keys()) {
-		currentDates.value.push(calendarStartDay + i * 84000000)
+	for (let dayIndex of Array(43).keys()) {
+		currentDates.value.push(calendarStartDay + dayIndex * 86400000)
 	}
 }
 

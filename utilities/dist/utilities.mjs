@@ -90,22 +90,34 @@ const defaultEventMap = {
 };
 function useKeyboardNav(options) {
   const getSelectors = (option) => {
-    let selectors = [];
-    if (typeof option.selectors === "string") {
-      selectors = Array.from(document.querySelectorAll(option.selectors));
-    } else if (option.selectors instanceof Element) {
-      selectors.push(option.selectors);
-    } else {
-      if (Array.isArray(option.selectors.value)) {
-        for (const element of option.selectors.value) {
-          if (element instanceof Element) {
-            selectors.push(element);
-          } else {
-            selectors.push(element.$el);
-          }
-        }
+    let $parent = null;
+    if (option.parent) {
+      if (typeof option.parent === "string") {
+        $parent = document.querySelector(option.parent);
+      } else if (option.parent instanceof Element) {
+        $parent = option.parent;
       } else {
-        selectors.push(option.selectors.value);
+        $parent = option.parent.value;
+      }
+    }
+    let selectors = [];
+    if (option.selectors) {
+      if (typeof option.selectors === "string") {
+        selectors = $parent ? Array.from($parent.querySelectorAll(option.selectors)) : Array.from(document.querySelectorAll(option.selectors));
+      } else if (option.selectors instanceof Element) {
+        selectors.push(option.selectors);
+      } else {
+        if (Array.isArray(option.selectors.value)) {
+          for (const element of option.selectors.value) {
+            if (element instanceof Element) {
+              selectors.push(element);
+            } else {
+              selectors.push(element.$el);
+            }
+          }
+        } else {
+          selectors.push(option.selectors.value);
+        }
       }
     }
     return selectors;

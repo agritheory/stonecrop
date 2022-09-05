@@ -99,25 +99,43 @@ const defaultEventMap: KeyboardHandlerOptions = {
 
 export function useKeyboardNav(options: KeyboardNavigationOptions[]) {
 	const getSelectors = (option: KeyboardNavigationOptions) => {
+		// get parent element
+		let $parent: Element | null = null
+		if (option.parent) {
+			if (typeof option.parent === 'string') {
+				$parent = document.querySelector(option.parent)
+			} else if (option.parent instanceof Element) {
+				$parent = option.parent
+			} else {
+				$parent = option.parent.value
+			}
+		}
+
 		// generate a list of selector(s)
 		let selectors: Element[] = []
-		if (typeof option.selectors === 'string') {
-			selectors = Array.from(document.querySelectorAll(option.selectors))
-		} else if (option.selectors instanceof Element) {
-			selectors.push(option.selectors)
-		} else {
-			if (Array.isArray(option.selectors.value)) {
-				for (const element of option.selectors.value) {
-					if (element instanceof Element) {
-						selectors.push(element)
-					} else {
-						// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-						selectors.push(element.$el)
-					}
-				}
+
+		if (option.selectors) {
+			if (typeof option.selectors === 'string') {
+				selectors = $parent
+					? Array.from($parent.querySelectorAll(option.selectors))
+					: Array.from(document.querySelectorAll(option.selectors))
+			} else if (option.selectors instanceof Element) {
+				selectors.push(option.selectors)
 			} else {
-				selectors.push(option.selectors.value)
+				if (Array.isArray(option.selectors.value)) {
+					for (const element of option.selectors.value) {
+						if (element instanceof Element) {
+							selectors.push(element)
+						} else {
+							selectors.push(element.$el as Element)
+						}
+					}
+				} else {
+					selectors.push(option.selectors.value)
+				}
 			}
+		} else {
+			// TODO: get all visible elements under parent DOM tree
 		}
 
 		return selectors

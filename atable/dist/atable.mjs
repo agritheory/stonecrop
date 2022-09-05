@@ -11,7 +11,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     var _a;
     const props = __props;
     const tableData = inject(props.tableid);
-    const cell = ref("");
+    const cell = ref(null);
     let cellModified = ref(false);
     const displayValue = computed(() => {
       const data = tableData.cellData(props.colIndex, props.rowIndex);
@@ -57,7 +57,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
       currentData = cell.value.innerText;
     };
     const onChange = () => {
-      if (cell.value.innerHTML !== currentData) {
+      if (cell.value && cell.value.innerHTML !== currentData) {
         currentData = cell.value.innerText;
         cell.value.dispatchEvent(new Event("change"));
         cellModified.value = true;
@@ -97,7 +97,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ACell_vue_vue_type_style_index_0_scoped_9d92b651_lang = "";
+const ACell_vue_vue_type_style_index_0_scoped_d81f86b2_lang = "";
 const _export_sfc = (sfc, props) => {
   const target = sfc.__vccOpts || sfc;
   for (const [key, val] of props) {
@@ -105,7 +105,7 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const ACell = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-9d92b651"]]);
+const ACell = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-d81f86b2"]]);
 const _sfc_main$3 = /* @__PURE__ */ defineComponent({
   __name: "ARow",
   props: {
@@ -481,22 +481,34 @@ const defaultEventMap = {
 };
 function useKeyboardNav(options) {
   const getSelectors = (option) => {
-    let selectors = [];
-    if (typeof option.selectors === "string") {
-      selectors = Array.from(document.querySelectorAll(option.selectors));
-    } else if (option.selectors instanceof Element) {
-      selectors.push(option.selectors);
-    } else {
-      if (Array.isArray(option.selectors.value)) {
-        for (const element of option.selectors.value) {
-          if (element instanceof Element) {
-            selectors.push(element);
-          } else {
-            selectors.push(element.$el);
-          }
-        }
+    let $parent = null;
+    if (option.parent) {
+      if (typeof option.parent === "string") {
+        $parent = document.querySelector(option.parent);
+      } else if (option.parent instanceof Element) {
+        $parent = option.parent;
       } else {
-        selectors.push(option.selectors.value);
+        $parent = option.parent.value;
+      }
+    }
+    let selectors = [];
+    if (option.selectors) {
+      if (typeof option.selectors === "string") {
+        selectors = $parent ? Array.from($parent.querySelectorAll(option.selectors)) : Array.from(document.querySelectorAll(option.selectors));
+      } else if (option.selectors instanceof Element) {
+        selectors.push(option.selectors);
+      } else {
+        if (Array.isArray(option.selectors.value)) {
+          for (const element of option.selectors.value) {
+            if (element instanceof Element) {
+              selectors.push(element);
+            } else {
+              selectors.push(element.$el);
+            }
+          }
+        } else {
+          selectors.push(option.selectors.value);
+        }
       }
     }
     return selectors;
