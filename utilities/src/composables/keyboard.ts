@@ -1,97 +1,165 @@
 import { onMounted, onUnmounted } from 'vue'
 
-import { KeyboardHandlerConfig, KeyboardHandlerOptions, KeyboardNavigationOptions } from 'types'
+import { KeyboardHandlerConfig, KeyboardHandlerOptions, KeyboardNavigationOptions, KeypressHandlers } from 'types'
 
-const defaultEventMap: KeyboardHandlerOptions = {
+export const defaultKeyboardEvents: KeypressHandlers = {
+	ArrowUp: (event: KeyboardEvent) => {
+		const target = event.target as HTMLElement
+
+		let $navCell: HTMLElement | undefined
+		if (target instanceof HTMLTableCellElement) {
+			const $prevRow = target.parentElement?.previousElementSibling
+			if ($prevRow) {
+				const $prevRowCells = Array.from($prevRow.children)
+				const $prevCell = $prevRowCells[target.cellIndex] as HTMLElement
+				if ($prevCell) {
+					$navCell = $prevCell
+				}
+			}
+		} else {
+			// TODO: handle other contexts
+		}
+
+		if ($navCell) {
+			event.preventDefault()
+			event.stopPropagation()
+			$navCell.focus()
+		}
+	},
+	ArrowDown: (event: KeyboardEvent) => {
+		const target = event.target as HTMLElement
+
+		let $navCell: HTMLElement | undefined
+		if (target instanceof HTMLTableCellElement) {
+			const $nextRow = target.parentElement?.nextElementSibling
+			if ($nextRow) {
+				const $nextRowCells = Array.from($nextRow.children)
+				const $nextCell = $nextRowCells[target.cellIndex] as HTMLElement
+				if ($nextCell) {
+					$navCell = $nextCell
+				}
+			}
+		} else {
+			// TODO: handle other contexts
+		}
+
+		if ($navCell) {
+			event.preventDefault()
+			event.stopPropagation()
+			$navCell.focus()
+		}
+	},
+	ArrowLeft: (event: KeyboardEvent) => {
+		const target = event.target as HTMLElement
+		const $prevCell = target.previousElementSibling as HTMLElement
+		if ($prevCell) {
+			event.preventDefault()
+			event.stopPropagation()
+			$prevCell.focus()
+		}
+	},
+	ArrowRight: (event: KeyboardEvent) => {
+		const target = event.target as HTMLElement
+		const $nextCell = target.nextElementSibling as HTMLElement
+		if ($nextCell) {
+			event.preventDefault()
+			event.stopPropagation()
+			$nextCell.focus()
+		}
+	},
+	End: (event: KeyboardEvent) => {
+		const target = event.target as HTMLElement
+		const $parent = target.parentElement
+		const $navCell = $parent.lastElementChild as HTMLElement | null
+		if ($navCell) {
+			event.preventDefault()
+			event.stopPropagation()
+			$navCell.focus()
+		}
+	},
+	Enter: (event: KeyboardEvent) => {
+		const target = event.target as HTMLElement
+		if (target instanceof HTMLTableCellElement) {
+			if (event.shiftKey) {
+				const handler = defaultKeyboardEvents['ArrowUp']
+				if (handler) {
+					handler(event)
+				}
+			} else {
+				const handler = defaultKeyboardEvents['ArrowDown']
+				if (handler) {
+					handler(event)
+				}
+			}
+		} else {
+			// TODO: handle other contexts
+		}
+	},
+	Home: (event: KeyboardEvent) => {
+		const target = event.target as HTMLElement
+		const $parent = target.parentElement
+		const $navCell = $parent.firstElementChild as HTMLElement | null
+		if ($navCell) {
+			event.preventDefault()
+			event.stopPropagation()
+			$navCell.focus()
+		}
+	},
+	Tab: (event: KeyboardEvent) => {
+		const target = event.target as HTMLElement
+
+		let $navCell: HTMLElement | undefined
+		if (event.shiftKey) {
+			const $prevCell = target.previousElementSibling as HTMLElement
+			if ($prevCell) {
+				$navCell = $prevCell
+			} else {
+				const $prevRow = target.parentElement?.previousElementSibling
+				if ($prevRow) {
+					const $prevRowCells = Array.from($prevRow.children)
+					$prevRowCells.reverse()
+					$navCell = $prevRowCells[0] as HTMLElement
+				}
+			}
+		} else {
+			const $nextCell = target.nextElementSibling as HTMLElement
+			if ($nextCell) {
+				$navCell = $nextCell
+			} else {
+				const $nextRow = target.parentElement?.nextElementSibling
+				if ($nextRow) {
+					const $nextRowCells = Array.from($nextRow.children)
+					$navCell = $nextRowCells[0] as HTMLElement
+				}
+			}
+		}
+
+		if ($navCell) {
+			event.preventDefault()
+			event.stopPropagation()
+			$navCell.focus()
+		}
+	},
+}
+
+export const defaultEventMap: KeyboardHandlerOptions = {
 	focus: {
 		listener: (event: FocusEvent) => {
-			const target = event.target as HTMLTableCellElement
+			const target = event.target as HTMLElement
 			target.tabIndex = 0
 		},
 	},
 	blur: {
 		listener: (event: FocusEvent) => {
-			const target = event.target as HTMLTableCellElement
+			const target = event.target as HTMLElement
 			target.tabIndex = -1
 		},
 	},
 	keydown: {
 		listener: (event: KeyboardEvent) => {
-			const target = event.target as HTMLTableCellElement
-
-			// handle tab navigation
-			if (event.key === 'Tab') {
-				let $navCell: HTMLTableCellElement | undefined
-				if (event.shiftKey) {
-					const $prevCell = target.previousElementSibling as HTMLTableCellElement
-					if ($prevCell) {
-						$navCell = $prevCell
-					} else {
-						const $prevRow = target.parentElement?.previousElementSibling as HTMLTableRowElement
-						if ($prevRow) {
-							const $prevRowCells = Array.from($prevRow.children)
-							$prevRowCells.reverse()
-							$navCell = $prevRowCells[0] as HTMLTableCellElement
-						}
-					}
-				} else {
-					const $nextCell = target.nextElementSibling as HTMLTableCellElement
-					if ($nextCell) {
-						$navCell = $nextCell
-					} else {
-						const $nextRow = target.parentElement?.nextElementSibling as HTMLTableRowElement
-						if ($nextRow) {
-							const $nextRowCells = Array.from($nextRow.children)
-							$navCell = $nextRowCells[0] as HTMLTableCellElement
-						}
-					}
-				}
-
-				if ($navCell) {
-					event.preventDefault()
-					event.stopPropagation()
-					$navCell.focus()
-				}
-			}
-
-			// handle arrow navigation
-			if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
-				let $navCell: HTMLTableCellElement | undefined
-				if (event.key === 'ArrowUp') {
-					const $prevRow = target.parentElement?.previousElementSibling as HTMLTableRowElement
-					if ($prevRow) {
-						const $prevRowCells = Array.from($prevRow.children)
-						const $prevCell = $prevRowCells[target.cellIndex]
-						if ($prevCell) {
-							$navCell = $prevCell as HTMLTableCellElement
-						}
-					}
-				} else if (event.key === 'ArrowDown') {
-					const $nextRow = target.parentElement?.nextElementSibling as HTMLTableRowElement
-					if ($nextRow) {
-						const $nextRowCells = Array.from($nextRow.children)
-						const $nextCell = $nextRowCells[target.cellIndex]
-						if ($nextCell) {
-							$navCell = $nextCell as HTMLTableCellElement
-						}
-					}
-				} else if (event.key === 'ArrowLeft') {
-					const $prevCell = target.previousElementSibling as HTMLTableCellElement
-					if ($prevCell) {
-						$navCell = $prevCell
-					}
-				} else if (event.key === 'ArrowRight') {
-					const $nextCell = target.nextElementSibling as HTMLTableCellElement
-					if ($nextCell) {
-						$navCell = $nextCell
-					}
-				}
-
-				if ($navCell) {
-					event.preventDefault()
-					event.stopPropagation()
-					$navCell.focus()
-				}
+			const handler = defaultKeyboardEvents[event.key]
+			if (handler) {
+				handler(event)
 			}
 		},
 	},
@@ -199,39 +267,3 @@ export function useKeyboardNav(options: KeyboardNavigationOptions[]) {
 		}
 	})
 }
-
-// const enterNav = async (event: KeyboardEvent) => {
-// 	event.preventDefault()
-// 	event.stopPropagation()
-// 	event.shiftKey ? await upCell(event) : await downCell(event)
-// }
-
-// const endNav = (event: KeyboardEvent) => {
-// 	const $cell = event.target as HTMLTableCellElement
-// 	const cellIndex = $cell.cellIndex
-// 	const $row = $cell.parentElement as HTMLTableRowElement
-// 	const rowIndex = $row.rowIndex
-// 	const $table = $row.parentElement as HTMLTableElement
-
-// 	const $lastRow = $table.rows[rowIndex - 1]
-// 	if ($lastRow.cells.length - 1 !== cellIndex) {
-// 		// last column
-// 		const $nextCell = $lastRow.cells[tableData.columns.length - (tableData.zeroColumn ? 0 : 1)] // last cell
-// 		$nextCell.focus()
-// 	}
-// }
-
-// const homeNav = (event: KeyboardEvent) => {
-// 	const $cell = event.target as HTMLTableCellElement
-// 	const cellIndex = $cell.cellIndex
-// 	const $row = $cell.parentElement as HTMLTableRowElement
-// 	const rowIndex = $row.rowIndex
-// 	const $table = $row.parentElement as HTMLTableElement
-
-// 	const $lastRow = $table.rows[rowIndex - 1]
-// 	if (cellIndex !== (tableData.config.numberedRows ? 1 : 0)) {
-// 		// TODO: zeroColumn // first column
-// 		const $nextCell = $lastRow.cells[tableData.zeroColumn ? 1 : 0] // last cell
-// 		$nextCell.focus()
-// 	}
-// }

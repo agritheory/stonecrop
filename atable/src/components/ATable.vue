@@ -46,7 +46,7 @@
 
 <script setup lang="ts">
 import { v4 } from 'uuid'
-import { provide, ref } from 'vue'
+import { provide } from 'vue'
 
 import { TableColumn, TableConfig, TableRow } from 'types'
 import TableDataStore from '.'

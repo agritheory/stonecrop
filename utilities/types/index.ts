@@ -1,8 +1,12 @@
 import { ComponentPublicInstance, Ref } from 'vue'
 
+export type KeypressHandlers = {
+	[key: string]: (event: KeyboardEvent) => void
+}
+
 export type KeyboardHandlerConfig = {
 	default?: boolean
-	listener?: (this: Element, ev: HTMLElementEventMap[keyof HTMLElementEventMap]) => any
+	listener?: (this: HTMLElement, ev: FocusEvent | KeyboardEvent) => any
 	options?: boolean | AddEventListenerOptions
 }
 

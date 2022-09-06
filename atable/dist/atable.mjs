@@ -390,6 +390,136 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   ], 544);
 }
 const ATableModal = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["render", _sfc_render], ["__scopeId", "data-v-33741903"]]);
+const defaultKeyboardEvents = {
+  ArrowUp: (event) => {
+    var _a;
+    const target = event.target;
+    let $navCell;
+    if (target instanceof HTMLTableCellElement) {
+      const $prevRow = (_a = target.parentElement) == null ? void 0 : _a.previousElementSibling;
+      if ($prevRow) {
+        const $prevRowCells = Array.from($prevRow.children);
+        const $prevCell = $prevRowCells[target.cellIndex];
+        if ($prevCell) {
+          $navCell = $prevCell;
+        }
+      }
+    }
+    if ($navCell) {
+      event.preventDefault();
+      event.stopPropagation();
+      $navCell.focus();
+    }
+  },
+  ArrowDown: (event) => {
+    var _a;
+    const target = event.target;
+    let $navCell;
+    if (target instanceof HTMLTableCellElement) {
+      const $nextRow = (_a = target.parentElement) == null ? void 0 : _a.nextElementSibling;
+      if ($nextRow) {
+        const $nextRowCells = Array.from($nextRow.children);
+        const $nextCell = $nextRowCells[target.cellIndex];
+        if ($nextCell) {
+          $navCell = $nextCell;
+        }
+      }
+    }
+    if ($navCell) {
+      event.preventDefault();
+      event.stopPropagation();
+      $navCell.focus();
+    }
+  },
+  ArrowLeft: (event) => {
+    const target = event.target;
+    const $prevCell = target.previousElementSibling;
+    if ($prevCell) {
+      event.preventDefault();
+      event.stopPropagation();
+      $prevCell.focus();
+    }
+  },
+  ArrowRight: (event) => {
+    const target = event.target;
+    const $nextCell = target.nextElementSibling;
+    if ($nextCell) {
+      event.preventDefault();
+      event.stopPropagation();
+      $nextCell.focus();
+    }
+  },
+  End: (event) => {
+    const target = event.target;
+    const $parent = target.parentElement;
+    const $navCell = $parent.lastElementChild;
+    if ($navCell) {
+      event.preventDefault();
+      event.stopPropagation();
+      $navCell.focus();
+    }
+  },
+  Enter: (event) => {
+    const target = event.target;
+    if (target instanceof HTMLTableCellElement) {
+      if (event.shiftKey) {
+        const handler = defaultKeyboardEvents["ArrowUp"];
+        if (handler) {
+          handler(event);
+        }
+      } else {
+        const handler = defaultKeyboardEvents["ArrowDown"];
+        if (handler) {
+          handler(event);
+        }
+      }
+    }
+  },
+  Home: (event) => {
+    const target = event.target;
+    const $parent = target.parentElement;
+    const $navCell = $parent.firstElementChild;
+    if ($navCell) {
+      event.preventDefault();
+      event.stopPropagation();
+      $navCell.focus();
+    }
+  },
+  Tab: (event) => {
+    var _a, _b;
+    const target = event.target;
+    let $navCell;
+    if (event.shiftKey) {
+      const $prevCell = target.previousElementSibling;
+      if ($prevCell) {
+        $navCell = $prevCell;
+      } else {
+        const $prevRow = (_a = target.parentElement) == null ? void 0 : _a.previousElementSibling;
+        if ($prevRow) {
+          const $prevRowCells = Array.from($prevRow.children);
+          $prevRowCells.reverse();
+          $navCell = $prevRowCells[0];
+        }
+      }
+    } else {
+      const $nextCell = target.nextElementSibling;
+      if ($nextCell) {
+        $navCell = $nextCell;
+      } else {
+        const $nextRow = (_b = target.parentElement) == null ? void 0 : _b.nextElementSibling;
+        if ($nextRow) {
+          const $nextRowCells = Array.from($nextRow.children);
+          $navCell = $nextRowCells[0];
+        }
+      }
+    }
+    if ($navCell) {
+      event.preventDefault();
+      event.stopPropagation();
+      $navCell.focus();
+    }
+  }
+};
 const defaultEventMap = {
   focus: {
     listener: (event) => {
@@ -405,76 +535,9 @@ const defaultEventMap = {
   },
   keydown: {
     listener: (event) => {
-      var _a, _b, _c, _d;
-      const target = event.target;
-      if (event.key === "Tab") {
-        let $navCell;
-        if (event.shiftKey) {
-          const $prevCell = target.previousElementSibling;
-          if ($prevCell) {
-            $navCell = $prevCell;
-          } else {
-            const $prevRow = (_a = target.parentElement) == null ? void 0 : _a.previousElementSibling;
-            if ($prevRow) {
-              const $prevRowCells = Array.from($prevRow.children);
-              $prevRowCells.reverse();
-              $navCell = $prevRowCells[0];
-            }
-          }
-        } else {
-          const $nextCell = target.nextElementSibling;
-          if ($nextCell) {
-            $navCell = $nextCell;
-          } else {
-            const $nextRow = (_b = target.parentElement) == null ? void 0 : _b.nextElementSibling;
-            if ($nextRow) {
-              const $nextRowCells = Array.from($nextRow.children);
-              $navCell = $nextRowCells[0];
-            }
-          }
-        }
-        if ($navCell) {
-          event.preventDefault();
-          event.stopPropagation();
-          $navCell.focus();
-        }
-      }
-      if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.key)) {
-        let $navCell;
-        if (event.key === "ArrowUp") {
-          const $prevRow = (_c = target.parentElement) == null ? void 0 : _c.previousElementSibling;
-          if ($prevRow) {
-            const $prevRowCells = Array.from($prevRow.children);
-            const $prevCell = $prevRowCells[target.cellIndex];
-            if ($prevCell) {
-              $navCell = $prevCell;
-            }
-          }
-        } else if (event.key === "ArrowDown") {
-          const $nextRow = (_d = target.parentElement) == null ? void 0 : _d.nextElementSibling;
-          if ($nextRow) {
-            const $nextRowCells = Array.from($nextRow.children);
-            const $nextCell = $nextRowCells[target.cellIndex];
-            if ($nextCell) {
-              $navCell = $nextCell;
-            }
-          }
-        } else if (event.key === "ArrowLeft") {
-          const $prevCell = target.previousElementSibling;
-          if ($prevCell) {
-            $navCell = $prevCell;
-          }
-        } else if (event.key === "ArrowRight") {
-          const $nextCell = target.nextElementSibling;
-          if ($nextCell) {
-            $navCell = $nextCell;
-          }
-        }
-        if ($navCell) {
-          event.preventDefault();
-          event.stopPropagation();
-          $navCell.focus();
-        }
+      const handler = defaultKeyboardEvents[event.key];
+      if (handler) {
+        handler(event);
       }
     }
   }
@@ -661,8 +724,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ATable_vue_vue_type_style_index_0_scoped_fa8a6b24_lang = "";
-const ATable = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-fa8a6b24"]]);
+const ATable_vue_vue_type_style_index_0_scoped_e29bf845_lang = "";
+const ATable = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-e29bf845"]]);
 function install(app) {
   app.component("ACell", ACell);
   app.component("ARow", _sfc_main$3);
