@@ -54,7 +54,7 @@ import ACell from '@/components/ACell.vue'
 import ARow from '@/components/ARow.vue'
 import ATableHeader from '@/components/ATableHeader.vue'
 import ATableModal from '@/components/ATableModal.vue'
-import { useKeyboardNav } from '@sedum/utilities'
+import { defaultKeypressHandlers, useKeyboardNav } from '@sedum/utilities'
 
 const props = withDefaults(
 	defineProps<{
@@ -76,11 +76,7 @@ provide(tableData.id, tableData)
 useKeyboardNav([
 	{
 		selectors: 'td',
-		handlers: {
-			focus: { default: true },
-			blur: { default: true },
-			keydown: { default: true },
-		},
+		handlers: defaultKeypressHandlers,
 	},
 ])
 

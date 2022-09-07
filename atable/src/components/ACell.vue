@@ -93,9 +93,14 @@ const cellWidth = computed(() => {
 let currentData = ''
 const onFocus = () => {
 	currentData = cell.value.innerText
+	cell.value.tabIndex = 0
 }
 
-const onChange = () => {
+const onChange = (event: FocusEvent | ClipboardEvent) => {
+	if (event.type == 'blur') {
+		cell.value.tabIndex = -1
+	}
+
 	if (cell.value && cell.value.innerHTML !== currentData) {
 		currentData = cell.value.innerText
 		cell.value.dispatchEvent(new Event('change'))

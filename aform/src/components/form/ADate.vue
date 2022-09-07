@@ -45,7 +45,7 @@
 import { computed, inject, onMounted, ref, watch } from 'vue'
 
 import { TableDataStore } from '@sedum/atable'
-import { useKeyboardNav } from '@sedum/utilities'
+import { defaultKeypressHandlers, useKeyboardNav } from '@sedum/utilities'
 
 const props = defineProps<{
 	colIndex?: number
@@ -60,11 +60,7 @@ const tableData = inject<TableDataStore>(props.tableid)
 useKeyboardNav([
 	{
 		selectors: 'td',
-		handlers: {
-			focus: { default: true },
-			blur: { default: true },
-			keydown: { default: true },
-		},
+		handlers: defaultKeypressHandlers,
 	},
 ])
 

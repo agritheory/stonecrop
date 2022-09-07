@@ -2,154 +2,188 @@
   typeof exports === "object" && typeof module !== "undefined" ? factory(exports, require("vue")) : typeof define === "function" && define.amd ? define(["exports", "vue"], factory) : (global = typeof globalThis !== "undefined" ? globalThis : global || self, factory(global["@sedum/utilities"] = {}, global.Vue));
 })(this, function(exports2, vue) {
   "use strict";
-  const defaultKeyboardEvents = {
-    ArrowUp: (event) => {
-      var _a;
-      const target = event.target;
-      let $navCell;
-      if (target instanceof HTMLTableCellElement) {
-        const $prevRow = (_a = target.parentElement) == null ? void 0 : _a.previousElementSibling;
-        if ($prevRow) {
-          const $prevRowCells = Array.from($prevRow.children);
-          const $prevCell = $prevRowCells[target.cellIndex];
-          if ($prevCell) {
-            $navCell = $prevCell;
-          }
-        }
-      }
-      if ($navCell) {
-        event.preventDefault();
-        event.stopPropagation();
-        $navCell.focus();
-      }
-    },
-    ArrowDown: (event) => {
-      var _a;
-      const target = event.target;
-      let $navCell;
-      if (target instanceof HTMLTableCellElement) {
-        const $nextRow = (_a = target.parentElement) == null ? void 0 : _a.nextElementSibling;
-        if ($nextRow) {
-          const $nextRowCells = Array.from($nextRow.children);
-          const $nextCell = $nextRowCells[target.cellIndex];
-          if ($nextCell) {
-            $navCell = $nextCell;
-          }
-        }
-      }
-      if ($navCell) {
-        event.preventDefault();
-        event.stopPropagation();
-        $navCell.focus();
-      }
-    },
-    ArrowLeft: (event) => {
-      const target = event.target;
-      const $prevCell = target.previousElementSibling;
-      if ($prevCell) {
-        event.preventDefault();
-        event.stopPropagation();
-        $prevCell.focus();
-      }
-    },
-    ArrowRight: (event) => {
-      const target = event.target;
-      const $nextCell = target.nextElementSibling;
-      if ($nextCell) {
-        event.preventDefault();
-        event.stopPropagation();
-        $nextCell.focus();
-      }
-    },
-    End: (event) => {
-      const target = event.target;
-      const $parent = target.parentElement;
-      const $navCell = $parent.lastElementChild;
-      if ($navCell) {
-        event.preventDefault();
-        event.stopPropagation();
-        $navCell.focus();
-      }
-    },
-    Enter: (event) => {
-      const target = event.target;
-      if (target instanceof HTMLTableCellElement) {
-        if (event.shiftKey) {
-          const handler = defaultKeyboardEvents["ArrowUp"];
-          if (handler) {
-            handler(event);
-          }
-        } else {
-          const handler = defaultKeyboardEvents["ArrowDown"];
-          if (handler) {
-            handler(event);
-          }
-        }
-      }
-    },
-    Home: (event) => {
-      const target = event.target;
-      const $parent = target.parentElement;
-      const $navCell = $parent.firstElementChild;
-      if ($navCell) {
-        event.preventDefault();
-        event.stopPropagation();
-        $navCell.focus();
-      }
-    },
-    Tab: (event) => {
-      var _a, _b;
-      const target = event.target;
-      let $navCell;
-      if (event.shiftKey) {
-        const $prevCell = target.previousElementSibling;
+  const getUpCell = (event) => {
+    var _a;
+    const target = event.target;
+    let $upCell;
+    if (target instanceof HTMLTableCellElement) {
+      const $prevRow = (_a = target.parentElement) == null ? void 0 : _a.previousElementSibling;
+      if ($prevRow) {
+        const $prevRowCells = Array.from($prevRow.children);
+        const $prevCell = $prevRowCells[target.cellIndex];
         if ($prevCell) {
-          $navCell = $prevCell;
-        } else {
-          const $prevRow = (_a = target.parentElement) == null ? void 0 : _a.previousElementSibling;
-          if ($prevRow) {
-            const $prevRowCells = Array.from($prevRow.children);
-            $prevRowCells.reverse();
-            $navCell = $prevRowCells[0];
-          }
+          $upCell = $prevCell;
         }
-      } else {
-        const $nextCell = target.nextElementSibling;
-        if ($nextCell) {
-          $navCell = $nextCell;
-        } else {
-          const $nextRow = (_b = target.parentElement) == null ? void 0 : _b.nextElementSibling;
-          if ($nextRow) {
-            const $nextRowCells = Array.from($nextRow.children);
-            $navCell = $nextRowCells[0];
-          }
-        }
-      }
-      if ($navCell) {
-        event.preventDefault();
-        event.stopPropagation();
-        $navCell.focus();
       }
     }
+    return $upCell;
   };
-  const defaultEventMap = {
-    focus: {
+  const getDownCell = (event) => {
+    var _a;
+    const target = event.target;
+    let $downCell;
+    if (target instanceof HTMLTableCellElement) {
+      const $nextRow = (_a = target.parentElement) == null ? void 0 : _a.nextElementSibling;
+      if ($nextRow) {
+        const $nextRowCells = Array.from($nextRow.children);
+        const $nextCell = $nextRowCells[target.cellIndex];
+        if ($nextCell) {
+          $downCell = $nextCell;
+        }
+      }
+    }
+    return $downCell;
+  };
+  const getPrevCell = (event) => {
+    var _a;
+    const target = event.target;
+    let $prevCell;
+    if (target.previousElementSibling) {
+      $prevCell = target.previousElementSibling;
+    } else {
+      const $prevRow = (_a = target.parentElement) == null ? void 0 : _a.previousElementSibling;
+      if ($prevRow) {
+        const $prevRowCells = Array.from($prevRow.children);
+        $prevRowCells.reverse();
+        $prevCell = $prevRowCells[0];
+      }
+    }
+    return $prevCell;
+  };
+  const getNextCell = (event) => {
+    var _a;
+    const target = event.target;
+    let $nextCell;
+    if (target.nextElementSibling) {
+      $nextCell = target.nextElementSibling;
+    } else {
+      const $nextRow = (_a = target.parentElement) == null ? void 0 : _a.nextElementSibling;
+      if ($nextRow) {
+        const $nextRowCells = Array.from($nextRow.children);
+        $nextCell = $nextRowCells[0];
+      }
+    }
+    return $nextCell;
+  };
+  const getFirstCell = (event) => {
+    const target = event.target;
+    const $parent = target.parentElement;
+    const $firstCell = $parent.firstElementChild;
+    return $firstCell;
+  };
+  const getLastCell = (event) => {
+    const target = event.target;
+    const $parent = target.parentElement;
+    const $lastCell = $parent.lastElementChild;
+    return $lastCell;
+  };
+  const defaultKeypressHandlers = {
+    ArrowUp: {
       listener: (event) => {
-        const target = event.target;
-        target.tabIndex = 0;
+        if (event.key === "ArrowUp") {
+          const $upCell = getUpCell(event);
+          if ($upCell) {
+            event.preventDefault();
+            event.stopPropagation();
+            $upCell.focus();
+          }
+        }
       }
     },
-    blur: {
+    ArrowDown: {
       listener: (event) => {
-        const target = event.target;
-        target.tabIndex = -1;
+        if (event.key === "ArrowDown") {
+          const $downCell = getDownCell(event);
+          if ($downCell) {
+            event.preventDefault();
+            event.stopPropagation();
+            $downCell.focus();
+          }
+        }
       }
     },
-    keydown: {
+    ArrowLeft: {
       listener: (event) => {
-        const handler = defaultKeyboardEvents[event.key];
-        if (handler) {
-          handler(event);
+        if (event.key === "ArrowLeft") {
+          const $prevCell = getPrevCell(event);
+          if ($prevCell) {
+            event.preventDefault();
+            event.stopPropagation();
+            $prevCell.focus();
+          }
+        }
+      }
+    },
+    ArrowRight: {
+      listener: (event) => {
+        if (event.key === "ArrowRight") {
+          const $nextCell = getNextCell(event);
+          if ($nextCell) {
+            event.preventDefault();
+            event.stopPropagation();
+            $nextCell.focus();
+          }
+        }
+      }
+    },
+    End: {
+      listener: (event) => {
+        if (event.key === "End") {
+          const $lastCell = getLastCell(event);
+          if ($lastCell) {
+            event.preventDefault();
+            event.stopPropagation();
+            $lastCell.focus();
+          }
+        }
+      }
+    },
+    Enter: {
+      listener: (event) => {
+        if (event.key === "Enter") {
+          const target = event.target;
+          if (target instanceof HTMLTableCellElement) {
+            let $navCell;
+            if (event.shiftKey) {
+              $navCell = getUpCell(event);
+            } else {
+              $navCell = getDownCell(event);
+            }
+            if ($navCell) {
+              event.preventDefault();
+              event.stopPropagation();
+              $navCell.focus();
+            }
+          }
+        }
+      }
+    },
+    Home: {
+      listener: (event) => {
+        if (event.key === "Home") {
+          const $firstCell = getFirstCell(event);
+          if ($firstCell) {
+            event.preventDefault();
+            event.stopPropagation();
+            $firstCell.focus();
+          }
+        }
+      }
+    },
+    Tab: {
+      listener: (event) => {
+        if (event.key === "Tab") {
+          let $navCell;
+          if (event.shiftKey) {
+            $navCell = getPrevCell(event);
+          } else {
+            $navCell = getNextCell(event);
+          }
+          if ($navCell) {
+            event.preventDefault();
+            event.stopPropagation();
+            $navCell.focus();
+          }
         }
       }
     }
@@ -188,24 +222,21 @@
       }
       return selectors;
     };
-    const getEventListener = (event, config) => {
+    const getEventListener = (key, config) => {
       let eventListener, eventOptions;
-      if (config.default !== true) {
-        if (!config.listener) {
-          throw new Error(`Missing listener for event: '${event}'`);
-        }
+      if (config.listener) {
         eventListener = config.listener;
         eventOptions = config.options;
       } else {
-        const eventMap = defaultEventMap[event];
+        const eventMap = defaultKeypressHandlers[key];
         if (eventMap) {
           if (!eventMap.listener) {
-            throw new Error(`Missing default event listener for event: '${event}'`);
+            throw new Error(`Missing default event listener for keypress: '${key}'`);
           }
           eventListener = eventMap.listener;
           eventOptions = eventMap.options;
         } else {
-          throw new Error(`Missing default event map for event: '${event}'`);
+          throw new Error(`Missing default event map for keypress: '${key}'`);
         }
       }
       return { eventListener, eventOptions };
@@ -216,10 +247,10 @@
         if (selectors.length === 0) {
           continue;
         }
-        for (const [event, config] of Object.entries(option.handlers)) {
-          const { eventListener, eventOptions } = getEventListener(event, config);
+        for (const [key, config] of Object.entries(option.handlers)) {
+          const { eventListener, eventOptions } = getEventListener(key, config);
           for (const element of selectors) {
-            element.addEventListener(event, eventListener, eventOptions);
+            element.addEventListener("keydown", eventListener, eventOptions);
           }
         }
       }
@@ -230,10 +261,10 @@
         if (selectors.length === 0) {
           continue;
         }
-        for (const [event, config] of Object.entries(option.handlers)) {
-          const { eventListener, eventOptions } = getEventListener(event, config);
+        for (const [key, config] of Object.entries(option.handlers)) {
+          const { eventListener, eventOptions } = getEventListener(key, config);
           for (const element of selectors) {
-            element.removeEventListener(event, eventListener, eventOptions);
+            element.removeEventListener("keydown", eventListener, eventOptions);
           }
         }
       }
@@ -241,6 +272,7 @@
   }
   function install(app) {
   }
+  exports2.defaultKeypressHandlers = defaultKeypressHandlers;
   exports2.install = install;
   exports2.useKeyboardNav = useKeyboardNav;
   Object.defineProperties(exports2, { __esModule: { value: true }, [Symbol.toStringTag]: { value: "Module" } });
