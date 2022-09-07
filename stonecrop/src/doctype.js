@@ -4,7 +4,6 @@ export default class Doctype {
 		this.schema = schema
 		this.events = events // new Machine()
 		this.hooks = hooks
-		this.registry = null // gets assigned when added to registry, not when constructed
 	}
 	get slug() {
 		return this.doctype

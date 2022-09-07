@@ -12,9 +12,10 @@ export default class Registry {
 		this.name = 'Registry'
 		this.router = router
 		this.schemaLoader = schemaLoader
+		this.registry = {}
 	}
 	loadDoctypeSchema(doctype) {
-		// type: doctype class
+		// type: Doctype class
 		if (doctype.schemaLoader) {
 			return doctype.schemaLoader()
 		}
@@ -22,17 +23,16 @@ export default class Registry {
 	}
 	addDoctype(doctype) {
 		// type: Doctype class
-		if (!doctype.doctype in this) {
-			doctype.registry = this
-			this[doctype.doctype] = doctype
+		if (!(doctype.doctype in Object.keys(this.registry))) {
+			this.registry[doctype.doctype] = doctype
 		}
 		if (!this.router.hasRoute(doctype.slug)) {
-			router.addRoute({
+			this.router.addRoute({
 				path: `/${doctype.slug}`,
 				name: doctype.slug,
 				component: doctype.schema.recordsComponent || Records,
 			})
-			router.addRoute({ path: `/${doctype.slug}:id`, component: doctype.schema.component || Doctype })
+			this.router.addRoute({ path: `/${doctype.slug}:id`, component: doctype.schema.component || Doctype })
 		}
 	}
 }
