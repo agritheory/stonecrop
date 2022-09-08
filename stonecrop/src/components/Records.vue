@@ -3,6 +3,7 @@
 </template>
 <script lang="ts" setup>
 import { ref, reactive } from 'vue'
+import { ATable } from '@sedum/atable'
 
 const data = [
 	{ subject: 'First To Do' },
