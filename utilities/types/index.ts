@@ -1,12 +1,7 @@
 import { ComponentPublicInstance, Ref } from 'vue'
 
-export type KeyboardHandlerConfig = {
-	listener?: (ev: KeyboardEvent) => any
-	options?: boolean | AddEventListenerOptions
-}
-
 export type KeypressHandlers = {
-	[key: string]: KeyboardHandlerConfig
+	[key: string]: (ev: KeyboardEvent) => any
 }
 
 export type KeyboardNavigationOptions = {

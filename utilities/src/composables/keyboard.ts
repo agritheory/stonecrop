@@ -1,6 +1,6 @@
 import { onMounted, onUnmounted } from 'vue'
 
-import { KeyboardHandlerConfig, KeyboardNavigationOptions, KeypressHandlers } from 'types'
+import { KeyboardNavigationOptions, KeypressHandlers } from 'types'
 
 const getUpCell = (event: KeyboardEvent) => {
 	const target = event.target as HTMLElement
@@ -83,119 +83,125 @@ const getLastCell = (event: KeyboardEvent) => {
 	return $lastCell
 }
 
+const modifierKeys = ['alt', 'control', 'shift', 'meta']
+
+const eventKeyMap = {
+	ArrowUp: 'up',
+	ArrowDown: 'down',
+	ArrowLeft: 'left',
+	ArrowRight: 'right',
+	Home: 'home',
+	End: 'end',
+	Enter: 'enter',
+	Tab: 'tab',
+}
+
 export const defaultKeypressHandlers: KeypressHandlers = {
-	ArrowUp: {
-		listener: (event: KeyboardEvent) => {
-			if (event.key === 'ArrowUp') {
-				const $upCell = getUpCell(event)
-				if ($upCell) {
-					event.preventDefault()
-					event.stopPropagation()
-					$upCell.focus()
-				}
-			}
-		},
+	'keydown.up': (event: KeyboardEvent) => {
+		const $upCell = getUpCell(event)
+		if ($upCell) {
+			event.preventDefault()
+			event.stopPropagation()
+			$upCell.focus()
+		}
 	},
-	ArrowDown: {
-		listener: (event: KeyboardEvent) => {
-			if (event.key === 'ArrowDown') {
-				const $downCell = getDownCell(event)
-				if ($downCell) {
-					event.preventDefault()
-					event.stopPropagation()
-					$downCell.focus()
-				}
-			}
-		},
+	'keydown.down': (event: KeyboardEvent) => {
+		const $downCell = getDownCell(event)
+		if ($downCell) {
+			event.preventDefault()
+			event.stopPropagation()
+			$downCell.focus()
+		}
 	},
-	ArrowLeft: {
-		listener: (event: KeyboardEvent) => {
-			if (event.key === 'ArrowLeft') {
-				const $prevCell = getPrevCell(event)
-				if ($prevCell) {
-					event.preventDefault()
-					event.stopPropagation()
-					$prevCell.focus()
-				}
-			}
-		},
+	'keydown.left': (event: KeyboardEvent) => {
+		const $prevCell = getPrevCell(event)
+		if ($prevCell) {
+			event.preventDefault()
+			event.stopPropagation()
+			$prevCell.focus()
+		}
 	},
-	ArrowRight: {
-		listener: (event: KeyboardEvent) => {
-			if (event.key === 'ArrowRight') {
-				const $nextCell = getNextCell(event)
-				if ($nextCell) {
-					event.preventDefault()
-					event.stopPropagation()
-					$nextCell.focus()
-				}
-			}
-		},
+	'keydown.right': (event: KeyboardEvent) => {
+		const $nextCell = getNextCell(event)
+		if ($nextCell) {
+			event.preventDefault()
+			event.stopPropagation()
+			$nextCell.focus()
+		}
 	},
-	End: {
-		listener: (event: KeyboardEvent) => {
-			if (event.key === 'End') {
-				const $lastCell = getLastCell(event)
-				if ($lastCell) {
-					event.preventDefault()
-					event.stopPropagation()
-					$lastCell.focus()
-				}
-			}
-		},
+	'keydown.control.left': (event: KeyboardEvent) => {
+		const $firstCell = getFirstCell(event)
+		if ($firstCell) {
+			event.preventDefault()
+			event.stopPropagation()
+			$firstCell.focus()
+		}
 	},
-	Enter: {
-		listener: (event: KeyboardEvent) => {
-			if (event.key === 'Enter') {
-				const target = event.target as HTMLElement
-				if (target instanceof HTMLTableCellElement) {
-					let $navCell: HTMLElement | undefined
-					if (event.shiftKey) {
-						$navCell = getUpCell(event)
-					} else {
-						$navCell = getDownCell(event)
-					}
-
-					if ($navCell) {
-						event.preventDefault()
-						event.stopPropagation()
-						$navCell.focus()
-					}
-				} else {
-					// TODO: handle other contexts
-				}
-			}
-		},
+	'keydown.control.right': (event: KeyboardEvent) => {
+		const $lastCell = getLastCell(event)
+		if ($lastCell) {
+			event.preventDefault()
+			event.stopPropagation()
+			$lastCell.focus()
+		}
 	},
-	Home: {
-		listener: (event: KeyboardEvent) => {
-			if (event.key === 'Home') {
-				const $firstCell = getFirstCell(event)
-				if ($firstCell) {
-					event.preventDefault()
-					event.stopPropagation()
-					$firstCell.focus()
-				}
-			}
-		},
+	'keydown.end': (event: KeyboardEvent) => {
+		const $lastCell = getLastCell(event)
+		if ($lastCell) {
+			event.preventDefault()
+			event.stopPropagation()
+			$lastCell.focus()
+		}
 	},
-	Tab: {
-		listener: (event: KeyboardEvent) => {
-			if (event.key === 'Tab') {
-				let $navCell: HTMLElement | undefined
-				if (event.shiftKey) {
-					$navCell = getPrevCell(event)
-				} else {
-					$navCell = getNextCell(event)
-				}
-
-				if ($navCell) {
-					event.preventDefault()
-					event.stopPropagation()
-					$navCell.focus()
-				}
+	'keydown.enter': (event: KeyboardEvent) => {
+		const target = event.target as HTMLElement
+		if (target instanceof HTMLTableCellElement) {
+			const $downCell = getDownCell(event)
+			if ($downCell) {
+				event.preventDefault()
+				event.stopPropagation()
+				$downCell.focus()
 			}
-		},
+		} else {
+			// TODO: handle other contexts
+		}
+	},
+	'keydown.shift.enter': (event: KeyboardEvent) => {
+		const target = event.target as HTMLElement
+		if (target instanceof HTMLTableCellElement) {
+			const $upCell = getUpCell(event)
+			if ($upCell) {
+				event.preventDefault()
+				event.stopPropagation()
+				$upCell.focus()
+			}
+		} else {
+			// TODO: handle other contexts
+		}
+	},
+	'keydown.home': (event: KeyboardEvent) => {
+		const $firstCell = getFirstCell(event)
+		if ($firstCell) {
+			event.preventDefault()
+			event.stopPropagation()
+			$firstCell.focus()
+		}
+	},
+	'keydown.tab': (event: KeyboardEvent) => {
+		const $nextCell = getNextCell(event)
+		if ($nextCell) {
+			event.preventDefault()
+			event.stopPropagation()
+			$nextCell.focus()
+		}
+	},
+	'keydown.shift.tab': (event: KeyboardEvent) => {
+		const $prevCell = getPrevCell(event)
+		if ($prevCell) {
+			event.preventDefault()
+			event.stopPropagation()
+			$prevCell.focus()
+		}
 	},
 }
 
@@ -243,41 +249,50 @@ export function useKeyboardNav(options: KeyboardNavigationOptions[]) {
 		return selectors
 	}
 
-	const getEventListener = (key: string, config: KeyboardHandlerConfig) => {
-		let eventListener: KeyboardHandlerConfig['listener'], eventOptions: KeyboardHandlerConfig['options']
+	const getEventListener = (option: KeyboardNavigationOptions) => {
+		return (event: KeyboardEvent) => {
+			// only allow limited set of keypresses
+			const activeKey: string | undefined = eventKeyMap[event.key]
+			if (!activeKey) {
+				return
+			}
 
-		if (config.listener) {
-			eventListener = config.listener
-			eventOptions = config.options
-		} else {
-			const eventMap: KeyboardHandlerConfig | undefined = defaultKeypressHandlers[key]
-			if (eventMap) {
-				if (!eventMap.listener) {
-					throw new Error(`Missing default event listener for keypress: '${key}'`)
+			for (const key of Object.keys(option.handlers)) {
+				const [eventType, ...keys] = key.split('.')
+				if (eventType !== 'keydown') {
+					continue
 				}
 
-				eventListener = eventMap.listener
-				eventOptions = eventMap.options
-			} else {
-				throw new Error(`Missing default event map for keypress: '${key}'`)
+				if (keys.includes(activeKey)) {
+					const listener = option.handlers[key]
+
+					// check if the handler has modifiers, and if the modifier is active;
+					// this is to ensure exact key-press matches
+					const hasModifier = keys.filter(key => modifierKeys.includes(key))
+					if (hasModifier.length > 0) {
+						for (const modifier of modifierKeys) {
+							if (keys.includes(modifier)) {
+								// docs: https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/getModifierState
+								const modifierKey = modifier.charAt(0).toUpperCase() + modifier.slice(1)
+								const isModifierActive = event.getModifierState(modifierKey)
+								if (isModifierActive) {
+									listener(event)
+								}
+							}
+						}
+					} else {
+						listener(event)
+					}
+				}
 			}
 		}
-
-		return { eventListener, eventOptions }
 	}
 
 	onMounted(() => {
 		for (const option of options) {
 			const selectors = getSelectors(option)
-			if (selectors.length === 0) {
-				continue
-			}
-
-			for (const [key, config] of Object.entries(option.handlers)) {
-				const { eventListener, eventOptions } = getEventListener(key, config)
-				for (const element of selectors) {
-					element.addEventListener('keydown', eventListener, eventOptions)
-				}
+			for (const selector of selectors) {
+				selector.addEventListener('keydown', getEventListener(option))
 			}
 		}
 	})
@@ -285,15 +300,8 @@ export function useKeyboardNav(options: KeyboardNavigationOptions[]) {
 	onUnmounted(() => {
 		for (const option of options) {
 			const selectors = getSelectors(option)
-			if (selectors.length === 0) {
-				continue
-			}
-
-			for (const [key, config] of Object.entries(option.handlers)) {
-				const { eventListener, eventOptions } = getEventListener(key, config)
-				for (const element of selectors) {
-					element.removeEventListener('keydown', eventListener, eventOptions)
-				}
+			for (const selector of selectors) {
+				selector.removeEventListener('keydown', getEventListener(option))
 			}
 		}
 	})
