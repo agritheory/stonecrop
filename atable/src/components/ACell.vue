@@ -20,6 +20,7 @@
 <script setup lang="ts">
 import { computed, CSSProperties, inject, ref, resolveDynamicComponent } from 'vue'
 
+import { useKeyboardNav } from '@sedum/utilities'
 import TableDataStore from '.'
 
 const props = defineProps<{
@@ -57,20 +58,32 @@ const handleInput = () => {
 		// tableData.columns[props.colIndex].mask(event)
 	}
 
-	if (tableData.columns[props.colIndex].component) {
-		if (resolveDynamicComponent(tableData.columns[props.colIndex].component)) {
-			const domRect = cell.value.getBoundingClientRect()
-			tableData.modal.visible = true
-			tableData.modal.colIndex = props.colIndex
-			tableData.modal.rowIndex = props.rowIndex
-			tableData.modal.parent = cell.value
-			tableData.modal.top = domRect.top + domRect.height
-			tableData.modal.left = domRect.left
-			tableData.modal.width = cellWidth.value
-			tableData.modal.component = tableData.columns[props.colIndex].component
-		}
+	const component = tableData.columns[props.colIndex].component
+	if (component && resolveDynamicComponent(component)) {
+		const domRect = cell.value.getBoundingClientRect()
+		tableData.modal.visible = true
+		tableData.modal.colIndex = props.colIndex
+		tableData.modal.rowIndex = props.rowIndex
+		tableData.modal.parent = cell.value
+		tableData.modal.top = domRect.top + domRect.height
+		tableData.modal.left = domRect.left
+		tableData.modal.width = cellWidth.value
+		tableData.modal.component = component
 	}
 }
+
+useKeyboardNav([
+	{
+		selectors: cell,
+		handlers: {
+			'keydown.f2': handleInput,
+			'keydown.alt.up': handleInput,
+			'keydown.alt.down': handleInput,
+			'keydown.alt.left': handleInput,
+			'keydown.alt.right': handleInput,
+		},
+	},
+])
 
 const updateData = (event: Event) => {
 	if (event) {
@@ -92,19 +105,23 @@ const cellWidth = computed(() => {
 
 let currentData = ''
 const onFocus = () => {
-	currentData = cell.value.innerText
-	cell.value.tabIndex = 0
+	if (cell.value) {
+		currentData = cell.value.innerText
+		cell.value.tabIndex = 0
+	}
 }
 
 const onChange = (event: FocusEvent | ClipboardEvent) => {
-	if (event.type == 'blur') {
-		cell.value.tabIndex = -1
-	}
+	if (cell.value) {
+		if (event.type == 'blur') {
+			cell.value.tabIndex = -1
+		}
 
-	if (cell.value && cell.value.innerHTML !== currentData) {
-		currentData = cell.value.innerText
-		cell.value.dispatchEvent(new Event('change'))
-		cellModified.value = true // set display instead
+		if (cell.value.innerHTML !== currentData) {
+			currentData = cell.value.innerText
+			cell.value.dispatchEvent(new Event('change'))
+			cellModified.value = true // set display instead
+		}
 	}
 }
 

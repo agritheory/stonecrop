@@ -1,4 +1,4 @@
-import { onMounted, onUnmounted } from 'vue'
+import { onMounted, onBeforeUnmount } from 'vue'
 
 import { KeyboardNavigationOptions, KeypressHandlers } from 'types'
 
@@ -20,6 +20,24 @@ const getUpCell = (event: KeyboardEvent) => {
 	return $upCell
 }
 
+const getTopCell = (event: KeyboardEvent) => {
+	const target = event.target as HTMLElement
+	let $topCell: HTMLElement | undefined
+	if (target instanceof HTMLTableCellElement) {
+		const $table = target.parentElement?.parentElement
+		if ($table) {
+			const $firstRow = $table.firstElementChild
+			const $navCell = $firstRow.children[target.cellIndex] as HTMLElement
+			if ($navCell) {
+				$topCell = $navCell
+			}
+		}
+	} else {
+		// TODO: handle other contexts
+	}
+	return $topCell
+}
+
 const getDownCell = (event: KeyboardEvent) => {
 	const target = event.target as HTMLElement
 	let $downCell: HTMLElement | undefined
@@ -36,6 +54,24 @@ const getDownCell = (event: KeyboardEvent) => {
 		// TODO: handle other contexts
 	}
 	return $downCell
+}
+
+const getBottomCell = (event: KeyboardEvent) => {
+	const target = event.target as HTMLElement
+	let $bottomCell: HTMLElement | undefined
+	if (target instanceof HTMLTableCellElement) {
+		const $table = target.parentElement?.parentElement
+		if ($table) {
+			const $lastRow = $table.lastElementChild
+			const $navCell = $lastRow.children[target.cellIndex] as HTMLElement
+			if ($navCell) {
+				$bottomCell = $navCell
+			}
+		}
+	} else {
+		// TODO: handle other contexts
+	}
+	return $bottomCell
 }
 
 const getPrevCell = (event: KeyboardEvent) => {
@@ -90,10 +126,6 @@ const eventKeyMap = {
 	ArrowDown: 'down',
 	ArrowLeft: 'left',
 	ArrowRight: 'right',
-	Home: 'home',
-	End: 'end',
-	Enter: 'enter',
-	Tab: 'tab',
 }
 
 export const defaultKeypressHandlers: KeypressHandlers = {
@@ -129,6 +161,22 @@ export const defaultKeypressHandlers: KeypressHandlers = {
 			$nextCell.focus()
 		}
 	},
+	'keydown.control.up': (event: KeyboardEvent) => {
+		const $topCell = getTopCell(event)
+		if ($topCell) {
+			event.preventDefault()
+			event.stopPropagation()
+			$topCell.focus()
+		}
+	},
+	'keydown.control.down': (event: KeyboardEvent) => {
+		const $bottomCell = getBottomCell(event)
+		if ($bottomCell) {
+			event.preventDefault()
+			event.stopPropagation()
+			$bottomCell.focus()
+		}
+	},
 	'keydown.control.left': (event: KeyboardEvent) => {
 		const $firstCell = getFirstCell(event)
 		if ($firstCell) {
@@ -156,10 +204,10 @@ export const defaultKeypressHandlers: KeypressHandlers = {
 	'keydown.enter': (event: KeyboardEvent) => {
 		const target = event.target as HTMLElement
 		if (target instanceof HTMLTableCellElement) {
+			event.preventDefault()
+			event.stopPropagation()
 			const $downCell = getDownCell(event)
 			if ($downCell) {
-				event.preventDefault()
-				event.stopPropagation()
 				$downCell.focus()
 			}
 		} else {
@@ -169,10 +217,10 @@ export const defaultKeypressHandlers: KeypressHandlers = {
 	'keydown.shift.enter': (event: KeyboardEvent) => {
 		const target = event.target as HTMLElement
 		if (target instanceof HTMLTableCellElement) {
+			event.preventDefault()
+			event.stopPropagation()
 			const $upCell = getUpCell(event)
 			if ($upCell) {
-				event.preventDefault()
-				event.stopPropagation()
 				$upCell.focus()
 			}
 		} else {
@@ -251,11 +299,8 @@ export function useKeyboardNav(options: KeyboardNavigationOptions[]) {
 
 	const getEventListener = (option: KeyboardNavigationOptions) => {
 		return (event: KeyboardEvent) => {
-			// only allow limited set of keypresses
-			const activeKey: string | undefined = eventKeyMap[event.key]
-			if (!activeKey) {
-				return
-			}
+			const activeKey = (eventKeyMap[event.key] as string) || event.key.toLowerCase()
+			if (modifierKeys.includes(activeKey)) return // ignore modifier key presses
 
 			for (const key of Object.keys(option.handlers)) {
 				const [eventType, ...keys] = key.split('.')
@@ -269,19 +314,27 @@ export function useKeyboardNav(options: KeyboardNavigationOptions[]) {
 					// check if the handler has modifiers, and if the modifier is active;
 					// this is to ensure exact key-press matches
 					const hasModifier = keys.filter(key => modifierKeys.includes(key))
+					const isModifierActive = modifierKeys.some(key => {
+						const modifierKey = key.charAt(0).toUpperCase() + key.slice(1)
+						return event.getModifierState(modifierKey)
+					})
+
 					if (hasModifier.length > 0) {
-						for (const modifier of modifierKeys) {
-							if (keys.includes(modifier)) {
-								// docs: https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/getModifierState
-								const modifierKey = modifier.charAt(0).toUpperCase() + modifier.slice(1)
-								const isModifierActive = event.getModifierState(modifierKey)
-								if (isModifierActive) {
-									listener(event)
+						if (isModifierActive) {
+							for (const modifier of modifierKeys) {
+								if (keys.includes(modifier)) {
+									// docs: https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/getModifierState
+									const modifierKey = modifier.charAt(0).toUpperCase() + modifier.slice(1)
+									if (event.getModifierState(modifierKey)) {
+										listener(event)
+									}
 								}
 							}
 						}
 					} else {
-						listener(event)
+						if (!isModifierActive) {
+							listener(event)
+						}
 					}
 				}
 			}
@@ -297,7 +350,7 @@ export function useKeyboardNav(options: KeyboardNavigationOptions[]) {
 		}
 	})
 
-	onUnmounted(() => {
+	onBeforeUnmount(() => {
 		for (const option of options) {
 			const selectors = getSelectors(option)
 			for (const selector of selectors) {

@@ -138,6 +138,13 @@ const clickOutside = (event: MouseEvent) => {
 }
 
 window.addEventListener('click', clickOutside)
+window.addEventListener('keydown', (event: KeyboardEvent) => {
+	if (event.key === 'Escape') {
+		if (tableData.modal.visible) {
+			tableData.modal.visible = false
+		}
+	}
+})
 </script>
 
 <style scoped>

@@ -1,4 +1,4 @@
-import { defineComponent, resolveComponent, openBlock, createBlock, withCtx, createElementVNode, onMounted, onUnmounted, inject, ref, watch, computed, createElementBlock, withKeys, toDisplayString, unref, Fragment, renderList, normalizeStyle, withModifiers, normalizeClass, resolveDynamicComponent, mergeProps, createTextVNode, createCommentVNode, withDirectives, createVNode, vShow, resolveDirective, vModelText } from "vue";
+import { defineComponent, resolveComponent, openBlock, createBlock, withCtx, createElementVNode, onMounted, onBeforeUnmount, inject, ref, watch, computed, createElementBlock, withKeys, toDisplayString, unref, Fragment, renderList, normalizeStyle, withModifiers, normalizeClass, resolveDynamicComponent, mergeProps, createTextVNode, createCommentVNode, withDirectives, createVNode, vShow, resolveDirective, vModelText } from "vue";
 const _sfc_main$6 = defineComponent({
   name: "AComboBox",
   props: ["event", "cellData", "tableID"]
@@ -45,6 +45,22 @@ const getUpCell = (event) => {
   }
   return $upCell;
 };
+const getTopCell = (event) => {
+  var _a;
+  const target = event.target;
+  let $topCell;
+  if (target instanceof HTMLTableCellElement) {
+    const $table = (_a = target.parentElement) == null ? void 0 : _a.parentElement;
+    if ($table) {
+      const $firstRow = $table.firstElementChild;
+      const $navCell = $firstRow.children[target.cellIndex];
+      if ($navCell) {
+        $topCell = $navCell;
+      }
+    }
+  }
+  return $topCell;
+};
 const getDownCell = (event) => {
   var _a;
   const target = event.target;
@@ -60,6 +76,22 @@ const getDownCell = (event) => {
     }
   }
   return $downCell;
+};
+const getBottomCell = (event) => {
+  var _a;
+  const target = event.target;
+  let $bottomCell;
+  if (target instanceof HTMLTableCellElement) {
+    const $table = (_a = target.parentElement) == null ? void 0 : _a.parentElement;
+    if ($table) {
+      const $lastRow = $table.lastElementChild;
+      const $navCell = $lastRow.children[target.cellIndex];
+      if ($navCell) {
+        $bottomCell = $navCell;
+      }
+    }
+  }
+  return $bottomCell;
 };
 const getPrevCell = (event) => {
   var _a;
@@ -109,11 +141,7 @@ const eventKeyMap = {
   ArrowUp: "up",
   ArrowDown: "down",
   ArrowLeft: "left",
-  ArrowRight: "right",
-  Home: "home",
-  End: "end",
-  Enter: "enter",
-  Tab: "tab"
+  ArrowRight: "right"
 };
 const defaultKeypressHandlers = {
   "keydown.up": (event) => {
@@ -148,6 +176,22 @@ const defaultKeypressHandlers = {
       $nextCell.focus();
     }
   },
+  "keydown.control.up": (event) => {
+    const $topCell = getTopCell(event);
+    if ($topCell) {
+      event.preventDefault();
+      event.stopPropagation();
+      $topCell.focus();
+    }
+  },
+  "keydown.control.down": (event) => {
+    const $bottomCell = getBottomCell(event);
+    if ($bottomCell) {
+      event.preventDefault();
+      event.stopPropagation();
+      $bottomCell.focus();
+    }
+  },
   "keydown.control.left": (event) => {
     const $firstCell = getFirstCell(event);
     if ($firstCell) {
@@ -175,10 +219,10 @@ const defaultKeypressHandlers = {
   "keydown.enter": (event) => {
     const target = event.target;
     if (target instanceof HTMLTableCellElement) {
+      event.preventDefault();
+      event.stopPropagation();
       const $downCell = getDownCell(event);
       if ($downCell) {
-        event.preventDefault();
-        event.stopPropagation();
         $downCell.focus();
       }
     }
@@ -186,10 +230,10 @@ const defaultKeypressHandlers = {
   "keydown.shift.enter": (event) => {
     const target = event.target;
     if (target instanceof HTMLTableCellElement) {
+      event.preventDefault();
+      event.stopPropagation();
       const $upCell = getUpCell(event);
       if ($upCell) {
-        event.preventDefault();
-        event.stopPropagation();
         $upCell.focus();
       }
     }
@@ -255,10 +299,9 @@ function useKeyboardNav(options) {
   };
   const getEventListener = (option) => {
     return (event) => {
-      const activeKey = eventKeyMap[event.key];
-      if (!activeKey) {
+      const activeKey = eventKeyMap[event.key] || event.key.toLowerCase();
+      if (modifierKeys.includes(activeKey))
         return;
-      }
       for (const key of Object.keys(option.handlers)) {
         const [eventType, ...keys] = key.split(".");
         if (eventType !== "keydown") {
@@ -267,18 +310,25 @@ function useKeyboardNav(options) {
         if (keys.includes(activeKey)) {
           const listener = option.handlers[key];
           const hasModifier = keys.filter((key2) => modifierKeys.includes(key2));
+          const isModifierActive = modifierKeys.some((key2) => {
+            const modifierKey = key2.charAt(0).toUpperCase() + key2.slice(1);
+            return event.getModifierState(modifierKey);
+          });
           if (hasModifier.length > 0) {
-            for (const modifier of modifierKeys) {
-              if (keys.includes(modifier)) {
-                const modifierKey = modifier.charAt(0).toUpperCase() + modifier.slice(1);
-                const isModifierActive = event.getModifierState(modifierKey);
-                if (isModifierActive) {
-                  listener(event);
+            if (isModifierActive) {
+              for (const modifier of modifierKeys) {
+                if (keys.includes(modifier)) {
+                  const modifierKey = modifier.charAt(0).toUpperCase() + modifier.slice(1);
+                  if (event.getModifierState(modifierKey)) {
+                    listener(event);
+                  }
                 }
               }
             }
           } else {
-            listener(event);
+            if (!isModifierActive) {
+              listener(event);
+            }
           }
         }
       }
@@ -292,7 +342,7 @@ function useKeyboardNav(options) {
       }
     }
   });
-  onUnmounted(() => {
+  onBeforeUnmount(() => {
     for (const option of options) {
       const selectors = getSelectors(option);
       for (const selector of selectors) {

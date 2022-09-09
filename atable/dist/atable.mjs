@@ -1,4 +1,326 @@
-import { defineComponent, inject, ref, computed, openBlock, createElementBlock, unref, toDisplayString, resolveDynamicComponent, withDirectives, createCommentVNode, renderSlot, vShow, reactive, createElementVNode, normalizeStyle, Fragment, renderList, createTextVNode, onMounted, onUnmounted, provide, createVNode, createBlock, withCtx } from "vue";
+import { onMounted, onBeforeUnmount, defineComponent, inject, ref, computed, openBlock, createElementBlock, unref, toDisplayString, resolveDynamicComponent, withDirectives, createCommentVNode, renderSlot, vShow, reactive, createElementVNode, normalizeStyle, Fragment, renderList, createTextVNode, provide, createVNode, createBlock, withCtx } from "vue";
+const getUpCell = (event) => {
+  var _a;
+  const target = event.target;
+  let $upCell;
+  if (target instanceof HTMLTableCellElement) {
+    const $prevRow = (_a = target.parentElement) == null ? void 0 : _a.previousElementSibling;
+    if ($prevRow) {
+      const $prevRowCells = Array.from($prevRow.children);
+      const $prevCell = $prevRowCells[target.cellIndex];
+      if ($prevCell) {
+        $upCell = $prevCell;
+      }
+    }
+  }
+  return $upCell;
+};
+const getTopCell = (event) => {
+  var _a;
+  const target = event.target;
+  let $topCell;
+  if (target instanceof HTMLTableCellElement) {
+    const $table = (_a = target.parentElement) == null ? void 0 : _a.parentElement;
+    if ($table) {
+      const $firstRow = $table.firstElementChild;
+      const $navCell = $firstRow.children[target.cellIndex];
+      if ($navCell) {
+        $topCell = $navCell;
+      }
+    }
+  }
+  return $topCell;
+};
+const getDownCell = (event) => {
+  var _a;
+  const target = event.target;
+  let $downCell;
+  if (target instanceof HTMLTableCellElement) {
+    const $nextRow = (_a = target.parentElement) == null ? void 0 : _a.nextElementSibling;
+    if ($nextRow) {
+      const $nextRowCells = Array.from($nextRow.children);
+      const $nextCell = $nextRowCells[target.cellIndex];
+      if ($nextCell) {
+        $downCell = $nextCell;
+      }
+    }
+  }
+  return $downCell;
+};
+const getBottomCell = (event) => {
+  var _a;
+  const target = event.target;
+  let $bottomCell;
+  if (target instanceof HTMLTableCellElement) {
+    const $table = (_a = target.parentElement) == null ? void 0 : _a.parentElement;
+    if ($table) {
+      const $lastRow = $table.lastElementChild;
+      const $navCell = $lastRow.children[target.cellIndex];
+      if ($navCell) {
+        $bottomCell = $navCell;
+      }
+    }
+  }
+  return $bottomCell;
+};
+const getPrevCell = (event) => {
+  var _a;
+  const target = event.target;
+  let $prevCell;
+  if (target.previousElementSibling) {
+    $prevCell = target.previousElementSibling;
+  } else {
+    const $prevRow = (_a = target.parentElement) == null ? void 0 : _a.previousElementSibling;
+    if ($prevRow) {
+      const $prevRowCells = Array.from($prevRow.children);
+      $prevRowCells.reverse();
+      $prevCell = $prevRowCells[0];
+    }
+  }
+  return $prevCell;
+};
+const getNextCell = (event) => {
+  var _a;
+  const target = event.target;
+  let $nextCell;
+  if (target.nextElementSibling) {
+    $nextCell = target.nextElementSibling;
+  } else {
+    const $nextRow = (_a = target.parentElement) == null ? void 0 : _a.nextElementSibling;
+    if ($nextRow) {
+      const $nextRowCells = Array.from($nextRow.children);
+      $nextCell = $nextRowCells[0];
+    }
+  }
+  return $nextCell;
+};
+const getFirstCell = (event) => {
+  const target = event.target;
+  const $parent = target.parentElement;
+  const $firstCell = $parent.firstElementChild;
+  return $firstCell;
+};
+const getLastCell = (event) => {
+  const target = event.target;
+  const $parent = target.parentElement;
+  const $lastCell = $parent.lastElementChild;
+  return $lastCell;
+};
+const modifierKeys = ["alt", "control", "shift", "meta"];
+const eventKeyMap = {
+  ArrowUp: "up",
+  ArrowDown: "down",
+  ArrowLeft: "left",
+  ArrowRight: "right"
+};
+const defaultKeypressHandlers = {
+  "keydown.up": (event) => {
+    const $upCell = getUpCell(event);
+    if ($upCell) {
+      event.preventDefault();
+      event.stopPropagation();
+      $upCell.focus();
+    }
+  },
+  "keydown.down": (event) => {
+    const $downCell = getDownCell(event);
+    if ($downCell) {
+      event.preventDefault();
+      event.stopPropagation();
+      $downCell.focus();
+    }
+  },
+  "keydown.left": (event) => {
+    const $prevCell = getPrevCell(event);
+    if ($prevCell) {
+      event.preventDefault();
+      event.stopPropagation();
+      $prevCell.focus();
+    }
+  },
+  "keydown.right": (event) => {
+    const $nextCell = getNextCell(event);
+    if ($nextCell) {
+      event.preventDefault();
+      event.stopPropagation();
+      $nextCell.focus();
+    }
+  },
+  "keydown.control.up": (event) => {
+    const $topCell = getTopCell(event);
+    if ($topCell) {
+      event.preventDefault();
+      event.stopPropagation();
+      $topCell.focus();
+    }
+  },
+  "keydown.control.down": (event) => {
+    const $bottomCell = getBottomCell(event);
+    if ($bottomCell) {
+      event.preventDefault();
+      event.stopPropagation();
+      $bottomCell.focus();
+    }
+  },
+  "keydown.control.left": (event) => {
+    const $firstCell = getFirstCell(event);
+    if ($firstCell) {
+      event.preventDefault();
+      event.stopPropagation();
+      $firstCell.focus();
+    }
+  },
+  "keydown.control.right": (event) => {
+    const $lastCell = getLastCell(event);
+    if ($lastCell) {
+      event.preventDefault();
+      event.stopPropagation();
+      $lastCell.focus();
+    }
+  },
+  "keydown.end": (event) => {
+    const $lastCell = getLastCell(event);
+    if ($lastCell) {
+      event.preventDefault();
+      event.stopPropagation();
+      $lastCell.focus();
+    }
+  },
+  "keydown.enter": (event) => {
+    const target = event.target;
+    if (target instanceof HTMLTableCellElement) {
+      event.preventDefault();
+      event.stopPropagation();
+      const $downCell = getDownCell(event);
+      if ($downCell) {
+        $downCell.focus();
+      }
+    }
+  },
+  "keydown.shift.enter": (event) => {
+    const target = event.target;
+    if (target instanceof HTMLTableCellElement) {
+      event.preventDefault();
+      event.stopPropagation();
+      const $upCell = getUpCell(event);
+      if ($upCell) {
+        $upCell.focus();
+      }
+    }
+  },
+  "keydown.home": (event) => {
+    const $firstCell = getFirstCell(event);
+    if ($firstCell) {
+      event.preventDefault();
+      event.stopPropagation();
+      $firstCell.focus();
+    }
+  },
+  "keydown.tab": (event) => {
+    const $nextCell = getNextCell(event);
+    if ($nextCell) {
+      event.preventDefault();
+      event.stopPropagation();
+      $nextCell.focus();
+    }
+  },
+  "keydown.shift.tab": (event) => {
+    const $prevCell = getPrevCell(event);
+    if ($prevCell) {
+      event.preventDefault();
+      event.stopPropagation();
+      $prevCell.focus();
+    }
+  }
+};
+function useKeyboardNav(options) {
+  const getSelectors = (option) => {
+    let $parent = null;
+    if (option.parent) {
+      if (typeof option.parent === "string") {
+        $parent = document.querySelector(option.parent);
+      } else if (option.parent instanceof Element) {
+        $parent = option.parent;
+      } else {
+        $parent = option.parent.value;
+      }
+    }
+    let selectors = [];
+    if (option.selectors) {
+      if (typeof option.selectors === "string") {
+        selectors = $parent ? Array.from($parent.querySelectorAll(option.selectors)) : Array.from(document.querySelectorAll(option.selectors));
+      } else if (option.selectors instanceof Element) {
+        selectors.push(option.selectors);
+      } else {
+        if (Array.isArray(option.selectors.value)) {
+          for (const element of option.selectors.value) {
+            if (element instanceof Element) {
+              selectors.push(element);
+            } else {
+              selectors.push(element.$el);
+            }
+          }
+        } else {
+          selectors.push(option.selectors.value);
+        }
+      }
+    }
+    return selectors;
+  };
+  const getEventListener = (option) => {
+    return (event) => {
+      const activeKey = eventKeyMap[event.key] || event.key.toLowerCase();
+      if (modifierKeys.includes(activeKey))
+        return;
+      for (const key of Object.keys(option.handlers)) {
+        const [eventType, ...keys] = key.split(".");
+        if (eventType !== "keydown") {
+          continue;
+        }
+        if (keys.includes(activeKey)) {
+          const listener = option.handlers[key];
+          const hasModifier = keys.filter((key2) => modifierKeys.includes(key2));
+          const isModifierActive = modifierKeys.some((key2) => {
+            const modifierKey = key2.charAt(0).toUpperCase() + key2.slice(1);
+            return event.getModifierState(modifierKey);
+          });
+          if (hasModifier.length > 0) {
+            if (isModifierActive) {
+              for (const modifier of modifierKeys) {
+                if (keys.includes(modifier)) {
+                  const modifierKey = modifier.charAt(0).toUpperCase() + modifier.slice(1);
+                  if (event.getModifierState(modifierKey)) {
+                    listener(event);
+                  }
+                }
+              }
+            }
+          } else {
+            if (!isModifierActive) {
+              listener(event);
+            }
+          }
+        }
+      }
+    };
+  };
+  onMounted(() => {
+    for (const option of options) {
+      const selectors = getSelectors(option);
+      for (const selector of selectors) {
+        selector.addEventListener("keydown", getEventListener(option));
+      }
+    }
+  });
+  onBeforeUnmount(() => {
+    for (const option of options) {
+      const selectors = getSelectors(option);
+      for (const selector of selectors) {
+        selector.removeEventListener("keydown", getEventListener(option));
+      }
+    }
+  });
+}
 const _hoisted_1$2 = ["data-colindex", "data-rowindex", "data-editable", "contenteditable"];
 const _sfc_main$4 = /* @__PURE__ */ defineComponent({
   __name: "ACell",
@@ -32,20 +354,31 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     const handleInput = () => {
       if (tableData.columns[props.colIndex].mask)
         ;
-      if (tableData.columns[props.colIndex].component) {
-        if (resolveDynamicComponent(tableData.columns[props.colIndex].component)) {
-          const domRect = cell.value.getBoundingClientRect();
-          tableData.modal.visible = true;
-          tableData.modal.colIndex = props.colIndex;
-          tableData.modal.rowIndex = props.rowIndex;
-          tableData.modal.parent = cell.value;
-          tableData.modal.top = domRect.top + domRect.height;
-          tableData.modal.left = domRect.left;
-          tableData.modal.width = cellWidth.value;
-          tableData.modal.component = tableData.columns[props.colIndex].component;
-        }
+      const component = tableData.columns[props.colIndex].component;
+      if (component && resolveDynamicComponent(component)) {
+        const domRect = cell.value.getBoundingClientRect();
+        tableData.modal.visible = true;
+        tableData.modal.colIndex = props.colIndex;
+        tableData.modal.rowIndex = props.rowIndex;
+        tableData.modal.parent = cell.value;
+        tableData.modal.top = domRect.top + domRect.height;
+        tableData.modal.left = domRect.left;
+        tableData.modal.width = cellWidth.value;
+        tableData.modal.component = component;
       }
     };
+    useKeyboardNav([
+      {
+        selectors: cell,
+        handlers: {
+          "keydown.f2": handleInput,
+          "keydown.alt.up": handleInput,
+          "keydown.alt.down": handleInput,
+          "keydown.alt.left": handleInput,
+          "keydown.alt.right": handleInput
+        }
+      }
+    ]);
     const textAlign = computed(() => {
       return tableData.columns[props.colIndex].align || "center";
     });
@@ -54,17 +387,21 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     });
     let currentData = "";
     const onFocus = () => {
-      currentData = cell.value.innerText;
-      cell.value.tabIndex = 0;
+      if (cell.value) {
+        currentData = cell.value.innerText;
+        cell.value.tabIndex = 0;
+      }
     };
     const onChange = (event) => {
-      if (event.type == "blur") {
-        cell.value.tabIndex = -1;
-      }
-      if (cell.value && cell.value.innerHTML !== currentData) {
-        currentData = cell.value.innerText;
-        cell.value.dispatchEvent(new Event("change"));
-        cellModified.value = true;
+      if (cell.value) {
+        if (event.type == "blur") {
+          cell.value.tabIndex = -1;
+        }
+        if (cell.value.innerHTML !== currentData) {
+          currentData = cell.value.innerText;
+          cell.value.dispatchEvent(new Event("change"));
+          cellModified.value = true;
+        }
       }
     };
     const getIndent = (colKey, indent) => {
@@ -101,7 +438,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ACell_vue_vue_type_style_index_0_scoped_58f3691e_lang = "";
+const ACell_vue_vue_type_style_index_0_scoped_0fe8c033_lang = "";
 const _export_sfc = (sfc, props) => {
   const target = sfc.__vccOpts || sfc;
   for (const [key, val] of props) {
@@ -109,7 +446,7 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const ACell = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-58f3691e"]]);
+const ACell = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-0fe8c033"]]);
 const _sfc_main$3 = /* @__PURE__ */ defineComponent({
   __name: "ARow",
   props: {
@@ -332,7 +669,7 @@ const _sfc_main$2 = defineComponent({
 const ATableHeader_vue_vue_type_style_index_0_scoped_80fa6b2a_lang = "";
 const _hoisted_1$1 = { key: 0 };
 const _hoisted_2 = { tabindex: "-1" };
-function _sfc_render$1(_ctx, _cache, $props, $setup, $data, $options) {
+function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return _ctx.columns.length ? (openBlock(), createElementBlock("thead", _hoisted_1$1, [
     createElementVNode("tr", _hoisted_2, [
       _ctx.tableData.zeroColumn ? (openBlock(), createElementBlock("th", {
@@ -357,315 +694,35 @@ function _sfc_render$1(_ctx, _cache, $props, $setup, $data, $options) {
     ])
   ])) : createCommentVNode("", true);
 }
-const ATableHeader = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["render", _sfc_render$1], ["__scopeId", "data-v-80fa6b2a"]]);
-const _sfc_main$1 = defineComponent({
-  name: "ATableModal",
+const ATableHeader = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["render", _sfc_render], ["__scopeId", "data-v-80fa6b2a"]]);
+const _sfc_main$1 = /* @__PURE__ */ defineComponent({
+  __name: "ATableModal",
   props: {
-    colIndex: {
-      type: Number,
-      default: 0
-    },
-    rowIndex: {
-      type: Number,
-      default: 0
-    },
-    tableid: {
-      type: String
-    }
+    colIndex: null,
+    rowIndex: null,
+    tableid: null
   },
-  setup(props) {
-    const tableData = inject(props.tableid);
+  setup(__props) {
+    const props = __props;
+    inject(props.tableid);
     const handleInput = (event) => {
       event.stopPropagation();
     };
-    return { tableData, handleInput };
+    return (_ctx, _cache) => {
+      return openBlock(), createElementBlock("div", {
+        ref: "amodal",
+        class: "amodal",
+        tabindex: "-1",
+        onClick: handleInput,
+        onInput: handleInput
+      }, [
+        renderSlot(_ctx.$slots, "default", {}, void 0, true)
+      ], 544);
+    };
   }
 });
-const ATableModal_vue_vue_type_style_index_0_scoped_33741903_lang = "";
-function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
-  return openBlock(), createElementBlock("div", {
-    ref: "amodal",
-    class: "amodal",
-    tabindex: "-1",
-    onClick: _cache[0] || (_cache[0] = (...args) => _ctx.handleInput && _ctx.handleInput(...args)),
-    onInput: _cache[1] || (_cache[1] = (...args) => _ctx.handleInput && _ctx.handleInput(...args))
-  }, [
-    renderSlot(_ctx.$slots, "default", {}, void 0, true)
-  ], 544);
-}
-const ATableModal = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["render", _sfc_render], ["__scopeId", "data-v-33741903"]]);
-const getUpCell = (event) => {
-  var _a;
-  const target = event.target;
-  let $upCell;
-  if (target instanceof HTMLTableCellElement) {
-    const $prevRow = (_a = target.parentElement) == null ? void 0 : _a.previousElementSibling;
-    if ($prevRow) {
-      const $prevRowCells = Array.from($prevRow.children);
-      const $prevCell = $prevRowCells[target.cellIndex];
-      if ($prevCell) {
-        $upCell = $prevCell;
-      }
-    }
-  }
-  return $upCell;
-};
-const getDownCell = (event) => {
-  var _a;
-  const target = event.target;
-  let $downCell;
-  if (target instanceof HTMLTableCellElement) {
-    const $nextRow = (_a = target.parentElement) == null ? void 0 : _a.nextElementSibling;
-    if ($nextRow) {
-      const $nextRowCells = Array.from($nextRow.children);
-      const $nextCell = $nextRowCells[target.cellIndex];
-      if ($nextCell) {
-        $downCell = $nextCell;
-      }
-    }
-  }
-  return $downCell;
-};
-const getPrevCell = (event) => {
-  var _a;
-  const target = event.target;
-  let $prevCell;
-  if (target.previousElementSibling) {
-    $prevCell = target.previousElementSibling;
-  } else {
-    const $prevRow = (_a = target.parentElement) == null ? void 0 : _a.previousElementSibling;
-    if ($prevRow) {
-      const $prevRowCells = Array.from($prevRow.children);
-      $prevRowCells.reverse();
-      $prevCell = $prevRowCells[0];
-    }
-  }
-  return $prevCell;
-};
-const getNextCell = (event) => {
-  var _a;
-  const target = event.target;
-  let $nextCell;
-  if (target.nextElementSibling) {
-    $nextCell = target.nextElementSibling;
-  } else {
-    const $nextRow = (_a = target.parentElement) == null ? void 0 : _a.nextElementSibling;
-    if ($nextRow) {
-      const $nextRowCells = Array.from($nextRow.children);
-      $nextCell = $nextRowCells[0];
-    }
-  }
-  return $nextCell;
-};
-const getFirstCell = (event) => {
-  const target = event.target;
-  const $parent = target.parentElement;
-  const $firstCell = $parent.firstElementChild;
-  return $firstCell;
-};
-const getLastCell = (event) => {
-  const target = event.target;
-  const $parent = target.parentElement;
-  const $lastCell = $parent.lastElementChild;
-  return $lastCell;
-};
-const modifierKeys = ["alt", "control", "shift", "meta"];
-const eventKeyMap = {
-  ArrowUp: "up",
-  ArrowDown: "down",
-  ArrowLeft: "left",
-  ArrowRight: "right",
-  Home: "home",
-  End: "end",
-  Enter: "enter",
-  Tab: "tab"
-};
-const defaultKeypressHandlers = {
-  "keydown.up": (event) => {
-    const $upCell = getUpCell(event);
-    if ($upCell) {
-      event.preventDefault();
-      event.stopPropagation();
-      $upCell.focus();
-    }
-  },
-  "keydown.down": (event) => {
-    const $downCell = getDownCell(event);
-    if ($downCell) {
-      event.preventDefault();
-      event.stopPropagation();
-      $downCell.focus();
-    }
-  },
-  "keydown.left": (event) => {
-    const $prevCell = getPrevCell(event);
-    if ($prevCell) {
-      event.preventDefault();
-      event.stopPropagation();
-      $prevCell.focus();
-    }
-  },
-  "keydown.right": (event) => {
-    const $nextCell = getNextCell(event);
-    if ($nextCell) {
-      event.preventDefault();
-      event.stopPropagation();
-      $nextCell.focus();
-    }
-  },
-  "keydown.control.left": (event) => {
-    const $firstCell = getFirstCell(event);
-    if ($firstCell) {
-      event.preventDefault();
-      event.stopPropagation();
-      $firstCell.focus();
-    }
-  },
-  "keydown.control.right": (event) => {
-    const $lastCell = getLastCell(event);
-    if ($lastCell) {
-      event.preventDefault();
-      event.stopPropagation();
-      $lastCell.focus();
-    }
-  },
-  "keydown.end": (event) => {
-    const $lastCell = getLastCell(event);
-    if ($lastCell) {
-      event.preventDefault();
-      event.stopPropagation();
-      $lastCell.focus();
-    }
-  },
-  "keydown.enter": (event) => {
-    const target = event.target;
-    if (target instanceof HTMLTableCellElement) {
-      const $downCell = getDownCell(event);
-      if ($downCell) {
-        event.preventDefault();
-        event.stopPropagation();
-        $downCell.focus();
-      }
-    }
-  },
-  "keydown.shift.enter": (event) => {
-    const target = event.target;
-    if (target instanceof HTMLTableCellElement) {
-      const $upCell = getUpCell(event);
-      if ($upCell) {
-        event.preventDefault();
-        event.stopPropagation();
-        $upCell.focus();
-      }
-    }
-  },
-  "keydown.home": (event) => {
-    const $firstCell = getFirstCell(event);
-    if ($firstCell) {
-      event.preventDefault();
-      event.stopPropagation();
-      $firstCell.focus();
-    }
-  },
-  "keydown.tab": (event) => {
-    const $nextCell = getNextCell(event);
-    if ($nextCell) {
-      event.preventDefault();
-      event.stopPropagation();
-      $nextCell.focus();
-    }
-  },
-  "keydown.shift.tab": (event) => {
-    const $prevCell = getPrevCell(event);
-    if ($prevCell) {
-      event.preventDefault();
-      event.stopPropagation();
-      $prevCell.focus();
-    }
-  }
-};
-function useKeyboardNav(options) {
-  const getSelectors = (option) => {
-    let $parent = null;
-    if (option.parent) {
-      if (typeof option.parent === "string") {
-        $parent = document.querySelector(option.parent);
-      } else if (option.parent instanceof Element) {
-        $parent = option.parent;
-      } else {
-        $parent = option.parent.value;
-      }
-    }
-    let selectors = [];
-    if (option.selectors) {
-      if (typeof option.selectors === "string") {
-        selectors = $parent ? Array.from($parent.querySelectorAll(option.selectors)) : Array.from(document.querySelectorAll(option.selectors));
-      } else if (option.selectors instanceof Element) {
-        selectors.push(option.selectors);
-      } else {
-        if (Array.isArray(option.selectors.value)) {
-          for (const element of option.selectors.value) {
-            if (element instanceof Element) {
-              selectors.push(element);
-            } else {
-              selectors.push(element.$el);
-            }
-          }
-        } else {
-          selectors.push(option.selectors.value);
-        }
-      }
-    }
-    return selectors;
-  };
-  const getEventListener = (option) => {
-    return (event) => {
-      const activeKey = eventKeyMap[event.key];
-      if (!activeKey) {
-        return;
-      }
-      for (const key of Object.keys(option.handlers)) {
-        const [eventType, ...keys] = key.split(".");
-        if (eventType !== "keydown") {
-          continue;
-        }
-        if (keys.includes(activeKey)) {
-          const listener = option.handlers[key];
-          const hasModifier = keys.filter((key2) => modifierKeys.includes(key2));
-          if (hasModifier.length > 0) {
-            for (const modifier of modifierKeys) {
-              if (keys.includes(modifier)) {
-                const modifierKey = modifier.charAt(0).toUpperCase() + modifier.slice(1);
-                const isModifierActive = event.getModifierState(modifierKey);
-                if (isModifierActive) {
-                  listener(event);
-                }
-              }
-            }
-          } else {
-            listener(event);
-          }
-        }
-      }
-    };
-  };
-  onMounted(() => {
-    for (const option of options) {
-      const selectors = getSelectors(option);
-      for (const selector of selectors) {
-        selector.addEventListener("keydown", getEventListener(option));
-      }
-    }
-  });
-  onUnmounted(() => {
-    for (const option of options) {
-      const selectors = getSelectors(option);
-      for (const selector of selectors) {
-        selector.removeEventListener("keydown", getEventListener(option));
-      }
-    }
-  });
-}
+const ATableModal_vue_vue_type_style_index_0_scoped_1bd2b677_lang = "";
+const ATableModal = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-1bd2b677"]]);
 const _hoisted_1 = { class: "atable" };
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "ATable",
@@ -695,6 +752,13 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
       }
     };
     window.addEventListener("click", clickOutside);
+    window.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        if (tableData.modal.visible) {
+          tableData.modal.visible = false;
+        }
+      }
+    });
     return (_ctx, _cache) => {
       return openBlock(), createElementBlock("table", _hoisted_1, [
         renderSlot(_ctx.$slots, "tableheader", {}, () => [
@@ -759,8 +823,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ATable_vue_vue_type_style_index_0_scoped_e6533082_lang = "";
-const ATable = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-e6533082"]]);
+const ATable_vue_vue_type_style_index_0_scoped_f3a7faf7_lang = "";
+const ATable = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-f3a7faf7"]]);
 function install(app) {
   app.component("ACell", ACell);
   app.component("ARow", _sfc_main$3);
