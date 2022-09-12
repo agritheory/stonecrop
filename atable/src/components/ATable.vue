@@ -54,7 +54,7 @@ import ACell from '@/components/ACell.vue'
 import ARow from '@/components/ARow.vue'
 import ATableHeader from '@/components/ATableHeader.vue'
 import ATableModal from '@/components/ATableModal.vue'
-import { defaultKeypressHandlers, useKeyboardNav } from '@sedum/utilities'
+import { useKeyboardNav } from '@sedum/utilities'
 
 const props = withDefaults(
 	defineProps<{
@@ -73,12 +73,7 @@ const props = withDefaults(
 let tableData = new TableDataStore(props.id, props.columns, props.rows, props.config)
 provide(tableData.id, tableData)
 
-useKeyboardNav([
-	{
-		selectors: 'td',
-		handlers: defaultKeypressHandlers,
-	},
-])
+useKeyboardNav([{ selectors: 'td' }])
 
 const formatCell = (event?: KeyboardEvent, column?: TableColumn, cellData?: any) => {
 	let colIndex: number

@@ -1,15 +1,16 @@
 import { onMounted, onBeforeUnmount } from 'vue'
+import { useElementVisibility } from '@vueuse/core'
 
 import { KeyboardNavigationOptions, KeypressHandlers } from 'types'
 
 const getUpCell = (event: KeyboardEvent) => {
-	const target = event.target as HTMLElement
+	const $target = event.target as HTMLElement
 	let $upCell: HTMLElement | undefined
-	if (target instanceof HTMLTableCellElement) {
-		const $prevRow = target.parentElement?.previousElementSibling
+	if ($target instanceof HTMLTableCellElement) {
+		const $prevRow = $target.parentElement?.previousElementSibling as HTMLTableRowElement
 		if ($prevRow) {
 			const $prevRowCells = Array.from($prevRow.children)
-			const $prevCell = $prevRowCells[target.cellIndex] as HTMLElement
+			const $prevCell = $prevRowCells[$target.cellIndex] as HTMLElement
 			if ($prevCell) {
 				$upCell = $prevCell
 			}
@@ -21,13 +22,13 @@ const getUpCell = (event: KeyboardEvent) => {
 }
 
 const getTopCell = (event: KeyboardEvent) => {
-	const target = event.target as HTMLElement
+	const $target = event.target as HTMLElement
 	let $topCell: HTMLElement | undefined
-	if (target instanceof HTMLTableCellElement) {
-		const $table = target.parentElement?.parentElement
+	if ($target instanceof HTMLTableCellElement) {
+		const $table = $target.parentElement?.parentElement
 		if ($table) {
 			const $firstRow = $table.firstElementChild
-			const $navCell = $firstRow.children[target.cellIndex] as HTMLElement
+			const $navCell = $firstRow.children[$target.cellIndex] as HTMLElement
 			if ($navCell) {
 				$topCell = $navCell
 			}
@@ -39,13 +40,13 @@ const getTopCell = (event: KeyboardEvent) => {
 }
 
 const getDownCell = (event: KeyboardEvent) => {
-	const target = event.target as HTMLElement
+	const $target = event.target as HTMLElement
 	let $downCell: HTMLElement | undefined
-	if (target instanceof HTMLTableCellElement) {
-		const $nextRow = target.parentElement?.nextElementSibling
+	if ($target instanceof HTMLTableCellElement) {
+		const $nextRow = $target.parentElement?.nextElementSibling
 		if ($nextRow) {
 			const $nextRowCells = Array.from($nextRow.children)
-			const $nextCell = $nextRowCells[target.cellIndex] as HTMLElement
+			const $nextCell = $nextRowCells[$target.cellIndex] as HTMLElement
 			if ($nextCell) {
 				$downCell = $nextCell
 			}
@@ -57,13 +58,13 @@ const getDownCell = (event: KeyboardEvent) => {
 }
 
 const getBottomCell = (event: KeyboardEvent) => {
-	const target = event.target as HTMLElement
+	const $target = event.target as HTMLElement
 	let $bottomCell: HTMLElement | undefined
-	if (target instanceof HTMLTableCellElement) {
-		const $table = target.parentElement?.parentElement
+	if ($target instanceof HTMLTableCellElement) {
+		const $table = $target.parentElement?.parentElement
 		if ($table) {
 			const $lastRow = $table.lastElementChild
-			const $navCell = $lastRow.children[target.cellIndex] as HTMLElement
+			const $navCell = $lastRow.children[$target.cellIndex] as HTMLElement
 			if ($navCell) {
 				$bottomCell = $navCell
 			}
@@ -75,46 +76,39 @@ const getBottomCell = (event: KeyboardEvent) => {
 }
 
 const getPrevCell = (event: KeyboardEvent) => {
-	const target = event.target as HTMLElement
+	const $target = event.target as HTMLElement
 	let $prevCell: HTMLElement | undefined
-	if (target.previousElementSibling) {
-		$prevCell = target.previousElementSibling as HTMLElement
+	if ($target.previousElementSibling) {
+		$prevCell = $target.previousElementSibling as HTMLElement
 	} else {
-		const $prevRow = target.parentElement?.previousElementSibling
-		if ($prevRow) {
-			const $prevRowCells = Array.from($prevRow.children)
-			$prevRowCells.reverse()
-			$prevCell = $prevRowCells[0] as HTMLElement
-		}
+		const $prevRow = $target.parentElement?.previousElementSibling
+		$prevCell = $prevRow?.lastElementChild as HTMLElement
 	}
 	return $prevCell
 }
 
 const getNextCell = (event: KeyboardEvent) => {
-	const target = event.target as HTMLElement
+	const $target = event.target as HTMLElement
 	let $nextCell: HTMLElement | undefined
-	if (target.nextElementSibling) {
-		$nextCell = target.nextElementSibling as HTMLElement
+	if ($target.nextElementSibling) {
+		$nextCell = $target.nextElementSibling as HTMLElement
 	} else {
-		const $nextRow = target.parentElement?.nextElementSibling
-		if ($nextRow) {
-			const $nextRowCells = Array.from($nextRow.children)
-			$nextCell = $nextRowCells[0] as HTMLElement
-		}
+		const $nextRow = $target.parentElement?.nextElementSibling
+		$nextCell = $nextRow?.firstElementChild as HTMLElement
 	}
 	return $nextCell
 }
 
 const getFirstCell = (event: KeyboardEvent) => {
-	const target = event.target as HTMLElement
-	const $parent = target.parentElement
+	const $target = event.target as HTMLElement
+	const $parent = $target.parentElement
 	const $firstCell = $parent.firstElementChild as HTMLElement | null
 	return $firstCell
 }
 
 const getLastCell = (event: KeyboardEvent) => {
-	const target = event.target as HTMLElement
-	const $parent = target.parentElement
+	const $target = event.target as HTMLElement
+	const $parent = $target.parentElement
 	const $lastCell = $parent.lastElementChild as HTMLElement | null
 	return $lastCell
 }
@@ -147,17 +141,19 @@ export const defaultKeypressHandlers: KeypressHandlers = {
 	},
 	'keydown.left': (event: KeyboardEvent) => {
 		const $prevCell = getPrevCell(event)
+		// prevent default edit-cell behaviour on first cell
+		event.preventDefault()
+		event.stopPropagation()
 		if ($prevCell) {
-			event.preventDefault()
-			event.stopPropagation()
 			$prevCell.focus()
 		}
 	},
 	'keydown.right': (event: KeyboardEvent) => {
 		const $nextCell = getNextCell(event)
+		// prevent default edit-cell behaviour on last cell
+		event.preventDefault()
+		event.stopPropagation()
 		if ($nextCell) {
-			event.preventDefault()
-			event.stopPropagation()
 			$nextCell.focus()
 		}
 	},
@@ -202,8 +198,8 @@ export const defaultKeypressHandlers: KeypressHandlers = {
 		}
 	},
 	'keydown.enter': (event: KeyboardEvent) => {
-		const target = event.target as HTMLElement
-		if (target instanceof HTMLTableCellElement) {
+		const $target = event.target as HTMLElement
+		if ($target instanceof HTMLTableCellElement) {
 			event.preventDefault()
 			event.stopPropagation()
 			const $downCell = getDownCell(event)
@@ -215,8 +211,8 @@ export const defaultKeypressHandlers: KeypressHandlers = {
 		}
 	},
 	'keydown.shift.enter': (event: KeyboardEvent) => {
-		const target = event.target as HTMLElement
-		if (target instanceof HTMLTableCellElement) {
+		const $target = event.target as HTMLElement
+		if ($target instanceof HTMLTableCellElement) {
 			event.preventDefault()
 			event.stopPropagation()
 			const $upCell = getUpCell(event)
@@ -291,7 +287,20 @@ export function useKeyboardNav(options: KeyboardNavigationOptions[]) {
 				}
 			}
 		} else {
-			// TODO: get all visible elements under parent DOM tree
+			const $children = Array.from($parent.children)
+			selectors = $children.filter((selector: HTMLElement) => {
+				// ignore elements not in the tab order
+				if (selector.tabIndex < 0) {
+					return false
+				}
+
+				// ignore elements that are not visible
+				if (!useElementVisibility(selector).value) {
+					return false
+				}
+
+				return true
+			})
 		}
 
 		return selectors
@@ -302,14 +311,15 @@ export function useKeyboardNav(options: KeyboardNavigationOptions[]) {
 			const activeKey = (eventKeyMap[event.key] as string) || event.key.toLowerCase()
 			if (modifierKeys.includes(activeKey)) return // ignore modifier key presses
 
-			for (const key of Object.keys(option.handlers)) {
+			const handlers = option.handlers || defaultKeypressHandlers
+			for (const key of Object.keys(handlers)) {
 				const [eventType, ...keys] = key.split('.')
 				if (eventType !== 'keydown') {
 					continue
 				}
 
 				if (keys.includes(activeKey)) {
-					const listener = option.handlers[key]
+					const listener = handlers[key]
 
 					// check if the handler has modifiers, and if the modifier is active;
 					// this is to ensure exact key-press matches

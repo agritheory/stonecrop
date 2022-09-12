@@ -1,32 +1,172 @@
-(function(global, factory) {
-  typeof exports === "object" && typeof module !== "undefined" ? factory(exports, require("vue")) : typeof define === "function" && define.amd ? define(["exports", "vue"], factory) : (global = typeof globalThis !== "undefined" ? globalThis : global || self, factory(global["@sedum/atable"] = {}, global.Vue));
+(function(global2, factory) {
+  typeof exports === "object" && typeof module !== "undefined" ? factory(exports, require("vue")) : typeof define === "function" && define.amd ? define(["exports", "vue"], factory) : (global2 = typeof globalThis !== "undefined" ? globalThis : global2 || self, factory(global2["@sedum/atable"] = {}, global2.Vue));
 })(this, function(exports2, vue) {
   "use strict";
+  var _a;
+  const isClient = typeof window !== "undefined";
+  const isString = (val) => typeof val === "string";
+  const noop = () => {
+  };
+  isClient && ((_a = window == null ? void 0 : window.navigator) == null ? void 0 : _a.userAgent) && /iP(ad|hone|od)/.test(window.navigator.userAgent);
+  function resolveUnref(r) {
+    return typeof r === "function" ? r() : vue.unref(r);
+  }
+  function identity(arg) {
+    return arg;
+  }
+  function tryOnScopeDispose(fn) {
+    if (vue.getCurrentScope()) {
+      vue.onScopeDispose(fn);
+      return true;
+    }
+    return false;
+  }
+  function unrefElement(elRef) {
+    var _a2;
+    const plain = resolveUnref(elRef);
+    return (_a2 = plain == null ? void 0 : plain.$el) != null ? _a2 : plain;
+  }
+  const defaultWindow = isClient ? window : void 0;
+  function useEventListener(...args) {
+    let target;
+    let event;
+    let listener;
+    let options;
+    if (isString(args[0])) {
+      [event, listener, options] = args;
+      target = defaultWindow;
+    } else {
+      [target, event, listener, options] = args;
+    }
+    if (!target)
+      return noop;
+    let cleanup = noop;
+    const stopWatch = vue.watch(() => unrefElement(target), (el) => {
+      cleanup();
+      if (!el)
+        return;
+      el.addEventListener(event, listener, options);
+      cleanup = () => {
+        el.removeEventListener(event, listener, options);
+        cleanup = noop;
+      };
+    }, { immediate: true, flush: "post" });
+    const stop = () => {
+      stopWatch();
+      cleanup();
+    };
+    tryOnScopeDispose(stop);
+    return stop;
+  }
+  const _global = typeof globalThis !== "undefined" ? globalThis : typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : {};
+  const globalKey = "__vueuse_ssr_handlers__";
+  _global[globalKey] = _global[globalKey] || {};
+  _global[globalKey];
+  function useElementVisibility(element, { window: window2 = defaultWindow, scrollTarget } = {}) {
+    const elementIsVisible = vue.ref(false);
+    const testBounding = () => {
+      if (!window2)
+        return;
+      const document2 = window2.document;
+      const el = unrefElement(element);
+      if (!el) {
+        elementIsVisible.value = false;
+      } else {
+        const rect = el.getBoundingClientRect();
+        elementIsVisible.value = rect.top <= (window2.innerHeight || document2.documentElement.clientHeight) && rect.left <= (window2.innerWidth || document2.documentElement.clientWidth) && rect.bottom >= 0 && rect.right >= 0;
+      }
+    };
+    vue.watch(() => unrefElement(element), () => testBounding(), { immediate: true, flush: "post" });
+    if (window2) {
+      useEventListener(scrollTarget || window2, "scroll", testBounding, {
+        capture: false,
+        passive: true
+      });
+    }
+    return elementIsVisible;
+  }
+  var SwipeDirection;
+  (function(SwipeDirection2) {
+    SwipeDirection2["UP"] = "UP";
+    SwipeDirection2["RIGHT"] = "RIGHT";
+    SwipeDirection2["DOWN"] = "DOWN";
+    SwipeDirection2["LEFT"] = "LEFT";
+    SwipeDirection2["NONE"] = "NONE";
+  })(SwipeDirection || (SwipeDirection = {}));
+  var __defProp = Object.defineProperty;
+  var __getOwnPropSymbols = Object.getOwnPropertySymbols;
+  var __hasOwnProp = Object.prototype.hasOwnProperty;
+  var __propIsEnum = Object.prototype.propertyIsEnumerable;
+  var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+  var __spreadValues = (a, b) => {
+    for (var prop in b || (b = {}))
+      if (__hasOwnProp.call(b, prop))
+        __defNormalProp(a, prop, b[prop]);
+    if (__getOwnPropSymbols)
+      for (var prop of __getOwnPropSymbols(b)) {
+        if (__propIsEnum.call(b, prop))
+          __defNormalProp(a, prop, b[prop]);
+      }
+    return a;
+  };
+  const _TransitionPresets = {
+    easeInSine: [0.12, 0, 0.39, 0],
+    easeOutSine: [0.61, 1, 0.88, 1],
+    easeInOutSine: [0.37, 0, 0.63, 1],
+    easeInQuad: [0.11, 0, 0.5, 0],
+    easeOutQuad: [0.5, 1, 0.89, 1],
+    easeInOutQuad: [0.45, 0, 0.55, 1],
+    easeInCubic: [0.32, 0, 0.67, 0],
+    easeOutCubic: [0.33, 1, 0.68, 1],
+    easeInOutCubic: [0.65, 0, 0.35, 1],
+    easeInQuart: [0.5, 0, 0.75, 0],
+    easeOutQuart: [0.25, 1, 0.5, 1],
+    easeInOutQuart: [0.76, 0, 0.24, 1],
+    easeInQuint: [0.64, 0, 0.78, 0],
+    easeOutQuint: [0.22, 1, 0.36, 1],
+    easeInOutQuint: [0.83, 0, 0.17, 1],
+    easeInExpo: [0.7, 0, 0.84, 0],
+    easeOutExpo: [0.16, 1, 0.3, 1],
+    easeInOutExpo: [0.87, 0, 0.13, 1],
+    easeInCirc: [0.55, 0, 1, 0.45],
+    easeOutCirc: [0, 0.55, 0.45, 1],
+    easeInOutCirc: [0.85, 0, 0.15, 1],
+    easeInBack: [0.36, 0, 0.66, -0.56],
+    easeOutBack: [0.34, 1.56, 0.64, 1],
+    easeInOutBack: [0.68, -0.6, 0.32, 1.6]
+  };
+  __spreadValues({
+    linear: identity
+  }, _TransitionPresets);
+  const isElementVisible = (element) => {
+    return useElementVisibility(element).value && element.clientHeight > 0;
+  };
   const getUpCell = (event) => {
-    var _a;
-    const target = event.target;
-    let $upCell;
-    if (target instanceof HTMLTableCellElement) {
-      const $prevRow = (_a = target.parentElement) == null ? void 0 : _a.previousElementSibling;
-      if ($prevRow) {
+    var _a2;
+    const $target = event.target;
+    let $upCell = $target;
+    if ($target instanceof HTMLTableCellElement) {
+      while ($upCell) {
+        const $prevRow = (_a2 = $upCell.parentElement) == null ? void 0 : _a2.previousElementSibling;
+        if (!$prevRow)
+          break;
         const $prevRowCells = Array.from($prevRow.children);
-        const $prevCell = $prevRowCells[target.cellIndex];
-        if ($prevCell) {
-          $upCell = $prevCell;
-        }
+        $upCell = $prevRowCells[$target.cellIndex];
+        if (!$upCell || isElementVisible($upCell))
+          break;
       }
     }
     return $upCell;
   };
   const getTopCell = (event) => {
-    var _a;
-    const target = event.target;
+    var _a2;
+    const $target = event.target;
     let $topCell;
-    if (target instanceof HTMLTableCellElement) {
-      const $table = (_a = target.parentElement) == null ? void 0 : _a.parentElement;
+    if ($target instanceof HTMLTableCellElement) {
+      const $table = (_a2 = $target.parentElement) == null ? void 0 : _a2.parentElement;
       if ($table) {
         const $firstRow = $table.firstElementChild;
-        const $navCell = $firstRow.children[target.cellIndex];
+        const $navCell = $firstRow.children[$target.cellIndex];
         if ($navCell) {
           $topCell = $navCell;
         }
@@ -35,30 +175,32 @@
     return $topCell;
   };
   const getDownCell = (event) => {
-    var _a;
-    const target = event.target;
-    let $downCell;
-    if (target instanceof HTMLTableCellElement) {
-      const $nextRow = (_a = target.parentElement) == null ? void 0 : _a.nextElementSibling;
-      if ($nextRow) {
+    var _a2;
+    const $target = event.target;
+    let $downCell = $target;
+    if ($target instanceof HTMLTableCellElement) {
+      while ($downCell) {
+        debugger;
+        const $nextRow = (_a2 = $target.parentElement) == null ? void 0 : _a2.nextElementSibling;
+        if (!$nextRow)
+          break;
         const $nextRowCells = Array.from($nextRow.children);
-        const $nextCell = $nextRowCells[target.cellIndex];
-        if ($nextCell) {
-          $downCell = $nextCell;
-        }
+        $downCell = $nextRowCells[$target.cellIndex];
+        if (!$downCell || isElementVisible($downCell))
+          break;
       }
     }
     return $downCell;
   };
   const getBottomCell = (event) => {
-    var _a;
-    const target = event.target;
+    var _a2;
+    const $target = event.target;
     let $bottomCell;
-    if (target instanceof HTMLTableCellElement) {
-      const $table = (_a = target.parentElement) == null ? void 0 : _a.parentElement;
+    if ($target instanceof HTMLTableCellElement) {
+      const $table = (_a2 = $target.parentElement) == null ? void 0 : _a2.parentElement;
       if ($table) {
         const $lastRow = $table.lastElementChild;
-        const $navCell = $lastRow.children[target.cellIndex];
+        const $navCell = $lastRow.children[$target.cellIndex];
         if ($navCell) {
           $bottomCell = $navCell;
         }
@@ -67,45 +209,38 @@
     return $bottomCell;
   };
   const getPrevCell = (event) => {
-    var _a;
-    const target = event.target;
+    var _a2;
+    const $target = event.target;
     let $prevCell;
-    if (target.previousElementSibling) {
-      $prevCell = target.previousElementSibling;
+    if ($target.previousElementSibling) {
+      $prevCell = $target.previousElementSibling;
     } else {
-      const $prevRow = (_a = target.parentElement) == null ? void 0 : _a.previousElementSibling;
-      if ($prevRow) {
-        const $prevRowCells = Array.from($prevRow.children);
-        $prevRowCells.reverse();
-        $prevCell = $prevRowCells[0];
-      }
+      const $prevRow = (_a2 = $target.parentElement) == null ? void 0 : _a2.previousElementSibling;
+      $prevCell = $prevRow == null ? void 0 : $prevRow.lastElementChild;
     }
     return $prevCell;
   };
   const getNextCell = (event) => {
-    var _a;
-    const target = event.target;
+    var _a2;
+    const $target = event.target;
     let $nextCell;
-    if (target.nextElementSibling) {
-      $nextCell = target.nextElementSibling;
+    if ($target.nextElementSibling) {
+      $nextCell = $target.nextElementSibling;
     } else {
-      const $nextRow = (_a = target.parentElement) == null ? void 0 : _a.nextElementSibling;
-      if ($nextRow) {
-        const $nextRowCells = Array.from($nextRow.children);
-        $nextCell = $nextRowCells[0];
-      }
+      const $nextRow = (_a2 = $target.parentElement) == null ? void 0 : _a2.nextElementSibling;
+      $nextCell = $nextRow == null ? void 0 : $nextRow.firstElementChild;
     }
     return $nextCell;
   };
   const getFirstCell = (event) => {
-    const target = event.target;
-    const $parent = target.parentElement;
+    const $target = event.target;
+    const $parent = $target.parentElement;
     const $firstCell = $parent.firstElementChild;
     return $firstCell;
   };
   const getLastCell = (event) => {
-    const target = event.target;
-    const $parent = target.parentElement;
+    const $target = event.target;
+    const $parent = $target.parentElement;
     const $lastCell = $parent.lastElementChild;
     return $lastCell;
   };
@@ -135,17 +270,17 @@
     },
     "keydown.left": (event) => {
       const $prevCell = getPrevCell(event);
+      event.preventDefault();
+      event.stopPropagation();
       if ($prevCell) {
-        event.preventDefault();
-        event.stopPropagation();
         $prevCell.focus();
       }
     },
     "keydown.right": (event) => {
       const $nextCell = getNextCell(event);
+      event.preventDefault();
+      event.stopPropagation();
       if ($nextCell) {
-        event.preventDefault();
-        event.stopPropagation();
         $nextCell.focus();
       }
     },
@@ -190,8 +325,8 @@
       }
     },
     "keydown.enter": (event) => {
-      const target = event.target;
-      if (target instanceof HTMLTableCellElement) {
+      const $target = event.target;
+      if ($target instanceof HTMLTableCellElement) {
         event.preventDefault();
         event.stopPropagation();
         const $downCell = getDownCell(event);
@@ -201,8 +336,8 @@
       }
     },
     "keydown.shift.enter": (event) => {
-      const target = event.target;
-      if (target instanceof HTMLTableCellElement) {
+      const $target = event.target;
+      if ($target instanceof HTMLTableCellElement) {
         event.preventDefault();
         event.stopPropagation();
         const $upCell = getUpCell(event);
@@ -267,6 +402,17 @@
             selectors.push(option.selectors.value);
           }
         }
+      } else {
+        const $children = Array.from($parent.children);
+        selectors = $children.filter((selector) => {
+          if (selector.tabIndex < 0) {
+            return false;
+          }
+          if (!useElementVisibility(selector).value) {
+            return false;
+          }
+          return true;
+        });
       }
       return selectors;
     };
@@ -275,13 +421,14 @@
         const activeKey = eventKeyMap[event.key] || event.key.toLowerCase();
         if (modifierKeys.includes(activeKey))
           return;
-        for (const key of Object.keys(option.handlers)) {
+        const handlers = option.handlers || defaultKeypressHandlers;
+        for (const key of Object.keys(handlers)) {
           const [eventType, ...keys] = key.split(".");
           if (eventType !== "keydown") {
             continue;
           }
           if (keys.includes(activeKey)) {
-            const listener = option.handlers[key];
+            const listener = handlers[key];
             const hasModifier = keys.filter((key2) => modifierKeys.includes(key2));
             const isModifierActive = modifierKeys.some((key2) => {
               const modifierKey = key2.charAt(0).toUpperCase() + key2.slice(1);
@@ -333,7 +480,7 @@
       tableid: null
     },
     setup(__props) {
-      var _a;
+      var _a2;
       const props = __props;
       const tableData = vue.inject(props.tableid);
       const cell = vue.ref(null);
@@ -419,7 +566,7 @@
         width: cellWidth.value,
         backgroundColor: !cellModified.value ? "inherit" : "var(--cell-modified-color)",
         fontWeight: !cellModified.value ? "inherit" : "bold",
-        paddingLeft: getIndent(props.colIndex, (_a = tableData.display[props.rowIndex]) == null ? void 0 : _a.indent)
+        paddingLeft: getIndent(props.colIndex, (_a2 = tableData.display[props.rowIndex]) == null ? void 0 : _a2.indent)
       };
       return (_ctx, _cache) => {
         return vue.openBlock(), vue.createElementBlock("td", {
@@ -680,12 +827,12 @@
           style: vue.normalizeStyle({ minWidth: _ctx.tableData.numberedRowWidth.value })
         }, null, 4)) : vue.createCommentVNode("", true),
         (vue.openBlock(true), vue.createElementBlock(vue.Fragment, null, vue.renderList(_ctx.columns, (column, colKey) => {
-          var _a;
+          var _a2;
           return vue.openBlock(), vue.createElementBlock("th", {
             key: colKey,
             tabindex: "-1",
             style: vue.normalizeStyle({
-              textAlign: ((_a = column.align) == null ? void 0 : _a.toLowerCase()) || "center",
+              textAlign: ((_a2 = column.align) == null ? void 0 : _a2.toLowerCase()) || "center",
               minWidth: column.width || "40ch"
             })
           }, [
@@ -740,15 +887,10 @@
       const props = __props;
       let tableData = new TableDataStore(props.id, props.columns, props.rows, props.config);
       vue.provide(tableData.id, tableData);
-      useKeyboardNav([
-        {
-          selectors: "td",
-          handlers: defaultKeypressHandlers
-        }
-      ]);
+      useKeyboardNav([{ selectors: "td" }]);
       const clickOutside = (event) => {
-        var _a;
-        if (!((_a = tableData.modal.parent) == null ? void 0 : _a.contains(event.target))) {
+        var _a2;
+        if (!((_a2 = tableData.modal.parent) == null ? void 0 : _a2.contains(event.target))) {
           if (tableData.modal.visible) {
             tableData.modal.visible = false;
           }
@@ -781,7 +923,7 @@
               }, {
                 default: vue.withCtx(() => [
                   (vue.openBlock(true), vue.createElementBlock(vue.Fragment, null, vue.renderList(vue.unref(tableData).columns, (col, colIndex) => {
-                    var _a;
+                    var _a2;
                     return vue.openBlock(), vue.createBlock(ACell, {
                       key: colIndex,
                       tableid: vue.unref(tableData).id,
@@ -790,7 +932,7 @@
                       rowIndex,
                       colIndex: colIndex + (vue.unref(tableData).zeroColumn ? 0 : -1),
                       style: vue.normalizeStyle({
-                        textAlign: ((_a = col == null ? void 0 : col.align) == null ? void 0 : _a.toLowerCase()) || "center",
+                        textAlign: ((_a2 = col == null ? void 0 : col.align) == null ? void 0 : _a2.toLowerCase()) || "center",
                         minWidth: (col == null ? void 0 : col.width) || "40ch"
                       })
                     }, null, 8, ["tableid", "col", "rowIndex", "colIndex", "style"]);
@@ -826,8 +968,8 @@
       };
     }
   });
-  const ATable_vue_vue_type_style_index_0_scoped_f3a7faf7_lang = "";
-  const ATable = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-f3a7faf7"]]);
+  const ATable_vue_vue_type_style_index_0_scoped_f1dba1ed_lang = "";
+  const ATable = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-f1dba1ed"]]);
   function install(app) {
     app.component("ACell", ACell);
     app.component("ARow", _sfc_main$3);

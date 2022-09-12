@@ -56,12 +56,12 @@ div[data-v-1bd2b677] {
 	font-size: var(--table-font-size); */
 }
 
-table[data-v-f3a7faf7] {
+table[data-v-f1dba1ed] {
 	display: table;
 	border-collapse: var(--border-collapsed);
 	caret-color: var(--brand-color);
 }
-th[data-v-f3a7faf7] {
+th[data-v-f1dba1ed] {
 	box-sizing: border-box;
 	background-color: var(--brand-color);
 	border-width: 1px;
@@ -70,10 +70,10 @@ th[data-v-f3a7faf7] {
 	border-radius: 0px;
 	color: var(--header-text-color);
 }
-tr[data-v-f3a7faf7] {
+tr[data-v-f1dba1ed] {
 	background-color: var(--row-color-zebra-light);
 	outline: none;
 }
-tr[data-v-f3a7faf7]:nth-child(even) {
+tr[data-v-f1dba1ed]:nth-child(even) {
 	background-color: var(--row-color-zebra-dark);
 }

@@ -45,7 +45,7 @@
 import { computed, inject, onMounted, ref, watch } from 'vue'
 
 import { TableDataStore } from '@sedum/atable'
-import { defaultKeypressHandlers, useKeyboardNav } from '@sedum/utilities'
+import { useKeyboardNav } from '@sedum/utilities'
 
 const props = defineProps<{
 	colIndex?: number
@@ -57,12 +57,7 @@ const props = defineProps<{
 
 const tableData = inject<TableDataStore>(props.tableid)
 
-useKeyboardNav([
-	{
-		selectors: 'td',
-		handlers: defaultKeypressHandlers,
-	},
-])
+useKeyboardNav([{ selectors: 'td' }])
 
 const numberOfRows = 6
 const numberOfColumns = 7
