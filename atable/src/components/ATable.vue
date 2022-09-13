@@ -74,7 +74,7 @@ const props = withDefaults(
 let tableData = new TableDataStore(props.id, props.columns, props.rows, props.config)
 provide(tableData.id, tableData)
 
-useKeyboardNav([{ selectors: 'td' }])
+useKeyboardNav([{ parent: 'table.atable', selectors: 'td' }])
 
 const formatCell = (event?: KeyboardEvent, column?: TableColumn, cellData?: any) => {
 	let colIndex: number

@@ -1,5 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap');
-[data-v-58cec00b]:root {
+[data-v-913147f2]:root {
 	--primary-color: #3c5014;
 	--primary-text-color: #f7f7e9;
 	--font-size: 11pt;
@@ -28,7 +28,7 @@
 	#e63c28
 	#827553 */
 }
-.aform-primary-action[data-v-58cec00b] {
+.aform-primary-action[data-v-913147f2] {
 	font-size: 100%;
 	text-align: center;
 	min-height: 2em;
@@ -41,19 +41,19 @@
 	font-size: var(--font-size);
 	margin: 0.5ch;
 }
-.aform-primary-action[data-v-58cec00b]:hover,
-.aform-primary-action[data-v-58cec00b]:active {
+.aform-primary-action[data-v-913147f2]:hover,
+.aform-primary-action[data-v-913147f2]:active {
 	outline: 2px solid var(--primary-text-color);
 	outline-offset: -4px;
 	transition: outline-offset 200ms ease;
 }
-.atable[data-v-58cec00b] {
+.atable[data-v-913147f2] {
 	font-family: var(--atable-font-family);
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
 	font-size: var(--table-font-size);
 }
-.adate[data-v-58cec00b] {
+.adate[data-v-913147f2] {
 	border: 2px solid var(--focus-cell-outline);
 	position: absolute;
 	z-index: 100;
@@ -64,19 +64,19 @@
 	outline: none;
 	width: calc(100% - 4px);
 }
-.adate tr[data-v-58cec00b] {
+.adate tr[data-v-913147f2] {
 	height: 1.15rem;
 	text-align: center;
 	vertical-align: middle;
 }
-.adate td[data-v-58cec00b] {
+.adate td[data-v-913147f2] {
 	border: 2px solid transparent;
 	min-width: 2.25ch; /* this doesn't zoom correctly */
 }
-.adate td[data-v-58cec00b]:hover {
+.adate td[data-v-913147f2]:hover {
 	border: 2px solid var(--focus-cell-outline);
 }
-.adate td[data-v-58cec00b] {
+.adate td[data-v-913147f2] {
 	border: 1px;
 	border-style: solid;
 	border-color: var(--cell-border-color);
@@ -91,8 +91,8 @@
 	padding-left: 0.5ch;
 	padding-right: 0.5ch;
 }
-.adate td[data-v-58cec00b]:focus,
-.adate td[data-v-58cec00b]:focus-within {
+.adate td[data-v-913147f2]:focus,
+.adate td[data-v-913147f2]:focus-within {
 	background-color: var(--focus-cell-background);
 	outline-width: 2px;
 	outline-style: solid;
@@ -103,7 +103,7 @@
 	max-height: 1.15em;
 	overflow: hidden;
 }
-button[data-v-58cec00b] {
+button[data-v-913147f2] {
 	background-color: var(--row-color-zebra-light);
 	border: none;
 	padding: 0px;
@@ -112,16 +112,16 @@ button[data-v-58cec00b] {
 	outline: none;
 	font-size: var(--table-font-size);
 }
-.dateheader[data-v-58cec00b] {
+.dateheader[data-v-913147f2] {
 	font-weight: 700;
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
 }
-.adate .todaysdate[data-v-58cec00b] {
+.adate .todaysdate[data-v-913147f2] {
 	border-bottom-color: var(--focus-cell-outline);
 }
-.adate .selecteddate[data-v-58cec00b] {
+.adate .selecteddate[data-v-913147f2] {
 	border: 2px solid var(--focus-cell-outline);
 }
 

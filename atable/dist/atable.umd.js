@@ -881,7 +881,7 @@
       const props = __props;
       let tableData = new TableDataStore(props.id, props.columns, props.rows, props.config);
       vue.provide(tableData.id, tableData);
-      useKeyboardNav([{ selectors: "td" }]);
+      useKeyboardNav([{ parent: "table.atable", selectors: "td" }]);
       const clickOutside = (event) => {
         var _a2;
         if (!((_a2 = tableData.modal.parent) == null ? void 0 : _a2.contains(event.target))) {
@@ -963,8 +963,8 @@
       };
     }
   });
-  const ATable_vue_vue_type_style_index_0_scoped_afc9f9b2_lang = "";
-  const ATable = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-afc9f9b2"]]);
+  const ATable_vue_vue_type_style_index_0_scoped_166249a2_lang = "";
+  const ATable = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-166249a2"]]);
   function install(app) {
     app.component("ACell", ACell);
     app.component("ARow", _sfc_main$3);

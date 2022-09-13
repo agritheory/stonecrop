@@ -595,16 +595,21 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
         month: "long"
       });
     });
-    const keypressHandlers = {
-      ...defaultKeypressHandlers,
-      ...{
-        "keydown.pageup": previousMonth,
-        "keydown.shift.pageup": previousYear,
-        "keydown.pagedown": nextMonth,
-        "keydown.shift.pagedown": nextYear
+    useKeyboardNav([
+      {
+        parent: "table.adate",
+        selectors: "td",
+        handlers: {
+          ...defaultKeypressHandlers,
+          ...{
+            "keydown.pageup": previousMonth,
+            "keydown.shift.pageup": previousYear,
+            "keydown.pagedown": nextMonth,
+            "keydown.shift.pagedown": nextYear
+          }
+        }
       }
-    };
-    useKeyboardNav([{ selectors: "td", handlers: keypressHandlers }]);
+    ]);
     return (_ctx, _cache) => {
       return openBlock(), createElementBlock("div", {
         event: __props.event,
@@ -653,8 +658,8 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ADate_vue_vue_type_style_index_0_scoped_58cec00b_lang = "";
-const ADate = /* @__PURE__ */ _export_sfc(_sfc_main$5, [["__scopeId", "data-v-58cec00b"]]);
+const ADate_vue_vue_type_style_index_0_scoped_913147f2_lang = "";
+const ADate = /* @__PURE__ */ _export_sfc(_sfc_main$5, [["__scopeId", "data-v-913147f2"]]);
 const _sfc_main$4 = defineComponent({
   name: "AForm",
   props: {
