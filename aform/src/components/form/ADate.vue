@@ -171,13 +171,17 @@ const monthAndYear = computed(() => {
 })
 
 // setup keyboard navigation
-Object.assign(defaultKeypressHandlers, {
-	'keydown.pageup': previousMonth,
-	'keydown.shift.pageup': previousYear,
-	'keydown.pagedown': nextMonth,
-	'keydown.shift.pagedown': nextYear,
-})
-useKeyboardNav([{ selectors: 'td', handlers: defaultKeypressHandlers }])
+const keypressHandlers = {
+	...defaultKeypressHandlers,
+	...{
+		'keydown.pageup': previousMonth,
+		'keydown.shift.pageup': previousYear,
+		'keydown.pagedown': nextMonth,
+		'keydown.shift.pagedown': nextYear,
+	},
+}
+
+useKeyboardNav([{ selectors: 'td', handlers: keypressHandlers }])
 </script>
 
 <style scoped>

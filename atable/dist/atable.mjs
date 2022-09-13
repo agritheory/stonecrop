@@ -960,8 +960,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ATable_vue_vue_type_style_index_0_scoped_458fc4a9_lang = "";
-const ATable = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-458fc4a9"]]);
+const ATable_vue_vue_type_style_index_0_scoped_afc9f9b2_lang = "";
+const ATable = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-afc9f9b2"]]);
 function install(app) {
   app.component("ACell", ACell);
   app.component("ARow", _sfc_main$3);

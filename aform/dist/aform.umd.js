@@ -598,13 +598,16 @@
           month: "long"
         });
       });
-      Object.assign(defaultKeypressHandlers, {
-        "keydown.pageup": previousMonth,
-        "keydown.shift.pageup": previousYear,
-        "keydown.pagedown": nextMonth,
-        "keydown.shift.pagedown": nextYear
-      });
-      useKeyboardNav([{ selectors: "td", handlers: defaultKeypressHandlers }]);
+      const keypressHandlers = {
+        ...defaultKeypressHandlers,
+        ...{
+          "keydown.pageup": previousMonth,
+          "keydown.shift.pageup": previousYear,
+          "keydown.pagedown": nextMonth,
+          "keydown.shift.pagedown": nextYear
+        }
+      };
+      useKeyboardNav([{ selectors: "td", handlers: keypressHandlers }]);
       return (_ctx, _cache) => {
         return vue.openBlock(), vue.createElementBlock("div", {
           event: __props.event,
@@ -653,8 +656,8 @@
       };
     }
   });
-  const ADate_vue_vue_type_style_index_0_scoped_b220a9e8_lang = "";
-  const ADate = /* @__PURE__ */ _export_sfc(_sfc_main$5, [["__scopeId", "data-v-b220a9e8"]]);
+  const ADate_vue_vue_type_style_index_0_scoped_58cec00b_lang = "";
+  const ADate = /* @__PURE__ */ _export_sfc(_sfc_main$5, [["__scopeId", "data-v-58cec00b"]]);
   const _sfc_main$4 = vue.defineComponent({
     name: "AForm",
     props: {

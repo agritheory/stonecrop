@@ -56,12 +56,12 @@ div[data-v-1bd2b677] {
 	font-size: var(--table-font-size); */
 }
 
-table[data-v-458fc4a9] {
+table[data-v-afc9f9b2] {
 	display: table;
 	border-collapse: var(--border-collapsed);
 	caret-color: var(--brand-color);
 }
-th[data-v-458fc4a9] {
+th[data-v-afc9f9b2] {
 	box-sizing: border-box;
 	background-color: var(--brand-color);
 	border-width: 1px;
@@ -70,10 +70,10 @@ th[data-v-458fc4a9] {
 	border-radius: 0px;
 	color: var(--header-text-color);
 }
-tr[data-v-458fc4a9] {
+tr[data-v-afc9f9b2] {
 	background-color: var(--row-color-zebra-light);
 	outline: none;
 }
-tr[data-v-458fc4a9]:nth-child(even) {
+tr[data-v-afc9f9b2]:nth-child(even) {
 	background-color: var(--row-color-zebra-dark);
 }
