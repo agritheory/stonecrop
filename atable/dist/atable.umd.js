@@ -138,22 +138,18 @@
   __spreadValues({
     linear: identity
   }, _TransitionPresets);
-  const isElementVisible = (element) => {
-    return useElementVisibility(element).value && element.clientHeight > 0;
-  };
   const getUpCell = (event) => {
     var _a2;
     const $target = event.target;
-    let $upCell = $target;
+    let $upCell;
     if ($target instanceof HTMLTableCellElement) {
-      while ($upCell) {
-        const $prevRow = (_a2 = $upCell.parentElement) == null ? void 0 : _a2.previousElementSibling;
-        if (!$prevRow)
-          break;
+      const $prevRow = (_a2 = $target.parentElement) == null ? void 0 : _a2.previousElementSibling;
+      if ($prevRow) {
         const $prevRowCells = Array.from($prevRow.children);
-        $upCell = $prevRowCells[$target.cellIndex];
-        if (!$upCell || isElementVisible($upCell))
-          break;
+        const $prevCell = $prevRowCells[$target.cellIndex];
+        if ($prevCell) {
+          $upCell = $prevCell;
+        }
       }
     }
     return $upCell;
@@ -177,17 +173,15 @@
   const getDownCell = (event) => {
     var _a2;
     const $target = event.target;
-    let $downCell = $target;
+    let $downCell;
     if ($target instanceof HTMLTableCellElement) {
-      while ($downCell) {
-        debugger;
-        const $nextRow = (_a2 = $target.parentElement) == null ? void 0 : _a2.nextElementSibling;
-        if (!$nextRow)
-          break;
+      const $nextRow = (_a2 = $target.parentElement) == null ? void 0 : _a2.nextElementSibling;
+      if ($nextRow) {
         const $nextRowCells = Array.from($nextRow.children);
-        $downCell = $nextRowCells[$target.cellIndex];
-        if (!$downCell || isElementVisible($downCell))
-          break;
+        const $nextCell = $nextRowCells[$target.cellIndex];
+        if ($nextCell) {
+          $downCell = $nextCell;
+        }
       }
     }
     return $downCell;
@@ -955,6 +949,7 @@
           }, {
             default: vue.withCtx(() => [
               (vue.openBlock(), vue.createBlock(vue.resolveDynamicComponent(vue.unref(tableData).modal.component), {
+                key: `${vue.unref(tableData).modal.rowIndex}:${vue.unref(tableData).modal.colIndex}`,
                 colIndex: vue.unref(tableData).modal.colIndex,
                 rowIndex: vue.unref(tableData).modal.rowIndex,
                 tableid: vue.unref(tableData).id
@@ -968,8 +963,8 @@
       };
     }
   });
-  const ATable_vue_vue_type_style_index_0_scoped_f1dba1ed_lang = "";
-  const ATable = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-f1dba1ed"]]);
+  const ATable_vue_vue_type_style_index_0_scoped_458fc4a9_lang = "";
+  const ATable = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-458fc4a9"]]);
   function install(app) {
     app.component("ACell", ACell);
     app.component("ARow", _sfc_main$3);

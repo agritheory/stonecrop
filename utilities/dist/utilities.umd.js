@@ -141,22 +141,18 @@
   __spreadValues({
     linear: identity
   }, _TransitionPresets);
-  const isElementVisible = (element) => {
-    return useElementVisibility(element).value && element.clientHeight > 0;
-  };
   const getUpCell = (event) => {
     var _a2;
     const $target = event.target;
-    let $upCell = $target;
+    let $upCell;
     if ($target instanceof HTMLTableCellElement) {
-      while ($upCell) {
-        const $prevRow = (_a2 = $upCell.parentElement) == null ? void 0 : _a2.previousElementSibling;
-        if (!$prevRow)
-          break;
+      const $prevRow = (_a2 = $target.parentElement) == null ? void 0 : _a2.previousElementSibling;
+      if ($prevRow) {
         const $prevRowCells = Array.from($prevRow.children);
-        $upCell = $prevRowCells[$target.cellIndex];
-        if (!$upCell || isElementVisible($upCell))
-          break;
+        const $prevCell = $prevRowCells[$target.cellIndex];
+        if ($prevCell) {
+          $upCell = $prevCell;
+        }
       }
     }
     return $upCell;
@@ -180,17 +176,15 @@
   const getDownCell = (event) => {
     var _a2;
     const $target = event.target;
-    let $downCell = $target;
+    let $downCell;
     if ($target instanceof HTMLTableCellElement) {
-      while ($downCell) {
-        debugger;
-        const $nextRow = (_a2 = $target.parentElement) == null ? void 0 : _a2.nextElementSibling;
-        if (!$nextRow)
-          break;
+      const $nextRow = (_a2 = $target.parentElement) == null ? void 0 : _a2.nextElementSibling;
+      if ($nextRow) {
         const $nextRowCells = Array.from($nextRow.children);
-        $downCell = $nextRowCells[$target.cellIndex];
-        if (!$downCell || isElementVisible($downCell))
-          break;
+        const $nextCell = $nextRowCells[$target.cellIndex];
+        if ($nextCell) {
+          $downCell = $nextCell;
+        }
       }
     }
     return $downCell;

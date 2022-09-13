@@ -7,7 +7,7 @@
 		class="adate"
 		tabindex="0"
 		ref="adatepicker">
-		<table @keydown.page-down="handlePageDown" @keydown.page-up="handlePageUp">
+		<table>
 			<tr>
 				<td @click="previousMonth" :tabindex="-1">&lt;</td>
 				<th colspan="5">{{ monthAndYear }}</th>
@@ -18,20 +18,20 @@
 				<td
 					v-for="colNo in numberOfColumns"
 					:key="(rowNo - 1) * numberOfColumns + colNo"
-					:contenteditable="tableData.columns[colIndex].edit"
-					:tabindex="0"
+					:contenteditable="false"
 					:spellcheck="false"
+					:tabindex="0"
 					:style="{
 						border: isSelectedDate(currentDates[(rowNo - 1) * numberOfColumns + colNo])
 							? '2px solid var(--focus-cell-outline)'
 							: 'none',
-						borderBottomColor: today(currentDates[(rowNo - 1) * numberOfColumns + colNo])
+						borderBottomColor: isTodaysDate(currentDates[(rowNo - 1) * numberOfColumns + colNo])
 							? 'var(--focus-cell-outline)'
 							: 'none',
 					}"
 					@click.prevent.stop="selectDate($event, (rowNo - 1) * numberOfColumns + colNo)"
 					:class="{
-						todaysdate: today(currentDates[(rowNo - 1) * numberOfColumns + colNo]),
+						todaysdate: isTodaysDate(currentDates[(rowNo - 1) * numberOfColumns + colNo]),
 						selecteddate: isSelectedDate(currentDates[(rowNo - 1) * numberOfColumns + colNo]),
 					}">
 					{{ new Date(currentDates[(rowNo - 1) * numberOfColumns + colNo]).getDate() }}
@@ -42,10 +42,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, onMounted, ref, watch } from 'vue'
+import { computed, inject, nextTick, onMounted, ref, watch } from 'vue'
 
 import { TableDataStore } from '@sedum/atable'
-import { useKeyboardNav } from '@sedum/utilities'
+import { defaultKeypressHandlers, useKeyboardNav } from '@sedum/utilities'
 
 const props = defineProps<{
 	colIndex?: number
@@ -57,48 +57,57 @@ const props = defineProps<{
 
 const tableData = inject<TableDataStore>(props.tableid)
 
-useKeyboardNav([{ selectors: 'td' }])
-
 const numberOfRows = 6
 const numberOfColumns = 7
-
 const todaysDate = new Date()
-let currentMonth = ref(todaysDate.getMonth())
-let currentYear = ref(todaysDate.getFullYear())
 
-let selectedDate = ref(tableData.cellData<string | number | Date>(props.colIndex, props.rowIndex))
-let currentDates = ref<number[]>([])
-let width = ref('')
+const selectedDate = ref<Date>()
+const currentMonth = ref<number>()
+const currentYear = ref<number>()
+const currentDates = ref<number[]>([])
+// const width = ref('')
 
-onMounted(() => {
+onMounted(async () => {
+	let cellDate = tableData.cellData<string | number | Date>(props.colIndex, props.rowIndex)
+	if (cellDate) {
+		if (!(cellDate instanceof Date)) {
+			cellDate = new Date(cellDate)
+		}
+
+		selectedDate.value = cellDate
+		currentMonth.value = selectedDate.value.getMonth()
+		currentYear.value = selectedDate.value.getFullYear()
+	} else {
+		currentMonth.value = todaysDate.getMonth()
+		currentYear.value = todaysDate.getFullYear()
+	}
+
 	renderMonth()
+	await nextTick()
+
+	const $selectedDate = document.getElementsByClassName('selecteddate')
+	if ($selectedDate.length > 0) {
+		;($selectedDate[0] as HTMLElement).focus()
+	} else {
+		const $todaysDate = document.getElementsByClassName('todaysdate')
+		if ($todaysDate.length > 0) {
+			;($todaysDate[0] as HTMLElement).focus()
+		}
+	}
 })
 
-watch(currentMonth, () => {
-	currentDates.value = []
-	renderMonth()
-})
-
-watch(currentYear, () => {
-	currentDates.value = []
+watch([currentMonth, currentYear], () => {
 	renderMonth()
 })
 
 const renderMonth = () => {
+	currentDates.value = []
 	const firstOfMonth = new Date(currentYear.value, currentMonth.value, 1)
 	const monthStartWeekday = firstOfMonth.getDay()
 	const calendarStartDay = firstOfMonth.setDate(firstOfMonth.getDate() - monthStartWeekday)
 	for (let dayIndex of Array(43).keys()) {
 		currentDates.value.push(calendarStartDay + dayIndex * 86400000)
 	}
-}
-
-const handlePageDown = (event: KeyboardEvent) => {
-	event.shiftKey ? previousYear() : previousMonth()
-}
-
-const handlePageUp = (event: KeyboardEvent) => {
-	event.shiftKey ? nextYear() : nextMonth()
 }
 
 const previousYear = () => {
@@ -112,7 +121,7 @@ const nextYear = () => {
 const previousMonth = () => {
 	if (currentMonth.value == 0) {
 		currentMonth.value = 11
-		currentYear.value -= 1
+		previousYear()
 	} else {
 		currentMonth.value -= 1
 	}
@@ -121,13 +130,13 @@ const previousMonth = () => {
 const nextMonth = () => {
 	if (currentMonth.value == 11) {
 		currentMonth.value = 0
-		currentYear.value += 1
+		nextYear()
 	} else {
 		currentMonth.value += 1
 	}
 }
 
-const today = (day: string | number | Date) => {
+const isTodaysDate = (day: string | number | Date) => {
 	if (currentMonth.value !== todaysDate.getMonth()) {
 		return
 	}
@@ -139,7 +148,7 @@ const isSelectedDate = (day: string | number | Date) => {
 }
 
 const selectDate = (event: Event, currentIndex: number) => {
-	selectedDate.value = currentDates.value[currentIndex]
+	selectedDate.value = new Date(currentDates.value[currentIndex])
 	updateData()
 	// TODO: (typing) figure out a way to close datepicker
 	// context.refs.adatepicker.destroy()
@@ -149,10 +158,10 @@ const updateData = () => {
 	tableData.setCellData(props.rowIndex, props.colIndex, selectedDate.value)
 }
 
-const dayWidth = computed(() => {
-	const widthValue = Number(width.value.replace('px', ''))
-	return `${widthValue / (numberOfColumns - 1)}px`
-})
+// const dayWidth = computed(() => {
+// 	const widthValue = Number(width.value.replace('px', ''))
+// 	return `${widthValue / (numberOfColumns - 1)}px`
+// })
 
 const monthAndYear = computed(() => {
 	return new Date(currentYear.value, currentMonth.value, 1).toLocaleDateString(undefined, {
@@ -160,6 +169,15 @@ const monthAndYear = computed(() => {
 		month: 'long',
 	})
 })
+
+// setup keyboard navigation
+Object.assign(defaultKeypressHandlers, {
+	'keydown.pageup': previousMonth,
+	'keydown.shift.pageup': previousYear,
+	'keydown.pagedown': nextMonth,
+	'keydown.shift.pagedown': nextYear,
+})
+useKeyboardNav([{ selectors: 'td', handlers: defaultKeypressHandlers }])
 </script>
 
 <style scoped>

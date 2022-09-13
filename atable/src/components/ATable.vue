@@ -36,6 +36,7 @@
 				maxWidth: tableData.modal.width + 'px',
 			}">
 			<component
+				:key="`${tableData.modal.rowIndex}:${tableData.modal.colIndex}`"
 				:is="tableData.modal.component"
 				:colIndex="tableData.modal.colIndex"
 				:rowIndex="tableData.modal.rowIndex"

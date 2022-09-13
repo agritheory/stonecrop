@@ -168,22 +168,18 @@
   __spreadValues({
     linear: identity
   }, _TransitionPresets);
-  const isElementVisible = (element) => {
-    return useElementVisibility(element).value && element.clientHeight > 0;
-  };
   const getUpCell = (event) => {
     var _a2;
     const $target = event.target;
-    let $upCell = $target;
+    let $upCell;
     if ($target instanceof HTMLTableCellElement) {
-      while ($upCell) {
-        const $prevRow = (_a2 = $upCell.parentElement) == null ? void 0 : _a2.previousElementSibling;
-        if (!$prevRow)
-          break;
+      const $prevRow = (_a2 = $target.parentElement) == null ? void 0 : _a2.previousElementSibling;
+      if ($prevRow) {
         const $prevRowCells = Array.from($prevRow.children);
-        $upCell = $prevRowCells[$target.cellIndex];
-        if (!$upCell || isElementVisible($upCell))
-          break;
+        const $prevCell = $prevRowCells[$target.cellIndex];
+        if ($prevCell) {
+          $upCell = $prevCell;
+        }
       }
     }
     return $upCell;
@@ -207,17 +203,15 @@
   const getDownCell = (event) => {
     var _a2;
     const $target = event.target;
-    let $downCell = $target;
+    let $downCell;
     if ($target instanceof HTMLTableCellElement) {
-      while ($downCell) {
-        debugger;
-        const $nextRow = (_a2 = $target.parentElement) == null ? void 0 : _a2.nextElementSibling;
-        if (!$nextRow)
-          break;
+      const $nextRow = (_a2 = $target.parentElement) == null ? void 0 : _a2.nextElementSibling;
+      if ($nextRow) {
         const $nextRowCells = Array.from($nextRow.children);
-        $downCell = $nextRowCells[$target.cellIndex];
-        if (!$downCell || isElementVisible($downCell))
-          break;
+        const $nextCell = $nextRowCells[$target.cellIndex];
+        if ($nextCell) {
+          $downCell = $nextCell;
+        }
       }
     }
     return $downCell;
@@ -502,9 +496,8 @@
     });
   }
   const _hoisted_1$1 = ["event", "colIndex", "rowIndex", "tableid"];
-  const _hoisted_2$1 = ["onKeydown"];
-  const _hoisted_3$1 = { colspan: "5" };
-  const _hoisted_4 = ["contenteditable", "onClick"];
+  const _hoisted_2$1 = { colspan: "5" };
+  const _hoisted_3$1 = ["onClick"];
   const _sfc_main$5 = /* @__PURE__ */ vue.defineComponent({
     __name: "ADate",
     props: {
@@ -517,39 +510,49 @@
     setup(__props) {
       const props = __props;
       const tableData = vue.inject(props.tableid);
-      useKeyboardNav([{ selectors: "td" }]);
       const numberOfRows = 6;
       const numberOfColumns = 7;
       const todaysDate = new Date();
-      let currentMonth = vue.ref(todaysDate.getMonth());
-      let currentYear = vue.ref(todaysDate.getFullYear());
-      let selectedDate = vue.ref(tableData.cellData(props.colIndex, props.rowIndex));
-      let currentDates = vue.ref([]);
-      let width = vue.ref("");
-      vue.onMounted(() => {
+      const selectedDate = vue.ref();
+      const currentMonth = vue.ref();
+      const currentYear = vue.ref();
+      const currentDates = vue.ref([]);
+      vue.onMounted(async () => {
+        let cellDate = tableData.cellData(props.colIndex, props.rowIndex);
+        if (cellDate) {
+          if (!(cellDate instanceof Date)) {
+            cellDate = new Date(cellDate);
+          }
+          selectedDate.value = cellDate;
+          currentMonth.value = selectedDate.value.getMonth();
+          currentYear.value = selectedDate.value.getFullYear();
+        } else {
+          currentMonth.value = todaysDate.getMonth();
+          currentYear.value = todaysDate.getFullYear();
+        }
         renderMonth();
+        await vue.nextTick();
+        const $selectedDate = document.getElementsByClassName("selecteddate");
+        if ($selectedDate.length > 0) {
+          $selectedDate[0].focus();
+        } else {
+          const $todaysDate = document.getElementsByClassName("todaysdate");
+          if ($todaysDate.length > 0) {
+            $todaysDate[0].focus();
+          }
+        }
       });
-      vue.watch(currentMonth, () => {
-        currentDates.value = [];
-        renderMonth();
-      });
-      vue.watch(currentYear, () => {
-        currentDates.value = [];
+      vue.watch([currentMonth, currentYear], () => {
         renderMonth();
       });
       const renderMonth = () => {
+        currentDates.value = [];
         const firstOfMonth = new Date(currentYear.value, currentMonth.value, 1);
         const monthStartWeekday = firstOfMonth.getDay();
         const calendarStartDay = firstOfMonth.setDate(firstOfMonth.getDate() - monthStartWeekday);
         for (let dayIndex of Array(43).keys()) {
           currentDates.value.push(calendarStartDay + dayIndex * 864e5);
         }
-      };
-      const handlePageDown = (event) => {
-        event.shiftKey ? previousYear() : previousMonth();
-      };
-      const handlePageUp = (event) => {
-        event.shiftKey ? nextYear() : nextMonth();
       };
       const previousYear = () => {
         currentYear.value -= 1;
@@ -560,7 +563,7 @@
       const previousMonth = () => {
         if (currentMonth.value == 0) {
           currentMonth.value = 11;
-          currentYear.value -= 1;
+          previousYear();
         } else {
           currentMonth.value -= 1;
         }
@@ -568,12 +571,12 @@
       const nextMonth = () => {
         if (currentMonth.value == 11) {
           currentMonth.value = 0;
-          currentYear.value += 1;
+          nextYear();
         } else {
           currentMonth.value += 1;
         }
       };
-      const today = (day) => {
+      const isTodaysDate = (day) => {
         if (currentMonth.value !== todaysDate.getMonth()) {
           return;
         }
@@ -583,22 +586,25 @@
         return new Date(day).toDateString() === new Date(selectedDate.value).toDateString();
       };
       const selectDate = (event, currentIndex) => {
-        selectedDate.value = currentDates.value[currentIndex];
+        selectedDate.value = new Date(currentDates.value[currentIndex]);
         updateData();
       };
       const updateData = () => {
         tableData.setCellData(props.rowIndex, props.colIndex, selectedDate.value);
       };
-      vue.computed(() => {
-        const widthValue = Number(width.value.replace("px", ""));
-        return `${widthValue / (numberOfColumns - 1)}px`;
-      });
       const monthAndYear = vue.computed(() => {
         return new Date(currentYear.value, currentMonth.value, 1).toLocaleDateString(void 0, {
           year: "numeric",
           month: "long"
         });
       });
+      Object.assign(defaultKeypressHandlers, {
+        "keydown.pageup": previousMonth,
+        "keydown.shift.pageup": previousYear,
+        "keydown.pagedown": nextMonth,
+        "keydown.shift.pagedown": nextYear
+      });
+      useKeyboardNav([{ selectors: "td", handlers: defaultKeypressHandlers }]);
       return (_ctx, _cache) => {
         return vue.openBlock(), vue.createElementBlock("div", {
           event: __props.event,
@@ -609,18 +615,13 @@
           tabindex: "0",
           ref: "adatepicker"
         }, [
-          vue.createElementVNode("table", {
-            onKeydown: [
-              vue.withKeys(handlePageDown, ["page-down"]),
-              vue.withKeys(handlePageUp, ["page-up"])
-            ]
-          }, [
+          vue.createElementVNode("table", null, [
             vue.createElementVNode("tr", null, [
               vue.createElementVNode("td", {
                 onClick: previousMonth,
                 tabindex: -1
               }, "<"),
-              vue.createElementVNode("th", _hoisted_3$1, vue.toDisplayString(vue.unref(monthAndYear)), 1),
+              vue.createElementVNode("th", _hoisted_2$1, vue.toDisplayString(vue.unref(monthAndYear)), 1),
               vue.createElementVNode("td", {
                 onClick: nextMonth,
                 tabindex: -1
@@ -631,29 +632,29 @@
                 (vue.openBlock(), vue.createElementBlock(vue.Fragment, null, vue.renderList(numberOfColumns, (colNo) => {
                   return vue.createElementVNode("td", {
                     key: (rowNo - 1) * numberOfColumns + colNo,
-                    contenteditable: vue.unref(tableData).columns[__props.colIndex].edit,
-                    tabindex: 0,
+                    contenteditable: false,
                     spellcheck: false,
+                    tabindex: 0,
                     style: vue.normalizeStyle({
-                      border: isSelectedDate(vue.unref(currentDates)[(rowNo - 1) * numberOfColumns + colNo]) ? "2px solid var(--focus-cell-outline)" : "none",
-                      borderBottomColor: today(vue.unref(currentDates)[(rowNo - 1) * numberOfColumns + colNo]) ? "var(--focus-cell-outline)" : "none"
+                      border: isSelectedDate(currentDates.value[(rowNo - 1) * numberOfColumns + colNo]) ? "2px solid var(--focus-cell-outline)" : "none",
+                      borderBottomColor: isTodaysDate(currentDates.value[(rowNo - 1) * numberOfColumns + colNo]) ? "var(--focus-cell-outline)" : "none"
                     }),
                     onClick: vue.withModifiers(($event) => selectDate($event, (rowNo - 1) * numberOfColumns + colNo), ["prevent", "stop"]),
                     class: vue.normalizeClass({
-                      todaysdate: today(vue.unref(currentDates)[(rowNo - 1) * numberOfColumns + colNo]),
-                      selecteddate: isSelectedDate(vue.unref(currentDates)[(rowNo - 1) * numberOfColumns + colNo])
+                      todaysdate: isTodaysDate(currentDates.value[(rowNo - 1) * numberOfColumns + colNo]),
+                      selecteddate: isSelectedDate(currentDates.value[(rowNo - 1) * numberOfColumns + colNo])
                     })
-                  }, vue.toDisplayString(new Date(vue.unref(currentDates)[(rowNo - 1) * numberOfColumns + colNo]).getDate()), 15, _hoisted_4);
+                  }, vue.toDisplayString(new Date(currentDates.value[(rowNo - 1) * numberOfColumns + colNo]).getDate()), 15, _hoisted_3$1);
                 }), 64))
               ]);
             }), 64))
-          ], 40, _hoisted_2$1)
+          ])
         ], 8, _hoisted_1$1);
       };
     }
   });
-  const ADate_vue_vue_type_style_index_0_scoped_bed59339_lang = "";
-  const ADate = /* @__PURE__ */ _export_sfc(_sfc_main$5, [["__scopeId", "data-v-bed59339"]]);
+  const ADate_vue_vue_type_style_index_0_scoped_b220a9e8_lang = "";
+  const ADate = /* @__PURE__ */ _export_sfc(_sfc_main$5, [["__scopeId", "data-v-b220a9e8"]]);
   const _sfc_main$4 = vue.defineComponent({
     name: "AForm",
     props: {
