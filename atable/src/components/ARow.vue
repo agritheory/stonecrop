@@ -1,9 +1,10 @@
 <template>
 	<tr v-show="rowVisible()">
-		<td v-if="tableData.config.numberedRows" id="row-index" :tabIndex="-1" :style="numberedRowStyle">
+		<td ref="cell" v-if="tableData.config.numberedRows" id="row-index" :tabIndex="-1" :style="numberedRowStyle">
 			{{ rowIndex + 1 }}
 		</td>
 		<td
+			ref="cell"
 			v-if="tableData.config.treeView"
 			id="row-index"
 			:tabIndex="-1"
@@ -17,8 +18,9 @@
 </template>
 
 <script setup lang="ts">
+import { useKeyboardNav } from '@sedum/utilities'
 import { TableRow } from 'types'
-import { CSSProperties, inject } from 'vue'
+import { CSSProperties, inject, ref } from 'vue'
 
 import TableDataStore from '.'
 
@@ -29,6 +31,7 @@ const props = defineProps<{
 }>()
 
 const tableData = inject<TableDataStore>(props.tableid)
+const cell = ref<HTMLTableCellElement[]>([])
 
 const numberedRowStyle: CSSProperties = {
 	backgroundColor: 'var(--brand-color)',
@@ -85,4 +88,6 @@ const rowVisible = () => {
 const toggleRowExpand = (rowIndex: number) => {
 	tableData.toggleRowExpand(rowIndex)
 }
+
+useKeyboardNav([{ selectors: cell }])
 </script>

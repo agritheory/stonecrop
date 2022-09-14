@@ -498,8 +498,7 @@
       const handleInput = () => {
         if (tableData.columns[props.colIndex].mask)
           ;
-        const component = tableData.columns[props.colIndex].component;
-        if (component && vue.resolveDynamicComponent(component)) {
+        if (tableData.columns[props.colIndex].component) {
           const domRect = cell.value.getBoundingClientRect();
           tableData.modal.visible = true;
           tableData.modal.colIndex = props.colIndex;
@@ -508,18 +507,21 @@
           tableData.modal.top = domRect.top + domRect.height;
           tableData.modal.left = domRect.left;
           tableData.modal.width = cellWidth.value;
-          tableData.modal.component = component;
+          tableData.modal.component = tableData.columns[props.colIndex].component;
         }
       };
       useKeyboardNav([
         {
           selectors: cell,
           handlers: {
-            "keydown.f2": handleInput,
-            "keydown.alt.up": handleInput,
-            "keydown.alt.down": handleInput,
-            "keydown.alt.left": handleInput,
-            "keydown.alt.right": handleInput
+            ...defaultKeypressHandlers,
+            ...{
+              "keydown.f2": handleInput,
+              "keydown.alt.up": handleInput,
+              "keydown.alt.down": handleInput,
+              "keydown.alt.left": handleInput,
+              "keydown.alt.right": handleInput
+            }
           }
         }
       ]);
@@ -582,7 +584,7 @@
       };
     }
   });
-  const ACell_vue_vue_type_style_index_0_scoped_0fe8c033_lang = "";
+  const ACell_vue_vue_type_style_index_0_scoped_f710e7b4_lang = "";
   const _export_sfc = (sfc, props) => {
     const target = sfc.__vccOpts || sfc;
     for (const [key, val] of props) {
@@ -590,7 +592,7 @@
     }
     return target;
   };
-  const ACell = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-0fe8c033"]]);
+  const ACell = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-f710e7b4"]]);
   const _sfc_main$3 = /* @__PURE__ */ vue.defineComponent({
     __name: "ARow",
     props: {
@@ -601,6 +603,7 @@
     setup(__props) {
       const props = __props;
       const tableData = vue.inject(props.tableid);
+      const cell = vue.ref([]);
       const numberedRowStyle = {
         backgroundColor: "var(--brand-color)",
         borderColor: "var(--header-border-color)",
@@ -649,21 +652,26 @@
       const toggleRowExpand = (rowIndex) => {
         tableData.toggleRowExpand(rowIndex);
       };
+      useKeyboardNav([{ selectors: cell }]);
       return (_ctx, _cache) => {
         return vue.withDirectives((vue.openBlock(), vue.createElementBlock("tr", null, [
           vue.unref(tableData).config.numberedRows ? (vue.openBlock(), vue.createElementBlock("td", {
             key: 0,
+            ref_key: "cell",
+            ref: cell,
             id: "row-index",
             tabIndex: -1,
             style: numberedRowStyle
-          }, vue.toDisplayString(__props.rowIndex + 1), 1)) : vue.createCommentVNode("", true),
+          }, vue.toDisplayString(__props.rowIndex + 1), 513)) : vue.createCommentVNode("", true),
           vue.unref(tableData).config.treeView ? (vue.openBlock(), vue.createElementBlock("td", {
             key: 1,
+            ref_key: "cell",
+            ref: cell,
             id: "row-index",
             tabIndex: -1,
             style: treeRowStyle,
             onClick: _cache[0] || (_cache[0] = ($event) => toggleRowExpand(__props.rowIndex))
-          }, vue.toDisplayString(getRowExpandSymbol()), 1)) : vue.createCommentVNode("", true),
+          }, vue.toDisplayString(getRowExpandSymbol()), 513)) : vue.createCommentVNode("", true),
           !vue.unref(tableData).config.numberedRows && !vue.unref(tableData).config.treeView ? vue.renderSlot(_ctx.$slots, "indexCell", { key: 2 }) : vue.createCommentVNode("", true),
           vue.renderSlot(_ctx.$slots, "default")
         ], 512)), [
@@ -881,7 +889,6 @@
       const props = __props;
       let tableData = new TableDataStore(props.id, props.columns, props.rows, props.config);
       vue.provide(tableData.id, tableData);
-      useKeyboardNav([{ parent: "table.atable", selectors: "td" }]);
       const clickOutside = (event) => {
         var _a2;
         if (!((_a2 = tableData.modal.parent) == null ? void 0 : _a2.contains(event.target))) {
@@ -895,6 +902,17 @@
         if (event.key === "Escape") {
           if (tableData.modal.visible) {
             tableData.modal.visible = false;
+            const $parent = tableData.modal.parent;
+            if ($parent) {
+              void vue.nextTick().then(() => {
+                const rowIndex = $parent.dataset.rowindex;
+                const colIndex = $parent.dataset.colindex;
+                const $parentCell = document.querySelectorAll(`[data-rowindex='${rowIndex}'][data-colindex='${colIndex}']`);
+                if ($parentCell) {
+                  $parentCell[0].focus();
+                }
+              });
+            }
           }
         }
       });
@@ -963,8 +981,8 @@
       };
     }
   });
-  const ATable_vue_vue_type_style_index_0_scoped_166249a2_lang = "";
-  const ATable = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-166249a2"]]);
+  const ATable_vue_vue_type_style_index_0_scoped_5c0ccd5d_lang = "";
+  const ATable = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-5c0ccd5d"]]);
   function install(app) {
     app.component("ACell", ACell);
     app.component("ARow", _sfc_main$3);

@@ -47,7 +47,7 @@
 
 <script setup lang="ts">
 import { v4 } from 'uuid'
-import { provide } from 'vue'
+import { nextTick, provide } from 'vue'
 
 import { TableColumn, TableConfig, TableRow } from 'types'
 import TableDataStore from '.'
@@ -55,7 +55,6 @@ import ACell from '@/components/ACell.vue'
 import ARow from '@/components/ARow.vue'
 import ATableHeader from '@/components/ATableHeader.vue'
 import ATableModal from '@/components/ATableModal.vue'
-import { useKeyboardNav } from '@sedum/utilities'
 
 const props = withDefaults(
 	defineProps<{
@@ -73,8 +72,6 @@ const props = withDefaults(
 
 let tableData = new TableDataStore(props.id, props.columns, props.rows, props.config)
 provide(tableData.id, tableData)
-
-useKeyboardNav([{ parent: 'table.atable', selectors: 'td' }])
 
 const formatCell = (event?: KeyboardEvent, column?: TableColumn, cellData?: any) => {
 	let colIndex: number
@@ -138,6 +135,22 @@ window.addEventListener('keydown', (event: KeyboardEvent) => {
 	if (event.key === 'Escape') {
 		if (tableData.modal.visible) {
 			tableData.modal.visible = false
+
+			// focus on the parent cell again
+			const $parent = tableData.modal.parent
+			if ($parent) {
+				// wait for the modal to close
+				void nextTick().then(() => {
+					// for some reason, the parent is not immediately visible in the DOM;
+					// re-fetching the cell to add focus instead
+					const rowIndex = $parent.dataset.rowindex
+					const colIndex = $parent.dataset.colindex
+					const $parentCell = document.querySelectorAll(`[data-rowindex='${rowIndex}'][data-colindex='${colIndex}']`)
+					if ($parentCell) {
+						;($parentCell[0] as HTMLTableCellElement).focus()
+					}
+				})
+			}
 		}
 	}
 })

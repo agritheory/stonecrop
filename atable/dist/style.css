@@ -1,5 +1,5 @@
 
-td[data-v-0fe8c033] {
+td[data-v-f710e7b4] {
 	border: 1px;
 	border-style: solid;
 	border-color: var(--cell-border-color);
@@ -14,8 +14,8 @@ td[data-v-0fe8c033] {
 	padding-left: 0.5ch;
 	padding-right: 0.5ch;
 }
-td[data-v-0fe8c033]:focus,
-td[data-v-0fe8c033]:focus-within {
+td[data-v-f710e7b4]:focus,
+td[data-v-f710e7b4]:focus-within {
 	background-color: var(--focus-cell-background);
 	outline-width: 2px;
 	outline-style: solid;
@@ -56,12 +56,12 @@ div[data-v-1bd2b677] {
 	font-size: var(--table-font-size); */
 }
 
-table[data-v-166249a2] {
+table[data-v-5c0ccd5d] {
 	display: table;
 	border-collapse: var(--border-collapsed);
 	caret-color: var(--brand-color);
 }
-th[data-v-166249a2] {
+th[data-v-5c0ccd5d] {
 	box-sizing: border-box;
 	background-color: var(--brand-color);
 	border-width: 1px;
@@ -70,10 +70,10 @@ th[data-v-166249a2] {
 	border-radius: 0px;
 	color: var(--header-text-color);
 }
-tr[data-v-166249a2] {
+tr[data-v-5c0ccd5d] {
 	background-color: var(--row-color-zebra-light);
 	outline: none;
 }
-tr[data-v-166249a2]:nth-child(even) {
+tr[data-v-5c0ccd5d]:nth-child(even) {
 	background-color: var(--row-color-zebra-dark);
 }

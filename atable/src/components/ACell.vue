@@ -18,9 +18,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, CSSProperties, inject, ref, resolveDynamicComponent } from 'vue'
+import { computed, CSSProperties, inject, ref } from 'vue'
 
-import { useKeyboardNav } from '@sedum/utilities'
+import { defaultKeypressHandlers, useKeyboardNav } from '@sedum/utilities'
 import TableDataStore from '.'
 
 const props = defineProps<{
@@ -58,8 +58,7 @@ const handleInput = () => {
 		// tableData.columns[props.colIndex].mask(event)
 	}
 
-	const component = tableData.columns[props.colIndex].component
-	if (component && resolveDynamicComponent(component)) {
+	if (tableData.columns[props.colIndex].component) {
 		const domRect = cell.value.getBoundingClientRect()
 		tableData.modal.visible = true
 		tableData.modal.colIndex = props.colIndex
@@ -68,7 +67,7 @@ const handleInput = () => {
 		tableData.modal.top = domRect.top + domRect.height
 		tableData.modal.left = domRect.left
 		tableData.modal.width = cellWidth.value
-		tableData.modal.component = component
+		tableData.modal.component = tableData.columns[props.colIndex].component
 	}
 }
 
@@ -76,11 +75,14 @@ useKeyboardNav([
 	{
 		selectors: cell,
 		handlers: {
-			'keydown.f2': handleInput,
-			'keydown.alt.up': handleInput,
-			'keydown.alt.down': handleInput,
-			'keydown.alt.left': handleInput,
-			'keydown.alt.right': handleInput,
+			...defaultKeypressHandlers,
+			...{
+				'keydown.f2': handleInput,
+				'keydown.alt.up': handleInput,
+				'keydown.alt.down': handleInput,
+				'keydown.alt.left': handleInput,
+				'keydown.alt.right': handleInput,
+			},
 		},
 	},
 ])
