@@ -168,19 +168,33 @@
   __spreadValues({
     linear: identity
   }, _TransitionPresets);
+  const isVisible = (element) => {
+    let isVisible2 = useElementVisibility(element).value;
+    isVisible2 = isVisible2 && element.offsetHeight > 0;
+    return isVisible2;
+  };
+  const isFocusable = (element) => {
+    return element.tabIndex >= 0;
+  };
   const getUpCell = (event) => {
-    var _a2;
     const $target = event.target;
+    return _getUpCell($target);
+  };
+  const _getUpCell = (element) => {
+    var _a2;
     let $upCell;
-    if ($target instanceof HTMLTableCellElement) {
-      const $prevRow = (_a2 = $target.parentElement) == null ? void 0 : _a2.previousElementSibling;
+    if (element instanceof HTMLTableCellElement) {
+      const $prevRow = (_a2 = element.parentElement) == null ? void 0 : _a2.previousElementSibling;
       if ($prevRow) {
         const $prevRowCells = Array.from($prevRow.children);
-        const $prevCell = $prevRowCells[$target.cellIndex];
+        const $prevCell = $prevRowCells[element.cellIndex];
         if ($prevCell) {
           $upCell = $prevCell;
         }
       }
+    }
+    if ($upCell && (!isFocusable($upCell) || !isVisible($upCell))) {
+      return _getUpCell($upCell);
     }
     return $upCell;
   };
@@ -198,21 +212,30 @@
         }
       }
     }
+    if ($topCell && (!isFocusable($topCell) || !isVisible($topCell))) {
+      return _getDownCell($topCell);
+    }
     return $topCell;
   };
   const getDownCell = (event) => {
-    var _a2;
     const $target = event.target;
+    return _getDownCell($target);
+  };
+  const _getDownCell = (element) => {
+    var _a2;
     let $downCell;
-    if ($target instanceof HTMLTableCellElement) {
-      const $nextRow = (_a2 = $target.parentElement) == null ? void 0 : _a2.nextElementSibling;
+    if (element instanceof HTMLTableCellElement) {
+      const $nextRow = (_a2 = element.parentElement) == null ? void 0 : _a2.nextElementSibling;
       if ($nextRow) {
         const $nextRowCells = Array.from($nextRow.children);
-        const $nextCell = $nextRowCells[$target.cellIndex];
+        const $nextCell = $nextRowCells[element.cellIndex];
         if ($nextCell) {
           $downCell = $nextCell;
         }
       }
+    }
+    if ($downCell && (!isFocusable($downCell) || !isVisible($downCell))) {
+      return _getDownCell($downCell);
     }
     return $downCell;
   };
@@ -230,29 +253,44 @@
         }
       }
     }
+    if ($bottomCell && (!isFocusable($bottomCell) || !isVisible($bottomCell))) {
+      return _getUpCell($bottomCell);
+    }
     return $bottomCell;
   };
   const getPrevCell = (event) => {
-    var _a2;
     const $target = event.target;
+    return _getPrevCell($target);
+  };
+  const _getPrevCell = (element) => {
+    var _a2;
     let $prevCell;
-    if ($target.previousElementSibling) {
-      $prevCell = $target.previousElementSibling;
+    if (element.previousElementSibling) {
+      $prevCell = element.previousElementSibling;
     } else {
-      const $prevRow = (_a2 = $target.parentElement) == null ? void 0 : _a2.previousElementSibling;
+      const $prevRow = (_a2 = element.parentElement) == null ? void 0 : _a2.previousElementSibling;
       $prevCell = $prevRow == null ? void 0 : $prevRow.lastElementChild;
+    }
+    if ($prevCell && (!isFocusable($prevCell) || !isVisible($prevCell))) {
+      return _getPrevCell($prevCell);
     }
     return $prevCell;
   };
   const getNextCell = (event) => {
-    var _a2;
     const $target = event.target;
+    return _getNextCell($target);
+  };
+  const _getNextCell = (element) => {
+    var _a2;
     let $nextCell;
-    if ($target.nextElementSibling) {
-      $nextCell = $target.nextElementSibling;
+    if (element.nextElementSibling) {
+      $nextCell = element.nextElementSibling;
     } else {
-      const $nextRow = (_a2 = $target.parentElement) == null ? void 0 : _a2.nextElementSibling;
+      const $nextRow = (_a2 = element.parentElement) == null ? void 0 : _a2.nextElementSibling;
       $nextCell = $nextRow == null ? void 0 : $nextRow.firstElementChild;
+    }
+    if ($nextCell && (!isFocusable($nextCell) || !isVisible($nextCell))) {
+      return _getNextCell($nextCell);
     }
     return $nextCell;
   };
@@ -260,12 +298,18 @@
     const $target = event.target;
     const $parent = $target.parentElement;
     const $firstCell = $parent.firstElementChild;
+    if ($firstCell && (!isFocusable($firstCell) || !isVisible($firstCell))) {
+      return _getNextCell($firstCell);
+    }
     return $firstCell;
   };
   const getLastCell = (event) => {
     const $target = event.target;
     const $parent = $target.parentElement;
     const $lastCell = $parent.lastElementChild;
+    if ($lastCell && (!isFocusable($lastCell) || !isVisible($lastCell))) {
+      return _getPrevCell($lastCell);
+    }
     return $lastCell;
   };
   const modifierKeys = ["alt", "control", "shift", "meta"];
@@ -429,13 +473,7 @@
       } else {
         const $children = Array.from($parent.children);
         selectors = $children.filter((selector) => {
-          if (selector.tabIndex < 0) {
-            return false;
-          }
-          if (!useElementVisibility(selector).value) {
-            return false;
-          }
-          return true;
+          return isFocusable(selector) && isVisible(selector);
         });
       }
       return selectors;

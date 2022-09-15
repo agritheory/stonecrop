@@ -3,20 +3,39 @@ import { useElementVisibility } from '@vueuse/core'
 
 import { KeyboardNavigationOptions, KeypressHandlers } from 'types'
 
+// helper functions
+const isVisible = (element: HTMLElement) => {
+	let isVisible = useElementVisibility(element).value
+	isVisible = isVisible && element.offsetHeight > 0
+	return isVisible
+}
+
+const isFocusable = (element: HTMLElement) => {
+	return element.tabIndex >= 0
+}
+
+// navigation functions
 const getUpCell = (event: KeyboardEvent) => {
 	const $target = event.target as HTMLElement
+	return _getUpCell($target)
+}
+
+const _getUpCell = (element: HTMLElement): HTMLElement | undefined => {
 	let $upCell: HTMLElement | undefined
-	if ($target instanceof HTMLTableCellElement) {
-		const $prevRow = $target.parentElement?.previousElementSibling as HTMLTableRowElement
+	if (element instanceof HTMLTableCellElement) {
+		const $prevRow = element.parentElement?.previousElementSibling as HTMLTableRowElement
 		if ($prevRow) {
 			const $prevRowCells = Array.from($prevRow.children)
-			const $prevCell = $prevRowCells[$target.cellIndex] as HTMLElement
+			const $prevCell = $prevRowCells[element.cellIndex] as HTMLElement
 			if ($prevCell) {
 				$upCell = $prevCell
 			}
 		}
 	} else {
 		// TODO: handle other contexts
+	}
+	if ($upCell && (!isFocusable($upCell) || !isVisible($upCell))) {
+		return _getUpCell($upCell)
 	}
 	return $upCell
 }
@@ -36,23 +55,33 @@ const getTopCell = (event: KeyboardEvent) => {
 	} else {
 		// TODO: handle other contexts
 	}
+	if ($topCell && (!isFocusable($topCell) || !isVisible($topCell))) {
+		return _getDownCell($topCell)
+	}
 	return $topCell
 }
 
 const getDownCell = (event: KeyboardEvent) => {
 	const $target = event.target as HTMLElement
+	return _getDownCell($target)
+}
+
+const _getDownCell = (element: HTMLElement): HTMLElement | undefined => {
 	let $downCell: HTMLElement | undefined
-	if ($target instanceof HTMLTableCellElement) {
-		const $nextRow = $target.parentElement?.nextElementSibling
+	if (element instanceof HTMLTableCellElement) {
+		const $nextRow = element.parentElement?.nextElementSibling
 		if ($nextRow) {
 			const $nextRowCells = Array.from($nextRow.children)
-			const $nextCell = $nextRowCells[$target.cellIndex] as HTMLElement
+			const $nextCell = $nextRowCells[element.cellIndex] as HTMLElement
 			if ($nextCell) {
 				$downCell = $nextCell
 			}
 		}
 	} else {
 		// TODO: handle other contexts
+	}
+	if ($downCell && (!isFocusable($downCell) || !isVisible($downCell))) {
+		return _getDownCell($downCell)
 	}
 	return $downCell
 }
@@ -72,29 +101,46 @@ const getBottomCell = (event: KeyboardEvent) => {
 	} else {
 		// TODO: handle other contexts
 	}
+	if ($bottomCell && (!isFocusable($bottomCell) || !isVisible($bottomCell))) {
+		return _getUpCell($bottomCell)
+	}
 	return $bottomCell
 }
 
 const getPrevCell = (event: KeyboardEvent) => {
 	const $target = event.target as HTMLElement
+	return _getPrevCell($target)
+}
+
+const _getPrevCell = (element: HTMLElement): HTMLElement | undefined => {
 	let $prevCell: HTMLElement | undefined
-	if ($target.previousElementSibling) {
-		$prevCell = $target.previousElementSibling as HTMLElement
+	if (element.previousElementSibling) {
+		$prevCell = element.previousElementSibling as HTMLElement
 	} else {
-		const $prevRow = $target.parentElement?.previousElementSibling
+		const $prevRow = element.parentElement?.previousElementSibling
 		$prevCell = $prevRow?.lastElementChild as HTMLElement
+	}
+	if ($prevCell && (!isFocusable($prevCell) || !isVisible($prevCell))) {
+		return _getPrevCell($prevCell)
 	}
 	return $prevCell
 }
 
 const getNextCell = (event: KeyboardEvent) => {
 	const $target = event.target as HTMLElement
+	return _getNextCell($target)
+}
+
+const _getNextCell = (element: HTMLElement): HTMLElement | undefined => {
 	let $nextCell: HTMLElement | undefined
-	if ($target.nextElementSibling) {
-		$nextCell = $target.nextElementSibling as HTMLElement
+	if (element.nextElementSibling) {
+		$nextCell = element.nextElementSibling as HTMLElement
 	} else {
-		const $nextRow = $target.parentElement?.nextElementSibling
+		const $nextRow = element.parentElement?.nextElementSibling
 		$nextCell = $nextRow?.firstElementChild as HTMLElement
+	}
+	if ($nextCell && (!isFocusable($nextCell) || !isVisible($nextCell))) {
+		return _getNextCell($nextCell)
 	}
 	return $nextCell
 }
@@ -103,6 +149,9 @@ const getFirstCell = (event: KeyboardEvent) => {
 	const $target = event.target as HTMLElement
 	const $parent = $target.parentElement
 	const $firstCell = $parent.firstElementChild as HTMLElement | null
+	if ($firstCell && (!isFocusable($firstCell) || !isVisible($firstCell))) {
+		return _getNextCell($firstCell)
+	}
 	return $firstCell
 }
 
@@ -110,6 +159,9 @@ const getLastCell = (event: KeyboardEvent) => {
 	const $target = event.target as HTMLElement
 	const $parent = $target.parentElement
 	const $lastCell = $parent.lastElementChild as HTMLElement | null
+	if ($lastCell && (!isFocusable($lastCell) || !isVisible($lastCell))) {
+		return _getPrevCell($lastCell)
+	}
 	return $lastCell
 }
 
@@ -289,17 +341,8 @@ export function useKeyboardNav(options: KeyboardNavigationOptions[]) {
 		} else {
 			const $children = Array.from($parent.children)
 			selectors = $children.filter((selector: HTMLElement) => {
-				// ignore elements not in the tab order
-				if (selector.tabIndex < 0) {
-					return false
-				}
-
-				// ignore elements that are not visible
-				if (!useElementVisibility(selector).value) {
-					return false
-				}
-
-				return true
+				// ignore elements not in the tab order or are not visible
+				return isFocusable(selector) && isVisible(selector)
 			})
 		}
 

@@ -5,7 +5,7 @@
 		:data-rowindex="rowIndex"
 		:data-editable="tableData.columns[colIndex].edit"
 		:contenteditable="tableData.columns[colIndex].edit"
-		:tabindex="-1"
+		:tabindex="0"
 		:spellcheck="false"
 		:style="cellStyle"
 		@focus="onFocus"
@@ -109,16 +109,11 @@ let currentData = ''
 const onFocus = () => {
 	if (cell.value) {
 		currentData = cell.value.innerText
-		cell.value.tabIndex = 0
 	}
 }
 
-const onChange = (event: FocusEvent | ClipboardEvent) => {
+const onChange = () => {
 	if (cell.value) {
-		if (event.type == 'blur') {
-			cell.value.tabIndex = -1
-		}
-
 		if (cell.value.innerHTML !== currentData) {
 			currentData = cell.value.innerText
 			cell.value.dispatchEvent(new Event('change'))

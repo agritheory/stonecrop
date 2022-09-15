@@ -138,19 +138,33 @@
   __spreadValues({
     linear: identity
   }, _TransitionPresets);
+  const isVisible = (element) => {
+    let isVisible2 = useElementVisibility(element).value;
+    isVisible2 = isVisible2 && element.offsetHeight > 0;
+    return isVisible2;
+  };
+  const isFocusable = (element) => {
+    return element.tabIndex >= 0;
+  };
   const getUpCell = (event) => {
-    var _a2;
     const $target = event.target;
+    return _getUpCell($target);
+  };
+  const _getUpCell = (element) => {
+    var _a2;
     let $upCell;
-    if ($target instanceof HTMLTableCellElement) {
-      const $prevRow = (_a2 = $target.parentElement) == null ? void 0 : _a2.previousElementSibling;
+    if (element instanceof HTMLTableCellElement) {
+      const $prevRow = (_a2 = element.parentElement) == null ? void 0 : _a2.previousElementSibling;
       if ($prevRow) {
         const $prevRowCells = Array.from($prevRow.children);
-        const $prevCell = $prevRowCells[$target.cellIndex];
+        const $prevCell = $prevRowCells[element.cellIndex];
         if ($prevCell) {
           $upCell = $prevCell;
         }
       }
+    }
+    if ($upCell && (!isFocusable($upCell) || !isVisible($upCell))) {
+      return _getUpCell($upCell);
     }
     return $upCell;
   };
@@ -168,21 +182,30 @@
         }
       }
     }
+    if ($topCell && (!isFocusable($topCell) || !isVisible($topCell))) {
+      return _getDownCell($topCell);
+    }
     return $topCell;
   };
   const getDownCell = (event) => {
-    var _a2;
     const $target = event.target;
+    return _getDownCell($target);
+  };
+  const _getDownCell = (element) => {
+    var _a2;
     let $downCell;
-    if ($target instanceof HTMLTableCellElement) {
-      const $nextRow = (_a2 = $target.parentElement) == null ? void 0 : _a2.nextElementSibling;
+    if (element instanceof HTMLTableCellElement) {
+      const $nextRow = (_a2 = element.parentElement) == null ? void 0 : _a2.nextElementSibling;
       if ($nextRow) {
         const $nextRowCells = Array.from($nextRow.children);
-        const $nextCell = $nextRowCells[$target.cellIndex];
+        const $nextCell = $nextRowCells[element.cellIndex];
         if ($nextCell) {
           $downCell = $nextCell;
         }
       }
+    }
+    if ($downCell && (!isFocusable($downCell) || !isVisible($downCell))) {
+      return _getDownCell($downCell);
     }
     return $downCell;
   };
@@ -200,29 +223,44 @@
         }
       }
     }
+    if ($bottomCell && (!isFocusable($bottomCell) || !isVisible($bottomCell))) {
+      return _getUpCell($bottomCell);
+    }
     return $bottomCell;
   };
   const getPrevCell = (event) => {
-    var _a2;
     const $target = event.target;
+    return _getPrevCell($target);
+  };
+  const _getPrevCell = (element) => {
+    var _a2;
     let $prevCell;
-    if ($target.previousElementSibling) {
-      $prevCell = $target.previousElementSibling;
+    if (element.previousElementSibling) {
+      $prevCell = element.previousElementSibling;
     } else {
-      const $prevRow = (_a2 = $target.parentElement) == null ? void 0 : _a2.previousElementSibling;
+      const $prevRow = (_a2 = element.parentElement) == null ? void 0 : _a2.previousElementSibling;
       $prevCell = $prevRow == null ? void 0 : $prevRow.lastElementChild;
+    }
+    if ($prevCell && (!isFocusable($prevCell) || !isVisible($prevCell))) {
+      return _getPrevCell($prevCell);
     }
     return $prevCell;
   };
   const getNextCell = (event) => {
-    var _a2;
     const $target = event.target;
+    return _getNextCell($target);
+  };
+  const _getNextCell = (element) => {
+    var _a2;
     let $nextCell;
-    if ($target.nextElementSibling) {
-      $nextCell = $target.nextElementSibling;
+    if (element.nextElementSibling) {
+      $nextCell = element.nextElementSibling;
     } else {
-      const $nextRow = (_a2 = $target.parentElement) == null ? void 0 : _a2.nextElementSibling;
+      const $nextRow = (_a2 = element.parentElement) == null ? void 0 : _a2.nextElementSibling;
       $nextCell = $nextRow == null ? void 0 : $nextRow.firstElementChild;
+    }
+    if ($nextCell && (!isFocusable($nextCell) || !isVisible($nextCell))) {
+      return _getNextCell($nextCell);
     }
     return $nextCell;
   };
@@ -230,12 +268,18 @@
     const $target = event.target;
     const $parent = $target.parentElement;
     const $firstCell = $parent.firstElementChild;
+    if ($firstCell && (!isFocusable($firstCell) || !isVisible($firstCell))) {
+      return _getNextCell($firstCell);
+    }
     return $firstCell;
   };
   const getLastCell = (event) => {
     const $target = event.target;
     const $parent = $target.parentElement;
     const $lastCell = $parent.lastElementChild;
+    if ($lastCell && (!isFocusable($lastCell) || !isVisible($lastCell))) {
+      return _getPrevCell($lastCell);
+    }
     return $lastCell;
   };
   const modifierKeys = ["alt", "control", "shift", "meta"];
@@ -399,13 +443,7 @@
       } else {
         const $children = Array.from($parent.children);
         selectors = $children.filter((selector) => {
-          if (selector.tabIndex < 0) {
-            return false;
-          }
-          if (!useElementVisibility(selector).value) {
-            return false;
-          }
-          return true;
+          return isFocusable(selector) && isVisible(selector);
         });
       }
       return selectors;
@@ -535,14 +573,10 @@
       const onFocus = () => {
         if (cell.value) {
           currentData = cell.value.innerText;
-          cell.value.tabIndex = 0;
         }
       };
-      const onChange = (event) => {
+      const onChange = () => {
         if (cell.value) {
-          if (event.type == "blur") {
-            cell.value.tabIndex = -1;
-          }
           if (cell.value.innerHTML !== currentData) {
             currentData = cell.value.innerText;
             cell.value.dispatchEvent(new Event("change"));
@@ -572,7 +606,7 @@
           "data-rowindex": __props.rowIndex,
           "data-editable": vue.unref(tableData).columns[__props.colIndex].edit,
           contenteditable: vue.unref(tableData).columns[__props.colIndex].edit,
-          tabindex: -1,
+          tabindex: 0,
           spellcheck: false,
           style: cellStyle,
           onFocus,
@@ -584,7 +618,7 @@
       };
     }
   });
-  const ACell_vue_vue_type_style_index_0_scoped_f710e7b4_lang = "";
+  const ACell_vue_vue_type_style_index_0_scoped_c8072902_lang = "";
   const _export_sfc = (sfc, props) => {
     const target = sfc.__vccOpts || sfc;
     for (const [key, val] of props) {
@@ -592,7 +626,7 @@
     }
     return target;
   };
-  const ACell = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-f710e7b4"]]);
+  const ACell = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-c8072902"]]);
   const _sfc_main$3 = /* @__PURE__ */ vue.defineComponent({
     __name: "ARow",
     props: {
@@ -603,7 +637,6 @@
     setup(__props) {
       const props = __props;
       const tableData = vue.inject(props.tableid);
-      const cell = vue.ref([]);
       const numberedRowStyle = {
         backgroundColor: "var(--brand-color)",
         borderColor: "var(--header-border-color)",
@@ -652,26 +685,21 @@
       const toggleRowExpand = (rowIndex) => {
         tableData.toggleRowExpand(rowIndex);
       };
-      useKeyboardNav([{ selectors: cell }]);
       return (_ctx, _cache) => {
         return vue.withDirectives((vue.openBlock(), vue.createElementBlock("tr", null, [
           vue.unref(tableData).config.numberedRows ? (vue.openBlock(), vue.createElementBlock("td", {
             key: 0,
-            ref_key: "cell",
-            ref: cell,
             id: "row-index",
             tabIndex: -1,
             style: numberedRowStyle
-          }, vue.toDisplayString(__props.rowIndex + 1), 513)) : vue.createCommentVNode("", true),
+          }, vue.toDisplayString(__props.rowIndex + 1), 1)) : vue.createCommentVNode("", true),
           vue.unref(tableData).config.treeView ? (vue.openBlock(), vue.createElementBlock("td", {
             key: 1,
-            ref_key: "cell",
-            ref: cell,
             id: "row-index",
             tabIndex: -1,
             style: treeRowStyle,
             onClick: _cache[0] || (_cache[0] = ($event) => toggleRowExpand(__props.rowIndex))
-          }, vue.toDisplayString(getRowExpandSymbol()), 513)) : vue.createCommentVNode("", true),
+          }, vue.toDisplayString(getRowExpandSymbol()), 1)) : vue.createCommentVNode("", true),
           !vue.unref(tableData).config.numberedRows && !vue.unref(tableData).config.treeView ? vue.renderSlot(_ctx.$slots, "indexCell", { key: 2 }) : vue.createCommentVNode("", true),
           vue.renderSlot(_ctx.$slots, "default")
         ], 512)), [
