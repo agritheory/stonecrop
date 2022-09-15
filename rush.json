@@ -1,12 +1,12 @@
 {
 	"$schema": "https://developer.microsoft.com/json-schemas/rush/v5/rush.schema.json",
 	"rushVersion": "5.76.1",
-	"pnpmVersion": "7.9.4",
+	"pnpmVersion": "7.9.5",
 	"pnpmOptions": {
 		"useWorkspaces": true
 	},
 	"approvedPackagesPolicy": {
-		"reviewCategories": ["production", "tool", "prototype", "documentation"],
+		"reviewCategories": ["production", "tool", "prototype", "documentation", "utilities"],
 		"ignoredNpmScopes": ["@types"]
 	},
 	"gitPolicy": {},
@@ -53,6 +53,11 @@
 			"packageName": "@sedum/examples",
 			"projectFolder": "examples",
 			"reviewCategory": "prototype"
+		},
+		{
+			"packageName": "@sedum/utilities",
+			"projectFolder": "utilities",
+			"reviewCategory": "utilities"
 		}
 		// {
 		//   "packageName": "@sedum/beam",

@@ -1,0 +1,1142 @@
+[
+	{
+		"id": 44496913,
+		"link": {
+			"title": "011.vuejs.org",
+			"url": "https://github.com/vuejs/011.vuejs.org"
+		},
+		"name": "011.vuejs.org",
+		"stars": 6,
+		"topics": ""
+	},
+	{
+		"id": 45555452,
+		"link": {
+			"title": "012-cn.vuejs.org",
+			"url": "https://github.com/vuejs/012-cn.vuejs.org"
+		},
+		"name": "012-cn.vuejs.org",
+		"stars": 2,
+		"topics": ""
+	},
+	{
+		"id": 44495137,
+		"link": {
+			"title": "012.vuejs.org",
+			"url": "https://github.com/vuejs/012.vuejs.org"
+		},
+		"name": "012.vuejs.org",
+		"stars": 6,
+		"topics": ""
+	},
+	{
+		"id": 56103492,
+		"link": {
+			"title": "art",
+			"url": "https://github.com/vuejs/art"
+		},
+		"name": "art",
+		"stars": 102,
+		"topics": ""
+	},
+	{
+		"id": 44571718,
+		"link": {
+			"title": "awesome-vue",
+			"url": "https://github.com/vuejs/awesome-vue"
+		},
+		"name": "awesome-vue",
+		"stars": 56033,
+		"topics": ""
+	},
+	{
+		"id": 63093567,
+		"link": {
+			"title": "babel-helper-vue-jsx-merge-props",
+			"url": "https://github.com/vuejs/babel-helper-vue-jsx-merge-props"
+		},
+		"name": "babel-helper-vue-jsx-merge-props",
+		"stars": 23,
+		"topics": ""
+	},
+	{
+		"id": 61406464,
+		"link": {
+			"title": "babel-plugin-transform-vue-jsx",
+			"url": "https://github.com/vuejs/babel-plugin-transform-vue-jsx"
+		},
+		"name": "babel-plugin-transform-vue-jsx",
+		"stars": 1683,
+		"topics": ""
+	},
+	{
+		"id": 73054105,
+		"link": {
+			"title": "babel-preset-vue",
+			"url": "https://github.com/vuejs/babel-preset-vue"
+		},
+		"name": "babel-preset-vue",
+		"stars": 79,
+		"topics": ""
+	},
+	{
+		"id": 79305682,
+		"link": {
+			"title": "babel-preset-vue-app",
+			"url": "https://github.com/vuejs/babel-preset-vue-app"
+		},
+		"name": "babel-preset-vue-app",
+		"stars": 126,
+		"topics": ""
+	},
+	{
+		"id": 22999141,
+		"link": {
+			"title": "beautiful-open",
+			"url": "https://github.com/vuejs/beautiful-open"
+		},
+		"name": "beautiful-open",
+		"stars": 17,
+		"topics": ""
+	},
+	{
+		"id": 44466096,
+		"link": {
+			"title": "cdnjs",
+			"url": "https://github.com/vuejs/cdnjs"
+		},
+		"name": "cdnjs",
+		"stars": 5,
+		"topics": ""
+	},
+	{
+		"id": 45115168,
+		"link": {
+			"title": "cn.vuejs.org",
+			"url": "https://github.com/vuejs/cn.vuejs.org"
+		},
+		"name": "cn.vuejs.org",
+		"stars": 1662,
+		"topics": ""
+	},
+	{
+		"id": 126248388,
+		"link": {
+			"title": "component-compiler-utils",
+			"url": "https://github.com/vuejs/component-compiler-utils"
+		},
+		"name": "component-compiler-utils",
+		"stars": 230,
+		"topics": ""
+	},
+	{
+		"id": 193669763,
+		"link": {
+			"title": "composition-api",
+			"url": "https://github.com/vuejs/composition-api"
+		},
+		"name": "composition-api",
+		"stars": 2514,
+		"topics": ""
+	},
+	{
+		"id": 202427764,
+		"link": {
+			"title": "composition-api-rfc",
+			"url": "https://github.com/vuejs/composition-api-rfc"
+		},
+		"name": "composition-api-rfc",
+		"stars": 86,
+		"topics": ""
+	},
+	{
+		"id": 140776092,
+		"link": {
+			"title": "conventional-changelog",
+			"url": "https://github.com/vuejs/conventional-changelog"
+		},
+		"name": "conventional-changelog",
+		"stars": 18,
+		"topics": ""
+	},
+	{
+		"id": 17964612,
+		"link": {
+			"title": "Discussion",
+			"url": "https://github.com/vuejs/Discussion"
+		},
+		"name": "Discussion",
+		"stars": 163,
+		"topics": ""
+	},
+	{
+		"id": 228162270,
+		"link": {
+			"title": "docs-next",
+			"url": "https://github.com/vuejs/docs-next"
+		},
+		"name": "docs-next",
+		"stars": 453,
+		"topics": ""
+	},
+	{
+		"id": 195827328,
+		"link": {
+			"title": "eslint-config-airbnb",
+			"url": "https://github.com/vuejs/eslint-config-airbnb"
+		},
+		"name": "eslint-config-airbnb",
+		"stars": 15,
+		"topics": ""
+	},
+	{
+		"id": 195828813,
+		"link": {
+			"title": "eslint-config-prettier",
+			"url": "https://github.com/vuejs/eslint-config-prettier"
+		},
+		"name": "eslint-config-prettier",
+		"stars": 19,
+		"topics": ""
+	},
+	{
+		"id": 195829895,
+		"link": {
+			"title": "eslint-config-standard",
+			"url": "https://github.com/vuejs/eslint-config-standard"
+		},
+		"name": "eslint-config-standard",
+		"stars": 6,
+		"topics": ""
+	},
+	{
+		"id": 195831483,
+		"link": {
+			"title": "eslint-config-typescript",
+			"url": "https://github.com/vuejs/eslint-config-typescript"
+		},
+		"name": "eslint-config-typescript",
+		"stars": 14,
+		"topics": ""
+	},
+	{
+		"id": 57985891,
+		"link": {
+			"title": "eslint-config-vue",
+			"url": "https://github.com/vuejs/eslint-config-vue"
+		},
+		"name": "eslint-config-vue",
+		"stars": 264,
+		"topics": ""
+	},
+	{
+		"id": 66855798,
+		"link": {
+			"title": "eslint-plugin-vue",
+			"url": "https://github.com/vuejs/eslint-plugin-vue"
+		},
+		"name": "eslint-plugin-vue",
+		"stars": 3170,
+		"topics": "vue, eslint, eslint-plugin, npm, npm-package, npm-module, javascript, html, static-analysis"
+	},
+	{
+		"id": 93035057,
+		"link": {
+			"title": "eslint-plugin-vue-libs",
+			"url": "https://github.com/vuejs/eslint-plugin-vue-libs"
+		},
+		"name": "eslint-plugin-vue-libs",
+		"stars": 80,
+		"topics": ""
+	},
+	{
+		"id": 167855077,
+		"link": {
+			"title": "events",
+			"url": "https://github.com/vuejs/events"
+		},
+		"name": "events",
+		"stars": 216,
+		"topics": ""
+	},
+	{
+		"id": 61046328,
+		"link": {
+			"title": "flow-typed",
+			"url": "https://github.com/vuejs/flow-typed"
+		},
+		"name": "flow-typed",
+		"stars": 6,
+		"topics": ""
+	},
+	{
+		"id": 136048832,
+		"link": {
+			"title": "fork-ts-checker-webpack-plugin",
+			"url": "https://github.com/vuejs/fork-ts-checker-webpack-plugin"
+		},
+		"name": "fork-ts-checker-webpack-plugin",
+		"stars": 1,
+		"topics": ""
+	},
+	{
+		"id": 193367553,
+		"link": {
+			"title": "function-api-converter",
+			"url": "https://github.com/vuejs/function-api-converter"
+		},
+		"name": "function-api-converter",
+		"stars": 110,
+		"topics": ""
+	},
+	{
+		"id": 101504481,
+		"link": {
+			"title": "gitbook-plugin-theme-vuejs",
+			"url": "https://github.com/vuejs/gitbook-plugin-theme-vuejs"
+		},
+		"name": "gitbook-plugin-theme-vuejs",
+		"stars": 6,
+		"topics": ""
+	},
+	{
+		"id": 44835992,
+		"link": {
+			"title": "insert-css",
+			"url": "https://github.com/vuejs/insert-css"
+		},
+		"name": "insert-css",
+		"stars": 7,
+		"topics": ""
+	},
+	{
+		"id": 48554355,
+		"link": {
+			"title": "it.vuejs.org",
+			"url": "https://github.com/vuejs/it.vuejs.org"
+		},
+		"name": "it.vuejs.org",
+		"stars": 24,
+		"topics": ""
+	},
+	{
+		"id": 45193724,
+		"link": {
+			"title": "jp.vuejs.org",
+			"url": "https://github.com/vuejs/jp.vuejs.org"
+		},
+		"name": "jp.vuejs.org",
+		"stars": 209,
+		"topics": "vue, docs, japan"
+	},
+	{
+		"id": 36586804,
+		"link": {
+			"title": "js-repaint-perfs",
+			"url": "https://github.com/vuejs/js-repaint-perfs"
+		},
+		"name": "js-repaint-perfs",
+		"stars": 9,
+		"topics": ""
+	},
+	{
+		"id": 41225043,
+		"link": {
+			"title": "jsdelivr",
+			"url": "https://github.com/vuejs/jsdelivr"
+		},
+		"name": "jsdelivr",
+		"stars": 11,
+		"topics": ""
+	},
+	{
+		"id": 122793890,
+		"link": {
+			"title": "jsx",
+			"url": "https://github.com/vuejs/jsx"
+		},
+		"name": "jsx",
+		"stars": 849,
+		"topics": ""
+	},
+	{
+		"id": 262275061,
+		"link": {
+			"title": "jsx-next",
+			"url": "https://github.com/vuejs/jsx-next"
+		},
+		"name": "jsx-next",
+		"stars": 205,
+		"topics": ""
+	},
+	{
+		"id": 66352746,
+		"link": {
+			"title": "laravel-elixir-vue-2",
+			"url": "https://github.com/vuejs/laravel-elixir-vue-2"
+		},
+		"name": "laravel-elixir-vue-2",
+		"stars": 104,
+		"topics": ""
+	},
+	{
+		"id": 114658469,
+		"link": {
+			"title": "news.vuejs.org",
+			"url": "https://github.com/vuejs/news.vuejs.org"
+		},
+		"name": "news.vuejs.org",
+		"stars": 47,
+		"topics": ""
+	},
+	{
+		"id": 167573830,
+		"link": {
+			"title": "operation-guidelines",
+			"url": "https://github.com/vuejs/operation-guidelines"
+		},
+		"name": "operation-guidelines",
+		"stars": 5,
+		"topics": ""
+	},
+	{
+		"id": 116756655,
+		"link": {
+			"title": "preload-webpack-plugin",
+			"url": "https://github.com/vuejs/preload-webpack-plugin"
+		},
+		"name": "preload-webpack-plugin",
+		"stars": 53,
+		"topics": ""
+	},
+	{
+		"id": 44034028,
+		"link": {
+			"title": "rc.vuejs.org",
+			"url": "https://github.com/vuejs/rc.vuejs.org"
+		},
+		"name": "rc.vuejs.org",
+		"stars": 10,
+		"topics": ""
+	},
+	{
+		"id": 141149109,
+		"link": {
+			"title": "regression-testing",
+			"url": "https://github.com/vuejs/regression-testing"
+		},
+		"name": "regression-testing",
+		"stars": 26,
+		"topics": ""
+	},
+	{
+		"id": 161246367,
+		"link": {
+			"title": "rfcs",
+			"url": "https://github.com/vuejs/rfcs"
+		},
+		"name": "rfcs",
+		"stars": 2652,
+		"topics": ""
+	},
+	{
+		"id": 104365964,
+		"link": {
+			"title": "roadmap",
+			"url": "https://github.com/vuejs/roadmap"
+		},
+		"name": "roadmap",
+		"stars": 844,
+		"topics": ""
+	},
+	{
+		"id": 50274171,
+		"link": {
+			"title": "rollup-plugin-vue",
+			"url": "https://github.com/vuejs/rollup-plugin-vue"
+		},
+		"name": "rollup-plugin-vue",
+		"stars": 672,
+		"topics": "vue, rollup"
+	},
+	{
+		"id": 61602255,
+		"link": {
+			"title": "systemjs-plugin-vue",
+			"url": "https://github.com/vuejs/systemjs-plugin-vue"
+		},
+		"name": "systemjs-plugin-vue",
+		"stars": 30,
+		"topics": ""
+	},
+	{
+		"id": 27467328,
+		"link": {
+			"title": "todomvc",
+			"url": "https://github.com/vuejs/todomvc"
+		},
+		"name": "todomvc",
+		"stars": 19,
+		"topics": ""
+	},
+	{
+		"id": 135472920,
+		"link": {
+			"title": "ts-loader",
+			"url": "https://github.com/vuejs/ts-loader"
+		},
+		"name": "ts-loader",
+		"stars": 2,
+		"topics": ""
+	},
+	{
+		"id": 122224783,
+		"link": {
+			"title": "ui",
+			"url": "https://github.com/vuejs/ui"
+		},
+		"name": "ui",
+		"stars": 1175,
+		"topics": ""
+	},
+	{
+		"id": 74501891,
+		"link": {
+			"title": "v1-cn.vuejs.org",
+			"url": "https://github.com/vuejs/v1-cn.vuejs.org"
+		},
+		"name": "v1-cn.vuejs.org",
+		"stars": 3,
+		"topics": ""
+	},
+	{
+		"id": 74501772,
+		"link": {
+			"title": "v1-jp.vuejs.org",
+			"url": "https://github.com/vuejs/v1-jp.vuejs.org"
+		},
+		"name": "v1-jp.vuejs.org",
+		"stars": 3,
+		"topics": ""
+	},
+	{
+		"id": 69633364,
+		"link": {
+			"title": "v1.vuejs.org",
+			"url": "https://github.com/vuejs/v1.vuejs.org"
+		},
+		"name": "v1.vuejs.org",
+		"stars": 8,
+		"topics": ""
+	},
+	{
+		"id": 72314479,
+		"link": {
+			"title": "vetur",
+			"url": "https://github.com/vuejs/vetur"
+		},
+		"name": "vetur",
+		"stars": 4450,
+		"topics": "vscode, vue, visual-studio-code"
+	},
+	{
+		"id": 260338399,
+		"link": {
+			"title": "vitepress",
+			"url": "https://github.com/vuejs/vitepress"
+		},
+		"name": "vitepress",
+		"stars": 1591,
+		"topics": ""
+	},
+	{
+		"id": 11730342,
+		"link": {
+			"title": "vue",
+			"url": "https://github.com/vuejs/vue"
+		},
+		"name": "vue",
+		"stars": 170829,
+		"topics": "vue, javascript, frontend, framework"
+	},
+	{
+		"id": 52018678,
+		"link": {
+			"title": "vue-animated-list",
+			"url": "https://github.com/vuejs/vue-animated-list"
+		},
+		"name": "vue-animated-list",
+		"stars": 454,
+		"topics": ""
+	},
+	{
+		"id": 68540295,
+		"link": {
+			"title": "vue-apollo",
+			"url": "https://github.com/vuejs/vue-apollo"
+		},
+		"name": "vue-apollo",
+		"stars": 5000,
+		"topics": "vuejs2, apollographql, graphql, vuejs, vue, vue2"
+	},
+	{
+		"id": 40506963,
+		"link": {
+			"title": "vue-async-data",
+			"url": "https://github.com/vuejs/vue-async-data"
+		},
+		"name": "vue-async-data",
+		"stars": 419,
+		"topics": ""
+	},
+	{
+		"id": 118862982,
+		"link": {
+			"title": "vue-ci-image",
+			"url": "https://github.com/vuejs/vue-ci-image"
+		},
+		"name": "vue-ci-image",
+		"stars": 21,
+		"topics": ""
+	},
+	{
+		"id": 38071534,
+		"link": {
+			"title": "vue-class-component",
+			"url": "https://github.com/vuejs/vue-class-component"
+		},
+		"name": "vue-class-component",
+		"stars": 4869,
+		"topics": ""
+	},
+	{
+		"id": 48626335,
+		"link": {
+			"title": "vue-cli",
+			"url": "https://github.com/vuejs/vue-cli"
+		},
+		"name": "vue-cli",
+		"stars": 26162,
+		"topics": ""
+	},
+	{
+		"id": 231384793,
+		"link": {
+			"title": "vue-cli-plugin-vue-next",
+			"url": "https://github.com/vuejs/vue-cli-plugin-vue-next"
+		},
+		"name": "vue-cli-plugin-vue-next",
+		"stars": 325,
+		"topics": ""
+	},
+	{
+		"id": 244677074,
+		"link": {
+			"title": "vue-cli-wiki",
+			"url": "https://github.com/vuejs/vue-cli-wiki"
+		},
+		"name": "vue-cli-wiki",
+		"stars": 0,
+		"topics": ""
+	},
+	{
+		"id": 232143109,
+		"link": {
+			"title": "vue-codemod",
+			"url": "https://github.com/vuejs/vue-codemod"
+		},
+		"name": "vue-codemod",
+		"stars": 74,
+		"topics": ""
+	},
+	{
+		"id": 24738920,
+		"link": {
+			"title": "vue-component-compiler",
+			"url": "https://github.com/vuejs/vue-component-compiler"
+		},
+		"name": "vue-component-compiler",
+		"stars": 311,
+		"topics": ""
+	},
+	{
+		"id": 76563728,
+		"link": {
+			"title": "vue-curated",
+			"url": "https://github.com/vuejs/vue-curated"
+		},
+		"name": "vue-curated",
+		"stars": 176,
+		"topics": ""
+	},
+	{
+		"id": 76561616,
+		"link": {
+			"title": "vue-curated-client",
+			"url": "https://github.com/vuejs/vue-curated-client"
+		},
+		"name": "vue-curated-client",
+		"stars": 68,
+		"topics": ""
+	},
+	{
+		"id": 76587053,
+		"link": {
+			"title": "vue-curated-server",
+			"url": "https://github.com/vuejs/vue-curated-server"
+		},
+		"name": "vue-curated-server",
+		"stars": 29,
+		"topics": ""
+	},
+	{
+		"id": 173536604,
+		"link": {
+			"title": "vue-dev-server",
+			"url": "https://github.com/vuejs/vue-dev-server"
+		},
+		"name": "vue-dev-server",
+		"stars": 512,
+		"topics": ""
+	},
+	{
+		"id": 24579238,
+		"link": {
+			"title": "vue-devtools",
+			"url": "https://github.com/vuejs/vue-devtools"
+		},
+		"name": "vue-devtools",
+		"stars": 18087,
+		"topics": ""
+	},
+	{
+		"id": 121649543,
+		"link": {
+			"title": "vue-docs-zh-cn",
+			"url": "https://github.com/vuejs/vue-docs-zh-cn"
+		},
+		"name": "vue-docs-zh-cn",
+		"stars": 1284,
+		"topics": ""
+	},
+	{
+		"id": 24651290,
+		"link": {
+			"title": "vue-element",
+			"url": "https://github.com/vuejs/vue-element"
+		},
+		"name": "vue-element",
+		"stars": 203,
+		"topics": ""
+	},
+	{
+		"id": 24973735,
+		"link": {
+			"title": "vue-hackernews",
+			"url": "https://github.com/vuejs/vue-hackernews"
+		},
+		"name": "vue-hackernews",
+		"stars": 2487,
+		"topics": ""
+	},
+	{
+		"id": 65052980,
+		"link": {
+			"title": "vue-hackernews-2.0",
+			"url": "https://github.com/vuejs/vue-hackernews-2.0"
+		},
+		"name": "vue-hackernews-2.0",
+		"stars": 10477,
+		"topics": ""
+	},
+	{
+		"id": 44696600,
+		"link": {
+			"title": "vue-hot-reload-api",
+			"url": "https://github.com/vuejs/vue-hot-reload-api"
+		},
+		"name": "vue-hot-reload-api",
+		"stars": 414,
+		"topics": ""
+	},
+	{
+		"id": 43513683,
+		"link": {
+			"title": "vue-html-loader",
+			"url": "https://github.com/vuejs/vue-html-loader"
+		},
+		"name": "vue-html-loader",
+		"stars": 76,
+		"topics": ""
+	},
+	{
+		"id": 81365668,
+		"link": {
+			"title": "vue-issue-helper",
+			"url": "https://github.com/vuejs/vue-issue-helper"
+		},
+		"name": "vue-issue-helper",
+		"stars": 123,
+		"topics": ""
+	},
+	{
+		"id": 102215356,
+		"link": {
+			"title": "vue-jest",
+			"url": "https://github.com/vuejs/vue-jest"
+		},
+		"name": "vue-jest",
+		"stars": 488,
+		"topics": "jest, jest-vue, vue-jest"
+	},
+	{
+		"id": 24700171,
+		"link": {
+			"title": "vue-loader",
+			"url": "https://github.com/vuejs/vue-loader"
+		},
+		"name": "vue-loader",
+		"stars": 4412,
+		"topics": "vue, webpack, hot-reload, single-file-component"
+	},
+	{
+		"id": 68337359,
+		"link": {
+			"title": "vue-migration-helper",
+			"url": "https://github.com/vuejs/vue-migration-helper"
+		},
+		"name": "vue-migration-helper",
+		"stars": 564,
+		"topics": ""
+	},
+	{
+		"id": 137078487,
+		"link": {
+			"title": "vue-next",
+			"url": "https://github.com/vuejs/vue-next"
+		},
+		"name": "vue-next",
+		"stars": 15212,
+		"topics": ""
+	},
+	{
+		"id": 229326433,
+		"link": {
+			"title": "vue-next-webpack-preview",
+			"url": "https://github.com/vuejs/vue-next-webpack-preview"
+		},
+		"name": "vue-next-webpack-preview",
+		"stars": 380,
+		"topics": ""
+	},
+	{
+		"id": 47896737,
+		"link": {
+			"title": "vue-requests",
+			"url": "https://github.com/vuejs/vue-requests"
+		},
+		"name": "vue-requests",
+		"stars": 69,
+		"topics": ""
+	},
+	{
+		"id": 15116946,
+		"link": {
+			"title": "vue-router",
+			"url": "https://github.com/vuejs/vue-router"
+		},
+		"name": "vue-router",
+		"stars": 16920,
+		"topics": "vue, javascript, router"
+	},
+	{
+		"id": 92323439,
+		"link": {
+			"title": "vue-router-demos",
+			"url": "https://github.com/vuejs/vue-router-demos"
+		},
+		"name": "vue-router-demos",
+		"stars": 103,
+		"topics": "vue-router, vue, demos"
+	},
+	{
+		"id": 169618186,
+		"link": {
+			"title": "vue-router-next",
+			"url": "https://github.com/vuejs/vue-router-next"
+		},
+		"name": "vue-router-next",
+		"stars": 557,
+		"topics": ""
+	},
+	{
+		"id": 45409716,
+		"link": {
+			"title": "vue-rx",
+			"url": "https://github.com/vuejs/vue-rx"
+		},
+		"name": "vue-rx",
+		"stars": 3009,
+		"topics": ""
+	},
+	{
+		"id": 89439854,
+		"link": {
+			"title": "vue-ssr-docs",
+			"url": "https://github.com/vuejs/vue-ssr-docs"
+		},
+		"name": "vue-ssr-docs",
+		"stars": 488,
+		"topics": ""
+	},
+	{
+		"id": 80575872,
+		"link": {
+			"title": "vue-ssr-html-stream",
+			"url": "https://github.com/vuejs/vue-ssr-html-stream"
+		},
+		"name": "vue-ssr-html-stream",
+		"stars": 38,
+		"topics": ""
+	},
+	{
+		"id": 49083565,
+		"link": {
+			"title": "vue-style-loader",
+			"url": "https://github.com/vuejs/vue-style-loader"
+		},
+		"name": "vue-style-loader",
+		"stars": 197,
+		"topics": ""
+	},
+	{
+		"id": 26773986,
+		"link": {
+			"title": "vue-syntax-highlight",
+			"url": "https://github.com/vuejs/vue-syntax-highlight"
+		},
+		"name": "vue-syntax-highlight",
+		"stars": 1415,
+		"topics": ""
+	},
+	{
+		"id": 66160171,
+		"link": {
+			"title": "vue-template-es2015-compiler",
+			"url": "https://github.com/vuejs/vue-template-es2015-compiler"
+		},
+		"name": "vue-template-es2015-compiler",
+		"stars": 46,
+		"topics": ""
+	},
+	{
+		"id": 119086158,
+		"link": {
+			"title": "vue-template-explorer",
+			"url": "https://github.com/vuejs/vue-template-explorer"
+		},
+		"name": "vue-template-explorer",
+		"stars": 204,
+		"topics": ""
+	},
+	{
+		"id": 49039645,
+		"link": {
+			"title": "vue-template-validator",
+			"url": "https://github.com/vuejs/vue-template-validator"
+		},
+		"name": "vue-template-validator",
+		"stars": 24,
+		"topics": ""
+	},
+	{
+		"id": 92657585,
+		"link": {
+			"title": "vue-test-utils",
+			"url": "https://github.com/vuejs/vue-test-utils"
+		},
+		"name": "vue-test-utils",
+		"stars": 3045,
+		"topics": ""
+	},
+	{
+		"id": 105201960,
+		"link": {
+			"title": "vue-test-utils-getting-started",
+			"url": "https://github.com/vuejs/vue-test-utils-getting-started"
+		},
+		"name": "vue-test-utils-getting-started",
+		"stars": 75,
+		"topics": ""
+	},
+	{
+		"id": 105415177,
+		"link": {
+			"title": "vue-test-utils-jest-example",
+			"url": "https://github.com/vuejs/vue-test-utils-jest-example"
+		},
+		"name": "vue-test-utils-jest-example",
+		"stars": 286,
+		"topics": ""
+	},
+	{
+		"id": 105417429,
+		"link": {
+			"title": "vue-test-utils-mocha-webpack-example",
+			"url": "https://github.com/vuejs/vue-test-utils-mocha-webpack-example"
+		},
+		"name": "vue-test-utils-mocha-webpack-example",
+		"stars": 103,
+		"topics": ""
+	},
+	{
+		"id": 241878558,
+		"link": {
+			"title": "vue-test-utils-next",
+			"url": "https://github.com/vuejs/vue-test-utils-next"
+		},
+		"name": "vue-test-utils-next",
+		"stars": 96,
+		"topics": ""
+	},
+	{
+		"id": 242434537,
+		"link": {
+			"title": "vue-test-utils-next-docs",
+			"url": "https://github.com/vuejs/vue-test-utils-next-docs"
+		},
+		"name": "vue-test-utils-next-docs",
+		"stars": 15,
+		"topics": ""
+	},
+	{
+		"id": 142793811,
+		"link": {
+			"title": "vue-test-utils-typescript-example",
+			"url": "https://github.com/vuejs/vue-test-utils-typescript-example"
+		},
+		"name": "vue-test-utils-typescript-example",
+		"stars": 37,
+		"topics": ""
+	},
+	{
+		"id": 16630339,
+		"link": {
+			"title": "vue-touch",
+			"url": "https://github.com/vuejs/vue-touch"
+		},
+		"name": "vue-touch",
+		"stars": 2596,
+		"topics": ""
+	},
+	{
+		"id": 119904615,
+		"link": {
+			"title": "vue-web-component-wrapper",
+			"url": "https://github.com/vuejs/vue-web-component-wrapper"
+		},
+		"name": "vue-web-component-wrapper",
+		"stars": 778,
+		"topics": ""
+	},
+	{
+		"id": 37281938,
+		"link": {
+			"title": "vue-webpack-meteor-example",
+			"url": "https://github.com/vuejs/vue-webpack-meteor-example"
+		},
+		"name": "vue-webpack-meteor-example",
+		"stars": 77,
+		"topics": ""
+	},
+	{
+		"id": 192515827,
+		"link": {
+			"title": "vue.js.org",
+			"url": "https://github.com/vuejs/vue.js.org"
+		},
+		"name": "vue.js.org",
+		"stars": 1,
+		"topics": ""
+	},
+	{
+		"id": 184143331,
+		"link": {
+			"title": "vuedesk-bundle",
+			"url": "https://github.com/vuejs/vuedesk-bundle"
+		},
+		"name": "vuedesk-bundle",
+		"stars": 11,
+		"topics": ""
+	},
+	{
+		"id": 49235921,
+		"link": {
+			"title": "vuefire",
+			"url": "https://github.com/vuejs/vuefire"
+		},
+		"name": "vuefire",
+		"stars": 2939,
+		"topics": "vue, firebase, firestore, vuex, realtime, database"
+	},
+	{
+		"id": 24738983,
+		"link": {
+			"title": "vueify",
+			"url": "https://github.com/vuejs/vueify"
+		},
+		"name": "vueify",
+		"stars": 1184,
+		"topics": ""
+	},
+	{
+		"id": 15644594,
+		"link": {
+			"title": "vuejs.org",
+			"url": "https://github.com/vuejs/vuejs.org"
+		},
+		"name": "vuejs.org",
+		"stars": 4585,
+		"topics": ""
+	},
+	{
+		"id": 128237146,
+		"link": {
+			"title": "vuepress",
+			"url": "https://github.com/vuejs/vuepress"
+		},
+		"name": "vuepress",
+		"stars": 17246,
+		"topics": "vue, vuepress, seo, static-site-generator, docs-generator, blog-engine"
+	},
+	{
+		"id": 39176269,
+		"link": {
+			"title": "vuex",
+			"url": "https://github.com/vuejs/vuex"
+		},
+		"name": "vuex",
+		"stars": 24601,
+		"topics": "vue, javascript, vuex, state-management, time-travel"
+	},
+	{
+		"id": 75052560,
+		"link": {
+			"title": "vuex-observable",
+			"url": "https://github.com/vuejs/vuex-observable"
+		},
+		"name": "vuex-observable",
+		"stars": 156,
+		"topics": ""
+	},
+	{
+		"id": 53403865,
+		"link": {
+			"title": "vuex-router-sync",
+			"url": "https://github.com/vuejs/vuex-router-sync"
+		},
+		"name": "vuex-router-sync",
+		"stars": 2277,
+		"topics": "vue, vuex, vue-router"
+	}
+]
