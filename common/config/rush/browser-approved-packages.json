@@ -4,15 +4,15 @@
   "packages": [
     {
       "name": "@cypress/vite-dev-server",
-      "allowedCategories": [ "documentation", "prototype" ]
+      "allowedCategories": [ "documentation", "prototype", "utilities" ]
     },
     {
       "name": "@cypress/vue",
-      "allowedCategories": [ "documentation", "prototype" ]
+      "allowedCategories": [ "documentation", "prototype", "utilities" ]
     },
     {
       "name": "@histoire/plugin-vue",
-      "allowedCategories": [ "prototype" ]
+      "allowedCategories": [ "prototype", "utilities" ]
     },
     {
       "name": "@miragejs/graphql",
@@ -35,16 +35,20 @@
       "allowedCategories": [ "prototype" ]
     },
     {
-      "name": "@typescript-eslint/eslint-plugin",
+      "name": "@sedum/utilities",
       "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "@typescript-eslint/eslint-plugin",
+      "allowedCategories": [ "prototype", "utilities" ]
     },
     {
       "name": "@typescript-eslint/parser",
-      "allowedCategories": [ "prototype" ]
+      "allowedCategories": [ "prototype", "utilities" ]
     },
     {
       "name": "@vitejs/plugin-vue",
-      "allowedCategories": [ "prototype" ]
+      "allowedCategories": [ "prototype", "utilities" ]
     },
     {
       "name": "@vue/compiler-sfc",
@@ -52,27 +56,27 @@
     },
     {
       "name": "@vueuse/core",
-      "allowedCategories": [ "prototype" ]
+      "allowedCategories": [ "prototype", "utilities" ]
     },
     {
       "name": "cypress",
-      "allowedCategories": [ "prototype" ]
+      "allowedCategories": [ "prototype", "utilities" ]
     },
     {
       "name": "eslint",
-      "allowedCategories": [ "prototype" ]
+      "allowedCategories": [ "prototype", "utilities" ]
     },
     {
       "name": "eslint-config-prettier",
-      "allowedCategories": [ "prototype" ]
+      "allowedCategories": [ "prototype", "utilities" ]
     },
     {
       "name": "eslint-plugin-vue",
-      "allowedCategories": [ "prototype" ]
+      "allowedCategories": [ "prototype", "utilities" ]
     },
     {
       "name": "histoire",
-      "allowedCategories": [ "prototype" ]
+      "allowedCategories": [ "prototype", "utilities" ]
     },
     {
       "name": "immutable",
@@ -140,7 +144,7 @@
     },
     {
       "name": "typescript",
-      "allowedCategories": [ "prototype" ]
+      "allowedCategories": [ "prototype", "utilities" ]
     },
     {
       "name": "unstorage",
@@ -152,7 +156,7 @@
     },
     {
       "name": "vite",
-      "allowedCategories": [ "prototype" ]
+      "allowedCategories": [ "prototype", "utilities" ]
     },
     {
       "name": "vite-plugin-vue2",
@@ -160,11 +164,11 @@
     },
     {
       "name": "vue",
-      "allowedCategories": [ "prototype" ]
+      "allowedCategories": [ "prototype", "utilities" ]
     },
     {
       "name": "vue-router",
-      "allowedCategories": [ "prototype" ]
+      "allowedCategories": [ "prototype", "utilities" ]
     },
     {
       "name": "vue-template-compiler",

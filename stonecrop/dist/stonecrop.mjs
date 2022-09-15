@@ -1,4 +1,4 @@
-import { S } from "./index.dde27c17.mjs";
+import { S } from "./index.3789314c.mjs";
 import "vue";
 export {
   S as default
