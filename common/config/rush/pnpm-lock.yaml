@@ -7,41 +7,41 @@ importers:
 
   ../../aform:
     specifiers:
-      '@cypress/vite-dev-server': ~2.0.3
-      '@cypress/vue': ~3.0.0-beta.4
-      '@histoire/plugin-vue': ~0.10.2
+      '@cypress/vite-dev-server': ^2.0.3
+      '@cypress/vue': ^3.0.0-beta.4
+      '@histoire/plugin-vue': ^0.10.2
       '@sedum/atable': workspace:*
       '@sedum/utilities': workspace:*
-      '@types/uuid': ~8.3.4
-      '@typescript-eslint/eslint-plugin': ~5.33.0
-      '@typescript-eslint/parser': ~5.33.0
-      '@vitejs/plugin-vue': ~3.0.1
-      cypress: ~8.1.0
-      eslint: ~8.22.0
-      eslint-config-prettier: ~8.5.0
-      eslint-plugin-vue: ~9.3.0
-      histoire: ~0.10.2
-      prettier: ~2.7.1
-      pretty-quick: ~3.1.3
-      typescript: ~4.7.4
+      '@types/uuid': ^8.3.4
+      '@typescript-eslint/eslint-plugin': ^5.33.0
+      '@typescript-eslint/parser': ^5.33.0
+      '@vitejs/plugin-vue': ^3.0.1
+      cypress: ^8.1.0
+      eslint: ^8.22.0
+      eslint-config-prettier: ^8.5.0
+      eslint-plugin-vue: ^9.3.0
+      histoire: ^0.10.2
+      prettier: ^2.7.1
+      pretty-quick: ^3.1.3
+      typescript: ^4.7.4
       uuid: ^8.3.2
-      vite: ~3.0.5
+      vite: ^3.0.5
       vue: ^3.2.37
-      vue-router: ~4
+      vue-router: ^4
     dependencies:
       '@sedum/utilities': link:../utilities
       uuid: 8.3.2
       vue: 3.2.37
     devDependencies:
       '@cypress/vite-dev-server': 2.0.8_vite@3.0.9
-      '@cypress/vue': 3.0.5_cypress@8.1.0+vue@3.2.37
+      '@cypress/vue': 3.1.2_cypress@8.7.0+vue@3.2.37
       '@histoire/plugin-vue': 0.10.4_maixmy2buciknipraogpn2dzvq
       '@sedum/atable': link:../atable
       '@types/uuid': 8.3.4
       '@typescript-eslint/eslint-plugin': 5.33.1_vsoshirnpb7xw6mr7xomgfas2i
       '@typescript-eslint/parser': 5.33.1_4rv7y5c6xz3vfxwhbrcxxi73bq
       '@vitejs/plugin-vue': 3.0.3_vite@3.0.9+vue@3.2.37
-      cypress: 8.1.0
+      cypress: 8.7.0
       eslint: 8.22.0
       eslint-config-prettier: 8.5.0_eslint@8.22.0
       eslint-plugin-vue: 9.3.0_eslint@8.22.0
@@ -54,39 +54,39 @@ importers:
 
   ../../atable:
     specifiers:
-      '@cypress/vite-dev-server': ~2.0.3
-      '@cypress/vue': ~3.0.0-beta.4
-      '@histoire/plugin-vue': ~0.10.2
+      '@cypress/vite-dev-server': ^2.0.3
+      '@cypress/vue': ^3.0.0-beta.4
+      '@histoire/plugin-vue': ^0.10.2
       '@sedum/aform': workspace:*
       '@sedum/utilities': workspace:*
-      '@types/uuid': ~8.3.4
-      '@typescript-eslint/eslint-plugin': ~5.33.0
-      '@typescript-eslint/parser': ~5.33.0
-      '@vitejs/plugin-vue': ~3.0.1
-      cypress: ~8.1.0
-      eslint: ~8.22.0
-      eslint-config-prettier: ~8.5.0
-      eslint-plugin-vue: ~9.3.0
-      histoire: ~0.10.2
-      typescript: ~4.7.4
-      uuid: ~8.3.2
-      vite: ~3.0.5
-      vue: ~3.2.37
-      vue-router: ~4
+      '@types/uuid': ^8.3.4
+      '@typescript-eslint/eslint-plugin': ^5.33.0
+      '@typescript-eslint/parser': ^5.33.0
+      '@vitejs/plugin-vue': ^3.0.1
+      cypress: ^8.1.0
+      eslint: ^8.22.0
+      eslint-config-prettier: ^8.5.0
+      eslint-plugin-vue: ^9.3.0
+      histoire: ^0.10.2
+      typescript: ^4.7.4
+      uuid: ^8.3.2
+      vite: ^3.0.5
+      vue: ^3.2.37
+      vue-router: ^4
     dependencies:
       '@sedum/utilities': link:../utilities
       uuid: 8.3.2
       vue: 3.2.37
     devDependencies:
       '@cypress/vite-dev-server': 2.0.8_vite@3.0.9
-      '@cypress/vue': 3.0.5_cypress@8.1.0+vue@3.2.37
+      '@cypress/vue': 3.1.2_cypress@8.7.0+vue@3.2.37
       '@histoire/plugin-vue': 0.10.4_maixmy2buciknipraogpn2dzvq
       '@sedum/aform': link:../aform
       '@types/uuid': 8.3.4
       '@typescript-eslint/eslint-plugin': 5.33.1_vsoshirnpb7xw6mr7xomgfas2i
       '@typescript-eslint/parser': 5.33.1_4rv7y5c6xz3vfxwhbrcxxi73bq
       '@vitejs/plugin-vue': 3.0.3_vite@3.0.9+vue@3.2.37
-      cypress: 8.1.0
+      cypress: 8.7.0
       eslint: 8.22.0
       eslint-config-prettier: 8.5.0_eslint@8.22.0
       eslint-plugin-vue: 9.3.0_eslint@8.22.0
@@ -97,10 +97,10 @@ importers:
 
   ../../desktop:
     specifiers:
-      '@histoire/plugin-vue': ~0.10.2
+      '@histoire/plugin-vue': ^0.10.2
       '@vitejs/plugin-vue': ^3.0.1
-      histoire: ~0.10.2
-      portal-vue: ~3.0.0-beta.0
+      histoire: ^0.10.2
+      portal-vue: ^3.0.0-beta.0
       vite: ^3.0.5
       vue: ^3.2.37
       vue-router: ^4
@@ -118,17 +118,17 @@ importers:
 
   ../../examples:
     specifiers:
-      '@histoire/plugin-vue': ~0.10.2
-      '@miragejs/graphql': ~0.1.13
-      '@sedum/aform': workspace:~0.1.0
-      '@sedum/atable': workspace:~0.1.0
-      '@sedum/desktop': workspace:~0.1.0
-      '@sedum/stonecrop': workspace:~0.1.0
+      '@histoire/plugin-vue': ^0.10.2
+      '@miragejs/graphql': ^0.1.13
+      '@sedum/aform': workspace:^0.1.0
+      '@sedum/atable': workspace:^0.1.0
+      '@sedum/desktop': workspace:^0.1.0
+      '@sedum/stonecrop': workspace:^0.1.0
       '@vitejs/plugin-vue': ^3.0.1
       cypress: ^8.1.0
-      histoire: ~0.10.2
-      miragejs: ~0.1.41
-      uuid: ~8.3.2
+      histoire: ^0.10.2
+      miragejs: ^0.1.42
+      uuid: ^8.3.2
       vite: ^3.0.5
       vue: ^3.2.37
       vue-router: ^4
@@ -151,20 +151,20 @@ importers:
 
   ../../stonecrop:
     specifiers:
-      '@cypress/vite-dev-server': ~2.0.3
+      '@cypress/vite-dev-server': ^2.0.3
       '@cypress/vue': ^3.0.0-beta.4
-      '@histoire/plugin-vue': ~0.10.2
-      '@sedum/aform': workspace:~0.1.0
-      '@sedum/atable': workspace:~0.1.0
+      '@histoire/plugin-vue': ^0.10.2
+      '@sedum/aform': workspace:^0.1.0
+      '@sedum/atable': workspace:^0.1.0
       '@vitejs/plugin-vue': ^3.0.1
       cypress: ^8.1.0
-      histoire: ~0.10.2
+      histoire: ^0.10.2
       node-sass: ^6.0.1
       overmind: ^28.0.1
       overmind-vue: ^28.0.3
       sass: ^1.35.1
       sass-loader: ^12.1.0
-      unstorage: ~0.2.7
+      unstorage: ^0.2.7
       vite: ^3.0.5
       vue: ^3.2.37
       vue-router: ^4
@@ -192,33 +192,33 @@ importers:
 
   ../../utilities:
     specifiers:
-      '@cypress/vite-dev-server': ~2.0.3
-      '@cypress/vue': ~3.0.0-beta.4
-      '@histoire/plugin-vue': ~0.10.2
-      '@typescript-eslint/eslint-plugin': ~5.33.0
-      '@typescript-eslint/parser': ~5.33.0
-      '@vitejs/plugin-vue': ~3.0.1
-      '@vueuse/core': ~9.2.0
-      cypress: ~8.1.0
-      eslint: ~8.22.0
-      eslint-config-prettier: ~8.5.0
-      eslint-plugin-vue: ~9.3.0
-      histoire: ~0.10.2
-      typescript: ~4.7.4
-      vite: ~3.0.5
-      vue: ~3.2.37
-      vue-router: ~4
+      '@cypress/vite-dev-server': ^2.0.3
+      '@cypress/vue': ^3.0.0-beta.4
+      '@histoire/plugin-vue': ^0.10.2
+      '@typescript-eslint/eslint-plugin': ^5.33.0
+      '@typescript-eslint/parser': ^5.33.0
+      '@vitejs/plugin-vue': ^3.0.1
+      '@vueuse/core': ^9.2.0
+      cypress: ^8.1.0
+      eslint: ^8.22.0
+      eslint-config-prettier: ^8.5.0
+      eslint-plugin-vue: ^9.3.0
+      histoire: ^0.10.2
+      typescript: ^4.7.4
+      vite: ^3.0.5
+      vue: ^3.2.37
+      vue-router: ^4
     dependencies:
       vue: 3.2.37
     devDependencies:
       '@cypress/vite-dev-server': 2.0.8_vite@3.0.9
-      '@cypress/vue': 3.0.5_cypress@8.1.0+vue@3.2.37
+      '@cypress/vue': 3.1.2_cypress@8.7.0+vue@3.2.37
       '@histoire/plugin-vue': 0.10.4_maixmy2buciknipraogpn2dzvq
       '@typescript-eslint/eslint-plugin': 5.33.1_vsoshirnpb7xw6mr7xomgfas2i
       '@typescript-eslint/parser': 5.33.1_4rv7y5c6xz3vfxwhbrcxxi73bq
       '@vitejs/plugin-vue': 3.0.3_vite@3.0.9+vue@3.2.37
       '@vueuse/core': 9.2.0_vue@3.2.37
-      cypress: 8.1.0
+      cypress: 8.7.0
       eslint: 8.22.0
       eslint-config-prettier: 8.5.0_eslint@8.22.0
       eslint-plugin-vue: 9.3.0_eslint@8.22.0
@@ -298,26 +298,6 @@ packages:
       vite: 3.0.9
     transitivePeerDependencies:
       - supports-color
-    dev: true
-
-  /@cypress/vue/3.0.5_cypress@8.1.0+vue@3.2.37:
-    resolution: {integrity: sha512-v6uVMEP04mCJGfc9/oH2ZIYPZ3fRwiOSzjtQ7jT0O2Lt2+SkoEWbDymG0pUFMRM1W8oc7Ep1hqEgZjIop7RXgw==}
-    engines: {node: '>=8'}
-    peerDependencies:
-      '@cypress/webpack-dev-server': '*'
-      babel-loader: '*'
-      cypress: '>=7.0.0'
-      vue: '>=3.0.0'
-    peerDependenciesMeta:
-      '@cypress/webpack-dev-server':
-        optional: true
-      babel-loader:
-        optional: true
-    dependencies:
-      '@cypress/mount-utils': 1.0.2
-      '@vue/test-utils': 2.0.2_vue@3.2.37
-      cypress: 8.1.0
-      vue: 3.2.37
     dev: true
 
   /@cypress/vue/3.1.2_cypress@8.7.0+vue@3.2.37:
@@ -481,7 +461,7 @@ packages:
   /@types/concat-stream/1.6.1:
     resolution: {integrity: sha512-eHE4cQPoj6ngxBZMvVf6Hw7Mh4jMW4U9lpGmS5GBPB9RYxlFg+CHaVN7ErNY4W9XfLIEn20b4VDYaIrbq0q4uA==}
     dependencies:
-      '@types/node': 8.10.66
+      '@types/node': 18.7.9
     dev: true
 
   /@types/flexsearch/0.7.3:
@@ -491,7 +471,7 @@ packages:
   /@types/form-data/0.0.33:
     resolution: {integrity: sha512-8BSvG1kGm83cyJITQMZSulnl6QV8jqAGreJsc5tPu1Jq0vTSOiY/k24Wx82JRpWwZSqrala6sd5rWi6aNXvqcw==}
     dependencies:
-      '@types/node': 8.10.66
+      '@types/node': 18.7.9
     dev: true
 
   /@types/fs-extra/9.0.13:
@@ -1277,55 +1257,6 @@ packages:
 
   /csstype/2.6.20:
     resolution: {integrity: sha512-/WwNkdXfckNgw6S5R125rrW8ez139lBHWouiBvX8dfMFtcn6V81REDqnH7+CRpRipfYlyU1CmOnOxrmGcFOjeA==}
-
-  /cypress/8.1.0:
-    resolution: {integrity: sha512-GXjlqPjY/6HPbQwAp3AvlA1Mk/NoJTAmqVSUhQsuM/1xDpd/FQHkxVuq5h6O6RrAoCXSgpZPXFsVtdqE+FwEJw==}
-    engines: {node: '>=12.0.0'}
-    hasBin: true
-    requiresBuild: true
-    dependencies:
-      '@cypress/request': 2.88.10
-      '@cypress/xvfb': 1.2.4
-      '@types/node': 14.18.25
-      '@types/sinonjs__fake-timers': 6.0.4
-      '@types/sizzle': 2.3.3
-      arch: 2.2.0
-      blob-util: 2.0.2
-      bluebird: 3.7.2
-      cachedir: 2.3.0
-      chalk: 4.1.2
-      check-more-types: 2.24.0
-      cli-cursor: 3.1.0
-      cli-table3: 0.6.2
-      commander: 5.1.0
-      common-tags: 1.8.2
-      dayjs: 1.11.5
-      debug: 4.3.4_supports-color@8.1.1
-      enquirer: 2.3.6
-      eventemitter2: 6.4.7
-      execa: 4.1.0
-      executable: 4.1.1
-      extract-zip: 2.0.1_supports-color@8.1.1
-      figures: 3.2.0
-      fs-extra: 9.1.0
-      getos: 3.2.1
-      is-ci: 3.0.1
-      is-installed-globally: 0.4.0
-      lazy-ass: 1.6.0
-      listr2: 3.14.0_enquirer@2.3.6
-      lodash: 4.17.21
-      log-symbols: 4.1.0
-      minimist: 1.2.6
-      ospath: 1.2.2
-      pretty-bytes: 5.6.0
-      ramda: 0.27.2
-      request-progress: 3.0.0
-      supports-color: 8.1.1
-      tmp: 0.2.1
-      untildify: 4.0.0
-      url: 0.11.0
-      yauzl: 2.10.0
-    dev: true
 
   /cypress/8.7.0:
     resolution: {integrity: sha512-b1bMC3VQydC6sXzBMFnSqcvwc9dTZMgcaOzT0vpSD+Gq1yFc+72JDWi55sfUK5eIeNLAtWOGy1NNb6UlhMvB+Q==}

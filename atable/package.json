@@ -21,29 +21,29 @@
 	},
 	"dependencies": {
 		"@sedum/utilities": "workspace:*",
-		"uuid": "~8.3.2",
-		"vue": "~3.2.37"
+		"uuid": "^8.3.2",
+		"vue": "^3.2.37"
 	},
 	"peerDependencies": {
 		"@sedum/aform": "workspace:*"
 	},
 	"devDependencies": {
-		"@cypress/vite-dev-server": "~2.0.3",
-		"@cypress/vue": "~3.0.0-beta.4",
-		"@histoire/plugin-vue": "~0.10.2",
+		"@cypress/vite-dev-server": "^2.0.3",
+		"@cypress/vue": "^3.0.0-beta.4",
+		"@histoire/plugin-vue": "^0.10.2",
 		"@sedum/aform": "workspace:*",
-		"@types/uuid": "~8.3.4",
-		"@typescript-eslint/eslint-plugin": "~5.33.0",
-		"@typescript-eslint/parser": "~5.33.0",
-		"@vitejs/plugin-vue": "~3.0.1",
-		"cypress": "~8.1.0",
-		"eslint-config-prettier": "~8.5.0",
-		"eslint-plugin-vue": "~9.3.0",
-		"eslint": "~8.22.0",
-		"histoire": "~0.10.2",
-		"typescript": "~4.7.4",
-		"vite": "~3.0.5",
-		"vue-router": "~4"
+		"@types/uuid": "^8.3.4",
+		"@typescript-eslint/eslint-plugin": "^5.33.0",
+		"@typescript-eslint/parser": "^5.33.0",
+		"@vitejs/plugin-vue": "^3.0.1",
+		"cypress": "^8.1.0",
+		"eslint-config-prettier": "^8.5.0",
+		"eslint-plugin-vue": "^9.3.0",
+		"eslint": "^8.22.0",
+		"histoire": "^0.10.2",
+		"typescript": "^4.7.4",
+		"vite": "^3.0.5",
+		"vue-router": "^4"
 	},
 	"engines": {
 		"node": ">=16.13.0"

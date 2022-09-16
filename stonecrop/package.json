@@ -9,14 +9,14 @@
 		"overmind-vue": "^28.0.3",
 		"vue": "^3.2.37",
 		"vue-router": "^4",
-		"unstorage": "~0.2.7"
+		"unstorage": "^0.2.7"
 	},
 	"devDependencies": {
-		"@sedum/atable": "workspace:~0.1.0",
-		"@sedum/aform": "workspace:~0.1.0",
+		"@sedum/atable": "workspace:^0.1.0",
+		"@sedum/aform": "workspace:^0.1.0",
 		"cypress": "^8.1.0",
 		"@cypress/vue": "^3.0.0-beta.4",
-		"@cypress/vite-dev-server": "~2.0.3",
+		"@cypress/vite-dev-server": "^2.0.3",
 		"@vitejs/plugin-vue": "^3.0.1",
 		"node-sass": "^6.0.1",
 		"sass": "^1.35.1",
@@ -24,8 +24,8 @@
 		"vite": "^3.0.5",
 		"vue-template-compiler": "^2.6.14",
 		"vue-router": "^4",
-		"histoire": "~0.10.2",
-		"@histoire/plugin-vue": "~0.10.2"
+		"histoire": "^0.10.2",
+		"@histoire/plugin-vue": "^0.10.2"
 	},
 	"scripts": {
 		"dev": "vite serve dev/ -c dev/vite.config.js -d",

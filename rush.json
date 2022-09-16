@@ -11,8 +11,8 @@
 	},
 	"gitPolicy": {},
 	"repository": {
-		"url": "https://github.com/sedum-io/",
-		"defaultBranch": "develop",
+		"url": "https://github.com/Alchez/stonecrop",
+		"defaultBranch": "development",
 		"defaultRemote": "origin"
 	},
 	"eventHooks": {
@@ -22,42 +22,49 @@
 		"postRushBuild": []
 	},
 	"variants": [],
-	"telemetryEnabled": false,
+	"ensureConsistentVersions": true,
 	"hotfixChangeEnabled": false,
+	"telemetryEnabled": false,
 	"projects": [
 		{
 			"packageName": "@sedum/stonecrop",
 			"projectFolder": "stonecrop",
-			"reviewCategory": "prototype"
+			"reviewCategory": "prototype",
+			"shouldPublish": false
 		},
 		{
 			"packageName": "@sedum/atable",
 			"projectFolder": "atable",
 			"reviewCategory": "prototype",
 			// to avoid circular dependency problems
-			"decoupledLocalDependencies": ["@sedum/aform"]
+			"decoupledLocalDependencies": ["@sedum/aform"],
+			"shouldPublish": true
 		},
 		{
 			"packageName": "@sedum/aform",
 			"projectFolder": "aform",
 			"reviewCategory": "prototype",
 			// to avoid circular dependency problems
-			"decoupledLocalDependencies": ["@sedum/atable"]
+			"decoupledLocalDependencies": ["@sedum/atable"],
+			"shouldPublish": true
 		},
 		{
 			"packageName": "@sedum/desktop",
 			"projectFolder": "desktop",
-			"reviewCategory": "prototype"
+			"reviewCategory": "prototype",
+			"shouldPublish": false
 		},
 		{
 			"packageName": "@sedum/examples",
 			"projectFolder": "examples",
-			"reviewCategory": "prototype"
+			"reviewCategory": "prototype",
+			"shouldPublish": false
 		},
 		{
 			"packageName": "@sedum/utilities",
 			"projectFolder": "utilities",
-			"reviewCategory": "utilities"
+			"reviewCategory": "utilities",
+			"shouldPublish": true
 		}
 		// {
 		//   "packageName": "@sedum/beam",
