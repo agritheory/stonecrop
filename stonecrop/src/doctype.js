@@ -11,7 +11,4 @@ export default class Doctype {
 			.replace(/[\s_]+/g, '-')
 			.toLowerCase() // kebab case
 	}
-	// getRecords
-	// getRecord
-	//
 }

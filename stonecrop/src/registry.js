@@ -24,15 +24,18 @@ export default class Registry {
 	addDoctype(doctype) {
 		// type: Doctype class
 		if (!(doctype.doctype in Object.keys(this.registry))) {
-			this.registry[doctype.doctype] = doctype
+			this.registry[doctype.slug] = doctype
 		}
-		if (!this.router.hasRoute(doctype.slug)) {
+		if (!this.router.hasRoute(doctype.doctype)) {
 			this.router.addRoute({
 				path: `/${doctype.slug}`,
 				name: doctype.slug,
 				component: doctype.schema.recordsComponent || Records,
 			})
-			this.router.addRoute({ path: `/${doctype.slug}:id`, component: doctype.schema.component || Doctype })
+			this.router.addRoute({
+				path: `/${doctype.slug}:id`,
+				component: doctype.schema.component || Doctype,
+			})
 		}
 	}
 }

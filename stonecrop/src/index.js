@@ -7,7 +7,8 @@ import Registry from './registry.js'
 const Stonecrop = {
 	install: (app, options) => {
 		app.use(router)
-		app.config.globalProperties.$registry = new Registry(router, options.schemaLoader)
+		// app.config.globalProperties.$registry = new Registry(router, options.schemaLoader)
+		app.provide('$registry', new Registry(router, options.schemaLoader))
 	},
 }
 

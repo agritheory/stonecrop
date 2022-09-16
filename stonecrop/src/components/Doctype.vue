@@ -1,13 +1,14 @@
 <template>
 	<div>
-		<h3>Doctype</h3>
-		<pre>{{}}</pre>
-		<AForm class="aform-main" :schema="basic_form_schema" :data="data" :formId="id" :key="formKey" />
+		<h3>{{ schema.doctype }}</h3>
+		<pre>{{ route }}</pre>
+		<AForm class="aform-main" :schema="schema.schema" :data="data" :formId="id" :key="formKey" />
 	</div>
 </template>
 <script>
-import { reactive, ref, defineComponent } from 'vue'
+import { reactive, ref, defineComponent, inject } from 'vue'
 import { AForm, ATextInput } from '@sedum/aform'
+import { useRouter, useRoute } from 'vue-router'
 // pinia for state, later
 //
 
@@ -16,33 +17,12 @@ export default defineComponent({
 	components: {
 		AForm,
 	},
-	setup(props) {
+	setup(props, context) {
+		const router = useRouter()
+		const doctypeSlug = router.currentRoute._value.params.records
+		const schema = inject('$registry').schemaLoader(router.currentRoute._value.params.records)
+		console.log(schema)
 		// change this to $registry.registry[$route.currentRoute???]
-		const basic_form_schema = [
-			{
-				fieldname: 'first_name',
-				component: ATextInput,
-				label: 'First Name',
-			},
-			{
-				fieldname: 'last_name',
-				component: ATextInput,
-				label: 'Last Name',
-			},
-			{
-				fieldname: 'date',
-				fieldtype: 'Date',
-				component: ATextInput,
-				label: 'Date',
-			},
-			{
-				fieldname: 'phone',
-				fieldtype: 'Phone',
-				component: ATextInput,
-				label: 'Phone',
-				mask: "(locale) => { if (locale === 'en-US') { return '(###) ###-####' } else if (locale === 'en-IN') { return '####-######'} }",
-			},
-		]
 		let data = reactive([
 			{
 				first_name: 'John',
@@ -54,7 +34,7 @@ export default defineComponent({
 
 		let id = ref(123456)
 		const formKey = ref(0)
-		return { basic_form_schema, data, id, formKey }
+		return { schema, data, id, formKey }
 	},
 })
 </script>

@@ -16,7 +16,8 @@ import { Map, OrderedSet } from 'immutable'
 export const useStonecrop = createGlobalState(
 	() => {
 		return { ...new Stonecrop() }
-	} // use for dev - no localstorage yet
+	} // use for dev or refactor to an env flag
+	// https://github.com/unjs/unstorage
 	// () => useStorage(
 	// 	'stonecrop',
 	// 	{... new Stonecrop()}
