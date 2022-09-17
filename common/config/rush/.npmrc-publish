@@ -18,5 +18,6 @@
 #
 #   //registry.npmjs.org/:_authToken=${NPM_AUTH_TOKEN}
 #
-registry=https://npm.pkg.github.com
-always-auth=false
+registry=https://npm.pkg.github.com/alchez/stonecrop
+
+//npm.pkg.github.com/:_authToken=${NPM_AUTH_TOKEN}
