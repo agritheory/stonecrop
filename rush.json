@@ -58,6 +58,11 @@
 			"packageName": "@sedum/utilities",
 			"projectFolder": "utilities",
 			"reviewCategory": "utilities"
+		},
+		{
+			"packageName": "@sedum/phrasal",
+			"projectFolder": "phrasal",
+			"reviewCategory": "prototype"
 		}
 		// {
 		//   "packageName": "@sedum/beam",
