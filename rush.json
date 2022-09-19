@@ -11,7 +11,7 @@
 	},
 	"gitPolicy": {},
 	"repository": {
-		"url": "https://github.com/Alchez/stonecrop",
+		"url": "https://github.com/agritheory/stonecrop",
 		"defaultBranch": "development",
 		"defaultRemote": "origin"
 	},
