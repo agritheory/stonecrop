@@ -1,31 +1,23 @@
 name: Node.js Package
 
 on:
-  release:
-    types: [created]
+  pull_request:
+    types:
+      - closed
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 16
-      - run: rush build
-
   publish-gpr:
-    needs: build
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     permissions:
-      packages: write
       contents: read
+      packages: write
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
           node-version: 16
           registry-url: https://npm.pkg.github.com/
-      - run: rush publish -p
+      - run: node common/scripts/install-run-rush.js publish -p
         env:
           GPR_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
