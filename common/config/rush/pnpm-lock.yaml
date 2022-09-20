@@ -10,8 +10,8 @@ importers:
       '@cypress/vite-dev-server': ^2.0.3
       '@cypress/vue': ^3.0.0-beta.4
       '@histoire/plugin-vue': ^0.10.2
-      '@sedum/atable': workspace:*
-      '@sedum/utilities': workspace:*
+      '@agritheory/atable': workspace:*
+      '@agritheory/utilities': workspace:*
       '@types/uuid': ^8.3.4
       '@typescript-eslint/eslint-plugin': ^5.33.0
       '@typescript-eslint/parser': ^5.33.0
@@ -29,14 +29,14 @@ importers:
       vue: ^3.2.37
       vue-router: ^4
     dependencies:
-      '@sedum/utilities': link:../utilities
+      '@agritheory/utilities': link:../utilities
       uuid: 8.3.2
       vue: 3.2.37
     devDependencies:
       '@cypress/vite-dev-server': 2.0.8_vite@3.0.9
       '@cypress/vue': 3.1.2_cypress@8.7.0+vue@3.2.37
       '@histoire/plugin-vue': 0.10.4_maixmy2buciknipraogpn2dzvq
-      '@sedum/atable': link:../atable
+      '@agritheory/atable': link:../atable
       '@types/uuid': 8.3.4
       '@typescript-eslint/eslint-plugin': 5.33.1_vsoshirnpb7xw6mr7xomgfas2i
       '@typescript-eslint/parser': 5.33.1_4rv7y5c6xz3vfxwhbrcxxi73bq
@@ -57,8 +57,8 @@ importers:
       '@cypress/vite-dev-server': ^2.0.3
       '@cypress/vue': ^3.0.0-beta.4
       '@histoire/plugin-vue': ^0.10.2
-      '@sedum/aform': workspace:*
-      '@sedum/utilities': workspace:*
+      '@agritheory/aform': workspace:*
+      '@agritheory/utilities': workspace:*
       '@types/uuid': ^8.3.4
       '@typescript-eslint/eslint-plugin': ^5.33.0
       '@typescript-eslint/parser': ^5.33.0
@@ -74,14 +74,14 @@ importers:
       vue: ^3.2.37
       vue-router: ^4
     dependencies:
-      '@sedum/utilities': link:../utilities
+      '@agritheory/utilities': link:../utilities
       uuid: 8.3.2
       vue: 3.2.37
     devDependencies:
       '@cypress/vite-dev-server': 2.0.8_vite@3.0.9
       '@cypress/vue': 3.1.2_cypress@8.7.0+vue@3.2.37
       '@histoire/plugin-vue': 0.10.4_maixmy2buciknipraogpn2dzvq
-      '@sedum/aform': link:../aform
+      '@agritheory/aform': link:../aform
       '@types/uuid': 8.3.4
       '@typescript-eslint/eslint-plugin': 5.33.1_vsoshirnpb7xw6mr7xomgfas2i
       '@typescript-eslint/parser': 5.33.1_4rv7y5c6xz3vfxwhbrcxxi73bq
@@ -120,10 +120,10 @@ importers:
     specifiers:
       '@histoire/plugin-vue': ^0.10.2
       '@miragejs/graphql': ^0.1.13
-      '@sedum/aform': workspace:^0.1.0
-      '@sedum/atable': workspace:^0.1.0
-      '@sedum/desktop': workspace:^0.1.0
-      '@sedum/stonecrop': workspace:^0.1.0
+      '@agritheory/aform': workspace:^0.1.0
+      '@agritheory/atable': workspace:^0.1.0
+      '@agritheory/desktop': workspace:^0.1.0
+      '@agritheory/stonecrop': workspace:^0.1.0
       '@vitejs/plugin-vue': ^3.0.1
       cypress: ^8.1.0
       histoire: ^0.10.2
@@ -134,10 +134,10 @@ importers:
       vue-router: ^4
     dependencies:
       '@miragejs/graphql': 0.1.13
-      '@sedum/aform': link:../aform
-      '@sedum/atable': link:../atable
-      '@sedum/desktop': link:../desktop
-      '@sedum/stonecrop': link:../stonecrop
+      '@agritheory/aform': link:../aform
+      '@agritheory/atable': link:../atable
+      '@agritheory/desktop': link:../desktop
+      '@agritheory/stonecrop': link:../stonecrop
       '@vitejs/plugin-vue': 3.0.3_vite@3.0.9+vue@3.2.37
       cypress: 8.7.0
       miragejs: 0.1.45
@@ -154,8 +154,8 @@ importers:
       '@cypress/vite-dev-server': ^2.0.3
       '@cypress/vue': ^3.0.0-beta.4
       '@histoire/plugin-vue': ^0.10.2
-      '@sedum/aform': workspace:^0.1.0
-      '@sedum/atable': workspace:^0.1.0
+      '@agritheory/aform': workspace:^0.1.0
+      '@agritheory/atable': workspace:^0.1.0
       '@vitejs/plugin-vue': ^3.0.1
       cypress: ^8.1.0
       histoire: ^0.10.2
@@ -179,8 +179,8 @@ importers:
       '@cypress/vite-dev-server': 2.0.8_vite@3.0.9
       '@cypress/vue': 3.1.2_cypress@8.7.0+vue@3.2.37
       '@histoire/plugin-vue': 0.10.4_maixmy2buciknipraogpn2dzvq
-      '@sedum/aform': link:../aform
-      '@sedum/atable': link:../atable
+      '@agritheory/aform': link:../aform
+      '@agritheory/atable': link:../atable
       '@vitejs/plugin-vue': 3.0.3_vite@3.0.9+vue@3.2.37
       cypress: 8.7.0
       histoire: 0.10.4_sass@1.54.5+vite@3.0.9

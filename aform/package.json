@@ -1,5 +1,5 @@
 {
-	"name": "@sedum/aform",
+	"name": "@agritheory/aform",
 	"version": "0.1.0",
 	"main": "dist/aform.mjs",
 	"module": "dist/aform.mjs",
@@ -21,18 +21,18 @@
 		"pretty-quick": "pretty-quick --staged"
 	},
 	"dependencies": {
-		"@sedum/utilities": "workspace:*",
+		"@agritheory/utilities": "workspace:*",
 		"uuid": "^8.3.2",
 		"vue": "^3.2.37"
 	},
 	"peerDependencies": {
-		"@sedum/atable": "workspace:*"
+		"@agritheory/atable": "workspace:*"
 	},
 	"devDependencies": {
 		"@cypress/vite-dev-server": "^2.0.3",
 		"@cypress/vue": "^3.0.0-beta.4",
 		"@histoire/plugin-vue": "^0.10.2",
-		"@sedum/atable": "workspace:*",
+		"@agritheory/atable": "workspace:*",
 		"@types/uuid": "^8.3.4",
 		"@typescript-eslint/eslint-plugin": "^5.33.0",
 		"@typescript-eslint/parser": "^5.33.0",

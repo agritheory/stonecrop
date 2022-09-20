@@ -1,5 +1,5 @@
 {
-	"name": "@sedum/examples",
+	"name": "@agritheory/examples",
 	"private": true,
 	"version": "0.1.0",
 	"description": "Example App(s) for the Stonecrop framework",
@@ -9,13 +9,13 @@
 		"cypress": "^8.1.0",
 		"miragejs": "^0.1.42",
 		"@miragejs/graphql": "^0.1.13",
-		"@sedum/atable": "workspace:^0.1.0",
-		"@sedum/aform": "workspace:^0.1.0",
-		"@sedum/stonecrop": "workspace:^0.1.0",
+		"@agritheory/atable": "workspace:^0.1.0",
+		"@agritheory/aform": "workspace:^0.1.0",
+		"@agritheory/stonecrop": "workspace:^0.1.0",
 		"vite": "^3.0.5",
 		"@vitejs/plugin-vue": "^3.0.1",
 		"vue": "^3.2.37",
-		"@sedum/desktop": "workspace:^0.1.0",
+		"@agritheory/desktop": "workspace:^0.1.0",
 		"uuid": "^8.3.2"
 	},
 	"scripts": {

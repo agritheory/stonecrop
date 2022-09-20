@@ -27,57 +27,57 @@
 	"telemetryEnabled": false,
 	"projects": [
 		{
-			"packageName": "@sedum/stonecrop",
+			"packageName": "@agritheory/stonecrop",
 			"projectFolder": "stonecrop",
 			"reviewCategory": "prototype",
 			"shouldPublish": false
 		},
 		{
-			"packageName": "@sedum/atable",
+			"packageName": "@agritheory/atable",
 			"projectFolder": "atable",
 			"reviewCategory": "prototype",
 			// to avoid circular dependency problems
-			"decoupledLocalDependencies": ["@sedum/aform"],
+			"decoupledLocalDependencies": ["@agritheory/aform"],
 			"shouldPublish": true
 		},
 		{
-			"packageName": "@sedum/aform",
+			"packageName": "@agritheory/aform",
 			"projectFolder": "aform",
 			"reviewCategory": "prototype",
 			// to avoid circular dependency problems
-			"decoupledLocalDependencies": ["@sedum/atable"],
+			"decoupledLocalDependencies": ["@agritheory/atable"],
 			"shouldPublish": true
 		},
 		{
-			"packageName": "@sedum/desktop",
+			"packageName": "@agritheory/desktop",
 			"projectFolder": "desktop",
 			"reviewCategory": "prototype",
 			"shouldPublish": false
 		},
 		{
-			"packageName": "@sedum/examples",
+			"packageName": "@agritheory/examples",
 			"projectFolder": "examples",
 			"reviewCategory": "prototype",
 			"shouldPublish": false
 		},
 		{
-			"packageName": "@sedum/utilities",
+			"packageName": "@agritheory/utilities",
 			"projectFolder": "utilities",
 			"reviewCategory": "utilities",
 			"shouldPublish": true
 		}
 		// {
-		//   "packageName": "@sedum/beam",
+		//   "packageName": "@agritheory/beam",
 		//   "projectFolder": "beam",
 		//   "reviewCategory": "prototype"
 		// },
 		// {
-		//   "packageName": "@sedum/themes",
+		//   "packageName": "@agritheory/themes",
 		//   "projectFolder": "themes",
 		//   "reviewCategory": "prototype"
 		// },
 		// {
-		//   "packageName": "@sedum/docs",
+		//   "packageName": "@agritheory/docs",
 		//   "projectFolder": "docs",
 		//   "reviewCategory": "documentation"
 		// }

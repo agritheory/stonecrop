@@ -1,7 +1,7 @@
 import { createApp } from 'vue'
 import Dev from './Dev.vue'
-import atable from '@sedum/atable'
-import aform from '@sedum/aform'
+import atable from '@agritheory/atable'
+import aform from '@agritheory/aform'
 import stonecrop from './../src/'
 
 let app = createApp(Dev)

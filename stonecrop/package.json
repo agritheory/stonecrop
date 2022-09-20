@@ -1,5 +1,5 @@
 {
-	"name": "@sedum/stonecrop",
+	"name": "@agritheory/stonecrop",
 	"version": "0.1.0",
 	"description": "schema helper",
 	"main": "index.js",
@@ -12,8 +12,8 @@
 		"unstorage": "^0.2.7"
 	},
 	"devDependencies": {
-		"@sedum/atable": "workspace:^0.1.0",
-		"@sedum/aform": "workspace:^0.1.0",
+		"@agritheory/atable": "workspace:^0.1.0",
+		"@agritheory/aform": "workspace:^0.1.0",
 		"cypress": "^8.1.0",
 		"@cypress/vue": "^3.0.0-beta.4",
 		"@cypress/vite-dev-server": "^2.0.3",

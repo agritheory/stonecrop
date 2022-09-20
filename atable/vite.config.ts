@@ -15,7 +15,7 @@ export default defineConfig({
 		minify: false,
 		lib: {
 			entry: resolve(projectRootDir, 'src/index.ts'),
-			name: '@sedum/atable',
+			name: '@agritheory/atable',
 		},
 		rollupOptions: {
 			external: ['vue'],

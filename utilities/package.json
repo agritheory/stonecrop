@@ -1,5 +1,5 @@
 {
-	"name": "@sedum/utilities",
+	"name": "@agritheory/utilities",
 	"version": "0.1.0",
 	"main": "dist/utilities.umd.js",
 	"module": "dist/utilities.mjs",
