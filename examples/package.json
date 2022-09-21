@@ -13,7 +13,7 @@
 		"@miragejs/graphql": "^0.1.13",
 		"@vitejs/plugin-vue": "^3.0.1",
 		"miragejs": "^0.1.42",
-		"uuid": "^8.3.2",
+		"uuid": "^9.0.0",
 		"vite": "^3.0.5",
 		"vue": "^3.2.37"
 	},

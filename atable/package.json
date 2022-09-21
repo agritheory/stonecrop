@@ -21,15 +21,13 @@
 	},
 	"dependencies": {
 		"@agritheory/utilities": "workspace:*",
-		"uuid": "^8.3.2",
+		"uuid": "^9.0.0",
 		"vue": "^3.2.37"
 	},
 	"peerDependencies": {
 		"@agritheory/aform": "workspace:*"
 	},
 	"devDependencies": {
-		"@cypress/vite-dev-server": "^2.0.3",
-		"@cypress/vue": "^3.0.0-beta.4",
 		"@histoire/plugin-vue": "^0.10.2",
 		"@agritheory/aform": "workspace:*",
 		"@types/uuid": "^8.3.4",

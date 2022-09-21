@@ -14,8 +14,6 @@
 	"devDependencies": {
 		"@agritheory/aform": "workspace:^0.1.0",
 		"@agritheory/atable": "workspace:^0.1.0",
-		"@cypress/vite-dev-server": "^2.0.3",
-		"@cypress/vue": "^3.0.0-beta.4",
 		"@histoire/plugin-vue": "^0.10.2",
 		"@vitejs/plugin-vue": "^3.0.1",
 		"cypress": "^10.8.0",
