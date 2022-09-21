@@ -141,9 +141,6 @@ const cellStyle: CSSProperties = {
 
 <style scoped>
 td {
-	border: 1px;
-	border-style: solid;
-	border-color: var(--cell-border-color);
 	border-radius: 0px;
 	box-sizing: border-box;
 	margin: 0px;
@@ -154,6 +151,16 @@ td {
 	overflow: hidden;
 	padding-left: 0.5ch;
 	padding-right: 0.5ch;
+
+	padding-top: var(--atable-row-padding);
+	padding-bottom: var(--atable-row-padding);
+
+	border-spacing: 0px;
+	border-collapse: collapse;
+}
+
+[data-colindex='0'] {
+	padding-left: var(--atable-row-padding) !important;
 }
 
 td:focus,

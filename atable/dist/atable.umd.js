@@ -618,7 +618,7 @@
       };
     }
   });
-  const ACell_vue_vue_type_style_index_0_scoped_c8072902_lang = "";
+  const ACell_vue_vue_type_style_index_0_scoped_a2d6eb78_lang = "";
   const _export_sfc = (sfc, props) => {
     const target = sfc.__vccOpts || sfc;
     for (const [key, val] of props) {
@@ -626,7 +626,7 @@
     }
     return target;
   };
-  const ACell = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-c8072902"]]);
+  const ACell = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-a2d6eb78"]]);
   const _sfc_main$3 = /* @__PURE__ */ vue.defineComponent({
     __name: "ARow",
     props: {
@@ -638,22 +638,23 @@
       const props = __props;
       const tableData = vue.inject(props.tableid);
       const numberedRowStyle = {
-        backgroundColor: "var(--row-number-background-color)",
-        borderColor: "var(--header-border-color)",
         color: "var(--header-text-color)",
         fontWeight: "bold",
         textAlign: "center",
         userSelect: "none",
-        width: tableData.numberedRowWidth.value
+        width: tableData.numberedRowWidth.value,
+        paddingLeft: "var(--atable-row-padding)",
+        paddingRight: "var(--atable-row-padding)"
       };
       const treeRowStyle = {
-        backgroundColor: "var(--brand-color)",
-        borderColor: "var(--header-border-color)",
         color: "var(--header-text-color)",
         fontWeight: "bold",
         textAlign: "center",
         userSelect: "none",
         width: "2ch"
+      };
+      const rowStyle = {
+        borderTop: "1px solid var(--row-border-color)"
       };
       const getRowExpandSymbol = () => {
         if (!tableData.config.treeView) {
@@ -686,7 +687,7 @@
         tableData.toggleRowExpand(rowIndex);
       };
       return (_ctx, _cache) => {
-        return vue.withDirectives((vue.openBlock(), vue.createElementBlock("tr", null, [
+        return vue.withDirectives((vue.openBlock(), vue.createElementBlock("tr", { style: rowStyle }, [
           vue.unref(tableData).config.numberedRows ? (vue.openBlock(), vue.createElementBlock("td", {
             key: 0,
             id: "row-index",
@@ -846,7 +847,7 @@
       return { tableData };
     }
   });
-  const ATableHeader_vue_vue_type_style_index_0_scoped_80fa6b2a_lang = "";
+  const ATableHeader_vue_vue_type_style_index_0_scoped_52164430_lang = "";
   const _hoisted_1$1 = { key: 0 };
   const _hoisted_2 = { tabindex: "-1" };
   function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
@@ -874,7 +875,7 @@
       ])
     ])) : vue.createCommentVNode("", true);
   }
-  const ATableHeader = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["render", _sfc_render], ["__scopeId", "data-v-80fa6b2a"]]);
+  const ATableHeader = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["render", _sfc_render], ["__scopeId", "data-v-52164430"]]);
   const _sfc_main$1 = /* @__PURE__ */ vue.defineComponent({
     __name: "ATableModal",
     props: {
@@ -1009,8 +1010,8 @@
       };
     }
   });
-  const ATable_vue_vue_type_style_index_0_scoped_5c0ccd5d_lang = "";
-  const ATable = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-5c0ccd5d"]]);
+  const ATable_vue_vue_type_style_index_0_scoped_baff4513_lang = "";
+  const ATable = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-baff4513"]]);
   function install(app) {
     app.component("ACell", ACell);
     app.component("ARow", _sfc_main$3);

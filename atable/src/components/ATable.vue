@@ -159,7 +159,7 @@ window.addEventListener('keydown', (event: KeyboardEvent) => {
 <style scoped>
 table {
 	display: table;
-	border-collapse: var(--border-collapsed);
+	border-collapse: collapse;
 	caret-color: var(--brand-color);
 }
 
@@ -176,6 +176,7 @@ th {
 tr {
 	background-color: var(--row-color-zebra-light);
 	outline: none;
+	border-collapse: collapse;
 }
 
 tr:nth-child(even) {

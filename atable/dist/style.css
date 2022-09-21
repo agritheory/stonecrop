@@ -1,8 +1,5 @@
 
-td[data-v-c8072902] {
-	border: 1px;
-	border-style: solid;
-	border-color: var(--cell-border-color);
+td[data-v-a2d6eb78] {
 	border-radius: 0px;
 	box-sizing: border-box;
 	margin: 0px;
@@ -13,9 +10,19 @@ td[data-v-c8072902] {
 	overflow: hidden;
 	padding-left: 0.5ch;
 	padding-right: 0.5ch;
+
+	padding-top: var(--atable-row-padding);
+	padding-bottom: var(--atable-row-padding);
+
+
+	border-spacing: 0px;
+	border-collapse: collapse;
 }
-td[data-v-c8072902]:focus,
-td[data-v-c8072902]:focus-within {
+[data-colindex="0"][data-v-a2d6eb78] {
+	padding-left: var(--atable-row-padding) !important;
+}
+td[data-v-a2d6eb78]:focus,
+td[data-v-a2d6eb78]:focus-within {
 	background-color: var(--focus-cell-background);
 	outline-width: 2px;
 	outline-style: solid;
@@ -27,18 +34,28 @@ td[data-v-c8072902]:focus-within {
 	overflow: hidden;
 }
 
-th[data-v-80fa6b2a] {
-	background-color: var(--brand-color);
+thead[data-v-52164430] {
+	background-color: var(--gray-5);
+}
+th[data-v-52164430] {
+	/* background-color: var(--brand-color); */
 	border-width: 0px;
 	border-style: solid;
-	border-color: var(--header-border-color);
+	/* border-color: var(--header-border-color); */
 	border-radius: 0px;
-	color: var(--header-text-color);
+	/* color: var(--header-text-color); */
 	padding-left: 0.5ch;
 	padding-right: 0.5ch;
+
+	padding-top: var(--atable-row-padding);
+	padding-bottom: var(--atable-row-padding);
+	color: var(--gray-60);
 }
-th[data-v-80fa6b2a]:focus {
+th[data-v-52164430]:focus {
 	outline: none;
+}
+th[data-v-52164430]:nth-child(2) {
+	padding-left: var(--atable-row-padding) !important;
 }
 
 div[data-v-1bd2b677] {
@@ -56,12 +73,12 @@ div[data-v-1bd2b677] {
 	font-size: var(--table-font-size); */
 }
 
-table[data-v-5c0ccd5d] {
+table[data-v-baff4513] {
 	display: table;
-	border-collapse: var(--border-collapsed);
+	border-collapse: collapse;
 	caret-color: var(--brand-color);
 }
-th[data-v-5c0ccd5d] {
+th[data-v-baff4513] {
 	box-sizing: border-box;
 	background-color: var(--brand-color);
 	border-width: 1px;
@@ -70,10 +87,12 @@ th[data-v-5c0ccd5d] {
 	border-radius: 0px;
 	color: var(--header-text-color);
 }
-tr[data-v-5c0ccd5d] {
+tr[data-v-baff4513] {
 	background-color: var(--row-color-zebra-light);
 	outline: none;
+	border-collapse: collapse;
 }
-tr[data-v-5c0ccd5d]:nth-child(even) {
+tr[data-v-baff4513]:nth-child(even) {
 	background-color: var(--row-color-zebra-dark);
 }
+

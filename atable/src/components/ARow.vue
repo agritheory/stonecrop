@@ -1,5 +1,5 @@
 <template>
-	<tr v-show="rowVisible()">
+	<tr v-show="rowVisible()" :style="rowStyle">
 		<td v-if="tableData.config.numberedRows" id="row-index" :tabIndex="-1" :style="numberedRowStyle">
 			{{ rowIndex + 1 }}
 		</td>
@@ -31,23 +31,25 @@ const props = defineProps<{
 const tableData = inject<TableDataStore>(props.tableid)
 
 const numberedRowStyle: CSSProperties = {
-	backgroundColor: 'var(--row-number-background-color)',
-	borderColor: 'var(--header-border-color)',
 	color: 'var(--header-text-color)',
 	fontWeight: 'bold',
 	textAlign: 'center',
 	userSelect: 'none',
 	width: tableData.numberedRowWidth.value,
+	paddingLeft: 'var(--atable-row-padding)',
+	paddingRight: 'var(--atable-row-padding)',
 }
 
 const treeRowStyle: CSSProperties = {
-	backgroundColor: 'var(--brand-color)',
-	borderColor: 'var(--header-border-color)',
 	color: 'var(--header-text-color)',
 	fontWeight: 'bold',
 	textAlign: 'center',
 	userSelect: 'none',
 	width: '2ch',
+}
+
+const rowStyle: CSSProperties = {
+	borderTop: '1px solid var(--row-border-color)',
 }
 
 const getRowExpandSymbol = () => {

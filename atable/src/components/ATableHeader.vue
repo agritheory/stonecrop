@@ -45,17 +45,27 @@ export default defineComponent({
 </script>
 
 <style scoped>
+thead {
+	background-color: var(--gray-5);
+}
 th {
-	background-color: var(--brand-color);
+	/* background-color: var(--brand-color); */
 	border-width: 0px;
 	border-style: solid;
-	border-color: var(--header-border-color);
+	/* border-color: var(--header-border-color); */
 	border-radius: 0px;
-	color: var(--header-text-color);
+	/* color: var(--header-text-color); */
 	padding-left: 0.5ch;
 	padding-right: 0.5ch;
+
+	padding-top: var(--atable-row-padding);
+	padding-bottom: var(--atable-row-padding);
+	color: var(--gray-60);
 }
 th:focus {
 	outline: none;
+}
+th:nth-child(2) {
+	padding-left: var(--atable-row-padding) !important;
 }
 </style>
