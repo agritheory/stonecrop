@@ -1,7 +1,11 @@
 <template>
 	<Story title="dropdown">
 		<div class="dropdown-form">
-			<ADropdown :items="dropdown_data.items" v-model="dropdown_data.value" :label="dropdown_data.label" />
+			<ADropdown
+				data-theme="purple"
+				:items="dropdown_data.items"
+				v-model="dropdown_data.value"
+				:label="dropdown_data.label" />
 			<ADropdown
 				:items="async_dropdown_data.items"
 				v-model="async_dropdown_data.value"

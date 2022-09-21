@@ -1,33 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap');
+@import url('default.css');
+@import url('custom_themes.css');
 
 :root {
-	--primary-color: #3c5014;
-	--primary-text-color: #f7f7e9;
-	--font-size: 11pt;
-	font-family: Arimo, Arial, sans-serif;
-	--brand-color: #3c5014;
-	--header-border-color: #ffffff;
-	--header-text-color: #ffffff;
-	--row-color-zebra-light: #eeeeee;
-	--row-color-zebra-dark: #dddddd;
-	--cell-border-color: #ffffff;
-	--cell-text-color: #3a3c41;
-	--focus-cell-background: #ffffff;
-	--focus-cell-outline: #827553;
-	--active-cell-background: #ffffff;
-	--active-cell-outline: #e6a92d;
-	--required-border: #e63c28;
-	--table-font-size: 11pt;
-	--atable-font-family: 'Arimo', sans-serif;
-	/* #a5460d
-	#3a3c41
-	#c3b9a0
-	#e6a92d
-	#4a1539
-	#3c5014
-	#f7f7e9
-	#e63c28
-	#827553 */
+	font-family: var(--font-family);
 }
 
 .aform-primary-action {
@@ -56,4 +32,41 @@
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
 	font-size: var(--table-font-size);
+	border-collapse: collapse;
+}
+
+.atable th {
+	padding-top: var(--atable-row-padding);
+	padding-bottom: var(--atable-row-padding);
+	color: var(--gray-60);
+}
+
+.atable thead {
+	background-color: var(--gray-5);
+}
+
+.atable tr {
+	border-top: 1px solid var(--row-border-color);
+}
+
+.atable thead tr {
+	border-top: none;
+}
+
+.atable td {
+	padding-top: var(--atable-row-padding);
+	padding-bottom: var(--atable-row-padding);
+}
+
+.atable tr td:first-child {
+	padding-left: var(--atable-row-padding);
+	padding-right: var(--atable-row-padding);
+}
+
+.atable td:nth-child(2) {
+	padding-left: var(--atable-row-padding) !important;
+}
+
+.atable th:nth-child(2) {
+	padding-left: var(--atable-row-padding) !important;
 }

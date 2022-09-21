@@ -635,7 +635,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     const props = __props;
     const tableData = inject(props.tableid);
     const numberedRowStyle = {
-      backgroundColor: "var(--brand-color)",
+      backgroundColor: "var(--row-number-background-color)",
       borderColor: "var(--header-border-color)",
       color: "var(--header-text-color)",
       fontWeight: "bold",

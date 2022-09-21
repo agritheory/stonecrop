@@ -31,7 +31,7 @@ const props = defineProps<{
 const tableData = inject<TableDataStore>(props.tableid)
 
 const numberedRowStyle: CSSProperties = {
-	backgroundColor: 'var(--brand-color)',
+	backgroundColor: 'var(--row-number-background-color)',
 	borderColor: 'var(--header-border-color)',
 	color: 'var(--header-text-color)',
 	fontWeight: 'bold',

@@ -1,0 +1,48 @@
+:root {
+	/* THEME COLORS */
+
+	/* General Colors */
+	--primary-color: #0098c9; /* primary action color, default blue */
+	--primary-text-color: #ffffff; /* text color paired with primary color, default white */
+	--brand-color: #202a44; /* brand color, default navy */
+
+	/* Grays */
+	--gray-5: #f2f2f2;
+	--gray-10: #e6e6e6;
+	--gray-20: #cccccc;
+	--gray-50: #808080;
+	--gray-60: #666666;
+	--gray-80: #333333;
+
+	/* Table Colors */
+	--row-color-zebra-light: #eeeeee;
+	--row-color-zebra-dark: #dddddd;
+	--focus-cell-background: #ffffff;
+	--focus-cell-outline: #827553;
+	--cell-border-color: #ffffff;
+	--cell-text-color: #3a3c41;
+	--active-cell-background: #ffffff;
+	--active-cell-outline: #e6a92d;
+	--row-border-color: var(--gray-20);
+	--header-border-color: #ffffff;
+	--header-text-color: var(--gray-20);
+	--row-number-background-color: #ffffff;
+
+	/* Form Colors */
+	--input-border-color: #242424;
+	--input-label-color: #242424;
+	--input-active-border-color: var(--primary-color);
+	--input-active-label-color: var(--primary-color);
+	--required-border: #e63c28;
+
+	/* FONT */
+	--font-size: 11pt;
+	--font-family: Arimo, Arial, sans-serif;
+	--table-font-size: 11pt;
+	--atable-font-family: 'Arimo', sans-serif;
+
+	/* TABLE */
+	--atable-row-padding: 10px;
+
+	/* FORM */
+}

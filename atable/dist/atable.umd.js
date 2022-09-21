@@ -638,7 +638,7 @@
       const props = __props;
       const tableData = vue.inject(props.tableid);
       const numberedRowStyle = {
-        backgroundColor: "var(--brand-color)",
+        backgroundColor: "var(--row-number-background-color)",
         borderColor: "var(--header-border-color)",
         color: "var(--header-text-color)",
         fontWeight: "bold",
