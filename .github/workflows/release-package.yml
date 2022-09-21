@@ -10,14 +10,27 @@ jobs:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       packages: write
     steps:
       - uses: actions/checkout@v3
+        name: Checkout
+
       - uses: actions/setup-node@v3
+        name: Install Node.js
         with:
-          node-version: 16
+          cache-dependency-path: '**/config/rush/pnpm-lock.yaml'
           registry-url: https://npm.pkg.github.com/
-      - run: node common/scripts/install-run-rush.js publish -p
+
+      - name: Configure Git User
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+
+      - name: Install Rush
+        run: node common/scripts/install-run-rush.js install
+
+      - name: Publish Packages via Rush
+        run: node common/scripts/install-run-rush.js publish -ap --add-commit-details --set-access-level=public
         env:
-          GPR_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

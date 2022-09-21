@@ -6,17 +6,16 @@
 	"main": "index.js",
 	"license": "MIT",
 	"dependencies": {
-		"cypress": "^8.1.0",
-		"miragejs": "^0.1.42",
-		"@miragejs/graphql": "^0.1.13",
-		"@agritheory/atable": "workspace:^0.1.0",
 		"@agritheory/aform": "workspace:^0.1.0",
-		"@agritheory/stonecrop": "workspace:^0.1.0",
-		"vite": "^3.0.5",
-		"@vitejs/plugin-vue": "^3.0.1",
-		"vue": "^3.2.37",
+		"@agritheory/atable": "workspace:^0.1.0",
 		"@agritheory/desktop": "workspace:^0.1.0",
-		"uuid": "^8.3.2"
+		"@agritheory/stonecrop": "workspace:^0.1.0",
+		"@miragejs/graphql": "^0.1.13",
+		"@vitejs/plugin-vue": "^3.0.1",
+		"miragejs": "^0.1.42",
+		"uuid": "^8.3.2",
+		"vite": "^3.0.5",
+		"vue": "^3.2.37"
 	},
 	"scripts": {
 		"dev:crud": "vite serve cruddesk/ -c cruddesk/vite.config.js -d",
@@ -24,8 +23,9 @@
 		"build": ""
 	},
 	"devDependencies": {
-		"vue-router": "^4",
+		"@histoire/plugin-vue": "^0.10.2",
+		"cypress": "^10.8.0",
 		"histoire": "^0.10.2",
-		"@histoire/plugin-vue": "^0.10.2"
+		"vue-router": "^4"
 	}
 }
