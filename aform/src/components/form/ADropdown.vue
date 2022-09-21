@@ -10,20 +10,20 @@
 				@keydown.down="onArrowDown"
 				@keydown.up="onArrowUp"
 				@keydown.enter="onEnter" />
+			<ul id="autocomplete-results" v-show="isOpen" class="autocomplete-results">
+				<li class="loading autocomplete-result" v-if="isLoading">Loading results...</li>
+				<li
+					v-else
+					v-for="(result, i) in results"
+					:key="i"
+					@click="setResult(result)"
+					class="autocomplete-result"
+					:class="{ 'is-active': i === arrowCounter }">
+					{{ result }}
+				</li>
+			</ul>
 			<label>{{ label }}</label>
 		</div>
-		<ul id="autocomplete-results" v-show="isOpen" class="autocomplete-results">
-			<li class="loading autocomplete-result" v-if="isLoading">Loading results...</li>
-			<li
-				v-else
-				v-for="(result, i) in results"
-				:key="i"
-				@click="setResult(result)"
-				class="autocomplete-result"
-				:class="{ 'is-active': i === arrowCounter }">
-				{{ result }}
-			</li>
-		</ul>
 	</div>
 </template>
 
@@ -160,7 +160,13 @@ input {
 	padding: 1ch 0.5ch 0.5ch 1ch;
 	margin: calc(1.15rem / 2) 0 0 0;
 	min-height: 1.15rem;
-	/* border-radius: 0.25rem;  don't like, but it's here */
+	border-radius: 0.25rem;
+}
+
+input:focus {
+	border: 1px solid var(--input-border-color);
+	border-radius: 0.25rem 0.25rem 0 0;
+	border-bottom: none;
 }
 
 label {
@@ -180,12 +186,14 @@ label {
 
 .autocomplete-results {
 	position: absolute;
-	width: 100%;
+	width: calc(100% - 0.75ch);
 	z-index: 1;
 	padding: 0;
 	margin: 0;
 	color: var(--primary-color);
 	border: 1px solid var(--input-border-color);
+	border-radius: 0 0 0.25rem 0.25rem;
+	border-top: none;
 }
 
 .autocomplete-result {

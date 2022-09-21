@@ -86,7 +86,7 @@ input {
 	padding: 1ch 0.5ch 0.5ch 1ch;
 	margin: calc(1.15rem / 2) 0 0 0;
 	min-height: 1.15rem;
-	/* border-radius: 0.25rem;  don't like, but it's here */
+	border-radius: 0.25rem;
 }
 p,
 label {
@@ -121,6 +121,6 @@ input:focus {
 
 input:focus + label {
 	color: var(--input-active-label-color);
-	font-weight: bold;
+	/* font-weight: bold; */
 }
 </style>

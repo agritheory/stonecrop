@@ -29,8 +29,8 @@
 	--row-number-background-color: #ffffff;
 
 	/* Form Colors */
-	--input-border-color: #242424;
-	--input-label-color: #242424;
+	--input-border-color: var(--gray-20);
+	--input-label-color: var(--gray-80);
 	--input-active-border-color: var(--primary-color);
 	--input-active-label-color: var(--primary-color);
 	--required-border: #e63c28;
