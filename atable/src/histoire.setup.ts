@@ -6,7 +6,7 @@ import ATable from '@/components/ATable.vue'
 import ATableHeader from '@/components/ATableHeader.vue'
 import ATableModal from '@/components/ATableModal.vue'
 
-import { ADate } from '@sedum/aform'
+import { ADate } from '@agritheory/aform'
 
 export const setupVue3 = defineSetupVue3(({ app }) => {
 	// TODO: (typing) add typing for ADate

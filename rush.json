@@ -1,6 +1,6 @@
 {
 	"$schema": "https://developer.microsoft.com/json-schemas/rush/v5/rush.schema.json",
-	"rushVersion": "5.76.1",
+	"rushVersion": "5.78.0",
 	"pnpmVersion": "7.9.5",
 	"pnpmOptions": {
 		"useWorkspaces": true
@@ -11,8 +11,8 @@
 	},
 	"gitPolicy": {},
 	"repository": {
-		"url": "https://github.com/sedum-io/",
-		"defaultBranch": "develop",
+		"url": "https://github.com/agritheory/stonecrop",
+		"defaultBranch": "development",
 		"defaultRemote": "origin"
 	},
 	"eventHooks": {
@@ -22,55 +22,62 @@
 		"postRushBuild": []
 	},
 	"variants": [],
-	"telemetryEnabled": false,
+	"ensureConsistentVersions": true,
 	"hotfixChangeEnabled": false,
+	"telemetryEnabled": false,
 	"projects": [
 		{
-			"packageName": "@sedum/stonecrop",
+			"packageName": "@agritheory/stonecrop",
 			"projectFolder": "stonecrop",
-			"reviewCategory": "prototype"
+			"reviewCategory": "prototype",
+			"shouldPublish": false
 		},
 		{
-			"packageName": "@sedum/atable",
+			"packageName": "@agritheory/atable",
 			"projectFolder": "atable",
 			"reviewCategory": "prototype",
 			// to avoid circular dependency problems
-			"decoupledLocalDependencies": ["@sedum/aform"]
+			"decoupledLocalDependencies": ["@agritheory/aform"],
+			"shouldPublish": true
 		},
 		{
-			"packageName": "@sedum/aform",
+			"packageName": "@agritheory/aform",
 			"projectFolder": "aform",
 			"reviewCategory": "prototype",
 			// to avoid circular dependency problems
-			"decoupledLocalDependencies": ["@sedum/atable"]
+			"decoupledLocalDependencies": ["@agritheory/atable"],
+			"shouldPublish": true
 		},
 		{
-			"packageName": "@sedum/desktop",
+			"packageName": "@agritheory/desktop",
 			"projectFolder": "desktop",
-			"reviewCategory": "prototype"
+			"reviewCategory": "prototype",
+			"shouldPublish": false
 		},
 		{
-			"packageName": "@sedum/examples",
+			"packageName": "@agritheory/examples",
 			"projectFolder": "examples",
-			"reviewCategory": "prototype"
+			"reviewCategory": "prototype",
+			"shouldPublish": false
 		},
 		{
-			"packageName": "@sedum/utilities",
+			"packageName": "@agritheory/utilities",
 			"projectFolder": "utilities",
-			"reviewCategory": "utilities"
+			"reviewCategory": "utilities",
+			"shouldPublish": true
 		}
 		// {
-		//   "packageName": "@sedum/beam",
+		//   "packageName": "@agritheory/beam",
 		//   "projectFolder": "beam",
 		//   "reviewCategory": "prototype"
 		// },
 		// {
-		//   "packageName": "@sedum/themes",
+		//   "packageName": "@agritheory/themes",
 		//   "projectFolder": "themes",
 		//   "reviewCategory": "prototype"
 		// },
 		// {
-		//   "packageName": "@sedum/docs",
+		//   "packageName": "@agritheory/docs",
 		//   "projectFolder": "docs",
 		//   "reviewCategory": "documentation"
 		// }

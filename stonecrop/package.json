@@ -1,5 +1,5 @@
 {
-	"name": "@sedum/stonecrop",
+	"name": "@agritheory/stonecrop",
 	"version": "0.1.0",
 	"description": "schema helper",
 	"main": "index.js",
@@ -9,23 +9,18 @@
 		"overmind-vue": "^28.0.3",
 		"vue": "^3.2.37",
 		"vue-router": "^4",
-		"unstorage": "~0.2.7"
+		"unstorage": "^0.2.7"
 	},
 	"devDependencies": {
-		"@sedum/atable": "workspace:~0.1.0",
-		"@sedum/aform": "workspace:~0.1.0",
-		"cypress": "^8.1.0",
-		"@cypress/vue": "^3.0.0-beta.4",
-		"@cypress/vite-dev-server": "~2.0.3",
+		"@agritheory/aform": "workspace:^0.1.0",
+		"@agritheory/atable": "workspace:^0.1.0",
+		"@histoire/plugin-vue": "^0.10.2",
 		"@vitejs/plugin-vue": "^3.0.1",
-		"node-sass": "^6.0.1",
-		"sass": "^1.35.1",
-		"sass-loader": "^12.1.0",
+		"cypress": "^10.8.0",
+		"histoire": "^0.10.2",
 		"vite": "^3.0.5",
-		"vue-template-compiler": "^2.6.14",
 		"vue-router": "^4",
-		"histoire": "~0.10.2",
-		"@histoire/plugin-vue": "~0.10.2"
+		"vue-template-compiler": "^2.6.14"
 	},
 	"scripts": {
 		"dev": "vite serve dev/ -c dev/vite.config.js -d",
