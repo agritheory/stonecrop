@@ -5,6 +5,11 @@
 import { ref, reactive } from 'vue'
 import { ATable } from '@sedum/atable'
 
+// use component if provided else call to Records Schema endpoint/ table  / lookup
+// alteratively: a view: component map, eg records: Records, gantt: GanttView
+// default_view key in schema
+// last_used_view_type in application state
+
 const data = [
 	{ subject: 'First To Do' },
 	{ subject: 'Second To Do' },

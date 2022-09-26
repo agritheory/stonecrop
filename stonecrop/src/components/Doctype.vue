@@ -18,9 +18,11 @@ export default defineComponent({
 		AForm,
 	},
 	setup(props, context) {
+		// const schema = useStonecrop()
+
 		const router = useRouter()
 		const doctypeSlug = router.currentRoute._value.params.records
-		const schema = inject('$registry').schemaLoader(router.currentRoute._value.params.records)
+		const schema = inject('$registry').schemaLoader(doctypeSlug)
 		console.log(schema)
 		// change this to $registry.registry[$route.currentRoute???]
 		let data = reactive([

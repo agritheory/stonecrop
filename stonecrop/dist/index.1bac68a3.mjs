@@ -1,4 +1,4 @@
-import { shallowRef, unref, computed, reactive, nextTick, defineComponent, inject, h, provide, ref, watch, getCurrentInstance, watchEffect, effectScope, openBlock, createElementBlock, createElementVNode, toDisplayString, renderSlot, createVNode, Fragment, renderList, createBlock, withCtx, normalizeStyle, withDirectives, resolveDynamicComponent, vShow, createCommentVNode, createTextVNode, onMounted, onBeforeUnmount, getCurrentScope, onScopeDispose, mergeProps, normalizeClass, resolveDirective, vModelText, resolveComponent } from "vue";
+import { shallowRef, inject, unref, computed, reactive, nextTick, defineComponent, h, provide, ref, watch, getCurrentInstance, watchEffect, effectScope, openBlock, createElementBlock, createElementVNode, toDisplayString, renderSlot, createVNode, Fragment, renderList, createBlock, withCtx, normalizeStyle, withDirectives, resolveDynamicComponent, vShow, createCommentVNode, createTextVNode, onMounted, onBeforeUnmount, getCurrentScope, onScopeDispose, mergeProps, normalizeClass, resolveComponent } from "vue";
 function getDevtoolsGlobalHook() {
   return getTarget().__VUE_DEVTOOLS_GLOBAL_HOOK__;
 }
@@ -2316,6 +2316,9 @@ function extractChangingRecords(to, from) {
   }
   return [leavingRecords, updatingRecords, enteringRecords];
 }
+function useRouter() {
+  return inject(routerKey);
+}
 var _a$2;
 const isClient$2 = typeof window !== "undefined";
 isClient$2 && ((_a$2 = window == null ? void 0 : window.navigator) == null ? void 0 : _a$2.userAgent) && /iP(ad|hone|od)/.test(window.navigator.userAgent);
@@ -2346,19 +2349,19 @@ class Stonecrop$1 {
     this.hooks = hooks;
   }
 }
-const _hoisted_1$4 = { id: "home" };
+const _hoisted_1$3 = { id: "home" };
 const _sfc_main$6 = /* @__PURE__ */ defineComponent({
   __name: "Home",
   setup(__props) {
     let state = useStonecrop();
     return (_ctx, _cache) => {
-      return openBlock(), createElementBlock("div", _hoisted_1$4, [
+      return openBlock(), createElementBlock("div", _hoisted_1$3, [
         createElementVNode("pre", null, toDisplayString(unref(state)), 1)
       ]);
     };
   }
 });
-const Records = () => import("./Records.8b9a7a5b.mjs");
+const Records = () => import("./Records.28d972ef.mjs");
 const Doctype$2 = () => Promise.resolve().then(() => Doctype$1);
 const routes = [
   { path: "/", component: _sfc_main$6, meta: { transition: "slide-up" } },
@@ -3192,7 +3195,7 @@ class TableDataStore {
     }
   }
 }
-const _sfc_main$2$1 = defineComponent({
+const _sfc_main$2 = defineComponent({
   name: "ATableHeader",
   props: {
     columns: {
@@ -3212,11 +3215,11 @@ const _sfc_main$2$1 = defineComponent({
     return { tableData };
   }
 });
-const _hoisted_1$1$1 = { key: 0 };
-const _hoisted_2$1 = { tabindex: "-1" };
-function _sfc_render$2(_ctx, _cache, $props, $setup, $data, $options) {
-  return _ctx.columns.length ? (openBlock(), createElementBlock("thead", _hoisted_1$1$1, [
-    createElementVNode("tr", _hoisted_2$1, [
+const _hoisted_1$1 = { key: 0 };
+const _hoisted_2 = { tabindex: "-1" };
+function _sfc_render$1(_ctx, _cache, $props, $setup, $data, $options) {
+  return _ctx.columns.length ? (openBlock(), createElementBlock("thead", _hoisted_1$1, [
+    createElementVNode("tr", _hoisted_2, [
       _ctx.tableData.zeroColumn ? (openBlock(), createElementBlock("th", {
         key: 0,
         style: normalizeStyle({ minWidth: _ctx.tableData.numberedRowWidth.value })
@@ -3239,7 +3242,7 @@ function _sfc_render$2(_ctx, _cache, $props, $setup, $data, $options) {
     ])
   ])) : createCommentVNode("", true);
 }
-const ATableHeader = /* @__PURE__ */ _export_sfc$2(_sfc_main$2$1, [["render", _sfc_render$2], ["__scopeId", "data-v-80fa6b2a"]]);
+const ATableHeader = /* @__PURE__ */ _export_sfc$2(_sfc_main$2, [["render", _sfc_render$1], ["__scopeId", "data-v-80fa6b2a"]]);
 const _sfc_main$1$1 = /* @__PURE__ */ defineComponent({
   __name: "ATableModal",
   props: {
@@ -3267,7 +3270,7 @@ const _sfc_main$1$1 = /* @__PURE__ */ defineComponent({
   }
 });
 const ATableModal = /* @__PURE__ */ _export_sfc$2(_sfc_main$1$1, [["__scopeId", "data-v-1bd2b677"]]);
-const _hoisted_1$3 = { class: "atable" };
+const _hoisted_1 = { class: "atable" };
 const _sfc_main$5 = /* @__PURE__ */ defineComponent({
   __name: "ATable",
   props: {
@@ -3309,7 +3312,7 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
       }
     });
     return (_ctx, _cache) => {
-      return openBlock(), createElementBlock("table", _hoisted_1$3, [
+      return openBlock(), createElementBlock("table", _hoisted_1, [
         renderSlot(_ctx.$slots, "tableheader", {}, () => [
           createVNode(ATableHeader, {
             columns: unref(tableData).columns,
@@ -3374,7 +3377,7 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
   }
 });
 const ATable = /* @__PURE__ */ _export_sfc$2(_sfc_main$5, [["__scopeId", "data-v-5c0ccd5d"]]);
-const _sfc_main$2 = /* @__PURE__ */ defineComponent({
+const _sfc_main$1 = /* @__PURE__ */ defineComponent({
   __name: "Records",
   setup(__props) {
     const data = [
@@ -3673,7 +3676,7 @@ function useStringMask(el, binding) {
     el.value = mask;
   }
 }
-const _sfc_main$1 = defineComponent({
+defineComponent({
   name: "ATextInput",
   props: {
     schema: {
@@ -3718,32 +3721,6 @@ const _sfc_main$1 = defineComponent({
     mask: useStringMask
   }
 });
-const _hoisted_1$1 = ["id", "disabled", "maxlength", "required"];
-const _hoisted_2 = ["for"];
-const _hoisted_3 = ["innerHTML"];
-function _sfc_render$1(_ctx, _cache, $props, $setup, $data, $options) {
-  const _directive_mask = resolveDirective("mask");
-  return openBlock(), createElementBlock("div", null, [
-    withDirectives(createElementVNode("input", {
-      "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => _ctx.inputText = $event),
-      id: _ctx.uuid,
-      disabled: _ctx.readOnly,
-      maxlength: _ctx.mask ? _ctx.maskFilled && _ctx.mask.length : void 0,
-      required: _ctx.required,
-      onInput: _cache[1] || (_cache[1] = (...args) => _ctx.update && _ctx.update(...args))
-    }, null, 40, _hoisted_1$1), [
-      [vModelText, _ctx.inputText],
-      [_directive_mask, _ctx.mask]
-    ]),
-    createElementVNode("label", { for: _ctx.uuid }, toDisplayString(_ctx.label), 9, _hoisted_2),
-    withDirectives(createElementVNode("p", {
-      innerHTML: _ctx.validation.errorMessage
-    }, null, 8, _hoisted_3), [
-      [vShow, _ctx.validation.errorMessage]
-    ])
-  ]);
-}
-const ATextInput = /* @__PURE__ */ _export_sfc$1(_sfc_main$1, [["render", _sfc_render$1], ["__scopeId", "data-v-58bab3b3"]]);
 const _export_sfc = (sfc, props) => {
   const target = sfc.__vccOpts || sfc;
   for (const [key, val] of props) {
@@ -3756,32 +3733,11 @@ const _sfc_main = defineComponent({
   components: {
     AForm
   },
-  setup(props) {
-    const basic_form_schema = [
-      {
-        fieldname: "first_name",
-        component: ATextInput,
-        label: "First Name"
-      },
-      {
-        fieldname: "last_name",
-        component: ATextInput,
-        label: "Last Name"
-      },
-      {
-        fieldname: "date",
-        fieldtype: "Date",
-        component: ATextInput,
-        label: "Date"
-      },
-      {
-        fieldname: "phone",
-        fieldtype: "Phone",
-        component: ATextInput,
-        label: "Phone",
-        mask: "(locale) => { if (locale === 'en-US') { return '(###) ###-####' } else if (locale === 'en-IN') { return '####-######'} }"
-      }
-    ];
+  setup(props, context) {
+    const router2 = useRouter();
+    router2.currentRoute._value.params.records;
+    const schema = inject("$registry").schemaLoader(router2.currentRoute._value.params.records);
+    console.log(schema);
     let data = reactive([
       {
         first_name: "John",
@@ -3792,18 +3748,17 @@ const _sfc_main = defineComponent({
     ]);
     let id = ref(123456);
     const formKey = ref(0);
-    return { basic_form_schema, data, id, formKey };
+    return { schema, data, id, formKey };
   }
 });
-const _hoisted_1 = /* @__PURE__ */ createElementVNode("h3", null, "Doctype", -1);
 function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   const _component_AForm = resolveComponent("AForm");
   return openBlock(), createElementBlock("div", null, [
-    _hoisted_1,
-    createElementVNode("pre", null, toDisplayString(), 1),
+    createElementVNode("h3", null, toDisplayString(_ctx.schema.doctype), 1),
+    createElementVNode("pre", null, toDisplayString(_ctx.route), 1),
     (openBlock(), createBlock(_component_AForm, {
       class: "aform-main",
-      schema: _ctx.basic_form_schema,
+      schema: _ctx.schema.schema,
       data: _ctx.data,
       formId: _ctx.id,
       key: _ctx.formKey
@@ -3834,25 +3789,28 @@ class Registry {
   }
   addDoctype(doctype) {
     if (!(doctype.doctype in Object.keys(this.registry))) {
-      this.registry[doctype.doctype] = doctype;
+      this.registry[doctype.slug] = doctype;
     }
-    if (!this.router.hasRoute(doctype.slug)) {
+    if (!this.router.hasRoute(doctype.doctype)) {
       this.router.addRoute({
         path: `/${doctype.slug}`,
         name: doctype.slug,
-        component: doctype.schema.recordsComponent || _sfc_main$2
+        component: doctype.schema.recordsComponent || _sfc_main$1
       });
-      this.router.addRoute({ path: `/${doctype.slug}:id`, component: doctype.schema.component || Doctype });
+      this.router.addRoute({
+        path: `/${doctype.slug}:id`,
+        component: doctype.schema.component || Doctype
+      });
     }
   }
 }
 const Stonecrop = {
   install: (app, options) => {
     app.use(router);
-    app.config.globalProperties.$registry = new Registry(router, options.schemaLoader);
+    app.provide("$registry", new Registry(router, options.schemaLoader));
   }
 };
 export {
   Stonecrop as S,
-  _sfc_main$2 as _
+  _sfc_main$1 as _
 };

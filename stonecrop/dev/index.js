@@ -4,7 +4,7 @@ import Stonecrop from '../src/index.js'
 import Doctype from '../src/doctype.js'
 import { ADate, ATextInput } from '@sedum/aform'
 // import server
-import createServer from './server.js'
+// import createServer from './server.js'
 
 const app = createApp(Dev)
 
@@ -59,7 +59,7 @@ const doctypes = {
 app.use(Stonecrop, {
 	schemaLoader: doctype => {
 		// normally this would be configured as a memoized/cached call to a server
-		return doctypes[doctype]
+		return doctypes[doctype] // or if doctype is a function [doctype].apply()
 	},
 })
 app.mount('#app')
