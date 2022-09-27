@@ -12,7 +12,7 @@ export default defineConfig({
 		},
 	},
 	build: {
-		minify: false,
+		sourcemap: true,
 		lib: {
 			entry: resolve(projectRootDir, 'src/index.ts'),
 			name: '@agritheory/atable',
