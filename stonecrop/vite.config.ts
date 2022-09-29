@@ -8,14 +8,14 @@ export default defineConfig({
 	plugins: [vue()],
 	resolve: {
 		alias: {
-			'@/': `${resolve(projectRootDir, 'src')}/`
+			'@/': `${resolve(projectRootDir, 'src')}/`,
 		},
 	},
 	build: {
 		minify: false,
 		lib: {
 			entry: resolve(projectRootDir, 'src/index.js'),
-			name: '@sedum/stonecrop',
+			name: '@agritheory/stonecrop',
 		},
 		rollupOptions: {
 			external: ['vue'],

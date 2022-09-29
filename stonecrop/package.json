@@ -1,28 +1,26 @@
 {
-	"name": "@sedum/stonecrop",
+	"name": "@agritheory/stonecrop",
 	"version": "0.1.0",
 	"description": "schema helper",
 	"main": "index.js",
 	"license": "MIT",
 	"dependencies": {
-		"vue": "^3.2.16",
+		"@vueuse/core": "^9.2.0",
+		"immutable": "^4.1.0",
+		"pinia-shared-state": "^0.2.8",
+		"pinia-undo": "^0.1.4",
+		"pinia": "^2.0.18",
 		"vue-router": "^4",
-		"@vueuse/core": "~9.1.0",
-		"pinia": "~2.0.18",
-		"immutable": "~4.1.0",
-		"pinia-shared-state": "~0.2.8",
-		"pinia-undo": "~0.1.4"
+		"vue": "^3.2.37"
 	},
 	"devDependencies": {
-		"@sedum/atable": "workspace:~0.1.0",
-		"@sedum/aform": "workspace:~0.1.0",
-		"cypress": "^8.1.0",
-		"@cypress/vue": "^3.0.0-beta.4",
-		"@cypress/vite-dev-server": "~2.0.3",
+		"@agritheory/aform": "workspace:^0.1.0",
+		"@agritheory/atable": "workspace:^0.1.0",
+		"@histoire/plugin-vue": "^0.10.2",
+		"@miragejs/graphql": "^0.1.13",
 		"@vitejs/plugin-vue": "^3.0.1",
-		"vite": "^3.0.5",
-		"miragejs": "~0.1.45",
-		"@miragejs/graphql": "~0.1.13"
+		"miragejs": "^0.1.45",
+		"vite": "^3.0.5"
 	},
 	"scripts": {
 		"dev": "vite serve dev/ -c vite.config.ts -d",

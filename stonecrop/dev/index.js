@@ -2,7 +2,7 @@ import { createApp } from 'vue'
 import Dev from './Dev.vue'
 import Stonecrop from '../src/index.js'
 import Doctype from '../src/doctype.js'
-import { ADate, ATextInput } from '@sedum/aform'
+import { ADate, ATextInput } from '@agritheory/aform'
 // import server
 // import createServer from './server.js'
 

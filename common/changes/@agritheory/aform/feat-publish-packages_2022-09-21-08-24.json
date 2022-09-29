@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Initial upload",
+      "type": "minor",
+      "packageName": "@agritheory/aform"
+    }
+  ],
+  "packageName": "@agritheory/aform",
+  "email": "rohan@parsimony.com"
+}

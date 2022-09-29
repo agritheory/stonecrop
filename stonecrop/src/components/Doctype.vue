@@ -7,7 +7,7 @@
 </template>
 <script>
 import { reactive, ref, defineComponent, inject } from 'vue'
-import { AForm, ATextInput } from '@sedum/aform'
+import { AForm, ATextInput } from '@agritheory/aform'
 import { useRouter, useRoute } from 'vue-router'
 // pinia for state, later
 //

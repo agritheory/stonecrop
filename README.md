@@ -28,10 +28,12 @@ rush rebuild
 cd stonecrop
 rushx story:dev
 
-
 # sometimes, when changing branches or updating dependencies you may have issues
 # this command removes and re-links all dependencies
 rush purge && rush update && rush rebuild
+
+# Provide changelog for release
+rush change
 
 # Stage changes and run linters
 rushx lint

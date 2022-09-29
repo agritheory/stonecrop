@@ -3,7 +3,7 @@
 </template>
 <script lang="ts" setup>
 import { ref, reactive } from 'vue'
-import { ATable } from '@sedum/atable'
+import { ATable } from '@agritheory/atable'
 
 // use component if provided else call to Records Schema endpoint/ table  / lookup
 // alteratively: a view: component map, eg records: Records, gantt: GanttView

@@ -1,5 +1,5 @@
 {
-	"name": "@sedum/beam",
+	"name": "@agritheory/beam",
 	"version": "0.1.0",
 	"license": "MIT",
 	"scripts": {
@@ -13,10 +13,8 @@
 	},
 	"devDependencies": {
 		"@vitejs/plugin-vue": "^3.0.1",
+		"cypress": "^10.8.0",
 		"vite": "^3.0.5",
-		"cypress": "^8.1.0",
-		"@cypress/vue": "^3.0.0-beta.4",
-		"@cypress/vite-dev-server": "~2.0.3",
 		"vue-router": "^4"
 	},
 	"engines": {

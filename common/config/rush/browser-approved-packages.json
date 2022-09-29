@@ -3,14 +3,6 @@
   "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/approved-packages.schema.json",
   "packages": [
     {
-      "name": "@cypress/vite-dev-server",
-      "allowedCategories": [ "documentation", "prototype", "utilities" ]
-    },
-    {
-      "name": "@cypress/vue",
-      "allowedCategories": [ "documentation", "prototype", "utilities" ]
-    },
-    {
       "name": "@histoire/plugin-vue",
       "allowedCategories": [ "prototype", "utilities" ]
     },
@@ -19,23 +11,23 @@
       "allowedCategories": [ "prototype" ]
     },
     {
-      "name": "@sedum/aform",
+      "name": "@agritheory/aform",
       "allowedCategories": [ "prototype" ]
     },
     {
-      "name": "@sedum/atable",
+      "name": "@agritheory/atable",
       "allowedCategories": [ "prototype" ]
     },
     {
-      "name": "@sedum/desktop",
+      "name": "@agritheory/desktop",
       "allowedCategories": [ "prototype" ]
     },
     {
-      "name": "@sedum/stonecrop",
+      "name": "@agritheory/stonecrop",
       "allowedCategories": [ "prototype" ]
     },
     {
-      "name": "@sedum/utilities",
+      "name": "@agritheory/utilities",
       "allowedCategories": [ "prototype" ]
     },
     {
