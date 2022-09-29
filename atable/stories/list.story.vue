@@ -3,17 +3,21 @@
 		<ATable id="list" :columns="http_logs.columns" :rows="http_logs.rows" :config="http_logs.config">
 			<template #body="{ data }: { data: TableDataStore }">
 				<ARow
+					ref="rows"
 					v-for="(row, rowIndex) in data.rows"
 					:key="row.id || v4()"
 					:row="row"
 					:rowIndex="rowIndex"
-					:tableid="data.id">
+					:tableid="data.id"
+					:tabIndex="0">
 					<ACell
 						v-for="(col, colIndex) in data.columns"
 						:key="colIndex"
 						:tableid="data.id"
 						:col="col"
 						spellcheck="false"
+						:tabIndex="-1"
+						:addNavigation="false"
 						:rowIndex="rowIndex"
 						:colIndex="colIndex + (data.zeroColumn ? 0 : -1)"
 						:style="{
@@ -34,7 +38,9 @@ import { TableColumn } from 'types'
 import data from '@/assets/sample_data/http_logs.json'
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import TableDataStore from '@/components'
+import { useKeyboardNav } from '@agritheory/utilities'
 
+const rows = ref<HTMLTableRowElement[]>([])
 const http_logs = ref({
 	rows: data,
 	columns: [
@@ -88,6 +94,8 @@ const http_logs = ref({
 	] as TableColumn[],
 	config: { numberedRows: true, treeView: false },
 })
+
+useKeyboardNav([{ selectors: rows }])
 </script>
 
 <style>

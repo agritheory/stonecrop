@@ -5,7 +5,7 @@
 		:data-rowindex="rowIndex"
 		:data-editable="tableData.columns[colIndex].edit"
 		:contenteditable="tableData.columns[colIndex].edit"
-		:tabindex="0"
+		:tabindex="tabIndex"
 		:spellcheck="false"
 		:style="cellStyle"
 		@focus="onFocus"
@@ -23,11 +23,19 @@ import { computed, CSSProperties, inject, ref } from 'vue'
 import { defaultKeypressHandlers, useKeyboardNav } from '@agritheory/utilities'
 import TableDataStore from '.'
 
-const props = defineProps<{
-	colIndex: number
-	rowIndex: number
-	tableid: string
-}>()
+const props = withDefaults(
+	defineProps<{
+		colIndex: number
+		rowIndex: number
+		tableid: string
+		tabIndex?: number
+		addNavigation?: boolean
+	}>(),
+	{
+		tabIndex: 0,
+		addNavigation: true,
+	}
+)
 
 const tableData = inject<TableDataStore>(props.tableid)
 const cell = ref<HTMLTableCellElement>(null)
@@ -71,21 +79,23 @@ const handleInput = () => {
 	}
 }
 
-useKeyboardNav([
-	{
-		selectors: cell,
-		handlers: {
-			...defaultKeypressHandlers,
-			...{
-				'keydown.f2': handleInput,
-				'keydown.alt.up': handleInput,
-				'keydown.alt.down': handleInput,
-				'keydown.alt.left': handleInput,
-				'keydown.alt.right': handleInput,
+if (props.addNavigation) {
+	useKeyboardNav([
+		{
+			selectors: cell,
+			handlers: {
+				...defaultKeypressHandlers,
+				...{
+					'keydown.f2': handleInput,
+					'keydown.alt.up': handleInput,
+					'keydown.alt.down': handleInput,
+					'keydown.alt.left': handleInput,
+					'keydown.alt.right': handleInput,
+				},
 			},
 		},
-	},
-])
+	])
+}
 
 const updateData = (event: Event) => {
 	if (event) {
