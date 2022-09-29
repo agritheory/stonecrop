@@ -11,13 +11,12 @@ pinia.use(
 	PiniaSharedState({
 		enable: true,
 		initialize: true,
-	}),
+	})
 )
 pinia.use(PiniaUndo)
 
-
-const increment = (context) => context.count + 1
-const decrement = (context) => context.count - 1
+const increment = context => context.count + 1
+const decrement = context => context.count - 1
 
 export const counterMachine = createMachine({
 	id: 'counter',
@@ -36,9 +35,6 @@ export const counterMachine = createMachine({
 })
 
 // create a store using the xstate middleware
-export const counterStore = defineStore(
-	counterMachine.id,
-	xstate(counterMachine),
-)
+export const counterStore = defineStore(counterMachine.id, xstate(counterMachine))
 
 export default { pinia }

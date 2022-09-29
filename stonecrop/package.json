@@ -1,9 +1,15 @@
 {
 	"name": "@agritheory/stonecrop",
 	"version": "0.1.0",
+	"type": "module",
 	"description": "schema helper",
 	"main": "index.js",
 	"license": "MIT",
+	"scripts": {
+		"dev": "vite serve dev/ -c vite.config.ts",
+		"build": "vite build",
+		"preview": "vite preview"
+	},
 	"dependencies": {
 		"@vueuse/core": "^9.2.0",
 		"immutable": "^4.1.0",
@@ -22,14 +28,10 @@
 		"miragejs": "^0.1.45",
 		"vite": "^3.0.5"
 	},
-	"scripts": {
-		"dev": "vite serve dev/ -c vite.config.ts -d",
-		"build": "vite build -d --emptyOutDir true"
-	},
 	"exports": {
 		".": {
-			"import": "./dist/stonecrop.mjs",
-			"require": "./dist/stonecrop.umd.js"
+			"import": "./dist/stonecrop.js",
+			"require": "./dist/stonecrop.umd.cjs"
 		}
 	}
 }

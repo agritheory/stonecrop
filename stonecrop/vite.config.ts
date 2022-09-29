@@ -6,9 +6,10 @@ const projectRootDir = resolve(__dirname)
 
 export default defineConfig({
 	plugins: [vue()],
+	optimizeDeps: { exclude: ['@agritheory/atable', '@agritheory/aform'] },
 	resolve: {
 		alias: {
-			'@/': `${resolve(projectRootDir, 'src')}/`,
+			'@': resolve(projectRootDir, 'src'),
 		},
 	},
 	build: {

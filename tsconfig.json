@@ -12,5 +12,5 @@
 		"jsx": "preserve"
 	},
 	"exclude": ["node_modules", "**/*.spec.ts"],
-	"references": [{ "path": "./aform" }, { "path": "./atable" }, { "path": "./utilities" }]
+	"references": [{ "path": "./aform" }, { "path": "./atable" }, { "path": "./stonecrop" }, { "path": "./utilities" }]
 }
