@@ -1,4 +1,4 @@
-name: Node.js Package
+name: Publish Packages
 
 on:
   pull_request:
@@ -31,6 +31,8 @@ jobs:
         run: node common/scripts/install-run-rush.js install
 
       - name: Publish Packages via Rush
-        run: node common/scripts/install-run-rush.js publish -ap --add-commit-details --set-access-level=public
+        run: |
+          git fetch origin development:refs/remotes/origin/development -a
+          node common/scripts/install-run-rush.js publish --apply --publish --target-branch development --add-commit-details --set-access-level=public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

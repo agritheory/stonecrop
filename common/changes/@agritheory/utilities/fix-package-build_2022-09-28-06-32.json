@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@agritheory/utilities",
+      "comment": "Reconfigure build outputs",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@agritheory/utilities"
+}
