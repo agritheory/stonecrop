@@ -1,5 +1,5 @@
 <template>
-	<tr v-show="rowVisible()">
+	<tr :tabindex="tabIndex" v-show="rowVisible()">
 		<td v-if="tableData.config.numberedRows" id="row-index" :tabIndex="-1" :style="numberedRowStyle">
 			{{ rowIndex + 1 }}
 		</td>
@@ -22,11 +22,17 @@ import { CSSProperties, inject } from 'vue'
 
 import TableDataStore from '.'
 
-const props = defineProps<{
-	row: TableRow
-	rowIndex: number
-	tableid: string
-}>()
+const props = withDefaults(
+	defineProps<{
+		row: TableRow
+		rowIndex: number
+		tableid: string
+		tabIndex?: number
+	}>(),
+	{
+		tabIndex: -1,
+	}
+)
 
 const tableData = inject<TableDataStore>(props.tableid)
 
