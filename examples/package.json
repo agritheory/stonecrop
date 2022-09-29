@@ -6,8 +6,8 @@
 	"main": "index.js",
 	"license": "MIT",
 	"dependencies": {
-		"@agritheory/aform": "workspace:^0.1.0",
-		"@agritheory/atable": "workspace:^0.1.0",
+		"@agritheory/aform": "workspace:^0.1.1",
+		"@agritheory/atable": "workspace:^0.1.1",
 		"@agritheory/desktop": "workspace:^0.1.0",
 		"@agritheory/stonecrop": "workspace:^0.1.0",
 		"@miragejs/graphql": "^0.1.13",
