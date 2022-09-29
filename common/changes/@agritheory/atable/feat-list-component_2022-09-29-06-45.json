@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@agritheory/atable",
+      "comment": "Add story for list view tables",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@agritheory/atable"
+}
