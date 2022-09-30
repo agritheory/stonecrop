@@ -28,8 +28,9 @@ const props = withDefaults(
 		colIndex: number
 		rowIndex: number
 		tableid: string
-		tabIndex?: number
 		addNavigation?: boolean
+		tabIndex?: number
+		clickHandler?: (event: MouseEvent) => void
 	}>(),
 	{
 		tabIndex: 0,
@@ -60,7 +61,12 @@ const displayValue = computed(() => {
 	}
 })
 
-const handleInput = () => {
+const handleInput = (event: MouseEvent) => {
+	if (props.clickHandler) {
+		props.clickHandler(event)
+		return
+	}
+
 	if (tableData.columns[props.colIndex].mask) {
 		// TODO: add masking to cell values
 		// tableData.columns[props.colIndex].mask(event)
