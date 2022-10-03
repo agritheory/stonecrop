@@ -1,9 +1,10 @@
 {
 	"name": "@agritheory/utilities",
-	"version": "0.1.0",
-	"main": "dist/utilities.umd.js",
-	"module": "dist/utilities.mjs",
-	"umd": "dist/utilities.umd.js",
+	"version": "0.1.1",
+	"type": "module",
+	"main": "dist/utilities.js",
+	"module": "dist/utilities.js",
+	"umd": "dist/utilities.umd.cjs",
 	"types": "src/index",
 	"files": [
 		"dist/*",
@@ -12,7 +13,7 @@
 	"license": "MIT",
 	"scripts": {
 		"dev": "vite",
-		"build": "tsc -b && vite build --emptyOutDir true",
+		"build": "tsc -b && vite build",
 		"preview": "vite preview",
 		"story:dev": "histoire dev",
 		"story:build": "histoire build",
@@ -42,8 +43,8 @@
 	},
 	"exports": {
 		".": {
-			"import": "./dist/utilities.mjs",
-			"require": "./dist/utilities.umd.js"
+			"import": "./dist/utilities.js",
+			"require": "./dist/utilities.umd.cjs"
 		}
 	}
 }

@@ -1,9 +1,10 @@
 {
 	"name": "@agritheory/atable",
-	"version": "0.1.0",
-	"main": "dist/atable.umd.js",
-	"module": "dist/atable.mjs",
-	"umd": "dist/atable.umd.js",
+	"version": "0.1.1",
+	"type": "module",
+	"main": "dist/atable.js",
+	"module": "dist/atable.js",
+	"umd": "dist/atable.umd.cjs",
 	"types": "src/index",
 	"files": [
 		"dist/*",
@@ -12,7 +13,7 @@
 	"license": "MIT",
 	"scripts": {
 		"dev": "vite",
-		"build": "tsc -b && vite build --emptyOutDir true",
+		"build": "tsc -b && vite build",
 		"preview": "vite preview",
 		"story:dev": "histoire dev",
 		"story:build": "histoire build",
@@ -48,8 +49,8 @@
 	},
 	"exports": {
 		".": {
-			"import": "./dist/atable.mjs",
-			"require": "./dist/atable.umd.js"
+			"import": "./dist/atable.js",
+			"require": "./dist/atable.umd.cjs"
 		}
 	}
 }

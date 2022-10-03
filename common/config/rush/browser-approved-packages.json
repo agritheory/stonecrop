@@ -3,14 +3,6 @@
   "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/approved-packages.schema.json",
   "packages": [
     {
-      "name": "@histoire/plugin-vue",
-      "allowedCategories": [ "prototype", "utilities" ]
-    },
-    {
-      "name": "@miragejs/graphql",
-      "allowedCategories": [ "prototype" ]
-    },
-    {
       "name": "@agritheory/aform",
       "allowedCategories": [ "prototype" ]
     },
@@ -28,6 +20,14 @@
     },
     {
       "name": "@agritheory/utilities",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "@histoire/plugin-vue",
+      "allowedCategories": [ "prototype", "utilities" ]
+    },
+    {
+      "name": "@miragejs/graphql",
       "allowedCategories": [ "prototype" ]
     },
     {
