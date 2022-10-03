@@ -22,7 +22,6 @@
 	"devDependencies": {
 		"@agritheory/aform": "workspace:^0.1.0",
 		"@agritheory/atable": "workspace:^0.1.0",
-		"@histoire/plugin-vue": "^0.10.2",
 		"@miragejs/graphql": "^0.1.13",
 		"@vitejs/plugin-vue": "^3.0.1",
 		"miragejs": "^0.1.45",

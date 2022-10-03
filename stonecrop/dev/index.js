@@ -1,10 +1,11 @@
 import { createApp } from 'vue'
-import Dev from './Dev.vue'
-import Stonecrop from '../src/index.js'
-import Doctype from '../src/doctype.js'
+
 import { ADate, ATextInput } from '@agritheory/aform'
-// import server
-// import createServer from './server.js'
+
+import Dev from './Dev.vue'
+import makeServer from './server.js'
+import Doctype from '../src/doctype.js'
+import Stonecrop from '../src/index.js'
 
 const app = createApp(Dev)
 
@@ -56,6 +57,8 @@ const doctypes = {
 	issue: Issue,
 }
 
+const server = makeServer()
+
 app.use(Stonecrop, {
 	schemaLoader: doctype => {
 		// normally this would be configured as a memoized/cached call to a server
@@ -63,6 +66,3 @@ app.use(Stonecrop, {
 	},
 })
 app.mount('#app')
-
-// run server
-// createServer()

@@ -145,7 +145,6 @@ importers:
     specifiers:
       '@agritheory/aform': workspace:^0.1.0
       '@agritheory/atable': workspace:^0.1.0
-      '@histoire/plugin-vue': ^0.10.2
       '@miragejs/graphql': ^0.1.13
       '@vitejs/plugin-vue': ^3.0.1
       '@vueuse/core': ^9.2.0
@@ -168,7 +167,6 @@ importers:
     devDependencies:
       '@agritheory/aform': link:../aform
       '@agritheory/atable': link:../atable
-      '@histoire/plugin-vue': 0.10.2_vue@3.2.37
       '@miragejs/graphql': 0.1.13
       '@vitejs/plugin-vue': 3.0.1_vite@3.0.5+vue@3.2.37
       miragejs: 0.1.45
@@ -303,18 +301,6 @@ packages:
       '@histoire/shared': 0.10.2
       '@histoire/vendors': 0.10.2
       histoire: 0.10.2_vite@3.0.5
-      vue: 3.2.37
-    dev: true
-
-  /@histoire/plugin-vue/0.10.2_vue@3.2.37:
-    resolution: {integrity: sha512-uiqvye8zK47IeRd/jkuAvf+3inkfdtL0Wii3lUgRrhXDAJVBymBg5CBulJ/+2nKq0ngg/eeeovbedvPpdWOnzA==}
-    peerDependencies:
-      histoire: ^0.10.2
-      vue: ^3.2.31
-    dependencies:
-      '@histoire/controls': 0.10.2
-      '@histoire/shared': 0.10.2
-      '@histoire/vendors': 0.10.2
       vue: 3.2.37
     dev: true
 
