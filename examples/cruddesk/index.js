@@ -2,10 +2,10 @@
 // miragejs for dev server
 import { createApp } from 'vue'
 import App from './App.vue'
-import atable from '@sedum/atable'
-import aform from '@sedum/aform'
-import stonecrop from '@sedum/stonecrop'
-import desktop from '@sedum/desktop'
+import atable from '@agritheory/atable'
+import aform from '@agritheory/aform'
+import stonecrop from '@agritheory/stonecrop'
+import desktop from '@agritheory/desktop'
 import { makeServer } from './server'
 
 if (import.meta.env.DEV) {

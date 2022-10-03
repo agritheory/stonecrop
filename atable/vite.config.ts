@@ -12,10 +12,10 @@ export default defineConfig({
 		},
 	},
 	build: {
-		minify: false,
+		sourcemap: true,
 		lib: {
 			entry: resolve(projectRootDir, 'src/index.ts'),
-			name: '@sedum/atable',
+			name: '@agritheory/atable',
 		},
 		rollupOptions: {
 			external: ['vue'],

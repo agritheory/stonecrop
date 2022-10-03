@@ -5,7 +5,7 @@ module.exports = {
 	build: {
 		lib: {
 			entry: resolve(__dirname, '../src/index.js'),
-			name: '@sedum/stonecrop',
+			name: '@agritheory/stonecrop',
 		},
 		rollupOptions: {
 			external: ['vue'],
@@ -18,5 +18,5 @@ module.exports = {
 		outDir: '../dist/',
 	},
 	plugins: [vue()],
-	optimizeDeps: { exclude: ['@sedum/atable', '@sedum/aform'] },
+	optimizeDeps: { exclude: ['@agritheory/atable', '@agritheory/aform'] },
 }

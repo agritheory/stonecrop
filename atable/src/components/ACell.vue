@@ -20,7 +20,7 @@
 <script setup lang="ts">
 import { computed, CSSProperties, inject, ref } from 'vue'
 
-import { defaultKeypressHandlers, useKeyboardNav } from '@sedum/utilities'
+import { defaultKeypressHandlers, useKeyboardNav } from '@agritheory/utilities'
 import TableDataStore from '.'
 
 const props = defineProps<{

@@ -1,5 +1,5 @@
 // TODO: (typing) figure out a way to import other monorepo package types
-import { TableColumn, TableConfig, TableRow } from '@sedum/atable/types'
+import { TableColumn, TableConfig, TableRow } from '@agritheory/atable/types'
 
 export type BasicSchema = {
 	component: string

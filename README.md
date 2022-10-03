@@ -28,6 +28,9 @@ rush rebuild
 cd stonecrop
 rushx story:dev
 
+# Provide changelog for release
+rush change
+
 # Stage changes and run linters
 rushx lint
 ```
