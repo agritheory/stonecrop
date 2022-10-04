@@ -15,4 +15,20 @@ const router = createRouter({
 	routes,
 })
 
+router.beforeEach(async (to, from, next) => {
+	const params = to.params
+	const doctypeSlug = to.params.records.toString()
+
+	if (params.record) {
+		const response = await fetch(`/${doctypeSlug}/${params.record}`)
+		const data = await response.json()
+		to.params.recordData = data
+	} else {
+		const response = await fetch(`/${doctypeSlug}`)
+		const data = await response.json()
+		to.params.recordsData = data
+	}
+	next()
+})
+
 export default router

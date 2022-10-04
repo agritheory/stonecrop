@@ -18,14 +18,14 @@ export default function makeServer() {
 		seeds(server) {
 			server.db.loadData({
 				todos: [
-					{ id: '1', name: 'Luke', subject: 'First To Do' },
-					{ id: '2', name: 'Leia', subject: 'Second To Do' },
-					{ id: '3', name: 'Anakin', subject: 'Third To Do' },
+					{ id: '1', first_name: 'Luke', last_name: 'Skywalker', subject: 'First To Do' },
+					{ id: '2', first_name: 'Leia', last_name: 'Skywalker', subject: 'Second To Do' },
+					{ id: '3', first_name: 'Anakin', last_name: 'Skywalker', subject: 'Third To Do' },
 				],
 				issues: [
-					{ id: '1', name: 'Luke', subject: 'First To Do' },
-					{ id: '2', name: 'Leia', subject: 'Second To Do' },
-					{ id: '3', name: 'Anakin', subject: 'Third To Do' },
+					{ id: '1', first_name: 'luke', last_name: 'Skywalker', subject: 'First To Do' },
+					{ id: '2', first_name: 'Leia', last_name: 'Skywalker', subject: 'Second To Do' },
+					{ id: '3', first_name: 'Anakin', last_name: 'Skywalker', subject: 'Third To Do' },
 				],
 			})
 		},
@@ -33,6 +33,14 @@ export default function makeServer() {
 		routes() {
 			this.get('/to-do', schema => schema.db.todos)
 			this.get('/issue', schema => schema.db.issues)
+			this.get('/to-do/:id', schema => {
+				const todo = schema.todos.first()
+				return todo.attrs
+			})
+			this.get('/issue/:id', schema => {
+				const issue = schema.issues.first()
+				return issue.attrs
+			})
 		},
 	})
 

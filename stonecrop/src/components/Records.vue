@@ -1,9 +1,9 @@
 <template>
-	<ATable :key="rows" :columns="records.columns" :rows="rows" :config="records.config" />
+	<ATable :key="records.rows" :columns="records.columns" :rows="records.rows" :config="records.config" />
 </template>
 
 <script setup lang="ts">
-import { reactive, inject, onBeforeMount, ref } from 'vue'
+import { reactive, inject } from 'vue'
 import { useRoute } from 'vue-router'
 
 import { ATable } from '@agritheory/atable'
@@ -16,32 +16,16 @@ import Registry from '@/registry.js'
 // last_used_view_type in application state
 
 const route = useRoute()
-const doctypeSlug = route.params.records.toString()
 
-const rows = ref([])
-onBeforeMount(async () => {
-	const response = await fetch(`/${doctypeSlug}`)
-	rows.value = await response.json()
-})
-
+// get schema
 const registry = inject<Registry>('$registry')
-const schema = registry.loadDoctypeSchema({
-	schemaLoader: () => {
-		return [
-			{
-				label: 'Subject',
-				name: 'subject',
-				type: 'Data',
-				align: 'left',
-				edit: false,
-				width: '35ch',
-				// component: 'router-link'
-			},
-		]
-	},
-})
+const doctypeSlug = route.params.records
+const schemaDetails = registry.loadDoctypeSchema({ doctype: doctypeSlug })
+const schema = schemaDetails.schema
 
+// get data
 const records = reactive({
+	rows: route.params.recordsData,
 	columns: schema,
 	config: { numberedRows: true, treeView: false },
 })
