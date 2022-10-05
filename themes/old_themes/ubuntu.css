@@ -1,0 +1,26 @@
+:root {
+	--brand-color: #e95420;
+	--header-border-color: #e95420;
+	--header-text-color: #ffffff;
+	--row-color-zebra-light: #f2f1f0;
+	--row-color-zebra-dark: #dfd8dd;
+	--cell-border-color: #ffffff;
+	--cell-text-color: #222222;
+	--active-cell-background: #ffffff;
+	--active-cell-outline: #772953;
+	--required-border: #e95420;
+	--table-font-size: 11pt;
+	--border-collapsed: none;
+}
+
+.atable {
+	font-family: Ubuntu, sans-serif;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	font-size: var(--table-font-size);
+}
+
+body {
+	background: rgb(233, 84, 32);
+	background: linear-gradient(260deg, rgba(233, 84, 32, 1) 0%, rgba(119, 41, 83, 1) 100%);
+}
