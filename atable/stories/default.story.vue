@@ -8,7 +8,7 @@
 import { ref } from 'vue'
 
 import { TableColumn } from 'types'
-import data from './sample_data/http_logs.json'
+import data from '@/assets/sample_data/http_logs.json'
 
 const http_logs = ref({
 	rows: data,
@@ -67,7 +67,7 @@ const http_logs = ref({
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap');
-@import '@/themes/atable.css';
+@import '@/assets/atable.css';
 </style>
 
 <!-- enter documentation here -->
