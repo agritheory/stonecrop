@@ -13,16 +13,21 @@ const toDo = new Doctype(
 	'To Do',
 	[
 		{
+			name: 'first_name',
 			fieldname: 'first_name',
+			fieldtype: 'Data',
 			component: ATextInput,
 			label: 'First Name',
 		},
 		{
+			name: 'last_name',
 			fieldname: 'last_name',
+			fieldtype: 'Data',
 			component: ATextInput,
 			label: 'Last Name',
 		},
 		{
+			name: 'phone',
 			fieldname: 'phone',
 			fieldtype: 'Phone',
 			component: ATextInput,
@@ -38,12 +43,16 @@ const Issue = new Doctype(
 	'Issue',
 	[
 		{
+			name: 'subject',
 			fieldname: 'subject',
+			fieldtype: 'Data',
 			component: ATextInput,
 			label: 'Subject',
 		},
 		{
+			name: 'date',
 			fieldname: 'date',
+			fieldtype: 'Date',
 			component: ADate,
 			label: 'Date',
 		},
