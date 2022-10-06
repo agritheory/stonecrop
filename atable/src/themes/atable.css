@@ -1,0 +1,28 @@
+:root {
+	--brand-color: #827553;
+	--header-border-color: #f7f7f0;
+	--header-text-color: #f7f7f0;
+	--row-color-zebra-light: #dcdcd7;
+	--row-color-zebra-dark: #cdcdc8;
+	--cell-border-color: #f7f7f0;
+	--cell-text-color: #070607;
+	--focus-cell-background: #f7f7f0;
+	--focus-cell-outline: #827553;
+	--active-cell-background: #f7f7f0;
+	--active-cell-outline: #e6a92d;
+	--required-border: #e63c28;
+	--table-font-size: 11pt;
+	--atable-font-family: 'Arimo', sans-serif;
+}
+
+html,
+body {
+	font-family: var(--atable-font-family);
+}
+
+.atable {
+	font-family: var(--atable-font-family);
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	font-size: var(--table-font-size);
+}
