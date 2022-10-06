@@ -106,8 +106,8 @@ importers:
 
   ../../examples:
     specifiers:
-      '@agritheory/aform': workspace:^0.1.0
-      '@agritheory/atable': workspace:^0.1.0
+      '@agritheory/aform': workspace:^0.1.1
+      '@agritheory/atable': workspace:^0.1.1
       '@agritheory/desktop': workspace:^0.1.0
       '@agritheory/stonecrop': workspace:^0.1.0
       '@histoire/plugin-vue': ^0.10.2
@@ -139,8 +139,8 @@ importers:
 
   ../../stonecrop:
     specifiers:
-      '@agritheory/aform': workspace:^0.1.0
-      '@agritheory/atable': workspace:^0.1.0
+      '@agritheory/aform': workspace:^0.1.1
+      '@agritheory/atable': workspace:^0.1.1
       '@histoire/plugin-vue': ^0.10.2
       '@vitejs/plugin-vue': ^3.0.1
       cypress: ^10.8.0

@@ -7,7 +7,7 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
 
-import data from '@/assets/sample_data/coa.json'
+import data from './sample_data/coa.json'
 
 const coa = ref({
 	rows: data,
@@ -47,7 +47,7 @@ const coa = ref({
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap');
-@import '@/assets/default.css';
+@import '@/themes/default.css';
 </style>
 
 <!-- enter documentation here -->
