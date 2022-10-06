@@ -1,0 +1,24 @@
+{
+  "name": "@agritheory/aform",
+  "entries": [
+    {
+      "version": "0.1.1",
+      "tag": "@agritheory/aform_v0.1.1",
+      "date": "Thu, 29 Sep 2022 12:25:57 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Reconfigure build outputs",
+            "author": "Tyler Matteson <tyler@agritheory.com>",
+            "commit": "536e713397a6aa4d2149dd6d94e5eeedf1f7d53e"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@agritheory/utilities\" to `0.1.1`"
+          }
+        ]
+      }
+    }
+  ]
+}

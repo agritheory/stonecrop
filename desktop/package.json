@@ -18,7 +18,7 @@
 	},
 	"scripts": {
 		"dev": "vite",
-		"build": "vite build --emptyOutDir true",
+		"build": "vite build",
 		"preview": "vite preview",
 		"story:dev": "histoire dev",
 		"story:build": "histoire build",
