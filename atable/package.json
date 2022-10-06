@@ -1,9 +1,10 @@
 {
-	"name": "@sedum/atable",
-	"version": "0.1.0",
-	"main": "dist/atable.umd.js",
-	"module": "dist/atable.mjs",
-	"umd": "dist/atable.umd.js",
+	"name": "@agritheory/atable",
+	"version": "0.1.1",
+	"type": "module",
+	"main": "dist/atable.js",
+	"module": "dist/atable.js",
+	"umd": "dist/atable.umd.cjs",
 	"types": "src/index",
 	"files": [
 		"dist/*",
@@ -12,7 +13,7 @@
 	"license": "MIT",
 	"scripts": {
 		"dev": "vite",
-		"build": "tsc -b && vite build --emptyOutDir true",
+		"build": "tsc -b && vite build",
 		"preview": "vite preview",
 		"story:dev": "histoire dev",
 		"story:build": "histoire build",
@@ -20,38 +21,36 @@
 		"lint": "eslint . --ext .ts,.vue"
 	},
 	"dependencies": {
-		"@sedum/utilities": "workspace:*",
-		"uuid": "~8.3.2",
-		"vue": "~3.2.37"
+		"@agritheory/utilities": "workspace:*",
+		"uuid": "^9.0.0",
+		"vue": "^3.2.37"
 	},
 	"peerDependencies": {
-		"@sedum/aform": "workspace:*"
+		"@agritheory/aform": "workspace:*"
 	},
 	"devDependencies": {
-		"@cypress/vite-dev-server": "~2.0.3",
-		"@cypress/vue": "~3.0.0-beta.4",
-		"@histoire/plugin-vue": "~0.10.2",
-		"@sedum/aform": "workspace:*",
-		"@types/uuid": "~8.3.4",
-		"@typescript-eslint/eslint-plugin": "~5.33.0",
-		"@typescript-eslint/parser": "~5.33.0",
-		"@vitejs/plugin-vue": "~3.0.1",
-		"cypress": "~8.1.0",
-		"eslint-config-prettier": "~8.5.0",
-		"eslint-plugin-vue": "~9.3.0",
-		"eslint": "~8.22.0",
-		"histoire": "~0.10.2",
-		"typescript": "~4.7.4",
-		"vite": "~3.0.5",
-		"vue-router": "~4"
+		"@histoire/plugin-vue": "^0.10.2",
+		"@agritheory/aform": "workspace:*",
+		"@types/uuid": "^8.3.4",
+		"@typescript-eslint/eslint-plugin": "^5.33.0",
+		"@typescript-eslint/parser": "^5.33.0",
+		"@vitejs/plugin-vue": "^3.0.1",
+		"cypress": "^10.8.0",
+		"eslint-config-prettier": "^8.5.0",
+		"eslint-plugin-vue": "^9.3.0",
+		"eslint": "^8.22.0",
+		"histoire": "^0.10.2",
+		"typescript": "^4.7.4",
+		"vite": "^3.0.5",
+		"vue-router": "^4"
 	},
 	"engines": {
 		"node": ">=16.13.0"
 	},
 	"exports": {
 		".": {
-			"import": "./dist/atable.mjs",
-			"require": "./dist/atable.umd.js"
+			"import": "./dist/atable.js",
+			"require": "./dist/atable.umd.cjs"
 		}
 	}
 }

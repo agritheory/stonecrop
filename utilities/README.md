@@ -1,3 +1,3 @@
 # Utilities
 
-`@sedum/utilities` contains helper functions and utilities for working with other `@sedum` libraries.
+`@agritheory/utilities` contains helper functions and utilities for working with other `@agritheory` libraries.

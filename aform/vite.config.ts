@@ -12,10 +12,10 @@ export default defineConfig({
 		},
 	},
 	build: {
-		minify: false,
+		sourcemap: true,
 		lib: {
 			entry: resolve(projectRootDir, 'src/index.ts'),
-			name: '@sedum/aform',
+			name: '@agritheory/aform',
 		},
 		rollupOptions: {
 			external: ['vue'],
