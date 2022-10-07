@@ -33,7 +33,7 @@ export default class Registry {
 				component: doctype.schema.recordsComponent || Records,
 			})
 			this.router.addRoute({
-				path: `/${doctype.slug}:id`,
+				path: `/${doctype.slug}/:id`,
 				component: doctype.schema.component || Doctype,
 			})
 		}

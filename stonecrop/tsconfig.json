@@ -7,7 +7,7 @@
 		"outDir": "dist",
 		"baseUrl": ".",
 		"paths": {
-			"@/*": ["./src/*", "./dist/*"],
+			"@/*": ["src/*", "dist/*"],
 			"types/*": ["types/*"]
 		}
 	},

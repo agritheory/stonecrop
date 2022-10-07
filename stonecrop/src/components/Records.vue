@@ -10,7 +10,7 @@ import { ATable } from '@agritheory/atable'
 
 import Registry from '@/registry.js'
 
-// use component if provided else call to Records Schema endpoint/ table  / lookup
+// TODO: use component if provided else call to Records Schema endpoint/ table  / lookup
 // alteratively: a view: component map, eg records: Records, gantt: GanttView
 // default_view key in schema
 // last_used_view_type in application state

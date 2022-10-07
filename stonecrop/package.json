@@ -6,7 +6,7 @@
 	"main": "index.js",
 	"license": "MIT",
 	"scripts": {
-		"dev": "vite serve dev/ -c vite.config.ts",
+		"dev": "vite serve stories/ -c vite.config.ts",
 		"build": "vite build",
 		"preview": "vite preview"
 	},

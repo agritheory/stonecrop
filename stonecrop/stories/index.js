@@ -2,13 +2,19 @@ import { createApp } from 'vue'
 
 import { ADate, ATextInput } from '@agritheory/aform'
 
+import Doctype from '@/doctype.js'
+import Stonecrop from '@/index.js'
+import router from '@/router.js'
+import { default as DoctypeComponent } from '@/components/Doctype.vue'
+import Home from '@/components/Home.vue'
+import Records from '@/components/Records.vue'
 import Dev from './Dev.vue'
 import makeServer from './server.js'
-import Doctype from '../src/doctype.js'
-import Stonecrop from '../src/index.js'
 
-const app = createApp(Dev)
+// create mirage server
+makeServer()
 
+// setup doctype schemas
 const toDo = new Doctype(
 	'To Do',
 	[
@@ -39,7 +45,7 @@ const toDo = new Doctype(
 	[1, 2, 3]
 )
 
-const Issue = new Doctype(
+const issue = new Doctype(
 	'Issue',
 	[
 		{
@@ -61,14 +67,42 @@ const Issue = new Doctype(
 	[1, 2, 3]
 )
 
-const doctypes = {
-	'to-do': toDo,
-	issue: Issue,
+// setup router
+const routes = [
+	{ path: '/', component: Home, meta: { transition: 'slide-up' } },
+	{ path: '/:records', component: Records, meta: { transition: 'slide-up' } },
+	{ path: '/:records/:record', component: DoctypeComponent, meta: { transition: 'slide-up' } },
+]
+
+for (const route of routes) {
+	router.addRoute(route)
 }
 
-const server = makeServer()
+router.beforeEach(async (to, from, next) => {
+	const doctypeSlug = to.params.records?.toString()
+	if (doctypeSlug) {
+		if (to.params.record) {
+			const response = await fetch(`/${doctypeSlug}/${to.params.record}`)
+			const data = await response.json()
+			to.params.recordData = data
+		} else {
+			const response = await fetch(`/${doctypeSlug}`)
+			const data = await response.json()
+			to.params.recordsData = data
+		}
+	}
+	next()
+})
 
+// setup app with schema loader
+const doctypes = {
+	'to-do': toDo,
+	issue,
+}
+
+const app = createApp(Dev)
 app.use(Stonecrop, {
+	router,
 	schemaLoader: doctype => {
 		// normally this would be configured as a memoized/cached call to a server
 		return doctypes[doctype] // or if doctype is a function [doctype].apply()
