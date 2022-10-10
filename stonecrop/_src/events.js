@@ -52,14 +52,14 @@ export default class Bloom {
 	}
 
 	onAppLoad() {
-		on('onAppLoad')
+		this.on('onAppLoad')
 	}
 
 	beforeRouteChange() {
-		on('beforeRouteChange')
+		this.on('beforeRouteChange')
 	}
 
 	afterRouteChange() {
-		on('afterRouteChange')
+		this.on('afterRouteChange')
 	}
 }
