@@ -19,7 +19,6 @@
 						:tabIndex="-1"
 						:addNavigation="false"
 						:contenteditable="false"
-						:clickHandler="handleClick"
 						:rowIndex="rowIndex"
 						:colIndex="colIndex + (data.zeroColumn ? 0 : -1)"
 						:style="{
@@ -39,7 +38,7 @@ import { ref } from 'vue'
 import { useKeyboardNav } from '@agritheory/utilities'
 
 import { TableColumn } from 'types'
-import data from '@/assets/sample_data/http_logs.json'
+import data from './sample_data/http_logs.json'
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import TableDataStore from '@/components'
 
@@ -98,18 +97,18 @@ const http_logs = ref({
 	config: { numberedRows: true, treeView: false },
 })
 
-const handleClick = (event: PointerEvent) => {
-	const target = event.target as HTMLTableCellElement
-	const $row = target.parentElement as HTMLTableRowElement
-	$row.focus()
-}
+// const handleClick = (event: PointerEvent) => {
+// 	const target = event.target as HTMLTableCellElement
+// 	const $row = target.parentElement as HTMLTableRowElement
+// 	$row.focus()
+// }
 
 useKeyboardNav([{ selectors: rows }])
 </script>
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap');
-@import '@/assets/atable.css';
+@import '@/themes/atable.css';
 
 tr:focus {
 	background-color: lightblue;

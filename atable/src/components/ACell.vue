@@ -12,7 +12,12 @@
 		@paste="onChange"
 		@blur="onChange"
 		@input="onChange"
-		@click="handleInput">
+		@click="handleInput"
+		@mousedown="handleInput"
+		@keydown.up="handleUpKey"
+		@keydown.left="handleUpKey"
+		@keydown.down="handleDownKey"
+		@keydown.right="handleDownKey">
 		{{ displayValue }}
 	</td>
 </template>
@@ -62,6 +67,15 @@ const displayValue = computed(() => {
 })
 
 const handleInput = (event: MouseEvent) => {
+	if (props.tabIndex == -1 && !props.contenteditable) {
+		event.preventDefault()
+		const target = event.target as HTMLTableCellElement
+		const $row = target.parentElement as HTMLTableRowElement
+		$row.focus()
+		return
+	}
+
+	// Not sure if click handler is needed anymore?
 	if (props.clickHandler) {
 		props.clickHandler(event)
 		return
@@ -83,6 +97,28 @@ const handleInput = (event: MouseEvent) => {
 		tableData.modal.width = cellWidth.value
 		tableData.modal.component = tableData.columns[props.colIndex].component
 	}
+}
+
+const handleUpKey = e => {
+	if (props.tabIndex == -1) {
+		const target = e.target as HTMLTableCellElement
+		const $row = target.parentElement?.previousElementSibling
+			? (target.parentElement?.previousElementSibling as HTMLTableRowElement)
+			: (target.parentElement as HTMLTableRowElement)
+		$row.focus()
+	}
+	return true
+}
+
+const handleDownKey = e => {
+	if (props.tabIndex == -1) {
+		const target = e.target as HTMLTableCellElement
+		const $row = target.parentElement?.nextElementSibling
+			? (target.parentElement?.nextElementSibling as HTMLTableRowElement)
+			: (target.parentElement as HTMLTableRowElement)
+		$row.focus()
+	}
+	return true
 }
 
 if (props.addNavigation) {
