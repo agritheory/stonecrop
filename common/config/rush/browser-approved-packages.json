@@ -107,6 +107,10 @@
       "allowedCategories": [ "prototype" ]
     },
     {
+      "name": "pinia-xstate",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
       "name": "portal-vue",
       "allowedCategories": [ "prototype" ]
     },
@@ -164,6 +168,10 @@
     },
     {
       "name": "vue-template-compiler",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "xstate",
       "allowedCategories": [ "prototype" ]
     }
   ]

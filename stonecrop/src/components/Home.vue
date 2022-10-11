@@ -4,7 +4,7 @@
 	</div>
 </template>
 <script setup lang="ts">
-import { useStonecrop } from '@/composable.js'
+import { useStonecrop } from '@/composable'
 
 let state = useStonecrop()
 </script>

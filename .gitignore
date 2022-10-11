@@ -69,3 +69,6 @@ common/autoinstallers/*/.npmrc
 
 # Typescript build files
 **/tsconfig.tsbuildinfo
+
+# XState generated files
+**/*.typegen.ts

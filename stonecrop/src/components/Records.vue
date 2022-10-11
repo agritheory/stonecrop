@@ -8,7 +8,7 @@ import { useRoute } from 'vue-router'
 
 import { ATable } from '@agritheory/atable'
 
-import Registry from '@/registry.js'
+import Registry from '@/registry'
 
 // TODO: use component if provided else call to Records Schema endpoint/ table  / lookup
 // alteratively: a view: component map, eg records: Records, gantt: GanttView
@@ -20,7 +20,7 @@ const route = useRoute()
 // get schema
 const registry = inject<Registry>('$registry')
 const doctypeSlug = route.params.records
-const schemaDetails = registry.loadDoctypeSchema({ doctype: doctypeSlug })
+const schemaDetails = registry.schemaLoader(doctypeSlug.toString())
 const schema = schemaDetails.schema
 
 // get data

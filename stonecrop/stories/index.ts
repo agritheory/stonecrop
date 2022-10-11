@@ -2,14 +2,14 @@ import { createApp } from 'vue'
 
 import { ADate, ATextInput } from '@agritheory/aform'
 
-import Doctype from '@/doctype.js'
-import Stonecrop from '@/index.js'
-import router from '@/router.js'
+import Doctype from '@/doctype'
+import Stonecrop from '@/index'
+import router from '@/router'
 import { default as DoctypeComponent } from '@/components/Doctype.vue'
 import Home from '@/components/Home.vue'
 import Records from '@/components/Records.vue'
 import Dev from './Dev.vue'
-import makeServer from './server.js'
+import makeServer from './server'
 
 // create mirage server
 makeServer()
@@ -82,7 +82,8 @@ router.beforeEach(async (to, from, next) => {
 	const doctypeSlug = to.params.records?.toString()
 	if (doctypeSlug) {
 		if (to.params.record) {
-			const response = await fetch(`/${doctypeSlug}/${to.params.record}`)
+			const recordId = to.params.record.toString()
+			const response = await fetch(`/${doctypeSlug}/${recordId}`)
 			const data = await response.json()
 			to.params.recordData = data
 		} else {
@@ -103,7 +104,7 @@ const doctypes = {
 const app = createApp(Dev)
 app.use(Stonecrop, {
 	router,
-	schemaLoader: doctype => {
+	schemaLoader: (doctype: string) => {
 		// normally this would be configured as a memoized/cached call to a server
 		return doctypes[doctype] // or if doctype is a function [doctype].apply()
 	},

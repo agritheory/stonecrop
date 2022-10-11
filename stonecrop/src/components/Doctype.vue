@@ -11,7 +11,7 @@ import { useRoute } from 'vue-router'
 
 import { AForm } from '@agritheory/aform'
 
-import Registry from '@/registry.js'
+import Registry from '@/registry'
 // TODO: pinia for state, later
 // const schema = useStonecrop()
 
@@ -21,5 +21,5 @@ const data = route.params.recordData
 const doctypeSlug = route.params.records
 
 const registry = inject<Registry>('$registry')
-const schema = registry.schemaLoader(doctypeSlug)
+const schema = registry.schemaLoader(doctypeSlug.toString())
 </script>

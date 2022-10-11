@@ -61,5 +61,5 @@ module.exports = {
 		'@typescript-eslint/no-unsafe-return': 'off',
 	},
 
-	ignorePatterns: ['.eslintrc.js', '*.config.ts', 'node_modules/', 'dist/'],
+	ignorePatterns: ['.eslintrc.cjs', '*.config.ts', 'node_modules/', 'dist/'],
 }

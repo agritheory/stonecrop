@@ -15,7 +15,7 @@ export default defineConfig({
 	build: {
 		minify: false,
 		lib: {
-			entry: resolve(projectRootDir, 'src/index.js'),
+			entry: resolve(projectRootDir, 'src/index.ts'),
 			name: '@agritheory/stonecrop',
 		},
 		rollupOptions: {
