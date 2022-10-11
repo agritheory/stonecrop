@@ -44,6 +44,7 @@ export default class Registry {
 				name: doctype.slug,
 				component: doctype.schema.recordsComponent || Records,
 			})
+			// TODO: remove me!
 			this.router.addRoute({
 				path: `/${doctype.slug}/:id`,
 				component: doctype.schema.component || Doctype,

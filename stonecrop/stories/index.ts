@@ -14,6 +14,10 @@ import makeServer from './server'
 // create mirage server
 makeServer()
 
+// to-do events
+// load + some side effect
+// save
+
 // setup doctype schemas
 const toDo = new Doctype(
 	'To Do',
@@ -41,10 +45,36 @@ const toDo = new Doctype(
 			mask: "(locale) => { if (locale === 'en-US') { return '(###) ###-####' } else if (locale === 'en-IN') { return '####-######'} }",
 		},
 	],
-	undefined,
-	[1, 2, 3]
+	undefined, // FSM
+	{
+		load: [
+			() => {
+				console.log('load event')
+			},
+			() => {
+				console.log('load event side effect')
+			},
+		],
+		save: [
+			() => {
+				console.log('save event')
+			},
+			() => {
+				console.log('after save event')
+			},
+		],
+		delete: [
+			() => {
+				console.log('delete event')
+			},
+			() => {
+				console.log('after delete event')
+			},
+		],
+	}
 )
 
+// transitions: load, report, assign, triage, resolve, archive
 const issue = new Doctype(
 	'Issue',
 	[
