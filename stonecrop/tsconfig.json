@@ -7,7 +7,7 @@
 		"outDir": "dist",
 		"baseUrl": ".",
 		"paths": {
-			"@/*": ["src/*", "dist/*"],
+			"@/*": ["src/*"],
 			"types/*": ["types/*"]
 		}
 	},
@@ -16,7 +16,8 @@
 		"src/**/*",
 		"src/**/*.ts",
 		"src/**/*.vue",
-		"stories/**/*.story.vue",
+		"stories/**/*.ts",
+		"stories/**/*.vue",
 		"tests/**/*.ts",
 		"tests/**/*.vue",
 		"types/**/*.ts"

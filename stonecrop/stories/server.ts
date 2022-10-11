@@ -1,7 +1,7 @@
 import { createServer, Model } from 'miragejs'
 
 export default function makeServer() {
-	let server = createServer({
+	const server = createServer({
 		models: {
 			todo: Model,
 			issue: Model,

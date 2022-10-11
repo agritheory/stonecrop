@@ -25,7 +25,13 @@ export const useStonecrop = createGlobalState(
 )
 
 export class Stonecrop {
-	constructor(schema, events, hooks, value) {
+	static _root: any
+	name: string
+	schema: any
+	events: any
+	hooks: any
+
+	constructor(schema?: any, events?: any, hooks?: any, value?: any) {
 		if (Stonecrop._root) {
 			return Stonecrop._root
 		}
