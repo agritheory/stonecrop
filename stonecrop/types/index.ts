@@ -4,10 +4,10 @@ import { SchemaTypes } from '@agritheory/aform/types'
 
 export type Schema = {
 	doctype: string
-	schema: SchemaTypes
+	schema: SchemaTypes[]
 }
 
 export type InstallOptions = {
 	router: Router
-	schemaLoader: (doctype?: string) => Schema
+	schemaLoader: (doctype?: string) => Schema | Promise<Schema>
 }

@@ -1,11 +1,12 @@
 <template>
-	<ATable :key="records.rows" :columns="records.columns" :rows="records.rows" :config="records.config" />
+	<ATable :key="records.columns" :columns="records.columns" :rows="records.rows" :config="records.config" />
 </template>
 
 <script setup lang="ts">
-import { reactive, inject } from 'vue'
+import { reactive, inject, onBeforeMount } from 'vue'
 import { useRoute } from 'vue-router'
 
+import { SchemaTypes } from '@agritheory/aform/types'
 import { ATable } from '@agritheory/atable'
 
 import Registry from '@/registry'
@@ -17,16 +18,18 @@ import Registry from '@/registry'
 
 const route = useRoute()
 
-// get schema
-const registry = inject<Registry>('$registry')
-const doctypeSlug = route.params.records
-const schemaDetails = registry.schemaLoader(doctypeSlug.toString())
-const schema = schemaDetails.schema
-
 // get data
 const records = reactive({
 	rows: route.params.recordsData,
-	columns: schema,
+	columns: [] as SchemaTypes[],
 	config: { numberedRows: true, treeView: false },
+})
+
+onBeforeMount(async () => {
+	// get schema
+	const registry = inject<Registry>('$registry')
+	const doctypeSlug = route.params.records
+	const schemaDetails = await registry.schemaLoader(doctypeSlug.toString())
+	records.columns = schemaDetails.schema
 })
 </script>

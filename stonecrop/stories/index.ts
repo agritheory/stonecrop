@@ -1,15 +1,15 @@
 import { createApp } from 'vue'
-
-import { ADate, ATextInput } from '@agritheory/aform'
+import { RouteRecordRaw } from 'vue-router'
 
 import Doctype from '@/doctype'
 import Stonecrop from '@/index'
 import router from '@/router'
-import { default as DoctypeComponent } from '@/components/Doctype.vue'
-import Home from '@/components/Home.vue'
-import Records from '@/components/Records.vue'
+import { default as DoctypeComponent } from './components/Doctype.vue'
+import Home from './components/Home.vue'
+import Records from './components/Records.vue'
 import Dev from './Dev.vue'
 import makeServer from './server'
+import { SchemaTypes } from '@agritheory/aform/types'
 
 // create mirage server
 makeServer()
@@ -21,30 +21,6 @@ makeServer()
 // setup doctype schemas
 const toDo = new Doctype(
 	'To Do',
-	[
-		{
-			name: 'first_name',
-			fieldname: 'first_name',
-			fieldtype: 'Data',
-			component: ATextInput,
-			label: 'First Name',
-		},
-		{
-			name: 'last_name',
-			fieldname: 'last_name',
-			fieldtype: 'Data',
-			component: ATextInput,
-			label: 'Last Name',
-		},
-		{
-			name: 'phone',
-			fieldname: 'phone',
-			fieldtype: 'Phone',
-			component: ATextInput,
-			label: 'Phone',
-			mask: "(locale) => { if (locale === 'en-US') { return '(###) ###-####' } else if (locale === 'en-IN') { return '####-######'} }",
-		},
-	],
 	undefined, // FSM
 	{
 		load: [
@@ -75,30 +51,10 @@ const toDo = new Doctype(
 )
 
 // transitions: load, report, assign, triage, resolve, archive
-const issue = new Doctype(
-	'Issue',
-	[
-		{
-			name: 'subject',
-			fieldname: 'subject',
-			fieldtype: 'Data',
-			component: ATextInput,
-			label: 'Subject',
-		},
-		{
-			name: 'date',
-			fieldname: 'date',
-			fieldtype: 'Date',
-			component: ADate,
-			label: 'Date',
-		},
-	],
-	undefined,
-	[1, 2, 3]
-)
+const issue = new Doctype('Issue', undefined, [1, 2, 3])
 
 // setup router
-const routes = [
+const routes: RouteRecordRaw[] = [
 	{ path: '/', component: Home, meta: { transition: 'slide-up' } },
 	{ path: '/:records', component: Records, meta: { transition: 'slide-up' } },
 	{ path: '/:records/:record', component: DoctypeComponent, meta: { transition: 'slide-up' } },
@@ -134,9 +90,16 @@ const doctypes = {
 const app = createApp(Dev)
 app.use(Stonecrop, {
 	router,
-	schemaLoader: (doctype: string) => {
-		// normally this would be configured as a memoized/cached call to a server
-		return doctypes[doctype] // or if doctype is a function [doctype].apply()
+	schemaLoader: async (doctype: string): Promise<Doctype> => {
+		// TODO: normally this would be configured as a memoized/cached call to a server
+		const response = await fetch(`/meta/${doctype}`)
+		const data: SchemaTypes[] = await response.json()
+
+		const doctypeClass: Doctype = doctypes[doctype]
+		doctypeClass.schema = data
+		return doctypeClass
+
+		// TODO: or if doctype is a function [doctype].apply()
 	},
 })
 app.mount('#app')
