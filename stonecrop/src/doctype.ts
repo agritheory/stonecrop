@@ -1,6 +1,6 @@
 import { ComponentOptions } from 'vue'
 
-import { SchemaTypes } from 'types/index'
+import { SchemaTypes } from '@agritheory/aform/types'
 
 export default class Doctype {
 	doctype: string
@@ -10,14 +10,12 @@ export default class Doctype {
 
 	constructor(
 		doctype: string,
-		schema: SchemaTypes[],
 		events: any,
 		hooks: any,
 		component: string | ComponentOptions = undefined,
 		recordsComponent: string | ComponentOptions = undefined
 	) {
 		this.doctype = doctype
-		this.schema = schema
 		this.events = events
 		this.hooks = hooks
 	}
