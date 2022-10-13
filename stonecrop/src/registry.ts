@@ -1,6 +1,6 @@
 import { Router } from 'vue-router'
 
-import { default as DoctypeClass } from '@/doctype'
+import Doctype from '@/doctype'
 import { Schema } from 'types/index'
 
 export default class Registry {
@@ -8,11 +8,9 @@ export default class Registry {
 	name: string
 	router: Router
 	schemaLoader: (doctype: string) => Schema | Promise<Schema>
-	registry: Record<string, DoctypeClass>
+	registry: Record<string, Doctype>
 
 	constructor(router: Router, schemaLoader: (doctype: string) => Schema | Promise<Schema> = undefined) {
-		// type: Vue router, function or undefined
-		// singleton
 		if (Registry._root) {
 			return Registry._root
 		}
@@ -23,16 +21,14 @@ export default class Registry {
 		this.registry = {}
 	}
 
-	loadDoctypeSchema(doctype: DoctypeClass) {
-		// type: Doctype class
+	loadDoctypeSchema(doctype: Doctype) {
 		if (doctype.schemaLoader) {
 			return doctype.schemaLoader()
 		}
 		return this.schemaLoader(doctype.doctype)
 	}
 
-	addDoctype(doctype: DoctypeClass) {
-		// type: Doctype class
+	addDoctype(doctype: Doctype) {
 		if (!(doctype.doctype in Object.keys(this.registry))) {
 			this.registry[doctype.slug] = doctype
 		}

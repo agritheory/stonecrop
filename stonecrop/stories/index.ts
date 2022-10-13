@@ -1,6 +1,8 @@
-import { createApp } from 'vue'
+import { createApp, inject } from 'vue'
 import { RouteRecordRaw } from 'vue-router'
 
+import { SchemaTypes } from '@agritheory/aform/types'
+import { ADate, ATextInput } from '@agritheory/aform'
 import Doctype from '@/doctype'
 import Stonecrop from '@/index'
 import router from '@/router'
@@ -9,7 +11,7 @@ import Home from './components/Home.vue'
 import Records from './components/Records.vue'
 import Dev from './Dev.vue'
 import makeServer from './server'
-import { SchemaTypes } from '@agritheory/aform/types'
+import Registry from '@/registry'
 
 // create mirage server
 makeServer()
@@ -89,6 +91,10 @@ const doctypes = {
 
 const app = createApp(Dev)
 app.use(Stonecrop, {
+	components: {
+		ATextInput: ATextInput,
+		ADate: ADate,
+	},
 	router,
 	schemaLoader: async (doctype: string): Promise<Doctype> => {
 		// TODO: normally this would be configured as a memoized/cached call to a server

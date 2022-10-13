@@ -17,14 +17,15 @@ import { Schema } from 'types/index'
 // const schema = useStonecrop()
 
 const route = useRoute()
-// change this to $registry.registry[$route.currentRoute???]
+const registry = inject<Registry>('$registry')
+
+// TODO: change this to $registry.registry[$route.currentRoute???]
 const doctypeSlug = route.params.records.toString()
 const data = route.params.recordData
 
 let schema = ref<Schema>({ doctype: doctypeSlug, schema: [] })
 onBeforeMount(async () => {
 	// get schema
-	const registry = inject<Registry>('$registry')
 	const schemaDetails = await registry.schemaLoader(doctypeSlug)
 	schema.value = markRaw(schemaDetails)
 })

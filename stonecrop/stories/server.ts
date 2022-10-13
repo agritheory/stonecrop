@@ -1,7 +1,5 @@
 import { createServer, Model } from 'miragejs'
 
-import { ADate, ATextInput } from '@agritheory/aform'
-
 export default function makeServer() {
 	const server = createServer({
 		models: {
@@ -18,22 +16,21 @@ export default function makeServer() {
 						name: 'first_name',
 						fieldname: 'first_name',
 						fieldtype: 'Data',
-						// TODO: figure out why the component isn't rendering
-						component: ATextInput,
+						component: 'ATextInput',
 						label: 'First Name',
 					},
 					{
 						name: 'last_name',
 						fieldname: 'last_name',
 						fieldtype: 'Data',
-						component: ATextInput,
+						component: 'ATextInput',
 						label: 'Last Name',
 					},
 					{
 						name: 'phone',
 						fieldname: 'phone',
 						fieldtype: 'Phone',
-						component: ATextInput,
+						component: 'ATextInput',
 						label: 'Phone',
 						mask: "(locale) => { if (locale === 'en-US') { return '(###) ###-####' } else if (locale === 'en-IN') { return '####-######'} }",
 					},
@@ -48,14 +45,14 @@ export default function makeServer() {
 						name: 'subject',
 						fieldname: 'subject',
 						fieldtype: 'Data',
-						component: ATextInput,
+						component: 'ATextInput',
 						label: 'Subject',
 					},
 					{
 						name: 'date',
 						fieldname: 'date',
 						fieldtype: 'Date',
-						component: ADate,
+						component: 'ADate',
 						label: 'Date',
 					},
 				],

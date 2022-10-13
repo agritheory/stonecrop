@@ -17,6 +17,7 @@ import Registry from '@/registry'
 // last_used_view_type in application state
 
 const route = useRoute()
+const registry = inject<Registry>('$registry')
 
 // get data
 const records = reactive({
@@ -27,9 +28,8 @@ const records = reactive({
 
 onBeforeMount(async () => {
 	// get schema
-	const registry = inject<Registry>('$registry')
-	const doctypeSlug = route.params.records
-	const schemaDetails = await registry.schemaLoader(doctypeSlug.toString())
+	const doctypeSlug = route.params.records.toString()
+	const schemaDetails = await registry.schemaLoader(doctypeSlug)
 	records.columns = schemaDetails.schema
 })
 </script>
