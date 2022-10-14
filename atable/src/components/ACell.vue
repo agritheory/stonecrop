@@ -13,11 +13,7 @@
 		@blur="onChange"
 		@input="onChange"
 		@click="handleInput"
-		@mousedown="handleInput"
-		@keydown.up="handleUpKey"
-		@keydown.left="handleUpKey"
-		@keydown.down="handleDownKey"
-		@keydown.right="handleDownKey">
+		@mousedown="handleInput">
 		{{ displayValue }}
 	</td>
 </template>
@@ -33,7 +29,7 @@ const props = withDefaults(
 		colIndex: number
 		rowIndex: number
 		tableid: string
-		addNavigation?: boolean
+		addNavigation?: { type: [boolean, object] }
 		tabIndex?: number
 		clickHandler?: (event: MouseEvent) => void
 	}>(),
@@ -67,14 +63,6 @@ const displayValue = computed(() => {
 })
 
 const handleInput = (event: MouseEvent) => {
-	if (props.tabIndex == -1 && !props.contenteditable) {
-		event.preventDefault()
-		const target = event.target as HTMLTableCellElement
-		const $row = target.parentElement as HTMLTableRowElement
-		$row.focus()
-		return
-	}
-
 	// Not sure if click handler is needed anymore?
 	if (props.clickHandler) {
 		props.clickHandler(event)
@@ -122,19 +110,28 @@ const handleDownKey = e => {
 }
 
 if (props.addNavigation) {
+	let handlers = {
+		...defaultKeypressHandlers,
+		...{
+			'keydown.f2': handleInput,
+			'keydown.alt.up': handleInput,
+			'keydown.alt.down': handleInput,
+			'keydown.alt.left': handleInput,
+			'keydown.alt.right': handleInput,
+		},
+	}
+
+	if (typeof props.addNavigation === 'object') {
+		handlers = {
+			...handlers,
+			...props.addNavigation,
+		}
+	}
+
 	useKeyboardNav([
 		{
 			selectors: cell,
-			handlers: {
-				...defaultKeypressHandlers,
-				...{
-					'keydown.f2': handleInput,
-					'keydown.alt.up': handleInput,
-					'keydown.alt.down': handleInput,
-					'keydown.alt.left': handleInput,
-					'keydown.alt.right': handleInput,
-				},
-			},
+			handlers: handlers,
 		},
 	])
 }

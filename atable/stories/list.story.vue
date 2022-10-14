@@ -9,15 +9,16 @@
 					:row="row"
 					:rowIndex="rowIndex"
 					:tableid="data.id"
-					:tabIndex="0">
+					:tabIndex="0"
+					:addNavigation="rowNav">
 					<ACell
 						v-for="(col, colIndex) in data.columns"
 						:key="colIndex"
 						:tableid="data.id"
 						:col="col"
 						spellcheck="false"
-						:tabIndex="-1"
-						:addNavigation="false"
+						:tabIndex="0"
+						:addNavigation="rowNav"
 						:contenteditable="false"
 						:rowIndex="rowIndex"
 						:colIndex="colIndex + (data.zeroColumn ? 0 : -1)"
@@ -97,13 +98,32 @@ const http_logs = ref({
 	config: { numberedRows: true, treeView: false },
 })
 
-// const handleClick = (event: PointerEvent) => {
-// 	const target = event.target as HTMLTableCellElement
-// 	const $row = target.parentElement as HTMLTableRowElement
-// 	$row.focus()
-// }
+let rowNav = {
+	'keydown.up': e => {
+		let target = e.target instanceof HTMLTableCellElement ? e.target.parentElement : e.target
+		const $row = target.previousElementSibling
+			? (target.previousElementSibling as HTMLTableRowElement)
+			: (target as HTMLTableRowElement)
+		$row.focus()
+		return true
+	},
+	'keydown.down': e => {
+		let target = e.target instanceof HTMLTableCellElement ? e.target.parentElement : e.target
+		const $row = target.nextElementSibling
+			? (target.nextElementSibling as HTMLTableRowElement)
+			: (target as HTMLTableRowElement)
+		$row.focus()
+		return true
+	},
+}
 
-useKeyboardNav([{ selectors: rows }])
+rowNav['keydown.alt.up'] = rowNav['keydown.up']
+rowNav['keydown.alt.down'] = rowNav['keydown.down']
+
+rowNav['keydown.shift.enter'] = rowNav['keydown.up']
+rowNav['keydown.enter'] = rowNav['keydown.down']
+
+//useKeyboardNav([{ selectors: rows }])
 </script>
 
 <style>

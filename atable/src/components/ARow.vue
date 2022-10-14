@@ -1,5 +1,5 @@
 <template>
-	<tr :tabindex="tabIndex" v-show="rowVisible()">
+	<tr ref="rowEl" :tabindex="tabIndex" v-show="rowVisible()">
 		<td v-if="tableData.config.numberedRows" id="row-index" :tabIndex="-1" :style="numberedRowStyle">
 			{{ rowIndex + 1 }}
 		</td>
@@ -18,7 +18,8 @@
 
 <script setup lang="ts">
 import { TableRow } from 'types'
-import { CSSProperties, inject } from 'vue'
+import { CSSProperties, inject, ref } from 'vue'
+import { defaultKeypressHandlers, useKeyboardNav } from '@agritheory/utilities'
 
 import TableDataStore from '.'
 
@@ -28,6 +29,7 @@ const props = withDefaults(
 		rowIndex: number
 		tableid: string
 		tabIndex?: number
+		addNavigation?: object
 	}>(),
 	{
 		tabIndex: -1,
@@ -35,6 +37,7 @@ const props = withDefaults(
 )
 
 const tableData = inject<TableDataStore>(props.tableid)
+const rowEl = ref<HTMLTableRowElement>(null)
 
 const numberedRowStyle: CSSProperties = {
 	backgroundColor: 'var(--brand-color)',
@@ -90,5 +93,14 @@ const rowVisible = () => {
 
 const toggleRowExpand = (rowIndex: number) => {
 	tableData.toggleRowExpand(rowIndex)
+}
+
+if (props.addNavigation) {
+	useKeyboardNav([
+		{
+			selectors: rowEl,
+			handlers: props.addNavigation,
+		},
+	])
 }
 </script>

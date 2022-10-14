@@ -11,6 +11,11 @@ export default defineConfig({
 			'@': resolve(projectRootDir, 'src'),
 		},
 	},
+	server: {
+		fs: {
+			allow: ['..'],
+		},
+	},
 	build: {
 		sourcemap: true,
 		lib: {
