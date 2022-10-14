@@ -1,6 +1,11 @@
 # Change Log - @agritheory/aform
 
-This log was last generated on Thu, 29 Sep 2022 12:25:57 GMT and should not be manually modified.
+This log was last generated on Fri, 14 Oct 2022 23:32:04 GMT and should not be manually modified.
+
+## 0.1.2
+Fri, 14 Oct 2022 23:32:04 GMT
+
+_Version update only_
 
 ## 0.1.1
 Thu, 29 Sep 2022 12:25:57 GMT

@@ -2,6 +2,25 @@
   "name": "@agritheory/atable",
   "entries": [
     {
+      "version": "0.2.0",
+      "tag": "@agritheory/atable_v0.2.0",
+      "date": "Fri, 14 Oct 2022 23:32:04 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Add story for list view tables",
+            "author": "Tyler Matteson <tyler@agritheory.com>",
+            "commit": "199fb25cbfbe1dacd17be1f2b5d95e147f3d247d"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@agritheory/utilities\" to `0.2.0`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.1.1",
       "tag": "@agritheory/atable_v0.1.1",
       "date": "Thu, 29 Sep 2022 12:25:57 GMT",
