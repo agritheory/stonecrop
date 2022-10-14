@@ -1,7 +1,6 @@
-import { createApp, inject } from 'vue'
+import { createApp } from 'vue'
 import { RouteRecordRaw } from 'vue-router'
 
-import { SchemaTypes } from '@agritheory/aform/types'
 import { ADate, ATextInput } from '@agritheory/aform'
 import Doctype from '@/doctype'
 import Stonecrop from '@/index'
@@ -11,49 +10,10 @@ import Home from './components/Home.vue'
 import Records from './components/Records.vue'
 import Dev from './Dev.vue'
 import makeServer from './server'
-import Registry from '@/registry'
+import { Meta } from 'types/index'
 
 // create mirage server
 makeServer()
-
-// to-do events
-// load + some side effect
-// save
-
-// setup doctype schemas
-const toDo = new Doctype(
-	'To Do',
-	undefined, // FSM
-	{
-		load: [
-			() => {
-				console.log('load event')
-			},
-			() => {
-				console.log('load event side effect')
-			},
-		],
-		save: [
-			() => {
-				console.log('save event')
-			},
-			() => {
-				console.log('after save event')
-			},
-		],
-		delete: [
-			() => {
-				console.log('delete event')
-			},
-			() => {
-				console.log('after delete event')
-			},
-		],
-	}
-)
-
-// transitions: load, report, assign, triage, resolve, archive
-const issue = new Doctype('Issue', undefined, [1, 2, 3])
 
 // setup router
 const routes: RouteRecordRaw[] = [
@@ -83,29 +43,21 @@ router.beforeEach(async (to, from, next) => {
 	next()
 })
 
-// setup app with schema loader
-const doctypes = {
-	'to-do': toDo,
-	issue,
-}
-
 const app = createApp(Dev)
 app.use(Stonecrop, {
-	components: {
-		ATextInput: ATextInput,
-		ADate: ADate,
-	},
 	router,
+	components: {
+		ATextInput,
+		ADate,
+	},
+	// TODO: or if doctype is a function [doctype].apply()
 	schemaLoader: async (doctype: string): Promise<Doctype> => {
 		// TODO: normally this would be configured as a memoized/cached call to a server
 		const response = await fetch(`/meta/${doctype}`)
-		const data: SchemaTypes[] = await response.json()
-
-		const doctypeClass: Doctype = doctypes[doctype]
-		doctypeClass.schema = data
+		const data: Meta = await response.json()
+		const doctypeClass = new Doctype(doctype, data.events, data.hooks)
+		doctypeClass.schema = data.schema
 		return doctypeClass
-
-		// TODO: or if doctype is a function [doctype].apply()
 	},
 })
 app.mount('#app')

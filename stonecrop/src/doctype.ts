@@ -1,17 +1,17 @@
 import { ComponentOptions } from 'vue'
 
-import { SchemaTypes } from '@agritheory/aform/types'
+import { Meta } from 'types/index'
 
 export default class Doctype {
 	doctype: string
-	schema: SchemaTypes[]
-	events: any // TODO: new Machine()
-	hooks: any
+	schema: Meta['schema']
+	events: Meta['events']
+	hooks: Meta['hooks']
 
 	constructor(
 		doctype: string,
-		events: any,
-		hooks: any,
+		events: Meta['events'],
+		hooks: Meta['hooks'],
 		component: string | ComponentOptions = undefined,
 		recordsComponent: string | ComponentOptions = undefined
 	) {

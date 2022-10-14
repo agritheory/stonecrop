@@ -7,8 +7,8 @@ export default class Registry {
 	static _root: any
 	name: string
 	router: Router
-	schemaLoader: (doctype: string) => Schema | Promise<Schema>
 	registry: Record<string, Doctype>
+	schemaLoader: (doctype: string) => Schema | Promise<Schema>
 
 	constructor(router: Router, schemaLoader: (doctype: string) => Schema | Promise<Schema> = undefined) {
 		if (Registry._root) {
@@ -17,8 +17,8 @@ export default class Registry {
 		Registry._root = this
 		this.name = 'Registry'
 		this.router = router
-		this.schemaLoader = schemaLoader
 		this.registry = {}
+		this.schemaLoader = schemaLoader
 	}
 
 	loadDoctypeSchema(doctype: Doctype) {
