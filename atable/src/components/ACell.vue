@@ -12,7 +12,8 @@
 		@paste="onChange"
 		@blur="onChange"
 		@input="onChange"
-		@click="handleInput">
+		@click="handleInput"
+		@mousedown="handleInput">
 		{{ displayValue }}
 	</td>
 </template>
@@ -28,7 +29,7 @@ const props = withDefaults(
 		colIndex: number
 		rowIndex: number
 		tableid: string
-		addNavigation?: boolean
+		addNavigation?: { type: [boolean, object] }
 		tabIndex?: number
 		clickHandler?: (event: MouseEvent) => void
 	}>(),
@@ -62,6 +63,7 @@ const displayValue = computed(() => {
 })
 
 const handleInput = (event: MouseEvent) => {
+	// Not sure if click handler is needed anymore?
 	if (props.clickHandler) {
 		props.clickHandler(event)
 		return
@@ -85,20 +87,51 @@ const handleInput = (event: MouseEvent) => {
 	}
 }
 
+const handleUpKey = e => {
+	if (props.tabIndex == -1) {
+		const target = e.target as HTMLTableCellElement
+		const $row = target.parentElement?.previousElementSibling
+			? (target.parentElement?.previousElementSibling as HTMLTableRowElement)
+			: (target.parentElement as HTMLTableRowElement)
+		$row.focus()
+	}
+	return true
+}
+
+const handleDownKey = e => {
+	if (props.tabIndex == -1) {
+		const target = e.target as HTMLTableCellElement
+		const $row = target.parentElement?.nextElementSibling
+			? (target.parentElement?.nextElementSibling as HTMLTableRowElement)
+			: (target.parentElement as HTMLTableRowElement)
+		$row.focus()
+	}
+	return true
+}
+
 if (props.addNavigation) {
+	let handlers = {
+		...defaultKeypressHandlers,
+		...{
+			'keydown.f2': handleInput,
+			'keydown.alt.up': handleInput,
+			'keydown.alt.down': handleInput,
+			'keydown.alt.left': handleInput,
+			'keydown.alt.right': handleInput,
+		},
+	}
+
+	if (typeof props.addNavigation === 'object') {
+		handlers = {
+			...handlers,
+			...props.addNavigation,
+		}
+	}
+
 	useKeyboardNav([
 		{
 			selectors: cell,
-			handlers: {
-				...defaultKeypressHandlers,
-				...{
-					'keydown.f2': handleInput,
-					'keydown.alt.up': handleInput,
-					'keydown.alt.down': handleInput,
-					'keydown.alt.left': handleInput,
-					'keydown.alt.right': handleInput,
-				},
-			},
+			handlers: handlers,
 		},
 	])
 }

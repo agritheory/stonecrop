@@ -9,17 +9,17 @@
 					:row="row"
 					:rowIndex="rowIndex"
 					:tableid="data.id"
-					:tabIndex="0">
+					:tabIndex="0"
+					:addNavigation="rowNav">
 					<ACell
 						v-for="(col, colIndex) in data.columns"
 						:key="colIndex"
 						:tableid="data.id"
 						:col="col"
 						spellcheck="false"
-						:tabIndex="-1"
-						:addNavigation="false"
+						:tabIndex="0"
+						:addNavigation="rowNav"
 						:contenteditable="false"
-						:clickHandler="handleClick"
 						:rowIndex="rowIndex"
 						:colIndex="colIndex + (data.zeroColumn ? 0 : -1)"
 						:style="{
@@ -39,7 +39,7 @@ import { ref } from 'vue'
 import { useKeyboardNav } from '@agritheory/utilities'
 
 import { TableColumn } from 'types'
-import data from '@/assets/sample_data/http_logs.json'
+import data from './sample_data/http_logs.json'
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import TableDataStore from '@/components'
 
@@ -98,18 +98,37 @@ const http_logs = ref({
 	config: { numberedRows: true, treeView: false },
 })
 
-const handleClick = (event: PointerEvent) => {
-	const target = event.target as HTMLTableCellElement
-	const $row = target.parentElement as HTMLTableRowElement
-	$row.focus()
+let rowNav = {
+	'keydown.up': e => {
+		let target = e.target instanceof HTMLTableCellElement ? e.target.parentElement : e.target
+		const $row = target.previousElementSibling
+			? (target.previousElementSibling as HTMLTableRowElement)
+			: (target as HTMLTableRowElement)
+		$row.focus()
+		return true
+	},
+	'keydown.down': e => {
+		let target = e.target instanceof HTMLTableCellElement ? e.target.parentElement : e.target
+		const $row = target.nextElementSibling
+			? (target.nextElementSibling as HTMLTableRowElement)
+			: (target as HTMLTableRowElement)
+		$row.focus()
+		return true
+	},
 }
 
-useKeyboardNav([{ selectors: rows }])
+rowNav['keydown.alt.up'] = rowNav['keydown.up']
+rowNav['keydown.alt.down'] = rowNav['keydown.down']
+
+rowNav['keydown.shift.enter'] = rowNav['keydown.up']
+rowNav['keydown.enter'] = rowNav['keydown.down']
+
+//useKeyboardNav([{ selectors: rows }])
 </script>
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap');
-@import '@/assets/atable.css';
+@import '@/themes/atable.css';
 
 tr:focus {
 	background-color: lightblue;

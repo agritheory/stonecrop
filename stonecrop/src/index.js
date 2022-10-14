@@ -1,21 +1,14 @@
-import { createOvermind } from 'overmind'
-import { createPlugin } from 'overmind-vue'
-import { config } from './overmind'
-import { router } from './routes.js'
-import StonecropConfigLoader from './configLoader'
+import router from './router.js'
+import Registry from './registry.js'
+// import { useStonecrop } from './composable.js'
 
-// let bloom = new Bloom()
+// TODO: import { pinia } from "./store.js"
 
-function install(app, options) {
-	const overmind = createOvermind(config)
-	const OvermindPlugin = createPlugin(overmind)
-	app.use(OvermindPlugin)
-	app.use(router)
-	const config = new StonecropConfigLoader()
-	// app.use(bloom)
-	// app.use(caulis)
+const Stonecrop = {
+	install: (app, options) => {
+		app.use(router)
+		app.provide('$registry', new Registry(options.router || router, options.schemaLoader))
+	},
 }
 
-export default {
-	install,
-}
+export default Stonecrop
