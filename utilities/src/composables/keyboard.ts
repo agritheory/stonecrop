@@ -31,8 +31,13 @@ const _getUpCell = (element: HTMLElement): HTMLElement | undefined => {
 				$upCell = $prevCell
 			}
 		}
+	} else if (element instanceof HTMLTableRowElement) {
+		const $prevRow = element.previousElementSibling as HTMLTableRowElement
+		if ($prevRow) {
+			$upCell = $prevRow
+		}
 	} else {
-		// TODO: handle other contexts
+		// handle other contexts
 	}
 	if ($upCell && (!isFocusable($upCell) || !isVisible($upCell))) {
 		return _getUpCell($upCell)
@@ -52,8 +57,16 @@ const getTopCell = (event: KeyboardEvent) => {
 				$topCell = $navCell
 			}
 		}
+	} else if ($target instanceof HTMLTableRowElement) {
+		const $table = $target.parentElement as HTMLTableElement
+		if ($table) {
+			const $firstRow = $table.firstElementChild as HTMLTableRowElement
+			if ($firstRow) {
+				$topCell = $firstRow
+			}
+		}
 	} else {
-		// TODO: handle other contexts
+		// handle other contexts
 	}
 	if ($topCell && (!isFocusable($topCell) || !isVisible($topCell))) {
 		return _getDownCell($topCell)
@@ -77,8 +90,13 @@ const _getDownCell = (element: HTMLElement): HTMLElement | undefined => {
 				$downCell = $nextCell
 			}
 		}
+	} else if (element instanceof HTMLTableRowElement) {
+		const $nextRow = element.nextElementSibling as HTMLTableRowElement
+		if ($nextRow) {
+			$downCell = $nextRow
+		}
 	} else {
-		// TODO: handle other contexts
+		// handle other contexts
 	}
 	if ($downCell && (!isFocusable($downCell) || !isVisible($downCell))) {
 		return _getDownCell($downCell)
@@ -98,8 +116,16 @@ const getBottomCell = (event: KeyboardEvent) => {
 				$bottomCell = $navCell
 			}
 		}
+	} else if ($target instanceof HTMLTableRowElement) {
+		const $table = $target.parentElement as HTMLTableElement
+		if ($table) {
+			const $lastRow = $table.lastElementChild as HTMLTableRowElement
+			if ($lastRow) {
+				$bottomCell = $lastRow
+			}
+		}
 	} else {
-		// TODO: handle other contexts
+		// handle other contexts
 	}
 	if ($bottomCell && (!isFocusable($bottomCell) || !isVisible($bottomCell))) {
 		return _getUpCell($bottomCell)
@@ -259,7 +285,7 @@ export const defaultKeypressHandlers: KeypressHandlers = {
 				$downCell.focus()
 			}
 		} else {
-			// TODO: handle other contexts
+			// handle other contexts
 		}
 	},
 	'keydown.shift.enter': (event: KeyboardEvent) => {
@@ -272,7 +298,7 @@ export const defaultKeypressHandlers: KeypressHandlers = {
 				$upCell.focus()
 			}
 		} else {
-			// TODO: handle other contexts
+			// handle other contexts
 		}
 	},
 	'keydown.home': (event: KeyboardEvent) => {
