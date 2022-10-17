@@ -1,3 +1,4 @@
+import { List, Map } from 'immutable'
 import { createApp } from 'vue'
 import { RouteRecordRaw } from 'vue-router'
 
@@ -10,7 +11,7 @@ import Home from './components/Home.vue'
 import Records from './components/Records.vue'
 import Dev from './Dev.vue'
 import makeServer from './server'
-import { Meta } from 'types/index'
+import { ImmutableRegistry, MutableRegistry } from 'types/index'
 
 // create mirage server
 makeServer()
@@ -51,13 +52,26 @@ app.use(Stonecrop, {
 		ADate,
 	},
 	// TODO: or if doctype is a function [doctype].apply()
-	schemaLoader: async (doctype: string): Promise<Doctype> => {
+	schemaLoader: async (doctype: string) => {
 		// TODO: normally this would be configured as a memoized/cached call to a server
 		const response = await fetch(`/meta/${doctype}`)
-		const data: Meta = await response.json()
-		const doctypeClass = new Doctype(doctype, data.events, data.hooks)
-		doctypeClass.schema = data.schema
-		return doctypeClass
+		const data: MutableRegistry = await response.json()
+
+		let schema: ImmutableRegistry['schema']
+		if (Array.isArray(data.schema)) {
+			schema = List(data.schema)
+		} else {
+			schema = List(await data.schema())
+		}
+
+		const registry: ImmutableRegistry = {
+			schema,
+			// TODO: would we need to process server's events response into a MachineConfig-like object?
+			events: data.events,
+			hooks: Map(data.hooks),
+		}
+
+		return new Doctype(doctype, registry.schema, registry.events, registry.hooks)
 	},
 })
 app.mount('#app')

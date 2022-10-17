@@ -1,17 +1,25 @@
+import { List, Map } from 'immutable'
 import { ComponentOptions } from 'vue'
 import { Router } from 'vue-router'
+import { MachineConfig } from 'xstate'
 
 import { SchemaTypes } from '@agritheory/aform/types'
 
-export type Meta = {
+export type ImmutableRegistry = Readonly<{
+	schema: List<SchemaTypes> | (() => List<SchemaTypes> | Promise<List<SchemaTypes>>)
+	events: MachineConfig<any, any, any>
+	hooks: Map<string, any>
+}>
+
+export type MutableRegistry = {
 	schema: SchemaTypes[] | (() => SchemaTypes[] | Promise<SchemaTypes[]>)
-	events: any // TODO: new Machine()
+	events: MachineConfig<any, any, any>
 	hooks: Record<string, any>
 }
 
 export type Schema = {
 	doctype: string
-	schema: SchemaTypes[]
+	schema: List<SchemaTypes>
 }
 
 export type InstallOptions = {

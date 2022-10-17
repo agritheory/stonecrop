@@ -30,6 +30,6 @@ onBeforeMount(async () => {
 	// get schema
 	const doctypeSlug = route.params.records.toString()
 	const schemaDetails = await registry.schemaLoader(doctypeSlug)
-	records.columns = schemaDetails.schema
+	records.columns = schemaDetails.schema.toArray()
 })
 </script>

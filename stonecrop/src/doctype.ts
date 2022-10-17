@@ -1,21 +1,23 @@
 import { ComponentOptions } from 'vue'
 
-import { Meta } from 'types/index'
+import { ImmutableRegistry } from 'types/index'
 
 export default class Doctype {
 	doctype: string
-	schema: Meta['schema']
-	events: Meta['events']
-	hooks: Meta['hooks']
+	schema: ImmutableRegistry['schema']
+	events: ImmutableRegistry['events']
+	hooks: ImmutableRegistry['hooks']
 
 	constructor(
 		doctype: string,
-		events: Meta['events'],
-		hooks: Meta['hooks'],
+		schema: ImmutableRegistry['schema'],
+		events: ImmutableRegistry['events'],
+		hooks: ImmutableRegistry['hooks'],
 		component: string | ComponentOptions = undefined,
 		recordsComponent: string | ComponentOptions = undefined
 	) {
 		this.doctype = doctype
+		this.schema = schema
 		this.events = events
 		this.hooks = hooks
 	}

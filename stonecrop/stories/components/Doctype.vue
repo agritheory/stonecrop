@@ -1,11 +1,12 @@
 <template>
 	<div>
 		<h3>{{ schema.doctype }}</h3>
-		<AForm :key="schema" class="aform-main" :schema="schema.schema" :data="data" />
+		<AForm :key="schema" class="aform-main" :schema="schema.schema.toArray()" :data="data" />
 	</div>
 </template>
 
 <script setup lang="ts">
+import { List } from 'immutable'
 import { inject, markRaw, onBeforeMount, ref } from 'vue'
 import { useRoute } from 'vue-router'
 
@@ -23,7 +24,7 @@ const registry = inject<Registry>('$registry')
 const doctypeSlug = route.params.records.toString()
 const data = route.params.recordData
 
-let schema = ref<Schema>({ doctype: doctypeSlug, schema: [] })
+let schema = ref<Schema>({ doctype: doctypeSlug, schema: List() })
 onBeforeMount(async () => {
 	// get schema
 	const schemaDetails = await registry.schemaLoader(doctypeSlug)
