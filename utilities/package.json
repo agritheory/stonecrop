@@ -1,6 +1,6 @@
 {
 	"name": "@agritheory/utilities",
-	"version": "0.1.1",
+	"version": "0.2.0",
 	"type": "module",
 	"main": "dist/utilities.js",
 	"module": "dist/utilities.js",
@@ -43,6 +43,7 @@
 	},
 	"exports": {
 		".": {
+			"types": "./types/index.ts",
 			"import": "./dist/utilities.js",
 			"require": "./dist/utilities.umd.cjs"
 		}

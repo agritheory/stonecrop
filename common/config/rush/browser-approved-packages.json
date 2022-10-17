@@ -48,7 +48,7 @@
     },
     {
       "name": "@vueuse/core",
-      "allowedCategories": [ "utilities" ]
+      "allowedCategories": [ "prototype", "utilities" ]
     },
     {
       "name": "cypress",
@@ -71,6 +71,10 @@
       "allowedCategories": [ "prototype", "utilities" ]
     },
     {
+      "name": "immutable",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
       "name": "localforage",
       "allowedCategories": [ "prototype" ]
     },
@@ -88,6 +92,22 @@
     },
     {
       "name": "overmind-vue",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "pinia",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "pinia-shared-state",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "pinia-undo",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "pinia-xstate",
       "allowedCategories": [ "prototype" ]
     },
     {
@@ -148,6 +168,10 @@
     },
     {
       "name": "vue-template-compiler",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "xstate",
       "allowedCategories": [ "prototype" ]
     }
   ]

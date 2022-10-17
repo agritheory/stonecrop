@@ -1,35 +1,53 @@
 {
 	"name": "@agritheory/stonecrop",
 	"version": "0.1.0",
+	"type": "module",
 	"description": "schema helper",
-	"main": "index.js",
+	"main": "dist/stonecrop.js",
+	"module": "dist/stonecrop.js",
+	"umd": "dist/stonecrop.umd.cjs",
+	"types": "src/index",
+	"files": [
+		"dist/*",
+		"src/**/*.vue"
+	],
 	"license": "MIT",
+	"scripts": {
+		"dev": "vite serve stories/ -c vite.config.ts",
+		"build": "vite build",
+		"preview": "vite preview",
+		"lint": "eslint . --ext .ts,.vue"
+	},
 	"dependencies": {
-		"overmind": "^28.0.1",
-		"overmind-vue": "^28.0.3",
-		"vue": "^3.2.37",
+		"@vueuse/core": "^9.2.0",
+		"immutable": "^4.1.0",
+		"pinia-shared-state": "^0.2.8",
+		"pinia-undo": "^0.1.4",
+		"pinia-xstate": "~1.0.7",
+		"pinia": "^2.0.18",
 		"vue-router": "^4",
-		"unstorage": "^0.2.7"
+		"vue": "^3.2.37",
+		"xstate": "~4.33.6"
 	},
 	"devDependencies": {
-		"@agritheory/aform": "workspace:^0.1.1",
-		"@agritheory/atable": "workspace:^0.1.1",
-		"@histoire/plugin-vue": "^0.10.2",
+		"@agritheory/aform": "workspace:^0.1.2",
+		"@agritheory/atable": "workspace:^0.2.0",
+		"@miragejs/graphql": "^0.1.13",
+		"@typescript-eslint/eslint-plugin": "^5.33.0",
+		"@typescript-eslint/parser": "^5.33.0",
 		"@vitejs/plugin-vue": "^3.0.1",
-		"cypress": "^10.8.0",
-		"histoire": "^0.10.2",
-		"vite": "^3.0.5",
-		"vue-router": "^4",
-		"vue-template-compiler": "^2.6.14"
-	},
-	"scripts": {
-		"dev": "vite serve dev/ -c dev/vite.config.js -d",
-		"build": "vite build dev/ -c dev/vite.config.js -d --emptyOutDir true"
+		"eslint-config-prettier": "^8.5.0",
+		"eslint-plugin-vue": "^9.3.0",
+		"eslint": "^8.22.0",
+		"miragejs": "^0.1.45",
+		"typescript": "^4.7.4",
+		"vite": "^3.0.5"
 	},
 	"exports": {
 		".": {
-			"import": "./dist/stonecrop.mjs",
-			"require": "./dist/stonecrop.umd.js"
+			"types": "./types/index.ts",
+			"import": "./dist/stonecrop.js",
+			"require": "./dist/stonecrop.umd.cjs"
 		}
 	}
 }

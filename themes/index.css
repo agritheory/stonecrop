@@ -1,0 +1,63 @@
+/* :root, [data-theme="light"] {
+
+} */
+
+@import url('https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap');
+
+:root {
+	font-family: Arimo, Arial, sans-serif;
+	--primary-color: hsl(43, 4%, 75%);
+	--primary-text-color: hsl(43, 4%, 15%);
+	--font-size: 11pt;
+	--brand-color: hsl(43, 4%, 75%);
+	--header-border-color: red;
+	--header-text-color: hsl(43, 4%, 15%);
+	--row-color-zebra-light: #eeeeee;
+	--row-color-zebra-dark: #dddddd;
+	--cell-border-color: hsl(43, 4%, 15%);
+	--cell-text-color: #3a3c41;
+	--focus-cell-background: #ffffff;
+	--focus-cell-outline: #827553;
+	--active-cell-background: #ffffff;
+	--active-cell-outline: #e6a92d;
+	--required-border: #e63c28;
+	--table-font-size: 11pt;
+	--atable-font-family: 'Arimo', sans-serif;
+	/* #a5460d
+	#3a3c41
+	#c3b9a0
+	#e6a92d
+	#4a1539
+	#3c5014
+	#f7f7e9
+	#e63c28
+	#827553 */
+}
+
+.aform-primary-action {
+	font-size: 100%;
+	text-align: center;
+	min-height: 2em;
+	padding: 0.25rem 1rem 0.25rem 1rem;
+	border: 1px solid var(--primary-color);
+	color: var(--primary-text-color);
+	background-color: var(--primary-color);
+	outline: 2px solid var(--primary-text-color);
+	transition: outline-offset 200ms ease;
+	font-size: var(--font-size);
+	margin: 0.5ch;
+}
+
+.aform-primary-action:hover,
+.aform-primary-action:active {
+	outline: 2px solid var(--primary-text-color);
+	outline-offset: -4px;
+	transition: outline-offset 200ms ease;
+}
+
+.atable {
+	font-family: var(--atable-font-family);
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	font-size: var(--table-font-size);
+}

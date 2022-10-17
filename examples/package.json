@@ -6,13 +6,13 @@
 	"main": "index.js",
 	"license": "MIT",
 	"dependencies": {
-		"@agritheory/aform": "workspace:^0.1.1",
-		"@agritheory/atable": "workspace:^0.1.1",
+		"@agritheory/aform": "workspace:^0.1.2",
+		"@agritheory/atable": "workspace:^0.2.0",
 		"@agritheory/desktop": "workspace:^0.1.0",
 		"@agritheory/stonecrop": "workspace:^0.1.0",
 		"@miragejs/graphql": "^0.1.13",
 		"@vitejs/plugin-vue": "^3.0.1",
-		"miragejs": "^0.1.42",
+		"miragejs": "^0.1.45",
 		"uuid": "^9.0.0",
 		"vite": "^3.0.5",
 		"vue": "^3.2.37"

@@ -2,6 +2,20 @@
   "name": "@agritheory/utilities",
   "entries": [
     {
+      "version": "0.2.0",
+      "tag": "@agritheory/utilities_v0.2.0",
+      "date": "Fri, 14 Oct 2022 23:32:04 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Add row context for keyboard navigation",
+            "author": "Tyler Matteson <tyler@agritheory.com>",
+            "commit": "199fb25cbfbe1dacd17be1f2b5d95e147f3d247d"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.1.1",
       "tag": "@agritheory/utilities_v0.1.1",
       "date": "Thu, 29 Sep 2022 12:25:57 GMT",

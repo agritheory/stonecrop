@@ -1,6 +1,6 @@
 {
 	"name": "@agritheory/atable",
-	"version": "0.1.1",
+	"version": "0.2.0",
 	"type": "module",
 	"main": "dist/atable.js",
 	"module": "dist/atable.js",
@@ -49,6 +49,7 @@
 	},
 	"exports": {
 		".": {
+			"types": "./types/index.ts",
 			"import": "./dist/atable.js",
 			"require": "./dist/atable.umd.cjs"
 		}

@@ -1,47 +1,53 @@
 <template>
 	<table class="atable">
-		<slot name="tableheader">
+		<slot name="header" :data="tableData">
 			<ATableHeader :columns="tableData.columns" :config="tableData.config" :tableid="tableData.id" />
 		</slot>
+
 		<tbody>
-			<ARow
-				v-for="(row, rowIndex) in tableData.rows"
-				:key="row.id || v4()"
-				:row="row"
-				:rowIndex="rowIndex"
-				:tableid="tableData.id">
-				<ACell
-					v-for="(col, colIndex) in tableData.columns"
-					:key="colIndex"
-					:tableid="tableData.id"
-					:col="col"
-					spellcheck="false"
+			<slot name="body" :data="tableData">
+				<ARow
+					v-for="(row, rowIndex) in tableData.rows"
+					:key="row.id || v4()"
+					:row="row"
 					:rowIndex="rowIndex"
-					:colIndex="colIndex + (tableData.zeroColumn ? 0 : -1)"
-					:style="{
-						textAlign: col?.align?.toLowerCase() || 'center',
-						minWidth: col?.width || '40ch',
-					}" />
-			</ARow>
+					:tableid="tableData.id">
+					<ACell
+						v-for="(col, colIndex) in tableData.columns"
+						:key="colIndex"
+						:tableid="tableData.id"
+						:col="col"
+						spellcheck="false"
+						:rowIndex="rowIndex"
+						:colIndex="colIndex + (tableData.zeroColumn ? 0 : -1)"
+						:style="{
+							textAlign: col?.align?.toLowerCase() || 'center',
+							minWidth: col?.width || '40ch',
+						}" />
+				</ARow>
+			</slot>
 		</tbody>
-		<slot name="footer" />
-		<ATableModal
-			:colIndex="tableData.modal.colIndex"
-			:rowIndex="tableData.modal.rowIndex"
-			:tableid="tableData.id"
-			v-show="tableData.modal.visible"
-			:style="{
-				left: tableData.modal.left + 'px',
-				top: tableData.modal.top + 'px',
-				maxWidth: tableData.modal.width + 'px',
-			}">
-			<component
-				:key="`${tableData.modal.rowIndex}:${tableData.modal.colIndex}`"
-				:is="tableData.modal.component"
+
+		<slot name="footer" :data="tableData" />
+		<slot name="modal" :data="tableData">
+			<ATableModal
 				:colIndex="tableData.modal.colIndex"
 				:rowIndex="tableData.modal.rowIndex"
-				:tableid="tableData.id" />
-		</ATableModal>
+				:tableid="tableData.id"
+				v-show="tableData.modal.visible"
+				:style="{
+					left: tableData.modal.left + 'px',
+					top: tableData.modal.top + 'px',
+					maxWidth: tableData.modal.width + 'px',
+				}">
+				<component
+					:key="`${tableData.modal.rowIndex}:${tableData.modal.colIndex}`"
+					:is="tableData.modal.component"
+					:colIndex="tableData.modal.colIndex"
+					:rowIndex="tableData.modal.rowIndex"
+					:tableid="tableData.id" />
+			</ATableModal>
+		</slot>
 	</table>
 </template>
 

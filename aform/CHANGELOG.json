@@ -2,6 +2,18 @@
   "name": "@agritheory/aform",
   "entries": [
     {
+      "version": "0.1.2",
+      "tag": "@agritheory/aform_v0.1.2",
+      "date": "Fri, 14 Oct 2022 23:32:04 GMT",
+      "comments": {
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@agritheory/utilities\" to `0.2.0`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.1.1",
       "tag": "@agritheory/aform_v0.1.1",
       "date": "Thu, 29 Sep 2022 12:25:57 GMT",
