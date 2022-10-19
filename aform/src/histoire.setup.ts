@@ -6,6 +6,7 @@ import ANumericInput from '@/components/form/ANumericInput.vue'
 import ATextInput from '@/components/form/ATextInput.vue'
 
 import { ATable, ATableHeader, ATableModal } from '@agritheory/atable'
+import '@agritheory/atable/styles'
 
 export const setupVue3 = defineSetupVue3(({ app }) => {
 	// TODO: (typing) add typing for ATable components

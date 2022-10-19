@@ -18,7 +18,7 @@
 	--row-color-zebra-light: #eeeeee;
 	--row-color-zebra-dark: #dddddd;
 	--focus-cell-background: #ffffff;
-	--focus-cell-outline: #827553;
+	--focus-cell-outline: #000000;
 	--cell-border-color: #ffffff;
 	--cell-text-color: #3a3c41;
 	--active-cell-background: #ffffff;
@@ -31,8 +31,8 @@
 	/* Form Colors */
 	--input-border-color: var(--gray-20);
 	--input-label-color: var(--gray-80);
-	--input-active-border-color: var(--primary-color);
-	--input-active-label-color: var(--primary-color);
+	--input-active-border-color: #000000;
+	--input-active-label-color: #000000;
 	--required-border: #e63c28;
 
 	/* FONT */
@@ -42,7 +42,8 @@
 	--atable-font-family: 'Arimo', sans-serif;
 
 	/* TABLE */
-	--atable-row-padding: 10px;
+	--atable-row-padding: 0px;
+	--atable-row-height: 1.5em;
 
 	/* FORM */
 }

@@ -21,8 +21,10 @@
 						:rowIndex="rowIndex"
 						:colIndex="colIndex + (tableData.zeroColumn ? 0 : -1)"
 						:style="{
-							textAlign: col?.align?.toLowerCase() || 'center',
-							minWidth: col?.width || '40ch',
+							/* textAlign: col?.align?.toLowerCase() || 'center',
+							minWidth: col?.width || '40ch', */
+							textAlign: col.align.toLowerCase() || 'center',
+							minWidth: col.width || '40ch',
 						}" />
 				</ARow>
 			</slot>
@@ -163,10 +165,20 @@ window.addEventListener('keydown', (event: KeyboardEvent) => {
 </script>
 
 <style scoped>
+@import url('@agritheory/themes/default/default.css');
 table {
 	display: table;
 	border-collapse: collapse;
 	caret-color: var(--brand-color);
+}
+
+table.atable,
+.atable {
+	font-family: var(--atable-font-family);
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	font-size: var(--table-font-size);
+	border-collapse: collapse;
 }
 
 th {
@@ -179,7 +191,7 @@ th {
 	color: var(--header-text-color);
 }
 
-tr {
+/* tr {
 	background-color: var(--row-color-zebra-light);
 	outline: none;
 	border-collapse: collapse;
@@ -187,5 +199,5 @@ tr {
 
 tr:nth-child(even) {
 	background-color: var(--row-color-zebra-dark);
-}
+} */
 </style>

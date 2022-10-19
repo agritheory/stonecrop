@@ -46,7 +46,7 @@ const numberedRowStyle: CSSProperties = {
 	userSelect: 'none',
 	width: tableData.numberedRowWidth.value,
 	paddingLeft: 'var(--atable-row-padding)',
-	paddingRight: 'var(--atable-row-padding)',
+	paddingRight: '2em',
 }
 
 const treeRowStyle: CSSProperties = {
@@ -59,6 +59,7 @@ const treeRowStyle: CSSProperties = {
 
 const rowStyle: CSSProperties = {
 	borderTop: '1px solid var(--row-border-color)',
+	height: 'var(--atable-row-height)',
 }
 
 const getRowExpandSymbol = () => {

@@ -164,7 +164,7 @@ input {
 }
 
 input:focus {
-	border: 1px solid var(--input-border-color);
+	border: 1px solid var(--input-active-border-color);
 	border-radius: 0.25rem 0.25rem 0 0;
 	border-bottom: none;
 }
@@ -186,12 +186,12 @@ label {
 
 .autocomplete-results {
 	position: absolute;
-	width: calc(100% - 0.75ch);
+	width: calc(100% - 1ch + 1.5px);
 	z-index: 1;
 	padding: 0;
 	margin: 0;
-	color: var(--primary-color);
-	border: 1px solid var(--input-border-color);
+	color: #000000;
+	border: 1px solid var(--input-active-border-color);
 	border-radius: 0 0 0.25rem 0.25rem;
 	border-top: none;
 }
@@ -206,6 +206,6 @@ label {
 .autocomplete-result.is-active,
 .autocomplete-result:hover {
 	background-color: var(--row-color-zebra-light);
-	color: var(--primary-color);
+	color: #000000;
 }
 </style>

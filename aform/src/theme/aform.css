@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap');
-@import url('default.css');
+/* @import url('default.css'); */
+@import url('@agritheory/themes/default/default.css');
 @import url('custom_themes.css');
 
 :root {
@@ -27,15 +28,7 @@
 	transition: outline-offset 200ms ease;
 }
 
-.atable {
-	font-family: var(--atable-font-family);
-	-webkit-font-smoothing: antialiased;
-	-moz-osx-font-smoothing: grayscale;
-	font-size: var(--table-font-size);
-	border-collapse: collapse;
-}
-
-.atable th {
+/* .atable th {
 	padding-top: var(--atable-row-padding);
 	padding-bottom: var(--atable-row-padding);
 	color: var(--gray-60);
@@ -69,4 +62,4 @@
 
 .atable th:nth-child(2) {
 	padding-left: var(--atable-row-padding) !important;
-}
+} */

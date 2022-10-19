@@ -198,7 +198,7 @@ td {
 	color: var(--cell-text-color);
 	text-overflow: ellipsis;
 	overflow: hidden;
-	padding-left: 0.5ch;
+	padding-left: 0.5ch !important;
 	padding-right: 0.5ch;
 
 	padding-top: var(--atable-row-padding);
@@ -208,9 +208,9 @@ td {
 	border-collapse: collapse;
 }
 
-[data-colindex='0'] {
+/* [data-colindex='0'] {
 	padding-left: var(--atable-row-padding) !important;
-}
+} */
 
 td:focus,
 td:focus-within {

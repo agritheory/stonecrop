@@ -1,6 +1,6 @@
 <template>
 	<thead v-if="columns.length">
-		<tr tabindex="-1">
+		<tr class="atable-header-row" tabindex="-1">
 			<th v-if="tableData.zeroColumn" :style="{ minWidth: tableData.numberedRowWidth.value }" />
 			<th
 				v-for="(column, colKey) in columns"
@@ -61,11 +61,12 @@ th {
 	padding-top: var(--atable-row-padding);
 	padding-bottom: var(--atable-row-padding);
 	color: var(--gray-60);
+	height: var(--atable-row-height);
 }
 th:focus {
 	outline: none;
 }
-th:nth-child(2) {
+/* th:nth-child(2) {
 	padding-left: var(--atable-row-padding) !important;
-}
+} */
 </style>
