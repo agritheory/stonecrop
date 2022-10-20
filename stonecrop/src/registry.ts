@@ -9,8 +9,9 @@ export default class Registry {
 	router: Router
 	registry: Record<string, Doctype>
 	schemaLoader: (doctype: string) => Schema | Promise<Schema>
+	doctypeLoader: (doctype: string) => Doctype | Promise<Doctype>
 
-	constructor(router: Router, schemaLoader: (doctype: string) => Schema | Promise<Schema> = undefined) {
+	constructor(router: Router, doctypeLoader: (doctype: string) => Doctype | Promise<Doctype> = undefined) {
 		if (Registry._root) {
 			return Registry._root
 		}
@@ -18,13 +19,13 @@ export default class Registry {
 		this.name = 'Registry'
 		this.router = router
 		this.registry = {}
-		this.schemaLoader = schemaLoader
+		this.doctypeLoader = doctypeLoader
 	}
 
 	loadDoctypeSchema(doctype: Doctype) {
-		if (doctype.schemaLoader) {
-			return doctype.schemaLoader()
-		}
+		// if (doctype.schemaLoader) {
+		// 	return doctype.schemaLoader()
+		// }
 		return this.schemaLoader(doctype.doctype)
 	}
 

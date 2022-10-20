@@ -1,4 +1,5 @@
 import { createServer, Model } from 'miragejs'
+import { createMachine } from 'xstate'
 
 export default function makeServer() {
 	const server = createServer({
@@ -36,9 +37,19 @@ export default function makeServer() {
 							mask: "(locale) => { if (locale === 'en-US') { return '(###) ###-####' } else if (locale === 'en-IN') { return '####-######'} }",
 						},
 					],
-					events: undefined,
+					events: createMachine({
+						id: 'todo',
+						predictableActionArguments: true,
+						tsTypes: {} as import('./server.typegen').Typegen0,
+						initial: 'created',
+						states: {
+							created: { on: { LOAD: 'loaded' } },
+							loaded: { on: { SAVE: 'saved' } },
+							saved: {},
+						},
+					}),
 					hooks: {
-						load: [
+						LOAD: [
 							() => {
 								console.log('load event')
 							},
@@ -46,20 +57,12 @@ export default function makeServer() {
 								console.log('load event side effect')
 							},
 						],
-						save: [
+						SAVE: [
 							() => {
 								console.log('save event')
 							},
 							() => {
 								console.log('after save event')
-							},
-						],
-						delete: [
-							() => {
-								console.log('delete event')
-							},
-							() => {
-								console.log('after delete event')
 							},
 						],
 					},
@@ -87,8 +90,35 @@ export default function makeServer() {
 							label: 'Date',
 						},
 					],
-					events: undefined,
-					hooks: {},
+					events: createMachine({
+						id: 'issue',
+						predictableActionArguments: true,
+						tsTypes: {} as import('./server.typegen').Typegen1,
+						initial: 'created',
+						states: {
+							created: { on: { LOAD: 'loaded' } },
+							loaded: { on: { SAVE: 'saved' } },
+							saved: {},
+						},
+					}),
+					hooks: {
+						LOAD: [
+							() => {
+								console.log('load event')
+							},
+							() => {
+								console.log('load event side effect')
+							},
+						],
+						SAVE: [
+							() => {
+								console.log('save event')
+							},
+							() => {
+								console.log('after save event')
+							},
+						],
+					},
 				},
 				issues: [
 					{ id: '1', subject: 'First Issue', date: '2022-01-01' },

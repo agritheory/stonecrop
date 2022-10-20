@@ -12,6 +12,7 @@ import Records from './components/Records.vue'
 import Dev from './Dev.vue'
 import makeServer from './server'
 import { ImmutableRegistry, MutableRegistry } from 'types/index'
+import { createMachine } from 'xstate'
 
 // create mirage server
 makeServer()
@@ -27,23 +28,6 @@ for (const route of routes) {
 	router.addRoute(route)
 }
 
-router.beforeEach(async (to, from, next) => {
-	const doctypeSlug = to.params.records?.toString()
-	if (doctypeSlug) {
-		if (to.params.record) {
-			const recordId = to.params.record.toString()
-			const response = await fetch(`/${doctypeSlug}/${recordId}`)
-			const data = await response.json()
-			to.params.recordData = data
-		} else {
-			const response = await fetch(`/${doctypeSlug}`)
-			const data = await response.json()
-			to.params.recordsData = data
-		}
-	}
-	next()
-})
-
 const app = createApp(Dev)
 app.use(Stonecrop, {
 	router,
@@ -52,7 +36,7 @@ app.use(Stonecrop, {
 		ADate,
 	},
 	// TODO: or if doctype is a function [doctype].apply()
-	schemaLoader: async (doctype: string) => {
+	doctypeLoader: async (doctype: string) => {
 		// TODO: normally this would be configured as a memoized/cached call to a server
 		const response = await fetch(`/meta/${doctype}`)
 		const data: MutableRegistry = await response.json()
@@ -66,8 +50,7 @@ app.use(Stonecrop, {
 
 		const registry: ImmutableRegistry = {
 			schema,
-			// TODO: would we need to process server's events response into a MachineConfig-like object?
-			events: data.events,
+			events: createMachine(data.events),
 			hooks: Map(data.hooks),
 		}
 

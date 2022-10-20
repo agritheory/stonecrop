@@ -10,7 +10,7 @@ const Stonecrop = {
 	install: (app: App, options: InstallOptions) => {
 		const appRouter = options.router || router
 		app.use(appRouter)
-		app.provide('$registry', new Registry(appRouter, options.schemaLoader))
+		app.provide('$registry', new Registry(appRouter, options.doctypeLoader))
 		for (const [tag, component] of Object.entries(options.components)) {
 			app.component(tag, component)
 		}
