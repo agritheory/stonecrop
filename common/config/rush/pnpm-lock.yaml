@@ -106,8 +106,8 @@ importers:
 
   ../../examples:
     specifiers:
-      '@agritheory/aform': workspace:^0.1.1
-      '@agritheory/atable': workspace:^0.1.1
+      '@agritheory/aform': workspace:^0.1.2
+      '@agritheory/atable': workspace:^0.2.0
       '@agritheory/desktop': workspace:^0.1.0
       '@agritheory/stonecrop': workspace:^0.1.0
       '@histoire/plugin-vue': ^0.10.2
@@ -139,8 +139,8 @@ importers:
 
   ../../stonecrop:
     specifiers:
-      '@agritheory/aform': workspace:^0.1.1
-      '@agritheory/atable': workspace:^0.1.1
+      '@agritheory/aform': workspace:^0.1.2
+      '@agritheory/atable': workspace:^0.2.0
       '@miragejs/graphql': ^0.1.13
       '@typescript-eslint/eslint-plugin': ^5.33.0
       '@typescript-eslint/parser': ^5.33.0
