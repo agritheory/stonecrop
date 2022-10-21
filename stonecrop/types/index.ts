@@ -1,15 +1,33 @@
-import { ComponentOptions } from 'vue'
+import { List, Map } from 'immutable'
+import { Component } from 'vue'
 import { Router } from 'vue-router'
+import { MachineConfig, StateMachine } from 'xstate'
 
 import { SchemaTypes } from '@agritheory/aform/types'
 
+import Doctype from '@/doctype'
+
+export type ImmutableDoctype = Readonly<{
+	// TODO: allow schema to be a function
+	schema?: List<SchemaTypes>
+	events: StateMachine<unknown, unknown, any>
+	hooks?: Map<string, string[]>
+}>
+
+export type MutableDoctype = {
+	// TODO: allow schema to be a function
+	schema?: SchemaTypes[]
+	events: MachineConfig<unknown, unknown, any>
+	hooks?: Record<string, string[]>
+}
+
 export type Schema = {
 	doctype: string
-	schema: SchemaTypes[]
+	schema: List<SchemaTypes>
 }
 
 export type InstallOptions = {
-	components: Record<string, ComponentOptions>
+	components: Record<string, Component>
 	router: Router
-	schemaLoader: (doctype?: string) => Schema | Promise<Schema>
+	doctypeLoader: (doctype?: string) => Doctype | Promise<Doctype>
 }

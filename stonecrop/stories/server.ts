@@ -1,4 +1,26 @@
+/* eslint-disable no-console */
 import { createServer, Model } from 'miragejs'
+
+import { MutableDoctype } from 'types/index'
+
+const doctypeHooks: MutableDoctype['hooks'] = {
+	LOAD: [
+		(() => {
+			console.log('load event')
+		}).toString(),
+		(() => {
+			console.log('load event side effect')
+		}).toString(),
+	],
+	SAVE: [
+		(() => {
+			console.log('save event')
+		}).toString(),
+		(() => {
+			console.log('after save event')
+		}).toString(),
+	],
+}
 
 export default function makeServer() {
 	const server = createServer({
@@ -11,51 +33,80 @@ export default function makeServer() {
 
 		seeds(server) {
 			server.db.loadData({
-				todoMeta: [
-					{
-						name: 'first_name',
-						fieldname: 'first_name',
-						fieldtype: 'Data',
-						component: 'ATextInput',
-						label: 'First Name',
-					},
-					{
-						name: 'last_name',
-						fieldname: 'last_name',
-						fieldtype: 'Data',
-						component: 'ATextInput',
-						label: 'Last Name',
-					},
-					{
-						name: 'phone',
-						fieldname: 'phone',
-						fieldtype: 'Phone',
-						component: 'ATextInput',
-						label: 'Phone',
-						mask: "(locale) => { if (locale === 'en-US') { return '(###) ###-####' } else if (locale === 'en-IN') { return '####-######'} }",
-					},
-				],
+				todoMeta: {
+					schema: [
+						{
+							name: 'first_name',
+							fieldname: 'first_name',
+							fieldtype: 'Data',
+							component: 'ATextInput',
+							label: 'First Name',
+						},
+						{
+							name: 'last_name',
+							fieldname: 'last_name',
+							fieldtype: 'Data',
+							component: 'ATextInput',
+							label: 'Last Name',
+						},
+						{
+							name: 'phone',
+							fieldname: 'phone',
+							fieldtype: 'Phone',
+							component: 'ATextInput',
+							label: 'Phone',
+							mask: "(locale) => { if (locale === 'en-US') { return '(###) ###-####' } else if (locale === 'en-IN') { return '####-######'} }",
+						},
+					] as MutableDoctype['schema'],
+					events: {
+						id: 'todo',
+						predictableActionArguments: true,
+						tsTypes: {} as import('./server.typegen').Typegen0,
+						initial: 'created',
+						states: {
+							created: { on: { LOAD: 'loaded' } },
+							loaded: { on: { SAVE: 'saved' } },
+							saved: {},
+						},
+					} /* as MutableDoctype['events'] */,
+					hooks: doctypeHooks,
+				},
 				todos: [
 					{ id: '1', first_name: 'Luke', last_name: 'Skywalker', phone: '+1 123 456 7890' },
 					{ id: '2', first_name: 'Leia', last_name: 'Skywalker', phone: '+1 123 456 7890' },
 					{ id: '3', first_name: 'Anakin', last_name: 'Skywalker', phone: '+1 123 456 7890' },
 				],
-				issueMeta: [
-					{
-						name: 'subject',
-						fieldname: 'subject',
-						fieldtype: 'Data',
-						component: 'ATextInput',
-						label: 'Subject',
-					},
-					{
-						name: 'date',
-						fieldname: 'date',
-						fieldtype: 'Date',
-						component: 'ADate',
-						label: 'Date',
-					},
-				],
+				// transitions: load, report, assign, triage, resolve, archive
+				issueMeta: {
+					schema: [
+						{
+							name: 'subject',
+							fieldname: 'subject',
+							fieldtype: 'Data',
+							component: 'ATextInput',
+							label: 'Subject',
+						},
+						{
+							name: 'date',
+							fieldname: 'date',
+							fieldtype: 'Date',
+							component: 'ADate',
+							label: 'Date',
+						},
+					] as MutableDoctype['schema'],
+					events: {
+						id: 'issue',
+						predictableActionArguments: true,
+						tsTypes: {} as import('./server.typegen').Typegen0,
+						initial: 'created',
+						states: {
+							created: { on: { LOAD: 'loaded' } },
+							loaded: { on: { SAVE: 'saved' } },
+							saved: {},
+						},
+					} /* as MutableDoctype['events'] */,
+					hooks: doctypeHooks,
+				},
 				issues: [
 					{ id: '1', subject: 'First Issue', date: '2022-01-01' },
 					{ id: '2', subject: 'Second Issue', date: '2022-01-01' },
@@ -65,10 +116,21 @@ export default function makeServer() {
 		},
 
 		routes() {
-			this.get('/meta/to-do', schema => schema.db.todoMeta)
-			this.get('/meta/issue', schema => schema.db.issueMeta)
+			// meta
+			this.get('/meta/to-do', schema => {
+				const meta = schema.first('todoMeta')
+				return meta.attrs
+			})
+			this.get('/meta/issue', schema => {
+				const meta = schema.first('issueMeta')
+				return meta.attrs
+			})
+
+			// list
 			this.get('/to-do', schema => schema.db.todos)
 			this.get('/issue', schema => schema.db.issues)
+
+			// record
 			this.get('/to-do/:id', schema => {
 				const todo = schema.first('todo')
 				return todo.attrs

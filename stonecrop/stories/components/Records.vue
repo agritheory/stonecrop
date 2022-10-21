@@ -1,15 +1,16 @@
 <template>
-	<ATable :key="records.columns" :columns="records.columns" :rows="records.rows" :config="records.config" />
+	<ATable :key="records.rows" :columns="records.columns" :rows="records.rows" :config="records.config" />
 </template>
 
 <script setup lang="ts">
-import { reactive, inject, onBeforeMount } from 'vue'
+import { reactive, inject, onBeforeMount, ref } from 'vue'
 import { useRoute } from 'vue-router'
 
 import { SchemaTypes } from '@agritheory/aform/types'
 import { ATable } from '@agritheory/atable'
 
 import Registry from '@/registry'
+import { ImmutableDoctype } from 'types/index'
 
 // TODO: use component if provided else call to Records Schema endpoint/ table  / lookup
 // alteratively: a view: component map, eg records: Records, gantt: GanttView
@@ -17,19 +18,48 @@ import Registry from '@/registry'
 // last_used_view_type in application state
 
 const route = useRoute()
+const doctypeSlug = route.params.records.toString()
 const registry = inject<Registry>('$registry')
 
 // get data
 const records = reactive({
-	rows: route.params.recordsData,
+	rows: [] as any[],
 	columns: [] as SchemaTypes[],
 	config: { numberedRows: true, treeView: false },
 })
 
+let stateMachine = ref<ImmutableDoctype['events']>()
+let hooks = ref<ImmutableDoctype['hooks']>()
+
 onBeforeMount(async () => {
+	// register doctype in registry
+	const doctype = await registry.doctypeLoader(doctypeSlug)
+	registry.addDoctype(doctype)
+
 	// get schema
-	const doctypeSlug = route.params.records.toString()
-	const schemaDetails = await registry.schemaLoader(doctypeSlug)
-	records.columns = schemaDetails.schema
+	records.columns = doctype.schema?.toArray()
+
+	// get data
+	const doctypeRecords = await fetch(`/${doctypeSlug}`)
+	const data = await doctypeRecords.json()
+	records.rows = data
+
+	// setup local state for events and hooks
+	const doctypeRegistry = registry.registry[doctype.slug]
+	stateMachine.value = doctypeRegistry.events
+	hooks.value = doctypeRegistry.hooks
+
+	// trigger the 'LOAD' action on the state machine
+	const { initialState } = stateMachine.value
+	stateMachine.value.transition(initialState, { type: 'LOAD' })
+
+	// run 'LOAD' hooks after state machine transition
+	const hookEvents: string[] = hooks.value.get('LOAD')
+	if (hookEvents.length > 0) {
+		hookEvents.forEach(hook => {
+			const hookFn = eval(hook) as () => void
+			hookFn()
+		})
+	}
 })
 </script>

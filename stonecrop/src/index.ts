@@ -8,9 +8,9 @@ import Registry from './registry'
 
 const Stonecrop = {
 	install: (app: App, options: InstallOptions) => {
-		app.use(router)
-		app.provide('$registry', new Registry(options.router || router, options.schemaLoader))
-
+		const appRouter = options.router || router
+		app.use(appRouter)
+		app.provide('$registry', new Registry(appRouter, options.doctypeLoader))
 		for (const [tag, component] of Object.entries(options.components)) {
 			app.component(tag, component)
 		}
