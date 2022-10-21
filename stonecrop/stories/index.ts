@@ -11,7 +11,7 @@ import Home from './components/Home.vue'
 import Records from './components/Records.vue'
 import Dev from './Dev.vue'
 import makeServer from './server'
-import { ImmutableRegistry, MutableRegistry } from 'types/index'
+import { ImmutableDoctype, MutableDoctype } from 'types/index'
 import { createMachine } from 'xstate'
 
 // create mirage server
@@ -39,22 +39,14 @@ app.use(Stonecrop, {
 	doctypeLoader: async (doctype: string) => {
 		// TODO: normally this would be configured as a memoized/cached call to a server
 		const response = await fetch(`/meta/${doctype}`)
-		const data: MutableRegistry = await response.json()
-
-		let schema: ImmutableRegistry['schema']
-		if (Array.isArray(data.schema)) {
-			schema = List(data.schema)
-		} else {
-			schema = List(await data.schema())
-		}
-
-		const registry: ImmutableRegistry = {
-			schema,
+		const data: MutableDoctype = await response.json()
+		const config: ImmutableDoctype = {
+			schema: List(data.schema),
 			events: createMachine(data.events),
 			hooks: Map(data.hooks),
 		}
 
-		return new Doctype(doctype, registry.schema, registry.events, registry.hooks)
+		return new Doctype(doctype, config.schema, config.events, config.hooks)
 	},
 })
 app.mount('#app')

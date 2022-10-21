@@ -1,5 +1,26 @@
+/* eslint-disable no-console */
 import { createServer, Model } from 'miragejs'
-import { createMachine } from 'xstate'
+
+import { MutableDoctype } from 'types/index'
+
+const doctypeHooks: MutableDoctype['hooks'] = {
+	LOAD: [
+		(() => {
+			console.log('load event')
+		}).toString(),
+		(() => {
+			console.log('load event side effect')
+		}).toString(),
+	],
+	SAVE: [
+		(() => {
+			console.log('save event')
+		}).toString(),
+		(() => {
+			console.log('after save event')
+		}).toString(),
+	],
+}
 
 export default function makeServer() {
 	const server = createServer({
@@ -36,8 +57,8 @@ export default function makeServer() {
 							label: 'Phone',
 							mask: "(locale) => { if (locale === 'en-US') { return '(###) ###-####' } else if (locale === 'en-IN') { return '####-######'} }",
 						},
-					],
-					events: createMachine({
+					] as MutableDoctype['schema'],
+					events: {
 						id: 'todo',
 						predictableActionArguments: true,
 						tsTypes: {} as import('./server.typegen').Typegen0,
@@ -47,25 +68,8 @@ export default function makeServer() {
 							loaded: { on: { SAVE: 'saved' } },
 							saved: {},
 						},
-					}),
-					hooks: {
-						LOAD: [
-							() => {
-								console.log('load event')
-							},
-							() => {
-								console.log('load event side effect')
-							},
-						],
-						SAVE: [
-							() => {
-								console.log('save event')
-							},
-							() => {
-								console.log('after save event')
-							},
-						],
-					},
+					} /* as MutableDoctype['events'] */,
+					hooks: doctypeHooks,
 				},
 				todos: [
 					{ id: '1', first_name: 'Luke', last_name: 'Skywalker', phone: '+1 123 456 7890' },
@@ -89,36 +93,19 @@ export default function makeServer() {
 							component: 'ADate',
 							label: 'Date',
 						},
-					],
-					events: createMachine({
+					] as MutableDoctype['schema'],
+					events: {
 						id: 'issue',
 						predictableActionArguments: true,
-						tsTypes: {} as import('./server.typegen').Typegen1,
+						tsTypes: {} as import('./server.typegen').Typegen0,
 						initial: 'created',
 						states: {
 							created: { on: { LOAD: 'loaded' } },
 							loaded: { on: { SAVE: 'saved' } },
 							saved: {},
 						},
-					}),
-					hooks: {
-						LOAD: [
-							() => {
-								console.log('load event')
-							},
-							() => {
-								console.log('load event side effect')
-							},
-						],
-						SAVE: [
-							() => {
-								console.log('save event')
-							},
-							() => {
-								console.log('after save event')
-							},
-						],
-					},
+					} /* as MutableDoctype['events'] */,
+					hooks: doctypeHooks,
 				},
 				issues: [
 					{ id: '1', subject: 'First Issue', date: '2022-01-01' },

@@ -3,15 +3,14 @@
 </template>
 
 <script setup lang="ts">
-import { List } from 'immutable'
-import { reactive, inject, onBeforeMount, ref, onMounted } from 'vue'
+import { reactive, inject, onBeforeMount, ref } from 'vue'
 import { useRoute } from 'vue-router'
 
 import { SchemaTypes } from '@agritheory/aform/types'
 import { ATable } from '@agritheory/atable'
 
 import Registry from '@/registry'
-import { ImmutableRegistry } from 'types/index'
+import { ImmutableDoctype } from 'types/index'
 
 // TODO: use component if provided else call to Records Schema endpoint/ table  / lookup
 // alteratively: a view: component map, eg records: Records, gantt: GanttView
@@ -29,40 +28,38 @@ const records = reactive({
 	config: { numberedRows: true, treeView: false },
 })
 
-let stateMachine = ref<ImmutableRegistry['events']>()
-let hooks = ref<ImmutableRegistry['hooks']>()
+let stateMachine = ref<ImmutableDoctype['events']>()
+let hooks = ref<ImmutableDoctype['hooks']>()
+
 onBeforeMount(async () => {
-	// get schema
+	// register doctype in registry
 	const doctype = await registry.doctypeLoader(doctypeSlug)
 	registry.addDoctype(doctype)
 
-	if (List.isList(doctype.schema)) {
-		records.columns = doctype.schema.toArray()
-	} else {
-		const processedSchema = await doctype.schema()
-		records.columns = processedSchema.toArray()
-	}
+	// get schema
+	records.columns = doctype.schema?.toArray()
 
+	// get data
 	const doctypeRecords = await fetch(`/${doctypeSlug}`)
 	const data = await doctypeRecords.json()
 	records.rows = data
 
-	const doctypeRegistry = registry.registry[doctypeSlug]
+	// setup local state for events and hooks
+	const doctypeRegistry = registry.registry[doctype.slug]
 	stateMachine.value = doctypeRegistry.events
 	hooks.value = doctypeRegistry.hooks
 
+	// trigger the 'LOAD' action on the state machine
 	const { initialState } = stateMachine.value
 	stateMachine.value.transition(initialState, { type: 'LOAD' })
 
-	const hookEvents: (() => void | undefined)[] = hooks.value.get('LOAD')
-	if (hookEvents) {
+	// run 'LOAD' hooks after state machine transition
+	const hookEvents: string[] = hooks.value.get('LOAD')
+	if (hookEvents.length > 0) {
 		hookEvents.forEach(hook => {
-			if (hook) hook()
+			const hookFn = eval(hook) as () => void
+			hookFn()
 		})
 	}
-})
-
-onMounted(() => {
-	//
 })
 </script>
