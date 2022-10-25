@@ -21,10 +21,8 @@
 						:rowIndex="rowIndex"
 						:colIndex="colIndex + (tableData.zeroColumn ? 0 : -1)"
 						:style="{
-							/* textAlign: col?.align?.toLowerCase() || 'center',
-							minWidth: col?.width || '40ch', */
-							textAlign: col.align.toLowerCase() || 'center',
-							minWidth: col.width || '40ch',
+							textAlign: col?.align?.toLowerCase() || 'center',
+							minWidth: col?.width || '40ch',
 						}" />
 				</ARow>
 			</slot>
@@ -190,14 +188,4 @@ th {
 	border-radius: 0px;
 	color: var(--header-text-color);
 }
-
-/* tr {
-	background-color: var(--row-color-zebra-light);
-	outline: none;
-	border-collapse: collapse;
-}
-
-tr:nth-child(even) {
-	background-color: var(--row-color-zebra-dark);
-} */
 </style>

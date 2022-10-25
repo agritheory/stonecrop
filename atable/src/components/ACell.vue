@@ -208,10 +208,6 @@ td {
 	border-collapse: collapse;
 }
 
-/* [data-colindex='0'] {
-	padding-left: var(--atable-row-padding) !important;
-} */
-
 td:focus,
 td:focus-within {
 	background-color: var(--focus-cell-background);

@@ -116,11 +116,9 @@ label {
 
 input:focus {
 	border: 1px solid var(--input-active-border-color);
-	/* border: none; */
 }
 
 input:focus + label {
 	color: var(--input-active-label-color);
-	/* font-weight: bold; */
 }
 </style>

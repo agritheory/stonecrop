@@ -1,5 +1,4 @@
 @import url('https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap');
-/* @import url('default.css'); */
 @import url('@agritheory/themes/default/default.css');
 @import url('custom_themes.css');
 
@@ -27,39 +26,3 @@
 	outline-offset: -4px;
 	transition: outline-offset 200ms ease;
 }
-
-/* .atable th {
-	padding-top: var(--atable-row-padding);
-	padding-bottom: var(--atable-row-padding);
-	color: var(--gray-60);
-}
-
-.atable thead {
-	background-color: var(--gray-5);
-}
-
-.atable tr {
-	border-top: 1px solid var(--row-border-color);
-}
-
-.atable thead tr {
-	border-top: none;
-}
-
-.atable td {
-	padding-top: var(--atable-row-padding);
-	padding-bottom: var(--atable-row-padding);
-}
-
-.atable tr td:first-child {
-	padding-left: var(--atable-row-padding);
-	padding-right: var(--atable-row-padding);
-}
-
-.atable td:nth-child(2) {
-	padding-left: var(--atable-row-padding) !important;
-}
-
-.atable th:nth-child(2) {
-	padding-left: var(--atable-row-padding) !important;
-} */

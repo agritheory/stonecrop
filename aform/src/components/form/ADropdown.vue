@@ -65,13 +65,8 @@ export default defineComponent({
 	},
 	watch: {
 		items: function (value, oldValue) {
-			console.log('items changed')
 			this.isLoading = false
 			this.results = value
-			// if (value.length !== oldValue.length) {
-			//   this.results = value;
-			//   this.isLoading = false;
-			// }
 		},
 	},
 	mounted() {

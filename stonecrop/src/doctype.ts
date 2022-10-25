@@ -1,23 +1,28 @@
-import { ComponentOptions } from 'vue'
+import { Component } from 'vue'
 
-import { SchemaTypes } from '@agritheory/aform/types'
+import { ImmutableDoctype } from 'types/index'
 
 export default class Doctype {
 	doctype: string
-	schema: SchemaTypes[]
-	events: any // TODO: new Machine()
-	hooks: any
+	schema: ImmutableDoctype['schema']
+	events: ImmutableDoctype['events']
+	hooks: ImmutableDoctype['hooks']
+	// TODO: allow different components for different views; probably
+	// should be defined in the schema instead?
+	component?: Component
 
 	constructor(
 		doctype: string,
-		events: any,
-		hooks: any,
-		component: string | ComponentOptions = undefined,
-		recordsComponent: string | ComponentOptions = undefined
+		schema: ImmutableDoctype['schema'],
+		events: ImmutableDoctype['events'],
+		hooks: ImmutableDoctype['hooks'],
+		component?: Component
 	) {
 		this.doctype = doctype
+		this.schema = schema
 		this.events = events
 		this.hooks = hooks
+		this.component = component
 	}
 
 	get slug() {

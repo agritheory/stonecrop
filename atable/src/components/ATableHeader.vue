@@ -49,12 +49,9 @@ thead {
 	background-color: var(--gray-5);
 }
 th {
-	/* background-color: var(--brand-color); */
 	border-width: 0px;
 	border-style: solid;
-	/* border-color: var(--header-border-color); */
 	border-radius: 0px;
-	/* color: var(--header-text-color); */
 	padding-left: 0.5ch;
 	padding-right: 0.5ch;
 
@@ -66,7 +63,4 @@ th {
 th:focus {
 	outline: none;
 }
-/* th:nth-child(2) {
-	padding-left: var(--atable-row-padding) !important;
-} */
 </style>
