@@ -163,10 +163,20 @@ window.addEventListener('keydown', (event: KeyboardEvent) => {
 </script>
 
 <style scoped>
+@import url('@agritheory/themes/default/default.css');
 table {
 	display: table;
-	border-collapse: var(--border-collapsed);
+	border-collapse: collapse;
 	caret-color: var(--brand-color);
+}
+
+table.atable,
+.atable {
+	font-family: var(--atable-font-family);
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	font-size: var(--table-font-size);
+	border-collapse: collapse;
 }
 
 th {
@@ -177,14 +187,5 @@ th {
 	border-color: var(--header-border-color);
 	border-radius: 0px;
 	color: var(--header-text-color);
-}
-
-tr {
-	background-color: var(--row-color-zebra-light);
-	outline: none;
-}
-
-tr:nth-child(even) {
-	background-color: var(--row-color-zebra-dark);
 }
 </style>

@@ -1,5 +1,5 @@
 <template>
-	<tr ref="rowEl" :tabindex="tabIndex" v-show="rowVisible()">
+	<tr ref="rowEl" :tabindex="tabIndex" v-show="rowVisible()" :style="rowStyle">
 		<td v-if="tableData.config.numberedRows" id="row-index" :tabIndex="-1" :style="numberedRowStyle">
 			{{ rowIndex + 1 }}
 		</td>
@@ -40,23 +40,26 @@ const tableData = inject<TableDataStore>(props.tableid)
 const rowEl = ref<HTMLTableRowElement>(null)
 
 const numberedRowStyle: CSSProperties = {
-	backgroundColor: 'var(--brand-color)',
-	borderColor: 'var(--header-border-color)',
 	color: 'var(--header-text-color)',
 	fontWeight: 'bold',
 	textAlign: 'center',
 	userSelect: 'none',
 	width: tableData.numberedRowWidth.value,
+	paddingLeft: 'var(--atable-row-padding)',
+	paddingRight: '2em',
 }
 
 const treeRowStyle: CSSProperties = {
-	backgroundColor: 'var(--brand-color)',
-	borderColor: 'var(--header-border-color)',
 	color: 'var(--header-text-color)',
 	fontWeight: 'bold',
 	textAlign: 'center',
 	userSelect: 'none',
 	width: '2ch',
+}
+
+const rowStyle: CSSProperties = {
+	borderTop: '1px solid var(--row-border-color)',
+	height: 'var(--atable-row-height)',
 }
 
 const getRowExpandSymbol = () => {

@@ -23,7 +23,8 @@
 	"dependencies": {
 		"@agritheory/utilities": "workspace:*",
 		"uuid": "^9.0.0",
-		"vue": "^3.2.37"
+		"vue": "^3.2.37",
+		"@agritheory/themes": "workspace:*"
 	},
 	"peerDependencies": {
 		"@agritheory/aform": "workspace:*"
@@ -52,6 +53,7 @@
 			"types": "./types/index.ts",
 			"import": "./dist/atable.js",
 			"require": "./dist/atable.umd.cjs"
-		}
+		},
+		"./styles": "./dist/style.css"
 	}
 }

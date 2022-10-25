@@ -52,7 +52,7 @@ fieldset {
 	width: 100%;
 	margin-right: 2ch;
 	border: 1px solid transparent;
-	border-bottom: 1px solid var(--primary-color);
+	border-bottom: 1px solid var(--gray-50);
 }
 legend {
 	width: 100%;

@@ -82,14 +82,15 @@ div {
 input {
 	width: calc(100% - 1ch);
 	outline: 1px solid transparent;
-	border: 1px solid var(--primary-color);
+	border: 1px solid var(--input-border-color);
 	padding: 1ch 0.5ch 0.5ch 1ch;
 	margin: calc(1.15rem / 2) 0 0 0;
 	min-height: 1.15rem;
-	/* border-radius: 0.25rem;  don't like, but it's here */
+	border-radius: 0.25rem;
 }
 p,
 label {
+	color: var(--input-label-color);
 	display: block;
 	min-height: 1.15rem;
 	padding: 0rem;
@@ -114,11 +115,10 @@ label {
 }
 
 input:focus {
-	outline: 1px solid var(--primary-color);
+	border: 1px solid var(--input-active-border-color);
 }
 
 input:focus + label {
-	color: var(--primary-color);
-	font-weight: bold;
+	color: var(--input-active-label-color);
 }
 </style>

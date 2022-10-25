@@ -1,2 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap');
-@import url('./default/default.css');
+
+:root {
+	--primary-color: #645caa;
+}
+
+:root [data-theme='purple'] {
+	--row-color-zebra-light: #ebc7e8;
+}

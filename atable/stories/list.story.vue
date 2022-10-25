@@ -128,8 +128,7 @@ rowNav['keydown.enter'] = rowNav['keydown.down']
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap');
-@import '@/themes/atable.css';
-
+@import url('@agritheory/themes/default/default.css');
 tr:focus {
 	background-color: lightblue;
 	outline: auto;

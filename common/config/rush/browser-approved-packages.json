@@ -19,6 +19,10 @@
       "allowedCategories": [ "prototype" ]
     },
     {
+      "name": "@agritheory/themes",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
       "name": "@agritheory/utilities",
       "allowedCategories": [ "prototype" ]
     },

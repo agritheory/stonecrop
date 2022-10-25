@@ -33,6 +33,11 @@
 			"shouldPublish": false
 		},
 		{
+			"packageName": "@agritheory/themes",
+			"projectFolder": "themes",
+			"reviewCategory": "prototype"
+		},
+		{
 			"packageName": "@agritheory/atable",
 			"projectFolder": "atable",
 			"reviewCategory": "prototype",
