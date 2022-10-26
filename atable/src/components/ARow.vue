@@ -19,7 +19,7 @@
 <script setup lang="ts">
 import { TableRow } from 'types'
 import { CSSProperties, inject, ref } from 'vue'
-import { defaultKeypressHandlers, useKeyboardNav } from '@agritheory/utilities'
+import { useKeyboardNav } from '@agritheory/utilities'
 
 import TableDataStore from '.'
 

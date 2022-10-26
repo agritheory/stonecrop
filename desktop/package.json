@@ -10,9 +10,9 @@
 		"vue-router": "^4"
 	},
 	"devDependencies": {
-		"@histoire/plugin-vue": "^0.10.2",
+		"@histoire/plugin-vue": "^0.11.5",
 		"@vitejs/plugin-vue": "^3.0.1",
-		"histoire": "^0.10.2",
+		"histoire": "^0.11.5",
 		"vite": "^3.0.5",
 		"vue-template-compiler": "^2.6.14"
 	},

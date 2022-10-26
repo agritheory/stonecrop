@@ -1,42 +1,75 @@
 <template>
 	<Story title="list">
-		<ATable id="list" :columns="http_logs.columns" :rows="http_logs.rows" :config="http_logs.config">
-			<template #body="{ data }: { data: TableDataStore }">
-				<ARow
-					ref="rows"
-					v-for="(row, rowIndex) in data.rows"
-					:key="row.id || v4()"
-					:row="row"
-					:rowIndex="rowIndex"
-					:tableid="data.id"
-					:tabIndex="0"
-					:addNavigation="rowNav">
-					<ACell
-						v-for="(col, colIndex) in data.columns"
-						:key="colIndex"
-						:tableid="data.id"
-						:col="col"
-						spellcheck="false"
-						:tabIndex="0"
-						:addNavigation="rowNav"
-						:contenteditable="false"
+		<Variant title="default">
+			<ATable id="list" :columns="http_logs.columns" :rows="http_logs.rows" :config="http_logs.config">
+				<template #body="{ data }: { data: TableDataStore }">
+					<ARow
+						ref="rows"
+						v-for="(row, rowIndex) in data.rows"
+						:key="row.id || v4()"
+						:row="row"
 						:rowIndex="rowIndex"
-						:colIndex="colIndex + (data.zeroColumn ? 0 : -1)"
-						:style="{
-							textAlign: col?.align?.toLowerCase() || 'center',
-							minWidth: col?.width || '40ch',
-						}" />
-				</ARow>
-			</template>
-		</ATable>
+						:tableid="data.id"
+						:tabIndex="0"
+						:addNavigation="rowNav">
+						<ACell
+							v-for="(col, colIndex) in data.columns"
+							:key="colIndex"
+							:tableid="data.id"
+							:col="col"
+							spellcheck="false"
+							:tabIndex="0"
+							:addNavigation="rowNav"
+							:contenteditable="false"
+							:rowIndex="rowIndex"
+							:colIndex="colIndex + (data.zeroColumn ? 0 : -1)"
+							:style="{
+								textAlign: col?.align?.toLowerCase() || 'center',
+								minWidth: col?.width || '40ch',
+							}" />
+					</ARow>
+				</template>
+			</ATable>
+		</Variant>
+
+		<Variant title="expandable">
+			<ATable id="list" :columns="http_logs.columns" :rows="http_logs.rows" :config="http_logs.config">
+				<template #body="{ data }: { data: TableDataStore }">
+					<ARow
+						ref="rows"
+						:data-id="row.id"
+						v-for="(row, rowIndex) in data.rows"
+						:key="row.id || v4()"
+						:row="row"
+						:rowIndex="rowIndex"
+						:tableid="data.id"
+						:tabIndex="0"
+						:addNavigation="rowNav">
+						<ACell
+							v-for="(col, colIndex) in data.columns"
+							:key="colIndex"
+							:tableid="data.id"
+							:col="col"
+							spellcheck="false"
+							:tabIndex="0"
+							:addNavigation="rowNav"
+							:contenteditable="false"
+							:rowIndex="rowIndex"
+							:colIndex="colIndex + (data.zeroColumn ? 0 : -1)"
+							:style="{
+								textAlign: col?.align?.toLowerCase() || 'center',
+								minWidth: col?.width || '40ch',
+							}" />
+					</ARow>
+				</template>
+			</ATable>
+		</Variant>
 	</Story>
 </template>
 
 <script lang="ts" setup>
 import { v4 } from 'uuid'
 import { ref } from 'vue'
-
-import { useKeyboardNav } from '@agritheory/utilities'
 
 import { TableColumn } from 'types'
 import data from './sample_data/http_logs.json'
@@ -99,19 +132,25 @@ const http_logs = ref({
 })
 
 let rowNav = {
-	'keydown.up': e => {
-		let target = e.target instanceof HTMLTableCellElement ? e.target.parentElement : e.target
+	'keydown.up': (event: KeyboardEvent) => {
+		const target =
+			event.target instanceof HTMLTableCellElement ? event.target.parentElement : (event.target as HTMLTableRowElement)
+
 		const $row = target.previousElementSibling
 			? (target.previousElementSibling as HTMLTableRowElement)
 			: (target as HTMLTableRowElement)
+
 		$row.focus()
 		return true
 	},
-	'keydown.down': e => {
-		let target = e.target instanceof HTMLTableCellElement ? e.target.parentElement : e.target
+	'keydown.down': (event: KeyboardEvent) => {
+		const target =
+			event.target instanceof HTMLTableCellElement ? event.target.parentElement : (event.target as HTMLTableRowElement)
+
 		const $row = target.nextElementSibling
 			? (target.nextElementSibling as HTMLTableRowElement)
 			: (target as HTMLTableRowElement)
+
 		$row.focus()
 		return true
 	},
@@ -122,8 +161,6 @@ rowNav['keydown.alt.down'] = rowNav['keydown.down']
 
 rowNav['keydown.shift.enter'] = rowNav['keydown.up']
 rowNav['keydown.enter'] = rowNav['keydown.down']
-
-//useKeyboardNav([{ selectors: rows }])
 </script>
 
 <style>
