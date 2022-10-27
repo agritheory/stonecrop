@@ -1,6 +1,6 @@
 <template>
 	<tr ref="rowEl" :tabindex="tabIndex" v-show="rowVisible()" :style="rowStyle">
-		<td v-if="tableData.config.numberedRows" id="row-index" :tabIndex="-1" :style="numberedRowStyle">
+		<td v-if="tableData.config.listView" id="row-index" :tabIndex="-1" :style="numberedRowStyle">
 			{{ rowIndex + 1 }}
 		</td>
 		<td
@@ -11,7 +11,7 @@
 			@click="toggleRowExpand(rowIndex)">
 			{{ getRowExpandSymbol() }}
 		</td>
-		<slot v-if="!tableData.config.numberedRows && !tableData.config.treeView" name="indexCell" />
+		<slot v-if="!tableData.config.listView && !tableData.config.treeView" name="indexCell" />
 		<slot />
 	</tr>
 </template>

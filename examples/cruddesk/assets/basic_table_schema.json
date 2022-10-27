@@ -45,7 +45,7 @@
 				"format": "value => { return (new Date(Number(value)).toLocaleDateString('en-US')) }"
 			}
 		],
-		"config": { "numberedRows": true, "treeView": false },
+		"config": { "listView": true },
 		"rows": []
 	}
 ]

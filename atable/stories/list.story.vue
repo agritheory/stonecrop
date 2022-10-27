@@ -1,7 +1,7 @@
 <template>
 	<Story title="list">
 		<Variant title="default">
-			<ATable id="list" :columns="http_logs.columns" :rows="http_logs.rows" :config="http_logs.config">
+			<ATable id="list" :columns="http_logs.columns" :rows="http_logs.rows" :config="{ listView: true }">
 				<template #body="{ data }: { data: TableDataStore }">
 					<ARow
 						ref="rows"
@@ -12,30 +12,32 @@
 						:tableid="data.id"
 						:tabIndex="0"
 						:addNavigation="rowNav">
-						<ACell
-							v-for="(col, colIndex) in data.columns"
-							:key="colIndex"
-							:tableid="data.id"
-							:col="col"
-							spellcheck="false"
-							:tabIndex="0"
-							:addNavigation="rowNav"
-							:contenteditable="false"
-							:rowIndex="rowIndex"
-							:colIndex="colIndex + (data.zeroColumn ? 0 : -1)"
-							:style="{
-								textAlign: col?.align?.toLowerCase() || 'center',
-								minWidth: col?.width || '40ch',
-							}" />
+						<template #default>
+							<ACell
+								v-for="(col, colIndex) in data.columns"
+								:key="colIndex"
+								:tableid="data.id"
+								:col="col"
+								spellcheck="false"
+								:tabIndex="0"
+								:addNavigation="rowNav"
+								:contenteditable="false"
+								:rowIndex="rowIndex"
+								:colIndex="colIndex + (data.zeroColumn ? 0 : -1)"
+								:style="{
+									textAlign: col?.align?.toLowerCase() || 'center',
+									minWidth: col?.width || '40ch',
+								}" />
+						</template>
 					</ARow>
 				</template>
 			</ATable>
 		</Variant>
 
 		<Variant title="expandable">
-			<ATable id="list" :columns="http_logs.columns" :rows="http_logs.rows" :config="http_logs.config">
+			<ATable id="list" :columns="http_logs.columns" :rows="http_logs.rows" :config="{ listExpansionView: true }">
 				<template #body="{ data }: { data: TableDataStore }">
-					<ARow
+					<AExpansionRow
 						ref="rows"
 						:data-id="row.id"
 						v-for="(row, rowIndex) in data.rows"
@@ -45,22 +47,24 @@
 						:tableid="data.id"
 						:tabIndex="0"
 						:addNavigation="rowNav">
-						<ACell
-							v-for="(col, colIndex) in data.columns"
-							:key="colIndex"
-							:tableid="data.id"
-							:col="col"
-							spellcheck="false"
-							:tabIndex="0"
-							:addNavigation="rowNav"
-							:contenteditable="false"
-							:rowIndex="rowIndex"
-							:colIndex="colIndex + (data.zeroColumn ? 0 : -1)"
-							:style="{
-								textAlign: col?.align?.toLowerCase() || 'center',
-								minWidth: col?.width || '40ch',
-							}" />
-					</ARow>
+						<template #default>
+							<ACell
+								v-for="(col, colIndex) in data.columns"
+								:key="colIndex"
+								:tableid="data.id"
+								:col="col"
+								spellcheck="false"
+								:tabIndex="0"
+								:addNavigation="rowNav"
+								:contenteditable="false"
+								:rowIndex="rowIndex"
+								:colIndex="colIndex + (data.zeroColumn ? 0 : -1)"
+								:style="{
+									textAlign: col?.align?.toLowerCase() || 'center',
+									minWidth: col?.width || '40ch',
+								}" />
+						</template>
+					</AExpansionRow>
 				</template>
 			</ATable>
 		</Variant>
@@ -128,7 +132,6 @@ const http_logs = ref({
 			},
 		},
 	] as TableColumn[],
-	config: { numberedRows: true, treeView: false },
 })
 
 let rowNav = {

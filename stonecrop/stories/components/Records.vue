@@ -25,7 +25,7 @@ const registry = inject<Registry>('$registry')
 const records = reactive({
 	rows: [] as any[],
 	columns: [] as SchemaTypes[],
-	config: { numberedRows: true, treeView: false },
+	config: { listView: true },
 })
 
 let stateMachine = ref<ImmutableDoctype['events']>()
