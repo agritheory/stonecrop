@@ -24,10 +24,7 @@
 								:contenteditable="false"
 								:rowIndex="rowIndex"
 								:colIndex="colIndex + (data.zeroColumn ? 0 : -1)"
-								:style="{
-									textAlign: col?.align?.toLowerCase() || 'center',
-									minWidth: col?.width || '40ch',
-								}" />
+								:style="getRowCellStyle(col)" />
 						</template>
 					</ARow>
 				</template>
@@ -59,10 +56,7 @@
 								:contenteditable="false"
 								:rowIndex="rowIndex"
 								:colIndex="colIndex + (data.zeroColumn ? 0 : -1)"
-								:style="{
-									textAlign: col?.align?.toLowerCase() || 'center',
-									minWidth: col?.width || '40ch',
-								}" />
+								:style="getRowCellStyle(col)" />
 						</template>
 						<template #content>
 							<AForm class="aform-main" :schema="basic_form_schema" :data="data" />
@@ -95,10 +89,7 @@
 												:contenteditable="false"
 												:rowIndex="rowIndex"
 												:colIndex="colIndex + (data.zeroColumn ? 0 : -1)"
-												:style="{
-													textAlign: col?.align?.toLowerCase() || 'center',
-													minWidth: col?.width || '40ch',
-												}" />
+												:style="getRowCellStyle(col)" />
 										</template>
 										<template #content>
 											<AForm class="aform-main" :schema="basic_form_schema" :data="data" />
@@ -116,7 +107,7 @@
 
 <script lang="ts" setup>
 import { v4 } from 'uuid'
-import { ref } from 'vue'
+import { CSSProperties, ref } from 'vue'
 
 import { TableColumn } from 'types'
 import data from './sample_data/http_logs.json'
@@ -219,7 +210,14 @@ const http_logs = ref({
 	] as TableColumn[],
 })
 
-let rowNav = {
+const getRowCellStyle = (column: TableColumn): CSSProperties => {
+	return {
+		minWidth: column?.width || '40ch',
+		textAlign: column?.align?.toLowerCase() || 'center',
+	}
+}
+
+const rowNav = {
 	'keydown.up': (event: KeyboardEvent) => {
 		const target =
 			event.target instanceof HTMLTableCellElement ? event.target.parentElement : (event.target as HTMLTableRowElement)
@@ -254,6 +252,7 @@ rowNav['keydown.enter'] = rowNav['keydown.down']
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap');
 @import url('@agritheory/themes/default/default.css');
+
 tr:focus {
 	background-color: lightblue;
 	outline: auto;

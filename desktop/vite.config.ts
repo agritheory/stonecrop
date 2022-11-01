@@ -15,10 +15,10 @@ export default defineConfig({
 		},
 	},
 	build: {
-		minify: false,
+		sourcemap: true,
 		lib: {
 			entry: resolve(projectRootDir, 'src/index.js'),
-			name: '@agritheory/aform',
+			name: '@agritheory/desktop',
 		},
 		rollupOptions: {
 			external: ['vue'],

@@ -1,9 +1,22 @@
 {
 	"name": "@agritheory/desktop",
 	"version": "0.1.0",
+	"type": "module",
 	"description": "desktop specific components for Stonecrop UI",
 	"main": "index.js",
+	"files": [
+		"dist/*",
+		"src/**/*.vue"
+	],
 	"license": "MIT",
+	"scripts": {
+		"dev": "vite",
+		"build": "vite build",
+		"preview": "vite preview",
+		"story:dev": "histoire dev",
+		"story:build": "histoire build",
+		"story:preview": "histoire preview"
+	},
 	"dependencies": {
 		"portal-vue": "^3.0.0-beta.0",
 		"vue": "^3.2.37",
@@ -16,21 +29,10 @@
 		"vite": "^3.0.5",
 		"vue-template-compiler": "^2.6.14"
 	},
-	"scripts": {
-		"dev": "vite",
-		"build": "vite build",
-		"preview": "vite preview",
-		"story:dev": "histoire dev",
-		"story:build": "histoire build",
-		"story:preview": "histoire preview"
-	},
 	"exports": {
 		".": {
-			"import": "./dist/desktop.mjs",
-			"require": "./dist/desktop.umd.js"
+			"import": "./dist/desktop.js",
+			"require": "./dist/desktop.umd.cjs"
 		}
-	},
-	"files": [
-		"dist/*.css"
-	]
+	}
 }
