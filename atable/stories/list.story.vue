@@ -47,7 +47,7 @@
 						:tableid="data.id"
 						:tabIndex="0"
 						:addNavigation="rowNav">
-						<template #default>
+						<template #row>
 							<ACell
 								v-for="(col, colIndex) in data.columns"
 								:key="colIndex"
@@ -64,15 +64,48 @@
 									minWidth: col?.width || '40ch',
 								}" />
 						</template>
-						<template #expanded>
-							<div>
-								Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the
-								industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and
-								scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap
-								into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the
-								release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing
-								software like Aldus PageMaker including versions of Lorem Ipsum.
-							</div>
+						<template #content>
+							<AForm class="aform-main" :schema="basic_form_schema" :data="data" />
+
+							<ATable
+								id="list"
+								:columns="http_logs.columns"
+								:rows="http_logs.rows"
+								:config="{ listExpansionView: true }">
+								<template #body="{ data }: { data: TableDataStore }">
+									<AExpansionRow
+										ref="rows"
+										:data-id="row.id"
+										v-for="(row, rowIndex) in data.rows"
+										:key="row.id || v4()"
+										:row="row"
+										:rowIndex="rowIndex"
+										:tableid="data.id"
+										:tabIndex="0"
+										:addNavigation="rowNav">
+										<template #row>
+											<ACell
+												v-for="(col, colIndex) in data.columns"
+												:key="colIndex"
+												:tableid="data.id"
+												:col="col"
+												spellcheck="false"
+												:tabIndex="0"
+												:addNavigation="rowNav"
+												:contenteditable="false"
+												:rowIndex="rowIndex"
+												:colIndex="colIndex + (data.zeroColumn ? 0 : -1)"
+												:style="{
+													textAlign: col?.align?.toLowerCase() || 'center',
+													minWidth: col?.width || '40ch',
+												}" />
+										</template>
+										<template #content>
+											<AForm class="aform-main" :schema="basic_form_schema" :data="data" />
+										</template>
+									</AExpansionRow>
+								</template>
+							</ATable>
 						</template>
 					</AExpansionRow>
 				</template>
@@ -91,6 +124,48 @@ import data from './sample_data/http_logs.json'
 import TableDataStore from '@/components'
 
 const rows = ref<HTMLTableRowElement[]>([])
+
+const basic_form_schema = ref([
+	{
+		fieldname: 'first_name',
+		component: 'ATextInput',
+		label: 'First Name',
+	},
+	{
+		fieldname: 'middle_name',
+		component: 'ATextInput',
+		label: 'Middle Name',
+	},
+	{
+		fieldname: 'last_name',
+		component: 'ATextInput',
+		label: 'Last Name',
+	},
+	{
+		fieldname: 'age',
+		component: 'ANumericInput',
+		label: 'Age',
+	},
+	{
+		fieldname: 'date',
+		fieldtype: 'Date',
+		component: 'ATextInput',
+		label: 'Date',
+	},
+	{
+		fieldname: 'card',
+		fieldtype: 'Card',
+		component: 'ATextInput',
+		label: 'Card',
+	},
+	{
+		fieldname: 'phone',
+		fieldtype: 'Phone',
+		component: 'ATextInput',
+		label: 'Phone',
+	},
+])
+
 const http_logs = ref({
 	rows: data,
 	columns: [

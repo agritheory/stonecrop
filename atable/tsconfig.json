@@ -16,6 +16,7 @@
 		"src/**/*",
 		"src/**/*.ts",
 		"src/**/*.vue",
+		"stories/**/*.json",
 		"stories/**/*.story.vue",
 		"tests/**/*.ts",
 		"tests/**/*.vue",

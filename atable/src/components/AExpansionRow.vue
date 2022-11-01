@@ -3,15 +3,13 @@
 		<td id="row-index" :tabIndex="-1" @click="tableData.toggleRowExpand(rowIndex)">
 			{{ getRowExpandSymbol() }}
 		</td>
-		<slot />
+		<slot name="row" />
 	</tr>
-	<div
-		v-if="tableData.display[props.rowIndex].expanded"
-		ref="rowExpanded"
-		:tabindex="tabIndex"
-		class="expandable-row-content">
-		<slot name="expanded" />
-	</div>
+	<tr v-if="tableData.display[props.rowIndex].expanded" ref="rowExpanded" :tabindex="tabIndex" class="expanded-row">
+		<td :tabIndex="-1" :colspan="tableData.columns.length + 1" class="expanded-row-content">
+			<slot name="content" />
+		</td>
+	</tr>
 </template>
 
 <script setup lang="ts">
@@ -69,9 +67,14 @@ if (props.addNavigation !== undefined) {
 	height: var(--atable-row-height);
 }
 
-.expandable-row-content {
+.expanded-row {
 	border-bottom: 1px solid var(--row-border-color);
 	border-top: 1px solid var(--row-border-color);
-	padding: 0.5rem;
+}
+
+.expanded-row-content {
+	border-bottom: 1px solid var(--row-border-color);
+	border-top: 1px solid var(--row-border-color);
+	padding: 1.5rem;
 }
 </style>
