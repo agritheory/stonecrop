@@ -44,10 +44,17 @@ const getRowExpandSymbol = () => {
 }
 
 if (props.addNavigation !== undefined) {
+	const keyboardNav = Object.assign({}, props.addNavigation)
+	keyboardNav['keydown.control.g'] = (event: KeyboardEvent) => {
+		event.stopPropagation()
+		event.preventDefault()
+		tableData.toggleRowExpand(props.rowIndex)
+	}
+
 	useKeyboardNav([
 		{
 			selectors: rowEl,
-			handlers: props.addNavigation,
+			handlers: keyboardNav,
 		},
 	])
 }

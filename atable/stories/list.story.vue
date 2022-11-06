@@ -244,7 +244,6 @@ const rowNav = {
 
 rowNav['keydown.alt.up'] = rowNav['keydown.up']
 rowNav['keydown.alt.down'] = rowNav['keydown.down']
-
 rowNav['keydown.shift.enter'] = rowNav['keydown.up']
 rowNav['keydown.enter'] = rowNav['keydown.down']
 </script>
