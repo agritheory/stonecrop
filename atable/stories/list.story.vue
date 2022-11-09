@@ -63,8 +63,8 @@
 
 							<ATable
 								id="list"
-								:columns="http_logs.columns"
-								:rows="http_logs.rows"
+								:columns="inbox.columns"
+								:rows="chooseRandomData(inbox.rows)"
 								:config="{ listExpansionView: true }">
 								<template #body="{ data }: { data: TableDataStore }">
 									<AExpansionRow
@@ -110,7 +110,8 @@ import { v4 } from 'uuid'
 import { CSSProperties, ref } from 'vue'
 
 import { TableColumn } from 'types'
-import data from './sample_data/http_logs.json'
+import inbox_data from './sample_data/inbox.json'
+import http_data from './sample_data/http_logs.json'
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import TableDataStore from '@/components'
 
@@ -158,7 +159,7 @@ const basic_form_schema = ref([
 ])
 
 const http_logs = ref({
-	rows: data,
+	rows: http_data,
 	columns: [
 		{
 			label: 'Home Page',
@@ -179,22 +180,6 @@ const http_logs = ref({
 			edit: true,
 			width: '20ch',
 		},
-		// {
-		//   label: "IP Address",
-		//   name: "ip_address",
-		//   type: "Data",
-		//   align: 'left',
-		//   edit: false,
-		//   width: '20ch',
-		// },
-		// {
-		//   label: "Status",
-		//   name: "status",
-		//   type: "Data",
-		//   align: 'left',
-		//   edit: true,
-		//   width: '35ch',
-		// },
 		{
 			label: 'Report Date',
 			name: 'report_date',
@@ -209,6 +194,42 @@ const http_logs = ref({
 		},
 	] as TableColumn[],
 })
+
+const inbox = ref({
+	rows: inbox_data,
+	columns: [
+		{
+			label: 'ID',
+			name: 'id',
+			type: 'Data',
+			align: 'left',
+			edit: true,
+			width: '20ch',
+		},
+		{
+			label: 'Email',
+			name: 'email',
+			type: 'Data',
+			align: 'left',
+			edit: false,
+			width: '35ch',
+		},
+		{
+			label: 'Name',
+			name: 'name',
+			type: 'Data',
+			align: 'left',
+			edit: true,
+			width: '35ch',
+		},
+	] as TableColumn[],
+})
+
+const chooseRandomData = (rows: any[]) => {
+	return Array(3)
+		.fill(0)
+		.map((_, i) => rows[Math.floor(Math.random() * rows.length)])
+}
 
 const getRowCellStyle = (column: TableColumn): CSSProperties => {
 	return {
@@ -257,6 +278,22 @@ tr:focus {
 	outline: auto;
 }
 
+form {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	justify-content: flex-start;
+	align-items: baseline;
+}
+
+form div {
+	min-width: 40ch;
+	border: 1px solid transparent;
+	padding: 0rem;
+	margin: 0rem;
+	margin-right: 1ch;
+}
+
 input {
 	width: calc(100% - 1ch);
 	outline: 1px solid transparent;
@@ -281,6 +318,14 @@ label {
 	background: white;
 	margin: calc(-1.5rem - calc(2.15rem / 2)) 0 0 1ch;
 	padding: 0 0.25ch 0 0.25ch;
+}
+
+input:focus {
+	border: 1px solid var(--input-active-border-color);
+}
+
+input:focus + label {
+	color: var(--input-active-label-color);
 }
 </style>
 
