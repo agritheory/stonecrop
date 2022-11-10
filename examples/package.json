@@ -4,6 +4,11 @@
 	"version": "0.1.0",
 	"description": "Example App(s) for the Stonecrop framework",
 	"main": "index.js",
+	"files": [
+		"cruddesk/*",
+		"docbuilder/*",
+		"mobile/*"
+	],
 	"license": "MIT",
 	"dependencies": {
 		"@agritheory/aform": "workspace:^0.1.2",
@@ -18,14 +23,19 @@
 		"vue": "^3.2.37"
 	},
 	"scripts": {
+		"build": "",
 		"dev:crud": "vite serve cruddesk/ -c cruddesk/vite.config.js -d",
-		"dev:mobile": "vite serve mobile/ -c mobile/vite.config.js -d",
-		"build": ""
+		"dev:builder": "vite serve docbuilder/ -c docbuilder/vite.config.ts -d",
+		"dev:mobile": "vite serve mobile/ -c mobile/vite.config.js -d"
 	},
 	"devDependencies": {
-		"@histoire/plugin-vue": "^0.10.2",
+		"@types/uuid": "^8.3.4",
+		"@typescript-eslint/eslint-plugin": "^5.33.0",
+		"@typescript-eslint/parser": "^5.33.0",
 		"cypress": "^10.8.0",
-		"histoire": "^0.10.2",
+		"eslint-plugin-vue": "^9.3.0",
+		"eslint": "^8.22.0",
+		"typescript": "^4.7.4",
 		"vue-router": "^4"
 	}
 }
