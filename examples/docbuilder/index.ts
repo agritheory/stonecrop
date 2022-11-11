@@ -1,13 +1,15 @@
 import { createApp } from 'vue'
 
-import { ATable } from '@agritheory/atable'
-import { AForm } from '@agritheory/aform'
+import { AFieldset, AForm } from '@agritheory/aform'
+import { ACell, ARow, ATableHeader, ATableModal, ATable } from '@agritheory/atable'
 import App from './App.vue'
-import { makeServer } from './server'
-
-makeServer()
 
 let app = createApp(App)
-app.component('ATable', ATable)
+app.component('ACell', ACell)
+app.component('AFieldset', AFieldset)
 app.component('AForm', AForm)
+app.component('ARow', ARow)
+app.component('ATable', ATable)
+app.component('ATableHeader', ATableHeader)
+app.component('ATableModal', ATableModal)
 app.mount('#app')

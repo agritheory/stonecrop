@@ -1,24 +1,50 @@
 <template>
-	<div>
-		<AForm class="aform-main" :schema="schema" :data="data" :key="key" />
-		<!-- <SheetNav class="sheet-nav-footer" /> -->
+	<div class="builder-container">
+		<div class="builder-schema">
+			<h3>Schema</h3>
+			<AForm class="aform-main" :schema="basic_table_schema" :data="http_logs" :key="key" />
+			<!-- <SheetNav class="sheet-nav-footer" /> -->
+		</div>
+		<div class="builder-hooks">
+			<h3>Hooks</h3>
+			<AForm class="aform-main" :key="hooksData" :schema="hooks" :data="hooksData" />
+		</div>
+		<div class="builder-events">
+			<h3>Events</h3>
+		</div>
 	</div>
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
 import { v4 as uuidv4 } from 'uuid'
+import { onMounted, ref } from 'vue'
 
 import basic_table_schema from './assets/basic_table_schema.json'
+import hooks from './assets/hooks.json'
+import http_logs from './assets/http_logs.json'
+import { makeServer } from './server'
 
 const key = uuidv4()
-const schema = basic_table_schema
-const data = []
-// const data = this.state.data
 
-// onMounted(() => {
-// 	this.state.schema = basic_table_schema
-// })
+// create mirage server
+makeServer()
+
+// create hooks data
+let hooksData = ref([])
+onMounted(async () => {
+	const searchParams = new URLSearchParams({ doctype: 'Sales Order' })
+	const response = await fetch('/api/load_hooks?' + searchParams.toString())
+	const data = await response.json()
+
+	for (const [event, callback] of Object.entries(data)) {
+		if (Array.isArray(callback)) {
+			hooksData.value.push({
+				event_name: event,
+				callback: JSON.stringify(callback, null, 2),
+			})
+		}
+	}
+})
 </script>
 
 <style>
@@ -44,12 +70,47 @@ nav {
 	padding-right: 1ch;
 }
 
-.aform-main {
-	margin-left: 2ch;
-	margin-top: 1.15rem;
+.builder-container {
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	height: 40vh;
 }
 
-* {
-	margin: 0;
+.builder-schema,
+.builder-hooks,
+.builder-events {
+	border: 2px solid #827553;
+	padding: 1em;
+}
+
+.collapse-button {
+	background-color: transparent;
+	border: none;
+	float: right;
+	font-size: 150%;
+	margin-top: -0.5rem;
+	min-width: calc(66px - 4ch);
+	text-align: center;
+	width: 2ch;
+}
+
+.rotated {
+	transform: rotate(45deg);
+	-webkit-transform: rotate(45deg);
+	-moz-transform: rotate(45deg);
+	-ms-transform: rotate(45deg);
+	-o-transform: rotate(45deg);
+	transition: transform 250ms;
+	transform-origin: center center;
+}
+
+.unrotated {
+	transform: rotate(0deg);
+	-webkit-transform: rotate(0deg);
+	-moz-transform: rotate(0deg);
+	-ms-transform: rotate(0deg);
+	-o-transform: rotate(0deg);
+	transition: transform 250ms;
 }
 </style>
