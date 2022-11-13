@@ -144,6 +144,7 @@ ul {
 	/* So the psueudo elements can be
      abs. positioned inside */
 	position: relative;
+	margin-left: -1px;
 }
 .tabs a {
 	float: left;
@@ -161,6 +162,8 @@ ul {
 	-moz-border-radius-topright: 15px;
 	border-top-left-radius: 15px;
 	border-top-right-radius: 15px;
+
+	border: 1px solid #ccc;
 }
 .tabs .router-link-active {
 	/* Highest, active tab is on top */
@@ -176,7 +179,7 @@ ul {
 .tabs li:after,
 .tabs li a:before,
 .tabs li a:after {
-	/* All pseudo elements are 
+	/* All pseudo elements are
      abs. positioned and on bottom */
 	position: absolute;
 	bottom: 0;
@@ -246,7 +249,7 @@ ul {
 .hidebreadcrumbs a {
 	width: 1ch;
 	min-width: calc(66px - 4ch);
-	background-color: #827553;
+	background-color: #ffffff;
 	padding-left: 2ch;
 	padding-right: 2ch;
 	padding-top: 3px;
@@ -271,6 +274,15 @@ ul {
 	-o-transform: rotate(0deg);
 	transition: transform 250ms;
 }
+li:active,
+li:hover,
+li:focus,
+li > a:active,
+li > a:hover,
+li > a:focus {
+	z-index: 3;
+}
+
 a:active,
 a:hover,
 a:focus {
@@ -280,7 +292,7 @@ a:focus {
 .hometab a {
 	width: 1ch;
 	min-width: calc(66px - 4ch);
-	background-color: #827553;
+	background-color: #ffffff;
 	padding-left: 2ch;
 	padding-right: 2ch;
 	padding-top: 6px;
@@ -293,7 +305,7 @@ a:focus {
 .searchtab a {
 	/* width: 100%; */
 	min-width: calc(66px - 4ch);
-	background-color: #827553;
+	background-color: #ffffff;
 	padding-left: 2ch;
 	padding-right: 2ch;
 	padding-top: 11px;
