@@ -29,7 +29,7 @@ const props = withDefaults(
 		colIndex: number
 		rowIndex: number
 		tableid: string
-		addNavigation?: { type: [boolean, object] }
+		addNavigation?: boolean | object
 		tabIndex?: number
 		clickHandler?: (event: MouseEvent) => void
 	}>(),
@@ -87,28 +87,6 @@ const handleInput = (event: MouseEvent) => {
 	}
 }
 
-const handleUpKey = e => {
-	if (props.tabIndex == -1) {
-		const target = e.target as HTMLTableCellElement
-		const $row = target.parentElement?.previousElementSibling
-			? (target.parentElement?.previousElementSibling as HTMLTableRowElement)
-			: (target.parentElement as HTMLTableRowElement)
-		$row.focus()
-	}
-	return true
-}
-
-const handleDownKey = e => {
-	if (props.tabIndex == -1) {
-		const target = e.target as HTMLTableCellElement
-		const $row = target.parentElement?.nextElementSibling
-			? (target.parentElement?.nextElementSibling as HTMLTableRowElement)
-			: (target.parentElement as HTMLTableRowElement)
-		$row.focus()
-	}
-	return true
-}
-
 if (props.addNavigation) {
 	let handlers = {
 		...defaultKeypressHandlers,
@@ -136,15 +114,15 @@ if (props.addNavigation) {
 	])
 }
 
-const updateData = (event: Event) => {
-	if (event) {
-		// custom components need to handle their own updateData, this is the default
-		if (!tableData.columns[props.colIndex].component) {
-			tableData.setCellData(props.rowIndex, props.colIndex, cell.value.innerHTML)
-		}
-		cellModified.value = true
-	}
-}
+// const updateData = (event: Event) => {
+// 	if (event) {
+// 		// custom components need to handle their own updateData, this is the default
+// 		if (!tableData.columns[props.colIndex].component) {
+// 			tableData.setCellData(props.rowIndex, props.colIndex, cell.value.innerHTML)
+// 		}
+// 		cellModified.value = true
+// 	}
+// }
 
 const textAlign = computed(() => {
 	return tableData.columns[props.colIndex].align || 'center'

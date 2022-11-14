@@ -23,9 +23,9 @@
 		"build": ""
 	},
 	"devDependencies": {
-		"@histoire/plugin-vue": "^0.10.2",
+		"@histoire/plugin-vue": "^0.11.6",
 		"cypress": "^10.8.0",
-		"histoire": "^0.10.2",
+		"histoire": "^0.11.6",
 		"vue-router": "^4"
 	}
 }

@@ -88,6 +88,7 @@ input {
 	min-height: 1.15rem;
 	border-radius: 0.25rem;
 }
+
 p,
 label {
 	color: var(--input-label-color);
