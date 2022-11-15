@@ -63,6 +63,7 @@ export default class TableDataStore {
 
 			defaultDisplay[rowIndex] = {
 				childrenOpen: false,
+				expanded: false,
 				indent: row.indent || null,
 				isParent: parents.has(rowIndex),
 				isRoot: row.parent === null || row.parent === undefined,
@@ -76,7 +77,7 @@ export default class TableDataStore {
 	}
 
 	get zeroColumn() {
-		return this.config.numberedRows || this.config.treeView
+		return this.config.listExpansionView || this.config.listView || this.config.treeView
 	}
 
 	get numberedRowWidth() {
@@ -98,18 +99,18 @@ export default class TableDataStore {
 	}
 
 	toggleRowExpand(rowIndex: number) {
-		if (!this.config.treeView) {
-			return
-		}
-
-		this.display[rowIndex].childrenOpen = !this.display[rowIndex].childrenOpen
-		for (let index = this.rows.length - 1; index >= 0; index--) {
-			if (this.display[index].parent === rowIndex) {
-				this.display[index].open = !this.display[index].open
-				if (this.display[index].childrenOpen) {
-					this.toggleRowExpand(index)
+		if (this.config.treeView) {
+			this.display[rowIndex].childrenOpen = !this.display[rowIndex].childrenOpen
+			for (let index = this.rows.length - 1; index >= 0; index--) {
+				if (this.display[index].parent === rowIndex) {
+					this.display[index].open = !this.display[index].open
+					if (this.display[index].childrenOpen) {
+						this.toggleRowExpand(index)
+					}
 				}
 			}
+		} else if (this.config.listExpansionView) {
+			this.display[rowIndex].expanded = !this.display[rowIndex].expanded
 		}
 	}
 }

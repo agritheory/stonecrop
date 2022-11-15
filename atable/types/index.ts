@@ -13,12 +13,14 @@ export type TableColumn = {
 }
 
 export type TableConfig = {
-	numberedRows?: boolean
+	listExpansionView?: boolean
+	listView?: boolean
 	treeView?: boolean
 }
 
 export type TableDisplay = {
 	childrenOpen?: boolean
+	expanded?: boolean
 	indent?: number
 	isParent?: boolean
 	isRoot?: boolean

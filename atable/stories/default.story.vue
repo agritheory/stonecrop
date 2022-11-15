@@ -61,7 +61,7 @@ const http_logs = ref({
 			},
 		},
 	] as TableColumn[],
-	config: { numberedRows: true, treeView: false },
+	config: { listView: true },
 })
 </script>
 
