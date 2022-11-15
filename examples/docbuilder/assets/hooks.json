@@ -2,7 +2,7 @@
 	{
 		"component": "AFieldset",
 		"collapsible": true,
-		"label": "Hooks",
+		"label": "Side Effects",
 		"schema": [
 			{
 				"component": "ATable",

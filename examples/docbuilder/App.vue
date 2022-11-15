@@ -6,7 +6,7 @@
 			<!-- <SheetNav class="sheet-nav-footer" /> -->
 		</div>
 		<div class="builder-hooks">
-			<h3>Hooks</h3>
+			<h3>Side Effects</h3>
 			<AForm class="aform-main" :key="hooksData" :schema="hooks" :data="hooksData" />
 		</div>
 		<div class="builder-events">
@@ -34,13 +34,13 @@ let hooksData = ref([])
 onMounted(async () => {
 	const searchParams = new URLSearchParams({ doctype: 'Sales Order' })
 	const response = await fetch('/api/load_hooks?' + searchParams.toString())
-	const data = await response.json()
+	const data: Record<string, string[]> = await response.json()
 
-	for (const [event, callback] of Object.entries(data)) {
-		if (Array.isArray(callback)) {
+	for (const [event, callbacks] of Object.entries(data)) {
+		if (Array.isArray(callbacks)) {
 			hooksData.value.push({
 				event_name: event,
-				callback: JSON.stringify(callback, null, 2),
+				callback: JSON.stringify(callbacks, null, 2),
 			})
 		}
 	}

@@ -8,12 +8,6 @@
 	</ATableModal>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue'
-
-export default defineComponent({
-	name: 'AComboBox',
-	// components: { ATableModal }, // no need to define because its imported globally with the plugin
-	props: ['event', 'cellData', 'tableID'],
-})
+<script setup lang="ts">
+defineProps(['event', 'cellData', 'tableID'])
 </script>

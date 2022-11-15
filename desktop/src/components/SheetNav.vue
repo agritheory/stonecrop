@@ -72,7 +72,8 @@
 		</ul>
 	</footer>
 </template>
-<script>
+
+<script lang="ts">
 import { defineComponent } from 'vue'
 
 export default defineComponent({
@@ -176,7 +177,7 @@ ul {
 .tabs li:after,
 .tabs li a:before,
 .tabs li a:after {
-	/* All pseudo elements are 
+	/* All pseudo elements are
      abs. positioned and on bottom */
 	position: absolute;
 	bottom: 0;

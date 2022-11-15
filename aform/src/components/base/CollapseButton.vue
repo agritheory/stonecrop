@@ -2,17 +2,8 @@
 	<button class="collapse-button" :class="collapsed ? 'rotated' : 'unrotated'">×</button>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue'
-
-export default defineComponent({
-	props: {
-		collapsed: {
-			type: Boolean,
-			required: true,
-		},
-	},
-})
+<script setup lang="ts">
+defineProps<{ collapsed: boolean }>()
 </script>
 
 <style scoped>
