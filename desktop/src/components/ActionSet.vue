@@ -1,12 +1,39 @@
 <template>
 	<div class="action-set collapse">
 		<div class="action-menu-icon">
-			<svg viewBox="0 0 100 80" width="20" height="40">
-				<rect width="100" height="20" rx="8"></rect>
-				<rect y="30" width="100" height="20" rx="8"></rect>
-				<rect y="60" width="100" height="20" rx="8"></rect>
-			</svg>
+			<div id="chevron">
+				<svg
+					class="leftBar"
+					version="1.1"
+					id="Layer_1"
+					xmlns="http://www.w3.org/2000/svg"
+					xmlns:xlink="http://www.w3.org/1999/xlink"
+					x="0px"
+					y="0px"
+					viewBox="0 0 100 100"
+					xml:space="preserve"
+					width="50"
+					height="50">
+					<polygon points="54.2,33.4 29.2,58.8 25,54.6 50,29.2 " />
+				</svg>
+
+				<svg
+					class="rightBar"
+					version="1.1"
+					id="Layer_1"
+					xmlns="http://www.w3.org/2000/svg"
+					xmlns:xlink="http://www.w3.org/1999/xlink"
+					x="0px"
+					y="0px"
+					viewBox="0 0 100 100"
+					xml:space="preserve"
+					width="50"
+					height="50">
+					<polygon points="70.8,58.8 45.8,33.4 50,29.2 75,54.6 " />
+				</svg>
+			</div>
 		</div>
+		<div style="margin-right: 30px"></div>
 		<div class="action-element" v-for="(el, index) in _elements">
 			<button v-if="el.elementType == 'button'" :onclick="el.action" class="button-default">{{ el.label }}</button>
 			<div v-if="el.elementType == 'dropdown'">
@@ -57,12 +84,46 @@ export default defineComponent({
 })
 </script>
 <style scoped>
+#chevron {
+	position: relative;
+	transform: rotate(90deg);
+}
+
+.leftBar,
+.rightBar {
+	transition-duration: 0.225s;
+	transition-property: transform;
+}
+
+.leftBar {
+	transform-origin: 33.4% 50%;
+	transform: rotate(90deg);
+}
+
+.rightBar {
+	transform-origin: 67% 50%;
+	transform: rotate(-90deg);
+}
+
+.rightBar {
+	position: absolute;
+	top: 0;
+	left: 0;
+}
+
+.action-set.collapse:hover .leftBar {
+	transform: rotate(0);
+}
+
+.action-set.collapse:hover .rightBar {
+	transform: rotate(0);
+}
+
 .action-set {
 	position: fixed;
 	top: 10px;
 	right: 10px;
 	padding: 20px;
-	/* -webkit-box-shadow: 0px 4px 9px 0px rgba(0,0,0,0.38); */
 	box-shadow: 0px 1px 2px rgba(25, 39, 52, 0.05), 0px 0px 4px rgba(25, 39, 52, 0.1);
 	border-radius: 10px;
 	display: flex;
@@ -71,15 +132,8 @@ export default defineComponent({
 
 .action-menu-icon {
 	position: absolute;
-	top: 13px;
-	right: 22px;
-	color: red;
-	opacity: 1;
-	-webkit-transition: opacity 0.25s ease-in-out;
-	-moz-transition: opacity 0.25s ease-in-out;
-	-o-transition: opacity 0.25s ease-in-out;
-	transition: opacity 0.25s ease-in-out;
-	transition-delay: 0.5s;
+	top: 6px;
+	right: 8px;
 }
 
 .action-menu-icon svg {
@@ -108,11 +162,6 @@ export default defineComponent({
 .action-set.collapse:hover {
 	max-width: 500px;
 	overflow: visible !important;
-}
-
-.action-set.collapse:hover .action-menu-icon {
-	opacity: 0 !important;
-	transition-delay: 0s;
 }
 
 .action-set.collapse:hover .action-element {
