@@ -47,7 +47,7 @@ test('table renders', async () => {
 					width: '35ch',
 				},
 			],
-			config: { numberedRows: true },
+			config: { listView: true },
 		},
 	})
 

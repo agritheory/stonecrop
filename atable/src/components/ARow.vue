@@ -1,25 +1,25 @@
 <template>
-	<tr ref="rowEl" :tabindex="tabIndex" v-show="rowVisible()" :style="rowStyle">
-		<td v-if="tableData.config.numberedRows" id="row-index" :tabIndex="-1" :style="numberedRowStyle">
+	<tr ref="rowEl" :tabindex="tabIndex" v-show="rowVisible()" class="table-row">
+		<td v-if="tableData.config.listView" id="row-index" :tabIndex="-1" class="list-index">
 			{{ rowIndex + 1 }}
 		</td>
 		<td
 			v-if="tableData.config.treeView"
 			id="row-index"
 			:tabIndex="-1"
-			:style="treeRowStyle"
+			class="tree-index"
 			@click="toggleRowExpand(rowIndex)">
 			{{ getRowExpandSymbol() }}
 		</td>
-		<slot v-if="!tableData.config.numberedRows && !tableData.config.treeView" name="indexCell" />
+		<slot v-if="!tableData.config.listView && !tableData.config.treeView" name="indexCell" />
 		<slot />
 	</tr>
 </template>
 
 <script setup lang="ts">
 import { TableRow } from 'types'
-import { CSSProperties, inject, ref } from 'vue'
-import { defaultKeypressHandlers, useKeyboardNav } from '@agritheory/utilities'
+import { inject, ref } from 'vue'
+import { useKeyboardNav } from '@agritheory/utilities'
 
 import TableDataStore from '.'
 
@@ -38,29 +38,6 @@ const props = withDefaults(
 
 const tableData = inject<TableDataStore>(props.tableid)
 const rowEl = ref<HTMLTableRowElement>(null)
-
-const numberedRowStyle: CSSProperties = {
-	color: 'var(--header-text-color)',
-	fontWeight: 'bold',
-	textAlign: 'center',
-	userSelect: 'none',
-	width: tableData.numberedRowWidth.value,
-	paddingLeft: 'var(--atable-row-padding)',
-	paddingRight: '2em',
-}
-
-const treeRowStyle: CSSProperties = {
-	color: 'var(--header-text-color)',
-	fontWeight: 'bold',
-	textAlign: 'center',
-	userSelect: 'none',
-	width: '2ch',
-}
-
-const rowStyle: CSSProperties = {
-	borderTop: '1px solid var(--row-border-color)',
-	height: 'var(--atable-row-height)',
-}
 
 const getRowExpandSymbol = () => {
 	if (!tableData.config.treeView) {
@@ -107,3 +84,28 @@ if (props.addNavigation) {
 	])
 }
 </script>
+
+<style scoped>
+.table-row {
+	border-top: 1px solid var(--row-border-color);
+	height: var(--atable-row-height);
+}
+
+.list-index {
+	color: var(--header-text-color);
+	font-weight: bold;
+	padding-left: var(--atable-row-padding);
+	padding-right: 2em;
+	text-align: center;
+	user-select: none;
+	width: v-bind('tableData.numberedRowWidth.value');
+}
+
+.tree-index {
+	color: var(--header-text-color);
+	font-weight: bold;
+	text-align: center;
+	user-select: none;
+	width: 2ch;
+}
+</style>

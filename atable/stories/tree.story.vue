@@ -41,7 +41,7 @@ const coa = ref({
 			component: 'TestModalComponent',
 		},
 	],
-	config: { numberedRows: false, treeView: true },
+	config: { treeView: true },
 })
 </script>
 
