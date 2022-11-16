@@ -3,12 +3,16 @@ import { TableColumn, TableConfig, TableRow } from '@agritheory/atable/types'
 
 export type BasicSchema = {
 	component: string
+	fieldname: string
 }
 
 export type FormSchema = BasicSchema & {
-	fieldname: string
+	align: string
+	edit: boolean
 	fieldtype: string
 	label: string
+	name: string
+	width: string
 	mask?: string
 }
 

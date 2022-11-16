@@ -5,8 +5,8 @@
 			:is="componentObj.component"
 			:key="key"
 			:schema="componentObj"
-			v-bind="componentProps(componentObj)"
-			:data="formData">
+			:data="formData[componentObj.fieldname]"
+			v-bind="componentProps(componentObj)">
 		</component>
 	</form>
 </template>
@@ -28,6 +28,14 @@ const componentProps = (componentObj: SchemaTypes) => {
 	for (const [key, value] of Object.entries(componentObj)) {
 		if (!['component', 'fieldtype'].includes(key)) {
 			propsToPass[key] = value
+		}
+
+		// handle ATable data formats in case the table is nested under an AFormm;
+		// TODO: there's probably a better way to do this
+		if (key === 'rows') {
+			if (value && (value as any[]).length === 0) {
+				propsToPass['rows'] = formData.value[componentObj.fieldname]
+			}
 		}
 	}
 	return propsToPass

@@ -1,3 +1,93 @@
+html,
+body {
+	height: 100%;
+	font-family: Arimo, sans-serif;
+	font-size: 11pt;
+}
+
+nav {
+	min-height: 60px;
+	display: flex;
+	/* flex-direction: row; */
+	flex-direction: row-reverse;
+	align-items: center;
+	border-bottom: 2px solid var(--primary-color);
+	margin: 0px;
+	padding-left: 1ch;
+	padding-right: 1ch;
+}
+
+table {
+	display: table;
+	border-collapse: collapse;
+	caret-color: var(--brand-color);
+}
+
+table.atable,
+.atable {
+	font-family: var(--atable-font-family);
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	font-size: var(--table-font-size);
+	border-collapse: collapse;
+}
+
+th {
+	box-sizing: border-box;
+	background-color: var(--brand-color);
+	border-width: 1px;
+	border-style: solid;
+	border-color: var(--header-border-color);
+	border-radius: 0px;
+	color: var(--header-text-color);
+}
+
+td {
+	border-radius: 0px;
+	box-sizing: border-box;
+	margin: 0px;
+	outline: none;
+	box-shadow: none;
+	color: var(--cell-text-color);
+	text-overflow: ellipsis;
+	overflow: hidden;
+	padding-left: 0.5ch !important;
+	padding-right: 0.5ch;
+
+	padding-top: var(--atable-row-padding);
+	padding-bottom: var(--atable-row-padding);
+
+	border-spacing: 0px;
+	border-collapse: collapse;
+}
+
+td:focus,
+td:focus-within {
+	background-color: var(--focus-cell-background);
+	outline-width: 2px;
+	outline-style: solid;
+	outline-color: var(--focus-cell-outline);
+	box-shadow: none;
+	overflow: hidden;
+	min-height: 1.15em;
+	max-height: 1.15em;
+	overflow: hidden;
+}
+
+.builder-container {
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	height: 60vh;
+}
+
+.builder-schema,
+.builder-hooks,
+.builder-events {
+	border: 2px solid #827553;
+	padding: 1em;
+}
+
 .sheet-nav-footer {
 	position: fixed;
 	bottom: 0px;
@@ -19,6 +109,7 @@
 	/* So the psueudo elements can be abs. positioned inside */
 	position: relative;
 }
+
 .tabs a {
 	float: left;
 	padding: 1ch 4ch 4ch 4ch;
@@ -36,16 +127,19 @@
 	border-top-left-radius: 15px;
 	border-top-right-radius: 15px;
 }
+
 .tabs .router-link-active {
 	/* Highest, active tab is on top */
 	z-index: 3;
 }
+
 .router-link-active {
 	/* Colors when tab is active */
 	background: #827553;
 	color: black;
 	box-shadow: #999;
 }
+
 .tabs li:before,
 .tabs li:after,
 .tabs li a:before,
@@ -54,6 +148,7 @@
 	position: absolute;
 	bottom: 0;
 }
+
 /* Only the first, last, and active tabs need pseudo elements at all */
 .tabs li:last-child:after,
 .tabs li:last-child a:after,
@@ -65,6 +160,7 @@
 .tabs .router-link-active a:before {
 	content: '';
 }
+
 .tabs .router-link-active:before,
 .tabs .router-link-active:after {
 	background: transparent;
@@ -72,6 +168,7 @@
 	/* Squares below circles */
 	z-index: 1;
 }
+
 /* Squares */
 .tabs li:before,
 .tabs li:after {
@@ -79,12 +176,15 @@
 	width: 10px;
 	height: 10px;
 }
+
 .tabs li:before {
 	left: -10px;
 }
+
 .tabs li:after {
 	right: -10px;
 }
+
 /* Circles */
 .tabs li a:after,
 .tabs li a:before {
@@ -99,21 +199,26 @@
 	/* Circles over squares */
 	z-index: 2;
 }
+
 .tabs .router-link-active a:after,
 .tabs .router-link-active a:before {
 	background: transparent;
 }
+
 /* First and last tabs have different outside color needs */
 .tabs li:first-child.router-link-active a:before,
 .tabs li:last-child.router-link-active a:after {
 	background: transparent;
 }
+
 .tabs li a:before {
 	left: -20px;
 }
+
 .tabs li a:after {
 	right: -20px;
 }
+
 .hidebreadcrumbs a {
 	width: 1ch;
 	min-width: calc(66px - 4ch);
@@ -124,17 +229,29 @@
 	font-size: 150%;
 	text-align: center;
 }
+
+.collapse-button {
+	background-color: transparent;
+	border: none;
+	float: right;
+	font-size: 150%;
+	margin-top: -0.5rem;
+	min-width: calc(66px - 4ch);
+	text-align: center;
+	width: 2ch;
+}
+
 .rotated {
-	/* border: 1px solid red; */
 	transform: rotate(45deg);
 	-webkit-transform: rotate(45deg);
 	-moz-transform: rotate(45deg);
 	-ms-transform: rotate(45deg);
 	-o-transform: rotate(45deg);
 	transition: transform 250ms;
+	transform-origin: center center;
 }
+
 .unrotated {
-	/* border: 1px solid red; */
 	transform: rotate(0deg);
 	-webkit-transform: rotate(0deg);
 	-moz-transform: rotate(0deg);
@@ -142,12 +259,14 @@
 	-o-transform: rotate(0deg);
 	transition: transform 250ms;
 }
+
 a:active,
 a:hover,
 a:focus {
 	outline: 2px solid black;
 	z-index: 3;
 }
+
 .hometab a {
 	width: 1ch;
 	min-width: calc(66px - 4ch);
@@ -157,10 +276,12 @@ a:focus {
 	padding-top: 6px;
 	text-align: center;
 }
+
 .hometab svg {
 	height: 14pt;
 	width: 14pt;
 }
+
 .searchtab a {
 	/* width: 100%; */
 	min-width: calc(66px - 4ch);
@@ -171,9 +292,11 @@ a:focus {
 	font-size: 150%;
 	align-items: center;
 }
+
 .searchtab svg {
 	padding-left: 0.25ch;
 }
+
 .searchtab input {
 	margin-top: -4px;
 	outline: none;

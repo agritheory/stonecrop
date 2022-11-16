@@ -3,13 +3,15 @@
 		"component": "AFieldset",
 		"collapsible": true,
 		"label": "Side Effects",
+		"fieldname": "side_effects_fieldset",
 		"schema": [
 			{
 				"component": "ATable",
+				"fieldname": "side_effects",
 				"columns": [
 					{
 						"label": "Event Name",
-						"fieldname": "event_name",
+						"name": "event_name",
 						"fieldtype": "Data",
 						"align": "Left",
 						"edit": false,
@@ -17,7 +19,7 @@
 					},
 					{
 						"label": "Callback",
-						"fieldname": "callback",
+						"name": "callback",
 						"fieldtype": "Data",
 						"align": "Left",
 						"edit": true,
