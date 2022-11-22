@@ -6,17 +6,19 @@ export function makeServer({ environment = 'development' } = {}) {
 		environment,
 
 		models: {
+			doctype: Model,
 			hook: Model,
 			meta: Model,
-			'Sales Order': Model,
-			'Sales Invoice': Model,
+			issue: Model,
+			todo: Model,
 		},
 
 		seeds(server) {
 			server.db.loadData({
+				doctypes: [{ name: 'Issue' }, { name: 'Todo' }],
 				meta: [
 					{
-						name: 'Sales Order',
+						name: 'Issue',
 						fields: [
 							{
 								type: 'submit',
@@ -38,7 +40,7 @@ export function makeServer({ environment = 'development' } = {}) {
 						],
 					},
 					{
-						name: 'Sales Invoice',
+						name: 'Todo',
 						fields: [
 							{
 								type: 'password',
@@ -62,16 +64,16 @@ export function makeServer({ environment = 'development' } = {}) {
 				],
 				hooks: [
 					{
-						name: 'Sales Order',
+						name: 'Issue',
 						side_effects: [
 							{
 								event_name: 'LOAD',
 								callback: [
 									(() => {
-										console.log('load event')
+										console.log('load issue')
 									}).toString(),
 									(() => {
-										console.log('load event side effect')
+										console.log('load issue side effect')
 									}).toString(),
 								],
 							},
@@ -79,10 +81,37 @@ export function makeServer({ environment = 'development' } = {}) {
 								event_name: 'SAVE',
 								callback: [
 									(() => {
-										console.log('save event')
+										console.log('save issue')
 									}).toString(),
 									(() => {
-										console.log('after save event')
+										console.log('after save issue')
+									}).toString(),
+								],
+							},
+						],
+					},
+					{
+						name: 'Todo',
+						side_effects: [
+							{
+								event_name: 'LOAD',
+								callback: [
+									(() => {
+										console.log('load todo')
+									}).toString(),
+									(() => {
+										console.log('load todo side effect')
+									}).toString(),
+								],
+							},
+							{
+								event_name: 'SAVE',
+								callback: [
+									(() => {
+										console.log('save todo')
+									}).toString(),
+									(() => {
+										console.log('after save todo')
 									}).toString(),
 								],
 							},
@@ -95,30 +124,30 @@ export function makeServer({ environment = 'development' } = {}) {
 		routes() {
 			this.namespace = 'api'
 
-			this.get('/Sales Order', schema => {
-				return schema['Sales Order'].all()
+			this.get('/doctypes', schema => {
+				return schema.all('doctype')
 			})
 
-			this.get('/Sales Invoice', schema => {
-				return schema['Sales Invoice'].all()
+			this.get('/issue', schema => {
+				return schema.all('issue')
+			})
+
+			this.get('/todo', schema => {
+				return schema.all('todo')
 			})
 
 			this.get('/load_meta', (schema, request) => {
-				let doctypeMeta = schema.meta.findBy({ name: request.queryParams.doctype })
-				if (doctypeMeta) {
-					return doctypeMeta.attrs.fields
-				} else {
-					return new Response(400, { some: 'Not Found' }, { errors: ['Metadata for Doctype not found'] })
-				}
+				let meta = schema.meta.findBy({ name: request.queryParams.doctype })
+				return meta
+					? meta.attrs.fields
+					: new Response(400, { some: 'Not Found' }, { errors: ['Metadata for Doctype not found'] })
 			})
 
 			this.get('/load_side_effects', (schema, request) => {
-				let doctypeHooks = schema.hooks.findBy({ name: request.queryParams.doctype })
-				if (doctypeHooks) {
-					return doctypeHooks.attrs.side_effects
-				} else {
-					return new Response(400, { some: 'Not Found' }, { errors: ['Hooks for Doctype not found'] })
-				}
+				let hooks = schema.hooks.findBy({ name: request.queryParams.doctype })
+				return hooks
+					? hooks.attrs.side_effects
+					: new Response(400, { some: 'Not Found' }, { errors: ['Hooks for Doctype not found'] })
 			})
 		},
 	})

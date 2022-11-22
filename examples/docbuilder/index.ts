@@ -3,8 +3,10 @@ import { createApp } from 'vue'
 import { AFieldset, AForm, ANumericInput, ATextInput } from '@agritheory/aform'
 import { ACell, ARow, ATableHeader, ATableModal, ATable } from '@agritheory/atable'
 import App from './App.vue'
+import router from './router'
 
 let app = createApp(App)
+app.use(router)
 app.component('ACell', ACell)
 app.component('AFieldset', AFieldset)
 app.component('AForm', AForm)
