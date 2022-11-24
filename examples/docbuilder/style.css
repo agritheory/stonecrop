@@ -74,20 +74,6 @@ td:focus-within {
 	overflow: hidden;
 }
 
-.builder-container {
-	display: flex;
-	flex-direction: column;
-	justify-content: space-between;
-	height: 60vh;
-}
-
-.builder-schema,
-.builder-hooks,
-.builder-events {
-	border: 2px solid #827553;
-	padding: 1em;
-}
-
 .sheet-nav-footer {
 	position: fixed;
 	bottom: 0px;

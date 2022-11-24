@@ -1,0 +1,42 @@
+[
+	{
+		"component": "AFieldset",
+		"collapsible": true,
+		"label": "Schema",
+		"fieldname": "schema_fieldset",
+		"schema": [
+			{
+				"component": "ATable",
+				"fieldname": "schema",
+				"columns": [
+					{
+						"label": "ID",
+						"name": "id",
+						"fieldtype": "Data",
+						"align": "Left",
+						"edit": false,
+						"width": "20ch"
+					},
+					{
+						"label": "Label",
+						"name": "label",
+						"fieldtype": "Data",
+						"align": "Left",
+						"edit": false,
+						"width": "35ch"
+					},
+					{
+						"label": "Type",
+						"name": "type",
+						"fieldtype": "Data",
+						"align": "Left",
+						"edit": false,
+						"width": "20ch"
+					}
+				],
+				"config": { "listView": true },
+				"rows": []
+			}
+		]
+	}
+]
