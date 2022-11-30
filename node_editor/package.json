@@ -1,8 +1,8 @@
 {
-	"name": "@agritheory/desktop",
+	"name": "@agritheory/node_editor",
 	"version": "0.1.0",
 	"type": "module",
-	"description": "desktop specific components for Stonecrop UI",
+	"description": "Node editor UI for Stonecrop",
 	"main": "index.js",
 	"files": [
 		"dist/*",
@@ -21,7 +21,12 @@
 		"portal-vue": "^3.0.0-beta.0",
 		"vue": "^3.2.37",
 		"vue-router": "^4",
-		"baklavajs": "~1.10.2"
+		"baklavajs": "~1.10.2",
+		"@baklavajs/core": "~1.10.2",
+		"@baklavajs/engine": "~2.0.1-next.0",
+		"@baklavajs/interface-types": "~2.0.1-next.0",
+		"@baklavajs/renderer-vue": "~2.0.1-next.0",
+		"@baklavajs/themes": "~2.0.1-next.0"
 	},
 	"devDependencies": {
 		"@histoire/plugin-vue": "^0.11.6",
@@ -32,8 +37,8 @@
 	},
 	"exports": {
 		".": {
-			"import": "./dist/desktop.js",
-			"require": "./dist/desktop.umd.cjs"
+			"import": "./dist/node_editor.js",
+			"require": "./dist/node_editor.umd.cjs"
 		}
 	}
 }

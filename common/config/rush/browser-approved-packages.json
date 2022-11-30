@@ -27,6 +27,22 @@
       "allowedCategories": [ "prototype" ]
     },
     {
+      "name": "@baklavajs/core",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "@baklavajs/engine",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "@baklavajs/interface-types",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "@baklavajs/renderer-vue",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
       "name": "@histoire/plugin-vue",
       "allowedCategories": [ "prototype", "utilities" ]
     },
@@ -53,6 +69,10 @@
     {
       "name": "@vueuse/core",
       "allowedCategories": [ "prototype", "utilities" ]
+    },
+    {
+      "name": "baklavajs",
+      "allowedCategories": [ "prototype" ]
     },
     {
       "name": "cypress",

@@ -91,6 +91,7 @@ importers:
     specifiers:
       '@histoire/plugin-vue': ^0.11.6
       '@vitejs/plugin-vue': ^3.0.1
+      baklavajs: ~1.10.2
       histoire: ^0.11.6
       portal-vue: ^3.0.0-beta.0
       vite: ^3.0.5
@@ -98,6 +99,7 @@ importers:
       vue-router: ^4
       vue-template-compiler: ^2.6.14
     dependencies:
+      baklavajs: 1.10.2
       portal-vue: 3.0.0-beta.0_vue@3.2.40
       vue: 3.2.40
       vue-router: 4.1.5_vue@3.2.40
@@ -140,6 +142,39 @@ importers:
       cypress: 10.9.0
       histoire: 0.11.6_vite@3.1.4
       vue-router: 4.1.5_vue@3.2.40
+
+  ../../node_editor:
+    specifiers:
+      '@baklavajs/core': ~1.10.2
+      '@baklavajs/engine': ~2.0.1-next.0
+      '@baklavajs/interface-types': ~2.0.1-next.0
+      '@baklavajs/renderer-vue': ~2.0.1-next.0
+      '@baklavajs/themes': ~2.0.1-next.0
+      '@histoire/plugin-vue': ^0.11.6
+      '@vitejs/plugin-vue': ^3.0.1
+      baklavajs: ~1.10.2
+      histoire: ^0.11.6
+      portal-vue: ^3.0.0-beta.0
+      vite: ^3.0.5
+      vue: ^3.2.37
+      vue-router: ^4
+      vue-template-compiler: ^2.6.14
+    dependencies:
+      '@baklavajs/core': 1.10.2
+      '@baklavajs/engine': 2.0.1-next.0
+      '@baklavajs/interface-types': 2.0.1-next.0
+      '@baklavajs/renderer-vue': 2.0.1-next.0
+      '@baklavajs/themes': 2.0.1-next.0
+      baklavajs: 1.10.2
+      portal-vue: 3.0.0-beta.0_vue@3.2.40
+      vue: 3.2.40
+      vue-router: 4.1.5_vue@3.2.40
+    devDependencies:
+      '@histoire/plugin-vue': 0.11.6_z2uv55hbhjl5c4thezt7scxyse
+      '@vitejs/plugin-vue': 3.1.2_vite@3.1.4+vue@3.2.40
+      histoire: 0.11.6_vite@3.1.4
+      vite: 3.1.4
+      vue-template-compiler: 2.7.10
 
   ../../stonecrop:
     specifiers:
@@ -244,6 +279,66 @@ packages:
     dependencies:
       regenerator-runtime: 0.13.9
     dev: true
+
+  /@baklavajs/core/1.10.2:
+    resolution: {integrity: sha512-8bqlhFJo9Zuli1DCIz41NK/eX6AAnyErKEBlamc8auEZMMlnusu8QkRuHxVXf+P7OsKKFTPHM5NGC4Ibhplbmg==}
+    dependencies:
+      '@baklavajs/events': 1.10.2
+    dev: false
+
+  /@baklavajs/core/2.0.1-next.0:
+    resolution: {integrity: sha512-p88NZl/3dTS9nX+TLo6P1iIGV+9VoEVmwmoOKUngqgeBH9igl8YwXIOOf5f1xX5GIBldFELm48rRD/0M1QNeHA==}
+    dependencies:
+      '@baklavajs/events': 2.0.1-next.0
+      uuid: 8.3.2
+    dev: false
+
+  /@baklavajs/engine/2.0.1-next.0:
+    resolution: {integrity: sha512-+3ckMLChI6AtGarAuDvpyULqEJKSP5rrmf+emXPASUPlBWJ68IUWSLsQPOCQOLw87ungQSqyAxx3knHgftpraw==}
+    dependencies:
+      '@baklavajs/core': 2.0.1-next.0
+      '@baklavajs/events': 2.0.1-next.0
+    dev: false
+
+  /@baklavajs/events/1.10.2:
+    resolution: {integrity: sha512-GtJdkEPdWN+NKxCTYhzpyLjAPyJLpx/hr4jASjNFtnoRFjwcHh/ZQAR5J7b/4hU0RTKjgAR/Oz71/Wlih4ry3Q==}
+    dev: false
+
+  /@baklavajs/events/2.0.1-next.0:
+    resolution: {integrity: sha512-/8YnptMMPPcNvwF/HWklMe2fv+D70+No+HpxKECr1v54iJzH/365zGevQQsQ/uMs8HVTF6SPSudVNCeJgUF5mw==}
+    dev: false
+
+  /@baklavajs/interface-types/2.0.1-next.0:
+    resolution: {integrity: sha512-4qDTBhU8EjsfuF5Qt9iEUrYQ5AHwx65AmAkY/e3VOwmC7+O1Gx5KNmRDKiVwRptv/gW1pT4sQ1RrJlfUUjdyqw==}
+    dev: false
+
+  /@baklavajs/plugin-engine/1.10.2:
+    resolution: {integrity: sha512-kneDrfoqRq+hdHIxLNzkHh4YtU7CTzvg2lYmDne3NNCihPz+DUhu4mjq4Q+McRQrrG5WyqF9PFAyoBIibhQCFQ==}
+    dependencies:
+      '@baklavajs/events': 1.10.2
+    dev: false
+
+  /@baklavajs/plugin-interface-types/1.10.2:
+    resolution: {integrity: sha512-8hOsW7gxgZ7G9nOi1OtrsoeK7LTqXdlLXM8OG8/FR2A0OiwpS7eROfVxc2MX/bTY0K9ty1SnHVbC5jRnh1et5A==}
+    dev: false
+
+  /@baklavajs/plugin-options-vue/1.10.2:
+    resolution: {integrity: sha512-yaO5Cs0IaNB5r5FgQdGYQSAagyNsScLTkpz+lLwSidT1l0ZcKnM84e64iAPYFoZQhR8F9TkDWE8Hj69S9iraxQ==}
+    dev: false
+
+  /@baklavajs/plugin-renderer-vue/1.10.2:
+    resolution: {integrity: sha512-ehDZETbHegdLAcW7xIr8utqO5H2SK0Gd0XjnsDdT/zCnI5ilzmaQr05lfzLr01JJ+JEqrGJS5FujwTHOcXdpqA==}
+    dependencies:
+      '@baklavajs/events': 1.10.2
+    dev: false
+
+  /@baklavajs/renderer-vue/2.0.1-next.0:
+    resolution: {integrity: sha512-Vm7MZmWeqvVdlYBhCstDxVZujY5jmtmBAS/q2vOAMnAhEPwf1sVJKlxsVvRGVieQ+20B3UBKcF1HQen1ycLUdA==}
+    dev: false
+
+  /@baklavajs/themes/2.0.1-next.0:
+    resolution: {integrity: sha512-MlelIBddjTm+/zI8F/0gGS4thgdpwwtR79Z7Qxx35nHIE0AXtO2L2wO++fOQktBZYCQGy++OzsUdFZ0WdtKKPA==}
+    dev: false
 
   /@codemirror/commands/6.1.2:
     resolution: {integrity: sha512-sO3jdX1s0pam6lIdeSJLMN3DQ6mPEbM4yLvyKkdqtmd/UDwhXA5+AwFJ89rRXm6vTeOXBsE5cAmlos/t7MJdgg==}
@@ -965,6 +1060,16 @@ packages:
   /aws4/1.11.0:
     resolution: {integrity: sha512-xh1Rl34h6Fi1DC2WWKfxUTVqRsNnr6LsKz2+hfwDxQJWmrx8+c7ylaqBMcHfl1U1r2dsifOvKX3LQuLNZ+XSvA==}
     dev: true
+
+  /baklavajs/1.10.2:
+    resolution: {integrity: sha512-UWmh/L2BTUKpSZLPKZ6vzVrQ88FjqTcQGD4oJsSuUMOykWvsc+YJe8Ik/jxF7IrHV7Iqon7+UR0Ll7BhA8AJ9w==}
+    dependencies:
+      '@baklavajs/core': 1.10.2
+      '@baklavajs/plugin-engine': 1.10.2
+      '@baklavajs/plugin-interface-types': 1.10.2
+      '@baklavajs/plugin-options-vue': 1.10.2
+      '@baklavajs/plugin-renderer-vue': 1.10.2
+    dev: false
 
   /balanced-match/1.0.2:
     resolution: {integrity: sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==}
@@ -3641,7 +3746,6 @@ packages:
   /uuid/8.3.2:
     resolution: {integrity: sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==}
     hasBin: true
-    dev: true
 
   /uuid/9.0.0:
     resolution: {integrity: sha512-MXcSTerfPa4uqyzStbRoTgt5XIe3x5+42+q1sDuy3R5MDk66URdLMOZe5aPX/SQd+kuYAh0FdP/pO28IkQyTeg==}
