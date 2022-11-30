@@ -1,0 +1,39 @@
+{
+	"name": "@agritheory/node_editor",
+	"version": "0.1.0",
+	"type": "module",
+	"description": "Node editor UI for Stonecrop",
+	"main": "index.js",
+	"files": [
+		"dist/*",
+		"src/**/*.vue"
+	],
+	"license": "MIT",
+	"scripts": {
+		"dev": "vite",
+		"build": "vite build",
+		"preview": "vite preview",
+		"story:dev": "histoire dev",
+		"story:build": "histoire build",
+		"story:preview": "histoire preview"
+	},
+	"dependencies": {
+		"portal-vue": "^3.0.0-beta.0",
+		"vue": "^3.2.37",
+		"vue-router": "^4",
+		"@vue-flow/core": "~1.5.1",
+		"xstate": "~4.33.6"
+	},
+	"devDependencies": {
+		"@histoire/plugin-vue": "^0.11.6",
+		"@vitejs/plugin-vue": "^3.0.1",
+		"histoire": "^0.11.6",
+		"vite": "^3.0.5"
+	},
+	"exports": {
+		".": {
+			"import": "./dist/node_editor.js",
+			"require": "./dist/node_editor.umd.cjs"
+		}
+	}
+}

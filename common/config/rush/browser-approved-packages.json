@@ -27,6 +27,42 @@
       "allowedCategories": [ "prototype" ]
     },
     {
+      "name": "@baklavajs/core",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "@baklavajs/engine",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "@baklavajs/events",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "@baklavajs/interface-types",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "@baklavajs/plugin-engine",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "@baklavajs/plugin-options-vue3",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "@baklavajs/plugin-renderer-vue3",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "@baklavajs/renderer-vue",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "@baklavajs/themes",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
       "name": "@histoire/plugin-vue",
       "allowedCategories": [ "prototype", "utilities" ]
     },
@@ -47,12 +83,20 @@
       "allowedCategories": [ "prototype", "utilities" ]
     },
     {
+      "name": "@vue-flow/core",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
       "name": "@vue/compiler-sfc",
       "allowedCategories": [ "prototype" ]
     },
     {
       "name": "@vueuse/core",
       "allowedCategories": [ "prototype", "utilities" ]
+    },
+    {
+      "name": "baklavajs",
+      "allowedCategories": [ "prototype" ]
     },
     {
       "name": "cypress",
@@ -165,6 +209,14 @@
     {
       "name": "vue",
       "allowedCategories": [ "prototype", "utilities" ]
+    },
+    {
+      "name": "vue-class-component",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "vue-property-decorator",
+      "allowedCategories": [ "prototype" ]
     },
     {
       "name": "vue-router",
