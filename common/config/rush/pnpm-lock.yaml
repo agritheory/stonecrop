@@ -91,7 +91,6 @@ importers:
     specifiers:
       '@histoire/plugin-vue': ^0.11.6
       '@vitejs/plugin-vue': ^3.0.1
-      baklavajs: 2.0.2-beta.1
       histoire: ^0.11.6
       portal-vue: ^3.0.0-beta.0
       vite: ^3.0.5
@@ -99,7 +98,6 @@ importers:
       vue-router: ^4
       vue-template-compiler: ^2.6.14
     dependencies:
-      baklavajs: 2.0.2-beta.1
       portal-vue: 3.0.0-beta.0_vue@3.2.40
       vue: 3.2.40
       vue-router: 4.1.5_vue@3.2.40

@@ -21,12 +21,12 @@
 		"portal-vue": "^3.0.0-beta.0",
 		"vue": "^3.2.37",
 		"vue-router": "^4",
-		"baklavajs": "2.0.2-beta.1",
 		"@baklavajs/core": "2.0.2-beta.1",
 		"@baklavajs/engine": "2.0.2-beta.1",
 		"@baklavajs/interface-types": "2.0.2-beta.1",
 		"@baklavajs/renderer-vue": "2.0.2-beta.1",
-		"@baklavajs/themes": "2.0.2-alpha.4"
+		"@baklavajs/themes": "2.0.2-alpha.4",
+		"baklavajs": "2.0.2-beta.1"
 	},
 	"devDependencies": {
 		"@histoire/plugin-vue": "^0.11.6",
