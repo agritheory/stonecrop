@@ -21,7 +21,7 @@
 		"portal-vue": "^3.0.0-beta.0",
 		"vue": "^3.2.37",
 		"vue-router": "^4",
-		"baklavajs": "~1.10.2"
+		"baklavajs": "2.0.2-beta.1"
 	},
 	"devDependencies": {
 		"@histoire/plugin-vue": "^0.11.6",

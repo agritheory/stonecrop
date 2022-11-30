@@ -43,6 +43,10 @@
       "allowedCategories": [ "prototype" ]
     },
     {
+      "name": "@baklavajs/themes",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
       "name": "@histoire/plugin-vue",
       "allowedCategories": [ "prototype", "utilities" ]
     },
