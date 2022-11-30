@@ -20,6 +20,7 @@
 						spellcheck="false"
 						:rowIndex="rowIndex"
 						:colIndex="colIndex + (tableData.zeroColumn ? 0 : -1)"
+						:component="col.cellComponent"
 						:style="{
 							textAlign: col?.align?.toLowerCase() || 'center',
 							minWidth: col?.width || '40ch',

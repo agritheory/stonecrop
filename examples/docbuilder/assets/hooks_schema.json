@@ -23,7 +23,12 @@
 						"fieldtype": "Data",
 						"align": "Left",
 						"edit": true,
-						"width": "20ch"
+						"width": "20ch",
+						"cellComponent": "textarea",
+						"cellComponentProps": {
+							"rows": 8,
+							"cols": 50
+						}
 					}
 				],
 				"config": { "listView": true },

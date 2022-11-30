@@ -8,9 +8,10 @@
 import { ref } from 'vue'
 
 import data from './sample_data/coa.json'
+import { TableColumn, TableConfig, TableRow } from 'types/index'
 
 const coa = ref({
-	rows: data,
+	rows: data as TableRow[],
 	columns: [
 		{
 			label: 'Number',
@@ -38,10 +39,10 @@ const coa = ref({
 			format: (value: { title?: string; value?: any }) => {
 				return value.title
 			},
-			component: 'TestModalComponent',
+			modalComponent: 'TestModalComponent',
 		},
-	],
-	config: { treeView: true },
+	] as TableColumn[],
+	config: { treeView: true } as TableConfig,
 })
 </script>
 

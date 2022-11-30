@@ -55,7 +55,7 @@ const http_logs = ref({
 			align: 'center',
 			edit: true,
 			width: '25ch',
-			component: 'ADate',
+			modalComponent: 'ADate',
 			format: (value: number) => {
 				return new Date(Number(value)).toLocaleDateString('en-US')
 			},

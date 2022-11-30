@@ -2,11 +2,14 @@ export type TableColumn = {
 	name: string
 
 	align?: CanvasTextAlign
-	component?: string
 	edit?: boolean
 	label?: string
 	type?: string
 	width?: string
+
+	cellComponent?: string
+	cellComponentProps?: Record<string, any>
+	modalComponent?: string
 
 	format?: string | ((value: any) => any)
 	mask?: (value: any) => any
