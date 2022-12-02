@@ -5,32 +5,32 @@
 </template>
 <script>
 import { defineComponent } from 'vue'
-import { EditorComponent, useBaklava } from '@baklavajs/renderer-vue'
-import { defineNode, NodeInterface } from '@baklavajs/core'
-import * as mod from '@baklavajs/interface-types'
-import { NumberInterface, SelectInterface } from 'baklavajs'
 import '@baklavajs/themes/dist/syrup-dark.css'
-console.log('DF')
-
-const myNode = defineNode({
+import { default as WorkflowConnection } from './WorkflowConnection.vue'
+import * as baklavajs from 'baklavajs'
+console.log('baklava', baklavajs.Components)
+//baklavajs.Components.Connection = WorkflowConnection
+const myNode = baklavajs.defineNode({
 	type: 'MyNode',
 	inputs: {
-		number1: () => new NumberInterface('Number', 1),
-		number2: () => new NumberInterface('Number', 10),
-		operation: () => new SelectInterface('Operation', 'Add', ['Add', 'Subtract']).setPort(false),
+		number1: () => new baklavajs.NumberInterface('Number', 1),
+		number2: () => new baklavajs.NumberInterface('Number', 10),
+		operation: () => new baklavajs.SelectInterface('Operation', 'Add', ['Add', 'Subtract']).setPort(false),
 	},
 	outputs: {
-		output: () => new NodeInterface('Output', 0),
+		output: () => new baklavajs.NodeInterface('Output', 0),
 	},
 })
 
 export default defineComponent({
 	components: {
-		'baklava-editor': EditorComponent,
+		'baklava-editor': baklavajs.EditorComponent,
 	},
 	setup() {
-		const baklava = useBaklava()
+		const baklava = baklavajs.useBaklava()
 		baklava.editor.registerNodeType(myNode)
+		console.log('instance', baklava)
+		console.log('more', baklava)
 		return { baklava }
 	},
 })
