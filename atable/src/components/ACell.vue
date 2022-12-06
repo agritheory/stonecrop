@@ -14,7 +14,13 @@
 		@input="onChange"
 		@click="handleInput"
 		@mousedown="handleInput">
-		{{ displayValue }}
+		<component
+			v-if="tableData.columns[colIndex].cellComponent"
+			:is="tableData.columns[colIndex].cellComponent"
+			:value="displayValue"
+			v-bind="tableData.columns[colIndex].cellComponentProps">
+		</component>
+		<span v-else>{{ displayValue }}</span>
 	</td>
 </template>
 
@@ -74,7 +80,7 @@ const handleInput = (event: MouseEvent) => {
 		// tableData.columns[props.colIndex].mask(event)
 	}
 
-	if (tableData.columns[props.colIndex].component) {
+	if (tableData.columns[props.colIndex].modalComponent) {
 		const domRect = cell.value.getBoundingClientRect()
 		tableData.modal.visible = true
 		tableData.modal.colIndex = props.colIndex
@@ -83,7 +89,7 @@ const handleInput = (event: MouseEvent) => {
 		tableData.modal.top = domRect.top + domRect.height
 		tableData.modal.left = domRect.left
 		tableData.modal.width = cellWidth.value
-		tableData.modal.component = tableData.columns[props.colIndex].component
+		tableData.modal.component = tableData.columns[props.colIndex].modalComponent
 	}
 }
 

@@ -5,48 +5,41 @@
 			:is="componentObj.component"
 			:key="key"
 			:schema="componentObj"
-			v-bind="componentProps(componentObj)"
-			:value="formData[componentObj.fieldname]">
+			:data="formData[componentObj.fieldname]"
+			v-bind="componentProps(componentObj)">
 		</component>
 	</form>
 </template>
 
-<script lang="ts">
-import { defineComponent, PropType, ref } from 'vue'
+<script setup lang="ts">
+import { ref } from 'vue'
 
 import { SchemaTypes } from 'types'
 
-export default defineComponent({
-	name: 'AForm',
-	props: {
-		schema: {
-			type: Array as PropType<SchemaTypes[]>,
-			required: true,
-		},
-		data: {
-			type: Object,
-			required: true,
-		},
-		formId: {
-			type: Number,
-		},
-	},
-	setup(props) {
-		const formData = ref(props.data || {})
+const props = defineProps<{
+	schema: SchemaTypes[]
+	data: Record<string, any>
+}>()
 
-		const componentProps = (componentObj: SchemaTypes) => {
-			let propsToPass = {}
-			for (const [key, value] of Object.entries(componentObj)) {
-				if (!['component', 'fieldtype'].includes(key)) {
-					propsToPass[key] = value
-				}
-			}
-			return propsToPass
+const formData = ref(props.data || {})
+
+const componentProps = (componentObj: SchemaTypes) => {
+	let propsToPass = {}
+	for (const [key, value] of Object.entries(componentObj)) {
+		if (!['component', 'fieldtype'].includes(key)) {
+			propsToPass[key] = value
 		}
 
-		return { formData, componentProps }
-	},
-})
+		// handle ATable data formats in case the table is nested under an AFormm;
+		// TODO: there's probably a better way to do this
+		if (key === 'rows') {
+			if (value && (value as any[]).length === 0) {
+				propsToPass['rows'] = formData.value[componentObj.fieldname]
+			}
+		}
+	}
+	return propsToPass
+}
 </script>
 
 <style scoped>

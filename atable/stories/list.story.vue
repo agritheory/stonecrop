@@ -187,7 +187,7 @@ const http_logs = ref({
 			align: 'center',
 			edit: true,
 			width: '25ch',
-			component: 'ADate',
+			modalComponent: 'ADate',
 			format: (value: number) => {
 				return new Date(Number(value)).toLocaleDateString('en-US')
 			},
@@ -240,6 +240,9 @@ const getRowCellStyle = (column: TableColumn): CSSProperties => {
 
 const rowNav = {
 	'keydown.up': (event: KeyboardEvent) => {
+		event.preventDefault()
+		event.stopPropagation()
+
 		const target =
 			event.target instanceof HTMLTableCellElement ? event.target.parentElement : (event.target as HTMLTableRowElement)
 
@@ -251,6 +254,9 @@ const rowNav = {
 		return true
 	},
 	'keydown.down': (event: KeyboardEvent) => {
+		event.preventDefault()
+		event.stopPropagation()
+
 		const target =
 			event.target instanceof HTMLTableCellElement ? event.target.parentElement : (event.target as HTMLTableRowElement)
 
