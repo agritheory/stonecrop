@@ -33,7 +33,5 @@ export default defineConfig({
 		plugins: [HstVue()],
 		storyIgnored: ['**/node_modules/**', '**/dist/**'],
 	},
-	optimizeDeps: {
-		entries: ['@baklavajs/plugin-renderer-vue3'],
-	},
+	optimizeDeps: {},
 })
