@@ -171,14 +171,6 @@
       "allowedCategories": [ "prototype", "utilities" ]
     },
     {
-      "name": "vue-class-component",
-      "allowedCategories": [ "prototype" ]
-    },
-    {
-      "name": "vue-property-decorator",
-      "allowedCategories": [ "prototype" ]
-    },
-    {
       "name": "vue-router",
       "allowedCategories": [ "prototype", "utilities" ]
     },
