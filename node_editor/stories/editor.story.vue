@@ -1,11 +1,11 @@
 <template>
 	<Story title="NodeEditor">
-		<NodeEditor :state-machine="fetchMachine" />
+		<StateEditor :state-machine="fetchMachine" />
 	</Story>
 </template>
 <script lang="ts" setup>
 import { ref } from 'vue'
-import NodeEditor from '@/components/NodeEditor.vue'
+import StateEditor from '@/components/StateEditor.vue'
 
 import { createMachine } from 'xstate'
 
