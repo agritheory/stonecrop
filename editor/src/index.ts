@@ -1,9 +1,9 @@
 import { App } from 'vue'
 
-import AEditor from '@/components/AEditor.vue'
+import ACodeEditor from '@/components/ACodeEditor.vue'
 
 function install(app: App /* options */) {
-	app.component('AEditor', AEditor)
+	app.component('ACodeEditor', ACodeEditor)
 }
 
-export { install, AEditor }
+export { install, ACodeEditor }

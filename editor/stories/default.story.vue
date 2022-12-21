@@ -1,9 +1,21 @@
 <template>
 	<Story title="default">
-		<AEditor> </AEditor>
+		<ACodeEditor :language="language" :initial-value="initialValue" />
 	</Story>
 </template>
 
 <script setup lang="ts">
-import { AEditor } from '@/index'
+import { ACodeEditor } from '@/index'
+
+const language = 'typescript'
+const initialValue = `
+type Person = {
+  name: string
+}
+
+type Company = {
+  name: string
+  manager: Person
+}
+`
 </script>

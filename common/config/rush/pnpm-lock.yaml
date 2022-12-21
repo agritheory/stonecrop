@@ -10,7 +10,7 @@ importers:
       '@agritheory/atable': workspace:*
       '@agritheory/themes': workspace:*
       '@agritheory/utilities': workspace:*
-      '@histoire/plugin-vue': ^0.12.0
+      '@histoire/plugin-vue': ^0.12.2
       '@types/uuid': ^8.3.4
       '@typescript-eslint/eslint-plugin': ^5.33.0
       '@typescript-eslint/parser': ^5.33.0
@@ -19,7 +19,7 @@ importers:
       eslint: ^8.22.0
       eslint-config-prettier: ^8.5.0
       eslint-plugin-vue: ^9.3.0
-      histoire: ^0.12.0
+      histoire: ^0.12.2
       typescript: ^4.9.4
       uuid: ^9.0.0
       vite: ^4.0.2
@@ -32,7 +32,7 @@ importers:
       vue: 3.2.40
     devDependencies:
       '@agritheory/atable': link:../atable
-      '@histoire/plugin-vue': 0.12.0_5pj64ezxqdp63syxaowv4u4hmu
+      '@histoire/plugin-vue': 0.12.2_zal2j2z6h53rgzst47gtmdh35u
       '@types/uuid': 8.3.4
       '@typescript-eslint/eslint-plugin': 5.39.0_isjtabnmh26l3ptrfldbaqqkwa
       '@typescript-eslint/parser': 5.39.0_mf7k6pf56vcpzce2rm6wugk24a
@@ -41,7 +41,7 @@ importers:
       eslint: 8.24.0
       eslint-config-prettier: 8.5.0_eslint@8.24.0
       eslint-plugin-vue: 9.6.0_eslint@8.24.0
-      histoire: 0.12.0_vite@4.0.2
+      histoire: 0.12.2_vite@4.0.2
       typescript: 4.9.4
       vite: 4.0.2
       vue-router: 4.1.5_vue@3.2.40
@@ -51,7 +51,7 @@ importers:
       '@agritheory/aform': workspace:*
       '@agritheory/themes': workspace:*
       '@agritheory/utilities': workspace:*
-      '@histoire/plugin-vue': ^0.12.0
+      '@histoire/plugin-vue': ^0.12.2
       '@types/uuid': ^8.3.4
       '@typescript-eslint/eslint-plugin': ^5.33.0
       '@typescript-eslint/parser': ^5.33.0
@@ -60,7 +60,7 @@ importers:
       eslint: ^8.22.0
       eslint-config-prettier: ^8.5.0
       eslint-plugin-vue: ^9.3.0
-      histoire: ^0.12.0
+      histoire: ^0.12.2
       typescript: ^4.9.4
       uuid: ^9.0.0
       vite: ^4.0.2
@@ -73,7 +73,7 @@ importers:
       vue: 3.2.40
     devDependencies:
       '@agritheory/aform': link:../aform
-      '@histoire/plugin-vue': 0.12.0_5pj64ezxqdp63syxaowv4u4hmu
+      '@histoire/plugin-vue': 0.12.2_zal2j2z6h53rgzst47gtmdh35u
       '@types/uuid': 8.3.4
       '@typescript-eslint/eslint-plugin': 5.39.0_isjtabnmh26l3ptrfldbaqqkwa
       '@typescript-eslint/parser': 5.39.0_mf7k6pf56vcpzce2rm6wugk24a
@@ -82,16 +82,16 @@ importers:
       eslint: 8.24.0
       eslint-config-prettier: 8.5.0_eslint@8.24.0
       eslint-plugin-vue: 9.6.0_eslint@8.24.0
-      histoire: 0.12.0_vite@4.0.2
+      histoire: 0.12.2_vite@4.0.2
       typescript: 4.9.4
       vite: 4.0.2
       vue-router: 4.1.5_vue@3.2.40
 
   ../../desktop:
     specifiers:
-      '@histoire/plugin-vue': ^0.12.0
+      '@histoire/plugin-vue': ^0.12.2
       '@vitejs/plugin-vue': ^4.0.0
-      histoire: ^0.12.0
+      histoire: ^0.12.2
       portal-vue: ^3.0.0-beta.0
       vite: ^4.0.2
       vue: ^3.2.37
@@ -102,9 +102,9 @@ importers:
       vue: 3.2.40
       vue-router: 4.1.5_vue@3.2.40
     devDependencies:
-      '@histoire/plugin-vue': 0.12.0_5pj64ezxqdp63syxaowv4u4hmu
+      '@histoire/plugin-vue': 0.12.2_zal2j2z6h53rgzst47gtmdh35u
       '@vitejs/plugin-vue': 4.0.0_vite@4.0.2+vue@3.2.40
-      histoire: 0.12.0_vite@4.0.2
+      histoire: 0.12.2_vite@4.0.2
       vite: 4.0.2
       vue-template-compiler: 2.7.10
 
@@ -113,7 +113,8 @@ importers:
       '@agritheory/atable': workspace:^0.2.0
       '@agritheory/themes': workspace:*
       '@agritheory/utilities': workspace:*
-      '@histoire/plugin-vue': ^0.12.0
+      '@histoire/plugin-vue': ^0.12.2
+      '@monaco-editor/loader': ~1.3.2
       '@types/uuid': ^8.3.4
       '@typescript-eslint/eslint-plugin': ^5.33.0
       '@typescript-eslint/parser': ^5.33.0
@@ -122,8 +123,8 @@ importers:
       eslint: ^8.22.0
       eslint-config-prettier: ^8.5.0
       eslint-plugin-vue: ^9.3.0
-      histoire: ^0.12.0
-      monaco-editor-vue3: ~0.1.6
+      histoire: ^0.12.2
+      monaco-editor: ~0.34.1
       typescript: ^4.9.4
       vite: ^4.0.2
       vue: ^3.2.37
@@ -131,11 +132,12 @@ importers:
     dependencies:
       '@agritheory/themes': link:../themes
       '@agritheory/utilities': link:../utilities
-      monaco-editor-vue3: 0.1.6
+      '@monaco-editor/loader': 1.3.2_monaco-editor@0.34.1
+      monaco-editor: 0.34.1
       vue: 3.2.40
     devDependencies:
       '@agritheory/atable': link:../atable
-      '@histoire/plugin-vue': 0.12.0_5pj64ezxqdp63syxaowv4u4hmu
+      '@histoire/plugin-vue': 0.12.2_zal2j2z6h53rgzst47gtmdh35u
       '@types/uuid': 8.3.4
       '@typescript-eslint/eslint-plugin': 5.39.0_isjtabnmh26l3ptrfldbaqqkwa
       '@typescript-eslint/parser': 5.39.0_mf7k6pf56vcpzce2rm6wugk24a
@@ -144,7 +146,7 @@ importers:
       eslint: 8.24.0
       eslint-config-prettier: 8.5.0_eslint@8.24.0
       eslint-plugin-vue: 9.6.0_eslint@8.24.0
-      histoire: 0.12.0_vite@4.0.2
+      histoire: 0.12.2_vite@4.0.2
       typescript: 4.9.4
       vite: 4.0.2
       vue-router: 4.1.5_vue@3.2.40
@@ -249,7 +251,7 @@ importers:
 
   ../../utilities:
     specifiers:
-      '@histoire/plugin-vue': ^0.12.0
+      '@histoire/plugin-vue': ^0.12.2
       '@typescript-eslint/eslint-plugin': ^5.33.0
       '@typescript-eslint/parser': ^5.33.0
       '@vitejs/plugin-vue': ^4.0.0
@@ -258,7 +260,7 @@ importers:
       eslint: ^8.22.0
       eslint-config-prettier: ^8.5.0
       eslint-plugin-vue: ^9.3.0
-      histoire: ^0.12.0
+      histoire: ^0.12.2
       typescript: ^4.9.4
       vite: ^4.0.2
       vue: ^3.2.37
@@ -266,7 +268,7 @@ importers:
     dependencies:
       vue: 3.2.40
     devDependencies:
-      '@histoire/plugin-vue': 0.12.0_5pj64ezxqdp63syxaowv4u4hmu
+      '@histoire/plugin-vue': 0.12.2_zal2j2z6h53rgzst47gtmdh35u
       '@typescript-eslint/eslint-plugin': 5.39.0_isjtabnmh26l3ptrfldbaqqkwa
       '@typescript-eslint/parser': 5.39.0_mf7k6pf56vcpzce2rm6wugk24a
       '@vitejs/plugin-vue': 4.0.0_vite@4.0.2+vue@3.2.40
@@ -275,7 +277,7 @@ importers:
       eslint: 8.24.0
       eslint-config-prettier: 8.5.0_eslint@8.24.0
       eslint-plugin-vue: 9.6.0_eslint@8.24.0
-      histoire: 0.12.0_vite@4.0.2
+      histoire: 0.12.2_vite@4.0.2
       typescript: 4.9.4
       vite: 4.0.2
       vue-router: 4.1.5_vue@3.2.40
@@ -581,12 +583,12 @@ packages:
       - supports-color
     dev: true
 
-  /@histoire/app/0.12.0_vite@4.0.2:
-    resolution: {integrity: sha512-/cTkl37Zeas7OA72+/Xu1xKN9QnUqwWZDkzS5s+qowBjzyiPfPXsWVFxXNQl0F6C1aCdTFJKMtSxVcdQnXX+Fw==}
+  /@histoire/app/0.12.2_vite@4.0.2:
+    resolution: {integrity: sha512-sO38kqalSbgx8mf+cKbGGhhXjhcZdNMPYpYKvYh1lxTNebaeI+w6Kv1adCa0vFAtQiI9oiPc4I5jApWOrvqcDg==}
     dependencies:
-      '@histoire/controls': 0.12.0
-      '@histoire/shared': 0.12.0_vite@4.0.2
-      '@histoire/vendors': 0.12.0
+      '@histoire/controls': 0.12.2
+      '@histoire/shared': 0.12.2_vite@4.0.2
+      '@histoire/vendors': 0.12.2
       '@types/flexsearch': 0.7.3
       flexsearch: 0.7.21
       shiki-es: 0.1.2
@@ -594,8 +596,8 @@ packages:
       - vite
     dev: true
 
-  /@histoire/controls/0.12.0:
-    resolution: {integrity: sha512-lxtjPjbQBJx/pmXkqp3dBRZHuPaGpRMzAAs69iZ4ZjEJj3aqK8RD6Jjf20Vcd6RwVbXo81GOPua9P/7HodVHkw==}
+  /@histoire/controls/0.12.2:
+    resolution: {integrity: sha512-8TMeMl1dHwuFcFuGY0dYtBxiTUJ+vyp6CbCCevo1RqRVyPwsS9Fik+uUeqSD1fnaL8WN4Vf6V/Wc5VY9Cea21Q==}
     dependencies:
       '@codemirror/commands': 6.1.2
       '@codemirror/lang-json': 6.0.1
@@ -604,26 +606,26 @@ packages:
       '@codemirror/state': 6.1.3
       '@codemirror/theme-one-dark': 6.1.0
       '@codemirror/view': 6.5.0
-      '@histoire/vendors': 0.12.0
+      '@histoire/vendors': 0.12.2
     dev: true
 
-  /@histoire/plugin-vue/0.12.0_5pj64ezxqdp63syxaowv4u4hmu:
-    resolution: {integrity: sha512-9BuknkxDS6s5gM4wjs9SjnglfctDSBuIes9sExKwFwaCICn/aEbqtDbGKLmPKGRDKCr2276C5F3CfsJSLZYuIA==}
+  /@histoire/plugin-vue/0.12.2_zal2j2z6h53rgzst47gtmdh35u:
+    resolution: {integrity: sha512-J9V3kyI5ussvmV8XxIij2mnjCVE7+t7mDTYcdaIELATGx64rRMScC28Cto3cRyBZ+WU6PwfyaUZuh3bugqa1Pw==}
     peerDependencies:
-      histoire: ^0.12.0
+      histoire: ^0.12.2
       vue: ^3.2.31
     dependencies:
-      '@histoire/controls': 0.12.0
-      '@histoire/shared': 0.12.0_vite@4.0.2
-      '@histoire/vendors': 0.12.0
-      histoire: 0.12.0_vite@4.0.2
+      '@histoire/controls': 0.12.2
+      '@histoire/shared': 0.12.2_vite@4.0.2
+      '@histoire/vendors': 0.12.2
+      histoire: 0.12.2_vite@4.0.2
       vue: 3.2.40
     transitivePeerDependencies:
       - vite
     dev: true
 
-  /@histoire/shared/0.12.0_vite@4.0.2:
-    resolution: {integrity: sha512-UzHDXBurNkD9OMXp3r0OcTHZNRQ6vDXBoXLvNnt06ymphtVJc1wSlf4tLurnmlPJhA+pZpf8NpBxihaiPKPuig==}
+  /@histoire/shared/0.12.2_vite@4.0.2:
+    resolution: {integrity: sha512-C6/DJyyrsXQRCBDTz1MAj/mIXLem1gvhcREwmhKAJ72BPXVxE5TbhsJRBmrwYq/9AwMrMbhTHlmk3Zvb4KWYJg==}
     peerDependencies:
       vite: ^2.9.0 || ^3.0.0 || ^4.0.0
     dependencies:
@@ -635,8 +637,8 @@ packages:
       vite: 4.0.2
     dev: true
 
-  /@histoire/vendors/0.12.0:
-    resolution: {integrity: sha512-q/l2RRQZHJJg+tNXFGa44zYJJM69hWULHB1f86vj3YHK4d/IZ7XBf1tdyYEzHhLTKgo1A5+o92dOiZ1ej1mt+g==}
+  /@histoire/vendors/0.12.2:
+    resolution: {integrity: sha512-/Wc8ZFObelont3NXQLr13m7DWFlg9lYHzQxGWcOVeSHmwYedEgb9QEvHMgQdD1/s/zitKhK0cWYxJnluZRbbdw==}
     dev: true
 
   /@humanwhocodes/config-array/0.10.7:
@@ -695,6 +697,15 @@ packages:
 
   /@miragejs/pretender-node-polyfill/0.1.2:
     resolution: {integrity: sha512-M/BexG/p05C5lFfMunxo/QcgIJnMT2vDVCd00wNqK2ImZONIlEETZwWJu1QtLxtmYlSHlCFl3JNzp0tLe7OJ5g==}
+
+  /@monaco-editor/loader/1.3.2_monaco-editor@0.34.1:
+    resolution: {integrity: sha512-BTDbpHl3e47r3AAtpfVFTlAi7WXv4UQ/xZmz8atKl4q7epQV5e7+JbigFDViWF71VBi4IIBdcWP57Hj+OWuc9g==}
+    peerDependencies:
+      monaco-editor: '>= 0.21.0 < 1'
+    dependencies:
+      monaco-editor: 0.34.1
+      state-local: 1.0.7
+    dev: false
 
   /@nodelib/fs.scandir/2.1.5:
     resolution: {integrity: sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==}
@@ -2208,16 +2219,16 @@ packages:
       tslib: 2.4.0
     dev: true
 
-  /histoire/0.12.0_vite@4.0.2:
-    resolution: {integrity: sha512-TwHswql+3RHcj5PNQhBvofOajgeya8UjX5kcVG2XxpYBh5+BVasLI2+sy8uVV43H8CW7AyeY3TTUqsnDVWLcYQ==}
+  /histoire/0.12.2_vite@4.0.2:
+    resolution: {integrity: sha512-yDDQzGY3UJpKIpEO+96nWPOaI/x1kkYAA4dOJJLtI2vQyutey8d6S94qOyngUZ5+DUsxUouonewTW/4dbTIuOA==}
     hasBin: true
     peerDependencies:
       vite: ^2.9.0 || ^3.0.0 || ^4.0.0
     dependencies:
-      '@histoire/app': 0.12.0_vite@4.0.2
-      '@histoire/controls': 0.12.0
-      '@histoire/shared': 0.12.0_vite@4.0.2
-      '@histoire/vendors': 0.12.0
+      '@histoire/app': 0.12.2_vite@4.0.2
+      '@histoire/controls': 0.12.2
+      '@histoire/shared': 0.12.2_vite@4.0.2
+      '@histoire/vendors': 0.12.2
       '@types/flexsearch': 0.7.3
       '@types/markdown-it': 12.2.3
       birpc: 0.1.1
@@ -2848,16 +2859,8 @@ packages:
       ufo: 1.0.1
     dev: true
 
-  /monaco-editor-vue3/0.1.6:
-    resolution: {integrity: sha512-jJxErTfP+cHCZtg/Ii5CsVX3VXNpMBevlbU6X9R1yggP+/QD3u1Ox+W1k9s3uTt3apF3k48B++QDbIGLYBv9HA==}
-    dependencies:
-      monaco-editor: 0.33.0
-      vite-plugin-monaco-editor: 1.1.0_monaco-editor@0.33.0
-      vue: 3.2.40
-    dev: false
-
-  /monaco-editor/0.33.0:
-    resolution: {integrity: sha512-VcRWPSLIUEgQJQIE0pVT8FcGBIgFoxz7jtqctE+IiCxWugD0DwgyQBcZBhdSrdMC84eumoqMZsGl2GTreOzwqw==}
+  /monaco-editor/0.34.1:
+    resolution: {integrity: sha512-FKc80TyiMaruhJKKPz5SpJPIjL+dflGvz4CpuThaPMc94AyN7SeC9HQ8hrvaxX7EyHdJcUY5i4D0gNyJj1vSZQ==}
     dev: false
 
   /mri/1.2.0:
@@ -3456,6 +3459,7 @@ packages:
 
   /sourcemap-codec/1.4.8:
     resolution: {integrity: sha512-9NykojV5Uih4lgo5So5dtw+f0JgJX30KCNI8gwhz2J9A15wD0Ml6tjHKwf6fTSa6fAdVBdZeNOs9eJ71qCk8vA==}
+    deprecated: Please use @jridgewell/sourcemap-codec instead
 
   /sprintf-js/1.0.3:
     resolution: {integrity: sha512-D9cPgkvLlV3t3IzL0D0YLvGA9Ahk4PcvVwUbN0dSGr1aP0Nrt4AEnTUbuGvquEC0mA64Gqt1fzirlRs5ibXx8g==}
@@ -3476,6 +3480,10 @@ packages:
       safer-buffer: 2.1.2
       tweetnacl: 0.14.5
     dev: true
+
+  /state-local/1.0.7:
+    resolution: {integrity: sha512-HTEHMNieakEnoe33shBYcZ7NX83ACUjCu8c40iOGEZsngj9zRnkqS9j1pqQPXwobB0ZcVTk27REb7COQ0UR59w==}
+    dev: false
 
   /statuses/1.5.0:
     resolution: {integrity: sha512-OpZ3zP+jT1PI7I8nemJX4AKmAX070ZkYPVWV/AaKTJl+tXCTGyVdC1a4SL8RUQYEwk/f34ZX8UTykN68FwrqAA==}
@@ -3772,14 +3780,6 @@ packages:
       - supports-color
       - terser
     dev: true
-
-  /vite-plugin-monaco-editor/1.1.0_monaco-editor@0.33.0:
-    resolution: {integrity: sha512-IvtUqZotrRoVqwT0PBBDIZPNraya3BxN/bfcNfnxZ5rkJiGcNtO5eAOWWSgT7zullIAEqQwxMU83yL9J5k7gww==}
-    peerDependencies:
-      monaco-editor: '>=0.33.0'
-    dependencies:
-      monaco-editor: 0.33.0
-    dev: false
 
   /vite/4.0.2:
     resolution: {integrity: sha512-QJaY3R+tFlTagH0exVqbgkkw45B+/bXVBzF2ZD1KB5Z8RiAoiKo60vSUf6/r4c2Vh9jfGBKM4oBI9b4/1ZJYng==}
