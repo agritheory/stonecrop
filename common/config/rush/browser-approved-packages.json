@@ -51,6 +51,10 @@
       "allowedCategories": [ "prototype", "utilities" ]
     },
     {
+      "name": "@vue-flow/core",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
       "name": "@vue/compiler-sfc",
       "allowedCategories": [ "prototype" ]
     },

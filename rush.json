@@ -61,6 +61,12 @@
 			"shouldPublish": false
 		},
 		{
+			"packageName": "@agritheory/node_editor",
+			"projectFolder": "node_editor",
+			"reviewCategory": "prototype",
+			"shouldPublish": false
+		},
+		{
 			"packageName": "@agritheory/stonecrop",
 			"projectFolder": "stonecrop",
 			"reviewCategory": "prototype",
