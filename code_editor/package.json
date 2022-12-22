@@ -1,10 +1,10 @@
 {
-	"name": "@agritheory/editor",
+	"name": "@agritheory/code_editor",
 	"version": "0.1.2",
 	"type": "module",
-	"main": "dist/editor.js",
-	"module": "dist/editor.js",
-	"umd": "dist/editor.umd.cjs",
+	"main": "dist/code_editor.js",
+	"module": "dist/code_editor.js",
+	"umd": "dist/code_editor.umd.cjs",
 	"types": "src/index",
 	"files": [
 		"dist/*",
@@ -49,8 +49,8 @@
 	"exports": {
 		".": {
 			"types": "./types/index",
-			"import": "./dist/editor.js",
-			"require": "./dist/editor.umd.cjs"
+			"import": "./dist/code_editor.js",
+			"require": "./dist/code_editor.umd.cjs"
 		}
 	}
 }

@@ -6,7 +6,7 @@
 import loader from '@monaco-editor/loader'
 import { onMounted, ref } from 'vue'
 
-import { theme } from '@/theme/agritheory_theme'
+import { theme } from '@/theme/agritheory'
 
 const props = defineProps<{
 	language: string

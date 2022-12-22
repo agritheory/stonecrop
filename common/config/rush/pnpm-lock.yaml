@@ -87,28 +87,7 @@ importers:
       vite: 4.0.2
       vue-router: 4.1.5_vue@3.2.40
 
-  ../../desktop:
-    specifiers:
-      '@histoire/plugin-vue': ^0.12.2
-      '@vitejs/plugin-vue': ^4.0.0
-      histoire: ^0.12.2
-      portal-vue: ^3.0.0-beta.0
-      vite: ^4.0.2
-      vue: ^3.2.37
-      vue-router: ^4
-      vue-template-compiler: ^2.6.14
-    dependencies:
-      portal-vue: 3.0.0-beta.0_vue@3.2.40
-      vue: 3.2.40
-      vue-router: 4.1.5_vue@3.2.40
-    devDependencies:
-      '@histoire/plugin-vue': 0.12.2_zal2j2z6h53rgzst47gtmdh35u
-      '@vitejs/plugin-vue': 4.0.0_vite@4.0.2+vue@3.2.40
-      histoire: 0.12.2_vite@4.0.2
-      vite: 4.0.2
-      vue-template-compiler: 2.7.10
-
-  ../../editor:
+  ../../code_editor:
     specifiers:
       '@agritheory/atable': workspace:^0.2.0
       '@agritheory/themes': workspace:*
@@ -150,6 +129,27 @@ importers:
       typescript: 4.9.4
       vite: 4.0.2
       vue-router: 4.1.5_vue@3.2.40
+
+  ../../desktop:
+    specifiers:
+      '@histoire/plugin-vue': ^0.12.2
+      '@vitejs/plugin-vue': ^4.0.0
+      histoire: ^0.12.2
+      portal-vue: ^3.0.0-beta.0
+      vite: ^4.0.2
+      vue: ^3.2.37
+      vue-router: ^4
+      vue-template-compiler: ^2.6.14
+    dependencies:
+      portal-vue: 3.0.0-beta.0_vue@3.2.40
+      vue: 3.2.40
+      vue-router: 4.1.5_vue@3.2.40
+    devDependencies:
+      '@histoire/plugin-vue': 0.12.2_zal2j2z6h53rgzst47gtmdh35u
+      '@vitejs/plugin-vue': 4.0.0_vite@4.0.2+vue@3.2.40
+      histoire: 0.12.2_vite@4.0.2
+      vite: 4.0.2
+      vue-template-compiler: 2.7.10
 
   ../../examples:
     specifiers:
@@ -1047,23 +1047,17 @@ packages:
       acorn-walk: 8.2.0
     dev: true
 
-  /acorn-jsx/5.3.2_acorn@8.8.0:
+  /acorn-jsx/5.3.2_acorn@8.8.1:
     resolution: {integrity: sha512-rq9s+JNhf0IChjtDXxllJ7g41oZk5SlXtp0LHwyA5cejwn7vKmKp4pPri6YEePv2PU65sAsegbXtIinmDFDXgQ==}
     peerDependencies:
       acorn: ^6.0.0 || ^7.0.0 || ^8.0.0
     dependencies:
-      acorn: 8.8.0
+      acorn: 8.8.1
     dev: true
 
   /acorn-walk/8.2.0:
     resolution: {integrity: sha512-k+iyHEuPgSw6SbuDpGQM+06HQUa04DZ3o+F6CSzXMvvI5KMvnaEqXe+YVe555R9nn6GPt404fos4wcgpw12SDA==}
     engines: {node: '>=0.4.0'}
-    dev: true
-
-  /acorn/8.8.0:
-    resolution: {integrity: sha512-QOxyigPVrpZ2GXT+PFyZTl6TtOFc5egxHIP9IlQ+RbupQuX4RkT/Bee4/kQuC02Xkzg84JcT7oLYtDIQxp+v7w==}
-    engines: {node: '>=0.4.0'}
-    hasBin: true
     dev: true
 
   /acorn/8.8.1:
@@ -1400,7 +1394,7 @@ packages:
     dev: true
 
   /concat-map/0.0.1:
-    resolution: {integrity: sha1-2Klr13/Wjfd5OnMDajug1UBdR3s=}
+    resolution: {integrity: sha512-/Srv4dswyQNBfohGpz9o6Yb3Gz3SrUDqBH5rTuhGR7ahtlbYKnVxw2bCFMRljaA7EXHaXZ8wsHdodFvbkhKmqg==}
     dev: true
 
   /connect/3.7.0:
@@ -1839,8 +1833,8 @@ packages:
     resolution: {integrity: sha512-DQmnRpLj7f6TgN/NYb0MTzJXL+vJF9h3pHy4JhCIs3zwcgez8xmGg3sXHcEO97BrmO2OSvCwMdfdlyl+E9KjOw==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     dependencies:
-      acorn: 8.8.0
-      acorn-jsx: 5.3.2_acorn@8.8.0
+      acorn: 8.8.1
+      acorn-jsx: 5.3.2_acorn@8.8.1
       eslint-visitor-keys: 3.3.0
     dev: true
 

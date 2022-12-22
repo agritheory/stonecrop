@@ -49,8 +49,8 @@
 			"shouldPublish": false
 		},
 		{
-			"packageName": "@agritheory/editor",
-			"projectFolder": "editor",
+			"packageName": "@agritheory/code_editor",
+			"projectFolder": "code_editor",
 			"reviewCategory": "prototype",
 			"shouldPublish": false
 		},

@@ -95,10 +95,6 @@
       "allowedCategories": [ "prototype" ]
     },
     {
-      "name": "monaco-editor-vue3",
-      "allowedCategories": [ "prototype" ]
-    },
-    {
       "name": "node-sass",
       "allowedCategories": [ "prototype" ]
     },
