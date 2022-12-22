@@ -1,5 +1,5 @@
 {
-	"name": "@agritheory/code_editor",
+	"name": "@agritheory/code-editor",
 	"version": "0.1.2",
 	"type": "module",
 	"main": "dist/code_editor.js",

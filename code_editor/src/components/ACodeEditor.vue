@@ -4,22 +4,20 @@
 
 <script setup lang="ts">
 import loader from '@monaco-editor/loader'
+import { editor } from 'monaco-editor'
 import { onMounted, ref } from 'vue'
 
-import { theme } from '@/theme/agritheory'
+import { theme } from '@/theme/code_editor/agritheory'
 
 const props = defineProps<{
-	language: string
+	language: editor.IStandaloneEditorConstructionOptions['language']
 	initialValue?: string
 }>()
 
-const editorOptions = {
+const editorOptions: editor.IEditorOptions = {
+	automaticLayout: true,
 	colorDecorators: true,
 	lineHeight: 24,
-	dimension: {
-		width: 800,
-		height: 600,
-	},
 }
 
 const container = ref(null)
@@ -39,3 +37,11 @@ onMounted(async () => {
 	})
 })
 </script>
+
+<style scoped>
+#container {
+	width: 100%;
+	height: 100%;
+	min-height: 400px;
+}
+</style>

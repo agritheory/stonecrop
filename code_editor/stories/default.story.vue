@@ -1,6 +1,6 @@
 <template>
 	<Story title="default">
-		<ACodeEditor :language="language" :initial-value="initialValue" />
+		<ACodeEditor :language="language" :initialValue="initialValue" />
 	</Story>
 </template>
 
@@ -19,3 +19,30 @@ type Company = {
 }
 `
 </script>
+
+<docs lang="md">
+## Supported languages
+
+The [Monaco editor](https://github.com/microsoft/monaco-editor) currently supports the following languages:
+
+JSON worker:
+
+- `json`
+
+CSS worker:
+
+- `css`
+- `scss`
+- `less`
+
+HTML worker:
+
+- `html`
+- `handlebars`
+- `razor`
+
+TypeScript worker:
+
+- `typescript`
+- `javascript`
+</docs>

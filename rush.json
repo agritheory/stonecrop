@@ -49,7 +49,7 @@
 			"shouldPublish": false
 		},
 		{
-			"packageName": "@agritheory/code_editor",
+			"packageName": "@agritheory/code-editor",
 			"projectFolder": "code_editor",
 			"reviewCategory": "prototype",
 			"shouldPublish": false
