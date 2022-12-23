@@ -1,6 +1,6 @@
 <template>
 	<Story title="default">
-		<ACodeEditor :language="language" :initialValue="initialValue" />
+		<ACodeEditor :language="language" :initialValue="initialValue" style="height: 400px" />
 	</Story>
 </template>
 
