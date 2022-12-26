@@ -9,19 +9,12 @@ import { onMounted, ref } from 'vue'
 
 import { theme } from '@/theme/code_editor/agritheory'
 
-const props = withDefaults(
-	defineProps<{
-		language: editor.IStandaloneEditorConstructionOptions['language']
-		initialValue?: string
-		options?: editor.IEditorOptions
-	}>(),
-	{
-		initialValue: '',
-	}
-)
+const props = defineProps<{
+	options?: editor.IStandaloneEditorConstructionOptions
+}>()
 
 const container = ref(null)
-const editorOptions: editor.IEditorOptions = {
+const editorOptions: typeof props['options'] = {
 	...props.options,
 	automaticLayout: true,
 	colorDecorators: true,
@@ -36,11 +29,7 @@ onMounted(async () => {
 	editor.setTheme('agritheory')
 
 	// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-	editor.create(container.value as HTMLElement, {
-		...editorOptions,
-		language: props.language,
-		value: props.initialValue,
-	})
+	editor.create(container.value as HTMLElement, editorOptions)
 })
 </script>
 

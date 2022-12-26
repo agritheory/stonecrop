@@ -1,6 +1,6 @@
 <template>
 	<Story title="default">
-		<ACodeEditor :language="language" :initialValue="initialValue" :options="options" style="height: 400px" />
+		<ACodeEditor :options="options" style="height: 400px" />
 	</Story>
 </template>
 
@@ -9,19 +9,20 @@ import { editor } from 'monaco-editor'
 
 import { ACodeEditor } from '@/index'
 
-const language = 'typescript'
-const initialValue = `
+const value = `
 type Person = {
-  name: string
+	name: string
 }
 
 type Company = {
-  name: string
-  manager: Person
+	name: string
+	manager: Person
 }
 `
 
-const options: editor.IEditorOptions = {
+const options: editor.IStandaloneEditorConstructionOptions = {
+	language: 'typescript',
+	value,
 	minimap: {
 		enabled: false,
 	},
