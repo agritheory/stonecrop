@@ -9,18 +9,24 @@ import { onMounted, ref } from 'vue'
 
 import { theme } from '@/theme/code_editor/agritheory'
 
-const props = defineProps<{
-	language: editor.IStandaloneEditorConstructionOptions['language']
-	initialValue?: string
-}>()
+const props = withDefaults(
+	defineProps<{
+		language: editor.IStandaloneEditorConstructionOptions['language']
+		initialValue?: string
+		options?: editor.IEditorOptions
+	}>(),
+	{
+		initialValue: '',
+	}
+)
 
+const container = ref(null)
 const editorOptions: editor.IEditorOptions = {
+	...props.options,
 	automaticLayout: true,
 	colorDecorators: true,
 	lineHeight: 24,
 }
-
-const container = ref(null)
 
 onMounted(async () => {
 	const monacoInstance = await loader.init()

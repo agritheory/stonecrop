@@ -25,9 +25,9 @@
 		"xstate": "~4.33.6"
 	},
 	"devDependencies": {
-		"@histoire/plugin-vue": "^0.12.2",
+		"@histoire/plugin-vue": "^0.12.4",
 		"@vitejs/plugin-vue": "^4.0.0",
-		"histoire": "^0.12.2",
+		"histoire": "^0.12.4",
 		"vite": "^4.0.2"
 	},
 	"exports": {

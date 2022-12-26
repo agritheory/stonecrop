@@ -30,7 +30,7 @@
 		"@agritheory/aform": "workspace:*"
 	},
 	"devDependencies": {
-		"@histoire/plugin-vue": "^0.12.2",
+		"@histoire/plugin-vue": "^0.12.4",
 		"@agritheory/aform": "workspace:*",
 		"@agritheory/themes": "workspace:*",
 		"@types/uuid": "^8.3.4",
@@ -41,7 +41,7 @@
 		"eslint-config-prettier": "^8.5.0",
 		"eslint-plugin-vue": "^9.3.0",
 		"eslint": "^8.22.0",
-		"histoire": "^0.12.2",
+		"histoire": "^0.12.4",
 		"typescript": "^4.9.4",
 		"vite": "^4.0.2",
 		"vue-router": "^4"
