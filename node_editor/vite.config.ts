@@ -17,7 +17,7 @@ export default defineConfig({
 	build: {
 		sourcemap: true,
 		lib: {
-			entry: resolve(projectRootDir, 'src/index.js'),
+			entry: resolve(projectRootDir, 'src/index.ts'),
 			name: '@agritheory/node_editor',
 		},
 		rollupOptions: {

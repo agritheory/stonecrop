@@ -113,7 +113,9 @@ importers:
       '@agritheory/aform': workspace:^0.1.2
       '@agritheory/atable': workspace:^0.2.0
       '@agritheory/desktop': workspace:^0.1.0
+      '@agritheory/node_editor': workspace:^0.1.0
       '@agritheory/stonecrop': workspace:^0.1.0
+      '@agritheory/themes': workspace:*
       '@miragejs/graphql': ^0.1.13
       '@types/uuid': ^8.3.4
       '@typescript-eslint/eslint-plugin': ^5.33.0
@@ -132,7 +134,9 @@ importers:
       '@agritheory/aform': link:../aform
       '@agritheory/atable': link:../atable
       '@agritheory/desktop': link:../desktop
+      '@agritheory/node_editor': link:../node_editor
       '@agritheory/stonecrop': link:../stonecrop
+      '@agritheory/themes': link:../themes
       '@miragejs/graphql': 0.1.13
       '@vitejs/plugin-vue': 3.2.0_vite@3.2.5+vue@3.2.45
       miragejs: 0.1.46

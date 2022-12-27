@@ -1,17 +1,24 @@
 <template>
-	<div class="builder-container">
-		<div class="builder-schema">
-			<h3>Schema</h3>
-			<AForm class="aform-main" :key="formKey" :schema="doctypeSchema" :data="schemaData" />
-			<!-- <SheetNav class="sheet-nav-footer" /> -->
+	<div>
+		<div class="builder-container">
+			<div class="builder-schema">
+				<h3>Schema</h3>
+				<AForm class="aform-main" :key="formKey" :schema="doctypeSchema" :data="schemaData" />
+				<!-- <SheetNav class="sheet-nav-footer" /> -->
+			</div>
+			<div class="builder-hooks">
+				<h3>Side Effects</h3>
+				<AForm class="aform-main" :key="formKey" :schema="hooksSchema" :data="hooksData" />
+			</div>
+			<div class="builder-events">
+				<h3>Events</h3>
+			</div>
+			<div class="builder-workflow">
+				<h3>Workflow</h3>
+				<!-- <StateEditor  /> -->
+			</div>
 		</div>
-		<div class="builder-hooks">
-			<h3>Side Effects</h3>
-			<AForm class="aform-main" :key="formKey" :schema="hooksSchema" :data="hooksData" />
-		</div>
-		<div class="builder-events">
-			<h3>Events</h3>
-		</div>
+		<ActionSet :elements="actionElements" />
 	</div>
 </template>
 
@@ -51,23 +58,59 @@ onBeforeMount(async () => {
 
 	formKey.value++
 })
+
+//Setup page actions
+const actionElements = [
+	{
+		elementType: 'button',
+		action: function () {},
+		label: 'Save',
+	},
+	{
+		elementType: 'dropdown',
+		label: 'Actions',
+		actions: [
+			{
+				label: 'Print',
+				action: function () {},
+			},
+			{
+				label: 'Email',
+				action: function () {},
+			},
+			{
+				label: 'Duplicate',
+				action: function () {},
+			},
+		],
+	},
+]
 </script>
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap');
-@import '../style.css';
-
+@import url('@agritheory/themes/default/default.css');
+/* @import '../style.css'; */
+html,
+body {
+	height: 100%;
+	font-family: Arimo, sans-serif;
+	font-size: 11pt;
+}
 .builder-container {
 	display: flex;
 	flex-direction: column;
 	justify-content: start;
 	height: 60vh;
+	margin-top: 90px;
 }
 
 .builder-schema,
 .builder-hooks,
 .builder-events {
-	border: 2px solid #827553;
+	border: 1px solid var(--gray-20);
+	border-radius: 10px;
+
 	padding: 1em;
 	margin-bottom: 1em;
 }

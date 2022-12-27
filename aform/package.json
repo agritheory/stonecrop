@@ -53,6 +53,7 @@
 			"types": "./types/index",
 			"import": "./dist/aform.js",
 			"require": "./dist/aform.umd.cjs"
-		}
+		},
+		"./styles": "./dist/style.css"
 	}
 }
