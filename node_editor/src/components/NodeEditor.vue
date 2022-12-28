@@ -2,8 +2,12 @@
 	<div :class="containerClass">
 		<div class="chart-controls">
 			<div><b>Selected Node:</b> {{ activeElementKey ? activeElementKey : 'none' }}</div>
-			<div v-if="activeElementIndex > -1"><button @click="shiftInput()">Shift Input Position</button></div>
-			<div v-if="activeElementIndex > -1"><button @click="shiftOutput()">Shift Output Position</button></div>
+			<div v-if="activeElementIndex > -1">
+				<button class="button-default" @click="shiftInput()">Shift Input Position</button>
+			</div>
+			<div v-if="activeElementIndex > -1">
+				<button class="button-default" @click="shiftOutput()">Shift Output Position</button>
+			</div>
 		</div>
 		<VueFlow v-if="_elements && _elements.length" v-model="_elements"></VueFlow>
 	</div>
@@ -75,13 +79,13 @@ export default {
 	},
 }
 </script>
-<style scoped>
+<style>
 @import '@vue-flow/core/dist/style.css';
 @import '@vue-flow/core/dist/theme-default.css';
 
 .chart-controls {
 	padding: 20px;
-	min-height: 80px;
+	border-bottom: 1px solid #ccc;
 }
 .chart-controls div {
 	margin-bottom: 5px;
@@ -91,12 +95,30 @@ export default {
 	width: 100%;
 	border: 1px solid #ccc;
 }
-element.style {
-	z-index: 0;
-	transform: translate(50px, 50px);
-	pointer-events: all;
+.default-input-node.vue-flow__node-input,
+.default-output-node.vue-flow__node-output {
+	border-color: #000;
 }
-.vue-flow__node-input {
-	border-color: #cccccc !important;
+.default-input-node.vue-flow__node-input .vue-flow__handle,
+.default-output-node.vue-flow__node-output .vue-flow__handle {
+	background-color: #000;
+}
+.default-input-node.vue-flow__node-input.selected,
+.default-output-node.vue-flow__node-output.selected {
+	box-shadow: 0 0 0 0.5px #000;
+}
+button.button-default {
+	background-color: #ffffff;
+	padding: 5px 12px;
+	border-radius: 3px;
+	box-shadow: rgba(0, 0, 0, 0.05) 0px 0.5px 0px 0px, rgba(0, 0, 0, 0.08) 0px 0px 0px 1px,
+		rgba(0, 0, 0, 0.05) 0px 2px 4px 0px;
+	border: none;
+	cursor: pointer;
+	white-space: nowrap;
+}
+
+button.button-default:hover {
+	background-color: #f2f2f2;
 }
 </style>

@@ -38,6 +38,7 @@ export default {
 				}
 				if (states[key].type && states[key].type == 'final') {
 					el.type = 'output'
+					el.class = 'default-output-node'
 				}
 
 				stateHash[key] = el
@@ -63,6 +64,7 @@ export default {
 			for (let key in stateHash) {
 				if (!hasInputs[key]) {
 					stateHash[key]['type'] = 'input'
+					stateHash[key]['class'] = 'default-input-node'
 				}
 				this.stateElements.push(stateHash[key])
 			}
