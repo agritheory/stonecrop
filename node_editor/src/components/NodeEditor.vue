@@ -1,11 +1,11 @@
 <template>
-	<div style="height: 90vh; width: 100%; border: 1px solid #ccc">
+	<div :class="containerClass">
 		<div class="chart-controls">
 			<div><b>Selected Node:</b> {{ activeElementKey ? activeElementKey : 'none' }}</div>
 			<div v-if="activeElementIndex > -1"><button @click="shiftInput()">Shift Input Position</button></div>
 			<div v-if="activeElementIndex > -1"><button @click="shiftOutput()">Shift Output Position</button></div>
 		</div>
-		<VueFlow v-model="_elements"></VueFlow>
+		<VueFlow v-if="_elements && _elements.length" v-model="_elements"></VueFlow>
 	</div>
 </template>
 <script>
@@ -16,7 +16,7 @@ export default {
 	components: {
 		VueFlow: VueFlow,
 	},
-	props: ['elements'],
+	props: ['elements', 'nodeContainerClass'],
 	computed: {
 		activeElementIndex() {
 			for (let j = 0; j < this._elements.length; j++) {
@@ -29,9 +29,15 @@ export default {
 		return {
 			activeElementKey: '',
 			_elements: [],
+			containerClass: 'defaultContainerClass',
 		}
 	},
 	created() {
+		// console.log("NodeEditor mounted")
+		if (this.nodeContainerClass) {
+			this.containerClass = this.nodeContainerClass
+		}
+
 		this._elements = this.elements
 		for (let j = 0; j < this._elements.length; j++) {
 			let key = this.elements[j].id
@@ -79,5 +85,18 @@ export default {
 }
 .chart-controls div {
 	margin-bottom: 5px;
+}
+.defaultContainerClass {
+	height: 90vh;
+	width: 100%;
+	border: 1px solid #ccc;
+}
+element.style {
+	z-index: 0;
+	transform: translate(50px, 50px);
+	pointer-events: all;
+}
+.vue-flow__node-input {
+	border-color: #cccccc !important;
 }
 </style>

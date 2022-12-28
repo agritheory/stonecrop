@@ -128,6 +128,7 @@ export default defineComponent({
 	border-radius: 10px;
 	display: flex;
 	flex-direction: row-reverse;
+	background-color: white;
 }
 
 .action-menu-icon {

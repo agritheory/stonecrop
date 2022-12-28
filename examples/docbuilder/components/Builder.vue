@@ -15,7 +15,11 @@
 			</div>
 			<div class="builder-workflow">
 				<h3>Workflow</h3>
-				<!-- <StateEditor  /> -->
+				<StateEditor
+					node-container-class="node-editor"
+					v-if="stateMachine"
+					:state-machine="stateMachine"
+					:layout="layout" />
 			</div>
 		</div>
 		<ActionSet :elements="actionElements" />
@@ -26,6 +30,7 @@
 import { v4 as uuidv4 } from 'uuid'
 import { onBeforeMount, ref } from 'vue'
 import { useRoute } from 'vue-router'
+import { createMachine } from 'xstate'
 
 import doctypeSchema from '../assets/doctype_schema.json'
 import hooksSchema from '../assets/hooks_schema.json'
@@ -42,6 +47,8 @@ makeServer()
 // create hooks data
 let schemaData = ref({})
 let hooksData = ref({})
+let stateMachine
+let layout
 onBeforeMount(async () => {
 	const doctype = route.params.id.toString()
 	const searchParams = new URLSearchParams({ doctype })
@@ -56,6 +63,10 @@ onBeforeMount(async () => {
 	hooksData.value['side_effects_fieldset'] = {}
 	hooksData.value['side_effects_fieldset']['side_effects'] = hooksResponseData
 
+	const stateResponse = await fetch('/api/load_state_machine?' + searchParams.toString())
+	const stateResponseData: Record<string, any>[] = await stateResponse.json()
+	stateMachine = createMachine(stateResponseData.machine)
+	layout = stateResponseData.layout
 	formKey.value++
 })
 
@@ -107,11 +118,17 @@ body {
 
 .builder-schema,
 .builder-hooks,
-.builder-events {
+.builder-events,
+.builder-workflow {
 	border: 1px solid var(--gray-20);
 	border-radius: 10px;
 
 	padding: 1em;
 	margin-bottom: 1em;
+}
+.node-editor {
+	width: 100%;
+	height: 60vh;
+	min-height: 400px;
 }
 </style>

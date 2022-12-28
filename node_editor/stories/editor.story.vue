@@ -1,6 +1,6 @@
 <template>
 	<Story title="NodeEditor">
-		<StateEditor :state-machine="fetchMachine" />
+		<StateEditor :state-machine="fetchMachine" :layout="layout" />
 	</Story>
 </template>
 <script lang="ts" setup>
@@ -9,6 +9,22 @@ import StateEditor from '@/components/StateEditor.vue'
 
 import { createMachine } from 'xstate'
 
+const layout = {
+	idle: {
+		position: { x: 100, y: 50 },
+	},
+	loading: {
+		position: { x: 400, y: 50 },
+	},
+	failure: {
+		position: { x: 400, y: 250 },
+		targetPosition: 'right',
+		sourcePosition: 'left',
+	},
+	success: {
+		position: { x: 700, y: 50 },
+	},
+}
 const fetchMachine = createMachine({
 	id: 'fetch',
 	initial: 'idle',

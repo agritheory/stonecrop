@@ -1,6 +1,6 @@
 <template>
 	<div>
-		<NodeEditor :elements="stateElements" />
+		<NodeEditor :elements="stateElements" :node-container-class="nodeContainerClass" />
 	</div>
 </template>
 <script>
@@ -12,44 +12,29 @@ export default {
 	components: {
 		NodeEditor: NodeEditor,
 	},
-	props: ['stateMachine'],
+	props: ['stateMachine', 'layout', 'nodeContainerClass'],
 	data() {
 		return {
 			stateElements: [],
-			savedData: {
-				idle: {
-					position: { x: 100, y: 50 },
-				},
-				loading: {
-					position: { x: 400, y: 50 },
-				},
-				failure: {
-					position: { x: 400, y: 250 },
-					targetPosition: 'right',
-					sourcePosition: 'left',
-				},
-				success: {
-					position: { x: 700, y: 50 },
-				},
-			},
 		}
 	},
 	created() {
+		//console.log("StateEditor mounted")
 		if (this.stateMachine) {
 			let states = this.stateMachine.config.states
 			let stateHash = {}
 			let hasInputs = {}
+			let j = 0
 			for (let key in states) {
 				let idx = this.stateElements.length
 				let el = {
 					id: key,
 					label: key,
-					position:
-						this.savedData[key] && this.savedData[key].position ? this.savedData[key].position : { x: 200 * j, y: 100 },
+					position: this.layout[key] && this.layout[key].position ? this.layout[key].position : { x: 200 * j, y: 100 },
 					targetPosition:
-						this.savedData[key] && this.savedData[key].targetPosition ? this.savedData[key].targetPosition : 'left',
+						this.layout[key] && this.layout[key].targetPosition ? this.layout[key].targetPosition : 'left',
 					sourcePosition:
-						this.savedData[key] && this.savedData[key].sourcePosition ? this.savedData[key].sourcePosition : 'right',
+						this.layout[key] && this.layout[key].sourcePosition ? this.layout[key].sourcePosition : 'right',
 				}
 				if (states[key].type && states[key].type == 'final') {
 					el.type = 'output'
@@ -72,6 +57,7 @@ export default {
 					})
 					hasInputs[target] = true
 				}
+				j++
 			}
 
 			for (let key in stateHash) {

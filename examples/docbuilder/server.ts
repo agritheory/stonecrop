@@ -11,11 +11,102 @@ export function makeServer({ environment = 'development' } = {}) {
 			meta: Model,
 			issue: Model,
 			todo: Model,
+			stateMachine: Model,
 		},
 
 		seeds(server) {
 			server.db.loadData({
 				doctypes: [{ name: 'Issue' }, { name: 'Todo' }],
+				stateMachines: [
+					{
+						name: 'Issue',
+						machine: {
+							id: 'Issue',
+							initial: 'New',
+							context: {
+								retries: 0,
+							},
+							states: {
+								New: {
+									on: {
+										SAVE: 'Draft',
+									},
+								},
+								Draft: {
+									on: {
+										SUBMIT: 'Submitted',
+									},
+								},
+								Submitted: {
+									on: {
+										CANCEL: 'Cancelled',
+									},
+								},
+								Cancelled: {
+									type: 'final',
+								},
+							},
+						},
+						layout: {
+							New: {
+								position: { x: 50, y: 50 },
+							},
+							Draft: {
+								position: { x: 300, y: 50 },
+							},
+							Submitted: {
+								position: { x: 550, y: 50 },
+							},
+							Cancelled: {
+								position: { x: 800, y: 50 },
+							},
+						},
+					},
+					{
+						name: 'Todo',
+						machine: {
+							id: 'Todo',
+							initial: 'New',
+							context: {
+								retries: 0,
+							},
+							states: {
+								New: {
+									on: {
+										SAVE: 'Draft',
+									},
+								},
+								Draft: {
+									on: {
+										SUBMIT: 'Submitted',
+									},
+								},
+								Submitted: {
+									on: {
+										CANCEL: 'Cancelled',
+									},
+								},
+								Cancelled: {
+									type: 'final',
+								},
+							},
+						},
+						layout: {
+							New: {
+								position: { x: 50, y: 50 },
+							},
+							Draft: {
+								position: { x: 300, y: 50 },
+							},
+							Submitted: {
+								position: { x: 550, y: 50 },
+							},
+							Cancelled: {
+								position: { x: 800, y: 50 },
+							},
+						},
+					},
+				],
 				meta: [
 					{
 						name: 'Issue',
@@ -129,6 +220,13 @@ export function makeServer({ environment = 'development' } = {}) {
 
 			this.get('/todo', schema => {
 				return schema.all('todo')
+			})
+
+			this.get('/load_state_machine', (schema, request) => {
+				let machine = schema.stateMachines.findBy({ name: request.queryParams.doctype })
+				return machine
+					? machine.attrs
+					: new Response(400, { some: 'Not Found' }, { errors: ['StateMachine for Doctype not found'] })
 			})
 
 			this.get('/load_meta', (schema, request) => {
