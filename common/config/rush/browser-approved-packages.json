@@ -35,6 +35,10 @@
       "allowedCategories": [ "prototype" ]
     },
     {
+      "name": "@monaco-editor/loader",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
       "name": "@typescript-eslint/eslint-plugin",
       "allowedCategories": [ "prototype", "utilities" ]
     },
@@ -88,6 +92,10 @@
     },
     {
       "name": "miragejs",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "monaco-editor",
       "allowedCategories": [ "prototype" ]
     },
     {
@@ -161,10 +169,6 @@
     {
       "name": "vite",
       "allowedCategories": [ "prototype", "utilities" ]
-    },
-    {
-      "name": "vite-plugin-vue2",
-      "allowedCategories": [ "prototype" ]
     },
     {
       "name": "vue",

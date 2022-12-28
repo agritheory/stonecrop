@@ -1,10 +1,10 @@
 {
-	"name": "@agritheory/aform",
+	"name": "@agritheory/code-editor",
 	"version": "0.1.2",
 	"type": "module",
-	"main": "dist/aform.js",
-	"module": "dist/aform.js",
-	"umd": "dist/aform.umd.cjs",
+	"main": "dist/code_editor.js",
+	"module": "dist/code_editor.js",
+	"umd": "dist/code_editor.umd.cjs",
 	"types": "src/index",
 	"files": [
 		"dist/*",
@@ -21,17 +21,15 @@
 		"lint": "eslint . --ext .ts,.vue"
 	},
 	"dependencies": {
+		"@agritheory/themes": "workspace:*",
 		"@agritheory/utilities": "workspace:*",
-		"uuid": "^9.0.0",
-		"vue": "^3.2.37",
-		"@agritheory/themes": "workspace:*"
-	},
-	"peerDependencies": {
-		"@agritheory/atable": "workspace:*"
+		"@monaco-editor/loader": "~1.3.2",
+		"monaco-editor": "~0.34.1",
+		"vue": "^3.2.37"
 	},
 	"devDependencies": {
+		"@agritheory/atable": "workspace:^0.2.0",
 		"@histoire/plugin-vue": "^0.12.4",
-		"@agritheory/atable": "workspace:*",
 		"@types/uuid": "^9.0.0",
 		"@typescript-eslint/eslint-plugin": "^5.33.0",
 		"@typescript-eslint/parser": "^5.33.0",
@@ -51,8 +49,8 @@
 	"exports": {
 		".": {
 			"types": "./types/index",
-			"import": "./dist/aform.js",
-			"require": "./dist/aform.umd.cjs"
+			"import": "./dist/code_editor.js",
+			"require": "./dist/code_editor.umd.cjs"
 		}
 	}
 }
