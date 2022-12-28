@@ -1,5 +1,7 @@
 <template>
-	<div ref="container" id="container"></div>
+	<div ref="editorContainer" id="editor-container">
+		<div ref="aCodeEditor" id="editor-area"></div>
+	</div>
 </template>
 
 <script setup lang="ts">
@@ -13,12 +15,13 @@ const props = defineProps<{
 	options?: editor.IStandaloneEditorConstructionOptions
 }>()
 
-const container = ref(null)
+const aCodeEditor = ref(null)
 const editorOptions: typeof props['options'] = {
 	...props.options,
 	automaticLayout: true,
 	colorDecorators: true,
 	lineHeight: 24,
+	scrollBeyondLastLine: false,
 }
 
 onMounted(async () => {
@@ -29,12 +32,12 @@ onMounted(async () => {
 	editor.setTheme('agritheory')
 
 	// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-	editor.create(container.value as HTMLElement, editorOptions)
+	editor.create(aCodeEditor.value as HTMLElement, editorOptions)
 })
 </script>
 
 <style scoped>
-#container {
+#editor-area {
 	width: 100%;
 	height: 100%;
 }

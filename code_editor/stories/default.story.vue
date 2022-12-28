@@ -1,6 +1,6 @@
 <template>
 	<Story title="default">
-		<ACodeEditor :options="options" style="height: 400px" />
+		<ACodeEditor :options="options" id="code-editor" />
 	</Story>
 </template>
 
@@ -28,6 +28,15 @@ const options: editor.IStandaloneEditorConstructionOptions = {
 	},
 }
 </script>
+
+<style scoped>
+#code-editor {
+	height: 300px;
+	resize: both;
+	overflow: auto;
+	border: 1px solid black;
+}
+</style>
 
 <docs lang="md">
 ## Supported languages
