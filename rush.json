@@ -1,7 +1,7 @@
 {
 	"$schema": "https://developer.microsoft.com/json-schemas/rush/v5/rush.schema.json",
-	"rushVersion": "5.78.0",
-	"pnpmVersion": "7.9.5",
+	"rushVersion": "5.87.0",
+	"pnpmVersion": "7.20.0",
 	"pnpmOptions": {
 		"useWorkspaces": true
 	},
@@ -27,15 +27,12 @@
 	"telemetryEnabled": false,
 	"projects": [
 		{
-			"packageName": "@agritheory/stonecrop",
-			"projectFolder": "stonecrop",
+			"packageName": "@agritheory/aform",
+			"projectFolder": "aform",
 			"reviewCategory": "prototype",
-			"shouldPublish": false
-		},
-		{
-			"packageName": "@agritheory/themes",
-			"projectFolder": "themes",
-			"reviewCategory": "prototype"
+			// to avoid circular dependency problems
+			"decoupledLocalDependencies": ["@agritheory/atable"],
+			"shouldPublish": true
 		},
 		{
 			"packageName": "@agritheory/atable",
@@ -46,16 +43,20 @@
 			"shouldPublish": true
 		},
 		{
-			"packageName": "@agritheory/aform",
-			"projectFolder": "aform",
-			"reviewCategory": "prototype",
-			// to avoid circular dependency problems
-			"decoupledLocalDependencies": ["@agritheory/atable"],
-			"shouldPublish": true
-		},
-		{
 			"packageName": "@agritheory/desktop",
 			"projectFolder": "desktop",
+			"reviewCategory": "prototype",
+			"shouldPublish": false
+		},
+		{
+			"packageName": "@agritheory/code-editor",
+			"projectFolder": "code_editor",
+			"reviewCategory": "prototype",
+			"shouldPublish": false
+		},
+		{
+			"packageName": "@agritheory/examples",
+			"projectFolder": "examples",
 			"reviewCategory": "prototype",
 			"shouldPublish": false
 		},
@@ -66,10 +67,15 @@
 			"shouldPublish": false
 		},
 		{
-			"packageName": "@agritheory/examples",
-			"projectFolder": "examples",
+			"packageName": "@agritheory/stonecrop",
+			"projectFolder": "stonecrop",
 			"reviewCategory": "prototype",
 			"shouldPublish": false
+		},
+		{
+			"packageName": "@agritheory/themes",
+			"projectFolder": "themes",
+			"reviewCategory": "prototype"
 		},
 		{
 			"packageName": "@agritheory/utilities",
