@@ -1,18 +1,6 @@
 <template>
 	<div>
 		<div class="builder-container">
-			<div class="builder-schema">
-				<h3>Schema</h3>
-				<AForm class="aform-main" :key="formKey" :schema="doctypeSchema" :data="schemaData" />
-				<!-- <SheetNav class="sheet-nav-footer" /> -->
-			</div>
-			<div class="builder-hooks">
-				<h3>Side Effects</h3>
-				<AForm class="aform-main" :key="formKey" :schema="hooksSchema" :data="hooksData" />
-			</div>
-			<div class="builder-events">
-				<h3>Events</h3>
-			</div>
 			<div class="builder-workflow">
 				<h3>Workflow</h3>
 				<StateEditor
@@ -21,8 +9,18 @@
 					:state-machine="stateMachine"
 					:layout="layout" />
 			</div>
+			<div class="builder-schema">
+				<h3>Schema</h3>
+				<AForm class="aform-main" :key="formKey" :schema="doctypeSchema" :data="schemaData" />
+				<!-- <SheetNav class="sheet-nav-footer" /> -->
+			</div>
+			<div class="builder-hooks">
+				<h3>Events</h3>
+				<AForm class="aform-main" :key="formKey" :schema="hooksSchema" :data="hooksData" />
+			</div>
 		</div>
 		<ActionSet :elements="actionElements" />
+		<SheetNav />
 	</div>
 </template>
 
@@ -113,22 +111,29 @@ body {
 	flex-direction: column;
 	justify-content: start;
 	height: 60vh;
-	margin-top: 90px;
+	/* margin-top: 90px; */
 }
 
 .builder-schema,
 .builder-hooks,
-.builder-events,
-.builder-workflow {
-	border: 1px solid var(--gray-20);
-	border-radius: 10px;
+.builder-events {
+	/* border: 1px solid var(--gray-20);
+	border-radius: 10px; */
 
 	padding: 1em;
 	margin-bottom: 1em;
+}
+.builder-workflow {
+	padding: 1em;
+	margin-bottom: 3em;
 }
 .node-editor {
 	width: 100%;
 	height: 60vh;
 	min-height: 400px;
+}
+footer {
+	bottom: 15px !important;
+	right: 15px !important;
 }
 </style>

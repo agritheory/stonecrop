@@ -1,5 +1,5 @@
 <template>
-	<div :class="containerClass">
+	<div :class="containerClass" @mouseover="hover = true" @mouseleave="hover = false">
 		<div class="chart-controls">
 			<div><b>Selected Node:</b> {{ activeElementKey ? activeElementKey : 'none' }}</div>
 			<div v-if="activeElementIndex > -1">
@@ -9,7 +9,16 @@
 				<button class="button-default" @click="shiftOutput()">Shift Output Position</button>
 			</div>
 		</div>
-		<VueFlow v-if="_elements && _elements.length" v-model="_elements"></VueFlow>
+
+		<VueFlow
+			@keypress="zoomIn()"
+			@pane-ready="onPaneReady"
+			@wheel.prevent="onWheel($event)"
+			class="nowheel"
+			:prevent-scrolling="true"
+			:zoom-on-scroll="false"
+			v-if="_elements && _elements.length"
+			v-model="_elements"></VueFlow>
 	</div>
 </template>
 <script>
@@ -34,6 +43,8 @@ export default {
 			activeElementKey: '',
 			_elements: [],
 			containerClass: 'defaultContainerClass',
+			vueFlowInstance: null,
+			hover: false,
 		}
 	},
 	created() {
@@ -52,6 +63,13 @@ export default {
 				},
 			}
 		}
+	},
+	mounted() {
+		document.removeEventListener('keypress', this.handleKeypress)
+		document.addEventListener('keypress', this.handleKeypress)
+	},
+	beforeDestroy() {
+		document.removeEventListener('keypress', this.handleKeypress)
 	},
 	methods: {
 		shiftTerminal(currentTerminal) {
@@ -74,6 +92,22 @@ export default {
 				this._elements[this.activeElementIndex].targetPosition = this.shiftTerminal(
 					this._elements[this.activeElementIndex].targetPosition
 				)
+			}
+		},
+		onWheel($event) {
+			window.scrollBy(0, $event.deltaY)
+		},
+		onPaneReady(vueFlowInstance) {
+			this.vueFlowInstance = vueFlowInstance
+		},
+		handleKeypress(e) {
+			if (this.hover && e.ctrlKey == true) {
+				if (e.key == '+' || e.key == '=') {
+					this.vueFlowInstance.zoomIn()
+				}
+				if (e.key == '-') {
+					this.vueFlowInstance.zoomOut()
+				}
 			}
 		},
 	},
@@ -120,5 +154,10 @@ button.button-default {
 
 button.button-default:hover {
 	background-color: #f2f2f2;
+}
+.vue-flow {
+	background-size: 40px 40px;
+	background-image: linear-gradient(to right, #ccc 1px, transparent 1px),
+		linear-gradient(to bottom, #ccc 1px, transparent 1px);
 }
 </style>

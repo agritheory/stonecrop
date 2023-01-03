@@ -7,6 +7,7 @@ import '@agritheory/atable/styles'
 import { NodeEditor, StateEditor } from '@agritheory/node_editor'
 import '@agritheory/node_editor/styles'
 import { ActionSet } from '@agritheory/desktop'
+import { SheetNav } from '@agritheory/desktop'
 import '@agritheory/desktop/styles'
 import App from './App.vue'
 import router from './router'
@@ -25,4 +26,5 @@ app.component('ATextInput', ATextInput)
 app.component('NodeEditor', NodeEditor)
 app.component('StateEditor', StateEditor)
 app.component('ActionSet', ActionSet)
+app.component('SheetNav', SheetNav)
 app.mount('#app')

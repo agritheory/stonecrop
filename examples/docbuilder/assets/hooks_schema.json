@@ -2,7 +2,7 @@
 	{
 		"component": "AFieldset",
 		"collapsible": true,
-		"label": "Side Effects",
+		"label": "",
 		"fieldname": "side_effects_fieldset",
 		"schema": [
 			{

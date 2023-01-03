@@ -2,7 +2,7 @@
 	{
 		"component": "AFieldset",
 		"collapsible": true,
-		"label": "Schema",
+		"label": "",
 		"fieldname": "schema_fieldset",
 		"schema": [
 			{
