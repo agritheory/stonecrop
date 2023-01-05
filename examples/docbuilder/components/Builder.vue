@@ -1,25 +1,20 @@
 <template>
 	<div>
 		<div class="builder-container">
-			<div class="builder-workflow">
-				<h3>Workflow</h3>
-				<StateEditor
-					node-container-class="node-editor"
-					v-if="stateMachine"
-					:state-machine="stateMachine"
-					:layout="layout" />
-			</div>
+			<AFieldSet :label="Workflow" :collapsible="true">
+				<div class="builder-workflow">
+					<StateEditor
+						node-container-class="node-editor"
+						v-if="stateMachine"
+						:state-machine="stateMachine"
+						:layout="layout" />
+				</div>
+			</AFieldSet>
 			<div class="builder-schema">
-				<h3>Schema</h3>
 				<AForm class="aform-main" :key="formKey" :schema="doctypeSchema" :data="schemaData" />
-				<!-- <SheetNav class="sheet-nav-footer" /> -->
-			</div>
-			<div class="builder-hooks">
-				<h3>Events</h3>
-				<AForm class="aform-main" :key="formKey" :schema="hooksSchema" :data="hooksData" />
 			</div>
 		</div>
-		<ActionSet :elements="actionElements" />
+		<!-- <ActionSet :elements="actionElements" /> -->
 		<SheetNav />
 	</div>
 </template>
@@ -31,7 +26,6 @@ import { useRoute } from 'vue-router'
 import { createMachine } from 'xstate'
 
 import doctypeSchema from '../assets/doctype_schema.json'
-import hooksSchema from '../assets/hooks_schema.json'
 import { makeServer } from '../server'
 
 const route = useRoute()
