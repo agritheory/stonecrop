@@ -4,7 +4,9 @@
 			{{ label }}
 			<CollapseButton v-if="collapsible" :collapsed="collapsed" />
 		</legend>
-		<AForm v-show="!collapsed" :schema="schema" :data="formData" />
+		<slot>
+			<AForm v-show="!collapsed" :schema="schema" :data="formData" />
+		</slot>
 	</fieldset>
 </template>
 
