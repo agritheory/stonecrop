@@ -1,20 +1,16 @@
 <template>
 	<div>
-		<div class="builder-container">
-			<AFieldSet :label="Workflow" :collapsible="true">
-				<div class="builder-workflow">
-					<StateEditor
-						node-container-class="node-editor"
-						v-if="stateMachine"
-						:state-machine="stateMachine"
-						:layout="layout" />
-				</div>
-			</AFieldSet>
-			<div class="builder-schema">
-				<AForm class="aform-main" :key="formKey" :schema="doctypeSchema" :data="schemaData" />
+		<AFieldset label="Workflow" :collapsible="true">
+			<div class="builder-workflow">
+				<StateEditor
+					node-container-class="node-editor"
+					v-if="stateMachine"
+					:state-machine="stateMachine"
+					:layout="layout" />
 			</div>
-		</div>
-		<!-- <ActionSet :elements="actionElements" /> -->
+		</AFieldset>
+		<AForm class="aform-main" :key="formKey" :schema="doctypeSchema" :data="schemaData" />
+		<ActionSet :elements="actionElements" />
 		<SheetNav />
 	</div>
 </template>
@@ -104,15 +100,16 @@ body {
 	display: flex;
 	flex-direction: column;
 	justify-content: start;
-	height: 60vh;
+	/* height: 40vh; */
+
 	/* margin-top: 90px; */
 }
 
 .builder-schema,
 .builder-hooks,
 .builder-events {
-	/* border: 1px solid var(--gray-20);
-	border-radius: 10px; */
+	border: 1px solid var(--gray-20);
+	/* border-radius: 10px; */
 
 	padding: 1em;
 	margin-bottom: 1em;
@@ -123,8 +120,9 @@ body {
 }
 .node-editor {
 	width: 100%;
-	height: 60vh;
-	min-height: 400px;
+	height: 40vh;
+	/* min-height: 400px; */
+	overflow: hidden;
 }
 footer {
 	bottom: 15px !important;
