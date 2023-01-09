@@ -155,7 +155,7 @@ export default defineComponent({
 	display: flex;
 	flex-direction: row-reverse;
 	background-color: white;
-	overflow-x: hidden;
+	overflow: hidden;
 }
 
 .action-menu-icon {
@@ -171,7 +171,7 @@ export default defineComponent({
 .action-set.collapse,
 .action-set.collapse.hovered-and-closed:hover {
 	max-width: 25px;
-	overflow-x: hidden;
+	overflow: hidden;
 
 	-webkit-transition: max-width 0.5s ease-in-out;
 	-moz-transition: max-width 0.5s ease-in-out;
