@@ -1,33 +1,54 @@
 <template>
-	<div :class="containerClass" @mouseover="hover = true" @mouseleave="hover = false">
+	<div class="node-editor-wrapper" :class="containerClass" @mouseover="hover = true" @mouseleave="hover = false">
 		<div class="chart-controls">
-			<div><b>Selected Node:</b> {{ activeElementKey ? activeElementKey : 'none' }}</div>
-			<div v-if="activeElementIndex > -1">
-				<button class="button-default" @click="shiftInput()">Shift Input Position</button>
+			<div class="chart-controls-left">
+				<div><b>Selected Node:</b> {{ activeElementKey ? activeElementKey : 'none' }}</div>
 			</div>
-			<div v-if="activeElementIndex > -1">
-				<button class="button-default" @click="shiftOutput()">Shift Output Position</button>
+			<div class="chart-controls-right">
+				<div>
+					<button class="button-default" @click="fitView()">Center</button>
+				</div>
+				<div v-if="activeElementIndex > -1">
+					<button class="button-default" @click="shiftInput()">Shift Input Position</button>
+				</div>
+				<div v-if="activeElementIndex > -1">
+					<button class="button-default" @click="shiftOutput()">Shift Output Position</button>
+				</div>
 			</div>
 		</div>
 
 		<VueFlow
-			@keypress="zoomIn()"
 			@pane-ready="onPaneReady"
 			@wheel.prevent="onWheel($event)"
 			class="nowheel"
 			:prevent-scrolling="true"
 			:zoom-on-scroll="false"
+			:fit-view-on-init="true"
 			v-if="_elements && _elements.length"
-			v-model="_elements"></VueFlow>
+			v-model="_elements"
+			@connect="onConnect($event)"
+			@edge-double-click="onEdgeDoubleClick($event)">
+			<template #node-editable="props">
+				<EditableNode
+					:props="props"
+					:data="props.data"
+					:label="props.label"
+					:source-position="props['source-position']"
+					:target-position="props['target-position']"
+					@change="labelChanged($event, props.id)" />
+			</template>
+		</VueFlow>
 	</div>
 </template>
 <script>
 import { VueFlow } from '@vue-flow/core'
 import '@vue-flow/core/dist/style.css'
 import '@vue-flow/core/dist/theme-default.css'
+import EditableNode from './EditableNode.vue'
 export default {
 	components: {
 		VueFlow: VueFlow,
+		EditableNode: EditableNode,
 	},
 	props: ['elements', 'nodeContainerClass'],
 	computed: {
@@ -45,6 +66,10 @@ export default {
 			containerClass: 'defaultContainerClass',
 			vueFlowInstance: null,
 			hover: false,
+			labelEditor: {
+				x: 0,
+				y: 0,
+			},
 		}
 	},
 	created() {
@@ -53,6 +78,21 @@ export default {
 			this.containerClass = this.nodeContainerClass
 		}
 
+		for (let j = 0; j < this.elements.length; j++) {
+			this.elements[j].data = {}
+			this.elements[j].dimensions = { width: 200, height: 100 } // change to actual
+			if (this.elements[j].type == 'input') {
+				this.elements[j].data.hasInput = false
+				this.elements[j].data.hasOutput = true
+			} else if (this.elements[j].type == 'output') {
+				this.elements[j].data.hasInput = true
+				this.elements[j].data.hasOutput = false
+			} else {
+				this.elements[j].data.hasInput = true
+				this.elements[j].data.hasOutput = true
+			}
+			this.elements[j].type = 'editable'
+		}
 		this._elements = this.elements
 		for (let j = 0; j < this._elements.length; j++) {
 			let key = this.elements[j].id
@@ -110,6 +150,23 @@ export default {
 				}
 			}
 		},
+		fitView() {
+			this.vueFlowInstance.fitView()
+		},
+		onConnect(e) {
+			console.log('edge connect', e)
+		},
+		onEdgeDoubleClick(e) {
+			console.log('edge double click', e)
+		},
+		labelChanged(e, id) {
+			for (let j = 0; j < this._elements.length; j++) {
+				if (this._elements[j].id == id) {
+					this._elements[j].label = e
+					break
+				}
+			}
+		},
 	},
 }
 </script>
@@ -117,9 +174,25 @@ export default {
 @import '@vue-flow/core/dist/style.css';
 @import '@vue-flow/core/dist/theme-default.css';
 
+.chart-controls-left,
+.chart-controls-right {
+	height: 1.8em;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	padding-top: 0.2em;
+}
+.chart-controls-right div {
+	margin-left: 5px;
+}
 .chart-controls {
-	padding: 20px;
+	padding-left: 20px;
+	padding-right: 20px;
+	height: 1.8em;
 	border-bottom: 1px solid #ccc;
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
 }
 .chart-controls div {
 	margin-bottom: 5px;
@@ -143,11 +216,9 @@ export default {
 }
 button.button-default {
 	background-color: #ffffff;
-	padding: 5px 12px;
+	padding: 1px 12px;
 	border-radius: 3px;
-	box-shadow: rgba(0, 0, 0, 0.05) 0px 0.5px 0px 0px, rgba(0, 0, 0, 0.08) 0px 0px 0px 1px,
-		rgba(0, 0, 0, 0.05) 0px 2px 4px 0px;
-	border: none;
+	border: 1px solid #ccc;
 	cursor: pointer;
 	white-space: nowrap;
 }
@@ -159,5 +230,11 @@ button.button-default:hover {
 	background-size: 40px 40px;
 	background-image: linear-gradient(to right, #ccc 1px, transparent 1px),
 		linear-gradient(to bottom, #ccc 1px, transparent 1px);
+}
+input.label-editor {
+	position: absolute;
+}
+.node-editor-wrapper {
+	position: relative;
 }
 </style>
