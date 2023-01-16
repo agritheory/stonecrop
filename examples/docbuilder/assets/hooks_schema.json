@@ -15,7 +15,7 @@
 						"fieldtype": "Data",
 						"align": "Left",
 						"edit": false,
-						"width": "35ch"
+						"width": "20ch"
 					},
 					{
 						"label": "Callback",

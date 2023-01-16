@@ -1,18 +1,21 @@
 <template>
 	<tr ref="rowEl" :tabindex="tabIndex" v-show="rowVisible()" class="table-row">
+		<!-- render numbered/tree view index -->
 		<td v-if="tableData.config.listView" id="row-index" :tabIndex="-1" class="list-index">
 			{{ rowIndex + 1 }}
 		</td>
 		<td
-			v-if="tableData.config.treeView"
+			v-else-if="tableData.config.treeView"
 			id="row-index"
 			:tabIndex="-1"
 			class="tree-index"
 			@click="toggleRowExpand(rowIndex)">
 			{{ getRowExpandSymbol() }}
 		</td>
-		<slot v-if="!tableData.config.listView && !tableData.config.treeView" name="indexCell" />
-		<slot />
+		<slot v-else name="indexCell"></slot>
+
+		<!-- render cell content -->
+		<slot></slot>
 	</tr>
 </template>
 
@@ -38,6 +41,7 @@ const props = withDefaults(
 
 const tableData = inject<TableDataStore>(props.tableid)
 const rowEl = ref<HTMLTableRowElement>(null)
+const numberedRowWidth = tableData.numberedRowWidth.value
 
 const getRowExpandSymbol = () => {
 	if (!tableData.config.treeView) {
@@ -95,10 +99,11 @@ if (props.addNavigation) {
 	color: var(--header-text-color);
 	font-weight: bold;
 	padding-left: var(--atable-row-padding);
-	padding-right: 2em;
+	padding-right: 1em;
 	text-align: center;
 	user-select: none;
-	width: v-bind('tableData.numberedRowWidth.value');
+	width: v-bind(numberedRowWidth);
+	max-width: v-bind(numberedRowWidth);
 }
 
 .tree-index {
