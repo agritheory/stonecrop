@@ -2,7 +2,7 @@
 	{
 		"component": "AFieldset",
 		"collapsible": true,
-		"label": "",
+		"label": "Schema",
 		"fieldname": "schema_fieldset",
 		"schema": [
 			{
@@ -10,31 +10,118 @@
 				"fieldname": "schema",
 				"columns": [
 					{
-						"label": "ID",
-						"name": "id",
-						"fieldtype": "Data",
-						"align": "Left",
-						"edit": false,
-						"width": "20ch"
-					},
-					{
 						"label": "Label",
 						"name": "label",
+						"fieldtype": "Data",
+						"align": "Left",
+						"width": "16ch",
+						"edit": true
+					},
+					{
+						"label": "Fieldtype",
+						"name": "_fieldtype",
+						"fieldtype": "Select",
+						"align": "Left",
+						"width": "20ch",
+						"edit": true
+					},
+					{
+						"label": "Component",
+						"name": "_component",
+						"fieldtype": "Data",
+						"align": "Left",
+						"width": "20ch",
+						"edit": true
+					},
+					{
+						"label": "Align",
+						"name": "_align",
+						"fieldtype": "Numeric",
+						"align": "Right",
+						"width": "8ch",
+						"edit": true
+					},
+					{
+						"label": "Width",
+						"name": "format",
+						"fieldtype": "Data",
+						"align": "Left",
+						"width": "8ch",
+						"edit": true
+					},
+					{
+						"label": "Editable",
+						"name": "_edit",
+						"fieldtype": "Select",
+						"align": "Left",
+						"width": "8ch",
+						"edit": true
+					},
+					{
+						"label": "Options",
+						"name": "_options",
+						"fieldtype": "Data",
+						"align": "Left",
+						"width": "16ch",
+						"edit": true
+					},
+					{
+						"label": "Format",
+						"name": "_format",
+						"fieldtype": "Data",
+						"align": "Left",
+						"width": "16ch",
+						"edit": true
+					},
+					{
+						"label": "Mask",
+						"name": "_mask",
+						"fieldtype": "Data",
+						"align": "Left",
+						"width": "16ch",
+						"edit": true
+					}
+				],
+				"config": { "listView": true },
+				"rows": []
+			}
+		]
+	},
+	{
+		"component": "AFieldset",
+		"collapsible": true,
+		"label": "Events",
+		"fieldname": "side_effects_fieldset",
+		"schema": [
+			{
+				"component": "ATable",
+				"fieldname": "side_effects",
+				"columns": [
+					{
+						"label": "Event Name",
+						"name": "event_name",
 						"fieldtype": "Data",
 						"align": "Left",
 						"edit": false,
 						"width": "35ch"
 					},
 					{
-						"label": "Type",
-						"name": "type",
+						"label": "Callback",
+						"name": "callback",
 						"fieldtype": "Data",
 						"align": "Left",
-						"edit": false,
-						"width": "20ch"
+						"edit": true,
+						"width": "40ch",
+						"cellComponent": "textarea",
+						"cellComponentProps": {
+							"rows": 8,
+							"cols": 50
+						}
 					}
 				],
-				"config": { "listView": true },
+				"config": {
+					"listView": true
+				},
 				"rows": []
 			}
 		]

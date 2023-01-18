@@ -4,12 +4,14 @@
 			{{ label }}
 			<CollapseButton v-if="collapsible" :collapsed="collapsed" />
 		</legend>
-		<AForm v-show="!collapsed" :schema="schema" :data="formData" />
+		<slot>
+			<AForm v-show="!collapsed" :schema="schema" :data="formData" />
+		</slot>
 	</fieldset>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, defineProps } from 'vue'
 
 import CollapseButton from '@/components/base/CollapseButton.vue'
 import AForm from '@/components/AForm.vue'
@@ -37,6 +39,7 @@ function toggleCollapse(event: Event) {
 
 <style scoped>
 fieldset {
+	max-width: 100%;
 	width: 100%;
 	margin-right: 2ch;
 	border: 1px solid transparent;

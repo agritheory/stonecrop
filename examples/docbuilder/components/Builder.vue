@@ -1,24 +1,15 @@
 <template>
 	<div>
-		<div class="builder-container">
+		<AFieldset label="Workflow" :collapsible="true">
 			<div class="builder-workflow">
-				<h3>Workflow</h3>
 				<StateEditor
 					node-container-class="node-editor"
 					v-if="stateMachine"
 					:state-machine="stateMachine"
 					:layout="layout" />
 			</div>
-			<div class="builder-schema">
-				<h3>Schema</h3>
-				<AForm class="aform-main" :key="formKey" :schema="doctypeSchema" :data="schemaData" />
-				<!-- <SheetNav class="sheet-nav-footer" /> -->
-			</div>
-			<div class="builder-hooks">
-				<h3>Events</h3>
-				<AForm class="aform-main" :key="formKey" :schema="hooksSchema" :data="hooksData" />
-			</div>
-		</div>
+		</AFieldset>
+		<AForm class="aform-main" :key="formKey" :schema="doctypeSchema" :data="schemaData" />
 		<ActionSet :elements="actionElements" />
 		<SheetNav />
 	</div>
@@ -31,7 +22,6 @@ import { useRoute } from 'vue-router'
 import { createMachine } from 'xstate'
 
 import doctypeSchema from '../assets/doctype_schema.json'
-import hooksSchema from '../assets/hooks_schema.json'
 import { makeServer } from '../server'
 
 const route = useRoute()
@@ -110,15 +100,16 @@ body {
 	display: flex;
 	flex-direction: column;
 	justify-content: start;
-	height: 60vh;
+	/* height: 40vh; */
+
 	/* margin-top: 90px; */
 }
 
 .builder-schema,
 .builder-hooks,
 .builder-events {
-	/* border: 1px solid var(--gray-20);
-	border-radius: 10px; */
+	border: 1px solid var(--gray-20);
+	/* border-radius: 10px; */
 
 	padding: 1em;
 	margin-bottom: 1em;
@@ -129,8 +120,9 @@ body {
 }
 .node-editor {
 	width: 100%;
-	height: 60vh;
-	min-height: 400px;
+	height: 40vh;
+	/* min-height: 400px; */
+	overflow: hidden;
 }
 footer {
 	bottom: 15px !important;
