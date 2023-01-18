@@ -37,6 +37,9 @@
 					:target-position="props['target-position']"
 					@change="labelChanged($event, props.id)" />
 			</template>
+			<template #edge-editable="props">
+				<EditableEdge v-bind="props" :label="props.label" @change="labelChanged($event, props.id)" />
+			</template>
 		</VueFlow>
 	</div>
 </template>
@@ -45,10 +48,12 @@ import { VueFlow } from '@vue-flow/core'
 import '@vue-flow/core/dist/style.css'
 import '@vue-flow/core/dist/theme-default.css'
 import EditableNode from './EditableNode.vue'
+import EditableEdge from './EditableEdge.vue'
 export default {
 	components: {
 		VueFlow: VueFlow,
 		EditableNode: EditableNode,
+		EditableEdge: EditableEdge,
 	},
 	props: ['elements', 'nodeContainerClass'],
 	computed: {
