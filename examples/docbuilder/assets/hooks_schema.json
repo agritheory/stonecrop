@@ -13,7 +13,7 @@
 						"label": "Event Name",
 						"name": "event_name",
 						"fieldtype": "Data",
-						"align": "Left",
+						"align": "left",
 						"edit": false,
 						"width": "20ch"
 					},
@@ -21,7 +21,7 @@
 						"label": "Callback",
 						"name": "callback",
 						"fieldtype": "Data",
-						"align": "Left",
+						"align": "left",
 						"edit": true,
 						"width": "20ch",
 						"cellComponent": "textarea",
@@ -31,7 +31,7 @@
 						}
 					}
 				],
-				"config": { "listView": true },
+				"config": { "view": "list", "fullWidth": true },
 				"rows": []
 			}
 		]

@@ -21,18 +21,18 @@
 		"lint": "eslint . --ext .ts,.vue"
 	},
 	"dependencies": {
+		"@agritheory/themes": "workspace:*",
 		"@agritheory/utilities": "workspace:*",
 		"uuid": "^9.0.0",
-		"vue": "^3.2.37",
-		"@agritheory/themes": "workspace:*"
+		"vue": "^3.2.37"
 	},
 	"peerDependencies": {
 		"@agritheory/aform": "workspace:*"
 	},
 	"devDependencies": {
-		"@histoire/plugin-vue": "^0.12.4",
 		"@agritheory/aform": "workspace:*",
 		"@agritheory/themes": "workspace:*",
+		"@histoire/plugin-vue": "^0.12.4",
 		"@types/uuid": "^9.0.0",
 		"@typescript-eslint/eslint-plugin": "^5.33.0",
 		"@typescript-eslint/parser": "^5.33.0",

@@ -1,5 +1,5 @@
 <template>
-	<ATable id="list" :key="rows" :columns="columns" :rows="rows" :config="{ listView: true }">
+	<ATable id="list" :key="rows" :columns="columns" :rows="rows" :config="{ view: 'list' }">
 		<template #body="{ data }: { data: TableDataStore }">
 			<ARow
 				v-for="(row, rowIndex) in data.rows"
@@ -64,7 +64,7 @@ function showBuilder(doctype: string) {
 function getRowCellStyle(column: TableColumn): CSSProperties {
 	return {
 		minWidth: column?.width || '40ch',
-		textAlign: column?.align?.toLowerCase() || 'center',
+		textAlign: column?.align || 'center',
 	}
 }
 

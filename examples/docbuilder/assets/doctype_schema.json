@@ -13,7 +13,7 @@
 						"label": "ID",
 						"name": "id",
 						"fieldtype": "Data",
-						"align": "Left",
+						"align": "left",
 						"edit": false,
 						"width": "20ch"
 					},
@@ -21,7 +21,7 @@
 						"label": "Label",
 						"name": "label",
 						"fieldtype": "Data",
-						"align": "Left",
+						"align": "left",
 						"edit": false,
 						"width": "35ch"
 					},
@@ -29,12 +29,12 @@
 						"label": "Type",
 						"name": "type",
 						"fieldtype": "Data",
-						"align": "Left",
+						"align": "left",
 						"edit": false,
 						"width": "20ch"
 					}
 				],
-				"config": { "listView": true },
+				"config": { "view": "list", "fullWidth": true },
 				"rows": []
 			}
 		]

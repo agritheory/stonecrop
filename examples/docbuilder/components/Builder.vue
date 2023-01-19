@@ -16,7 +16,6 @@
 </template>
 
 <script setup lang="ts">
-import { v4 as uuidv4 } from 'uuid'
 import { onBeforeMount, ref } from 'vue'
 import { useRoute } from 'vue-router'
 
@@ -25,8 +24,6 @@ import hooksSchema from '../assets/hooks_schema.json'
 import { makeServer } from '../server'
 
 const route = useRoute()
-
-const key = uuidv4()
 let formKey = ref(0)
 
 // create mirage server

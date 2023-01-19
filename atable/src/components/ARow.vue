@@ -1,12 +1,11 @@
 <template>
 	<tr ref="rowEl" :tabindex="tabIndex" v-show="rowVisible()" class="table-row">
 		<!-- render numbered/tree view index -->
-		<td v-if="tableData.config.listView" id="row-index" :tabIndex="-1" class="list-index">
+		<td v-if="tableData.config.view === 'list'" :tabIndex="-1" class="list-index">
 			{{ rowIndex + 1 }}
 		</td>
 		<td
-			v-else-if="tableData.config.treeView"
-			id="row-index"
+			v-else-if="tableData.config.view === 'tree'"
 			:tabIndex="-1"
 			class="tree-index"
 			@click="toggleRowExpand(rowIndex)">
@@ -44,7 +43,7 @@ const rowEl = ref<HTMLTableRowElement>(null)
 const numberedRowWidth = tableData.numberedRowWidth.value
 
 const getRowExpandSymbol = () => {
-	if (!tableData.config.treeView) {
+	if (tableData.config.view !== 'tree') {
 		return ''
 	}
 
@@ -68,11 +67,11 @@ const getRowExpandSymbol = () => {
 }
 
 const rowVisible = () => {
-	if (!tableData.config.treeView) {
-		return true
-	}
-
-	return tableData.display[props.rowIndex].isRoot || tableData.display[props.rowIndex].open
+	return (
+		tableData.config.view !== 'tree' ||
+		tableData.display[props.rowIndex].isRoot ||
+		tableData.display[props.rowIndex].open
+	)
 }
 
 const toggleRowExpand = (rowIndex: number) => {
@@ -90,6 +89,7 @@ if (props.addNavigation) {
 </script>
 
 <style scoped>
+@import url('@agritheory/themes/default/default.css');
 .table-row {
 	border-top: 1px solid var(--row-border-color);
 	height: var(--atable-row-height);

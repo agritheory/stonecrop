@@ -1,5 +1,5 @@
 <template>
-	<table class="atable">
+	<table class="atable" :style="{ width: tableData.config.fullWidth ? '100%' : 'auto' }">
 		<slot name="header" :data="tableData">
 			<ATableHeader :columns="tableData.columns" :config="tableData.config" :tableid="tableData.id" />
 		</slot>
@@ -22,7 +22,7 @@
 						:colIndex="colIndex + (tableData.zeroColumn ? 0 : -1)"
 						:component="col.cellComponent"
 						:style="{
-							textAlign: col?.align?.toLowerCase() || 'center',
+							textAlign: col?.align || 'center',
 							minWidth: col?.width || '40ch',
 						}" />
 				</ARow>
@@ -165,6 +165,7 @@ window.addEventListener('keydown', (event: KeyboardEvent) => {
 
 <style scoped>
 @import url('@agritheory/themes/default/default.css');
+
 table {
 	display: table;
 	border-collapse: collapse;
