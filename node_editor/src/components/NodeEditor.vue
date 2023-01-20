@@ -6,6 +6,9 @@
 			</div>
 			<div class="chart-controls-right">
 				<div>
+					<button class="button-default" @click="addNode()">Add Node</button>
+				</div>
+				<div>
 					<button class="button-default" @click="fitView()">Center</button>
 				</div>
 				<div v-if="activeElementIndex > -1">
@@ -151,6 +154,56 @@ export default {
 		},
 		fitView() {
 			this.vueFlowInstance.fitView()
+		},
+		addNode() {
+			let newNodePosition = { x: Math.random() * 200, y: Math.random() * 200 }
+			let makeEdge = false
+			if (this.activeElementIndex > -1) {
+				const activeNode = this._elements[this.activeElementIndex]
+				if (activeNode.data.hasOutput) {
+					newNodePosition = { x: activeNode.position.x + 200, y: activeNode.position.y + 50 }
+					makeEdge = true
+				}
+			}
+
+			let id = this._elements.length
+			let nodeId = `node-${id}`
+			this._elements.push({
+				id: nodeId,
+				label: 'Node ' + id,
+				sourcePosition: 'right',
+				targetPosition: 'left',
+				class: 'vue-flow__node-default',
+				type: 'editable',
+				data: {
+					hasInput: true,
+					hasOutput: true,
+				},
+				events: {
+					click: () => {
+						this.activeElementKey = nodeId
+					},
+				},
+				// position: { x: Math.random() * this.vueFlowInstance.dimensions.width, y: Math.random() * this.vueFlowInstance.dimensions.height }
+				position: newNodePosition,
+			})
+
+			if (makeEdge) {
+				let edgeId = `edge-${id + 1}`
+				this._elements.push({
+					id: edgeId,
+					source: this.activeElementKey,
+					target: nodeId,
+					type: 'editable',
+					label: `EDGE ${id + 1}`,
+					animated: true,
+					events: {
+						click: () => {
+							this.activeElementKey = edgeId
+						},
+					},
+				})
+			}
 		},
 		onConnect(e) {
 			console.log('edge connect', e)
