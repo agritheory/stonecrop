@@ -1,20 +1,16 @@
 <script lang="ts" setup>
-import { Handle, Position, NodeEventsOn } from '@vue-flow/core'
+import { NodeProps, Handle, Position, NodeEventsOn } from '@vue-flow/core'
 import { computed, ref, nextTick } from 'vue'
 
-const props = defineProps({
-	data: {
-		type: Object,
-		required: false,
-	},
-	label: {
-		type: String,
-		required: false,
-	},
-	sourcePosition: String,
-	targetPosition: String,
-	props: Object,
-})
+interface EditableNodeProps extends NodeProps {
+	id: string
+	label: string
+	sourcePosition: Position
+	targetPosition: Position
+	data: any
+}
+
+const props = defineProps<EditableNodeProps>()
 
 const emit = defineEmits(['change'])
 
@@ -55,7 +51,7 @@ const submitNewLabel = () => {
 </script>
 
 <template>
-	<div @click="nodeOnClick()" class="vue-flow__node vue-flow__node-default nopan selectable">
+	<div @click="nodeOnClick()">
 		<div>{{ props.label }}</div>
 		<div v-if="showInput" class="label-input-wrapper">
 			<input

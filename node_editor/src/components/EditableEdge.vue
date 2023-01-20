@@ -4,7 +4,7 @@ import { EdgeLabelRenderer, getBezierPath, useVueFlow } from '@vue-flow/core'
 import type { CSSProperties } from 'vue'
 import { computed, ref, nextTick } from 'vue'
 
-interface CustomEdgeProps<T = any> extends EdgeProps<T> {
+interface EditableEdgeProps<T = any> extends EdgeProps<T> {
 	id: string
 	sourceX: number
 	sourceY: number
@@ -18,7 +18,7 @@ interface CustomEdgeProps<T = any> extends EdgeProps<T> {
 	label: string
 }
 
-const props = defineProps<CustomEdgeProps>()
+const props = defineProps<EditableEdgeProps>()
 
 const { removeEdges } = useVueFlow()
 
@@ -87,6 +87,7 @@ export default {
 .editable-edge-label {
 	background-color: white;
 	position: relative;
+	font-size: 12px;
 }
 .label-input-wrapper {
 	position: absolute;

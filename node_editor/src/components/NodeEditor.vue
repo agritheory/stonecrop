@@ -29,21 +29,15 @@
 			@connect="onConnect($event)"
 			@edge-double-click="onEdgeDoubleClick($event)">
 			<template #node-editable="props">
-				<EditableNode
-					:props="props"
-					:data="props.data"
-					:label="props.label"
-					:source-position="props['source-position']"
-					:target-position="props['target-position']"
-					@change="labelChanged($event, props.id)" />
+				<EditableNode v-bind="props" @change="labelChanged($event, props.id)" />
 			</template>
 			<template #edge-editable="props">
-				<EditableEdge v-bind="props" :label="props.label" @change="labelChanged($event, props.id)" />
+				<EditableEdge v-bind="props" @change="labelChanged($event, props.id)" />
 			</template>
 		</VueFlow>
 	</div>
 </template>
-<script>
+<script lang="ts">
 import { VueFlow } from '@vue-flow/core'
 import '@vue-flow/core/dist/style.css'
 import '@vue-flow/core/dist/theme-default.css'
@@ -85,7 +79,6 @@ export default {
 
 		for (let j = 0; j < this.elements.length; j++) {
 			this.elements[j].data = {}
-			this.elements[j].dimensions = { width: 200, height: 100 } // change to actual
 			if (this.elements[j].type == 'input') {
 				this.elements[j].data.hasInput = false
 				this.elements[j].data.hasOutput = true
@@ -96,6 +89,7 @@ export default {
 				this.elements[j].data.hasInput = true
 				this.elements[j].data.hasOutput = true
 			}
+			this.elements[j].class = 'vue-flow__node-default'
 			this.elements[j].type = 'editable'
 		}
 		this._elements = this.elements
