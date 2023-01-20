@@ -47,7 +47,7 @@
 		"vue-router": "^4"
 	},
 	"engines": {
-		"node": ">=16.13.0"
+		"node": ">=16.17.1"
 	},
 	"exports": {
 		".": {
