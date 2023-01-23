@@ -1,0 +1,19 @@
+{
+  "name": "@agritheory/desktop",
+  "entries": [
+    {
+      "version": "0.1.3",
+      "tag": "@agritheory/desktop_v0.1.3",
+      "date": "Mon, 23 Jan 2023 12:23:48 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Publish package",
+            "author": "Rohan <Alchez@users.noreply.github.com>",
+            "commit": "e5f3738bb64c05dca1c333bc137b26d4e486a7fc"
+          }
+        ]
+      }
+    }
+  ]
+}
