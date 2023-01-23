@@ -46,7 +46,7 @@
 			"packageName": "@agritheory/desktop",
 			"projectFolder": "desktop",
 			"reviewCategory": "prototype",
-			"shouldPublish": false
+			"shouldPublish": true
 		},
 		{
 			"packageName": "@agritheory/code-editor",
@@ -70,7 +70,7 @@
 			"packageName": "@agritheory/stonecrop",
 			"projectFolder": "stonecrop",
 			"reviewCategory": "prototype",
-			"shouldPublish": false
+			"shouldPublish": true
 		},
 		{
 			"packageName": "@agritheory/themes",

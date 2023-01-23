@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@agritheory/stonecrop",
+      "comment": "Publish package",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@agritheory/stonecrop"
+}
