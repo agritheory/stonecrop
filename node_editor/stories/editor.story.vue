@@ -1,6 +1,6 @@
 <template>
 	<Story title="NodeEditor">
-		<StateEditor :state-machine="fetchMachine" :layout="layout" />
+		<StateEditor v-model="fetchConfig" :layout="layout" />
 	</Story>
 </template>
 <script lang="ts" setup>
@@ -25,6 +25,7 @@ const layout = {
 		position: { x: 700, y: 50 },
 	},
 }
+
 const fetchMachine = createMachine({
 	id: 'fetch',
 	initial: 'idle',
@@ -58,6 +59,8 @@ const fetchMachine = createMachine({
 		},
 	},
 })
+
+const fetchConfig = fetchMachine.config
 </script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap');
