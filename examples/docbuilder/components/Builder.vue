@@ -4,8 +4,8 @@
 			<div class="builder-workflow">
 				<StateEditor
 					node-container-class="node-editor"
-					v-if="stateMachine"
-					:state-machine="stateMachine"
+					v-if="stateConfig && Object.keys(stateConfig).length > 0"
+					v-model="stateConfig"
 					:layout="layout" />
 			</div>
 		</AFieldset>
@@ -37,6 +37,7 @@ let schemaData = ref({})
 let hooksData = ref({})
 let stateMachine
 let layout
+let stateConfig = ref({})
 onBeforeMount(async () => {
 	const doctype = route.params.id.toString()
 	const searchParams = new URLSearchParams({ doctype })
@@ -54,6 +55,7 @@ onBeforeMount(async () => {
 	const stateResponse = await fetch('/api/load_state_machine?' + searchParams.toString())
 	const stateResponseData: Record<string, any>[] = await stateResponse.json()
 	stateMachine = createMachine(stateResponseData.machine)
+	stateConfig.value = stateMachine.config.states
 	layout = stateResponseData.layout
 	formKey.value++
 })
