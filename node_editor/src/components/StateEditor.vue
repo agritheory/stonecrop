@@ -1,6 +1,6 @@
 <template>
 	<div>
-		<NodeEditor :elements="elements" :node-container-class="nodeContainerClass" />
+		<NodeEditor v-model="elements" :node-container-class="nodeContainerClass" />
 	</div>
 </template>
 <script lang="ts" setup>
@@ -22,7 +22,7 @@ const emit = defineEmits(['update:modelValue'])
 
 const elements = computed({
 	get: () => {
-		let states = props.modelValue.states
+		let states = props.modelValue
 		let stateHash = {}
 		let hasInputs = {}
 		let j = 0
@@ -116,7 +116,6 @@ const onElementsChange = elements => {
 			states[label].on[edgeKey] = edges[key][edgeKey]
 		}
 	}
-
 	emit('update:modelValue', states)
 }
 </script>

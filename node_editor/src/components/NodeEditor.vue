@@ -26,8 +26,8 @@
 			:prevent-scrolling="true"
 			:zoom-on-scroll="false"
 			:fit-view-on-init="true"
-			v-if="_elements && _elements.length"
-			v-model="_elements"
+			v-if="vueFlowElements && vueFlowElements.length"
+			v-model="vueFlowElements"
 			@connect="onConnect($event)"
 			@edge-double-click="onEdgeDoubleClick($event)">
 			<template #node-editable="props">
@@ -45,31 +45,21 @@ import '@vue-flow/core/dist/style.css'
 import '@vue-flow/core/dist/theme-default.css'
 import EditableNode from './EditableNode.vue'
 import EditableEdge from './EditableEdge.vue'
-import { ref, computed, defineEmits, onBeforeUnmount, onMounted } from 'vue'
+import { ref, computed, defineEmits, onBeforeUnmount, onMounted, watch, reactive } from 'vue'
 
 // Props
 
 const props = defineProps<{
-	elements: any[]
+	modelValue: any
 	nodeContainerClass: string
 }>()
 
 // Emits
 
-const emit = defineEmits(['change'])
-
-// Computed variables
-
-const activeElementIndex = computed(() => {
-	for (let j = 0; j < _elements.value.length; j++) {
-		if (_elements.value[j].id == activeElementKey.value) return j
-	}
-	return -1
-})
+const emit = defineEmits(['update:modelValue'])
 
 // Data
 
-const _elements = ref([])
 const containerClass = ref('')
 const vueFlowInstance = ref({})
 const hover = ref(false)
@@ -79,6 +69,59 @@ const labelEditor = ref({
 })
 
 const activeElementKey = ref('')
+
+const vueFlowElements = ref([])
+
+// Computed variables
+
+const activeElementIndex = computed(() => {
+	for (let j = 0; j < vueFlowElements.value.length; j++) {
+		if (vueFlowElements.value[j].id == activeElementKey.value) return j
+	}
+	return -1
+})
+
+const elements = computed({
+	get: () => {
+		let _elements = props.modelValue
+		if (props.nodeContainerClass) {
+			containerClass.value = props.nodeContainerClass
+		} else {
+			containerClass.value = 'defaultContainerClass'
+		}
+
+		for (let j = 0; j < _elements.length; j++) {
+			_elements[j].data = {}
+			if (_elements[j].type == 'input') {
+				_elements[j].data.hasInput = false
+				_elements[j].data.hasOutput = true
+			} else if (_elements[j].type == 'output') {
+				_elements[j].data.hasInput = true
+				_elements[j].data.hasOutput = false
+			} else {
+				_elements[j].data.hasInput = true
+				_elements[j].data.hasOutput = true
+			}
+			_elements[j].class = 'vue-flow__node-default'
+			_elements[j].type = 'editable'
+		}
+
+		for (let j = 0; j < _elements.length; j++) {
+			let key = _elements[j].id
+			let el = _elements[j]
+			_elements[j].events = {
+				click: () => {
+					activeElementKey.value = key
+				},
+			}
+		}
+
+		return _elements
+	},
+	set: newValue => {
+		emit('update:modelValue', JSON.parse(JSON.stringify(newValue)))
+	},
+})
 
 //VueFlow
 
@@ -90,37 +133,7 @@ onPaneReady(i => {
 
 // Setup
 
-if (props.nodeContainerClass) {
-	containerClass.value = props.nodeContainerClass
-} else {
-	containerClass.value = 'defaultContainerClass'
-}
-
-for (let j = 0; j < props.elements.length; j++) {
-	props.elements[j].data = {}
-	if (props.elements[j].type == 'input') {
-		props.elements[j].data.hasInput = false
-		props.elements[j].data.hasOutput = true
-	} else if (props.elements[j].type == 'output') {
-		props.elements[j].data.hasInput = true
-		props.elements[j].data.hasOutput = false
-	} else {
-		props.elements[j].data.hasInput = true
-		props.elements[j].data.hasOutput = true
-	}
-	props.elements[j].class = 'vue-flow__node-default'
-	props.elements[j].type = 'editable'
-}
-_elements.value = props.elements
-for (let j = 0; j < _elements.value.length; j++) {
-	let key = props.elements[j].id
-	let el = props.elements[j]
-	_elements.value[j].events = {
-		click: () => {
-			activeElementKey.value = key
-		},
-	}
-}
+vueFlowElements.value = elements.value
 
 // Lifecycle Hooks
 
@@ -146,16 +159,16 @@ const shiftTerminal = currentTerminal => {
 
 const shiftOutput = () => {
 	if (activeElementIndex.value > -1) {
-		_elements.value[activeElementIndex.value].sourcePosition = shiftTerminal(
-			_elements.value[activeElementIndex.value].sourcePosition
+		vueFlowElements.value[activeElementIndex.value].sourcePosition = shiftTerminal(
+			vueFlowElements.value[activeElementIndex.value].sourcePosition
 		)
 	}
 }
 
 const shiftInput = () => {
 	if (activeElementIndex.value > -1) {
-		_elements.value[activeElementIndex.value].targetPosition = shiftTerminal(
-			_elements.value[activeElementIndex.value].targetPosition
+		vueFlowElements.value[activeElementIndex.value].targetPosition = shiftTerminal(
+			vueFlowElements.value[activeElementIndex.value].targetPosition
 		)
 	}
 }
@@ -183,16 +196,16 @@ const addNode = () => {
 	let newNodePosition = { x: Math.random() * 200, y: Math.random() * 200 }
 	let makeEdge = false
 	if (activeElementIndex.value > -1) {
-		const activeNode = _elements.value[activeElementIndex.value]
+		const activeNode = vueFlowElements.value[activeElementIndex.value]
 		if (activeNode.data.hasOutput) {
 			newNodePosition = { x: activeNode.position.x + 200, y: activeNode.position.y + 50 }
 			makeEdge = true
 		}
 	}
 
-	let id = _elements.value.length
+	let id = vueFlowElements.value.length
 	let nodeId = `node-${id}`
-	_elements.value.push({
+	vueFlowElements.value.push({
 		id: nodeId,
 		label: 'Node ' + id,
 		sourcePosition: 'right',
@@ -214,7 +227,7 @@ const addNode = () => {
 
 	if (makeEdge) {
 		let edgeId = `edge-${id + 1}`
-		_elements.value.push({
+		vueFlowElements.value.push({
 			id: edgeId,
 			source: activeElementKey.value,
 			target: nodeId,
@@ -239,9 +252,9 @@ const onEdgeDoubleClick = e => {
 }
 
 const labelChanged = (e, id) => {
-	for (let j = 0; j < _elements.value.length; j++) {
-		if (_elements.value[j].id == id) {
-			_elements.value[j].label = e
+	for (let j = 0; j < vueFlowElements.value.length; j++) {
+		if (vueFlowElements.value[j].id == id) {
+			vueFlowElements.value[j].label = e
 			break
 		}
 	}
