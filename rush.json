@@ -43,6 +43,12 @@
 			"shouldPublish": true
 		},
 		{
+			"packageName": "@agritheory/beam",
+			"projectFolder": "beam",
+			"reviewCategory": "prototype",
+			"shouldPublish": false
+		},
+		{
 			"packageName": "@agritheory/desktop",
 			"projectFolder": "desktop",
 			"reviewCategory": "prototype",

@@ -13,4 +13,3 @@
   - Dynamic component so its swapable with `nuxt-link` or `router-link`
 - Calculator/Number input
 - Modal helper (sized depending on client)
-- SCSS variables throughout

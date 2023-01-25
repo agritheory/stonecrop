@@ -87,6 +87,45 @@ importers:
       vite: 4.0.3
       vue-router: 4.1.6_vue@3.2.45
 
+  ../../beam:
+    specifiers:
+      '@agritheory/themes': workspace:*
+      '@agritheory/utilities': workspace:*
+      '@histoire/plugin-vue': ^0.12.4
+      '@types/uuid': ^9.0.0
+      '@typescript-eslint/eslint-plugin': ^5.33.0
+      '@typescript-eslint/parser': ^5.33.0
+      '@vitejs/plugin-vue': ^4.0.0
+      cypress: ^12.2.0
+      eslint: ^8.22.0
+      eslint-config-prettier: ^8.5.0
+      eslint-plugin-vue: ^9.3.0
+      portal-vue: ^3.0.0-beta.0
+      typescript: ^4.9.4
+      uuid: ^9.0.0
+      vite: ^4.0.2
+      vue: ^3.2.37
+      vue-router: ^4
+    dependencies:
+      '@agritheory/themes': link:../themes
+      '@agritheory/utilities': link:../utilities
+      portal-vue: 3.0.0_vue@3.2.45
+      uuid: 9.0.0
+      vue: 3.2.45
+    devDependencies:
+      '@histoire/plugin-vue': 0.12.4_vite@4.0.3+vue@3.2.45
+      '@types/uuid': 9.0.0
+      '@typescript-eslint/eslint-plugin': 5.47.0_ncmi6noazr3nzas7jxykisekym
+      '@typescript-eslint/parser': 5.47.0_lzzuuodtsqwxnvqeq4g4likcqa
+      '@vitejs/plugin-vue': 4.0.0_vite@4.0.3+vue@3.2.45
+      cypress: 12.2.0
+      eslint: 8.30.0
+      eslint-config-prettier: 8.5.0_eslint@8.30.0
+      eslint-plugin-vue: 9.8.0_eslint@8.30.0
+      typescript: 4.9.4
+      vite: 4.0.3
+      vue-router: 4.1.6_vue@3.2.45
+
   ../../code_editor:
     specifiers:
       '@agritheory/atable': workspace:^0.2.0
@@ -648,6 +687,20 @@ packages:
       '@histoire/shared': 0.12.4_vite@4.0.3
       '@histoire/vendors': 0.12.4
       histoire: 0.12.4_vite@4.0.3
+      vue: 3.2.45
+    transitivePeerDependencies:
+      - vite
+    dev: true
+
+  /@histoire/plugin-vue/0.12.4_vite@4.0.3+vue@3.2.45:
+    resolution: {integrity: sha512-2xgBDwEHmiY053hPWy4rKnnMjntVcg8qfIYJGyITwFWSfNTq+6ez/HjWzUcHT6qwFMglUHq+rDlQb9gYZF+Edw==}
+    peerDependencies:
+      histoire: ^0.12.4
+      vue: ^3.2.31
+    dependencies:
+      '@histoire/controls': 0.12.4
+      '@histoire/shared': 0.12.4_vite@4.0.3
+      '@histoire/vendors': 0.12.4
       vue: 3.2.45
     transitivePeerDependencies:
       - vite

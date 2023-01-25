@@ -231,5 +231,5 @@ body {
 	height: 100%;
 }
 
-@import './theme.scss';
+@import './theme.css';
 </style>
