@@ -6,7 +6,7 @@
 				"label": "Home Page",
 				"fieldname": "home_page",
 				"fieldtype": "Data",
-				"align": "Left",
+				"align": "left",
 				"edit": false,
 				"width": "35ch",
 				"format": "value => {return value.title}"
@@ -15,7 +15,7 @@
 				"label": "HTTP Method",
 				"fieldname": "http_method",
 				"fieldtype": "Data",
-				"align": "Left",
+				"align": "left",
 				"edit": true,
 				"width": "20ch"
 			},
@@ -23,7 +23,7 @@
 				"label": "IP Address",
 				"fieldname": "ip_address",
 				"fieldtype": "Data",
-				"align": "Left",
+				"align": "left",
 				"edit": false,
 				"width": "20ch"
 			},
@@ -31,7 +31,7 @@
 				"label": "Status",
 				"fieldname": "status",
 				"fieldtype": "Data",
-				"align": "Left",
+				"align": "left",
 				"edit": true,
 				"width": "35ch"
 			},
@@ -39,13 +39,13 @@
 				"label": "Report Date",
 				"fieldname": "report_date",
 				"fieldtype": "component",
-				"align": "Center",
+				"align": "center",
 				"edit": true,
 				"width": "25ch",
 				"format": "value => { return (new Date(Number(value)).toLocaleDateString('en-US')) }"
 			}
 		],
-		"config": { "listView": true },
+		"config": { "view": "list" },
 		"rows": []
 	}
 ]

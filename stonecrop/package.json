@@ -49,5 +49,8 @@
 			"import": "./dist/stonecrop.js",
 			"require": "./dist/stonecrop.umd.cjs"
 		}
+	},
+	"engines": {
+		"node": ">=16.17.1"
 	}
 }

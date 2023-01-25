@@ -42,7 +42,7 @@ const coa = ref({
 			modalComponent: 'TestModalComponent',
 		},
 	] as TableColumn[],
-	config: { treeView: true } as TableConfig,
+	config: { view: 'tree' } as TableConfig,
 })
 </script>
 

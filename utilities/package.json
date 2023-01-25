@@ -38,14 +38,14 @@
 		"vue-router": "^4",
 		"@vueuse/core": "^9.2.0"
 	},
-	"engines": {
-		"node": ">=16.13.0"
-	},
 	"exports": {
 		".": {
 			"types": "./types/index.ts",
 			"import": "./dist/utilities.js",
 			"require": "./dist/utilities.umd.cjs"
 		}
+	},
+	"engines": {
+		"node": ">=16.17.1"
 	}
 }

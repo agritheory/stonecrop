@@ -1,6 +1,6 @@
 <template>
 	<tr v-bind="$attrs" ref="rowEl" :tabindex="tabIndex" class="expandable-row">
-		<td id="row-index" :tabIndex="-1" @click="tableData.toggleRowExpand(rowIndex)">
+		<td :tabIndex="-1" @click="tableData.toggleRowExpand(rowIndex)" class="row-index">
 			{{ getRowExpandSymbol() }}
 		</td>
 		<slot name="row" />
@@ -61,7 +61,8 @@ if (props.addNavigation !== undefined) {
 </script>
 
 <style scoped>
-#row-index {
+@import url('@agritheory/themes/default/default.css');
+.row-index {
 	color: var(--header-text-color);
 	font-weight: bold;
 	text-align: center;

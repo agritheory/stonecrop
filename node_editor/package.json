@@ -35,5 +35,8 @@
 			"import": "./dist/node_editor.js",
 			"require": "./dist/node_editor.umd.cjs"
 		}
+	},
+	"engines": {
+		"node": ">=16.17.1"
 	}
 }
