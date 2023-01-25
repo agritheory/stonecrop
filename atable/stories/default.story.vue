@@ -15,111 +15,65 @@ import { ref } from 'vue'
 import { TableColumn } from 'types'
 import data from './sample_data/http_logs.json'
 
+const columns: TableColumn[] = [
+	{
+		label: 'Home Page',
+		name: 'home_page',
+		type: 'Data',
+		align: 'left',
+		edit: false,
+		width: '35ch',
+		format: (value: { title?: string; value?: any }) => {
+			return value.title
+		},
+	},
+	{
+		label: 'HTTP Method',
+		name: 'http_method',
+		type: 'Data',
+		align: 'left',
+		edit: true,
+		width: '20ch',
+	},
+	// {
+	//   label: "IP Address",
+	//   name: "ip_address",
+	//   type: "Data",
+	//   align: 'left',
+	//   edit: false,
+	//   width: '20ch',
+	// },
+	// {
+	//   label: "Status",
+	//   name: "status",
+	//   type: "Data",
+	//   align: 'left',
+	//   edit: true,
+	//   width: '35ch',
+	// },
+	{
+		label: 'Report Date',
+		name: 'report_date',
+		type: 'component',
+		align: 'center',
+		edit: true,
+		width: '25ch',
+		modalComponent: 'ADate',
+		format: (value: number) => {
+			return new Date(Number(value)).toLocaleDateString('en-US')
+		},
+	},
+]
+
 const http_logs = ref({
 	rows: data,
-	columns: [
-		{
-			label: 'Home Page',
-			name: 'home_page',
-			type: 'Data',
-			align: 'left',
-			edit: false,
-			width: '35ch',
-			format: (value: { title?: string; value?: any }) => {
-				return value.title
-			},
-		},
-		{
-			label: 'HTTP Method',
-			name: 'http_method',
-			type: 'Data',
-			align: 'left',
-			edit: true,
-			width: '20ch',
-		},
-		// {
-		//   label: "IP Address",
-		//   name: "ip_address",
-		//   type: "Data",
-		//   align: 'left',
-		//   edit: false,
-		//   width: '20ch',
-		// },
-		// {
-		//   label: "Status",
-		//   name: "status",
-		//   type: "Data",
-		//   align: 'left',
-		//   edit: true,
-		//   width: '35ch',
-		// },
-		{
-			label: 'Report Date',
-			name: 'report_date',
-			type: 'component',
-			align: 'center',
-			edit: true,
-			width: '25ch',
-			modalComponent: 'ADate',
-			format: (value: number) => {
-				return new Date(Number(value)).toLocaleDateString('en-US')
-			},
-		},
-	] as TableColumn[],
+	columns,
 	config: { view: 'list' },
 })
 
-let full_width_table = ref({
+const full_width_table = ref({
 	rows: data,
-	columns: [
-		{
-			label: 'Home Page',
-			name: 'home_page',
-			type: 'Data',
-			align: 'left',
-			edit: false,
-			width: '35ch',
-			format: (value: { title?: string; value?: any }) => {
-				return value.title
-			},
-		},
-		{
-			label: 'HTTP Method',
-			name: 'http_method',
-			type: 'Data',
-			align: 'left',
-			edit: true,
-			width: '20ch',
-		},
-		// {
-		//   label: "IP Address",
-		//   name: "ip_address",
-		//   type: "Data",
-		//   align: 'left',
-		//   edit: false,
-		//   width: '20ch',
-		// },
-		// {
-		//   label: "Status",
-		//   name: "status",
-		//   type: "Data",
-		//   align: 'left',
-		//   edit: true,
-		//   width: '35ch',
-		// },
-		{
-			label: 'Report Date',
-			name: 'report_date',
-			type: 'component',
-			align: 'center',
-			edit: true,
-			width: '25ch',
-			modalComponent: 'ADate',
-			format: (value: number) => {
-				return new Date(Number(value)).toLocaleDateString('en-US')
-			},
-		},
-	] as TableColumn[],
+	columns,
 	config: { view: 'list', fullWidth: true },
 })
 </script>

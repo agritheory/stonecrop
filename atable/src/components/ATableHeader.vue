@@ -1,7 +1,7 @@
 <template>
 	<thead v-if="columns.length">
 		<tr class="atable-header-row" tabindex="-1">
-			<th v-if="tableData.zeroColumn" class="header-index" />
+			<th v-if="tableData.zeroColumn" id="header-index" />
 			<th v-for="(column, colKey) in columns" :key="colKey" tabindex="-1" :style="getHeaderCellStyle(column)">
 				<slot>{{ column.label || String.fromCharCode(colKey + 97).toUpperCase() }}</slot>
 			</th>
@@ -37,7 +37,7 @@ thead {
 	background-color: var(--gray-5);
 }
 
-.header-index {
+#header-index {
 	width: v-bind(numberedRowWidth);
 	max-width: v-bind(numberedRowWidth);
 }
