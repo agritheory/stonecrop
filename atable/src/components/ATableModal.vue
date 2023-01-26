@@ -32,6 +32,7 @@ const handleInput = (event: Event) => {
 </script>
 
 <style scoped>
+@import url('@agritheory/themes/default/default.css');
 div {
 	z-index: 100;
 	position: absolute;

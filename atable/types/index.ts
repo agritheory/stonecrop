@@ -16,9 +16,8 @@ export type TableColumn = {
 }
 
 export type TableConfig = {
-	listExpansionView?: boolean
-	listView?: boolean
-	treeView?: boolean
+	view?: 'list' | 'tree' | 'list-expansion'
+	fullWidth?: boolean
 }
 
 export type TableDisplay = {

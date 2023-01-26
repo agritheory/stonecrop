@@ -1,6 +1,6 @@
 {
 	"name": "@agritheory/stonecrop",
-	"version": "0.1.0",
+	"version": "0.1.2",
 	"type": "module",
 	"description": "schema helper",
 	"main": "dist/stonecrop.js",
@@ -49,5 +49,8 @@
 			"import": "./dist/stonecrop.js",
 			"require": "./dist/stonecrop.umd.cjs"
 		}
+	},
+	"engines": {
+		"node": ">=16.17.1"
 	}
 }

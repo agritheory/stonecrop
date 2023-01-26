@@ -10,12 +10,20 @@
 				"fieldname": "schema",
 				"columns": [
 					{
+						"label": "ID",
+						"name": "id",
+						"fieldtype": "Data",
+						"align": "left",
+						"edit": false,
+						"width": "20ch"
+					},
+					{
 						"label": "Label",
 						"name": "label",
 						"fieldtype": "Data",
-						"align": "Left",
-						"width": "16ch",
-						"edit": true
+						"align": "left",
+						"edit": false,
+						"width": "35ch"
 					},
 					{
 						"label": "Fieldtype",
@@ -29,60 +37,12 @@
 						"label": "Component",
 						"name": "_component",
 						"fieldtype": "Data",
-						"align": "Left",
-						"width": "20ch",
-						"edit": true
-					},
-					{
-						"label": "Align",
-						"name": "_align",
-						"fieldtype": "Numeric",
-						"align": "Right",
-						"width": "8ch",
-						"edit": true
-					},
-					{
-						"label": "Width",
-						"name": "format",
-						"fieldtype": "Data",
-						"align": "Left",
-						"width": "8ch",
-						"edit": true
-					},
-					{
-						"label": "Editable",
-						"name": "_edit",
-						"fieldtype": "Select",
-						"align": "Left",
-						"width": "8ch",
-						"edit": true
-					},
-					{
-						"label": "Options",
-						"name": "_options",
-						"fieldtype": "Data",
-						"align": "Left",
-						"width": "16ch",
-						"edit": true
-					},
-					{
-						"label": "Format",
-						"name": "_format",
-						"fieldtype": "Data",
-						"align": "Left",
-						"width": "16ch",
-						"edit": true
-					},
-					{
-						"label": "Mask",
-						"name": "_mask",
-						"fieldtype": "Data",
-						"align": "Left",
-						"width": "16ch",
-						"edit": true
+						"align": "left",
+						"edit": false,
+						"width": "20ch"
 					}
 				],
-				"config": { "listView": true },
+				"config": { "view": "list", "fullWidth": true },
 				"rows": []
 			}
 		]

@@ -173,6 +173,7 @@ const cellStyle: CSSProperties = {
 </script>
 
 <style scoped>
+@import url('@agritheory/themes/default/default.css');
 td {
 	border-radius: 0px;
 	box-sizing: border-box;

@@ -1,18 +1,20 @@
 <template>
 	<tr ref="rowEl" :tabindex="tabIndex" v-show="rowVisible()" class="table-row">
-		<td v-if="tableData.config.listView" id="row-index" :tabIndex="-1" class="list-index">
+		<!-- render numbered/tree view index -->
+		<td v-if="tableData.config.view === 'list'" :tabIndex="-1" class="list-index">
 			{{ rowIndex + 1 }}
 		</td>
 		<td
-			v-if="tableData.config.treeView"
-			id="row-index"
+			v-else-if="tableData.config.view === 'tree'"
 			:tabIndex="-1"
 			class="tree-index"
 			@click="toggleRowExpand(rowIndex)">
 			{{ getRowExpandSymbol() }}
 		</td>
-		<slot v-if="!tableData.config.listView && !tableData.config.treeView" name="indexCell" />
-		<slot />
+		<slot v-else name="indexCell"></slot>
+
+		<!-- render cell content -->
+		<slot></slot>
 	</tr>
 </template>
 
@@ -38,9 +40,10 @@ const props = withDefaults(
 
 const tableData = inject<TableDataStore>(props.tableid)
 const rowEl = ref<HTMLTableRowElement>(null)
+const numberedRowWidth = tableData.numberedRowWidth.value
 
 const getRowExpandSymbol = () => {
-	if (!tableData.config.treeView) {
+	if (tableData.config.view !== 'tree') {
 		return ''
 	}
 
@@ -64,11 +67,11 @@ const getRowExpandSymbol = () => {
 }
 
 const rowVisible = () => {
-	if (!tableData.config.treeView) {
-		return true
-	}
-
-	return tableData.display[props.rowIndex].isRoot || tableData.display[props.rowIndex].open
+	return (
+		tableData.config.view !== 'tree' ||
+		tableData.display[props.rowIndex].isRoot ||
+		tableData.display[props.rowIndex].open
+	)
 }
 
 const toggleRowExpand = (rowIndex: number) => {
@@ -86,6 +89,7 @@ if (props.addNavigation) {
 </script>
 
 <style scoped>
+@import url('@agritheory/themes/default/default.css');
 .table-row {
 	border-top: 1px solid var(--row-border-color);
 	height: var(--atable-row-height);
@@ -95,10 +99,11 @@ if (props.addNavigation) {
 	color: var(--header-text-color);
 	font-weight: bold;
 	padding-left: var(--atable-row-padding);
-	padding-right: 2em;
+	padding-right: 1em;
 	text-align: center;
 	user-select: none;
-	width: v-bind('tableData.numberedRowWidth.value');
+	width: v-bind(numberedRowWidth);
+	max-width: v-bind(numberedRowWidth);
 }
 
 .tree-index {
