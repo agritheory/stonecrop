@@ -27,9 +27,7 @@
 	},
 	"scripts": {
 		"build": "",
-		"dev:crud": "vite serve cruddesk/ -c cruddesk/vite.config.js -d",
-		"dev:builder": "vite serve docbuilder/ -c docbuilder/vite.config.ts -d",
-		"dev:mobile": "vite serve mobile/ -c mobile/vite.config.js -d"
+		"dev:builder": "vite serve docbuilder/ -c docbuilder/vite.config.ts -d"
 	},
 	"devDependencies": {
 		"@types/uuid": "^9.0.0",
