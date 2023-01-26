@@ -33,7 +33,8 @@
 		".": {
 			"import": "./dist/desktop.js",
 			"require": "./dist/desktop.umd.cjs"
-		}
+		},
+		"./styles": "./dist/style.css"
 	},
 	"engines": {
 		"node": ">=16.17.1"

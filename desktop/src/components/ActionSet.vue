@@ -1,7 +1,11 @@
 <template>
-	<div class="action-set collapse">
+	<div
+		:class="{ 'open-set': isOpen, 'hovered-and-closed': closeClicked }"
+		class="action-set collapse"
+		@mouseover="onHover"
+		@mouseleave="onHoverLeave">
 		<div class="action-menu-icon">
-			<div id="chevron">
+			<div id="chevron" @click="closeClicked = !closeClicked">
 				<svg
 					class="leftBar"
 					version="1.1"
@@ -61,6 +65,10 @@ export default defineComponent({
 	data() {
 		return {
 			_elements: Object,
+			isOpen: false,
+			timeout: null,
+			hover: false,
+			closeClicked: false,
 		}
 	},
 	methods: {
@@ -71,6 +79,22 @@ export default defineComponent({
 				}
 			}
 		},
+		onHover() {
+			let self = this
+			this.hover = true
+			this.timeout = setTimeout(() => {
+				if (self.hover) {
+					self.isOpen = true
+				}
+			}, 500)
+		},
+		onHoverLeave() {
+			this.hover = false
+			this.closeClicked = false
+			clearTimeout(this.timeout)
+			this.isOpen = false
+		},
+
 		toggleDropdown(index) {
 			const showDropdown = !this._elements[index].show
 			this.closeDropdowns()
@@ -95,12 +119,14 @@ export default defineComponent({
 	transition-property: transform;
 }
 
-.leftBar {
+.leftBar,
+.action-set.collapse.hovered-and-closed:hover .leftBar {
 	transform-origin: 33.4% 50%;
 	transform: rotate(90deg);
 }
 
-.rightBar {
+.rightBar,
+.action-set.collapse.hovered-and-closed:hover .rightBar {
 	transform-origin: 67% 50%;
 	transform: rotate(-90deg);
 }
@@ -128,6 +154,8 @@ export default defineComponent({
 	border-radius: 10px;
 	display: flex;
 	flex-direction: row-reverse;
+	background-color: white;
+	overflow: hidden;
 }
 
 .action-menu-icon {
@@ -140,9 +168,10 @@ export default defineComponent({
 	fill: #333333;
 }
 
-.action-set.collapse {
+.action-set.collapse,
+.action-set.collapse.hovered-and-closed:hover {
 	max-width: 25px;
-	overflow-x: hidden;
+	overflow: hidden;
 
 	-webkit-transition: max-width 0.5s ease-in-out;
 	-moz-transition: max-width 0.5s ease-in-out;
@@ -150,7 +179,8 @@ export default defineComponent({
 	transition: max-width 0.5s ease-in-out;
 }
 
-.action-set.collapse .action-element {
+.action-set.collapse .action-element,
+.action-set.collapse.hovered-and-closed:hover .action-element {
 	opacity: 0;
 	-webkit-transition: opacity 0.25s ease-in-out;
 	-moz-transition: opacity 0.25s ease-in-out;
@@ -161,12 +191,20 @@ export default defineComponent({
 
 .action-set.collapse:hover {
 	max-width: 500px;
+}
+
+.action-set.collapse.open-set:hover {
 	overflow: visible !important;
+}
+
+.action-set.collapse.hovered-and-closed:hover .action-element {
+	opacity: 0 !important;
+	/* transition-delay: 0.5s; */
 }
 
 .action-set.collapse:hover .action-element {
 	opacity: 100 !important;
-	transition-delay: 0.5s;
+	/* transition-delay: 0.5s; */
 }
 
 .action-element {
