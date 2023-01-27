@@ -11,7 +11,6 @@
 		</AFieldset>
 		<AForm class="aform-main" :key="formKey" :schema="doctypeSchema" :data="schemaData" />
 		<ActionSet :elements="actionElements" />
-		<SheetNav />
 	</div>
 </template>
 

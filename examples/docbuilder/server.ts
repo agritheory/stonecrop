@@ -10,13 +10,13 @@ export function makeServer({ environment = 'development' } = {}) {
 			hook: Model,
 			meta: Model,
 			issue: Model,
-			todo: Model,
+			assignment: Model,
 			stateMachine: Model,
 		},
 
 		seeds(server) {
 			server.db.loadData({
-				doctypes: [{ name: 'Issue' }, { name: 'Todo' }],
+				doctypes: [{ name: 'Issue' }, { name: 'Assignment' }],
 				stateMachines: [
 					{
 						name: 'Issue',
@@ -29,43 +29,66 @@ export function makeServer({ environment = 'development' } = {}) {
 							states: {
 								New: {
 									on: {
-										SAVE: 'Draft',
+										Save: 'Draft',
 									},
 								},
 								Draft: {
 									on: {
-										SUBMIT: 'Submitted',
+										Assign: {
+											target: 'Assigned',
+										},
+										Resolve: {
+											target: 'Resolved',
+										},
 									},
 								},
-								Submitted: {
+								Assigned: {
 									on: {
-										CANCEL: 'Cancelled',
+										Resolve: {
+											target: 'Resolved',
+										},
 									},
 								},
-								Cancelled: {
-									type: 'final',
+								Resolved: {
+									on: {
+										Close: {
+											target: 'Closed',
+										},
+									},
+								},
+								Closed: {
+									on: {
+										Reopen: {
+											target: 'Draft',
+										},
+									},
 								},
 							},
 						},
 						layout: {
 							New: {
-								position: { x: 50, y: 50 },
+								position: { x: 50, y: 0 },
 							},
 							Draft: {
 								position: { x: 300, y: 50 },
+								targetPosition: 'top',
 							},
-							Submitted: {
-								position: { x: 550, y: 50 },
+							Assigned: {
+								position: { x: 550, y: 150 },
 							},
-							Cancelled: {
-								position: { x: 800, y: 50 },
+							Resolved: {
+								position: { x: 800, y: 100 },
+							},
+							Closed: {
+								position: { x: 1050, y: 50 },
+								sourcePosition: 'top',
 							},
 						},
 					},
 					{
-						name: 'Todo',
+						name: 'Assignment',
 						machine: {
-							id: 'Todo',
+							id: 'Assignment',
 							initial: 'New',
 							context: {
 								retries: 0,
@@ -78,10 +101,10 @@ export function makeServer({ environment = 'development' } = {}) {
 								},
 								Draft: {
 									on: {
-										SUBMIT: 'Submitted',
+										COMPLETE: 'Completed',
 									},
 								},
-								Submitted: {
+								Completed: {
 									on: {
 										CANCEL: 'Cancelled',
 									},
@@ -98,7 +121,7 @@ export function makeServer({ environment = 'development' } = {}) {
 							Draft: {
 								position: { x: 300, y: 50 },
 							},
-							Submitted: {
+							Completed: {
 								position: { x: 550, y: 50 },
 							},
 							Cancelled: {
@@ -112,38 +135,89 @@ export function makeServer({ environment = 'development' } = {}) {
 						name: 'Issue',
 						fields: [
 							{
-								id: 'status',
-								label: 'Status',
-								type: 'Select',
-							},
-							{
 								id: 'subject',
 								label: 'Subject',
-								type: 'Data',
+								fieldtype: 'Data',
+								required: true,
 							},
 							{
 								id: 'description',
 								label: 'Description',
-								type: 'Long Text',
+								fieldtype: 'Long Text',
+								required: true,
+							},
+							{
+								id: 'reported_date',
+								label: 'Report Date',
+								fieldtype: 'Date',
+								read_only: true,
+							},
+							{
+								id: 'assigned_date',
+								label: 'Assigned Date',
+								fieldtype: 'Date',
+								read_only: true,
+							},
+							{
+								id: 'assigned_to',
+								label: 'Assigned To',
+								fieldtype: 'AutocompleteMultiSelect',
+							},
+							{
+								id: 'resolved_date',
+								label: 'Resolved Date',
+								fieldtype: 'Date',
+								read_only: true,
+							},
+							{
+								id: 'closed_date',
+								label: 'Closed Date',
+								fieldtype: 'Date',
+								read_only: true,
+							},
+							{
+								id: 'resolution',
+								label: 'Resolution',
+								fieldtype: 'Long Text',
 							},
 						],
 					},
 					{
-						name: 'Todo',
+						name: 'Assignment',
 						fields: [
 							{
-								id: 'password',
-								label: 'Enter a new password',
-								type: 'password',
+								id: 'user',
+								label: 'User',
+								fieldtype: 'Autocomplete',
+								required: true,
 							},
 							{
-								id: 'password_confirm',
-								label: 'Confirm your password',
-								type: 'password',
+								id: 'issue',
+								label: 'Issue',
+								fieldtype: 'Autocomplete',
+								required: true,
 							},
 							{
-								label: 'Change password',
-								type: 'submit',
+								id: 'due_date',
+								label: 'Due Date',
+								fieldtype: 'Date',
+							},
+							{
+								id: 'assigned_date',
+								label: 'Assigned Date',
+								fieldtype: 'Date',
+								read_only: true,
+							},
+							{
+								id: 'assigned_by',
+								label: 'Assigned By',
+								fieldtype: 'Autocomplete',
+							},
+							{
+								id: 'completed_date',
+								label: 'Completed Date',
+								fieldtype: 'Date',
+								read_only: true,
 							},
 						],
 					},
@@ -177,7 +251,7 @@ export function makeServer({ environment = 'development' } = {}) {
 						],
 					},
 					{
-						name: 'Todo',
+						name: 'Assignment',
 						side_effects: [
 							{
 								event_name: 'LOAD',
@@ -218,8 +292,8 @@ export function makeServer({ environment = 'development' } = {}) {
 				return schema.all('issue')
 			})
 
-			this.get('/todo', schema => {
-				return schema.all('todo')
+			this.get('/Assignment', schema => {
+				return schema.all('assignment')
 			})
 
 			this.get('/load_state_machine', (schema, request) => {
