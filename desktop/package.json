@@ -18,6 +18,10 @@
 		"story:preview": "histoire preview"
 	},
 	"dependencies": {
+		"@agritheory/aform": "workspace:^0.1.2",
+		"@agritheory/atable": "workspace:^0.2.0",
+		"@agritheory/themes": "workspace:*",
+		"@agritheory/stonecrop": "workspace:^0.1.0",
 		"portal-vue": "^3.0.0-beta.0",
 		"vue": "^3.2.37",
 		"vue-router": "^4"

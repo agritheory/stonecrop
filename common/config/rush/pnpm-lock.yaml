@@ -132,6 +132,10 @@ importers:
 
   ../../desktop:
     specifiers:
+      '@agritheory/aform': workspace:^0.1.2
+      '@agritheory/atable': workspace:^0.2.0
+      '@agritheory/stonecrop': workspace:^0.1.0
+      '@agritheory/themes': workspace:*
       '@histoire/plugin-vue': ^0.12.4
       '@vitejs/plugin-vue': ^4.0.0
       histoire: ^0.12.4
@@ -141,6 +145,10 @@ importers:
       vue-router: ^4
       vue-template-compiler: ^2.6.14
     dependencies:
+      '@agritheory/aform': link:../aform
+      '@agritheory/atable': link:../atable
+      '@agritheory/stonecrop': link:../stonecrop
+      '@agritheory/themes': link:../themes
       portal-vue: 3.0.0_vue@3.2.45
       vue: 3.2.45
       vue-router: 4.1.6_vue@3.2.45
