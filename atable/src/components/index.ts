@@ -77,7 +77,7 @@ export default class TableDataStore {
 	}
 
 	get zeroColumn() {
-		return this.config.listExpansionView || this.config.listView || this.config.treeView
+		return ['list', 'tree', 'list-expansion'].includes(this.config.view)
 	}
 
 	get numberedRowWidth() {
@@ -99,7 +99,7 @@ export default class TableDataStore {
 	}
 
 	toggleRowExpand(rowIndex: number) {
-		if (this.config.treeView) {
+		if (this.config.view === 'tree') {
 			this.display[rowIndex].childrenOpen = !this.display[rowIndex].childrenOpen
 			for (let index = this.rows.length - 1; index >= 0; index--) {
 				if (this.display[index].parent === rowIndex) {
@@ -109,7 +109,7 @@ export default class TableDataStore {
 					}
 				}
 			}
-		} else if (this.config.listExpansionView) {
+		} else if (this.config.view === 'list-expansion') {
 			this.display[rowIndex].expanded = !this.display[rowIndex].expanded
 		}
 	}

@@ -1,6 +1,6 @@
 {
 	"name": "@agritheory/desktop",
-	"version": "0.1.0",
+	"version": "0.1.2",
 	"type": "module",
 	"description": "desktop specific components for Stonecrop UI",
 	"main": "index.js",
@@ -33,6 +33,10 @@
 		".": {
 			"import": "./dist/desktop.js",
 			"require": "./dist/desktop.umd.cjs"
-		}
+		},
+		"./styles": "./dist/style.css"
+	},
+	"engines": {
+		"node": ">=16.17.1"
 	}
 }

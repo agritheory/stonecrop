@@ -46,13 +46,14 @@
 		"vue-router": "^4"
 	},
 	"engines": {
-		"node": ">=16.13.0"
+		"node": ">=16.17.1"
 	},
 	"exports": {
 		".": {
 			"types": "./types/index",
 			"import": "./dist/aform.js",
 			"require": "./dist/aform.umd.cjs"
-		}
+		},
+		"./styles": "./dist/style.css"
 	}
 }

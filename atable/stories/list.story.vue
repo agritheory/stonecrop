@@ -1,7 +1,7 @@
 <template>
 	<Story title="list">
 		<Variant title="default">
-			<ATable id="list" :columns="http_logs.columns" :rows="http_logs.rows" :config="{ listView: true }">
+			<ATable id="list" :columns="http_logs.columns" :rows="http_logs.rows" :config="{ view: 'list' }">
 				<template #body="{ data }: { data: TableDataStore }">
 					<ARow
 						ref="rows"
@@ -32,7 +32,7 @@
 		</Variant>
 
 		<Variant title="expandable">
-			<ATable id="list" :columns="http_logs.columns" :rows="http_logs.rows" :config="{ listExpansionView: true }">
+			<ATable id="list" :columns="http_logs.columns" :rows="http_logs.rows" :config="{ view: 'list-expansion' }">
 				<template #body="{ data }: { data: TableDataStore }">
 					<AExpansionRow
 						ref="rows"
@@ -65,7 +65,7 @@
 								id="list"
 								:columns="inbox.columns"
 								:rows="chooseRandomData(inbox.rows)"
-								:config="{ listExpansionView: true }">
+								:config="{ view: 'list-expansion' }">
 								<template #body="{ data }: { data: TableDataStore }">
 									<AExpansionRow
 										ref="rows"
@@ -234,7 +234,7 @@ const chooseRandomData = (rows: any[]) => {
 const getRowCellStyle = (column: TableColumn): CSSProperties => {
 	return {
 		minWidth: column?.width || '40ch',
-		textAlign: column?.align?.toLowerCase() || 'center',
+		textAlign: column?.align || 'center',
 	}
 }
 

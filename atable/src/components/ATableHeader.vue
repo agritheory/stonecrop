@@ -23,19 +23,23 @@ const props = defineProps<{
 
 const tableData = inject<TableDataStore>(props.tableid)
 
+const numberedRowWidth = tableData.numberedRowWidth.value
 const getHeaderCellStyle = (column: TableColumn): CSSProperties => ({
 	minWidth: column.width || '40ch',
-	textAlign: column.align?.toLowerCase() || 'center',
+	textAlign: column.align || 'center',
+	width: tableData.config.fullWidth ? 'auto' : null,
 })
 </script>
 
 <style scoped>
+@import url('@agritheory/themes/default/default.css');
 thead {
 	background-color: var(--gray-5);
 }
 
 #header-index {
-	min-width: v-bind('tableData.numberedRowWidth.value');
+	width: v-bind(numberedRowWidth);
+	max-width: v-bind(numberedRowWidth);
 }
 
 th {
@@ -44,7 +48,6 @@ th {
 	border-radius: 0px;
 	padding-left: 0.5ch;
 	padding-right: 0.5ch;
-
 	padding-top: var(--atable-row-padding);
 	padding-bottom: var(--atable-row-padding);
 	color: var(--gray-60);

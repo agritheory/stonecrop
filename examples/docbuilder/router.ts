@@ -7,6 +7,7 @@ const router = createRouter({
 			path: '/',
 			name: 'listview',
 			component: () => import('./components/Listview.vue'),
+			alias: '/home',
 		},
 		{
 			path: '/:id',

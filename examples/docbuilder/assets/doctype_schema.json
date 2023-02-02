@@ -13,7 +13,7 @@
 						"label": "ID",
 						"name": "id",
 						"fieldtype": "Data",
-						"align": "Left",
+						"align": "left",
 						"edit": false,
 						"width": "20ch"
 					},
@@ -21,20 +21,67 @@
 						"label": "Label",
 						"name": "label",
 						"fieldtype": "Data",
+						"align": "left",
+						"edit": false,
+						"width": "35ch"
+					},
+					{
+						"label": "Fieldtype",
+						"name": "_fieldtype",
+						"fieldtype": "Select",
+						"align": "Left",
+						"width": "20ch",
+						"edit": true
+					},
+					{
+						"label": "Component",
+						"name": "_component",
+						"fieldtype": "Data",
+						"align": "left",
+						"edit": false,
+						"width": "20ch"
+					}
+				],
+				"config": { "view": "list", "fullWidth": true },
+				"rows": []
+			}
+		]
+	},
+	{
+		"component": "AFieldset",
+		"collapsible": true,
+		"label": "Events",
+		"fieldname": "side_effects_fieldset",
+		"schema": [
+			{
+				"component": "ATable",
+				"fieldname": "side_effects",
+				"columns": [
+					{
+						"label": "Event Name",
+						"name": "event_name",
+						"fieldtype": "Data",
 						"align": "Left",
 						"edit": false,
 						"width": "35ch"
 					},
 					{
-						"label": "Type",
-						"name": "type",
+						"label": "Callback",
+						"name": "callback",
 						"fieldtype": "Data",
 						"align": "Left",
-						"edit": false,
-						"width": "20ch"
+						"edit": true,
+						"width": "40ch",
+						"cellComponent": "textarea",
+						"cellComponentProps": {
+							"rows": 8,
+							"cols": 50
+						}
 					}
 				],
-				"config": { "listView": true },
+				"config": {
+					"listView": true
+				},
 				"rows": []
 			}
 		]

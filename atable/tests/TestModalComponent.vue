@@ -2,31 +2,18 @@
 	<input placeholder="test component" />
 </template>
 
-<script>
-export default {
-	name: 'TestModalComponent',
-	props: {
-		colIndex: {
-			type: Number,
-			required: false,
-			default: 0,
-		},
-		rowIndex: {
-			type: Number,
-			required: false,
-			default: 0,
-		},
-		tableid: {
-			type: String,
-			required: false,
-		},
-	},
-	data() {
-		return { dummyData: '' }
-	},
-}
+<script setup lang="ts">
+defineProps<{
+	colIndex?: number
+	rowIndex?: number
+	tableid?: string
+}>()
+
+const dummyData = ref('')
 </script>
+
 <style scoped>
+@import url('@agritheory/themes/default/default.css');
 input {
 	position: relative;
 	/* width: calc(100% - 4px); */

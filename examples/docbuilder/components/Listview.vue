@@ -1,5 +1,5 @@
 <template>
-	<ATable id="list" :key="rows" :columns="columns" :rows="rows" :config="{ listView: true }">
+	<ATable id="list" :key="rows" :columns="columns" :rows="rows" :config="{ view: 'list' }">
 		<template #body="{ data }: { data: TableDataStore }">
 			<ARow
 				v-for="(row, rowIndex) in data.rows"
@@ -64,7 +64,7 @@ function showBuilder(doctype: string) {
 function getRowCellStyle(column: TableColumn): CSSProperties {
 	return {
 		minWidth: column?.width || '40ch',
-		textAlign: column?.align?.toLowerCase() || 'center',
+		textAlign: column?.align || 'center',
 	}
 }
 
@@ -107,5 +107,6 @@ rowNav['keydown.enter'] = rowNav['keydown.down']
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap');
-@import '../style.css';
+@import url('@agritheory/themes/default/default.css');
+/* @import '../style.css'; */
 </style>

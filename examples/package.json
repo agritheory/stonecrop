@@ -14,19 +14,20 @@
 		"@agritheory/aform": "workspace:^0.1.2",
 		"@agritheory/atable": "workspace:^0.2.0",
 		"@agritheory/desktop": "workspace:^0.1.0",
+		"@agritheory/node_editor": "workspace:^0.1.0",
+		"@agritheory/themes": "workspace:*",
 		"@agritheory/stonecrop": "workspace:^0.1.0",
 		"@miragejs/graphql": "^0.1.13",
 		"@vitejs/plugin-vue": "^4.0.0",
 		"miragejs": "^0.1.45",
 		"uuid": "^9.0.0",
 		"vite": "^4.0.2",
-		"vue": "^3.2.37"
+		"vue": "^3.2.37",
+		"xstate": "~4.33.6"
 	},
 	"scripts": {
 		"build": "",
-		"dev:crud": "vite serve cruddesk/ -c cruddesk/vite.config.js -d",
-		"dev:builder": "vite serve docbuilder/ -c docbuilder/vite.config.ts -d",
-		"dev:mobile": "vite serve mobile/ -c mobile/vite.config.js -d"
+		"dev:builder": "vite serve docbuilder/ -c docbuilder/vite.config.ts -d"
 	},
 	"devDependencies": {
 		"@types/uuid": "^9.0.0",
@@ -37,5 +38,8 @@
 		"eslint": "^8.22.0",
 		"typescript": "^4.9.4",
 		"vue-router": "^4"
+	},
+	"engines": {
+		"node": ">=16.17.1"
 	}
 }
