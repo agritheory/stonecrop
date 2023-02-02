@@ -9,7 +9,7 @@
 					:layout="layout" />
 			</div>
 		</AFieldset>
-		<AForm class="aform-main" :key="formKey" :schema="doctypeSchema" :data="schemaData" />
+		<AForm class="aform-main" :key="formKey" :schema="doctypeSchema" :data="data" />
 		<ActionSet :elements="actionElements" />
 		<SheetNav />
 	</div>
@@ -29,35 +29,36 @@ let formKey = ref(0)
 // create mirage server
 makeServer()
 
-// create hooks data
-let schemaData = ref({})
-let hooksData = ref({})
-let stateMachine
-let layout
+// fetch data
+let data = ref({})
+let layout: any
 let stateConfig = ref({})
+
 onBeforeMount(async () => {
 	const doctype = route.params.id.toString()
 	const searchParams = new URLSearchParams({ doctype })
 
 	const schemaResponse = await fetch('/api/load_meta?' + searchParams.toString())
 	const schemaResponseData: Record<string, any>[] = await schemaResponse.json()
-	schemaData.value['schema_fieldset'] = {}
-	schemaData.value['schema_fieldset']['schema'] = schemaResponseData
+	data.value['schema_fieldset'] = {}
+	data.value['schema_fieldset']['schema'] = schemaResponseData
 
 	const hooksResponse = await fetch('/api/load_side_effects?' + searchParams.toString())
 	const hooksResponseData: Record<string, any>[] = await hooksResponse.json()
-	hooksData.value['side_effects_fieldset'] = {}
-	hooksData.value['side_effects_fieldset']['side_effects'] = hooksResponseData
+	data.value['side_effects_fieldset'] = {}
+	data.value['side_effects_fieldset']['side_effects'] = hooksResponseData
 
 	const stateResponse = await fetch('/api/load_state_machine?' + searchParams.toString())
 	const stateResponseData: Record<string, any>[] = await stateResponse.json()
-	stateMachine = createMachine(stateResponseData.machine)
+	const stateMachine = createMachine(stateResponseData.machine)
 	stateConfig.value = stateMachine.config.states
 	layout = stateResponseData.layout
+
+	// increment form key to force form re-render
 	formKey.value++
 })
 
-//Setup page actions
+// setup page actions
 const actionElements = [
 	{
 		elementType: 'button',
@@ -113,16 +114,19 @@ body {
 	padding: 1em;
 	margin-bottom: 1em;
 }
+
 .builder-workflow {
 	padding: 1em;
 	margin-bottom: 3em;
 }
+
 .node-editor {
 	width: 100%;
 	height: 40vh;
 	/* min-height: 400px; */
 	overflow: hidden;
 }
+
 footer {
 	bottom: 15px !important;
 	right: 15px !important;
