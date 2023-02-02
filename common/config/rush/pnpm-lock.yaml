@@ -137,27 +137,45 @@ importers:
       '@agritheory/stonecrop': workspace:^0.1.0
       '@agritheory/themes': workspace:*
       '@histoire/plugin-vue': ^0.12.4
+      '@miragejs/graphql': ^0.1.13
+      '@typescript-eslint/eslint-plugin': ^5.33.0
+      '@typescript-eslint/parser': ^5.33.0
       '@vitejs/plugin-vue': ^4.0.0
+      eslint: ^8.22.0
+      eslint-config-prettier: ^8.5.0
+      eslint-plugin-vue: ^9.3.0
       histoire: ^0.12.4
+      immutable: ^4.2.2
+      miragejs: ^0.1.45
       portal-vue: ^3.0.0-beta.0
+      typescript: ^4.9.4
       vite: ^4.0.2
       vue: ^3.2.37
       vue-router: ^4
-      vue-template-compiler: ^2.6.14
+      xstate: ~4.33.6
     dependencies:
       '@agritheory/aform': link:../aform
       '@agritheory/atable': link:../atable
       '@agritheory/stonecrop': link:../stonecrop
       '@agritheory/themes': link:../themes
+      '@miragejs/graphql': 0.1.13
+      immutable: 4.2.2
+      miragejs: 0.1.46
       portal-vue: 3.0.0_vue@3.2.45
       vue: 3.2.45
-      vue-router: 4.1.6_vue@3.2.45
+      xstate: 4.33.6
     devDependencies:
       '@histoire/plugin-vue': 0.12.4_jqvjr2esqd34alwy6xppejkevm
+      '@typescript-eslint/eslint-plugin': 5.47.0_ncmi6noazr3nzas7jxykisekym
+      '@typescript-eslint/parser': 5.47.0_lzzuuodtsqwxnvqeq4g4likcqa
       '@vitejs/plugin-vue': 4.0.0_vite@4.0.3+vue@3.2.45
+      eslint: 8.30.0
+      eslint-config-prettier: 8.5.0_eslint@8.30.0
+      eslint-plugin-vue: 9.8.0_eslint@8.30.0
       histoire: 0.12.4_vite@4.0.3
+      typescript: 4.9.4
       vite: 4.0.3
-      vue-template-compiler: 2.7.14
+      vue-router: 4.1.6_vue@3.2.45
 
   ../../examples:
     specifiers:
@@ -241,7 +259,7 @@ importers:
       eslint: ^8.22.0
       eslint-config-prettier: ^8.5.0
       eslint-plugin-vue: ^9.3.0
-      immutable: ^4.1.0
+      immutable: ^4.2.2
       miragejs: ^0.1.45
       pinia: ^2.0.18
       pinia-shared-state: ^0.2.8
@@ -254,7 +272,7 @@ importers:
       xstate: ~4.33.6
     dependencies:
       '@vueuse/core': 9.9.0_vue@3.2.45
-      immutable: 4.2.1
+      immutable: 4.2.2
       vue: 3.2.45
       vue-router: 4.1.6_vue@3.2.45
       xstate: 4.33.6
@@ -1646,10 +1664,6 @@ packages:
     resolution: {integrity: sha512-+Yw9U6YO5TQohxLcIkrXBeY73WP3ejHWVvx8XCk3gxvQDCTEmS48ZrSZCKciI7Bhl/uCMyxYtE9UqRILmFphkQ==}
     dev: true
 
-  /de-indent/1.0.2:
-    resolution: {integrity: sha512-e/1zu3xH5MQryN2zdVaF0OrdNLUbvWxzMbi+iNA6Bky7l1RoP8a2fIbRocyHclXt/arDrrR6lL3TqFD9pMQTsg==}
-    dev: true
-
   /debug/2.6.9:
     resolution: {integrity: sha512-bC7ElrdJaJnPbAP+1EotYvqZsb3ecl5wi6Bfi6BJTUcNowp6cvspg0jXznRTKDjm/E7AdgFBVeAPVMNcKGsHMA==}
     dependencies:
@@ -2325,11 +2339,6 @@ packages:
     dependencies:
       function-bind: 1.1.1
 
-  /he/1.2.0:
-    resolution: {integrity: sha512-F/1DnUGPopORZi0ni+CvrCgHQ5FyEAHRLSApuYWMmrbSwoN2Mn/7k+Gl38gJnR7yyDZk6WLXwiGod1JOWNDKGw==}
-    hasBin: true
-    dev: true
-
   /header-case/2.0.4:
     resolution: {integrity: sha512-H/vuk5TEEVZwrR0lp2zed9OCo1uAILMlx0JEMgC26rzyJJ3N1v6XkwHHXJQdR2doSjcGPM6OKPYoJgf0plJ11Q==}
     dependencies:
@@ -2446,8 +2455,8 @@ packages:
     engines: {node: '>= 4'}
     dev: true
 
-  /immutable/4.2.1:
-    resolution: {integrity: sha512-7WYV7Q5BTs0nlQm7tl92rDYYoyELLKHoDMBKhrxEoiV4mrfVdRz8hzPiYOzH7yWjzoVEamxRuAqhxL2PLRwZYQ==}
+  /immutable/4.2.2:
+    resolution: {integrity: sha512-fTMKDwtbvO5tldky9QZ2fMX7slR0mYpY5nbnFWYp0fOzDhHqhgIw9KoYgxLWsoNTS9ZHGauHj18DTyEw6BK3Og==}
     dev: false
 
   /import-fresh/3.3.0:
@@ -3977,13 +3986,6 @@ packages:
     dependencies:
       '@vue/devtools-api': 6.4.5
       vue: 3.2.45
-
-  /vue-template-compiler/2.7.14:
-    resolution: {integrity: sha512-zyA5Y3ArvVG0NacJDkkzJuPQDF8RFeRlzV2vLeSnhSpieO6LK2OVbdLPi5MPPs09Ii+gMO8nY4S3iKQxBxDmWQ==}
-    dependencies:
-      de-indent: 1.0.2
-      he: 1.2.0
-    dev: true
 
   /vue/3.2.45:
     resolution: {integrity: sha512-9Nx/Mg2b2xWlXykmCwiTUCWHbWIj53bnkizBxKai1g61f2Xit700A1ljowpTIM11e3uipOeiPcSqnmBg6gyiaA==}

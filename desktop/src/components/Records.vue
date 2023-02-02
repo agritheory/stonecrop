@@ -9,9 +9,8 @@ import { useRoute } from 'vue-router'
 
 import { SchemaTypes } from '@agritheory/aform/types'
 import { ATable } from '@agritheory/atable'
-
-import Registry from '@/registry'
-import { ImmutableDoctype } from 'types/index'
+import { Registry } from '@agritheory/stonecrop'
+import { ImmutableDoctype } from '@agritheory/stonecrop/types'
 
 // TODO: use component if provided else call to Records Schema endpoint/ table  / lookup
 // alteratively: a view: component map, eg records: Records, gantt: GanttView
@@ -58,7 +57,8 @@ onBeforeMount(async () => {
 	const hookEvents: string[] = hooks.value.get('LOAD')
 	if (hookEvents.length > 0) {
 		hookEvents.forEach(hook => {
-			const hookFn = eval(hook) as () => void
+			// eslint-disable-next-line @typescript-eslint/no-implied-eval
+			const hookFn = new Function(hook)
 			hookFn()
 		})
 	}

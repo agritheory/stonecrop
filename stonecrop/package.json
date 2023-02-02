@@ -20,7 +20,7 @@
 	},
 	"dependencies": {
 		"@vueuse/core": "^9.2.0",
-		"immutable": "^4.1.0",
+		"immutable": "^4.2.2",
 		"vue-router": "^4",
 		"vue": "^3.2.37",
 		"xstate": "~4.33.6"

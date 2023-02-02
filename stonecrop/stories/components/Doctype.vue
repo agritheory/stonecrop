@@ -55,7 +55,8 @@ onBeforeMount(async () => {
 	const hookEvents: string[] = hooks.value.get('LOAD')
 	if (hookEvents.length > 0) {
 		hookEvents.forEach(hook => {
-			const hookFn = eval(hook) as () => void
+			// eslint-disable-next-line @typescript-eslint/no-implied-eval
+			const hookFn = new Function(hook)
 			hookFn()
 		})
 	}
@@ -68,7 +69,8 @@ const saveRecord = () => {
 	const hookEvents: string[] = hooks.value.get('SAVE')
 	if (hookEvents.length > 0) {
 		hookEvents.forEach(hook => {
-			const hookFn = eval(hook) as () => void
+			// eslint-disable-next-line @typescript-eslint/no-implied-eval
+			const hookFn = new Function(hook)
 			hookFn()
 		})
 	}

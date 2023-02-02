@@ -31,6 +31,7 @@ export default defineConfig({
 	},
 	histoire: {
 		plugins: [HstVue()],
+		setupFile: '/src/histoire.setup.ts',
 		storyIgnored: ['**/node_modules/**', '**/dist/**'],
 	},
 })

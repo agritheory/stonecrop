@@ -4,7 +4,7 @@ import { RouteRecordRaw } from 'vue-router'
 
 import { ADate, ATextInput } from '@agritheory/aform'
 import Doctype from '@/doctype'
-import Stonecrop from '@/index'
+import { Stonecrop } from '@/index'
 import router from '@/router'
 import { default as DoctypeComponent } from './components/Doctype.vue'
 import Home from './components/Home.vue'
