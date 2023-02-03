@@ -6,14 +6,11 @@
 </template>
 
 <script lang="ts" setup>
-import ActionSet from '@/components/ActionSet.vue'
-import SheetNav from '@/components/SheetNav.vue'
-
 const elements = [
 	{
 		elementType: 'button',
-		action: buttonClicked,
 		label: 'Show Alert',
+		action: buttonClicked,
 	},
 	{
 		elementType: 'dropdown',

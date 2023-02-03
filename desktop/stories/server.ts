@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import { createServer, Model } from 'miragejs'
 
-import { MutableDoctype } from 'types/index'
+import type { MutableDoctype } from '@agritheory/stonecrop/types'
 
 const doctypeHooks: MutableDoctype['hooks'] = {
 	LOAD: [
@@ -97,7 +97,7 @@ export default function makeServer() {
 					events: {
 						id: 'issue',
 						predictableActionArguments: true,
-						tsTypes: {} as import('./server.typegen').Typegen0,
+						tsTypes: {} as import('./server.typegen').Typegen1,
 						initial: 'created',
 						states: {
 							created: { on: { LOAD: 'loaded' } },

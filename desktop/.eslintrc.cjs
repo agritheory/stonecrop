@@ -49,6 +49,10 @@ module.exports = {
 		// add it as an extension for your IDE
 	],
 
+	globals: {
+		NodeJS: true,
+	},
+
 	// add your custom rules here
 	rules: {
 		'no-console': 2,

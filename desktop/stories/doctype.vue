@@ -9,9 +9,7 @@
 	</Story>
 </template>
 
-<script setup lang="ts">
-import SheetNav from '@/components/SheetNav.vue'
-</script>
+<script setup lang="ts"></script>
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap');

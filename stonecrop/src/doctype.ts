@@ -1,6 +1,6 @@
 import { Component } from 'vue'
 
-import { ImmutableDoctype } from 'types/index'
+import type { ImmutableDoctype } from 'types/index'
 
 export default class Doctype {
 	doctype: string

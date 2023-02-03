@@ -1,6 +1,6 @@
 import { App } from 'vue'
 
-import { InstallOptions } from 'types/index'
+import type { InstallOptions } from 'types/index'
 import Doctype from './doctype'
 import Registry from './registry'
 import router from './router'

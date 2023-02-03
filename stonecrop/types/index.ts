@@ -3,7 +3,7 @@ import { Component } from 'vue'
 import { Router } from 'vue-router'
 import { MachineConfig, StateMachine } from 'xstate'
 
-import { SchemaTypes } from '@agritheory/aform/types'
+import type { SchemaTypes } from '@agritheory/aform/types'
 
 import Doctype from '@/doctype'
 

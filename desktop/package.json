@@ -26,15 +26,13 @@
 		"@agritheory/atable": "workspace:^0.2.0",
 		"@agritheory/themes": "workspace:*",
 		"@agritheory/stonecrop": "workspace:^0.1.0",
-		"@miragejs/graphql": "^0.1.13",
 		"immutable": "^4.2.2",
-		"miragejs": "^0.1.45",
-		"portal-vue": "^3.0.0-beta.0",
-		"vue": "^3.2.37",
+		"vue": "^3.2.47",
 		"xstate": "~4.33.6"
 	},
 	"devDependencies": {
 		"@histoire/plugin-vue": "^0.12.4",
+		"@miragejs/graphql": "^0.1.13",
 		"@typescript-eslint/eslint-plugin": "^5.33.0",
 		"@typescript-eslint/parser": "^5.33.0",
 		"@vitejs/plugin-vue": "^4.0.0",
@@ -42,8 +40,9 @@
 		"eslint-plugin-vue": "^9.3.0",
 		"eslint": "^8.22.0",
 		"histoire": "^0.12.4",
+		"miragejs": "^0.1.45",
 		"typescript": "^4.9.4",
-		"vite": "^4.0.2",
+		"vite": "^4.1.1",
 		"vue-router": "^4"
 	},
 	"exports": {

@@ -38,13 +38,13 @@
 			</div>
 		</div>
 		<div style="margin-right: 30px"></div>
-		<div class="action-element" v-for="(el, index) in _elements">
+		<div class="action-element" v-for="(el, index) in _elements" :key="index">
 			<button v-if="el.elementType == 'button'" :onclick="el.action" class="button-default">{{ el.label }}</button>
 			<div v-if="el.elementType == 'dropdown'">
 				<button class="button-default" @click="toggleDropdown(index)">{{ el.label }}</button>
 				<div class="dropdown-container" v-show="el.show">
 					<div class="dropdown">
-						<div v-for="item in el.actions">
+						<div v-for="item in el.actions" :key="item.label">
 							<button v-if="item.action != null" :onclick="item.action" class="dropdown-item">{{ item.label }}</button>
 							<a v-else-if="item.link != null" :href="item.link"
 								><button class="dropdown-item">{{ item.label }}</button></a
@@ -57,56 +57,68 @@
 	</div>
 </template>
 
-<script>
-import { defineComponent } from 'vue'
+<script setup lang="ts">
+import { onMounted, ref } from 'vue'
 
-export default defineComponent({
-	name: 'ActionSet',
-	props: ['elements'],
-	data() {
-		return {
-			_elements: Object,
-			isOpen: false,
-			timeout: null,
-			hover: false,
-			closeClicked: false,
-		}
-	},
-	methods: {
-		closeDropdowns() {
-			for (let j = 0; j < this._elements.length; j++) {
-				if (this._elements[j].elementType == 'dropdown') {
-					this._elements[j].show = false
-				}
-			}
-		},
-		onHover() {
-			let self = this
-			this.hover = true
-			this.timeout = setTimeout(() => {
-				if (self.hover) {
-					self.isOpen = true
-				}
-			}, 500)
-		},
-		onHoverLeave() {
-			this.hover = false
-			this.closeClicked = false
-			clearTimeout(this.timeout)
-			this.isOpen = false
-		},
+type SetAction = {
+	label: string
+	link?: string
+	action?: () => void
+}
 
-		toggleDropdown(index) {
-			const showDropdown = !this._elements[index].show
-			this.closeDropdowns()
-			this._elements[index].show = showDropdown
-		},
-	},
-	mounted() {
-		this._elements = this.elements
-		this.closeDropdowns
-	},
+type SetElement = {
+	elementType: string
+	label: string
+	link?: string
+	show?: boolean
+	action?: () => void
+	actions?: SetAction[]
+}
+
+const props = defineProps<{
+	elements?: SetElement[]
+}>()
+
+const _elements = ref<SetElement[]>([])
+const isOpen = ref(false)
+const timeout = ref<NodeJS.Timeout>(null)
+const hover = ref(false)
+const closeClicked = ref(false)
+
+onMounted(() => {
+	_elements.value = props.elements
+	closeDropdowns()
 })
+
+const closeDropdowns = () => {
+	for (let element of _elements.value) {
+		if (element.elementType === 'dropdown') {
+			element.show = false
+		}
+	}
+}
+
+const onHover = () => {
+	hover.value = true
+	timeout.value = setTimeout(() => {
+		if (hover.value) {
+			isOpen.value = true
+		}
+	}, 500)
+}
+
+const onHoverLeave = () => {
+	hover.value = false
+	closeClicked.value = false
+	clearTimeout(timeout.value)
+	isOpen.value = false
+}
+
+const toggleDropdown = (index: number) => {
+	const showDropdown = !_elements.value[index].show
+	closeDropdowns()
+	_elements.value[index].show = showDropdown
+}
 </script>
 
 <style scoped>

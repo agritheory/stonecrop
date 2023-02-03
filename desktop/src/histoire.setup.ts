@@ -5,7 +5,7 @@ import { createMachine } from 'xstate'
 
 import { ADate, ATextInput } from '@agritheory/aform'
 import { Doctype, Stonecrop } from '@agritheory/stonecrop'
-import { ImmutableDoctype, MutableDoctype } from '@agritheory/stonecrop/types'
+import type { ImmutableDoctype, MutableDoctype } from '@agritheory/stonecrop/types'
 
 import ActionSet from '@/components/ActionSet.vue'
 import { default as DoctypeComponent } from '@/components/Doctype.vue'
@@ -57,7 +57,7 @@ export const setupVue3 = defineSetupVue3(({ app }) => {
 
 	app.component('ActionSet', ActionSet)
 	app.component('CommandPalette', CommandPalette)
-	app.component('Doctype', Doctype)
+	app.component('Doctype', DoctypeComponent)
 	app.component('Records', Records)
 	app.component('SheetNav', SheetNav)
 })

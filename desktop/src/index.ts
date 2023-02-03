@@ -6,7 +6,7 @@ import Doctype from '@/components/Doctype.vue'
 import Records from '@/components/Records.vue'
 import SheetNav from '@/components/SheetNav.vue'
 
-function install(app: App, options) {
+function install(app: App) {
 	app.component('ActionSet', ActionSet)
 	app.component('CommandPalette', CommandPalette)
 	app.component('Doctype', Doctype)

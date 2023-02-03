@@ -9,12 +9,13 @@
 	},
 	"dependencies": {
 		"portal-vue": "~3.0.0-beta.0",
-		"vue": "^3.2.37"
+		"vue": "^3.2.47"
 	},
 	"devDependencies": {
 		"@vitejs/plugin-vue": "^4.0.0",
 		"cypress": "^12.2.0",
-		"vite": "^4.0.2",
+		"portal-vue": "^3.0.0",
+		"vite": "^4.1.1",
 		"vue-router": "^4"
 	},
 	"engines": {

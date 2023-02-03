@@ -22,26 +22,24 @@
 		"@vueuse/core": "^9.2.0",
 		"immutable": "^4.2.2",
 		"vue-router": "^4",
-		"vue": "^3.2.37",
+		"vue": "^3.2.47",
 		"xstate": "~4.33.6"
 	},
 	"devDependencies": {
 		"@agritheory/aform": "workspace:^0.1.2",
 		"@agritheory/atable": "workspace:^0.2.0",
-		"@miragejs/graphql": "^0.1.13",
 		"@typescript-eslint/eslint-plugin": "^5.33.0",
 		"@typescript-eslint/parser": "^5.33.0",
 		"@vitejs/plugin-vue": "^4.0.0",
 		"eslint-config-prettier": "^8.5.0",
 		"eslint-plugin-vue": "^9.3.0",
 		"eslint": "^8.22.0",
-		"miragejs": "^0.1.45",
 		"pinia-shared-state": "^0.2.8",
 		"pinia-undo": "^0.1.4",
 		"pinia-xstate": "~1.0.7",
 		"pinia": "^2.0.18",
 		"typescript": "^4.9.4",
-		"vite": "^4.0.2"
+		"vite": "^4.1.1"
 	},
 	"exports": {
 		".": {
