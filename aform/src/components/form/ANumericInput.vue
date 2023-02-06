@@ -5,10 +5,10 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
-withDefaults(
+const props = withDefaults(
 	defineProps<{
 		label: string
-		value?: any
+		modelValue: any
 		required?: boolean
 		readOnly?: boolean
 		uuid?: string
@@ -19,7 +19,7 @@ withDefaults(
 	}
 )
 
-const amount = ref('')
+const amount = props.modelValue
 
 // const emit = defineEmits(['update:value'])
 // const update = (event: InputEvent) => {

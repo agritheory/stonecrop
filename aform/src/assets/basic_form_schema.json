@@ -2,7 +2,8 @@
 	{
 		"fieldname": "first_name",
 		"component": "ATextInput",
-		"label": "First Name"
+		"label": "First Name",
+		"value": "John"
 	},
 	{
 		"fieldname": "middle_name",

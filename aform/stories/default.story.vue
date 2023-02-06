@@ -1,7 +1,7 @@
 <template>
 	<Story title="default">
 		<Variant title="Form" :setup-app="formSetup">
-			<AForm class="aform-main" v-model="basic_form_schema" :schema="basic_form_schema" :data="data" :key="formKey" />
+			<AForm class="aform-main" v-model="form_schema" :schema="basic_form_schema" :data="data" :key="formKey" />
 
 			<template #controls>
 				<HstRadio
@@ -39,6 +39,8 @@ import basic_fieldset_schema from '@/assets/basic_fieldset_schema.json'
 import basic_table_schema from '@/assets/basic_table_schema.json'
 import fieldset_table_schema from '@/assets/fieldset_table_schema.json'
 
+const form_schema = ref(basic_form_schema)
+
 const data = ref([])
 const locale = ref('en-US')
 // TODO: (histoire) const color = ref('')
@@ -48,6 +50,10 @@ const formKey = ref(0)
 watch(locale, () => {
 	// re-render form when locale is changed
 	formKey.value++
+})
+
+watch(form_schema, () => {
+	console.log('form_schema changed', form_schema.value)
 })
 
 const formSetup = ({ app }: { app: App }) => {
