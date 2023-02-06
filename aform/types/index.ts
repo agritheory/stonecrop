@@ -7,6 +7,7 @@ export type BasicSchema = {
 }
 
 export type FormSchema = BasicSchema & {
+	value: any
 	align: string
 	edit: boolean
 	fieldtype: string

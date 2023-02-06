@@ -1,7 +1,7 @@
 <template>
 	<Story title="default">
 		<Variant title="Form" :setup-app="formSetup">
-			<AForm class="aform-main" :schema="basic_form_schema" :data="data" :key="formKey" />
+			<AForm class="aform-main" v-model="basic_form_schema" :schema="basic_form_schema" :data="data" :key="formKey" />
 
 			<template #controls>
 				<HstRadio
