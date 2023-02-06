@@ -19,7 +19,7 @@ const props = withDefaults(
 	}
 )
 
-const amount = props.modelValue
+const amount = ref(props.modelValue)
 
 // const emit = defineEmits(['update:value'])
 // const update = (event: InputEvent) => {

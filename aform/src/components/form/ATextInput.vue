@@ -6,6 +6,7 @@
 			:disabled="readOnly"
 			:maxlength="mask ? maskFilled && mask.length : undefined"
 			:required="required"
+			@input="update"
 			v-mask="mask" />
 		<label :for="uuid">{{ label }} </label>
 		<p v-show="validation.errorMessage" v-html="validation.errorMessage"></p>
@@ -50,15 +51,18 @@ export default defineComponent({
 		},
 	},
 	setup(props, context) {
-		const inputText = props.modelValue
+		const inputText = ref(props.modelValue)
 		const maskFilled = ref(false)
-
-		console.log('ATextInput', props.modelValue)
 
 		// TODO: (state) replace with state management
 		const locale = inject<string>('locale', '')
 
-		return { inputText, locale, maskFilled }
+		const update = (event: InputEvent) => {
+			const value = (event.target as HTMLInputElement).value
+			context.emit('update:modelValue', value)
+		}
+
+		return { inputText, locale, maskFilled, update }
 	},
 	directives: {
 		mask: useStringMask,

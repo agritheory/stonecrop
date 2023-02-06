@@ -18,7 +18,8 @@
 	{
 		"fieldname": "age",
 		"component": "ANumericInput",
-		"label": "Age"
+		"label": "Age",
+		"value": 3
 	},
 	{
 		"fieldname": "date",
