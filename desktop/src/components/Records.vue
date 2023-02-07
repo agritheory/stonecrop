@@ -32,6 +32,8 @@ let stateMachine = ref<ImmutableDoctype['events']>()
 let hooks = ref<ImmutableDoctype['hooks']>()
 
 onBeforeMount(async () => {
+	if (doctypeSlug.startsWith('__')) return
+
 	// register doctype in registry
 	const doctype = await registry.doctypeLoader(doctypeSlug)
 	registry.addDoctype(doctype)

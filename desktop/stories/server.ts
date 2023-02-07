@@ -61,7 +61,6 @@ export default function makeServer() {
 					events: {
 						id: 'todo',
 						predictableActionArguments: true,
-						tsTypes: {} as import('./server.typegen').Typegen0,
 						initial: 'created',
 						states: {
 							created: { on: { LOAD: 'loaded' } },
@@ -97,7 +96,6 @@ export default function makeServer() {
 					events: {
 						id: 'issue',
 						predictableActionArguments: true,
-						tsTypes: {} as import('./server.typegen').Typegen1,
 						initial: 'created',
 						states: {
 							created: { on: { LOAD: 'loaded' } },
@@ -139,6 +137,10 @@ export default function makeServer() {
 				const issue = schema.first('issue')
 				return issue.attrs
 			})
+
+			// allow other same-domain and external requests to passthrough normally
+			this.passthrough()
+			this.passthrough('https://cdn.jsdelivr.net/**')
 		},
 	})
 

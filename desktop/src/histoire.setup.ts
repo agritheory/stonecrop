@@ -31,14 +31,17 @@ export const setupVue3 = defineSetupVue3(({ app }) => {
 		router.addRoute(route)
 	}
 
-	app.use(router)
-
 	// setup Stonecrop
 	app.use(Stonecrop, {
 		router,
 		components: {
-			ATextInput,
+			ActionSet,
 			ADate,
+			ATextInput,
+			CommandPalette,
+			Doctype,
+			Records,
+			SheetNav,
 		},
 		// TODO: or if doctype is a function [doctype].apply()
 		doctypeLoader: async (doctype: string) => {
@@ -54,10 +57,4 @@ export const setupVue3 = defineSetupVue3(({ app }) => {
 			return new Doctype(doctype, config.schema, config.events, config.hooks)
 		},
 	})
-
-	app.component('ActionSet', ActionSet)
-	app.component('CommandPalette', CommandPalette)
-	app.component('Doctype', DoctypeComponent)
-	app.component('Records', Records)
-	app.component('SheetNav', SheetNav)
 })
