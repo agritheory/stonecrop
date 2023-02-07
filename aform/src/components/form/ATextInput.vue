@@ -6,7 +6,6 @@
 			:disabled="readOnly"
 			:maxlength="mask ? maskFilled && mask.length : undefined"
 			:required="required"
-			@input="update"
 			v-mask="mask" />
 		<label :for="uuid">{{ label }} </label>
 		<p v-show="validation.errorMessage" v-html="validation.errorMessage"></p>
@@ -14,7 +13,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, inject, PropType, ref } from 'vue'
+import { defineComponent, inject, PropType, ref, computed } from 'vue'
 
 import { FormSchema } from 'types'
 import { useStringMask } from '@/directives/mask'
@@ -51,18 +50,21 @@ export default defineComponent({
 		},
 	},
 	setup(props, context) {
-		const inputText = ref(props.modelValue)
 		const maskFilled = ref(false)
 
 		// TODO: (state) replace with state management
 		const locale = inject<string>('locale', '')
 
-		const update = (event: InputEvent) => {
-			const value = (event.target as HTMLInputElement).value
-			context.emit('update:modelValue', value)
-		}
+		const inputText = computed({
+			get() {
+				return props.modelValue
+			},
+			set(newValue) {
+				context.emit('update:modelValue', newValue)
+			},
+		})
 
-		return { inputText, locale, maskFilled, update }
+		return { inputText, locale, maskFilled }
 	},
 	directives: {
 		mask: useStringMask,

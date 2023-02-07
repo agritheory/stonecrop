@@ -5,7 +5,7 @@
 			:is="componentObj.component"
 			:key="key"
 			:schema="componentObj"
-			v-model="childModels[key]"
+			v-model="childModels[key].value"
 			:data="formData[componentObj.fieldname]"
 			v-bind="componentProps(componentObj)">
 		</component>

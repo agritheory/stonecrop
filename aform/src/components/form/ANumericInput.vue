@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 
 const props = withDefaults(
 	defineProps<{
@@ -18,12 +18,13 @@ const props = withDefaults(
 		validation: () => ({ errorMessage: '&nbsp;' }),
 	}
 )
-
-const amount = ref(props.modelValue)
-
-// const emit = defineEmits(['update:value'])
-// const update = (event: InputEvent) => {
-// 	const value = (event.target as HTMLInputElement).value
-// 	emit('update:value', value)
-// }
+const emit = defineEmits(['update:modelValue'])
+const amount = computed({
+	get: () => {
+		return props.modelValue
+	},
+	set: newValue => {
+		emit('update:modelValue', newValue)
+	},
+})
 </script>

@@ -2,8 +2,7 @@
 	{
 		"fieldname": "first_name",
 		"component": "ATextInput",
-		"label": "First Name",
-		"value": "John"
+		"label": "First Name"
 	},
 	{
 		"fieldname": "middle_name",
@@ -18,8 +17,7 @@
 	{
 		"fieldname": "age",
 		"component": "ANumericInput",
-		"label": "Age",
-		"value": 3
+		"label": "Age"
 	},
 	{
 		"fieldname": "date",
