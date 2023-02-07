@@ -2,64 +2,41 @@
 	<div>
 		<span>
 			<input v-model="checkbox" type="checkbox" :id="uuid" :disabled="readOnly" :required="required" @input="update" />
-			<!-- <output name="mask" :for="uuid" v-mask="checked"> {{ mask || "" }} </output> -->
+			<output name="output" :for="uuid"> {{ checkbox }} </output>
 		</span>
-		<label :for="uuid">{{ label }} </label>
+		<label :for="uuid">{{ label }}</label>
 		<p v-show="validation.errorMessage" v-html="validation.errorMessage"></p>
 	</div>
 </template>
 
-<script lang="ts">
-import { defineComponent, inject, PropType, ref } from 'vue'
+<script setup lang="ts">
+import { InputHTMLAttributes, ref } from 'vue'
 
 import { FormSchema } from 'types'
 
-export default defineComponent({
-	name: 'ACheckbox',
-	props: {
-		schema: {
-			type: Object as PropType<FormSchema>,
-			required: true,
-		},
-		label: {
-			type: String,
-			required: true,
-		},
-		value: {
-			type: null as unknown as PropType<string | number>,
-		},
-		mask: {
-			type: String,
-		},
-		required: {
-			type: Boolean,
-		},
-		readOnly: {
-			type: Boolean,
-		},
-		uuid: {
-			type: String,
-		},
-		validation: {
-			type: Object,
-			default: () => ({ errorMessage: '&nbsp;' }),
-		},
-	},
-	setup(props, context) {
-		const checkbox = ref(props.value)
-		let checked = ref()
+const props = withDefaults(
+	defineProps<{
+		schema: FormSchema
+		label: string
+		value?: InputHTMLAttributes['checked']
+		required?: boolean
+		readOnly?: boolean
+		uuid?: string
+		validation?: Record<string, any>
+	}>(),
+	{
+		validation: () => ({ errorMessage: '&nbsp;' }),
+	}
+)
 
-		// TODO: (state) replace with state management
-		const locale = inject<string>('locale', '')
+// let checked = ref()
+const checkbox = ref(props.value)
 
-		const update = (event: InputEvent) => {
-			const value = (event.target as HTMLInputElement).value
-			context.emit('update:value', value)
-		}
-
-		return { checkbox, checked, update }
-	},
-})
+const emit = defineEmits(['update:value'])
+const update = (event: InputEvent) => {
+	const value = (event.target as HTMLInputElement).value
+	emit('update:value', value)
+}
 </script>
 
 <style scoped>
