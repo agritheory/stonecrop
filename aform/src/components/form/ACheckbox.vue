@@ -1,8 +1,8 @@
 <template>
 	<div>
-		<span>
-			<input v-model="checkbox" type="checkbox" :id="uuid" :disabled="readOnly" :required="required" @input="update" />
-			<output name="output" :for="uuid"> {{ checkbox }} </output>
+		<span id="checkbox-container">
+			<input v-model="checkbox" type="checkbox" :id="uuid" class="checkbox" :readonly="readOnly" :required="required" />
+			<span></span>
 		</span>
 		<label :for="uuid">{{ label }}</label>
 		<p v-show="validation.errorMessage" v-html="validation.errorMessage"></p>
@@ -10,7 +10,7 @@
 </template>
 
 <script setup lang="ts">
-import { InputHTMLAttributes, ref } from 'vue'
+import { computed, InputHTMLAttributes } from 'vue'
 
 import { FormSchema } from 'types'
 
@@ -29,14 +29,18 @@ const props = withDefaults(
 	}
 )
 
-// let checked = ref()
-const checkbox = ref(props.value)
+const emit = defineEmits<{
+	(e: 'update:value', value: InputHTMLAttributes['checked']): void
+}>()
 
-const emit = defineEmits(['update:value'])
-const update = (event: InputEvent) => {
-	const value = (event.target as HTMLInputElement).value
-	emit('update:value', value)
-}
+const checkbox = computed({
+	get() {
+		return props.value
+	},
+	set(value) {
+		emit('update:value', value)
+	},
+})
 </script>
 
 <style scoped>
@@ -49,7 +53,7 @@ div {
 	margin-right: 1ch;
 }
 
-span {
+#checkbox-container {
 	display: inline-block;
 	min-width: calc(100% - 1ch);
 	outline: 1px solid transparent;
@@ -60,24 +64,33 @@ span {
 	border-radius: 0.25rem;
 }
 
-/* output {
+#checkbox-container:hover {
+	border: 1px solid var(--input-active-border-color);
+}
+
+#checkbox-container:hover + label {
+	color: var(--input-active-label-color);
+}
+
+output {
 	width: calc(100% - 1ch);
-} */
-
-/* input[type='checkbox'] {
-  display:none;
 }
 
-input[type='checkbox'] + span:after {
-  content:"⬡";
+/* .checkbox {
+	visibility: hidden;
+} */
+
+.checkbox + span:after {
+	content: '⬡';
 	padding: 1ch 0.5ch 0.5ch 1ch;
 	font-size: 120%;
 }
-input[type='checkbox']:checked + span:after {
-  content:"⬣";
+
+.checkbox:checked + span:after {
+	content: '⬣';
 	padding: 1ch 0.5ch 0.5ch 1ch;
 	font-size: 120%;
-} */
+}
 
 p,
 label {
@@ -103,13 +116,5 @@ label {
 	background: white;
 	margin: calc(-1.5rem - calc(2.15rem / 2)) 0 0 1ch;
 	padding: 0 0.25ch 0 0.25ch;
-}
-
-span:hover {
-	border: 1px solid var(--input-active-border-color);
-}
-
-span:hover + label {
-	color: var(--input-active-label-color);
 }
 </style>
