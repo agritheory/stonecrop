@@ -1,10 +1,10 @@
 <template>
 	<div>
-		<span id="checkbox-container">
+		<label id="checkbox-container">
 			<input v-model="checkbox" type="checkbox" :id="uuid" class="checkbox" :readonly="readOnly" :required="required" />
-			<span></span>
-		</span>
-		<label :for="uuid">{{ label }}</label>
+			<span id="custom-checkbox">{{ checkbox }}</span>
+		</label>
+		<label :for="uuid" id="checkbox-label">{{ label }}</label>
 		<p v-show="validation.errorMessage" v-html="validation.errorMessage"></p>
 	</div>
 </template>
@@ -53,6 +53,49 @@ div {
 	margin-right: 1ch;
 }
 
+p,
+label {
+	color: var(--input-label-color);
+	display: block;
+	min-height: 1.15rem;
+	padding: 0rem;
+	margin: 0rem;
+	border: 1px solid transparent;
+	margin-bottom: 0.25rem;
+}
+
+p {
+	width: 100%;
+	color: red;
+	font-size: 85%;
+}
+
+.checkbox {
+	visibility: hidden;
+}
+
+.checkbox + #custom-checkbox:after {
+	content: '⬡';
+	padding: 1ch 0 0.5ch 0;
+	font-size: 120%;
+	cursor: pointer;
+	position: relative;
+	left: -18px;
+}
+
+.checkbox:checked + #custom-checkbox:after {
+	content: '⬣';
+	padding: 1ch 0 0.5ch 0;
+	font-size: 120%;
+	cursor: pointer;
+	position: relative;
+	left: -18px;
+}
+
+#custom-checkbox {
+	display: inline-block;
+}
+
 #checkbox-container {
 	display: inline-block;
 	min-width: calc(100% - 1ch);
@@ -72,44 +115,7 @@ div {
 	color: var(--input-active-label-color);
 }
 
-output {
-	width: calc(100% - 1ch);
-}
-
-/* .checkbox {
-	visibility: hidden;
-} */
-
-.checkbox + span:after {
-	content: '⬡';
-	padding: 1ch 0.5ch 0.5ch 1ch;
-	font-size: 120%;
-}
-
-.checkbox:checked + span:after {
-	content: '⬣';
-	padding: 1ch 0.5ch 0.5ch 1ch;
-	font-size: 120%;
-}
-
-p,
-label {
-	color: var(--input-label-color);
-	display: block;
-	min-height: 1.15rem;
-	padding: 0rem;
-	margin: 0rem;
-	border: 1px solid transparent;
-	margin-bottom: 0.25rem;
-}
-
-p {
-	width: 100%;
-	color: red;
-	font-size: 85%;
-}
-
-label {
+#checkbox-label {
 	z-index: 2;
 	font-size: 80%;
 	position: absolute;
