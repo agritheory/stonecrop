@@ -59,7 +59,7 @@
 								:style="getRowCellStyle(col)" />
 						</template>
 						<template #content>
-							<AForm class="aform-main" :schema="basic_form_schema" :data="data" />
+							<AForm class="aform-main" v-model="basic_form_schema" :data="data" />
 
 							<ATable
 								id="list"
@@ -92,7 +92,7 @@
 												:style="getRowCellStyle(col)" />
 										</template>
 										<template #content>
-											<AForm class="aform-main" :schema="basic_form_schema" :data="data" />
+											<AForm class="aform-main" v-model="basic_form_schema" :data="data" />
 										</template>
 									</AExpansionRow>
 								</template>

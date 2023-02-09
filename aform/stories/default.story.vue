@@ -1,7 +1,7 @@
 <template>
 	<Story title="default">
 		<Variant title="Form" :setup-app="formSetup">
-			<AForm class="aform-main" v-model="form_schema" :schema="basic_form_schema" :data="data" :key="formKey" />
+			<AForm class="aform-main" v-model="form_schema" :data="data" :key="formKey" />
 
 			<template #controls>
 				<HstRadio
@@ -20,13 +20,13 @@
 			</template>
 		</Variant>
 		<Variant title="Table">
-			<AForm class="aform-main" v-model="table_schema" :schema="basic_table_schema" :data="data" />
+			<AForm class="aform-main" v-model="table_schema" :data="data" />
 		</Variant>
 		<Variant title="Fieldset">
-			<AForm class="aform-main" v-model="fieldset_schema" :schema="basic_fieldset_schema" :data="data" />
+			<AForm class="aform-main" v-model="fieldset_schema" :data="data" />
 		</Variant>
 		<Variant title="Fieldset with Table">
-			<AForm class="aform-main" v-model="fieldset_table_schema_ref" :schema="fieldset_table_schema" :data="data" />
+			<AForm class="aform-main" v-model="fieldset_table_schema_ref" :data="data" />
 		</Variant>
 	</Story>
 </template>
@@ -53,10 +53,6 @@ const formKey = ref(0)
 watch(locale, () => {
 	// re-render form when locale is changed
 	formKey.value++
-})
-
-watch(form_schema, () => {
-	console.log('form_schema changed', form_schema.value)
 })
 
 const formSetup = ({ app }: { app: App }) => {
