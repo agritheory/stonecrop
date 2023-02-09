@@ -1,10 +1,10 @@
-name: Continuous Integration
+name: Linters
 # https://github.com/marketplace/actions/prettier-check
 # This action works with pull requests and pushes on the main branch
 on:
   pull_request:
   push:
-    branches: [main, development]
+    branches: [development]
 
 jobs:
   prettier:

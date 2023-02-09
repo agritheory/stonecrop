@@ -12,11 +12,8 @@
 <script setup lang="ts">
 import { computed, InputHTMLAttributes } from 'vue'
 
-import { FormSchema } from 'types'
-
 const props = withDefaults(
 	defineProps<{
-		schema: FormSchema
 		label: string
 		value?: InputHTMLAttributes['checked']
 		required?: boolean

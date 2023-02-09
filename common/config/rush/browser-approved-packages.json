@@ -55,11 +55,23 @@
       "allowedCategories": [ "prototype", "utilities" ]
     },
     {
+      "name": "@vitest/coverage-c8",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "@vitest/ui",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
       "name": "@vue-flow/core",
       "allowedCategories": [ "prototype" ]
     },
     {
       "name": "@vue/compiler-sfc",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "@vue/test-utils",
       "allowedCategories": [ "prototype" ]
     },
     {
@@ -173,6 +185,10 @@
     {
       "name": "vite",
       "allowedCategories": [ "prototype", "utilities" ]
+    },
+    {
+      "name": "vitest",
+      "allowedCategories": [ "prototype" ]
     },
     {
       "name": "vue",
