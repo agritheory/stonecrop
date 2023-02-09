@@ -1,12 +1,14 @@
-name: Tests
+name: AForm
 
 on:
   pull_request:
+    paths: ['aform/**']
   push:
+    paths: ['aform/**']
     branches: [development]
 
 jobs:
-  aform:
+  tests:
     name: Vitest
     runs-on: ubuntu-latest
 
