@@ -103,6 +103,10 @@
       "allowedCategories": [ "prototype" ]
     },
     {
+      "name": "jsdom",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
       "name": "localforage",
       "allowedCategories": [ "prototype" ]
     },
