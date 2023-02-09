@@ -5,17 +5,16 @@ import ACheckbox from '@/components/form/ACheckbox.vue'
 
 describe('checkbox component', () => {
 	let wrapper = mount(ACheckbox, {
-		props: {
-			label: 'Test Label',
-			value: false,
-			'onUpdate:value': (value: boolean) => {
-				wrapper.setProps({ value })
-			},
-		},
+		props: { value: false },
 	})
 
-	it('emits input value when changed', async () => {
+	it('emits checkbox value when changed', async () => {
 		await wrapper.find('input').setValue(true)
-		expect(wrapper.props('value')).toBe(true)
+		await wrapper.find('input').setValue(false)
+
+		const updateEvents = wrapper.emitted('update:value')
+		expect(updateEvents).toHaveLength(2)
+		expect(updateEvents![0]).toEqual([true])
+		expect(updateEvents![1]).toEqual([false])
 	})
 })

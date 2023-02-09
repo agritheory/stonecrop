@@ -14,7 +14,7 @@ import { computed, InputHTMLAttributes } from 'vue'
 
 const props = withDefaults(
 	defineProps<{
-		label: string
+		label?: string
 		value?: InputHTMLAttributes['checked']
 		required?: boolean
 		readOnly?: boolean
