@@ -37,10 +37,10 @@
 <script setup lang="ts">
 import { App, ref, watch } from 'vue'
 
-import basic_form_schema from '@/assets/basic_form_schema.json'
-import basic_fieldset_schema from '@/assets/basic_fieldset_schema.json'
-import basic_table_schema from '@/assets/basic_table_schema.json'
-import fieldset_table_schema from '@/assets/fieldset_table_schema.json'
+import basic_form_schema from './assets/basic_form_schema.json'
+import basic_fieldset_schema from './assets/basic_fieldset_schema.json'
+import basic_table_schema from './assets/basic_table_schema.json'
+import fieldset_table_schema from './assets/fieldset_table_schema.json'
 
 const data = ref([])
 const locale = ref('en-US')

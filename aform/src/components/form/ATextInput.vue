@@ -19,6 +19,8 @@ import { defineComponent, inject, PropType, ref } from 'vue'
 import { FormSchema } from 'types'
 import { useStringMask } from '@/directives/mask'
 
+// TODO: when moving to composition API, figure out how to provide mask
+// as a custom directive
 export default defineComponent({
 	name: 'ATextInput',
 	props: {
