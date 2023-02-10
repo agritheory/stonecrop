@@ -3,6 +3,9 @@
 		<Variant title="default">
 			<ATable :columns="http_logs.columns" :rows="http_logs.rows" :config="http_logs.config" />
 		</Variant>
+		<Variant title="default (read-only)">
+			<ATable :columns="http_logs.columns" :rows="http_logs.rows" :config="http_logs.config" :readonly="true" />
+		</Variant>
 		<Variant title="full width">
 			<ATable :columns="full_width_table.columns" :rows="full_width_table.rows" :config="full_width_table.config" />
 		</Variant>

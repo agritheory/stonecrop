@@ -36,7 +36,7 @@
 				:colIndex="tableData.modal.colIndex"
 				:rowIndex="tableData.modal.rowIndex"
 				:tableid="tableData.id"
-				v-show="tableData.modal.visible"
+				v-show="!readonly && tableData.modal.visible"
 				:style="{
 					left: tableData.modal.left + 'px',
 					top: tableData.modal.top + 'px',
@@ -71,6 +71,7 @@ const props = withDefaults(
 		rows?: TableRow[]
 		config?: TableConfig
 		tableid?: string
+		readonly?: boolean
 	}>(),
 	{
 		rows: () => [],
