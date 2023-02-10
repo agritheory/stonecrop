@@ -1,13 +1,13 @@
 <template>
 	<div>
-		<input v-model="inputNumber" type="number" :id="uuid" :disabled="readOnly" :required="required" @input="update" />
+		<input v-model="inputNumber" type="number" :id="uuid" :disabled="readOnly" :required="required" />
 		<label :for="uuid">{{ label }}</label>
 		<p v-show="validation.errorMessage" v-html="validation.errorMessage"></p>
 	</div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed } from 'vue'
 
 const props = withDefaults(
 	defineProps<{
@@ -23,13 +23,15 @@ const props = withDefaults(
 	}
 )
 
-const inputNumber = ref(props.value)
-
-const emit = defineEmits(['update:value'])
-const update = (event: InputEvent) => {
-	const value = (event.target as HTMLInputElement).value
-	emit('update:value', value)
-}
+const emit = defineEmits<{ (e: 'update:value', value: number): void }>()
+const inputNumber = computed({
+	get() {
+		return props.value
+	},
+	set(value) {
+		emit('update:value', value)
+	},
+})
 </script>
 
 <style scoped>
