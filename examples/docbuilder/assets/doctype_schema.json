@@ -10,79 +10,39 @@
 				"fieldname": "schema",
 				"columns": [
 					{
+						"label": "ID",
+						"name": "id",
+						"fieldtype": "Data",
+						"align": "left",
+						"edit": false,
+						"width": "20ch"
+					},
+					{
 						"label": "Label",
 						"name": "label",
 						"fieldtype": "Data",
-						"align": "Left",
-						"width": "16ch",
-						"edit": true
+						"align": "left",
+						"edit": false,
+						"width": "35ch"
 					},
 					{
 						"label": "Fieldtype",
-						"name": "_fieldtype",
+						"name": "fieldtype",
 						"fieldtype": "Select",
-						"align": "Left",
+						"align": "left",
 						"width": "20ch",
 						"edit": true
 					},
 					{
 						"label": "Component",
-						"name": "_component",
+						"name": "component",
 						"fieldtype": "Data",
-						"align": "Left",
-						"width": "20ch",
-						"edit": true
-					},
-					{
-						"label": "Align",
-						"name": "_align",
-						"fieldtype": "Numeric",
-						"align": "Right",
-						"width": "8ch",
-						"edit": true
-					},
-					{
-						"label": "Width",
-						"name": "format",
-						"fieldtype": "Data",
-						"align": "Left",
-						"width": "8ch",
-						"edit": true
-					},
-					{
-						"label": "Editable",
-						"name": "_edit",
-						"fieldtype": "Select",
-						"align": "Left",
-						"width": "8ch",
-						"edit": true
-					},
-					{
-						"label": "Options",
-						"name": "_options",
-						"fieldtype": "Data",
-						"align": "Left",
-						"width": "16ch",
-						"edit": true
-					},
-					{
-						"label": "Format",
-						"name": "_format",
-						"fieldtype": "Data",
-						"align": "Left",
-						"width": "16ch",
-						"edit": true
-					},
-					{
-						"label": "Mask",
-						"name": "_mask",
-						"fieldtype": "Data",
-						"align": "Left",
-						"width": "16ch",
-						"edit": true
+						"align": "left",
+						"edit": false,
+						"width": "20ch"
 					}
 				],
-				"config": { "listView": true },
+				"config": { "view": "list", "fullWidth": true },
 				"rows": []
 			}
 		]
@@ -101,7 +61,7 @@
 						"label": "Event Name",
 						"name": "event_name",
 						"fieldtype": "Data",
-						"align": "Left",
+						"align": "left",
 						"edit": false,
 						"width": "35ch"
 					},
@@ -109,7 +69,7 @@
 						"label": "Callback",
 						"name": "callback",
 						"fieldtype": "Data",
-						"align": "Left",
+						"align": "left",
 						"edit": true,
 						"width": "40ch",
 						"cellComponent": "textarea",
@@ -119,9 +79,7 @@
 						}
 					}
 				],
-				"config": {
-					"listView": true
-				},
+				"config": { "view": "list", "fullWidth": true },
 				"rows": []
 			}
 		]

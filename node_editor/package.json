@@ -36,5 +36,8 @@
 			"require": "./dist/node_editor.umd.cjs"
 		},
 		"./styles": "./dist/style.css"
+	},
+	"engines": {
+		"node": ">=16.17.1"
 	}
 }
