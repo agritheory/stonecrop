@@ -4,14 +4,14 @@
 			{{ label }}
 			<CollapseButton v-if="collapsible" :collapsed="collapsed" />
 		</legend>
-		<slot>
+		<slot :collapsed="collapsed">
 			<AForm v-show="!collapsed" :schema="schema" :data="formData" />
 		</slot>
 	</fieldset>
 </template>
 
 <script setup lang="ts">
-import { ref, defineProps } from 'vue'
+import { ref } from 'vue'
 
 import CollapseButton from '@/components/base/CollapseButton.vue'
 import AForm from '@/components/AForm.vue'

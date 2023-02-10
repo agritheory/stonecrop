@@ -3,35 +3,41 @@
 	"version": "0.1.2",
 	"type": "module",
 	"description": "desktop specific components for Stonecrop UI",
-	"main": "index.js",
+	"main": "dist/desktop.js",
+	"module": "dist/desktop.js",
+	"umd": "dist/desktop.umd.cjs",
+	"types": "src/index",
 	"files": [
 		"dist/*",
 		"src/**/*.vue"
 	],
 	"license": "MIT",
 	"scripts": {
-		"dev": "vite",
-		"build": "vite build",
-		"preview": "vite preview",
-		"story:dev": "histoire dev",
-		"story:build": "histoire build",
-		"story:preview": "histoire preview"
+		"story:dev": "vite dev stories/ -c stories/vite.config.ts",
+		"story:build": "vite build stories/ -c stories/vite.config.ts",
+		"lint": "eslint . --ext .ts,.vue"
 	},
 	"dependencies": {
 		"@agritheory/aform": "workspace:^0.1.2",
 		"@agritheory/atable": "workspace:^0.2.0",
 		"@agritheory/themes": "workspace:*",
 		"@agritheory/stonecrop": "workspace:^0.1.0",
-		"portal-vue": "^3.0.0-beta.0",
-		"vue": "^3.2.37",
-		"vue-router": "^4"
+		"immutable": "^4.2.2",
+		"vue": "^3.2.47",
+		"xstate": "~4.33.6"
 	},
 	"devDependencies": {
-		"@histoire/plugin-vue": "^0.12.4",
+		"@miragejs/graphql": "^0.1.13",
+		"@typescript-eslint/eslint-plugin": "^5.33.0",
+		"@typescript-eslint/parser": "^5.33.0",
 		"@vitejs/plugin-vue": "^4.0.0",
-		"histoire": "^0.12.4",
-		"vite": "^4.0.2",
-		"vue-template-compiler": "^2.6.14"
+		"eslint-config-prettier": "^8.5.0",
+		"eslint-plugin-vue": "^9.3.0",
+		"eslint": "^8.22.0",
+		"miragejs": "^0.1.45",
+		"typescript": "^4.9.4",
+		"vite": "^4.1.1",
+		"vue-router": "^4"
 	},
 	"exports": {
 		".": {

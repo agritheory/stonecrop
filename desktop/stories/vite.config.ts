@@ -6,16 +6,23 @@ const projectRootDir = resolve(__dirname)
 
 export default defineConfig({
 	plugins: [vue()],
+	optimizeDeps: {
+		exclude: ['@agritheory/atable', '@agritheory/aform', '@agritheory/stonecrop'],
+	},
 	resolve: {
 		alias: {
-			'@': resolve(projectRootDir, 'src'),
+			'@': resolve(projectRootDir, 'stories'),
+		},
+	},
+	server: {
+		fs: {
+			allow: ['..'],
 		},
 	},
 	build: {
 		sourcemap: true,
 		lib: {
-			entry: resolve(projectRootDir, 'src/index.ts'),
-			name: '@agritheory/desktop',
+			entry: resolve(projectRootDir, 'stories/index.ts'),
 		},
 		rollupOptions: {
 			external: ['vue'],

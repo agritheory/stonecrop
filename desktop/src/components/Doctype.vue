@@ -10,15 +10,15 @@ import { inject, onBeforeMount, ref } from 'vue'
 import { useRoute } from 'vue-router'
 
 import { AForm } from '@agritheory/aform'
+import { Registry } from '@agritheory/stonecrop'
+import { ImmutableDoctype, Schema } from '@agritheory/stonecrop/types'
 
-import Registry from '@/registry'
-import { ImmutableDoctype, Schema } from 'types/index'
 // TODO: pinia for state, later
 // const schema = useStonecrop()
 
 const route = useRoute()
-const doctypeSlug = route.params.records.toString()
-const recordId = route.params.record.toString()
+const doctypeSlug = route.params.records.toString().toLowerCase()
+const recordId = route.params.record.toString().toLowerCase()
 
 const registry = inject<Registry>('$registry')
 
@@ -53,7 +53,8 @@ onBeforeMount(async () => {
 	const hookEvents: string[] = hooks.value.get('LOAD')
 	if (hookEvents.length > 0) {
 		hookEvents.forEach(hook => {
-			const hookFn = eval(hook) as () => void
+			// eslint-disable-next-line @typescript-eslint/no-implied-eval
+			const hookFn = new Function(hook)
 			hookFn()
 		})
 	}
@@ -66,7 +67,8 @@ const saveRecord = () => {
 	const hookEvents: string[] = hooks.value.get('SAVE')
 	if (hookEvents.length > 0) {
 		hookEvents.forEach(hook => {
-			const hookFn = eval(hook) as () => void
+			// eslint-disable-next-line @typescript-eslint/no-implied-eval
+			const hookFn = new Function(hook)
 			hookFn()
 		})
 	}

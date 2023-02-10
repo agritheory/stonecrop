@@ -1,9 +1,10 @@
 import { App } from 'vue'
 
-import { InstallOptions } from 'types/index'
-import router from './router'
+import type { InstallOptions } from 'types/index'
+import Doctype from './doctype'
 import Registry from './registry'
-// import { useStonecrop } from './composable'
+import router from './router'
+import { useStonecrop } from './composable'
 // TODO: import { pinia } from "./store"
 
 const Stonecrop = {
@@ -17,4 +18,4 @@ const Stonecrop = {
 	},
 }
 
-export default Stonecrop
+export { Doctype, Registry, Stonecrop, useStonecrop }

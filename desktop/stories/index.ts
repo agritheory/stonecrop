@@ -1,20 +1,23 @@
 import { List, Map } from 'immutable'
 import { createApp } from 'vue'
 import { RouteRecordRaw } from 'vue-router'
-
-import { ADate, ATextInput } from '@agritheory/aform'
-import Doctype from '@/doctype'
-import Stonecrop from '@/index'
-import router from '@/router'
-import { default as DoctypeComponent } from './components/Doctype.vue'
-import Home from './components/Home.vue'
-import Records from './components/Records.vue'
-import Dev from './Dev.vue'
-import makeServer from './server'
-import { ImmutableDoctype, MutableDoctype } from 'types/index'
 import { createMachine } from 'xstate'
 
-// create mirage server
+import { ADate, ATextInput } from '@agritheory/aform'
+import { Doctype, Stonecrop } from '@agritheory/stonecrop'
+import type { ImmutableDoctype, MutableDoctype } from '@agritheory/stonecrop/types'
+
+import ActionSet from '../src/components/ActionSet.vue'
+import CommandPalette from '../src/components/CommandPalette.vue'
+import { default as DoctypeComponent } from '../src/components/Doctype.vue'
+import Records from '../src/components/Records.vue'
+import SheetNav from '../src/components/SheetNav.vue'
+import router from '../src/router'
+import Home from './components/Home.vue'
+import App from './App.vue'
+import makeServer from './server'
+
+const app = createApp(App)
 makeServer()
 
 // setup router
@@ -28,12 +31,17 @@ for (const route of routes) {
 	router.addRoute(route)
 }
 
-const app = createApp(Dev)
+// setup Stonecrop
 app.use(Stonecrop, {
 	router,
 	components: {
-		ATextInput,
+		ActionSet,
 		ADate,
+		ATextInput,
+		CommandPalette,
+		Doctype,
+		Records,
+		SheetNav,
 	},
 	// TODO: or if doctype is a function [doctype].apply()
 	doctypeLoader: async (doctype: string) => {
@@ -49,4 +57,5 @@ app.use(Stonecrop, {
 		return new Doctype(doctype, config.schema, config.events, config.hooks)
 	},
 })
+
 app.mount('#app')

@@ -9,6 +9,7 @@ module.exports = {
 	// `parser: 'vue-eslint-parser'` is already included with any 'plugin:vue/**' config and should be omitted
 	parserOptions: {
 		tsconfigRootDir: __dirname,
+		project: ['./tsconfig.json'],
 		parser: require.resolve('@typescript-eslint/parser'),
 		extraFileExtensions: ['.vue'],
 	},
@@ -47,6 +48,10 @@ module.exports = {
 		// Prettier has not been included as plugin to avoid performance impact
 		// add it as an extension for your IDE
 	],
+
+	globals: {
+		NodeJS: true,
+	},
 
 	// add your custom rules here
 	rules: {

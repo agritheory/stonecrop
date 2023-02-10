@@ -1,0 +1,43 @@
+name: AForm
+
+on:
+  pull_request:
+    paths: ['aform/**']
+  push:
+    paths: ['aform/**']
+    branches: [development]
+
+jobs:
+  tests:
+    name: Vitest
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [16.x]
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Install Node ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        cache-dependency-path: '**/config/rush/pnpm-lock.yaml'
+        registry-url: https://npm.pkg.github.com/
+
+    - name: Install Rush
+      run: node common/scripts/install-run-rush.js install
+
+    - name: Run Vitest
+      working-directory: ./aform
+      run: node ../common/scripts/install-run-rushx.js test:coverage
+
+    - name: Coverage Report
+      if: always() # Also generate the report if tests are failing
+      uses: davelosert/vitest-coverage-report-action@v1
+      with:
+        working-directory: ./aform
+        vite-config-path: './vite.config.ts'
+        json-summary-path: './coverage/coverage-summary.json'
+        json-final-path: './coverage/coverage-final.json'
