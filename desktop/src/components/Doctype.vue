@@ -17,8 +17,8 @@ import { ImmutableDoctype, Schema } from '@agritheory/stonecrop/types'
 // const schema = useStonecrop()
 
 const route = useRoute()
-const doctypeSlug = route.params.records.toString()
-const recordId = route.params.record.toString()
+const doctypeSlug = route.params.records.toString().toLowerCase()
+const recordId = route.params.record.toString().toLowerCase()
 
 const registry = inject<Registry>('$registry')
 

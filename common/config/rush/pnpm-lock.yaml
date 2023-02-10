@@ -136,7 +136,6 @@ importers:
       '@agritheory/atable': workspace:^0.2.0
       '@agritheory/stonecrop': workspace:^0.1.0
       '@agritheory/themes': workspace:*
-      '@histoire/plugin-vue': ^0.13.0
       '@miragejs/graphql': ^0.1.13
       '@typescript-eslint/eslint-plugin': ^5.33.0
       '@typescript-eslint/parser': ^5.33.0
@@ -144,7 +143,6 @@ importers:
       eslint: ^8.22.0
       eslint-config-prettier: ^8.5.0
       eslint-plugin-vue: ^9.3.0
-      histoire: ^0.13.0
       immutable: ^4.2.2
       miragejs: ^0.1.45
       typescript: ^4.9.4
@@ -161,7 +159,6 @@ importers:
       vue: 3.2.47
       xstate: 4.33.6
     devDependencies:
-      '@histoire/plugin-vue': 0.13.0_o4qesjlrxn6fcyni6znghz2wsu
       '@miragejs/graphql': 0.1.13
       '@typescript-eslint/eslint-plugin': 5.47.0_ncmi6noazr3nzas7jxykisekym
       '@typescript-eslint/parser': 5.47.0_lzzuuodtsqwxnvqeq4g4likcqa
@@ -169,7 +166,6 @@ importers:
       eslint: 8.30.0
       eslint-config-prettier: 8.5.0_eslint@8.30.0
       eslint-plugin-vue: 9.8.0_eslint@8.30.0
-      histoire: 0.13.0_vite@4.1.1
       miragejs: 0.1.46
       typescript: 4.9.4
       vite: 4.1.1

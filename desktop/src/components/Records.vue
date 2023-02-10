@@ -18,7 +18,7 @@ import { ImmutableDoctype } from '@agritheory/stonecrop/types'
 // last_used_view_type in application state
 
 const route = useRoute()
-const doctypeSlug = route.params.records.toString()
+const doctypeSlug = route.params.records.toString().toLowerCase()
 const registry = inject<Registry>('$registry')
 
 // get data
@@ -32,8 +32,6 @@ let stateMachine = ref<ImmutableDoctype['events']>()
 let hooks = ref<ImmutableDoctype['hooks']>()
 
 onBeforeMount(async () => {
-	if (doctypeSlug.startsWith('__')) return
-
 	// register doctype in registry
 	const doctype = await registry.doctypeLoader(doctypeSlug)
 	registry.addDoctype(doctype)

@@ -1,11 +1,14 @@
 <template>
-	<Story title="SheetNav">
-		<ActionSet :elements="elements" />
-		<SheetNav />
-	</Story>
+	<ActionSet :elements="elements" />
+	<router-view v-slot="{ Component, route }">
+		<transition :name="route.meta.transition || 'slide-up'">
+			<component :is="Component" />
+		</transition>
+	</router-view>
+	<SheetNav />
 </template>
 
-<script lang="ts" setup>
+<script setup lang="ts">
 const elements = [
 	{
 		elementType: 'button',
