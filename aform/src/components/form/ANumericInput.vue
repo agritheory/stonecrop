@@ -1,5 +1,5 @@
 <template>
-	<ATextInput :label="label" :readOnly="readOnly" :uuid="uuid" :validation="validation" v-model="amount" />
+	<ATextInput :label="label" :readonly="readonly" :uuid="uuid" :validation="validation" v-model="amount" />
 </template>
 
 <script setup lang="ts">
@@ -10,7 +10,7 @@ withDefaults(
 		label: string
 		value?: any
 		required?: boolean
-		readOnly?: boolean
+		readonly?: boolean
 		uuid?: string
 		validation?: Record<string, any>
 	}>(),

@@ -3,7 +3,7 @@
 		<input
 			v-model="inputText"
 			:id="uuid"
-			:disabled="readOnly"
+			:disabled="readonly"
 			:maxlength="mask ? maskFilled && mask.length : undefined"
 			:required="required"
 			@input="update"
@@ -39,7 +39,7 @@ export default defineComponent({
 		required: {
 			type: Boolean,
 		},
-		readOnly: {
+		readonly: {
 			type: Boolean,
 		},
 		uuid: {

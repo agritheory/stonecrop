@@ -19,6 +19,9 @@
 					]" />
 			</template>
 		</Variant>
+		<Variant title="Form (Read-Only)">
+			<AForm class="aform-main" :schema="basic_form_schema" :data="data" :readonly="true" />
+		</Variant>
 		<Variant title="Table">
 			<AForm class="aform-main" :schema="basic_table_schema" :data="data" />
 		</Variant>

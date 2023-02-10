@@ -6,6 +6,7 @@
 			:key="key"
 			:schema="componentObj"
 			:data="formData[componentObj.fieldname]"
+			:readonly="readonly"
 			v-bind="componentProps(componentObj)">
 		</component>
 	</form>
@@ -19,6 +20,7 @@ import { SchemaTypes } from 'types'
 const props = defineProps<{
 	schema: SchemaTypes[]
 	data: Record<string, any>
+	readonly?: boolean
 }>()
 
 const formData = ref(props.data || {})
