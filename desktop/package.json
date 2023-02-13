@@ -13,6 +13,8 @@
 	],
 	"license": "MIT",
 	"scripts": {
+		"dev": "vite",
+		"build": "vite build",
 		"story:dev": "vite dev stories/ -c stories/vite.config.ts",
 		"story:build": "vite build stories/ -c stories/vite.config.ts",
 		"lint": "eslint . --ext .ts,.vue"
