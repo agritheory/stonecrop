@@ -10,6 +10,7 @@ export type TableColumn = {
 	cellComponent?: string
 	cellComponentProps?: Record<string, any>
 	modalComponent?: string
+	modalComponentProps?: Record<string, any>
 
 	format?: string | ((value: any) => any)
 	mask?: (value: any) => any
@@ -39,7 +40,6 @@ export type TableRow = {
 
 export type TableModal = {
 	colIndex?: number
-	component?: string
 	event?: string
 	left?: number
 	parent?: HTMLElement
@@ -47,4 +47,7 @@ export type TableModal = {
 	top?: number
 	visible?: boolean
 	width?: string
+
+	component?: string
+	componentProps?: Record<string, any>
 }
