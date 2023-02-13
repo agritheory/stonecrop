@@ -11,7 +11,7 @@ import { useRoute } from 'vue-router'
 
 import { AForm } from '@agritheory/aform'
 import { Registry } from '@agritheory/stonecrop'
-import { ImmutableDoctype, Schema } from '@agritheory/stonecrop/types'
+import type { ImmutableDoctype, Schema } from '@agritheory/stonecrop/types'
 
 // TODO: pinia for state, later
 // const schema = useStonecrop()

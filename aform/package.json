@@ -58,7 +58,6 @@
 	},
 	"exports": {
 		".": {
-			"types": "./types/index",
 			"import": "./dist/aform.js",
 			"require": "./dist/aform.umd.cjs"
 		},

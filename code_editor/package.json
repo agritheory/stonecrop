@@ -48,7 +48,6 @@
 	},
 	"exports": {
 		".": {
-			"types": "./types/index",
 			"import": "./dist/code_editor.js",
 			"require": "./dist/code_editor.umd.cjs"
 		}

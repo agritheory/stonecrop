@@ -43,7 +43,6 @@
 	},
 	"exports": {
 		".": {
-			"types": "./types/index.ts",
 			"import": "./dist/stonecrop.js",
 			"require": "./dist/stonecrop.umd.cjs"
 		}

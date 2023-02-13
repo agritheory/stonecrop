@@ -40,7 +40,6 @@
 	},
 	"exports": {
 		".": {
-			"types": "./types/index.ts",
 			"import": "./dist/utilities.js",
 			"require": "./dist/utilities.umd.cjs"
 		}

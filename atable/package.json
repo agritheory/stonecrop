@@ -51,7 +51,6 @@
 	},
 	"exports": {
 		".": {
-			"types": "./types/index.ts",
 			"import": "./dist/atable.js",
 			"require": "./dist/atable.umd.cjs"
 		},

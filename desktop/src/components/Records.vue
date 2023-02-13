@@ -7,10 +7,10 @@
 import { reactive, inject, onBeforeMount, ref } from 'vue'
 import { useRoute } from 'vue-router'
 
-import { SchemaTypes } from '@agritheory/aform/types'
+import type { SchemaTypes } from '@agritheory/aform/types'
 import { ATable } from '@agritheory/atable'
 import { Registry } from '@agritheory/stonecrop'
-import { ImmutableDoctype } from '@agritheory/stonecrop/types'
+import type { ImmutableDoctype } from '@agritheory/stonecrop/types'
 
 // TODO: use component if provided else call to Records Schema endpoint/ table  / lookup
 // alteratively: a view: component map, eg records: Records, gantt: GanttView
