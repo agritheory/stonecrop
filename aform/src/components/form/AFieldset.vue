@@ -11,7 +11,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, defineProps } from 'vue'
+import { ref } from 'vue'
 
 import CollapseButton from '@/components/base/CollapseButton.vue'
 import AForm from '@/components/AForm.vue'
