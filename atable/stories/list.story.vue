@@ -1,7 +1,7 @@
 <template>
 	<Story title="list">
 		<Variant title="default">
-			<ATable id="list" :columns="http_logs.columns" :rows="http_logs.rows" :config="{ view: 'list' }">
+			<ATable id="list" :columns="http_logs.columns" v-model="http_logs.rows" :config="{ view: 'list' }">
 				<template #body="{ data }: { data: TableDataStore }">
 					<ARow
 						ref="rows"
@@ -32,7 +32,7 @@
 		</Variant>
 
 		<Variant title="expandable">
-			<ATable id="list" :columns="http_logs.columns" :rows="http_logs.rows" :config="{ view: 'list-expansion' }">
+			<ATable id="list" :columns="http_logs.columns" v-model="http_logs.rows" :config="{ view: 'list-expansion' }">
 				<template #body="{ data }: { data: TableDataStore }">
 					<AExpansionRow
 						ref="rows"
