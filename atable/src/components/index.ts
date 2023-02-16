@@ -95,6 +95,8 @@ export default class TableDataStore {
 			this.display[rowIndex].modified = true
 		}
 		this.table[`${colIndex}:${rowIndex}`] = value
+		let col = this.columns[colIndex]
+		this.rows[rowIndex][col.name] = value
 		return this.table[`${colIndex}:${rowIndex}`]
 	}
 

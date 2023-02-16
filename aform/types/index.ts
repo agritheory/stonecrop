@@ -4,6 +4,7 @@ import { TableColumn, TableConfig, TableRow } from '@agritheory/atable/types'
 export type BasicSchema = {
 	component: string
 	fieldname: string
+	value: any
 }
 
 export type FormSchema = BasicSchema & {

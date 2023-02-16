@@ -12,7 +12,7 @@ import { computed } from 'vue'
 const props = withDefaults(
 	defineProps<{
 		label: string
-		value?: number
+		modelValue: any
 		required?: boolean
 		readOnly?: boolean
 		uuid?: string
@@ -22,14 +22,13 @@ const props = withDefaults(
 		validation: () => ({ errorMessage: '&nbsp;' }),
 	}
 )
-
-const emit = defineEmits<{ (e: 'update:value', value: number): void }>()
+const emit = defineEmits(['update:modelValue'])
 const inputNumber = computed({
-	get() {
-		return props.value
+	get: () => {
+		return props.modelValue
 	},
-	set(value) {
-		emit('update:value', value)
+	set: newValue => {
+		emit('update:modelValue', newValue)
 	},
 })
 </script>

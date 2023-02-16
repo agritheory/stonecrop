@@ -1,7 +1,7 @@
 <template>
 	<Story title="default">
 		<Variant title="Form" :setup-app="formSetup">
-			<AForm class="aform-main" :schema="basic_form_schema" :data="data" :key="formKey" />
+			<AForm class="aform-main" v-model="form_schema" :data="data" :key="formKey" />
 
 			<template #controls>
 				<HstRadio
@@ -20,13 +20,13 @@
 			</template>
 		</Variant>
 		<Variant title="Table">
-			<AForm class="aform-main" :schema="basic_table_schema" :data="data" />
+			<AForm class="aform-main" v-model="table_schema" :data="data" />
 		</Variant>
 		<Variant title="Fieldset">
-			<AForm class="aform-main" :schema="basic_fieldset_schema" :data="data" />
+			<AForm class="aform-main" v-model="fieldset_schema" :data="data" />
 		</Variant>
 		<Variant title="Fieldset with Table">
-			<AForm class="aform-main" :schema="fieldset_table_schema" :data="data" />
+			<AForm class="aform-main" v-model="fieldset_table_schema_ref" :data="data" />
 		</Variant>
 	</Story>
 </template>
@@ -38,6 +38,11 @@ import basic_form_schema from './assets/basic_form_schema.json'
 import basic_fieldset_schema from './assets/basic_fieldset_schema.json'
 import basic_table_schema from './assets/basic_table_schema.json'
 import fieldset_table_schema from './assets/fieldset_table_schema.json'
+
+const form_schema = ref(basic_form_schema)
+const fieldset_schema = ref(basic_fieldset_schema)
+const table_schema = ref(basic_table_schema)
+const fieldset_table_schema_ref = ref(fieldset_table_schema)
 
 const data = ref([])
 const locale = ref('en-US')

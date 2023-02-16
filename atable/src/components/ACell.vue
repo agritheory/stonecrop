@@ -151,6 +151,10 @@ const onChange = () => {
 			currentData = cell.value.innerText
 			cell.value.dispatchEvent(new Event('change'))
 			cellModified.value = true // set display instead
+			if (!tableData.columns[props.colIndex].format) {
+				// TODO: need to setup reverse format function
+				tableData.setCellData(props.rowIndex, props.colIndex, currentData)
+			}
 		}
 	}
 }

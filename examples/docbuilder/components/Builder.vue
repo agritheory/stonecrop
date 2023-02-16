@@ -9,7 +9,7 @@
 					:layout="layout" />
 			</div>
 		</AFieldset>
-		<AForm class="aform-main" :key="formKey" :schema="doctypeSchema" :data="data" />
+		<AForm class="aform-main" :key="formKey" v-model="doctypeSchema" :data="data" />
 		<ActionSet :elements="actionElements" />
 		<SheetNav />
 	</div>

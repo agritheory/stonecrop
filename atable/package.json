@@ -18,13 +18,18 @@
 		"story:dev": "histoire dev",
 		"story:build": "histoire build",
 		"story:preview": "histoire preview",
-		"lint": "eslint . --ext .ts,.vue"
+		"lint": "eslint . --ext .ts,.vue",
+		"test": "vitest"
 	},
 	"dependencies": {
 		"@agritheory/themes": "workspace:*",
 		"@agritheory/utilities": "workspace:*",
 		"uuid": "^9.0.0",
-		"vue": "^3.2.37"
+		"vue": "^3.2.37",
+		"vitest": "^0.28.4",
+		"@vitest/coverage-c8": "^0.28.4",
+		"@vitest/ui": "^0.28.4",
+		"@vue/test-utils": "^2.2.10"
 	},
 	"peerDependencies": {
 		"@agritheory/aform": "workspace:*"

@@ -1,6 +1,6 @@
 <template>
 	<Story title="tree">
-		<ATable :columns="coa.columns" :rows="coa.rows" :config="coa.config" />
+		<ATable :columns="coa.columns" v-model="coa.rows" :config="coa.config" />
 	</Story>
 </template>
 

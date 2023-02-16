@@ -1,10 +1,10 @@
 <template>
 	<Story title="default">
 		<Variant title="default">
-			<ATable :columns="http_logs.columns" :rows="http_logs.rows" :config="http_logs.config" />
+			<ATable :columns="http_logs.columns" v-model="http_logs.rows" :config="http_logs.config" />
 		</Variant>
 		<Variant title="full width">
-			<ATable :columns="full_width_table.columns" :rows="full_width_table.rows" :config="full_width_table.config" />
+			<ATable :columns="full_width_table.columns" v-model="full_width_table.rows" :config="full_width_table.config" />
 		</Variant>
 	</Story>
 </template>

@@ -155,7 +155,8 @@ const selectDate = (event: Event, currentIndex: number) => {
 }
 
 const updateData = () => {
-	tableData.setCellData(props.rowIndex, props.colIndex, selectedDate.value)
+	// TODO: check proper date format to feed back (assuming number for now)
+	tableData.setCellData(props.rowIndex, props.colIndex, selectedDate.value.getTime())
 }
 
 // const dayWidth = computed(() => {
