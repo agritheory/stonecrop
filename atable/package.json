@@ -26,10 +26,6 @@
 		"@agritheory/utilities": "workspace:*",
 		"uuid": "^9.0.0",
 		"vue": "^3.2.47",
-		"vitest": "^0.28.4",
-		"@vitest/coverage-c8": "^0.28.4",
-		"@vitest/ui": "^0.28.4",
-		"@vue/test-utils": "^2.2.10"
 	},
 	"peerDependencies": {
 		"@agritheory/aform": "workspace:*"
@@ -41,6 +37,10 @@
 		"@types/uuid": "^9.0.0",
 		"@typescript-eslint/eslint-plugin": "^5.33.0",
 		"@typescript-eslint/parser": "^5.33.0",
+		"vitest": "^0.28.4",
+		"@vitest/coverage-c8": "^0.28.4",
+		"@vitest/ui": "^0.28.4",
+		"@vue/test-utils": "^2.2.10",
 		"@vitejs/plugin-vue": "^4.0.0",
 		"cypress": "^12.2.0",
 		"eslint-config-prettier": "^8.5.0",
