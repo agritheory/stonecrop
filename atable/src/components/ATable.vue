@@ -33,21 +33,24 @@
 		<slot name="footer" :data="tableData" />
 		<slot name="modal" :data="tableData">
 			<ATableModal
+				v-show="tableData.modal.visible"
 				:colIndex="tableData.modal.colIndex"
 				:rowIndex="tableData.modal.rowIndex"
 				:tableid="tableData.id"
-				v-show="tableData.modal.visible"
 				:style="{
 					left: tableData.modal.left + 'px',
 					top: tableData.modal.top + 'px',
 					maxWidth: tableData.modal.width + 'px',
 				}">
-				<component
-					:key="`${tableData.modal.rowIndex}:${tableData.modal.colIndex}`"
-					:is="tableData.modal.component"
-					:colIndex="tableData.modal.colIndex"
-					:rowIndex="tableData.modal.rowIndex"
-					:tableid="tableData.id" />
+				<template #default>
+					<component
+						:key="`${tableData.modal.rowIndex}:${tableData.modal.colIndex}`"
+						:is="tableData.modal.component"
+						:colIndex="tableData.modal.colIndex"
+						:rowIndex="tableData.modal.rowIndex"
+						:tableid="tableData.id"
+						v-bind="tableData.modal.componentProps" />
+				</template>
 			</ATableModal>
 		</slot>
 	</table>
@@ -55,7 +58,7 @@
 
 <script setup lang="ts">
 import { v4 } from 'uuid'
-import { nextTick, provide } from 'vue'
+import { nextTick, provide, watch } from 'vue'
 
 import { TableColumn, TableConfig, TableRow } from 'types'
 import TableDataStore from '.'
@@ -67,6 +70,7 @@ import ATableModal from '@/components/ATableModal.vue'
 const props = withDefaults(
 	defineProps<{
 		id?: string
+		modelValue: TableRow[]
 		columns: TableColumn[]
 		rows?: TableRow[]
 		config?: TableConfig
@@ -78,8 +82,20 @@ const props = withDefaults(
 	}
 )
 
-let tableData = new TableDataStore(props.id, props.columns, props.rows, props.config)
+const emit = defineEmits(['update:modelValue'])
+
+let rows = props.modelValue ? props.modelValue : props.rows
+
+let tableData = new TableDataStore(props.id, props.columns, rows, props.config)
 provide(tableData.id, tableData)
+
+watch(
+	() => tableData.rows,
+	(newValue, oldValue) => {
+		emit('update:modelValue', newValue)
+	},
+	{ deep: true }
+)
 
 const formatCell = (event?: KeyboardEvent, column?: TableColumn, cellData?: any) => {
 	let colIndex: number

@@ -1,5 +1,6 @@
 <template>
 	<div
+		v-if="!readonly"
 		:event="event"
 		:colIndex="colIndex"
 		:rowIndex="rowIndex"
@@ -53,6 +54,7 @@ const props = defineProps<{
 	tableid?: string
 	event?: Event
 	indent?: number
+	readonly?: boolean
 }>()
 
 const tableData = inject<TableDataStore>(props.tableid)
@@ -155,7 +157,8 @@ const selectDate = (event: Event, currentIndex: number) => {
 }
 
 const updateData = () => {
-	tableData.setCellData(props.rowIndex, props.colIndex, selectedDate.value)
+	// TODO: check proper date format to feed back (assuming number for now)
+	tableData.setCellData(props.rowIndex, props.colIndex, selectedDate.value.getTime())
 }
 
 // const dayWidth = computed(() => {

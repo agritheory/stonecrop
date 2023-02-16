@@ -1,6 +1,6 @@
 <template>
 	<div>
-		<input v-model="inputNumber" type="number" :id="uuid" :disabled="readOnly" :required="required" />
+		<input v-model="inputNumber" type="number" :id="uuid" :disabled="readonly" :required="required" />
 		<label :for="uuid">{{ label }}</label>
 		<p v-show="validation.errorMessage" v-html="validation.errorMessage"></p>
 	</div>
@@ -12,9 +12,9 @@ import { computed } from 'vue'
 const props = withDefaults(
 	defineProps<{
 		label: string
-		value?: number
+		modelValue: any
 		required?: boolean
-		readOnly?: boolean
+		readonly?: boolean
 		uuid?: string
 		validation?: Record<string, any>
 	}>(),
@@ -22,14 +22,13 @@ const props = withDefaults(
 		validation: () => ({ errorMessage: '&nbsp;' }),
 	}
 )
-
-const emit = defineEmits<{ (e: 'update:value', value: number): void }>()
+const emit = defineEmits(['update:modelValue'])
 const inputNumber = computed({
-	get() {
-		return props.value
+	get: () => {
+		return props.modelValue
 	},
-	set(value) {
-		emit('update:value', value)
+	set: newValue => {
+		emit('update:modelValue', newValue)
 	},
 })
 </script>

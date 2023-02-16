@@ -90,6 +90,7 @@ const handleInput = (event: MouseEvent) => {
 		tableData.modal.left = domRect.left
 		tableData.modal.width = cellWidth.value
 		tableData.modal.component = tableData.columns[props.colIndex].modalComponent
+		tableData.modal.componentProps = tableData.columns[props.colIndex].modalComponentProps
 	}
 }
 
@@ -151,6 +152,10 @@ const onChange = () => {
 			currentData = cell.value.innerText
 			cell.value.dispatchEvent(new Event('change'))
 			cellModified.value = true // set display instead
+			if (!tableData.columns[props.colIndex].format) {
+				// TODO: need to setup reverse format function
+				tableData.setCellData(props.rowIndex, props.colIndex, currentData)
+			}
 		}
 	}
 }
