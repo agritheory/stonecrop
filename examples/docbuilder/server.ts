@@ -16,7 +16,7 @@ export function makeServer({ environment = 'development' } = {}) {
 
 		seeds(server) {
 			server.db.loadData({
-				doctypes: [{ name: 'Issue' }, { name: 'Assignment' }],
+				doctypes: [{ name: 'Issue' }, { name: 'Assignment' }, { name: 'User' }],
 				stateMachines: [
 					{
 						name: 'Issue',
@@ -129,6 +129,44 @@ export function makeServer({ environment = 'development' } = {}) {
 							},
 						},
 					},
+					{
+						name: 'User',
+						machine: {
+							id: 'User',
+							invoke: {
+								src: 'Load',
+							},
+							initial: 'Active',
+							states: {
+								Active: {
+									on: {
+										Deactivate: {
+											target: 'Inactive',
+										},
+									},
+								},
+								Inactive: {
+									on: {
+										'Re-Activate': {
+											target: 'Active',
+										},
+									},
+								},
+							},
+						},
+						layout: {
+							Active: {
+								position: { x: 50, y: 0 },
+								sourcePosition: 'top',
+								targetPosition: 'bottom',
+							},
+							Inactive: {
+								position: { x: 300, y: 25 },
+								targetPosition: 'top',
+								sourcePosition: 'bottom',
+							},
+						},
+					},
 				],
 				meta: [
 					{
@@ -221,6 +259,34 @@ export function makeServer({ environment = 'development' } = {}) {
 							},
 						],
 					},
+					{
+						name: 'User',
+						fields: [
+							{
+								id: 'username',
+								label: 'Username',
+								fieldtype: 'Data',
+								required: true,
+							},
+							{
+								id: 'first_name',
+								label: 'First Name',
+								fieldtype: 'Data',
+								required: true,
+							},
+							{
+								id: 'last_name',
+								label: 'Last Name',
+								fieldtype: 'Data',
+							},
+							{
+								id: 'email',
+								label: 'Email Address',
+								fieldtype: 'Data',
+								required: true,
+							},
+						],
+					},
 				],
 				hooks: [
 					{
@@ -277,6 +343,33 @@ export function makeServer({ environment = 'development' } = {}) {
 							},
 						],
 					},
+					{
+						name: 'User',
+						side_effects: [
+							{
+								event_name: 'LOAD',
+								callback: [
+									(() => {
+										console.log('load todo')
+									}).toString(),
+									(() => {
+										console.log('load todo side effect')
+									}).toString(),
+								],
+							},
+							{
+								event_name: 'SAVE',
+								callback: [
+									(() => {
+										console.log('save todo')
+									}).toString(),
+									(() => {
+										console.log('after save todo')
+									}).toString(),
+								],
+							},
+						],
+					},
 				],
 			})
 		},
@@ -292,8 +385,12 @@ export function makeServer({ environment = 'development' } = {}) {
 				return schema.all('issue')
 			})
 
-			this.get('/Assignment', schema => {
+			this.get('/assignment', schema => {
 				return schema.all('assignment')
+			})
+
+			this.get('/user', schema => {
+				return schema.all('user')
 			})
 
 			this.get('/load_state_machine', (schema, request) => {
