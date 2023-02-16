@@ -33,21 +33,24 @@
 		<slot name="footer" :data="tableData" />
 		<slot name="modal" :data="tableData">
 			<ATableModal
+				v-show="tableData.modal.visible"
 				:colIndex="tableData.modal.colIndex"
 				:rowIndex="tableData.modal.rowIndex"
 				:tableid="tableData.id"
-				v-show="tableData.modal.visible"
 				:style="{
 					left: tableData.modal.left + 'px',
 					top: tableData.modal.top + 'px',
 					maxWidth: tableData.modal.width + 'px',
 				}">
-				<component
-					:key="`${tableData.modal.rowIndex}:${tableData.modal.colIndex}`"
-					:is="tableData.modal.component"
-					:colIndex="tableData.modal.colIndex"
-					:rowIndex="tableData.modal.rowIndex"
-					:tableid="tableData.id" />
+				<template #default>
+					<component
+						:key="`${tableData.modal.rowIndex}:${tableData.modal.colIndex}`"
+						:is="tableData.modal.component"
+						:colIndex="tableData.modal.colIndex"
+						:rowIndex="tableData.modal.rowIndex"
+						:tableid="tableData.id"
+						v-bind="tableData.modal.componentProps" />
+				</template>
 			</ATableModal>
 		</slot>
 	</table>

@@ -90,6 +90,7 @@ const handleInput = (event: MouseEvent) => {
 		tableData.modal.left = domRect.left
 		tableData.modal.width = cellWidth.value
 		tableData.modal.component = tableData.columns[props.colIndex].modalComponent
+		tableData.modal.componentProps = tableData.columns[props.colIndex].modalComponentProps
 	}
 }
 

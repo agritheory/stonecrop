@@ -1,5 +1,6 @@
 <template>
 	<div
+		v-if="!readonly"
 		:event="event"
 		:colIndex="colIndex"
 		:rowIndex="rowIndex"
@@ -53,6 +54,7 @@ const props = defineProps<{
 	tableid?: string
 	event?: Event
 	indent?: number
+	readonly?: boolean
 }>()
 
 const tableData = inject<TableDataStore>(props.tableid)
