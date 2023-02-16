@@ -7,6 +7,7 @@
 			:schema="componentObj"
 			v-model="childModels[key].value"
 			:data="formData[componentObj.fieldname]"
+			:readonly="readonly"
 			v-bind="componentProps(componentObj)">
 		</component>
 	</form>
@@ -21,6 +22,7 @@ const props = defineProps<{
 	modelValue: SchemaTypes[]
 	schema: SchemaTypes[]
 	data: Record<string, any>
+	readonly?: boolean
 }>()
 
 const emit = defineEmits(['update:modelValue'])

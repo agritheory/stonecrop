@@ -1,6 +1,6 @@
 <template>
 	<div>
-		<input v-model="inputNumber" type="number" :id="uuid" :disabled="readOnly" :required="required" />
+		<input v-model="inputNumber" type="number" :id="uuid" :disabled="readonly" :required="required" />
 		<label :for="uuid">{{ label }}</label>
 		<p v-show="validation.errorMessage" v-html="validation.errorMessage"></p>
 	</div>
@@ -14,7 +14,7 @@ const props = withDefaults(
 		label: string
 		modelValue: any
 		required?: boolean
-		readOnly?: boolean
+		readonly?: boolean
 		uuid?: string
 		validation?: Record<string, any>
 	}>(),
