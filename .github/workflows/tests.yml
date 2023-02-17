@@ -1,0 +1,99 @@
+name: Tests
+
+on:
+  push:
+    branches: [development]
+  pull_request:
+
+jobs:
+  changes:
+    name: Check for changes
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    outputs:
+      aform: ${{ steps.filter.outputs.aform }}
+      atable: ${{ steps.filter.outputs.atable }}
+    steps:
+    - uses: dorny/paths-filter@v2
+      id: filter
+      with:
+        filters: |
+          aform: aform/**
+          atable: atable/**
+
+  aform:
+    name: AForm
+    needs: changes
+    if: ${{ needs.changes.outputs.aform == 'true' }}
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      pull-requests: write
+
+    strategy:
+      matrix:
+        node: [16.x]
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Install Node ${{ matrix.node }}
+      uses: actions/setup-node@v3
+      with:
+        cache-dependency-path: '**/config/rush/pnpm-lock.yaml'
+        registry-url: https://npm.pkg.github.com/
+
+    - name: Install Rush
+      run: node common/scripts/install-run-rush.js install
+
+    - name: Run Tests
+      working-directory: ./aform
+      run: node ../common/scripts/install-run-rushx.js test:coverage
+
+    - name: Coverage Report
+      if: always() # Also generate the report if tests are failing
+      uses: davelosert/vitest-coverage-report-action@v1
+      with:
+        working-directory: ./aform
+        vite-config-path: './vite.config.ts'
+
+  atable:
+    name: ATable
+    needs: changes
+    if: ${{ needs.changes.outputs.atable == 'true' }}
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      pull-requests: write
+
+    strategy:
+      matrix:
+        node: [16.x]
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Install Node ${{ matrix.node }}
+      uses: actions/setup-node@v3
+      with:
+        cache-dependency-path: '**/config/rush/pnpm-lock.yaml'
+        registry-url: https://npm.pkg.github.com/
+
+    - name: Install Rush
+      run: node common/scripts/install-run-rush.js install
+
+    - name: Run Tests
+      working-directory: ./atable
+      run: node ../common/scripts/install-run-rushx.js test:coverage
+
+    - name: Coverage Report
+      if: always() # Also generate the report if tests are failing
+      uses: davelosert/vitest-coverage-report-action@v1
+      with:
+        working-directory: ./atable
+        vite-config-path: './vite.config.ts'
