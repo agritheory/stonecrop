@@ -32,4 +32,8 @@ export default class Doctype {
 			.replace(/[\s_]+/g, '-')
 			.toLowerCase()
 	}
+
+	get __typename() {
+		return this.doctype
+	}
 }

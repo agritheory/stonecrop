@@ -158,7 +158,7 @@ export function makeServer({ environment = 'development' } = {}) {
 				hooks: [
 					{
 						name: 'Issue',
-						side_effects: [
+						actions: [
 							{
 								event_name: 'LOAD',
 								callback: [
@@ -185,7 +185,7 @@ export function makeServer({ environment = 'development' } = {}) {
 					},
 					{
 						name: 'Todo',
-						side_effects: [
+						actions: [
 							{
 								event_name: 'LOAD',
 								callback: [

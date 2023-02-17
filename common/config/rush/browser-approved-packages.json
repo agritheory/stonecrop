@@ -36,7 +36,7 @@
     },
     {
       "name": "@miragejs/graphql",
-      "allowedCategories": [ "prototype" ]
+      "allowedCategories": [ "prototype", "utilities" ]
     },
     {
       "name": "@monaco-editor/loader",
@@ -56,11 +56,11 @@
     },
     {
       "name": "@vitest/coverage-c8",
-      "allowedCategories": [ "prototype" ]
+      "allowedCategories": [ "prototype", "utilities" ]
     },
     {
       "name": "@vitest/ui",
-      "allowedCategories": [ "prototype" ]
+      "allowedCategories": [ "prototype", "utilities" ]
     },
     {
       "name": "@vue-flow/core",
@@ -95,6 +95,14 @@
       "allowedCategories": [ "prototype", "utilities" ]
     },
     {
+      "name": "graphql",
+      "allowedCategories": [ "utilities" ]
+    },
+    {
+      "name": "graphql-request",
+      "allowedCategories": [ "utilities" ]
+    },
+    {
       "name": "histoire",
       "allowedCategories": [ "prototype", "utilities" ]
     },
@@ -112,7 +120,7 @@
     },
     {
       "name": "miragejs",
-      "allowedCategories": [ "prototype" ]
+      "allowedCategories": [ "prototype", "utilities" ]
     },
     {
       "name": "monaco-editor",
@@ -192,7 +200,7 @@
     },
     {
       "name": "vitest",
-      "allowedCategories": [ "prototype" ]
+      "allowedCategories": [ "prototype", "utilities" ]
     },
     {
       "name": "vue",
