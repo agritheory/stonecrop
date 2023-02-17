@@ -1,0 +1,40 @@
+type Doctype {
+	id: ID!
+	name: String!
+	workflow: DoctypeWorkflow!
+	schema: [DoctypeField!]!
+	actions: [DoctypeActions!]!
+}
+
+type DoctypeField {
+	id: ID!
+	label: String!
+	fieldtype: String
+	component: String
+	required: Boolean
+	readonly: Boolean
+}
+
+type DoctypeWorkflow {
+	name: String!
+	machine: StateMachine!
+}
+
+type StateMachine {
+	id: ID!
+}
+
+type DoctypeAction {
+	eventName: String!
+	callback: String
+}
+
+type Query {
+	getMeta(doctype: String!): Doctype # ∪ error
+	getRecords(doctype: String!, filters: Filters): [Record] # ∪ error
+	getRecord(doctype: String!, id: ID!): Record # ∪ error
+}
+
+type Mutation {
+	runAction(doctype: String!, id: [ID!]!, functionName: String!): [Record!]! # ∪ error
+}

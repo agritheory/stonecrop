@@ -1,0 +1,53 @@
+{
+	"name": "@agritheory/graphql-client",
+	"version": "0.1.0",
+	"type": "module",
+	"main": "dist/graphql.js",
+	"module": "dist/graphql.js",
+	"umd": "dist/graphql.umd.cjs",
+	"types": "src/index",
+	"files": [
+		"dist/*",
+		"src/**/*.ts"
+	],
+	"license": "MIT",
+	"scripts": {
+		"dev": "vite",
+		"build": "tsc -b && vite build",
+		"preview": "vite preview",
+		"test": "vitest",
+		"test:coverage": "vitest run --coverage",
+		"test:ui": "vitest --ui",
+		"lint": "eslint . --ext .ts,.vue"
+	},
+	"dependencies": {
+		"graphql-request": "~5.1.0",
+		"graphql": "~16.6.0"
+	},
+	"devDependencies": {
+		"@typescript-eslint/eslint-plugin": "^5.33.0",
+		"@typescript-eslint/parser": "^5.33.0",
+		"cypress": "^12.2.0",
+		"eslint-config-prettier": "^8.5.0",
+		"eslint-plugin-vue": "^9.3.0",
+		"eslint": "^8.22.0",
+		"typescript": "^4.9.4",
+		"vite": "^4.0.2",
+		"miragejs": "^0.1.45",
+		"@miragejs/graphql": "^0.1.13",
+		"@vitest/coverage-c8": "^0.28.4",
+		"@vitest/ui": "^0.28.4",
+		"vitest": "^0.28.4",
+		"@types/graphql": "~14.5.0"
+	},
+	"exports": {
+		".": {
+			"types": "./types/index.ts",
+			"import": "./dist/graphql.js",
+			"require": "./dist/graphql.umd.cjs"
+		}
+	},
+	"engines": {
+		"node": ">=16.17.1"
+	}
+}
