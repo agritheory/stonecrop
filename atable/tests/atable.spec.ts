@@ -1,8 +1,9 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { ref } from 'vue'
+
 import ATable from '@/components/ATable.vue'
 import ACell from '@/components/ACell.vue'
-import { ref } from 'vue'
 
 import { TableColumn } from 'types'
 import data from '../stories/sample_data/http_logs.json'
@@ -63,7 +64,7 @@ describe('ATable Component', () => {
 		await wrapper.vm.$nextTick()
 
 		const aCellWrapper = wrapper.findComponent(ACell)
-		await aCellWrapper.findAll('input')
+		aCellWrapper.findAll('input')
 		await wrapper.vm.$nextTick()
 
 		const tds = wrapper.findAll('td')
