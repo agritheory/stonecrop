@@ -1,5 +1,5 @@
 {
-	"name": "@agritheory/node_editor",
+	"name": "@agritheory/node-editor",
 	"version": "0.1.0",
 	"type": "module",
 	"description": "Node editor UI for Stonecrop",
@@ -32,8 +32,8 @@
 	},
 	"exports": {
 		".": {
-			"import": "./dist/node_editor.js",
-			"require": "./dist/node_editor.umd.cjs"
+			"import": "./dist/node-editor.js",
+			"require": "./dist/node-editor.umd.cjs"
 		},
 		"./styles": "./dist/style.css"
 	},

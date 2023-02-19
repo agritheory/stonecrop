@@ -61,7 +61,7 @@
 			"shouldPublish": false
 		},
 		{
-			"packageName": "@agritheory/node_editor",
+			"packageName": "@agritheory/node-editor",
 			"projectFolder": "node_editor",
 			"reviewCategory": "prototype",
 			"shouldPublish": false
@@ -85,7 +85,7 @@
 		},
 		{
 			"packageName": "@agritheory/graphql-client",
-			"projectFolder": "graphql-client",
+			"projectFolder": "graphql_client",
 			"reviewCategory": "utilities",
 			"shouldPublish": false
 		}

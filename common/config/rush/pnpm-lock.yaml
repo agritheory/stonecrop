@@ -174,7 +174,7 @@ importers:
       '@agritheory/aform': workspace:^0.1.2
       '@agritheory/atable': workspace:^0.2.0
       '@agritheory/desktop': workspace:^0.1.0
-      '@agritheory/node_editor': workspace:^0.1.0
+      '@agritheory/node-editor': workspace:^0.1.0
       '@agritheory/stonecrop': workspace:^0.1.0
       '@agritheory/themes': workspace:*
       '@miragejs/graphql': ^0.1.13
@@ -196,7 +196,7 @@ importers:
       '@agritheory/aform': link:../aform
       '@agritheory/atable': link:../atable
       '@agritheory/desktop': link:../desktop
-      '@agritheory/node_editor': link:../node_editor
+      '@agritheory/node-editor': link:../node_editor
       '@agritheory/stonecrop': link:../stonecrop
       '@agritheory/themes': link:../themes
       '@miragejs/graphql': 0.1.13
@@ -216,7 +216,7 @@ importers:
       typescript: 4.9.4
       vue-router: 4.1.6_vue@3.2.45
 
-  ../../graphql-client:
+  ../../graphql_client:
     specifiers:
       '@miragejs/graphql': ^0.1.13
       '@types/graphql': ~14.5.0
@@ -3390,15 +3390,6 @@ packages:
       lodash.values: 4.3.0
       pretender: 3.4.7
 
-  /mlly/1.0.0:
-    resolution: {integrity: sha512-QL108Hwt+u9bXdWgOI0dhzZfACovn5Aen4Xvc8Jasd9ouRH4NjnrXEiyP3nVvJo91zPlYjVRckta0Nt2zfoR6g==}
-    dependencies:
-      acorn: 8.8.2
-      pathe: 1.1.0
-      pkg-types: 1.0.1
-      ufo: 1.0.1
-    dev: true
-
   /mlly/1.1.0:
     resolution: {integrity: sha512-cwzBrBfwGC1gYJyfcy8TcZU1f+dbH/T+TuOhtYP2wLv/Fb51/uV7HJQfBPtEupZ2ORLRU1EKFS/QfS3eo9+kBQ==}
     dependencies:
@@ -4425,7 +4416,7 @@ packages:
     hasBin: true
     dependencies:
       debug: 4.3.4
-      mlly: 1.0.0
+      mlly: 1.1.0
       pathe: 0.2.0
       source-map: 0.6.1
       source-map-support: 0.5.21
