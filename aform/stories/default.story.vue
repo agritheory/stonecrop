@@ -20,7 +20,7 @@
 			</template>
 		</Variant>
 		<Variant title="Form (Read-Only)">
-			<AForm class="aform-main" :schema="basic_form_schema" :data="data" :readonly="true" />
+			<AForm class="aform-main" v-model="basic_form_schema" :data="data" :readonly="true" />
 		</Variant>
 		<Variant title="Table">
 			<AForm class="aform-main" v-model="table_schema" :data="data" />
@@ -49,9 +49,6 @@ const fieldset_table_schema_ref = ref(fieldset_table_schema)
 
 const data = ref([])
 const locale = ref('en-US')
-// TODO: (histoire) const color = ref('')
-
-// TODO: (state) replace with state management
 const formKey = ref(0)
 watch(locale, () => {
 	// re-render form when locale is changed

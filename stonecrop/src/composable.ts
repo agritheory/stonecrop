@@ -1,27 +1,31 @@
-import { createGlobalState } from '@vueuse/core'
-import type { CreateGlobalStateReturn } from '@vueuse/shared'
 import { List } from 'immutable'
-import { onBeforeMount, ref } from 'vue'
+import { onBeforeMount, Ref, ref } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 
 import Registry from './registry'
 import type { ImmutableDoctype, Schema } from 'types/index'
 
 export type StonecropReturn = {
-	state: CreateGlobalStateReturn<{ stonecrop: Stonecrop }>
+	stonecrop: Ref<Stonecrop>
 }
 
 // TODO: pinia for state, later
 export function useStonecrop(route: RouteLocationNormalizedLoaded, registry: Registry): StonecropReturn {
-	const doctypeSlug = route.params.records.toString().toLowerCase()
-	const recordId = route.params.record.toString().toLowerCase()
+	const doctypeSlug = route.params.records?.toString().toLowerCase()
+	const recordId = route.params.record?.toString().toLowerCase()
 
 	let doctypeSchema = ref<Schema>({ doctype: doctypeSlug, schema: List() })
 	let stateMachine = ref<ImmutableDoctype['events']>()
 	let doctypeHooks = ref<ImmutableDoctype['hooks']>()
 	let doctypeData = ref<Record<string, any>>({})
+	let stonecrop = ref<Stonecrop>(null)
+	// let state = ref<StonecropReturn>(null)
 
 	onBeforeMount(async () => {
+		if (doctypeSlug === undefined || recordId === undefined) {
+			return
+		}
+
 		// register doctype in registry
 		const doctype = await registry.doctypeLoader(doctypeSlug)
 		registry.addDoctype(doctype)
@@ -52,14 +56,11 @@ export function useStonecrop(route: RouteLocationNormalizedLoaded, registry: Reg
 				hookFn()
 			})
 		}
+
+		stonecrop.value = new Stonecrop(doctypeSchema.value, stateMachine.value, doctypeHooks.value, doctypeData.value)
 	})
 
-	const stonecrop = new Stonecrop(doctypeSchema.value, stateMachine.value, doctypeHooks.value, doctypeData.value)
-	const state = createGlobalState(() => {
-		return { stonecrop }
-	})
-
-	return { state }
+	return { stonecrop }
 }
 
 export class Stonecrop {

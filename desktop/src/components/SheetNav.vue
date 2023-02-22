@@ -116,8 +116,8 @@ const handleSearch = async (event: FocusEvent | KeyboardEvent) => {
 	await toggleSearch()
 }
 
-const navigateHome = (event: MouseEvent | KeyboardEvent) => {
-	console.log(event)
+const navigateHome = (/* event: MouseEvent | KeyboardEvent */) => {
+	// navigate home
 }
 </script>
 

@@ -34,7 +34,7 @@ const async_dropdown_data = reactive({
 	label: 'Animals',
 })
 
-function filterItems(search) {
+function filterItems(search: string) {
 	setTimeout(() => {
 		async_dropdown_data.items = async_dropdown_data.allItems.filter(item => {
 			return item.toLowerCase().indexOf(search.toLowerCase()) > -1

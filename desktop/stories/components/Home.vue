@@ -1,6 +1,6 @@
 <template>
 	<div id="home">
-		<pre>{{ state }}</pre>
+		<pre>{{ stonecrop }}</pre>
 		<Fieldtype></Fieldtype>
 	</div>
 </template>
@@ -14,5 +14,5 @@ import Fieldtype from './Fieldtype.vue'
 
 const route = useRoute()
 const registry = inject<Registry>('$registry')
-let { state } = useStonecrop(route, registry)
+let { stonecrop } = useStonecrop(route, registry)
 </script>

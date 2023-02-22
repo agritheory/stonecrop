@@ -1,6 +1,5 @@
 <template>
 	<ATable :key="records.rows" :columns="records.columns" :rows="records.rows" :config="records.config" />
-	<!-- SheetNav -->
 </template>
 
 <script setup lang="ts">

@@ -267,7 +267,6 @@ importers:
       '@typescript-eslint/parser': ^5.33.0
       '@vitejs/plugin-vue': ^4.0.0
       '@vueuse/core': ^9.13.0
-      '@vueuse/shared': ^9.13.0
       eslint: ^8.22.0
       eslint-config-prettier: ^8.5.0
       eslint-plugin-vue: ^9.3.0
@@ -283,7 +282,6 @@ importers:
       xstate: ~4.33.6
     dependencies:
       '@vueuse/core': 9.13.0_vue@3.2.47
-      '@vueuse/shared': 9.13.0_vue@3.2.47
       immutable: 4.2.4
       vue: 3.2.47
       vue-router: 4.1.6_vue@3.2.47
