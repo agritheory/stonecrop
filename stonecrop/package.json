@@ -19,7 +19,8 @@
 		"lint": "eslint . --ext .ts,.vue"
 	},
 	"dependencies": {
-		"@vueuse/core": "^9.2.0",
+		"@vueuse/core": "^9.13.0",
+		"@vueuse/shared": "^9.13.0",
 		"immutable": "^4.2.2",
 		"vue-router": "^4",
 		"vue": "^3.2.47",
