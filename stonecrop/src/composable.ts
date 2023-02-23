@@ -5,7 +5,7 @@ import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import Registry from './registry'
 import type { ImmutableDoctype, Schema } from 'types/index'
 
-export type StonecropReturn = {
+type StonecropReturn = {
 	stonecrop: Ref<Stonecrop>
 }
 
@@ -14,15 +14,14 @@ export function useStonecrop(route: RouteLocationNormalizedLoaded, registry: Reg
 	const doctypeSlug = route.params.records?.toString().toLowerCase()
 	const recordId = route.params.record?.toString().toLowerCase()
 
-	let doctypeSchema = ref<Schema>({ doctype: doctypeSlug, schema: List() })
-	let stateMachine = ref<ImmutableDoctype['events']>()
-	let doctypeHooks = ref<ImmutableDoctype['hooks']>()
-	let doctypeData = ref<Record<string, any>>({})
-	let stonecrop = ref<Stonecrop>(null)
-	// let state = ref<StonecropReturn>(null)
+	const doctypeSchema = ref<Schema>({ doctype: doctypeSlug, schema: List() })
+	const stateMachine = ref<ImmutableDoctype['events']>()
+	const doctypeHooks = ref<ImmutableDoctype['hooks']>()
+	const doctypeData = ref<unknown>(null)
+	const stonecrop = ref<Stonecrop>(null)
 
 	onBeforeMount(async () => {
-		if (doctypeSlug === undefined || recordId === undefined) {
+		if (doctypeSlug === undefined && recordId === undefined) {
 			return
 		}
 
@@ -33,10 +32,17 @@ export function useStonecrop(route: RouteLocationNormalizedLoaded, registry: Reg
 		// get schema
 		doctypeSchema.value = { doctype: doctype.doctype, schema: doctype.schema }
 
-		// get data
-		const doctypeRecord = await fetch(`/${doctypeSlug}/${recordId}`)
-		const recordData: Record<string, any> = await doctypeRecord.json()
-		doctypeData.value = recordData
+		if (doctypeSlug && recordId === undefined) {
+			// get list-view data
+			const doctypeRecords = await fetch(`/${doctypeSlug}`)
+			const data: Record<string, any>[] = await doctypeRecords.json()
+			doctypeData.value = data
+		} else if (doctypeSlug && recordId) {
+			// get record-view data
+			const doctypeRecord = await fetch(`/${doctypeSlug}/${recordId}`)
+			const data: Record<string, any> = await doctypeRecord.json()
+			doctypeData.value = data
+		}
 
 		// setup local state for events and hooks
 		const doctypeRegistry = registry.registry[doctype.slug]
@@ -64,24 +70,18 @@ export function useStonecrop(route: RouteLocationNormalizedLoaded, registry: Reg
 }
 
 export class Stonecrop {
-	static _root: any
-	name: string
+	static _root: Stonecrop
+	name = 'Stonecrop'
 	schema: Schema
 	events: ImmutableDoctype['events']
 	hooks: ImmutableDoctype['hooks']
-	data: Record<string, any>
+	data: any
 
-	constructor(
-		schema?: Schema,
-		events?: ImmutableDoctype['events'],
-		hooks?: ImmutableDoctype['hooks'],
-		value?: Record<string, any>
-	) {
+	constructor(schema?: Schema, events?: ImmutableDoctype['events'], hooks?: ImmutableDoctype['hooks'], value?: any) {
 		if (Stonecrop._root) {
 			return Stonecrop._root
 		}
 		Stonecrop._root = this
-		this.name = 'Stonecrop'
 		this.schema = schema // new Registry(schema)
 		this.events = events
 		this.hooks = hooks

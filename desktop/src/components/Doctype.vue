@@ -18,10 +18,10 @@ const { stonecrop } = useStonecrop(route, registry)
 let schema = ref<SchemaTypes[]>([])
 let stonecropKey = 0
 
-watch(stonecrop, (val, oldVal) => {
-	if (val !== oldVal) {
+watch(stonecrop, (newVal, oldVal) => {
+	if (newVal !== oldVal) {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-		schema.value = val.schema.schema.toArray()
+		schema.value = newVal.schema.schema.toArray()
 		stonecropKey++
 	}
 })
