@@ -2,10 +2,10 @@
 _This package is under active development / design._
 
 ## Design
-A context will define schema, events and hooks.
+A context will define schema, workflow and actions.
   - Schema describes the data model and layout of the document.
-  - Events are the events that are registered on it and will specific to the context. An application might have 'login', 'onAppLoad', 'beforeRouteChange' and 'logout' events.  A form/document context might define CRUD events. A table component, nested inside the form component might define its own events. I think we want Events to be FSM
-  - Hooks are an ordered set of functions, called by Event
+  - Workflows are the events that are registered on it and will specific to the context. An application might have 'login', 'onAppLoad', 'beforeRouteChange' and 'logout' events.  A form/document context might define CRUD events. A table component, nested inside the form component might define its own events. I think we want Events to be FSM
+  - Actions are an ordered set of functions, called by Workflow
   - [Router integration](https://pinia.vuejs.org/core-concepts/plugins.html#adding-new-external-properties). Stonecrop setup should expect a router or provide a default implementation
 
 The context will be tree-shaped with a single root. Adding more nodes at the root level isn't a problem, but multiple roots would be disallowed.
@@ -14,17 +14,17 @@ Example APIs and paths
 
 ```
 app.schema <Record> // immutable
-app.events <FSM> // immutable
-app.hooks <OrderedSet> // immutable
+app.workflow <FSM> // immutable
+app.actions <OrderedSet> // immutable
 app.value <Store> // mutable
 app.user // "tyler@agritheory.com"
 app.name // "My First Application"
 app.doctype.schema <Record> // `app.doctype` lazy loaded by Event in router?
-app.doctype.events <FSM>
-app.doctype.hooks <OrderedSet>
-app.doctype.hooks.value <Store>
-app.doctype.schema.field.events <FSM>
-app.doctype.schema.field.hooks <OrderedSet>
+app.doctype.workflow <FSM>
+app.doctype.actions <OrderedSet>
+app.doctype.actions.value <Store>
+app.doctype.schema.field.workflow <FSM>
+app.doctype.schema.field.actions <OrderedSet>
 app.doctype.schema.field.value <Store>
 app.doctype.schema.field.value.field.value <Store> // a "sub-form"
 app.doctype.schema.field.value.field[0].value <Store> // also a "sub-form", likely representing a table or list

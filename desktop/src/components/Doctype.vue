@@ -1,43 +1,31 @@
 <template>
-	<div>
-		<AForm v-if="stonecrop" :key="stonecropKey" class="aform-main" v-model="schema" :data="stonecrop?.data" />
-	</div>
+	<AForm v-if="isReady" class="aform-main" v-model="schema" :data="stonecrop.data" />
 </template>
 
 <script setup lang="ts">
-import { inject, ref, watch } from 'vue'
+import { ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 
 import { AForm } from '@agritheory/aform'
-import { Registry, useStonecrop } from '@agritheory/stonecrop'
 import type { SchemaTypes } from '@agritheory/aform/types'
+import { Doctype, useStonecrop } from '@agritheory/stonecrop'
 
-const route = useRoute()
-const registry = inject<Registry>('$registry')
-const { stonecrop } = useStonecrop(route, registry)
-let schema = ref<SchemaTypes[]>([])
-let stonecropKey = 0
+const { stonecrop, isReady } = useStonecrop()
+const schema = ref<SchemaTypes[]>([])
 
-watch(stonecrop, (newVal, oldVal) => {
-	if (newVal !== oldVal) {
+watch(isReady, () => {
+	if (isReady.value) {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-		schema.value = newVal.schema.schema.toArray()
-		stonecropKey++
+		schema.value = stonecrop.value.schema.schema.toArray()
 	}
 })
 
-// const saveRecord = () => {
-// 	// handle the save action
+// const route = useRoute()
+// const doctypeSlug = route.params.records?.toString().toLowerCase()
+// const recordId = route.params.record?.toString().toLowerCase()
 
-// 	// run 'SAVE' hooks after handling the save action
-// 	// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-// 	const hookEvents: string[] = stonecrop.value.hooks.get('SAVE')
-// 	if (hookEvents.length > 0) {
-// 		hookEvents.forEach(hook => {
-// 			// eslint-disable-next-line @typescript-eslint/no-implied-eval
-// 			const hookFn = new Function(hook)
-// 			hookFn()
-// 		})
-// 	}
+// const saveRecord = async () => {
+// 	const doctype: Doctype = await stonecrop.value.registry.doctypeLoader(doctypeSlug)
+// 	stonecrop.value.runAction(doctype, 'save', recordId ? [recordId] : [])
 // }
 </script>

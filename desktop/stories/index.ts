@@ -50,11 +50,11 @@ app.use(Stonecrop, {
 		const data: MutableDoctype = await response.json()
 		const config: ImmutableDoctype = {
 			schema: List(data.schema),
-			events: createMachine(data.events),
-			hooks: Map(data.hooks),
+			workflow: createMachine(data.workflow),
+			actions: Map(data.actions),
 		}
 
-		return new Doctype(doctype, config.schema, config.events, config.hooks)
+		return new Doctype(doctype, config.schema, config.workflow, config.actions)
 	},
 })
 

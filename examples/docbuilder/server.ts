@@ -288,7 +288,7 @@ export function makeServer({ environment = 'development' } = {}) {
 						],
 					},
 				],
-				hooks: [
+				actions: [
 					{
 						name: 'Issue',
 						side_effects: [
@@ -408,10 +408,10 @@ export function makeServer({ environment = 'development' } = {}) {
 			})
 
 			this.get('/load_side_effects', (schema, request) => {
-				let hooks = schema.hooks.findBy({ name: request.queryParams.doctype })
-				return hooks
-					? hooks.attrs.side_effects
-					: new Response(400, { some: 'Not Found' }, { errors: ['Hooks for Doctype not found'] })
+				let actions = schema.actions.findBy({ name: request.queryParams.doctype })
+				return actions
+					? actions.attrs.side_effects
+					: new Response(400, { some: 'Not Found' }, { errors: ['Actions for Doctype not found'] })
 			})
 		},
 	})

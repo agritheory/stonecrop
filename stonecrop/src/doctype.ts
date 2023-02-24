@@ -3,25 +3,25 @@ import { Component } from 'vue'
 import type { ImmutableDoctype } from 'types/index'
 
 export default class Doctype {
-	doctype: string
-	schema: ImmutableDoctype['schema']
-	events: ImmutableDoctype['events']
-	hooks: ImmutableDoctype['hooks']
+	readonly doctype: string
+	readonly schema: ImmutableDoctype['schema']
+	readonly workflow: ImmutableDoctype['workflow']
+	readonly actions: ImmutableDoctype['actions']
 	// TODO: allow different components for different views; probably
 	// should be defined in the schema instead?
-	component?: Component
+	readonly component?: Component
 
 	constructor(
 		doctype: string,
 		schema: ImmutableDoctype['schema'],
-		events: ImmutableDoctype['events'],
-		hooks: ImmutableDoctype['hooks'],
+		workflow: ImmutableDoctype['workflow'],
+		actions: ImmutableDoctype['actions'],
 		component?: Component
 	) {
 		this.doctype = doctype
 		this.schema = schema
-		this.events = events
-		this.hooks = hooks
+		this.workflow = workflow
+		this.actions = actions
 		this.component = component
 	}
 

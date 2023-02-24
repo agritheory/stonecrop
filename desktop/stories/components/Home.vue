@@ -6,13 +6,9 @@
 </template>
 
 <script setup lang="ts">
-import { Registry, useStonecrop } from '@agritheory/stonecrop'
-import { inject } from 'vue'
-import { useRoute } from 'vue-router'
+import { useStonecrop } from '@agritheory/stonecrop'
 
 import Fieldtype from './Fieldtype.vue'
 
-const route = useRoute()
-const registry = inject<Registry>('$registry')
-let { stonecrop } = useStonecrop(route, registry)
+const { stonecrop } = useStonecrop()
 </script>
