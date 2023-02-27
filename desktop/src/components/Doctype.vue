@@ -16,7 +16,13 @@ const schema = ref<SchemaTypes[]>([])
 watch(isReady, () => {
 	if (isReady.value) {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-		schema.value = stonecrop.value.schema.schema.toArray()
+		let newSchema = stonecrop.value.schema.schema.toArray()
+		newSchema.forEach((item, index) => {
+			if (stonecrop.value.data !== undefined && stonecrop.value.data[item.name] !== undefined) {
+				newSchema[index].value = stonecrop.value.data[item.name]
+			}
+		})
+		schema.value = newSchema
 	}
 })
 
