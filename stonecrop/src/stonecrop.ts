@@ -1,6 +1,7 @@
 import type { ImmutableDoctype, Schema } from 'types/index'
 import Doctype from './doctype'
 import Registry from './registry'
+import { useDataStore } from './stores/data'
 
 export class Stonecrop {
 	static _root: Stonecrop
@@ -10,24 +11,24 @@ export class Stonecrop {
 	schema: Schema
 	workflow: ImmutableDoctype['workflow']
 	actions: ImmutableDoctype['actions']
-	data: any
+	store: ReturnType<typeof useDataStore>
 
 	constructor(
 		registry: Registry,
+		store: ReturnType<typeof useDataStore>,
 		schema?: Schema,
 		workflow?: ImmutableDoctype['workflow'],
-		actions?: ImmutableDoctype['actions'],
-		data?: any
+		actions?: ImmutableDoctype['actions']
 	) {
 		if (Stonecrop._root) {
 			return Stonecrop._root
 		}
 		Stonecrop._root = this
 		this.registry = registry
+		this.store = store
 		this.schema = schema // new Registry(schema)
 		this.workflow = workflow
 		this.actions = actions
-		this.data = data
 	}
 
 	setup(doctype: Doctype) {
@@ -51,15 +52,17 @@ export class Stonecrop {
 	}
 
 	async getRecords(doctype: Doctype, filters?: RequestInit) {
+		this.store.$patch({ records: [] })
 		const records = await fetch(`/${doctype.slug}`, filters)
 		const data: Record<string, any>[] = await records.json()
-		this.data = data
+		this.store.$patch({ records: data })
 	}
 
 	async getRecord(doctype: Doctype, id: string) {
+		this.store.$patch({ record: {} })
 		const record = await fetch(`/${doctype.slug}/${id}`)
 		const data: Record<string, any> = await record.json()
-		this.data = data
+		this.store.$patch({ record: data })
 	}
 
 	runAction(doctype: Doctype, action: string, id?: string[]) {

@@ -2,19 +2,20 @@ import { inject, onBeforeMount, Ref, ref } from 'vue'
 
 import Registry from './registry'
 import { Stonecrop } from './stonecrop'
+import { useDataStore } from './stores/data'
 
 type StonecropReturn = {
 	stonecrop: Ref<Stonecrop>
 	isReady: Ref<boolean>
 }
 
-// TODO: pinia for state, later
 export function useStonecrop(registry?: Registry): StonecropReturn {
 	if (!registry) {
 		registry = inject<Registry>('$registry')
 	}
 
-	const stonecrop = ref(new Stonecrop(registry))
+	const store = useDataStore()
+	const stonecrop = ref(new Stonecrop(registry, store))
 	const isReady = ref(false)
 
 	onBeforeMount(async () => {
@@ -22,8 +23,8 @@ export function useStonecrop(registry?: Registry): StonecropReturn {
 		const doctypeSlug = route.params.records?.toString().toLowerCase()
 		const recordId = route.params.record?.toString().toLowerCase()
 
-		// TODO: handle views other than list and form views
-		if (doctypeSlug === undefined && recordId === undefined) {
+		// TODO: handle views other than list and form views?
+		if (!doctypeSlug && !recordId) {
 			return
 		}
 

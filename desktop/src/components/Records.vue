@@ -1,5 +1,9 @@
 <template>
-	<ATable v-if="isReady" :columns="stonecrop.schema.schema.toArray()" :rows="stonecrop.data" :config="config" />
+	<ATable
+		v-if="isReady"
+		:columns="stonecrop.schema.schema.toArray()"
+		:rows="stonecrop.store.records"
+		:config="config" />
 </template>
 
 <script setup lang="ts">
