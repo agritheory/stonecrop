@@ -38,6 +38,6 @@
 		"./styles": "./dist/style.css"
 	},
 	"engines": {
-		"node": ">=16.17.1"
+		"node": ">=16.19.1"
 	}
 }

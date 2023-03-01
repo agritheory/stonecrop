@@ -18,7 +18,7 @@
 		"vue-router": "^4"
 	},
 	"engines": {
-		"node": ">=16.17.1"
+		"node": ">=16.19.1"
 	},
 	"files": [
 		"dist"
