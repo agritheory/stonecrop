@@ -1,5 +1,5 @@
 <template>
-	<ATable id="list" :key="rows" :columns="columns" :rows="rows" :config="{ view: 'list' }">
+	<ATable id="list" :key="rows" :columns="columns" :rows="rows" :config="{ view: 'list', fullWidth: true }">
 		<template #body="{ data }: { data: TableDataStore }">
 			<ARow
 				v-for="(row, rowIndex) in data.rows"

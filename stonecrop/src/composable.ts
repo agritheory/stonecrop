@@ -1,44 +1,49 @@
-import { createGlobalState, useStorage } from '@vueuse/core'
-import { Map, OrderedSet } from 'immutable'
+import { inject, onBeforeMount, Ref, ref } from 'vue'
 
-// export const useStonecrop = createGlobalState(
-// 	() => { return { ... new Stonecrop(
-// 		Map({ node: 'A', 'suit': 'B' }),
-// 		Map({}),
-// 		OrderedSet([1, 2, 3]),
-// 	) } } // use for dev - no localstorage yet
-// 	// () => useStorage(
-// 	// 	'stonecrop',
-// 	// 	{... new Stonecrop()}
-// 	// ),
-// )
+import Registry from './registry'
+import { Stonecrop } from './stonecrop'
+import { useDataStore } from './stores/data'
 
-export const useStonecrop = createGlobalState(
-	() => {
-		return { ...new Stonecrop() }
-	} // use for dev or refactor to an env flag
-	// https://github.com/unjs/unstorage
-	// () => useStorage(
-	// 	'stonecrop',
-	// 	{... new Stonecrop()}
-	// ),
-)
+type StonecropReturn = {
+	stonecrop: Ref<Stonecrop>
+	isReady: Ref<boolean>
+}
 
-export class Stonecrop {
-	static _root: any
-	name: string
-	schema: any
-	events: any
-	hooks: any
-
-	constructor(schema?: any, events?: any, hooks?: any, value?: any) {
-		if (Stonecrop._root) {
-			return Stonecrop._root
-		}
-		Stonecrop._root = this
-		this.name = 'Stonecrop'
-		this.schema = schema // new Registry(schema)
-		this.events = events
-		this.hooks = hooks
+export function useStonecrop(registry?: Registry): StonecropReturn {
+	if (!registry) {
+		registry = inject<Registry>('$registry')
 	}
+
+	const store = useDataStore()
+	const stonecrop = ref(new Stonecrop(registry, store))
+	const isReady = ref(false)
+
+	onBeforeMount(async () => {
+		const route = registry.router.currentRoute.value
+		const doctypeSlug = route.params.records?.toString().toLowerCase()
+		const recordId = route.params.record?.toString().toLowerCase()
+
+		// TODO: handle views other than list and form views?
+		if (!doctypeSlug && !recordId) {
+			return
+		}
+
+		// setup doctype via registry
+		const doctype = await registry.doctypeLoader(doctypeSlug)
+		registry.addDoctype(doctype)
+		stonecrop.value.setup(doctype)
+
+		if (doctypeSlug) {
+			if (recordId) {
+				await stonecrop.value.getRecord(doctype, recordId)
+			} else {
+				await stonecrop.value.getRecords(doctype)
+			}
+		}
+
+		stonecrop.value.runAction(doctype, 'LOAD', recordId ? [recordId] : undefined)
+		isReady.value = true
+	})
+
+	return { stonecrop, isReady }
 }

@@ -1,7 +1,7 @@
 import { onMounted, onBeforeUnmount } from 'vue'
 import { useElementVisibility } from '@vueuse/core'
 
-import { KeyboardNavigationOptions, KeypressHandlers } from 'types'
+import type { KeyboardNavigationOptions, KeypressHandlers } from 'types'
 
 // helper functions
 const isVisible = (element: HTMLElement) => {

@@ -1,19 +1,6 @@
-import { createPinia, defineStore } from 'pinia'
-import { PiniaSharedState } from 'pinia-shared-state'
-import { PiniaUndo } from 'pinia-undo'
+import { defineStore } from 'pinia'
 import xstate from 'pinia-xstate'
 import { createMachine } from 'xstate'
-
-const pinia = createPinia()
-
-// Pass the plugin to your application's pinia plugin
-pinia.use(
-	PiniaSharedState({
-		enable: true,
-		initialize: true,
-	})
-)
-pinia.use(PiniaUndo)
 
 export const counterMachine = createMachine(
 	{
@@ -22,7 +9,7 @@ export const counterMachine = createMachine(
 		context: {
 			count: 0,
 		},
-		tsTypes: {} as import('./store.typegen').Typegen0,
+		tsTypes: {} as import('./xstate.typegen').Typegen0,
 		states: {
 			active: {
 				on: {
@@ -45,6 +32,4 @@ export const counterMachine = createMachine(
 )
 
 // create a store using the xstate middleware
-export const counterStore = defineStore(counterMachine.id, xstate(counterMachine))
-
-export default { pinia }
+export const useCounterStore = defineStore(counterMachine.id, xstate(counterMachine))

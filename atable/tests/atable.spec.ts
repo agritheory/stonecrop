@@ -1,53 +1,53 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
-import ATable from '@/components/ATable.vue'
-import ACell from '@/components/ACell.vue'
 import { ref } from 'vue'
 
-import { TableColumn } from 'types'
+import ATable from '@/components/ATable.vue'
+import ACell from '@/components/ACell.vue'
+
 import data from '../stories/sample_data/http_logs.json'
 
-const columns: TableColumn[] = [
-	{
-		label: 'Home Page',
-		name: 'home_page',
-		type: 'Data',
-		align: 'left',
-		edit: false,
-		width: '35ch',
-		format: (value: { title?: string; value?: any }) => {
-			return value.title
-		},
-	},
-	{
-		label: 'HTTP Method',
-		name: 'http_method',
-		type: 'Data',
-		align: 'left',
-		edit: true,
-		width: '20ch',
-	},
-	{
-		label: 'Report Date',
-		name: 'report_date',
-		type: 'component',
-		align: 'center',
-		edit: true,
-		width: '25ch',
-		modalComponent: 'ADate',
-		format: (value: number) => {
-			return new Date(Number(value)).toLocaleDateString('en-US')
-		},
-	},
-]
-
-const http_logs = ref({
-	rows: data,
-	columns,
-	config: { view: 'list' },
-})
-
 describe('ATable Component', () => {
+	const columns = [
+		{
+			label: 'Home Page',
+			name: 'home_page',
+			type: 'Data',
+			align: 'left',
+			edit: false,
+			width: '35ch',
+			format: (value: { title?: string; value?: any }) => {
+				return value.title
+			},
+		},
+		{
+			label: 'HTTP Method',
+			name: 'http_method',
+			type: 'Data',
+			align: 'left',
+			edit: true,
+			width: '20ch',
+		},
+		{
+			label: 'Report Date',
+			name: 'report_date',
+			type: 'component',
+			align: 'center',
+			edit: true,
+			width: '25ch',
+			modalComponent: 'ADate',
+			format: (value: number) => {
+				return new Date(Number(value)).toLocaleDateString('en-US')
+			},
+		},
+	]
+
+	const http_logs = ref({
+		rows: data,
+		columns,
+		config: { view: 'list' },
+	})
+
 	const wrapper = mount(ATable, {
 		props: {
 			columns: http_logs.value.columns,
@@ -63,7 +63,7 @@ describe('ATable Component', () => {
 		await wrapper.vm.$nextTick()
 
 		const aCellWrapper = wrapper.findComponent(ACell)
-		await aCellWrapper.findAll('input')
+		aCellWrapper.findAll('input')
 		await wrapper.vm.$nextTick()
 
 		const tds = wrapper.findAll('td')

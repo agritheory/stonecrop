@@ -10,13 +10,13 @@ export function makeServer({ environment = 'development' } = {}) {
 			hook: Model,
 			meta: Model,
 			issue: Model,
-			todo: Model,
+			assignment: Model,
 			stateMachine: Model,
 		},
 
 		seeds(server) {
 			server.db.loadData({
-				doctypes: [{ name: 'Issue' }, { name: 'Todo' }],
+				doctypes: [{ name: 'Issue' }, { name: 'Assignment' }, { name: 'User' }],
 				stateMachines: [
 					{
 						name: 'Issue',
@@ -29,43 +29,66 @@ export function makeServer({ environment = 'development' } = {}) {
 							states: {
 								New: {
 									on: {
-										SAVE: 'Draft',
+										Save: 'Draft',
 									},
 								},
 								Draft: {
 									on: {
-										SUBMIT: 'Submitted',
+										Assign: {
+											target: 'Assigned',
+										},
+										Resolve: {
+											target: 'Resolved',
+										},
 									},
 								},
-								Submitted: {
+								Assigned: {
 									on: {
-										CANCEL: 'Cancelled',
+										Resolve: {
+											target: 'Resolved',
+										},
 									},
 								},
-								Cancelled: {
-									type: 'final',
+								Resolved: {
+									on: {
+										Close: {
+											target: 'Closed',
+										},
+									},
+								},
+								Closed: {
+									on: {
+										Reopen: {
+											target: 'Draft',
+										},
+									},
 								},
 							},
 						},
 						layout: {
 							New: {
-								position: { x: 50, y: 50 },
+								position: { x: 50, y: 0 },
 							},
 							Draft: {
 								position: { x: 300, y: 50 },
+								targetPosition: 'top',
 							},
-							Submitted: {
-								position: { x: 550, y: 50 },
+							Assigned: {
+								position: { x: 550, y: 150 },
 							},
-							Cancelled: {
-								position: { x: 800, y: 50 },
+							Resolved: {
+								position: { x: 800, y: 100 },
+							},
+							Closed: {
+								position: { x: 1050, y: 50 },
+								sourcePosition: 'top',
 							},
 						},
 					},
 					{
-						name: 'Todo',
+						name: 'Assignment',
 						machine: {
-							id: 'Todo',
+							id: 'Assignment',
 							initial: 'New',
 							context: {
 								retries: 0,
@@ -78,10 +101,10 @@ export function makeServer({ environment = 'development' } = {}) {
 								},
 								Draft: {
 									on: {
-										SUBMIT: 'Submitted',
+										COMPLETE: 'Completed',
 									},
 								},
-								Submitted: {
+								Completed: {
 									on: {
 										CANCEL: 'Cancelled',
 									},
@@ -98,11 +121,49 @@ export function makeServer({ environment = 'development' } = {}) {
 							Draft: {
 								position: { x: 300, y: 50 },
 							},
-							Submitted: {
+							Completed: {
 								position: { x: 550, y: 50 },
 							},
 							Cancelled: {
 								position: { x: 800, y: 50 },
+							},
+						},
+					},
+					{
+						name: 'User',
+						machine: {
+							id: 'User',
+							invoke: {
+								src: 'Load',
+							},
+							initial: 'Active',
+							states: {
+								Active: {
+									on: {
+										Deactivate: {
+											target: 'Inactive',
+										},
+									},
+								},
+								Inactive: {
+									on: {
+										'Re-Activate': {
+											target: 'Active',
+										},
+									},
+								},
+							},
+						},
+						layout: {
+							Active: {
+								position: { x: 50, y: 0 },
+								sourcePosition: 'top',
+								targetPosition: 'bottom',
+							},
+							Inactive: {
+								position: { x: 300, y: 25 },
+								targetPosition: 'top',
+								sourcePosition: 'bottom',
 							},
 						},
 					},
@@ -112,50 +173,122 @@ export function makeServer({ environment = 'development' } = {}) {
 						name: 'Issue',
 						fields: [
 							{
-								id: 'status',
-								label: 'Status',
-								fieldtype: 'Select',
-								component: 'ATextInput',
-							},
-							{
 								id: 'subject',
 								label: 'Subject',
 								fieldtype: 'Data',
-								component: 'ATextInput',
+								required: true,
 							},
 							{
 								id: 'description',
 								label: 'Description',
 								fieldtype: 'Long Text',
-								component: 'ATextInput',
+								required: true,
+							},
+							{
+								id: 'reported_date',
+								label: 'Report Date',
+								fieldtype: 'Date',
+								read_only: true,
+							},
+							{
+								id: 'assigned_date',
+								label: 'Assigned Date',
+								fieldtype: 'Date',
+								read_only: true,
+							},
+							{
+								id: 'assigned_to',
+								label: 'Assigned To',
+								fieldtype: 'AutocompleteMultiSelect',
+							},
+							{
+								id: 'resolved_date',
+								label: 'Resolved Date',
+								fieldtype: 'Date',
+								read_only: true,
+							},
+							{
+								id: 'closed_date',
+								label: 'Closed Date',
+								fieldtype: 'Date',
+								read_only: true,
+							},
+							{
+								id: 'resolution',
+								label: 'Resolution',
+								fieldtype: 'Long Text',
 							},
 						],
 					},
 					{
-						name: 'Todo',
+						name: 'Assignment',
 						fields: [
 							{
-								id: 'password',
-								label: 'Enter a new password',
-								fieldtype: 'password',
-								component: 'ATextInput',
+								id: 'user',
+								label: 'User',
+								fieldtype: 'Autocomplete',
+								required: true,
 							},
 							{
-								id: 'password_confirm',
-								label: 'Confirm your password',
-								fieldtype: 'password',
-								component: 'ATextInput',
+								id: 'issue',
+								label: 'Issue',
+								fieldtype: 'Autocomplete',
+								required: true,
 							},
 							{
-								id: 'change_password',
-								label: 'Change password',
-								fieldtype: 'submit',
-								component: 'ATextInput',
+								id: 'due_date',
+								label: 'Due Date',
+								fieldtype: 'Date',
+							},
+							{
+								id: 'assigned_date',
+								label: 'Assigned Date',
+								fieldtype: 'Date',
+								read_only: true,
+							},
+							{
+								id: 'assigned_by',
+								label: 'Assigned By',
+								fieldtype: 'Autocomplete',
+							},
+							{
+								id: 'completed_date',
+								label: 'Completed Date',
+								fieldtype: 'Date',
+								read_only: true,
+							},
+						],
+					},
+					{
+						name: 'User',
+						fields: [
+							{
+								id: 'username',
+								label: 'Username',
+								fieldtype: 'Data',
+								required: true,
+							},
+							{
+								id: 'first_name',
+								label: 'First Name',
+								fieldtype: 'Data',
+								required: true,
+							},
+							{
+								id: 'last_name',
+								label: 'Last Name',
+								fieldtype: 'Data',
+							},
+							{
+								id: 'email',
+								label: 'Email Address',
+								fieldtype: 'Data',
+								required: true,
 							},
 						],
 					},
 				],
-				hooks: [
+				actions: [
 					{
 						name: 'Issue',
 						side_effects: [
@@ -184,7 +317,34 @@ export function makeServer({ environment = 'development' } = {}) {
 						],
 					},
 					{
-						name: 'Todo',
+						name: 'Assignment',
+						side_effects: [
+							{
+								event_name: 'LOAD',
+								callback: [
+									(() => {
+										console.log('load todo')
+									}).toString(),
+									(() => {
+										console.log('load todo side effect')
+									}).toString(),
+								],
+							},
+							{
+								event_name: 'SAVE',
+								callback: [
+									(() => {
+										console.log('save todo')
+									}).toString(),
+									(() => {
+										console.log('after save todo')
+									}).toString(),
+								],
+							},
+						],
+					},
+					{
+						name: 'User',
 						side_effects: [
 							{
 								event_name: 'LOAD',
@@ -225,8 +385,12 @@ export function makeServer({ environment = 'development' } = {}) {
 				return schema.all('issue')
 			})
 
-			this.get('/todo', schema => {
-				return schema.all('todo')
+			this.get('/assignment', schema => {
+				return schema.all('assignment')
+			})
+
+			this.get('/user', schema => {
+				return schema.all('user')
 			})
 
 			this.get('/load_state_machine', (schema, request) => {
@@ -244,10 +408,10 @@ export function makeServer({ environment = 'development' } = {}) {
 			})
 
 			this.get('/load_side_effects', (schema, request) => {
-				let hooks = schema.hooks.findBy({ name: request.queryParams.doctype })
-				return hooks
-					? hooks.attrs.side_effects
-					: new Response(400, { some: 'Not Found' }, { errors: ['Hooks for Doctype not found'] })
+				let actions = schema.actions.findBy({ name: request.queryParams.doctype })
+				return actions
+					? actions.attrs.side_effects
+					: new Response(400, { some: 'Not Found' }, { errors: ['Actions for Doctype not found'] })
 			})
 		},
 	})

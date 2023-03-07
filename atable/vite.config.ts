@@ -40,6 +40,7 @@ export default defineConfig({
 		storyIgnored: ['**/node_modules/**', '**/dist/**'],
 	},
 	test: {
+		globals: true,
 		environment: 'jsdom',
 		coverage: {
 			lines: 10,

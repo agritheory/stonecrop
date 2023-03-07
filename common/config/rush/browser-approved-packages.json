@@ -79,6 +79,10 @@
       "allowedCategories": [ "prototype", "utilities" ]
     },
     {
+      "name": "@vueuse/shared",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
       "name": "cypress",
       "allowedCategories": [ "prototype", "utilities" ]
     },

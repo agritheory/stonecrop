@@ -1,9 +1,9 @@
 /* eslint-disable no-console */
 import { createServer, Model } from 'miragejs'
 
-import { MutableDoctype } from 'types/index'
+import type { MutableDoctype } from '@agritheory/stonecrop/types'
 
-const doctypeHooks: MutableDoctype['hooks'] = {
+const doctypeActions: MutableDoctype['actions'] = {
 	LOAD: [
 		(() => {
 			console.log('load event')
@@ -58,18 +58,17 @@ export default function makeServer() {
 							mask: "(locale) => { if (locale === 'en-US') { return '(###) ###-####' } else if (locale === 'en-IN') { return '####-######'} }",
 						},
 					] as MutableDoctype['schema'],
-					events: {
+					workflow: {
 						id: 'todo',
 						predictableActionArguments: true,
-						tsTypes: {} as import('./server.typegen').Typegen0,
 						initial: 'created',
 						states: {
 							created: { on: { LOAD: 'loaded' } },
 							loaded: { on: { SAVE: 'saved' } },
 							saved: {},
 						},
-					} /* as MutableDoctype['events'] */,
-					hooks: doctypeHooks,
+					} /* as MutableDoctype['workflow'] */,
+					actions: doctypeActions,
 				},
 				todos: [
 					{ id: '1', first_name: 'Luke', last_name: 'Skywalker', phone: '+1 123 456 7890' },
@@ -94,18 +93,17 @@ export default function makeServer() {
 							label: 'Date',
 						},
 					] as MutableDoctype['schema'],
-					events: {
+					workflow: {
 						id: 'issue',
 						predictableActionArguments: true,
-						tsTypes: {} as import('./server.typegen').Typegen0,
 						initial: 'created',
 						states: {
 							created: { on: { LOAD: 'loaded' } },
 							loaded: { on: { SAVE: 'saved' } },
 							saved: {},
 						},
-					} /* as MutableDoctype['events'] */,
-					hooks: doctypeHooks,
+					} /* as MutableDoctype['workflow'] */,
+					actions: doctypeActions,
 				},
 				issues: [
 					{ id: '1', subject: 'First Issue', date: '2022-01-01' },
@@ -139,6 +137,10 @@ export default function makeServer() {
 				const issue = schema.first('issue')
 				return issue.attrs
 			})
+
+			// allow other same-domain and external requests to passthrough normally
+			this.passthrough()
+			this.passthrough('https://cdn.jsdelivr.net/**')
 		},
 	})
 
