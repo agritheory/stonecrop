@@ -73,52 +73,54 @@
 	</footer>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue'
+<script setup lang="ts">
+import { computed, nextTick, onMounted, ref } from 'vue'
 
-export default defineComponent({
-	name: 'SheetNav',
-	data() {
-		return {
-			breadcrumbs: [],
-			breadcrumbsVisibile: true,
-			searchVisibile: false,
-			searchText: '',
-		}
-	},
-	methods: {
-		toggleBreadcrumbs() {
-			this.breadcrumbsVisibile = !this.breadcrumbsVisibile
-		},
-		toggleSearch() {
-			this.searchVisibile = !this.searchVisibile
-			this.$nextTick(() => {
-				this.$refs.searchinput.focus()
-			})
-		},
-		handleSearchInput(e) {
-			e.preventDefault()
-			e.stopPropagation()
-		},
-		handleSearch(e) {
-			e.preventDefault()
-			e.stopPropagation()
-			this.toggleSearch()
-		},
-		navigateHome(e) {
-			console.log(e)
-		},
-	},
-	computed: {
-		rotateHideTabIcon() {
-			return this.breadcrumbsVisibile ? 'unrotated' : 'rotated'
-		},
-	},
-	mounted() {
-		this.breadcrumbs = this.$props.breadcrumbs || []
-	},
+const props = defineProps<{
+	breadcrumbs?: { title: string; to: string }[]
+}>()
+
+const breadcrumbs = ref([])
+const breadcrumbsVisibile = ref(true)
+const searchVisibile = ref(false)
+const searchText = ref('')
+const searchinput = ref<HTMLElement>(null)
+
+const rotateHideTabIcon = computed(() => {
+	return breadcrumbsVisibile.value ? 'unrotated' : 'rotated'
 })
+
+onMounted(() => {
+	breadcrumbs.value = props.breadcrumbs || []
+})
+
+const toggleBreadcrumbs = () => {
+	breadcrumbsVisibile.value = !breadcrumbsVisibile.value
+}
+
+const toggleSearch = async () => {
+	searchVisibile.value = !searchVisibile.value
+	await nextTick(() => {
+		searchinput.value.focus()
+	})
+}
+
+const handleSearchInput = (event: Event | MouseEvent) => {
+	event.preventDefault()
+	event.stopPropagation()
+}
+
+const handleSearch = async (event: FocusEvent | KeyboardEvent) => {
+	event.preventDefault()
+	event.stopPropagation()
+	await toggleSearch()
+}
+
+const navigateHome = (/* event: MouseEvent | KeyboardEvent */) => {
+	// navigate home
+}
 </script>
+
 <style scoped>
 footer {
 	position: fixed;

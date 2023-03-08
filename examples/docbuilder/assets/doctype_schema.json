@@ -38,8 +38,24 @@
 						"name": "component",
 						"fieldtype": "Data",
 						"align": "left",
-						"edit": false,
+						"edit": true,
 						"width": "20ch"
+					},
+					{
+						"label": "Required",
+						"name": "required",
+						"component": "<input type=\"radio\"/>",
+						"align": "left",
+						"edit": true,
+						"width": "5ch"
+					},
+					{
+						"label": "Read Only",
+						"name": "read_only",
+						"component": "<input type=\"radio\"/>",
+						"align": "left",
+						"edit": true,
+						"width": "5ch"
 					}
 				],
 				"config": { "view": "list", "fullWidth": true },

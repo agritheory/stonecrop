@@ -3,22 +3,22 @@ import { Component } from 'vue'
 import { Router } from 'vue-router'
 import { MachineConfig, StateMachine } from 'xstate'
 
-import { SchemaTypes } from '@agritheory/aform/types'
+import type { SchemaTypes } from '@agritheory/aform/types'
 
 import Doctype from '@/doctype'
 
 export type ImmutableDoctype = Readonly<{
 	// TODO: allow schema to be a function
 	schema?: List<SchemaTypes>
-	events: StateMachine<unknown, unknown, any>
-	hooks?: Map<string, string[]>
+	workflow: StateMachine<unknown, unknown, any>
+	actions?: Map<string, string[]>
 }>
 
 export type MutableDoctype = {
 	// TODO: allow schema to be a function
 	schema?: SchemaTypes[]
-	events: MachineConfig<unknown, unknown, any>
-	hooks?: Record<string, string[]>
+	workflow: MachineConfig<unknown, unknown, any>
+	actions?: Record<string, string[]>
 }
 
 export type Schema = {

@@ -15,6 +15,7 @@
 	"references": [
 		{ "path": "./aform" },
 		{ "path": "./atable" },
+		{ "path": "./desktop" },
 		{ "path": "./examples" },
 		{ "path": "./stonecrop" },
 		{ "path": "./utilities" },

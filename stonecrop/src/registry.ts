@@ -3,7 +3,7 @@ import { Router } from 'vue-router'
 import Doctype from '@/doctype'
 
 export default class Registry {
-	static _root: any
+	static _root: Registry
 	name: string
 	router: Router
 	registry: Record<string, Doctype>

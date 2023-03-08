@@ -20,7 +20,6 @@ import { SchemaTypes } from 'types'
 
 const props = defineProps<{
 	modelValue: SchemaTypes[]
-	schema: SchemaTypes[]
 	data: Record<string, any>
 	readonly?: boolean
 }>()
@@ -62,7 +61,7 @@ const childModels = computed({
 			})
 		})
 	},
-	set: newValue => {
+	set: (/* newValue */) => {
 		//emit('update:modelValue', '')
 	},
 })

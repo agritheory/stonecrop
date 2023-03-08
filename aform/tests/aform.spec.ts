@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
+
 import AForm from '@/components/AForm.vue'
 import ATextInput from '@/components/form/ATextInput.vue'
-import { ref } from 'vue'
 
 describe('AForm Component', () => {
 	const form_schema = [
@@ -28,8 +28,9 @@ describe('AForm Component', () => {
 		await aTextInputWrapper.find('input').setValue('Steve')
 		await wrapper.vm.$nextTick()
 
-		expect(wrapper.emitted('update:modelValue')).toBeTruthy()
-		expect(wrapper.emitted('update:modelValue')[0]).toEqual([
+		const updateEvents = wrapper.emitted('update:modelValue')
+		expect(updateEvents).toBeTruthy()
+		expect(updateEvents![0]).toEqual([
 			[
 				{
 					fieldname: 'first_name',

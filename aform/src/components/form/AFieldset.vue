@@ -5,7 +5,7 @@
 			<CollapseButton v-if="collapsible" :collapsed="collapsed" />
 		</legend>
 		<slot :collapsed="collapsed">
-			<AForm v-show="!collapsed" v-model="formSchema" :schema="schema" :data="formData" />
+			<AForm v-show="!collapsed" v-model="formSchema" :data="formData" />
 		</slot>
 	</fieldset>
 </template>
@@ -28,8 +28,7 @@ const formData = ref(props.data || [])
 let collapsed = ref(false)
 let collapsible = ref(props.collapsible)
 
-const formSchema = props.schema
-
+const formSchema = ref(props.schema)
 function toggleCollapse(event: Event) {
 	event.preventDefault()
 	if (!collapsible.value) {

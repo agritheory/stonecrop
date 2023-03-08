@@ -21,26 +21,25 @@
 		"lint": "eslint . --ext .ts,.vue"
 	},
 	"dependencies": {
-		"vue": "^3.2.37"
+		"vue": "^3.2.47"
 	},
 	"devDependencies": {
-		"@histoire/plugin-vue": "^0.12.4",
+		"@histoire/plugin-vue": "^0.14.2",
 		"@typescript-eslint/eslint-plugin": "^5.33.0",
 		"@typescript-eslint/parser": "^5.33.0",
 		"@vitejs/plugin-vue": "^4.0.0",
+		"@vueuse/core": "^9.13.0",
 		"cypress": "^12.2.0",
 		"eslint-config-prettier": "^8.5.0",
 		"eslint-plugin-vue": "^9.3.0",
 		"eslint": "^8.22.0",
-		"histoire": "^0.12.4",
+		"histoire": "^0.14.2",
 		"typescript": "^4.9.4",
-		"vite": "^4.0.2",
-		"vue-router": "^4",
-		"@vueuse/core": "^9.2.0"
+		"vite": "^4.1.1",
+		"vue-router": "^4"
 	},
 	"exports": {
 		".": {
-			"types": "./types/index.ts",
 			"import": "./dist/utilities.js",
 			"require": "./dist/utilities.umd.cjs"
 		}
