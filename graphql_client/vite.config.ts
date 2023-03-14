@@ -4,7 +4,6 @@ import { defineConfig } from 'vite'
 const projectRootDir = resolve(__dirname)
 
 export default defineConfig({
-	plugins: [],
 	resolve: {
 		alias: {
 			'@': resolve(projectRootDir, 'src'),
@@ -17,9 +16,5 @@ export default defineConfig({
 			name: '@agritheory/graphql-client',
 		},
 		rollupOptions: {},
-	},
-	histoire: {
-		plugins: [],
-		storyIgnored: ['**/node_modules/**', '**/dist/**'],
 	},
 })

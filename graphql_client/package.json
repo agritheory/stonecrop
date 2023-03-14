@@ -2,9 +2,9 @@
 	"name": "@agritheory/graphql-client",
 	"version": "0.1.0",
 	"type": "module",
-	"main": "dist/graphql.js",
-	"module": "dist/graphql.js",
-	"umd": "dist/graphql.umd.cjs",
+	"main": "dist/graphql-client.js",
+	"module": "dist/graphql-client.js",
+	"umd": "dist/graphql-client.umd.cjs",
 	"types": "src/index",
 	"files": [
 		"dist/*",
@@ -25,26 +25,25 @@
 		"graphql": "~16.6.0"
 	},
 	"devDependencies": {
+		"@miragejs/graphql": "^0.1.13",
+		"@types/graphql": "~14.5.0",
 		"@typescript-eslint/eslint-plugin": "^5.33.0",
 		"@typescript-eslint/parser": "^5.33.0",
+		"@vitest/coverage-c8": "^0.28.4",
+		"@vitest/ui": "^0.28.4",
 		"cypress": "^12.2.0",
 		"eslint-config-prettier": "^8.5.0",
 		"eslint-plugin-vue": "^9.3.0",
 		"eslint": "^8.22.0",
+		"miragejs": "^0.1.45",
 		"typescript": "^4.9.4",
 		"vite": "^4.1.1",
-		"miragejs": "^0.1.45",
-		"@miragejs/graphql": "^0.1.13",
-		"@vitest/coverage-c8": "^0.28.4",
-		"@vitest/ui": "^0.28.4",
-		"vitest": "^0.28.4",
-		"@types/graphql": "~14.5.0"
+		"vitest": "^0.28.4"
 	},
 	"exports": {
 		".": {
-			"types": "./types/index.ts",
-			"import": "./dist/graphql.js",
-			"require": "./dist/graphql.umd.cjs"
+			"import": "./dist/graphql-client.js",
+			"require": "./dist/graphql-client.umd.cjs"
 		}
 	},
 	"engines": {

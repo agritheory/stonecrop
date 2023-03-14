@@ -11,6 +11,7 @@ const query = gql`
 	}
 `
 
-export const Query = () => {
-	return request('https://api.spacex.land/graphql/', query).then(data => console.log(data))
+export const Query = async () => {
+	const data = await request('https://api.spacex.land/graphql/', query)
+	return console.log(data)
 }
