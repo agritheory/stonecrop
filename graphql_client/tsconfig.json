@@ -11,5 +11,5 @@
 			"types/*": ["types/*"]
 		}
 	},
-	"include": ["env.d.ts", "src/**/*", "src/**/*.ts", "src/**/*.vue", "types/**/*.ts"]
+	"include": ["src/**/*", "src/**/*.ts", "src/**/*.vue", "src/gql/index.d.ts"]
 }

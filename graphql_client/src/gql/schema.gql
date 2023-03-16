@@ -38,3 +38,8 @@ type Query {
 type Mutation {
 	runAction(doctype: String!, id: [ID!]!, functionName: String!): [Record!]! # ∪ error
 }
+
+schema {
+	query: Query
+	mutation: Mutation
+}
