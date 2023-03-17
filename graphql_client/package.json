@@ -21,7 +21,7 @@
 		"lint": "eslint . --ext .ts,.vue"
 	},
 	"dependencies": {
-		"graphql-request": "~5.1.0",
+		"graphql-request": "~5.2.0",
 		"graphql": "~16.6.0"
 	},
 	"devDependencies": {
@@ -35,7 +35,7 @@
 		"eslint-config-prettier": "^8.5.0",
 		"eslint-plugin-vue": "^9.3.0",
 		"eslint": "^8.22.0",
-		"miragejs": "^0.1.45",
+		"miragejs": "^0.1.47",
 		"typescript": "^4.9.4",
 		"vite": "^4.1.1",
 		"vitest": "^0.28.4"

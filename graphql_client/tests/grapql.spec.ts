@@ -1,12 +1,19 @@
 import { gql, request } from 'graphql-request'
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 
 import { Query } from '../src/index'
 import { makeServer } from './server'
 
 describe('query definition', () => {
-	const server = makeServer()
-	server.create('doctype', { id: 'Issue', name: 'Issue' })
+	let server: ReturnType<typeof makeServer>
+
+	beforeEach(() => {
+		server = makeServer()
+	})
+
+	afterEach(() => {
+		server.shutdown()
+	})
 
 	it('query is defined', async () => {
 		const data = await Query()

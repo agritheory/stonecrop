@@ -6,9 +6,15 @@ import typeDefs from '@/gql/schema'
 
 export function makeServer() {
 	return createServer({
+		environment: 'test',
+
 		routes() {
 			const graphQLHandler = createGraphQLHandler(typeDefs, this.schema)
 			this.post('/graphql', graphQLHandler)
+		},
+
+		seeds(server) {
+			server.create('Doctype', { id: 'Issue', name: 'Issue' })
 		},
 	})
 }

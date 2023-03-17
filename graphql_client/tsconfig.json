@@ -11,5 +11,5 @@
 			"types/*": ["types/*"]
 		}
 	},
-	"include": ["src/**/*", "src/**/*.ts", "src/**/*.vue", "src/gql/index.d.ts"]
+	"include": ["src/**/*", "src/**/*.ts", "src/**/*.vue", "src/gql/index.d.ts", "tests/**/*.ts"]
 }
