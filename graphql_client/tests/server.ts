@@ -1,7 +1,7 @@
 import { createServer } from 'miragejs'
-import { createGraphQLHandler } from '@miragejs/graphql'
+import { createGraphQLHandler, mirageGraphQLFieldResolver } from '@miragejs/graphql'
 
-import typeDefs from '@/gql/schema'
+import typeDefs from '../src/gql/schema'
 // import graphQLSchema from '@/gql/schema.gql'
 
 export function makeServer() {
@@ -9,12 +9,19 @@ export function makeServer() {
 		environment: 'test',
 
 		routes() {
-			const graphQLHandler = createGraphQLHandler(typeDefs, this.schema)
-			this.post('/graphql', graphQLHandler)
-		},
+			const graphQLHandler = createGraphQLHandler(typeDefs, this.schema, {
+				resolvers: {
+					Query: {
+						getMeta(obj, args, context, info) {
+							args.name = args.doctype
+							delete args.doctype
+							return mirageGraphQLFieldResolver(obj, args, context, info)
+						},
+					},
+				},
+			})
 
-		seeds(server) {
-			server.create('Doctype', { id: 'Issue', name: 'Issue' })
+			this.post('/graphql', graphQLHandler)
 		},
 	})
 }

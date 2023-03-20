@@ -244,6 +244,7 @@ importers:
       '@types/graphql': ~14.5.0
       '@typescript-eslint/eslint-plugin': ^5.33.0
       '@typescript-eslint/parser': ^5.33.0
+      '@vitejs/plugin-vue': ^4.0.0
       '@vitest/coverage-c8': ^0.28.4
       '@vitest/ui': ^0.28.4
       cypress: ^12.2.0
@@ -256,6 +257,8 @@ importers:
       typescript: ^4.9.4
       vite: ^4.1.1
       vitest: ^0.28.4
+      vue: ^3.2.47
+      vue-router: ^4
     dependencies:
       graphql: 16.6.0
       graphql-request: 5.2.0_graphql@16.6.0
@@ -264,6 +267,7 @@ importers:
       '@types/graphql': 14.5.0
       '@typescript-eslint/eslint-plugin': 5.47.0_ncmi6noazr3nzas7jxykisekym
       '@typescript-eslint/parser': 5.47.0_lzzuuodtsqwxnvqeq4g4likcqa
+      '@vitejs/plugin-vue': 4.0.0_vite@4.1.4+vue@3.2.47
       '@vitest/coverage-c8': 0.28.4_@vitest+ui@0.28.4
       '@vitest/ui': 0.28.4
       cypress: 12.2.0
@@ -274,6 +278,8 @@ importers:
       typescript: 4.9.4
       vite: 4.1.4
       vitest: 0.28.4_@vitest+ui@0.28.4
+      vue: 3.2.47
+      vue-router: 4.1.6_vue@3.2.47
 
   ../../node_editor:
     specifiers:

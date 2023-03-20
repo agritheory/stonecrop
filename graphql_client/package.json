@@ -15,6 +15,8 @@
 		"dev": "vite",
 		"build": "tsc -b && vite build",
 		"preview": "vite preview",
+		"story:dev": "vite dev stories/ -c stories/vite.config.ts",
+		"story:build": "vite build stories/ -c stories/vite.config.ts",
 		"test": "vitest",
 		"test:coverage": "vitest run --coverage",
 		"test:ui": "vitest --ui",
@@ -29,6 +31,7 @@
 		"@types/graphql": "~14.5.0",
 		"@typescript-eslint/eslint-plugin": "^5.33.0",
 		"@typescript-eslint/parser": "^5.33.0",
+		"@vitejs/plugin-vue": "^4.0.0",
 		"@vitest/coverage-c8": "^0.28.4",
 		"@vitest/ui": "^0.28.4",
 		"cypress": "^12.2.0",
@@ -38,7 +41,9 @@
 		"miragejs": "^0.1.47",
 		"typescript": "^4.9.4",
 		"vite": "^4.1.1",
-		"vitest": "^0.28.4"
+		"vitest": "^0.28.4",
+		"vue": "^3.2.47",
+		"vue-router": "^4"
 	},
 	"exports": {
 		".": {
