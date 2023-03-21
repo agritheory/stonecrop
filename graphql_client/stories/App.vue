@@ -1,32 +1,50 @@
 <template>
-	<div></div>
+	<div>
+		<h1>Schema</h1>
+		<pre>{{ schema?.schema }}</pre>
+	</div>
+
+	<div>
+		<h1>Query</h1>
+		<pre>{{ query }}</pre>
+	</div>
+
+	<div>
+		<h1>Data</h1>
+		<pre>{{ data }}</pre>
+	</div>
 </template>
 
 <script setup lang="ts">
 import { gql, request } from 'graphql-request'
-import { onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
 
-onMounted(async () => {
-	const query = gql`
-		query getDoctype($doctype: String!) {
-			getMeta(doctype: $doctype) {
-				id
+const data = ref({})
+const schema = ref({})
+
+const query = gql`
+	query getDoctype($doctype: String!) {
+		getMeta(doctype: $doctype) {
+			id
+			name
+			workflow {
 				name
-				workflow {
-					name
-				}
-				schema {
-					id
-					label
-				}
-				actions {
-					eventName
-				}
+			}
+			schema {
+				id
+				label
+			}
+			actions {
+				eventName
 			}
 		}
-	`
+	}
+`
 
-	const data = await request('/graphql', query, { doctype: 'Issue' })
-	console.log('data', data)
+onMounted(async () => {
+	const response = await fetch('/schema')
+	schema.value = await response.json()
+
+	data.value = await request('/graphql', query, { doctype: 'Issue' })
 })
 </script>
