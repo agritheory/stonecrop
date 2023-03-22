@@ -17,6 +17,7 @@
 		{ "path": "./atable" },
 		{ "path": "./desktop" },
 		{ "path": "./examples" },
+		{ "path": "./graphql-client" },
 		{ "path": "./stonecrop" },
 		{ "path": "./utilities" }
 	]

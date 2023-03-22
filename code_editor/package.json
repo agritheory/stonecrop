@@ -2,9 +2,9 @@
 	"name": "@agritheory/code-editor",
 	"version": "0.1.2",
 	"type": "module",
-	"main": "dist/code_editor.js",
-	"module": "dist/code_editor.js",
-	"umd": "dist/code_editor.umd.cjs",
+	"main": "dist/code-editor.js",
+	"module": "dist/code-editor.js",
+	"umd": "dist/code-editor.umd.cjs",
 	"types": "src/index",
 	"files": [
 		"dist/*",
@@ -44,12 +44,12 @@
 		"vue-router": "^4"
 	},
 	"engines": {
-		"node": ">=16.17.1"
+		"node": ">=16.19.1"
 	},
 	"exports": {
 		".": {
-			"import": "./dist/code_editor.js",
-			"require": "./dist/code_editor.umd.cjs"
+			"import": "./dist/code-editor.js",
+			"require": "./dist/code-editor.umd.cjs"
 		}
 	}
 }

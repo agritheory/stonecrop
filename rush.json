@@ -61,7 +61,7 @@
 			"shouldPublish": false
 		},
 		{
-			"packageName": "@agritheory/node_editor",
+			"packageName": "@agritheory/node-editor",
 			"projectFolder": "node_editor",
 			"reviewCategory": "prototype",
 			"shouldPublish": false
@@ -82,21 +82,12 @@
 			"projectFolder": "utilities",
 			"reviewCategory": "utilities",
 			"shouldPublish": true
+		},
+		{
+			"packageName": "@agritheory/graphql-client",
+			"projectFolder": "graphql_client",
+			"reviewCategory": "utilities",
+			"shouldPublish": false
 		}
-		// {
-		//   "packageName": "@agritheory/beam",
-		//   "projectFolder": "beam",
-		//   "reviewCategory": "prototype"
-		// },
-		// {
-		//   "packageName": "@agritheory/themes",
-		//   "projectFolder": "themes",
-		//   "reviewCategory": "prototype"
-		// },
-		// {
-		//   "packageName": "@agritheory/docs",
-		//   "projectFolder": "docs",
-		//   "reviewCategory": "documentation"
-		// }
 	]
 }

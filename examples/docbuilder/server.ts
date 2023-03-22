@@ -291,7 +291,7 @@ export function makeServer({ environment = 'development' } = {}) {
 				actions: [
 					{
 						name: 'Issue',
-						side_effects: [
+						actions: [
 							{
 								event_name: 'LOAD',
 								callback: [
