@@ -20,6 +20,11 @@
 		"label": "Age"
 	},
 	{
+		"fieldname": "height",
+		"component": "AQuantity",
+		"label": "Height"
+	},
+	{
 		"fieldname": "date",
 		"fieldtype": "Date",
 		"component": "ATextInput",
