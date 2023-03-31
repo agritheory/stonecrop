@@ -24,7 +24,7 @@
 					{{ result }}
 				</li>
 			</ul>
-			<label>{{ label }}</label>
+			<label v-if="label">{{ label }}</label>
 		</div>
 	</div>
 </template>

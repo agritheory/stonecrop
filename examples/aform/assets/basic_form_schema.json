@@ -26,6 +26,7 @@
 		"value": {
 			"quantity": 150,
 			"uom": "cm",
+			"uoms": ["cm", "inch", "feet"],
 			"min": 0
 		}
 	},
