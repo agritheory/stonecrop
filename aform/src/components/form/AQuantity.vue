@@ -1,31 +1,43 @@
 <template>
 	<div class="input-group">
-		<input v-model="quantity" type="number" :id="uuid" :disabled="readonly" :required="required" />
+		<input
+			v-model="values.quantity"
+			type="number"
+			:id="uuid"
+			:disabled="readonly"
+			:required="required"
+			v-bind="values" />
 		<label :for="uuid">{{ label }}</label>
+
+		<div v-if="values.uom" class="input-group-append">
+			<span>{{ values.uom }}</span>
+		</div>
+
 		<p v-show="validation.errorMessage" v-html="validation.errorMessage"></p>
-		<div class="input-group-append"><span>cm</span></div>
 	</div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
 
+import type { Quantity } from 'types/quantity'
+
 const props = withDefaults(
 	defineProps<{
 		label: string
-		modelValue?: number
+		modelValue: Quantity
 		required?: boolean
 		readonly?: boolean
 		uuid?: string
 		validation?: Record<string, any>
 	}>(),
 	{
+		modelValue: () => ({ quantity: 0 }),
 		validation: () => ({ errorMessage: '&nbsp;' }),
 	}
 )
-
 const emit = defineEmits(['update:modelValue'])
-const quantity = computed({
+const values = computed({
 	get: () => {
 		return props.modelValue
 	},
@@ -43,7 +55,7 @@ const quantity = computed({
 
 .input-group-append {
 	position: relative;
-	top: -45px;
+	top: -25px;
 	left: 310px;
 }
 
