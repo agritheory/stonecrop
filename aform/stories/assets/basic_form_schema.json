@@ -22,7 +22,12 @@
 	{
 		"fieldname": "height",
 		"component": "AQuantity",
-		"label": "Height"
+		"label": "Height",
+		"value": {
+			"quantity": 150,
+			"uom": "cm",
+			"min": 0
+		}
 	},
 	{
 		"fieldname": "date",
