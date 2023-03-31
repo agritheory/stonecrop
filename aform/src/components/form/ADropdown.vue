@@ -22,7 +22,7 @@
 					{{ result }}
 				</li>
 			</ul>
-			<label>{{ label }}</label>
+			<label v-if="label">{{ label }}</label>
 		</div>
 	</div>
 </template>
@@ -134,7 +134,7 @@ export default defineComponent({
 })
 </script>
 
-<style>
+<style scoped>
 /* variables taken from here: https://github.com/frappe/frappe/blob/version-13/frappe/public/scss/common/awesomeplete.scss */
 .autocomplete {
 	position: relative;
