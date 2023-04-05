@@ -1,5 +1,6 @@
 <template>
 	<div class="input-group">
+		<label :for="uuid">{{ label }}</label>
 		<input
 			v-model="values.quantity"
 			type="number"
@@ -7,13 +8,9 @@
 			:disabled="readonly"
 			:required="required"
 			v-bind="values" />
-		<label :for="uuid">{{ label }}</label>
 
-		<div v-if="values.uom" class="input-group-append">
-			<span>{{ values.uom }}</span>
-		</div>
-
-		<!-- <ADropdown v-model="values.uom" label="" :items="values.uoms" class="input-group-append"></ADropdown> -->
+		<ADropdown v-if="values.uom" v-model="values.uom" label="" :items="values.uoms" class="input-group-append">
+		</ADropdown>
 
 		<p v-show="validation.errorMessage" v-html="validation.errorMessage"></p>
 	</div>
@@ -61,13 +58,6 @@ const values = computed({
 	flex-direction: row;
 	align-items: baseline;
 }
-
-/* .input-group-append {
-	padding: calc(1rem / 2);
-	border: 1px solid var(--input-border-color);
-	border-radius: 0.25rem;
-	background-color: #e9ecef;
-} */
 
 div {
 	min-width: 40ch;
