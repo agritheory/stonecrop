@@ -30,6 +30,16 @@ jobs:
       - name: Install Rush
         run: node common/scripts/install-run-rush.js install
 
+      - name: Rush Build
+        run: rush build
+
+      - name: Commit Dist
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git commit -a -m 'Updated dists' || echo "No changes to commit"
+          git push
+
       - name: Publish Packages via Rush
         run: |
           git fetch origin development:refs/remotes/origin/development -a
