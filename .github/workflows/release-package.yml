@@ -1,9 +1,10 @@
 name: Publish Packages
 
 on:
-  pull_request:
-    types:
-      - closed
+  push:
+  # pull_request:
+  #   types:
+  #     - closed
 
 jobs:
   publish-gpr:
@@ -25,8 +26,8 @@ jobs:
       - name: Rush CLI
         run: npm install -g @microsoft/rush
 
-      - name: Install Rush
-        run: node common/scripts/install-run-rush.js install
+      - name: Rush Changed Projects
+        uses: advancedcsg-open/actions-rush-changed-projects
 
       - name: Rush Build
         run: rush build
