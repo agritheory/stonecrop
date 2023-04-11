@@ -1,24 +1,29 @@
 {
 	"name": "@agritheory/utilities",
 	"version": "0.2.0",
+	"license": "MIT",
 	"type": "module",
+	"exports": {
+		".": {
+			"import": "./dist/utilities.js",
+			"require": "./dist/utilities.umd.cjs"
+		}
+	},
 	"main": "dist/utilities.js",
 	"module": "dist/utilities.js",
-	"umd": "dist/utilities.umd.cjs",
 	"types": "src/index",
 	"files": [
 		"dist/*",
 		"src/**/*.ts"
 	],
-	"license": "MIT",
 	"scripts": {
-		"dev": "vite",
 		"build": "tsc -b && vite build",
+		"dev": "vite",
+		"lint": "eslint . --ext .ts,.vue",
 		"preview": "vite preview",
-		"story:dev": "histoire dev",
 		"story:build": "histoire build",
-		"story:preview": "histoire preview",
-		"lint": "eslint . --ext .ts,.vue"
+		"story:dev": "histoire dev",
+		"story:preview": "histoire preview"
 	},
 	"dependencies": {
 		"vue": "^3.2.47"
@@ -30,21 +35,16 @@
 		"@vitejs/plugin-vue": "^4.0.0",
 		"@vueuse/core": "^9.13.0",
 		"cypress": "^12.2.0",
+		"eslint": "^8.22.0",
 		"eslint-config-prettier": "^8.5.0",
 		"eslint-plugin-vue": "^9.3.0",
-		"eslint": "^8.22.0",
 		"histoire": "^0.14.2",
 		"typescript": "^4.9.4",
 		"vite": "^4.1.1",
 		"vue-router": "^4"
 	},
-	"exports": {
-		".": {
-			"import": "./dist/utilities.js",
-			"require": "./dist/utilities.umd.cjs"
-		}
-	},
 	"engines": {
 		"node": ">=16.19.1"
-	}
+	},
+	"umd": "dist/utilities.umd.cjs"
 }
