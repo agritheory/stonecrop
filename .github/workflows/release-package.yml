@@ -1,9 +1,10 @@
 name: Publish Packages
 
 on:
-  pull_request:
-    types:
-      - closed
+  push:
+  # pull_request:
+  #   types:
+  #     - closed
 
 jobs:
   publish-gpr:
@@ -22,13 +23,11 @@ jobs:
           cache-dependency-path: '**/config/rush/pnpm-lock.yaml'
           registry-url: https://npm.pkg.github.com/
 
-      - name: Configure Git User
-        run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
+      - name: Rush CLI
+        run: npm install -g @microsoft/rush
 
-      - name: Install Rush
-        run: node common/scripts/install-run-rush.js install
+      - name: Rush Changed Projects
+        uses: advancedcsg-open/actions-rush-changed-projects
 
       - name: Rush Build
         run: rush build
