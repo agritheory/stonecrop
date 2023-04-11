@@ -52,7 +52,7 @@
 			"packageName": "@agritheory/code-editor",
 			"projectFolder": "code_editor",
 			"reviewCategory": "prototype",
-			"shouldPublish": true
+			"shouldPublish": false
 		},
 		{
 			"packageName": "@agritheory/examples",
@@ -64,7 +64,7 @@
 			"packageName": "@agritheory/node-editor",
 			"projectFolder": "node_editor",
 			"reviewCategory": "prototype",
-			"shouldPublish": true
+			"shouldPublish": false
 		},
 		{
 			"packageName": "@agritheory/stonecrop",
@@ -75,8 +75,7 @@
 		{
 			"packageName": "@agritheory/themes",
 			"projectFolder": "themes",
-			"reviewCategory": "prototype",
-			"shouldPublish": true
+			"reviewCategory": "prototype"
 		},
 		{
 			"packageName": "@agritheory/utilities",
@@ -88,7 +87,7 @@
 			"packageName": "@agritheory/graphql-client",
 			"projectFolder": "graphql_client",
 			"reviewCategory": "utilities",
-			"shouldPublish": true
+			"shouldPublish": false
 		}
 	]
 }
