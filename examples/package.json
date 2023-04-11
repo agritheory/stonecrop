@@ -13,10 +13,10 @@
 	"dependencies": {
 		"@agritheory/aform": "workspace:^0.1.2",
 		"@agritheory/atable": "workspace:^0.2.0",
-		"@agritheory/desktop": "workspace:^0.1.0",
+		"@agritheory/desktop": "workspace:^0.1.3",
 		"@agritheory/node-editor": "workspace:^0.1.0",
 		"@agritheory/themes": "workspace:*",
-		"@agritheory/stonecrop": "workspace:^0.1.0",
+		"@agritheory/stonecrop": "workspace:^0.1.3",
 		"@miragejs/graphql": "^0.1.13",
 		"@vitejs/plugin-vue": "^4.0.0",
 		"miragejs": "^0.1.47",
