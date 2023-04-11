@@ -39,8 +39,6 @@ jobs:
           git push
 
       - name: Publish Packages via Rush
-        run: |
-          git fetch origin development:refs/remotes/origin/development -a
-          node common/scripts/install-run-rush.js publish --apply --publish --target-branch development --add-commit-details --set-access-level=public
+        run: node common/scripts/install-run-rush.js publish --apply --publish --target-branch development --add-commit-details --set-access-level=public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
