@@ -1,0 +1,8 @@
+{
+	"name": "rush-plugins",
+	"version": "1.0.0",
+	"private": true,
+	"dependencies": {
+		"rush-sort-package-json": "^0.0.4"
+	}
+}

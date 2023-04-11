@@ -1,29 +1,35 @@
 {
 	"name": "@agritheory/desktop",
 	"version": "0.1.3",
-	"type": "module",
 	"description": "desktop specific components for Stonecrop UI",
+	"license": "MIT",
+	"type": "module",
+	"exports": {
+		".": {
+			"import": "./dist/desktop.js",
+			"require": "./dist/desktop.umd.cjs"
+		},
+		"./styles": "./dist/style.css"
+	},
 	"main": "dist/desktop.js",
 	"module": "dist/desktop.js",
-	"umd": "dist/desktop.umd.cjs",
 	"types": "src/index",
 	"files": [
 		"dist/*",
 		"src/**/*.vue"
 	],
-	"license": "MIT",
 	"scripts": {
-		"dev": "vite",
 		"build": "vite build",
-		"story:dev": "vite dev stories/ -c stories/vite.config.ts",
+		"dev": "vite",
+		"lint": "eslint . --ext .ts,.vue",
 		"story:build": "vite build stories/ -c stories/vite.config.ts",
-		"lint": "eslint . --ext .ts,.vue"
+		"story:dev": "vite dev stories/ -c stories/vite.config.ts"
 	},
 	"dependencies": {
 		"@agritheory/aform": "workspace:^0.1.2",
 		"@agritheory/atable": "workspace:^0.2.0",
-		"@agritheory/themes": "workspace:*",
 		"@agritheory/stonecrop": "workspace:^0.1.3",
+		"@agritheory/themes": "workspace:*",
 		"immutable": "^4.2.2",
 		"vue": "^3.2.47",
 		"xstate": "~4.33.6"
@@ -33,22 +39,16 @@
 		"@typescript-eslint/eslint-plugin": "^5.33.0",
 		"@typescript-eslint/parser": "^5.33.0",
 		"@vitejs/plugin-vue": "^4.0.0",
+		"eslint": "^8.22.0",
 		"eslint-config-prettier": "^8.5.0",
 		"eslint-plugin-vue": "^9.3.0",
-		"eslint": "^8.22.0",
 		"miragejs": "^0.1.47",
 		"typescript": "^4.9.4",
 		"vite": "^4.1.1",
 		"vue-router": "^4"
 	},
-	"exports": {
-		".": {
-			"import": "./dist/desktop.js",
-			"require": "./dist/desktop.umd.cjs"
-		},
-		"./styles": "./dist/style.css"
-	},
 	"engines": {
 		"node": ">=16.19.1"
-	}
+	},
+	"umd": "dist/desktop.umd.cjs"
 }
