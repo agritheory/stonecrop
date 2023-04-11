@@ -1,14 +1,13 @@
 name: Publish Packages
 
 on:
-  push:
-  # pull_request:
-  #   types:
-  #     - closed
+  pull_request:
+    types:
+      - closed
 
 jobs:
   publish-gpr:
-    if: github.event.pull_request.merged == true
+    # if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -26,8 +25,8 @@ jobs:
       - name: Rush CLI
         run: npm install -g @microsoft/rush
 
-      - name: Rush Changed Projects
-        uses: advancedcsg-open/actions-rush-changed-projects
+      - name: Install Rush
+        run: node common/scripts/install-run-rush.js install
 
       - name: Rush Build
         run: rush build
