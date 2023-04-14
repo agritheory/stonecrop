@@ -5,6 +5,11 @@
       "packageName": "rush-sort-package-json",
       "pluginName": "rush-sort-package-json",
       "autoinstallerName": "rush-plugins"
+    },
+    {
+      "packageName": "rush-commit-analyzer",
+      "pluginName": "rush-commit-analyzer",
+      "autoinstallerName": "rush-plugins"
     }
   ]
 }

@@ -3,6 +3,7 @@
 	"version": "1.0.0",
 	"private": true,
 	"dependencies": {
+		"@semantic-release/commit-analyzer": "^9.0.2",
 		"rush-sort-package-json": "^0.0.4"
 	}
 }
