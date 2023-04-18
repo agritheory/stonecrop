@@ -29,7 +29,7 @@ jobs:
         run: |
           echo "The following files are not formatted:"
           echo "${{steps.prettier-run.outputs.prettier_output}}"
-  
+
   sort-package-json:
     name: Sort package.json
     runs-on: ubuntu-latest
@@ -43,11 +43,8 @@ jobs:
           cache-dependency-path: '**/config/rush/pnpm-lock.yaml'
           registry-url: https://npm.pkg.github.com/
 
-      - name: Rush CLI
-        run: npm install -g @microsoft/rush
-
       - name: Install Rush
         run: node common/scripts/install-run-rush.js install
 
-      - name: Rush Build
-        run: rush sort-package-json
+      - name: Sort package.json
+        run: node common/scripts/install-run-rush.js sort-package-json

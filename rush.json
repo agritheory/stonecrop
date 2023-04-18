@@ -32,7 +32,7 @@
 			"reviewCategory": "prototype",
 			// to avoid circular dependency problems
 			"decoupledLocalDependencies": ["@agritheory/atable"],
-			"shouldPublish": true
+			"versionPolicyName": "stonecrop"
 		},
 		{
 			"packageName": "@agritheory/atable",
@@ -40,19 +40,19 @@
 			"reviewCategory": "prototype",
 			// to avoid circular dependency problems
 			"decoupledLocalDependencies": ["@agritheory/aform"],
-			"shouldPublish": true
+			"versionPolicyName": "stonecrop"
 		},
 		{
 			"packageName": "@agritheory/desktop",
 			"projectFolder": "desktop",
 			"reviewCategory": "prototype",
-			"shouldPublish": true
+			"versionPolicyName": "stonecrop"
 		},
 		{
 			"packageName": "@agritheory/code-editor",
 			"projectFolder": "code_editor",
 			"reviewCategory": "prototype",
-			"shouldPublish": true
+			"versionPolicyName": "stonecrop"
 		},
 		{
 			"packageName": "@agritheory/examples",
@@ -64,31 +64,31 @@
 			"packageName": "@agritheory/node-editor",
 			"projectFolder": "node_editor",
 			"reviewCategory": "prototype",
-			"shouldPublish": true
+			"versionPolicyName": "stonecrop"
 		},
 		{
 			"packageName": "@agritheory/stonecrop",
 			"projectFolder": "stonecrop",
 			"reviewCategory": "prototype",
-			"shouldPublish": true
+			"versionPolicyName": "stonecrop"
 		},
 		{
 			"packageName": "@agritheory/themes",
 			"projectFolder": "themes",
 			"reviewCategory": "prototype",
-			"shouldPublish": true
+			"versionPolicyName": "stonecrop"
 		},
 		{
 			"packageName": "@agritheory/utilities",
 			"projectFolder": "utilities",
 			"reviewCategory": "utilities",
-			"shouldPublish": true
+			"versionPolicyName": "stonecrop"
 		},
 		{
 			"packageName": "@agritheory/graphql-client",
 			"projectFolder": "graphql_client",
 			"reviewCategory": "utilities",
-			"shouldPublish": true
+			"versionPolicyName": "stonecrop"
 		}
 	]
 }
