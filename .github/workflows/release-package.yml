@@ -22,14 +22,11 @@ jobs:
           cache-dependency-path: '**/config/rush/pnpm-lock.yaml'
           registry-url: https://npm.pkg.github.com/
 
-      - name: Rush CLI
-        run: npm install -g @microsoft/rush
-
       - name: Install Rush
         run: node common/scripts/install-run-rush.js install
 
       - name: Rush Build
-        run: rush build
+        run: node common/scripts/install-run-rush.js build
 
       - name: Commit Dist
         run: |
@@ -38,7 +35,10 @@ jobs:
           git commit -a -m 'Updated dists' || echo "No changes to commit"
           git push
 
+      - name: Bump Version for Packages
+        run: node common/scripts/install-run-rush.js version --bump
+
       - name: Publish Packages via Rush
-        run: node common/scripts/install-run-rush.js publish --apply --publish --target-branch development --add-commit-details --set-access-level=public
+        run: node common/scripts/install-run-rush.js publish --apply --publish --include-all --version-policy stonecrop --target-branch development --add-commit-details --set-access-level=public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
