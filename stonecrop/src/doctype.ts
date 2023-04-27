@@ -2,7 +2,7 @@ import { Component } from 'vue'
 
 import type { ImmutableDoctype } from 'types/index'
 
-export default class Doctype {
+export default class DoctypeMeta {
 	readonly doctype: string
 	readonly schema: ImmutableDoctype['schema']
 	readonly workflow: ImmutableDoctype['workflow']

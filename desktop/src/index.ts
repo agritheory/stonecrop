@@ -14,4 +14,4 @@ function install(app: App) {
 	app.component('SheetNav', SheetNav)
 }
 
-export { install, SheetNav, CommandPalette, ActionSet }
+export { install, Doctype, Records, SheetNav, CommandPalette, ActionSet }
