@@ -1,4 +1,4 @@
-import { defineComponent as q, ref as V, onMounted as Ft, openBlock as $, createElementBlock as A, normalizeClass as lo, createElementVNode as T, Fragment as Ie, renderList as Pe, toDisplayString as ce, createCommentVNode as Se, withDirectives as ct, vShow as Gt, pushScopeId as co, popScopeId as uo, inject as Z, computed as j, createBlock as ke, resolveDynamicComponent as Wt, mergeProps as Qt, unref as b, effectScope as fo, markRaw as ae, shallowRef as _r, toRaw as ut, getCurrentInstance as zt, onBeforeMount as wr, reactive as ge, watch as de, isRef as Fe, isReactive as Kt, toRef as _t, nextTick as Ge, getCurrentScope as po, onScopeDispose as ho, h as mo, provide as tt, toRefs as hn, watchEffect as br, normalizeStyle as le, renderSlot as ve, createVNode as at, withCtx as it, useCssVars as go, createTextVNode as vo, onBeforeUnmount as Er, resolveComponent as Sr, withKeys as Je, vModelText as kr } from "vue";
+import { defineComponent as q, ref as V, onMounted as Ft, openBlock as $, createElementBlock as A, normalizeClass as lo, createElementVNode as T, Fragment as Ie, renderList as Pe, toDisplayString as ce, createCommentVNode as Se, withDirectives as ct, vShow as Gt, pushScopeId as co, popScopeId as uo, inject as Z, computed as j, createBlock as ke, resolveDynamicComponent as Wt, mergeProps as Qt, unref as b, effectScope as fo, markRaw as ae, onBeforeMount as _r, shallowRef as wr, toRaw as ut, getCurrentInstance as zt, reactive as ge, watch as de, isRef as Fe, isReactive as Kt, toRef as _t, nextTick as Ge, getCurrentScope as po, onScopeDispose as ho, h as mo, provide as tt, toRefs as hn, watchEffect as br, normalizeStyle as le, renderSlot as ve, createVNode as at, withCtx as it, useCssVars as go, createTextVNode as vo, onBeforeUnmount as Er, resolveComponent as Sr, withKeys as Je, vModelText as kr } from "vue";
 const qt = (e) => (co("data-v-b7fdfbec"), e = e(), uo(), e), Or = { class: "action-menu-icon" }, Ir = /* @__PURE__ */ qt(() => /* @__PURE__ */ T("svg", {
   class: "leftBar",
   version: "1.1",
@@ -329,7 +329,7 @@ let rs = class nt {
   }
   /**
    * @method setup
-   * @param {Doctype} doctype - The doctype to setup
+   * @param {DoctypeMeta} doctype - The doctype to setup
    * @returns {void}
    * @description Sets up the Stonecrop instance with the given doctype
    * @example
@@ -341,7 +341,7 @@ let rs = class nt {
   }
   /**
    * @method getMeta
-   * @param {Doctype} doctype - The doctype to get meta for
+   * @param {DoctypeMeta} doctype - The doctype to get meta for
    * @returns {void}
    * @description Gets the meta for the given doctype
    * @example
@@ -353,7 +353,7 @@ let rs = class nt {
   }
   /**
    * @method getWorkflow
-   * @param {Doctype} doctype - The doctype to get workflow for
+   * @param {DoctypeMeta} doctype - The doctype to get workflow for
    * @returns {void}
    * @description Gets the workflow for the given doctype
    * @example
@@ -366,7 +366,7 @@ let rs = class nt {
   }
   /**
    * @method getActions
-   * @param {Doctype} doctype - The doctype to get actions for
+   * @param {DoctypeMeta} doctype - The doctype to get actions for
    * @returns {void}
    * @description Gets the actions for the given doctype
    * @example
@@ -379,7 +379,7 @@ let rs = class nt {
   }
   /**
    * @method getRecords
-   * @param {Doctype} doctype - The doctype to get records for
+   * @param {DoctypeMeta} doctype - The doctype to get records for
    * @param {RequestInit} [filters] - The filters to apply to the records
    * @returns {Promise<void>}
    * @description Gets the records for the given doctype
@@ -398,7 +398,7 @@ let rs = class nt {
   }
   /**
    * @method getRecord
-   * @param {Doctype} doctype - The doctype to get record for
+   * @param {DoctypeMeta} doctype - The doctype to get record for
    * @param {string} id - The id of the record to get
    * @returns {Promise<void>}
    * @description Gets the record for the given doctype and id
@@ -413,7 +413,7 @@ let rs = class nt {
   }
   /**
    * @method runAction
-   * @param {Doctype} doctype - The doctype to run action for
+   * @param {DoctypeMeta} doctype - The doctype to run action for
    * @param {string} action - The action to run
    * @param {string[]} [id] - The id(s) of the record(s) to run action on
    * @returns {void}
@@ -1394,7 +1394,7 @@ const As = Rs("data", () => {
 function Co(e) {
   e || (e = Z("$registry"));
   const t = As(), n = V(new rs(e, t)), o = V(!1);
-  return wr(async () => {
+  return _r(async () => {
     var r, s;
     const a = e.router.currentRoute.value, i = (r = a.params.records) == null ? void 0 : r.toString().toLowerCase(), l = (s = a.params.record) == null ? void 0 : s.toString().toLowerCase();
     if (!i && !l)
@@ -2875,7 +2875,7 @@ function si(e) {
   const t = ya(e.routes, e), n = e.parseQuery || La, o = e.stringifyQuery || Vn, r = e.history;
   if (process.env.NODE_ENV !== "production" && !r)
     throw new Error('Provide the "history" option when calling "createRouter()": https://next.router.vuejs.org/api/#history.');
-  const s = Me(), a = Me(), i = Me(), l = _r(he);
+  const s = Me(), a = Me(), i = Me(), l = wr(he);
   let c = he;
   ie && e.scrollBehavior && "scrollRestoration" in history && (history.scrollRestoration = "manual");
   const u = bt.bind(null, (h) => "" + h), d = bt.bind(null, Ma), f = (
@@ -4949,6 +4949,8 @@ function gc(e) {
 export {
   jr as ActionSet,
   Hr as CommandPalette,
+  ml as Doctype,
+  Xl as Records,
   fc as SheetNav,
   gc as install
 };

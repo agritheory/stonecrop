@@ -4,12 +4,12 @@ import { RouteRecordRaw } from 'vue-router'
 import { createMachine } from 'xstate'
 
 import { ADate, ATextInput } from '@agritheory/aform'
-import { Doctype, Stonecrop } from '@agritheory/stonecrop'
+import { DoctypeMeta, Stonecrop } from '@agritheory/stonecrop'
 import type { ImmutableDoctype, MutableDoctype } from '@agritheory/stonecrop/types'
 
 import ActionSet from '../src/components/ActionSet.vue'
 import CommandPalette from '../src/components/CommandPalette.vue'
-import { default as DoctypeComponent } from '../src/components/Doctype.vue'
+import Doctype from '../src/components/Doctype.vue'
 import Records from '../src/components/Records.vue'
 import SheetNav from '../src/components/SheetNav.vue'
 import router from '../src/router'
@@ -24,7 +24,7 @@ makeServer()
 const routes: RouteRecordRaw[] = [
 	{ path: '/', component: Home, meta: { transition: 'slide-up' } },
 	{ path: '/:records', component: Records, meta: { transition: 'slide-up' } },
-	{ path: '/:records/:record', component: DoctypeComponent, meta: { transition: 'slide-up' } },
+	{ path: '/:records/:record', component: Doctype, meta: { transition: 'slide-up' } },
 ]
 
 for (const route of routes) {
@@ -54,7 +54,7 @@ app.use(Stonecrop, {
 			actions: Map(data.actions),
 		}
 
-		return new Doctype(doctype, config.schema, config.workflow, config.actions)
+		return new DoctypeMeta(doctype, config.schema, config.workflow, config.actions)
 	},
 })
 

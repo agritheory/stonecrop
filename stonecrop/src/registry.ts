@@ -1,15 +1,15 @@
 import { Router } from 'vue-router'
 
-import Doctype from '@/doctype'
+import DoctypeMeta from '@/doctype'
 
 export default class Registry {
 	static _root: Registry
 	name: string
 	router: Router
-	registry: Record<string, Doctype>
-	doctypeLoader: (doctype: string) => Doctype | Promise<Doctype>
+	registry: Record<string, DoctypeMeta>
+	doctypeLoader: (doctype: string) => DoctypeMeta | Promise<DoctypeMeta>
 
-	constructor(router: Router, doctypeLoader: (doctype: string) => Doctype | Promise<Doctype> = undefined) {
+	constructor(router: Router, doctypeLoader: (doctype: string) => DoctypeMeta | Promise<DoctypeMeta> = undefined) {
 		if (Registry._root) {
 			return Registry._root
 		}
@@ -20,7 +20,7 @@ export default class Registry {
 		this.doctypeLoader = doctypeLoader
 	}
 
-	addDoctype(doctype: Doctype) {
+	addDoctype(doctype: DoctypeMeta) {
 		if (!(doctype.doctype in Object.keys(this.registry))) {
 			this.registry[doctype.slug] = doctype
 		}

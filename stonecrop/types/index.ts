@@ -5,7 +5,7 @@ import { MachineConfig, StateMachine } from 'xstate'
 
 import type { SchemaTypes } from '@agritheory/aform/types'
 
-import Doctype from '@/doctype'
+import DoctypeMeta from '@/doctype'
 
 export type ImmutableDoctype = Readonly<{
 	// TODO: allow schema to be a function
@@ -29,5 +29,5 @@ export type Schema = {
 export type InstallOptions = {
 	components: Record<string, Component>
 	router: Router
-	doctypeLoader: (doctype?: string) => Doctype | Promise<Doctype>
+	doctypeLoader: (doctype?: string) => DoctypeMeta | Promise<DoctypeMeta>
 }
