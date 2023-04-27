@@ -24,7 +24,7 @@
     },
     {
       "name": "@agritheory/stonecrop",
-      "allowedCategories": [ "prototype" ]
+      "allowedCategories": [ "prototype", "utilities" ]
     },
     {
       "name": "@agritheory/themes",

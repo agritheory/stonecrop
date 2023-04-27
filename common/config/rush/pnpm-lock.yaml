@@ -240,6 +240,7 @@ importers:
 
   ../../graphql_client:
     specifiers:
+      '@agritheory/stonecrop': workspace:^0.1.3
       '@miragejs/graphql': ^0.1.13
       '@types/graphql': ~14.5.0
       '@typescript-eslint/eslint-plugin': ^5.33.0
@@ -260,6 +261,7 @@ importers:
       vue: ^3.2.47
       vue-router: ^4
     dependencies:
+      '@agritheory/stonecrop': link:../stonecrop
       graphql: 16.6.0
       graphql-request: 5.2.0_graphql@16.6.0
     devDependencies:
