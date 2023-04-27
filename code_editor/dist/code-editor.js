@@ -223,7 +223,7 @@ var oe = {
   create: ee
 }, ie = {
   paths: {
-    vs: "https://cdn.jsdelivr.net/npm/monaco-editor@0.33.0/min/vs"
+    vs: "https://cdn.jsdelivr.net/npm/monaco-editor@0.36.1/min/vs"
   }
 };
 function ae(e) {

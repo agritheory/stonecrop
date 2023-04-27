@@ -1,4 +1,4 @@
-import { defineComponent as D, computed as T, openBlock as v, createElementBlock as b, createElementVNode as c, withDirectives as A, isRef as le, vModelCheckbox as he, unref as y, toDisplayString as C, vShow as O, resolveComponent as be, createBlock as H, withCtx as _e, onMounted as oe, onBeforeUnmount as we, ref as g, watch as F, getCurrentScope as xe, onScopeDispose as ke, inject as ae, nextTick as De, Fragment as $, renderList as L, normalizeStyle as Ee, withModifiers as Ae, normalizeClass as se, createCommentVNode as re, resolveDynamicComponent as Ce, mergeProps as Ie, createTextVNode as Me, renderSlot as Te, createVNode as Se, vModelText as ue, resolveDirective as Oe } from "vue";
+import { defineComponent as D, computed as T, openBlock as v, createElementBlock as b, createElementVNode as c, withDirectives as A, isRef as le, vModelCheckbox as he, unref as y, toDisplayString as C, vShow as O, resolveComponent as be, createBlock as B, withCtx as _e, onMounted as oe, onBeforeUnmount as we, ref as g, watch as P, getCurrentScope as xe, onScopeDispose as ke, inject as ae, nextTick as De, Fragment as $, renderList as L, normalizeStyle as Ee, withModifiers as Ae, normalizeClass as se, createCommentVNode as re, resolveDynamicComponent as Ce, mergeProps as Ie, createTextVNode as Me, renderSlot as Te, createVNode as Se, vModelText as ue, resolveDirective as Oe } from "vue";
 const $e = { id: "checkbox-container" }, Le = ["id", "readonly", "required"], Ve = { id: "custom-checkbox" }, Be = ["for"], Pe = ["innerHTML"], He = /* @__PURE__ */ D({
   __name: "ACheckbox",
   props: {
@@ -60,7 +60,7 @@ const I = (e, t) => {
   setup(e) {
     return (t, l) => {
       const n = be("ATableModal");
-      return v(), H(n, {
+      return v(), B(n, {
         event: e.event,
         cellData: e.cellData,
         class: "amodal"
@@ -73,10 +73,10 @@ const I = (e, t) => {
     };
   }
 });
-var N;
+var Y;
 const ie = typeof window < "u", Re = (e) => typeof e == "string", Qe = () => {
 };
-ie && (N = window == null ? void 0 : window.navigator) != null && N.userAgent && /iP(ad|hone|od)/.test(window.navigator.userAgent);
+ie && (Y = window == null ? void 0 : window.navigator) != null && Y.userAgent && /iP(ad|hone|od)/.test(window.navigator.userAgent);
 function ce(e) {
   return typeof e == "function" ? e() : y(e);
 }
@@ -99,16 +99,15 @@ function Ne(...e) {
   Array.isArray(l) || (l = [l]), Array.isArray(n) || (n = [n]);
   const a = [], s = () => {
     a.forEach((f) => f()), a.length = 0;
-  }, r = (f, _, h, d) => (f.addEventListener(_, h, d), () => f.removeEventListener(_, h, d)), u = F(() => [V(t), ce(o)], ([f, _]) => {
+  }, r = (f, _, h, d) => (f.addEventListener(_, h, d), () => f.removeEventListener(_, h, d)), u = P(() => [V(t), ce(o)], ([f, _]) => {
     s(), f && a.push(...l.flatMap((h) => n.map((d) => r(f, h, d, _))));
   }, { immediate: !0, flush: "post" }), i = () => {
     u(), s();
   };
   return je(i), i;
 }
-const B = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, P = "__vueuse_ssr_handlers__";
-B[P] = B[P] || {};
-B[P];
+const j = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, N = "__vueuse_ssr_handlers__";
+j[N] = j[N] || {};
 function We(e, { window: t = de, scrollTarget: l } = {}) {
   const n = g(!1), o = () => {
     if (!t)
@@ -121,7 +120,7 @@ function We(e, { window: t = de, scrollTarget: l } = {}) {
       n.value = r.top <= (t.innerHeight || a.documentElement.clientHeight) && r.left <= (t.innerWidth || a.documentElement.clientWidth) && r.bottom >= 0 && r.right >= 0;
     }
   };
-  return F(() => V(e), () => o(), { immediate: !0, flush: "post" }), t && Ne(l || t, "scroll", o, {
+  return P(() => V(e), () => o(), { immediate: !0, flush: "post" }), t && Ne(l || t, "scroll", o, {
     capture: !1,
     passive: !0
   }), n;
@@ -172,8 +171,8 @@ const x = (e) => {
   return t = t && e.offsetHeight > 0, t;
 }, k = (e) => e.tabIndex >= 0, J = (e) => {
   const t = e.target;
-  return q(t);
-}, q = (e) => {
+  return H(t);
+}, H = (e) => {
   var t;
   let l;
   if (e instanceof HTMLTableCellElement) {
@@ -186,7 +185,7 @@ const x = (e) => {
     const n = e.previousElementSibling;
     n && (l = n);
   }
-  return l && (!k(l) || !x(l)) ? q(l) : l;
+  return l && (!k(l) || !x(l)) ? H(l) : l;
 }, Ze = (e) => {
   var t;
   const l = e.target;
@@ -204,11 +203,11 @@ const x = (e) => {
       a && (n = a);
     }
   }
-  return n && (!k(n) || !x(n)) ? U(n) : n;
+  return n && (!k(n) || !x(n)) ? F(n) : n;
 }, K = (e) => {
   const t = e.target;
-  return U(t);
-}, U = (e) => {
+  return F(t);
+}, F = (e) => {
   var t;
   let l;
   if (e instanceof HTMLTableCellElement) {
@@ -221,7 +220,7 @@ const x = (e) => {
     const n = e.nextElementSibling;
     n && (l = n);
   }
-  return l && (!k(l) || !x(l)) ? U(l) : l;
+  return l && (!k(l) || !x(l)) ? F(l) : l;
 }, et = (e) => {
   var t;
   const l = e.target;
@@ -239,11 +238,11 @@ const x = (e) => {
       a && (n = a);
     }
   }
-  return n && (!k(n) || !x(n)) ? q(n) : n;
+  return n && (!k(n) || !x(n)) ? H(n) : n;
 }, X = (e) => {
   const t = e.target;
-  return R(t);
-}, R = (e) => {
+  return q(t);
+}, q = (e) => {
   var t;
   let l;
   if (e.previousElementSibling)
@@ -252,11 +251,11 @@ const x = (e) => {
     const n = (t = e.parentElement) == null ? void 0 : t.previousElementSibling;
     l = n == null ? void 0 : n.lastElementChild;
   }
-  return l && (!k(l) || !x(l)) ? R(l) : l;
+  return l && (!k(l) || !x(l)) ? q(l) : l;
 }, Z = (e) => {
   const t = e.target;
-  return Q(t);
-}, Q = (e) => {
+  return U(t);
+}, U = (e) => {
   var t;
   let l;
   if (e.nextElementSibling)
@@ -265,13 +264,13 @@ const x = (e) => {
     const n = (t = e.parentElement) == null ? void 0 : t.nextElementSibling;
     l = n == null ? void 0 : n.firstElementChild;
   }
-  return l && (!k(l) || !x(l)) ? Q(l) : l;
+  return l && (!k(l) || !x(l)) ? U(l) : l;
 }, ee = (e) => {
   const t = e.target.parentElement.firstElementChild;
-  return t && (!k(t) || !x(t)) ? Q(t) : t;
+  return t && (!k(t) || !x(t)) ? U(t) : t;
 }, te = (e) => {
   const t = e.target.parentElement.lastElementChild;
-  return t && (!k(t) || !x(t)) ? R(t) : t;
+  return t && (!k(t) || !x(t)) ? q(t) : t;
 }, S = ["alt", "control", "shift", "meta"], tt = {
   ArrowUp: "up",
   ArrowDown: "down",
@@ -409,7 +408,7 @@ const lt = ["event", "colIndex", "rowIndex", "tableid"], ot = { colspan: "5" }, 
     readonly: { type: Boolean }
   },
   setup(e) {
-    const t = e, l = ae(t.tableid), n = 6, o = 7, a = new Date(), s = g(), r = g(), u = g(), i = g([]);
+    const t = e, l = ae(t.tableid), n = 6, o = 7, a = /* @__PURE__ */ new Date(), s = g(), r = g(), u = g(), i = g([]);
     oe(async () => {
       let p = l.cellData(t.colIndex, t.rowIndex);
       p ? (p instanceof Date || (p = new Date(p)), s.value = p, r.value = s.value.getMonth(), u.value = s.value.getFullYear()) : (r.value = a.getMonth(), u.value = a.getFullYear()), f(), await De();
@@ -420,7 +419,7 @@ const lt = ["event", "colIndex", "rowIndex", "tableid"], ot = { colspan: "5" }, 
         const m = document.getElementsByClassName("todaysdate");
         m.length > 0 && m[0].focus();
       }
-    }), F([r, u], () => {
+    }), P([r, u], () => {
       f();
     });
     const f = () => {
@@ -436,10 +435,10 @@ const lt = ["event", "colIndex", "rowIndex", "tableid"], ot = { colspan: "5" }, 
       r.value == 0 ? (r.value = 11, _()) : r.value -= 1;
     }, M = () => {
       r.value == 11 ? (r.value = 0, h()) : r.value += 1;
-    }, Y = (p) => {
+    }, R = (p) => {
       if (r.value === a.getMonth())
         return a.toDateString() === new Date(p).toDateString();
-    }, j = (p) => new Date(p).toDateString() === new Date(s.value).toDateString(), me = (p, E) => {
+    }, Q = (p) => new Date(p).toDateString() === new Date(s.value).toDateString(), me = (p, E) => {
       s.value = new Date(i.value[E]), ve();
     }, ve = () => {
       l.setCellData(t.rowIndex, t.colIndex, s.value.getTime());
@@ -488,13 +487,13 @@ const lt = ["event", "colIndex", "rowIndex", "tableid"], ot = { colspan: "5" }, 
             spellcheck: !1,
             tabindex: 0,
             style: Ee({
-              border: j(i.value[(m - 1) * o + w]) ? "2px solid var(--focus-cell-outline)" : "none",
-              borderBottomColor: Y(i.value[(m - 1) * o + w]) ? "var(--focus-cell-outline)" : "none"
+              border: Q(i.value[(m - 1) * o + w]) ? "2px solid var(--focus-cell-outline)" : "none",
+              borderBottomColor: R(i.value[(m - 1) * o + w]) ? "var(--focus-cell-outline)" : "none"
             }),
             onClick: Ae((ge) => me(ge, (m - 1) * o + w), ["prevent", "stop"]),
             class: se({
-              todaysdate: Y(i.value[(m - 1) * o + w]),
-              selecteddate: j(i.value[(m - 1) * o + w])
+              todaysdate: R(i.value[(m - 1) * o + w]),
+              selecteddate: Q(i.value[(m - 1) * o + w])
             })
           }, C(new Date(i.value[(m - 1) * o + w]).getDate()), 15, at)), 64))
         ])), 64))
@@ -540,7 +539,7 @@ const it = /* @__PURE__ */ I(ut, [["__scopeId", "data-v-6f1c1b45"]]), ct = /* @_
       }
     });
     return (s, r) => (v(), b("form", null, [
-      (v(!0), b($, null, L(e.modelValue, (u, i) => (v(), H(Ce(u.component), Ie({
+      (v(!0), b($, null, L(e.modelValue, (u, i) => (v(), B(Ce(u.component), Ie({
         key: i,
         schema: u,
         modelValue: y(a)[i].value,
@@ -572,7 +571,7 @@ const pe = /* @__PURE__ */ I(ct, [["__scopeId", "data-v-74d66cf2"]]), dt = /* @_
         onSubmit: s
       }, [
         Me(C(e.label) + " ", 1),
-        y(o) ? (v(), H(it, {
+        y(o) ? (v(), B(it, {
           key: 0,
           collapsed: y(n)
         }, null, 8, ["collapsed"])) : re("", !0)

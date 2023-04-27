@@ -162,37 +162,37 @@
     }
     delete target[key];
   }
-  function getDevtoolsGlobalHook$1() {
-    return getTarget$1().__VUE_DEVTOOLS_GLOBAL_HOOK__;
+  function getDevtoolsGlobalHook() {
+    return getTarget().__VUE_DEVTOOLS_GLOBAL_HOOK__;
   }
-  function getTarget$1() {
+  function getTarget() {
     return typeof navigator !== "undefined" && typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : {};
   }
-  const isProxyAvailable$1 = typeof Proxy === "function";
-  const HOOK_SETUP$1 = "devtools-plugin:setup";
-  const HOOK_PLUGIN_SETTINGS_SET$1 = "plugin:settings:set";
-  let supported$1;
-  let perf$1;
-  function isPerformanceSupported$1() {
+  const isProxyAvailable = typeof Proxy === "function";
+  const HOOK_SETUP = "devtools-plugin:setup";
+  const HOOK_PLUGIN_SETTINGS_SET = "plugin:settings:set";
+  let supported;
+  let perf;
+  function isPerformanceSupported() {
     var _a;
-    if (supported$1 !== void 0) {
-      return supported$1;
+    if (supported !== void 0) {
+      return supported;
     }
     if (typeof window !== "undefined" && window.performance) {
-      supported$1 = true;
-      perf$1 = window.performance;
+      supported = true;
+      perf = window.performance;
     } else if (typeof global !== "undefined" && ((_a = global.perf_hooks) === null || _a === void 0 ? void 0 : _a.performance)) {
-      supported$1 = true;
-      perf$1 = global.perf_hooks.performance;
+      supported = true;
+      perf = global.perf_hooks.performance;
     } else {
-      supported$1 = false;
+      supported = false;
     }
-    return supported$1;
+    return supported;
   }
-  function now$2() {
-    return isPerformanceSupported$1() ? perf$1.now() : Date.now();
+  function now$1() {
+    return isPerformanceSupported() ? perf.now() : Date.now();
   }
-  let ApiProxy$1 = class ApiProxy {
+  class ApiProxy {
     constructor(plugin, hook) {
       this.target = null;
       this.targetQueue = [];
@@ -226,11 +226,11 @@
           currentSettings = value;
         },
         now() {
-          return now$2();
+          return now$1();
         }
       };
       if (hook) {
-        hook.on(HOOK_PLUGIN_SETTINGS_SET$1, (pluginId, value) => {
+        hook.on(HOOK_PLUGIN_SETTINGS_SET, (pluginId, value) => {
           if (pluginId === this.plugin.id) {
             this.fallbacks.setSettings(value);
           }
@@ -289,16 +289,16 @@
         item.resolve(await this.target[item.method](...item.args));
       }
     }
-  };
-  function setupDevtoolsPlugin$1(pluginDescriptor, setupFn) {
+  }
+  function setupDevtoolsPlugin(pluginDescriptor, setupFn) {
     const descriptor = pluginDescriptor;
-    const target = getTarget$1();
-    const hook = getDevtoolsGlobalHook$1();
-    const enableProxy = isProxyAvailable$1 && descriptor.enableEarlyProxy;
+    const target = getTarget();
+    const hook = getDevtoolsGlobalHook();
+    const enableProxy = isProxyAvailable && descriptor.enableEarlyProxy;
     if (hook && (target.__VUE_DEVTOOLS_PLUGIN_API_AVAILABLE__ || !enableProxy)) {
-      hook.emit(HOOK_SETUP$1, pluginDescriptor, setupFn);
+      hook.emit(HOOK_SETUP, pluginDescriptor, setupFn);
     } else {
-      const proxy = enableProxy ? new ApiProxy$1(descriptor, hook) : null;
+      const proxy = enableProxy ? new ApiProxy(descriptor, hook) : null;
       const list = target.__VUE_DEVTOOLS_PLUGINS__ = target.__VUE_DEVTOOLS_PLUGINS__ || [];
       list.push({
         pluginDescriptor: descriptor,
@@ -310,7 +310,7 @@
     }
   }
   /*!
-    * pinia v2.0.33
+    * pinia v2.0.35
     * (c) 2023 Eduardo San Martin Morote
     * @license MIT
     */
@@ -674,7 +674,7 @@
   const { assign: assign$1 } = Object;
   const getStoreType = (id) => "🍍 " + id;
   function registerPiniaDevtools(app, pinia2) {
-    setupDevtoolsPlugin$1({
+    setupDevtoolsPlugin({
       id: "dev.esm.pinia",
       label: "Pinia 🍍",
       logo: "https://pinia.vuejs.org/logo.svg",
@@ -856,7 +856,7 @@ Only state can be modified.`);
     if (!componentStateTypes.includes(getStoreType(store.$id))) {
       componentStateTypes.push(getStoreType(store.$id));
     }
-    setupDevtoolsPlugin$1({
+    setupDevtoolsPlugin({
       id: "dev.esm.pinia",
       label: "Pinia 🍍",
       logo: "https://pinia.vuejs.org/logo.svg",
@@ -1657,153 +1657,6 @@ This will fail in production.`);
           component: doctype.component
         });
       }
-    }
-  }
-  function getDevtoolsGlobalHook() {
-    return getTarget().__VUE_DEVTOOLS_GLOBAL_HOOK__;
-  }
-  function getTarget() {
-    return typeof navigator !== "undefined" && typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : {};
-  }
-  const isProxyAvailable = typeof Proxy === "function";
-  const HOOK_SETUP = "devtools-plugin:setup";
-  const HOOK_PLUGIN_SETTINGS_SET = "plugin:settings:set";
-  let supported;
-  let perf;
-  function isPerformanceSupported() {
-    var _a;
-    if (supported !== void 0) {
-      return supported;
-    }
-    if (typeof window !== "undefined" && window.performance) {
-      supported = true;
-      perf = window.performance;
-    } else if (typeof global !== "undefined" && ((_a = global.perf_hooks) === null || _a === void 0 ? void 0 : _a.performance)) {
-      supported = true;
-      perf = global.perf_hooks.performance;
-    } else {
-      supported = false;
-    }
-    return supported;
-  }
-  function now$1() {
-    return isPerformanceSupported() ? perf.now() : Date.now();
-  }
-  class ApiProxy {
-    constructor(plugin, hook) {
-      this.target = null;
-      this.targetQueue = [];
-      this.onQueue = [];
-      this.plugin = plugin;
-      this.hook = hook;
-      const defaultSettings = {};
-      if (plugin.settings) {
-        for (const id in plugin.settings) {
-          const item = plugin.settings[id];
-          defaultSettings[id] = item.defaultValue;
-        }
-      }
-      const localSettingsSaveId = `__vue-devtools-plugin-settings__${plugin.id}`;
-      let currentSettings = Object.assign({}, defaultSettings);
-      try {
-        const raw = localStorage.getItem(localSettingsSaveId);
-        const data = JSON.parse(raw);
-        Object.assign(currentSettings, data);
-      } catch (e) {
-      }
-      this.fallbacks = {
-        getSettings() {
-          return currentSettings;
-        },
-        setSettings(value) {
-          try {
-            localStorage.setItem(localSettingsSaveId, JSON.stringify(value));
-          } catch (e) {
-          }
-          currentSettings = value;
-        },
-        now() {
-          return now$1();
-        }
-      };
-      if (hook) {
-        hook.on(HOOK_PLUGIN_SETTINGS_SET, (pluginId, value) => {
-          if (pluginId === this.plugin.id) {
-            this.fallbacks.setSettings(value);
-          }
-        });
-      }
-      this.proxiedOn = new Proxy({}, {
-        get: (_target, prop) => {
-          if (this.target) {
-            return this.target.on[prop];
-          } else {
-            return (...args) => {
-              this.onQueue.push({
-                method: prop,
-                args
-              });
-            };
-          }
-        }
-      });
-      this.proxiedTarget = new Proxy({}, {
-        get: (_target, prop) => {
-          if (this.target) {
-            return this.target[prop];
-          } else if (prop === "on") {
-            return this.proxiedOn;
-          } else if (Object.keys(this.fallbacks).includes(prop)) {
-            return (...args) => {
-              this.targetQueue.push({
-                method: prop,
-                args,
-                resolve: () => {
-                }
-              });
-              return this.fallbacks[prop](...args);
-            };
-          } else {
-            return (...args) => {
-              return new Promise((resolve) => {
-                this.targetQueue.push({
-                  method: prop,
-                  args,
-                  resolve
-                });
-              });
-            };
-          }
-        }
-      });
-    }
-    async setRealTarget(target) {
-      this.target = target;
-      for (const item of this.onQueue) {
-        this.target.on[item.method](...item.args);
-      }
-      for (const item of this.targetQueue) {
-        item.resolve(await this.target[item.method](...item.args));
-      }
-    }
-  }
-  function setupDevtoolsPlugin(pluginDescriptor, setupFn) {
-    const descriptor = pluginDescriptor;
-    const target = getTarget();
-    const hook = getDevtoolsGlobalHook();
-    const enableProxy = isProxyAvailable && descriptor.enableEarlyProxy;
-    if (hook && (target.__VUE_DEVTOOLS_PLUGIN_API_AVAILABLE__ || !enableProxy)) {
-      hook.emit(HOOK_SETUP, pluginDescriptor, setupFn);
-    } else {
-      const proxy = enableProxy ? new ApiProxy(descriptor, hook) : null;
-      const list = target.__VUE_DEVTOOLS_PLUGINS__ = target.__VUE_DEVTOOLS_PLUGINS__ || [];
-      list.push({
-        pluginDescriptor: descriptor,
-        setupFn,
-        proxy
-      });
-      if (proxy)
-        setupFn(proxy.proxiedTarget);
     }
   }
   /*!
@@ -4284,7 +4137,7 @@ ${JSON.stringify(newTargetLocation, null, 2)}
   var lastMs = 0;
   var additional = 0;
   function microSeconds$4() {
-    var ms = new Date().getTime();
+    var ms = (/* @__PURE__ */ new Date()).getTime();
     if (ms === lastMs) {
       additional++;
       return ms * 1e3 + additional;
@@ -4397,7 +4250,7 @@ ${JSON.stringify(newTargetLocation, null, 2)}
     }
   }
   function now() {
-    return new Date().getTime();
+    return (/* @__PURE__ */ new Date()).getTime();
   }
   function fillOptionsWithDefaults() {
     var originalOptions = arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : {};
@@ -4474,7 +4327,7 @@ ${JSON.stringify(newTargetLocation, null, 2)}
     });
   }
   function writeMessage(db, readerUuid, messageJson) {
-    var time = new Date().getTime();
+    var time = (/* @__PURE__ */ new Date()).getTime();
     var writeObject = {
       uuid: readerUuid,
       time,
@@ -4554,7 +4407,7 @@ ${JSON.stringify(newTargetLocation, null, 2)}
     }));
   }
   function getOldMessages(db, ttl) {
-    var olderThen = new Date().getTime() - ttl;
+    var olderThen = (/* @__PURE__ */ new Date()).getTime() - ttl;
     var tx = db.transaction(OBJECT_STORE_ID, "readonly", TRANSACTION_SETTINGS);
     var objectStore = tx.objectStore(OBJECT_STORE_ID);
     var ret = [];
@@ -4716,7 +4569,7 @@ ${JSON.stringify(newTargetLocation, null, 2)}
         var key = storageKey(channelState.channelName);
         var writeObj = {
           token: randomToken(),
-          time: new Date().getTime(),
+          time: (/* @__PURE__ */ new Date()).getTime(),
           data: messageJson,
           uuid: channelState.uuid
         };
