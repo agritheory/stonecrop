@@ -1,5 +1,5 @@
 import type { ImmutableDoctype, Schema } from 'types/index'
-import Doctype from './doctype'
+import DoctypeMeta from './doctype'
 import Registry from './registry'
 import { useDataStore } from './stores/data'
 
@@ -34,7 +34,7 @@ export class Stonecrop {
 	 * 	...
 	 * }
 	 * @see {@link Registry}
-	 * @see {@link Doctype}
+	 * @see {@link DoctypeMeta}
 	 */
 	readonly registry: Registry
 
@@ -51,8 +51,8 @@ export class Stonecrop {
 	 * 	}
 	 * }
 	 * @see {@link Registry}
-	 * @see {@link Doctype}
-	 * @see {@link Doctype.schema}
+	 * @see {@link DoctypeMeta}
+	 * @see {@link DoctypeMeta.schema}
 	 */
 	schema: Schema
 
@@ -103,14 +103,14 @@ export class Stonecrop {
 
 	/**
 	 * @method setup
-	 * @param {Doctype} doctype - The doctype to setup
+	 * @param {DoctypeMeta} doctype - The doctype to setup
 	 * @returns {void}
 	 * @description Sets up the Stonecrop instance with the given doctype
 	 * @example
 	 * const doctype = await registry.doctypeLoader('Task')
 	 * stonecrop.setup(doctype)
 	 */
-	setup(doctype: Doctype): void {
+	setup(doctype: DoctypeMeta): void {
 		this.getMeta(doctype)
 		this.getWorkflow(doctype)
 		this.getActions(doctype)
@@ -118,48 +118,48 @@ export class Stonecrop {
 
 	/**
 	 * @method getMeta
-	 * @param {Doctype} doctype - The doctype to get meta for
+	 * @param {DoctypeMeta} doctype - The doctype to get meta for
 	 * @returns {void}
 	 * @description Gets the meta for the given doctype
 	 * @example
 	 * const doctype = await registry.doctypeLoader('Task')
 	 * stonecrop.getMeta(doctype)
 	 */
-	getMeta(doctype: Doctype): void {
+	getMeta(doctype: DoctypeMeta): void {
 		this.schema = { doctype: doctype.doctype, schema: doctype.schema }
 	}
 
 	/**
 	 * @method getWorkflow
-	 * @param {Doctype} doctype - The doctype to get workflow for
+	 * @param {DoctypeMeta} doctype - The doctype to get workflow for
 	 * @returns {void}
 	 * @description Gets the workflow for the given doctype
 	 * @example
 	 * const doctype = await registry.doctypeLoader('Task')
 	 * stonecrop.getWorkflow(doctype)
 	 */
-	getWorkflow(doctype: Doctype): void {
+	getWorkflow(doctype: DoctypeMeta): void {
 		const doctypeRegistry = this.registry.registry[doctype.slug]
 		this.workflow = doctypeRegistry.workflow
 	}
 
 	/**
 	 * @method getActions
-	 * @param {Doctype} doctype - The doctype to get actions for
+	 * @param {DoctypeMeta} doctype - The doctype to get actions for
 	 * @returns {void}
 	 * @description Gets the actions for the given doctype
 	 * @example
 	 * const doctype = await registry.doctypeLoader('Task')
 	 * stonecrop.getActions(doctype)
 	 */
-	getActions(doctype: Doctype): void {
+	getActions(doctype: DoctypeMeta): void {
 		const doctypeRegistry = this.registry.registry[doctype.slug]
 		this.actions = doctypeRegistry.actions
 	}
 
 	/**
 	 * @method getRecords
-	 * @param {Doctype} doctype - The doctype to get records for
+	 * @param {DoctypeMeta} doctype - The doctype to get records for
 	 * @param {RequestInit} [filters] - The filters to apply to the records
 	 * @returns {Promise<void>}
 	 * @description Gets the records for the given doctype
@@ -171,7 +171,7 @@ export class Stonecrop {
 	 * const filters = JSON.stringify({ status: 'Open' })
 	 * await stonecrop.getRecords(doctype, { body: filters })
 	 */
-	async getRecords(doctype: Doctype, filters?: RequestInit): Promise<void> {
+	async getRecords(doctype: DoctypeMeta, filters?: RequestInit): Promise<void> {
 		this.store.$patch({ records: [] })
 		const records = await fetch(`/${doctype.slug}`, filters)
 		const data: Record<string, any>[] = await records.json()
@@ -180,7 +180,7 @@ export class Stonecrop {
 
 	/**
 	 * @method getRecord
-	 * @param {Doctype} doctype - The doctype to get record for
+	 * @param {DoctypeMeta} doctype - The doctype to get record for
 	 * @param {string} id - The id of the record to get
 	 * @returns {Promise<void>}
 	 * @description Gets the record for the given doctype and id
@@ -188,7 +188,7 @@ export class Stonecrop {
 	 * const doctype = await registry.doctypeLoader('Task')
 	 * await stonecrop.getRecord(doctype, 'TASK-00001')
 	 */
-	async getRecord(doctype: Doctype, id: string): Promise<void> {
+	async getRecord(doctype: DoctypeMeta, id: string): Promise<void> {
 		this.store.$patch({ record: {} })
 		const record = await fetch(`/${doctype.slug}/${id}`)
 		const data: Record<string, any> = await record.json()
@@ -197,7 +197,7 @@ export class Stonecrop {
 
 	/**
 	 * @method runAction
-	 * @param {Doctype} doctype - The doctype to run action for
+	 * @param {DoctypeMeta} doctype - The doctype to run action for
 	 * @param {string} action - The action to run
 	 * @param {string[]} [id] - The id(s) of the record(s) to run action on
 	 * @returns {void}
@@ -215,7 +215,7 @@ export class Stonecrop {
 	 * const doctype = await registry.doctypeLoader('Task')
 	 * stonecrop.runAction(doctype, 'TRANSITION', ['TASK-00001', 'TASK-00002'])
 	 */
-	runAction(doctype: Doctype, action: string, id?: string[]): void {
+	runAction(doctype: DoctypeMeta, action: string, id?: string[]): void {
 		const doctypeRegistry = this.registry.registry[doctype.slug]
 		const actions = doctypeRegistry.actions.get(action)
 

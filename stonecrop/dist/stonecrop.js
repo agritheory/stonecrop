@@ -23,7 +23,7 @@ let Stonecrop$1 = class Stonecrop {
   }
   /**
    * @method setup
-   * @param {Doctype} doctype - The doctype to setup
+   * @param {DoctypeMeta} doctype - The doctype to setup
    * @returns {void}
    * @description Sets up the Stonecrop instance with the given doctype
    * @example
@@ -37,7 +37,7 @@ let Stonecrop$1 = class Stonecrop {
   }
   /**
    * @method getMeta
-   * @param {Doctype} doctype - The doctype to get meta for
+   * @param {DoctypeMeta} doctype - The doctype to get meta for
    * @returns {void}
    * @description Gets the meta for the given doctype
    * @example
@@ -49,7 +49,7 @@ let Stonecrop$1 = class Stonecrop {
   }
   /**
    * @method getWorkflow
-   * @param {Doctype} doctype - The doctype to get workflow for
+   * @param {DoctypeMeta} doctype - The doctype to get workflow for
    * @returns {void}
    * @description Gets the workflow for the given doctype
    * @example
@@ -62,7 +62,7 @@ let Stonecrop$1 = class Stonecrop {
   }
   /**
    * @method getActions
-   * @param {Doctype} doctype - The doctype to get actions for
+   * @param {DoctypeMeta} doctype - The doctype to get actions for
    * @returns {void}
    * @description Gets the actions for the given doctype
    * @example
@@ -75,7 +75,7 @@ let Stonecrop$1 = class Stonecrop {
   }
   /**
    * @method getRecords
-   * @param {Doctype} doctype - The doctype to get records for
+   * @param {DoctypeMeta} doctype - The doctype to get records for
    * @param {RequestInit} [filters] - The filters to apply to the records
    * @returns {Promise<void>}
    * @description Gets the records for the given doctype
@@ -95,7 +95,7 @@ let Stonecrop$1 = class Stonecrop {
   }
   /**
    * @method getRecord
-   * @param {Doctype} doctype - The doctype to get record for
+   * @param {DoctypeMeta} doctype - The doctype to get record for
    * @param {string} id - The id of the record to get
    * @returns {Promise<void>}
    * @description Gets the record for the given doctype and id
@@ -111,7 +111,7 @@ let Stonecrop$1 = class Stonecrop {
   }
   /**
    * @method runAction
-   * @param {Doctype} doctype - The doctype to run action for
+   * @param {DoctypeMeta} doctype - The doctype to run action for
    * @param {string} action - The action to run
    * @param {string[]} [id] - The id(s) of the record(s) to run action on
    * @returns {void}
@@ -1617,7 +1617,7 @@ function useStonecrop(registry) {
   });
   return { stonecrop, isReady };
 }
-class Doctype {
+class DoctypeMeta {
   constructor(doctype, schema, workflow, actions, component) {
     this.doctype = doctype;
     this.schema = schema;
@@ -5411,7 +5411,7 @@ const Stonecrop2 = {
   }
 };
 export {
-  Doctype,
+  DoctypeMeta,
   Registry,
   Stonecrop2 as Stonecrop,
   useStonecrop
