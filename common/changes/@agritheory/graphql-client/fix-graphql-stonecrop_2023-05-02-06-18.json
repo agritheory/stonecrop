@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@agritheory/graphql-client",
+      "comment": "Setup GraphQL plugin for Stonecrop",
+      "type": "none"
+    }
+  ],
+  "packageName": "@agritheory/graphql-client"
+}
