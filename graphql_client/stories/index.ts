@@ -1,8 +1,8 @@
 import { createApp } from 'vue'
 import { createRouter, createWebHistory } from 'vue-router'
-import { makeServer } from '../tests/server'
 
 import { StonecropGraphQl } from '../src/index'
+import { makeServer } from './server'
 import App from './App.vue'
 import { Stonecrop } from '@agritheory/stonecrop'
 
