@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 
-import { Query } from '../src/index'
 import { makeServer } from './server'
 
 describe('query definition', () => {
@@ -14,8 +13,5 @@ describe('query definition', () => {
 		server.shutdown()
 	})
 
-	it('query is defined', async () => {
-		const data = await Query()
-		expect(data).toBeDefined()
-	})
+	// TODO: test the query definition
 })

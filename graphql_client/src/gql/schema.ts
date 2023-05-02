@@ -4,9 +4,9 @@ const typeDefs = gql`
 	type Doctype {
 		id: ID!
 		name: String!
-		workflow: DoctypeWorkflow!
-		schema: [DoctypeField!]!
-		actions: [DoctypeAction!]!
+		workflow: String!
+		schema: String!
+		actions: String!
 	}
 
 	type DoctypeField {
