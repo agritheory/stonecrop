@@ -15,6 +15,10 @@
       "allowedCategories": [ "prototype" ]
     },
     {
+      "name": "@agritheory/graphql-client",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
       "name": "@agritheory/node_editor",
       "allowedCategories": [ "prototype" ]
     },
