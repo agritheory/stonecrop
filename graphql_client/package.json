@@ -1,6 +1,6 @@
 {
 	"name": "@agritheory/graphql-client",
-	"version": "0.1.0",
+	"version": "0.2.0",
 	"license": "MIT",
 	"type": "module",
 	"exports": {
@@ -17,17 +17,15 @@
 		"src/**/*.ts"
 	],
 	"scripts": {
-		"build": "tsc -b && vite build",
+		"build": "vite build",
 		"dev": "vite",
 		"lint": "eslint . --ext .ts,.vue",
 		"preview": "vite preview",
 		"story:build": "vite build stories/ -c stories/vite.config.ts",
-		"story:dev": "vite dev stories/ -c stories/vite.config.ts",
-		"test": "vitest",
-		"test:coverage": "vitest run --coverage",
-		"test:ui": "vitest --ui"
+		"story:dev": "vite dev stories/ -c stories/vite.config.ts"
 	},
 	"dependencies": {
+		"@agritheory/stonecrop": "workspace:^0.2.0",
 		"graphql": "~16.6.0",
 		"graphql-request": "~5.2.0"
 	},
@@ -37,8 +35,6 @@
 		"@typescript-eslint/eslint-plugin": "^5.33.0",
 		"@typescript-eslint/parser": "^5.33.0",
 		"@vitejs/plugin-vue": "^4.0.0",
-		"@vitest/coverage-c8": "^0.28.4",
-		"@vitest/ui": "^0.28.4",
 		"cypress": "^12.2.0",
 		"eslint": "^8.22.0",
 		"eslint-config-prettier": "^8.5.0",
@@ -46,7 +42,6 @@
 		"miragejs": "^0.1.47",
 		"typescript": "^4.9.4",
 		"vite": "^4.1.1",
-		"vitest": "^0.28.4",
 		"vue": "^3.2.47",
 		"vue-router": "^4"
 	},

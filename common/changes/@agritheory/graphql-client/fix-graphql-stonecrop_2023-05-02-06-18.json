@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@agritheory/graphql-client",
-      "comment": "Version bump",
+      "comment": "Setup GraphQL plugin for Stonecrop",
       "type": "patch"
     }
   ],

@@ -6,7 +6,7 @@
 
 	<div>
 		<h1>Query</h1>
-		<pre>{{ query }}</pre>
+		<pre>{{ queries.getMeta }}</pre>
 	</div>
 
 	<div>
@@ -16,35 +16,18 @@
 </template>
 
 <script setup lang="ts">
-import { gql, request } from 'graphql-request'
 import { onMounted, ref } from 'vue'
+
+import { useStonecrop } from '@agritheory/stonecrop'
+import { queries } from '../src/queries'
 
 const data = ref({})
 const schema = ref({})
-
-const query = gql`
-	query getDoctype($doctype: String!) {
-		getMeta(doctype: $doctype) {
-			id
-			name
-			workflow {
-				name
-			}
-			schema {
-				id
-				label
-			}
-			actions {
-				eventName
-			}
-		}
-	}
-`
+const { stonecrop } = useStonecrop()
 
 onMounted(async () => {
 	const response = await fetch('/schema')
 	schema.value = await response.json()
-
-	data.value = await request('/graphql', query, { doctype: 'Issue' })
+	data.value = await stonecrop.value.getMeta('Issue')
 })
 </script>

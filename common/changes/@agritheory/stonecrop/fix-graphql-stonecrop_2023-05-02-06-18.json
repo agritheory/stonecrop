@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@agritheory/stonecrop",
-      "comment": "Update class name and export",
+      "comment": "Version bump",
       "type": "patch"
     }
   ],
