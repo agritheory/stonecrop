@@ -3,7 +3,7 @@
     {
       "packageName": "@agritheory/stonecrop",
       "comment": "Version bump",
-      "type": "none"
+      "type": "patch"
     }
   ],
   "packageName": "@agritheory/stonecrop"

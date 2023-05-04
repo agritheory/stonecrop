@@ -3,7 +3,7 @@
     {
       "packageName": "@agritheory/graphql-client",
       "comment": "Setup GraphQL plugin for Stonecrop",
-      "type": "none"
+      "type": "patch"
     }
   ],
   "packageName": "@agritheory/graphql-client"

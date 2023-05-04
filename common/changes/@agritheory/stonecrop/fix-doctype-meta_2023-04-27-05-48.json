@@ -3,7 +3,7 @@
     {
       "packageName": "@agritheory/stonecrop",
       "comment": "Update class name and export",
-      "type": "none"
+      "type": "patch"
     }
   ],
   "packageName": "@agritheory/stonecrop"

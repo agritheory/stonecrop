@@ -3,7 +3,7 @@
     {
       "packageName": "@agritheory/code-editor",
       "comment": "Version bump",
-      "type": "none"
+      "type": "patch"
     }
   ],
   "packageName": "@agritheory/code-editor"

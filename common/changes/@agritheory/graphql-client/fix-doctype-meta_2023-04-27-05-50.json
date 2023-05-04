@@ -3,7 +3,7 @@
     {
       "packageName": "@agritheory/graphql-client",
       "comment": "Version bump",
-      "type": "none"
+      "type": "patch"
     }
   ],
   "packageName": "@agritheory/graphql-client"

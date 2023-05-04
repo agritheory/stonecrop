@@ -1,6 +1,6 @@
 {
 	"name": "@agritheory/stonecrop",
-	"version": "0.1.3",
+	"version": "0.2.0",
 	"description": "schema helper",
 	"license": "MIT",
 	"type": "module",
@@ -35,7 +35,7 @@
 		"xstate": "~4.33.6"
 	},
 	"devDependencies": {
-		"@agritheory/aform": "workspace:^0.1.2",
+		"@agritheory/aform": "workspace:^0.2.0",
 		"@agritheory/atable": "workspace:^0.2.0",
 		"@typescript-eslint/eslint-plugin": "^5.33.0",
 		"@typescript-eslint/parser": "^5.33.0",

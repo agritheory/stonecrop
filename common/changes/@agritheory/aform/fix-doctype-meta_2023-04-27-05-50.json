@@ -3,7 +3,7 @@
     {
       "packageName": "@agritheory/aform",
       "comment": "Version bump",
-      "type": "none"
+      "type": "patch"
     }
   ],
   "packageName": "@agritheory/aform"

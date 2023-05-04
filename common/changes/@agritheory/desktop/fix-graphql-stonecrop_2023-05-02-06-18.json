@@ -3,7 +3,7 @@
     {
       "packageName": "@agritheory/desktop",
       "comment": "Version bump",
-      "type": "none"
+      "type": "patch"
     }
   ],
   "packageName": "@agritheory/desktop"
