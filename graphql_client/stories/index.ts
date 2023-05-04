@@ -1,7 +1,7 @@
 import { createApp } from 'vue'
 import { createRouter, createWebHistory } from 'vue-router'
 
-import { StonecropGraphQl } from '../src/index'
+import { StonecropGraphQL } from '../src/index'
 import { makeServer } from './server'
 import App from './App.vue'
 import { Stonecrop } from '@agritheory/stonecrop'
@@ -38,5 +38,5 @@ server.create('Doctype', {
 })
 
 app.use(Stonecrop, { components: {} })
-app.use(StonecropGraphQl, { url: '/graphql' })
+app.use(StonecropGraphQL, { url: '/graphql' })
 app.mount('#app')

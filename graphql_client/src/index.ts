@@ -4,8 +4,9 @@ import type { App } from 'vue'
 import type { InstallOptions } from 'types/index'
 import { DoctypeMeta, useStonecrop } from '@agritheory/stonecrop'
 import { queries } from './queries'
+import typeDefs from './gql/schema.ts'
 
-const StonecropGraphQl = {
+const StonecropGraphQL = {
 	install: (app: App, options: InstallOptions) => {
 		if (!options.url) {
 			throw new Error('Please provide a URL for the GraphQL client')
@@ -25,4 +26,6 @@ const StonecropGraphQl = {
 	},
 }
 
-export { StonecropGraphQl }
+const StonecropGraphQLTypeDefs = typeDefs
+
+export { StonecropGraphQL, StonecropGraphQLTypeDefs }
