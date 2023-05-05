@@ -15,10 +15,6 @@
       "allowedCategories": [ "prototype" ]
     },
     {
-      "name": "@agritheory/node_editor",
-      "allowedCategories": [ "prototype" ]
-    },
-    {
       "name": "@agritheory/node-editor",
       "allowedCategories": [ "prototype" ]
     },

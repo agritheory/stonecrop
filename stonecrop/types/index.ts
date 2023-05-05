@@ -27,7 +27,7 @@ export type Schema = {
 }
 
 export type InstallOptions = {
-	components: Record<string, Component>
-	router: Router
-	doctypeLoader: (doctype?: string) => DoctypeMeta | Promise<DoctypeMeta>
+	router?: Router
+	components?: Record<string, Component>
+	doctypeLoader?: (doctype?: string) => DoctypeMeta | Promise<DoctypeMeta>
 }

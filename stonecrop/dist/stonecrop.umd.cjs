@@ -2,7 +2,7 @@
   typeof exports === "object" && typeof module !== "undefined" ? factory(exports, require("vue")) : typeof define === "function" && define.amd ? define(["exports", "vue"], factory) : (global2 = typeof globalThis !== "undefined" ? globalThis : global2 || self, factory(global2["@agritheory/stonecrop"] = {}, global2.Vue));
 })(this, function(exports2, vue) {
   "use strict";
-  let Stonecrop$1 = class Stonecrop2 {
+  class Stonecrop {
     /**
      * @constructor
      * @param {Registry} registry - The immutable registry
@@ -14,10 +14,10 @@
      */
     constructor(registry, store, schema, workflow, actions) {
       this.name = "Stonecrop";
-      if (Stonecrop2._root) {
-        return Stonecrop2._root;
+      if (Stonecrop._root) {
+        return Stonecrop._root;
       }
-      Stonecrop2._root = this;
+      Stonecrop._root = this;
       this.registry = registry;
       this.store = store;
       this.schema = schema;
@@ -144,7 +144,7 @@
         });
       }
     }
-  };
+  }
   var isVue2 = false;
   function set(target, key, val) {
     if (Array.isArray(target)) {
@@ -1595,7 +1595,7 @@ This will fail in production.`);
       registry = vue.inject("$registry");
     }
     const store = useDataStore();
-    const stonecrop = vue.ref(new Stonecrop$1(registry, store));
+    const stonecrop = vue.ref(new Stonecrop(registry, store));
     const isReady = vue.ref(false);
     vue.onBeforeMount(async () => {
       var _a, _b;
@@ -2052,9 +2052,9 @@ This will fail in production.`);
     function listen(callback) {
       listeners.push(callback);
       const teardown = () => {
-        const index = listeners.indexOf(callback);
-        if (index > -1)
-          listeners.splice(index, 1);
+        const index2 = listeners.indexOf(callback);
+        if (index2 > -1)
+          listeners.splice(index2, 1);
       };
       teardowns.push(teardown);
       return teardown;
@@ -2673,9 +2673,9 @@ You can find more information at https://next.router.vuejs.org/guide/migration/#
           matcher.alias.forEach(removeRoute);
         }
       } else {
-        const index = matchers.indexOf(matcherRef);
-        if (index > -1) {
-          matchers.splice(index, 1);
+        const index2 = matchers.indexOf(matcherRef);
+        if (index2 > -1) {
+          matchers.splice(index2, 1);
           if (matcherRef.record.name)
             matcherMap.delete(matcherRef.record.name);
           matcherRef.children.forEach(removeRoute);
@@ -3089,9 +3089,9 @@ ${guard.toString()}
       const currentMatched = currentRoute.matched;
       if (!routeMatched || !currentMatched.length)
         return -1;
-      const index = currentMatched.findIndex(isSameRouteRecord.bind(null, routeMatched));
-      if (index > -1)
-        return index;
+      const index2 = currentMatched.findIndex(isSameRouteRecord.bind(null, routeMatched));
+      if (index2 > -1)
+        return index2;
       const parentRecordPath = getOriginalPath(matched[length - 2]);
       return (
         // we are dealing with nested routes
@@ -3099,7 +3099,7 @@ ${guard.toString()}
         // referring to the empty child. Or we currently are on a different
         // child of the same parent
         getOriginalPath(routeMatched) === parentRecordPath && // avoid comparing the child with its parent
-        currentMatched[currentMatched.length - 1].path !== parentRecordPath ? currentMatched.findIndex(isSameRouteRecord.bind(null, matched[length - 2])) : index
+        currentMatched[currentMatched.length - 1].path !== parentRecordPath ? currentMatched.findIndex(isSameRouteRecord.bind(null, matched[length - 2])) : index2
       );
     });
     const isActive = vue.computed(() => activeRecordIndex.value > -1 && includesParams(currentRoute.params, route.value.params));
@@ -5144,61 +5144,61 @@ ${JSON.stringify(newTargetLocation, null, 2)}
       parsed
     );
     const hydrated = Array(values.length);
-    function hydrate(index, standalone = false) {
-      if (index === UNDEFINED)
+    function hydrate(index2, standalone = false) {
+      if (index2 === UNDEFINED)
         return void 0;
-      if (index === NAN)
+      if (index2 === NAN)
         return NaN;
-      if (index === POSITIVE_INFINITY)
+      if (index2 === POSITIVE_INFINITY)
         return Infinity;
-      if (index === NEGATIVE_INFINITY)
+      if (index2 === NEGATIVE_INFINITY)
         return -Infinity;
-      if (index === NEGATIVE_ZERO)
+      if (index2 === NEGATIVE_ZERO)
         return -0;
       if (standalone)
         throw new Error(`Invalid input`);
-      if (index in hydrated)
-        return hydrated[index];
-      const value = values[index];
+      if (index2 in hydrated)
+        return hydrated[index2];
+      const value = values[index2];
       if (!value || typeof value !== "object") {
-        hydrated[index] = value;
+        hydrated[index2] = value;
       } else if (Array.isArray(value)) {
         if (typeof value[0] === "string") {
           const type2 = value[0];
           const reviver = revivers == null ? void 0 : revivers[type2];
           if (reviver) {
-            return hydrated[index] = reviver(hydrate(value[1]));
+            return hydrated[index2] = reviver(hydrate(value[1]));
           }
           switch (type2) {
             case "Date":
-              hydrated[index] = new Date(value[1]);
+              hydrated[index2] = new Date(value[1]);
               break;
             case "Set":
               const set2 = /* @__PURE__ */ new Set();
-              hydrated[index] = set2;
+              hydrated[index2] = set2;
               for (let i = 1; i < value.length; i += 1) {
                 set2.add(hydrate(value[i]));
               }
               break;
             case "Map":
               const map = /* @__PURE__ */ new Map();
-              hydrated[index] = map;
+              hydrated[index2] = map;
               for (let i = 1; i < value.length; i += 2) {
                 map.set(hydrate(value[i]), hydrate(value[i + 1]));
               }
               break;
             case "RegExp":
-              hydrated[index] = new RegExp(value[1], value[2]);
+              hydrated[index2] = new RegExp(value[1], value[2]);
               break;
             case "Object":
-              hydrated[index] = Object(value[1]);
+              hydrated[index2] = Object(value[1]);
               break;
             case "BigInt":
-              hydrated[index] = BigInt(value[1]);
+              hydrated[index2] = BigInt(value[1]);
               break;
             case "null":
               const obj = /* @__PURE__ */ Object.create(null);
-              hydrated[index] = obj;
+              hydrated[index2] = obj;
               for (let i = 1; i < value.length; i += 2) {
                 obj[value[i]] = hydrate(value[i + 1]);
               }
@@ -5208,7 +5208,7 @@ ${JSON.stringify(newTargetLocation, null, 2)}
           }
         } else {
           const array = new Array(value.length);
-          hydrated[index] = array;
+          hydrated[index2] = array;
           for (let i = 0; i < value.length; i += 1) {
             const n = value[i];
             if (n === HOLE)
@@ -5218,13 +5218,13 @@ ${JSON.stringify(newTargetLocation, null, 2)}
         }
       } else {
         const object = {};
-        hydrated[index] = object;
+        hydrated[index2] = object;
         for (const key in value) {
           const n = value[key];
           object[key] = hydrate(n);
         }
       }
-      return hydrated[index];
+      return hydrated[index2];
     }
     return hydrate(0);
   }
@@ -5253,13 +5253,13 @@ ${JSON.stringify(newTargetLocation, null, 2)}
         return NEGATIVE_INFINITY;
       if (thing === 0 && 1 / thing < 0)
         return NEGATIVE_ZERO;
-      const index2 = p++;
-      indexes.set(thing, index2);
+      const index3 = p++;
+      indexes.set(thing, index3);
       for (const { key, fn } of custom) {
         const value2 = fn(thing);
         if (value2) {
-          stringified[index2] = `["${key}",${flatten(value2)}]`;
-          return index2;
+          stringified[index3] = `["${key}",${flatten(value2)}]`;
+          return index3;
         }
       }
       let str = "";
@@ -5351,12 +5351,12 @@ ${JSON.stringify(newTargetLocation, null, 2)}
             }
         }
       }
-      stringified[index2] = str;
-      return index2;
+      stringified[index3] = str;
+      return index3;
     }
-    const index = flatten(value);
-    if (index < 0)
-      return `${index}`;
+    const index2 = flatten(value);
+    if (index2 < 0)
+      return `${index2}`;
     return `[${stringified.join(",")}]`;
   }
   function stringify_primitive(thing) {
@@ -5402,20 +5402,22 @@ ${JSON.stringify(newTargetLocation, null, 2)}
       initialize: true
     })
   );
-  const Stonecrop = {
+  const index = {
     install: (app, options) => {
-      const appRouter = options.router || router;
+      const appRouter = (options == null ? void 0 : options.router) || router;
       app.use(appRouter);
       app.use(pinia);
-      app.provide("$registry", new Registry(appRouter, options.doctypeLoader));
-      for (const [tag, component] of Object.entries(options.components)) {
-        app.component(tag, component);
+      app.provide("$registry", new Registry(appRouter, options == null ? void 0 : options.doctypeLoader));
+      if (options == null ? void 0 : options.components) {
+        for (const [tag, component] of Object.entries(options.components)) {
+          app.component(tag, component);
+        }
       }
     }
   };
   exports2.DoctypeMeta = DoctypeMeta;
   exports2.Registry = Registry;
-  exports2.Stonecrop = Stonecrop;
+  exports2.Stonecrop = index;
   exports2.useStonecrop = useStonecrop;
   Object.defineProperty(exports2, Symbol.toStringTag, { value: "Module" });
 });
