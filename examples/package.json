@@ -20,14 +20,20 @@
 		"@agritheory/desktop": "workspace:^0.2.0",
 		"@agritheory/node-editor": "workspace:^0.2.0",
 		"@agritheory/stonecrop": "workspace:^0.2.0",
+		"@agritheory/graphql-client": "workspace:^0.2.0",
 		"@agritheory/themes": "workspace:*",
 		"@miragejs/graphql": "^0.1.13",
 		"@vitejs/plugin-vue": "^4.0.0",
 		"miragejs": "^0.1.47",
+		"@types/graphql": "~14.5.0",
 		"uuid": "^9.0.0",
 		"vite": "^4.1.1",
 		"vue": "^3.2.47",
-		"xstate": "~4.33.6"
+		"xstate": "~4.33.6",
+		"pinia": "^2.0.32",
+		"pinia-shared-state": "^0.3.0",
+		"pinia-undo": "^0.1.9",
+		"pinia-xstate": "^1.0.9"
 	},
 	"devDependencies": {
 		"@types/uuid": "^9.0.0",
