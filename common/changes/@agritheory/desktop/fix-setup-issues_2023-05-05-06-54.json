@@ -3,7 +3,7 @@
     {
       "packageName": "@agritheory/desktop",
       "comment": "Add Vue plugin to install",
-      "type": "none"
+      "type": "patch"
     }
   ],
   "packageName": "@agritheory/desktop"

@@ -3,7 +3,7 @@
     {
       "packageName": "@agritheory/stonecrop",
       "comment": "Add Vue plugin to install",
-      "type": "none"
+      "type": "patch"
     }
   ],
   "packageName": "@agritheory/stonecrop"
