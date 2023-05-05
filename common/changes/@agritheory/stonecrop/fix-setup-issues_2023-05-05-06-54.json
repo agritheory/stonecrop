@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@agritheory/stonecrop",
+      "comment": "Add Vue plugin to install",
+      "type": "none"
+    }
+  ],
+  "packageName": "@agritheory/stonecrop"
+}

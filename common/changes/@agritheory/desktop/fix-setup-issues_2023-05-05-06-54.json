@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@agritheory/desktop",
+      "comment": "Add Vue plugin to install",
+      "type": "none"
+    }
+  ],
+  "packageName": "@agritheory/desktop"
+}
