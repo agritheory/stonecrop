@@ -6,11 +6,12 @@ export function makeServer({ environment = 'development' } = {}) {
 		environment,
 
 		models: {
+			action: Model,
+			assignment: Model,
 			doctype: Model,
 			hook: Model,
-			meta: Model,
 			issue: Model,
-			assignment: Model,
+			meta: Model,
 			stateMachine: Model,
 		},
 
@@ -23,6 +24,7 @@ export function makeServer({ environment = 'development' } = {}) {
 						machine: {
 							id: 'Issue',
 							initial: 'New',
+							predictableActionArguments: true,
 							context: {
 								retries: 0,
 							},
@@ -90,6 +92,7 @@ export function makeServer({ environment = 'development' } = {}) {
 						machine: {
 							id: 'Assignment',
 							initial: 'New',
+							predictableActionArguments: true,
 							context: {
 								retries: 0,
 							},
@@ -137,6 +140,7 @@ export function makeServer({ environment = 'development' } = {}) {
 								src: 'Load',
 							},
 							initial: 'Active',
+							predictableActionArguments: true,
 							states: {
 								Active: {
 									on: {
@@ -410,7 +414,7 @@ export function makeServer({ environment = 'development' } = {}) {
 			this.get('/load_side_effects', (schema, request) => {
 				let actions = schema.actions.findBy({ name: request.queryParams.doctype })
 				return actions
-					? actions.attrs.side_effects
+					? actions.attrs.actions
 					: new Response(400, { some: 'Not Found' }, { errors: ['Actions for Doctype not found'] })
 			})
 		},
