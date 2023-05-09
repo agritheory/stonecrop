@@ -1,6 +1,6 @@
 {
 	"name": "@agritheory/node-editor",
-	"version": "0.2.1",
+	"version": "0.2.2",
 	"description": "Node editor UI for Stonecrop",
 	"license": "MIT",
 	"type": "module",
