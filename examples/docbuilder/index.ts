@@ -2,17 +2,18 @@ import { createApp } from 'vue'
 import { createRouter, createWebHistory } from 'vue-router'
 
 import { StonecropGraphQL } from '@agritheory/graphql-client'
-import { makeServer } from './server'
-import App from './App.vue'
 import { Stonecrop } from '@agritheory/stonecrop'
 import { StateEditor } from '@agritheory/node-editor'
+
+import { makeServer } from './server'
+import App from './App.vue'
 
 const app = createApp(App)
 
 // setup router
-createRouter({
+const router = createRouter({
 	history: createWebHistory(),
-	routes: [{ path: '/', component: App, meta: { transition: 'slide-up' } }],
+	routes: [{ path: '/', component: App, alias: '/home', meta: { transition: 'slide-up' } }],
 })
 
 // setup mirage server and load with data
@@ -39,7 +40,6 @@ server.create('Doctype', {
 })
 
 // initialize more components if needed
-
-app.use(Stonecrop, { components: {} })
+app.use(Stonecrop, { router, components: {} })
 app.use(StonecropGraphQL, { url: '/graphql' })
 app.mount('#app')

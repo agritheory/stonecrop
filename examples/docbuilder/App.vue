@@ -5,6 +5,8 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+
+import { SheetNav } from '@agritheory/desktop'
 import { useStonecrop } from '@agritheory/stonecrop'
 
 const data = ref({})
@@ -17,6 +19,7 @@ onMounted(async () => {
 	data.value = await stonecrop.value.getMeta('Issue')
 })
 </script>
+
 <style scoped>
 footer {
 	position: fixed;

@@ -14,7 +14,7 @@ export function useStonecrop(registry?: Registry): StonecropReturn {
 		registry = inject<Registry>('$registry')
 	}
 
-	const store = useDataStore()
+	const store = inject<ReturnType<typeof useDataStore>>('$store')
 	const stonecrop = ref(new Stonecrop(registry, store))
 	const isReady = ref(false)
 
