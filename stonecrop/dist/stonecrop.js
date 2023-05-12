@@ -1,5 +1,5 @@
 import { inject, ref, onBeforeMount, shallowRef, unref, computed, reactive, nextTick, defineComponent, h as h$1, provide, watch, getCurrentInstance, watchEffect, effectScope, markRaw, toRaw, isRef, isReactive, toRef, getCurrentScope, onScopeDispose, toRefs } from "vue";
-let Stonecrop$1 = class Stonecrop {
+class Stonecrop {
   /**
    * @constructor
    * @param {Registry} registry - The immutable registry
@@ -141,13 +141,13 @@ let Stonecrop$1 = class Stonecrop {
       });
     }
   }
-};
+}
 function useStonecrop(registry) {
   if (!registry) {
     registry = inject("$registry");
   }
   const store = inject("$store");
-  const stonecrop = ref(new Stonecrop$1(registry, store));
+  const stonecrop = ref(new Stonecrop(registry, store));
   const isReady = ref(false);
   onBeforeMount(async () => {
     var _a, _b;
@@ -604,9 +604,9 @@ function useHistoryListeners(base, historyState, currentLocation, replace) {
   function listen(callback) {
     listeners.push(callback);
     const teardown = () => {
-      const index = listeners.indexOf(callback);
-      if (index > -1)
-        listeners.splice(index, 1);
+      const index2 = listeners.indexOf(callback);
+      if (index2 > -1)
+        listeners.splice(index2, 1);
     };
     teardowns.push(teardown);
     return teardown;
@@ -1225,9 +1225,9 @@ function createRouterMatcher(routes, globalOptions) {
         matcher.alias.forEach(removeRoute);
       }
     } else {
-      const index = matchers.indexOf(matcherRef);
-      if (index > -1) {
-        matchers.splice(index, 1);
+      const index2 = matchers.indexOf(matcherRef);
+      if (index2 > -1) {
+        matchers.splice(index2, 1);
         if (matcherRef.record.name)
           matcherMap.delete(matcherRef.record.name);
         matcherRef.children.forEach(removeRoute);
@@ -1641,9 +1641,9 @@ function useLink(props) {
     const currentMatched = currentRoute.matched;
     if (!routeMatched || !currentMatched.length)
       return -1;
-    const index = currentMatched.findIndex(isSameRouteRecord.bind(null, routeMatched));
-    if (index > -1)
-      return index;
+    const index2 = currentMatched.findIndex(isSameRouteRecord.bind(null, routeMatched));
+    if (index2 > -1)
+      return index2;
     const parentRecordPath = getOriginalPath(matched[length - 2]);
     return (
       // we are dealing with nested routes
@@ -1651,7 +1651,7 @@ function useLink(props) {
       // referring to the empty child. Or we currently are on a different
       // child of the same parent
       getOriginalPath(routeMatched) === parentRecordPath && // avoid comparing the child with its parent
-      currentMatched[currentMatched.length - 1].path !== parentRecordPath ? currentMatched.findIndex(isSameRouteRecord.bind(null, matched[length - 2])) : index
+      currentMatched[currentMatched.length - 1].path !== parentRecordPath ? currentMatched.findIndex(isSameRouteRecord.bind(null, matched[length - 2])) : index2
     );
   });
   const isActive = computed(() => activeRecordIndex.value > -1 && includesParams(currentRoute.params, route.value.params));
@@ -5136,61 +5136,61 @@ function unflatten(parsed, revivers) {
     parsed
   );
   const hydrated = Array(values.length);
-  function hydrate(index, standalone = false) {
-    if (index === UNDEFINED)
+  function hydrate(index2, standalone = false) {
+    if (index2 === UNDEFINED)
       return void 0;
-    if (index === NAN)
+    if (index2 === NAN)
       return NaN;
-    if (index === POSITIVE_INFINITY)
+    if (index2 === POSITIVE_INFINITY)
       return Infinity;
-    if (index === NEGATIVE_INFINITY)
+    if (index2 === NEGATIVE_INFINITY)
       return -Infinity;
-    if (index === NEGATIVE_ZERO)
+    if (index2 === NEGATIVE_ZERO)
       return -0;
     if (standalone)
       throw new Error(`Invalid input`);
-    if (index in hydrated)
-      return hydrated[index];
-    const value = values[index];
+    if (index2 in hydrated)
+      return hydrated[index2];
+    const value = values[index2];
     if (!value || typeof value !== "object") {
-      hydrated[index] = value;
+      hydrated[index2] = value;
     } else if (Array.isArray(value)) {
       if (typeof value[0] === "string") {
         const type2 = value[0];
         const reviver = revivers == null ? void 0 : revivers[type2];
         if (reviver) {
-          return hydrated[index] = reviver(hydrate(value[1]));
+          return hydrated[index2] = reviver(hydrate(value[1]));
         }
         switch (type2) {
           case "Date":
-            hydrated[index] = new Date(value[1]);
+            hydrated[index2] = new Date(value[1]);
             break;
           case "Set":
             const set2 = /* @__PURE__ */ new Set();
-            hydrated[index] = set2;
+            hydrated[index2] = set2;
             for (let i = 1; i < value.length; i += 1) {
               set2.add(hydrate(value[i]));
             }
             break;
           case "Map":
             const map = /* @__PURE__ */ new Map();
-            hydrated[index] = map;
+            hydrated[index2] = map;
             for (let i = 1; i < value.length; i += 2) {
               map.set(hydrate(value[i]), hydrate(value[i + 1]));
             }
             break;
           case "RegExp":
-            hydrated[index] = new RegExp(value[1], value[2]);
+            hydrated[index2] = new RegExp(value[1], value[2]);
             break;
           case "Object":
-            hydrated[index] = Object(value[1]);
+            hydrated[index2] = Object(value[1]);
             break;
           case "BigInt":
-            hydrated[index] = BigInt(value[1]);
+            hydrated[index2] = BigInt(value[1]);
             break;
           case "null":
             const obj = /* @__PURE__ */ Object.create(null);
-            hydrated[index] = obj;
+            hydrated[index2] = obj;
             for (let i = 1; i < value.length; i += 2) {
               obj[value[i]] = hydrate(value[i + 1]);
             }
@@ -5200,7 +5200,7 @@ function unflatten(parsed, revivers) {
         }
       } else {
         const array = new Array(value.length);
-        hydrated[index] = array;
+        hydrated[index2] = array;
         for (let i = 0; i < value.length; i += 1) {
           const n = value[i];
           if (n === HOLE)
@@ -5210,13 +5210,13 @@ function unflatten(parsed, revivers) {
       }
     } else {
       const object = {};
-      hydrated[index] = object;
+      hydrated[index2] = object;
       for (const key in value) {
         const n = value[key];
         object[key] = hydrate(n);
       }
     }
-    return hydrated[index];
+    return hydrated[index2];
   }
   return hydrate(0);
 }
@@ -5245,13 +5245,13 @@ function stringify(value, reducers) {
       return NEGATIVE_INFINITY;
     if (thing === 0 && 1 / thing < 0)
       return NEGATIVE_ZERO;
-    const index2 = p++;
-    indexes.set(thing, index2);
+    const index3 = p++;
+    indexes.set(thing, index3);
     for (const { key, fn } of custom) {
       const value2 = fn(thing);
       if (value2) {
-        stringified[index2] = `["${key}",${flatten(value2)}]`;
-        return index2;
+        stringified[index3] = `["${key}",${flatten(value2)}]`;
+        return index3;
       }
     }
     let str = "";
@@ -5343,12 +5343,12 @@ function stringify(value, reducers) {
           }
       }
     }
-    stringified[index2] = str;
-    return index2;
+    stringified[index3] = str;
+    return index3;
   }
-  const index = flatten(value);
-  if (index < 0)
-    return `${index}`;
+  const index2 = flatten(value);
+  if (index2 < 0)
+    return `${index2}`;
   return `[${stringified.join(",")}]`;
 }
 function stringify_primitive(thing) {
@@ -5399,22 +5399,24 @@ const useDataStore = defineStore("data", () => {
   const record = ref({});
   return { records, record };
 });
-const Stonecrop2 = {
+const index = {
   install: (app, options) => {
-    const appRouter = options.router || router;
+    const appRouter = (options == null ? void 0 : options.router) || router;
     app.use(appRouter);
     app.use(pinia);
     const store = useDataStore();
-    app.provide("$registry", new Registry(appRouter, options.doctypeLoader));
+    app.provide("$registry", new Registry(appRouter, options == null ? void 0 : options.doctypeLoader));
     app.provide("$store", store);
-    for (const [tag, component] of Object.entries(options.components)) {
-      app.component(tag, component);
+    if (options == null ? void 0 : options.components) {
+      for (const [tag, component] of Object.entries(options.components)) {
+        app.component(tag, component);
+      }
     }
   }
 };
 export {
   DoctypeMeta,
   Registry,
-  Stonecrop2 as Stonecrop,
+  index as Stonecrop,
   useStonecrop
 };
