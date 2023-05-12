@@ -1,7 +1,7 @@
 import { request } from 'graphql-request'
-import type { App } from 'vue'
+import { App } from 'vue'
 
-import { useStonecrop } from '@agritheory/stonecrop'
+import { StonecropClass } from '@agritheory/stonecrop'
 
 import type { InstallOptions } from 'types/index'
 import { queries } from '@/queries'
@@ -12,12 +12,12 @@ export default {
 			throw new Error('Please provide a URL for the GraphQL client')
 		}
 
-		const { stonecrop } = useStonecrop()
-		if (!(stonecrop.value || stonecrop.value.registry)) {
+		const stonecrop: StonecropClass = app.config.globalProperties.$stonecrop
+		if (!(stonecrop || stonecrop?.registry)) {
 			throw new Error('Please setup Stonecrop before the GraphQL client')
 		}
 
-		Object.assign(stonecrop.value, {
+		Object.assign(stonecrop, {
 			getMeta: async (doctype: string) => {
 				const data = await request(options.url, queries.getMeta, { doctype })
 				return data

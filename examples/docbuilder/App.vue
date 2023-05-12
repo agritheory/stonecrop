@@ -1,6 +1,6 @@
 <template>
-	<router-view></router-view>
 	<SheetNav />
+	<router-view></router-view>
 </template>
 
 <script setup lang="ts">
@@ -16,7 +16,7 @@ const { stonecrop } = useStonecrop()
 onMounted(async () => {
 	const response = await fetch('/schema')
 	schema.value = await response.json()
-	data.value = await stonecrop.value.getMeta('Issue')
+	data.value = await stonecrop.getMeta('Issue')
 })
 </script>
 

@@ -16,9 +16,9 @@ const schema = ref<SchemaTypes[]>([])
 watch(isReady, () => {
 	if (isReady.value) {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-		let newSchema: SchemaTypes[] = stonecrop.value.schema.schema.toArray()
+		let newSchema: SchemaTypes[] = stonecrop.schema.schema.toArray()
 		newSchema.forEach((item, index) => {
-			const record = stonecrop.value.store.record
+			const record = stonecrop.store.record
 			const fieldValue = record[item.fieldname]
 			newSchema[index].value = fieldValue
 		})
@@ -31,7 +31,7 @@ watch(isReady, () => {
 // const recordId = route.params.record?.toString().toLowerCase()
 
 // const saveRecord = async () => {
-// 	const doctype: DoctypeMeta = await stonecrop.value.registry.doctypeLoader(doctypeSlug)
-// 	stonecrop.value.runAction(doctype, 'save', recordId ? [recordId] : [])
+// 	const doctype: DoctypeMeta = await stonecrop.registry.doctypeLoader(doctypeSlug)
+// 	stonecrop.runAction(doctype, 'save', recordId ? [recordId] : [])
 // }
 </script>
