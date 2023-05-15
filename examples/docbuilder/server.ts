@@ -295,7 +295,7 @@ export function makeServer({ environment = 'development' } = {}) {
 				actions: [
 					{
 						name: 'Issue',
-						actions: [
+						side_effects: [
 							{
 								event_name: 'LOAD',
 								callback: [
@@ -414,7 +414,7 @@ export function makeServer({ environment = 'development' } = {}) {
 			this.get('/load_side_effects', (schema, request) => {
 				let actions = schema.actions.findBy({ name: request.queryParams.doctype })
 				return actions
-					? actions.attrs.actions
+					? actions.attrs.side_effects
 					: new Response(400, { some: 'Not Found' }, { errors: ['Actions for Doctype not found'] })
 			})
 		},

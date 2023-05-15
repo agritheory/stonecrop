@@ -1,8 +1,8 @@
-import { onMounted as ye, onBeforeUnmount as Ie, ref as E, watch as j, unref as s, getCurrentScope as _e, onScopeDispose as Ee, defineComponent as k, inject as O, computed as S, openBlock as p, createElementBlock as w, createBlock as P, resolveDynamicComponent as ie, mergeProps as V, toDisplayString as $, Fragment as L, createElementVNode as T, renderSlot as x, createCommentVNode as M, useCssVars as de, withDirectives as ce, vShow as ue, reactive as A, renderList as N, normalizeStyle as H, createTextVNode as ke, provide as Ce, nextTick as Ae, createVNode as z, withCtx as G } from "vue";
-var J;
+import { onMounted as ye, onBeforeUnmount as Ie, ref as E, watch as W, unref as s, getCurrentScope as _e, onScopeDispose as Ee, defineComponent as k, inject as O, computed as S, openBlock as p, createElementBlock as w, createBlock as P, resolveDynamicComponent as ie, mergeProps as B, toDisplayString as $, Fragment as L, createElementVNode as T, renderSlot as x, createCommentVNode as M, useCssVars as de, withDirectives as ce, vShow as ue, reactive as A, renderList as N, normalizeStyle as H, createTextVNode as ke, provide as Ce, nextTick as Ae, createVNode as J, withCtx as X } from "vue";
+var Y;
 const pe = typeof window < "u", Te = (t) => typeof t == "string", $e = () => {
 };
-pe && (J = window == null ? void 0 : window.navigator) != null && J.userAgent && /iP(ad|hone|od)/.test(window.navigator.userAgent);
+pe && (Y = window == null ? void 0 : window.navigator) != null && Y.userAgent && /iP(ad|hone|od)/.test(window.navigator.userAgent);
 function fe(t) {
   return typeof t == "function" ? t() : s(t);
 }
@@ -25,15 +25,16 @@ function Re(...t) {
   Array.isArray(n) || (n = [n]), Array.isArray(o) || (o = [o]);
   const a = [], r = () => {
     a.forEach((d) => d()), a.length = 0;
-  }, i = (d, h, v, m) => (d.addEventListener(h, v, m), () => d.removeEventListener(h, v, m)), c = j(() => [U(e), fe(l)], ([d, h]) => {
+  }, i = (d, h, v, m) => (d.addEventListener(h, v, m), () => d.removeEventListener(h, v, m)), c = W(() => [U(e), fe(l)], ([d, h]) => {
     r(), d && a.push(...n.flatMap((v) => o.map((m) => i(d, v, m, h))));
   }, { immediate: !0, flush: "post" }), u = () => {
     c(), r();
   };
   return De(u), u;
 }
-const X = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, Y = "__vueuse_ssr_handlers__";
-X[Y] = X[Y] || {};
+const j = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, V = "__vueuse_ssr_handlers__";
+j[V] = j[V] || {};
+j[V];
 function Se(t, { window: e = me, scrollTarget: n } = {}) {
   const o = E(!1), l = () => {
     if (!e)
@@ -46,7 +47,7 @@ function Se(t, { window: e = me, scrollTarget: n } = {}) {
       o.value = i.top <= (e.innerHeight || a.documentElement.clientHeight) && i.left <= (e.innerWidth || a.documentElement.clientWidth) && i.bottom >= 0 && i.right >= 0;
     }
   };
-  return j(() => U(t), () => l(), { immediate: !0, flush: "post" }), e && Re(n || e, "scroll", l, {
+  return W(() => U(t), () => l(), { immediate: !0, flush: "post" }), e && Re(n || e, "scroll", l, {
     capture: !1,
     passive: !0
   }), o;
@@ -97,8 +98,8 @@ const y = (t) => {
   return e = e && t.offsetHeight > 0, e;
 }, I = (t) => t.tabIndex >= 0, te = (t) => {
   const e = t.target;
-  return W(e);
-}, W = (t) => {
+  return Q(e);
+}, Q = (t) => {
   var e;
   let n;
   if (t instanceof HTMLTableCellElement) {
@@ -111,7 +112,7 @@ const y = (t) => {
     const o = t.previousElementSibling;
     o && (n = o);
   }
-  return n && (!I(n) || !y(n)) ? W(n) : n;
+  return n && (!I(n) || !y(n)) ? Q(n) : n;
 }, Ue = (t) => {
   var e;
   const n = t.target;
@@ -129,11 +130,11 @@ const y = (t) => {
       a && (o = a);
     }
   }
-  return o && (!I(o) || !y(o)) ? B(o) : o;
+  return o && (!I(o) || !y(o)) ? F(o) : o;
 }, ne = (t) => {
   const e = t.target;
-  return B(e);
-}, B = (t) => {
+  return F(e);
+}, F = (t) => {
   var e;
   let n;
   if (t instanceof HTMLTableCellElement) {
@@ -146,7 +147,7 @@ const y = (t) => {
     const o = t.nextElementSibling;
     o && (n = o);
   }
-  return n && (!I(n) || !y(n)) ? B(n) : n;
+  return n && (!I(n) || !y(n)) ? F(n) : n;
 }, je = (t) => {
   var e;
   const n = t.target;
@@ -164,11 +165,11 @@ const y = (t) => {
       a && (o = a);
     }
   }
-  return o && (!I(o) || !y(o)) ? W(o) : o;
+  return o && (!I(o) || !y(o)) ? Q(o) : o;
 }, oe = (t) => {
   const e = t.target;
-  return Q(e);
-}, Q = (t) => {
+  return q(e);
+}, q = (t) => {
   var e;
   let n;
   if (t.previousElementSibling)
@@ -177,11 +178,11 @@ const y = (t) => {
     const o = (e = t.parentElement) == null ? void 0 : e.previousElementSibling;
     n = o == null ? void 0 : o.lastElementChild;
   }
-  return n && (!I(n) || !y(n)) ? Q(n) : n;
+  return n && (!I(n) || !y(n)) ? q(n) : n;
 }, le = (t) => {
   const e = t.target;
-  return F(e);
-}, F = (t) => {
+  return z(e);
+}, z = (t) => {
   var e;
   let n;
   if (t.nextElementSibling)
@@ -190,13 +191,13 @@ const y = (t) => {
     const o = (e = t.parentElement) == null ? void 0 : e.nextElementSibling;
     n = o == null ? void 0 : o.firstElementChild;
   }
-  return n && (!I(n) || !y(n)) ? F(n) : n;
+  return n && (!I(n) || !y(n)) ? z(n) : n;
 }, ae = (t) => {
   const e = t.target.parentElement.firstElementChild;
-  return e && (!I(e) || !y(e)) ? F(e) : e;
+  return e && (!I(e) || !y(e)) ? z(e) : e;
 }, re = (t) => {
   const e = t.target.parentElement.lastElementChild;
-  return e && (!I(e) || !y(e)) ? Q(e) : e;
+  return e && (!I(e) || !y(e)) ? q(e) : e;
 }, D = ["alt", "control", "shift", "meta"], Ve = {
   ArrowUp: "up",
   ArrowDown: "down",
@@ -266,7 +267,7 @@ const y = (t) => {
     e && (t.preventDefault(), t.stopPropagation(), e.focus());
   }
 };
-function q(t) {
+function G(t) {
   const e = (o) => {
     let l = null;
     o.parent && (typeof o.parent == "string" ? l = document.querySelector(o.parent) : o.parent instanceof Element ? l = o.parent : l = o.parent.value);
@@ -366,7 +367,7 @@ const We = ["data-colindex", "data-rowindex", "data-editable", "contenteditable"
       typeof e.addNavigation == "object" && (b = {
         ...b,
         ...e.addNavigation
-      }), q([
+      }), G([
         {
           selectors: o,
           handlers: b
@@ -403,7 +404,7 @@ const We = ["data-colindex", "data-rowindex", "data-editable", "contenteditable"
       onClick: r,
       onMousedown: r
     }, [
-      s(n).columns[t.colIndex].cellComponent ? (p(), P(ie(s(n).columns[t.colIndex].cellComponent), V({
+      s(n).columns[t.colIndex].cellComponent ? (p(), P(ie(s(n).columns[t.colIndex].cellComponent), B({
         key: 0,
         value: s(a)
       }, s(n).columns[t.colIndex].cellComponentProps), null, 16, ["value"])) : (p(), w("span", Be, $(s(a)), 1))
@@ -430,7 +431,7 @@ const C = (t, e) => {
       const r = Object.assign({}, e.addNavigation);
       r["keydown.control.g"] = (i) => {
         i.stopPropagation(), i.preventDefault(), n.toggleRowExpand(e.rowIndex);
-      }, q([
+      }, G([
         {
           selectors: o,
           handlers: r
@@ -438,7 +439,7 @@ const C = (t, e) => {
       ]);
     }
     return (r, i) => (p(), w(L, null, [
-      T("tr", V(r.$attrs, {
+      T("tr", B(r.$attrs, {
         ref_key: "rowEl",
         ref: o,
         tabindex: t.tabIndex,
@@ -490,7 +491,7 @@ const Je = /* @__PURE__ */ C(Ge, [["__scopeId", "data-v-2bb821ae"]]), Xe = ["tab
     const n = O(e.tableid), o = E(null), l = n.numberedRowWidth.value, a = () => n.config.view !== "tree" ? "" : n.display[e.rowIndex].isRoot || n.display[e.rowIndex].isParent ? n.display[e.rowIndex].childrenOpen ? "-" : "+" : "", r = () => n.config.view !== "tree" || n.display[e.rowIndex].isRoot || n.display[e.rowIndex].open, i = (c) => {
       n.toggleRowExpand(c);
     };
-    return e.addNavigation && q([
+    return e.addNavigation && G([
       {
         selectors: o,
         handlers: e.addNavigation
@@ -673,7 +674,7 @@ const ve = /* @__PURE__ */ C(it, [["__scopeId", "data-v-8ac70767"]]), dt = /* @_
   setup(t, { emit: e }) {
     const n = t;
     let o = n.modelValue ? n.modelValue : n.rows, l = new ot(n.id, n.columns, o, n.config);
-    Ce(l.id, l), j(
+    Ce(l.id, l), W(
       () => l.rows,
       (r, i) => {
         e("update:modelValue", r);
@@ -698,7 +699,7 @@ const ve = /* @__PURE__ */ C(it, [["__scopeId", "data-v-8ac70767"]]), dt = /* @_
       style: H({ width: s(l).config.fullWidth ? "100%" : "auto" })
     }, [
       x(r.$slots, "header", { data: s(l) }, () => [
-        z(xe, {
+        J(xe, {
           columns: s(l).columns,
           config: s(l).config,
           tableid: s(l).id
@@ -712,7 +713,7 @@ const ve = /* @__PURE__ */ C(it, [["__scopeId", "data-v-8ac70767"]]), dt = /* @_
             rowIndex: u,
             tableid: s(l).id
           }, {
-            default: G(() => [
+            default: X(() => [
               (p(!0), w(L, null, N(s(l).columns, (d, h) => (p(), P(he, {
                 key: `${h}:${u}`,
                 tableid: s(l).id,
@@ -734,7 +735,7 @@ const ve = /* @__PURE__ */ C(it, [["__scopeId", "data-v-8ac70767"]]), dt = /* @_
       ]),
       x(r.$slots, "footer", { data: s(l) }, void 0, !0),
       x(r.$slots, "modal", { data: s(l) }, () => [
-        ce(z(ve, {
+        ce(J(ve, {
           colIndex: s(l).modal.colIndex,
           rowIndex: s(l).modal.rowIndex,
           tableid: s(l).id,
@@ -744,8 +745,8 @@ const ve = /* @__PURE__ */ C(it, [["__scopeId", "data-v-8ac70767"]]), dt = /* @_
             maxWidth: s(l).modal.width + "px"
           })
         }, {
-          default: G(() => [
-            (p(), P(ie(s(l).modal.component), V({
+          default: X(() => [
+            (p(), P(ie(s(l).modal.component), B({
               key: `${s(l).modal.rowIndex}:${s(l).modal.colIndex}`,
               colIndex: s(l).modal.colIndex,
               rowIndex: s(l).modal.rowIndex,

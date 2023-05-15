@@ -4284,7 +4284,7 @@ ${JSON.stringify(newTargetLocation, null, 2)}
   var lastMs = 0;
   var additional = 0;
   function microSeconds$4() {
-    var ms = (/* @__PURE__ */ new Date()).getTime();
+    var ms = new Date().getTime();
     if (ms === lastMs) {
       additional++;
       return ms * 1e3 + additional;
@@ -4397,7 +4397,7 @@ ${JSON.stringify(newTargetLocation, null, 2)}
     }
   }
   function now() {
-    return (/* @__PURE__ */ new Date()).getTime();
+    return new Date().getTime();
   }
   function fillOptionsWithDefaults() {
     var originalOptions = arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : {};
@@ -4474,7 +4474,7 @@ ${JSON.stringify(newTargetLocation, null, 2)}
     });
   }
   function writeMessage(db, readerUuid, messageJson) {
-    var time = (/* @__PURE__ */ new Date()).getTime();
+    var time = new Date().getTime();
     var writeObject = {
       uuid: readerUuid,
       time,
@@ -4554,7 +4554,7 @@ ${JSON.stringify(newTargetLocation, null, 2)}
     }));
   }
   function getOldMessages(db, ttl) {
-    var olderThen = (/* @__PURE__ */ new Date()).getTime() - ttl;
+    var olderThen = new Date().getTime() - ttl;
     var tx = db.transaction(OBJECT_STORE_ID, "readonly", TRANSACTION_SETTINGS);
     var objectStore = tx.objectStore(OBJECT_STORE_ID);
     var ret = [];
@@ -4716,7 +4716,7 @@ ${JSON.stringify(newTargetLocation, null, 2)}
         var key = storageKey(channelState.channelName);
         var writeObj = {
           token: randomToken(),
-          time: (/* @__PURE__ */ new Date()).getTime(),
+          time: new Date().getTime(),
           data: messageJson,
           uuid: channelState.uuid
         };
