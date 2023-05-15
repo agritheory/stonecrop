@@ -4627,7 +4627,7 @@ class Ul {
   }
   setCellData(t, n, o) {
     this.table[`${n}:${t}`] !== o && (this.display[t].modified = !0), this.table[`${n}:${t}`] = o;
-    let r = this.columns[n];
+    const r = this.columns[n];
     return this.rows[t][r.name] = o, this.table[`${n}:${t}`];
   }
   toggleRowExpand(t) {
