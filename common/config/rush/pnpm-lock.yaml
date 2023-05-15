@@ -109,7 +109,7 @@ importers:
 
   ../../code_editor:
     specifiers:
-      '@agritheory/atable': workspace:^0.2.0
+      '@agritheory/atable': workspace:*
       '@agritheory/themes': workspace:*
       '@agritheory/utilities': workspace:*
       '@histoire/plugin-vue': ^0.14.2
@@ -152,9 +152,9 @@ importers:
 
   ../../desktop:
     specifiers:
-      '@agritheory/aform': workspace:^0.2.0
-      '@agritheory/atable': workspace:^0.2.0
-      '@agritheory/stonecrop': workspace:^0.2.0
+      '@agritheory/aform': workspace:*
+      '@agritheory/atable': workspace:*
+      '@agritheory/stonecrop': workspace:*
       '@agritheory/themes': workspace:*
       '@miragejs/graphql': ^0.1.13
       '@typescript-eslint/eslint-plugin': ^5.33.0
@@ -193,12 +193,12 @@ importers:
 
   ../../examples:
     specifiers:
-      '@agritheory/aform': workspace:^0.2.0
-      '@agritheory/atable': workspace:^0.2.0
-      '@agritheory/desktop': workspace:^0.2.0
-      '@agritheory/graphql-client': workspace:^0.2.0
-      '@agritheory/node-editor': workspace:^0.2.0
-      '@agritheory/stonecrop': workspace:^0.2.0
+      '@agritheory/aform': workspace:*
+      '@agritheory/atable': workspace:*
+      '@agritheory/desktop': workspace:*
+      '@agritheory/graphql-client': workspace:*
+      '@agritheory/node-editor': workspace:*
+      '@agritheory/stonecrop': workspace:*
       '@agritheory/themes': workspace:*
       '@miragejs/graphql': ^0.1.13
       '@types/graphql': ~14.5.0
@@ -252,7 +252,7 @@ importers:
 
   ../../graphql_client:
     specifiers:
-      '@agritheory/stonecrop': workspace:^0.2.0
+      '@agritheory/stonecrop': workspace:*
       '@miragejs/graphql': ^0.1.13
       '@types/graphql': ~14.5.0
       '@typescript-eslint/eslint-plugin': ^5.33.0
@@ -312,8 +312,8 @@ importers:
 
   ../../stonecrop:
     specifiers:
-      '@agritheory/aform': workspace:^0.2.0
-      '@agritheory/atable': workspace:^0.2.0
+      '@agritheory/aform': workspace:*
+      '@agritheory/atable': workspace:*
       '@typescript-eslint/eslint-plugin': ^5.33.0
       '@typescript-eslint/parser': ^5.33.0
       '@vitejs/plugin-vue': ^4.0.0
