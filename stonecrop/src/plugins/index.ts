@@ -8,9 +8,11 @@ import { pinia } from '../stores'
 export default {
 	install: (app: App, options?: InstallOptions) => {
 		const appRouter = options?.router || router
+		const registry = new Registry(appRouter, options?.getMeta)
+
 		app.use(appRouter)
 		app.use(pinia)
-		app.provide('$registry', new Registry(appRouter, options?.doctypeLoader))
+		app.provide('$registry', registry)
 
 		if (options?.components) {
 			for (const [tag, component] of Object.entries(options.components)) {

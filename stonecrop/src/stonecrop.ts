@@ -1,5 +1,6 @@
 import type { ImmutableDoctype, Schema } from 'types/index'
 import DoctypeMeta from './doctype'
+import { NotImplementedError } from './exceptions'
 import Registry from './registry'
 import { useDataStore } from './stores/data'
 
@@ -82,6 +83,11 @@ export class Stonecrop {
 	 * @param {ImmutableDoctype['workflow']} [workflow] - (optional) The Stonecrop workflow
 	 * @param {ImmutableDoctype['actions']} [actions] - (optional) The Stonecrop actions
 	 * @returns {Stonecrop} The Stonecrop instance
+	 * @description The Stonecrop constructor initializes a new Stonecrop instance with the given registry, store, schema, workflow, and actions. If a Stonecrop instance has already been created, it returns the existing instance instead of creating a new one.
+	 * @example
+	 * const registry = new Registry()
+	 * const store = useDataStore()
+	 * const stonecrop = new Stonecrop(registry, store, schema, workflow, actions)
 	 */
 	constructor(
 		registry: Registry,
@@ -107,7 +113,7 @@ export class Stonecrop {
 	 * @returns {void}
 	 * @description Sets up the Stonecrop instance with the given doctype
 	 * @example
-	 * const doctype = await registry.doctypeLoader('Task')
+	 * const doctype = await registry.getMeta('Task')
 	 * stonecrop.setup(doctype)
 	 */
 	setup(doctype: DoctypeMeta): void {
@@ -122,11 +128,11 @@ export class Stonecrop {
 	 * @returns {void}
 	 * @description Gets the meta for the given doctype
 	 * @example
-	 * const doctype = await registry.doctypeLoader('Task')
+	 * const doctype = await registry.getMeta('Task')
 	 * stonecrop.getMeta(doctype)
 	 */
 	getMeta(doctype: DoctypeMeta): void {
-		this.schema = { doctype: doctype.doctype, schema: doctype.schema }
+		return this.registry.getMeta ? this.registry.getMeta(doctype.doctype) : new NotImplementedError(doctype.doctype)
 	}
 
 	/**
@@ -135,7 +141,7 @@ export class Stonecrop {
 	 * @returns {void}
 	 * @description Gets the workflow for the given doctype
 	 * @example
-	 * const doctype = await registry.doctypeLoader('Task')
+	 * const doctype = await registry.getMeta('Task')
 	 * stonecrop.getWorkflow(doctype)
 	 */
 	getWorkflow(doctype: DoctypeMeta): void {
@@ -149,7 +155,7 @@ export class Stonecrop {
 	 * @returns {void}
 	 * @description Gets the actions for the given doctype
 	 * @example
-	 * const doctype = await registry.doctypeLoader('Task')
+	 * const doctype = await registry.getMeta('Task')
 	 * stonecrop.getActions(doctype)
 	 */
 	getActions(doctype: DoctypeMeta): void {
@@ -164,10 +170,10 @@ export class Stonecrop {
 	 * @returns {Promise<void>}
 	 * @description Gets the records for the given doctype
 	 * @example
-	 * const doctype = await registry.doctypeLoader('Task')
+	 * const doctype = await registry.getMeta('Task')
 	 * await stonecrop.getRecords(doctype)
 	 * @example
-	 * const doctype = await registry.doctypeLoader('Task')
+	 * const doctype = await registry.getMeta('Task')
 	 * const filters = JSON.stringify({ status: 'Open' })
 	 * await stonecrop.getRecords(doctype, { body: filters })
 	 */
@@ -185,7 +191,7 @@ export class Stonecrop {
 	 * @returns {Promise<void>}
 	 * @description Gets the record for the given doctype and id
 	 * @example
-	 * const doctype = await registry.doctypeLoader('Task')
+	 * const doctype = await registry.getMeta('Task')
 	 * await stonecrop.getRecord(doctype, 'TASK-00001')
 	 */
 	async getRecord(doctype: DoctypeMeta, id: string): Promise<void> {
@@ -203,16 +209,16 @@ export class Stonecrop {
 	 * @returns {void}
 	 * @description Runs the action for the given doctype and id
 	 * @example
-	 * const doctype = await registry.doctypeLoader('Task')
+	 * const doctype = await registry.getMeta('Task')
 	 * stonecrop.runAction(doctype, 'CREATE')
 	 * @example
-	 * const doctype = await registry.doctypeLoader('Task')
+	 * const doctype = await registry.getMeta('Task')
 	 * stonecrop.runAction(doctype, 'UPDATE', ['TASK-00001'])
 	 * @example
-	 * const doctype = await registry.doctypeLoader('Task')
+	 * const doctype = await registry.getMeta('Task')
 	 * stonecrop.runAction(doctype, 'DELETE', ['TASK-00001'])
 	 * @example
-	 * const doctype = await registry.doctypeLoader('Task')
+	 * const doctype = await registry.getMeta('Task')
 	 * stonecrop.runAction(doctype, 'TRANSITION', ['TASK-00001', 'TASK-00002'])
 	 */
 	runAction(doctype: DoctypeMeta, action: string, id?: string[]): void {

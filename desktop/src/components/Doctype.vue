@@ -31,7 +31,7 @@ watch(isReady, () => {
 // const recordId = route.params.record?.toString().toLowerCase()
 
 // const saveRecord = async () => {
-// 	const doctype: DoctypeMeta = await stonecrop.value.registry.doctypeLoader(doctypeSlug)
+// 	const doctype: DoctypeMeta = await stonecrop.value.registry.getMeta(doctypeSlug)
 // 	stonecrop.value.runAction(doctype, 'save', recordId ? [recordId] : [])
 // }
 </script>

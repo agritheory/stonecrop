@@ -7,9 +7,9 @@ export default class Registry {
 	name: string
 	router: Router
 	registry: Record<string, DoctypeMeta>
-	doctypeLoader: (doctype: string) => DoctypeMeta | Promise<DoctypeMeta>
+	getMeta?: (doctype: string) => DoctypeMeta | Promise<DoctypeMeta>
 
-	constructor(router: Router, doctypeLoader: (doctype: string) => DoctypeMeta | Promise<DoctypeMeta> = undefined) {
+	constructor(router: Router, getMeta?: (doctype: string) => DoctypeMeta | Promise<DoctypeMeta>) {
 		if (Registry._root) {
 			return Registry._root
 		}
@@ -17,7 +17,7 @@ export default class Registry {
 		this.name = 'Registry'
 		this.router = router
 		this.registry = {}
-		this.doctypeLoader = doctypeLoader
+		this.getMeta = getMeta
 	}
 
 	addDoctype(doctype: DoctypeMeta) {

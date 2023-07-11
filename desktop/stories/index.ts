@@ -44,7 +44,7 @@ app.use(Stonecrop, {
 		SheetNav,
 	},
 	// TODO: or if doctype is a function [doctype].apply()
-	doctypeLoader: async (doctype: string) => {
+	getMeta: async (doctype: string) => {
 		// TODO: normally this would be configured as a memoized/cached call to a server
 		const response = await fetch(`/meta/${doctype}`)
 		const data: MutableDoctype = await response.json()
