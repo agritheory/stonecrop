@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@agritheory/desktop",
+      "comment": "Update stonecrop API",
+      "type": "none"
+    }
+  ],
+  "packageName": "@agritheory/desktop"
+}
