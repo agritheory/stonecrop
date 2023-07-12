@@ -55,11 +55,13 @@ class Stonecrop {
   /**
    * @method getMeta
    * @param {DoctypeMeta} doctype - The doctype to get meta for
-   * @returns {void}
+   * @returns {DoctypeMeta}
+   * @see {@link DoctypeMeta}
+   * @throws NotImplementedError
    * @description Gets the meta for the given doctype
    * @example
    * const doctype = await registry.getMeta('Task')
-   * stonecrop.getMeta(doctype)
+   * const meta = stonecrop.getMeta(doctype)
    */
   getMeta(doctype) {
     return this.registry.getMeta ? this.registry.getMeta(doctype.doctype) : new NotImplementedError(doctype.doctype);
