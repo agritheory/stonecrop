@@ -31,6 +31,10 @@
 		<Variant title="Fieldset with Table">
 			<AForm class="aform-main" v-model="fieldset_table_schema_ref" :data="data" />
 		</Variant>
+		<Variant title="ADate Testing">
+			<AForm class="aform-main" v-model="adate_test_schema" :data="data"> </AForm>
+			<AModal id="amodal" />
+		</Variant>
 	</Story>
 </template>
 
@@ -46,6 +50,15 @@ const form_schema = ref(basic_form_schema)
 const fieldset_schema = ref(basic_fieldset_schema)
 const table_schema = ref(basic_table_schema)
 const fieldset_table_schema_ref = ref(fieldset_table_schema)
+
+const adate_test_schema = ref([
+	{
+		fieldname: 'date',
+		component: 'ADate',
+		label: 'Date',
+		fieldtype: 'Date',
+	},
+])
 
 const data = ref([])
 const locale = ref('en-US')

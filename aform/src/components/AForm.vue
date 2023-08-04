@@ -17,6 +17,7 @@
 import { ref, computed } from 'vue'
 
 import { SchemaTypes } from 'types'
+import AModal from './base/AModal.vue'
 
 const props = defineProps<{
 	modelValue: SchemaTypes[]

@@ -29,4 +29,8 @@ export type FieldsetSchema = BasicSchema & {
 	collapsible?: boolean
 }
 
-export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema
+type AModalType = {
+	open: boolean
+}
+
+export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema | AModalType

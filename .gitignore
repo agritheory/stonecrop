@@ -69,3 +69,5 @@ common/autoinstallers/*/.npmrc
 
 # XState generated files
 **/*.typegen.ts
+
+*.code-workspace

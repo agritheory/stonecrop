@@ -21,8 +21,8 @@
 	},
 	{
 		"fieldname": "date",
-		"fieldtype": "Date",
-		"component": "ATextInput",
+
+		"component": "ADate",
 		"label": "Date"
 	},
 	{
