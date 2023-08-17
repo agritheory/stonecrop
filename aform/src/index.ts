@@ -6,6 +6,7 @@ import ADate from '@/components/form/ADate.vue'
 import ADatePicker from '@/components/base/ADatePicker.vue'
 import AFieldset from '@/components/form/AFieldset.vue'
 import AForm from '@/components/AForm.vue'
+import AModal from '@/components/base/AModal.vue'
 import ANumericInput from '@/components/form/ANumericInput.vue'
 import ATextInput from '@/components/form/ATextInput.vue'
 // import { ACurrency } from '@/components/form/ACurrency.vue'
@@ -18,6 +19,7 @@ function install(app: App /* options */) {
 	app.component('ADatePicker', ADatePicker)
 	app.component('AFieldset', AFieldset)
 	app.component('AForm', AForm)
+	app.component('AModal', AModal)
 	app.component('ANumericInput', ANumericInput)
 	app.component('ATextInput', ATextInput)
 	// app.component('ACurrency', ACurrency)

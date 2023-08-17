@@ -14,38 +14,35 @@
 		</div>
 	</Teleport>
 </template>
-<script lang="ts">
-import { ref, defineComponent, withDefaults, defineProps } from 'vue'
-import { useAModal } from '../../modal'
+
+<script setup lang="ts">
+import { Component, ref } from 'vue'
+
+import { useAModal } from '@/modal'
 
 const open = ref(false)
-
 const props = withDefaults(
 	defineProps<{
-		open: boolean
-		target: Object
-		component: string
+		target?: Record<string, any>
+		component?: string | Component
 	}>(),
 	{
-		target: {
-			position: {
-				top: 0,
-				left: 0,
-				width: 0,
-				height: 0,
-			},
+		target: () => {
+			return {
+				position: {
+					top: 0,
+					left: 0,
+					width: 0,
+					height: 0,
+				},
+			}
 		},
 	}
 )
 
-export default defineComponent({
-	setup(props) {
-		const { open, target, component } = useAModal(props.open, props.target, props.component)
-		console.log(open, target, component)
-		return { open, target, component }
-	},
-})
+const { target, component } = useAModal(props.target, props.component)
 </script>
+
 <style>
 .amodal {
 	border: 1px solid aqua;

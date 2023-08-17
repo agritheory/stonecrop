@@ -75,7 +75,7 @@ export default defineComponent({
 	},
 	methods: {
 		toggleModal() {
-			useAModal(true, this, 'ADatePicker')
+			useAModal(this, 'ADatePicker')
 		},
 	},
 })
