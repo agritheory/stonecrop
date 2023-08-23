@@ -1,5 +1,5 @@
-import { defineComponent as I, computed as S, openBlock as g, createElementBlock as w, createElementVNode as d, withDirectives as A, isRef as ge, vModelCheckbox as He, unref as y, toDisplayString as D, vShow as L, resolveComponent as qe, createBlock as V, withCtx as Re, getCurrentInstance as Qe, onMounted as Q, nextTick as he, getCurrentScope as be, onScopeDispose as _e, ref as f, watch as $, inject as U, resolveDirective as we, vModelText as j, onBeforeUnmount as Ue, Fragment as F, renderList as H, normalizeStyle as ke, withModifiers as je, normalizeClass as Ie, createCommentVNode as N, resolveDynamicComponent as Ne, mergeProps as We, createTextVNode as ze, renderSlot as Ye, createVNode as Ge, Teleport as Ke } from "vue";
-const Je = { id: "checkbox-container" }, Xe = ["id", "readonly", "required"], Ze = { id: "custom-checkbox" }, et = ["for"], tt = ["innerHTML"], nt = /* @__PURE__ */ I({
+import { defineComponent as O, computed as S, openBlock as g, createElementBlock as w, createElementVNode as p, withDirectives as x, isRef as ge, vModelCheckbox as Qe, unref as y, toDisplayString as D, vShow as V, resolveComponent as he, createBlock as P, withCtx as Ue, getCurrentInstance as je, onMounted as Q, nextTick as be, getCurrentScope as _e, onScopeDispose as we, ref as f, watch as $, inject as U, resolveDirective as ke, vModelText as j, createVNode as Oe, onBeforeUnmount as Ne, Fragment as F, renderList as H, normalizeStyle as Ie, withModifiers as We, normalizeClass as Ee, createCommentVNode as N, resolveDynamicComponent as Ae, mergeProps as ze, createTextVNode as Ye, renderSlot as Ge, Teleport as Ke } from "vue";
+const Je = { id: "checkbox-container" }, Xe = ["id", "readonly", "required"], Ze = { id: "custom-checkbox" }, et = ["for"], tt = ["innerHTML"], nt = /* @__PURE__ */ O({
   __name: "ACheckbox",
   props: {
     label: null,
@@ -20,8 +20,8 @@ const Je = { id: "checkbox-container" }, Xe = ["id", "readonly", "required"], Ze
       }
     });
     return (l, a) => (g(), w("div", null, [
-      d("label", Je, [
-        A(d("input", {
+      p("label", Je, [
+        x(p("input", {
           "onUpdate:modelValue": a[0] || (a[0] = (r) => ge(o) ? o.value = r : null),
           type: "checkbox",
           id: e.uuid,
@@ -29,18 +29,18 @@ const Je = { id: "checkbox-container" }, Xe = ["id", "readonly", "required"], Ze
           readonly: e.readOnly,
           required: e.required
         }, null, 8, Xe), [
-          [He, y(o)]
+          [Qe, y(o)]
         ]),
-        d("span", Ze, D(y(o)), 1)
+        p("span", Ze, D(y(o)), 1)
       ]),
-      d("label", {
+      p("label", {
         for: e.uuid,
         id: "checkbox-label"
       }, D(e.label), 9, et),
-      A(d("p", {
+      x(p("p", {
         innerHTML: e.validation.errorMessage
       }, null, 8, tt), [
-        [L, e.validation.errorMessage]
+        [V, e.validation.errorMessage]
       ])
     ]));
   }
@@ -50,22 +50,22 @@ const C = (e, t) => {
   for (const [o, l] of t)
     n[o] = l;
   return n;
-}, ot = /* @__PURE__ */ C(nt, [["__scopeId", "data-v-743cd4db"]]), lt = /* @__PURE__ */ d("div", null, [
-  /* @__PURE__ */ d("input", { type: "text" }),
-  /* @__PURE__ */ d("input", { type: "text" }),
-  /* @__PURE__ */ d("input", { type: "text" })
-], -1), at = /* @__PURE__ */ I({
+}, ot = /* @__PURE__ */ C(nt, [["__scopeId", "data-v-743cd4db"]]), lt = /* @__PURE__ */ p("div", null, [
+  /* @__PURE__ */ p("input", { type: "text" }),
+  /* @__PURE__ */ p("input", { type: "text" }),
+  /* @__PURE__ */ p("input", { type: "text" })
+], -1), at = /* @__PURE__ */ O({
   __name: "AComboBox",
   props: ["event", "cellData", "tableID"],
   setup(e) {
     return (t, n) => {
-      const o = qe("ATableModal");
-      return g(), V(o, {
+      const o = he("ATableModal");
+      return g(), P(o, {
         event: e.event,
         cellData: e.cellData,
         class: "amodal"
       }, {
-        default: Re(() => [
+        default: Ue(() => [
           lt
         ]),
         _: 1
@@ -121,7 +121,7 @@ function it(e, t, n) {
   }
   return o.slice(0, t.length);
 }
-function Ee(e, t) {
+function xe(e, t) {
   const n = st(t);
   if (!n)
     return;
@@ -133,44 +133,44 @@ function Ee(e, t) {
     e.value = n;
 }
 var J;
-const Oe = typeof window < "u", ct = (e) => typeof e == "string", dt = () => {
+const De = typeof window < "u", ct = (e) => typeof e == "string", dt = () => {
 };
-Oe && ((J = window == null ? void 0 : window.navigator) != null && J.userAgent) && /iP(ad|hone|od)/.test(window.navigator.userAgent);
-function xe(e) {
+De && ((J = window == null ? void 0 : window.navigator) != null && J.userAgent) && /iP(ad|hone|od)/.test(window.navigator.userAgent);
+function Ce(e) {
   return typeof e == "function" ? e() : y(e);
 }
 function pt(e) {
   return e;
 }
-function Ae(e) {
-  return be() ? (_e(e), !0) : !1;
+function Me(e) {
+  return _e() ? (we(e), !0) : !1;
 }
-function De(e, t = !0) {
-  Qe() ? Q(e) : t ? e() : he(e);
+function Te(e, t = !0) {
+  je() ? Q(e) : t ? e() : be(e);
 }
-function B(e) {
+function L(e) {
   var t;
-  const n = xe(e);
+  const n = Ce(e);
   return (t = n == null ? void 0 : n.$el) != null ? t : n;
 }
-const Ce = Oe ? window : void 0;
+const Se = De ? window : void 0;
 function X(...e) {
   let t, n, o, l;
-  if (ct(e[0]) || Array.isArray(e[0]) ? ([n, o, l] = e, t = Ce) : [t, n, o, l] = e, !t)
+  if (ct(e[0]) || Array.isArray(e[0]) ? ([n, o, l] = e, t = Se) : [t, n, o, l] = e, !t)
     return dt;
   Array.isArray(n) || (n = [n]), Array.isArray(o) || (o = [o]);
   const a = [], r = () => {
     a.forEach((c) => c()), a.length = 0;
-  }, s = (c, m, v, p) => (c.addEventListener(m, v, p), () => c.removeEventListener(m, v, p)), u = $(() => [B(t), xe(l)], ([c, m]) => {
-    r(), c && a.push(...n.flatMap((v) => o.map((p) => s(c, v, p, m))));
+  }, s = (c, m, v, d) => (c.addEventListener(m, v, d), () => c.removeEventListener(m, v, d)), u = $(() => [L(t), Ce(l)], ([c, m]) => {
+    r(), c && a.push(...n.flatMap((v) => o.map((d) => s(c, v, d, m))));
   }, { immediate: !0, flush: "post" }), i = () => {
     u(), r();
   };
-  return Ae(i), i;
+  return Me(i), i;
 }
 function ft(e, t = !1) {
   const n = f(), o = () => n.value = !!e();
-  return o(), De(o, t), n;
+  return o(), Te(o, t), n;
 }
 const Z = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, ee = "__vueuse_ssr_handlers__";
 Z[ee] = Z[ee] || {};
@@ -184,16 +184,16 @@ var te = Object.getOwnPropertySymbols, mt = Object.prototype.hasOwnProperty, vt 
   return n;
 };
 function gt(e, t, n = {}) {
-  const o = n, { window: l = Ce } = o, a = yt(o, ["window"]);
+  const o = n, { window: l = Se } = o, a = yt(o, ["window"]);
   let r;
   const s = ft(() => l && "ResizeObserver" in l), u = () => {
     r && (r.disconnect(), r = void 0);
-  }, i = $(() => B(e), (m) => {
+  }, i = $(() => L(e), (m) => {
     u(), s.value && l && m && (r = new ResizeObserver(t), r.observe(m, a));
   }, { immediate: !0, flush: "post" }), c = () => {
     u(), i();
   };
-  return Ae(c), {
+  return Me(c), {
     isSupported: s,
     stop: c
   };
@@ -204,17 +204,17 @@ function ht(e, t = {}) {
     windowResize: o = !0,
     windowScroll: l = !0,
     immediate: a = !0
-  } = t, r = f(0), s = f(0), u = f(0), i = f(0), c = f(0), m = f(0), v = f(0), p = f(0);
+  } = t, r = f(0), s = f(0), u = f(0), i = f(0), c = f(0), m = f(0), v = f(0), d = f(0);
   function b() {
-    const M = B(e);
+    const M = L(e);
     if (!M) {
-      n && (r.value = 0, s.value = 0, u.value = 0, i.value = 0, c.value = 0, m.value = 0, v.value = 0, p.value = 0);
+      n && (r.value = 0, s.value = 0, u.value = 0, i.value = 0, c.value = 0, m.value = 0, v.value = 0, d.value = 0);
       return;
     }
     const k = M.getBoundingClientRect();
-    r.value = k.height, s.value = k.bottom, u.value = k.left, i.value = k.right, c.value = k.top, m.value = k.width, v.value = k.x, p.value = k.y;
+    r.value = k.height, s.value = k.bottom, u.value = k.left, i.value = k.right, c.value = k.top, m.value = k.width, v.value = k.x, d.value = k.y;
   }
-  return gt(e, b), $(() => B(e), (M) => !M && b()), l && X("scroll", b, { capture: !0, passive: !0 }), o && X("resize", b, { passive: !0 }), De(() => {
+  return gt(e, b), $(() => L(e), (M) => !M && b()), l && X("scroll", b, { capture: !0, passive: !0 }), o && X("resize", b, { passive: !0 }), Te(() => {
     a && b();
   }), {
     height: r,
@@ -224,7 +224,7 @@ function ht(e, t = {}) {
     top: c,
     width: m,
     x: v,
-    y: p,
+    y: d,
     update: b
   };
 }
@@ -240,7 +240,7 @@ var bt = Object.defineProperty, oe = Object.getOwnPropertySymbols, _t = Object.p
       wt.call(t, n) && le(e, n, t[n]);
   return e;
 };
-const It = {
+const Ot = {
   easeInSine: [0.12, 0, 0.39, 0],
   easeOutSine: [0.61, 1, 0.88, 1],
   easeInOutSine: [0.37, 0, 0.63, 1],
@@ -268,18 +268,20 @@ const It = {
 };
 kt({
   linear: pt
-}, It);
+}, Ot);
 function q(e, t) {
-  console.log(e, t);
-  const n = ht(e.$el);
-  return e.position = {
-    top: n.bottom.value,
-    left: n.left.value,
-    width: n.width.value,
-    height: "1.15rem"
-  }, { target: e, component: t };
+  if (console.log(e, t), e) {
+    const n = ht(e.$el);
+    e.position = {
+      top: n.bottom.value,
+      left: n.left.value,
+      width: n.width.value,
+      height: "1.15rem"
+    };
+  }
+  return { target: e, component: t };
 }
-const Et = I({
+const It = O({
   name: "ADate",
   props: {
     schema: {
@@ -312,73 +314,74 @@ const Et = I({
     }
   },
   setup(e, t) {
-    const n = f(!1), o = U("locale", "");
-    return { inputText: S({
+    const n = f(!1), o = f(!1), { target: l, component: a } = q(this, "ADatePicker"), r = U("locale", ""), s = S({
       get() {
         return e.modelValue;
       },
-      set(a) {
-        t.emit("update:modelValue", a);
+      set(u) {
+        t.emit("update:modelValue", u);
       }
-    }), locale: o, maskFilled: n, useAModal: q };
+    });
+    return { component: a, inputText: s, locale: r, maskFilled: n, modalOpen: o, target: l, useAModal: q };
   },
   directives: {
-    mask: Ee
-  },
-  methods: {
-    toggleModal() {
-      q(this, "ADatePicker");
-    }
+    mask: xe
   }
 });
-const Ot = ["id", "disabled", "maxlength", "required"], xt = ["for"];
-function At(e, t, n, o, l, a) {
-  const r = we("mask");
+const Et = ["id", "disabled", "maxlength", "required"], At = ["for"];
+function xt(e, t, n, o, l, a) {
+  const r = he("AModal"), s = ke("mask");
   return g(), w("div", null, [
-    A(d("input", {
-      "onUpdate:modelValue": t[0] || (t[0] = (s) => e.inputText = s),
+    x(p("input", {
+      "onUpdate:modelValue": t[0] || (t[0] = (u) => e.inputText = u),
       id: e.uuid,
       ref: "uuid",
       disabled: e.readonly,
       maxlength: e.mask ? e.maskFilled && e.mask.length : void 0,
       required: e.required,
-      onClick: t[1] || (t[1] = (...s) => e.toggleModal && e.toggleModal(...s))
-    }, null, 8, Ot), [
+      onClick: t[1] || (t[1] = (u) => e.modalOpen = !e.modalOpen)
+    }, null, 8, Et), [
       [j, e.inputText],
-      [r, e.mask]
+      [s, e.mask]
     ]),
-    d("label", { for: e.uuid }, D(e.label), 9, xt)
+    p("label", { for: e.uuid }, D(e.label), 9, At),
+    Oe(r, {
+      id: "amodal",
+      open: e.modalOpen,
+      target: e.target,
+      component: e.component
+    }, null, 8, ["open", "target", "component"])
   ]);
 }
-const Dt = /* @__PURE__ */ C(Et, [["render", At], ["__scopeId", "data-v-cb714523"]]);
+const Dt = /* @__PURE__ */ C(It, [["render", xt], ["__scopeId", "data-v-e6bbe426"]]);
 var ae;
-const Me = typeof window < "u", Ct = (e) => typeof e == "string", Mt = () => {
+const $e = typeof window < "u", Ct = (e) => typeof e == "string", Mt = () => {
 };
-Me && (ae = window == null ? void 0 : window.navigator) != null && ae.userAgent && /iP(ad|hone|od)/.test(window.navigator.userAgent);
-function Te(e) {
+$e && (ae = window == null ? void 0 : window.navigator) != null && ae.userAgent && /iP(ad|hone|od)/.test(window.navigator.userAgent);
+function Pe(e) {
   return typeof e == "function" ? e() : y(e);
 }
 function Tt(e) {
   return e;
 }
 function St(e) {
-  return be() ? (_e(e), !0) : !1;
+  return _e() ? (we(e), !0) : !1;
 }
 function R(e) {
   var t;
-  const n = Te(e);
+  const n = Pe(e);
   return (t = n == null ? void 0 : n.$el) != null ? t : n;
 }
-const Se = Me ? window : void 0;
+const Be = $e ? window : void 0;
 function $t(...e) {
   let t, n, o, l;
-  if (Ct(e[0]) || Array.isArray(e[0]) ? ([n, o, l] = e, t = Se) : [t, n, o, l] = e, !t)
+  if (Ct(e[0]) || Array.isArray(e[0]) ? ([n, o, l] = e, t = Be) : [t, n, o, l] = e, !t)
     return Mt;
   Array.isArray(n) || (n = [n]), Array.isArray(o) || (o = [o]);
   const a = [], r = () => {
     a.forEach((c) => c()), a.length = 0;
-  }, s = (c, m, v, p) => (c.addEventListener(m, v, p), () => c.removeEventListener(m, v, p)), u = $(() => [R(t), Te(l)], ([c, m]) => {
-    r(), c && a.push(...n.flatMap((v) => o.map((p) => s(c, v, p, m))));
+  }, s = (c, m, v, d) => (c.addEventListener(m, v, d), () => c.removeEventListener(m, v, d)), u = $(() => [R(t), Pe(l)], ([c, m]) => {
+    r(), c && a.push(...n.flatMap((v) => o.map((d) => s(c, v, d, m))));
   }, { immediate: !0, flush: "post" }), i = () => {
     u(), r();
   };
@@ -386,7 +389,7 @@ function $t(...e) {
 }
 const re = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, se = "__vueuse_ssr_handlers__";
 re[se] = re[se] || {};
-function Pt(e, { window: t = Se, scrollTarget: n } = {}) {
+function Pt(e, { window: t = Be, scrollTarget: n } = {}) {
   const o = f(!1), l = () => {
     if (!t)
       return;
@@ -444,10 +447,10 @@ const Ht = {
 Ft({
   linear: Tt
 }, Ht);
-const O = (e) => {
+const E = (e) => {
   let t = Pt(e).value;
   return t = t && e.offsetHeight > 0, t;
-}, x = (e) => e.tabIndex >= 0, de = (e) => {
+}, A = (e) => e.tabIndex >= 0, de = (e) => {
   const t = e.target;
   return W(t);
 }, W = (e) => {
@@ -463,7 +466,7 @@ const O = (e) => {
     const o = e.previousElementSibling;
     o && (n = o);
   }
-  return n && (!x(n) || !O(n)) ? W(n) : n;
+  return n && (!A(n) || !E(n)) ? W(n) : n;
 }, qt = (e) => {
   var t;
   const n = e.target;
@@ -481,7 +484,7 @@ const O = (e) => {
       a && (o = a);
     }
   }
-  return o && (!x(o) || !O(o)) ? z(o) : o;
+  return o && (!A(o) || !E(o)) ? z(o) : o;
 }, pe = (e) => {
   const t = e.target;
   return z(t);
@@ -498,7 +501,7 @@ const O = (e) => {
     const o = e.nextElementSibling;
     o && (n = o);
   }
-  return n && (!x(n) || !O(n)) ? z(n) : n;
+  return n && (!A(n) || !E(n)) ? z(n) : n;
 }, Rt = (e) => {
   var t;
   const n = e.target;
@@ -516,7 +519,7 @@ const O = (e) => {
       a && (o = a);
     }
   }
-  return o && (!x(o) || !O(o)) ? W(o) : o;
+  return o && (!A(o) || !E(o)) ? W(o) : o;
 }, fe = (e) => {
   const t = e.target;
   return Y(t);
@@ -529,7 +532,7 @@ const O = (e) => {
     const o = (t = e.parentElement) == null ? void 0 : t.previousElementSibling;
     n = o == null ? void 0 : o.lastElementChild;
   }
-  return n && (!x(n) || !O(n)) ? Y(n) : n;
+  return n && (!A(n) || !E(n)) ? Y(n) : n;
 }, me = (e) => {
   const t = e.target;
   return G(t);
@@ -542,19 +545,19 @@ const O = (e) => {
     const o = (t = e.parentElement) == null ? void 0 : t.nextElementSibling;
     n = o == null ? void 0 : o.firstElementChild;
   }
-  return n && (!x(n) || !O(n)) ? G(n) : n;
+  return n && (!A(n) || !E(n)) ? G(n) : n;
 }, ve = (e) => {
   const t = e.target.parentElement.firstElementChild;
-  return t && (!x(t) || !O(t)) ? G(t) : t;
+  return t && (!A(t) || !E(t)) ? G(t) : t;
 }, ye = (e) => {
   const t = e.target.parentElement.lastElementChild;
-  return t && (!x(t) || !O(t)) ? Y(t) : t;
-}, P = ["alt", "control", "shift", "meta"], Qt = {
+  return t && (!A(t) || !E(t)) ? Y(t) : t;
+}, B = ["alt", "control", "shift", "meta"], Qt = {
   ArrowUp: "up",
   ArrowDown: "down",
   ArrowLeft: "left",
   ArrowRight: "right"
-}, $e = {
+}, Le = {
   "keydown.up": (e) => {
     const t = de(e);
     t && (e.preventDefault(), e.stopPropagation(), t.focus());
@@ -634,25 +637,25 @@ function Ut(e) {
       else
         a.push(o.selectors.value);
     else
-      a = Array.from(l.children).filter((r) => x(r) && O(r));
+      a = Array.from(l.children).filter((r) => A(r) && E(r));
     return a;
   }, n = (o) => (l) => {
     const a = Qt[l.key] || l.key.toLowerCase();
-    if (P.includes(a))
+    if (B.includes(a))
       return;
-    const r = o.handlers || $e;
+    const r = o.handlers || Le;
     for (const s of Object.keys(r)) {
       const [u, ...i] = s.split(".");
       if (u === "keydown" && i.includes(a)) {
-        const c = r[s], m = i.filter((p) => P.includes(p)), v = P.some((p) => {
-          const b = p.charAt(0).toUpperCase() + p.slice(1);
+        const c = r[s], m = i.filter((d) => B.includes(d)), v = B.some((d) => {
+          const b = d.charAt(0).toUpperCase() + d.slice(1);
           return l.getModifierState(b);
         });
         if (m.length > 0) {
           if (v) {
-            for (const p of P)
-              if (i.includes(p)) {
-                const b = p.charAt(0).toUpperCase() + p.slice(1);
+            for (const d of B)
+              if (i.includes(d)) {
+                const b = d.charAt(0).toUpperCase() + d.slice(1);
                 l.getModifierState(b) && c(l);
               }
           }
@@ -667,7 +670,7 @@ function Ut(e) {
       for (const a of l)
         a.addEventListener("keydown", n(o));
     }
-  }), Ue(() => {
+  }), Ne(() => {
     for (const o of e) {
       const l = t(o);
       for (const a of l)
@@ -675,7 +678,7 @@ function Ut(e) {
     }
   });
 }
-const jt = ["event", "colIndex", "rowIndex", "tableid"], Nt = { colspan: "5" }, Wt = ["onClick"], zt = /* @__PURE__ */ I({
+const jt = ["event", "colIndex", "rowIndex", "tableid"], Nt = { colspan: "5" }, Wt = ["onClick"], zt = /* @__PURE__ */ O({
   __name: "ADatePicker",
   props: {
     colIndex: null,
@@ -689,7 +692,7 @@ const jt = ["event", "colIndex", "rowIndex", "tableid"], Nt = { colspan: "5" }, 
     const t = e, n = U(t.tableid), o = 6, l = 7, a = /* @__PURE__ */ new Date(), r = f(), s = f(), u = f(), i = f([]);
     Q(async () => {
       let h = n.cellData(t.colIndex, t.rowIndex);
-      h ? (h instanceof Date || (h = new Date(h)), r.value = h, s.value = r.value.getMonth(), u.value = r.value.getFullYear()) : (s.value = a.getMonth(), u.value = a.getFullYear()), c(), await he();
+      h ? (h instanceof Date || (h = new Date(h)), r.value = h, s.value = r.value.getMonth(), u.value = r.value.getFullYear()) : (s.value = a.getMonth(), u.value = a.getFullYear()), c(), await be();
       const T = document.getElementsByClassName("selecteddate");
       if (T.length > 0)
         T[0].focus();
@@ -703,24 +706,24 @@ const jt = ["event", "colIndex", "rowIndex", "tableid"], Nt = { colspan: "5" }, 
     const c = () => {
       i.value = [];
       const h = new Date(u.value, s.value, 1), T = h.getDay(), _ = h.setDate(h.getDate() - T);
-      for (let E of Array(43).keys())
-        i.value.push(_ + E * 864e5);
+      for (let I of Array(43).keys())
+        i.value.push(_ + I * 864e5);
     }, m = () => {
       u.value -= 1;
     }, v = () => {
       u.value += 1;
-    }, p = () => {
+    }, d = () => {
       s.value == 0 ? (s.value = 11, m()) : s.value -= 1;
     }, b = () => {
       s.value == 11 ? (s.value = 0, v()) : s.value += 1;
     }, M = (h) => {
       if (s.value === a.getMonth())
         return a.toDateString() === new Date(h).toDateString();
-    }, k = (h) => new Date(h).toDateString() === new Date(r.value).toDateString(), Be = (h, T) => {
-      r.value = new Date(i.value[T]), Le();
-    }, Le = () => {
+    }, k = (h) => new Date(h).toDateString() === new Date(r.value).toDateString(), Fe = (h, T) => {
+      r.value = new Date(i.value[T]), He();
+    }, He = () => {
       n.setCellData(t.rowIndex, t.colIndex, r.value.getTime());
-    }, Ve = S(() => new Date(u.value, s.value, 1).toLocaleDateString(void 0, {
+    }, qe = S(() => new Date(u.value, s.value, 1).toLocaleDateString(void 0, {
       year: "numeric",
       month: "long"
     }));
@@ -729,8 +732,8 @@ const jt = ["event", "colIndex", "rowIndex", "tableid"], Nt = { colspan: "5" }, 
         parent: "table.adate",
         selectors: "td",
         handlers: {
-          ...$e,
-          "keydown.pageup": p,
+          ...Le,
+          "keydown.pageup": d,
           "keydown.shift.pageup": m,
           "keydown.pagedown": b,
           "keydown.shift.pagedown": v
@@ -746,51 +749,51 @@ const jt = ["event", "colIndex", "rowIndex", "tableid"], Nt = { colspan: "5" }, 
       tabindex: "0",
       ref: "adatepicker"
     }, [
-      d("table", null, [
-        d("tr", null, [
-          d("td", {
-            onClick: p,
+      p("table", null, [
+        p("tr", null, [
+          p("td", {
+            onClick: d,
             tabindex: -1
           }, "<"),
-          d("th", Nt, D(y(Ve)), 1),
-          d("td", {
+          p("th", Nt, D(y(qe)), 1),
+          p("td", {
             onClick: b,
             tabindex: -1
           }, ">")
         ]),
-        (g(), w(F, null, H(o, (_) => d("tr", { key: _ }, [
-          (g(), w(F, null, H(l, (E) => d("td", {
-            key: (_ - 1) * l + E,
+        (g(), w(F, null, H(o, (_) => p("tr", { key: _ }, [
+          (g(), w(F, null, H(l, (I) => p("td", {
+            key: (_ - 1) * l + I,
             contenteditable: !1,
             spellcheck: !1,
             tabindex: 0,
-            style: ke({
-              border: k(i.value[(_ - 1) * l + E]) ? "2px solid var(--focus-cell-outline)" : "none",
-              borderBottomColor: M(i.value[(_ - 1) * l + E]) ? "var(--focus-cell-outline)" : "none"
+            style: Ie({
+              border: k(i.value[(_ - 1) * l + I]) ? "2px solid var(--focus-cell-outline)" : "none",
+              borderBottomColor: M(i.value[(_ - 1) * l + I]) ? "var(--focus-cell-outline)" : "none"
             }),
-            onClick: je((Fe) => Be(Fe, (_ - 1) * l + E), ["prevent", "stop"]),
-            class: Ie({
-              todaysdate: M(i.value[(_ - 1) * l + E]),
-              selecteddate: k(i.value[(_ - 1) * l + E])
+            onClick: We((Re) => Fe(Re, (_ - 1) * l + I), ["prevent", "stop"]),
+            class: Ee({
+              todaysdate: M(i.value[(_ - 1) * l + I]),
+              selecteddate: k(i.value[(_ - 1) * l + I])
             })
-          }, D(new Date(i.value[(_ - 1) * l + E]).getDate()), 15, Wt)), 64))
+          }, D(new Date(i.value[(_ - 1) * l + I]).getDate()), 15, Wt)), 64))
         ])), 64))
       ])
     ], 8, jt));
   }
 });
-const Yt = /* @__PURE__ */ C(zt, [["__scopeId", "data-v-a53b9422"]]), Gt = /* @__PURE__ */ I({
+const Yt = /* @__PURE__ */ C(zt, [["__scopeId", "data-v-a53b9422"]]), Gt = /* @__PURE__ */ O({
   __name: "CollapseButton",
   props: {
     collapsed: { type: Boolean }
   },
   setup(e) {
     return (t, n) => (g(), w("button", {
-      class: Ie(["collapse-button", e.collapsed ? "rotated" : "unrotated"])
+      class: Ee(["collapse-button", e.collapsed ? "rotated" : "unrotated"])
     }, "×", 2));
   }
 });
-const Kt = /* @__PURE__ */ C(Gt, [["__scopeId", "data-v-6f1c1b45"]]), Jt = /* @__PURE__ */ I({
+const Kt = /* @__PURE__ */ C(Gt, [["__scopeId", "data-v-6f1c1b45"]]), Jt = /* @__PURE__ */ O({
   __name: "AForm",
   props: {
     modelValue: null,
@@ -817,7 +820,7 @@ const Kt = /* @__PURE__ */ C(Gt, [["__scopeId", "data-v-6f1c1b45"]]), Jt = /* @_
       }
     });
     return (r, s) => (g(), w("form", null, [
-      (g(!0), w(F, null, H(e.modelValue, (u, i) => (g(), V(Ne(u.component), We({
+      (g(!0), w(F, null, H(e.modelValue, (u, i) => (g(), P(Ae(u.component), ze({
         key: i,
         schema: u,
         modelValue: y(a)[i].value,
@@ -828,7 +831,7 @@ const Kt = /* @__PURE__ */ C(Gt, [["__scopeId", "data-v-6f1c1b45"]]), Jt = /* @_
     ]));
   }
 });
-const Pe = /* @__PURE__ */ C(Jt, [["__scopeId", "data-v-74d66cf2"]]), Xt = /* @__PURE__ */ I({
+const Ve = /* @__PURE__ */ C(Jt, [["__scopeId", "data-v-74d66cf2"]]), Xt = /* @__PURE__ */ O({
   __name: "AFieldset",
   props: {
     schema: null,
@@ -844,31 +847,32 @@ const Pe = /* @__PURE__ */ C(Jt, [["__scopeId", "data-v-74d66cf2"]]), Xt = /* @_
       s.preventDefault(), l.value && (o.value = !o.value);
     }
     return (s, u) => (g(), w("fieldset", null, [
-      d("legend", {
+      p("legend", {
         onClick: r,
         onSubmit: r
       }, [
-        ze(D(e.label) + " ", 1),
-        y(l) ? (g(), V(Kt, {
+        Ye(D(e.label) + " ", 1),
+        y(l) ? (g(), P(Kt, {
           key: 0,
           collapsed: y(o)
         }, null, 8, ["collapsed"])) : N("", !0)
       ], 32),
-      Ye(s.$slots, "default", { collapsed: y(o) }, () => [
-        A(Ge(Pe, {
+      Ge(s.$slots, "default", { collapsed: y(o) }, () => [
+        x(Oe(Ve, {
           modelValue: a.value,
           "onUpdate:modelValue": u[0] || (u[0] = (i) => a.value = i),
           data: n.value
         }, null, 8, ["modelValue", "data"]), [
-          [L, !y(o)]
+          [V, !y(o)]
         ])
       ], !0)
     ]));
   }
 });
-const Zt = /* @__PURE__ */ C(Xt, [["__scopeId", "data-v-cad9b578"]]), en = /* @__PURE__ */ d("p", null, "Hello from the modal!", -1), tn = /* @__PURE__ */ I({
+const Zt = /* @__PURE__ */ C(Xt, [["__scopeId", "data-v-cad9b578"]]), en = { key: 1 }, tn = /* @__PURE__ */ O({
   __name: "AModal",
   props: {
+    open: { type: Boolean, default: !1 },
     target: { default: () => ({
       position: {
         top: 0,
@@ -880,27 +884,24 @@ const Zt = /* @__PURE__ */ C(Xt, [["__scopeId", "data-v-cad9b578"]]), en = /* @_
     component: null
   },
   setup(e) {
-    const t = e, n = f(!1), { target: o, component: l } = q(t.target, t.component);
-    return (a, r) => (g(), V(Ke, { to: "amodal" }, [
-      n.value ? (g(), w("div", {
+    const t = e, { target: n, component: o } = q(t.target, t.component);
+    return (l, a) => (g(), P(Ke, { to: "body" }, [
+      e.open ? (g(), w("div", {
         key: 0,
         class: "amodal",
-        style: ke({
-          top: y(o).position.top,
-          left: y(o).position.left,
-          width: y(o).position.width,
-          height: y(o).position.height
+        style: Ie({
+          top: y(n).position.top,
+          left: y(n).position.left,
+          width: y(n).position.width,
+          height: y(n).position.height
         })
       }, [
-        en,
-        d("button", {
-          onClick: r[0] || (r[0] = (s) => n.value = !1)
-        }, "Close")
+        y(o) ? (g(), P(Ae(y(o)), { key: 0 })) : (g(), w("p", en, "Hello from the modal!"))
       ], 4)) : N("", !0)
     ]));
   }
 });
-const nn = ["id", "disabled", "required"], on = ["for"], ln = ["innerHTML"], an = /* @__PURE__ */ I({
+const nn = ["id", "disabled", "required"], on = ["for"], ln = ["innerHTML"], an = /* @__PURE__ */ O({
   __name: "ANumericInput",
   props: {
     label: null,
@@ -919,7 +920,7 @@ const nn = ["id", "disabled", "required"], on = ["for"], ln = ["innerHTML"], an 
       }
     });
     return (l, a) => (g(), w("div", null, [
-      A(d("input", {
+      x(p("input", {
         "onUpdate:modelValue": a[0] || (a[0] = (r) => ge(o) ? o.value = r : null),
         type: "number",
         id: e.uuid,
@@ -928,16 +929,16 @@ const nn = ["id", "disabled", "required"], on = ["for"], ln = ["innerHTML"], an 
       }, null, 8, nn), [
         [j, y(o)]
       ]),
-      d("label", { for: e.uuid }, D(e.label), 9, on),
-      A(d("p", {
+      p("label", { for: e.uuid }, D(e.label), 9, on),
+      x(p("p", {
         innerHTML: e.validation.errorMessage
       }, null, 8, ln), [
-        [L, e.validation.errorMessage]
+        [V, e.validation.errorMessage]
       ])
     ]));
   }
 });
-const rn = /* @__PURE__ */ C(an, [["__scopeId", "data-v-be33e6c4"]]), sn = I({
+const rn = /* @__PURE__ */ C(an, [["__scopeId", "data-v-be33e6c4"]]), sn = O({
   name: "ATextInput",
   props: {
     schema: {
@@ -980,14 +981,14 @@ const rn = /* @__PURE__ */ C(an, [["__scopeId", "data-v-be33e6c4"]]), sn = I({
     }), locale: o, maskFilled: n };
   },
   directives: {
-    mask: Ee
+    mask: xe
   }
 });
 const un = ["id", "disabled", "maxlength", "required"], cn = ["for"], dn = ["innerHTML"];
 function pn(e, t, n, o, l, a) {
-  const r = we("mask");
+  const r = ke("mask");
   return g(), w("div", null, [
-    A(d("input", {
+    x(p("input", {
       "onUpdate:modelValue": t[0] || (t[0] = (s) => e.inputText = s),
       id: e.uuid,
       disabled: e.readonly,
@@ -997,24 +998,24 @@ function pn(e, t, n, o, l, a) {
       [j, e.inputText],
       [r, e.mask]
     ]),
-    d("label", { for: e.uuid }, D(e.label), 9, cn),
-    A(d("p", {
+    p("label", { for: e.uuid }, D(e.label), 9, cn),
+    x(p("p", {
       innerHTML: e.validation.errorMessage
     }, null, 8, dn), [
-      [L, e.validation.errorMessage]
+      [V, e.validation.errorMessage]
     ])
   ]);
 }
 const fn = /* @__PURE__ */ C(sn, [["render", pn], ["__scopeId", "data-v-76dba9b8"]]);
 function vn(e) {
-  e.component("ACheckbox", ot), e.component("ACombobox", at), e.component("ADate", Dt), e.component("ADatePicker", Yt), e.component("AFieldset", Zt), e.component("AForm", Pe), e.component("AModal", tn), e.component("ANumericInput", rn), e.component("ATextInput", fn);
+  e.component("ACheckbox", ot), e.component("ACombobox", at), e.component("ADate", Dt), e.component("ADatePicker", Yt), e.component("AFieldset", Zt), e.component("AForm", Ve), e.component("AModal", tn), e.component("ANumericInput", rn), e.component("ATextInput", fn);
 }
 export {
   ot as ACheckbox,
   at as AComboBox,
   Dt as ADate,
   Zt as AFieldset,
-  Pe as AForm,
+  Ve as AForm,
   rn as ANumericInput,
   fn as ATextInput,
   vn as install

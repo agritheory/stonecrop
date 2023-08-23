@@ -1,15 +1,17 @@
 import type { SchemaTypes } from 'types'
-import { Component, computed, ref } from 'vue'
+import type { Component } from 'vue'
 import { useElementBounding } from '@vueuse/core'
 
 export function useAModal(target: any, component: string | Component) {
 	console.log(target, component)
-	const bounding = useElementBounding(target.$el as HTMLElement)
-	target.position = {
-		top: bounding.bottom.value,
-		left: bounding.left.value,
-		width: bounding.width.value,
-		height: '1.15rem',
+	if (target) {
+		const bounding = useElementBounding(target.$el as HTMLElement)
+		target.position = {
+			top: bounding.bottom.value,
+			left: bounding.left.value,
+			width: bounding.width.value,
+			height: '1.15rem',
+		}
 	}
 	return { target, component }
 }

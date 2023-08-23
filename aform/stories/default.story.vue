@@ -33,7 +33,6 @@
 		</Variant>
 		<Variant title="ADate Testing">
 			<AForm class="aform-main" v-model="adate_test_schema" :data="data"> </AForm>
-			<AModal id="amodal" />
 		</Variant>
 	</Story>
 </template>

@@ -8,8 +8,9 @@
 			:maxlength="mask ? maskFilled && mask.length : undefined"
 			:required="required"
 			v-mask="mask"
-			@click="toggleModal" />
+			@click="modalOpen = !modalOpen" />
 		<label :for="uuid">{{ label }} </label>
+		<AModal id="amodal" :open="modalOpen" :target="target" :component="component" />
 	</div>
 </template>
 
@@ -56,6 +57,8 @@ export default defineComponent({
 	},
 	setup(props, context) {
 		const maskFilled = ref(false)
+		const modalOpen = ref(false)
+		const { target, component } = useAModal(this, 'ADatePicker')
 
 		// TODO: (state) replace with state management
 		const locale = inject<string>('locale', '')
@@ -68,15 +71,11 @@ export default defineComponent({
 				context.emit('update:modelValue', newValue)
 			},
 		})
-		return { inputText, locale, maskFilled, useAModal }
+
+		return { component, inputText, locale, maskFilled, modalOpen, target, useAModal }
 	},
 	directives: {
 		mask: useStringMask,
-	},
-	methods: {
-		toggleModal() {
-			useAModal(this, 'ADatePicker')
-		},
 	},
 })
 </script>

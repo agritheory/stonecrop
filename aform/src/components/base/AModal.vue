@@ -1,32 +1,33 @@
 <template>
-	<Teleport to="amodal">
+	<Teleport to="body">
 		<div
+			v-if="open"
 			class="amodal"
 			:style="{
 				top: target.position.top,
 				left: target.position.left,
 				width: target.position.width,
 				height: target.position.height,
-			}"
-			v-if="open">
-			<p>Hello from the modal!</p>
-			<button @click="open = false">Close</button>
+			}">
+			<component v-if="component" :is="component"></component>
+			<p v-else>Hello from the modal!</p>
 		</div>
 	</Teleport>
 </template>
 
 <script setup lang="ts">
-import { Component, ref } from 'vue'
+import type { Component } from 'vue'
 
 import { useAModal } from '@/modal'
 
-const open = ref(false)
 const props = withDefaults(
 	defineProps<{
+		open?: boolean
 		target?: Record<string, any>
 		component?: string | Component
 	}>(),
 	{
+		open: false,
 		target: () => {
 			return {
 				position: {
