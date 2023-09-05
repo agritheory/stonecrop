@@ -48,21 +48,19 @@ import { computed, defineEmits, nextTick, onMounted, ref, watch } from 'vue'
 import { defaultKeypressHandlers, useKeyboardNav } from '@stonecrop/utilities'
 
 const props = defineProps<{
+	value?: Date
 	event?: Event
 	readonly?: boolean
 }>()
-
-const emit = defineEmits(['selectedDate'])
 
 const numberOfRows = 6
 const numberOfColumns = 7
 const todaysDate = new Date()
 
-const selectedDate = ref<Date>()
+const selectedDate = ref<Date>(props.value || undefined)
 const currentMonth = ref<number>()
 const currentYear = ref<number>()
 const currentDates = ref<number[]>([])
-// const width = ref('')
 
 onMounted(async () => {
 	let cellDate = new Date()
@@ -140,6 +138,17 @@ const isSelectedDate = (day: string | number | Date) => {
 	return new Date(day).toDateString() === new Date(selectedDate.value).toDateString()
 }
 
+const emit = defineEmits(['update:modelValue'])
+
+computed({
+	get: () => {
+		return selectedDate.value
+	},
+	set: newValue => {
+		emit('update:modelValue', newValue)
+	},
+})
+
 const selectDate = (event: Event, currentIndex: number) => {
 	selectedDate.value = new Date(currentDates.value[currentIndex])
 	emit('selectedDate', selectedDate.value)
@@ -173,10 +182,12 @@ useKeyboardNav([
 <style scoped>
 @import '@/theme/aform.css';
 
+:root {
+	--focus-cell-outline: red;
+}
+
 .adate {
 	border: 2px solid var(--focus-cell-outline);
-	position: absolute;
-	z-index: 100;
 	font-size: var(--table-font-size);
 	display: inline-table;
 	background-color: var(--row-color-zebra-light);
