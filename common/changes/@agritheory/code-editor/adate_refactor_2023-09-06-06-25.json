@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@agritheory/code-editor",
+      "comment": "Version bump",
+      "type": "none"
+    }
+  ],
+  "packageName": "@agritheory/code-editor"
+}

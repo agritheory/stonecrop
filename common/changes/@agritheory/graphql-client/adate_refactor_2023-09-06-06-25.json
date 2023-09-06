@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@agritheory/graphql-client",
+      "comment": "Version bump",
+      "type": "none"
+    }
+  ],
+  "packageName": "@agritheory/graphql-client"
+}
