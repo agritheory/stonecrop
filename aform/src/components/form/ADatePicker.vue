@@ -50,7 +50,11 @@ import { defaultKeypressHandlers, useKeyboardNav } from '@stonecrop/utilities'
 const props = defineProps<{
 	value?: Date
 	event?: Event
-	readonly?: boolean
+}>()
+
+const emit = defineEmits<{
+	(e: 'update:modelValue', value: Date): void
+	(e: 'selectedDate', value: Date): void
 }>()
 
 const numberOfRows = 6
@@ -137,8 +141,6 @@ const isTodaysDate = (day: string | number | Date) => {
 const isSelectedDate = (day: string | number | Date) => {
 	return new Date(day).toDateString() === new Date(selectedDate.value).toDateString()
 }
-
-const emit = defineEmits(['update:modelValue'])
 
 computed({
 	get: () => {
