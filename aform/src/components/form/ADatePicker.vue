@@ -1,12 +1,12 @@
 <template>
-	<div :event="event" class="adate" tabindex="0" ref="adatepicker">
+	<div :event="event" class="adatepicker" tabindex="0" ref="adatepicker">
 		<table>
-			<tr class="adate-header">
+			<tr>
 				<td @click="previousMonth" :tabindex="-1">&lt;</td>
 				<th colspan="5">{{ monthAndYear }}</th>
 				<td @click="nextMonth" :tabindex="-1">&gt;</td>
 			</tr>
-			<tr class="adate-header">
+			<tr>
 				<td>M</td>
 				<td>T</td>
 				<td>W</td>
@@ -23,18 +23,10 @@
 					:contenteditable="false"
 					:spellcheck="false"
 					:tabindex="0"
-					:style="{
-						border: isSelectedDate(currentDates[(rowNo - 1) * numberOfColumns + colNo])
-							? '2px solid var(--focus-cell-outline)'
-							: 'none',
-						borderBottomColor: isTodaysDate(currentDates[(rowNo - 1) * numberOfColumns + colNo])
-							? 'var(--focus-cell-outline)'
-							: 'none',
-					}"
 					@click.prevent.stop="selectDate($event, (rowNo - 1) * numberOfColumns + colNo)"
 					:class="{
-						todaysdate: isTodaysDate(currentDates[(rowNo - 1) * numberOfColumns + colNo]),
-						selecteddate: isSelectedDate(currentDates[(rowNo - 1) * numberOfColumns + colNo]),
+						todaysDate: isTodaysDate(currentDates[(rowNo - 1) * numberOfColumns + colNo]),
+						selectedDate: isSelectedDate(currentDates[(rowNo - 1) * numberOfColumns + colNo]),
 					}">
 					{{ new Date(currentDates[(rowNo - 1) * numberOfColumns + colNo]).getDate() }}
 				</td>
@@ -48,20 +40,17 @@ import { computed, defineEmits, nextTick, onMounted, ref, watch } from 'vue'
 import { defaultKeypressHandlers, useKeyboardNav } from '@stonecrop/utilities'
 
 const props = defineProps<{
-	value?: Date
+	modelValue?: Number
 	event?: Event
 }>()
 
-const emit = defineEmits<{
-	(e: 'update:modelValue', value: Date): void
-	(e: 'selectedDate', value: Date): void
-}>()
+const emit = defineEmits(['modelValue'])
 
 const numberOfRows = 6
 const numberOfColumns = 7
 const todaysDate = new Date()
 
-const selectedDate = ref<Date>(props.value || undefined)
+const selectedDate = ref<Date>(props.modelValue || undefined)
 const currentMonth = ref<number>()
 const currentYear = ref<number>()
 const currentDates = ref<number[]>([])
@@ -142,18 +131,18 @@ const isSelectedDate = (day: string | number | Date) => {
 	return new Date(day).toDateString() === new Date(selectedDate.value).toDateString()
 }
 
-computed({
+const value = computed({
 	get: () => {
-		return selectedDate.value
+		return modelValue.value
 	},
 	set: newValue => {
-		emit('update:modelValue', newValue)
+		selectDate(newValue)
 	},
 })
 
-const selectDate = (event: Event, currentIndex: number) => {
+const selectDate = (currentIndex: number) => {
 	selectedDate.value = new Date(currentDates.value[currentIndex])
-	emit('selectedDate', selectedDate.value)
+	emit('modelValue', selectedDate.value.getTime())
 }
 
 const monthAndYear = computed(() => {
@@ -175,6 +164,10 @@ useKeyboardNav([
 				'keydown.shift.pageup': previousYear,
 				'keydown.pagedown': nextMonth,
 				'keydown.shift.pagedown': nextYear,
+				// 'keydown.tab': selectDate // select this date
+				// 'keydown.enter': selectDate // select this date
+				'keydown.shift.tab': () => {}, // disable - not working
+				'keydown.shift.enter': () => {}, // disable - not working
 			},
 		},
 	},
@@ -183,74 +176,47 @@ useKeyboardNav([
 
 <style scoped>
 @import '@/theme/aform.css';
+@import url('@stonecrop/themes/default/default.css');
 
-:root {
-	--focus-cell-outline: red;
-}
-
-.adate {
-	border: 2px solid var(--focus-cell-outline);
+.adatepicker {
 	font-size: var(--table-font-size);
 	display: inline-table;
-	background-color: var(--row-color-zebra-light);
 	color: var(--cell-text-color);
 	outline: none;
-	width: calc(100% - 4px);
+	border-collapse: collapse;
+	/* width: calc(100% - 4px); */
 }
 
-.adate tr {
+.adatepicker tr {
+	height: 1.15rem;
 	height: 1.15rem;
 	text-align: center;
 	vertical-align: middle;
 }
 
-.adate td {
+.adatepicker td {
 	border: 2px solid transparent;
+	outline: 2px solid transparent;
 	min-width: 3ch;
 	max-width: 3ch;
-	/* this doesn't zoom correctly */
 }
 
-.adate td {
-	border: 1px;
-	border-style: solid;
-	border-color: var(--cell-border-color);
-	border-radius: 0px;
-	box-sizing: border-box;
-	margin: 0px;
-	outline: none;
-	box-shadow: none;
-	color: var(--cell-text-color);
-	text-overflow: ellipsis;
-	overflow: hidden;
-	padding-left: 0.5ch;
-	padding-right: 0.5ch;
-}
-
-.adate td:focus,
-.adate td:focus-within {
-	background-color: var(--focus-cell-background);
+.adatepicker td:focus,
+.adatepicker td:focus-within {
 	outline-width: 2px;
 	outline-style: solid;
-	outline-color: var(--focus-cell-outline);
+	outline-color: var(--active-cell-outline);
 	box-shadow: none;
 	overflow: hidden;
 	min-height: 1.15em;
 	max-height: 1.15em;
 	overflow: hidden;
 }
-
-.adate .todaysdate {
-	border-bottom-color: var(--focus-cell-outline, black);
+.adatepicker .selectedDate {
+	border: 2px solid var(--focus-cell-outline);
 }
 
-.adate .selecteddate {
-	border: 2px solid var(--focus-cell-outline, black);
-}
-.adate-header td,
-.adate-header th {
-	border: 2px solid transparent;
-	min-width: 2.25ch;
-	max-width: 2.25ch;
+.adatepicker .todaysDate {
+	border-bottom-color: var(--active-cell-outline);
 }
 </style>
