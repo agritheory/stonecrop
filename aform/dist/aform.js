@@ -548,7 +548,7 @@ function mt(e) {
     }
   });
 }
-const vt = (e) => (Ce("data-v-3dd4936c"), e = e(), De(), e), ht = ["event"], yt = { colspan: "5" }, gt = /* @__PURE__ */ vt(() => /* @__PURE__ */ i("tr", null, [
+const vt = (e) => (Ce("data-v-4abe2c18"), e = e(), De(), e), ht = ["event"], yt = { colspan: "5" }, gt = /* @__PURE__ */ vt(() => /* @__PURE__ */ i("tr", null, [
   /* @__PURE__ */ i("td", null, "M"),
   /* @__PURE__ */ i("td", null, "T"),
   /* @__PURE__ */ i("td", null, "W"),
@@ -562,7 +562,7 @@ const vt = (e) => (Ce("data-v-3dd4936c"), e = e(), De(), e), ht = ["event"], yt 
     modelValue: {},
     event: {}
   },
-  emits: ["modelValue"],
+  emits: ["update:value"],
   setup(e, { emit: t }) {
     const n = e, o = t, s = /* @__PURE__ */ new Date(), l = y(n.modelValue || void 0), a = y(), r = y(), d = y([]);
     ae(async () => {
@@ -662,7 +662,7 @@ const vt = (e) => (Ce("data-v-3dd4936c"), e = e(), De(), e), ht = ["event"], yt 
     ], 8, ht));
   }
 });
-const kt = /* @__PURE__ */ C(wt, [["__scopeId", "data-v-3dd4936c"]]), Ct = /* @__PURE__ */ k({
+const kt = /* @__PURE__ */ C(wt, [["__scopeId", "data-v-4abe2c18"]]), Ct = /* @__PURE__ */ k({
   __name: "CollapseButton",
   props: {
     collapsed: { type: Boolean }

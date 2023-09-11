@@ -44,7 +44,7 @@ const props = defineProps<{
 	event?: Event
 }>()
 
-const emit = defineEmits(['modelValue'])
+const emit = defineEmits(['update:value'])
 
 const numberOfRows = 6
 const numberOfColumns = 7
