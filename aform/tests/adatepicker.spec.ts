@@ -15,11 +15,14 @@ describe('text input component', () => {
 	})
 
 	it('emits update event when date is changed', async () => {
-		await wrapper.find('.todaysDate').click()
+		await wrapper.find('.todaysDate').trigger('click')
 		await wrapper.vm.$nextTick()
 
+		let todaysDate = new Date()
+		todaysDate = new Date(todaysDate.getFullYear(), todaysDate.getMonth(), todaysDate.getDate())
+
 		const updateEvents = wrapper.emitted('update:modelValue')
-		expect(updateEvents).toHaveLength(1)
-		expect(updateEvents![0]).toEqual(['Jane'])
+		console.log('emitted', updateEvents)
+		expect(updateEvents).toEqual(todaysDate.getTime())
 	})
 })
