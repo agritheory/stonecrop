@@ -45,7 +45,9 @@
 		"miragejs": "^0.1.47",
 		"typescript": "^5.0.4",
 		"vite": "^4.3.5",
-		"vue-router": "^4"
+		"vue-router": "^4",
+		"histoire": "0.17.0",
+		"@histoire/plugin-vue": "0.17.1"
 	},
 	"engines": {
 		"node": ">=20.11.0"

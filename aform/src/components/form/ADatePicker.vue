@@ -16,14 +16,13 @@
 				<td>S</td>
 			</tr>
 			<tr v-for="rowNo in numberOfRows" :key="rowNo">
-				<!-- TODO: (style) remove inline styling and replace with theme package -->
 				<td
 					v-for="colNo in numberOfColumns"
 					:key="(rowNo - 1) * numberOfColumns + colNo"
 					:contenteditable="false"
 					:spellcheck="false"
 					:tabindex="0"
-					@click.prevent.stop="selectDate($event, (rowNo - 1) * numberOfColumns + colNo)"
+					@click.prevent.stop="selectDate((rowNo - 1) * numberOfColumns + colNo)"
 					:class="{
 						todaysDate: isTodaysDate(currentDates[(rowNo - 1) * numberOfColumns + colNo]),
 						selectedDate: isSelectedDate(currentDates[(rowNo - 1) * numberOfColumns + colNo]),
@@ -40,17 +39,17 @@ import { computed, defineEmits, nextTick, onMounted, ref, watch } from 'vue'
 import { defaultKeypressHandlers, useKeyboardNav } from '@stonecrop/utilities'
 
 const props = defineProps<{
-	modelValue?: Number
+	modelValue?: number | Date
 	event?: Event
 }>()
 
-const emit = defineEmits(['update:value'])
+const emit = defineEmits(['update:modelValue'])
 
 const numberOfRows = 6
 const numberOfColumns = 7
 const todaysDate = new Date()
 
-const selectedDate = ref<Date>(props.modelValue || undefined)
+const selectedDate = ref(props.modelValue ? new Date(props.modelValue) : undefined)
 const currentMonth = ref<number>()
 const currentYear = ref<number>()
 const currentDates = ref<number[]>([])
@@ -69,11 +68,11 @@ onMounted(async () => {
 	renderMonth()
 	await nextTick()
 
-	const $selectedDate = document.getElementsByClassName('selecteddate')
+	const $selectedDate = document.getElementsByClassName('selectedDate')
 	if ($selectedDate.length > 0) {
 		;($selectedDate[0] as HTMLElement).focus()
 	} else {
-		const $todaysDate = document.getElementsByClassName('todaysdate')
+		const $todaysDate = document.getElementsByClassName('todaysDate')
 		if ($todaysDate.length > 0) {
 			;($todaysDate[0] as HTMLElement).focus()
 		}
@@ -131,18 +130,18 @@ const isSelectedDate = (day: string | number | Date) => {
 	return new Date(day).toDateString() === new Date(selectedDate.value).toDateString()
 }
 
-const value = computed({
-	get: () => {
-		return modelValue.value
-	},
-	set: newValue => {
-		selectDate(newValue)
-	},
-})
+// const value = computed({
+// 	get: () => {
+// 		return modelValue.value
+// 	},
+// 	set: newValue => {
+// 		selectDate(newValue)
+// 	},
+// })
 
 const selectDate = (currentIndex: number) => {
 	selectedDate.value = new Date(currentDates.value[currentIndex])
-	emit('modelValue', selectedDate.value.getTime())
+	emit('update:modelValue', selectedDate.value.getTime())
 }
 
 const monthAndYear = computed(() => {
@@ -166,8 +165,6 @@ useKeyboardNav([
 				'keydown.shift.pagedown': nextYear,
 				// 'keydown.tab': selectDate // select this date
 				// 'keydown.enter': selectDate // select this date
-				'keydown.shift.tab': () => {}, // disable - not working
-				'keydown.shift.enter': () => {}, // disable - not working
 			},
 		},
 	},

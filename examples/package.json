@@ -37,7 +37,9 @@
 		"eslint": "^8.40.0",
 		"eslint-plugin-vue": "^9.11.1",
 		"typescript": "^5.0.4",
-		"vue-router": "^4"
+		"vue-router": "^4",
+		"histoire": "0.17.0",
+		"@histoire/plugin-vue": "0.17.1"
 	},
 	"engines": {
 		"node": ">=20.11.0"

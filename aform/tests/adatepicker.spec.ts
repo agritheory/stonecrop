@@ -22,7 +22,7 @@ describe('text input component', () => {
 		todaysDate = new Date(todaysDate.getFullYear(), todaysDate.getMonth(), todaysDate.getDate())
 
 		const updateEvents = wrapper.emitted('update:modelValue')
-		console.log('emitted', updateEvents)
-		expect(updateEvents).toEqual(todaysDate.getTime())
+		expect(updateEvents).toBeTruthy()
+		expect(updateEvents![0][0]).toEqual(todaysDate.getTime())
 	})
 })
