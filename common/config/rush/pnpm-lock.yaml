@@ -10,7 +10,7 @@ importers:
       '@agritheory/atable': workspace:*
       '@agritheory/themes': workspace:*
       '@agritheory/utilities': workspace:*
-      '@histoire/plugin-vue': ^0.16.1
+      '@histoire/plugin-vue': 0.17.1
       '@types/uuid': ^9.0.0
       '@typescript-eslint/eslint-plugin': ^5.59.5
       '@typescript-eslint/parser': ^5.59.5
@@ -22,7 +22,7 @@ importers:
       eslint: ^8.40.0
       eslint-config-prettier: ^8.8.0
       eslint-plugin-vue: ^9.11.1
-      histoire: ^0.16.1
+      histoire: 0.17.0
       jsdom: ^22.0.0
       typescript: ^5.0.4
       uuid: ^9.0.0
@@ -37,7 +37,7 @@ importers:
       vue: 3.2.47
     devDependencies:
       '@agritheory/atable': link:../atable
-      '@histoire/plugin-vue': 0.16.1_wiqxjenmydtlfnmuibvdzspxum
+      '@histoire/plugin-vue': 0.17.1_evii5tpbfp3j5s2ouzg4bz6nt4
       '@types/uuid': 9.0.0
       '@typescript-eslint/eslint-plugin': 5.59.5_zaj6dsh3leplki3sfxgbx2w2za
       '@typescript-eslint/parser': 5.59.5_3qfatcekpgbllh6uk5ivyhkbxq
@@ -49,7 +49,7 @@ importers:
       eslint: 8.40.0
       eslint-config-prettier: 8.8.0_eslint@8.40.0
       eslint-plugin-vue: 9.11.1_eslint@8.40.0
-      histoire: 0.16.1_vite@4.3.5
+      histoire: 0.17.0_vite@4.3.5
       jsdom: 22.0.0
       typescript: 5.0.4
       vite: 4.3.5
@@ -61,7 +61,7 @@ importers:
       '@agritheory/aform': workspace:*
       '@agritheory/themes': workspace:*
       '@agritheory/utilities': workspace:*
-      '@histoire/plugin-vue': ^0.16.1
+      '@histoire/plugin-vue': 0.17.1
       '@types/uuid': ^9.0.0
       '@typescript-eslint/eslint-plugin': ^5.59.5
       '@typescript-eslint/parser': ^5.59.5
@@ -73,7 +73,7 @@ importers:
       eslint: ^8.40.0
       eslint-config-prettier: ^8.8.0
       eslint-plugin-vue: ^9.11.1
-      histoire: ^0.16.1
+      histoire: 0.17.0
       jsdom: ^22.0.0
       typescript: ^5.0.4
       uuid: ^9.0.0
@@ -88,7 +88,7 @@ importers:
       vue: 3.2.47
     devDependencies:
       '@agritheory/aform': link:../aform
-      '@histoire/plugin-vue': 0.16.1_wiqxjenmydtlfnmuibvdzspxum
+      '@histoire/plugin-vue': 0.17.1_evii5tpbfp3j5s2ouzg4bz6nt4
       '@types/uuid': 9.0.0
       '@typescript-eslint/eslint-plugin': 5.59.5_zaj6dsh3leplki3sfxgbx2w2za
       '@typescript-eslint/parser': 5.59.5_3qfatcekpgbllh6uk5ivyhkbxq
@@ -100,7 +100,7 @@ importers:
       eslint: 8.40.0
       eslint-config-prettier: 8.8.0_eslint@8.40.0
       eslint-plugin-vue: 9.11.1_eslint@8.40.0
-      histoire: 0.16.1_vite@4.3.5
+      histoire: 0.17.0_vite@4.3.5
       jsdom: 22.0.0
       typescript: 5.0.4
       vite: 4.3.5
@@ -112,7 +112,7 @@ importers:
       '@agritheory/atable': workspace:*
       '@agritheory/themes': workspace:*
       '@agritheory/utilities': workspace:*
-      '@histoire/plugin-vue': ^0.16.1
+      '@histoire/plugin-vue': 0.17.1
       '@monaco-editor/loader': ~1.3.2
       '@types/uuid': ^9.0.0
       '@typescript-eslint/eslint-plugin': ^5.59.5
@@ -122,7 +122,7 @@ importers:
       eslint: ^8.40.0
       eslint-config-prettier: ^8.8.0
       eslint-plugin-vue: ^9.11.1
-      histoire: ^0.16.1
+      histoire: 0.17.0
       monaco-editor: ~0.34.1
       typescript: ^5.0.4
       vite: ^4.3.5
@@ -136,7 +136,7 @@ importers:
       vue: 3.2.47
     devDependencies:
       '@agritheory/atable': link:../atable
-      '@histoire/plugin-vue': 0.16.1_wiqxjenmydtlfnmuibvdzspxum
+      '@histoire/plugin-vue': 0.17.1_evii5tpbfp3j5s2ouzg4bz6nt4
       '@types/uuid': 9.0.0
       '@typescript-eslint/eslint-plugin': 5.59.5_zaj6dsh3leplki3sfxgbx2w2za
       '@typescript-eslint/parser': 5.59.5_3qfatcekpgbllh6uk5ivyhkbxq
@@ -145,7 +145,7 @@ importers:
       eslint: 8.40.0
       eslint-config-prettier: 8.8.0_eslint@8.40.0
       eslint-plugin-vue: 9.11.1_eslint@8.40.0
-      histoire: 0.16.1_vite@4.3.5
+      histoire: 0.17.0_vite@4.3.5
       typescript: 5.0.4
       vite: 4.3.5
       vue-router: 4.1.6_vue@3.2.47
@@ -156,6 +156,7 @@ importers:
       '@agritheory/atable': workspace:*
       '@agritheory/stonecrop': workspace:*
       '@agritheory/themes': workspace:*
+      '@histoire/plugin-vue': 0.17.1
       '@miragejs/graphql': ^0.1.13
       '@typescript-eslint/eslint-plugin': ^5.59.5
       '@typescript-eslint/parser': ^5.59.5
@@ -163,6 +164,7 @@ importers:
       eslint: ^8.40.0
       eslint-config-prettier: ^8.8.0
       eslint-plugin-vue: ^9.11.1
+      histoire: 0.17.0
       immutable: ^4.3.0
       miragejs: ^0.1.47
       typescript: ^5.0.4
@@ -179,6 +181,7 @@ importers:
       vue: 3.2.47
       xstate: 4.37.2
     devDependencies:
+      '@histoire/plugin-vue': 0.17.1_evii5tpbfp3j5s2ouzg4bz6nt4
       '@miragejs/graphql': 0.1.13
       '@typescript-eslint/eslint-plugin': 5.59.5_zaj6dsh3leplki3sfxgbx2w2za
       '@typescript-eslint/parser': 5.59.5_3qfatcekpgbllh6uk5ivyhkbxq
@@ -186,6 +189,7 @@ importers:
       eslint: 8.40.0
       eslint-config-prettier: 8.8.0_eslint@8.40.0
       eslint-plugin-vue: 9.11.1_eslint@8.40.0
+      histoire: 0.17.0_vite@4.3.5
       miragejs: 0.1.47
       typescript: 5.0.4
       vite: 4.3.5
@@ -199,6 +203,7 @@ importers:
       '@agritheory/node-editor': workspace:*
       '@agritheory/stonecrop': workspace:*
       '@agritheory/themes': workspace:*
+      '@histoire/plugin-vue': 0.17.1
       '@miragejs/graphql': ^0.1.13
       '@types/uuid': ^9.0.0
       '@typescript-eslint/eslint-plugin': ^5.59.5
@@ -207,6 +212,7 @@ importers:
       cypress: ^12.11.0
       eslint: ^8.40.0
       eslint-plugin-vue: ^9.11.1
+      histoire: 0.17.0
       miragejs: ^0.1.47
       typescript: ^5.0.4
       uuid: ^9.0.0
@@ -229,18 +235,21 @@ importers:
       vue: 3.2.47
       xstate: 4.37.2
     devDependencies:
+      '@histoire/plugin-vue': 0.17.1_evii5tpbfp3j5s2ouzg4bz6nt4
       '@types/uuid': 9.0.0
       '@typescript-eslint/eslint-plugin': 5.59.5_zaj6dsh3leplki3sfxgbx2w2za
       '@typescript-eslint/parser': 5.59.5_3qfatcekpgbllh6uk5ivyhkbxq
       cypress: 12.11.0
       eslint: 8.40.0
       eslint-plugin-vue: 9.11.1_eslint@8.40.0
+      histoire: 0.17.0_vite@4.3.5
       typescript: 5.0.4
       vue-router: 4.1.6_vue@3.2.47
 
   ../../graphql_client:
     specifiers:
       '@agritheory/stonecrop': workspace:*
+      '@histoire/plugin-vue': 0.17.1
       '@miragejs/graphql': ^0.1.13
       '@types/graphql': ~14.5.0
       '@typescript-eslint/eslint-plugin': ^5.59.5
@@ -252,6 +261,7 @@ importers:
       eslint-plugin-vue: ^9.11.1
       graphql: ~16.6.0
       graphql-request: ~6.0.0
+      histoire: 0.17.0
       miragejs: ^0.1.47
       typescript: ^5.0.4
       vite: ^4.3.5
@@ -262,6 +272,7 @@ importers:
       graphql: 16.6.0
       graphql-request: 6.0.0_graphql@16.6.0
     devDependencies:
+      '@histoire/plugin-vue': 0.17.1_evii5tpbfp3j5s2ouzg4bz6nt4
       '@miragejs/graphql': 0.1.13
       '@types/graphql': 14.5.0
       '@typescript-eslint/eslint-plugin': 5.59.5_zaj6dsh3leplki3sfxgbx2w2za
@@ -271,6 +282,7 @@ importers:
       eslint: 8.40.0
       eslint-config-prettier: 8.8.0_eslint@8.40.0
       eslint-plugin-vue: 9.11.1_eslint@8.40.0
+      histoire: 0.17.0_vite@4.3.5
       miragejs: 0.1.47
       typescript: 5.0.4
       vite: 4.3.5
@@ -279,10 +291,10 @@ importers:
 
   ../../node_editor:
     specifiers:
-      '@histoire/plugin-vue': ^0.16.1
+      '@histoire/plugin-vue': 0.17.1
       '@vitejs/plugin-vue': ^4.2.1
       '@vue-flow/core': ~1.19.3
-      histoire: ^0.16.1
+      histoire: 0.17.0
       vite: ^4.3.5
       vue: ^3.2.47
       vue-router: ^4
@@ -293,15 +305,16 @@ importers:
       vue-router: 4.1.6_vue@3.2.47
       xstate: 4.37.2
     devDependencies:
-      '@histoire/plugin-vue': 0.16.1_wiqxjenmydtlfnmuibvdzspxum
+      '@histoire/plugin-vue': 0.17.1_evii5tpbfp3j5s2ouzg4bz6nt4
       '@vitejs/plugin-vue': 4.2.1_vite@4.3.5+vue@3.2.47
-      histoire: 0.16.1_vite@4.3.5
+      histoire: 0.17.0_vite@4.3.5
       vite: 4.3.5
 
   ../../stonecrop:
     specifiers:
       '@agritheory/aform': workspace:*
       '@agritheory/atable': workspace:*
+      '@histoire/plugin-vue': 0.17.1
       '@typescript-eslint/eslint-plugin': ^5.59.5
       '@typescript-eslint/parser': ^5.59.5
       '@vitejs/plugin-vue': ^4.2.1
@@ -309,6 +322,7 @@ importers:
       eslint: ^8.40.0
       eslint-config-prettier: ^8.8.0
       eslint-plugin-vue: ^9.11.1
+      histoire: 0.17.0
       immutable: ^4.3.0
       pinia: ^2.0.32
       pinia-shared-state: ^0.3.0
@@ -332,28 +346,34 @@ importers:
     devDependencies:
       '@agritheory/aform': link:../aform
       '@agritheory/atable': link:../atable
+      '@histoire/plugin-vue': 0.17.1_evii5tpbfp3j5s2ouzg4bz6nt4
       '@typescript-eslint/eslint-plugin': 5.59.5_zaj6dsh3leplki3sfxgbx2w2za
       '@typescript-eslint/parser': 5.59.5_3qfatcekpgbllh6uk5ivyhkbxq
       '@vitejs/plugin-vue': 4.2.1_vite@4.3.5+vue@3.2.47
       eslint: 8.40.0
       eslint-config-prettier: 8.8.0_eslint@8.40.0
       eslint-plugin-vue: 9.11.1_eslint@8.40.0
+      histoire: 0.17.0_vite@4.3.5
       typescript: 5.0.4
       vite: 4.3.5
 
   ../../themes:
     specifiers:
+      '@histoire/plugin-vue': 0.17.1
       '@vitejs/plugin-vue': ^4.2.1
+      histoire: 0.17.0
       vite: ^4.3.5
       vue: ^3.2.47
     devDependencies:
+      '@histoire/plugin-vue': 0.17.1_evii5tpbfp3j5s2ouzg4bz6nt4
       '@vitejs/plugin-vue': 4.2.1_vite@4.3.5+vue@3.2.47
+      histoire: 0.17.0_vite@4.3.5
       vite: 4.3.5
       vue: 3.2.47
 
   ../../utilities:
     specifiers:
-      '@histoire/plugin-vue': ^0.16.1
+      '@histoire/plugin-vue': 0.17.1
       '@typescript-eslint/eslint-plugin': ^5.59.5
       '@typescript-eslint/parser': ^5.59.5
       '@vitejs/plugin-vue': ^4.2.1
@@ -362,7 +382,7 @@ importers:
       eslint: ^8.40.0
       eslint-config-prettier: ^8.8.0
       eslint-plugin-vue: ^9.11.1
-      histoire: ^0.16.1
+      histoire: 0.17.0
       typescript: ^5.0.4
       vite: ^4.3.5
       vue: ^3.2.47
@@ -370,7 +390,7 @@ importers:
     dependencies:
       vue: 3.2.47
     devDependencies:
-      '@histoire/plugin-vue': 0.16.1_wiqxjenmydtlfnmuibvdzspxum
+      '@histoire/plugin-vue': 0.17.1_evii5tpbfp3j5s2ouzg4bz6nt4
       '@typescript-eslint/eslint-plugin': 5.59.5_zaj6dsh3leplki3sfxgbx2w2za
       '@typescript-eslint/parser': 5.59.5_3qfatcekpgbllh6uk5ivyhkbxq
       '@vitejs/plugin-vue': 4.2.1_vite@4.3.5+vue@3.2.47
@@ -379,7 +399,7 @@ importers:
       eslint: 8.40.0
       eslint-config-prettier: 8.8.0_eslint@8.40.0
       eslint-plugin-vue: 9.11.1_eslint@8.40.0
-      histoire: 0.16.1_vite@4.3.5
+      histoire: 0.17.0_vite@4.3.5
       typescript: 5.0.4
       vite: 4.3.5
       vue-router: 4.1.6_vue@3.2.47
@@ -415,12 +435,12 @@ packages:
     resolution: {integrity: sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==}
     dev: true
 
-  /@codemirror/commands/6.1.2:
-    resolution: {integrity: sha512-sO3jdX1s0pam6lIdeSJLMN3DQ6mPEbM4yLvyKkdqtmd/UDwhXA5+AwFJ89rRXm6vTeOXBsE5cAmlos/t7MJdgg==}
+  /@codemirror/commands/6.2.5:
+    resolution: {integrity: sha512-dSi7ow2P2YgPBZflR9AJoaTHvqmeGIgkhignYMd5zK5y6DANTvxKxp6eMEpIDUJkRAaOY/TFZ4jP1ADIO/GLVA==}
     dependencies:
-      '@codemirror/language': 6.3.2
-      '@codemirror/state': 6.1.4
-      '@codemirror/view': 6.7.1
+      '@codemirror/language': 6.9.0
+      '@codemirror/state': 6.2.1
+      '@codemirror/view': 6.18.1
       '@lezer/common': 1.0.2
     dev: true
 
@@ -442,11 +462,22 @@ packages:
       style-mod: 4.0.0
     dev: true
 
-  /@codemirror/lint/6.1.0:
-    resolution: {integrity: sha512-mdvDQrjRmYPvQ3WrzF6Ewaao+NWERYtpthJvoQ3tK3t/44Ynhk8ZGjTSL9jMEv8CgSMogmt75X8ceOZRDSXHtQ==}
+  /@codemirror/language/6.9.0:
+    resolution: {integrity: sha512-nFu311/0ne/qGuGCL3oKuktBgzVOaxCHZPZv1tLSZkNjPYxxvkjSbzno3MlErG2tgw1Yw1yF8BxMCegeMXqpiw==}
     dependencies:
-      '@codemirror/state': 6.1.4
-      '@codemirror/view': 6.7.1
+      '@codemirror/state': 6.2.1
+      '@codemirror/view': 6.18.1
+      '@lezer/common': 1.0.2
+      '@lezer/highlight': 1.1.3
+      '@lezer/lr': 1.2.5
+      style-mod: 4.0.0
+    dev: true
+
+  /@codemirror/lint/6.4.1:
+    resolution: {integrity: sha512-2Hx945qKX7FBan5/gUdTM8fsMYrNG9clIgEcPXestbLVFAUyQYFAuju/5BMNf/PwgpVaX5pvRm4+ovjbp9D9gQ==}
+    dependencies:
+      '@codemirror/state': 6.2.1
+      '@codemirror/view': 6.18.1
       crelt: 1.0.5
     dev: true
 
@@ -454,13 +485,25 @@ packages:
     resolution: {integrity: sha512-g+3OJuRylV5qsXuuhrc6Cvs1NQluNioepYMM2fhnpYkNk7NgX+j0AFuevKSVKzTDmDyt9+Puju+zPdHNECzCNQ==}
     dev: true
 
-  /@codemirror/theme-one-dark/6.1.0:
-    resolution: {integrity: sha512-AiTHtFRu8+vWT9wWUWDM+cog6ZwgivJogB1Tm/g40NIpLwph7AnmxrSzWfvJN5fBVufsuwBxecQCNmdcR5D7Aw==}
+  /@codemirror/state/6.2.1:
+    resolution: {integrity: sha512-RupHSZ8+OjNT38zU9fKH2sv+Dnlr8Eb8sl4NOnnqz95mCFTZUaiRP8Xv5MeeaG0px2b8Bnfe7YGwCV3nsBhbuw==}
+    dev: true
+
+  /@codemirror/theme-one-dark/6.1.2:
+    resolution: {integrity: sha512-F+sH0X16j/qFLMAfbciKTxVOwkdAS336b7AXTKOZhy8BR3eH/RelsnLgLFINrpST63mmN2OuwUt0W2ndUgYwUA==}
     dependencies:
-      '@codemirror/language': 6.3.2
-      '@codemirror/state': 6.1.4
-      '@codemirror/view': 6.7.1
+      '@codemirror/language': 6.9.0
+      '@codemirror/state': 6.2.1
+      '@codemirror/view': 6.18.1
       '@lezer/highlight': 1.1.3
+    dev: true
+
+  /@codemirror/view/6.18.1:
+    resolution: {integrity: sha512-xcsXcMkIMd7l3WZEWoc4ljteAiqzxb5gVerRxk5132p5cLix6rTydWTQjsj2oxORepfsrwy1fC4r20iMa9plrg==}
+    dependencies:
+      '@codemirror/state': 6.2.1
+      style-mod: 4.1.0
+      w3c-keyname: 2.2.6
     dev: true
 
   /@codemirror/view/6.7.1:
@@ -730,12 +773,12 @@ packages:
       graphql: 16.6.0
     dev: false
 
-  /@histoire/app/0.16.1_vite@4.3.5:
-    resolution: {integrity: sha512-13komnhVk1Pk0wMmkJKDPWT8RKpA5HfAbeeXSHAq29pvFP9Faq+dAa62g1wqOpoyJD5C7SkI0OPI3eJwJHgTiQ==}
+  /@histoire/app/0.17.0_vite@4.3.5:
+    resolution: {integrity: sha512-rZyuIw3Ck6RqwBSkCfIAZAzKZTclzWmLcCNtSCbUHF/wcEUbFdfAhGTW56+NhzNeURq+QxNuklHhSnE+x0PiEQ==}
     dependencies:
-      '@histoire/controls': 0.16.1_vite@4.3.5
-      '@histoire/shared': 0.16.1_vite@4.3.5
-      '@histoire/vendors': 0.16.0
+      '@histoire/controls': 0.17.0_vite@4.3.5
+      '@histoire/shared': 0.17.0_vite@4.3.5
+      '@histoire/vendors': 0.17.0
       '@types/flexsearch': 0.7.3
       flexsearch: 0.7.21
       shiki-es: 0.2.0
@@ -743,34 +786,34 @@ packages:
       - vite
     dev: true
 
-  /@histoire/controls/0.16.1_vite@4.3.5:
-    resolution: {integrity: sha512-Ot/J/LPzUexn+fLrJrWu3jUakx9aVSJWKnriiJSmEodAxJq+4mrprX3xS0bnzieud19pJc3mzC/MSD94urTbHA==}
+  /@histoire/controls/0.17.0_vite@4.3.5:
+    resolution: {integrity: sha512-zdZB4kLthWIZxe/GxUdYM18y7lXiF13g8BMomE9d/YudY1KFkfmMKSbrNlDyM9yKiTd6ycSRJIWEXlxOSuyNrw==}
     dependencies:
-      '@codemirror/commands': 6.1.2
+      '@codemirror/commands': 6.2.5
       '@codemirror/lang-json': 6.0.1
-      '@codemirror/language': 6.3.2
-      '@codemirror/lint': 6.1.0
-      '@codemirror/state': 6.1.4
-      '@codemirror/theme-one-dark': 6.1.0
-      '@codemirror/view': 6.7.1
-      '@histoire/shared': 0.16.1_vite@4.3.5
-      '@histoire/vendors': 0.16.0
+      '@codemirror/language': 6.9.0
+      '@codemirror/lint': 6.4.1
+      '@codemirror/state': 6.2.1
+      '@codemirror/theme-one-dark': 6.1.2
+      '@codemirror/view': 6.18.1
+      '@histoire/shared': 0.17.0_vite@4.3.5
+      '@histoire/vendors': 0.17.0
     transitivePeerDependencies:
       - vite
     dev: true
 
-  /@histoire/plugin-vue/0.16.1_wiqxjenmydtlfnmuibvdzspxum:
-    resolution: {integrity: sha512-K7ZZl5tA8PWHjQsWFmFX3xa4HlRs+S8+nxym1Smh4dudQ6XSVwdF+gsPQ+RE4zwf6YQ8HDPsvOobI31dz6F4Tg==}
+  /@histoire/plugin-vue/0.17.1_evii5tpbfp3j5s2ouzg4bz6nt4:
+    resolution: {integrity: sha512-p9MkCy1Ohe0RkAwpTB6XcOoAhlSsONBSWorhVukwi4HnIMUsPbTjOVkLfKhALW9QtVux+7reWXRocJdLECNwGA==}
     peerDependencies:
-      histoire: ^0.16.1
+      histoire: ^0.17.0
       vue: ^3.2.47
     dependencies:
-      '@histoire/controls': 0.16.1_vite@4.3.5
-      '@histoire/shared': 0.16.1_vite@4.3.5
-      '@histoire/vendors': 0.16.0
+      '@histoire/controls': 0.17.0_vite@4.3.5
+      '@histoire/shared': 0.17.0_vite@4.3.5
+      '@histoire/vendors': 0.17.0
       change-case: 4.1.2
-      globby: 13.1.3
-      histoire: 0.16.1_vite@4.3.5
+      globby: 13.2.2
+      histoire: 0.17.0_vite@4.3.5
       launch-editor: 2.6.0
       pathe: 0.2.0
       vue: 3.2.47
@@ -778,12 +821,12 @@ packages:
       - vite
     dev: true
 
-  /@histoire/shared/0.16.1_vite@4.3.5:
-    resolution: {integrity: sha512-bcySHGC6kcZ1U9OZUcBQCROTBygTZ9T9MlqfeGtBtJWXGdmHPZ/64elZOY36O8gUAMF89Q08EIVe5cIQ0SJ3Uw==}
+  /@histoire/shared/0.17.0_vite@4.3.5:
+    resolution: {integrity: sha512-itdEqD+V+WNkCqhSsgoSRuoHeXBH3/bNjY98vHz/89prKeqEVMGbBbGPUpgm1IpKEYrNcLhfDAREJHnwsKxKCg==}
     peerDependencies:
       vite: ^2.9.0 || ^3.0.0 || ^4.0.0
     dependencies:
-      '@histoire/vendors': 0.16.0
+      '@histoire/vendors': 0.17.0
       '@types/fs-extra': 9.0.13
       '@types/markdown-it': 12.2.3
       chokidar: 3.5.3
@@ -792,8 +835,8 @@ packages:
       vite: 4.3.5
     dev: true
 
-  /@histoire/vendors/0.16.0:
-    resolution: {integrity: sha512-MVr3P2q5Q9UiLJJT99b+j2ABCSerQG4VnUeCr5+eOxyEmoIFz1a0KGJimzqQM0EoVnMQmiaNN3WhuUYG+DWh/w==}
+  /@histoire/vendors/0.17.0:
+    resolution: {integrity: sha512-HI2hkai3p5+gAoWZAGWoAdDLlu0ujfYtGhykGChTQyKAroocizRG21l/2w71cN1K+oigbAccqtxP8BkpqX74cQ==}
     dev: true
 
   /@humanwhocodes/config-array/0.11.8:
@@ -2085,8 +2128,8 @@ packages:
     resolution: {integrity: sha512-oIPzksmTg4/MriiaYGO+okXDT7ztn/w3Eptv/+gSIdMdKsJo0u4CfYNFJPy+4SKMuCqGw2wxnA+URMg3t8a/bQ==}
     dev: true
 
-  /defu/6.1.1:
-    resolution: {integrity: sha512-aA964RUCsBt0FGoNIlA3uFgo2hO+WWC0fiC6DBps/0SFzkKcYoM/3CzVLIa5xSsrFjdioMdYgAIbwo80qp2MoA==}
+  /defu/6.1.2:
+    resolution: {integrity: sha512-+uO4+qr7msjNNWKYPHqN/3+Dx3NFkmIzayk2L1MyZQlvgZb/J1A0fo410dpKrN2SnqFjt8n4JL8fDJE0wIgjFQ==}
     dev: true
 
   /delayed-stream/1.0.0:
@@ -2469,6 +2512,17 @@ packages:
       micromatch: 4.0.5
     dev: true
 
+  /fast-glob/3.3.1:
+    resolution: {integrity: sha512-kNFPyjhh5cKjrUltxs+wFx+ZkbRaxxmZ+X0ZU31SOsxCEtP9VPgtq2teZw1DebupL5GmDaNQ6yKMMVcM41iqDg==}
+    engines: {node: '>=8.6.0'}
+    dependencies:
+      '@nodelib/fs.stat': 2.0.5
+      '@nodelib/fs.walk': 1.2.8
+      glob-parent: 5.1.2
+      merge2: 1.4.1
+      micromatch: 4.0.5
+    dev: true
+
   /fast-json-stable-stringify/2.1.0:
     resolution: {integrity: sha512-lhd/wF+Lk98HZoTCtlVraHtfh5XYijIjalXck7saUtuanSDyLMxnHhSXEDJqHxD7msR8D0uCmqlkwjCV8xvwHw==}
     dev: true
@@ -2699,12 +2753,12 @@ packages:
       slash: 3.0.0
     dev: true
 
-  /globby/13.1.3:
-    resolution: {integrity: sha512-8krCNHXvlCgHDpegPzleMq07yMYTO2sXKASmZmquEYWEmCx6J5UTRbp5RwMJkTJGtcQ44YpiUYUiN0b9mzy8Bw==}
+  /globby/13.2.2:
+    resolution: {integrity: sha512-Y1zNGV+pzQdh7H39l9zgB4PJqjRNqydvdYCDG4HFXM4XuvSaQQlEc91IU1yALL8gUTDomgBAfz3XJdmUS+oo0w==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
     dependencies:
       dir-glob: 3.0.1
-      fast-glob: 3.2.12
+      fast-glob: 3.3.1
       ignore: 5.2.4
       merge2: 1.4.1
       slash: 4.0.0
@@ -2760,33 +2814,33 @@ packages:
       tslib: 2.4.1
     dev: true
 
-  /histoire/0.16.1_vite@4.3.5:
-    resolution: {integrity: sha512-TIzJ0Wqe8epfTYMd7yuS0Zcuy86ysJ5t4p6qt0zjHAinoNgEH2M9biHtuKQzd96/QuUy3oc2dcXiFLFSZGdSyw==}
+  /histoire/0.17.0_vite@4.3.5:
+    resolution: {integrity: sha512-q5fX2yAiw1vjlC0xaEcm8uqiJzdKmItozyNa24ujFVD+YjKpBE1R6tl/zpUIfqOBgpifMgh7xQD5uU4ZFd7v/g==}
     hasBin: true
     peerDependencies:
       vite: ^2.9.0 || ^3.0.0 || ^4.0.0
     dependencies:
       '@akryum/tinypool': 0.3.1
-      '@histoire/app': 0.16.1_vite@4.3.5
-      '@histoire/controls': 0.16.1_vite@4.3.5
-      '@histoire/shared': 0.16.1_vite@4.3.5
-      '@histoire/vendors': 0.16.0
+      '@histoire/app': 0.17.0_vite@4.3.5
+      '@histoire/controls': 0.17.0_vite@4.3.5
+      '@histoire/shared': 0.17.0_vite@4.3.5
+      '@histoire/vendors': 0.17.0
       '@types/flexsearch': 0.7.3
       '@types/markdown-it': 12.2.3
       birpc: 0.1.1
       change-case: 4.1.2
       chokidar: 3.5.3
       connect: 3.7.0
-      defu: 6.1.1
+      defu: 6.1.2
       diacritics: 1.3.0
       flexsearch: 0.7.21
       fs-extra: 10.1.0
-      globby: 13.1.3
+      globby: 13.2.2
       gray-matter: 4.0.3
-      jiti: 1.18.2
+      jiti: 1.20.0
       jsdom: 20.0.3
       markdown-it: 12.3.2
-      markdown-it-anchor: 8.6.6_2zb4u3vubltivolgu556vv4aom
+      markdown-it-anchor: 8.6.7_2zb4u3vubltivolgu556vv4aom
       markdown-it-attrs: 4.1.6_markdown-it@12.3.2
       markdown-it-emoji: 2.0.2
       micromatch: 4.0.5
@@ -2795,7 +2849,7 @@ packages:
       picocolors: 1.0.0
       sade: 1.8.1
       shiki-es: 0.2.0
-      sirv: 2.0.2
+      sirv: 2.0.3
       vite: 4.3.5
       vite-node: 0.28.4
     transitivePeerDependencies:
@@ -3018,8 +3072,8 @@ packages:
       istanbul-lib-report: 3.0.0
     dev: true
 
-  /jiti/1.18.2:
-    resolution: {integrity: sha512-QAdOptna2NYiSSpv0O/BwoHBSmz4YhpzJHyi+fnMRTXFjp7B8i/YG5Z8IfusxB1ufjcD2Sre1F3R+nX3fvy7gg==}
+  /jiti/1.20.0:
+    resolution: {integrity: sha512-3TV69ZbrvV6U5DfQimop50jE9Dl6J8O1ja1dvBbMba/sZ3YBEQqJ2VZRoQPVnhlzjNtU1vaXRZVrVjU4qtm8yA==}
     hasBin: true
     dev: true
 
@@ -3394,8 +3448,8 @@ packages:
       semver: 6.3.0
     dev: true
 
-  /markdown-it-anchor/8.6.6_2zb4u3vubltivolgu556vv4aom:
-    resolution: {integrity: sha512-jRW30YGywD2ESXDc+l17AiritL0uVaSnWsb26f+68qaW9zgbIIr1f4v2Nsvc0+s0Z2N3uX6t/yAw7BwCQ1wMsA==}
+  /markdown-it-anchor/8.6.7_2zb4u3vubltivolgu556vv4aom:
+    resolution: {integrity: sha512-FlCHFwNnutLgVTflOYHPW2pPcl2AACqVzExlkGQNsi4CJgqOHN7YTgDd4LuhgN1BFO3TS0vLAruV1Td6dwWPJA==}
     peerDependencies:
       '@types/markdown-it': '*'
       markdown-it: '*'
@@ -4141,6 +4195,15 @@ packages:
       totalist: 3.0.0
     dev: true
 
+  /sirv/2.0.3:
+    resolution: {integrity: sha512-O9jm9BsID1P+0HOi81VpXPoDxYP374pkOLzACAoyUQ/3OUVndNpsz6wMnY2z+yOxzbllCKZrM+9QrWsv4THnyA==}
+    engines: {node: '>= 10'}
+    dependencies:
+      '@polka/url': 1.0.0-next.21
+      mrmime: 1.0.1
+      totalist: 3.0.0
+    dev: true
+
   /slash/3.0.0:
     resolution: {integrity: sha512-g9Q1haeby36OSStwb4ntCGGGaKsaVSjQ68fBxoQcutl5fS1vuY18H3wSt3jFyFtrkx+Kz0V1G85A4MyAdDMi2Q==}
     engines: {node: '>=8'}
@@ -4271,6 +4334,10 @@ packages:
 
   /style-mod/4.0.0:
     resolution: {integrity: sha512-OPhtyEjyyN9x3nhPsu76f52yUGXiZcgvsrFVtvTkyGRQJ0XK+GPc6ov1z+lRpbeabka+MYEQxOYRnt5nF30aMw==}
+    dev: true
+
+  /style-mod/4.1.0:
+    resolution: {integrity: sha512-Ca5ib8HrFn+f+0n4N4ScTIA9iTOQ7MaGS1ylHcoVqW9J7w2w8PzN6g9gKmTYgGEBH8e120+RCmhpje6jC5uGWA==}
     dev: true
 
   /supports-color/7.2.0:
