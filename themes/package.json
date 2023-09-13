@@ -10,9 +10,7 @@
 	"devDependencies": {
 		"@vitejs/plugin-vue": "^4.2.1",
 		"vite": "^4.3.5",
-		"vue": "^3.2.47",
-		"histoire": "0.17.0",
-		"@histoire/plugin-vue": "0.17.1"
+		"vue": "^3.2.47"
 	},
 	"engines": {
 		"node": ">=20.11.0"

@@ -44,9 +44,7 @@
 		"eslint-config-prettier": "^8.8.0",
 		"eslint-plugin-vue": "^9.11.1",
 		"typescript": "^5.0.4",
-		"vite": "^4.3.5",
-		"histoire": "0.17.0",
-		"@histoire/plugin-vue": "0.17.1"
+		"vite": "^4.3.5"
 	},
 	"engines": {
 		"node": ">=20.11.0"
