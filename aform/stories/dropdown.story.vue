@@ -17,8 +17,8 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue'
-import { reactive } from 'vue'
+import { reactive, ref } from 'vue'
+
 import ADropdown from '@/components/form/ADropdown.vue'
 
 const dropdown_data = ref({
