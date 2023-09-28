@@ -29,7 +29,7 @@ export function useStonecrop(registry?: Registry): StonecropReturn {
 		}
 
 		// setup doctype via registry
-		const doctype = await registry.doctypeLoader(doctypeSlug)
+		const doctype = await registry.getMeta(doctypeSlug)
 		registry.addDoctype(doctype)
 		stonecrop.value.setup(doctype)
 

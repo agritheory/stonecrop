@@ -2,6 +2,18 @@
   typeof exports === "object" && typeof module !== "undefined" ? factory(exports, require("vue")) : typeof define === "function" && define.amd ? define(["exports", "vue"], factory) : (global2 = typeof globalThis !== "undefined" ? globalThis : global2 || self, factory(global2["@agritheory/stonecrop"] = {}, global2.Vue));
 })(this, function(exports2, vue) {
   "use strict";
+  function NotImplementedError(message) {
+    this.message = message || "";
+  }
+  NotImplementedError.prototype = Object.create(Error.prototype, {
+    constructor: { value: NotImplementedError },
+    name: { value: "NotImplemented" },
+    stack: {
+      get: function() {
+        return new Error().stack;
+      }
+    }
+  });
   class Stonecrop {
     /**
      * @constructor
@@ -11,6 +23,11 @@
      * @param {ImmutableDoctype['workflow']} [workflow] - (optional) The Stonecrop workflow
      * @param {ImmutableDoctype['actions']} [actions] - (optional) The Stonecrop actions
      * @returns {Stonecrop} The Stonecrop instance
+     * @description The Stonecrop constructor initializes a new Stonecrop instance with the given registry, store, schema, workflow, and actions. If a Stonecrop instance has already been created, it returns the existing instance instead of creating a new one.
+     * @example
+     * const registry = new Registry()
+     * const store = useDataStore()
+     * const stonecrop = new Stonecrop(registry, store, schema, workflow, actions)
      */
     constructor(registry, store, schema, workflow, actions) {
       this.name = "Stonecrop";
@@ -30,7 +47,7 @@
      * @returns {void}
      * @description Sets up the Stonecrop instance with the given doctype
      * @example
-     * const doctype = await registry.doctypeLoader('Task')
+     * const doctype = await registry.getMeta('Task')
      * stonecrop.setup(doctype)
      */
     setup(doctype) {
@@ -41,14 +58,16 @@
     /**
      * @method getMeta
      * @param {DoctypeMeta} doctype - The doctype to get meta for
-     * @returns {void}
+     * @returns {DoctypeMeta}
+     * @see {@link DoctypeMeta}
+     * @throws NotImplementedError
      * @description Gets the meta for the given doctype
      * @example
-     * const doctype = await registry.doctypeLoader('Task')
-     * stonecrop.getMeta(doctype)
+     * const doctype = await registry.getMeta('Task')
+     * const meta = stonecrop.getMeta(doctype)
      */
     getMeta(doctype) {
-      this.schema = { doctype: doctype.doctype, schema: doctype.schema };
+      return this.registry.getMeta ? this.registry.getMeta(doctype.doctype) : new NotImplementedError(doctype.doctype);
     }
     /**
      * @method getWorkflow
@@ -56,7 +75,7 @@
      * @returns {void}
      * @description Gets the workflow for the given doctype
      * @example
-     * const doctype = await registry.doctypeLoader('Task')
+     * const doctype = await registry.getMeta('Task')
      * stonecrop.getWorkflow(doctype)
      */
     getWorkflow(doctype) {
@@ -69,7 +88,7 @@
      * @returns {void}
      * @description Gets the actions for the given doctype
      * @example
-     * const doctype = await registry.doctypeLoader('Task')
+     * const doctype = await registry.getMeta('Task')
      * stonecrop.getActions(doctype)
      */
     getActions(doctype) {
@@ -83,10 +102,10 @@
      * @returns {Promise<void>}
      * @description Gets the records for the given doctype
      * @example
-     * const doctype = await registry.doctypeLoader('Task')
+     * const doctype = await registry.getMeta('Task')
      * await stonecrop.getRecords(doctype)
      * @example
-     * const doctype = await registry.doctypeLoader('Task')
+     * const doctype = await registry.getMeta('Task')
      * const filters = JSON.stringify({ status: 'Open' })
      * await stonecrop.getRecords(doctype, { body: filters })
      */
@@ -103,7 +122,7 @@
      * @returns {Promise<void>}
      * @description Gets the record for the given doctype and id
      * @example
-     * const doctype = await registry.doctypeLoader('Task')
+     * const doctype = await registry.getMeta('Task')
      * await stonecrop.getRecord(doctype, 'TASK-00001')
      */
     async getRecord(doctype, id) {
@@ -120,16 +139,16 @@
      * @returns {void}
      * @description Runs the action for the given doctype and id
      * @example
-     * const doctype = await registry.doctypeLoader('Task')
+     * const doctype = await registry.getMeta('Task')
      * stonecrop.runAction(doctype, 'CREATE')
      * @example
-     * const doctype = await registry.doctypeLoader('Task')
+     * const doctype = await registry.getMeta('Task')
      * stonecrop.runAction(doctype, 'UPDATE', ['TASK-00001'])
      * @example
-     * const doctype = await registry.doctypeLoader('Task')
+     * const doctype = await registry.getMeta('Task')
      * stonecrop.runAction(doctype, 'DELETE', ['TASK-00001'])
      * @example
-     * const doctype = await registry.doctypeLoader('Task')
+     * const doctype = await registry.getMeta('Task')
      * stonecrop.runAction(doctype, 'TRANSITION', ['TASK-00001', 'TASK-00002'])
      */
     runAction(doctype, action, id) {
@@ -1605,7 +1624,7 @@ This will fail in production.`);
       if (!doctypeSlug && !recordId) {
         return;
       }
-      const doctype = await registry.doctypeLoader(doctypeSlug);
+      const doctype = await registry.getMeta(doctypeSlug);
       registry.addDoctype(doctype);
       stonecrop.value.setup(doctype);
       if (doctypeSlug) {
@@ -1636,7 +1655,7 @@ This will fail in production.`);
     }
   }
   class Registry {
-    constructor(router2, doctypeLoader = void 0) {
+    constructor(router2, getMeta) {
       if (Registry._root) {
         return Registry._root;
       }
@@ -1644,7 +1663,7 @@ This will fail in production.`);
       this.name = "Registry";
       this.router = router2;
       this.registry = {};
-      this.doctypeLoader = doctypeLoader;
+      this.getMeta = getMeta;
     }
     addDoctype(doctype) {
       if (!(doctype.doctype in Object.keys(this.registry))) {
@@ -5405,9 +5424,10 @@ ${JSON.stringify(newTargetLocation, null, 2)}
   const index = {
     install: (app, options) => {
       const appRouter = (options == null ? void 0 : options.router) || router;
+      const registry = new Registry(appRouter, options == null ? void 0 : options.getMeta);
       app.use(appRouter);
       app.use(pinia);
-      app.provide("$registry", new Registry(appRouter, options == null ? void 0 : options.doctypeLoader));
+      app.provide("$registry", registry);
       if (options == null ? void 0 : options.components) {
         for (const [tag, component] of Object.entries(options.components)) {
           app.component(tag, component);
