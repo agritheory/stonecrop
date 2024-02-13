@@ -60,7 +60,7 @@
 		"@agritheory/aform": "workspace:*"
 	},
 	"engines": {
-		"node": ">=16.19.1"
+		"node": ">=20.11.0"
 	},
 	"umd": "dist/atable.umd.cjs"
 }

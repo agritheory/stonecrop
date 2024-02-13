@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@agritheory/desktop",
+      "comment": "update node version",
+      "type": "none"
+    }
+  ],
+  "packageName": "@agritheory/desktop"
+}

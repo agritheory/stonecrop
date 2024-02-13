@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@agritheory/atable",
+      "comment": "update node version",
+      "type": "none"
+    }
+  ],
+  "packageName": "@agritheory/atable"
+}

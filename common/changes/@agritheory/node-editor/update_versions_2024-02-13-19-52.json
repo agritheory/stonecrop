@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@agritheory/node-editor",
+      "comment": "update node version",
+      "type": "none"
+    }
+  ],
+  "packageName": "@agritheory/node-editor"
+}
