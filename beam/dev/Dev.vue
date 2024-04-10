@@ -222,6 +222,7 @@ export default {
 }
 </script>
 <style>
+@import './theme.css';
 body {
 	margin: 0;
 	padding: 0;
@@ -230,6 +231,4 @@ body {
 	flex: 1 0 auto;
 	height: 100%;
 }
-
-@import './theme.scss';
 </style>
