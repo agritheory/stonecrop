@@ -14,96 +14,26 @@ function Le(e, t) {
   }
   return Object.freeze(Object.defineProperty(e, Symbol.toStringTag, { value: "Module" }));
 }
-const le = {
-  parse: JSON.parse,
-  stringify: JSON.stringify
-};
-var Fe = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {};
-function Pe(e) {
-  return e && e.__esModule && Object.prototype.hasOwnProperty.call(e, "default") ? e.default : e;
-}
-var Be = function(t) {
-  var n = t.uri, r = t.name, i = t.type;
-  this.uri = n, this.name = r, this.type = i;
-}, Me = Be, ve = function(t) {
-  return typeof File < "u" && t instanceof File || typeof Blob < "u" && t instanceof Blob || t instanceof Me;
-};
-const Ue = ve;
-var Ve = ve, je = function e(t, n, r) {
-  n === void 0 && (n = ""), r === void 0 && (r = Ve);
-  var i, s = /* @__PURE__ */ new Map();
-  function c(d, y) {
-    var m = s.get(y);
-    m ? m.push.apply(m, d) : s.set(y, d);
-  }
-  if (r(t))
-    i = null, c([n], t);
-  else {
-    var u = n ? n + "." : "";
-    if (typeof FileList < "u" && t instanceof FileList)
-      i = Array.prototype.map.call(t, function(d, y) {
-        return c(["" + u + y], d), null;
-      });
-    else if (Array.isArray(t))
-      i = t.map(function(d, y) {
-        var m = e(d, "" + u + y, r);
-        return m.files.forEach(c), m.clone;
-      });
-    else if (t && t.constructor === Object) {
-      i = {};
-      for (var h in t) {
-        var f = e(t[h], "" + u + h, r);
-        f.files.forEach(c), i[h] = f.clone;
-      }
-    } else
-      i = t;
-  }
-  return {
-    clone: i,
-    files: s
-  };
-};
-const qe = je;
-var $e = typeof self == "object" ? self.FormData : window.FormData;
-const Ge = (e) => Ue(e) || e !== null && typeof e == "object" && typeof e.pipe == "function", He = (e, t, n, r = le) => {
-  const { clone: i, files: s } = qe({ query: e, variables: t, operationName: n }, "", Ge);
-  if (s.size === 0) {
-    if (!Array.isArray(e))
-      return r.stringify(i);
-    if (typeof t < "u" && !Array.isArray(t))
-      throw new Error("Cannot create request body with given variable type, array expected");
-    const d = e.reduce((y, m, A) => (y.push({ query: m, variables: t ? t[A] : void 0 }), y), []);
-    return r.stringify(d);
-  }
-  const c = typeof FormData > "u" ? $e : FormData, u = new c();
-  u.append("operations", r.stringify(i));
-  const h = {};
-  let f = 0;
-  return s.forEach((d) => {
-    h[++f] = d;
-  }), u.append("map", r.stringify(h)), f = 0, s.forEach((d, y) => {
-    u.append(`${++f}`, y);
-  }), u;
-}, Ye = (e) => e.toUpperCase(), Je = (e) => {
+const he = JSON, Fe = (e) => e.toUpperCase(), Pe = (e) => {
   const t = {};
   return e.forEach((n, r) => {
     t[r] = n;
   }), t;
-}, ze = (e, t, n) => e.document ? e : {
+}, Be = (e, t, n) => e.document ? e : {
   document: e,
   variables: t,
   requestHeaders: n,
   signal: void 0
-}, Qe = (e, t, n) => e.query ? e : {
+}, Me = (e, t, n) => e.query ? e : {
   query: e,
   variables: t,
   requestHeaders: n,
   signal: void 0
-}, Xe = (e, t) => e.documents ? e : {
+}, Ue = (e, t) => e.documents ? e : {
   documents: e,
   requestHeaders: t,
   signal: void 0
-}, We = (e, t, ...n) => {
+}, Ve = (e, t, ...n) => {
   const [r, i] = n;
   return e.document ? e : {
     url: e,
@@ -113,24 +43,24 @@ const Ge = (e) => Ue(e) || e !== null && typeof e == "object" && typeof e.pipe =
     signal: void 0
   };
 };
-function X(e, t) {
-  if (!Boolean(e))
+function Q(e, t) {
+  if (!!!e)
     throw new Error(t);
 }
-function Ze(e) {
+function je(e) {
   return typeof e == "object" && e !== null;
 }
-function Ke(e, t) {
-  if (!Boolean(e))
+function qe(e, t) {
+  if (!!!e)
     throw new Error(
       t ?? "Unexpected invariant triggered."
     );
 }
-const et = /\r\n|[\n\r]/g;
+const $e = /\r\n|[\n\r]/g;
 function ae(e, t) {
   let n = 0, r = 1;
-  for (const i of e.body.matchAll(et)) {
-    if (typeof i.index == "number" || Ke(!1), i.index >= t)
+  for (const i of e.body.matchAll($e)) {
+    if (typeof i.index == "number" || qe(!1), i.index >= t)
       break;
     n = i.index + i[0].length, r += 1;
   }
@@ -139,40 +69,40 @@ function ae(e, t) {
     column: t + 1 - n
   };
 }
-function tt(e) {
-  return Ae(
+function Ge(e) {
+  return xe(
     e.source,
     ae(e.source, e.start)
   );
 }
-function Ae(e, t) {
-  const n = e.locationOffset.column - 1, r = "".padStart(n) + e.body, i = t.line - 1, s = e.locationOffset.line - 1, c = t.line + s, u = t.line === 1 ? n : 0, h = t.column + u, f = `${e.name}:${c}:${h}
-`, d = r.split(/\r\n|[\n\r]/g), y = d[i];
-  if (y.length > 120) {
-    const m = Math.floor(h / 80), A = h % 80, T = [];
-    for (let I = 0; I < y.length; I += 80)
-      T.push(y.slice(I, I + 80));
-    return f + de([
-      [`${c} |`, T[0]],
-      ...T.slice(1, m + 1).map((I) => ["|", I]),
+function xe(e, t) {
+  const n = e.locationOffset.column - 1, r = "".padStart(n) + e.body, i = t.line - 1, s = e.locationOffset.line - 1, c = t.line + s, u = t.line === 1 ? n : 0, p = t.column + u, d = `${e.name}:${c}:${p}
+`, y = r.split(/\r\n|[\n\r]/g), m = y[i];
+  if (m.length > 120) {
+    const T = Math.floor(p / 80), A = p % 80, E = [];
+    for (let I = 0; I < m.length; I += 80)
+      E.push(m.slice(I, I + 80));
+    return d + fe([
+      [`${c} |`, E[0]],
+      ...E.slice(1, T + 1).map((I) => ["|", I]),
       ["|", "^".padStart(A)],
-      ["|", T[m + 1]]
+      ["|", E[T + 1]]
     ]);
   }
-  return f + de([
+  return d + fe([
     // Lines specified like this: ["prefix", "string"],
-    [`${c - 1} |`, d[i - 1]],
-    [`${c} |`, y],
-    ["|", "^".padStart(h)],
-    [`${c + 1} |`, d[i + 1]]
+    [`${c - 1} |`, y[i - 1]],
+    [`${c} |`, m],
+    ["|", "^".padStart(p)],
+    [`${c + 1} |`, y[i + 1]]
   ]);
 }
-function de(e) {
+function fe(e) {
   const t = e.filter(([r, i]) => i !== void 0), n = Math.max(...t.map(([r]) => r.length));
   return t.map(([r, i]) => r.padStart(n) + (i ? " " + i : "")).join(`
 `);
 }
-function nt(e) {
+function He(e) {
   const t = e[0];
   return t == null || "kind" in t || "length" in t ? {
     nodes: t,
@@ -183,7 +113,7 @@ function nt(e) {
     extensions: e[5]
   } : t;
 }
-class he extends Error {
+class pe extends Error {
   /**
    * An array of `{ line, column }` locations within the source GraphQL document
    * which correspond to this error.
@@ -224,18 +154,18 @@ class he extends Error {
    */
   constructor(t, ...n) {
     var r, i, s;
-    const { nodes: c, source: u, positions: h, path: f, originalError: d, extensions: y } = nt(n);
-    super(t), this.name = "GraphQLError", this.path = f ?? void 0, this.originalError = d ?? void 0, this.nodes = fe(
+    const { nodes: c, source: u, positions: p, path: d, originalError: y, extensions: m } = He(n);
+    super(t), this.name = "GraphQLError", this.path = d ?? void 0, this.originalError = y ?? void 0, this.nodes = ye(
       Array.isArray(c) ? c : c ? [c] : void 0
     );
-    const m = fe(
-      (r = this.nodes) === null || r === void 0 ? void 0 : r.map((T) => T.loc).filter((T) => T != null)
+    const T = ye(
+      (r = this.nodes) === null || r === void 0 ? void 0 : r.map((E) => E.loc).filter((E) => E != null)
     );
-    this.source = u ?? (m == null || (i = m[0]) === null || i === void 0 ? void 0 : i.source), this.positions = h ?? (m == null ? void 0 : m.map((T) => T.start)), this.locations = h && u ? h.map((T) => ae(u, T)) : m == null ? void 0 : m.map((T) => ae(T.source, T.start));
-    const A = Ze(
-      d == null ? void 0 : d.extensions
-    ) ? d == null ? void 0 : d.extensions : void 0;
-    this.extensions = (s = y ?? A) !== null && s !== void 0 ? s : /* @__PURE__ */ Object.create(null), Object.defineProperties(this, {
+    this.source = u ?? (T == null || (i = T[0]) === null || i === void 0 ? void 0 : i.source), this.positions = p ?? (T == null ? void 0 : T.map((E) => E.start)), this.locations = p && u ? p.map((E) => ae(u, E)) : T == null ? void 0 : T.map((E) => ae(E.source, E.start));
+    const A = je(
+      y == null ? void 0 : y.extensions
+    ) ? y == null ? void 0 : y.extensions : void 0;
+    this.extensions = (s = m ?? A) !== null && s !== void 0 ? s : /* @__PURE__ */ Object.create(null), Object.defineProperties(this, {
       message: {
         writable: !0,
         enumerable: !0
@@ -255,11 +185,11 @@ class he extends Error {
       originalError: {
         enumerable: !1
       }
-    }), d != null && d.stack ? Object.defineProperty(this, "stack", {
-      value: d.stack,
+    }), y != null && y.stack ? Object.defineProperty(this, "stack", {
+      value: y.stack,
       writable: !0,
       configurable: !0
-    }) : Error.captureStackTrace ? Error.captureStackTrace(this, he) : Object.defineProperty(this, "stack", {
+    }) : Error.captureStackTrace ? Error.captureStackTrace(this, pe) : Object.defineProperty(this, "stack", {
       value: Error().stack,
       writable: !0,
       configurable: !0
@@ -274,12 +204,12 @@ class he extends Error {
       for (const n of this.nodes)
         n.loc && (t += `
 
-` + tt(n.loc));
+` + Ge(n.loc));
     else if (this.source && this.locations)
       for (const n of this.locations)
         t += `
 
-` + Ae(this.source, n);
+` + xe(this.source, n);
     return t;
   }
   toJSON() {
@@ -289,16 +219,16 @@ class he extends Error {
     return this.locations != null && (t.locations = this.locations), this.path != null && (t.path = this.path), this.extensions != null && Object.keys(this.extensions).length > 0 && (t.extensions = this.extensions), t;
   }
 }
-function fe(e) {
+function ye(e) {
   return e === void 0 || e.length === 0 ? void 0 : e;
 }
 function O(e, t, n) {
-  return new he(`Syntax Error: ${n}`, {
+  return new pe(`Syntax Error: ${n}`, {
     source: e,
     positions: [t]
   });
 }
-class it {
+class Ye {
   /**
    * The character offset at which this Node begins.
    */
@@ -327,7 +257,7 @@ class it {
     };
   }
 }
-class xe {
+class Ae {
   /**
    * The kind of Token.
    */
@@ -443,27 +373,27 @@ const Ie = {
   UnionTypeExtension: ["name", "directives", "types"],
   EnumTypeExtension: ["name", "directives", "values"],
   InputObjectTypeExtension: ["name", "directives", "fields"]
-}, rt = new Set(Object.keys(Ie));
-function ye(e) {
+}, ze = new Set(Object.keys(Ie));
+function Ee(e) {
   const t = e == null ? void 0 : e.kind;
-  return typeof t == "string" && rt.has(t);
+  return typeof t == "string" && ze.has(t);
 }
-var U;
+var M;
 (function(e) {
   e.QUERY = "query", e.MUTATION = "mutation", e.SUBSCRIPTION = "subscription";
-})(U || (U = {}));
+})(M || (M = {}));
 var ce;
 (function(e) {
   e.QUERY = "QUERY", e.MUTATION = "MUTATION", e.SUBSCRIPTION = "SUBSCRIPTION", e.FIELD = "FIELD", e.FRAGMENT_DEFINITION = "FRAGMENT_DEFINITION", e.FRAGMENT_SPREAD = "FRAGMENT_SPREAD", e.INLINE_FRAGMENT = "INLINE_FRAGMENT", e.VARIABLE_DEFINITION = "VARIABLE_DEFINITION", e.SCHEMA = "SCHEMA", e.SCALAR = "SCALAR", e.OBJECT = "OBJECT", e.FIELD_DEFINITION = "FIELD_DEFINITION", e.ARGUMENT_DEFINITION = "ARGUMENT_DEFINITION", e.INTERFACE = "INTERFACE", e.UNION = "UNION", e.ENUM = "ENUM", e.ENUM_VALUE = "ENUM_VALUE", e.INPUT_OBJECT = "INPUT_OBJECT", e.INPUT_FIELD_DEFINITION = "INPUT_FIELD_DEFINITION";
 })(ce || (ce = {}));
-var E;
+var f;
 (function(e) {
   e.NAME = "Name", e.DOCUMENT = "Document", e.OPERATION_DEFINITION = "OperationDefinition", e.VARIABLE_DEFINITION = "VariableDefinition", e.SELECTION_SET = "SelectionSet", e.FIELD = "Field", e.ARGUMENT = "Argument", e.FRAGMENT_SPREAD = "FragmentSpread", e.INLINE_FRAGMENT = "InlineFragment", e.FRAGMENT_DEFINITION = "FragmentDefinition", e.VARIABLE = "Variable", e.INT = "IntValue", e.FLOAT = "FloatValue", e.STRING = "StringValue", e.BOOLEAN = "BooleanValue", e.NULL = "NullValue", e.ENUM = "EnumValue", e.LIST = "ListValue", e.OBJECT = "ObjectValue", e.OBJECT_FIELD = "ObjectField", e.DIRECTIVE = "Directive", e.NAMED_TYPE = "NamedType", e.LIST_TYPE = "ListType", e.NON_NULL_TYPE = "NonNullType", e.SCHEMA_DEFINITION = "SchemaDefinition", e.OPERATION_TYPE_DEFINITION = "OperationTypeDefinition", e.SCALAR_TYPE_DEFINITION = "ScalarTypeDefinition", e.OBJECT_TYPE_DEFINITION = "ObjectTypeDefinition", e.FIELD_DEFINITION = "FieldDefinition", e.INPUT_VALUE_DEFINITION = "InputValueDefinition", e.INTERFACE_TYPE_DEFINITION = "InterfaceTypeDefinition", e.UNION_TYPE_DEFINITION = "UnionTypeDefinition", e.ENUM_TYPE_DEFINITION = "EnumTypeDefinition", e.ENUM_VALUE_DEFINITION = "EnumValueDefinition", e.INPUT_OBJECT_TYPE_DEFINITION = "InputObjectTypeDefinition", e.DIRECTIVE_DEFINITION = "DirectiveDefinition", e.SCHEMA_EXTENSION = "SchemaExtension", e.SCALAR_TYPE_EXTENSION = "ScalarTypeExtension", e.OBJECT_TYPE_EXTENSION = "ObjectTypeExtension", e.INTERFACE_TYPE_EXTENSION = "InterfaceTypeExtension", e.UNION_TYPE_EXTENSION = "UnionTypeExtension", e.ENUM_TYPE_EXTENSION = "EnumTypeExtension", e.INPUT_OBJECT_TYPE_EXTENSION = "InputObjectTypeExtension";
-})(E || (E = {}));
+})(f || (f = {}));
 function ue(e) {
   return e === 9 || e === 32;
 }
-function G(e) {
+function $(e) {
   return e >= 48 && e <= 57;
 }
 function ge(e) {
@@ -473,42 +403,42 @@ function ge(e) {
 function Oe(e) {
   return ge(e) || e === 95;
 }
-function st(e) {
-  return ge(e) || G(e) || e === 95;
+function Je(e) {
+  return ge(e) || $(e) || e === 95;
 }
-function ot(e) {
+function Qe(e) {
   var t;
   let n = Number.MAX_SAFE_INTEGER, r = null, i = -1;
   for (let c = 0; c < e.length; ++c) {
     var s;
-    const u = e[c], h = at(u);
-    h !== u.length && (r = (s = r) !== null && s !== void 0 ? s : c, i = c, c !== 0 && h < n && (n = h));
+    const u = e[c], p = Xe(u);
+    p !== u.length && (r = (s = r) !== null && s !== void 0 ? s : c, i = c, c !== 0 && p < n && (n = p));
   }
   return e.map((c, u) => u === 0 ? c : c.slice(n)).slice(
     (t = r) !== null && t !== void 0 ? t : 0,
     i + 1
   );
 }
-function at(e) {
+function Xe(e) {
   let t = 0;
   for (; t < e.length && ue(e.charCodeAt(t)); )
     ++t;
   return t;
 }
-function ct(e, t) {
-  const n = e.replace(/"""/g, '\\"""'), r = n.split(/\r\n|[\n\r]/g), i = r.length === 1, s = r.length > 1 && r.slice(1).every((A) => A.length === 0 || ue(A.charCodeAt(0))), c = n.endsWith('\\"""'), u = e.endsWith('"') && !c, h = e.endsWith("\\"), f = u || h, d = !(t != null && t.minimize) && // add leading and trailing new lines only if it improves readability
-  (!i || e.length > 70 || f || s || c);
-  let y = "";
-  const m = i && ue(e.charCodeAt(0));
-  return (d && !m || s) && (y += `
-`), y += n, (d || f) && (y += `
-`), '"""' + y + '"""';
+function We(e, t) {
+  const n = e.replace(/"""/g, '\\"""'), r = n.split(/\r\n|[\n\r]/g), i = r.length === 1, s = r.length > 1 && r.slice(1).every((A) => A.length === 0 || ue(A.charCodeAt(0))), c = n.endsWith('\\"""'), u = e.endsWith('"') && !c, p = e.endsWith("\\"), d = u || p, y = !(t != null && t.minimize) && // add leading and trailing new lines only if it improves readability
+  (!i || e.length > 70 || d || s || c);
+  let m = "";
+  const T = i && ue(e.charCodeAt(0));
+  return (y && !T || s) && (m += `
+`), m += n, (y || d) && (m += `
+`), '"""' + m + '"""';
 }
 var a;
 (function(e) {
   e.SOF = "<SOF>", e.EOF = "<EOF>", e.BANG = "!", e.DOLLAR = "$", e.AMP = "&", e.PAREN_L = "(", e.PAREN_R = ")", e.SPREAD = "...", e.COLON = ":", e.EQUALS = "=", e.AT = "@", e.BRACKET_L = "[", e.BRACKET_R = "]", e.BRACE_L = "{", e.PIPE = "|", e.BRACE_R = "}", e.NAME = "Name", e.INT = "Int", e.FLOAT = "Float", e.STRING = "String", e.BLOCK_STRING = "BlockString", e.COMMENT = "Comment";
 })(a || (a = {}));
-class ut {
+class Ze {
   /**
    * The previously focused non-ignored token.
    */
@@ -522,7 +452,7 @@ class ut {
    * The character offset at which the current line begins.
    */
   constructor(t) {
-    const n = new xe(a.SOF, 0, 0, 0, 0);
+    const n = new Ae(a.SOF, 0, 0, 0, 0);
     this.source = t, this.lastToken = n, this.token = n, this.line = 1, this.lineStart = 0;
   }
   get [Symbol.toStringTag]() {
@@ -545,26 +475,26 @@ class ut {
         if (t.next)
           t = t.next;
         else {
-          const n = ht(this, t.end);
+          const n = et(this, t.end);
           t.next = n, n.prev = t, t = n;
         }
       while (t.kind === a.COMMENT);
     return t;
   }
 }
-function lt(e) {
+function Ke(e) {
   return e === a.BANG || e === a.DOLLAR || e === a.AMP || e === a.PAREN_L || e === a.PAREN_R || e === a.SPREAD || e === a.COLON || e === a.EQUALS || e === a.AT || e === a.BRACKET_L || e === a.BRACKET_R || e === a.BRACE_L || e === a.PIPE || e === a.BRACE_R;
 }
-function V(e) {
+function U(e) {
   return e >= 0 && e <= 55295 || e >= 57344 && e <= 1114111;
 }
 function K(e, t) {
-  return be(e.charCodeAt(t)) && _e(e.charCodeAt(t + 1));
-}
-function be(e) {
-  return e >= 55296 && e <= 56319;
+  return _e(e.charCodeAt(t)) && be(e.charCodeAt(t + 1));
 }
 function _e(e) {
+  return e >= 55296 && e <= 56319;
+}
+function be(e) {
   return e >= 56320 && e <= 57343;
 }
 function F(e, t) {
@@ -579,9 +509,9 @@ function F(e, t) {
 }
 function g(e, t, n, r, i) {
   const s = e.line, c = 1 + n - e.lineStart;
-  return new xe(t, n, r, s, c, i);
+  return new Ae(t, n, r, s, c, i);
 }
-function ht(e, t) {
+function et(e, t) {
   const n = e.source.body, r = n.length;
   let i = t;
   for (; i < r; ) {
@@ -600,7 +530,7 @@ function ht(e, t) {
         n.charCodeAt(i + 1) === 10 ? i += 2 : ++i, ++e.line, e.lineStart = i;
         continue;
       case 35:
-        return pt(e, i);
+        return tt(e, i);
       case 33:
         return g(e, a.BANG, i, i + 1);
       case 36:
@@ -632,28 +562,28 @@ function ht(e, t) {
       case 125:
         return g(e, a.BRACE_R, i, i + 1);
       case 34:
-        return n.charCodeAt(i + 1) === 34 && n.charCodeAt(i + 2) === 34 ? Tt(e, i) : ft(e, i);
+        return n.charCodeAt(i + 1) === 34 && n.charCodeAt(i + 2) === 34 ? at(e, i) : it(e, i);
     }
-    if (G(s) || s === 45)
-      return dt(e, i, s);
+    if ($(s) || s === 45)
+      return nt(e, i, s);
     if (Oe(s))
-      return Nt(e, i);
+      return ct(e, i);
     throw O(
       e.source,
       i,
-      s === 39 ? `Unexpected single quote character ('), did you mean to use a double quote (")?` : V(s) || K(n, i) ? `Unexpected character: ${F(e, i)}.` : `Invalid character: ${F(e, i)}.`
+      s === 39 ? `Unexpected single quote character ('), did you mean to use a double quote (")?` : U(s) || K(n, i) ? `Unexpected character: ${F(e, i)}.` : `Invalid character: ${F(e, i)}.`
     );
   }
   return g(e, a.EOF, r, r);
 }
-function pt(e, t) {
+function tt(e, t) {
   const n = e.source.body, r = n.length;
   let i = t + 1;
   for (; i < r; ) {
     const s = n.charCodeAt(i);
     if (s === 10 || s === 13)
       break;
-    if (V(s))
+    if (U(s))
       ++i;
     else if (K(n, i))
       i += 2;
@@ -668,11 +598,11 @@ function pt(e, t) {
     n.slice(t + 1, i)
   );
 }
-function dt(e, t, n) {
+function nt(e, t, n) {
   const r = e.source.body;
   let i = t, s = n, c = !1;
   if (s === 45 && (s = r.charCodeAt(++i)), s === 48) {
-    if (s = r.charCodeAt(++i), G(s))
+    if (s = r.charCodeAt(++i), $(s))
       throw O(
         e.source,
         i,
@@ -701,7 +631,7 @@ function dt(e, t, n) {
   );
 }
 function ie(e, t, n) {
-  if (!G(n))
+  if (!$(n))
     throw O(
       e.source,
       t,
@@ -712,11 +642,11 @@ function ie(e, t, n) {
     );
   const r = e.source.body;
   let i = t + 1;
-  for (; G(r.charCodeAt(i)); )
+  for (; $(r.charCodeAt(i)); )
     ++i;
   return i;
 }
-function ft(e, t) {
+function it(e, t) {
   const n = e.source.body, r = n.length;
   let i = t + 1, s = i, c = "";
   for (; i < r; ) {
@@ -725,13 +655,13 @@ function ft(e, t) {
       return c += n.slice(s, i), g(e, a.STRING, t, i + 1, c);
     if (u === 92) {
       c += n.slice(s, i);
-      const h = n.charCodeAt(i + 1) === 117 ? n.charCodeAt(i + 2) === 123 ? yt(e, i) : Et(e, i) : mt(e, i);
-      c += h.value, i += h.size, s = i;
+      const p = n.charCodeAt(i + 1) === 117 ? n.charCodeAt(i + 2) === 123 ? rt(e, i) : st(e, i) : ot(e, i);
+      c += p.value, i += p.size, s = i;
       continue;
     }
     if (u === 10 || u === 13)
       break;
-    if (V(u))
+    if (U(u))
       ++i;
     else if (K(n, i))
       i += 2;
@@ -747,20 +677,20 @@ function ft(e, t) {
   }
   throw O(e.source, i, "Unterminated string.");
 }
-function yt(e, t) {
+function rt(e, t) {
   const n = e.source.body;
   let r = 0, i = 3;
   for (; i < 12; ) {
     const s = n.charCodeAt(t + i++);
     if (s === 125) {
-      if (i < 5 || !V(r))
+      if (i < 5 || !U(r))
         break;
       return {
         value: String.fromCodePoint(r),
         size: i
       };
     }
-    if (r = r << 4 | q(s), r < 0)
+    if (r = r << 4 | j(s), r < 0)
       break;
   }
   throw O(
@@ -772,16 +702,16 @@ function yt(e, t) {
     )}".`
   );
 }
-function Et(e, t) {
-  const n = e.source.body, r = Ee(n, t + 2);
-  if (V(r))
+function st(e, t) {
+  const n = e.source.body, r = me(n, t + 2);
+  if (U(r))
     return {
       value: String.fromCodePoint(r),
       size: 6
     };
-  if (be(r) && n.charCodeAt(t + 6) === 92 && n.charCodeAt(t + 7) === 117) {
-    const i = Ee(n, t + 8);
-    if (_e(i))
+  if (_e(r) && n.charCodeAt(t + 6) === 92 && n.charCodeAt(t + 7) === 117) {
+    const i = me(n, t + 8);
+    if (be(i))
       return {
         value: String.fromCodePoint(r, i),
         size: 12
@@ -793,13 +723,13 @@ function Et(e, t) {
     `Invalid Unicode escape sequence: "${n.slice(t, t + 6)}".`
   );
 }
-function Ee(e, t) {
-  return q(e.charCodeAt(t)) << 12 | q(e.charCodeAt(t + 1)) << 8 | q(e.charCodeAt(t + 2)) << 4 | q(e.charCodeAt(t + 3));
+function me(e, t) {
+  return j(e.charCodeAt(t)) << 12 | j(e.charCodeAt(t + 1)) << 8 | j(e.charCodeAt(t + 2)) << 4 | j(e.charCodeAt(t + 3));
 }
-function q(e) {
+function j(e) {
   return e >= 48 && e <= 57 ? e - 48 : e >= 65 && e <= 70 ? e - 55 : e >= 97 && e <= 102 ? e - 87 : -1;
 }
-function mt(e, t) {
+function ot(e, t) {
   const n = e.source.body;
   switch (n.charCodeAt(t + 1)) {
     case 34:
@@ -853,34 +783,34 @@ function mt(e, t) {
     )}".`
   );
 }
-function Tt(e, t) {
+function at(e, t) {
   const n = e.source.body, r = n.length;
   let i = e.lineStart, s = t + 3, c = s, u = "";
-  const h = [];
+  const p = [];
   for (; s < r; ) {
-    const f = n.charCodeAt(s);
-    if (f === 34 && n.charCodeAt(s + 1) === 34 && n.charCodeAt(s + 2) === 34) {
-      u += n.slice(c, s), h.push(u);
-      const d = g(
+    const d = n.charCodeAt(s);
+    if (d === 34 && n.charCodeAt(s + 1) === 34 && n.charCodeAt(s + 2) === 34) {
+      u += n.slice(c, s), p.push(u);
+      const y = g(
         e,
         a.BLOCK_STRING,
         t,
         s + 3,
         // Return a string of the lines joined with U+000A.
-        ot(h).join(`
+        Qe(p).join(`
 `)
       );
-      return e.line += h.length - 1, e.lineStart = i, d;
+      return e.line += p.length - 1, e.lineStart = i, y;
     }
-    if (f === 92 && n.charCodeAt(s + 1) === 34 && n.charCodeAt(s + 2) === 34 && n.charCodeAt(s + 3) === 34) {
+    if (d === 92 && n.charCodeAt(s + 1) === 34 && n.charCodeAt(s + 2) === 34 && n.charCodeAt(s + 3) === 34) {
       u += n.slice(c, s), c = s + 1, s += 4;
       continue;
     }
-    if (f === 10 || f === 13) {
-      u += n.slice(c, s), h.push(u), f === 13 && n.charCodeAt(s + 1) === 10 ? s += 2 : ++s, u = "", c = s, i = s;
+    if (d === 10 || d === 13) {
+      u += n.slice(c, s), p.push(u), d === 13 && n.charCodeAt(s + 1) === 10 ? s += 2 : ++s, u = "", c = s, i = s;
       continue;
     }
-    if (V(f))
+    if (U(d))
       ++s;
     else if (K(n, s))
       s += 2;
@@ -896,12 +826,12 @@ function Tt(e, t) {
   }
   throw O(e.source, s, "Unterminated string.");
 }
-function Nt(e, t) {
+function ct(e, t) {
   const n = e.source.body, r = n.length;
   let i = t + 1;
   for (; i < r; ) {
     const s = n.charCodeAt(i);
-    if (st(s))
+    if (Je(s))
       ++i;
     else
       break;
@@ -914,8 +844,8 @@ function Nt(e, t) {
     n.slice(t, i)
   );
 }
-const vt = 10, De = 2;
-function pe(e) {
+const ut = 10, De = 2;
+function de(e) {
   return ee(e, []);
 }
 function ee(e, t) {
@@ -925,45 +855,45 @@ function ee(e, t) {
     case "function":
       return e.name ? `[function ${e.name}]` : "[function]";
     case "object":
-      return At(e, t);
+      return lt(e, t);
     default:
       return String(e);
   }
 }
-function At(e, t) {
+function lt(e, t) {
   if (e === null)
     return "null";
   if (t.includes(e))
     return "[Circular]";
   const n = [...t, e];
-  if (xt(e)) {
+  if (ht(e)) {
     const r = e.toJSON();
     if (r !== e)
       return typeof r == "string" ? r : ee(r, n);
   } else if (Array.isArray(e))
-    return gt(e, n);
-  return It(e, n);
+    return dt(e, n);
+  return pt(e, n);
 }
-function xt(e) {
+function ht(e) {
   return typeof e.toJSON == "function";
 }
-function It(e, t) {
+function pt(e, t) {
   const n = Object.entries(e);
-  return n.length === 0 ? "{}" : t.length > De ? "[" + Ot(e) + "]" : "{ " + n.map(
+  return n.length === 0 ? "{}" : t.length > De ? "[" + ft(e) + "]" : "{ " + n.map(
     ([i, s]) => i + ": " + ee(s, t)
   ).join(", ") + " }";
 }
-function gt(e, t) {
+function dt(e, t) {
   if (e.length === 0)
     return "[]";
   if (t.length > De)
     return "[Array]";
-  const n = Math.min(vt, e.length), r = e.length - n, i = [];
+  const n = Math.min(ut, e.length), r = e.length - n, i = [];
   for (let s = 0; s < n; ++s)
     i.push(ee(e[s], t));
   return r === 1 ? i.push("... 1 more item") : r > 1 && i.push(`... ${r} more items`), "[" + i.join(", ") + "]";
 }
-function Ot(e) {
+function ft(e) {
   const t = Object.prototype.toString.call(e).replace(/^\[object /, "").replace(/]$/, "");
   if (t === "Object" && typeof e.constructor == "function") {
     const n = e.constructor.name;
@@ -972,7 +902,7 @@ function Ot(e) {
   }
   return t;
 }
-const bt = (
+const yt = (
   /* c8 ignore next 6 */
   // FIXME: https://github.com/graphql/graphql-js/issues/2317
   // eslint-disable-next-line no-undef
@@ -988,7 +918,7 @@ const bt = (
         Symbol.toStringTag in t ? t[Symbol.toStringTag] : (r = t.constructor) === null || r === void 0 ? void 0 : r.name
       );
       if (i === s) {
-        const c = pe(t);
+        const c = de(t);
         throw new Error(`Cannot use ${i} "${c}" from another module or realm.
 
 Ensure that there is only one instance of "graphql" in the node_modules
@@ -1011,10 +941,10 @@ class Se {
     line: 1,
     column: 1
   }) {
-    typeof t == "string" || X(!1, `Body must be a string. Received: ${pe(t)}.`), this.body = t, this.name = n, this.locationOffset = r, this.locationOffset.line > 0 || X(
+    typeof t == "string" || Q(!1, `Body must be a string. Received: ${de(t)}.`), this.body = t, this.name = n, this.locationOffset = r, this.locationOffset.line > 0 || Q(
       !1,
       "line in locationOffset is 1-indexed and must be positive."
-    ), this.locationOffset.column > 0 || X(
+    ), this.locationOffset.column > 0 || Q(
       !1,
       "column in locationOffset is 1-indexed and must be positive."
     );
@@ -1023,16 +953,16 @@ class Se {
     return "Source";
   }
 }
-function _t(e) {
-  return bt(e, Se);
+function Et(e) {
+  return yt(e, Se);
 }
-function Dt(e, t) {
-  return new St(e, t).parseDocument();
+function mt(e, t) {
+  return new Tt(e, t).parseDocument();
 }
-class St {
+class Tt {
   constructor(t, n = {}) {
-    const r = _t(t) ? t : new Se(t);
-    this._lexer = new ut(r), this._options = n, this._tokenCounter = 0;
+    const r = Et(t) ? t : new Se(t);
+    this._lexer = new Ze(r), this._options = n, this._tokenCounter = 0;
   }
   /**
    * Converts a name lex token into a name parse node.
@@ -1040,7 +970,7 @@ class St {
   parseName() {
     const t = this.expectToken(a.NAME);
     return this.node(t, {
-      kind: E.NAME,
+      kind: f.NAME,
       value: t.value
     });
   }
@@ -1050,7 +980,7 @@ class St {
    */
   parseDocument() {
     return this.node(this._lexer.token, {
-      kind: E.DOCUMENT,
+      kind: f.DOCUMENT,
       definitions: this.many(
         a.SOF,
         this.parseDefinition,
@@ -1133,8 +1063,8 @@ class St {
     const t = this._lexer.token;
     if (this.peek(a.BRACE_L))
       return this.node(t, {
-        kind: E.OPERATION_DEFINITION,
-        operation: U.QUERY,
+        kind: f.OPERATION_DEFINITION,
+        operation: M.QUERY,
         name: void 0,
         variableDefinitions: [],
         directives: [],
@@ -1143,7 +1073,7 @@ class St {
     const n = this.parseOperationType();
     let r;
     return this.peek(a.NAME) && (r = this.parseName()), this.node(t, {
-      kind: E.OPERATION_DEFINITION,
+      kind: f.OPERATION_DEFINITION,
       operation: n,
       name: r,
       variableDefinitions: this.parseVariableDefinitions(),
@@ -1158,11 +1088,11 @@ class St {
     const t = this.expectToken(a.NAME);
     switch (t.value) {
       case "query":
-        return U.QUERY;
+        return M.QUERY;
       case "mutation":
-        return U.MUTATION;
+        return M.MUTATION;
       case "subscription":
-        return U.SUBSCRIPTION;
+        return M.SUBSCRIPTION;
     }
     throw this.unexpected(t);
   }
@@ -1181,7 +1111,7 @@ class St {
    */
   parseVariableDefinition() {
     return this.node(this._lexer.token, {
-      kind: E.VARIABLE_DEFINITION,
+      kind: f.VARIABLE_DEFINITION,
       variable: this.parseVariable(),
       type: (this.expectToken(a.COLON), this.parseTypeReference()),
       defaultValue: this.expectOptionalToken(a.EQUALS) ? this.parseConstValueLiteral() : void 0,
@@ -1194,7 +1124,7 @@ class St {
   parseVariable() {
     const t = this._lexer.token;
     return this.expectToken(a.DOLLAR), this.node(t, {
-      kind: E.VARIABLE,
+      kind: f.VARIABLE,
       name: this.parseName()
     });
   }
@@ -1205,7 +1135,7 @@ class St {
    */
   parseSelectionSet() {
     return this.node(this._lexer.token, {
-      kind: E.SELECTION_SET,
+      kind: f.SELECTION_SET,
       selections: this.many(
         a.BRACE_L,
         this.parseSelection,
@@ -1231,7 +1161,7 @@ class St {
     const t = this._lexer.token, n = this.parseName();
     let r, i;
     return this.expectOptionalToken(a.COLON) ? (r = n, i = this.parseName()) : i = n, this.node(t, {
-      kind: E.FIELD,
+      kind: f.FIELD,
       alias: r,
       name: i,
       arguments: this.parseArguments(!1),
@@ -1252,7 +1182,7 @@ class St {
   parseArgument(t = !1) {
     const n = this._lexer.token, r = this.parseName();
     return this.expectToken(a.COLON), this.node(n, {
-      kind: E.ARGUMENT,
+      kind: f.ARGUMENT,
       name: r,
       value: this.parseValueLiteral(t)
     });
@@ -1273,11 +1203,11 @@ class St {
     this.expectToken(a.SPREAD);
     const n = this.expectOptionalKeyword("on");
     return !n && this.peek(a.NAME) ? this.node(t, {
-      kind: E.FRAGMENT_SPREAD,
+      kind: f.FRAGMENT_SPREAD,
       name: this.parseFragmentName(),
       directives: this.parseDirectives(!1)
     }) : this.node(t, {
-      kind: E.INLINE_FRAGMENT,
+      kind: f.INLINE_FRAGMENT,
       typeCondition: n ? this.parseNamedType() : void 0,
       directives: this.parseDirectives(!1),
       selectionSet: this.parseSelectionSet()
@@ -1292,14 +1222,14 @@ class St {
   parseFragmentDefinition() {
     const t = this._lexer.token;
     return this.expectKeyword("fragment"), this._options.allowLegacyFragmentVariables === !0 ? this.node(t, {
-      kind: E.FRAGMENT_DEFINITION,
+      kind: f.FRAGMENT_DEFINITION,
       name: this.parseFragmentName(),
       variableDefinitions: this.parseVariableDefinitions(),
       typeCondition: (this.expectKeyword("on"), this.parseNamedType()),
       directives: this.parseDirectives(!1),
       selectionSet: this.parseSelectionSet()
     }) : this.node(t, {
-      kind: E.FRAGMENT_DEFINITION,
+      kind: f.FRAGMENT_DEFINITION,
       name: this.parseFragmentName(),
       typeCondition: (this.expectKeyword("on"), this.parseNamedType()),
       directives: this.parseDirectives(!1),
@@ -1342,12 +1272,12 @@ class St {
         return this.parseObject(t);
       case a.INT:
         return this.advanceLexer(), this.node(n, {
-          kind: E.INT,
+          kind: f.INT,
           value: n.value
         });
       case a.FLOAT:
         return this.advanceLexer(), this.node(n, {
-          kind: E.FLOAT,
+          kind: f.FLOAT,
           value: n.value
         });
       case a.STRING:
@@ -1357,21 +1287,21 @@ class St {
         switch (this.advanceLexer(), n.value) {
           case "true":
             return this.node(n, {
-              kind: E.BOOLEAN,
+              kind: f.BOOLEAN,
               value: !0
             });
           case "false":
             return this.node(n, {
-              kind: E.BOOLEAN,
+              kind: f.BOOLEAN,
               value: !1
             });
           case "null":
             return this.node(n, {
-              kind: E.NULL
+              kind: f.NULL
             });
           default:
             return this.node(n, {
-              kind: E.ENUM,
+              kind: f.ENUM,
               value: n.value
             });
         }
@@ -1397,7 +1327,7 @@ class St {
   parseStringLiteral() {
     const t = this._lexer.token;
     return this.advanceLexer(), this.node(t, {
-      kind: E.STRING,
+      kind: f.STRING,
       value: t.value,
       block: t.kind === a.BLOCK_STRING
     });
@@ -1410,7 +1340,7 @@ class St {
   parseList(t) {
     const n = () => this.parseValueLiteral(t);
     return this.node(this._lexer.token, {
-      kind: E.LIST,
+      kind: f.LIST,
       values: this.any(a.BRACKET_L, n, a.BRACKET_R)
     });
   }
@@ -1424,7 +1354,7 @@ class St {
   parseObject(t) {
     const n = () => this.parseObjectField(t);
     return this.node(this._lexer.token, {
-      kind: E.OBJECT,
+      kind: f.OBJECT,
       fields: this.any(a.BRACE_L, n, a.BRACE_R)
     });
   }
@@ -1434,7 +1364,7 @@ class St {
   parseObjectField(t) {
     const n = this._lexer.token, r = this.parseName();
     return this.expectToken(a.COLON), this.node(n, {
-      kind: E.OBJECT_FIELD,
+      kind: f.OBJECT_FIELD,
       name: r,
       value: this.parseValueLiteral(t)
     });
@@ -1460,7 +1390,7 @@ class St {
   parseDirective(t) {
     const n = this._lexer.token;
     return this.expectToken(a.AT), this.node(n, {
-      kind: E.DIRECTIVE,
+      kind: f.DIRECTIVE,
       name: this.parseName(),
       arguments: this.parseArguments(t)
     });
@@ -1478,13 +1408,13 @@ class St {
     if (this.expectOptionalToken(a.BRACKET_L)) {
       const r = this.parseTypeReference();
       this.expectToken(a.BRACKET_R), n = this.node(t, {
-        kind: E.LIST_TYPE,
+        kind: f.LIST_TYPE,
         type: r
       });
     } else
       n = this.parseNamedType();
     return this.expectOptionalToken(a.BANG) ? this.node(t, {
-      kind: E.NON_NULL_TYPE,
+      kind: f.NON_NULL_TYPE,
       type: n
     }) : n;
   }
@@ -1493,7 +1423,7 @@ class St {
    */
   parseNamedType() {
     return this.node(this._lexer.token, {
-      kind: E.NAMED_TYPE,
+      kind: f.NAMED_TYPE,
       name: this.parseName()
     });
   }
@@ -1522,7 +1452,7 @@ class St {
       a.BRACE_R
     );
     return this.node(t, {
-      kind: E.SCHEMA_DEFINITION,
+      kind: f.SCHEMA_DEFINITION,
       description: n,
       directives: r,
       operationTypes: i
@@ -1536,7 +1466,7 @@ class St {
     this.expectToken(a.COLON);
     const r = this.parseNamedType();
     return this.node(t, {
-      kind: E.OPERATION_TYPE_DEFINITION,
+      kind: f.OPERATION_TYPE_DEFINITION,
       operation: n,
       type: r
     });
@@ -1549,7 +1479,7 @@ class St {
     this.expectKeyword("scalar");
     const r = this.parseName(), i = this.parseConstDirectives();
     return this.node(t, {
-      kind: E.SCALAR_TYPE_DEFINITION,
+      kind: f.SCALAR_TYPE_DEFINITION,
       description: n,
       name: r,
       directives: i
@@ -1565,7 +1495,7 @@ class St {
     this.expectKeyword("type");
     const r = this.parseName(), i = this.parseImplementsInterfaces(), s = this.parseConstDirectives(), c = this.parseFieldsDefinition();
     return this.node(t, {
-      kind: E.OBJECT_TYPE_DEFINITION,
+      kind: f.OBJECT_TYPE_DEFINITION,
       description: n,
       name: r,
       interfaces: i,
@@ -1602,7 +1532,7 @@ class St {
     this.expectToken(a.COLON);
     const s = this.parseTypeReference(), c = this.parseConstDirectives();
     return this.node(t, {
-      kind: E.FIELD_DEFINITION,
+      kind: f.FIELD_DEFINITION,
       description: n,
       name: r,
       arguments: i,
@@ -1632,7 +1562,7 @@ class St {
     this.expectOptionalToken(a.EQUALS) && (s = this.parseConstValueLiteral());
     const c = this.parseConstDirectives();
     return this.node(t, {
-      kind: E.INPUT_VALUE_DEFINITION,
+      kind: f.INPUT_VALUE_DEFINITION,
       description: n,
       name: r,
       type: i,
@@ -1649,7 +1579,7 @@ class St {
     this.expectKeyword("interface");
     const r = this.parseName(), i = this.parseImplementsInterfaces(), s = this.parseConstDirectives(), c = this.parseFieldsDefinition();
     return this.node(t, {
-      kind: E.INTERFACE_TYPE_DEFINITION,
+      kind: f.INTERFACE_TYPE_DEFINITION,
       description: n,
       name: r,
       interfaces: i,
@@ -1666,7 +1596,7 @@ class St {
     this.expectKeyword("union");
     const r = this.parseName(), i = this.parseConstDirectives(), s = this.parseUnionMemberTypes();
     return this.node(t, {
-      kind: E.UNION_TYPE_DEFINITION,
+      kind: f.UNION_TYPE_DEFINITION,
       description: n,
       name: r,
       directives: i,
@@ -1690,7 +1620,7 @@ class St {
     this.expectKeyword("enum");
     const r = this.parseName(), i = this.parseConstDirectives(), s = this.parseEnumValuesDefinition();
     return this.node(t, {
-      kind: E.ENUM_TYPE_DEFINITION,
+      kind: f.ENUM_TYPE_DEFINITION,
       description: n,
       name: r,
       directives: i,
@@ -1715,7 +1645,7 @@ class St {
   parseEnumValueDefinition() {
     const t = this._lexer.token, n = this.parseDescription(), r = this.parseEnumValueName(), i = this.parseConstDirectives();
     return this.node(t, {
-      kind: E.ENUM_VALUE_DEFINITION,
+      kind: f.ENUM_VALUE_DEFINITION,
       description: n,
       name: r,
       directives: i
@@ -1729,7 +1659,7 @@ class St {
       throw O(
         this._lexer.source,
         this._lexer.token.start,
-        `${Q(
+        `${J(
           this._lexer.token
         )} is reserved and cannot be used for an enum value.`
       );
@@ -1744,7 +1674,7 @@ class St {
     this.expectKeyword("input");
     const r = this.parseName(), i = this.parseConstDirectives(), s = this.parseInputFieldsDefinition();
     return this.node(t, {
-      kind: E.INPUT_OBJECT_TYPE_DEFINITION,
+      kind: f.INPUT_OBJECT_TYPE_DEFINITION,
       description: n,
       name: r,
       directives: i,
@@ -1815,7 +1745,7 @@ class St {
     if (n.length === 0 && r.length === 0)
       throw this.unexpected();
     return this.node(t, {
-      kind: E.SCHEMA_EXTENSION,
+      kind: f.SCHEMA_EXTENSION,
       directives: n,
       operationTypes: r
     });
@@ -1831,7 +1761,7 @@ class St {
     if (r.length === 0)
       throw this.unexpected();
     return this.node(t, {
-      kind: E.SCALAR_TYPE_EXTENSION,
+      kind: f.SCALAR_TYPE_EXTENSION,
       name: n,
       directives: r
     });
@@ -1849,7 +1779,7 @@ class St {
     if (r.length === 0 && i.length === 0 && s.length === 0)
       throw this.unexpected();
     return this.node(t, {
-      kind: E.OBJECT_TYPE_EXTENSION,
+      kind: f.OBJECT_TYPE_EXTENSION,
       name: n,
       interfaces: r,
       directives: i,
@@ -1869,7 +1799,7 @@ class St {
     if (r.length === 0 && i.length === 0 && s.length === 0)
       throw this.unexpected();
     return this.node(t, {
-      kind: E.INTERFACE_TYPE_EXTENSION,
+      kind: f.INTERFACE_TYPE_EXTENSION,
       name: n,
       interfaces: r,
       directives: i,
@@ -1888,7 +1818,7 @@ class St {
     if (r.length === 0 && i.length === 0)
       throw this.unexpected();
     return this.node(t, {
-      kind: E.UNION_TYPE_EXTENSION,
+      kind: f.UNION_TYPE_EXTENSION,
       name: n,
       directives: r,
       types: i
@@ -1906,7 +1836,7 @@ class St {
     if (r.length === 0 && i.length === 0)
       throw this.unexpected();
     return this.node(t, {
-      kind: E.ENUM_TYPE_EXTENSION,
+      kind: f.ENUM_TYPE_EXTENSION,
       name: n,
       directives: r,
       values: i
@@ -1924,7 +1854,7 @@ class St {
     if (r.length === 0 && i.length === 0)
       throw this.unexpected();
     return this.node(t, {
-      kind: E.INPUT_OBJECT_TYPE_EXTENSION,
+      kind: f.INPUT_OBJECT_TYPE_EXTENSION,
       name: n,
       directives: r,
       fields: i
@@ -1943,7 +1873,7 @@ class St {
     this.expectKeyword("on");
     const c = this.parseDirectiveLocations();
     return this.node(t, {
-      kind: E.DIRECTIVE_DEFINITION,
+      kind: f.DIRECTIVE_DEFINITION,
       description: n,
       name: r,
       arguments: i,
@@ -1999,7 +1929,7 @@ class St {
    * given parsed object.
    */
   node(t, n) {
-    return this._options.noLocation !== !0 && (n.loc = new it(
+    return this._options.noLocation !== !0 && (n.loc = new Ye(
       t,
       this._lexer.lastToken,
       this._lexer.source
@@ -2022,7 +1952,7 @@ class St {
     throw O(
       this._lexer.source,
       n.start,
-      `Expected ${Ce(t)}, found ${Q(n)}.`
+      `Expected ${Ce(t)}, found ${J(n)}.`
     );
   }
   /**
@@ -2044,7 +1974,7 @@ class St {
       throw O(
         this._lexer.source,
         n.start,
-        `Expected "${t}", found ${Q(n)}.`
+        `Expected "${t}", found ${J(n)}.`
       );
   }
   /**
@@ -2063,7 +1993,7 @@ class St {
     return O(
       this._lexer.source,
       n.start,
-      `Unexpected ${Q(n)}.`
+      `Unexpected ${J(n)}.`
     );
   }
   /**
@@ -2130,21 +2060,21 @@ class St {
       );
   }
 }
-function Q(e) {
+function J(e) {
   const t = e.value;
   return Ce(e.kind) + (t != null ? ` "${t}"` : "");
 }
 function Ce(e) {
-  return lt(e) ? `"${e}"` : e;
+  return Ke(e) ? `"${e}"` : e;
 }
-function Ct(e) {
-  return `"${e.replace(wt, kt)}"`;
+function Nt(e) {
+  return `"${e.replace(vt, xt)}"`;
 }
-const wt = /[\x00-\x1f\x22\x5c\x7f-\x9f]/g;
-function kt(e) {
-  return Rt[e.charCodeAt(0)];
+const vt = /[\x00-\x1f\x22\x5c\x7f-\x9f]/g;
+function xt(e) {
+  return At[e.charCodeAt(0)];
 }
-const Rt = [
+const At = [
   "\\u0000",
   "\\u0001",
   "\\u0002",
@@ -2310,75 +2240,75 @@ const Rt = [
   "\\u009D",
   "\\u009E",
   "\\u009F"
-], Lt = Object.freeze({});
-function Ft(e, t, n = Ie) {
+], It = Object.freeze({});
+function gt(e, t, n = Ie) {
   const r = /* @__PURE__ */ new Map();
-  for (const S of Object.values(E))
-    r.set(S, Pt(t, S));
-  let i, s = Array.isArray(e), c = [e], u = -1, h = [], f = e, d, y;
-  const m = [], A = [];
+  for (const S of Object.values(f))
+    r.set(S, Ot(t, S));
+  let i, s = Array.isArray(e), c = [e], u = -1, p = [], d = e, y, m;
+  const T = [], A = [];
   do {
     u++;
-    const S = u === c.length, H = S && h.length !== 0;
+    const S = u === c.length, G = S && p.length !== 0;
     if (S) {
-      if (d = A.length === 0 ? void 0 : m[m.length - 1], f = y, y = A.pop(), H)
+      if (y = A.length === 0 ? void 0 : T[T.length - 1], d = m, m = A.pop(), G)
         if (s) {
-          f = f.slice();
+          d = d.slice();
           let C = 0;
-          for (const [B, Y] of h) {
-            const J = B - C;
-            Y === null ? (f.splice(J, 1), C++) : f[J] = Y;
+          for (const [P, H] of p) {
+            const Y = P - C;
+            H === null ? (d.splice(Y, 1), C++) : d[Y] = H;
           }
         } else {
-          f = Object.defineProperties(
+          d = Object.defineProperties(
             {},
-            Object.getOwnPropertyDescriptors(f)
+            Object.getOwnPropertyDescriptors(d)
           );
-          for (const [C, B] of h)
-            f[C] = B;
+          for (const [C, P] of p)
+            d[C] = P;
         }
-      u = i.index, c = i.keys, h = i.edits, s = i.inArray, i = i.prev;
-    } else if (y) {
-      if (d = s ? u : c[u], f = y[d], f == null)
+      u = i.index, c = i.keys, p = i.edits, s = i.inArray, i = i.prev;
+    } else if (m) {
+      if (y = s ? u : c[u], d = m[y], d == null)
         continue;
-      m.push(d);
+      T.push(y);
     }
     let k;
-    if (!Array.isArray(f)) {
-      var T, I;
-      ye(f) || X(!1, `Invalid AST Node: ${pe(f)}.`);
-      const C = S ? (T = r.get(f.kind)) === null || T === void 0 ? void 0 : T.leave : (I = r.get(f.kind)) === null || I === void 0 ? void 0 : I.enter;
-      if (k = C == null ? void 0 : C.call(t, f, d, y, m, A), k === Lt)
+    if (!Array.isArray(d)) {
+      var E, I;
+      Ee(d) || Q(!1, `Invalid AST Node: ${de(d)}.`);
+      const C = S ? (E = r.get(d.kind)) === null || E === void 0 ? void 0 : E.leave : (I = r.get(d.kind)) === null || I === void 0 ? void 0 : I.enter;
+      if (k = C == null ? void 0 : C.call(t, d, y, m, T, A), k === It)
         break;
       if (k === !1) {
         if (!S) {
-          m.pop();
+          T.pop();
           continue;
         }
-      } else if (k !== void 0 && (h.push([d, k]), !S))
-        if (ye(k))
-          f = k;
+      } else if (k !== void 0 && (p.push([y, k]), !S))
+        if (Ee(k))
+          d = k;
         else {
-          m.pop();
+          T.pop();
           continue;
         }
     }
-    if (k === void 0 && H && h.push([d, f]), S)
-      m.pop();
+    if (k === void 0 && G && p.push([y, d]), S)
+      T.pop();
     else {
       var D;
       i = {
         inArray: s,
         index: u,
         keys: c,
-        edits: h,
+        edits: p,
         prev: i
-      }, s = Array.isArray(f), c = s ? f : (D = n[f.kind]) !== null && D !== void 0 ? D : [], u = -1, h = [], y && A.push(y), y = f;
+      }, s = Array.isArray(d), c = s ? d : (D = n[d.kind]) !== null && D !== void 0 ? D : [], u = -1, p = [], m && A.push(m), m = d;
     }
   } while (i !== void 0);
-  return h.length !== 0 ? h[h.length - 1][1] : e;
+  return p.length !== 0 ? p[p.length - 1][1] : e;
 }
-function Pt(e, t) {
+function Ot(e, t) {
   const n = e[t];
   return typeof n == "object" ? n : typeof n == "function" ? {
     enter: n,
@@ -2388,10 +2318,10 @@ function Pt(e, t) {
     leave: e.leave
   };
 }
-function Bt(e) {
-  return Ft(e, Ut);
+function _t(e) {
+  return gt(e, Dt);
 }
-const Mt = 80, Ut = {
+const bt = 80, Dt = {
   Name: {
     leave: (e) => e.value
   },
@@ -2400,17 +2330,17 @@ const Mt = 80, Ut = {
   },
   // Document
   Document: {
-    leave: (e) => p(e.definitions, `
+    leave: (e) => h(e.definitions, `
 
 `)
   },
   OperationDefinition: {
     leave(e) {
-      const t = v("(", p(e.variableDefinitions, ", "), ")"), n = p(
+      const t = v("(", h(e.variableDefinitions, ", "), ")"), n = h(
         [
           e.operation,
-          p([e.name, t]),
-          p(e.directives, " ")
+          h([e.name, t]),
+          h(e.directives, " ")
         ],
         " "
       );
@@ -2418,7 +2348,7 @@ const Mt = 80, Ut = {
     }
   },
   VariableDefinition: {
-    leave: ({ variable: e, type: t, defaultValue: n, directives: r }) => e + ": " + t + v(" = ", n) + v(" ", p(r, " "))
+    leave: ({ variable: e, type: t, defaultValue: n, directives: r }) => e + ": " + t + v(" = ", n) + v(" ", h(r, " "))
   },
   SelectionSet: {
     leave: ({ selections: e }) => w(e)
@@ -2426,11 +2356,11 @@ const Mt = 80, Ut = {
   Field: {
     leave({ alias: e, name: t, arguments: n, directives: r, selectionSet: i }) {
       const s = v("", e, ": ") + t;
-      let c = s + v("(", p(n, ", "), ")");
-      return c.length > Mt && (c = s + v(`(
-`, W(p(n, `
+      let c = s + v("(", h(n, ", "), ")");
+      return c.length > bt && (c = s + v(`(
+`, X(h(n, `
 `)), `
-)`)), p([c, p(r, " "), i], " ");
+)`)), h([c, h(r, " "), i], " ");
     }
   },
   Argument: {
@@ -2438,14 +2368,14 @@ const Mt = 80, Ut = {
   },
   // Fragments
   FragmentSpread: {
-    leave: ({ name: e, directives: t }) => "..." + e + v(" ", p(t, " "))
+    leave: ({ name: e, directives: t }) => "..." + e + v(" ", h(t, " "))
   },
   InlineFragment: {
-    leave: ({ typeCondition: e, directives: t, selectionSet: n }) => p(
+    leave: ({ typeCondition: e, directives: t, selectionSet: n }) => h(
       [
         "...",
         v("on ", e),
-        p(t, " "),
+        h(t, " "),
         n
       ],
       " "
@@ -2454,7 +2384,7 @@ const Mt = 80, Ut = {
   FragmentDefinition: {
     leave: ({ name: e, typeCondition: t, variableDefinitions: n, directives: r, selectionSet: i }) => (
       // or removed in the future.
-      `fragment ${e}${v("(", p(n, ", "), ")")} on ${t} ${v("", p(r, " "), " ")}` + i
+      `fragment ${e}${v("(", h(n, ", "), ")")} on ${t} ${v("", h(r, " "), " ")}` + i
     )
   },
   // Value
@@ -2465,7 +2395,7 @@ const Mt = 80, Ut = {
     leave: ({ value: e }) => e
   },
   StringValue: {
-    leave: ({ value: e, block: t }) => t ? ct(e) : Ct(e)
+    leave: ({ value: e, block: t }) => t ? We(e) : Nt(e)
   },
   BooleanValue: {
     leave: ({ value: e }) => e ? "true" : "false"
@@ -2477,17 +2407,17 @@ const Mt = 80, Ut = {
     leave: ({ value: e }) => e
   },
   ListValue: {
-    leave: ({ values: e }) => "[" + p(e, ", ") + "]"
+    leave: ({ values: e }) => "[" + h(e, ", ") + "]"
   },
   ObjectValue: {
-    leave: ({ fields: e }) => "{" + p(e, ", ") + "}"
+    leave: ({ fields: e }) => "{" + h(e, ", ") + "}"
   },
   ObjectField: {
     leave: ({ name: e, value: t }) => e + ": " + t
   },
   // Directive
   Directive: {
-    leave: ({ name: e, arguments: t }) => "@" + e + v("(", p(t, ", "), ")")
+    leave: ({ name: e, arguments: t }) => "@" + e + v("(", h(t, ", "), ")")
   },
   // Type
   NamedType: {
@@ -2502,23 +2432,23 @@ const Mt = 80, Ut = {
   // Type System Definitions
   SchemaDefinition: {
     leave: ({ description: e, directives: t, operationTypes: n }) => v("", e, `
-`) + p(["schema", p(t, " "), w(n)], " ")
+`) + h(["schema", h(t, " "), w(n)], " ")
   },
   OperationTypeDefinition: {
     leave: ({ operation: e, type: t }) => e + ": " + t
   },
   ScalarTypeDefinition: {
     leave: ({ description: e, name: t, directives: n }) => v("", e, `
-`) + p(["scalar", t, p(n, " ")], " ")
+`) + h(["scalar", t, h(n, " ")], " ")
   },
   ObjectTypeDefinition: {
     leave: ({ description: e, name: t, interfaces: n, directives: r, fields: i }) => v("", e, `
-`) + p(
+`) + h(
       [
         "type",
         t,
-        v("implements ", p(n, " & ")),
-        p(r, " "),
+        v("implements ", h(n, " & ")),
+        h(r, " "),
         w(i)
       ],
       " "
@@ -2526,26 +2456,26 @@ const Mt = 80, Ut = {
   },
   FieldDefinition: {
     leave: ({ description: e, name: t, arguments: n, type: r, directives: i }) => v("", e, `
-`) + t + (me(n) ? v(`(
-`, W(p(n, `
+`) + t + (Te(n) ? v(`(
+`, X(h(n, `
 `)), `
-)`) : v("(", p(n, ", "), ")")) + ": " + r + v(" ", p(i, " "))
+)`) : v("(", h(n, ", "), ")")) + ": " + r + v(" ", h(i, " "))
   },
   InputValueDefinition: {
     leave: ({ description: e, name: t, type: n, defaultValue: r, directives: i }) => v("", e, `
-`) + p(
-      [t + ": " + n, v("= ", r), p(i, " ")],
+`) + h(
+      [t + ": " + n, v("= ", r), h(i, " ")],
       " "
     )
   },
   InterfaceTypeDefinition: {
     leave: ({ description: e, name: t, interfaces: n, directives: r, fields: i }) => v("", e, `
-`) + p(
+`) + h(
       [
         "interface",
         t,
-        v("implements ", p(n, " & ")),
-        p(r, " "),
+        v("implements ", h(n, " & ")),
+        h(r, " "),
         w(i)
       ],
       " "
@@ -2553,104 +2483,104 @@ const Mt = 80, Ut = {
   },
   UnionTypeDefinition: {
     leave: ({ description: e, name: t, directives: n, types: r }) => v("", e, `
-`) + p(
-      ["union", t, p(n, " "), v("= ", p(r, " | "))],
+`) + h(
+      ["union", t, h(n, " "), v("= ", h(r, " | "))],
       " "
     )
   },
   EnumTypeDefinition: {
     leave: ({ description: e, name: t, directives: n, values: r }) => v("", e, `
-`) + p(["enum", t, p(n, " "), w(r)], " ")
+`) + h(["enum", t, h(n, " "), w(r)], " ")
   },
   EnumValueDefinition: {
     leave: ({ description: e, name: t, directives: n }) => v("", e, `
-`) + p([t, p(n, " ")], " ")
+`) + h([t, h(n, " ")], " ")
   },
   InputObjectTypeDefinition: {
     leave: ({ description: e, name: t, directives: n, fields: r }) => v("", e, `
-`) + p(["input", t, p(n, " "), w(r)], " ")
+`) + h(["input", t, h(n, " "), w(r)], " ")
   },
   DirectiveDefinition: {
     leave: ({ description: e, name: t, arguments: n, repeatable: r, locations: i }) => v("", e, `
-`) + "directive @" + t + (me(n) ? v(`(
-`, W(p(n, `
+`) + "directive @" + t + (Te(n) ? v(`(
+`, X(h(n, `
 `)), `
-)`) : v("(", p(n, ", "), ")")) + (r ? " repeatable" : "") + " on " + p(i, " | ")
+)`) : v("(", h(n, ", "), ")")) + (r ? " repeatable" : "") + " on " + h(i, " | ")
   },
   SchemaExtension: {
-    leave: ({ directives: e, operationTypes: t }) => p(
-      ["extend schema", p(e, " "), w(t)],
+    leave: ({ directives: e, operationTypes: t }) => h(
+      ["extend schema", h(e, " "), w(t)],
       " "
     )
   },
   ScalarTypeExtension: {
-    leave: ({ name: e, directives: t }) => p(["extend scalar", e, p(t, " ")], " ")
+    leave: ({ name: e, directives: t }) => h(["extend scalar", e, h(t, " ")], " ")
   },
   ObjectTypeExtension: {
-    leave: ({ name: e, interfaces: t, directives: n, fields: r }) => p(
+    leave: ({ name: e, interfaces: t, directives: n, fields: r }) => h(
       [
         "extend type",
         e,
-        v("implements ", p(t, " & ")),
-        p(n, " "),
+        v("implements ", h(t, " & ")),
+        h(n, " "),
         w(r)
       ],
       " "
     )
   },
   InterfaceTypeExtension: {
-    leave: ({ name: e, interfaces: t, directives: n, fields: r }) => p(
+    leave: ({ name: e, interfaces: t, directives: n, fields: r }) => h(
       [
         "extend interface",
         e,
-        v("implements ", p(t, " & ")),
-        p(n, " "),
+        v("implements ", h(t, " & ")),
+        h(n, " "),
         w(r)
       ],
       " "
     )
   },
   UnionTypeExtension: {
-    leave: ({ name: e, directives: t, types: n }) => p(
+    leave: ({ name: e, directives: t, types: n }) => h(
       [
         "extend union",
         e,
-        p(t, " "),
-        v("= ", p(n, " | "))
+        h(t, " "),
+        v("= ", h(n, " | "))
       ],
       " "
     )
   },
   EnumTypeExtension: {
-    leave: ({ name: e, directives: t, values: n }) => p(["extend enum", e, p(t, " "), w(n)], " ")
+    leave: ({ name: e, directives: t, values: n }) => h(["extend enum", e, h(t, " "), w(n)], " ")
   },
   InputObjectTypeExtension: {
-    leave: ({ name: e, directives: t, fields: n }) => p(["extend input", e, p(t, " "), w(n)], " ")
+    leave: ({ name: e, directives: t, fields: n }) => h(["extend input", e, h(t, " "), w(n)], " ")
   }
 };
-function p(e, t = "") {
+function h(e, t = "") {
   var n;
   return (n = e == null ? void 0 : e.filter((r) => r).join(t)) !== null && n !== void 0 ? n : "";
 }
 function w(e) {
   return v(`{
-`, W(p(e, `
+`, X(h(e, `
 `)), `
 }`);
 }
 function v(e, t, n = "") {
   return t != null && t !== "" ? e + t + n : "";
 }
-function W(e) {
+function X(e) {
   return v("  ", e.replace(/\n/g, `
   `));
 }
-function me(e) {
+function Te(e) {
   var t;
   return (t = e == null ? void 0 : e.some((n) => n.includes(`
 `))) !== null && t !== void 0 ? t : !1;
 }
-const Te = (e) => {
+const Ne = (e) => {
   var r, i;
   let t;
   const n = e.definitions.filter((s) => s.kind === "OperationDefinition");
@@ -2659,38 +2589,35 @@ const Te = (e) => {
   if (typeof e == "string") {
     let n;
     try {
-      const r = Dt(e);
-      n = Te(r);
+      const r = mt(e);
+      n = Ne(r);
     } catch {
     }
     return { query: e, operationName: n };
   }
-  const t = Te(e);
-  return { query: Bt(e), operationName: t };
+  const t = Ne(e);
+  return { query: _t(e), operationName: t };
 };
-class $ extends Error {
+class q extends Error {
   constructor(t, n) {
-    const r = `${$.extractMessage(t)}: ${JSON.stringify({
+    const r = `${q.extractMessage(t)}: ${JSON.stringify({
       response: t,
       request: n
     })}`;
-    super(r), Object.setPrototypeOf(this, $.prototype), this.response = t, this.request = n, typeof Error.captureStackTrace == "function" && Error.captureStackTrace(this, $);
+    super(r), Object.setPrototypeOf(this, q.prototype), this.response = t, this.request = n, typeof Error.captureStackTrace == "function" && Error.captureStackTrace(this, q);
   }
   static extractMessage(t) {
     var n, r;
     return ((r = (n = t.errors) == null ? void 0 : n[0]) == null ? void 0 : r.message) ?? `GraphQL Error (Code: ${t.status})`;
   }
 }
-var P = {}, Vt = {
-  get exports() {
-    return P;
-  },
-  set exports(e) {
-    P = e;
-  }
-};
+var St = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {};
+function Ct(e) {
+  return e && e.__esModule && Object.prototype.hasOwnProperty.call(e, "default") ? e.default : e;
+}
+var le = { exports: {} };
 (function(e, t) {
-  var n = typeof self < "u" ? self : Fe, r = function() {
+  var n = typeof self < "u" ? self : St, r = function() {
     function s() {
       this.fetch = !1, this.DOMException = n.DOMException;
     }
@@ -2711,11 +2638,11 @@ var P = {}, Vt = {
         formData: "FormData" in s,
         arrayBuffer: "ArrayBuffer" in s
       };
-      function h(o) {
+      function p(o) {
         return o && DataView.prototype.isPrototypeOf(o);
       }
       if (u.arrayBuffer)
-        var f = [
+        var d = [
           "[object Int8Array]",
           "[object Uint8Array]",
           "[object Uint8ClampedArray]",
@@ -2725,15 +2652,15 @@ var P = {}, Vt = {
           "[object Uint32Array]",
           "[object Float32Array]",
           "[object Float64Array]"
-        ], d = ArrayBuffer.isView || function(o) {
-          return o && f.indexOf(Object.prototype.toString.call(o)) > -1;
+        ], y = ArrayBuffer.isView || function(o) {
+          return o && d.indexOf(Object.prototype.toString.call(o)) > -1;
         };
-      function y(o) {
+      function m(o) {
         if (typeof o != "string" && (o = String(o)), /[^a-z0-9\-#$%&'*+.^_`|~]/i.test(o))
           throw new TypeError("Invalid character in header field name");
         return o.toLowerCase();
       }
-      function m(o) {
+      function T(o) {
         return typeof o != "string" && (o = String(o)), o;
       }
       function A(o) {
@@ -2747,8 +2674,8 @@ var P = {}, Vt = {
           return l;
         }), l;
       }
-      function T(o) {
-        this.map = {}, o instanceof T ? o.forEach(function(l, N) {
+      function E(o) {
+        this.map = {}, o instanceof E ? o.forEach(function(l, N) {
           this.append(N, l);
         }, this) : Array.isArray(o) ? o.forEach(function(l) {
           this.append(l[0], l[1]);
@@ -2756,37 +2683,37 @@ var P = {}, Vt = {
           this.append(l, o[l]);
         }, this);
       }
-      T.prototype.append = function(o, l) {
-        o = y(o), l = m(l);
+      E.prototype.append = function(o, l) {
+        o = m(o), l = T(l);
         var N = this.map[o];
         this.map[o] = N ? N + ", " + l : l;
-      }, T.prototype.delete = function(o) {
-        delete this.map[y(o)];
-      }, T.prototype.get = function(o) {
-        return o = y(o), this.has(o) ? this.map[o] : null;
-      }, T.prototype.has = function(o) {
-        return this.map.hasOwnProperty(y(o));
-      }, T.prototype.set = function(o, l) {
-        this.map[y(o)] = m(l);
-      }, T.prototype.forEach = function(o, l) {
+      }, E.prototype.delete = function(o) {
+        delete this.map[m(o)];
+      }, E.prototype.get = function(o) {
+        return o = m(o), this.has(o) ? this.map[o] : null;
+      }, E.prototype.has = function(o) {
+        return this.map.hasOwnProperty(m(o));
+      }, E.prototype.set = function(o, l) {
+        this.map[m(o)] = T(l);
+      }, E.prototype.forEach = function(o, l) {
         for (var N in this.map)
           this.map.hasOwnProperty(N) && o.call(l, this.map[N], N, this);
-      }, T.prototype.keys = function() {
+      }, E.prototype.keys = function() {
         var o = [];
         return this.forEach(function(l, N) {
           o.push(N);
         }), A(o);
-      }, T.prototype.values = function() {
+      }, E.prototype.values = function() {
         var o = [];
         return this.forEach(function(l) {
           o.push(l);
         }), A(o);
-      }, T.prototype.entries = function() {
+      }, E.prototype.entries = function() {
         var o = [];
         return this.forEach(function(l, N) {
           o.push([N, l]);
         }), A(o);
-      }, u.iterable && (T.prototype[Symbol.iterator] = T.prototype.entries);
+      }, u.iterable && (E.prototype[Symbol.iterator] = E.prototype.entries);
       function I(o) {
         if (o.bodyUsed)
           return Promise.reject(new TypeError("Already read"));
@@ -2805,13 +2732,13 @@ var P = {}, Vt = {
         var l = new FileReader(), N = D(l);
         return l.readAsArrayBuffer(o), N;
       }
-      function H(o) {
+      function G(o) {
         var l = new FileReader(), N = D(l);
         return l.readAsText(o), N;
       }
       function k(o) {
-        for (var l = new Uint8Array(o), N = new Array(l.length), _ = 0; _ < l.length; _++)
-          N[_] = String.fromCharCode(l[_]);
+        for (var l = new Uint8Array(o), N = new Array(l.length), b = 0; b < l.length; b++)
+          N[b] = String.fromCharCode(l[b]);
         return N.join("");
       }
       function C(o) {
@@ -2820,9 +2747,9 @@ var P = {}, Vt = {
         var l = new Uint8Array(o.byteLength);
         return l.set(new Uint8Array(o)), l.buffer;
       }
-      function B() {
+      function P() {
         return this.bodyUsed = !1, this._initBody = function(o) {
-          this._bodyInit = o, o ? typeof o == "string" ? this._bodyText = o : u.blob && Blob.prototype.isPrototypeOf(o) ? this._bodyBlob = o : u.formData && FormData.prototype.isPrototypeOf(o) ? this._bodyFormData = o : u.searchParams && URLSearchParams.prototype.isPrototypeOf(o) ? this._bodyText = o.toString() : u.arrayBuffer && u.blob && h(o) ? (this._bodyArrayBuffer = C(o.buffer), this._bodyInit = new Blob([this._bodyArrayBuffer])) : u.arrayBuffer && (ArrayBuffer.prototype.isPrototypeOf(o) || d(o)) ? this._bodyArrayBuffer = C(o) : this._bodyText = o = Object.prototype.toString.call(o) : this._bodyText = "", this.headers.get("content-type") || (typeof o == "string" ? this.headers.set("content-type", "text/plain;charset=UTF-8") : this._bodyBlob && this._bodyBlob.type ? this.headers.set("content-type", this._bodyBlob.type) : u.searchParams && URLSearchParams.prototype.isPrototypeOf(o) && this.headers.set("content-type", "application/x-www-form-urlencoded;charset=UTF-8"));
+          this._bodyInit = o, o ? typeof o == "string" ? this._bodyText = o : u.blob && Blob.prototype.isPrototypeOf(o) ? this._bodyBlob = o : u.formData && FormData.prototype.isPrototypeOf(o) ? this._bodyFormData = o : u.searchParams && URLSearchParams.prototype.isPrototypeOf(o) ? this._bodyText = o.toString() : u.arrayBuffer && u.blob && p(o) ? (this._bodyArrayBuffer = C(o.buffer), this._bodyInit = new Blob([this._bodyArrayBuffer])) : u.arrayBuffer && (ArrayBuffer.prototype.isPrototypeOf(o) || y(o)) ? this._bodyArrayBuffer = C(o) : this._bodyText = o = Object.prototype.toString.call(o) : this._bodyText = "", this.headers.get("content-type") || (typeof o == "string" ? this.headers.set("content-type", "text/plain;charset=UTF-8") : this._bodyBlob && this._bodyBlob.type ? this.headers.set("content-type", this._bodyBlob.type) : u.searchParams && URLSearchParams.prototype.isPrototypeOf(o) && this.headers.set("content-type", "application/x-www-form-urlencoded;charset=UTF-8"));
         }, u.blob && (this.blob = function() {
           var o = I(this);
           if (o)
@@ -2841,7 +2768,7 @@ var P = {}, Vt = {
           if (o)
             return o;
           if (this._bodyBlob)
-            return H(this._bodyBlob);
+            return G(this._bodyBlob);
           if (this._bodyArrayBuffer)
             return Promise.resolve(k(this._bodyArrayBuffer));
           if (this._bodyFormData)
@@ -2853,10 +2780,10 @@ var P = {}, Vt = {
           return this.text().then(JSON.parse);
         }, this;
       }
-      var Y = ["DELETE", "GET", "HEAD", "OPTIONS", "POST", "PUT"];
-      function J(o) {
+      var H = ["DELETE", "GET", "HEAD", "OPTIONS", "POST", "PUT"];
+      function Y(o) {
         var l = o.toUpperCase();
-        return Y.indexOf(l) > -1 ? l : o;
+        return H.indexOf(l) > -1 ? l : o;
       }
       function L(o, l) {
         l = l || {};
@@ -2864,10 +2791,10 @@ var P = {}, Vt = {
         if (o instanceof L) {
           if (o.bodyUsed)
             throw new TypeError("Already read");
-          this.url = o.url, this.credentials = o.credentials, l.headers || (this.headers = new T(o.headers)), this.method = o.method, this.mode = o.mode, this.signal = o.signal, !N && o._bodyInit != null && (N = o._bodyInit, o.bodyUsed = !0);
+          this.url = o.url, this.credentials = o.credentials, l.headers || (this.headers = new E(o.headers)), this.method = o.method, this.mode = o.mode, this.signal = o.signal, !N && o._bodyInit != null && (N = o._bodyInit, o.bodyUsed = !0);
         } else
           this.url = String(o);
-        if (this.credentials = l.credentials || this.credentials || "same-origin", (l.headers || !this.headers) && (this.headers = new T(l.headers)), this.method = J(l.method || this.method || "GET"), this.mode = l.mode || this.mode || null, this.signal = l.signal || this.signal, this.referrer = null, (this.method === "GET" || this.method === "HEAD") && N)
+        if (this.credentials = l.credentials || this.credentials || "same-origin", (l.headers || !this.headers) && (this.headers = new E(l.headers)), this.method = Y(l.method || this.method || "GET"), this.mode = l.mode || this.mode || null, this.signal = l.signal || this.signal, this.referrer = null, (this.method === "GET" || this.method === "HEAD") && N)
           throw new TypeError("Body not allowed for GET or HEAD requests");
         this._initBody(N);
       }
@@ -2878,30 +2805,30 @@ var P = {}, Vt = {
         var l = new FormData();
         return o.trim().split("&").forEach(function(N) {
           if (N) {
-            var _ = N.split("="), b = _.shift().replace(/\+/g, " "), x = _.join("=").replace(/\+/g, " ");
-            l.append(decodeURIComponent(b), decodeURIComponent(x));
+            var b = N.split("="), _ = b.shift().replace(/\+/g, " "), x = b.join("=").replace(/\+/g, " ");
+            l.append(decodeURIComponent(_), decodeURIComponent(x));
           }
         }), l;
       }
       function ke(o) {
-        var l = new T(), N = o.replace(/\r?\n[\t ]+/g, " ");
-        return N.split(/\r?\n/).forEach(function(_) {
-          var b = _.split(":"), x = b.shift().trim();
+        var l = new E(), N = o.replace(/\r?\n[\t ]+/g, " ");
+        return N.split(/\r?\n/).forEach(function(b) {
+          var _ = b.split(":"), x = _.shift().trim();
           if (x) {
-            var z = b.join(":").trim();
+            var z = _.join(":").trim();
             l.append(x, z);
           }
         }), l;
       }
-      B.call(L.prototype);
+      P.call(L.prototype);
       function R(o, l) {
-        l || (l = {}), this.type = "default", this.status = l.status === void 0 ? 200 : l.status, this.ok = this.status >= 200 && this.status < 300, this.statusText = "statusText" in l ? l.statusText : "OK", this.headers = new T(l.headers), this.url = l.url || "", this._initBody(o);
+        l || (l = {}), this.type = "default", this.status = l.status === void 0 ? 200 : l.status, this.ok = this.status >= 200 && this.status < 300, this.statusText = "statusText" in l ? l.statusText : "OK", this.headers = new E(l.headers), this.url = l.url || "", this._initBody(o);
       }
-      B.call(R.prototype), R.prototype.clone = function() {
+      P.call(R.prototype), R.prototype.clone = function() {
         return new R(this._bodyInit, {
           status: this.status,
           statusText: this.statusText,
-          headers: new T(this.headers),
+          headers: new E(this.headers),
           url: this.url
         });
       }, R.error = function() {
@@ -2919,155 +2846,156 @@ var P = {}, Vt = {
       } catch {
         c.DOMException = function(l, N) {
           this.message = l, this.name = N;
-          var _ = Error(l);
-          this.stack = _.stack;
+          var b = Error(l);
+          this.stack = b.stack;
         }, c.DOMException.prototype = Object.create(Error.prototype), c.DOMException.prototype.constructor = c.DOMException;
       }
       function te(o, l) {
-        return new Promise(function(N, _) {
-          var b = new L(o, l);
-          if (b.signal && b.signal.aborted)
-            return _(new c.DOMException("Aborted", "AbortError"));
+        return new Promise(function(N, b) {
+          var _ = new L(o, l);
+          if (_.signal && _.signal.aborted)
+            return b(new c.DOMException("Aborted", "AbortError"));
           var x = new XMLHttpRequest();
           function z() {
             x.abort();
           }
           x.onload = function() {
-            var j = {
+            var V = {
               status: x.status,
               statusText: x.statusText,
               headers: ke(x.getAllResponseHeaders() || "")
             };
-            j.url = "responseURL" in x ? x.responseURL : j.headers.get("X-Request-URL");
+            V.url = "responseURL" in x ? x.responseURL : V.headers.get("X-Request-URL");
             var ne = "response" in x ? x.response : x.responseText;
-            N(new R(ne, j));
+            N(new R(ne, V));
           }, x.onerror = function() {
-            _(new TypeError("Network request failed"));
+            b(new TypeError("Network request failed"));
           }, x.ontimeout = function() {
-            _(new TypeError("Network request failed"));
+            b(new TypeError("Network request failed"));
           }, x.onabort = function() {
-            _(new c.DOMException("Aborted", "AbortError"));
-          }, x.open(b.method, b.url, !0), b.credentials === "include" ? x.withCredentials = !0 : b.credentials === "omit" && (x.withCredentials = !1), "responseType" in x && u.blob && (x.responseType = "blob"), b.headers.forEach(function(j, ne) {
-            x.setRequestHeader(ne, j);
-          }), b.signal && (b.signal.addEventListener("abort", z), x.onreadystatechange = function() {
-            x.readyState === 4 && b.signal.removeEventListener("abort", z);
-          }), x.send(typeof b._bodyInit > "u" ? null : b._bodyInit);
+            b(new c.DOMException("Aborted", "AbortError"));
+          }, x.open(_.method, _.url, !0), _.credentials === "include" ? x.withCredentials = !0 : _.credentials === "omit" && (x.withCredentials = !1), "responseType" in x && u.blob && (x.responseType = "blob"), _.headers.forEach(function(V, ne) {
+            x.setRequestHeader(ne, V);
+          }), _.signal && (_.signal.addEventListener("abort", z), x.onreadystatechange = function() {
+            x.readyState === 4 && _.signal.removeEventListener("abort", z);
+          }), x.send(typeof _._bodyInit > "u" ? null : _._bodyInit);
         });
       }
-      return te.polyfill = !0, s.fetch || (s.fetch = te, s.Headers = T, s.Request = L, s.Response = R), c.Headers = T, c.Request = L, c.Response = R, c.fetch = te, Object.defineProperty(c, "__esModule", { value: !0 }), c;
+      return te.polyfill = !0, s.fetch || (s.fetch = te, s.Headers = E, s.Request = L, s.Response = R), c.Headers = E, c.Request = L, c.Response = R, c.fetch = te, Object.defineProperty(c, "__esModule", { value: !0 }), c;
     })({});
   })(r), r.fetch.ponyfill = !0, delete r.fetch.polyfill;
   var i = r;
   t = i.fetch, t.default = i.fetch, t.fetch = i.fetch, t.Headers = i.Headers, t.Request = i.Request, t.Response = i.Response, e.exports = t;
-})(Vt, P);
-const Z = /* @__PURE__ */ Pe(P), jt = /* @__PURE__ */ Le({
+})(le, le.exports);
+var Z = le.exports;
+const W = /* @__PURE__ */ Ct(Z), wt = /* @__PURE__ */ Le({
   __proto__: null,
-  default: Z
-}, [P]), M = (e) => {
+  default: W
+}, [Z]), B = (e) => {
   let t = {};
-  return e && (typeof Headers < "u" && e instanceof Headers || jt && P.Headers && e instanceof P.Headers ? t = Je(e) : Array.isArray(e) ? e.forEach(([n, r]) => {
+  return e && (typeof Headers < "u" && e instanceof Headers || wt && Z.Headers && e instanceof Z.Headers ? t = Pe(e) : Array.isArray(e) ? e.forEach(([n, r]) => {
     n && r !== void 0 && (t[n] = r);
   }) : t = e), t;
-}, Ne = (e) => e.replace(/([\s,]|#[^\n\r]+)+/g, " ").trim(), qt = (e) => {
+}, ve = (e) => e.replace(/([\s,]|#[^\n\r]+)+/g, " ").trim(), kt = (e) => {
   if (!Array.isArray(e.query)) {
-    const r = e, i = [`query=${encodeURIComponent(Ne(r.query))}`];
+    const r = e, i = [`query=${encodeURIComponent(ve(r.query))}`];
     return e.variables && i.push(`variables=${encodeURIComponent(r.jsonSerializer.stringify(r.variables))}`), r.operationName && i.push(`operationName=${encodeURIComponent(r.operationName)}`), i.join("&");
   }
   if (typeof e.variables < "u" && !Array.isArray(e.variables))
     throw new Error("Cannot create query with given variable type, array expected");
   const t = e, n = e.query.reduce((r, i, s) => (r.push({
-    query: Ne(i),
+    query: ve(i),
     variables: t.variables ? t.jsonSerializer.stringify(t.variables[s]) : void 0
   }), r), []);
   return `query=${encodeURIComponent(t.jsonSerializer.stringify(n))}`;
-}, $t = (e) => async (t) => {
-  const { url: n, query: r, variables: i, operationName: s, fetch: c, fetchOptions: u, middleware: h } = t, f = { ...t.headers };
-  let d = "", y;
-  e === "POST" ? (y = He(r, i, s, u.jsonSerializer), typeof y == "string" && (f["Content-Type"] = "application/json")) : d = qt({
+}, Rt = (e) => async (t) => {
+  const { url: n, query: r, variables: i, operationName: s, fetch: c, fetchOptions: u, middleware: p } = t, d = { ...t.headers };
+  let y = "", m;
+  e === "POST" ? (m = Pt(r, i, s, u.jsonSerializer), typeof m == "string" && (d["Content-Type"] = "application/json")) : y = kt({
     query: r,
     variables: i,
     operationName: s,
-    jsonSerializer: u.jsonSerializer ?? le
+    jsonSerializer: u.jsonSerializer ?? he
   });
-  const m = {
+  const T = {
     method: e,
-    headers: f,
-    body: y,
+    headers: d,
+    body: m,
     ...u
   };
-  let A = n, T = m;
-  if (h) {
-    const I = await Promise.resolve(h({ ...m, url: n, operationName: s, variables: i })), { url: D, ...S } = I;
-    A = D, T = S;
+  let A = n, E = T;
+  if (p) {
+    const I = await Promise.resolve(p({ ...T, url: n, operationName: s, variables: i })), { url: D, ...S } = I;
+    A = D, E = S;
   }
-  return d && (A = `${A}?${d}`), await c(A, T);
+  return y && (A = `${A}?${y}`), await c(A, E);
 };
-class Gt {
+class Lt {
   constructor(t, n = {}) {
     this.url = t, this.requestConfig = n, this.rawRequest = async (...r) => {
-      const [i, s, c] = r, u = Qe(i, s, c), { headers: h, fetch: f = Z, method: d = "POST", requestMiddleware: y, responseMiddleware: m, ...A } = this.requestConfig, { url: T } = this;
+      const [i, s, c] = r, u = Me(i, s, c), { headers: p, fetch: d = W, method: y = "POST", requestMiddleware: m, responseMiddleware: T, ...A } = this.requestConfig, { url: E } = this;
       u.signal !== void 0 && (A.signal = u.signal);
       const { operationName: I } = re(u.query);
       return se({
-        url: T,
+        url: E,
         query: u.query,
         variables: u.variables,
         headers: {
-          ...M(oe(h)),
-          ...M(u.requestHeaders)
+          ...B(oe(p)),
+          ...B(u.requestHeaders)
         },
         operationName: I,
-        fetch: f,
-        method: d,
+        fetch: d,
+        method: y,
         fetchOptions: A,
-        middleware: y
-      }).then((D) => (m && m(D), D)).catch((D) => {
-        throw m && m(D), D;
+        middleware: m
+      }).then((D) => (T && T(D), D)).catch((D) => {
+        throw T && T(D), D;
       });
     };
   }
   async request(t, ...n) {
-    const [r, i] = n, s = ze(t, r, i), { headers: c, fetch: u = Z, method: h = "POST", requestMiddleware: f, responseMiddleware: d, ...y } = this.requestConfig, { url: m } = this;
-    s.signal !== void 0 && (y.signal = s.signal);
-    const { query: A, operationName: T } = re(s.document);
+    const [r, i] = n, s = Be(t, r, i), { headers: c, fetch: u = W, method: p = "POST", requestMiddleware: d, responseMiddleware: y, ...m } = this.requestConfig, { url: T } = this;
+    s.signal !== void 0 && (m.signal = s.signal);
+    const { query: A, operationName: E } = re(s.document);
     return se({
-      url: m,
+      url: T,
       query: A,
       variables: s.variables,
       headers: {
-        ...M(oe(c)),
-        ...M(s.requestHeaders)
+        ...B(oe(c)),
+        ...B(s.requestHeaders)
       },
-      operationName: T,
+      operationName: E,
       fetch: u,
-      method: h,
-      fetchOptions: y,
-      middleware: f
-    }).then((I) => (d && d(I), I.data)).catch((I) => {
-      throw d && d(I), I;
+      method: p,
+      fetchOptions: m,
+      middleware: d
+    }).then((I) => (y && y(I), I.data)).catch((I) => {
+      throw y && y(I), I;
     });
   }
   // prettier-ignore
   batchRequests(t, n) {
-    const r = Xe(t, n), { headers: i, ...s } = this.requestConfig;
+    const r = Ue(t, n), { headers: i, ...s } = this.requestConfig;
     r.signal !== void 0 && (s.signal = r.signal);
-    const c = r.documents.map(({ document: h }) => re(h).query), u = r.documents.map(({ variables: h }) => h);
+    const c = r.documents.map(({ document: p }) => re(p).query), u = r.documents.map(({ variables: p }) => p);
     return se({
       url: this.url,
       query: c,
       // @ts-expect-error TODO reconcile batch variables into system.
       variables: u,
       headers: {
-        ...M(oe(i)),
-        ...M(r.requestHeaders)
+        ...B(oe(i)),
+        ...B(r.requestHeaders)
       },
       operationName: void 0,
-      fetch: this.requestConfig.fetch ?? Z,
+      fetch: this.requestConfig.fetch ?? W,
       method: this.requestConfig.method || "POST",
       fetchOptions: s,
       middleware: this.requestConfig.requestMiddleware
-    }).then((h) => (this.requestConfig.responseMiddleware && this.requestConfig.responseMiddleware(h), h.data)).catch((h) => {
-      throw this.requestConfig.responseMiddleware && this.requestConfig.responseMiddleware(h), h;
+    }).then((p) => (this.requestConfig.responseMiddleware && this.requestConfig.responseMiddleware(p), p.data)).catch((p) => {
+      throw this.requestConfig.responseMiddleware && this.requestConfig.responseMiddleware(p), p;
     });
   }
   setHeaders(t) {
@@ -3088,38 +3016,46 @@ class Gt {
   }
 }
 const se = async (e) => {
-  const { query: t, variables: n, fetchOptions: r } = e, i = $t(Ye(e.method ?? "post")), s = Array.isArray(e.query), c = await i(e), u = await Yt(c, r.jsonSerializer ?? le), h = Array.isArray(u) ? !u.some(({ data: d }) => !d) : Boolean(u.data), f = Array.isArray(u) || !u.errors || Array.isArray(u.errors) && !u.errors.length || r.errorPolicy === "all" || r.errorPolicy === "ignore";
-  if (c.ok && f && h) {
-    const { errors: d, ...y } = (Array.isArray(u), u), m = r.errorPolicy === "ignore" ? y : u;
+  const { query: t, variables: n, fetchOptions: r } = e, i = Rt(Fe(e.method ?? "post")), s = Array.isArray(e.query), c = await i(e), u = await Bt(c, r.jsonSerializer ?? he), p = Array.isArray(u) ? !u.some(({ data: y }) => !y) : !!u.data, d = Array.isArray(u) || !u.errors || Array.isArray(u.errors) && !u.errors.length || r.errorPolicy === "all" || r.errorPolicy === "ignore";
+  if (c.ok && d && p) {
+    const { errors: y, ...m } = (Array.isArray(u), u), T = r.errorPolicy === "ignore" ? m : u;
     return {
-      ...s ? { data: m } : m,
+      ...s ? { data: T } : T,
       headers: c.headers,
       status: c.status
     };
   } else {
-    const d = typeof u == "string" ? {
+    const y = typeof u == "string" ? {
       error: u
     } : u;
-    throw new $(
+    throw new q(
       // @ts-expect-error TODO
-      { ...d, status: c.status, headers: c.headers },
+      { ...y, status: c.status, headers: c.headers },
       { query: t, variables: n }
     );
   }
 };
-async function Ht(e, t, ...n) {
-  const r = We(e, t, ...n);
-  return new Gt(r.url).request({
+async function Ft(e, t, ...n) {
+  const r = Ve(e, t, ...n);
+  return new Lt(r.url).request({
     ...r
   });
 }
-const Yt = async (e, t) => {
+const Pt = (e, t, n, r) => {
+  const i = r ?? he;
+  if (!Array.isArray(e))
+    return i.stringify({ query: e, variables: t, operationName: n });
+  if (typeof t < "u" && !Array.isArray(t))
+    throw new Error("Cannot create request body with given variable type, array expected");
+  const s = e.reduce((c, u, p) => (c.push({ query: u, variables: t ? t[p] : void 0 }), c), []);
+  return i.stringify(s);
+}, Bt = async (e, t) => {
   let n;
   return e.headers.forEach((r, i) => {
     i.toLowerCase() === "content-type" && (n = r);
   }), n && (n.toLowerCase().startsWith("application/json") || n.toLowerCase().startsWith("application/graphql+json") || n.toLowerCase().startsWith("application/graphql-response+json")) ? t.parse(await e.text()) : e.text();
-}, oe = (e) => typeof e == "function" ? e() : e, Jt = (e, ...t) => e.reduce((n, r, i) => `${n}${r}${i in t ? t[i] : ""}`, ""), zt = {
-  getMeta: Jt`
+}, oe = (e) => typeof e == "function" ? e() : e, Mt = (e, ...t) => e.reduce((n, r, i) => `${n}${r}${i in t ? String(t[i]) : ""}`, ""), Ut = {
+  getMeta: Mt`
 		query getDoctype($doctype: String!) {
 			getMeta(doctype: $doctype) {
 				id
@@ -3130,10 +3066,10 @@ const Yt = async (e, t) => {
 			}
 		}
 	`
-}, Qt = {
-  getMeta: async (e, t) => await Ht(t || "/graphql", zt.getMeta, { doctype: e })
+}, Vt = {
+  getMeta: async (e, t) => await Ft(t || "/graphql", Ut.getMeta, { doctype: e })
 };
 export {
-  Qt as methods
+  Vt as methods
 };
 //# sourceMappingURL=graphql-client.js.map

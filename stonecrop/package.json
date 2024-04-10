@@ -47,7 +47,7 @@
 		"vite": "^4.3.5"
 	},
 	"engines": {
-		"node": ">=16.19.1"
+		"node": ">=20.11.0"
 	},
 	"umd": "dist/stonecrop.umd.cjs"
 }

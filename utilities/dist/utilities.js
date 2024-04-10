@@ -1,8 +1,8 @@
 import { unref as Q, getCurrentScope as U, onScopeDispose as K, ref as B, watch as D, onMounted as W, onBeforeUnmount as V } from "vue";
-var T;
+var v;
 const M = typeof window < "u", F = (e) => typeof e == "string", j = () => {
 };
-M && ((T = window == null ? void 0 : window.navigator) != null && T.userAgent) && /iP(ad|hone|od)/.test(window.navigator.userAgent);
+M && ((v = window == null ? void 0 : window.navigator) != null && v.userAgent) && /iP(ad|hone|od)/.test(window.navigator.userAgent);
 function H(e) {
   return typeof e == "function" ? e() : Q(e);
 }
@@ -32,9 +32,8 @@ function z(...e) {
   };
   return G(d), d;
 }
-const E = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, w = "__vueuse_ssr_handlers__";
-E[w] = E[w] || {};
-E[w];
+const O = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, T = "__vueuse_ssr_handlers__";
+O[T] = O[T] || {};
 function J(e, { window: t = N, scrollTarget: r } = {}) {
   const n = B(!1), o = () => {
     if (!t)
@@ -98,8 +97,8 @@ const f = (e) => {
   return t = t && e.offsetHeight > 0, t;
 }, u = (e) => e.tabIndex >= 0, A = (e) => {
   const t = e.target;
-  return h(t);
-}, h = (e) => {
+  return E(t);
+}, E = (e) => {
   var r;
   let t;
   if (e instanceof HTMLTableCellElement) {
@@ -112,7 +111,7 @@ const f = (e) => {
     const n = e.previousElementSibling;
     n && (t = n);
   }
-  return t && (!u(t) || !f(t)) ? h(t) : t;
+  return t && (!u(t) || !f(t)) ? E(t) : t;
 }, ne = (e) => {
   var n;
   const t = e.target;
@@ -130,11 +129,11 @@ const f = (e) => {
       l && (r = l);
     }
   }
-  return r && (!u(r) || !f(r)) ? b(r) : r;
+  return r && (!u(r) || !f(r)) ? w(r) : r;
 }, x = (e) => {
   const t = e.target;
-  return b(t);
-}, b = (e) => {
+  return w(t);
+}, w = (e) => {
   var r;
   let t;
   if (e instanceof HTMLTableCellElement) {
@@ -147,7 +146,7 @@ const f = (e) => {
     const n = e.nextElementSibling;
     n && (t = n);
   }
-  return t && (!u(t) || !f(t)) ? b(t) : t;
+  return t && (!u(t) || !f(t)) ? w(t) : t;
 }, re = (e) => {
   var n;
   const t = e.target;
@@ -165,11 +164,11 @@ const f = (e) => {
       l && (r = l);
     }
   }
-  return r && (!u(r) || !f(r)) ? h(r) : r;
+  return r && (!u(r) || !f(r)) ? E(r) : r;
 }, k = (e) => {
   const t = e.target;
-  return v(t);
-}, v = (e) => {
+  return h(t);
+}, h = (e) => {
   var r;
   let t;
   if (e.previousElementSibling)
@@ -178,11 +177,11 @@ const f = (e) => {
     const n = (r = e.parentElement) == null ? void 0 : r.previousElementSibling;
     t = n == null ? void 0 : n.lastElementChild;
   }
-  return t && (!u(t) || !f(t)) ? v(t) : t;
+  return t && (!u(t) || !f(t)) ? h(t) : t;
 }, S = (e) => {
   const t = e.target;
-  return O(t);
-}, O = (e) => {
+  return b(t);
+}, b = (e) => {
   var r;
   let t;
   if (e.nextElementSibling)
@@ -191,13 +190,13 @@ const f = (e) => {
     const n = (r = e.parentElement) == null ? void 0 : r.nextElementSibling;
     t = n == null ? void 0 : n.firstElementChild;
   }
-  return t && (!u(t) || !f(t)) ? O(t) : t;
+  return t && (!u(t) || !f(t)) ? b(t) : t;
 }, L = (e) => {
   const n = e.target.parentElement.firstElementChild;
-  return n && (!u(n) || !f(n)) ? O(n) : n;
+  return n && (!u(n) || !f(n)) ? b(n) : n;
 }, R = (e) => {
   const n = e.target.parentElement.lastElementChild;
-  return n && (!u(n) || !f(n)) ? v(n) : n;
+  return n && (!u(n) || !f(n)) ? h(n) : n;
 }, m = ["alt", "control", "shift", "meta"], oe = {
   ArrowUp: "up",
   ArrowDown: "down",

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@agritheory/stonecrop",
+      "comment": "update node version",
+      "type": "none"
+    }
+  ],
+  "packageName": "@agritheory/stonecrop"
+}

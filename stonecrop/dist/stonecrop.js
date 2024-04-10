@@ -1,4 +1,4 @@
-import { effectScope, ref, markRaw, toRaw, getCurrentInstance, inject, watch, unref, reactive, isRef, isReactive, toRef, nextTick, computed, getCurrentScope, onScopeDispose, toRefs, onBeforeMount, shallowRef, defineComponent, h as h$1, provide, watchEffect } from "vue";
+import { effectScope, ref, markRaw, toRaw, hasInjectionContext, inject, getCurrentInstance, watch, unref, reactive, isRef, isReactive, toRef, nextTick, computed, getCurrentScope, onScopeDispose, toRefs, onBeforeMount, shallowRef, shallowReactive, defineComponent, h as h$1, provide, watchEffect } from "vue";
 function NotImplementedError(message) {
   this.message = message || "";
 }
@@ -178,37 +178,37 @@ function del(target, key) {
   }
   delete target[key];
 }
-function getDevtoolsGlobalHook$1() {
-  return getTarget$1().__VUE_DEVTOOLS_GLOBAL_HOOK__;
+function getDevtoolsGlobalHook() {
+  return getTarget().__VUE_DEVTOOLS_GLOBAL_HOOK__;
 }
-function getTarget$1() {
+function getTarget() {
   return typeof navigator !== "undefined" && typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : {};
 }
-const isProxyAvailable$1 = typeof Proxy === "function";
-const HOOK_SETUP$1 = "devtools-plugin:setup";
-const HOOK_PLUGIN_SETTINGS_SET$1 = "plugin:settings:set";
-let supported$1;
-let perf$1;
-function isPerformanceSupported$1() {
+const isProxyAvailable = typeof Proxy === "function";
+const HOOK_SETUP = "devtools-plugin:setup";
+const HOOK_PLUGIN_SETTINGS_SET = "plugin:settings:set";
+let supported;
+let perf;
+function isPerformanceSupported() {
   var _a;
-  if (supported$1 !== void 0) {
-    return supported$1;
+  if (supported !== void 0) {
+    return supported;
   }
   if (typeof window !== "undefined" && window.performance) {
-    supported$1 = true;
-    perf$1 = window.performance;
+    supported = true;
+    perf = window.performance;
   } else if (typeof global !== "undefined" && ((_a = global.perf_hooks) === null || _a === void 0 ? void 0 : _a.performance)) {
-    supported$1 = true;
-    perf$1 = global.perf_hooks.performance;
+    supported = true;
+    perf = global.perf_hooks.performance;
   } else {
-    supported$1 = false;
+    supported = false;
   }
-  return supported$1;
+  return supported;
 }
-function now$2() {
-  return isPerformanceSupported$1() ? perf$1.now() : Date.now();
+function now$1() {
+  return isPerformanceSupported() ? perf.now() : Date.now();
 }
-let ApiProxy$1 = class ApiProxy {
+class ApiProxy {
   constructor(plugin, hook) {
     this.target = null;
     this.targetQueue = [];
@@ -242,11 +242,11 @@ let ApiProxy$1 = class ApiProxy {
         currentSettings = value;
       },
       now() {
-        return now$2();
+        return now$1();
       }
     };
     if (hook) {
-      hook.on(HOOK_PLUGIN_SETTINGS_SET$1, (pluginId, value) => {
+      hook.on(HOOK_PLUGIN_SETTINGS_SET, (pluginId, value) => {
         if (pluginId === this.plugin.id) {
           this.fallbacks.setSettings(value);
         }
@@ -305,16 +305,16 @@ let ApiProxy$1 = class ApiProxy {
       item.resolve(await this.target[item.method](...item.args));
     }
   }
-};
-function setupDevtoolsPlugin$1(pluginDescriptor, setupFn) {
+}
+function setupDevtoolsPlugin(pluginDescriptor, setupFn) {
   const descriptor = pluginDescriptor;
-  const target = getTarget$1();
-  const hook = getDevtoolsGlobalHook$1();
-  const enableProxy = isProxyAvailable$1 && descriptor.enableEarlyProxy;
+  const target = getTarget();
+  const hook = getDevtoolsGlobalHook();
+  const enableProxy = isProxyAvailable && descriptor.enableEarlyProxy;
   if (hook && (target.__VUE_DEVTOOLS_PLUGIN_API_AVAILABLE__ || !enableProxy)) {
-    hook.emit(HOOK_SETUP$1, pluginDescriptor, setupFn);
+    hook.emit(HOOK_SETUP, pluginDescriptor, setupFn);
   } else {
-    const proxy = enableProxy ? new ApiProxy$1(descriptor, hook) : null;
+    const proxy = enableProxy ? new ApiProxy(descriptor, hook) : null;
     const list = target.__VUE_DEVTOOLS_PLUGINS__ = target.__VUE_DEVTOOLS_PLUGINS__ || [];
     list.push({
       pluginDescriptor: descriptor,
@@ -326,10 +326,10 @@ function setupDevtoolsPlugin$1(pluginDescriptor, setupFn) {
   }
 }
 /*!
-  * pinia v2.0.33
-  * (c) 2023 Eduardo San Martin Morote
-  * @license MIT
-  */
+ * pinia v2.1.7
+ * (c) 2023 Eduardo San Martin Morote
+ * @license MIT
+ */
 let activePinia;
 const setActivePinia = (pinia2) => activePinia = pinia2;
 const piniaSymbol = process.env.NODE_ENV !== "production" ? Symbol("pinia") : (
@@ -523,7 +523,7 @@ async function actionGlobalPasteState(pinia2) {
   if (checkClipboardAccess())
     return;
   try {
-    pinia2.state.value = JSON.parse(await navigator.clipboard.readText());
+    loadStoresState(pinia2, JSON.parse(await navigator.clipboard.readText()));
     toastMessage("Global state pasted from clipboard.");
   } catch (error) {
     if (checkNotFocusedError(error))
@@ -569,16 +569,26 @@ function getFileOpener() {
 }
 async function actionGlobalOpenStateFile(pinia2) {
   try {
-    const open2 = await getFileOpener();
+    const open2 = getFileOpener();
     const result = await open2();
     if (!result)
       return;
     const { text, file } = result;
-    pinia2.state.value = JSON.parse(text);
+    loadStoresState(pinia2, JSON.parse(text));
     toastMessage(`Global state imported from "${file.name}".`);
   } catch (error) {
-    toastMessage(`Failed to export the state as JSON. Check the console for more details.`, "error");
+    toastMessage(`Failed to import the state from JSON. Check the console for more details.`, "error");
     console.error(error);
+  }
+}
+function loadStoresState(pinia2, state) {
+  for (const key in state) {
+    const storeState = pinia2.state.value[key];
+    if (storeState) {
+      Object.assign(storeState, state[key]);
+    } else {
+      pinia2.state.value[key] = state[key];
+    }
   }
 }
 function formatDisplay$1(display) {
@@ -690,7 +700,7 @@ const INSPECTOR_ID = "pinia";
 const { assign: assign$1 } = Object;
 const getStoreType = (id) => "🍍 " + id;
 function registerPiniaDevtools(app, pinia2) {
-  setupDevtoolsPlugin$1({
+  setupDevtoolsPlugin({
     id: "dev.esm.pinia",
     label: "Pinia 🍍",
     logo: "https://pinia.vuejs.org/logo.svg",
@@ -749,13 +759,13 @@ function registerPiniaDevtools(app, pinia2) {
       nodeActions: [
         {
           icon: "restore",
-          tooltip: "Reset the state (option store only)",
+          tooltip: 'Reset the state (with "$reset")',
           action: (nodeId) => {
             const store = pinia2._s.get(nodeId);
             if (!store) {
               toastMessage(`Cannot reset "${nodeId}" store because it wasn't found.`, "warn");
-            } else if (!store._isOptionsAPI) {
-              toastMessage(`Cannot reset "${nodeId}" store because it's a setup store.`, "warn");
+            } else if (typeof store.$reset !== "function") {
+              toastMessage(`Cannot reset "${nodeId}" store because it doesn't have a "$reset" method implemented.`, "warn");
             } else {
               store.$reset();
               toastMessage(`Store "${nodeId}" reset.`);
@@ -872,7 +882,7 @@ function addStoreToDevtools(app, store) {
   if (!componentStateTypes.includes(getStoreType(store.$id))) {
     componentStateTypes.push(getStoreType(store.$id));
   }
-  setupDevtoolsPlugin$1({
+  setupDevtoolsPlugin({
     id: "dev.esm.pinia",
     label: "Pinia 🍍",
     logo: "https://pinia.vuejs.org/logo.svg",
@@ -980,7 +990,6 @@ function addStoreToDevtools(app, store) {
         data: assign$1({ store: formatDisplay$1(store.$id) }, formatEventData(events)),
         groupId: activeAction
       };
-      activeAction = void 0;
       if (type2 === MutationType.patchFunction) {
         eventData.subtitle = "⤵️";
       } else if (type2 === MutationType.patchObject) {
@@ -1038,7 +1047,7 @@ function addStoreToDevtools(app, store) {
 }
 let runningActionId = 0;
 let activeAction;
-function patchActionForGrouping(store, actionNames) {
+function patchActionForGrouping(store, actionNames, wrapWithProxy) {
   const actions = actionNames.reduce((storeActions, actionName) => {
     storeActions[actionName] = toRaw(store)[actionName];
     return storeActions;
@@ -1046,7 +1055,7 @@ function patchActionForGrouping(store, actionNames) {
   for (const actionName in actions) {
     store[actionName] = function() {
       const _actionId = runningActionId;
-      const trackedStore = new Proxy(store, {
+      const trackedStore = wrapWithProxy ? new Proxy(store, {
         get(...args) {
           activeAction = _actionId;
           return Reflect.get(...args);
@@ -1055,8 +1064,11 @@ function patchActionForGrouping(store, actionNames) {
           activeAction = _actionId;
           return Reflect.set(...args);
         }
-      });
-      return actions[actionName].apply(trackedStore, arguments);
+      }) : store;
+      activeAction = _actionId;
+      const retValue = actions[actionName].apply(trackedStore, arguments);
+      activeAction = void 0;
+      return retValue;
     };
   }
 }
@@ -1064,21 +1076,13 @@ function devtoolsPlugin({ app, store, options }) {
   if (store.$id.startsWith("__hot:")) {
     return;
   }
-  if (options.state) {
-    store._isOptionsAPI = true;
-  }
-  if (typeof options.state === "function") {
-    patchActionForGrouping(
-      // @ts-expect-error: can cast the store...
-      store,
-      Object.keys(options.actions)
-    );
-    const originalHotUpdate = store._hotUpdate;
-    toRaw(store)._hotUpdate = function(newStore) {
-      originalHotUpdate.apply(this, arguments);
-      patchActionForGrouping(store, Object.keys(newStore._hmrPayload.actions));
-    };
-  }
+  store._isOptionsAPI = !!options.state;
+  patchActionForGrouping(store, Object.keys(options.actions), store._isOptionsAPI);
+  const originalHotUpdate = store._hotUpdate;
+  toRaw(store)._hotUpdate = function(newStore) {
+    originalHotUpdate.apply(this, arguments);
+    patchActionForGrouping(store, Object.keys(newStore._hmrPayload.actions), !!store._isOptionsAPI);
+  };
   addStoreToDevtools(
     app,
     // FIXME: is there a way to allow the assignment from Store<Id, S, G, A> to StoreGeneric?
@@ -1163,6 +1167,7 @@ function triggerSubscriptions(subscriptions, ...args) {
     callback(...args);
   });
 }
+const fallbackRunWithContext = (fn) => fn();
 function mergeReactiveObjects(target, patchToApply) {
   if (target instanceof Map && patchToApply instanceof Map) {
     patchToApply.forEach((value, key) => target.set(key, value));
@@ -1248,8 +1253,8 @@ function createSetupStore($id, setup, options = {}, pinia2, hot, isOptionsStore)
   }
   let isListening;
   let isSyncListening;
-  let subscriptions = markRaw([]);
-  let actionSubscriptions = markRaw([]);
+  let subscriptions = [];
+  let actionSubscriptions = [];
   let debuggerEvents;
   const initialState = pinia2.state.value[$id];
   if (!isOptionsStore && !initialState && (!(process.env.NODE_ENV !== "production") || !hot)) {
@@ -1386,10 +1391,8 @@ function createSetupStore($id, setup, options = {}, pinia2, hot, isOptionsStore)
     // setupStore
   ) : partialStore);
   pinia2._s.set($id, store);
-  const setupStore = pinia2._e.run(() => {
-    scope = effectScope();
-    return scope.run(() => setup());
-  });
+  const runWithContext = pinia2._a && pinia2._a.runWithContext || fallbackRunWithContext;
+  const setupStore = runWithContext(() => pinia2._e.run(() => (scope = effectScope()).run(setup)));
   for (const key in setupStore) {
     const prop = setupStore[key];
     if (isRef(prop) && !isComputed(prop) || isReactive(prop)) {
@@ -1557,18 +1560,20 @@ function defineStore(idOrOptions, setup, setupOptions) {
   } else {
     options = idOrOptions;
     id = idOrOptions.id;
+    if (process.env.NODE_ENV !== "production" && typeof id !== "string") {
+      throw new Error(`[🍍]: "defineStore()" must be passed a store id as its first argument.`);
+    }
   }
   function useStore(pinia2, hot) {
-    const currentInstance = getCurrentInstance();
+    const hasContext = hasInjectionContext();
     pinia2 = // in test mode, ignore the argument provided as we can always retrieve a
     // pinia instance with getActivePinia()
-    (process.env.NODE_ENV === "test" && activePinia && activePinia._testing ? null : pinia2) || currentInstance && inject(piniaSymbol, null);
+    (process.env.NODE_ENV === "test" && activePinia && activePinia._testing ? null : pinia2) || (hasContext ? inject(piniaSymbol, null) : null);
     if (pinia2)
       setActivePinia(pinia2);
     if (process.env.NODE_ENV !== "production" && !activePinia) {
-      throw new Error(`[🍍]: getActivePinia was called with no active Pinia. Did you forget to install pinia?
-	const pinia = createPinia()
-	app.use(pinia)
+      throw new Error(`[🍍]: "getActivePinia()" was called but there was no active Pinia. Are you trying to use a store before calling "app.use(pinia)"?
+See https://pinia.vuejs.org/core-concepts/outside-component-usage.html for help.
 This will fail in production.`);
     }
     pinia2 = activePinia;
@@ -1590,11 +1595,14 @@ This will fail in production.`);
       delete pinia2.state.value[hotId];
       pinia2._s.delete(hotId);
     }
-    if (process.env.NODE_ENV !== "production" && IS_CLIENT && currentInstance && currentInstance.proxy && // avoid adding stores that are just built for hot module replacement
-    !hot) {
-      const vm = currentInstance.proxy;
-      const cache = "_pStores" in vm ? vm._pStores : vm._pStores = {};
-      cache[id] = store;
+    if (process.env.NODE_ENV !== "production" && IS_CLIENT) {
+      const currentInstance = getCurrentInstance();
+      if (currentInstance && currentInstance.proxy && // avoid adding stores that are just built for hot module replacement
+      !hot) {
+        const vm = currentInstance.proxy;
+        const cache = "_pStores" in vm ? vm._pStores : vm._pStores = {};
+        cache[id] = store;
+      }
     }
     return store;
   }
@@ -1675,156 +1683,9 @@ class Registry {
     }
   }
 }
-function getDevtoolsGlobalHook() {
-  return getTarget().__VUE_DEVTOOLS_GLOBAL_HOOK__;
-}
-function getTarget() {
-  return typeof navigator !== "undefined" && typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : {};
-}
-const isProxyAvailable = typeof Proxy === "function";
-const HOOK_SETUP = "devtools-plugin:setup";
-const HOOK_PLUGIN_SETTINGS_SET = "plugin:settings:set";
-let supported;
-let perf;
-function isPerformanceSupported() {
-  var _a;
-  if (supported !== void 0) {
-    return supported;
-  }
-  if (typeof window !== "undefined" && window.performance) {
-    supported = true;
-    perf = window.performance;
-  } else if (typeof global !== "undefined" && ((_a = global.perf_hooks) === null || _a === void 0 ? void 0 : _a.performance)) {
-    supported = true;
-    perf = global.perf_hooks.performance;
-  } else {
-    supported = false;
-  }
-  return supported;
-}
-function now$1() {
-  return isPerformanceSupported() ? perf.now() : Date.now();
-}
-class ApiProxy2 {
-  constructor(plugin, hook) {
-    this.target = null;
-    this.targetQueue = [];
-    this.onQueue = [];
-    this.plugin = plugin;
-    this.hook = hook;
-    const defaultSettings = {};
-    if (plugin.settings) {
-      for (const id in plugin.settings) {
-        const item = plugin.settings[id];
-        defaultSettings[id] = item.defaultValue;
-      }
-    }
-    const localSettingsSaveId = `__vue-devtools-plugin-settings__${plugin.id}`;
-    let currentSettings = Object.assign({}, defaultSettings);
-    try {
-      const raw = localStorage.getItem(localSettingsSaveId);
-      const data = JSON.parse(raw);
-      Object.assign(currentSettings, data);
-    } catch (e) {
-    }
-    this.fallbacks = {
-      getSettings() {
-        return currentSettings;
-      },
-      setSettings(value) {
-        try {
-          localStorage.setItem(localSettingsSaveId, JSON.stringify(value));
-        } catch (e) {
-        }
-        currentSettings = value;
-      },
-      now() {
-        return now$1();
-      }
-    };
-    if (hook) {
-      hook.on(HOOK_PLUGIN_SETTINGS_SET, (pluginId, value) => {
-        if (pluginId === this.plugin.id) {
-          this.fallbacks.setSettings(value);
-        }
-      });
-    }
-    this.proxiedOn = new Proxy({}, {
-      get: (_target, prop) => {
-        if (this.target) {
-          return this.target.on[prop];
-        } else {
-          return (...args) => {
-            this.onQueue.push({
-              method: prop,
-              args
-            });
-          };
-        }
-      }
-    });
-    this.proxiedTarget = new Proxy({}, {
-      get: (_target, prop) => {
-        if (this.target) {
-          return this.target[prop];
-        } else if (prop === "on") {
-          return this.proxiedOn;
-        } else if (Object.keys(this.fallbacks).includes(prop)) {
-          return (...args) => {
-            this.targetQueue.push({
-              method: prop,
-              args,
-              resolve: () => {
-              }
-            });
-            return this.fallbacks[prop](...args);
-          };
-        } else {
-          return (...args) => {
-            return new Promise((resolve) => {
-              this.targetQueue.push({
-                method: prop,
-                args,
-                resolve
-              });
-            });
-          };
-        }
-      }
-    });
-  }
-  async setRealTarget(target) {
-    this.target = target;
-    for (const item of this.onQueue) {
-      this.target.on[item.method](...item.args);
-    }
-    for (const item of this.targetQueue) {
-      item.resolve(await this.target[item.method](...item.args));
-    }
-  }
-}
-function setupDevtoolsPlugin(pluginDescriptor, setupFn) {
-  const descriptor = pluginDescriptor;
-  const target = getTarget();
-  const hook = getDevtoolsGlobalHook();
-  const enableProxy = isProxyAvailable && descriptor.enableEarlyProxy;
-  if (hook && (target.__VUE_DEVTOOLS_PLUGIN_API_AVAILABLE__ || !enableProxy)) {
-    hook.emit(HOOK_SETUP, pluginDescriptor, setupFn);
-  } else {
-    const proxy = enableProxy ? new ApiProxy2(descriptor, hook) : null;
-    const list = target.__VUE_DEVTOOLS_PLUGINS__ = target.__VUE_DEVTOOLS_PLUGINS__ || [];
-    list.push({
-      pluginDescriptor: descriptor,
-      setupFn,
-      proxy
-    });
-    if (proxy)
-      setupFn(proxy.proxiedTarget);
-  }
-}
 /*!
-  * vue-router v4.1.6
-  * (c) 2022 Eduardo San Martin Morote
+  * vue-router v4.2.5
+  * (c) 2023 Eduardo San Martin Morote
   * @license MIT
   */
 const isBrowser = typeof window !== "undefined";
@@ -1916,6 +1777,10 @@ function resolveRelativePath(to, from) {
     return from;
   const fromSegments = from.split("/");
   const toSegments = to.split("/");
+  const lastToSegment = toSegments[toSegments.length - 1];
+  if (lastToSegment === ".." || lastToSegment === ".") {
+    toSegments.push("");
+  }
   let position = fromSegments.length - 1;
   let toPosition;
   let segment;
@@ -2089,7 +1954,9 @@ function useHistoryListeners(base, historyState, currentLocation, replace) {
     window.removeEventListener("beforeunload", beforeUnloadListener);
   }
   window.addEventListener("popstate", popStateHandler);
-  window.addEventListener("beforeunload", beforeUnloadListener);
+  window.addEventListener("beforeunload", beforeUnloadListener, {
+    passive: true
+  });
   return {
     pauseListeners,
     listen,
@@ -2746,7 +2613,7 @@ function createRouterMatcher(routes, globalOptions) {
     } else if ("path" in location2) {
       path = location2.path;
       if (process.env.NODE_ENV !== "production" && !path.startsWith("/")) {
-        warn(`The Matcher cannot resolve relative paths but received "${path}". Unless you directly called \`matcher.resolve("${path}")\`, this is probably a bug in vue-router. Please open an issue at https://new-issue.vuejs.org/?repo=vuejs/router.`);
+        warn(`The Matcher cannot resolve relative paths but received "${path}". Unless you directly called \`matcher.resolve("${path}")\`, this is probably a bug in vue-router. Please open an issue at https://github.com/vuejs/router/issues/new/choose.`);
       }
       matcher = matchers.find((m2) => m2.re.test(path));
       if (matcher) {
@@ -2813,7 +2680,7 @@ function normalizeRecordProps(record) {
     propsObject.default = props;
   } else {
     for (const name in record.components)
-      propsObject[name] = typeof props === "boolean" ? props : props[name];
+      propsObject[name] = typeof props === "object" ? props[name] : props;
   }
   return propsObject;
 }
@@ -2977,7 +2844,7 @@ function useCallbacks() {
   }
   return {
     add,
-    list: () => handlers,
+    list: () => handlers.slice(),
     reset
   };
 }
@@ -3333,7 +3200,8 @@ const RouterView = RouterViewImpl;
 function warnDeprecatedUsage() {
   const instance = getCurrentInstance();
   const parentName = instance.parent && instance.parent.type.name;
-  if (parentName && (parentName === "KeepAlive" || parentName.includes("Transition"))) {
+  const parentSubTreeType = instance.parent && instance.parent.subTree && instance.parent.subTree.type;
+  if (parentName && (parentName === "KeepAlive" || parentName.includes("Transition")) && typeof parentSubTreeType === "object" && parentSubTreeType.name === "RouterView") {
     const comp = parentName === "KeepAlive" ? "keep-alive" : "transition";
     warn(`<router-view> can no longer be used directly inside <transition> or <keep-alive>.
 Use slot props instead:
@@ -3515,7 +3383,9 @@ function addDevtools(app, router2, matcher) {
       if (!activeRoutesPayload)
         return;
       const payload = activeRoutesPayload;
-      let routes = matcher.getRoutes().filter((route) => !route.parent);
+      let routes = matcher.getRoutes().filter((route) => !route.parent || // these routes have a parent with no component which will not appear in the view
+      // therefore we still need to include them
+      !route.parent.record.components);
       routes.forEach(resetMatchStateOnRouteRecord);
       if (payload.filter) {
         routes = routes.filter((route) => (
@@ -3800,8 +3670,7 @@ function createRouter(options) {
     if ("path" in rawLocation) {
       if (process.env.NODE_ENV !== "production" && "params" in rawLocation && !("name" in rawLocation) && // @ts-expect-error: the type is never
       Object.keys(rawLocation.params).length) {
-        warn(`Path "${// @ts-expect-error: the type is never
-        rawLocation.path}" was passed with params but they will be ignored. Use a named route alongside params instead.`);
+        warn(`Path "${rawLocation.path}" was passed with params but they will be ignored. Use a named route alongside params instead.`);
       }
       matcherLocation = assign({}, rawLocation, {
         path: parseURL(parseQuery$1, rawLocation.path, currentLocation.path).path
@@ -3814,7 +3683,7 @@ function createRouter(options) {
         }
       }
       matcherLocation = assign({}, rawLocation, {
-        params: encodeParams(rawLocation.params)
+        params: encodeParams(targetParams)
       });
       currentLocation.params = encodeParams(currentLocation.params);
     }
@@ -3953,8 +3822,9 @@ ${JSON.stringify(newTargetLocation, null, 2)}
           (redirectedFrom._count = redirectedFrom._count ? (
             // @ts-expect-error
             redirectedFrom._count + 1
-          ) : 1) > 10) {
-            warn(`Detected an infinite redirection in a navigation guard when going from "${from.fullPath}" to "${toLocation.fullPath}". Aborting to avoid a Stack Overflow. This will break in production if not fixed.`);
+          ) : 1) > 30) {
+            warn(`Detected a possibly infinite redirection in a navigation guard when going from "${from.fullPath}" to "${toLocation.fullPath}". Aborting to avoid a Stack Overflow.
+ Are you always returning a new location within a navigation guard? That would lead to this error. Only return when redirecting or aborting, that should fix this. This might break in production if not fixed.`);
             return Promise.reject(new Error("Infinite redirect in navigation guard"));
           }
           return pushWithRedirect(
@@ -3980,6 +3850,10 @@ ${JSON.stringify(newTargetLocation, null, 2)}
   function checkCanceledNavigationAndReject(to, from) {
     const error = checkCanceledNavigation(to, from);
     return error ? Promise.reject(error) : Promise.resolve();
+  }
+  function runWithContext(fn) {
+    const app = installedApps.values().next().value;
+    return app && typeof app.runWithContext === "function" ? app.runWithContext(fn) : fn();
   }
   function navigate(to, from) {
     let guards;
@@ -4010,8 +3884,8 @@ ${JSON.stringify(newTargetLocation, null, 2)}
       return runGuardQueue(guards);
     }).then(() => {
       guards = [];
-      for (const record of to.matched) {
-        if (record.beforeEnter && !from.matched.includes(record)) {
+      for (const record of enteringRecords) {
+        if (record.beforeEnter) {
           if (isArray(record.beforeEnter)) {
             for (const beforeEnter of record.beforeEnter)
               guards.push(guardToPromiseFn(beforeEnter, to, from));
@@ -4041,8 +3915,7 @@ ${JSON.stringify(newTargetLocation, null, 2)}
     ) ? err : Promise.reject(err));
   }
   function triggerAfterEach(to, from, failure) {
-    for (const guard of afterGuards.list())
-      guard(to, from, failure);
+    afterGuards.list().forEach((guard) => runWithContext(() => guard(to, from, failure)));
   }
   function finalizeNavigation(toLocation, from, isPush, replace2, data) {
     const error = checkCanceledNavigation(toLocation, from);
@@ -4141,11 +4014,11 @@ ${JSON.stringify(newTargetLocation, null, 2)}
     });
   }
   let readyHandlers = useCallbacks();
-  let errorHandlers = useCallbacks();
+  let errorListeners = useCallbacks();
   let ready;
   function triggerError(error, to, from) {
     markAsReady(error);
-    const list = errorHandlers.list();
+    const list = errorListeners.list();
     if (list.length) {
       list.forEach((handler) => handler(error, to, from));
     } else {
@@ -4199,7 +4072,7 @@ ${JSON.stringify(newTargetLocation, null, 2)}
     beforeEach: beforeGuards.add,
     beforeResolve: beforeResolveGuards.add,
     afterEach: afterGuards.add,
-    onError: errorHandlers.add,
+    onError: errorListeners.add,
     isReady,
     install(app) {
       const router3 = this;
@@ -4221,10 +4094,13 @@ ${JSON.stringify(newTargetLocation, null, 2)}
       }
       const reactiveRoute = {};
       for (const key in START_LOCATION_NORMALIZED) {
-        reactiveRoute[key] = computed(() => currentRoute.value[key]);
+        Object.defineProperty(reactiveRoute, key, {
+          get: () => currentRoute.value[key],
+          enumerable: true
+        });
       }
       app.provide(routerKey, router3);
-      app.provide(routeLocationKey, reactive(reactiveRoute));
+      app.provide(routeLocationKey, shallowReactive(reactiveRoute));
       app.provide(routerViewLocationKey, currentRoute);
       const unmountApp = app.unmount;
       installedApps.add(app);
@@ -4245,10 +4121,10 @@ ${JSON.stringify(newTargetLocation, null, 2)}
       }
     }
   };
+  function runGuardQueue(guards) {
+    return guards.reduce((promise, guard) => promise.then(() => runWithContext(guard)), Promise.resolve());
+  }
   return router2;
-}
-function runGuardQueue(guards) {
-  return guards.reduce((promise, guard) => promise.then(() => guard()), Promise.resolve());
 }
 function extractChangingRecords(to, from) {
   const leavingRecords = [];
@@ -4300,7 +4176,7 @@ function randomToken() {
 var lastMs = 0;
 var additional = 0;
 function microSeconds$4() {
-  var ms = new Date().getTime();
+  var ms = (/* @__PURE__ */ new Date()).getTime();
   if (ms === lastMs) {
     additional++;
     return ms * 1e3 + additional;
@@ -4413,7 +4289,7 @@ function removeTooOldValues(obliviousSet) {
   }
 }
 function now() {
-  return new Date().getTime();
+  return (/* @__PURE__ */ new Date()).getTime();
 }
 function fillOptionsWithDefaults() {
   var originalOptions = arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : {};
@@ -4490,7 +4366,7 @@ function createDatabase(channelName) {
   });
 }
 function writeMessage(db, readerUuid, messageJson) {
-  var time = new Date().getTime();
+  var time = (/* @__PURE__ */ new Date()).getTime();
   var writeObject = {
     uuid: readerUuid,
     time,
@@ -4570,7 +4446,7 @@ function removeMessagesById(channelState, ids) {
   }));
 }
 function getOldMessages(db, ttl) {
-  var olderThen = new Date().getTime() - ttl;
+  var olderThen = (/* @__PURE__ */ new Date()).getTime() - ttl;
   var tx = db.transaction(OBJECT_STORE_ID, "readonly", TRANSACTION_SETTINGS);
   var objectStore = tx.objectStore(OBJECT_STORE_ID);
   var ret = [];
@@ -4732,7 +4608,7 @@ function postMessage$1(channelState, messageJson) {
       var key = storageKey(channelState.channelName);
       var writeObj = {
         token: randomToken(),
-        time: new Date().getTime(),
+        time: (/* @__PURE__ */ new Date()).getTime(),
         data: messageJson,
         uuid: channelState.uuid
       };
@@ -5079,20 +4955,6 @@ function _stopListening(channel) {
     channel.method.onMessage(channel._state, null, time);
   }
 }
-const escaped = {
-  "<": "\\u003C",
-  ">": "\\u003E",
-  "/": "\\u002F",
-  "\\": "\\\\",
-  "\b": "\\b",
-  "\f": "\\f",
-  "\n": "\\n",
-  "\r": "\\r",
-  "	": "\\t",
-  "\0": "\\u0000",
-  "\u2028": "\\u2028",
-  "\u2029": "\\u2029"
-};
 class DevalueError extends Error {
   /**
    * @param {string} message
@@ -5107,7 +4969,9 @@ class DevalueError extends Error {
 function is_primitive(thing) {
   return Object(thing) !== thing;
 }
-const object_proto_names = Object.getOwnPropertyNames(Object.prototype).sort().join("\0");
+const object_proto_names = /* @__PURE__ */ Object.getOwnPropertyNames(
+  Object.prototype
+).sort().join("\0");
 function is_plain_object(thing) {
   const proto = Object.getPrototypeOf(thing);
   return proto === Object.prototype || proto === null || Object.getOwnPropertyNames(proto).sort().join("\0") === object_proto_names;
@@ -5115,30 +4979,45 @@ function is_plain_object(thing) {
 function get_type(thing) {
   return Object.prototype.toString.call(thing).slice(8, -1);
 }
+function get_escaped_char(char) {
+  switch (char) {
+    case '"':
+      return '\\"';
+    case "<":
+      return "\\u003C";
+    case "\\":
+      return "\\\\";
+    case "\n":
+      return "\\n";
+    case "\r":
+      return "\\r";
+    case "	":
+      return "\\t";
+    case "\b":
+      return "\\b";
+    case "\f":
+      return "\\f";
+    case "\u2028":
+      return "\\u2028";
+    case "\u2029":
+      return "\\u2029";
+    default:
+      return char < " " ? `\\u${char.charCodeAt(0).toString(16).padStart(4, "0")}` : "";
+  }
+}
 function stringify_string(str) {
-  let result = '"';
-  for (let i = 0; i < str.length; i += 1) {
-    const char = str.charAt(i);
-    const code = char.charCodeAt(0);
-    if (char === '"') {
-      result += '\\"';
-    } else if (char in escaped) {
-      result += escaped[char];
-    } else if (code <= 31) {
-      result += `\\u${code.toString(16).toUpperCase().padStart(4, "0")}`;
-    } else if (code >= 55296 && code <= 57343) {
-      const next = str.charCodeAt(i + 1);
-      if (code <= 56319 && next >= 56320 && next <= 57343) {
-        result += char + str[++i];
-      } else {
-        result += `\\u${code.toString(16).toUpperCase()}`;
-      }
-    } else {
-      result += char;
+  let result = "";
+  let last_pos = 0;
+  const len = str.length;
+  for (let i = 0; i < len; i += 1) {
+    const char = str[i];
+    const replacement = get_escaped_char(char);
+    if (replacement) {
+      result += str.slice(last_pos, i) + replacement;
+      last_pos = i + 1;
     }
   }
-  result += '"';
-  return result;
+  return `"${last_pos === 0 ? str : result + str.slice(last_pos)}"`;
 }
 const UNDEFINED = -1;
 const HOLE = -2;
