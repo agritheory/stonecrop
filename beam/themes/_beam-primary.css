@@ -1,5 +1,10 @@
-/* Font import */
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto&display=swap');
+/* Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400..700;1,400..700&display=swap');
+
+/* General Sizing */
+html {
+	font-size: 62.5%; /*1 rem = 10px; 10px/16px = 62.5%*/
+}
 
 /* Variables */
 :root {
@@ -8,7 +13,7 @@
 	--brand-danger: #e63c28;
 	--brand-success: #3c5014;
 	--brand-dark: #3a3c41;
-	--font-family: 'Roboto', 'sans-serif';
+	--font-family: 'Arimo', 'sans-serif';
 }
 body {
 	font-family: var(--font-family);
@@ -80,7 +85,8 @@ body {
 }
 
 .beam__navbar {
-	background-color: var(--brand-dark);
+	padding: 1rem;
+	background-color: white;
 	margin-left: 0;
 	min-height: 4em;
 	max-height: 4em;
@@ -90,11 +96,11 @@ body {
 	align-content: center;
 	justify-content: space-between;
 	align-items: center;
-	padding-left: 1ch;
-	padding-right: 1ch;
+	/* padding-left: 1ch;
+	padding-right: 1ch; */
 
 	.home-icon {
-		font-size: 200%;
+		font-size: 3rem;
 		border: 1px solid transparent;
 		margin-top: -0.3em;
 		max-width: 33%;
