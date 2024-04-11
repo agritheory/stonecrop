@@ -4,7 +4,7 @@
 			<ConfirmDialog @closemodal="closeModal" @confirmmodal="confirmModal" />
 		</BeamModal>
 		<Navbar @click="handlePrimaryAction">
-			<template v-slot:title><h1>ITEMS TO RECEIVE</h1></template>
+			<template v-slot:title><h1 class="nav-title">Items to Receive</h1></template>
 			<template v-slot:navbaraction>DONE</template>
 		</Navbar>
 		<ListView :items="items" @scrollbottom="loadMoreItems" />
