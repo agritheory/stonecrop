@@ -53,26 +53,44 @@ body {
 	display: flex;
 	flex-flow: row nowrap;
 	justify-content: space-between;
+	gap: 2rem;
 	/* width: calc(100vw - 3ch); */
 }
-.beam__listitem label {
-	font-size: 150%;
-	max-width: calc(100vw - 10ch);
+.beam__listtext {
+	width: 80%;
+	text-overflow: ellipsis;
 	white-space: nowrap;
 	overflow: hidden;
+	flex-grow: 1;
+}
+.beam__listitem label {
+	font-size: 1.8rem;
+	font-weight: bold;
+	display: block;
+	margin-bottom: 1rem;
+	overflow: hidden;
 	text-overflow: ellipsis;
-	display: flex;
-	flex: 0 1 auto;
+	/* width:270px;
+	max-width:270px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis; */
+	/* display: flex;
+	flex: 0 1 auto; */
 }
 .beam__listitem p {
-	font-size: 90%;
+	font-size: 1.4rem;
 	margin: 0;
-	max-width: calc(100vw - 10ch);
-	white-space: nowrap;
+	/* margin: 1rem 0; */
+	/* width:100px; */
+	/* white-space: nowrap; */
+	overflow: hidden;
+	text-overflow: ellipsis;
+	/* white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	display: flex;
-	flex: 0 1 auto;
+	flex: 0 1 auto; */
 }
 
 .beam__listitem:focus {
@@ -81,9 +99,9 @@ body {
 }
 
 .beam__itemcount {
-	font-size: 250%;
-	display: flex;
-	flex: 0 1 auto;
+	font-size: 2.1rem;
+	/* display: flex;
+	flex: 0 1 auto; */
 }
 .beam__itemcount span {
 	margin: 0;
@@ -141,7 +159,7 @@ body {
 		border: 1px solid transparent;
 		margin-left: 1rem;
 		text-align: left;
-		font-size: 1.8rem;
+		font-size: 2.4rem;
 		color: var(--brand-light);
 	}
 	/* .nav-title:hover {
@@ -180,7 +198,8 @@ body {
 .beam__actionfooter {
 	/* background-color: var(--brand-light); */
 	margin-left: 0;
-
+	background: rgb(255, 255, 255);
+	background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 100%);
 	color: var(--brand-dark);
 	position: fixed;
 	bottom: 0;
