@@ -1,7 +1,7 @@
 <template>
 	<label class="container">
 		<input type="checkbox" :checked="value" @input="handleInput" tabindex="-1" />
-		<span class="checkmark" tabindex="0"></span>
+		<div class="checkmark" tabindex="0"></div>
 	</label>
 </template>
 <script>
@@ -32,6 +32,7 @@ export default {
 	display: block;
 	position: relative;
 	padding-left: 2.5ch;
+	margin: 0;
 	margin-top: 0.5rem;
 	cursor: pointer;
 	font-size: 2rem;
@@ -58,18 +59,15 @@ export default {
 	width: 2rem;
 	background-color: #eee;
 	outline: 2px solid transparent;
-}
-
-.checkmark:focus {
-	outline: 2px solid $brand-primary;
+	border: 1px solid var(--highlight);
 }
 
 .container:hover input ~ .checkmark {
-	background-color: #ccc;
+	background-color: white;
 }
 
 .container input:checked ~ .checkmark {
-	background-color: $brand-dark;
+	background-color: var(--brand-secondary);
 }
 
 .checkmark:after {
@@ -83,14 +81,14 @@ export default {
 }
 
 .container .checkmark:after {
-	left: 0.75rem;
-	top: 0.25rem;
+	left: 25%;
+	top: 50%;
 	width: 0.5rem;
 	height: 1rem;
-	border: solid $brand-primary;
+	border: solid var(--text-color);
 	border-width: 0 3px 3px 0;
 	-webkit-transform: rotate(45deg);
 	-ms-transform: rotate(45deg);
-	transform: rotate(45deg);
+	transform: rotate(45deg) translate(-50%, -50%);
 }
 </style>
