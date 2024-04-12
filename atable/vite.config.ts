@@ -43,10 +43,14 @@ export default defineConfig({
 		globals: true,
 		environment: 'jsdom',
 		coverage: {
-			lines: 10,
-			branches: 10,
-			functions: 10,
-			statements: 10,
+			provider: 'v8',
+			thresholds: {
+				lines: 80,
+				branches: 80,
+				functions: 80,
+				statements: 80,
+				autoUpdate: true,
+			},
 			// required for Github Actions CI
 			reporter: ['text', 'json-summary', 'json'],
 			reportsDirectory: './coverage',

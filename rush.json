@@ -40,6 +40,12 @@
 			"versionPolicyName": "stonecrop"
 		},
 		{
+			"packageName": "@agritheory/beam",
+			"projectFolder": "beam",
+			"reviewCategory": "prototype",
+			"versionPolicyName": "stonecrop"
+		},
+		{
 			"packageName": "@agritheory/desktop",
 			"projectFolder": "desktop",
 			"reviewCategory": "prototype",

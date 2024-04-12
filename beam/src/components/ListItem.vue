@@ -4,6 +4,7 @@
 			<label>{{ item.label }}</label>
 			<p>{{ item.description }}</p>
 		</span>
+
 		<ItemCount
 			v-if="item.count"
 			v-model="item.count.count"
@@ -13,21 +14,21 @@
 		<ItemCheck v-if="item.hasOwnProperty('checked')" v-model="item.checked" />
 	</li>
 </template>
-<script>
+
+<script setup lang="ts">
 import ItemCount from './ItemCount.vue'
 import ItemCheck from './ItemCheck.vue'
 
-export default {
-	name: 'ListItem',
-	components: {
-		ItemCount,
-		ItemCheck,
-	},
-	props: {
-		item: {
-			type: Object,
-			required: true,
-		},
-	},
-}
+defineProps<{
+	item: {
+		label: string
+		description: string
+		count?: {
+			count: number
+			of: number
+			uom: string
+		}
+		checked?: boolean
+	}
+}>()
 </script>

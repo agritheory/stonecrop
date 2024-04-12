@@ -2,34 +2,51 @@
 	"name": "@agritheory/beam",
 	"version": "0.2.2",
 	"license": "MIT",
+	"type": "module",
+	"exports": {
+		".": {
+			"import": "./dist/beam.js",
+			"require": "./dist/beam.umd.cjs"
+		},
+		"./styles": "./dist/style.css"
+	},
+	"main": "dist/beam.js",
+	"module": "dist/beam.js",
+	"types": "src/index",
+	"files": [
+		"dist/*",
+		"src/**/*.vue"
+	],
 	"scripts": {
-		"dev": "vite serve dev/ -c dev/vite.config.js -d",
-		"build": "vite build dev/ -c dev/vite.config.js -d",
-		"serve": "vite preview"
+		"build": "tsc -b && vite build",
+		"dev": "vite",
+		"lint": "eslint . --ext .ts,.vue",
+		"preview": "vite preview",
+		"story:build": "histoire build",
+		"story:dev": "histoire dev",
+		"story:preview": "histoire preview"
 	},
 	"dependencies": {
-		"portal-vue": "~3.0.0-beta.0",
-		"vue": "^3.2.47"
+		"portal-vue": "^3.0.0",
+		"vue": "^3.4.21"
 	},
 	"devDependencies": {
-		"@vitejs/plugin-vue": "^4.0.0",
-		"cypress": "^12.2.0",
-		"portal-vue": "^3.0.0",
+		"@histoire/plugin-vue": "^0.17.17",
+		"@typescript-eslint/eslint-plugin": "^7.6.0",
+		"@typescript-eslint/parser": "^7.6.0",
+		"@vitejs/plugin-vue": "^4.2.1",
+		"cypress": "^12.11.0",
+		"eslint": "^8.40.0",
+		"eslint-config-prettier": "^8.8.0",
+		"eslint-plugin-vue": "^9.11.1",
+		"histoire": "^0.17.17",
+		"sass": "^1.75.0",
+		"typescript": "^5.4.5",
 		"vite": "^5.2.8",
 		"vue-router": "^4"
 	},
 	"engines": {
 		"node": ">=20.11.0"
 	},
-	"files": [
-		"dist"
-	],
-	"main": "./dist/beam-ui.umd.js",
-	"module": "./dist/beam-ui.es.js",
-	"exports": {
-		".": {
-			"import": "./dist/beam-ui.es.js",
-			"require": "./dist/beam-ui.umd.js"
-		}
-	}
+	"umd": "dist/beam.umd.cjs"
 }
