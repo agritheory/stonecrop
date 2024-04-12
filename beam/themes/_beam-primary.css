@@ -1,25 +1,11 @@
-/* Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400..700;1,400..700&display=swap');
-
 /* General Sizing */
 html {
 	font-size: 62.5%; /*1 rem = 10px; 10px/16px = 62.5%*/
 }
 
-/* Variables */
-:root {
-	--brand-primary: #827553;
-	--brand-secondary: #c4b695;
-	--brand-danger: #e63c28;
-	--brand-success: #155724;
-	--brand-dark: #3a3c41;
-	--brand-light: #fff;
-	--text-color: #333;
-	--light-gray: #ddd;
-	--font-family: 'Arimo', 'sans-serif';
-}
 body {
 	font-family: var(--font-family);
+	background-color: var(--background-color);
 }
 
 /* Style */
@@ -27,7 +13,7 @@ body {
 	font-size: 3rem;
 	border: 1px solid transparent;
 	text-align: left;
-	color: var(--brand-light);
+	color: var(--background-color);
 }
 
 .home-icon:hover {
@@ -41,14 +27,20 @@ body {
 }
 
 .beam__listitem {
-	padding: 1rem;
-	border-bottom: 1px solid var(--light-gray);
+	padding: 2rem;
+	border-bottom: 1px solid var(--highlight);
 	max-width: 100%;
 	box-sizing: border-box;
 	display: flex;
 	flex-flow: row nowrap;
 	justify-content: space-between;
 	gap: 2rem;
+	cursor: pointer;
+	transition: all 0.2s;
+
+	&:hover {
+		background-color: var(--highlight);
+	}
 }
 .beam__listtext {
 	width: 80%;
@@ -56,6 +48,7 @@ body {
 	white-space: nowrap;
 	overflow: hidden;
 	flex-grow: 1;
+	color: var(--text-color);
 }
 .beam__listitem label {
 	font-size: 1.8rem;
@@ -74,11 +67,13 @@ body {
 
 .beam__listitem:focus {
 	border-bottom: 2px solid transparent;
+	background-color: var(--highlight);
 	outline: 2px solid var(--brand-primary);
 }
 
 .beam__itemcount {
 	font-size: 2.1rem;
+	color: var(--text-color);
 }
 .beam__itemcount span {
 	margin: 0;
@@ -89,7 +84,7 @@ body {
 .beam__listanchor {
 	text-decoration: none;
 	outline: none;
-	color: var(--brand-dark);
+	color: var(--text-color);
 }
 .btn {
 	font-size: 1.4rem;
@@ -97,7 +92,7 @@ body {
 	padding: 1rem 1.5rem;
 	border: none;
 	color: var(--brand-primary);
-	background-color: var(--brand-light);
+	background-color: white;
 	font-weight: bold;
 	cursor: pointer;
 	border-radius: 2px;
@@ -105,12 +100,12 @@ body {
 
 	&:hover,
 	&:active {
+		color: white;
 		background-color: var(--brand-secondary);
-		color: var(--brand-light);
 	}
 }
 .btn--dark {
-	color: var(--brand-light);
+	color: white;
 	background-color: var(--brand-primary);
 }
 .beam__navbar {
@@ -126,7 +121,6 @@ body {
 	justify-content: flex-start;
 	align-items: center;
 	position: relative;
-	border-bottom: 1px solid var(--brand-primary);
 
 	.nav-title {
 		display: inline-block;
@@ -134,7 +128,7 @@ body {
 		margin-left: 1rem;
 		text-align: left;
 		font-size: 2.4rem;
-		color: var(--brand-light);
+		color: var(--background-color);
 	}
 	.navbar-action-wrapper {
 		position: absolute;
@@ -146,9 +140,9 @@ body {
 }
 .beam__actionfooter {
 	margin-left: 0;
-	background: rgb(255, 255, 255);
-	background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 100%);
-	color: var(--brand-dark);
+	background: red;
+	background: linear-gradient(180deg, transparent 0%, var(--background-color) 100%);
+	color: var(--text-color);
 	position: fixed;
 	bottom: 0;
 	left: 0;
@@ -161,4 +155,35 @@ body {
 }
 .alert {
 	color: var(--brand-danger);
+}
+.beam__modal {
+	position: fixed;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	background-color: rgba(0, 0, 0, 0.5);
+	backdrop-filter: blur(2px);
+	z-index: 1000;
+	text-align: center;
+	padding: 2rem;
+}
+.beam__modal-confirm {
+	background: var(--background-color);
+	padding: 2rem;
+	width: 80%;
+	max-width: 400px;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+
+	& button {
+		margin: 1rem;
+	}
+	& h2 {
+		border-bottom: 1px solid var(--highlight);
+		padding-bottom: 1rem;
+		color: var(--text-color);
+	}
 }
