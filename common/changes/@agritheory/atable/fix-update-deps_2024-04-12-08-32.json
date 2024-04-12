@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "chore: update vitest dependencies",
+      "type": "patch",
+      "packageName": "@agritheory/atable"
+    }
+  ],
+  "packageName": "@agritheory/atable",
+  "email": "rohan@parsimony.com"
+}
