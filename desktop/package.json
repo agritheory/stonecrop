@@ -44,7 +44,7 @@
 		"eslint-plugin-vue": "^9.11.1",
 		"miragejs": "^0.1.47",
 		"typescript": "^5.0.4",
-		"vite": "^4.3.5",
+		"vite": "^5.2.8",
 		"vue-router": "^4"
 	},
 	"engines": {

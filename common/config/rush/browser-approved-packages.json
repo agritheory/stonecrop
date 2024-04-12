@@ -55,7 +55,7 @@
       "allowedCategories": [ "prototype", "utilities" ]
     },
     {
-      "name": "@vitest/coverage-c8",
+      "name": "@vitest/coverage-v8",
       "allowedCategories": [ "prototype", "utilities" ]
     },
     {
