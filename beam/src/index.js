@@ -36,20 +36,6 @@ if (typeof window !== 'undefined' && window.Vue) {
 	install(window.Vue)
 }
 
-export {
-	Navbar,
-	ListView,
-	ListItem,
-	ListAnchor,
-	ItemCount,
-	ItemCheck,
-	ScanInput,
-	ActionFooter,
-	BeamModal,
-	ConfirmDialog,
-	BeamModalOutlet,
-}
-
 export default {
 	version: '0.1.0',
 	install,

@@ -154,6 +154,28 @@ importers:
         specifier: ^4
         version: 4.2.5(vue@3.4.19)
 
+  ../../beam:
+    dependencies:
+      portal-vue:
+        specifier: ~3.0.0
+        version: 3.0.0(vue@3.4.19)
+      vue:
+        specifier: ^3.2.47
+        version: 3.4.19(typescript@5.3.3)
+    devDependencies:
+      '@vitejs/plugin-vue':
+        specifier: ^4.2.1
+        version: 4.6.2(vite@4.5.2)(vue@3.4.19)
+      cypress:
+        specifier: ^12.11.0
+        version: 12.17.4
+      vite:
+        specifier: ^4.3.5
+        version: 4.5.2(@types/node@20.11.17)
+      vue-router:
+        specifier: ^4
+        version: 4.2.5(vue@3.4.19)
+
   ../../code_editor:
     dependencies:
       '@agritheory/themes':
@@ -4066,6 +4088,18 @@ packages:
       mlly: 1.5.0
       pathe: 1.1.2
     dev: true
+
+  /portal-vue@3.0.0(vue@3.4.19):
+    resolution: {integrity: sha512-9eprMxNURLx6ijbcgkWjYNcTWJYu/H8QF8nyAeBzOmk9lKCea01BW1hYBeLkgz+AestmPOvznAEOFmNuO4Adjw==}
+    engines: {node: '>=14.19'}
+    peerDependencies:
+      vue: ^3.0.4
+    peerDependenciesMeta:
+      vue:
+        optional: true
+    dependencies:
+      vue: 3.4.19(typescript@5.3.3)
+    dev: false
 
   /postcss-selector-parser@6.0.15:
     resolution: {integrity: sha512-rEYkQOMUCEMhsKbK66tbEU9QVIxbhN18YiniAwA7XQYTVBqrBy+P2p5JcdqsHgKM2zWylp8d7J6eszocfds5Sw==}
