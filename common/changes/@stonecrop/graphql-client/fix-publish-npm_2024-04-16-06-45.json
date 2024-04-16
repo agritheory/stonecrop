@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/graphql-client",
+      "comment": "Update package name",
+      "type": "none"
+    }
+  ],
+  "packageName": "@stonecrop/graphql-client"
+}

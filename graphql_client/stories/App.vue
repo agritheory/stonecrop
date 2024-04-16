@@ -18,7 +18,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 
-import { useStonecrop } from '@agritheory/stonecrop'
+import { useStonecrop } from '@stonecrop/stonecrop'
 import { queries } from '../src/queries'
 
 const data = ref({})

@@ -27,7 +27,7 @@
 <script setup lang="ts">
 import { computed, CSSProperties, inject, ref } from 'vue'
 
-import { defaultKeypressHandlers, useKeyboardNav } from '@agritheory/utilities'
+import { defaultKeypressHandlers, useKeyboardNav } from '@stonecrop/utilities'
 import TableDataStore from '.'
 
 const props = withDefaults(
@@ -178,7 +178,7 @@ const cellStyle: CSSProperties = {
 </script>
 
 <style scoped>
-@import url('@agritheory/themes/default/default.css');
+@import url('@stonecrop/themes/default/default.css');
 td {
 	border-radius: 0px;
 	box-sizing: border-box;

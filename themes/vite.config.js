@@ -15,7 +15,7 @@ export default defineConfig({
 		sourcemap: true,
 		lib: {
 			entry: resolve(projectRootDir, 'index.js'),
-			name: '@agritheory/themes',
+			name: '@stonecrop/themes',
 		},
 		rollupOptions: {
 			external: ['vue'],

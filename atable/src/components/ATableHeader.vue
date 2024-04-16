@@ -32,7 +32,7 @@ const getHeaderCellStyle = (column: TableColumn): CSSProperties => ({
 </script>
 
 <style scoped>
-@import url('@agritheory/themes/default/default.css');
+@import url('@stonecrop/themes/default/default.css');
 thead {
 	background-color: var(--gray-5);
 }

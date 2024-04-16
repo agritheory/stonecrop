@@ -1,5 +1,5 @@
 {
-	"name": "@agritheory/node-editor",
+	"name": "@stonecrop/node-editor",
 	"version": "0.2.2",
 	"description": "Node editor UI for Stonecrop",
 	"license": "MIT",

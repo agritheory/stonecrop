@@ -10,10 +10,10 @@ importers:
 
   ../../aform:
     dependencies:
-      '@agritheory/themes':
+      '@stonecrop/themes':
         specifier: workspace:*
         version: link:../themes
-      '@agritheory/utilities':
+      '@stonecrop/utilities':
         specifier: workspace:*
         version: link:../utilities
       uuid:
@@ -23,7 +23,7 @@ importers:
         specifier: ^3.2.47
         version: 3.4.19(typescript@5.3.3)
     devDependencies:
-      '@agritheory/atable':
+      '@stonecrop/atable':
         specifier: workspace:*
         version: link:../atable
       '@histoire/plugin-vue':
@@ -83,10 +83,10 @@ importers:
 
   ../../atable:
     dependencies:
-      '@agritheory/themes':
+      '@stonecrop/themes':
         specifier: workspace:*
         version: link:../themes
-      '@agritheory/utilities':
+      '@stonecrop/utilities':
         specifier: workspace:*
         version: link:../utilities
       uuid:
@@ -96,7 +96,7 @@ importers:
         specifier: ^3.2.47
         version: 3.4.19(typescript@5.3.3)
     devDependencies:
-      '@agritheory/aform':
+      '@stonecrop/aform':
         specifier: workspace:*
         version: link:../aform
       '@histoire/plugin-vue':
@@ -156,10 +156,10 @@ importers:
 
   ../../code_editor:
     dependencies:
-      '@agritheory/themes':
+      '@stonecrop/themes':
         specifier: workspace:*
         version: link:../themes
-      '@agritheory/utilities':
+      '@stonecrop/utilities':
         specifier: workspace:*
         version: link:../utilities
       '@monaco-editor/loader':
@@ -172,7 +172,7 @@ importers:
         specifier: ^3.2.47
         version: 3.4.19(typescript@5.3.3)
     devDependencies:
-      '@agritheory/atable':
+      '@stonecrop/atable':
         specifier: workspace:*
         version: link:../atable
       '@histoire/plugin-vue':
@@ -217,16 +217,16 @@ importers:
 
   ../../desktop:
     dependencies:
-      '@agritheory/aform':
+      '@stonecrop/aform':
         specifier: workspace:*
         version: link:../aform
-      '@agritheory/atable':
+      '@stonecrop/atable':
         specifier: workspace:*
         version: link:../atable
-      '@agritheory/stonecrop':
+      '@stonecrop/stonecrop':
         specifier: workspace:*
         version: link:../stonecrop
-      '@agritheory/themes':
+      '@stonecrop/themes':
         specifier: workspace:*
         version: link:../themes
       immutable:
@@ -275,22 +275,22 @@ importers:
 
   ../../examples:
     dependencies:
-      '@agritheory/aform':
+      '@stonecrop/aform':
         specifier: workspace:*
         version: link:../aform
-      '@agritheory/atable':
+      '@stonecrop/atable':
         specifier: workspace:*
         version: link:../atable
-      '@agritheory/desktop':
+      '@stonecrop/desktop':
         specifier: workspace:*
         version: link:../desktop
-      '@agritheory/node-editor':
+      '@stonecrop/node-editor':
         specifier: workspace:*
         version: link:../node_editor
-      '@agritheory/stonecrop':
+      '@stonecrop/stonecrop':
         specifier: workspace:*
         version: link:../stonecrop
-      '@agritheory/themes':
+      '@stonecrop/themes':
         specifier: workspace:*
         version: link:../themes
       '@miragejs/graphql':
@@ -342,7 +342,7 @@ importers:
 
   ../../graphql_client:
     dependencies:
-      '@agritheory/stonecrop':
+      '@stonecrop/stonecrop':
         specifier: workspace:*
         version: link:../stonecrop
       graphql:
@@ -453,10 +453,10 @@ importers:
         specifier: ~4.37.2
         version: 4.37.2
     devDependencies:
-      '@agritheory/aform':
+      '@stonecrop/aform':
         specifier: workspace:*
         version: link:../aform
-      '@agritheory/atable':
+      '@stonecrop/atable':
         specifier: workspace:*
         version: link:../atable
       '@typescript-eslint/eslint-plugin':
