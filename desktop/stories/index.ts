@@ -3,9 +3,9 @@ import { createApp } from 'vue'
 import { RouteRecordRaw } from 'vue-router'
 import { createMachine } from 'xstate'
 
-import { ADate, ATextInput } from '@agritheory/aform'
-import { DoctypeMeta, Stonecrop } from '@agritheory/stonecrop'
-import type { ImmutableDoctype, MutableDoctype } from '@agritheory/stonecrop/types'
+import { ADate, ATextInput } from '@stonecrop/aform'
+import { DoctypeMeta, Stonecrop } from '@stonecrop/stonecrop'
+import type { ImmutableDoctype, MutableDoctype } from '@stonecrop/stonecrop/types'
 
 import ActionSet from '../src/components/ActionSet.vue'
 import CommandPalette from '../src/components/CommandPalette.vue'

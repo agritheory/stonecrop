@@ -16,7 +16,7 @@
 import { TableRow } from 'types'
 import { inject, ref } from 'vue'
 
-import { useKeyboardNav } from '@agritheory/utilities'
+import { useKeyboardNav } from '@stonecrop/utilities'
 
 import TableDataStore from '.'
 
@@ -61,7 +61,7 @@ if (props.addNavigation !== undefined) {
 </script>
 
 <style scoped>
-@import url('@agritheory/themes/default/default.css');
+@import url('@stonecrop/themes/default/default.css');
 .row-index {
 	color: var(--header-text-color);
 	font-weight: bold;

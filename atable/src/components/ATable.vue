@@ -181,7 +181,7 @@ window.addEventListener('keydown', (event: KeyboardEvent) => {
 </script>
 
 <style scoped>
-@import url('@agritheory/themes/default/default.css');
+@import url('@stonecrop/themes/default/default.css');
 
 table {
 	display: table;

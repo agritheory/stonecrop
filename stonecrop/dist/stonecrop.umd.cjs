@@ -1,5 +1,5 @@
 (function(global2, factory) {
-  typeof exports === "object" && typeof module !== "undefined" ? factory(exports, require("vue")) : typeof define === "function" && define.amd ? define(["exports", "vue"], factory) : (global2 = typeof globalThis !== "undefined" ? globalThis : global2 || self, factory(global2["@agritheory/stonecrop"] = {}, global2.Vue));
+  typeof exports === "object" && typeof module !== "undefined" ? factory(exports, require("vue")) : typeof define === "function" && define.amd ? define(["exports", "vue"], factory) : (global2 = typeof globalThis !== "undefined" ? globalThis : global2 || self, factory(global2["@stonecrop/stonecrop"] = {}, global2.Vue));
 })(this, function(exports2, vue) {
   "use strict";
   function NotImplementedError(message) {

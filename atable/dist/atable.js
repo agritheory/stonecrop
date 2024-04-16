@@ -415,7 +415,7 @@ const C = (t, e) => {
   for (const [o, a] of e)
     n[o] = a;
   return n;
-}, he = /* @__PURE__ */ C(Qe, [["__scopeId", "data-v-1738c6fc"]]), Fe = ["tabindex"], qe = ["tabindex"], ze = ["colspan"], Ge = /* @__PURE__ */ k({
+}, he = /* @__PURE__ */ C(Qe, [["__scopeId", "data-v-07dfe445"]]), Fe = ["tabindex"], qe = ["tabindex"], ze = ["colspan"], Ge = /* @__PURE__ */ k({
   __name: "AExpansionRow",
   props: {
     row: {},
@@ -469,7 +469,7 @@ const C = (t, e) => {
     ], 64));
   }
 });
-const Je = /* @__PURE__ */ C(Ge, [["__scopeId", "data-v-2bb821ae"]]), Xe = ["tabindex"], Ye = {
+const Je = /* @__PURE__ */ C(Ge, [["__scopeId", "data-v-b2e2ed2d"]]), Xe = ["tabindex"], Ye = {
   key: 0,
   tabIndex: -1,
   class: "list-index"
@@ -484,7 +484,7 @@ const Je = /* @__PURE__ */ C(Ge, [["__scopeId", "data-v-2bb821ae"]]), Xe = ["tab
   },
   setup(t) {
     de((d) => ({
-      "6b10edcf": r(a)
+      "5b18ee03": r(a)
     }));
     const e = t, n = O(e.tableid), o = E(null), a = n.numberedRowWidth.value, l = () => n.config.view !== "tree" ? "" : n.display[e.rowIndex].isRoot || n.display[e.rowIndex].isParent ? n.display[e.rowIndex].childrenOpen ? "-" : "+" : "", s = () => n.config.view !== "tree" || n.display[e.rowIndex].isRoot || n.display[e.rowIndex].open, i = (d) => {
       n.toggleRowExpand(d);
@@ -512,7 +512,7 @@ const Je = /* @__PURE__ */ C(Ge, [["__scopeId", "data-v-2bb821ae"]]), Xe = ["tab
     ]);
   }
 });
-const be = /* @__PURE__ */ C(Ze, [["__scopeId", "data-v-c758303d"]]);
+const be = /* @__PURE__ */ C(Ze, [["__scopeId", "data-v-4c71a067"]]);
 let R;
 const Ke = new Uint8Array(16);
 function et() {
@@ -611,7 +611,7 @@ const lt = { key: 0 }, at = {
   },
   setup(t) {
     de((l) => ({
-      "1cb0fcc9": r(o)
+      "12d06943": r(o)
     }));
     const n = O(t.tableid), o = n.numberedRowWidth.value, a = (l) => ({
       minWidth: l.width || "40ch",
@@ -634,7 +634,7 @@ const lt = { key: 0 }, at = {
     ])) : M("", !0);
   }
 });
-const ve = /* @__PURE__ */ C(st, [["__scopeId", "data-v-8a8d9cee"]]), it = /* @__PURE__ */ k({
+const ve = /* @__PURE__ */ C(st, [["__scopeId", "data-v-16e66636"]]), it = /* @__PURE__ */ k({
   __name: "ATableModal",
   props: {
     colIndex: {},
@@ -657,7 +657,7 @@ const ve = /* @__PURE__ */ C(st, [["__scopeId", "data-v-8a8d9cee"]]), it = /* @_
     ], 544));
   }
 });
-const ye = /* @__PURE__ */ C(it, [["__scopeId", "data-v-8ac70767"]]), dt = /* @__PURE__ */ k({
+const ye = /* @__PURE__ */ C(it, [["__scopeId", "data-v-10a48b2a"]]), dt = /* @__PURE__ */ k({
   __name: "ATable",
   props: {
     id: {},
@@ -758,7 +758,7 @@ const ye = /* @__PURE__ */ C(it, [["__scopeId", "data-v-8ac70767"]]), dt = /* @_
     ], 4));
   }
 });
-const ct = /* @__PURE__ */ C(dt, [["__scopeId", "data-v-9137b4c3"]]);
+const ct = /* @__PURE__ */ C(dt, [["__scopeId", "data-v-819abcc5"]]);
 function ft(t) {
   t.component("ACell", he), t.component("AExpansionRow", Je), t.component("ARow", be), t.component("ATable", ct), t.component("ATableHeader", ve), t.component("ATableModal", ye);
 }

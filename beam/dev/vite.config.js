@@ -19,7 +19,7 @@ module.exports = {
 	build: {
 		lib: {
 			entry: resolve(__dirname, '../src/index.js'),
-			name: '@agritheory/beam',
+			name: '@stonecrop/beam',
 		},
 		rollupOptions: {
 			external: ['vue'],
