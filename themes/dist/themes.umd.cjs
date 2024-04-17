@@ -1,2 +1,2 @@
-(function(n){typeof define=="function"&&define.amd?define(n):n()})(function(){"use strict";const n=""});
+(function(n){typeof define=="function"&&define.amd?define(n):n()})(function(){"use strict"});
 //# sourceMappingURL=themes.umd.cjs.map

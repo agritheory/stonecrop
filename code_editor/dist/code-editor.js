@@ -1,4 +1,4 @@
-import { defineComponent as _, ref as C, onMounted as $, openBlock as x, createElementBlock as q, createElementVNode as D } from "vue";
+import { defineComponent as C, ref as $, onMounted as x, openBlock as q, createElementBlock as D, createElementVNode as _ } from "vue";
 function B(e, n, r) {
   return n in e ? Object.defineProperty(e, n, {
     value: r,
@@ -738,32 +738,31 @@ const je = {
 }, Se = {
   ref: "editorContainer",
   id: "editor-container"
-}, Pe = /* @__PURE__ */ _({
+}, Pe = /* @__PURE__ */ C({
   __name: "ACodeEditor",
   props: {
     options: {}
   },
   setup(e) {
-    const n = e, r = C(null), t = {
+    const n = e, r = $(null), t = {
       ...n.options,
       automaticLayout: !0,
       colorDecorators: !0,
       lineHeight: 24,
       scrollBeyondLastLine: !1
     };
-    return $(async () => {
+    return x(async () => {
       const i = (await we.init()).editor;
       i.defineTheme("agritheory", je), i.setTheme("agritheory"), i.create(r.value, t);
-    }), (o, i) => (x(), q("div", Se, [
-      D("div", {
+    }), (o, i) => (q(), D("div", Se, [
+      _("div", {
         ref_key: "aCodeEditor",
         ref: r,
         id: "editor-area"
       }, null, 512)
     ], 512));
   }
-});
-const Ie = (e, n) => {
+}), Ie = (e, n) => {
   const r = e.__vccOpts || e;
   for (const [t, o] of n)
     r[t] = o;

@@ -45,10 +45,10 @@ export default defineConfig({
 		coverage: {
 			provider: 'v8',
 			thresholds: {
-				lines: 40,
-				branches: 40,
-				functions: 40,
-				statements: 40,
+				lines: 70,
+				branches: 70,
+				functions: 70,
+				statements: 70,
 			},
 			// required for Github Actions CI
 			reporter: ['text', 'json-summary', 'json'],
