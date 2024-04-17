@@ -3,6 +3,18 @@
   "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/approved-packages.schema.json",
   "packages": [
     {
+      "name": "@histoire/plugin-vue",
+      "allowedCategories": [ "prototype", "utilities" ]
+    },
+    {
+      "name": "@miragejs/graphql",
+      "allowedCategories": [ "prototype", "utilities" ]
+    },
+    {
+      "name": "@monaco-editor/loader",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
       "name": "@stonecrop/aform",
       "allowedCategories": [ "prototype" ]
     },
@@ -31,18 +43,6 @@
       "allowedCategories": [ "prototype" ]
     },
     {
-      "name": "@histoire/plugin-vue",
-      "allowedCategories": [ "prototype", "utilities" ]
-    },
-    {
-      "name": "@miragejs/graphql",
-      "allowedCategories": [ "prototype", "utilities" ]
-    },
-    {
-      "name": "@monaco-editor/loader",
-      "allowedCategories": [ "prototype" ]
-    },
-    {
       "name": "@typescript-eslint/eslint-plugin",
       "allowedCategories": [ "prototype", "utilities" ]
     },
@@ -57,6 +57,10 @@
     {
       "name": "@vitest/coverage-c8",
       "allowedCategories": [ "prototype", "utilities" ]
+    },
+    {
+      "name": "@vitest/coverage-v8",
+      "allowedCategories": [ "prototype" ]
     },
     {
       "name": "@vitest/ui",

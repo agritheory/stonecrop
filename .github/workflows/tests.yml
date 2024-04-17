@@ -55,9 +55,10 @@ jobs:
 
     - name: Coverage Report
       if: always() # Also generate the report if tests are failing
-      uses: davelosert/vitest-coverage-report-action@v1
+      uses: davelosert/vitest-coverage-report-action@v2
       with:
         working-directory: ./aform
+        file-coverage-mode: 'all'
         vite-config-path: './vite.config.ts'
 
   atable:
@@ -93,7 +94,8 @@ jobs:
 
     - name: Coverage Report
       if: always() # Also generate the report if tests are failing
-      uses: davelosert/vitest-coverage-report-action@v1
+      uses: davelosert/vitest-coverage-report-action@v2
       with:
         working-directory: ./atable
+        file-coverage-mode: 'all'
         vite-config-path: './vite.config.ts'

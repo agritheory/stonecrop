@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "update coverage report",
+      "type": "patch",
+      "packageName": "@stonecrop/atable"
+    }
+  ],
+  "packageName": "@stonecrop/atable",
+  "email": "rohan@agritheory.dev"
+}
