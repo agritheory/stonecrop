@@ -10,3 +10,45 @@ node common/scripts/install-run-rush.js prettier || exit $?
 
 # Invoke the "rush build" custom command to build the project before every commit
 node common/scripts/install-run-rush.js build || exit $?
+
+# Ignore changes in the "dist" package folders from the git index
+git update-index --assume-unchanged aform/dist/aform.js
+git update-index --assume-unchanged aform/dist/aform.js.map
+git update-index --assume-unchanged aform/dist/aform.umd.cjs
+git update-index --assume-unchanged aform/dist/aform.umd.cjs.map
+git update-index --assume-unchanged aform/dist/style.css
+git update-index --assume-unchanged atable/dist/atable.js
+git update-index --assume-unchanged atable/dist/atable.js.map
+git update-index --assume-unchanged atable/dist/atable.umd.cjs
+git update-index --assume-unchanged atable/dist/atable.umd.cjs.map
+git update-index --assume-unchanged atable/dist/style.css
+git update-index --assume-unchanged code_editor/dist/code-editor.js
+git update-index --assume-unchanged code_editor/dist/code-editor.js.map
+git update-index --assume-unchanged code_editor/dist/code-editor.umd.cjs
+git update-index --assume-unchanged code_editor/dist/code-editor.umd.cjs.map
+git update-index --assume-unchanged code_editor/dist/style.css
+git update-index --assume-unchanged desktop/dist/desktop.js
+git update-index --assume-unchanged desktop/dist/desktop.js.map
+git update-index --assume-unchanged desktop/dist/desktop.umd.cjs
+git update-index --assume-unchanged desktop/dist/desktop.umd.cjs.map
+git update-index --assume-unchanged desktop/dist/style.css
+git update-index --assume-unchanged graphql_client/dist/graphql-client.js
+git update-index --assume-unchanged graphql_client/dist/graphql-client.js.map
+git update-index --assume-unchanged graphql_client/dist/graphql-client.umd.cjs
+git update-index --assume-unchanged graphql_client/dist/graphql-client.umd.cjs.map
+git update-index --assume-unchanged node_editor/dist/node-editor.js
+git update-index --assume-unchanged node_editor/dist/node-editor.js.map
+git update-index --assume-unchanged node_editor/dist/node-editor.umd.cjs
+git update-index --assume-unchanged node_editor/dist/node-editor.umd.cjs.map
+git update-index --assume-unchanged node_editor/dist/style.css
+git update-index --assume-unchanged stonecrop/dist/stonecrop.js
+git update-index --assume-unchanged stonecrop/dist/stonecrop.umd.cjs
+git update-index --assume-unchanged themes/dist/themes.js
+git update-index --assume-unchanged themes/dist/themes.js.map
+git update-index --assume-unchanged themes/dist/themes.umd.cjs
+git update-index --assume-unchanged themes/dist/themes.umd.cjs.map
+git update-index --assume-unchanged themes/dist/style.css
+git update-index --assume-unchanged utilities/dist/utilities.js
+git update-index --assume-unchanged utilities/dist/utilities.js.map
+git update-index --assume-unchanged utilities/dist/utilities.umd.cjs
+git update-index --assume-unchanged utilities/dist/utilities.umd.cjs.map
