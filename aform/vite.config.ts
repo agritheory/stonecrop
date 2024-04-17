@@ -39,10 +39,13 @@ export default defineConfig({
 		globals: true,
 		environment: 'jsdom',
 		coverage: {
-			lines: 50,
-			branches: 50,
-			functions: 50,
-			statements: 50,
+			provider: 'v8',
+			thresholds: {
+				lines: 50,
+				branches: 50,
+				functions: 50,
+				statements: 50,
+			},
 			// required for Github Actions CI
 			reporter: ['text', 'json-summary', 'json'],
 			reportsDirectory: './coverage',
@@ -63,7 +66,6 @@ export default defineConfig({
 				'**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*',
 				'**/.{eslint,mocha,prettier}rc.{js,cjs,yml}',
 			],
-			all: true,
 			skipFull: true,
 		},
 	},

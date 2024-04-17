@@ -36,14 +36,14 @@
 		"vue": "^3.2.47"
 	},
 	"devDependencies": {
-		"@stonecrop/aform": "workspace:*",
 		"@histoire/plugin-vue": "^0.16.1",
+		"@stonecrop/aform": "workspace:*",
 		"@types/uuid": "^9.0.0",
 		"@typescript-eslint/eslint-plugin": "^5.59.5",
 		"@typescript-eslint/parser": "^5.59.5",
 		"@vitejs/plugin-vue": "^4.2.1",
-		"@vitest/coverage-c8": "^0.31.0",
-		"@vitest/ui": "^0.31.0",
+		"@vitest/coverage-v8": "^1.5.0",
+		"@vitest/ui": "^1.5.0",
 		"@vue/test-utils": "^2.3.2",
 		"cypress": "^12.11.0",
 		"eslint": "^8.40.0",
@@ -53,7 +53,7 @@
 		"jsdom": "^22.0.0",
 		"typescript": "^5.0.4",
 		"vite": "^4.3.5",
-		"vitest": "^0.31.0",
+		"vitest": "^1.5.0",
 		"vue-router": "^4"
 	},
 	"peerDependencies": {
