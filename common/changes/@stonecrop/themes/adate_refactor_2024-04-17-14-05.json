@@ -1,10 +1,10 @@
 {
   "changes": [
     {
-      "packageName": "@agritheory/themes",
+      "packageName": "@stonecrop/themes",
       "comment": "Version bump",
       "type": "none"
     }
   ],
-  "packageName": "@agritheory/themes"
+  "packageName": "@stonecrop/themes"
 }

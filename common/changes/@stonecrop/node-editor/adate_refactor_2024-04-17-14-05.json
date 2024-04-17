@@ -1,10 +1,10 @@
 {
   "changes": [
     {
-      "packageName": "@agritheory/utilities",
+      "packageName": "@stonecrop/node-editor",
       "comment": "Version bump",
       "type": "none"
     }
   ],
-  "packageName": "@agritheory/utilities"
+  "packageName": "@stonecrop/node-editor"
 }

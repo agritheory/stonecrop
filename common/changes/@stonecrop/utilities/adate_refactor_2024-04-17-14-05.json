@@ -1,10 +1,10 @@
 {
   "changes": [
     {
-      "packageName": "@agritheory/atable",
+      "packageName": "@stonecrop/utilities",
       "comment": "Version bump",
       "type": "none"
     }
   ],
-  "packageName": "@agritheory/atable"
+  "packageName": "@stonecrop/utilities"
 }

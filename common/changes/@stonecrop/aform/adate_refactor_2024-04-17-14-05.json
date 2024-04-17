@@ -1,10 +1,10 @@
 {
   "changes": [
     {
-      "packageName": "@agritheory/aform",
+      "packageName": "@stonecrop/aform",
       "comment": "Add ADatePicker base component",
       "type": "none"
     }
   ],
-  "packageName": "@agritheory/aform"
+  "packageName": "@stonecrop/aform"
 }
