@@ -1,5 +1,5 @@
 {
-	"name": "@agritheory/atable",
+	"name": "@stonecrop/atable",
 	"version": "0.2.2",
 	"license": "MIT",
 	"type": "module",
@@ -30,14 +30,14 @@
 		"test:ui": "vitest --ui"
 	},
 	"dependencies": {
-		"@agritheory/themes": "workspace:*",
-		"@agritheory/utilities": "workspace:*",
+		"@stonecrop/themes": "workspace:*",
+		"@stonecrop/utilities": "workspace:*",
 		"uuid": "^9.0.0",
 		"vue": "^3.4.21"
 	},
 	"devDependencies": {
-		"@agritheory/aform": "workspace:*",
 		"@histoire/plugin-vue": "^0.17.17",
+		"@stonecrop/aform": "workspace:*",
 		"@types/uuid": "^9.0.0",
 		"@typescript-eslint/eslint-plugin": "^7.6.0",
 		"@typescript-eslint/parser": "^7.6.0",
@@ -57,7 +57,7 @@
 		"vue-router": "^4"
 	},
 	"peerDependencies": {
-		"@agritheory/aform": "workspace:*"
+		"@stonecrop/aform": "workspace:*"
 	},
 	"engines": {
 		"node": ">=20.11.0"

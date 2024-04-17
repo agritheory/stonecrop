@@ -4522,7 +4522,7 @@ const Oc = ["data-colindex", "data-rowindex", "data-editable", "contenteditable"
   for (const [o, r] of t)
     n[o] = r;
   return n;
-}, Cc = /* @__PURE__ */ qe(Pc, [["__scopeId", "data-v-1738c6fc"]]), xc = ["tabindex"], $c = {
+}, Cc = /* @__PURE__ */ qe(Pc, [["__scopeId", "data-v-07dfe445"]]), xc = ["tabindex"], $c = {
   key: 0,
   tabIndex: -1,
   class: "list-index"
@@ -4537,7 +4537,7 @@ const Oc = ["data-colindex", "data-rowindex", "data-editable", "contenteditable"
   },
   setup(e) {
     vo((l) => ({
-      "6b10edcf": k(r)
+      "5b18ee03": k(r)
     }));
     const t = e, n = Z(t.tableid), o = V(null), r = n.numberedRowWidth.value, s = () => n.config.view !== "tree" ? "" : n.display[t.rowIndex].isRoot || n.display[t.rowIndex].isParent ? n.display[t.rowIndex].childrenOpen ? "-" : "+" : "", i = () => n.config.view !== "tree" || n.display[t.rowIndex].isRoot || n.display[t.rowIndex].open, a = (l) => {
       n.toggleRowExpand(l);
@@ -4564,7 +4564,7 @@ const Oc = ["data-colindex", "data-rowindex", "data-editable", "contenteditable"
       [jt, i()]
     ]);
   }
-}), Rc = /* @__PURE__ */ qe(Nc, [["__scopeId", "data-v-c758303d"]]);
+}), Rc = /* @__PURE__ */ qe(Nc, [["__scopeId", "data-v-4c71a067"]]);
 let tt;
 const Ac = new Uint8Array(16);
 function Tc() {
@@ -4663,7 +4663,7 @@ const Lc = { key: 0 }, jc = {
   },
   setup(e) {
     vo((r) => ({
-      "1cb0fcc9": k(n)
+      "12d06943": k(n)
     }));
     const t = Z(e.tableid), n = t.numberedRowWidth.value, o = (r) => ({
       minWidth: r.width || "40ch",
@@ -4685,7 +4685,7 @@ const Lc = { key: 0 }, jc = {
       ])
     ])) : ke("", !0);
   }
-}), Hc = /* @__PURE__ */ qe(Uc, [["__scopeId", "data-v-8a8d9cee"]]), Wc = /* @__PURE__ */ q({
+}), Hc = /* @__PURE__ */ qe(Uc, [["__scopeId", "data-v-16e66636"]]), Wc = /* @__PURE__ */ q({
   __name: "ATableModal",
   props: {
     colIndex: {},
@@ -4707,7 +4707,7 @@ const Lc = { key: 0 }, jc = {
       me(n.$slots, "default", {}, void 0, !0)
     ], 544));
   }
-}), Fc = /* @__PURE__ */ qe(Wc, [["__scopeId", "data-v-8ac70767"]]), Gc = /* @__PURE__ */ q({
+}), Fc = /* @__PURE__ */ qe(Wc, [["__scopeId", "data-v-10a48b2a"]]), Gc = /* @__PURE__ */ q({
   __name: "ATable",
   props: {
     id: {},
@@ -4807,7 +4807,7 @@ const Lc = { key: 0 }, jc = {
       ], !0)
     ], 4));
   }
-}), zc = /* @__PURE__ */ qe(Gc, [["__scopeId", "data-v-9137b4c3"]]), Qc = /* @__PURE__ */ q({
+}), zc = /* @__PURE__ */ qe(Gc, [["__scopeId", "data-v-819abcc5"]]), Qc = /* @__PURE__ */ q({
   __name: "Records",
   setup(e) {
     const { stonecrop: t, isReady: n } = No(), o = { view: "list" };

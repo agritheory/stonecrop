@@ -1,5 +1,5 @@
 {
-	"name": "@agritheory/desktop",
+	"name": "@stonecrop/desktop",
 	"version": "0.2.2",
 	"description": "desktop specific components for Stonecrop UI",
 	"license": "MIT",
@@ -26,10 +26,10 @@
 		"story:dev": "vite dev stories/ -c stories/vite.config.ts"
 	},
 	"dependencies": {
-		"@agritheory/aform": "workspace:*",
-		"@agritheory/atable": "workspace:*",
-		"@agritheory/stonecrop": "workspace:*",
-		"@agritheory/themes": "workspace:*",
+		"@stonecrop/aform": "workspace:*",
+		"@stonecrop/atable": "workspace:*",
+		"@stonecrop/stonecrop": "workspace:*",
+		"@stonecrop/themes": "workspace:*",
 		"immutable": "^4.3.0",
 		"vue": "^3.4.21",
 		"xstate": "~4.37.2"

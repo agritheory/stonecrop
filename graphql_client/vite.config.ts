@@ -13,7 +13,7 @@ export default defineConfig({
 		sourcemap: true,
 		lib: {
 			entry: resolve(projectRootDir, 'src/index.ts'),
-			name: '@agritheory/graphql-client',
+			name: '@stonecrop/graphql-client',
 		},
 		rollupOptions: {},
 	},

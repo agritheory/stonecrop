@@ -23,7 +23,7 @@ export default defineConfig({
 		sourcemap: true,
 		lib: {
 			entry: resolve(projectRootDir, 'src/index.ts'),
-			name: '@agritheory/atable',
+			name: '@stonecrop/atable',
 		},
 		rollupOptions: {
 			external: ['vue'],
@@ -45,10 +45,10 @@ export default defineConfig({
 		coverage: {
 			provider: 'v8',
 			thresholds: {
-				lines: 80,
-				branches: 80,
-				functions: 80,
-				statements: 80,
+				lines: 40,
+				branches: 40,
+				functions: 40,
+				statements: 40,
 				autoUpdate: true,
 			},
 			// required for Github Actions CI

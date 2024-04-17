@@ -7,8 +7,8 @@
 </template>
 
 <script setup lang="ts">
-import { ATable } from '@agritheory/atable'
-import { useStonecrop } from '@agritheory/stonecrop'
+import { ATable } from '@stonecrop/atable'
+import { useStonecrop } from '@stonecrop/stonecrop'
 
 // TODO: use component if provided else call to Records Schema endpoint/ table  / lookup
 // alteratively: a view: component map, eg records: Records, gantt: GanttView

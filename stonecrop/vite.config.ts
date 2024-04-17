@@ -6,7 +6,7 @@ const projectRootDir = resolve(__dirname)
 
 export default defineConfig({
 	plugins: [vue()],
-	optimizeDeps: { exclude: ['@agritheory/atable', '@agritheory/aform'] },
+	optimizeDeps: { exclude: ['@stonecrop/atable', '@stonecrop/aform'] },
 	resolve: {
 		alias: {
 			'@': resolve(projectRootDir, 'src'),
@@ -16,7 +16,7 @@ export default defineConfig({
 		minify: false,
 		lib: {
 			entry: resolve(projectRootDir, 'src/index.ts'),
-			name: '@agritheory/stonecrop',
+			name: '@stonecrop/stonecrop',
 		},
 		rollupOptions: {
 			external: ['vue'],

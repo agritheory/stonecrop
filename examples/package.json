@@ -1,5 +1,5 @@
 {
-	"name": "@agritheory/examples",
+	"name": "@stonecrop/examples",
 	"version": "0.2.2",
 	"private": true,
 	"description": "Example App(s) for the Stonecrop framework",
@@ -15,12 +15,12 @@
 		"dev:builder": "vite serve docbuilder/ -c docbuilder/vite.config.ts -d"
 	},
 	"dependencies": {
-		"@agritheory/aform": "workspace:*",
-		"@agritheory/atable": "workspace:*",
-		"@agritheory/desktop": "workspace:*",
-		"@agritheory/node-editor": "workspace:*",
-		"@agritheory/stonecrop": "workspace:*",
-		"@agritheory/themes": "workspace:*",
+		"@stonecrop/aform": "workspace:*",
+		"@stonecrop/atable": "workspace:*",
+		"@stonecrop/desktop": "workspace:*",
+		"@stonecrop/node-editor": "workspace:*",
+		"@stonecrop/stonecrop": "workspace:*",
+		"@stonecrop/themes": "workspace:*",
 		"@miragejs/graphql": "^0.1.13",
 		"@vitejs/plugin-vue": "^4.2.1",
 		"miragejs": "^0.1.47",

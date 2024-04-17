@@ -1,5 +1,5 @@
 {
-	"name": "@agritheory/code-editor",
+	"name": "@stonecrop/code-editor",
 	"version": "0.2.2",
 	"license": "MIT",
 	"type": "module",
@@ -26,15 +26,15 @@
 		"story:preview": "histoire preview"
 	},
 	"dependencies": {
-		"@agritheory/themes": "workspace:*",
-		"@agritheory/utilities": "workspace:*",
+		"@stonecrop/themes": "workspace:*",
+		"@stonecrop/utilities": "workspace:*",
 		"@monaco-editor/loader": "~1.3.2",
 		"monaco-editor": "~0.34.1",
 		"vue": "^3.4.21"
 	},
 	"devDependencies": {
-		"@agritheory/atable": "workspace:*",
 		"@histoire/plugin-vue": "^0.17.17",
+		"@stonecrop/atable": "workspace:*",
 		"@types/uuid": "^9.0.0",
 		"@typescript-eslint/eslint-plugin": "^7.6.0",
 		"@typescript-eslint/parser": "^7.6.0",

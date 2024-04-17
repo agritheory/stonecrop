@@ -414,7 +414,7 @@ const We = ["data-colindex", "data-rowindex", "data-editable", "contenteditable"
   for (const [o, a] of e)
     n[o] = a;
   return n;
-}, he = /* @__PURE__ */ _(Qe, [["__scopeId", "data-v-1738c6fc"]]), Fe = ["tabindex"], qe = ["tabindex"], ze = ["colspan"], Ge = /* @__PURE__ */ C({
+}, he = /* @__PURE__ */ _(Qe, [["__scopeId", "data-v-07dfe445"]]), Fe = ["tabindex"], qe = ["tabindex"], ze = ["colspan"], Ge = /* @__PURE__ */ C({
   __name: "AExpansionRow",
   props: {
     row: {},
@@ -467,7 +467,7 @@ const We = ["data-colindex", "data-rowindex", "data-editable", "contenteditable"
       ], 8, qe)) : M("", !0)
     ], 64));
   }
-}), Je = /* @__PURE__ */ _(Ge, [["__scopeId", "data-v-2bb821ae"]]), Xe = ["tabindex"], Ye = {
+}), Je = /* @__PURE__ */ _(Ge, [["__scopeId", "data-v-b2e2ed2d"]]), Xe = ["tabindex"], Ye = {
   key: 0,
   tabIndex: -1,
   class: "list-index"
@@ -482,7 +482,7 @@ const We = ["data-colindex", "data-rowindex", "data-editable", "contenteditable"
   },
   setup(t) {
     de((d) => ({
-      "6b10edcf": r(a)
+      "5b18ee03": r(a)
     }));
     const e = t, n = O(e.tableid), o = k(null), a = n.numberedRowWidth.value, l = () => n.config.view !== "tree" ? "" : n.display[e.rowIndex].isRoot || n.display[e.rowIndex].isParent ? n.display[e.rowIndex].childrenOpen ? "-" : "+" : "", s = () => n.config.view !== "tree" || n.display[e.rowIndex].isRoot || n.display[e.rowIndex].open, i = (d) => {
       n.toggleRowExpand(d);
@@ -509,7 +509,7 @@ const We = ["data-colindex", "data-rowindex", "data-editable", "contenteditable"
       [ue, s()]
     ]);
   }
-}), be = /* @__PURE__ */ _(Ze, [["__scopeId", "data-v-c758303d"]]);
+}), be = /* @__PURE__ */ _(Ze, [["__scopeId", "data-v-4c71a067"]]);
 let S;
 const Ke = new Uint8Array(16);
 function et() {
@@ -608,7 +608,7 @@ const lt = { key: 0 }, at = {
   },
   setup(t) {
     de((l) => ({
-      "1cb0fcc9": r(o)
+      "12d06943": r(o)
     }));
     const n = O(t.tableid), o = n.numberedRowWidth.value, a = (l) => ({
       minWidth: l.width || "40ch",
@@ -630,7 +630,7 @@ const lt = { key: 0 }, at = {
       ])
     ])) : M("", !0);
   }
-}), ve = /* @__PURE__ */ _(st, [["__scopeId", "data-v-8a8d9cee"]]), it = /* @__PURE__ */ C({
+}), ve = /* @__PURE__ */ _(st, [["__scopeId", "data-v-16e66636"]]), it = /* @__PURE__ */ C({
   __name: "ATableModal",
   props: {
     colIndex: {},
@@ -652,7 +652,7 @@ const lt = { key: 0 }, at = {
       y(o.$slots, "default", {}, void 0, !0)
     ], 544));
   }
-}), ye = /* @__PURE__ */ _(it, [["__scopeId", "data-v-8ac70767"]]), dt = /* @__PURE__ */ C({
+}), ye = /* @__PURE__ */ _(it, [["__scopeId", "data-v-10a48b2a"]]), dt = /* @__PURE__ */ C({
   __name: "ATable",
   props: {
     id: {},
@@ -752,7 +752,7 @@ const lt = { key: 0 }, at = {
       ], !0)
     ], 4));
   }
-}), ct = /* @__PURE__ */ _(dt, [["__scopeId", "data-v-9137b4c3"]]);
+}), ct = /* @__PURE__ */ _(dt, [["__scopeId", "data-v-819abcc5"]]);
 function ft(t) {
   t.component("ACell", he), t.component("AExpansionRow", Je), t.component("ARow", be), t.component("ATable", ct), t.component("ATableHeader", ve), t.component("ATableModal", ye);
 }

@@ -1,7 +1,7 @@
 import { createApp } from 'vue'
 import { createRouter, createWebHistory } from 'vue-router'
 
-import { Stonecrop } from '@agritheory/stonecrop'
+import { Stonecrop } from '@stonecrop/stonecrop'
 
 import { methods } from '../src'
 import { makeServer } from './server'

@@ -1,5 +1,5 @@
 {
-	"name": "@agritheory/stonecrop",
+	"name": "@stonecrop/stonecrop",
 	"version": "0.2.2",
 	"description": "schema helper",
 	"license": "MIT",
@@ -35,8 +35,8 @@
 		"xstate": "~4.37.2"
 	},
 	"devDependencies": {
-		"@agritheory/aform": "workspace:*",
-		"@agritheory/atable": "workspace:*",
+		"@stonecrop/aform": "workspace:*",
+		"@stonecrop/atable": "workspace:*",
 		"@typescript-eslint/eslint-plugin": "^7.6.0",
 		"@typescript-eslint/parser": "^7.6.0",
 		"@vitejs/plugin-vue": "^4.2.1",
