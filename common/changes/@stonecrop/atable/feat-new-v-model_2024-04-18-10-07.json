@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/atable",
+      "comment": "Version bump",
+      "type": "none"
+    }
+  ],
+  "packageName": "@stonecrop/atable"
+}
