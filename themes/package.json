@@ -8,9 +8,9 @@
 		"preview": "vite preview"
 	},
 	"devDependencies": {
-		"@vitejs/plugin-vue": "^4.2.1",
-		"vite": "^4.3.5",
-		"vue": "^3.2.47"
+		"@vitejs/plugin-vue": "^5.0.4",
+		"vite": "^5.2.9",
+		"vue": "^3.4.23"
 	},
 	"engines": {
 		"node": ">=20.11.0"
