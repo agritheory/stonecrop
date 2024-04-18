@@ -7,12 +7,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-
-const props = withDefaults(
+withDefaults(
 	defineProps<{
 		label: string
-		modelValue: any
 		required?: boolean
 		readonly?: boolean
 		uuid?: string
@@ -22,15 +19,8 @@ const props = withDefaults(
 		validation: () => ({ errorMessage: '&nbsp;' }),
 	}
 )
-const emit = defineEmits(['update:modelValue'])
-const inputNumber = computed({
-	get: () => {
-		return props.modelValue
-	},
-	set: newValue => {
-		emit('update:modelValue', newValue)
-	},
-})
+
+const inputNumber = defineModel<number>()
 </script>
 
 <style scoped>
