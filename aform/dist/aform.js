@@ -659,7 +659,7 @@ const mt = /* @__PURE__ */ M(it, [["render", ft]]), vt = /* @__PURE__ */ D({
       }, l(u)), null, 16, ["schema", "modelValue", "onUpdate:modelValue", "data", "readonly"]))), 128))
     ]));
   }
-}), pe = /* @__PURE__ */ M(gt, [["__scopeId", "data-v-74d66cf2"]]), yt = /* @__PURE__ */ D({
+}), pe = /* @__PURE__ */ M(gt, [["__scopeId", "data-v-82492bb4"]]), yt = /* @__PURE__ */ D({
   __name: "AFieldset",
   props: {
     schema: {},

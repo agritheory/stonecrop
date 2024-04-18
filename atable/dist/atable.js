@@ -1,4 +1,4 @@
-import { onMounted as xe, onBeforeUnmount as Ie, ref as k, watch as j, unref as r, getCurrentScope as Ee, onScopeDispose as ke, defineComponent as C, inject as O, computed as R, openBlock as m, createElementBlock as b, createBlock as P, resolveDynamicComponent as ie, mergeProps as V, toDisplayString as T, Fragment as L, createElementVNode as A, renderSlot as y, createCommentVNode as M, useCssVars as de, withDirectives as ce, vShow as ue, reactive as $, renderList as N, normalizeStyle as H, createTextVNode as Ce, provide as _e, nextTick as $e, createVNode as z, withCtx as G } from "vue";
+import { onMounted as xe, onBeforeUnmount as Ie, ref as k, watch as j, unref as r, getCurrentScope as Ee, onScopeDispose as ke, defineComponent as C, inject as O, computed as R, openBlock as m, createElementBlock as b, createBlock as P, resolveDynamicComponent as ie, mergeProps as W, toDisplayString as T, Fragment as L, createElementVNode as A, renderSlot as y, createCommentVNode as M, useCssVars as de, withDirectives as ce, vShow as ue, reactive as $, renderList as N, normalizeStyle as H, createTextVNode as Ce, provide as _e, nextTick as $e, createVNode as z, withCtx as G } from "vue";
 var J;
 const pe = typeof window < "u", Ae = (t) => typeof t == "string", Te = () => {
 };
@@ -97,8 +97,8 @@ const x = (t) => {
   return e = e && t.offsetHeight > 0, e;
 }, I = (t) => t.tabIndex >= 0, te = (t) => {
   const e = t.target;
-  return W(e);
-}, W = (t) => {
+  return V(e);
+}, V = (t) => {
   var e;
   let n;
   if (t instanceof HTMLTableCellElement) {
@@ -111,7 +111,7 @@ const x = (t) => {
     const o = t.previousElementSibling;
     o && (n = o);
   }
-  return n && (!I(n) || !x(n)) ? W(n) : n;
+  return n && (!I(n) || !x(n)) ? V(n) : n;
 }, Ue = (t) => {
   var e;
   const n = t.target;
@@ -164,7 +164,7 @@ const x = (t) => {
       l && (o = l);
     }
   }
-  return o && (!I(o) || !x(o)) ? W(o) : o;
+  return o && (!I(o) || !x(o)) ? V(o) : o;
 }, oe = (t) => {
   const e = t.target;
   return Q(e);
@@ -197,7 +197,7 @@ const x = (t) => {
 }, re = (t) => {
   const e = t.target.parentElement.lastElementChild;
   return e && (!I(e) || !x(e)) ? Q(e) : e;
-}, D = ["alt", "control", "shift", "meta"], Ve = {
+}, D = ["alt", "control", "shift", "meta"], We = {
   ArrowUp: "up",
   ArrowDown: "down",
   ArrowLeft: "left",
@@ -285,7 +285,7 @@ function q(t) {
       l = Array.from(a.children).filter((s) => I(s) && x(s));
     return l;
   }, n = (o) => (a) => {
-    const l = Ve[a.key] || a.key.toLowerCase();
+    const l = We[a.key] || a.key.toLowerCase();
     if (D.includes(l))
       return;
     const s = o.handlers || we;
@@ -323,7 +323,7 @@ function q(t) {
     }
   });
 }
-const We = ["data-colindex", "data-rowindex", "data-editable", "contenteditable", "tabindex"], Be = { key: 1 }, Qe = /* @__PURE__ */ C({
+const Ve = ["data-colindex", "data-rowindex", "data-editable", "contenteditable", "tabindex"], Be = { key: 1 }, Qe = /* @__PURE__ */ C({
   __name: "ACell",
   props: {
     colIndex: {},
@@ -403,11 +403,11 @@ const We = ["data-colindex", "data-rowindex", "data-editable", "contenteditable"
       onClick: s,
       onMousedown: s
     }, [
-      r(n).columns[u.colIndex].cellComponent ? (m(), P(ie(r(n).columns[u.colIndex].cellComponent), V({
+      r(n).columns[u.colIndex].cellComponent ? (m(), P(ie(r(n).columns[u.colIndex].cellComponent), W({
         key: 0,
         value: l.value
       }, r(n).columns[u.colIndex].cellComponentProps), null, 16, ["value"])) : (m(), b("span", Be, T(l.value), 1))
-    ], 40, We));
+    ], 40, Ve));
   }
 }), _ = (t, e) => {
   const n = t.__vccOpts || t;
@@ -437,7 +437,7 @@ const We = ["data-colindex", "data-rowindex", "data-editable", "contenteditable"
       ]);
     }
     return (s, i) => (m(), b(L, null, [
-      A("tr", V(s.$attrs, {
+      A("tr", W(s.$attrs, {
         ref_key: "rowEl",
         ref: o,
         tabindex: s.tabIndex,
@@ -668,7 +668,7 @@ const lt = { key: 0 }, at = {
     let a = n.modelValue ? n.modelValue : n.rows, l = new ot(n.id, n.columns, a, n.config);
     _e(l.id, l), j(
       () => l.rows,
-      (i, d) => {
+      (i) => {
         o("update:modelValue", i);
       },
       { deep: !0 }
@@ -738,7 +738,7 @@ const lt = { key: 0 }, at = {
           })
         }, {
           default: G(() => [
-            (m(), P(ie(r(l).modal.component), V({
+            (m(), P(ie(r(l).modal.component), W({
               key: `${r(l).modal.rowIndex}:${r(l).modal.colIndex}`,
               colIndex: r(l).modal.colIndex,
               rowIndex: r(l).modal.rowIndex,
@@ -752,7 +752,7 @@ const lt = { key: 0 }, at = {
       ], !0)
     ], 4));
   }
-}), ct = /* @__PURE__ */ _(dt, [["__scopeId", "data-v-819abcc5"]]);
+}), ct = /* @__PURE__ */ _(dt, [["__scopeId", "data-v-55d8ba05"]]);
 function ft(t) {
   t.component("ACell", he), t.component("AExpansionRow", Je), t.component("ARow", be), t.component("ATable", ct), t.component("ATableHeader", ve), t.component("ATableModal", ye);
 }

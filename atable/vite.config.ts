@@ -45,10 +45,10 @@ export default defineConfig({
 		coverage: {
 			provider: 'v8',
 			thresholds: {
-				lines: 40,
-				branches: 40,
-				functions: 40,
-				statements: 40,
+				lines: 70,
+				branches: 70,
+				functions: 70,
+				statements: 70,
 				autoUpdate: true,
 			},
 			// required for Github Actions CI
@@ -71,7 +71,6 @@ export default defineConfig({
 				'**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*',
 				'**/.{eslint,mocha,prettier}rc.{js,cjs,yml}',
 			],
-			all: true,
 			skipFull: true,
 		},
 	},

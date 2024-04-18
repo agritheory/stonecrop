@@ -279,7 +279,7 @@ const Zr = /* @__PURE__ */ q({
       }, s(u)), null, 16, ["schema", "modelValue", "onUpdate:modelValue", "data", "readonly"]))), 128))
     ]));
   }
-}), es = /* @__PURE__ */ Gr(Zr, [["__scopeId", "data-v-74d66cf2"]]), yn = {
+}), es = /* @__PURE__ */ Gr(Zr, [["__scopeId", "data-v-82492bb4"]]), yn = {
   date: "##/##/####",
   datetime: "####/##/## ##:##",
   time: "##:##",
@@ -4723,7 +4723,7 @@ const Lc = { key: 0 }, jc = {
     let r = n.modelValue ? n.modelValue : n.rows, s = new Mc(n.id, n.columns, r, n.config);
     nt(s.id, s), ue(
       () => s.rows,
-      (a, l) => {
+      (a) => {
         o("update:modelValue", a);
       },
       { deep: !0 }
@@ -4807,7 +4807,7 @@ const Lc = { key: 0 }, jc = {
       ], !0)
     ], 4));
   }
-}), zc = /* @__PURE__ */ qe(Gc, [["__scopeId", "data-v-819abcc5"]]), Qc = /* @__PURE__ */ q({
+}), zc = /* @__PURE__ */ qe(Gc, [["__scopeId", "data-v-55d8ba05"]]), Qc = /* @__PURE__ */ q({
   __name: "Records",
   setup(e) {
     const { stonecrop: t, isReady: n } = No(), o = { view: "list" };

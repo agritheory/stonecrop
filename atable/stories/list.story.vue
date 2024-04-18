@@ -228,7 +228,7 @@ const inbox = ref({
 const chooseRandomData = (rows: any[]) => {
 	return Array(3)
 		.fill(0)
-		.map((_, i) => rows[Math.floor(Math.random() * rows.length)])
+		.map(() => rows[Math.floor(Math.random() * rows.length)])
 }
 
 const getRowCellStyle = (column: TableColumn): CSSProperties => {
