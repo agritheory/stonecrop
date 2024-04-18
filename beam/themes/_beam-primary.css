@@ -5,7 +5,7 @@ html {
 
 body {
 	font-family: var(--font-family);
-	background-color: var(--background-color);
+	background-color: white;
 }
 
 /* Style */
@@ -13,22 +13,55 @@ body {
 	font-size: 3rem;
 	border: 1px solid transparent;
 	text-align: left;
-	color: var(--background-color);
+	color: var(--primary-text-color);
+	border: 1px solid transparent;
 }
 
 .home-icon:hover {
 	border: 1px solid var(--brand-primary);
 }
+.beam__navbar {
+	padding: 1rem;
+	background-color: var(--primary-color);
+	margin-left: 0;
+	min-height: 4em;
+	max-height: 4em;
+	color: var(--primary-text-color);
+	display: flex;
+	flex-flow: row nowrap;
+	align-content: center;
+	justify-content: flex-start;
+	align-items: center;
+	position: relative;
+	border-bottom: 1px solid var(--row-border-color);
+
+	.nav-title {
+		display: inline-block;
+		border: 1px solid transparent;
+		margin-left: 1rem;
+		text-align: left;
+		font-size: 1.8rem;
+		color: var(--primary-text-color);
+	}
+	.navbar-action-wrapper {
+		position: absolute;
+		right: 1rem;
+		top: 50%;
+		transform: translateY(-50%);
+		text-align: right;
+	}
+}
 .beam__listview {
 	list-style-type: none;
-	margin: 2rem 1rem;
+	margin: 0rem 1rem;
 	padding: 0;
 	padding-bottom: 2.5em;
+	margin-top: 1px;
 }
 
 .beam__listitem {
-	padding: 2rem;
-	border-bottom: 1px solid var(--highlight);
+	padding: 1rem;
+	border-bottom: 1px solid var(--row-border-color);
 	max-width: 100%;
 	box-sizing: border-box;
 	display: flex;
@@ -36,10 +69,12 @@ body {
 	justify-content: space-between;
 	gap: 2rem;
 	cursor: pointer;
-	transition: all 0.2s;
+	outline: 2px solid transparent;
+	outline-offset: -1px;
 
-	&:hover {
-		background-color: var(--highlight);
+	&:focus {
+		outline: 2px solid var(--focus-cell-outline);
+		background-color: var(--focus-cell-background);
 	}
 }
 .beam__listtext {
@@ -48,13 +83,12 @@ body {
 	white-space: nowrap;
 	overflow: hidden;
 	flex-grow: 1;
-	color: var(--text-color);
+	color: var(--primary-text-color);
 }
 .beam__listitem label {
-	font-size: 1.8rem;
+	font-size: 1.4rem;
 	font-weight: bold;
 	display: block;
-	margin-bottom: 1rem;
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
@@ -65,15 +99,9 @@ body {
 	text-overflow: ellipsis;
 }
 
-.beam__listitem:focus {
-	border-bottom: 2px solid transparent;
-	background-color: var(--highlight);
-	outline: 2px solid var(--brand-primary);
-}
-
 .beam__itemcount {
 	font-size: 2.1rem;
-	color: var(--text-color);
+	color: var(--primary-text-color);
 }
 .beam__itemcount span {
 	margin: 0;
@@ -84,64 +112,26 @@ body {
 .beam__listanchor {
 	text-decoration: none;
 	outline: none;
-	color: var(--text-color);
+	color: var(--primary-text-color);
 }
 .btn {
 	font-size: 1.4rem;
 	text-align: center;
-	padding: 1rem 1.5rem;
-	border: none;
-	color: var(--brand-primary);
-	background-color: white;
-	font-weight: bold;
+	padding: 0.5rem 1.2rem;
+	border: 1px solid var(--btn-border);
+	color: var(--btn-label-color);
+	background-color: var(--btn-color);
 	cursor: pointer;
-	border-radius: 2px;
-	transition: all 0.2s;
 
 	&:hover,
 	&:active {
-		color: white;
-		background-color: var(--brand-secondary);
+		background-color: var(--btn-hover);
 	}
 }
-.btn--dark {
-	color: white;
-	background-color: var(--brand-primary);
-}
-.beam__navbar {
-	padding: 1rem;
-	background-color: var(--brand-primary);
-	margin-left: 0;
-	min-height: 4em;
-	max-height: 4em;
-	color: var(--brand-primary);
-	display: flex;
-	flex-flow: row nowrap;
-	align-content: center;
-	justify-content: flex-start;
-	align-items: center;
-	position: relative;
 
-	.nav-title {
-		display: inline-block;
-		border: 1px solid transparent;
-		margin-left: 1rem;
-		text-align: left;
-		font-size: 2.4rem;
-		color: var(--background-color);
-	}
-	.navbar-action-wrapper {
-		position: absolute;
-		right: 1rem;
-		top: 50%;
-		transform: translateY(-50%);
-		text-align: right;
-	}
-}
 .beam__actionfooter {
 	margin-left: 0;
-	background: red;
-	background: linear-gradient(180deg, transparent 0%, var(--background-color) 100%);
+	background: linear-gradient(180deg, transparent 0%, white 100%);
 	color: var(--text-color);
 	position: fixed;
 	bottom: 0;
@@ -169,7 +159,7 @@ body {
 	padding: 2rem;
 }
 .beam__modal-confirm {
-	background: var(--background-color);
+	background: #ffffff;
 	padding: 2rem;
 	width: 80%;
 	max-width: 400px;
@@ -182,8 +172,8 @@ body {
 		margin: 1rem;
 	}
 	& h2 {
-		border-bottom: 1px solid var(--highlight);
+		border-bottom: 1px solid var(--row-border-color);
 		padding-bottom: 1rem;
-		color: var(--text-color);
+		color: var(--primary-text-color);
 	}
 }

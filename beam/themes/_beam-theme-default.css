@@ -1,0 +1,29 @@
+@import url('https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400..700;1,400..700&display=swap');
+
+:root {
+	/* General Colors */
+	--primary-color: #f2f2f2; /* primary action color, default gray */
+	--primary-text-color: #666666;
+	--brand-color: #ccc;
+
+	/* Warnings/Alerts/Success */
+	--brand-danger: #e63c28;
+	--brand-success: #155724;
+
+	/* Form Colors */
+	--focus-cell-background: #ffffff;
+	--focus-cell-outline: #000000;
+	--row-border-color: #cccccc;
+	--cell-text-color: #3a3c41;
+	--active-cell-background: #ffffff;
+	--active-cell-outline: #e6a92d;
+
+	/* Font */
+	--font-family: 'Arimo', 'sans-serif';
+
+	/* Btns */
+	--btn-color: white;
+	--btn-border: #cccccc;
+	--btn-hover: #f2f2f2;
+	--btn-label-color: black;
+}
