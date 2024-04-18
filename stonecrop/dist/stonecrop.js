@@ -4075,10 +4075,10 @@ ${JSON.stringify(newTargetLocation, null, 2)}
     onError: errorListeners.add,
     isReady,
     install(app) {
-      const router22 = this;
+      const router3 = this;
       app.component("RouterLink", RouterLink);
       app.component("RouterView", RouterView);
-      app.config.globalProperties.$router = router22;
+      app.config.globalProperties.$router = router3;
       Object.defineProperty(app.config.globalProperties, "$route", {
         enumerable: true,
         get: () => unref(currentRoute)
@@ -4099,7 +4099,7 @@ ${JSON.stringify(newTargetLocation, null, 2)}
           enumerable: true
         });
       }
-      app.provide(routerKey, router22);
+      app.provide(routerKey, router3);
       app.provide(routeLocationKey, shallowReactive(reactiveRoute));
       app.provide(routerViewLocationKey, currentRoute);
       const unmountApp = app.unmount;
@@ -4117,7 +4117,7 @@ ${JSON.stringify(newTargetLocation, null, 2)}
         unmountApp();
       };
       if ((process.env.NODE_ENV !== "production" || false) && isBrowser) {
-        addDevtools(app, router22, matcher);
+        addDevtools(app, router3, matcher);
       }
     }
   };
