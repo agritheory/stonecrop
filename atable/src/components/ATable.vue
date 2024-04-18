@@ -91,7 +91,7 @@ provide(tableData.id, tableData)
 
 watch(
 	() => tableData.rows,
-	(newValue, oldValue) => {
+	newValue => {
 		emit('update:modelValue', newValue)
 	},
 	{ deep: true }
@@ -139,11 +139,11 @@ const formatCell = (event?: KeyboardEvent, column?: TableColumn, cellData?: any)
 	}
 }
 
-const moveCursorToEnd = (target: HTMLElement) => {
-	target.focus()
-	document.execCommand('selectAll', false, null)
-	document.getSelection().collapseToEnd()
-}
+// const moveCursorToEnd = (target: HTMLElement) => {
+// 	target.focus()
+// 	document.execCommand('selectAll', false, null)
+// 	document.getSelection().collapseToEnd()
+// }
 
 const clickOutside = (event: MouseEvent) => {
 	if (!tableData.modal.parent?.contains(event.target as HTMLElement)) {
@@ -181,7 +181,7 @@ window.addEventListener('keydown', (event: KeyboardEvent) => {
 </script>
 
 <style scoped>
-@import url('@agritheory/themes/default/default.css');
+@import url('@stonecrop/themes/default/default.css');
 
 table {
 	display: table;

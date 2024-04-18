@@ -6,9 +6,9 @@
 import { ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 
-import { AForm } from '@agritheory/aform'
-import type { SchemaTypes } from '@agritheory/aform/types'
-import { Doctype, useStonecrop } from '@agritheory/stonecrop'
+import { AForm } from '@stonecrop/aform'
+import type { SchemaTypes } from '@stonecrop/aform/types'
+import { DoctypeMeta, useStonecrop } from '@stonecrop/stonecrop'
 
 const { stonecrop, isReady } = useStonecrop()
 const schema = ref<SchemaTypes[]>([])
@@ -31,7 +31,7 @@ watch(isReady, () => {
 // const recordId = route.params.record?.toString().toLowerCase()
 
 // const saveRecord = async () => {
-// 	const doctype: Doctype = await stonecrop.value.registry.doctypeLoader(doctypeSlug)
+// 	const doctype: DoctypeMeta = await stonecrop.value.registry.getMeta(doctypeSlug)
 // 	stonecrop.value.runAction(doctype, 'save', recordId ? [recordId] : [])
 // }
 </script>

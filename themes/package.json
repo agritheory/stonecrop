@@ -1,18 +1,18 @@
 {
-	"name": "@agritheory/themes",
+	"name": "@stonecrop/themes",
 	"version": "0.0.0",
 	"type": "module",
 	"scripts": {
-		"dev": "vite",
 		"build": "vite build",
+		"dev": "vite",
 		"preview": "vite preview"
 	},
 	"devDependencies": {
-		"vite": "^4.1.1",
-		"vue": "^3.2.47",
-		"@vitejs/plugin-vue": "^4.0.0"
+		"@vitejs/plugin-vue": "^4.2.1",
+		"vite": "^4.3.5",
+		"vue": "^3.2.47"
 	},
 	"engines": {
-		"node": ">=16.19.1"
+		"node": ">=20.11.0"
 	}
 }

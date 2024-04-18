@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@agritheory/graphql-client",
+      "comment": "Add Vue plugin to install",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@agritheory/graphql-client"
+}

@@ -55,6 +55,7 @@ const childModels = computed({
 				},
 				set: newValue => {
 					// Find the component in modelValue and update it
+					// eslint-disable-next-line vue/no-mutating-props
 					props.modelValue[i].value = newValue
 					emit('update:modelValue', props.modelValue)
 				},

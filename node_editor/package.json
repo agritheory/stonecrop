@@ -1,34 +1,9 @@
 {
-	"name": "@agritheory/node-editor",
-	"version": "0.1.0",
-	"type": "module",
+	"name": "@stonecrop/node-editor",
+	"version": "0.2.2",
 	"description": "Node editor UI for Stonecrop",
-	"main": "index.js",
-	"files": [
-		"dist/*",
-		"src/**/*.vue"
-	],
 	"license": "MIT",
-	"scripts": {
-		"dev": "vite",
-		"build": "vite build",
-		"preview": "vite preview",
-		"story:dev": "histoire dev",
-		"story:build": "histoire build",
-		"story:preview": "histoire preview"
-	},
-	"dependencies": {
-		"@vue-flow/core": "~1.5.1",
-		"vue-router": "^4",
-		"vue": "^3.2.47",
-		"xstate": "~4.33.6"
-	},
-	"devDependencies": {
-		"@histoire/plugin-vue": "^0.14.2",
-		"@vitejs/plugin-vue": "^4.0.0",
-		"histoire": "^0.14.2",
-		"vite": "^4.1.1"
-	},
+	"type": "module",
 	"exports": {
 		".": {
 			"import": "./dist/node-editor.js",
@@ -36,7 +11,32 @@
 		},
 		"./styles": "./dist/style.css"
 	},
+	"main": "index.js",
+	"files": [
+		"dist/*",
+		"src/**/*.vue"
+	],
+	"scripts": {
+		"build": "vite build",
+		"dev": "vite",
+		"preview": "vite preview",
+		"story:build": "histoire build",
+		"story:dev": "histoire dev",
+		"story:preview": "histoire preview"
+	},
+	"dependencies": {
+		"@vue-flow/core": "~1.19.3",
+		"vue": "^3.2.47",
+		"vue-router": "^4",
+		"xstate": "~4.37.2"
+	},
+	"devDependencies": {
+		"@histoire/plugin-vue": "^0.16.1",
+		"@vitejs/plugin-vue": "^4.2.1",
+		"histoire": "^0.16.1",
+		"vite": "^4.3.5"
+	},
 	"engines": {
-		"node": ">=16.19.1"
+		"node": ">=20.11.0"
 	}
 }

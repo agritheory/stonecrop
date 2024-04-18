@@ -1,14 +1,14 @@
 import { createApp } from 'vue'
 
-import { AFieldset, AForm, ANumericInput, ATextInput } from '@agritheory/aform'
-import '@agritheory/aform/styles'
-import { ACell, ARow, ATableHeader, ATableModal, ATable } from '@agritheory/atable'
-import '@agritheory/atable/styles'
-import { NodeEditor, StateEditor } from '@agritheory/node_editor'
-import '@agritheory/node_editor/styles'
-import { ActionSet } from '@agritheory/desktop'
-import { SheetNav } from '@agritheory/desktop'
-import '@agritheory/desktop/styles'
+import '@stonecrop/aform/styles'
+import '@stonecrop/atable/styles'
+import '@stonecrop/desktop/styles'
+import '@stonecrop/node-editor/styles'
+import { AFieldset, AForm, ANumericInput, ATextInput } from '@stonecrop/aform'
+import { ACell, ARow, ATableHeader, ATableModal, ATable } from '@stonecrop/atable'
+import { ActionSet, SheetNav } from '@stonecrop/desktop'
+import { NodeEditor, StateEditor } from '@stonecrop/node-editor'
+
 import App from './App.vue'
 import router from './router'
 

@@ -19,7 +19,7 @@ export default defineConfig({
 		sourcemap: true,
 		lib: {
 			entry: resolve(projectRootDir, 'src/index.ts'),
-			name: '@agritheory/aform',
+			name: '@stonecrop/aform',
 		},
 		rollupOptions: {
 			external: ['vue'],
@@ -39,10 +39,13 @@ export default defineConfig({
 		globals: true,
 		environment: 'jsdom',
 		coverage: {
-			lines: 40,
-			branches: 40,
-			functions: 40,
-			statements: 40,
+			provider: 'v8',
+			thresholds: {
+				lines: 70,
+				branches: 70,
+				functions: 70,
+				statements: 70,
+			},
 			// required for Github Actions CI
 			reporter: ['text', 'json-summary', 'json'],
 			reportsDirectory: './coverage',
@@ -63,7 +66,6 @@ export default defineConfig({
 				'**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*',
 				'**/.{eslint,mocha,prettier}rc.{js,cjs,yml}',
 			],
-			all: true,
 			skipFull: true,
 		},
 	},

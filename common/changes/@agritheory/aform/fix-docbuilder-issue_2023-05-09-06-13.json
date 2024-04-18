@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@agritheory/aform",
+      "comment": "Update dependencies",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@agritheory/aform"
+}

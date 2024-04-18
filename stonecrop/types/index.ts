@@ -3,9 +3,9 @@ import { Component } from 'vue'
 import { Router } from 'vue-router'
 import { MachineConfig, StateMachine } from 'xstate'
 
-import type { SchemaTypes } from '@agritheory/aform/types'
+import type { SchemaTypes } from '@stonecrop/aform/types'
 
-import Doctype from '@/doctype'
+import DoctypeMeta from '@/doctype'
 
 export type ImmutableDoctype = Readonly<{
 	// TODO: allow schema to be a function
@@ -27,7 +27,7 @@ export type Schema = {
 }
 
 export type InstallOptions = {
-	components: Record<string, Component>
-	router: Router
-	doctypeLoader: (doctype?: string) => Doctype | Promise<Doctype>
+	router?: Router
+	components?: Record<string, Component>
+	getMeta?: (doctype?: string) => DoctypeMeta | Promise<DoctypeMeta>
 }

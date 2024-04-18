@@ -1,46 +1,9 @@
 {
-	"name": "@agritheory/desktop",
-	"version": "0.1.2",
-	"type": "module",
+	"name": "@stonecrop/desktop",
+	"version": "0.2.2",
 	"description": "desktop specific components for Stonecrop UI",
-	"main": "dist/desktop.js",
-	"module": "dist/desktop.js",
-	"umd": "dist/desktop.umd.cjs",
-	"types": "src/index",
-	"files": [
-		"dist/*",
-		"src/**/*.vue"
-	],
 	"license": "MIT",
-	"scripts": {
-		"dev": "vite",
-		"build": "vite build",
-		"story:dev": "vite dev stories/ -c stories/vite.config.ts",
-		"story:build": "vite build stories/ -c stories/vite.config.ts",
-		"lint": "eslint . --ext .ts,.vue"
-	},
-	"dependencies": {
-		"@agritheory/aform": "workspace:^0.1.2",
-		"@agritheory/atable": "workspace:^0.2.0",
-		"@agritheory/themes": "workspace:*",
-		"@agritheory/stonecrop": "workspace:^0.1.0",
-		"immutable": "^4.2.2",
-		"vue": "^3.2.47",
-		"xstate": "~4.33.6"
-	},
-	"devDependencies": {
-		"@miragejs/graphql": "^0.1.13",
-		"@typescript-eslint/eslint-plugin": "^5.33.0",
-		"@typescript-eslint/parser": "^5.33.0",
-		"@vitejs/plugin-vue": "^4.0.0",
-		"eslint-config-prettier": "^8.5.0",
-		"eslint-plugin-vue": "^9.3.0",
-		"eslint": "^8.22.0",
-		"miragejs": "^0.1.47",
-		"typescript": "^4.9.4",
-		"vite": "^4.1.1",
-		"vue-router": "^4"
-	},
+	"type": "module",
 	"exports": {
 		".": {
 			"import": "./dist/desktop.js",
@@ -48,7 +11,44 @@
 		},
 		"./styles": "./dist/style.css"
 	},
+	"main": "dist/desktop.js",
+	"module": "dist/desktop.js",
+	"types": "src/index",
+	"files": [
+		"dist/*",
+		"src/**/*.vue"
+	],
+	"scripts": {
+		"build": "vite build",
+		"dev": "vite",
+		"lint": "eslint . --ext .ts,.vue",
+		"story:build": "vite build stories/ -c stories/vite.config.ts",
+		"story:dev": "vite dev stories/ -c stories/vite.config.ts"
+	},
+	"dependencies": {
+		"@stonecrop/aform": "workspace:*",
+		"@stonecrop/atable": "workspace:*",
+		"@stonecrop/stonecrop": "workspace:*",
+		"@stonecrop/themes": "workspace:*",
+		"immutable": "^4.3.0",
+		"vue": "^3.2.47",
+		"xstate": "~4.37.2"
+	},
+	"devDependencies": {
+		"@miragejs/graphql": "^0.1.13",
+		"@typescript-eslint/eslint-plugin": "^5.59.5",
+		"@typescript-eslint/parser": "^5.59.5",
+		"@vitejs/plugin-vue": "^4.2.1",
+		"eslint": "^8.40.0",
+		"eslint-config-prettier": "^8.8.0",
+		"eslint-plugin-vue": "^9.11.1",
+		"miragejs": "^0.1.47",
+		"typescript": "^5.0.4",
+		"vite": "^4.3.5",
+		"vue-router": "^4"
+	},
 	"engines": {
-		"node": ">=16.19.1"
-	}
+		"node": ">=20.11.0"
+	},
+	"umd": "dist/desktop.umd.cjs"
 }

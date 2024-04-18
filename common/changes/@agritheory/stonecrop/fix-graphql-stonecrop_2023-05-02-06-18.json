@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@agritheory/stonecrop",
-      "comment": "Publish package",
+      "comment": "Version bump",
       "type": "patch"
     }
   ],

@@ -1,50 +1,50 @@
 {
-	"name": "@agritheory/utilities",
-	"version": "0.2.0",
-	"type": "module",
-	"main": "dist/utilities.js",
-	"module": "dist/utilities.js",
-	"umd": "dist/utilities.umd.cjs",
-	"types": "src/index",
-	"files": [
-		"dist/*",
-		"src/**/*.ts"
-	],
+	"name": "@stonecrop/utilities",
+	"version": "0.2.2",
 	"license": "MIT",
-	"scripts": {
-		"dev": "vite",
-		"build": "tsc -b && vite build",
-		"preview": "vite preview",
-		"story:dev": "histoire dev",
-		"story:build": "histoire build",
-		"story:preview": "histoire preview",
-		"lint": "eslint . --ext .ts,.vue"
-	},
-	"dependencies": {
-		"vue": "^3.2.47"
-	},
-	"devDependencies": {
-		"@histoire/plugin-vue": "^0.14.2",
-		"@typescript-eslint/eslint-plugin": "^5.33.0",
-		"@typescript-eslint/parser": "^5.33.0",
-		"@vitejs/plugin-vue": "^4.0.0",
-		"@vueuse/core": "^9.13.0",
-		"cypress": "^12.2.0",
-		"eslint-config-prettier": "^8.5.0",
-		"eslint-plugin-vue": "^9.3.0",
-		"eslint": "^8.22.0",
-		"histoire": "^0.14.2",
-		"typescript": "^4.9.4",
-		"vite": "^4.1.1",
-		"vue-router": "^4"
-	},
+	"type": "module",
 	"exports": {
 		".": {
 			"import": "./dist/utilities.js",
 			"require": "./dist/utilities.umd.cjs"
 		}
 	},
+	"main": "dist/utilities.js",
+	"module": "dist/utilities.js",
+	"types": "src/index",
+	"files": [
+		"dist/*",
+		"src/**/*.ts"
+	],
+	"scripts": {
+		"build": "tsc -b && vite build",
+		"dev": "vite",
+		"lint": "eslint . --ext .ts,.vue",
+		"preview": "vite preview",
+		"story:build": "histoire build",
+		"story:dev": "histoire dev",
+		"story:preview": "histoire preview"
+	},
+	"dependencies": {
+		"vue": "^3.2.47"
+	},
+	"devDependencies": {
+		"@histoire/plugin-vue": "^0.16.1",
+		"@typescript-eslint/eslint-plugin": "^5.59.5",
+		"@typescript-eslint/parser": "^5.59.5",
+		"@vitejs/plugin-vue": "^4.2.1",
+		"@vueuse/core": "^9.13.0",
+		"cypress": "^12.11.0",
+		"eslint": "^8.40.0",
+		"eslint-config-prettier": "^8.8.0",
+		"eslint-plugin-vue": "^9.11.1",
+		"histoire": "^0.16.1",
+		"typescript": "^5.0.4",
+		"vite": "^4.3.5",
+		"vue-router": "^4"
+	},
 	"engines": {
-		"node": ">=16.19.1"
-	}
+		"node": ">=20.11.0"
+	},
+	"umd": "dist/utilities.umd.cjs"
 }

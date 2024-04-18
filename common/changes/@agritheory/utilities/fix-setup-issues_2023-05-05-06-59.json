@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@agritheory/utilities",
+      "comment": "Version bump",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@agritheory/utilities"
+}

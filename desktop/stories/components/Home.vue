@@ -6,7 +6,7 @@
 </template>
 
 <script setup lang="ts">
-import { useStonecrop } from '@agritheory/stonecrop'
+import { useStonecrop } from '@stonecrop/stonecrop'
 
 import Fieldtype from './Fieldtype.vue'
 

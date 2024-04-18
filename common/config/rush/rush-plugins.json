@@ -1,0 +1,10 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/rush-plugins.schema.json",
+  "plugins": [
+    {
+      "packageName": "rush-sort-package-json",
+      "pluginName": "rush-sort-package-json",
+      "autoinstallerName": "rush-plugins"
+    }
+  ]
+}

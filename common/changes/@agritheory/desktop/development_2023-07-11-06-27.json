@@ -2,8 +2,8 @@
   "changes": [
     {
       "packageName": "@agritheory/desktop",
-      "comment": "Publish package",
-      "type": "patch"
+      "comment": "Update stonecrop API",
+      "type": "none"
     }
   ],
   "packageName": "@agritheory/desktop"

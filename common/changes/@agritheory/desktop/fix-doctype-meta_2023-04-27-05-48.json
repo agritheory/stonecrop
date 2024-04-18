@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@agritheory/desktop",
+      "comment": "Export components for list and form view",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@agritheory/desktop"
+}

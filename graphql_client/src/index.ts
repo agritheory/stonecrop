@@ -1,27 +1,10 @@
-import { request, gql } from 'graphql-request'
+import { request } from 'graphql-request'
 
-const query = gql`
-	{
-		allFilms {
-			films {
-				title
-				director
-				releaseDate
-				speciesConnection {
-					species {
-						name
-						classification
-						homeworld {
-							name
-						}
-					}
-				}
-			}
-		}
-	}
-`
+import { queries } from './queries'
 
-export const Query = async () => {
-	const data = await request('https://swapi-graphql.netlify.app/.netlify/functions/index', query)
-	return data
+export const methods = {
+	getMeta: async (doctype: string, url?: string) => {
+		const data: any = await request(url || '/graphql', queries.getMeta, { doctype })
+		return data
+	},
 }

@@ -12,7 +12,7 @@ This project has the following system dependencies:
 
 - [`pnpm`](https://pnpm.io/) (using yarn or npm will break packages)
 - [`rush`](https://rushjs.io/)
-- `nvm` and `node v16`: `nvm install --lts && nvm use --lts`
+- `nvm` and `node v20`: `nvm install 20 --lts && nvm use 20 --lts`
 
 ```bash
 git clone stonecrop

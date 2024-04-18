@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@agritheory/stonecrop",
+      "comment": "Update class name and export",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@agritheory/stonecrop"
+}

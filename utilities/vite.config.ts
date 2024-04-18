@@ -18,7 +18,7 @@ export default defineConfig({
 		sourcemap: true,
 		lib: {
 			entry: resolve(projectRootDir, 'src/index.ts'),
-			name: '@agritheory/utilities',
+			name: '@stonecrop/utilities',
 		},
 		rollupOptions: {
 			external: ['vue'],
