@@ -26,15 +26,15 @@
 	},
 	"dependencies": {
 		"@vue-flow/core": "~1.19.3",
-		"vue": "^3.2.47",
+		"vue": "^3.4.23",
 		"vue-router": "^4",
 		"xstate": "~4.37.2"
 	},
 	"devDependencies": {
-		"@histoire/plugin-vue": "^0.16.1",
-		"@vitejs/plugin-vue": "^4.2.1",
-		"histoire": "^0.16.1",
-		"vite": "^4.3.5"
+		"@histoire/plugin-vue": "^0.17.17",
+		"@vitejs/plugin-vue": "^5.0.4",
+		"histoire": "^0.17.17",
+		"vite": "^5.2.9"
 	},
 	"engines": {
 		"node": ">=20.11.0"

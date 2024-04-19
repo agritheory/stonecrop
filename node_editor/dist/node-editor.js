@@ -1,4 +1,4 @@
-import { defineComponent as fe, toRef as O, ref as ee, computed as q, openBlock as te, createElementBlock as ie, unref as k, normalizeClass as Ke, renderSlot as xe, provide as lt, onMounted as Ve, onBeforeUnmount as jn, watch as ce, h as ue, createBlock as _e, Teleport as bi, getCurrentScope as ia, inject as ut, useSlots as wi, onUnmounted as xi, createVNode as ke, withCtx as Pe, Fragment as Ne, renderList as st, onScopeDispose as Rt, getCurrentInstance as tn, onBeforeMount as _i, nextTick as Re, reactive as Ei, toRefs as Si, effectScope as Ni, watchEffect as uo, createElementVNode as de, toDisplayString as ct, createCommentVNode as ge, markRaw as nt, normalizeStyle as Le, readonly as ki, isRef as Ci, customRef as Mi, resolveDynamicComponent as ra, normalizeProps as Pi, mergeProps as Ht, resolveComponent as la, createTextVNode as ua, withDirectives as sa, withKeys as ca, vModelText as da, withModifiers as Ii } from "vue";
+import { defineComponent as fe, toRef as O, ref as ee, computed as q, openBlock as te, createElementBlock as ie, unref as k, normalizeClass as Ke, renderSlot as xe, provide as lt, onMounted as Ve, onBeforeUnmount as jn, watch as ce, h as ue, createBlock as _e, Teleport as bi, getCurrentScope as ia, inject as ut, useSlots as wi, onUnmounted as xi, createVNode as ke, withCtx as Pe, Fragment as Ne, renderList as st, onScopeDispose as Rt, getCurrentInstance as tn, onBeforeMount as _i, nextTick as Re, effectScope as Ei, watchEffect as uo, createElementVNode as de, toDisplayString as ct, createCommentVNode as ge, markRaw as nt, reactive as Si, toRefs as Ni, normalizeStyle as Le, readonly as ki, isRef as Ci, customRef as Mi, resolveDynamicComponent as ra, normalizeProps as Pi, mergeProps as Ht, resolveComponent as la, createTextVNode as ua, withDirectives as sa, withKeys as ca, vModelText as da, withModifiers as Ii } from "vue";
 var so;
 const Zn = typeof window < "u", $i = (e) => typeof e < "u", Ti = (e) => typeof e == "boolean", Ye = (e) => typeof e == "function", Be = (e) => typeof e == "number", Ae = (e) => typeof e == "string", Oi = () => {
 };
@@ -5646,7 +5646,7 @@ class tt {
     return this.flows.delete(t);
   }
   create(t, n) {
-    const o = ti(n), a = Ei(o), i = q(() => a.nodes.map((h) => h.id)), r = q(() => a.edges.map((h) => h.id)), l = vs(a, i, r), u = id(a, l, i, r), s = {};
+    const o = ti(n), a = Si(o), i = q(() => a.nodes.map((h) => h.id)), r = q(() => a.edges.map((h) => h.id)), l = vs(a, i, r), u = id(a, l, i, r), s = {};
     Object.entries(a.hooks).forEach(([h, b]) => {
       const m = `on${h.charAt(0).toUpperCase() + h.slice(1)}`;
       s[m] = b.on;
@@ -5659,7 +5659,7 @@ class tt {
       ...s,
       ...l,
       ...u,
-      ...Si(a),
+      ...Ni(a),
       emits: c,
       id: t,
       vueFlowVersion: "1.19.4",
@@ -5693,7 +5693,7 @@ const ve = (e) => {
   })), i;
 };
 function rd(e, t, n) {
-  const o = Ni();
+  const o = Ei();
   return o.run(() => {
     [
       () => {
@@ -6563,8 +6563,7 @@ const ld = {
       ke($d)
     ], 512));
   }
-});
-const Dd = {
+}), Dd = {
   key: 0,
   class: "label-input-wrapper"
 }, Bd = /* @__PURE__ */ fe({
@@ -6636,8 +6635,7 @@ const Dd = {
       }, null, 8, ["position"])) : ge("", !0)
     ]));
   }
-});
-const Ad = ["id", "d", "marker-end"], zd = { class: "vue-flow__edge-label" }, Rd = {
+}), Ad = ["id", "d", "marker-end"], zd = { class: "vue-flow__edge-label" }, Rd = {
   key: 0,
   class: "label-input-wrapper"
 }, Vd = {
@@ -6729,8 +6727,7 @@ const Ad = ["id", "d", "marker-end"], zd = { class: "vue-flow__edge-label" }, Rd
       })
     ], 64));
   }
-});
-const Yd = { class: "chart-controls" }, Xd = { class: "chart-controls-left" }, Gd = /* @__PURE__ */ de("b", null, "Selected Node:", -1), Hd = { class: "chart-controls-right" }, Fd = { key: 0 }, Ud = { key: 1 }, pi = /* @__PURE__ */ fe({
+}), Yd = { class: "chart-controls" }, Xd = { class: "chart-controls-left" }, Gd = /* @__PURE__ */ de("b", null, "Selected Node:", -1), Hd = { class: "chart-controls-right" }, Fd = { key: 0 }, Ud = { key: 1 }, pi = /* @__PURE__ */ fe({
   __name: "NodeEditor",
   props: {
     modelValue: {},
@@ -6911,8 +6908,7 @@ const Yd = { class: "chart-controls" }, Xd = { class: "chart-controls-left" }, G
       }, 8, ["modelValue"])) : ge("", !0)
     ], 34));
   }
-});
-const jd = /* @__PURE__ */ fe({
+}), jd = /* @__PURE__ */ fe({
   __name: "StateEditor",
   props: ["layout", "nodeContainerClass", "modelValue"],
   emits: ["update:modelValue"],

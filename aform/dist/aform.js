@@ -1,143 +1,137 @@
-import { defineComponent as k, computed as S, openBlock as f, createElementBlock as v, createElementVNode as i, withDirectives as w, vModelCheckbox as ye, toDisplayString as C, vShow as $, resolveComponent as ge, createBlock as F, withCtx as be, onMounted as se, onBeforeUnmount as _e, ref as g, watch as H, unref as O, getCurrentScope as we, onScopeDispose as Ce, inject as ae, nextTick as ke, Fragment as x, renderList as V, normalizeStyle as De, withModifiers as Ae, normalizeClass as B, createCommentVNode as re, withKeys as P, vModelText as R, resolveDynamicComponent as Ee, mergeProps as Ie, createTextVNode as Me, renderSlot as Te, createVNode as Se, resolveDirective as Oe } from "vue";
-const $e = { id: "checkbox-container" }, Le = ["id", "readonly", "required"], xe = { id: "custom-checkbox" }, Ve = ["for"], Be = ["innerHTML"], Pe = /* @__PURE__ */ k({
+import { defineComponent as D, mergeModels as se, useModel as ae, openBlock as f, createElementBlock as h, createElementVNode as i, withDirectives as C, vModelCheckbox as be, toDisplayString as k, vShow as O, resolveComponent as we, createBlock as H, withCtx as Ce, onMounted as re, onBeforeUnmount as ke, ref as y, watch as F, unref as S, getCurrentScope as De, onScopeDispose as Ee, inject as ie, nextTick as Ae, computed as L, Fragment as V, renderList as x, normalizeStyle as Ie, withModifiers as Me, normalizeClass as B, createCommentVNode as ue, withKeys as P, vModelText as R, resolveDynamicComponent as Te, mergeProps as _e, createTextVNode as Se, renderSlot as Oe, createVNode as $e, resolveDirective as Le } from "vue";
+const Ve = { id: "checkbox-container" }, xe = ["id", "readonly", "required"], Be = { id: "custom-checkbox" }, Pe = ["for"], qe = ["innerHTML"], He = /* @__PURE__ */ D({
   __name: "ACheckbox",
-  props: {
+  props: /* @__PURE__ */ se({
     label: {},
-    value: {},
     required: { type: Boolean },
     readOnly: { type: Boolean },
     uuid: {},
     validation: { default: () => ({ errorMessage: "&nbsp;" }) }
-  },
-  emits: ["update:value"],
-  setup(e, { emit: t }) {
-    const o = e, n = t, s = S({
-      get() {
-        return o.value;
-      },
-      set(l) {
-        n("update:value", l);
-      }
-    });
-    return (l, a) => (f(), v("div", null, [
-      i("label", $e, [
-        w(i("input", {
-          "onUpdate:modelValue": a[0] || (a[0] = (r) => s.value = r),
+  }, {
+    modelValue: {},
+    modelModifiers: {}
+  }),
+  emits: ["update:modelValue"],
+  setup(e) {
+    const t = ae(e, "modelValue");
+    return (n, o) => (f(), h("div", null, [
+      i("label", Ve, [
+        C(i("input", {
+          "onUpdate:modelValue": o[0] || (o[0] = (l) => t.value = l),
           type: "checkbox",
-          id: l.uuid,
+          id: n.uuid,
           class: "checkbox",
-          readonly: l.readOnly,
-          required: l.required
-        }, null, 8, Le), [
-          [ye, s.value]
+          readonly: n.readOnly,
+          required: n.required
+        }, null, 8, xe), [
+          [be, t.value]
         ]),
-        i("span", xe, C(s.value), 1)
+        i("span", Be, k(t.value), 1)
       ]),
       i("label", {
-        for: l.uuid,
+        for: n.uuid,
         id: "checkbox-label"
-      }, C(l.label), 9, Ve),
-      w(i("p", {
-        innerHTML: l.validation.errorMessage
-      }, null, 8, Be), [
-        [$, l.validation.errorMessage]
+      }, k(n.label), 9, Pe),
+      C(i("p", {
+        innerHTML: n.validation.errorMessage
+      }, null, 8, qe), [
+        [O, n.validation.errorMessage]
       ])
     ]));
   }
-});
-const I = (e, t) => {
-  const o = e.__vccOpts || e;
-  for (const [n, s] of t)
-    o[n] = s;
-  return o;
-}, qe = /* @__PURE__ */ I(Pe, [["__scopeId", "data-v-743cd4db"]]), Fe = /* @__PURE__ */ i("div", null, [
+}), M = (e, t) => {
+  const n = e.__vccOpts || e;
+  for (const [o, l] of t)
+    n[o] = l;
+  return n;
+}, Fe = /* @__PURE__ */ M(He, [["__scopeId", "data-v-5093f1cb"]]), Re = /* @__PURE__ */ i("div", null, [
   /* @__PURE__ */ i("input", { type: "text" }),
   /* @__PURE__ */ i("input", { type: "text" }),
   /* @__PURE__ */ i("input", { type: "text" })
-], -1), He = /* @__PURE__ */ k({
+], -1), Ue = /* @__PURE__ */ D({
   __name: "AComboBox",
   props: ["event", "cellData", "tableID"],
   setup(e) {
-    return (t, o) => {
-      const n = ge("ATableModal");
-      return f(), F(n, {
+    return (t, n) => {
+      const o = we("ATableModal");
+      return f(), H(o, {
         event: e.event,
         cellData: e.cellData,
         class: "amodal"
       }, {
-        default: be(() => [
-          Fe
+        default: Ce(() => [
+          Re
         ]),
         _: 1
       }, 8, ["event", "cellData"]);
     };
   }
 });
-var N;
-const ie = typeof window < "u", Re = (e) => typeof e == "string", Ue = () => {
+var W;
+const de = typeof window < "u", Qe = (e) => typeof e == "string", Ye = () => {
 };
-ie && (N = window == null ? void 0 : window.navigator) != null && N.userAgent && /iP(ad|hone|od)/.test(window.navigator.userAgent);
-function ue(e) {
-  return typeof e == "function" ? e() : O(e);
+de && (W = window == null ? void 0 : window.navigator) != null && W.userAgent && /iP(ad|hone|od)/.test(window.navigator.userAgent);
+function ce(e) {
+  return typeof e == "function" ? e() : S(e);
 }
-function Qe(e) {
+function je(e) {
   return e;
 }
-function Ye(e) {
-  return we() ? (Ce(e), !0) : !1;
+function We(e) {
+  return De() ? (Ee(e), !0) : !1;
 }
 function q(e) {
   var t;
-  const o = ue(e);
-  return (t = o == null ? void 0 : o.$el) != null ? t : o;
+  const n = ce(e);
+  return (t = n == null ? void 0 : n.$el) != null ? t : n;
 }
-const ce = ie ? window : void 0;
-function je(...e) {
-  let t, o, n, s;
-  if (Re(e[0]) || Array.isArray(e[0]) ? ([o, n, s] = e, t = ce) : [t, o, n, s] = e, !t)
-    return Ue;
-  Array.isArray(o) || (o = [o]), Array.isArray(n) || (n = [n]);
-  const l = [], a = () => {
-    l.forEach((c) => c()), l.length = 0;
-  }, r = (c, y, b, m) => (c.addEventListener(y, b, m), () => c.removeEventListener(y, b, m)), p = H(() => [q(t), ue(s)], ([c, y]) => {
-    a(), c && l.push(...o.flatMap((b) => n.map((m) => r(c, b, m, y))));
+const pe = de ? window : void 0;
+function Ne(...e) {
+  let t, n, o, l;
+  if (Qe(e[0]) || Array.isArray(e[0]) ? ([n, o, l] = e, t = pe) : [t, n, o, l] = e, !t)
+    return Ye;
+  Array.isArray(n) || (n = [n]), Array.isArray(o) || (o = [o]);
+  const s = [], a = () => {
+    s.forEach((d) => d()), s.length = 0;
+  }, r = (d, g, b, m) => (d.addEventListener(g, b, m), () => d.removeEventListener(g, b, m)), p = F(() => [q(t), ce(l)], ([d, g]) => {
+    a(), d && s.push(...n.flatMap((b) => o.map((m) => r(d, b, m, g))));
   }, { immediate: !0, flush: "post" }), u = () => {
     p(), a();
   };
-  return Ye(u), u;
+  return We(u), u;
 }
-const W = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, z = "__vueuse_ssr_handlers__";
-W[z] = W[z] || {};
-function Ne(e, { window: t = ce, scrollTarget: o } = {}) {
-  const n = g(!1), s = () => {
+const N = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, z = "__vueuse_ssr_handlers__";
+N[z] = N[z] || {};
+function ze(e, { window: t = pe, scrollTarget: n } = {}) {
+  const o = y(!1), l = () => {
     if (!t)
       return;
-    const l = t.document, a = q(e);
+    const s = t.document, a = q(e);
     if (!a)
-      n.value = !1;
+      o.value = !1;
     else {
       const r = a.getBoundingClientRect();
-      n.value = r.top <= (t.innerHeight || l.documentElement.clientHeight) && r.left <= (t.innerWidth || l.documentElement.clientWidth) && r.bottom >= 0 && r.right >= 0;
+      o.value = r.top <= (t.innerHeight || s.documentElement.clientHeight) && r.left <= (t.innerWidth || s.documentElement.clientWidth) && r.bottom >= 0 && r.right >= 0;
     }
   };
-  return H(() => q(e), () => s(), { immediate: !0, flush: "post" }), t && je(o || t, "scroll", s, {
+  return F(() => q(e), () => l(), { immediate: !0, flush: "post" }), t && Ne(n || t, "scroll", l, {
     capture: !1,
     passive: !0
-  }), n;
+  }), o;
 }
 var G;
 (function(e) {
   e.UP = "UP", e.RIGHT = "RIGHT", e.DOWN = "DOWN", e.LEFT = "LEFT", e.NONE = "NONE";
 })(G || (G = {}));
-var We = Object.defineProperty, K = Object.getOwnPropertySymbols, ze = Object.prototype.hasOwnProperty, Ge = Object.prototype.propertyIsEnumerable, J = (e, t, o) => t in e ? We(e, t, { enumerable: !0, configurable: !0, writable: !0, value: o }) : e[t] = o, Ke = (e, t) => {
-  for (var o in t || (t = {}))
-    ze.call(t, o) && J(e, o, t[o]);
+var Ge = Object.defineProperty, K = Object.getOwnPropertySymbols, Ke = Object.prototype.hasOwnProperty, Je = Object.prototype.propertyIsEnumerable, J = (e, t, n) => t in e ? Ge(e, t, { enumerable: !0, configurable: !0, writable: !0, value: n }) : e[t] = n, Xe = (e, t) => {
+  for (var n in t || (t = {}))
+    Ke.call(t, n) && J(e, n, t[n]);
   if (K)
-    for (var o of K(t))
-      Ge.call(t, o) && J(e, o, t[o]);
+    for (var n of K(t))
+      Je.call(t, n) && J(e, n, t[n]);
   return e;
 };
-const Je = {
+const Ze = {
   easeInSine: [0.12, 0, 0.39, 0],
   easeOutSine: [0.61, 1, 0.88, 1],
   easeInOutSine: [0.37, 0, 0.63, 1],
@@ -163,120 +157,120 @@ const Je = {
   easeOutBack: [0.34, 1.56, 0.64, 1],
   easeInOutBack: [0.68, -0.6, 0.32, 1.6]
 };
-Ke({
-  linear: Qe
-}, Je);
-const D = (e) => {
-  let t = Ne(e).value;
+Xe({
+  linear: je
+}, Ze);
+const E = (e) => {
+  let t = ze(e).value;
   return t = t && e.offsetHeight > 0, t;
 }, A = (e) => e.tabIndex >= 0, X = (e) => {
   const t = e.target;
   return U(t);
 }, U = (e) => {
   var t;
-  let o;
+  let n;
   if (e instanceof HTMLTableCellElement) {
-    const n = (t = e.parentElement) == null ? void 0 : t.previousElementSibling;
-    if (n) {
-      const s = Array.from(n.children)[e.cellIndex];
-      s && (o = s);
+    const o = (t = e.parentElement) == null ? void 0 : t.previousElementSibling;
+    if (o) {
+      const l = Array.from(o.children)[e.cellIndex];
+      l && (n = l);
     }
   } else if (e instanceof HTMLTableRowElement) {
-    const n = e.previousElementSibling;
-    n && (o = n);
+    const o = e.previousElementSibling;
+    o && (n = o);
   }
-  return o && (!A(o) || !D(o)) ? U(o) : o;
-}, Xe = (e) => {
+  return n && (!A(n) || !E(n)) ? U(n) : n;
+}, et = (e) => {
   var t;
-  const o = e.target;
-  let n;
-  if (o instanceof HTMLTableCellElement) {
-    const s = (t = o.parentElement) == null ? void 0 : t.parentElement;
-    if (s) {
-      const l = s.firstElementChild.children[o.cellIndex];
-      l && (n = l);
+  const n = e.target;
+  let o;
+  if (n instanceof HTMLTableCellElement) {
+    const l = (t = n.parentElement) == null ? void 0 : t.parentElement;
+    if (l) {
+      const s = l.firstElementChild.children[n.cellIndex];
+      s && (o = s);
     }
-  } else if (o instanceof HTMLTableRowElement) {
-    const s = o.parentElement;
-    if (s) {
-      const l = s.firstElementChild;
-      l && (n = l);
+  } else if (n instanceof HTMLTableRowElement) {
+    const l = n.parentElement;
+    if (l) {
+      const s = l.firstElementChild;
+      s && (o = s);
     }
   }
-  return n && (!A(n) || !D(n)) ? Q(n) : n;
+  return o && (!A(o) || !E(o)) ? Q(o) : o;
 }, Z = (e) => {
   const t = e.target;
   return Q(t);
 }, Q = (e) => {
   var t;
-  let o;
+  let n;
   if (e instanceof HTMLTableCellElement) {
-    const n = (t = e.parentElement) == null ? void 0 : t.nextElementSibling;
-    if (n) {
-      const s = Array.from(n.children)[e.cellIndex];
-      s && (o = s);
+    const o = (t = e.parentElement) == null ? void 0 : t.nextElementSibling;
+    if (o) {
+      const l = Array.from(o.children)[e.cellIndex];
+      l && (n = l);
     }
   } else if (e instanceof HTMLTableRowElement) {
-    const n = e.nextElementSibling;
-    n && (o = n);
+    const o = e.nextElementSibling;
+    o && (n = o);
   }
-  return o && (!A(o) || !D(o)) ? Q(o) : o;
-}, Ze = (e) => {
+  return n && (!A(n) || !E(n)) ? Q(n) : n;
+}, tt = (e) => {
   var t;
-  const o = e.target;
-  let n;
-  if (o instanceof HTMLTableCellElement) {
-    const s = (t = o.parentElement) == null ? void 0 : t.parentElement;
-    if (s) {
-      const l = s.lastElementChild.children[o.cellIndex];
-      l && (n = l);
+  const n = e.target;
+  let o;
+  if (n instanceof HTMLTableCellElement) {
+    const l = (t = n.parentElement) == null ? void 0 : t.parentElement;
+    if (l) {
+      const s = l.lastElementChild.children[n.cellIndex];
+      s && (o = s);
     }
-  } else if (o instanceof HTMLTableRowElement) {
-    const s = o.parentElement;
-    if (s) {
-      const l = s.lastElementChild;
-      l && (n = l);
+  } else if (n instanceof HTMLTableRowElement) {
+    const l = n.parentElement;
+    if (l) {
+      const s = l.lastElementChild;
+      s && (o = s);
     }
   }
-  return n && (!A(n) || !D(n)) ? U(n) : n;
+  return o && (!A(o) || !E(o)) ? U(o) : o;
 }, ee = (e) => {
   const t = e.target;
   return Y(t);
 }, Y = (e) => {
   var t;
-  let o;
+  let n;
   if (e.previousElementSibling)
-    o = e.previousElementSibling;
+    n = e.previousElementSibling;
   else {
-    const n = (t = e.parentElement) == null ? void 0 : t.previousElementSibling;
-    o = n == null ? void 0 : n.lastElementChild;
+    const o = (t = e.parentElement) == null ? void 0 : t.previousElementSibling;
+    n = o == null ? void 0 : o.lastElementChild;
   }
-  return o && (!A(o) || !D(o)) ? Y(o) : o;
+  return n && (!A(n) || !E(n)) ? Y(n) : n;
 }, te = (e) => {
   const t = e.target;
   return j(t);
 }, j = (e) => {
   var t;
-  let o;
+  let n;
   if (e.nextElementSibling)
-    o = e.nextElementSibling;
+    n = e.nextElementSibling;
   else {
-    const n = (t = e.parentElement) == null ? void 0 : t.nextElementSibling;
-    o = n == null ? void 0 : n.firstElementChild;
+    const o = (t = e.parentElement) == null ? void 0 : t.nextElementSibling;
+    n = o == null ? void 0 : o.firstElementChild;
   }
-  return o && (!A(o) || !D(o)) ? j(o) : o;
+  return n && (!A(n) || !E(n)) ? j(n) : n;
 }, ne = (e) => {
   const t = e.target.parentElement.firstElementChild;
-  return t && (!A(t) || !D(t)) ? j(t) : t;
+  return t && (!A(t) || !E(t)) ? j(t) : t;
 }, oe = (e) => {
   const t = e.target.parentElement.lastElementChild;
-  return t && (!A(t) || !D(t)) ? Y(t) : t;
-}, L = ["alt", "control", "shift", "meta"], et = {
+  return t && (!A(t) || !E(t)) ? Y(t) : t;
+}, $ = ["alt", "control", "shift", "meta"], nt = {
   ArrowUp: "up",
   ArrowDown: "down",
   ArrowLeft: "left",
   ArrowRight: "right"
-}, de = {
+}, fe = {
   "keydown.up": (e) => {
     const t = X(e);
     t && (e.preventDefault(), e.stopPropagation(), t.focus());
@@ -294,11 +288,11 @@ const D = (e) => {
     e.preventDefault(), e.stopPropagation(), t && t.focus();
   },
   "keydown.control.up": (e) => {
-    const t = Xe(e);
+    const t = et(e);
     t && (e.preventDefault(), e.stopPropagation(), t.focus());
   },
   "keydown.control.down": (e) => {
-    const t = Ze(e);
+    const t = tt(e);
     t && (e.preventDefault(), e.stopPropagation(), t.focus());
   },
   "keydown.control.left": (e) => {
@@ -340,64 +334,64 @@ const D = (e) => {
     t && (e.preventDefault(), e.stopPropagation(), t.focus());
   }
 };
-function tt(e) {
-  const t = (n) => {
-    let s = null;
-    n.parent && (typeof n.parent == "string" ? s = document.querySelector(n.parent) : n.parent instanceof Element ? s = n.parent : s = n.parent.value);
-    let l = [];
-    if (n.selectors)
-      if (typeof n.selectors == "string")
-        l = s ? Array.from(s.querySelectorAll(n.selectors)) : Array.from(document.querySelectorAll(n.selectors));
-      else if (n.selectors instanceof Element)
-        l.push(n.selectors);
-      else if (Array.isArray(n.selectors.value))
-        for (const a of n.selectors.value)
-          a instanceof Element ? l.push(a) : l.push(a.$el);
+function ot(e) {
+  const t = (o) => {
+    let l = null;
+    o.parent && (typeof o.parent == "string" ? l = document.querySelector(o.parent) : o.parent instanceof Element ? l = o.parent : l = o.parent.value);
+    let s = [];
+    if (o.selectors)
+      if (typeof o.selectors == "string")
+        s = l ? Array.from(l.querySelectorAll(o.selectors)) : Array.from(document.querySelectorAll(o.selectors));
+      else if (o.selectors instanceof Element)
+        s.push(o.selectors);
+      else if (Array.isArray(o.selectors.value))
+        for (const a of o.selectors.value)
+          a instanceof Element ? s.push(a) : s.push(a.$el);
       else
-        l.push(n.selectors.value);
+        s.push(o.selectors.value);
     else
-      l = Array.from(s.children).filter((a) => A(a) && D(a));
-    return l;
-  }, o = (n) => (s) => {
-    const l = et[s.key] || s.key.toLowerCase();
-    if (L.includes(l))
+      s = Array.from(l.children).filter((a) => A(a) && E(a));
+    return s;
+  }, n = (o) => (l) => {
+    const s = nt[l.key] || l.key.toLowerCase();
+    if ($.includes(s))
       return;
-    const a = n.handlers || de;
+    const a = o.handlers || fe;
     for (const r of Object.keys(a)) {
       const [p, ...u] = r.split(".");
-      if (p === "keydown" && u.includes(l)) {
-        const c = a[r], y = u.filter((m) => L.includes(m)), b = L.some((m) => {
-          const T = m.charAt(0).toUpperCase() + m.slice(1);
-          return s.getModifierState(T);
+      if (p === "keydown" && u.includes(s)) {
+        const d = a[r], g = u.filter((m) => $.includes(m)), b = $.some((m) => {
+          const _ = m.charAt(0).toUpperCase() + m.slice(1);
+          return l.getModifierState(_);
         });
-        if (y.length > 0) {
+        if (g.length > 0) {
           if (b) {
-            for (const m of L)
+            for (const m of $)
               if (u.includes(m)) {
-                const T = m.charAt(0).toUpperCase() + m.slice(1);
-                s.getModifierState(T) && c(s);
+                const _ = m.charAt(0).toUpperCase() + m.slice(1);
+                l.getModifierState(_) && d(l);
               }
           }
         } else
-          b || c(s);
+          b || d(l);
       }
     }
   };
-  se(() => {
-    for (const n of e) {
-      const s = t(n);
-      for (const l of s)
-        l.addEventListener("keydown", o(n));
+  re(() => {
+    for (const o of e) {
+      const l = t(o);
+      for (const s of l)
+        s.addEventListener("keydown", n(o));
     }
-  }), _e(() => {
-    for (const n of e) {
-      const s = t(n);
-      for (const l of s)
-        l.removeEventListener("keydown", o(n));
+  }), ke(() => {
+    for (const o of e) {
+      const l = t(o);
+      for (const s of l)
+        s.removeEventListener("keydown", n(o));
     }
   });
 }
-const nt = ["event", "colIndex", "rowIndex", "tableid"], ot = { colspan: "5" }, lt = ["onClick"], st = 6, E = 7, at = /* @__PURE__ */ k({
+const lt = ["event", "colIndex", "rowIndex", "tableid"], st = { colspan: "5" }, at = ["onClick"], rt = 6, I = 7, it = /* @__PURE__ */ D({
   __name: "ADate",
   props: {
     colIndex: {},
@@ -408,62 +402,62 @@ const nt = ["event", "colIndex", "rowIndex", "tableid"], ot = { colspan: "5" }, 
     readonly: { type: Boolean }
   },
   setup(e) {
-    const t = e, o = ae(t.tableid), n = /* @__PURE__ */ new Date(), s = g(), l = g(), a = g(), r = g([]);
-    se(async () => {
-      let d = o.cellData(t.colIndex, t.rowIndex);
-      d ? (d instanceof Date || (d = new Date(d)), s.value = d, l.value = s.value.getMonth(), a.value = s.value.getFullYear()) : (l.value = n.getMonth(), a.value = n.getFullYear()), p(), await ke();
-      const M = document.getElementsByClassName("selecteddate");
-      if (M.length > 0)
-        M[0].focus();
+    const t = e, n = ie(t.tableid), o = /* @__PURE__ */ new Date(), l = y(), s = y(), a = y(), r = y([]);
+    re(async () => {
+      let c = n.cellData(t.colIndex, t.rowIndex);
+      c ? (c instanceof Date || (c = new Date(c)), l.value = c, s.value = l.value.getMonth(), a.value = l.value.getFullYear()) : (s.value = o.getMonth(), a.value = o.getFullYear()), p(), await Ae();
+      const T = document.getElementsByClassName("selecteddate");
+      if (T.length > 0)
+        T[0].focus();
       else {
-        const h = document.getElementsByClassName("todaysdate");
-        h.length > 0 && h[0].focus();
+        const v = document.getElementsByClassName("todaysdate");
+        v.length > 0 && v[0].focus();
       }
-    }), H([l, a], () => {
+    }), F([s, a], () => {
       p();
     });
     const p = () => {
       r.value = [];
-      const d = new Date(a.value, l.value, 1), M = d.getDay(), h = d.setDate(d.getDate() - M);
-      for (let _ of Array(43).keys())
-        r.value.push(h + _ * 864e5);
+      const c = new Date(a.value, s.value, 1), T = c.getDay(), v = c.setDate(c.getDate() - T);
+      for (let w of Array(43).keys())
+        r.value.push(v + w * 864e5);
     }, u = () => {
       a.value -= 1;
-    }, c = () => {
+    }, d = () => {
       a.value += 1;
-    }, y = () => {
-      l.value == 0 ? (l.value = 11, u()) : l.value -= 1;
+    }, g = () => {
+      s.value == 0 ? (s.value = 11, u()) : s.value -= 1;
     }, b = () => {
-      l.value == 11 ? (l.value = 0, c()) : l.value += 1;
-    }, m = (d) => {
-      if (l.value === n.getMonth())
-        return n.toDateString() === new Date(d).toDateString();
-    }, T = (d) => new Date(d).toDateString() === new Date(s.value).toDateString(), fe = (d, M) => {
-      s.value = new Date(r.value[M]), me();
-    }, me = () => {
-      o.setCellData(t.rowIndex, t.colIndex, s.value.getTime());
-    }, ve = S(() => new Date(a.value, l.value, 1).toLocaleDateString(void 0, {
+      s.value == 11 ? (s.value = 0, d()) : s.value += 1;
+    }, m = (c) => {
+      if (s.value === o.getMonth())
+        return o.toDateString() === new Date(c).toDateString();
+    }, _ = (c) => new Date(c).toDateString() === new Date(l.value).toDateString(), he = (c, T) => {
+      l.value = new Date(r.value[T]), ve();
+    }, ve = () => {
+      n.setCellData(t.rowIndex, t.colIndex, l.value.getTime());
+    }, ge = L(() => new Date(a.value, s.value, 1).toLocaleDateString(void 0, {
       year: "numeric",
       month: "long"
     }));
-    return tt([
+    return ot([
       {
         parent: "table.adate",
         selectors: "td",
         handlers: {
-          ...de,
-          "keydown.pageup": y,
+          ...fe,
+          "keydown.pageup": g,
           "keydown.shift.pageup": u,
           "keydown.pagedown": b,
-          "keydown.shift.pagedown": c
+          "keydown.shift.pagedown": d
         }
       }
-    ]), (d, M) => d.readonly ? re("", !0) : (f(), v("div", {
+    ]), (c, T) => c.readonly ? ue("", !0) : (f(), h("div", {
       key: 0,
-      event: d.event,
-      colIndex: d.colIndex,
-      rowIndex: d.rowIndex,
-      tableid: d.tableid,
+      event: c.event,
+      colIndex: c.colIndex,
+      rowIndex: c.rowIndex,
+      tableid: c.tableid,
       class: "adate",
       tabindex: "0",
       ref: "adatepicker"
@@ -471,37 +465,36 @@ const nt = ["event", "colIndex", "rowIndex", "tableid"], ot = { colspan: "5" }, 
       i("table", null, [
         i("tr", null, [
           i("td", {
-            onClick: y,
+            onClick: g,
             tabindex: -1
           }, "<"),
-          i("th", ot, C(ve.value), 1),
+          i("th", st, k(ge.value), 1),
           i("td", {
             onClick: b,
             tabindex: -1
           }, ">")
         ]),
-        (f(), v(x, null, V(st, (h) => i("tr", { key: h }, [
-          (f(), v(x, null, V(E, (_) => i("td", {
-            key: (h - 1) * E + _,
+        (f(), h(V, null, x(rt, (v) => i("tr", { key: v }, [
+          (f(), h(V, null, x(I, (w) => i("td", {
+            key: (v - 1) * I + w,
             contenteditable: !1,
             spellcheck: !1,
             tabindex: 0,
-            style: De({
-              border: T(r.value[(h - 1) * E + _]) ? "2px solid var(--focus-cell-outline)" : "none",
-              borderBottomColor: m(r.value[(h - 1) * E + _]) ? "var(--focus-cell-outline)" : "none"
+            style: Ie({
+              border: _(r.value[(v - 1) * I + w]) ? "2px solid var(--focus-cell-outline)" : "none",
+              borderBottomColor: m(r.value[(v - 1) * I + w]) ? "var(--focus-cell-outline)" : "none"
             }),
-            onClick: Ae((he) => fe(he, (h - 1) * E + _), ["prevent", "stop"]),
+            onClick: Me((ye) => he(ye, (v - 1) * I + w), ["prevent", "stop"]),
             class: B({
-              todaysdate: m(r.value[(h - 1) * E + _]),
-              selecteddate: T(r.value[(h - 1) * E + _])
+              todaysdate: m(r.value[(v - 1) * I + w]),
+              selecteddate: _(r.value[(v - 1) * I + w])
             })
-          }, C(new Date(r.value[(h - 1) * E + _]).getDate()), 15, lt)), 64))
+          }, k(new Date(r.value[(v - 1) * I + w]).getDate()), 15, at)), 64))
         ])), 64))
       ])
-    ], 8, nt));
+    ], 8, lt));
   }
-});
-const rt = /* @__PURE__ */ I(at, [["__scopeId", "data-v-169f1184"]]), it = k({
+}), ut = /* @__PURE__ */ M(it, [["__scopeId", "data-v-169f1184"]]), dt = D({
   name: "ADropdown",
   props: {
     modelValue: {
@@ -575,20 +568,19 @@ const rt = /* @__PURE__ */ I(at, [["__scopeId", "data-v-169f1184"]]), it = k({
       this.search = "", this.onChange(), this.$refs.mopInput.focus();
     }
   }
-});
-const ut = { class: "input-wrapper" }, ct = {
+}), ct = { class: "input-wrapper" }, pt = {
   id: "autocomplete-results",
   class: "autocomplete-results"
-}, dt = {
+}, ft = {
   key: 0,
   class: "loading autocomplete-result"
-}, pt = ["onClick"];
-function ft(e, t, o, n, s, l) {
-  return f(), v("div", {
+}, mt = ["onClick"];
+function ht(e, t, n, o, l, s) {
+  return f(), h("div", {
     class: B(["autocomplete", { isOpen: e.isOpen }])
   }, [
-    i("div", ut, [
-      w(i("input", {
+    i("div", ct, [
+      C(i("input", {
         ref: "mopInput",
         type: "text",
         onInput: t[0] || (t[0] = (...a) => e.onChange && e.onChange(...a)),
@@ -602,31 +594,30 @@ function ft(e, t, o, n, s, l) {
       }, null, 544), [
         [R, e.search]
       ]),
-      w(i("ul", ct, [
-        e.isLoading ? (f(), v("li", dt, "Loading results...")) : (f(!0), v(x, { key: 1 }, V(e.results, (a, r) => (f(), v("li", {
+      C(i("ul", pt, [
+        e.isLoading ? (f(), h("li", ft, "Loading results...")) : (f(!0), h(V, { key: 1 }, x(e.results, (a, r) => (f(), h("li", {
           key: r,
           onClick: (p) => e.setResult(a),
           class: B(["autocomplete-result", { "is-active": r === e.arrowCounter }])
-        }, C(a), 11, pt))), 128))
+        }, k(a), 11, mt))), 128))
       ], 512), [
-        [$, e.isOpen]
+        [O, e.isOpen]
       ]),
-      i("label", null, C(e.label), 1)
+      i("label", null, k(e.label), 1)
     ])
   ], 2);
 }
-const mt = /* @__PURE__ */ I(it, [["render", ft]]), vt = /* @__PURE__ */ k({
+const vt = /* @__PURE__ */ M(dt, [["render", ht]]), gt = /* @__PURE__ */ D({
   __name: "CollapseButton",
   props: {
     collapsed: { type: Boolean }
   },
   setup(e) {
-    return (t, o) => (f(), v("button", {
+    return (t, n) => (f(), h("button", {
       class: B(["collapse-button", t.collapsed ? "rotated" : "unrotated"])
     }, "×", 2));
   }
-});
-const ht = /* @__PURE__ */ I(vt, [["__scopeId", "data-v-6f1c1b45"]]), yt = /* @__PURE__ */ k({
+}), yt = /* @__PURE__ */ M(gt, [["__scopeId", "data-v-6f1c1b45"]]), bt = /* @__PURE__ */ D({
   __name: "AForm",
   props: {
     modelValue: {},
@@ -635,36 +626,35 @@ const ht = /* @__PURE__ */ I(vt, [["__scopeId", "data-v-6f1c1b45"]]), yt = /* @_
   },
   emits: ["update:modelValue"],
   setup(e, { emit: t }) {
-    const o = e, n = t, s = g(o.data || {}), l = (r) => {
+    const n = e, o = t, l = y(n.data || {}), s = (r) => {
       let p = {};
-      for (const [u, c] of Object.entries(r))
-        ["component", "fieldtype"].includes(u) || (p[u] = c), u === "rows" && c && c.length === 0 && (p.rows = s.value[r.fieldname]);
+      for (const [u, d] of Object.entries(r))
+        ["component", "fieldtype"].includes(u) || (p[u] = d), u === "rows" && d && d.length === 0 && (p.rows = l.value[r.fieldname]);
       return p;
-    }, a = S({
-      get: () => o.modelValue.map((r, p) => S({
+    }, a = L({
+      get: () => n.modelValue.map((r, p) => L({
         get() {
           return r.value;
         },
         set: (u) => {
-          o.modelValue[p].value = u, n("update:modelValue", o.modelValue);
+          n.modelValue[p].value = u, o("update:modelValue", n.modelValue);
         }
       })),
       set: () => {
       }
     });
-    return (r, p) => (f(), v("form", null, [
-      (f(!0), v(x, null, V(r.modelValue, (u, c) => (f(), F(Ee(u.component), Ie({
-        key: c,
+    return (r, p) => (f(), h("form", null, [
+      (f(!0), h(V, null, x(r.modelValue, (u, d) => (f(), H(Te(u.component), _e({
+        key: d,
         schema: u,
-        modelValue: a.value[c].value,
-        "onUpdate:modelValue": (y) => a.value[c].value = y,
-        data: s.value[u.fieldname],
+        modelValue: a.value[d].value,
+        "onUpdate:modelValue": (g) => a.value[d].value = g,
+        data: l.value[u.fieldname],
         readonly: r.readonly
-      }, l(u)), null, 16, ["schema", "modelValue", "onUpdate:modelValue", "data", "readonly"]))), 128))
+      }, s(u)), null, 16, ["schema", "modelValue", "onUpdate:modelValue", "data", "readonly"]))), 128))
     ]));
   }
-});
-const pe = /* @__PURE__ */ I(yt, [["__scopeId", "data-v-82492bb4"]]), gt = /* @__PURE__ */ k({
+}), me = /* @__PURE__ */ M(bt, [["__scopeId", "data-v-74d66cf2"]]), wt = /* @__PURE__ */ D({
   __name: "AFieldset",
   props: {
     schema: {},
@@ -673,73 +663,68 @@ const pe = /* @__PURE__ */ I(yt, [["__scopeId", "data-v-82492bb4"]]), gt = /* @_
     data: {}
   },
   setup(e) {
-    const t = e, o = g(t.data || []);
-    let n = g(!1), s = g(t.collapsible);
-    const l = g(t.schema);
+    const t = e, n = y(t.data || []);
+    let o = y(!1), l = y(t.collapsible);
+    const s = y(t.schema);
     function a(r) {
-      r.preventDefault(), s.value && (n.value = !n.value);
+      r.preventDefault(), l.value && (o.value = !o.value);
     }
-    return (r, p) => (f(), v("fieldset", null, [
+    return (r, p) => (f(), h("fieldset", null, [
       i("legend", {
         onClick: a,
         onSubmit: a
       }, [
-        Me(C(r.label) + " ", 1),
-        O(s) ? (f(), F(ht, {
+        Se(k(r.label) + " ", 1),
+        S(l) ? (f(), H(yt, {
           key: 0,
-          collapsed: O(n)
-        }, null, 8, ["collapsed"])) : re("", !0)
+          collapsed: S(o)
+        }, null, 8, ["collapsed"])) : ue("", !0)
       ], 32),
-      Te(r.$slots, "default", { collapsed: O(n) }, () => [
-        w(Se(pe, {
-          modelValue: l.value,
-          "onUpdate:modelValue": p[0] || (p[0] = (u) => l.value = u),
-          data: o.value
+      Oe(r.$slots, "default", { collapsed: S(o) }, () => [
+        C($e(me, {
+          modelValue: s.value,
+          "onUpdate:modelValue": p[0] || (p[0] = (u) => s.value = u),
+          data: n.value
         }, null, 8, ["modelValue", "data"]), [
-          [$, !O(n)]
+          [O, !S(o)]
         ])
       ], !0)
     ]));
   }
-});
-const bt = /* @__PURE__ */ I(gt, [["__scopeId", "data-v-cad9b578"]]), _t = ["id", "disabled", "required"], wt = ["for"], Ct = ["innerHTML"], kt = /* @__PURE__ */ k({
+}), Ct = /* @__PURE__ */ M(wt, [["__scopeId", "data-v-cad9b578"]]), kt = ["id", "disabled", "required"], Dt = ["for"], Et = ["innerHTML"], At = /* @__PURE__ */ D({
   __name: "ANumericInput",
-  props: {
+  props: /* @__PURE__ */ se({
     label: {},
-    modelValue: {},
     required: { type: Boolean },
     readonly: { type: Boolean },
     uuid: {},
     validation: { default: () => ({ errorMessage: "&nbsp;" }) }
-  },
+  }, {
+    modelValue: {},
+    modelModifiers: {}
+  }),
   emits: ["update:modelValue"],
-  setup(e, { emit: t }) {
-    const o = e, n = t, s = S({
-      get: () => o.modelValue,
-      set: (l) => {
-        n("update:modelValue", l);
-      }
-    });
-    return (l, a) => (f(), v("div", null, [
-      w(i("input", {
-        "onUpdate:modelValue": a[0] || (a[0] = (r) => s.value = r),
+  setup(e) {
+    const t = ae(e, "modelValue");
+    return (n, o) => (f(), h("div", null, [
+      C(i("input", {
+        "onUpdate:modelValue": o[0] || (o[0] = (l) => t.value = l),
         type: "number",
-        id: l.uuid,
-        disabled: l.readonly,
-        required: l.required
-      }, null, 8, _t), [
-        [R, s.value]
+        id: n.uuid,
+        disabled: n.readonly,
+        required: n.required
+      }, null, 8, kt), [
+        [R, t.value]
       ]),
-      i("label", { for: l.uuid }, C(l.label), 9, wt),
-      w(i("p", {
-        innerHTML: l.validation.errorMessage
-      }, null, 8, Ct), [
-        [$, l.validation.errorMessage]
+      i("label", { for: n.uuid }, k(n.label), 9, Dt),
+      C(i("p", {
+        innerHTML: n.validation.errorMessage
+      }, null, 8, Et), [
+        [O, n.validation.errorMessage]
       ])
     ]));
   }
-});
-const Dt = /* @__PURE__ */ I(kt, [["__scopeId", "data-v-be33e6c4"]]), le = {
+}), It = /* @__PURE__ */ M(At, [["__scopeId", "data-v-02907cd6"]]), le = {
   date: "##/##/####",
   datetime: "####/##/## ##:##",
   time: "##:##",
@@ -747,59 +732,59 @@ const Dt = /* @__PURE__ */ I(kt, [["__scopeId", "data-v-be33e6c4"]]), le = {
   phone: "(###) ### - ####",
   card: "#### #### #### ####"
 };
-function At(e) {
+function Mt(e) {
   try {
     return Function(`"use strict";return (${e})`)();
   } catch {
   }
 }
-function Et(e) {
-  var o;
+function Tt(e) {
+  var n;
   let t = e.value;
   if (t) {
-    const n = At(t);
-    if (n) {
-      const s = e.instance.locale;
-      t = n(s);
+    const o = Mt(t);
+    if (o) {
+      const l = e.instance.locale;
+      t = o(l);
     }
   } else {
-    const s = (o = e.instance.schema.fieldtype) == null ? void 0 : o.toLowerCase();
-    s && le[s] && (t = le[s]);
+    const l = (n = e.instance.schema.fieldtype) == null ? void 0 : n.toLowerCase();
+    l && le[l] && (t = le[l]);
   }
   return t;
 }
-function It(e, t) {
+function _t(e, t) {
   t || (t = "#");
-  let o = e;
-  const n = [t, "/", "-", "(", ")", " "];
-  for (const s of n)
-    o = o.replaceAll(s, "");
-  return o;
+  let n = e;
+  const o = [t, "/", "-", "(", ")", " "];
+  for (const l of o)
+    n = n.replaceAll(l, "");
+  return n;
 }
-function Mt(e, t, o) {
-  o || (o = "#");
-  let n = t;
-  for (const s of e) {
-    const l = n.indexOf(o);
-    if (l !== -1) {
-      const a = n.substring(0, l), r = n.substring(l + 1);
-      n = a + s + r;
+function St(e, t, n) {
+  n || (n = "#");
+  let o = t;
+  for (const l of e) {
+    const s = o.indexOf(n);
+    if (s !== -1) {
+      const a = o.substring(0, s), r = o.substring(s + 1);
+      o = a + l + r;
     }
   }
-  return n.slice(0, t.length);
+  return o.slice(0, t.length);
 }
-function Tt(e, t) {
-  const o = Et(t);
-  if (!o)
+function Ot(e, t) {
+  const n = Tt(t);
+  if (!n)
     return;
-  const n = "#", s = e.value, l = It(s, n);
-  if (l) {
-    const a = Mt(l, o, n);
-    t.instance.maskFilled && (t.instance.maskFilled = !a.includes(n)), e.value = a;
+  const o = "#", l = e.value, s = _t(l, o);
+  if (s) {
+    const a = St(s, n, o);
+    t.instance.maskFilled && (t.instance.maskFilled = !a.includes(o)), e.value = a;
   } else
-    e.value = o;
+    e.value = n;
 }
-const St = k({
+const $t = D({
   name: "ATextInput",
   props: {
     schema: {
@@ -831,55 +816,54 @@ const St = k({
     }
   },
   setup(e, t) {
-    const o = g(!1), n = ae("locale", "");
-    return { inputText: S({
+    const n = y(!1), o = ie("locale", "");
+    return { inputText: L({
       get() {
         return e.modelValue;
       },
-      set(l) {
-        t.emit("update:modelValue", l);
+      set(s) {
+        t.emit("update:modelValue", s);
       }
-    }), locale: n, maskFilled: o };
+    }), locale: o, maskFilled: n };
   },
   directives: {
-    mask: Tt
+    mask: Ot
   }
-});
-const Ot = ["id", "disabled", "maxlength", "required"], $t = ["for"], Lt = ["innerHTML"];
-function xt(e, t, o, n, s, l) {
-  const a = Oe("mask");
-  return f(), v("div", null, [
-    w(i("input", {
+}), Lt = ["id", "disabled", "maxlength", "required"], Vt = ["for"], xt = ["innerHTML"];
+function Bt(e, t, n, o, l, s) {
+  const a = Le("mask");
+  return f(), h("div", null, [
+    C(i("input", {
       "onUpdate:modelValue": t[0] || (t[0] = (r) => e.inputText = r),
       id: e.uuid,
       disabled: e.readonly,
       maxlength: e.mask ? e.maskFilled && e.mask.length : void 0,
       required: e.required
-    }, null, 8, Ot), [
+    }, null, 8, Lt), [
       [R, e.inputText],
       [a, e.mask]
     ]),
-    i("label", { for: e.uuid }, C(e.label), 9, $t),
-    w(i("p", {
+    i("label", { for: e.uuid }, k(e.label), 9, Vt),
+    C(i("p", {
       innerHTML: e.validation.errorMessage
-    }, null, 8, Lt), [
-      [$, e.validation.errorMessage]
+    }, null, 8, xt), [
+      [O, e.validation.errorMessage]
     ])
   ]);
 }
-const Vt = /* @__PURE__ */ I(St, [["render", xt], ["__scopeId", "data-v-76dba9b8"]]);
-function Pt(e) {
-  e.component("ACheckbox", qe), e.component("ACombobox", He), e.component("ADate", rt), e.component("ADropdown", mt), e.component("AFieldset", bt), e.component("AForm", pe), e.component("ANumericInput", Dt), e.component("ATextInput", Vt);
+const Pt = /* @__PURE__ */ M($t, [["render", Bt], ["__scopeId", "data-v-76dba9b8"]]);
+function Ht(e) {
+  e.component("ACheckbox", Fe), e.component("ACombobox", Ue), e.component("ADate", ut), e.component("ADropdown", vt), e.component("AFieldset", Ct), e.component("AForm", me), e.component("ANumericInput", It), e.component("ATextInput", Pt);
 }
 export {
-  qe as ACheckbox,
-  He as AComboBox,
-  rt as ADate,
-  mt as ADropdown,
-  bt as AFieldset,
-  pe as AForm,
-  Dt as ANumericInput,
-  Vt as ATextInput,
-  Pt as install
+  Fe as ACheckbox,
+  Ue as AComboBox,
+  ut as ADate,
+  vt as ADropdown,
+  Ct as AFieldset,
+  me as AForm,
+  It as ANumericInput,
+  Pt as ATextInput,
+  Ht as install
 };
 //# sourceMappingURL=aform.js.map
