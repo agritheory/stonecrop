@@ -1,4 +1,4 @@
-import { defineComponent as k, computed as S, openBlock as f, createElementBlock as v, createElementVNode as i, withDirectives as w, vModelCheckbox as ye, toDisplayString as C, vShow as $, resolveComponent as ge, createBlock as F, withCtx as be, onMounted as se, onBeforeUnmount as _e, ref as g, watch as H, unref as O, getCurrentScope as we, onScopeDispose as Ce, inject as ae, nextTick as ke, Fragment as x, renderList as V, normalizeStyle as De, withModifiers as Ae, normalizeClass as B, createCommentVNode as re, withKeys as P, vModelText as R, resolveDynamicComponent as Ee, mergeProps as Ie, createTextVNode as Me, renderSlot as Te, createVNode as Se, resolveDirective as Oe } from "vue";
+import { defineComponent as k, computed as S, openBlock as f, createElementBlock as v, createElementVNode as i, withDirectives as w, vModelCheckbox as ye, toDisplayString as C, vShow as $, resolveComponent as ge, createBlock as F, withCtx as _e, onMounted as se, onBeforeUnmount as be, ref as g, watch as H, unref as O, getCurrentScope as we, onScopeDispose as Ce, inject as ae, nextTick as ke, Fragment as x, renderList as V, normalizeStyle as De, withModifiers as Ae, normalizeClass as B, createCommentVNode as re, withKeys as P, vModelText as R, resolveDynamicComponent as Ee, mergeProps as Ie, createTextVNode as Me, renderSlot as Te, createVNode as Se, resolveDirective as Oe } from "vue";
 const $e = { id: "checkbox-container" }, Le = ["id", "readonly", "required"], xe = { id: "custom-checkbox" }, Ve = ["for"], Be = ["innerHTML"], Pe = /* @__PURE__ */ k({
   __name: "ACheckbox",
   props: {
@@ -50,7 +50,7 @@ const I = (e, t) => {
   for (const [n, s] of t)
     o[n] = s;
   return o;
-}, qe = /* @__PURE__ */ I(Pe, [["__scopeId", "data-v-743cd4db"]]), Fe = /* @__PURE__ */ i("div", null, [
+}, qe = /* @__PURE__ */ I(Pe, [["__scopeId", "data-v-23f69d95"]]), Fe = /* @__PURE__ */ i("div", null, [
   /* @__PURE__ */ i("input", { type: "text" }),
   /* @__PURE__ */ i("input", { type: "text" }),
   /* @__PURE__ */ i("input", { type: "text" })
@@ -65,7 +65,7 @@ const I = (e, t) => {
         cellData: e.cellData,
         class: "amodal"
       }, {
-        default: be(() => [
+        default: _e(() => [
           Fe
         ]),
         _: 1
@@ -91,16 +91,16 @@ function q(e) {
   const o = ue(e);
   return (t = o == null ? void 0 : o.$el) != null ? t : o;
 }
-const ce = ie ? window : void 0;
+const de = ie ? window : void 0;
 function je(...e) {
   let t, o, n, s;
-  if (Re(e[0]) || Array.isArray(e[0]) ? ([o, n, s] = e, t = ce) : [t, o, n, s] = e, !t)
+  if (Re(e[0]) || Array.isArray(e[0]) ? ([o, n, s] = e, t = de) : [t, o, n, s] = e, !t)
     return Ue;
   Array.isArray(o) || (o = [o]), Array.isArray(n) || (n = [n]);
   const l = [], a = () => {
-    l.forEach((c) => c()), l.length = 0;
-  }, r = (c, y, b, m) => (c.addEventListener(y, b, m), () => c.removeEventListener(y, b, m)), p = H(() => [q(t), ue(s)], ([c, y]) => {
-    a(), c && l.push(...o.flatMap((b) => n.map((m) => r(c, b, m, y))));
+    l.forEach((d) => d()), l.length = 0;
+  }, r = (d, y, _, m) => (d.addEventListener(y, _, m), () => d.removeEventListener(y, _, m)), p = H(() => [q(t), ue(s)], ([d, y]) => {
+    a(), d && l.push(...o.flatMap((_) => n.map((m) => r(d, _, m, y))));
   }, { immediate: !0, flush: "post" }), u = () => {
     p(), a();
   };
@@ -108,7 +108,7 @@ function je(...e) {
 }
 const W = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, z = "__vueuse_ssr_handlers__";
 W[z] = W[z] || {};
-function Ne(e, { window: t = ce, scrollTarget: o } = {}) {
+function Ne(e, { window: t = de, scrollTarget: o } = {}) {
   const n = g(!1), s = () => {
     if (!t)
       return;
@@ -276,7 +276,7 @@ const D = (e) => {
   ArrowDown: "down",
   ArrowLeft: "left",
   ArrowRight: "right"
-}, de = {
+}, ce = {
   "keydown.up": (e) => {
     const t = X(e);
     t && (e.preventDefault(), e.stopPropagation(), t.focus());
@@ -362,24 +362,24 @@ function tt(e) {
     const l = et[s.key] || s.key.toLowerCase();
     if (L.includes(l))
       return;
-    const a = n.handlers || de;
+    const a = n.handlers || ce;
     for (const r of Object.keys(a)) {
       const [p, ...u] = r.split(".");
       if (p === "keydown" && u.includes(l)) {
-        const c = a[r], y = u.filter((m) => L.includes(m)), b = L.some((m) => {
+        const d = a[r], y = u.filter((m) => L.includes(m)), _ = L.some((m) => {
           const T = m.charAt(0).toUpperCase() + m.slice(1);
           return s.getModifierState(T);
         });
         if (y.length > 0) {
-          if (b) {
+          if (_) {
             for (const m of L)
               if (u.includes(m)) {
                 const T = m.charAt(0).toUpperCase() + m.slice(1);
-                s.getModifierState(T) && c(s);
+                s.getModifierState(T) && d(s);
               }
           }
         } else
-          b || c(s);
+          _ || d(s);
       }
     }
   };
@@ -389,7 +389,7 @@ function tt(e) {
       for (const l of s)
         l.addEventListener("keydown", o(n));
     }
-  }), _e(() => {
+  }), be(() => {
     for (const n of e) {
       const s = t(n);
       for (const l of s)
@@ -410,8 +410,8 @@ const nt = ["event", "colIndex", "rowIndex", "tableid"], ot = { colspan: "5" }, 
   setup(e) {
     const t = e, o = ae(t.tableid), n = /* @__PURE__ */ new Date(), s = g(), l = g(), a = g(), r = g([]);
     se(async () => {
-      let d = o.cellData(t.colIndex, t.rowIndex);
-      d ? (d instanceof Date || (d = new Date(d)), s.value = d, l.value = s.value.getMonth(), a.value = s.value.getFullYear()) : (l.value = n.getMonth(), a.value = n.getFullYear()), p(), await ke();
+      let c = o.cellData(t.colIndex, t.rowIndex);
+      c ? (c instanceof Date || (c = new Date(c)), s.value = c, l.value = s.value.getMonth(), a.value = s.value.getFullYear()) : (l.value = n.getMonth(), a.value = n.getFullYear()), p(), await ke();
       const M = document.getElementsByClassName("selecteddate");
       if (M.length > 0)
         M[0].focus();
@@ -424,21 +424,21 @@ const nt = ["event", "colIndex", "rowIndex", "tableid"], ot = { colspan: "5" }, 
     });
     const p = () => {
       r.value = [];
-      const d = new Date(a.value, l.value, 1), M = d.getDay(), h = d.setDate(d.getDate() - M);
-      for (let _ of Array(43).keys())
-        r.value.push(h + _ * 864e5);
+      const c = new Date(a.value, l.value, 1), M = c.getDay(), h = c.setDate(c.getDate() - M);
+      for (let b of Array(43).keys())
+        r.value.push(h + b * 864e5);
     }, u = () => {
       a.value -= 1;
-    }, c = () => {
+    }, d = () => {
       a.value += 1;
     }, y = () => {
       l.value == 0 ? (l.value = 11, u()) : l.value -= 1;
-    }, b = () => {
-      l.value == 11 ? (l.value = 0, c()) : l.value += 1;
-    }, m = (d) => {
+    }, _ = () => {
+      l.value == 11 ? (l.value = 0, d()) : l.value += 1;
+    }, m = (c) => {
       if (l.value === n.getMonth())
-        return n.toDateString() === new Date(d).toDateString();
-    }, T = (d) => new Date(d).toDateString() === new Date(s.value).toDateString(), fe = (d, M) => {
+        return n.toDateString() === new Date(c).toDateString();
+    }, T = (c) => new Date(c).toDateString() === new Date(s.value).toDateString(), fe = (c, M) => {
       s.value = new Date(r.value[M]), me();
     }, me = () => {
       o.setCellData(t.rowIndex, t.colIndex, s.value.getTime());
@@ -451,19 +451,19 @@ const nt = ["event", "colIndex", "rowIndex", "tableid"], ot = { colspan: "5" }, 
         parent: "table.adate",
         selectors: "td",
         handlers: {
-          ...de,
+          ...ce,
           "keydown.pageup": y,
           "keydown.shift.pageup": u,
-          "keydown.pagedown": b,
-          "keydown.shift.pagedown": c
+          "keydown.pagedown": _,
+          "keydown.shift.pagedown": d
         }
       }
-    ]), (d, M) => d.readonly ? re("", !0) : (f(), v("div", {
+    ]), (c, M) => c.readonly ? re("", !0) : (f(), v("div", {
       key: 0,
-      event: d.event,
-      colIndex: d.colIndex,
-      rowIndex: d.rowIndex,
-      tableid: d.tableid,
+      event: c.event,
+      colIndex: c.colIndex,
+      rowIndex: c.rowIndex,
+      tableid: c.tableid,
       class: "adate",
       tabindex: "0",
       ref: "adatepicker"
@@ -476,32 +476,32 @@ const nt = ["event", "colIndex", "rowIndex", "tableid"], ot = { colspan: "5" }, 
           }, "<"),
           i("th", ot, C(ve.value), 1),
           i("td", {
-            onClick: b,
+            onClick: _,
             tabindex: -1
           }, ">")
         ]),
         (f(), v(x, null, V(st, (h) => i("tr", { key: h }, [
-          (f(), v(x, null, V(E, (_) => i("td", {
-            key: (h - 1) * E + _,
+          (f(), v(x, null, V(E, (b) => i("td", {
+            key: (h - 1) * E + b,
             contenteditable: !1,
             spellcheck: !1,
             tabindex: 0,
             style: De({
-              border: T(r.value[(h - 1) * E + _]) ? "2px solid var(--focus-cell-outline)" : "none",
-              borderBottomColor: m(r.value[(h - 1) * E + _]) ? "var(--focus-cell-outline)" : "none"
+              border: T(r.value[(h - 1) * E + b]) ? "2px solid var(--focus-cell-outline)" : "none",
+              borderBottomColor: m(r.value[(h - 1) * E + b]) ? "var(--focus-cell-outline)" : "none"
             }),
-            onClick: Ae((he) => fe(he, (h - 1) * E + _), ["prevent", "stop"]),
+            onClick: Ae((he) => fe(he, (h - 1) * E + b), ["prevent", "stop"]),
             class: B({
-              todaysdate: m(r.value[(h - 1) * E + _]),
-              selecteddate: T(r.value[(h - 1) * E + _])
+              todaysdate: m(r.value[(h - 1) * E + b]),
+              selecteddate: T(r.value[(h - 1) * E + b])
             })
-          }, C(new Date(r.value[(h - 1) * E + _]).getDate()), 15, lt)), 64))
+          }, C(new Date(r.value[(h - 1) * E + b]).getDate()), 15, lt)), 64))
         ])), 64))
       ])
     ], 8, nt));
   }
 });
-const rt = /* @__PURE__ */ I(at, [["__scopeId", "data-v-fcdc102d"]]), it = k({
+const rt = /* @__PURE__ */ I(at, [["__scopeId", "data-v-1e916ed1"]]), it = k({
   name: "ADropdown",
   props: {
     modelValue: {
@@ -576,10 +576,10 @@ const rt = /* @__PURE__ */ I(at, [["__scopeId", "data-v-fcdc102d"]]), it = k({
     }
   }
 });
-const ut = { class: "input-wrapper" }, ct = {
+const ut = { class: "input-wrapper" }, dt = {
   id: "autocomplete-results",
   class: "autocomplete-results"
-}, dt = {
+}, ct = {
   key: 0,
   class: "loading autocomplete-result"
 }, pt = ["onClick"];
@@ -602,8 +602,8 @@ function ft(e, t, o, n, s, l) {
       }, null, 544), [
         [R, e.search]
       ]),
-      w(i("ul", ct, [
-        e.isLoading ? (f(), v("li", dt, "Loading results...")) : (f(!0), v(x, { key: 1 }, V(e.results, (a, r) => (f(), v("li", {
+      w(i("ul", dt, [
+        e.isLoading ? (f(), v("li", ct, "Loading results...")) : (f(!0), v(x, { key: 1 }, V(e.results, (a, r) => (f(), v("li", {
           key: r,
           onClick: (p) => e.setResult(a),
           class: B(["autocomplete-result", { "is-active": r === e.arrowCounter }])
@@ -626,7 +626,7 @@ const mt = /* @__PURE__ */ I(it, [["render", ft]]), vt = /* @__PURE__ */ k({
     }, "×", 2));
   }
 });
-const ht = /* @__PURE__ */ I(vt, [["__scopeId", "data-v-6f1c1b45"]]), yt = /* @__PURE__ */ k({
+const ht = /* @__PURE__ */ I(vt, [["__scopeId", "data-v-fa78c7f7"]]), yt = /* @__PURE__ */ k({
   __name: "AForm",
   props: {
     modelValue: {},
@@ -637,8 +637,8 @@ const ht = /* @__PURE__ */ I(vt, [["__scopeId", "data-v-6f1c1b45"]]), yt = /* @_
   setup(e, { emit: t }) {
     const o = e, n = t, s = g(o.data || {}), l = (r) => {
       let p = {};
-      for (const [u, c] of Object.entries(r))
-        ["component", "fieldtype"].includes(u) || (p[u] = c), u === "rows" && c && c.length === 0 && (p.rows = s.value[r.fieldname]);
+      for (const [u, d] of Object.entries(r))
+        ["component", "fieldtype"].includes(u) || (p[u] = d), u === "rows" && d && d.length === 0 && (p.rows = s.value[r.fieldname]);
       return p;
     }, a = S({
       get: () => o.modelValue.map((r, p) => S({
@@ -653,18 +653,18 @@ const ht = /* @__PURE__ */ I(vt, [["__scopeId", "data-v-6f1c1b45"]]), yt = /* @_
       }
     });
     return (r, p) => (f(), v("form", null, [
-      (f(!0), v(x, null, V(r.modelValue, (u, c) => (f(), F(Ee(u.component), Ie({
-        key: c,
+      (f(!0), v(x, null, V(r.modelValue, (u, d) => (f(), F(Ee(u.component), Ie({
+        key: d,
         schema: u,
-        modelValue: a.value[c].value,
-        "onUpdate:modelValue": (y) => a.value[c].value = y,
+        modelValue: a.value[d].value,
+        "onUpdate:modelValue": (y) => a.value[d].value = y,
         data: s.value[u.fieldname],
         readonly: r.readonly
       }, l(u)), null, 16, ["schema", "modelValue", "onUpdate:modelValue", "data", "readonly"]))), 128))
     ]));
   }
 });
-const pe = /* @__PURE__ */ I(yt, [["__scopeId", "data-v-74d66cf2"]]), gt = /* @__PURE__ */ k({
+const pe = /* @__PURE__ */ I(yt, [["__scopeId", "data-v-e5beaceb"]]), gt = /* @__PURE__ */ k({
   __name: "AFieldset",
   props: {
     schema: {},
@@ -702,7 +702,7 @@ const pe = /* @__PURE__ */ I(yt, [["__scopeId", "data-v-74d66cf2"]]), gt = /* @_
     ]));
   }
 });
-const bt = /* @__PURE__ */ I(gt, [["__scopeId", "data-v-cad9b578"]]), _t = ["id", "disabled", "required"], wt = ["for"], Ct = ["innerHTML"], kt = /* @__PURE__ */ k({
+const _t = /* @__PURE__ */ I(gt, [["__scopeId", "data-v-f3ee8077"]]), bt = ["id", "disabled", "required"], wt = ["for"], Ct = ["innerHTML"], kt = /* @__PURE__ */ k({
   __name: "ANumericInput",
   props: {
     label: {},
@@ -727,7 +727,7 @@ const bt = /* @__PURE__ */ I(gt, [["__scopeId", "data-v-cad9b578"]]), _t = ["id"
         id: l.uuid,
         disabled: l.readonly,
         required: l.required
-      }, null, 8, _t), [
+      }, null, 8, bt), [
         [R, s.value]
       ]),
       i("label", { for: l.uuid }, C(l.label), 9, wt),
@@ -739,7 +739,7 @@ const bt = /* @__PURE__ */ I(gt, [["__scopeId", "data-v-cad9b578"]]), _t = ["id"
     ]));
   }
 });
-const Dt = /* @__PURE__ */ I(kt, [["__scopeId", "data-v-be33e6c4"]]), le = {
+const Dt = /* @__PURE__ */ I(kt, [["__scopeId", "data-v-8e4a9df5"]]), le = {
   date: "##/##/####",
   datetime: "####/##/## ##:##",
   time: "##:##",
@@ -867,16 +867,16 @@ function xt(e, t, o, n, s, l) {
     ])
   ]);
 }
-const Vt = /* @__PURE__ */ I(St, [["render", xt], ["__scopeId", "data-v-76dba9b8"]]);
+const Vt = /* @__PURE__ */ I(St, [["render", xt], ["__scopeId", "data-v-083a37fb"]]);
 function Pt(e) {
-  e.component("ACheckbox", qe), e.component("ACombobox", He), e.component("ADate", rt), e.component("ADropdown", mt), e.component("AFieldset", bt), e.component("AForm", pe), e.component("ANumericInput", Dt), e.component("ATextInput", Vt);
+  e.component("ACheckbox", qe), e.component("ACombobox", He), e.component("ADate", rt), e.component("ADropdown", mt), e.component("AFieldset", _t), e.component("AForm", pe), e.component("ANumericInput", Dt), e.component("ATextInput", Vt);
 }
 export {
   qe as ACheckbox,
   He as AComboBox,
   rt as ADate,
   mt as ADropdown,
-  bt as AFieldset,
+  _t as AFieldset,
   pe as AForm,
   Dt as ANumericInput,
   Vt as ATextInput,

@@ -4,16 +4,16 @@ const p = (t, e) => {
   for (const [r, l] of e)
     n[r] = l;
   return n;
-}, at = {
+}, st = {
   name: "Navbar",
   methods: {
     handlePrimaryAction() {
       this.$emit("click");
     }
   }
-}, st = { class: "beam__navbar" }, rt = /* @__PURE__ */ d("span", { class: "home-icon" }, "⬣", -1), lt = /* @__PURE__ */ d("h1", { class: "nav-title" }, "TITLE", -1), ct = { class: "navbar-action-wrapper" };
+}, at = { class: "beam__navbar" }, rt = /* @__PURE__ */ d("span", { class: "home-icon" }, "⬣", -1), lt = /* @__PURE__ */ d("h1", { class: "nav-title" }, "TITLE", -1), ct = { class: "navbar-action-wrapper" };
 function it(t, e, n, r, l, o) {
-  return i(), m("nav", st, [
+  return i(), m("nav", at, [
     _(t.$slots, "icon", {}, () => [
       rt
     ]),
@@ -23,7 +23,7 @@ function it(t, e, n, r, l, o) {
     d("div", ct, [
       d("button", {
         class: "navbar-action btn",
-        onClick: e[0] || (e[0] = (...a) => o.handlePrimaryAction && o.handlePrimaryAction(...a))
+        onClick: e[0] || (e[0] = (...s) => o.handlePrimaryAction && o.handlePrimaryAction(...s))
       }, [
         _(t.$slots, "navbaraction", {}, () => [
           j("Action")
@@ -32,7 +32,7 @@ function it(t, e, n, r, l, o) {
     ])
   ]);
 }
-const E = /* @__PURE__ */ p(at, [["render", it]]), dt = {
+const E = /* @__PURE__ */ p(st, [["render", it]]), dt = {
   name: "ListAnchor",
   props: {
     to: {
@@ -99,8 +99,8 @@ function $t(t, e, n, r, l, o) {
     d("span", {
       contenteditable: n.editable,
       class: U({ alert: o.countColor === !1 }),
-      onInput: e[0] || (e[0] = (a) => o.handleInput(a)),
-      onClick: e[1] || (e[1] = (a) => o.handleInput(a))
+      onInput: e[0] || (e[0] = (s) => o.handleInput(s)),
+      onClick: e[1] || (e[1] = (s) => o.handleInput(s))
     }, h(l.count), 43, ft),
     d("span", null, "/" + h(n.denominator), 1),
     n.uom ? (i(), m("span", ht, "  " + h(n.uom), 1)) : y("", !0)
@@ -127,7 +127,7 @@ const bt = {
       this.$emit("input", this.checked);
     }
   }
-}, vt = (t) => (H("data-v-66aa3656"), t = t(), z(), t), yt = { class: "container" }, kt = ["checked"], gt = /* @__PURE__ */ vt(() => /* @__PURE__ */ d("div", {
+}, vt = (t) => (H("data-v-1d87d388"), t = t(), z(), t), yt = { class: "container" }, kt = ["checked"], gt = /* @__PURE__ */ vt(() => /* @__PURE__ */ d("div", {
   class: "checkmark",
   tabindex: "0"
 }, null, -1));
@@ -136,13 +136,13 @@ function wt(t, e, n, r, l, o) {
     d("input", {
       type: "checkbox",
       checked: n.value,
-      onInput: e[0] || (e[0] = (...a) => o.handleInput && o.handleInput(...a)),
+      onInput: e[0] || (e[0] = (...s) => o.handleInput && o.handleInput(...s)),
       tabindex: "-1"
     }, null, 40, kt),
     gt
   ]);
 }
-const w = /* @__PURE__ */ p(bt, [["render", wt], ["__scopeId", "data-v-66aa3656"]]), Ct = {
+const w = /* @__PURE__ */ p(bt, [["render", wt], ["__scopeId", "data-v-1d87d388"]]), Ct = {
   name: "ListItem",
   components: {
     ItemCount: g,
@@ -159,13 +159,13 @@ const w = /* @__PURE__ */ p(bt, [["render", wt], ["__scopeId", "data-v-66aa3656"
   class: "beam__listitem"
 }, Mt = { class: "beam__listtext" };
 function St(t, e, n, r, l, o) {
-  const a = $("ItemCount"), s = $("ItemCheck");
+  const s = $("ItemCount"), a = $("ItemCheck");
   return i(), m("li", It, [
     d("div", Mt, [
       d("label", null, h(n.item.label), 1),
       d("p", null, h(n.item.description), 1)
     ]),
-    n.item.count ? (i(), f(a, {
+    n.item.count ? (i(), f(s, {
       key: 0,
       modelValue: n.item.count.count,
       "onUpdate:modelValue": e[0] || (e[0] = (c) => n.item.count.count = c),
@@ -173,7 +173,7 @@ function St(t, e, n, r, l, o) {
       uom: n.item.count.uom,
       editable: !0
     }, null, 8, ["modelValue", "denominator", "uom"])) : y("", !0),
-    n.item.hasOwnProperty("checked") ? (i(), f(s, {
+    n.item.hasOwnProperty("checked") ? (i(), f(a, {
       key: 1,
       modelValue: n.item.checked,
       "onUpdate:modelValue": e[1] || (e[1] = (c) => n.item.checked = c)
@@ -206,21 +206,21 @@ const C = /* @__PURE__ */ p(Ct, [["render", St]]), Nt = {
   }
 }, Et = { class: "beam__listview" };
 function Lt(t, e, n, r, l, o) {
-  const a = $("ListItem");
+  const s = $("ListItem");
   return i(), m("ul", Et, [
-    (i(!0), m(W, null, Y(n.items, (s, c) => (i(), m("li", { key: c }, [
-      s.linkComponent ? (i(), f(G(s.linkComponent), {
+    (i(!0), m(W, null, Y(n.items, (a, c) => (i(), m("li", { key: c }, [
+      a.linkComponent ? (i(), f(G(a.linkComponent), {
         key: 0,
-        to: s.route,
+        to: a.route,
         tabindex: "-1"
       }, {
         default: M(() => [
-          J(a, { item: s }, null, 8, ["item"])
+          J(s, { item: a }, null, 8, ["item"])
         ]),
         _: 2
-      }, 1032, ["to"])) : (i(), f(a, {
+      }, 1032, ["to"])) : (i(), f(s, {
         key: 1,
-        item: s
+        item: a
       }, null, 8, ["item"]))
     ]))), 128))
   ]);
@@ -263,8 +263,8 @@ function Dt(t, e, n, r, l, o) {
   return i(), m("footer", Vt, [
     d("span", Tt, [
       d("button", {
-        class: "footer-action btn btn--dark",
-        onClick: e[0] || (e[0] = (...a) => o.handleFooterAction && o.handleFooterAction(...a))
+        class: "footer-action btn",
+        onClick: e[0] || (e[0] = (...s) => o.handleFooterAction && o.handleFooterAction(...s))
       }, [
         _(t.$slots, "default")
       ])
@@ -276,17 +276,17 @@ const A = /* @__PURE__ */ p(Pt, [["render", Dt]]), Ft = {
   props: ["showModal"]
 }, qt = { class: "beam__modal" };
 function Ot(t, e, n, r, l, o) {
-  const a = $("portal");
-  return i(), f(a, { to: "beam__modal_outlet" }, {
+  const s = $("portal");
+  return i(), f(s, { to: "beam__modal_outlet" }, {
     default: M(() => [
       K(d("div", qt, [
         d("button", {
           class: "btn",
-          onClick: e[0] || (e[0] = (s) => t.$emit("closemodal"))
+          onClick: e[0] || (e[0] = (a) => t.$emit("closemodal"))
         }, "Close Modal"),
         _(t.$slots, "default", {
-          onClosemodal: e[1] || (e[1] = (s) => t.$emit("closemodal")),
-          onConfirmmodal: e[2] || (e[2] = (s) => t.$emit("confirmmodal"))
+          onClosemodal: e[1] || (e[1] = (a) => t.$emit("closemodal")),
+          onConfirmmodal: e[2] || (e[2] = (a) => t.$emit("confirmmodal"))
         })
       ], 512), [
         [Q, n.showModal]
@@ -299,8 +299,8 @@ const B = /* @__PURE__ */ p(Ft, [["render", Ot]]), jt = {
   name: "BeamModalOutlet"
 };
 function Ut(t, e, n, r, l, o) {
-  const a = $("portal-target");
-  return i(), f(a, { name: "beam__modal_outlet" });
+  const s = $("portal-target");
+  return i(), f(s, { name: "beam__modal_outlet" });
 }
 const P = /* @__PURE__ */ p(jt, [["render", Ut]]), Ht = {
   name: "ConfirmDialog",
@@ -317,12 +317,12 @@ function Yt(t, e, n, r, l, o) {
   return i(), m("div", zt, [
     Wt,
     d("button", {
-      class: "btn btn--dark",
-      onClick: e[0] || (e[0] = (...a) => o.confirmModal && o.confirmModal(...a))
+      class: "btn",
+      onClick: e[0] || (e[0] = (...s) => o.confirmModal && o.confirmModal(...s))
     }, "Yes"),
     d("button", {
-      class: "btn btn--dark",
-      onClick: e[1] || (e[1] = (...a) => o.closeModal && o.closeModal(...a))
+      class: "btn",
+      onClick: e[1] || (e[1] = (...s) => o.closeModal && o.closeModal(...s))
     }, "No")
   ]);
 }
@@ -345,11 +345,11 @@ function Jt(t, e) {
   function r() {
     if (!F)
       return;
-    const { to: o, name: a, order: s } = t;
+    const { to: o, name: s, order: a } = t;
     e.default ? n.open({
       to: o,
-      from: a,
-      order: s,
+      from: s,
+      order: a,
       content: e.default
     }) : l();
   }
@@ -367,8 +367,8 @@ function Jt(t, e) {
     l();
   }), N(
     () => t.to,
-    (o, a) => {
-      t.disabled || (a && a !== o && l(a), r());
+    (o, s) => {
+      t.disabled || (s && s !== o && l(s), r());
     }
   );
 }
@@ -406,9 +406,9 @@ const Kt = S({
         const o = r.getContentForTarget(
           t.name,
           t.multiple
-        ), a = n.wrapper, s = o.map((u) => u.content(t.slotProps)), c = a ? s.flatMap(
-          (u) => u.length ? a(u) : []
-        ) : s.flat(1);
+        ), s = n.wrapper, a = o.map((u) => u.content(t.slotProps)), c = s ? a.flatMap(
+          (u) => u.length ? s(u) : []
+        ) : a.flat(1);
         return {
           vnodes: c,
           vnodesFn: () => c
@@ -418,8 +418,8 @@ const Kt = S({
     return N(
       l,
       ({ vnodes: o }) => {
-        const a = o.length > 0, s = r.transports.get(t.name), c = s ? [...s.keys()] : [];
-        e("change", { hasContent: a, sources: c });
+        const s = o.length > 0, a = r.transports.get(t.name), c = a ? [...a.keys()] : [];
+        e("change", { hasContent: s, sources: c });
       },
       { flush: "post" }
     ), () => {
@@ -436,34 +436,34 @@ const Kt = S({
 });
 function Xt(t = !0) {
   const e = nt(/* @__PURE__ */ new Map());
-  function n(a) {
+  function n(s) {
     if (!F)
       return;
-    const { to: s, from: c, content: u, order: b = 1 / 0 } = a;
-    if (!s || !c || !u)
+    const { to: a, from: c, content: u, order: b = 1 / 0 } = s;
+    if (!a || !c || !u)
       return;
-    e.has(s) || e.set(s, /* @__PURE__ */ new Map());
-    const v = e.get(s), O = {
-      to: s,
+    e.has(a) || e.set(a, /* @__PURE__ */ new Map());
+    const v = e.get(a), O = {
+      to: a,
       from: c,
       content: u,
       order: b
     };
     v.set(c, O);
   }
-  function r(a) {
-    const { to: s, from: c } = a;
-    if (!s || !c)
+  function r(s) {
+    const { to: a, from: c } = s;
+    if (!a || !c)
       return;
-    const u = e.get(s);
-    !u || (u.delete(c), u.size || e.delete(s));
+    const u = e.get(a);
+    !u || (u.delete(c), u.size || e.delete(a));
   }
-  function l(a, s) {
-    const c = e.get(a);
+  function l(s, a) {
+    const c = e.get(s);
     if (!c)
       return [];
     const u = Array.from((c == null ? void 0 : c.values()) || []);
-    return s ? Gt(
+    return a ? Gt(
       u,
       (b, v) => b.order - v.order
     ) : [u.pop()];

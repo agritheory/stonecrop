@@ -768,7 +768,7 @@ const Ie = (e, n) => {
   for (const [t, o] of n)
     r[t] = o;
   return r;
-}, Ee = /* @__PURE__ */ Ie(Pe, [["__scopeId", "data-v-28cc715a"]]);
+}, Ee = /* @__PURE__ */ Ie(Pe, [["__scopeId", "data-v-dd740de8"]]);
 function Te(e) {
   e.component("ACodeEditor", Ee);
 }

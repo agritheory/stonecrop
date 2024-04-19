@@ -1,4 +1,56 @@
-/* General Sizing */
+@import url('https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400..700;1,400..700&display=swap');
+
+:root {
+	/* THEME COLORS */
+
+	/* General Colors */
+	--primary-color: #f2f2f2; /* primary action color, default blue */
+	--primary-text-color: #666666; /* text color paired with primary color, default white */
+	--brand-color: #202a44; /* brand color, default navy */
+
+	/* Grays */
+	--gray-5: #f2f2f2;
+	--gray-10: #e6e6e6;
+	--gray-20: #cccccc;
+	--gray-50: #808080;
+	--gray-60: #666666;
+	--gray-80: #333333;
+
+	/* Warnings/Alerts/Success */
+	--brand-danger: #e63c28;
+	--brand-success: #155724;
+
+	/* Table Colors */
+	--row-color-zebra-light: #eeeeee;
+	--row-color-zebra-dark: #dddddd;
+	--focus-cell-background: #ffffff;
+	--focus-cell-outline: #000000;
+	--cell-border-color: #ffffff;
+	--cell-text-color: #3a3c41;
+	--active-cell-background: #ffffff;
+	--active-cell-outline: #e6a92d;
+	--row-border-color: var(--gray-20);
+	--header-border-color: #ffffff;
+	--header-text-color: var(--gray-20);
+	--row-number-background-color: #ffffff;
+
+	/* Form Colors */
+	--input-border-color: var(--gray-20);
+	--input-label-color: var(--gray-80);
+	--input-active-border-color: #000000;
+	--input-active-label-color: #000000;
+	--required-border: #e63c28;
+
+	/* FONT */
+	--font-family: Arimo, Arial, sans-serif;
+
+	/* BTNS */
+	--btn-color: white;
+	--btn-border: #cccccc;
+	--btn-hover: #f2f2f2;
+	--btn-label-color: black;
+}
+
 html {
 	font-size: 62.5%; /*1 rem = 10px; 10px/16px = 62.5%*/
 }
@@ -6,6 +58,12 @@ html {
 body {
 	font-family: var(--font-family);
 	background-color: white;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	flex: 1 0 auto;
+	height: 100%;
 }
 
 /* Style */

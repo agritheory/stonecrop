@@ -1,4 +1,4 @@
-import { onMounted as xe, onBeforeUnmount as _e, ref as E, watch as j, unref as r, getCurrentScope as Ie, onScopeDispose as Ee, defineComponent as k, inject as O, computed as S, openBlock as m, createElementBlock as b, createBlock as P, resolveDynamicComponent as ie, mergeProps as V, toDisplayString as $, Fragment as L, createElementVNode as T, renderSlot as y, createCommentVNode as M, useCssVars as de, withDirectives as ce, vShow as ue, reactive as A, renderList as N, normalizeStyle as H, createTextVNode as ke, provide as Ce, nextTick as Ae, createVNode as z, withCtx as G } from "vue";
+import { onMounted as xe, onBeforeUnmount as _e, ref as E, watch as j, unref as r, getCurrentScope as Ie, onScopeDispose as Ee, defineComponent as k, inject as O, computed as S, openBlock as m, createElementBlock as g, createBlock as P, resolveDynamicComponent as ie, mergeProps as V, toDisplayString as $, Fragment as L, createElementVNode as T, renderSlot as y, createCommentVNode as M, useCssVars as de, withDirectives as ce, vShow as ue, reactive as A, renderList as N, normalizeStyle as H, createTextVNode as ke, provide as Ce, nextTick as Ae, createVNode as z, withCtx as G } from "vue";
 var J;
 const pe = typeof window < "u", Te = (t) => typeof t == "string", $e = () => {
 };
@@ -340,8 +340,8 @@ const We = ["data-colindex", "data-rowindex", "data-editable", "contenteditable"
     const l = S(() => {
       const u = n.cellData(e.colIndex, e.rowIndex);
       if (n.columns[e.colIndex].format) {
-        const g = n.columns[e.colIndex].format;
-        return typeof g == "function" ? g(u) : typeof g == "string" ? Function(`"use strict";return (${g})`)()(u) : u;
+        const b = n.columns[e.colIndex].format;
+        return typeof b == "function" ? b(u) : typeof b == "string" ? Function(`"use strict";return (${b})`)()(u) : u;
       } else
         return u;
     }), s = (u) => {
@@ -350,8 +350,8 @@ const We = ["data-colindex", "data-rowindex", "data-editable", "contenteditable"
         return;
       }
       if (n.columns[e.colIndex].mask, n.columns[e.colIndex].modalComponent) {
-        const g = o.value.getBoundingClientRect();
-        n.modal.visible = !0, n.modal.colIndex = e.colIndex, n.modal.rowIndex = e.rowIndex, n.modal.parent = o.value, n.modal.top = g.top + g.height, n.modal.left = g.left, n.modal.width = d.value, n.modal.component = n.columns[e.colIndex].modalComponent, n.modal.componentProps = n.columns[e.colIndex].modalComponentProps;
+        const b = o.value.getBoundingClientRect();
+        n.modal.visible = !0, n.modal.colIndex = e.colIndex, n.modal.rowIndex = e.rowIndex, n.modal.parent = o.value, n.modal.top = b.top + b.height, n.modal.left = b.left, n.modal.width = d.value, n.modal.component = n.columns[e.colIndex].modalComponent, n.modal.componentProps = n.columns[e.colIndex].modalComponentProps;
       }
     };
     if (e.addNavigation) {
@@ -379,14 +379,14 @@ const We = ["data-colindex", "data-rowindex", "data-editable", "contenteditable"
       o.value && (p = o.value.innerText);
     }, c = () => {
       o.value && o.value.innerHTML !== p && (p = o.value.innerText, o.value.dispatchEvent(new Event("change")), a.value = !0, n.columns[e.colIndex].format || n.setCellData(e.rowIndex, e.colIndex, p));
-    }, v = (u, g) => g && u === 0 && g > 0 ? `${g}ch` : "inherit", h = {
+    }, v = (u, b) => b && u === 0 && b > 0 ? `${b}ch` : "inherit", h = {
       textAlign: i.value,
       width: d.value,
       backgroundColor: a.value ? "var(--cell-modified-color)" : "inherit",
       fontWeight: a.value ? "bold" : "inherit",
       paddingLeft: v(e.colIndex, (I = n.display[e.rowIndex]) == null ? void 0 : I.indent)
     };
-    return (u, g) => (m(), b("td", {
+    return (u, b) => (m(), g("td", {
       ref_key: "cell",
       ref: o,
       "data-colindex": u.colIndex,
@@ -406,7 +406,7 @@ const We = ["data-colindex", "data-rowindex", "data-editable", "contenteditable"
       r(n).columns[u.colIndex].cellComponent ? (m(), P(ie(r(n).columns[u.colIndex].cellComponent), V({
         key: 0,
         value: l.value
-      }, r(n).columns[u.colIndex].cellComponentProps), null, 16, ["value"])) : (m(), b("span", Be, $(l.value), 1))
+      }, r(n).columns[u.colIndex].cellComponentProps), null, 16, ["value"])) : (m(), g("span", Be, $(l.value), 1))
     ], 40, We));
   }
 });
@@ -415,7 +415,7 @@ const C = (t, e) => {
   for (const [o, a] of e)
     n[o] = a;
   return n;
-}, he = /* @__PURE__ */ C(Qe, [["__scopeId", "data-v-1738c6fc"]]), Fe = ["tabindex"], qe = ["tabindex"], ze = ["colspan"], Ge = /* @__PURE__ */ k({
+}, he = /* @__PURE__ */ C(Qe, [["__scopeId", "data-v-25c960fb"]]), Fe = ["tabindex"], qe = ["tabindex"], ze = ["colspan"], Ge = /* @__PURE__ */ k({
   __name: "AExpansionRow",
   props: {
     row: {},
@@ -437,7 +437,7 @@ const C = (t, e) => {
         }
       ]);
     }
-    return (s, i) => (m(), b(L, null, [
+    return (s, i) => (m(), g(L, null, [
       T("tr", V(s.$attrs, {
         ref_key: "rowEl",
         ref: o,
@@ -451,7 +451,7 @@ const C = (t, e) => {
         }, $(l()), 1),
         y(s.$slots, "row", {}, void 0, !0)
       ], 16, Fe),
-      r(n).display[e.rowIndex].expanded ? (m(), b("tr", {
+      r(n).display[e.rowIndex].expanded ? (m(), g("tr", {
         key: 0,
         ref_key: "rowExpanded",
         ref: a,
@@ -469,7 +469,7 @@ const C = (t, e) => {
     ], 64));
   }
 });
-const Je = /* @__PURE__ */ C(Ge, [["__scopeId", "data-v-2bb821ae"]]), Xe = ["tabindex"], Ye = {
+const Je = /* @__PURE__ */ C(Ge, [["__scopeId", "data-v-006f9280"]]), Xe = ["tabindex"], Ye = {
   key: 0,
   tabIndex: -1,
   class: "list-index"
@@ -484,7 +484,7 @@ const Je = /* @__PURE__ */ C(Ge, [["__scopeId", "data-v-2bb821ae"]]), Xe = ["tab
   },
   setup(t) {
     de((d) => ({
-      "6b10edcf": r(a)
+      51583799: r(a)
     }));
     const e = t, n = O(e.tableid), o = E(null), a = n.numberedRowWidth.value, l = () => n.config.view !== "tree" ? "" : n.display[e.rowIndex].isRoot || n.display[e.rowIndex].isParent ? n.display[e.rowIndex].childrenOpen ? "-" : "+" : "", s = () => n.config.view !== "tree" || n.display[e.rowIndex].isRoot || n.display[e.rowIndex].open, i = (d) => {
       n.toggleRowExpand(d);
@@ -494,13 +494,13 @@ const Je = /* @__PURE__ */ C(Ge, [["__scopeId", "data-v-2bb821ae"]]), Xe = ["tab
         selectors: o,
         handlers: e.addNavigation
       }
-    ]), (d, p) => ce((m(), b("tr", {
+    ]), (d, p) => ce((m(), g("tr", {
       ref_key: "rowEl",
       ref: o,
       tabindex: d.tabIndex,
       class: "table-row"
     }, [
-      r(n).config.view === "list" ? (m(), b("td", Ye, $(d.rowIndex + 1), 1)) : r(n).config.view === "tree" ? (m(), b("td", {
+      r(n).config.view === "list" ? (m(), g("td", Ye, $(d.rowIndex + 1), 1)) : r(n).config.view === "tree" ? (m(), g("td", {
         key: 1,
         tabIndex: -1,
         class: "tree-index",
@@ -512,7 +512,7 @@ const Je = /* @__PURE__ */ C(Ge, [["__scopeId", "data-v-2bb821ae"]]), Xe = ["tab
     ]);
   }
 });
-const be = /* @__PURE__ */ C(Ze, [["__scopeId", "data-v-c758303d"]]);
+const ge = /* @__PURE__ */ C(Ze, [["__scopeId", "data-v-fab653ac"]]);
 let R;
 const Ke = new Uint8Array(16);
 function et() {
@@ -529,7 +529,7 @@ function tt(t, e = 0) {
 const nt = typeof crypto < "u" && crypto.randomUUID && crypto.randomUUID.bind(crypto), se = {
   randomUUID: nt
 };
-function ge(t, e, n) {
+function be(t, e, n) {
   if (se.randomUUID && !e && !t)
     return se.randomUUID();
   t = t || {};
@@ -544,7 +544,7 @@ function ge(t, e, n) {
 }
 class ot {
   constructor(e, n, o, a, l, s) {
-    this.id = e || ge(), this.rows = o, this.columns = A(n), this.config = A(a), this.table = l || A(this.createTableObject()), this.display = this.createDisplayObject(s), this.modal = A({ visible: !1 });
+    this.id = e || be(), this.rows = o, this.columns = A(n), this.config = A(a), this.table = l || A(this.createTableObject()), this.display = this.createDisplayObject(s), this.modal = A({ visible: !1 });
   }
   createTableObject() {
     const e = {};
@@ -611,17 +611,17 @@ const lt = { key: 0 }, at = {
   },
   setup(t) {
     de((l) => ({
-      "1cb0fcc9": r(o)
+      e41795ae: r(o)
     }));
     const n = O(t.tableid), o = n.numberedRowWidth.value, a = (l) => ({
       minWidth: l.width || "40ch",
       textAlign: l.align || "center",
       width: n.config.fullWidth ? "auto" : null
     });
-    return (l, s) => l.columns.length ? (m(), b("thead", lt, [
+    return (l, s) => l.columns.length ? (m(), g("thead", lt, [
       T("tr", at, [
-        r(n).zeroColumn ? (m(), b("th", rt)) : M("", !0),
-        (m(!0), b(L, null, N(l.columns, (i, d) => (m(), b("th", {
+        r(n).zeroColumn ? (m(), g("th", rt)) : M("", !0),
+        (m(!0), g(L, null, N(l.columns, (i, d) => (m(), g("th", {
           key: d,
           tabindex: "-1",
           style: H(a(i))
@@ -634,7 +634,7 @@ const lt = { key: 0 }, at = {
     ])) : M("", !0);
   }
 });
-const ve = /* @__PURE__ */ C(st, [["__scopeId", "data-v-8a8d9cee"]]), it = /* @__PURE__ */ k({
+const ve = /* @__PURE__ */ C(st, [["__scopeId", "data-v-a536c71e"]]), it = /* @__PURE__ */ k({
   __name: "ATableModal",
   props: {
     colIndex: {},
@@ -646,7 +646,7 @@ const ve = /* @__PURE__ */ C(st, [["__scopeId", "data-v-8a8d9cee"]]), it = /* @_
     const n = (o) => {
       o.stopPropagation();
     };
-    return (o, a) => (m(), b("div", {
+    return (o, a) => (m(), g("div", {
       ref: "amodal",
       class: "amodal",
       tabindex: "-1",
@@ -657,7 +657,7 @@ const ve = /* @__PURE__ */ C(st, [["__scopeId", "data-v-8a8d9cee"]]), it = /* @_
     ], 544));
   }
 });
-const ye = /* @__PURE__ */ C(it, [["__scopeId", "data-v-8ac70767"]]), dt = /* @__PURE__ */ k({
+const ye = /* @__PURE__ */ C(it, [["__scopeId", "data-v-1c1a174d"]]), dt = /* @__PURE__ */ k({
   __name: "ATable",
   props: {
     id: {},
@@ -691,7 +691,7 @@ const ye = /* @__PURE__ */ C(it, [["__scopeId", "data-v-8ac70767"]]), dt = /* @_
           c && c[0].focus();
         });
       }
-    }), (i, d) => (m(), b("table", {
+    }), (i, d) => (m(), g("table", {
       class: "atable",
       style: H({ width: r(l).config.fullWidth ? "100%" : "auto" })
     }, [
@@ -704,14 +704,14 @@ const ye = /* @__PURE__ */ C(it, [["__scopeId", "data-v-8ac70767"]]), dt = /* @_
       ], !0),
       T("tbody", null, [
         y(i.$slots, "body", { data: r(l) }, () => [
-          (m(!0), b(L, null, N(r(l).rows, (p, f) => (m(), P(be, {
-            key: p.id || r(ge)(),
+          (m(!0), g(L, null, N(r(l).rows, (p, f) => (m(), P(ge, {
+            key: p.id || r(be)(),
             row: p,
             rowIndex: f,
             tableid: r(l).id
           }, {
             default: G(() => [
-              (m(!0), b(L, null, N(r(l).columns, (c, v) => (m(), P(he, {
+              (m(!0), g(L, null, N(r(l).columns, (c, v) => (m(), P(he, {
                 key: `${v}:${f}`,
                 tableid: r(l).id,
                 col: c,
@@ -758,14 +758,14 @@ const ye = /* @__PURE__ */ C(it, [["__scopeId", "data-v-8ac70767"]]), dt = /* @_
     ], 4));
   }
 });
-const ct = /* @__PURE__ */ C(dt, [["__scopeId", "data-v-9137b4c3"]]);
+const ct = /* @__PURE__ */ C(dt, [["__scopeId", "data-v-fbfc39ce"]]);
 function ft(t) {
-  t.component("ACell", he), t.component("AExpansionRow", Je), t.component("ARow", be), t.component("ATable", ct), t.component("ATableHeader", ve), t.component("ATableModal", ye);
+  t.component("ACell", he), t.component("AExpansionRow", Je), t.component("ARow", ge), t.component("ATable", ct), t.component("ATableHeader", ve), t.component("ATableModal", ye);
 }
 export {
   he as ACell,
   Je as AExpansionRow,
-  be as ARow,
+  ge as ARow,
   ct as ATable,
   ve as ATableHeader,
   ye as ATableModal,

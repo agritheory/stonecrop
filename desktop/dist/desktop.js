@@ -1,5 +1,5 @@
 import { defineComponent as q, ref as V, onMounted as Lt, openBlock as x, createElementBlock as A, normalizeClass as co, createElementVNode as T, Fragment as Oe, renderList as Pe, toDisplayString as ce, createCommentVNode as ke, withDirectives as lt, vShow as jt, pushScopeId as lo, popScopeId as uo, inject as Z, computed as B, createBlock as Se, resolveDynamicComponent as Bt, mergeProps as Ut, effectScope as fo, markRaw as Ee, onBeforeMount as wr, shallowRef as _r, toRaw as ut, hasInjectionContext as br, getCurrentInstance as Ht, unref as k, shallowReactive as Er, watch as ue, reactive as be, isRef as We, isReactive as Wt, toRef as yt, nextTick as Fe, getCurrentScope as po, onScopeDispose as ho, h as mo, provide as nt, toRefs as dn, watchEffect as kr, normalizeStyle as ie, renderSlot as me, createVNode as at, withCtx as it, useCssVars as vo, createTextVNode as go, onBeforeUnmount as Sr, resolveComponent as Ir, withKeys as Ye, vModelText as Or } from "vue";
-const Ft = (e) => (lo("data-v-b7fdfbec"), e = e(), uo(), e), Pr = { class: "action-menu-icon" }, xr = /* @__PURE__ */ Ft(() => /* @__PURE__ */ T("svg", {
+const Ft = (e) => (lo("data-v-0861f745"), e = e(), uo(), e), Pr = { class: "action-menu-icon" }, xr = /* @__PURE__ */ Ft(() => /* @__PURE__ */ T("svg", {
   class: "leftBar",
   version: "1.1",
   id: "Layer_1",
@@ -109,7 +109,7 @@ const Gt = (e, t) => {
   for (const [o, r] of t)
     n[o] = r;
   return n;
-}, Ur = /* @__PURE__ */ Gt(Br, [["__scopeId", "data-v-b7fdfbec"]]), Hr = {};
+}, Ur = /* @__PURE__ */ Gt(Br, [["__scopeId", "data-v-0861f745"]]), Hr = {};
 function Wr(e, t) {
   return x(), A("dialog");
 }
@@ -280,7 +280,7 @@ const Zr = /* @__PURE__ */ q({
       }, s(u)), null, 16, ["schema", "modelValue", "onUpdate:modelValue", "data", "readonly"]))), 128))
     ]));
   }
-}), es = /* @__PURE__ */ Gr(Zr, [["__scopeId", "data-v-74d66cf2"]]), yn = {
+}), es = /* @__PURE__ */ Gr(Zr, [["__scopeId", "data-v-e5beaceb"]]), yn = {
   date: "##/##/####",
   datetime: "####/##/## ##:##",
   time: "##:##",
@@ -4523,7 +4523,7 @@ const Ic = ["data-colindex", "data-rowindex", "data-editable", "contenteditable"
   for (const [o, r] of t)
     n[o] = r;
   return n;
-}, xc = /* @__PURE__ */ qe(Pc, [["__scopeId", "data-v-1738c6fc"]]), Cc = ["tabindex"], $c = {
+}, xc = /* @__PURE__ */ qe(Pc, [["__scopeId", "data-v-25c960fb"]]), Cc = ["tabindex"], $c = {
   key: 0,
   tabIndex: -1,
   class: "list-index"
@@ -4538,7 +4538,7 @@ const Ic = ["data-colindex", "data-rowindex", "data-editable", "contenteditable"
   },
   setup(e) {
     vo((l) => ({
-      "6b10edcf": k(r)
+      51583799: k(r)
     }));
     const t = e, n = Z(t.tableid), o = V(null), r = n.numberedRowWidth.value, s = () => n.config.view !== "tree" ? "" : n.display[t.rowIndex].isRoot || n.display[t.rowIndex].isParent ? n.display[t.rowIndex].childrenOpen ? "-" : "+" : "", i = () => n.config.view !== "tree" || n.display[t.rowIndex].isRoot || n.display[t.rowIndex].open, a = (l) => {
       n.toggleRowExpand(l);
@@ -4565,7 +4565,7 @@ const Ic = ["data-colindex", "data-rowindex", "data-editable", "contenteditable"
       [jt, i()]
     ]);
   }
-}), Rc = /* @__PURE__ */ qe(Nc, [["__scopeId", "data-v-c758303d"]]);
+}), Rc = /* @__PURE__ */ qe(Nc, [["__scopeId", "data-v-fab653ac"]]);
 let tt;
 const Ac = new Uint8Array(16);
 function Tc() {
@@ -4664,7 +4664,7 @@ const Lc = { key: 0 }, jc = {
   },
   setup(e) {
     vo((r) => ({
-      "1cb0fcc9": k(n)
+      e41795ae: k(n)
     }));
     const t = Z(e.tableid), n = t.numberedRowWidth.value, o = (r) => ({
       minWidth: r.width || "40ch",
@@ -4686,7 +4686,7 @@ const Lc = { key: 0 }, jc = {
       ])
     ])) : ke("", !0);
   }
-}), Hc = /* @__PURE__ */ qe(Uc, [["__scopeId", "data-v-8a8d9cee"]]), Wc = /* @__PURE__ */ q({
+}), Hc = /* @__PURE__ */ qe(Uc, [["__scopeId", "data-v-a536c71e"]]), Wc = /* @__PURE__ */ q({
   __name: "ATableModal",
   props: {
     colIndex: {},
@@ -4708,7 +4708,7 @@ const Lc = { key: 0 }, jc = {
       me(n.$slots, "default", {}, void 0, !0)
     ], 544));
   }
-}), Fc = /* @__PURE__ */ qe(Wc, [["__scopeId", "data-v-8ac70767"]]), Gc = /* @__PURE__ */ q({
+}), Fc = /* @__PURE__ */ qe(Wc, [["__scopeId", "data-v-1c1a174d"]]), Gc = /* @__PURE__ */ q({
   __name: "ATable",
   props: {
     id: {},
@@ -4808,7 +4808,7 @@ const Lc = { key: 0 }, jc = {
       ], !0)
     ], 4));
   }
-}), zc = /* @__PURE__ */ qe(Gc, [["__scopeId", "data-v-9137b4c3"]]), Qc = /* @__PURE__ */ q({
+}), zc = /* @__PURE__ */ qe(Gc, [["__scopeId", "data-v-fbfc39ce"]]), Qc = /* @__PURE__ */ q({
   __name: "Records",
   setup(e) {
     const { stonecrop: t, isReady: n } = No(), o = { view: "list" };
@@ -4819,7 +4819,7 @@ const Lc = { key: 0 }, jc = {
       config: o
     }, null, 8, ["columns", "rows"])) : ke("", !0);
   }
-}), vr = (e) => (lo("data-v-18bfde6e"), e = e(), uo(), e), qc = { class: "tabs" }, Kc = { tabindex: "0" }, Jc = {
+}), vr = (e) => (lo("data-v-cb80d0d3"), e = e(), uo(), e), qc = { class: "tabs" }, Kc = { tabindex: "0" }, Jc = {
   version: "1.1",
   id: "Capa_1",
   xmlns: "http://www.w3.org/2000/svg",
@@ -4832,14 +4832,14 @@ const Lc = { key: 0 }, jc = {
 }, Yc = /* @__PURE__ */ vr(() => /* @__PURE__ */ T("g", null, [
   /* @__PURE__ */ T("path", {
     style: { fill: "#010002" },
-    d: `M351.191,401.923H72.901c-4.487,0-8.129-3.633-8.129-8.129V242.262l-56.664-0.114
-								c-3.284-0.008-6.243-1.992-7.495-5.023c-1.252-3.04-0.553-6.527,1.764-8.852L206.104,24.546c1.853-1.845,4.503-2.666,7.047-2.276
-								c2.414,0.39,4.511,1.845,5.731,3.942l47.43,47.43V58.499c0-4.487,3.633-8.129,8.129-8.129h47.755c4.495,0,8.129,3.642,8.129,8.129
-								v79.156l91.39,91.398c2.325,2.325,3.024,5.828,1.764,8.868c-1.26,3.032-4.227,5.007-7.511,5.007c-0.008,0-0.008,0-0.016,0
-								l-56.64-0.114v150.98C359.32,398.29,355.686,401.923,351.191,401.923z M81.03,385.666h262.033V234.67
-								c0-2.162,0.854-4.235,2.39-5.755c1.528-1.52,3.585-2.374,5.739-2.374c0.008,0,0.008,0,0.016,0l45.105,0.089l-79.855-79.863
-								c-1.528-1.528-2.382-3.593-2.382-5.747V66.628h-31.498v26.645c0,3.284-1.975,6.251-5.015,7.511
-								c-3.032,1.268-6.527,0.569-8.86-1.764l-57.038-57.038l-183.95,183.95l45.203,0.089c4.487,0.008,8.112,3.642,8.112,8.129
+    d: `M351.191,401.923H72.901c-4.487,0-8.129-3.633-8.129-8.129V242.262l-56.664-0.114\r
+								c-3.284-0.008-6.243-1.992-7.495-5.023c-1.252-3.04-0.553-6.527,1.764-8.852L206.104,24.546c1.853-1.845,4.503-2.666,7.047-2.276\r
+								c2.414,0.39,4.511,1.845,5.731,3.942l47.43,47.43V58.499c0-4.487,3.633-8.129,8.129-8.129h47.755c4.495,0,8.129,3.642,8.129,8.129\r
+								v79.156l91.39,91.398c2.325,2.325,3.024,5.828,1.764,8.868c-1.26,3.032-4.227,5.007-7.511,5.007c-0.008,0-0.008,0-0.016,0\r
+								l-56.64-0.114v150.98C359.32,398.29,355.686,401.923,351.191,401.923z M81.03,385.666h262.033V234.67\r
+								c0-2.162,0.854-4.235,2.39-5.755c1.528-1.52,3.585-2.374,5.739-2.374c0.008,0,0.008,0,0.016,0l45.105,0.089l-79.855-79.863\r
+								c-1.528-1.528-2.382-3.593-2.382-5.747V66.628h-31.498v26.645c0,3.284-1.975,6.251-5.015,7.511\r
+								c-3.032,1.268-6.527,0.569-8.86-1.764l-57.038-57.038l-183.95,183.95l45.203,0.089c4.487,0.008,8.112,3.642,8.112,8.129\r
 								C81.03,234.149,81.03,385.666,81.03,385.666z`
   })
 ], -1)), Xc = [
@@ -4951,7 +4951,7 @@ const Lc = { key: 0 }, jc = {
     };
   }
 });
-const rl = /* @__PURE__ */ Gt(ol, [["__scopeId", "data-v-18bfde6e"]]), al = {
+const rl = /* @__PURE__ */ Gt(ol, [["__scopeId", "data-v-cb80d0d3"]]), al = {
   install: (e) => {
     e.component("ActionSet", Ur), e.component("CommandPalette", Fr), e.component("Doctype", uc), e.component("Records", Qc), e.component("SheetNav", rl);
   }
