@@ -1,8 +1,20 @@
 {
 	"name": "@stonecrop/utilities",
-	"version": "0.2.2",
+	"version": "0.2.6",
 	"license": "MIT",
 	"type": "module",
+	"author": {
+		"name": "Tyler Matteson",
+		"email": "tyler@agritheory.com"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/agritheory/stonecrop",
+		"directory": "utilities"
+	},
+	"bugs": {
+		"url": "https://github.com/agritheory/stonecrop/issues"
+	},
 	"exports": {
 		".": {
 			"import": "./dist/utilities.js",
@@ -11,10 +23,11 @@
 	},
 	"main": "dist/utilities.js",
 	"module": "dist/utilities.js",
+	"umd": "dist/utilities.umd.cjs",
 	"types": "src/index",
 	"files": [
 		"dist/*",
-		"src/**/*.ts"
+		"src/*"
 	],
 	"scripts": {
 		"build": "tsc -b && vite build",
@@ -26,25 +39,27 @@
 		"story:preview": "histoire preview"
 	},
 	"dependencies": {
-		"vue": "^3.2.47"
+		"vue": "^3.4.23"
 	},
 	"devDependencies": {
-		"@histoire/plugin-vue": "0.17.1",
+		"@histoire/plugin-vue": "^0.17.17",
 		"@typescript-eslint/eslint-plugin": "^5.59.5",
 		"@typescript-eslint/parser": "^5.59.5",
-		"@vitejs/plugin-vue": "^4.2.1",
+		"@vitejs/plugin-vue": "^5.0.4",
 		"@vueuse/core": "^9.13.0",
 		"cypress": "^12.11.0",
 		"eslint": "^8.40.0",
 		"eslint-config-prettier": "^8.8.0",
 		"eslint-plugin-vue": "^9.11.1",
-		"histoire": "0.17.0",
+		"histoire": "^0.17.17",
 		"typescript": "^5.0.4",
-		"vite": "^4.3.5",
+		"vite": "^5.2.9",
 		"vue-router": "^4"
+	},
+	"publishConfig": {
+		"access": "public"
 	},
 	"engines": {
 		"node": ">=20.11.0"
-	},
-	"umd": "dist/utilities.umd.cjs"
+	}
 }

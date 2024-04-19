@@ -1,7 +1,32 @@
 {
 	"name": "@stonecrop/beam",
-	"version": "0.2.2",
+	"version": "0.2.6",
 	"license": "MIT",
+	"type": "module",
+	"author": {
+		"name": "Tyler Matteson",
+		"email": "tyler@agritheory.com"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/agritheory/stonecrop",
+		"directory": "beam"
+	},
+	"bugs": {
+		"url": "https://github.com/agritheory/stonecrop/issues"
+	},
+	"exports": {
+		".": {
+			"import": "./dist/beam-ui.es.js",
+			"require": "./dist/beam-ui.umd.js"
+		}
+	},
+	"main": "./dist/beam-ui.umd.js",
+	"module": "./dist/beam-ui.es.js",
+	"files": [
+		"dist/*",
+		"src/*"
+	],
 	"scripts": {
 		"dev": "vite serve dev/ -c dev/vite.config.js -d",
 		"build": "vite build dev/ -c dev/vite.config.js -d",
@@ -9,27 +34,19 @@
 	},
 	"dependencies": {
 		"portal-vue": "~3.0.0-beta.0",
-		"vue": "^3.2.47"
+		"vue": "^3.4.23"
 	},
 	"devDependencies": {
 		"@vitejs/plugin-vue": "^4.0.0",
 		"cypress": "^12.2.0",
 		"portal-vue": "^3.0.0",
-		"vite": "^4.3.5",
+		"vite": "^5.2.9",
 		"vue-router": "^4"
+	},
+	"publishConfig": {
+		"access": "public"
 	},
 	"engines": {
 		"node": ">=20.11.0"
-	},
-	"files": [
-		"dist"
-	],
-	"main": "./dist/beam-ui.umd.js",
-	"module": "./dist/beam-ui.es.js",
-	"exports": {
-		".": {
-			"import": "./dist/beam-ui.es.js",
-			"require": "./dist/beam-ui.umd.js"
-		}
 	}
 }

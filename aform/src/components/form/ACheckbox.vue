@@ -10,12 +10,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed, InputHTMLAttributes } from 'vue'
+import { InputHTMLAttributes } from 'vue'
 
-const props = withDefaults(
+withDefaults(
 	defineProps<{
 		label?: string
-		value?: InputHTMLAttributes['checked']
 		required?: boolean
 		readOnly?: boolean
 		uuid?: string
@@ -26,18 +25,7 @@ const props = withDefaults(
 	}
 )
 
-const emit = defineEmits<{
-	(e: 'update:value', value: InputHTMLAttributes['checked']): void
-}>()
-
-const checkbox = computed({
-	get() {
-		return props.value
-	},
-	set(value) {
-		emit('update:value', value)
-	},
-})
+const checkbox = defineModel<InputHTMLAttributes['checked']>()
 </script>
 
 <style scoped>
