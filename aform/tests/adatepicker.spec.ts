@@ -3,15 +3,11 @@ import { mount } from '@vue/test-utils'
 
 import ADatePicker from '@/components/form/ADatePicker.vue'
 
-describe('text input component', () => {
-	let datepickerValue = new Date('2023-1-1').getTime()
-	let schema = {
-		fieldname: 'default_date',
-		label: 'Default Date',
-	}
+describe('datepicker component', () => {
+	const datepickerValue = new Date('2023-1-1').getTime()
 
 	let wrapper = mount(ADatePicker, {
-		props: { modelValue: datepickerValue, schema: schema },
+		props: { modelValue: datepickerValue },
 	})
 
 	it('emits update event when date is changed', async () => {
