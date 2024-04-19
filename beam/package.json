@@ -1,8 +1,20 @@
 {
 	"name": "@stonecrop/beam",
-	"version": "0.2.2",
+	"version": "0.2.6",
 	"license": "MIT",
 	"type": "module",
+	"author": {
+		"name": "Tyler Matteson",
+		"email": "tyler@agritheory.com"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/agritheory/stonecrop",
+		"directory": "beam"
+	},
+	"bugs": {
+		"url": "https://github.com/agritheory/stonecrop/issues"
+	},
 	"exports": {
 		".": {
 			"import": "./dist/beam.js",
@@ -12,10 +24,9 @@
 	},
 	"main": "dist/beam.js",
 	"module": "dist/beam.js",
-	"types": "src/index",
 	"files": [
 		"dist/*",
-		"src/**/*.vue"
+		"src/*"
 	],
 	"scripts": {
 		"build": "tsc -b && vite build",
@@ -28,13 +39,13 @@
 	},
 	"dependencies": {
 		"portal-vue": "^3.0.0",
-		"vue": "^3.4.21"
+		"vue": "^3.4.23"
 	},
 	"devDependencies": {
 		"@histoire/plugin-vue": "^0.17.17",
 		"@typescript-eslint/eslint-plugin": "^7.6.0",
 		"@typescript-eslint/parser": "^7.6.0",
-		"@vitejs/plugin-vue": "^4.2.1",
+		"@vitejs/plugin-vue": "^5.0.4",
 		"cypress": "^12.11.0",
 		"eslint": "^8.40.0",
 		"eslint-config-prettier": "^8.8.0",
@@ -42,11 +53,13 @@
 		"histoire": "^0.17.17",
 		"sass": "^1.75.0",
 		"typescript": "^5.4.5",
-		"vite": "^5.2.8",
+		"vite": "^5.2.9",
 		"vue-router": "^4"
+	},
+	"publishConfig": {
+		"access": "public"
 	},
 	"engines": {
 		"node": ">=20.11.0"
-	},
-	"umd": "dist/beam.umd.cjs"
+	}
 }

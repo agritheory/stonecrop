@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/utilities",
+      "comment": "Remove distributable files from git",
+      "type": "none"
+    }
+  ],
+  "packageName": "@stonecrop/utilities"
+}
