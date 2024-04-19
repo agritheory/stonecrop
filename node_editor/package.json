@@ -1,9 +1,21 @@
 {
 	"name": "@stonecrop/node-editor",
-	"version": "0.2.2",
+	"version": "0.2.5",
 	"description": "Node editor UI for Stonecrop",
 	"license": "MIT",
 	"type": "module",
+	"author": {
+		"name": "Tyler Matteson",
+		"email": "tyler@agritheory.com"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/agritheory/stonecrop",
+		"directory": "node_editor"
+	},
+	"bugs": {
+		"url": "https://github.com/agritheory/stonecrop/issues"
+	},
 	"exports": {
 		".": {
 			"import": "./dist/node-editor.js",
@@ -11,10 +23,12 @@
 		},
 		"./styles": "./dist/style.css"
 	},
-	"main": "index.js",
+	"main": "dist/node-editor.js",
+	"module": "dist/node-editor.js",
+	"umd": "dist/node-editor.umd.cjs",
 	"files": [
 		"dist/*",
-		"src/**/*.vue"
+		"src/*"
 	],
 	"scripts": {
 		"build": "vite build",
@@ -35,6 +49,9 @@
 		"@vitejs/plugin-vue": "^5.0.4",
 		"histoire": "^0.17.17",
 		"vite": "^5.2.9"
+	},
+	"publishConfig": {
+		"access": "public"
 	},
 	"engines": {
 		"node": ">=20.11.0"

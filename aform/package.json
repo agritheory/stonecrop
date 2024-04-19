@@ -1,8 +1,20 @@
 {
 	"name": "@stonecrop/aform",
-	"version": "0.2.2",
+	"version": "0.2.5",
 	"license": "MIT",
 	"type": "module",
+	"author": {
+		"name": "Tyler Matteson",
+		"email": "tyler@agritheory.com"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/agritheory/stonecrop",
+		"directory": "aform"
+	},
+	"bugs": {
+		"url": "https://github.com/agritheory/stonecrop/issues"
+	},
 	"exports": {
 		".": {
 			"import": "./dist/aform.js",
@@ -12,10 +24,11 @@
 	},
 	"main": "dist/aform.js",
 	"module": "dist/aform.js",
+	"umd": "dist/aform.umd.cjs",
 	"types": "src/index",
 	"files": [
 		"dist/*",
-		"src/**/*.vue"
+		"src/*"
 	],
 	"scripts": {
 		"build": "tsc -b && vite build",
@@ -59,8 +72,10 @@
 	"peerDependencies": {
 		"@stonecrop/atable": "workspace:*"
 	},
+	"publishConfig": {
+		"access": "public"
+	},
 	"engines": {
 		"node": ">=20.11.0"
-	},
-	"umd": "dist/aform.umd.cjs"
+	}
 }
