@@ -39,14 +39,14 @@
 			"versionPolicyName": "stonecrop"
 		},
 		{
-			"packageName": "@stonecrop/desktop",
-			"projectFolder": "desktop",
+			"packageName": "@stonecrop/code-editor",
+			"projectFolder": "code_editor",
 			"reviewCategory": "prototype",
 			"versionPolicyName": "stonecrop"
 		},
 		{
-			"packageName": "@stonecrop/code-editor",
-			"projectFolder": "code_editor",
+			"packageName": "@stonecrop/desktop",
+			"projectFolder": "desktop",
 			"reviewCategory": "prototype",
 			"versionPolicyName": "stonecrop"
 		},
@@ -55,6 +55,12 @@
 			"projectFolder": "examples",
 			"reviewCategory": "prototype",
 			"shouldPublish": false
+		},
+		{
+			"packageName": "@stonecrop/graphql-client",
+			"projectFolder": "graphql_client",
+			"reviewCategory": "utilities",
+			"versionPolicyName": "stonecrop"
 		},
 		{
 			"packageName": "@stonecrop/node-editor",
@@ -77,12 +83,6 @@
 		{
 			"packageName": "@stonecrop/utilities",
 			"projectFolder": "utilities",
-			"reviewCategory": "utilities",
-			"versionPolicyName": "stonecrop"
-		},
-		{
-			"packageName": "@stonecrop/graphql-client",
-			"projectFolder": "graphql_client",
 			"reviewCategory": "utilities",
 			"versionPolicyName": "stonecrop"
 		}

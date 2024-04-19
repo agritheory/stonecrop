@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/graphql-client",
+      "comment": "Remove distributable files from git",
+      "type": "none"
+    }
+  ],
+  "packageName": "@stonecrop/graphql-client"
+}
