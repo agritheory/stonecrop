@@ -10,6 +10,7 @@
 				@keydown.down="onArrowDown"
 				@keydown.up="onArrowUp"
 				@keydown.enter="onEnter" />
+
 			<ul id="autocomplete-results" v-show="isOpen" class="autocomplete-results">
 				<li class="loading autocomplete-result" v-if="isLoading">Loading results...</li>
 				<li
@@ -27,111 +28,95 @@
 	</div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue'
-export default defineComponent({
-	name: 'ADropdown',
-	props: {
-		modelValue: {
-			type: String,
-			required: false,
-			default: '',
-		},
-		label: {
-			type: String,
-			required: true,
-		},
-		value: String,
-		items: {
-			type: Array,
-			required: false,
-			default: () => [],
-		},
-		isAsync: {
-			type: Boolean,
-			required: false,
-			default: false,
-		},
-	},
-	emits: ['update:modelValue', 'filterChanged'],
-	data() {
-		return {
-			results: [],
-			search: this.modelValue,
-			isLoading: false,
-			arrowCounter: 0,
-			isOpen: false,
-		}
-	},
-	watch: {
-		items: function (value, oldValue) {
-			this.isLoading = false
-			this.results = value
-		},
-	},
-	mounted() {
-		document.addEventListener('click', this.handleClickOutside)
-		this.filterResults()
-	},
-	destroyed() {
-		document.removeEventListener('click', this.handleClickOutside)
-	},
-	methods: {
-		setResult(result) {
-			this.search = result
-			this.closeResults()
-		},
-		filterResults() {
-			this.results = this.items.filter(item => {
-				return item.toLowerCase().indexOf(this.search.toLowerCase()) > -1
-			})
-		},
-		onChange() {
-			this.isOpen = true
-			if (this.isAsync) {
-				this.isLoading = true
-				this.$emit('filterChanged', this.search)
-			} else {
-				this.filterResults()
-			}
-		},
-		handleClickOutside(event) {
-			if (!this.$el.contains(event.target)) {
-				this.closeResults()
-				this.arrowCounter = 0
-			}
-		},
-		closeResults() {
-			this.isOpen = false
+<script setup lang="ts">
+import { onMounted, onUnmounted, ref } from 'vue'
 
-			if (!this.items.includes(this.search)) {
-				this.search = ''
-			}
+const props = defineProps<{
+	label: string
+	items?: string[]
+	isAsync?: boolean
+}>()
 
-			this.$emit('update:modelValue', this.search)
-		},
-		onArrowDown() {
-			if (this.arrowCounter < this.results.length) {
-				this.arrowCounter = this.arrowCounter + 1
-			}
-		},
-		onArrowUp() {
-			if (this.arrowCounter > 0) {
-				this.arrowCounter = this.arrowCounter - 1
-			}
-		},
-		onEnter() {
-			this.search = this.results[this.arrowCounter]
-			this.closeResults()
-			this.arrowCounter = 0
-		},
-		openWithSearch() {
-			this.search = ''
-			this.onChange()
-			this.$refs.mopInput.focus()
-		},
-	},
+const emit = defineEmits(['filterChanged'])
+
+const results = ref(props.items)
+const search = defineModel<string>()
+const isLoading = ref(false)
+const arrowCounter = ref(0)
+const isOpen = ref(false)
+const mopInput = ref(null)
+
+onMounted(() => {
+	document.addEventListener('click', handleClickOutside)
+	filterResults()
 })
+
+onUnmounted(() => {
+	document.removeEventListener('click', handleClickOutside)
+})
+
+const setResult = result => {
+	search.value = result
+	closeResults()
+}
+
+const filterResults = () => {
+	if (!search.value) {
+		results.value = props.items
+	} else {
+		results.value = props.items.filter(item => {
+			return item.toLowerCase().indexOf(search.value.toLowerCase()) > -1
+		})
+	}
+}
+
+const onChange = () => {
+	isOpen.value = true
+	if (props.isAsync) {
+		isLoading.value = true
+		emit('filterChanged', search.value)
+	} else {
+		filterResults()
+	}
+}
+
+const handleClickOutside = (event: MouseEvent) => {
+	closeResults()
+	arrowCounter.value = 0
+}
+
+const closeResults = () => {
+	isOpen.value = false
+
+	// TODO: (test) when would this occur? how should this be tested?
+	if (!props.items.includes(search.value)) {
+		search.value = ''
+	}
+}
+
+const onArrowDown = () => {
+	if (arrowCounter.value < results.value.length) {
+		arrowCounter.value = arrowCounter.value + 1
+	}
+}
+
+const onArrowUp = () => {
+	if (arrowCounter.value > 0) {
+		arrowCounter.value = arrowCounter.value - 1
+	}
+}
+
+const onEnter = () => {
+	search.value = results.value[arrowCounter.value]
+	closeResults()
+	arrowCounter.value = 0
+}
+
+// const openWithSearch = () => {
+// 	search.value = ''
+// 	onChange()
+// 	mopInput.value.focus()
+// }
 </script>
 
 <style>
