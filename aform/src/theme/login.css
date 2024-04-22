@@ -42,11 +42,13 @@
 	line-height: 2rem;
 	font-weight: 600;
 	letter-spacing: -0.025em;
+	margin: 0;
 }
 
 #account-subtitle {
 	font-size: 0.875rem;
 	line-height: 1.25rem;
+	margin: 1rem;
 }
 
 .login-form-container {
@@ -88,7 +90,6 @@
 	margin-right: 0.5rem;
 	height: 1rem;
 	width: 1rem;
-	animation: spin 1s linear infinite;
 }
 .btn {
 	background-color: var(--btn-color);
@@ -103,7 +104,7 @@
 	}
 	&:disabled {
 		background-color: light-dark(rgba(239, 239, 239, 0.3), rgba(59, 59, 59, 0.3));
-		color: var(--btn-label-color);
+		color: light-dark(rgb(84, 84, 84), rgb(170, 170, 170));
 	}
 }
 .disabled {
