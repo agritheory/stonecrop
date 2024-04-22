@@ -7,7 +7,7 @@ const projectRootDir = resolve(__dirname)
 export default defineConfig({
 	plugins: [vue()],
 	optimizeDeps: {
-		exclude: ['@agritheory/atable', '@agritheory/aform', '@agritheory/stonecrop'],
+		exclude: ['@stonecrop/atable', '@stonecrop/aform', '@stonecrop/stonecrop'],
 	},
 	resolve: {
 		alias: {

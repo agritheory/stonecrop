@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/code-editor",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+  "packageName": "@stonecrop/code-editor"
+}

@@ -34,8 +34,8 @@ import { v4 } from 'uuid'
 import { CSSProperties, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
-import { TableDataStore } from '@agritheory/atable'
-import { TableColumn, TableRow } from '@agritheory/atable/types'
+import { TableDataStore } from '@stonecrop/atable'
+import { TableColumn, TableRow } from '@stonecrop/atable/types'
 
 const router = useRouter()
 
@@ -107,6 +107,6 @@ rowNav['keydown.enter'] = rowNav['keydown.down']
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap');
-@import url('@agritheory/themes/default/default.css');
+@import url('@stonecrop/themes/default/default.css');
 /* @import '../style.css'; */
 </style>

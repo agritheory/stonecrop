@@ -1,11 +1,16 @@
-import { resolve } from 'path'
 import vue from '@vitejs/plugin-vue'
+import { resolve } from 'path'
+import { defineConfig } from 'vite'
 
-module.exports = {
+const projectRootDir = resolve(__dirname)
+
+export default defineConfig({
+	plugins: [vue()],
 	build: {
+		sourcemap: true,
 		lib: {
-			entry: resolve(__dirname, '../src/index.js'),
-			name: '@agritheory/beam',
+			entry: resolve(projectRootDir, '../src/index.js'),
+			name: '@stonecrop/beam',
 		},
 		rollupOptions: {
 			external: ['vue'],
@@ -15,7 +20,5 @@ module.exports = {
 				},
 			},
 		},
-		outDir: '../dist/',
 	},
-	plugins: [vue()],
-}
+})

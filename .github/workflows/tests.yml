@@ -38,10 +38,10 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Install Node ${{ matrix.node }}
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         cache-dependency-path: '**/config/rush/pnpm-lock.yaml'
         registry-url: https://npm.pkg.github.com/
@@ -55,9 +55,10 @@ jobs:
 
     - name: Coverage Report
       if: always() # Also generate the report if tests are failing
-      uses: davelosert/vitest-coverage-report-action@v1
+      uses: davelosert/vitest-coverage-report-action@v2
       with:
         working-directory: ./aform
+        file-coverage-mode: 'all'
         vite-config-path: './vite.config.ts'
 
   atable:
@@ -76,10 +77,10 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Install Node ${{ matrix.node }}
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         cache-dependency-path: '**/config/rush/pnpm-lock.yaml'
         registry-url: https://npm.pkg.github.com/
@@ -93,7 +94,8 @@ jobs:
 
     - name: Coverage Report
       if: always() # Also generate the report if tests are failing
-      uses: davelosert/vitest-coverage-report-action@v1
+      uses: davelosert/vitest-coverage-report-action@v2
       with:
         working-directory: ./atable
+        file-coverage-mode: 'all'
         vite-config-path: './vite.config.ts'

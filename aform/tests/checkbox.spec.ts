@@ -12,7 +12,7 @@ describe('checkbox component', () => {
 		await wrapper.find('input').setValue(true)
 		await wrapper.find('input').setValue(false)
 
-		const updateEvents = wrapper.emitted('update:value')
+		const updateEvents = wrapper.emitted('update:modelValue')
 		expect(updateEvents).toHaveLength(2)
 		expect(updateEvents![0]).toEqual([true])
 		expect(updateEvents![1]).toEqual([false])

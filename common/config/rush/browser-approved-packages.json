@@ -3,34 +3,6 @@
   "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/approved-packages.schema.json",
   "packages": [
     {
-      "name": "@agritheory/aform",
-      "allowedCategories": [ "prototype" ]
-    },
-    {
-      "name": "@agritheory/atable",
-      "allowedCategories": [ "prototype" ]
-    },
-    {
-      "name": "@agritheory/desktop",
-      "allowedCategories": [ "prototype" ]
-    },
-    {
-      "name": "@agritheory/node-editor",
-      "allowedCategories": [ "prototype" ]
-    },
-    {
-      "name": "@agritheory/stonecrop",
-      "allowedCategories": [ "prototype", "utilities" ]
-    },
-    {
-      "name": "@agritheory/themes",
-      "allowedCategories": [ "prototype" ]
-    },
-    {
-      "name": "@agritheory/utilities",
-      "allowedCategories": [ "prototype" ]
-    },
-    {
       "name": "@histoire/plugin-vue",
       "allowedCategories": [ "prototype", "utilities" ]
     },
@@ -40,6 +12,34 @@
     },
     {
       "name": "@monaco-editor/loader",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "@stonecrop/aform",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "@stonecrop/atable",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "@stonecrop/desktop",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "@stonecrop/node-editor",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "@stonecrop/stonecrop",
+      "allowedCategories": [ "prototype", "utilities" ]
+    },
+    {
+      "name": "@stonecrop/themes",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "@stonecrop/utilities",
       "allowedCategories": [ "prototype" ]
     },
     {
@@ -57,6 +57,10 @@
     {
       "name": "@vitest/coverage-c8",
       "allowedCategories": [ "prototype", "utilities" ]
+    },
+    {
+      "name": "@vitest/coverage-v8",
+      "allowedCategories": [ "prototype" ]
     },
     {
       "name": "@vitest/ui",

@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 
-import AForm from '@/components/AForm.vue'
-import ATextInput from '@/components/form/ATextInput.vue'
+import AForm from '../src/components/AForm.vue'
+import ATextInput from '../src/components/form/ATextInput.vue'
 
 describe('AForm Component', () => {
 	const form_schema = [
@@ -16,6 +16,7 @@ describe('AForm Component', () => {
 	const wrapper = mount(AForm, {
 		props: {
 			modelValue: form_schema,
+			data: {},
 		},
 		components: {
 			ATextInput,

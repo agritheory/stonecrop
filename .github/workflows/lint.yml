@@ -34,10 +34,10 @@ jobs:
     name: Sort package.json
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         name: Checkout
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         name: Install Node.js
         with:
           cache-dependency-path: '**/config/rush/pnpm-lock.yaml'
