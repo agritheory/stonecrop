@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/themes",
+      "comment": "Remove distributable files from git",
+      "type": "none"
+    }
+  ],
+  "packageName": "@stonecrop/themes"
+}

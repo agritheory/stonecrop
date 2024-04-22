@@ -1,9 +1,21 @@
 {
 	"name": "@stonecrop/desktop",
-	"version": "0.2.2",
-	"description": "desktop specific components for Stonecrop UI",
+	"version": "0.2.5",
+	"description": "Desktop-specific components for Stonecrop UI",
 	"license": "MIT",
 	"type": "module",
+	"author": {
+		"name": "Tyler Matteson",
+		"email": "tyler@agritheory.com"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/agritheory/stonecrop",
+		"directory": "desktop"
+	},
+	"bugs": {
+		"url": "https://github.com/agritheory/stonecrop/issues"
+	},
 	"exports": {
 		".": {
 			"import": "./dist/desktop.js",
@@ -13,10 +25,11 @@
 	},
 	"main": "dist/desktop.js",
 	"module": "dist/desktop.js",
+	"umd": "dist/desktop.umd.cjs",
 	"types": "src/index",
 	"files": [
 		"dist/*",
-		"src/**/*.vue"
+		"src/*"
 	],
 	"scripts": {
 		"build": "vite build",
@@ -47,8 +60,10 @@
 		"vite": "^5.2.9",
 		"vue-router": "^4"
 	},
+	"publishConfig": {
+		"access": "public"
+	},
 	"engines": {
 		"node": ">=20.11.0"
-	},
-	"umd": "dist/desktop.umd.cjs"
+	}
 }

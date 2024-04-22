@@ -1,9 +1,21 @@
 {
 	"name": "@stonecrop/stonecrop",
-	"version": "0.2.2",
+	"version": "0.2.5",
 	"description": "schema helper",
 	"license": "MIT",
 	"type": "module",
+	"author": {
+		"name": "Tyler Matteson",
+		"email": "tyler@agritheory.com"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/agritheory/stonecrop",
+		"directory": "stonecrop"
+	},
+	"bugs": {
+		"url": "https://github.com/agritheory/stonecrop/issues"
+	},
 	"exports": {
 		".": {
 			"import": "./dist/stonecrop.js",
@@ -12,10 +24,11 @@
 	},
 	"main": "dist/stonecrop.js",
 	"module": "dist/stonecrop.js",
+	"umd": "dist/stonecrop.umd.cjs",
 	"types": "src/index",
 	"files": [
 		"dist/*",
-		"src/**/*.vue"
+		"src/*"
 	],
 	"scripts": {
 		"build": "vite build",
@@ -46,8 +59,10 @@
 		"typescript": "^5.0.4",
 		"vite": "^5.2.9"
 	},
+	"publishConfig": {
+		"access": "public"
+	},
 	"engines": {
 		"node": ">=20.11.0"
-	},
-	"umd": "dist/stonecrop.umd.cjs"
+	}
 }

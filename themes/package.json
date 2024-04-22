@@ -1,7 +1,19 @@
 {
 	"name": "@stonecrop/themes",
-	"version": "0.0.0",
+	"version": "0.2.5",
 	"type": "module",
+	"author": {
+		"name": "Tyler Matteson",
+		"email": "tyler@agritheory.com"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/agritheory/stonecrop",
+		"directory": "themes"
+	},
+	"bugs": {
+		"url": "https://github.com/agritheory/stonecrop/issues"
+	},
 	"scripts": {
 		"build": "vite build",
 		"dev": "vite",
@@ -11,6 +23,9 @@
 		"@vitejs/plugin-vue": "^5.0.4",
 		"vite": "^5.2.9",
 		"vue": "^3.4.23"
+	},
+	"publishConfig": {
+		"access": "public"
 	},
 	"engines": {
 		"node": ">=20.11.0"
