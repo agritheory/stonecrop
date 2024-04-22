@@ -1,0 +1,131 @@
+@import url('https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap');
+@import url('@stonecrop/themes/default/default.css');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200');
+
+:root {
+	/* BTNS */
+	--btn-color: white;
+	--btn-border: #cccccc;
+	--btn-hover: #f2f2f2;
+	--btn-label-color: black;
+}
+
+.login-container {
+	width: 100%;
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	font-family: var(--font-family);
+}
+
+.account-container {
+	width: 100%;
+	margin-left: auto;
+	margin-top: 0.5rem;
+	margin-right: auto;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+}
+
+.account-header {
+	display: flex;
+	flex-direction: column;
+	text-align: center;
+	margin-top: 0.5rem;
+}
+
+#account-title {
+	font-size: 1.5rem;
+	line-height: 2rem;
+	font-weight: 600;
+	letter-spacing: -0.025em;
+}
+
+#account-subtitle {
+	font-size: 0.875rem;
+	line-height: 1.25rem;
+}
+
+.login-form-container {
+	display: grid;
+	gap: 0.5rem;
+}
+
+.login-form-email,
+.login-form-password {
+	display: grid;
+	gap: 0.25rem;
+}
+.login-form-element {
+	margin: 0.5rem 0;
+}
+.login-field {
+	padding: 0.5rem 0.25rem 0.25rem 0.5rem;
+	outline: 1px solid transparent;
+	border: 1px solid var(--input-border-color);
+	border-radius: 0.25rem;
+
+	&:focus {
+		border: 1px solid black;
+	}
+}
+.login-label {
+	position: absolute;
+	padding: 0;
+	background: white;
+	white-space: nowrap;
+	border-width: 0;
+	font-size: 0.7rem;
+	margin-left: 0.5rem;
+	margin-top: -0.7rem;
+	padding: 0.3rem;
+}
+
+#login-form-button {
+	margin-right: 0.5rem;
+	height: 1rem;
+	width: 1rem;
+	animation: spin 1s linear infinite;
+}
+.btn {
+	background-color: var(--btn-color);
+	color: var(--btn-label-color);
+	border: 1px solid var(--btn-border);
+	margin: 0.5rem 0;
+	padding: 0.25rem;
+	position: relative;
+
+	&:hover {
+		background-color: var(--btn-hover);
+	}
+	&:disabled {
+		background-color: light-dark(rgba(239, 239, 239, 0.3), rgba(59, 59, 59, 0.3));
+		color: var(--btn-label-color);
+	}
+}
+.disabled {
+	opacity: 0.5;
+}
+.loading-icon {
+	animation: spin 1s linear infinite forwards;
+	display: inline-block;
+	margin-right: 0.2rem;
+	line-height: 0;
+	font-size: 1rem;
+	position: relative;
+	top: 0.2rem;
+}
+
+/* ANIMATION */
+@keyframes spin {
+	from {
+		transform: rotate(0deg);
+	}
+
+	to {
+		transform: rotate(360deg);
+	}
+}

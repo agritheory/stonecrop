@@ -44,7 +44,7 @@ const Ve = { id: "checkbox-container" }, xe = ["id", "readonly", "required"], Be
   for (const [o, l] of t)
     n[o] = l;
   return n;
-}, Fe = /* @__PURE__ */ M(He, [["__scopeId", "data-v-5093f1cb"]]), Re = /* @__PURE__ */ i("div", null, [
+}, Fe = /* @__PURE__ */ M(He, [["__scopeId", "data-v-24cb38ac"]]), Re = /* @__PURE__ */ i("div", null, [
   /* @__PURE__ */ i("input", { type: "text" }),
   /* @__PURE__ */ i("input", { type: "text" }),
   /* @__PURE__ */ i("input", { type: "text" })
@@ -494,7 +494,7 @@ const lt = ["event", "colIndex", "rowIndex", "tableid"], st = { colspan: "5" }, 
       ])
     ], 8, lt));
   }
-}), ut = /* @__PURE__ */ M(it, [["__scopeId", "data-v-169f1184"]]), dt = D({
+}), ut = /* @__PURE__ */ M(it, [["__scopeId", "data-v-e52e7ee9"]]), dt = D({
   name: "ADropdown",
   props: {
     modelValue: {
@@ -617,7 +617,7 @@ const vt = /* @__PURE__ */ M(dt, [["render", ht]]), gt = /* @__PURE__ */ D({
       class: B(["collapse-button", t.collapsed ? "rotated" : "unrotated"])
     }, "×", 2));
   }
-}), yt = /* @__PURE__ */ M(gt, [["__scopeId", "data-v-6f1c1b45"]]), bt = /* @__PURE__ */ D({
+}), yt = /* @__PURE__ */ M(gt, [["__scopeId", "data-v-fa78c7f7"]]), bt = /* @__PURE__ */ D({
   __name: "AForm",
   props: {
     modelValue: {},
@@ -654,7 +654,7 @@ const vt = /* @__PURE__ */ M(dt, [["render", ht]]), gt = /* @__PURE__ */ D({
       }, s(u)), null, 16, ["schema", "modelValue", "onUpdate:modelValue", "data", "readonly"]))), 128))
     ]));
   }
-}), me = /* @__PURE__ */ M(bt, [["__scopeId", "data-v-74d66cf2"]]), wt = /* @__PURE__ */ D({
+}), me = /* @__PURE__ */ M(bt, [["__scopeId", "data-v-e5beaceb"]]), wt = /* @__PURE__ */ D({
   __name: "AFieldset",
   props: {
     schema: {},
@@ -691,7 +691,7 @@ const vt = /* @__PURE__ */ M(dt, [["render", ht]]), gt = /* @__PURE__ */ D({
       ], !0)
     ]));
   }
-}), Ct = /* @__PURE__ */ M(wt, [["__scopeId", "data-v-cad9b578"]]), kt = ["id", "disabled", "required"], Dt = ["for"], Et = ["innerHTML"], At = /* @__PURE__ */ D({
+}), Ct = /* @__PURE__ */ M(wt, [["__scopeId", "data-v-f3ee8077"]]), kt = ["id", "disabled", "required"], Dt = ["for"], Et = ["innerHTML"], At = /* @__PURE__ */ D({
   __name: "ANumericInput",
   props: /* @__PURE__ */ se({
     label: {},
@@ -724,7 +724,7 @@ const vt = /* @__PURE__ */ M(dt, [["render", ht]]), gt = /* @__PURE__ */ D({
       ])
     ]));
   }
-}), It = /* @__PURE__ */ M(At, [["__scopeId", "data-v-02907cd6"]]), le = {
+}), It = /* @__PURE__ */ M(At, [["__scopeId", "data-v-5389ec31"]]), le = {
   date: "##/##/####",
   datetime: "####/##/## ##:##",
   time: "##:##",
@@ -851,7 +851,7 @@ function Bt(e, t, n, o, l, s) {
     ])
   ]);
 }
-const Pt = /* @__PURE__ */ M($t, [["render", Bt], ["__scopeId", "data-v-76dba9b8"]]);
+const Pt = /* @__PURE__ */ M($t, [["render", Bt], ["__scopeId", "data-v-083a37fb"]]);
 function Ht(e) {
   e.component("ACheckbox", Fe), e.component("ACombobox", Ue), e.component("ADate", ut), e.component("ADropdown", vt), e.component("AFieldset", Ct), e.component("AForm", me), e.component("ANumericInput", It), e.component("ATextInput", Pt);
 }
