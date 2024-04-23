@@ -154,6 +154,28 @@ importers:
         specifier: ^4
         version: 4.2.5(vue@3.4.23)
 
+  ../../beam:
+    dependencies:
+      portal-vue:
+        specifier: ^3.0.0
+        version: 3.0.0(vue@3.4.23)
+      vue:
+        specifier: ^3.4.23
+        version: 3.4.23(typescript@5.3.3)
+    devDependencies:
+      '@vitejs/plugin-vue':
+        specifier: ^5.0.4
+        version: 5.0.4(vite@5.2.9)(vue@3.4.23)
+      cypress:
+        specifier: ^12.11.0
+        version: 12.17.4
+      vite:
+        specifier: ^5.2.9
+        version: 5.2.9
+      vue-router:
+        specifier: ^4
+        version: 4.2.5(vue@3.4.23)
+
   ../../code_editor:
     dependencies:
       '@monaco-editor/loader':
@@ -4473,6 +4495,18 @@ packages:
       mlly: 1.5.0
       pathe: 1.1.2
     dev: true
+
+  /portal-vue@3.0.0(vue@3.4.23):
+    resolution: {integrity: sha512-9eprMxNURLx6ijbcgkWjYNcTWJYu/H8QF8nyAeBzOmk9lKCea01BW1hYBeLkgz+AestmPOvznAEOFmNuO4Adjw==}
+    engines: {node: '>=14.19'}
+    peerDependencies:
+      vue: ^3.0.4
+    peerDependenciesMeta:
+      vue:
+        optional: true
+    dependencies:
+      vue: 3.4.23(typescript@5.3.3)
+    dev: false
 
   /postcss-selector-parser@6.0.15:
     resolution: {integrity: sha512-rEYkQOMUCEMhsKbK66tbEU9QVIxbhN18YiniAwA7XQYTVBqrBy+P2p5JcdqsHgKM2zWylp8d7J6eszocfds5Sw==}
