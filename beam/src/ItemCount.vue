@@ -2,7 +2,7 @@
 	<div class="beam__itemcount">
 		<span
 			:contenteditable="editable"
-			:style="{ color: countColor === true ? '#3c5014' : '#e63c28' }"
+			:class="{ alert: countColor === false }"
 			@input="handleInput($event)"
 			@click="handleInput($event)"
 			>{{ count }}</span

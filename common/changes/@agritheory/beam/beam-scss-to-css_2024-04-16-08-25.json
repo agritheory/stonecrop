@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@agritheory/beam",
+      "comment": "Move SCSS to CSS",
+      "type": "none"
+    }
+  ],
+  "packageName": "@agritheory/beam"
+}

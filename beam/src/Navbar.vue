@@ -7,7 +7,7 @@
 			<h1 class="nav-title">TITLE</h1>
 		</slot>
 		<div class="navbar-action-wrapper">
-			<button class="navbar-action" @click="handlePrimaryAction">
+			<button class="navbar-action btn" @click="handlePrimaryAction">
 				<slot name="navbaraction">Action</slot>
 			</button>
 		</div>
