@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/beam",
+      "comment": "Version bump",
+      "type": "none"
+    }
+  ],
+  "packageName": "@stonecrop/beam"
+}
