@@ -6,7 +6,7 @@
 				<th colspan="5">{{ monthAndYear }}</th>
 				<td @click="nextMonth" :tabindex="-1">&gt;</td>
 			</tr>
-			<tr>
+			<tr class="days-header">
 				<td>M</td>
 				<td>T</td>
 				<td>W</td>
@@ -155,46 +155,5 @@ useKeyboardNav([
 <style>
 @import '@/theme/aform.css';
 @import url('@stonecrop/themes/default/default.css');
-
-.adatepicker {
-	font-size: var(--table-font-size);
-	display: inline-table;
-	color: var(--cell-text-color);
-	outline: none;
-	border-collapse: collapse;
-	/* width: calc(100% - 4px); */
-}
-
-.adatepicker tr {
-	height: 1.15rem;
-	height: 1.15rem;
-	text-align: center;
-	vertical-align: middle;
-}
-
-.adatepicker td {
-	border: 2px solid transparent;
-	outline: 2px solid transparent;
-	min-width: 3ch;
-	max-width: 3ch;
-}
-
-.adatepicker td:focus,
-.adatepicker td:focus-within {
-	outline-width: 2px;
-	outline-style: solid;
-	outline-color: var(--active-cell-outline);
-	box-shadow: none;
-	overflow: hidden;
-	min-height: 1.15em;
-	max-height: 1.15em;
-	overflow: hidden;
-}
-.adatepicker .selectedDate {
-	border: 2px solid var(--focus-cell-outline);
-}
-
-.adatepicker .todaysDate {
-	border-bottom-color: var(--active-cell-outline);
-}
+@import url('@/theme/adate.css');
 </style>

@@ -1,0 +1,49 @@
+.adatepicker {
+	font-size: var(--table-font-size);
+	display: inline-table;
+	color: var(--cell-text-color);
+	outline: none;
+	border-collapse: collapse;
+	/* width: calc(100% - 4px); */
+}
+
+.adatepicker tr {
+	height: 1.15rem;
+	height: 1.15rem;
+	text-align: center;
+	vertical-align: middle;
+}
+
+.adatepicker td {
+	border: 2px solid transparent;
+	outline: 2px solid transparent;
+	min-width: 3ch;
+	max-width: 3ch;
+}
+
+.adatepicker td:focus,
+.adatepicker td:focus-within {
+	outline: 1px dashed black;
+	box-shadow: none;
+	overflow: hidden;
+	min-height: 1.15em;
+	max-height: 1.15em;
+	overflow: hidden;
+}
+.adatepicker .selectedDate {
+	outline: 1px solid black;
+	background: var(--gray-20);
+	font-weight: bolder;
+}
+
+.adatepicker .todaysDate {
+	font-weight: bolder;
+	text-decoration: underline;
+	color: black;
+}
+.days-header > td {
+	font-weight: bold;
+}
+.prev-date {
+	color: var(--gray-20);
+}
