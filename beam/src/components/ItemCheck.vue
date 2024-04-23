@@ -4,27 +4,21 @@
 		<div class="checkmark" tabindex="0"></div>
 	</label>
 </template>
-<script>
-export default {
-	// make this v-model sensitive from parent
-	name: 'ItemCheck',
-	props: {
-		value: {
-			type: Boolean,
-			required: false,
-			default: false,
-		},
-	},
-	data() {
-		return {
-			checked: this.value,
-		}
-	},
-	methods: {
-		handleInput(e) {
-			this.$emit('input', this.checked)
-		},
-	},
+
+<script setup lang="ts">
+import { ref } from 'vue'
+
+// make this v-model sensitive from parent
+const props = defineProps<{
+	value?: boolean
+}>()
+
+const emit = defineEmits(['input'])
+
+const checked = ref(props.value)
+
+const handleInput = (e: InputEvent) => {
+	emit('input', checked.value)
 }
 </script>
 

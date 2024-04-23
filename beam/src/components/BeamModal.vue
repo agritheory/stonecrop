@@ -6,10 +6,9 @@
 		</div>
 	</portal>
 </template>
-<script>
-export default {
-	name: 'BeamModal',
-	props: ['showModal'],
-}
+
+<script setup lang="ts">
+defineProps<{
+	showModal: boolean
+}>()
 </script>
-<style scoped></style>
