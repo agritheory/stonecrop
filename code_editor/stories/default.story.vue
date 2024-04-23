@@ -29,7 +29,7 @@ const options: editor.IStandaloneEditorConstructionOptions = {
 }
 </script>
 
-<style scoped>
+<style>
 #code-editor {
 	height: 300px;
 	resize: both;

@@ -1,7 +1,7 @@
 <template>
 	<Story title="date">
 		<Variant title="ADatePicker">
-			<ADatePicker v-model="unsetDate" />
+			<ADatePicker />
 			<ADatePicker v-model="defaultDate" />
 		</Variant>
 		<Variant title="ADate">
@@ -11,14 +11,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref } from 'vue'
 
-const unsetDate = ref(new Date())
-const defaultDate = ref(new Date().setDate(new Date().getDate() - 2))
-
-watch(unsetDate, () => {
-	console.log('unsetDate', unsetDate.value)
-})
+const twoDaysAgo = new Date().setDate(new Date().getDate() - 2)
+const defaultDate = ref(new Date(twoDaysAgo))
 </script>
 
 <style>

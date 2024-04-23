@@ -1,5 +1,5 @@
 <template>
-	<div :event="event" class="adatepicker" tabindex="0" ref="adatepicker">
+	<div class="adatepicker" tabindex="0" ref="adatepicker">
 		<table>
 			<tr>
 				<td @click="previousMonth" :tabindex="-1">&lt;</td>
@@ -18,16 +18,17 @@
 			<tr v-for="rowNo in numberOfRows" :key="rowNo">
 				<td
 					v-for="colNo in numberOfColumns"
-					:key="(rowNo - 1) * numberOfColumns + colNo"
+					:key="getCurrentCell(rowNo, colNo)"
 					:contenteditable="false"
 					:spellcheck="false"
 					:tabindex="0"
-					@click.prevent.stop="selectDate((rowNo - 1) * numberOfColumns + colNo)"
+					@click.prevent.stop="selectDate(getCurrentCell(rowNo, colNo))"
+					@keydown.enter="selectDate(getCurrentCell(rowNo, colNo))"
 					:class="{
-						todaysDate: isTodaysDate(currentDates[(rowNo - 1) * numberOfColumns + colNo]),
-						selectedDate: isSelectedDate(currentDates[(rowNo - 1) * numberOfColumns + colNo]),
+						todaysDate: isTodaysDate(getCurrentDate(rowNo, colNo)),
+						selectedDate: isSelectedDate(getCurrentDate(rowNo, colNo)),
 					}">
-					{{ new Date(currentDates[(rowNo - 1) * numberOfColumns + colNo]).getDate() }}
+					{{ new Date(getCurrentDate(rowNo, colNo)).getDate() }}
 				</td>
 			</tr>
 		</table>
@@ -35,37 +36,22 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { defaultKeypressHandlers, useKeyboardNav } from '@stonecrop/utilities'
-
-const props = defineProps<{
-	modelValue?: number | Date
-	event?: Event
-}>()
-
-const emit = defineEmits(['update:modelValue'])
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
 
 const numberOfRows = 6
 const numberOfColumns = 7
-const todaysDate = new Date()
 
-const selectedDate = ref(props.modelValue ? new Date(props.modelValue) : undefined)
-const currentMonth = ref<number>()
-const currentYear = ref<number>()
+const date = defineModel<number | Date | undefined>()
+const selectedDate = ref(date.value ? new Date(date.value) : new Date())
+const currentMonth = ref<number>(selectedDate.value.getMonth())
+const currentYear = ref<number>(selectedDate.value.getFullYear())
 const currentDates = ref<number[]>([])
 
 onMounted(async () => {
-	let cellDate = new Date()
-	if (cellDate) {
-		selectedDate.value = cellDate
-		currentMonth.value = selectedDate.value.getMonth()
-		currentYear.value = selectedDate.value.getFullYear()
-	} else {
-		currentMonth.value = todaysDate.getMonth()
-		currentYear.value = todaysDate.getFullYear()
-	}
-
 	renderMonth()
+
+	// required to allow the elements to be focused in the next step
 	await nextTick()
 
 	const $selectedDate = document.getElementsByClassName('selectedDate')
@@ -79,27 +65,19 @@ onMounted(async () => {
 	}
 })
 
-watch([currentMonth, currentYear], () => {
-	renderMonth()
-})
-
 const renderMonth = () => {
 	currentDates.value = []
 	const firstOfMonth = new Date(currentYear.value, currentMonth.value, 1)
 	const monthStartWeekday = firstOfMonth.getDay()
 	const calendarStartDay = firstOfMonth.setDate(firstOfMonth.getDate() - monthStartWeekday)
-	for (let dayIndex of Array(43).keys()) {
+	for (const dayIndex of Array(43).keys()) {
 		currentDates.value.push(calendarStartDay + dayIndex * 86400000)
 	}
 }
 
-const previousYear = () => {
-	currentYear.value -= 1
-}
-
-const nextYear = () => {
-	currentYear.value += 1
-}
+watch([currentMonth, currentYear], renderMonth)
+const previousYear = () => (currentYear.value -= 1)
+const nextYear = () => (currentYear.value += 1)
 
 const previousMonth = () => {
 	if (currentMonth.value == 0) {
@@ -120,6 +98,7 @@ const nextMonth = () => {
 }
 
 const isTodaysDate = (day: string | number | Date) => {
+	const todaysDate = new Date()
 	if (currentMonth.value !== todaysDate.getMonth()) {
 		return
 	}
@@ -130,18 +109,16 @@ const isSelectedDate = (day: string | number | Date) => {
 	return new Date(day).toDateString() === new Date(selectedDate.value).toDateString()
 }
 
-// const value = computed({
-// 	get: () => {
-// 		return modelValue.value
-// 	},
-// 	set: newValue => {
-// 		selectDate(newValue)
-// 	},
-// })
+const getCurrentCell = (rowNo: number, colNo: number) => {
+	return (rowNo - 1) * numberOfColumns + colNo
+}
+
+const getCurrentDate = (rowNo: number, colNo: number) => {
+	return currentDates.value[getCurrentCell(rowNo, colNo)]
+}
 
 const selectDate = (currentIndex: number) => {
-	selectedDate.value = new Date(currentDates.value[currentIndex])
-	emit('update:modelValue', selectedDate.value.getTime())
+	date.value = selectedDate.value = new Date(currentDates.value[currentIndex])
 }
 
 const monthAndYear = computed(() => {
@@ -163,15 +140,17 @@ useKeyboardNav([
 				'keydown.shift.pageup': previousYear,
 				'keydown.pagedown': nextMonth,
 				'keydown.shift.pagedown': nextYear,
-				// 'keydown.tab': selectDate // select this date
-				// 'keydown.enter': selectDate // select this date
+				// TODO: this is a hack to override the stonecrop enter handler;
+				// store context inside the component so that handlers can be setup consistently
+				// eslint-disable-next-line @typescript-eslint/no-empty-function
+				'keydown.enter': () => {}, // select this date
 			},
 		},
 	},
 ])
 </script>
 
-<style scoped>
+<style>
 @import '@/theme/aform.css';
 @import url('@stonecrop/themes/default/default.css');
 
