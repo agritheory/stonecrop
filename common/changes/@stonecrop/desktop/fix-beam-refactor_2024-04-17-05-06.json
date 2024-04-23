@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/desktop",
+      "comment": "Update dependencies",
+      "type": "none"
+    }
+  ],
+  "packageName": "@stonecrop/desktop"
+}

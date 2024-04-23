@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/atable",
+      "comment": "Update dependencies",
+      "type": "none"
+    }
+  ],
+  "packageName": "@stonecrop/atable"
+}
