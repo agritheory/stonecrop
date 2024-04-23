@@ -5,7 +5,7 @@
 			<ADatePicker v-model="defaultDate" />
 		</Variant>
 		<Variant title="ADate">
-			<ADate v-model="defaultDate" />
+			<ADate label="Date" v-model="defaultDate" />
 		</Variant>
 	</Story>
 </template>
