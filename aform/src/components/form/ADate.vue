@@ -19,7 +19,7 @@ withDefaults(
 		validation: () => ({ errorMessage: '&nbsp;' }),
 	}
 )
-const inputDate = defineModel<number | Date>()
+const inputDate = defineModel<string | number | Date>()
 </script>
 
 <style scoped>

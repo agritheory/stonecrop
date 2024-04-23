@@ -1,11 +1,13 @@
 <template>
 	<Story title="date">
-		<Variant title="ADatePicker">
-			<ADatePicker />
-			<ADatePicker v-model="defaultDate" />
-		</Variant>
 		<Variant title="ADate">
 			<ADate label="Date" v-model="defaultDate" />
+		</Variant>
+		<Variant title="ADatePicker">
+			<h3>Default Date</h3>
+			<ADatePicker />
+			<h3>Custom Date</h3>
+			<ADatePicker v-model="defaultDate" />
 		</Variant>
 	</Story>
 </template>
@@ -20,7 +22,8 @@ const defaultDate = ref(new Date(twoDaysAgo))
 <style>
 @import url('@stonecrop/themes/default/default.css');
 
-.adate {
-	margin-right: 2ch;
+.adate,
+.adatepicker {
+	margin-right: 5ch;
 }
 </style>
