@@ -2,12 +2,12 @@
 	<div class="beam__itemcount">
 		<span
 			:contenteditable="editable"
-			:style="{ color: countColor === true ? '#3c5014' : '#e63c28' }"
+			:class="{ alert: countColor === false }"
 			@input="handleInput"
 			@click="handleInput">
 			{{ count }}
 		</span>
-		<span>/{{ denominator }} </span>
+		<span>/{{ denominator }}</span>
 		<span v-if="uom">&nbsp; {{ uom }}</span>
 	</div>
 </template>

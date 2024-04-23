@@ -1,9 +1,9 @@
 <template>
 	<li tabindex="0" class="beam__listitem">
-		<span>
+		<div class="beam__listtext">
 			<label>{{ item.label }}</label>
 			<p>{{ item.description }}</p>
-		</span>
+		</div>
 
 		<ItemCount
 			v-if="item.count"

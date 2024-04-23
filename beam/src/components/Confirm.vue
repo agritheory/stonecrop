@@ -1,9 +1,8 @@
 <template>
-	<div>
-		Would you like to continue?<br />
-		<button @click="confirmModal">Yes</button>
-		<br />
-		<button @click="closeModal">No</button>
+	<div class="beam__modal-confirm">
+		<h2>Would you like to continue?</h2>
+		<button class="btn" @click="confirmModal">Yes</button>
+		<button class="btn" @click="closeModal">No</button>
 	</div>
 </template>
 

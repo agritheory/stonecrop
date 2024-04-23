@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400..700;1,400..700&display=swap');
+
 :root {
 	/* THEME COLORS */
 
@@ -13,6 +15,10 @@
 	--gray-50: #808080;
 	--gray-60: #666666;
 	--gray-80: #333333;
+
+	/* Warnings/Alerts/Success */
+	--brand-danger: #e63c28;
+	--brand-success: #155724;
 
 	/* Table Colors */
 	--row-color-zebra-light: #eeeeee;
@@ -46,4 +52,10 @@
 	--atable-row-height: 1.5em;
 
 	/* FORM */
+
+	/* BTNS */
+	--btn-color: white;
+	--btn-border: #cccccc;
+	--btn-hover: #f2f2f2;
+	--btn-label-color: black;
 }

@@ -8,7 +8,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 const emit = defineEmits(['scaninput'])
 const barcode = ref('')
 
-const handleScanInput = (event: InputEvent) => {
+const handleScanInput = (event: InputEvent | KeyboardEvent) => {
 	if (event.target.tagName !== 'INPUT') {
 		if (event.key !== 'Enter') {
 			barcode.value += `${event.key}`
