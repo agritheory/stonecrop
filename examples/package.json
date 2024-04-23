@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/examples",
-	"version": "0.2.6",
+	"version": "0.2.7",
 	"private": true,
 	"description": "Example App(s) for the Stonecrop framework",
 	"license": "MIT",
