@@ -4,18 +4,16 @@ import { mount } from '@vue/test-utils'
 import ADatePicker from '@/components/form/ADatePicker.vue'
 
 describe('datepicker component', () => {
-	const datepickerValue = new Date('2023-1-1').getTime()
-
-	let wrapper = mount(ADatePicker, {
-		props: { modelValue: datepickerValue },
+	const wrapper = mount(ADatePicker, {
+		props: { modelValue: new Date('2024-01-01') },
 	})
 
 	it('emits update event when date is changed', async () => {
 		await wrapper.find('.todaysDate').trigger('click')
 		await wrapper.vm.$nextTick()
 
-		let todaysDate = new Date()
-		todaysDate = new Date(todaysDate.getFullYear(), todaysDate.getMonth(), todaysDate.getDate())
+		const todaysDatetime = new Date().setHours(0, 0, 0)
+		const todaysDate = new Date(todaysDatetime)
 
 		const updateEvents = wrapper.emitted('update:modelValue')
 		expect(updateEvents).toBeTruthy()

@@ -42,14 +42,14 @@ import { computed, nextTick, onMounted, ref, watch } from 'vue'
 const numberOfRows = 6
 const numberOfColumns = 7
 
-const date = defineModel<number | Date | undefined>()
-const selectedDate = ref(date.value ? new Date(date.value) : new Date())
+const date = defineModel<number | Date>({ default: new Date() })
+const selectedDate = ref(new Date(date.value))
 const currentMonth = ref<number>(selectedDate.value.getMonth())
 const currentYear = ref<number>(selectedDate.value.getFullYear())
 const currentDates = ref<number[]>([])
 
 onMounted(async () => {
-	renderMonth()
+	populateMonth()
 
 	// required to allow the elements to be focused in the next step
 	await nextTick()
@@ -65,7 +65,7 @@ onMounted(async () => {
 	}
 })
 
-const renderMonth = () => {
+const populateMonth = () => {
 	currentDates.value = []
 	const firstOfMonth = new Date(currentYear.value, currentMonth.value, 1)
 	const monthStartWeekday = firstOfMonth.getDay()
@@ -75,7 +75,7 @@ const renderMonth = () => {
 	}
 }
 
-watch([currentMonth, currentYear], renderMonth)
+watch([currentMonth, currentYear], populateMonth)
 const previousYear = () => (currentYear.value -= 1)
 const nextYear = () => (currentYear.value += 1)
 
