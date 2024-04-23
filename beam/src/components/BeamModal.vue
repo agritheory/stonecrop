@@ -11,6 +11,4 @@
 defineProps<{
 	showModal: boolean
 }>()
-
-defineEmits(['closemodal', 'confirmmodal'])
 </script>

@@ -1,15 +1,19 @@
 <template>
-	<Story title="default">
-		<Variant title="default">
-			<BeamModal :showModal="showModal">
+	<Story>
+		<Variant>
+			<BeamModal @confirmmodal="confirmModal" @closemodal="closeModal" :showModal="showModal">
 				<Confirm @confirmmodal="confirmModal" @closemodal="closeModal" />
 			</BeamModal>
+
 			<Navbar @click="handlePrimaryAction">
-				<template v-slot:title><h1>ITEMS TO RECEIVE</h1></template>
-				<template v-slot:navbaraction>DONE</template>
+				<template #title>
+					<h1 class="nav-title">Items to Receive</h1>
+				</template>
+				<template #navbaraction>Done</template>
 			</Navbar>
+
 			<ListView :items="items" @scrollbottom="loadMoreItems" />
-			<ActionFooter @click="handlePrimaryAction"> DONE </ActionFooter>
+			<ActionFooter @click="handlePrimaryAction">Done</ActionFooter>
 			<ScanInput @scaninput="handleScanInput($event)" />
 			<BeamModalOutlet @confirmmodal="confirmModal" @closemodal="closeModal"></BeamModalOutlet>
 		</Variant>
@@ -126,15 +130,6 @@ const confirmModal = () => {
 }
 </script>
 
-<style scoped>
-@import './theme.scss';
-
-body {
-	margin: 0;
-	padding: 0;
-	display: flex;
-	flex-direction: column;
-	flex: 1 0 auto;
-	height: 100%;
-}
+<style>
+@import url('./../themes/beam.css');
 </style>
