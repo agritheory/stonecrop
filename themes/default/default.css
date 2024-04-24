@@ -36,7 +36,7 @@
 
 	/* Form Colors */
 	--input-border-color: var(--gray-20);
-	--input-label-color: var(--gray-80);
+	--input-label-color: var(--gray-60);
 	--input-active-border-color: #000000;
 	--input-active-label-color: #000000;
 	--required-border: #e63c28;
