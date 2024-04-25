@@ -483,9 +483,6 @@ importers:
       pinia-shared-state:
         specifier: ^0.3.0
         version: 0.3.0(pinia@2.1.7)(vue@3.4.23)
-      pinia-undo:
-        specifier: ^0.1.9
-        version: 0.1.9(pinia@2.1.7)
       pinia-xstate:
         specifier: ^1.0.9
         version: 1.0.9(pinia@2.1.7)(typescript@5.4.5)(xstate@4.37.2)
@@ -1508,6 +1505,7 @@ packages:
 
   /@ungap/structured-clone@1.2.0:
     resolution: {integrity: sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==}
+    dev: true
 
   /@vitejs/plugin-vue@5.0.4(vite@5.2.9)(vue@3.4.23):
     resolution: {integrity: sha512-WS3hevEszI6CEVEx28F8RjTX97k3KsrcY6kvTg7+Whm5y3oYvcqzVeGCU3hxSAn4uY2CLCkeokkGKpoctccilQ==}
@@ -4186,16 +4184,6 @@ packages:
       - vue
     dev: false
 
-  /pinia-undo@0.1.9(pinia@2.1.7):
-    resolution: {integrity: sha512-/yk+FNR/NBXDGoSe/sMcFJE2x/dBSmwQaUwBybbbHKXDvRp6rV0fhohYE0o4j+LtqL+xT/LympLpop8lvWL6fQ==}
-    peerDependencies:
-      pinia: ^2.0.0
-    dependencies:
-      '@ungap/structured-clone': 1.2.0
-      pinia: 2.1.7(typescript@5.4.5)(vue@3.4.23)
-      undo-stacker: 0.1.3
-    dev: false
-
   /pinia-xstate@1.0.9(pinia@2.1.7)(typescript@5.4.5)(xstate@4.37.2):
     resolution: {integrity: sha512-fvoA3p7S5l+96Lczl9JTCeXxK0qP2YWRiZqINH2ei9kMbwqP184czYTAD4HjqjUN7fpEVgDAZFeBIIykmnYV1A==}
     peerDependencies:
@@ -4857,10 +4845,6 @@ packages:
   /undici-types@5.26.5:
     resolution: {integrity: sha512-JlCMO+ehdEIKqlFxk6IfVoAUVmgz7cU7zD/h9XZ0qzeosSHmUJVOzSQvvYSYWXkFXC+IfLKSIffhv0sVZup6pA==}
     dev: true
-
-  /undo-stacker@0.1.3:
-    resolution: {integrity: sha512-7cttFLMKJhLgWJtLUTz6wSOrJepFVaHKIrXahwJCiNnFIqQKxJlW5ixI5lHY6xACLftMsw19SBAlLn6qzIexMA==}
-    dev: false
 
   /universalify@0.2.0:
     resolution: {integrity: sha512-CJ1QgKmNg3CwvAv/kOFmtnEN05f0D/cn9QntgNOQlQF9dgvVTHj3t+8JPdjqawCHk7V/KA+fbUqzZ9XWhcqPUg==}

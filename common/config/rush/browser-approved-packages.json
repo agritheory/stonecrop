@@ -151,10 +151,6 @@
       "allowedCategories": [ "prototype" ]
     },
     {
-      "name": "pinia-undo",
-      "allowedCategories": [ "prototype" ]
-    },
-    {
       "name": "pinia-xstate",
       "allowedCategories": [ "prototype" ]
     },
