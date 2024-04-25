@@ -1,12 +1,21 @@
 <template>
 	<div>
-		<input v-model="inputDate" type="date" :id="uuid" :disabled="readonly" :required="required" />
+		<input
+			ref="dateRef"
+			type="date"
+			:id="uuid"
+			:disabled="readonly"
+			:required="required"
+			:value="inputDate"
+			@click="showPicker" />
 		<label :for="uuid">{{ label }}</label>
 		<p v-show="validation.errorMessage" v-html="validation.errorMessage"></p>
 	</div>
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
+
 withDefaults(
 	defineProps<{
 		label: string
@@ -19,7 +28,15 @@ withDefaults(
 		validation: () => ({ errorMessage: '&nbsp;' }),
 	}
 )
+
 const inputDate = defineModel<string | number | Date>()
+const dateRef = ref<HTMLInputElement | null>(null)
+
+const showPicker = () => {
+	if (dateRef.value) {
+		dateRef.value.showPicker()
+	}
+}
 </script>
 
 <style scoped>

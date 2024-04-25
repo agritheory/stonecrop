@@ -1,9 +1,9 @@
 <template>
 	<Story title="date">
-		<Variant title="ADate">
+		<Variant title="Date Input">
 			<ADate label="Date" v-model="defaultDate" />
 		</Variant>
-		<Variant title="ADatePicker">
+		<Variant title="Date Picker">
 			<h3>Default Date</h3>
 			<ADatePicker />
 			<h3>Custom Date</h3>
