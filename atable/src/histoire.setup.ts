@@ -7,7 +7,7 @@ import ATable from '@/components/ATable.vue'
 import ATableHeader from '@/components/ATableHeader.vue'
 import ATableModal from '@/components/ATableModal.vue'
 
-import { ADate, AForm, ANumericInput, ATextInput } from '@stonecrop/aform'
+import { ADate, AForm, ANumericInput, ATextInput, AFileAttach } from '@stonecrop/aform'
 
 export const setupVue3 = defineSetupVue3(({ app }) => {
 	// TODO: (typing) add typing for ADate
@@ -21,4 +21,5 @@ export const setupVue3 = defineSetupVue3(({ app }) => {
 	app.component('ATableHeader', ATableHeader)
 	app.component('ATableModal', ATableModal)
 	app.component('ATextInput', ATextInput)
+	app.component('AFileAttach', AFileAttach)
 })

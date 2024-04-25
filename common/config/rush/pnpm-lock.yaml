@@ -16,6 +16,9 @@ importers:
       '@stonecrop/utilities':
         specifier: workspace:*
         version: link:../utilities
+      '@vueuse/core':
+        specifier: ^9.13.0
+        version: 9.13.0(vue@3.4.23)
       uuid:
         specifier: ^9.0.0
         version: 9.0.1
