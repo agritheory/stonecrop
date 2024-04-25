@@ -154,6 +154,11 @@ const basic_form_schema = ref([
 		component: 'ATextInput',
 		label: 'Phone',
 	},
+	{
+		fieldname: "attach_file",
+		component: "AFileAttach",
+		label: "Attach Files"
+	}
 ])
 
 const http_logs = ref({

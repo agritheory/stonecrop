@@ -1,6 +1,6 @@
 import { defineSetupVue3 } from '@histoire/plugin-vue'
 
-import { ADate, AForm, ANumericInput, ATextInput } from '@stonecrop/aform'
+import { ADate, AFileAttach, AForm, ANumericInput, ATextInput } from '@stonecrop/aform'
 import { ACell, AExpansionRow, ARow, ATable, ATableHeader, ATableModal } from '@stonecrop/atable'
 
 export const setupVue3 = defineSetupVue3(({ app }) => {
@@ -14,4 +14,5 @@ export const setupVue3 = defineSetupVue3(({ app }) => {
 	app.component('ATableHeader', ATableHeader)
 	app.component('ATableModal', ATableModal)
 	app.component('ATextInput', ATextInput)
+	app.component('AFileAttach', AFileAttach)
 })

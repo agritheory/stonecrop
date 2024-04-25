@@ -6,6 +6,7 @@ import {
 	ADatePicker,
 	ADropdown,
 	AFieldset,
+	AFileAttach,
 	AForm,
 	ANumericInput,
 	ATextInput,
@@ -19,6 +20,7 @@ export const setupVue3 = defineSetupVue3(({ app }) => {
 	app.component('ADatePicker', ADatePicker)
 	app.component('ADropdown', ADropdown)
 	app.component('AFieldset', AFieldset)
+	app.component('AFileAttach', AFileAttach)
 	app.component('AForm', AForm)
 	app.component('ANumericInput', ANumericInput)
 	app.component('ATable', ATable)
