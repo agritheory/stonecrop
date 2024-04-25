@@ -3,7 +3,7 @@
 		<table>
 			<tr>
 				<td @click="previousMonth" :tabindex="-1">&lt;</td>
-				<th colspan="5">{{ monthAndYear }}</th>
+				<th colspan="5" :tabindex="-1">{{ monthAndYear }}</th>
 				<td @click="nextMonth" :tabindex="-1">&gt;</td>
 			</tr>
 			<tr class="days-header">

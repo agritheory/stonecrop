@@ -1,5 +1,5 @@
 <template>
-	<Story title="dropdown">
+	<Story>
 		<div class="dropdown-form">
 			<ADropdown
 				data-theme="purple"
