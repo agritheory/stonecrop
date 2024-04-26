@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/atable",
+      "comment": "reused attach file component from aform",
+      "type": "none"
+    }
+  ],
+  "packageName": "@stonecrop/atable"
+}
