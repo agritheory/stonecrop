@@ -7,13 +7,11 @@
 		</span>
 	</footer>
 </template>
-<script>
-export default {
-	name: 'ActionFooter',
-	methods: {
-		handleFooterAction() {
-			this.$emit('click')
-		},
-	},
+
+<script setup lang="ts">
+const emit = defineEmits(['click'])
+
+const handleFooterAction = () => {
+	emit('click')
 }
 </script>

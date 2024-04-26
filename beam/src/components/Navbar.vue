@@ -13,13 +13,11 @@
 		</div>
 	</nav>
 </template>
-<script>
-export default {
-	name: 'Navbar',
-	methods: {
-		handlePrimaryAction() {
-			this.$emit('click')
-		},
-	},
+
+<script setup lang="ts">
+const emit = defineEmits(['click'])
+
+const handlePrimaryAction = () => {
+	emit('click')
 }
 </script>

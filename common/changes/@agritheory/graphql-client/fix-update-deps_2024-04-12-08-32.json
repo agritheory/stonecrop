@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "chore: update vitest dependencies",
+      "type": "patch",
+      "packageName": "@agritheory/graphql-client"
+    }
+  ],
+  "packageName": "@agritheory/graphql-client",
+  "email": "rohan@parsimony.com"
+}
