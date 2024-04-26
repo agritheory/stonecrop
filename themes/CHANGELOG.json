@@ -1,0 +1,26 @@
+{
+  "name": "@stonecrop/themes",
+  "entries": [
+    {
+      "version": "0.2.7",
+      "tag": "@stonecrop/themes_v0.2.7",
+      "date": "Fri, 26 Apr 2024 06:36:23 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Version bump"
+          },
+          {
+            "comment": "Update dependencies"
+          },
+          {
+            "comment": "Update package name"
+          },
+          {
+            "comment": "Remove distributable files from git"
+          }
+        ]
+      }
+    }
+  ]
+}
