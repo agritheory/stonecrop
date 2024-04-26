@@ -39,6 +39,7 @@ export default defineConfig({
 		globals: true,
 		environment: 'jsdom',
 		coverage: {
+			enabled: true,
 			provider: 'istanbul',
 			reporter: ['text', 'json-summary', 'json'], // required for Github Actions CI
 			reportOnFailure: true,
@@ -54,7 +55,6 @@ export default defineConfig({
 				...coverageConfigDefaults.exclude,
 				'**/*.setup.ts', // ignore histoire setup files
 				'src/index.ts', // ignore the entry file
-				'src/components/form/AComboBox.vue', // ignore AComboBox template coverage
 				'stories/**', // ignore histoire storybook files
 				'types/**', // ignore types
 			],

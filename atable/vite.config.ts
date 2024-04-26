@@ -44,6 +44,7 @@ export default defineConfig({
 		globals: true,
 		environment: 'jsdom',
 		coverage: {
+			enabled: true,
 			provider: 'istanbul',
 			reporter: ['text', 'json-summary', 'json'], // required for Github Actions CI
 			reportOnFailure: true,
