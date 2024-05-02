@@ -1,6 +1,11 @@
 # Change Log - @stonecrop/themes
 
-This log was last generated on Thu, 02 May 2024 11:10:46 GMT and should not be manually modified.
+This log was last generated on Thu, 02 May 2024 13:00:37 GMT and should not be manually modified.
+
+## 0.2.10
+Thu, 02 May 2024 13:00:37 GMT
+
+_Version update only_
 
 ## 0.2.9
 Thu, 02 May 2024 11:10:46 GMT
