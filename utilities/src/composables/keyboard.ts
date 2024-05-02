@@ -1,5 +1,5 @@
 import { onMounted, onBeforeUnmount } from 'vue'
-import { useElementVisibility } from '@vueuse/core'
+import { useElementVisibility } from '@/composables/visibility'
 
 import type { KeyboardNavigationOptions, KeypressHandlers } from 'types'
 

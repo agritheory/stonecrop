@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/utilities",
+      "comment": "Add local useElementVisibility composable for compatibility",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/utilities"
+}
