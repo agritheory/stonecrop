@@ -3,7 +3,7 @@
     {
       "packageName": "@stonecrop/aform",
       "comment": "Add ADatePicker base component",
-      "type": "none"
+      "type": "patch"
     }
   ],
   "packageName": "@stonecrop/aform"

@@ -3,7 +3,7 @@
     {
       "packageName": "@stonecrop/utilities",
       "comment": "Update keyboard navigation composable",
-      "type": "none"
+      "type": "patch"
     }
   ],
   "packageName": "@stonecrop/utilities"

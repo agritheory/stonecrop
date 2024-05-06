@@ -3,7 +3,7 @@
     {
       "packageName": "@stonecrop/atable",
       "comment": "Update table keyboard navigation",
-      "type": "none"
+      "type": "patch"
     }
   ],
   "packageName": "@stonecrop/atable"
