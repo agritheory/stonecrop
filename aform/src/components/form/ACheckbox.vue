@@ -1,9 +1,8 @@
 <template>
-	<div class="form-element">
-		<label class="field-label" :for="uuid">{{ label }}</label>
-		<label class="checkbox-container input-field">
-			<input v-model="checkbox" type="checkbox" :id="uuid" class="checkbox" :readonly="readOnly" :required="required" />
-			<span class="custom-checkbox">{{ checkbox }}</span>
+	<div class="aform__form-element">
+		<label class="aform__field-label" :for="uuid">{{ label }}</label>
+		<label class="aform__checkbox-container aform__input-field">
+			<input v-model="checkbox" type="checkbox" :id="uuid" class="aform__checkbox" :readonly="readOnly" :required="required" />
 		</label>
 		<p class="error" v-show="validation.errorMessage" v-html="validation.errorMessage"></p>
 	</div>
@@ -28,7 +27,7 @@ withDefaults(
 const checkbox = defineModel<InputHTMLAttributes['checked']>()
 </script>
 
-<style>
+<!-- <style>
 @import url('@/theme/fields.css');
 
-</style>
+</style> -->

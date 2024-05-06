@@ -1,8 +1,8 @@
 <template>
-	<div class="form-element">
-		<label class="field-label" :for="uuid">{{ label }} </label>
+	<div class="aform__form-element">
+		<label class="aform__field-label" :for="uuid">{{ label }} </label>
 		<input
-			class="input-field"
+			class="aform__input-field"
 			v-model="inputText"
 			:id="uuid"
 			:disabled="readonly"
@@ -76,5 +76,5 @@ export default defineComponent({
 </script>
 
 <style>
-@import url('@/theme/fields.css');
+/* @import url('@/theme/fields.css'); */
 </style>
