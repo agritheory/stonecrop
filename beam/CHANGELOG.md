@@ -1,13 +1,11 @@
-# Change Log - @stonecrop/aform
+# Change Log - @stonecrop/beam
 
 This log was last generated on Mon, 06 May 2024 11:40:42 GMT and should not be manually modified.
 
 ## 0.2.13
 Mon, 06 May 2024 11:40:42 GMT
 
-### Patches
-
-- Add ADatePicker base component
+_Version update only_
 
 ## 0.2.12
 Fri, 03 May 2024 12:30:58 GMT
@@ -32,27 +30,7 @@ _Version update only_
 ## 0.2.7
 Fri, 26 Apr 2024 06:36:23 GMT
 
-### Patches
-
-- update coverage report
-
 ### Updates
 
-- Add Login utility component
-- Use new v-model API
 - Update dependencies
-- Update package name
-- Remove distributable files from git
-
-## 0.1.2
-Fri, 14 Oct 2022 23:32:04 GMT
-
-_Version update only_
-
-## 0.1.1
-Thu, 29 Sep 2022 12:25:57 GMT
-
-### Patches
-
-- Reconfigure build outputs
 

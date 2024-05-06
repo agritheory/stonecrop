@@ -21,7 +21,7 @@
 <script setup lang="ts">
 import { TableRow } from 'types'
 import { inject, ref } from 'vue'
-import { useKeyboardNav } from '@stonecrop/utilities'
+import { type KeypressHandlers, useKeyboardNav, defaultKeypressHandlers } from '@stonecrop/utilities'
 
 import TableDataStore from '.'
 
@@ -31,10 +31,11 @@ const props = withDefaults(
 		rowIndex: number
 		tableid: string
 		tabIndex?: number
-		addNavigation?: object
+		addNavigation?: boolean | KeypressHandlers
 	}>(),
 	{
 		tabIndex: -1,
+		addNavigation: false, // default to allowing cell navigation
 	}
 )
 
@@ -79,10 +80,19 @@ const toggleRowExpand = (rowIndex: number) => {
 }
 
 if (props.addNavigation) {
+	let handlers = defaultKeypressHandlers
+
+	if (typeof props.addNavigation === 'object') {
+		handlers = {
+			...handlers,
+			...props.addNavigation,
+		}
+	}
+
 	useKeyboardNav([
 		{
 			selectors: rowEl,
-			handlers: props.addNavigation,
+			handlers: handlers,
 		},
 	])
 }

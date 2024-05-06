@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/stonecrop",
-	"version": "0.2.6",
+	"version": "0.2.13",
 	"description": "schema helper",
 	"license": "MIT",
 	"type": "module",
@@ -37,7 +37,6 @@
 		"preview": "vite preview"
 	},
 	"dependencies": {
-		"@vueuse/core": "^9.13.0",
 		"immutable": "^4.3.0",
 		"pinia": "^2.0.32",
 		"pinia-shared-state": "^0.3.0",
