@@ -45,7 +45,7 @@ import '@vue-flow/core/dist/style.css'
 import '@vue-flow/core/dist/theme-default.css'
 import EditableNode from './EditableNode.vue'
 import EditableEdge from './EditableEdge.vue'
-import { ref, computed, onBeforeUnmount, onMounted, watch, reactive } from 'vue'
+import { ref, computed, defineEmits, onBeforeUnmount, onMounted, watch, reactive } from 'vue'
 
 // Props
 

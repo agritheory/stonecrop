@@ -47,6 +47,7 @@ const selectedDate = ref(new Date(date.value))
 const currentMonth = ref<number>(selectedDate.value.getMonth())
 const currentYear = ref<number>(selectedDate.value.getFullYear())
 const currentDates = ref<number[]>([])
+const adatepicker = ref<HTMLElement | null>(null)
 
 onMounted(async () => {
 	populateMonth()
@@ -133,7 +134,7 @@ const monthAndYear = computed(() => {
 // setup keyboard navigation
 useKeyboardNav([
 	{
-		parent: 'table.adate',
+		parent: adatepicker,
 		selectors: 'td',
 		handlers: {
 			...defaultKeypressHandlers,

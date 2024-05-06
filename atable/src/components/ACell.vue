@@ -27,7 +27,7 @@
 <script setup lang="ts">
 import { computed, CSSProperties, inject, ref } from 'vue'
 
-import { defaultKeypressHandlers, useKeyboardNav } from '@stonecrop/utilities'
+import { KeypressHandlers, defaultKeypressHandlers, useKeyboardNav } from '@stonecrop/utilities'
 import TableDataStore from '.'
 
 const props = withDefaults(
@@ -35,7 +35,7 @@ const props = withDefaults(
 		colIndex: number
 		rowIndex: number
 		tableid: string
-		addNavigation?: boolean | object
+		addNavigation?: boolean | KeypressHandlers
 		tabIndex?: number
 		clickHandler?: (event: MouseEvent) => void
 	}>(),
