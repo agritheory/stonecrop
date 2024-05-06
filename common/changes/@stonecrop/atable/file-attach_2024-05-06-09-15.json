@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/atable",
+      "comment": "upgraded vueuse package",
+      "type": "none"
+    }
+  ],
+  "packageName": "@stonecrop/atable"
+}
