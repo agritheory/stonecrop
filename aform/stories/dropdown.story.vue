@@ -1,5 +1,5 @@
 <template>
-	<Story title="dropdown">
+	<Story>
 		<div class="dropdown-form">
 			<ADropdown
 				data-theme="purple"
@@ -17,8 +17,8 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue'
-import { reactive } from 'vue'
+import { reactive, ref } from 'vue'
+
 import ADropdown from '@/components/form/ADropdown.vue'
 
 const dropdown_data = ref({

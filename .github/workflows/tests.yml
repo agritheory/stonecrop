@@ -47,7 +47,7 @@ jobs:
         registry-url: https://npm.pkg.github.com/
 
     - name: Install Rush
-      run: node common/scripts/install-run-rush.js install
+      run: node common/scripts/install-run-rush.js install && node common/scripts/install-run-rush.js build
 
     - name: Run Tests
       working-directory: ./aform
@@ -86,7 +86,7 @@ jobs:
         registry-url: https://npm.pkg.github.com/
 
     - name: Install Rush
-      run: node common/scripts/install-run-rush.js install
+      run: node common/scripts/install-run-rush.js install && node common/scripts/install-run-rush.js build
 
     - name: Run Tests
       working-directory: ./atable

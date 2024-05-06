@@ -18,6 +18,7 @@
 		"src/**/*.vue",
 		"stories/**/*.json",
 		"stories/**/*.story.vue",
+		"tests/**/*.spec.ts",
 		"tests/**/*.ts",
 		"tests/**/*.vue",
 		"types/**/*.ts"
