@@ -18,6 +18,7 @@
 			<tr v-for="rowNo in numberOfRows" :key="rowNo">
 				<td
 					v-for="colNo in numberOfColumns"
+					ref="celldate"
 					:key="getCurrentCell(rowNo, colNo)"
 					:contenteditable="false"
 					:spellcheck="false"

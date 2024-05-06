@@ -54,7 +54,6 @@ export default defineConfig({
 				branches: 70,
 				functions: 70,
 				statements: 70,
-				autoUpdate: true,
 			},
 			exclude: [
 				...coverageConfigDefaults.exclude,

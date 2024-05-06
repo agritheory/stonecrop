@@ -18,13 +18,14 @@ import { ref } from 'vue'
 
 withDefaults(
 	defineProps<{
-		label: string
+		label?: string
 		required?: boolean
 		readonly?: boolean
 		uuid?: string
 		validation?: Record<string, any>
 	}>(),
 	{
+		label: 'Date',
 		validation: () => ({ errorMessage: '&nbsp;' }),
 	}
 )
@@ -34,7 +35,12 @@ const dateRef = ref<HTMLInputElement | null>(null)
 
 const showPicker = () => {
 	if (dateRef.value) {
-		dateRef.value.showPicker()
+		if ('showPicker' in HTMLInputElement.prototype) {
+			// https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement/showPicker
+			// TODO: re-check browser support and compatibility; figure out alternative ways
+			// to spawn the native datepicker and eventually replace with ADatepicker
+			dateRef.value.showPicker()
+		}
 	}
 }
 </script>
