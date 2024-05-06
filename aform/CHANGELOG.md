@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/aform
 
-This log was last generated on Fri, 03 May 2024 12:30:58 GMT and should not be manually modified.
+This log was last generated on Mon, 06 May 2024 11:40:42 GMT and should not be manually modified.
+
+## 0.2.13
+Mon, 06 May 2024 11:40:42 GMT
+
+### Patches
+
+- Add ADatePicker base component
 
 ## 0.2.12
 Fri, 03 May 2024 12:30:58 GMT
