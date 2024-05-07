@@ -46,7 +46,8 @@
 		"@stonecrop/themes": "workspace:*",
 		"@stonecrop/utilities": "workspace:*",
 		"uuid": "^9.0.0",
-		"vue": "^3.4.23"
+		"vue": "^3.4.23",
+		"@vueuse/core": "^10.9.0"
 	},
 	"devDependencies": {
 		"@histoire/plugin-vue": "^0.17.17",
