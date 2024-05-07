@@ -41,4 +41,50 @@ describe('datepicker component', () => {
 		// TODO: check if the selected date is focused
 		// expect($randomDate.element).toBe(document.activeElement)
 	})
+
+	it('select previous month', async () => {
+		const wrapper = mount(ADatePicker)
+		await wrapper.vm.$nextTick()
+
+		const $prevMonthBtn = wrapper.find('#previous-month-btn')
+		await $prevMonthBtn.trigger('click')
+		expect(wrapper.vm.currentMonth).toBe(new Date().getMonth() - 1)
+	})
+
+	it('select previous year', async () => {
+		const wrapper = mount(ADatePicker)
+		await wrapper.vm.$nextTick()
+
+		const $prevMonthBtn = wrapper.find('#previous-month-btn')
+		const currentMonth = new Date().getMonth()
+
+		for (const _ of Array(currentMonth + 1).keys()) {
+			await $prevMonthBtn.trigger('click')
+		}
+
+		expect(wrapper.vm.currentYear).toBe(new Date().getFullYear() - 1)
+	})
+
+	it('select next month', async () => {
+		const wrapper = mount(ADatePicker)
+		await wrapper.vm.$nextTick()
+
+		const $prevMonthBtn = wrapper.find('#next-month-btn')
+		await $prevMonthBtn.trigger('click')
+		expect(wrapper.vm.currentMonth).toBe(new Date().getMonth() + 1)
+	})
+
+	it('select next year', async () => {
+		const wrapper = mount(ADatePicker)
+		await wrapper.vm.$nextTick()
+
+		const $prevMonthBtn = wrapper.find('#next-month-btn')
+		const currentMonth = new Date().getMonth()
+
+		for (const _ of Array(12 - currentMonth).keys()) {
+			await $prevMonthBtn.trigger('click')
+		}
+
+		expect(wrapper.vm.currentYear).toBe(new Date().getFullYear() + 1)
+	})
 })

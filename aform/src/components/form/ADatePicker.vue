@@ -2,9 +2,9 @@
 	<div class="adatepicker" tabindex="0" ref="adatepicker">
 		<table>
 			<tr>
-				<td @click="previousMonth" :tabindex="-1">&lt;</td>
+				<td id="previous-month-btn" @click="previousMonth" :tabindex="-1">&lt;</td>
 				<th colspan="5" :tabindex="-1">{{ monthAndYear }}</th>
-				<td @click="nextMonth" :tabindex="-1">&gt;</td>
+				<td id="next-month-btn" @click="nextMonth" :tabindex="-1">&gt;</td>
 			</tr>
 			<tr class="days-header">
 				<td>M</td>
