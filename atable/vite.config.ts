@@ -49,6 +49,7 @@ export default defineConfig({
 				branches: 70,
 				functions: 70,
 				statements: 70,
+				autoUpdate: true,
 			},
 			// required for Github Actions CI
 			reporter: ['text', 'json-summary', 'json'],

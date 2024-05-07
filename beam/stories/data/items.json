@@ -1,0 +1,116 @@
+[
+	{
+		"barcode": "6281478257437327897",
+		"label": "Item 1 Long Title: Including Subtitle to demonstrate ellipsis",
+		"description": "iPhone this and that",
+		"count": { "count": 0, "of": 3 },
+		"linkComponent": "ListAnchor",
+		"route": "/item1"
+	},
+	{
+		"label": "Item 2",
+		"description": "More descriptions of stuff",
+		"count": { "count": 3, "of": 3 },
+		"linkComponent": "ListAnchor",
+		"route": "/item2"
+	},
+	{
+		"label": "Item 3",
+		"description": "",
+		"count": { "count": 1, "of": 6 },
+		"linkComponent": "ListAnchor",
+		"route": "/item3"
+	},
+	{
+		"label": "Item 4",
+		"description": "iPhone this and that plus even more text to demonstrate ellipsis and great savings! on things you can't see or touch",
+		"count": { "count": 0, "of": 3 },
+		"linkComponent": "div",
+		"route": "/item4",
+		"barcode": "5564269659609843627"
+	},
+	{
+		"barcode": "6281478257437327897",
+		"label": "Item 1",
+		"description": "iPhone this and that",
+		"count": { "count": 0, "of": 2 },
+		"linkComponent": "ListAnchor",
+		"route": "/item1"
+	},
+	{
+		"barcode": "6281478257437327897",
+		"label": "Item 1 Long Title: Including Subtitle to demonstrate ellipsis",
+		"description": "iPhone this and that",
+		"count": { "count": 0, "of": 3 },
+		"linkComponent": "ListAnchor",
+		"route": "/item1"
+	},
+	{
+		"label": "Item 2",
+		"description": "More descriptions of stuff",
+		"count": { "count": 3, "of": 3 },
+		"linkComponent": "ListAnchor",
+		"route": "/item2"
+	},
+	{
+		"label": "Item 3",
+		"description": "",
+		"count": { "count": 1, "of": 6 },
+		"linkComponent": "ListAnchor",
+		"route": "/item3"
+	},
+	{
+		"label": "Item 4",
+		"description": "iPhone this and that plus even more text to demonstrate ellipsis and great savings! on things you can't see or touch",
+		"count": { "count": 0, "of": 3 },
+		"linkComponent": "div",
+		"route": "/item4",
+		"barcode": "5564269659609843627"
+	},
+	{
+		"barcode": "6281478257437327897",
+		"label": "Item 1",
+		"description": "iPhone this and that",
+		"count": { "count": 0, "of": 2 },
+		"linkComponent": "ListAnchor",
+		"route": "/item1"
+	},
+	{
+		"barcode": "6281478257437327897",
+		"label": "Item 1 Long Title: Including Subtitle to demonstrate ellipsis",
+		"description": "iPhone this and that",
+		"count": { "count": 0, "of": 3 },
+		"linkComponent": "ListAnchor",
+		"route": "/item1"
+	},
+	{
+		"label": "Item 2",
+		"description": "More descriptions of stuff",
+		"count": { "count": 3, "of": 3 },
+		"linkComponent": "ListAnchor",
+		"route": "/item2"
+	},
+	{
+		"label": "Item 3",
+		"description": "",
+		"count": { "count": 1, "of": 6 },
+		"linkComponent": "ListAnchor",
+		"route": "/item3"
+	},
+	{
+		"label": "Item 4",
+		"description": "iPhone this and that plus even more text to demonstrate ellipsis and great savings! on things you can't see or touch",
+		"count": { "count": 0, "of": 3 },
+		"linkComponent": "div",
+		"route": "/item4",
+		"barcode": "5564269659609843627"
+	},
+	{
+		"barcode": "6281478257437327897",
+		"label": "Item 1",
+		"description": "iPhone this and that",
+		"count": { "count": 0, "of": 2 },
+		"linkComponent": "ListAnchor",
+		"route": "/item1"
+	}
+]

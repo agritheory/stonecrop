@@ -55,12 +55,8 @@
       "allowedCategories": [ "prototype", "utilities" ]
     },
     {
-      "name": "@vitest/coverage-c8",
-      "allowedCategories": [ "prototype", "utilities" ]
-    },
-    {
       "name": "@vitest/coverage-v8",
-      "allowedCategories": [ "prototype" ]
+      "allowedCategories": [ "prototype", "utilities" ]
     },
     {
       "name": "@vitest/ui",
@@ -81,10 +77,6 @@
     {
       "name": "@vueuse/core",
       "allowedCategories": [ "prototype", "utilities" ]
-    },
-    {
-      "name": "@vueuse/shared",
-      "allowedCategories": [ "prototype" ]
     },
     {
       "name": "cypress",

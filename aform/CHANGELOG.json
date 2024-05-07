@@ -1,6 +1,71 @@
 {
-  "name": "@agritheory/aform",
+  "name": "@stonecrop/aform",
   "entries": [
+    {
+      "version": "0.2.13",
+      "tag": "@stonecrop/aform_v0.2.13",
+      "date": "Mon, 06 May 2024 11:40:42 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Add ADatePicker base component"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.2.12",
+      "tag": "@stonecrop/aform_v0.2.12",
+      "date": "Fri, 03 May 2024 12:30:58 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.2.10",
+      "tag": "@stonecrop/aform_v0.2.10",
+      "date": "Thu, 02 May 2024 13:00:37 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.2.9",
+      "tag": "@stonecrop/aform_v0.2.9",
+      "date": "Thu, 02 May 2024 11:10:46 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.2.8",
+      "tag": "@stonecrop/aform_v0.2.8",
+      "date": "Fri, 26 Apr 2024 10:56:28 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.2.7",
+      "tag": "@stonecrop/aform_v0.2.7",
+      "date": "Fri, 26 Apr 2024 06:36:23 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add Login utility component"
+          },
+          {
+            "comment": "Use new v-model API"
+          },
+          {
+            "comment": "Update dependencies"
+          },
+          {
+            "comment": "Update package name"
+          },
+          {
+            "comment": "Remove distributable files from git"
+          }
+        ],
+        "patch": [
+          {
+            "comment": "update coverage report"
+          }
+        ]
+      }
+    },
     {
       "version": "0.1.2",
       "tag": "@agritheory/aform_v0.1.2",

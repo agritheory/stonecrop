@@ -4,6 +4,7 @@ import ACheckbox from '@/components/form/ACheckbox.vue'
 import AComboBox from '@/components/form/AComboBox.vue'
 import ADate from '@/components/form/ADate.vue'
 import ADropdown from '@/components/form/ADropdown.vue'
+import ADatePicker from '@/components/form/ADatePicker.vue'
 import AFieldset from '@/components/form/AFieldset.vue'
 import AForm from '@/components/AForm.vue'
 import ANumericInput from '@/components/form/ANumericInput.vue'
@@ -17,6 +18,7 @@ function install(app: App /* options */) {
 	app.component('ACombobox', AComboBox)
 	app.component('ADate', ADate)
 	app.component('ADropdown', ADropdown)
+	app.component('ADatePicker', ADatePicker)
 	app.component('AFieldset', AFieldset)
 	app.component('AForm', AForm)
 	app.component('ANumericInput', ANumericInput)
@@ -26,4 +28,16 @@ function install(app: App /* options */) {
 	// app.component('AQuantity', AQuantity)
 }
 
-export { ACheckbox, AComboBox, ADate, ADropdown, AFieldset, AForm, ANumericInput, AQuantity, ATextInput, install }
+export {
+	ACheckbox,
+	AComboBox,
+	ADate,
+	ADatePicker,
+	ADropdown,
+	AFieldset,
+	AForm,
+	ANumericInput,
+	AQuantity,
+	ATextInput,
+	install,
+}

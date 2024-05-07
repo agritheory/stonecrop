@@ -4,14 +4,14 @@ import { mount } from '@vue/test-utils'
 import ATextInput from '@/components/form/ATextInput.vue'
 
 describe('text input component', () => {
-	let textInputModel = 'John'
-	let schema = {
+	const textInputModel = 'John'
+	const schema = {
 		fieldname: 'first_name',
 		label: 'First Name',
 	}
 
 	let wrapper = mount(ATextInput, {
-		props: { modelValue: textInputModel, schema: schema },
+		props: { modelValue: textInputModel, label: 'First Name', schema: schema },
 	})
 
 	it('emits update event when input changed', async () => {
