@@ -10,10 +10,10 @@
 				<form @submit="onSubmit">
 					<div class="login-form-container">
 						<div class="login-form-email login-form-element">
-							<label id="login-email" for="email" class="login-label">Email</label>
+							<label id="login-email" for="email" class="aform__field-label">Email</label>
 							<input
 								id="email"
-								class="login-field"
+								class="aform__input-field"
 								name="email"
 								placeholder="name@example.com"
 								type="email"
@@ -24,8 +24,8 @@
 						</div>
 
 						<div class="login-form-password login-form-element">
-							<label id="login-password" for="password" class="login-label">Password</label>
-							<input id="password" class="login-field" name="password" type="password" :disabled="isLoading" />
+							<label id="login-password" for="password" class="aform__field-label">Password</label>
+							<input id="password" class="aform__input-field" name="password" type="password" :disabled="isLoading" />
 						</div>
 
 						<button class="btn" :disabled="isLoading">
@@ -68,5 +68,5 @@ function onSubmit(event: Event) {
 </script>
 
 <style>
-@import url('../../theme/login.css');
+@import url('@/theme/login.css');
 </style>

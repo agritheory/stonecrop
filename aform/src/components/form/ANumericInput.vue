@@ -22,5 +22,3 @@ withDefaults(
 
 const inputNumber = defineModel<number>()
 </script>
-
-

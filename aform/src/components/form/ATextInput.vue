@@ -74,7 +74,3 @@ export default defineComponent({
 	},
 })
 </script>
-
-<style>
-/* @import url('@/theme/fields.css'); */
-</style>

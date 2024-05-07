@@ -40,9 +40,9 @@
 	--required-border: #e63c28;
 
 	/* FONT */
-	--font-size: 11pt;
+	--font-size: 10px;
 	--font-family: Arimo, Arial, sans-serif;
-	--table-font-size: 11pt;
+	--table-font-size: 16px;
 	--atable-font-family: 'Arimo', sans-serif;
 
 	/* TABLE */
@@ -57,3 +57,4 @@
 	--btn-hover: #f2f2f2;
 	--btn-label-color: black;
 }
+

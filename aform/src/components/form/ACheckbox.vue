@@ -26,8 +26,3 @@ withDefaults(
 
 const checkbox = defineModel<InputHTMLAttributes['checked']>()
 </script>
-
-<!-- <style>
-@import url('@/theme/fields.css');
-
-</style> -->

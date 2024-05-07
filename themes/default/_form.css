@@ -4,22 +4,23 @@ Holds styles for all form fields
 /* .aform__form{
 
 } */
-.aform{
+.aform, .aform form{
   display: flex;
 	flex-direction: row;
 	flex-wrap: wrap;
 	justify-content: flex-start;
 	align-items: baseline;
 }
-.aform__form-element{
+.aform__form-element, .aform div{
   min-width:40ch;
     border:1px solid transparent;
     padding:0;
     margin:0;
     margin-right:.5rem;
     margin-bottom:.5rem;
+		display:grid;
 }
-.aform__input-field{
+.aform__input-field, .aform input{
   outline: 1px solid transparent;
     border: 1px solid var(--input-border-color);
     padding:.25rem;
@@ -28,7 +29,7 @@ Holds styles for all form fields
     box-sizing:border-box;
     width:100%;
 }
-.aform__field-label{
+.aform__field-label, .aform label{
   color: var(--input-label-color);
 	display: block;
 	min-height: 1.15rem;
@@ -36,7 +37,7 @@ Holds styles for all form fields
 	margin: 0rem;
   z-index: 2;
 	font-size: 1rem;
-	font-weight:600;
+	font-weight:500;
   letter-spacing: 0.05rem;
 	background: white;
 	width:100%;
@@ -44,6 +45,7 @@ Holds styles for all form fields
 	background:var(--gray-5);
 	border:1px solid var(--input-border-color);
 	border-bottom:none;
+	grid-row:1;
   
 }
 .aform > p.error{
@@ -58,11 +60,11 @@ Holds styles for all form fields
 	font-size: .8rem;
 }
 
-.aform__input-field:focus {
+.aform__input-field:focus, .aform input:focus {
 	border: 1px solid var(--input-active-border-color);
 }
 
-.aform__input-field:focus + .aform__field-label {
+.aform__input-field:focus + .aform__field-label, .aform input:focus + .aform label {
 	color: var(--input-active-label-color);
 }
 
@@ -83,3 +85,79 @@ Holds styles for all form fields
 .aform__checkbox-container:hover + .aform__field-label {
 	color: var(--input-active-label-color);
 }
+.aform-primary-action {
+	font-size: 100%;
+	text-align: center;
+	min-height: 2em;
+	padding: 0.25rem 1rem 0.25rem 1rem;
+	border: 1px solid var(--primary-color);
+	color: var(--primary-text-color);
+	background-color: var(--primary-color);
+	outline: 2px solid var(--primary-text-color);
+	transition: outline-offset 200ms ease;
+	font-size: var(--font-size);
+	margin: 0.5ch;
+}
+
+.aform-primary-action:hover,
+.aform-primary-action:active {
+	outline: 2px solid var(--primary-text-color);
+	outline-offset: -4px;
+	transition: outline-offset 200ms ease;
+}
+
+/** expandedable form styles **/
+tr:focus {
+	background-color: lightblue;
+	outline: auto;
+}
+
+/* .aform > form {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	justify-content: flex-start;
+	align-items: baseline;
+} */
+
+/* .aform div {
+	min-width: 40ch;
+	border: 1px solid transparent;
+	padding: 0rem;
+	margin: 0rem;
+	margin-right: 1ch;
+} */
+
+/* .aform input {
+	width: calc(100% - 1ch);
+	outline: 1px solid transparent;
+	border: 1px solid var(--input-border-color);
+	padding: 1ch 0.5ch 0.5ch 1ch;
+	margin: calc(1.15rem / 2) 0 0 0;
+	min-height: 1.15rem;
+	border-radius: 0.25rem;
+} */
+
+/* .aform label {
+	color: var(--input-label-color);
+	display: block;
+	min-height: 1.15rem;
+	padding: 0rem;
+	margin: 0rem;
+	border: 1px solid transparent;
+	margin-bottom: 0.25rem;
+	z-index: 2;
+	font-size: 80%;
+	position: absolute;
+	background: white;
+	margin: calc(-1.5rem - calc(2.15rem / 2)) 0 0 1ch;
+	padding: 0 0.25ch 0 0.25ch;
+} */
+
+/* .aform input:focus {
+	border: 1px solid var(--input-active-border-color);
+} */
+
+/* .aform input:focus + label {
+	color: var(--input-active-label-color);
+} */
