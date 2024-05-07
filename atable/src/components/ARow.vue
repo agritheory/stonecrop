@@ -1,5 +1,5 @@
 <template>
-	<tr ref="rowEl" :tabindex="tabIndex" v-show="isRowVisible" class="atable-row">
+	<tr ref="rowEl" :tabindex="tabIndex" v-show="isRowVisible" class="atable-row" :style="style" style="position: fixed">
 		<!-- render numbered/tree view index; skip render for uncounted lists -->
 		<slot name="index" v-if="store.config.view !== 'uncounted'">
 			<td
@@ -26,6 +26,7 @@
 
 <script setup lang="ts">
 import { type KeypressHandlers, useKeyboardNav, defaultKeypressHandlers } from '@stonecrop/utilities'
+import { useDraggable } from '@vueuse/core'
 import { computed, useTemplateRef } from 'vue'
 
 import { createTableStore } from '../stores/table'
@@ -43,9 +44,22 @@ const {
 }>()
 
 const rowRef = useTemplateRef<HTMLTableRowElement>('rowEl')
-
 const isRowVisible = computed(() => store.isRowVisible(rowIndex))
 const rowExpandSymbol = computed(() => store.getRowExpandSymbol(rowIndex))
+
+const { style } = useDraggable(rowRef, {
+	initialValue: { x: 5, y: (rowIndex + 1) * 21 },
+	axis: 'y',
+	// TODO: fix the store update logic to handle row movement
+	// onEnd(position) {
+	// 	let newPosition = Math.round(position.y / 21)
+	// 	let movedRow = store.rows[rowIndex]
+	// 	for (let index = rowIndex; index < newPosition; index++) {
+	// 		store.rows[index] = store.rows[index + 1]
+	// 	}
+	// 	store.rows[newPosition] = movedRow
+	// },
+})
 
 if (addNavigation) {
 	let handlers = defaultKeypressHandlers
