@@ -17,6 +17,7 @@
 								name="email"
 								placeholder="name@example.com"
 								type="email"
+								v-model="email"
 								auto-capitalize="none"
 								auto-complete="email"
 								auto-correct="off"
@@ -25,11 +26,17 @@
 
 						<div class="login-form-password login-form-element">
 							<label id="login-password" for="password" class="login-label">Password</label>
-							<input id="password" class="login-field" name="password" type="password" :disabled="isLoading" />
+							<input
+								id="password"
+								class="login-field"
+								name="password"
+								type="password"
+								v-model="password"
+								:disabled="isLoading" />
 						</div>
 
-						<button class="btn" :disabled="isLoading">
-							<span v-if="isLoading" class="material-symbols-outlined loading-icon"> progress_activity </span>
+						<button class="btn" @click="onSubmit" :disabled="isLoading || !email || !password">
+							<span v-if="isLoading" class="material-symbols-outlined loading-icon">progress_activity</span>
 							<span id="login-form-button">Login</span>
 						</button>
 					</div>
@@ -57,13 +64,28 @@ withDefaults(
 	}
 )
 
+const emit = defineEmits(['loginFailed', 'loginSuccess'])
+
+const email = ref('')
+const password = ref('')
+
 const isLoading = ref(false)
+const loginFailed = ref(false)
 
 function onSubmit(event: Event) {
 	event.preventDefault()
 	isLoading.value = true
 
-	// TODO: handle submit logic
+	// TODO: handle submit logic, handle failure
+
+	if (loginFailed.value) {
+		isLoading.value = false
+		emit('loginFailed')
+		return
+	}
+
+	isLoading.value = false
+	emit('loginSuccess')
 }
 </script>
 
