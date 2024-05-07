@@ -123,6 +123,12 @@ importers:
       '@vue/test-utils':
         specifier: ^2.4.6
         version: 2.4.6
+      '@vueuse/components':
+        specifier: ^10.9.0
+        version: 10.9.0(vue@3.4.23)
+      '@vueuse/core':
+        specifier: ^10.9.0
+        version: 10.9.0(vue@3.4.23)
       cypress:
         specifier: ^12.11.0
         version: 12.17.4
@@ -1841,6 +1847,17 @@ packages:
     dependencies:
       js-beautify: 1.14.11
       vue-component-type-helpers: 2.0.14
+    dev: true
+
+  /@vueuse/components@10.9.0(vue@3.4.23):
+    resolution: {integrity: sha512-BHQpA0yIi3y7zKa1gYD0FUzLLkcRTqVhP8smnvsCK6GFpd94Nziq1XVPD7YpFeho0k5BzbBiNZF7V/DpkJ967A==}
+    dependencies:
+      '@vueuse/core': 10.9.0(vue@3.4.23)
+      '@vueuse/shared': 10.9.0(vue@3.4.23)
+      vue-demi: 0.14.7(vue@3.4.23)
+    transitivePeerDependencies:
+      - '@vue/composition-api'
+      - vue
     dev: true
 
   /@vueuse/core@10.9.0(vue@3.4.23):
