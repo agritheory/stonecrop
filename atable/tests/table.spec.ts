@@ -1,9 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 
-import ACell from '@/components/ACell.vue'
 import ATable from '@/components/ATable.vue'
-import ATableHeader from '@/components/ATableHeader.vue'
 import data from '../stories/sample_data/http_logs.json'
 
 describe('table component', () => {
@@ -41,28 +39,18 @@ describe('table component', () => {
 		},
 	]
 
-	const http_logs = {
-		rows: data,
+	const defaultProps = {
 		columns,
+		modelValue: data,
 		config: { view: 'list' },
 	}
 
 	it('verify header row', async () => {
-		const wrapper = mount(ATable, {
-			props: {
-				columns: http_logs.columns,
-				modelValue: http_logs.rows,
-				config: http_logs.config,
-			},
-			components: {
-				ATableHeader,
-			},
-		})
-
+		const wrapper = mount(ATable, { props: defaultProps })
 		expect(wrapper.vm).toBeTruthy()
 
 		const headerCells = wrapper.findAll('th')
-		expect(headerCells.length).toBe(http_logs.columns.length + 1) // +1 for the row number column
+		expect(headerCells.length).toBe(columns.length + 1) // +1 for the row number column
 
 		const homePageHeader = headerCells.at(1)
 		expect(homePageHeader!.element.style.minWidth).toBe('35ch')
@@ -81,19 +69,10 @@ describe('table component', () => {
 	})
 
 	it('verify data rows (format function)', async () => {
-		const wrapper = mount(ATable, {
-			props: {
-				columns: http_logs.columns,
-				modelValue: http_logs.rows,
-				config: http_logs.config,
-			},
-			components: {
-				ACell,
-			},
-		})
+		const wrapper = mount(ATable, { props: defaultProps })
 
 		const dataCells = wrapper.findAll('td')
-		expect(dataCells.length).toBe((http_logs.columns.length + 1) * http_logs.rows.length) // +1 for the row number column
+		expect(dataCells.length).toBe((columns.length + 1) * data.length) // +1 for the row number column
 
 		const homePageCell = dataCells.at(1)
 		expect(homePageCell!.text()).toBeTypeOf('string') // test string format
@@ -141,16 +120,13 @@ describe('table component', () => {
 		const wrapper = mount(ATable, {
 			props: {
 				columns,
-				modelValue: http_logs.rows,
-				config: http_logs.config,
-			},
-			components: {
-				ACell,
+				modelValue: data,
+				config: { view: 'list' },
 			},
 		})
 
 		const dataCells = wrapper.findAll('td')
-		expect(dataCells.length).toBe((http_logs.columns.length + 1) * http_logs.rows.length) // +1 for the row number column
+		expect(dataCells.length).toBe((columns.length + 1) * data.length) // +1 for the row number column
 
 		const homePageCell = dataCells.at(1)
 		expect(homePageCell!.text()).toBeTypeOf('string') // test string format
@@ -197,16 +173,13 @@ describe('table component', () => {
 		const wrapper = mount(ATable, {
 			props: {
 				columns,
-				modelValue: http_logs.rows,
-				config: http_logs.config,
-			},
-			components: {
-				ACell,
+				modelValue: data,
+				config: { view: 'list' },
 			},
 		})
 
 		const dataCells = wrapper.findAll('td')
-		expect(dataCells.length).toBe((http_logs.columns.length + 1) * http_logs.rows.length) // +1 for the row number column
+		expect(dataCells.length).toBe((columns.length + 1) * data.length) // +1 for the row number column
 
 		const homePageCell = dataCells.at(1)
 		const text = JSON.parse(homePageCell!.text())

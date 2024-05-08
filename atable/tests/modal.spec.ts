@@ -39,37 +39,14 @@ describe('table modal component', () => {
 		},
 	]
 
-	const http_logs = {
-		rows: data,
+	const props = {
 		columns,
+		modelValue: data,
 		config: { view: 'list' },
 	}
 
 	it('spawn modal component', async () => {
-		const wrapper = mount(ATable, {
-			props: {
-				columns: http_logs.columns,
-				modelValue: http_logs.rows,
-				config: http_logs.config,
-			},
-		})
-
-		const dataCells = wrapper.findAll('td')
-		const cellElement = dataCells.at(3)
-		cellElement!.trigger('click')
-
-		await wrapper.vm.$nextTick()
-		expect(wrapper.vm.tableData.modal.visible).toBe(true)
-	})
-
-	it('click inside to keep modal component alive', async () => {
-		const wrapper = mount(ATable, {
-			props: {
-				columns: http_logs.columns,
-				modelValue: http_logs.rows,
-				config: http_logs.config,
-			},
-		})
+		const wrapper = mount(ATable, { props })
 
 		// spawn modal component
 		const dataCells = wrapper.findAll('td')
@@ -77,20 +54,26 @@ describe('table modal component', () => {
 		cellElement!.trigger('click')
 		await wrapper.vm.$nextTick()
 
-		// click outside
+		expect(wrapper.vm.tableData.modal.visible).toBe(true)
+	})
+
+	it('click inside to keep modal component alive', async () => {
+		const wrapper = mount(ATable, { props })
+
+		// spawn modal component
+		const dataCells = wrapper.findAll('td')
+		const cellElement = dataCells.at(3)
+		cellElement!.trigger('click')
+		await wrapper.vm.$nextTick()
+
+		// click inside
 		const $table = wrapper.find('.atable')
 		$table.trigger('click')
 		expect(wrapper.vm.tableData.modal.visible).toBe(true)
 	})
 
 	it('click outside to dismiss modal component', async () => {
-		const wrapper = mount(ATable, {
-			props: {
-				columns: http_logs.columns,
-				modelValue: http_logs.rows,
-				config: http_logs.config,
-			},
-		})
+		const wrapper = mount(ATable, { props })
 
 		// spawn modal component
 		const dataCells = wrapper.findAll('td')
@@ -104,13 +87,7 @@ describe('table modal component', () => {
 	})
 
 	it('press escape to dismiss modal component', async () => {
-		const wrapper = mount(ATable, {
-			props: {
-				columns: http_logs.columns,
-				modelValue: http_logs.rows,
-				config: http_logs.config,
-			},
-		})
+		const wrapper = mount(ATable, { props })
 
 		// spawn modal component
 		const dataCells = wrapper.findAll('td')
@@ -118,7 +95,7 @@ describe('table modal component', () => {
 		cellElement!.trigger('click')
 		await wrapper.vm.$nextTick()
 
-		// click outside
+		// press escape
 		window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))
 		expect(wrapper.vm.tableData.modal.visible).toBe(false)
 	})

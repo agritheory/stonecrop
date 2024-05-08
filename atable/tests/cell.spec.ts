@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 
-import ACell from '@/components/ACell.vue'
 import ATable from '@/components/ATable.vue'
 import data from '../stories/sample_data/http_logs.json'
 
@@ -40,40 +39,22 @@ describe('table cell component', () => {
 		},
 	]
 
-	const http_logs = {
-		rows: data,
+	const props = {
 		columns,
+		modelValue: data,
 		config: { view: 'list' },
 	}
 
 	it('update data when cell is focused', async () => {
-		const wrapper = mount(ATable, {
-			props: {
-				columns: http_logs.columns,
-				modelValue: http_logs.rows,
-				config: http_logs.config,
-			},
-			components: {
-				ACell,
-			},
-		})
+		const wrapper = mount(ATable, { props })
 
-		const cellWrapper = wrapper.findComponent(ACell)
+		const cellWrapper = wrapper.findComponent({ name: 'ACell' })
 		await cellWrapper.trigger('focus')
 		expect(cellWrapper.vm.currentData).toEqual(cellWrapper!.text())
 	})
 
 	it('emit update event when cell is edited', async () => {
-		const wrapper = mount(ATable, {
-			props: {
-				columns: http_logs.columns,
-				modelValue: http_logs.rows,
-				config: http_logs.config,
-			},
-			components: {
-				ACell,
-			},
-		})
+		const wrapper = mount(ATable, { props })
 
 		const dataCells = wrapper.findAll('td')
 		const cellElement = dataCells.at(2)
