@@ -2,6 +2,18 @@
   "name": "@stonecrop/themes",
   "entries": [
     {
+      "version": "0.2.14",
+      "tag": "@stonecrop/themes_v0.2.14",
+      "date": "Fri, 10 May 2024 11:10:09 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Add prepublish script"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.2.13",
       "tag": "@stonecrop/themes_v0.2.13",
       "date": "Mon, 06 May 2024 11:40:42 GMT",
