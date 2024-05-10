@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add prepublish script",
+      "type": "patch",
+      "packageName": "@stonecrop/utilities"
+    }
+  ],
+  "packageName": "@stonecrop/utilities",
+  "email": "rohan@agritheory.dev"
+}

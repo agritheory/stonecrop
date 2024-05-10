@@ -30,6 +30,7 @@
 		"src/*"
 	],
 	"scripts": {
+		"prepublish": "vite build",
 		"build": "vite build",
 		"dev": "vite",
 		"lint": "eslint . --ext .ts,.vue",
