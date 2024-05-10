@@ -15,6 +15,7 @@
 		"url": "https://github.com/agritheory/stonecrop/issues"
 	},
 	"scripts": {
+		"prepublish": "vite build",
 		"build": "vite build",
 		"dev": "vite",
 		"preview": "vite preview"
