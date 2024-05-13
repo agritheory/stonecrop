@@ -4,3 +4,10 @@ Holds styles for all tables, TH, TR, TD, etc.
 /* .atable__table{
 
 } */
+.atable {
+	font-family: var(--atable-font-family);
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	font-size: var(--table-font-size);
+	border-collapse: collapse;
+}
