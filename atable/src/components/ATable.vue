@@ -180,31 +180,6 @@ window.addEventListener('keydown', (event: KeyboardEvent) => {
 })
 </script>
 
-<style scoped>
+<style>
 @import url('@stonecrop/themes/default/default.css');
-
-table {
-	display: table;
-	border-collapse: collapse;
-	caret-color: var(--brand-color);
-}
-
-table.atable,
-.atable {
-	font-family: var(--atable-font-family);
-	-webkit-font-smoothing: antialiased;
-	-moz-osx-font-smoothing: grayscale;
-	font-size: var(--table-font-size);
-	border-collapse: collapse;
-}
-
-th {
-	box-sizing: border-box;
-	background-color: var(--brand-color);
-	border-width: 1px;
-	border-style: solid;
-	border-color: var(--header-border-color);
-	border-radius: 0px;
-	color: var(--header-text-color);
-}
 </style>

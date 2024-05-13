@@ -37,7 +37,7 @@ Holds styles for all form fields
 	margin: 0rem;
   z-index: 2;
 	font-size: 1rem;
-	font-weight:500;
+	font-weight:300;
   letter-spacing: 0.05rem;
 	background: white;
 	width:100%;
@@ -70,16 +70,21 @@ Holds styles for all form fields
 
 /**  CHECKBOX **/
 .aform__checkbox{
-  cursor:pointer;
+	cursor:pointer;
+	width:auto;
 }
 .aform__checkbox:checked{
-  accent-color:var(--primary-color);
+	accent-color:var(--primary-color);
   border:1px solid black;
 }
 
 .aform__checkbox-container {
 	width:100%;
 	display:inline-block;
+	text-align: left;
+}
+.aform__checkbox-container input{
+	width:auto;
 }
 
 .aform__checkbox-container:hover + .aform__field-label {

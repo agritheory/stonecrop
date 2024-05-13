@@ -1,9 +1,9 @@
 <template>
 	<div class="aform__form-element">
 		<label class="aform__field-label" :for="uuid">{{ label }}</label>
-		<label class="aform__checkbox-container aform__input-field">
+		<span class="aform__checkbox-container aform__input-field">
 			<input v-model="checkbox" type="checkbox" :id="uuid" class="aform__checkbox" :readonly="readOnly" :required="required" />
-		</label>
+		</span>
 		<p class="error" v-show="validation.errorMessage" v-html="validation.errorMessage"></p>
 	</div>
 </template>

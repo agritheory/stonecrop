@@ -88,29 +88,6 @@ if (props.addNavigation) {
 }
 </script>
 
-<style scoped>
+<style>
 @import url('@stonecrop/themes/default/default.css');
-.table-row {
-	border-top: 1px solid var(--row-border-color);
-	height: var(--atable-row-height);
-}
-
-.list-index {
-	color: var(--header-text-color);
-	font-weight: bold;
-	padding-left: var(--atable-row-padding);
-	padding-right: 1em;
-	text-align: center;
-	user-select: none;
-	width: v-bind(numberedRowWidth);
-	max-width: v-bind(numberedRowWidth);
-}
-
-.tree-index {
-	color: var(--header-text-color);
-	font-weight: bold;
-	text-align: center;
-	user-select: none;
-	width: 2ch;
-}
 </style>

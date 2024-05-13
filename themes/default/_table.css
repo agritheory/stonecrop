@@ -4,6 +4,9 @@ Holds styles for all tables, TH, TR, TD, etc.
 /* .atable__table{
 
 } */
+.header{
+	background:red;
+}
 .atable {
 	font-family: var(--atable-font-family);
 	-webkit-font-smoothing: antialiased;
@@ -11,3 +14,110 @@ Holds styles for all tables, TH, TR, TD, etc.
 	font-size: var(--table-font-size);
 	border-collapse: collapse;
 }
+.row-index {
+	color: var(--header-text-color);
+	font-weight: bold;
+	text-align: center;
+	user-select: none;
+	width: 2ch;
+}
+.expandable-row {
+	border-top: 1px solid var(--row-border-color);
+	height: var(--atable-row-height);
+}
+
+.expanded-row {
+	border-bottom: 1px solid var(--row-border-color);
+	border-top: 1px solid var(--row-border-color);
+}
+
+.expanded-row-content {
+	border-bottom: 1px solid var(--row-border-color);
+	border-top: 1px solid var(--row-border-color);
+	padding: 1.5rem;
+}
+.atable__cell {
+	border-radius: 0px;
+	box-sizing: border-box;
+	margin: 0px;
+	outline: none;
+	box-shadow: none;
+	color: var(--cell-text-color);
+	text-overflow: ellipsis;
+	overflow: hidden;
+	padding-left: 0.5ch !important;
+	padding-right: 0.5ch;
+	padding-top: var(--atable-row-padding);
+	padding-bottom: var(--atable-row-padding);
+	border-spacing: 0px;
+	border-collapse: collapse;
+}
+.atable__cell:focus,
+.atable__cell:focus-within {
+	background-color: var(--focus-cell-background);
+	outline-width: 2px;
+	outline-style: solid;
+	outline-color: var(--focus-cell-outline);
+	box-shadow: none;
+	overflow: hidden;
+	min-height: 1.15em;
+	max-height: 1.15em;
+	overflow: hidden;
+}
+
+.table-row {
+	border-top: 1px solid var(--row-border-color);
+	height: var(--atable-row-height);
+}
+
+.list-index {
+	color: var(--header-text-color);
+	font-weight: bold;
+	padding-left: var(--atable-row-padding);
+	padding-right: 1em;
+	text-align: center;
+	user-select: none;
+	width: v-bind(numberedRowWidth);
+	max-width: v-bind(numberedRowWidth);
+}
+
+.tree-index {
+	color: var(--header-text-color);
+	font-weight: bold;
+	text-align: center;
+	user-select: none;
+	width: 2ch;
+}
+
+.atable thead {
+	background-color: var(--gray-5);
+}
+
+.atable #header-index {
+	width: v-bind(numberedRowWidth);
+	max-width: v-bind(numberedRowWidth);
+}
+
+.atable th {
+	border-width: 0px;
+	border-style: solid;
+	border-radius: 0px;
+	padding-left: 0.5ch;
+	padding-right: 0.5ch;
+	padding-top: var(--atable-row-padding);
+	padding-bottom: var(--atable-row-padding);
+	color: var(--gray-60);
+	height: var(--atable-row-height);
+	font-weight:300;
+	letter-spacing: 0.05rem;
+}
+
+.atable th:focus {
+	outline: none;
+}
+.amodal{
+	z-index: 100;
+	position: absolute;
+	background-color: var(--row-color-zebra-dark);
+}
+	
