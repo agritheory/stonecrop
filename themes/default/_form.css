@@ -47,7 +47,7 @@ Holds styles for all form fields
 	border-bottom: none;
 	grid-row: 1;
 }
-.aform > p.error {
+p.error {
 	display: block;
 	min-height: 1.15rem;
 	padding: 0rem;
