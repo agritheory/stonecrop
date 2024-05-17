@@ -4,87 +4,86 @@ Holds styles for all form fields
 /* .aform__form{
 
 } */
-.aform, .aform form{
-  display: flex;
+.aform {
+	display: flex;
 	flex-direction: row;
 	flex-wrap: wrap;
 	justify-content: flex-start;
 	align-items: baseline;
 }
-.aform__form-element, .aform div{
-  min-width:40ch;
-    border:1px solid transparent;
-    padding:0;
-    margin:0;
-    margin-right:.5rem;
-    margin-bottom:.5rem;
-		display:grid;
+.aform__form-element {
+	min-width: 40ch;
+	border: 1px solid transparent;
+	padding: 0;
+	margin: 0;
+	margin-right: 0.5rem;
+	margin-bottom: 0.5rem;
+	display: grid;
 }
-.aform__input-field, .aform input{
-  outline: 1px solid transparent;
-    border: 1px solid var(--input-border-color);
-    padding:.25rem;
-    margin: 0 0 0 0;
-    border-radius: 0 0 0.25rem .25rem;
-    box-sizing:border-box;
-    width:100%;
+.aform__input-field {
+	outline: 1px solid transparent;
+	border: 1px solid var(--input-border-color);
+	padding: 0.25rem;
+	margin: 0 0 0 0;
+	border-radius: 0 0 0.25rem 0.25rem;
+	box-sizing: border-box;
+	width: 100%;
 }
-.aform__field-label, .aform label{
-  color: var(--input-label-color);
+.aform__field-label {
+	color: var(--input-label-color);
 	display: block;
 	min-height: 1.15rem;
-	padding: .25rem;
+	padding: 0.25rem;
 	margin: 0rem;
-  z-index: 2;
+	z-index: 2;
 	font-size: 1rem;
-	font-weight:300;
-  letter-spacing: 0.05rem;
+	font-weight: 300;
+	letter-spacing: 0.05rem;
 	background: white;
-	width:100%;
-	box-sizing:border-box;
-	background:var(--gray-5);
-	border:1px solid var(--input-border-color);
-	border-bottom:none;
-	grid-row:1;
-  
+	width: 100%;
+	box-sizing: border-box;
+	background: var(--gray-5);
+	border: 1px solid var(--input-border-color);
+	border-bottom: none;
+	grid-row: 1;
 }
-.aform > p.error{
+.aform > p.error {
 	display: block;
 	min-height: 1.15rem;
 	padding: 0rem;
-	padding-left:.5rem;
-	margin: .5rem 0 .25rem 0rem;
+	padding-left: 0.5rem;
+	margin: 0.5rem 0 0.25rem 0rem;
 	border: 1px solid transparent;
-  width: 100%;
+	width: 100%;
 	color: var(--brand-danger);
-	font-size: .8rem;
+	font-size: 0.8rem;
 }
 
-.aform__input-field:focus, .aform input:focus {
+.aform__input-field:focus {
 	border: 1px solid var(--input-active-border-color);
 }
 
-.aform__input-field:focus + .aform__field-label, .aform input:focus + .aform label {
+.aform__input-field:focus + .aform__field-label {
 	color: var(--input-active-label-color);
 }
 
 /**  CHECKBOX **/
-.aform__checkbox{
-	cursor:pointer;
-	width:auto;
+.aform__checkbox {
+	cursor: pointer;
+	width: auto;
 }
-.aform__checkbox:checked{
-	accent-color:var(--primary-color);
-  border:1px solid black;
+.aform__checkbox:checked {
+	accent-color: var(--primary-color);
+	border: 1px solid black;
 }
 
 .aform__checkbox-container {
-	width:100%;
-	display:inline-block;
+	width: 100%;
+	display: inline-block;
 	text-align: left;
 }
-.aform__checkbox-container input{
-	width:auto;
+.aform__checkbox-container input {
+	width: auto;
 }
 
 .aform__checkbox-container:hover + .aform__field-label {
