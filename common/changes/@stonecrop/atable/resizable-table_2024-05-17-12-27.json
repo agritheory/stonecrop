@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/atable",
+      "comment": "allow user to drag and resize aTable columns",
+      "type": "none"
+    }
+  ],
+  "packageName": "@stonecrop/atable"
+}
