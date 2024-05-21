@@ -3,7 +3,7 @@
     {
       "packageName": "@stonecrop/atable",
       "comment": "allow user to drag and resize aTable columns",
-      "type": "none"
+      "type": "patch"
     }
   ],
   "packageName": "@stonecrop/atable"
