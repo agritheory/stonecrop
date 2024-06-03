@@ -1,6 +1,76 @@
-# Change Log - @agritheory/atable
+# Change Log - @stonecrop/atable
 
-This log was last generated on Fri, 14 Oct 2022 23:32:04 GMT and should not be manually modified.
+This log was last generated on Mon, 03 Jun 2024 11:13:20 GMT and should not be manually modified.
+
+## 0.2.17
+Mon, 03 Jun 2024 11:13:20 GMT
+
+### Patches
+
+- Update tests + add coverage
+
+## 0.2.16
+Mon, 03 Jun 2024 07:46:58 GMT
+
+### Patches
+
+- Remove prepublish step
+
+## 0.2.15
+Mon, 03 Jun 2024 07:38:20 GMT
+
+### Patches
+
+- Add npmignore file
+- allow user to drag and resize aTable columns
+
+## 0.2.14
+Fri, 10 May 2024 11:10:09 GMT
+
+### Patches
+
+- Add prepublish script
+
+## 0.2.13
+Mon, 06 May 2024 11:40:42 GMT
+
+### Patches
+
+- Update table keyboard navigation
+
+## 0.2.12
+Fri, 03 May 2024 12:30:58 GMT
+
+_Version update only_
+
+## 0.2.10
+Thu, 02 May 2024 13:00:37 GMT
+
+_Version update only_
+
+## 0.2.9
+Thu, 02 May 2024 11:10:46 GMT
+
+_Version update only_
+
+## 0.2.8
+Fri, 26 Apr 2024 10:56:28 GMT
+
+_Version update only_
+
+## 0.2.7
+Fri, 26 Apr 2024 06:36:23 GMT
+
+### Patches
+
+- update coverage report
+
+### Updates
+
+- Version bump
+- Update dependencies
+- Update package name
+- Remove distributable files from git
 
 ## 0.2.0
 Fri, 14 Oct 2022 23:32:04 GMT

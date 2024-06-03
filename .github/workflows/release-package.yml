@@ -31,7 +31,7 @@ jobs:
         run: node common/scripts/install-run-rush.js install
 
       - name: Bump Version for Packages
-        run: node common/scripts/install-run-rush.js version --bump
+        run: node common/scripts/install-run-rush.js version --bump --target-branch development --ignore-git-hooks
 
       - name: Publish Packages via Rush
         run: node common/scripts/install-run-rush.js publish --apply --publish --include-all --version-policy stonecrop --target-branch development --add-commit-details --set-access-level=public

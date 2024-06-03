@@ -6,6 +6,7 @@
 		"emitDeclarationOnly": true,
 		"outDir": "dist",
 		"baseUrl": ".",
+		"types": ["vitest/globals", "vitest/jsdom"],
 		"paths": {
 			"@/*": ["src/*"],
 			"types/*": ["types/*"]
@@ -18,6 +19,7 @@
 		"src/**/*.vue",
 		"stories/**/*.json",
 		"stories/**/*.story.vue",
+		"tests/**/*.spec.ts",
 		"tests/**/*.ts",
 		"tests/**/*.vue",
 		"types/**/*.ts"

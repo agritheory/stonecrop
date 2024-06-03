@@ -55,7 +55,7 @@
       "allowedCategories": [ "prototype", "utilities" ]
     },
     {
-      "name": "@vitest/coverage-v8",
+      "name": "@vitest/coverage-istanbul",
       "allowedCategories": [ "prototype", "utilities" ]
     },
     {
@@ -75,12 +75,12 @@
       "allowedCategories": [ "prototype" ]
     },
     {
-      "name": "@vueuse/core",
-      "allowedCategories": [ "prototype", "utilities" ]
+      "name": "@vueuse/components",
+      "allowedCategories": [ "prototype" ]
     },
     {
-      "name": "@vueuse/shared",
-      "allowedCategories": [ "prototype" ]
+      "name": "@vueuse/core",
+      "allowedCategories": [ "prototype", "utilities" ]
     },
     {
       "name": "cypress",

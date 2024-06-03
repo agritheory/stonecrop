@@ -1,5 +1,8 @@
 <template>
-	<table class="atable" :style="{ width: tableData.config.fullWidth ? '100%' : 'auto' }">
+	<table
+		class="atable"
+		:style="{ width: tableData.config.fullWidth ? '100%' : 'auto' }"
+		v-on-click-outside="closeModal">
 		<slot name="header" :data="tableData">
 			<ATableHeader :columns="tableData.columns" :config="tableData.config" :tableid="tableData.id" />
 		</slot>
@@ -59,6 +62,7 @@
 <script setup lang="ts">
 import { v4 } from 'uuid'
 import { nextTick, provide, watch } from 'vue'
+import { vOnClickOutside } from '@vueuse/components'
 
 import { TableColumn, TableConfig, TableRow } from 'types'
 import TableDataStore from '.'
@@ -85,7 +89,6 @@ const props = withDefaults(
 const emit = defineEmits(['update:modelValue'])
 
 let rows = props.modelValue ? props.modelValue : props.rows
-
 let tableData = new TableDataStore(props.id, props.columns, rows, props.config)
 provide(tableData.id, tableData)
 
@@ -97,47 +100,47 @@ watch(
 	{ deep: true }
 )
 
-const formatCell = (event?: KeyboardEvent, column?: TableColumn, cellData?: any) => {
-	let colIndex: number
-	const target = event?.target as HTMLTableCellElement
-	if (event) {
-		colIndex = target.cellIndex + (tableData.zeroColumn ? -1 : 0)
-	} else if (column && cellData) {
-		colIndex = tableData.columns.indexOf(column)
-	}
+// const formatCell = (event?: KeyboardEvent, column?: TableColumn, cellData?: any) => {
+// 	let colIndex: number
+// 	const target = event?.target as HTMLTableCellElement
+// 	if (event) {
+// 		colIndex = target.cellIndex + (tableData.zeroColumn ? -1 : 0)
+// 	} else if (column && cellData) {
+// 		colIndex = tableData.columns.indexOf(column)
+// 	}
 
-	if (!column && 'format' in tableData.columns[colIndex]) {
-		// TODO: (utils) create helper to extract format from string
-		const format = tableData.columns[colIndex].format
-		if (typeof format === 'function') {
-			return format(target.innerHTML)
-		} else if (typeof format === 'string') {
-			// parse format function from string
-			// eslint-disable-next-line @typescript-eslint/no-implied-eval
-			const formatFn: (args: any) => any = Function(`"use strict";return (${format})`)()
-			return formatFn(target.innerHTML)
-		} else {
-			return target.innerHTML
-		}
-	} else if (cellData && 'format' in column) {
-		const format = column.format
-		if (typeof format === 'function') {
-			return format(cellData)
-		} else if (typeof format === 'string') {
-			// parse format function from string
-			// eslint-disable-next-line @typescript-eslint/no-implied-eval
-			const formatFn: (args: any) => any = Function(`"use strict";return (${format})`)()
-			return formatFn(cellData)
-		} else {
-			return cellData
-		}
-	} else if (cellData && column.type.toLowerCase() in ['int', 'decimal', 'float', 'number', 'percent']) {
-		return cellData
-		// TODO: number formatting
-	} else {
-		return cellData
-	}
-}
+// 	if (!column && 'format' in tableData.columns[colIndex]) {
+// 		// TODO: (utils) create helper to extract format from string
+// 		const format = tableData.columns[colIndex].format
+// 		if (typeof format === 'function') {
+// 			return format(target.innerHTML)
+// 		} else if (typeof format === 'string') {
+// 			// parse format function from string
+// 			// eslint-disable-next-line @typescript-eslint/no-implied-eval
+// 			const formatFn: (args: any) => any = Function(`"use strict";return (${format})`)()
+// 			return formatFn(target.innerHTML)
+// 		} else {
+// 			return target.innerHTML
+// 		}
+// 	} else if (cellData && 'format' in column) {
+// 		const format = column.format
+// 		if (typeof format === 'function') {
+// 			return format(cellData)
+// 		} else if (typeof format === 'string') {
+// 			// parse format function from string
+// 			// eslint-disable-next-line @typescript-eslint/no-implied-eval
+// 			const formatFn: (args: any) => any = Function(`"use strict";return (${format})`)()
+// 			return formatFn(cellData)
+// 		} else {
+// 			return cellData
+// 		}
+// 	} else if (cellData && column.type.toLowerCase() in ['int', 'decimal', 'float', 'number', 'percent']) {
+// 		return cellData
+// 		// TODO: number formatting
+// 	} else {
+// 		return cellData
+// 	}
+// }
 
 // const moveCursorToEnd = (target: HTMLElement) => {
 // 	target.focus()
@@ -145,17 +148,17 @@ const formatCell = (event?: KeyboardEvent, column?: TableColumn, cellData?: any)
 // 	document.getSelection().collapseToEnd()
 // }
 
-const clickOutside = (event: MouseEvent) => {
-	if (!tableData.modal.parent?.contains(event.target as HTMLElement)) {
-		if (tableData.modal.visible) {
-			// call set data
-			tableData.modal.visible = false
-		}
+const closeModal = (event: MouseEvent) => {
+	if (!(event.target instanceof Node)) {
+		// if the target is not a node, it's probably a custom click event to Document or Window
+		// err on the side of closing the modal in that case
+		if (tableData.modal.visible) tableData.modal.visible = false
+	} else if (!tableData.modal.parent?.contains(event.target)) {
+		if (tableData.modal.visible) tableData.modal.visible = false
 	}
 }
 
-window.addEventListener('click', clickOutside)
-window.addEventListener('keydown', (event: KeyboardEvent) => {
+window.addEventListener('keydown', async (event: KeyboardEvent) => {
 	if (event.key === 'Escape') {
 		if (tableData.modal.visible) {
 			tableData.modal.visible = false
@@ -163,17 +166,9 @@ window.addEventListener('keydown', (event: KeyboardEvent) => {
 			// focus on the parent cell again
 			const $parent = tableData.modal.parent
 			if ($parent) {
-				// wait for the modal to close
-				void nextTick().then(() => {
-					// for some reason, the parent is not immediately visible in the DOM;
-					// re-fetching the cell to add focus instead
-					const rowIndex = $parent.dataset.rowindex
-					const colIndex = $parent.dataset.colindex
-					const $parentCell = document.querySelectorAll(`[data-rowindex='${rowIndex}'][data-colindex='${colIndex}']`)
-					if ($parentCell) {
-						;($parentCell[0] as HTMLTableCellElement).focus()
-					}
-				})
+				// wait for the modal to close before focusing
+				await nextTick()
+				$parent.focus()
 			}
 		}
 	}
