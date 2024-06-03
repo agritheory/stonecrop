@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/graphql-client",
-	"version": "0.2.13",
+	"version": "0.2.16",
 	"license": "MIT",
 	"type": "module",
 	"author": {
@@ -30,6 +30,7 @@
 		"src/*"
 	],
 	"scripts": {
+		"prepublish": "vite build",
 		"build": "vite build",
 		"dev": "vite",
 		"lint": "eslint . --ext .ts,.vue",

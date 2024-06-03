@@ -1,5 +1,5 @@
 <template>
-	<thead v-if="columns.length">
+	<thead id="resizable" v-if="columns.length">
 		<tr class="atable-header-row" tabindex="-1">
 			<th v-if="tableData.zeroColumn" id="header-index" />
 			<th v-for="(column, colKey) in columns" :key="colKey" tabindex="-1" :style="getHeaderCellStyle(column)">
@@ -56,5 +56,10 @@ th {
 
 th:focus {
 	outline: none;
+}
+#resizable th {
+	resize: horizontal;
+	overflow: auto;
+	white-space: nowrap;
 }
 </style>

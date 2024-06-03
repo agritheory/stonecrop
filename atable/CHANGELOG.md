@@ -1,6 +1,28 @@
 # Change Log - @stonecrop/atable
 
-This log was last generated on Mon, 06 May 2024 11:40:42 GMT and should not be manually modified.
+This log was last generated on Mon, 03 Jun 2024 07:46:58 GMT and should not be manually modified.
+
+## 0.2.16
+Mon, 03 Jun 2024 07:46:58 GMT
+
+### Patches
+
+- Remove prepublish step
+
+## 0.2.15
+Mon, 03 Jun 2024 07:38:20 GMT
+
+### Patches
+
+- Add npmignore file
+- allow user to drag and resize aTable columns
+
+## 0.2.14
+Fri, 10 May 2024 11:10:09 GMT
+
+### Patches
+
+- Add prepublish script
 
 ## 0.2.13
 Mon, 06 May 2024 11:40:42 GMT
