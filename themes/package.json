@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/themes",
-	"version": "0.2.13",
+	"version": "0.2.17",
 	"type": "module",
 	"author": {
 		"name": "Tyler Matteson",
@@ -15,6 +15,7 @@
 		"url": "https://github.com/agritheory/stonecrop/issues"
 	},
 	"scripts": {
+		"prepublish": "vite build",
 		"build": "vite build",
 		"dev": "vite",
 		"preview": "vite preview"
