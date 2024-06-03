@@ -55,7 +55,7 @@
       "allowedCategories": [ "prototype", "utilities" ]
     },
     {
-      "name": "@vitest/coverage-v8",
+      "name": "@vitest/coverage-istanbul",
       "allowedCategories": [ "prototype", "utilities" ]
     },
     {
@@ -72,6 +72,10 @@
     },
     {
       "name": "@vue/test-utils",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "@vueuse/components",
       "allowedCategories": [ "prototype" ]
     },
     {
