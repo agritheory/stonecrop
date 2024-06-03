@@ -16,7 +16,7 @@ jobs:
         name: Install Node.js
         with:
           cache-dependency-path: '**/config/rush/pnpm-lock.yaml'
-          registry-url: https://npm.pkg.github.com/
+          registry-url: https://registry.npmjs.org/
 
       - name: Verify Changes
         run: node common/scripts/install-run-rush.js change --verify
