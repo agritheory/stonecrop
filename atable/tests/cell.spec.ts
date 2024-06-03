@@ -1,13 +1,10 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
-import { ref } from 'vue'
 
 import ATable from '@/components/ATable.vue'
-import ACell from '@/components/ACell.vue'
-
 import data from '../stories/sample_data/http_logs.json'
 
-describe('ATable Component', () => {
+describe('table cell component', () => {
 	const columns = [
 		{
 			label: 'Home Page',
@@ -42,39 +39,31 @@ describe('ATable Component', () => {
 		},
 	]
 
-	const http_logs = ref({
-		rows: data,
+	const props = {
 		columns,
+		modelValue: data,
 		config: { view: 'list' },
+	}
+
+	it('update data when cell is focused', async () => {
+		const wrapper = mount(ATable, { props })
+
+		const cellWrapper = wrapper.findComponent({ name: 'ACell' })
+		await cellWrapper.trigger('focus')
+		expect(cellWrapper.vm.currentData).toEqual(cellWrapper!.text())
 	})
 
-	const wrapper = mount(ATable, {
-		props: {
-			columns: http_logs.value.columns,
-			modelValue: http_logs.value.rows,
-			config: http_logs.value.config,
-		},
-		components: {
-			ACell,
-		},
-	})
+	it('emit update event when cell is edited', async () => {
+		const wrapper = mount(ATable, { props })
 
-	it('model update event should emit when cell is edited', async () => {
-		await wrapper.vm.$nextTick()
-
-		const aCellWrapper = wrapper.findComponent(ACell)
-		aCellWrapper.findAll('input')
-		await wrapper.vm.$nextTick()
-
-		const tds = wrapper.findAll('td')
-
-		const tdElement = tds.at(2)
-		tdElement.trigger('click')
-		tdElement.element.textContent = 'FETCH'
-		tdElement.trigger('input')
+		const dataCells = wrapper.findAll('td')
+		const cellElement = dataCells.at(2)
+		await cellElement!.trigger('click')
+		// can't use `wrapper.setValue` so hack to change the value
+		cellElement!.element.textContent = 'POST'
+		await cellElement!.trigger('input')
 
 		await wrapper.vm.$nextTick()
-
 		expect(wrapper.emitted('update:modelValue')).toBeTruthy()
 	})
 })

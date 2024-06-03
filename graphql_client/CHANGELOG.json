@@ -2,6 +2,12 @@
   "name": "@stonecrop/graphql-client",
   "entries": [
     {
+      "version": "0.2.17",
+      "tag": "@stonecrop/graphql-client_v0.2.17",
+      "date": "Mon, 03 Jun 2024 11:13:20 GMT",
+      "comments": {}
+    },
+    {
       "version": "0.2.16",
       "tag": "@stonecrop/graphql-client_v0.2.16",
       "date": "Mon, 03 Jun 2024 07:46:58 GMT",

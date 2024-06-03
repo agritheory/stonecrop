@@ -1,17 +1,18 @@
 <template>
-	<tr ref="rowEl" :tabindex="tabIndex" v-show="rowVisible()" class="table-row" :style="style" style="position: fixed">
+	<tr ref="rowEl" :tabindex="tabIndex" v-show="isRowVisible" class="table-row" :style="style" style="position: fixed">
 		<!-- render numbered/tree view index -->
-		<td v-if="tableData.config.view === 'list'" :tabIndex="-1" class="list-index">
-			{{ rowIndex + 1 }}
-		</td>
-		<td
-			v-else-if="tableData.config.view === 'tree'"
-			:tabIndex="-1"
-			class="tree-index"
-			@click="toggleRowExpand(rowIndex)">
-			{{ getRowExpandSymbol() }}
-		</td>
-		<slot v-else name="indexCell"></slot>
+		<slot name="index">
+			<td v-if="tableData.config.view === 'list'" :tabIndex="-1" class="list-index">
+				{{ rowIndex + 1 }}
+			</td>
+			<td
+				v-else-if="tableData.config.view === 'tree'"
+				:tabIndex="-1"
+				class="tree-index"
+				@click="toggleRowExpand(rowIndex)">
+				{{ getRowExpandSymbol() }}
+			</td>
+		</slot>
 
 		<!-- render cell content -->
 		<slot></slot>
@@ -19,9 +20,10 @@
 </template>
 
 <script setup lang="ts">
-import { TableRow } from 'types'
-import { inject, ref } from 'vue'
 import { useDraggable } from '@vueuse/core'
+import { computed, inject, ref } from 'vue'
+
+import { TableRow } from 'types'
 import { type KeypressHandlers, useKeyboardNav, defaultKeypressHandlers } from '@stonecrop/utilities'
 
 import TableDataStore from '.'
@@ -82,13 +84,13 @@ const getRowExpandSymbol = () => {
 	}
 }
 
-const rowVisible = () => {
+const isRowVisible = computed(() => {
 	return (
 		tableData.config.view !== 'tree' ||
 		tableData.display[props.rowIndex].isRoot ||
 		tableData.display[props.rowIndex].open
 	)
-}
+})
 
 const toggleRowExpand = (rowIndex: number) => {
 	tableData.toggleRowExpand(rowIndex)
