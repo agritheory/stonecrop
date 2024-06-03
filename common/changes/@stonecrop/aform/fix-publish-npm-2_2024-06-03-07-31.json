@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/aform",
+      "comment": "Add npmignore file",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/aform"
+}
