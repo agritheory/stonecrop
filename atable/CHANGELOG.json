@@ -2,6 +2,21 @@
   "name": "@stonecrop/atable",
   "entries": [
     {
+      "version": "0.2.15",
+      "tag": "@stonecrop/atable_v0.2.15",
+      "date": "Mon, 03 Jun 2024 07:38:20 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Add npmignore file"
+          },
+          {
+            "comment": "allow user to drag and resize aTable columns"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.2.14",
       "tag": "@stonecrop/atable_v0.2.14",
       "date": "Fri, 10 May 2024 11:10:09 GMT",

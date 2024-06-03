@@ -1,6 +1,14 @@
 # Change Log - @stonecrop/atable
 
-This log was last generated on Fri, 10 May 2024 11:10:09 GMT and should not be manually modified.
+This log was last generated on Mon, 03 Jun 2024 07:38:20 GMT and should not be manually modified.
+
+## 0.2.15
+Mon, 03 Jun 2024 07:38:20 GMT
+
+### Patches
+
+- Add npmignore file
+- allow user to drag and resize aTable columns
 
 ## 0.2.14
 Fri, 10 May 2024 11:10:09 GMT
