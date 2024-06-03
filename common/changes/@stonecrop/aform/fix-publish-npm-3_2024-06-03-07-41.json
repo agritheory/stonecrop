@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/aform",
+      "comment": "Remove prepublish step",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/aform"
+}

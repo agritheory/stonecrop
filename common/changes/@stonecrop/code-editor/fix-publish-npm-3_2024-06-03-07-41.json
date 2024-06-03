@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/code-editor",
+      "comment": "Remove prepublish step",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/code-editor"
+}
