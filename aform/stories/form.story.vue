@@ -1,5 +1,5 @@
 <template>
-	<Story title="default">
+	<Story>
 		<Variant title="Form" :setup-app="formSetup">
 			<AForm class="aform-main" v-model="form_schema" :data="data" :key="formKey" />
 

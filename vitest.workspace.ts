@@ -1,3 +1,1 @@
-import { defineWorkspace } from 'vitest/config'
-
-export default defineWorkspace(['aform/*/vite.config.ts', 'atable/*/vite.config.ts'])
+export default ['aform/*/vite.config.ts', 'atable/*/vite.config.ts']

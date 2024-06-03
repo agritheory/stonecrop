@@ -16,7 +16,7 @@
 import { TableRow } from 'types'
 import { inject, ref } from 'vue'
 
-import { useKeyboardNav } from '@stonecrop/utilities'
+import { type KeypressHandlers, useKeyboardNav } from '@stonecrop/utilities'
 
 import TableDataStore from '.'
 
@@ -26,9 +26,7 @@ const props = withDefaults(
 		rowIndex: number
 		tableid: string
 		tabIndex?: number
-		addNavigation?: {
-			[key: string]: (ev: KeyboardEvent) => any
-		}
+		addNavigation?: boolean | KeypressHandlers
 	}>(),
 	{
 		tabIndex: -1,
@@ -43,18 +41,23 @@ const getRowExpandSymbol = () => {
 	return tableData.display[props.rowIndex].expanded ? '▼' : '►'
 }
 
-if (props.addNavigation !== undefined) {
-	const keyboardNav = Object.assign({}, props.addNavigation)
-	keyboardNav['keydown.control.g'] = (event: KeyboardEvent) => {
-		event.stopPropagation()
-		event.preventDefault()
-		tableData.toggleRowExpand(props.rowIndex)
+if (props.addNavigation) {
+	const handlers: KeypressHandlers = {
+		'keydown.control.g': (event: KeyboardEvent) => {
+			event.stopPropagation()
+			event.preventDefault()
+			tableData.toggleRowExpand(props.rowIndex)
+		},
+	}
+
+	if (typeof props.addNavigation === 'object') {
+		Object.assign(handlers, props.addNavigation)
 	}
 
 	useKeyboardNav([
 		{
 			selectors: rowEl,
-			handlers: keyboardNav,
+			handlers: handlers,
 		},
 	])
 }

@@ -1,5 +1,5 @@
 <template>
-	<Story title="login">
+	<Story>
 		<Login />
 	</Story>
 </template>

@@ -71,6 +71,9 @@ jspm_packages/
 .idea/
 *.iml
 
+# Vitest output files
+.vite/
+
 # Rush temporary files
 common/deploy/
 common/temp/

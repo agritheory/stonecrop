@@ -27,7 +27,7 @@
 <script setup lang="ts">
 import { computed, CSSProperties, inject, ref } from 'vue'
 
-import { defaultKeypressHandlers, useKeyboardNav } from '@stonecrop/utilities'
+import { KeypressHandlers, defaultKeypressHandlers, useKeyboardNav } from '@stonecrop/utilities'
 import TableDataStore from '.'
 
 const props = withDefaults(
@@ -35,9 +35,8 @@ const props = withDefaults(
 		colIndex: number
 		rowIndex: number
 		tableid: string
-		addNavigation?: boolean | object
+		addNavigation?: boolean | KeypressHandlers
 		tabIndex?: number
-		clickHandler?: (event: MouseEvent) => void
 	}>(),
 	{
 		tabIndex: 0,
@@ -47,8 +46,9 @@ const props = withDefaults(
 
 const tableData = inject<TableDataStore>(props.tableid)
 const cell = ref<HTMLTableCellElement>(null)
+const currentData = ref('')
+const cellModified = ref(false)
 
-let cellModified = ref(false)
 const displayValue = computed(() => {
 	const data = tableData.cellData<any>(props.colIndex, props.rowIndex)
 	if (tableData.columns[props.colIndex].format) {
@@ -69,12 +69,6 @@ const displayValue = computed(() => {
 })
 
 const handleInput = (event: MouseEvent) => {
-	// Not sure if click handler is needed anymore?
-	if (props.clickHandler) {
-		props.clickHandler(event)
-		return
-	}
-
 	if (tableData.columns[props.colIndex].mask) {
 		// TODO: add masking to cell values
 		// tableData.columns[props.colIndex].mask(event)
@@ -139,22 +133,21 @@ const cellWidth = computed(() => {
 	return tableData.columns[props.colIndex].width || '40ch'
 })
 
-let currentData = ''
 const onFocus = () => {
 	if (cell.value) {
-		currentData = cell.value.innerText
+		currentData.value = cell.value.textContent
 	}
 }
 
 const onChange = () => {
 	if (cell.value) {
-		if (cell.value.innerHTML !== currentData) {
-			currentData = cell.value.innerText
+		if (cell.value.textContent !== currentData.value) {
+			currentData.value = cell.value.textContent
 			cell.value.dispatchEvent(new Event('change'))
 			cellModified.value = true // set display instead
 			if (!tableData.columns[props.colIndex].format) {
 				// TODO: need to setup reverse format function
-				tableData.setCellData(props.rowIndex, props.colIndex, currentData)
+				tableData.setCellData(props.rowIndex, props.colIndex, currentData.value)
 			}
 		}
 	}

@@ -5,7 +5,14 @@ export type KeypressHandlers = {
 }
 
 export type KeyboardNavigationOptions = {
-	parent?: string | Element | Ref<Element>
-	selectors?: string | Element | Ref<Element> | Ref<Element[]> | Ref<ComponentPublicInstance[]>
+	parent?: string | HTMLElement | Ref<HTMLElement>
+	selectors?:
+		| string
+		| HTMLElement
+		| HTMLElement[]
+		| ComponentPublicInstance[]
+		| Ref<HTMLElement>
+		| Ref<HTMLElement[]>
+		| Ref<ComponentPublicInstance[]>
 	handlers?: KeypressHandlers
 }

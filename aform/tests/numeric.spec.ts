@@ -4,14 +4,9 @@ import { mount } from '@vue/test-utils'
 import ANumericInput from '@/components/form/ANumericInput.vue'
 
 describe('numeric input component', () => {
-	let numericInputModel = 25
-	let schema = {
-		fieldname: 'age',
-		label: 'Age',
-	}
-
-	let wrapper = mount(ANumericInput, {
-		props: { modelValue: numericInputModel, schema: schema },
+	const numericInputModel = 25
+	const wrapper = mount(ANumericInput, {
+		props: { modelValue: numericInputModel, label: 'Age' },
 	})
 
 	it('emits update event when input changed', async () => {
