@@ -2,6 +2,18 @@
   "name": "@stonecrop/aform",
   "entries": [
     {
+      "version": "0.2.16",
+      "tag": "@stonecrop/aform_v0.2.16",
+      "date": "Mon, 03 Jun 2024 07:46:58 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Remove prepublish step"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.2.15",
       "tag": "@stonecrop/aform_v0.2.15",
       "date": "Mon, 03 Jun 2024 07:38:20 GMT",

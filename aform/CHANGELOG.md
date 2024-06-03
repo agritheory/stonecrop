@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/aform
 
-This log was last generated on Mon, 03 Jun 2024 07:38:20 GMT and should not be manually modified.
+This log was last generated on Mon, 03 Jun 2024 07:46:58 GMT and should not be manually modified.
+
+## 0.2.16
+Mon, 03 Jun 2024 07:46:58 GMT
+
+### Patches
+
+- Remove prepublish step
 
 ## 0.2.15
 Mon, 03 Jun 2024 07:38:20 GMT
