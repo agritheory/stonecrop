@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/themes",
+      "comment": "Add npmignore file",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/themes"
+}

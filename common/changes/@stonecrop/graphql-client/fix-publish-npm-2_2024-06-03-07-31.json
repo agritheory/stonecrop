@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/graphql-client",
+      "comment": "Add npmignore file",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/graphql-client"
+}
