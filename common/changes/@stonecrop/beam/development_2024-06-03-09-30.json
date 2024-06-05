@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/beam",
+      "comment": "Revert prepublish removal",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/beam"
+}
