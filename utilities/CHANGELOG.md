@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/utilities
 
-This log was last generated on Mon, 03 Jun 2024 13:59:22 GMT and should not be manually modified.
+This log was last generated on Wed, 05 Jun 2024 08:49:04 GMT and should not be manually modified.
+
+## 0.2.19
+Wed, 05 Jun 2024 08:49:04 GMT
+
+### Patches
+
+- Revert prepublish removal
 
 ## 0.2.18
 Mon, 03 Jun 2024 13:59:22 GMT
