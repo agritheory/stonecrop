@@ -9,9 +9,11 @@ jobs:
   publish-npm:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
+
     permissions:
       contents: write
       packages: write
+
     steps:
       - uses: actions/checkout@v4
         name: Checkout
@@ -29,6 +31,9 @@ jobs:
 
       - name: Install Rush
         run: node common/scripts/install-run-rush.js install
+
+      - name: Build Stonecrop
+        run: node common/scripts/install-run-rush.js rebuild --verbose
 
       - name: Bump Version for Packages
         run: node common/scripts/install-run-rush.js version --bump --target-branch development --ignore-git-hooks
