@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/node-editor",
-	"version": "0.2.17",
+	"version": "0.2.18",
 	"description": "Node editor UI for Stonecrop",
 	"license": "MIT",
 	"type": "module",
