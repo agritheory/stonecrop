@@ -9,11 +9,6 @@
 	--brand-color: #202a44; /* brand color, default navy */
 }
 
-html {
-	/* font-size: 62.5%;  */
-	/*1 rem = 10px; 10px/16px = 62.5%*/
-}
-
 body {
 	font-family: var(--font-family);
 	background-color: white;
