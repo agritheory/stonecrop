@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/beam",
+      "comment": "fixed style leak",
+      "type": "none"
+    }
+  ],
+  "packageName": "@stonecrop/beam"
+}
