@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/beam
 
-This log was last generated on Wed, 05 Jun 2024 09:51:18 GMT and should not be manually modified.
+This log was last generated on Tue, 11 Jun 2024 08:20:06 GMT and should not be manually modified.
+
+## 0.2.21
+Tue, 11 Jun 2024 08:20:06 GMT
+
+### Updates
+
+- fixed style leak
 
 ## 0.2.20
 Wed, 05 Jun 2024 09:51:18 GMT
