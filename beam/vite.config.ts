@@ -3,12 +3,13 @@
 import { HstVue } from '@histoire/plugin-vue'
 import vue from '@vitejs/plugin-vue'
 import { resolve } from 'path'
+import dts from 'vite-plugin-dts'
 import { defineConfig } from 'vite'
 
 const projectRootDir = resolve(__dirname)
 
 export default defineConfig({
-	plugins: [vue()],
+	plugins: [vue(), dts({ bundledPackages: ['stonecrop/*'] })],
 	resolve: {
 		alias: {
 			'@': resolve(projectRootDir, 'src'),

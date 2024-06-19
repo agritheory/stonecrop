@@ -3,7 +3,7 @@ import { Component } from 'vue'
 import { Router } from 'vue-router'
 import { MachineConfig, StateMachine } from 'xstate'
 
-import type { SchemaTypes } from '@stonecrop/aform/types'
+import type { SchemaTypes } from '@stonecrop/aform'
 
 import DoctypeMeta from '@/doctype'
 

@@ -15,7 +15,7 @@ import { ref } from 'vue'
 
 import CollapseButton from '@/components/base/CollapseButton.vue'
 import AForm from '@/components/AForm.vue'
-import { SchemaTypes } from 'types/index'
+import { SchemaTypes } from '@/types/index'
 
 const props = defineProps<{
 	schema: SchemaTypes[]

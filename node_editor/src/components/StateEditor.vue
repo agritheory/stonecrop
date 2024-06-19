@@ -3,120 +3,129 @@
 		<NodeEditor v-model="elements" :node-container-class="nodeContainerClass" />
 	</div>
 </template>
-<script lang="ts" setup>
-import { VueFlow } from '@vue-flow/core'
-import '@vue-flow/core/dist/style.css'
-import '@vue-flow/core/dist/theme-default.css'
+
+<script setup lang="ts">
+import { type Node, Position } from '@vue-flow/core'
+import { type HTMLAttributes, computed } from 'vue'
+
 import NodeEditor from './NodeEditor.vue'
-import { ref, computed } from 'vue'
+import type { EditorStates, FlowElement, FlowElements, Layout } from '@/types'
 
-// Props
-
-const props = defineProps(['layout', 'nodeContainerClass', 'modelValue'])
-
-// Emits
-
+const states = defineModel<EditorStates>()
+const props = defineProps<{
+	layout: Layout
+	nodeContainerClass?: HTMLAttributes['class']
+}>()
 const emit = defineEmits(['update:modelValue'])
 
-// Computed variables
-
-const elements = computed({
+const elements = computed<FlowElements>({
 	get: () => {
-		let states = props.modelValue
-		let stateHash = {}
-		let hasInputs = {}
-		let j = 0
-		let stateElements = []
-		for (let key in states) {
-			let idx = stateElements.length
-			let el = {
+		const hasInputs = {}
+		const stateElements: FlowElements = []
+		const stateHash: Record<string, FlowElement> = {}
+
+		let index = 0
+		for (const [key, value] of Object.entries(states.value)) {
+			const el: Node = {
 				id: key,
 				label: key,
-				position: props.layout[key] && props.layout[key].position ? props.layout[key].position : { x: 200 * j, y: 100 },
-				targetPosition:
-					props.layout[key] && props.layout[key].targetPosition ? props.layout[key].targetPosition : 'left',
-				sourcePosition:
-					props.layout[key] && props.layout[key].sourcePosition ? props.layout[key].sourcePosition : 'right',
+				position: props.layout[key]?.position || { x: 200 * index, y: 100 },
+				targetPosition: props.layout[key]?.targetPosition || Position.Left,
+				sourcePosition: props.layout[key]?.sourcePosition || Position.Right,
 			}
-			if (states[key].type && states[key].type == 'final') {
+
+			if (value.type === 'final') {
 				el.type = 'output'
 				el.class = 'default-output-node'
 			}
+
 			stateHash[key] = el
-			let edges = states[key].on
-			for (let edgeKey in states[key].on) {
-				let target = edges[edgeKey]
-				if (typeof target === 'object' && target.constructor === Object) {
-					target = target.target
+
+			for (const [edgeKey, edgeValue] of Object.entries(value.on)) {
+				if (Array.isArray(edgeValue)) {
+					for (const edge of edgeValue) {
+						// TODO: handle typescript errors for both types of states
+						// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+						const edgeJson = edge.toJSON()
+						// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+						const target = edgeJson.target.toString()
+						stateElements.push({
+							id: `${key}-${edgeKey}`,
+							target: target,
+							source: key,
+							label: edgeKey,
+							animated: true,
+						})
+
+						// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+						hasInputs[target] = true
+					}
 				}
-				stateElements.push({
-					id: `${key}-${edges[edgeKey]}-${edgeKey}`,
-					target: target,
-					source: key,
-					label: edgeKey,
-					animated: true,
-				})
-				hasInputs[target] = true
 			}
-			j++
+
+			index++
 		}
-		for (let key in stateHash) {
+
+		for (const [key, value] of Object.entries(stateHash)) {
 			if (!hasInputs[key]) {
-				stateHash[key]['type'] = 'input'
-				stateHash[key]['class'] = 'default-input-node'
+				value['type'] = 'input'
+				value['class'] = 'default-input-node'
 			}
-			stateElements.push(stateHash[key])
+			stateElements.push(value)
 		}
+
 		return stateElements
 	},
 	set: newValue => {
 		// update modelValue when elements change
 		onElementsChange(newValue)
-		// emit('update:modelValue', props.modelValue)
+
+		// TODO: emit('update:modelValue', props.modelValue)
 	},
 })
 
-// Methods
+const onElementsChange = (elements: FlowElements) => {
+	const edges: Record<string, Record<string, any>> = {}
+	const idToLabel: Record<string, string> = {}
+	const states: EditorStates = {}
 
-const onElementsChange = elements => {
-	let states = {}
-	let edges = {}
-	let idToLabel = {}
-	for (let i = 0; i < elements.length; i++) {
-		let el = elements[i]
-		if (el.type == 'input') {
+	for (const el of elements) {
+		const label = el.label as string
+
+		if (el.type === 'input') {
 			// it's an input node
-			states[el.label] = {
+			states[label] = {
 				on: {},
 			}
-		} else if (el.type == 'output') {
+		} else if (el.type === 'output') {
 			// it's an output node
-			states[el.label] = {
+			states[label] = {
 				type: 'final',
 			}
-		} else if (el.source && el.target) {
+		} /* else if (el.source && el.target) {
 			// it's an edge
 			edges[el.source] = edges[el.source] || {}
-			edges[el.source][el.label] = {
+			edges[el.source][label] = {
 				target: el.target,
 			}
-		} else {
+		} */ else {
 			// it's a state
-			states[el.label] = {
+			states[label] = {
 				on: {},
 			}
 		}
-		idToLabel[el.id] = el.label
+
+		idToLabel[el.id] = label
 	}
 
-	for (let key in edges) {
+	for (const [edgeKey, edgeValue] of Object.entries(edges)) {
 		// add edges to states
-		let label = idToLabel[key]
-		for (let edgeKey in edges[key]) {
-			states[label].on[edgeKey] = edges[key][edgeKey]
+		const label = idToLabel[edgeKey]
+		for (const [key, value] of Object.entries(edgeValue)) {
+			states[label].on[key] = value
 		}
 	}
+
 	emit('update:modelValue', states)
 }
 </script>
-<style scoped></style>

@@ -18,21 +18,21 @@
 	},
 	"exports": {
 		".": {
-			"import": "./dist/stonecrop.js",
+			"import": {
+				"types": "./dist/stonecrop/src/index.d.ts",
+				"default": "./dist/stonecrop.js"
+			},
 			"require": "./dist/stonecrop.umd.cjs"
 		}
 	},
-	"main": "dist/stonecrop.js",
-	"module": "dist/stonecrop.js",
-	"umd": "dist/stonecrop.umd.cjs",
-	"types": "src/index",
+	"types": "./dist/stonecrop/src/index.d.ts",
 	"files": [
 		"dist/*",
 		"src/*"
 	],
 	"scripts": {
-		"prepublish": "vite build",
-		"build": "vite build",
+		"prepublish": "tsc --build && vite build",
+		"build": "tsc --build && vite build",
 		"dev": "vite serve stories/ -c vite.config.ts",
 		"lint": "eslint . --ext .ts,.vue",
 		"preview": "vite preview"
@@ -45,7 +45,7 @@
 		"pinia-xstate": "^1.0.9",
 		"vue": "^3.4.23",
 		"vue-router": "^4",
-		"xstate": "~4.37.2"
+		"xstate": "^4.38.3"
 	},
 	"devDependencies": {
 		"@stonecrop/aform": "workspace:*",
@@ -57,7 +57,8 @@
 		"eslint-config-prettier": "^8.8.0",
 		"eslint-plugin-vue": "^9.11.1",
 		"typescript": "^5.4.5",
-		"vite": "^5.2.9"
+		"vite": "^5.2.9",
+		"vite-plugin-dts": "^3.9.1"
 	},
 	"publishConfig": {
 		"access": "public"

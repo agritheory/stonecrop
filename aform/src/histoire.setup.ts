@@ -12,7 +12,6 @@ import { ATable, ATableHeader, ATableModal } from '@stonecrop/atable'
 import '@stonecrop/atable/styles'
 
 export const setupVue3 = defineSetupVue3(({ app }) => {
-	// TODO: (typing) add typing for ATable components
 	app.component('ACheckbox', ACheckbox)
 	app.component('ADate', ADate)
 	app.component('ADatePicker', ADatePicker)

@@ -1,14 +1,9 @@
 {
 	"extends": "../tsconfig.json",
 	"compilerOptions": {
-		"composite": true,
-		"declarationMap": true,
-		"emitDeclarationOnly": true,
 		"outDir": "dist",
-		"baseUrl": ".",
 		"paths": {
-			"@/*": ["src/*"],
-			"types/*": ["types/*"]
+			"@/*": ["./src/*"]
 		}
 	},
 	"include": [
@@ -18,7 +13,6 @@
 		"src/**/*.vue",
 		"stories/**/*.json",
 		"stories/**/*.setup.ts",
-		"stories/**/*.story.vue",
-		"types/**/*.ts"
+		"stories/**/*.story.vue"
 	]
 }

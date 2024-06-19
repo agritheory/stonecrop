@@ -1,17 +1,21 @@
 {
+	"extends": "../tsconfig.json",
 	"compilerOptions": {
-		"target": "es2017",
-		"module": "esnext",
-		"lib": ["esnext"],
-		"moduleResolution": "node",
-		"esModuleInterop": true,
-		"resolveJsonModule": true,
-		"jsx": "preserve",
-		"baseUrl": ".",
+		"outDir": "dist",
 		"paths": {
-			"@/*": ["src/*"]
+			"@/*": ["./src/*"],
+			"types/*": ["./src/types/*"]
 		}
 	},
-	"include": ["env.d.ts", "src/**/*", "src/**/*.vue"],
-	"exclude": ["node_modules"]
+	"include": [
+		"env.d.ts",
+		"src/**/*",
+		"src/**/*.ts",
+		"src/**/*.vue",
+		"stories/**/*.json",
+		"stories/**/*.story.vue",
+		"tests/**/*.spec.ts",
+		"tests/**/*.ts",
+		"tests/**/*.vue"
+	]
 }

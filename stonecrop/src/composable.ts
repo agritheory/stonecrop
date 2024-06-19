@@ -45,5 +45,6 @@ export function useStonecrop(registry?: Registry): StonecropReturn {
 		isReady.value = true
 	})
 
+	// @ts-ignore
 	return { stonecrop, isReady }
 }

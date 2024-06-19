@@ -1,11 +1,7 @@
 {
 	"extends": "../tsconfig.json",
 	"compilerOptions": {
-		"composite": true,
-		"declarationMap": true,
-		"emitDeclarationOnly": true,
-		"outDir": "dist",
-		"baseUrl": "."
+		"outDir": "dist"
 	},
 	"include": ["docbuilder/**/*", "docbuilder/**/*.ts", "docbuilder/**/*.vue", "docbuilder/**/*.json"]
 }

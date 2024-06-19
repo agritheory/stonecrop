@@ -12,7 +12,7 @@
 <script setup lang="ts">
 import { CSSProperties, inject } from 'vue'
 
-import { TableColumn, TableConfig } from 'types'
+import { TableColumn, TableConfig } from 'types/index'
 import TableDataStore from '.'
 
 const props = defineProps<{

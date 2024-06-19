@@ -64,7 +64,7 @@ import { v4 } from 'uuid'
 import { nextTick, provide, watch } from 'vue'
 import { vOnClickOutside } from '@vueuse/components'
 
-import { TableColumn, TableConfig, TableRow } from 'types'
+import { TableColumn, TableConfig, TableRow } from 'types/index'
 import TableDataStore from '.'
 import ACell from '@/components/ACell.vue'
 import ARow from '@/components/ARow.vue'

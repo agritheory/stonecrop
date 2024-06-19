@@ -18,7 +18,7 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
 
-import { TableColumn } from 'types'
+import { TableColumn } from 'types/index'
 import data from './sample_data/http_logs.json'
 
 const columns: TableColumn[] = [

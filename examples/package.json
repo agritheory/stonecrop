@@ -27,17 +27,18 @@
 		"uuid": "^9.0.0",
 		"vite": "^5.2.9",
 		"vue": "^3.4.23",
-		"xstate": "~4.37.2"
+		"xstate": "^4.38.3"
 	},
 	"devDependencies": {
 		"@types/uuid": "^9.0.0",
 		"@typescript-eslint/eslint-plugin": "^7.6.0",
 		"@typescript-eslint/parser": "^7.6.0",
-		"cypress": "^12.11.0",
+		"cypress": "^13.11.0",
 		"eslint": "^8.40.0",
 		"eslint-plugin-vue": "^9.11.1",
 		"typescript": "^5.4.5",
-		"vue-router": "^4"
+		"vue-router": "^4",
+		"vite-plugin-dts": "^3.9.1"
 	},
 	"engines": {
 		"node": ">=20.11.0"

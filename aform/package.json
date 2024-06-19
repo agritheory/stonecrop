@@ -17,22 +17,22 @@
 	},
 	"exports": {
 		".": {
-			"import": "./dist/aform.js",
+			"import": {
+				"types": "./dist/aform/src/index.d.ts",
+				"default": "./dist/aform.js"
+			},
 			"require": "./dist/aform.umd.cjs"
 		},
 		"./styles": "./dist/style.css"
 	},
-	"main": "dist/aform.js",
-	"module": "dist/aform.js",
-	"umd": "dist/aform.umd.cjs",
-	"types": "src/index",
+	"typings": "./dist/aform/src/index.d.ts",
 	"files": [
 		"dist/*",
 		"src/*"
 	],
 	"scripts": {
-		"prepublish": "tsc -b && vite build",
-		"build": "tsc -b && vite build",
+		"prepublish": "tsc --build && vite build",
+		"build": "tsc --build && vite build",
 		"dev": "vite",
 		"lint": "eslint . --ext .ts,.vue",
 		"preview": "vite preview",
@@ -59,13 +59,14 @@
 		"@vitest/coverage-istanbul": "^1.6.0",
 		"@vitest/ui": "^1.6.0",
 		"@vue/test-utils": "^2.4.6",
-		"cypress": "^12.11.0",
+		"cypress": "^13.11.0",
 		"eslint-config-prettier": "^8.8.0",
 		"eslint-plugin-vue": "^9.11.1",
 		"eslint": "^8.40.0",
 		"histoire": "^0.17.17",
 		"jsdom": "^24.0.0",
 		"typescript": "^5.4.5",
+		"vite-plugin-dts": "^3.9.1",
 		"vite": "^5.2.9",
 		"vitest": "^1.6.0",
 		"vue-router": "^4"

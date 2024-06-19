@@ -3,13 +3,16 @@
 		<StateEditor v-model="fetchConfig" :layout="layout" />
 	</Story>
 </template>
-<script lang="ts" setup>
-import { ref } from 'vue'
-import StateEditor from '@/components/StateEditor.vue'
 
+<script setup lang="ts">
+import { Position } from '@vue-flow/core'
+import { ref } from 'vue'
 import { createMachine } from 'xstate'
 
-const layout = {
+import StateEditor from '@/components/StateEditor.vue'
+import { EditorStates, Layout } from '@/types'
+
+const layout: Layout = {
 	idle: {
 		position: { x: 100, y: 50 },
 	},
@@ -18,8 +21,8 @@ const layout = {
 	},
 	failure: {
 		position: { x: 400, y: 250 },
-		targetPosition: 'right',
-		sourcePosition: 'left',
+		targetPosition: Position.Right,
+		sourcePosition: Position.Left,
 	},
 	success: {
 		position: { x: 700, y: 50 },
@@ -51,22 +54,22 @@ const fetchMachine = createMachine({
 			on: {
 				RETRY: {
 					target: 'loading',
-					actions: {
-						retries: (context, event) => context.retries + 1,
-					},
+					actions: context => context.retries + 1,
 				},
 			},
 		},
 	},
 })
 
-const fetchConfig = ref(fetchMachine.config.states)
+const fetchConfig = ref(fetchMachine.config.states as EditorStates)
 </script>
+
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap');
 * {
 	margin: 0;
 }
+
 html,
 body {
 	height: 100%;

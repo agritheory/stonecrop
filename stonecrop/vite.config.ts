@@ -1,19 +1,21 @@
-import { resolve } from 'path'
-import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import { resolve } from 'path'
+import dts from 'vite-plugin-dts'
+import { defineConfig } from 'vite'
 
 const projectRootDir = resolve(__dirname)
 
 export default defineConfig({
-	plugins: [vue()],
+	plugins: [vue(), dts({ rollupTypes: true, bundledPackages: ['stonecrop/*'] })],
 	optimizeDeps: { exclude: ['@stonecrop/atable', '@stonecrop/aform'] },
 	resolve: {
 		alias: {
 			'@': resolve(projectRootDir, 'src'),
+			types: resolve(projectRootDir, 'src/types'),
 		},
 	},
 	build: {
-		minify: false,
+		sourcemap: true,
 		lib: {
 			entry: resolve(projectRootDir, 'src/index.ts'),
 			name: '@stonecrop/stonecrop',

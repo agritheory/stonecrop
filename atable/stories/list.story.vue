@@ -109,7 +109,7 @@
 import { v4 } from 'uuid'
 import { CSSProperties, ref } from 'vue'
 
-import { TableColumn } from 'types'
+import { TableColumn } from 'types/index'
 import inbox_data from './sample_data/inbox.json'
 import http_data from './sample_data/http_logs.json'
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

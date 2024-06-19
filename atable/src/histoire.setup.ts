@@ -10,7 +10,6 @@ import ATableModal from '@/components/ATableModal.vue'
 import { ADate, AForm, ANumericInput, ATextInput } from '@stonecrop/aform'
 
 export const setupVue3 = defineSetupVue3(({ app }) => {
-	// TODO: (typing) add typing for ADate
 	app.component('ACell', ACell)
 	app.component('ADate', ADate)
 	app.component('AExpansionRow', AExpansionRow)

@@ -1,4 +1,4 @@
-import type { FormSchema } from 'types'
+import type { FormSchema } from '../types/index'
 import type { DirectiveBinding } from 'vue'
 
 const NAMED_MASKS = {

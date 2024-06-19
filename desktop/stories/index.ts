@@ -5,7 +5,7 @@ import { createMachine } from 'xstate'
 
 import { ADate, ATextInput } from '@stonecrop/aform'
 import { DoctypeMeta, Stonecrop } from '@stonecrop/stonecrop'
-import type { ImmutableDoctype, MutableDoctype } from '@stonecrop/stonecrop/types'
+import type { ImmutableDoctype, MutableDoctype } from '@stonecrop/stonecrop'
 
 import ActionSet from '../src/components/ActionSet.vue'
 import CommandPalette from '../src/components/CommandPalette.vue'
@@ -57,5 +57,4 @@ app.use(Stonecrop, {
 		return new DoctypeMeta(doctype, config.schema, config.workflow, config.actions)
 	},
 })
-
 app.mount('#app')

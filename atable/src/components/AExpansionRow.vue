@@ -13,7 +13,7 @@
 </template>
 
 <script setup lang="ts">
-import { TableRow } from 'types'
+import { TableRow } from 'types/index'
 import { inject, ref } from 'vue'
 
 import { type KeypressHandlers, useKeyboardNav } from '@stonecrop/utilities'

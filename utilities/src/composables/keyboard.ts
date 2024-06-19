@@ -1,7 +1,7 @@
 import { type WatchStopHandle, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useFocusWithin } from '@vueuse/core'
 
-import type { KeyboardNavigationOptions, KeypressHandlers } from 'types'
+import type { KeyboardNavigationOptions, KeypressHandlers } from 'types/index'
 import { useElementVisibility } from '@/composables/visibility'
 
 // helper functions

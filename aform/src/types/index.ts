@@ -1,5 +1,4 @@
-// TODO: (typing) figure out a way to import other monorepo package types
-import type { TableColumn, TableConfig, TableRow } from '@stonecrop/atable/types'
+import ATable from '@stonecrop/atable'
 
 export type BasicSchema = {
 	component: string
@@ -18,9 +17,9 @@ export type FormSchema = BasicSchema & {
 }
 
 export type TableSchema = BasicSchema & {
-	columns: TableColumn[]
-	config: TableConfig
-	rows: TableRow[]
+	columns: ATable.TableColumn[]
+	config: ATable.TableConfig
+	rows: ATable.TableRow[]
 }
 
 export type FieldsetSchema = BasicSchema & {

@@ -29,8 +29,8 @@
 		"src/*"
 	],
 	"scripts": {
-		"prepublish": "tsc -b && vite build",
-		"build": "tsc -b && vite build",
+		"prepublish": "tsc --build && vite build",
+		"build": "tsc --build && vite build",
 		"dev": "vite",
 		"lint": "eslint . --ext .ts,.vue",
 		"preview": "vite preview",
@@ -47,7 +47,7 @@
 		"@typescript-eslint/eslint-plugin": "^7.6.0",
 		"@typescript-eslint/parser": "^7.6.0",
 		"@vitejs/plugin-vue": "^5.0.4",
-		"cypress": "^12.11.0",
+		"cypress": "^13.11.0",
 		"eslint": "^8.40.0",
 		"eslint-config-prettier": "^8.8.0",
 		"eslint-plugin-vue": "^9.11.1",
@@ -55,7 +55,8 @@
 		"sass": "^1.75.0",
 		"typescript": "^5.4.5",
 		"vite": "^5.2.9",
-		"vue-router": "^4"
+		"vue-router": "^4",
+		"vite-plugin-dts": "^3.9.1"
 	},
 	"publishConfig": {
 		"access": "public"

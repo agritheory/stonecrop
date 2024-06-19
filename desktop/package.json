@@ -23,17 +23,13 @@
 		},
 		"./styles": "./dist/style.css"
 	},
-	"main": "dist/desktop.js",
-	"module": "dist/desktop.js",
-	"umd": "dist/desktop.umd.cjs",
-	"types": "src/index",
 	"files": [
 		"dist/*",
 		"src/*"
 	],
 	"scripts": {
-		"prepublish": "vite build",
-		"build": "vite build",
+		"prepublish": "tsc --build && vite build",
+		"build": "tsc --build && vite build",
 		"dev": "vite",
 		"lint": "eslint . --ext .ts,.vue",
 		"story:build": "vite build stories/ -c stories/vite.config.ts",
@@ -46,7 +42,7 @@
 		"@stonecrop/themes": "workspace:*",
 		"immutable": "^4.3.0",
 		"vue": "^3.4.23",
-		"xstate": "~4.37.2"
+		"xstate": "^4.38.3"
 	},
 	"devDependencies": {
 		"@miragejs/graphql": "^0.1.13",
@@ -59,7 +55,8 @@
 		"miragejs": "^0.1.47",
 		"typescript": "^5.4.5",
 		"vite": "^5.2.9",
-		"vue-router": "^4"
+		"vue-router": "^4",
+		"vite-plugin-dts": "^3.9.1"
 	},
 	"publishConfig": {
 		"access": "public"

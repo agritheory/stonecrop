@@ -1,4 +1,4 @@
-import type { ImmutableDoctype, Schema } from 'types/index'
+import type { ImmutableDoctype, Schema } from './types/index'
 import DoctypeMeta from './doctype'
 import { NotImplementedError } from './exceptions'
 import Registry from './registry'

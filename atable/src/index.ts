@@ -7,7 +7,13 @@ import ATable from '@/components/ATable.vue'
 import ATableHeader from '@/components/ATableHeader.vue'
 import ATableModal from '@/components/ATableModal.vue'
 import TableDataStore from './components'
+export type { TableColumn, TableConfig, TableDisplay, TableRow, TableModal } from 'types/index'
 
+/**
+ * Install all ATable components
+ * @param app - Vue app instance
+ * @public
+ */
 function install(app: App /* options */) {
 	app.component('ACell', ACell)
 	app.component('AExpansionRow', AExpansionRow)
