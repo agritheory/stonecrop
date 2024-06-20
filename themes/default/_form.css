@@ -11,10 +11,11 @@ Holds styles for all form fields
 	justify-content: flex-start;
 	align-items: baseline;
 	padding: 1rem;
-	border: 1px solid var(--gray-5);
+	border: 1px solid var(--row-border-color);
 	border-left: 4px solid var(--input-border-color);
 	margin-bottom: 1rem;
 }
+
 .aform__form-element {
 	min-width: 40ch;
 	border: 1px solid transparent;
@@ -36,15 +37,17 @@ Holds styles for all form fields
 	padding-left: 0.5rem;
 	margin: 0 0 0 0;
 	/* border-radius: 0 0 0.25rem 0.25rem; */
+	border-radius: 0;
 	box-sizing: border-box;
 	width: 100%;
 	position: relative;
+	color: var(--cell-text-color);
 }
 .aform__field-label {
 	color: var(--input-label-color);
 	display: inline-block;
 	position: absolute;
-	padding: 0.25rem;
+	padding: 0 0.25rem;
 	margin: 0rem;
 	z-index: 2;
 	font-size: 0.7rem;
@@ -61,6 +64,7 @@ Holds styles for all form fields
 	top: 0;
 	left: 10px;
 	border: none;
+
 	transform: translateY(-50%);
 }
 p.error {
