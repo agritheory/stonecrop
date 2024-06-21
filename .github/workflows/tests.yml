@@ -44,10 +44,13 @@ jobs:
       uses: actions/setup-node@v4
       with:
         cache-dependency-path: '**/config/rush/pnpm-lock.yaml'
-        registry-url: https://npm.pkg.github.com/
+        registry-url: https://registry.npmjs.org/
 
-    - name: Install Rush
+    - name: Rush Install
       run: node common/scripts/install-run-rush.js install
+
+    - name: Rush Build
+      run: node common/scripts/install-run-rush.js rebuild --verbose
 
     - name: Run Tests
       working-directory: ./aform
@@ -83,10 +86,13 @@ jobs:
       uses: actions/setup-node@v4
       with:
         cache-dependency-path: '**/config/rush/pnpm-lock.yaml'
-        registry-url: https://npm.pkg.github.com/
+        registry-url: https://registry.npmjs.org/
 
-    - name: Install Rush
+    - name: Rush Install
       run: node common/scripts/install-run-rush.js install
+
+    - name: Rush Build
+      run: node common/scripts/install-run-rush.js rebuild --verbose
 
     - name: Run Tests
       working-directory: ./atable

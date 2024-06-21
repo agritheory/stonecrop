@@ -25,8 +25,8 @@ const props = defineProps<{
 }>()
 
 const formData = ref(props.data || [])
-let collapsed = ref(false)
-let collapsible = ref(props.collapsible)
+const collapsed = ref(false)
+const collapsible = ref(props.collapsible)
 
 const formSchema = ref(props.schema)
 function toggleCollapse(event: Event) {
