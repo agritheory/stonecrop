@@ -87,6 +87,10 @@
       "allowedCategories": [ "prototype", "utilities" ]
     },
     {
+      "name": "decimal.js",
+      "allowedCategories": [ "utilities" ]
+    },
+    {
       "name": "eslint",
       "allowedCategories": [ "prototype", "utilities" ]
     },
