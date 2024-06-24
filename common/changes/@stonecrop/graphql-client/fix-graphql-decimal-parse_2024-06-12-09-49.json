@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/graphql-client",
+      "comment": "add custom deserializer for graphQL responses",
+      "type": "none"
+    }
+  ],
+  "packageName": "@stonecrop/graphql-client"
+}
