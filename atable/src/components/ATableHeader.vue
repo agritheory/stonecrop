@@ -12,8 +12,8 @@
 <script setup lang="ts">
 import { CSSProperties, inject } from 'vue'
 
-import { TableColumn, TableConfig } from 'types/index'
 import TableDataStore from '.'
+import type { TableColumn, TableConfig } from '@/types'
 
 const props = defineProps<{
 	columns: TableColumn[]

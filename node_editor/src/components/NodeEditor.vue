@@ -44,7 +44,7 @@ import { type HTMLAttributes, ref, computed, defineEmits, onBeforeUnmount, onMou
 
 import EditableEdge from './EditableEdge.vue'
 import EditableNode from './EditableNode.vue'
-import { FlowElements } from '@/types'
+import type { FlowElements } from '@/types'
 
 const props = defineProps<{
 	modelValue: FlowElements

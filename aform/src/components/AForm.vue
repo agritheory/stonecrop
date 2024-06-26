@@ -16,7 +16,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 
-import { SchemaTypes } from 'types/index'
+import type { SchemaTypes } from '@/types'
 
 const props = defineProps<{
 	modelValue: SchemaTypes[]

@@ -9,7 +9,7 @@ import AFieldset from '@/components/form/AFieldset.vue'
 import AForm from '@/components/AForm.vue'
 import ANumericInput from '@/components/form/ANumericInput.vue'
 import ATextInput from '@/components/form/ATextInput.vue'
-export type { BasicSchema, FormSchema, TableSchema, FieldsetSchema, SchemaTypes } from 'types/index'
+export type { BasicSchema, FormSchema, TableSchema, FieldsetSchema, SchemaTypes } from '@/types'
 // import { ACurrency } from '@/components/form/ACurrency.vue'
 // import { AQuantity } from '@/components/form/AQuantity.vue'
 

@@ -8,7 +8,7 @@
 import { ref } from 'vue'
 
 import data from './sample_data/coa.json'
-import { TableColumn, TableConfig, TableRow } from '@/types/index'
+import { TableColumn, TableConfig, TableRow } from '@/types'
 
 const coa = ref({
 	rows: data as TableRow[],

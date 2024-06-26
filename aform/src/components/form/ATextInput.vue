@@ -15,8 +15,8 @@
 <script setup lang="ts">
 import { /* inject, */ ref } from 'vue'
 
-import { FormSchema } from 'types/index'
 import { useStringMask as vMask } from '@/directives/mask'
+import type { FormSchema } from '@/types'
 
 withDefaults(
 	defineProps<{

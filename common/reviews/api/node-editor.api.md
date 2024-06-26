@@ -5,10 +5,10 @@
 ```ts
 
 import { App } from 'vue';
-import { EditorStates } from './types/index';
-import { FlowElement } from './types/index';
-import { FlowElements } from './types/index';
-import { Layout } from './types/index';
+import { EditorStates } from './types';
+import { FlowElement } from './types';
+import { FlowElements } from './types';
+import { Layout } from './types';
 import { default as NodeEditor } from './components/NodeEditor.vue';
 import { default as StateEditor } from './components/StateEditor.vue';
 

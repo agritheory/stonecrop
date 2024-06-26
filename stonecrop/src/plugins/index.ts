@@ -1,9 +1,9 @@
 import { App } from 'vue'
 
-import type { InstallOptions } from '../types/index'
-import Registry from '../registry'
-import router from '../router'
-import { pinia } from '../stores'
+import Registry from '@/registry'
+import router from '@/router'
+import { pinia } from '@/stores'
+import type { InstallOptions } from '@/types'
 
 export default {
 	install: (app: App, options?: InstallOptions) => {

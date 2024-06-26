@@ -13,12 +13,11 @@
 </template>
 
 <script setup lang="ts">
-import { TableRow } from 'types/index'
+import { type KeypressHandlers, useKeyboardNav } from '@stonecrop/utilities'
 import { inject, ref } from 'vue'
 
-import { type KeypressHandlers, useKeyboardNav } from '@stonecrop/utilities'
-
 import TableDataStore from '.'
+import type { TableRow } from '@/types'
 
 const props = withDefaults(
 	defineProps<{

@@ -10,7 +10,7 @@ import { ref } from 'vue'
 import { createMachine } from 'xstate'
 
 import StateEditor from '@/components/StateEditor.vue'
-import { EditorStates, Layout } from '@/types'
+import type { EditorStates, Layout } from '@/types'
 
 const layout: Layout = {
 	idle: {

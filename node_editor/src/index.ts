@@ -2,7 +2,7 @@ import { App } from 'vue'
 
 import NodeEditor from '@/components/NodeEditor.vue'
 import StateEditor from '@/components/StateEditor.vue'
-export type { EditorStates, FlowElement, FlowElements, Layout } from '@/types/index'
+export type { EditorStates, FlowElement, FlowElements, Layout } from '@/types'
 
 /**
  * Install all Node Editor components

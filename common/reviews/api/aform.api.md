@@ -14,11 +14,11 @@ import { default as AForm } from './components/AForm.vue';
 import { default as ANumericInput } from './components/form/ANumericInput.vue';
 import { App } from 'vue';
 import { default as ATextInput } from './components/form/ATextInput.vue';
-import { BasicSchema } from './types/index';
-import { FieldsetSchema } from './types/index';
-import { FormSchema } from './types/index';
-import { SchemaTypes } from './types/index';
-import { TableSchema } from './types/index';
+import { BasicSchema } from './types';
+import { FieldsetSchema } from './types';
+import { FormSchema } from './types';
+import { SchemaTypes } from './types';
+import { TableSchema } from './types';
 
 export { ACheckbox }
 

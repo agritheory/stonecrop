@@ -11,12 +11,12 @@ import { default as ARow } from './components/ARow.vue';
 import { default as ATable } from './components/ATable.vue';
 import { default as ATableHeader } from './components/ATableHeader.vue';
 import { default as ATableModal } from './components/ATableModal.vue';
-import { TableColumn } from './types/index';
-import { TableConfig } from './types/index';
+import { TableColumn } from './types';
+import { TableConfig } from './types';
 import { default as TableDataStore } from './components';
-import { TableDisplay } from './types/index';
-import { TableModal } from './types/index';
-import { TableRow } from './types/index';
+import { TableDisplay } from './types';
+import { TableModal } from './types';
+import { TableRow } from './types';
 
 export { ACell }
 
