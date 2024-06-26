@@ -4,15 +4,14 @@ Holds styles for all tables, TH, TR, TD, etc.
 /* .atable__table{
 
 } */
-.header{
-	background:red;
-}
+
 .atable {
 	font-family: var(--atable-font-family);
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
 	font-size: var(--table-font-size);
 	border-collapse: collapse;
+	
 }
 .row-index {
 	color: var(--header-text-color);
@@ -27,6 +26,7 @@ Holds styles for all tables, TH, TR, TD, etc.
 }
 
 .expanded-row {
+	
 	border-bottom: 1px solid var(--row-border-color);
 	border-top: 1px solid var(--row-border-color);
 }
@@ -90,7 +90,7 @@ Holds styles for all tables, TH, TR, TD, etc.
 }
 
 .atable thead {
-	background-color: var(--gray-5);
+
 }
 
 .atable #header-index {

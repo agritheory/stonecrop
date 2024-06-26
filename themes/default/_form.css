@@ -14,8 +14,8 @@ Holds styles for all form fields
 	justify-content: space-between;
 	align-items: baseline;
 	padding: 1rem;
-	border: 1px solid var(--row-border-color);
-	border-left: 4px solid var(--input-border-color);
+	border: 1px solid var(--gray-5);
+	border-left: 4px solid var(--gray-5);
 	margin-bottom: 1rem;
 }
 
