@@ -4,9 +4,19 @@
 
 ```ts
 
+import { Meta } from './types';
+import { MetaParser } from './types';
+import { MetaResponse } from './types';
+
+export { Meta }
+
+export { MetaParser }
+
+export { MetaResponse }
+
 // @public
 export const methods: {
-    getMeta: (doctype: string, url?: string) => Promise<any>;
+    getMeta: (doctype: string, url?: string) => Promise<MetaResponse>;
 };
 
 // (No @packageDocumentation comment for this package)

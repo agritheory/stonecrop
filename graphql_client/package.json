@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/graphql-client",
-	"version": "0.2.21",
+	"version": "0.2.22",
 	"license": "MIT",
 	"type": "module",
 	"author": {
@@ -17,10 +17,14 @@
 	},
 	"exports": {
 		".": {
-			"import": "./dist/graphql-client.js",
+			"import": {
+				"types": "./dist/graphql_client/src/index.d.ts",
+				"default": "./dist/graphql-client.js"
+			},
 			"require": "./dist/graphql-client.umd.cjs"
 		}
 	},
+	"typings": "./dist/graphql_client/src/index.d.ts",
 	"files": [
 		"dist/*",
 		"src/*"
@@ -36,6 +40,7 @@
 	},
 	"dependencies": {
 		"@stonecrop/stonecrop": "workspace:*",
+		"decimal.js": "^10.4.3",
 		"graphql": "~16.6.0",
 		"graphql-request": "~6.0.0"
 	},

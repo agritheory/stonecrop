@@ -5,10 +5,11 @@ import { defineConfig } from 'vite'
 const projectRootDir = resolve(__dirname)
 
 export default defineConfig({
-	plugins: [dts({ bundledPackages: ['stonecrop/*'] })],
+	plugins: [dts({ rollupTypes: true, bundledPackages: ['stonecrop/*'] })],
 	resolve: {
 		alias: {
 			'@': resolve(projectRootDir, 'src'),
+			types: resolve(projectRootDir, 'src/types'),
 		},
 	},
 	build: {

@@ -2,6 +2,18 @@
   "name": "@stonecrop/graphql-client",
   "entries": [
     {
+      "version": "0.2.22",
+      "tag": "@stonecrop/graphql-client_v0.2.22",
+      "date": "Mon, 24 Jun 2024 13:56:45 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "add custom deserializer for graphQL responses"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.2.21",
       "tag": "@stonecrop/graphql-client_v0.2.21",
       "date": "Tue, 11 Jun 2024 08:20:06 GMT",
