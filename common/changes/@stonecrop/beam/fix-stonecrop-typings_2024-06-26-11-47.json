@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/beam",
+      "comment": "Add API extractor + update typings",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@stonecrop/beam"
+}

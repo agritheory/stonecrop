@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/graphql-client",
+      "comment": "Add API extractor + update typings",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@stonecrop/graphql-client"
+}

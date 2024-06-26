@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/node-editor",
+      "comment": "Add API extractor + update typings",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@stonecrop/node-editor"
+}
