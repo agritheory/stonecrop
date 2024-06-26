@@ -19,7 +19,7 @@ Description
 </th></tr></thead>
 <tbody><tr><td>
 
-[@stonecrop/atable](./atable.md)
+[@stonecrop/code-editor](./code-editor.md)
 
 
 </td><td>

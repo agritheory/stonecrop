@@ -2,7 +2,7 @@ import { Decimal } from 'decimal.js'
 import { GraphQLClient } from 'graphql-request'
 
 import { queries } from '@/queries'
-import type { Meta, MetaParser, MetaResponse } from '@/types'
+import type { Meta, MetaParser, MetaResponse } from './types'
 
 /**
  * Parse the response from the GraphQL server. Converts the stringified JSON to JSON and converts the stringified numbers to Decimal.
