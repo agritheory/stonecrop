@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/aform",
+      "comment": "updated styling",
+      "type": "none"
+    }
+  ],
+  "packageName": "@stonecrop/aform"
+}

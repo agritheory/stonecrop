@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/atable",
+      "comment": " Updated form labels to match table heading; onsolidated similar styles.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@stonecrop/atable"
+}

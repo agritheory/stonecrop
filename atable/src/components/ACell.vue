@@ -13,7 +13,8 @@
 		@blur="onChange"
 		@input="onChange"
 		@click="handleInput"
-		@mousedown="handleInput">
+		@mousedown="handleInput"
+		class="atable__cell">
 		<component
 			v-if="tableData.columns[colIndex].cellComponent"
 			:is="tableData.columns[colIndex].cellComponent"
@@ -170,37 +171,6 @@ const cellStyle: CSSProperties = {
 }
 </script>
 
-<style scoped>
+<style>
 @import url('@stonecrop/themes/default/default.css');
-td {
-	border-radius: 0px;
-	box-sizing: border-box;
-	margin: 0px;
-	outline: none;
-	box-shadow: none;
-	color: var(--cell-text-color);
-	text-overflow: ellipsis;
-	overflow: hidden;
-	padding-left: 0.5ch !important;
-	padding-right: 0.5ch;
-
-	padding-top: var(--atable-row-padding);
-	padding-bottom: var(--atable-row-padding);
-
-	border-spacing: 0px;
-	border-collapse: collapse;
-}
-
-td:focus,
-td:focus-within {
-	background-color: var(--focus-cell-background);
-	outline-width: 2px;
-	outline-style: solid;
-	outline-color: var(--focus-cell-outline);
-	box-shadow: none;
-	overflow: hidden;
-	min-height: 1.15em;
-	max-height: 1.15em;
-	overflow: hidden;
-}
 </style>

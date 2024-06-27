@@ -59,7 +59,7 @@
 								:style="getRowCellStyle(col)" />
 						</template>
 						<template #content>
-							<AForm class="aform-main" v-model="basic_form_schema" :data="data" />
+							<AForm class="aform-main aform" v-model="basic_form_schema" :data="data" />
 
 							<ATable
 								id="list"
@@ -92,7 +92,7 @@
 												:style="getRowCellStyle(col)" />
 										</template>
 										<template #content>
-											<AForm class="aform-main" v-model="basic_form_schema" :data="data" />
+											<AForm class="aform-main aform" v-model="basic_form_schema" :data="data" />
 										</template>
 									</AExpansionRow>
 								</template>
@@ -276,63 +276,7 @@ rowNav['keydown.enter'] = rowNav['keydown.down']
 </script>
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap');
 @import url('@stonecrop/themes/default/default.css');
-
-tr:focus {
-	background-color: lightblue;
-	outline: auto;
-}
-
-form {
-	display: flex;
-	flex-direction: row;
-	flex-wrap: wrap;
-	justify-content: flex-start;
-	align-items: baseline;
-}
-
-form div {
-	min-width: 40ch;
-	border: 1px solid transparent;
-	padding: 0rem;
-	margin: 0rem;
-	margin-right: 1ch;
-}
-
-input {
-	width: calc(100% - 1ch);
-	outline: 1px solid transparent;
-	border: 1px solid var(--input-border-color);
-	padding: 1ch 0.5ch 0.5ch 1ch;
-	margin: calc(1.15rem / 2) 0 0 0;
-	min-height: 1.15rem;
-	border-radius: 0.25rem;
-}
-
-label {
-	color: var(--input-label-color);
-	display: block;
-	min-height: 1.15rem;
-	padding: 0rem;
-	margin: 0rem;
-	border: 1px solid transparent;
-	margin-bottom: 0.25rem;
-	z-index: 2;
-	font-size: 80%;
-	position: absolute;
-	background: white;
-	margin: calc(-1.5rem - calc(2.15rem / 2)) 0 0 1ch;
-	padding: 0 0.25ch 0 0.25ch;
-}
-
-input:focus {
-	border: 1px solid var(--input-active-border-color);
-}
-
-input:focus + label {
-	color: var(--input-active-label-color);
-}
 </style>
 
 <!-- enter documentation here -->

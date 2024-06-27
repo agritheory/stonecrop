@@ -1,0 +1,85 @@
+/* Styles for all types of fields: Text and Number Inputs, Radios, Checkboxes, etc. */
+.form-element{
+  min-width:40ch;
+  border:1px solid transparent;
+  padding:0;
+  margin:0;
+  margin-right:.5rem;
+  margin-bottom:.5rem;
+}
+.input-field{
+  outline: 1px solid transparent;
+	border: 1px solid var(--input-border-color);
+	padding:.25rem;
+	margin: 0 0 0 0;
+	border-radius: 0 0 0.25rem .25rem;
+	box-sizing:border-box;
+	width:100%;
+}
+.field-label{
+  color: var(--input-label-color);
+	display: block;
+	min-height: 1.15rem;
+	padding: .25rem;
+	margin: 0rem;
+  z-index: 2;
+	font-size: 1rem;
+	font-weight:bold;
+	background: white;
+	width:100%;
+	box-sizing:border-box;
+	background:var(--gray-5);
+	border:1px solid var(--input-border-color);
+	border-bottom:none;
+  
+}
+p.error{
+	display: block;
+	min-height: 1.15rem;
+	padding: 0rem;
+	padding-left:.5rem;
+	margin: .5rem 0 .25rem 0rem;
+	border: 1px solid transparent;
+  width: 100%;
+	color: var(--brand-danger);
+	font-size: .8rem;
+}
+
+.input-field:focus {
+	border: 1px solid var(--input-active-border-color);
+}
+
+.input-field:focus + .field-label {
+	color: var(--input-active-label-color);
+}
+
+/**  CHECKBOX **/
+.checkbox {
+	visibility: hidden;
+	display:none;
+}
+
+.checkbox + .custom-checkbox:before {
+	content: '⬡';
+	font-size: 1.2rem;
+	cursor: pointer;
+	margin-right:.25rem;
+}
+
+.checkbox:checked + .custom-checkbox:before {
+	content: '⬣';
+}
+
+.custom-checkbox {
+	display: inline-block;
+	line-height:0;
+}
+
+.checkbox-container {
+	width:100%;
+	display:inline-block;
+}
+
+.checkbox-container:hover + .field-label {
+	color: var(--input-active-label-color);
+}

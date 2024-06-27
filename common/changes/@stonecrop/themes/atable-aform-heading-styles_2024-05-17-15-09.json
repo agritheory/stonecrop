@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/themes",
+      "comment": "added atable styles",
+      "type": "none"
+    }
+  ],
+  "packageName": "@stonecrop/themes"
+}

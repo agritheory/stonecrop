@@ -63,29 +63,6 @@ if (props.addNavigation) {
 }
 </script>
 
-<style scoped>
+<style>
 @import url('@stonecrop/themes/default/default.css');
-.row-index {
-	color: var(--header-text-color);
-	font-weight: bold;
-	text-align: center;
-	user-select: none;
-	width: 2ch;
-}
-
-.expandable-row {
-	border-top: 1px solid var(--row-border-color);
-	height: var(--atable-row-height);
-}
-
-.expanded-row {
-	border-bottom: 1px solid var(--row-border-color);
-	border-top: 1px solid var(--row-border-color);
-}
-
-.expanded-row-content {
-	border-bottom: 1px solid var(--row-border-color);
-	border-top: 1px solid var(--row-border-color);
-	padding: 1.5rem;
-}
 </style>
