@@ -9,7 +9,6 @@ export const counterMachine = createMachine(
 		context: {
 			count: 0,
 		},
-		tsTypes: {} as import('./xstate.typegen').Typegen0,
 		states: {
 			active: {
 				on: {
