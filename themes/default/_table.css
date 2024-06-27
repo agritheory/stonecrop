@@ -22,7 +22,7 @@ Holds styles for all tables, TH, TR, TD, etc.
 .expandable-row {
 	border-top: 1px solid var(--row-border-color);
 	height: var(--atable-row-height);
-	border-left: 4px solid var(--gray-5);
+	border-left: 4px solid var(--row-border-color);
 }
 
 .expanded-row {
