@@ -32,6 +32,9 @@ importers:
       '@microsoft/api-documenter':
         specifier: ^7.25.3
         version: 7.25.3
+      '@rushstack/heft':
+        specifier: ^0.66.18
+        version: 0.66.18
       '@types/uuid':
         specifier: ^9.0.0
         version: 9.0.8
@@ -114,6 +117,9 @@ importers:
       '@microsoft/api-documenter':
         specifier: ^7.25.3
         version: 7.25.3
+      '@rushstack/heft':
+        specifier: ^0.66.18
+        version: 0.66.18
       '@types/uuid':
         specifier: ^9.0.0
         version: 9.0.8
@@ -193,6 +199,9 @@ importers:
       '@microsoft/api-documenter':
         specifier: ^7.25.3
         version: 7.25.3
+      '@rushstack/heft':
+        specifier: ^0.66.18
+        version: 0.66.18
       '@typescript-eslint/eslint-plugin':
         specifier: ^7.6.0
         version: 7.7.1(@typescript-eslint/parser@7.7.1)(eslint@8.56.0)(typescript@5.4.5)
@@ -260,6 +269,9 @@ importers:
       '@microsoft/api-documenter':
         specifier: ^7.25.3
         version: 7.25.3
+      '@rushstack/heft':
+        specifier: ^0.66.18
+        version: 0.66.18
       '@stonecrop/atable':
         specifier: workspace:*
         version: link:../atable
@@ -336,6 +348,9 @@ importers:
       '@miragejs/graphql':
         specifier: ^0.1.13
         version: 0.1.13
+      '@rushstack/heft':
+        specifier: ^0.66.18
+        version: 0.66.18
       '@typescript-eslint/eslint-plugin':
         specifier: ^7.6.0
         version: 7.7.1(@typescript-eslint/parser@7.7.1)(eslint@8.56.0)(typescript@5.4.5)
@@ -464,6 +479,9 @@ importers:
       '@miragejs/graphql':
         specifier: ^0.1.13
         version: 0.1.13
+      '@rushstack/heft':
+        specifier: ^0.66.18
+        version: 0.66.18
       '@typescript-eslint/eslint-plugin':
         specifier: ^7.6.0
         version: 7.7.1(@typescript-eslint/parser@7.7.1)(eslint@8.56.0)(typescript@5.4.5)
@@ -528,6 +546,9 @@ importers:
       '@microsoft/api-documenter':
         specifier: ^7.25.3
         version: 7.25.3
+      '@rushstack/heft':
+        specifier: ^0.66.18
+        version: 0.66.18
       '@typescript-eslint/eslint-plugin':
         specifier: ^7.6.0
         version: 7.7.1(@typescript-eslint/parser@7.7.1)(eslint@8.56.0)(typescript@5.4.5)
@@ -610,6 +631,9 @@ importers:
       '@microsoft/api-documenter':
         specifier: ^7.25.3
         version: 7.25.3
+      '@rushstack/heft':
+        specifier: ^0.66.18
+        version: 0.66.18
       '@stonecrop/aform':
         specifier: workspace:*
         version: link:../aform
@@ -668,6 +692,9 @@ importers:
       '@microsoft/api-documenter':
         specifier: ^7.25.3
         version: 7.25.3
+      '@rushstack/heft':
+        specifier: ^0.66.18
+        version: 0.66.18
       '@typescript-eslint/eslint-plugin':
         specifier: ^7.6.0
         version: 7.7.1(@typescript-eslint/parser@7.7.1)(eslint@8.56.0)(typescript@5.4.5)
@@ -1713,7 +1740,6 @@ packages:
       jsonpath-plus: 4.0.0
     transitivePeerDependencies:
       - '@types/node'
-    dev: false
 
   /@rushstack/heft-typescript-plugin@0.5.16(@rushstack/heft@0.66.18):
     resolution: {integrity: sha512-FV1E3pRhTtcnOyXf+0WoAi5QMkijC53n/eJ5siGF5XPByrppxaME2WT/hlNP+3W5ugPCe4Lmz2La3+V6pUSysQ==}
@@ -1750,7 +1776,6 @@ packages:
       watchpack: 2.4.0
     transitivePeerDependencies:
       - '@types/node'
-    dev: false
 
   /@rushstack/node-core-library@4.0.2:
     resolution: {integrity: sha512-hyES82QVpkfQMeBMteQUnrhASL/KHPhd7iJ8euduwNJG4mu2GSOKybf0rOEjOm1Wz7CwJEUm9y0yD7jg2C1bfg==}
@@ -1795,7 +1820,6 @@ packages:
     dependencies:
       '@rushstack/node-core-library': 5.4.1
       '@rushstack/terminal': 0.13.0
-    dev: false
 
   /@rushstack/rig-package@0.5.2:
     resolution: {integrity: sha512-mUDecIJeH3yYGZs2a48k+pbhM6JYwWlgjs2Ca5f2n1G2/kgdgP9D/07oglEGf6mRyXEnazhEENeYTSNDRCwdqA==}
@@ -1911,7 +1935,6 @@ packages:
 
   /@types/tapable@1.0.6:
     resolution: {integrity: sha512-W+bw9ds02rAQaMvaLYxAbJ6cvguW/iJXNT6lTssS1ps6QdrMKttqEAMEG/b5CR8TZl3/L7/lH0ZV5nNR1LXikA==}
-    dev: false
 
   /@types/uuid@9.0.8:
     resolution: {integrity: sha512-jg+97EGIcY9AGHJJRaaPVgetKDsrTgbRjQ5Msgjh/DQKEFl0DtyRr/VCOyD1T2R1MNeWPK/u7JoGhlDZnKBAfA==}
@@ -3737,7 +3760,6 @@ packages:
   /git-repo-info@2.1.1:
     resolution: {integrity: sha512-8aCohiDo4jwjOwma4FmYFd3i97urZulL8XL24nIPxuE+GZnfsAyy/g2Shqx6OjUiFKUXZM+Yy+KHnOmmA3FVcg==}
     engines: {node: '>= 4.0'}
-    dev: false
 
   /glob-parent@5.1.2:
     resolution: {integrity: sha512-AOIgSQCepiJYwP3ARnGx+5VnTu2HBYdzbGP45eLw1vr3zB3vZLeyed1sC9hnbcOc9/SrMyM5RPQrkGz4aS9Zow==}
@@ -3754,7 +3776,6 @@ packages:
 
   /glob-to-regexp@0.4.1:
     resolution: {integrity: sha512-lkX1HJXwyMcprw/5YUZc2s7DrpAiHB21/V+E1rHUrVNokkvB6bqMzT0VfV6/86ZNabt1k14YOIaT7nDvOX3Iiw==}
-    dev: false
 
   /glob@10.3.10:
     resolution: {integrity: sha512-fa46+tv1Ak0UPK1TOy/pZrIybNNt4HCv7SDzwyfiOZkvZLEbjsZkJBPtDHVshZjbecAoAGSC20MjLDG/qr679g==}
@@ -4058,7 +4079,6 @@ packages:
   /ignore@5.1.9:
     resolution: {integrity: sha512-2zeMQpbKz5dhZ9IwL0gbxSW5w0NK/MSAMtNuhgIHEPmaU3vPdKPL0UdvUCXs5SS4JAwsBxysK5sFMW8ocFiVjQ==}
     engines: {node: '>= 4'}
-    dev: false
 
   /ignore@5.3.1:
     resolution: {integrity: sha512-5Fytz/IraMjqpwfd34ke28PTVMjZjJG2MPn5t7OE4eUCUNf8BAa7b5WUS9/Qvr6mwOQS7Mk6vdsMno5he+T8Xw==}
@@ -4439,7 +4459,6 @@ packages:
   /jsonpath-plus@4.0.0:
     resolution: {integrity: sha512-e0Jtg4KAzDJKKwzbLaUtinCn0RZseWBVRTRGihSpvFlM3wTR7ExSp+PTdeTsDrLNJUe7L7JYJe8mblHX5SCT6A==}
     engines: {node: '>=10.0'}
-    dev: false
 
   /jsprim@2.0.2:
     resolution: {integrity: sha512-gqXddjPqQ6G40VdnI6T6yObEC+pDNvyP95wdQhkWkg7crHH3km5qP1FsOXEkzEQwnz6gz5qGTn1c2Y52wP3OyQ==}
@@ -5625,7 +5644,6 @@ packages:
   /tapable@1.1.3:
     resolution: {integrity: sha512-4WK/bYZmj8xLr+HUCODHGF1ZFzsYffasLUgEiMBY4fgtltdO6B4WJtlSbPaDTLpYTcGVwM2qLnFTICEcNxs3kA==}
     engines: {node: '>=6'}
-    dev: false
 
   /test-exclude@6.0.0:
     resolution: {integrity: sha512-cAGWPIyOHU6zlmg88jwm7VRyXnMN7iV68OGAbYDk/Mh/xC/pzVPlQtY6ngoIH/5/tciuhGfvESU8GrHrcxD56w==}
@@ -5715,7 +5733,6 @@ packages:
 
   /true-case-path@2.2.1:
     resolution: {integrity: sha512-0z3j8R7MCjy10kc/g+qg7Ln3alJTodw9aDuVWZa3uiWqfuBMKeAeP2ocWcxoyM3D73yz3Jt/Pu4qPr4wHSdB/Q==}
-    dev: false
 
   /ts-api-utils@1.3.0(typescript@5.4.5):
     resolution: {integrity: sha512-UQMIo7pb8WRomKR1/+MFVLTroIvDVtMX3K6OUir8ynLyzB8Jeriont2bTAtmNPa1ekAgN7YPDyf6V+ygrdU+eQ==}
@@ -6175,7 +6192,6 @@ packages:
     dependencies:
       glob-to-regexp: 0.4.1
       graceful-fs: 4.2.11
-    dev: false
 
   /webidl-conversions@3.0.1:
     resolution: {integrity: sha512-2JAn3z8AR6rjK8Sm8orRC0h/bcl/DqL7tRPdGZ4I1CjdF+EaMLmYxBHyXuKL849eucPFhvBoxMsflfOb8kxaeQ==}
