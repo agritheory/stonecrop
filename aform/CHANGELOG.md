@@ -1,6 +1,14 @@
 # Change Log - @stonecrop/aform
 
-This log was last generated on Mon, 24 Jun 2024 13:56:45 GMT and should not be manually modified.
+This log was last generated on Thu, 27 Jun 2024 18:06:02 GMT and should not be manually modified.
+
+## 0.2.23
+Thu, 27 Jun 2024 18:06:02 GMT
+
+### Updates
+
+- updated styling
+-  Updated form labels to match table heading; consolidated similar styles.
 
 ## 0.2.22
 Mon, 24 Jun 2024 13:56:45 GMT
