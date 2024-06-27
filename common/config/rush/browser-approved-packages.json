@@ -7,12 +7,32 @@
       "allowedCategories": [ "prototype", "utilities" ]
     },
     {
+      "name": "@microsoft/api-documenter",
+      "allowedCategories": [ "prototype", "utilities" ]
+    },
+    {
+      "name": "@microsoft/api-extractor",
+      "allowedCategories": [ "prototype", "utilities" ]
+    },
+    {
       "name": "@miragejs/graphql",
       "allowedCategories": [ "prototype", "utilities" ]
     },
     {
       "name": "@monaco-editor/loader",
       "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "@rushstack/heft",
+      "allowedCategories": [ "prototype", "utilities" ]
+    },
+    {
+      "name": "@rushstack/heft-api-extractor-plugin",
+      "allowedCategories": [ "prototype", "utilities" ]
+    },
+    {
+      "name": "@rushstack/heft-typescript-plugin",
+      "allowedCategories": [ "prototype", "utilities" ]
     },
     {
       "name": "@stonecrop/aform",
@@ -181,6 +201,10 @@
     {
       "name": "sass-loader",
       "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "stonecrop-rig",
+      "allowedCategories": [ "prototype", "utilities" ]
     },
     {
       "name": "ts-node",

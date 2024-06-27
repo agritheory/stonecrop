@@ -4,18 +4,18 @@
 
 ```ts
 
-import { default as ActionFooter } from './components/ActionFooter.vue';
+import ActionFooter from '@/components/ActionFooter.vue';
 import { App } from 'vue';
-import { default as BeamModal } from './components/BeamModal.vue';
-import { default as BeamModalOutlet } from './components/BeamModalOutlet.vue';
-import { default as Confirm } from './components/Confirm.vue';
-import { default as ItemCheck } from './components/ItemCheck.vue';
-import { default as ItemCount } from './components/ItemCount.vue';
-import { default as ListAnchor } from './components/ListAnchor.vue';
-import { default as ListItem } from './components/ListItem.vue';
-import { default as ListView } from './components/ListView.vue';
-import { default as Navbar } from './components/Navbar.vue';
-import { default as ScanInput } from './components/ScanInput.vue';
+import BeamModal from '@/components/BeamModal.vue';
+import BeamModalOutlet from '@/components/BeamModalOutlet.vue';
+import Confirm from '@/components/Confirm.vue';
+import ItemCheck from '@/components/ItemCheck.vue';
+import ItemCount from '@/components/ItemCount.vue';
+import ListAnchor from '@/components/ListAnchor.vue';
+import ListItem from '@/components/ListItem.vue';
+import ListView from '@/components/ListView.vue';
+import Navbar from '@/components/Navbar.vue';
+import ScanInput from '@/components/ScanInput.vue';
 
 export { ActionFooter }
 

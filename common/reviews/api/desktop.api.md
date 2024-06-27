@@ -4,12 +4,12 @@
 
 ```ts
 
-import { default as ActionSet } from './components/ActionSet.vue';
-import { default as CommandPalette } from './components/CommandPalette.vue';
-import { default as Doctype } from './components/Doctype.vue';
-import { default as Records } from './components/Records.vue';
-import { default as SheetNav } from './components/SheetNav.vue';
-import { default as StonecropDesktop } from './plugins';
+import ActionSet from '@/components/ActionSet.vue';
+import CommandPalette from '@/components/CommandPalette.vue';
+import Doctype from '@/components/Doctype.vue';
+import Records from '@/components/Records.vue';
+import SheetNav from '@/components/SheetNav.vue';
+import StonecropDesktop from '@/plugins';
 
 export { ActionSet }
 

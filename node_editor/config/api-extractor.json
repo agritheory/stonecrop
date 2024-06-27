@@ -3,36 +3,18 @@
 	"extends": "../../common/config/api-extractor-base.json",
 	"mainEntryPointFilePath": "<projectFolder>/dist/node_editor/src/index.d.ts",
 
-	"apiReport": {
-		"enabled": true,
-		"reportFolder": "<projectFolder>/../common/reviews/api"
-	},
-
 	"docModel": {
 		"enabled": true,
 		"projectFolderUrl": "https://github.com/agritheory/stonecrop/tree/development/node_editor"
 	},
 
-	"dtsRollup": {
-		"enabled": false
-	},
-
 	"messages": {
-		"compilerMessageReporting": {
-			"default": {
-				"logLevel": "warning"
-			}
-		},
-
 		"extractorMessageReporting": {
-			"default": {
-				"logLevel": "warning"
-			}
-		},
-
-		"tsdocMessageReporting": {
-			"default": {
-				"logLevel": "warning"
+			// Disable this validation at your own risk:  Processing an incorrect file type
+			// may lead to other errors.  Function bodies may incorrectly get emitted in the
+			// .d.ts rollup.
+			"ae-wrong-input-file-type": {
+				"logLevel": "none"
 			}
 		}
 	}

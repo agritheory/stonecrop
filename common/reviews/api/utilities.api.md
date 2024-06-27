@@ -5,10 +5,10 @@
 ```ts
 
 import { App } from 'vue';
-import { defaultKeypressHandlers } from './composables/keyboard';
-import { KeyboardNavigationOptions } from './types';
-import { KeypressHandlers } from './types';
-import { useKeyboardNav } from './composables/keyboard';
+import { defaultKeypressHandlers } from '@/composables/keyboard';
+import { KeyboardNavigationOptions } from '@/types';
+import { KeypressHandlers } from '@/types';
+import { useKeyboardNav } from '@/composables/keyboard';
 
 export { defaultKeypressHandlers }
 

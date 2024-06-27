@@ -30,9 +30,10 @@
 		"src/*"
 	],
 	"scripts": {
-		"prepublish": "tsc --build && vite build",
-		"build": "tsc --build && vite build",
+		"prepublish": "heft build --clean && vite build && rushx docs",
+		"build": "heft build --clean && vite build && rushx docs",
 		"dev": "vite",
+		"docs": "api-documenter markdown -i temp -o ../docs/utilities",
 		"lint": "eslint . --ext .ts,.vue",
 		"preview": "vite preview"
 	},
@@ -40,6 +41,7 @@
 		"vue": "^3.4.23"
 	},
 	"devDependencies": {
+		"@microsoft/api-documenter": "^7.25.3",
 		"@typescript-eslint/eslint-plugin": "^7.6.0",
 		"@typescript-eslint/parser": "^7.6.0",
 		"@vitejs/plugin-vue": "^5.0.4",
@@ -48,6 +50,7 @@
 		"eslint": "^8.40.0",
 		"eslint-config-prettier": "^8.8.0",
 		"eslint-plugin-vue": "^9.11.1",
+		"stonecrop-rig": "workspace:*",
 		"typescript": "^5.4.5",
 		"vite": "^5.2.9",
 		"vue-router": "^4",

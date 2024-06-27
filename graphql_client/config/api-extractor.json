@@ -3,37 +3,8 @@
 	"extends": "../../common/config/api-extractor-base.json",
 	"mainEntryPointFilePath": "<projectFolder>/dist/graphql_client/src/index.d.ts",
 
-	"apiReport": {
-		"enabled": true,
-		"reportFolder": "<projectFolder>/../common/reviews/api"
-	},
-
 	"docModel": {
 		"enabled": true,
 		"projectFolderUrl": "https://github.com/agritheory/stonecrop/tree/development/graphql_client"
-	},
-
-	"dtsRollup": {
-		"enabled": false
-	},
-
-	"messages": {
-		"compilerMessageReporting": {
-			"default": {
-				"logLevel": "warning"
-			}
-		},
-
-		"extractorMessageReporting": {
-			"default": {
-				"logLevel": "warning"
-			}
-		},
-
-		"tsdocMessageReporting": {
-			"default": {
-				"logLevel": "warning"
-			}
-		}
 	}
 }

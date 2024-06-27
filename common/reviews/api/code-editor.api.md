@@ -4,7 +4,7 @@
 
 ```ts
 
-import { default as ACodeEditor } from './components/ACodeEditor.vue';
+import ACodeEditor from '@/components/ACodeEditor.vue';
 import { App } from 'vue';
 
 export { ACodeEditor }

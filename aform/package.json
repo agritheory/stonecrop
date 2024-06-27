@@ -31,9 +31,10 @@
 		"src/*"
 	],
 	"scripts": {
-		"prepublish": "tsc --build && vite build",
-		"build": "tsc --build && vite build",
+		"prepublish": "heft build --clean && vite build && rushx docs",
+		"build": "heft build --clean && vite build && rushx docs",
 		"dev": "vite",
+		"docs": "api-documenter markdown -i temp -o ../docs/aform",
 		"lint": "eslint . --ext .ts,.vue",
 		"preview": "vite preview",
 		"story:build": "histoire build",
@@ -44,6 +45,7 @@
 		"test:ui": "vitest --ui"
 	},
 	"dependencies": {
+		"@stonecrop/atable": "workspace:*",
 		"@stonecrop/themes": "workspace:*",
 		"@stonecrop/utilities": "workspace:*",
 		"uuid": "^9.0.0",
@@ -51,7 +53,7 @@
 	},
 	"devDependencies": {
 		"@histoire/plugin-vue": "^0.17.17",
-		"@stonecrop/atable": "workspace:*",
+		"@microsoft/api-documenter": "^7.25.3",
 		"@types/uuid": "^9.0.0",
 		"@typescript-eslint/eslint-plugin": "^7.6.0",
 		"@typescript-eslint/parser": "^7.6.0",
@@ -65,14 +67,12 @@
 		"eslint": "^8.40.0",
 		"histoire": "^0.17.17",
 		"jsdom": "^24.0.0",
+		"stonecrop-rig": "workspace:*",
 		"typescript": "^5.4.5",
 		"vite-plugin-dts": "^3.9.1",
 		"vite": "^5.2.9",
 		"vitest": "^1.6.0",
 		"vue-router": "^4"
-	},
-	"peerDependencies": {
-		"@stonecrop/atable": "workspace:*"
 	},
 	"publishConfig": {
 		"access": "public"

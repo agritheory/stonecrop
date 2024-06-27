@@ -5,12 +5,12 @@
 ```ts
 
 import { App } from 'vue';
-import { EditorStates } from './types';
-import { FlowElement } from './types';
-import { FlowElements } from './types';
-import { Layout } from './types';
-import { default as NodeEditor } from './components/NodeEditor.vue';
-import { default as StateEditor } from './components/StateEditor.vue';
+import { EditorStates } from '@/types';
+import { FlowElement } from '@/types';
+import { FlowElements } from '@/types';
+import { Layout } from '@/types';
+import NodeEditor from '@/components/NodeEditor.vue';
+import StateEditor from '@/components/StateEditor.vue';
 
 export { EditorStates }
 

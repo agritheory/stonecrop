@@ -42,8 +42,8 @@
 import { type VueFlowStore, Position, VueFlow, useVueFlow, Node } from '@vue-flow/core'
 import { type HTMLAttributes, ref, computed, defineEmits, onBeforeUnmount, onMounted } from 'vue'
 
-import EditableEdge from './EditableEdge.vue'
-import EditableNode from './EditableNode.vue'
+import EditableEdge from '@/components/EditableEdge.vue'
+import EditableNode from '@/components/EditableNode.vue'
 import type { FlowElements } from '@/types'
 
 const props = defineProps<{

@@ -4,21 +4,21 @@
 
 ```ts
 
-import { default as ACheckbox } from './components/form/ACheckbox.vue';
-import { default as AComboBox } from './components/form/AComboBox.vue';
-import { default as ADate } from './components/form/ADate.vue';
-import { default as ADatePicker } from './components/form/ADatePicker.vue';
-import { default as ADropdown } from './components/form/ADropdown.vue';
-import { default as AFieldset } from './components/form/AFieldset.vue';
-import { default as AForm } from './components/AForm.vue';
-import { default as ANumericInput } from './components/form/ANumericInput.vue';
+import ACheckbox from '@/components/form/ACheckbox.vue';
+import AComboBox from '@/components/form/AComboBox.vue';
+import ADate from '@/components/form/ADate.vue';
+import ADatePicker from '@/components/form/ADatePicker.vue';
+import ADropdown from '@/components/form/ADropdown.vue';
+import AFieldset from '@/components/form/AFieldset.vue';
+import AForm from '@/components/AForm.vue';
+import ANumericInput from '@/components/form/ANumericInput.vue';
 import { App } from 'vue';
-import { default as ATextInput } from './components/form/ATextInput.vue';
-import { BasicSchema } from './types';
-import { FieldsetSchema } from './types';
-import { FormSchema } from './types';
-import { SchemaTypes } from './types';
-import { TableSchema } from './types';
+import ATextInput from '@/components/form/ATextInput.vue';
+import { BasicSchema } from '@/types';
+import { FieldsetSchema } from '@/types';
+import { FormSchema } from '@/types';
+import { SchemaTypes } from '@/types';
+import { TableSchema } from '@/types';
 
 export { ACheckbox }
 

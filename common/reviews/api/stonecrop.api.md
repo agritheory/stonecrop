@@ -4,14 +4,14 @@
 
 ```ts
 
-import { default as DoctypeMeta } from './doctype';
-import { ImmutableDoctype } from './types';
-import { InstallOptions } from './types';
-import { MutableDoctype } from './types';
-import { default as Registry } from './registry';
-import { Schema } from './types';
-import { default as Stonecrop } from './plugins';
-import { useStonecrop } from './composable';
+import DoctypeMeta from '@/doctype';
+import { ImmutableDoctype } from '@/types';
+import { InstallOptions } from '@/types';
+import { MutableDoctype } from '@/types';
+import Registry from '@/registry';
+import { Schema } from '@/types';
+import Stonecrop from '@/plugins';
+import { useStonecrop } from '@/composable';
 
 export { DoctypeMeta }
 
@@ -20,12 +20,6 @@ export { ImmutableDoctype }
 export { InstallOptions }
 
 export { MutableDoctype }
-
-// @public (undocumented)
-export namespace NotImplementedError {
-    var // (undocumented)
-    prototype: any;
-}
 
 export { Registry }
 

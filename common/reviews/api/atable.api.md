@@ -4,19 +4,19 @@
 
 ```ts
 
-import { default as ACell } from './components/ACell.vue';
-import { default as AExpansionRow } from './components/AExpansionRow.vue';
+import ACell from '@/components/ACell.vue';
+import AExpansionRow from '@/components/AExpansionRow.vue';
 import { App } from 'vue';
-import { default as ARow } from './components/ARow.vue';
-import { default as ATable } from './components/ATable.vue';
-import { default as ATableHeader } from './components/ATableHeader.vue';
-import { default as ATableModal } from './components/ATableModal.vue';
-import { TableColumn } from './types';
-import { TableConfig } from './types';
-import { default as TableDataStore } from './components';
-import { TableDisplay } from './types';
-import { TableModal } from './types';
-import { TableRow } from './types';
+import ARow from '@/components/ARow.vue';
+import ATable from '@/components/ATable.vue';
+import ATableHeader from '@/components/ATableHeader.vue';
+import ATableModal from '@/components/ATableModal.vue';
+import { TableColumn } from '@/types';
+import { TableConfig } from '@/types';
+import TableDataStore from './components';
+import { TableDisplay } from '@/types';
+import { TableModal } from '@/types';
+import { TableRow } from '@/types';
 
 export { ACell }
 

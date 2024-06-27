@@ -16,8 +16,8 @@
 </template>
 
 <script setup lang="ts">
-import ItemCount from './ItemCount.vue'
-import ItemCheck from './ItemCheck.vue'
+import ItemCount from '@/components/ItemCount.vue'
+import ItemCheck from '@/components/ItemCheck.vue'
 
 defineProps<{
 	item: {

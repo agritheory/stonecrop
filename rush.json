@@ -91,6 +91,12 @@
 			"projectFolder": "utilities",
 			"reviewCategory": "utilities",
 			"versionPolicyName": "stonecrop"
+		},
+		{
+			"packageName": "stonecrop-rig",
+			"projectFolder": "rigs/stonecrop-rig",
+			"reviewCategory": "utilities",
+			"shouldPublish": false
 		}
 	]
 }

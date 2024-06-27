@@ -4,9 +4,9 @@
 
 ```ts
 
-import { Meta } from './types';
-import { MetaParser } from './types';
-import { MetaResponse } from './types';
+import type { Meta } from './types';
+import type { MetaParser } from './types';
+import type { MetaResponse } from './types';
 
 export { Meta }
 

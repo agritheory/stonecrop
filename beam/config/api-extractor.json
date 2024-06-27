@@ -1,39 +1,9 @@
 {
 	"$schema": "https://developer.microsoft.com/json-schemas/api-extractor/v7/api-extractor.schema.json",
 	"extends": "../../common/config/api-extractor-base.json",
-	"mainEntryPointFilePath": "<projectFolder>/dist/<unscopedPackageName>/src/index.d.ts",
-
-	"apiReport": {
-		"enabled": true,
-		"reportFolder": "<projectFolder>/../common/reviews/api"
-	},
 
 	"docModel": {
 		"enabled": true,
 		"projectFolderUrl": "https://github.com/agritheory/stonecrop/tree/development/beam"
-	},
-
-	"dtsRollup": {
-		"enabled": false
-	},
-
-	"messages": {
-		"compilerMessageReporting": {
-			"default": {
-				"logLevel": "warning"
-			}
-		},
-
-		"extractorMessageReporting": {
-			"default": {
-				"logLevel": "warning"
-			}
-		},
-
-		"tsdocMessageReporting": {
-			"default": {
-				"logLevel": "warning"
-			}
-		}
 	}
 }

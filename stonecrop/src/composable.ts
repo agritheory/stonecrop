@@ -1,8 +1,8 @@
 import { inject, onBeforeMount, Ref, ref } from 'vue'
 
-import Registry from './registry'
-import { Stonecrop } from './stonecrop'
-import { useDataStore } from './stores/data'
+import Registry from '@/registry'
+import { Stonecrop } from '@/stonecrop'
+import { useDataStore } from '@/stores/data'
 
 type StonecropReturn = {
 	stonecrop: Ref<Stonecrop>
@@ -45,6 +45,6 @@ export function useStonecrop(registry?: Registry): StonecropReturn {
 		isReady.value = true
 	})
 
-	// @ts-ignore
+	// @ts-expect-error TODO: fix the type mismatch
 	return { stonecrop, isReady }
 }

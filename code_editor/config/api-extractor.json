@@ -3,37 +3,8 @@
 	"extends": "../../common/config/api-extractor-base.json",
 	"mainEntryPointFilePath": "<projectFolder>/dist/code_editor/src/index.d.ts",
 
-	"apiReport": {
-		"enabled": true,
-		"reportFolder": "<projectFolder>/../common/reviews/api"
-	},
-
 	"docModel": {
 		"enabled": true,
 		"projectFolderUrl": "https://github.com/agritheory/stonecrop/tree/development/code_editor"
-	},
-
-	"dtsRollup": {
-		"enabled": false
-	},
-
-	"messages": {
-		"compilerMessageReporting": {
-			"default": {
-				"logLevel": "warning"
-			}
-		},
-
-		"extractorMessageReporting": {
-			"default": {
-				"logLevel": "warning"
-			}
-		},
-
-		"tsdocMessageReporting": {
-			"default": {
-				"logLevel": "warning"
-			}
-		}
 	}
 }
