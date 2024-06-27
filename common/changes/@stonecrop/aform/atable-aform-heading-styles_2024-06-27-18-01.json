@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/aform",
+      "comment": " Updated form labels to match table heading; consolidated similar styles.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@stonecrop/aform"
+}
