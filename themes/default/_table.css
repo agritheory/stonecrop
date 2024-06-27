@@ -11,7 +11,6 @@ Holds styles for all tables, TH, TR, TD, etc.
 	-moz-osx-font-smoothing: grayscale;
 	font-size: var(--table-font-size);
 	border-collapse: collapse;
-	
 }
 .row-index {
 	color: var(--header-text-color);
@@ -23,10 +22,10 @@ Holds styles for all tables, TH, TR, TD, etc.
 .expandable-row {
 	border-top: 1px solid var(--row-border-color);
 	height: var(--atable-row-height);
+	border-left: 4px solid var(--gray-5);
 }
 
 .expanded-row {
-	
 	border-bottom: 1px solid var(--row-border-color);
 	border-top: 1px solid var(--row-border-color);
 }
@@ -90,7 +89,6 @@ Holds styles for all tables, TH, TR, TD, etc.
 }
 
 .atable thead {
-
 }
 
 .atable #header-index {
@@ -108,16 +106,15 @@ Holds styles for all tables, TH, TR, TD, etc.
 	padding-bottom: var(--atable-row-padding);
 	color: var(--gray-60);
 	height: var(--atable-row-height);
-	font-weight:300;
+	font-weight: 300;
 	letter-spacing: 0.05rem;
 }
 
 .atable th:focus {
 	outline: none;
 }
-.amodal{
+.amodal {
 	z-index: 100;
 	position: absolute;
 	background-color: var(--row-color-zebra-dark);
 }
-	
