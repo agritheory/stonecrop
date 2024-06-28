@@ -41,7 +41,7 @@
 	/**
 	 * If true and "isolatedModules" is configured in tsconfig.json, use a worker thread to run transpilation concurrently with type checking and declaration emit.
 	 */
-	// "useTranspilerWorker": true
+	"useTranspilerWorker": true,
 
 	/**
 	 * Configures additional file types that should be copied into the TypeScript compiler's emit folders, for example

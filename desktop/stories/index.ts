@@ -7,15 +7,15 @@ import { ADate, ATextInput } from '@stonecrop/aform'
 import { DoctypeMeta, Stonecrop } from '@stonecrop/stonecrop'
 import type { ImmutableDoctype, MutableDoctype } from '@stonecrop/stonecrop'
 
-import ActionSet from '../src/components/ActionSet.vue'
-import CommandPalette from '../src/components/CommandPalette.vue'
-import Doctype from '../src/components/Doctype.vue'
-import Records from '../src/components/Records.vue'
-import SheetNav from '../src/components/SheetNav.vue'
-import router from '../src/router'
+import ActionSet from '@/components/ActionSet.vue'
+import CommandPalette from '@/components/CommandPalette.vue'
+import Doctype from '@/components/Doctype.vue'
+import Records from '@/components/Records.vue'
+import SheetNav from '@/components/SheetNav.vue'
+import router from '@/router'
 import Home from './components/Home.vue'
 import App from './App.vue'
-import makeServer from './server'
+import { makeServer } from './server'
 
 const app = createApp(App)
 makeServer()

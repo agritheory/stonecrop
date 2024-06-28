@@ -22,7 +22,7 @@ const doctypeActions: MutableDoctype['actions'] = {
 	],
 }
 
-export default function makeServer() {
+export function makeServer() {
 	const server = createServer({
 		models: {
 			todoMeta: Model,

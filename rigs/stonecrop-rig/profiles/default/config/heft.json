@@ -11,14 +11,14 @@
 			"cleanFiles": [{ "sourcePath": "dist" }],
 
 			"tasksByName": {
-				"typescript": {
-					"taskPlugin": {
-						"pluginPackage": "@rushstack/heft-typescript-plugin"
-					}
-				},
+				// "typescript": {
+				// 	"taskPlugin": {
+				// 		"pluginPackage": "@rushstack/heft-typescript-plugin"
+				// 	}
+				// },
 
 				"api-extractor": {
-					"taskDependencies": ["typescript"],
+					// "taskDependencies": ["typescript"],
 					"taskPlugin": {
 						"pluginPackage": "@rushstack/heft-api-extractor-plugin"
 					}
