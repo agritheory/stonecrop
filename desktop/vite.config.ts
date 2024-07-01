@@ -1,18 +1,18 @@
 import vue from '@vitejs/plugin-vue'
 import { resolve } from 'path'
-import dts from 'vite-plugin-dts'
 import { defineConfig } from 'vite'
 
 const projectRootDir = resolve(__dirname)
 
 export default defineConfig({
-	plugins: [vue(), dts({ bundledPackages: ['stonecrop/*'] })],
+	plugins: [vue()],
 	resolve: {
 		alias: {
 			'@': resolve(projectRootDir, 'src'),
 		},
 	},
 	build: {
+		emptyOutDir: false,
 		sourcemap: true,
 		lib: {
 			entry: resolve(projectRootDir, 'src/index.ts'),

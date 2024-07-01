@@ -1,11 +1,11 @@
-import { App } from 'vue'
+import { App, type Plugin } from 'vue'
 
 import Registry from '@/registry'
 import router from '@/router'
 import { pinia } from '@/stores'
 import type { InstallOptions } from '@/types'
 
-export default {
+const plugin: Plugin = {
 	install: (app: App, options?: InstallOptions) => {
 		const appRouter = options?.router || router
 		const registry = new Registry(appRouter, options?.getMeta)
@@ -21,3 +21,5 @@ export default {
 		}
 	},
 }
+
+export default plugin

@@ -1,7 +1,6 @@
 {
 	"$schema": "https://developer.microsoft.com/json-schemas/api-extractor/v7/api-extractor.schema.json",
 	"extends": "../../common/config/api-extractor-base.json",
-	"mainEntryPointFilePath": "<projectFolder>/dist/node_editor/src/index.d.ts",
 
 	"docModel": {
 		"enabled": true,

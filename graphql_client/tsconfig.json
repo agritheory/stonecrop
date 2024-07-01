@@ -1,7 +1,7 @@
 {
 	"extends": "../tsconfig.json",
 	"compilerOptions": {
-		"outDir": "dist",
+		"tsBuildInfoFile": "./dist/graphql_client.tsbuildinfo",
 		"paths": {
 			"@/*": ["./src/*"],
 			"types/*": ["./src/types/*"]

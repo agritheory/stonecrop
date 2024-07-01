@@ -1,9 +1,9 @@
 {
 	"compilerOptions": {
-		"rootDir": ".",
 		"target": "esnext",
 		"module": "preserve",
 		"lib": ["dom", "dom.iterable", "esnext"],
+		"outDir": "${configDir}/dist",
 		"composite": true,
 		"declaration": true,
 		"declarationMap": true,

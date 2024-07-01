@@ -1,7 +1,7 @@
 {
 	"extends": "../tsconfig.json",
 	"compilerOptions": {
-		"outDir": "dist",
+		"tsBuildInfoFile": "./dist/node_editor.tsbuildinfo",
 		"paths": {
 			"@/*": ["./src/*"],
 			"types/*": ["./src/types/*"]

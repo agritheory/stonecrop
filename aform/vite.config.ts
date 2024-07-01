@@ -4,13 +4,12 @@
 import { HstVue } from '@histoire/plugin-vue'
 import vue from '@vitejs/plugin-vue'
 import { resolve } from 'path'
-import dts from 'vite-plugin-dts'
 import { coverageConfigDefaults, defineConfig } from 'vitest/config'
 
 const projectRootDir = resolve(__dirname)
 
 export default defineConfig({
-	plugins: [vue(), dts({ rollupTypes: true, bundledPackages: ['stonecrop/*'] })],
+	plugins: [vue()],
 	resolve: {
 		alias: {
 			'@': resolve(projectRootDir, 'src'),
@@ -18,6 +17,7 @@ export default defineConfig({
 		},
 	},
 	build: {
+		emptyOutDir: false,
 		sourcemap: true,
 		lib: {
 			entry: resolve(projectRootDir, 'src/index.ts'),

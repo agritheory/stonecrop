@@ -47,7 +47,7 @@ app.use(Stonecrop, {
 	getMeta: async (doctype: string) => {
 		// TODO: normally this would be configured as a memoized/cached call to a server
 		const response = await fetch(`/meta/${doctype}`)
-		const data: MutableDoctype = await response.json()
+		const data = (await response.json()) as MutableDoctype
 		const config: ImmutableDoctype = {
 			schema: List(data.schema),
 			workflow: createMachine(data.workflow),

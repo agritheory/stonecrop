@@ -60,9 +60,8 @@
 		"eslint-config-prettier": "^8.8.0",
 		"eslint-plugin-vue": "^9.11.1",
 		"stonecrop-rig": "workspace:*",
-		"typescript": "^5.4.5",
-		"vite": "^5.3.2",
-		"vite-plugin-dts": "^3.9.1"
+		"typescript": "^5.5.2",
+		"vite": "^5.3.2"
 	},
 	"publishConfig": {
 		"access": "public"
