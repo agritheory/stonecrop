@@ -47,18 +47,18 @@
 	"dependencies": {
 		"@stonecrop/themes": "workspace:*",
 		"@stonecrop/utilities": "workspace:*",
-		"uuid": "^9.0.0",
-		"vue": "^3.4.23"
+		"uuid": "^10.0.0",
+		"vue": "^3.4.31"
 	},
 	"devDependencies": {
 		"@histoire/plugin-vue": "^0.17.17",
 		"@microsoft/api-documenter": "^7.25.3",
 		"@rushstack/heft": "^0.66.18",
 		"@stonecrop/aform": "workspace:*",
-		"@types/uuid": "^9.0.0",
-		"@typescript-eslint/eslint-plugin": "^7.6.0",
-		"@typescript-eslint/parser": "^7.6.0",
-		"@vitejs/plugin-vue": "^5.0.4",
+		"@types/uuid": "^10.0.0",
+		"@typescript-eslint/eslint-plugin": "^7.14.1",
+		"@typescript-eslint/parser": "^7.14.1",
+		"@vitejs/plugin-vue": "^5.0.5",
 		"@vitest/coverage-istanbul": "^1.6.0",
 		"@vitest/ui": "^1.6.0",
 		"@vue/test-utils": "^2.4.6",
@@ -73,9 +73,9 @@
 		"stonecrop-rig": "workspace:*",
 		"typescript": "^5.4.5",
 		"vite-plugin-dts": "^3.9.1",
-		"vite": "^5.2.9",
+		"vite": "^5.3.2",
 		"vitest": "^1.6.0",
-		"vue-router": "^4"
+		"vue-router": "^4.4.0"
 	},
 	"peerDependencies": {
 		"@stonecrop/aform": "workspace:*"

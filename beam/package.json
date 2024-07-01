@@ -41,15 +41,15 @@
 	},
 	"dependencies": {
 		"portal-vue": "^3.0.0",
-		"vue": "^3.4.23"
+		"vue": "^3.4.31"
 	},
 	"devDependencies": {
 		"@histoire/plugin-vue": "^0.17.17",
 		"@microsoft/api-documenter": "^7.25.3",
 		"@rushstack/heft": "^0.66.18",
-		"@typescript-eslint/eslint-plugin": "^7.6.0",
-		"@typescript-eslint/parser": "^7.6.0",
-		"@vitejs/plugin-vue": "^5.0.4",
+		"@typescript-eslint/eslint-plugin": "^7.14.1",
+		"@typescript-eslint/parser": "^7.14.1",
+		"@vitejs/plugin-vue": "^5.0.5",
 		"cypress": "^13.11.0",
 		"eslint": "^8.40.0",
 		"eslint-config-prettier": "^8.8.0",
@@ -58,8 +58,8 @@
 		"sass": "^1.75.0",
 		"stonecrop-rig": "workspace:*",
 		"typescript": "^5.4.5",
-		"vite": "^5.2.9",
-		"vue-router": "^4",
+		"vite": "^5.3.2",
+		"vue-router": "^4.4.0",
 		"vite-plugin-dts": "^3.9.1"
 	},
 	"publishConfig": {
