@@ -26,8 +26,8 @@
 		"src/*"
 	],
 	"scripts": {
-		"prepublish": "tsc --build && heft build && vite build && rushx docs",
-		"build": "tsc --build && heft build && vite build && rushx docs",
+		"prepublish": "heft build && vite build && rushx docs",
+		"build": "heft build && vite build && rushx docs",
 		"dev": "vite",
 		"docs": "api-documenter markdown -i temp -o ../docs/code_editor",
 		"lint": "eslint . --ext .ts,.vue",
