@@ -3,7 +3,7 @@
 		<template #body="{ data }: { data: TableDataStore }">
 			<ARow
 				v-for="(row, rowIndex) in data.rows"
-				:key="row.id || v4()"
+				:key="row.id"
 				:row="row"
 				:rowIndex="rowIndex"
 				:tableid="data.id"
@@ -13,7 +13,7 @@
 				<template #default>
 					<ACell
 						v-for="(col, colIndex) in data.columns"
-						:key="colIndex"
+						:key="col.name"
 						:tableid="data.id"
 						:col="col"
 						spellcheck="false"
@@ -30,7 +30,6 @@
 </template>
 
 <script lang="ts" setup>
-import { v4 } from 'uuid'
 import { CSSProperties, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 

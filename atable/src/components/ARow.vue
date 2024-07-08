@@ -10,7 +10,7 @@
 				:tabIndex="-1"
 				class="tree-index"
 				@click="toggleRowExpand(rowIndex)">
-				{{ getRowExpandSymbol() }}
+				{{ rowExpandSymbol }}
 			</td>
 		</slot>
 
@@ -44,36 +44,24 @@ const tableData = inject<TableDataStore>(props.tableid)
 const rowEl = ref<HTMLTableRowElement>(null)
 const numberedRowWidth = tableData.numberedRowWidth.value
 
-const getRowExpandSymbol = () => {
-	if (tableData.config.view !== 'tree') {
-		return ''
-	}
-
-	if (tableData.display[props.rowIndex].isRoot) {
-		if (tableData.display[props.rowIndex].childrenOpen) {
-			return '-'
-		} else {
-			return '+'
-		}
-	}
-
-	if (tableData.display[props.rowIndex].isParent) {
-		if (tableData.display[props.rowIndex].childrenOpen) {
-			return '-'
-		} else {
-			return '+'
-		}
-	} else {
-		return ''
-	}
-}
-
 const isRowVisible = computed(() => {
 	return (
 		tableData.config.view !== 'tree' ||
 		tableData.display[props.rowIndex].isRoot ||
 		tableData.display[props.rowIndex].open
 	)
+})
+
+const rowExpandSymbol = computed(() => {
+	if (tableData.config.view !== 'tree') {
+		return ''
+	}
+
+	if (tableData.display[props.rowIndex].isRoot || tableData.display[props.rowIndex].isParent) {
+		return tableData.display[props.rowIndex].childrenOpen ? '-' : '+'
+	}
+
+	return ''
 })
 
 const toggleRowExpand = (rowIndex: number) => {

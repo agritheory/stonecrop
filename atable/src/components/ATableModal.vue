@@ -5,22 +5,17 @@
 </template>
 
 <script setup lang="ts">
-import { inject } from 'vue'
+// import { inject } from 'vue'
 
-import TableDataStore from '.'
+// import TableDataStore from '.'
 
-const props = defineProps<{
+/* const props = */ defineProps<{
 	colIndex?: number
 	rowIndex?: number
 	tableid?: string
 }>()
 
-const tableData = inject<TableDataStore>(props.tableid)
-
-const handleInput = (event: Event) => {
-	event.stopPropagation()
-}
-
+// const tableData = inject<TableDataStore>(props.tableid)
 // const cellBackgroundColor = computed(() => {
 // 	if (tableData.modal.parent) {
 // 		let computedstyle = window.getComputedStyle(tableData.modal.parent)
@@ -29,6 +24,10 @@ const handleInput = (event: Event) => {
 // 		return 'inherit'
 // 	}
 // })
+
+const handleInput = (event: Event) => {
+	event.stopPropagation()
+}
 </script>
 
 <style>

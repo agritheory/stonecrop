@@ -38,7 +38,7 @@
 			</div>
 		</div>
 		<div style="margin-right: 30px"></div>
-		<div class="action-element" v-for="(el, index) in _elements" :key="index">
+		<div class="action-element" v-for="(el, index) in _elements" :key="el.label">
 			<button v-if="el.elementType == 'button'" :onclick="el.action" class="button-default">{{ el.label }}</button>
 			<div v-if="el.elementType == 'dropdown'">
 				<button class="button-default" @click="toggleDropdown(index)">{{ el.label }}</button>

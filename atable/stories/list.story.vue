@@ -6,7 +6,7 @@
 					<ARow
 						ref="rows"
 						v-for="(row, rowIndex) in data.rows"
-						:key="row.id || v4()"
+						:key="row.id"
 						:row="row"
 						:rowIndex="rowIndex"
 						:tableid="data.id"
@@ -15,7 +15,7 @@
 						<template #default>
 							<ACell
 								v-for="(col, colIndex) in data.columns"
-								:key="colIndex"
+								:key="col.name"
 								:tableid="data.id"
 								:col="col"
 								spellcheck="false"
@@ -38,7 +38,7 @@
 						ref="rows"
 						:data-id="row.id"
 						v-for="(row, rowIndex) in data.rows"
-						:key="row.id || v4()"
+						:key="row.id"
 						:row="row"
 						:rowIndex="rowIndex"
 						:tableid="data.id"
@@ -47,7 +47,7 @@
 						<template #row>
 							<ACell
 								v-for="(col, colIndex) in data.columns"
-								:key="colIndex"
+								:key="col.name"
 								:tableid="data.id"
 								:col="col"
 								spellcheck="false"
@@ -71,7 +71,7 @@
 										ref="rows"
 										:data-id="row.id"
 										v-for="(row, rowIndex) in data.rows"
-										:key="row.id || v4()"
+										:key="row.id"
 										:row="row"
 										:rowIndex="rowIndex"
 										:tableid="data.id"
@@ -80,7 +80,7 @@
 										<template #row>
 											<ACell
 												v-for="(col, colIndex) in data.columns"
-												:key="colIndex"
+												:key="col.name"
 												:tableid="data.id"
 												:col="col"
 												spellcheck="false"
@@ -106,7 +106,6 @@
 </template>
 
 <script lang="ts" setup>
-import { v4 } from 'uuid'
 import { CSSProperties, ref } from 'vue'
 
 import { TableColumn } from 'types'

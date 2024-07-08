@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/atable",
+      "comment": "Avoid recursion issues",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/atable"
+}
