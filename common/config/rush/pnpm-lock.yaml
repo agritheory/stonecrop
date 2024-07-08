@@ -233,9 +233,6 @@ importers:
       '@stonecrop/atable':
         specifier: workspace:*
         version: link:../atable
-      '@types/uuid':
-        specifier: ^9.0.0
-        version: 9.0.8
       '@typescript-eslint/eslint-plugin':
         specifier: ^7.6.0
         version: 7.7.1(@typescript-eslint/parser@7.7.1)(eslint@8.56.0)(typescript@5.4.5)
@@ -357,9 +354,6 @@ importers:
       miragejs:
         specifier: ^0.1.47
         version: 0.1.48
-      uuid:
-        specifier: ^9.0.0
-        version: 9.0.1
       vite:
         specifier: ^5.2.9
         version: 5.2.9(sass@1.75.0)
@@ -370,9 +364,6 @@ importers:
         specifier: ~4.37.2
         version: 4.37.2
     devDependencies:
-      '@types/uuid':
-        specifier: ^9.0.0
-        version: 9.0.8
       '@typescript-eslint/eslint-plugin':
         specifier: ^7.6.0
         version: 7.7.1(@typescript-eslint/parser@7.7.1)(eslint@8.56.0)(typescript@5.4.5)
