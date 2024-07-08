@@ -11,13 +11,13 @@
 			<slot name="body" :data="tableData">
 				<ARow
 					v-for="(row, rowIndex) in tableData.rows"
-					:key="row.id || v4()"
+					:key="row.id"
 					:row="row"
 					:rowIndex="rowIndex"
 					:tableid="tableData.id">
 					<ACell
 						v-for="(col, colIndex) in tableData.columns"
-						:key="`${colIndex}:${rowIndex}`"
+						:key="col.name"
 						:tableid="tableData.id"
 						:col="col"
 						spellcheck="false"
@@ -60,7 +60,6 @@
 </template>
 
 <script setup lang="ts">
-import { v4 } from 'uuid'
 import { nextTick, provide, watch } from 'vue'
 import { vOnClickOutside } from '@vueuse/components'
 

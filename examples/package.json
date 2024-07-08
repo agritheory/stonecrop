@@ -24,13 +24,11 @@
 		"@miragejs/graphql": "^0.1.13",
 		"@vitejs/plugin-vue": "^5.0.4",
 		"miragejs": "^0.1.47",
-		"uuid": "^9.0.0",
 		"vite": "^5.2.9",
 		"vue": "^3.4.23",
 		"xstate": "~4.37.2"
 	},
 	"devDependencies": {
-		"@types/uuid": "^9.0.0",
 		"@typescript-eslint/eslint-plugin": "^7.6.0",
 		"@typescript-eslint/parser": "^7.6.0",
 		"cypress": "^12.11.0",

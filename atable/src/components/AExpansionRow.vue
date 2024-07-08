@@ -1,7 +1,7 @@
 <template>
 	<tr v-bind="$attrs" ref="rowEl" :tabindex="tabIndex" class="expandable-row">
 		<td :tabIndex="-1" @click="tableData.toggleRowExpand(rowIndex)" class="row-index">
-			{{ getRowExpandSymbol() }}
+			{{ rowExpandSymbol }}
 		</td>
 		<slot name="row" />
 	</tr>
@@ -13,12 +13,11 @@
 </template>
 
 <script setup lang="ts">
-import { TableRow } from 'types'
-import { inject, ref } from 'vue'
-
 import { type KeypressHandlers, useKeyboardNav } from '@stonecrop/utilities'
+import { computed, inject, ref } from 'vue'
 
 import TableDataStore from '.'
+import type { TableRow } from 'types'
 
 const props = withDefaults(
 	defineProps<{
@@ -37,9 +36,9 @@ const tableData = inject<TableDataStore>(props.tableid)
 const rowEl = ref<HTMLTableRowElement>(null)
 const rowExpanded = ref<HTMLDivElement>(null)
 
-const getRowExpandSymbol = () => {
+const rowExpandSymbol = computed(() => {
 	return tableData.display[props.rowIndex].expanded ? '▼' : '►'
-}
+})
 
 if (props.addNavigation) {
 	const handlers: KeypressHandlers = {
