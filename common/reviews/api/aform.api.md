@@ -17,6 +17,7 @@ import ATextInput from '@/components/form/ATextInput.vue';
 import { BasicSchema } from '@/types';
 import { FieldsetSchema } from '@/types';
 import { FormSchema } from '@/types';
+import Login from '@/components/utilities/Login.vue';
 import { SchemaTypes } from '@/types';
 import { TableSchema } from '@/types';
 
@@ -46,6 +47,8 @@ export { FormSchema }
 
 // @public
 export function install(app: App): void;
+
+export { Login }
 
 export { SchemaTypes }
 

@@ -3,5 +3,5 @@
 	"compilerOptions": {
 		"outDir": "dist"
 	},
-	"include": ["docbuilder/**/*", "docbuilder/**/*.ts", "docbuilder/**/*.vue", "docbuilder/**/*.json"]
+	"include": ["env.d.ts", "docbuilder/**/*", "docbuilder/**/*.ts", "docbuilder/**/*.vue", "docbuilder/**/*.json"]
 }

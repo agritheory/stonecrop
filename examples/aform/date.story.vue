@@ -21,5 +21,5 @@ const defaultDate = ref(new Date(twoDaysAgo))
 </script>
 
 <style>
-@import url('@stonecrop/themes/default/default.css');
+@import url('@stonecrop/aform/styles');
 </style>

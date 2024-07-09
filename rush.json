@@ -25,16 +25,12 @@
 			"packageName": "@stonecrop/aform",
 			"projectFolder": "aform",
 			"reviewCategory": "prototype",
-			// to avoid circular dependency problems
-			"decoupledLocalDependencies": ["@stonecrop/atable"],
 			"versionPolicyName": "stonecrop"
 		},
 		{
 			"packageName": "@stonecrop/atable",
 			"projectFolder": "atable",
 			"reviewCategory": "prototype",
-			// to avoid circular dependency problems
-			"decoupledLocalDependencies": ["@stonecrop/aform"],
 			"versionPolicyName": "stonecrop"
 		},
 		{

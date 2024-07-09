@@ -9,6 +9,7 @@ import AFieldset from '@/components/form/AFieldset.vue'
 import AForm from '@/components/AForm.vue'
 import ANumericInput from '@/components/form/ANumericInput.vue'
 import ATextInput from '@/components/form/ATextInput.vue'
+import Login from '@/components/utilities/Login.vue'
 export type { BasicSchema, FormSchema, TableSchema, FieldsetSchema, SchemaTypes } from '@/types'
 // import { ACurrency } from '@/components/form/ACurrency.vue'
 // import { AQuantity } from '@/components/form/AQuantity.vue'
@@ -32,4 +33,16 @@ function install(app: App /* options */) {
 	// app.component('AQuantity', AQuantity)
 }
 
-export { ACheckbox, AComboBox, ADate, ADropdown, ADatePicker, AFieldset, AForm, ANumericInput, ATextInput, install }
+export {
+	ACheckbox,
+	AComboBox,
+	ADate,
+	ADropdown,
+	ADatePicker,
+	AFieldset,
+	AForm,
+	ANumericInput,
+	ATextInput,
+	Login,
+	install,
+}

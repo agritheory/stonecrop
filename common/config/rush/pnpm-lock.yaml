@@ -23,9 +23,6 @@ importers:
         specifier: ^3.4.31
         version: 3.4.31(typescript@5.5.2)
     devDependencies:
-      '@histoire/plugin-vue':
-        specifier: ^0.17.17
-        version: 0.17.17(histoire@0.17.17)(vite@5.3.2)(vue@3.4.31)
       '@microsoft/api-documenter':
         specifier: ^7.25.3
         version: 7.25.3
@@ -68,9 +65,6 @@ importers:
       eslint-plugin-vue:
         specifier: ^9.11.1
         version: 9.21.1(eslint@8.56.0)
-      histoire:
-        specifier: ^0.17.17
-        version: 0.17.17(sass@1.75.0)(vite@5.3.2)
       jsdom:
         specifier: ^24.0.0
         version: 24.0.0
@@ -105,18 +99,12 @@ importers:
         specifier: ^3.4.31
         version: 3.4.31(typescript@5.5.2)
     devDependencies:
-      '@histoire/plugin-vue':
-        specifier: ^0.17.17
-        version: 0.17.17(histoire@0.17.17)(vite@5.3.2)(vue@3.4.31)
       '@microsoft/api-documenter':
         specifier: ^7.25.3
         version: 7.25.3
       '@rushstack/heft':
         specifier: ^0.66.18
         version: 0.66.18
-      '@stonecrop/aform':
-        specifier: workspace:*
-        version: link:../aform
       '@types/uuid':
         specifier: ^10.0.0
         version: 10.0.0
@@ -156,9 +144,6 @@ importers:
       eslint-plugin-vue:
         specifier: ^9.11.1
         version: 9.21.1(eslint@8.56.0)
-      histoire:
-        specifier: ^0.17.17
-        version: 0.17.17(sass@1.75.0)(vite@5.3.2)
       jsdom:
         specifier: ^24.0.0
         version: 24.0.0
@@ -393,9 +378,6 @@ importers:
       '@stonecrop/themes':
         specifier: workspace:*
         version: link:../themes
-      '@vitejs/plugin-vue':
-        specifier: ^5.0.5
-        version: 5.0.5(vite@5.3.2)(vue@3.4.31)
       miragejs:
         specifier: ^0.1.47
         version: 0.1.48
@@ -412,6 +394,9 @@ importers:
         specifier: ^4.38.3
         version: 4.38.3
     devDependencies:
+      '@histoire/plugin-vue':
+        specifier: ^0.17.17
+        version: 0.17.17(histoire@0.17.17)(vite@5.3.2)(vue@3.4.31)
       '@types/uuid':
         specifier: ^10.0.0
         version: 10.0.0
@@ -421,6 +406,9 @@ importers:
       '@typescript-eslint/parser':
         specifier: ^7.14.1
         version: 7.14.1(eslint@8.56.0)(typescript@5.5.2)
+      '@vitejs/plugin-vue':
+        specifier: ^5.0.5
+        version: 5.0.5(vite@5.3.2)(vue@3.4.31)
       cypress:
         specifier: ^13.11.0
         version: 13.11.0
@@ -430,6 +418,9 @@ importers:
       eslint-plugin-vue:
         specifier: ^9.11.1
         version: 9.21.1(eslint@8.56.0)
+      histoire:
+        specifier: ^0.17.17
+        version: 0.17.17(sass@1.75.0)(vite@5.3.2)
       typescript:
         specifier: ^5.5.2
         version: 5.5.2
@@ -1958,6 +1949,7 @@ packages:
     dependencies:
       vite: 5.3.2(sass@1.75.0)
       vue: 3.4.31(typescript@5.5.2)
+    dev: true
 
   /@vitest/coverage-istanbul@1.6.0(vitest@1.6.0):
     resolution: {integrity: sha512-h/BwpXehkkS0qsNCS00QxiupAqVkNi0WT19BR0dQvlge5oHghoSVLx63fABYFoKxVb7Ue7+k6V2KokmQ1zdMpg==}
@@ -5579,6 +5571,7 @@ packages:
 
   /undici-types@5.26.5:
     resolution: {integrity: sha512-JlCMO+ehdEIKqlFxk6IfVoAUVmgz7cU7zD/h9XZ0qzeosSHmUJVOzSQvvYSYWXkFXC+IfLKSIffhv0sVZup6pA==}
+    requiresBuild: true
     dev: true
 
   /undo-stacker@0.1.3:

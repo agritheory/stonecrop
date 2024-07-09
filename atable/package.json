@@ -37,9 +37,6 @@
 		"docs": "api-documenter markdown -i temp -o ../docs/atable",
 		"lint": "eslint . --ext .ts,.vue",
 		"preview": "vite preview",
-		"story:build": "histoire build",
-		"story:dev": "histoire dev",
-		"story:preview": "histoire preview",
 		"test": "vitest",
 		"test:coverage": "vitest run --coverage",
 		"test:ui": "vitest --ui"
@@ -51,10 +48,8 @@
 		"vue": "^3.4.31"
 	},
 	"devDependencies": {
-		"@histoire/plugin-vue": "^0.17.17",
 		"@microsoft/api-documenter": "^7.25.3",
 		"@rushstack/heft": "^0.66.18",
-		"@stonecrop/aform": "workspace:*",
 		"@types/uuid": "^10.0.0",
 		"@typescript-eslint/eslint-plugin": "^7.14.1",
 		"@typescript-eslint/parser": "^7.14.1",
@@ -68,16 +63,12 @@
 		"eslint-config-prettier": "^8.8.0",
 		"eslint-plugin-vue": "^9.11.1",
 		"eslint": "^8.40.0",
-		"histoire": "^0.17.17",
 		"jsdom": "^24.0.0",
 		"stonecrop-rig": "workspace:*",
 		"typescript": "^5.5.2",
 		"vite": "^5.3.2",
 		"vitest": "^1.6.0",
 		"vue-router": "^4.4.0"
-	},
-	"peerDependencies": {
-		"@stonecrop/aform": "workspace:*"
 	},
 	"publishConfig": {
 		"access": "public"
