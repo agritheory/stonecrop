@@ -6,13 +6,5 @@
 			"@/*": ["./src/*"]
 		}
 	},
-	"include": [
-		"env.d.ts",
-		"src/**/*",
-		"src/**/*.ts",
-		"src/**/*.vue",
-		"stories/**/*.json",
-		"stories/**/*.setup.ts",
-		"stories/**/*.story.vue"
-	]
+	"include": ["src/**/*", "src/**/*.ts", "src/**/*.vue"]
 }

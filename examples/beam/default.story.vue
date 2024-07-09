@@ -131,5 +131,5 @@ const confirmModal = () => {
 </script>
 
 <style>
-@import url('./../themes/beam.css');
+@import url('@stonecrop/beam/styles');
 </style>

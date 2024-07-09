@@ -1,16 +1,17 @@
 import { defineSetupVue3 } from '@histoire/plugin-vue'
-
-import ActionFooter from '@/components/ActionFooter.vue'
-import BeamModal from '@/components/BeamModal.vue'
-import BeamModalOutlet from '@/components/BeamModalOutlet.vue'
-import Confirm from '@/components/Confirm.vue'
-import ItemCheck from '@/components/ItemCheck.vue'
-import ItemCount from '@/components/ItemCount.vue'
-import ListAnchor from '@/components/ListAnchor.vue'
-import ListItem from '@/components/ListItem.vue'
-import ListView from '@/components/ListView.vue'
-import Navbar from '@/components/Navbar.vue'
-import ScanInput from '@/components/ScanInput.vue'
+import {
+	ActionFooter,
+	BeamModal,
+	BeamModalOutlet,
+	Confirm,
+	ItemCheck,
+	ItemCount,
+	ListAnchor,
+	ListItem,
+	ListView,
+	Navbar,
+	ScanInput,
+} from '@stonecrop/beam'
 import PortalVue from 'portal-vue'
 
 export const setupVue3 = defineSetupVue3(({ app }) => {

@@ -165,16 +165,10 @@ importers:
 
   ../../beam:
     dependencies:
-      portal-vue:
-        specifier: ^3.0.0
-        version: 3.0.0(vue@3.4.31)
       vue:
         specifier: ^3.4.31
         version: 3.4.31(typescript@5.5.2)
     devDependencies:
-      '@histoire/plugin-vue':
-        specifier: ^0.17.17
-        version: 0.17.17(histoire@0.17.17)(vite@5.3.2)(vue@3.4.31)
       '@microsoft/api-documenter':
         specifier: ^7.25.3
         version: 7.25.3
@@ -202,9 +196,6 @@ importers:
       eslint-plugin-vue:
         specifier: ^9.11.1
         version: 9.21.1(eslint@8.56.0)
-      histoire:
-        specifier: ^0.17.17
-        version: 0.17.17(sass@1.75.0)(vite@5.3.2)
       sass:
         specifier: ^1.75.0
         version: 1.75.0
@@ -274,7 +265,7 @@ importers:
         version: 9.21.1(eslint@8.56.0)
       histoire:
         specifier: ^0.17.17
-        version: 0.17.17(sass@1.75.0)(vite@5.3.2)
+        version: 0.17.17(vite@5.3.2)
       stonecrop-rig:
         specifier: workspace:*
         version: link:../rigs/stonecrop-rig
@@ -366,6 +357,9 @@ importers:
       '@stonecrop/atable':
         specifier: workspace:*
         version: link:../atable
+      '@stonecrop/beam':
+        specifier: workspace:*
+        version: link:../beam
       '@stonecrop/desktop':
         specifier: workspace:*
         version: link:../desktop
@@ -414,7 +408,10 @@ importers:
         version: 9.21.1(eslint@8.56.0)
       histoire:
         specifier: ^0.17.17
-        version: 0.17.17(sass@1.75.0)(vite@5.3.2)
+        version: 0.17.17(vite@5.3.2)
+      portal-vue:
+        specifier: ^3.0.0
+        version: 3.0.0(vue@3.4.31)
       typescript:
         specifier: ^5.5.2
         version: 5.5.2
@@ -530,7 +527,7 @@ importers:
         version: 9.21.1(eslint@8.56.0)
       histoire:
         specifier: ^0.17.17
-        version: 0.17.17(sass@1.75.0)(vite@5.3.2)
+        version: 0.17.17(vite@5.3.2)
       stonecrop-rig:
         specifier: workspace:*
         version: link:../rigs/stonecrop-rig
@@ -1272,7 +1269,7 @@ packages:
       '@histoire/vendors': 0.17.17
       change-case: 4.1.2
       globby: 13.2.2
-      histoire: 0.17.17(sass@1.75.0)(vite@5.3.2)
+      histoire: 0.17.17(vite@5.3.2)
       launch-editor: 2.6.1
       pathe: 1.1.2
       vue: 3.4.31(typescript@5.5.2)
@@ -3726,7 +3723,7 @@ packages:
       tslib: 2.6.2
     dev: true
 
-  /histoire@0.17.17(sass@1.75.0)(vite@5.3.2):
+  /histoire@0.17.17(vite@5.3.2):
     resolution: {integrity: sha512-DAwY4sgIoP7NGE5ldaws2d3RWz4OOQcwhS8elRMiA2euqzLvDU2IXm+ZjeDDFVtGkvmQNQyfZBDKLCLHfRkSUg==}
     hasBin: true
     peerDependencies:
@@ -3763,7 +3760,7 @@ packages:
       shiki-es: 0.2.0
       sirv: 2.0.4
       vite: 5.3.2(sass@1.75.0)
-      vite-node: 0.34.7(sass@1.75.0)
+      vite-node: 0.34.7
     transitivePeerDependencies:
       - '@types/node'
       - bufferutil
@@ -4910,7 +4907,7 @@ packages:
         optional: true
     dependencies:
       vue: 3.4.31(typescript@5.5.2)
-    dev: false
+    dev: true
 
   /postcss-selector-parser@6.0.15:
     resolution: {integrity: sha512-rEYkQOMUCEMhsKbK66tbEU9QVIxbhN18YiniAwA7XQYTVBqrBy+P2p5JcdqsHgKM2zWylp8d7J6eszocfds5Sw==}
@@ -5663,7 +5660,7 @@ packages:
       extsprintf: 1.3.0
     dev: true
 
-  /vite-node@0.34.7(sass@1.75.0):
+  /vite-node@0.34.7:
     resolution: {integrity: sha512-0Yzb96QzHmqIKIs/x2q/sqG750V/EF6yDkS2p1WjJc1W2bgRSuQjf5vB9HY8h2nVb5j4pO5paS5Npcv3s69YUg==}
     engines: {node: '>=v14.18.0'}
     hasBin: true

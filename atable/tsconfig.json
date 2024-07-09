@@ -8,14 +8,5 @@
 			"types/*": ["./src/types/*"]
 		}
 	},
-	"include": [
-		"src/**/*",
-		"src/**/*.ts",
-		"src/**/*.vue",
-		"stories/**/*.json",
-		"stories/**/*.setup.ts",
-		"stories/**/*.story.vue",
-		"tests/**/*.ts",
-		"tests/**/*.vue"
-	]
+	"include": ["src/**/*", "src/**/*.ts", "src/**/*.vue", "tests/**/*.ts", "tests/**/*.vue"]
 }
