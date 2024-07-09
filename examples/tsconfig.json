@@ -3,5 +3,35 @@
 	"compilerOptions": {
 		"outDir": "dist"
 	},
-	"include": ["env.d.ts", "docbuilder/**/*", "docbuilder/**/*.ts", "docbuilder/**/*.vue", "docbuilder/**/*.json"]
+	"include": [
+		"env.d.ts",
+		"aform/**/*",
+		"aform/**/*.ts",
+		"aform/**/*.vue",
+		"aform/**/*.json",
+		"atable/**/*",
+		"atable/**/*.ts",
+		"atable/**/*.vue",
+		"atable/**/*.json",
+		"beam/**/*",
+		"beam/**/*.ts",
+		"beam/**/*.vue",
+		"beam/**/*.json",
+		"code_editor/**/*",
+		"code_editor/**/*.ts",
+		"code_editor/**/*.vue",
+		"code_editor/**/*.json",
+		"desktop/**/*",
+		"desktop/**/*.ts",
+		"desktop/**/*.vue",
+		"desktop/**/*.json",
+		"docbuilder/**/*",
+		"docbuilder/**/*.ts",
+		"docbuilder/**/*.vue",
+		"docbuilder/**/*.json",
+		"node_editor/**/*",
+		"node_editor/**/*.ts",
+		"node_editor/**/*.vue",
+		"node_editor/**/*.json"
+	]
 }

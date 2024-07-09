@@ -6,9 +6,6 @@ const projectRootDir = resolve(__dirname)
 
 export default defineConfig({
 	plugins: [vue()],
-	optimizeDeps: {
-		exclude: ['@stonecrop/atable', '@stonecrop/aform', '@stonecrop/stonecrop'],
-	},
 	resolve: {
 		alias: {
 			'@': resolve(projectRootDir, 'stories'),
@@ -17,20 +14,6 @@ export default defineConfig({
 	server: {
 		fs: {
 			allow: ['..'],
-		},
-	},
-	build: {
-		sourcemap: true,
-		lib: {
-			entry: resolve(projectRootDir, 'stories/index.ts'),
-		},
-		rollupOptions: {
-			external: ['vue'],
-			output: {
-				globals: {
-					vue: 'Vue',
-				},
-			},
 		},
 	},
 })

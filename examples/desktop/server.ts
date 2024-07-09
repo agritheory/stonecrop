@@ -1,7 +1,6 @@
 /* eslint-disable no-console */
-import { createServer, Model } from 'miragejs'
-
 import type { MutableDoctype } from '@stonecrop/stonecrop'
+import { createServer, Model } from 'miragejs'
 
 const doctypeActions: MutableDoctype['actions'] = {
 	LOAD: [
