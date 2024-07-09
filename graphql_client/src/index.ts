@@ -2,6 +2,7 @@ import { Decimal } from 'decimal.js'
 import { GraphQLClient } from 'graphql-request'
 
 import { queries } from './queries'
+import typeDefs from './gql/schema'
 import type { Meta, MetaParser, MetaResponse } from '@/types'
 
 /**
@@ -61,4 +62,4 @@ export const methods = {
 	},
 }
 
-export { Meta, MetaParser, MetaResponse, queries }
+export { Meta, MetaParser, MetaResponse, queries, typeDefs }

@@ -8,6 +8,7 @@ import type { Meta } from '@/types';
 import type { MetaParser } from '@/types';
 import type { MetaResponse } from '@/types';
 import { queries } from './queries';
+import typeDefs from './gql/schema';
 
 export { Meta }
 
@@ -21,6 +22,8 @@ export const methods: {
 };
 
 export { queries }
+
+export { typeDefs }
 
 // (No @packageDocumentation comment for this package)
 

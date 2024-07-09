@@ -16,9 +16,6 @@ importers:
       '@stonecrop/utilities':
         specifier: workspace:*
         version: link:../utilities
-      uuid:
-        specifier: ^10.0.0
-        version: 10.0.0
       vue:
         specifier: ^3.4.31
         version: 3.4.31(typescript@5.5.2)
@@ -32,9 +29,6 @@ importers:
       '@stonecrop/atable':
         specifier: workspace:*
         version: link:../atable
-      '@types/uuid':
-        specifier: ^10.0.0
-        version: 10.0.0
       '@typescript-eslint/eslint-plugin':
         specifier: ^7.14.1
         version: 7.14.1(@typescript-eslint/parser@7.14.1)(eslint@8.56.0)(typescript@5.5.2)

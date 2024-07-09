@@ -1,8 +1,6 @@
 import { createGraphQLHandler, mirageGraphQLFieldResolver } from '@miragejs/graphql'
+import typeDefs from '@stonecrop/graphql-client'
 import { createServer, Model } from 'miragejs'
-
-import typeDefs from '../../graphql_client/src/gql/schema'
-// import graphQLSchema from '@/gql/schema.gql'
 
 export function makeServer() {
 	return createServer({
