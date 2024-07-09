@@ -1,5 +1,5 @@
 <template>
-	<form>
+	<form class="aform">
 		<component
 			v-for="(componentObj, key) in modelValue"
 			:is="componentObj.component"
@@ -68,11 +68,5 @@ const childModels = computed({
 </script>
 
 <style scoped>
-form {
-	display: flex;
-	flex-direction: row;
-	flex-wrap: wrap;
-	justify-content: flex-start;
-	align-items: baseline;
-}
+@import url('@/theme/aform.css');
 </style>

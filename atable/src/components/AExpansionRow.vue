@@ -1,7 +1,7 @@
 <template>
 	<tr v-bind="$attrs" ref="rowEl" :tabindex="tabIndex" class="expandable-row">
 		<td :tabIndex="-1" @click="tableData.toggleRowExpand(rowIndex)" class="row-index">
-			{{ getRowExpandSymbol() }}
+			{{ rowExpandSymbol }}
 		</td>
 		<slot name="row" />
 	</tr>
@@ -36,9 +36,9 @@ const tableData = inject<TableDataStore>(props.tableid)
 const rowEl = ref<HTMLTableRowElement>(null)
 const rowExpanded = ref<HTMLDivElement>(null)
 
-const getRowExpandSymbol = () => {
+const rowExpandSymbol = computed(() => {
 	return tableData.display[props.rowIndex].expanded ? '▼' : '►'
-}
+})
 
 if (props.addNavigation) {
 	const handlers: KeypressHandlers = {
@@ -62,29 +62,6 @@ if (props.addNavigation) {
 }
 </script>
 
-<style scoped>
+<style>
 @import url('@stonecrop/themes/default/default.css');
-.row-index {
-	color: var(--header-text-color);
-	font-weight: bold;
-	text-align: center;
-	user-select: none;
-	width: 2ch;
-}
-
-.expandable-row {
-	border-top: 1px solid var(--row-border-color);
-	height: var(--atable-row-height);
-}
-
-.expanded-row {
-	border-bottom: 1px solid var(--row-border-color);
-	border-top: 1px solid var(--row-border-color);
-}
-
-.expanded-row-content {
-	border-bottom: 1px solid var(--row-border-color);
-	border-top: 1px solid var(--row-border-color);
-	padding: 1.5rem;
-}
 </style>

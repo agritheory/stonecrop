@@ -64,8 +64,8 @@
 				</a>
 			</li>
 			<li
-				v-for="(breadcrumb, index) in breadcrumbs"
-				:key="index"
+				v-for="breadcrumb in breadcrumbs"
+				:key="breadcrumb.title"
 				:style="{ display: breadcrumbsVisibile ? 'block' : 'none' }">
 				<router-link tabindex="0" :to="breadcrumb.to"> {{ breadcrumb.title }} </router-link>
 			</li>
@@ -74,13 +74,17 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref } from 'vue'
+import { computed, nextTick, ref } from 'vue'
 
-const props = defineProps<{
-	breadcrumbs?: { title: string; to: string }[]
-}>()
+withDefaults(
+	defineProps<{
+		breadcrumbs?: { title: string; to: string }[]
+	}>(),
+	{
+		breadcrumbs: () => [],
+	}
+)
 
-const breadcrumbs = ref([])
 const breadcrumbsVisibile = ref(true)
 const searchVisibile = ref(false)
 const searchText = ref('')
@@ -88,10 +92,6 @@ const searchinput = ref<HTMLElement>(null)
 
 const rotateHideTabIcon = computed(() => {
 	return breadcrumbsVisibile.value ? 'unrotated' : 'rotated'
-})
-
-onMounted(() => {
-	breadcrumbs.value = props.breadcrumbs || []
 })
 
 const toggleBreadcrumbs = () => {

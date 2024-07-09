@@ -381,9 +381,6 @@ importers:
       miragejs:
         specifier: ^0.1.47
         version: 0.1.48
-      uuid:
-        specifier: ^10.0.0
-        version: 10.0.0
       vite:
         specifier: ^5.3.2
         version: 5.3.2(sass@1.75.0)
@@ -397,9 +394,6 @@ importers:
       '@histoire/plugin-vue':
         specifier: ^0.17.17
         version: 0.17.17(histoire@0.17.17)(vite@5.3.2)(vue@3.4.31)
-      '@types/uuid':
-        specifier: ^10.0.0
-        version: 10.0.0
       '@typescript-eslint/eslint-plugin':
         specifier: ^7.14.1
         version: 7.14.1(@typescript-eslint/parser@7.14.1)(eslint@8.56.0)(typescript@5.5.2)

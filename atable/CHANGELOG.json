@@ -2,6 +2,33 @@
   "name": "@stonecrop/atable",
   "entries": [
     {
+      "version": "0.2.24",
+      "tag": "@stonecrop/atable_v0.2.24",
+      "date": "Mon, 08 Jul 2024 14:41:43 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Avoid recursion issues"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.2.23",
+      "tag": "@stonecrop/atable_v0.2.23",
+      "date": "Thu, 27 Jun 2024 18:06:02 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "moved styling to root defastylesheetult.css"
+          },
+          {
+            "comment": " Updated form labels to match table heading; onsolidated similar styles."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.2.22",
       "tag": "@stonecrop/atable_v0.2.22",
       "date": "Mon, 24 Jun 2024 13:56:45 GMT",
