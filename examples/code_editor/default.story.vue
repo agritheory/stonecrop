@@ -1,13 +1,12 @@
 <template>
 	<Story title="default">
-		<ACodeEditor :options="options" id="code-editor" />
+		<ACodeEditor id="code-editor" :options="options" />
 	</Story>
 </template>
 
 <script setup lang="ts">
+import { ACodeEditor } from '@stonecrop/code-editor'
 import { editor } from 'monaco-editor'
-
-import { ACodeEditor } from '@/index'
 
 const value = `
 type Person = {

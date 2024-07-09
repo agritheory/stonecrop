@@ -47,6 +47,10 @@
       "allowedCategories": [ "prototype" ]
     },
     {
+      "name": "@stonecrop/code-editor",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
       "name": "@stonecrop/desktop",
       "allowedCategories": [ "prototype" ]
     },

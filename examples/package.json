@@ -15,12 +15,14 @@
 		"dev:builder": "vite serve docbuilder/ -c docbuilder/vite.config.ts -d",
 		"story:aform:dev": "cd aform/ && histoire dev",
 		"story:atable:dev": "cd atable/ && histoire dev",
-		"story:beam:dev": "cd beam/ && histoire dev"
+		"story:beam:dev": "cd beam/ && histoire dev",
+		"story:code_editor:dev": "cd code_editor/ && histoire dev"
 	},
 	"dependencies": {
 		"@stonecrop/aform": "workspace:*",
 		"@stonecrop/atable": "workspace:*",
 		"@stonecrop/beam": "workspace:*",
+		"@stonecrop/code-editor": "workspace:*",
 		"@stonecrop/desktop": "workspace:*",
 		"@stonecrop/node-editor": "workspace:*",
 		"@stonecrop/stonecrop": "workspace:*",
@@ -33,6 +35,7 @@
 	},
 	"devDependencies": {
 		"@histoire/plugin-vue": "^0.17.17",
+		"@monaco-editor/loader": "^1.3.2",
 		"@typescript-eslint/eslint-plugin": "^7.14.1",
 		"@typescript-eslint/parser": "^7.14.1",
 		"@vitejs/plugin-vue": "^5.0.5",
@@ -40,6 +43,7 @@
 		"eslint": "^8.40.0",
 		"eslint-plugin-vue": "^9.11.1",
 		"histoire": "^0.17.17",
+		"monaco-editor": "^0.34.1",
 		"portal-vue": "^3.0.0",
 		"typescript": "^5.5.2",
 		"vue-router": "^4.4.0"
