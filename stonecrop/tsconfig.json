@@ -7,14 +7,5 @@
 			"types/*": ["./src/types/*"]
 		}
 	},
-	"include": [
-		"env.d.ts",
-		"src/**/*",
-		"src/**/*.ts",
-		"src/**/*.vue",
-		"stories/**/*.ts",
-		"stories/**/*.vue",
-		"tests/**/*.ts",
-		"tests/**/*.vue"
-	]
+	"include": ["env.d.ts", "src/**/*", "src/**/*.ts", "src/**/*.vue", "tests/**/*.ts", "tests/**/*.vue"]
 }

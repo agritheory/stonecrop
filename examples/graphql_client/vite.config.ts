@@ -8,7 +8,7 @@ export default defineConfig({
 	plugins: [vue()],
 	resolve: {
 		alias: {
-			'@': resolve(projectRootDir, 'stories'),
+			'@': resolve(projectRootDir, 'graphql_client'),
 		},
 	},
 	server: {
@@ -19,7 +19,7 @@ export default defineConfig({
 	build: {
 		sourcemap: true,
 		lib: {
-			entry: resolve(projectRootDir, 'stories/index.ts'),
+			entry: resolve(projectRootDir, 'graphql_client/index.ts'),
 		},
 		rollupOptions: {
 			external: ['vue'],

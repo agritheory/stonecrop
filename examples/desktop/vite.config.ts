@@ -8,7 +8,7 @@ export default defineConfig({
 	plugins: [vue()],
 	resolve: {
 		alias: {
-			'@': resolve(projectRootDir, 'stories'),
+			'@': resolve(projectRootDir, 'desktop'),
 		},
 	},
 	server: {

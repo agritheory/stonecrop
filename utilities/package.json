@@ -38,6 +38,7 @@
 		"preview": "vite preview"
 	},
 	"dependencies": {
+		"@vueuse/core": "^10.11.0",
 		"vue": "^3.4.31"
 	},
 	"devDependencies": {
@@ -46,7 +47,6 @@
 		"@typescript-eslint/eslint-plugin": "^7.14.1",
 		"@typescript-eslint/parser": "^7.14.1",
 		"@vitejs/plugin-vue": "^5.0.5",
-		"@vueuse/core": "^10.11.0",
 		"cypress": "^13.11.0",
 		"eslint": "^8.40.0",
 		"eslint-config-prettier": "^8.8.0",
