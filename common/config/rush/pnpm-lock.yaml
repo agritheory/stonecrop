@@ -357,6 +357,9 @@ importers:
       '@stonecrop/desktop':
         specifier: workspace:*
         version: link:../desktop
+      '@stonecrop/graphql-client':
+        specifier: workspace:*
+        version: link:../graphql_client
       '@stonecrop/node-editor':
         specifier: workspace:*
         version: link:../node_editor

@@ -16,10 +16,9 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
-
+import { queries } from '@stonecrop/graphql-client'
 import { useStonecrop } from '@stonecrop/stonecrop'
-import { queries } from '../src/queries'
+import { onMounted, ref } from 'vue'
 
 const data = ref({})
 const schema = ref({})

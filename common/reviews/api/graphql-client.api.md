@@ -4,9 +4,10 @@
 
 ```ts
 
-import type { Meta } from './types';
-import type { MetaParser } from './types';
-import type { MetaResponse } from './types';
+import type { Meta } from '@/types';
+import type { MetaParser } from '@/types';
+import type { MetaResponse } from '@/types';
+import { queries } from './queries';
 
 export { Meta }
 
@@ -18,6 +19,8 @@ export { MetaResponse }
 export const methods: {
     getMeta: (doctype: string, url?: string) => Promise<MetaResponse>;
 };
+
+export { queries }
 
 // (No @packageDocumentation comment for this package)
 

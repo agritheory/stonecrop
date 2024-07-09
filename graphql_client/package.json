@@ -35,9 +35,7 @@
 		"dev": "vite",
 		"docs": "api-documenter markdown -i temp -o ../docs/graphql_client",
 		"lint": "eslint . --ext .ts,.vue",
-		"preview": "vite preview",
-		"story:build": "vite build stories/ -c stories/vite.config.ts",
-		"story:dev": "vite dev stories/ -c stories/vite.config.ts"
+		"preview": "vite preview"
 	},
 	"dependencies": {
 		"@stonecrop/stonecrop": "workspace:*",

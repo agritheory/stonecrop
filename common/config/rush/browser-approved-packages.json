@@ -55,6 +55,10 @@
       "allowedCategories": [ "prototype" ]
     },
     {
+      "name": "@stonecrop/graphql-client",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
       "name": "@stonecrop/node-editor",
       "allowedCategories": [ "prototype" ]
     },
