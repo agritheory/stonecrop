@@ -42,7 +42,6 @@ const props = withDefaults(
 
 const tableData = inject<TableDataStore>(props.tableid)
 const rowEl = ref<HTMLTableRowElement>(null)
-const numberedRowWidth = tableData.numberedRowWidth.value
 
 const isRowVisible = computed(() => {
 	return (

@@ -14,7 +14,7 @@
 
 <script setup lang="ts">
 import { type KeypressHandlers, useKeyboardNav } from '@stonecrop/utilities'
-import { inject, ref } from 'vue'
+import { computed, inject, ref } from 'vue'
 
 import TableDataStore from '.'
 import type { TableRow } from '@/types'

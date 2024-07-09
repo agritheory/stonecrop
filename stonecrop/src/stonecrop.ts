@@ -117,7 +117,7 @@ export class Stonecrop {
 	 * stonecrop.setup(doctype)
 	 */
 	setup(doctype: DoctypeMeta): void {
-		this.getMeta(doctype)
+		void this.getMeta(doctype)
 		this.getWorkflow(doctype)
 		this.getActions(doctype)
 	}

@@ -157,7 +157,7 @@ const closeModal = (event: MouseEvent) => {
 	}
 }
 
-window.addEventListener('keydown', async (event: KeyboardEvent) => {
+window.addEventListener('keydown', (event: KeyboardEvent) => {
 	if (event.key === 'Escape') {
 		if (tableData.modal.visible) {
 			tableData.modal.visible = false
@@ -166,8 +166,9 @@ window.addEventListener('keydown', async (event: KeyboardEvent) => {
 			const $parent = tableData.modal.parent
 			if ($parent) {
 				// wait for the modal to close before focusing
-				await nextTick()
-				$parent.focus()
+				void nextTick().then(() => {
+					$parent.focus()
+				})
 			}
 		}
 	}

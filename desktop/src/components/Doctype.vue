@@ -4,11 +4,11 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+// import { useRoute } from 'vue-router'
 
 import { AForm } from '@stonecrop/aform'
 import type { SchemaTypes } from '@stonecrop/aform'
-import { DoctypeMeta, useStonecrop } from '@stonecrop/stonecrop'
+import { /* DoctypeMeta, */ useStonecrop } from '@stonecrop/stonecrop'
 
 const { stonecrop, isReady } = useStonecrop()
 const schema = ref<SchemaTypes[]>([])

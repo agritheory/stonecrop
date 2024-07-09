@@ -69,7 +69,7 @@ const displayValue = computed(() => {
 	}
 })
 
-const handleInput = (event: MouseEvent) => {
+const handleInput = () => {
 	if (tableData.columns[props.colIndex].mask) {
 		// TODO: add masking to cell values
 		// tableData.columns[props.colIndex].mask(event)
