@@ -5,12 +5,10 @@
 </template>
 
 <script setup lang="ts">
+import { StateEditor, type EditorStates, type Layout } from '@stonecrop/node-editor'
 import { Position } from '@vue-flow/core'
 import { ref } from 'vue'
 import { createMachine } from 'xstate'
-
-import StateEditor from '@/components/StateEditor.vue'
-import type { EditorStates, Layout } from '@/types'
 
 const layout: Layout = {
 	idle: {
@@ -30,6 +28,7 @@ const layout: Layout = {
 }
 
 const fetchMachine = createMachine({
+	predictableActionArguments: true,
 	id: 'fetch',
 	initial: 'idle',
 	context: {

@@ -41,24 +41,26 @@ const elements = computed<FlowElements>({
 
 			stateHash[key] = el
 
-			for (const [edgeKey, edgeValue] of Object.entries(value.on)) {
-				if (Array.isArray(edgeValue)) {
-					for (const edge of edgeValue) {
-						// TODO: handle typescript errors for both types of states
-						// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-						const edgeJson = edge.toJSON()
-						// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-						const target = edgeJson.target.toString()
-						stateElements.push({
-							id: `${key}-${edgeKey}`,
-							target: target,
-							source: key,
-							label: edgeKey,
-							animated: true,
-						})
+			if (value.on) {
+				for (const [edgeKey, edgeValue] of Object.entries(value.on)) {
+					if (Array.isArray(edgeValue)) {
+						for (const edge of edgeValue) {
+							// TODO: handle typescript errors for both types of states
+							// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+							const edgeJson = edge.toJSON()
+							// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+							const target = edgeJson.target.toString()
+							stateElements.push({
+								id: `${key}-${edgeKey}`,
+								target: target,
+								source: key,
+								label: edgeKey,
+								animated: true,
+							})
 
-						// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-						hasInputs[target] = true
+							// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+							hasInputs[target] = true
+						}
 					}
 				}
 			}

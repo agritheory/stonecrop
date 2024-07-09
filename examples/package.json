@@ -16,7 +16,8 @@
 		"story:aform:dev": "cd aform/ && histoire dev",
 		"story:atable:dev": "cd atable/ && histoire dev",
 		"story:beam:dev": "cd beam/ && histoire dev",
-		"story:code_editor:dev": "cd code_editor/ && histoire dev"
+		"story:code_editor:dev": "cd code_editor/ && histoire dev",
+		"story:node_editor:dev": "cd node_editor/ && histoire dev"
 	},
 	"dependencies": {
 		"@stonecrop/aform": "workspace:*",
@@ -39,6 +40,7 @@
 		"@typescript-eslint/eslint-plugin": "^7.14.1",
 		"@typescript-eslint/parser": "^7.14.1",
 		"@vitejs/plugin-vue": "^5.0.5",
+		"@vue-flow/core": "^1.37.1",
 		"cypress": "^13.11.0",
 		"eslint": "^8.40.0",
 		"eslint-plugin-vue": "^9.11.1",
