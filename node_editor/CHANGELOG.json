@@ -2,6 +2,18 @@
   "name": "@stonecrop/node-editor",
   "entries": [
     {
+      "version": "0.2.25",
+      "tag": "@stonecrop/node-editor_v0.2.25",
+      "date": "Wed, 10 Jul 2024 12:10:33 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Add API extractor + update typings"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.2.24",
       "tag": "@stonecrop/node-editor_v0.2.24",
       "date": "Mon, 08 Jul 2024 14:41:43 GMT",

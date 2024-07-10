@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/stonecrop
 
-This log was last generated on Mon, 08 Jul 2024 14:41:43 GMT and should not be manually modified.
+This log was last generated on Wed, 10 Jul 2024 12:10:33 GMT and should not be manually modified.
+
+## 0.2.25
+Wed, 10 Jul 2024 12:10:33 GMT
+
+### Minor changes
+
+- Add API extractor + update typings
 
 ## 0.2.24
 Mon, 08 Jul 2024 14:41:43 GMT
