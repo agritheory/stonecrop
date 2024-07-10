@@ -23,43 +23,40 @@
 		},
 		"./styles": "./dist/style.css"
 	},
-	"main": "dist/desktop.js",
-	"module": "dist/desktop.js",
-	"umd": "dist/desktop.umd.cjs",
-	"types": "src/index",
 	"files": [
 		"dist/*",
 		"src/*"
 	],
 	"scripts": {
-		"prepublish": "vite build",
-		"build": "vite build",
+		"prepublish": "heft build && vite build && rushx docs",
+		"build": "heft build && vite build && rushx docs",
 		"dev": "vite",
-		"lint": "eslint . --ext .ts,.vue",
-		"story:build": "vite build stories/ -c stories/vite.config.ts",
-		"story:dev": "vite dev stories/ -c stories/vite.config.ts"
+		"docs": "api-documenter markdown -i temp -o ../docs/desktop",
+		"lint": "eslint . --ext .ts,.vue"
 	},
 	"dependencies": {
 		"@stonecrop/aform": "workspace:*",
 		"@stonecrop/atable": "workspace:*",
 		"@stonecrop/stonecrop": "workspace:*",
 		"@stonecrop/themes": "workspace:*",
-		"immutable": "^4.3.0",
-		"vue": "^3.4.23",
-		"xstate": "~4.37.2"
+		"vue": "^3.4.31",
+		"xstate": "^4.38.3"
 	},
 	"devDependencies": {
+		"@microsoft/api-documenter": "^7.25.3",
 		"@miragejs/graphql": "^0.1.13",
-		"@typescript-eslint/eslint-plugin": "^7.6.0",
-		"@typescript-eslint/parser": "^7.6.0",
-		"@vitejs/plugin-vue": "^5.0.4",
+		"@rushstack/heft": "^0.66.18",
+		"@typescript-eslint/eslint-plugin": "^7.14.1",
+		"@typescript-eslint/parser": "^7.14.1",
+		"@vitejs/plugin-vue": "^5.0.5",
 		"eslint": "^8.40.0",
 		"eslint-config-prettier": "^8.8.0",
 		"eslint-plugin-vue": "^9.11.1",
 		"miragejs": "^0.1.47",
-		"typescript": "^5.4.5",
-		"vite": "^5.2.9",
-		"vue-router": "^4"
+		"stonecrop-rig": "workspace:*",
+		"typescript": "^5.5.2",
+		"vite": "^5.3.2",
+		"vue-router": "^4.4.0"
 	},
 	"publishConfig": {
 		"access": "public"

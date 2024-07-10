@@ -1,6 +1,3 @@
-/// <reference types="histoire" />
-
-import { HstVue } from '@histoire/plugin-vue'
 import vue from '@vitejs/plugin-vue'
 import { resolve } from 'path'
 import { defineConfig } from 'vite'
@@ -15,6 +12,7 @@ export default defineConfig({
 		},
 	},
 	build: {
+		emptyOutDir: false,
 		sourcemap: true,
 		lib: {
 			entry: resolve(projectRootDir, 'src/index.ts'),
@@ -29,9 +27,4 @@ export default defineConfig({
 			},
 		},
 	},
-	histoire: {
-		plugins: [HstVue()],
-		storyIgnored: ['**/node_modules/**', '**/dist/**'],
-	},
-	optimizeDeps: {},
 })

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/themes",
+      "comment": "Add API extractor + update typings",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/themes"
+}

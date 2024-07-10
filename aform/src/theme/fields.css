@@ -1,48 +1,47 @@
 /* Styles for all types of fields: Text and Number Inputs, Radios, Checkboxes, etc. */
-.form-element{
-  min-width:40ch;
-  border:1px solid transparent;
-  padding:0;
-  margin:0;
-  margin-right:.5rem;
-  margin-bottom:.5rem;
+.form-element {
+	min-width: 40ch;
+	border: 1px solid transparent;
+	padding: 0;
+	margin: 0;
+	margin-right: 0.5rem;
+	margin-bottom: 0.5rem;
 }
-.input-field{
-  outline: 1px solid transparent;
+.input-field {
+	outline: 1px solid transparent;
 	border: 1px solid var(--input-border-color);
-	padding:.25rem;
+	padding: 0.25rem;
 	margin: 0 0 0 0;
-	border-radius: 0 0 0.25rem .25rem;
-	box-sizing:border-box;
-	width:100%;
+	border-radius: 0 0 0.25rem 0.25rem;
+	box-sizing: border-box;
+	width: 100%;
 }
-.field-label{
-  color: var(--input-label-color);
+.field-label {
+	color: var(--input-label-color);
 	display: block;
 	min-height: 1.15rem;
-	padding: .25rem;
+	padding: 0.25rem;
 	margin: 0rem;
-  z-index: 2;
+	z-index: 2;
 	font-size: 1rem;
-	font-weight:bold;
+	font-weight: bold;
 	background: white;
-	width:100%;
-	box-sizing:border-box;
-	background:var(--gray-5);
-	border:1px solid var(--input-border-color);
-	border-bottom:none;
-  
+	width: 100%;
+	box-sizing: border-box;
+	background: var(--gray-5);
+	border: 1px solid var(--input-border-color);
+	border-bottom: none;
 }
-p.error{
+p.error {
 	display: block;
 	min-height: 1.15rem;
 	padding: 0rem;
-	padding-left:.5rem;
-	margin: .5rem 0 .25rem 0rem;
+	padding-left: 0.5rem;
+	margin: 0.5rem 0 0.25rem 0rem;
 	border: 1px solid transparent;
-  width: 100%;
+	width: 100%;
 	color: var(--brand-danger);
-	font-size: .8rem;
+	font-size: 0.8rem;
 }
 
 .input-field:focus {
@@ -56,14 +55,14 @@ p.error{
 /**  CHECKBOX **/
 .checkbox {
 	visibility: hidden;
-	display:none;
+	display: none;
 }
 
 .checkbox + .custom-checkbox:before {
 	content: '⬡';
 	font-size: 1.2rem;
 	cursor: pointer;
-	margin-right:.25rem;
+	margin-right: 0.25rem;
 }
 
 .checkbox:checked + .custom-checkbox:before {
@@ -72,12 +71,12 @@ p.error{
 
 .custom-checkbox {
 	display: inline-block;
-	line-height:0;
+	line-height: 0;
 }
 
 .checkbox-container {
-	width:100%;
-	display:inline-block;
+	width: 100%;
+	display: inline-block;
 }
 
 .checkbox-container:hover + .field-label {

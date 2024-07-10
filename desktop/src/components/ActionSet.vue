@@ -81,7 +81,7 @@ const props = defineProps<{
 
 const _elements = ref<SetElement[]>([])
 const isOpen = ref(false)
-const timeout = ref<NodeJS.Timeout>(null)
+const timeout = ref<number>(null)
 const hover = ref(false)
 const closeClicked = ref(false)
 

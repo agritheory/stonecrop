@@ -2,7 +2,8 @@ import { Decimal } from 'decimal.js'
 import { GraphQLClient } from 'graphql-request'
 
 import { queries } from './queries'
-import { Meta, MetaParser } from 'types/index'
+import typeDefs from './gql/schema'
+import type { Meta, MetaParser, MetaResponse } from '@/types'
 
 /**
  * Parse the response from the GraphQL server. Converts the stringified JSON to JSON and converts the stringified numbers to Decimal.
@@ -36,8 +37,15 @@ const metaParser = (obj: string): MetaParser => {
 	})
 }
 
+/**
+ * Get meta information for a doctype
+ * @param doctype - The doctype to get meta information for
+ * @param url - The URL to send the request to
+ * @returns The meta information for the doctype
+ * @public
+ */
 export const methods = {
-	getMeta: async (doctype: string, url?: string): Promise<Meta['response']['getMeta']> => {
+	getMeta: async (doctype: string, url?: string): Promise<MetaResponse> => {
 		const client = new GraphQLClient(url || '/graphql', {
 			jsonSerializer: {
 				stringify: obj => JSON.stringify(obj), // process the request object before sending; leave as default JSON
@@ -53,3 +61,5 @@ export const methods = {
 		return getMeta
 	},
 }
+
+export { Meta, MetaParser, MetaResponse, queries, typeDefs }

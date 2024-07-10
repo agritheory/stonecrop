@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 
 import ATable from '@/components/ATable.vue'
-import listData from '../stories/sample_data/http_logs.json'
+import listData from './data/http_logs.json'
 
 describe('table row component', () => {
 	const columns = [

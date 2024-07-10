@@ -12,8 +12,8 @@
 <script setup lang="ts">
 import { CSSProperties, inject } from 'vue'
 
-import { TableColumn, TableConfig } from 'types'
 import TableDataStore from '.'
+import type { TableColumn, TableConfig } from '@/types'
 
 const props = defineProps<{
 	columns: TableColumn[]
@@ -23,7 +23,6 @@ const props = defineProps<{
 
 const tableData = inject<TableDataStore>(props.tableid)
 
-const numberedRowWidth = tableData.numberedRowWidth.value
 const getHeaderCellStyle = (column: TableColumn): CSSProperties => ({
 	minWidth: column.width || '40ch',
 	textAlign: column.align || 'center',

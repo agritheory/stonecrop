@@ -17,26 +17,25 @@
 	},
 	"exports": {
 		".": {
-			"import": "./dist/graphql-client.js",
+			"import": {
+				"types": "./dist/graphql_client/src/index.d.ts",
+				"default": "./dist/graphql-client.js"
+			},
 			"require": "./dist/graphql-client.umd.cjs"
 		}
 	},
-	"main": "dist/graphql-client.js",
-	"module": "dist/graphql-client.js",
-	"umd": "dist/graphql-client.umd.cjs",
-	"types": "src/index",
+	"typings": "./dist/graphql_client/src/index.d.ts",
 	"files": [
 		"dist/*",
 		"src/*"
 	],
 	"scripts": {
-		"prepublish": "vite build",
-		"build": "vite build",
+		"prepublish": "heft build && vite build && rushx docs",
+		"build": "heft build && vite build && rushx docs",
 		"dev": "vite",
+		"docs": "api-documenter markdown -i temp -o ../docs/graphql_client",
 		"lint": "eslint . --ext .ts,.vue",
-		"preview": "vite preview",
-		"story:build": "vite build stories/ -c stories/vite.config.ts",
-		"story:dev": "vite dev stories/ -c stories/vite.config.ts"
+		"preview": "vite preview"
 	},
 	"dependencies": {
 		"@stonecrop/stonecrop": "workspace:*",
@@ -45,19 +44,22 @@
 		"graphql-request": "~6.0.0"
 	},
 	"devDependencies": {
+		"@microsoft/api-documenter": "^7.25.3",
 		"@miragejs/graphql": "^0.1.13",
-		"@typescript-eslint/eslint-plugin": "^7.6.0",
-		"@typescript-eslint/parser": "^7.6.0",
-		"@vitejs/plugin-vue": "^5.0.4",
-		"cypress": "^12.11.0",
+		"@rushstack/heft": "^0.66.18",
+		"@typescript-eslint/eslint-plugin": "^7.14.1",
+		"@typescript-eslint/parser": "^7.14.1",
+		"@vitejs/plugin-vue": "^5.0.5",
+		"cypress": "^13.11.0",
 		"eslint": "^8.40.0",
 		"eslint-config-prettier": "^8.8.0",
 		"eslint-plugin-vue": "^9.11.1",
 		"miragejs": "^0.1.47",
-		"typescript": "^5.4.5",
-		"vite": "^5.2.9",
-		"vue": "^3.4.23",
-		"vue-router": "^4"
+		"stonecrop-rig": "workspace:*",
+		"typescript": "^5.5.2",
+		"vite": "^5.3.2",
+		"vue": "^3.4.31",
+		"vue-router": "^4.4.0"
 	},
 	"publishConfig": {
 		"access": "public"

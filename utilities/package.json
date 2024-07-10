@@ -17,45 +17,44 @@
 	},
 	"exports": {
 		".": {
-			"import": "./dist/utilities.js",
+			"import": {
+				"types": "./dist/utilities/src/index.d.ts",
+				"default": "./dist/utilities.js"
+			},
 			"require": "./dist/utilities.umd.cjs"
 		}
 	},
-	"main": "dist/utilities.js",
-	"module": "dist/utilities.js",
-	"umd": "dist/utilities.umd.cjs",
-	"types": "src/index",
+	"typings": "./dist/utilities/src/index.d.ts",
 	"files": [
 		"dist/*",
 		"src/*"
 	],
 	"scripts": {
-		"prepublish": "tsc -b && vite build",
-		"build": "tsc -b && vite build",
+		"prepublish": "heft build && vite build && rushx docs",
+		"build": "heft build && vite build && rushx docs",
 		"dev": "vite",
+		"docs": "api-documenter markdown -i temp -o ../docs/utilities",
 		"lint": "eslint . --ext .ts,.vue",
-		"preview": "vite preview",
-		"story:build": "histoire build",
-		"story:dev": "histoire dev",
-		"story:preview": "histoire preview"
+		"preview": "vite preview"
 	},
 	"dependencies": {
-		"vue": "^3.4.23"
+		"@vueuse/core": "^10.11.0",
+		"vue": "^3.4.31"
 	},
 	"devDependencies": {
-		"@histoire/plugin-vue": "^0.17.17",
-		"@typescript-eslint/eslint-plugin": "^7.6.0",
-		"@typescript-eslint/parser": "^7.6.0",
-		"@vitejs/plugin-vue": "^5.0.4",
-		"@vueuse/core": "^10.9.0",
-		"cypress": "^12.11.0",
+		"@microsoft/api-documenter": "^7.25.3",
+		"@rushstack/heft": "^0.66.18",
+		"@typescript-eslint/eslint-plugin": "^7.14.1",
+		"@typescript-eslint/parser": "^7.14.1",
+		"@vitejs/plugin-vue": "^5.0.5",
+		"cypress": "^13.11.0",
 		"eslint": "^8.40.0",
 		"eslint-config-prettier": "^8.8.0",
 		"eslint-plugin-vue": "^9.11.1",
-		"histoire": "^0.17.17",
-		"typescript": "^5.4.5",
-		"vite": "^5.2.9",
-		"vue-router": "^4"
+		"stonecrop-rig": "workspace:*",
+		"typescript": "^5.5.2",
+		"vite": "^5.3.2",
+		"vue-router": "^4.4.0"
 	},
 	"publishConfig": {
 		"access": "public"

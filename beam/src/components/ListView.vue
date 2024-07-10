@@ -16,7 +16,7 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted } from 'vue'
 
-import ListItem from './ListItem.vue'
+import ListItem from '@/components/ListItem.vue'
 
 defineProps<{
 	items: {

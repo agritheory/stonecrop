@@ -45,7 +45,7 @@
 }
 
 .login-form-element {
-  display: grid;
+	display: grid;
 	margin: 0.5rem 0;
 }
 .login-field {
@@ -66,7 +66,7 @@
 	margin: 0.5rem 0;
 	padding: 0.25rem;
 	position: relative;
-  cursor:pointer;
+	cursor: pointer;
 
 	&:hover {
 		background-color: var(--btn-hover);

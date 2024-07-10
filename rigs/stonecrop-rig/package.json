@@ -1,0 +1,21 @@
+{
+	"name": "stonecrop-rig",
+	"version": "0.2.22",
+	"description": "Rig setup for Stonecrop monorepo",
+	"license": "MIT",
+	"private": "true",
+	"scripts": {
+		"build": "",
+		"_phase:build": ""
+	},
+	"dependencies": {
+		"@microsoft/api-extractor": "^7.47.0",
+		"@rushstack/heft": "^0.66.18",
+		"@rushstack/heft-api-extractor-plugin": "^0.3.38",
+		"@rushstack/heft-typescript-plugin": "^0.5.16",
+		"typescript": "^5.5.2"
+	},
+	"engines": {
+		"node": ">=20.11.0"
+	}
+}

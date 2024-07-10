@@ -60,15 +60,15 @@
 </template>
 
 <script setup lang="ts">
-import { nextTick, provide, watch } from 'vue'
 import { vOnClickOutside } from '@vueuse/components'
+import { nextTick, provide, watch } from 'vue'
 
-import { TableColumn, TableConfig, TableRow } from 'types'
 import TableDataStore from '.'
 import ACell from '@/components/ACell.vue'
 import ARow from '@/components/ARow.vue'
 import ATableHeader from '@/components/ATableHeader.vue'
 import ATableModal from '@/components/ATableModal.vue'
+import type { TableColumn, TableConfig, TableRow } from '@/types'
 
 const props = withDefaults(
 	defineProps<{
@@ -157,7 +157,7 @@ const closeModal = (event: MouseEvent) => {
 	}
 }
 
-window.addEventListener('keydown', async (event: KeyboardEvent) => {
+window.addEventListener('keydown', (event: KeyboardEvent) => {
 	if (event.key === 'Escape') {
 		if (tableData.modal.visible) {
 			tableData.modal.visible = false
@@ -166,8 +166,9 @@ window.addEventListener('keydown', async (event: KeyboardEvent) => {
 			const $parent = tableData.modal.parent
 			if ($parent) {
 				// wait for the modal to close before focusing
-				await nextTick()
-				$parent.focus()
+				void nextTick().then(() => {
+					$parent.focus()
+				})
 			}
 		}
 	}

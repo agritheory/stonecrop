@@ -1,6 +1,6 @@
+import vue from '@vitejs/plugin-vue'
 import { resolve } from 'path'
 import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
 
 const projectRootDir = resolve(__dirname)
 
@@ -10,10 +10,12 @@ export default defineConfig({
 	resolve: {
 		alias: {
 			'@': resolve(projectRootDir, 'src'),
+			types: resolve(projectRootDir, 'src/types'),
 		},
 	},
 	build: {
-		minify: false,
+		emptyOutDir: false,
+		sourcemap: true,
 		lib: {
 			entry: resolve(projectRootDir, 'src/index.ts'),
 			name: '@stonecrop/stonecrop',

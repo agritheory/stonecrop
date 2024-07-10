@@ -17,7 +17,7 @@ import { type KeypressHandlers, useKeyboardNav } from '@stonecrop/utilities'
 import { computed, inject, ref } from 'vue'
 
 import TableDataStore from '.'
-import type { TableRow } from 'types'
+import type { TableRow } from '@/types'
 
 const props = withDefaults(
 	defineProps<{

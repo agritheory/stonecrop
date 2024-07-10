@@ -9,6 +9,7 @@
 !/src-*/**
 !/dist/**
 !ThirdPartyNotice.txt
+!tsdoc-metadata.json
 
 # Ignore certain patterns that should not get published.
 /dist/*.stats.*

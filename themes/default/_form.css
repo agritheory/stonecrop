@@ -21,7 +21,7 @@ Holds styles for all form fields
 
 .aform__form-element {
 	min-width: 30%;
-	flex-basis:32%;
+	flex-basis: 32%;
 	/* flex-grow:1; */
 	border: 1px solid transparent;
 	padding: 0;
