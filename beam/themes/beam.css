@@ -9,10 +9,6 @@
 	--brand-color: #202a44; /* brand color, default navy */
 }
 
-html {
-	font-size: 62.5%; /*1 rem = 10px; 10px/16px = 62.5%*/
-}
-
 body {
 	font-family: var(--font-family);
 	background-color: white;
@@ -26,7 +22,7 @@ body {
 
 /* Style */
 .home-icon {
-	font-size: 3rem;
+	font-size: 1.875rem;
 	border: 1px solid transparent;
 	text-align: left;
 	color: var(--primary-text-color);
@@ -37,7 +33,7 @@ body {
 	border: 1px solid var(--brand-primary);
 }
 .beam__navbar {
-	padding: 1rem;
+	padding: 0.625rem;
 	background-color: var(--primary-color);
 	margin-left: 0;
 	min-height: 4em;
@@ -54,14 +50,14 @@ body {
 	.nav-title {
 		display: inline-block;
 		border: 1px solid transparent;
-		margin-left: 1rem;
+		margin-left: 0.625rem;
 		text-align: left;
-		font-size: 1.8rem;
+		font-size: 1.125rem;
 		color: var(--primary-text-color);
 	}
 	.navbar-action-wrapper {
 		position: absolute;
-		right: 1rem;
+		right: 0.625rem;
 		top: 50%;
 		transform: translateY(-50%);
 		text-align: right;
@@ -69,21 +65,21 @@ body {
 }
 .beam__listview {
 	list-style-type: none;
-	margin: 0rem 1rem;
+	margin: 0rem 0.625rem;
 	padding: 0;
 	padding-bottom: 2.5em;
 	margin-top: 1px;
 }
 
 .beam__listitem {
-	padding: 1rem;
+	padding: 0.625rem;
 	border-bottom: 1px solid var(--row-border-color);
 	max-width: 100%;
 	box-sizing: border-box;
 	display: flex;
 	flex-flow: row nowrap;
 	justify-content: space-between;
-	gap: 2rem;
+	gap: 1.25rem;
 	cursor: pointer;
 	outline: 2px solid transparent;
 	outline-offset: -1px;
@@ -102,21 +98,21 @@ body {
 	color: var(--primary-text-color);
 }
 .beam__listitem label {
-	font-size: 1.4rem;
+	font-size: 0.875rem;
 	font-weight: bold;
 	display: block;
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
 .beam__listitem p {
-	font-size: 1.4rem;
+	font-size: 0.875rem;
 	margin: 0;
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
 
 .beam__itemcount {
-	font-size: 2.1rem;
+	font-size: 1.3125rem;
 	color: var(--primary-text-color);
 }
 .beam__itemcount span {
@@ -131,9 +127,9 @@ body {
 	color: var(--primary-text-color);
 }
 .btn {
-	font-size: 1.4rem;
+	font-size: 0.875rem;
 	text-align: center;
-	padding: 0.5rem 1.2rem;
+	padding: 0.3125rem 0.75rem;
 	border: 1px solid var(--btn-border);
 	color: var(--btn-label-color);
 	background-color: var(--btn-color);
@@ -153,7 +149,7 @@ body {
 	bottom: 0;
 	left: 0;
 	right: 0;
-	padding: 1rem;
+	padding: 0.625rem;
 	text-align: center;
 }
 .success {
@@ -172,11 +168,11 @@ body {
 	backdrop-filter: blur(2px);
 	z-index: 1000;
 	text-align: center;
-	padding: 2rem;
+	padding: 1.25rem;
 }
 .beam__modal-confirm {
 	background: #ffffff;
-	padding: 2rem;
+	padding: 1.25rem;
 	width: 80%;
 	max-width: 400px;
 	position: absolute;
@@ -185,11 +181,11 @@ body {
 	transform: translate(-50%, -50%);
 
 	& button {
-		margin: 1rem;
+		margin: 0.625rem;
 	}
 	& h2 {
 		border-bottom: 1px solid var(--row-border-color);
-		padding-bottom: 1rem;
+		padding-bottom: 0.625rem;
 		color: var(--primary-text-color);
 	}
 }

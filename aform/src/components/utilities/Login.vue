@@ -10,10 +10,10 @@
 				<form @submit="onSubmit">
 					<div class="login-form-container">
 						<div class="login-form-email login-form-element">
-							<label id="login-email" for="email" class="login-label">Email</label>
+							<label id="login-email" for="email" class="aform__field-label">Email</label>
 							<input
 								id="email"
-								class="login-field"
+								class="aform__input-field"
 								name="email"
 								placeholder="name@example.com"
 								type="email"
@@ -90,5 +90,5 @@ function onSubmit(event: Event) {
 </script>
 
 <style>
-@import url('../../theme/login.css');
+@import url('@/theme/login.css');
 </style>

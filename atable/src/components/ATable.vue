@@ -11,13 +11,13 @@
 			<slot name="body" :data="tableData">
 				<ARow
 					v-for="(row, rowIndex) in tableData.rows"
-					:key="row.id || v4()"
+					:key="row.id"
 					:row="row"
 					:rowIndex="rowIndex"
 					:tableid="tableData.id">
 					<ACell
 						v-for="(col, colIndex) in tableData.columns"
-						:key="`${colIndex}:${rowIndex}`"
+						:key="col.name"
 						:tableid="tableData.id"
 						:col="col"
 						spellcheck="false"
@@ -60,16 +60,15 @@
 </template>
 
 <script setup lang="ts">
-import { v4 } from 'uuid'
-import { nextTick, provide, watch } from 'vue'
 import { vOnClickOutside } from '@vueuse/components'
+import { nextTick, provide, watch } from 'vue'
 
-import { TableColumn, TableConfig, TableRow } from 'types'
 import TableDataStore from '.'
 import ACell from '@/components/ACell.vue'
 import ARow from '@/components/ARow.vue'
 import ATableHeader from '@/components/ATableHeader.vue'
 import ATableModal from '@/components/ATableModal.vue'
+import type { TableColumn, TableConfig, TableRow } from '@/types'
 
 const props = withDefaults(
 	defineProps<{
@@ -158,7 +157,7 @@ const closeModal = (event: MouseEvent) => {
 	}
 }
 
-window.addEventListener('keydown', async (event: KeyboardEvent) => {
+window.addEventListener('keydown', (event: KeyboardEvent) => {
 	if (event.key === 'Escape') {
 		if (tableData.modal.visible) {
 			tableData.modal.visible = false
@@ -167,39 +166,15 @@ window.addEventListener('keydown', async (event: KeyboardEvent) => {
 			const $parent = tableData.modal.parent
 			if ($parent) {
 				// wait for the modal to close before focusing
-				await nextTick()
-				$parent.focus()
+				void nextTick().then(() => {
+					$parent.focus()
+				})
 			}
 		}
 	}
 })
 </script>
 
-<style scoped>
+<style>
 @import url('@stonecrop/themes/default/default.css');
-
-table {
-	display: table;
-	border-collapse: collapse;
-	caret-color: var(--brand-color);
-}
-
-table.atable,
-.atable {
-	font-family: var(--atable-font-family);
-	-webkit-font-smoothing: antialiased;
-	-moz-osx-font-smoothing: grayscale;
-	font-size: var(--table-font-size);
-	border-collapse: collapse;
-}
-
-th {
-	box-sizing: border-box;
-	background-color: var(--brand-color);
-	border-width: 1px;
-	border-style: solid;
-	border-color: var(--header-border-color);
-	border-radius: 0px;
-	color: var(--header-text-color);
-}
 </style>

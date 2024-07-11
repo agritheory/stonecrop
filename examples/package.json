@@ -1,43 +1,58 @@
 {
 	"name": "@stonecrop/examples",
 	"version": "0.2.6",
-	"private": true,
 	"description": "Example App(s) for the Stonecrop framework",
+	"private": true,
+	"type": "module",
 	"license": "MIT",
 	"main": "index.js",
 	"files": [
-		"cruddesk/*",
-		"docbuilder/*",
-		"mobile/*"
+		"aform/*",
+		"docbuilder/*"
 	],
 	"scripts": {
 		"build": "",
-		"dev:builder": "vite serve docbuilder/ -c docbuilder/vite.config.ts -d"
+		"dev:aform": "cd aform/ && histoire dev",
+		"dev:atable": "cd atable/ && histoire dev",
+		"dev:beam": "cd beam/ && histoire dev",
+		"dev:builder": "vite serve docbuilder/ --config docbuilder/vite.config.ts",
+		"dev:code_editor": "cd code_editor/ && histoire dev",
+		"dev:desktop": "vite dev desktop/ --config desktop/vite.config.ts",
+		"dev:graphql_client": "vite dev graphql_client/ --config graphql_client/vite.config.ts",
+		"dev:node_editor": "cd node_editor/ && histoire dev"
 	},
 	"dependencies": {
 		"@stonecrop/aform": "workspace:*",
 		"@stonecrop/atable": "workspace:*",
+		"@stonecrop/beam": "workspace:*",
+		"@stonecrop/code-editor": "workspace:*",
 		"@stonecrop/desktop": "workspace:*",
+		"@stonecrop/graphql-client": "workspace:*",
 		"@stonecrop/node-editor": "workspace:*",
 		"@stonecrop/stonecrop": "workspace:*",
 		"@stonecrop/themes": "workspace:*",
 		"@miragejs/graphql": "^0.1.13",
-		"@vitejs/plugin-vue": "^5.0.4",
 		"miragejs": "^0.1.47",
-		"uuid": "^9.0.0",
-		"vite": "^5.2.9",
-		"vue": "^3.4.23",
-		"xstate": "~4.37.2"
+		"vite": "^5.3.2",
+		"vue": "^3.4.31",
+		"xstate": "^4.38.3"
 	},
 	"devDependencies": {
-		"@types/uuid": "^9.0.0",
-		"@typescript-eslint/eslint-plugin": "^7.6.0",
-		"@typescript-eslint/parser": "^7.6.0",
-		"cypress": "^12.11.0",
+		"@histoire/plugin-vue": "^0.17.17",
+		"@monaco-editor/loader": "^1.3.2",
+		"@typescript-eslint/eslint-plugin": "^7.14.1",
+		"@typescript-eslint/parser": "^7.14.1",
+		"@vitejs/plugin-vue": "^5.0.5",
+		"@vue-flow/core": "^1.37.1",
+		"cypress": "^13.11.0",
 		"eslint": "^8.40.0",
 		"eslint-plugin-vue": "^9.11.1",
-		"typescript": "^5.4.5",
-		"vue-router": "^4"
+		"histoire": "^0.17.17",
+		"immutable": "^4.3.0",
+		"monaco-editor": "^0.34.1",
+		"portal-vue": "^3.0.0",
+		"typescript": "^5.5.2",
+		"vue-router": "^4.4.0"
 	},
 	"engines": {
 		"node": ">=20.11.0"

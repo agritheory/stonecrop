@@ -1,0 +1,20 @@
+{
+	"$schema": "https://developer.microsoft.com/json-schemas/api-extractor/v7/api-extractor.schema.json",
+	"extends": "../../common/config/api-extractor-base.json",
+
+	"docModel": {
+		"enabled": true,
+		"projectFolderUrl": "https://github.com/agritheory/stonecrop/tree/development/utilities"
+	},
+
+	"messages": {
+		"extractorMessageReporting": {
+			// Disable this validation at your own risk:  Processing an incorrect file type
+			// may lead to other errors.  Function bodies may incorrectly get emitted in the
+			// .d.ts rollup.
+			"ae-wrong-input-file-type": {
+				"logLevel": "none"
+			}
+		}
+	}
+}

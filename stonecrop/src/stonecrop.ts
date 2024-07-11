@@ -1,8 +1,8 @@
-import type { ImmutableDoctype, Schema } from 'types/index'
-import DoctypeMeta from './doctype'
-import { NotImplementedError } from './exceptions'
-import Registry from './registry'
-import { useDataStore } from './stores/data'
+import DoctypeMeta from '@/doctype'
+import { NotImplementedError } from '@/exceptions'
+import Registry from '@/registry'
+import { useDataStore } from '@/stores/data'
+import type { ImmutableDoctype, Schema } from '@/types'
 
 export class Stonecrop {
 	/**
@@ -117,7 +117,7 @@ export class Stonecrop {
 	 * stonecrop.setup(doctype)
 	 */
 	setup(doctype: DoctypeMeta): void {
-		this.getMeta(doctype)
+		void this.getMeta(doctype)
 		this.getWorkflow(doctype)
 		this.getActions(doctype)
 	}

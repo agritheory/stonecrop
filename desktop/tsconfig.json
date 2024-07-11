@@ -1,25 +1,10 @@
 {
 	"extends": "../tsconfig.json",
 	"compilerOptions": {
-		"composite": true,
-		"declarationMap": true,
-		"emitDeclarationOnly": true,
-		"outDir": "dist",
-		"baseUrl": ".",
+		"tsBuildInfoFile": "./dist/desktop.tsbuildinfo",
 		"paths": {
-			"@/*": ["src/*"],
-			"types/*": ["types/*"]
+			"@/*": ["./src/*"]
 		}
 	},
-	"include": [
-		"env.d.ts",
-		"src/**/*",
-		"src/**/*.ts",
-		"src/**/*.vue",
-		"stories/**/*.ts",
-		"stories/**/*.vue",
-		"tests/**/*.ts",
-		"tests/**/*.vue",
-		"types/**/*.ts"
-	]
+	"include": ["src/**/*", "src/**/*.ts", "src/**/*.vue", "tests/**/*.ts", "tests/**/*.vue"]
 }

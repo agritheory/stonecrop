@@ -3,9 +3,9 @@
 		<AFieldset label="Workflow" :collapsible="true">
 			<div class="builder-workflow">
 				<StateEditor
-					node-container-class="node-editor"
 					v-if="stateConfig && Object.keys(stateConfig).length > 0"
 					v-model="stateConfig"
+					node-container-class="node-editor"
 					:layout="layout" />
 			</div>
 		</AFieldset>
@@ -15,6 +15,7 @@
 </template>
 
 <script setup lang="ts">
+import type { Layout } from '@stonecrop/node-editor'
 import { onBeforeMount, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { createMachine } from 'xstate'
@@ -29,9 +30,9 @@ let formKey = ref(0)
 makeServer()
 
 // fetch data
-let data = ref({})
-let layout: any
-let stateConfig = ref({})
+let layout: Layout = {}
+const data = ref({})
+const stateConfig = ref({})
 
 onBeforeMount(async () => {
 	const doctype = route.params.id.toString()

@@ -2,6 +2,66 @@
   "name": "@stonecrop/graphql-client",
   "entries": [
     {
+      "version": "0.2.25",
+      "tag": "@stonecrop/graphql-client_v0.2.25",
+      "date": "Wed, 10 Jul 2024 12:10:33 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Add API extractor + update typings"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.2.24",
+      "tag": "@stonecrop/graphql-client_v0.2.24",
+      "date": "Mon, 08 Jul 2024 14:41:43 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.2.23",
+      "tag": "@stonecrop/graphql-client_v0.2.23",
+      "date": "Thu, 27 Jun 2024 18:06:02 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.2.22",
+      "tag": "@stonecrop/graphql-client_v0.2.22",
+      "date": "Mon, 24 Jun 2024 13:56:45 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "add custom deserializer for graphQL responses"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.2.21",
+      "tag": "@stonecrop/graphql-client_v0.2.21",
+      "date": "Tue, 11 Jun 2024 08:20:06 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.2.20",
+      "tag": "@stonecrop/graphql-client_v0.2.20",
+      "date": "Wed, 05 Jun 2024 09:51:18 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.2.19",
+      "tag": "@stonecrop/graphql-client_v0.2.19",
+      "date": "Wed, 05 Jun 2024 08:49:04 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.2.18",
+      "tag": "@stonecrop/graphql-client_v0.2.18",
+      "date": "Mon, 03 Jun 2024 13:59:22 GMT",
+      "comments": {}
+    },
+    {
       "version": "0.2.17",
       "tag": "@stonecrop/graphql-client_v0.2.17",
       "date": "Mon, 03 Jun 2024 11:13:20 GMT",

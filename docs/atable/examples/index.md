@@ -1,5 +1,0 @@
----
-navbar: true
----
-
-# Examples

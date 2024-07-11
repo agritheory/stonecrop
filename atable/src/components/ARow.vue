@@ -10,7 +10,7 @@
 				:tabIndex="-1"
 				class="tree-index"
 				@click="toggleRowExpand(rowIndex)">
-				{{ getRowExpandSymbol() }}
+				{{ rowExpandSymbol }}
 			</td>
 		</slot>
 
@@ -20,11 +20,11 @@
 </template>
 
 <script setup lang="ts">
-import { TableRow } from 'types'
-import { computed, inject, ref } from 'vue'
 import { type KeypressHandlers, useKeyboardNav, defaultKeypressHandlers } from '@stonecrop/utilities'
+import { computed, inject, ref } from 'vue'
 
 import TableDataStore from '.'
+import type { TableRow } from '@/types'
 
 const props = withDefaults(
 	defineProps<{
@@ -42,31 +42,6 @@ const props = withDefaults(
 
 const tableData = inject<TableDataStore>(props.tableid)
 const rowEl = ref<HTMLTableRowElement>(null)
-const numberedRowWidth = tableData.numberedRowWidth.value
-
-const getRowExpandSymbol = () => {
-	if (tableData.config.view !== 'tree') {
-		return ''
-	}
-
-	if (tableData.display[props.rowIndex].isRoot) {
-		if (tableData.display[props.rowIndex].childrenOpen) {
-			return '-'
-		} else {
-			return '+'
-		}
-	}
-
-	if (tableData.display[props.rowIndex].isParent) {
-		if (tableData.display[props.rowIndex].childrenOpen) {
-			return '-'
-		} else {
-			return '+'
-		}
-	} else {
-		return ''
-	}
-}
 
 const isRowVisible = computed(() => {
 	return (
@@ -74,6 +49,18 @@ const isRowVisible = computed(() => {
 		tableData.display[props.rowIndex].isRoot ||
 		tableData.display[props.rowIndex].open
 	)
+})
+
+const rowExpandSymbol = computed(() => {
+	if (tableData.config.view !== 'tree') {
+		return ''
+	}
+
+	if (tableData.display[props.rowIndex].isRoot || tableData.display[props.rowIndex].isParent) {
+		return tableData.display[props.rowIndex].childrenOpen ? '-' : '+'
+	}
+
+	return ''
 })
 
 const toggleRowExpand = (rowIndex: number) => {
@@ -99,29 +86,6 @@ if (props.addNavigation) {
 }
 </script>
 
-<style scoped>
+<style>
 @import url('@stonecrop/themes/default/default.css');
-.table-row {
-	border-top: 1px solid var(--row-border-color);
-	height: var(--atable-row-height);
-}
-
-.list-index {
-	color: var(--header-text-color);
-	font-weight: bold;
-	padding-left: var(--atable-row-padding);
-	padding-right: 1em;
-	text-align: center;
-	user-select: none;
-	width: v-bind(numberedRowWidth);
-	max-width: v-bind(numberedRowWidth);
-}
-
-.tree-index {
-	color: var(--header-text-color);
-	font-weight: bold;
-	text-align: center;
-	user-select: none;
-	width: 2ch;
-}
 </style>

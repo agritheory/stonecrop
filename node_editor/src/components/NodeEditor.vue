@@ -1,35 +1,33 @@
 <template>
-	<div class="node-editor-wrapper" :class="containerClass" @mouseover="hover = true" @mouseleave="hover = false">
+	<div class="node-editor-wrapper" :class="nodeContainerClass" @mouseover="hover = true" @mouseleave="hover = false">
 		<div class="chart-controls">
 			<div class="chart-controls-left">
 				<div><b>Selected Node:</b> {{ activeElementKey ? activeElementKey : 'none' }}</div>
 			</div>
 			<div class="chart-controls-right">
 				<div>
-					<button class="button-default" @click="addNode()">Add Node</button>
+					<button class="button-default" @click="addNode">Add Node</button>
 				</div>
 				<div>
-					<button class="button-default" @click="fitView()">Center</button>
+					<button class="button-default" @click="fitView">Center</button>
 				</div>
 				<div v-if="activeElementIndex > -1">
-					<button class="button-default" @click="shiftInput()">Shift Input Position</button>
+					<button class="button-default" @click="shiftInput">Shift Input Position</button>
 				</div>
 				<div v-if="activeElementIndex > -1">
-					<button class="button-default" @click="shiftOutput()">Shift Output Position</button>
+					<button class="button-default" @click="shiftOutput">Shift Output Position</button>
 				</div>
 			</div>
 		</div>
 
 		<VueFlow
-			@wheel.prevent="onWheel($event)"
+			v-if="vueFlowElements && vueFlowElements.length"
 			class="nowheel"
 			:prevent-scrolling="true"
 			:zoom-on-scroll="false"
 			:fit-view-on-init="true"
-			v-if="vueFlowElements && vueFlowElements.length"
 			v-model="vueFlowElements"
-			@connect="onConnect($event)"
-			@edge-double-click="onEdgeDoubleClick($event)">
+			@wheel.prevent="onWheel">
 			<template #node-editable="props">
 				<EditableNode v-bind="props" @change="labelChanged($event, props.id)" />
 			</template>
@@ -39,79 +37,62 @@
 		</VueFlow>
 	</div>
 </template>
-<script lang="ts" setup>
-import { VueFlow, useVueFlow } from '@vue-flow/core'
-import '@vue-flow/core/dist/style.css'
-import '@vue-flow/core/dist/theme-default.css'
-import EditableNode from './EditableNode.vue'
-import EditableEdge from './EditableEdge.vue'
-import { ref, computed, defineEmits, onBeforeUnmount, onMounted, watch, reactive } from 'vue'
 
-// Props
+<script setup lang="ts">
+import { type VueFlowStore, Position, VueFlow, useVueFlow, Node } from '@vue-flow/core'
+import { type HTMLAttributes, ref, computed, defineEmits, onBeforeUnmount, onMounted } from 'vue'
+
+import EditableEdge from '@/components/EditableEdge.vue'
+import EditableNode from '@/components/EditableNode.vue'
+import type { FlowElements } from '@/types'
 
 const props = defineProps<{
-	modelValue: any
-	nodeContainerClass: string
+	modelValue: FlowElements
+	nodeContainerClass?: HTMLAttributes['class']
 }>()
-
-// Emits
-
 const emit = defineEmits(['update:modelValue'])
 
-// Data
-
-const containerClass = ref('')
-const vueFlowInstance = ref({})
 const hover = ref(false)
-const labelEditor = ref({
-	x: 0,
-	y: 0,
-})
+const vueFlowElements = ref<FlowElements>([])
+const vueFlowInstance = ref<Partial<VueFlowStore>>()
 
 const activeElementKey = ref('')
-
-const vueFlowElements = ref([])
-
-// Computed variables
-
 const activeElementIndex = computed(() => {
-	for (let j = 0; j < vueFlowElements.value.length; j++) {
-		if (vueFlowElements.value[j].id == activeElementKey.value) return j
-	}
+	vueFlowElements.value.forEach((element, index) => {
+		if (element.id === activeElementKey.value) {
+			return index
+		}
+	})
+
 	return -1
 })
 
 const elements = computed({
 	get: () => {
-		let _elements = props.modelValue
-		if (props.nodeContainerClass) {
-			containerClass.value = props.nodeContainerClass
-		} else {
-			containerClass.value = 'defaultContainerClass'
-		}
+		const _elements = props.modelValue
 
-		for (let j = 0; j < _elements.length; j++) {
-			_elements[j].data = {}
-			if (_elements[j].type == 'input') {
-				_elements[j].data.hasInput = false
-				_elements[j].data.hasOutput = true
-			} else if (_elements[j].type == 'output') {
-				_elements[j].data.hasInput = true
-				_elements[j].data.hasOutput = false
+		// Add data to each element
+		for (const _element of _elements) {
+			_element.data = {}
+			if (_element.type === 'input') {
+				_element.data.hasInput = false
+				_element.data.hasOutput = true
+			} else if (_element.type === 'output') {
+				_element.data.hasInput = true
+				_element.data.hasOutput = false
 			} else {
-				_elements[j].data.hasInput = true
-				_elements[j].data.hasOutput = true
+				_element.data.hasInput = true
+				_element.data.hasOutput = true
 			}
-			_elements[j].class = 'vue-flow__node-default'
-			_elements[j].type = 'editable'
+			_element.class = 'vue-flow__node-default'
+			_element.type = 'editable'
 		}
 
-		for (let j = 0; j < _elements.length; j++) {
-			let key = _elements[j].id
-			let el = _elements[j]
-			_elements[j].events = {
+		// Add click event to each element
+		for (const _element of _elements) {
+			_element.events = {
 				click: () => {
-					activeElementKey.value = key
+					activeElementKey.value = _element.id
 				},
 			}
 		}
@@ -123,20 +104,6 @@ const elements = computed({
 	},
 })
 
-//VueFlow
-
-const { getNodes, onPaneReady } = useVueFlow({})
-
-onPaneReady(i => {
-	vueFlowInstance.value = i
-})
-
-// Setup
-
-vueFlowElements.value = elements.value
-
-// Lifecycle Hooks
-
 onMounted(() => {
 	document.removeEventListener('keypress', handleKeypress)
 	document.addEventListener('keypress', handleKeypress)
@@ -146,70 +113,74 @@ onBeforeUnmount(() => {
 	document.removeEventListener('keypress', handleKeypress)
 })
 
-// Methods
+const { onPaneReady } = useVueFlow()
+onPaneReady(instance => {
+	vueFlowInstance.value = instance
+})
 
-const shiftTerminal = currentTerminal => {
+vueFlowElements.value = elements.value
+
+// Methods
+const shiftTerminal = (currentTerminal: Position) => {
 	return {
-		top: 'right',
-		right: 'bottom',
-		bottom: 'left',
-		left: 'top',
+		[Position.Top]: Position.Right,
+		[Position.Right]: Position.Bottom,
+		[Position.Bottom]: Position.Left,
+		[Position.Left]: Position.Top,
 	}[currentTerminal]
 }
 
 const shiftOutput = () => {
 	if (activeElementIndex.value > -1) {
-		vueFlowElements.value[activeElementIndex.value].sourcePosition = shiftTerminal(
-			vueFlowElements.value[activeElementIndex.value].sourcePosition
-		)
+		const activeNode = vueFlowElements.value[activeElementIndex.value] as Node
+		activeNode.sourcePosition = shiftTerminal(activeNode.sourcePosition)
 	}
 }
 
 const shiftInput = () => {
 	if (activeElementIndex.value > -1) {
-		vueFlowElements.value[activeElementIndex.value].targetPosition = shiftTerminal(
-			vueFlowElements.value[activeElementIndex.value].targetPosition
-		)
+		const activeNode = vueFlowElements.value[activeElementIndex.value] as Node
+		activeNode.targetPosition = shiftTerminal(activeNode.targetPosition)
 	}
 }
 
-const onWheel = $event => {
-	window.scrollBy(0, $event.deltaY)
+const onWheel = (event: WheelEvent) => {
+	window.scrollBy(0, event.deltaY)
 }
 
-const handleKeypress = e => {
-	if (hover.value && e.ctrlKey == true) {
-		if (e.key == '+' || e.key == '=') {
-			vueFlowInstance.value.zoomIn()
+const handleKeypress = (event: KeyboardEvent) => {
+	if (hover.value && event.ctrlKey == true) {
+		if (event.key == '+' || event.key == '=') {
+			void vueFlowInstance.value.zoomIn()
 		}
-		if (e.key == '-') {
-			vueFlowInstance.value.zoomOut()
+		if (event.key == '-') {
+			void vueFlowInstance.value.zoomOut()
 		}
 	}
 }
 
-const fitView = () => {
-	vueFlowInstance.value.fitView()
+const fitView = async () => {
+	await vueFlowInstance.value.fitView()
 }
 
 const addNode = () => {
-	let newNodePosition = { x: Math.random() * 200, y: Math.random() * 200 }
 	let makeEdge = false
+	let newNodePosition = { x: Math.random() * 200, y: Math.random() * 200 }
 	if (activeElementIndex.value > -1) {
 		const activeNode = vueFlowElements.value[activeElementIndex.value]
 		if (activeNode.data.hasOutput) {
-			newNodePosition = { x: activeNode.position.x + 200, y: activeNode.position.y + 50 }
+			newNodePosition = { x: (activeNode as Node).position.x + 200, y: (activeNode as Node).position.y + 50 }
 			makeEdge = true
 		}
 	}
 
-	let id = vueFlowElements.value.length
-	let nodeId = `node-${id}`
+	const id = vueFlowElements.value.length
+	const nodeId = `node-${id}`
 	vueFlowElements.value.push({
 		id: nodeId,
 		label: 'Node ' + id,
-		sourcePosition: 'right',
-		targetPosition: 'left',
+		sourcePosition: Position.Right,
+		targetPosition: Position.Left,
 		class: 'vue-flow__node-default',
 		type: 'editable',
 		data: {
@@ -243,14 +214,6 @@ const addNode = () => {
 	}
 }
 
-const onConnect = e => {
-	console.log('edge connect', e)
-}
-
-const onEdgeDoubleClick = e => {
-	console.log('edge double click', e)
-}
-
 const labelChanged = (e, id) => {
 	for (let j = 0; j < vueFlowElements.value.length; j++) {
 		if (vueFlowElements.value[j].id == id) {
@@ -260,6 +223,7 @@ const labelChanged = (e, id) => {
 	}
 }
 </script>
+
 <style>
 @import '@vue-flow/core/dist/style.css';
 @import '@vue-flow/core/dist/theme-default.css';
@@ -272,9 +236,11 @@ const labelChanged = (e, id) => {
 	align-items: center;
 	padding-top: 0.2em;
 }
+
 .chart-controls-right div {
 	margin-left: 5px;
 }
+
 .chart-controls {
 	padding-left: 20px;
 	padding-right: 20px;
@@ -284,26 +250,32 @@ const labelChanged = (e, id) => {
 	flex-direction: row;
 	justify-content: space-between;
 }
+
 .chart-controls div {
 	margin-bottom: 5px;
 }
+
 .defaultContainerClass {
 	height: 90vh;
 	width: 100%;
 	border: 1px solid #ccc;
 }
+
 .default-input-node.vue-flow__node-input,
 .default-output-node.vue-flow__node-output {
 	border-color: #000;
 }
+
 .default-input-node.vue-flow__node-input .vue-flow__handle,
 .default-output-node.vue-flow__node-output .vue-flow__handle {
 	background-color: #000;
 }
+
 .default-input-node.vue-flow__node-input.selected,
 .default-output-node.vue-flow__node-output.selected {
 	box-shadow: 0 0 0 0.5px #000;
 }
+
 button.button-default {
 	background-color: #ffffff;
 	padding: 1px 12px;
@@ -316,14 +288,17 @@ button.button-default {
 button.button-default:hover {
 	background-color: #f2f2f2;
 }
+
 .vue-flow {
 	background-size: 40px 40px;
 	background-image: linear-gradient(to right, #ccc 1px, transparent 1px),
 		linear-gradient(to bottom, #ccc 1px, transparent 1px);
 }
+
 input.label-editor {
 	position: absolute;
 }
+
 .node-editor-wrapper {
 	position: relative;
 }

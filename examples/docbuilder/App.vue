@@ -7,6 +7,7 @@
 import { makeServer } from './server'
 makeServer()
 </script>
+
 <style scoped>
 footer {
 	position: fixed;
