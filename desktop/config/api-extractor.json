@@ -1,0 +1,27 @@
+{
+	"$schema": "https://developer.microsoft.com/json-schemas/api-extractor/v7/api-extractor.schema.json",
+	"extends": "../../common/config/api-extractor-base.json",
+
+	"docModel": {
+		"enabled": true,
+		"projectFolderUrl": "https://github.com/agritheory/stonecrop/tree/development/desktop"
+	},
+
+	// TODO: wait for Rush to fix this (date: June 28, 2024)
+	// enabling tsdoc-metadata causes the following api-extractor error:
+	// Error: Internal Error: The "default" symbol has a ts.SyntaxKind.ExportAssignment declaration which is not (yet?) supported by API Extractor
+	"tsdocMetadata": {
+		"enabled": false
+	},
+
+	"messages": {
+		"extractorMessageReporting": {
+			// Disable this validation at your own risk:  Processing an incorrect file type
+			// may lead to other errors.  Function bodies may incorrectly get emitted in the
+			// .d.ts rollup.
+			"ae-wrong-input-file-type": {
+				"logLevel": "none"
+			}
+		}
+	}
+}

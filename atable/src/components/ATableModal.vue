@@ -5,22 +5,17 @@
 </template>
 
 <script setup lang="ts">
-import { inject } from 'vue'
+// import { inject } from 'vue'
 
-import TableDataStore from '.'
+// import TableDataStore from '.'
 
-const props = defineProps<{
+/* const props = */ defineProps<{
 	colIndex?: number
 	rowIndex?: number
 	tableid?: string
 }>()
 
-const tableData = inject<TableDataStore>(props.tableid)
-
-const handleInput = (event: Event) => {
-	event.stopPropagation()
-}
-
+// const tableData = inject<TableDataStore>(props.tableid)
 // const cellBackgroundColor = computed(() => {
 // 	if (tableData.modal.parent) {
 // 		let computedstyle = window.getComputedStyle(tableData.modal.parent)
@@ -29,22 +24,12 @@ const handleInput = (event: Event) => {
 // 		return 'inherit'
 // 	}
 // })
+
+const handleInput = (event: Event) => {
+	event.stopPropagation()
+}
 </script>
 
-<style scoped>
+<style>
 @import url('@stonecrop/themes/default/default.css');
-div {
-	z-index: 100;
-	position: absolute;
-	background-color: var(--row-color-zebra-dark);
-	/* margin: 0px;
-	outline: none;
-	box-shadow: none;
-	color: var(--cell-text-color);
-	text-overflow: ellipsis;
-	overflow: hidden;
-	padding-left: 0.5ch;
-	padding-right: 0.5ch;
-	font-size: var(--table-font-size); */
-}
 </style>

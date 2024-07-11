@@ -1,23 +1,16 @@
 {
-	"compilerOptions": {
-		"rootDir": ".",
-		"target": "es2017",
-		"module": "esnext",
-		"lib": ["dom", "dom.iterable", "esnext"],
-		"moduleResolution": "node",
-		"esModuleInterop": true,
-		"isolatedModules": true,
-		"resolveJsonModule": true,
-		"skipLibCheck": true,
-		"jsx": "preserve"
-	},
-	"exclude": ["node_modules", "**/*.spec.ts"],
+	// https://www.typescriptlang.org/docs/handbook/project-references.html#overall-structure
+	"extends": "./tsconfig.options.json",
+	"files": [],
 	"references": [
 		{ "path": "./aform" },
 		{ "path": "./atable" },
+		{ "path": "./beam" },
+		{ "path": "./code_editor" },
 		{ "path": "./desktop" },
 		{ "path": "./examples" },
 		{ "path": "./graphql_client" },
+		{ "path": "./node_editor" },
 		{ "path": "./stonecrop" },
 		{ "path": "./utilities" }
 	]

@@ -31,7 +31,7 @@ const count = ref(props.value)
 const handleInput = (event: InputEvent | MouseEvent) => {
 	event.preventDefault()
 	event.stopPropagation()
-	count.value = Number(event.target.innerHTML.replace(/[^0-9]/g, ''))
+	count.value = Number((event.target as HTMLElement).innerHTML.replace(/[^0-9]/g, ''))
 	emit('input', count.value)
 }
 

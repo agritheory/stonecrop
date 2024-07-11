@@ -17,7 +17,7 @@ const emit = defineEmits(['input'])
 
 const checked = ref(props.value)
 
-const handleInput = (e: InputEvent) => {
+const handleInput = () => {
 	emit('input', checked.value)
 }
 </script>

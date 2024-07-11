@@ -9,8 +9,8 @@ const emit = defineEmits(['scaninput'])
 const barcode = ref('')
 
 const handleScanInput = (event: InputEvent | KeyboardEvent) => {
-	if (event.target.tagName !== 'INPUT') {
-		if (event.key !== 'Enter') {
+	if ((event.target as HTMLElement).tagName !== 'INPUT') {
+		if (event instanceof KeyboardEvent && event.key !== 'Enter') {
 			barcode.value += `${event.key}`
 		} else {
 			emit('scaninput', barcode.value)

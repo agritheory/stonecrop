@@ -38,7 +38,7 @@
 			</div>
 		</div>
 		<div style="margin-right: 30px"></div>
-		<div class="action-element" v-for="(el, index) in _elements" :key="index">
+		<div class="action-element" v-for="(el, index) in _elements" :key="el.label">
 			<button v-if="el.elementType == 'button'" :onclick="el.action" class="button-default">{{ el.label }}</button>
 			<div v-if="el.elementType == 'dropdown'">
 				<button class="button-default" @click="toggleDropdown(index)">{{ el.label }}</button>
@@ -81,7 +81,7 @@ const props = defineProps<{
 
 const _elements = ref<SetElement[]>([])
 const isOpen = ref(false)
-const timeout = ref<NodeJS.Timeout>(null)
+const timeout = ref<number>(null)
 const hover = ref(false)
 const closeClicked = ref(false)
 

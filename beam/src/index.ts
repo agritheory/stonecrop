@@ -12,6 +12,11 @@ import ListView from '@/components/ListView.vue'
 import Navbar from '@/components/Navbar.vue'
 import ScanInput from '@/components/ScanInput.vue'
 
+/**
+ * Install all Beam components
+ * @param app - Vue app instance
+ * @public
+ */
 function install(app: App /* options */) {
 	app.component('ActionFooter', ActionFooter)
 	app.component('BeamModal', BeamModal)

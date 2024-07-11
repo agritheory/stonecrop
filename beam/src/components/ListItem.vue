@@ -7,19 +7,21 @@
 
 		<ItemCount
 			v-if="item.count"
-			v-model="item.count.count"
+			v-model="listItem.count.count"
 			:denominator="item.count.of"
 			:uom="item.count.uom"
 			:editable="true" />
-		<ItemCheck v-if="item.hasOwnProperty('checked')" v-model="item.checked" />
+		<ItemCheck v-if="item.hasOwnProperty('checked')" v-model="listItem.checked" />
 	</li>
 </template>
 
 <script setup lang="ts">
-import ItemCount from './ItemCount.vue'
-import ItemCheck from './ItemCheck.vue'
+import { ref } from 'vue'
 
-defineProps<{
+import ItemCount from '@/components/ItemCount.vue'
+import ItemCheck from '@/components/ItemCheck.vue'
+
+const props = defineProps<{
 	item: {
 		label: string
 		description: string
@@ -31,4 +33,6 @@ defineProps<{
 		checked?: boolean
 	}
 }>()
+
+const listItem = ref(props.item)
 </script>

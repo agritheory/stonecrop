@@ -80,7 +80,7 @@ const onChange = () => {
 	}
 }
 
-const handleClickOutside = (event: MouseEvent) => {
+const handleClickOutside = () => {
 	closeResults()
 	arrowCounter.value = 0
 }
