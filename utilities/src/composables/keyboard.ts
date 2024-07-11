@@ -1,8 +1,8 @@
 import { type WatchStopHandle, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useFocusWithin } from '@vueuse/core'
 
-import type { KeyboardNavigationOptions, KeypressHandlers } from 'types'
 import { useElementVisibility } from '@/composables/visibility'
+import type { KeyboardNavigationOptions, KeypressHandlers } from '@/types'
 
 // helper functions
 const isVisible = (element: HTMLElement) => {

@@ -1,7 +1,5 @@
-/// <reference types="histoire" />
 /// <reference types="vitest" />
 
-import { HstVue } from '@histoire/plugin-vue'
 import vue from '@vitejs/plugin-vue'
 import { resolve } from 'path'
 import { coverageConfigDefaults, defineConfig } from 'vitest/config'
@@ -13,6 +11,7 @@ export default defineConfig({
 	resolve: {
 		alias: {
 			'@': resolve(projectRootDir, 'src'),
+			types: resolve(projectRootDir, 'src/types'),
 		},
 	},
 	server: {
@@ -21,6 +20,7 @@ export default defineConfig({
 		},
 	},
 	build: {
+		emptyOutDir: false,
 		sourcemap: true,
 		lib: {
 			entry: resolve(projectRootDir, 'src/index.ts'),
@@ -34,11 +34,6 @@ export default defineConfig({
 				},
 			},
 		},
-	},
-	histoire: {
-		plugins: [HstVue()],
-		setupFile: '/src/histoire.setup.ts',
-		storyIgnored: ['**/node_modules/**', '**/dist/**'],
 	},
 	test: {
 		globals: true,
@@ -57,9 +52,7 @@ export default defineConfig({
 			},
 			exclude: [
 				...coverageConfigDefaults.exclude,
-				'**/*.setup.ts', // ignore histoire setup files
 				'src/index.ts', // ignore the entry file
-				'stories/**', // ignore histoire storybook files
 				'types/**', // ignore types
 			],
 		},

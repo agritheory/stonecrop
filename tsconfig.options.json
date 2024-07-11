@@ -1,0 +1,16 @@
+{
+	"compilerOptions": {
+		"target": "esnext",
+		"module": "preserve",
+		"lib": ["dom", "dom.iterable", "esnext"],
+		"outDir": "${configDir}/dist",
+		"composite": true,
+		"declaration": true,
+		"declarationMap": true,
+		"disableReferencedProjectLoad": true,
+		"emitDeclarationOnly": true,
+		"isolatedModules": true,
+		"skipLibCheck": true
+	},
+	"exclude": ["node_modules", "**/*.spec.ts"]
+}

@@ -1,6 +1,6 @@
 import { createPinia } from 'pinia'
 import { PiniaSharedState } from 'pinia-shared-state'
-import { PiniaUndo } from 'pinia-undo'
+// import { PiniaUndo } from 'pinia-undo'
 
 const pinia = createPinia()
 
