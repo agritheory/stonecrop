@@ -1,63 +1,3 @@
-<script lang="ts" setup>
-import type { EdgeProps, Position } from '@vue-flow/core'
-import { EdgeLabelRenderer, getBezierPath, useVueFlow } from '@vue-flow/core'
-import type { CSSProperties } from 'vue'
-import { computed, ref, nextTick } from 'vue'
-
-interface EditableEdgeProps<T = any> extends EdgeProps<T> {
-	id: string
-	sourceX: number
-	sourceY: number
-	targetX: number
-	targetY: number
-	sourcePosition: Position
-	targetPosition: Position
-	data: T
-	markerEnd: string
-	style: CSSProperties
-	label: string
-}
-
-const props = defineProps<EditableEdgeProps>()
-
-const { removeEdges } = useVueFlow()
-
-const emit = defineEmits(['change'])
-
-const labelInput = ref()
-const newLabel = ref('')
-const showInput = ref(false)
-let lastClick = 0
-
-const labelOnClick = () => {
-	let now = Date.now()
-	if (now - lastClick < 500 && !showInput.value) {
-		showLabelInput()
-	}
-	lastClick = now
-}
-
-const showLabelInput = async () => {
-	newLabel.value = props.label
-	showInput.value = true
-	await nextTick()
-	labelInput.value.focus()
-}
-
-const submitNewLabel = () => {
-	showInput.value = false
-	emit('change', newLabel.value)
-}
-
-const path = computed(() => getBezierPath(props))
-</script>
-
-<script lang="ts">
-export default {
-	inheritAttrs: false,
-}
-</script>
-
 <template>
 	<path :id="id" :style="style" class="vue-flow__edge-path" :d="path[0]" :marker-end="markerEnd" />
 
@@ -83,12 +23,57 @@ export default {
 	</EdgeLabelRenderer>
 </template>
 
+<script setup lang="ts">
+import { type EdgeProps, EdgeLabelRenderer, getBezierPath /* useVueFlow */ } from '@vue-flow/core'
+import { computed, ref, nextTick } from 'vue'
+
+const props = defineProps<EdgeProps>()
+const emit = defineEmits(['change'])
+
+// TODO: Implement edge removal
+// const { removeEdges } = useVueFlow()
+
+const labelInput = ref<HTMLElement>()
+const newLabel = ref<EdgeProps['label']>('')
+const showInput = ref(false)
+let lastClick = 0
+
+const labelOnClick = async () => {
+	let now = Date.now()
+	if (now - lastClick < 500 && !showInput.value) {
+		await showLabelInput()
+	}
+	lastClick = now
+}
+
+const showLabelInput = async () => {
+	newLabel.value = props.label
+	showInput.value = true
+	await nextTick()
+	labelInput.value.focus()
+}
+
+const submitNewLabel = () => {
+	showInput.value = false
+	emit('change', newLabel.value)
+}
+
+const path = computed(() => getBezierPath(props))
+</script>
+
+<script lang="ts">
+export default {
+	inheritAttrs: false,
+}
+</script>
+
 <style>
 .editable-edge-label {
 	background-color: white;
 	position: relative;
 	font-size: 12px;
 }
+
 .label-input-wrapper {
 	position: absolute;
 	top: 0;
@@ -99,6 +84,7 @@ export default {
 	align-items: center;
 	justify-content: center;
 }
+
 .label-input {
 	text-align: center;
 }

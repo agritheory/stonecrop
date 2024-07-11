@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/beam",
-	"version": "0.2.6",
+	"version": "0.2.25",
 	"license": "MIT",
 	"type": "module",
 	"author": {
@@ -29,32 +29,31 @@
 		"src/*"
 	],
 	"scripts": {
-		"build": "tsc -b && vite build",
+		"prepublish": "heft build && vite build && rushx docs",
+		"build": "heft build && vite build && rushx docs",
 		"dev": "vite",
+		"docs": "api-documenter markdown -i temp -o ../docs/beam",
 		"lint": "eslint . --ext .ts,.vue",
-		"preview": "vite preview",
-		"story:build": "histoire build",
-		"story:dev": "histoire dev",
-		"story:preview": "histoire preview"
+		"preview": "vite preview"
 	},
 	"dependencies": {
-		"portal-vue": "^3.0.0",
-		"vue": "^3.4.23"
+		"vue": "^3.4.31"
 	},
 	"devDependencies": {
-		"@histoire/plugin-vue": "^0.17.17",
-		"@typescript-eslint/eslint-plugin": "^7.6.0",
-		"@typescript-eslint/parser": "^7.6.0",
-		"@vitejs/plugin-vue": "^5.0.4",
-		"cypress": "^12.11.0",
+		"@microsoft/api-documenter": "^7.25.3",
+		"@rushstack/heft": "^0.66.18",
+		"@typescript-eslint/eslint-plugin": "^7.14.1",
+		"@typescript-eslint/parser": "^7.14.1",
+		"@vitejs/plugin-vue": "^5.0.5",
+		"cypress": "^13.11.0",
 		"eslint": "^8.40.0",
 		"eslint-config-prettier": "^8.8.0",
 		"eslint-plugin-vue": "^9.11.1",
-		"histoire": "^0.17.17",
 		"sass": "^1.75.0",
-		"typescript": "^5.4.5",
-		"vite": "^5.2.9",
-		"vue-router": "^4"
+		"stonecrop-rig": "workspace:*",
+		"typescript": "^5.5.2",
+		"vite": "^5.3.2",
+		"vue-router": "^4.4.0"
 	},
 	"publishConfig": {
 		"access": "public"

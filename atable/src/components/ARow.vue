@@ -1,17 +1,18 @@
 <template>
-	<tr ref="rowEl" :tabindex="tabIndex" v-show="rowVisible()" class="table-row">
+	<tr ref="rowEl" :tabindex="tabIndex" v-show="isRowVisible" class="table-row">
 		<!-- render numbered/tree view index -->
-		<td v-if="tableData.config.view === 'list'" :tabIndex="-1" class="list-index">
-			{{ rowIndex + 1 }}
-		</td>
-		<td
-			v-else-if="tableData.config.view === 'tree'"
-			:tabIndex="-1"
-			class="tree-index"
-			@click="toggleRowExpand(rowIndex)">
-			{{ getRowExpandSymbol() }}
-		</td>
-		<slot v-else name="indexCell"></slot>
+		<slot name="index">
+			<td v-if="tableData.config.view === 'list'" :tabIndex="-1" class="list-index">
+				{{ rowIndex + 1 }}
+			</td>
+			<td
+				v-else-if="tableData.config.view === 'tree'"
+				:tabIndex="-1"
+				class="tree-index"
+				@click="toggleRowExpand(rowIndex)">
+				{{ rowExpandSymbol }}
+			</td>
+		</slot>
 
 		<!-- render cell content -->
 		<slot></slot>
@@ -19,11 +20,11 @@
 </template>
 
 <script setup lang="ts">
-import { TableRow } from 'types'
-import { inject, ref } from 'vue'
-import { useKeyboardNav } from '@stonecrop/utilities'
+import { type KeypressHandlers, useKeyboardNav, defaultKeypressHandlers } from '@stonecrop/utilities'
+import { computed, inject, ref } from 'vue'
 
 import TableDataStore from '.'
+import type { TableRow } from '@/types'
 
 const props = withDefaults(
 	defineProps<{
@@ -31,86 +32,60 @@ const props = withDefaults(
 		rowIndex: number
 		tableid: string
 		tabIndex?: number
-		addNavigation?: object
+		addNavigation?: boolean | KeypressHandlers
 	}>(),
 	{
 		tabIndex: -1,
+		addNavigation: false, // default to allowing cell navigation
 	}
 )
 
 const tableData = inject<TableDataStore>(props.tableid)
 const rowEl = ref<HTMLTableRowElement>(null)
-const numberedRowWidth = tableData.numberedRowWidth.value
 
-const getRowExpandSymbol = () => {
-	if (tableData.config.view !== 'tree') {
-		return ''
-	}
-
-	if (tableData.display[props.rowIndex].isRoot) {
-		if (tableData.display[props.rowIndex].childrenOpen) {
-			return '-'
-		} else {
-			return '+'
-		}
-	}
-
-	if (tableData.display[props.rowIndex].isParent) {
-		if (tableData.display[props.rowIndex].childrenOpen) {
-			return '-'
-		} else {
-			return '+'
-		}
-	} else {
-		return ''
-	}
-}
-
-const rowVisible = () => {
+const isRowVisible = computed(() => {
 	return (
 		tableData.config.view !== 'tree' ||
 		tableData.display[props.rowIndex].isRoot ||
 		tableData.display[props.rowIndex].open
 	)
-}
+})
+
+const rowExpandSymbol = computed(() => {
+	if (tableData.config.view !== 'tree') {
+		return ''
+	}
+
+	if (tableData.display[props.rowIndex].isRoot || tableData.display[props.rowIndex].isParent) {
+		return tableData.display[props.rowIndex].childrenOpen ? '-' : '+'
+	}
+
+	return ''
+})
 
 const toggleRowExpand = (rowIndex: number) => {
 	tableData.toggleRowExpand(rowIndex)
 }
 
 if (props.addNavigation) {
+	let handlers = defaultKeypressHandlers
+
+	if (typeof props.addNavigation === 'object') {
+		handlers = {
+			...handlers,
+			...props.addNavigation,
+		}
+	}
+
 	useKeyboardNav([
 		{
 			selectors: rowEl,
-			handlers: props.addNavigation,
+			handlers: handlers,
 		},
 	])
 }
 </script>
 
-<style scoped>
+<style>
 @import url('@stonecrop/themes/default/default.css');
-.table-row {
-	border-top: 1px solid var(--row-border-color);
-	height: var(--atable-row-height);
-}
-
-.list-index {
-	color: var(--header-text-color);
-	font-weight: bold;
-	padding-left: var(--atable-row-padding);
-	padding-right: 1em;
-	text-align: center;
-	user-select: none;
-	width: v-bind(numberedRowWidth);
-	max-width: v-bind(numberedRowWidth);
-}
-
-.tree-index {
-	color: var(--header-text-color);
-	font-weight: bold;
-	text-align: center;
-	user-select: none;
-	width: 2ch;
-}
 </style>

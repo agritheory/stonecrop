@@ -1,5 +1,6 @@
-import type { FormSchema } from 'types'
-import { DirectiveBinding } from 'vue'
+import type { DirectiveBinding } from 'vue'
+
+import type { FormSchema } from '@/types'
 
 const NAMED_MASKS = {
 	date: '##/##/####',
@@ -35,7 +36,7 @@ function getMask(binding: DirectiveBinding<string>) {
 	} else {
 		// TODO: (state) handle using state management
 		const schema: FormSchema = binding.instance['schema']
-		const fieldType: string | undefined = schema.fieldtype?.toLowerCase()
+		const fieldType: string | undefined = schema?.fieldtype?.toLowerCase()
 		if (fieldType && NAMED_MASKS[fieldType]) {
 			mask = NAMED_MASKS[fieldType]
 		}

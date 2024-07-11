@@ -7,12 +7,32 @@
       "allowedCategories": [ "prototype", "utilities" ]
     },
     {
+      "name": "@microsoft/api-documenter",
+      "allowedCategories": [ "prototype", "utilities" ]
+    },
+    {
+      "name": "@microsoft/api-extractor",
+      "allowedCategories": [ "prototype", "utilities" ]
+    },
+    {
       "name": "@miragejs/graphql",
       "allowedCategories": [ "prototype", "utilities" ]
     },
     {
       "name": "@monaco-editor/loader",
       "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "@rushstack/heft",
+      "allowedCategories": [ "prototype", "utilities" ]
+    },
+    {
+      "name": "@rushstack/heft-api-extractor-plugin",
+      "allowedCategories": [ "prototype", "utilities" ]
+    },
+    {
+      "name": "@rushstack/heft-typescript-plugin",
+      "allowedCategories": [ "prototype", "utilities" ]
     },
     {
       "name": "@stonecrop/aform",
@@ -23,7 +43,19 @@
       "allowedCategories": [ "prototype" ]
     },
     {
+      "name": "@stonecrop/beam",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "@stonecrop/code-editor",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
       "name": "@stonecrop/desktop",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "@stonecrop/graphql-client",
       "allowedCategories": [ "prototype" ]
     },
     {
@@ -55,7 +87,7 @@
       "allowedCategories": [ "prototype", "utilities" ]
     },
     {
-      "name": "@vitest/coverage-v8",
+      "name": "@vitest/coverage-istanbul",
       "allowedCategories": [ "prototype", "utilities" ]
     },
     {
@@ -75,16 +107,20 @@
       "allowedCategories": [ "prototype" ]
     },
     {
+      "name": "@vueuse/components",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
       "name": "@vueuse/core",
       "allowedCategories": [ "prototype", "utilities" ]
     },
     {
-      "name": "@vueuse/shared",
-      "allowedCategories": [ "prototype" ]
-    },
-    {
       "name": "cypress",
       "allowedCategories": [ "prototype", "utilities" ]
+    },
+    {
+      "name": "decimal.js",
+      "allowedCategories": [ "utilities" ]
     },
     {
       "name": "eslint",
@@ -175,6 +211,10 @@
       "allowedCategories": [ "prototype" ]
     },
     {
+      "name": "stonecrop-rig",
+      "allowedCategories": [ "prototype", "utilities" ]
+    },
+    {
       "name": "ts-node",
       "allowedCategories": [ "prototype" ]
     },
@@ -196,6 +236,10 @@
     },
     {
       "name": "vite",
+      "allowedCategories": [ "prototype", "utilities" ]
+    },
+    {
+      "name": "vite-plugin-dts",
       "allowedCategories": [ "prototype", "utilities" ]
     },
     {

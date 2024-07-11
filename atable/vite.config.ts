@@ -1,9 +1,8 @@
-/// <reference types="histoire" />
+/// <reference types="vitest" />
 
-import { HstVue } from '@histoire/plugin-vue'
 import vue from '@vitejs/plugin-vue'
 import { resolve } from 'path'
-import { defineConfig } from 'vitest/config'
+import { coverageConfigDefaults, defineConfig } from 'vitest/config'
 
 const projectRootDir = resolve(__dirname)
 
@@ -12,6 +11,7 @@ export default defineConfig({
 	resolve: {
 		alias: {
 			'@': resolve(projectRootDir, 'src'),
+			types: resolve(projectRootDir, 'src/types'),
 		},
 	},
 	server: {
@@ -20,6 +20,7 @@ export default defineConfig({
 		},
 	},
 	build: {
+		emptyOutDir: false,
 		sourcemap: true,
 		lib: {
 			entry: resolve(projectRootDir, 'src/index.ts'),
@@ -34,44 +35,26 @@ export default defineConfig({
 			},
 		},
 	},
-	histoire: {
-		plugins: [HstVue()],
-		setupFile: '/src/histoire.setup.ts',
-		storyIgnored: ['**/node_modules/**', '**/dist/**'],
-	},
 	test: {
 		globals: true,
 		environment: 'jsdom',
 		coverage: {
-			provider: 'v8',
+			enabled: true,
+			provider: 'istanbul',
+			reporter: ['text', 'json-summary', 'json'], // required for Github Actions CI
+			reportOnFailure: true,
+			skipFull: true,
 			thresholds: {
 				lines: 70,
 				branches: 70,
 				functions: 70,
 				statements: 70,
-				autoUpdate: true,
 			},
-			// required for Github Actions CI
-			reporter: ['text', 'json-summary', 'json'],
-			reportsDirectory: './coverage',
 			exclude: [
-				'coverage/**',
-				'dist/**',
-				'stories/**',
-				'types/**',
-				'packages/*/test{,s}/**',
-				'**/*.d.ts',
-				'**/*.setup.ts',
-				'cypress/**',
-				'test{,s}/**',
-				'test{,-*}.{js,cjs,mjs,ts,tsx,jsx}',
-				'**/*{.,-}test.{js,cjs,mjs,ts,tsx,jsx}',
-				'**/*{.,-}spec.{js,cjs,mjs,ts,tsx,jsx}',
-				'**/__tests__/**',
-				'**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*',
-				'**/.{eslint,mocha,prettier}rc.{js,cjs,yml}',
+				...coverageConfigDefaults.exclude,
+				'src/index.ts', // ignore the entry file
+				'types/**', // ignore types
 			],
-			skipFull: true,
 		},
 	},
 })

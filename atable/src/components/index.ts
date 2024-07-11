@@ -1,7 +1,7 @@
 import { v4 } from 'uuid'
 import { computed, reactive } from 'vue'
 
-import type { TableDisplay, TableRow, TableColumn, TableConfig, TableModal } from '../../types'
+import type { TableDisplay, TableRow, TableColumn, TableConfig, TableModal } from '@/types'
 
 export default class TableDataStore {
 	id: string

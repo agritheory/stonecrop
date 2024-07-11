@@ -1,7 +1,8 @@
-import { onMounted, onBeforeUnmount } from 'vue'
-import { useElementVisibility } from '@vueuse/core'
+import { type WatchStopHandle, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useFocusWithin } from '@vueuse/core'
 
-import type { KeyboardNavigationOptions, KeypressHandlers } from 'types'
+import { useElementVisibility } from '@/composables/visibility'
+import type { KeyboardNavigationOptions, KeypressHandlers } from '@/types'
 
 // helper functions
 const isVisible = (element: HTMLElement) => {
@@ -328,50 +329,67 @@ export const defaultKeypressHandlers: KeypressHandlers = {
 }
 
 export function useKeyboardNav(options: KeyboardNavigationOptions[]) {
-	const getSelectors = (option: KeyboardNavigationOptions) => {
-		// get parent element
-		let $parent: Element | null = null
+	const getParentElement = (option: KeyboardNavigationOptions) => {
+		let $parent: HTMLElement | null = null
 		if (option.parent) {
 			if (typeof option.parent === 'string') {
 				$parent = document.querySelector(option.parent)
-			} else if (option.parent instanceof Element) {
+			} else if (option.parent instanceof HTMLElement) {
 				$parent = option.parent
 			} else {
 				$parent = option.parent.value
 			}
 		}
+		return $parent
+	}
 
-		// generate a list of selector(s)
-		let selectors: Element[] = []
-
-		if (option.selectors) {
-			if (typeof option.selectors === 'string') {
-				selectors = $parent
-					? Array.from($parent.querySelectorAll(option.selectors))
-					: Array.from(document.querySelectorAll(option.selectors))
-			} else if (option.selectors instanceof Element) {
-				selectors.push(option.selectors)
-			} else {
-				if (Array.isArray(option.selectors.value)) {
-					for (const element of option.selectors.value) {
-						if (element instanceof Element) {
-							selectors.push(element)
-						} else {
-							selectors.push(element.$el as Element)
-						}
-					}
+	const getSelectorsFromOption = (option: KeyboardNavigationOptions) => {
+		// assumes that option.selectors is provided
+		const $parent = getParentElement(option)
+		let selectors: HTMLElement[] = []
+		if (typeof option.selectors === 'string') {
+			selectors = $parent
+				? Array.from($parent.querySelectorAll(option.selectors))
+				: Array.from(document.querySelectorAll(option.selectors))
+		} else if (Array.isArray(option.selectors)) {
+			for (const element of option.selectors) {
+				if (element instanceof HTMLElement) {
+					selectors.push(element)
 				} else {
-					selectors.push(option.selectors.value)
+					selectors.push(element.$el as HTMLElement)
 				}
 			}
+		} else if (option.selectors instanceof HTMLElement) {
+			selectors.push(option.selectors)
 		} else {
-			const $children = Array.from($parent.children)
-			selectors = $children.filter((selector: HTMLElement) => {
+			if (Array.isArray(option.selectors.value)) {
+				for (const element of option.selectors.value) {
+					if (element instanceof HTMLElement) {
+						selectors.push(element)
+					} else {
+						selectors.push(element.$el as HTMLElement)
+					}
+				}
+			} else {
+				selectors.push(option.selectors.value)
+			}
+		}
+		return selectors
+	}
+
+	const getSelectors = (option: KeyboardNavigationOptions) => {
+		const $parent = getParentElement(option)
+		let selectors: HTMLElement[] = []
+		if (option.selectors) {
+			selectors = getSelectorsFromOption(option)
+		} else if ($parent) {
+			// TODO: what should happen if no parent or selectors are provided?
+			const $children = Array.from($parent.children) as HTMLElement[]
+			selectors = $children.filter(selector => {
 				// ignore elements not in the tab order or are not visible
 				return isFocusable(selector) && isVisible(selector)
 			})
 		}
-
 		return selectors
 	}
 
@@ -420,21 +438,33 @@ export function useKeyboardNav(options: KeyboardNavigationOptions[]) {
 		}
 	}
 
+	const watchStopHandlers: WatchStopHandle[] = []
 	onMounted(() => {
 		for (const option of options) {
+			const $parent = getParentElement(option)
 			const selectors = getSelectors(option)
-			for (const selector of selectors) {
-				selector.addEventListener('keydown', getEventListener(option))
+			const listener = getEventListener(option)
+			const listenerElements = $parent
+				? [$parent] // watch for focus recursively within the parent element
+				: selectors // watch for focus on each selector element TODO: too much JS?
+
+			for (const element of listenerElements) {
+				const { focused } = useFocusWithin(ref(element))
+				const stopHandler = watch(focused, value => {
+					if (value) {
+						element.addEventListener('keydown', listener)
+					} else {
+						element.removeEventListener('keydown', listener)
+					}
+				})
+				watchStopHandlers.push(stopHandler)
 			}
 		}
 	})
 
 	onBeforeUnmount(() => {
-		for (const option of options) {
-			const selectors = getSelectors(option)
-			for (const selector of selectors) {
-				selector.removeEventListener('keydown', getEventListener(option))
-			}
+		for (const stopHandler of watchStopHandlers) {
+			stopHandler()
 		}
 	})
 }

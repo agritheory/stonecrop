@@ -1,0 +1,315 @@
+[
+	{
+		"component": "AFieldset",
+		"collapsible": true,
+		"label": "Table/Fieldset",
+		"schema": [
+			{
+				"component": "ATable",
+				"columns": [
+					{
+						"label": "Home Page",
+						"name": "home_page",
+						"fieldname": "home_page",
+						"fieldtype": "Data",
+						"align": "left",
+						"edit": false,
+						"width": "35ch",
+						"format": "value => {return value.title}"
+					},
+					{
+						"label": "HTTP Method",
+						"name": "http_method",
+						"fieldname": "http_method",
+						"fieldtype": "Data",
+						"align": "left",
+						"edit": true,
+						"width": "20ch"
+					},
+					{
+						"label": "IP Address",
+						"name": "ip_address",
+						"fieldname": "ip_address",
+						"fieldtype": "Data",
+						"align": "left",
+						"edit": false,
+						"width": "20ch"
+					},
+					{
+						"label": "Status",
+						"name": "status",
+						"fieldname": "status",
+						"fieldtype": "Data",
+						"align": "left",
+						"edit": true,
+						"width": "35ch"
+					},
+					{
+						"label": "Report Date",
+						"name": "report_date",
+						"fieldname": "report_date",
+						"fieldtype": "component",
+						"modalComponent": "ADatePicker",
+						"align": "center",
+						"edit": true,
+						"width": "25ch",
+						"format": "value => { return (new Date(Number(value)).toLocaleDateString('en-US')) }"
+					}
+				],
+				"config": { "view": "list" },
+				"rows": [
+					{
+						"home_page": {
+							"title": "https://ceara.berlin",
+							"url": "https://ceara.berlin"
+						},
+						"http_method": "HEAD",
+						"ip_address": "75.228.138.84",
+						"report_date": 1580804064118.311,
+						"status": "503 Service Unavailable"
+					},
+					{
+						"home_page": {
+							"title": "https://queenweed.info",
+							"url": "https://queenweed.info"
+						},
+						"http_method": "DELETE",
+						"ip_address": "235.108.58.48",
+						"report_date": 1581164525628.4841,
+						"status": "510 Not Extended"
+					},
+					{
+						"home_page": {
+							"title": "https://cequi.mil",
+							"url": "https://cequi.mil"
+						},
+						"http_method": "OPTIONS",
+						"ip_address": "200.232.58.22",
+						"report_date": 1583326905436.858,
+						"status": "504 Gateway Timeout"
+					},
+					{
+						"home_page": {
+							"title": "https://eel.net",
+							"url": "https://eel.net"
+						},
+						"http_method": "DELETE",
+						"ip_address": "122.41.199.214",
+						"report_date": 1584696361760.598,
+						"status": "431 Request Header Fields Too Large"
+					},
+					{
+						"home_page": {
+							"title": "https://inmeats.jobs",
+							"url": "https://inmeats.jobs"
+						},
+						"http_method": "PUT",
+						"ip_address": "5.123.57.245",
+						"report_date": 1585408663851.79,
+						"status": "409 Conflict"
+					},
+					{
+						"home_page": {
+							"title": "https://plimsol.biz",
+							"url": "https://plimsol.biz"
+						},
+						"http_method": "DELETE",
+						"ip_address": "206.197.127.159",
+						"report_date": 1587534556173.34,
+						"status": "429 Too Many Requests"
+					},
+					{
+						"home_page": {
+							"title": "https://bogert.xxx",
+							"url": "https://bogert.xxx"
+						},
+						"http_method": "HEAD",
+						"ip_address": "81.109.117.115",
+						"report_date": 1587553898966.296,
+						"status": "102 Processing"
+					},
+					{
+						"home_page": {
+							"title": "https://detail.helsinki",
+							"url": "https://detail.helsinki"
+						},
+						"http_method": "GET",
+						"ip_address": "160.47.242.22",
+						"report_date": 1587619825150.0808,
+						"status": "511 Network Authentication Required"
+					},
+					{
+						"home_page": {
+							"title": "https://attentional.net",
+							"url": "https://attentional.net"
+						},
+						"http_method": "PUT",
+						"ip_address": "103.146.82.109",
+						"report_date": 1587727848708.99,
+						"status": "424 Failed Dependency"
+					},
+					{
+						"home_page": {
+							"title": "https://abrar.com",
+							"url": "https://abrar.com"
+						},
+						"http_method": "PUT",
+						"ip_address": "226.78.31.101",
+						"report_date": 1588241122692.152,
+						"status": "413 Request Entity Too Large"
+					},
+					{
+						"home_page": {
+							"title": "https://devastating.berlin",
+							"url": "https://devastating.berlin"
+						},
+						"http_method": "OPTIONS",
+						"ip_address": "6.176.26.194",
+						"report_date": 1589238679474.172,
+						"status": "406 Not Acceptable"
+					},
+					{
+						"home_page": {
+							"title": "https://bedlamic.travel",
+							"url": "https://bedlamic.travel"
+						},
+						"http_method": "OPTIONS",
+						"ip_address": "87.81.29.141",
+						"report_date": 1591099793866.571,
+						"status": "307 Temporary Redirect"
+					},
+					{
+						"home_page": {
+							"title": "https://busybody.com",
+							"url": "https://busybody.com"
+						},
+						"http_method": "PUT",
+						"ip_address": "27.160.191.202",
+						"report_date": 1593790276585.5168,
+						"status": "205 Reset Content"
+					},
+					{
+						"home_page": {
+							"title": "https://diviner.rio",
+							"url": "https://diviner.rio"
+						},
+						"http_method": "GET",
+						"ip_address": "150.205.7.49",
+						"report_date": 1597194101311.922,
+						"status": "306 Reserved"
+					},
+					{
+						"home_page": {
+							"title": "https://cinter.wf",
+							"url": "https://cinter.wf"
+						},
+						"http_method": "DELETE",
+						"ip_address": "49.84.170.124",
+						"report_date": 1597294401553.942,
+						"status": "417 Expectation Failed"
+					},
+					{
+						"home_page": {
+							"title": "https://amusing.istanbul",
+							"url": "https://amusing.istanbul"
+						},
+						"http_method": "POST",
+						"ip_address": "133.171.161.201",
+						"report_date": 1597799367455.279,
+						"status": "409 Conflict"
+					},
+					{
+						"home_page": {
+							"title": "https://masseurs.ba",
+							"url": "https://masseurs.ba"
+						},
+						"http_method": "OPTIONS",
+						"ip_address": "212.197.88.171",
+						"report_date": 1597877957532.915,
+						"status": "414 Request URI Too Long"
+					},
+					{
+						"home_page": {
+							"title": "https://darrel.om",
+							"url": "https://darrel.om"
+						},
+						"http_method": "GET",
+						"ip_address": "81.50.236.159",
+						"report_date": 1597945294250.901,
+						"status": "501 Not Implemented"
+					},
+					{
+						"home_page": {
+							"title": "https://pityriasis.data",
+							"url": "https://pityriasis.data"
+						},
+						"http_method": "PUT",
+						"ip_address": "2.35.182.4",
+						"report_date": 1598567196827.72,
+						"status": "305 Use Proxy"
+					},
+					{
+						"home_page": {
+							"title": "https://carnell.int",
+							"url": "https://carnell.int"
+						},
+						"http_method": "POST",
+						"ip_address": "254.216.8.135",
+						"report_date": 1598620551534.259,
+						"status": "406 Not Acceptable"
+					},
+					{
+						"home_page": {
+							"title": "https://spelter.dance",
+							"url": "https://spelter.dance"
+						},
+						"http_method": "CONNECT",
+						"ip_address": "49.60.139.38",
+						"report_date": 1600670086438.613,
+						"status": "407 Proxy Authentication Required"
+					},
+					{
+						"home_page": {
+							"title": "https://apostrophe.mail",
+							"url": "https://apostrophe.mail"
+						},
+						"http_method": "CONNECT",
+						"ip_address": "97.25.126.232",
+						"report_date": 1600735768366.907,
+						"status": "500 Internal Server Error"
+					},
+					{
+						"home_page": {
+							"title": "https://amelina.stockholm",
+							"url": "https://amelina.stockholm"
+						},
+						"http_method": "POST",
+						"ip_address": "169.116.119.109",
+						"report_date": 1601126772802.768,
+						"status": "422 Unprocessable Entity"
+					},
+					{
+						"home_page": {
+							"title": "https://arming.net",
+							"url": "https://arming.net"
+						},
+						"http_method": "POST",
+						"ip_address": "107.147.13.95",
+						"report_date": 1605215400250.367,
+						"status": "307 Temporary Redirect"
+					},
+					{
+						"home_page": {
+							"title": "https://whimbrels.com",
+							"url": "https://whimbrels.com"
+						},
+						"http_method": "OPTIONS",
+						"ip_address": "60.233.119.67",
+						"report_date": 1606020776334.481,
+						"status": "417 Expectation Failed"
+					}
+				]
+			}
+		]
+	}
+]
