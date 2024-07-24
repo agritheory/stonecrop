@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/atable
 
-This log was last generated on Wed, 10 Jul 2024 12:10:33 GMT and should not be manually modified.
+This log was last generated on Wed, 24 Jul 2024 13:12:28 GMT and should not be manually modified.
+
+## 0.2.26
+Wed, 24 Jul 2024 13:12:28 GMT
+
+### Updates
+
+- added ui icons to atable
 
 ## 0.2.25
 Wed, 10 Jul 2024 12:10:33 GMT
