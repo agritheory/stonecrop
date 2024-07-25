@@ -16,10 +16,10 @@
 </template>
 
 <script lang="ts" setup>
+import type { CellFormatContext, TableColumn } from '@stonecrop/atable'
 import { ref } from 'vue'
 
 import data from './sample_data/http_logs.json'
-import type { TableColumn } from '@/types'
 
 const columns: TableColumn[] = [
 	{
@@ -28,9 +28,9 @@ const columns: TableColumn[] = [
 		type: 'Data',
 		align: 'left',
 		edit: false,
-		width: '35ch',
-		format: (value: { title?: string; value?: any }) => {
-			return value.title
+		width: '40ch',
+		format: (value: { title?: string; value?: any }, context: CellFormatContext) => {
+			return `${value.title} (IP: ${context.row.ip_address})`
 		},
 	},
 	{
@@ -62,10 +62,8 @@ const readonly_columns: TableColumn[] = [
 		type: 'Data',
 		align: 'left',
 		edit: false,
-		width: '35ch',
-		format: (value: { title?: string; value?: any }) => {
-			return value.title
-		},
+		width: '40ch',
+		format: '(value, { row }) => `${value.title} (IP: ${row.ip_address})`',
 	},
 	{
 		label: 'HTTP Method',
