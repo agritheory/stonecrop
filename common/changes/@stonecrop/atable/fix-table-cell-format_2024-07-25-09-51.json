@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/atable",
+      "comment": "Add context to cell format function",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/atable"
+}
