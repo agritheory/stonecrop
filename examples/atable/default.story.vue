@@ -9,6 +9,12 @@
 				:rows="http_logs_readonly.rows"
 				:config="http_logs_readonly.config" />
 		</Variant>
+		<Variant title="pinned columns">
+			<ATable
+				:columns="pinned_columns_table.columns"
+				v-model="pinned_columns_table.rows"
+				:config="pinned_columns_table.config" />
+		</Variant>
 		<Variant title="full width">
 			<ATable :columns="full_width_table.columns" v-model="full_width_table.rows" :config="full_width_table.config" />
 		</Variant>
@@ -90,6 +96,39 @@ const readonly_columns: TableColumn[] = [
 	},
 ]
 
+const pinned_columns: TableColumn[] = [
+	{
+		label: 'Home Page',
+		name: 'home_page',
+		type: 'Data',
+		align: 'left',
+		edit: false,
+		width: '30ch',
+		pinned: true,
+		format: (value: { title?: string; value?: any }) => `${value.title}`,
+	},
+	{
+		label: 'HTTP Method',
+		name: 'http_method',
+		type: 'Data',
+		align: 'left',
+		edit: true,
+		width: '20ch',
+	},
+	{
+		label: 'Report Date',
+		name: 'report_date',
+		type: 'component',
+		align: 'center',
+		edit: true,
+		width: '25ch',
+		modalComponent: 'ADate',
+		format: (value: number) => {
+			return new Date(Number(value)).toLocaleDateString('en-US')
+		},
+	},
+]
+
 const http_logs = ref({
 	rows: data,
 	columns,
@@ -99,6 +138,12 @@ const http_logs = ref({
 const http_logs_readonly = ref({
 	rows: data,
 	columns: readonly_columns,
+	config: { view: 'list' },
+})
+
+const pinned_columns_table = ref({
+	rows: data,
+	columns: pinned_columns,
 	config: { view: 'list' },
 })
 

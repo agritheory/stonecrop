@@ -2,7 +2,11 @@
 	<tr ref="rowEl" :tabindex="tabIndex" v-show="isRowVisible" class="table-row">
 		<!-- render numbered/tree view index -->
 		<slot name="index">
-			<td v-if="tableData.config.view === 'list'" :tabIndex="-1" class="list-index">
+			<td
+				v-if="tableData.config.view === 'list'"
+				:tabIndex="-1"
+				class="list-index"
+				:class="hasPinnedColumns ? 'sticky-index' : ''">
 				{{ rowIndex + 1 }}
 			</td>
 			<td
@@ -42,6 +46,8 @@ const props = withDefaults(
 
 const tableData = inject<TableDataStore>(props.tableid)
 const rowEl = ref<HTMLTableRowElement>(null)
+
+const hasPinnedColumns = computed(() => tableData.columns.some(col => col.pinned))
 
 const isRowVisible = computed(() => {
 	return (

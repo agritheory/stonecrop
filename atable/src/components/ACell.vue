@@ -3,8 +3,8 @@
 		ref="cell"
 		:data-colindex="colIndex"
 		:data-rowindex="rowIndex"
-		:data-editable="tableData.columns[colIndex].edit"
-		:contenteditable="tableData.columns[colIndex].edit"
+		:data-editable="currentColumn.edit"
+		:contenteditable="currentColumn.edit"
 		:tabindex="tabIndex"
 		:spellcheck="false"
 		:style="cellStyle"
@@ -14,12 +14,13 @@
 		@input="onChange"
 		@click="handleInput"
 		@mousedown="handleInput"
-		class="atable__cell">
+		class="atable__cell"
+		:class="hasPinnedColumns ? 'sticky-column' : ''">
 		<component
-			v-if="tableData.columns[colIndex].cellComponent"
-			:is="tableData.columns[colIndex].cellComponent"
+			v-if="currentColumn.cellComponent"
+			:is="currentColumn.cellComponent"
 			:value="displayValue"
-			v-bind="tableData.columns[colIndex].cellComponentProps">
+			v-bind="currentColumn.cellComponentProps">
 		</component>
 		<span v-else>{{ displayValue }}</span>
 	</td>
@@ -48,15 +49,18 @@ const props = withDefaults(
 
 const tableData = inject<TableDataStore>(props.tableid)
 const cell = ref<HTMLTableCellElement>(null)
+const currentColumn = tableData.columns[props.colIndex]
 const currentData = ref('')
 const cellModified = ref(false)
 
+const hasPinnedColumns = computed(() => tableData.columns.some(col => col.pinned))
+
 const displayValue = computed(() => {
 	const data = tableData.cellData<any>(props.colIndex, props.rowIndex)
-	if (tableData.columns[props.colIndex].format) {
+	if (currentColumn.format) {
 		const table = tableData.table
 		const row = tableData.rows[props.rowIndex]
-		const column = tableData.columns[props.colIndex]
+		const column = currentColumn
 		const format = column.format
 
 		if (typeof format === 'function') {
@@ -75,12 +79,12 @@ const displayValue = computed(() => {
 })
 
 const handleInput = () => {
-	if (tableData.columns[props.colIndex].mask) {
+	if (currentColumn.mask) {
 		// TODO: add masking to cell values
-		// tableData.columns[props.colIndex].mask(event)
+		// currentColumn.mask(event)
 	}
 
-	if (tableData.columns[props.colIndex].modalComponent) {
+	if (currentColumn.modalComponent) {
 		const domRect = cell.value.getBoundingClientRect()
 		tableData.modal.visible = true
 		tableData.modal.colIndex = props.colIndex
@@ -89,8 +93,8 @@ const handleInput = () => {
 		tableData.modal.top = domRect.top + domRect.height
 		tableData.modal.left = domRect.left
 		tableData.modal.width = cellWidth.value
-		tableData.modal.component = tableData.columns[props.colIndex].modalComponent
-		tableData.modal.componentProps = tableData.columns[props.colIndex].modalComponentProps
+		tableData.modal.component = currentColumn.modalComponent
+		tableData.modal.componentProps = currentColumn.modalComponentProps
 	}
 }
 
@@ -124,7 +128,7 @@ if (props.addNavigation) {
 // const updateData = (event: Event) => {
 // 	if (event) {
 // 		// custom components need to handle their own updateData, this is the default
-// 		if (!tableData.columns[props.colIndex].component) {
+// 		if (!currentColumn.component) {
 // 			tableData.setCellData(props.rowIndex, props.colIndex, cell.value.innerHTML)
 // 		}
 // 		cellModified.value = true
@@ -132,11 +136,11 @@ if (props.addNavigation) {
 // }
 
 const textAlign = computed(() => {
-	return tableData.columns[props.colIndex].align || 'center'
+	return currentColumn.align || 'center'
 })
 
 const cellWidth = computed(() => {
-	return tableData.columns[props.colIndex].width || '40ch'
+	return currentColumn.width || '40ch'
 })
 
 const onFocus = () => {
@@ -151,7 +155,7 @@ const onChange = () => {
 			currentData.value = cell.value.textContent
 			cell.value.dispatchEvent(new Event('change'))
 			cellModified.value = true // set display instead
-			if (!tableData.columns[props.colIndex].format) {
+			if (!currentColumn.format) {
 				// TODO: need to setup reverse format function
 				tableData.setCellData(props.rowIndex, props.colIndex, currentData.value)
 			}

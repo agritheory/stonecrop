@@ -8,6 +8,7 @@ export type TableColumn = {
 	label?: string
 	type?: string
 	width?: string
+	pinned?: boolean
 
 	cellComponent?: string
 	cellComponentProps?: Record<string, any>

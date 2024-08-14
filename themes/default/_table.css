@@ -1,4 +1,4 @@
-/* 
+/*
 Holds styles for all tables, TH, TR, TD, etc.
 */
 /* .atable__table{
@@ -78,6 +78,16 @@ Holds styles for all tables, TH, TR, TD, etc.
 	user-select: none;
 	width: v-bind(numberedRowWidth);
 	max-width: v-bind(numberedRowWidth);
+}
+
+.sticky-index {
+	position: sticky;
+	left: 0;
+	z-index: 1;
+}
+
+.sticky-column {
+	/* TODO: apply sticky column dynamically */
 }
 
 .tree-index {
