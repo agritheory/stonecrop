@@ -9,6 +9,7 @@ export default defineConfig({
 	resolve: {
 		alias: {
 			'@': resolve(projectRootDir, 'src'),
+			themes: resolve(projectRootDir, 'themes'),
 		},
 	},
 	build: {
