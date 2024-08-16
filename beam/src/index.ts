@@ -11,6 +11,7 @@ import ListItem from '@/components/ListItem.vue'
 import ListView from '@/components/ListView.vue'
 import Navbar from '@/components/Navbar.vue'
 import ScanInput from '@/components/ScanInput.vue'
+import 'themes/beam.css'
 
 /**
  * Install all Beam components
