@@ -5,43 +5,28 @@ Holds styles for all form fields
 
 } */
 .aform {
-	display: grid;
-	grid-auto-flow: row;
+	display: flex;
+	flex-wrap:wrap;
 	gap: 1rem;
-	grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
 	padding: 1rem;
 	border: 1px solid var(--gray-5);
 	border-left: 4px solid var(--gray-5);
 	margin-bottom: 1rem;
 	max-width:100%;
 }
-
-@media screen and (max-width:600px){
-	.aform{
-		grid-template-columns: 1fr 1fr 1fr 1fr;
-	}
-}
 @media screen and (max-width:400px){
 	.aform{
-		grid-template-columns: 1fr 1fr;
+		flex-direction: column;
 	}
 }
-
 .aform__form-element {
 	border: 1px solid transparent;
 	padding: 0;
 	margin: 0;
 	position: relative;
-	grid-column: span 2
-}
-.aform__grid--full{
-	grid-column: 1 / -1;
-}
-.aform__grid--small{
-	grid-column: span 1
-}
-.aform__grid--half{
-	grid-column: span 3
+	box-sizing:border-box;
+	flex-grow:1;
+	min-width:100px;
 }
 .aform__input-field {
 	outline: 1px solid transparent;
@@ -118,6 +103,7 @@ p.error {
 	cursor: pointer;
 	width: auto;
 	margin-top:0;
+	display:block;
 }
 .aform__checkbox:checked {
 	accent-color: var(--primary-color);
@@ -168,6 +154,10 @@ tr:focus {
 	border:1px solid var(--input-border-color);
 	color: var(--input-label-color);
 	cursor:pointer;
+	background-color: white;
+}
+.aform__form-btn:disabled{
+	background-color: var(--gray-5);
 }
 .aform__file-attach{
 	padding:1rem;
@@ -178,6 +168,7 @@ tr:focus {
 	justify-content: center;
 	align-items: center;
 	border: 1px dashed var(--input-border-color);
+	width:100%;
 }
 @media screen and (max-width:400px){
 	.aform__file-attach > .aform__form-btn{
