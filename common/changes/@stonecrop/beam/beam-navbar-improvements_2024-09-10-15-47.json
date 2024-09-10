@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/beam",
+      "comment": "updated navbar styling for beam",
+      "type": "none"
+    }
+  ],
+  "packageName": "@stonecrop/beam"
+}
