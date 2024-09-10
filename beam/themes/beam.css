@@ -36,15 +36,16 @@ body {
 	padding: 0.625rem;
 	background-color: var(--primary-color);
 	margin-left: 0;
-	min-height: 4em;
-	max-height: 4em;
+	min-height: 2em;
+	max-height: 2em;
 	color: var(--primary-text-color);
 	display: flex;
 	flex-flow: row nowrap;
 	align-content: center;
 	justify-content: flex-start;
 	align-items: center;
-	position: relative;
+	position: sticky;
+	top: 0;
 	border-bottom: 1px solid var(--row-border-color);
 
 	.nav-title {
@@ -188,4 +189,8 @@ body {
 		padding-bottom: 0.625rem;
 		color: var(--primary-text-color);
 	}
+}
+/* workaround for Histoire wrapper breaking sticky functionality with overflow:auto */
+.__histoire-render-story:not(.__histoire-render-custom-controls) {
+	overflow: clip !important;
 }
