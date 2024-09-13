@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/beam",
+      "comment": "add onscan.js dependency for hardware scanners",
+      "type": "none"
+    }
+  ],
+  "packageName": "@stonecrop/beam"
+}
