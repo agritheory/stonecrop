@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/themes",
+      "comment": "Styled file attach component",
+      "type": "none"
+    }
+  ],
+  "packageName": "@stonecrop/themes"
+}

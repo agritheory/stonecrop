@@ -44,6 +44,7 @@
 	"dependencies": {
 		"@stonecrop/themes": "workspace:*",
 		"@stonecrop/utilities": "workspace:*",
+		"@vueuse/core": "^10.11.0",
 		"vue": "^3.4.31"
 	},
 	"devDependencies": {

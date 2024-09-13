@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/aform",
+      "comment": "added attach file component",
+      "type": "none"
+    }
+  ],
+  "packageName": "@stonecrop/aform"
+}
