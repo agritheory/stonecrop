@@ -2,6 +2,18 @@
   "name": "@stonecrop/aform",
   "entries": [
     {
+      "version": "0.2.31",
+      "tag": "@stonecrop/aform_v0.2.31",
+      "date": "Fri, 13 Sep 2024 12:32:59 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "added attach file component"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.2.30",
       "tag": "@stonecrop/aform_v0.2.30",
       "date": "Fri, 13 Sep 2024 12:28:54 GMT",
