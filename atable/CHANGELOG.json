@@ -2,6 +2,12 @@
   "name": "@stonecrop/atable",
   "entries": [
     {
+      "version": "0.2.30",
+      "tag": "@stonecrop/atable_v0.2.30",
+      "date": "Fri, 13 Sep 2024 12:28:54 GMT",
+      "comments": {}
+    },
+    {
       "version": "0.2.29",
       "tag": "@stonecrop/atable_v0.2.29",
       "date": "Wed, 11 Sep 2024 18:43:29 GMT",
