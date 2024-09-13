@@ -3,7 +3,7 @@
     {
       "packageName": "@stonecrop/beam",
       "comment": "add onscan.js dependency for hardware scanners",
-      "type": "none"
+      "type": "patch"
     }
   ],
   "packageName": "@stonecrop/beam"

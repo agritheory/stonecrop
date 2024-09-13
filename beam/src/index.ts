@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-
 import { App } from 'vue'
 
 import ActionFooter from '@/components/ActionFooter.vue'
