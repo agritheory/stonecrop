@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 
-import onScan from 'onscan.js'
 import { App } from 'vue'
 
 import ActionFooter from '@/components/ActionFooter.vue'
@@ -23,14 +22,6 @@ import 'themes/beam.css'
  * @public
  */
 function install(app: App /* options */) {
-	if (onScan.isAttachedTo(window)) {
-		// there isn't an easy way to fetch the existing attached instance, so re-attach
-		onScan.detachFrom(window)
-	}
-
-	const scanHandler = onScan.attachTo(window)
-	app.provide('onScan', scanHandler)
-
 	app.component('ActionFooter', ActionFooter)
 	app.component('BeamModal', BeamModal)
 	app.component('BeamModalOutlet', BeamModalOutlet)

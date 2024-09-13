@@ -14,7 +14,7 @@
 
 			<ListView :items="items" @scrollbottom="loadMoreItems" />
 			<ActionFooter @click="handlePrimaryAction">Done</ActionFooter>
-			<ScanInput :handler="incrementItemCount" />
+			<ScanInput :scanHandler="incrementItemCount" />
 			<BeamModalOutlet @confirmmodal="confirmModal" @closemodal="closeModal"></BeamModalOutlet>
 		</Variant>
 	</Story>

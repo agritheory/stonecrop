@@ -6,23 +6,18 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 
-import { inject, onMounted, onUnmounted } from 'vue'
+import onScan from 'onscan.js'
+import { onMounted, onUnmounted } from 'vue'
 
 const props = defineProps<{
-	handler: (barcode: string, qty: number) => void
+	scanHandler: (barcode: string, qty: number) => void
 }>()
 
-const onScan = inject<any>('onScan')
-
 onMounted(() => {
-	onScan?.setOptions(window, {
-		onScan: (barcode: string, qty: number) => {
-			props.handler(barcode, qty)
-		},
-	})
+	onScan.attachTo(window, { onScan: props.scanHandler })
 })
 
 onUnmounted(() => {
-	onScan?.detachFrom(window)
+	onScan.detachFrom(window)
 })
 </script>
