@@ -159,6 +159,9 @@ importers:
 
   ../../beam:
     dependencies:
+      onscan.js:
+        specifier: ^1.5.2
+        version: 1.5.2
       vue:
         specifier: ^3.4.31
         version: 3.4.31(typescript@5.5.2)
@@ -4627,6 +4630,10 @@ packages:
     dependencies:
       mimic-fn: 4.0.0
     dev: true
+
+  /onscan.js@1.5.2:
+    resolution: {integrity: sha512-9oGYy2gXYRjvXO9GYqqVca0VuCTAmWhbmX3egBSBP13rXiMNb+dKPJzKFEeECGqPBpf0m40Zoo+GUQ7eCackdw==}
+    dev: false
 
   /optionator@0.9.3:
     resolution: {integrity: sha512-JjCoypp+jKn1ttEFExxhetCKeJt9zhAgAve5FXHixTvFDW/5aEktX9bufBKLRRMdU7bNtpLfcGu94B3cdEJgjg==}
