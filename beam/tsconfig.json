@@ -2,9 +2,10 @@
 	"extends": "../tsconfig.json",
 	"compilerOptions": {
 		"tsBuildInfoFile": "./dist/beam.tsbuildinfo",
+		"types": ["vitest/globals", "vitest/jsdom"],
 		"paths": {
 			"@/*": ["./src/*"]
 		}
 	},
-	"include": ["src/**/*", "src/**/*.ts", "src/**/*.vue"]
+	"include": ["src/**/*", "src/**/*.ts", "src/**/*.vue", "tests/**/*.spec.ts", "tests/**/*.ts", "tests/**/*.vue"]
 }

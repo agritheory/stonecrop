@@ -14,6 +14,7 @@ jobs:
     outputs:
       aform: ${{ steps.filter.outputs.aform }}
       atable: ${{ steps.filter.outputs.atable }}
+      beam: ${{ steps.filter.outputs.beam }}
     steps:
     - uses: dorny/paths-filter@v2
       id: filter
@@ -21,6 +22,7 @@ jobs:
         filters: |
           aform: aform/**
           atable: atable/**
+          beam: beam/**
 
   aform:
     name: AForm
@@ -103,5 +105,47 @@ jobs:
       uses: davelosert/vitest-coverage-report-action@v2
       with:
         working-directory: ./atable
+        file-coverage-mode: 'all'
+        vite-config-path: './vite.config.ts'
+
+  beam:
+    name: Beam
+    needs: changes
+    if: ${{ needs.changes.outputs.beam == 'true' }}
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      pull-requests: write
+
+    strategy:
+      matrix:
+        node: [20.x]
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Install Node ${{ matrix.node }}
+      uses: actions/setup-node@v4
+      with:
+        cache-dependency-path: '**/config/rush/pnpm-lock.yaml'
+        registry-url: https://registry.npmjs.org/
+
+    - name: Rush Install
+      run: node common/scripts/install-run-rush.js install
+
+    - name: Rush Build
+      run: node common/scripts/install-run-rush.js rebuild --verbose
+
+    - name: Run Tests
+      working-directory: ./beam
+      run: node ../common/scripts/install-run-rushx.js test:coverage
+
+    - name: Coverage Report
+      if: always() # Also generate the report if tests are failing
+      uses: davelosert/vitest-coverage-report-action@v2
+      with:
+        working-directory: ./beam
         file-coverage-mode: 'all'
         vite-config-path: './vite.config.ts'
