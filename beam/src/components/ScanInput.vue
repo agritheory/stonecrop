@@ -9,12 +9,17 @@
 import onScan from 'onscan.js'
 import { onMounted, onUnmounted } from 'vue'
 
+const emit = defineEmits<{
+	scanInstance: [instance: onScan]
+}>()
+
 const props = defineProps<{
 	scanHandler: (barcode: string, qty: number) => void
 }>()
 
 onMounted(() => {
-	onScan.attachTo(window, { onScan: props.scanHandler })
+	const instance = onScan.attachTo(window, { onScan: props.scanHandler })
+	emit('scanInstance', instance)
 })
 
 onUnmounted(() => {
