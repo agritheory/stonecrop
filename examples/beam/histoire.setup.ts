@@ -14,6 +14,8 @@ import {
 } from '@stonecrop/beam'
 import PortalVue from 'portal-vue'
 
+import './overrides.css'
+
 export const setupVue3 = defineSetupVue3(({ app }) => {
 	app.use(PortalVue)
 
