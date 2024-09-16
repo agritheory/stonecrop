@@ -2,6 +2,18 @@
   "name": "@stonecrop/beam",
   "entries": [
     {
+      "version": "0.2.33",
+      "tag": "@stonecrop/beam_v0.2.33",
+      "date": "Mon, 16 Sep 2024 11:56:08 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "isolate story-specific Beam styles"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.2.32",
       "tag": "@stonecrop/beam_v0.2.32",
       "date": "Mon, 16 Sep 2024 11:27:59 GMT",

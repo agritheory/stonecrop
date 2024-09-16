@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/beam
 
-This log was last generated on Mon, 16 Sep 2024 11:27:59 GMT and should not be manually modified.
+This log was last generated on Mon, 16 Sep 2024 11:56:08 GMT and should not be manually modified.
+
+## 0.2.33
+Mon, 16 Sep 2024 11:56:08 GMT
+
+### Patches
+
+- isolate story-specific Beam styles
 
 ## 0.2.32
 Mon, 16 Sep 2024 11:27:59 GMT
