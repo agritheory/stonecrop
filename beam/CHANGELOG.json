@@ -2,6 +2,18 @@
   "name": "@stonecrop/beam",
   "entries": [
     {
+      "version": "0.2.32",
+      "tag": "@stonecrop/beam_v0.2.32",
+      "date": "Mon, 16 Sep 2024 11:27:59 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "add onscan.js dependency for hardware scanners"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.2.31",
       "tag": "@stonecrop/beam_v0.2.31",
       "date": "Fri, 13 Sep 2024 12:32:59 GMT",
