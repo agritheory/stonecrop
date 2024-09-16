@@ -190,7 +190,3 @@ body {
 		color: var(--primary-text-color);
 	}
 }
-/* workaround for Histoire wrapper breaking sticky functionality with overflow:auto */
-.__histoire-render-story:not(.__histoire-render-custom-controls) {
-	overflow: clip !important;
-}
