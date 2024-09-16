@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/beam",
+      "comment": "isolate story-specific Beam styles",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/beam"
+}
