@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/aform",
+      "comment": "update vitest dependencies",
+      "type": "none"
+    }
+  ],
+  "packageName": "@stonecrop/aform"
+}
