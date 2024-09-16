@@ -74,21 +74,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, ref } from 'vue'
+import { computed, nextTick, ref, useTemplateRef } from 'vue'
 
-withDefaults(
-	defineProps<{
-		breadcrumbs?: { title: string; to: string }[]
-	}>(),
-	{
-		breadcrumbs: () => [],
-	}
-)
+const { breadcrumbs = [] } = defineProps<{ breadcrumbs?: { title: string; to: string }[] }>()
 
 const breadcrumbsVisibile = ref(true)
 const searchVisibile = ref(false)
 const searchText = ref('')
-const searchinput = ref<HTMLElement>(null)
+const searchinput = useTemplateRef<HTMLInputElement>('searchinput')
 
 const rotateHideTabIcon = computed(() => {
 	return breadcrumbsVisibile.value ? 'unrotated' : 'rotated'

@@ -107,12 +107,12 @@
 
 <script lang="ts" setup>
 import { type TableColumn, TableDataStore } from '@stonecrop/atable'
-import { CSSProperties, ref } from 'vue'
+import { CSSProperties, ref, useTemplateRef } from 'vue'
 
 import inbox_data from './sample_data/inbox.json'
 import http_data from './sample_data/http_logs.json'
 
-const rows = ref<HTMLTableRowElement[]>([])
+const rows = useTemplateRef<HTMLTableRowElement[]>('rows')
 
 const basic_form_schema = ref([
 	{
@@ -154,10 +154,10 @@ const basic_form_schema = ref([
 		label: 'Phone',
 	},
 	{
-		fieldname: "attach_file",
-		component: "AFileAttach",
-		label: "Attach Files"
-	}
+		fieldname: 'attach_file',
+		component: 'AFileAttach',
+		label: 'Attach Files',
+	},
 ])
 
 const http_logs = ref({

@@ -16,6 +16,7 @@
 				<td>S</td>
 			</tr>
 			<tr v-for="rowNo in numberOfRows" :key="rowNo">
+				<!-- the 'ref' key is currently only used for test references -->
 				<td
 					v-for="colNo in numberOfColumns"
 					ref="celldate"
@@ -38,7 +39,7 @@
 
 <script setup lang="ts">
 import { defaultKeypressHandlers, useKeyboardNav } from '@stonecrop/utilities'
-import { computed, nextTick, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, ref, useTemplateRef, watch } from 'vue'
 
 const numberOfRows = 6
 const numberOfColumns = 7
@@ -48,7 +49,7 @@ const selectedDate = ref(new Date(date.value))
 const currentMonth = ref<number>(selectedDate.value.getMonth())
 const currentYear = ref<number>(selectedDate.value.getFullYear())
 const currentDates = ref<number[]>([])
-const adatepicker = ref<HTMLElement | null>(null)
+const adatepicker = useTemplateRef<HTMLDivElement>('adatepicker')
 
 onMounted(async () => {
 	populateMonth()

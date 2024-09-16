@@ -1,6 +1,6 @@
 <template>
 	<div @click="nodeOnClick()">
-		<div>{{ props.label }}</div>
+		<div>{{ label }}</div>
 		<div v-if="showInput" class="label-input-wrapper">
 			<input
 				ref="labelInput"
@@ -9,19 +9,19 @@
 				@blur="showInput = false"
 				@keypress.enter="submitNewLabel" />
 		</div>
-		<Handle v-if="props.data.hasInput" id="a" type="target" :position="props.targetPosition" />
-		<Handle v-if="props.data.hasOutput" id="b" type="source" :position="props.sourcePosition" />
+		<Handle v-if="data.hasInput" id="a" type="target" :position="targetPosition" />
+		<Handle v-if="data.hasOutput" id="b" type="source" :position="sourcePosition" />
 	</div>
 </template>
 
 <script setup lang="ts">
 import { NodeProps, Handle } from '@vue-flow/core'
-import { ref, nextTick } from 'vue'
+import { ref, nextTick, useTemplateRef } from 'vue'
 
 const props = defineProps<NodeProps>()
 const emit = defineEmits(['change'])
 
-const labelInput = ref<HTMLInputElement>()
+const labelInput = useTemplateRef<HTMLInputElement>('labelInput')
 const newLabel = ref<NodeProps['label']>('')
 const showInput = ref(false)
 let lastClick = 0

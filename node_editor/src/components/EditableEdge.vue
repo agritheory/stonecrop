@@ -10,7 +10,7 @@
 			}"
 			class="nodrag nopan editable-edge-label"
 			@click="labelOnClick()">
-			<div class="vue-flow__edge-label">{{ props.label }}</div>
+			<div class="vue-flow__edge-label">{{ label }}</div>
 			<div v-if="showInput" class="label-input-wrapper">
 				<input
 					ref="labelInput"
@@ -25,7 +25,7 @@
 
 <script setup lang="ts">
 import { type EdgeProps, EdgeLabelRenderer, getBezierPath /* useVueFlow */ } from '@vue-flow/core'
-import { computed, ref, nextTick } from 'vue'
+import { computed, ref, nextTick, useTemplateRef } from 'vue'
 
 const props = defineProps<EdgeProps>()
 const emit = defineEmits(['change'])
@@ -33,7 +33,7 @@ const emit = defineEmits(['change'])
 // TODO: Implement edge removal
 // const { removeEdges } = useVueFlow()
 
-const labelInput = ref<HTMLElement>()
+const labelInput = useTemplateRef<HTMLInputElement>('labelInput')
 const newLabel = ref<EdgeProps['label']>('')
 const showInput = ref(false)
 let lastClick = 0

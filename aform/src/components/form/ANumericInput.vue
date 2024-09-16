@@ -6,25 +6,26 @@
 			v-model="inputNumber"
 			type="number"
 			:id="uuid"
-			:disabled="readonly"
+			:disabled="readOnly"
 			:required="required" />
 		<p class="error" v-show="validation.errorMessage" v-html="validation.errorMessage"></p>
 	</div>
 </template>
 
 <script setup lang="ts">
-withDefaults(
-	defineProps<{
-		label: string
-		required?: boolean
-		readonly?: boolean
-		uuid?: string
-		validation?: Record<string, any>
-	}>(),
-	{
-		validation: () => ({ errorMessage: '&nbsp;' }),
-	}
-)
+const {
+	label,
+	required,
+	readOnly,
+	uuid,
+	validation = { errorMessage: '&nbsp;' },
+} = defineProps<{
+	label?: string
+	required?: boolean
+	readOnly?: boolean
+	uuid?: string
+	validation?: Record<string, any>
+}>()
 
 const inputNumber = defineModel<number>()
 </script>

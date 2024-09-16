@@ -17,18 +17,19 @@
 <script setup lang="ts">
 import { InputHTMLAttributes } from 'vue'
 
-withDefaults(
-	defineProps<{
-		label?: string
-		required?: boolean
-		readOnly?: boolean
-		uuid?: string
-		validation?: Record<string, any>
-	}>(),
-	{
-		validation: () => ({ errorMessage: '&nbsp;' }),
-	}
-)
+const {
+	label,
+	required,
+	readOnly,
+	uuid,
+	validation = { errorMessage: '&nbsp;' },
+} = defineProps<{
+	label?: string
+	required?: boolean
+	readOnly?: boolean
+	uuid?: string
+	validation?: Record<string, any>
+}>()
 
 const checkbox = defineModel<InputHTMLAttributes['checked']>()
 </script>

@@ -27,36 +27,36 @@
 
 <script setup lang="ts">
 import { KeypressHandlers, defaultKeypressHandlers, useKeyboardNav } from '@stonecrop/utilities'
-import { computed, CSSProperties, inject, ref } from 'vue'
+import { computed, CSSProperties, inject, ref, useTemplateRef } from 'vue'
 
 import TableDataStore from '.'
 import type { CellFormatContext } from '@/types'
 
-const props = withDefaults(
-	defineProps<{
-		colIndex: number
-		rowIndex: number
-		tableid: string
-		addNavigation?: boolean | KeypressHandlers
-		tabIndex?: number
-	}>(),
-	{
-		tabIndex: 0,
-		addNavigation: true,
-	}
-)
+const {
+	colIndex,
+	rowIndex,
+	tableid,
+	addNavigation = true,
+	tabIndex = 0,
+} = defineProps<{
+	colIndex: number
+	rowIndex: number
+	tableid: string
+	addNavigation?: boolean | KeypressHandlers
+	tabIndex?: number
+}>()
 
-const tableData = inject<TableDataStore>(props.tableid)
-const cell = ref<HTMLTableCellElement>(null)
+const tableData = inject<TableDataStore>(tableid)
+const cell = useTemplateRef<HTMLTableCellElement>('cell')
 const currentData = ref('')
 const cellModified = ref(false)
 
 const displayValue = computed(() => {
-	const data = tableData.cellData<any>(props.colIndex, props.rowIndex)
-	if (tableData.columns[props.colIndex].format) {
+	const data = tableData.cellData<any>(colIndex, rowIndex)
+	if (tableData.columns[colIndex].format) {
 		const table = tableData.table
-		const row = tableData.rows[props.rowIndex]
-		const column = tableData.columns[props.colIndex]
+		const row = tableData.rows[rowIndex]
+		const column = tableData.columns[colIndex]
 		const format = column.format
 
 		if (typeof format === 'function') {
@@ -75,26 +75,26 @@ const displayValue = computed(() => {
 })
 
 const handleInput = () => {
-	if (tableData.columns[props.colIndex].mask) {
+	if (tableData.columns[colIndex].mask) {
 		// TODO: add masking to cell values
-		// tableData.columns[props.colIndex].mask(event)
+		// tableData.columns[colIndex].mask(event)
 	}
 
-	if (tableData.columns[props.colIndex].modalComponent) {
+	if (tableData.columns[colIndex].modalComponent) {
 		const domRect = cell.value.getBoundingClientRect()
 		tableData.modal.visible = true
-		tableData.modal.colIndex = props.colIndex
-		tableData.modal.rowIndex = props.rowIndex
+		tableData.modal.colIndex = colIndex
+		tableData.modal.rowIndex = rowIndex
 		tableData.modal.parent = cell.value
 		tableData.modal.top = domRect.top + domRect.height
 		tableData.modal.left = domRect.left
 		tableData.modal.width = cellWidth.value
-		tableData.modal.component = tableData.columns[props.colIndex].modalComponent
-		tableData.modal.componentProps = tableData.columns[props.colIndex].modalComponentProps
+		tableData.modal.component = tableData.columns[colIndex].modalComponent
+		tableData.modal.componentProps = tableData.columns[colIndex].modalComponentProps
 	}
 }
 
-if (props.addNavigation) {
+if (addNavigation) {
 	let handlers = {
 		...defaultKeypressHandlers,
 		...{
@@ -106,10 +106,10 @@ if (props.addNavigation) {
 		},
 	}
 
-	if (typeof props.addNavigation === 'object') {
+	if (typeof addNavigation === 'object') {
 		handlers = {
 			...handlers,
-			...props.addNavigation,
+			...addNavigation,
 		}
 	}
 
@@ -124,19 +124,19 @@ if (props.addNavigation) {
 // const updateData = (event: Event) => {
 // 	if (event) {
 // 		// custom components need to handle their own updateData, this is the default
-// 		if (!tableData.columns[props.colIndex].component) {
-// 			tableData.setCellData(props.rowIndex, props.colIndex, cell.value.innerHTML)
+// 		if (!tableData.columns[colIndex].component) {
+// 			tableData.setCellData(rowIndex, colIndex, cell.value.innerHTML)
 // 		}
 // 		cellModified.value = true
 // 	}
 // }
 
 const textAlign = computed(() => {
-	return tableData.columns[props.colIndex].align || 'center'
+	return tableData.columns[colIndex].align || 'center'
 })
 
 const cellWidth = computed(() => {
-	return tableData.columns[props.colIndex].width || '40ch'
+	return tableData.columns[colIndex].width || '40ch'
 })
 
 const onFocus = () => {
@@ -151,9 +151,9 @@ const onChange = () => {
 			currentData.value = cell.value.textContent
 			cell.value.dispatchEvent(new Event('change'))
 			cellModified.value = true // set display instead
-			if (!tableData.columns[props.colIndex].format) {
+			if (!tableData.columns[colIndex].format) {
 				// TODO: need to setup reverse format function
-				tableData.setCellData(props.rowIndex, props.colIndex, currentData.value)
+				tableData.setCellData(rowIndex, colIndex, currentData.value)
 			}
 		}
 	}
@@ -172,7 +172,7 @@ const cellStyle: CSSProperties = {
 	width: cellWidth.value,
 	backgroundColor: !cellModified.value ? 'inherit' : 'var(--cell-modified-color)',
 	fontWeight: !cellModified.value ? 'inherit' : 'bold',
-	paddingLeft: getIndent(props.colIndex, tableData.display[props.rowIndex]?.indent),
+	paddingLeft: getIndent(colIndex, tableData.display[rowIndex]?.indent),
 }
 </script>
 
