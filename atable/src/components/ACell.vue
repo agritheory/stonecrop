@@ -26,10 +26,11 @@
 </template>
 
 <script setup lang="ts">
+import { KeypressHandlers, defaultKeypressHandlers, useKeyboardNav } from '@stonecrop/utilities'
 import { computed, CSSProperties, inject, ref } from 'vue'
 
-import { KeypressHandlers, defaultKeypressHandlers, useKeyboardNav } from '@stonecrop/utilities'
 import TableDataStore from '.'
+import type { CellFormatContext } from '@/types'
 
 const props = withDefaults(
 	defineProps<{
@@ -53,14 +54,18 @@ const cellModified = ref(false)
 const displayValue = computed(() => {
 	const data = tableData.cellData<any>(props.colIndex, props.rowIndex)
 	if (tableData.columns[props.colIndex].format) {
-		const format = tableData.columns[props.colIndex].format
+		const table = tableData.table
+		const row = tableData.rows[props.rowIndex]
+		const column = tableData.columns[props.colIndex]
+		const format = column.format
+
 		if (typeof format === 'function') {
-			return format(data)
+			return format(data, { table, row, column })
 		} else if (typeof format === 'string') {
 			// parse format function from string
 			// eslint-disable-next-line @typescript-eslint/no-implied-eval
-			const formatFn: (args: any) => any = Function(`"use strict";return (${format})`)()
-			return formatFn(data)
+			const formatFn: (args: any, context?: CellFormatContext) => string = Function(`"use strict";return (${format})`)()
+			return formatFn(data, { table, row, column })
 		} else {
 			return data
 		}

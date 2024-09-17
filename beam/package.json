@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/beam",
-	"version": "0.2.25",
+	"version": "0.2.33",
 	"license": "MIT",
 	"type": "module",
 	"author": {
@@ -34,9 +34,13 @@
 		"dev": "vite",
 		"docs": "api-documenter markdown -i temp -o ../docs/beam",
 		"lint": "eslint . --ext .ts,.vue",
-		"preview": "vite preview"
+		"preview": "vite preview",
+		"test": "vitest",
+		"test:coverage": "vitest run --coverage",
+		"test:ui": "vitest --ui"
 	},
 	"dependencies": {
+		"onscan.js": "^1.5.2",
 		"vue": "^3.4.31"
 	},
 	"devDependencies": {
@@ -45,6 +49,9 @@
 		"@typescript-eslint/eslint-plugin": "^7.14.1",
 		"@typescript-eslint/parser": "^7.14.1",
 		"@vitejs/plugin-vue": "^5.0.5",
+		"@vitest/coverage-istanbul": "^2.1.1",
+		"@vitest/ui": "^2.1.1",
+		"@vue/test-utils": "^2.4.6",
 		"cypress": "^13.11.0",
 		"eslint": "^8.40.0",
 		"eslint-config-prettier": "^8.8.0",
@@ -53,6 +60,7 @@
 		"stonecrop-rig": "workspace:*",
 		"typescript": "^5.5.2",
 		"vite": "^5.3.2",
+		"vitest": "^2.1.1",
 		"vue-router": "^4.4.0"
 	},
 	"publishConfig": {

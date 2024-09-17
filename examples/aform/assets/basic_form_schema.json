@@ -48,5 +48,10 @@
 		"component": "ATextInput",
 		"label": "Phone",
 		"mask": "(locale) => { if (locale === 'en-US') { return '(###) ###-####' } else if (locale === 'en-IN') { return '####-######'} }"
+	},
+	{
+		"fieldname": "attach_file",
+		"component": "AFileAttach",
+		"label": "Attach Files"
 	}
 ]

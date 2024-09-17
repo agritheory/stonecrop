@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 70.6 61.51">
+  <g>
+    <polygon points="70.6 45.34 68.63 45.34 68.63 44.84 68.14 44.84 68.14 42.84 70.6 42.84 70.6 45.34" style="fill: #000; stroke-width: 0px;"/>
+    <path d="M65.28,44.84h-2.86v-2h2.86v2ZM59.57,44.84h-2.86v-2h2.86v2ZM53.86,44.84h-2.86v-2h2.86v2ZM48.15,44.84h-2.86v-2h2.86v2ZM42.44,44.84h-2.86v-2h2.86v2ZM36.73,44.84h-2.86v-2h2.86v2ZM31.02,44.84h-2.86v-2h2.86v2ZM25.31,44.84h-2.86v-2h2.86v2ZM19.6,44.84h-2.86v-2h2.86v2ZM13.89,44.84h-2.86v-2h2.86v2ZM8.18,44.84h-2.86v-2h2.86v2Z" style="fill: #000; stroke-width: 0px;"/>
+    <polygon points="1.97 45.34 0 45.34 0 42.84 2.47 42.84 2.47 44.84 1.97 44.84 1.97 45.34" style="fill: #000; stroke-width: 0px;"/>
+    <path d="M1.97,56.27H0v-2.73h1.97v2.73ZM1.97,50.81H0v-2.73h1.97v2.73Z" style="fill: #000; stroke-width: 0px;"/>
+    <polygon points="2.47 61.51 0 61.51 0 59.01 1.97 59.01 1.97 59.51 2.47 59.51 2.47 61.51" style="fill: #000; stroke-width: 0px;"/>
+    <path d="M65.28,61.51h-2.86v-2h2.86v2ZM59.57,61.51h-2.86v-2h2.86v2ZM53.86,61.51h-2.86v-2h2.86v2ZM48.15,61.51h-2.86v-2h2.86v2ZM42.44,61.51h-2.86v-2h2.86v2ZM36.73,61.51h-2.86v-2h2.86v2ZM31.02,61.51h-2.86v-2h2.86v2ZM25.31,61.51h-2.86v-2h2.86v2ZM19.6,61.51h-2.86v-2h2.86v2ZM13.89,61.51h-2.86v-2h2.86v2ZM8.18,61.51h-2.86v-2h2.86v2Z" style="fill: #000; stroke-width: 0px;"/>
+    <polygon points="70.6 61.51 68.14 61.51 68.14 59.51 68.63 59.51 68.63 59.01 70.6 59.01 70.6 61.51" style="fill: #000; stroke-width: 0px;"/>
+    <path d="M70.6,56.27h-1.97v-2.73h1.97v2.73ZM70.6,50.81h-1.97v-2.73h1.97v2.73Z" style="fill: #000; stroke-width: 0px;"/>
+  </g>
+  <rect y="21.67" width="70.6" height="17.67" style="fill: #000; stroke-width: 0px;"/>
+  <rect width="70.6" height="17.67" style="fill: #000; stroke-width: 0px;"/>
+</svg>

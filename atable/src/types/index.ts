@@ -1,3 +1,5 @@
+import TableDataStore from '@/components'
+
 export type TableColumn = {
 	name: string
 
@@ -12,8 +14,14 @@ export type TableColumn = {
 	modalComponent?: string
 	modalComponentProps?: Record<string, any>
 
-	format?: string | ((value: any) => any)
+	format?: string | ((value: any, context?: CellFormatContext) => string)
 	mask?: (value: any) => any
+}
+
+export type CellFormatContext = {
+	row: TableRow
+	column: TableColumn
+	table: TableDataStore['table']
 }
 
 export type TableConfig = {

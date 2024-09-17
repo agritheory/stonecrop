@@ -14,7 +14,7 @@
 
 			<ListView :items="items" @scrollbottom="loadMoreItems" />
 			<ActionFooter @click="handlePrimaryAction">Done</ActionFooter>
-			<ScanInput @scaninput="handleScanInput($event)" />
+			<ScanInput :scanHandler="incrementItemCount" />
 			<BeamModalOutlet @confirmmodal="confirmModal" @closemodal="closeModal"></BeamModalOutlet>
 		</Variant>
 	</Story>
@@ -27,40 +27,30 @@ import items from './data/items.json'
 
 const showModal = ref(false)
 
-const handleScanInput = (barcode: string) => {
-	incrementListItemCountByBarcode(barcode)
-}
-
 const handlePrimaryAction = () => {
 	showModal.value = true
 }
 
-const incrementListItemCountByBarcode = (barcode?: string) => {
-	if (!barcode) {
-		return
-	}
-
+const incrementItemCount = (barcode: string, qty: number) => {
+	// return indices of the matching barcode
 	const detectedItemsByIndex = items
-		.map((item, index) => {
-			return item.barcode === barcode ? index : undefined
-		}) // return indices of matching barcode
-		.filter(x => x !== undefined) // remove undefined
+		.map((item, index) => (item.barcode === barcode ? index : null))
+		.filter(x => x !== null)
 
 	for (const [detectedIndex, rowIndex] of detectedItemsByIndex.entries()) {
 		if (rowIndex) {
+			const count = items[rowIndex].count
 			if (detectedIndex !== detectedItemsByIndex.length - 1) {
-				if (items[rowIndex].count.count < items[rowIndex].count.of) {
+				if (count.count < count.of) {
 					// don't overcount if its not the last row of that barcode
-					let incrementedValue = items[rowIndex].count.count + 1
-					items[rowIndex].count.count = incrementedValue
+					count.count = count.count + qty
 					break
 				} else {
 					continue
 				}
 			} else {
 				// set it in the last item anyway
-				let incrementedValue = items[rowIndex].count.count + 1
-				items[rowIndex].count.count = incrementedValue
+				count.count = count.count + qty
 				break
 			}
 		}

@@ -10,6 +10,7 @@ import ADate from '@/components/form/ADate.vue';
 import ADatePicker from '@/components/form/ADatePicker.vue';
 import ADropdown from '@/components/form/ADropdown.vue';
 import AFieldset from '@/components/form/AFieldset.vue';
+import AFileAttach from '@/components/form/AFileAttach.vue';
 import AForm from '@/components/AForm.vue';
 import ANumericInput from '@/components/form/ANumericInput.vue';
 import { App } from 'vue';
@@ -33,6 +34,8 @@ export { ADatePicker }
 export { ADropdown }
 
 export { AFieldset }
+
+export { AFileAttach }
 
 export { AForm }
 
