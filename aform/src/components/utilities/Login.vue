@@ -25,10 +25,10 @@
 						</div>
 
 						<div class="login-form-password login-form-element">
-							<label id="login-password" for="password" class="login-label">Password</label>
+							<label id="login-password" for="password" class="aform__field-label">Password</label>
 							<input
 								id="password"
-								class="login-field"
+								class="aform__input-field"
 								name="password"
 								type="password"
 								v-model="password"

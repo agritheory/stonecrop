@@ -6,6 +6,7 @@ import ADate from '@/components/form/ADate.vue'
 import ADropdown from '@/components/form/ADropdown.vue'
 import ADatePicker from '@/components/form/ADatePicker.vue'
 import AFieldset from '@/components/form/AFieldset.vue'
+import AFileAttach from '@/components/form/AFileAttach.vue'
 import AForm from '@/components/AForm.vue'
 import ANumericInput from '@/components/form/ANumericInput.vue'
 import ATextInput from '@/components/form/ATextInput.vue'
@@ -26,6 +27,7 @@ function install(app: App /* options */) {
 	app.component('ADropdown', ADropdown)
 	app.component('ADatePicker', ADatePicker)
 	app.component('AFieldset', AFieldset)
+	app.component('AFileAttach', AFileAttach)
 	app.component('AForm', AForm)
 	app.component('ANumericInput', ANumericInput)
 	app.component('ATextInput', ATextInput)
@@ -40,6 +42,7 @@ export {
 	ADropdown,
 	ADatePicker,
 	AFieldset,
+	AFileAttach,
 	AForm,
 	ANumericInput,
 	ATextInput,

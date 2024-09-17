@@ -171,6 +171,10 @@
       "allowedCategories": [ "prototype" ]
     },
     {
+      "name": "onscan.js",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
       "name": "overmind",
       "allowedCategories": [ "prototype" ]
     },

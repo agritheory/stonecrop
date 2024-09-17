@@ -2,6 +2,54 @@
   "name": "@stonecrop/code-editor",
   "entries": [
     {
+      "version": "0.2.33",
+      "tag": "@stonecrop/code-editor_v0.2.33",
+      "date": "Mon, 16 Sep 2024 11:56:08 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.2.32",
+      "tag": "@stonecrop/code-editor_v0.2.32",
+      "date": "Mon, 16 Sep 2024 11:27:59 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.2.31",
+      "tag": "@stonecrop/code-editor_v0.2.31",
+      "date": "Fri, 13 Sep 2024 12:32:59 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.2.30",
+      "tag": "@stonecrop/code-editor_v0.2.30",
+      "date": "Fri, 13 Sep 2024 12:28:54 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.2.29",
+      "tag": "@stonecrop/code-editor_v0.2.29",
+      "date": "Wed, 11 Sep 2024 18:43:29 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.2.28",
+      "tag": "@stonecrop/code-editor_v0.2.28",
+      "date": "Fri, 16 Aug 2024 11:08:03 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.2.27",
+      "tag": "@stonecrop/code-editor_v0.2.27",
+      "date": "Thu, 25 Jul 2024 12:21:08 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.2.26",
+      "tag": "@stonecrop/code-editor_v0.2.26",
+      "date": "Wed, 24 Jul 2024 13:12:28 GMT",
+      "comments": {}
+    },
+    {
       "version": "0.2.25",
       "tag": "@stonecrop/code-editor_v0.2.25",
       "date": "Wed, 10 Jul 2024 12:10:33 GMT",
