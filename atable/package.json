@@ -51,7 +51,7 @@
 	},
 	"devDependencies": {
 		"@microsoft/api-documenter": "^7.25.3",
-		"@rushstack/heft": "^0.66.18",
+		"@rushstack/heft": "^0.67.2",
 		"@types/uuid": "^10.0.0",
 		"@typescript-eslint/eslint-plugin": "^7.14.1",
 		"@typescript-eslint/parser": "^7.14.1",
