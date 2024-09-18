@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/desktop
 
-This log was last generated on Mon, 16 Sep 2024 11:56:08 GMT and should not be manually modified.
+This log was last generated on Wed, 18 Sep 2024 15:26:37 GMT and should not be manually modified.
+
+## 0.2.34
+Wed, 18 Sep 2024 15:26:37 GMT
+
+### Patches
+
+- update package to vue 3.5
 
 ## 0.2.33
 Mon, 16 Sep 2024 11:56:08 GMT
