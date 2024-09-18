@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/themes",
+      "comment": "update package to vue 3.5",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/themes"
+}
