@@ -5,10 +5,5 @@
 </template>
 
 <script setup lang="ts">
-withDefaults(
-	defineProps<{
-		to?: string
-	}>(),
-	{ to: '' }
-)
+const { to = '' } = defineProps<{ to?: string }>()
 </script>

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/atable",
+      "comment": "update package to vue 3.5",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/atable"
+}

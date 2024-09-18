@@ -18,15 +18,14 @@ import { ref, computed } from 'vue'
 
 import type { SchemaTypes } from '@/types'
 
-const props = defineProps<{
+const emit = defineEmits(['update:modelValue'])
+const { modelValue, data, readonly } = defineProps<{
 	modelValue: SchemaTypes[]
 	data: Record<string, any>
 	readonly?: boolean
 }>()
 
-const emit = defineEmits(['update:modelValue'])
-
-const formData = ref(props.data || {})
+const formData = ref(data || {})
 
 const componentProps = (componentObj: SchemaTypes) => {
 	let propsToPass = {}
@@ -48,7 +47,7 @@ const componentProps = (componentObj: SchemaTypes) => {
 
 const childModels = computed({
 	get: () => {
-		return props.modelValue.map((val, i) => {
+		return modelValue.map((val, i) => {
 			return computed({
 				get() {
 					return val.value
@@ -56,8 +55,8 @@ const childModels = computed({
 				set: newValue => {
 					// Find the component in modelValue and update it
 					// eslint-disable-next-line vue/no-mutating-props
-					props.modelValue[i].value = newValue
-					emit('update:modelValue', props.modelValue)
+					modelValue[i].value = newValue
+					emit('update:modelValue', modelValue)
 				},
 			})
 		})

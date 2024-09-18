@@ -1,6 +1,6 @@
 {
 	"$schema": "https://developer.microsoft.com/json-schemas/rush/v5/rush.schema.json",
-	"rushVersion": "5.129.6",
+	"rushVersion": "5.134.0",
 	"pnpmVersion": "8.15.9",
 	"approvedPackagesPolicy": {
 		"reviewCategories": ["production", "tool", "prototype", "documentation", "utilities"],

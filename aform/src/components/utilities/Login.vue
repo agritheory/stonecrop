@@ -53,16 +53,10 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
-withDefaults(
-	defineProps<{
-		headerTitle?: string
-		headerSubtitle?: string
-	}>(),
-	{
-		headerTitle: 'Login',
-		headerSubtitle: 'Enter your email and password to login',
-	}
-)
+const { headerTitle = 'Login', headerSubtitle = 'Enter your email and password to login' } = defineProps<{
+	headerTitle?: string
+	headerSubtitle?: string
+}>()
 
 const emit = defineEmits(['loginFailed', 'loginSuccess'])
 
