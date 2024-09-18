@@ -7,7 +7,7 @@
 				type="checkbox"
 				:id="uuid"
 				class="aform__checkbox"
-				:readonly="readOnly"
+				:readonly="readonly"
 				:required="required" />
 		</span>
 		<p class="error" v-show="validation.errorMessage" v-html="validation.errorMessage"></p>
@@ -17,19 +17,8 @@
 <script setup lang="ts">
 import { InputHTMLAttributes } from 'vue'
 
-const {
-	label,
-	required,
-	readOnly,
-	uuid,
-	validation = { errorMessage: '&nbsp;' },
-} = defineProps<{
-	label?: string
-	required?: boolean
-	readOnly?: boolean
-	uuid?: string
-	validation?: Record<string, any>
-}>()
+import { ComponentProps } from '@/types'
 
+const { label, required, readonly, uuid, validation = { errorMessage: '&nbsp;' } } = defineProps<ComponentProps>()
 const checkbox = defineModel<InputHTMLAttributes['checked']>()
 </script>

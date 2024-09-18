@@ -9,10 +9,10 @@
 		"_phase:build": ""
 	},
 	"dependencies": {
-		"@microsoft/api-extractor": "^7.47.0",
+		"@microsoft/api-extractor": "^7.47.9",
 		"@rushstack/heft": "^0.67.2",
-		"@rushstack/heft-api-extractor-plugin": "^0.3.38",
-		"@rushstack/heft-typescript-plugin": "^0.5.16",
+		"@rushstack/heft-api-extractor-plugin": "^0.3.49",
+		"@rushstack/heft-typescript-plugin": "^0.5.27",
 		"typescript": "^5.5.2"
 	},
 	"engines": {
