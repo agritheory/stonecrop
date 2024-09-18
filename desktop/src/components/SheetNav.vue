@@ -81,7 +81,7 @@ const { breadcrumbs = [] } = defineProps<{ breadcrumbs?: { title: string; to: st
 const breadcrumbsVisibile = ref(true)
 const searchVisibile = ref(false)
 const searchText = ref('')
-const searchinput = useTemplateRef<HTMLInputElement>('searchinput')
+const inputRef = useTemplateRef<HTMLInputElement>('searchinput')
 
 const rotateHideTabIcon = computed(() => {
 	return breadcrumbsVisibile.value ? 'unrotated' : 'rotated'
@@ -94,7 +94,7 @@ const toggleBreadcrumbs = () => {
 const toggleSearch = async () => {
 	searchVisibile.value = !searchVisibile.value
 	await nextTick(() => {
-		searchinput.value.focus()
+		inputRef.value.focus()
 	})
 }
 

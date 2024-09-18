@@ -33,7 +33,7 @@ const emit = defineEmits(['change'])
 // TODO: Implement edge removal
 // const { removeEdges } = useVueFlow()
 
-const labelInput = useTemplateRef<HTMLInputElement>('labelInput')
+const inputRef = useTemplateRef<HTMLInputElement>('labelInput')
 const newLabel = ref<EdgeProps['label']>('')
 const showInput = ref(false)
 let lastClick = 0
@@ -50,7 +50,7 @@ const showLabelInput = async () => {
 	newLabel.value = props.label
 	showInput.value = true
 	await nextTick()
-	labelInput.value.focus()
+	inputRef.value.focus()
 }
 
 const submitNewLabel = () => {

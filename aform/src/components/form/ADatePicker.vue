@@ -1,5 +1,5 @@
 <template>
-	<div class="adatepicker" tabindex="0" ref="adatepicker">
+	<div class="adatepicker" tabindex="0" ref="datepicker">
 		<table>
 			<tr>
 				<td id="previous-month-btn" @click="previousMonth" :tabindex="-1">&lt;</td>
@@ -49,7 +49,7 @@ const selectedDate = ref(new Date(date.value))
 const currentMonth = ref<number>(selectedDate.value.getMonth())
 const currentYear = ref<number>(selectedDate.value.getFullYear())
 const currentDates = ref<number[]>([])
-const adatepicker = useTemplateRef<HTMLDivElement>('adatepicker')
+const datepickerRef = useTemplateRef<HTMLDivElement>('datepicker')
 
 onMounted(async () => {
 	populateMonth()
@@ -136,7 +136,7 @@ const monthAndYear = computed(() => {
 // setup keyboard navigation
 useKeyboardNav([
 	{
-		parent: adatepicker,
+		parent: datepickerRef,
 		selectors: 'td',
 		handlers: {
 			...defaultKeypressHandlers,

@@ -4,7 +4,6 @@
 			<ATable id="list" :columns="http_logs.columns" v-model="http_logs.rows" :config="{ view: 'list' }">
 				<template #body="{ data }: { data: TableDataStore }">
 					<ARow
-						ref="rows"
 						v-for="(row, rowIndex) in data.rows"
 						:key="row.id"
 						:row="row"
@@ -35,7 +34,6 @@
 			<ATable id="list" :columns="http_logs.columns" v-model="http_logs.rows" :config="{ view: 'list-expansion' }">
 				<template #body="{ data }: { data: TableDataStore }">
 					<AExpansionRow
-						ref="rows"
 						:data-id="row.id"
 						v-for="(row, rowIndex) in data.rows"
 						:key="row.id"
@@ -68,7 +66,6 @@
 								:config="{ view: 'list-expansion' }">
 								<template #body="{ data }: { data: TableDataStore }">
 									<AExpansionRow
-										ref="rows"
 										:data-id="row.id"
 										v-for="(row, rowIndex) in data.rows"
 										:key="row.id"
@@ -107,12 +104,10 @@
 
 <script lang="ts" setup>
 import { type TableColumn, TableDataStore } from '@stonecrop/atable'
-import { CSSProperties, ref, useTemplateRef } from 'vue'
+import { CSSProperties, ref } from 'vue'
 
 import inbox_data from './sample_data/inbox.json'
 import http_data from './sample_data/http_logs.json'
-
-const rows = useTemplateRef<HTMLTableRowElement[]>('rows')
 
 const basic_form_schema = ref([
 	{

@@ -21,7 +21,7 @@ import { ref, nextTick, useTemplateRef } from 'vue'
 const props = defineProps<NodeProps>()
 const emit = defineEmits(['change'])
 
-const labelInput = useTemplateRef<HTMLInputElement>('labelInput')
+const inputRef = useTemplateRef<HTMLInputElement>('labelInput')
 const newLabel = ref<NodeProps['label']>('')
 const showInput = ref(false)
 let lastClick = 0
@@ -38,7 +38,7 @@ const showLabelInput = async () => {
 	newLabel.value = props.label
 	showInput.value = true
 	await nextTick()
-	labelInput.value.focus()
+	inputRef.value.focus()
 }
 
 const submitNewLabel = () => {

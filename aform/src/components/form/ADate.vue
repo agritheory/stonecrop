@@ -1,7 +1,7 @@
 <template>
 	<div>
 		<input
-			ref="dateRef"
+			ref="date"
 			type="date"
 			:id="uuid"
 			:disabled="readonly"
@@ -27,7 +27,7 @@ const {
 } = defineProps<ComponentProps>()
 
 const inputDate = defineModel<string | number | Date>()
-const dateRef = useTemplateRef<HTMLInputElement>('dateRef')
+const dateRef = useTemplateRef<HTMLInputElement>('date')
 
 const showPicker = () => {
 	if (dateRef.value) {

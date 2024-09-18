@@ -34,8 +34,8 @@ const {
 }>()
 
 const tableData = inject<TableDataStore>(tableid)
-const rowEl = useTemplateRef<HTMLTableRowElement>('rowEl')
-const rowExpanded = useTemplateRef<HTMLDivElement>('rowExpanded')
+const rowRef = useTemplateRef<HTMLTableRowElement>('rowEl')
+// const expandedRowRef = useTemplateRef<HTMLDivElement>('rowExpanded')
 
 const rowExpandSymbol = computed(() => {
 	return tableData.display[rowIndex].expanded ? '▼' : '►'
@@ -56,7 +56,7 @@ if (addNavigation) {
 
 	useKeyboardNav([
 		{
-			selectors: rowEl,
+			selectors: rowRef,
 			handlers: handlers,
 		},
 	])

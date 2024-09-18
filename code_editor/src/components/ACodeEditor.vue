@@ -13,7 +13,7 @@ import { theme } from '@/theme/code_editor/agritheory'
 
 const { options } = defineProps<{ options?: editor.IStandaloneEditorConstructionOptions }>()
 
-const aCodeEditor = useTemplateRef<HTMLDivElement>('aCodeEditor')
+const editorRef = useTemplateRef<HTMLDivElement>('aCodeEditor')
 const editorOptions = {
 	...options,
 	automaticLayout: true,
@@ -28,7 +28,7 @@ onMounted(async () => {
 
 	editor.defineTheme('agritheory', theme)
 	editor.setTheme('agritheory')
-	editor.create(aCodeEditor.value, editorOptions)
+	editor.create(editorRef.value, editorOptions)
 })
 </script>
 

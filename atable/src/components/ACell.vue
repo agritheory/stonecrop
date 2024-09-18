@@ -47,7 +47,7 @@ const {
 }>()
 
 const tableData = inject<TableDataStore>(tableid)
-const cell = useTemplateRef<HTMLTableCellElement>('cell')
+const cellRef = useTemplateRef<HTMLTableCellElement>('cell')
 const currentData = ref('')
 const cellModified = ref(false)
 
@@ -81,11 +81,11 @@ const handleInput = () => {
 	}
 
 	if (tableData.columns[colIndex].modalComponent) {
-		const domRect = cell.value.getBoundingClientRect()
+		const domRect = cellRef.value.getBoundingClientRect()
 		tableData.modal.visible = true
 		tableData.modal.colIndex = colIndex
 		tableData.modal.rowIndex = rowIndex
-		tableData.modal.parent = cell.value
+		tableData.modal.parent = cellRef.value
 		tableData.modal.top = domRect.top + domRect.height
 		tableData.modal.left = domRect.left
 		tableData.modal.width = cellWidth.value
@@ -115,7 +115,7 @@ if (addNavigation) {
 
 	useKeyboardNav([
 		{
-			selectors: cell,
+			selectors: cellRef,
 			handlers: handlers,
 		},
 	])
@@ -140,16 +140,16 @@ const cellWidth = computed(() => {
 })
 
 const onFocus = () => {
-	if (cell.value) {
-		currentData.value = cell.value.textContent
+	if (cellRef.value) {
+		currentData.value = cellRef.value.textContent
 	}
 }
 
 const onChange = () => {
-	if (cell.value) {
-		if (cell.value.textContent !== currentData.value) {
-			currentData.value = cell.value.textContent
-			cell.value.dispatchEvent(new Event('change'))
+	if (cellRef.value) {
+		if (cellRef.value.textContent !== currentData.value) {
+			currentData.value = cellRef.value.textContent
+			cellRef.value.dispatchEvent(new Event('change'))
 			cellModified.value = true // set display instead
 			if (!tableData.columns[colIndex].format) {
 				// TODO: need to setup reverse format function

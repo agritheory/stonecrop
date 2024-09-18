@@ -41,7 +41,7 @@ const {
 }>()
 
 const tableData = inject<TableDataStore>(tableid)
-const rowEl = useTemplateRef<HTMLTableRowElement>('rowEl')
+const rowRef = useTemplateRef<HTMLTableRowElement>('rowEl')
 
 const isRowVisible = computed(() => {
 	return tableData.config.view !== 'tree' || tableData.display[rowIndex].isRoot || tableData.display[rowIndex].open
@@ -75,7 +75,7 @@ if (addNavigation) {
 
 	useKeyboardNav([
 		{
-			selectors: rowEl,
+			selectors: rowRef,
 			handlers: handlers,
 		},
 	])
