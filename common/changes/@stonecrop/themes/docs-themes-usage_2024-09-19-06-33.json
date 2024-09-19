@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/themes",
+      "comment": "add docs to use styles",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/themes"
+}
