@@ -1,5 +1,5 @@
 <template>
-	<div ref="amodal" class="amodal" tabindex="-1" @click="handleInput" @input="handleInput">
+	<div class="amodal" tabindex="-1" @click="handleInput" @input="handleInput">
 		<slot />
 	</div>
 </template>
@@ -9,13 +9,13 @@
 
 // import TableDataStore from '.'
 
-/* const props = */ defineProps<{
+/* const { colIndex, rowIndex, tableid } = */ defineProps<{
 	colIndex?: number
 	rowIndex?: number
 	tableid?: string
 }>()
 
-// const tableData = inject<TableDataStore>(props.tableid)
+// const tableData = inject<TableDataStore>(tableid)
 // const cellBackgroundColor = computed(() => {
 // 	if (tableData.modal.parent) {
 // 		let computedstyle = window.getComputedStyle(tableData.modal.parent)

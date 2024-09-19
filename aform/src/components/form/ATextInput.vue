@@ -17,22 +17,9 @@
 import { /* inject, */ ref } from 'vue'
 
 import { useStringMask as vMask } from '@/directives/mask'
-import type { FormSchema } from '@/types'
+import { ComponentProps } from '@/types'
 
-withDefaults(
-	defineProps<{
-		schema: FormSchema
-		label: string
-		mask?: string
-		required?: boolean
-		readonly?: boolean
-		uuid?: string
-		validation?: { errorMessage: string }
-	}>(),
-	{
-		validation: () => ({ errorMessage: '&nbsp;' }),
-	}
-)
+const { label, mask, required, readonly, uuid, validation = { errorMessage: '&nbsp;' } } = defineProps<ComponentProps>()
 
 // TODO: setup maskFilled as a computed property
 const maskFilled = ref(true)

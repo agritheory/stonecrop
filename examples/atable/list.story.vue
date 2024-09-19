@@ -4,7 +4,6 @@
 			<ATable id="list" :columns="http_logs.columns" v-model="http_logs.rows" :config="{ view: 'list' }">
 				<template #body="{ data }: { data: TableDataStore }">
 					<ARow
-						ref="rows"
 						v-for="(row, rowIndex) in data.rows"
 						:key="row.id"
 						:row="row"
@@ -35,7 +34,6 @@
 			<ATable id="list" :columns="http_logs.columns" v-model="http_logs.rows" :config="{ view: 'list-expansion' }">
 				<template #body="{ data }: { data: TableDataStore }">
 					<AExpansionRow
-						ref="rows"
 						:data-id="row.id"
 						v-for="(row, rowIndex) in data.rows"
 						:key="row.id"
@@ -68,7 +66,6 @@
 								:config="{ view: 'list-expansion' }">
 								<template #body="{ data }: { data: TableDataStore }">
 									<AExpansionRow
-										ref="rows"
 										:data-id="row.id"
 										v-for="(row, rowIndex) in data.rows"
 										:key="row.id"
@@ -111,8 +108,6 @@ import { CSSProperties, ref } from 'vue'
 
 import inbox_data from './sample_data/inbox.json'
 import http_data from './sample_data/http_logs.json'
-
-const rows = ref<HTMLTableRowElement[]>([])
 
 const basic_form_schema = ref([
 	{

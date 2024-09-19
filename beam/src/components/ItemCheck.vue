@@ -8,14 +8,11 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
-// make this v-model sensitive from parent
-const props = defineProps<{
-	value?: boolean
-}>()
-
 const emit = defineEmits(['input'])
+// TODO: make this v-model sensitive from parent
+const { value } = defineProps<{ value?: boolean }>()
 
-const checked = ref(props.value)
+const checked = ref(value)
 
 const handleInput = () => {
 	emit('input', checked.value)

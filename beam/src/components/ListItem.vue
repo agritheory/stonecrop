@@ -21,7 +21,7 @@ import { ref } from 'vue'
 import ItemCount from '@/components/ItemCount.vue'
 import ItemCheck from '@/components/ItemCheck.vue'
 
-const props = defineProps<{
+const { item } = defineProps<{
 	item: {
 		label: string
 		description: string
@@ -34,5 +34,5 @@ const props = defineProps<{
 	}
 }>()
 
-const listItem = ref(props.item)
+const listItem = ref(item)
 </script>

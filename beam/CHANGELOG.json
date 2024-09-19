@@ -2,6 +2,18 @@
   "name": "@stonecrop/beam",
   "entries": [
     {
+      "version": "0.2.34",
+      "tag": "@stonecrop/beam_v0.2.34",
+      "date": "Wed, 18 Sep 2024 15:26:37 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "update package to vue 3.5"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.2.33",
       "tag": "@stonecrop/beam_v0.2.33",
       "date": "Mon, 16 Sep 2024 11:56:08 GMT",

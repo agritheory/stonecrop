@@ -16,17 +16,19 @@
 import { ref, computed } from 'vue'
 
 const emit = defineEmits(['input'])
-const props = withDefaults(
-	defineProps<{
-		value?: number
-		denominator: number
-		uom?: string
-		editable?: boolean
-	}>(),
-	{ value: 0, editable: true, uom: '' }
-)
+const {
+	value = 0,
+	denominator,
+	uom = '',
+	editable = true,
+} = defineProps<{
+	value?: number
+	denominator: number
+	uom?: string
+	editable?: boolean
+}>()
 
-const count = ref(props.value)
+const count = ref(value)
 
 const handleInput = (event: InputEvent | MouseEvent) => {
 	event.preventDefault()
@@ -36,6 +38,6 @@ const handleInput = (event: InputEvent | MouseEvent) => {
 }
 
 const countColor = computed(() => {
-	return count.value === props.denominator
+	return count.value === denominator
 })
 </script>
