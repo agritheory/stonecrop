@@ -1,5 +1,14 @@
 import ATable from '@stonecrop/atable'
 
+export type ComponentProps = {
+	label?: string
+	mask?: string
+	required?: boolean
+	readonly?: boolean
+	uuid?: string
+	validation?: Record<string, any>
+}
+
 export type BasicSchema = {
 	component: string
 	fieldname: string

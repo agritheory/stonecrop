@@ -28,38 +28,38 @@
 
 <script setup lang="ts">
 import { KeypressHandlers, defaultKeypressHandlers, useKeyboardNav } from '@stonecrop/utilities'
-import { computed, CSSProperties, inject, ref } from 'vue'
+import { computed, CSSProperties, inject, ref, useTemplateRef } from 'vue'
 
 import TableDataStore from '.'
 import type { CellFormatContext } from '@/types'
 
-const props = withDefaults(
-	defineProps<{
-		colIndex: number
-		rowIndex: number
-		tableid: string
-		addNavigation?: boolean | KeypressHandlers
-		tabIndex?: number
-	}>(),
-	{
-		tabIndex: 0,
-		addNavigation: true,
-	}
-)
+const {
+	colIndex,
+	rowIndex,
+	tableid,
+	addNavigation = true,
+	tabIndex = 0,
+} = defineProps<{
+	colIndex: number
+	rowIndex: number
+	tableid: string
+	addNavigation?: boolean | KeypressHandlers
+	tabIndex?: number
+}>()
 
-const tableData = inject<TableDataStore>(props.tableid)
-const cell = ref<HTMLTableCellElement>(null)
-const currentColumn = tableData.columns[props.colIndex]
+const tableData = inject<TableDataStore>(tableid)
+const cellRef = useTemplateRef<HTMLTableCellElement>('cell')
+const currentColumn = tableData.columns[colIndex]
 const currentData = ref('')
 const cellModified = ref(false)
 
 const hasPinnedColumns = computed(() => tableData.columns.some(col => col.pinned))
 
 const displayValue = computed(() => {
-	const data = tableData.cellData<any>(props.colIndex, props.rowIndex)
+	const data = tableData.cellData<any>(colIndex, rowIndex)
 	if (currentColumn.format) {
 		const table = tableData.table
-		const row = tableData.rows[props.rowIndex]
+		const row = tableData.rows[rowIndex]
 		const column = currentColumn
 		const format = column.format
 
@@ -85,11 +85,11 @@ const handleInput = () => {
 	}
 
 	if (currentColumn.modalComponent) {
-		const domRect = cell.value.getBoundingClientRect()
+		const domRect = cellRef.value.getBoundingClientRect()
 		tableData.modal.visible = true
-		tableData.modal.colIndex = props.colIndex
-		tableData.modal.rowIndex = props.rowIndex
-		tableData.modal.parent = cell.value
+		tableData.modal.colIndex = colIndex
+		tableData.modal.rowIndex = rowIndex
+		tableData.modal.parent = cellRef.value
 		tableData.modal.top = domRect.top + domRect.height
 		tableData.modal.left = domRect.left
 		tableData.modal.width = cellWidth.value
@@ -98,7 +98,7 @@ const handleInput = () => {
 	}
 }
 
-if (props.addNavigation) {
+if (addNavigation) {
 	let handlers = {
 		...defaultKeypressHandlers,
 		...{
@@ -110,16 +110,16 @@ if (props.addNavigation) {
 		},
 	}
 
-	if (typeof props.addNavigation === 'object') {
+	if (typeof addNavigation === 'object') {
 		handlers = {
 			...handlers,
-			...props.addNavigation,
+			...addNavigation,
 		}
 	}
 
 	useKeyboardNav([
 		{
-			selectors: cell,
+			selectors: cellRef,
 			handlers: handlers,
 		},
 	])
@@ -128,8 +128,8 @@ if (props.addNavigation) {
 // const updateData = (event: Event) => {
 // 	if (event) {
 // 		// custom components need to handle their own updateData, this is the default
-// 		if (!currentColumn.component) {
-// 			tableData.setCellData(props.rowIndex, props.colIndex, cell.value.innerHTML)
+// 		if (!tableData.columns[colIndex].component) {
+// 			tableData.setCellData(rowIndex, colIndex, cell.value.innerHTML)
 // 		}
 // 		cellModified.value = true
 // 	}
@@ -144,20 +144,20 @@ const cellWidth = computed(() => {
 })
 
 const onFocus = () => {
-	if (cell.value) {
-		currentData.value = cell.value.textContent
+	if (cellRef.value) {
+		currentData.value = cellRef.value.textContent
 	}
 }
 
 const onChange = () => {
-	if (cell.value) {
-		if (cell.value.textContent !== currentData.value) {
-			currentData.value = cell.value.textContent
-			cell.value.dispatchEvent(new Event('change'))
+	if (cellRef.value) {
+		if (cellRef.value.textContent !== currentData.value) {
+			currentData.value = cellRef.value.textContent
+			cellRef.value.dispatchEvent(new Event('change'))
 			cellModified.value = true // set display instead
 			if (!currentColumn.format) {
 				// TODO: need to setup reverse format function
-				tableData.setCellData(props.rowIndex, props.colIndex, currentData.value)
+				tableData.setCellData(rowIndex, colIndex, currentData.value)
 			}
 		}
 	}
@@ -176,7 +176,7 @@ const cellStyle: CSSProperties = {
 	width: cellWidth.value,
 	backgroundColor: !cellModified.value ? 'inherit' : 'var(--cell-modified-color)',
 	fontWeight: !cellModified.value ? 'inherit' : 'bold',
-	paddingLeft: getIndent(props.colIndex, tableData.display[props.rowIndex]?.indent),
+	paddingLeft: getIndent(colIndex, tableData.display[rowIndex]?.indent),
 }
 </script>
 

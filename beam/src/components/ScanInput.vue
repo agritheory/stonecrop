@@ -3,31 +3,26 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 
-const emit = defineEmits(['scaninput'])
-const barcode = ref('')
+import onScan from 'onscan.js'
+import { onMounted, onUnmounted } from 'vue'
 
-const handleScanInput = (event: InputEvent | KeyboardEvent) => {
-	if ((event.target as HTMLElement).tagName !== 'INPUT') {
-		if (event instanceof KeyboardEvent && event.key !== 'Enter') {
-			barcode.value += `${event.key}`
-		} else {
-			emit('scaninput', barcode.value)
-			barcode.value = ''
-		}
-	}
-}
+const emit = defineEmits<{
+	scanInstance: [instance: onScan]
+}>()
+
+const props = defineProps<{
+	scanHandler: (barcode: string, qty: number) => void
+}>()
 
 onMounted(() => {
-	document.addEventListener('keypress', event => {
-		handleScanInput(event)
-	})
+	const instance = onScan.attachTo(window, { onScan: props.scanHandler })
+	emit('scanInstance', instance)
 })
 
 onUnmounted(() => {
-	window.removeEventListener('keypress', event => {
-		handleScanInput(event)
-	})
+	onScan.detachFrom(window)
 })
 </script>

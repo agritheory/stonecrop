@@ -11,12 +11,12 @@ import { type HTMLAttributes, computed } from 'vue'
 import NodeEditor from '@/components/NodeEditor.vue'
 import type { EditorStates, FlowElement, FlowElements, Layout } from '@/types'
 
+const emit = defineEmits(['update:modelValue'])
 const states = defineModel<EditorStates>()
-const props = defineProps<{
+const { layout, nodeContainerClass } = defineProps<{
 	layout: Layout
 	nodeContainerClass?: HTMLAttributes['class']
 }>()
-const emit = defineEmits(['update:modelValue'])
 
 const elements = computed<FlowElements>({
 	get: () => {
@@ -29,9 +29,9 @@ const elements = computed<FlowElements>({
 			const el: Node = {
 				id: key,
 				label: key,
-				position: props.layout[key]?.position || { x: 200 * index, y: 100 },
-				targetPosition: props.layout[key]?.targetPosition || Position.Left,
-				sourcePosition: props.layout[key]?.sourcePosition || Position.Right,
+				position: layout[key]?.position || { x: 200 * index, y: 100 },
+				targetPosition: layout[key]?.targetPosition || Position.Left,
+				sourcePosition: layout[key]?.sourcePosition || Position.Right,
 			}
 
 			if (value.type === 'final') {
@@ -82,7 +82,7 @@ const elements = computed<FlowElements>({
 		// update modelValue when elements change
 		onElementsChange(newValue)
 
-		// TODO: emit('update:modelValue', props.modelValue)
+		// TODO: emit('update:modelValue', modelValue)
 	},
 })
 

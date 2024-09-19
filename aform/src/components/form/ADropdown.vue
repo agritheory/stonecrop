@@ -29,9 +29,9 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref /* useTemplateRef */ } from 'vue'
 
-const props = defineProps<{
+const { label, items, isAsync } = defineProps<{
 	label: string
 	items?: string[]
 	isAsync?: boolean
@@ -39,12 +39,12 @@ const props = defineProps<{
 
 const emit = defineEmits(['filterChanged'])
 
-const results = ref(props.items)
+const results = ref(items)
 const search = defineModel<string>()
 const isLoading = ref(false)
 const arrowCounter = ref(0)
 const isOpen = ref(false)
-const mopInput = ref(null)
+// const mopInput = useTemplateRef<HTMLInputElement>('mopInput')
 
 onMounted(() => {
 	document.addEventListener('click', handleClickOutside)
@@ -62,9 +62,9 @@ const setResult = result => {
 
 const filterResults = () => {
 	if (!search.value) {
-		results.value = props.items
+		results.value = items
 	} else {
-		results.value = props.items.filter(item => {
+		results.value = items.filter(item => {
 			return item.toLowerCase().indexOf(search.value.toLowerCase()) > -1
 		})
 	}
@@ -72,7 +72,7 @@ const filterResults = () => {
 
 const onChange = () => {
 	isOpen.value = true
-	if (props.isAsync) {
+	if (isAsync) {
 		isLoading.value = true
 		emit('filterChanged', search.value)
 	} else {
@@ -89,7 +89,7 @@ const closeResults = () => {
 	isOpen.value = false
 
 	// TODO: (test) when would this occur? how should this be tested?
-	if (!props.items.includes(search.value)) {
+	if (!items.includes(search.value)) {
 		search.value = ''
 	}
 }
