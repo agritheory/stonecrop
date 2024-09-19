@@ -75,23 +75,20 @@ type SetElement = {
 	actions?: SetAction[]
 }
 
-const props = defineProps<{
-	elements?: SetElement[]
-}>()
+const { elements } = defineProps<{ elements?: SetElement[] }>()
 
-const _elements = ref<SetElement[]>([])
+const _elements = ref(elements)
 const isOpen = ref(false)
 const timeout = ref<number>(null)
 const hover = ref(false)
 const closeClicked = ref(false)
 
 onMounted(() => {
-	_elements.value = props.elements
 	closeDropdowns()
 })
 
 const closeDropdowns = () => {
-	for (let element of _elements.value) {
+	for (const element of _elements.value) {
 		if (element.elementType === 'dropdown') {
 			element.show = false
 		}

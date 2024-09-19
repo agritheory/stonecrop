@@ -46,7 +46,7 @@ import EditableEdge from '@/components/EditableEdge.vue'
 import EditableNode from '@/components/EditableNode.vue'
 import type { FlowElements } from '@/types'
 
-const props = defineProps<{
+const { modelValue, nodeContainerClass } = defineProps<{
 	modelValue: FlowElements
 	nodeContainerClass?: HTMLAttributes['class']
 }>()
@@ -69,7 +69,7 @@ const activeElementIndex = computed(() => {
 
 const elements = computed({
 	get: () => {
-		const _elements = props.modelValue
+		const _elements = modelValue
 
 		// Add data to each element
 		for (const _element of _elements) {
