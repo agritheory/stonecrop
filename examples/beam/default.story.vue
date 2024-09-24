@@ -111,13 +111,8 @@ const loadMoreItems = () => {
 	}, 300)
 }
 
-const closeModal = () => {
-	showModal.value = false
-}
-
-const confirmModal = () => {
-	showModal.value = false
-}
+const confirmModal = () => (showModal.value = false)
+const closeModal = () => (showModal.value = false)
 </script>
 
 <style>

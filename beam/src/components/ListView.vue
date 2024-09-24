@@ -33,7 +33,7 @@ defineProps<{
 	}[]
 }>()
 
-const emit = defineEmits(['scrollbottom'])
+const emit = defineEmits<{ scrollbottom: [] }>()
 
 onMounted(() => {
 	window.addEventListener('scroll', handleScroll)
