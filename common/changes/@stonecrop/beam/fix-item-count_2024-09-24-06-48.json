@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/beam",
+      "comment": "fix ItemCount input behaviour",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/beam"
+}
