@@ -17,6 +17,13 @@
 			<ScanInput @scaninput="handleScanInput($event)" />
 			<BeamModalOutlet @confirmmodal="confirmModal" @closemodal="closeModal"></BeamModalOutlet>
 		</Variant>
+		<Variant title="Metadata">
+			<BeamMetadata>
+				<template #components>
+					<ListView :items="items" @scrollbottom="loadMoreItems" />
+				</template>
+			</BeamMetadata>
+		</Variant>
 	</Story>
 </template>
 

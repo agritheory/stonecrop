@@ -11,6 +11,7 @@ import {
 	ListView,
 	Navbar,
 	ScanInput,
+	BeamMetadata,
 } from '@stonecrop/beam'
 import PortalVue from 'portal-vue'
 
@@ -28,4 +29,5 @@ export const setupVue3 = defineSetupVue3(({ app }) => {
 	app.component('ListView', ListView)
 	app.component('Navbar', Navbar)
 	app.component('ScanInput', ScanInput)
+	app.component('BeamMetadata', BeamMetadata)
 })
