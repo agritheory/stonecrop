@@ -50,6 +50,15 @@ Holds styles for all tables, TH, TR, TD, etc.
 	padding-bottom: var(--atable-row-padding);
 	border-spacing: 0px;
 	border-collapse: collapse;
+	width: 200px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	order: 1;
+
+	& span {
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
 }
 .atable__cell:focus,
 .atable__cell:focus-within {
@@ -67,6 +76,7 @@ Holds styles for all tables, TH, TR, TD, etc.
 .table-row {
 	border-top: 1px solid var(--row-border-color);
 	height: var(--atable-row-height);
+	display: flex;
 }
 
 .list-index {
@@ -76,18 +86,23 @@ Holds styles for all tables, TH, TR, TD, etc.
 	padding-right: 1em;
 	text-align: center;
 	user-select: none;
-	width: v-bind(numberedRowWidth);
-	max-width: v-bind(numberedRowWidth);
+	width: 30px;
+	text-overflow: ellipsis;
+	overflow: hidden;
 }
 
 .sticky-index {
 	position: sticky;
 	left: 0;
 	z-index: 1;
+	order: 0;
 }
 
 .sticky-column {
-	/* TODO: apply sticky column dynamically */
+	position: sticky;
+	left: 0;
+	z-index: 1;
+	order: 0;
 }
 
 .tree-index {
@@ -102,8 +117,12 @@ Holds styles for all tables, TH, TR, TD, etc.
 }
 
 .atable #header-index {
-	width: v-bind(numberedRowWidth);
-	max-width: v-bind(numberedRowWidth);
+	width: 30px;
+	padding-right: 1em;
+	padding-left: 0;
+}
+.atable-header-row {
+	display: flex;
 }
 
 .atable th {

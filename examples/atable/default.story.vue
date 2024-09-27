@@ -104,7 +104,7 @@ const pinned_columns: TableColumn[] = [
 		align: 'left',
 		edit: false,
 		width: '30ch',
-		pinned: true,
+		pinned: false,
 		format: (value: { title?: string; value?: any }) => `${value.title}`,
 	},
 	{
@@ -114,6 +114,7 @@ const pinned_columns: TableColumn[] = [
 		align: 'left',
 		edit: true,
 		width: '20ch',
+		pinned: true,
 	},
 	{
 		label: 'Report Date',

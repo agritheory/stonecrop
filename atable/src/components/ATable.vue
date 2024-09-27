@@ -21,6 +21,7 @@
 						:tableid="tableData.id"
 						:col="col"
 						spellcheck="false"
+						:pinned="col.pinned"
 						:rowIndex="rowIndex"
 						:colIndex="colIndex + (tableData.zeroColumn ? 0 : -1)"
 						:component="col.cellComponent"
