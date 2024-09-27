@@ -18,7 +18,7 @@
 			<BeamModalOutlet @confirmmodal="confirmModal" @closemodal="closeModal"></BeamModalOutlet>
 		</Variant>
 		<Variant title="Metadata">
-			<BeamMetadata>
+			<BeamMetadata :order="workOrder">
 				<template #components>
 					<ListView :items="items" @scrollbottom="loadMoreItems" />
 				</template>
@@ -31,6 +31,14 @@
 import { ref } from 'vue'
 
 import items from './data/items.json'
+
+const workOrder = {
+	orderNumber: 'WO#2024-01-00001',
+	product: 'Ambrosia Pie',
+	quantity: 0,
+	total: 20,
+	complete: false,
+}
 
 const showModal = ref(false)
 
