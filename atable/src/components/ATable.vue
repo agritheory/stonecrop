@@ -87,6 +87,13 @@ const {
 	tableid?: string
 }>()
 
+const getLeftPosition = (index, colWidth) => {
+	if (index != 0) {
+		return index * colWidth
+	}
+	return 0
+}
+
 const emit = defineEmits(['update:modelValue'])
 
 const rowsValue = modelValue ? modelValue : rows
