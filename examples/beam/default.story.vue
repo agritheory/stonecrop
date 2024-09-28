@@ -18,6 +18,13 @@
 			<BeamModalOutlet @confirmmodal="confirmModal" @closemodal="closeModal"></BeamModalOutlet>
 		</Variant>
 		<Variant title="Metadata">
+			<template #controls>
+				<HstText v-model="workOrder.orderNumber" title="Order Number" />
+				<HstText v-model="workOrder.product" title="Product" />
+				<HstNumber v-model="workOrder.quantity" :step="1" title="Quantity" />
+				<HstNumber v-model="workOrder.total" title="Total" />
+				<HstCheckbox v-model="workOrder.complete" title="Completed" />
+			</template>
 			<BeamMetadata :order="workOrder">
 				<template #components>
 					<ListView :items="items" @scrollbottom="loadMoreItems" />
@@ -28,17 +35,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, reactive } from 'vue'
 
 import items from './data/items.json'
 
-const workOrder = {
+const workOrder = reactive({
 	orderNumber: 'WO#2024-01-00001',
 	product: 'Ambrosia Pie',
 	quantity: 0,
 	total: 20,
 	complete: false,
-}
+})
 
 const showModal = ref(false)
 
