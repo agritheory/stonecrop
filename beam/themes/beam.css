@@ -197,6 +197,10 @@ body {
 	display: flex;
 	flex-direction: column;
 	max-height: 100vh;
+	color: var(--primary-text-color);
+}
+.beam_metadata_content {
+	padding-top: 10px;
 }
 .beam_metadata_header {
 	display: flex;
@@ -207,6 +211,10 @@ body {
 }
 .beam_metadata_count {
 	font-size: 1.5rem;
+
+	& p {
+		margin: 0;
+	}
 }
 .beam_metadata_header-order-num {
 	font-weight: bold;
@@ -221,6 +229,37 @@ body {
 	flex-direction: row;
 	align-items: baseline;
 	justify-content: space-between;
+
+	& p {
+		line-height: 1.5rem;
+	}
+
+	@media screen and (max-width: 600px) {
+		flex-direction: column;
+	}
+}
+.beam_metadata_arrow {
+	align-self: center;
+	padding: 0px 50px;
+	flex-grow: 1;
+	position: relative;
+	display: flex;
+	align-items: center;
+
+	@media screen and (max-width: 600px) {
+		display: none;
+	}
+}
+.beam_metadata_arrow-body {
+	width: 100%;
+	height: 10px;
+	background: #c4c4c4;
+}
+.beam_metadata_arrow-head {
+	& svg {
+		width: 20px;
+		display: block;
+	}
 }
 .beam_metadata_component_header {
 	display: flex;
@@ -241,9 +280,10 @@ body {
 	flex-direction: row;
 	justify-content: space-between;
 	align-items: baseline;
-}
-.beam_metadata--single-line {
-	margin: 0.25rem 0;
+
+	@media screen and (max-width: 600px) {
+		flex-direction: column;
+	}
 }
 .beam_metadata--error {
 	color: red;
