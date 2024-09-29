@@ -135,7 +135,6 @@ const assignStickyCellWidths = () => {
 	}
 	for (let h = 0; h < t.rows[0].cells.length; h++) {
 		const w = t.rows[1].cells[h].innerWidth
-		console.log(w)
 		t.rows[0].cells[h].style.width = w + 'px'
 	}
 }

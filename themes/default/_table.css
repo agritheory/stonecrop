@@ -65,12 +65,14 @@ Holds styles for all tables, TH, TR, TD, etc.
 	background-color: var(--focus-cell-background);
 	outline-width: 2px;
 	outline-style: solid;
+	outline-offset: -1px;
 	outline-color: var(--focus-cell-outline);
 	box-shadow: none;
 	overflow: hidden;
 	min-height: 1.15em;
 	max-height: 1.15em;
 	overflow: hidden;
+	box-sizing: border-box;
 }
 
 .table-row {
