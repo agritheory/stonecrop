@@ -50,7 +50,7 @@ Holds styles for all tables, TH, TR, TD, etc.
 	padding-bottom: var(--atable-row-padding);
 	border-spacing: 0px;
 	border-collapse: collapse;
-	width: 200px;
+
 	overflow: hidden;
 	text-overflow: ellipsis;
 	order: 1;
@@ -92,21 +92,6 @@ Holds styles for all tables, TH, TR, TD, etc.
 	overflow: hidden;
 }
 
-.sticky-index {
-	position: sticky;
-	left: 0px;
-	z-index: 1;
-	order: 0;
-	background-color: white;
-}
-
-.sticky-column {
-	position: sticky;
-	left: 40px;
-	z-index: 1;
-	order: 0;
-}
-
 .tree-index {
 	color: var(--header-text-color);
 	font-weight: bold;
@@ -139,6 +124,11 @@ Holds styles for all tables, TH, TR, TD, etc.
 	height: var(--atable-row-height);
 	font-weight: 300;
 	letter-spacing: 0.05rem;
+	order: 1;
+	box-sizing: border-box;
+}
+#header-index {
+	box-sizing: content-box;
 }
 
 .atable th:focus {
@@ -148,4 +138,27 @@ Holds styles for all tables, TH, TR, TD, etc.
 	z-index: 100;
 	position: absolute;
 	background-color: var(--row-color-zebra-dark);
+}
+
+.sticky-index {
+	position: sticky;
+	left: 0px;
+	z-index: 1;
+	order: 0;
+}
+
+.sticky-column,
+th.sticky-column,
+td.sticky-column,
+th.sticky-index,
+td.sticky-index {
+	position: sticky;
+	left: 40px;
+	z-index: 1;
+	order: 0;
+	background: white;
+}
+.sticky-column-edge {
+	border-right: 1px solid var(--row-border-color);
+	border-right-width: 1px;
 }

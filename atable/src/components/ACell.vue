@@ -28,7 +28,7 @@
 
 <script setup lang="ts">
 import { KeypressHandlers, defaultKeypressHandlers, useKeyboardNav } from '@stonecrop/utilities'
-import { computed, CSSProperties, inject, ref, useTemplateRef } from 'vue'
+import { computed, CSSProperties, inject, ref, useTemplateRef, onMounted } from 'vue'
 
 import TableDataStore from '.'
 import type { CellFormatContext } from '@/types'

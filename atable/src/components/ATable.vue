@@ -1,5 +1,6 @@
 <template>
 	<table
+		ref="table"
 		class="atable"
 		:style="{ width: tableData.config.fullWidth ? '100%' : 'auto' }"
 		v-on-click-outside="closeModal">
@@ -62,7 +63,7 @@
 
 <script setup lang="ts">
 import { vOnClickOutside } from '@vueuse/components'
-import { nextTick, provide, watch } from 'vue'
+import { nextTick, provide, watch, onMounted, useTemplateRef } from 'vue'
 
 import TableDataStore from '.'
 import ACell from '@/components/ACell.vue'
@@ -108,6 +109,36 @@ watch(
 	{ deep: true }
 )
 
+const table = useTemplateRef('table')
+
+onMounted(() => {
+	assignStickyCellWidths()
+})
+
+const assignStickyCellWidths = () => {
+	const t = table.value
+
+	for (var i = 0, row; (row = t.rows[i]); i++) {
+		let totalWidth = 0
+		let columns = []
+		for (var j = 0, col; (col = row.cells[j]); j++) {
+			if (col.classList.contains('sticky-column') || col.classList.contains('sticky-index')) {
+				col.style.left = totalWidth + 'px'
+				totalWidth += col.offsetWidth
+				columns.push(col)
+			}
+		}
+		if (columns.length > 0) {
+			let lastColumn = columns[columns.length - 1]
+			if (!lastColumn.classList.contains('sticky-column-edge')) lastColumn.classList.add('sticky-column-edge')
+		}
+	}
+	for (let h = 0; h < t.rows[0].cells.length; h++) {
+		const w = t.rows[1].cells[h].innerWidth
+		console.log(w)
+		t.rows[0].cells[h].style.width = w + 'px'
+	}
+}
 // const formatCell = (event?: KeyboardEvent, column?: TableColumn, cellData?: any) => {
 // 	let colIndex: number
 // 	const target = event?.target as HTMLTableCellElement
