@@ -153,7 +153,6 @@ td.sticky-column,
 th.sticky-index,
 td.sticky-index {
 	position: sticky;
-	left: 40px;
 	z-index: 1;
 	order: 0;
 	background: white;
