@@ -2,6 +2,18 @@
   "name": "@stonecrop/atable",
   "entries": [
     {
+      "version": "0.2.35",
+      "tag": "@stonecrop/atable_v0.2.35",
+      "date": "Mon, 30 Sep 2024 15:45:37 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "added pinned columns via sticky positioning"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.2.34",
       "tag": "@stonecrop/atable_v0.2.34",
       "date": "Wed, 18 Sep 2024 15:26:37 GMT",
