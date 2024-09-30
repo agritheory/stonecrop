@@ -78,25 +78,17 @@ const {
 	columns,
 	rows = [],
 	config = new Object(),
-	tableid,
 } = defineProps<{
 	id?: string
 	modelValue: TableRow[]
 	columns: TableColumn[]
 	rows?: TableRow[]
 	config?: TableConfig
-	tableid?: string
 }>()
-
-const getLeftPosition = (index, colWidth) => {
-	if (index != 0) {
-		return index * colWidth
-	}
-	return 0
-}
 
 const emit = defineEmits(['update:modelValue'])
 
+const tableRef = useTemplateRef<HTMLTableElement>('table')
 const rowsValue = modelValue ? modelValue : rows
 const tableData = new TableDataStore(id, columns, rowsValue, config)
 provide(tableData.id, tableData)
@@ -109,35 +101,40 @@ watch(
 	{ deep: true }
 )
 
-const table = useTemplateRef('table')
-
 onMounted(() => {
 	assignStickyCellWidths()
 })
 
 const assignStickyCellWidths = () => {
-	const t = table.value
+	const table = tableRef.value
 
-	for (var i = 0, row; (row = t.rows[i]); i++) {
+	// pin cells in row that are sticky
+	for (const row of table.rows) {
 		let totalWidth = 0
-		let columns = []
-		for (var j = 0, col; (col = row.cells[j]); j++) {
-			if (col.classList.contains('sticky-column') || col.classList.contains('sticky-index')) {
-				col.style.left = totalWidth + 'px'
-				totalWidth += col.offsetWidth
-				columns.push(col)
+		const columns: HTMLTableCellElement[] = []
+
+		for (const column of row.cells) {
+			if (column.classList.contains('sticky-column') || column.classList.contains('sticky-index')) {
+				column.style.left = `${totalWidth}px`
+				totalWidth += column.offsetWidth
+				columns.push(column)
 			}
 		}
+
 		if (columns.length > 0) {
-			let lastColumn = columns[columns.length - 1]
-			if (!lastColumn.classList.contains('sticky-column-edge')) lastColumn.classList.add('sticky-column-edge')
+			const lastColumn = columns[columns.length - 1]
+			lastColumn.classList.add('sticky-column-edge')
 		}
 	}
-	for (let h = 0; h < t.rows[0].cells.length; h++) {
-		const w = t.rows[1].cells[h].innerWidth
-		t.rows[0].cells[h].style.width = w + 'px'
+
+	// set header cell width to match sticky cells' width
+	const headerCells = Array.from(table.rows[0].cells)
+	for (const [index, headerCell] of headerCells.entries()) {
+		const rowCell = table.rows[1].cells[index]
+		headerCell.style.width = `${rowCell.offsetWidth}px`
 	}
 }
+
 // const formatCell = (event?: KeyboardEvent, column?: TableColumn, cellData?: any) => {
 // 	let colIndex: number
 // 	const target = event?.target as HTMLTableCellElement

@@ -24,13 +24,13 @@ const { columns, tableid } = defineProps<{ columns: TableColumn[]; tableid?: str
 
 const tableData = inject<TableDataStore>(tableid)
 
+const hasPinnedColumns = computed(() => tableData.columns.some(col => col.pinned))
+
 const getHeaderCellStyle = (column: TableColumn): CSSProperties => ({
 	minWidth: column.width || '40ch',
 	textAlign: column.align || 'center',
 	width: tableData.config.fullWidth ? 'auto' : null,
 })
-
-const hasPinnedColumns = computed(() => tableData.columns.some(col => col.pinned))
 </script>
 
 <style>
