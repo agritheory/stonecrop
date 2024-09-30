@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/atable",
+      "comment": "added pinned columns via sticky positioning",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/atable"
+}

@@ -114,6 +114,7 @@ const pinned_columns: TableColumn[] = [
 		align: 'left',
 		edit: true,
 		width: '20ch',
+		pinned: false,
 	},
 	{
 		label: 'Report Date',
@@ -122,6 +123,7 @@ const pinned_columns: TableColumn[] = [
 		align: 'center',
 		edit: true,
 		width: '25ch',
+		pinned: false,
 		modalComponent: 'ADate',
 		format: (value: number) => {
 			return new Date(Number(value)).toLocaleDateString('en-US')

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/themes",
+      "comment": "add styles for pinned columns ordering",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/themes"
+}

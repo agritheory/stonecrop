@@ -15,7 +15,7 @@
 		@click="handleInput"
 		@mousedown="handleInput"
 		class="atable__cell"
-		:class="hasPinnedColumns ? 'sticky-column' : ''">
+		:class="pinned ? 'sticky-column' : ''">
 		<component
 			v-if="currentColumn.cellComponent"
 			:is="currentColumn.cellComponent"
@@ -45,6 +45,7 @@ const {
 	tableid: string
 	addNavigation?: boolean | KeypressHandlers
 	tabIndex?: number
+	pinned: boolean
 }>()
 
 const tableData = inject<TableDataStore>(tableid)
@@ -52,8 +53,6 @@ const cellRef = useTemplateRef<HTMLTableCellElement>('cell')
 const currentColumn = tableData.columns[colIndex]
 const currentData = ref('')
 const cellModified = ref(false)
-
-const hasPinnedColumns = computed(() => tableData.columns.some(col => col.pinned))
 
 const displayValue = computed(() => {
 	const data = tableData.cellData<any>(colIndex, rowIndex)
