@@ -3,7 +3,7 @@
     {
       "packageName": "@stonecrop/atable",
       "comment": "added pinned columns via sticky positioning",
-      "type": "none"
+      "type": "patch"
     }
   ],
   "packageName": "@stonecrop/atable"

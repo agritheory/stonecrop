@@ -28,7 +28,7 @@
 
 <script setup lang="ts">
 import { KeypressHandlers, defaultKeypressHandlers, useKeyboardNav } from '@stonecrop/utilities'
-import { computed, CSSProperties, inject, ref, useTemplateRef, onMounted } from 'vue'
+import { computed, CSSProperties, inject, ref, useTemplateRef } from 'vue'
 
 import TableDataStore from '.'
 import type { CellFormatContext } from '@/types'
@@ -53,8 +53,6 @@ const cellRef = useTemplateRef<HTMLTableCellElement>('cell')
 const currentColumn = tableData.columns[colIndex]
 const currentData = ref('')
 const cellModified = ref(false)
-
-const hasPinnedColumns = computed(() => tableData.columns.some(col => col.pinned))
 
 const displayValue = computed(() => {
 	const data = tableData.cellData<any>(colIndex, rowIndex)
