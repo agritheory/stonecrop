@@ -25,10 +25,10 @@
 						</div>
 
 						<div class="login-form-password login-form-element">
-							<label id="login-password" for="password" class="login-label">Password</label>
+							<label id="login-password" for="password" class="aform__field-label">Password</label>
 							<input
 								id="password"
-								class="login-field"
+								class="aform__input-field"
 								name="password"
 								type="password"
 								v-model="password"
@@ -53,16 +53,10 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
-withDefaults(
-	defineProps<{
-		headerTitle?: string
-		headerSubtitle?: string
-	}>(),
-	{
-		headerTitle: 'Login',
-		headerSubtitle: 'Enter your email and password to login',
-	}
-)
+const { headerTitle = 'Login', headerSubtitle = 'Enter your email and password to login' } = defineProps<{
+	headerTitle?: string
+	headerSubtitle?: string
+}>()
 
 const emit = defineEmits(['loginFailed', 'loginSuccess'])
 

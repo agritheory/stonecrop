@@ -1,6 +1,58 @@
 # Change Log - @stonecrop/beam
 
-This log was last generated on Fri, 16 Aug 2024 11:08:03 GMT and should not be manually modified.
+This log was last generated on Thu, 26 Sep 2024 18:48:59 GMT and should not be manually modified.
+
+## 0.2.36
+Thu, 26 Sep 2024 18:48:59 GMT
+
+_Version update only_
+
+## 0.2.35
+Tue, 24 Sep 2024 10:51:20 GMT
+
+### Patches
+
+- fix ItemCount input behaviour
+
+## 0.2.34
+Wed, 18 Sep 2024 15:26:37 GMT
+
+### Patches
+
+- update package to vue 3.5
+
+## 0.2.33
+Mon, 16 Sep 2024 11:56:08 GMT
+
+### Patches
+
+- isolate story-specific Beam styles
+
+## 0.2.32
+Mon, 16 Sep 2024 11:27:59 GMT
+
+### Patches
+
+- add onscan.js dependency for hardware scanners
+
+## 0.2.31
+Fri, 13 Sep 2024 12:32:59 GMT
+
+_Version update only_
+
+## 0.2.30
+Fri, 13 Sep 2024 12:28:54 GMT
+
+### Updates
+
+- updated navbar styling for beam
+
+## 0.2.29
+Wed, 11 Sep 2024 18:43:29 GMT
+
+### Updates
+
+- added design directory to beam
 
 ## 0.2.28
 Fri, 16 Aug 2024 11:08:03 GMT

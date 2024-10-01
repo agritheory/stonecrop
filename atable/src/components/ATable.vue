@@ -4,7 +4,7 @@
 		:style="{ width: tableData.config.fullWidth ? '100%' : 'auto' }"
 		v-on-click-outside="closeModal">
 		<slot name="header" :data="tableData">
-			<ATableHeader :columns="tableData.columns" :config="tableData.config" :tableid="tableData.id" />
+			<ATableHeader :columns="tableData.columns" :tableid="tableData.id" />
 		</slot>
 
 		<tbody>
@@ -70,25 +70,26 @@ import ATableHeader from '@/components/ATableHeader.vue'
 import ATableModal from '@/components/ATableModal.vue'
 import type { TableColumn, TableConfig, TableRow } from '@/types'
 
-const props = withDefaults(
-	defineProps<{
-		id?: string
-		modelValue: TableRow[]
-		columns: TableColumn[]
-		rows?: TableRow[]
-		config?: TableConfig
-		tableid?: string
-	}>(),
-	{
-		rows: () => [],
-		config: () => new Object(),
-	}
-)
+const {
+	id,
+	modelValue,
+	columns,
+	rows = [],
+	config = new Object(),
+	tableid,
+} = defineProps<{
+	id?: string
+	modelValue: TableRow[]
+	columns: TableColumn[]
+	rows?: TableRow[]
+	config?: TableConfig
+	tableid?: string
+}>()
 
 const emit = defineEmits(['update:modelValue'])
 
-let rows = props.modelValue ? props.modelValue : props.rows
-let tableData = new TableDataStore(props.id, props.columns, rows, props.config)
+const rowsValue = modelValue ? modelValue : rows
+const tableData = new TableDataStore(id, columns, rowsValue, config)
 provide(tableData.id, tableData)
 
 watch(

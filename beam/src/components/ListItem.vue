@@ -1,17 +1,17 @@
 <template>
 	<li tabindex="0" class="beam__listitem">
 		<div class="beam__listtext">
-			<label>{{ item.label }}</label>
-			<p>{{ item.description }}</p>
+			<label>{{ listItem.label }}</label>
+			<p>{{ listItem.description }}</p>
 		</div>
 
 		<ItemCount
-			v-if="item.count"
+			v-if="listItem.count"
 			v-model="listItem.count.count"
-			:denominator="item.count.of"
-			:uom="item.count.uom"
+			:denominator="listItem.count.of"
+			:uom="listItem.count.uom"
 			:editable="true" />
-		<ItemCheck v-if="item.hasOwnProperty('checked')" v-model="listItem.checked" />
+		<ItemCheck v-if="listItem.hasOwnProperty('checked')" v-model="listItem.checked" />
 	</li>
 </template>
 
@@ -21,7 +21,7 @@ import { ref } from 'vue'
 import ItemCount from '@/components/ItemCount.vue'
 import ItemCheck from '@/components/ItemCheck.vue'
 
-const props = defineProps<{
+const { item } = defineProps<{
 	item: {
 		label: string
 		description: string
@@ -34,5 +34,5 @@ const props = defineProps<{
 	}
 }>()
 
-const listItem = ref(props.item)
+const listItem = ref(item)
 </script>

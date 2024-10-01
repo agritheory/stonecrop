@@ -1,7 +1,7 @@
 <template>
 	<div>
 		<input
-			ref="dateRef"
+			ref="date"
 			type="date"
 			:id="uuid"
 			:disabled="readonly"
@@ -14,24 +14,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { useTemplateRef } from 'vue'
 
-withDefaults(
-	defineProps<{
-		label?: string
-		required?: boolean
-		readonly?: boolean
-		uuid?: string
-		validation?: Record<string, any>
-	}>(),
-	{
-		label: 'Date',
-		validation: () => ({ errorMessage: '&nbsp;' }),
-	}
-)
+import { ComponentProps } from '@/types'
+
+const {
+	label = 'Date',
+	required,
+	readonly,
+	uuid,
+	validation = { errorMessage: '&nbsp;' },
+} = defineProps<ComponentProps>()
 
 const inputDate = defineModel<string | number | Date>()
-const dateRef = ref<HTMLInputElement | null>(null)
+const dateRef = useTemplateRef<HTMLInputElement>('date')
 
 const showPicker = () => {
 	if (dateRef.value) {

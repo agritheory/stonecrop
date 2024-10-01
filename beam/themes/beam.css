@@ -36,15 +36,16 @@ body {
 	padding: 0.625rem;
 	background-color: var(--primary-color);
 	margin-left: 0;
-	min-height: 4em;
-	max-height: 4em;
+	min-height: 2em;
+	max-height: 2em;
 	color: var(--primary-text-color);
 	display: flex;
 	flex-flow: row nowrap;
 	align-content: center;
 	justify-content: flex-start;
 	align-items: center;
-	position: relative;
+	position: sticky;
+	top: 0;
 	border-bottom: 1px solid var(--row-border-color);
 
 	.nav-title {

@@ -1,8 +1,5 @@
 <template>
 	<nav class="beam__navbar">
-		<slot name="icon">
-			<span class="home-icon">&#11043;</span>
-		</slot>
 		<slot name="title">
 			<h1 class="nav-title">TITLE</h1>
 		</slot>
@@ -15,7 +12,7 @@
 </template>
 
 <script setup lang="ts">
-const emit = defineEmits(['click'])
+const emit = defineEmits<{ click: [] }>()
 
 const handlePrimaryAction = () => {
 	emit('click')
