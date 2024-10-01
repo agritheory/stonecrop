@@ -1,6 +1,6 @@
 <template>
 	<Story>
-		<Variant>
+		<Variant title="default">
 			<BeamModal @confirmmodal="confirmModal" @closemodal="closeModal" :showModal="showModal">
 				<Confirm @confirmmodal="confirmModal" @closemodal="closeModal" />
 			</BeamModal>
@@ -17,7 +17,8 @@
 			<ScanInput :scanHandler="incrementItemCount" />
 			<BeamModalOutlet @confirmmodal="confirmModal" @closemodal="closeModal"></BeamModalOutlet>
 		</Variant>
-		<Variant title="Metadata">
+
+		<Variant title="metadata">
 			<template #controls>
 				<HstText v-model="workOrder.orderNumber" title="Order Number" />
 				<HstText v-model="workOrder.product" title="Product" />
@@ -25,6 +26,7 @@
 				<HstNumber v-model="workOrder.total" title="Total" />
 				<HstCheckbox v-model="workOrder.complete" title="Completed" />
 			</template>
+
 			<BeamMetadata :order="workOrder">
 				<template #components>
 					<ListView :items="items" @scrollbottom="loadMoreItems" />

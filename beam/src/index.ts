@@ -1,6 +1,7 @@
 import { App } from 'vue'
 
 import ActionFooter from '@/components/ActionFooter.vue'
+import BeamMetadata from './components/BeamMetadata.vue'
 import BeamModal from '@/components/BeamModal.vue'
 import BeamModalOutlet from '@/components/BeamModalOutlet.vue'
 import Confirm from '@/components/Confirm.vue'
@@ -11,7 +12,6 @@ import ListItem from '@/components/ListItem.vue'
 import ListView from '@/components/ListView.vue'
 import Navbar from '@/components/Navbar.vue'
 import ScanInput from '@/components/ScanInput.vue'
-import BeamMetadata from './components/BeamMetadata.vue'
 import 'themes/beam.css'
 
 /**
@@ -21,6 +21,7 @@ import 'themes/beam.css'
  */
 function install(app: App /* options */) {
 	app.component('ActionFooter', ActionFooter)
+	app.component('BeamMetadata', BeamMetadata)
 	app.component('BeamModal', BeamModal)
 	app.component('BeamModalOutlet', BeamModalOutlet)
 	app.component('Confirm', Confirm)
@@ -31,11 +32,11 @@ function install(app: App /* options */) {
 	app.component('ListView', ListView)
 	app.component('Navbar', Navbar)
 	app.component('ScanInput', ScanInput)
-	app.component('BeamMetadata', BeamMetadata)
 }
 
 export {
 	ActionFooter,
+	BeamMetadata,
 	BeamModal,
 	BeamModalOutlet,
 	Confirm,
@@ -46,6 +47,5 @@ export {
 	ListView,
 	Navbar,
 	ScanInput,
-	BeamMetadata,
 	install,
 }
