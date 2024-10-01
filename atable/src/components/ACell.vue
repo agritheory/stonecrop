@@ -45,7 +45,7 @@ const {
 	tableid: string
 	addNavigation?: boolean | KeypressHandlers
 	tabIndex?: number
-	pinned: boolean
+	pinned?: boolean
 }>()
 
 const tableData = inject<TableDataStore>(tableid)

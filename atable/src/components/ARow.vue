@@ -28,16 +28,13 @@ import { type KeypressHandlers, useKeyboardNav, defaultKeypressHandlers } from '
 import { computed, inject, useTemplateRef } from 'vue'
 
 import TableDataStore from '.'
-import type { TableRow } from '@/types'
 
 const {
-	row,
 	rowIndex,
 	tableid,
 	tabIndex = -1,
 	addNavigation = false, // default to allowing cell navigation
 } = defineProps<{
-	row: TableRow
 	rowIndex: number
 	tableid: string
 	tabIndex?: number
