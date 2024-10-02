@@ -9,10 +9,7 @@
 import onScan from 'onscan.js'
 import { onMounted, onUnmounted } from 'vue'
 
-const emit = defineEmits<{
-	scanInstance: [instance: onScan]
-}>()
-
+const emit = defineEmits<{ scanInstance: [instance: onScan] }>()
 const props = defineProps<{
 	scanHandler: (barcode: string, qty: number) => void
 }>()

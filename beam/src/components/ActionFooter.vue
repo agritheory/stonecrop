@@ -9,7 +9,7 @@
 </template>
 
 <script setup lang="ts">
-const emit = defineEmits(['click'])
+const emit = defineEmits<{ click: [] }>()
 
 const handleFooterAction = () => {
 	emit('click')

@@ -8,7 +8,5 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{
-	showModal: boolean
-}>()
+defineProps<{ showModal: boolean }>()
 </script>

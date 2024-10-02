@@ -3,7 +3,10 @@
 </template>
 
 <script setup lang="ts">
-// const emit = defineEmits(['confirmmodal', 'closemodal'])
+/* const emit = */ defineEmits<{
+	confirmmodal: []
+	closemodal: []
+}>()
 
 // const confirmModal = () => {
 // 	emit('confirmmodal')

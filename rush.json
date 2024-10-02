@@ -2,24 +2,19 @@
 	"$schema": "https://developer.microsoft.com/json-schemas/rush/v5/rush.schema.json",
 	"rushVersion": "5.134.0",
 	"pnpmVersion": "8.15.9",
+	"telemetryEnabled": false,
+
 	"approvedPackagesPolicy": {
 		"reviewCategories": ["production", "tool", "prototype", "documentation", "utilities"],
 		"ignoredNpmScopes": ["@types"]
 	},
-	"gitPolicy": {},
+
 	"repository": {
 		"url": "https://github.com/agritheory/stonecrop",
 		"defaultBranch": "development",
 		"defaultRemote": "origin"
 	},
-	"eventHooks": {
-		"preRushInstall": [],
-		"postRushInstall": [],
-		"preRushBuild": [],
-		"postRushBuild": []
-	},
-	"hotfixChangeEnabled": false,
-	"telemetryEnabled": false,
+
 	"projects": [
 		{
 			"packageName": "@stonecrop/aform",
