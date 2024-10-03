@@ -1,6 +1,6 @@
 <template>
 	<Story>
-		<Variant>
+		<Variant title="default">
 			<BeamModal @confirmmodal="confirmModal" @closemodal="closeModal" :showModal="showModal">
 				<Confirm @confirmmodal="confirmModal" @closemodal="closeModal" />
 			</BeamModal>
@@ -17,13 +17,37 @@
 			<ScanInput :scanHandler="incrementItemCount" />
 			<BeamModalOutlet @confirmmodal="confirmModal" @closemodal="closeModal"></BeamModalOutlet>
 		</Variant>
+
+		<Variant title="metadata">
+			<template #controls>
+				<HstText v-model="workOrder.orderNumber" title="Order Number" />
+				<HstText v-model="workOrder.product" title="Product" />
+				<HstNumber v-model="workOrder.quantity" :step="1" title="Quantity" />
+				<HstNumber v-model="workOrder.total" title="Total" />
+				<HstCheckbox v-model="workOrder.complete" title="Completed" />
+			</template>
+
+			<BeamMetadata :order="workOrder">
+				<template #components>
+					<ListView :items="items" @scrollbottom="loadMoreItems" />
+				</template>
+			</BeamMetadata>
+		</Variant>
 	</Story>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, reactive } from 'vue'
 
 import items from './data/items.json'
+
+const workOrder = reactive({
+	orderNumber: 'WO#2024-01-00001',
+	product: 'Ambrosia Pie',
+	quantity: 0,
+	total: 20,
+	complete: false,
+})
 
 const showModal = ref(false)
 
