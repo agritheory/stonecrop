@@ -2,6 +2,12 @@
   "name": "@stonecrop/utilities",
   "entries": [
     {
+      "version": "0.2.38",
+      "tag": "@stonecrop/utilities_v0.2.38",
+      "date": "Thu, 03 Oct 2024 18:57:07 GMT",
+      "comments": {}
+    },
+    {
       "version": "0.2.37",
       "tag": "@stonecrop/utilities_v0.2.37",
       "date": "Thu, 03 Oct 2024 18:51:13 GMT",
