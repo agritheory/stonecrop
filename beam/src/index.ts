@@ -1,7 +1,6 @@
 import { App } from 'vue'
 
 import ActionFooter from '@/components/ActionFooter.vue'
-import BeamMetadata from './components/BeamMetadata.vue'
 import BeamModal from '@/components/BeamModal.vue'
 import BeamModalOutlet from '@/components/BeamModalOutlet.vue'
 import Confirm from '@/components/Confirm.vue'
@@ -21,7 +20,6 @@ import 'themes/beam.css'
  */
 function install(app: App /* options */) {
 	app.component('ActionFooter', ActionFooter)
-	app.component('BeamMetadata', BeamMetadata)
 	app.component('BeamModal', BeamModal)
 	app.component('BeamModalOutlet', BeamModalOutlet)
 	app.component('Confirm', Confirm)
@@ -36,7 +34,6 @@ function install(app: App /* options */) {
 
 export {
 	ActionFooter,
-	BeamMetadata,
 	BeamModal,
 	BeamModalOutlet,
 	Confirm,

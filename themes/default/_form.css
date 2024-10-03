@@ -6,16 +6,16 @@ Holds styles for all form fields
 } */
 .aform {
 	display: flex;
-	flex-wrap: wrap;
+	flex-wrap:wrap;
 	gap: 1rem;
 	padding: 1rem;
 	border: 1px solid var(--gray-5);
 	border-left: 4px solid var(--gray-5);
 	margin-bottom: 1rem;
-	max-width: 100%;
+	max-width:100%;
 }
-@media screen and (max-width: 400px) {
-	.aform {
+@media screen and (max-width:400px){
+	.aform{
 		flex-direction: column;
 	}
 }
@@ -24,9 +24,9 @@ Holds styles for all form fields
 	padding: 0;
 	margin: 0;
 	position: relative;
-	box-sizing: border-box;
-	flex-grow: 1;
-	min-width: 100px;
+	box-sizing:border-box;
+	flex-grow:1;
+	min-width:100px;
 }
 .aform__input-field {
 	outline: 1px solid transparent;
@@ -102,8 +102,8 @@ p.error {
 .aform__checkbox {
 	cursor: pointer;
 	width: auto;
-	margin-top: 0;
-	display: block;
+	margin-top:0;
+	display:block;
 }
 .aform__checkbox:checked {
 	accent-color: var(--primary-color);
@@ -148,49 +148,49 @@ tr:focus {
 	background-color: lightblue;
 	outline: auto;
 }
-.aform__form-btn {
-	padding: 0.5rem 2rem;
-	width: auto;
-	border: 1px solid var(--input-border-color);
+.aform__form-btn{
+	padding:.5rem 2rem;
+	width:auto;
+	border:1px solid var(--input-border-color);
 	color: var(--input-label-color);
-	cursor: pointer;
+	cursor:pointer;
 	background-color: white;
 }
-.aform__form-btn:disabled {
+.aform__form-btn:disabled{
 	background-color: var(--gray-5);
 }
-.aform__file-attach {
-	padding: 1rem;
-	display: flex;
-	flex-wrap: wrap;
-	gap: 1rem;
-	flex-direction: row;
+.aform__file-attach{
+	padding:1rem;
+	display:flex;
+	flex-wrap:wrap;
+	gap:1rem;
+	flex-direction:row;
 	justify-content: center;
 	align-items: center;
 	border: 1px dashed var(--input-border-color);
-	width: 100%;
+	width:100%;
 }
-@media screen and (max-width: 400px) {
-	.aform__file-attach > .aform__form-btn {
-		width: 100%;
+@media screen and (max-width:400px){
+	.aform__file-attach > .aform__form-btn{
+		width:100%;
 	}
 }
 /* .aform__file-attach-buttons{
 	grid-column: span 1;
 } */
 
-.aform__file-attach-feedback {
+.aform__file-attach-feedback{
 	color: var(--input-label-color);
-	width: 100%;
-	padding: 0.5rem;
+	width:100%;
+	padding:.5rem;
 	text-align: center;
 	align-self: center;
 
-	& > li {
+	& > li{
 		list-style: none;
 		font-style: italic;
 	}
-	& > p {
-		margin-top: 0;
+	& > p{
+		margin-top :0;
 	}
 }
