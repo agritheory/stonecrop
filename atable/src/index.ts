@@ -7,7 +7,7 @@ import ATable from '@/components/ATable.vue'
 import ATableHeader from '@/components/ATableHeader.vue'
 import ATableModal from '@/components/ATableModal.vue'
 import TableDataStore from './components'
-export type { CellFormatContext, TableColumn, TableConfig, TableDisplay, TableRow, TableModal } from '@/types'
+export type { CellContext, TableColumn, TableConfig, TableDisplay, TableRow, TableModal } from '@/types'
 
 /**
  * Install all ATable components

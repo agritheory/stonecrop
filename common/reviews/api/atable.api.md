@@ -11,7 +11,7 @@ import ARow from '@/components/ARow.vue';
 import ATable from '@/components/ATable.vue';
 import ATableHeader from '@/components/ATableHeader.vue';
 import ATableModal from '@/components/ATableModal.vue';
-import { CellFormatContext } from '@/types';
+import { CellContext } from '@/types';
 import { TableColumn } from '@/types';
 import { TableConfig } from '@/types';
 import TableDataStore from './components';
@@ -31,7 +31,7 @@ export { ATableHeader }
 
 export { ATableModal }
 
-export { CellFormatContext }
+export { CellContext }
 
 // @public
 export function install(app: App): void;
