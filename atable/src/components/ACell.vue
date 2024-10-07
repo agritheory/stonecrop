@@ -30,7 +30,7 @@ import { KeypressHandlers, defaultKeypressHandlers, useKeyboardNav } from '@ston
 import { computed, CSSProperties, inject, ref, useTemplateRef } from 'vue'
 
 import TableDataStore from '.'
-import type { CellFormatContext } from '@/types'
+import type { CellContext } from '@/types'
 
 const {
 	colIndex,
@@ -51,36 +51,37 @@ const cellRef = useTemplateRef<HTMLTableCellElement>('cell')
 const currentData = ref('')
 const cellModified = ref(false)
 
-const displayValue = computed(() => {
-	const data = tableData.cellData<any>(colIndex, rowIndex)
-	if (tableData.columns[colIndex].format) {
-		const table = tableData.table
-		const row = tableData.rows[rowIndex]
-		const column = tableData.columns[colIndex]
-		const format = column.format
+const table = tableData.table
+const column = tableData.columns[colIndex]
+const row = tableData.rows[rowIndex]
 
-		if (typeof format === 'function') {
-			return format(data, { table, row, column })
-		} else if (typeof format === 'string') {
-			// parse format function from string
-			// eslint-disable-next-line @typescript-eslint/no-implied-eval
-			const formatFn: (args: any, context?: CellFormatContext) => string = Function(`"use strict";return (${format})`)()
-			return formatFn(data, { table, row, column })
-		} else {
-			return data
-		}
-	} else {
-		return data
+const displayValue = computed(() => {
+	const cellData = tableData.cellData<any>(colIndex, rowIndex)
+	const format = column.format
+
+	if (!format) {
+		return cellData
 	}
+
+	if (typeof format === 'function') {
+		return format(cellData, { table, row, column })
+	} else if (typeof format === 'string') {
+		// parse format function from string
+		// eslint-disable-next-line @typescript-eslint/no-implied-eval
+		const formatFn: (value: any, context?: CellContext) => string = Function(`"use strict";return (${format})`)()
+		return formatFn(cellData, { table, row, column })
+	}
+
+	return cellData
 })
 
 const handleInput = () => {
-	if (tableData.columns[colIndex].mask) {
+	if (column.mask) {
 		// TODO: add masking to cell values
-		// tableData.columns[colIndex].mask(event)
+		// column.mask(event)
 	}
 
-	if (tableData.columns[colIndex].modalComponent) {
+	if (column.modalComponent) {
 		const domRect = cellRef.value.getBoundingClientRect()
 		tableData.modal.visible = true
 		tableData.modal.colIndex = colIndex
@@ -89,8 +90,14 @@ const handleInput = () => {
 		tableData.modal.top = domRect.top + domRect.height
 		tableData.modal.left = domRect.left
 		tableData.modal.width = cellWidth.value
-		tableData.modal.component = tableData.columns[colIndex].modalComponent
-		tableData.modal.componentProps = tableData.columns[colIndex].modalComponentProps
+
+		if (typeof column.modalComponent === 'function') {
+			tableData.modal.component = column.modalComponent({ table, row, column })
+		} else {
+			tableData.modal.component = column.modalComponent
+		}
+
+		tableData.modal.componentProps = column.modalComponentExtraProps
 	}
 }
 
@@ -124,7 +131,7 @@ if (addNavigation) {
 // const updateData = (event: Event) => {
 // 	if (event) {
 // 		// custom components need to handle their own updateData, this is the default
-// 		if (!tableData.columns[colIndex].component) {
+// 		if (!column.component) {
 // 			tableData.setCellData(rowIndex, colIndex, cell.value.innerHTML)
 // 		}
 // 		cellModified.value = true
@@ -132,11 +139,11 @@ if (addNavigation) {
 // }
 
 const textAlign = computed(() => {
-	return tableData.columns[colIndex].align || 'center'
+	return column.align || 'center'
 })
 
 const cellWidth = computed(() => {
-	return tableData.columns[colIndex].width || '40ch'
+	return column.width || '40ch'
 })
 
 const onFocus = () => {
@@ -151,7 +158,7 @@ const onChange = () => {
 			currentData.value = cellRef.value.textContent
 			cellRef.value.dispatchEvent(new Event('change'))
 			cellModified.value = true // set display instead
-			if (!tableData.columns[colIndex].format) {
+			if (!column.format) {
 				// TODO: need to setup reverse format function
 				tableData.setCellData(rowIndex, colIndex, currentData.value)
 			}
