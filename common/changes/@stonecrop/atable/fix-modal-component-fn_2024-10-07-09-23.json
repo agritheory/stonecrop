@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/atable",
+      "comment": "allow modal component to be set dynamically",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/atable"
+}
