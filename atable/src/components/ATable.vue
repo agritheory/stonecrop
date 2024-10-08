@@ -103,7 +103,20 @@ watch(
 
 onMounted(() => {
 	assignStickyCellWidths()
+
+	//in tree view, a mutation observer is needed to capture and adjust expanded rows
+	if (tableData.config.view === 'tree') {
+		const observer = new MutationObserver((mutationList, observer) => {
+			assignStickyCellWidths()
+		})
+		observer.observe(tableRef.value, { childList: true, subtree: true })
+	}
 })
+
+const rowExpanded = () => {
+	console.log('readjusting pinned cols')
+	assignStickyCellWidths()
+}
 
 const assignStickyCellWidths = () => {
 	const table = tableRef.value

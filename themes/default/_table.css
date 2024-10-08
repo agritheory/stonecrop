@@ -102,13 +102,11 @@ Holds styles for all tables, TH, TR, TD, etc.
 	width: 2ch;
 }
 
-.atable thead {
-}
-
 .atable #header-index {
 	width: 30px;
 	padding-right: 1em;
 	padding-left: 0;
+	box-sizing: border-box;
 }
 .atable-header-row {
 	display: flex;
@@ -159,7 +157,8 @@ td.sticky-index {
 	order: 0;
 	background: white;
 }
-.sticky-column-edge {
+.sticky-column-edge,
+.atable th.sticky-column-edge {
 	border-right: 1px solid var(--row-border-color);
 	border-right-width: 1px;
 }

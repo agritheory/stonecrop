@@ -13,6 +13,7 @@
 				v-else-if="tableData.config.view === 'tree'"
 				:tabIndex="-1"
 				class="tree-index"
+				:class="hasPinnedColumns ? 'sticky-index' : ''"
 				@click="toggleRowExpand(rowIndex)">
 				{{ rowExpandSymbol }}
 			</td>
