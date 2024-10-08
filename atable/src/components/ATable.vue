@@ -108,6 +108,12 @@ onMounted(() => {
 const assignStickyCellWidths = () => {
 	const table = tableRef.value
 
+	// set header cell width to match sticky cells' width
+	const headerCells = Array.from(table.rows[0].cells)
+	for (const [index, headerCell] of headerCells.entries()) {
+		const rowCell = table.rows[1].cells[index]
+		headerCell.style.width = `${rowCell.offsetWidth}px`
+	}
 	// pin cells in row that are sticky
 	for (const row of table.rows) {
 		let totalWidth = 0
@@ -125,13 +131,6 @@ const assignStickyCellWidths = () => {
 			const lastColumn = columns[columns.length - 1]
 			lastColumn.classList.add('sticky-column-edge')
 		}
-	}
-
-	// set header cell width to match sticky cells' width
-	const headerCells = Array.from(table.rows[0].cells)
-	for (const [index, headerCell] of headerCells.entries()) {
-		const rowCell = table.rows[1].cells[index]
-		headerCell.style.width = `${rowCell.offsetWidth}px`
 	}
 }
 
