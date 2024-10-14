@@ -13,7 +13,7 @@
 </template>
 
 <script lang="ts" setup>
-import type { CellFormatContext, TableColumn } from '@stonecrop/atable'
+import type { CellContext, TableColumn } from '@stonecrop/atable'
 import { ref } from 'vue'
 
 import data from './sample_data/http_logs.json'
@@ -26,7 +26,7 @@ const columns: TableColumn[] = [
 		align: 'left',
 		edit: false,
 		width: '40ch',
-		format: (value: { title?: string; value?: any }, context: CellFormatContext) => {
+		format: (value: { title?: string; value?: any }, context: CellContext) => {
 			return `${value.title} (IP: ${context.row.ip_address})`
 		},
 	},
@@ -78,7 +78,7 @@ const readonly_columns: TableColumn[] = [
 		edit: true,
 		width: '25ch',
 		modalComponent: 'ADate',
-		modalComponentProps: {
+		modalComponentExtraProps: {
 			readonly: true,
 		},
 		format: (value: number) => {
