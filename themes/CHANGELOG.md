@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/themes
 
-This log was last generated on Mon, 07 Oct 2024 11:54:55 GMT and should not be manually modified.
+This log was last generated on Mon, 14 Oct 2024 07:43:10 GMT and should not be manually modified.
+
+## 0.2.40
+Mon, 14 Oct 2024 07:43:10 GMT
+
+### Patches
+
+- add styles for pinned columns ordering
 
 ## 0.2.39
 Mon, 07 Oct 2024 11:54:55 GMT
