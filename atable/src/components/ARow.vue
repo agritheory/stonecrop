@@ -2,13 +2,18 @@
 	<tr ref="rowEl" :tabindex="tabIndex" v-show="isRowVisible" class="table-row">
 		<!-- render numbered/tree view index -->
 		<slot name="index">
-			<td v-if="tableData.config.view === 'list'" :tabIndex="-1" class="list-index">
+			<td
+				v-if="tableData.config.view === 'list'"
+				:tabIndex="-1"
+				class="list-index"
+				:class="hasPinnedColumns ? 'sticky-index' : ''">
 				{{ rowIndex + 1 }}
 			</td>
 			<td
 				v-else-if="tableData.config.view === 'tree'"
 				:tabIndex="-1"
 				class="tree-index"
+				:class="hasPinnedColumns ? 'sticky-index' : ''"
 				@click="toggleRowExpand(rowIndex)">
 				{{ rowExpandSymbol }}
 			</td>
@@ -24,16 +29,13 @@ import { type KeypressHandlers, useKeyboardNav, defaultKeypressHandlers } from '
 import { computed, inject, useTemplateRef } from 'vue'
 
 import TableDataStore from '.'
-import type { TableRow } from '@/types'
 
 const {
-	row,
 	rowIndex,
 	tableid,
 	tabIndex = -1,
 	addNavigation = false, // default to allowing cell navigation
 } = defineProps<{
-	row: TableRow
 	rowIndex: number
 	tableid: string
 	tabIndex?: number
@@ -42,6 +44,8 @@ const {
 
 const tableData = inject<TableDataStore>(tableid)
 const rowRef = useTemplateRef<HTMLTableRowElement>('rowEl')
+
+const hasPinnedColumns = computed(() => tableData.columns.some(col => col.pinned))
 
 const isRowVisible = computed(() => {
 	return tableData.config.view !== 'tree' || tableData.display[rowIndex].isRoot || tableData.display[rowIndex].open

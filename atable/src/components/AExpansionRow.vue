@@ -17,16 +17,13 @@ import { type KeypressHandlers, useKeyboardNav } from '@stonecrop/utilities'
 import { computed, inject, useTemplateRef } from 'vue'
 
 import TableDataStore from '.'
-import type { TableRow } from '@/types'
 
 const {
-	row,
 	rowIndex,
 	tableid,
 	tabIndex = -1,
 	addNavigation,
 } = defineProps<{
-	row: TableRow
 	rowIndex: number
 	tableid: string
 	tabIndex?: number

@@ -1,5 +1,6 @@
 <template>
 	<table
+		ref="table"
 		class="atable"
 		:style="{ width: tableData.config.fullWidth ? '100%' : 'auto' }"
 		v-on-click-outside="closeModal">
@@ -21,6 +22,7 @@
 						:tableid="tableData.id"
 						:col="col"
 						spellcheck="false"
+						:pinned="col.pinned"
 						:rowIndex="rowIndex"
 						:colIndex="colIndex + (tableData.zeroColumn ? 0 : -1)"
 						:component="col.cellComponent"
@@ -61,7 +63,7 @@
 
 <script setup lang="ts">
 import { vOnClickOutside } from '@vueuse/components'
-import { nextTick, provide, watch } from 'vue'
+import { nextTick, provide, watch, onMounted, useTemplateRef } from 'vue'
 
 import TableDataStore from '.'
 import ACell from '@/components/ACell.vue'
@@ -76,18 +78,17 @@ const {
 	columns,
 	rows = [],
 	config = new Object(),
-	tableid,
 } = defineProps<{
 	id?: string
 	modelValue: TableRow[]
 	columns: TableColumn[]
 	rows?: TableRow[]
 	config?: TableConfig
-	tableid?: string
 }>()
 
 const emit = defineEmits(['update:modelValue'])
 
+const tableRef = useTemplateRef<HTMLTableElement>('table')
 const rowsValue = modelValue ? modelValue : rows
 const tableData = new TableDataStore(id, columns, rowsValue, config)
 provide(tableData.id, tableData)
@@ -99,6 +100,46 @@ watch(
 	},
 	{ deep: true }
 )
+
+onMounted(() => {
+	assignStickyCellWidths()
+
+	// in tree view, a mutation observer is needed to capture and adjust expanded rows
+	if (tableData.config.view === 'tree') {
+		const observer = new MutationObserver(() => assignStickyCellWidths())
+		observer.observe(tableRef.value, { childList: true, subtree: true })
+	}
+})
+
+const assignStickyCellWidths = () => {
+	const table = tableRef.value
+
+	// set header cell width to match sticky cells' width
+	const headerCells = Array.from(table.rows[0].cells)
+	for (const [index, headerCell] of headerCells.entries()) {
+		const rowCell = table.rows[1].cells[index]
+		headerCell.style.width = `${rowCell.offsetWidth}px`
+	}
+
+	// pin cells in row that are sticky
+	for (const row of table.rows) {
+		let totalWidth = 0
+		const columns: HTMLTableCellElement[] = []
+
+		for (const column of row.cells) {
+			if (column.classList.contains('sticky-column') || column.classList.contains('sticky-index')) {
+				column.style.left = `${totalWidth}px`
+				totalWidth += column.offsetWidth
+				columns.push(column)
+			}
+		}
+
+		if (columns.length > 0) {
+			const lastColumn = columns[columns.length - 1]
+			lastColumn.classList.add('sticky-column-edge')
+		}
+	}
+}
 
 // const formatCell = (event?: KeyboardEvent, column?: TableColumn, cellData?: any) => {
 // 	let colIndex: number

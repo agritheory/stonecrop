@@ -1,16 +1,13 @@
 <template>
 	<Story title="default">
 		<Variant title="default">
-			<ATable :columns="http_logs.columns" v-model="http_logs.rows" :config="http_logs.config" />
+			<ATable v-model="default_table.rows" :columns="default_table.columns" :config="default_table.config" />
 		</Variant>
 		<Variant title="read-only">
-			<ATable
-				:columns="http_logs_readonly.columns"
-				:rows="http_logs_readonly.rows"
-				:config="http_logs_readonly.config" />
+			<ATable v-model="readonly_table.rows" :columns="readonly_table.columns" :config="readonly_table.config" />
 		</Variant>
 		<Variant title="full width">
-			<ATable :columns="full_width_table.columns" v-model="full_width_table.rows" :config="full_width_table.config" />
+			<ATable v-model="full_width_table.rows" :columns="full_width_table.columns" :config="full_width_table.config" />
 		</Variant>
 	</Story>
 </template>
@@ -90,13 +87,13 @@ const readonly_columns: TableColumn[] = [
 	},
 ]
 
-const http_logs = ref({
+const default_table = ref({
 	rows: data,
 	columns,
 	config: { view: 'list' },
 })
 
-const http_logs_readonly = ref({
+const readonly_table = ref({
 	rows: data,
 	columns: readonly_columns,
 	config: { view: 'list' },

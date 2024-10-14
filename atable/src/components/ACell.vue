@@ -3,8 +3,8 @@
 		ref="cell"
 		:data-colindex="colIndex"
 		:data-rowindex="rowIndex"
-		:data-editable="tableData.columns[colIndex].edit"
-		:contenteditable="tableData.columns[colIndex].edit"
+		:data-editable="column.edit"
+		:contenteditable="column.edit"
 		:tabindex="tabIndex"
 		:spellcheck="false"
 		:style="cellStyle"
@@ -14,12 +14,13 @@
 		@input="onChange"
 		@click="handleInput"
 		@mousedown="handleInput"
-		class="atable__cell">
+		class="atable__cell"
+		:class="pinned ? 'sticky-column' : ''">
 		<component
-			v-if="tableData.columns[colIndex].cellComponent"
-			:is="tableData.columns[colIndex].cellComponent"
+			v-if="column.cellComponent"
+			:is="column.cellComponent"
 			:value="displayValue"
-			v-bind="tableData.columns[colIndex].cellComponentProps">
+			v-bind="column.cellComponentProps">
 		</component>
 		<span v-else>{{ displayValue }}</span>
 	</td>
@@ -44,6 +45,7 @@ const {
 	tableid: string
 	addNavigation?: boolean | KeypressHandlers
 	tabIndex?: number
+	pinned?: boolean
 }>()
 
 const tableData = inject<TableDataStore>(tableid)
