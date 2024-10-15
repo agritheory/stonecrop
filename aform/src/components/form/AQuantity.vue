@@ -3,11 +3,11 @@
 		<label :for="uuid">{{ label }}</label>
 		<input
 			v-model="values.quantity"
+			v-bind="values"
 			type="number"
 			:id="uuid"
 			:disabled="readonly"
-			:required="required"
-			v-bind="values" />
+			:required="required" />
 
 		<ADropdown v-if="values.uom" v-model="values.uom" label="" :items="values.uoms" class="input-group-append">
 		</ADropdown>
@@ -17,39 +17,29 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-
-import type { Quantity } from 'types/quantity'
+import type { Quantity } from '@/types/quantity'
 import ADropdown from './ADropdown.vue'
 
-const props = withDefaults(
-	defineProps<{
-		label: string
-		modelValue: Quantity
-		required?: boolean
-		readonly?: boolean
-		uuid?: string
-		validation?: Record<string, any>
-	}>(),
-	{
-		modelValue: () => ({ quantity: 0 }),
-		validation: () => ({ errorMessage: '' }),
-	}
-)
-const emit = defineEmits(['update:modelValue'])
+const {
+	label,
+	required,
+	readonly,
+	uuid,
+	validation = { errorMessage: '' },
+} = defineProps<{
+	label: string
+	required?: boolean
+	readonly?: boolean
+	uuid?: string
+	validation?: Record<string, any>
+}>()
 
-const stockQty = computed(() => {
-	return props.modelValue.quantity * props.modelValue.conversionFactor
-})
+const values = defineModel<Quantity>({ default: { quantity: 0 } })
 
-const values = computed({
-	get: () => {
-		return props.modelValue
-	},
-	set: newValue => {
-		emit('update:modelValue', newValue)
-	},
-})
+// TODO: use stock quantity in template
+// const stockQty = computed(() => {
+// 	return props.modelValue.quantity * props.modelValue.conversionFactor
+// })
 </script>
 
 <style scoped>
