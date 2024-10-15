@@ -1,4 +1,4 @@
-/* 
+/*
 Holds styles for all tables, TH, TR, TD, etc.
 */
 /* .atable__table{
@@ -50,23 +50,36 @@ Holds styles for all tables, TH, TR, TD, etc.
 	padding-bottom: var(--atable-row-padding);
 	border-spacing: 0px;
 	border-collapse: collapse;
+
+	overflow: hidden;
+	text-overflow: ellipsis;
+	order: 1;
+
+	& span {
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
 }
 .atable__cell:focus,
 .atable__cell:focus-within {
 	background-color: var(--focus-cell-background);
 	outline-width: 2px;
 	outline-style: solid;
+	outline-offset: -1px;
 	outline-color: var(--focus-cell-outline);
 	box-shadow: none;
 	overflow: hidden;
 	min-height: 1.15em;
 	max-height: 1.15em;
 	overflow: hidden;
+	box-sizing: border-box;
 }
 
 .table-row {
 	border-top: 1px solid var(--row-border-color);
 	height: var(--atable-row-height);
+	display: flex;
+	background-color: white;
 }
 
 .list-index {
@@ -76,8 +89,9 @@ Holds styles for all tables, TH, TR, TD, etc.
 	padding-right: 1em;
 	text-align: center;
 	user-select: none;
-	width: v-bind(numberedRowWidth);
-	max-width: v-bind(numberedRowWidth);
+	width: 30px;
+	text-overflow: ellipsis;
+	overflow: hidden;
 }
 
 .tree-index {
@@ -88,12 +102,14 @@ Holds styles for all tables, TH, TR, TD, etc.
 	width: 2ch;
 }
 
-.atable thead {
-}
-
 .atable #header-index {
-	width: v-bind(numberedRowWidth);
-	max-width: v-bind(numberedRowWidth);
+	width: 30px;
+	padding-right: 1em;
+	padding-left: 0;
+	box-sizing: border-box;
+}
+.atable-header-row {
+	display: flex;
 }
 
 .atable th {
@@ -108,6 +124,11 @@ Holds styles for all tables, TH, TR, TD, etc.
 	height: var(--atable-row-height);
 	font-weight: 300;
 	letter-spacing: 0.05rem;
+	order: 1;
+	box-sizing: border-box;
+}
+#header-index {
+	box-sizing: content-box;
 }
 
 .atable th:focus {
@@ -117,4 +138,27 @@ Holds styles for all tables, TH, TR, TD, etc.
 	z-index: 100;
 	position: absolute;
 	background-color: var(--row-color-zebra-dark);
+}
+
+.sticky-index {
+	position: sticky;
+	left: 0px;
+	z-index: 1;
+	order: 0;
+}
+
+.sticky-column,
+th.sticky-column,
+td.sticky-column,
+th.sticky-index,
+td.sticky-index {
+	position: sticky;
+	z-index: 1;
+	order: 0;
+	background: white;
+}
+.sticky-column-edge,
+.atable th.sticky-column-edge {
+	border-right: 1px solid var(--row-border-color);
+	border-right-width: 1px;
 }

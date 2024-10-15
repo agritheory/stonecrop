@@ -1,25 +1,12 @@
 <template>
 	<label class="container">
-		<input type="checkbox" :checked="value" @input="handleInput" tabindex="-1" />
+		<input type="checkbox" v-model="value" tabindex="-1" />
 		<div class="checkmark" tabindex="0"></div>
 	</label>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-
-// make this v-model sensitive from parent
-const props = defineProps<{
-	value?: boolean
-}>()
-
-const emit = defineEmits(['input'])
-
-const checked = ref(props.value)
-
-const handleInput = () => {
-	emit('input', checked.value)
-}
+const value = defineModel<boolean>({ default: false })
 </script>
 
 <style scoped>

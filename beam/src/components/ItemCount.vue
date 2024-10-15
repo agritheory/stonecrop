@@ -1,10 +1,6 @@
 <template>
 	<div class="beam__itemcount">
-		<span
-			:contenteditable="editable"
-			:class="{ alert: countColor === false }"
-			@input="handleInput"
-			@click="handleInput">
+		<span :contenteditable="editable" :class="{ alert: !isCountComplete }" @input="handleInput" @click="handleInput">
 			{{ count }}
 		</span>
 		<span>/{{ denominator }}</span>
@@ -13,29 +9,25 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
 
-const emit = defineEmits(['input'])
-const props = withDefaults(
-	defineProps<{
-		value?: number
-		denominator: number
-		uom?: string
-		editable?: boolean
-	}>(),
-	{ value: 0, editable: true, uom: '' }
-)
+const count = defineModel<number>({ required: true })
+const {
+	denominator,
+	uom = '',
+	editable = true,
+} = defineProps<{
+	denominator: number
+	uom?: string
+	editable?: boolean
+}>()
 
-const count = ref(props.value)
+const isCountComplete = computed(() => count.value === denominator)
 
 const handleInput = (event: InputEvent | MouseEvent) => {
 	event.preventDefault()
 	event.stopPropagation()
-	count.value = Number((event.target as HTMLElement).innerHTML.replace(/[^0-9]/g, ''))
-	emit('input', count.value)
+	const newValue = Number((event.target as HTMLElement).innerHTML) || 0
+	count.value = Math.min(newValue, denominator)
 }
-
-const countColor = computed(() => {
-	return count.value === props.denominator
-})
 </script>

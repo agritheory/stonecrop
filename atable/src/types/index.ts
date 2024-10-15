@@ -8,17 +8,18 @@ export type TableColumn = {
 	label?: string
 	type?: string
 	width?: string
+	pinned?: boolean
 
 	cellComponent?: string
 	cellComponentProps?: Record<string, any>
-	modalComponent?: string
-	modalComponentProps?: Record<string, any>
+	modalComponent?: string | ((context?: CellContext) => string)
+	modalComponentExtraProps?: Record<string, any>
 
-	format?: string | ((value: any, context?: CellFormatContext) => string)
+	format?: string | ((value: any, context?: CellContext) => string)
 	mask?: (value: any) => any
 }
 
-export type CellFormatContext = {
+export type CellContext = {
 	row: TableRow
 	column: TableColumn
 	table: TableDataStore['table']

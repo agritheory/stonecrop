@@ -17,24 +17,22 @@ import CollapseButton from '@/components/base/CollapseButton.vue'
 import AForm from '@/components/AForm.vue'
 import { SchemaTypes } from '@/types'
 
-const props = defineProps<{
+const { schema, label, collapsible, data } = defineProps<{
 	schema: SchemaTypes[]
 	label: string
 	collapsible?: boolean
 	data?: any
 }>()
 
-const formData = ref(props.data || [])
 const collapsed = ref(false)
-const collapsible = ref(props.collapsible)
+const formData = ref(data || [])
+const formSchema = ref(schema)
 
-const formSchema = ref(props.schema)
-function toggleCollapse(event: Event) {
+const toggleCollapse = (event: Event) => {
 	event.preventDefault()
-	if (!collapsible.value) {
-		return
+	if (collapsible) {
+		collapsed.value = !collapsed.value
 	}
-	collapsed.value = !collapsed.value
 }
 </script>
 

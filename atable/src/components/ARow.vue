@@ -2,13 +2,18 @@
 	<tr ref="rowEl" :tabindex="tabIndex" v-show="isRowVisible" class="table-row">
 		<!-- render numbered/tree view index -->
 		<slot name="index">
-			<td v-if="tableData.config.view === 'list'" :tabIndex="-1" class="list-index">
+			<td
+				v-if="tableData.config.view === 'list'"
+				:tabIndex="-1"
+				class="list-index"
+				:class="hasPinnedColumns ? 'sticky-index' : ''">
 				{{ rowIndex + 1 }}
 			</td>
 			<td
 				v-else-if="tableData.config.view === 'tree'"
 				:tabIndex="-1"
 				class="tree-index"
+				:class="hasPinnedColumns ? 'sticky-index' : ''"
 				@click="toggleRowExpand(rowIndex)">
 				{{ rowExpandSymbol }}
 			</td>
@@ -21,34 +26,29 @@
 
 <script setup lang="ts">
 import { type KeypressHandlers, useKeyboardNav, defaultKeypressHandlers } from '@stonecrop/utilities'
-import { computed, inject, ref } from 'vue'
+import { computed, inject, useTemplateRef } from 'vue'
 
 import TableDataStore from '.'
-import type { TableRow } from '@/types'
 
-const props = withDefaults(
-	defineProps<{
-		row: TableRow
-		rowIndex: number
-		tableid: string
-		tabIndex?: number
-		addNavigation?: boolean | KeypressHandlers
-	}>(),
-	{
-		tabIndex: -1,
-		addNavigation: false, // default to allowing cell navigation
-	}
-)
+const {
+	rowIndex,
+	tableid,
+	tabIndex = -1,
+	addNavigation = false, // default to allowing cell navigation
+} = defineProps<{
+	rowIndex: number
+	tableid: string
+	tabIndex?: number
+	addNavigation?: boolean | KeypressHandlers
+}>()
 
-const tableData = inject<TableDataStore>(props.tableid)
-const rowEl = ref<HTMLTableRowElement>(null)
+const tableData = inject<TableDataStore>(tableid)
+const rowRef = useTemplateRef<HTMLTableRowElement>('rowEl')
+
+const hasPinnedColumns = computed(() => tableData.columns.some(col => col.pinned))
 
 const isRowVisible = computed(() => {
-	return (
-		tableData.config.view !== 'tree' ||
-		tableData.display[props.rowIndex].isRoot ||
-		tableData.display[props.rowIndex].open
-	)
+	return tableData.config.view !== 'tree' || tableData.display[rowIndex].isRoot || tableData.display[rowIndex].open
 })
 
 const rowExpandSymbol = computed(() => {
@@ -56,8 +56,8 @@ const rowExpandSymbol = computed(() => {
 		return ''
 	}
 
-	if (tableData.display[props.rowIndex].isRoot || tableData.display[props.rowIndex].isParent) {
-		return tableData.display[props.rowIndex].childrenOpen ? '-' : '+'
+	if (tableData.display[rowIndex].isRoot || tableData.display[rowIndex].isParent) {
+		return tableData.display[rowIndex].childrenOpen ? '-' : '+'
 	}
 
 	return ''
@@ -67,19 +67,19 @@ const toggleRowExpand = (rowIndex: number) => {
 	tableData.toggleRowExpand(rowIndex)
 }
 
-if (props.addNavigation) {
+if (addNavigation) {
 	let handlers = defaultKeypressHandlers
 
-	if (typeof props.addNavigation === 'object') {
+	if (typeof addNavigation === 'object') {
 		handlers = {
 			...handlers,
-			...props.addNavigation,
+			...addNavigation,
 		}
 	}
 
 	useKeyboardNav([
 		{
-			selectors: rowEl,
+			selectors: rowRef,
 			handlers: handlers,
 		},
 	])

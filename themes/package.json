@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/themes",
-	"version": "0.2.33",
+	"version": "0.2.40",
 	"type": "module",
 	"author": {
 		"name": "Tyler Matteson",
@@ -21,9 +21,9 @@
 		"preview": "vite preview"
 	},
 	"devDependencies": {
-		"@vitejs/plugin-vue": "^5.0.5",
-		"vite": "^5.3.2",
-		"vue": "^3.4.31"
+		"@vitejs/plugin-vue": "^5.1.3",
+		"vite": "^5.4.5",
+		"vue": "^3.5.6"
 	},
 	"publishConfig": {
 		"access": "public"
