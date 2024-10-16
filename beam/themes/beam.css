@@ -276,16 +276,7 @@ body {
 	font-weight: bold;
 	margin: 0.625rem 0;
 }
-.beam_metadata--two-column {
-	display: flex;
-	flex-direction: row;
-	justify-content: space-between;
-	align-items: baseline;
 
-	@media screen and (max-width: 600px) {
-		flex-direction: column;
-	}
-}
 .beam_metadata--error {
 	color: red;
 }

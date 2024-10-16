@@ -12,6 +12,7 @@ import ListItem from '@/components/ListItem.vue'
 import ListView from '@/components/ListView.vue'
 import Navbar from '@/components/Navbar.vue'
 import ScanInput from '@/components/ScanInput.vue'
+import SplitColumn from './components/SplitColumn.vue'
 import 'themes/beam.css'
 
 /**
@@ -32,6 +33,7 @@ function install(app: App /* options */) {
 	app.component('ListView', ListView)
 	app.component('Navbar', Navbar)
 	app.component('ScanInput', ScanInput)
+	app.component('SplitColumn', SplitColumn)
 }
 
 export {
