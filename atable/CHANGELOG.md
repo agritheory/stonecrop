@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/atable
 
-This log was last generated on Mon, 14 Oct 2024 07:43:10 GMT and should not be manually modified.
+This log was last generated on Wed, 16 Oct 2024 06:45:08 GMT and should not be manually modified.
+
+## 0.2.41
+Wed, 16 Oct 2024 06:45:08 GMT
+
+### Patches
+
+- make modal placement dynamic
 
 ## 0.2.40
 Mon, 14 Oct 2024 07:43:10 GMT
