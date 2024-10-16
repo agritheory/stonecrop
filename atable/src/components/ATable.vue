@@ -63,6 +63,7 @@
 
 <script setup lang="ts">
 import { vOnClickOutside } from '@vueuse/components'
+import { useMutationObserver } from '@vueuse/core'
 import { nextTick, provide, watch, onMounted, useTemplateRef } from 'vue'
 
 import TableDataStore from '.'
@@ -102,12 +103,13 @@ watch(
 )
 
 onMounted(() => {
-	assignStickyCellWidths()
+	if (columns.some(col => col.pinned)) {
+		assignStickyCellWidths()
 
-	// in tree view, a mutation observer is needed to capture and adjust expanded rows
-	if (tableData.config.view === 'tree') {
-		const observer = new MutationObserver(() => assignStickyCellWidths())
-		observer.observe(tableRef.value, { childList: true, subtree: true })
+		// in tree view, also add a mutation observer to capture and adjust expanded rows
+		if (tableData.config.view === 'tree') {
+			useMutationObserver(tableRef, assignStickyCellWidths, { childList: true, subtree: true })
+		}
 	}
 })
 
@@ -115,10 +117,14 @@ const assignStickyCellWidths = () => {
 	const table = tableRef.value
 
 	// set header cell width to match sticky cells' width
-	const headerCells = Array.from(table.rows[0].cells)
+	const headerRow = table.rows[0]
+	const firstDataRow = table.rows[1]
+	const headerCells = headerRow ? Array.from(headerRow.cells) : []
 	for (const [index, headerCell] of headerCells.entries()) {
-		const rowCell = table.rows[1].cells[index]
-		headerCell.style.width = `${rowCell.offsetWidth}px`
+		const rowCell = firstDataRow.cells[index]
+		if (rowCell) {
+			headerCell.style.width = `${rowCell.offsetWidth}px`
+		}
 	}
 
 	// pin cells in row that are sticky
