@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/themes",
+      "comment": "update table modal positioning",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/themes"
+}
