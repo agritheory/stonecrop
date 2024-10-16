@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/atable",
+      "comment": "make modal placement dynamic",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/atable"
+}
