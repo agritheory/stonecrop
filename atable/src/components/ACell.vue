@@ -28,6 +28,7 @@
 
 <script setup lang="ts">
 import { KeypressHandlers, defaultKeypressHandlers, useKeyboardNav } from '@stonecrop/utilities'
+import { useElementBounding } from '@vueuse/core'
 import { computed, CSSProperties, inject, ref, useTemplateRef } from 'vue'
 
 import TableDataStore from '.'
@@ -57,6 +58,14 @@ const table = tableData.table
 const column = tableData.columns[colIndex]
 const row = tableData.rows[rowIndex]
 
+const textAlign = computed(() => {
+	return column.align || 'center'
+})
+
+const cellWidth = computed(() => {
+	return column.width || '40ch'
+})
+
 const displayValue = computed(() => {
 	const cellData = tableData.cellData<any>(colIndex, rowIndex)
 	const format = column.format
@@ -84,13 +93,13 @@ const handleInput = () => {
 	}
 
 	if (column.modalComponent) {
-		const domRect = cellRef.value.getBoundingClientRect()
+		const { top, left, height } = useElementBounding(cellRef)
 		tableData.modal.visible = true
 		tableData.modal.colIndex = colIndex
 		tableData.modal.rowIndex = rowIndex
 		tableData.modal.parent = cellRef.value
-		tableData.modal.top = domRect.top + domRect.height
-		tableData.modal.left = domRect.left
+		tableData.modal.top = top.value + height.value
+		tableData.modal.left = left.value
 		tableData.modal.width = cellWidth.value
 
 		if (typeof column.modalComponent === 'function') {
@@ -139,14 +148,6 @@ if (addNavigation) {
 // 		cellModified.value = true
 // 	}
 // }
-
-const textAlign = computed(() => {
-	return column.align || 'center'
-})
-
-const cellWidth = computed(() => {
-	return column.width || '40ch'
-})
 
 const onFocus = () => {
 	if (cellRef.value) {
