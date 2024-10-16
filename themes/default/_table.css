@@ -134,10 +134,11 @@ Holds styles for all tables, TH, TR, TD, etc.
 .atable th:focus {
 	outline: none;
 }
+
 .amodal {
-	z-index: 100;
-	position: absolute;
+	position: fixed;
 	background-color: var(--row-color-zebra-dark);
+	z-index: 100;
 }
 
 .sticky-index {

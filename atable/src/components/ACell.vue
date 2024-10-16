@@ -53,6 +53,7 @@ const tableData = inject<TableDataStore>(tableid)
 const cellRef = useTemplateRef<HTMLTableCellElement>('cell')
 const currentData = ref('')
 const cellModified = ref(false)
+const { bottom, left } = useElementBounding(cellRef)
 
 const table = tableData.table
 const column = tableData.columns[colIndex]
@@ -93,12 +94,11 @@ const handleInput = () => {
 	}
 
 	if (column.modalComponent) {
-		const { top, left, height } = useElementBounding(cellRef)
 		tableData.modal.visible = true
 		tableData.modal.colIndex = colIndex
 		tableData.modal.rowIndex = rowIndex
 		tableData.modal.parent = cellRef.value
-		tableData.modal.top = top.value + height.value
+		tableData.modal.top = bottom.value
 		tableData.modal.left = left.value
 		tableData.modal.width = cellWidth.value
 
