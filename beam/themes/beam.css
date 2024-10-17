@@ -36,11 +36,13 @@ body {
 
 /* general */
 .beam_header {
-	display: inline-block;
 	border: 1px solid transparent;
 	text-align: left;
 	font-size: 1.125rem;
 	color: var(--primary-text-color);
+	margin: 0;
+	padding: 0;
+	margin-bottom: 1rem;
 }
 .beam_copy {
 	color: var(--primary-text-color);
@@ -258,29 +260,7 @@ body {
 		flex-direction: column;
 	}
 }
-.beam_metadata_arrow {
-	align-self: center;
-	padding: 0px 50px;
-	flex-grow: 1;
-	position: relative;
-	display: flex;
-	align-items: center;
 
-	@media screen and (max-width: 600px) {
-		display: none;
-	}
-}
-.beam_metadata_arrow-body {
-	width: 100%;
-	height: 10px;
-	background: #c4c4c4;
-}
-.beam_metadata_arrow-head {
-	& svg {
-		width: 20px;
-		display: block;
-	}
-}
 .beam_metadata_component_header {
 	display: flex;
 	flex-direction: row;

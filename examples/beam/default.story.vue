@@ -47,22 +47,46 @@
 			</BeamMetadata>
 		</Variant>
 		<Variant title="Split Column">
-			<BeamContainer padding="3rem">
-				<SplitColumn rightColumnAlign="right">
-					<template #left>
-						<BeamMetadataHeading>
-							<template #order> WO#2024-01-00001 </template>
-							<template #title> Ambrosia Pie </template>
-						</BeamMetadataHeading>
-					</template>
-					<template #right>
-						<p class="beam_copy">3/10</p>
-					</template>
-				</SplitColumn>
-			</BeamContainer>
+			<SplitColumn align-items="flex-start">
+				<template #left>
+					<BeamMetadataHeading>
+						<template #order> WO#2024-01-00001 </template>
+						<template #title> Ambrosia Pie </template>
+					</BeamMetadataHeading>
+					<p class="beam_copy">
+						Sapien lobortis cupidatat quis viverra ipsam perspiciatis montes dicta nascetur sit debitis vitae eget,
+						officia doloribus modi nullam.
+					</p>
+				</template>
+				<template #right>
+					<ItemCount denominator="10" model-value="5" />
+				</template>
+			</SplitColumn>
+			<hr />
+			<SplitColumn>
+				<template #left>
+					<p class="beam_copy">
+						Sapien lobortis cupidatat quis viverra ipsam perspiciatis montes dicta nascetur sit debitis vitae eget,
+						officia doloribus modi nullam.
+					</p>
+				</template>
+				<template #right>
+					<p class="beam_copy" style="text-align: left">
+						Sapien lobortis cupidatat quis viverra ipsam perspiciatis montes dicta nascetur sit debitis vitae eget,
+						officia doloribus modi nullam.
+					</p>
+				</template>
+			</SplitColumn>
+		</Variant>
+		<Variant title="Arrow">
+			<BeamArrow />
 		</Variant>
 		<Variant title="Elements">
-			<h1 class="beam_header">This is a heading.<span class="beam--normal"> And this part is not bold.</span></h1>
+			<BeamHeading> This is the Beam Heading. </BeamHeading>
+			<BeamMetadataHeading>
+				<template #order> WO#2024-01-00001 </template>
+				<template #title> Ambrosia Pie </template>
+			</BeamMetadataHeading>
 			<p class="beam_copy">This is standard copy. <span class="beam--bold">And this is bold.</span></p>
 			<p class="beam_copy beam--alert">This is an alert!</p>
 			<p class="beam_copy">

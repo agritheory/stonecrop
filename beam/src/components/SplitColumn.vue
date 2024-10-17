@@ -1,11 +1,11 @@
 <template>
 	<div
 		class="two-column"
-		:style="{ justifyContent: justifyContent || 'space-between', alignItems: alignItems || 'baseline' }">
-		<div class="column column--left" :style="{ textAlign: leftColumnAlign || 'left' }">
+		:style="{ justifyContent: justifyContent || 'space-between', alignItems: alignItems || 'flex-start' }">
+		<div class="column column-left">
 			<slot name="left"></slot>
 		</div>
-		<div class="column column--right" :style="{ textAlign: rightColumnAlign || 'left' }">
+		<div class="column column-right">
 			<slot name="right"></slot>
 		</div>
 	</div>
@@ -14,8 +14,6 @@
 const props = defineProps<{
 	justifyContent?: String
 	alignItems?: String
-	leftColumnAlign?: String
-	rightColumnAlign?: String
 }>()
 </script>
 <style scoped>
@@ -24,25 +22,24 @@ const props = defineProps<{
 	flex-direction: row;
 	justify-content: space-between;
 	align-items: baseline;
+	gap: 1rem;
 
-	@media screen and (max-width: 600px) {
+	@media screen and (max-width: 400px) {
 		flex-direction: column;
+		gap: 0;
 	}
 }
 .column {
-	box-sizing: border-box;
-	@media screen and (max-width: 600px) {
+	flex-grow: 1;
+	width: 50%;
+	@media screen and (max-width: 400px) {
 		width: 100%;
 	}
 }
-
-.scrollable {
-	overflow: scroll;
-}
-.align-right {
+.column-right {
 	text-align: right;
-}
-.align-center {
-	text-align: center;
+	@media screen and (max-width: 400px) {
+		text-align: left;
+	}
 }
 </style>
