@@ -11,8 +11,6 @@
 	</div>
 </template>
 <script setup lang="ts">
-import { ref, computed, CSSProperties } from 'vue'
-
 const props = defineProps<{
 	justifyContent?: String
 	alignItems?: String
@@ -32,7 +30,6 @@ const props = defineProps<{
 	}
 }
 .column {
-	width: 50%;
 	box-sizing: border-box;
 	@media screen and (max-width: 600px) {
 		width: 100%;

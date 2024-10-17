@@ -47,17 +47,19 @@
 			</BeamMetadata>
 		</Variant>
 		<Variant title="Split Column">
-			<SplitColumn rightColumnAlign="right">
-				<template #left>
-					<BeamMetadataHeading>
-						<template #order> WO#2024-01-00001 </template>
-						<template #title> Ambrosia Pie </template>
-					</BeamMetadataHeading>
-				</template>
-				<template #right>
-					<ItemCount denominator="10" />
-				</template>
-			</SplitColumn>
+			<BeamContainer padding="3rem">
+				<SplitColumn rightColumnAlign="right">
+					<template #left>
+						<BeamMetadataHeading>
+							<template #order> WO#2024-01-00001 </template>
+							<template #title> Ambrosia Pie </template>
+						</BeamMetadataHeading>
+					</template>
+					<template #right>
+						<p class="beam_copy">3/10</p>
+					</template>
+				</SplitColumn>
+			</BeamContainer>
 		</Variant>
 		<Variant title="Elements">
 			<h1 class="beam_header">This is a heading.<span class="beam--normal"> And this part is not bold.</span></h1>
