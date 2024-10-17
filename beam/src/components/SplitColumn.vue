@@ -21,9 +21,6 @@ const props = defineProps<{
 }>()
 </script>
 <style scoped>
-* {
-	border: 1px solid red;
-}
 .two-column {
 	display: flex;
 	flex-direction: row;

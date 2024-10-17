@@ -7,7 +7,7 @@
 
 			<Navbar @click="handlePrimaryAction">
 				<template #title>
-					<h1 class="nav-title beam_header">Items to Receive</h1>
+					<BeamHeading>Items to Receive</BeamHeading>
 				</template>
 				<template #navbaraction>Done</template>
 			</Navbar>
@@ -47,15 +47,15 @@
 			</BeamMetadata>
 		</Variant>
 		<Variant title="Split Column">
-			<SplitColumn>
+			<SplitColumn rightColumnAlign="right">
 				<template #left>
-					<p>Column 1</p>
+					<BeamMetadataHeading>
+						<template #order> WO#2024-01-00001 </template>
+						<template #title> Ambrosia Pie </template>
+					</BeamMetadataHeading>
 				</template>
 				<template #right>
-					<p>Column 2</p>
-					<p>Column 2</p>
-					<p>Column 2</p>
-					<p>Column 2</p>
+					<ItemCount denominator="10" />
 				</template>
 			</SplitColumn>
 		</Variant>
