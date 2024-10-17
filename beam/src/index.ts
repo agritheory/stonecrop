@@ -14,7 +14,6 @@ import Navbar from '@/components/Navbar.vue'
 import ScanInput from '@/components/ScanInput.vue'
 import SplitColumn from './components/SplitColumn.vue'
 import BeamHeading from './components/BeamHeading.vue'
-import BeamMetadataHeading from './components/BeamMetadataHeading.vue'
 import BeamArrow from './components/BeamArrow.vue'
 import 'themes/beam.css'
 
@@ -38,7 +37,6 @@ function install(app: App /* options */) {
 	app.component('ScanInput', ScanInput)
 	app.component('SplitColumn', SplitColumn)
 	app.component('BeamHeading', BeamHeading)
-	app.component('BeamMetadataHeading', BeamMetadataHeading)
 	app.component('BeamArrow', BeamArrow)
 }
 
