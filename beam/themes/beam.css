@@ -34,6 +34,20 @@ body {
 	box-sizing: border-box;
 }
 
+/* general */
+.beam_header {
+	display: inline-block;
+	border: 1px solid transparent;
+	text-align: left;
+	font-size: 1.125rem;
+	color: var(--primary-text-color);
+}
+.beam_copy {
+	color: var(--primary-text-color);
+	font-size: 1rem;
+	line-height: 1.5rem;
+}
+
 /* modifiers */
 .beam--bold {
 	font-weight: bold;
@@ -46,16 +60,6 @@ body {
 }
 .beam--success {
 	color: var(--success);
-}
-
-/* general */
-.beam_header {
-	display: inline-block;
-	border: 1px solid transparent;
-	margin-left: 0.625rem;
-	text-align: left;
-	font-size: 1.125rem;
-	color: var(--primary-text-color);
 }
 
 /* beam navbar */
@@ -74,6 +78,10 @@ body {
 	position: sticky;
 	top: 0;
 	border-bottom: 1px solid var(--row-border-color);
+
+	& h1 {
+		margin-left: 0.625rem;
+	}
 }
 
 /* beam list */

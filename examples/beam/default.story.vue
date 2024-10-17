@@ -60,7 +60,7 @@
 			</SplitColumn>
 		</Variant>
 		<Variant title="Elements">
-			<h1 class="beam_heading"><span class="beam--bold">This is a heading.</span> And this part is not bold.</h1>
+			<h1 class="beam_header">This is a heading.<span class="beam--normal"> And this part is not bold.</span></h1>
 			<p class="beam_copy">This is standard copy. <span class="beam--bold">And this is bold.</span></p>
 			<p class="beam_copy beam--alert">This is an alert!</p>
 			<p class="beam_copy">
