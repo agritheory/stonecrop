@@ -122,8 +122,14 @@ body {
 	flex-grow: 1;
 	font-size: 0.875rem;
 	color: var(--primary-text-color);
-	overflow: hidden;
-	text-overflow: ellipsis;
+
+	& label,
+	& p {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		width: 100%;
+		display: block;
+	}
 }
 .beam_list-item label {
 	display: block;
