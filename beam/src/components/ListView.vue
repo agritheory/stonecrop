@@ -1,5 +1,5 @@
 <template>
-	<ul class="beam__listview">
+	<ul class="beam_list-view">
 		<li v-for="item in items" :key="item.label">
 			<template v-if="item.linkComponent">
 				<component :is="item.linkComponent" :to="item.route" tabindex="-1">

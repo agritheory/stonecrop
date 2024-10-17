@@ -7,7 +7,7 @@
 
 			<Navbar @click="handlePrimaryAction">
 				<template #title>
-					<h1 class="nav-title">Items to Receive</h1>
+					<h1 class="nav-title beam_header">Items to Receive</h1>
 				</template>
 				<template #navbaraction>Done</template>
 			</Navbar>
@@ -45,6 +45,30 @@
 					</div>
 				</div>
 			</BeamMetadata>
+		</Variant>
+		<Variant title="Split Column">
+			<SplitColumn>
+				<template #left>
+					<p>Column 1</p>
+				</template>
+				<template #right>
+					<p>Column 2</p>
+					<p>Column 2</p>
+					<p>Column 2</p>
+					<p>Column 2</p>
+				</template>
+			</SplitColumn>
+		</Variant>
+		<Variant title="Elements">
+			<h1 class="beam_heading"><span class="beam--bold">This is a heading.</span> And this part is not bold.</h1>
+			<p class="beam_copy">This is standard copy. <span class="beam--bold">And this is bold.</span></p>
+			<p class="beam_copy beam--alert">This is an alert!</p>
+			<p class="beam_copy">
+				Here is long text. Luctus condimentum repudiandae! Ex enim quas quis metus faucibus felis hic sodales natoque
+				sapiente anim posuere aliquip, cupidatat, modi rem! Adipisci conubia quaerat sint? Consequat dolores nam impedit
+				id pariatur earum ultricies hic, consequatur qui! Nemo! Donec sagittis a! Accumsan! Aperiam impedit, quidem elit
+				aut, facere, minim dignissim conubia blanditiis doloribus ex montes vitae exercitation.
+			</p>
 		</Variant>
 	</Story>
 </template>

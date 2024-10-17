@@ -1,5 +1,5 @@
 <template>
-	<portal-target name="beam__modal_outlet" />
+	<portal-target name="beam_modal_outlet" />
 </template>
 
 <script setup lang="ts">
