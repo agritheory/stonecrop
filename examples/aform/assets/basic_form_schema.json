@@ -20,6 +20,17 @@
 		"label": "Age"
 	},
 	{
+		"fieldname": "height",
+		"component": "AQuantity",
+		"label": "Height",
+		"value": {
+			"quantity": 150,
+			"uom": "cm",
+			"uoms": ["cm", "inch", "feet"],
+			"min": 0
+		}
+	},
+	{
 		"fieldname": "date",
 		"fieldtype": "Date",
 		"component": "ATextInput",
