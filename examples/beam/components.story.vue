@@ -3,10 +3,7 @@
 		<Variant title="Split Column">
 			<SplitColumn align-items="flex-start">
 				<template #left>
-					<BeamMetadataHeading>
-						<template #order> WO#2024-01-00001 </template>
-						<template #title> Ambrosia Pie </template>
-					</BeamMetadataHeading>
+					<BeamHeading> WO#2024-01-00001 <span class="beam--normal">Ambrosia Pie</span> </BeamHeading>
 					<p class="beam_copy">
 						Sapien lobortis cupidatat quis viverra ipsam perspiciatis montes dicta nascetur sit debitis vitae eget,
 						officia doloribus modi nullam.
@@ -34,9 +31,21 @@
 		</Variant>
 		<Variant title="Arrow">
 			<BeamArrow />
+			<hr />
+			<div style="display: flex; flex-direction: row; gap: 1rem; justify-content: space-between">
+				<p class="beam_copy" style="flex-basis: 100%">
+					Luctus condimentum repudiandae! Ex enim quas quis metus faucibus felis hic sodales natoque sapiente anim
+					posuere aliquip, cupidatat, modi rem!
+				</p>
+
+				<BeamArrow style="flex-basis: 100%" />
+				<p class="beam_copy" style="flex-basis: 100%">
+					Luctus condimentum repudiandae! Ex enim quas quis metus faucibus felis hic sodales natoque sapiente anim
+					posuere aliquip, cupidatat, modi rem!
+				</p>
+			</div>
 		</Variant>
-		<Variant title="Elements">
-			<BeamHeading> This is the Beam Heading. </BeamHeading>
+		<Variant title="Text Elements">
 			<BeamHeading>
 				This is the Beam Heading. <span class="beam--normal">And this should not be bold.</span></BeamHeading
 			>
@@ -49,8 +58,22 @@
 				aut, facere, minim dignissim conubia blanditiis doloribus ex montes vitae exercitation.
 			</p>
 		</Variant>
+		<Variant title="Btn">
+			<BeamBtn>Click</BeamBtn>
+		</Variant>
+		<Variant title="Progress Block">
+			<BeamProgress :complete="workOrder.complete" />
+		</Variant>
 	</Story>
 </template>
+
+<script setup lang="ts">
+import { reactive } from 'vue'
+
+const workOrder = reactive({
+	complete: false,
+})
+</script>
 
 <style>
 @import url('@stonecrop/beam/styles');

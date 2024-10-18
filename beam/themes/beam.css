@@ -42,7 +42,6 @@ body {
 	color: var(--primary-text-color);
 	margin: 0;
 	padding: 0;
-	margin-bottom: 1rem;
 }
 .beam_copy {
 	color: var(--primary-text-color);
