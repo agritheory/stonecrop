@@ -239,16 +239,16 @@
       "allowedCategories": [ "prototype" ]
     },
     {
-      "name": "uuid",
-      "allowedCategories": [ "prototype" ]
-    },
-    {
       "name": "vite",
       "allowedCategories": [ "prototype", "utilities" ]
     },
     {
       "name": "vite-plugin-dts",
       "allowedCategories": [ "prototype", "utilities" ]
+    },
+    {
+      "name": "vite-plugin-node-polyfills",
+      "allowedCategories": [ "prototype" ]
     },
     {
       "name": "vitest",
