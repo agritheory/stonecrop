@@ -247,10 +247,6 @@
       "allowedCategories": [ "prototype", "utilities" ]
     },
     {
-      "name": "vite-plugin-node-polyfills",
-      "allowedCategories": [ "prototype" ]
-    },
-    {
       "name": "vitest",
       "allowedCategories": [ "prototype", "utilities" ]
     },
