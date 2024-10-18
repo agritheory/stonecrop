@@ -1,7 +1,7 @@
 <template>
-	<li tabindex="0" class="beam__listitem">
-		<div class="beam__listtext">
-			<label>{{ listItem.label }}</label>
+	<li tabindex="0" class="beam_list-item">
+		<div class="beam_list-text">
+			<label class="beam--bold">{{ listItem.label }}</label>
 			<p>{{ listItem.description }}</p>
 		</div>
 

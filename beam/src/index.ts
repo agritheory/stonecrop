@@ -12,6 +12,11 @@ import ListItem from '@/components/ListItem.vue'
 import ListView from '@/components/ListView.vue'
 import Navbar from '@/components/Navbar.vue'
 import ScanInput from '@/components/ScanInput.vue'
+import SplitColumn from './components/SplitColumn.vue'
+import BeamHeading from './components/BeamHeading.vue'
+import BeamArrow from './components/BeamArrow.vue'
+import BeamBtn from './components/BeamBtn.vue'
+import BeamProgress from './components/BeamProgress.vue'
 import 'themes/beam.css'
 
 /**
@@ -32,6 +37,11 @@ function install(app: App /* options */) {
 	app.component('ListView', ListView)
 	app.component('Navbar', Navbar)
 	app.component('ScanInput', ScanInput)
+	app.component('SplitColumn', SplitColumn)
+	app.component('BeamHeading', BeamHeading)
+	app.component('BeamArrow', BeamArrow)
+	app.component('BeamBtn', BeamBtn)
+	app.component('BeamProgress', BeamProgress)
 }
 
 export {

@@ -1,13 +1,11 @@
 <template>
-	<nav class="beam__navbar">
+	<nav class="beam_navbar">
 		<slot name="title">
-			<h1 class="nav-title">TITLE</h1>
+			<BeamHeading>TITLE</BeamHeading>
 		</slot>
-		<div class="navbar-action-wrapper">
-			<button class="navbar-action btn" @click="handlePrimaryAction">
-				<slot name="navbaraction">Action</slot>
-			</button>
-		</div>
+		<button class="navbar-action beam_btn" @click="handlePrimaryAction">
+			<slot name="navbaraction">Action</slot>
+		</button>
 	</nav>
 </template>
 

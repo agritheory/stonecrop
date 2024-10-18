@@ -1,5 +1,5 @@
 <template>
-	<a :href="to" class="beam__listanchor">
+	<a :href="to" class="beam_list-anchor">
 		<slot />
 	</a>
 </template>
