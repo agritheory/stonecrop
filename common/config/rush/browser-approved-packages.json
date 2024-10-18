@@ -239,10 +239,6 @@
       "allowedCategories": [ "prototype" ]
     },
     {
-      "name": "uuid",
-      "allowedCategories": [ "prototype" ]
-    },
-    {
       "name": "vite",
       "allowedCategories": [ "prototype", "utilities" ]
     },

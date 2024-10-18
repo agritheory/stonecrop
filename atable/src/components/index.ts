@@ -1,4 +1,3 @@
-import { v4 } from 'uuid'
 import { computed, reactive } from 'vue'
 
 import type { TableDisplay, TableRow, TableColumn, TableConfig, TableModal } from '@/types'
@@ -20,7 +19,7 @@ export default class TableDataStore {
 		table?: { [key: string]: any },
 		display?: TableDisplay[]
 	) {
-		this.id = id || v4()
+		this.id = id || crypto.randomUUID()
 		this.rows = rows
 		this.columns = reactive(columns)
 		this.config = reactive(config)
