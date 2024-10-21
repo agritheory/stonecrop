@@ -46,13 +46,11 @@
 		"@stonecrop/utilities": "workspace:*",
 		"@vueuse/components": "^10.11.0",
 		"@vueuse/core": "^11.1.0",
-		"uuid": "^10.0.0",
 		"vue": "^3.5.6"
 	},
 	"devDependencies": {
 		"@microsoft/api-documenter": "^7.25.3",
 		"@rushstack/heft": "^0.67.2",
-		"@types/uuid": "^10.0.0",
 		"@typescript-eslint/eslint-plugin": "^7.14.1",
 		"@typescript-eslint/parser": "^7.14.1",
 		"@vitejs/plugin-vue": "^5.1.3",

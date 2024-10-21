@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/atable",
+      "comment": "replace uuid dependency with inbuilt crypto module",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/atable"
+}
