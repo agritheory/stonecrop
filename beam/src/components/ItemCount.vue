@@ -1,6 +1,10 @@
 <template>
-	<div class="beam__itemcount">
-		<span :contenteditable="editable" :class="{ alert: !isCountComplete }" @input="handleInput" @click="handleInput">
+	<div class="beam_item-count">
+		<span
+			:contenteditable="editable"
+			:class="{ 'beam--alert': !isCountComplete }"
+			@input="handleInput"
+			@click="handleInput">
 			{{ count }}
 		</span>
 		<span>/{{ denominator }}</span>
