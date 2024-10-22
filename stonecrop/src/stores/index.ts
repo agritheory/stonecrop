@@ -1,6 +1,5 @@
 import { createPinia } from 'pinia'
 import { PiniaSharedState } from 'pinia-shared-state'
-// import { PiniaUndo } from 'pinia-undo'
 
 const pinia = createPinia()
 
@@ -11,6 +10,5 @@ pinia.use(
 		initialize: true,
 	})
 )
-// pinia.use(PiniaUndo)
 
 export { pinia }

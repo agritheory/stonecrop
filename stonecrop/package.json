@@ -41,7 +41,6 @@
 		"immutable": "^4.3.0",
 		"pinia": "^2.0.32",
 		"pinia-shared-state": "^0.3.0",
-		"pinia-undo": "^0.1.9",
 		"pinia-xstate": "^1.0.9",
 		"vue": "^3.5.6",
 		"vue-router": "^4.4.0",
