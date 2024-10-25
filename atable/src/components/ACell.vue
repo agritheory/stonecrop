@@ -20,8 +20,8 @@
 			v-if="column.cellComponent"
 			:is="column.cellComponent"
 			:value="displayValue"
-			v-bind="column.cellComponentProps">
-		</component>
+			v-bind="column.cellComponentProps" />
+		<div v-else-if="isHtmlValue" v-html="displayValue" />
 		<span v-else>{{ displayValue }}</span>
 	</td>
 </template>
@@ -33,6 +33,7 @@ import { computed, CSSProperties, inject, ref, useTemplateRef } from 'vue'
 
 import TableDataStore from '.'
 import type { CellContext } from '@/types'
+import { isHtmlString } from '@/utils'
 
 const {
 	colIndex,
@@ -85,6 +86,14 @@ const displayValue = computed(() => {
 	}
 
 	return cellData
+})
+
+const isHtmlValue = computed(() => {
+	if (typeof displayValue.value === 'string') {
+		return isHtmlString(displayValue.value)
+	}
+
+	return false
 })
 
 const handleInput = () => {
