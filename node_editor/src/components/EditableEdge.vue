@@ -87,5 +87,6 @@ export default {
 
 .label-input {
 	text-align: center;
+	width: 40ch;
 }
 </style>

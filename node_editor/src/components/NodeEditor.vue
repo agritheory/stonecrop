@@ -28,7 +28,6 @@
 			:fit-view-on-init="true"
 			v-model="vueFlowElements"
 			@wheel.prevent="onWheel">
-			@connect="onConnect"
 			<template #node-editable="props">
 				<EditableNode v-bind="props" @change="labelChanged($event, props.id)" />
 			</template>
