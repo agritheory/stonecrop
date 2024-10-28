@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/themes",
+      "comment": "added warning color variable",
+      "type": "none"
+    }
+  ],
+  "packageName": "@stonecrop/themes"
+}

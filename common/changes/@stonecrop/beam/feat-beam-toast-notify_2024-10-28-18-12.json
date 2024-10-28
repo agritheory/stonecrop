@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/beam",
+      "comment": "added toast notifications",
+      "type": "none"
+    }
+  ],
+  "packageName": "@stonecrop/beam"
+}
