@@ -46,11 +46,16 @@
 				</div>
 			</BeamMetadata>
 		</Variant>
+		<Variant title="Toast Notification">
+			<button @click="showNotification">Show Notification</button>
+		</Variant>
 	</Story>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
+import { useToast } from 'vue-toast-notification'
+import 'vue-toast-notification/dist/theme-bootstrap.css'
 
 import items from './data/items.json'
 
@@ -61,6 +66,21 @@ const workOrder = reactive({
 	total: 20,
 	complete: false,
 })
+
+// Toast Component //
+const toast = useToast()
+
+const showNotification = () => {
+	let toastOptions = {
+		message: 'Notified',
+		position: 'top',
+		duration: 5000,
+		type: 'default',
+	}
+	// let notification = toast.success("Notified!", toastOptions)
+	let notification = toast.open(toastOptions)
+}
+// End Toast Component //
 
 const showModal = ref(false)
 
