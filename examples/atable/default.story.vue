@@ -27,7 +27,7 @@ const columns: TableColumn[] = [
 		edit: false,
 		width: '40ch',
 		format: (value: { title?: string; value?: any }, context: CellContext) => {
-			return `${value.title} (IP: ${context.row.ip_address})`
+			return `<a href="${value.title}" target="_blank">${value.title} (IP: ${context.row.ip_address})</a>`
 		},
 	},
 	{

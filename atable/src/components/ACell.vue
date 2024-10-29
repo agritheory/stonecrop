@@ -21,7 +21,7 @@
 			:is="column.cellComponent"
 			:value="displayValue"
 			v-bind="column.cellComponentProps" />
-		<div v-else-if="isHtmlValue" v-html="displayValue" />
+		<span v-else-if="isHtmlValue" v-html="displayValue" />
 		<span v-else>{{ displayValue }}</span>
 	</td>
 </template>
@@ -89,11 +89,8 @@ const displayValue = computed(() => {
 })
 
 const isHtmlValue = computed(() => {
-	if (typeof displayValue.value === 'string') {
-		return isHtmlString(displayValue.value)
-	}
-
-	return false
+	// TODO: check if display value is a native DOM element
+	return typeof displayValue.value === 'string' ? isHtmlString(displayValue.value) : false
 })
 
 const handleInput = () => {

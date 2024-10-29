@@ -1,5 +1,4 @@
 export const isHtmlString = (htmlString: string) => {
-	const $temp = document.createElement('div')
-	$temp.innerHTML = htmlString
-	return $temp.firstChild && $temp.firstChild.nodeType === Node.ELEMENT_NODE
+	const $document = new DOMParser().parseFromString(htmlString, 'text/html')
+	return Array.from($document.body.childNodes).some(node => node.nodeType === 1)
 }
