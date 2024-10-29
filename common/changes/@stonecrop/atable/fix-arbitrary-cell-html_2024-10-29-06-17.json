@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/atable",
+      "comment": "allow arbitrary HTML in table cells",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/atable"
+}
