@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/atable",
+      "comment": "update theme path",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/atable"
+}

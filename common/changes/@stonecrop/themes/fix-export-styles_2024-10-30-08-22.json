@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/themes",
+      "comment": "export themes correctly",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/themes"
+}
