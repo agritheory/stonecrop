@@ -315,7 +315,7 @@ rowNav['keydown.enter'] = rowNav['keydown.down']
 </script>
 
 <style>
-@import url('@stonecrop/themes/default/default.css');
+@import url('@stonecrop/themes/default.css');
 @import url('@stonecrop/atable/styles');
 </style>
 

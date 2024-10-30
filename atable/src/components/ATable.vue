@@ -224,5 +224,5 @@ window.addEventListener('keydown', (event: KeyboardEvent) => {
 </script>
 
 <style>
-@import url('@stonecrop/themes/default/default.css');
+@import url('@stonecrop/themes/default.css');
 </style>

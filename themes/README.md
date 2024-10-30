@@ -14,8 +14,8 @@ This directory contains various themes that can be used in Stonecrop application
 
 ## Usage
 
-To use a theme, simply import the stylesheet into your application. For example, to use the `dark` theme:
+To use a theme, import the corresponding stylesheet into your application. For example, to use the `dark` theme:
 
 ```javascript
-import '@stonecrop/themes/dark';
+import '@stonecrop/themes/dark.css';
 ```

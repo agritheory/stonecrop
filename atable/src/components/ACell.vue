@@ -193,5 +193,5 @@ const cellStyle: CSSProperties = {
 </script>
 
 <style>
-@import url('@stonecrop/themes/default/default.css');
+@import url('@stonecrop/themes/default.css');
 </style>

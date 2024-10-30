@@ -14,6 +14,15 @@
 	"bugs": {
 		"url": "https://github.com/agritheory/stonecrop/issues"
 	},
+	"exports": {
+		"./agritheory.css": "./dist/agritheory.css",
+		"./dark.css": "./dist/default.css",
+		"./default.css": "./dist/default.css",
+		"./excel.css": "./dist/default.css",
+		"./legal.css": "./dist/default.css",
+		"./verdant.css": "./dist/default.css",
+		"./vue.css": "./dist/default.css"
+	},
 	"scripts": {
 		"prepublish": "vite build",
 		"build": "vite build",
@@ -21,9 +30,7 @@
 		"preview": "vite preview"
 	},
 	"devDependencies": {
-		"@vitejs/plugin-vue": "^5.1.3",
-		"vite": "^5.4.5",
-		"vue": "^3.5.6"
+		"vite": "^5.4.5"
 	},
 	"publishConfig": {
 		"access": "public"
