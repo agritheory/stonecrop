@@ -3,7 +3,7 @@
     {
       "packageName": "@stonecrop/node-editor",
       "comment": "Add handling for edge creation and removal.",
-      "type": "none"
+      "type": "patch"
     }
   ],
   "packageName": "@stonecrop/node-editor"

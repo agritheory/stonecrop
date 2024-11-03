@@ -45,6 +45,8 @@ const elements = computed<FlowElements>({
 		for (const [key, value] of Object.entries(states.value)) {
 			if (value.on) {
 				for (const [edgeKey, edgeValue] of Object.entries(value.on)) {
+					// If the proxy array 'value.on' has more than one edge, 'edgeValue' will contain a proxy object
+					// where 'target' can be accessed. Otherwise, 'edgeValue' will be available directly.
 					const target = edgeValue.target || edgeValue
 					// TODO: handle typescript errors for both types of states
 					// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
