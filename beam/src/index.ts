@@ -17,6 +17,7 @@ import BeamHeading from './components/BeamHeading.vue'
 import BeamArrow from './components/BeamArrow.vue'
 import BeamBtn from './components/BeamBtn.vue'
 import BeamProgress from './components/BeamProgress.vue'
+import BeamDayDivider from './components/BeamDayDivider.vue'
 import 'themes/beam.css'
 
 /**
@@ -42,6 +43,7 @@ function install(app: App /* options */) {
 	app.component('BeamArrow', BeamArrow)
 	app.component('BeamBtn', BeamBtn)
 	app.component('BeamProgress', BeamProgress)
+	app.component('BeamDayDivider', BeamDayDivider)
 }
 
 export {
@@ -57,5 +59,6 @@ export {
 	ListView,
 	Navbar,
 	ScanInput,
+	BeamDayDivider,
 	install,
 }

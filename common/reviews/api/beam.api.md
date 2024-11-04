@@ -6,6 +6,7 @@
 
 import ActionFooter from '@/components/ActionFooter.vue';
 import { App } from 'vue';
+import BeamDayDivider from './components/BeamDayDivider.vue';
 import BeamMetadata from './components/BeamMetadata.vue';
 import BeamModal from '@/components/BeamModal.vue';
 import BeamModalOutlet from '@/components/BeamModalOutlet.vue';
@@ -19,6 +20,8 @@ import Navbar from '@/components/Navbar.vue';
 import ScanInput from '@/components/ScanInput.vue';
 
 export { ActionFooter }
+
+export { BeamDayDivider }
 
 export { BeamMetadata }
 

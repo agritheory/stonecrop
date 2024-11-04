@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/beam",
+      "comment": "added day divider to beam",
+      "type": "none"
+    }
+  ],
+  "packageName": "@stonecrop/beam"
+}
