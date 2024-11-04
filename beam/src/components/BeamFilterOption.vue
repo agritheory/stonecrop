@@ -13,12 +13,13 @@
 		</div>
 		<ul ref="menu" v-if="open" class="beam_filter-select-menu">
 			<li
-				v-for="(choice, index) in choices"
-				@click="updateValue(choice)"
+				v-for="(opt, index) in choices"
+				@click="updateValue(opt)"
 				class="beam_filter-select-option"
-				:data-value="{ value }"
-				:key="{ index }">
-				{{ choice.choice }}
+				:class="{ selected: choice == opt.choice }"
+				:data-value="opt.value"
+				:key="index">
+				{{ opt.choice }}
 			</li>
 		</ul>
 	</div>
@@ -42,6 +43,7 @@ let choice = ref(props.choices[0].choice)
 const updateValue = choiceData => {
 	choice = choiceData.choice
 	value = choiceData.value
+	console.log(choice)
 }
 
 let open = ref(false)
@@ -119,5 +121,9 @@ svg {
 }
 .selected {
 	background: var(--row-border-color);
+
+	&:hover {
+		background: var(--row-border-color);
+	}
 }
 </style>
