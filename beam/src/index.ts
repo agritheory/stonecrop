@@ -20,6 +20,7 @@ import BeamProgress from './components/BeamProgress.vue'
 import ToggleArrow from './components/ToggleArrow.vue'
 import BeamFilter from './components/BeamFilter.vue'
 import BeamFilterOption from './components/BeamFilterOption.vue'
+import FixedTop from './components/FixedTop.vue'
 import 'themes/beam.css'
 
 /**
@@ -48,6 +49,7 @@ function install(app: App /* options */) {
 	app.component('ToggleArrow', ToggleArrow)
 	app.component('BeamFilter', BeamFilter)
 	app.component('BeamFilterOption', BeamFilterOption)
+	app.component('FixedTop', FixedTop)
 }
 
 export {
@@ -66,5 +68,6 @@ export {
 	ToggleArrow,
 	BeamFilter,
 	BeamFilterOption,
+	FixedTop,
 	install,
 }
