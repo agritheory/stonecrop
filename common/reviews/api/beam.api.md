@@ -12,6 +12,7 @@ import BeamMetadata from './components/BeamMetadata.vue';
 import BeamModal from '@/components/BeamModal.vue';
 import BeamModalOutlet from '@/components/BeamModalOutlet.vue';
 import Confirm from '@/components/Confirm.vue';
+import FixedTop from './components/FixedTop.vue';
 import ItemCheck from '@/components/ItemCheck.vue';
 import ItemCount from '@/components/ItemCount.vue';
 import ListAnchor from '@/components/ListAnchor.vue';
@@ -34,6 +35,8 @@ export { BeamModal }
 export { BeamModalOutlet }
 
 export { Confirm }
+
+export { FixedTop }
 
 // @public
 export function install(app: App): void;

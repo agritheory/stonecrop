@@ -12,14 +12,15 @@ const props = defineProps(['open'])
 </script>
 <style scoped>
 .arrow-icon {
-	width: 0.5rem;
+	width: 0.4rem;
 	transform: rotate(0);
 	transform-origin: center;
 	position: relative;
-	transition: all 0.2s ease-in-out;
+	transition: all 0.1s ease-in-out;
 	margin: 0.5rem;
 	cursor: pointer;
-	display: inline-block;
+	display: flex;
+	align-items: center;
 }
 .open {
 	transform: rotate(90deg);

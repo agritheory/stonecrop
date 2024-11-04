@@ -56,6 +56,10 @@ const getTotalHeight = el => {
 	box-sizing: border-box;
 	font-size: 1rem;
 	padding: 0 2rem;
+
+	& > h1 {
+		font-size: 1rem;
+	}
 }
 .beam_filters-options {
 	background: white;
