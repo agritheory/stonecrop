@@ -19,8 +19,8 @@ let isOpen = ref(false)
 const header = useTemplateRef('beam-filters-header')
 const beamFilters = useTemplateRef('beam-filters')
 
-let totalHeight
-let headerHeight
+let totalHeight = ref(null)
+let headerHeight = ref(null)
 
 const toggle = () => {
 	isOpen.value = !isOpen.value
@@ -45,7 +45,6 @@ const getTotalHeight = el => {
 	box-sizing: border-box;
 	transition: all 0.2s ease-in-out;
 	border-bottom: 1px solid var(--row-border-color);
-	/* background:var(--primary-color); */
 	background: white;
 }
 .beam_filters-heading {

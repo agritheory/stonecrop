@@ -11,8 +11,7 @@
 				<label>{{ choice }}</label>
 			</div>
 		</div>
-		<ul v-if="open" ref="menu" class="beam_filter-select-menu" :style="{ top: menuTop }">
-			<slot :change-value></slot>
+		<ul ref="menu" v-if="open" class="beam_filter-select-menu">
 			<li
 				v-for="(choice, index) in choices"
 				@click="updateValue(choice)"
@@ -25,9 +24,7 @@
 	</div>
 </template>
 <script setup>
-import { ref, onMounted, useTemplateRef, defineProps } from 'vue'
-const select = useTemplateRef('select')
-const menu = useTemplateRef('menu')
+import { ref, defineProps } from 'vue'
 
 const props = defineProps({
 	title: {
@@ -39,27 +36,15 @@ const props = defineProps({
 	},
 })
 
-let menuTop = ref('0px')
-let open = ref(false)
 let value = ref(props.choices[0].value)
 let choice = ref(props.choices[0].choice)
-
-onMounted(() => {
-	menuTop.value = getTotalHeight(select.value)
-})
-
-const getTotalHeight = el => {
-	const height = el.getBoundingClientRect().height
-	const marginTop = parseInt(getComputedStyle(el).marginTop)
-	const marginBottom = parseInt(getComputedStyle(el).marginBottom)
-	return height + marginTop + marginBottom + 'px'
-}
 
 const updateValue = choiceData => {
 	choice = choiceData.choice
 	value = choiceData.value
 }
 
+let open = ref(false)
 const toggle = () => {
 	open.value = !open.value
 }
