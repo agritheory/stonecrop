@@ -1,0 +1,32 @@
+<template>
+	<div class="arrow-icon" :class="{ open: open }">
+		<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 35.36 70.71">
+			<polygon points="0 70.71 0 0 35.36 35.36 0 70.71" />
+		</svg>
+	</div>
+</template>
+<script setup lang="ts">
+import { ref, defineProps } from 'vue'
+
+const props = defineProps(['open'])
+</script>
+<style scoped>
+.arrow-icon {
+	width: 0.5rem;
+	transform: rotate(0);
+	transform-origin: center;
+	position: relative;
+	transition: all 0.2s ease-in-out;
+	margin: 0.5rem;
+	cursor: pointer;
+	display: inline-block;
+}
+.open {
+	transform: rotate(90deg);
+}
+svg {
+	width: 100%;
+	overflow: visible;
+	fill: var(--primary-text-color);
+}
+</style>

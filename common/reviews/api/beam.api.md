@@ -6,6 +6,8 @@
 
 import ActionFooter from '@/components/ActionFooter.vue';
 import { App } from 'vue';
+import BeamFilter from './components/BeamFilter.vue';
+import BeamFilterOption from './components/BeamFilterOption.vue';
 import BeamMetadata from './components/BeamMetadata.vue';
 import BeamModal from '@/components/BeamModal.vue';
 import BeamModalOutlet from '@/components/BeamModalOutlet.vue';
@@ -17,8 +19,13 @@ import ListItem from '@/components/ListItem.vue';
 import ListView from '@/components/ListView.vue';
 import Navbar from '@/components/Navbar.vue';
 import ScanInput from '@/components/ScanInput.vue';
+import ToggleArrow from './components/ToggleArrow.vue';
 
 export { ActionFooter }
+
+export { BeamFilter }
+
+export { BeamFilterOption }
 
 export { BeamMetadata }
 
@@ -44,6 +51,8 @@ export { ListView }
 export { Navbar }
 
 export { ScanInput }
+
+export { ToggleArrow }
 
 // (No @packageDocumentation comment for this package)
 

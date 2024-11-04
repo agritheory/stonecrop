@@ -17,6 +17,9 @@ import BeamHeading from './components/BeamHeading.vue'
 import BeamArrow from './components/BeamArrow.vue'
 import BeamBtn from './components/BeamBtn.vue'
 import BeamProgress from './components/BeamProgress.vue'
+import ToggleArrow from './components/ToggleArrow.vue'
+import BeamFilter from './components/BeamFilter.vue'
+import BeamFilterOption from './components/BeamFilterOption.vue'
 import 'themes/beam.css'
 
 /**
@@ -42,6 +45,9 @@ function install(app: App /* options */) {
 	app.component('BeamArrow', BeamArrow)
 	app.component('BeamBtn', BeamBtn)
 	app.component('BeamProgress', BeamProgress)
+	app.component('ToggleArrow', ToggleArrow)
+	app.component('BeamFilter', BeamFilter)
+	app.component('BeamFilterOption', BeamFilterOption)
 }
 
 export {
@@ -57,5 +63,8 @@ export {
 	ListView,
 	Navbar,
 	ScanInput,
+	ToggleArrow,
+	BeamFilter,
+	BeamFilterOption,
 	install,
 }
