@@ -1,9 +1,13 @@
 import { App } from 'vue'
 
 import ActionFooter from '@/components/ActionFooter.vue'
-import BeamMetadata from './components/BeamMetadata.vue'
+import BeamArrow from '@/components/BeamArrow.vue'
+import BeamBtn from '@/components/BeamBtn.vue'
+import BeamHeading from '@/components/BeamHeading.vue'
+import BeamMetadata from '@/components/BeamMetadata.vue'
 import BeamModal from '@/components/BeamModal.vue'
 import BeamModalOutlet from '@/components/BeamModalOutlet.vue'
+import BeamProgress from '@/components/BeamProgress.vue'
 import Confirm from '@/components/Confirm.vue'
 import ItemCheck from '@/components/ItemCheck.vue'
 import ItemCount from '@/components/ItemCount.vue'
@@ -12,11 +16,8 @@ import ListItem from '@/components/ListItem.vue'
 import ListView from '@/components/ListView.vue'
 import Navbar from '@/components/Navbar.vue'
 import ScanInput from '@/components/ScanInput.vue'
-import SplitColumn from './components/SplitColumn.vue'
-import BeamHeading from './components/BeamHeading.vue'
-import BeamArrow from './components/BeamArrow.vue'
-import BeamBtn from './components/BeamBtn.vue'
-import BeamProgress from './components/BeamProgress.vue'
+import SplitColumn from '@/components/SplitColumn.vue'
+import { useMqttStream } from '@/composables/mqtt'
 import 'themes/beam.css'
 
 /**
@@ -26,9 +27,13 @@ import 'themes/beam.css'
  */
 function install(app: App /* options */) {
 	app.component('ActionFooter', ActionFooter)
+	app.component('BeamArrow', BeamArrow)
+	app.component('BeamBtn', BeamBtn)
+	app.component('BeamHeading', BeamHeading)
 	app.component('BeamMetadata', BeamMetadata)
 	app.component('BeamModal', BeamModal)
 	app.component('BeamModalOutlet', BeamModalOutlet)
+	app.component('BeamProgress', BeamProgress)
 	app.component('Confirm', Confirm)
 	app.component('ItemCheck', ItemCheck)
 	app.component('ItemCount', ItemCount)
@@ -38,17 +43,17 @@ function install(app: App /* options */) {
 	app.component('Navbar', Navbar)
 	app.component('ScanInput', ScanInput)
 	app.component('SplitColumn', SplitColumn)
-	app.component('BeamHeading', BeamHeading)
-	app.component('BeamArrow', BeamArrow)
-	app.component('BeamBtn', BeamBtn)
-	app.component('BeamProgress', BeamProgress)
 }
 
 export {
 	ActionFooter,
+	BeamArrow,
+	BeamBtn,
+	BeamHeading,
 	BeamMetadata,
 	BeamModal,
 	BeamModalOutlet,
+	BeamProgress,
 	Confirm,
 	ItemCheck,
 	ItemCount,
@@ -57,5 +62,7 @@ export {
 	ListView,
 	Navbar,
 	ScanInput,
+	SplitColumn,
 	install,
+	useMqttStream,
 }

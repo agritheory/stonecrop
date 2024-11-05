@@ -167,6 +167,10 @@
       "allowedCategories": [ "prototype" ]
     },
     {
+      "name": "mqtt",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
       "name": "node-sass",
       "allowedCategories": [ "prototype" ]
     },
