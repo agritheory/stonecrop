@@ -57,5 +57,10 @@ export {
 	ListView,
 	Navbar,
 	ScanInput,
+	SplitColumn,
+	BeamHeading,
+	BeamArrow,
+	BeamBtn,
+	BeamProgress,
 	install,
 }

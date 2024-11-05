@@ -6,9 +6,13 @@
 
 import ActionFooter from '@/components/ActionFooter.vue';
 import { App } from 'vue';
+import BeamArrow from './components/BeamArrow.vue';
+import BeamBtn from './components/BeamBtn.vue';
+import BeamHeading from './components/BeamHeading.vue';
 import BeamMetadata from './components/BeamMetadata.vue';
 import BeamModal from '@/components/BeamModal.vue';
 import BeamModalOutlet from '@/components/BeamModalOutlet.vue';
+import BeamProgress from './components/BeamProgress.vue';
 import Confirm from '@/components/Confirm.vue';
 import ItemCheck from '@/components/ItemCheck.vue';
 import ItemCount from '@/components/ItemCount.vue';
@@ -17,14 +21,23 @@ import ListItem from '@/components/ListItem.vue';
 import ListView from '@/components/ListView.vue';
 import Navbar from '@/components/Navbar.vue';
 import ScanInput from '@/components/ScanInput.vue';
+import SplitColumn from './components/SplitColumn.vue';
 
 export { ActionFooter }
+
+export { BeamArrow }
+
+export { BeamBtn }
+
+export { BeamHeading }
 
 export { BeamMetadata }
 
 export { BeamModal }
 
 export { BeamModalOutlet }
+
+export { BeamProgress }
 
 export { Confirm }
 
@@ -44,6 +57,8 @@ export { ListView }
 export { Navbar }
 
 export { ScanInput }
+
+export { SplitColumn }
 
 // (No @packageDocumentation comment for this package)
 
