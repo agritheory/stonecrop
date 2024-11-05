@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/beam",
+      "comment": "export beam metadata components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@stonecrop/beam"
+}
