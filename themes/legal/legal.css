@@ -1,20 +1,20 @@
 :root {
-	--brand-color: #31708e;
-	--header-border-color: #31708e;
-	--header-text-color: #f7f9fb;
-	--row-color-zebra-light: #f7f9fb;
-	--row-color-zebra-dark: #eeeeee;
-	--cell-border-color: #ffffff;
-	--cell-text-color: #080604;
-	--active-cell-background: #ffffff;
-	--active-cell-outline: #687864;
-	--required-border: #e04e46;
-	--table-font-size: 11pt;
+	--sc-active-cell-background: #ffffff;
+	--sc-active-cell-outline: #687864;
+	--sc-brand-color: #31708e;
+	--sc-cell-border-color: #ffffff;
+	--sc-cell-text-color: #080604;
+	--sc-header-border-color: #31708e;
+	--sc-header-text-color: #f7f9fb;
+	--sc-required-border: #e04e46;
+	--sc-row-color-zebra-dark: #eeeeee;
+	--sc-row-color-zebra-light: #f7f9fb;
+	--sc-table-font-size: 11pt;
 }
 
 .atable {
 	font-family: Sabon, serif;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
-	font-size: var(--table-font-size);
+	font-size: var(--sc-table-font-size);
 }

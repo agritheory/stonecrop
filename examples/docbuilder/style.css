@@ -11,7 +11,7 @@ nav {
 	/* flex-direction: row; */
 	flex-direction: row-reverse;
 	align-items: center;
-	border-bottom: 2px solid var(--primary-color);
+	border-bottom: 2px solid var(--sc-primary-color);
 	margin: 0px;
 	padding-left: 1ch;
 	padding-right: 1ch;
@@ -20,26 +20,26 @@ nav {
 table {
 	display: table;
 	border-collapse: collapse;
-	caret-color: var(--brand-color);
+	caret-color: var(--sc-brand-color);
 }
 
 table.atable,
 .atable {
-	font-family: var(--atable-font-family);
+	font-family: var(--sc-atable-font-family);
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
-	font-size: var(--table-font-size);
+	font-size: var(--sc-table-font-size);
 	border-collapse: collapse;
 }
 
 th {
 	box-sizing: border-box;
-	background-color: var(--brand-color);
+	background-color: var(--sc-brand-color);
 	border-width: 1px;
 	border-style: solid;
-	border-color: var(--header-border-color);
+	border-color: var(--sc-header-border-color);
 	border-radius: 0px;
-	color: var(--header-text-color);
+	color: var(--sc-header-text-color);
 }
 
 td {
@@ -48,14 +48,14 @@ td {
 	margin: 0px;
 	outline: none;
 	box-shadow: none;
-	color: var(--cell-text-color);
+	color: var(--sc-cell-text-color);
 	text-overflow: ellipsis;
 	overflow: hidden;
 	padding-left: 0.5ch !important;
 	padding-right: 0.5ch;
 
-	padding-top: var(--atable-row-padding);
-	padding-bottom: var(--atable-row-padding);
+	padding-top: var(--sc-atable-row-padding);
+	padding-bottom: var(--sc-atable-row-padding);
 
 	border-spacing: 0px;
 	border-collapse: collapse;
@@ -63,10 +63,10 @@ td {
 
 td:focus,
 td:focus-within {
-	background-color: var(--focus-cell-background);
+	background-color: var(--sc-focus-cell-background);
 	outline-width: 2px;
 	outline-style: solid;
-	outline-color: var(--focus-cell-outline);
+	outline-color: var(--sc-focus-cell-outline);
 	box-shadow: none;
 	overflow: hidden;
 	min-height: 1.15em;

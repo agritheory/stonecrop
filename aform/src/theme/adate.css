@@ -1,7 +1,7 @@
 .adatepicker {
-	font-size: var(--table-font-size);
+	font-size: var(--sc-table-font-size);
 	display: inline-table;
-	color: var(--cell-text-color);
+	color: var(--sc-cell-text-color);
 	outline: none;
 	border-collapse: collapse;
 	/* width: calc(100% - 4px); */
@@ -32,7 +32,7 @@
 }
 .adatepicker .selectedDate {
 	outline: 1px solid black;
-	background: var(--gray-20);
+	background: var(--sc-gray-20);
 	font-weight: bolder;
 }
 
@@ -45,5 +45,5 @@
 	font-weight: bold;
 }
 .prev-date {
-	color: var(--gray-20);
+	color: var(--sc-gray-20);
 }

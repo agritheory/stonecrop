@@ -72,7 +72,7 @@ nav {
 	/* flex-direction: row; */
 	flex-direction: row-reverse;
 	align-items: center;
-	border-bottom: 2px solid var(--primary-color);
+	border-bottom: 2px solid var(--sc-primary-color);
 	margin: 0px;
 	padding-left: 1ch;
 	padding-right: 1ch;
