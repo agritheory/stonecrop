@@ -68,5 +68,5 @@ const childModels = computed({
 </script>
 
 <style scoped>
-@import url('@/theme/aform.css');
+@import url('@stonecrop/themes/default.css');
 </style>

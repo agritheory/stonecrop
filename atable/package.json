@@ -23,12 +23,15 @@
 			},
 			"require": "./dist/atable.umd.cjs"
 		},
-		"./styles": "./dist/style.css"
+		"./styles": "./dist/assets/index.css"
 	},
 	"typings": "./dist/atable/src/index.d.ts",
 	"files": [
 		"dist/*",
 		"src/*"
+	],
+	"sideEffects": [
+		"**/*.css"
 	],
 	"scripts": {
 		"prepublish": "heft build && vite build && rushx docs",
@@ -64,6 +67,7 @@
 		"jsdom": "^25.0.0",
 		"stonecrop-rig": "workspace:*",
 		"typescript": "^5.5.2",
+		"vite-plugin-lib-inject-css": "^2.1.1",
 		"vite": "^5.4.5",
 		"vitest": "^2.1.1",
 		"vue-router": "^4.4.0"
