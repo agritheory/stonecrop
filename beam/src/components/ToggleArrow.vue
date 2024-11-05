@@ -6,8 +6,6 @@
 	</div>
 </template>
 <script setup lang="ts">
-import { ref, defineProps } from 'vue'
-
 const props = defineProps(['open'])
 </script>
 <style scoped>

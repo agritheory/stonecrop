@@ -24,26 +24,20 @@
 		</ul>
 	</div>
 </template>
-<script setup>
+<script setup lang="ts">
 import { ref, defineProps } from 'vue'
 
-const props = defineProps({
-	title: {
-		type: String,
-		default: 'title',
-	},
-	choices: {
-		type: [Array, { choice: String, value: String }],
-	},
-})
+const { title = 'title', choices = [] } = defineProps<{
+	title?: string
+	choices: { choice: string; value: string }[]
+}>()
 
-let value = ref(props.choices[0].value)
-let choice = ref(props.choices[0].choice)
+let value = ref(choices[0].value)
+let choice = ref(choices[0].choice)
 
 const updateValue = choiceData => {
 	choice.value = choiceData.choice
 	value.value = choiceData.value
-	console.log(choice)
 }
 
 let open = ref(false)
