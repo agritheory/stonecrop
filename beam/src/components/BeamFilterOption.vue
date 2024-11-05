@@ -41,8 +41,8 @@ let value = ref(props.choices[0].value)
 let choice = ref(props.choices[0].choice)
 
 const updateValue = choiceData => {
-	choice = choiceData.choice
-	value = choiceData.value
+	choice.value = choiceData.choice
+	value.value = choiceData.value
 	console.log(choice)
 }
 
