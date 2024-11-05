@@ -154,7 +154,3 @@ const loadMoreItems = () => {
 const confirmModal = () => (showModal.value = false)
 const closeModal = () => (showModal.value = false)
 </script>
-
-<style>
-@import url('@stonecrop/beam/styles');
-</style>

@@ -20,7 +20,7 @@
 			"import": "./dist/beam.js",
 			"require": "./dist/beam.umd.cjs"
 		},
-		"./styles": "./dist/style.css"
+		"./styles": "./dist/assets/index.css"
 	},
 	"main": "dist/beam.js",
 	"module": "dist/beam.js",
@@ -59,6 +59,7 @@
 		"sass": "^1.75.0",
 		"stonecrop-rig": "workspace:*",
 		"typescript": "^5.5.2",
+		"vite-plugin-lib-inject-css": "^2.1.1",
 		"vite": "^5.4.5",
 		"vitest": "^2.1.1",
 		"vue-router": "^4.4.0"
