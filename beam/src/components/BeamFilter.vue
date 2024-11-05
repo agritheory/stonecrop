@@ -27,9 +27,9 @@ const toggle = () => {
 }
 
 onMounted(() => {
-	headerHeight = getTotalHeight(header.value)
-	totalHeight = getTotalHeight(beamFilters.value)
-	beamFilters.value.style.height = headerHeight
+	headerHeight.value = getTotalHeight(header.value)
+	totalHeight.value = getTotalHeight(beamFilters.value)
+	beamFilters.value.style.height = headerHeight.value
 })
 
 const getTotalHeight = el => {
