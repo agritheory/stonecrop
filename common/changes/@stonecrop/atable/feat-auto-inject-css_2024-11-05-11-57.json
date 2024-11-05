@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/atable",
+      "comment": "auto-import component styles",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/atable"
+}

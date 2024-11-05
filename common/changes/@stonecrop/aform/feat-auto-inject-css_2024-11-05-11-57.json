@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/aform",
+      "comment": "auto-import component styles",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/aform"
+}

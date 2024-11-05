@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/themes",
+      "comment": "use bem-style css properties",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/themes"
+}
