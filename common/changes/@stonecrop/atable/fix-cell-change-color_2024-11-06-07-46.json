@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/atable",
+      "comment": "change cell style on value update",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/atable"
+}
