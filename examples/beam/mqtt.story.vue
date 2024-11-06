@@ -1,7 +1,11 @@
 <template>
 	<Story>
-		<Variant title="stream">
-			<pre>{{ messages }}</pre>
+		<Variant title="subscribe to all">
+			<pre>{{ allMessages }}</pre>
+		</Variant>
+
+		<Variant title="subscribe to select topics">
+			<pre>{{ topicMessages }}</pre>
 		</Variant>
 	</Story>
 </template>
@@ -18,10 +22,18 @@ const mqtt = reactive({
 	topics: ['smarthome/#', 'smarthome2/#'],
 })
 
-const { messages } = useMqttStream(mqtt.topics, {
+const { messages: allMessages } = useMqttStream({
 	username: mqtt.username,
 	password: mqtt.password,
 	host: mqtt.host,
 	port: mqtt.port,
+})
+
+const { messages: topicMessages } = useMqttStream({
+	username: mqtt.username,
+	password: mqtt.password,
+	host: mqtt.host,
+	port: mqtt.port,
+	topics: mqtt.topics,
 })
 </script>

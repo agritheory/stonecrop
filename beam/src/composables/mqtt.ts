@@ -1,14 +1,22 @@
 import mqtt, { type MqttClient, type IClientOptions } from 'mqtt'
 import { onMounted, onUnmounted, ref } from 'vue'
 
-export const useMqttStream = (topics: string[], options?: IClientOptions) => {
+interface IMqttStream extends IClientOptions {
+	topics?: string[]
+}
+
+export const useMqttStream = (options?: IMqttStream) => {
 	const client = ref<MqttClient>(null)
 	const messages = ref<Record<string, string[]>>({})
 
 	onMounted(() => {
 		client.value = mqtt.connect(options)
 
-		for (const topic of topics) {
+		if (!options.topics) {
+			options.topics = ['#']
+		}
+
+		for (const topic of options.topics) {
 			client.value.subscribe(topic, err => {
 				if (err) {
 					throw err
