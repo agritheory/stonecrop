@@ -3,6 +3,7 @@
 		<slot></slot>
 	</div>
 </template>
+
 <style scoped>
 .fixed-top {
 	position: sticky;

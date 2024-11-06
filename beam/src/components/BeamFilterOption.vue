@@ -14,47 +14,56 @@
 		<ul ref="menu" v-if="open" class="beam_filter-select-menu">
 			<li
 				v-for="(opt, index) in choices"
-				@click="updateValue(opt)"
-				class="beam_filter-select-option"
 				:class="{ selected: choice == opt.choice }"
 				:data-value="opt.value"
-				:key="index">
+				:key="index"
+				class="beam_filter-select-option"
+				@click="updateValue(opt)">
 				{{ opt.choice }}
 			</li>
 		</ul>
 	</div>
 </template>
+
 <script setup lang="ts">
 import { ref, defineProps } from 'vue'
 
-const { title = 'title', choices = [] } = defineProps<{
-	title?: string
-	choices: { choice: string; value: string }[]
-}>()
-
-let value = ref(choices[0].value)
-let choice = ref(choices[0].choice)
-
-const updateValue = choiceData => {
-	choice.value = choiceData.choice
-	value.value = choiceData.value
+type Choice = {
+	choice: string
+	value: string
 }
 
-let open = ref(false)
+const { title = 'title', choices = [] } = defineProps<{
+	choices: Choice[]
+	title?: string
+}>()
+
+const open = ref(false)
+const value = ref(choices[0].value)
+const choice = ref(choices[0].choice)
+
+const updateValue = (data: Choice) => {
+	choice.value = data.choice
+	value.value = data.value
+}
+
 const toggle = () => {
 	open.value = !open.value
 }
 </script>
+
 <style scoped>
 .beam_filter-option {
 	cursor: pointer;
 	position: relative;
 	margin-bottom: 1rem;
 }
+
 .beam_filter-option-heading {
 	font-size: 1rem;
 	padding-bottom: 0.25rem;
 }
+
 .beam_filter-option-select {
 	position: relative;
 	appearance: none;
@@ -66,10 +75,12 @@ const toggle = () => {
 	display: flex;
 	align-items: stretch;
 }
+
 label {
 	cursor: pointer;
 	padding: 0.5rem;
 }
+
 .beam_filter-arrow {
 	background: var(--primary-color);
 	color: var(--primary-text-color);
@@ -79,15 +90,18 @@ label {
 	width: 5px;
 	padding: 0.5rem 0.7rem;
 }
+
 .beam_filter-label {
 	display: flex;
 	align-items: center;
 }
+
 svg {
 	fill: var(--primary-text-color);
 	width: 5px;
 	transform: rotate(90deg);
 }
+
 .beam_filter-select-menu {
 	/* position: absolute; */
 	z-index: 100;
@@ -102,6 +116,7 @@ svg {
 	overflow-y: scroll;
 	margin: 0;
 }
+
 .beam_filter-select-option {
 	font-size: 0.8rem;
 	font-family: var(--font-family);
@@ -113,6 +128,7 @@ svg {
 		background: var(--primary-color);
 	}
 }
+
 .selected {
 	background: var(--row-border-color);
 

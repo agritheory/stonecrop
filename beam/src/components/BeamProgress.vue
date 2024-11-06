@@ -7,23 +7,17 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-const props = defineProps({
-	label: {
-		type: String,
-		default: 'Status',
-	},
-	progressMessage: {
-		type: String,
-		default: 'In Progress',
-	},
-	completeMessage: {
-		type: String,
-		default: 'Complete',
-	},
-	complete: Boolean,
-})
+const {
+	label = 'Status',
+	progressMessage = 'In Progress',
+	completeMessage = 'Complete',
+	complete = false,
+} = defineProps<{
+	label?: string
+	progressMessage?: string
+	completeMessage?: string
+	complete?: boolean
+}>()
 
-const statusMessage = computed(() => {
-	return props.complete ? props.completeMessage : props.progressMessage
-})
+const statusMessage = computed(() => (complete ? completeMessage : progressMessage))
 </script>

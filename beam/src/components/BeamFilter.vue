@@ -11,16 +11,16 @@
 		</div>
 	</div>
 </template>
+
 <script setup lang="ts">
-import BeamHeading from './BeamHeading.vue'
 import { ref, onMounted, useTemplateRef } from 'vue'
 
-let isOpen = ref(false)
 const header = useTemplateRef('beam-filters-header')
 const beamFilters = useTemplateRef('beam-filters')
 
-let totalHeight = ref(null)
-let headerHeight = ref(null)
+const isOpen = ref(false)
+const headerHeight = ref<string>()
+const totalHeight = ref<string>()
 
 const toggle = () => {
 	isOpen.value = !isOpen.value
@@ -32,13 +32,14 @@ onMounted(() => {
 	beamFilters.value.style.height = headerHeight.value
 })
 
-const getTotalHeight = el => {
+const getTotalHeight = (el: HTMLDivElement) => {
 	const height = el.getBoundingClientRect().height
 	const marginTop = parseInt(getComputedStyle(el).marginTop)
 	const marginBottom = parseInt(getComputedStyle(el).marginBottom)
 	return height + marginTop + marginBottom + 'px'
 }
 </script>
+
 <style scoped>
 .beam_filters {
 	overflow: hidden;
@@ -47,6 +48,7 @@ const getTotalHeight = el => {
 	border-bottom: 1px solid var(--row-border-color);
 	background: white;
 }
+
 .beam_filters-heading {
 	background: var(--primary-color);
 	cursor: pointer;
@@ -61,6 +63,7 @@ const getTotalHeight = el => {
 		font-size: 1rem;
 	}
 }
+
 .beam_filters-options {
 	background: white;
 	margin: 1rem;

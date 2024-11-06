@@ -6,17 +6,17 @@
 
 import ActionFooter from '@/components/ActionFooter.vue';
 import { App } from 'vue';
-import BeamArrow from './components/BeamArrow.vue';
-import BeamBtn from './components/BeamBtn.vue';
-import BeamFilter from './components/BeamFilter.vue';
-import BeamFilterOption from './components/BeamFilterOption.vue';
-import BeamHeading from './components/BeamHeading.vue';
-import BeamMetadata from './components/BeamMetadata.vue';
+import BeamArrow from '@/components/BeamArrow.vue';
+import BeamBtn from '@/components/BeamBtn.vue';
+import BeamFilter from '@/components/BeamFilter.vue';
+import BeamFilterOption from '@/components/BeamFilterOption.vue';
+import BeamHeading from '@/components/BeamHeading.vue';
+import BeamMetadata from '@/components/BeamMetadata.vue';
 import BeamModal from '@/components/BeamModal.vue';
 import BeamModalOutlet from '@/components/BeamModalOutlet.vue';
-import BeamProgress from './components/BeamProgress.vue';
+import BeamProgress from '@/components/BeamProgress.vue';
 import Confirm from '@/components/Confirm.vue';
-import FixedTop from './components/FixedTop.vue';
+import FixedTop from '@/components/FixedTop.vue';
 import ItemCheck from '@/components/ItemCheck.vue';
 import ItemCount from '@/components/ItemCount.vue';
 import ListAnchor from '@/components/ListAnchor.vue';
@@ -24,8 +24,8 @@ import ListItem from '@/components/ListItem.vue';
 import ListView from '@/components/ListView.vue';
 import Navbar from '@/components/Navbar.vue';
 import ScanInput from '@/components/ScanInput.vue';
-import SplitColumn from './components/SplitColumn.vue';
-import ToggleArrow from './components/ToggleArrow.vue';
+import SplitColumn from '@/components/SplitColumn.vue';
+import ToggleArrow from '@/components/ToggleArrow.vue';
 
 export { ActionFooter }
 
