@@ -93,6 +93,16 @@ const isHtmlValue = computed(() => {
 	return typeof displayValue.value === 'string' ? isHtmlString(displayValue.value) : false
 })
 
+const cellStyle = computed((): CSSProperties => {
+	return {
+		textAlign: textAlign.value,
+		width: cellWidth.value,
+		backgroundColor: !cellModified.value ? 'inherit' : 'var(--cell-modified-color)',
+		fontWeight: !cellModified.value ? 'inherit' : 'bold',
+		paddingLeft: getIndent(colIndex, tableData.display[rowIndex]?.indent),
+	}
+})
+
 const handleInput = () => {
 	if (column.mask) {
 		// TODO: add masking to cell values
@@ -175,20 +185,12 @@ const onChange = () => {
 	}
 }
 
-const getIndent = (colKey: number, indent: number) => {
-	if (indent && colKey === 0 && indent > 0) {
-		return `${indent}ch`
+const getIndent = (colIndex: number, indentLevel?: number) => {
+	if (indentLevel && colIndex === 0 && indentLevel > 0) {
+		return `${indentLevel}ch`
 	} else {
 		return 'inherit'
 	}
-}
-
-const cellStyle: CSSProperties = {
-	textAlign: textAlign.value,
-	width: cellWidth.value,
-	backgroundColor: !cellModified.value ? 'inherit' : 'var(--cell-modified-color)',
-	fontWeight: !cellModified.value ? 'inherit' : 'bold',
-	paddingLeft: getIndent(colIndex, tableData.display[rowIndex]?.indent),
 }
 </script>
 
