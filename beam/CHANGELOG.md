@@ -1,6 +1,20 @@
 # Change Log - @stonecrop/beam
 
-This log was last generated on Mon, 04 Nov 2024 16:21:07 GMT and should not be manually modified.
+This log was last generated on Tue, 05 Nov 2024 19:00:13 GMT and should not be manually modified.
+
+## 0.2.50
+Tue, 05 Nov 2024 19:00:13 GMT
+
+### Updates
+
+- export beam metadata components
+
+## 0.2.49
+Tue, 05 Nov 2024 12:21:06 GMT
+
+### Patches
+
+- auto-import component styles
 
 ## 0.2.48
 Mon, 04 Nov 2024 16:21:07 GMT

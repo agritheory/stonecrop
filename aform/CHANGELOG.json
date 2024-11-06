@@ -2,6 +2,24 @@
   "name": "@stonecrop/aform",
   "entries": [
     {
+      "version": "0.2.50",
+      "tag": "@stonecrop/aform_v0.2.50",
+      "date": "Tue, 05 Nov 2024 19:00:13 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.2.49",
+      "tag": "@stonecrop/aform_v0.2.49",
+      "date": "Tue, 05 Nov 2024 12:21:06 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "auto-import component styles"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.2.48",
       "tag": "@stonecrop/aform_v0.2.48",
       "date": "Mon, 04 Nov 2024 16:21:07 GMT",

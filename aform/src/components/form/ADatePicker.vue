@@ -158,5 +158,4 @@ useKeyboardNav([
 <style>
 @import url('@stonecrop/themes/default.css');
 @import url('@/theme/adate.css');
-@import url('@/theme/aform.css');
 </style>

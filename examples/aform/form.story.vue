@@ -61,10 +61,6 @@ const formSetup = ({ app }: { app: App }) => {
 </script>
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap');
-@import url('@stonecrop/aform/styles');
-@import url('@stonecrop/atable/styles');
-
 html {
 	font-family: Arimo, sans-serif;
 	font-size: 11pt;
@@ -76,7 +72,7 @@ nav {
 	/* flex-direction: row; */
 	flex-direction: row-reverse;
 	align-items: center;
-	border-bottom: 2px solid var(--primary-color);
+	border-bottom: 2px solid var(--sc-primary-color);
 	margin: 0px;
 	padding-left: 1ch;
 	padding-right: 1ch;
