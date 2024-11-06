@@ -74,7 +74,3 @@ const workOrder = reactive({
 	complete: false,
 })
 </script>
-
-<style>
-@import url('@stonecrop/beam/styles');
-</style>

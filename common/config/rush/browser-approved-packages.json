@@ -247,6 +247,10 @@
       "allowedCategories": [ "prototype", "utilities" ]
     },
     {
+      "name": "vite-plugin-lib-inject-css",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
       "name": "vitest",
       "allowedCategories": [ "prototype", "utilities" ]
     },

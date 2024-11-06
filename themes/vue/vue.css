@@ -1,16 +1,16 @@
 :root {
-	--brand-color: #34495e;
-	--header-border-color: #34495e;
-	--header-text-color: #ffffff;
-	--row-color-zebra-light: #ecf8f3;
-	--row-color-zebra-dark: #d9f1e6;
-	--cell-border-color: #ffffff;
-	--cell-text-color: #34495e;
-	--active-cell-background: #ffffff;
-	--active-cell-outline: #41b883;
-	--required-border: #b84277;
-	--table-font-size: 11pt;
-	--border-collapsed: none;
+	--sc-active-cell-background: #ffffff;
+	--sc-active-cell-outline: #41b883;
+	--sc-border-collapsed: none;
+	--sc-brand-color: #34495e;
+	--sc-cell-border-color: #ffffff;
+	--sc-cell-text-color: #34495e;
+	--sc-header-border-color: #34495e;
+	--sc-header-text-color: #ffffff;
+	--sc-required-border: #b84277;
+	--sc-row-color-zebra-dark: #d9f1e6;
+	--sc-row-color-zebra-light: #ecf8f3;
+	--sc-table-font-size: 11pt;
 }
 
 .atable {
@@ -18,7 +18,7 @@
 		Helvetica Neue, sans-serif;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
-	font-size: var(--table-font-size);
+	font-size: var(--sc-table-font-size);
 }
 
 body {

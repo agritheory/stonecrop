@@ -1,6 +1,23 @@
 # Change Log - @stonecrop/node-editor
 
-This log was last generated on Wed, 30 Oct 2024 11:56:52 GMT and should not be manually modified.
+This log was last generated on Tue, 05 Nov 2024 19:00:13 GMT and should not be manually modified.
+
+## 0.2.50
+Tue, 05 Nov 2024 19:00:13 GMT
+
+_Version update only_
+
+## 0.2.49
+Tue, 05 Nov 2024 12:21:06 GMT
+
+_Version update only_
+
+## 0.2.48
+Mon, 04 Nov 2024 16:21:07 GMT
+
+### Patches
+
+- Add handling for edge creation and removal.
 
 ## 0.2.47
 Wed, 30 Oct 2024 11:56:52 GMT

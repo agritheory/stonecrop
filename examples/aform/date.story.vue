@@ -19,7 +19,3 @@ import { ref } from 'vue'
 const twoDaysAgo = new Date().setDate(new Date().getDate() - 2)
 const defaultDate = ref(new Date(twoDaysAgo))
 </script>
-
-<style>
-@import url('@stonecrop/aform/styles');
-</style>

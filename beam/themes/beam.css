@@ -1,29 +1,28 @@
-/* @import url('../../themes/default.css'); */
 @import url('https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap');
 
 /* Style */
 
 :root {
 	/* variables */
-	--primary-color: #f2f2f2; /* primary action color */
-	--primary-text-color: #666666; /* text color paired with primary color */
+	--sc-primary-color: #f2f2f2; /* primary action color */
+	--sc-primary-text-color: #666666; /* text color paired with primary color */
 
-	--alert: #e63c28;
-	--success: #155724;
+	--sc-alert: #e63c28;
+	--sc-success: #155724;
 
-	--font-family: Arimo, Arial, sans-serif;
+	--sc-font-family: Arimo, Arial, sans-serif;
 
-	--row-border-color: #ccc;
+	--sc-row-border-color: #ccc;
 
-	--btn-color: white;
-	--btn-border: #ccc;
-	--btn-label-color: black;
+	--sc-btn-color: white;
+	--sc-btn-border: #ccc;
+	--sc-btn-label-color: black;
 
-	--list-margin: 0rem 0.625rem;
+	--sc-list-margin: 0rem 0.625rem;
 }
 
 body {
-	font-family: var(--font-family);
+	font-family: var(--sc-font-family);
 	background-color: white;
 	margin: 0;
 	padding: 0;
@@ -39,12 +38,12 @@ body {
 	border: 1px solid transparent;
 	text-align: left;
 	font-size: 1.125rem;
-	color: var(--primary-text-color);
+	color: var(--sc-primary-text-color);
 	margin: 0;
 	padding: 0;
 }
 .beam_copy {
-	color: var(--primary-text-color);
+	color: var(--sc-primary-text-color);
 	font-size: 1rem;
 	line-height: 1.5rem;
 }
@@ -57,20 +56,20 @@ body {
 	font-weight: normal;
 }
 .beam--alert {
-	color: var(--alert);
+	color: var(--sc-alert);
 }
 .beam--success {
-	color: var(--success);
+	color: var(--sc-success);
 }
 
 /* beam navbar */
 .beam_navbar {
 	padding: 0.625rem;
-	background-color: var(--primary-color);
+	background-color: var(--sc-primary-color);
 	margin-left: 0;
 	min-height: 2em;
 	max-height: 2em;
-	color: var(--primary-text-color);
+	color: var(--sc-primary-text-color);
 	display: flex;
 	flex-flow: row nowrap;
 	align-content: center;
@@ -78,7 +77,7 @@ body {
 	align-items: center;
 	position: sticky;
 	top: 0;
-	border-bottom: 1px solid var(--row-border-color);
+	border-bottom: 1px solid var(--sc-row-border-color);
 
 	& h1 {
 		margin-left: 0.625rem;
@@ -89,7 +88,7 @@ body {
 
 .beam_list-view {
 	list-style-type: none;
-	margin: var(--list-margin);
+	margin: var(--sc-list-margin);
 	padding: 0;
 	padding-bottom: 2.5em;
 	margin-top: 1px;
@@ -97,7 +96,7 @@ body {
 
 .beam_list-item {
 	padding: 0.625rem;
-	border-bottom: 1px solid var(--row-border-color);
+	border-bottom: 1px solid var(--sc-row-border-color);
 	max-width: 100%;
 	box-sizing: border-box;
 	display: flex;
@@ -109,8 +108,8 @@ body {
 	outline-offset: -1px;
 
 	&:focus {
-		outline: 2px solid var(--focus-cell-outline);
-		background-color: var(--focus-cell-background);
+		outline: 2px solid var(--sc-focus-cell-outline);
+		background-color: var(--sc-focus-cell-background);
 	}
 }
 .beam_list-text {
@@ -120,7 +119,7 @@ body {
 	overflow: hidden;
 	flex-grow: 1;
 	font-size: 0.875rem;
-	color: var(--primary-text-color);
+	color: var(--sc-primary-text-color);
 
 	& label,
 	& p {
@@ -139,14 +138,14 @@ body {
 .beam_list-anchor {
 	text-decoration: none;
 	outline: none;
-	color: var(--primary-text-color);
+	color: var(--sc-primary-text-color);
 }
 
 /* item count */
 
 .beam_item-count {
 	font-size: 1.3125rem;
-	color: var(--primary-text-color);
+	color: var(--sc-primary-text-color);
 }
 .beam_item-count span {
 	margin: 0;
@@ -160,21 +159,21 @@ body {
 	font-size: 0.875rem;
 	text-align: center;
 	padding: 0.3125rem 0.75rem;
-	border: 1px solid var(--btn-border);
-	color: var(--btn-label-color);
-	background-color: var(--btn-color);
+	border: 1px solid var(--sc-btn-border);
+	color: var(--sc-btn-label-color);
+	background-color: var(--sc-btn-color);
 	cursor: pointer;
 
 	&:hover,
 	&:active {
-		background-color: var(--btn-hover);
+		background-color: var(--sc-btn-hover);
 	}
 }
 
 .beam_action-footer {
 	margin-left: 0;
 	background: linear-gradient(180deg, transparent 0%, white 100%);
-	color: var(--primary-text-color);
+	color: var(--sc-primary-text-color);
 	position: fixed;
 	bottom: 0;
 	left: 0;
@@ -210,9 +209,9 @@ body {
 		margin: 0.625rem;
 	}
 	& h2 {
-		border-bottom: 1px solid var(--row-border-color);
+		border-bottom: 1px solid var(--sc-row-border-color);
 		padding-bottom: 0.625rem;
-		color: var(--primary-text-color);
+		color: var(--sc-primary-text-color);
 	}
 }
 
@@ -224,7 +223,7 @@ body {
 	display: flex;
 	flex-direction: column;
 	max-height: 100vh;
-	color: var(--primary-text-color);
+	color: var(--sc-primary-text-color);
 }
 .beam_metadata_content {
 	padding-top: 10px;

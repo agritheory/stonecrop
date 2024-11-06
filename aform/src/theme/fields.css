@@ -9,7 +9,7 @@
 }
 .input-field {
 	outline: 1px solid transparent;
-	border: 1px solid var(--input-border-color);
+	border: 1px solid var(--sc-input-border-color);
 	padding: 0.25rem;
 	margin: 0 0 0 0;
 	border-radius: 0 0 0.25rem 0.25rem;
@@ -17,7 +17,7 @@
 	width: 100%;
 }
 .field-label {
-	color: var(--input-label-color);
+	color: var(--sc-input-label-color);
 	display: block;
 	min-height: 1.15rem;
 	padding: 0.25rem;
@@ -28,8 +28,8 @@
 	background: white;
 	width: 100%;
 	box-sizing: border-box;
-	background: var(--gray-5);
-	border: 1px solid var(--input-border-color);
+	background: var(--sc-gray-5);
+	border: 1px solid var(--sc-input-border-color);
 	border-bottom: none;
 }
 p.error {
@@ -40,16 +40,16 @@ p.error {
 	margin: 0.5rem 0 0.25rem 0rem;
 	border: 1px solid transparent;
 	width: 100%;
-	color: var(--brand-danger);
+	color: var(--sc-brand-danger);
 	font-size: 0.8rem;
 }
 
 .input-field:focus {
-	border: 1px solid var(--input-active-border-color);
+	border: 1px solid var(--sc-input-active-border-color);
 }
 
 .input-field:focus + .field-label {
-	color: var(--input-active-label-color);
+	color: var(--sc-input-active-label-color);
 }
 
 /**  CHECKBOX **/
@@ -80,5 +80,5 @@ p.error {
 }
 
 .checkbox-container:hover + .field-label {
-	color: var(--input-active-label-color);
+	color: var(--sc-input-active-label-color);
 }
