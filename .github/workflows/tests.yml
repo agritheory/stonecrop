@@ -9,14 +9,15 @@ jobs:
   changes:
     name: Check for changes
     runs-on: ubuntu-latest
+
     permissions:
       pull-requests: read
+
     outputs:
-      aform: ${{ steps.filter.outputs.aform }}
-      atable: ${{ steps.filter.outputs.atable }}
-      beam: ${{ steps.filter.outputs.beam }}
+      packages: ${{ steps.filter.outputs.changes }}
+
     steps:
-    - uses: dorny/paths-filter@v2
+    - uses: dorny/paths-filter@v3
       id: filter
       with:
         filters: |
@@ -24,128 +25,40 @@ jobs:
           atable: atable/**
           beam: beam/**
 
-  aform:
-    name: AForm
+  test:
+    name: ${{ matrix.package }}
     needs: changes
-    if: ${{ needs.changes.outputs.aform == 'true' }}
     runs-on: ubuntu-latest
-
-    permissions:
-      contents: read
-      pull-requests: write
 
     strategy:
       matrix:
-        node: [20.x]
+        package: ${{ fromJSON(needs.changes.outputs.packages) }}
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Install Node ${{ matrix.node }}
-      uses: actions/setup-node@v4
-      with:
-        cache-dependency-path: '**/config/rush/pnpm-lock.yaml'
-        registry-url: https://registry.npmjs.org/
+      - name: Install Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache-dependency-path: '**/config/rush/pnpm-lock.yaml'
+          registry-url: https://registry.npmjs.org/
 
-    - name: Rush Install
-      run: node common/scripts/install-run-rush.js install
+      - name: Rush Install
+        run: node common/scripts/install-run-rush.js install
 
-    - name: Rush Build
-      run: node common/scripts/install-run-rush.js rebuild --verbose
+      - name: Rush Build
+        run: node common/scripts/install-run-rush.js rebuild --verbose
 
-    - name: Run Tests
-      working-directory: ./aform
-      run: node ../common/scripts/install-run-rushx.js test:coverage
+      - name: Run Tests
+        working-directory: ./${{ matrix.package }}
+        run: node ../common/scripts/install-run-rushx.js test:coverage
 
-    - name: Coverage Report
-      if: always() # Also generate the report if tests are failing
-      uses: davelosert/vitest-coverage-report-action@v2
-      with:
-        working-directory: ./aform
-        file-coverage-mode: 'all'
-        vite-config-path: './vite.config.ts'
-
-  atable:
-    name: ATable
-    needs: changes
-    if: ${{ needs.changes.outputs.atable == 'true' }}
-    runs-on: ubuntu-latest
-
-    permissions:
-      contents: read
-      pull-requests: write
-
-    strategy:
-      matrix:
-        node: [20.x]
-
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-
-    - name: Install Node ${{ matrix.node }}
-      uses: actions/setup-node@v4
-      with:
-        cache-dependency-path: '**/config/rush/pnpm-lock.yaml'
-        registry-url: https://registry.npmjs.org/
-
-    - name: Rush Install
-      run: node common/scripts/install-run-rush.js install
-
-    - name: Rush Build
-      run: node common/scripts/install-run-rush.js rebuild --verbose
-
-    - name: Run Tests
-      working-directory: ./atable
-      run: node ../common/scripts/install-run-rushx.js test:coverage
-
-    - name: Coverage Report
-      if: always() # Also generate the report if tests are failing
-      uses: davelosert/vitest-coverage-report-action@v2
-      with:
-        working-directory: ./atable
-        file-coverage-mode: 'all'
-        vite-config-path: './vite.config.ts'
-
-  beam:
-    name: Beam
-    needs: changes
-    if: ${{ needs.changes.outputs.beam == 'true' }}
-    runs-on: ubuntu-latest
-
-    permissions:
-      contents: read
-      pull-requests: write
-
-    strategy:
-      matrix:
-        node: [20.x]
-
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-
-    - name: Install Node ${{ matrix.node }}
-      uses: actions/setup-node@v4
-      with:
-        cache-dependency-path: '**/config/rush/pnpm-lock.yaml'
-        registry-url: https://registry.npmjs.org/
-
-    - name: Rush Install
-      run: node common/scripts/install-run-rush.js install
-
-    - name: Rush Build
-      run: node common/scripts/install-run-rush.js rebuild --verbose
-
-    - name: Run Tests
-      working-directory: ./beam
-      run: node ../common/scripts/install-run-rushx.js test:coverage
-
-    - name: Coverage Report
-      if: always() # Also generate the report if tests are failing
-      uses: davelosert/vitest-coverage-report-action@v2
-      with:
-        working-directory: ./beam
-        file-coverage-mode: 'all'
-        vite-config-path: './vite.config.ts'
+      - name: Coverage Report
+        if: always() # generate the coverage report even if tests are failing
+        uses: davelosert/vitest-coverage-report-action@v2
+        with:
+          working-directory: ./${{ matrix.package }}
+          file-coverage-mode: 'all'
+          vite-config-path: './vite.config.ts'
