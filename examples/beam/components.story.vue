@@ -1,6 +1,6 @@
 <template>
-	<Story title="Components">
-		<Variant title="Split Column">
+	<Story title="components">
+		<Variant title="split column">
 			<SplitColumn align-items="flex-start">
 				<template #left>
 					<BeamHeading> WO#2024-01-00001 <span class="beam--normal">Ambrosia Pie</span> </BeamHeading>
@@ -29,7 +29,8 @@
 				</template>
 			</SplitColumn>
 		</Variant>
-		<Variant title="Arrow">
+
+		<Variant title="arrow">
 			<BeamArrow />
 			<hr />
 			<div style="display: flex; flex-direction: row; gap: 1rem; justify-content: space-between">
@@ -45,7 +46,8 @@
 				</p>
 			</div>
 		</Variant>
-		<Variant title="Text Elements">
+
+		<Variant title="text elements">
 			<BeamHeading>
 				This is the Beam Heading. <span class="beam--normal">And this should not be bold.</span></BeamHeading
 			>
@@ -58,10 +60,12 @@
 				aut, facere, minim dignissim conubia blanditiis doloribus ex montes vitae exercitation.
 			</p>
 		</Variant>
-		<Variant title="Btn">
+
+		<Variant title="button">
 			<BeamBtn>Click</BeamBtn>
 		</Variant>
-		<Variant title="Progress Block">
+
+		<Variant title="progress block">
 			<BeamProgress :complete="workOrder.complete" />
 		</Variant>
 	</Story>

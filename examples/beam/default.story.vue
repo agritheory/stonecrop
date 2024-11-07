@@ -50,7 +50,7 @@
 			</BeamMetadata>
 		</Variant>
 
-		<Variant title="Toast Notification">
+		<Variant title="toast">
 			<template #controls>
 				<HstText v-model="toastMsg" title="Toast Message" />
 				<HstSelect
@@ -86,7 +86,7 @@
 			</Navbar>
 		</Variant>
 
-		<Variant title="Filter ListView">
+		<Variant title="list filters">
 			<FixedTop>
 				<Navbar @click="handlePrimaryAction">
 					<template #title>
@@ -122,7 +122,7 @@
 
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
-import { useToast } from 'vue-toast-notification'
+import { type ToastPosition, useToast } from 'vue-toast-notification'
 import 'vue-toast-notification/dist/theme-default.css'
 
 import items from './data/items.json'
@@ -135,25 +135,22 @@ const workOrder = reactive({
 	complete: false,
 })
 
-// Toast Component //
-
+// Start Toast //
 const toast = useToast()
 const toastType = ref('default')
 const toastTime = ref(3)
 const toastMsg = ref('Toast Message.')
-const toastPosition = ref('top')
+const toastPosition = ref<ToastPosition>('top')
 
 const showNotification = () => {
-	let toastOptions = {
+	toast.open({
 		message: toastMsg.value,
+		type: toastType.value,
 		position: toastPosition.value,
 		duration: toastTime.value * 1000,
-		type: toastType.value,
-	}
-	// let notification = toast.success("Notified!", toastOptions)
-	let notification = toast.open(toastOptions)
+	})
 }
-// End Toast Component //
+// End Toast //
 
 const showModal = ref(false)
 
