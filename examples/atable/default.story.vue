@@ -106,5 +106,11 @@ const full_width_table = ref({
 })
 </script>
 
+<style>
+:root {
+	--cell-modified-color: yellow;
+}
+</style>
+
 <!-- enter documentation here -->
 <docs lang="md"></docs>
