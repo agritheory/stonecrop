@@ -49,6 +49,7 @@
 				</div>
 			</BeamMetadata>
 		</Variant>
+
 		<Variant title="Toast Notification">
 			<template #controls>
 				<HstText v-model="toastMsg" title="Toast Message" />

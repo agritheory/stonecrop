@@ -285,23 +285,23 @@ body {
 .v-toast__item {
 	border-radius: 0;
 	color: white;
-	font-family: var(--font-family);
+	font-family: var(--sc-font-family);
 }
 .v-toast__item--success {
-	background-color: var(--brand-success);
+	background-color: var(--sc-brand-success);
 	color: white;
 }
 .v-toast__item--info {
-	background-color: var(--primary-text-color);
+	background-color: var(--sc-primary-text-color);
 }
 .v-toast__item--warning {
-	background-color: var(--brand-warning);
+	background-color: var(--sc-brand-warning);
 	color: white;
 }
 .v-toast__item--error {
-	background-color: var(--brand-danger);
+	background-color: var(--sc-brand-danger);
 	color: white;
 }
 .v-toast__item--default {
-	background-color: var(--primary-text-color);
+	background-color: var(--sc-primary-text-color);
 }

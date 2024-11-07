@@ -42,7 +42,8 @@
 	"dependencies": {
 		"mqtt": "^5.10.1",
 		"onscan.js": "^1.5.2",
-		"vue": "^3.5.6"
+		"vue": "^3.5.6",
+		"vue-toast-notification": "^3"
 	},
 	"devDependencies": {
 		"@microsoft/api-documenter": "^7.25.3",

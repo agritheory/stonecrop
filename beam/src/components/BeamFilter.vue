@@ -45,12 +45,12 @@ const getTotalHeight = (el: HTMLDivElement) => {
 	overflow: hidden;
 	box-sizing: border-box;
 	transition: all 0.2s ease-in-out;
-	border-bottom: 1px solid var(--row-border-color);
+	border-bottom: 1px solid var(--sc-row-border-color);
 	background: white;
 }
 
 .beam_filters-heading {
-	background: var(--primary-color);
+	background: var(--sc-primary-color);
 	cursor: pointer;
 	display: flex;
 	align-items: center;

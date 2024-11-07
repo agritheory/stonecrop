@@ -14,7 +14,7 @@ const { open } = defineProps<{ open: boolean }>()
 svg {
 	width: 100%;
 	overflow: visible;
-	fill: var(--primary-text-color);
+	fill: var(--sc-primary-text-color);
 }
 
 .arrow-icon {
