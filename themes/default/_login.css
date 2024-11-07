@@ -5,7 +5,7 @@
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
-	font-family: var(--font-family);
+	font-family: var(--sc-font-family);
 }
 
 .account-container {
@@ -52,7 +52,7 @@
 .login-field {
 	padding: 0.5rem 0.25rem 0.25rem 0.5rem;
 	outline: 1px solid transparent;
-	border: 1px solid var(--input-border-color);
+	border: 1px solid var(--sc-input-border-color);
 	border-radius: 0.25rem;
 
 	&:focus {
@@ -61,16 +61,16 @@
 }
 
 .btn {
-	background-color: var(--btn-color);
-	color: var(--btn-label-color);
-	border: 1px solid var(--btn-border);
+	background-color: var(--sc-btn-color);
+	color: var(--sc-btn-label-color);
+	border: 1px solid var(--sc-btn-border);
 	margin: 0.5rem 0;
 	padding: 0.25rem;
 	position: relative;
 	cursor: pointer;
 
 	&:hover {
-		background-color: var(--btn-hover);
+		background-color: var(--sc-btn-hover);
 	}
 	&:disabled {
 		background-color: light-dark(rgba(239, 239, 239, 0.3), rgba(59, 59, 59, 0.3));

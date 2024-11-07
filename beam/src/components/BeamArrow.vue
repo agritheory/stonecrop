@@ -10,10 +10,9 @@
 </template>
 
 <script setup lang="ts">
-defineProps({
-	color: String,
-})
+const { color } = defineProps<{ color?: string }>()
 </script>
+
 <style scoped>
 .beam_metadata_arrow {
 	align-self: center;
@@ -22,11 +21,13 @@ defineProps({
 	display: flex;
 	align-items: center;
 }
+
 .beam_metadata_arrow-body {
 	width: 100%;
 	height: 10px;
 	background: #c4c4c4;
 }
+
 .beam_metadata_arrow-head {
 	& svg {
 		width: 20px;

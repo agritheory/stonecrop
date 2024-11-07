@@ -10,12 +10,14 @@
 		</div>
 	</div>
 </template>
+
 <script setup lang="ts">
-const props = defineProps<{
-	justifyContent?: String
-	alignItems?: String
+const { justifyContent, alignItems } = defineProps<{
+	justifyContent?: string
+	alignItems?: string
 }>()
 </script>
+
 <style scoped>
 .two-column {
 	display: flex;
@@ -29,6 +31,7 @@ const props = defineProps<{
 		gap: 0;
 	}
 }
+
 .column {
 	flex-grow: 1;
 	width: 50%;
@@ -36,6 +39,7 @@ const props = defineProps<{
 		width: 100%;
 	}
 }
+
 .column-right {
 	text-align: right;
 	@media screen and (max-width: 400px) {

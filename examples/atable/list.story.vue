@@ -314,10 +314,5 @@ rowNav['keydown.shift.enter'] = rowNav['keydown.up']
 rowNav['keydown.enter'] = rowNav['keydown.down']
 </script>
 
-<style>
-@import url('@stonecrop/themes/default.css');
-@import url('@stonecrop/atable/styles');
-</style>
-
 <!-- enter documentation here -->
 <docs lang="md"></docs>

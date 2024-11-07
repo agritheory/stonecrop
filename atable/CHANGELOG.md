@@ -1,6 +1,33 @@
 # Change Log - @stonecrop/atable
 
-This log was last generated on Wed, 30 Oct 2024 11:56:52 GMT and should not be manually modified.
+This log was last generated on Thu, 07 Nov 2024 07:38:42 GMT and should not be manually modified.
+
+## 0.2.52
+Thu, 07 Nov 2024 07:38:42 GMT
+
+_Version update only_
+
+## 0.2.51
+Thu, 07 Nov 2024 07:32:46 GMT
+
+_Version update only_
+
+## 0.2.50
+Tue, 05 Nov 2024 19:00:13 GMT
+
+_Version update only_
+
+## 0.2.49
+Tue, 05 Nov 2024 12:21:06 GMT
+
+### Patches
+
+- auto-import component styles
+
+## 0.2.48
+Mon, 04 Nov 2024 16:21:07 GMT
+
+_Version update only_
 
 ## 0.2.47
 Wed, 30 Oct 2024 11:56:52 GMT

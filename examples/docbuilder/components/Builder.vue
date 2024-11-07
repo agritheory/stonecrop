@@ -108,7 +108,7 @@ body {
 .builder-schema,
 .builder-hooks,
 .builder-events {
-	border: 1px solid var(--gray-20);
+	border: 1px solid var(--sc-gray-20);
 	/* border-radius: 10px; */
 
 	padding: 1em;
