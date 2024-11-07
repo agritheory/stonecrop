@@ -40,6 +40,7 @@
 		"test:ui": "vitest --ui"
 	},
 	"dependencies": {
+		"mqtt": "^5.10.1",
 		"onscan.js": "^1.5.2",
 		"vue": "^3.5.6"
 	},

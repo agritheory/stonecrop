@@ -21,6 +21,7 @@ import Navbar from '@/components/Navbar.vue'
 import ScanInput from '@/components/ScanInput.vue'
 import SplitColumn from '@/components/SplitColumn.vue'
 import ToggleArrow from '@/components/ToggleArrow.vue'
+import { useMqttStream } from '@/composables/mqtt'
 import 'themes/beam.css'
 
 /**
@@ -75,4 +76,5 @@ export {
 	SplitColumn,
 	ToggleArrow,
 	install,
+	useMqttStream,
 }
