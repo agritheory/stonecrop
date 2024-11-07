@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/beam",
-	"version": "0.2.43",
+	"version": "0.2.51",
 	"license": "MIT",
 	"type": "module",
 	"author": {
@@ -20,7 +20,7 @@
 			"import": "./dist/beam.js",
 			"require": "./dist/beam.umd.cjs"
 		},
-		"./styles": "./dist/style.css"
+		"./styles": "./dist/assets/index.css"
 	},
 	"main": "dist/beam.js",
 	"module": "dist/beam.js",
@@ -40,6 +40,7 @@
 		"test:ui": "vitest --ui"
 	},
 	"dependencies": {
+		"mqtt": "^5.10.1",
 		"onscan.js": "^1.5.2",
 		"vue": "^3.5.6"
 	},
@@ -59,6 +60,7 @@
 		"sass": "^1.75.0",
 		"stonecrop-rig": "workspace:*",
 		"typescript": "^5.5.2",
+		"vite-plugin-lib-inject-css": "^2.1.1",
 		"vite": "^5.4.5",
 		"vitest": "^2.1.1",
 		"vue-router": "^4.4.0"

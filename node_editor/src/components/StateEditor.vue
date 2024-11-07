@@ -40,31 +40,28 @@ const elements = computed<FlowElements>({
 			}
 
 			stateHash[key] = el
+		}
 
+		for (const [key, value] of Object.entries(states.value)) {
 			if (value.on) {
 				for (const [edgeKey, edgeValue] of Object.entries(value.on)) {
-					if (Array.isArray(edgeValue)) {
-						for (const edge of edgeValue) {
-							// TODO: handle typescript errors for both types of states
-							// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-							const edgeJson = edge.toJSON()
-							// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-							const target = edgeJson.target.toString()
-							stateElements.push({
-								id: `${key}-${edgeKey}`,
-								target: target,
-								source: key,
-								label: edgeKey,
-								animated: true,
-							})
+					// If the proxy array 'value.on' has more than one edge, 'edgeValue' will contain a proxy object
+					// where 'target' can be accessed. Otherwise, 'edgeValue' will be available directly.
+					const target = edgeValue.target || edgeValue
+					// TODO: handle typescript errors for both types of states
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+					stateElements.push({
+						id: `${key}-${target}`,
+						source: key,
+						target: target,
+						label: edgeKey,
+						animated: true,
+					})
 
-							// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-							hasInputs[target] = true
-						}
-					}
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+					hasInputs[target] = true
 				}
 			}
-
 			index++
 		}
 
@@ -78,6 +75,7 @@ const elements = computed<FlowElements>({
 
 		return stateElements
 	},
+
 	set: newValue => {
 		// update modelValue when elements change
 		onElementsChange(newValue)
@@ -85,7 +83,6 @@ const elements = computed<FlowElements>({
 		// TODO: emit('update:modelValue', modelValue)
 	},
 })
-
 const onElementsChange = (elements: FlowElements) => {
 	const edges: Record<string, Record<string, any>> = {}
 	const idToLabel: Record<string, string> = {}
@@ -104,19 +101,18 @@ const onElementsChange = (elements: FlowElements) => {
 			states[label] = {
 				type: 'final',
 			}
-		} /* else if (el.source && el.target) {
+		} else if (el.source && el.target) {
 			// it's an edge
 			edges[el.source] = edges[el.source] || {}
 			edges[el.source][label] = {
 				target: el.target,
 			}
-		} */ else {
+		} else {
 			// it's a state
 			states[label] = {
 				on: {},
 			}
 		}
-
 		idToLabel[el.id] = label
 	}
 

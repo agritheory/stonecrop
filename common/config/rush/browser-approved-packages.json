@@ -167,6 +167,10 @@
       "allowedCategories": [ "prototype" ]
     },
     {
+      "name": "mqtt",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
       "name": "node-sass",
       "allowedCategories": [ "prototype" ]
     },
@@ -239,16 +243,16 @@
       "allowedCategories": [ "prototype" ]
     },
     {
-      "name": "uuid",
-      "allowedCategories": [ "prototype" ]
-    },
-    {
       "name": "vite",
       "allowedCategories": [ "prototype", "utilities" ]
     },
     {
       "name": "vite-plugin-dts",
       "allowedCategories": [ "prototype", "utilities" ]
+    },
+    {
+      "name": "vite-plugin-lib-inject-css",
+      "allowedCategories": [ "prototype" ]
     },
     {
       "name": "vitest",

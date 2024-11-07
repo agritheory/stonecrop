@@ -27,7 +27,7 @@ const columns: TableColumn[] = [
 		edit: false,
 		width: '40ch',
 		format: (value: { title?: string; value?: any }, context: CellContext) => {
-			return `${value.title} (IP: ${context.row.ip_address})`
+			return `<a href="${value.title}" target="_blank">${value.title} (IP: ${context.row.ip_address})</a>`
 		},
 	},
 	{
@@ -105,12 +105,6 @@ const full_width_table = ref({
 	config: { view: 'list', fullWidth: true },
 })
 </script>
-
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap');
-@import url('@stonecrop/themes/default/default.css');
-@import url('@stonecrop/atable/styles');
-</style>
 
 <!-- enter documentation here -->
 <docs lang="md"></docs>

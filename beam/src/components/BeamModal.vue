@@ -1,7 +1,7 @@
 <template>
-	<portal to="beam__modal_outlet">
-		<div class="beam__modal" v-show="showModal">
-			<button class="btn" @click="$emit('closemodal')">Close Modal</button>
+	<portal to="beam_modal_outlet">
+		<div class="beam_modal" v-show="showModal">
+			<button class="beam_btn" @click="$emit('closemodal')">Close Modal</button>
 			<slot @closemodal="$emit('closemodal')" @confirmmodal="$emit('confirmmodal')"></slot>
 		</div>
 	</portal>

@@ -2,12 +2,13 @@
 
 import vue from '@vitejs/plugin-vue'
 import { resolve } from 'path'
+import { libInjectCss } from 'vite-plugin-lib-inject-css'
 import { coverageConfigDefaults, defineConfig } from 'vitest/config'
 
 const projectRootDir = resolve(__dirname)
 
 export default defineConfig({
-	plugins: [vue()],
+	plugins: [vue(), libInjectCss()],
 	resolve: {
 		alias: {
 			'@': resolve(projectRootDir, 'src'),
@@ -29,6 +30,8 @@ export default defineConfig({
 		rollupOptions: {
 			external: ['vue'],
 			output: {
+				chunkFileNames: 'chunks/[name].[hash].js',
+				assetFileNames: 'assets/[name].[ext]',
 				globals: {
 					vue: 'Vue',
 				},

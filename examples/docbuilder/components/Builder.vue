@@ -88,7 +88,7 @@ const actionElements = [
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap');
-@import url('@stonecrop/themes/default/default.css');
+@import url('@stonecrop/themes/default.css');
 /* @import '../style.css'; */
 html,
 body {
@@ -108,7 +108,7 @@ body {
 .builder-schema,
 .builder-hooks,
 .builder-events {
-	border: 1px solid var(--gray-20);
+	border: 1px solid var(--sc-gray-20);
 	/* border-radius: 10px; */
 
 	padding: 1em;

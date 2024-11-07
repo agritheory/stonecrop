@@ -5,16 +5,11 @@
 
 # Use negative patterns to bring back the specific things we want to publish.
 !/bin/**
-!/src/**
-!/src-*/**
 !/dist/**
 !ThirdPartyNotice.txt
 
 # Ignore certain patterns that should not get published.
 /dist/*.stats.*
-/src/**/test/
-/src-*/**/test/
-*.test.js
 
 # NOTE: These don't need to be specified, because NPM includes them automatically.
 #

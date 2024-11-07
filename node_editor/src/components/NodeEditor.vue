@@ -39,7 +39,7 @@
 </template>
 
 <script setup lang="ts">
-import { type VueFlowStore, Position, VueFlow, useVueFlow, Node } from '@vue-flow/core'
+import { type VueFlowStore, Position, VueFlow, useVueFlow, Connection, Node } from '@vue-flow/core'
 import { type HTMLAttributes, ref, computed, defineEmits, onBeforeUnmount, onMounted } from 'vue'
 
 import EditableEdge from '@/components/EditableEdge.vue'
@@ -103,6 +103,7 @@ const elements = computed({
 		emit('update:modelValue', JSON.parse(JSON.stringify(newValue)))
 	},
 })
+const { onConnect, addEdges, onEdgeContextMenu, onPaneReady, removeEdges } = useVueFlow()
 
 onMounted(() => {
 	document.removeEventListener('keypress', handleKeypress)
@@ -113,7 +114,6 @@ onBeforeUnmount(() => {
 	document.removeEventListener('keypress', handleKeypress)
 })
 
-const { onPaneReady } = useVueFlow()
 onPaneReady(instance => {
 	vueFlowInstance.value = instance
 })
@@ -222,6 +222,35 @@ const labelChanged = (e, id) => {
 		}
 	}
 }
+
+const handleConnect = (connection: Connection) => {
+	const id = vueFlowElements.value.length
+	const newEdge = {
+		id: `edge-${id}`,
+		source: connection.source,
+		target: connection.target,
+		type: 'editable',
+		label: `New Edge`,
+		interactionWidth: 400,
+		animated: true,
+		events: {
+			click: () => {
+				activeElementKey.value = newEdge.id
+			},
+		},
+	}
+	addEdges([newEdge])
+}
+
+onConnect(handleConnect)
+
+const handleEdgeRemove = edgeId => {
+	removeEdges(edgeId)
+}
+
+onEdgeContextMenu(({ event, edge }) => {
+	handleEdgeRemove(edge.id)
+})
 </script>
 
 <style>

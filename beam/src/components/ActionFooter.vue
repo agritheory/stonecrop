@@ -1,7 +1,7 @@
 <template>
-	<footer class="beam__actionfooter">
+	<footer class="beam_action-footer">
 		<span class="footer-action-wrapper">
-			<button class="footer-action btn" @click="handleFooterAction">
+			<button class="beam_btn" @click="handleFooterAction">
 				<slot />
 			</button>
 		</span>

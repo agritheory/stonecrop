@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/atable",
-	"version": "0.2.43",
+	"version": "0.2.51",
 	"license": "MIT",
 	"type": "module",
 	"author": {
@@ -23,12 +23,15 @@
 			},
 			"require": "./dist/atable.umd.cjs"
 		},
-		"./styles": "./dist/style.css"
+		"./styles": "./dist/assets/index.css"
 	},
 	"typings": "./dist/atable/src/index.d.ts",
 	"files": [
 		"dist/*",
 		"src/*"
+	],
+	"sideEffects": [
+		"**/*.css"
 	],
 	"scripts": {
 		"prepublish": "heft build && vite build && rushx docs",
@@ -46,13 +49,11 @@
 		"@stonecrop/utilities": "workspace:*",
 		"@vueuse/components": "^10.11.0",
 		"@vueuse/core": "^11.1.0",
-		"uuid": "^10.0.0",
 		"vue": "^3.5.6"
 	},
 	"devDependencies": {
 		"@microsoft/api-documenter": "^7.25.3",
 		"@rushstack/heft": "^0.67.2",
-		"@types/uuid": "^10.0.0",
 		"@typescript-eslint/eslint-plugin": "^7.14.1",
 		"@typescript-eslint/parser": "^7.14.1",
 		"@vitejs/plugin-vue": "^5.1.3",
@@ -66,6 +67,7 @@
 		"jsdom": "^25.0.0",
 		"stonecrop-rig": "workspace:*",
 		"typescript": "^5.5.2",
+		"vite-plugin-lib-inject-css": "^2.1.1",
 		"vite": "^5.4.5",
 		"vitest": "^2.1.1",
 		"vue-router": "^4.4.0"

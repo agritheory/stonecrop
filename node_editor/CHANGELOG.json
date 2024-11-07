@@ -2,6 +2,60 @@
   "name": "@stonecrop/node-editor",
   "entries": [
     {
+      "version": "0.2.51",
+      "tag": "@stonecrop/node-editor_v0.2.51",
+      "date": "Thu, 07 Nov 2024 07:32:46 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.2.50",
+      "tag": "@stonecrop/node-editor_v0.2.50",
+      "date": "Tue, 05 Nov 2024 19:00:13 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.2.49",
+      "tag": "@stonecrop/node-editor_v0.2.49",
+      "date": "Tue, 05 Nov 2024 12:21:06 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.2.48",
+      "tag": "@stonecrop/node-editor_v0.2.48",
+      "date": "Mon, 04 Nov 2024 16:21:07 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Add handling for edge creation and removal."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.2.47",
+      "tag": "@stonecrop/node-editor_v0.2.47",
+      "date": "Wed, 30 Oct 2024 11:56:52 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.2.46",
+      "tag": "@stonecrop/node-editor_v0.2.46",
+      "date": "Tue, 29 Oct 2024 17:31:02 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.2.45",
+      "tag": "@stonecrop/node-editor_v0.2.45",
+      "date": "Tue, 29 Oct 2024 12:10:41 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.2.44",
+      "tag": "@stonecrop/node-editor_v0.2.44",
+      "date": "Mon, 21 Oct 2024 12:11:04 GMT",
+      "comments": {}
+    },
+    {
       "version": "0.2.43",
       "tag": "@stonecrop/node-editor_v0.2.43",
       "date": "Wed, 16 Oct 2024 14:33:45 GMT",
