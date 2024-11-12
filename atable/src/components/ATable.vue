@@ -225,4 +225,29 @@ window.addEventListener('keydown', (event: KeyboardEvent) => {
 
 <style scoped>
 @import url('@stonecrop/themes/default.css');
+.atable {
+	font-family: var(--sc-atable-font-family);
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	font-size: var(--sc-table-font-size);
+	border-collapse: collapse;
+}
+.atable th {
+	border-width: 0px;
+	border-style: solid;
+	border-radius: 0px;
+	padding-left: 0.5ch;
+	padding-right: 0.5ch;
+	padding-top: var(--sc-atable-row-padding);
+	padding-bottom: var(--sc-atable-row-padding);
+	color: var(--sc-gray-60);
+	height: var(--sc-atable-row-height);
+	font-weight: 300;
+	letter-spacing: 0.05rem;
+	order: 1;
+	box-sizing: border-box;
+}
+.atable th:focus {
+	outline: none;
+}
 </style>

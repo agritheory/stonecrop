@@ -14,7 +14,7 @@
 		@input="updateCellData"
 		@click="showModal"
 		@mousedown="showModal"
-		class="atable__cell"
+		class="atable-cell"
 		:class="pinned ? 'sticky-column' : ''">
 		<component
 			v-if="column.cellComponent"
@@ -75,7 +75,7 @@ const cellStyle = computed((): CSSProperties => {
 	return {
 		textAlign,
 		width: cellWidth,
-		backgroundColor: !cellModified.value ? 'inherit' : 'var(--cell-modified-color)',
+		backgroundColor: !cellModified.value ? 'inherit' : 'var(--sc-cell-modified)',
 		fontWeight: !cellModified.value ? 'inherit' : 'bold',
 		paddingLeft: getIndent(colIndex, tableData.display[rowIndex]?.indent),
 	}
@@ -196,4 +196,46 @@ const getIndent = (colIndex: number, indentLevel?: number) => {
 
 <style>
 @import url('@stonecrop/themes/default.css');
+.atable-cell {
+	border-radius: 0px;
+	box-sizing: border-box;
+	margin: 0px;
+	outline: none;
+	box-shadow: none;
+	color: var(--sc-cell-text-color);
+	text-overflow: ellipsis;
+	overflow: hidden;
+	padding-left: 0.5ch !important;
+	padding-right: 0.5ch;
+	padding-top: var(--sc-atable-row-padding);
+	padding-bottom: var(--sc-atable-row-padding);
+	border-spacing: 0px;
+	border-collapse: collapse;
+
+	overflow: hidden;
+	text-overflow: ellipsis;
+	order: 1;
+
+	& span {
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+}
+.atable-cell a {
+	color: var(--sc-cell-text-color);
+	text-decoration: none;
+}
+.atable-cell:focus,
+.atable-cell:focus-within {
+	background-color: var(--sc-focus-cell-background);
+	/* make variable for border width: ; */
+	outline-width: var(--sc-atable-cell-border-width);
+	outline-style: solid;
+	outline-offset: calc(var(--sc-atable-cell-border-width) * -1);
+	outline-color: var(--sc-focus-cell-outline);
+	box-shadow: none;
+	overflow: hidden;
+	text-wrap: nowrap;
+	box-sizing: border-box;
+}
 </style>

@@ -39,6 +39,7 @@
 	--sc-input-border-color: var(--sc-gray-20);
 	--sc-input-label-color: var(--sc-gray-60);
 	--sc-required-border: #e63c28;
+	--sc-cell-modified: #ffffb1;
 
 	/* FONT */
 	--sc-font-size: 10px;
@@ -47,10 +48,9 @@
 	--sc-atable-font-family: 'Arimo', sans-serif;
 
 	/* TABLE */
-	--sc-atable-row-padding: 0px;
+	--sc-atable-row-padding: 5px;
 	--sc-atable-row-height: 1.5em;
-
-	/* FORM */
+	--sc-atable-cell-border-width: 2px;
 
 	/* BTNS */
 	--sc-btn-border: #cccccc;
@@ -58,9 +58,3 @@
 	--sc-btn-hover: #f2f2f2;
 	--sc-btn-label-color: black;
 }
-
-/* @media (prefers-color-scheme: dark) {
-	:root{
-		--sc-cell-text-color: #d8d8d8;
-	}
-} */

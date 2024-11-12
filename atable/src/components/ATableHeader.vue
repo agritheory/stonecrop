@@ -35,4 +35,16 @@ const getHeaderCellStyle = (column: TableColumn): CSSProperties => ({
 
 <style>
 @import url('@stonecrop/themes/default.css');
+.atable #header-index {
+	width: 30px;
+	padding-right: 1em;
+	padding-left: 0;
+	box-sizing: border-box;
+}
+.atable-header-row {
+	display: flex;
+}
+#header-index {
+	box-sizing: content-box;
+}
 </style>
