@@ -62,6 +62,7 @@ if (addNavigation) {
 
 <style>
 @import url('@stonecrop/themes/default.css');
+
 .row-index {
 	color: var(--sc-header-text-color);
 	font-weight: bold;

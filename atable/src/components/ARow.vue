@@ -88,9 +88,9 @@ if (addNavigation) {
 
 <style>
 @import url('@stonecrop/themes/default.css');
+
 .table-row {
 	border-top: 1px solid var(--sc-row-border-color);
-	/* height: var(--sc-atable-row-height); */
 	display: flex;
 	background-color: white;
 }
@@ -99,11 +99,12 @@ if (addNavigation) {
 	font-weight: bold;
 	padding-left: var(--sc-atable-row-padding);
 	padding-right: 1em;
-	text-align: center;
+	text-align: left;
 	user-select: none;
-	width: 30px;
+	width: 57px;
 	text-overflow: ellipsis;
 	overflow: hidden;
+	box-sizing: border-box;
 }
 .tree-index {
 	color: var(--sc-header-text-color);
@@ -111,5 +112,6 @@ if (addNavigation) {
 	text-align: center;
 	user-select: none;
 	width: 2ch;
+	box-sizing: border-box;
 }
 </style>

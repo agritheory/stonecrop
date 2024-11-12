@@ -231,6 +231,9 @@ window.addEventListener('keydown', (event: KeyboardEvent) => {
 	-moz-osx-font-smoothing: grayscale;
 	font-size: var(--sc-table-font-size);
 	border-collapse: collapse;
+	box-sizing: border-box;
+	table-layout: auto;
+	width: auto;
 }
 .atable th {
 	border-width: 0px;

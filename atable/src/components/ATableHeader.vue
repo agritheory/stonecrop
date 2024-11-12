@@ -1,7 +1,11 @@
 <template>
 	<thead id="resizable" v-if="columns.length">
 		<tr class="atable-header-row" tabindex="-1">
-			<th v-if="tableData.zeroColumn" id="header-index" :class="hasPinnedColumns ? 'sticky-index' : ''" />
+			<th
+				v-if="tableData.zeroColumn"
+				id="header-index"
+				:class="hasPinnedColumns ? 'sticky-index' : ''"
+				class="list-index" />
 			<th
 				v-for="(column, colKey) in columns"
 				:key="column.name"
@@ -35,16 +39,21 @@ const getHeaderCellStyle = (column: TableColumn): CSSProperties => ({
 
 <style>
 @import url('@stonecrop/themes/default.css');
-.atable #header-index {
-	width: 30px;
-	padding-right: 1em;
-	padding-left: 0;
-	box-sizing: border-box;
-}
+
 .atable-header-row {
 	display: flex;
 }
+.atable-header-row th {
+	padding-left: 0.5ch !important;
+	font-weight: 700;
+	padding-top: var(--sc-atable-row-padding);
+	padding-bottom: var(--sc-atable-row-padding);
+	box-sizing: border-box;
+	color: var(--sc-header-text-color);
+}
 #header-index {
-	box-sizing: content-box;
+	padding-right: 1em;
+	padding-left: var(--sc-atable-row-padding);
+	box-sizing: border-box;
 }
 </style>
