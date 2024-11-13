@@ -105,6 +105,8 @@ if (addNavigation) {
 	text-overflow: ellipsis;
 	overflow: hidden;
 	box-sizing: border-box;
+	padding-top: var(--sc-atable-row-padding);
+	padding-bottom: var(--sc-atable-row-padding);
 }
 .tree-index {
 	color: var(--sc-header-text-color);
@@ -113,5 +115,7 @@ if (addNavigation) {
 	user-select: none;
 	width: 2ch;
 	box-sizing: border-box;
+	padding-top: var(--sc-atable-row-padding);
+	padding-bottom: var(--sc-atable-row-padding);
 }
 </style>
