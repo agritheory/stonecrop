@@ -4,7 +4,7 @@
 			<th
 				v-if="tableData.zeroColumn"
 				id="header-index"
-				:class="hasPinnedColumns ? 'sticky-index' : ''"
+				:class="(hasPinnedColumns ? 'sticky-index' : '', tableData.config.view === 'tree' ? 'tree-index' : '')"
 				class="list-index" />
 			<th
 				v-for="(column, colKey) in columns"
@@ -52,8 +52,13 @@ const getHeaderCellStyle = (column: TableColumn): CSSProperties => ({
 	color: var(--sc-header-text-color);
 }
 #header-index {
-	padding-right: 1em;
 	padding-left: var(--sc-atable-row-padding);
 	box-sizing: border-box;
+}
+.tree-index {
+	padding-right: 0;
+}
+th {
+	order: 1;
 }
 </style>

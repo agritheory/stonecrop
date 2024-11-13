@@ -98,10 +98,10 @@ if (addNavigation) {
 	color: var(--sc-header-text-color);
 	font-weight: bold;
 	padding-left: var(--sc-atable-row-padding);
-	padding-right: 1em;
+	padding-right: 0.5em;
 	text-align: left;
 	user-select: none;
-	width: 57px;
+	width: 7ch;
 	text-overflow: ellipsis;
 	overflow: hidden;
 	box-sizing: border-box;
