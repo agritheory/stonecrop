@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@stonecrop/beam",
-      "comment": "added toast notifications",
+      "comment": "add debounce to list item input",
       "type": "patch"
     }
   ],
