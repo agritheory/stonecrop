@@ -8,9 +8,10 @@
 		<ItemCount
 			v-if="listItem.count"
 			v-model="listItem.count.count"
+			:debounce="listItem.debounce"
 			:denominator="listItem.count.of"
-			:uom="listItem.count.uom"
-			:editable="true" />
+			:editable="true"
+			:uom="listItem.count.uom" />
 		<ItemCheck v-if="listItem.hasOwnProperty('checked')" v-model="listItem.checked" />
 	</li>
 </template>
@@ -20,19 +21,9 @@ import { ref } from 'vue'
 
 import ItemCount from '@/components/ItemCount.vue'
 import ItemCheck from '@/components/ItemCheck.vue'
+import type { ListViewItem } from '@/types'
 
-const { item } = defineProps<{
-	item: {
-		label: string
-		description: string
-		count?: {
-			count: number
-			of: number
-			uom: string
-		}
-		checked?: boolean
-	}
-}>()
+const { item } = defineProps<{ item: ListViewItem }>()
 
 const listItem = ref(item)
 </script>
