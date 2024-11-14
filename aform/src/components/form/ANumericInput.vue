@@ -1,14 +1,14 @@
 <template>
-	<div class="aform__form-element">
-		<label class="aform__field-label" :for="uuid">{{ label }}</label>
+	<div class="aform_form-element">
 		<input
-			class="aform__input-field"
+			class="aform_input-field"
 			v-model="inputNumber"
 			type="number"
 			:id="uuid"
 			:disabled="readonly"
 			:required="required" />
-		<p class="error" v-show="validation.errorMessage" v-html="validation.errorMessage"></p>
+		<label class="aform_field-label" :for="uuid">{{ label }}</label>
+		<p class="aform_error" v-show="validation.errorMessage" v-html="validation.errorMessage"></p>
 	</div>
 </template>
 

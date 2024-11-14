@@ -40,6 +40,10 @@
 	--sc-input-label-color: var(--sc-gray-60);
 	--sc-required-border: #e63c28;
 	--sc-cell-modified: #ffffb1;
+	--sc-form-border: var(--sc-gray-5);
+	--sc-form-background: #ffffff;
+	--sc-input-field-background: #ffffff;
+	--sc-input-field-disabled-background: var(--sc-gray-5);
 
 	/* FONT */
 	--sc-font-size: 10px;

@@ -222,7 +222,30 @@ window.addEventListener('keydown', (event: KeyboardEvent) => {
 	}
 })
 </script>
+<style>
+.sticky-index {
+	position: sticky;
+	left: 0px;
+	z-index: 1;
+	order: 0;
+}
 
+.sticky-column,
+th.sticky-column,
+td.sticky-column,
+th.sticky-index,
+td.sticky-index {
+	position: sticky;
+	z-index: 1;
+	order: 0;
+	background: white;
+}
+.sticky-column-edge,
+.atable th.sticky-column-edge {
+	border-right: 1px solid var(--sc-row-border-color);
+	border-right-width: 1px;
+}
+</style>
 <style scoped>
 @import url('@stonecrop/themes/default.css');
 .atable {
