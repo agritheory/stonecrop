@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/atable",
+      "comment": "updated styling for Atable",
+      "type": "none"
+    }
+  ],
+  "packageName": "@stonecrop/atable"
+}

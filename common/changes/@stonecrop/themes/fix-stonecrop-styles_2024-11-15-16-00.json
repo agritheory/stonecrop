@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/themes",
+      "comment": "scoped styles to components",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/themes"
+}
