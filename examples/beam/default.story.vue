@@ -147,7 +147,7 @@ const showNotification = () => {
 		message: toastMsg.value,
 		type: toastType.value,
 		position: toastPosition.value,
-		duration: toastTime.value * 1000,
+		duration: toastTime.value * 100000,
 	})
 }
 // End Toast //

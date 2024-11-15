@@ -51,3 +51,13 @@ const handleScroll = () => {
 	}
 }
 </script>
+<style scoped>
+.beam_list-view {
+	list-style-type: none;
+	margin: var(--sc-list-margin);
+	padding: 0;
+	padding-bottom: 2.5em;
+	margin-top: 1px;
+	font-family: var(--sc-font-family);
+}
+</style>

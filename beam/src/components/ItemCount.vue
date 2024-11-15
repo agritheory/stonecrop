@@ -35,3 +35,14 @@ const handleInput = (event: InputEvent | MouseEvent) => {
 	count.value = Math.min(newValue, denominator)
 }
 </script>
+<style scoped>
+.beam_item-count {
+	font-size: 1.3125rem;
+	color: var(--sc-primary-text-color);
+}
+.beam_item-count span {
+	margin: 0;
+	padding: 0;
+	outline: none;
+}
+</style>
