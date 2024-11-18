@@ -108,7 +108,7 @@ const full_width_table = ref({
 
 <style>
 :root {
-	--cell-modified-color: yellow;
+	--sc-cell-modified: yellow;
 }
 </style>
 

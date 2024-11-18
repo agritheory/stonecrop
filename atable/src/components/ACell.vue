@@ -75,7 +75,7 @@ const cellStyle = computed((): CSSProperties => {
 	return {
 		textAlign,
 		width: cellWidth,
-		backgroundColor: !cellModified.value ? 'inherit' : 'var(--cell-modified-color)',
+		backgroundColor: !cellModified.value ? 'inherit' : 'var(--sc-cell-modified)',
 		fontWeight: !cellModified.value ? 'inherit' : 'bold',
 		paddingLeft: getIndent(colIndex, tableData.display[rowIndex]?.indent),
 	}
@@ -83,23 +83,27 @@ const cellStyle = computed((): CSSProperties => {
 
 const displayValue = computed(() => {
 	const cellData = tableData.cellData<any>(colIndex, rowIndex)
+	return getFormattedValue(cellData)
+})
+
+const getFormattedValue = (value: any) => {
 	const format = column.format
 
 	if (!format) {
-		return cellData
+		return value
 	}
 
 	if (typeof format === 'function') {
-		return format(cellData, { table, row, column })
+		return format(value, { table, row, column })
 	} else if (typeof format === 'string') {
 		// parse format function from string
 		// eslint-disable-next-line @typescript-eslint/no-implied-eval
 		const formatFn: (value: any, context?: CellContext) => string = Function(`"use strict";return (${format})`)()
-		return formatFn(cellData, { table, row, column })
+		return formatFn(value, { table, row, column })
 	}
 
-	return cellData
-})
+	return value
+}
 
 const showModal = () => {
 	if (column.mask) {
@@ -172,7 +176,11 @@ const onFocus = () => {
 const updateCellData = () => {
 	if (cellRef.value) {
 		// only apply changes if the cell value has changed after being mounted
-		cellModified.value = cellRef.value.textContent !== originalData
+		if (column.format) {
+			cellModified.value = cellRef.value.textContent !== getFormattedValue(originalData)
+		} else {
+			cellModified.value = cellRef.value.textContent !== originalData
+		}
 
 		if (cellRef.value.textContent !== currentData.value) {
 			currentData.value = cellRef.value.textContent
