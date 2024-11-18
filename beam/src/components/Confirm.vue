@@ -5,6 +5,7 @@
 		<button class="beam_btn" @click="$emit('closemodal')">No</button>
 	</div>
 </template>
+
 <style scoped>
 .beam_modal-confirm {
 	background: #ffffff;

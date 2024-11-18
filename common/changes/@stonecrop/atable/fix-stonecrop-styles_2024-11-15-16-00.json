@@ -3,7 +3,7 @@
     {
       "packageName": "@stonecrop/atable",
       "comment": "updated styling for Atable",
-      "type": "none"
+      "type": "patch"
     }
   ],
   "packageName": "@stonecrop/atable"

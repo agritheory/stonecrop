@@ -3,6 +3,7 @@
 		<slot></slot>
 	</h1>
 </template>
+
 <style scoped>
 .beam_header {
 	border: 1px solid transparent;

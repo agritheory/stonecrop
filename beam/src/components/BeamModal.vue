@@ -10,6 +10,7 @@
 <script setup lang="ts">
 defineProps<{ showModal: boolean }>()
 </script>
+
 <style scoped>
 .beam_modal {
 	position: fixed;

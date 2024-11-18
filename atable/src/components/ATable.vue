@@ -222,6 +222,7 @@ window.addEventListener('keydown', (event: KeyboardEvent) => {
 	}
 })
 </script>
+
 <style>
 .sticky-index {
 	position: sticky;
@@ -240,12 +241,14 @@ td.sticky-index {
 	order: 0;
 	background: white;
 }
+
 .sticky-column-edge,
 .atable th.sticky-column-edge {
 	border-right: 1px solid var(--sc-row-border-color);
 	border-right-width: 1px;
 }
 </style>
+
 <style scoped>
 @import url('@stonecrop/themes/default.css');
 .atable {

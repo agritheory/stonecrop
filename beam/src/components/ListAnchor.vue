@@ -7,6 +7,7 @@
 <script setup lang="ts">
 const { to = '' } = defineProps<{ to?: string }>()
 </script>
+
 <style scoped>
 .beam_list-anchor {
 	text-decoration: none;

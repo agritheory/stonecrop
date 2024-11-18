@@ -22,6 +22,7 @@ import { ComponentProps } from '@/types'
 const { label, required, readonly, uuid, validation = { errorMessage: '&nbsp;' } } = defineProps<ComponentProps>()
 const checkbox = defineModel<InputHTMLAttributes['checked']>()
 </script>
+
 <style scoped>
 .aform_checkbox {
 	cursor: pointer;
@@ -29,6 +30,7 @@ const checkbox = defineModel<InputHTMLAttributes['checked']>()
 	margin-top: 0;
 	display: block;
 }
+
 .aform_checkbox:checked {
 	accent-color: var(--sc-primary-color);
 	border: 1px solid black;
@@ -39,6 +41,7 @@ const checkbox = defineModel<InputHTMLAttributes['checked']>()
 	display: inline-block;
 	text-align: left;
 }
+
 .aform_checkbox-container input {
 	width: auto;
 }

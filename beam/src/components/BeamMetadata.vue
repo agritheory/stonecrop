@@ -36,6 +36,7 @@ defineProps<{
 	}
 }>()
 </script>
+
 <style scoped>
 .beam_metadata {
 	/* margin:3.125rem; */

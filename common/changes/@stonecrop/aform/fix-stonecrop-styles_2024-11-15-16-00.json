@@ -3,7 +3,7 @@
     {
       "packageName": "@stonecrop/aform",
       "comment": "updated styling for Stonecrop",
-      "type": "none"
+      "type": "patch"
     }
   ],
   "packageName": "@stonecrop/aform"

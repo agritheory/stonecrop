@@ -36,6 +36,7 @@ const { item } = defineProps<{
 
 const listItem = ref(item)
 </script>
+
 <style scoped>
 .beam_list-item {
 	padding: 0.625rem;
@@ -55,6 +56,7 @@ const listItem = ref(item)
 		background-color: var(--sc-focus-cell-background);
 	}
 }
+
 .beam_list-text {
 	width: 80%;
 	text-overflow: ellipsis;
@@ -72,9 +74,11 @@ const listItem = ref(item)
 		display: block;
 	}
 }
+
 .beam_list-item label {
 	display: block;
 }
+
 .beam_list-item p {
 	margin: 0;
 }

@@ -15,7 +15,8 @@ const handleFooterAction = () => {
 	emit('click')
 }
 </script>
-<style scope>
+
+<style scoped>
 .beam_action-footer {
 	margin-left: 0;
 	background: linear-gradient(180deg, transparent 0%, white 100%);

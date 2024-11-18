@@ -3,6 +3,7 @@
 		<slot>Action</slot>
 	</button>
 </template>
+
 <style scoped>
 .beam_btn {
 	font-size: 0.875rem;

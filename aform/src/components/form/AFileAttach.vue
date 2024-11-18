@@ -31,6 +31,7 @@ const fileLengthText = computed(() => {
 
 onChange(files => files)
 </script>
+
 <style scoped>
 .aform_file-attach {
 	padding: 1rem;
@@ -43,6 +44,7 @@ onChange(files => files)
 	border: 1px dashed var(--sc-input-border-color);
 	width: 100%;
 }
+
 @media screen and (max-width: 400px) {
 	.aform_file-attach > .aform_form-btn {
 		width: 100%;
@@ -64,6 +66,7 @@ onChange(files => files)
 		margin-top: 0;
 	}
 }
+
 .aform_form-btn {
 	padding: 0.5rem 2rem;
 	width: auto;
@@ -72,6 +75,7 @@ onChange(files => files)
 	cursor: pointer;
 	background-color: white;
 }
+
 .aform_form-btn:disabled {
 	background-color: var(--sc-gray-5);
 }

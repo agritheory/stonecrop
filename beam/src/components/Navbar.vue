@@ -16,6 +16,7 @@ const handlePrimaryAction = () => {
 	emit('click')
 }
 </script>
+
 <style scoped>
 .beam_navbar {
 	padding: 0.625rem;

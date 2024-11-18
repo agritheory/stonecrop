@@ -51,6 +51,7 @@ const handleScroll = () => {
 	}
 }
 </script>
+
 <style scoped>
 .beam_list-view {
 	list-style-type: none;
