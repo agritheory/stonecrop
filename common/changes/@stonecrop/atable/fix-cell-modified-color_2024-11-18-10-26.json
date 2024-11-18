@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/atable",
+      "comment": "fix cell modified colour with column format function",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/atable"
+}
