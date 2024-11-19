@@ -1,5 +1,5 @@
 <template>
-	<Story>
+	<Story :layout="{ type: 'grid', width: 400 }">
 		<Variant title="subscribe to all">
 			<pre>{{ allMessages }}</pre>
 		</Variant>
@@ -37,3 +37,9 @@ const { messages: topicMessages } = useMqttStream({
 	topics: mqtt.topics,
 })
 </script>
+
+<style>
+pre {
+	color: var(--histoire-contrast-color);
+}
+</style>

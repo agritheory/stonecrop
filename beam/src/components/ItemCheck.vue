@@ -41,7 +41,7 @@ const value = defineModel<boolean>({ default: false })
 	width: 2rem;
 	background-color: #eee;
 	outline: 2px solid transparent;
-	border: 1px solid var(--highlight);
+	border: 1px solid var(--sc-highlight);
 }
 
 .container:hover input ~ .checkmark {
@@ -49,7 +49,7 @@ const value = defineModel<boolean>({ default: false })
 }
 
 .container input:checked ~ .checkmark {
-	background-color: var(--brand-secondary);
+	background-color: var(--sc-brand-secondary);
 }
 
 .checkmark:after {
@@ -67,7 +67,7 @@ const value = defineModel<boolean>({ default: false })
 	top: 50%;
 	width: 0.5rem;
 	height: 1rem;
-	border: solid var(--text-color);
+	border: solid var(--sc-text-color);
 	border-width: 0 3px 3px 0;
 	-webkit-transform: rotate(45deg);
 	-ms-transform: rotate(45deg);

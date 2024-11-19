@@ -36,9 +36,9 @@ export type TableDisplay = {
 	indent?: number
 	isParent?: boolean
 	isRoot?: boolean
-	modified?: boolean
 	open?: boolean
 	parent?: number
+	rowModified?: boolean
 }
 
 export type TableRow = {

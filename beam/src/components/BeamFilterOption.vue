@@ -67,11 +67,11 @@ const toggle = () => {
 .beam_filter-option-select {
 	position: relative;
 	appearance: none;
-	border: 1px solid var(--row-border-color);
+	border: 1px solid var(--sc-row-border-color);
 	font-weight: bold;
-	color: var(--primary-text-color);
+	color: var(--sc-primary-text-color);
 	font-size: 0.8rem;
-	font-family: var(--font-family);
+	font-family: var(--sc-font-family);
 	display: flex;
 	align-items: stretch;
 }
@@ -82,8 +82,8 @@ label {
 }
 
 .beam_filter-arrow {
-	background: var(--primary-color);
-	color: var(--primary-text-color);
+	background: var(--sc-primary-color);
+	color: var(--sc-primary-text-color);
 	cursor: pointer;
 	display: flex;
 	align-items: center;
@@ -97,7 +97,7 @@ label {
 }
 
 svg {
-	fill: var(--primary-text-color);
+	fill: var(--sc-primary-text-color);
 	width: 5px;
 	transform: rotate(90deg);
 }
@@ -107,7 +107,7 @@ svg {
 	z-index: 100;
 	border-top: none;
 	left: 0;
-	border: 1px solid var(--row-border-color);
+	border: 1px solid var(--sc-row-border-color);
 	padding: 0rem;
 	list-style: none;
 	width: 100%;
@@ -119,21 +119,21 @@ svg {
 
 .beam_filter-select-option {
 	font-size: 0.8rem;
-	font-family: var(--font-family);
+	font-family: var(--sc-font-family);
 	font-weight: bold;
-	color: var(--primary-text-color);
-	border-bottom: 1px solid var(--row-border-color);
+	color: var(--sc-primary-text-color);
+	border-bottom: 1px solid var(--sc-row-border-color);
 	padding: 0.5rem;
 	&:hover {
-		background: var(--primary-color);
+		background: var(--sc-primary-color);
 	}
 }
 
 .selected {
-	background: var(--row-border-color);
+	background: var(--sc-row-border-color);
 
 	&:hover {
-		background: var(--row-border-color);
+		background: var(--sc-row-border-color);
 	}
 }
 </style>

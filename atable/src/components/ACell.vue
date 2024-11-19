@@ -9,11 +9,11 @@
 		:spellcheck="false"
 		:style="cellStyle"
 		@focus="onFocus"
-		@paste="onChange"
-		@blur="onChange"
-		@input="onChange"
-		@click="handleInput"
-		@mousedown="handleInput"
+		@paste="updateCellData"
+		@blur="updateCellData"
+		@input="updateCellData"
+		@click="showModal"
+		@mousedown="showModal"
 		class="atable__cell"
 		:class="pinned ? 'sticky-column' : ''">
 		<component
@@ -52,48 +52,60 @@ const {
 
 const tableData = inject<TableDataStore>(tableid)
 const cellRef = useTemplateRef<HTMLTableCellElement>('cell')
+const { bottom, left } = useElementBounding(cellRef)
+
+// keep a shallow copy of the original cell value for comparison
+const originalData = tableData.cellData<any>(colIndex, rowIndex)
 const currentData = ref('')
 const cellModified = ref(false)
-const { bottom, left } = useElementBounding(cellRef)
 
 const table = tableData.table
 const column = tableData.columns[colIndex]
 const row = tableData.rows[rowIndex]
 
-const textAlign = computed(() => {
-	return column.align || 'center'
-})
-
-const cellWidth = computed(() => {
-	return column.width || '40ch'
-})
-
-const displayValue = computed(() => {
-	const cellData = tableData.cellData<any>(colIndex, rowIndex)
-	const format = column.format
-
-	if (!format) {
-		return cellData
-	}
-
-	if (typeof format === 'function') {
-		return format(cellData, { table, row, column })
-	} else if (typeof format === 'string') {
-		// parse format function from string
-		// eslint-disable-next-line @typescript-eslint/no-implied-eval
-		const formatFn: (value: any, context?: CellContext) => string = Function(`"use strict";return (${format})`)()
-		return formatFn(cellData, { table, row, column })
-	}
-
-	return cellData
-})
+const textAlign = column.align || 'center'
+const cellWidth = column.width || '40ch'
 
 const isHtmlValue = computed(() => {
 	// TODO: check if display value is a native DOM element
 	return typeof displayValue.value === 'string' ? isHtmlString(displayValue.value) : false
 })
 
-const handleInput = () => {
+const cellStyle = computed((): CSSProperties => {
+	return {
+		textAlign,
+		width: cellWidth,
+		backgroundColor: !cellModified.value ? 'inherit' : 'var(--sc-cell-modified)',
+		fontWeight: !cellModified.value ? 'inherit' : 'bold',
+		paddingLeft: getIndent(colIndex, tableData.display[rowIndex]?.indent),
+	}
+})
+
+const displayValue = computed(() => {
+	const cellData = tableData.cellData<any>(colIndex, rowIndex)
+	return getFormattedValue(cellData)
+})
+
+const getFormattedValue = (value: any) => {
+	const format = column.format
+
+	if (!format) {
+		return value
+	}
+
+	if (typeof format === 'function') {
+		return format(value, { table, row, column })
+	} else if (typeof format === 'string') {
+		// parse format function from string
+		// eslint-disable-next-line @typescript-eslint/no-implied-eval
+		const formatFn: (value: any, context?: CellContext) => string = Function(`"use strict";return (${format})`)()
+		return formatFn(value, { table, row, column })
+	}
+
+	return value
+}
+
+const showModal = () => {
 	if (column.mask) {
 		// TODO: add masking to cell values
 		// column.mask(event)
@@ -106,7 +118,7 @@ const handleInput = () => {
 		tableData.modal.parent = cellRef.value
 		tableData.modal.top = bottom.value
 		tableData.modal.left = left.value
-		tableData.modal.width = cellWidth.value
+		tableData.modal.width = cellWidth
 
 		if (typeof column.modalComponent === 'function') {
 			tableData.modal.component = column.modalComponent({ table, row, column })
@@ -122,11 +134,11 @@ if (addNavigation) {
 	let handlers = {
 		...defaultKeypressHandlers,
 		...{
-			'keydown.f2': handleInput,
-			'keydown.alt.up': handleInput,
-			'keydown.alt.down': handleInput,
-			'keydown.alt.left': handleInput,
-			'keydown.alt.right': handleInput,
+			'keydown.f2': showModal,
+			'keydown.alt.up': showModal,
+			'keydown.alt.down': showModal,
+			'keydown.alt.left': showModal,
+			'keydown.alt.right': showModal,
 		},
 	}
 
@@ -161,12 +173,18 @@ const onFocus = () => {
 	}
 }
 
-const onChange = () => {
+const updateCellData = () => {
 	if (cellRef.value) {
+		// only apply changes if the cell value has changed after being mounted
+		if (column.format) {
+			cellModified.value = cellRef.value.textContent !== getFormattedValue(originalData)
+		} else {
+			cellModified.value = cellRef.value.textContent !== originalData
+		}
+
 		if (cellRef.value.textContent !== currentData.value) {
 			currentData.value = cellRef.value.textContent
 			cellRef.value.dispatchEvent(new Event('change'))
-			cellModified.value = true // set display instead
 			if (!column.format) {
 				// TODO: need to setup reverse format function
 				tableData.setCellData(rowIndex, colIndex, currentData.value)
@@ -175,20 +193,12 @@ const onChange = () => {
 	}
 }
 
-const getIndent = (colKey: number, indent: number) => {
-	if (indent && colKey === 0 && indent > 0) {
-		return `${indent}ch`
+const getIndent = (colIndex: number, indentLevel?: number) => {
+	if (indentLevel && colIndex === 0 && indentLevel > 0) {
+		return `${indentLevel}ch`
 	} else {
 		return 'inherit'
 	}
-}
-
-const cellStyle: CSSProperties = {
-	textAlign: textAlign.value,
-	width: cellWidth.value,
-	backgroundColor: !cellModified.value ? 'inherit' : 'var(--cell-modified-color)',
-	fontWeight: !cellModified.value ? 'inherit' : 'bold',
-	paddingLeft: getIndent(colIndex, tableData.display[rowIndex]?.indent),
 }
 </script>
 

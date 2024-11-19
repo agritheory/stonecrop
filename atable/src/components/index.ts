@@ -39,7 +39,7 @@ export default class TableDataStore {
 	}
 
 	createDisplayObject(display?: TableDisplay[]) {
-		const defaultDisplay: TableDisplay[] = [Object.assign({}, { modified: false })]
+		const defaultDisplay: TableDisplay[] = [Object.assign({}, { rowModified: false })]
 
 		// TODO: (typing) what is the type of `display` here?
 		if (display) {
@@ -66,7 +66,7 @@ export default class TableDataStore {
 				indent: row.indent || null,
 				isParent: parents.has(rowIndex),
 				isRoot: row.parent === null || row.parent === undefined,
-				modified: false,
+				rowModified: false,
 				open: row.parent === null || row.parent === undefined,
 				parent: row.parent,
 			}
@@ -90,13 +90,16 @@ export default class TableDataStore {
 	}
 
 	setCellData(rowIndex: number, colIndex: number, value: any) {
-		if (this.table[`${colIndex}:${rowIndex}`] !== value) {
-			this.display[rowIndex].modified = true
-		}
-		this.table[`${colIndex}:${rowIndex}`] = value
+		const index = `${colIndex}:${rowIndex}`
 		const col = this.columns[colIndex]
+
+		if (this.table[index] !== value) {
+			this.display[rowIndex].rowModified = true
+		}
+
+		this.table[index] = value
 		this.rows[rowIndex][col.name] = value
-		return this.table[`${colIndex}:${rowIndex}`]
+		return this.table[index]
 	}
 
 	toggleRowExpand(rowIndex: number) {

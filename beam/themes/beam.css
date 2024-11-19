@@ -280,4 +280,28 @@ body {
 	margin: 0.625rem 0;
 }
 
-/* new, revised styles */
+/* Vue Toast Notifictations Overrides */
+
+.v-toast__item {
+	border-radius: 0;
+	color: white;
+	font-family: var(--sc-font-family);
+}
+.v-toast__item--success {
+	background-color: var(--sc-brand-success);
+	color: white;
+}
+.v-toast__item--info {
+	background-color: var(--sc-primary-text-color);
+}
+.v-toast__item--warning {
+	background-color: var(--sc-brand-warning);
+	color: white;
+}
+.v-toast__item--error {
+	background-color: var(--sc-brand-danger);
+	color: white;
+}
+.v-toast__item--default {
+	background-color: var(--sc-primary-text-color);
+}
