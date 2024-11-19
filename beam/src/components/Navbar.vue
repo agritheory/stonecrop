@@ -3,9 +3,9 @@
 		<slot name="title">
 			<BeamHeading>TITLE</BeamHeading>
 		</slot>
-		<button class="navbar-action beam_btn" @click="handlePrimaryAction">
+		<BeamBtn @click="handlePrimaryAction">
 			<slot name="navbaraction">Action</slot>
-		</button>
+		</BeamBtn>
 	</nav>
 </template>
 

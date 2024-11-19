@@ -9,6 +9,7 @@
 
 	--sc-alert: #e63c28;
 	--sc-success: #155724;
+	--sc-warning: #f0f34f;
 
 	--sc-font-family: Arimo, Arial, sans-serif;
 
@@ -52,6 +53,9 @@
 .beam--alert {
 	color: var(--sc-alert);
 }
+.beam--warning {
+	color: var(--sc-warning);
+}
 .beam--success {
 	color: var(--sc-success);
 }
@@ -64,20 +68,20 @@
 	font-family: var(--sc-font-family);
 }
 .v-toast__item--success {
-	background-color: var(--sc-brand-success);
+	background-color: var(--sc-success) !important;
 	color: white;
 }
 .v-toast__item--info {
-	background-color: var(--sc-primary-text-color);
+	background-color: var(--sc-primary-text-color) !important;
 }
 .v-toast__item--warning {
-	background-color: var(--sc-brand-warning);
+	background-color: var(--sc-warning) !important;
 	color: white;
 }
 .v-toast__item--error {
-	background-color: var(--sc-brand-danger);
+	background-color: var(--sc-alert) !important;
 	color: white;
 }
 .v-toast__item--default {
-	background-color: var(--sc-primary-text-color);
+	background-color: var(--sc-primary-text-color) !important;
 }
