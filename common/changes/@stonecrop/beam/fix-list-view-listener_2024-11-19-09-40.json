@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/beam",
+      "comment": "add emit on item count update",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/beam"
+}
