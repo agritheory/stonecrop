@@ -17,13 +17,22 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 
 import ItemCount from '@/components/ItemCount.vue'
 import ItemCheck from '@/components/ItemCheck.vue'
 import type { ListViewItem } from '@/types'
 
 const { item } = defineProps<{ item: ListViewItem }>()
+const emit = defineEmits<{ update: [item: ListViewItem] }>()
 
 const listItem = ref(item)
+
+watch(
+	listItem,
+	value => {
+		emit('update', value)
+	},
+	{ deep: true }
+)
 </script>
