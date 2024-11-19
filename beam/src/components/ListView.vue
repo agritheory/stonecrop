@@ -17,22 +17,9 @@
 import { onMounted, onUnmounted } from 'vue'
 
 import ListItem from '@/components/ListItem.vue'
+import type { ListViewItem } from '@/types'
 
-defineProps<{
-	items: {
-		label: string
-		description: string
-		count?: {
-			count: number
-			of: number
-			uom: string
-		}
-		checked?: boolean
-		linkComponent?: string
-		route?: string
-	}[]
-}>()
-
+defineProps<{ items: ListViewItem[] }>()
 const emit = defineEmits<{ scrollbottom: [] }>()
 
 onMounted(() => {
