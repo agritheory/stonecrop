@@ -80,7 +80,7 @@
 			</BeamModal>
 			<Navbar @click="showNotification">
 				<template #title>
-					<h1 class="nav-title">Items to Receive</h1>
+					<BeamHeading>Items to Receive</BeamHeading>
 				</template>
 				<template #navbaraction>Show Notification</template>
 			</Navbar>

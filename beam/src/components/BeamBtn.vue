@@ -13,6 +13,7 @@
 	color: var(--sc-btn-label-color);
 	background-color: var(--sc-btn-color);
 	cursor: pointer;
+	font-family: var(--sc-font-family);
 
 	&:hover,
 	&:active {

@@ -46,6 +46,7 @@ defineProps<{
 	flex-direction: column;
 	max-height: 100vh;
 	color: var(--sc-primary-text-color);
+	font-family: var(--sc-font-family);
 }
 .beam_metadata_content {
 	padding-top: 10px;
@@ -98,9 +99,12 @@ defineProps<{
 .beam_metadata_components {
 	overflow: scroll;
 }
+</style>
+<style>
 .beam_metadata_heading {
 	font-size: 1.125rem;
 	font-weight: bold;
 	margin: 0.625rem 0;
+	color: var(--sc-primary-text-color);
 }
 </style>
