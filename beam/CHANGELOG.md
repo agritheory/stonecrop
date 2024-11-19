@@ -1,6 +1,14 @@
 # Change Log - @stonecrop/beam
 
-This log was last generated on Thu, 07 Nov 2024 13:02:28 GMT and should not be manually modified.
+This log was last generated on Mon, 18 Nov 2024 13:04:04 GMT and should not be manually modified.
+
+## 0.2.54
+Mon, 18 Nov 2024 13:04:04 GMT
+
+### Patches
+
+- added toast notifications
+- add debounce to list item input
 
 ## 0.2.53
 Thu, 07 Nov 2024 13:02:28 GMT

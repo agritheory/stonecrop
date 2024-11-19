@@ -34,7 +34,7 @@
 							<BeamHeading> WO#2024-01-00001 <span class="beam--normal">Ambrosia Pie</span> </BeamHeading>
 						</template>
 						<template #right>
-							<ItemCount denominator="10" model-value="5" />
+							<ItemCount denominator="20" model-value="5" />
 						</template>
 					</SplitColumn>
 					<BeamProgress :complete="workOrder.complete" progress-message="In Transit" />

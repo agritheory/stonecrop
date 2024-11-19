@@ -2,6 +2,18 @@
   "name": "@stonecrop/themes",
   "entries": [
     {
+      "version": "0.2.54",
+      "tag": "@stonecrop/themes_v0.2.54",
+      "date": "Mon, 18 Nov 2024 13:04:04 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "added warning color variable"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.2.53",
       "tag": "@stonecrop/themes_v0.2.53",
       "date": "Thu, 07 Nov 2024 13:02:28 GMT",

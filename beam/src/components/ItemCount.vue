@@ -3,8 +3,9 @@
 		<span
 			:contenteditable="editable"
 			:class="{ 'beam--alert': !isCountComplete }"
-			@input="handleInput"
-			@click="handleInput">
+			@click.stop.prevent="validate"
+			@input.stop.prevent="debouncedValidate"
+			@paste="validate">
 			{{ count }}
 		</span>
 		<span>/{{ denominator }}</span>
@@ -13,25 +14,29 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { useDebounceFn } from '@vueuse/core'
+import { computed, type HTMLAttributes } from 'vue'
 
 const count = defineModel<number>({ required: true })
 const {
 	denominator,
-	uom = '',
+	debounce = 300,
 	editable = true,
+	uom = '',
 } = defineProps<{
 	denominator: number
+	debounce?: number
+	editable?: HTMLAttributes['contenteditable']
 	uom?: string
-	editable?: boolean
 }>()
 
 const isCountComplete = computed(() => count.value === denominator)
 
-const handleInput = (event: InputEvent | MouseEvent) => {
-	event.preventDefault()
-	event.stopPropagation()
-	const newValue = Number((event.target as HTMLElement).innerHTML) || 0
+const validate = (payload: ClipboardEvent | InputEvent | MouseEvent) => {
+	const newValue = Number((payload.target as HTMLElement).innerHTML) || 0
 	count.value = Math.min(newValue, denominator)
 }
+
+const debouncedRequest = useDebounceFn((payload: InputEvent) => validate(payload), debounce)
+const debouncedValidate = async (payload: InputEvent) => await debouncedRequest(payload)
 </script>
