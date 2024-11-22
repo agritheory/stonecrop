@@ -90,8 +90,11 @@ body {
 	list-style-type: none;
 	margin: var(--sc-list-margin);
 	padding: 0;
-	padding-bottom: 2.5em;
+	/* padding-bottom: 2.5em; */
 	margin-top: 1px;
+}
+ul.beam_list-view:last-of-type {
+	padding-bottom: 2.5em;
 }
 
 .beam_list-item {

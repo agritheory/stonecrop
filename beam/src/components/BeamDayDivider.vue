@@ -20,19 +20,22 @@ const getDate = computed(() => {
 .beam_day-divider {
 	text-align: center;
 	padding: 0.4rem;
-	background: var(--primary-color);
-	border: 1px solid var(--row-border-color);
+	background: var(--sc-primary-color);
+	border: 1px solid var(--sc-row-border-color);
 	border-right: none;
 	border-left: none;
 	box-sizing: border-box;
-	margin-bottom: 1rem;
+	margin: 1rem 0;
 
 	& h2 {
 		text-align: center;
 		font-size: 1rem;
-		color: var(--primary-text-color);
+		color: var(--sc-primary-text-color);
 		margin: 0;
 		padding: 0;
 	}
+}
+.beam_day-divider:first-of-type {
+	margin-top: 0;
 }
 </style>
