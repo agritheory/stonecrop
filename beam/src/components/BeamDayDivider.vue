@@ -1,25 +1,29 @@
 <template>
 	<div class="beam_day-divider">
-		<h2>{{ getDate }}</h2>
+		<h2>{{ listItem.date }}</h2>
 	</div>
+	<slot></slot>
 </template>
 <script setup lang="ts">
-import { defineProps, computed } from 'vue'
-const props = defineProps(['month', 'day', 'year'])
+import { defineProps, computed, ref } from 'vue'
+// const props = defineProps(['month', 'day', 'year'])
+
+import type { ListViewItem } from '@/types'
+
+const { item } = defineProps<{ item: ListViewItem }>()
+
+const listItem = ref(item)
 
 const getDate = computed(() => {
-	const date = []
-	if (props.year) date.push(props.year)
-	if (props.month) date.push(props.month)
-	if (props.day) date.push(props.day)
-	const formattedDate = date.join(' - ')
-	return formattedDate
+	const date = String(listItem.date)
+	const newDate = new Date(date).toISOString()
+	return newDate
 })
 </script>
 <style scoped>
 .beam_day-divider {
-	text-align: center;
-	padding: 0.4rem;
+	text-align: left;
+	padding: 1rem;
 	background: var(--sc-primary-color);
 	border: 1px solid var(--sc-row-border-color);
 	border-right: none;
@@ -28,7 +32,7 @@ const getDate = computed(() => {
 	margin: 1rem 0;
 
 	& h2 {
-		text-align: center;
+		text-align: left;
 		font-size: 1rem;
 		color: var(--sc-primary-text-color);
 		margin: 0;

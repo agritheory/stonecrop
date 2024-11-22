@@ -62,11 +62,6 @@
 				<template #navbaraction>Done</template>
 			</Navbar>
 
-			<BeamDayDivider :month="'10'" :day="'20'" :year="'2024'" />
-			<ListView :items="items" @scrollbottom="loadMoreItems" />
-			<BeamDayDivider :month="'10'" :day="'22'" :year="'2024'" />
-			<ListView :items="items" @scrollbottom="loadMoreItems" />
-			<BeamDayDivider :month="'11'" :day="'10'" :year="'2024'" />
 			<ListView :items="items" @scrollbottom="loadMoreItems" />
 			<ActionFooter @click="handlePrimaryAction">Done</ActionFooter>
 			<ScanInput :scanHandler="incrementItemCount" />

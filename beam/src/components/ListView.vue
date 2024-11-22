@@ -1,11 +1,15 @@
 <template>
 	<ul class="beam_list-view">
 		<li v-for="item in items" :key="item.label">
-			<template v-if="item.linkComponent">
+			<template v-if="item.linkComponent == 'BeamDayDivider'">
+				<BeamDayDivider :item="item"></BeamDayDivider>
+			</template>
+			<template v-else-if="item.linkComponent">
 				<component :is="item.linkComponent" :to="item.route" tabindex="-1">
 					<ListItem :item="item"></ListItem>
 				</component>
 			</template>
+
 			<template v-else>
 				<ListItem :item="item"></ListItem>
 			</template>
@@ -18,6 +22,7 @@ import { onMounted, onUnmounted } from 'vue'
 
 import ListItem from '@/components/ListItem.vue'
 import type { ListViewItem } from '@/types'
+import BeamDayDivider from '@/components/BeamDayDivider.vue'
 
 defineProps<{ items: ListViewItem[] }>()
 const emit = defineEmits<{ scrollbottom: [] }>()

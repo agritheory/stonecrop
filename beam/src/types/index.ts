@@ -10,4 +10,5 @@ export type ListViewItem = {
 		of: number
 		uom: string
 	}
+	date?: string
 }

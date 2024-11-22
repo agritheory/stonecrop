@@ -30,6 +30,10 @@
 		"barcode": "5564269659609843627"
 	},
 	{
+		"date": "2012-10-06",
+		"linkComponent": "BeamDayDivider"
+	},
+	{
 		"barcode": "6281478257437327897",
 		"label": "Item 1",
 		"description": "iPhone this and that",
