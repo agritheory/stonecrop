@@ -139,7 +139,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, onBeforeMount } from 'vue'
 import { type ToastPosition, useToast } from 'vue-toast-notification'
 import 'vue-toast-notification/dist/theme-default.css'
 
@@ -153,6 +153,10 @@ const workOrder = reactive({
 	complete: false,
 })
 
+onBeforeMount(() => {
+	items.splice(5, 0, { date: new Date('2024-11-12'), linkComponent: 'BeamDayDivider', dateFormat: 'default' })
+	items.splice(9, 0, { date: new Date('2024-10-18'), linkComponent: 'BeamDayDivider', dateFormat: 'iso' })
+})
 // Start Toast //
 const toast = useToast()
 const toastType = ref('default')

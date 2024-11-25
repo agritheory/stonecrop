@@ -1,23 +1,26 @@
 <template>
 	<div class="beam_day-divider">
-		<h2>{{ listItem.date }}</h2>
+		<h2>{{ getDate }}</h2>
 	</div>
 	<slot></slot>
 </template>
 <script setup lang="ts">
-import { defineProps, computed, ref } from 'vue'
-// const props = defineProps(['month', 'day', 'year'])
+import { defineProps, ref, computed } from 'vue'
 
 import type { ListViewItem } from '@/types'
 
 const { item } = defineProps<{ item: ListViewItem }>()
 
-const listItem = ref(item)
-
 const getDate = computed(() => {
-	const date = String(listItem.date)
-	const newDate = new Date(date).toISOString()
-	return newDate
+	// if needed, the user can specify a Date format flag that will dictate how the output is formatted, defaults to toDateString()
+	// using switch/case here in case more values wanted to be added
+	if (item.dateFormat) {
+		switch (item.dateFormat.toLowerCase()) {
+			case 'iso':
+				return item.date.toISOString()
+		}
+	}
+	return item.date.toDateString()
 })
 </script>
 <style scoped>
