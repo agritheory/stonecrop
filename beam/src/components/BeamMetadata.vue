@@ -36,3 +36,75 @@ defineProps<{
 	}
 }>()
 </script>
+
+<style scoped>
+.beam_metadata {
+	/* margin:3.125rem; */
+	box-sizing: border-box;
+	border: 1px solid black;
+	display: flex;
+	flex-direction: column;
+	max-height: 100vh;
+	color: var(--sc-primary-text-color);
+	font-family: var(--sc-font-family);
+}
+.beam_metadata_content {
+	padding-top: 10px;
+}
+.beam_metadata_header {
+	display: flex;
+	flex-direction: row;
+	align-items: baseline;
+	padding: 0px 30px 0px 30px;
+	justify-content: space-between;
+}
+.beam_metadata_count {
+	font-size: 1.5rem;
+
+	& p {
+		margin: 0;
+	}
+}
+.beam_metadata_header-order-num {
+	font-weight: bold;
+	font-size: 1.5rem;
+}
+.beam_metadata_block {
+	padding: 0px 30px;
+	margin: 10px 0;
+}
+
+.beam_metadata_shipping {
+	display: flex;
+	flex-direction: row;
+	align-items: baseline;
+	justify-content: space-between;
+
+	& p {
+		line-height: 1.5rem;
+	}
+}
+@media screen and (max-width: 600px) {
+	.beam_metadata_shipping {
+		flex-direction: column;
+	}
+}
+
+.beam_metadata_component_header {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	align-items: baseline;
+}
+.beam_metadata_components {
+	overflow: scroll;
+}
+</style>
+<style>
+.beam_metadata_heading {
+	font-size: 1.125rem;
+	font-weight: bold;
+	margin: 0.625rem 0;
+	color: var(--sc-primary-text-color);
+}
+</style>

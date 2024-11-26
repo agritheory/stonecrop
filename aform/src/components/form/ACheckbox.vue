@@ -1,16 +1,16 @@
 <template>
-	<div class="aform__form-element">
-		<label class="aform__field-label" :for="uuid">{{ label }}</label>
-		<span class="aform__checkbox-container aform__input-field">
+	<div class="aform_form-element">
+		<label class="aform_field-label" :for="uuid">{{ label }}</label>
+		<span class="aform_checkbox-container aform_input-field">
 			<input
 				v-model="checkbox"
 				type="checkbox"
 				:id="uuid"
-				class="aform__checkbox"
+				class="aform_checkbox"
 				:readonly="readonly"
 				:required="required" />
 		</span>
-		<p class="error" v-show="validation.errorMessage" v-html="validation.errorMessage"></p>
+		<p class="aform_error" v-show="validation.errorMessage" v-html="validation.errorMessage"></p>
 	</div>
 </template>
 
@@ -22,3 +22,31 @@ import { ComponentProps } from '@/types'
 const { label, required, readonly, uuid, validation = { errorMessage: '&nbsp;' } } = defineProps<ComponentProps>()
 const checkbox = defineModel<InputHTMLAttributes['checked']>()
 </script>
+
+<style scoped>
+.aform_checkbox {
+	cursor: pointer;
+	width: auto;
+	margin-top: 0;
+	display: block;
+}
+
+.aform_checkbox:checked {
+	accent-color: var(--sc-primary-color);
+	border: 1px solid black;
+}
+
+.aform_checkbox-container {
+	width: 100%;
+	display: inline-block;
+	text-align: left;
+}
+
+.aform_checkbox-container input {
+	width: auto;
+}
+
+.aform_checkbox-container:hover + .aform_field-label {
+	color: var(--sc-input-active-label-color);
+}
+</style>

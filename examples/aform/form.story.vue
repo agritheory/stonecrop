@@ -59,27 +59,3 @@ const formSetup = ({ app }: { app: App }) => {
 	app.provide('locale', locale)
 }
 </script>
-
-<style>
-html {
-	font-family: Arimo, sans-serif;
-	font-size: 11pt;
-}
-
-nav {
-	min-height: 60px;
-	display: flex;
-	/* flex-direction: row; */
-	flex-direction: row-reverse;
-	align-items: center;
-	border-bottom: 2px solid var(--sc-primary-color);
-	margin: 0px;
-	padding-left: 1ch;
-	padding-right: 1ch;
-}
-
-.aform-main {
-	margin-left: 2ch;
-	margin-top: 1.15rem;
-}
-</style>

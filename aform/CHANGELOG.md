@@ -1,6 +1,23 @@
 # Change Log - @stonecrop/aform
 
-This log was last generated on Mon, 18 Nov 2024 13:04:04 GMT and should not be manually modified.
+This log was last generated on Sat, 23 Nov 2024 17:29:12 GMT and should not be manually modified.
+
+## 0.2.57
+Sat, 23 Nov 2024 17:29:12 GMT
+
+### Patches
+
+- updated styling for Stonecrop
+
+## 0.2.56
+Tue, 19 Nov 2024 09:44:32 GMT
+
+_Version update only_
+
+## 0.2.55
+Tue, 19 Nov 2024 07:13:25 GMT
+
+_Version update only_
 
 ## 0.2.54
 Mon, 18 Nov 2024 13:04:04 GMT

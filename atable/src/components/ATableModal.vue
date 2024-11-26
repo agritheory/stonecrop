@@ -32,4 +32,10 @@ const handleInput = (event: Event) => {
 
 <style>
 @import url('@stonecrop/themes/default.css');
+
+.amodal {
+	position: fixed;
+	background-color: var(--sc-row-color-zebra-dark);
+	z-index: 100;
+}
 </style>

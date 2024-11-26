@@ -40,3 +40,16 @@ const validate = (payload: ClipboardEvent | InputEvent | MouseEvent) => {
 const debouncedRequest = useDebounceFn((payload: InputEvent) => validate(payload), debounce)
 const debouncedValidate = async (payload: InputEvent) => await debouncedRequest(payload)
 </script>
+
+<style scoped>
+.beam_item-count {
+	font-size: 1.3125rem;
+	color: var(--sc-primary-text-color);
+}
+
+.beam_item-count span {
+	margin: 0;
+	padding: 0;
+	outline: none;
+}
+</style>

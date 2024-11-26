@@ -42,11 +42,6 @@ function filterItems(search: string) {
 </script>
 
 <style>
-html {
-	font-family: Arimo, sans-serif;
-	font-size: 11pt;
-}
-
 .dropdown-form {
 	min-height: 60px;
 	display: flex;

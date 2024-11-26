@@ -6,12 +6,12 @@
 			</template>
 			<template v-else-if="item.linkComponent">
 				<component :is="item.linkComponent" :to="item.route" tabindex="-1">
-					<ListItem :item="item"></ListItem>
+					<ListItem :item="item" @update="handleUpdate"></ListItem>
 				</component>
 			</template>
 
 			<template v-else>
-				<ListItem :item="item"></ListItem>
+				<ListItem :item="item" @update="handleUpdate"></ListItem>
 			</template>
 		</li>
 	</ul>
@@ -25,7 +25,7 @@ import type { ListViewItem } from '@/types'
 import BeamDayDivider from '@/components/BeamDayDivider.vue'
 
 defineProps<{ items: ListViewItem[] }>()
-const emit = defineEmits<{ scrollbottom: [] }>()
+const emit = defineEmits<{ update: [item: ListViewItem]; scrollbottom: [] }>()
 
 onMounted(() => {
 	window.addEventListener('scroll', handleScroll)
@@ -35,6 +35,7 @@ onUnmounted(() => {
 	window.removeEventListener('scroll', handleScroll)
 })
 
+const handleUpdate = (item: ListViewItem) => emit('update', item)
 const handleScroll = () => {
 	const scrollHeightDifference = document.documentElement.scrollHeight - window.innerHeight
 	const scrollposition = document.documentElement.scrollTop
@@ -43,3 +44,18 @@ const handleScroll = () => {
 	}
 }
 </script>
+
+<style scoped>
+.beam_list-view {
+	list-style-type: none;
+	margin: var(--sc-list-margin);
+	padding: 0;
+	/* padding-bottom: 2.5em; */
+	margin-top: 1px;
+	font-family: var(--sc-font-family);
+}
+
+ul.beam_list-view:last-of-type {
+	padding-bottom: 2.5em;
+}
+</style>

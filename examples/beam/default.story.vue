@@ -98,7 +98,7 @@
 			</BeamModal>
 			<Navbar @click="showNotification">
 				<template #title>
-					<h1 class="nav-title">Items to Receive</h1>
+					<BeamHeading>Items to Receive</BeamHeading>
 				</template>
 				<template #navbaraction>Show Notification</template>
 			</Navbar>
@@ -143,8 +143,9 @@ import { ref, reactive, onBeforeMount } from 'vue'
 import { type ToastPosition, useToast } from 'vue-toast-notification'
 import 'vue-toast-notification/dist/theme-default.css'
 
-import items from './data/items.json'
+import data from './data/items.json'
 
+const items = ref(data)
 const workOrder = reactive({
 	orderNumber: 'WO#2024-01-00001',
 	product: 'Ambrosia Pie',
@@ -182,13 +183,13 @@ const handlePrimaryAction = () => {
 
 const incrementItemCount = (barcode: string, qty: number) => {
 	// return indices of the matching barcode
-	const detectedItemsByIndex = items
+	const detectedItemsByIndex = items.value
 		.map((item, index) => (item.barcode === barcode ? index : null))
 		.filter(x => x !== null)
 
 	for (const [detectedIndex, rowIndex] of detectedItemsByIndex.entries()) {
 		if (rowIndex) {
-			const count = items[rowIndex].count
+			const count = items.value[rowIndex].count
 			if (detectedIndex !== detectedItemsByIndex.length - 1) {
 				if (count.count < count.of) {
 					// don't overcount if its not the last row of that barcode
@@ -207,14 +208,14 @@ const incrementItemCount = (barcode: string, qty: number) => {
 }
 
 const loadMoreItems = () => {
-	if (items.length > 40) {
+	if (items.value.length > 40) {
 		// an arbitrary number for this example
 		return
 	}
 
 	window.setTimeout(() => {
 		// fake an API response time
-		items.push(
+		items.value.push(
 			...[
 				{
 					barcode: '6281478257437327897',

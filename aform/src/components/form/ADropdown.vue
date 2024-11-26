@@ -119,7 +119,7 @@ const onEnter = () => {
 // }
 </script>
 
-<style>
+<style scoped>
 /* variables taken from here: https://github.com/frappe/frappe/blob/version-13/frappe/public/scss/common/awesomeplete.scss */
 .autocomplete {
 	position: relative;

@@ -62,4 +62,32 @@ if (addNavigation) {
 
 <style>
 @import url('@stonecrop/themes/default.css');
+
+.row-index {
+	color: var(--sc-header-text-color);
+	font-weight: bold;
+	text-align: center;
+	user-select: none;
+	width: 2ch;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+.expandable-row {
+	border-top: 1px solid var(--sc-row-border-color);
+	height: var(--sc-atable-row-height);
+	border-left: 4px solid var(--sc-row-border-color);
+	display: flex;
+}
+
+.expanded-row {
+	border-bottom: 1px solid var(--sc-row-border-color);
+	border-top: 1px solid var(--sc-row-border-color);
+}
+
+.expanded-row-content {
+	border-bottom: 1px solid var(--sc-row-border-color);
+	border-top: 1px solid var(--sc-row-border-color);
+	padding: 1.5rem;
+}
 </style>
