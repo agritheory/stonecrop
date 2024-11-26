@@ -23,6 +23,7 @@ import ScanInput from '@/components/ScanInput.vue'
 import SplitColumn from '@/components/SplitColumn.vue'
 import ToggleArrow from '@/components/ToggleArrow.vue'
 import { useMqttStream } from '@/composables/mqtt'
+export type { ListViewItem } from '@/types'
 import 'themes/beam.css'
 
 /**
@@ -33,18 +34,14 @@ import 'themes/beam.css'
 function install(app: App /* options */) {
 	app.component('ActionFooter', ActionFooter)
 	app.component('BeamArrow', BeamArrow)
-	app.component('BeamArrow', BeamArrow)
-	app.component('BeamBtn', BeamBtn)
 	app.component('BeamBtn', BeamBtn)
 	app.component('BeamDayDivider', BeamDayDivider)
 	app.component('BeamFilter', BeamFilter)
 	app.component('BeamFilterOption', BeamFilterOption)
 	app.component('BeamHeading', BeamHeading)
-	app.component('BeamHeading', BeamHeading)
 	app.component('BeamMetadata', BeamMetadata)
 	app.component('BeamModal', BeamModal)
 	app.component('BeamModalOutlet', BeamModalOutlet)
-	app.component('BeamProgress', BeamProgress)
 	app.component('BeamProgress', BeamProgress)
 	app.component('Confirm', Confirm)
 	app.component('FixedTop', FixedTop)

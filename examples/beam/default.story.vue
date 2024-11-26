@@ -62,7 +62,7 @@
 				<template #navbaraction>Done</template>
 			</Navbar>
 
-			<ListView :items="items" @scrollbottom="loadMoreItems" />
+			<ListView :items="itemsWithDivider" @scrollbottom="loadMoreItems" />
 			<ActionFooter @click="handlePrimaryAction">Done</ActionFooter>
 			<ScanInput :scanHandler="incrementItemCount" />
 			<BeamModalOutlet @confirmmodal="confirmModal" @closemodal="closeModal"></BeamModalOutlet>
@@ -130,6 +130,7 @@
 						]" />
 				</BeamFilter>
 			</FixedTop>
+
 			<ListView :items="items" @scrollbottom="loadMoreItems" />
 			<ActionFooter @click="handlePrimaryAction">Done</ActionFooter>
 			<ScanInput :scanHandler="incrementItemCount" />
@@ -139,13 +140,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onBeforeMount } from 'vue'
+import type { ListViewItem } from '@stonecrop/beam'
+import { ref, reactive, computed } from 'vue'
 import { type ToastPosition, useToast } from 'vue-toast-notification'
 import 'vue-toast-notification/dist/theme-default.css'
 
 import data from './data/items.json'
 
-const items = ref(data)
+const items = ref<ListViewItem[]>(data)
+const showModal = ref(false)
 const workOrder = reactive({
 	orderNumber: 'WO#2024-01-00001',
 	product: 'Ambrosia Pie',
@@ -154,10 +157,6 @@ const workOrder = reactive({
 	complete: false,
 })
 
-onBeforeMount(() => {
-	items.splice(5, 0, { date: new Date('2024-11-12'), linkComponent: 'BeamDayDivider', dateFormat: 'default' })
-	items.splice(9, 0, { date: new Date('2024-10-18'), linkComponent: 'BeamDayDivider', dateFormat: 'iso' })
-})
 // Start Toast //
 const toast = useToast()
 const toastType = ref('default')
@@ -175,11 +174,20 @@ const showNotification = () => {
 }
 // End Toast //
 
-const showModal = ref(false)
-
-const handlePrimaryAction = () => {
-	showModal.value = true
-}
+const itemsWithDivider = computed(() => {
+	const itemsCopy = [...items.value]
+	itemsCopy.splice(3, 0, {
+		date: '2024-11-12T00:00:00.000Z',
+		linkComponent: 'BeamDayDivider',
+		dateFormat: 'default',
+	})
+	itemsCopy.splice(7, 0, {
+		date: '2024-10-18T00:00:00.000Z',
+		linkComponent: 'BeamDayDivider',
+		dateFormat: 'iso',
+	})
+	return itemsCopy
+})
 
 const incrementItemCount = (barcode: string, qty: number) => {
 	// return indices of the matching barcode
@@ -263,4 +271,5 @@ const loadMoreItems = () => {
 
 const confirmModal = () => (showModal.value = false)
 const closeModal = () => (showModal.value = false)
+const handlePrimaryAction = () => (showModal.value = true)
 </script>

@@ -23,6 +23,7 @@ import ItemCount from '@/components/ItemCount.vue';
 import ListAnchor from '@/components/ListAnchor.vue';
 import ListItem from '@/components/ListItem.vue';
 import ListView from '@/components/ListView.vue';
+import { ListViewItem } from '@/types';
 import Navbar from '@/components/Navbar.vue';
 import ScanInput from '@/components/ScanInput.vue';
 import SplitColumn from '@/components/SplitColumn.vue';
@@ -67,6 +68,8 @@ export { ListAnchor }
 export { ListItem }
 
 export { ListView }
+
+export { ListViewItem }
 
 export { Navbar }
 

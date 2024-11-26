@@ -1,28 +1,37 @@
 <template>
 	<div class="beam_day-divider">
-		<h2>{{ getDate }}</h2>
+		<h2>{{ date }}</h2>
 	</div>
+
 	<slot></slot>
 </template>
+
 <script setup lang="ts">
-import { defineProps, ref, computed } from 'vue'
+import { defineProps, computed } from 'vue'
 
 import type { ListViewItem } from '@/types'
 
+defineSlots<{ default(): any }>()
 const { item } = defineProps<{ item: ListViewItem }>()
 
-const getDate = computed(() => {
-	// if needed, the user can specify a Date format flag that will dictate how the output is formatted, defaults to toDateString()
-	// using switch/case here in case more values wanted to be added
+const date = computed(() => {
+	if (!item.date || isNaN(Date.parse(item.date))) {
+		return item.date
+	}
+
+	// if needed, the user can specify a Date format flag that will dictate how the output is formatted,
+	// defaults to toDateString(); using switch/case here in case more values wanted to be added
+	const dateObj = new Date(item.date)
 	if (item.dateFormat) {
 		switch (item.dateFormat.toLowerCase()) {
 			case 'iso':
-				return item.date.toISOString()
+				return dateObj.toISOString()
 		}
 	}
-	return item.date.toDateString()
+	return dateObj.toDateString()
 })
 </script>
+
 <style scoped>
 .beam_day-divider {
 	text-align: left;
@@ -42,6 +51,7 @@ const getDate = computed(() => {
 		padding: 0;
 	}
 }
+
 .beam_day-divider:first-of-type {
 	margin-top: 0;
 }
