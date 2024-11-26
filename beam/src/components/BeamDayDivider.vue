@@ -36,10 +36,8 @@ const date = computed(() => {
 .beam_day-divider {
 	text-align: left;
 	padding: 1rem;
-	background: var(--sc-primary-color);
-	border: 1px solid var(--sc-row-border-color);
-	border-right: none;
-	border-left: none;
+	background: var(--sc-cell-changed-color);
+	border-bottom: 1px solid var(--sc-row-border-color);
 	box-sizing: border-box;
 	margin: 1rem 0;
 
