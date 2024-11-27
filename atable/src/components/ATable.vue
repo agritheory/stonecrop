@@ -28,8 +28,7 @@
 						:component="col.cellComponent"
 						:style="{
 							textAlign: col?.align || 'center',
-							minWidth: col?.width || '40ch',
-							width: tableData.config.fullWidth ? 'auto' : null,
+							width: col.width ? col.width : tableData.config.fullWidth ? 'auto' : '40ch',
 						}" />
 				</ARow>
 			</slot>

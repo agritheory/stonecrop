@@ -93,8 +93,8 @@ importers:
         specifier: workspace:*
         version: link:../utilities
       '@vueuse/components':
-        specifier: ^10.11.0
-        version: 10.11.1(vue@3.5.6)
+        specifier: ^11.1.0
+        version: 11.3.0(vue@3.5.6)
       '@vueuse/core':
         specifier: ^11.1.0
         version: 11.1.0(vue@3.5.6)
@@ -2198,11 +2198,11 @@ packages:
       vue-component-type-helpers: 2.1.6
     dev: true
 
-  /@vueuse/components@10.11.1(vue@3.5.6):
-    resolution: {integrity: sha512-ThcreQCX/eq61sLkLKjigD4PQvs3Wy4zglICvQH9tP6xl87y5KsQEoizn6OI+R3hrOgwQHLJe7Y0wLLh3fBKcg==}
+  /@vueuse/components@11.3.0(vue@3.5.6):
+    resolution: {integrity: sha512-sqaGtWPgobXvZmv3atcjW8YW0ypecFuB286OEKFXaPrLsA5b2Y+xAvHvq5V7d+VJRKt705gCK3BNBjxu3g1PdQ==}
     dependencies:
-      '@vueuse/core': 10.11.1(vue@3.5.6)
-      '@vueuse/shared': 10.11.1(vue@3.5.6)
+      '@vueuse/core': 11.3.0(vue@3.5.6)
+      '@vueuse/shared': 11.3.0(vue@3.5.6)
       vue-demi: 0.14.10(vue@3.5.6)
     transitivePeerDependencies:
       - '@vue/composition-api'
@@ -2232,11 +2232,27 @@ packages:
       - vue
     dev: false
 
+  /@vueuse/core@11.3.0(vue@3.5.6):
+    resolution: {integrity: sha512-7OC4Rl1f9G8IT6rUfi9JrKiXy4bfmHhZ5x2Ceojy0jnd3mHNEvV4JaRygH362ror6/NZ+Nl+n13LPzGiPN8cKA==}
+    dependencies:
+      '@types/web-bluetooth': 0.0.20
+      '@vueuse/metadata': 11.3.0
+      '@vueuse/shared': 11.3.0(vue@3.5.6)
+      vue-demi: 0.14.10(vue@3.5.6)
+    transitivePeerDependencies:
+      - '@vue/composition-api'
+      - vue
+    dev: false
+
   /@vueuse/metadata@10.11.1:
     resolution: {integrity: sha512-IGa5FXd003Ug1qAZmyE8wF3sJ81xGLSqTqtQ6jaVfkeZ4i5kS2mwQF61yhVqojRnenVew5PldLyRgvdl4YYuSw==}
 
   /@vueuse/metadata@11.1.0:
     resolution: {integrity: sha512-l9Q502TBTaPYGanl1G+hPgd3QX5s4CGnpXriVBR5fEZ/goI6fvDaVmIl3Td8oKFurOxTmbXvBPSsgrd6eu6HYg==}
+    dev: false
+
+  /@vueuse/metadata@11.3.0:
+    resolution: {integrity: sha512-pwDnDspTqtTo2HwfLw4Rp6yywuuBdYnPYDq+mO38ZYKGebCUQC/nVj/PXSiK9HX5otxLz8Fn7ECPbjiRz2CC3g==}
     dev: false
 
   /@vueuse/shared@10.11.1(vue@3.5.6):
@@ -2249,6 +2265,15 @@ packages:
 
   /@vueuse/shared@11.1.0(vue@3.5.6):
     resolution: {integrity: sha512-YUtIpY122q7osj+zsNMFAfMTubGz0sn5QzE5gPzAIiCmtt2ha3uQUY1+JPyL4gRCTsLPX82Y9brNbo/aqlA91w==}
+    dependencies:
+      vue-demi: 0.14.10(vue@3.5.6)
+    transitivePeerDependencies:
+      - '@vue/composition-api'
+      - vue
+    dev: false
+
+  /@vueuse/shared@11.3.0(vue@3.5.6):
+    resolution: {integrity: sha512-P8gSSWQeucH5821ek2mn/ciCk+MS/zoRKqdQIM3bHq6p7GXDAJLmnRRKmF5F65sAVJIfzQlwR3aDzwCn10s8hA==}
     dependencies:
       vue-demi: 0.14.10(vue@3.5.6)
     transitivePeerDependencies:

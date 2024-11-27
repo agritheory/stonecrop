@@ -6,9 +6,10 @@ export type TableColumn = {
 	align?: CanvasTextAlign
 	edit?: boolean
 	label?: string
+	pinned?: boolean
+	resizable?: boolean
 	type?: string
 	width?: string
-	pinned?: boolean
 
 	cellComponent?: string
 	cellComponentProps?: Record<string, any>

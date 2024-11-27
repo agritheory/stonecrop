@@ -62,7 +62,7 @@ function showBuilder(doctype: string) {
 
 function getRowCellStyle(column: TableColumn): CSSProperties {
 	return {
-		minWidth: column?.width || '40ch',
+		width: column?.width || '40ch',
 		textAlign: column?.align || 'center',
 	}
 }

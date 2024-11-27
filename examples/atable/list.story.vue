@@ -1,6 +1,6 @@
 <template>
 	<Story title="list">
-		<Variant title="default">
+		<Variant title="row navigation (up + down)">
 			<ATable id="list" v-model="http_logs.rows" :columns="http_logs.columns" :config="{ view: 'list' }">
 				<template #body="{ data }: { data: TableDataStore }">
 					<ARow
@@ -272,7 +272,7 @@ const chooseRandomData = (rows: any[]) => {
 
 const getRowCellStyle = (column: TableColumn): CSSProperties => {
 	return {
-		minWidth: column?.width || '40ch',
+		width: column?.width || '40ch',
 		textAlign: column?.align || 'center',
 	}
 }

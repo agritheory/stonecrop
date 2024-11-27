@@ -37,6 +37,7 @@ const columns: TableColumn[] = [
 		align: 'left',
 		edit: true,
 		width: '20ch',
+		resizable: true,
 	},
 	{
 		label: 'Report Date',
