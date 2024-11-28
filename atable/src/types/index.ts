@@ -26,7 +26,14 @@ export type CellContext = {
 }
 
 export type TableConfig = {
-	view?: 'list' | 'tree' | 'list-expansion'
+	/**
+	 * The type of view to display the table in. Possible values:
+	 * - `uncounted` - row numbers are not displayed in the table
+	 * - `list` - row numbers are displayed in the table
+	 * - `list-expansion` - carets are displayed in the number column that expand/collapse the row inline
+	 * - `tree` - carets are displayed in the number column that expand/collapse grouped rows
+	 */
+	view?: 'uncounted' | 'list' | 'list-expansion' | 'tree'
 	fullWidth?: boolean
 }
 

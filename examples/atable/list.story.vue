@@ -1,6 +1,6 @@
 <template>
 	<Story title="list">
-		<Variant title="default">
+		<Variant title="row navigation">
 			<ATable id="list" v-model="http_logs.rows" :columns="http_logs.columns" :config="{ view: 'list' }">
 				<template #body="{ data }: { data: TableDataStore }">
 					<ARow
@@ -22,7 +22,7 @@
 								:addNavigation="rowNav"
 								:contenteditable="false"
 								:rowIndex="rowIndex"
-								:colIndex="colIndex + (data.zeroColumn ? 0 : -1)"
+								:colIndex="colIndex"
 								:style="getRowCellStyle(col)" />
 						</template>
 					</ARow>
@@ -57,7 +57,7 @@
 								:addNavigation="rowNav"
 								:contenteditable="false"
 								:rowIndex="rowIndex"
-								:colIndex="colIndex + (data.zeroColumn ? 0 : -1)"
+								:colIndex="colIndex"
 								:style="getRowCellStyle(col)" />
 						</template>
 						<template #content>
@@ -89,7 +89,7 @@
 												:addNavigation="rowNav"
 												:contenteditable="false"
 												:rowIndex="rowIndex"
-												:colIndex="colIndex + (data.zeroColumn ? 0 : -1)"
+												:colIndex="colIndex"
 												:style="getRowCellStyle(col)" />
 										</template>
 										<template #content>

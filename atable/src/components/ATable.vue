@@ -24,7 +24,7 @@
 						spellcheck="false"
 						:pinned="col.pinned"
 						:rowIndex="rowIndex"
-						:colIndex="colIndex + (tableData.zeroColumn ? 0 : -1)"
+						:colIndex="colIndex"
 						:component="col.cellComponent"
 						:style="{
 							textAlign: col?.align || 'center',
@@ -151,7 +151,7 @@ const assignStickyCellWidths = () => {
 // 	let colIndex: number
 // 	const target = event?.target as HTMLTableCellElement
 // 	if (event) {
-// 		colIndex = target.cellIndex + (tableData.zeroColumn ? -1 : 0)
+// 		colIndex = target.cellIndex
 // 	} else if (column && cellData) {
 // 		colIndex = tableData.columns.indexOf(column)
 // 	}

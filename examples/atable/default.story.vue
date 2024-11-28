@@ -3,6 +3,9 @@
 		<Variant title="default">
 			<ATable v-model="default_table.rows" :columns="default_table.columns" :config="default_table.config" />
 		</Variant>
+		<Variant title="uncounted">
+			<ATable v-model="uncounted_table.rows" :columns="uncounted_table.columns" :config="uncounted_table.config" />
+		</Variant>
 		<Variant title="read-only">
 			<ATable v-model="readonly_table.rows" :columns="readonly_table.columns" :config="readonly_table.config" />
 		</Variant>
@@ -91,6 +94,12 @@ const default_table = ref({
 	rows: data,
 	columns,
 	config: { view: 'list' },
+})
+
+const uncounted_table = ref({
+	rows: data,
+	columns,
+	config: { view: 'uncounted' },
 })
 
 const readonly_table = ref({
