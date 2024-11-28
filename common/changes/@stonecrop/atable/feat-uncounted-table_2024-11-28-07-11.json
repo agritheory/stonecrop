@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/atable",
+      "comment": "add uncounted table option",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/atable"
+}
