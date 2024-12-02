@@ -36,8 +36,8 @@ const columns: TableColumn[] = [
 		type: 'Data',
 		align: 'left',
 		edit: true,
-		width: '20ch',
 		resizable: true,
+		width: '20ch',
 	},
 	{
 		label: 'Report Date',
@@ -45,6 +45,7 @@ const columns: TableColumn[] = [
 		type: 'component',
 		align: 'center',
 		edit: true,
+		resizable: true,
 		width: '25ch',
 		modalComponent: 'ADate',
 		format: (value: number) => {

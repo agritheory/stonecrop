@@ -34,7 +34,6 @@ import TableDataStore from '.'
 import type { TableColumn } from '@/types'
 
 const { columns, tableid } = defineProps<{ columns: TableColumn[]; tableid?: string }>()
-
 const tableData = inject<TableDataStore>(tableid)
 
 const hasPinnedColumns = computed(() => tableData.columns.some(col => col.pinned))
@@ -53,15 +52,23 @@ const onResize = (entries: ReadonlyArray<ResizeObserverEntry>) => {
 	}
 }
 
-const getHeaderCellStyle = (column: TableColumn): CSSProperties => ({
-	width: column.width || '40ch',
-	textAlign: column.align || 'center',
-	...(column.resizable && {
-		resize: 'horizontal',
-		overflow: 'auto',
-		whiteSpace: 'nowrap',
-	}),
-})
+const getHeaderCellStyle = (column: TableColumn): CSSProperties => {
+	const isLastCol = columns.indexOf(column) === columns.length - 1
+
+	// if the table is full width, the last column should not be resizable;
+	// ref: https://github.com/agritheory/stonecrop/pull/196#issuecomment-2503762641
+	const isResizable = tableData.config.fullWidth ? column.resizable && !isLastCol : column.resizable
+
+	return {
+		width: column.width || '40ch',
+		textAlign: column.align || 'center',
+		...(isResizable && {
+			resize: 'horizontal',
+			overflow: 'auto',
+			whiteSpace: 'nowrap',
+		}),
+	}
+}
 </script>
 
 <style>
