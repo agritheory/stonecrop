@@ -115,11 +115,7 @@ const full_width_table = ref({
 })
 </script>
 
-<style>
-:root {
-	--sc-cell-modified: yellow;
-}
-</style>
+<style></style>
 
 <!-- enter documentation here -->
 <docs lang="md"></docs>
