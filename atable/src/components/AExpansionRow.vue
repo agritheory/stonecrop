@@ -76,8 +76,11 @@ if (addNavigation) {
 .expandable-row {
 	border-top: 1px solid var(--sc-row-border-color);
 	height: var(--sc-atable-row-height);
-	border-left: 4px solid var(--sc-row-border-color);
+	/* border-left: 4px solid var(--sc-row-border-color); */
 	display: flex;
+}
+.expandable-row > td:first-child {
+	border-left: 4px solid var(--sc-row-border-color);
 }
 
 .expanded-row {
