@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/atable",
+      "comment": "allow resizable columns",
+      "type": "none"
+    }
+  ],
+  "packageName": "@stonecrop/atable"
+}
