@@ -95,7 +95,7 @@ if (addNavigation) {
 	background-color: white;
 }
 .table-row > td:first-child {
-	border-left: 4px solid var(--sc-row-border-color);
+	border-left: 4px solid var(--sc-form-border);
 }
 .list-index {
 	color: var(--sc-header-text-color);

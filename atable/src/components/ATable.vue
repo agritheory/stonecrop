@@ -260,6 +260,7 @@ td.sticky-index {
 	box-sizing: border-box;
 	table-layout: auto;
 	width: auto;
+	/* border-left:4px solid var(--sc-form-border); */
 }
 .atable th {
 	border-width: 0px;

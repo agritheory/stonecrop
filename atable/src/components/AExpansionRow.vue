@@ -80,17 +80,19 @@ if (addNavigation) {
 	display: flex;
 }
 .expandable-row > td:first-child {
-	border-left: 4px solid var(--sc-row-border-color);
+	border-left: 4px solid var(--sc-form-border);
 }
 
 .expanded-row {
 	border-bottom: 1px solid var(--sc-row-border-color);
 	border-top: 1px solid var(--sc-row-border-color);
+	display: flex;
 }
 
 .expanded-row-content {
 	border-bottom: 1px solid var(--sc-row-border-color);
 	border-top: 1px solid var(--sc-row-border-color);
 	padding: 1.5rem;
+	border-left: 4px solid var(--sc-form-border);
 }
 </style>
