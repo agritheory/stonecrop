@@ -64,7 +64,7 @@ const getHeaderCellStyle = (column: TableColumn): CSSProperties => {
 		textAlign: column.align || 'center',
 		...(isResizable && {
 			resize: 'horizontal',
-			overflow: 'auto',
+			overflow: 'hidden',
 			whiteSpace: 'nowrap',
 		}),
 	}
