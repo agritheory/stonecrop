@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/beam",
+      "comment": "use individual margin styles for extensibility",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/beam"
+}
