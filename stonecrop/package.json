@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/stonecrop",
-	"version": "0.2.57",
+	"version": "0.2.61",
 	"description": "schema helper",
 	"license": "MIT",
 	"type": "module",

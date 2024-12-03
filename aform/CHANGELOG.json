@@ -2,6 +2,30 @@
   "name": "@stonecrop/aform",
   "entries": [
     {
+      "version": "0.2.61",
+      "tag": "@stonecrop/aform_v0.2.61",
+      "date": "Tue, 03 Dec 2024 06:50:08 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.2.60",
+      "tag": "@stonecrop/aform_v0.2.60",
+      "date": "Tue, 03 Dec 2024 06:36:32 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.2.59",
+      "tag": "@stonecrop/aform_v0.2.59",
+      "date": "Mon, 02 Dec 2024 12:40:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.2.58",
+      "tag": "@stonecrop/aform_v0.2.58",
+      "date": "Wed, 27 Nov 2024 12:32:53 GMT",
+      "comments": {}
+    },
+    {
       "version": "0.2.57",
       "tag": "@stonecrop/aform_v0.2.57",
       "date": "Sat, 23 Nov 2024 17:29:12 GMT",

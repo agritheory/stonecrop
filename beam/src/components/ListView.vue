@@ -1,11 +1,16 @@
 <template>
 	<ul class="beam_list-view">
 		<li v-for="item in items" :key="item.label">
-			<template v-if="item.linkComponent">
+			<template v-if="item.linkComponent == 'BeamDayDivider'">
+				<BeamDayDivider :item="item"></BeamDayDivider>
+			</template>
+
+			<template v-else-if="item.linkComponent">
 				<component :is="item.linkComponent" :to="item.route" tabindex="-1">
 					<ListItem :item="item" @update="handleUpdate"></ListItem>
 				</component>
 			</template>
+
 			<template v-else>
 				<ListItem :item="item" @update="handleUpdate"></ListItem>
 			</template>
@@ -16,6 +21,7 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted } from 'vue'
 
+import BeamDayDivider from '@/components/BeamDayDivider.vue'
 import ListItem from '@/components/ListItem.vue'
 import type { ListViewItem } from '@/types'
 
@@ -42,11 +48,15 @@ const handleScroll = () => {
 
 <style scoped>
 .beam_list-view {
-	list-style-type: none;
-	margin: var(--sc-list-margin);
-	padding: 0;
-	padding-bottom: 2.5em;
-	margin-top: 1px;
 	font-family: var(--sc-font-family);
+	list-style-type: none;
+	margin-top: 1px;
+	margin-left: var(--sc-list-margin);
+	margin-right: var(--sc-list-margin);
+	padding: 0;
+}
+
+ul.beam_list-view:last-of-type {
+	padding-bottom: 2.5em;
 }
 </style>

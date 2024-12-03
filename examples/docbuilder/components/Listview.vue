@@ -21,7 +21,7 @@
 						:addNavigation="rowNav"
 						:contenteditable="false"
 						:rowIndex="rowIndex"
-						:colIndex="colIndex + (data.zeroColumn ? 0 : -1)"
+						:colIndex="colIndex"
 						:style="getRowCellStyle(col)" />
 				</template>
 			</ARow>

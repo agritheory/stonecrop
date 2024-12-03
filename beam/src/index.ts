@@ -3,6 +3,7 @@ import { App } from 'vue'
 import ActionFooter from '@/components/ActionFooter.vue'
 import BeamArrow from '@/components/BeamArrow.vue'
 import BeamBtn from '@/components/BeamBtn.vue'
+import BeamDayDivider from '@/components/BeamDayDivider.vue'
 import BeamFilter from '@/components/BeamFilter.vue'
 import BeamFilterOption from '@/components/BeamFilterOption.vue'
 import BeamHeading from '@/components/BeamHeading.vue'
@@ -22,6 +23,7 @@ import ScanInput from '@/components/ScanInput.vue'
 import SplitColumn from '@/components/SplitColumn.vue'
 import ToggleArrow from '@/components/ToggleArrow.vue'
 import { useMqttStream } from '@/composables/mqtt'
+export type { ListViewItem } from '@/types'
 import 'themes/beam.css'
 
 /**
@@ -33,6 +35,7 @@ function install(app: App /* options */) {
 	app.component('ActionFooter', ActionFooter)
 	app.component('BeamArrow', BeamArrow)
 	app.component('BeamBtn', BeamBtn)
+	app.component('BeamDayDivider', BeamDayDivider)
 	app.component('BeamFilter', BeamFilter)
 	app.component('BeamFilterOption', BeamFilterOption)
 	app.component('BeamHeading', BeamHeading)
@@ -57,6 +60,7 @@ export {
 	ActionFooter,
 	BeamArrow,
 	BeamBtn,
+	BeamDayDivider,
 	BeamFilter,
 	BeamFilterOption,
 	BeamHeading,
