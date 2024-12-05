@@ -15,7 +15,7 @@
 		@click="showModal"
 		@mousedown="showModal"
 		class="atable-cell"
-		:class="pinned ? 'sticky-column' : ''">
+		:class="cellClasses">
 		<component
 			v-if="column.cellComponent"
 			:is="column.cellComponent"
@@ -41,6 +41,7 @@ const {
 	tableid,
 	addNavigation = true,
 	tabIndex = 0,
+	pinned = false,
 } = defineProps<{
 	colIndex: number
 	rowIndex: number
@@ -75,9 +76,15 @@ const cellStyle = computed((): CSSProperties => {
 	return {
 		textAlign,
 		width: cellWidth,
-		backgroundColor: !cellModified.value ? 'inherit' : 'var(--sc-cell-modified)',
 		fontWeight: !cellModified.value ? 'inherit' : 'bold',
 		paddingLeft: getIndent(colIndex, tableData.display[rowIndex]?.indent),
+	}
+})
+
+const cellClasses = computed(() => {
+	return {
+		'sticky-column': pinned,
+		'cell-modified': cellModified.value,
 	}
 })
 

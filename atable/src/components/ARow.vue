@@ -1,5 +1,5 @@
 <template>
-	<tr ref="rowEl" :tabindex="tabIndex" v-show="isRowVisible" class="table-row">
+	<tr ref="rowEl" :tabindex="tabIndex" v-show="isRowVisible" class="atable-row">
 		<!-- render numbered/tree view index; skip render for uncounted lists -->
 		<slot name="index" v-if="tableData.config.view !== 'uncounted'">
 			<td
@@ -89,7 +89,7 @@ if (addNavigation) {
 <style>
 @import url('@stonecrop/themes/default.css');
 
-.table-row {
+.atable-row {
 	border-top: 1px solid var(--sc-row-border-color);
 	display: flex;
 	background-color: white;
@@ -117,5 +117,17 @@ if (addNavigation) {
 	box-sizing: border-box;
 	padding-top: var(--sc-atable-row-padding);
 	padding-bottom: var(--sc-atable-row-padding);
+}
+/* sticky cells in modified rows should be a solid color to properly hide non-sticky cells */
+.atable-row:has(td.cell-modified) > td.sticky-column,
+.atable-row:has(td.cell-modified) > th.sticky-column,
+.atable-row:has(td.cell-modified) > td.sticky-index,
+.atable-row:has(td.cell-modified) > th.sticky-index {
+	background: var(--sc-cell-changed-color);
+}
+</style>
+<style scoped>
+.atable-row:has(td.cell-modified) {
+	background: linear-gradient(45deg, var(--sc-cell-changed-color), transparent);
 }
 </style>

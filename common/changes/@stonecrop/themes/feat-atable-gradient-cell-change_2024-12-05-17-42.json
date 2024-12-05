@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/themes",
+      "comment": "added cell change color variable",
+      "type": "none"
+    }
+  ],
+  "packageName": "@stonecrop/themes"
+}
