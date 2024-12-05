@@ -93,6 +93,6 @@ if (addNavigation) {
 </style>
 <style scoped>
 .expandable-row:has(td.cell-modified) {
-	background: linear-gradient(45deg, var(--sc-cell-changed-color), transparent);
+	background: linear-gradient(90deg, var(--sc-cell-changed-color), transparent);
 }
 </style>
