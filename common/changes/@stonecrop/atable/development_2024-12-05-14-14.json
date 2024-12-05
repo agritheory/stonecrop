@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/atable",
+      "comment": "expose table data on initialization",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/atable"
+}

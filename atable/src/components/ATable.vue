@@ -221,6 +221,8 @@ window.addEventListener('keydown', (event: KeyboardEvent) => {
 		}
 	}
 })
+
+defineExpose({ tableData })
 </script>
 
 <style>
