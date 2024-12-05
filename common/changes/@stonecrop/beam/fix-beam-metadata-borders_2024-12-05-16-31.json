@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/beam",
+      "comment": "removed borders from metatdata and replzced with horizontal rule",
+      "type": "none"
+    }
+  ],
+  "packageName": "@stonecrop/beam"
+}
