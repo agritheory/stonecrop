@@ -1,4 +1,5 @@
-import { describe, it, expect } from 'vitest'
+import { createPinia, setActivePinia } from 'pinia'
+import { describe, it, expect, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 
 import ATable from '@/components/ATable.vue'
@@ -38,6 +39,10 @@ describe('table row component', () => {
 			},
 		},
 	]
+
+	beforeEach(() => {
+		setActivePinia(createPinia())
+	})
 
 	it('verify no expand symbol on list table config', async () => {
 		const wrapper = mount(ATable, {

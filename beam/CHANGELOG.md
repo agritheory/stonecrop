@@ -1,6 +1,25 @@
 # Change Log - @stonecrop/beam
 
-This log was last generated on Tue, 03 Dec 2024 06:50:08 GMT and should not be manually modified.
+This log was last generated on Wed, 11 Dec 2024 07:45:13 GMT and should not be manually modified.
+
+## 0.2.64
+Wed, 11 Dec 2024 07:45:13 GMT
+
+### Minor changes
+
+- update dependencies
+
+## 0.2.63
+Mon, 09 Dec 2024 18:06:22 GMT
+
+### Updates
+
+- removed borders from metatdata and replzced with horizontal rule
+
+## 0.2.62
+Thu, 05 Dec 2024 14:20:47 GMT
+
+_Version update only_
 
 ## 0.2.61
 Tue, 03 Dec 2024 06:50:08 GMT

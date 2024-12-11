@@ -1,5 +1,3 @@
-import TableDataStore from '@/components'
-
 export type TableColumn = {
 	name: string
 
@@ -23,7 +21,7 @@ export type TableColumn = {
 export type CellContext = {
 	row: TableRow
 	column: TableColumn
-	table: TableDataStore['table']
+	table: { [key: string]: any }
 }
 
 export type TableConfig = {

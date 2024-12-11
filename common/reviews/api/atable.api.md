@@ -12,9 +12,9 @@ import ATable from '@/components/ATable.vue';
 import ATableHeader from '@/components/ATableHeader.vue';
 import ATableModal from '@/components/ATableModal.vue';
 import { CellContext } from '@/types';
+import { createTableStore } from '@/stores/table';
 import { TableColumn } from '@/types';
 import { TableConfig } from '@/types';
-import TableDataStore from './components';
 import { TableDisplay } from '@/types';
 import { TableModal } from '@/types';
 import { TableRow } from '@/types';
@@ -33,14 +33,14 @@ export { ATableModal }
 
 export { CellContext }
 
+export { createTableStore }
+
 // @public
 export function install(app: App): void;
 
 export { TableColumn }
 
 export { TableConfig }
-
-export { TableDataStore }
 
 export { TableDisplay }
 

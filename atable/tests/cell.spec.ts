@@ -1,4 +1,5 @@
-import { describe, it, expect } from 'vitest'
+import { setActivePinia, createPinia } from 'pinia'
+import { describe, it, expect, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 
 import ATable from '@/components/ATable.vue'
@@ -44,6 +45,10 @@ describe('table cell component', () => {
 		modelValue: data,
 		config: { view: 'list' },
 	}
+
+	beforeEach(() => {
+		setActivePinia(createPinia())
+	})
 
 	it('update data when cell is focused', async () => {
 		const wrapper = mount(ATable, { props })

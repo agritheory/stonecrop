@@ -2,12 +2,12 @@
 	<thead v-if="columns.length">
 		<tr class="atable-header-row" tabindex="-1">
 			<th
-				v-if="tableData.zeroColumn"
+				v-if="store.zeroColumn"
 				id="header-index"
 				:class="[
-					hasPinnedColumns ? 'sticky-index' : '',
-					tableData.config.view === 'tree' ? 'tree-index' : '',
-					tableData.config.view === 'list-expansion' ? 'list-expansion-index' : '',
+					store.hasPinnedColumns ? 'sticky-index' : '',
+					store.config.view === 'tree' ? 'tree-index' : '',
+					store.config.view === 'list-expansion' ? 'list-expansion-index' : '',
 				]"
 				class="list-index" />
 
@@ -18,7 +18,7 @@
 				:data-colindex="colIndex"
 				:key="column.name"
 				tabindex="-1"
-				:style="getHeaderCellStyle(column)"
+				:style="store.getHeaderCellStyle(column)"
 				:class="column.pinned ? 'sticky-column' : ''">
 				<slot>{{ column.label || String.fromCharCode(colIndex + 97).toUpperCase() }}</slot>
 			</th>
@@ -28,15 +28,14 @@
 
 <script setup lang="ts">
 import { vResizeObserver } from '@vueuse/components'
-import { CSSProperties, inject, computed } from 'vue'
 
-import TableDataStore from '.'
+import { createTableStore } from '@/stores/table'
 import type { TableColumn } from '@/types'
 
-const { columns, tableid } = defineProps<{ columns: TableColumn[]; tableid?: string }>()
-const tableData = inject<TableDataStore>(tableid)
-
-const hasPinnedColumns = computed(() => tableData.columns.some(col => col.pinned))
+const { columns, store } = defineProps<{
+	columns: TableColumn[]
+	store: ReturnType<typeof createTableStore>
+}>()
 
 const onResize = (entries: ReadonlyArray<ResizeObserverEntry>) => {
 	for (const entry of entries) {
@@ -45,28 +44,13 @@ const onResize = (entries: ReadonlyArray<ResizeObserverEntry>) => {
 		const observedCell = entry.borderBoxSize[0]
 		const observedWidth = `${observedCell.inlineSize}px`
 		const colIndex = Number((entry.target as HTMLElement).dataset.colindex)
-		const colWidth = tableData.columns[colIndex].width
+		const colWidth = store.columns[colIndex].width
+
 		if (colWidth !== observedWidth) {
-			tableData.columns[colIndex].width = `${entry.contentRect.right}px`
+			store.$patch(state => {
+				state.columns[colIndex].width = `${entry.contentRect.right}px`
+			})
 		}
-	}
-}
-
-const getHeaderCellStyle = (column: TableColumn): CSSProperties => {
-	const isLastCol = columns.indexOf(column) === columns.length - 1
-
-	// if the table is full width, the last column should not be resizable;
-	// ref: https://github.com/agritheory/stonecrop/pull/196#issuecomment-2503762641
-	const isResizable = tableData.config.fullWidth ? column.resizable && !isLastCol : column.resizable
-
-	return {
-		width: column.width || '40ch',
-		textAlign: column.align || 'center',
-		...(isResizable && {
-			resize: 'horizontal',
-			overflow: 'hidden',
-			whiteSpace: 'nowrap',
-		}),
 	}
 }
 </script>

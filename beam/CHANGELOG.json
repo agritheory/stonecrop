@@ -2,6 +2,36 @@
   "name": "@stonecrop/beam",
   "entries": [
     {
+      "version": "0.2.64",
+      "tag": "@stonecrop/beam_v0.2.64",
+      "date": "Wed, 11 Dec 2024 07:45:13 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "update dependencies"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.2.63",
+      "tag": "@stonecrop/beam_v0.2.63",
+      "date": "Mon, 09 Dec 2024 18:06:22 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "removed borders from metatdata and replzced with horizontal rule"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.2.62",
+      "tag": "@stonecrop/beam_v0.2.62",
+      "date": "Thu, 05 Dec 2024 14:20:47 GMT",
+      "comments": {}
+    },
+    {
       "version": "0.2.61",
       "tag": "@stonecrop/beam_v0.2.61",
       "date": "Tue, 03 Dec 2024 06:50:08 GMT",

@@ -1,12 +1,12 @@
 <template>
 	<ATable id="list" :key="rows" :columns="columns" :rows="rows" :config="{ view: 'list', fullWidth: true }">
-		<template #body="{ data }: { data: TableDataStore }">
+		<template #body="{ data }">
 			<ARow
 				v-for="(row, rowIndex) in data.rows"
 				:key="row.id"
 				:row="row"
 				:rowIndex="rowIndex"
-				:tableid="data.id"
+				:store="data"
 				:tabIndex="0"
 				:addNavigation="rowNav"
 				@click="showBuilder(row.name)">
@@ -14,7 +14,7 @@
 					<ACell
 						v-for="(col, colIndex) in data.columns"
 						:key="col.name"
-						:tableid="data.id"
+						:store="data"
 						:col="col"
 						spellcheck="false"
 						:tabIndex="0"
@@ -33,7 +33,7 @@
 import { CSSProperties, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
-import { TableDataStore } from '@stonecrop/atable'
+import { createTableStore } from '@stonecrop/atable'
 import { TableColumn, TableRow } from '@stonecrop/atable/types'
 
 const router = useRouter()

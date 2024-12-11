@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/node-editor",
-	"version": "0.2.61",
+	"version": "0.2.64",
 	"description": "Node editor UI for Stonecrop",
 	"license": "MIT",
 	"type": "module",
@@ -41,7 +41,7 @@
 	},
 	"dependencies": {
 		"@vue-flow/core": "^1.37.1",
-		"vue": "^3.5.6",
+		"vue": "^3.5.11",
 		"vue-router": "^4.4.0",
 		"xstate": "^4.38.3"
 	},

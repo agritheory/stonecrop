@@ -13,9 +13,9 @@
 		@blur="updateCellData"
 		@input="updateCellData"
 		@click="showModal"
-		@mousedown="showModal"
 		class="atable-cell"
-		:class="pinned ? 'sticky-column' : ''">
+		:class="pinned ? 'sticky-column' : ''"
+		v-on-click-outside="store.closeModal">
 		<component
 			v-if="column.cellComponent"
 			:is="column.cellComponent"
@@ -28,47 +28,46 @@
 
 <script setup lang="ts">
 import { KeypressHandlers, defaultKeypressHandlers, useKeyboardNav } from '@stonecrop/utilities'
+import { vOnClickOutside } from '@vueuse/components'
 import { useElementBounding } from '@vueuse/core'
-import { computed, CSSProperties, inject, ref, useTemplateRef } from 'vue'
+import { computed, CSSProperties, ref, useTemplateRef } from 'vue'
 
-import TableDataStore from '.'
-import type { CellContext } from '@/types'
+import { createTableStore } from '@/stores/table'
 import { isHtmlString } from '@/utils'
 
 const {
 	colIndex,
 	rowIndex,
-	tableid,
+	store,
 	addNavigation = true,
 	tabIndex = 0,
 } = defineProps<{
 	colIndex: number
 	rowIndex: number
-	tableid: string
+	store: ReturnType<typeof createTableStore>
 	addNavigation?: boolean | KeypressHandlers
 	tabIndex?: number
 	pinned?: boolean
 }>()
 
-const tableData = inject<TableDataStore>(tableid)
 const cellRef = useTemplateRef<HTMLTableCellElement>('cell')
 const { bottom, left } = useElementBounding(cellRef)
 
 // keep a shallow copy of the original cell value for comparison
-const originalData = tableData.cellData<any>(colIndex, rowIndex)
+const originalData = store.getCellData(colIndex, rowIndex)
+const displayValue = store.getCellDisplayValue(colIndex, rowIndex)
 const currentData = ref('')
 const cellModified = ref(false)
 
-const table = tableData.table
-const column = tableData.columns[colIndex]
-const row = tableData.rows[rowIndex]
+const column = store.columns[colIndex]
+const row = store.rows[rowIndex]
 
 const textAlign = column.align || 'center'
 const cellWidth = column.width || '40ch'
 
 const isHtmlValue = computed(() => {
 	// TODO: check if display value is a native DOM element
-	return typeof displayValue.value === 'string' ? isHtmlString(displayValue.value) : false
+	return typeof displayValue === 'string' ? isHtmlString(displayValue) : false
 })
 
 const cellStyle = computed((): CSSProperties => {
@@ -77,33 +76,9 @@ const cellStyle = computed((): CSSProperties => {
 		width: cellWidth,
 		backgroundColor: !cellModified.value ? 'inherit' : 'var(--sc-cell-modified)',
 		fontWeight: !cellModified.value ? 'inherit' : 'bold',
-		paddingLeft: getIndent(colIndex, tableData.display[rowIndex]?.indent),
+		paddingLeft: store.getIndent(colIndex, store.display[rowIndex]?.indent),
 	}
 })
-
-const displayValue = computed(() => {
-	const cellData = tableData.cellData<any>(colIndex, rowIndex)
-	return getFormattedValue(cellData)
-})
-
-const getFormattedValue = (value: any) => {
-	const format = column.format
-
-	if (!format) {
-		return value
-	}
-
-	if (typeof format === 'function') {
-		return format(value, { table, row, column })
-	} else if (typeof format === 'string') {
-		// parse format function from string
-		// eslint-disable-next-line @typescript-eslint/no-implied-eval
-		const formatFn: (value: any, context?: CellContext) => string = Function(`"use strict";return (${format})`)()
-		return formatFn(value, { table, row, column })
-	}
-
-	return value
-}
 
 const showModal = () => {
 	if (column.mask) {
@@ -112,21 +87,23 @@ const showModal = () => {
 	}
 
 	if (column.modalComponent) {
-		tableData.modal.visible = true
-		tableData.modal.colIndex = colIndex
-		tableData.modal.rowIndex = rowIndex
-		tableData.modal.parent = cellRef.value
-		tableData.modal.top = bottom.value
-		tableData.modal.left = left.value
-		tableData.modal.width = cellWidth
+		store.$patch(state => {
+			state.modal.visible = true
+			state.modal.colIndex = colIndex
+			state.modal.rowIndex = rowIndex
+			state.modal.parent = cellRef.value
+			state.modal.top = bottom.value
+			state.modal.left = left.value
+			state.modal.width = cellWidth
 
-		if (typeof column.modalComponent === 'function') {
-			tableData.modal.component = column.modalComponent({ table, row, column })
-		} else {
-			tableData.modal.component = column.modalComponent
-		}
+			if (typeof column.modalComponent === 'function') {
+				state.modal.component = column.modalComponent({ table: state.table, row, column })
+			} else {
+				state.modal.component = column.modalComponent
+			}
 
-		tableData.modal.componentProps = column.modalComponentExtraProps
+			state.modal.componentProps = column.modalComponentExtraProps
+		})
 	}
 }
 
@@ -161,7 +138,7 @@ if (addNavigation) {
 // 	if (event) {
 // 		// custom components need to handle their own updateData, this is the default
 // 		if (!column.component) {
-// 			tableData.setCellData(rowIndex, colIndex, cell.value.innerHTML)
+// 			store.setCellData(colIndex, rowIndex, cell.value.innerHTML)
 // 		}
 // 		cellModified.value = true
 // 	}
@@ -177,7 +154,7 @@ const updateCellData = () => {
 	if (cellRef.value) {
 		// only apply changes if the cell value has changed after being mounted
 		if (column.format) {
-			cellModified.value = cellRef.value.textContent !== getFormattedValue(originalData)
+			cellModified.value = cellRef.value.textContent !== store.getFormattedValue(colIndex, rowIndex, originalData)
 		} else {
 			cellModified.value = cellRef.value.textContent !== originalData
 		}
@@ -187,17 +164,9 @@ const updateCellData = () => {
 			cellRef.value.dispatchEvent(new Event('change'))
 			if (!column.format) {
 				// TODO: need to setup reverse format function
-				tableData.setCellData(rowIndex, colIndex, currentData.value)
+				store.setCellData(colIndex, rowIndex, currentData.value)
 			}
 		}
-	}
-}
-
-const getIndent = (colIndex: number, indentLevel?: number) => {
-	if (indentLevel && colIndex === 0 && indentLevel > 0) {
-		return `${indentLevel}ch`
-	} else {
-		return 'inherit'
 	}
 }
 </script>

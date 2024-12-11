@@ -1,20 +1,20 @@
 <template>
 	<tr ref="rowEl" :tabindex="tabIndex" v-show="isRowVisible" class="table-row">
 		<!-- render numbered/tree view index; skip render for uncounted lists -->
-		<slot name="index" v-if="tableData.config.view !== 'uncounted'">
+		<slot name="index" v-if="store.config.view !== 'uncounted'">
 			<td
-				v-if="tableData.config.view === 'list'"
+				v-if="store.config.view === 'list'"
 				:tabIndex="-1"
 				class="list-index"
-				:class="hasPinnedColumns ? 'sticky-index' : ''">
+				:class="store.hasPinnedColumns ? 'sticky-index' : ''">
 				{{ rowIndex + 1 }}
 			</td>
 			<td
-				v-else-if="tableData.config.view === 'tree'"
+				v-else-if="store.config.view === 'tree'"
 				:tabIndex="-1"
 				class="tree-index"
-				:class="hasPinnedColumns ? 'sticky-index' : ''"
-				@click="toggleRowExpand(rowIndex)">
+				:class="store.hasPinnedColumns ? 'sticky-index' : ''"
+				@click="store.toggleRowExpand(rowIndex)">
 				{{ rowExpandSymbol }}
 			</td>
 		</slot>
@@ -26,46 +26,25 @@
 
 <script setup lang="ts">
 import { type KeypressHandlers, useKeyboardNav, defaultKeypressHandlers } from '@stonecrop/utilities'
-import { computed, inject, useTemplateRef } from 'vue'
+import { useTemplateRef } from 'vue'
 
-import TableDataStore from '.'
+import { createTableStore } from '@/stores/table'
 
 const {
 	rowIndex,
-	tableid,
+	store,
 	tabIndex = -1,
 	addNavigation = false, // default to allowing cell navigation
 } = defineProps<{
 	rowIndex: number
-	tableid: string
+	store: ReturnType<typeof createTableStore>
 	tabIndex?: number
 	addNavigation?: boolean | KeypressHandlers
 }>()
 
-const tableData = inject<TableDataStore>(tableid)
 const rowRef = useTemplateRef<HTMLTableRowElement>('rowEl')
-
-const hasPinnedColumns = computed(() => tableData.columns.some(col => col.pinned))
-
-const isRowVisible = computed(() => {
-	return tableData.config.view !== 'tree' || tableData.display[rowIndex].isRoot || tableData.display[rowIndex].open
-})
-
-const rowExpandSymbol = computed(() => {
-	if (tableData.config.view !== 'tree') {
-		return ''
-	}
-
-	if (tableData.display[rowIndex].isRoot || tableData.display[rowIndex].isParent) {
-		return tableData.display[rowIndex].childrenOpen ? '-' : '+'
-	}
-
-	return ''
-})
-
-const toggleRowExpand = (rowIndex: number) => {
-	tableData.toggleRowExpand(rowIndex)
-}
+const isRowVisible = store.isRowVisible(rowIndex)
+const rowExpandSymbol = store.getRowExpandSymbol(rowIndex)
 
 if (addNavigation) {
 	let handlers = defaultKeypressHandlers
@@ -94,6 +73,7 @@ if (addNavigation) {
 	display: flex;
 	background-color: white;
 }
+
 .list-index {
 	color: var(--sc-header-text-color);
 	font-weight: bold;
@@ -108,6 +88,7 @@ if (addNavigation) {
 	padding-top: var(--sc-atable-row-padding);
 	padding-bottom: var(--sc-atable-row-padding);
 }
+
 .tree-index {
 	color: var(--sc-header-text-color);
 	font-weight: bold;
