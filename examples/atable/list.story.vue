@@ -2,20 +2,20 @@
 	<Story title="list">
 		<Variant title="row navigation">
 			<ATable id="list" v-model="http_logs.rows" :columns="http_logs.columns" :config="{ view: 'list' }">
-				<template #body="{ data }: { data: TableDataStore }">
+				<template #body="{ data }">
 					<ARow
 						v-for="(row, rowIndex) in data.rows"
 						:key="row.id"
 						:row="row"
 						:rowIndex="rowIndex"
-						:tableid="data.id"
+						:store="data"
 						:tabIndex="0"
 						:addNavigation="rowNav">
 						<template #default>
 							<ACell
 								v-for="(col, colIndex) in data.columns"
 								:key="col.name"
-								:tableid="data.id"
+								:store="data"
 								:col="col"
 								spellcheck="false"
 								:tabIndex="0"
@@ -36,21 +36,21 @@
 
 		<Variant title="expandable">
 			<ATable id="list" v-model="http_logs.rows" :columns="http_logs.columns" :config="{ view: 'list-expansion' }">
-				<template #body="{ data }: { data: TableDataStore }">
+				<template #body="{ data }">
 					<AExpansionRow
 						:data-id="row.id"
 						v-for="(row, rowIndex) in data.rows"
 						:key="row.id"
 						:row="row"
 						:rowIndex="rowIndex"
-						:tableid="data.id"
+						:store="data"
 						:tabIndex="0"
 						:addNavigation="rowNav">
 						<template #row>
 							<ACell
 								v-for="(col, colIndex) in data.columns"
 								:key="col.name"
-								:tableid="data.id"
+								:store="data"
 								:col="col"
 								spellcheck="false"
 								:tabIndex="0"
@@ -68,21 +68,21 @@
 								:columns="inbox.columns"
 								:rows="chooseRandomData(inbox.rows)"
 								:config="{ view: 'list-expansion' }">
-								<template #body="{ data }: { data: TableDataStore }">
+								<template #body="{ data }">
 									<AExpansionRow
 										:data-id="row.id"
 										v-for="(row, rowIndex) in data.rows"
 										:key="row.id"
 										:row="row"
 										:rowIndex="rowIndex"
-										:tableid="data.id"
+										:store="data"
 										:tabIndex="0"
 										:addNavigation="rowNav">
 										<template #row>
 											<ACell
 												v-for="(col, colIndex) in data.columns"
 												:key="col.name"
-												:tableid="data.id"
+												:store="data"
 												:col="col"
 												spellcheck="false"
 												:tabIndex="0"
@@ -107,7 +107,7 @@
 </template>
 
 <script lang="ts" setup>
-import { type TableColumn, TableDataStore } from '@stonecrop/atable'
+import { type TableColumn, createTableStore } from '@stonecrop/atable'
 import { CSSProperties, ref } from 'vue'
 
 import inbox_data from './sample_data/inbox.json'

@@ -1,3 +1,4 @@
+import { createPinia } from 'pinia'
 import { App } from 'vue'
 
 import ACell from '@/components/ACell.vue'
@@ -6,7 +7,7 @@ import ARow from '@/components/ARow.vue'
 import ATable from '@/components/ATable.vue'
 import ATableHeader from '@/components/ATableHeader.vue'
 import ATableModal from '@/components/ATableModal.vue'
-import TableDataStore from './components'
+export { createTableStore } from '@/stores/table'
 export type { CellContext, TableColumn, TableConfig, TableDisplay, TableRow, TableModal } from '@/types'
 
 /**
@@ -15,6 +16,9 @@ export type { CellContext, TableColumn, TableConfig, TableDisplay, TableRow, Tab
  * @public
  */
 function install(app: App /* options */) {
+	const pinia = createPinia()
+	app.use(pinia)
+
 	app.component('ACell', ACell)
 	app.component('AExpansionRow', AExpansionRow)
 	app.component('ARow', ARow)
@@ -23,4 +27,4 @@ function install(app: App /* options */) {
 	app.component('ATableModal', ATableModal)
 }
 
-export { install, ACell, AExpansionRow, ARow, ATable, ATableHeader, ATableModal, TableDataStore }
+export { install, ACell, AExpansionRow, ARow, ATable, ATableHeader, ATableModal }

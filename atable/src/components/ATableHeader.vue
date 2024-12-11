@@ -2,19 +2,19 @@
 	<thead id="resizable" v-if="columns.length">
 		<tr class="atable-header-row" tabindex="-1">
 			<th
-				v-if="tableData.zeroColumn"
+				v-if="store.zeroColumn"
 				id="header-index"
 				:class="[
-					hasPinnedColumns ? 'sticky-index' : '',
-					tableData.config.view === 'tree' ? 'tree-index' : '',
-					tableData.config.view === 'list-expansion' ? 'list-expansion-index' : '',
+					store.hasPinnedColumns ? 'sticky-index' : '',
+					store.config.view === 'tree' ? 'tree-index' : '',
+					store.config.view === 'list-expansion' ? 'list-expansion-index' : '',
 				]"
 				class="list-index" />
 			<th
 				v-for="(column, colKey) in columns"
 				:key="column.name"
 				tabindex="-1"
-				:style="getHeaderCellStyle(column)"
+				:style="store.getHeaderCellStyle(column)"
 				:class="column.pinned ? 'sticky-column' : ''">
 				<slot>{{ column.label || String.fromCharCode(colKey + 97).toUpperCase() }}</slot>
 			</th>
@@ -23,22 +23,13 @@
 </template>
 
 <script setup lang="ts">
-import { CSSProperties, inject, computed } from 'vue'
-
-import TableDataStore from '.'
+import { createTableStore } from '@/stores/table'
 import type { TableColumn } from '@/types'
 
-const { columns, tableid } = defineProps<{ columns: TableColumn[]; tableid?: string }>()
-
-const tableData = inject<TableDataStore>(tableid)
-
-const hasPinnedColumns = computed(() => tableData.columns.some(col => col.pinned))
-
-const getHeaderCellStyle = (column: TableColumn): CSSProperties => ({
-	minWidth: column.width || '40ch',
-	textAlign: column.align || 'center',
-	width: tableData.config.fullWidth ? 'auto' : null,
-})
+const { columns, store } = defineProps<{
+	columns: TableColumn[]
+	store: ReturnType<typeof createTableStore>
+}>()
 </script>
 
 <style>
