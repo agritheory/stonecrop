@@ -29,7 +29,7 @@
 <script setup lang="ts">
 import { KeypressHandlers, defaultKeypressHandlers, useKeyboardNav } from '@stonecrop/utilities'
 import { vOnClickOutside } from '@vueuse/components'
-import { useElementBounding } from '@vueuse/core'
+import { useElementBounding, useWindowScroll } from '@vueuse/core'
 import { computed, CSSProperties, ref, useTemplateRef } from 'vue'
 
 import { createTableStore } from '@/stores/table'
@@ -52,6 +52,9 @@ const {
 
 const cellRef = useTemplateRef<HTMLTableCellElement>('cell')
 const { bottom, left } = useElementBounding(cellRef)
+
+const scrollX = useWindowScroll().x
+const scrollY = useWindowScroll().y
 
 // keep a shallow copy of the original cell value for comparison
 const originalData = store.getCellData(colIndex, rowIndex)
@@ -92,8 +95,8 @@ const showModal = () => {
 			state.modal.colIndex = colIndex
 			state.modal.rowIndex = rowIndex
 			state.modal.parent = cellRef.value
-			state.modal.top = bottom.value
-			state.modal.left = left.value
+			state.modal.top = bottom.value + scrollY.value
+			state.modal.left = left.value + scrollX.value
 			state.modal.width = cellWidth
 
 			if (typeof column.modalComponent === 'function') {

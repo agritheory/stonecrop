@@ -31,7 +31,7 @@ const handleInput = (event: Event) => {
 @import url('@stonecrop/themes/default.css');
 
 .amodal {
-	position: fixed;
+	position: absolute;
 	background-color: var(--sc-row-color-zebra-dark);
 	z-index: 100;
 }
