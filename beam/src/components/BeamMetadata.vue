@@ -22,6 +22,7 @@
 				</div>
 			</slot>
 		</div>
+		<hr />
 	</div>
 </template>
 
@@ -41,7 +42,6 @@ defineProps<{
 .beam_metadata {
 	/* margin:3.125rem; */
 	box-sizing: border-box;
-	border: 1px solid black;
 	display: flex;
 	flex-direction: column;
 	max-height: 100vh;
@@ -98,6 +98,14 @@ defineProps<{
 }
 .beam_metadata_components {
 	overflow: scroll;
+}
+hr {
+	display: block;
+	height: 1px;
+	border: 0;
+	border-top: 1px solid var(--sc-row-border-color);
+	margin: 1em 0;
+	padding: 0;
 }
 </style>
 <style>

@@ -5,20 +5,17 @@
 </template>
 
 <script setup lang="ts">
-// import { inject } from 'vue'
+import { createTableStore } from '@/stores/table'
 
-// import TableDataStore from '.'
-
-/* const { colIndex, rowIndex, tableid } = */ defineProps<{
+/* const { colIndex, rowIndex, store } = */ defineProps<{
 	colIndex?: number
 	rowIndex?: number
-	tableid?: string
+	store?: ReturnType<typeof createTableStore>
 }>()
 
-// const tableData = inject<TableDataStore>(tableid)
 // const cellBackgroundColor = computed(() => {
-// 	if (tableData.modal.parent) {
-// 		let computedstyle = window.getComputedStyle(tableData.modal.parent)
+// 	if (store.modal.parent) {
+// 		let computedstyle = window.getComputedStyle(store.modal.parent)
 // 		return 'blue'
 // 	} else {
 // 		return 'inherit'

@@ -1,25 +1,16 @@
 <template>
-	<table
-		ref="table"
-		class="atable"
-		:style="{ width: tableData.config.fullWidth ? '100%' : 'auto' }"
-		v-on-click-outside="closeModal">
-		<slot name="header" :data="tableData">
-			<ATableHeader :columns="tableData.columns" :tableid="tableData.id" />
+	<table ref="table" class="atable" :style="{ width: store.config.fullWidth ? '100%' : 'auto' }">
+		<slot name="header" :data="store">
+			<ATableHeader :columns="store.columns" :store="store" />
 		</slot>
 
 		<tbody>
-			<slot name="body" :data="tableData">
-				<ARow
-					v-for="(row, rowIndex) in tableData.rows"
-					:key="row.id"
-					:row="row"
-					:rowIndex="rowIndex"
-					:tableid="tableData.id">
+			<slot name="body" :data="store">
+				<ARow v-for="(row, rowIndex) in store.rows" :key="row.id" :row="row" :rowIndex="rowIndex" :store="store">
 					<ACell
-						v-for="(col, colIndex) in tableData.columns"
+						v-for="(col, colIndex) in store.columns"
 						:key="col.name"
-						:tableid="tableData.id"
+						:store="store"
 						:col="col"
 						spellcheck="false"
 						:pinned="col.pinned"
@@ -29,32 +20,32 @@
 						:style="{
 							textAlign: col?.align || 'center',
 							minWidth: col?.width || '40ch',
-							width: tableData.config.fullWidth ? 'auto' : null,
+							width: store.config.fullWidth ? 'auto' : null,
 						}" />
 				</ARow>
 			</slot>
 		</tbody>
 
-		<slot name="footer" :data="tableData" />
-		<slot name="modal" :data="tableData">
+		<slot name="footer" :data="store" />
+		<slot name="modal" :data="store">
 			<ATableModal
-				v-show="tableData.modal.visible"
-				:colIndex="tableData.modal.colIndex"
-				:rowIndex="tableData.modal.rowIndex"
-				:tableid="tableData.id"
+				v-show="store.modal.visible"
+				:colIndex="store.modal.colIndex"
+				:rowIndex="store.modal.rowIndex"
+				:store="store"
 				:style="{
-					left: tableData.modal.left + 'px',
-					top: tableData.modal.top + 'px',
-					maxWidth: tableData.modal.width + 'px',
+					left: store.modal.left + 'px',
+					top: store.modal.top + 'px',
+					maxWidth: store.modal.width + 'px',
 				}">
 				<template #default>
 					<component
-						:key="`${tableData.modal.rowIndex}:${tableData.modal.colIndex}`"
-						:is="tableData.modal.component"
-						:colIndex="tableData.modal.colIndex"
-						:rowIndex="tableData.modal.rowIndex"
-						:tableid="tableData.id"
-						v-bind="tableData.modal.componentProps" />
+						:key="`${store.modal.rowIndex}:${store.modal.colIndex}`"
+						:is="store.modal.component"
+						:colIndex="store.modal.colIndex"
+						:rowIndex="store.modal.rowIndex"
+						:store="store"
+						v-bind="store.modal.componentProps" />
 				</template>
 			</ATableModal>
 		</slot>
@@ -62,15 +53,14 @@
 </template>
 
 <script setup lang="ts">
-import { vOnClickOutside } from '@vueuse/components'
 import { useMutationObserver } from '@vueuse/core'
-import { nextTick, provide, watch, onMounted, useTemplateRef } from 'vue'
+import { nextTick, watch, onMounted, useTemplateRef } from 'vue'
 
-import TableDataStore from '.'
 import ACell from '@/components/ACell.vue'
 import ARow from '@/components/ARow.vue'
 import ATableHeader from '@/components/ATableHeader.vue'
 import ATableModal from '@/components/ATableModal.vue'
+import { createTableStore } from '@/stores/table'
 import type { TableColumn, TableConfig, TableRow } from '@/types'
 
 const {
@@ -87,15 +77,25 @@ const {
 	config?: TableConfig
 }>()
 
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits<{
+	'update:modelValue': [value: TableRow[]]
+	cellUpdate: [colIndex: number, rowIndex: number, newCellValue: any, prevCellValue: any]
+}>()
 
 const tableRef = useTemplateRef<HTMLTableElement>('table')
 const rowsValue = modelValue ? modelValue : rows
-const tableData = new TableDataStore(id, columns, rowsValue, config)
-provide(tableData.id, tableData)
+const store = createTableStore({ columns, rows: rowsValue, id, config })
+
+store.$onAction(({ name, store, args }) => {
+	if (name === 'setCellData') {
+		const [colIndex, rowIndex, newCellValue] = args
+		const prevCellValue = store.getCellData(colIndex, rowIndex)
+		emit('cellUpdate', [colIndex, rowIndex, newCellValue, prevCellValue])
+	}
+})
 
 watch(
-	() => tableData.rows,
+	() => store.rows,
 	newValue => {
 		emit('update:modelValue', newValue)
 	},
@@ -107,7 +107,7 @@ onMounted(() => {
 		assignStickyCellWidths()
 
 		// in tree view, also add a mutation observer to capture and adjust expanded rows
-		if (tableData.config.view === 'tree') {
+		if (store.config.view === 'tree') {
 			useMutationObserver(tableRef, assignStickyCellWidths, { childList: true, subtree: true })
 		}
 	}
@@ -153,12 +153,12 @@ const assignStickyCellWidths = () => {
 // 	if (event) {
 // 		colIndex = target.cellIndex
 // 	} else if (column && cellData) {
-// 		colIndex = tableData.columns.indexOf(column)
+// 		colIndex = store.columns.indexOf(column)
 // 	}
 
-// 	if (!column && 'format' in tableData.columns[colIndex]) {
+// 	if (!column && 'format' in store.columns[colIndex]) {
 // 		// TODO: (utils) create helper to extract format from string
-// 		const format = tableData.columns[colIndex].format
+// 		const format = store.columns[colIndex].format
 // 		if (typeof format === 'function') {
 // 			return format(target.innerHTML)
 // 		} else if (typeof format === 'string') {
@@ -195,23 +195,13 @@ const assignStickyCellWidths = () => {
 // 	document.getSelection().collapseToEnd()
 // }
 
-const closeModal = (event: MouseEvent) => {
-	if (!(event.target instanceof Node)) {
-		// if the target is not a node, it's probably a custom click event to Document or Window
-		// err on the side of closing the modal in that case
-		if (tableData.modal.visible) tableData.modal.visible = false
-	} else if (!tableData.modal.parent?.contains(event.target)) {
-		if (tableData.modal.visible) tableData.modal.visible = false
-	}
-}
-
 window.addEventListener('keydown', (event: KeyboardEvent) => {
 	if (event.key === 'Escape') {
-		if (tableData.modal.visible) {
-			tableData.modal.visible = false
+		if (store.modal.visible) {
+			store.modal.visible = false
 
 			// focus on the parent cell again
-			const $parent = tableData.modal.parent
+			const $parent = store.modal.parent
 			if ($parent) {
 				// wait for the modal to close before focusing
 				void nextTick().then(() => {
@@ -222,7 +212,7 @@ window.addEventListener('keydown', (event: KeyboardEvent) => {
 	}
 })
 
-defineExpose({ tableData })
+defineExpose({ store })
 </script>
 
 <style>
