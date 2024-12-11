@@ -76,23 +76,22 @@ if (addNavigation) {
 .expandable-row {
 	border-top: 1px solid var(--sc-row-border-color);
 	height: var(--sc-atable-row-height);
-	/* border-left: 4px solid var(--sc-row-border-color); */
 	display: flex;
 }
 .expandable-row > td:first-child {
-	border-left: 4px solid var(--sc-form-border);
+	border-left: 4px solid var(--sc-row-border-color);
 }
 
 .expanded-row {
-	border-bottom: 1px solid var(--sc-row-border-color);
-	border-top: 1px solid var(--sc-row-border-color);
 	display: flex;
+	border-left: 2px solid var(--sc-row-border-color);
 }
 
-.expanded-row-content {
+.expandable-row:last-child {
 	border-bottom: 1px solid var(--sc-row-border-color);
+}
+.expanded-row-content {
 	border-top: 1px solid var(--sc-row-border-color);
 	padding: 1.5rem;
-	border-left: 4px solid var(--sc-form-border);
 }
 </style>
