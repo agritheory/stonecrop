@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/beam",
+      "comment": "added link styles to BeamBtn",
+      "type": "none"
+    }
+  ],
+  "packageName": "@stonecrop/beam"
+}
