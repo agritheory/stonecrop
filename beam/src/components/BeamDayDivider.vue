@@ -39,7 +39,11 @@ const date = computed(() => {
 	background: var(--sc-cell-changed-color);
 	border-bottom: 1px solid var(--sc-row-border-color);
 	box-sizing: border-box;
-	margin: 1rem 0;
+	margin-bottom: 1rem;
+
+	/* reverse margins only for day-divider elements in list */
+	margin-left: calc(-1 * var(--sc-list-margin));
+	margin-right: calc(-1 * var(--sc-list-margin));
 
 	& h2 {
 		text-align: left;
