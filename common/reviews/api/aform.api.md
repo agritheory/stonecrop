@@ -4,23 +4,18 @@
 
 ```ts
 
-import ACheckbox from '@/components/form/ACheckbox.vue';
-import AComboBox from '@/components/form/AComboBox.vue';
-import ADate from '@/components/form/ADate.vue';
-import ADatePicker from '@/components/form/ADatePicker.vue';
-import ADropdown from '@/components/form/ADropdown.vue';
-import AFieldset from '@/components/form/AFieldset.vue';
-import AFileAttach from '@/components/form/AFileAttach.vue';
-import AForm from '@/components/AForm.vue';
-import ANumericInput from '@/components/form/ANumericInput.vue';
+import ACheckbox from './components/form/ACheckbox.vue';
+import AComboBox from './components/form/AComboBox.vue';
+import ADate from './components/form/ADate.vue';
+import ADatePicker from './components/form/ADatePicker.vue';
+import ADropdown from './components/form/ADropdown.vue';
+import AFieldset from './components/form/AFieldset.vue';
+import AFileAttach from './components/form/AFileAttach.vue';
+import AForm from './components/AForm.vue';
+import ANumericInput from './components/form/ANumericInput.vue';
 import { App } from 'vue';
-import ATextInput from '@/components/form/ATextInput.vue';
-import { BasicSchema } from '@/types';
-import { FieldsetSchema } from '@/types';
-import { FormSchema } from '@/types';
-import Login from '@/components/utilities/Login.vue';
-import { SchemaTypes } from '@/types';
-import { TableSchema } from '@/types';
+import ATextInput from './components/form/ATextInput.vue';
+import Login from './components/utilities/Login.vue';
 
 export { ACheckbox }
 
@@ -42,20 +37,55 @@ export { ANumericInput }
 
 export { ATextInput }
 
-export { BasicSchema }
+// @beta
+export type BasicSchema = {
+    component: string;
+    fieldname: string;
+    value: any;
+};
 
-export { FieldsetSchema }
+// @beta
+export type FieldsetSchema = BasicSchema & {
+    label: string;
+    schema: (FormSchema | TableSchema)[];
+    collapsible?: boolean;
+};
 
-export { FormSchema }
+// @beta
+export type FormSchema = BasicSchema & {
+    align: string;
+    edit: boolean;
+    fieldtype: string;
+    label: string;
+    name: string;
+    width: string;
+    mask?: string;
+};
 
 // @public
 export function install(app: App): void;
 
 export { Login }
 
-export { SchemaTypes }
+// Warning: (ae-incompatible-release-tags) The symbol "SchemaTypes" is marked as @public, but its signature references "FormSchema" which is marked as @beta
+// Warning: (ae-incompatible-release-tags) The symbol "SchemaTypes" is marked as @public, but its signature references "TableSchema" which is marked as @beta
+// Warning: (ae-incompatible-release-tags) The symbol "SchemaTypes" is marked as @public, but its signature references "FieldsetSchema" which is marked as @beta
+//
+// @public
+export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema;
 
-export { TableSchema }
+// @beta
+export type TableSchema = BasicSchema & {
+    columns: TableColumn[];
+    config: TableConfig;
+    rows: TableRow[];
+};
+
+// Warnings were encountered during analysis:
+//
+// src/types/index.ts:45:2 - (ae-forgotten-export) The symbol "TableColumn" needs to be exported by the entry point index.d.ts
+// src/types/index.ts:46:2 - (ae-forgotten-export) The symbol "TableConfig" needs to be exported by the entry point index.d.ts
+// src/types/index.ts:47:2 - (ae-forgotten-export) The symbol "TableRow" needs to be exported by the entry point index.d.ts
 
 // (No @packageDocumentation comment for this package)
 
