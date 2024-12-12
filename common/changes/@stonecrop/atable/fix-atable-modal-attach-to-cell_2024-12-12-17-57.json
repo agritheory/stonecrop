@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/atable",
+      "comment": "modal scrolls with cells and detects edges",
+      "type": "none"
+    }
+  ],
+  "packageName": "@stonecrop/atable"
+}

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/aform",
+      "comment": "small style update to Adate",
+      "type": "none"
+    }
+  ],
+  "packageName": "@stonecrop/aform"
+}
