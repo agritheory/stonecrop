@@ -33,11 +33,7 @@
 				:colIndex="store.modal.colIndex"
 				:rowIndex="store.modal.rowIndex"
 				:store="store"
-				:style="{
-					left: store.modal.left + 'px',
-					top: store.modal.top + 'px',
-					maxWidth: store.modal.width + 'px',
-				}">
+				:container="tableRef">
 				<template #default>
 					<component
 						:key="`${store.modal.rowIndex}:${store.modal.colIndex}`"
@@ -244,6 +240,7 @@ td.sticky-index {
 <style scoped>
 @import url('@stonecrop/themes/default.css');
 .atable {
+	position: relative;
 	font-family: var(--sc-atable-font-family);
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
