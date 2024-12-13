@@ -53,7 +53,7 @@
 		"vue": "^3.5.11"
 	},
 	"devDependencies": {
-		"@microsoft/api-documenter": "^7.25.3",
+		"@microsoft/api-documenter": "^7.26.2",
 		"@rushstack/heft": "^0.68.6",
 		"@typescript-eslint/eslint-plugin": "^7.14.1",
 		"@typescript-eslint/parser": "^7.14.1",

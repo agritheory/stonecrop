@@ -26,7 +26,7 @@ importers:
         version: 3.5.13(typescript@5.7.2)
     devDependencies:
       '@microsoft/api-documenter':
-        specifier: ^7.25.3
+        specifier: ^7.26.2
         version: 7.26.2(@types/node@22.10.2)
       '@rushstack/heft':
         specifier: ^0.68.6
@@ -108,7 +108,7 @@ importers:
         version: 3.5.13(typescript@5.7.2)
     devDependencies:
       '@microsoft/api-documenter':
-        specifier: ^7.25.3
+        specifier: ^7.26.2
         version: 7.26.2(@types/node@22.10.2)
       '@rushstack/heft':
         specifier: ^0.68.6
@@ -181,7 +181,7 @@ importers:
         version: 3.5.13(typescript@5.7.2)
     devDependencies:
       '@microsoft/api-documenter':
-        specifier: ^7.25.3
+        specifier: ^7.26.2
         version: 7.26.2(@types/node@22.10.2)
       '@rushstack/heft':
         specifier: ^0.68.6
@@ -257,7 +257,7 @@ importers:
         version: 3.5.13(typescript@5.7.2)
     devDependencies:
       '@microsoft/api-documenter':
-        specifier: ^7.25.3
+        specifier: ^7.26.2
         version: 7.26.2(@types/node@22.10.2)
       '@rushstack/heft':
         specifier: ^0.68.6
@@ -321,7 +321,7 @@ importers:
         version: 4.38.3
     devDependencies:
       '@microsoft/api-documenter':
-        specifier: ^7.25.3
+        specifier: ^7.26.2
         version: 7.26.2(@types/node@22.10.2)
       '@miragejs/graphql':
         specifier: ^0.1.13
@@ -476,7 +476,7 @@ importers:
         version: 6.0.0(graphql@16.6.0)
     devDependencies:
       '@microsoft/api-documenter':
-        specifier: ^7.25.3
+        specifier: ^7.26.2
         version: 7.26.2(@types/node@22.10.2)
       '@miragejs/graphql':
         specifier: ^0.1.13
@@ -540,7 +540,7 @@ importers:
         version: 4.38.3
     devDependencies:
       '@microsoft/api-documenter':
-        specifier: ^7.25.3
+        specifier: ^7.26.2
         version: 7.26.2(@types/node@22.10.2)
       '@rushstack/heft':
         specifier: ^0.68.6
@@ -619,11 +619,14 @@ importers:
         version: 4.38.3
     devDependencies:
       '@microsoft/api-documenter':
-        specifier: ^7.25.3
+        specifier: ^7.26.2
         version: 7.26.2(@types/node@22.10.2)
       '@rushstack/heft':
         specifier: ^0.68.6
         version: 0.68.10(@types/node@22.10.2)
+      '@rushstack/heft-typescript-plugin':
+        specifier: ^0.6.3
+        version: 0.6.3(@rushstack/heft@0.68.10(@types/node@22.10.2))(@types/node@22.10.2)
       '@stonecrop/aform':
         specifier: workspace:*
         version: link:../aform
@@ -674,7 +677,7 @@ importers:
         version: 3.5.13(typescript@5.7.2)
     devDependencies:
       '@microsoft/api-documenter':
-        specifier: ^7.25.3
+        specifier: ^7.26.2
         version: 7.26.2(@types/node@22.10.2)
       '@rushstack/heft':
         specifier: ^0.68.6
