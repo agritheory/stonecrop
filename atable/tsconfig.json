@@ -8,5 +8,5 @@
 			"types/*": ["./src/types/*"]
 		}
 	},
-	"include": ["src/**/*", "src/**/*.ts", "src/**/*.vue", "tests/**/*.ts", "tests/**/*.vue"]
+	"include": ["src/**/*.ts", "src/**/*.vue", "tests/**/*.ts", "tests/**/*.vue"]
 }

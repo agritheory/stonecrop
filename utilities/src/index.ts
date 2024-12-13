@@ -1,7 +1,7 @@
 import { App } from 'vue'
 
-import { defaultKeypressHandlers, useKeyboardNav } from '@/composables/keyboard'
-export type { KeypressHandlers, KeyboardNavigationOptions } from '@/types'
+import { defaultKeypressHandlers, useKeyboardNav } from './composables/keyboard'
+export type { KeypressHandlers, KeyboardNavigationOptions } from './types'
 
 /**
  * Install all utility components

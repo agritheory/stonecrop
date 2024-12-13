@@ -3,9 +3,8 @@
 	"compilerOptions": {
 		"tsBuildInfoFile": "./dist/stonecrop.tsbuildinfo",
 		"paths": {
-			"@/*": ["./src/*"],
-			"types/*": ["./src/types/*"]
+			"@/*": ["./src/*"]
 		}
 	},
-	"include": ["env.d.ts", "src/**/*", "src/**/*.ts", "src/**/*.vue", "tests/**/*.ts", "tests/**/*.vue"]
+	"include": ["src/**/*.ts"]
 }

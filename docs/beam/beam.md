@@ -29,3 +29,81 @@ Install all Beam components
 
 </td></tr>
 </tbody></table>
+
+## Interfaces
+
+<table><thead><tr><th>
+
+Interface
+
+
+</th><th>
+
+Description
+
+
+</th></tr></thead>
+<tbody><tr><td>
+
+[IMqttStream](./beam.imqttstream.md)
+
+
+</td><td>
+
+MQTT stream options
+
+
+</td></tr>
+</tbody></table>
+
+## Variables
+
+<table><thead><tr><th>
+
+Variable
+
+
+</th><th>
+
+Description
+
+
+</th></tr></thead>
+<tbody><tr><td>
+
+[useMqttStream](./beam.usemqttstream.md)
+
+
+</td><td>
+
+**_(BETA)_** Use MQTT stream
+
+
+</td></tr>
+</tbody></table>
+
+## Type Aliases
+
+<table><thead><tr><th>
+
+Type Alias
+
+
+</th><th>
+
+Description
+
+
+</th></tr></thead>
+<tbody><tr><td>
+
+[ListViewItem](./beam.listviewitem.md)
+
+
+</td><td>
+
+**_(BETA)_**
+
+
+</td></tr>
+</tbody></table>

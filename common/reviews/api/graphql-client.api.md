@@ -4,26 +4,53 @@
 
 ```ts
 
-import type { Meta } from '@/types';
-import type { MetaParser } from '@/types';
-import type { MetaResponse } from '@/types';
-import { queries } from './queries';
-import typeDefs from './gql/schema';
+// @public
+export type Meta = {
+    	variables: {
+        		doctype: string
+        	}
 
-export { Meta }
+    	response: {
+        		getMeta: MetaResponse
+        	}
+}
 
-export { MetaParser }
+// @public
+export type MetaParser = {
+    	data: Meta['response']
+}
 
-export { MetaResponse }
+// @public
+export type MetaResponse = {
+    	id: string
+    	name: string
+    	workflow: {
+        		id: string
+        		name: string
+        		machineId?: string
+        	}
+    	schema: {
+        		id: string
+        		label: string
+        	}[]
+    	actions: {
+        		id: string
+        		eventName: string
+        	}[]
+}
 
 // @public
 export const methods: {
     getMeta: (doctype: string, url?: string) => Promise<MetaResponse>;
 };
 
-export { queries }
+// @public
+export const queries: {
+    getMeta: string;
+};
 
-export { typeDefs }
+// @public
+export const typeDefs: string;
 
 // (No @packageDocumentation comment for this package)
 

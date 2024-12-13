@@ -12,7 +12,7 @@
 	{
 		"definitionName": "lockStepVersion",
 		"policyName": "stonecrop",
-		"version": "0.2.64",
+		"version": "0.2.65",
 		"nextBump": "patch"
 	}
 	// {

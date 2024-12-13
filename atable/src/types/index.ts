@@ -1,3 +1,7 @@
+/**
+ * Table column definition.
+ * @public
+ */
 export type TableColumn = {
 	name: string
 
@@ -17,12 +21,20 @@ export type TableColumn = {
 	mask?: (value: any) => any
 }
 
+/**
+ * Table cell context definition.
+ * @public
+ */
 export type CellContext = {
 	row: TableRow
 	column: TableColumn
 	table: { [key: string]: any }
 }
 
+/**
+ * Table configuration definition.
+ * @public
+ */
 export type TableConfig = {
 	/**
 	 * The type of view to display the table in. Possible values:
@@ -35,6 +47,10 @@ export type TableConfig = {
 	fullWidth?: boolean
 }
 
+/**
+ * Table display definition.
+ * @public
+ */
 export type TableDisplay = {
 	childrenOpen?: boolean
 	expanded?: boolean
@@ -46,12 +62,20 @@ export type TableDisplay = {
 	rowModified?: boolean
 }
 
+/**
+ * Table row definition.
+ * @public
+ */
 export type TableRow = {
 	[key: string]: any
 	indent?: number
 	parent?: number
 }
 
+/**
+ * Table modal definition.
+ * @public
+ */
 export type TableModal = {
 	colIndex?: number
 	event?: string

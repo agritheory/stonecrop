@@ -1,10 +1,14 @@
-import mqtt, { type MqttClient, type IClientOptions } from 'mqtt'
+import mqtt, { type MqttClient } from 'mqtt'
 import { onMounted, onUnmounted, ref } from 'vue'
 
-interface IMqttStream extends IClientOptions {
-	topics?: string[]
-}
+import { IMqttStream } from '@/types'
 
+/**
+ * Use MQTT stream
+ * @param options - MQTT stream options
+ * @returns MQTT stream messages
+ * @beta
+ */
 export const useMqttStream = (options?: IMqttStream) => {
 	const client = ref<MqttClient>(null)
 	const messages = ref<Record<string, string[]>>({})

@@ -28,4 +28,74 @@ Get meta information for a doctype
 
 
 </td></tr>
+<tr><td>
+
+[queries](./graphql-client.queries.md)
+
+
+</td><td>
+
+Queries for the GraphQL API.
+
+
+</td></tr>
+<tr><td>
+
+[typeDefs](./graphql-client.typedefs.md)
+
+
+</td><td>
+
+This is the schema for the GraphQL API.
+
+
+</td></tr>
+</tbody></table>
+
+## Type Aliases
+
+<table><thead><tr><th>
+
+Type Alias
+
+
+</th><th>
+
+Description
+
+
+</th></tr></thead>
+<tbody><tr><td>
+
+[Meta](./graphql-client.meta.md)
+
+
+</td><td>
+
+The type of the response from the `getMeta` query.
+
+
+</td></tr>
+<tr><td>
+
+[MetaParser](./graphql-client.metaparser.md)
+
+
+</td><td>
+
+The type of the response from the `getMeta` query.
+
+
+</td></tr>
+<tr><td>
+
+[MetaResponse](./graphql-client.metaresponse.md)
+
+
+</td><td>
+
+The type of the response from the `getRecords` query.
+
+
+</td></tr>
 </tbody></table>
