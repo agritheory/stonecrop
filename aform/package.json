@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/aform",
-	"version": "0.2.64",
+	"version": "0.2.65",
 	"license": "MIT",
 	"type": "module",
 	"author": {
@@ -18,14 +18,14 @@
 	"exports": {
 		".": {
 			"import": {
-				"types": "./dist/aform/src/index.d.ts",
+				"types": "./dist/src/index.d.ts",
 				"default": "./dist/aform.js"
 			},
 			"require": "./dist/aform.umd.cjs"
 		},
 		"./styles": "./dist/assets/index.css"
 	},
-	"typings": "./dist/aform/src/index.d.ts",
+	"typings": "./dist/src/index.d.ts",
 	"files": [
 		"dist/*",
 		"src/*"
@@ -48,8 +48,8 @@
 		"vue": "^3.5.11"
 	},
 	"devDependencies": {
-		"@microsoft/api-documenter": "^7.25.3",
-		"@rushstack/heft": "^0.67.2",
+		"@microsoft/api-documenter": "^7.26.2",
+		"@rushstack/heft": "^0.68.6",
 		"@stonecrop/atable": "workspace:*",
 		"@typescript-eslint/eslint-plugin": "^7.14.1",
 		"@typescript-eslint/parser": "^7.14.1",
@@ -63,7 +63,7 @@
 		"eslint": "^8.40.0",
 		"jsdom": "^25.0.0",
 		"stonecrop-rig": "workspace:*",
-		"typescript": "^5.5.2",
+		"typescript": "^5.6.3",
 		"vite-plugin-lib-inject-css": "^2.1.1",
 		"vite": "^5.4.5",
 		"vitest": "^2.1.1",

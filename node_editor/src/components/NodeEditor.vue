@@ -54,7 +54,7 @@ const emit = defineEmits(['update:modelValue'])
 
 const hover = ref(false)
 const vueFlowElements = ref<FlowElements>([])
-const vueFlowInstance = ref<Partial<VueFlowStore>>()
+const vueFlowInstance = ref<VueFlowStore>()
 
 const activeElementKey = ref('')
 const activeElementIndex = computed(() => {

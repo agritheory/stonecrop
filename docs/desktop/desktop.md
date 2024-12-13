@@ -4,3 +4,28 @@
 
 ## desktop package
 
+## Variables
+
+<table><thead><tr><th>
+
+Variable
+
+
+</th><th>
+
+Description
+
+
+</th></tr></thead>
+<tbody><tr><td>
+
+[StonecropDesktop](./desktop.stonecropdesktop.md)
+
+
+</td><td>
+
+This is the main plugin file that will be used to register all the components that we want to use in our application.
+
+
+</td></tr>
+</tbody></table>

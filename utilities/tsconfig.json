@@ -3,9 +3,8 @@
 	"compilerOptions": {
 		"tsBuildInfoFile": "./dist/utilities.tsbuildinfo",
 		"paths": {
-			"@/*": ["./src/*"],
-			"types/*": ["./src/types/*"]
+			"@/*": ["./src/*"]
 		}
 	},
-	"include": ["src/**/*", "src/**/*.ts", "src/**/*.vue"]
+	"include": ["src/**/*.ts"]
 }

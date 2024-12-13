@@ -19,12 +19,104 @@ Description
 </th></tr></thead>
 <tbody><tr><td>
 
+[createTableStore(initData)](./atable.createtablestore.md)
+
+
+</td><td>
+
+Create a table store
+
+
+</td></tr>
+<tr><td>
+
 [install(app)](./atable.install.md)
 
 
 </td><td>
 
 Install all ATable components
+
+
+</td></tr>
+</tbody></table>
+
+## Type Aliases
+
+<table><thead><tr><th>
+
+Type Alias
+
+
+</th><th>
+
+Description
+
+
+</th></tr></thead>
+<tbody><tr><td>
+
+[CellContext](./atable.cellcontext.md)
+
+
+</td><td>
+
+Table cell context definition.
+
+
+</td></tr>
+<tr><td>
+
+[TableColumn](./atable.tablecolumn.md)
+
+
+</td><td>
+
+Table column definition.
+
+
+</td></tr>
+<tr><td>
+
+[TableConfig](./atable.tableconfig.md)
+
+
+</td><td>
+
+Table configuration definition.
+
+
+</td></tr>
+<tr><td>
+
+[TableDisplay](./atable.tabledisplay.md)
+
+
+</td><td>
+
+Table display definition.
+
+
+</td></tr>
+<tr><td>
+
+[TableModal](./atable.tablemodal.md)
+
+
+</td><td>
+
+Table modal definition.
+
+
+</td></tr>
+<tr><td>
+
+[TableRow](./atable.tablerow.md)
+
+
+</td><td>
+
+Table row definition.
 
 
 </td></tr>

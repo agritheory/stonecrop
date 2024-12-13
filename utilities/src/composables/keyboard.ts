@@ -201,6 +201,10 @@ const eventKeyMap = {
 	ArrowRight: 'right',
 }
 
+/**
+ * Default keypress handlers for keyboard navigation
+ * @public
+ */
 export const defaultKeypressHandlers: KeypressHandlers = {
 	'keydown.up': (event: KeyboardEvent) => {
 		const $upCell = getUpCell(event)
@@ -328,6 +332,11 @@ export const defaultKeypressHandlers: KeypressHandlers = {
 	},
 }
 
+/**
+ * Keyboard navigation composable
+ * @param options - Keyboard navigation options
+ * @public
+ */
 export function useKeyboardNav(options: KeyboardNavigationOptions[]) {
 	const getParentElement = (option: KeyboardNavigationOptions) => {
 		let $parent: HTMLElement | null = null

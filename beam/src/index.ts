@@ -23,7 +23,7 @@ import ScanInput from '@/components/ScanInput.vue'
 import SplitColumn from '@/components/SplitColumn.vue'
 import ToggleArrow from '@/components/ToggleArrow.vue'
 import { useMqttStream } from '@/composables/mqtt'
-export type { ListViewItem } from '@/types'
+export type { IMqttStream, ListViewItem } from '@/types'
 import 'themes/beam.css'
 
 /**

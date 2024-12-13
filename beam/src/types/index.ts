@@ -1,3 +1,8 @@
+import type { IClientOptions } from 'mqtt'
+
+/**
+ * @beta
+ */
 export type ListViewItem = {
 	description: string
 	label: string
@@ -13,4 +18,12 @@ export type ListViewItem = {
 	debounce?: number
 	linkComponent?: string
 	route?: string
+}
+
+/**
+ * MQTT stream options
+ * @public
+ */
+export interface IMqttStream extends IClientOptions {
+	topics?: string[]
 }

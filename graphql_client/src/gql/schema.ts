@@ -1,5 +1,9 @@
 import { gql } from 'graphql-request'
 
+/**
+ * This is the schema for the GraphQL API.
+ * @public
+ */
 const typeDefs = gql`
 	type Doctype {
 		id: ID!

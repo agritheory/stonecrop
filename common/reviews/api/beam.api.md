@@ -18,17 +18,17 @@ import BeamModalOutlet from '@/components/BeamModalOutlet.vue';
 import BeamProgress from '@/components/BeamProgress.vue';
 import Confirm from '@/components/Confirm.vue';
 import FixedTop from '@/components/FixedTop.vue';
+import type { IClientOptions } from 'mqtt';
 import ItemCheck from '@/components/ItemCheck.vue';
 import ItemCount from '@/components/ItemCount.vue';
 import ListAnchor from '@/components/ListAnchor.vue';
 import ListItem from '@/components/ListItem.vue';
 import ListView from '@/components/ListView.vue';
-import { ListViewItem } from '@/types';
+import { MqttClient } from 'mqtt';
 import Navbar from '@/components/Navbar.vue';
 import ScanInput from '@/components/ScanInput.vue';
 import SplitColumn from '@/components/SplitColumn.vue';
 import ToggleArrow from '@/components/ToggleArrow.vue';
-import { useMqttStream } from '@/composables/mqtt';
 
 export { ActionFooter }
 
@@ -57,6 +57,12 @@ export { Confirm }
 export { FixedTop }
 
 // @public
+export interface IMqttStream extends IClientOptions {
+    	// (undocumented)
+    topics?: string[]
+}
+
+// @public
 export function install(app: App): void;
 
 export { ItemCheck }
@@ -69,7 +75,23 @@ export { ListItem }
 
 export { ListView }
 
-export { ListViewItem }
+// @beta (undocumented)
+export type ListViewItem = {
+    	description: string
+    	label: string
+
+    	checked?: boolean
+    	count?: {
+        		count: number
+        		of: number
+        		uom: string
+        	}
+    	date?: string
+    	dateFormat?: string
+    	debounce?: number
+    	linkComponent?: string
+    	route?: string
+}
 
 export { Navbar }
 
@@ -79,7 +101,43 @@ export { SplitColumn }
 
 export { ToggleArrow }
 
-export { useMqttStream }
+// @beta
+export const useMqttStream = (options?: IMqttStream) => {
+    	const // (undocumented)
+    client = ref<MqttClient>(null)
+    	const // (undocumented)
+    messages = ref<Record<string, string[]>>({})
+
+    	onMounted(() => {
+        		client.value = mqtt.connect(options)
+
+        		if (!options.topics) {
+            			options.topics = ['#']
+            		}
+
+        		for (const topic of options.topics) {
+            			client.value.subscribe(topic, err => {
+                				if (err) {
+                    					throw err
+                    				}
+                			})
+            		}
+
+        		client.value.on('message', (topic, message) => {
+            			if (!messages.value[topic]) {
+                				messages.value[topic] = []
+                			}
+
+            			messages.value[topic].push(message.toString())
+            		})
+        	})
+
+    	onUnmounted(() => {
+        		client.value.end()
+        	})
+
+    	return { messages }
+};
 
 // (No @packageDocumentation comment for this package)
 

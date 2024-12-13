@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/stonecrop",
-	"version": "0.2.64",
+	"version": "0.2.65",
 	"description": "schema helper",
 	"license": "MIT",
 	"type": "module",
@@ -19,20 +19,20 @@
 	"exports": {
 		".": {
 			"import": {
-				"types": "./dist/stonecrop/src/index.d.ts",
+				"types": "./dist/src/index.d.ts",
 				"default": "./dist/stonecrop.js"
 			},
 			"require": "./dist/stonecrop.umd.cjs"
 		}
 	},
-	"types": "./dist/stonecrop/src/index.d.ts",
+	"typings": "./dist/src/index.d.ts",
 	"files": [
 		"dist/*",
 		"src/*"
 	],
 	"scripts": {
-		"prepublish": "heft build && vite build && rushx docs",
-		"build": "heft build && vite build && rushx docs",
+		"prepublish": "heft build && vite build",
+		"build": "heft build && vite build",
 		"docs": "api-documenter markdown -i temp -o ../docs/stonecrop",
 		"lint": "eslint . --ext .ts,.vue",
 		"preview": "vite preview"
@@ -48,8 +48,9 @@
 		"xstate": "^4.38.3"
 	},
 	"devDependencies": {
-		"@microsoft/api-documenter": "^7.25.3",
-		"@rushstack/heft": "^0.67.2",
+		"@microsoft/api-documenter": "^7.26.2",
+		"@rushstack/heft": "^0.68.6",
+		"@rushstack/heft-typescript-plugin": "^0.6.3",
 		"@stonecrop/aform": "workspace:*",
 		"@stonecrop/atable": "workspace:*",
 		"@typescript-eslint/eslint-plugin": "^7.14.1",
@@ -59,7 +60,7 @@
 		"eslint-config-prettier": "^8.8.0",
 		"eslint-plugin-vue": "^9.11.1",
 		"stonecrop-rig": "workspace:*",
-		"typescript": "^5.5.2",
+		"typescript": "^5.6.3",
 		"vite": "^5.4.5"
 	},
 	"publishConfig": {

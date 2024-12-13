@@ -5,21 +5,33 @@
 ```ts
 
 import { App } from 'vue';
-import { defaultKeypressHandlers } from '@/composables/keyboard';
-import { KeyboardNavigationOptions } from '@/types';
-import { KeypressHandlers } from '@/types';
-import { useKeyboardNav } from '@/composables/keyboard';
+import { ComponentPublicInstance } from 'vue';
+import { Ref } from 'vue';
 
-export { defaultKeypressHandlers }
+// Warning: (ae-forgotten-export) The symbol "KeypressHandlers_2" needs to be exported by the entry point index.d.ts
+//
+// @public
+export const defaultKeypressHandlers: KeypressHandlers_2;
 
 // @public
 export function install(app: App): void;
 
-export { KeyboardNavigationOptions }
+// @public
+export type KeyboardNavigationOptions = {
+    parent?: string | HTMLElement | Ref<HTMLElement>;
+    selectors?: string | HTMLElement | HTMLElement[] | ComponentPublicInstance[] | Ref<HTMLElement> | Ref<HTMLElement[]> | Ref<ComponentPublicInstance[]>;
+    handlers?: KeypressHandlers;
+};
 
-export { KeypressHandlers }
+// @public
+export type KeypressHandlers = {
+    [key: string]: (ev: KeyboardEvent) => any;
+};
 
-export { useKeyboardNav }
+// Warning: (ae-forgotten-export) The symbol "KeyboardNavigationOptions_2" needs to be exported by the entry point index.d.ts
+//
+// @public
+export function useKeyboardNav(options: KeyboardNavigationOptions_2[]): void;
 
 // (No @packageDocumentation comment for this package)
 

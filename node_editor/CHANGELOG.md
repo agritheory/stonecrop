@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/node-editor
 
-This log was last generated on Wed, 11 Dec 2024 07:45:13 GMT and should not be manually modified.
+This log was last generated on Fri, 13 Dec 2024 06:53:37 GMT and should not be manually modified.
+
+## 0.2.65
+Fri, 13 Dec 2024 06:53:37 GMT
+
+### Patches
+
+- fix typings path
 
 ## 0.2.64
 Wed, 11 Dec 2024 07:45:13 GMT
