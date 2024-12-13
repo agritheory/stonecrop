@@ -73,6 +73,7 @@ const readonly_columns: TableColumn[] = [
 		type: 'Data',
 		align: 'left',
 		edit: true,
+		resizable: true,
 		width: '20ch',
 	},
 	{
