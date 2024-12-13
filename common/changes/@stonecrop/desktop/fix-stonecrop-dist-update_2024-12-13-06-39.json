@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/desktop",
+      "comment": "fix typings path",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/desktop"
+}

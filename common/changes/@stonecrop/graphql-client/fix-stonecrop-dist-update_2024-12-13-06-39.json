@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/graphql-client",
+      "comment": "fix typings path",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/graphql-client"
+}

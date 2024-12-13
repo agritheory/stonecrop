@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/atable",
+      "comment": "externalize pinia dependency",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/atable"
+}

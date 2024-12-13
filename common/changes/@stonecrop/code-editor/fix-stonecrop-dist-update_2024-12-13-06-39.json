@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/code-editor",
+      "comment": "fix typings path",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/code-editor"
+}
