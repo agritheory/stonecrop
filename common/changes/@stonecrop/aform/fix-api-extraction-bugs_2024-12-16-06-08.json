@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/aform",
+      "comment": "update import paths to avoid API extraction bugs",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/aform"
+}

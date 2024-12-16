@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/desktop",
+      "comment": "update import paths to avoid API extraction bugs",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/desktop"
+}
