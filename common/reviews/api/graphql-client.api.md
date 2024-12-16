@@ -6,38 +6,37 @@
 
 // @public
 export type Meta = {
-    	variables: {
-        		doctype: string
-        	}
-
-    	response: {
-        		getMeta: MetaResponse
-        	}
-}
+    variables: {
+        doctype: string;
+    };
+    response: {
+        getMeta: MetaResponse;
+    };
+};
 
 // @public
 export type MetaParser = {
-    	data: Meta['response']
-}
+    data: Meta['response'];
+};
 
 // @public
 export type MetaResponse = {
-    	id: string
-    	name: string
-    	workflow: {
-        		id: string
-        		name: string
-        		machineId?: string
-        	}
-    	schema: {
-        		id: string
-        		label: string
-        	}[]
-    	actions: {
-        		id: string
-        		eventName: string
-        	}[]
-}
+    id: string;
+    name: string;
+    workflow: {
+        id: string;
+        name: string;
+        machineId?: string;
+    };
+    schema: {
+        id: string;
+        label: string;
+    }[];
+    actions: {
+        id: string;
+        eventName: string;
+    }[];
+};
 
 // @public
 export const methods: {

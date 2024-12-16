@@ -28,6 +28,17 @@ Install all Beam components
 
 
 </td></tr>
+<tr><td>
+
+[useMqttStream(options)](./beam.usemqttstream.md)
+
+
+</td><td>
+
+**_(BETA)_** Use MQTT stream
+
+
+</td></tr>
 </tbody></table>
 
 ## Interfaces
@@ -51,32 +62,6 @@ Description
 </td><td>
 
 MQTT stream options
-
-
-</td></tr>
-</tbody></table>
-
-## Variables
-
-<table><thead><tr><th>
-
-Variable
-
-
-</th><th>
-
-Description
-
-
-</th></tr></thead>
-<tbody><tr><td>
-
-[useMqttStream](./beam.usemqttstream.md)
-
-
-</td><td>
-
-**_(BETA)_** Use MQTT stream
 
 
 </td></tr>

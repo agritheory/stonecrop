@@ -6,11 +6,6 @@ const projectRootDir = resolve(__dirname)
 
 export default defineConfig({
 	plugins: [vue()],
-	resolve: {
-		alias: {
-			'@': resolve(projectRootDir, 'src'),
-		},
-	},
 	build: {
 		emptyOutDir: false,
 		sourcemap: true,

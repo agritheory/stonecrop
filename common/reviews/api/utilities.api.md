@@ -8,10 +8,8 @@ import { App } from 'vue';
 import { ComponentPublicInstance } from 'vue';
 import { Ref } from 'vue';
 
-// Warning: (ae-forgotten-export) The symbol "KeypressHandlers_2" needs to be exported by the entry point index.d.ts
-//
 // @public
-export const defaultKeypressHandlers: KeypressHandlers_2;
+export const defaultKeypressHandlers: KeypressHandlers;
 
 // @public
 export function install(app: App): void;
@@ -28,10 +26,8 @@ export type KeypressHandlers = {
     [key: string]: (ev: KeyboardEvent) => any;
 };
 
-// Warning: (ae-forgotten-export) The symbol "KeyboardNavigationOptions_2" needs to be exported by the entry point index.d.ts
-//
 // @public
-export function useKeyboardNav(options: KeyboardNavigationOptions_2[]): void;
+export function useKeyboardNav(options: KeyboardNavigationOptions[]): void;
 
 // (No @packageDocumentation comment for this package)
 

@@ -10,8 +10,8 @@ The type of the response from the `getMeta` query.
 
 ```typescript
 export type MetaParser = {
-	data: Meta['response']
-}
+    data: Meta['response'];
+};
 ```
 **References:** [Meta](./graphql-client.meta.md)
 

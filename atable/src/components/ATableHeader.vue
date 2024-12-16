@@ -29,8 +29,8 @@
 <script setup lang="ts">
 import { vResizeObserver } from '@vueuse/components'
 
-import { createTableStore } from '@/stores/table'
-import type { TableColumn } from '@/types'
+import { createTableStore } from '../stores/table'
+import type { TableColumn } from '../types'
 
 const { columns, store } = defineProps<{
 	columns: TableColumn[]

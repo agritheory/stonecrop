@@ -59,6 +59,6 @@ export type FieldsetSchema = BasicSchema & {
 
 /**
  * Superset of schema types
- * @public
+ * @beta
  */
 export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema

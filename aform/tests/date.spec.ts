@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 
-import ADate from '@/components/form/ADate.vue'
+import ADate from '../src/components/form/ADate.vue'
 
 describe('date component', () => {
 	it('date input is rendered', async () => {

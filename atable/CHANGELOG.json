@@ -2,6 +2,36 @@
   "name": "@stonecrop/atable",
   "entries": [
     {
+      "version": "0.3.0",
+      "tag": "@stonecrop/atable_v0.3.0",
+      "date": "Mon, 16 Dec 2024 07:40:48 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "update import paths to avoid API extraction bugs"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.2.67",
+      "tag": "@stonecrop/atable_v0.2.67",
+      "date": "Fri, 13 Dec 2024 12:32:30 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.2.66",
+      "tag": "@stonecrop/atable_v0.2.66",
+      "date": "Fri, 13 Dec 2024 12:15:19 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "minor style updates for Atable"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.2.65",
       "tag": "@stonecrop/atable_v0.2.65",
       "date": "Fri, 13 Dec 2024 06:53:37 GMT",

@@ -4,13 +4,12 @@
 
 ```ts
 
-import ActionSet from '@/components/ActionSet.vue';
-import { App } from 'vue';
-import CommandPalette from '@/components/CommandPalette.vue';
-import Doctype from '@/components/Doctype.vue';
+import ActionSet from './components/ActionSet.vue';
+import CommandPalette from './components/CommandPalette.vue';
+import Doctype from './components/Doctype.vue';
 import { Plugin as Plugin_2 } from 'vue';
-import Records from '@/components/Records.vue';
-import SheetNav from '@/components/SheetNav.vue';
+import Records from './components/Records.vue';
+import SheetNav from './components/SheetNav.vue';
 
 export { ActionSet }
 
@@ -23,15 +22,7 @@ export { Records }
 export { SheetNav }
 
 // @public
-export const StonecropDesktop: Plugin_2 = {
-    	install: (app: App) => {
-        		app.component('ActionSet', ActionSet)
-        		app.component('CommandPalette', CommandPalette)
-        		app.component('Doctype', Doctype)
-        		app.component('Records', Records)
-        		app.component('SheetNav', SheetNav)
-        	},
-};
+export const StonecropDesktop: Plugin_2;
 
 // (No @packageDocumentation comment for this package)
 

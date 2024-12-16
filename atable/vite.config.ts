@@ -9,12 +9,6 @@ const projectRootDir = resolve(__dirname)
 
 export default defineConfig({
 	plugins: [vue(), libInjectCss()],
-	resolve: {
-		alias: {
-			'@': resolve(projectRootDir, 'src'),
-			types: resolve(projectRootDir, 'src/types'),
-		},
-	},
 	server: {
 		fs: {
 			allow: ['..'],

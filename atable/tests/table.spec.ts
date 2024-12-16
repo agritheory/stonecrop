@@ -2,7 +2,7 @@ import { createPinia, setActivePinia } from 'pinia'
 import { describe, it, expect, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 
-import ATable from '@/components/ATable.vue'
+import ATable from '../src/components/ATable.vue'
 import data from './data/http_logs.json'
 
 describe('table component', () => {

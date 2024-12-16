@@ -32,8 +32,8 @@ import { vOnClickOutside } from '@vueuse/components'
 import { useElementBounding } from '@vueuse/core'
 import { computed, CSSProperties, ref, useTemplateRef } from 'vue'
 
-import { createTableStore } from '@/stores/table'
-import { isHtmlString } from '@/utils'
+import { createTableStore } from '../stores/table'
+import { isHtmlString } from '../utils'
 
 const {
 	colIndex,
@@ -74,7 +74,7 @@ const cellStyle = computed((): CSSProperties => {
 	return {
 		textAlign,
 		width: cellWidth,
-		backgroundColor: !cellModified.value ? 'inherit' : 'var(--sc-cell-modified)',
+		backgroundColor: !cellModified.value ? 'inherit' : 'var(--sc-cell-changed-color)',
 		fontWeight: !cellModified.value ? 'inherit' : 'bold',
 		paddingLeft: store.getIndent(colIndex, store.display[rowIndex]?.indent),
 	}

@@ -4,5 +4,5 @@
 </template>
 
 <script setup lang="ts">
-import SheetNav from '@/components/SheetNav.vue'
+import SheetNav from './SheetNav.vue'
 </script>

@@ -4,7 +4,7 @@ import { Component } from 'vue'
 import { Router } from 'vue-router'
 import { MachineConfig, StateMachine } from 'xstate'
 
-import DoctypeMeta from '@/doctype'
+import DoctypeMeta from '../doctype'
 
 export type ImmutableDoctype = {
 	// TODO: allow schema to be a function

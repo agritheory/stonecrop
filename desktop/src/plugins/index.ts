@@ -1,10 +1,10 @@
 import { App, type Plugin } from 'vue'
 
-import ActionSet from '@/components/ActionSet.vue'
-import CommandPalette from '@/components/CommandPalette.vue'
-import Doctype from '@/components/Doctype.vue'
-import Records from '@/components/Records.vue'
-import SheetNav from '@/components/SheetNav.vue'
+import ActionSet from '../components/ActionSet.vue'
+import CommandPalette from '../components/CommandPalette.vue'
+import Doctype from '../components/Doctype.vue'
+import Records from '../components/Records.vue'
+import SheetNav from '../components/SheetNav.vue'
 
 /**
  * This is the main plugin file that will be used to register all the components
