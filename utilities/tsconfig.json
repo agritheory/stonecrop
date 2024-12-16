@@ -1,11 +1,7 @@
 {
 	"extends": "../tsconfig.json",
 	"compilerOptions": {
-		"tsBuildInfoFile": "./dist/utilities.tsbuildinfo",
-		"paths": {
-			"@/*": ["./src/*"],
-			"types/*": ["./src/types/*"]
-		}
+		"tsBuildInfoFile": "./dist/utilities.tsbuildinfo"
 	},
-	"include": ["src/**/*", "src/**/*.ts", "src/**/*.vue"]
+	"include": ["src/**/*.ts"]
 }

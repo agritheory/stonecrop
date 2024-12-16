@@ -1,8 +1,14 @@
 import { defineStore } from 'pinia'
 import { type CSSProperties, computed, ref } from 'vue'
 
-import type { CellContext, TableColumn, TableConfig, TableDisplay, TableModal, TableRow } from '@/types'
+import type { CellContext, TableColumn, TableConfig, TableDisplay, TableModal, TableRow } from '../types'
 
+/**
+ * Create a table store
+ * @param initData - Initial data for the table store
+ * @returns table store instance
+ * @public
+ */
 export const createTableStore = (initData: {
 	columns: TableColumn[]
 	rows: TableRow[]

@@ -4,20 +4,17 @@
 
 ```ts
 
-import ACell from '@/components/ACell.vue';
-import AExpansionRow from '@/components/AExpansionRow.vue';
+import ACell from './components/ACell.vue';
+import AExpansionRow from './components/AExpansionRow.vue';
 import { App } from 'vue';
-import ARow from '@/components/ARow.vue';
-import ATable from '@/components/ATable.vue';
-import ATableHeader from '@/components/ATableHeader.vue';
-import ATableModal from '@/components/ATableModal.vue';
-import { CellContext } from '@/types';
-import { createTableStore } from '@/stores/table';
-import { TableColumn } from '@/types';
-import { TableConfig } from '@/types';
-import { TableDisplay } from '@/types';
-import { TableModal } from '@/types';
-import { TableRow } from '@/types';
+import ARow from './components/ARow.vue';
+import ATable from './components/ATable.vue';
+import ATableHeader from './components/ATableHeader.vue';
+import ATableModal from './components/ATableModal.vue';
+import { ComputedRef } from 'vue';
+import { CSSProperties } from 'vue';
+import { Ref } from 'vue';
+import { Store } from 'pinia';
 
 export { ACell }
 
@@ -31,22 +28,392 @@ export { ATableHeader }
 
 export { ATableModal }
 
-export { CellContext }
+// @public
+export type CellContext = {
+    row: TableRow;
+    column: TableColumn;
+    table: {
+        [key: string]: any;
+    };
+};
 
-export { createTableStore }
+// @public
+export const createTableStore: (initData: {
+    columns: TableColumn[];
+    rows: TableRow[];
+    id?: string;
+    config?: TableConfig;
+    table?: {
+        [key: string]: any;
+    };
+    display?: TableDisplay[];
+    modal?: TableModal;
+}) => Store<`table-${string}`, Pick<{
+columns: Ref<    {
+name: string;
+align?: CanvasTextAlign;
+edit?: boolean;
+label?: string;
+type?: string;
+width?: string;
+pinned?: boolean;
+cellComponent?: string;
+cellComponentProps?: Record<string, any>;
+modalComponent?: string | ((context?: CellContext) => string);
+modalComponentExtraProps?: Record<string, any>;
+format?: string | ((value: any, context?: CellContext) => string);
+mask?: (value: any) => any;
+}[], TableColumn[] | {
+name: string;
+align?: CanvasTextAlign;
+edit?: boolean;
+label?: string;
+type?: string;
+width?: string;
+pinned?: boolean;
+cellComponent?: string;
+cellComponentProps?: Record<string, any>;
+modalComponent?: string | ((context?: CellContext) => string);
+modalComponentExtraProps?: Record<string, any>;
+format?: string | ((value: any, context?: CellContext) => string);
+mask?: (value: any) => any;
+}[]>;
+rows: Ref<    {
+[x: string]: any;
+indent?: number;
+parent?: number;
+}[], TableRow[] | {
+[x: string]: any;
+indent?: number;
+parent?: number;
+}[]>;
+config: Ref<    {
+view?: "uncounted" | "list" | "list-expansion" | "tree";
+fullWidth?: boolean;
+}, TableConfig | {
+view?: "uncounted" | "list" | "list-expansion" | "tree";
+fullWidth?: boolean;
+}>;
+table: Ref<    {}, {}>;
+display: Ref<    {
+childrenOpen?: boolean;
+expanded?: boolean;
+indent?: number;
+isParent?: boolean;
+isRoot?: boolean;
+open?: boolean;
+parent?: number;
+rowModified?: boolean;
+}[], TableDisplay[] | {
+childrenOpen?: boolean;
+expanded?: boolean;
+indent?: number;
+isParent?: boolean;
+isRoot?: boolean;
+open?: boolean;
+parent?: number;
+rowModified?: boolean;
+}[]>;
+modal: Ref<    {
+colIndex?: number;
+event?: string;
+left?: number;
+parent?: HTMLElement;
+rowIndex?: number;
+top?: number;
+visible?: boolean;
+width?: string;
+component?: string;
+componentProps?: Record<string, any>;
+}, TableModal | {
+colIndex?: number;
+event?: string;
+left?: number;
+parent?: HTMLElement;
+rowIndex?: number;
+top?: number;
+visible?: boolean;
+width?: string;
+component?: string;
+componentProps?: Record<string, any>;
+}>;
+hasPinnedColumns: ComputedRef<boolean>;
+numberedRowWidth: ComputedRef<string>;
+zeroColumn: ComputedRef<boolean>;
+closeModal: (event: MouseEvent) => void;
+getCellData: <T = any>(colIndex: number, rowIndex: number) => T;
+getCellDisplayValue: (colIndex: number, rowIndex: number) => any;
+getFormattedValue: (colIndex: number, rowIndex: number, value: any) => any;
+getHeaderCellStyle: (column: TableColumn) => CSSProperties;
+getIndent: (colIndex: number, indentLevel?: number) => string;
+getRowExpandSymbol: (rowIndex: number) => "" | "-" | "+";
+isRowVisible: (rowIndex: number) => boolean;
+setCellData: (colIndex: number, rowIndex: number, value: any) => void;
+toggleRowExpand: (rowIndex: number) => void;
+}, "columns" | "rows" | "config" | "table" | "display" | "modal">, Pick<{
+columns: Ref<    {
+name: string;
+align?: CanvasTextAlign;
+edit?: boolean;
+label?: string;
+type?: string;
+width?: string;
+pinned?: boolean;
+cellComponent?: string;
+cellComponentProps?: Record<string, any>;
+modalComponent?: string | ((context?: CellContext) => string);
+modalComponentExtraProps?: Record<string, any>;
+format?: string | ((value: any, context?: CellContext) => string);
+mask?: (value: any) => any;
+}[], TableColumn[] | {
+name: string;
+align?: CanvasTextAlign;
+edit?: boolean;
+label?: string;
+type?: string;
+width?: string;
+pinned?: boolean;
+cellComponent?: string;
+cellComponentProps?: Record<string, any>;
+modalComponent?: string | ((context?: CellContext) => string);
+modalComponentExtraProps?: Record<string, any>;
+format?: string | ((value: any, context?: CellContext) => string);
+mask?: (value: any) => any;
+}[]>;
+rows: Ref<    {
+[x: string]: any;
+indent?: number;
+parent?: number;
+}[], TableRow[] | {
+[x: string]: any;
+indent?: number;
+parent?: number;
+}[]>;
+config: Ref<    {
+view?: "uncounted" | "list" | "list-expansion" | "tree";
+fullWidth?: boolean;
+}, TableConfig | {
+view?: "uncounted" | "list" | "list-expansion" | "tree";
+fullWidth?: boolean;
+}>;
+table: Ref<    {}, {}>;
+display: Ref<    {
+childrenOpen?: boolean;
+expanded?: boolean;
+indent?: number;
+isParent?: boolean;
+isRoot?: boolean;
+open?: boolean;
+parent?: number;
+rowModified?: boolean;
+}[], TableDisplay[] | {
+childrenOpen?: boolean;
+expanded?: boolean;
+indent?: number;
+isParent?: boolean;
+isRoot?: boolean;
+open?: boolean;
+parent?: number;
+rowModified?: boolean;
+}[]>;
+modal: Ref<    {
+colIndex?: number;
+event?: string;
+left?: number;
+parent?: HTMLElement;
+rowIndex?: number;
+top?: number;
+visible?: boolean;
+width?: string;
+component?: string;
+componentProps?: Record<string, any>;
+}, TableModal | {
+colIndex?: number;
+event?: string;
+left?: number;
+parent?: HTMLElement;
+rowIndex?: number;
+top?: number;
+visible?: boolean;
+width?: string;
+component?: string;
+componentProps?: Record<string, any>;
+}>;
+hasPinnedColumns: ComputedRef<boolean>;
+numberedRowWidth: ComputedRef<string>;
+zeroColumn: ComputedRef<boolean>;
+closeModal: (event: MouseEvent) => void;
+getCellData: <T = any>(colIndex: number, rowIndex: number) => T;
+getCellDisplayValue: (colIndex: number, rowIndex: number) => any;
+getFormattedValue: (colIndex: number, rowIndex: number, value: any) => any;
+getHeaderCellStyle: (column: TableColumn) => CSSProperties;
+getIndent: (colIndex: number, indentLevel?: number) => string;
+getRowExpandSymbol: (rowIndex: number) => "" | "-" | "+";
+isRowVisible: (rowIndex: number) => boolean;
+setCellData: (colIndex: number, rowIndex: number, value: any) => void;
+toggleRowExpand: (rowIndex: number) => void;
+}, "hasPinnedColumns" | "numberedRowWidth" | "zeroColumn">, Pick<{
+columns: Ref<    {
+name: string;
+align?: CanvasTextAlign;
+edit?: boolean;
+label?: string;
+type?: string;
+width?: string;
+pinned?: boolean;
+cellComponent?: string;
+cellComponentProps?: Record<string, any>;
+modalComponent?: string | ((context?: CellContext) => string);
+modalComponentExtraProps?: Record<string, any>;
+format?: string | ((value: any, context?: CellContext) => string);
+mask?: (value: any) => any;
+}[], TableColumn[] | {
+name: string;
+align?: CanvasTextAlign;
+edit?: boolean;
+label?: string;
+type?: string;
+width?: string;
+pinned?: boolean;
+cellComponent?: string;
+cellComponentProps?: Record<string, any>;
+modalComponent?: string | ((context?: CellContext) => string);
+modalComponentExtraProps?: Record<string, any>;
+format?: string | ((value: any, context?: CellContext) => string);
+mask?: (value: any) => any;
+}[]>;
+rows: Ref<    {
+[x: string]: any;
+indent?: number;
+parent?: number;
+}[], TableRow[] | {
+[x: string]: any;
+indent?: number;
+parent?: number;
+}[]>;
+config: Ref<    {
+view?: "uncounted" | "list" | "list-expansion" | "tree";
+fullWidth?: boolean;
+}, TableConfig | {
+view?: "uncounted" | "list" | "list-expansion" | "tree";
+fullWidth?: boolean;
+}>;
+table: Ref<    {}, {}>;
+display: Ref<    {
+childrenOpen?: boolean;
+expanded?: boolean;
+indent?: number;
+isParent?: boolean;
+isRoot?: boolean;
+open?: boolean;
+parent?: number;
+rowModified?: boolean;
+}[], TableDisplay[] | {
+childrenOpen?: boolean;
+expanded?: boolean;
+indent?: number;
+isParent?: boolean;
+isRoot?: boolean;
+open?: boolean;
+parent?: number;
+rowModified?: boolean;
+}[]>;
+modal: Ref<    {
+colIndex?: number;
+event?: string;
+left?: number;
+parent?: HTMLElement;
+rowIndex?: number;
+top?: number;
+visible?: boolean;
+width?: string;
+component?: string;
+componentProps?: Record<string, any>;
+}, TableModal | {
+colIndex?: number;
+event?: string;
+left?: number;
+parent?: HTMLElement;
+rowIndex?: number;
+top?: number;
+visible?: boolean;
+width?: string;
+component?: string;
+componentProps?: Record<string, any>;
+}>;
+hasPinnedColumns: ComputedRef<boolean>;
+numberedRowWidth: ComputedRef<string>;
+zeroColumn: ComputedRef<boolean>;
+closeModal: (event: MouseEvent) => void;
+getCellData: <T = any>(colIndex: number, rowIndex: number) => T;
+getCellDisplayValue: (colIndex: number, rowIndex: number) => any;
+getFormattedValue: (colIndex: number, rowIndex: number, value: any) => any;
+getHeaderCellStyle: (column: TableColumn) => CSSProperties;
+getIndent: (colIndex: number, indentLevel?: number) => string;
+getRowExpandSymbol: (rowIndex: number) => "" | "-" | "+";
+isRowVisible: (rowIndex: number) => boolean;
+setCellData: (colIndex: number, rowIndex: number, value: any) => void;
+toggleRowExpand: (rowIndex: number) => void;
+}, "closeModal" | "getCellData" | "getCellDisplayValue" | "getFormattedValue" | "getHeaderCellStyle" | "getIndent" | "getRowExpandSymbol" | "isRowVisible" | "setCellData" | "toggleRowExpand">>;
 
 // @public
 export function install(app: App): void;
 
-export { TableColumn }
+// @public
+export type TableColumn = {
+    name: string;
+    align?: CanvasTextAlign;
+    edit?: boolean;
+    label?: string;
+    type?: string;
+    width?: string;
+    pinned?: boolean;
+    cellComponent?: string;
+    cellComponentProps?: Record<string, any>;
+    modalComponent?: string | ((context?: CellContext) => string);
+    modalComponentExtraProps?: Record<string, any>;
+    format?: string | ((value: any, context?: CellContext) => string);
+    mask?: (value: any) => any;
+};
 
-export { TableConfig }
+// @public
+export type TableConfig = {
+    view?: 'uncounted' | 'list' | 'list-expansion' | 'tree';
+    fullWidth?: boolean;
+};
 
-export { TableDisplay }
+// @public
+export type TableDisplay = {
+    childrenOpen?: boolean;
+    expanded?: boolean;
+    indent?: number;
+    isParent?: boolean;
+    isRoot?: boolean;
+    open?: boolean;
+    parent?: number;
+    rowModified?: boolean;
+};
 
-export { TableModal }
+// @public
+export type TableModal = {
+    colIndex?: number;
+    event?: string;
+    left?: number;
+    parent?: HTMLElement;
+    rowIndex?: number;
+    top?: number;
+    visible?: boolean;
+    width?: string;
+    component?: string;
+    componentProps?: Record<string, any>;
+};
 
-export { TableRow }
+// @public
+export type TableRow = {
+    [key: string]: any;
+    indent?: number;
+    parent?: number;
+};
 
 // (No @packageDocumentation comment for this package)
 

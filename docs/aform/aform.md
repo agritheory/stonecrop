@@ -29,3 +29,117 @@ Install all AForm components
 
 </td></tr>
 </tbody></table>
+
+## Type Aliases
+
+<table><thead><tr><th>
+
+Type Alias
+
+
+</th><th>
+
+Description
+
+
+</th></tr></thead>
+<tbody><tr><td>
+
+[BasicSchema](./aform.basicschema.md)
+
+
+</td><td>
+
+**_(BETA)_** Base schemda for AForm components
+
+
+</td></tr>
+<tr><td>
+
+[CellContext](./aform.cellcontext.md)
+
+
+</td><td>
+
+Table cell context definition.
+
+
+</td></tr>
+<tr><td>
+
+[FieldsetSchema](./aform.fieldsetschema.md)
+
+
+</td><td>
+
+**_(BETA)_** Fieldset schema
+
+
+</td></tr>
+<tr><td>
+
+[FormSchema](./aform.formschema.md)
+
+
+</td><td>
+
+**_(BETA)_** Form schema
+
+
+</td></tr>
+<tr><td>
+
+[SchemaTypes](./aform.schematypes.md)
+
+
+</td><td>
+
+**_(BETA)_** Superset of schema types
+
+
+</td></tr>
+<tr><td>
+
+[TableColumn](./aform.tablecolumn.md)
+
+
+</td><td>
+
+Table column definition.
+
+
+</td></tr>
+<tr><td>
+
+[TableConfig](./aform.tableconfig.md)
+
+
+</td><td>
+
+Table configuration definition.
+
+
+</td></tr>
+<tr><td>
+
+[TableRow](./aform.tablerow.md)
+
+
+</td><td>
+
+Table row definition.
+
+
+</td></tr>
+<tr><td>
+
+[TableSchema](./aform.tableschema.md)
+
+
+</td><td>
+
+**_(BETA)_** Table schema
+
+
+</td></tr>
+</tbody></table>

@@ -21,3 +21,12 @@
 	}
 }
 </style>
+<style>
+.beam_btn a:link,
+.beam_btn a:visited,
+.beam_btn a:hover,
+.beam_btn a:active {
+	text-decoration: none;
+	color: var(--sc-btn-label-color);
+}
+</style>

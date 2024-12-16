@@ -1,3 +1,12 @@
+/**
+ * @file This file contains all the types that are used in the application.
+ * @public
+ */
+
+/**
+ * The type of the response from the `getMeta` query.
+ * @public
+ */
 export type Meta = {
 	variables: {
 		doctype: string
@@ -8,6 +17,10 @@ export type Meta = {
 	}
 }
 
+/**
+ * The type of the response from the `getRecords` query.
+ * @public
+ */
 export type MetaResponse = {
 	id: string
 	name: string
@@ -26,6 +39,10 @@ export type MetaResponse = {
 	}[]
 }
 
+/**
+ * The type of the response from the `getMeta` query.
+ * @public
+ */
 export type MetaParser = {
 	data: Meta['response']
 }

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 
-import ACheckbox from '@/components/form/ACheckbox.vue'
+import ACheckbox from '../src/components/form/ACheckbox.vue'
 
 describe('checkbox component', () => {
 	let wrapper = mount(ACheckbox, {
