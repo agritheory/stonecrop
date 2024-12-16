@@ -4,31 +4,31 @@
 
 ```ts
 
-import ActionFooter from '@/components/ActionFooter.vue';
+import ActionFooter from './components/ActionFooter.vue';
 import { App } from 'vue';
-import BeamArrow from '@/components/BeamArrow.vue';
-import BeamBtn from '@/components/BeamBtn.vue';
-import BeamDayDivider from '@/components/BeamDayDivider.vue';
-import BeamFilter from '@/components/BeamFilter.vue';
-import BeamFilterOption from '@/components/BeamFilterOption.vue';
-import BeamHeading from '@/components/BeamHeading.vue';
-import BeamMetadata from '@/components/BeamMetadata.vue';
-import BeamModal from '@/components/BeamModal.vue';
-import BeamModalOutlet from '@/components/BeamModalOutlet.vue';
-import BeamProgress from '@/components/BeamProgress.vue';
-import Confirm from '@/components/Confirm.vue';
-import FixedTop from '@/components/FixedTop.vue';
+import BeamArrow from './components/BeamArrow.vue';
+import BeamBtn from './components/BeamBtn.vue';
+import BeamDayDivider from './components/BeamDayDivider.vue';
+import BeamFilter from './components/BeamFilter.vue';
+import BeamFilterOption from './components/BeamFilterOption.vue';
+import BeamHeading from './components/BeamHeading.vue';
+import BeamMetadata from './components/BeamMetadata.vue';
+import BeamModal from './components/BeamModal.vue';
+import BeamModalOutlet from './components/BeamModalOutlet.vue';
+import BeamProgress from './components/BeamProgress.vue';
+import Confirm from './components/Confirm.vue';
+import FixedTop from './components/FixedTop.vue';
 import type { IClientOptions } from 'mqtt';
-import ItemCheck from '@/components/ItemCheck.vue';
-import ItemCount from '@/components/ItemCount.vue';
-import ListAnchor from '@/components/ListAnchor.vue';
-import ListItem from '@/components/ListItem.vue';
-import ListView from '@/components/ListView.vue';
-import { MqttClient } from 'mqtt';
-import Navbar from '@/components/Navbar.vue';
-import ScanInput from '@/components/ScanInput.vue';
-import SplitColumn from '@/components/SplitColumn.vue';
-import ToggleArrow from '@/components/ToggleArrow.vue';
+import ItemCheck from './components/ItemCheck.vue';
+import ItemCount from './components/ItemCount.vue';
+import ListAnchor from './components/ListAnchor.vue';
+import ListItem from './components/ListItem.vue';
+import ListView from './components/ListView.vue';
+import Navbar from './components/Navbar.vue';
+import { Ref } from 'vue';
+import ScanInput from './components/ScanInput.vue';
+import SplitColumn from './components/SplitColumn.vue';
+import ToggleArrow from './components/ToggleArrow.vue';
 
 export { ActionFooter }
 
@@ -58,8 +58,8 @@ export { FixedTop }
 
 // @public
 export interface IMqttStream extends IClientOptions {
-    	// (undocumented)
-    topics?: string[]
+    // (undocumented)
+    topics?: string[];
 }
 
 // @public
@@ -77,21 +77,20 @@ export { ListView }
 
 // @beta (undocumented)
 export type ListViewItem = {
-    	description: string
-    	label: string
-
-    	checked?: boolean
-    	count?: {
-        		count: number
-        		of: number
-        		uom: string
-        	}
-    	date?: string
-    	dateFormat?: string
-    	debounce?: number
-    	linkComponent?: string
-    	route?: string
-}
+    description: string;
+    label: string;
+    checked?: boolean;
+    count?: {
+        count: number;
+        of: number;
+        uom: string;
+    };
+    date?: string;
+    dateFormat?: string;
+    debounce?: number;
+    linkComponent?: string;
+    route?: string;
+};
 
 export { Navbar }
 
@@ -102,41 +101,8 @@ export { SplitColumn }
 export { ToggleArrow }
 
 // @beta
-export const useMqttStream = (options?: IMqttStream) => {
-    	const // (undocumented)
-    client = ref<MqttClient>(null)
-    	const // (undocumented)
-    messages = ref<Record<string, string[]>>({})
-
-    	onMounted(() => {
-        		client.value = mqtt.connect(options)
-
-        		if (!options.topics) {
-            			options.topics = ['#']
-            		}
-
-        		for (const topic of options.topics) {
-            			client.value.subscribe(topic, err => {
-                				if (err) {
-                    					throw err
-                    				}
-                			})
-            		}
-
-        		client.value.on('message', (topic, message) => {
-            			if (!messages.value[topic]) {
-                				messages.value[topic] = []
-                			}
-
-            			messages.value[topic].push(message.toString())
-            		})
-        	})
-
-    	onUnmounted(() => {
-        		client.value.end()
-        	})
-
-    	return { messages }
+export const useMqttStream: (options?: IMqttStream) => {
+    messages: Ref<Record<string, string[]>, Record<string, string[]>>;
 };
 
 // (No @packageDocumentation comment for this package)

@@ -8,8 +8,8 @@
 import { type Node, Position } from '@vue-flow/core'
 import { type HTMLAttributes, computed } from 'vue'
 
-import NodeEditor from '@/components/NodeEditor.vue'
-import type { EditorStates, FlowElement, FlowElements, Layout } from '@/types'
+import NodeEditor from './NodeEditor.vue'
+import type { EditorStates, FlowElement, FlowElements, Layout } from '../types'
 
 const emit = defineEmits(['update:modelValue'])
 const states = defineModel<EditorStates>()

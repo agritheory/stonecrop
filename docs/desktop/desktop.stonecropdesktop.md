@@ -9,13 +9,5 @@ This is the main plugin file that will be used to register all the components th
 **Signature:**
 
 ```typescript
-plugin: Plugin = {
-	install: (app: App) => {
-		app.component('ActionSet', ActionSet)
-		app.component('CommandPalette', CommandPalette)
-		app.component('Doctype', Doctype)
-		app.component('Records', Records)
-		app.component('SheetNav', SheetNav)
-	},
-}
+plugin: Plugin
 ```

@@ -1,11 +1,7 @@
 {
 	"extends": "../tsconfig.json",
 	"compilerOptions": {
-		"tsBuildInfoFile": "./dist/node_editor.tsbuildinfo",
-		"paths": {
-			"@/*": ["./src/*"],
-			"types/*": ["./src/types/*"]
-		}
+		"tsBuildInfoFile": "./dist/node_editor.tsbuildinfo"
 	},
 	"include": ["src/**/*.ts", "src/**/*.vue", "tests/**/*.spec.ts", "tests/**/*.ts", "tests/**/*.vue"]
 }

@@ -21,9 +21,9 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted } from 'vue'
 
-import BeamDayDivider from '@/components/BeamDayDivider.vue'
-import ListItem from '@/components/ListItem.vue'
-import type { ListViewItem } from '@/types'
+import BeamDayDivider from './BeamDayDivider.vue'
+import ListItem from './ListItem.vue'
+import type { ListViewItem } from '../types'
 
 defineProps<{ items: ListViewItem[] }>()
 const emit = defineEmits<{ update: [item: ListViewItem]; scrollbottom: [] }>()

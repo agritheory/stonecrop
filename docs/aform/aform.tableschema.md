@@ -18,5 +18,5 @@ export type TableSchema = BasicSchema & {
     rows: TableRow[];
 };
 ```
-**References:** [BasicSchema](./aform.basicschema.md)
+**References:** [BasicSchema](./aform.basicschema.md)<!-- -->, [TableColumn](./aform.tablecolumn.md)<!-- -->, [TableConfig](./aform.tableconfig.md)<!-- -->, [TableRow](./aform.tablerow.md)
 

@@ -39,8 +39,8 @@
 	--sc-input-border-color: var(--sc-gray-20);
 	--sc-input-label-color: var(--sc-gray-60);
 	--sc-required-border: #e63c28;
-	--sc-cell-modified: #ffffb1;
-	--sc-form-border: var(--sc-gray-5);
+	--sc-cell-changed-color: #d8edff;
+	--sc-form-border: var(--sc-gray-20);
 	--sc-form-background: #ffffff;
 	--sc-input-field-background: #ffffff;
 	--sc-input-field-disabled-background: var(--sc-gray-5);
@@ -52,7 +52,7 @@
 	--sc-atable-font-family: 'Arimo', sans-serif;
 
 	/* TABLE */
-	--sc-atable-row-padding: 5px;
+	--sc-atable-row-padding: 0.125rem;
 	--sc-atable-row-height: 1.5em;
 	--sc-atable-cell-border-width: 2px;
 

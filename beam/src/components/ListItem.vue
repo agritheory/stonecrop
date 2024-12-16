@@ -19,9 +19,9 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 
-import ItemCount from '@/components/ItemCount.vue'
-import ItemCheck from '@/components/ItemCheck.vue'
-import type { ListViewItem } from '@/types'
+import ItemCount from './ItemCount.vue'
+import ItemCheck from './ItemCheck.vue'
+import type { ListViewItem } from '../types'
 
 const { item } = defineProps<{ item: ListViewItem }>()
 const emit = defineEmits<{ update: [item: ListViewItem] }>()

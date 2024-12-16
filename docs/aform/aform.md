@@ -56,6 +56,17 @@ Description
 </td></tr>
 <tr><td>
 
+[CellContext](./aform.cellcontext.md)
+
+
+</td><td>
+
+Table cell context definition.
+
+
+</td></tr>
+<tr><td>
+
 [FieldsetSchema](./aform.fieldsetschema.md)
 
 
@@ -83,7 +94,40 @@ Description
 
 </td><td>
 
-Superset of schema types
+**_(BETA)_** Superset of schema types
+
+
+</td></tr>
+<tr><td>
+
+[TableColumn](./aform.tablecolumn.md)
+
+
+</td><td>
+
+Table column definition.
+
+
+</td></tr>
+<tr><td>
+
+[TableConfig](./aform.tableconfig.md)
+
+
+</td><td>
+
+Table configuration definition.
+
+
+</td></tr>
+<tr><td>
+
+[TableRow](./aform.tablerow.md)
+
+
+</td><td>
+
+Table row definition.
 
 
 </td></tr>

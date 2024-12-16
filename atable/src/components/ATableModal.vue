@@ -8,7 +8,7 @@
 import { useElementBounding } from '@vueuse/core'
 import { useTemplateRef, computed } from 'vue'
 
-import { createTableStore } from '@/stores/table'
+import { createTableStore } from '../stores/table'
 
 const { store, container } = defineProps<{
 	colIndex?: number

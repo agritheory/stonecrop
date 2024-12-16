@@ -16,7 +16,7 @@
 <script setup lang="ts">
 import { useTemplateRef } from 'vue'
 
-import { ComponentProps } from '@/types'
+import { ComponentProps } from '../../types'
 
 const {
 	label = 'Date',

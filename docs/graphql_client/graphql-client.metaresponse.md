@@ -10,20 +10,20 @@ The type of the response from the `getRecords` query.
 
 ```typescript
 export type MetaResponse = {
-	id: string
-	name: string
-	workflow: {
-		id: string
-		name: string
-		machineId?: string
-	}
-	schema: {
-		id: string
-		label: string
-	}[]
-	actions: {
-		id: string
-		eventName: string
-	}[]
-}
+    id: string;
+    name: string;
+    workflow: {
+        id: string;
+        name: string;
+        machineId?: string;
+    };
+    schema: {
+        id: string;
+        label: string;
+    }[];
+    actions: {
+        id: string;
+        eventName: string;
+    }[];
+};
 ```

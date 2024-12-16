@@ -1,6 +1,6 @@
 import { Component } from 'vue'
 
-import type { ImmutableDoctype } from '@/types'
+import type { ImmutableDoctype } from './types'
 
 export default class DoctypeMeta {
 	readonly doctype: string

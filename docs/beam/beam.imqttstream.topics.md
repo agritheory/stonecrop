@@ -7,5 +7,5 @@
 **Signature:**
 
 ```typescript
-topics?: string[]
+topics?: string[];
 ```

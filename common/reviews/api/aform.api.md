@@ -44,6 +44,15 @@ export type BasicSchema = {
     value: any;
 };
 
+// @public
+export type CellContext = {
+    row: TableRow;
+    column: TableColumn;
+    table: {
+        [key: string]: any;
+    };
+};
+
 // @beta
 export type FieldsetSchema = BasicSchema & {
     label: string;
@@ -67,12 +76,38 @@ export function install(app: App): void;
 
 export { Login }
 
-// Warning: (ae-incompatible-release-tags) The symbol "SchemaTypes" is marked as @public, but its signature references "FormSchema" which is marked as @beta
-// Warning: (ae-incompatible-release-tags) The symbol "SchemaTypes" is marked as @public, but its signature references "TableSchema" which is marked as @beta
-// Warning: (ae-incompatible-release-tags) The symbol "SchemaTypes" is marked as @public, but its signature references "FieldsetSchema" which is marked as @beta
-//
-// @public
+// @beta
 export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema;
+
+// @public
+export type TableColumn = {
+    name: string;
+    align?: CanvasTextAlign;
+    edit?: boolean;
+    label?: string;
+    type?: string;
+    width?: string;
+    pinned?: boolean;
+    cellComponent?: string;
+    cellComponentProps?: Record<string, any>;
+    modalComponent?: string | ((context?: CellContext) => string);
+    modalComponentExtraProps?: Record<string, any>;
+    format?: string | ((value: any, context?: CellContext) => string);
+    mask?: (value: any) => any;
+};
+
+// @public
+export type TableConfig = {
+    view?: 'uncounted' | 'list' | 'list-expansion' | 'tree';
+    fullWidth?: boolean;
+};
+
+// @public
+export type TableRow = {
+    [key: string]: any;
+    indent?: number;
+    parent?: number;
+};
 
 // @beta
 export type TableSchema = BasicSchema & {
@@ -80,12 +115,6 @@ export type TableSchema = BasicSchema & {
     config: TableConfig;
     rows: TableRow[];
 };
-
-// Warnings were encountered during analysis:
-//
-// src/types/index.ts:45:2 - (ae-forgotten-export) The symbol "TableColumn" needs to be exported by the entry point index.d.ts
-// src/types/index.ts:46:2 - (ae-forgotten-export) The symbol "TableConfig" needs to be exported by the entry point index.d.ts
-// src/types/index.ts:47:2 - (ae-forgotten-export) The symbol "TableRow" needs to be exported by the entry point index.d.ts
 
 // (No @packageDocumentation comment for this package)
 

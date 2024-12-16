@@ -1,7 +1,7 @@
 import mqtt, { type MqttClient } from 'mqtt'
 import { onMounted, onUnmounted, ref } from 'vue'
 
-import { IMqttStream } from '@/types'
+import { IMqttStream } from '../types'
 
 /**
  * Use MQTT stream

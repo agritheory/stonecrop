@@ -9,11 +9,6 @@ export default defineConfig({
 	optimizeDeps: {
 		exclude: ['@stonecrop/atable', '@stonecrop/aform', '@stonecrop/stonecrop'],
 	},
-	resolve: {
-		alias: {
-			'@': resolve(projectRootDir, 'docbuilder'),
-		},
-	},
 	server: {
 		fs: {
 			allow: ['..'],

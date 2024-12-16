@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 
-import AFieldset from '@/components/form/AFieldset.vue'
+import AFieldset from '../src/components/form/AFieldset.vue'
 
 describe('fieldset input component', () => {
 	it('no change in collapse status when fieldset is uncollapsible', async () => {

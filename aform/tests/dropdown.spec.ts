@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 
-import ADropdown from '@/components/form/ADropdown.vue'
+import ADropdown from '../src/components/form/ADropdown.vue'
 
 describe('dropdown input component', () => {
 	const dropdownData = {
