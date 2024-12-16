@@ -5,7 +5,7 @@
 </template>
 
 <script setup lang="ts">
-import { createTableStore } from '@/stores/table'
+import { createTableStore } from '../stores/table'
 
 /* const { colIndex, rowIndex, store } = */ defineProps<{
 	colIndex?: number

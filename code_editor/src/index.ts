@@ -1,6 +1,6 @@
 import { App } from 'vue'
 
-import ACodeEditor from '@/components/ACodeEditor.vue'
+import ACodeEditor from './components/ACodeEditor.vue'
 
 /**
  * Install all Code Editor components

@@ -2,7 +2,7 @@
 
 [Home](./index.md) &gt; [@stonecrop/beam](./beam.md) &gt; [useMqttStream](./beam.usemqttstream.md)
 
-## useMqttStream variable
+## useMqttStream() function
 
 > This API is provided as a beta preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
 > 
@@ -12,38 +12,49 @@ Use MQTT stream
 **Signature:**
 
 ```typescript
-useMqttStream = (options?: IMqttStream) => {
-	const client = ref<MqttClient>(null)
-	const messages = ref<Record<string, string[]>>({})
-
-	onMounted(() => {
-		client.value = mqtt.connect(options)
-
-		if (!options.topics) {
-			options.topics = ['#']
-		}
-
-		for (const topic of options.topics) {
-			client.value.subscribe(topic, err => {
-				if (err) {
-					throw err
-				}
-			})
-		}
-
-		client.value.on('message', (topic, message) => {
-			if (!messages.value[topic]) {
-				messages.value[topic] = []
-			}
-
-			messages.value[topic].push(message.toString())
-		})
-	})
-
-	onUnmounted(() => {
-		client.value.end()
-	})
-
-	return { messages }
+useMqttStream: (options?: IMqttStream) => {
+    messages: import("vue").Ref<Record<string, string[]>, Record<string, string[]>>;
 }
 ```
+
+## Parameters
+
+<table><thead><tr><th>
+
+Parameter
+
+
+</th><th>
+
+Type
+
+
+</th><th>
+
+Description
+
+
+</th></tr></thead>
+<tbody><tr><td>
+
+options
+
+
+</td><td>
+
+[IMqttStream](./beam.imqttstream.md)
+
+
+</td><td>
+
+_(Optional)_ MQTT stream options
+
+
+</td></tr>
+</tbody></table>
+**Returns:**
+
+{ messages: import("vue").Ref&lt;Record&lt;string, string\[\]&gt;, Record&lt;string, string\[\]&gt;&gt;; }
+
+MQTT stream messages
+

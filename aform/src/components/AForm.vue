@@ -16,7 +16,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 
-import type { SchemaTypes } from '@/types'
+import type { SchemaTypes } from '../types'
 
 const emit = defineEmits(['update:modelValue'])
 const { modelValue, data, readonly } = defineProps<{

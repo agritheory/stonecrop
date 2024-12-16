@@ -1,11 +1,7 @@
 {
 	"extends": "../tsconfig.json",
 	"compilerOptions": {
-		"tsBuildInfoFile": "./dist/graphql_client.tsbuildinfo",
-		"paths": {
-			"@/*": ["./src/*"],
-			"types/*": ["./src/types/*"]
-		}
+		"tsBuildInfoFile": "./dist/graphql_client.tsbuildinfo"
 	},
 	"include": ["src/**/*.ts", "src/**/*.vue", "tests/**/*.spec.ts", "tests/**/*.ts", "tests/**/*.vue"]
 }

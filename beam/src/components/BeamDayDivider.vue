@@ -9,7 +9,7 @@
 <script setup lang="ts">
 import { defineProps, computed } from 'vue'
 
-import type { ListViewItem } from '@/types'
+import type { ListViewItem } from '../types'
 
 defineSlots<{ default(): any }>()
 const { item } = defineProps<{ item: ListViewItem }>()

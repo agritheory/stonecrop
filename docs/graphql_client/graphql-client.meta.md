@@ -10,14 +10,13 @@ The type of the response from the `getMeta` query.
 
 ```typescript
 export type Meta = {
-	variables: {
-		doctype: string
-	}
-
-	response: {
-		getMeta: MetaResponse
-	}
-}
+    variables: {
+        doctype: string;
+    };
+    response: {
+        getMeta: MetaResponse;
+    };
+};
 ```
 **References:** [MetaResponse](./graphql-client.metaresponse.md)
 

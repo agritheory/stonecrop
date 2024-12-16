@@ -39,15 +39,15 @@ export type CellContext = {
 
 // @public
 export const createTableStore: (initData: {
-    columns: TableColumn_2[];
-    rows: TableRow_2[];
+    columns: TableColumn[];
+    rows: TableRow[];
     id?: string;
-    config?: TableConfig_2;
+    config?: TableConfig;
     table?: {
         [key: string]: any;
     };
-    display?: TableDisplay_2[];
-    modal?: TableModal_2;
+    display?: TableDisplay[];
+    modal?: TableModal;
 }) => Store<`table-${string}`, Pick<{
 columns: Ref<    {
 name: string;
@@ -59,11 +59,11 @@ width?: string;
 pinned?: boolean;
 cellComponent?: string;
 cellComponentProps?: Record<string, any>;
-modalComponent?: string | ((context?: CellContext_2) => string);
+modalComponent?: string | ((context?: CellContext) => string);
 modalComponentExtraProps?: Record<string, any>;
-format?: string | ((value: any, context?: CellContext_2) => string);
+format?: string | ((value: any, context?: CellContext) => string);
 mask?: (value: any) => any;
-}[], TableColumn_2[] | {
+}[], TableColumn[] | {
 name: string;
 align?: CanvasTextAlign;
 edit?: boolean;
@@ -73,16 +73,16 @@ width?: string;
 pinned?: boolean;
 cellComponent?: string;
 cellComponentProps?: Record<string, any>;
-modalComponent?: string | ((context?: CellContext_2) => string);
+modalComponent?: string | ((context?: CellContext) => string);
 modalComponentExtraProps?: Record<string, any>;
-format?: string | ((value: any, context?: CellContext_2) => string);
+format?: string | ((value: any, context?: CellContext) => string);
 mask?: (value: any) => any;
 }[]>;
 rows: Ref<    {
 [x: string]: any;
 indent?: number;
 parent?: number;
-}[], TableRow_2[] | {
+}[], TableRow[] | {
 [x: string]: any;
 indent?: number;
 parent?: number;
@@ -90,7 +90,7 @@ parent?: number;
 config: Ref<    {
 view?: "uncounted" | "list" | "list-expansion" | "tree";
 fullWidth?: boolean;
-}, TableConfig_2 | {
+}, TableConfig | {
 view?: "uncounted" | "list" | "list-expansion" | "tree";
 fullWidth?: boolean;
 }>;
@@ -104,7 +104,7 @@ isRoot?: boolean;
 open?: boolean;
 parent?: number;
 rowModified?: boolean;
-}[], TableDisplay_2[] | {
+}[], TableDisplay[] | {
 childrenOpen?: boolean;
 expanded?: boolean;
 indent?: number;
@@ -125,7 +125,7 @@ visible?: boolean;
 width?: string;
 component?: string;
 componentProps?: Record<string, any>;
-}, TableModal_2 | {
+}, TableModal | {
 colIndex?: number;
 event?: string;
 left?: number;
@@ -144,7 +144,7 @@ closeModal: (event: MouseEvent) => void;
 getCellData: <T = any>(colIndex: number, rowIndex: number) => T;
 getCellDisplayValue: (colIndex: number, rowIndex: number) => any;
 getFormattedValue: (colIndex: number, rowIndex: number, value: any) => any;
-getHeaderCellStyle: (column: TableColumn_2) => CSSProperties;
+getHeaderCellStyle: (column: TableColumn) => CSSProperties;
 getIndent: (colIndex: number, indentLevel?: number) => string;
 getRowExpandSymbol: (rowIndex: number) => "" | "-" | "+";
 isRowVisible: (rowIndex: number) => boolean;
@@ -161,11 +161,11 @@ width?: string;
 pinned?: boolean;
 cellComponent?: string;
 cellComponentProps?: Record<string, any>;
-modalComponent?: string | ((context?: CellContext_2) => string);
+modalComponent?: string | ((context?: CellContext) => string);
 modalComponentExtraProps?: Record<string, any>;
-format?: string | ((value: any, context?: CellContext_2) => string);
+format?: string | ((value: any, context?: CellContext) => string);
 mask?: (value: any) => any;
-}[], TableColumn_2[] | {
+}[], TableColumn[] | {
 name: string;
 align?: CanvasTextAlign;
 edit?: boolean;
@@ -175,16 +175,16 @@ width?: string;
 pinned?: boolean;
 cellComponent?: string;
 cellComponentProps?: Record<string, any>;
-modalComponent?: string | ((context?: CellContext_2) => string);
+modalComponent?: string | ((context?: CellContext) => string);
 modalComponentExtraProps?: Record<string, any>;
-format?: string | ((value: any, context?: CellContext_2) => string);
+format?: string | ((value: any, context?: CellContext) => string);
 mask?: (value: any) => any;
 }[]>;
 rows: Ref<    {
 [x: string]: any;
 indent?: number;
 parent?: number;
-}[], TableRow_2[] | {
+}[], TableRow[] | {
 [x: string]: any;
 indent?: number;
 parent?: number;
@@ -192,7 +192,7 @@ parent?: number;
 config: Ref<    {
 view?: "uncounted" | "list" | "list-expansion" | "tree";
 fullWidth?: boolean;
-}, TableConfig_2 | {
+}, TableConfig | {
 view?: "uncounted" | "list" | "list-expansion" | "tree";
 fullWidth?: boolean;
 }>;
@@ -206,7 +206,7 @@ isRoot?: boolean;
 open?: boolean;
 parent?: number;
 rowModified?: boolean;
-}[], TableDisplay_2[] | {
+}[], TableDisplay[] | {
 childrenOpen?: boolean;
 expanded?: boolean;
 indent?: number;
@@ -227,7 +227,7 @@ visible?: boolean;
 width?: string;
 component?: string;
 componentProps?: Record<string, any>;
-}, TableModal_2 | {
+}, TableModal | {
 colIndex?: number;
 event?: string;
 left?: number;
@@ -246,7 +246,7 @@ closeModal: (event: MouseEvent) => void;
 getCellData: <T = any>(colIndex: number, rowIndex: number) => T;
 getCellDisplayValue: (colIndex: number, rowIndex: number) => any;
 getFormattedValue: (colIndex: number, rowIndex: number, value: any) => any;
-getHeaderCellStyle: (column: TableColumn_2) => CSSProperties;
+getHeaderCellStyle: (column: TableColumn) => CSSProperties;
 getIndent: (colIndex: number, indentLevel?: number) => string;
 getRowExpandSymbol: (rowIndex: number) => "" | "-" | "+";
 isRowVisible: (rowIndex: number) => boolean;
@@ -263,11 +263,11 @@ width?: string;
 pinned?: boolean;
 cellComponent?: string;
 cellComponentProps?: Record<string, any>;
-modalComponent?: string | ((context?: CellContext_2) => string);
+modalComponent?: string | ((context?: CellContext) => string);
 modalComponentExtraProps?: Record<string, any>;
-format?: string | ((value: any, context?: CellContext_2) => string);
+format?: string | ((value: any, context?: CellContext) => string);
 mask?: (value: any) => any;
-}[], TableColumn_2[] | {
+}[], TableColumn[] | {
 name: string;
 align?: CanvasTextAlign;
 edit?: boolean;
@@ -277,16 +277,16 @@ width?: string;
 pinned?: boolean;
 cellComponent?: string;
 cellComponentProps?: Record<string, any>;
-modalComponent?: string | ((context?: CellContext_2) => string);
+modalComponent?: string | ((context?: CellContext) => string);
 modalComponentExtraProps?: Record<string, any>;
-format?: string | ((value: any, context?: CellContext_2) => string);
+format?: string | ((value: any, context?: CellContext) => string);
 mask?: (value: any) => any;
 }[]>;
 rows: Ref<    {
 [x: string]: any;
 indent?: number;
 parent?: number;
-}[], TableRow_2[] | {
+}[], TableRow[] | {
 [x: string]: any;
 indent?: number;
 parent?: number;
@@ -294,7 +294,7 @@ parent?: number;
 config: Ref<    {
 view?: "uncounted" | "list" | "list-expansion" | "tree";
 fullWidth?: boolean;
-}, TableConfig_2 | {
+}, TableConfig | {
 view?: "uncounted" | "list" | "list-expansion" | "tree";
 fullWidth?: boolean;
 }>;
@@ -308,7 +308,7 @@ isRoot?: boolean;
 open?: boolean;
 parent?: number;
 rowModified?: boolean;
-}[], TableDisplay_2[] | {
+}[], TableDisplay[] | {
 childrenOpen?: boolean;
 expanded?: boolean;
 indent?: number;
@@ -329,7 +329,7 @@ visible?: boolean;
 width?: string;
 component?: string;
 componentProps?: Record<string, any>;
-}, TableModal_2 | {
+}, TableModal | {
 colIndex?: number;
 event?: string;
 left?: number;
@@ -348,7 +348,7 @@ closeModal: (event: MouseEvent) => void;
 getCellData: <T = any>(colIndex: number, rowIndex: number) => T;
 getCellDisplayValue: (colIndex: number, rowIndex: number) => any;
 getFormattedValue: (colIndex: number, rowIndex: number, value: any) => any;
-getHeaderCellStyle: (column: TableColumn_2) => CSSProperties;
+getHeaderCellStyle: (column: TableColumn) => CSSProperties;
 getIndent: (colIndex: number, indentLevel?: number) => string;
 getRowExpandSymbol: (rowIndex: number) => "" | "-" | "+";
 isRowVisible: (rowIndex: number) => boolean;
@@ -414,15 +414,6 @@ export type TableRow = {
     indent?: number;
     parent?: number;
 };
-
-// Warnings were encountered during analysis:
-//
-// src/stores/table.ts:13:2 - (ae-forgotten-export) The symbol "TableColumn_2" needs to be exported by the entry point index.d.ts
-// src/stores/table.ts:14:2 - (ae-forgotten-export) The symbol "TableRow_2" needs to be exported by the entry point index.d.ts
-// src/stores/table.ts:16:2 - (ae-forgotten-export) The symbol "TableConfig_2" needs to be exported by the entry point index.d.ts
-// src/stores/table.ts:18:2 - (ae-forgotten-export) The symbol "TableDisplay_2" needs to be exported by the entry point index.d.ts
-// src/stores/table.ts:19:2 - (ae-forgotten-export) The symbol "TableModal_2" needs to be exported by the entry point index.d.ts
-// src/stores/table.ts:31:9 - (ae-forgotten-export) The symbol "CellContext_2" needs to be exported by the entry point index.d.ts
 
 // (No @packageDocumentation comment for this package)
 

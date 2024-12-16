@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 
-import CollapseButton from '@/components/base/CollapseButton.vue'
+import CollapseButton from '../src/components/base/CollapseButton.vue'
 
 describe('numeric input component', () => {
 	it('apply specific class based on collapsed input', async () => {

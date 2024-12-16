@@ -16,7 +16,7 @@
 import { type KeypressHandlers, useKeyboardNav } from '@stonecrop/utilities'
 import { computed, useTemplateRef } from 'vue'
 
-import { createTableStore } from '@/stores/table'
+import { createTableStore } from '../stores/table'
 
 const {
 	rowIndex,

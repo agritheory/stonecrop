@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 
-import Login from '@/components/utilities/Login.vue'
+import Login from '../src/components/utilities/Login.vue'
 
 describe('login component', () => {
 	it('mount the login component', async () => {

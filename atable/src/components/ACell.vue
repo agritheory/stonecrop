@@ -32,8 +32,8 @@ import { vOnClickOutside } from '@vueuse/components'
 import { useElementBounding } from '@vueuse/core'
 import { computed, CSSProperties, ref, useTemplateRef } from 'vue'
 
-import { createTableStore } from '@/stores/table'
-import { isHtmlString } from '@/utils'
+import { createTableStore } from '../stores/table'
+import { isHtmlString } from '../utils'
 
 const {
 	colIndex,

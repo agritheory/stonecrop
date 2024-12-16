@@ -37,7 +37,7 @@ options
 
 </td><td>
 
-KeyboardNavigationOptions\[\]
+[KeyboardNavigationOptions](./utilities.keyboardnavigationoptions.md)<!-- -->\[\]
 
 
 </td><td>
