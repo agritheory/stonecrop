@@ -16,10 +16,10 @@
 </template>
 
 <script lang="ts" setup>
-import type { CellContext, TableColumn } from '@stonecrop/atable'
-import { ref } from 'vue'
+import type { TableColumn } from '@stonecrop/atable'
+import { reactive } from 'vue'
 
-import data from './sample_data/http_logs.json'
+import rows from './sample_data/http_logs.json'
 
 const columns: TableColumn[] = [
 	{
@@ -29,7 +29,7 @@ const columns: TableColumn[] = [
 		align: 'left',
 		edit: false,
 		width: '40ch',
-		format: (value: { title?: string; value?: any }, context: CellContext) => {
+		format: (value: { title?: string; value?: any }, context) => {
 			return `<a href="${value.title}" target="_blank">${value.title} (IP: ${context.row.ip_address})</a>`
 		},
 	},
@@ -48,10 +48,8 @@ const columns: TableColumn[] = [
 		align: 'center',
 		edit: true,
 		width: '25ch',
-		modalComponent: 'ADate',
-		format: (value: number) => {
-			return new Date(Number(value)).toLocaleDateString('en-US')
-		},
+		modalComponent: 'DateInput',
+		format: (value: number) => new Date(value).toLocaleDateString('en-US'),
 	},
 ]
 
@@ -70,7 +68,7 @@ const readonly_columns: TableColumn[] = [
 		name: 'http_method',
 		type: 'Data',
 		align: 'left',
-		edit: true,
+		edit: false,
 		width: '20ch',
 	},
 	{
@@ -78,38 +76,34 @@ const readonly_columns: TableColumn[] = [
 		name: 'report_date',
 		type: 'component',
 		align: 'center',
-		edit: true,
+		edit: false,
 		width: '25ch',
-		modalComponent: 'ADate',
-		modalComponentExtraProps: {
-			readonly: true,
-		},
-		format: (value: number) => {
-			return new Date(Number(value)).toLocaleDateString('en-US')
-		},
+		modalComponent: 'DateInput',
+		modalComponentExtraProps: { readonly: true },
+		format: (value: number) => new Date(value).toLocaleDateString('en-US'),
 	},
 ]
 
-const default_table = ref({
-	rows: data,
+const default_table = reactive({
+	rows,
 	columns,
 	config: { view: 'list' },
 })
 
-const uncounted_table = ref({
-	rows: data,
+const uncounted_table = reactive({
+	rows,
 	columns,
 	config: { view: 'uncounted' },
 })
 
-const readonly_table = ref({
-	rows: data,
+const readonly_table = reactive({
+	rows,
 	columns: readonly_columns,
 	config: { view: 'list' },
 })
 
-const full_width_table = ref({
-	rows: data,
+const full_width_table = reactive({
+	rows,
 	columns,
 	config: { view: 'list', fullWidth: true },
 })

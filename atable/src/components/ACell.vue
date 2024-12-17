@@ -28,7 +28,7 @@
 <script setup lang="ts">
 import { KeypressHandlers, defaultKeypressHandlers, useKeyboardNav } from '@stonecrop/utilities'
 import { useElementBounding } from '@vueuse/core'
-import { computed, CSSProperties, ref, useTemplateRef } from 'vue'
+import { computed, CSSProperties, ref, useTemplateRef, watch } from 'vue'
 
 import { createTableStore } from '../stores/table'
 import { isHtmlString } from '../utils'
@@ -53,7 +53,7 @@ const { bottom, left } = useElementBounding(cellRef)
 
 // keep a shallow copy of the original cell value for comparison
 const originalData = store.getCellData(colIndex, rowIndex)
-const displayValue = store.getCellDisplayValue(colIndex, rowIndex)
+const displayValue = ref(store.getCellDisplayValue(colIndex, rowIndex))
 const currentData = ref('')
 const cellModified = ref(false)
 
@@ -63,9 +63,16 @@ const row = store.rows[rowIndex]
 const textAlign = column.align || 'center'
 const cellWidth = column.width || '40ch'
 
+watch(
+	() => store.getCellData(colIndex, rowIndex),
+	cellData => {
+		displayValue.value = store.getFormattedValue(colIndex, rowIndex, cellData)
+	}
+)
+
 const isHtmlValue = computed(() => {
 	// TODO: check if display value is a native DOM element
-	return typeof displayValue === 'string' ? isHtmlString(displayValue) : false
+	return typeof displayValue.value === 'string' ? isHtmlString(displayValue.value) : false
 })
 
 const cellStyle = computed((): CSSProperties => {

@@ -4,9 +4,10 @@ import { mount } from '@vue/test-utils'
 
 import ATable from '../src/components/ATable.vue'
 import data from './data/http_logs.json'
+import type { TableColumn, TableConfig } from '../src/types'
 
 describe('table component', () => {
-	const columns = [
+	const columns: TableColumn[] = [
 		{
 			label: 'Home Page',
 			name: 'home_page',
@@ -14,9 +15,7 @@ describe('table component', () => {
 			align: 'left',
 			edit: false,
 			width: '35ch',
-			format: (value: { title?: string; value?: any }) => {
-				return value.title
-			},
+			format: (value: { title: string }) => value.title,
 		},
 		{
 			label: 'HTTP Method',
@@ -33,17 +32,15 @@ describe('table component', () => {
 			align: 'center',
 			edit: true,
 			width: '25ch',
-			modalComponent: 'ADate',
-			format: (value: number) => {
-				return new Date(Number(value)).toLocaleDateString('en-US')
-			},
+			modalComponent: 'DateInput',
+			format: (value: string | number) => new Date(value).toLocaleDateString('en-US'),
 		},
 	]
 
 	const defaultProps = {
 		columns,
 		modelValue: data,
-		config: { view: 'list' },
+		config: { view: 'list' } as TableConfig,
 	}
 
 	beforeEach(() => {
@@ -90,7 +87,7 @@ describe('table component', () => {
 	})
 
 	it('verify data rows (format string)', async () => {
-		const columns = [
+		const columns: TableColumn[] = [
 			{
 				label: 'Home Page',
 				name: 'home_page',
@@ -115,10 +112,8 @@ describe('table component', () => {
 				align: 'center',
 				edit: true,
 				width: '25ch',
-				modalComponent: 'ADate',
-				format: (value: number) => {
-					return new Date(Number(value)).toLocaleDateString('en-US')
-				},
+				modalComponent: 'DateInput',
+				format: (value: string | number) => new Date(value).toLocaleDateString('en-US'),
 			},
 		]
 
@@ -144,7 +139,7 @@ describe('table component', () => {
 	})
 
 	it('verify data rows (no format)', async () => {
-		const columns = [
+		const columns: TableColumn[] = [
 			{
 				label: 'Home Page',
 				name: 'home_page',
@@ -168,10 +163,8 @@ describe('table component', () => {
 				align: 'center',
 				edit: true,
 				width: '25ch',
-				modalComponent: 'ADate',
-				format: (value: number) => {
-					return new Date(Number(value)).toLocaleDateString('en-US')
-				},
+				modalComponent: 'DateInput',
+				format: (value: string | number) => new Date(value).toLocaleDateString('en-US'),
 			},
 		]
 
