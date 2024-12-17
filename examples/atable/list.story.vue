@@ -107,7 +107,7 @@
 </template>
 
 <script lang="ts" setup>
-import { type TableColumn, createTableStore } from '@stonecrop/atable'
+import { type TableColumn } from '@stonecrop/atable'
 import { CSSProperties, ref } from 'vue'
 
 import inbox_data from './sample_data/inbox.json'
@@ -188,10 +188,8 @@ const http_logs = ref({
 			align: 'center',
 			edit: true,
 			width: '25ch',
-			modalComponent: 'ADate',
-			format: (value: number) => {
-				return new Date(Number(value)).toLocaleDateString('en-US')
-			},
+			modalComponent: 'DateInput',
+			format: (value: number) => new Date(value).toLocaleDateString('en-US'),
 		},
 	] as TableColumn[],
 })
@@ -226,10 +224,8 @@ const pinned_logs = ref({
 			edit: true,
 			width: '25ch',
 			pinned: false,
-			modalComponent: 'ADate',
-			format: (value: number) => {
-				return new Date(Number(value)).toLocaleDateString('en-US')
-			},
+			modalComponent: 'DateInput',
+			format: (value: string | number) => new Date(value).toLocaleDateString('en-US'),
 		},
 	],
 })
