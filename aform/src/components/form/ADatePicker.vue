@@ -1,38 +1,40 @@
 <template>
 	<div class="adatepicker" tabindex="0" ref="datepicker">
 		<table>
-			<tr>
-				<td id="previous-month-btn" @click="previousMonth" :tabindex="-1">&lt;</td>
-				<th colspan="5" :tabindex="-1">{{ monthAndYear }}</th>
-				<td id="next-month-btn" @click="nextMonth" :tabindex="-1">&gt;</td>
-			</tr>
-			<tr class="days-header">
-				<td>M</td>
-				<td>T</td>
-				<td>W</td>
-				<td>T</td>
-				<td>F</td>
-				<td>S</td>
-				<td>S</td>
-			</tr>
-			<tr v-for="rowNo in numberOfRows" :key="rowNo">
-				<!-- the 'ref' key is currently only used for test references -->
-				<td
-					v-for="colNo in numberOfColumns"
-					ref="celldate"
-					:key="getCurrentCell(rowNo, colNo)"
-					:contenteditable="false"
-					:spellcheck="false"
-					:tabindex="0"
-					@click.prevent.stop="selectDate(getCurrentCell(rowNo, colNo))"
-					@keydown.enter="selectDate(getCurrentCell(rowNo, colNo))"
-					:class="{
-						todaysDate: isTodaysDate(getCurrentDate(rowNo, colNo)),
-						selectedDate: isSelectedDate(getCurrentDate(rowNo, colNo)),
-					}">
-					{{ new Date(getCurrentDate(rowNo, colNo)).getDate() }}
-				</td>
-			</tr>
+			<tbody>
+				<tr>
+					<td id="previous-month-btn" @click="previousMonth" :tabindex="-1">&lt;</td>
+					<th colspan="5" :tabindex="-1">{{ monthAndYear }}</th>
+					<td id="next-month-btn" @click="nextMonth" :tabindex="-1">&gt;</td>
+				</tr>
+				<tr class="days-header">
+					<td>M</td>
+					<td>T</td>
+					<td>W</td>
+					<td>T</td>
+					<td>F</td>
+					<td>S</td>
+					<td>S</td>
+				</tr>
+				<tr v-for="rowNo in numberOfRows" :key="rowNo">
+					<!-- the 'ref' key is currently only used for test references -->
+					<td
+						v-for="colNo in numberOfColumns"
+						ref="celldate"
+						:key="getCurrentCell(rowNo, colNo)"
+						:contenteditable="false"
+						:spellcheck="false"
+						:tabindex="0"
+						@click.prevent.stop="selectDate(getCurrentCell(rowNo, colNo))"
+						@keydown.enter="selectDate(getCurrentCell(rowNo, colNo))"
+						:class="{
+							todaysDate: isTodaysDate(getCurrentDate(rowNo, colNo)),
+							selectedDate: isSelectedDate(getCurrentDate(rowNo, colNo)),
+						}">
+						{{ new Date(getCurrentDate(rowNo, colNo)).getDate() }}
+					</td>
+				</tr>
+			</tbody>
 		</table>
 	</div>
 </template>

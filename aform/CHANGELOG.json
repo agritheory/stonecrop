@@ -2,6 +2,30 @@
   "name": "@stonecrop/aform",
   "entries": [
     {
+      "version": "0.3.2",
+      "tag": "@stonecrop/aform_v0.3.2",
+      "date": "Tue, 17 Dec 2024 10:07:54 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "format adate emit response to fit native datepicker"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.3.1",
+      "tag": "@stonecrop/aform_v0.3.1",
+      "date": "Tue, 17 Dec 2024 08:28:48 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "update deps"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.3.0",
       "tag": "@stonecrop/aform_v0.3.0",
       "date": "Mon, 16 Dec 2024 07:40:48 GMT",

@@ -1,12 +1,12 @@
 <template>
 	<div>
 		<input
+			v-model="inputDate"
 			ref="date"
 			type="date"
 			:id="uuid"
 			:disabled="readonly"
 			:required="required"
-			:value="inputDate"
 			@click="showPicker" />
 		<label :for="uuid">{{ label }}</label>
 		<p v-show="validation.errorMessage" v-html="validation.errorMessage"></p>
@@ -26,7 +26,10 @@ const {
 	validation = { errorMessage: '&nbsp;' },
 } = defineProps<ComponentProps>()
 
-const inputDate = defineModel<string | number | Date>()
+const inputDate = defineModel<string | number | Date>({
+	// format the date to be compatible with the native input datepicker
+	set: value => new Date(value).toISOString().split('T')[0],
+})
 const dateRef = useTemplateRef<HTMLInputElement>('date')
 
 const showPicker = () => {
