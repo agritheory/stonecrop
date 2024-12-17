@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/atable",
+      "comment": "update table cell value reactively",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/atable"
+}
