@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/atable",
+      "comment": "don't set header width until rows are loaded",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/atable"
+}
