@@ -59,9 +59,9 @@ width?: string;
 pinned?: boolean;
 cellComponent?: string;
 cellComponentProps?: Record<string, any>;
-modalComponent?: string | ((context?: CellContext) => string);
+modalComponent?: string | ((context: CellContext) => string);
 modalComponentExtraProps?: Record<string, any>;
-format?: string | ((value: any, context?: CellContext) => string);
+format?: string | ((value: any, context: CellContext) => string);
 mask?: (value: any) => any;
 }[], TableColumn[] | {
 name: string;
@@ -73,9 +73,9 @@ width?: string;
 pinned?: boolean;
 cellComponent?: string;
 cellComponentProps?: Record<string, any>;
-modalComponent?: string | ((context?: CellContext) => string);
+modalComponent?: string | ((context: CellContext) => string);
 modalComponentExtraProps?: Record<string, any>;
-format?: string | ((value: any, context?: CellContext) => string);
+format?: string | ((value: any, context: CellContext) => string);
 mask?: (value: any) => any;
 }[]>;
 rows: Ref<    {
@@ -163,9 +163,9 @@ width?: string;
 pinned?: boolean;
 cellComponent?: string;
 cellComponentProps?: Record<string, any>;
-modalComponent?: string | ((context?: CellContext) => string);
+modalComponent?: string | ((context: CellContext) => string);
 modalComponentExtraProps?: Record<string, any>;
-format?: string | ((value: any, context?: CellContext) => string);
+format?: string | ((value: any, context: CellContext) => string);
 mask?: (value: any) => any;
 }[], TableColumn[] | {
 name: string;
@@ -177,9 +177,9 @@ width?: string;
 pinned?: boolean;
 cellComponent?: string;
 cellComponentProps?: Record<string, any>;
-modalComponent?: string | ((context?: CellContext) => string);
+modalComponent?: string | ((context: CellContext) => string);
 modalComponentExtraProps?: Record<string, any>;
-format?: string | ((value: any, context?: CellContext) => string);
+format?: string | ((value: any, context: CellContext) => string);
 mask?: (value: any) => any;
 }[]>;
 rows: Ref<    {
@@ -267,9 +267,9 @@ width?: string;
 pinned?: boolean;
 cellComponent?: string;
 cellComponentProps?: Record<string, any>;
-modalComponent?: string | ((context?: CellContext) => string);
+modalComponent?: string | ((context: CellContext) => string);
 modalComponentExtraProps?: Record<string, any>;
-format?: string | ((value: any, context?: CellContext) => string);
+format?: string | ((value: any, context: CellContext) => string);
 mask?: (value: any) => any;
 }[], TableColumn[] | {
 name: string;
@@ -281,9 +281,9 @@ width?: string;
 pinned?: boolean;
 cellComponent?: string;
 cellComponentProps?: Record<string, any>;
-modalComponent?: string | ((context?: CellContext) => string);
+modalComponent?: string | ((context: CellContext) => string);
 modalComponentExtraProps?: Record<string, any>;
-format?: string | ((value: any, context?: CellContext) => string);
+format?: string | ((value: any, context: CellContext) => string);
 mask?: (value: any) => any;
 }[]>;
 rows: Ref<    {
@@ -376,9 +376,9 @@ export type TableColumn = {
     pinned?: boolean;
     cellComponent?: string;
     cellComponentProps?: Record<string, any>;
-    modalComponent?: string | ((context?: CellContext) => string);
+    modalComponent?: string | ((context: CellContext) => string);
     modalComponentExtraProps?: Record<string, any>;
-    format?: string | ((value: any, context?: CellContext) => string);
+    format?: string | ((value: any, context: CellContext) => string);
     mask?: (value: any) => any;
 };
 
