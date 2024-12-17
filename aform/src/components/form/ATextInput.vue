@@ -16,8 +16,8 @@
 <script setup lang="ts">
 import { /* inject, */ ref } from 'vue'
 
-import { useStringMask as vMask } from '@/directives/mask'
-import { ComponentProps } from '@/types'
+import { useStringMask as vMask } from '../../directives/mask'
+import { ComponentProps } from '../../types'
 
 const { label, mask, required, readonly, uuid, validation = { errorMessage: '&nbsp;' } } = defineProps<ComponentProps>()
 

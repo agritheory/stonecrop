@@ -4,23 +4,18 @@
 
 ```ts
 
-import ACheckbox from '@/components/form/ACheckbox.vue';
-import AComboBox from '@/components/form/AComboBox.vue';
-import ADate from '@/components/form/ADate.vue';
-import ADatePicker from '@/components/form/ADatePicker.vue';
-import ADropdown from '@/components/form/ADropdown.vue';
-import AFieldset from '@/components/form/AFieldset.vue';
-import AFileAttach from '@/components/form/AFileAttach.vue';
-import AForm from '@/components/AForm.vue';
-import ANumericInput from '@/components/form/ANumericInput.vue';
+import ACheckbox from './components/form/ACheckbox.vue';
+import AComboBox from './components/form/AComboBox.vue';
+import ADate from './components/form/ADate.vue';
+import ADatePicker from './components/form/ADatePicker.vue';
+import ADropdown from './components/form/ADropdown.vue';
+import AFieldset from './components/form/AFieldset.vue';
+import AFileAttach from './components/form/AFileAttach.vue';
+import AForm from './components/AForm.vue';
+import ANumericInput from './components/form/ANumericInput.vue';
 import { App } from 'vue';
-import ATextInput from '@/components/form/ATextInput.vue';
-import { BasicSchema } from '@/types';
-import { FieldsetSchema } from '@/types';
-import { FormSchema } from '@/types';
-import Login from '@/components/utilities/Login.vue';
-import { SchemaTypes } from '@/types';
-import { TableSchema } from '@/types';
+import ATextInput from './components/form/ATextInput.vue';
+import Login from './components/utilities/Login.vue';
 
 export { ACheckbox }
 
@@ -42,20 +37,84 @@ export { ANumericInput }
 
 export { ATextInput }
 
-export { BasicSchema }
+// @beta
+export type BasicSchema = {
+    component: string;
+    fieldname: string;
+    value: any;
+};
 
-export { FieldsetSchema }
+// @public
+export type CellContext = {
+    row: TableRow;
+    column: TableColumn;
+    table: {
+        [key: string]: any;
+    };
+};
 
-export { FormSchema }
+// @beta
+export type FieldsetSchema = BasicSchema & {
+    label: string;
+    schema: (FormSchema | TableSchema)[];
+    collapsible?: boolean;
+};
+
+// @beta
+export type FormSchema = BasicSchema & {
+    align: string;
+    edit: boolean;
+    fieldtype: string;
+    label: string;
+    name: string;
+    width: string;
+    mask?: string;
+};
 
 // @public
 export function install(app: App): void;
 
 export { Login }
 
-export { SchemaTypes }
+// @beta
+export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema;
 
-export { TableSchema }
+// @public
+export type TableColumn = {
+    name: string;
+    align?: CanvasTextAlign;
+    edit?: boolean;
+    label?: string;
+    type?: string;
+    width?: string;
+    pinned?: boolean;
+    cellComponent?: string;
+    cellComponentProps?: Record<string, any>;
+    modalComponent?: string | ((context?: CellContext) => string);
+    modalComponentExtraProps?: Record<string, any>;
+    format?: string | ((value: any, context?: CellContext) => string);
+    mask?: (value: any) => any;
+};
+
+// @public
+export type TableConfig = {
+    view?: 'uncounted' | 'list' | 'list-expansion' | 'tree';
+    fullWidth?: boolean;
+};
+
+// @public
+export type TableRow = {
+    [key: string]: any;
+    indent?: number;
+    parent?: number;
+};
+
+// @beta
+export type TableSchema = BasicSchema & {
+    columns: TableColumn[];
+    config: TableConfig;
+    rows: TableRow[];
+};
 
 // (No @packageDocumentation comment for this package)
 

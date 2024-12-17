@@ -7,12 +7,6 @@ const projectRootDir = resolve(__dirname)
 export default defineConfig({
 	plugins: [vue()],
 	optimizeDeps: { exclude: ['@stonecrop/atable', '@stonecrop/aform'] },
-	resolve: {
-		alias: {
-			'@': resolve(projectRootDir, 'src'),
-			types: resolve(projectRootDir, 'src/types'),
-		},
-	},
 	build: {
 		emptyOutDir: false,
 		sourcemap: true,

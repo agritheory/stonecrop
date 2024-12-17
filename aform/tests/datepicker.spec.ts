@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 
-import ADatePicker from '@/components/form/ADatePicker.vue'
+import ADatePicker from '../src/components/form/ADatePicker.vue'
 
 describe('datepicker component', () => {
 	it('emits update event when date is changed', async () => {

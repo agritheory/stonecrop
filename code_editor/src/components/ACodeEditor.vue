@@ -9,7 +9,7 @@ import loader from '@monaco-editor/loader'
 import { editor } from 'monaco-editor'
 import { onMounted, useTemplateRef } from 'vue'
 
-import { theme } from '@/theme/code_editor/agritheory'
+import { theme } from '../theme/code_editor/agritheory'
 
 const { options } = defineProps<{ options?: editor.IStandaloneEditorConstructionOptions }>()
 

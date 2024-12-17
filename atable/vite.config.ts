@@ -9,12 +9,6 @@ const projectRootDir = resolve(__dirname)
 
 export default defineConfig({
 	plugins: [vue(), libInjectCss()],
-	resolve: {
-		alias: {
-			'@': resolve(projectRootDir, 'src'),
-			types: resolve(projectRootDir, 'src/types'),
-		},
-	},
 	server: {
 		fs: {
 			allow: ['..'],
@@ -28,12 +22,13 @@ export default defineConfig({
 			name: '@stonecrop/atable',
 		},
 		rollupOptions: {
-			external: ['vue'],
+			external: ['vue', 'pinia'],
 			output: {
 				chunkFileNames: 'chunks/[name].[hash].js',
 				assetFileNames: 'assets/[name].[ext]',
 				globals: {
 					vue: 'Vue',
+					pinia: 'pinia',
 				},
 			},
 		},
