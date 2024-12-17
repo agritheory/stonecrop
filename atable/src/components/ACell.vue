@@ -14,8 +14,7 @@
 		@input="updateCellData"
 		@click="showModal"
 		class="atable-cell"
-		:class="pinned ? 'sticky-column' : ''"
-		v-on-click-outside="store.closeModal">
+		:class="pinned ? 'sticky-column' : ''">
 		<component
 			v-if="column.cellComponent"
 			:is="column.cellComponent"
@@ -28,7 +27,6 @@
 
 <script setup lang="ts">
 import { KeypressHandlers, defaultKeypressHandlers, useKeyboardNav } from '@stonecrop/utilities'
-import { vOnClickOutside } from '@vueuse/components'
 import { useElementBounding } from '@vueuse/core'
 import { computed, CSSProperties, ref, useTemplateRef } from 'vue'
 

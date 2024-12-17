@@ -1,5 +1,9 @@
 <template>
-	<table ref="table" class="atable" :style="{ width: store.config.fullWidth ? '100%' : 'auto' }">
+	<table
+		ref="table"
+		class="atable"
+		:style="{ width: store.config.fullWidth ? '100%' : 'auto' }"
+		v-on-click-outside="store.closeModal">
 		<slot name="header" :data="store">
 			<ATableHeader :columns="store.columns" :store="store" />
 		</slot>
@@ -53,6 +57,7 @@
 </template>
 
 <script setup lang="ts">
+import { vOnClickOutside } from '@vueuse/components'
 import { useMutationObserver } from '@vueuse/core'
 import { nextTick, watch, onMounted, useTemplateRef } from 'vue'
 
@@ -121,7 +126,7 @@ const assignStickyCellWidths = () => {
 	const firstDataRow = table.rows[1]
 	const headerCells = headerRow ? Array.from(headerRow.cells) : []
 	for (const [index, headerCell] of headerCells.entries()) {
-		const rowCell = firstDataRow.cells[index]
+		const rowCell = firstDataRow?.cells[index]
 		if (rowCell) {
 			headerCell.style.width = `${rowCell.offsetWidth}px`
 		}
