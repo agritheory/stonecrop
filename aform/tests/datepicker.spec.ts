@@ -71,7 +71,7 @@ describe('datepicker component', () => {
 
 		const $prevMonthBtn = wrapper.find('#next-month-btn')
 		await $prevMonthBtn.trigger('click')
-		expect(wrapper.vm.currentMonth).toBe(new Date().getMonth() + 1)
+		expect(wrapper.vm.currentMonth).toBe((new Date().getMonth() + 1) % 12)
 	})
 
 	it('select next year', async () => {
