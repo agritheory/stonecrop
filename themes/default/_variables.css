@@ -55,6 +55,7 @@
 	--sc-atable-row-padding: 0.125rem;
 	--sc-atable-row-height: 1.5em;
 	--sc-atable-cell-border-width: 2px;
+	--sc-table-loading-color: 204, 204, 204;
 
 	/* BTNS */
 	--sc-btn-border: #cccccc;

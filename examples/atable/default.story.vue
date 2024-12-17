@@ -12,6 +12,9 @@
 		<Variant title="full width">
 			<ATable v-model="full_width_table.rows" :columns="full_width_table.columns" :config="full_width_table.config" />
 		</Variant>
+		<Variant title="loading gradient">
+			<ATableLoading>Loading</ATableLoading>
+		</Variant>
 	</Story>
 </template>
 
@@ -20,6 +23,19 @@ import type { TableColumn } from '@stonecrop/atable'
 import { reactive } from 'vue'
 
 import rows from './sample_data/http_logs.json'
+
+const empty_rows = [
+	{
+		home_page: {
+			title: 'https://ceara.berlin',
+			url: 'https://ceara.berlin',
+		},
+		http_method: 'HEAD',
+		ip_address: '75.228.138.84',
+		report_date: 1580804064118.311,
+		status: '503 Service Unavailable',
+	},
+]
 
 const columns: TableColumn[] = [
 	{

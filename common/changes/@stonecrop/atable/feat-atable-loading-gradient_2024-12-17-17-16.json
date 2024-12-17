@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/atable",
+      "comment": "added atable loading component",
+      "type": "none"
+    }
+  ],
+  "packageName": "@stonecrop/atable"
+}

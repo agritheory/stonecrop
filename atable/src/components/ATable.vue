@@ -99,6 +99,7 @@ watch(
 	() => store.rows,
 	newValue => {
 		emit('update:modelValue', newValue)
+		console.log('data loaded')
 	},
 	{ deep: true }
 )
