@@ -26,18 +26,13 @@
 	position: relative;
 }
 .aloading-bar {
-	width: 100%;
-	height: 100%;
+	width: 50%;
+	height: 3px;
 	position: absolute;
 	left: -100%;
-	top: 0;
-	background: linear-gradient(
-		90deg,
-		rgba(var(--sc-table-loading-color), 0) 0%,
-		rgba(var(--sc-table-loading-color), 1) 50%,
-		rgba(var(--sc-table-loading-color), 0) 100%
-	);
-	animation: gradient infinite 2s;
+	bottom: 0;
+	background: var(--sc-row-border-color);
+	animation: bar-left infinite 2s;
 	z-index: 0;
 }
 .aloading-header {
@@ -57,9 +52,9 @@
 	animation-iteration-count: infinite;
 }
 
-@keyframes gradient {
+@keyframes bar-left {
 	0% {
-		left: -100%;
+		left: -50%;
 	}
 	100% {
 		left: 100%;

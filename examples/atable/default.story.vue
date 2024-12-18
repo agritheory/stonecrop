@@ -12,8 +12,10 @@
 		<Variant title="full width">
 			<ATable v-model="full_width_table.rows" :columns="full_width_table.columns" :config="full_width_table.config" />
 		</Variant>
-		<Variant title="loading gradient">
+		<Variant title="loading options">
 			<ATableLoading>Loading</ATableLoading>
+			<br />
+			<ATableLoadingBar>Loading</ATableLoadingBar>
 		</Variant>
 	</Story>
 </template>

@@ -6,6 +6,7 @@ import ARow from './components/ARow.vue'
 import ATable from './components/ATable.vue'
 import ATableHeader from './components/ATableHeader.vue'
 import ATableLoading from './components/ATableLoading.vue'
+import ATableLoadingBar from './components/ATableLoadingBar.vue'
 import ATableModal from './components/ATableModal.vue'
 export { createTableStore } from './stores/table'
 export type { CellContext, TableColumn, TableConfig, TableDisplay, TableRow, TableModal } from './types'
@@ -22,6 +23,7 @@ function install(app: App /* options */) {
 	app.component('ATable', ATable)
 	app.component('ATableHeader', ATableHeader)
 	app.component('ATableLoading', ATableLoading)
+	app.component('ATableLoadingBar', ATableLoadingBar)
 	app.component('ATableModal', ATableModal)
 }
 
