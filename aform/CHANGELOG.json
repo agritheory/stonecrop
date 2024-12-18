@@ -2,6 +2,24 @@
   "name": "@stonecrop/aform",
   "entries": [
     {
+      "version": "0.3.4",
+      "tag": "@stonecrop/aform_v0.3.4",
+      "date": "Wed, 18 Dec 2024 09:54:31 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.3.3",
+      "tag": "@stonecrop/aform_v0.3.3",
+      "date": "Tue, 17 Dec 2024 13:42:30 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "small style update to Adate"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.3.2",
       "tag": "@stonecrop/aform_v0.3.2",
       "date": "Tue, 17 Dec 2024 10:07:54 GMT",

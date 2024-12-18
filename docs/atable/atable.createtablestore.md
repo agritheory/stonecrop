@@ -51,15 +51,6 @@ createTableStore: (initData: {
         format?: string | ((value: any, context: CellContext) => string);
         mask?: (value: any) => any;
     }[]>;
-    rows: import("vue").Ref<{
-        [x: string]: any;
-        indent?: number;
-        parent?: number;
-    }[], TableRow[] | {
-        [x: string]: any;
-        indent?: number;
-        parent?: number;
-    }[]>;
     config: import("vue").Ref<{
         view?: "uncounted" | "list" | "list-expansion" | "tree";
         fullWidth?: boolean;
@@ -67,7 +58,6 @@ createTableStore: (initData: {
         view?: "uncounted" | "list" | "list-expansion" | "tree";
         fullWidth?: boolean;
     }>;
-    table: import("vue").Ref<{}, {}>;
     display: import("vue").Ref<{
         childrenOpen?: boolean;
         expanded?: boolean;
@@ -90,26 +80,39 @@ createTableStore: (initData: {
     modal: import("vue").Ref<{
         colIndex?: number;
         event?: string;
+        height?: number;
         left?: number;
         parent?: HTMLElement;
         rowIndex?: number;
         top?: number;
         visible?: boolean;
-        width?: string;
+        width?: number;
         component?: string;
         componentProps?: Record<string, any>;
     }, TableModal | {
         colIndex?: number;
         event?: string;
+        height?: number;
         left?: number;
         parent?: HTMLElement;
         rowIndex?: number;
         top?: number;
         visible?: boolean;
-        width?: string;
+        width?: number;
         component?: string;
         componentProps?: Record<string, any>;
     }>;
+    rows: import("vue").Ref<{
+        [x: string]: any;
+        indent?: number;
+        parent?: number;
+    }[], TableRow[] | {
+        [x: string]: any;
+        indent?: number;
+        parent?: number;
+    }[]>;
+    table: import("vue").Ref<{}, {}>;
+    updates: import("vue").Ref<Record<string, string>, Record<string, string>>;
     hasPinnedColumns: import("vue").ComputedRef<boolean>;
     numberedRowWidth: import("vue").ComputedRef<string>;
     zeroColumn: import("vue").ComputedRef<boolean>;
@@ -122,8 +125,9 @@ createTableStore: (initData: {
     getRowExpandSymbol: (rowIndex: number) => "" | "-" | "+";
     isRowVisible: (rowIndex: number) => boolean;
     setCellData: (colIndex: number, rowIndex: number, value: any) => void;
+    setCellText: (colIndex: number, rowIndex: number, value: string) => void;
     toggleRowExpand: (rowIndex: number) => void;
-}, "columns" | "rows" | "config" | "table" | "display" | "modal">, Pick<{
+}, "columns" | "config" | "display" | "modal" | "rows" | "table" | "updates">, Pick<{
     columns: import("vue").Ref<{
         name: string;
         align?: CanvasTextAlign;
@@ -155,15 +159,6 @@ createTableStore: (initData: {
         format?: string | ((value: any, context: CellContext) => string);
         mask?: (value: any) => any;
     }[]>;
-    rows: import("vue").Ref<{
-        [x: string]: any;
-        indent?: number;
-        parent?: number;
-    }[], TableRow[] | {
-        [x: string]: any;
-        indent?: number;
-        parent?: number;
-    }[]>;
     config: import("vue").Ref<{
         view?: "uncounted" | "list" | "list-expansion" | "tree";
         fullWidth?: boolean;
@@ -171,7 +166,6 @@ createTableStore: (initData: {
         view?: "uncounted" | "list" | "list-expansion" | "tree";
         fullWidth?: boolean;
     }>;
-    table: import("vue").Ref<{}, {}>;
     display: import("vue").Ref<{
         childrenOpen?: boolean;
         expanded?: boolean;
@@ -194,26 +188,39 @@ createTableStore: (initData: {
     modal: import("vue").Ref<{
         colIndex?: number;
         event?: string;
+        height?: number;
         left?: number;
         parent?: HTMLElement;
         rowIndex?: number;
         top?: number;
         visible?: boolean;
-        width?: string;
+        width?: number;
         component?: string;
         componentProps?: Record<string, any>;
     }, TableModal | {
         colIndex?: number;
         event?: string;
+        height?: number;
         left?: number;
         parent?: HTMLElement;
         rowIndex?: number;
         top?: number;
         visible?: boolean;
-        width?: string;
+        width?: number;
         component?: string;
         componentProps?: Record<string, any>;
     }>;
+    rows: import("vue").Ref<{
+        [x: string]: any;
+        indent?: number;
+        parent?: number;
+    }[], TableRow[] | {
+        [x: string]: any;
+        indent?: number;
+        parent?: number;
+    }[]>;
+    table: import("vue").Ref<{}, {}>;
+    updates: import("vue").Ref<Record<string, string>, Record<string, string>>;
     hasPinnedColumns: import("vue").ComputedRef<boolean>;
     numberedRowWidth: import("vue").ComputedRef<string>;
     zeroColumn: import("vue").ComputedRef<boolean>;
@@ -226,6 +233,7 @@ createTableStore: (initData: {
     getRowExpandSymbol: (rowIndex: number) => "" | "-" | "+";
     isRowVisible: (rowIndex: number) => boolean;
     setCellData: (colIndex: number, rowIndex: number, value: any) => void;
+    setCellText: (colIndex: number, rowIndex: number, value: string) => void;
     toggleRowExpand: (rowIndex: number) => void;
 }, "hasPinnedColumns" | "numberedRowWidth" | "zeroColumn">, Pick<{
     columns: import("vue").Ref<{
@@ -259,15 +267,6 @@ createTableStore: (initData: {
         format?: string | ((value: any, context: CellContext) => string);
         mask?: (value: any) => any;
     }[]>;
-    rows: import("vue").Ref<{
-        [x: string]: any;
-        indent?: number;
-        parent?: number;
-    }[], TableRow[] | {
-        [x: string]: any;
-        indent?: number;
-        parent?: number;
-    }[]>;
     config: import("vue").Ref<{
         view?: "uncounted" | "list" | "list-expansion" | "tree";
         fullWidth?: boolean;
@@ -275,7 +274,6 @@ createTableStore: (initData: {
         view?: "uncounted" | "list" | "list-expansion" | "tree";
         fullWidth?: boolean;
     }>;
-    table: import("vue").Ref<{}, {}>;
     display: import("vue").Ref<{
         childrenOpen?: boolean;
         expanded?: boolean;
@@ -298,26 +296,39 @@ createTableStore: (initData: {
     modal: import("vue").Ref<{
         colIndex?: number;
         event?: string;
+        height?: number;
         left?: number;
         parent?: HTMLElement;
         rowIndex?: number;
         top?: number;
         visible?: boolean;
-        width?: string;
+        width?: number;
         component?: string;
         componentProps?: Record<string, any>;
     }, TableModal | {
         colIndex?: number;
         event?: string;
+        height?: number;
         left?: number;
         parent?: HTMLElement;
         rowIndex?: number;
         top?: number;
         visible?: boolean;
-        width?: string;
+        width?: number;
         component?: string;
         componentProps?: Record<string, any>;
     }>;
+    rows: import("vue").Ref<{
+        [x: string]: any;
+        indent?: number;
+        parent?: number;
+    }[], TableRow[] | {
+        [x: string]: any;
+        indent?: number;
+        parent?: number;
+    }[]>;
+    table: import("vue").Ref<{}, {}>;
+    updates: import("vue").Ref<Record<string, string>, Record<string, string>>;
     hasPinnedColumns: import("vue").ComputedRef<boolean>;
     numberedRowWidth: import("vue").ComputedRef<string>;
     zeroColumn: import("vue").ComputedRef<boolean>;
@@ -330,8 +341,9 @@ createTableStore: (initData: {
     getRowExpandSymbol: (rowIndex: number) => "" | "-" | "+";
     isRowVisible: (rowIndex: number) => boolean;
     setCellData: (colIndex: number, rowIndex: number, value: any) => void;
+    setCellText: (colIndex: number, rowIndex: number, value: string) => void;
     toggleRowExpand: (rowIndex: number) => void;
-}, "closeModal" | "getCellData" | "getCellDisplayValue" | "getFormattedValue" | "getHeaderCellStyle" | "getIndent" | "getRowExpandSymbol" | "isRowVisible" | "setCellData" | "toggleRowExpand">>
+}, "closeModal" | "getCellData" | "getCellDisplayValue" | "getFormattedValue" | "getHeaderCellStyle" | "getIndent" | "getRowExpandSymbol" | "isRowVisible" | "setCellData" | "setCellText" | "toggleRowExpand">>
 ```
 
 ## Parameters
@@ -371,7 +383,7 @@ Initial data for the table store
 </tbody></table>
 **Returns:**
 
-import("pinia").Store&lt;\`table-${string}\`, Pick&lt;{ columns: import("vue").Ref&lt;{ name: string; align?: CanvasTextAlign; edit?: boolean; label?: string; pinned?: boolean; resizable?: boolean; type?: string; width?: string; cellComponent?: string; cellComponentProps?: Record&lt;string, any&gt;; modalComponent?: string \| ((context: [CellContext](./atable.cellcontext.md)<!-- -->) =&gt; string); modalComponentExtraProps?: Record&lt;string, any&gt;; format?: string \| ((value: any, context: [CellContext](./atable.cellcontext.md)<!-- -->) =&gt; string); mask?: (value: any) =&gt; any; }\[\], [TableColumn](./atable.tablecolumn.md)<!-- -->\[\] \| { name: string; align?: CanvasTextAlign; edit?: boolean; label?: string; pinned?: boolean; resizable?: boolean; type?: string; width?: string; cellComponent?: string; cellComponentProps?: Record&lt;string, any&gt;; modalComponent?: string \| ((context: [CellContext](./atable.cellcontext.md)<!-- -->) =&gt; string); modalComponentExtraProps?: Record&lt;string, any&gt;; format?: string \| ((value: any, context: [CellContext](./atable.cellcontext.md)<!-- -->) =&gt; string); mask?: (value: any) =&gt; any; }\[\]&gt;; rows: import("vue").Ref&lt;{ \[x: string\]: any; indent?: number; parent?: number; }\[\], [TableRow](./atable.tablerow.md)<!-- -->\[\] \| { \[x: string\]: any; indent?: number; parent?: number; }\[\]&gt;; config: import("vue").Ref&lt;{ view?: "uncounted" \| "list" \| "list-expansion" \| "tree"; fullWidth?: boolean; }, [TableConfig](./atable.tableconfig.md) \| { view?: "uncounted" \| "list" \| "list-expansion" \| "tree"; fullWidth?: boolean; }&gt;; table: import("vue").Ref&lt;{}, {}&gt;; display: import("vue").Ref&lt;{ childrenOpen?: boolean; expanded?: boolean; indent?: number; isParent?: boolean; isRoot?: boolean; open?: boolean; parent?: number; rowModified?: boolean; }\[\], [TableDisplay](./atable.tabledisplay.md)<!-- -->\[\] \| { childrenOpen?: boolean; expanded?: boolean; indent?: number; isParent?: boolean; isRoot?: boolean; open?: boolean; parent?: number; rowModified?: boolean; }\[\]&gt;; modal: import("vue").Ref&lt;{ colIndex?: number; event?: string; left?: number; parent?: HTMLElement; rowIndex?: number; top?: number; visible?: boolean; width?: string; component?: string; componentProps?: Record&lt;string, any&gt;; }, [TableModal](./atable.tablemodal.md) \| { colIndex?: number; event?: string; left?: number; parent?: HTMLElement; rowIndex?: number; top?: number; visible?: boolean; width?: string; component?: string; componentProps?: Record&lt;string, any&gt;; }&gt;; hasPinnedColumns: import("vue").ComputedRef&lt;boolean&gt;; numberedRowWidth: import("vue").ComputedRef&lt;string&gt;; zeroColumn: import("vue").ComputedRef&lt;boolean&gt;; closeModal: (event: MouseEvent) =&gt; void; getCellData: &lt;T = any&gt;(colIndex: number, rowIndex: number) =&gt; T; getCellDisplayValue: (colIndex: number, rowIndex: number) =&gt; any; getFormattedValue: (colIndex: number, rowIndex: number, value: any) =&gt; any; getHeaderCellStyle: (column: [TableColumn](./atable.tablecolumn.md)<!-- -->) =&gt; CSSProperties; getIndent: (colIndex: number, indentLevel?: number) =&gt; string; getRowExpandSymbol: (rowIndex: number) =&gt; "" \| "-" \| "+"; isRowVisible: (rowIndex: number) =&gt; boolean; setCellData: (colIndex: number, rowIndex: number, value: any) =&gt; void; toggleRowExpand: (rowIndex: number) =&gt; void; }, "columns" \| "rows" \| "config" \| "table" \| "display" \| "modal"&gt;, Pick&lt;{ columns: import("vue").Ref&lt;{ name: string; align?: CanvasTextAlign; edit?: boolean; label?: string; pinned?: boolean; resizable?: boolean; type?: string; width?: string; cellComponent?: string; cellComponentProps?: Record&lt;string, any&gt;; modalComponent?: string \| ((context: [CellContext](./atable.cellcontext.md)<!-- -->) =&gt; string); modalComponentExtraProps?: Record&lt;string, any&gt;; format?: string \| ((value: any, context: [CellContext](./atable.cellcontext.md)<!-- -->) =&gt; string); mask?: (value: any) =&gt; any; }\[\], [TableColumn](./atable.tablecolumn.md)<!-- -->\[\] \| { name: string; align?: CanvasTextAlign; edit?: boolean; label?: string; pinned?: boolean; resizable?: boolean; type?: string; width?: string; cellComponent?: string; cellComponentProps?: Record&lt;string, any&gt;; modalComponent?: string \| ((context: [CellContext](./atable.cellcontext.md)<!-- -->) =&gt; string); modalComponentExtraProps?: Record&lt;string, any&gt;; format?: string \| ((value: any, context: [CellContext](./atable.cellcontext.md)<!-- -->) =&gt; string); mask?: (value: any) =&gt; any; }\[\]&gt;; rows: import("vue").Ref&lt;{ \[x: string\]: any; indent?: number; parent?: number; }\[\], [TableRow](./atable.tablerow.md)<!-- -->\[\] \| { \[x: string\]: any; indent?: number; parent?: number; }\[\]&gt;; config: import("vue").Ref&lt;{ view?: "uncounted" \| "list" \| "list-expansion" \| "tree"; fullWidth?: boolean; }, [TableConfig](./atable.tableconfig.md) \| { view?: "uncounted" \| "list" \| "list-expansion" \| "tree"; fullWidth?: boolean; }&gt;; table: import("vue").Ref&lt;{}, {}&gt;; display: import("vue").Ref&lt;{ childrenOpen?: boolean; expanded?: boolean; indent?: number; isParent?: boolean; isRoot?: boolean; open?: boolean; parent?: number; rowModified?: boolean; }\[\], [TableDisplay](./atable.tabledisplay.md)<!-- -->\[\] \| { childrenOpen?: boolean; expanded?: boolean; indent?: number; isParent?: boolean; isRoot?: boolean; open?: boolean; parent?: number; rowModified?: boolean; }\[\]&gt;; modal: import("vue").Ref&lt;{ colIndex?: number; event?: string; left?: number; parent?: HTMLElement; rowIndex?: number; top?: number; visible?: boolean; width?: string; component?: string; componentProps?: Record&lt;string, any&gt;; }, [TableModal](./atable.tablemodal.md) \| { colIndex?: number; event?: string; left?: number; parent?: HTMLElement; rowIndex?: number; top?: number; visible?: boolean; width?: string; component?: string; componentProps?: Record&lt;string, any&gt;; }&gt;; hasPinnedColumns: import("vue").ComputedRef&lt;boolean&gt;; numberedRowWidth: import("vue").ComputedRef&lt;string&gt;; zeroColumn: import("vue").ComputedRef&lt;boolean&gt;; closeModal: (event: MouseEvent) =&gt; void; getCellData: &lt;T = any&gt;(colIndex: number, rowIndex: number) =&gt; T; getCellDisplayValue: (colIndex: number, rowIndex: number) =&gt; any; getFormattedValue: (colIndex: number, rowIndex: number, value: any) =&gt; any; getHeaderCellStyle: (column: [TableColumn](./atable.tablecolumn.md)<!-- -->) =&gt; CSSProperties; getIndent: (colIndex: number, indentLevel?: number) =&gt; string; getRowExpandSymbol: (rowIndex: number) =&gt; "" \| "-" \| "+"; isRowVisible: (rowIndex: number) =&gt; boolean; setCellData: (colIndex: number, rowIndex: number, value: any) =&gt; void; toggleRowExpand: (rowIndex: number) =&gt; void; }, "hasPinnedColumns" \| "numberedRowWidth" \| "zeroColumn"&gt;, Pick&lt;{ columns: import("vue").Ref&lt;{ name: string; align?: CanvasTextAlign; edit?: boolean; label?: string; pinned?: boolean; resizable?: boolean; type?: string; width?: string; cellComponent?: string; cellComponentProps?: Record&lt;string, any&gt;; modalComponent?: string \| ((context: [CellContext](./atable.cellcontext.md)<!-- -->) =&gt; string); modalComponentExtraProps?: Record&lt;string, any&gt;; format?: string \| ((value: any, context: [CellContext](./atable.cellcontext.md)<!-- -->) =&gt; string); mask?: (value: any) =&gt; any; }\[\], [TableColumn](./atable.tablecolumn.md)<!-- -->\[\] \| { name: string; align?: CanvasTextAlign; edit?: boolean; label?: string; pinned?: boolean; resizable?: boolean; type?: string; width?: string; cellComponent?: string; cellComponentProps?: Record&lt;string, any&gt;; modalComponent?: string \| ((context: [CellContext](./atable.cellcontext.md)<!-- -->) =&gt; string); modalComponentExtraProps?: Record&lt;string, any&gt;; format?: string \| ((value: any, context: [CellContext](./atable.cellcontext.md)<!-- -->) =&gt; string); mask?: (value: any) =&gt; any; }\[\]&gt;; rows: import("vue").Ref&lt;{ \[x: string\]: any; indent?: number; parent?: number; }\[\], [TableRow](./atable.tablerow.md)<!-- -->\[\] \| { \[x: string\]: any; indent?: number; parent?: number; }\[\]&gt;; config: import("vue").Ref&lt;{ view?: "uncounted" \| "list" \| "list-expansion" \| "tree"; fullWidth?: boolean; }, [TableConfig](./atable.tableconfig.md) \| { view?: "uncounted" \| "list" \| "list-expansion" \| "tree"; fullWidth?: boolean; }&gt;; table: import("vue").Ref&lt;{}, {}&gt;; display: import("vue").Ref&lt;{ childrenOpen?: boolean; expanded?: boolean; indent?: number; isParent?: boolean; isRoot?: boolean; open?: boolean; parent?: number; rowModified?: boolean; }\[\], [TableDisplay](./atable.tabledisplay.md)<!-- -->\[\] \| { childrenOpen?: boolean; expanded?: boolean; indent?: number; isParent?: boolean; isRoot?: boolean; open?: boolean; parent?: number; rowModified?: boolean; }\[\]&gt;; modal: import("vue").Ref&lt;{ colIndex?: number; event?: string; left?: number; parent?: HTMLElement; rowIndex?: number; top?: number; visible?: boolean; width?: string; component?: string; componentProps?: Record&lt;string, any&gt;; }, [TableModal](./atable.tablemodal.md) \| { colIndex?: number; event?: string; left?: number; parent?: HTMLElement; rowIndex?: number; top?: number; visible?: boolean; width?: string; component?: string; componentProps?: Record&lt;string, any&gt;; }&gt;; hasPinnedColumns: import("vue").ComputedRef&lt;boolean&gt;; numberedRowWidth: import("vue").ComputedRef&lt;string&gt;; zeroColumn: import("vue").ComputedRef&lt;boolean&gt;; closeModal: (event: MouseEvent) =&gt; void; getCellData: &lt;T = any&gt;(colIndex: number, rowIndex: number) =&gt; T; getCellDisplayValue: (colIndex: number, rowIndex: number) =&gt; any; getFormattedValue: (colIndex: number, rowIndex: number, value: any) =&gt; any; getHeaderCellStyle: (column: [TableColumn](./atable.tablecolumn.md)<!-- -->) =&gt; CSSProperties; getIndent: (colIndex: number, indentLevel?: number) =&gt; string; getRowExpandSymbol: (rowIndex: number) =&gt; "" \| "-" \| "+"; isRowVisible: (rowIndex: number) =&gt; boolean; setCellData: (colIndex: number, rowIndex: number, value: any) =&gt; void; toggleRowExpand: (rowIndex: number) =&gt; void; }, "closeModal" \| "getCellData" \| "getCellDisplayValue" \| "getFormattedValue" \| "getHeaderCellStyle" \| "getIndent" \| "getRowExpandSymbol" \| "isRowVisible" \| "setCellData" \| "toggleRowExpand"&gt;&gt;
+import("pinia").Store&lt;\`table-${string}\`, Pick&lt;{ columns: import("vue").Ref&lt;{ name: string; align?: CanvasTextAlign; edit?: boolean; label?: string; pinned?: boolean; resizable?: boolean; type?: string; width?: string; cellComponent?: string; cellComponentProps?: Record&lt;string, any&gt;; modalComponent?: string \| ((context: [CellContext](./atable.cellcontext.md)<!-- -->) =&gt; string); modalComponentExtraProps?: Record&lt;string, any&gt;; format?: string \| ((value: any, context: [CellContext](./atable.cellcontext.md)<!-- -->) =&gt; string); mask?: (value: any) =&gt; any; }\[\], [TableColumn](./atable.tablecolumn.md)<!-- -->\[\] \| { name: string; align?: CanvasTextAlign; edit?: boolean; label?: string; pinned?: boolean; resizable?: boolean; type?: string; width?: string; cellComponent?: string; cellComponentProps?: Record&lt;string, any&gt;; modalComponent?: string \| ((context: [CellContext](./atable.cellcontext.md)<!-- -->) =&gt; string); modalComponentExtraProps?: Record&lt;string, any&gt;; format?: string \| ((value: any, context: [CellContext](./atable.cellcontext.md)<!-- -->) =&gt; string); mask?: (value: any) =&gt; any; }\[\]&gt;; config: import("vue").Ref&lt;{ view?: "uncounted" \| "list" \| "list-expansion" \| "tree"; fullWidth?: boolean; }, [TableConfig](./atable.tableconfig.md) \| { view?: "uncounted" \| "list" \| "list-expansion" \| "tree"; fullWidth?: boolean; }&gt;; display: import("vue").Ref&lt;{ childrenOpen?: boolean; expanded?: boolean; indent?: number; isParent?: boolean; isRoot?: boolean; open?: boolean; parent?: number; rowModified?: boolean; }\[\], [TableDisplay](./atable.tabledisplay.md)<!-- -->\[\] \| { childrenOpen?: boolean; expanded?: boolean; indent?: number; isParent?: boolean; isRoot?: boolean; open?: boolean; parent?: number; rowModified?: boolean; }\[\]&gt;; modal: import("vue").Ref&lt;{ colIndex?: number; event?: string; height?: number; left?: number; parent?: HTMLElement; rowIndex?: number; top?: number; visible?: boolean; width?: number; component?: string; componentProps?: Record&lt;string, any&gt;; }, [TableModal](./atable.tablemodal.md) \| { colIndex?: number; event?: string; height?: number; left?: number; parent?: HTMLElement; rowIndex?: number; top?: number; visible?: boolean; width?: number; component?: string; componentProps?: Record&lt;string, any&gt;; }&gt;; rows: import("vue").Ref&lt;{ \[x: string\]: any; indent?: number; parent?: number; }\[\], [TableRow](./atable.tablerow.md)<!-- -->\[\] \| { \[x: string\]: any; indent?: number; parent?: number; }\[\]&gt;; table: import("vue").Ref&lt;{}, {}&gt;; updates: import("vue").Ref&lt;Record&lt;string, string&gt;, Record&lt;string, string&gt;&gt;; hasPinnedColumns: import("vue").ComputedRef&lt;boolean&gt;; numberedRowWidth: import("vue").ComputedRef&lt;string&gt;; zeroColumn: import("vue").ComputedRef&lt;boolean&gt;; closeModal: (event: MouseEvent) =&gt; void; getCellData: &lt;T = any&gt;(colIndex: number, rowIndex: number) =&gt; T; getCellDisplayValue: (colIndex: number, rowIndex: number) =&gt; any; getFormattedValue: (colIndex: number, rowIndex: number, value: any) =&gt; any; getHeaderCellStyle: (column: [TableColumn](./atable.tablecolumn.md)<!-- -->) =&gt; CSSProperties; getIndent: (colIndex: number, indentLevel?: number) =&gt; string; getRowExpandSymbol: (rowIndex: number) =&gt; "" \| "-" \| "+"; isRowVisible: (rowIndex: number) =&gt; boolean; setCellData: (colIndex: number, rowIndex: number, value: any) =&gt; void; setCellText: (colIndex: number, rowIndex: number, value: string) =&gt; void; toggleRowExpand: (rowIndex: number) =&gt; void; }, "columns" \| "config" \| "display" \| "modal" \| "rows" \| "table" \| "updates"&gt;, Pick&lt;{ columns: import("vue").Ref&lt;{ name: string; align?: CanvasTextAlign; edit?: boolean; label?: string; pinned?: boolean; resizable?: boolean; type?: string; width?: string; cellComponent?: string; cellComponentProps?: Record&lt;string, any&gt;; modalComponent?: string \| ((context: [CellContext](./atable.cellcontext.md)<!-- -->) =&gt; string); modalComponentExtraProps?: Record&lt;string, any&gt;; format?: string \| ((value: any, context: [CellContext](./atable.cellcontext.md)<!-- -->) =&gt; string); mask?: (value: any) =&gt; any; }\[\], [TableColumn](./atable.tablecolumn.md)<!-- -->\[\] \| { name: string; align?: CanvasTextAlign; edit?: boolean; label?: string; pinned?: boolean; resizable?: boolean; type?: string; width?: string; cellComponent?: string; cellComponentProps?: Record&lt;string, any&gt;; modalComponent?: string \| ((context: [CellContext](./atable.cellcontext.md)<!-- -->) =&gt; string); modalComponentExtraProps?: Record&lt;string, any&gt;; format?: string \| ((value: any, context: [CellContext](./atable.cellcontext.md)<!-- -->) =&gt; string); mask?: (value: any) =&gt; any; }\[\]&gt;; config: import("vue").Ref&lt;{ view?: "uncounted" \| "list" \| "list-expansion" \| "tree"; fullWidth?: boolean; }, [TableConfig](./atable.tableconfig.md) \| { view?: "uncounted" \| "list" \| "list-expansion" \| "tree"; fullWidth?: boolean; }&gt;; display: import("vue").Ref&lt;{ childrenOpen?: boolean; expanded?: boolean; indent?: number; isParent?: boolean; isRoot?: boolean; open?: boolean; parent?: number; rowModified?: boolean; }\[\], [TableDisplay](./atable.tabledisplay.md)<!-- -->\[\] \| { childrenOpen?: boolean; expanded?: boolean; indent?: number; isParent?: boolean; isRoot?: boolean; open?: boolean; parent?: number; rowModified?: boolean; }\[\]&gt;; modal: import("vue").Ref&lt;{ colIndex?: number; event?: string; height?: number; left?: number; parent?: HTMLElement; rowIndex?: number; top?: number; visible?: boolean; width?: number; component?: string; componentProps?: Record&lt;string, any&gt;; }, [TableModal](./atable.tablemodal.md) \| { colIndex?: number; event?: string; height?: number; left?: number; parent?: HTMLElement; rowIndex?: number; top?: number; visible?: boolean; width?: number; component?: string; componentProps?: Record&lt;string, any&gt;; }&gt;; rows: import("vue").Ref&lt;{ \[x: string\]: any; indent?: number; parent?: number; }\[\], [TableRow](./atable.tablerow.md)<!-- -->\[\] \| { \[x: string\]: any; indent?: number; parent?: number; }\[\]&gt;; table: import("vue").Ref&lt;{}, {}&gt;; updates: import("vue").Ref&lt;Record&lt;string, string&gt;, Record&lt;string, string&gt;&gt;; hasPinnedColumns: import("vue").ComputedRef&lt;boolean&gt;; numberedRowWidth: import("vue").ComputedRef&lt;string&gt;; zeroColumn: import("vue").ComputedRef&lt;boolean&gt;; closeModal: (event: MouseEvent) =&gt; void; getCellData: &lt;T = any&gt;(colIndex: number, rowIndex: number) =&gt; T; getCellDisplayValue: (colIndex: number, rowIndex: number) =&gt; any; getFormattedValue: (colIndex: number, rowIndex: number, value: any) =&gt; any; getHeaderCellStyle: (column: [TableColumn](./atable.tablecolumn.md)<!-- -->) =&gt; CSSProperties; getIndent: (colIndex: number, indentLevel?: number) =&gt; string; getRowExpandSymbol: (rowIndex: number) =&gt; "" \| "-" \| "+"; isRowVisible: (rowIndex: number) =&gt; boolean; setCellData: (colIndex: number, rowIndex: number, value: any) =&gt; void; setCellText: (colIndex: number, rowIndex: number, value: string) =&gt; void; toggleRowExpand: (rowIndex: number) =&gt; void; }, "hasPinnedColumns" \| "numberedRowWidth" \| "zeroColumn"&gt;, Pick&lt;{ columns: import("vue").Ref&lt;{ name: string; align?: CanvasTextAlign; edit?: boolean; label?: string; pinned?: boolean; resizable?: boolean; type?: string; width?: string; cellComponent?: string; cellComponentProps?: Record&lt;string, any&gt;; modalComponent?: string \| ((context: [CellContext](./atable.cellcontext.md)<!-- -->) =&gt; string); modalComponentExtraProps?: Record&lt;string, any&gt;; format?: string \| ((value: any, context: [CellContext](./atable.cellcontext.md)<!-- -->) =&gt; string); mask?: (value: any) =&gt; any; }\[\], [TableColumn](./atable.tablecolumn.md)<!-- -->\[\] \| { name: string; align?: CanvasTextAlign; edit?: boolean; label?: string; pinned?: boolean; resizable?: boolean; type?: string; width?: string; cellComponent?: string; cellComponentProps?: Record&lt;string, any&gt;; modalComponent?: string \| ((context: [CellContext](./atable.cellcontext.md)<!-- -->) =&gt; string); modalComponentExtraProps?: Record&lt;string, any&gt;; format?: string \| ((value: any, context: [CellContext](./atable.cellcontext.md)<!-- -->) =&gt; string); mask?: (value: any) =&gt; any; }\[\]&gt;; config: import("vue").Ref&lt;{ view?: "uncounted" \| "list" \| "list-expansion" \| "tree"; fullWidth?: boolean; }, [TableConfig](./atable.tableconfig.md) \| { view?: "uncounted" \| "list" \| "list-expansion" \| "tree"; fullWidth?: boolean; }&gt;; display: import("vue").Ref&lt;{ childrenOpen?: boolean; expanded?: boolean; indent?: number; isParent?: boolean; isRoot?: boolean; open?: boolean; parent?: number; rowModified?: boolean; }\[\], [TableDisplay](./atable.tabledisplay.md)<!-- -->\[\] \| { childrenOpen?: boolean; expanded?: boolean; indent?: number; isParent?: boolean; isRoot?: boolean; open?: boolean; parent?: number; rowModified?: boolean; }\[\]&gt;; modal: import("vue").Ref&lt;{ colIndex?: number; event?: string; height?: number; left?: number; parent?: HTMLElement; rowIndex?: number; top?: number; visible?: boolean; width?: number; component?: string; componentProps?: Record&lt;string, any&gt;; }, [TableModal](./atable.tablemodal.md) \| { colIndex?: number; event?: string; height?: number; left?: number; parent?: HTMLElement; rowIndex?: number; top?: number; visible?: boolean; width?: number; component?: string; componentProps?: Record&lt;string, any&gt;; }&gt;; rows: import("vue").Ref&lt;{ \[x: string\]: any; indent?: number; parent?: number; }\[\], [TableRow](./atable.tablerow.md)<!-- -->\[\] \| { \[x: string\]: any; indent?: number; parent?: number; }\[\]&gt;; table: import("vue").Ref&lt;{}, {}&gt;; updates: import("vue").Ref&lt;Record&lt;string, string&gt;, Record&lt;string, string&gt;&gt;; hasPinnedColumns: import("vue").ComputedRef&lt;boolean&gt;; numberedRowWidth: import("vue").ComputedRef&lt;string&gt;; zeroColumn: import("vue").ComputedRef&lt;boolean&gt;; closeModal: (event: MouseEvent) =&gt; void; getCellData: &lt;T = any&gt;(colIndex: number, rowIndex: number) =&gt; T; getCellDisplayValue: (colIndex: number, rowIndex: number) =&gt; any; getFormattedValue: (colIndex: number, rowIndex: number, value: any) =&gt; any; getHeaderCellStyle: (column: [TableColumn](./atable.tablecolumn.md)<!-- -->) =&gt; CSSProperties; getIndent: (colIndex: number, indentLevel?: number) =&gt; string; getRowExpandSymbol: (rowIndex: number) =&gt; "" \| "-" \| "+"; isRowVisible: (rowIndex: number) =&gt; boolean; setCellData: (colIndex: number, rowIndex: number, value: any) =&gt; void; setCellText: (colIndex: number, rowIndex: number, value: string) =&gt; void; toggleRowExpand: (rowIndex: number) =&gt; void; }, "closeModal" \| "getCellData" \| "getCellDisplayValue" \| "getFormattedValue" \| "getHeaderCellStyle" \| "getIndent" \| "getRowExpandSymbol" \| "isRowVisible" \| "setCellData" \| "setCellText" \| "toggleRowExpand"&gt;&gt;
 
 table store instance
 

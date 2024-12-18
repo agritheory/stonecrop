@@ -24,7 +24,8 @@
 						:style="{
 							textAlign: col?.align || 'center',
 							width: col.width ? col.width : store.config.fullWidth ? 'auto' : '40ch',
-						}" />
+						}"
+						@cellInput="emitInput" />
 				</ARow>
 			</slot>
 		</tbody>
@@ -36,11 +37,7 @@
 				:colIndex="store.modal.colIndex"
 				:rowIndex="store.modal.rowIndex"
 				:store="store"
-				:style="{
-					left: store.modal.left + 'px',
-					top: store.modal.top + 'px',
-					maxWidth: store.modal.width + 'px',
-				}">
+				:container="tableRef">
 				<template #default>
 					<component
 						:key="`${store.modal.rowIndex}:${store.modal.colIndex}`"
@@ -90,11 +87,14 @@ const tableRef = useTemplateRef<HTMLTableElement>('table')
 const rowsValue = modelValue ? modelValue : rows
 const store = createTableStore({ columns, rows: rowsValue, id, config })
 
-store.$onAction(({ name, store, args }) => {
+store.$onAction(({ name, store, args, after }) => {
 	if (name === 'setCellData') {
 		const [colIndex, rowIndex, newCellValue] = args
 		const prevCellValue = store.getCellData(colIndex, rowIndex)
-		emit('cellUpdate', [colIndex, rowIndex, newCellValue, prevCellValue])
+
+		after(() => {
+			emit('cellUpdate', colIndex, rowIndex, newCellValue, prevCellValue)
+		})
 	}
 })
 
@@ -116,6 +116,10 @@ onMounted(() => {
 		}
 	}
 })
+
+const emitInput = (colIndex: number, rowIndex: number, newCellValue: any, prevCellValue: any) => {
+	emit('cellUpdate', colIndex, rowIndex, newCellValue, prevCellValue)
+}
 
 const assignStickyCellWidths = () => {
 	const table = tableRef.value
@@ -150,54 +154,6 @@ const assignStickyCellWidths = () => {
 		}
 	}
 }
-
-// const formatCell = (event?: KeyboardEvent, column?: TableColumn, cellData?: any) => {
-// 	let colIndex: number
-// 	const target = event?.target as HTMLTableCellElement
-// 	if (event) {
-// 		colIndex = target.cellIndex
-// 	} else if (column && cellData) {
-// 		colIndex = store.columns.indexOf(column)
-// 	}
-
-// 	if (!column && 'format' in store.columns[colIndex]) {
-// 		// TODO: (utils) create helper to extract format from string
-// 		const format = store.columns[colIndex].format
-// 		if (typeof format === 'function') {
-// 			return format(target.innerHTML)
-// 		} else if (typeof format === 'string') {
-// 			// parse format function from string
-// 			// eslint-disable-next-line @typescript-eslint/no-implied-eval
-// 			const formatFn: (args: any) => any = Function(`"use strict";return (${format})`)()
-// 			return formatFn(target.innerHTML)
-// 		} else {
-// 			return target.innerHTML
-// 		}
-// 	} else if (cellData && 'format' in column) {
-// 		const format = column.format
-// 		if (typeof format === 'function') {
-// 			return format(cellData)
-// 		} else if (typeof format === 'string') {
-// 			// parse format function from string
-// 			// eslint-disable-next-line @typescript-eslint/no-implied-eval
-// 			const formatFn: (args: any) => any = Function(`"use strict";return (${format})`)()
-// 			return formatFn(cellData)
-// 		} else {
-// 			return cellData
-// 		}
-// 	} else if (cellData && column.type.toLowerCase() in ['int', 'decimal', 'float', 'number', 'percent']) {
-// 		return cellData
-// 		// TODO: number formatting
-// 	} else {
-// 		return cellData
-// 	}
-// }
-
-// const moveCursorToEnd = (target: HTMLElement) => {
-// 	target.focus()
-// 	document.execCommand('selectAll', false, null)
-// 	document.getSelection().collapseToEnd()
-// }
 
 window.addEventListener('keydown', (event: KeyboardEvent) => {
 	if (event.key === 'Escape') {
@@ -248,6 +204,7 @@ td.sticky-index {
 <style scoped>
 @import url('@stonecrop/themes/default.css');
 .atable {
+	position: relative;
 	font-family: var(--sc-atable-font-family);
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
