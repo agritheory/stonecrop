@@ -10,7 +10,6 @@
 		:style="cellStyle"
 		@focus="onFocus"
 		@paste="updateCellData"
-		@blur="updateCellData"
 		@input="updateCellData"
 		@click="showModal"
 		class="atable-cell"
@@ -28,7 +27,7 @@
 <script setup lang="ts">
 import { KeypressHandlers, defaultKeypressHandlers, useKeyboardNav } from '@stonecrop/utilities'
 import { useElementBounding } from '@vueuse/core'
-import { computed, CSSProperties, ref, useTemplateRef, watch } from 'vue'
+import { computed, type CSSProperties, ref, useTemplateRef } from 'vue'
 
 import { createTableStore } from '../stores/table'
 import { isHtmlString } from '../utils'
@@ -48,12 +47,13 @@ const {
 	pinned?: boolean
 }>()
 
+const emit = defineEmits<{ cellInput: [colIndex: number, rowIndex: number, newValue: string, oldValue: string] }>()
+
 const cellRef = useTemplateRef<HTMLTableCellElement>('cell')
 const { width, height } = useElementBounding(cellRef)
 
 // keep a shallow copy of the original cell value for comparison
 const originalData = store.getCellData(colIndex, rowIndex)
-const displayValue = ref(store.getCellDisplayValue(colIndex, rowIndex))
 const currentData = ref('')
 const cellModified = ref(false)
 
@@ -63,13 +63,7 @@ const row = store.rows[rowIndex]
 const textAlign = column.align || 'center'
 const cellWidth = column.width || '40ch'
 
-watch(
-	() => store.getCellData(colIndex, rowIndex),
-	cellData => {
-		displayValue.value = store.getFormattedValue(colIndex, rowIndex, cellData)
-	}
-)
-
+const displayValue = computed(() => store.getCellDisplayValue(colIndex, rowIndex))
 const isHtmlValue = computed(() => {
 	// TODO: check if display value is a native DOM element
 	return typeof displayValue.value === 'string' ? isHtmlString(displayValue.value) : false
@@ -156,23 +150,23 @@ const onFocus = () => {
 	}
 }
 
-const updateCellData = () => {
-	if (cellRef.value) {
-		// only apply changes if the cell value has changed after being mounted
-		if (column.format) {
-			cellModified.value = cellRef.value.textContent !== store.getFormattedValue(colIndex, rowIndex, originalData)
-		} else {
-			cellModified.value = cellRef.value.textContent !== originalData
-		}
+const updateCellData = (payload: Event) => {
+	const target = payload.target as HTMLTableCellElement
+	if (target.textContent === currentData.value) {
+		return
+	}
 
-		if (cellRef.value.textContent !== currentData.value) {
-			currentData.value = cellRef.value.textContent
-			cellRef.value.dispatchEvent(new Event('change'))
-			if (!column.format) {
-				// TODO: need to setup reverse format function
-				store.setCellData(colIndex, rowIndex, currentData.value)
-			}
-		}
+	emit('cellInput', colIndex, rowIndex, target.textContent, currentData.value)
+	currentData.value = target.textContent
+
+	// only apply changes if the cell value has changed after being mounted
+	if (column.format) {
+		cellModified.value = target.textContent !== store.getFormattedValue(colIndex, rowIndex, originalData)
+		// TODO: need to setup reverse format function?
+		store.setCellText(colIndex, rowIndex, target.textContent)
+	} else {
+		cellModified.value = target.textContent !== originalData
+		store.setCellData(colIndex, rowIndex, target.textContent)
 	}
 }
 </script>

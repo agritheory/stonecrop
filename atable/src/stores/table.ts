@@ -75,6 +75,7 @@ export const createTableStore = (initData: {
 		const table = ref(initData.table || createTableObject())
 		const display = ref(createDisplayObject(initData.display))
 		const modal = ref(initData.modal || { visible: false })
+		const updates = ref<Record<string, string>>({})
 
 		// getters
 		const hasPinnedColumns = computed(() => columns.value.some(col => col.pinned))
@@ -98,6 +99,15 @@ export const createTableStore = (initData: {
 
 			table.value[index] = value
 			rows.value[rowIndex][col.name] = value
+		}
+
+		const setCellText = (colIndex: number, rowIndex: number, value: string) => {
+			const index = `${colIndex}:${rowIndex}`
+
+			if (table.value[index] !== value) {
+				display.value[rowIndex].rowModified = true
+				updates.value[index] = value
+			}
 		}
 
 		const getHeaderCellStyle = (column: TableColumn): CSSProperties => ({
@@ -185,11 +195,12 @@ export const createTableStore = (initData: {
 		return {
 			// state
 			columns,
-			rows,
 			config,
-			table,
 			display,
 			modal,
+			rows,
+			table,
+			updates,
 
 			// getters
 			hasPinnedColumns,
@@ -206,6 +217,7 @@ export const createTableStore = (initData: {
 			getRowExpandSymbol,
 			isRowVisible,
 			setCellData,
+			setCellText,
 			toggleRowExpand,
 		}
 	})
