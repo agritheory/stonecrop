@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/atable",
+      "comment": "emit cell update in columns with format",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/atable"
+}
