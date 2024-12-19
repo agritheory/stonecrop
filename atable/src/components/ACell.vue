@@ -218,9 +218,10 @@ const updateCellData = () => {
 	box-sizing: border-box;
 }
 .cell-modified {
-	outline: 1px solid rgba(0, 0, 0, 0.5);
-	outline-offset: -1px;
-	background: color-mix(in srgb, var(--sc-cell-changed-color), rgba(0, 0, 0, 0.75) 10%);
+	font-weight: bold;
 	font-style: italic;
+}
+.cell-modified-highlight {
+	background-color: var(--sc-cell-changed-color);
 }
 </style>

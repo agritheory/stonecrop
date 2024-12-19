@@ -91,7 +91,7 @@ if (addNavigation) {
 }
 </style>
 <style scoped>
-.expandable-row:has(td.cell-modified) {
+.expandable-row.changed-row-gradient:has(td.cell-modified) {
 	--cell-color-start: color-mix(in srgb, var(--sc-cell-changed-color), #fff 20%);
 	--cell-color-end: color-mix(in srgb, var(--sc-cell-changed-color), #fff 60%);
 	background: linear-gradient(90deg, var(--cell-color-start), var(--cell-color-end));
