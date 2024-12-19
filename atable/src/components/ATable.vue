@@ -56,12 +56,12 @@
 import { useMutationObserver } from '@vueuse/core'
 import { nextTick, watch, onMounted, useTemplateRef } from 'vue'
 
-import ACell from '@/components/ACell.vue'
-import ARow from '@/components/ARow.vue'
-import ATableHeader from '@/components/ATableHeader.vue'
-import ATableModal from '@/components/ATableModal.vue'
-import { createTableStore } from '@/stores/table'
-import type { TableColumn, TableConfig, TableRow } from '@/types'
+import ACell from './ACell.vue'
+import ARow from './ARow.vue'
+import ATableHeader from './ATableHeader.vue'
+import ATableModal from './ATableModal.vue'
+import { createTableStore } from '../stores/table'
+import type { TableColumn, TableConfig, TableRow } from '../types'
 
 const {
 	id,
@@ -252,6 +252,7 @@ td.sticky-index {
 	box-sizing: border-box;
 	table-layout: auto;
 	width: auto;
+	/* border-left:4px solid var(--sc-form-border); */
 }
 .atable th {
 	border-width: 0px;

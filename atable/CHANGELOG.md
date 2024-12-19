@@ -1,6 +1,32 @@
 # Change Log - @stonecrop/atable
 
-This log was last generated on Wed, 11 Dec 2024 07:45:13 GMT and should not be manually modified.
+This log was last generated on Mon, 16 Dec 2024 07:40:48 GMT and should not be manually modified.
+
+## 0.3.0
+Mon, 16 Dec 2024 07:40:48 GMT
+
+### Patches
+
+- update import paths to avoid API extraction bugs
+
+## 0.2.67
+Fri, 13 Dec 2024 12:32:30 GMT
+
+_Version update only_
+
+## 0.2.66
+Fri, 13 Dec 2024 12:15:19 GMT
+
+### Patches
+
+- minor style updates for Atable
+
+## 0.2.65
+Fri, 13 Dec 2024 06:53:37 GMT
+
+### Patches
+
+- externalize pinia dependency
 
 ## 0.2.64
 Wed, 11 Dec 2024 07:45:13 GMT

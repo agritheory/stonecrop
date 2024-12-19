@@ -1,11 +1,7 @@
 {
 	"extends": "../tsconfig.json",
 	"compilerOptions": {
-		"tsBuildInfoFile": "./dist/stonecrop.tsbuildinfo",
-		"paths": {
-			"@/*": ["./src/*"],
-			"types/*": ["./src/types/*"]
-		}
+		"tsBuildInfoFile": "./dist/stonecrop.tsbuildinfo"
 	},
-	"include": ["env.d.ts", "src/**/*", "src/**/*.ts", "src/**/*.vue", "tests/**/*.ts", "tests/**/*.vue"]
+	"include": ["src/**/*.ts"]
 }

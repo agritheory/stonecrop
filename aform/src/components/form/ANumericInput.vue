@@ -13,7 +13,7 @@
 </template>
 
 <script setup lang="ts">
-import { ComponentProps } from '@/types'
+import { ComponentProps } from '../../types'
 
 const { label, required, readonly, uuid, validation = { errorMessage: '&nbsp;' } } = defineProps<ComponentProps>()
 const inputNumber = defineModel<number>()

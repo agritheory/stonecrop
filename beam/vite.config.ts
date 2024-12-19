@@ -9,12 +9,6 @@ const projectRootDir = resolve(__dirname)
 
 export default defineConfig({
 	plugins: [vue(), libInjectCss()],
-	resolve: {
-		alias: {
-			'@': resolve(projectRootDir, 'src'),
-			themes: resolve(projectRootDir, 'themes'),
-		},
-	},
 	build: {
 		emptyOutDir: false,
 		sourcemap: true,

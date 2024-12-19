@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 
-import ANumericInput from '@/components/form/ANumericInput.vue'
+import ANumericInput from '../src/components/form/ANumericInput.vue'
 
 describe('numeric input component', () => {
 	const numericInputModel = 25

@@ -1,8 +1,8 @@
-import DoctypeMeta from '@/doctype'
-import { NotImplementedError } from '@/exceptions'
-import Registry from '@/registry'
-import { useDataStore } from '@/stores/data'
-import type { ImmutableDoctype, Schema } from '@/types'
+import DoctypeMeta from './doctype'
+import { NotImplementedError } from './exceptions'
+import Registry from './registry'
+import { useDataStore } from './stores/data'
+import type { ImmutableDoctype, Schema } from './types'
 
 export class Stonecrop {
 	/**

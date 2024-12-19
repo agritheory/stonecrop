@@ -4,24 +4,51 @@
 
 ```ts
 
+import type { AnyStateMachine } from 'xstate';
+import type { AnyStateNodeDefinition } from 'xstate';
 import { App } from 'vue';
-import { EditorStates } from '@/types';
-import { FlowElement } from '@/types';
-import { FlowElements } from '@/types';
-import { Layout } from '@/types';
-import NodeEditor from '@/components/NodeEditor.vue';
-import StateEditor from '@/components/StateEditor.vue';
+import { Element as Element_2 } from '@vue-flow/core';
+import { Elements } from '@vue-flow/core';
+import NodeEditor from './components/NodeEditor.vue';
+import { Position } from '@vue-flow/core';
+import StateEditor from './components/StateEditor.vue';
+import type { StatesConfig } from 'xstate';
+import { XYPosition } from '@vue-flow/core';
 
-export { EditorStates }
+// @public
+export type EditorStates = {
+    [key: string]: AnyStateMachine | AnyStateNodeDefinition | StatesConfig<any, any, any>;
+};
 
-export { FlowElement }
+// @public
+export type FlowElement = Element_2<{
+    hasInput?: boolean;
+    hasOutput?: boolean;
+}, {
+    hasInput?: boolean;
+    hasOutput?: boolean;
+}>;
 
-export { FlowElements }
+// @public
+export type FlowElements = Elements<{
+    hasInput?: boolean;
+    hasOutput?: boolean;
+}, {
+    hasInput?: boolean;
+    hasOutput?: boolean;
+}>;
 
 // @public
 export function install(app: App): void;
 
-export { Layout }
+// @public
+export type Layout = {
+    [key: string]: {
+        position?: XYPosition;
+        targetPosition?: Position;
+        sourcePosition?: Position;
+    };
+};
 
 export { NodeEditor }
 

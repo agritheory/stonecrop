@@ -1,8 +1,8 @@
 import { type WatchStopHandle, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useFocusWithin } from '@vueuse/core'
 
-import { useElementVisibility } from '@/composables/visibility'
-import type { KeyboardNavigationOptions, KeypressHandlers } from '@/types'
+import { useElementVisibility } from './visibility'
+import type { KeyboardNavigationOptions, KeypressHandlers } from '../types'
 
 // helper functions
 const isVisible = (element: HTMLElement) => {
@@ -201,6 +201,10 @@ const eventKeyMap = {
 	ArrowRight: 'right',
 }
 
+/**
+ * Default keypress handlers for keyboard navigation
+ * @public
+ */
 export const defaultKeypressHandlers: KeypressHandlers = {
 	'keydown.up': (event: KeyboardEvent) => {
 		const $upCell = getUpCell(event)
@@ -328,6 +332,11 @@ export const defaultKeypressHandlers: KeypressHandlers = {
 	},
 }
 
+/**
+ * Keyboard navigation composable
+ * @param options - Keyboard navigation options
+ * @public
+ */
 export function useKeyboardNav(options: KeyboardNavigationOptions[]) {
 	const getParentElement = (option: KeyboardNavigationOptions) => {
 		let $parent: HTMLElement | null = null

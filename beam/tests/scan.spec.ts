@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 
-import ScanInput from '@/components/ScanInput.vue'
+import ScanInput from '../src/components/ScanInput.vue'
 
 describe('scan input component', () => {
 	it('call scan handler prop function when barcode scanner is used', async () => {

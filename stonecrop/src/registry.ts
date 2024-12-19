@@ -1,6 +1,6 @@
 import { Router } from 'vue-router'
 
-import DoctypeMeta from '@/doctype'
+import DoctypeMeta from './doctype'
 
 export default class Registry {
 	static _root: Registry

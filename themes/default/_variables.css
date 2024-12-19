@@ -52,7 +52,7 @@
 	--sc-atable-font-family: 'Arimo', sans-serif;
 
 	/* TABLE */
-	--sc-atable-row-padding: 5px;
+	--sc-atable-row-padding: 0.125rem;
 	--sc-atable-row-height: 1.5em;
 	--sc-atable-cell-border-width: 2px;
 

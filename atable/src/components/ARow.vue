@@ -28,7 +28,7 @@
 import { type KeypressHandlers, useKeyboardNav, defaultKeypressHandlers } from '@stonecrop/utilities'
 import { useTemplateRef } from 'vue'
 
-import { createTableStore } from '@/stores/table'
+import { createTableStore } from '../stores/table'
 
 const {
 	rowIndex,
@@ -72,6 +72,10 @@ if (addNavigation) {
 	border-top: 1px solid var(--sc-row-border-color);
 	display: flex;
 	background-color: white;
+}
+
+.table-row > td:first-child {
+	border-left: 4px solid var(--sc-row-border-color);
 }
 
 .list-index {

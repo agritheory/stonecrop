@@ -13,9 +13,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
-import CollapseButton from '@/components/base/CollapseButton.vue'
-import AForm from '@/components/AForm.vue'
-import { SchemaTypes } from '@/types'
+import CollapseButton from '../base/CollapseButton.vue'
+import AForm from '../AForm.vue'
+import { SchemaTypes } from '../../types'
 
 const { schema, label, collapsible, data } = defineProps<{
 	schema: SchemaTypes[]
