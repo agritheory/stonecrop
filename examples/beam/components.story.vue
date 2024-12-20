@@ -68,6 +68,19 @@
 		<Variant title="progress block">
 			<BeamProgress :complete="workOrder.complete" />
 		</Variant>
+		<Variant title="Segmented Display">
+			<template #controls>
+				<HstText v-model="displayOptions.displayColor" title="Display Background Color" />
+				<HstText v-model="displayOptions.textColor" title="Display Text Color" />
+				<HstNumber v-model="displayOptions.displayInput" title="Display Number Input" />
+				<HstNumber v-model="displayOptions.decimalPlaces" :step="1" title="Decimal Places" />
+			</template>
+			<SegmentedDisplay
+				:display-color="displayOptions.displayColor"
+				:text-color="displayOptions.textColor"
+				:display-input="displayOptions.displayInput"
+				:decimal-places="displayOptions.decimalPlaces"></SegmentedDisplay>
+		</Variant>
 	</Story>
 </template>
 
@@ -76,5 +89,11 @@ import { reactive } from 'vue'
 
 const workOrder = reactive({
 	complete: false,
+})
+const displayOptions = reactive({
+	displayColor: '--sc-segmented-display-background',
+	textColor: '--sc-segmented-display-color',
+	displayInput: 0,
+	decimalPlaces: 2,
 })
 </script>

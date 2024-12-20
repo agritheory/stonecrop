@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/beam",
+      "comment": "added SegementedDisplay component",
+      "type": "none"
+    }
+  ],
+  "packageName": "@stonecrop/beam"
+}
