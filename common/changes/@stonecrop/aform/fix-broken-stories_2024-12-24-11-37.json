@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/aform",
+      "comment": "fix broken table stories",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/aform"
+}
