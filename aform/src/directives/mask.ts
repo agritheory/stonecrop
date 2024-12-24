@@ -2,6 +2,9 @@ import type { DirectiveBinding } from 'vue'
 
 import type { FormSchema } from '../types'
 
+/**
+ * Named masks for common input types
+ */
 const NAMED_MASKS = {
 	date: '##/##/####',
 	datetime: '####/##/## ##:##',
@@ -11,6 +14,11 @@ const NAMED_MASKS = {
 	card: '#### #### #### ####',
 }
 
+/**
+ * Extracts a mask function from a stringified function
+ * @param mask - Mask string
+ * @returns Mask function
+ */
 function extractMaskFn(mask: string): ((args: any) => string) | void {
 	try {
 		// eslint-disable-next-line @typescript-eslint/no-implied-eval
@@ -22,6 +30,11 @@ function extractMaskFn(mask: string): ((args: any) => string) | void {
 	}
 }
 
+/**
+ * Gets the mask for a given directive binding
+ * @param binding - Binding object from directive hook
+ * @returns Mask string
+ */
 function getMask(binding: DirectiveBinding<string>) {
 	let mask = binding.value
 
@@ -35,7 +48,7 @@ function getMask(binding: DirectiveBinding<string>) {
 		}
 	} else {
 		// TODO: (state) handle using state management
-		const schema: FormSchema = binding.instance['schema']
+		const schema = binding.instance['schema'] as FormSchema
 		const fieldType: string | undefined = schema?.fieldtype?.toLowerCase()
 		if (fieldType && NAMED_MASKS[fieldType]) {
 			mask = NAMED_MASKS[fieldType]
@@ -45,6 +58,12 @@ function getMask(binding: DirectiveBinding<string>) {
 	return mask
 }
 
+/**
+ * Unmasks the input string
+ * @param input - Input string
+ * @param maskToken - Mask token character
+ * @returns Unmasked input string
+ */
 function unmaskInput(input: string, maskToken?: string) {
 	if (!maskToken) {
 		maskToken = '#'
@@ -60,6 +79,13 @@ function unmaskInput(input: string, maskToken?: string) {
 	return unmaskedInput
 }
 
+/**
+ * Fills the mask with the input string
+ * @param input - Input string
+ * @param mask - Mask string
+ * @param maskToken - Mask token character
+ * @returns Masked input string
+ */
 function fillMask(input: string, mask: string, maskToken?: string) {
 	if (!maskToken) {
 		maskToken = '#'
@@ -78,6 +104,13 @@ function fillMask(input: string, mask: string, maskToken?: string) {
 	return replacement.slice(0, mask.length)
 }
 
+/**
+ * Applies a mask to an input element
+ * @param el - Input element
+ * @param binding - Binding object from directive hook
+ * @returns void
+ * @public
+ */
 export function useStringMask(el: HTMLInputElement, binding: DirectiveBinding<string>) {
 	const mask = getMask(binding)
 	if (!mask) return

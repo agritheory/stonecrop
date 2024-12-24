@@ -14,7 +14,13 @@ export function useStonecrop(registry?: Registry): StonecropReturn {
 		registry = inject<Registry>('$registry')
 	}
 
-	const store = useDataStore()
+	let store: ReturnType<typeof useDataStore>
+	try {
+		store = useDataStore()
+	} catch (e) {
+		throw new Error('Please enable the Stonecrop plugin before using the Stonecrop composable')
+	}
+
 	const stonecrop = ref(new Stonecrop(registry, store))
 	const isReady = ref(false)
 
