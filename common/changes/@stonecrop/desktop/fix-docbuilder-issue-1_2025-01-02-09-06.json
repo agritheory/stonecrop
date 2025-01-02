@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/desktop",
+      "comment": "fix broken docbuilder stories",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/desktop"
+}
