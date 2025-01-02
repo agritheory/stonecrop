@@ -6,4 +6,5 @@
 		<li><router-link to="/user">Users</router-link></li>
 	</div>
 </template>
+
 <script setup lang="ts"></script>
