@@ -20,7 +20,7 @@ export function makeServer({ environment = 'development' } = {}) {
 				doctypes: [{ name: 'Issue' }, { name: 'Assignment' }, { name: 'User' }],
 				stateMachines: [
 					{
-						name: 'Issue',
+						name: 'issue',
 						machine: {
 							id: 'Issue',
 							initial: 'New',
@@ -88,7 +88,7 @@ export function makeServer({ environment = 'development' } = {}) {
 						},
 					},
 					{
-						name: 'Assignment',
+						name: 'assignment',
 						machine: {
 							id: 'Assignment',
 							initial: 'New',
@@ -133,7 +133,7 @@ export function makeServer({ environment = 'development' } = {}) {
 						},
 					},
 					{
-						name: 'User',
+						name: 'user',
 						machine: {
 							id: 'User',
 							invoke: {
@@ -174,7 +174,7 @@ export function makeServer({ environment = 'development' } = {}) {
 				],
 				meta: [
 					{
-						name: 'Issue',
+						name: 'issue',
 						fields: [
 							{
 								id: 'subject',
@@ -225,7 +225,7 @@ export function makeServer({ environment = 'development' } = {}) {
 						],
 					},
 					{
-						name: 'Assignment',
+						name: 'assignment',
 						fields: [
 							{
 								id: 'user',
@@ -264,7 +264,7 @@ export function makeServer({ environment = 'development' } = {}) {
 						],
 					},
 					{
-						name: 'User',
+						name: 'user',
 						fields: [
 							{
 								id: 'username',
@@ -294,7 +294,7 @@ export function makeServer({ environment = 'development' } = {}) {
 				],
 				actions: [
 					{
-						name: 'Issue',
+						name: 'issue',
 						side_effects: [
 							{
 								event_name: 'LOAD',
@@ -321,7 +321,7 @@ export function makeServer({ environment = 'development' } = {}) {
 						],
 					},
 					{
-						name: 'Assignment',
+						name: 'assignment',
 						side_effects: [
 							{
 								event_name: 'LOAD',
@@ -348,7 +348,7 @@ export function makeServer({ environment = 'development' } = {}) {
 						],
 					},
 					{
-						name: 'User',
+						name: 'user',
 						side_effects: [
 							{
 								event_name: 'LOAD',
@@ -398,21 +398,24 @@ export function makeServer({ environment = 'development' } = {}) {
 			})
 
 			this.get('/load_state_machine', (schema, request) => {
-				let machine = schema.stateMachines.findBy({ name: request.queryParams.doctype })
+				const doctype = request.queryParams.doctype.toString().toLowerCase()
+				const machine = schema.stateMachines.findBy({ name: doctype })
 				return machine
 					? machine.attrs
 					: new Response(400, { some: 'Not Found' }, { errors: ['StateMachine for Doctype not found'] })
 			})
 
 			this.get('/load_meta', (schema, request) => {
-				let meta = schema.meta.findBy({ name: request.queryParams.doctype })
+				const doctype = request.queryParams.doctype.toString().toLowerCase()
+				const meta = schema.meta.findBy({ name: doctype })
 				return meta
 					? meta.attrs.fields
 					: new Response(400, { some: 'Not Found' }, { errors: ['Metadata for Doctype not found'] })
 			})
 
 			this.get('/load_side_effects', (schema, request) => {
-				let actions = schema.actions.findBy({ name: request.queryParams.doctype })
+				const doctype = request.queryParams.doctype.toString().toLowerCase()
+				const actions = schema.actions.findBy({ name: doctype })
 				return actions
 					? actions.attrs.side_effects
 					: new Response(400, { some: 'Not Found' }, { errors: ['Actions for Doctype not found'] })

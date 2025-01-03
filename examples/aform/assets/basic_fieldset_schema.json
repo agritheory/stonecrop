@@ -6,7 +6,7 @@
 		"schema": [
 			{
 				"fieldname": "first_name",
-				"fieldtype": "ATextInput",
+				"component": "ATextInput",
 				"label": "First Name"
 			},
 			{

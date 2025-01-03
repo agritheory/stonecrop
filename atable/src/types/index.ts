@@ -1,3 +1,5 @@
+import { createTableStore } from '../stores/table'
+
 /**
  * Table column definition.
  * @public
@@ -103,4 +105,15 @@ export type TableModal = {
 
 	component?: string
 	componentProps?: Record<string, any>
+}
+
+/**
+ * Table modal props definition.
+ * @public
+ */
+export type TableModalProps = {
+	[key: string]: any
+	colIndex: number
+	rowIndex: number
+	store: ReturnType<typeof createTableStore>
 }

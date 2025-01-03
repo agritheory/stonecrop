@@ -4,3 +4,260 @@
 
 ## stonecrop package
 
+## Classes
+
+<table><thead><tr><th>
+
+Class
+
+
+</th><th>
+
+Description
+
+
+</th></tr></thead>
+<tbody><tr><td>
+
+[DoctypeMeta](./stonecrop.doctypemeta.md)
+
+
+</td><td>
+
+Doctype Meta class
+
+
+</td></tr>
+<tr><td>
+
+[Registry](./stonecrop.registry.md)
+
+
+</td><td>
+
+Stonecrop Registry class
+
+
+</td></tr>
+</tbody></table>
+
+## Functions
+
+<table><thead><tr><th>
+
+Function
+
+
+</th><th>
+
+Description
+
+
+</th></tr></thead>
+<tbody><tr><td>
+
+[useStonecrop(registry)](./stonecrop.usestonecrop.md)
+
+
+</td><td>
+
+Stonecrop composable
+
+
+</td></tr>
+</tbody></table>
+
+## Variables
+
+<table><thead><tr><th>
+
+Variable
+
+
+</th><th>
+
+Description
+
+
+</th></tr></thead>
+<tbody><tr><td>
+
+[Stonecrop](./stonecrop.stonecrop.md)
+
+
+</td><td>
+
+Stonecrop Vue plugin
+
+
+</td></tr>
+</tbody></table>
+
+## Type Aliases
+
+<table><thead><tr><th>
+
+Type Alias
+
+
+</th><th>
+
+Description
+
+
+</th></tr></thead>
+<tbody><tr><td>
+
+[BaseSchema](./stonecrop.baseschema.md)
+
+
+</td><td>
+
+Basic field structure for AForm schemas
+
+
+</td></tr>
+<tr><td>
+
+[CellContext](./stonecrop.cellcontext.md)
+
+
+</td><td>
+
+Table cell context definition.
+
+
+</td></tr>
+<tr><td>
+
+[FieldsetSchema](./stonecrop.fieldsetschema.md)
+
+
+</td><td>
+
+Schema structure for defining fieldsets inside AForm
+
+
+</td></tr>
+<tr><td>
+
+[FormSchema](./stonecrop.formschema.md)
+
+
+</td><td>
+
+Schema structure for defining forms inside AForm
+
+
+</td></tr>
+<tr><td>
+
+[ImmutableDoctype](./stonecrop.immutabledoctype.md)
+
+
+</td><td>
+
+Immutable Doctype type for Stonecrop instances
+
+
+</td></tr>
+<tr><td>
+
+[InstallOptions](./stonecrop.installoptions.md)
+
+
+</td><td>
+
+Install options for Stonecrop Vue plugin
+
+
+</td></tr>
+<tr><td>
+
+[MutableDoctype](./stonecrop.mutabledoctype.md)
+
+
+</td><td>
+
+Mutable Doctype type for Stonecrop instances
+
+
+</td></tr>
+<tr><td>
+
+[Schema](./stonecrop.schema.md)
+
+
+</td><td>
+
+Schema type for Stonecrop instances
+
+
+</td></tr>
+<tr><td>
+
+[SchemaTypes](./stonecrop.schematypes.md)
+
+
+</td><td>
+
+Superset of all schema types for AForm
+
+
+</td></tr>
+<tr><td>
+
+[StonecropReturn](./stonecrop.stonecropreturn.md)
+
+
+</td><td>
+
+Stonecrop composable return type
+
+
+</td></tr>
+<tr><td>
+
+[TableColumn](./stonecrop.tablecolumn.md)
+
+
+</td><td>
+
+Table column definition.
+
+
+</td></tr>
+<tr><td>
+
+[TableConfig](./stonecrop.tableconfig.md)
+
+
+</td><td>
+
+Table configuration definition.
+
+
+</td></tr>
+<tr><td>
+
+[TableRow](./stonecrop.tablerow.md)
+
+
+</td><td>
+
+Table row definition.
+
+
+</td></tr>
+<tr><td>
+
+[TableSchema](./stonecrop.tableschema.md)
+
+
+</td><td>
+
+Schema structure for defining tables inside AForm
+
+
+</td></tr>
+</tbody></table>

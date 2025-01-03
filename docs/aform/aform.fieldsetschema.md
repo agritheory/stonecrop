@@ -4,19 +4,16 @@
 
 ## FieldsetSchema type
 
-> This API is provided as a beta preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
-> 
-
-Fieldset schema
+Schema structure for defining fieldsets inside AForm
 
 **Signature:**
 
 ```typescript
-export type FieldsetSchema = BasicSchema & {
-    label: string;
-    schema: (FormSchema | TableSchema)[];
+export type FieldsetSchema = BaseSchema & {
+    label?: string;
+    schema?: (FormSchema | TableSchema)[];
     collapsible?: boolean;
 };
 ```
-**References:** [BasicSchema](./aform.basicschema.md)<!-- -->, [FormSchema](./aform.formschema.md)<!-- -->, [TableSchema](./aform.tableschema.md)
+**References:** [BaseSchema](./aform.baseschema.md)<!-- -->, [FormSchema](./aform.formschema.md)<!-- -->, [TableSchema](./aform.tableschema.md)
 
