@@ -111,6 +111,17 @@ Table modal definition.
 </td></tr>
 <tr><td>
 
+[TableModalProps](./atable.tablemodalprops.md)
+
+
+</td><td>
+
+Table modal props definition.
+
+
+</td></tr>
+<tr><td>
+
 [TableRow](./atable.tablerow.md)
 
 

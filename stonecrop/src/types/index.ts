@@ -6,6 +6,10 @@ import { MachineConfig, StateMachine } from 'xstate'
 
 import DoctypeMeta from '../doctype'
 
+/**
+ * Immutable Doctype type for Stonecrop instances
+ * @public
+ */
 export type ImmutableDoctype = {
 	// TODO: allow schema to be a function
 	readonly schema?: List<SchemaTypes>
@@ -13,6 +17,10 @@ export type ImmutableDoctype = {
 	readonly actions?: Map<string, string[]>
 }
 
+/**
+ * Mutable Doctype type for Stonecrop instances
+ * @public
+ */
 export type MutableDoctype = {
 	// TODO: allow schema to be a function
 	schema?: SchemaTypes[]
@@ -20,11 +28,19 @@ export type MutableDoctype = {
 	actions?: Record<string, string[]>
 }
 
+/**
+ * Schema type for Stonecrop instances
+ * @public
+ */
 export type Schema = {
 	doctype: string
 	schema: List<SchemaTypes>
 }
 
+/**
+ * Install options for Stonecrop Vue plugin
+ * @public
+ */
 export type InstallOptions = {
 	router?: Router
 	components?: Record<string, Component>

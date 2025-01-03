@@ -12,12 +12,13 @@ Table modal definition.
 export type TableModal = {
     colIndex?: number;
     event?: string;
+    height?: number;
     left?: number;
     parent?: HTMLElement;
     rowIndex?: number;
     top?: number;
     visible?: boolean;
-    width?: string;
+    width?: number;
     component?: string;
     componentProps?: Record<string, any>;
 };

@@ -34,6 +34,8 @@ const toggleCollapse = (event: Event) => {
 		collapsed.value = !collapsed.value
 	}
 }
+
+defineExpose({ collapsed })
 </script>
 
 <style scoped>

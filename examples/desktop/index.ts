@@ -1,10 +1,12 @@
 import { List, Map } from 'immutable'
+import { createPinia } from 'pinia'
 import { createApp } from 'vue'
 import { RouteRecordRaw } from 'vue-router'
 import { createMachine } from 'xstate'
 
+import '@stonecrop/desktop/styles'
 import { ADate, ATextInput } from '@stonecrop/aform'
-import { ActionSet, CommandPalette, Doctype, Records, SheetNav } from '@stonecrop/desktop'
+import { Doctype, Records, StonecropDesktop } from '@stonecrop/desktop'
 import { DoctypeMeta, Stonecrop, type ImmutableDoctype, type MutableDoctype } from '@stonecrop/stonecrop'
 
 import Home from './components/Home.vue'
@@ -26,17 +28,16 @@ for (const route of routes) {
 	router.addRoute(route)
 }
 
+// setup Pinia
+const pinia = createPinia()
+app.use(pinia)
+
 // setup Stonecrop
 app.use(Stonecrop, {
 	router,
 	components: {
-		ActionSet,
 		ADate,
 		ATextInput,
-		CommandPalette,
-		Doctype,
-		Records,
-		SheetNav,
 	},
 	// TODO: or if doctype is a function [doctype].apply()
 	getMeta: async (doctype: string) => {
@@ -52,4 +53,5 @@ app.use(Stonecrop, {
 		return new DoctypeMeta(doctype, config.schema, config.workflow, config.actions)
 	},
 })
+app.use(StonecropDesktop)
 app.mount('#app')

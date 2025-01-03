@@ -17,7 +17,7 @@ export default defineConfig({
 	build: {
 		sourcemap: true,
 		lib: {
-			entry: resolve(projectRootDir, 'docbuilder/index.ts'),
+			entry: resolve(projectRootDir, 'index.ts'),
 			name: '@stonecrop/examples',
 		},
 		rollupOptions: {

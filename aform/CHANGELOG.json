@@ -2,6 +2,72 @@
   "name": "@stonecrop/aform",
   "entries": [
     {
+      "version": "0.3.7",
+      "tag": "@stonecrop/aform_v0.3.7",
+      "date": "Fri, 03 Jan 2025 06:27:07 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.3.6",
+      "tag": "@stonecrop/aform_v0.3.6",
+      "date": "Fri, 27 Dec 2024 09:24:01 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.3.5",
+      "tag": "@stonecrop/aform_v0.3.5",
+      "date": "Tue, 24 Dec 2024 11:42:53 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "fix broken table stories"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.3.4",
+      "tag": "@stonecrop/aform_v0.3.4",
+      "date": "Wed, 18 Dec 2024 09:54:31 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.3.3",
+      "tag": "@stonecrop/aform_v0.3.3",
+      "date": "Tue, 17 Dec 2024 13:42:30 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "small style update to Adate"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.3.2",
+      "tag": "@stonecrop/aform_v0.3.2",
+      "date": "Tue, 17 Dec 2024 10:07:54 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "format adate emit response to fit native datepicker"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.3.1",
+      "tag": "@stonecrop/aform_v0.3.1",
+      "date": "Tue, 17 Dec 2024 08:28:48 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "update deps"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.3.0",
       "tag": "@stonecrop/aform_v0.3.0",
       "date": "Mon, 16 Dec 2024 07:40:48 GMT",

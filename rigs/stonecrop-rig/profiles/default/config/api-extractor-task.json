@@ -1,4 +1,3 @@
 {
-	"$schema": "https://developer.microsoft.com/json-schemas/heft/v0/api-extractor-task.schema.json",
-	"useProjectTypescriptVersion": true
+	"$schema": "https://developer.microsoft.com/json-schemas/heft/v0/api-extractor-task.schema.json"
 }

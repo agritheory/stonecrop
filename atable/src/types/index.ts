@@ -1,3 +1,5 @@
+import { createTableStore } from '../stores/table'
+
 /**
  * Table column definition.
  * @public
@@ -14,10 +16,24 @@ export type TableColumn = {
 
 	cellComponent?: string
 	cellComponentProps?: Record<string, any>
-	modalComponent?: string | ((context?: CellContext) => string)
+	/**
+	 * The component to use for the modal. If a function is provided, it will be called with the cell context.
+	 * The following properties are available on the cell context:
+	 * - `row` - the row object
+	 * - `column` - the column object
+	 * - `table` - the table object
+	 *
+	 * The function should return the name of the component to use for the modal.
+	 *
+	 * Additionally, the following properties will be automatically passed to the modal component:
+	 * - `colIndex` - the column index of the current cell
+	 * - `rowIndex` - the row index of the current cell
+	 * - `store` - the table data store
+	 */
+	modalComponent?: string | ((context: CellContext) => string)
 	modalComponentExtraProps?: Record<string, any>
 
-	format?: string | ((value: any, context?: CellContext) => string)
+	format?: string | ((value: any, context: CellContext) => string)
 	mask?: (value: any) => any
 }
 
@@ -79,13 +95,25 @@ export type TableRow = {
 export type TableModal = {
 	colIndex?: number
 	event?: string
+	height?: number
 	left?: number
 	parent?: HTMLElement
 	rowIndex?: number
 	top?: number
 	visible?: boolean
-	width?: string
+	width?: number
 
 	component?: string
 	componentProps?: Record<string, any>
+}
+
+/**
+ * Table modal props definition.
+ * @public
+ */
+export type TableModalProps = {
+	[key: string]: any
+	colIndex: number
+	rowIndex: number
+	store: ReturnType<typeof createTableStore>
 }

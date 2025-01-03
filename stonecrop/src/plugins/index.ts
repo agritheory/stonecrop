@@ -5,6 +5,34 @@ import router from '../router'
 import { pinia } from '../stores'
 import type { InstallOptions } from '../types'
 
+/**
+ * Stonecrop Vue plugin
+ * @param app - The Vue app instance
+ * @param options - The plugin options
+ * @example
+ * ```ts
+ *
+ * import { createApp } from 'vue'
+ * import Stonecrop from 'stonecrop'
+ *
+ * import App from './App.vue'
+ *
+ * const app = createApp(App)
+ * app.use(Stonecrop, {
+ *  router,
+ *  components: {
+ *   // register custom components
+ *  },
+ *  getMeta: async (doctype: string) => {
+ *   // fetch doctype meta from API
+ *  },
+ * })
+ *
+ * app.mount('#app')
+ * ```
+ *
+ * @public
+ */
 const plugin: Plugin = {
 	install: (app: App, options?: InstallOptions) => {
 		const appRouter = options?.router || router
