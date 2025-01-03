@@ -5,22 +5,19 @@
 		:style="{ width: store.config.fullWidth ? '100%' : 'auto' }"
 		v-on-click-outside="store.closeModal">
 		<slot name="header" :data="store">
-			<ATableHeader :columns="store.columns" :store="store" />
+			<ATableHeader :columns="store.columns" :tableId="tableId" />
 		</slot>
 
 		<tbody>
 			<slot name="body" :data="store">
-				<ARow v-for="(row, rowIndex) in store.rows" :key="row.id" :row="row" :rowIndex="rowIndex" :store="store">
+				<ARow v-for="(row, rowIndex) in store.rows[tableId]" :key="row.id" :rowIndex="rowIndex" :tableId="tableId">
 					<ACell
-						v-for="(col, colIndex) in store.columns"
+						v-for="(col, colIndex) in store.columns[tableId]"
 						:key="col.name"
-						:store="store"
-						:col="col"
-						spellcheck="false"
-						:pinned="col.pinned"
-						:rowIndex="rowIndex"
 						:colIndex="colIndex"
-						:component="col.cellComponent"
+						:rowIndex="rowIndex"
+						:pinned="col.pinned"
+						:tableId="tableId"
 						:style="{
 							textAlign: col?.align || 'center',
 							minWidth: col?.width || '40ch',
@@ -34,19 +31,19 @@
 		<slot name="footer" :data="store" />
 		<slot name="modal" :data="store">
 			<ATableModal
-				v-show="store.modal.visible"
-				:colIndex="store.modal.colIndex"
-				:rowIndex="store.modal.rowIndex"
-				:store="store"
+				v-show="store.modal[tableId].visible"
+				:colIndex="store.modal[tableId].colIndex"
+				:rowIndex="store.modal[tableId].rowIndex"
+				:tableId="tableId"
 				:container="tableRef">
 				<template #default>
 					<component
-						:key="`${store.modal.rowIndex}:${store.modal.colIndex}`"
-						:is="store.modal.component"
-						:colIndex="store.modal.colIndex"
-						:rowIndex="store.modal.rowIndex"
-						:store="store"
-						v-bind="store.modal.componentProps" />
+						:key="`${store.modal[tableId].rowIndex}:${store.modal[tableId].colIndex}`"
+						:is="store.modal[tableId].component"
+						:colIndex="store.modal[tableId].colIndex"
+						:rowIndex="store.modal[tableId].rowIndex"
+						:tableId="tableId"
+						v-bind="store.modal[tableId].componentProps" />
 				</template>
 			</ATableModal>
 		</slot>
@@ -62,7 +59,7 @@ import ACell from './ACell.vue'
 import ARow from './ARow.vue'
 import ATableHeader from './ATableHeader.vue'
 import ATableModal from './ATableModal.vue'
-import { createTableStore } from '../stores/table'
+import { useTableStore } from '../../../stonecrop/src/stores/table'
 import type { TableColumn, TableConfig, TableRow } from '../types'
 
 const {
@@ -86,12 +83,22 @@ const emit = defineEmits<{
 
 const tableRef = useTemplateRef<HTMLTableElement>('table')
 const rowsValue = modelValue ? modelValue : rows
-const store = createTableStore({ columns, rows: rowsValue, id, config })
+const store = useTableStore()
+const tableId = id || crypto.randomUUID()
+
+store.$patch(state => {
+	state.columns[tableId] = columns
+	state.rows[tableId] = rowsValue
+	state.config = config
+	state.table[tableId] = store.createTableObject(columns, rowsValue)
+	state.display[tableId] = store.createDisplayObject(rowsValue)
+	state.modal[tableId] = { visible: false }
+})
 
 store.$onAction(({ name, store, args, after }) => {
 	if (name === 'setCellData') {
 		const [colIndex, rowIndex, newCellValue] = args
-		const prevCellValue = store.getCellData(colIndex, rowIndex)
+		const prevCellValue = store.getCellData(tableId, colIndex, rowIndex)
 
 		after(() => {
 			emit('cellUpdate', colIndex, rowIndex, newCellValue, prevCellValue)
@@ -100,7 +107,7 @@ store.$onAction(({ name, store, args, after }) => {
 })
 
 watch(
-	() => store.rows,
+	() => store.rows[tableId],
 	newValue => {
 		emit('update:modelValue', newValue)
 	},
@@ -158,11 +165,11 @@ const assignStickyCellWidths = () => {
 
 window.addEventListener('keydown', (event: KeyboardEvent) => {
 	if (event.key === 'Escape') {
-		if (store.modal.visible) {
-			store.modal.visible = false
+		if (store.modal[tableId].visible) {
+			store.modal[tableId].visible = false
 
 			// focus on the parent cell again
-			const $parent = store.modal.parent
+			const $parent = store.modal[tableId].parent
 			if ($parent) {
 				// wait for the modal to close before focusing
 				void nextTick().then(() => {

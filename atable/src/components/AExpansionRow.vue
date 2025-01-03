@@ -1,12 +1,12 @@
 <template>
 	<tr v-bind="$attrs" ref="rowEl" :tabindex="tabIndex" class="expandable-row">
-		<td :tabIndex="-1" @click="store.toggleRowExpand(rowIndex)" class="row-index">
+		<td :tabIndex="-1" @click="store.toggleRowExpand(rowIndex, tableId)" class="row-index">
 			{{ rowExpandSymbol }}
 		</td>
 		<slot name="row" />
 	</tr>
-	<tr v-if="store.display[rowIndex].expanded" ref="rowExpanded" :tabindex="tabIndex" class="expanded-row">
-		<td :tabIndex="-1" :colspan="store.columns.length + 1" class="expanded-row-content">
+	<tr v-if="store.display[tableId][rowIndex].expanded" ref="rowExpanded" :tabindex="tabIndex" class="expanded-row">
+		<td :tabIndex="-1" :colspan="store.columns[tableId].length + 1" class="expanded-row-content">
 			<slot name="content" />
 		</td>
 	</tr>
@@ -16,25 +16,27 @@
 import { type KeypressHandlers, useKeyboardNav } from '@stonecrop/utilities'
 import { computed, useTemplateRef } from 'vue'
 
-import { createTableStore } from '../stores/table'
+import { useTableStore } from '../stores/table'
 
 const {
 	rowIndex,
-	store,
 	tabIndex = -1,
 	addNavigation,
+	tableId,
 } = defineProps<{
 	rowIndex: number
-	store: ReturnType<typeof createTableStore>
 	tabIndex?: number
 	addNavigation?: boolean | KeypressHandlers
+	tableId: string
 }>()
+
+const store = useTableStore()
 
 const rowRef = useTemplateRef<HTMLTableRowElement>('rowEl')
 // const expandedRowRef = useTemplateRef<HTMLDivElement>('rowExpanded')
 
 const rowExpandSymbol = computed(() => {
-	return store.display[rowIndex].expanded ? '▼' : '►'
+	return store.display[tableId][rowIndex].expanded ? '▼' : '►'
 })
 
 if (addNavigation) {
@@ -42,7 +44,7 @@ if (addNavigation) {
 		'keydown.control.g': (event: KeyboardEvent) => {
 			event.stopPropagation()
 			event.preventDefault()
-			store.toggleRowExpand(rowIndex)
+			store.toggleRowExpand(rowIndex, tableId)
 		},
 	}
 

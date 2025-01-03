@@ -5,6 +5,7 @@ import { mount } from '@vue/test-utils'
 import ATable from '../src/components/ATable.vue'
 import data from './data/http_logs.json'
 import type { TableColumn, TableConfig } from '../src/types'
+import { useTableStore, initializeTableStore } from '../src/stores/table'
 
 describe('table component', () => {
 	const columns: TableColumn[] = [
@@ -38,6 +39,7 @@ describe('table component', () => {
 	]
 
 	const defaultProps = {
+		id: 'table1',
 		columns,
 		modelValue: data,
 		config: { view: 'list' } as TableConfig,
@@ -45,6 +47,12 @@ describe('table component', () => {
 
 	beforeEach(() => {
 		setActivePinia(createPinia())
+		initializeTableStore({
+			id: 'table1',
+			columns,
+			rows: data,
+			config: { view: 'list' },
+		})
 	})
 
 	it('verify header row', async () => {
@@ -119,6 +127,7 @@ describe('table component', () => {
 
 		const wrapper = mount(ATable, {
 			props: {
+				id: 'table2',
 				columns,
 				modelValue: data,
 				config: { view: 'list' },
@@ -170,6 +179,7 @@ describe('table component', () => {
 
 		const wrapper = mount(ATable, {
 			props: {
+				id: 'table3',
 				columns,
 				modelValue: data,
 				config: { view: 'list' },
@@ -188,5 +198,17 @@ describe('table component', () => {
 
 		const reportDateCell = dataCells.at(3)
 		expect(reportDateCell!.text()).toBeTruthy()
+	})
+
+	it('verify multiple table instances', async () => {
+		const wrapper1 = mount(ATable, { props: { ...defaultProps, id: 'table1' } })
+		const wrapper2 = mount(ATable, { props: { ...defaultProps, id: 'table2' } })
+
+		expect(wrapper1.vm).toBeTruthy()
+		expect(wrapper2.vm).toBeTruthy()
+
+		const store = useTableStore()
+		expect(store.rows['table1']).toHaveLength(data.length)
+		expect(store.rows['table2']).toHaveLength(data.length)
 	})
 })

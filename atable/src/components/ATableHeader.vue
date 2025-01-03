@@ -23,13 +23,15 @@
 </template>
 
 <script setup lang="ts">
-import { createTableStore } from '../stores/table'
+import { useTableStore } from '../stores/table'
 import type { TableColumn } from '../types'
 
-const { columns, store } = defineProps<{
+const { columns, tableId } = defineProps<{
 	columns: TableColumn[]
-	store: ReturnType<typeof createTableStore>
+	tableId: string
 }>()
+
+const store = useTableStore()
 </script>
 
 <style>

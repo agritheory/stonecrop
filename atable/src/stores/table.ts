@@ -1,226 +1,90 @@
 import { defineStore } from 'pinia'
-import { type CSSProperties, computed, ref } from 'vue'
+import { ref, computed } from 'vue'
 
-import type { CellContext, TableColumn, TableConfig, TableDisplay, TableModal, TableRow } from '../types'
+export const useTableStore = defineStore('table', () => {
+  const tables = ref<Record<string, any>>({})
 
-/**
- * Create a table store
- * @param initData - Initial data for the table store
- * @returns table store instance
- * @public
- */
-export const createTableStore = (initData: {
-	columns: TableColumn[]
-	rows: TableRow[]
-	id?: string
-	config?: TableConfig
-	table?: { [key: string]: any }
-	display?: TableDisplay[]
-	modal?: TableModal
-}) => {
-	const id = initData.id || crypto.randomUUID()
-	const createStore = defineStore(`table-${id}`, () => {
-		// util functions
-		const createTableObject = () => {
-			const table = {}
-			for (const [colIndex, column] of columns.value.entries()) {
-				for (const [rowIndex, row] of rows.value.entries()) {
-					table[`${colIndex}:${rowIndex}`] = row[column.name]
-				}
-			}
-			return table
-		}
+  const getTable = (tableId: string) => {
+    if (!tables.value[tableId]) {
+      tables.value[tableId] = {
+        columns: [],
+        rows: [],
+        config: {},
+        display: [],
+        modal: { visible: false },
+      }
+    }
+    return tables.value[tableId]
+  }
 
-		const createDisplayObject = (display?: TableDisplay[]) => {
-			const defaultDisplay: TableDisplay[] = [Object.assign({}, { rowModified: false })]
+  const setTableData = (tableId: string, columns: any[], rows: any[], config: any) => {
+    const table = getTable(tableId)
+    table.columns = columns
+    table.rows = rows
+    table.config = config
+    table.display = rows.map(() => ({ expanded: false, indent: 0 }))
+  }
 
-			// TODO: (typing) what is the type of `display` here?
-			if (display) {
-				if ('0:0' in display) {
-					return display
-				}
-				// else if ('default' in display) {
-				// 	// TODO: (typing) what is the possible input here for 'default'?
-				// 	defaultDisplay = display.default
-				// }
-			}
+  const getCellData = (tableId: string, colIndex: number, rowIndex: number) => {
+    const table = getTable(tableId)
+    return table.rows[rowIndex][table.columns[colIndex].name]
+  }
 
-			// TODO: (typing) is this type correct for the parent set?
-			const parents = new Set<string | number>()
-			for (let rowIndex = rows.value.length - 1; rowIndex >= 0; rowIndex--) {
-				const row = rows.value[rowIndex]
-				if (row.parent) {
-					parents.add(row.parent)
-				}
+  const setCellData = (tableId: string, colIndex: number, rowIndex: number, value: any) => {
+    const table = getTable(tableId)
+    table.rows[rowIndex][table.columns[colIndex].name] = value
+  }
 
-				defaultDisplay[rowIndex] = {
-					childrenOpen: false,
-					expanded: false,
-					indent: row.indent || null,
-					isParent: parents.has(rowIndex),
-					isRoot: row.parent === null || row.parent === undefined,
-					rowModified: false,
-					open: row.parent === null || row.parent === undefined,
-					parent: row.parent,
-				}
-			}
+  const getCellDisplayValue = (tableId: string, colIndex: number, rowIndex: number) => {
+    const table = getTable(tableId)
+    const column = table.columns[colIndex]
+    const value = getCellData(tableId, colIndex, rowIndex)
+    return column.format ? column.format(value) : value
+  }
 
-			return defaultDisplay
-		}
+  const getFormattedValue = (tableId: string, colIndex: number, rowIndex: number, value: any) => {
+    const table = getTable(tableId)
+    const column = table.columns[colIndex]
+    return column.format ? column.format(value) : value
+  }
 
-		// state
-		const columns = ref(initData.columns)
-		const rows = ref(initData.rows)
-		const config = ref(initData.config || {})
-		const table = ref(initData.table || createTableObject())
-		const display = ref(createDisplayObject(initData.display))
-		const modal = ref(initData.modal || { visible: false })
-		const updates = ref<Record<string, string>>({})
+  const getIndent = (tableId: string, colIndex: number, indent: number) => {
+    const table = getTable(tableId)
+    return `${indent * 2}ch`
+  }
 
-		// getters
-		const hasPinnedColumns = computed(() => columns.value.some(col => col.pinned))
+  const toggleRowExpand = (tableId: string, rowIndex: number) => {
+    const table = getTable(tableId)
+    table.display[rowIndex].expanded = !table.display[rowIndex].expanded
+  }
 
-		const numberedRowWidth = computed(() => {
-			const indent = Math.ceil(rows.value.length / 100 + 1)
-			return `${indent}ch`
-		})
+  const isRowVisible = (tableId: string, rowIndex: number) => {
+    const table = getTable(tableId)
+    return table.display[rowIndex].expanded
+  }
 
-		const zeroColumn = computed(() => ['list', 'tree', 'list-expansion'].includes(config.value.view))
+  const getRowExpandSymbol = (tableId: string, rowIndex: number) => {
+    const table = getTable(tableId)
+    return table.display[rowIndex].expanded ? '▼' : '►'
+  }
 
-		// actions
-		const getCellData = <T = any>(colIndex: number, rowIndex: number): T => table.value[`${colIndex}:${rowIndex}`]
-		const setCellData = (colIndex: number, rowIndex: number, value: any) => {
-			const index = `${colIndex}:${rowIndex}`
-			const col = columns.value[colIndex]
+  const closeModal = (tableId: string) => {
+    const table = getTable(tableId)
+    table.modal.visible = false
+  }
 
-			if (table.value[index] !== value) {
-				display.value[rowIndex].rowModified = true
-			}
-
-			table.value[index] = value
-			rows.value[rowIndex][col.name] = value
-		}
-
-		const setCellText = (colIndex: number, rowIndex: number, value: string) => {
-			const index = `${colIndex}:${rowIndex}`
-
-			if (table.value[index] !== value) {
-				display.value[rowIndex].rowModified = true
-				updates.value[index] = value
-			}
-		}
-
-		const getHeaderCellStyle = (column: TableColumn): CSSProperties => ({
-			minWidth: column.width || '40ch',
-			textAlign: column.align || 'center',
-			width: config.value.fullWidth ? 'auto' : null,
-		})
-
-		const isRowVisible = (rowIndex: number) => {
-			return config.value.view !== 'tree' || display.value[rowIndex].isRoot || display.value[rowIndex].open
-		}
-
-		const getRowExpandSymbol = (rowIndex: number) => {
-			if (config.value.view !== 'tree') {
-				return ''
-			}
-
-			if (display.value[rowIndex].isRoot || display.value[rowIndex].isParent) {
-				return display.value[rowIndex].childrenOpen ? '-' : '+'
-			}
-
-			return ''
-		}
-
-		const toggleRowExpand = (rowIndex: number) => {
-			if (config.value.view === 'tree') {
-				display.value[rowIndex].childrenOpen = !display.value[rowIndex].childrenOpen
-				for (let index = rows.value.length - 1; index >= 0; index--) {
-					if (display.value[index].parent === rowIndex) {
-						display.value[index].open = !display.value[index].open
-						if (display.value[index].childrenOpen) {
-							toggleRowExpand(index)
-						}
-					}
-				}
-			} else if (config.value.view === 'list-expansion') {
-				display.value[rowIndex].expanded = !display.value[rowIndex].expanded
-			}
-		}
-
-		const getCellDisplayValue = (colIndex: number, rowIndex: number) => {
-			const cellData = getCellData(colIndex, rowIndex)
-			return getFormattedValue(colIndex, rowIndex, cellData)
-		}
-
-		const getFormattedValue = (colIndex: number, rowIndex: number, value: any) => {
-			const column = columns.value[colIndex]
-			const row = rows.value[rowIndex]
-			const format = column.format
-
-			if (!format) {
-				return value
-			}
-
-			if (typeof format === 'function') {
-				return format(value, { table: table.value, row, column })
-			} else if (typeof format === 'string') {
-				// parse format function from string
-				// eslint-disable-next-line @typescript-eslint/no-implied-eval
-				const formatFn: (value: any, context?: CellContext) => string = Function(`"use strict";return (${format})`)()
-				return formatFn(value, { table: table.value, row, column })
-			}
-
-			return value
-		}
-
-		const closeModal = (event: MouseEvent) => {
-			if (!(event.target instanceof Node)) {
-				// if the target is not a node, it's probably a custom click event to Document or Window
-				// err on the side of closing the modal in that case
-				if (modal.value.visible) modal.value.visible = false
-			} else if (!modal.value.parent?.contains(event.target)) {
-				if (modal.value.visible) modal.value.visible = false
-			}
-		}
-
-		const getIndent = (colIndex: number, indentLevel?: number) => {
-			if (indentLevel && colIndex === 0 && indentLevel > 0) {
-				return `${indentLevel}ch`
-			} else {
-				return 'inherit'
-			}
-		}
-
-		return {
-			// state
-			columns,
-			config,
-			display,
-			modal,
-			rows,
-			table,
-			updates,
-
-			// getters
-			hasPinnedColumns,
-			numberedRowWidth,
-			zeroColumn,
-
-			// actions
-			closeModal,
-			getCellData,
-			getCellDisplayValue,
-			getFormattedValue,
-			getHeaderCellStyle,
-			getIndent,
-			getRowExpandSymbol,
-			isRowVisible,
-			setCellData,
-			setCellText,
-			toggleRowExpand,
-		}
-	})
-
-	return createStore()
-}
+  return {
+    tables,
+    getTable,
+    setTableData,
+    getCellData,
+    setCellData,
+    getCellDisplayValue,
+    getFormattedValue,
+    getIndent,
+    toggleRowExpand,
+    isRowVisible,
+    getRowExpandSymbol,
+    closeModal,
+  }
+})

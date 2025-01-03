@@ -29,23 +29,26 @@ import { KeypressHandlers, defaultKeypressHandlers, useKeyboardNav } from '@ston
 import { useElementBounding } from '@vueuse/core'
 import { computed, type CSSProperties, ref, useTemplateRef } from 'vue'
 
-import { createTableStore } from '../stores/table'
+import { useTableStore } from '../stores/table'
 import { isHtmlString } from '../utils'
 
 const {
 	colIndex,
 	rowIndex,
-	store,
-	addNavigation = true,
 	tabIndex = 0,
+	pinned,
+	addNavigation = true,
+	tableId,
 } = defineProps<{
 	colIndex: number
 	rowIndex: number
-	store: ReturnType<typeof createTableStore>
-	addNavigation?: boolean | KeypressHandlers
 	tabIndex?: number
 	pinned?: boolean
+	addNavigation?: boolean | KeypressHandlers
+	tableId: string
 }>()
+
+const store = useTableStore()
 
 const emit = defineEmits<{ cellInput: [colIndex: number, rowIndex: number, newValue: string, oldValue: string] }>()
 
@@ -53,17 +56,17 @@ const cellRef = useTemplateRef<HTMLTableCellElement>('cell')
 const { width, height } = useElementBounding(cellRef)
 
 // keep a shallow copy of the original cell value for comparison
-const originalData = store.getCellData(colIndex, rowIndex)
+const originalData = store.getCellData(tableId, colIndex, rowIndex)
 const currentData = ref('')
 const cellModified = ref(false)
 
-const column = store.columns[colIndex]
-const row = store.rows[rowIndex]
+const column = store.columns[tableId][colIndex]
+const row = store.rows[tableId][rowIndex]
 
 const textAlign = column.align || 'center'
 const cellWidth = column.width || '40ch'
 
-const displayValue = computed(() => store.getCellDisplayValue(colIndex, rowIndex))
+const displayValue = computed(() => store.getCellDisplayValue(tableId, colIndex, rowIndex))
 const isHtmlValue = computed(() => {
 	// TODO: check if display value is a native DOM element
 	return typeof displayValue.value === 'string' ? isHtmlString(displayValue.value) : false
@@ -75,7 +78,7 @@ const cellStyle = computed((): CSSProperties => {
 		width: cellWidth,
 		backgroundColor: !cellModified.value ? 'inherit' : 'var(--sc-cell-changed-color)',
 		fontWeight: !cellModified.value ? 'inherit' : 'bold',
-		paddingLeft: store.getIndent(colIndex, store.display[rowIndex]?.indent),
+		paddingLeft: store.getIndent(tableId, colIndex, store.display[tableId][rowIndex]?.indent),
 	}
 })
 
@@ -87,22 +90,22 @@ const showModal = () => {
 
 	if (column.modalComponent) {
 		store.$patch(state => {
-			state.modal.visible = true
-			state.modal.colIndex = colIndex
-			state.modal.rowIndex = rowIndex
-			state.modal.parent = cellRef.value
-			state.modal.top = cellRef.value.offsetTop + cellRef.value.offsetHeight
-			state.modal.left = cellRef.value.offsetLeft
-			state.modal.width = width.value
-			state.modal.height = height.value
+			state.modal[tableId].visible = true
+			state.modal[tableId].colIndex = colIndex
+			state.modal[tableId].rowIndex = rowIndex
+			state.modal[tableId].parent = cellRef.value
+			state.modal[tableId].top = cellRef.value.offsetTop + cellRef.value.offsetHeight
+			state.modal[tableId].left = cellRef.value.offsetLeft
+			state.modal[tableId].width = width.value
+			state.modal[tableId].height = height.value
 
 			if (typeof column.modalComponent === 'function') {
-				state.modal.component = column.modalComponent({ table: state.table, row, column })
+				state.modal[tableId].component = column.modalComponent({ table: state.table[tableId], row, column })
 			} else {
-				state.modal.component = column.modalComponent
+				state.modal[tableId].component = column.modalComponent
 			}
 
-			state.modal.componentProps = column.modalComponentExtraProps
+			state.modal[tableId].componentProps = column.modalComponentExtraProps
 		})
 	}
 }
@@ -161,12 +164,12 @@ const updateCellData = (payload: Event) => {
 
 	// only apply changes if the cell value has changed after being mounted
 	if (column.format) {
-		cellModified.value = target.textContent !== store.getFormattedValue(colIndex, rowIndex, originalData)
+		cellModified.value = target.textContent !== store.getFormattedValue(tableId, colIndex, rowIndex, originalData)
 		// TODO: need to setup reverse format function?
-		store.setCellText(colIndex, rowIndex, target.textContent)
+		store.setCellText(tableId, colIndex, rowIndex, target.textContent)
 	} else {
 		cellModified.value = target.textContent !== originalData
-		store.setCellData(colIndex, rowIndex, target.textContent)
+		store.setCellData(tableId, colIndex, rowIndex, target.textContent)
 	}
 }
 </script>

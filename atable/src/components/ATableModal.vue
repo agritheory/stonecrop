@@ -8,14 +8,16 @@
 import { useElementBounding } from '@vueuse/core'
 import { useTemplateRef, computed } from 'vue'
 
-import { createTableStore } from '../stores/table'
+import { useTableStore } from '../stores/table'
 
-const { store, container } = defineProps<{
+const { colIndex, rowIndex, tableId, container } = defineProps<{
 	colIndex?: number
 	rowIndex?: number
-	store?: ReturnType<typeof createTableStore>
+	tableId: string
 	container?: HTMLElement
 }>()
+
+const store = useTableStore()
 
 const amodalRef = useTemplateRef('amodal')
 const { width, height } = useElementBounding(amodalRef)
@@ -30,14 +32,14 @@ const amodalStyles = computed(() => {
 
 	// if this modal would go outside the edge of its container, instead place it above the element (Y) or along the right side (X)
 	const modalLeft =
-		store.modal.left + width.value > containerWidth
-			? store.modal.left - (width.value - store.modal.width)
-			: store.modal.left
+		store.modal[tableId].left + width.value > containerWidth
+			? store.modal[tableId].left - (width.value - store.modal[tableId].width)
+			: store.modal[tableId].left
 
 	const modalTop =
-		store.modal.top + height.value > containerHeight
-			? store.modal.top - height.value - store.modal.height
-			: store.modal.top
+		store.modal[tableId].top + height.value > containerHeight
+			? store.modal[tableId].top - height.value - store.modal[tableId].height
+			: store.modal[tableId].top
 
 	return {
 		left: `${modalLeft}px`,

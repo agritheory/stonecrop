@@ -14,7 +14,7 @@
 				:tabIndex="-1"
 				class="tree-index"
 				:class="store.hasPinnedColumns ? 'sticky-index' : ''"
-				@click="store.toggleRowExpand(rowIndex)">
+				@click="store.toggleRowExpand(rowIndex, tableId)">
 				{{ rowExpandSymbol }}
 			</td>
 		</slot>
@@ -28,23 +28,25 @@
 import { type KeypressHandlers, useKeyboardNav, defaultKeypressHandlers } from '@stonecrop/utilities'
 import { useTemplateRef } from 'vue'
 
-import { createTableStore } from '../stores/table'
+import { useTableStore } from '../stores/table'
 
 const {
 	rowIndex,
-	store,
 	tabIndex = -1,
 	addNavigation = false, // default to allowing cell navigation
+	tableId,
 } = defineProps<{
 	rowIndex: number
-	store: ReturnType<typeof createTableStore>
 	tabIndex?: number
 	addNavigation?: boolean | KeypressHandlers
+	tableId: string
 }>()
 
+const store = useTableStore()
+
 const rowRef = useTemplateRef<HTMLTableRowElement>('rowEl')
-const isRowVisible = store.isRowVisible(rowIndex)
-const rowExpandSymbol = store.getRowExpandSymbol(rowIndex)
+const isRowVisible = store.isRowVisible(rowIndex, tableId)
+const rowExpandSymbol = store.getRowExpandSymbol(rowIndex, tableId)
 
 if (addNavigation) {
 	let handlers = defaultKeypressHandlers
