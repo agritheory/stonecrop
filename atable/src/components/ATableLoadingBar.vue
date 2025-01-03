@@ -6,7 +6,7 @@
 		<div class="aloading-bar"></div>
 	</div>
 </template>
-<script setup lang="ts"></script>
+
 <style scoped>
 .aloading {
 	width: 100%;

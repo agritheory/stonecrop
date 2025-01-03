@@ -3,7 +3,7 @@
     {
       "packageName": "@stonecrop/themes",
       "comment": "added rgb variable for loading gradient color",
-      "type": "none"
+      "type": "patch"
     }
   ],
   "packageName": "@stonecrop/themes"
