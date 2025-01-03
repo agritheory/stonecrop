@@ -23,14 +23,14 @@
 						"fieldtype": "Data",
 						"align": "left",
 						"edit": false,
-						"width": "35ch"
+						"width": "25ch"
 					},
 					{
 						"label": "Fieldtype",
 						"name": "fieldtype",
 						"fieldtype": "Select",
 						"align": "left",
-						"width": "20ch",
+						"width": "25ch",
 						"edit": true
 					},
 					{
@@ -47,7 +47,7 @@
 						"component": "<input type=\"radio\"/>",
 						"align": "left",
 						"edit": true,
-						"width": "5ch"
+						"width": "10ch"
 					},
 					{
 						"label": "Read Only",
@@ -55,7 +55,7 @@
 						"component": "<input type=\"radio\"/>",
 						"align": "left",
 						"edit": true,
-						"width": "5ch"
+						"width": "10ch"
 					}
 				],
 				"config": { "view": "list", "fullWidth": true },
@@ -87,7 +87,7 @@
 						"fieldtype": "Data",
 						"align": "left",
 						"edit": true,
-						"width": "40ch",
+						"width": "50ch",
 						"cellComponent": "textarea",
 						"cellComponentProps": {
 							"rows": 8,

@@ -2,6 +2,12 @@
   "name": "@stonecrop/beam",
   "entries": [
     {
+      "version": "0.3.7",
+      "tag": "@stonecrop/beam_v0.3.7",
+      "date": "Fri, 03 Jan 2025 06:27:07 GMT",
+      "comments": {}
+    },
+    {
       "version": "0.3.6",
       "tag": "@stonecrop/beam_v0.3.6",
       "date": "Fri, 27 Dec 2024 09:24:01 GMT",
