@@ -10,14 +10,21 @@ export default defineNuxtModule({
 		configKey: 'stonecrop',
 	},
 
-	setup(_options, _nuxt) {
+	defaults: nuxt => {
+		return {
+			router: {},
+			docbuilder: false,
+		}
+	},
+
+	setup(_options, nuxt) {
 		// add the base Stonecrop layout from the module
 		const layoutsDir = resolve('runtime/layouts')
 		const homeLayoutPath = resolve(layoutsDir, 'StonecropHome.vue')
 		addLayout(homeLayoutPath, 'home')
 
 		// find doctype schemas in the nuxt application and add them as pages
-		const rootDir = _nuxt.options.srcDir
+		const rootDir = nuxt.options.srcDir
 		const doctypesDir = resolve(rootDir, 'doctypes')
 		if (existsSync(doctypesDir)) {
 			const schemas = readdirSync(doctypesDir).filter(file => extname(file) === '.json')
