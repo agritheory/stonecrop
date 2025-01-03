@@ -4,23 +4,20 @@
 
 ## FormSchema type
 
-> This API is provided as a beta preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
-> 
-
-Form schema
+Schema structure for defining forms inside AForm
 
 **Signature:**
 
 ```typescript
-export type FormSchema = BasicSchema & {
-    align: string;
-    edit: boolean;
-    fieldtype: string;
-    label: string;
-    name: string;
-    width: string;
+export type FormSchema = BaseSchema & {
+    align?: string;
+    edit?: boolean;
+    fieldtype?: string;
+    label?: string;
+    name?: string;
+    width?: string;
     mask?: string;
 };
 ```
-**References:** [BasicSchema](./aform.basicschema.md)
+**References:** [BaseSchema](./aform.baseschema.md)
 

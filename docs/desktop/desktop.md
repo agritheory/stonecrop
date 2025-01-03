@@ -24,7 +24,77 @@ Description
 
 </td><td>
 
-This is the main plugin file that will be used to register all the components that we want to use in our application.
+This is the main plugin that will be used to register all the desktop components.
+
+
+</td></tr>
+</tbody></table>
+
+## Type Aliases
+
+<table><thead><tr><th>
+
+Type Alias
+
+
+</th><th>
+
+Description
+
+
+</th></tr></thead>
+<tbody><tr><td>
+
+[ActionElements](./desktop.actionelements.md)
+
+
+</td><td>
+
+Superset of all element types in the Action Set
+
+
+</td></tr>
+<tr><td>
+
+[BaseElement](./desktop.baseelement.md)
+
+
+</td><td>
+
+Base type for elements in the Action Set
+
+
+</td></tr>
+<tr><td>
+
+[ButtonElement](./desktop.buttonelement.md)
+
+
+</td><td>
+
+Button elements
+
+
+</td></tr>
+<tr><td>
+
+[DropdownElement](./desktop.dropdownelement.md)
+
+
+</td><td>
+
+Dropdown elements
+
+
+</td></tr>
+<tr><td>
+
+[ElementAction](./desktop.elementaction.md)
+
+
+</td><td>
+
+Element actions
 
 
 </td></tr>

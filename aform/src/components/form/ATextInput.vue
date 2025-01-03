@@ -19,7 +19,15 @@ import { /* inject, */ ref } from 'vue'
 import { useStringMask as vMask } from '../../directives/mask'
 import { ComponentProps } from '../../types'
 
-const { label, mask, required, readonly, uuid, validation = { errorMessage: '&nbsp;' } } = defineProps<ComponentProps>()
+const {
+	schema, // don't remove to allow masking to work
+	label,
+	mask,
+	required,
+	readonly,
+	uuid,
+	validation = { errorMessage: '&nbsp;' },
+} = defineProps<ComponentProps>()
 
 // TODO: setup maskFilled as a computed property
 const maskFilled = ref(true)
