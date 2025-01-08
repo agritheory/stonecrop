@@ -3,7 +3,7 @@
     {
       "packageName": "@stonecrop/atable",
       "comment": "replace crypto uuid generation with randomly generated hash string",
-      "type": "none"
+      "type": "patch"
     }
   ],
   "packageName": "@stonecrop/atable"
