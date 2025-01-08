@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/beam",
+      "comment": "denominator condition to be shown",
+      "type": "none"
+    }
+  ],
+  "packageName": "@stonecrop/beam"
+}
