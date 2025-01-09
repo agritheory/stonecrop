@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import xstate from 'pinia-xstate'
+import { xstate } from 'pinia-xstate'
 import { createMachine } from 'xstate'
 
 export const counterMachine = createMachine(

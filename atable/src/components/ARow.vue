@@ -26,7 +26,7 @@
 
 <script setup lang="ts">
 import { type KeypressHandlers, useKeyboardNav, defaultKeypressHandlers } from '@stonecrop/utilities'
-import { useTemplateRef } from 'vue'
+import { computed, useTemplateRef } from 'vue'
 
 import { createTableStore } from '../stores/table'
 
@@ -43,8 +43,9 @@ const {
 }>()
 
 const rowRef = useTemplateRef<HTMLTableRowElement>('rowEl')
-const isRowVisible = store.isRowVisible(rowIndex)
-const rowExpandSymbol = store.getRowExpandSymbol(rowIndex)
+
+const isRowVisible = computed(() => store.isRowVisible(rowIndex))
+const rowExpandSymbol = computed(() => store.getRowExpandSymbol(rowIndex))
 
 if (addNavigation) {
 	let handlers = defaultKeypressHandlers
