@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/desktop",
+      "comment": "add strict null checks to improve logic",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/desktop"
+}

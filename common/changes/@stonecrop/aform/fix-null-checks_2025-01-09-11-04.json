@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/aform",
+      "comment": "add strict null checks to improve logic",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/aform"
+}
