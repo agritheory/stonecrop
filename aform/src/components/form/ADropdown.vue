@@ -131,14 +131,14 @@ const onEnter = () => {
 input {
 	width: calc(100% - 1ch);
 	outline: 1px solid transparent;
-	border: 1px solid #cccccc;
+	border: 1px solid var(--sc-input-border-color);
 	padding: 1ch 0.5ch 0.5ch 1ch;
 	margin: calc(1.15rem / 2) 0 0 0;
 	min-height: 1.15rem;
 	border-radius: 0.25rem;
 }
 input:focus {
-	border: 1px solid #000000;
+	border: 1px solid var(--sc-input-active-border-color);
 	border-radius: 0.25rem 0.25rem 0 0;
 	border-bottom: none;
 }
@@ -162,8 +162,8 @@ label {
 	z-index: 999;
 	padding: 0;
 	margin: 0;
-	color: #000000;
-	border: 1px solid #000000;
+	color: var(--sc-input-active-border-color);
+	border: 1px solid var(--sc-input-active-border-color);
 	border-radius: 0 0 0.25rem 0.25rem;
 	border-top: none;
 	background-color: #fff;
@@ -177,7 +177,7 @@ label {
 }
 .autocomplete-result.is-active,
 .autocomplete-result:hover {
-	background-color: #eeeeee;
-	color: #000000;
+	background-color: var(--sc-row-color-zebra-light);
+	color: var(--sc-input-active-border-color);
 }
 </style>
