@@ -44,6 +44,11 @@ export class Stonecrop {
 	readonly registry: Registry
 
 	/**
+	 * The Pinia store that manages the mutable records
+	 */
+	store: ReturnType<typeof useDataStore>
+
+	/**
 	 * schema - The Stonecrop schema; the schema is a subset of the registry
 	 * @example
 	 * ```ts
@@ -60,22 +65,17 @@ export class Stonecrop {
 	 * @see {@link DoctypeMeta}
 	 * @see {@link DoctypeMeta.schema}
 	 */
-	schema: Schema
+	schema?: Schema
 
 	/**
 	 * The workflow is a subset of the registry
 	 */
-	workflow: ImmutableDoctype['workflow']
+	workflow?: ImmutableDoctype['workflow']
 
 	/**
 	 * The actions are a subset of the registry
 	 */
-	actions: ImmutableDoctype['actions']
-
-	/**
-	 * The Pinia store that manages the mutable records
-	 */
-	store: ReturnType<typeof useDataStore>
+	actions?: ImmutableDoctype['actions']
 
 	/**
 	 * @param registry - The immutable registry
@@ -236,19 +236,22 @@ export class Stonecrop {
 	 */
 	runAction(doctype: DoctypeMeta, action: string, id?: string[]): void {
 		const doctypeRegistry = this.registry.registry[doctype.slug]
-		const actions = doctypeRegistry.actions.get(action)
+		const actions = doctypeRegistry.actions?.get(action)
 
 		// trigger the action on the state machine
-		const { initialState } = this.workflow
-		this.workflow.transition(initialState, { type: action })
+		if (this.workflow) {
+			const { initialState } = this.workflow
+			this.workflow.transition(initialState, { type: action })
 
-		// run actions after state machine transition
-		if (actions.length > 0) {
-			actions.forEach(action => {
-				// eslint-disable-next-line @typescript-eslint/no-implied-eval
-				const actionFn = new Function(action)
-				actionFn(id)
-			})
+			// run actions after state machine transition
+			// TODO: should this happen with or without the workflow?
+			if (actions && actions.length > 0) {
+				actions.forEach(action => {
+					// eslint-disable-next-line @typescript-eslint/no-implied-eval
+					const actionFn = new Function(action)
+					actionFn(id)
+				})
+			}
 		}
 	}
 }

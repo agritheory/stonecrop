@@ -10,7 +10,8 @@
 		"disableReferencedProjectLoad": true,
 		"emitDeclarationOnly": true,
 		"isolatedModules": true,
-		"skipLibCheck": true
+		"skipLibCheck": true,
+		"strictNullChecks": true
 	},
 	"exclude": ["node_modules", "**/*.spec.ts"]
 }

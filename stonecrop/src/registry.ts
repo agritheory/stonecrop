@@ -58,7 +58,7 @@ export default class Registry {
 		if (!(doctype.doctype in Object.keys(this.registry))) {
 			this.registry[doctype.slug] = doctype
 		}
-		if (!this.router.hasRoute(doctype.doctype)) {
+		if (!this.router.hasRoute(doctype.doctype) && doctype.component) {
 			this.router.addRoute({
 				path: `/${doctype.slug}`,
 				name: doctype.slug,

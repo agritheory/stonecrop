@@ -56,7 +56,7 @@ export const createTableStore = (initData: {
 				defaultDisplay[rowIndex] = {
 					childrenOpen: false,
 					expanded: false,
-					indent: row.indent || null,
+					indent: row.indent || 0,
 					isParent: parents.has(rowIndex),
 					isRoot: row.parent === null || row.parent === undefined,
 					rowModified: false,
@@ -85,7 +85,9 @@ export const createTableStore = (initData: {
 			return `${indent}ch`
 		})
 
-		const zeroColumn = computed(() => ['list', 'tree', 'list-expansion'].includes(config.value.view))
+		const zeroColumn = computed(() =>
+			config.value.view ? ['list', 'tree', 'list-expansion'].includes(config.value.view) : false
+		)
 
 		// actions
 		const getCellData = <T = any>(colIndex: number, rowIndex: number): T => table.value[`${colIndex}:${rowIndex}`]

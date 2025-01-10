@@ -2,6 +2,12 @@
   "name": "@stonecrop/themes",
   "entries": [
     {
+      "version": "0.3.8",
+      "tag": "@stonecrop/themes_v0.3.8",
+      "date": "Thu, 09 Jan 2025 11:21:58 GMT",
+      "comments": {}
+    },
+    {
       "version": "0.3.7",
       "tag": "@stonecrop/themes_v0.3.7",
       "date": "Fri, 03 Jan 2025 06:27:07 GMT",
