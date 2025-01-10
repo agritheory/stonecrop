@@ -38,6 +38,7 @@ const {
 	store,
 	addNavigation = true,
 	tabIndex = 0,
+	tableRef,
 } = defineProps<{
 	colIndex: number
 	rowIndex: number
@@ -45,12 +46,12 @@ const {
 	addNavigation?: boolean | KeypressHandlers
 	tabIndex?: number
 	pinned?: boolean
+	tableRef?: HTMLTableElement
 }>()
 
 const emit = defineEmits<{ cellInput: [colIndex: number, rowIndex: number, newValue: string, oldValue: string] }>()
 
 const cellRef = useTemplateRef<HTMLTableCellElement>('cell')
-const { width, height } = useElementBounding(cellRef)
 
 // keep a shallow copy of the original cell value for comparison
 const originalData = store.getCellData(colIndex, rowIndex)
@@ -80,6 +81,8 @@ const cellStyle = computed((): CSSProperties => {
 })
 
 const showModal = () => {
+	const { left, bottom, width, height } = useElementBounding(cellRef)
+
 	if (column.mask) {
 		// TODO: add masking to cell values
 		// column.mask(event)
@@ -90,9 +93,8 @@ const showModal = () => {
 			state.modal.visible = true
 			state.modal.colIndex = colIndex
 			state.modal.rowIndex = rowIndex
-			state.modal.parent = cellRef.value
-			state.modal.top = cellRef.value.offsetTop + cellRef.value.offsetHeight
-			state.modal.left = cellRef.value.offsetLeft
+			state.modal.left = left
+			state.modal.bottom = bottom
 			state.modal.width = width.value
 			state.modal.height = height.value
 

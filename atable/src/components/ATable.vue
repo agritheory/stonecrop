@@ -21,6 +21,7 @@
 						:rowIndex="rowIndex"
 						:colIndex="colIndex"
 						:component="col.cellComponent"
+						:tableRef="tableRef"
 						:style="{
 							textAlign: col?.align || 'center',
 							minWidth: col?.width || '40ch',
@@ -37,8 +38,7 @@
 				v-show="store.modal.visible"
 				:colIndex="store.modal.colIndex"
 				:rowIndex="store.modal.rowIndex"
-				:store="store"
-				:container="tableRef">
+				:store="store">
 				<template #default>
 					<component
 						:key="`${store.modal.rowIndex}:${store.modal.colIndex}`"
@@ -55,8 +55,8 @@
 
 <script setup lang="ts">
 import { vOnClickOutside } from '@vueuse/components'
-import { useMutationObserver } from '@vueuse/core'
-import { nextTick, watch, onMounted, useTemplateRef } from 'vue'
+import { useMutationObserver, useElementSize } from '@vueuse/core'
+import { ref, nextTick, watch, onMounted, useTemplateRef } from 'vue'
 
 import ACell from './ACell.vue'
 import ARow from './ARow.vue'
