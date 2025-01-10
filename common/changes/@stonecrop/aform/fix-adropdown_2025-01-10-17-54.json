@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/aform",
+      "comment": "allow external clicks, fix on result selection and clear search when necesary\"",
+      "type": "none"
+    }
+  ],
+  "packageName": "@stonecrop/aform"
+}
