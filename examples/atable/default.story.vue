@@ -1,9 +1,7 @@
 <template>
 	<Story title="default">
 		<Variant title="default">
-			<div style="position: relative; top: 50px; left: 20px">
-				<ATable v-model="default_table.rows" :columns="default_table.columns" :config="default_table.config" />
-			</div>
+			<ATable v-model="default_table.rows" :columns="default_table.columns" :config="default_table.config" />
 		</Variant>
 		<Variant title="uncounted">
 			<ATable v-model="uncounted_table.rows" :columns="uncounted_table.columns" :config="uncounted_table.config" />
