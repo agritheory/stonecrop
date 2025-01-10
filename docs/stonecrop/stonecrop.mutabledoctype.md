@@ -11,7 +11,7 @@ Mutable Doctype type for Stonecrop instances
 ```typescript
 export type MutableDoctype = {
     schema?: SchemaTypes[];
-    workflow: MachineConfig<unknown, unknown, any>;
+    workflow: MachineConfig<unknown, any, any>;
     actions?: Record<string, string[]>;
 };
 ```

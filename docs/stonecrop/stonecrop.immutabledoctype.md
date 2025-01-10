@@ -11,7 +11,7 @@ Immutable Doctype type for Stonecrop instances
 ```typescript
 export type ImmutableDoctype = {
     readonly schema?: List<SchemaTypes>;
-    readonly workflow: StateMachine<unknown, unknown, any>;
+    readonly workflow: StateMachine<unknown, any, any>;
     readonly actions?: Map<string, string[]>;
 };
 ```

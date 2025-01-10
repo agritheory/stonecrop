@@ -101,7 +101,7 @@ export { SplitColumn }
 export { ToggleArrow }
 
 // @beta
-export const useMqttStream: (options?: IMqttStream) => {
+export const useMqttStream: (options: IMqttStream) => {
     messages: Ref<Record<string, string[]>, Record<string, string[]>>;
 };
 

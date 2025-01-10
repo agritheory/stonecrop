@@ -6,12 +6,12 @@
 
 import { Component } from 'vue';
 import { List } from 'immutable';
-import { MachineConfig } from 'xstate';
+import type { MachineConfig } from 'xstate';
 import { Map as Map_2 } from 'immutable';
 import { Plugin as Plugin_2 } from 'vue';
 import { Ref } from 'vue';
 import { Router } from 'vue-router';
-import { StateMachine } from 'xstate';
+import type { StateMachine } from 'xstate';
 import { StoreDefinition } from 'pinia';
 
 // @public
@@ -62,7 +62,7 @@ export type FormSchema = BaseSchema & {
 // @public
 export type ImmutableDoctype = {
     readonly schema?: List<SchemaTypes>;
-    readonly workflow: StateMachine<unknown, unknown, any>;
+    readonly workflow: StateMachine<unknown, any, any>;
     readonly actions?: Map_2<string, string[]>;
 };
 
@@ -76,7 +76,7 @@ export type InstallOptions = {
 // @public
 export type MutableDoctype = {
     schema?: SchemaTypes[];
-    workflow: MachineConfig<unknown, unknown, any>;
+    workflow: MachineConfig<unknown, any, any>;
     actions?: Record<string, string[]>;
 };
 
