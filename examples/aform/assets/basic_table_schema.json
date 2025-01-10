@@ -43,7 +43,6 @@
 				"label": "Report Date",
 				"name": "report_date",
 				"fieldname": "report_date",
-				"fieldtype": "component",
 				"modalComponent": "ADatePicker",
 				"align": "center",
 				"edit": true,

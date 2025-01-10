@@ -2,6 +2,60 @@
   "name": "@stonecrop/stonecrop",
   "entries": [
     {
+      "version": "0.3.8",
+      "tag": "@stonecrop/stonecrop_v0.3.8",
+      "date": "Thu, 09 Jan 2025 11:21:58 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "add strict null checks to improve logic"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.3.7",
+      "tag": "@stonecrop/stonecrop_v0.3.7",
+      "date": "Fri, 03 Jan 2025 06:27:07 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.3.6",
+      "tag": "@stonecrop/stonecrop_v0.3.6",
+      "date": "Fri, 27 Dec 2024 09:24:01 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "fix stonecrop documentation generation"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.3.5",
+      "tag": "@stonecrop/stonecrop_v0.3.5",
+      "date": "Tue, 24 Dec 2024 11:42:53 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "throw error if Stonecrop plugin isn't installed"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.3.4",
+      "tag": "@stonecrop/stonecrop_v0.3.4",
+      "date": "Wed, 18 Dec 2024 09:54:31 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.3.3",
+      "tag": "@stonecrop/stonecrop_v0.3.3",
+      "date": "Tue, 17 Dec 2024 13:42:30 GMT",
+      "comments": {}
+    },
+    {
       "version": "0.3.2",
       "tag": "@stonecrop/stonecrop_v0.3.2",
       "date": "Tue, 17 Dec 2024 10:07:54 GMT",

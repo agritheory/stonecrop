@@ -56,7 +56,7 @@ export const createTableStore = (initData: {
 				defaultDisplay[rowIndex] = {
 					childrenOpen: false,
 					expanded: false,
-					indent: row.indent || null,
+					indent: row.indent || 0,
 					isParent: parents.has(rowIndex),
 					isRoot: row.parent === null || row.parent === undefined,
 					rowModified: false,
@@ -75,6 +75,7 @@ export const createTableStore = (initData: {
 		const table = ref(initData.table || createTableObject())
 		const display = ref(createDisplayObject(initData.display))
 		const modal = ref(initData.modal || { visible: false })
+		const updates = ref<Record<string, string>>({})
 
 		// getters
 		const hasPinnedColumns = computed(() => columns.value.some(col => col.pinned))
@@ -84,7 +85,9 @@ export const createTableStore = (initData: {
 			return `${indent}ch`
 		})
 
-		const zeroColumn = computed(() => ['list', 'tree', 'list-expansion'].includes(config.value.view))
+		const zeroColumn = computed(() =>
+			config.value.view ? ['list', 'tree', 'list-expansion'].includes(config.value.view) : false
+		)
 
 		// actions
 		const getCellData = <T = any>(colIndex: number, rowIndex: number): T => table.value[`${colIndex}:${rowIndex}`]
@@ -100,10 +103,19 @@ export const createTableStore = (initData: {
 			rows.value[rowIndex][col.name] = value
 		}
 
+		const setCellText = (colIndex: number, rowIndex: number, value: string) => {
+			const index = `${colIndex}:${rowIndex}`
+
+			if (table.value[index] !== value) {
+				display.value[rowIndex].rowModified = true
+				updates.value[index] = value
+			}
+		}
+
 		const getHeaderCellStyle = (column: TableColumn): CSSProperties => ({
 			minWidth: column.width || '40ch',
 			textAlign: column.align || 'center',
-			width: config.value.fullWidth ? 'auto' : null,
+			width: config.value.fullWidth ? 'auto' : undefined,
 		})
 
 		const isRowVisible = (rowIndex: number) => {
@@ -185,11 +197,12 @@ export const createTableStore = (initData: {
 		return {
 			// state
 			columns,
-			rows,
 			config,
-			table,
 			display,
 			modal,
+			rows,
+			table,
+			updates,
 
 			// getters
 			hasPinnedColumns,
@@ -206,6 +219,7 @@ export const createTableStore = (initData: {
 			getRowExpandSymbol,
 			isRowVisible,
 			setCellData,
+			setCellText,
 			toggleRowExpand,
 		}
 	})

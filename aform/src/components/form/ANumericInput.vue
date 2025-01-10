@@ -15,6 +15,13 @@
 <script setup lang="ts">
 import { ComponentProps } from '../../types'
 
-const { label, required, readonly, uuid, validation = { errorMessage: '&nbsp;' } } = defineProps<ComponentProps>()
+const {
+	schema, // don't remove to allow masking to work
+	label,
+	required,
+	readonly,
+	uuid,
+	validation = { errorMessage: '&nbsp;' },
+} = defineProps<ComponentProps>()
 const inputNumber = defineModel<number>()
 </script>

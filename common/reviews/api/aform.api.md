@@ -13,7 +13,7 @@ import AFieldset from './components/form/AFieldset.vue';
 import AFileAttach from './components/form/AFileAttach.vue';
 import AForm from './components/AForm.vue';
 import ANumericInput from './components/form/ANumericInput.vue';
-import { App } from 'vue';
+import type { App } from 'vue';
 import ATextInput from './components/form/ATextInput.vue';
 import Login from './components/utilities/Login.vue';
 
@@ -37,11 +37,11 @@ export { ANumericInput }
 
 export { ATextInput }
 
-// @beta
-export type BasicSchema = {
-    component: string;
+// @public
+export type BaseSchema = {
     fieldname: string;
-    value: any;
+    component?: string;
+    value?: any;
 };
 
 // @public
@@ -53,21 +53,21 @@ export type CellContext = {
     };
 };
 
-// @beta
-export type FieldsetSchema = BasicSchema & {
-    label: string;
-    schema: (FormSchema | TableSchema)[];
+// @public
+export type FieldsetSchema = BaseSchema & {
+    label?: string;
+    schema?: (FormSchema | TableSchema)[];
     collapsible?: boolean;
 };
 
-// @beta
-export type FormSchema = BasicSchema & {
-    align: string;
-    edit: boolean;
-    fieldtype: string;
-    label: string;
-    name: string;
-    width: string;
+// @public
+export type FormSchema = BaseSchema & {
+    align?: string;
+    edit?: boolean;
+    fieldtype?: string;
+    label?: string;
+    name?: string;
+    width?: string;
     mask?: string;
 };
 
@@ -76,7 +76,7 @@ export function install(app: App): void;
 
 export { Login }
 
-// @beta
+// @public
 export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema;
 
 // @public
@@ -109,11 +109,11 @@ export type TableRow = {
     parent?: number;
 };
 
-// @beta
-export type TableSchema = BasicSchema & {
-    columns: TableColumn[];
-    config: TableConfig;
-    rows: TableRow[];
+// @public
+export type TableSchema = BaseSchema & {
+    columns?: TableColumn[];
+    config?: TableConfig;
+    rows?: TableRow[];
 };
 
 // (No @packageDocumentation comment for this package)

@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 
 import AFieldset from '../src/components/form/AFieldset.vue'
+import type { SchemaTypes } from '../src/types'
 
 describe('fieldset input component', () => {
 	it('no change in collapse status when fieldset is uncollapsible', async () => {
@@ -12,7 +13,7 @@ describe('fieldset input component', () => {
 				schema: [
 					{
 						fieldname: 'first_name',
-						fieldtype: 'ATextInput',
+						component: 'ATextInput',
 						label: 'First Name',
 					},
 					{
@@ -30,7 +31,7 @@ describe('fieldset input component', () => {
 						component: 'ANumericInput',
 						label: 'Age',
 					},
-				],
+				] as SchemaTypes[],
 			},
 		})
 
@@ -48,7 +49,7 @@ describe('fieldset input component', () => {
 				schema: [
 					{
 						fieldname: 'first_name',
-						fieldtype: 'ATextInput',
+						component: 'ATextInput',
 						label: 'First Name',
 					},
 					{
@@ -66,7 +67,7 @@ describe('fieldset input component', () => {
 						component: 'ANumericInput',
 						label: 'Age',
 					},
-				],
+				] as SchemaTypes[],
 			},
 		})
 

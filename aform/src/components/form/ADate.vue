@@ -19,6 +19,7 @@ import { useTemplateRef } from 'vue'
 import { ComponentProps } from '../../types'
 
 const {
+	schema, // don't remove to allow masking to work
 	label = 'Date',
 	required,
 	readonly,
@@ -47,6 +48,8 @@ const showPicker = () => {
 <style scoped>
 div {
 	min-width: 40ch;
+	width: 100%;
+	box-sizing: border-box;
 	border: 1px solid transparent;
 	padding: 0rem;
 	margin: 0rem;
@@ -55,6 +58,7 @@ div {
 
 input {
 	width: calc(100% - 1ch);
+	box-sizing: border-box;
 	outline: 1px solid transparent;
 	border: 1px solid var(--sc-input-border-color);
 	padding: 1ch 0.5ch 0.5ch 1ch;
@@ -72,12 +76,14 @@ label {
 	margin: 0rem;
 	border: 1px solid transparent;
 	margin-bottom: 0.25rem;
+	box-sizing: border-box;
 }
 
 p {
 	width: 100%;
 	color: red;
 	font-size: 85%;
+	box-sizing: border-box;
 }
 
 label {
@@ -87,6 +93,7 @@ label {
 	background: white;
 	margin: calc(-1.5rem - calc(2.15rem / 2)) 0 0 1ch;
 	padding: 0 0.25ch 0 0.25ch;
+	box-sizing: border-box;
 }
 
 input:focus {

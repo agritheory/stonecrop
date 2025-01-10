@@ -316,9 +316,6 @@ importers:
       vue:
         specifier: ^3.5.11
         version: 3.5.13(typescript@5.7.2)
-      xstate:
-        specifier: ^4.38.3
-        version: 4.38.3
     devDependencies:
       '@microsoft/api-documenter':
         specifier: ^7.26.2
@@ -603,8 +600,8 @@ importers:
         specifier: ^0.3.0
         version: 0.3.0(pinia@2.3.0(typescript@5.7.2)(vue@3.5.13(typescript@5.7.2)))(vue@3.5.13(typescript@5.7.2))
       pinia-xstate:
-        specifier: ^1.0.9
-        version: 1.0.9(pinia@2.3.0(typescript@5.7.2)(vue@3.5.13(typescript@5.7.2)))(typescript@5.7.2)(xstate@4.38.3)
+        specifier: ^2.2.1
+        version: 2.2.1(pinia@2.3.0(typescript@5.7.2)(vue@3.5.13(typescript@5.7.2)))(typescript@5.7.2)(xstate@4.38.3)
       vue:
         specifier: ^3.5.11
         version: 3.5.13(typescript@5.7.2)
@@ -3029,11 +3026,11 @@ packages:
     peerDependencies:
       pinia: '>=2.0.14'
 
-  pinia-xstate@1.0.9:
-    resolution: {integrity: sha512-fvoA3p7S5l+96Lczl9JTCeXxK0qP2YWRiZqINH2ei9kMbwqP184czYTAD4HjqjUN7fpEVgDAZFeBIIykmnYV1A==}
+  pinia-xstate@2.2.1:
+    resolution: {integrity: sha512-TnNNql9b0AiRxseDNrsInJ5tSdCylwSuTFw0XSgJvDHMCjyYVyXG+EePpajBl66THTycKWpzZ3cBWHMyuL2TXw==}
     peerDependencies:
       pinia: ^2.0.0
-      xstate: ^4.30.0
+      xstate: ^5.15.0
 
   pinia@2.3.0:
     resolution: {integrity: sha512-ohZj3jla0LL0OH5PlLTDMzqKiVw2XARmC1XYLdLWIPBMdhDW/123ZWr4zVAhtJm+aoSkFa13pYXskAvAscIkhQ==}
@@ -6472,7 +6469,7 @@ snapshots:
       - '@vue/composition-api'
       - vue
 
-  pinia-xstate@1.0.9(pinia@2.3.0(typescript@5.7.2)(vue@3.5.13(typescript@5.7.2)))(typescript@5.7.2)(xstate@4.38.3):
+  pinia-xstate@2.2.1(pinia@2.3.0(typescript@5.7.2)(vue@3.5.13(typescript@5.7.2)))(typescript@5.7.2)(xstate@4.38.3):
     dependencies:
       pinia: 2.3.0(typescript@5.7.2)(vue@3.5.13(typescript@5.7.2))
       vue: 3.5.13(typescript@5.7.2)

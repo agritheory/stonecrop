@@ -1,6 +1,42 @@
 # Change Log - @stonecrop/stonecrop
 
-This log was last generated on Tue, 17 Dec 2024 10:07:54 GMT and should not be manually modified.
+This log was last generated on Thu, 09 Jan 2025 11:21:58 GMT and should not be manually modified.
+
+## 0.3.8
+Thu, 09 Jan 2025 11:21:58 GMT
+
+### Patches
+
+- add strict null checks to improve logic
+
+## 0.3.7
+Fri, 03 Jan 2025 06:27:07 GMT
+
+_Version update only_
+
+## 0.3.6
+Fri, 27 Dec 2024 09:24:01 GMT
+
+### Patches
+
+- fix stonecrop documentation generation
+
+## 0.3.5
+Tue, 24 Dec 2024 11:42:53 GMT
+
+### Patches
+
+- throw error if Stonecrop plugin isn't installed
+
+## 0.3.4
+Wed, 18 Dec 2024 09:54:31 GMT
+
+_Version update only_
+
+## 0.3.3
+Tue, 17 Dec 2024 13:42:30 GMT
+
+_Version update only_
 
 ## 0.3.2
 Tue, 17 Dec 2024 10:07:54 GMT

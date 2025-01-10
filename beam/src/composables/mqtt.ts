@@ -9,8 +9,8 @@ import { IMqttStream } from '../types'
  * @returns MQTT stream messages
  * @beta
  */
-export const useMqttStream = (options?: IMqttStream) => {
-	const client = ref<MqttClient>(null)
+export const useMqttStream = (options: IMqttStream) => {
+	const client = ref<MqttClient>()
 	const messages = ref<Record<string, string[]>>({})
 
 	onMounted(() => {
@@ -38,7 +38,7 @@ export const useMqttStream = (options?: IMqttStream) => {
 	})
 
 	onUnmounted(() => {
-		client.value.end()
+		client.value?.end()
 	})
 
 	return { messages }
