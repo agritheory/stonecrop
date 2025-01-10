@@ -1,8 +1,8 @@
 <template>
-	<div class="autocomplete" :class="{ isOpen: isOpen }">
+	<div ref="autocomplete" class="autocomplete" :class="{ isOpen: isOpen }">
 		<div class="input-wrapper">
 			<input
-				ref="mopInput"
+				ref="adropdown"
 				type="text"
 				@input="onChange"
 				@focus="onChange"
@@ -17,7 +17,7 @@
 					v-else
 					v-for="(result, i) in results"
 					:key="i"
-					@click="setResult(result)"
+					@click.stop="setResult(result)"
 					class="autocomplete-result"
 					:class="{ 'is-active': i === arrowCounter }">
 					{{ result }}
@@ -29,86 +29,84 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref /* useTemplateRef */ } from 'vue'
-
-const { label, items, isAsync } = defineProps<{
+import { onMounted, onUnmounted, ref } from 'vue'
+const { label, items, isAsync, filterFunction } = defineProps<{
 	label: string
 	items?: string[]
 	isAsync?: boolean
+	filterFunction?: (search: string) => Promise<string[]>
 }>()
-
-const emit = defineEmits(['filterChanged'])
-
+const autocomplete = ref<HTMLElement | null>(null)
 const results = ref(items)
 const search = defineModel<string>()
 const isLoading = ref(false)
 const arrowCounter = ref(0)
 const isOpen = ref(false)
-// const mopInput = useTemplateRef<HTMLInputElement>('mopInput')
-
 onMounted(() => {
 	document.addEventListener('click', handleClickOutside)
 	filterResults()
 })
-
 onUnmounted(() => {
 	document.removeEventListener('click', handleClickOutside)
 })
+const handleClickOutside = (event: MouseEvent) => {
+	if (autocomplete.value && !autocomplete.value.contains(event.target as Node)) {
+		closeResults()
+		arrowCounter.value = 0
+	}
+}
+const onChange = async () => {
+	isOpen.value = true
+	if (isAsync && filterFunction) {
+		isLoading.value = true
+		try {
+			const filteredResults = await filterFunction(search.value)
+			results.value = filteredResults
+		} catch (error) {
+			console.error('Error en el filtrado asíncrono:', error)
+		} finally {
+			isLoading.value = false
+		}
+	} else {
+		filterResults()
+	}
+}
 
-const setResult = result => {
+const setResult = (result: string) => {
 	search.value = result
-	closeResults()
+	closeResults(result)
+}
+
+const closeResults = (result?: string) => {
+	isOpen.value = false
+	if (!items.includes(result || search.value)) {
+		search.value = ''
+	}
 }
 
 const filterResults = () => {
 	if (!search.value) {
 		results.value = items
 	} else {
-		results.value = items.filter(item => {
-			return item.toLowerCase().indexOf(search.value.toLowerCase()) > -1
-		})
-	}
-}
-
-const onChange = () => {
-	isOpen.value = true
-	if (isAsync) {
-		isLoading.value = true
-		emit('filterChanged', search.value)
-	} else {
-		filterResults()
-	}
-}
-
-const handleClickOutside = () => {
-	closeResults()
-	arrowCounter.value = 0
-}
-
-const closeResults = () => {
-	isOpen.value = false
-
-	// TODO: (test) when would this occur? how should this be tested?
-	if (!items.includes(search.value)) {
-		search.value = ''
+		results.value = items.filter(item => item.toLowerCase().includes(search.value.toLowerCase()))
 	}
 }
 
 const onArrowDown = () => {
 	if (arrowCounter.value < results.value.length) {
-		arrowCounter.value = arrowCounter.value + 1
+		arrowCounter.value += 1
 	}
 }
 
 const onArrowUp = () => {
 	if (arrowCounter.value > 0) {
-		arrowCounter.value = arrowCounter.value - 1
+		arrowCounter.value -= 1
 	}
 }
 
 const onEnter = () => {
 	search.value = results.value[arrowCounter.value]
-	closeResults()
+	closeResults(results.value[arrowCounter.value])
 	arrowCounter.value = 0
 }
 
@@ -124,31 +122,26 @@ const onEnter = () => {
 .autocomplete {
 	position: relative;
 }
-
 .input-wrapper {
-	min-width: 40ch;
 	border: 1px solid transparent;
 	padding: 0rem;
 	margin: 0rem;
 	margin-right: 1ch;
 }
-
 input {
 	width: calc(100% - 1ch);
 	outline: 1px solid transparent;
-	border: 1px solid var(--sc-input-border-color);
+	border: 1px solid #cccccc;
 	padding: 1ch 0.5ch 0.5ch 1ch;
 	margin: calc(1.15rem / 2) 0 0 0;
 	min-height: 1.15rem;
 	border-radius: 0.25rem;
 }
-
 input:focus {
-	border: 1px solid var(--sc-input-active-border-color);
+	border: 1px solid #000000;
 	border-radius: 0.25rem 0.25rem 0 0;
 	border-bottom: none;
 }
-
 label {
 	display: block;
 	min-height: 1.15rem;
@@ -163,29 +156,28 @@ label {
 	margin: calc(-1.5rem - calc(2.15rem / 2)) 0 0 1ch;
 	padding: 0 0.25ch 0 0.25ch;
 }
-
 .autocomplete-results {
 	position: absolute;
 	width: calc(100% - 1ch + 1.5px);
-	z-index: 1;
+	z-index: 999;
 	padding: 0;
 	margin: 0;
 	color: #000000;
-	border: 1px solid var(--sc-input-active-border-color);
+	border: 1px solid #000000;
 	border-radius: 0 0 0.25rem 0.25rem;
 	border-top: none;
+	background-color: #fff;
 }
-
 .autocomplete-result {
 	list-style: none;
 	text-align: left;
 	padding: 4px 6px;
 	cursor: pointer;
+	border-bottom: 0.5px solid lightgray;
 }
-
 .autocomplete-result.is-active,
 .autocomplete-result:hover {
-	background-color: var(--sc-row-color-zebra-light);
+	background-color: #eeeeee;
 	color: #000000;
 }
 </style>

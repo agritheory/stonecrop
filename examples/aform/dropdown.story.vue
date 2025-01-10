@@ -11,7 +11,7 @@
 				v-model="async_dropdown_data.value"
 				:label="async_dropdown_data.label"
 				:isAsync="true"
-				@filterChanged="val => filterItems(val)" />
+				:filterFunction="filterItems" />
 		</div>
 	</Story>
 </template>
@@ -32,21 +32,24 @@ const async_dropdown_data = reactive({
 	label: 'Animals',
 })
 
-function filterItems(search: string) {
-	setTimeout(() => {
-		async_dropdown_data.items = async_dropdown_data.allItems.filter(item => {
-			return item.toLowerCase().indexOf(search.toLowerCase()) > -1
-		})
-	}, 750)
+function filterItems(search: string): Promise<string[]> {
+	return new Promise(resolve => {
+		setTimeout(() => {
+			const filtered = async_dropdown_data.allItems.filter(item => item.toLowerCase().includes(search.toLowerCase()))
+			async_dropdown_data.items = filtered
+			resolve(filtered)
+		}, 750)
+	})
 }
 </script>
 
 <style>
 .dropdown-form {
 	min-height: 60px;
+	height: 200px;
 	display: flex;
 	flex-direction: row;
-	align-items: center;
+	align-items: top;
 	margin: 0px;
 	padding-left: 1ch;
 	padding-right: 1ch;
