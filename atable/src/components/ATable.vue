@@ -21,7 +21,6 @@
 						:rowIndex="rowIndex"
 						:colIndex="colIndex"
 						:component="col.cellComponent"
-						:tableRef="tableRef"
 						:style="{
 							textAlign: col?.align || 'center',
 							minWidth: col?.width || '40ch',
@@ -55,8 +54,8 @@
 
 <script setup lang="ts">
 import { vOnClickOutside } from '@vueuse/components'
-import { useMutationObserver, useElementSize } from '@vueuse/core'
-import { ref, nextTick, watch, onMounted, useTemplateRef } from 'vue'
+import { useMutationObserver } from '@vueuse/core'
+import { nextTick, watch, onMounted, useTemplateRef } from 'vue'
 
 import ACell from './ACell.vue'
 import ARow from './ARow.vue'

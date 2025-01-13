@@ -38,7 +38,6 @@ const {
 	store,
 	addNavigation = true,
 	tabIndex = 0,
-	tableRef,
 } = defineProps<{
 	colIndex: number
 	rowIndex: number
@@ -46,7 +45,6 @@ const {
 	addNavigation?: boolean | KeypressHandlers
 	tabIndex?: number
 	pinned?: boolean
-	tableRef?: HTMLTableElement
 }>()
 
 const emit = defineEmits<{ cellInput: [colIndex: number, rowIndex: number, newValue: string, oldValue: string] }>()
