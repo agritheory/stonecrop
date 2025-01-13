@@ -53,7 +53,7 @@ const getTopCell = (event: KeyboardEvent) => {
 		const $table = $target.parentElement?.parentElement
 		if ($table) {
 			const $firstRow = $table.firstElementChild
-			const $navCell = $firstRow.children[$target.cellIndex] as HTMLElement
+			const $navCell = $firstRow?.children[$target.cellIndex] as HTMLElement
 			if ($navCell) {
 				$topCell = $navCell
 			}
@@ -112,7 +112,7 @@ const getBottomCell = (event: KeyboardEvent) => {
 		const $table = $target.parentElement?.parentElement
 		if ($table) {
 			const $lastRow = $table.lastElementChild
-			const $navCell = $lastRow.children[$target.cellIndex] as HTMLElement
+			const $navCell = $lastRow?.children[$target.cellIndex] as HTMLElement
 			if ($navCell) {
 				$bottomCell = $navCell
 			}
@@ -175,7 +175,7 @@ const _getNextCell = (element: HTMLElement): HTMLElement | undefined => {
 const getFirstCell = (event: KeyboardEvent) => {
 	const $target = event.target as HTMLElement
 	const $parent = $target.parentElement
-	const $firstCell = $parent.firstElementChild as HTMLElement | null
+	const $firstCell = $parent?.firstElementChild as HTMLElement | null
 	if ($firstCell && (!isFocusable($firstCell) || !isVisible($firstCell))) {
 		return _getNextCell($firstCell)
 	}
@@ -185,7 +185,7 @@ const getFirstCell = (event: KeyboardEvent) => {
 const getLastCell = (event: KeyboardEvent) => {
 	const $target = event.target as HTMLElement
 	const $parent = $target.parentElement
-	const $lastCell = $parent.lastElementChild as HTMLElement | null
+	const $lastCell = $parent?.lastElementChild as HTMLElement | null
 	if ($lastCell && (!isFocusable($lastCell) || !isVisible($lastCell))) {
 		return _getPrevCell($lastCell)
 	}
@@ -370,7 +370,7 @@ export function useKeyboardNav(options: KeyboardNavigationOptions[]) {
 			}
 		} else if (option.selectors instanceof HTMLElement) {
 			selectors.push(option.selectors)
-		} else {
+		} else if (option.selectors?.value) {
 			if (Array.isArray(option.selectors.value)) {
 				for (const element of option.selectors.value) {
 					if (element instanceof HTMLElement) {

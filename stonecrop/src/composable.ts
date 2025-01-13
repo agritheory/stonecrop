@@ -32,10 +32,13 @@ export function useStonecrop(registry?: Registry): StonecropReturn {
 		throw new Error('Please enable the Stonecrop plugin before using the Stonecrop composable')
 	}
 
+	// @ts-expect-error TODO: handle empty registry passed to Stonecrop
 	const stonecrop = ref(new Stonecrop(registry, store))
 	const isReady = ref(false)
 
 	onBeforeMount(async () => {
+		if (!registry) return
+
 		const route = registry.router.currentRoute.value
 		const doctypeSlug = route.params.records?.toString().toLowerCase()
 		const recordId = route.params.record?.toString().toLowerCase()
@@ -46,19 +49,22 @@ export function useStonecrop(registry?: Registry): StonecropReturn {
 		}
 
 		// setup doctype via registry
-		const doctype = await registry.getMeta(doctypeSlug)
-		registry.addDoctype(doctype)
-		stonecrop.value.setup(doctype)
+		const doctype = await registry.getMeta?.(doctypeSlug)
+		if (doctype) {
+			registry.addDoctype(doctype)
+			stonecrop.value.setup(doctype)
 
-		if (doctypeSlug) {
-			if (recordId) {
-				await stonecrop.value.getRecord(doctype, recordId)
-			} else {
-				await stonecrop.value.getRecords(doctype)
+			if (doctypeSlug) {
+				if (recordId) {
+					await stonecrop.value.getRecord(doctype, recordId)
+				} else {
+					await stonecrop.value.getRecords(doctype)
+				}
 			}
+
+			stonecrop.value.runAction(doctype, 'LOAD', recordId ? [recordId] : undefined)
 		}
 
-		stonecrop.value.runAction(doctype, 'LOAD', recordId ? [recordId] : undefined)
 		isReady.value = true
 	})
 
