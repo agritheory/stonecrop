@@ -1,5 +1,5 @@
 <template>
-	<ATable id="list" :key="rows" :columns="columns" :rows="rows" :config="{ view: 'list', fullWidth: true }">
+	<ATable v-model="rows" :columns="columns" :config="{ view: 'list', fullWidth: true }" :key="componentKey">
 		<template #body="{ data }">
 			<ARow
 				v-for="(row, rowIndex) in data.rows"
@@ -30,14 +30,13 @@
 </template>
 
 <script lang="ts" setup>
-import { CSSProperties, onMounted, ref } from 'vue'
+import type { TableColumn, TableRow } from '@stonecrop/atable'
+import { type CSSProperties, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-
-import { createTableStore } from '@stonecrop/atable'
-import { TableColumn, TableRow } from '@stonecrop/atable/types'
 
 const router = useRouter()
 
+const componentKey = ref(0)
 const rows = ref<TableRow[]>([])
 const columns = [
 	{
@@ -52,15 +51,16 @@ const columns = [
 
 onMounted(async () => {
 	const response = await fetch('/api/doctypes')
-	const data: Record<string, Record<string, any>[]> = await response.json()
-	rows.value = data.doctypes
+	const data = await response.json()
+	rows.value = data.doctypes as Record<string, any>[]
+	componentKey.value++
 })
 
-function showBuilder(doctype: string) {
+const showBuilder = (doctype: string) => {
 	router.push({ name: 'builder', params: { id: doctype } })
 }
 
-function getRowCellStyle(column: TableColumn): CSSProperties {
+const getRowCellStyle = (column: TableColumn): CSSProperties => {
 	return {
 		minWidth: column?.width || '40ch',
 		textAlign: column?.align || 'center',
@@ -103,9 +103,3 @@ rowNav['keydown.alt.down'] = rowNav['keydown.down']
 rowNav['keydown.shift.enter'] = rowNav['keydown.up']
 rowNav['keydown.enter'] = rowNav['keydown.down']
 </script>
-
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap');
-@import url('@stonecrop/themes/default.css');
-/* @import '../style.css'; */
-</style>

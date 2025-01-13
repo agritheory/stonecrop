@@ -148,7 +148,7 @@ if (addNavigation) {
 
 const onFocus = () => {
 	if (cellRef.value) {
-		currentData.value = cellRef.value.textContent
+		currentData.value = cellRef.value.textContent!
 	}
 }
 
@@ -158,14 +158,14 @@ const updateCellData = (payload: Event) => {
 		return
 	}
 
-	emit('cellInput', colIndex, rowIndex, target.textContent, currentData.value)
-	currentData.value = target.textContent
+	emit('cellInput', colIndex, rowIndex, target.textContent!, currentData.value)
+	currentData.value = target.textContent!
 
 	// only apply changes if the cell value has changed after being mounted
 	if (column.format) {
 		cellModified.value = target.textContent !== store.getFormattedValue(colIndex, rowIndex, originalData)
 		// TODO: need to setup reverse format function?
-		store.setCellText(colIndex, rowIndex, target.textContent)
+		store.setCellText(colIndex, rowIndex, target.textContent!)
 	} else {
 		cellModified.value = target.textContent !== originalData
 		store.setCellData(colIndex, rowIndex, target.textContent)

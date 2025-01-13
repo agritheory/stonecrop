@@ -7,8 +7,7 @@ import Records from '../components/Records.vue'
 import SheetNav from '../components/SheetNav.vue'
 
 /**
- * This is the main plugin file that will be used to register all the components
- * that we want to use in our application.
+ * This is the main plugin that will be used to register all the desktop components.
  * @public
  */
 const plugin: Plugin = {

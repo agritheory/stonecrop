@@ -11,11 +11,37 @@ import { Plugin as Plugin_2 } from 'vue';
 import Records from './components/Records.vue';
 import SheetNav from './components/SheetNav.vue';
 
+// @public
+export type ActionElements = ButtonElement | DropdownElement;
+
 export { ActionSet }
+
+// @public
+export type BaseElement = {
+    label: string;
+    show?: boolean;
+};
+
+// @public
+export type ButtonElement = BaseElement & ElementAction & {
+    type: 'button';
+};
 
 export { CommandPalette }
 
 export { Doctype }
+
+// @public
+export type DropdownElement = BaseElement & {
+    type: 'dropdown';
+    actions: ElementAction[];
+};
+
+// @public
+export type ElementAction = BaseElement & {
+    link?: string;
+    action?: () => void;
+};
 
 export { Records }
 

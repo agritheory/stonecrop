@@ -155,6 +155,8 @@ useKeyboardNav([
 		},
 	},
 ])
+
+defineExpose({ currentMonth, currentYear, selectedDate })
 </script>
 
 <style scoped>

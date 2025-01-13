@@ -11,12 +11,12 @@
 <script setup lang="ts">
 const elements = [
 	{
-		elementType: 'button',
+		type: 'button',
 		label: 'Show Alert',
 		action: buttonClicked,
 	},
 	{
-		elementType: 'dropdown',
+		type: 'dropdown',
 		label: 'Action Menu',
 		actions: [
 			{
@@ -38,7 +38,7 @@ const elements = [
 		],
 	},
 	{
-		elementType: 'dropdown',
+		type: 'dropdown',
 		label: 'Link Menu',
 		actions: [
 			{
