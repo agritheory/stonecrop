@@ -45,12 +45,12 @@ Description
 </th></tr></thead>
 <tbody><tr><td>
 
-[BasicSchema](./aform.basicschema.md)
+[BaseSchema](./aform.baseschema.md)
 
 
 </td><td>
 
-**_(BETA)_** Base schemda for AForm components
+Basic field structure for AForm schemas
 
 
 </td></tr>
@@ -72,7 +72,7 @@ Table cell context definition.
 
 </td><td>
 
-**_(BETA)_** Fieldset schema
+Schema structure for defining fieldsets inside AForm
 
 
 </td></tr>
@@ -83,7 +83,7 @@ Table cell context definition.
 
 </td><td>
 
-**_(BETA)_** Form schema
+Schema structure for defining forms inside AForm
 
 
 </td></tr>
@@ -94,7 +94,7 @@ Table cell context definition.
 
 </td><td>
 
-**_(BETA)_** Superset of schema types
+Superset of all schema types for AForm
 
 
 </td></tr>
@@ -138,7 +138,7 @@ Table row definition.
 
 </td><td>
 
-**_(BETA)_** Table schema
+Schema structure for defining tables inside AForm
 
 
 </td></tr>

@@ -4,19 +4,16 @@
 
 ## TableSchema type
 
-> This API is provided as a beta preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
-> 
-
-Table schema
+Schema structure for defining tables inside AForm
 
 **Signature:**
 
 ```typescript
-export type TableSchema = BasicSchema & {
-    columns: TableColumn[];
-    config: TableConfig;
-    rows: TableRow[];
+export type TableSchema = BaseSchema & {
+    columns?: TableColumn[];
+    config?: TableConfig;
+    rows?: TableRow[];
 };
 ```
-**References:** [BasicSchema](./aform.basicschema.md)<!-- -->, [TableColumn](./aform.tablecolumn.md)<!-- -->, [TableConfig](./aform.tableconfig.md)<!-- -->, [TableRow](./aform.tablerow.md)
+**References:** [BaseSchema](./aform.baseschema.md)<!-- -->, [TableColumn](./aform.tablecolumn.md)<!-- -->, [TableConfig](./aform.tableconfig.md)<!-- -->, [TableRow](./aform.tablerow.md)
 

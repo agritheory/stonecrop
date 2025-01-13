@@ -3,7 +3,7 @@
     {
       "packageName": "@stonecrop/atable",
       "comment": "added fix for modal positioning",
-      "type": "none"
+      "type": "patch"
     }
   ],
   "packageName": "@stonecrop/atable"

@@ -9,12 +9,13 @@
 					:layout="layout" />
 			</div>
 		</AFieldset>
-		<AForm class="aform-main" :key="formKey" v-model="doctypeSchema" :data="data" />
+		<AForm class="aform-main" v-model="doctypeSchema" :data="data" :key="formKey" />
 		<ActionSet :elements="actionElements" />
 	</div>
 </template>
 
 <script setup lang="ts">
+import type { ActionElements } from '@stonecrop/desktop'
 import type { Layout } from '@stonecrop/node-editor'
 import { onBeforeMount, ref } from 'vue'
 import { useRoute } from 'vue-router'
@@ -24,13 +25,13 @@ import doctypeSchema from '../assets/doctype_schema.json'
 import { makeServer } from '../server'
 
 const route = useRoute()
-let formKey = ref(0)
+const formKey = ref(0)
 
 // create mirage server
 makeServer()
 
 // fetch data
-let layout: Layout = {}
+const layout = ref<Layout>({})
 const data = ref({})
 const stateConfig = ref({})
 
@@ -49,10 +50,10 @@ onBeforeMount(async () => {
 	data.value['side_effects_fieldset']['side_effects'] = actions
 
 	const stateResponse = await fetch('/api/load_state_machine?' + searchParams.toString())
-	const stateResponseData: Record<string, any>[] = await stateResponse.json()
+	const stateResponseData: Record<string, any> = await stateResponse.json()
 	const stateMachine = createMachine(stateResponseData.machine)
 	stateConfig.value = stateMachine.config.states
-	layout = stateResponseData.layout
+	layout.value = stateResponseData.layout
 
 	// increment form key to force form re-render
 	formKey.value++
@@ -61,12 +62,12 @@ onBeforeMount(async () => {
 // setup page actions
 const actionElements = [
 	{
-		elementType: 'button',
-		action: function () {},
+		type: 'button',
 		label: 'Save',
+		action: function () {},
 	},
 	{
-		elementType: 'dropdown',
+		type: 'dropdown',
 		label: 'Actions',
 		actions: [
 			{
@@ -83,13 +84,10 @@ const actionElements = [
 			},
 		],
 	},
-]
+] as ActionElements[]
 </script>
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap');
-@import url('@stonecrop/themes/default.css');
-/* @import '../style.css'; */
 html,
 body {
 	height: 100%;

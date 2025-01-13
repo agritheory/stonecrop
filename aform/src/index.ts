@@ -1,5 +1,5 @@
 export type { CellContext, TableConfig, TableColumn, TableRow } from '@stonecrop/atable'
-import { App } from 'vue'
+import type { App } from 'vue'
 
 import ACheckbox from './components/form/ACheckbox.vue'
 import AComboBox from './components/form/AComboBox.vue'
@@ -12,9 +12,7 @@ import AForm from './components/AForm.vue'
 import ANumericInput from './components/form/ANumericInput.vue'
 import ATextInput from './components/form/ATextInput.vue'
 import Login from './components/utilities/Login.vue'
-export type { BasicSchema, FormSchema, TableSchema, FieldsetSchema, SchemaTypes } from './types'
-// import { ACurrency } from './components/form/ACurrency.vue'
-// import { AQuantity } from './components/form/AQuantity.vue'
+export type { BaseSchema, FieldsetSchema, FormSchema, SchemaTypes, TableSchema } from './types'
 
 /**
  * Install all AForm components
@@ -32,8 +30,6 @@ function install(app: App /* options */) {
 	app.component('AForm', AForm)
 	app.component('ANumericInput', ANumericInput)
 	app.component('ATextInput', ATextInput)
-	// app.component('ACurrency', ACurrency)
-	// app.component('AQuantity', AQuantity)
 }
 
 export {

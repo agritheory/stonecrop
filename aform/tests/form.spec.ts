@@ -3,19 +3,18 @@ import { mount } from '@vue/test-utils'
 
 import AForm from '../src/components/AForm.vue'
 import ATextInput from '../src/components/form/ATextInput.vue'
+import type { SchemaTypes } from '../src/types'
 
 describe('AForm Component', () => {
-	const form_schema = [
-		{
-			fieldname: 'first_name',
-			component: 'ATextInput',
-			label: 'First Name',
-		},
-	]
-
 	const wrapper = mount(AForm, {
 		props: {
-			modelValue: form_schema,
+			modelValue: [
+				{
+					fieldname: 'first_name',
+					component: 'ATextInput',
+					label: 'First Name',
+				},
+			] as SchemaTypes[],
 			data: {},
 		},
 		components: {

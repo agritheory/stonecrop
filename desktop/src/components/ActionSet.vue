@@ -39,8 +39,8 @@
 		</div>
 		<div style="margin-right: 30px"></div>
 		<div class="action-element" v-for="(el, index) in _elements" :key="el.label">
-			<button v-if="el.elementType == 'button'" :onclick="el.action" class="button-default">{{ el.label }}</button>
-			<div v-if="el.elementType == 'dropdown'">
+			<button v-if="el.type == 'button'" :onclick="el.action" class="button-default">{{ el.label }}</button>
+			<div v-if="el.type == 'dropdown'">
 				<button class="button-default" @click="toggleDropdown(index)">{{ el.label }}</button>
 				<div class="dropdown-container" v-show="el.show">
 					<div class="dropdown">
@@ -60,22 +60,9 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 
-type SetAction = {
-	label: string
-	link?: string
-	action?: () => void
-}
+import type { ActionElements } from '../types'
 
-type SetElement = {
-	elementType: string
-	label: string
-	link?: string
-	show?: boolean
-	action?: () => void
-	actions?: SetAction[]
-}
-
-const { elements } = defineProps<{ elements?: SetElement[] }>()
+const { elements } = defineProps<{ elements?: ActionElements[] }>()
 
 const _elements = ref(elements)
 const isOpen = ref(false)
@@ -89,7 +76,7 @@ onMounted(() => {
 
 const closeDropdowns = () => {
 	for (const element of _elements.value) {
-		if (element.elementType === 'dropdown') {
+		if (element.type === 'dropdown') {
 			element.show = false
 		}
 	}
