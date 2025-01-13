@@ -5,7 +5,7 @@
 </template>
 
 <script setup lang="ts">
-import { useElementBounding } from '@vueuse/core'
+import { useElementBounding, useWindowScroll } from '@vueuse/core'
 import { useTemplateRef, computed } from 'vue'
 
 import { createTableStore } from '../stores/table'
@@ -18,6 +18,7 @@ const { store } = defineProps<{
 
 const amodalRef = useTemplateRef('amodal')
 const { width, height } = useElementBounding(amodalRef)
+const scrollY = useWindowScroll().y
 
 const amodalStyles = computed(() => {
 	const body = document.body
@@ -33,7 +34,7 @@ const amodalStyles = computed(() => {
 	const maxWidth = Math.max(body.scrollWidth, body.offsetWidth, html.clientWidth, html.scrollWidth, html.offsetWidth)
 
 	const modalY =
-		store.modal.bottom + height.value <= maxHeight
+		store.modal.bottom + height.value + scrollY.value <= maxHeight
 			? store.modal.bottom
 			: store.modal.bottom - height.value - store.modal.height
 	const modalX =
