@@ -10,17 +10,15 @@ import { useTemplateRef, computed } from 'vue'
 
 import { createTableStore } from '../stores/table'
 
-const { store } = defineProps<{
-	colIndex?: number
-	rowIndex?: number
-	store?: ReturnType<typeof createTableStore>
-}>()
+const { store } = defineProps<{ store: ReturnType<typeof createTableStore> }>()
 
 const amodalRef = useTemplateRef('amodal')
 const { width, height } = useElementBounding(amodalRef)
-const scrollY = useWindowScroll().y
+const { y: scrollY } = useWindowScroll()
 
 const amodalStyles = computed(() => {
+	if (!(store.modal.height && store.modal.width && store.modal.left && store.modal.bottom)) return
+
 	const body = document.body
 	const html = document.documentElement
 
@@ -37,6 +35,7 @@ const amodalStyles = computed(() => {
 		store.modal.bottom + height.value + scrollY.value <= maxHeight
 			? store.modal.bottom
 			: store.modal.bottom - height.value - store.modal.height
+
 	const modalX =
 		store.modal.left + width.value <= maxWidth ? store.modal.left : store.modal.left - (width.value - store.modal.width)
 

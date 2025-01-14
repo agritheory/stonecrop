@@ -15,6 +15,7 @@ import { ComputedRef } from 'vue';
 import { CSSProperties } from 'vue';
 import { Ref } from 'vue';
 import { Store } from 'pinia';
+import { useElementBounding } from '@vueuse/core';
 
 export { ACell }
 
@@ -105,25 +106,25 @@ parent?: number | undefined;
 rowModified?: boolean | undefined;
 }[]>;
 modal: Ref<    {
+bottom?: number | undefined;
 colIndex?: number | undefined;
 event?: string | undefined;
 height?: number | undefined;
 left?: number | undefined;
 parent?: HTMLElement | undefined;
 rowIndex?: number | undefined;
-top?: number | undefined;
 visible?: boolean | undefined;
 width?: number | undefined;
 component?: string | undefined;
 componentProps?: Record<string, any> | undefined;
 }, TableModal | {
+bottom?: number | undefined;
 colIndex?: number | undefined;
 event?: string | undefined;
 height?: number | undefined;
 left?: number | undefined;
 parent?: HTMLElement | undefined;
 rowIndex?: number | undefined;
-top?: number | undefined;
 visible?: boolean | undefined;
 width?: number | undefined;
 component?: string | undefined;
@@ -211,25 +212,25 @@ parent?: number | undefined;
 rowModified?: boolean | undefined;
 }[]>;
 modal: Ref<    {
+bottom?: number | undefined;
 colIndex?: number | undefined;
 event?: string | undefined;
 height?: number | undefined;
 left?: number | undefined;
 parent?: HTMLElement | undefined;
 rowIndex?: number | undefined;
-top?: number | undefined;
 visible?: boolean | undefined;
 width?: number | undefined;
 component?: string | undefined;
 componentProps?: Record<string, any> | undefined;
 }, TableModal | {
+bottom?: number | undefined;
 colIndex?: number | undefined;
 event?: string | undefined;
 height?: number | undefined;
 left?: number | undefined;
 parent?: HTMLElement | undefined;
 rowIndex?: number | undefined;
-top?: number | undefined;
 visible?: boolean | undefined;
 width?: number | undefined;
 component?: string | undefined;
@@ -317,25 +318,25 @@ parent?: number | undefined;
 rowModified?: boolean | undefined;
 }[]>;
 modal: Ref<    {
+bottom?: number | undefined;
 colIndex?: number | undefined;
 event?: string | undefined;
 height?: number | undefined;
 left?: number | undefined;
 parent?: HTMLElement | undefined;
 rowIndex?: number | undefined;
-top?: number | undefined;
 visible?: boolean | undefined;
 width?: number | undefined;
 component?: string | undefined;
 componentProps?: Record<string, any> | undefined;
 }, TableModal | {
+bottom?: number | undefined;
 colIndex?: number | undefined;
 event?: string | undefined;
 height?: number | undefined;
 left?: number | undefined;
 parent?: HTMLElement | undefined;
 rowIndex?: number | undefined;
-top?: number | undefined;
 visible?: boolean | undefined;
 width?: number | undefined;
 component?: string | undefined;
@@ -408,15 +409,15 @@ export type TableDisplay = {
 
 // @public
 export type TableModal = {
+    bottom?: ReturnType<typeof useElementBounding>['bottom'];
     colIndex?: number;
     event?: string;
-    height?: number;
-    left?: number;
+    height?: ReturnType<typeof useElementBounding>['height'];
+    left?: ReturnType<typeof useElementBounding>['left'];
     parent?: HTMLElement;
     rowIndex?: number;
-    top?: number;
     visible?: boolean;
-    width?: number;
+    width?: ReturnType<typeof useElementBounding>['width'];
     component?: string;
     componentProps?: Record<string, any>;
 };

@@ -91,10 +91,11 @@ const showModal = () => {
 			state.modal.visible = true
 			state.modal.colIndex = colIndex
 			state.modal.rowIndex = rowIndex
+			// TODO: typing refs somehow resolves to unref'd value; probably a bug in API Extractor?
 			state.modal.left = left
 			state.modal.bottom = bottom
-			state.modal.width = width.value
-			state.modal.height = height.value
+			state.modal.width = width
+			state.modal.height = height
 
 			if (typeof column.modalComponent === 'function') {
 				state.modal.component = column.modalComponent({ table: state.table, row, column })
