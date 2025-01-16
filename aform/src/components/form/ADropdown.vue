@@ -1,11 +1,10 @@
 <template>
-	<div ref="autocomplete" class="autocomplete" :class="{ isOpen: isOpen }">
+	<div ref="autocomplete" class="autocomplete" :class="{ isOpen: isOpen }" v-on-click-outside="closeResultsHandler">
 		<div class="input-wrapper">
 			<input
-				ref="adropdown"
 				type="text"
 				@input="onChange"
-				@focus="onChange"
+				@focus="onFocus"
 				v-model="search"
 				@keydown.down="onArrowDown"
 				@keydown.up="onArrowUp"
@@ -29,32 +28,26 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue'
+import { ref, useTemplateRef } from 'vue'
+import { vOnClickOutside } from '@vueuse/components'
 const { label, items, isAsync, filterFunction } = defineProps<{
 	label: string
 	items?: string[]
 	isAsync?: boolean
 	filterFunction?: (search: string) => Promise<string[]>
 }>()
-const autocomplete = ref<HTMLElement | null>(null)
+const autocomplete = useTemplateRef<HTMLElement>('autocomplete')
 const results = ref(items)
 const search = defineModel<string>()
 const isLoading = ref(false)
 const arrowCounter = ref(0)
 const isOpen = ref(false)
-onMounted(() => {
-	document.addEventListener('click', handleClickOutside)
-	filterResults()
-})
-onUnmounted(() => {
-	document.removeEventListener('click', handleClickOutside)
-})
-const handleClickOutside = (event: MouseEvent) => {
-	if (autocomplete.value && !autocomplete.value.contains(event.target as Node)) {
-		closeResults()
-		arrowCounter.value = 0
-	}
+
+const closeResultsHandler = () => {
+	closeResults()
+	arrowCounter.value = 0
 }
+
 const onChange = async () => {
 	isOpen.value = true
 	if (isAsync && filterFunction) {
@@ -62,14 +55,20 @@ const onChange = async () => {
 		try {
 			const filteredResults = await filterFunction(search.value)
 			results.value = filteredResults
-		} catch (error) {
-			console.error('Error en el filtrado asíncrono:', error)
+		} catch {
+			results.value = []
 		} finally {
 			isLoading.value = false
 		}
 	} else {
 		filterResults()
 	}
+}
+
+const onFocus = () => {
+	isOpen.value = true
+	results.value = items
+	arrowCounter.value = items.indexOf(search.value)
 }
 
 const setResult = (result: string) => {

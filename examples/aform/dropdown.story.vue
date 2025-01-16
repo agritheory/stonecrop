@@ -32,14 +32,15 @@ const async_dropdown_data = reactive({
 	label: 'Animals',
 })
 
-function filterItems(search: string): Promise<string[]> {
-	return new Promise(resolve => {
-		setTimeout(() => {
-			const filtered = async_dropdown_data.allItems.filter(item => item.toLowerCase().includes(search.toLowerCase()))
-			async_dropdown_data.items = filtered
-			resolve(filtered)
-		}, 750)
-	})
+function delay(): Promise<void> {
+	return new Promise(resolve => setTimeout(resolve, 750))
+}
+
+async function filterItems(search: string): Promise<string[]> {
+	await delay()
+	const filtered = async_dropdown_data.allItems.filter(item => item.toLowerCase().includes(search.toLowerCase()))
+	async_dropdown_data.items = filtered
+	return filtered
 }
 </script>
 
