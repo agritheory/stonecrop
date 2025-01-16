@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 
 import ADropdown from '../src/components/form/ADropdown.vue'
@@ -78,9 +78,9 @@ describe('dropdown input component', () => {
 		expect(updateEvents![3]).toEqual(['Apple'])
 	})
 
-	it('emits filter change event when dropdown item is selected using mouse in async', async () => {
+	it('emits filter change event when dropdown item is selected using mouse in sync', async () => {
 		const wrapper = mount(ADropdown, {
-			props: { modelValue: dropdownData.value, label: dropdownData.label, items: dropdownData.items, isAsync: true },
+			props: { modelValue: dropdownData.value, label: dropdownData.label, items: dropdownData.items, isAsync: false },
 		})
 
 		await wrapper.find('input').setValue('')
@@ -94,11 +94,39 @@ describe('dropdown input component', () => {
 		await wrapper.vm.$nextTick()
 
 		valueUpdateEvents = wrapper.emitted('update:modelValue')
-		expect(valueUpdateEvents).toHaveLength(1)
-		expect(valueUpdateEvents![0]).toEqual([''])
+		expect(valueUpdateEvents).toHaveLength(2)
+		expect(valueUpdateEvents![1]).toEqual(['Apple'])
+	})
 
-		const filterChangedEvents = wrapper.emitted('filterChanged')
-		expect(filterChangedEvents).toHaveLength(1)
-		expect(filterChangedEvents![0]).toEqual([''])
+	it('emits filter change event when dropdown item is selected using mouse in async', async () => {
+		const mockFilterFunction = vi.fn(async search => {
+			if (search === 'a') {
+				return ['Apple', 'Orange', 'Pear']
+			}
+			return []
+		})
+
+		const wrapper = mount(ADropdown, {
+			props: {
+				modelValue: dropdownData.value,
+				label: dropdownData.label,
+				items: dropdownData.items,
+				isAsync: true,
+				filterFunction: mockFilterFunction,
+			},
+		})
+
+		const input = wrapper.find('input')
+		await input.setValue('a')
+		await wrapper.vm.$nextTick()
+
+		expect(mockFilterFunction).toHaveBeenCalledWith('a')
+		expect(mockFilterFunction).toHaveBeenCalledTimes(1)
+
+		const liElements = wrapper.findAll('li')
+		expect(liElements).toHaveLength(3)
+		expect(liElements.at(0)?.text()).toBe('Apple')
+		expect(liElements.at(1)?.text()).toBe('Orange')
+		expect(liElements.at(2)?.text()).toBe('Pear')
 	})
 })

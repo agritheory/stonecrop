@@ -67,8 +67,13 @@ const onChange = async () => {
 
 const onFocus = () => {
 	isOpen.value = true
-	results.value = items
-	arrowCounter.value = items.indexOf(search.value)
+	if (isAsync) {
+		results.value = []
+		arrowCounter.value = 0
+	} else {
+		results.value = items
+		arrowCounter.value = items.indexOf(search.value)
+	}
 }
 
 const setResult = (result: string) => {
