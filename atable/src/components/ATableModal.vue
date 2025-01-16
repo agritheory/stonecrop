@@ -5,43 +5,43 @@
 </template>
 
 <script setup lang="ts">
-import { useElementBounding } from '@vueuse/core'
+import { useElementBounding, useWindowScroll } from '@vueuse/core'
 import { useTemplateRef, computed } from 'vue'
 
 import { createTableStore } from '../stores/table'
 
-const { store, container } = defineProps<{
-	colIndex?: number
-	rowIndex?: number
-	store?: ReturnType<typeof createTableStore>
-	container?: HTMLElement
-}>()
+const { store } = defineProps<{ store: ReturnType<typeof createTableStore> }>()
 
 const amodalRef = useTemplateRef('amodal')
 const { width, height } = useElementBounding(amodalRef)
+const { y: scrollY } = useWindowScroll()
 
 const amodalStyles = computed(() => {
-	// the modal usually will appear left align with and below the element it is associated with,
-	// but needs to detect and adjust its position if it would overflow the rightr or bottom edges
+	if (!(store.modal.height && store.modal.width && store.modal.left && store.modal.bottom)) return
 
-	// get the dimensions of whatever container is holding this modal, e.g. Table, Window, div so the modal can detect edges
-	const containerWidth = container?.offsetWidth || 0
-	const containerHeight = container?.offsetHeight || 0
+	const body = document.body
+	const html = document.documentElement
 
-	// if this modal would go outside the edge of its container, instead place it above the element (Y) or along the right side (X)
-	const modalLeft =
-		store.modal.left + width.value > containerWidth
-			? store.modal.left - (width.value - store.modal.width)
-			: store.modal.left
+	const maxHeight = Math.max(
+		body.scrollHeight,
+		body.offsetHeight,
+		html.clientHeight,
+		html.scrollHeight,
+		html.offsetHeight
+	)
+	const maxWidth = Math.max(body.scrollWidth, body.offsetWidth, html.clientWidth, html.scrollWidth, html.offsetWidth)
 
-	const modalTop =
-		store.modal.top + height.value > containerHeight
-			? store.modal.top - height.value - store.modal.height
-			: store.modal.top
+	const modalY =
+		store.modal.bottom + height.value + scrollY.value <= maxHeight
+			? store.modal.bottom
+			: store.modal.bottom - height.value - store.modal.height
+
+	const modalX =
+		store.modal.left + width.value <= maxWidth ? store.modal.left : store.modal.left - (width.value - store.modal.width)
 
 	return {
-		left: `${modalLeft}px`,
-		top: `${modalTop}px`,
+		left: `${modalX}px`,
+		top: `${modalY}px`,
 	}
 })
 
@@ -54,8 +54,8 @@ const handleInput = (event: Event) => {
 @import url('@stonecrop/themes/default.css');
 
 .amodal {
-	position: absolute;
+	position: fixed;
 	background-color: var(--sc-row-color-zebra-dark);
-	z-index: 100;
+	z-index: 1000;
 }
 </style>

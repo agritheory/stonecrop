@@ -116,7 +116,7 @@ Table modal definition.
 
 </td><td>
 
-Table modal props definition.
+Table modal component props definition.
 
 
 </td></tr>
