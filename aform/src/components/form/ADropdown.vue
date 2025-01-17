@@ -1,5 +1,5 @@
 <template>
-	<div ref="autocomplete" class="autocomplete" :class="{ isOpen: isOpen }" v-on-click-outside="closeResultsHandler">
+	<div ref="autocomplete" class="autocomplete" :class="{ isOpen: isOpen }" v-on-click-outside="onClickOutside">
 		<div class="input-wrapper">
 			<input
 				type="text"
@@ -8,7 +8,8 @@
 				v-model="search"
 				@keydown.down="onArrowDown"
 				@keydown.up="onArrowUp"
-				@keydown.enter="onEnter" />
+				@keydown.enter="onEnter"
+				@keydown.esc="onClickOutside" />
 
 			<ul id="autocomplete-results" v-show="isOpen" class="autocomplete-results">
 				<li class="loading autocomplete-result" v-if="isLoading">Loading results...</li>
@@ -18,7 +19,7 @@
 					:key="i"
 					@click.stop="setResult(result)"
 					class="autocomplete-result"
-					:class="{ 'is-active': i === arrowCounter }">
+					:class="{ 'is-active': i === activeItemIndex }">
 					{{ result }}
 				</li>
 			</ul>
@@ -28,7 +29,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, useTemplateRef } from 'vue'
+import { ref } from 'vue'
 import { vOnClickOutside } from '@vueuse/components'
 const { label, items, isAsync, filterFunction } = defineProps<{
 	label: string
@@ -36,16 +37,15 @@ const { label, items, isAsync, filterFunction } = defineProps<{
 	isAsync?: boolean
 	filterFunction?: (search: string) => Promise<string[]>
 }>()
-const autocomplete = useTemplateRef<HTMLElement>('autocomplete')
 const results = ref(items)
 const search = defineModel<string>()
 const isLoading = ref(false)
-const arrowCounter = ref(0)
+const activeItemIndex = ref<number | null>(null)
 const isOpen = ref(false)
 
-const closeResultsHandler = () => {
+const onClickOutside = () => {
 	closeResults()
-	arrowCounter.value = 0
+	activeItemIndex.value = null
 }
 
 const onChange = async () => {
@@ -53,7 +53,7 @@ const onChange = async () => {
 	if (isAsync && filterFunction) {
 		isLoading.value = true
 		try {
-			const filteredResults = await filterFunction(search.value)
+			const filteredResults = await filterFunction(search.value || '')
 			results.value = filteredResults
 		} catch {
 			results.value = []
@@ -69,10 +69,10 @@ const onFocus = () => {
 	isOpen.value = true
 	if (isAsync) {
 		results.value = []
-		arrowCounter.value = 0
+		activeItemIndex.value = null
 	} else {
 		results.value = items
-		arrowCounter.value = items.indexOf(search.value)
+		activeItemIndex.value = items?.indexOf(search.value || '') || null
 	}
 }
 
@@ -83,7 +83,7 @@ const setResult = (result: string) => {
 
 const closeResults = (result?: string) => {
 	isOpen.value = false
-	if (!items.includes(result || search.value)) {
+	if (!items?.includes(result || search.value || '')) {
 		search.value = ''
 	}
 }
@@ -92,33 +92,27 @@ const filterResults = () => {
 	if (!search.value) {
 		results.value = items
 	} else {
-		results.value = items.filter(item => item.toLowerCase().includes(search.value.toLowerCase()))
+		results.value = items?.filter(item => item.toLowerCase().includes((search.value ?? '').toLowerCase()))
 	}
 }
 
 const onArrowDown = () => {
-	if (arrowCounter.value < results.value.length) {
-		arrowCounter.value += 1
-	}
+	const resultsLength = results.value?.length || 0
+	activeItemIndex.value = ((activeItemIndex.value ?? 0) + 1) % resultsLength
 }
 
 const onArrowUp = () => {
-	if (arrowCounter.value > 0) {
-		arrowCounter.value -= 1
-	}
+	const resultsLength = results.value?.length || 0
+	activeItemIndex.value = ((activeItemIndex.value ?? 0) - 1 + resultsLength) % resultsLength
 }
 
 const onEnter = () => {
-	search.value = results.value[arrowCounter.value]
-	closeResults(results.value[arrowCounter.value])
-	arrowCounter.value = 0
+	if (results.value) {
+		search.value = results.value[activeItemIndex.value || 0]
+		closeResults(results.value[activeItemIndex.value || 0])
+	}
+	activeItemIndex.value = 0
 }
-
-// const openWithSearch = () => {
-// 	search.value = ''
-// 	onChange()
-// 	mopInput.value.focus()
-// }
 </script>
 
 <style scoped>
@@ -126,12 +120,14 @@ const onEnter = () => {
 .autocomplete {
 	position: relative;
 }
+
 .input-wrapper {
 	border: 1px solid transparent;
 	padding: 0rem;
 	margin: 0rem;
 	margin-right: 1ch;
 }
+
 input {
 	width: calc(100% - 1ch);
 	outline: 1px solid transparent;
@@ -141,11 +137,13 @@ input {
 	min-height: 1.15rem;
 	border-radius: 0.25rem;
 }
+
 input:focus {
 	border: 1px solid var(--sc-input-active-border-color);
 	border-radius: 0.25rem 0.25rem 0 0;
 	border-bottom: none;
 }
+
 label {
 	display: block;
 	min-height: 1.15rem;
@@ -160,6 +158,7 @@ label {
 	margin: calc(-1.5rem - calc(2.15rem / 2)) 0 0 1ch;
 	padding: 0 0.25ch 0 0.25ch;
 }
+
 .autocomplete-results {
 	position: absolute;
 	width: calc(100% - 1ch + 1.5px);
@@ -172,6 +171,7 @@ label {
 	border-top: none;
 	background-color: #fff;
 }
+
 .autocomplete-result {
 	list-style: none;
 	text-align: left;
@@ -179,6 +179,7 @@ label {
 	cursor: pointer;
 	border-bottom: 0.5px solid lightgray;
 }
+
 .autocomplete-result.is-active,
 .autocomplete-result:hover {
 	background-color: var(--sc-row-color-zebra-light);
