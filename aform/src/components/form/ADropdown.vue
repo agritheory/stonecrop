@@ -98,13 +98,11 @@ const filterResults = () => {
 
 const onArrowDown = () => {
 	const resultsLength = results.value?.length || 0
-	console.log({ resultsLength }, results.value)
 	activeItemIndex.value = ((activeItemIndex.value ?? 0) + 1) % resultsLength
 }
 
 const onArrowUp = () => {
 	const resultsLength = results.value?.length || 0
-	console.log({ resultsLength }, results.value)
 	activeItemIndex.value = ((activeItemIndex.value ?? 0) - 1 + resultsLength) % resultsLength
 }
 
