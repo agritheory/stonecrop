@@ -11,6 +11,12 @@
 				v-model="async_dropdown_data.value"
 				:label="async_dropdown_data.label"
 				:isAsync="true"
+				:filterFunction="asyncFilterItems" />
+			<ADropdown
+				:items="custom_filter_dropdown_data.items"
+				v-model="custom_filter_dropdown_data.value"
+				:label="custom_filter_dropdown_data.label"
+				:isAsync="false"
 				:filterFunction="filterItems" />
 		</div>
 	</Story>
@@ -32,14 +38,29 @@ const async_dropdown_data = reactive({
 	label: 'Animals',
 })
 
+const custom_filter_dropdown_data = reactive({
+	allItems: ['Pizza', 'Burger', 'Pasta', 'Sushi', 'Tacos', 'Salad', 'Steak', 'Soup'],
+	items: ['Pizza', 'Burger', 'Pasta', 'Sushi', 'Tacos', 'Salad', 'Steak', 'Soup'],
+	value: '',
+	label: 'Food',
+})
+
 function delay(): Promise<void> {
 	return new Promise(resolve => setTimeout(resolve, 750))
 }
 
-async function filterItems(search: string): Promise<string[]> {
+async function asyncFilterItems(search: string): Promise<string[]> {
 	await delay()
 	const filtered = async_dropdown_data.allItems.filter(item => item.toLowerCase().includes(search.toLowerCase()))
 	async_dropdown_data.items = filtered
+	return filtered
+}
+
+async function filterItems(search: string): Promise<string[]> {
+	const filtered = custom_filter_dropdown_data.allItems.filter(item =>
+		item.toLowerCase().startsWith(search.toLowerCase())
+	)
+	custom_filter_dropdown_data.items = filtered
 	return filtered
 }
 </script>
@@ -47,7 +68,7 @@ async function filterItems(search: string): Promise<string[]> {
 <style>
 .dropdown-form {
 	min-height: 60px;
-	height: 200px;
+	height: 800px;
 	display: flex;
 	flex-direction: row;
 	align-items: top;

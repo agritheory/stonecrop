@@ -1,5 +1,5 @@
 <template>
-	<div ref="autocomplete" class="autocomplete" :class="{ isOpen: isOpen }" v-on-click-outside="onClickOutside">
+	<div class="autocomplete" :class="{ isOpen: isOpen }" v-on-click-outside="onClickOutside">
 		<div class="input-wrapper">
 			<input
 				type="text"
@@ -50,15 +50,15 @@ const onClickOutside = () => {
 
 const onChange = async () => {
 	isOpen.value = true
-	if (isAsync && filterFunction) {
-		isLoading.value = true
+	if (filterFunction) {
+		if (isAsync) isLoading.value = true
 		try {
 			const filteredResults = await filterFunction(search.value || '')
 			results.value = filteredResults
 		} catch {
 			results.value = []
 		} finally {
-			isLoading.value = false
+			if (isAsync) isLoading.value = false
 		}
 	} else {
 		filterResults()
@@ -98,11 +98,13 @@ const filterResults = () => {
 
 const onArrowDown = () => {
 	const resultsLength = results.value?.length || 0
+	console.log({ resultsLength }, results.value)
 	activeItemIndex.value = ((activeItemIndex.value ?? 0) + 1) % resultsLength
 }
 
 const onArrowUp = () => {
 	const resultsLength = results.value?.length || 0
+	console.log({ resultsLength }, results.value)
 	activeItemIndex.value = ((activeItemIndex.value ?? 0) - 1 + resultsLength) % resultsLength
 }
 
