@@ -50,7 +50,6 @@ const {
 const emit = defineEmits<{ cellInput: [colIndex: number, rowIndex: number, newValue: string, oldValue: string] }>()
 
 const cellRef = useTemplateRef<HTMLTableCellElement>('cell')
-const { width, height } = useElementBounding(cellRef)
 
 // keep a shallow copy of the original cell value for comparison
 const originalData = store.getCellData(colIndex, rowIndex)
@@ -80,6 +79,8 @@ const cellStyle = computed((): CSSProperties => {
 })
 
 const showModal = () => {
+	const { left, bottom, width, height } = useElementBounding(cellRef)
+
 	if (column.mask) {
 		// TODO: add masking to cell values
 		// column.mask(event)
@@ -90,11 +91,11 @@ const showModal = () => {
 			state.modal.visible = true
 			state.modal.colIndex = colIndex
 			state.modal.rowIndex = rowIndex
-			state.modal.parent = cellRef.value!
-			state.modal.top = cellRef.value!.offsetTop + cellRef.value!.offsetHeight
-			state.modal.left = cellRef.value!.offsetLeft
-			state.modal.width = width.value
-			state.modal.height = height.value
+			// TODO: typing refs somehow resolves to unref'd value; probably a bug in API Extractor?
+			state.modal.left = left
+			state.modal.bottom = bottom
+			state.modal.width = width
+			state.modal.height = height
 
 			if (typeof column.modalComponent === 'function') {
 				state.modal.component = column.modalComponent({ table: state.table, row, column })

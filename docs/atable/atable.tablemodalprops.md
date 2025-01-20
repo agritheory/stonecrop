@@ -4,7 +4,7 @@
 
 ## TableModalProps type
 
-Table modal props definition.
+Table modal component props definition.
 
 **Signature:**
 

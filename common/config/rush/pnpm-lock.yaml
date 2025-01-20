@@ -18,6 +18,9 @@ importers:
       '@stonecrop/utilities':
         specifier: workspace:*
         version: link:../utilities
+      '@vueuse/components':
+        specifier: ^12.0.0
+        version: 12.0.0(typescript@5.7.2)
       '@vueuse/core':
         specifier: ^12.0.0
         version: 12.0.0(typescript@5.7.2)
