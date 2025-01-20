@@ -1,25 +1,26 @@
 <template>
-	<div class="autocomplete" :class="{ isOpen: isOpen }" v-on-click-outside="onClickOutside">
+	<div class="autocomplete" :class="{ isOpen: dropdown.open }" v-on-click-outside="onClickOutside">
 		<div class="input-wrapper">
 			<input
-				type="text"
-				@input="onChange"
-				@focus="onFocus"
 				v-model="search"
-				@keydown.down="onArrowDown"
-				@keydown.up="onArrowUp"
-				@keydown.enter="onEnter"
-				@keydown.esc="onClickOutside" />
+				type="text"
+				@input="filter"
+				@focus="openDropdown"
+				@keydown.down="selectNextResult"
+				@keydown.up="selectPrevResult"
+				@keydown.enter="setCurrentResult"
+				@keydown.esc="onClickOutside"
+				@keydown.tab="onClickOutside" />
 
-			<ul id="autocomplete-results" v-show="isOpen" class="autocomplete-results">
-				<li class="loading autocomplete-result" v-if="isLoading">Loading results...</li>
+			<ul id="autocomplete-results" v-show="dropdown.open" class="autocomplete-results">
+				<li class="loading autocomplete-result" v-if="dropdown.loading">Loading results...</li>
 				<li
 					v-else
-					v-for="(result, i) in results"
-					:key="i"
+					v-for="(result, i) in dropdown.results"
+					:key="result"
 					@click.stop="setResult(result)"
 					class="autocomplete-result"
-					:class="{ 'is-active': i === activeItemIndex }">
+					:class="{ 'is-active': i === dropdown.activeItemIndex }">
 					{{ result }}
 				</li>
 			</ul>
@@ -29,60 +30,58 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
 import { vOnClickOutside } from '@vueuse/components'
+import { reactive } from 'vue'
+
 const { label, items, isAsync, filterFunction } = defineProps<{
 	label: string
 	items?: string[]
 	isAsync?: boolean
-	filterFunction?: (search: string) => Promise<string[]>
+	filterFunction?: (search: string) => string[] | Promise<string[]>
 }>()
-const results = ref(items)
 const search = defineModel<string>()
-const isLoading = ref(false)
-const activeItemIndex = ref<number | null>(null)
-const isOpen = ref(false)
 
-const onClickOutside = () => {
-	closeResults()
-	activeItemIndex.value = null
-}
+const dropdown = reactive({
+	activeItemIndex: null as number | null,
+	open: false,
+	loading: false,
+	results: items,
+})
 
-const onChange = async () => {
-	isOpen.value = true
+const onClickOutside = () => closeDropdown()
+
+const filter = async () => {
+	dropdown.open = true
 	if (filterFunction) {
-		if (isAsync) isLoading.value = true
+		if (isAsync) dropdown.loading = true
 		try {
 			const filteredResults = await filterFunction(search.value || '')
-			results.value = filteredResults
+			dropdown.results = filteredResults
 		} catch {
-			results.value = []
+			dropdown.results = []
 		} finally {
-			if (isAsync) isLoading.value = false
+			if (isAsync) dropdown.loading = false
 		}
 	} else {
 		filterResults()
 	}
 }
 
-const onFocus = () => {
-	isOpen.value = true
-	if (isAsync) {
-		results.value = []
-		activeItemIndex.value = null
-	} else {
-		results.value = items
-		activeItemIndex.value = items?.indexOf(search.value || '') || null
-	}
-}
-
 const setResult = (result: string) => {
 	search.value = result
-	closeResults(result)
+	closeDropdown(result)
 }
 
-const closeResults = (result?: string) => {
-	isOpen.value = false
+const openDropdown = () => {
+	dropdown.activeItemIndex = isAsync ? null : search.value ? items?.indexOf(search.value) || null : null
+	dropdown.open = true
+	// TODO: this should probably call the async function if it's async
+	dropdown.results = isAsync ? [] : items
+}
+
+const closeDropdown = (result?: string) => {
+	dropdown.activeItemIndex = null
+	dropdown.open = false
 	if (!items?.includes(result || search.value || '')) {
 		search.value = ''
 	}
@@ -90,28 +89,39 @@ const closeResults = (result?: string) => {
 
 const filterResults = () => {
 	if (!search.value) {
-		results.value = items
+		dropdown.results = items
 	} else {
-		results.value = items?.filter(item => item.toLowerCase().includes((search.value ?? '').toLowerCase()))
+		dropdown.results = items?.filter(item => item.toLowerCase().includes((search.value ?? '').toLowerCase()))
 	}
 }
 
-const onArrowDown = () => {
-	const resultsLength = results.value?.length || 0
-	activeItemIndex.value = ((activeItemIndex.value ?? 0) + 1) % resultsLength
-}
-
-const onArrowUp = () => {
-	const resultsLength = results.value?.length || 0
-	activeItemIndex.value = ((activeItemIndex.value ?? 0) - 1 + resultsLength) % resultsLength
-}
-
-const onEnter = () => {
-	if (results.value) {
-		search.value = results.value[activeItemIndex.value || 0]
-		closeResults(results.value[activeItemIndex.value || 0])
+const selectNextResult = () => {
+	const resultsLength = dropdown.results?.length || 0
+	if (dropdown.activeItemIndex != null) {
+		const currentIndex = isNaN(dropdown.activeItemIndex) ? 0 : dropdown.activeItemIndex
+		dropdown.activeItemIndex = (currentIndex + 1) % resultsLength
+	} else {
+		dropdown.activeItemIndex = 0
 	}
-	activeItemIndex.value = 0
+}
+
+const selectPrevResult = () => {
+	const resultsLength = dropdown.results?.length || 0
+	if (dropdown.activeItemIndex != null) {
+		const currentIndex = isNaN(dropdown.activeItemIndex) ? 0 : dropdown.activeItemIndex
+		dropdown.activeItemIndex = (currentIndex - 1 + resultsLength) % resultsLength
+	} else {
+		dropdown.activeItemIndex = resultsLength - 1
+	}
+}
+
+const setCurrentResult = () => {
+	if (dropdown.results) {
+		const currentIndex = dropdown.activeItemIndex || 0
+		const result = dropdown.results[currentIndex]
+		setResult(result)
+	}
+	dropdown.activeItemIndex = 0
 }
 </script>
 

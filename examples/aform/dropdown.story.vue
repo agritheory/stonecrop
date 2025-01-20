@@ -1,17 +1,22 @@
 <template>
 	<Story>
 		<div class="dropdown-form">
+			<!-- normal dropdown story -->
 			<ADropdown
 				data-theme="purple"
 				:items="dropdown_data.items"
 				v-model="dropdown_data.value"
 				:label="dropdown_data.label" />
+
+			<!-- dropdown with API request simulation -->
 			<ADropdown
 				:items="async_dropdown_data.items"
 				v-model="async_dropdown_data.value"
 				:label="async_dropdown_data.label"
 				:isAsync="true"
 				:filterFunction="asyncFilterItems" />
+
+			<!-- dropdown with custom filtering logic -->
 			<ADropdown
 				:items="custom_filter_dropdown_data.items"
 				v-model="custom_filter_dropdown_data.value"
@@ -22,10 +27,10 @@
 	</Story>
 </template>
 
-<script lang="ts" setup>
-import { reactive, ref } from 'vue'
+<script setup lang="ts">
+import { reactive } from 'vue'
 
-const dropdown_data = ref({
+const dropdown_data = reactive({
 	items: ['Apple', 'Orange', 'Pear', 'Kiwi', 'Grape'],
 	value: 'Orange',
 	label: 'Fruit',
@@ -45,23 +50,24 @@ const custom_filter_dropdown_data = reactive({
 	label: 'Food',
 })
 
-function delay(): Promise<void> {
-	return new Promise(resolve => setTimeout(resolve, 750))
-}
-
-async function asyncFilterItems(search: string): Promise<string[]> {
-	await delay()
+async function asyncFilterItems(search: string) {
+	// introduce a delay to simulate an async request
+	await delay(750)
 	const filtered = async_dropdown_data.allItems.filter(item => item.toLowerCase().includes(search.toLowerCase()))
 	async_dropdown_data.items = filtered
 	return filtered
 }
 
-async function filterItems(search: string): Promise<string[]> {
+function filterItems(search: string) {
 	const filtered = custom_filter_dropdown_data.allItems.filter(item =>
 		item.toLowerCase().startsWith(search.toLowerCase())
 	)
 	custom_filter_dropdown_data.items = filtered
 	return filtered
+}
+
+function delay(ms: number) {
+	return new Promise(resolve => setTimeout(resolve, ms))
 }
 </script>
 
@@ -77,6 +83,3 @@ async function filterItems(search: string): Promise<string[]> {
 	padding-right: 1ch;
 }
 </style>
-
-<!-- enter documentation here -->
-<docs lang="md"></docs>

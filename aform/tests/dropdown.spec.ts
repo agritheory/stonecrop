@@ -1,5 +1,5 @@
-import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { describe, it, expect, vi } from 'vitest'
 
 import ADropdown from '../src/components/form/ADropdown.vue'
 
@@ -56,6 +56,7 @@ describe('dropdown input component', () => {
 
 		// arrow down to select the second item
 		await input.trigger('keydown', { key: 'ArrowDown' })
+		await input.trigger('keydown', { key: 'ArrowDown' })
 		await input.trigger('keydown', { key: 'Enter' })
 
 		updateEvents = wrapper.emitted('update:modelValue')
@@ -99,7 +100,7 @@ describe('dropdown input component', () => {
 	})
 
 	it('emits filter change event when dropdown item is selected using mouse in async', async () => {
-		const mockFilterFunction = vi.fn(async search => {
+		const mockFilterFunction = vi.fn(search => {
 			if (search === 'a') {
 				return ['Apple', 'Orange', 'Pear']
 			}
