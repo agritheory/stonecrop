@@ -1,25 +1,26 @@
 <template>
-	<div class="autocomplete" :class="{ isOpen: isOpen }">
+	<div class="autocomplete" :class="{ isOpen: dropdown.open }" v-on-click-outside="onClickOutside">
 		<div class="input-wrapper">
 			<input
-				ref="mopInput"
-				type="text"
-				@input="onChange"
-				@focus="onChange"
 				v-model="search"
-				@keydown.down="onArrowDown"
-				@keydown.up="onArrowUp"
-				@keydown.enter="onEnter" />
+				type="text"
+				@input="filter"
+				@focus="openDropdown"
+				@keydown.down="selectNextResult"
+				@keydown.up="selectPrevResult"
+				@keydown.enter="setCurrentResult"
+				@keydown.esc="onClickOutside"
+				@keydown.tab="onClickOutside" />
 
-			<ul id="autocomplete-results" v-show="isOpen" class="autocomplete-results">
-				<li class="loading autocomplete-result" v-if="isLoading">Loading results...</li>
+			<ul id="autocomplete-results" v-show="dropdown.open" class="autocomplete-results">
+				<li class="loading autocomplete-result" v-if="dropdown.loading">Loading results...</li>
 				<li
 					v-else
-					v-for="(result, i) in results"
-					:key="i"
-					@click="setResult(result)"
+					v-for="(result, i) in dropdown.results"
+					:key="result"
+					@click.stop="setResult(result)"
 					class="autocomplete-result"
-					:class="{ 'is-active': i === arrowCounter }">
+					:class="{ 'is-active': i === dropdown.activeItemIndex }">
 					{{ result }}
 				</li>
 			</ul>
@@ -29,94 +30,99 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref /* useTemplateRef */ } from 'vue'
+import { vOnClickOutside } from '@vueuse/components'
+import { reactive } from 'vue'
 
-const { label, items, isAsync } = defineProps<{
+const { label, items, isAsync, filterFunction } = defineProps<{
 	label: string
 	items?: string[]
 	isAsync?: boolean
+	filterFunction?: (search: string) => string[] | Promise<string[]>
 }>()
-
-const emit = defineEmits(['filterChanged'])
-
-const results = ref(items)
 const search = defineModel<string>()
-const isLoading = ref(false)
-const arrowCounter = ref(0)
-const isOpen = ref(false)
-// const mopInput = useTemplateRef<HTMLInputElement>('mopInput')
 
-onMounted(() => {
-	document.addEventListener('click', handleClickOutside)
-	filterResults()
+const dropdown = reactive({
+	activeItemIndex: null as number | null,
+	open: false,
+	loading: false,
+	results: items,
 })
 
-onUnmounted(() => {
-	document.removeEventListener('click', handleClickOutside)
-})
+const onClickOutside = () => closeDropdown()
 
-const setResult = result => {
-	search.value = result
-	closeResults()
-}
-
-const filterResults = () => {
-	if (!search.value) {
-		results.value = items
-	} else {
-		results.value = items.filter(item => {
-			return item.toLowerCase().indexOf(search.value.toLowerCase()) > -1
-		})
-	}
-}
-
-const onChange = () => {
-	isOpen.value = true
-	if (isAsync) {
-		isLoading.value = true
-		emit('filterChanged', search.value)
+const filter = async () => {
+	dropdown.open = true
+	if (filterFunction) {
+		if (isAsync) dropdown.loading = true
+		try {
+			const filteredResults = await filterFunction(search.value || '')
+			dropdown.results = filteredResults
+		} catch {
+			dropdown.results = []
+		} finally {
+			if (isAsync) dropdown.loading = false
+		}
 	} else {
 		filterResults()
 	}
 }
 
-const handleClickOutside = () => {
-	closeResults()
-	arrowCounter.value = 0
+const setResult = (result: string) => {
+	search.value = result
+	closeDropdown(result)
 }
 
-const closeResults = () => {
-	isOpen.value = false
+const openDropdown = () => {
+	dropdown.activeItemIndex = isAsync ? null : search.value ? items?.indexOf(search.value) || null : null
+	dropdown.open = true
+	// TODO: this should probably call the async function if it's async
+	dropdown.results = isAsync ? [] : items
+}
 
-	// TODO: (test) when would this occur? how should this be tested?
-	if (!items.includes(search.value)) {
+const closeDropdown = (result?: string) => {
+	dropdown.activeItemIndex = null
+	dropdown.open = false
+	if (!items?.includes(result || search.value || '')) {
 		search.value = ''
 	}
 }
 
-const onArrowDown = () => {
-	if (arrowCounter.value < results.value.length) {
-		arrowCounter.value = arrowCounter.value + 1
+const filterResults = () => {
+	if (!search.value) {
+		dropdown.results = items
+	} else {
+		dropdown.results = items?.filter(item => item.toLowerCase().includes((search.value ?? '').toLowerCase()))
 	}
 }
 
-const onArrowUp = () => {
-	if (arrowCounter.value > 0) {
-		arrowCounter.value = arrowCounter.value - 1
+const selectNextResult = () => {
+	const resultsLength = dropdown.results?.length || 0
+	if (dropdown.activeItemIndex != null) {
+		const currentIndex = isNaN(dropdown.activeItemIndex) ? 0 : dropdown.activeItemIndex
+		dropdown.activeItemIndex = (currentIndex + 1) % resultsLength
+	} else {
+		dropdown.activeItemIndex = 0
 	}
 }
 
-const onEnter = () => {
-	search.value = results.value[arrowCounter.value]
-	closeResults()
-	arrowCounter.value = 0
+const selectPrevResult = () => {
+	const resultsLength = dropdown.results?.length || 0
+	if (dropdown.activeItemIndex != null) {
+		const currentIndex = isNaN(dropdown.activeItemIndex) ? 0 : dropdown.activeItemIndex
+		dropdown.activeItemIndex = (currentIndex - 1 + resultsLength) % resultsLength
+	} else {
+		dropdown.activeItemIndex = resultsLength - 1
+	}
 }
 
-// const openWithSearch = () => {
-// 	search.value = ''
-// 	onChange()
-// 	mopInput.value.focus()
-// }
+const setCurrentResult = () => {
+	if (dropdown.results) {
+		const currentIndex = dropdown.activeItemIndex || 0
+		const result = dropdown.results[currentIndex]
+		setResult(result)
+	}
+	dropdown.activeItemIndex = 0
+}
 </script>
 
 <style scoped>
@@ -126,7 +132,6 @@ const onEnter = () => {
 }
 
 .input-wrapper {
-	min-width: 40ch;
 	border: 1px solid transparent;
 	padding: 0rem;
 	margin: 0rem;
@@ -167,13 +172,14 @@ label {
 .autocomplete-results {
 	position: absolute;
 	width: calc(100% - 1ch + 1.5px);
-	z-index: 1;
+	z-index: 999;
 	padding: 0;
 	margin: 0;
-	color: #000000;
+	color: var(--sc-input-active-border-color);
 	border: 1px solid var(--sc-input-active-border-color);
 	border-radius: 0 0 0.25rem 0.25rem;
 	border-top: none;
+	background-color: #fff;
 }
 
 .autocomplete-result {
@@ -181,11 +187,12 @@ label {
 	text-align: left;
 	padding: 4px 6px;
 	cursor: pointer;
+	border-bottom: 0.5px solid lightgray;
 }
 
 .autocomplete-result.is-active,
 .autocomplete-result:hover {
 	background-color: var(--sc-row-color-zebra-light);
-	color: #000000;
+	color: var(--sc-input-active-border-color);
 }
 </style>

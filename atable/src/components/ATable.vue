@@ -33,12 +33,7 @@
 
 		<slot name="footer" :data="store" />
 		<slot name="modal" :data="store">
-			<ATableModal
-				v-show="store.modal.visible"
-				:colIndex="store.modal.colIndex"
-				:rowIndex="store.modal.rowIndex"
-				:store="store"
-				:container="tableRef">
+			<ATableModal v-show="store.modal.visible" :store="store">
 				<template #default>
 					<component
 						:key="`${store.modal.rowIndex}:${store.modal.colIndex}`"
@@ -126,8 +121,8 @@ const assignStickyCellWidths = () => {
 	const table = tableRef.value
 
 	// set header cell width to match sticky cells' width
-	const headerRow = table.rows[0]
-	const firstDataRow = table.rows[1]
+	const headerRow = table?.rows[0]
+	const firstDataRow = table?.rows[1]
 	const headerCells = headerRow ? Array.from(headerRow.cells) : []
 	for (const [index, headerCell] of headerCells.entries()) {
 		const rowCell = firstDataRow?.cells[index]
@@ -137,7 +132,7 @@ const assignStickyCellWidths = () => {
 	}
 
 	// pin cells in row that are sticky
-	for (const row of table.rows) {
+	for (const row of table?.rows || []) {
 		let totalWidth = 0
 		const columns: HTMLTableCellElement[] = []
 
