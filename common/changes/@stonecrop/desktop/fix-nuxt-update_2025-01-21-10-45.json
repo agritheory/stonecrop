@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/desktop",
+      "comment": "lock typescript dependency",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/desktop"
+}

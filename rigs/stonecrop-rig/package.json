@@ -13,7 +13,7 @@
 		"@rushstack/heft": "^0.68.6",
 		"@rushstack/heft-api-extractor-plugin": "^0.3.60",
 		"@rushstack/heft-typescript-plugin": "^0.6.3",
-		"typescript": "^5.6.3"
+		"typescript": "~5.6.3"
 	},
 	"engines": {
 		"node": ">=20.11.0"

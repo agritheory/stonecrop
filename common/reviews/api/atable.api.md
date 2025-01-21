@@ -60,9 +60,9 @@ width?: string | undefined;
 pinned?: boolean | undefined;
 cellComponent?: string | undefined;
 cellComponentProps?: Record<string, any> | undefined;
-modalComponent?: string | ((context: CellContext) => string) | undefined;
+modalComponent?: (string | ((context: CellContext) => string)) | undefined;
 modalComponentExtraProps?: Record<string, any> | undefined;
-format?: string | ((value: any, context: CellContext) => string) | undefined;
+format?: (string | ((value: any, context: CellContext) => string)) | undefined;
 mask?: ((value: any) => any) | undefined;
 }[], TableColumn[] | {
 name: string;
@@ -74,16 +74,16 @@ width?: string | undefined;
 pinned?: boolean | undefined;
 cellComponent?: string | undefined;
 cellComponentProps?: Record<string, any> | undefined;
-modalComponent?: string | ((context: CellContext) => string) | undefined;
+modalComponent?: (string | ((context: CellContext) => string)) | undefined;
 modalComponentExtraProps?: Record<string, any> | undefined;
-format?: string | ((value: any, context: CellContext) => string) | undefined;
+format?: (string | ((value: any, context: CellContext) => string)) | undefined;
 mask?: ((value: any) => any) | undefined;
 }[]>;
 config: Ref<    {
-view?: "uncounted" | "list" | "list-expansion" | "tree" | undefined;
+view?: ("uncounted" | "list" | "list-expansion" | "tree") | undefined;
 fullWidth?: boolean | undefined;
 }, TableConfig | {
-view?: "uncounted" | "list" | "list-expansion" | "tree" | undefined;
+view?: ("uncounted" | "list" | "list-expansion" | "tree") | undefined;
 fullWidth?: boolean | undefined;
 }>;
 display: Ref<    {
@@ -166,9 +166,9 @@ width?: string | undefined;
 pinned?: boolean | undefined;
 cellComponent?: string | undefined;
 cellComponentProps?: Record<string, any> | undefined;
-modalComponent?: string | ((context: CellContext) => string) | undefined;
+modalComponent?: (string | ((context: CellContext) => string)) | undefined;
 modalComponentExtraProps?: Record<string, any> | undefined;
-format?: string | ((value: any, context: CellContext) => string) | undefined;
+format?: (string | ((value: any, context: CellContext) => string)) | undefined;
 mask?: ((value: any) => any) | undefined;
 }[], TableColumn[] | {
 name: string;
@@ -180,16 +180,16 @@ width?: string | undefined;
 pinned?: boolean | undefined;
 cellComponent?: string | undefined;
 cellComponentProps?: Record<string, any> | undefined;
-modalComponent?: string | ((context: CellContext) => string) | undefined;
+modalComponent?: (string | ((context: CellContext) => string)) | undefined;
 modalComponentExtraProps?: Record<string, any> | undefined;
-format?: string | ((value: any, context: CellContext) => string) | undefined;
+format?: (string | ((value: any, context: CellContext) => string)) | undefined;
 mask?: ((value: any) => any) | undefined;
 }[]>;
 config: Ref<    {
-view?: "uncounted" | "list" | "list-expansion" | "tree" | undefined;
+view?: ("uncounted" | "list" | "list-expansion" | "tree") | undefined;
 fullWidth?: boolean | undefined;
 }, TableConfig | {
-view?: "uncounted" | "list" | "list-expansion" | "tree" | undefined;
+view?: ("uncounted" | "list" | "list-expansion" | "tree") | undefined;
 fullWidth?: boolean | undefined;
 }>;
 display: Ref<    {
@@ -272,9 +272,9 @@ width?: string | undefined;
 pinned?: boolean | undefined;
 cellComponent?: string | undefined;
 cellComponentProps?: Record<string, any> | undefined;
-modalComponent?: string | ((context: CellContext) => string) | undefined;
+modalComponent?: (string | ((context: CellContext) => string)) | undefined;
 modalComponentExtraProps?: Record<string, any> | undefined;
-format?: string | ((value: any, context: CellContext) => string) | undefined;
+format?: (string | ((value: any, context: CellContext) => string)) | undefined;
 mask?: ((value: any) => any) | undefined;
 }[], TableColumn[] | {
 name: string;
@@ -286,16 +286,16 @@ width?: string | undefined;
 pinned?: boolean | undefined;
 cellComponent?: string | undefined;
 cellComponentProps?: Record<string, any> | undefined;
-modalComponent?: string | ((context: CellContext) => string) | undefined;
+modalComponent?: (string | ((context: CellContext) => string)) | undefined;
 modalComponentExtraProps?: Record<string, any> | undefined;
-format?: string | ((value: any, context: CellContext) => string) | undefined;
+format?: (string | ((value: any, context: CellContext) => string)) | undefined;
 mask?: ((value: any) => any) | undefined;
 }[]>;
 config: Ref<    {
-view?: "uncounted" | "list" | "list-expansion" | "tree" | undefined;
+view?: ("uncounted" | "list" | "list-expansion" | "tree") | undefined;
 fullWidth?: boolean | undefined;
 }, TableConfig | {
-view?: "uncounted" | "list" | "list-expansion" | "tree" | undefined;
+view?: ("uncounted" | "list" | "list-expansion" | "tree") | undefined;
 fullWidth?: boolean | undefined;
 }>;
 display: Ref<    {
