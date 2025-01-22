@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/node-editor
 
-This log was last generated on Mon, 20 Jan 2025 07:32:03 GMT and should not be manually modified.
+This log was last generated on Tue, 21 Jan 2025 10:56:53 GMT and should not be manually modified.
+
+## 0.4.0
+Tue, 21 Jan 2025 10:56:53 GMT
+
+### Patches
+
+- lock typescript dependency
 
 ## 0.3.11
 Mon, 20 Jan 2025 07:32:03 GMT

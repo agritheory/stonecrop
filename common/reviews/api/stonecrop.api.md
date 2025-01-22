@@ -82,13 +82,13 @@ export type MutableDoctype = {
 
 // @public
 export class Registry {
-    constructor(router: Router, getMeta?: (doctype: string) => DoctypeMeta | Promise<DoctypeMeta>);
+    constructor(router?: Router, getMeta?: (doctype: string) => DoctypeMeta | Promise<DoctypeMeta>);
     addDoctype(doctype: DoctypeMeta): void;
     getMeta?: (doctype: string) => DoctypeMeta | Promise<DoctypeMeta>;
     name: string;
     registry: Record<string, DoctypeMeta>;
     static _root: Registry;
-    router: Router;
+    router?: Router;
 }
 
 // @public

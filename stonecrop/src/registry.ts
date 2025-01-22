@@ -20,16 +20,16 @@ export default class Registry {
 	name: string
 
 	/**
-	 * The Vue router instance
-	 * @see {@link https://router.vuejs.org/}
-	 */
-	router: Router
-
-	/**
 	 * The registry property contains a collection of doctypes
 	 * @see {@link DoctypeMeta}
 	 */
 	registry: Record<string, DoctypeMeta>
+
+	/**
+	 * The Vue router instance
+	 * @see {@link https://router.vuejs.org/}
+	 */
+	router?: Router
 
 	/**
 	 * The getMeta function fetches doctype metadata from an API
@@ -37,14 +37,14 @@ export default class Registry {
 	 */
 	getMeta?: (doctype: string) => DoctypeMeta | Promise<DoctypeMeta>
 
-	constructor(router: Router, getMeta?: (doctype: string) => DoctypeMeta | Promise<DoctypeMeta>) {
+	constructor(router?: Router, getMeta?: (doctype: string) => DoctypeMeta | Promise<DoctypeMeta>) {
 		if (Registry._root) {
 			return Registry._root
 		}
 		Registry._root = this
 		this.name = 'Registry'
-		this.router = router
 		this.registry = {}
+		this.router = router
 		this.getMeta = getMeta
 	}
 
@@ -58,7 +58,8 @@ export default class Registry {
 		if (!(doctype.doctype in Object.keys(this.registry))) {
 			this.registry[doctype.slug] = doctype
 		}
-		if (!this.router.hasRoute(doctype.doctype) && doctype.component) {
+
+		if (doctype.component && this.router && !this.router.hasRoute(doctype.doctype)) {
 			this.router.addRoute({
 				path: `/${doctype.slug}`,
 				name: doctype.slug,

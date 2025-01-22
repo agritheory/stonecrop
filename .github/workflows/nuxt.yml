@@ -1,0 +1,40 @@
+name: Tests
+
+on:
+  push:
+    paths: [nuxt/**]
+    branches: [development]
+  pull_request:
+
+jobs:
+  test:
+    name: Nuxt
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache-dependency-path: '**/config/rush/pnpm-lock.yaml'
+          registry-url: https://registry.npmjs.org/
+
+      - name: Rush Install
+        run: node common/scripts/install-run-rush.js install
+
+      - name: Prepare Playground
+        working-directory: nuxt/
+        run: node ../common/scripts/install-run-rushx.js dev:prepare
+
+      - name: Rush Build
+        run: node common/scripts/install-run-rush.js rebuild --verbose
+
+      - name: Run Tests
+        working-directory: nuxt/
+        run: node ../common/scripts/install-run-rushx.js test

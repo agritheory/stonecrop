@@ -9,7 +9,7 @@ Constructs a new instance of the `Registry` class
 **Signature:**
 
 ```typescript
-constructor(router: Router, getMeta?: (doctype: string) => DoctypeMeta | Promise<DoctypeMeta>);
+constructor(router?: Router, getMeta?: (doctype: string) => DoctypeMeta | Promise<DoctypeMeta>);
 ```
 
 ## Parameters
@@ -41,6 +41,8 @@ Router
 
 
 </td><td>
+
+_(Optional)_
 
 
 </td></tr>

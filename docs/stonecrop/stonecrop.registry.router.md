@@ -9,5 +9,5 @@ The Vue router instance
 **Signature:**
 
 ```typescript
-router: Router;
+router?: Router;
 ```

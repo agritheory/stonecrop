@@ -2,6 +2,18 @@
   "name": "@stonecrop/code-editor",
   "entries": [
     {
+      "version": "0.4.0",
+      "tag": "@stonecrop/code-editor_v0.4.0",
+      "date": "Tue, 21 Jan 2025 10:56:53 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "lock typescript dependency"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.3.11",
       "tag": "@stonecrop/code-editor_v0.3.11",
       "date": "Mon, 20 Jan 2025 07:32:03 GMT",

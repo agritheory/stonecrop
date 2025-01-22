@@ -23,6 +23,26 @@
       "allowedCategories": [ "prototype" ]
     },
     {
+      "name": "@nuxt/devtools",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "@nuxt/kit",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "@nuxt/module-builder",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "@nuxt/schema",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "@nuxt/test-utils",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
       "name": "@rushstack/heft",
       "allowedCategories": [ "prototype", "utilities" ]
     },
@@ -143,6 +163,10 @@
       "allowedCategories": [ "utilities" ]
     },
     {
+      "name": "h3",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
       "name": "histoire",
       "allowedCategories": [ "prototype", "utilities" ]
     },
@@ -171,7 +195,19 @@
       "allowedCategories": [ "prototype" ]
     },
     {
+      "name": "nitropack",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
       "name": "node-sass",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "nuxi",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "nuxt",
       "allowedCategories": [ "prototype" ]
     },
     {

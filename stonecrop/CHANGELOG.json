@@ -2,6 +2,21 @@
   "name": "@stonecrop/stonecrop",
   "entries": [
     {
+      "version": "0.4.0",
+      "tag": "@stonecrop/stonecrop_v0.4.0",
+      "date": "Tue, 21 Jan 2025 10:56:53 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "remove router requirement for Stonecrop plugin"
+          },
+          {
+            "comment": "lock typescript dependency"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.3.11",
       "tag": "@stonecrop/stonecrop_v0.3.11",
       "date": "Mon, 20 Jan 2025 07:32:03 GMT",

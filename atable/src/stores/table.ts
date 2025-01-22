@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { type CSSProperties, computed, ref } from 'vue'
 
 import type { CellContext, TableColumn, TableConfig, TableDisplay, TableModal, TableRow } from '../types'
+import { generateHash } from '../utils'
 
 /**
  * Create a table store
@@ -18,7 +19,7 @@ export const createTableStore = (initData: {
 	display?: TableDisplay[]
 	modal?: TableModal
 }) => {
-	const id = initData.id || crypto.randomUUID()
+	const id = initData.id || generateHash()
 	const createStore = defineStore(`table-${id}`, () => {
 		// util functions
 		const createTableObject = () => {

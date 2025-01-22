@@ -2,6 +2,21 @@
   "name": "@stonecrop/atable",
   "entries": [
     {
+      "version": "0.4.0",
+      "tag": "@stonecrop/atable_v0.4.0",
+      "date": "Tue, 21 Jan 2025 10:56:53 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "replace crypto uuid generation with randomly generated hash string"
+          },
+          {
+            "comment": "lock typescript dependency"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.3.11",
       "tag": "@stonecrop/atable_v0.3.11",
       "date": "Mon, 20 Jan 2025 07:32:03 GMT",

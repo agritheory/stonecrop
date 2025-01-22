@@ -37,7 +37,7 @@ export function useStonecrop(registry?: Registry): StonecropReturn {
 	const isReady = ref(false)
 
 	onBeforeMount(async () => {
-		if (!registry) return
+		if (!registry || !registry.router) return
 
 		const route = registry.router.currentRoute.value
 		const doctypeSlug = route.params.records?.toString().toLowerCase()
