@@ -1,0 +1,37 @@
+{
+  "name": "@stonecrop/nuxt",
+  "entries": [
+    {
+      "version": "0.4.1",
+      "tag": "@stonecrop/nuxt_v0.4.1",
+      "date": "Thu, 23 Jan 2025 10:02:28 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "setup stonecrop when component has been mounted"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.4.0",
+      "tag": "@stonecrop/nuxt_v0.4.0",
+      "date": "Tue, 21 Jan 2025 10:56:53 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "add Nuxt module"
+          }
+        ],
+        "patch": [
+          {
+            "comment": "update typescript dependency"
+          },
+          {
+            "comment": "lock typescript dependency"
+          }
+        ]
+      }
+    }
+  ]
+}

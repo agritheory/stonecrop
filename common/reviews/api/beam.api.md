@@ -27,6 +27,7 @@ import ListView from './components/ListView.vue';
 import Navbar from './components/Navbar.vue';
 import { Ref } from 'vue';
 import ScanInput from './components/ScanInput.vue';
+import SegmentedDisplay from './components/SegmentedDisplay.vue';
 import SplitColumn from './components/SplitColumn.vue';
 import ToggleArrow from './components/ToggleArrow.vue';
 
@@ -96,12 +97,14 @@ export { Navbar }
 
 export { ScanInput }
 
+export { SegmentedDisplay }
+
 export { SplitColumn }
 
 export { ToggleArrow }
 
 // @beta
-export const useMqttStream: (options?: IMqttStream) => {
+export const useMqttStream: (options: IMqttStream) => {
     messages: Ref<Record<string, string[]>, Record<string, string[]>>;
 };
 

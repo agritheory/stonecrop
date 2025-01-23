@@ -1,0 +1,75 @@
+{
+	"schema": [
+		{
+			"fieldname": "users",
+			"component": "ATable",
+			"columns": [
+				{
+					"label": "User ID",
+					"name": "id",
+					"fieldname": "id",
+					"fieldtype": "Data",
+					"align": "left",
+					"edit": false,
+					"width": "10ch"
+				},
+				{
+					"label": "Username",
+					"name": "username",
+					"fieldname": "username",
+					"fieldtype": "Data",
+					"align": "left",
+					"edit": true,
+					"width": "20ch"
+				},
+				{
+					"label": "Disabled",
+					"name": "disabled",
+					"fieldname": "disabled",
+					"fieldtype": "Check",
+					"align": "left",
+					"edit": false,
+					"width": "10ch"
+				},
+				{
+					"label": "Created On",
+					"name": "creation",
+					"fieldname": "creation",
+					"fieldtype": "Date",
+					"align": "left",
+					"edit": true,
+					"width": "25ch"
+				},
+				{
+					"label": "Modified On",
+					"name": "modified",
+					"fieldname": "modified",
+					"fieldtype": "Date",
+					"align": "left",
+					"edit": true,
+					"width": "25ch"
+				},
+				{
+					"label": "Owner",
+					"name": "owner",
+					"fieldname": "owner",
+					"fieldtype": "Data",
+					"align": "center",
+					"edit": true,
+					"width": "20ch"
+				},
+				{
+					"label": "Modified By",
+					"name": "modified_by",
+					"fieldname": "modified_by",
+					"fieldtype": "Data",
+					"align": "center",
+					"edit": true,
+					"width": "20ch"
+				}
+			],
+			"config": { "view": "list" },
+			"rows": []
+		}
+	]
+}

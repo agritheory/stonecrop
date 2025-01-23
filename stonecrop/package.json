@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/stonecrop",
-	"version": "0.3.7",
+	"version": "0.4.1",
 	"description": "schema helper",
 	"license": "MIT",
 	"type": "module",
@@ -42,7 +42,7 @@
 		"pinia": "^2.3.0",
 		"pinia-shared-state": "^0.3.0",
 		"pinia-undo": "^0.1.9",
-		"pinia-xstate": "^1.0.9",
+		"pinia-xstate": "^2.2.1",
 		"vue": "^3.5.11",
 		"vue-router": "^4.4.0",
 		"xstate": "^4.38.3"
@@ -60,7 +60,7 @@
 		"eslint-config-prettier": "^8.8.0",
 		"eslint-plugin-vue": "^9.11.1",
 		"stonecrop-rig": "workspace:*",
-		"typescript": "^5.6.3",
+		"typescript": "~5.6.3",
 		"vite": "^5.4.5"
 	},
 	"publishConfig": {

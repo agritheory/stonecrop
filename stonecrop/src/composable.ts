@@ -1,4 +1,4 @@
-import { inject, onBeforeMount, Ref, ref } from 'vue'
+import { inject, onMounted, Ref, ref } from 'vue'
 
 import Registry from './registry'
 import { Stonecrop } from './stonecrop'
@@ -9,8 +9,7 @@ import { useDataStore } from './stores/data'
  * @public
  */
 export type StonecropReturn = {
-	stonecrop: Ref<Stonecrop>
-	isReady: Ref<boolean>
+	stonecrop: Ref<Stonecrop | undefined>
 }
 
 /**
@@ -21,21 +20,25 @@ export type StonecropReturn = {
  * @public
  */
 export function useStonecrop(registry?: Registry): StonecropReturn {
-	if (!registry) {
-		registry = inject<Registry>('$registry')
-	}
+	const stonecrop = ref<Stonecrop>()
 
-	let store: ReturnType<typeof useDataStore>
-	try {
-		store = useDataStore()
-	} catch (e) {
-		throw new Error('Please enable the Stonecrop plugin before using the Stonecrop composable')
-	}
+	onMounted(async () => {
+		if (!registry) {
+			registry = inject<Registry>('$registry')
+		}
 
-	const stonecrop = ref(new Stonecrop(registry, store))
-	const isReady = ref(false)
+		let store: ReturnType<typeof useDataStore>
+		try {
+			store = useDataStore()
+		} catch (e) {
+			throw new Error('Please enable the Stonecrop plugin before using the Stonecrop composable')
+		}
 
-	onBeforeMount(async () => {
+		// @ts-expect-error TODO: handle empty registry passed to Stonecrop
+		stonecrop.value = new Stonecrop(registry, store)
+
+		if (!registry || !registry.router) return
+
 		const route = registry.router.currentRoute.value
 		const doctypeSlug = route.params.records?.toString().toLowerCase()
 		const recordId = route.params.record?.toString().toLowerCase()
@@ -46,22 +49,22 @@ export function useStonecrop(registry?: Registry): StonecropReturn {
 		}
 
 		// setup doctype via registry
-		const doctype = await registry.getMeta(doctypeSlug)
-		registry.addDoctype(doctype)
-		stonecrop.value.setup(doctype)
+		const doctype = await registry.getMeta?.(doctypeSlug)
+		if (doctype) {
+			registry.addDoctype(doctype)
+			stonecrop.value.setup(doctype)
 
-		if (doctypeSlug) {
-			if (recordId) {
-				await stonecrop.value.getRecord(doctype, recordId)
-			} else {
-				await stonecrop.value.getRecords(doctype)
+			if (doctypeSlug) {
+				if (recordId) {
+					await stonecrop.value.getRecord(doctype, recordId)
+				} else {
+					await stonecrop.value.getRecords(doctype)
+				}
 			}
-		}
 
-		stonecrop.value.runAction(doctype, 'LOAD', recordId ? [recordId] : undefined)
-		isReady.value = true
+			stonecrop.value.runAction(doctype, 'LOAD', recordId ? [recordId] : undefined)
+		}
 	})
 
-	// @ts-expect-error TODO: fix the type mismatch
-	return { stonecrop, isReady }
+	return { stonecrop }
 }

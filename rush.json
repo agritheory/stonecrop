@@ -65,6 +65,12 @@
 			"versionPolicyName": "stonecrop"
 		},
 		{
+			"packageName": "@stonecrop/nuxt",
+			"projectFolder": "nuxt",
+			"reviewCategory": "prototype",
+			"versionPolicyName": "stonecrop"
+		},
+		{
 			"packageName": "@stonecrop/stonecrop",
 			"projectFolder": "stonecrop",
 			"reviewCategory": "prototype",

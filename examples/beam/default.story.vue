@@ -31,10 +31,12 @@
 				<div class="beam_metadata_block">
 					<SplitColumn>
 						<template #left>
-							<BeamHeading> WO#2024-01-00001 <span class="beam--normal">Ambrosia Pie</span> </BeamHeading>
+							<BeamHeading>
+								{{ workOrder.orderNumber }} <span class="beam--normal">{{ workOrder.product }}</span>
+							</BeamHeading>
 						</template>
 						<template #right>
-							<ItemCount denominator="20" model-value="5" />
+							<ItemCount :denominator="workOrder.total" v-model="workOrder.quantity" />
 						</template>
 					</SplitColumn>
 					<BeamProgress :complete="workOrder.complete" progress-message="In Transit" />

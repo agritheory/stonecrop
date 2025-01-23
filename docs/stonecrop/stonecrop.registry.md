@@ -149,7 +149,7 @@ The registry property contains a collection of doctypes
 </td></tr>
 <tr><td>
 
-[router](./stonecrop.registry.router.md)
+[router?](./stonecrop.registry.router.md)
 
 
 </td><td>
@@ -162,7 +162,7 @@ Router
 
 </td><td>
 
-The Vue router instance
+_(Optional)_ The Vue router instance
 
 
 </td></tr>

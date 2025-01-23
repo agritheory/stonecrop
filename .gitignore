@@ -127,3 +127,11 @@ tsdoc-metadata.json
 
 # XState generated files
 **/*.typegen.ts
+
+# Nuxt
+.nuxt
+.output
+.data
+.vercel_build_output
+.build-*
+.netlify

@@ -8,7 +8,7 @@
 			@paste="validate">
 			{{ count }}
 		</span>
-		<span>/{{ denominator }}</span>
+		<span v-if="denominator">/{{ denominator }}</span>
 		<span v-if="uom">&nbsp; {{ uom }}</span>
 	</div>
 </template>

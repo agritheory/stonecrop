@@ -12,7 +12,7 @@ Use MQTT stream
 **Signature:**
 
 ```typescript
-useMqttStream: (options?: IMqttStream) => {
+useMqttStream: (options: IMqttStream) => {
     messages: import("vue").Ref<Record<string, string[]>, Record<string, string[]>>;
 }
 ```
@@ -47,7 +47,7 @@ options
 
 </td><td>
 
-_(Optional)_ MQTT stream options
+MQTT stream options
 
 
 </td></tr>

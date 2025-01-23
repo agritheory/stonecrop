@@ -1,6 +1,43 @@
 # Change Log - @stonecrop/atable
 
-This log was last generated on Fri, 03 Jan 2025 06:27:07 GMT and should not be manually modified.
+This log was last generated on Thu, 23 Jan 2025 10:02:28 GMT and should not be manually modified.
+
+## 0.4.1
+Thu, 23 Jan 2025 10:02:28 GMT
+
+_Version update only_
+
+## 0.4.0
+Tue, 21 Jan 2025 10:56:53 GMT
+
+### Patches
+
+- replace crypto uuid generation with randomly generated hash string
+- lock typescript dependency
+
+## 0.3.11
+Mon, 20 Jan 2025 07:32:03 GMT
+
+_Version update only_
+
+## 0.3.10
+Wed, 15 Jan 2025 14:30:10 GMT
+
+### Patches
+
+- added fix for modal positioning
+
+## 0.3.9
+Mon, 13 Jan 2025 11:31:50 GMT
+
+_Version update only_
+
+## 0.3.8
+Thu, 09 Jan 2025 11:21:58 GMT
+
+### Patches
+
+- add strict null checks to improve logic
 
 ## 0.3.7
 Fri, 03 Jan 2025 06:27:07 GMT

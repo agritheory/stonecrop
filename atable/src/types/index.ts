@@ -1,3 +1,5 @@
+import { useElementBounding } from '@vueuse/core'
+
 import { createTableStore } from '../stores/table'
 
 /**
@@ -93,22 +95,22 @@ export type TableRow = {
  * @public
  */
 export type TableModal = {
+	bottom?: ReturnType<typeof useElementBounding>['bottom']
 	colIndex?: number
 	event?: string
-	height?: number
-	left?: number
+	height?: ReturnType<typeof useElementBounding>['height']
+	left?: ReturnType<typeof useElementBounding>['left']
 	parent?: HTMLElement
 	rowIndex?: number
-	top?: number
 	visible?: boolean
-	width?: number
+	width?: ReturnType<typeof useElementBounding>['width']
 
 	component?: string
 	componentProps?: Record<string, any>
 }
 
 /**
- * Table modal props definition.
+ * Table modal component props definition.
  * @public
  */
 export type TableModalProps = {
