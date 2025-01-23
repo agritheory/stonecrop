@@ -16,15 +16,31 @@
 			<ATableLoading>Loading</ATableLoading>
 			<br />
 			<ATableLoadingBar>Loading</ATableLoadingBar>
+			<br />
+			<ATableLoading v-show="loading">Loading</ATableLoading>
+			<ATable
+				v-show="!loading"
+				v-model="full_width_table.rows"
+				:columns="full_width_table.columns"
+				:config="full_width_table.config" />
 		</Variant>
 	</Story>
 </template>
 
 <script lang="ts" setup>
 import type { TableColumn } from '@stonecrop/atable'
-import { reactive } from 'vue'
+import { ref, onMounted, reactive } from 'vue'
 
 import rows from './sample_data/http_logs.json'
+
+const loading = ref()
+
+onMounted(() => {
+	loading.value = true
+	setTimeout(() => {
+		loading.value = false
+	}, 2500)
+})
 
 const empty_rows = [
 	{
