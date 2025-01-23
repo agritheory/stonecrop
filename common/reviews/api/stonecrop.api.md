@@ -105,8 +105,7 @@ export const Stonecrop: Plugin_2;
 
 // @public
 export type StonecropReturn = {
-    stonecrop: Ref<Stonecrop_2>;
-    isReady: Ref<boolean>;
+    stonecrop: Ref<Stonecrop_2 | undefined>;
 };
 
 // @public

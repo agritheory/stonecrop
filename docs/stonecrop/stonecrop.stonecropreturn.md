@@ -10,7 +10,6 @@ Stonecrop composable return type
 
 ```typescript
 export type StonecropReturn = {
-    stonecrop: Ref<Stonecrop>;
-    isReady: Ref<boolean>;
+    stonecrop: Ref<Stonecrop | undefined>;
 };
 ```
