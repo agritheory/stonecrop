@@ -35,4 +35,4 @@ function install(app: App /* options */) {
 	app.component('ATableModal', ATableModal)
 }
 
-export { install, ACell, AExpansionRow, ARow, ATable, ATableHeader, ATableLoading, ATableModal }
+export { install, ACell, AExpansionRow, ARow, ATable, ATableHeader, ATableLoading, ATableLoadingBar, ATableModal }
