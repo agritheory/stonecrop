@@ -5,8 +5,9 @@
 
 <script setup lang="ts">
 import type { SchemaTypes } from '@stonecrop/aform'
-import { useRoute } from 'nuxt/app'
 import { onMounted, ref } from 'vue'
+
+import { useRoute } from '#imports'
 
 const route = useRoute()
 const schema = ref<SchemaTypes[]>([])

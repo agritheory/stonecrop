@@ -2,7 +2,8 @@ import { install as AForm } from '@stonecrop/aform'
 import { install as ATable } from '@stonecrop/atable'
 import { Stonecrop } from '@stonecrop/stonecrop'
 import { createPinia } from 'pinia'
-import { defineNuxtPlugin, useRouter } from 'nuxt/app'
+
+import { defineNuxtPlugin, useRouter } from '#imports'
 
 export default defineNuxtPlugin(nuxt => {
 	const pinia = createPinia()
