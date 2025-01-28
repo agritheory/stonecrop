@@ -175,7 +175,7 @@ defineExpose({ store })
 .sticky-index {
 	position: sticky;
 	left: 0px;
-	z-index: 1;
+	z-index: 10;
 	order: 0;
 }
 
@@ -185,7 +185,7 @@ td.sticky-column,
 th.sticky-index,
 td.sticky-index {
 	position: sticky;
-	z-index: 1;
+	z-index: 10;
 	order: 0;
 	background: white;
 }
@@ -209,6 +209,7 @@ td.sticky-index {
 	box-sizing: border-box;
 	table-layout: auto;
 	width: auto;
+	overflow: clip;
 	/* border-left:4px solid var(--sc-form-border); */
 }
 .atable th {

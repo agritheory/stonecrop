@@ -103,6 +103,7 @@ const showModal = () => {
 			state.modal.bottom = bottom
 			state.modal.width = width
 			state.modal.height = height
+			state.modal.cell = cellRef.value
 
 			if (typeof column.modalComponent === 'function') {
 				state.modal.component = column.modalComponent({ table: state.table, row, column })

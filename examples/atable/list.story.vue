@@ -31,7 +31,14 @@
 		</Variant>
 
 		<Variant title="pinned columns">
-			<ATable v-model="pinned_logs.rows" :columns="pinned_logs.columns" :config="{ view: 'list' }" />
+			<div style="position: relative; top: 100px; left: 100px">
+				<ATable v-model="pinned_logs.rows" :columns="pinned_logs.columns" :config="{ view: 'list' }" />
+			</div>
+		</Variant>
+		<Variant title="pinned columns with extra columns">
+			<div style="position: relative; top: 100px; left: 100px">
+				<ATable v-model="pinned_extra_logs.rows" :columns="pinned_extra_logs.columns" :config="{ view: 'list' }" />
+			</div>
 		</Variant>
 
 		<Variant title="expandable">
@@ -226,6 +233,79 @@ const pinned_logs = ref({
 			pinned: false,
 			modalComponent: 'DateInput',
 			format: (value: string | number) => new Date(value).toLocaleDateString('en-US'),
+		},
+	],
+})
+const pinned_extra_logs = ref({
+	rows: http_data,
+	columns: [
+		{
+			label: 'Home Page',
+			name: 'home_page',
+			type: 'Data',
+			align: 'left',
+			edit: false,
+			width: '30ch',
+			pinned: true,
+			format: (value: { title?: string; value?: any }) => `${value.title}`,
+		},
+		{
+			label: 'Report Date',
+			name: 'report_date',
+			type: 'component',
+			align: 'center',
+			edit: true,
+			width: '25ch',
+			pinned: false,
+			modalComponent: 'DateInput',
+			format: (value: string | number) => new Date(value).toLocaleDateString('en-US'),
+		},
+		{
+			label: 'HTTP Method',
+			name: 'http_method',
+			type: 'Data',
+			align: 'left',
+			edit: true,
+			width: '20ch',
+			pinned: false,
+		},
+		{
+			label: 'HTTP Method',
+			name: 'http_method',
+			type: 'Data',
+			align: 'left',
+			edit: true,
+			width: '20ch',
+			pinned: false,
+		},
+		{
+			label: 'HTTP Method',
+			name: 'http_method',
+			type: 'Data',
+			align: 'left',
+			edit: true,
+			width: '20ch',
+			pinned: false,
+		},
+		{
+			label: 'Report Date',
+			name: 'report_date',
+			type: 'component',
+			align: 'center',
+			edit: true,
+			width: '25ch',
+			pinned: false,
+			modalComponent: 'DateInput',
+			format: (value: string | number) => new Date(value).toLocaleDateString('en-US'),
+		},
+		{
+			label: 'HTTP Method',
+			name: 'http_method',
+			type: 'Data',
+			align: 'left',
+			edit: true,
+			width: '20ch',
+			pinned: false,
 		},
 	],
 })

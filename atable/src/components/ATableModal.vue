@@ -14,36 +14,46 @@ const { store } = defineProps<{ store: ReturnType<typeof createTableStore> }>()
 
 const amodalRef = useTemplateRef('amodal')
 const { width, height } = useElementBounding(amodalRef)
-const { y: scrollY } = useWindowScroll()
 
 const amodalStyles = computed(() => {
 	if (!(store.modal.height && store.modal.width && store.modal.left && store.modal.bottom)) return
 
-	const body = document.body
-	const html = document.documentElement
+	const table = getTable(store.modal.cell)
+	const maxHeight = table.offsetHeight
+	const maxWidth = table.offsetWidth
 
-	const maxHeight = Math.max(
-		body.scrollHeight,
-		body.offsetHeight,
-		html.clientHeight,
-		html.scrollHeight,
-		html.offsetHeight
-	)
-	const maxWidth = Math.max(body.scrollWidth, body.offsetWidth, html.clientWidth, html.scrollWidth, html.offsetWidth)
+	/* Y Positioning */
+	const headerHeight = table.querySelector('thead').offsetHeight //height of the header matches row height
+	const offsetY = store.modal.rowIndex //offset for each table row adding one pixel to its position (probably something to do with border?)
+	const cellY = (store.modal.rowIndex + 1) * store.modal.height // the y position of the cell clicked
+	const modalY = cellY + headerHeight + offsetY
+	const modalPositionY = modalY + height.value < maxHeight ? modalY : modalY - store.modal.height - height.value
 
-	const modalY =
-		store.modal.bottom + height.value + scrollY.value <= maxHeight
-			? store.modal.bottom
-			: store.modal.bottom - height.value - store.modal.height
+	let modalX = 0
 
-	const modalX =
-		store.modal.left + width.value <= maxWidth ? store.modal.left : store.modal.left - (width.value - store.modal.width)
+	//need to get the cumulative width of each cell that comes before this one
+	const row = store.modal.cell.parentNode
+	for (let i = 0; i < store.modal.cell.cellIndex; i++) {
+		modalX += row.children[i].offsetWidth
+	}
+
+	const modalPositionX = modalX + width.value <= maxWidth ? modalX : modalX - (width.value - store.modal.width)
 
 	return {
-		left: `${modalX}px`,
-		top: `${modalY}px`,
+		left: `${modalPositionX}px`,
+		top: `${modalPositionY}px`,
 	}
 })
+
+const getTable = htmlElementNode => {
+	while (htmlElementNode) {
+		htmlElementNode = htmlElementNode.parentNode
+		if (htmlElementNode.tagName.toLowerCase() === 'table') {
+			return htmlElementNode
+		}
+	}
+	return undefined
+}
 
 const handleInput = (event: Event) => {
 	event.stopPropagation()
@@ -54,8 +64,8 @@ const handleInput = (event: Event) => {
 @import url('@stonecrop/themes/default.css');
 
 .amodal {
-	position: fixed;
+	position: absolute;
 	background-color: var(--sc-row-color-zebra-dark);
-	z-index: 1000;
+	z-index: 5;
 }
 </style>

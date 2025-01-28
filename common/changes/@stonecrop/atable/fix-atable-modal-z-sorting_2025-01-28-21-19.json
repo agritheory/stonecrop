@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/atable",
+      "comment": "amodal uses cell and row sizes to calculate position",
+      "type": "none"
+    }
+  ],
+  "packageName": "@stonecrop/atable"
+}
