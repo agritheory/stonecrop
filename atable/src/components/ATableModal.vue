@@ -19,33 +19,38 @@ const amodalStyles = computed(() => {
 	if (!(store.modal.height && store.modal.width && store.modal.left && store.modal.bottom)) return
 
 	const table = getTable(store.modal.cell)
-	const maxHeight = table.offsetHeight
-	const maxWidth = table.offsetWidth
+	const maxHeight = table.offsetHeight || 0
+	const maxWidth = table.offsetWidth || 0
 
-	/* Y Positioning */
-	const headerHeight = table.querySelector('thead').offsetHeight //height of the header matches row height
-	const offsetY = store.modal.rowIndex //offset for each table row adding one pixel to its position (probably something to do with border?)
-	const cellY = (store.modal.rowIndex + 1) * store.modal.height // the y position of the cell clicked
-	const modalY = cellY + headerHeight + offsetY
-	const modalPositionY = modalY + height.value < maxHeight ? modalY : modalY - store.modal.height - height.value
+	/* Get the Y position of the cell clicked by getting the cumulative height of prior rows + the header (if present) */
+
+	let modalY = 0
+	for (let j = 0; j < store.modal.rowIndex; j++) {
+		modalY += table.rows[j].offsetHeight
+	}
+	const headerHeight = table.querySelector('thead').offsetHeight || 0
+	modalY += headerHeight + store.modal.height
+	modalY = modalY + height.value < maxHeight ? modalY : modalY - store.modal.height - height.value
+
+	/* Get the X position of the cell clicked by getting the cumulative width of prior cells within the row */
 
 	let modalX = 0
 
-	//need to get the cumulative width of each cell that comes before this one
 	const row = store.modal.cell.parentNode
 	for (let i = 0; i < store.modal.cell.cellIndex; i++) {
 		modalX += row.children[i].offsetWidth
 	}
 
-	const modalPositionX = modalX + width.value <= maxWidth ? modalX : modalX - (width.value - store.modal.width)
+	modalX = modalX + width.value <= maxWidth ? modalX : modalX - (width.value - store.modal.width)
 
 	return {
-		left: `${modalPositionX}px`,
-		top: `${modalPositionY}px`,
+		left: `${modalX}px`,
+		top: `${modalY}px`,
 	}
 })
 
 const getTable = htmlElementNode => {
+	//return the closest table ancestor to this element
 	while (htmlElementNode) {
 		htmlElementNode = htmlElementNode.parentNode
 		if (htmlElementNode.tagName.toLowerCase() === 'table') {
