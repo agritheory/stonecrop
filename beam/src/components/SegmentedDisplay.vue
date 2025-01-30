@@ -3,8 +3,11 @@
 		<h1 class="segmented-display-output" :style="{ color: getColor(textColor) }">{{ getOutput }}</h1>
 	</div>
 </template>
+
 <script setup lang="ts">
-import { ref, defineProps, computed } from 'vue'
+import { computed } from 'vue'
+
+import { BeamColor } from '../types'
 
 const {
 	displayInput = 120.2568,
@@ -14,16 +17,16 @@ const {
 } = defineProps<{
 	displayInput?: number
 	decimalPlaces?: number
-	displayColor?: Color
-	textColor?: Color
+	displayColor?: BeamColor
+	textColor?: BeamColor
 }>()
 
 const getOutput = computed(() => {
-	if (displayInput.length == 0) return Number(0).toFixed(decimalPlaces)
+	if (displayInput === 0) return Number(0).toFixed(decimalPlaces)
 	return displayInput.toFixed(decimalPlaces)
 })
 
-const getColor = color => {
+const getColor = (color: BeamColor) => {
 	return color.substr(0, 2) == '--' ? `var(${color})` : color
 }
 </script>

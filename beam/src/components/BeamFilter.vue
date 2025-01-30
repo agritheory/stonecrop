@@ -2,18 +2,19 @@
 	<div ref="beam-filters" class="beam_filters" :style="{ height: isOpen ? '100%' : headerHeight }">
 		<div ref="beam-filters-header" @click="toggle" class="beam_filters-heading">
 			<ToggleArrow :open="isOpen" />
-			<BeamHeading> Filter </BeamHeading>
+			<BeamHeading>Filter</BeamHeading>
 		</div>
+
 		<div class="beam_filters-options">
-			<slot>
-				<p>OPTIONS GO HERE</p>
-			</slot>
+			<slot></slot>
 		</div>
 	</div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, useTemplateRef } from 'vue'
+
+defineSlots<{ default(): any }>()
 
 const header = useTemplateRef('beam-filters-header')
 const beamFilters = useTemplateRef('beam-filters')
@@ -27,9 +28,11 @@ const toggle = () => {
 }
 
 onMounted(() => {
-	headerHeight.value = getTotalHeight(header.value)
-	totalHeight.value = getTotalHeight(beamFilters.value)
-	beamFilters.value.style.height = headerHeight.value
+	if (header.value && beamFilters.value) {
+		headerHeight.value = getTotalHeight(header.value)
+		totalHeight.value = getTotalHeight(beamFilters.value)
+		beamFilters.value.style.height = headerHeight.value
+	}
 })
 
 const getTotalHeight = (el: HTMLDivElement) => {

@@ -1,6 +1,6 @@
 <template>
 	<ul class="beam_list-view">
-		<li v-for="item in items" :key="item.label">
+		<li v-for="item in items" :key="item.barcode || item.label">
 			<template v-if="item.linkComponent == 'BeamDayDivider'">
 				<BeamDayDivider :item="item"></BeamDayDivider>
 			</template>

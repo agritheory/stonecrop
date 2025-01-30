@@ -1,25 +1,26 @@
 <template>
 	<BeamHeading class="beam_filter-option-heading">{{ title }}</BeamHeading>
-	<div @click="toggle" class="beam_filter-option">
-		<div ref="select" class="beam_filter-option-select">
+	<div @click="open = !open" class="beam_filter-option">
+		<div class="beam_filter-option-select">
 			<div class="beam_filter-arrow">
 				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 35.36 70.71">
 					<polygon points="0 70.71 0 0 35.36 35.36 0 70.71" />
 				</svg>
 			</div>
 			<div class="beam_filter-label">
-				<label>{{ choice }}</label>
+				<label>{{ label }}</label>
 			</div>
 		</div>
+
 		<ul ref="menu" v-if="open" class="beam_filter-select-menu">
 			<li
-				v-for="(opt, index) in choices"
-				:class="{ selected: choice == opt.choice }"
-				:data-value="opt.value"
-				:key="index"
+				v-for="choice in choices"
+				:class="{ selected: label == choice.label }"
+				:data-value="choice.value"
+				:key="choice.value"
 				class="beam_filter-select-option"
-				@click="updateValue(opt)">
-				{{ opt.choice }}
+				@click="selectChoice(choice)">
+				{{ choice.label }}
 			</li>
 		</ul>
 	</div>
@@ -28,27 +29,25 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
-type Choice = {
-	choice: string
-	value: string
-}
+import { BeamFilterChoice } from '../types'
+
+const emit = defineEmits<{
+	select: [choice: BeamFilterChoice]
+}>()
 
 const { title = 'title', choices = [] } = defineProps<{
-	choices: Choice[]
+	choices: BeamFilterChoice[]
 	title?: string
 }>()
 
 const open = ref(false)
+const label = ref(choices[0].label)
 const value = ref(choices[0].value)
-const choice = ref(choices[0].choice)
 
-const updateValue = (data: Choice) => {
-	choice.value = data.choice
+const selectChoice = (data: BeamFilterChoice) => {
+	label.value = data.label
 	value.value = data.value
-}
-
-const toggle = () => {
-	open.value = !open.value
+	emit('select', data)
 }
 </script>
 

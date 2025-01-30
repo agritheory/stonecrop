@@ -37,9 +37,18 @@ export { BeamArrow }
 
 export { BeamBtn }
 
+// @public (undocumented)
+export type BeamColor = RGB | RGBA | HEX | HSL | HSLA | string;
+
 export { BeamDayDivider }
 
 export { BeamFilter }
+
+// @public (undocumented)
+export type BeamFilterChoice = {
+    label: string;
+    value: string;
+};
 
 export { BeamFilterOption }
 
@@ -56,6 +65,15 @@ export { BeamProgress }
 export { Confirm }
 
 export { FixedTop }
+
+// @public
+export type HEX = `#${string}`;
+
+// @public
+export type HSL = `hsl(${number}, ${number}%, ${number}%)`;
+
+// @public
+export type HSLA = `hsl(${number}, ${number}%, ${number}%), ${number}`;
 
 // @public
 export interface IMqttStream extends IClientOptions {
@@ -76,24 +94,31 @@ export { ListItem }
 
 export { ListView }
 
-// @beta (undocumented)
+// @public (undocumented)
 export type ListViewItem = {
-    description: string;
-    label: string;
+    barcode?: string;
     checked?: boolean;
     count?: {
         count: number;
         of: number;
-        uom: string;
+        uom?: string;
     };
     date?: string;
     dateFormat?: string;
     debounce?: number;
+    description?: string;
+    label?: string;
     linkComponent?: string;
     route?: string;
 };
 
 export { Navbar }
+
+// @public
+export type RGB = `rgb(${number}, ${number}, ${number})`;
+
+// @public
+export type RGBA = `rgba(${number}, ${number}, ${number}, ${number})`;
 
 export { ScanInput }
 
@@ -104,9 +129,9 @@ export { SplitColumn }
 export { ToggleArrow }
 
 // @beta
-export const useMqttStream: (options: IMqttStream) => {
+export const useMqttStream: (options: IMqttStream) => Promise<{
     messages: Ref<Record<string, string[]>, Record<string, string[]>>;
-};
+} | undefined>;
 
 // (No @packageDocumentation comment for this package)
 
