@@ -70,7 +70,6 @@ if (addNavigation) {
 @import url('@stonecrop/themes/default.css');
 
 .atable-row {
-	border-top: 1px solid var(--sc-row-border-color);
 	display: flex;
 	background-color: white;
 }

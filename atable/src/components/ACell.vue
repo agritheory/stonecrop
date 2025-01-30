@@ -202,6 +202,7 @@ const updateCellData = (payload: Event) => {
 	order: 1;
 	white-space: nowrap;
 	max-width: 40ch;
+	border-top: 1px solid var(--sc-row-border-color);
 }
 .atable-cell a {
 	color: var(--sc-cell-text-color);
