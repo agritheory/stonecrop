@@ -98,7 +98,7 @@ const showModal = () => {
 			state.modal.visible = true
 			state.modal.colIndex = colIndex
 			state.modal.rowIndex = rowIndex
-			// TODO: typing refs somehow resolves to unref'd value; probably a bug in API Extractor?
+			// TODO: typing refs somehow resolves to unref'd value; probably a bug in TS?
 			state.modal.left = left
 			state.modal.bottom = bottom
 			state.modal.width = width

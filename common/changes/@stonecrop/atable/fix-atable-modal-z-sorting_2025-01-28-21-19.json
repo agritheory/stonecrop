@@ -3,7 +3,7 @@
     {
       "packageName": "@stonecrop/atable",
       "comment": "amodal uses cell and row sizes to calculate position",
-      "type": "none"
+      "type": "patch"
     }
   ],
   "packageName": "@stonecrop/atable"

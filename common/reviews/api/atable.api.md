@@ -113,6 +113,7 @@ rowModified?: boolean | undefined;
 }[]>;
 modal: Ref<    {
 bottom?: number | undefined;
+cell?: (HTMLTableCellElement | null) | undefined;
 colIndex?: number | undefined;
 event?: string | undefined;
 height?: number | undefined;
@@ -125,6 +126,7 @@ component?: string | undefined;
 componentProps?: Record<string, any> | undefined;
 }, TableModal | {
 bottom?: number | undefined;
+cell?: (HTMLTableCellElement | null) | undefined;
 colIndex?: number | undefined;
 event?: string | undefined;
 height?: number | undefined;
@@ -219,6 +221,7 @@ rowModified?: boolean | undefined;
 }[]>;
 modal: Ref<    {
 bottom?: number | undefined;
+cell?: (HTMLTableCellElement | null) | undefined;
 colIndex?: number | undefined;
 event?: string | undefined;
 height?: number | undefined;
@@ -231,6 +234,7 @@ component?: string | undefined;
 componentProps?: Record<string, any> | undefined;
 }, TableModal | {
 bottom?: number | undefined;
+cell?: (HTMLTableCellElement | null) | undefined;
 colIndex?: number | undefined;
 event?: string | undefined;
 height?: number | undefined;
@@ -325,6 +329,7 @@ rowModified?: boolean | undefined;
 }[]>;
 modal: Ref<    {
 bottom?: number | undefined;
+cell?: (HTMLTableCellElement | null) | undefined;
 colIndex?: number | undefined;
 event?: string | undefined;
 height?: number | undefined;
@@ -337,6 +342,7 @@ component?: string | undefined;
 componentProps?: Record<string, any> | undefined;
 }, TableModal | {
 bottom?: number | undefined;
+cell?: (HTMLTableCellElement | null) | undefined;
 colIndex?: number | undefined;
 event?: string | undefined;
 height?: number | undefined;
@@ -416,6 +422,7 @@ export type TableDisplay = {
 // @public
 export type TableModal = {
     bottom?: ReturnType<typeof useElementBounding>['bottom'];
+    cell?: HTMLTableCellElement | null;
     colIndex?: number;
     event?: string;
     height?: ReturnType<typeof useElementBounding>['height'];

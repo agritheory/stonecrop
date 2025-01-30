@@ -31,11 +31,14 @@
 		</Variant>
 
 		<Variant title="pinned columns">
+			<!-- div to make sure modals are positioning relative to the table and not the page -->
 			<div style="position: relative; top: 100px; left: 100px">
 				<ATable v-model="pinned_logs.rows" :columns="pinned_logs.columns" :config="{ view: 'list' }" />
 			</div>
 		</Variant>
+
 		<Variant title="pinned columns with extra columns">
+			<!-- div to make sure modals are positioning relative to the table and not the page -->
 			<div style="position: relative; top: 100px; left: 100px">
 				<ATable v-model="pinned_extra_logs.rows" :columns="pinned_extra_logs.columns" :config="{ view: 'list' }" />
 			</div>

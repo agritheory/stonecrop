@@ -193,7 +193,6 @@ td.sticky-index {
 .sticky-column-edge,
 .atable th.sticky-column-edge {
 	border-right: 1px solid var(--sc-row-border-color);
-	border-right-width: 1px;
 }
 </style>
 
