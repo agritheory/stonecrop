@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/beam",
+      "comment": "add emit response on beam filter option set",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/beam"
+}
