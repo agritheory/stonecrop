@@ -1,28 +1,30 @@
 <template>
-	<BeamHeading class="beam_filter-option-heading">{{ title }}</BeamHeading>
-	<div @click="open = !open" class="beam_filter-option">
-		<div class="beam_filter-option-select">
-			<div class="beam_filter-arrow">
-				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 35.36 70.71">
-					<polygon points="0 70.71 0 0 35.36 35.36 0 70.71" />
-				</svg>
+	<div class="beam_filter-container">
+		<BeamHeading class="beam_filter-option-heading">{{ title }}</BeamHeading>
+		<div @click="open = !open" class="beam_filter-option">
+			<div class="beam_filter-option-select">
+				<div class="beam_filter-arrow">
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 35.36 70.71">
+						<polygon points="0 70.71 0 0 35.36 35.36 0 70.71" />
+					</svg>
+				</div>
+				<div class="beam_filter-label">
+					<label>{{ label }}</label>
+				</div>
 			</div>
-			<div class="beam_filter-label">
-				<label>{{ label }}</label>
-			</div>
-		</div>
 
-		<ul ref="menu" v-if="open" class="beam_filter-select-menu">
-			<li
-				v-for="choice in choices"
-				:class="{ selected: label == choice.label }"
-				:data-value="choice.value"
-				:key="choice.value"
-				class="beam_filter-select-option"
-				@click="selectChoice(choice)">
-				{{ choice.label }}
-			</li>
-		</ul>
+			<ul ref="menu" v-if="open" class="beam_filter-select-menu">
+				<li
+					v-for="choice in choices"
+					:class="{ selected: label == choice.label }"
+					:data-value="choice.value"
+					:key="choice.value"
+					class="beam_filter-select-option"
+					@click="selectChoice(choice)">
+					{{ choice.label }}
+				</li>
+			</ul>
+		</div>
 	</div>
 </template>
 

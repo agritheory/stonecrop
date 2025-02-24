@@ -68,10 +68,12 @@ const getTotalHeight = (el: HTMLDivElement) => {
 }
 
 .beam_filters-options {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	column-gap: 1rem;
 	background: white;
-	margin: 1rem;
 	box-sizing: border-box;
-	padding: 0 2rem;
-	margin-bottom: 2rem;
+	padding: 0 1rem;
+	margin: 1rem 0;
 }
 </style>
