@@ -37,7 +37,8 @@
 		"docs": "api-documenter markdown -i temp -o ../docs/aform",
 		"lint": "eslint . --ext .ts,.vue",
 		"preview": "vite preview",
-		"test": "vitest",
+		"test": "vitest run --coverage.enabled false",
+		"test:watch": "vitest watch",
 		"test:coverage": "vitest run --coverage",
 		"test:ui": "vitest --ui"
 	},
