@@ -137,4 +137,14 @@ svg {
 		background: var(--sc-row-border-color);
 	}
 }
+.beam_filter-container {
+	flex-grow: 1;
+	max-width: 300px;
+	width: 50%;
+
+	@media (max-width: 500px) {
+		width: 100%;
+		max-width: 100%;
+	}
+}
 </style>
