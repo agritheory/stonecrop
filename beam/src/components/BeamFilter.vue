@@ -78,7 +78,7 @@ const getTotalHeight = (el: HTMLDivElement) => {
 	padding: 0 1rem;
 	margin: 1rem 0;
 
-	@media (max-width: 500px) {
+	@media (max-width: 479px) {
 		flex-direction: column;
 	}
 }

@@ -142,7 +142,7 @@ svg {
 	max-width: 300px;
 	width: 50%;
 
-	@media (max-width: 500px) {
+	@media (max-width: 479px) {
 		width: 100%;
 		max-width: 100%;
 	}
