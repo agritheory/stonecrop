@@ -31,6 +31,7 @@ jobs:
     runs-on: ubuntu-latest
 
     strategy:
+      fail-fast: false
       matrix:
         package: ${{ fromJSON(needs.changes.outputs.packages) }}
 
@@ -53,12 +54,4 @@ jobs:
 
       - name: Run Tests
         working-directory: ./${{ matrix.package }}
-        run: node ../common/scripts/install-run-rushx.js test:coverage
-
-      - name: Coverage Report
-        if: always() # generate the coverage report even if tests are failing
-        uses: davelosert/vitest-coverage-report-action@v2
-        with:
-          working-directory: ./${{ matrix.package }}
-          file-coverage-mode: 'all'
-          vite-config-path: './vite.config.ts'
+        run: node ../common/scripts/install-run-rushx.js test
