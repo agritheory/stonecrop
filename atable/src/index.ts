@@ -6,6 +6,7 @@ import ARow from './components/ARow.vue'
 import ATable from './components/ATable.vue'
 import ATableHeader from './components/ATableHeader.vue'
 import ATableModal from './components/ATableModal.vue'
+import AGanttHandler from './components/AGanttHandler.vue'
 export { createTableStore } from './stores/table'
 export type {
 	CellContext,
@@ -29,6 +30,7 @@ function install(app: App /* options */) {
 	app.component('ATable', ATable)
 	app.component('ATableHeader', ATableHeader)
 	app.component('ATableModal', ATableModal)
+	app.component('AGanttHandler', AGanttHandler)
 }
 
-export { install, ACell, AExpansionRow, ARow, ATable, ATableHeader, ATableModal }
+export { install, ACell, AExpansionRow, ARow, ATable, ATableHeader, ATableModal, AGanttHandler }

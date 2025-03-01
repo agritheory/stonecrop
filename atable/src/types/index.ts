@@ -61,7 +61,7 @@ export type TableConfig = {
 	 * - `list-expansion` - carets are displayed in the number column that expand/collapse the row inline
 	 * - `tree` - carets are displayed in the number column that expand/collapse grouped rows
 	 */
-	view?: 'uncounted' | 'list' | 'list-expansion' | 'tree'
+	view?: 'uncounted' | 'list' | 'list-expansion' | 'tree' | 'gantt'
 	fullWidth?: boolean
 }
 

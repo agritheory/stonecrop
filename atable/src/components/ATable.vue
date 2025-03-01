@@ -2,7 +2,9 @@
 	<table
 		ref="table"
 		class="atable"
-		:style="{ width: store.config.fullWidth ? '100%' : 'auto' }"
+		:style="{
+			width: store.config.fullWidth ? '100%' : 'auto',
+		}"
 		v-on-click-outside="store.closeModal">
 		<slot name="header" :data="store">
 			<ATableHeader :columns="store.columns" :store="store" />
@@ -11,22 +13,25 @@
 		<tbody>
 			<slot name="body" :data="store">
 				<ARow v-for="(row, rowIndex) in store.rows" :key="row.id" :row="row" :rowIndex="rowIndex" :store="store">
-					<ACell
-						v-for="(col, colIndex) in store.columns"
-						:key="col.name"
-						:store="store"
-						:col="col"
-						spellcheck="false"
-						:pinned="col.pinned"
-						:rowIndex="rowIndex"
-						:colIndex="colIndex"
-						:component="col.cellComponent"
-						:style="{
-							textAlign: col?.align || 'center',
-							minWidth: col?.width || '40ch',
-							width: store.config.fullWidth ? 'auto' : null,
-						}"
-						@cellInput="emitInput" />
+					<template v-for="(col, colIndex) in getProcessedColumnsForRow(row)" :key="col.name">
+						<component
+							:is="col.isGantt ? col.ganttComponent : col.cellComponent || 'ACell'"
+							:store="store"
+							:col="col"
+							:colspan="col.colspan"
+							spellcheck="false"
+							:pinned="col.pinned"
+							:rowIndex="rowIndex"
+							:colIndex="col.originalIndex !== undefined ? col.originalIndex : colIndex"
+							:component="col.isGantt ? col.ganttComponent : col.cellComponent"
+							:style="{
+								textAlign: col?.align || 'center',
+								minWidth: col?.width || '40ch',
+								width: store.config.fullWidth ? 'auto' : null,
+								// tabIndex: col.isGantt ? '-1' : '0',
+							}"
+							@cellInput="emitInput" />
+					</template>
 				</ARow>
 			</slot>
 		</tbody>
@@ -168,6 +173,38 @@ window.addEventListener('keydown', (event: KeyboardEvent) => {
 	}
 })
 
+const getProcessedColumnsForRow = row => {
+	// Check if this is a Gantt row (indent === 0)
+	const isGanttRow = row.indent === 0
+
+	// Count pinned columns
+	const pinnedColumnCount = store.columns.filter(col => col.pinned).length
+
+	// If not a Gantt row or no pinned columns, return all columns unchanged
+	if (!isGanttRow || pinnedColumnCount === 0) {
+		return store.columns
+	}
+
+	const result = []
+	// Add pinned columns
+	for (let i = 0; i < pinnedColumnCount; i++) {
+		const col = { ...store.columns[i] }
+		col.originalIndex = i // Preserve original index
+		result.push(col)
+	}
+
+	// Add the Gantt column with colspan
+	const ganttCol = { ...store.columns[pinnedColumnCount] }
+	ganttCol.colspan = store.columns.length - pinnedColumnCount
+	ganttCol.isGantt = true
+	ganttCol.originalIndex = pinnedColumnCount
+	ganttCol.width = 'auto' // TODO: refactor to API that can detect when data exists in a cell. Might have be custom and not generalizable
+	ganttCol.ganttComponent = store.columns[pinnedColumnCount].gantt_component || 'AGanttHandler'
+	result.push(ganttCol)
+
+	return result
+}
+
 defineExpose({ store })
 </script>
 
@@ -228,5 +265,23 @@ td.sticky-index {
 }
 .atable th:focus {
 	outline: none;
+}
+
+/* Make sure the vertical indicator doesn't extend into the header */
+.atable:tbody {
+	overflow: hidden; /* This ensures the indicator is clipped */
+	position: relative; /* Create a stacking context */
+}
+
+/* Ensure the indicator stays within the tbody */
+.atable:tbody::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 1px;
+	background-color: transparent;
+	z-index: 100;
 }
 </style>

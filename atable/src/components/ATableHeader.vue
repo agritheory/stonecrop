@@ -36,7 +36,7 @@ const { columns, store } = defineProps<{
 @import url('@stonecrop/themes/default.css');
 
 .atable-header-row {
-	display: flex;
+	display: table-row;
 }
 .atable-header-row th {
 	padding-left: 0.5ch !important;

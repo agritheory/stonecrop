@@ -6,6 +6,7 @@
 
 import ACell from './components/ACell.vue';
 import AExpansionRow from './components/AExpansionRow.vue';
+import AGanttHandler from './components/AGanttHandler.vue';
 import { App } from 'vue';
 import ARow from './components/ARow.vue';
 import ATable from './components/ATable.vue';
@@ -20,6 +21,8 @@ import { useElementBounding } from '@vueuse/core';
 export { ACell }
 
 export { AExpansionRow }
+
+export { AGanttHandler }
 
 export { ARow }
 
@@ -80,10 +83,10 @@ format?: (string | ((value: any, context: CellContext) => string)) | undefined;
 mask?: ((value: any) => any) | undefined;
 }[]>;
 config: Ref<    {
-view?: ("uncounted" | "list" | "list-expansion" | "tree") | undefined;
+view?: ("uncounted" | "list" | "list-expansion" | "tree" | "gantt") | undefined;
 fullWidth?: boolean | undefined;
 }, TableConfig | {
-view?: ("uncounted" | "list" | "list-expansion" | "tree") | undefined;
+view?: ("uncounted" | "list" | "list-expansion" | "tree" | "gantt") | undefined;
 fullWidth?: boolean | undefined;
 }>;
 display: Ref<    {
@@ -186,10 +189,10 @@ format?: (string | ((value: any, context: CellContext) => string)) | undefined;
 mask?: ((value: any) => any) | undefined;
 }[]>;
 config: Ref<    {
-view?: ("uncounted" | "list" | "list-expansion" | "tree") | undefined;
+view?: ("uncounted" | "list" | "list-expansion" | "tree" | "gantt") | undefined;
 fullWidth?: boolean | undefined;
 }, TableConfig | {
-view?: ("uncounted" | "list" | "list-expansion" | "tree") | undefined;
+view?: ("uncounted" | "list" | "list-expansion" | "tree" | "gantt") | undefined;
 fullWidth?: boolean | undefined;
 }>;
 display: Ref<    {
@@ -292,10 +295,10 @@ format?: (string | ((value: any, context: CellContext) => string)) | undefined;
 mask?: ((value: any) => any) | undefined;
 }[]>;
 config: Ref<    {
-view?: ("uncounted" | "list" | "list-expansion" | "tree") | undefined;
+view?: ("uncounted" | "list" | "list-expansion" | "tree" | "gantt") | undefined;
 fullWidth?: boolean | undefined;
 }, TableConfig | {
-view?: ("uncounted" | "list" | "list-expansion" | "tree") | undefined;
+view?: ("uncounted" | "list" | "list-expansion" | "tree" | "gantt") | undefined;
 fullWidth?: boolean | undefined;
 }>;
 display: Ref<    {
@@ -391,7 +394,7 @@ export type TableColumn = {
 
 // @public
 export type TableConfig = {
-    view?: 'uncounted' | 'list' | 'list-expansion' | 'tree';
+    view?: 'uncounted' | 'list' | 'list-expansion' | 'tree' | 'gantt';
     fullWidth?: boolean;
 };
 
