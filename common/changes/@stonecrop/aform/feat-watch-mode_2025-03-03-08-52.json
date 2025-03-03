@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/aform",
+      "comment": "add incremental builds and watch mode for stories",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/aform"
+}

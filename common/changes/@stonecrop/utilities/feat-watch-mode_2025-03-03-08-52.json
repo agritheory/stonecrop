@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/utilities",
+      "comment": "add incremental builds and watch mode for stories",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/utilities"
+}
