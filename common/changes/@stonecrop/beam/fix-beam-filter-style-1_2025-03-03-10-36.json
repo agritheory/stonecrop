@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/beam",
+      "comment": "render filter menus over list content",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/beam"
+}
