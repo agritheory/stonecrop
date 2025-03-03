@@ -24,6 +24,7 @@
 		"./vue.css": "./dist/default.css"
 	},
 	"scripts": {
+		"_phase:build": "vite build",
 		"prepublish": "vite build",
 		"build": "vite build",
 		"dev": "vite",

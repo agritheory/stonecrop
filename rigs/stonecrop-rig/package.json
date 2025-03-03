@@ -5,8 +5,8 @@
 	"license": "MIT",
 	"private": "true",
 	"scripts": {
-		"build": "",
-		"_phase:build": ""
+		"_phase:build": "",
+		"build": ""
 	},
 	"dependencies": {
 		"@microsoft/api-extractor": "^7.50.1",

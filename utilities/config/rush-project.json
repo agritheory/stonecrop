@@ -38,7 +38,7 @@
 			//    * (Required) The name of the operation.
 			//    * This should be a key in the "package.json" file's "scripts" section.
 			//    */
-			"operationName": "build",
+			"operationName": "_phase:build",
 			//
 			//   /**
 			//    * Specify the folders where this operation writes its output files.  If enabled, the Rush build cache
