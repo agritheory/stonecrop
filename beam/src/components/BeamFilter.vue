@@ -68,8 +68,6 @@ const getTotalHeight = (el: HTMLDivElement) => {
 }
 
 .beam_filters-options {
-	/* display: grid;
-	grid-template-columns: repeat(2, 1fr); */
 	display: flex;
 	flex-direction: row;
 	column-gap: 1rem;
