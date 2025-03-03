@@ -104,18 +104,19 @@ svg {
 }
 
 .beam_filter-select-menu {
-	/* position: absolute; */
-	z-index: 100;
+	background-color: white;
 	border-top: none;
-	left: 0;
 	border: 1px solid var(--sc-row-border-color);
-	padding: 0rem;
-	list-style: none;
-	width: 100%;
 	box-sizing: border-box;
+	left: 0;
+	list-style: none;
+	margin: 0;
 	max-height: 200px;
 	overflow-y: scroll;
-	margin: 0;
+	padding: 0rem;
+	position: absolute;
+	width: 100%;
+	z-index: 100;
 }
 
 .beam_filter-select-option {

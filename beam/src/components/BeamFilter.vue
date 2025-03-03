@@ -5,7 +5,7 @@
 			<BeamHeading>Filter</BeamHeading>
 		</div>
 
-		<div class="beam_filters-options">
+		<div v-if="isOpen" class="beam_filters-options">
 			<slot></slot>
 		</div>
 	</div>
@@ -45,7 +45,7 @@ const getTotalHeight = (el: HTMLDivElement) => {
 
 <style scoped>
 .beam_filters {
-	overflow: hidden;
+	overflow: visible;
 	box-sizing: border-box;
 	transition: all 0.2s ease-in-out;
 	border-bottom: 1px solid var(--sc-row-border-color);
@@ -68,8 +68,6 @@ const getTotalHeight = (el: HTMLDivElement) => {
 }
 
 .beam_filters-options {
-	/* display: grid;
-	grid-template-columns: repeat(2, 1fr); */
 	display: flex;
 	flex-direction: row;
 	column-gap: 1rem;
