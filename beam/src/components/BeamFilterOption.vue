@@ -56,24 +56,24 @@ const selectChoice = (data: BeamFilterChoice) => {
 .beam_filter-option {
 	cursor: pointer;
 	position: relative;
-	margin-bottom: 1rem;
 }
 
 .beam_filter-option-heading {
-	font-size: 1rem;
+	font-size: 1rem !important;
 	padding-bottom: 0.25rem;
 }
 
 .beam_filter-option-select {
-	position: relative;
-	appearance: none;
-	border: 1px solid var(--sc-row-border-color);
-	font-weight: bold;
-	color: var(--sc-primary-text-color);
-	font-size: 0.8rem;
-	font-family: var(--sc-font-family);
-	display: flex;
 	align-items: stretch;
+	appearance: none;
+	background-color: white;
+	border: 1px solid var(--sc-row-border-color);
+	color: var(--sc-primary-text-color);
+	display: flex;
+	font-family: var(--sc-font-family);
+	font-size: 0.8rem;
+	font-weight: bold;
+	position: relative;
 }
 
 label {
