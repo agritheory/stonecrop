@@ -178,10 +178,9 @@ useResizeObserver(containerRef, () => {
 
 .gantt-handler {
 	position: relative;
-	height: 24px;
+	height: 100%;
 	background-color: #f0f0f0;
 	border-radius: 4px;
-	margin: 4px 8px;
 	overflow: visible; /* Changed from hidden to allow indicators to extend out */
 }
 
@@ -195,6 +194,7 @@ useResizeObserver(containerRef, () => {
 	align-items: center;
 	justify-content: space-between;
 	cursor: grab;
+	box-sizing: border-box;
 }
 
 .gantt-bar:active {
@@ -226,7 +226,7 @@ useResizeObserver(containerRef, () => {
 	align-items: center;
 	justify-content: center;
 	background-color: #a5b4fc;
-	z-index: 1;
+	z-index: 0;
 }
 
 .left-handle {
