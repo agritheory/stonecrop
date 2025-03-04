@@ -1,5 +1,5 @@
 <template>
-	<div class="beam_filter-container">
+	<div v-on-click-outside="() => (open = false)" class="beam_filter-container">
 		<BeamHeading class="beam_filter-option-heading">{{ title }}</BeamHeading>
 		<div @click="open = !open" class="beam_filter-option">
 			<div class="beam_filter-option-select">
@@ -29,13 +29,12 @@
 </template>
 
 <script setup lang="ts">
+import { vOnClickOutside } from '@vueuse/components'
 import { ref } from 'vue'
 
 import { BeamFilterChoice } from '../types'
 
-const emit = defineEmits<{
-	select: [choice: BeamFilterChoice]
-}>()
+const emit = defineEmits<{ select: [choice: BeamFilterChoice] }>()
 
 const { title = 'title', choices = [] } = defineProps<{
 	choices: BeamFilterChoice[]

@@ -170,6 +170,9 @@ importers:
 
   ../../beam:
     dependencies:
+      '@vueuse/components':
+        specifier: ^12.7.0
+        version: 12.7.0(typescript@5.6.3)
       '@vueuse/core':
         specifier: ^12.7.0
         version: 12.7.0(typescript@5.6.3)
