@@ -1,12 +1,12 @@
 <template>
 	<div class="beam_filters">
-		<div @click="toggle" class="beam_filters-heading">
-			<ToggleArrow :open="isOpen" />
+		<div @click="isFilterExpanded = !isFilterExpanded" class="beam_filters-heading">
+			<ToggleArrow :open="isFilterExpanded" />
 			<BeamHeading>Filter</BeamHeading>
 		</div>
 
-		<div v-if="isOpen" class="beam_filters-options">
-			<slot></slot>
+		<div v-show="isFilterExpanded" class="beam_filters-options">
+			<slot />
 		</div>
 	</div>
 </template>
@@ -16,11 +16,7 @@ import { ref } from 'vue'
 
 defineSlots<{ default(): any }>()
 
-const isOpen = ref(false)
-
-const toggle = () => {
-	isOpen.value = !isOpen.value
-}
+const isFilterExpanded = ref(false)
 </script>
 
 <style scoped>

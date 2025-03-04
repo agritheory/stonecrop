@@ -1,7 +1,7 @@
 <template>
-	<div v-on-click-outside="() => (open = false)" class="beam_filter-container">
+	<div v-on-click-outside="() => (isMenuOpen = false)" class="beam_filter-container">
 		<BeamHeading class="beam_filter-option-heading">{{ title }}</BeamHeading>
-		<div @click="open = !open" class="beam_filter-option">
+		<div @click="isMenuOpen = !isMenuOpen" class="beam_filter-option">
 			<div class="beam_filter-option-select">
 				<div class="beam_filter-arrow">
 					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 35.36 70.71">
@@ -13,7 +13,7 @@
 				</div>
 			</div>
 
-			<ul ref="menu" v-if="open" class="beam_filter-select-menu">
+			<ul ref="menu" v-if="isMenuOpen" class="beam_filter-select-menu">
 				<li
 					v-for="choice in choices"
 					:class="{ selected: label == choice.label }"
@@ -41,7 +41,7 @@ const { title = 'title', choices = [] } = defineProps<{
 	title?: string
 }>()
 
-const open = ref(false)
+const isMenuOpen = ref(false)
 const label = ref(choices[0].label)
 const value = ref(choices[0].value)
 
