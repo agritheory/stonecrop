@@ -26,6 +26,7 @@
 		"dist"
 	],
 	"scripts": {
+		"_phase:build": "rushx dev:prepare && nuxt-module-build build",
 		"prepublish": "rushx dev:prepare && nuxt-module-build build",
 		"prepack": "rushx dev:prepare && nuxt-module-build build",
 		"build": "rushx dev:prepare && nuxt-module-build build",
