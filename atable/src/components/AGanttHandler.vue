@@ -1,14 +1,14 @@
 <template>
 	<td class="aganttcell" :colspan="colspan">
-		<div ref="containerRef" class="gantt-handler">
+		<div ref="container" class="gantt-handler">
 			<!-- Draggable gantt bar -->
 			<div
-				ref="barRef"
+				ref="bar"
 				class="gantt-bar"
 				:class="{ 'is-dragging': isBarDragging || isLeftDragging || isRightDragging }"
 				:style="barStyle">
 				<!-- Left resizer handle -->
-				<div ref="leftHandleRef" class="gantt-handle left-handle" :class="{ 'is-dragging': isLeftDragging }">
+				<div ref="leftHandle" class="gantt-handle left-handle" :class="{ 'is-dragging': isLeftDragging }">
 					<div class="handle-grip"></div>
 					<!-- Vertical indicator for left handle -->
 					<div class="vertical-indicator left-indicator"></div>
@@ -17,7 +17,7 @@
 				<label class="gantt-label">{{ label }}</label>
 
 				<!-- Right resizer handle -->
-				<div ref="rightHandleRef" class="gantt-handle right-handle" :class="{ 'is-dragging': isRightDragging }">
+				<div ref="rightHandle" class="gantt-handle right-handle" :class="{ 'is-dragging': isRightDragging }">
 					<div class="handle-grip"></div>
 					<!-- Vertical indicator for right handle -->
 					<div class="vertical-indicator right-indicator"></div>
@@ -28,7 +28,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, useTemplateRef } from 'vue'
 import { useResizeObserver, useDraggable, useElementBounding } from '@vueuse/core'
 
 const {
@@ -48,10 +48,10 @@ const {
 const emit = defineEmits(['update:start', 'update:end', 'drag'])
 
 // Element refs
-const containerRef = ref(null)
-const barRef = ref(null)
-const leftHandleRef = ref(null)
-const rightHandleRef = ref(null)
+const containerRef = useTemplateRef('container')
+const barRef = useTemplateRef('bar')
+const leftHandleRef = useTemplateRef('leftHandle')
+const rightHandleRef = useTemplateRef('rightHandle')
 
 // Get container bounds to calculate percentages
 const containerBounds = useElementBounding(containerRef)
@@ -80,11 +80,11 @@ const { x: barX, isDragging: isBarDragging } = useDraggable(barRef, {
 		initialBarStart.value = start
 		initialBarEnd.value = end
 	},
-	onMove: ({ delta }) => {
+	onMove: ({ x }) => {
 		if (!containerBounds.width.value || !draggingBar.value) return
 
 		const pixelsPerUnit = containerBounds.width.value / duration || 1
-		const deltaUnits = delta.x / pixelsPerUnit
+		const deltaUnits = x / pixelsPerUnit
 
 		const barDuration = end - start
 		let newStart = initialBarStart.value + deltaUnits
@@ -112,11 +112,11 @@ const { x: leftX, isDragging: isLeftDragging } = useDraggable(leftHandleRef, {
 	onStart: () => {
 		initialBarStart.value = start
 	},
-	onMove: ({ delta }) => {
+	onMove: ({ x }) => {
 		if (!containerBounds.width.value) return
 
 		const pixelsPerUnit = containerBounds.width.value / duration
-		const deltaUnits = delta.x / pixelsPerUnit
+		const deltaUnits = x / pixelsPerUnit
 
 		const newStart = Math.max(0, Math.min(end - 1, initialBarStart.value + deltaUnits))
 
@@ -130,11 +130,11 @@ const { x: rightX, isDragging: isRightDragging } = useDraggable(rightHandleRef, 
 	onStart: () => {
 		initialBarEnd.value = end
 	},
-	onMove: ({ delta }) => {
+	onMove: ({ x }) => {
 		if (!containerBounds.width.value) return
 
 		const pixelsPerUnit = containerBounds.width.value / duration
-		const deltaUnits = delta.x / pixelsPerUnit
+		const deltaUnits = x / pixelsPerUnit
 
 		const newEnd = Math.max(start + 1, Math.min(duration, initialBarEnd.value + deltaUnits))
 
