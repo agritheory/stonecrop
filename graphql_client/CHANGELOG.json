@@ -2,6 +2,18 @@
   "name": "@stonecrop/graphql-client",
   "entries": [
     {
+      "version": "0.4.8",
+      "tag": "@stonecrop/graphql-client_v0.4.8",
+      "date": "Tue, 04 Mar 2025 21:22:12 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "add incremental builds and watch mode for stories"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.4.7",
       "tag": "@stonecrop/graphql-client_v0.4.7",
       "date": "Fri, 28 Feb 2025 14:47:14 GMT",

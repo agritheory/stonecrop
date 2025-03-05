@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/themes",
-	"version": "0.4.7",
+	"version": "0.4.8",
 	"type": "module",
 	"author": {
 		"name": "Tyler Matteson",
@@ -24,6 +24,7 @@
 		"./vue.css": "./dist/default.css"
 	},
 	"scripts": {
+		"_phase:build": "vite build",
 		"prepublish": "vite build",
 		"build": "vite build",
 		"dev": "vite",

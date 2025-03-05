@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/nuxt",
-	"version": "0.4.7",
+	"version": "0.4.8",
 	"description": "Nuxt module for Stonecrop",
 	"license": "MIT",
 	"type": "module",
@@ -26,6 +26,7 @@
 		"dist"
 	],
 	"scripts": {
+		"_phase:build": "rushx dev:prepare && nuxt-module-build build",
 		"prepublish": "rushx dev:prepare && nuxt-module-build build",
 		"prepack": "rushx dev:prepare && nuxt-module-build build",
 		"build": "rushx dev:prepare && nuxt-module-build build",

@@ -44,9 +44,6 @@ const isFilterExpanded = ref(false)
 }
 
 .beam_filters-options {
-	background-color: var(--sc-primary-color);
-	box-sizing: border-box;
-	column-gap: 1rem;
 	display: flex;
 	flex-direction: row;
 	margin: 1rem 0;

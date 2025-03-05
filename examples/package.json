@@ -11,15 +11,16 @@
 		"docbuilder/*"
 	],
 	"scripts": {
+		"_phase:build": "",
 		"build": "",
-		"dev:aform": "cd aform/ && histoire dev",
-		"dev:atable": "cd atable/ && histoire dev",
-		"dev:beam": "cd beam/ && histoire dev",
+		"dev:aform": "cd aform/ && histoire dev & rush build --watch --to @stonecrop/aform",
+		"dev:atable": "cd atable/ && histoire dev & rush build --watch --to @stonecrop/atable",
+		"dev:beam": "cd beam/ && histoire dev & rush build --watch --to @stonecrop/beam",
 		"dev:builder": "vite serve docbuilder/ --config docbuilder/vite.config.ts",
-		"dev:code_editor": "cd code_editor/ && histoire dev",
+		"dev:code_editor": "cd code_editor/ && histoire dev & rush build --watch --to @stonecrop/code-editor",
 		"dev:desktop": "vite dev desktop/ --config desktop/vite.config.ts",
 		"dev:graphql_client": "vite dev graphql_client/ --config graphql_client/vite.config.ts",
-		"dev:node_editor": "cd node_editor/ && histoire dev"
+		"dev:node_editor": "cd node_editor/ && histoire dev & rush build --watch --to @stonecrop/node-editor"
 	},
 	"dependencies": {
 		"@stonecrop/aform": "workspace:*",

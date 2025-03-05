@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/stonecrop
 
-This log was last generated on Fri, 28 Feb 2025 14:47:14 GMT and should not be manually modified.
+This log was last generated on Tue, 04 Mar 2025 21:22:12 GMT and should not be manually modified.
+
+## 0.4.8
+Tue, 04 Mar 2025 21:22:12 GMT
+
+### Patches
+
+- add incremental builds and watch mode for stories
 
 ## 0.4.7
 Fri, 28 Feb 2025 14:47:14 GMT
