@@ -11,6 +11,7 @@ Table modal definition.
 ```typescript
 export type TableModal = {
     bottom?: ReturnType<typeof useElementBounding>['bottom'];
+    cell?: HTMLTableCellElement | null;
     colIndex?: number;
     event?: string;
     height?: ReturnType<typeof useElementBounding>['height'];

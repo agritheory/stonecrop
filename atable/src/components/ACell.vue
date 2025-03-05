@@ -13,7 +13,7 @@
 		@input="updateCellData"
 		@click="showModal"
 		class="atable-cell"
-		:class="pinned ? 'sticky-column' : ''">
+		:class="cellClasses">
 		<component
 			v-if="column.cellComponent"
 			:is="column.cellComponent"
@@ -38,6 +38,7 @@ const {
 	store,
 	addNavigation = true,
 	tabIndex = 0,
+	pinned = false,
 } = defineProps<{
 	colIndex: number
 	rowIndex: number
@@ -72,9 +73,15 @@ const cellStyle = computed((): CSSProperties => {
 	return {
 		textAlign,
 		width: cellWidth,
-		backgroundColor: !cellModified.value ? 'inherit' : 'var(--sc-cell-changed-color)',
 		fontWeight: !cellModified.value ? 'inherit' : 'bold',
 		paddingLeft: store.getIndent(colIndex, store.display[rowIndex]?.indent),
+	}
+})
+
+const cellClasses = computed(() => {
+	return {
+		'sticky-column': pinned,
+		'cell-modified': cellModified.value,
 	}
 })
 
@@ -91,11 +98,12 @@ const showModal = () => {
 			state.modal.visible = true
 			state.modal.colIndex = colIndex
 			state.modal.rowIndex = rowIndex
-			// TODO: typing refs somehow resolves to unref'd value; probably a bug in API Extractor?
+			// TODO: typing refs somehow resolves to unref'd value; probably a bug in TS?
 			state.modal.left = left
 			state.modal.bottom = bottom
 			state.modal.width = width
 			state.modal.height = height
+			state.modal.cell = cellRef.value
 
 			if (typeof column.modalComponent === 'function') {
 				state.modal.component = column.modalComponent({ table: state.table, row, column })
@@ -194,6 +202,7 @@ const updateCellData = (payload: Event) => {
 	order: 1;
 	white-space: nowrap;
 	max-width: 40ch;
+	border-top: 1px solid var(--sc-row-border-color);
 }
 .atable-cell a {
 	color: var(--sc-cell-text-color);
@@ -210,5 +219,12 @@ const updateCellData = (payload: Event) => {
 	overflow: hidden;
 	text-wrap: nowrap;
 	box-sizing: border-box;
+}
+.cell-modified {
+	font-weight: bold;
+	font-style: italic;
+}
+.cell-modified-highlight {
+	background-color: var(--sc-cell-changed-color);
 }
 </style>

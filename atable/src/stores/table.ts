@@ -75,7 +75,7 @@ export const createTableStore = (initData: {
 		const config = ref(initData.config || {})
 		const table = ref(initData.table || createTableObject())
 		const display = ref(createDisplayObject(initData.display))
-		const modal = ref(initData.modal || { visible: false })
+		const modal = ref<TableModal>(initData.modal || { visible: false })
 		const updates = ref<Record<string, string>>({})
 
 		// getters

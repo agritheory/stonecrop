@@ -90,6 +90,7 @@ import { reactive } from 'vue'
 const workOrder = reactive({
 	complete: false,
 })
+
 const displayOptions = reactive({
 	displayColor: '--sc-segmented-display-background',
 	textColor: '--sc-segmented-display-color',

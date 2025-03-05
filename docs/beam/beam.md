@@ -82,12 +82,86 @@ Description
 </th></tr></thead>
 <tbody><tr><td>
 
+[BeamColor](./beam.beamcolor.md)
+
+
+</td><td>
+
+
+
+</td></tr>
+<tr><td>
+
+[BeamFilterChoice](./beam.beamfilterchoice.md)
+
+
+</td><td>
+
+
+
+</td></tr>
+<tr><td>
+
+[HEX](./beam.hex.md)
+
+
+</td><td>
+
+HEX color string representation
+
+
+</td></tr>
+<tr><td>
+
+[HSL](./beam.hsl.md)
+
+
+</td><td>
+
+HSL color string representation
+
+
+</td></tr>
+<tr><td>
+
+[HSLA](./beam.hsla.md)
+
+
+</td><td>
+
+HSLA color string representation
+
+
+</td></tr>
+<tr><td>
+
 [ListViewItem](./beam.listviewitem.md)
 
 
 </td><td>
 
-**_(BETA)_**
+
+
+</td></tr>
+<tr><td>
+
+[RGB](./beam.rgb.md)
+
+
+</td><td>
+
+RGB color string representation
+
+
+</td></tr>
+<tr><td>
+
+[RGBA](./beam.rgba.md)
+
+
+</td><td>
+
+RGBA color string representation
 
 
 </td></tr>

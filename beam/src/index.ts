@@ -24,7 +24,7 @@ import SegmentedDisplay from './components/SegmentedDisplay.vue'
 import SplitColumn from './components/SplitColumn.vue'
 import ToggleArrow from './components/ToggleArrow.vue'
 import { useMqttStream } from './composables/mqtt'
-export type { IMqttStream, ListViewItem } from './types'
+export type * from './types'
 import '../themes/beam.css'
 
 /**

@@ -3,7 +3,6 @@ name: Tests
 on:
   push:
     paths: [nuxt/**]
-    branches: [development]
   pull_request:
 
 jobs:

@@ -1,5 +1,5 @@
 <template>
-	<tr ref="rowEl" :tabindex="tabIndex" v-show="isRowVisible" class="table-row">
+	<tr ref="rowEl" :tabindex="tabIndex" v-show="isRowVisible" class="atable-row">
 		<!-- render numbered/tree view index; skip render for uncounted lists -->
 		<slot name="index" v-if="store.config.view !== 'uncounted'">
 			<td
@@ -71,8 +71,7 @@ if (addNavigation) {
 <style>
 @import url('@stonecrop/themes/default.css');
 
-.table-row {
-	border-top: 1px solid var(--sc-row-border-color);
+.atable-row {
 	display: flex;
 	background-color: white;
 }
@@ -105,5 +104,19 @@ if (addNavigation) {
 	box-sizing: border-box;
 	padding-top: var(--sc-atable-row-padding);
 	padding-bottom: var(--sc-atable-row-padding);
+}
+/* sticky cells in modified rows should be a solid color to properly hide non-sticky cells */
+.atable-row:has(td.cell-modified) > td.sticky-column,
+.atable-row:has(td.cell-modified) > th.sticky-column,
+.atable-row:has(td.cell-modified) > td.sticky-index,
+.atable-row:has(td.cell-modified) > th.sticky-index {
+	background: var(--sc-cell-changed-color);
+}
+</style>
+<style scoped>
+.atable-row.changed-row-gradient:has(td.cell-modified) {
+	--cell-color-start: color-mix(in srgb, var(--sc-cell-changed-color), #fff 20%);
+	--cell-color-end: color-mix(in srgb, var(--sc-cell-changed-color), #fff 60%);
+	background: linear-gradient(90deg, var(--cell-color-start), var(--cell-color-end));
 }
 </style>

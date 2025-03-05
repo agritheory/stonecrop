@@ -11,6 +11,8 @@ import { App } from 'vue';
 import ARow from './components/ARow.vue';
 import ATable from './components/ATable.vue';
 import ATableHeader from './components/ATableHeader.vue';
+import ATableLoading from './components/ATableLoading.vue';
+import ATableLoadingBar from './components/ATableLoadingBar.vue';
 import ATableModal from './components/ATableModal.vue';
 import { ComputedRef } from 'vue';
 import { CSSProperties } from 'vue';
@@ -29,6 +31,10 @@ export { ARow }
 export { ATable }
 
 export { ATableHeader }
+
+export { ATableLoading }
+
+export { ATableLoadingBar }
 
 export { ATableModal }
 
@@ -110,6 +116,7 @@ rowModified?: boolean | undefined;
 }[]>;
 modal: Ref<    {
 bottom?: number | undefined;
+cell?: (HTMLTableCellElement | null) | undefined;
 colIndex?: number | undefined;
 event?: string | undefined;
 height?: number | undefined;
@@ -122,6 +129,7 @@ component?: string | undefined;
 componentProps?: Record<string, any> | undefined;
 }, TableModal | {
 bottom?: number | undefined;
+cell?: (HTMLTableCellElement | null) | undefined;
 colIndex?: number | undefined;
 event?: string | undefined;
 height?: number | undefined;
@@ -216,6 +224,7 @@ rowModified?: boolean | undefined;
 }[]>;
 modal: Ref<    {
 bottom?: number | undefined;
+cell?: (HTMLTableCellElement | null) | undefined;
 colIndex?: number | undefined;
 event?: string | undefined;
 height?: number | undefined;
@@ -228,6 +237,7 @@ component?: string | undefined;
 componentProps?: Record<string, any> | undefined;
 }, TableModal | {
 bottom?: number | undefined;
+cell?: (HTMLTableCellElement | null) | undefined;
 colIndex?: number | undefined;
 event?: string | undefined;
 height?: number | undefined;
@@ -322,6 +332,7 @@ rowModified?: boolean | undefined;
 }[]>;
 modal: Ref<    {
 bottom?: number | undefined;
+cell?: (HTMLTableCellElement | null) | undefined;
 colIndex?: number | undefined;
 event?: string | undefined;
 height?: number | undefined;
@@ -334,6 +345,7 @@ component?: string | undefined;
 componentProps?: Record<string, any> | undefined;
 }, TableModal | {
 bottom?: number | undefined;
+cell?: (HTMLTableCellElement | null) | undefined;
 colIndex?: number | undefined;
 event?: string | undefined;
 height?: number | undefined;
@@ -413,6 +425,7 @@ export type TableDisplay = {
 // @public
 export type TableModal = {
     bottom?: ReturnType<typeof useElementBounding>['bottom'];
+    cell?: HTMLTableCellElement | null;
     colIndex?: number;
     event?: string;
     height?: ReturnType<typeof useElementBounding>['height'];
