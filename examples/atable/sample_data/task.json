@@ -2,7 +2,8 @@
 	{
 		"resource_name": {
 			"resource_group": "Andromedan Holodeck",
-			"resource_display": "(Group)"
+			"resource_display": "(Group)",
+			"color": "#d45a08"
 		},
 		"indent": 0,
 		"parent": null
@@ -2299,7 +2300,8 @@
 	{
 		"resource_name": {
 			"resource_group": "Gluon Encoder",
-			"resource_display": "(Group)"
+			"resource_display": "(Group)",
+			"color": "#e34aa6"
 		},
 		"indent": 0,
 		"parent": null
@@ -5359,7 +5361,8 @@
 	{
 		"resource_name": {
 			"resource_group": "Higgins Decoder",
-			"resource_display": "(Group)"
+			"resource_display": "(Group)",
+			"color": "#0289f7"
 		},
 		"indent": 0,
 		"parent": null
@@ -8419,7 +8422,8 @@
 	{
 		"resource_name": {
 			"resource_group": "Kelvin Cooling Module",
-			"resource_display": "(Group)"
+			"resource_display": "(Group)",
+			"color": "#16794c"
 		},
 		"indent": 0,
 		"parent": null
@@ -10716,7 +10720,8 @@
 	{
 		"resource_name": {
 			"resource_group": "Quadripod Docking Station",
-			"resource_display": "(Group)"
+			"resource_display": "(Group)",
+			"color": "#16794c"
 		},
 		"indent": 0,
 		"parent": null
@@ -13013,7 +13018,8 @@
 	{
 		"resource_name": {
 			"resource_group": "Quantum Entanglement Generator",
-			"resource_display": "(Group)"
+			"resource_display": "(Group)",
+			"color": "#e03636"
 		},
 		"indent": 0,
 		"parent": null
@@ -15310,7 +15316,8 @@
 	{
 		"resource_name": {
 			"resource_group": "Quark Receiver",
-			"resource_display": "(Group)"
+			"resource_display": "(Group)",
+			"color": "#edba13"
 		},
 		"indent": 0,
 		"parent": null
@@ -17607,7 +17614,8 @@
 	{
 		"resource_name": {
 			"resource_group": "Quasar Defense System",
-			"resource_display": "(Group)"
+			"resource_display": "(Group)",
+			"color": "#9c45e3"
 		},
 		"indent": 0,
 		"parent": null
@@ -19904,7 +19912,8 @@
 	{
 		"resource_name": {
 			"resource_group": "Warp Speed Accelerator",
-			"resource_display": "(Group)"
+			"resource_display": "(Group)",
+			"color": "#36baad"
 		},
 		"indent": 0,
 		"parent": null
