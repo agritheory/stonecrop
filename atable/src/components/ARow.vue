@@ -72,11 +72,10 @@ if (addNavigation) {
 @import url('@stonecrop/themes/default.css');
 
 .atable-row {
-	display: flex;
 	background-color: white;
 }
 
-.table-row > td:first-child {
+.atable-row > td:first-child {
 	border-left: 4px solid var(--sc-row-border-color);
 }
 
