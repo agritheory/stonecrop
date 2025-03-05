@@ -46,6 +46,7 @@ const isFilterExpanded = ref(false)
 .beam_filters-options {
 	display: flex;
 	flex-direction: row;
+	justify-content: space-around;
 	margin: 1rem 0;
 	padding: 0 1rem;
 
