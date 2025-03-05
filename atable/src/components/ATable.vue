@@ -246,6 +246,7 @@ td.sticky-index {
 	table-layout: auto;
 	width: auto;
 	overflow: clip;
+	height: 1px;
 	/* border-left:4px solid var(--sc-form-border); */
 }
 .atable th {
