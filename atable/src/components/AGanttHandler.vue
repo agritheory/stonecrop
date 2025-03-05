@@ -27,32 +27,23 @@
 	</td>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { useResizeObserver, useDraggable, useElementBounding } from '@vueuse/core'
 
-const props = defineProps({
-	colspan: {
-		type: Number,
-		default: 1,
-	},
-	label: {
-		type: String,
-		default: '',
-	},
-	start: {
-		type: Number,
-		default: 0,
-	},
-	end: {
-		type: Number,
-		default: 100,
-	},
-	duration: {
-		type: Number,
-		default: 100,
-	},
-})
+const {
+	colspan = 1,
+	label = '',
+	start = 0,
+	end = 100,
+	duration = 100,
+} = defineProps<{
+	colspan?: number
+	label?: string
+	start?: number
+	end?: number
+	duration?: number
+}>()
 
 const emit = defineEmits(['update:start', 'update:end', 'drag'])
 
@@ -72,8 +63,8 @@ const initialBarEnd = ref(0)
 
 // Calculate bar style based on start and end values
 const barStyle = computed(() => {
-	const startPercent = (props.start / props.duration) * 100
-	const endPercent = 100 - ((props.duration - props.end) / props.duration) * 100
+	const startPercent = (start / duration) * 100
+	const endPercent = 100 - ((duration - end) / duration) * 100
 	const width = endPercent - startPercent
 
 	return {
@@ -86,24 +77,24 @@ const barStyle = computed(() => {
 const { x: barX, isDragging: isBarDragging } = useDraggable(barRef, {
 	onStart: () => {
 		draggingBar.value = true
-		initialBarStart.value = props.start
-		initialBarEnd.value = props.end
+		initialBarStart.value = start
+		initialBarEnd.value = end
 	},
 	onMove: ({ delta }) => {
 		if (!containerBounds.width.value || !draggingBar.value) return
 
-		const pixelsPerUnit = containerBounds.width.value / props.duration || 1
+		const pixelsPerUnit = containerBounds.width.value / duration || 1
 		const deltaUnits = delta.x / pixelsPerUnit
 
-		const barDuration = props.end - props.start
+		const barDuration = end - start
 		let newStart = initialBarStart.value + deltaUnits
 		let newEnd = initialBarEnd.value + deltaUnits
 
 		if (newStart < 0) {
 			newStart = 0
 			newEnd = barDuration
-		} else if (newEnd > props.duration) {
-			newEnd = props.duration
+		} else if (newEnd > duration) {
+			newEnd = duration
 			newStart = newEnd - barDuration
 		}
 
@@ -119,15 +110,15 @@ const { x: barX, isDragging: isBarDragging } = useDraggable(barRef, {
 // Make the left handle resizable
 const { x: leftX, isDragging: isLeftDragging } = useDraggable(leftHandleRef, {
 	onStart: () => {
-		initialBarStart.value = props.start
+		initialBarStart.value = start
 	},
 	onMove: ({ delta }) => {
 		if (!containerBounds.width.value) return
 
-		const pixelsPerUnit = containerBounds.width.value / props.duration
+		const pixelsPerUnit = containerBounds.width.value / duration
 		const deltaUnits = delta.x / pixelsPerUnit
 
-		const newStart = Math.max(0, Math.min(props.end - 1, initialBarStart.value + deltaUnits))
+		const newStart = Math.max(0, Math.min(end - 1, initialBarStart.value + deltaUnits))
 
 		emit('update:start', newStart)
 		emit('drag', { type: 'resize', edge: 'start', value: newStart })
@@ -137,15 +128,15 @@ const { x: leftX, isDragging: isLeftDragging } = useDraggable(leftHandleRef, {
 // Make the right handle resizable
 const { x: rightX, isDragging: isRightDragging } = useDraggable(rightHandleRef, {
 	onStart: () => {
-		initialBarEnd.value = props.end
+		initialBarEnd.value = end
 	},
 	onMove: ({ delta }) => {
 		if (!containerBounds.width.value) return
 
-		const pixelsPerUnit = containerBounds.width.value / props.duration
+		const pixelsPerUnit = containerBounds.width.value / duration
 		const deltaUnits = delta.x / pixelsPerUnit
 
-		const newEnd = Math.max(props.start + 1, Math.min(props.duration, initialBarEnd.value + deltaUnits))
+		const newEnd = Math.max(start + 1, Math.min(duration, initialBarEnd.value + deltaUnits))
 
 		emit('update:end', newEnd)
 		emit('drag', { type: 'resize', edge: 'end', value: newEnd })
