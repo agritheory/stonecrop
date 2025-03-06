@@ -28,8 +28,7 @@
 								width: store.config.fullWidth ? 'auto' : null,
 								// tabIndex: column.isGantt ? '-1' : '0',
 							}"
-							spellcheck="false"
-							@cellInput="emitInput" />
+							spellcheck="false" />
 						<component
 							v-else
 							:is="column.cellComponent || 'ACell'"
@@ -71,7 +70,6 @@ import { vOnClickOutside } from '@vueuse/components'
 import { useMutationObserver } from '@vueuse/core'
 import { nextTick, watch, onMounted, useTemplateRef } from 'vue'
 
-import ACell from './ACell.vue'
 import ARow from './ARow.vue'
 import ATableHeader from './ATableHeader.vue'
 import ATableModal from './ATableModal.vue'

@@ -17,10 +17,10 @@ export type TableColumn = {
     type?: string;
     width?: string;
     pinned?: boolean;
-    originalIndex?: number;
     colspan?: number;
-    isGantt?: boolean;
     ganttComponent?: string;
+    isGantt?: boolean;
+    originalIndex?: number;
     cellComponent?: string;
     cellComponentProps?: Record<string, any>;
     modalComponent?: string | ((context: CellContext) => string);

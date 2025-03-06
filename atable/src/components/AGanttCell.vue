@@ -10,16 +10,14 @@
 				<!-- Left resizer handle -->
 				<div ref="leftHandle" class="gantt-handle left-handle" :class="{ 'is-dragging': isLeftDragging }">
 					<div class="handle-grip"></div>
-					<!-- Vertical indicator for left handle -->
 					<div class="vertical-indicator left-indicator"></div>
 				</div>
 
-				<label class="gantt-label">{{ label }}</label>
+				<label v-if="label" class="gantt-label">{{ label }}</label>
 
 				<!-- Right resizer handle -->
 				<div ref="rightHandle" class="gantt-handle right-handle" :class="{ 'is-dragging': isRightDragging }">
 					<div class="handle-grip"></div>
-					<!-- Vertical indicator for right handle -->
 					<div class="vertical-indicator right-indicator"></div>
 				</div>
 			</div>
@@ -28,144 +26,97 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, useTemplateRef } from 'vue'
-import { useResizeObserver, useDraggable, useElementBounding } from '@vueuse/core'
+import { ref, computed, useTemplateRef } from 'vue'
+import { useDraggable, useElementBounding } from '@vueuse/core'
 
 const {
+	start,
+	end,
 	colspan = 1,
-	label = '',
-	start = 0,
-	end = 100,
-	duration = 100,
+	label,
 } = defineProps<{
-	colspan?: number
-	label?: string
 	start?: number
 	end?: number
-	duration?: number
+	colspan?: number
+	label?: string
 }>()
 
-const emit = defineEmits(['update:start', 'update:end', 'drag'])
+const emit = defineEmits<{
+	'update:start': [value: number]
+	'update:end': [value: number]
+	drag: [{ type: 'bar'; start: number; end: number } | { type: 'resize'; edge: 'start' | 'end'; value: number }]
+}>()
 
-// Element refs
 const containerRef = useTemplateRef('container')
 const barRef = useTemplateRef('bar')
 const leftHandleRef = useTemplateRef('leftHandle')
 const rightHandleRef = useTemplateRef('rightHandle')
 
-// Get container bounds to calculate percentages
-const containerBounds = useElementBounding(containerRef)
+const { width: totalBarWidth } = useElementBounding(containerRef)
+const { left: barLeft, right: barRight } = useElementBounding(barRef)
+const currentStart = ref(start || 1)
+const currentEnd = ref(end || 4)
+// const currentEnd = ref(end || colspan)
 
-// Initialize drag state
-const draggingBar = ref(false)
-const initialBarStart = ref(0)
-const initialBarEnd = ref(0)
-
-// Calculate bar style based on start and end values
+const pixelsPerColumn = computed(() => (colspan > 0 ? totalBarWidth.value / colspan : 0))
 const barStyle = computed(() => {
-	const startPercent = (start / duration) * 100
-	const endPercent = 100 - ((duration - end) / duration) * 100
-	const width = endPercent - startPercent
-
+	const startPercent = (currentStart.value / colspan) * 100
+	const endPercent = (currentEnd.value / colspan) * 100
 	return {
 		left: `${startPercent}%`,
-		width: `${width}%`,
+		width: `${endPercent - startPercent}%`,
 	}
 })
 
-// Make the bar draggable
-const { x: barX, isDragging: isBarDragging } = useDraggable(barRef, {
-	onStart: () => {
-		console.log('starting drag for bar')
-		draggingBar.value = true
-		initialBarStart.value = start
-		initialBarEnd.value = end
-	},
-	onMove: ({ x }) => {
-		console.log('moving')
-		if (!containerBounds.width.value || !draggingBar.value) return
-
-		const pixelsPerUnit = containerBounds.width.value / duration || 1
-		const deltaUnits = x / pixelsPerUnit
-
-		const barDuration = end - start
-		let newStart = initialBarStart.value + deltaUnits
-		let newEnd = initialBarEnd.value + deltaUnits
-
-		if (newStart < 0) {
-			newStart = 0
-			newEnd = barDuration
-		} else if (newEnd > duration) {
-			newEnd = duration
-			newStart = newEnd - barDuration
-		}
-
-		emit('update:start', newStart)
-		emit('update:end', newEnd)
-		emit('drag', { type: 'bar', start: newStart, end: newEnd })
-	},
-	onEnd: () => {
-		console.log('ending drag for bar')
-		draggingBar.value = false
-	},
-})
-
-// Make the left handle resizable
-const { x: leftX, isDragging: isLeftDragging } = useDraggable(leftHandleRef, {
+const { isDragging: isLeftDragging } = useDraggable(leftHandleRef, {
+	exact: true,
 	axis: 'x',
-	onStart: () => {
-		console.log('starting drag for left handle')
-		initialBarStart.value = start
-	},
-	onMove: ({ x }) => {
-		console.log('moving')
-		if (!containerBounds.width.value) return
-
-		const pixelsPerUnit = containerBounds.width.value / duration
-		const deltaUnits = x / pixelsPerUnit
-
-		const newStart = Math.max(0, Math.min(end - 1, initialBarStart.value + deltaUnits))
-
+	onEnd: ({ x }) => {
+		const deltaColumns = Math.floor((x - barLeft.value) / pixelsPerColumn.value)
+		const newStart = Math.max(0, Math.min(currentEnd.value - 1, currentStart.value + deltaColumns))
+		currentStart.value = newStart
 		emit('update:start', newStart)
 		emit('drag', { type: 'resize', edge: 'start', value: newStart })
 	},
 })
 
-// Make the right handle resizable
-const { x: rightX, isDragging: isRightDragging } = useDraggable(rightHandleRef, {
+const { isDragging: isRightDragging } = useDraggable(rightHandleRef, {
+	exact: true,
 	axis: 'x',
-	onStart: () => {
-		console.log('starting for right handle')
-		initialBarEnd.value = end
-	},
-	onMove: ({ x }) => {
-		console.log('moving')
-		if (!containerBounds.width.value) return
-
-		const pixelsPerUnit = containerBounds.width.value / duration
-		const deltaUnits = x / pixelsPerUnit
-
-		const newEnd = Math.max(start + 1, Math.min(duration, initialBarEnd.value + deltaUnits))
-
+	onEnd: ({ x }) => {
+		const deltaColumns = Math.floor((x - barRight.value) / pixelsPerColumn.value)
+		const newEnd = Math.max(currentStart.value + 1, Math.min(colspan, currentEnd.value + deltaColumns))
+		currentEnd.value = newEnd
 		emit('update:end', newEnd)
 		emit('drag', { type: 'resize', edge: 'end', value: newEnd })
 	},
 })
 
-// Reset position when not dragging
-watch([isLeftDragging, isRightDragging, isBarDragging], ([leftDrag, rightDrag, barDrag]) => {
-	if (!leftDrag && !rightDrag && !barDrag) {
-		leftX.value = 0
-		rightX.value = 0
-		barX.value = 0
-	}
-})
+// Make the bar draggable
+const { isDragging: isBarDragging } = useDraggable(barRef, {
+	exact: true,
+	axis: 'x',
+	preventDefault: isLeftDragging.value || isRightDragging.value,
+	onEnd: ({ x }) => {
+		const deltaColumns = Math.floor((x - barLeft.value) / pixelsPerColumn.value)
+		const barWidth = currentEnd.value - currentStart.value
+		let newStart = currentStart.value + deltaColumns
+		let newEnd = currentEnd.value + deltaColumns
 
-// Use resize observer to recalculate on container resizing
-useResizeObserver(containerRef, () => {
-	leftX.value = 0
-	rightX.value = 0
-	barX.value = 0
+		if (newStart < 0) {
+			newStart = 0
+			newEnd = barWidth
+		} else if (newEnd > colspan) {
+			newEnd = colspan
+			newStart = newEnd - barWidth
+		}
+
+		currentStart.value = newStart
+		currentEnd.value = newEnd
+		emit('update:start', newStart)
+		emit('update:end', newEnd)
+		emit('drag', { type: 'bar', start: newStart, end: newEnd })
+	},
 })
 </script>
 

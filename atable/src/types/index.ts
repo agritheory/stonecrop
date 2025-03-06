@@ -17,10 +17,10 @@ export type TableColumn = {
 	pinned?: boolean
 
 	// Gantt-specific fields
-	originalIndex?: number
 	colspan?: number
-	isGantt?: boolean
 	ganttComponent?: string
+	isGantt?: boolean
+	originalIndex?: number
 
 	cellComponent?: string
 	cellComponentProps?: Record<string, any>
