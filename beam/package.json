@@ -42,6 +42,7 @@
 		"test:ui": "vitest --ui"
 	},
 	"dependencies": {
+		"@vueuse/components": "^12.7.0",
 		"@vueuse/core": "^12.7.0",
 		"mqtt": "^5.10.3",
 		"onscan.js": "^1.5.2",
