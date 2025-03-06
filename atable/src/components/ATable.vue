@@ -13,23 +13,36 @@
 		<tbody>
 			<slot name="body" :data="store">
 				<ARow v-for="(row, rowIndex) in store.rows" :key="row.id" :row="row" :rowIndex="rowIndex" :store="store">
-					<template v-for="(col, colIndex) in getProcessedColumnsForRow(row)" :key="col.name">
+					<template v-for="(column, colIndex) in getProcessedColumnsForRow(row)" :key="column.name">
 						<component
-							:is="col.isGantt ? col.ganttComponent : col.cellComponent || 'ACell'"
+							v-if="column.isGantt"
+							:is="column.ganttComponent || 'AGanttCell'"
 							:store="store"
-							:col="col"
-							:colspan="col.colspan"
-							spellcheck="false"
-							:pinned="col.pinned"
+							:colspan="column.colspan"
+							:pinned="column.pinned"
 							:rowIndex="rowIndex"
-							:colIndex="col.originalIndex !== undefined ? col.originalIndex : colIndex"
-							:component="col.isGantt ? col.ganttComponent : col.cellComponent"
+							:colIndex="column.originalIndex !== undefined ? column.originalIndex : colIndex"
 							:style="{
-								textAlign: col?.align || 'center',
-								minWidth: col?.width || '40ch',
+								textAlign: column?.align || 'center',
+								minWidth: column?.width || '40ch',
 								width: store.config.fullWidth ? 'auto' : null,
-								// tabIndex: col.isGantt ? '-1' : '0',
+								// tabIndex: column.isGantt ? '-1' : '0',
 							}"
+							spellcheck="false"
+							@cellInput="emitInput" />
+						<component
+							v-else
+							:is="column.cellComponent || 'ACell'"
+							:store="store"
+							:pinned="column.pinned"
+							:rowIndex="rowIndex"
+							:colIndex="colIndex"
+							:style="{
+								textAlign: column?.align || 'center',
+								minWidth: column?.width || '40ch',
+								width: store.config.fullWidth ? 'auto' : null,
+							}"
+							spellcheck="false"
 							@cellInput="emitInput" />
 					</template>
 				</ARow>
@@ -108,7 +121,7 @@ watch(
 )
 
 onMounted(() => {
-	if (columns.some(col => col.pinned)) {
+	if (columns.some(column => column.pinned)) {
 		assignStickyCellWidths()
 
 		// in tree view, also add a mutation observer to capture and adjust expanded rows
@@ -173,34 +186,29 @@ window.addEventListener('keydown', (event: KeyboardEvent) => {
 	}
 })
 
-const getProcessedColumnsForRow = row => {
-	// Check if this is a Gantt row (indent === 0)
+const getProcessedColumnsForRow = (row: TableRow) => {
 	const isGanttRow = row.indent === 0
-
-	// Count pinned columns
-	const pinnedColumnCount = store.columns.filter(col => col.pinned).length
-
-	// If not a Gantt row or no pinned columns, return all columns unchanged
+	const pinnedColumnCount = store.columns.filter(column => column.pinned).length
 	if (!isGanttRow || pinnedColumnCount === 0) {
 		return store.columns
 	}
 
-	const result = []
 	// Add pinned columns
+	const result: TableColumn[] = []
 	for (let i = 0; i < pinnedColumnCount; i++) {
-		const col = { ...store.columns[i] }
-		col.originalIndex = i // Preserve original index
-		result.push(col)
+		const column = { ...store.columns[i] }
+		column.originalIndex = i // Preserve original index
+		result.push(column)
 	}
 
 	// Add the Gantt column with colspan
-	const ganttCol = { ...store.columns[pinnedColumnCount] }
-	ganttCol.colspan = store.columns.length - pinnedColumnCount
-	ganttCol.isGantt = true
-	ganttCol.originalIndex = pinnedColumnCount
-	ganttCol.width = 'auto' // TODO: refactor to API that can detect when data exists in a cell. Might have be custom and not generalizable
-	ganttCol.ganttComponent = store.columns[pinnedColumnCount].gantt_component || 'AGanttHandler'
-	result.push(ganttCol)
+	result.push({
+		...store.columns[pinnedColumnCount],
+		colspan: store.columns.length - pinnedColumnCount,
+		isGantt: true,
+		originalIndex: pinnedColumnCount,
+		width: 'auto', // TODO: refactor to API that can detect when data exists in a cell. Might have be custom and not generalizable
+	})
 
 	return result
 }

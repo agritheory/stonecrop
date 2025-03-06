@@ -6,7 +6,7 @@
 
 import ACell from './components/ACell.vue';
 import AExpansionRow from './components/AExpansionRow.vue';
-import AGanttHandler from './components/AGanttHandler.vue';
+import AGanttCell from './components/AGanttCell.vue';
 import { App } from 'vue';
 import ARow from './components/ARow.vue';
 import ATable from './components/ATable.vue';
@@ -24,7 +24,7 @@ export { ACell }
 
 export { AExpansionRow }
 
-export { AGanttHandler }
+export { AGanttCell }
 
 export { ARow }
 
@@ -67,6 +67,10 @@ label?: string | undefined;
 type?: string | undefined;
 width?: string | undefined;
 pinned?: boolean | undefined;
+originalIndex?: number | undefined;
+colspan?: number | undefined;
+isGantt?: boolean | undefined;
+ganttComponent?: string | undefined;
 cellComponent?: string | undefined;
 cellComponentProps?: Record<string, any> | undefined;
 modalComponent?: (string | ((context: CellContext) => string)) | undefined;
@@ -81,6 +85,10 @@ label?: string | undefined;
 type?: string | undefined;
 width?: string | undefined;
 pinned?: boolean | undefined;
+originalIndex?: number | undefined;
+colspan?: number | undefined;
+isGantt?: boolean | undefined;
+ganttComponent?: string | undefined;
 cellComponent?: string | undefined;
 cellComponentProps?: Record<string, any> | undefined;
 modalComponent?: (string | ((context: CellContext) => string)) | undefined;
@@ -175,6 +183,10 @@ label?: string | undefined;
 type?: string | undefined;
 width?: string | undefined;
 pinned?: boolean | undefined;
+originalIndex?: number | undefined;
+colspan?: number | undefined;
+isGantt?: boolean | undefined;
+ganttComponent?: string | undefined;
 cellComponent?: string | undefined;
 cellComponentProps?: Record<string, any> | undefined;
 modalComponent?: (string | ((context: CellContext) => string)) | undefined;
@@ -189,6 +201,10 @@ label?: string | undefined;
 type?: string | undefined;
 width?: string | undefined;
 pinned?: boolean | undefined;
+originalIndex?: number | undefined;
+colspan?: number | undefined;
+isGantt?: boolean | undefined;
+ganttComponent?: string | undefined;
 cellComponent?: string | undefined;
 cellComponentProps?: Record<string, any> | undefined;
 modalComponent?: (string | ((context: CellContext) => string)) | undefined;
@@ -283,6 +299,10 @@ label?: string | undefined;
 type?: string | undefined;
 width?: string | undefined;
 pinned?: boolean | undefined;
+originalIndex?: number | undefined;
+colspan?: number | undefined;
+isGantt?: boolean | undefined;
+ganttComponent?: string | undefined;
 cellComponent?: string | undefined;
 cellComponentProps?: Record<string, any> | undefined;
 modalComponent?: (string | ((context: CellContext) => string)) | undefined;
@@ -297,6 +317,10 @@ label?: string | undefined;
 type?: string | undefined;
 width?: string | undefined;
 pinned?: boolean | undefined;
+originalIndex?: number | undefined;
+colspan?: number | undefined;
+isGantt?: boolean | undefined;
+ganttComponent?: string | undefined;
 cellComponent?: string | undefined;
 cellComponentProps?: Record<string, any> | undefined;
 modalComponent?: (string | ((context: CellContext) => string)) | undefined;
@@ -396,6 +420,10 @@ export type TableColumn = {
     type?: string;
     width?: string;
     pinned?: boolean;
+    originalIndex?: number;
+    colspan?: number;
+    isGantt?: boolean;
+    ganttComponent?: string;
     cellComponent?: string;
     cellComponentProps?: Record<string, any>;
     modalComponent?: string | ((context: CellContext) => string);

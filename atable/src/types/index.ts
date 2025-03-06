@@ -16,6 +16,12 @@ export type TableColumn = {
 	width?: string
 	pinned?: boolean
 
+	// Gantt-specific fields
+	originalIndex?: number
+	colspan?: number
+	isGantt?: boolean
+	ganttComponent?: string
+
 	cellComponent?: string
 	cellComponentProps?: Record<string, any>
 	/**

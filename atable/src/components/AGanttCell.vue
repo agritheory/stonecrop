@@ -76,11 +76,13 @@ const barStyle = computed(() => {
 // Make the bar draggable
 const { x: barX, isDragging: isBarDragging } = useDraggable(barRef, {
 	onStart: () => {
+		console.log('starting drag for bar')
 		draggingBar.value = true
 		initialBarStart.value = start
 		initialBarEnd.value = end
 	},
 	onMove: ({ x }) => {
+		console.log('moving')
 		if (!containerBounds.width.value || !draggingBar.value) return
 
 		const pixelsPerUnit = containerBounds.width.value / duration || 1
@@ -103,16 +105,20 @@ const { x: barX, isDragging: isBarDragging } = useDraggable(barRef, {
 		emit('drag', { type: 'bar', start: newStart, end: newEnd })
 	},
 	onEnd: () => {
+		console.log('ending drag for bar')
 		draggingBar.value = false
 	},
 })
 
 // Make the left handle resizable
 const { x: leftX, isDragging: isLeftDragging } = useDraggable(leftHandleRef, {
+	axis: 'x',
 	onStart: () => {
+		console.log('starting drag for left handle')
 		initialBarStart.value = start
 	},
 	onMove: ({ x }) => {
+		console.log('moving')
 		if (!containerBounds.width.value) return
 
 		const pixelsPerUnit = containerBounds.width.value / duration
@@ -127,10 +133,13 @@ const { x: leftX, isDragging: isLeftDragging } = useDraggable(leftHandleRef, {
 
 // Make the right handle resizable
 const { x: rightX, isDragging: isRightDragging } = useDraggable(rightHandleRef, {
+	axis: 'x',
 	onStart: () => {
+		console.log('starting for right handle')
 		initialBarEnd.value = end
 	},
 	onMove: ({ x }) => {
+		console.log('moving')
 		if (!containerBounds.width.value) return
 
 		const pixelsPerUnit = containerBounds.width.value / duration
