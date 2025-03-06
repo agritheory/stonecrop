@@ -46,9 +46,10 @@ const isFilterExpanded = ref(false)
 .beam_filters-options {
 	display: flex;
 	flex-direction: row;
-	justify-content: space-around;
+	justify-content: flex-start;
 	margin: 1rem 0;
 	padding: 0 1rem;
+	gap: 1rem;
 
 	@media (max-width: 479px) {
 		flex-direction: column;
