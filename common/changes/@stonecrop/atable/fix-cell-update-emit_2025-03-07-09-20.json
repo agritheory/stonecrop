@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/atable",
+      "comment": "send cell update emit values as object",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/atable"
+}
