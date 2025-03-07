@@ -26,7 +26,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, useTemplateRef } from 'vue'
+import { ref, computed, useTemplateRef, onMounted } from 'vue'
 import { useDraggable, useElementBounding } from '@vueuse/core'
 
 const {
@@ -34,12 +34,24 @@ const {
 	end,
 	colspan = 1,
 	label,
+	color,
 } = defineProps<{
 	start?: number
 	end?: number
 	colspan?: number
 	label?: string
+	color: string
 }>()
+
+const baseColor = ref()
+
+onMounted(() => {
+	if (color == '' || color.length < 6) {
+		baseColor.value = '#cccccc'
+	} else {
+		baseColor.value = color
+	}
+})
 
 const emit = defineEmits<{
 	'update:start': [value: number]
@@ -59,12 +71,15 @@ const currentEnd = ref(end || 4)
 // const currentEnd = ref(end || colspan)
 
 const pixelsPerColumn = computed(() => (colspan > 0 ? totalBarWidth.value / colspan : 0))
+
 const barStyle = computed(() => {
 	const startPercent = (currentStart.value / colspan) * 100
 	const endPercent = (currentEnd.value / colspan) * 100
+
 	return {
 		left: `${startPercent}%`,
 		width: `${endPercent - startPercent}%`,
+		backgroundColor: baseColor.value,
 	}
 })
 
@@ -120,7 +135,7 @@ const { isDragging: isBarDragging } = useDraggable(barRef, {
 })
 </script>
 
-<style>
+<style scoped>
 .aganttcell {
 	background-color: #f9f9f9;
 	width: 100%;
@@ -138,14 +153,13 @@ const { isDragging: isBarDragging } = useDraggable(barRef, {
 .gantt-bar {
 	position: absolute;
 	height: 100%;
-	background-color: #e0e7ff;
 	border-radius: 4px;
-	border: 1px solid #a5b4fc;
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
 	cursor: grab;
 	box-sizing: border-box;
+	border: 1px solid rgba(0, 0, 0, 0.5);
 }
 
 .gantt-bar:active {
@@ -160,7 +174,7 @@ const { isDragging: isBarDragging } = useDraggable(barRef, {
 	flex: 1;
 	text-align: center;
 	font-size: 12px;
-	color: #4f46e5;
+	color: #aaaaaa;
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -176,40 +190,39 @@ const { isDragging: isBarDragging } = useDraggable(barRef, {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	background-color: #a5b4fc;
 	z-index: 0;
+	background: rgba(0, 0, 0, 0.25);
 }
 
 .left-handle {
-	border-right: 1px solid #818cf8;
+	border-right: 1px solid rgba(0, 0, 0, 0.5);
 }
-
 .right-handle {
-	border-left: 1px solid #818cf8;
+	border-left: 1px solid rgba(0, 0, 0, 0.5);
 }
 
 .handle-grip {
 	width: 4px;
 	height: 12px;
-	background-color: #4f46e5;
 	border-radius: 2px;
+	background: rgba(0, 0, 0, 0.8);
 }
 
 .gantt-handle:hover {
-	background-color: #818cf8;
+	background-color: rgba(255, 255, 255, 0.5);
 }
 
 /* Vertical indicators for handles */
 .vertical-indicator {
 	position: absolute;
 	width: 2px;
-	background-color: #4f46e5;
 	opacity: 0;
 	pointer-events: none;
 	transition: opacity 0.2s ease;
 	top: -100vh; /* Extend up */
 	height: 100vh; /* Full height, but will be clipped by tbody */
 	z-index: 5;
+	background-color: v-bind(baseColor);
 }
 
 .left-indicator {
