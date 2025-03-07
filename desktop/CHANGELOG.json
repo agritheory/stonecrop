@@ -2,6 +2,12 @@
   "name": "@stonecrop/desktop",
   "entries": [
     {
+      "version": "0.4.10",
+      "tag": "@stonecrop/desktop_v0.4.10",
+      "date": "Fri, 07 Mar 2025 13:49:04 GMT",
+      "comments": {}
+    },
+    {
       "version": "0.4.9",
       "tag": "@stonecrop/desktop_v0.4.9",
       "date": "Thu, 06 Mar 2025 17:20:07 GMT",
