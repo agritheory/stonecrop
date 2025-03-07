@@ -25,8 +25,7 @@
 							textAlign: col?.align || 'center',
 							minWidth: col?.width || '40ch',
 							width: store.config.fullWidth ? 'auto' : null,
-						}"
-						@cellInput="emitInput" />
+						}" />
 				</ARow>
 			</slot>
 		</tbody>
@@ -76,7 +75,7 @@ const {
 
 const emit = defineEmits<{
 	'update:modelValue': [value: TableRow[]]
-	cellUpdate: [colIndex: number, rowIndex: number, newCellValue: any, prevCellValue: any]
+	cellUpdate: [{ colIndex: number; rowIndex: number; newValue: any; oldValue: any }]
 }>()
 
 const tableRef = useTemplateRef<HTMLTableElement>('table')
@@ -84,12 +83,12 @@ const rowsValue = modelValue ? modelValue : rows
 const store = createTableStore({ columns, rows: rowsValue, id, config })
 
 store.$onAction(({ name, store, args, after }) => {
-	if (name === 'setCellData') {
-		const [colIndex, rowIndex, newCellValue] = args
-		const prevCellValue = store.getCellData(colIndex, rowIndex)
+	if (name === 'setCellData' || name === 'setCellText') {
+		const [colIndex, rowIndex, newValue] = args
+		const oldValue = store.getCellData(colIndex, rowIndex)
 
 		after(() => {
-			emit('cellUpdate', colIndex, rowIndex, newCellValue, prevCellValue)
+			emit('cellUpdate', { colIndex, rowIndex, newValue, oldValue })
 		})
 	}
 })
@@ -112,10 +111,6 @@ onMounted(() => {
 		}
 	}
 })
-
-const emitInput = (colIndex: number, rowIndex: number, newCellValue: any, prevCellValue: any) => {
-	emit('cellUpdate', colIndex, rowIndex, newCellValue, prevCellValue)
-}
 
 const assignStickyCellWidths = () => {
 	const table = tableRef.value
