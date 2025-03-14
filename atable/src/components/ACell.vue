@@ -308,6 +308,7 @@ defineExpose({
 	white-space: nowrap;
 	max-width: 40ch;
 	border-top: 1px solid var(--sc-row-border-color);
+	margin-left: 1px;
 }
 .atable-cell a {
 	color: var(--sc-cell-text-color);
