@@ -140,6 +140,7 @@ const { isDragging: isBarDragging } = useDraggable(barRef, {
 	background-color: #f9f9f9;
 	width: 100%;
 	padding: 0;
+	height: 100%;
 }
 
 .gantt-handler {
