@@ -3,7 +3,7 @@
     {
       "packageName": "@stonecrop/atable",
       "comment": "Refactored ATableHeader to remove the id=\"resizable\" and replace it with a ref for better handling of multiple tables.",
-      "type": "none"
+      "type": "patch"
     }
   ],
   "packageName": "@stonecrop/atable"

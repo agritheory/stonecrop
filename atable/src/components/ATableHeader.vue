@@ -24,21 +24,12 @@
 
 <script setup lang="ts">
 import { createTableStore } from '../stores/table'
-import { ref, onMounted } from 'vue'
 import type { TableColumn } from '../types'
-
-const resizable = ref<HTMLElement | null>(null)
 
 const { columns, store } = defineProps<{
 	columns: TableColumn[]
 	store: ReturnType<typeof createTableStore>
 }>()
-
-onMounted(() => {
-	if (resizable.value) {
-		console.log('ATableHeader mounted:', resizable.value)
-	}
-})
 </script>
 
 <style>
