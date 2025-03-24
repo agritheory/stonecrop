@@ -24,8 +24,7 @@
 						:style="{
 							textAlign: col?.align || 'center',
 							width: col.width ? col.width : store.config.fullWidth ? 'auto' : '40ch',
-						}"
-						@cellInput="emitInput" />
+						}" />
 				</ARow>
 			</slot>
 		</tbody>
@@ -75,7 +74,7 @@ const {
 
 const emit = defineEmits<{
 	'update:modelValue': [value: TableRow[]]
-	cellUpdate: [colIndex: number, rowIndex: number, newCellValue: any, prevCellValue: any]
+	cellUpdate: [{ colIndex: number; rowIndex: number; newValue: any; oldValue: any }]
 }>()
 
 const tableRef = useTemplateRef<HTMLTableElement>('table')
@@ -83,12 +82,12 @@ const rowsValue = modelValue ? modelValue : rows
 const store = createTableStore({ columns, rows: rowsValue, id, config })
 
 store.$onAction(({ name, store, args, after }) => {
-	if (name === 'setCellData') {
-		const [colIndex, rowIndex, newCellValue] = args
-		const prevCellValue = store.getCellData(colIndex, rowIndex)
+	if (name === 'setCellData' || name === 'setCellText') {
+		const [colIndex, rowIndex, newValue] = args
+		const oldValue = store.getCellData(colIndex, rowIndex)
 
 		after(() => {
-			emit('cellUpdate', colIndex, rowIndex, newCellValue, prevCellValue)
+			emit('cellUpdate', { colIndex, rowIndex, newValue, oldValue })
 		})
 	}
 })
@@ -111,10 +110,6 @@ onMounted(() => {
 		}
 	}
 })
-
-const emitInput = (colIndex: number, rowIndex: number, newCellValue: any, prevCellValue: any) => {
-	emit('cellUpdate', colIndex, rowIndex, newCellValue, prevCellValue)
-}
 
 const assignStickyCellWidths = () => {
 	const table = tableRef.value
@@ -174,7 +169,7 @@ defineExpose({ store })
 .sticky-index {
 	position: sticky;
 	left: 0px;
-	z-index: 1;
+	z-index: 10;
 	order: 0;
 }
 
@@ -184,7 +179,7 @@ td.sticky-column,
 th.sticky-index,
 td.sticky-index {
 	position: sticky;
-	z-index: 1;
+	z-index: 10;
 	order: 0;
 	background: white;
 }
@@ -192,7 +187,6 @@ td.sticky-index {
 .sticky-column-edge,
 .atable th.sticky-column-edge {
 	border-right: 1px solid var(--sc-row-border-color);
-	border-right-width: 1px;
 }
 </style>
 
@@ -208,6 +202,7 @@ td.sticky-index {
 	box-sizing: border-box;
 	table-layout: auto;
 	width: auto;
+	overflow: clip;
 	/* border-left:4px solid var(--sc-form-border); */
 }
 .atable th {

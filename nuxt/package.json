@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/nuxt",
-	"version": "0.4.0",
+	"version": "0.4.10",
 	"description": "Nuxt module for Stonecrop",
 	"license": "MIT",
 	"type": "module",
@@ -26,6 +26,7 @@
 		"dist"
 	],
 	"scripts": {
+		"_phase:build": "rushx dev:prepare && nuxt-module-build build",
 		"prepublish": "rushx dev:prepare && nuxt-module-build build",
 		"prepack": "rushx dev:prepare && nuxt-module-build build",
 		"build": "rushx dev:prepare && nuxt-module-build build",
@@ -37,26 +38,26 @@
 		"test:ui": "vitest --ui"
 	},
 	"dependencies": {
-		"@nuxt/kit": "^3.15.2",
+		"@nuxt/kit": "^3.15.4",
 		"@stonecrop/aform": "workspace:*",
 		"@stonecrop/atable": "workspace:*",
 		"@stonecrop/stonecrop": "workspace:*",
-		"pinia": "^2.3.0"
+		"pinia": "^3.0.1"
 	},
 	"devDependencies": {
 		"@nuxt/devtools": "^1.7.0",
 		"@nuxt/module-builder": "^0.8.4",
-		"@nuxt/schema": "^3.15.2",
-		"@nuxt/test-utils": "^3.15.4",
+		"@nuxt/schema": "^3.15.4",
+		"@nuxt/test-utils": "^3.17.0",
 		"eslint": "^8.40.0",
 		"h3": "*",
 		"nitropack": "*",
-		"nuxi": "^3.20.0",
-		"nuxt": "^3.15.2",
+		"nuxi": "^3.22.2",
+		"nuxt": "^3.15.4",
 		"typescript": "~5.6.3",
-		"vue": "^3.5.11",
-		"vite": "^5.4.5",
-		"vitest": "^2.1.1",
-		"vue-router": "^4.4.0"
+		"vue": "^3.5.13",
+		"vite": "^6.1.1",
+		"vitest": "^3.0.6",
+		"vue-router": "^4.5.0"
 	}
 }

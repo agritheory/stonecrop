@@ -3,23 +3,48 @@
 		<Variant title="default">
 			<ATable v-model="default_table.rows" :columns="default_table.columns" :config="default_table.config" />
 		</Variant>
+
 		<Variant title="uncounted">
 			<ATable v-model="uncounted_table.rows" :columns="uncounted_table.columns" :config="uncounted_table.config" />
 		</Variant>
+
 		<Variant title="read-only">
 			<ATable v-model="readonly_table.rows" :columns="readonly_table.columns" :config="readonly_table.config" />
 		</Variant>
+
 		<Variant title="full width">
 			<ATable v-model="full_width_table.rows" :columns="full_width_table.columns" :config="full_width_table.config" />
+		</Variant>
+
+		<Variant title="loading options">
+			<ATableLoading>Loading</ATableLoading>
+			<br />
+			<ATableLoadingBar>Loading</ATableLoadingBar>
+			<br />
+			<ATableLoading v-show="loading">Loading</ATableLoading>
+			<ATable
+				v-show="!loading"
+				v-model="full_width_table.rows"
+				:columns="full_width_table.columns"
+				:config="full_width_table.config" />
 		</Variant>
 	</Story>
 </template>
 
 <script lang="ts" setup>
 import type { TableColumn } from '@stonecrop/atable'
-import { reactive } from 'vue'
+import { ref, onMounted, reactive } from 'vue'
 
 import rows from './sample_data/http_logs.json'
+
+const loading = ref()
+
+onMounted(() => {
+	loading.value = true
+	setTimeout(() => {
+		loading.value = false
+	}, 2500)
+})
 
 const columns: TableColumn[] = [
 	{

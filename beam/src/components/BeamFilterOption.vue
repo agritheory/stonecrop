@@ -1,54 +1,54 @@
 <template>
-	<BeamHeading class="beam_filter-option-heading">{{ title }}</BeamHeading>
-	<div @click="toggle" class="beam_filter-option">
-		<div ref="select" class="beam_filter-option-select">
-			<div class="beam_filter-arrow">
-				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 35.36 70.71">
-					<polygon points="0 70.71 0 0 35.36 35.36 0 70.71" />
-				</svg>
+	<div v-on-click-outside="() => (isMenuOpen = false)" class="beam_filter-container">
+		<BeamHeading class="beam_filter-option-heading">{{ title }}</BeamHeading>
+		<div @click="isMenuOpen = !isMenuOpen" class="beam_filter-option">
+			<div class="beam_filter-option-select">
+				<div class="beam_filter-arrow">
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 35.36 70.71">
+						<polygon points="0 70.71 0 0 35.36 35.36 0 70.71" />
+					</svg>
+				</div>
+				<div class="beam_filter-label">
+					<label>{{ label }}</label>
+				</div>
 			</div>
-			<div class="beam_filter-label">
-				<label>{{ choice }}</label>
-			</div>
+
+			<ul ref="menu" v-if="isMenuOpen" class="beam_filter-select-menu">
+				<li
+					v-for="choice in choices"
+					:class="{ selected: label == choice.label }"
+					:data-value="choice.value"
+					:key="choice.value"
+					class="beam_filter-select-option"
+					@click="selectChoice(choice)">
+					{{ choice.label }}
+				</li>
+			</ul>
 		</div>
-		<ul ref="menu" v-if="open" class="beam_filter-select-menu">
-			<li
-				v-for="(opt, index) in choices"
-				:class="{ selected: choice == opt.choice }"
-				:data-value="opt.value"
-				:key="index"
-				class="beam_filter-select-option"
-				@click="updateValue(opt)">
-				{{ opt.choice }}
-			</li>
-		</ul>
 	</div>
 </template>
 
 <script setup lang="ts">
+import { vOnClickOutside } from '@vueuse/components'
 import { ref } from 'vue'
 
-type Choice = {
-	choice: string
-	value: string
-}
+import { BeamFilterChoice } from '../types'
+
+const emit = defineEmits<{ select: [choice: BeamFilterChoice] }>()
 
 const { title = 'title', choices = [] } = defineProps<{
-	choices: Choice[]
+	choices: BeamFilterChoice[]
 	title?: string
 }>()
 
-const open = ref(false)
+const isMenuOpen = ref(false)
+const label = ref(choices[0].label)
 const value = ref(choices[0].value)
-const choice = ref(choices[0].choice)
 
-const updateValue = (data: Choice) => {
-	choice.value = data.choice
+const selectChoice = (data: BeamFilterChoice) => {
+	label.value = data.label
 	value.value = data.value
-}
-
-const toggle = () => {
-	open.value = !open.value
+	emit('select', data)
 }
 </script>
 
@@ -56,24 +56,24 @@ const toggle = () => {
 .beam_filter-option {
 	cursor: pointer;
 	position: relative;
-	margin-bottom: 1rem;
 }
 
 .beam_filter-option-heading {
-	font-size: 1rem;
+	font-size: 1rem !important;
 	padding-bottom: 0.25rem;
 }
 
 .beam_filter-option-select {
-	position: relative;
-	appearance: none;
-	border: 1px solid var(--sc-row-border-color);
-	font-weight: bold;
-	color: var(--sc-primary-text-color);
-	font-size: 0.8rem;
-	font-family: var(--sc-font-family);
-	display: flex;
 	align-items: stretch;
+	appearance: none;
+	background-color: white;
+	border: 1px solid var(--sc-row-border-color);
+	color: var(--sc-primary-text-color);
+	display: flex;
+	font-family: var(--sc-font-family);
+	font-size: 0.8rem;
+	font-weight: bold;
+	position: relative;
 }
 
 label {
@@ -103,18 +103,19 @@ svg {
 }
 
 .beam_filter-select-menu {
-	/* position: absolute; */
-	z-index: 100;
+	background-color: white;
 	border-top: none;
-	left: 0;
 	border: 1px solid var(--sc-row-border-color);
-	padding: 0rem;
-	list-style: none;
-	width: 100%;
 	box-sizing: border-box;
+	left: 0;
+	list-style: none;
+	margin: 0;
 	max-height: 200px;
 	overflow-y: scroll;
-	margin: 0;
+	padding: 0rem;
+	position: absolute;
+	width: 100%;
+	z-index: 100;
 }
 
 .beam_filter-select-option {
@@ -134,6 +135,16 @@ svg {
 
 	&:hover {
 		background: var(--sc-row-border-color);
+	}
+}
+.beam_filter-container {
+	flex-grow: 1;
+	max-width: 300px;
+	width: 50%;
+
+	@media (max-width: 479px) {
+		width: 100%;
+		max-width: 100%;
 	}
 }
 </style>

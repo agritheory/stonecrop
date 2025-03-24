@@ -4,25 +4,23 @@
 
 ## ListViewItem type
 
-> This API is provided as a beta preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
-> 
-
 
 **Signature:**
 
 ```typescript
 export type ListViewItem = {
-    description: string;
-    label: string;
+    barcode?: string;
     checked?: boolean;
     count?: {
         count: number;
         of: number;
-        uom: string;
+        uom?: string;
     };
     date?: string;
     dateFormat?: string;
     debounce?: number;
+    description?: string;
+    label?: string;
     linkComponent?: string;
     route?: string;
 };

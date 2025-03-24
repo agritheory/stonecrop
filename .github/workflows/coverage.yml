@@ -1,0 +1,120 @@
+name: Coverage
+
+on: [pull_request]
+
+jobs:
+  changes:
+    name: Check for changes
+    runs-on: ubuntu-latest
+
+    permissions:
+      pull-requests: read
+
+    outputs:
+      packages: ${{ steps.filter.outputs.changes }}
+
+    steps:
+    - uses: dorny/paths-filter@v3
+      id: filter
+      with:
+        filters: |
+          aform: aform/**
+          atable: atable/**
+          beam: beam/**
+
+  coverage:
+    name: ${{ matrix.package }} (${{ matrix.branch }})
+    needs: changes
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        package: ${{ fromJSON(needs.changes.outputs.packages) }}
+        branch:
+          - ${{ github.event.pull_request.base.ref }}
+          - ${{ github.event.pull_request.head.ref }}
+        include:
+          - branch: ${{ github.event.pull_request.base.ref }}
+            artifact: development
+          - branch: ${{ github.event.pull_request.head.ref }}
+            artifact: pull-request
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.branch }}
+
+      - name: Install Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache-dependency-path: '**/config/rush/pnpm-lock.yaml'
+          registry-url: https://registry.npmjs.org/
+
+      - name: Rush Install
+        run: node common/scripts/install-run-rush.js install
+
+      - name: Rush Build
+        run: node common/scripts/install-run-rush.js rebuild --verbose
+
+      - name: Run Tests
+        working-directory: ./${{ matrix.package }}
+        run: node ../common/scripts/install-run-rushx.js test:coverage
+
+      - name: Upload Coverage
+        if: always() # upload the coverage report even if tests are failing
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ matrix.package }}-${{ matrix.artifact }}
+          path: ./${{ matrix.package }}/coverage
+
+  report:
+    name: ${{ matrix.package }} report
+    needs: [changes, coverage]
+    runs-on: ubuntu-latest
+    if: always() # run the coverage report even if tests are failing
+
+    strategy:
+      matrix:
+        package: ${{ fromJSON(needs.changes.outputs.packages) }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Install Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache-dependency-path: '**/config/rush/pnpm-lock.yaml'
+          registry-url: https://registry.npmjs.org/
+
+      - name: Rush Install
+        run: node common/scripts/install-run-rush.js install
+
+      - name: Download PR Branch Coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-${{ matrix.package }}-pull-request
+          path: ${{ matrix.package }}/coverage
+
+      - name: Download Base Branch Coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-${{ matrix.package }}-development
+          path: ${{ matrix.package }}/coverage-base
+
+      - name: Report Coverage
+        uses: davelosert/vitest-coverage-report-action@v2
+        with:
+          working-directory: ${{ matrix.package }}
+          file-coverage-mode: 'all'
+          vite-config-path: 'vite.config.ts'
+          json-summary-compare-path: coverage-base/coverage-summary.json

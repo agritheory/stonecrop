@@ -12,9 +12,9 @@ Use MQTT stream
 **Signature:**
 
 ```typescript
-useMqttStream: (options: IMqttStream) => {
+useMqttStream: (options: IMqttStream) => Promise<{
     messages: import("vue").Ref<Record<string, string[]>, Record<string, string[]>>;
-}
+} | undefined>
 ```
 
 ## Parameters
@@ -54,7 +54,7 @@ MQTT stream options
 </tbody></table>
 **Returns:**
 
-{ messages: import("vue").Ref&lt;Record&lt;string, string\[\]&gt;, Record&lt;string, string\[\]&gt;&gt;; }
+Promise&lt;{ messages: import("vue").Ref&lt;Record&lt;string, string\[\]&gt;, Record&lt;string, string\[\]&gt;&gt;; } \| undefined&gt;
 
 MQTT stream messages
 
