@@ -26,7 +26,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, useTemplateRef, onMounted } from 'vue'
+import { ref, computed, onMounted, useTemplateRef } from 'vue'
 import { useDraggable, useElementBounding } from '@vueuse/core'
 
 const {
@@ -40,13 +40,13 @@ const {
 	end?: number
 	colspan?: number
 	label?: string
-	color: string
+	color?: string
 }>()
 
 const baseColor = ref()
 
 onMounted(() => {
-	if (color == '' || color.length < 6) {
+	if (!color || color == '' || color.length < 6) {
 		baseColor.value = '#cccccc'
 	} else {
 		baseColor.value = color
@@ -68,7 +68,7 @@ const { width: totalBarWidth } = useElementBounding(containerRef)
 const { left: barLeft, right: barRight } = useElementBounding(barRef)
 const currentStart = ref(start || 1)
 const currentEnd = ref(end || 4)
-// const currentEnd = ref(end || colspan)
+const dragStartData = ref({ startX: 0, startPos: 0 })
 
 const pixelsPerColumn = computed(() => (colspan > 0 ? totalBarWidth.value / colspan : 0))
 
@@ -84,53 +84,108 @@ const barStyle = computed(() => {
 })
 
 const { isDragging: isLeftDragging } = useDraggable(leftHandleRef, {
-	exact: true,
 	axis: 'x',
+	onStart: () => {
+		if (barRef.value) barRef.value.style.transition = 'none'
+		dragStartData.value = {
+			startX: barLeft.value,
+			startPos: currentStart.value,
+		}
+	},
+	onMove: ({ x }) => {
+		if (isLeftDragging.value && barRef.value) {
+			const deltaX = x - dragStartData.value.startX
+			const deltaColumns = deltaX / pixelsPerColumn.value
+			const newStart = Math.max(0, Math.min(currentEnd.value - 1, dragStartData.value.startPos + deltaColumns))
+			barRef.value.style.left = `${(newStart / colspan) * 100}%`
+			barRef.value.style.width = `${((currentEnd.value - newStart) / colspan) * 100}%`
+		}
+	},
 	onEnd: ({ x }) => {
-		const deltaColumns = Math.floor((x - barLeft.value) / pixelsPerColumn.value)
-		const newStart = Math.max(0, Math.min(currentEnd.value - 1, currentStart.value + deltaColumns))
-		currentStart.value = newStart
-		emit('update:start', newStart)
-		emit('drag', { type: 'resize', edge: 'start', value: newStart })
+		if (barRef.value) {
+			const deltaX = x - dragStartData.value.startX
+			const deltaColumns = Math.round(deltaX / pixelsPerColumn.value)
+			const newStart = Math.max(0, Math.min(currentEnd.value - 1, dragStartData.value.startPos + deltaColumns))
+			currentStart.value = newStart
+
+			emit('update:start', newStart)
+			emit('drag', { type: 'resize', edge: 'start', value: newStart })
+		}
 	},
 })
 
 const { isDragging: isRightDragging } = useDraggable(rightHandleRef, {
-	exact: true,
 	axis: 'x',
+	onStart: () => {
+		if (barRef.value) barRef.value.style.transition = 'none'
+		dragStartData.value = {
+			startX: barRight.value,
+			startPos: currentEnd.value,
+		}
+	},
+	onMove: ({ x }) => {
+		if (isRightDragging.value && barRef.value) {
+			const deltaX = x - dragStartData.value.startX
+			const deltaColumns = deltaX / pixelsPerColumn.value
+			const newEnd = Math.max(currentStart.value + 1, Math.min(colspan, dragStartData.value.startPos + deltaColumns))
+			barRef.value.style.width = `${((newEnd - currentStart.value) / colspan) * 100}%`
+		}
+	},
 	onEnd: ({ x }) => {
-		const deltaColumns = Math.floor((x - barRight.value) / pixelsPerColumn.value)
-		const newEnd = Math.max(currentStart.value + 1, Math.min(colspan, currentEnd.value + deltaColumns))
-		currentEnd.value = newEnd
-		emit('update:end', newEnd)
-		emit('drag', { type: 'resize', edge: 'end', value: newEnd })
+		if (barRef.value) {
+			const deltaX = x - dragStartData.value.startX
+			const deltaColumns = Math.round(deltaX / pixelsPerColumn.value)
+			const newEnd = Math.max(currentStart.value + 1, Math.min(colspan, dragStartData.value.startPos + deltaColumns))
+			currentEnd.value = newEnd
+
+			emit('update:end', newEnd)
+			emit('drag', { type: 'resize', edge: 'end', value: newEnd })
+		}
 	},
 })
 
-// Make the bar draggable
 const { isDragging: isBarDragging } = useDraggable(barRef, {
-	exact: true,
+	exact: true, // to avoid triggering when the left and right handles are being used
 	axis: 'x',
-	preventDefault: isLeftDragging.value || isRightDragging.value,
-	onEnd: ({ x }) => {
-		const deltaColumns = Math.floor((x - barLeft.value) / pixelsPerColumn.value)
-		const barWidth = currentEnd.value - currentStart.value
-		let newStart = currentStart.value + deltaColumns
-		let newEnd = currentEnd.value + deltaColumns
-
-		if (newStart < 0) {
-			newStart = 0
-			newEnd = barWidth
-		} else if (newEnd > colspan) {
-			newEnd = colspan
-			newStart = newEnd - barWidth
+	onStart: () => {
+		if (barRef.value) barRef.value.style.transition = 'none'
+		dragStartData.value = {
+			startX: barLeft.value,
+			startPos: currentStart.value,
 		}
+	},
+	onMove: ({ x }) => {
+		if (isBarDragging.value && barRef.value) {
+			const deltaX = x - dragStartData.value.startX
+			const deltaColumns = deltaX / pixelsPerColumn.value
+			const barWidth = currentEnd.value - currentStart.value
+			const newStart = Math.max(0, Math.min(dragStartData.value.startPos + deltaColumns, colspan - barWidth))
+			barRef.value.style.left = `${(newStart / colspan) * 100}%`
+		}
+	},
+	onEnd: ({ x }) => {
+		if (barRef.value) {
+			const deltaX = x - dragStartData.value.startX
+			const deltaColumns = Math.round(deltaX / pixelsPerColumn.value)
+			const barWidth = currentEnd.value - currentStart.value
 
-		currentStart.value = newStart
-		currentEnd.value = newEnd
-		emit('update:start', newStart)
-		emit('update:end', newEnd)
-		emit('drag', { type: 'bar', start: newStart, end: newEnd })
+			let newStart = dragStartData.value.startPos + deltaColumns
+			let newEnd = newStart + barWidth
+			if (newStart < 0) {
+				newStart = 0
+				newEnd = barWidth
+			} else if (newEnd > colspan) {
+				newEnd = colspan
+				newStart = newEnd - barWidth
+			}
+
+			currentStart.value = newStart
+			currentEnd.value = newEnd
+
+			emit('update:start', newStart)
+			emit('update:end', newEnd)
+			emit('drag', { type: 'bar', start: newStart, end: newEnd })
+		}
 	},
 })
 </script>
@@ -161,6 +216,7 @@ const { isDragging: isBarDragging } = useDraggable(barRef, {
 	cursor: grab;
 	box-sizing: border-box;
 	border: 1px solid rgba(0, 0, 0, 0.5);
+	transition: left 0.1s ease-out, width 0.1s ease-out;
 }
 
 .gantt-bar:active {
@@ -236,8 +292,20 @@ const { isDragging: isBarDragging } = useDraggable(barRef, {
 	transform: translateX(50%);
 }
 
-/* Show indicators when handles are being dragged */
 .gantt-handle.is-dragging .vertical-indicator {
 	opacity: 0.7;
+}
+
+.gantt-handler::after {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-size: calc(100% / v-bind(colspan)) 100%;
+	background-image: linear-gradient(to right, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
+	pointer-events: none;
+	z-index: 1;
 }
 </style>
