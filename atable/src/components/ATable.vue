@@ -42,8 +42,7 @@
 								minWidth: column?.width || '40ch',
 								width: store.config.fullWidth ? 'auto' : null,
 							}"
-							spellcheck="false"
-							@cellInput="emitInput" />
+							spellcheck="false" />
 					</template>
 				</ARow>
 			</slot>
@@ -93,7 +92,7 @@ const {
 
 const emit = defineEmits<{
 	'update:modelValue': [value: TableRow[]]
-	cellUpdate: [colIndex: number, rowIndex: number, newCellValue: any, prevCellValue: any]
+	cellUpdate: [{ colIndex: number; rowIndex: number; newValue: any; oldValue: any }]
 }>()
 
 const tableRef = useTemplateRef<HTMLTableElement>('table')
@@ -101,12 +100,12 @@ const rowsValue = modelValue ? modelValue : rows
 const store = createTableStore({ columns, rows: rowsValue, id, config })
 
 store.$onAction(({ name, store, args, after }) => {
-	if (name === 'setCellData') {
-		const [colIndex, rowIndex, newCellValue] = args
-		const prevCellValue = store.getCellData(colIndex, rowIndex)
+	if (name === 'setCellData' || name === 'setCellText') {
+		const [colIndex, rowIndex, newValue] = args
+		const oldValue = store.getCellData(colIndex, rowIndex)
 
 		after(() => {
-			emit('cellUpdate', colIndex, rowIndex, newCellValue, prevCellValue)
+			emit('cellUpdate', { colIndex, rowIndex, newValue, oldValue })
 		})
 	}
 })
@@ -129,10 +128,6 @@ onMounted(() => {
 		}
 	}
 })
-
-const emitInput = (colIndex: number, rowIndex: number, newCellValue: any, prevCellValue: any) => {
-	emit('cellUpdate', colIndex, rowIndex, newCellValue, prevCellValue)
-}
 
 const assignStickyCellWidths = () => {
 	const table = tableRef.value
@@ -206,7 +201,7 @@ const getProcessedColumnsForRow = (row: TableRow) => {
 		colspan: store.columns.length - pinnedColumnCount,
 		isGantt: true,
 		originalIndex: pinnedColumnCount,
-		color: isGanttRow ? row.resource_name.color : '',
+		color: isGanttRow ? (row.resource_name as { color: string }).color : '',
 		width: 'auto', // TODO: refactor to API that can detect when data exists in a cell. Might have be custom and not generalizable
 	})
 

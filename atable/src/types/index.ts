@@ -17,6 +17,7 @@ export type TableColumn = {
 	pinned?: boolean
 
 	// Gantt-specific fields
+	color?: string
 	colspan?: number
 	ganttComponent?: string
 	isGantt?: boolean

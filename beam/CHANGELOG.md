@@ -1,6 +1,18 @@
 # Change Log - @stonecrop/beam
 
-This log was last generated on Tue, 04 Mar 2025 21:22:12 GMT and should not be manually modified.
+This log was last generated on Fri, 07 Mar 2025 13:49:04 GMT and should not be manually modified.
+
+## 0.4.10
+Fri, 07 Mar 2025 13:49:04 GMT
+
+_Version update only_
+
+## 0.4.9
+Thu, 06 Mar 2025 17:20:07 GMT
+
+### Patches
+
+- render filter menus over list content
 
 ## 0.4.8
 Tue, 04 Mar 2025 21:22:12 GMT

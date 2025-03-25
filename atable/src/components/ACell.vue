@@ -48,8 +48,6 @@ const {
 	pinned?: boolean
 }>()
 
-const emit = defineEmits<{ cellInput: [colIndex: number, rowIndex: number, newValue: string, oldValue: string] }>()
-
 const cellRef = useTemplateRef<HTMLTableCellElement>('cell')
 
 // keep a shallow copy of the original cell value for comparison
@@ -165,7 +163,6 @@ const updateCellData = (payload: Event) => {
 		return
 	}
 
-	emit('cellInput', colIndex, rowIndex, target.textContent!, currentData.value)
 	currentData.value = target.textContent!
 
 	// only apply changes if the cell value has changed after being mounted
