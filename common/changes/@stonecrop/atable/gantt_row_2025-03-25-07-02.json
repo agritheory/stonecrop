@@ -3,7 +3,7 @@
     {
       "packageName": "@stonecrop/atable",
       "comment": "add gantt view for tables",
-      "type": "minor"
+      "type": "patch"
     }
   ],
   "packageName": "@stonecrop/atable"

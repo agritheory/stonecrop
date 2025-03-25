@@ -35,13 +35,11 @@ const {
 	store,
 	tabIndex = -1,
 	addNavigation = false, // default to allowing cell navigation
-	gantt = false,
 } = defineProps<{
 	rowIndex: number
 	store: ReturnType<typeof createTableStore>
 	tabIndex?: number
 	addNavigation?: boolean | KeypressHandlers
-	gantt?: boolean
 }>()
 
 const rowRef = useTemplateRef<HTMLTableRowElement>('rowEl')
