@@ -2,6 +2,18 @@
   "name": "@stonecrop/atable",
   "entries": [
     {
+      "version": "0.4.11",
+      "tag": "@stonecrop/atable_v0.4.11",
+      "date": "Wed, 26 Mar 2025 06:51:27 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "add gantt view for tables"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.4.10",
       "tag": "@stonecrop/atable_v0.4.10",
       "date": "Fri, 07 Mar 2025 13:49:04 GMT",
