@@ -1,12 +1,16 @@
 import { createPinia, setActivePinia } from 'pinia'
 import { describe, it, expect, beforeEach } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { config, mount } from '@vue/test-utils'
 
-import ATable from '../src/components/ATable.vue'
 import data from './data/http_logs.json'
+import ACell from '../src/components/ACell.vue'
+import ARow from '../src/components/ARow.vue'
+import ATable from '../src/components/ATable.vue'
 import type { TableColumn, TableConfig } from '../src/types'
 
 describe('table component', () => {
+	config.global.components = { ACell, ARow }
+
 	const columns: TableColumn[] = [
 		{
 			label: 'Home Page',
@@ -52,7 +56,7 @@ describe('table component', () => {
 		expect(wrapper.vm).toBeTruthy()
 
 		const headerCells = wrapper.findAll('th')
-		expect(headerCells.length).toBe(columns.length + 1) // +1 for the row number column
+		expect(headerCells.length).toBe(columns.length + 1)
 
 		const homePageHeader = headerCells.at(1)
 		expect(homePageHeader!.element.style.minWidth).toBe('35ch')
@@ -73,16 +77,19 @@ describe('table component', () => {
 	it('verify data rows (format function)', async () => {
 		const wrapper = mount(ATable, { props: defaultProps })
 
-		const dataCells = wrapper.findAll('td')
-		expect(dataCells.length).toBe((columns.length + 1) * data.length) // +1 for the row number column
+		const dataCells = wrapper.findAllComponents(ACell)
+		expect(dataCells.length).toBe(columns.length * data.length)
 
-		const homePageCell = dataCells.at(1)
+		const homePageCell = dataCells.at(0)
+		expect(homePageCell?.exists()).toBe(true)
 		expect(homePageCell!.text()).toBeTypeOf('string') // test string format
 
-		const httpMethodCell = dataCells.at(2)
+		const httpMethodCell = dataCells.at(1)
+		expect(httpMethodCell?.exists()).toBe(true)
 		expect(httpMethodCell!.text()).toBeTruthy()
 
-		const reportDateCell = dataCells.at(3)
+		const reportDateCell = dataCells.at(2)
+		expect(reportDateCell?.exists()).toBe(true)
 		expect(reportDateCell!.text()).toBeTruthy()
 	})
 
@@ -125,16 +132,19 @@ describe('table component', () => {
 			},
 		})
 
-		const dataCells = wrapper.findAll('td')
-		expect(dataCells.length).toBe((columns.length + 1) * data.length) // +1 for the row number column
+		const dataCells = wrapper.findAllComponents(ACell)
+		expect(dataCells.length).toBe(columns.length * data.length) // +1 for the row number column
 
-		const homePageCell = dataCells.at(1)
+		const homePageCell = dataCells.at(0)
+		expect(homePageCell?.exists()).toBe(true)
 		expect(homePageCell!.text()).toBeTypeOf('string') // test string format
 
-		const httpMethodCell = dataCells.at(2)
+		const httpMethodCell = dataCells.at(1)
+		expect(httpMethodCell?.exists()).toBe(true)
 		expect(httpMethodCell!.text()).toBeTruthy()
 
-		const reportDateCell = dataCells.at(3)
+		const reportDateCell = dataCells.at(2)
+		expect(reportDateCell?.exists()).toBe(true)
 		expect(reportDateCell!.text()).toBeTruthy()
 	})
 
@@ -176,17 +186,20 @@ describe('table component', () => {
 			},
 		})
 
-		const dataCells = wrapper.findAll('td')
-		expect(dataCells.length).toBe((columns.length + 1) * data.length) // +1 for the row number column
+		const dataCells = wrapper.findAllComponents(ACell)
+		expect(dataCells.length).toBe(columns.length * data.length)
 
-		const homePageCell = dataCells.at(1)
+		const homePageCell = dataCells.at(0)
+		expect(homePageCell?.exists()).toBe(true)
 		const text = JSON.parse(homePageCell!.text())
 		expect(text).toBeTypeOf('object') // test no format
 
-		const httpMethodCell = dataCells.at(2)
+		const httpMethodCell = dataCells.at(1)
+		expect(httpMethodCell?.exists()).toBe(true)
 		expect(httpMethodCell!.text()).toBeTruthy()
 
-		const reportDateCell = dataCells.at(3)
+		const reportDateCell = dataCells.at(2)
+		expect(reportDateCell?.exists()).toBe(true)
 		expect(reportDateCell!.text()).toBeTruthy()
 	})
 })

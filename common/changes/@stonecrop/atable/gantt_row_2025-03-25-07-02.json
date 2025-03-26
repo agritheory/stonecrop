@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/atable",
+      "comment": "add gantt view for tables",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/atable"
+}

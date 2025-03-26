@@ -2,7 +2,9 @@
 	<table
 		ref="table"
 		class="atable"
-		:style="{ width: store.config.fullWidth ? '100%' : 'auto' }"
+		:style="{
+			width: store.config.fullWidth ? '100%' : 'auto',
+		}"
 		v-on-click-outside="store.closeModal">
 		<slot name="header" :data="store">
 			<ATableHeader :columns="store.columns" :store="store" />
@@ -11,21 +13,37 @@
 		<tbody>
 			<slot name="body" :data="store">
 				<ARow v-for="(row, rowIndex) in store.rows" :key="row.id" :row="row" :rowIndex="rowIndex" :store="store">
-					<ACell
-						v-for="(col, colIndex) in store.columns"
-						:key="col.name"
-						:store="store"
-						:col="col"
-						spellcheck="false"
-						:pinned="col.pinned"
-						:rowIndex="rowIndex"
-						:colIndex="colIndex"
-						:component="col.cellComponent"
-						:style="{
-							textAlign: col?.align || 'center',
-							minWidth: col?.width || '40ch',
-							width: store.config.fullWidth ? 'auto' : null,
-						}" />
+					<template v-for="(column, colIndex) in getProcessedColumnsForRow(row)" :key="column.name">
+						<component
+							v-if="column.isGantt"
+							:is="column.ganttComponent || 'AGanttCell'"
+							:store="store"
+							:color="column.color"
+							:colspan="column.colspan"
+							:pinned="column.pinned"
+							:rowIndex="rowIndex"
+							:colIndex="column.originalIndex !== undefined ? column.originalIndex : colIndex"
+							:style="{
+								textAlign: column?.align || 'center',
+								minWidth: column?.width || '40ch',
+								width: store.config.fullWidth ? 'auto' : null,
+								// tabIndex: column.isGantt ? '-1' : '0',
+							}"
+							spellcheck="false" />
+						<component
+							v-else
+							:is="column.cellComponent || 'ACell'"
+							:store="store"
+							:pinned="column.pinned"
+							:rowIndex="rowIndex"
+							:colIndex="colIndex"
+							:style="{
+								textAlign: column?.align || 'center',
+								minWidth: column?.width || '40ch',
+								width: store.config.fullWidth ? 'auto' : null,
+							}"
+							spellcheck="false" />
+					</template>
 				</ARow>
 			</slot>
 		</tbody>
@@ -52,7 +70,6 @@ import { vOnClickOutside } from '@vueuse/components'
 import { useMutationObserver } from '@vueuse/core'
 import { nextTick, watch, onMounted, useTemplateRef } from 'vue'
 
-import ACell from './ACell.vue'
 import ARow from './ARow.vue'
 import ATableHeader from './ATableHeader.vue'
 import ATableModal from './ATableModal.vue'
@@ -102,7 +119,7 @@ watch(
 )
 
 onMounted(() => {
-	if (columns.some(col => col.pinned)) {
+	if (columns.some(column => column.pinned)) {
 		assignStickyCellWidths()
 
 		// in tree view, also add a mutation observer to capture and adjust expanded rows
@@ -163,6 +180,34 @@ window.addEventListener('keydown', (event: KeyboardEvent) => {
 	}
 })
 
+const getProcessedColumnsForRow = (row: TableRow) => {
+	const isGanttRow = row.indent === 0
+	const pinnedColumnCount = store.columns.filter(column => column.pinned).length
+	if (!isGanttRow || pinnedColumnCount === 0) {
+		return store.columns
+	}
+
+	// Add pinned columns
+	const result: TableColumn[] = []
+	for (let i = 0; i < pinnedColumnCount; i++) {
+		const column = { ...store.columns[i] }
+		column.originalIndex = i // Preserve original index
+		result.push(column)
+	}
+	// Add the Gantt column with colspan
+
+	result.push({
+		...store.columns[pinnedColumnCount],
+		colspan: store.columns.length - pinnedColumnCount,
+		isGantt: true,
+		originalIndex: pinnedColumnCount,
+		color: isGanttRow ? (row.resource_name as { color: string }).color : '',
+		width: 'auto', // TODO: refactor to API that can detect when data exists in a cell. Might have be custom and not generalizable
+	})
+
+	return result
+}
+
 defineExpose({ store })
 </script>
 
@@ -204,6 +249,7 @@ td.sticky-index {
 	table-layout: auto;
 	width: auto;
 	overflow: clip;
+	height: 1px;
 	/* border-left:4px solid var(--sc-form-border); */
 }
 .atable th {
@@ -223,5 +269,23 @@ td.sticky-index {
 }
 .atable th:focus {
 	outline: none;
+}
+
+/* Make sure the vertical indicator doesn't extend into the header */
+.atable:tbody {
+	overflow: hidden; /* This ensures the indicator is clipped */
+	position: relative; /* Create a stacking context */
+}
+
+/* Ensure the indicator stays within the tbody */
+.atable:tbody::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 1px;
+	background-color: transparent;
+	z-index: 100;
 }
 </style>

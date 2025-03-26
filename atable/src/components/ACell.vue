@@ -175,6 +175,10 @@ const updateCellData = (payload: Event) => {
 		store.setCellData(colIndex, rowIndex, target.textContent)
 	}
 }
+
+defineExpose({
+	currentData,
+})
 </script>
 
 <style>
