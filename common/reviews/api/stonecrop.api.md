@@ -118,6 +118,11 @@ export type TableColumn = {
     resizable?: boolean;
     type?: string;
     width?: string;
+    color?: string;
+    colspan?: number;
+    ganttComponent?: string;
+    isGantt?: boolean;
+    originalIndex?: number;
     cellComponent?: string;
     cellComponentProps?: Record<string, any>;
     modalComponent?: string | ((context: CellContext) => string);
@@ -128,7 +133,7 @@ export type TableColumn = {
 
 // @public
 export type TableConfig = {
-    view?: 'uncounted' | 'list' | 'list-expansion' | 'tree';
+    view?: 'uncounted' | 'list' | 'list-expansion' | 'tree' | 'gantt';
     fullWidth?: boolean;
 };
 

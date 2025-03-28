@@ -2,6 +2,7 @@ import { App } from 'vue'
 
 import ACell from './components/ACell.vue'
 import AExpansionRow from './components/AExpansionRow.vue'
+import AGanttCell from './components/AGanttCell.vue'
 import ARow from './components/ARow.vue'
 import ATable from './components/ATable.vue'
 import ATableHeader from './components/ATableHeader.vue'
@@ -27,6 +28,7 @@ export type {
 function install(app: App /* options */) {
 	app.component('ACell', ACell)
 	app.component('AExpansionRow', AExpansionRow)
+	app.component('AGanttCell', AGanttCell)
 	app.component('ARow', ARow)
 	app.component('ATable', ATable)
 	app.component('ATableHeader', ATableHeader)
@@ -35,4 +37,15 @@ function install(app: App /* options */) {
 	app.component('ATableModal', ATableModal)
 }
 
-export { install, ACell, AExpansionRow, ARow, ATable, ATableHeader, ATableLoading, ATableLoadingBar, ATableModal }
+export {
+	ACell,
+	AExpansionRow,
+	AGanttCell,
+	ARow,
+	ATable,
+	ATableHeader,
+	ATableLoading,
+	ATableLoadingBar,
+	ATableModal,
+	install,
+}

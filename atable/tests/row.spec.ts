@@ -55,7 +55,7 @@ describe('table row component', () => {
 
 		const listColumns = rowWrapper.findAll('.list-index')
 		const treeColumns = rowWrapper.findAll('.tree-index')
-		expect(listColumns.length).toBe(1) // since only one instance of a row is retrieved
+		expect(listColumns.length).toBe(1) // since only the first instance of a row is retrieved
 		expect(treeColumns.length).toBe(0)
 	})
 
@@ -74,6 +74,6 @@ describe('table row component', () => {
 		const listColumns = rowWrapper.findAll('.list-index')
 		const treeColumns = rowWrapper.findAll('.tree-index')
 		expect(listColumns.length).toBe(0)
-		expect(treeColumns.length).toBe(1) // since only one instance of a row is retrieved
+		expect(treeColumns.length).toBe(1) // since only the first instance of a row is retrieved
 	})
 })
