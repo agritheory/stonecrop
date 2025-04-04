@@ -119,6 +119,18 @@ export const createTableStore = (initData: {
 			width: config.value.fullWidth ? 'auto' : undefined,
 		})
 
+		const resizeColumn = (colIndex: number, newWidth: number) => {
+			if (colIndex < 0 || colIndex >= columns.value.length) return
+
+			const minWidth = 40
+			const finalWidth = Math.max(newWidth, minWidth)
+
+			columns.value[colIndex] = {
+				...columns.value[colIndex],
+				width: `${finalWidth}px`,
+			}
+		}
+
 		const isRowVisible = (rowIndex: number) => {
 			return config.value.view !== 'tree' || display.value[rowIndex].isRoot || display.value[rowIndex].open
 		}
@@ -216,6 +228,7 @@ export const createTableStore = (initData: {
 			getCellDisplayValue,
 			getFormattedValue,
 			getHeaderCellStyle,
+			resizeColumn,
 			getIndent,
 			getRowExpandSymbol,
 			isRowVisible,
