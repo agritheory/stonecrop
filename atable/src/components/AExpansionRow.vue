@@ -72,28 +72,30 @@ if (addNavigation) {
 	align-items: center;
 	justify-content: center;
 }
+
 .expandable-row {
 	border-top: 1px solid var(--sc-row-border-color);
 	height: var(--sc-atable-row-height);
-	display: flex;
 }
+
 .expandable-row > td:first-child {
 	border-left: 4px solid var(--sc-row-border-color);
 }
 
 .expanded-row {
-	display: flex;
 	border-left: 2px solid var(--sc-row-border-color);
 }
 
 .expandable-row:last-child {
 	border-bottom: 1px solid var(--sc-row-border-color);
 }
+
 .expanded-row-content {
 	border-top: 1px solid var(--sc-row-border-color);
 	padding: 1.5rem;
 }
 </style>
+
 <style scoped>
 .expandable-row.changed-row-gradient:has(td.cell-modified) {
 	--cell-color-start: color-mix(in srgb, var(--sc-cell-changed-color), #fff 20%);

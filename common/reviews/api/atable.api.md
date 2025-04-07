@@ -6,6 +6,7 @@
 
 import ACell from './components/ACell.vue';
 import AExpansionRow from './components/AExpansionRow.vue';
+import AGanttCell from './components/AGanttCell.vue';
 import { App } from 'vue';
 import ARow from './components/ARow.vue';
 import ATable from './components/ATable.vue';
@@ -22,6 +23,8 @@ import { useElementBounding } from '@vueuse/core';
 export { ACell }
 
 export { AExpansionRow }
+
+export { AGanttCell }
 
 export { ARow }
 
@@ -64,6 +67,11 @@ label?: string | undefined;
 type?: string | undefined;
 width?: string | undefined;
 pinned?: boolean | undefined;
+color?: string | undefined;
+colspan?: number | undefined;
+ganttComponent?: string | undefined;
+isGantt?: boolean | undefined;
+originalIndex?: number | undefined;
 cellComponent?: string | undefined;
 cellComponentProps?: Record<string, any> | undefined;
 modalComponent?: (string | ((context: CellContext) => string)) | undefined;
@@ -78,6 +86,11 @@ label?: string | undefined;
 type?: string | undefined;
 width?: string | undefined;
 pinned?: boolean | undefined;
+color?: string | undefined;
+colspan?: number | undefined;
+ganttComponent?: string | undefined;
+isGantt?: boolean | undefined;
+originalIndex?: number | undefined;
 cellComponent?: string | undefined;
 cellComponentProps?: Record<string, any> | undefined;
 modalComponent?: (string | ((context: CellContext) => string)) | undefined;
@@ -86,10 +99,10 @@ format?: (string | ((value: any, context: CellContext) => string)) | undefined;
 mask?: ((value: any) => any) | undefined;
 }[]>;
 config: Ref<    {
-view?: ("uncounted" | "list" | "list-expansion" | "tree") | undefined;
+view?: ("uncounted" | "list" | "list-expansion" | "tree" | "gantt") | undefined;
 fullWidth?: boolean | undefined;
 }, TableConfig | {
-view?: ("uncounted" | "list" | "list-expansion" | "tree") | undefined;
+view?: ("uncounted" | "list" | "list-expansion" | "tree" | "gantt") | undefined;
 fullWidth?: boolean | undefined;
 }>;
 display: Ref<    {
@@ -173,6 +186,11 @@ label?: string | undefined;
 type?: string | undefined;
 width?: string | undefined;
 pinned?: boolean | undefined;
+color?: string | undefined;
+colspan?: number | undefined;
+ganttComponent?: string | undefined;
+isGantt?: boolean | undefined;
+originalIndex?: number | undefined;
 cellComponent?: string | undefined;
 cellComponentProps?: Record<string, any> | undefined;
 modalComponent?: (string | ((context: CellContext) => string)) | undefined;
@@ -187,6 +205,11 @@ label?: string | undefined;
 type?: string | undefined;
 width?: string | undefined;
 pinned?: boolean | undefined;
+color?: string | undefined;
+colspan?: number | undefined;
+ganttComponent?: string | undefined;
+isGantt?: boolean | undefined;
+originalIndex?: number | undefined;
 cellComponent?: string | undefined;
 cellComponentProps?: Record<string, any> | undefined;
 modalComponent?: (string | ((context: CellContext) => string)) | undefined;
@@ -195,10 +218,10 @@ format?: (string | ((value: any, context: CellContext) => string)) | undefined;
 mask?: ((value: any) => any) | undefined;
 }[]>;
 config: Ref<    {
-view?: ("uncounted" | "list" | "list-expansion" | "tree") | undefined;
+view?: ("uncounted" | "list" | "list-expansion" | "tree" | "gantt") | undefined;
 fullWidth?: boolean | undefined;
 }, TableConfig | {
-view?: ("uncounted" | "list" | "list-expansion" | "tree") | undefined;
+view?: ("uncounted" | "list" | "list-expansion" | "tree" | "gantt") | undefined;
 fullWidth?: boolean | undefined;
 }>;
 display: Ref<    {
@@ -282,6 +305,11 @@ label?: string | undefined;
 type?: string | undefined;
 width?: string | undefined;
 pinned?: boolean | undefined;
+color?: string | undefined;
+colspan?: number | undefined;
+ganttComponent?: string | undefined;
+isGantt?: boolean | undefined;
+originalIndex?: number | undefined;
 cellComponent?: string | undefined;
 cellComponentProps?: Record<string, any> | undefined;
 modalComponent?: (string | ((context: CellContext) => string)) | undefined;
@@ -296,6 +324,11 @@ label?: string | undefined;
 type?: string | undefined;
 width?: string | undefined;
 pinned?: boolean | undefined;
+color?: string | undefined;
+colspan?: number | undefined;
+ganttComponent?: string | undefined;
+isGantt?: boolean | undefined;
+originalIndex?: number | undefined;
 cellComponent?: string | undefined;
 cellComponentProps?: Record<string, any> | undefined;
 modalComponent?: (string | ((context: CellContext) => string)) | undefined;
@@ -304,10 +337,10 @@ format?: (string | ((value: any, context: CellContext) => string)) | undefined;
 mask?: ((value: any) => any) | undefined;
 }[]>;
 config: Ref<    {
-view?: ("uncounted" | "list" | "list-expansion" | "tree") | undefined;
+view?: ("uncounted" | "list" | "list-expansion" | "tree" | "gantt") | undefined;
 fullWidth?: boolean | undefined;
 }, TableConfig | {
-view?: ("uncounted" | "list" | "list-expansion" | "tree") | undefined;
+view?: ("uncounted" | "list" | "list-expansion" | "tree" | "gantt") | undefined;
 fullWidth?: boolean | undefined;
 }>;
 display: Ref<    {
@@ -396,6 +429,11 @@ export type TableColumn = {
     type?: string;
     width?: string;
     pinned?: boolean;
+    color?: string;
+    colspan?: number;
+    ganttComponent?: string;
+    isGantt?: boolean;
+    originalIndex?: number;
     cellComponent?: string;
     cellComponentProps?: Record<string, any>;
     modalComponent?: string | ((context: CellContext) => string);
@@ -406,7 +444,7 @@ export type TableColumn = {
 
 // @public
 export type TableConfig = {
-    view?: 'uncounted' | 'list' | 'list-expansion' | 'tree';
+    view?: 'uncounted' | 'list' | 'list-expansion' | 'tree' | 'gantt';
     fullWidth?: boolean;
 };
 

@@ -92,6 +92,3 @@ const pinned = ref({
 	config: { view: 'tree' } as TableConfig,
 })
 </script>
-
-<!-- enter documentation here -->
-<docs lang="md"></docs>

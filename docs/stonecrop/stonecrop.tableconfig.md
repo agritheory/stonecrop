@@ -10,7 +10,7 @@ Table configuration definition.
 
 ```typescript
 export type TableConfig = {
-    view?: 'uncounted' | 'list' | 'list-expansion' | 'tree';
+    view?: 'uncounted' | 'list' | 'list-expansion' | 'tree' | 'gantt';
     fullWidth?: boolean;
 };
 ```

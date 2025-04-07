@@ -28,6 +28,11 @@ createTableStore: (initData: {
         type?: string | undefined;
         width?: string | undefined;
         pinned?: boolean | undefined;
+        color?: string | undefined;
+        colspan?: number | undefined;
+        ganttComponent?: string | undefined;
+        isGantt?: boolean | undefined;
+        originalIndex?: number | undefined;
         cellComponent?: string | undefined;
         cellComponentProps?: Record<string, any> | undefined;
         modalComponent?: (string | ((context: CellContext) => string)) | undefined;
@@ -42,6 +47,11 @@ createTableStore: (initData: {
         type?: string | undefined;
         width?: string | undefined;
         pinned?: boolean | undefined;
+        color?: string | undefined;
+        colspan?: number | undefined;
+        ganttComponent?: string | undefined;
+        isGantt?: boolean | undefined;
+        originalIndex?: number | undefined;
         cellComponent?: string | undefined;
         cellComponentProps?: Record<string, any> | undefined;
         modalComponent?: (string | ((context: CellContext) => string)) | undefined;
@@ -50,10 +60,10 @@ createTableStore: (initData: {
         mask?: ((value: any) => any) | undefined;
     }[]>;
     config: import("vue").Ref<{
-        view?: ("uncounted" | "list" | "list-expansion" | "tree") | undefined;
+        view?: ("uncounted" | "list" | "list-expansion" | "tree" | "gantt") | undefined;
         fullWidth?: boolean | undefined;
     }, TableConfig | {
-        view?: ("uncounted" | "list" | "list-expansion" | "tree") | undefined;
+        view?: ("uncounted" | "list" | "list-expansion" | "tree" | "gantt") | undefined;
         fullWidth?: boolean | undefined;
     }>;
     display: import("vue").Ref<{
@@ -137,6 +147,11 @@ createTableStore: (initData: {
         type?: string | undefined;
         width?: string | undefined;
         pinned?: boolean | undefined;
+        color?: string | undefined;
+        colspan?: number | undefined;
+        ganttComponent?: string | undefined;
+        isGantt?: boolean | undefined;
+        originalIndex?: number | undefined;
         cellComponent?: string | undefined;
         cellComponentProps?: Record<string, any> | undefined;
         modalComponent?: (string | ((context: CellContext) => string)) | undefined;
@@ -151,6 +166,11 @@ createTableStore: (initData: {
         type?: string | undefined;
         width?: string | undefined;
         pinned?: boolean | undefined;
+        color?: string | undefined;
+        colspan?: number | undefined;
+        ganttComponent?: string | undefined;
+        isGantt?: boolean | undefined;
+        originalIndex?: number | undefined;
         cellComponent?: string | undefined;
         cellComponentProps?: Record<string, any> | undefined;
         modalComponent?: (string | ((context: CellContext) => string)) | undefined;
@@ -159,10 +179,10 @@ createTableStore: (initData: {
         mask?: ((value: any) => any) | undefined;
     }[]>;
     config: import("vue").Ref<{
-        view?: ("uncounted" | "list" | "list-expansion" | "tree") | undefined;
+        view?: ("uncounted" | "list" | "list-expansion" | "tree" | "gantt") | undefined;
         fullWidth?: boolean | undefined;
     }, TableConfig | {
-        view?: ("uncounted" | "list" | "list-expansion" | "tree") | undefined;
+        view?: ("uncounted" | "list" | "list-expansion" | "tree" | "gantt") | undefined;
         fullWidth?: boolean | undefined;
     }>;
     display: import("vue").Ref<{
@@ -246,6 +266,11 @@ createTableStore: (initData: {
         type?: string | undefined;
         width?: string | undefined;
         pinned?: boolean | undefined;
+        color?: string | undefined;
+        colspan?: number | undefined;
+        ganttComponent?: string | undefined;
+        isGantt?: boolean | undefined;
+        originalIndex?: number | undefined;
         cellComponent?: string | undefined;
         cellComponentProps?: Record<string, any> | undefined;
         modalComponent?: (string | ((context: CellContext) => string)) | undefined;
@@ -260,6 +285,11 @@ createTableStore: (initData: {
         type?: string | undefined;
         width?: string | undefined;
         pinned?: boolean | undefined;
+        color?: string | undefined;
+        colspan?: number | undefined;
+        ganttComponent?: string | undefined;
+        isGantt?: boolean | undefined;
+        originalIndex?: number | undefined;
         cellComponent?: string | undefined;
         cellComponentProps?: Record<string, any> | undefined;
         modalComponent?: (string | ((context: CellContext) => string)) | undefined;
@@ -268,10 +298,10 @@ createTableStore: (initData: {
         mask?: ((value: any) => any) | undefined;
     }[]>;
     config: import("vue").Ref<{
-        view?: ("uncounted" | "list" | "list-expansion" | "tree") | undefined;
+        view?: ("uncounted" | "list" | "list-expansion" | "tree" | "gantt") | undefined;
         fullWidth?: boolean | undefined;
     }, TableConfig | {
-        view?: ("uncounted" | "list" | "list-expansion" | "tree") | undefined;
+        view?: ("uncounted" | "list" | "list-expansion" | "tree" | "gantt") | undefined;
         fullWidth?: boolean | undefined;
     }>;
     display: import("vue").Ref<{
