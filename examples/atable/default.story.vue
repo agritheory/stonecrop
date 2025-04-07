@@ -2,6 +2,7 @@
 	<Story title="default">
 		<Variant title="default">
 			<ATable v-model="default_table.rows" :columns="default_table.columns" :config="default_table.config" />
+			<ATable v-model="default_table_2.rows" :columns="default_table_2.columns" :config="default_table_2.config" />
 		</Variant>
 
 		<Variant title="uncounted">
@@ -111,7 +112,13 @@ const readonly_columns: TableColumn[] = [
 
 const default_table = reactive({
 	rows,
-	columns,
+	columns: [...columns],
+	config: { view: 'list' },
+})
+
+const default_table_2 = reactive({
+	rows,
+	columns: [...columns],
 	config: { view: 'list' },
 })
 

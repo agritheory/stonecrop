@@ -1,5 +1,5 @@
 <template>
-	<thead ref="resizable" v-if="columns.length">
+	<thead v-if="columns.length">
 		<tr class="atable-header-row" tabindex="-1">
 			<th
 				v-if="store.zeroColumn"
