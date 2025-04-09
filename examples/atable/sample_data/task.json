@@ -2,11 +2,11 @@
 	{
 		"resource_name": {
 			"resource_group": "Andromedan Holodeck",
-			"resource_display": "(Group)",
-			"color": "#d45a08"
+			"resource_display": "(Group)"
 		},
 		"indent": 0,
-		"parent": null
+		"parent": null,
+		"gantt_color": "#d45a08"
 	},
 	{
 		"period_1": {
@@ -2300,11 +2300,11 @@
 	{
 		"resource_name": {
 			"resource_group": "Gluon Encoder",
-			"resource_display": "(Group)",
-			"color": "#e34aa6"
+			"resource_display": "(Group)"
 		},
 		"indent": 0,
-		"parent": null
+		"parent": null,
+		"gantt_color": "#e34aa6"
 	},
 	{
 		"period_1": {
@@ -5361,11 +5361,11 @@
 	{
 		"resource_name": {
 			"resource_group": "Higgins Decoder",
-			"resource_display": "(Group)",
-			"color": "#0289f7"
+			"resource_display": "(Group)"
 		},
 		"indent": 0,
-		"parent": null
+		"parent": null,
+		"gantt_color": "#0289f7"
 	},
 	{
 		"period_1": {
@@ -8422,11 +8422,11 @@
 	{
 		"resource_name": {
 			"resource_group": "Kelvin Cooling Module",
-			"resource_display": "(Group)",
-			"color": "#16794c"
+			"resource_display": "(Group)"
 		},
 		"indent": 0,
-		"parent": null
+		"parent": null,
+		"gantt_color": "#16794c"
 	},
 	{
 		"period_1": {
@@ -10720,11 +10720,11 @@
 	{
 		"resource_name": {
 			"resource_group": "Quadripod Docking Station",
-			"resource_display": "(Group)",
-			"color": "#16794c"
+			"resource_display": "(Group)"
 		},
 		"indent": 0,
-		"parent": null
+		"parent": null,
+		"gantt_color": "#16794c"
 	},
 	{
 		"period_1": {
@@ -13018,11 +13018,11 @@
 	{
 		"resource_name": {
 			"resource_group": "Quantum Entanglement Generator",
-			"resource_display": "(Group)",
-			"color": "#e03636"
+			"resource_display": "(Group)"
 		},
 		"indent": 0,
-		"parent": null
+		"parent": null,
+		"gantt_color": "#e03636"
 	},
 	{
 		"period_1": {
@@ -15316,11 +15316,11 @@
 	{
 		"resource_name": {
 			"resource_group": "Quark Receiver",
-			"resource_display": "(Group)",
-			"color": "#edba13"
+			"resource_display": "(Group)"
 		},
 		"indent": 0,
-		"parent": null
+		"parent": null,
+		"gantt_color": "#edba13"
 	},
 	{
 		"period_1": {
@@ -17614,11 +17614,11 @@
 	{
 		"resource_name": {
 			"resource_group": "Quasar Defense System",
-			"resource_display": "(Group)",
-			"color": "#9c45e3"
+			"resource_display": "(Group)"
 		},
 		"indent": 0,
-		"parent": null
+		"parent": null,
+		"gantt_color": "#9c45e3"
 	},
 	{
 		"period_1": {
@@ -19912,11 +19912,11 @@
 	{
 		"resource_name": {
 			"resource_group": "Warp Speed Accelerator",
-			"resource_display": "(Group)",
-			"color": "#36baad"
+			"resource_display": "(Group)"
 		},
 		"indent": 0,
-		"parent": null
+		"parent": null,
+		"gantt_color": "#36baad"
 	},
 	{
 		"period_1": {

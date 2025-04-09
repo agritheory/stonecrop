@@ -17,7 +17,6 @@ export type TableColumn = {
 	pinned?: boolean
 
 	// Gantt-specific fields
-	color?: string
 	colspan?: number
 	ganttComponent?: string
 	isGantt?: boolean
@@ -95,6 +94,11 @@ export type TableRow = {
 	[key: string]: any
 	indent?: number
 	parent?: number
+
+	/**
+	 * When a table is being viewed as a Gantt chart, this colour would be applied to the row's gantt bar, if one exists.
+	 */
+	gantt_color?: string
 }
 
 /**

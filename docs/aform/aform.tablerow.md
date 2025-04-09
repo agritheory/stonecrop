@@ -13,5 +13,6 @@ export type TableRow = {
     [key: string]: any;
     indent?: number;
     parent?: number;
+    gantt_color?: string;
 };
 ```
