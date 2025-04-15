@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/atable
 
-This log was last generated on Wed, 26 Mar 2025 06:51:27 GMT and should not be manually modified.
+This log was last generated on Tue, 15 Apr 2025 09:33:23 GMT and should not be manually modified.
+
+## 0.4.12
+Tue, 15 Apr 2025 09:33:23 GMT
+
+### Patches
+
+- use specific key to fetch gantt bar's color
 
 ## 0.4.11
 Wed, 26 Mar 2025 06:51:27 GMT

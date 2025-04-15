@@ -2,6 +2,12 @@
   "name": "@stonecrop/node-editor",
   "entries": [
     {
+      "version": "0.4.12",
+      "tag": "@stonecrop/node-editor_v0.4.12",
+      "date": "Tue, 15 Apr 2025 09:33:23 GMT",
+      "comments": {}
+    },
+    {
       "version": "0.4.11",
       "tag": "@stonecrop/node-editor_v0.4.11",
       "date": "Wed, 26 Mar 2025 06:51:27 GMT",
