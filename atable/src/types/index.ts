@@ -98,7 +98,18 @@ export type TableRow = {
 	/**
 	 * When a table is being viewed as a Gantt chart, this colour would be applied to the row's gantt bar, if one exists.
 	 */
-	gantt_color?: string
+	gantt?: GanttOptions
+}
+
+/**
+ * Table Gantt row options.
+ * @public
+ */
+export type GanttOptions = {
+	color?: string
+	startIndex?: number
+	endIndex?: number
+	colspan?: number
 }
 
 /**

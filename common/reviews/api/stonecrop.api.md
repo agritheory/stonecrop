@@ -60,6 +60,14 @@ export type FormSchema = BaseSchema & {
 };
 
 // @public
+export type GanttOptions = {
+    color?: string;
+    startIndex?: number;
+    endIndex?: number;
+    colspan?: number;
+};
+
+// @public
 export type ImmutableDoctype = {
     readonly schema?: List<SchemaTypes>;
     readonly workflow: StateMachine<unknown, any, any>;
@@ -140,7 +148,7 @@ export type TableRow = {
     [key: string]: any;
     indent?: number;
     parent?: number;
-    gantt_color?: string;
+    gantt?: GanttOptions;
 };
 
 // @public

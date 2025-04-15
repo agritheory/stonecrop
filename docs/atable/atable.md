@@ -67,6 +67,17 @@ Table cell context definition.
 </td></tr>
 <tr><td>
 
+[GanttOptions](./atable.ganttoptions.md)
+
+
+</td><td>
+
+Table Gantt row options.
+
+
+</td></tr>
+<tr><td>
+
 [TableColumn](./atable.tablecolumn.md)
 
 

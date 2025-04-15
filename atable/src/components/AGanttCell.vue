@@ -67,7 +67,7 @@ const rightHandleRef = useTemplateRef('rightHandle')
 const { width: totalBarWidth } = useElementBounding(containerRef)
 const { left: barLeft, right: barRight } = useElementBounding(barRef)
 const currentStart = ref(start || 0)
-const currentEnd = ref(end || colspan)
+const currentEnd = ref(end || currentStart.value + colspan)
 const dragStartData = ref({ startX: 0, startPos: 0 })
 
 const pixelsPerColumn = computed(() => (colspan > 0 ? totalBarWidth.value / colspan : 0))

@@ -152,6 +152,17 @@ Schema structure for defining forms inside AForm
 </td></tr>
 <tr><td>
 
+[GanttOptions](./stonecrop.ganttoptions.md)
+
+
+</td><td>
+
+Table Gantt row options.
+
+
+</td></tr>
+<tr><td>
+
 [ImmutableDoctype](./stonecrop.immutabledoctype.md)
 
 

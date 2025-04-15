@@ -121,7 +121,6 @@ export const createTableStore = (initData: {
 
 		const isRowGantt = (rowIndex: number) => {
 			const row = rows.value[rowIndex]
-			console.log(config.value.view, row.indent)
 			return config.value.view === 'gantt' && row.indent === 0
 		}
 

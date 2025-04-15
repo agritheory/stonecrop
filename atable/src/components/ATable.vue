@@ -18,7 +18,9 @@
 							v-if="column.isGantt"
 							:is="column.ganttComponent || 'AGanttCell'"
 							:store="store"
-							:color="row.gantt_color"
+							:color="row.gantt?.color"
+							:start="row.gantt?.startIndex"
+							:end="row.gantt?.endIndex"
 							:colspan="column.colspan"
 							:pinned="column.pinned"
 							:rowIndex="rowIndex"
@@ -193,11 +195,11 @@ const getProcessedColumnsForRow = (row: TableRow) => {
 		result.push(column)
 	}
 
-	// Finally, add the Gantt bar column with a full-width colspan
+	// Finally, add the Gantt bar column with either a provided colspan or default to full-width colspan
 	result.push({
 		...store.columns[pinnedColumnCount],
 		isGantt: true,
-		colspan: store.columns.length - pinnedColumnCount,
+		colspan: row.gantt?.colspan || store.columns.length - pinnedColumnCount,
 		originalIndex: pinnedColumnCount,
 		width: 'auto', // TODO: refactor to API that can detect when data exists in a cell. Might have be custom and not generalizable
 	})

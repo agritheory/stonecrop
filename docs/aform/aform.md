@@ -89,6 +89,17 @@ Schema structure for defining forms inside AForm
 </td></tr>
 <tr><td>
 
+[GanttOptions](./aform.ganttoptions.md)
+
+
+</td><td>
+
+Table Gantt row options.
+
+
+</td></tr>
+<tr><td>
+
 [SchemaTypes](./aform.schematypes.md)
 
 

@@ -153,12 +153,22 @@ rows: Ref<    {
 [x: string]: any;
 indent?: number | undefined;
 parent?: number | undefined;
-gantt_color?: string | undefined;
+gantt?: {
+color?: string | undefined;
+startIndex?: number | undefined;
+endIndex?: number | undefined;
+colspan?: number | undefined;
+} | undefined;
 }[], TableRow[] | {
 [x: string]: any;
 indent?: number | undefined;
 parent?: number | undefined;
-gantt_color?: string | undefined;
+gantt?: {
+color?: string | undefined;
+startIndex?: number | undefined;
+endIndex?: number | undefined;
+colspan?: number | undefined;
+} | undefined;
 }[]>;
 table: Ref<    {}, {}>;
 updates: Ref<Record<string, string>, Record<string, string>>;
@@ -272,12 +282,22 @@ rows: Ref<    {
 [x: string]: any;
 indent?: number | undefined;
 parent?: number | undefined;
-gantt_color?: string | undefined;
+gantt?: {
+color?: string | undefined;
+startIndex?: number | undefined;
+endIndex?: number | undefined;
+colspan?: number | undefined;
+} | undefined;
 }[], TableRow[] | {
 [x: string]: any;
 indent?: number | undefined;
 parent?: number | undefined;
-gantt_color?: string | undefined;
+gantt?: {
+color?: string | undefined;
+startIndex?: number | undefined;
+endIndex?: number | undefined;
+colspan?: number | undefined;
+} | undefined;
 }[]>;
 table: Ref<    {}, {}>;
 updates: Ref<Record<string, string>, Record<string, string>>;
@@ -391,12 +411,22 @@ rows: Ref<    {
 [x: string]: any;
 indent?: number | undefined;
 parent?: number | undefined;
-gantt_color?: string | undefined;
+gantt?: {
+color?: string | undefined;
+startIndex?: number | undefined;
+endIndex?: number | undefined;
+colspan?: number | undefined;
+} | undefined;
 }[], TableRow[] | {
 [x: string]: any;
 indent?: number | undefined;
 parent?: number | undefined;
-gantt_color?: string | undefined;
+gantt?: {
+color?: string | undefined;
+startIndex?: number | undefined;
+endIndex?: number | undefined;
+colspan?: number | undefined;
+} | undefined;
 }[]>;
 table: Ref<    {}, {}>;
 updates: Ref<Record<string, string>, Record<string, string>>;
@@ -416,6 +446,14 @@ setCellData: (colIndex: number, rowIndex: number, value: any) => void;
 setCellText: (colIndex: number, rowIndex: number, value: string) => void;
 toggleRowExpand: (rowIndex: number) => void;
 }, "closeModal" | "getCellData" | "getCellDisplayValue" | "getFormattedValue" | "getHeaderCellStyle" | "getIndent" | "getRowExpandSymbol" | "isRowGantt" | "isRowVisible" | "setCellData" | "setCellText" | "toggleRowExpand">>;
+
+// @public
+export type GanttOptions = {
+    color?: string;
+    startIndex?: number;
+    endIndex?: number;
+    colspan?: number;
+};
 
 // @public
 export function install(app: App): void;
@@ -488,7 +526,7 @@ export type TableRow = {
     [key: string]: any;
     indent?: number;
     parent?: number;
-    gantt_color?: string;
+    gantt?: GanttOptions;
 };
 
 // (No @packageDocumentation comment for this package)

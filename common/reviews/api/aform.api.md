@@ -72,6 +72,14 @@ export type FormSchema = BaseSchema & {
 };
 
 // @public
+export type GanttOptions = {
+    color?: string;
+    startIndex?: number;
+    endIndex?: number;
+    colspan?: number;
+};
+
+// @public
 export function install(app: App): void;
 
 export { Login }
@@ -111,7 +119,7 @@ export type TableRow = {
     [key: string]: any;
     indent?: number;
     parent?: number;
-    gantt_color?: string;
+    gantt?: GanttOptions;
 };
 
 // @public
