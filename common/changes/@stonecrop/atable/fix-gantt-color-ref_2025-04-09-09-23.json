@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/atable",
+      "comment": "use specific key to fetch gantt bar's color",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/atable"
+}
