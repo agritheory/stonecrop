@@ -88,7 +88,6 @@ export type TableColumn = {
     type?: string;
     width?: string;
     pinned?: boolean;
-    color?: string;
     colspan?: number;
     ganttComponent?: string;
     isGantt?: boolean;
@@ -112,6 +111,7 @@ export type TableRow = {
     [key: string]: any;
     indent?: number;
     parent?: number;
+    gantt_color?: string;
 };
 
 // @public

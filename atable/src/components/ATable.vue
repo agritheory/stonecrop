@@ -18,18 +18,16 @@
 							v-if="column.isGantt"
 							:is="column.ganttComponent || 'AGanttCell'"
 							:store="store"
-							:color="column.color"
+							:color="row.gantt_color"
 							:colspan="column.colspan"
 							:pinned="column.pinned"
 							:rowIndex="rowIndex"
-							:colIndex="column.originalIndex !== undefined ? column.originalIndex : colIndex"
+							:colIndex="column.originalIndex ?? colIndex"
 							:style="{
 								textAlign: column?.align || 'center',
 								minWidth: column?.width || '40ch',
 								width: store.config.fullWidth ? 'auto' : null,
-								// tabIndex: column.isGantt ? '-1' : '0',
-							}"
-							spellcheck="false" />
+							}" />
 						<component
 							v-else
 							:is="column.cellComponent || 'ACell'"
@@ -187,21 +185,20 @@ const getProcessedColumnsForRow = (row: TableRow) => {
 		return store.columns
 	}
 
-	// Add pinned columns
+	// For Gantt views, first add the pinned columns
 	const result: TableColumn[] = []
 	for (let i = 0; i < pinnedColumnCount; i++) {
 		const column = { ...store.columns[i] }
 		column.originalIndex = i // Preserve original index
 		result.push(column)
 	}
-	// Add the Gantt column with colspan
 
+	// Finally, add the Gantt bar column with a full-width colspan
 	result.push({
 		...store.columns[pinnedColumnCount],
-		colspan: store.columns.length - pinnedColumnCount,
 		isGantt: true,
+		colspan: store.columns.length - pinnedColumnCount,
 		originalIndex: pinnedColumnCount,
-		color: isGanttRow ? (row.resource_name as { color: string }).color : '',
 		width: 'auto', // TODO: refactor to API that can detect when data exists in a cell. Might have be custom and not generalizable
 	})
 

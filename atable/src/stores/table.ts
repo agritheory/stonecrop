@@ -131,6 +131,12 @@ export const createTableStore = (initData: {
 			}
 		}
 
+		const isRowGantt = (rowIndex: number) => {
+			const row = rows.value[rowIndex]
+			console.log(config.value.view, row.indent)
+			return config.value.view === 'gantt' && row.indent === 0
+		}
+
 		const isRowVisible = (rowIndex: number) => {
 			return config.value.view !== 'tree' || display.value[rowIndex].isRoot || display.value[rowIndex].open
 		}
@@ -231,6 +237,7 @@ export const createTableStore = (initData: {
 			resizeColumn,
 			getIndent,
 			getRowExpandSymbol,
+			isRowGantt,
 			isRowVisible,
 			setCellData,
 			setCellText,
