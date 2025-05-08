@@ -61,17 +61,14 @@ describe('table component', () => {
 		const homePageHeader = headerCells.at(1)
 		expect(homePageHeader!.element.style.width).toBe('35ch')
 		expect(homePageHeader!.element.style.textAlign).toBe('left')
-		expect(homePageHeader!.element.style.width).toBe('')
 
 		const httpMethodHeader = headerCells.at(2)
 		expect(httpMethodHeader!.element.style.width).toBe('20ch')
 		expect(httpMethodHeader!.element.style.textAlign).toBe('left')
-		expect(httpMethodHeader!.element.style.width).toBe('')
 
 		const reportDateHeader = headerCells.at(3)
 		expect(reportDateHeader!.element.style.width).toBe('25ch')
 		expect(reportDateHeader!.element.style.textAlign).toBe('center')
-		expect(reportDateHeader!.element.style.width).toBe('')
 	})
 
 	it('verify data rows (format function)', async () => {
