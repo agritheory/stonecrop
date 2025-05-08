@@ -15,6 +15,7 @@ export type TableColumn = {
 	type?: string
 	width?: string
 	pinned?: boolean
+	resizable?: boolean
 
 	// Gantt-specific fields
 	colspan?: number

@@ -3,6 +3,7 @@
 		<Variant title="default">
 			<ATable v-model="default_table.rows" :columns="default_table.columns" :config="default_table.config" />
 			<ATable v-model="default_table_2.rows" :columns="default_table_2.columns" :config="default_table_2.config" />
+			<ATable v-model="default_table_3.rows" :columns="default_table_3.columns" :config="default_table_3.config" />
 		</Variant>
 
 		<Variant title="uncounted">
@@ -53,6 +54,7 @@ const columns: TableColumn[] = [
 		name: 'home_page',
 		type: 'Data',
 		align: 'left',
+		resizable: false,
 		edit: false,
 		width: '40ch',
 		format: (value: { title?: string; value?: any }, context) => {
@@ -117,6 +119,12 @@ const default_table = reactive({
 })
 
 const default_table_2 = reactive({
+	rows,
+	columns: [...columns],
+	config: { view: 'list' },
+})
+
+const default_table_3 = reactive({
 	rows,
 	columns: [...columns],
 	config: { view: 'list' },

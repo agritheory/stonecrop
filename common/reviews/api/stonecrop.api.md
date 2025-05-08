@@ -117,6 +117,7 @@ export type TableColumn = {
     type?: string;
     width?: string;
     pinned?: boolean;
+    resizable?: boolean;
     colspan?: number;
     ganttComponent?: string;
     isGantt?: boolean;

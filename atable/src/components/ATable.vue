@@ -37,7 +37,6 @@
 							:colIndex="colIndex"
 							:style="{
 								textAlign: column?.align || 'center',
-								minWidth: column?.width || '40ch',
 								width: store.config.fullWidth ? 'auto' : null,
 							}"
 							spellcheck="false" />

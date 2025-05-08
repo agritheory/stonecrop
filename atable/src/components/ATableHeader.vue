@@ -12,53 +12,39 @@
 				class="list-index" />
 			<th
 				v-for="(column, colKey) in columns"
+				v-resize-observer="onResize"
 				:key="column.name"
+				:data-colindex="colKey"
 				tabindex="-1"
 				:style="store.getHeaderCellStyle(column)"
 				:class="column.pinned ? 'sticky-column' : ''">
 				<slot>{{ column.label || String.fromCharCode(colKey + 97).toUpperCase() }}</slot>
-				<div class="resize-handle" @mousedown="startResize($event, colKey)"></div>
 			</th>
 		</tr>
 	</thead>
 </template>
 
 <script setup lang="ts">
+import { vResizeObserver } from '@vueuse/components'
 import { createTableStore } from '../stores/table'
 import type { TableColumn } from '../types'
-import { ref } from 'vue'
 
-const resizingColumn = ref<number | null>(null)
-const startX = ref(0)
-const startWidth = ref(0)
 const { columns, store } = defineProps<{
 	columns: TableColumn[]
 	store: ReturnType<typeof createTableStore>
 }>()
 
-const startResize = (event: MouseEvent, colIndex: number) => {
-	resizingColumn.value = colIndex
-	startX.value = event.pageX
-
-	const thElement = (event.target as HTMLElement).parentElement
-	startWidth.value = thElement ? thElement.offsetWidth : parseInt(store.columns[colIndex].width || '40', 10)
-
-	document.addEventListener('mousemove', handleResize)
-	document.addEventListener('mouseup', stopResize)
-}
-
-const handleResize = (event: MouseEvent) => {
-	if (resizingColumn.value !== null) {
-		const delta = event.pageX - startX.value
-		const newWidth = startWidth.value + delta
-		store.resizeColumn(resizingColumn.value, newWidth)
+const onResize = (entries: ReadonlyArray<ResizeObserverEntry>) => {
+	for (const entry of entries) {
+		if (entry.borderBoxSize.length === 0) continue
+		const observedCell = entry.borderBoxSize[0]
+		const observedWidth = `${observedCell.inlineSize}px`
+		const colIndex = Number((entry.target as HTMLElement).dataset.colindex)
+		const colWidth = store.columns[colIndex]?.width || '40ch'
+		if (colWidth !== observedWidth) {
+			store.resizeColumn(colIndex, observedCell.inlineSize)
+		}
 	}
-}
-
-const stopResize = () => {
-	resizingColumn.value = null
-	document.removeEventListener('mousemove', handleResize)
-	document.removeEventListener('mouseup', stopResize)
 }
 </script>
 
@@ -87,20 +73,5 @@ th {
 .list-expansion-index {
 	width: 2ch;
 	margin-left: 5px;
-}
-.resize-handle {
-	position: absolute;
-	right: 0;
-	top: 0;
-	width: 3px;
-	height: 100%;
-	cursor: ew-resize;
-	background-color: rgba(135, 135, 135, 0.259);
-	border-right: 1px solid transparent;
-	transition: background-color 0.2s, border-color 0.2s;
-}
-.resize-handle:hover {
-	background-color: rgba(255, 255, 255, 0.5);
-	border-color: rgba(0, 0, 0, 0.5);
 }
 </style>
