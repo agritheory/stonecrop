@@ -119,8 +119,7 @@ export const createTableStore = (initData: {
 			// if the table is full width, the last column should not be resizable;
 			// ref: https://github.com/agritheory/stonecrop/pull/196#issuecomment-2503762641
 
-			const resizable = column.resizable === undefined ? true : column.resizable
-			const isResizable = config.value.fullWidth ? resizable && !isLastCol : resizable
+			const isResizable = config.value.fullWidth ? column.resizable && !isLastCol : column.resizable
 
 			return {
 				width: column.width || '40ch',

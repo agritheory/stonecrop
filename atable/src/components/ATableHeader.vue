@@ -38,11 +38,12 @@ const onResize = (entries: ReadonlyArray<ResizeObserverEntry>) => {
 	for (const entry of entries) {
 		if (entry.borderBoxSize.length === 0) continue
 		const observedCell = entry.borderBoxSize[0]
-		const observedWidth = `${observedCell.inlineSize}px`
+		const observedWidth = observedCell.inlineSize
 		const colIndex = Number((entry.target as HTMLElement).dataset.colindex)
-		const colWidth = store.columns[colIndex]?.width || '40ch'
-		if (colWidth !== observedWidth) {
-			store.resizeColumn(colIndex, observedCell.inlineSize)
+		const currentWidth = store.columns[colIndex]?.width
+
+		if (typeof currentWidth === 'number' && currentWidth !== observedWidth) {
+			store.resizeColumn(colIndex, observedWidth)
 		}
 	}
 }
