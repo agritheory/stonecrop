@@ -30,11 +30,11 @@ Install all AForm components
 </td></tr>
 </tbody></table>
 
-## Type Aliases
+## Interfaces
 
 <table><thead><tr><th>
 
-Type Alias
+Interface
 
 
 </th><th>
@@ -44,17 +44,6 @@ Description
 
 </th></tr></thead>
 <tbody><tr><td>
-
-[BaseSchema](./aform.baseschema.md)
-
-
-</td><td>
-
-Basic field structure for AForm schemas
-
-
-</td></tr>
-<tr><td>
 
 [CellContext](./aform.cellcontext.md)
 
@@ -67,45 +56,12 @@ Table cell context definition.
 </td></tr>
 <tr><td>
 
-[FieldsetSchema](./aform.fieldsetschema.md)
-
-
-</td><td>
-
-Schema structure for defining fieldsets inside AForm
-
-
-</td></tr>
-<tr><td>
-
-[FormSchema](./aform.formschema.md)
-
-
-</td><td>
-
-Schema structure for defining forms inside AForm
-
-
-</td></tr>
-<tr><td>
-
 [GanttOptions](./aform.ganttoptions.md)
 
 
 </td><td>
 
-Table Gantt row options.
-
-
-</td></tr>
-<tr><td>
-
-[SchemaTypes](./aform.schematypes.md)
-
-
-</td><td>
-
-Superset of all schema types for AForm
+This interface defines the options for a row when it is being viewed as a Gantt chart.
 
 
 </td></tr>
@@ -139,6 +95,65 @@ Table configuration definition.
 </td><td>
 
 Table row definition.
+
+
+</td></tr>
+</tbody></table>
+
+## Type Aliases
+
+<table><thead><tr><th>
+
+Type Alias
+
+
+</th><th>
+
+Description
+
+
+</th></tr></thead>
+<tbody><tr><td>
+
+[BaseSchema](./aform.baseschema.md)
+
+
+</td><td>
+
+Basic field structure for AForm schemas
+
+
+</td></tr>
+<tr><td>
+
+[FieldsetSchema](./aform.fieldsetschema.md)
+
+
+</td><td>
+
+Schema structure for defining fieldsets inside AForm
+
+
+</td></tr>
+<tr><td>
+
+[FormSchema](./aform.formschema.md)
+
+
+</td><td>
+
+Schema structure for defining forms inside AForm
+
+
+</td></tr>
+<tr><td>
+
+[SchemaTypes](./aform.schematypes.md)
+
+
+</td><td>
+
+Superset of all schema types for AForm
 
 
 </td></tr>

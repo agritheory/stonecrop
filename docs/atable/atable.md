@@ -41,11 +41,11 @@ Install all ATable components
 </td></tr>
 </tbody></table>
 
-## Type Aliases
+## Interfaces
 
 <table><thead><tr><th>
 
-Type Alias
+Interface
 
 
 </th><th>
@@ -72,7 +72,7 @@ Table cell context definition.
 
 </td><td>
 
-Table Gantt row options.
+This interface defines the options for a row when it is being viewed as a Gantt chart.
 
 
 </td></tr>
@@ -139,6 +139,32 @@ Table modal component props definition.
 </td><td>
 
 Table row definition.
+
+
+</td></tr>
+</tbody></table>
+
+## Type Aliases
+
+<table><thead><tr><th>
+
+Type Alias
+
+
+</th><th>
+
+Description
+
+
+</th></tr></thead>
+<tbody><tr><td>
+
+[GanttDragEvent](./atable.ganttdragevent.md)
+
+
+</td><td>
+
+Gantt table drag event definition.
 
 
 </td></tr>

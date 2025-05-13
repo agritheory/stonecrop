@@ -2,19 +2,98 @@
 
 [Home](./index.md) &gt; [@stonecrop/aform](./aform.md) &gt; [TableRow](./aform.tablerow.md)
 
-## TableRow type
+## TableRow interface
 
 Table row definition.
 
 **Signature:**
 
 ```typescript
-export type TableRow = {
-    [key: string]: any;
-    indent?: number;
-    parent?: number;
-    gantt?: GanttOptions;
-};
+export interface TableRow 
 ```
-**References:** [GanttOptions](./aform.ganttoptions.md)
 
+## Properties
+
+<table><thead><tr><th>
+
+Property
+
+
+</th><th>
+
+Modifiers
+
+
+</th><th>
+
+Type
+
+
+</th><th>
+
+Description
+
+
+</th></tr></thead>
+<tbody><tr><td>
+
+[gantt?](./aform.tablerow.gantt.md)
+
+
+</td><td>
+
+
+</td><td>
+
+[GanttOptions](./aform.ganttoptions.md)
+
+
+</td><td>
+
+_(Optional)_ The options to use when rendering the row as a Gantt table.
+
+
+</td></tr>
+<tr><td>
+
+[indent?](./aform.tablerow.indent.md)
+
+
+</td><td>
+
+
+</td><td>
+
+number
+
+
+</td><td>
+
+_(Optional)_ The indentation level of the row node.
+
+Only applicable for tree and gantt views.
+
+
+</td></tr>
+<tr><td>
+
+[parent?](./aform.tablerow.parent.md)
+
+
+</td><td>
+
+
+</td><td>
+
+number
+
+
+</td><td>
+
+_(Optional)_ The HTML parent element for the row node. This is evaluated automatically while rendering the table.
+
+Only applicable for tree and gantt views.
+
+
+</td></tr>
+</tbody></table>

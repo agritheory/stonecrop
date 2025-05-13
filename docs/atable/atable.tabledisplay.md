@@ -2,21 +2,203 @@
 
 [Home](./index.md) &gt; [@stonecrop/atable](./atable.md) &gt; [TableDisplay](./atable.tabledisplay.md)
 
-## TableDisplay type
+## TableDisplay interface
 
 Table display definition.
 
 **Signature:**
 
 ```typescript
-export type TableDisplay = {
-    childrenOpen?: boolean;
-    expanded?: boolean;
-    indent?: number;
-    isParent?: boolean;
-    isRoot?: boolean;
-    open?: boolean;
-    parent?: number;
-    rowModified?: boolean;
-};
+export interface TableDisplay 
 ```
+
+## Properties
+
+<table><thead><tr><th>
+
+Property
+
+
+</th><th>
+
+Modifiers
+
+
+</th><th>
+
+Type
+
+
+</th><th>
+
+Description
+
+
+</th></tr></thead>
+<tbody><tr><td>
+
+[childrenOpen?](./atable.tabledisplay.childrenopen.md)
+
+
+</td><td>
+
+
+</td><td>
+
+boolean
+
+
+</td><td>
+
+_(Optional)_ Indicates whether a row node's child nodes are open or closed.
+
+Only applicable for tree views.
+
+
+</td></tr>
+<tr><td>
+
+[expanded?](./atable.tabledisplay.expanded.md)
+
+
+</td><td>
+
+
+</td><td>
+
+boolean
+
+
+</td><td>
+
+_(Optional)_ Indicates whether a row node is expanded or collapsed.
+
+Only applicable for list-expansion views.
+
+
+</td></tr>
+<tr><td>
+
+[indent?](./atable.tabledisplay.indent.md)
+
+
+</td><td>
+
+
+</td><td>
+
+number
+
+
+</td><td>
+
+_(Optional)_ The indentation level of the row node.
+
+Only applicable for tree and gantt views.
+
+
+</td></tr>
+<tr><td>
+
+[isParent?](./atable.tabledisplay.isparent.md)
+
+
+</td><td>
+
+
+</td><td>
+
+boolean
+
+
+</td><td>
+
+_(Optional)_ Indicates whether a row node is a parent node. This is evaluated automatically while rendering the table.
+
+Only applicable for tree views.
+
+
+</td></tr>
+<tr><td>
+
+[isRoot?](./atable.tabledisplay.isroot.md)
+
+
+</td><td>
+
+
+</td><td>
+
+boolean
+
+
+</td><td>
+
+_(Optional)_ Indicates whether a row node is a root node. This is evaluated automatically while rendering the table.
+
+Only applicable for tree views.
+
+
+</td></tr>
+<tr><td>
+
+[open?](./atable.tabledisplay.open.md)
+
+
+</td><td>
+
+
+</td><td>
+
+boolean
+
+
+</td><td>
+
+_(Optional)_ Indicates whether a row node is visible. This is evaluated automatically while rendering the table.
+
+Only applicable for tree views.
+
+
+</td></tr>
+<tr><td>
+
+[parent?](./atable.tabledisplay.parent.md)
+
+
+</td><td>
+
+
+</td><td>
+
+number
+
+
+</td><td>
+
+_(Optional)_ The HTML parent element for the row node. This is evaluated automatically while rendering the table.
+
+Only applicable for tree and gantt views.
+
+
+</td></tr>
+<tr><td>
+
+[rowModified?](./atable.tabledisplay.rowmodified.md)
+
+
+</td><td>
+
+
+</td><td>
+
+boolean
+
+
+</td><td>
+
+_(Optional)_ Indicates whether a row node has been modified. This is evaluated automatically when a cell is edited.
+
+
+</td></tr>
+</tbody></table>
