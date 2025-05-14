@@ -2,15 +2,75 @@
 
 [Home](./index.md) &gt; [@stonecrop/aform](./aform.md) &gt; [TableConfig](./aform.tableconfig.md)
 
-## TableConfig type
+## TableConfig interface
 
 Table configuration definition.
 
 **Signature:**
 
 ```typescript
-export type TableConfig = {
-    view?: 'uncounted' | 'list' | 'list-expansion' | 'tree' | 'gantt';
-    fullWidth?: boolean;
-};
+export interface TableConfig 
 ```
+
+## Properties
+
+<table><thead><tr><th>
+
+Property
+
+
+</th><th>
+
+Modifiers
+
+
+</th><th>
+
+Type
+
+
+</th><th>
+
+Description
+
+
+</th></tr></thead>
+<tbody><tr><td>
+
+[fullWidth?](./aform.tableconfig.fullwidth.md)
+
+
+</td><td>
+
+
+</td><td>
+
+boolean
+
+
+</td><td>
+
+_(Optional)_ Control whether the table should be allowed to use the full width of its container.
+
+
+</td></tr>
+<tr><td>
+
+[view?](./aform.tableconfig.view.md)
+
+
+</td><td>
+
+
+</td><td>
+
+'uncounted' \| 'list' \| 'list-expansion' \| 'tree' \| 'gantt'
+
+
+</td><td>
+
+_(Optional)_ The type of view to display the table in. Possible values: - `uncounted` - row numbers are not displayed in the table - `list` - row numbers are displayed in the table - `list-expansion` - carets are displayed in the number column that expand/collapse the row inline - `tree` - carets are displayed in the number column that expand/collapse grouped rows
+
+
+</td></tr>
+</tbody></table>

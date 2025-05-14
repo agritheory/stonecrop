@@ -18,7 +18,10 @@
 							v-if="column.isGantt"
 							:is="column.ganttComponent || 'AGanttCell'"
 							:store="store"
-							:color="row.gantt_color"
+							:columnsCount="store.columns.length - pinnedColumnCount"
+							:color="row.gantt?.color"
+							:start="row.gantt?.startIndex"
+							:end="row.gantt?.endIndex"
 							:colspan="column.colspan"
 							:pinned="column.pinned"
 							:rowIndex="rowIndex"
@@ -66,13 +69,13 @@
 <script setup lang="ts">
 import { vOnClickOutside } from '@vueuse/components'
 import { useMutationObserver } from '@vueuse/core'
-import { nextTick, watch, onMounted, useTemplateRef } from 'vue'
+import { nextTick, watch, onMounted, useTemplateRef, computed } from 'vue'
 
 import ARow from './ARow.vue'
 import ATableHeader from './ATableHeader.vue'
 import ATableModal from './ATableModal.vue'
 import { createTableStore } from '../stores/table'
-import type { TableColumn, TableConfig, TableRow } from '../types'
+import type { GanttDragEvent, TableColumn, TableConfig, TableRow } from '../types'
 
 const {
 	id,
@@ -91,6 +94,7 @@ const {
 const emit = defineEmits<{
 	'update:modelValue': [value: TableRow[]]
 	cellUpdate: [{ colIndex: number; rowIndex: number; newValue: any; oldValue: any }]
+	'gantt:drag': [event: GanttDragEvent]
 }>()
 
 const tableRef = useTemplateRef<HTMLTableElement>('table')
@@ -101,10 +105,31 @@ store.$onAction(({ name, store, args, after }) => {
 	if (name === 'setCellData' || name === 'setCellText') {
 		const [colIndex, rowIndex, newValue] = args
 		const oldValue = store.getCellData(colIndex, rowIndex)
-
 		after(() => {
 			emit('cellUpdate', { colIndex, rowIndex, newValue, oldValue })
 		})
+	} else if (name === 'updateGanttBar') {
+		const [event] = args
+		const ganttBar = store.rows[event.rowIndex]?.gantt
+		if (ganttBar) {
+			// only emit if the bar was actually resized or moved; check before the mutation
+			let emitDrag = false
+			if (event.type === 'resize') {
+				if (event.edge === 'start') {
+					emitDrag = ganttBar.startIndex !== event.value
+				} else if (event.edge === 'end') {
+					emitDrag = ganttBar.endIndex !== event.value
+				}
+			} else if (event.type === 'bar') {
+				emitDrag = ganttBar.startIndex !== event.start || ganttBar.endIndex !== event.end
+			}
+
+			if (emitDrag) {
+				after(() => {
+					emit('gantt:drag', event)
+				})
+			}
+		}
 	}
 })
 
@@ -125,6 +150,10 @@ onMounted(() => {
 			useMutationObserver(tableRef, assignStickyCellWidths, { childList: true, subtree: true })
 		}
 	}
+})
+
+const pinnedColumnCount = computed(() => {
+	return store.columns.filter(column => column.pinned).length
 })
 
 const assignStickyCellWidths = () => {
@@ -180,25 +209,24 @@ window.addEventListener('keydown', (event: KeyboardEvent) => {
 
 const getProcessedColumnsForRow = (row: TableRow) => {
 	const isGanttRow = row.indent === 0
-	const pinnedColumnCount = store.columns.filter(column => column.pinned).length
-	if (!isGanttRow || pinnedColumnCount === 0) {
+	if (!isGanttRow || pinnedColumnCount.value === 0) {
 		return store.columns
 	}
 
 	// For Gantt views, first add the pinned columns
 	const result: TableColumn[] = []
-	for (let i = 0; i < pinnedColumnCount; i++) {
+	for (let i = 0; i < pinnedColumnCount.value; i++) {
 		const column = { ...store.columns[i] }
 		column.originalIndex = i // Preserve original index
 		result.push(column)
 	}
 
-	// Finally, add the Gantt bar column with a full-width colspan
+	// Finally, add the Gantt bar column with either a provided colspan or default to full-width colspan
 	result.push({
-		...store.columns[pinnedColumnCount],
+		...store.columns[pinnedColumnCount.value],
 		isGantt: true,
-		colspan: store.columns.length - pinnedColumnCount,
-		originalIndex: pinnedColumnCount,
+		colspan: row.gantt?.colspan || store.columns.length - pinnedColumnCount.value,
+		originalIndex: pinnedColumnCount.value,
 		width: 'auto', // TODO: refactor to API that can detect when data exists in a cell. Might have be custom and not generalizable
 	})
 

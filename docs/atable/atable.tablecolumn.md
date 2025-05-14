@@ -2,32 +2,376 @@
 
 [Home](./index.md) &gt; [@stonecrop/atable](./atable.md) &gt; [TableColumn](./atable.tablecolumn.md)
 
-## TableColumn type
+## TableColumn interface
 
 Table column definition.
 
 **Signature:**
 
 ```typescript
-export type TableColumn = {
-    name: string;
-    align?: CanvasTextAlign;
-    edit?: boolean;
-    label?: string;
-    type?: string;
-    width?: string;
-    pinned?: boolean;
-    colspan?: number;
-    ganttComponent?: string;
-    isGantt?: boolean;
-    originalIndex?: number;
-    cellComponent?: string;
-    cellComponentProps?: Record<string, any>;
-    modalComponent?: string | ((context: CellContext) => string);
-    modalComponentExtraProps?: Record<string, any>;
-    format?: string | ((value: any, context: CellContext) => string);
-    mask?: (value: any) => any;
-};
+export interface TableColumn 
 ```
-**References:** [CellContext](./atable.cellcontext.md)
 
+## Properties
+
+<table><thead><tr><th>
+
+Property
+
+
+</th><th>
+
+Modifiers
+
+
+</th><th>
+
+Type
+
+
+</th><th>
+
+Description
+
+
+</th></tr></thead>
+<tbody><tr><td>
+
+[align?](./atable.tablecolumn.align.md)
+
+
+</td><td>
+
+
+</td><td>
+
+CanvasTextAlign
+
+
+</td><td>
+
+_(Optional)_ The alignment of the column. Possible values: - `left` - left aligned - `center` - center aligned - `right` - right aligned - `start` - aligned to the start of the column - `end` - aligned to the end of the column
+
+
+</td></tr>
+<tr><td>
+
+[cellComponent?](./atable.tablecolumn.cellcomponent.md)
+
+
+</td><td>
+
+
+</td><td>
+
+string
+
+
+</td><td>
+
+_(Optional)_ The component to use to render the cell for the column. If not provided, the table will render the default `<td>` element.
+
+
+</td></tr>
+<tr><td>
+
+[cellComponentProps?](./atable.tablecolumn.cellcomponentprops.md)
+
+
+</td><td>
+
+
+</td><td>
+
+Record&lt;string, any&gt;
+
+
+</td><td>
+
+_(Optional)_ Additional properties to pass to the table's cell component.
+
+Only applicable if the `cellComponent` property is set for the column.
+
+
+</td></tr>
+<tr><td>
+
+[colspan?](./atable.tablecolumn.colspan.md)
+
+
+</td><td>
+
+
+</td><td>
+
+number
+
+
+</td><td>
+
+_(Optional)_ The colspan of the Gantt-bar for the column. This is used to determine how many columns the Gantt-bar should span.
+
+Only applicable for Gantt tables.
+
+
+</td></tr>
+<tr><td>
+
+[edit?](./atable.tablecolumn.edit.md)
+
+
+</td><td>
+
+
+</td><td>
+
+boolean
+
+
+</td><td>
+
+_(Optional)_ Control whether cells for the column is editable.
+
+
+</td></tr>
+<tr><td>
+
+[format?](./atable.tablecolumn.format.md)
+
+
+</td><td>
+
+
+</td><td>
+
+string \| ((value: any, context: [CellContext](./atable.cellcontext.md)<!-- -->) =&gt; string)
+
+
+</td><td>
+
+_(Optional)_ The format function to use to format the value of the cell. This can either be a normal or stringified function that takes the value and the cell context and returns a string.
+
+
+</td></tr>
+<tr><td>
+
+[ganttComponent?](./atable.tablecolumn.ganttcomponent.md)
+
+
+</td><td>
+
+
+</td><td>
+
+string
+
+
+</td><td>
+
+_(Optional)_ The component to use to render the Gantt bar for the column.
+
+Only applicable for Gantt tables.
+
+
+</td></tr>
+<tr><td>
+
+[isGantt?](./atable.tablecolumn.isgantt.md)
+
+
+</td><td>
+
+
+</td><td>
+
+boolean
+
+
+</td><td>
+
+_(Optional)_ Whether the column is a Gantt column.
+
+Only applicable for Gantt tables.
+
+
+</td></tr>
+<tr><td>
+
+[label?](./atable.tablecolumn.label.md)
+
+
+</td><td>
+
+
+</td><td>
+
+string
+
+
+</td><td>
+
+_(Optional)_ The label of the column. This is displayed in the table header.
+
+
+</td></tr>
+<tr><td>
+
+[mask?](./atable.tablecolumn.mask.md)
+
+
+</td><td>
+
+
+</td><td>
+
+(value: any) =&gt; any
+
+
+</td><td>
+
+_(Optional)_ The masking function to use to apply an input mask to the cell. This will accept an input value and return the masked value.
+
+
+</td></tr>
+<tr><td>
+
+[modalComponent?](./atable.tablecolumn.modalcomponent.md)
+
+
+</td><td>
+
+
+</td><td>
+
+string \| ((context: [CellContext](./atable.cellcontext.md)<!-- -->) =&gt; string)
+
+
+</td><td>
+
+_(Optional)_ The component to use for the modal. If a function is provided, it will be called with the cell context. The following properties are available on the cell context: - `row` - the row object - `column` - the column object - `table` - the table object
+
+The function should return the name of the component to use for the modal.
+
+Additionally, the following properties will be automatically passed to the modal component: - `colIndex` - the column index of the current cell - `rowIndex` - the row index of the current cell - `store` - the table data store
+
+
+</td></tr>
+<tr><td>
+
+[modalComponentExtraProps?](./atable.tablecolumn.modalcomponentextraprops.md)
+
+
+</td><td>
+
+
+</td><td>
+
+Record&lt;string, any&gt;
+
+
+</td><td>
+
+_(Optional)_ Additional properties to pass to the modal component.
+
+Only applicable if the `modalComponent` property is set for the column.
+
+
+</td></tr>
+<tr><td>
+
+[name](./atable.tablecolumn.name.md)
+
+
+</td><td>
+
+
+</td><td>
+
+string
+
+
+</td><td>
+
+The key of the column. This is used to identify the column in the table.
+
+
+</td></tr>
+<tr><td>
+
+[originalIndex?](./atable.tablecolumn.originalindex.md)
+
+
+</td><td>
+
+
+</td><td>
+
+number
+
+
+</td><td>
+
+_(Optional)_ The starting column index for the Gantt-bar, excluding any pinned columns. This is evaluated automatically while rendering the table.
+
+Only applicable for Gantt tables.
+
+
+</td></tr>
+<tr><td>
+
+[pinned?](./atable.tablecolumn.pinned.md)
+
+
+</td><td>
+
+
+</td><td>
+
+boolean
+
+
+</td><td>
+
+_(Optional)_ Control whether the column should be pinned to the table.
+
+
+</td></tr>
+<tr><td>
+
+[type?](./atable.tablecolumn.type.md)
+
+
+</td><td>
+
+
+</td><td>
+
+string
+
+
+</td><td>
+
+**_(BETA)_** _(Optional)_ The data-type of the column. Possible values: - `Data` - the column contains text data - `Select` - the column contains a select input - `Date` - the column contains a date input - `component` - the column contains a custom component
+
+
+</td></tr>
+<tr><td>
+
+[width?](./atable.tablecolumn.width.md)
+
+
+</td><td>
+
+
+</td><td>
+
+string
+
+
+</td><td>
+
+_(Optional)_ The width of the column. This can be a number (in pixels) or a string (in CSS units).
+
+
+</td></tr>
+</tbody></table>

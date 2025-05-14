@@ -45,13 +45,13 @@ export type BaseSchema = {
 };
 
 // @public
-export type CellContext = {
-    row: TableRow;
+export interface CellContext {
     column: TableColumn;
+    row: TableRow;
     table: {
         [key: string]: any;
     };
-};
+}
 
 // @public
 export type FieldsetSchema = BaseSchema & {
@@ -72,6 +72,14 @@ export type FormSchema = BaseSchema & {
 };
 
 // @public
+export interface GanttOptions {
+    color?: string;
+    colspan?: number;
+    endIndex?: number;
+    startIndex?: number;
+}
+
+// @public
 export function install(app: App): void;
 
 export { Login }
@@ -80,39 +88,40 @@ export { Login }
 export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema;
 
 // @public
-export type TableColumn = {
-    name: string;
+export interface TableColumn {
     align?: CanvasTextAlign;
-    edit?: boolean;
-    label?: string;
-    type?: string;
-    width?: string;
-    pinned?: boolean;
-    colspan?: number;
-    ganttComponent?: string;
-    isGantt?: boolean;
-    originalIndex?: number;
     cellComponent?: string;
     cellComponentProps?: Record<string, any>;
+    colspan?: number;
+    edit?: boolean;
+    format?: string | ((value: any, context: CellContext) => string);
+    ganttComponent?: string;
+    isGantt?: boolean;
+    label?: string;
+    mask?: (value: any) => any;
     modalComponent?: string | ((context: CellContext) => string);
     modalComponentExtraProps?: Record<string, any>;
-    format?: string | ((value: any, context: CellContext) => string);
-    mask?: (value: any) => any;
-};
+    name: string;
+    originalIndex?: number;
+    pinned?: boolean;
+    // @beta
+    type?: string;
+    width?: string;
+}
 
 // @public
-export type TableConfig = {
-    view?: 'uncounted' | 'list' | 'list-expansion' | 'tree' | 'gantt';
+export interface TableConfig {
     fullWidth?: boolean;
-};
+    view?: 'uncounted' | 'list' | 'list-expansion' | 'tree' | 'gantt';
+}
 
 // @public
-export type TableRow = {
+export interface TableRow {
     [key: string]: any;
+    gantt?: GanttOptions;
     indent?: number;
     parent?: number;
-    gantt_color?: string;
-};
+}
 
 // @public
 export type TableSchema = BaseSchema & {

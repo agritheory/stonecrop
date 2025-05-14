@@ -67,6 +67,76 @@ Stonecrop composable
 </td></tr>
 </tbody></table>
 
+## Interfaces
+
+<table><thead><tr><th>
+
+Interface
+
+
+</th><th>
+
+Description
+
+
+</th></tr></thead>
+<tbody><tr><td>
+
+[CellContext](./stonecrop.cellcontext.md)
+
+
+</td><td>
+
+Table cell context definition.
+
+
+</td></tr>
+<tr><td>
+
+[GanttOptions](./stonecrop.ganttoptions.md)
+
+
+</td><td>
+
+This interface defines the options for a row when it is being viewed as a Gantt chart.
+
+
+</td></tr>
+<tr><td>
+
+[TableColumn](./stonecrop.tablecolumn.md)
+
+
+</td><td>
+
+Table column definition.
+
+
+</td></tr>
+<tr><td>
+
+[TableConfig](./stonecrop.tableconfig.md)
+
+
+</td><td>
+
+Table configuration definition.
+
+
+</td></tr>
+<tr><td>
+
+[TableRow](./stonecrop.tablerow.md)
+
+
+</td><td>
+
+Table row definition.
+
+
+</td></tr>
+</tbody></table>
+
 ## Variables
 
 <table><thead><tr><th>
@@ -114,17 +184,6 @@ Description
 </td><td>
 
 Basic field structure for AForm schemas
-
-
-</td></tr>
-<tr><td>
-
-[CellContext](./stonecrop.cellcontext.md)
-
-
-</td><td>
-
-Table cell context definition.
 
 
 </td></tr>
@@ -213,39 +272,6 @@ Superset of all schema types for AForm
 </td><td>
 
 Stonecrop composable return type
-
-
-</td></tr>
-<tr><td>
-
-[TableColumn](./stonecrop.tablecolumn.md)
-
-
-</td><td>
-
-Table column definition.
-
-
-</td></tr>
-<tr><td>
-
-[TableConfig](./stonecrop.tableconfig.md)
-
-
-</td><td>
-
-Table configuration definition.
-
-
-</td></tr>
-<tr><td>
-
-[TableRow](./stonecrop.tablerow.md)
-
-
-</td><td>
-
-Table row definition.
 
 
 </td></tr>
