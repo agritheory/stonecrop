@@ -450,9 +450,11 @@ const gantt = ref({
 
 const handleGanttDrag = (event: GanttDragEvent) => {
 	if (event.type === 'bar') {
-		console.log(`Bar moved to start=${event.start}, end=${event.end} at row ${event.rowIndex}`)
+		console.log(
+			`Bar moved ${event.delta} units (Start: ${event.oldStart} -> ${event.newStart}; End: ${event.oldEnd} -> ${event.newEnd}) at row ${event.rowIndex}`
+		)
 	} else if (event.type === 'resize') {
-		console.log(`Bar resized ${event.edge} to ${event.value} at row ${event.rowIndex}`)
+		console.log(`Bar resized ${event.edge} from ${event.oldValue} to ${event.newValue} at row ${event.rowIndex}`)
 	}
 }
 </script>

@@ -110,25 +110,17 @@ store.$onAction(({ name, store, args, after }) => {
 		})
 	} else if (name === 'updateGanttBar') {
 		const [event] = args
-		const ganttBar = store.rows[event.rowIndex]?.gantt
-		if (ganttBar) {
-			// only emit if the bar was actually resized or moved; check before the mutation
-			let emitDrag = false
-			if (event.type === 'resize') {
-				if (event.edge === 'start') {
-					emitDrag = ganttBar.startIndex !== event.value
-				} else if (event.edge === 'end') {
-					emitDrag = ganttBar.endIndex !== event.value
-				}
-			} else if (event.type === 'bar') {
-				emitDrag = ganttBar.startIndex !== event.start || ganttBar.endIndex !== event.end
-			}
+		let shouldEmit = false
+		if (event.type === 'resize') {
+			shouldEmit = event.oldValue !== event.newValue
+		} else if (event.type === 'bar') {
+			shouldEmit = event.oldStart !== event.newStart || event.oldEnd !== event.newEnd
+		}
 
-			if (emitDrag) {
-				after(() => {
-					emit('gantt:drag', event)
-				})
-			}
+		if (shouldEmit) {
+			after(() => {
+				emit('gantt:drag', event)
+			})
 		}
 	}
 })

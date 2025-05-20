@@ -214,13 +214,13 @@ export const createTableStore = (initData: {
 			if (ganttBar) {
 				if (event.type === 'resize') {
 					if (event.edge === 'start') {
-						ganttBar.startIndex = event.value
+						ganttBar.startIndex = event.newValue
 					} else if (event.edge === 'end') {
-						ganttBar.endIndex = event.value
+						ganttBar.endIndex = event.newValue
 					}
 				} else if (event.type === 'bar') {
-					ganttBar.startIndex = event.start
-					ganttBar.endIndex = event.end
+					ganttBar.startIndex = event.newStart
+					ganttBar.endIndex = event.newEnd
 				}
 			}
 		}

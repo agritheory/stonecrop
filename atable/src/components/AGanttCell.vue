@@ -109,10 +109,19 @@ const { isDragging: isLeftDragging } = useDraggable(leftHandleRef, {
 		if (barRef.value) {
 			const deltaX = x - dragStartData.value.startX
 			const deltaColumns = Math.round(deltaX / pixelsPerColumn.value)
+			const oldStart = currentStart.value
 			const newStart = Math.max(0, Math.min(currentEnd.value - 1, dragStartData.value.startPos + deltaColumns))
 			currentStart.value = newStart
 
-			store.updateGanttBar({ rowIndex, colIndex, type: 'resize', edge: 'start', value: newStart })
+			store.updateGanttBar({
+				rowIndex,
+				colIndex,
+				type: 'resize',
+				edge: 'start',
+				oldValue: oldStart,
+				newValue: newStart,
+				delta: deltaColumns,
+			})
 		}
 	},
 })
@@ -141,13 +150,22 @@ const { isDragging: isRightDragging } = useDraggable(rightHandleRef, {
 		if (barRef.value) {
 			const deltaX = x - dragStartData.value.startX
 			const deltaColumns = Math.round(deltaX / pixelsPerColumn.value)
+			const oldEnd = currentEnd.value
 			const newEnd = Math.max(
 				currentStart.value + 1,
 				Math.min(columnsCount, dragStartData.value.startPos + deltaColumns)
 			)
 			currentEnd.value = newEnd
 
-			store.updateGanttBar({ rowIndex, colIndex, type: 'resize', edge: 'end', value: newEnd })
+			store.updateGanttBar({
+				rowIndex,
+				colIndex,
+				type: 'resize',
+				edge: 'end',
+				oldValue: oldEnd,
+				newValue: newEnd,
+				delta: deltaColumns,
+			})
 		}
 	},
 })
@@ -177,6 +195,8 @@ const { isDragging: isBarDragging } = useDraggable(barRef, {
 			const deltaColumns = Math.round(deltaX / pixelsPerColumn.value)
 			const barWidth = currentEnd.value - currentStart.value
 
+			const oldStart = currentStart.value
+			const oldEnd = currentEnd.value
 			let newStart = dragStartData.value.startPos + deltaColumns
 			let newEnd = newStart + barWidth
 			if (newStart < 0) {
@@ -190,7 +210,7 @@ const { isDragging: isBarDragging } = useDraggable(barRef, {
 			currentStart.value = newStart
 			currentEnd.value = newEnd
 
-			store.updateGanttBar({ rowIndex, colIndex, type: 'bar', start: newStart, end: newEnd })
+			store.updateGanttBar({ rowIndex, colIndex, type: 'bar', oldStart, oldEnd, newStart, newEnd, delta: deltaColumns })
 		}
 	},
 })
