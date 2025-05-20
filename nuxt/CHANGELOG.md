@@ -1,6 +1,11 @@
 # Change Log - @stonecrop/nuxt
 
-This log was last generated on Wed, 14 May 2025 15:59:57 GMT and should not be manually modified.
+This log was last generated on Tue, 20 May 2025 08:13:28 GMT and should not be manually modified.
+
+## 0.4.14
+Tue, 20 May 2025 08:13:28 GMT
+
+_Version update only_
 
 ## 0.4.13
 Wed, 14 May 2025 15:59:57 GMT
