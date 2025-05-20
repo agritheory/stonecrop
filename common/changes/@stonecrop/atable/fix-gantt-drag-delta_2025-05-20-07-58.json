@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/atable",
+      "comment": "emit initial state after gantt drag",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/atable"
+}
