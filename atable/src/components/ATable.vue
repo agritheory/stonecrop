@@ -116,12 +116,12 @@ store.$onAction(({ name, store, args, after }) => {
 			let emitDrag = false
 			if (event.type === 'resize') {
 				if (event.edge === 'start') {
-					emitDrag = ganttBar.startIndex !== event.value
+					emitDrag = ganttBar.startIndex !== event.newValue
 				} else if (event.edge === 'end') {
-					emitDrag = ganttBar.endIndex !== event.value
+					emitDrag = ganttBar.endIndex !== event.newValue
 				}
 			} else if (event.type === 'bar') {
-				emitDrag = ganttBar.startIndex !== event.start || ganttBar.endIndex !== event.end
+				emitDrag = ganttBar.startIndex !== event.newStart || ganttBar.endIndex !== event.newEnd
 			}
 
 			if (emitDrag) {

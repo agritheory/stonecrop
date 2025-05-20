@@ -13,13 +13,18 @@ export type GanttDragEvent = {
     rowIndex: number;
     colIndex: number;
     type: 'bar';
-    start: number;
-    end: number;
+    oldStart: number;
+    oldEnd: number;
+    newStart: number;
+    newEnd: number;
+    delta: number;
 } | {
     rowIndex: number;
     colIndex: number;
     type: 'resize';
     edge: 'start' | 'end';
-    value: number;
+    oldValue: number;
+    newValue: number;
+    delta: number;
 };
 ```
