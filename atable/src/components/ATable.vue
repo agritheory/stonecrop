@@ -112,7 +112,7 @@ store.$onAction(({ name, store, args, after }) => {
 		const [event] = args
 		let shouldEmit = false
 		if (event.type === 'resize') {
-			shouldEmit = event.oldValue !== event.newValue
+			shouldEmit = event.oldColspan !== event.newColspan
 		} else if (event.type === 'bar') {
 			shouldEmit = event.oldStart !== event.newStart || event.oldEnd !== event.newEnd
 		}

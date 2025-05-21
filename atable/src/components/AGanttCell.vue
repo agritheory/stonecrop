@@ -118,9 +118,12 @@ const { isDragging: isLeftDragging } = useDraggable(leftHandleRef, {
 				colIndex,
 				type: 'resize',
 				edge: 'start',
-				oldValue: oldStart,
-				newValue: newStart,
+				oldStart,
+				newStart,
+				end: currentEnd.value,
 				delta: deltaColumns,
+				oldColspan: currentEnd.value - oldStart,
+				newColspan: currentEnd.value - newStart,
 			})
 		}
 	},
@@ -162,9 +165,12 @@ const { isDragging: isRightDragging } = useDraggable(rightHandleRef, {
 				colIndex,
 				type: 'resize',
 				edge: 'end',
-				oldValue: oldEnd,
-				newValue: newEnd,
+				oldEnd,
+				newEnd,
+				start: currentStart.value,
 				delta: deltaColumns,
+				oldColspan: oldEnd - currentStart.value,
+				newColspan: newEnd - currentStart.value,
 			})
 		}
 	},
@@ -210,7 +216,17 @@ const { isDragging: isBarDragging } = useDraggable(barRef, {
 			currentStart.value = newStart
 			currentEnd.value = newEnd
 
-			store.updateGanttBar({ rowIndex, colIndex, type: 'bar', oldStart, oldEnd, newStart, newEnd, delta: deltaColumns })
+			store.updateGanttBar({
+				rowIndex,
+				colIndex,
+				type: 'bar',
+				oldStart,
+				oldEnd,
+				newStart,
+				newEnd,
+				delta: deltaColumns,
+				colspan: newEnd - newStart,
+			})
 		}
 	},
 })

@@ -337,22 +337,35 @@ export type GanttDragEvent =
 	| {
 			rowIndex: number
 			colIndex: number
-			type: 'bar'
-			oldStart: number
-			oldEnd: number
-			newStart: number
-			newEnd: number
 			delta: number
-	  }
-	| {
-			rowIndex: number
-			colIndex: number
-			type: 'resize'
-			edge: 'start' | 'end'
-			oldValue: number
-			newValue: number
-			delta: number
-	  }
+	  } & (
+			| {
+					type: 'bar'
+					oldStart: number
+					oldEnd: number
+					newStart: number
+					newEnd: number
+					colspan: number
+			  }
+			| {
+					type: 'resize'
+					edge: 'start'
+					oldStart: number
+					newStart: number
+					end: number
+					oldColspan: number
+					newColspan: number
+			  }
+			| {
+					type: 'resize'
+					edge: 'end'
+					oldEnd: number
+					newEnd: number
+					start: number
+					oldColspan: number
+					newColspan: number
+			  }
+	  )
 
 /**
  * Table modal definition.
