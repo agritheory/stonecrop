@@ -454,7 +454,7 @@ const handleGanttDrag = (event: GanttDragEvent) => {
 			`Bar moved ${event.delta} units (Start: ${event.oldStart} -> ${event.newStart}; End: ${event.oldEnd} -> ${event.newEnd}) at row ${event.rowIndex}`
 		)
 	} else if (event.type === 'resize') {
-		console.log(`Bar resized ${event.edge} from ${event.oldValue} to ${event.newValue} at row ${event.rowIndex}`)
+		console.log(`Bar resized ${event.edge} by ${event.delta} units at row ${event.rowIndex}`)
 	}
 }
 </script>

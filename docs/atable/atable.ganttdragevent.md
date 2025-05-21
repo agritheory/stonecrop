@@ -12,19 +12,29 @@ Gantt table drag event definition.
 export type GanttDragEvent = {
     rowIndex: number;
     colIndex: number;
+    delta: number;
+} & ({
     type: 'bar';
     oldStart: number;
     oldEnd: number;
     newStart: number;
     newEnd: number;
-    delta: number;
+    colspan: number;
 } | {
-    rowIndex: number;
-    colIndex: number;
     type: 'resize';
-    edge: 'start' | 'end';
-    oldValue: number;
-    newValue: number;
-    delta: number;
-};
+    edge: 'start';
+    oldStart: number;
+    newStart: number;
+    end: number;
+    oldColspan: number;
+    newColspan: number;
+} | {
+    type: 'resize';
+    edge: 'end';
+    oldEnd: number;
+    newEnd: number;
+    start: number;
+    oldColspan: number;
+    newColspan: number;
+});
 ```
