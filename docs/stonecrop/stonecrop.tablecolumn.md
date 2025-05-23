@@ -338,6 +338,25 @@ _(Optional)_ Control whether the column should be pinned to the table.
 </td></tr>
 <tr><td>
 
+[resizable?](./stonecrop.tablecolumn.resizable.md)
+
+
+</td><td>
+
+
+</td><td>
+
+boolean
+
+
+</td><td>
+
+_(Optional)_
+
+
+</td></tr>
+<tr><td>
+
 [type?](./stonecrop.tablecolumn.type.md)
 
 

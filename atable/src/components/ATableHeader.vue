@@ -1,5 +1,5 @@
 <template>
-	<thead id="resizable" v-if="columns.length">
+	<thead v-if="columns.length">
 		<tr class="atable-header-row" tabindex="-1">
 			<th
 				v-if="store.zeroColumn"
@@ -12,7 +12,9 @@
 				class="list-index" />
 			<th
 				v-for="(column, colKey) in columns"
+				v-resize-observer="onResize"
 				:key="column.name"
+				:data-colindex="colKey"
 				tabindex="-1"
 				:style="store.getHeaderCellStyle(column)"
 				:class="column.pinned ? 'sticky-column' : ''">
@@ -23,6 +25,7 @@
 </template>
 
 <script setup lang="ts">
+import { vResizeObserver } from '@vueuse/components'
 import { createTableStore } from '../stores/table'
 import type { TableColumn } from '../types'
 
@@ -30,6 +33,20 @@ const { columns, store } = defineProps<{
 	columns: TableColumn[]
 	store: ReturnType<typeof createTableStore>
 }>()
+
+const onResize = (entries: ReadonlyArray<ResizeObserverEntry>) => {
+	for (const entry of entries) {
+		if (entry.borderBoxSize.length === 0) continue
+		const observedCell = entry.borderBoxSize[0]
+		const observedWidth = observedCell.inlineSize
+		const colIndex = Number((entry.target as HTMLElement).dataset.colindex)
+		const currentWidth = store.columns[colIndex]?.width
+
+		if (typeof currentWidth === 'number' && currentWidth !== observedWidth) {
+			store.resizeColumn(colIndex, observedWidth)
+		}
+	}
+}
 </script>
 
 <style>
@@ -42,6 +59,7 @@ const { columns, store } = defineProps<{
 	padding-bottom: var(--sc-atable-row-padding);
 	box-sizing: border-box;
 	color: var(--sc-header-text-color);
+	position: relative;
 }
 #header-index {
 	padding-left: var(--sc-atable-row-padding);

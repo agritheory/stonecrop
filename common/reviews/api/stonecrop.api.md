@@ -133,6 +133,8 @@ export interface TableColumn {
     name: string;
     originalIndex?: number;
     pinned?: boolean;
+    // (undocumented)
+    resizable?: boolean;
     // @beta
     type?: string;
     width?: string;

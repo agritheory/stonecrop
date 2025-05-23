@@ -63,6 +63,7 @@ export interface TableColumn {
 	 * @defaultValue false
 	 */
 	pinned?: boolean
+	resizable?: boolean
 
 	/**
 	 * The component to use to render the cell for the column. If not provided, the table will

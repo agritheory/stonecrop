@@ -62,7 +62,7 @@ const showBuilder = (doctype: string) => {
 
 const getRowCellStyle = (column: TableColumn): CSSProperties => {
 	return {
-		minWidth: column?.width || '40ch',
+		width: column?.width || '40ch',
 		textAlign: column?.align || 'center',
 	}
 }

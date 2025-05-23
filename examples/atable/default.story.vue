@@ -16,6 +16,11 @@
 			<ATable v-model="full_width_table.rows" :columns="full_width_table.columns" :config="full_width_table.config" />
 		</Variant>
 
+		<Variant title="resizable">
+			<ATable v-model="resizable_1.rows" :columns="resizable_1.columns" :config="resizable_1.config" />
+			<ATable v-model="resizable_2.rows" :columns="resizable_2.columns" :config="resizable_2.config" />
+		</Variant>
+
 		<Variant title="loading options">
 			<ATableLoading>Loading</ATableLoading>
 			<br />
@@ -111,7 +116,7 @@ const readonly_columns: TableColumn[] = [
 
 const default_table = reactive({
 	rows,
-	columns,
+	columns: columns,
 	config: { view: 'list' },
 })
 
@@ -124,6 +129,18 @@ const uncounted_table = reactive({
 const readonly_table = reactive({
 	rows,
 	columns: readonly_columns,
+	config: { view: 'list' },
+})
+
+const resizable_1 = reactive({
+	rows,
+	columns: [...columns].map(column => ({ ...column, resizable: true })),
+	config: { view: 'list' },
+})
+
+const resizable_2 = reactive({
+	rows,
+	columns: [...columns].map(column => ({ ...column, resizable: true })),
 	config: { view: 'list' },
 })
 

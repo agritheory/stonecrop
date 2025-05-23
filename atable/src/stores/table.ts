@@ -121,11 +121,36 @@ export const createTableStore = (initData: {
 			}
 		}
 
-		const getHeaderCellStyle = (column: TableColumn): CSSProperties => ({
-			minWidth: column.width || '40ch',
-			textAlign: column.align || 'center',
-			width: config.value.fullWidth ? 'auto' : undefined,
-		})
+		const getHeaderCellStyle = (column: TableColumn): CSSProperties => {
+			const isLastCol = columns.value.indexOf(column) === columns.value.length - 1
+
+			// if the table is full width, the last column should not be resizable;
+			// ref: https://github.com/agritheory/stonecrop/pull/196#issuecomment-2503762641
+
+			const isResizable = config.value.fullWidth ? column.resizable && !isLastCol : column.resizable
+
+			return {
+				width: column.width || '40ch',
+				textAlign: column.align || 'center',
+				...(isResizable && {
+					resize: 'horizontal',
+					overflow: 'hidden',
+					whiteSpace: 'nowrap',
+				}),
+			}
+		}
+
+		const resizeColumn = (colIndex: number, newWidth: number) => {
+			if (colIndex < 0 || colIndex >= columns.value.length) return
+
+			const minWidth = 40
+			const finalWidth = Math.max(newWidth, minWidth)
+
+			columns.value[colIndex] = {
+				...columns.value[colIndex],
+				width: `${finalWidth}px`,
+			}
+		}
 
 		const isRowGantt = (rowIndex: number) => {
 			const row = rows.value[rowIndex]
@@ -251,6 +276,7 @@ export const createTableStore = (initData: {
 			getCellDisplayValue,
 			getFormattedValue,
 			getHeaderCellStyle,
+			resizeColumn,
 			getIndent,
 			getRowExpandSymbol,
 			isRowGantt,
