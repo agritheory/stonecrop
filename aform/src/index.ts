@@ -1,4 +1,4 @@
-export type { CellContext, TableConfig, TableColumn, TableRow } from '@stonecrop/atable'
+export type { CellContext, GanttOptions, TableConfig, TableColumn, TableRow } from '@stonecrop/atable'
 import type { App } from 'vue'
 
 import ACheckbox from './components/form/ACheckbox.vue'

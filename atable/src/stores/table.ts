@@ -1,7 +1,15 @@
 import { defineStore } from 'pinia'
 import { type CSSProperties, computed, ref } from 'vue'
 
-import type { CellContext, TableColumn, TableConfig, TableDisplay, TableModal, TableRow } from '../types'
+import type {
+	CellContext,
+	GanttDragEvent,
+	TableColumn,
+	TableConfig,
+	TableDisplay,
+	TableModal,
+	TableRow,
+} from '../types'
 import { generateHash } from '../utils'
 
 /**
@@ -225,6 +233,28 @@ export const createTableStore = (initData: {
 			}
 		}
 
+		const updateGanttBar = (event: GanttDragEvent) => {
+			// update the local gantt bar cache
+			const ganttBar = rows.value[event.rowIndex]?.gantt
+			if (ganttBar) {
+				if (event.type === 'resize') {
+					if (event.edge === 'start') {
+						ganttBar.startIndex = event.newStart
+						ganttBar.endIndex = event.end
+						ganttBar.colspan = ganttBar.endIndex - ganttBar.startIndex
+					} else if (event.edge === 'end') {
+						ganttBar.startIndex = event.start
+						ganttBar.endIndex = event.newEnd
+						ganttBar.colspan = ganttBar.endIndex - ganttBar.startIndex
+					}
+				} else if (event.type === 'bar') {
+					ganttBar.startIndex = event.newStart
+					ganttBar.endIndex = event.newEnd
+					ganttBar.colspan = ganttBar.endIndex - ganttBar.startIndex
+				}
+			}
+		}
+
 		return {
 			// state
 			columns,
@@ -254,6 +284,7 @@ export const createTableStore = (initData: {
 			setCellData,
 			setCellText,
 			toggleRowExpand,
+			updateGanttBar,
 		}
 	})
 

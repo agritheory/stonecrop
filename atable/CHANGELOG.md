@@ -1,6 +1,25 @@
 # Change Log - @stonecrop/atable
 
-This log was last generated on Tue, 15 Apr 2025 09:33:23 GMT and should not be manually modified.
+This log was last generated on Wed, 21 May 2025 08:56:14 GMT and should not be manually modified.
+
+## 0.4.15
+Wed, 21 May 2025 08:56:14 GMT
+
+### Patches
+
+- pass colspan data in gantt drag emit
+
+## 0.4.14
+Tue, 20 May 2025 08:13:28 GMT
+
+### Patches
+
+- emit initial state after gantt drag
+
+## 0.4.13
+Wed, 14 May 2025 15:59:57 GMT
+
+_Version update only_
 
 ## 0.4.12
 Tue, 15 Apr 2025 09:33:23 GMT

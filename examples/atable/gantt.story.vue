@@ -1,13 +1,13 @@
 <template>
 	<Story title="gantt">
 		<Variant title="default">
-			<ATable v-model="gantt.rows" :columns="gantt.columns" :config="gantt.config" />
+			<ATable v-model="gantt.rows" :columns="gantt.columns" :config="gantt.config" @gantt:drag="handleGanttDrag" />
 		</Variant>
 	</Story>
 </template>
 
 <script lang="ts" setup>
-import type { TableConfig } from '@stonecrop/atable'
+import type { GanttDragEvent, TableConfig } from '@stonecrop/atable'
 import { ref } from 'vue'
 
 import gantt_data from './sample_data/task.json'
@@ -447,6 +447,16 @@ const gantt = ref({
 	columns: gantt_columns,
 	config: { view: 'gantt' } as TableConfig,
 })
+
+const handleGanttDrag = (event: GanttDragEvent) => {
+	if (event.type === 'bar') {
+		console.log(
+			`Bar moved ${event.delta} units (Start: ${event.oldStart} -> ${event.newStart}; End: ${event.oldEnd} -> ${event.newEnd}) at row ${event.rowIndex}`
+		)
+	} else if (event.type === 'resize') {
+		console.log(`Bar resized ${event.edge} by ${event.delta} units at row ${event.rowIndex}`)
+	}
+}
 </script>
 
 <!-- enter documentation here -->

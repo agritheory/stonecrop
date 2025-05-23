@@ -39,13 +39,13 @@ export { ATableLoadingBar }
 export { ATableModal }
 
 // @public
-export type CellContext = {
-    row: TableRow;
+export interface CellContext {
     column: TableColumn;
+    row: TableRow;
     table: {
         [key: string]: any;
     };
-};
+}
 
 // @public
 export const createTableStore: (initData: {
@@ -68,16 +68,16 @@ type?: string | undefined;
 width?: string | undefined;
 pinned?: boolean | undefined;
 resizable?: boolean | undefined;
-colspan?: number | undefined;
-ganttComponent?: string | undefined;
-isGantt?: boolean | undefined;
-originalIndex?: number | undefined;
 cellComponent?: string | undefined;
 cellComponentProps?: Record<string, any> | undefined;
 modalComponent?: (string | ((context: CellContext) => string)) | undefined;
 modalComponentExtraProps?: Record<string, any> | undefined;
 format?: (string | ((value: any, context: CellContext) => string)) | undefined;
 mask?: ((value: any) => any) | undefined;
+isGantt?: boolean | undefined;
+ganttComponent?: string | undefined;
+colspan?: number | undefined;
+originalIndex?: number | undefined;
 }[], TableColumn[] | {
 name: string;
 align?: CanvasTextAlign | undefined;
@@ -87,16 +87,16 @@ type?: string | undefined;
 width?: string | undefined;
 pinned?: boolean | undefined;
 resizable?: boolean | undefined;
-colspan?: number | undefined;
-ganttComponent?: string | undefined;
-isGantt?: boolean | undefined;
-originalIndex?: number | undefined;
 cellComponent?: string | undefined;
 cellComponentProps?: Record<string, any> | undefined;
 modalComponent?: (string | ((context: CellContext) => string)) | undefined;
 modalComponentExtraProps?: Record<string, any> | undefined;
 format?: (string | ((value: any, context: CellContext) => string)) | undefined;
 mask?: ((value: any) => any) | undefined;
+isGantt?: boolean | undefined;
+ganttComponent?: string | undefined;
+colspan?: number | undefined;
+originalIndex?: number | undefined;
 }[]>;
 config: Ref<    {
 view?: ("uncounted" | "list" | "list-expansion" | "tree" | "gantt") | undefined;
@@ -106,61 +106,69 @@ view?: ("uncounted" | "list" | "list-expansion" | "tree" | "gantt") | undefined;
 fullWidth?: boolean | undefined;
 }>;
 display: Ref<    {
-childrenOpen?: boolean | undefined;
 expanded?: boolean | undefined;
-indent?: number | undefined;
+childrenOpen?: boolean | undefined;
 isParent?: boolean | undefined;
 isRoot?: boolean | undefined;
 open?: boolean | undefined;
+indent?: number | undefined;
 parent?: number | undefined;
 rowModified?: boolean | undefined;
 }[], TableDisplay[] | {
-childrenOpen?: boolean | undefined;
 expanded?: boolean | undefined;
-indent?: number | undefined;
+childrenOpen?: boolean | undefined;
 isParent?: boolean | undefined;
 isRoot?: boolean | undefined;
 open?: boolean | undefined;
+indent?: number | undefined;
 parent?: number | undefined;
 rowModified?: boolean | undefined;
 }[]>;
 modal: Ref<    {
-bottom?: number | undefined;
-cell?: (HTMLTableCellElement | null) | undefined;
-colIndex?: number | undefined;
-event?: string | undefined;
-height?: number | undefined;
-left?: number | undefined;
-parent?: HTMLElement | undefined;
-rowIndex?: number | undefined;
 visible?: boolean | undefined;
-width?: number | undefined;
+cell?: (HTMLTableCellElement | null) | undefined;
+parent?: HTMLElement | undefined;
+colIndex?: number | undefined;
+rowIndex?: number | undefined;
 component?: string | undefined;
 componentProps?: Record<string, any> | undefined;
+bottom?: number | undefined;
+height?: number | undefined;
+left?: number | undefined;
+width?: number | undefined;
 }, TableModal | {
-bottom?: number | undefined;
-cell?: (HTMLTableCellElement | null) | undefined;
-colIndex?: number | undefined;
-event?: string | undefined;
-height?: number | undefined;
-left?: number | undefined;
-parent?: HTMLElement | undefined;
-rowIndex?: number | undefined;
 visible?: boolean | undefined;
-width?: number | undefined;
+cell?: (HTMLTableCellElement | null) | undefined;
+parent?: HTMLElement | undefined;
+colIndex?: number | undefined;
+rowIndex?: number | undefined;
 component?: string | undefined;
 componentProps?: Record<string, any> | undefined;
+bottom?: number | undefined;
+height?: number | undefined;
+left?: number | undefined;
+width?: number | undefined;
 }>;
 rows: Ref<    {
 [x: string]: any;
 indent?: number | undefined;
 parent?: number | undefined;
-gantt_color?: string | undefined;
+gantt?: {
+color?: string | undefined;
+startIndex?: number | undefined;
+endIndex?: number | undefined;
+colspan?: number | undefined;
+} | undefined;
 }[], TableRow[] | {
 [x: string]: any;
 indent?: number | undefined;
 parent?: number | undefined;
-gantt_color?: string | undefined;
+gantt?: {
+color?: string | undefined;
+startIndex?: number | undefined;
+endIndex?: number | undefined;
+colspan?: number | undefined;
+} | undefined;
 }[]>;
 table: Ref<    {}, {}>;
 updates: Ref<Record<string, string>, Record<string, string>>;
@@ -180,6 +188,7 @@ isRowVisible: (rowIndex: number) => boolean | undefined;
 setCellData: (colIndex: number, rowIndex: number, value: any) => void;
 setCellText: (colIndex: number, rowIndex: number, value: string) => void;
 toggleRowExpand: (rowIndex: number) => void;
+updateGanttBar: (event: GanttDragEvent) => void;
 }, "columns" | "config" | "display" | "modal" | "rows" | "table" | "updates">, Pick<{
 columns: Ref<    {
 name: string;
@@ -190,16 +199,16 @@ type?: string | undefined;
 width?: string | undefined;
 pinned?: boolean | undefined;
 resizable?: boolean | undefined;
-colspan?: number | undefined;
-ganttComponent?: string | undefined;
-isGantt?: boolean | undefined;
-originalIndex?: number | undefined;
 cellComponent?: string | undefined;
 cellComponentProps?: Record<string, any> | undefined;
 modalComponent?: (string | ((context: CellContext) => string)) | undefined;
 modalComponentExtraProps?: Record<string, any> | undefined;
 format?: (string | ((value: any, context: CellContext) => string)) | undefined;
 mask?: ((value: any) => any) | undefined;
+isGantt?: boolean | undefined;
+ganttComponent?: string | undefined;
+colspan?: number | undefined;
+originalIndex?: number | undefined;
 }[], TableColumn[] | {
 name: string;
 align?: CanvasTextAlign | undefined;
@@ -209,16 +218,16 @@ type?: string | undefined;
 width?: string | undefined;
 pinned?: boolean | undefined;
 resizable?: boolean | undefined;
-colspan?: number | undefined;
-ganttComponent?: string | undefined;
-isGantt?: boolean | undefined;
-originalIndex?: number | undefined;
 cellComponent?: string | undefined;
 cellComponentProps?: Record<string, any> | undefined;
 modalComponent?: (string | ((context: CellContext) => string)) | undefined;
 modalComponentExtraProps?: Record<string, any> | undefined;
 format?: (string | ((value: any, context: CellContext) => string)) | undefined;
 mask?: ((value: any) => any) | undefined;
+isGantt?: boolean | undefined;
+ganttComponent?: string | undefined;
+colspan?: number | undefined;
+originalIndex?: number | undefined;
 }[]>;
 config: Ref<    {
 view?: ("uncounted" | "list" | "list-expansion" | "tree" | "gantt") | undefined;
@@ -228,61 +237,69 @@ view?: ("uncounted" | "list" | "list-expansion" | "tree" | "gantt") | undefined;
 fullWidth?: boolean | undefined;
 }>;
 display: Ref<    {
-childrenOpen?: boolean | undefined;
 expanded?: boolean | undefined;
-indent?: number | undefined;
+childrenOpen?: boolean | undefined;
 isParent?: boolean | undefined;
 isRoot?: boolean | undefined;
 open?: boolean | undefined;
+indent?: number | undefined;
 parent?: number | undefined;
 rowModified?: boolean | undefined;
 }[], TableDisplay[] | {
-childrenOpen?: boolean | undefined;
 expanded?: boolean | undefined;
-indent?: number | undefined;
+childrenOpen?: boolean | undefined;
 isParent?: boolean | undefined;
 isRoot?: boolean | undefined;
 open?: boolean | undefined;
+indent?: number | undefined;
 parent?: number | undefined;
 rowModified?: boolean | undefined;
 }[]>;
 modal: Ref<    {
-bottom?: number | undefined;
-cell?: (HTMLTableCellElement | null) | undefined;
-colIndex?: number | undefined;
-event?: string | undefined;
-height?: number | undefined;
-left?: number | undefined;
-parent?: HTMLElement | undefined;
-rowIndex?: number | undefined;
 visible?: boolean | undefined;
-width?: number | undefined;
+cell?: (HTMLTableCellElement | null) | undefined;
+parent?: HTMLElement | undefined;
+colIndex?: number | undefined;
+rowIndex?: number | undefined;
 component?: string | undefined;
 componentProps?: Record<string, any> | undefined;
+bottom?: number | undefined;
+height?: number | undefined;
+left?: number | undefined;
+width?: number | undefined;
 }, TableModal | {
-bottom?: number | undefined;
-cell?: (HTMLTableCellElement | null) | undefined;
-colIndex?: number | undefined;
-event?: string | undefined;
-height?: number | undefined;
-left?: number | undefined;
-parent?: HTMLElement | undefined;
-rowIndex?: number | undefined;
 visible?: boolean | undefined;
-width?: number | undefined;
+cell?: (HTMLTableCellElement | null) | undefined;
+parent?: HTMLElement | undefined;
+colIndex?: number | undefined;
+rowIndex?: number | undefined;
 component?: string | undefined;
 componentProps?: Record<string, any> | undefined;
+bottom?: number | undefined;
+height?: number | undefined;
+left?: number | undefined;
+width?: number | undefined;
 }>;
 rows: Ref<    {
 [x: string]: any;
 indent?: number | undefined;
 parent?: number | undefined;
-gantt_color?: string | undefined;
+gantt?: {
+color?: string | undefined;
+startIndex?: number | undefined;
+endIndex?: number | undefined;
+colspan?: number | undefined;
+} | undefined;
 }[], TableRow[] | {
 [x: string]: any;
 indent?: number | undefined;
 parent?: number | undefined;
-gantt_color?: string | undefined;
+gantt?: {
+color?: string | undefined;
+startIndex?: number | undefined;
+endIndex?: number | undefined;
+colspan?: number | undefined;
+} | undefined;
 }[]>;
 table: Ref<    {}, {}>;
 updates: Ref<Record<string, string>, Record<string, string>>;
@@ -302,6 +319,7 @@ isRowVisible: (rowIndex: number) => boolean | undefined;
 setCellData: (colIndex: number, rowIndex: number, value: any) => void;
 setCellText: (colIndex: number, rowIndex: number, value: string) => void;
 toggleRowExpand: (rowIndex: number) => void;
+updateGanttBar: (event: GanttDragEvent) => void;
 }, "hasPinnedColumns" | "numberedRowWidth" | "zeroColumn">, Pick<{
 columns: Ref<    {
 name: string;
@@ -312,16 +330,16 @@ type?: string | undefined;
 width?: string | undefined;
 pinned?: boolean | undefined;
 resizable?: boolean | undefined;
-colspan?: number | undefined;
-ganttComponent?: string | undefined;
-isGantt?: boolean | undefined;
-originalIndex?: number | undefined;
 cellComponent?: string | undefined;
 cellComponentProps?: Record<string, any> | undefined;
 modalComponent?: (string | ((context: CellContext) => string)) | undefined;
 modalComponentExtraProps?: Record<string, any> | undefined;
 format?: (string | ((value: any, context: CellContext) => string)) | undefined;
 mask?: ((value: any) => any) | undefined;
+isGantt?: boolean | undefined;
+ganttComponent?: string | undefined;
+colspan?: number | undefined;
+originalIndex?: number | undefined;
 }[], TableColumn[] | {
 name: string;
 align?: CanvasTextAlign | undefined;
@@ -331,16 +349,16 @@ type?: string | undefined;
 width?: string | undefined;
 pinned?: boolean | undefined;
 resizable?: boolean | undefined;
-colspan?: number | undefined;
-ganttComponent?: string | undefined;
-isGantt?: boolean | undefined;
-originalIndex?: number | undefined;
 cellComponent?: string | undefined;
 cellComponentProps?: Record<string, any> | undefined;
 modalComponent?: (string | ((context: CellContext) => string)) | undefined;
 modalComponentExtraProps?: Record<string, any> | undefined;
 format?: (string | ((value: any, context: CellContext) => string)) | undefined;
 mask?: ((value: any) => any) | undefined;
+isGantt?: boolean | undefined;
+ganttComponent?: string | undefined;
+colspan?: number | undefined;
+originalIndex?: number | undefined;
 }[]>;
 config: Ref<    {
 view?: ("uncounted" | "list" | "list-expansion" | "tree" | "gantt") | undefined;
@@ -350,61 +368,69 @@ view?: ("uncounted" | "list" | "list-expansion" | "tree" | "gantt") | undefined;
 fullWidth?: boolean | undefined;
 }>;
 display: Ref<    {
-childrenOpen?: boolean | undefined;
 expanded?: boolean | undefined;
-indent?: number | undefined;
+childrenOpen?: boolean | undefined;
 isParent?: boolean | undefined;
 isRoot?: boolean | undefined;
 open?: boolean | undefined;
+indent?: number | undefined;
 parent?: number | undefined;
 rowModified?: boolean | undefined;
 }[], TableDisplay[] | {
-childrenOpen?: boolean | undefined;
 expanded?: boolean | undefined;
-indent?: number | undefined;
+childrenOpen?: boolean | undefined;
 isParent?: boolean | undefined;
 isRoot?: boolean | undefined;
 open?: boolean | undefined;
+indent?: number | undefined;
 parent?: number | undefined;
 rowModified?: boolean | undefined;
 }[]>;
 modal: Ref<    {
-bottom?: number | undefined;
-cell?: (HTMLTableCellElement | null) | undefined;
-colIndex?: number | undefined;
-event?: string | undefined;
-height?: number | undefined;
-left?: number | undefined;
-parent?: HTMLElement | undefined;
-rowIndex?: number | undefined;
 visible?: boolean | undefined;
-width?: number | undefined;
+cell?: (HTMLTableCellElement | null) | undefined;
+parent?: HTMLElement | undefined;
+colIndex?: number | undefined;
+rowIndex?: number | undefined;
 component?: string | undefined;
 componentProps?: Record<string, any> | undefined;
+bottom?: number | undefined;
+height?: number | undefined;
+left?: number | undefined;
+width?: number | undefined;
 }, TableModal | {
-bottom?: number | undefined;
-cell?: (HTMLTableCellElement | null) | undefined;
-colIndex?: number | undefined;
-event?: string | undefined;
-height?: number | undefined;
-left?: number | undefined;
-parent?: HTMLElement | undefined;
-rowIndex?: number | undefined;
 visible?: boolean | undefined;
-width?: number | undefined;
+cell?: (HTMLTableCellElement | null) | undefined;
+parent?: HTMLElement | undefined;
+colIndex?: number | undefined;
+rowIndex?: number | undefined;
 component?: string | undefined;
 componentProps?: Record<string, any> | undefined;
+bottom?: number | undefined;
+height?: number | undefined;
+left?: number | undefined;
+width?: number | undefined;
 }>;
 rows: Ref<    {
 [x: string]: any;
 indent?: number | undefined;
 parent?: number | undefined;
-gantt_color?: string | undefined;
+gantt?: {
+color?: string | undefined;
+startIndex?: number | undefined;
+endIndex?: number | undefined;
+colspan?: number | undefined;
+} | undefined;
 }[], TableRow[] | {
 [x: string]: any;
 indent?: number | undefined;
 parent?: number | undefined;
-gantt_color?: string | undefined;
+gantt?: {
+color?: string | undefined;
+startIndex?: number | undefined;
+endIndex?: number | undefined;
+colspan?: number | undefined;
+} | undefined;
 }[]>;
 table: Ref<    {}, {}>;
 updates: Ref<Record<string, string>, Record<string, string>>;
@@ -424,41 +450,82 @@ isRowVisible: (rowIndex: number) => boolean | undefined;
 setCellData: (colIndex: number, rowIndex: number, value: any) => void;
 setCellText: (colIndex: number, rowIndex: number, value: string) => void;
 toggleRowExpand: (rowIndex: number) => void;
-}, "closeModal" | "getCellData" | "getCellDisplayValue" | "getFormattedValue" | "getHeaderCellStyle" | "resizeColumn" | "getIndent" | "getRowExpandSymbol" | "isRowGantt" | "isRowVisible" | "setCellData" | "setCellText" | "toggleRowExpand">>;
+updateGanttBar: (event: GanttDragEvent) => void;
+}, "closeModal" | "getCellData" | "getCellDisplayValue" | "getFormattedValue" | "getHeaderCellStyle" | "resizeColumn" | "getIndent" | "getRowExpandSymbol" | "isRowGantt" | "isRowVisible" | "setCellData" | "setCellText" | "toggleRowExpand" | "updateGanttBar">>;
+
+// @public
+export type GanttDragEvent = {
+    rowIndex: number;
+    colIndex: number;
+    delta: number;
+} & ({
+    type: 'bar';
+    oldStart: number;
+    oldEnd: number;
+    newStart: number;
+    newEnd: number;
+    colspan: number;
+} | {
+    type: 'resize';
+    edge: 'start';
+    oldStart: number;
+    newStart: number;
+    end: number;
+    oldColspan: number;
+    newColspan: number;
+} | {
+    type: 'resize';
+    edge: 'end';
+    oldEnd: number;
+    newEnd: number;
+    start: number;
+    oldColspan: number;
+    newColspan: number;
+});
+
+// @public
+export interface GanttOptions {
+    color?: string;
+    colspan?: number;
+    endIndex?: number;
+    startIndex?: number;
+}
 
 // @public
 export function install(app: App): void;
 
 // @public
-export type TableColumn = {
-    name: string;
+export interface TableColumn {
     align?: CanvasTextAlign;
-    edit?: boolean;
-    label?: string;
-    type?: string;
-    width?: string;
-    pinned?: boolean;
-    resizable?: boolean;
-    colspan?: number;
-    ganttComponent?: string;
-    isGantt?: boolean;
-    originalIndex?: number;
     cellComponent?: string;
     cellComponentProps?: Record<string, any>;
+    colspan?: number;
+    edit?: boolean;
+    format?: string | ((value: any, context: CellContext) => string);
+    ganttComponent?: string;
+    isGantt?: boolean;
+    label?: string;
+    mask?: (value: any) => any;
     modalComponent?: string | ((context: CellContext) => string);
     modalComponentExtraProps?: Record<string, any>;
-    format?: string | ((value: any, context: CellContext) => string);
-    mask?: (value: any) => any;
-};
+    name: string;
+    originalIndex?: number;
+    pinned?: boolean;
+    // (undocumented)
+    resizable?: boolean;
+    // @beta
+    type?: string;
+    width?: string;
+}
 
 // @public
-export type TableConfig = {
-    view?: 'uncounted' | 'list' | 'list-expansion' | 'tree' | 'gantt';
+export interface TableConfig {
     fullWidth?: boolean;
-};
+    view?: 'uncounted' | 'list' | 'list-expansion' | 'tree' | 'gantt';
+}
 
 // @public
-export type TableDisplay = {
+export interface TableDisplay {
     childrenOpen?: boolean;
     expanded?: boolean;
     indent?: number;
@@ -467,39 +534,38 @@ export type TableDisplay = {
     open?: boolean;
     parent?: number;
     rowModified?: boolean;
-};
+}
 
 // @public
-export type TableModal = {
+export interface TableModal {
     bottom?: ReturnType<typeof useElementBounding>['bottom'];
     cell?: HTMLTableCellElement | null;
     colIndex?: number;
-    event?: string;
+    component?: string;
+    componentProps?: Record<string, any>;
     height?: ReturnType<typeof useElementBounding>['height'];
     left?: ReturnType<typeof useElementBounding>['left'];
     parent?: HTMLElement;
     rowIndex?: number;
     visible?: boolean;
     width?: ReturnType<typeof useElementBounding>['width'];
-    component?: string;
-    componentProps?: Record<string, any>;
-};
+}
 
 // @public
-export type TableModalProps = {
+export interface TableModalProps {
     [key: string]: any;
     colIndex: number;
     rowIndex: number;
     store: ReturnType<typeof createTableStore>;
-};
+}
 
 // @public
-export type TableRow = {
+export interface TableRow {
     [key: string]: any;
+    gantt?: GanttOptions;
     indent?: number;
     parent?: number;
-    gantt_color?: string;
-};
+}
 
 // (No @packageDocumentation comment for this package)
 

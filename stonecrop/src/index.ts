@@ -1,5 +1,5 @@
 export type { BaseSchema, FieldsetSchema, FormSchema, SchemaTypes, TableSchema } from '@stonecrop/aform'
-export type { CellContext, TableColumn, TableConfig, TableRow } from '@stonecrop/atable'
+export type { CellContext, GanttOptions, TableColumn, TableConfig, TableRow } from '@stonecrop/atable'
 
 import { type StonecropReturn, useStonecrop } from './composable'
 import DoctypeMeta from './doctype'
