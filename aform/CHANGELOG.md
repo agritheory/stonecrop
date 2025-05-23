@@ -1,6 +1,11 @@
 # Change Log - @stonecrop/aform
 
-This log was last generated on Wed, 21 May 2025 08:56:14 GMT and should not be manually modified.
+This log was last generated on Fri, 23 May 2025 19:01:31 GMT and should not be manually modified.
+
+## 0.4.16
+Fri, 23 May 2025 19:01:31 GMT
+
+_Version update only_
 
 ## 0.4.15
 Wed, 21 May 2025 08:56:14 GMT

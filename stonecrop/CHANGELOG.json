@@ -2,6 +2,12 @@
   "name": "@stonecrop/stonecrop",
   "entries": [
     {
+      "version": "0.4.16",
+      "tag": "@stonecrop/stonecrop_v0.4.16",
+      "date": "Fri, 23 May 2025 19:01:31 GMT",
+      "comments": {}
+    },
+    {
       "version": "0.4.15",
       "tag": "@stonecrop/stonecrop_v0.4.15",
       "date": "Wed, 21 May 2025 08:56:14 GMT",

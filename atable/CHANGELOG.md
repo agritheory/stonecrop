@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/atable
 
-This log was last generated on Wed, 21 May 2025 08:56:14 GMT and should not be manually modified.
+This log was last generated on Fri, 23 May 2025 19:01:31 GMT and should not be manually modified.
+
+## 0.4.16
+Fri, 23 May 2025 19:01:31 GMT
+
+### Patches
+
+- Refactored ATableHeader to remove the id="resizable" and replace it with a ref for better handling of multiple tables.
 
 ## 0.4.15
 Wed, 21 May 2025 08:56:14 GMT
