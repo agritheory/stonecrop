@@ -3,7 +3,7 @@
 		"barcode": "6281478257437327897",
 		"label": "Item 1 Long Title: Including Subtitle to demonstrate ellipsis",
 		"description": "iPhone this and that",
-		"count": { "count": 0, "of": 3 },
+		"count": { "count": 0 },
 		"linkComponent": "ListAnchor",
 		"route": "/item1"
 	},
