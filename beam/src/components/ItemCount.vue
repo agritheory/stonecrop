@@ -35,12 +35,13 @@ const isCountComplete = computed(() => denominator !== 0 && count.value === deno
 const validate = (payload: ClipboardEvent | InputEvent | MouseEvent) => {
 	const newValue = Number((payload.target as HTMLElement).innerHTML)
 	if (typeof newValue !== 'number' || isNaN(newValue)) {
-		nextTick(() => {
-			;(payload.target as HTMLElement).innerHTML = count.value.toString() || '0'
-		})
-		return
+		count.value = count.value || 0
+	} else {
+		count.value = denominator > 0 ? Math.min(newValue, denominator) : newValue
 	}
-	count.value = denominator > 0 ? Math.min(newValue, denominator) : newValue
+	nextTick(() => {
+		;(payload.target as HTMLElement).innerHTML = count.value.toString() || '0'
+	})
 }
 
 const debouncedRequest = useDebounceFn((payload: InputEvent) => validate(payload), debounce)
