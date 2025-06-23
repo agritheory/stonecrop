@@ -1,6 +1,39 @@
 # Change Log - @stonecrop/atable
 
-This log was last generated on Wed, 26 Mar 2025 06:51:27 GMT and should not be manually modified.
+This log was last generated on Fri, 23 May 2025 19:01:31 GMT and should not be manually modified.
+
+## 0.4.16
+Fri, 23 May 2025 19:01:31 GMT
+
+### Patches
+
+- Refactored ATableHeader to remove the id="resizable" and replace it with a ref for better handling of multiple tables.
+
+## 0.4.15
+Wed, 21 May 2025 08:56:14 GMT
+
+### Patches
+
+- pass colspan data in gantt drag emit
+
+## 0.4.14
+Tue, 20 May 2025 08:13:28 GMT
+
+### Patches
+
+- emit initial state after gantt drag
+
+## 0.4.13
+Wed, 14 May 2025 15:59:57 GMT
+
+_Version update only_
+
+## 0.4.12
+Tue, 15 Apr 2025 09:33:23 GMT
+
+### Patches
+
+- use specific key to fetch gantt bar's color
 
 ## 0.4.11
 Wed, 26 Mar 2025 06:51:27 GMT

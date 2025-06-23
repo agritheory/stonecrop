@@ -2,20 +2,94 @@
 
 [Home](./index.md) &gt; [@stonecrop/atable](./atable.md) &gt; [CellContext](./atable.cellcontext.md)
 
-## CellContext type
+## CellContext interface
 
 Table cell context definition.
 
 **Signature:**
 
 ```typescript
-export type CellContext = {
-    row: TableRow;
-    column: TableColumn;
-    table: {
-        [key: string]: any;
-    };
-};
+export interface CellContext 
 ```
-**References:** [TableRow](./atable.tablerow.md)<!-- -->, [TableColumn](./atable.tablecolumn.md)
 
+## Properties
+
+<table><thead><tr><th>
+
+Property
+
+
+</th><th>
+
+Modifiers
+
+
+</th><th>
+
+Type
+
+
+</th><th>
+
+Description
+
+
+</th></tr></thead>
+<tbody><tr><td>
+
+[column](./atable.cellcontext.column.md)
+
+
+</td><td>
+
+
+</td><td>
+
+[TableColumn](./atable.tablecolumn.md)
+
+
+</td><td>
+
+The column object for the current cell.
+
+
+</td></tr>
+<tr><td>
+
+[row](./atable.cellcontext.row.md)
+
+
+</td><td>
+
+
+</td><td>
+
+[TableRow](./atable.tablerow.md)
+
+
+</td><td>
+
+The row object for the current cell.
+
+
+</td></tr>
+<tr><td>
+
+[table](./atable.cellcontext.table.md)
+
+
+</td><td>
+
+
+</td><td>
+
+{ \[key: string\]: any; }
+
+
+</td><td>
+
+The table object for the current cell.
+
+
+</td></tr>
+</tbody></table>

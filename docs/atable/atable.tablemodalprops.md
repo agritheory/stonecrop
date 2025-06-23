@@ -2,17 +2,94 @@
 
 [Home](./index.md) &gt; [@stonecrop/atable](./atable.md) &gt; [TableModalProps](./atable.tablemodalprops.md)
 
-## TableModalProps type
+## TableModalProps interface
 
 Table modal component props definition.
 
 **Signature:**
 
 ```typescript
-export type TableModalProps = {
-    [key: string]: any;
-    colIndex: number;
-    rowIndex: number;
-    store: ReturnType<typeof createTableStore>;
-};
+export interface TableModalProps 
 ```
+
+## Properties
+
+<table><thead><tr><th>
+
+Property
+
+
+</th><th>
+
+Modifiers
+
+
+</th><th>
+
+Type
+
+
+</th><th>
+
+Description
+
+
+</th></tr></thead>
+<tbody><tr><td>
+
+[colIndex](./atable.tablemodalprops.colindex.md)
+
+
+</td><td>
+
+
+</td><td>
+
+number
+
+
+</td><td>
+
+The index of the column that the modal is currently being displayed for.
+
+
+</td></tr>
+<tr><td>
+
+[rowIndex](./atable.tablemodalprops.rowindex.md)
+
+
+</td><td>
+
+
+</td><td>
+
+number
+
+
+</td><td>
+
+The index of the row that the modal is currently being displayed for.
+
+
+</td></tr>
+<tr><td>
+
+[store](./atable.tablemodalprops.store.md)
+
+
+</td><td>
+
+
+</td><td>
+
+ReturnType&lt;typeof createTableStore&gt;
+
+
+</td><td>
+
+The store for managing the current table's state.
+
+
+</td></tr>
+</tbody></table>

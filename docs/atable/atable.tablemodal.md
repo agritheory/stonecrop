@@ -2,25 +2,246 @@
 
 [Home](./index.md) &gt; [@stonecrop/atable](./atable.md) &gt; [TableModal](./atable.tablemodal.md)
 
-## TableModal type
+## TableModal interface
 
 Table modal definition.
 
 **Signature:**
 
 ```typescript
-export type TableModal = {
-    bottom?: ReturnType<typeof useElementBounding>['bottom'];
-    cell?: HTMLTableCellElement | null;
-    colIndex?: number;
-    event?: string;
-    height?: ReturnType<typeof useElementBounding>['height'];
-    left?: ReturnType<typeof useElementBounding>['left'];
-    parent?: HTMLElement;
-    rowIndex?: number;
-    visible?: boolean;
-    width?: ReturnType<typeof useElementBounding>['width'];
-    component?: string;
-    componentProps?: Record<string, any>;
-};
+export interface TableModal 
 ```
+
+## Properties
+
+<table><thead><tr><th>
+
+Property
+
+
+</th><th>
+
+Modifiers
+
+
+</th><th>
+
+Type
+
+
+</th><th>
+
+Description
+
+
+</th></tr></thead>
+<tbody><tr><td>
+
+[bottom?](./atable.tablemodal.bottom.md)
+
+
+</td><td>
+
+
+</td><td>
+
+ReturnType&lt;typeof useElementBounding&gt;\['bottom'\]
+
+
+</td><td>
+
+_(Optional)_ Reactive bottom value for the modal's bounding box. The field is unset when the modal is not being displayed.
+
+
+</td></tr>
+<tr><td>
+
+[cell?](./atable.tablemodal.cell.md)
+
+
+</td><td>
+
+
+</td><td>
+
+HTMLTableCellElement \| null
+
+
+</td><td>
+
+_(Optional)_ The HTML cell element that the modal is currently being displayed for. The field is unset when the modal is not being displayed.
+
+
+</td></tr>
+<tr><td>
+
+[colIndex?](./atable.tablemodal.colindex.md)
+
+
+</td><td>
+
+
+</td><td>
+
+number
+
+
+</td><td>
+
+_(Optional)_ The index of the column that the modal is currently being displayed for. The field is unset when the modal is not being displayed.
+
+
+</td></tr>
+<tr><td>
+
+[component?](./atable.tablemodal.component.md)
+
+
+</td><td>
+
+
+</td><td>
+
+string
+
+
+</td><td>
+
+_(Optional)_ The component to use to render the modal. If not provided, the table will try to use the column's `modalComponent` property, if set. If that is not set, the table will not display a modal.
+
+
+</td></tr>
+<tr><td>
+
+[componentProps?](./atable.tablemodal.componentprops.md)
+
+
+</td><td>
+
+
+</td><td>
+
+Record&lt;string, any&gt;
+
+
+</td><td>
+
+_(Optional)_ Additional properties to pass to the table's modal component.
+
+
+</td></tr>
+<tr><td>
+
+[height?](./atable.tablemodal.height.md)
+
+
+</td><td>
+
+
+</td><td>
+
+ReturnType&lt;typeof useElementBounding&gt;\['height'\]
+
+
+</td><td>
+
+_(Optional)_ Reactive height value for the modal's bounding box. The field is unset when the modal is not being displayed.
+
+
+</td></tr>
+<tr><td>
+
+[left?](./atable.tablemodal.left.md)
+
+
+</td><td>
+
+
+</td><td>
+
+ReturnType&lt;typeof useElementBounding&gt;\['left'\]
+
+
+</td><td>
+
+_(Optional)_ Reactive left value for the modal's bounding box. The field is unset when the modal is not being displayed.
+
+
+</td></tr>
+<tr><td>
+
+[parent?](./atable.tablemodal.parent.md)
+
+
+</td><td>
+
+
+</td><td>
+
+HTMLElement
+
+
+</td><td>
+
+_(Optional)_ The HTML parent element that the modal is currently being displayed for. The field is unset when the modal is not being displayed.
+
+
+</td></tr>
+<tr><td>
+
+[rowIndex?](./atable.tablemodal.rowindex.md)
+
+
+</td><td>
+
+
+</td><td>
+
+number
+
+
+</td><td>
+
+_(Optional)_ The index of the row that the modal is currently being displayed for. The field is unset when the modal is not being displayed.
+
+
+</td></tr>
+<tr><td>
+
+[visible?](./atable.tablemodal.visible.md)
+
+
+</td><td>
+
+
+</td><td>
+
+boolean
+
+
+</td><td>
+
+_(Optional)_ Indicates whether the table modal is currently visible.
+
+
+</td></tr>
+<tr><td>
+
+[width?](./atable.tablemodal.width.md)
+
+
+</td><td>
+
+
+</td><td>
+
+ReturnType&lt;typeof useElementBounding&gt;\['width'\]
+
+
+</td><td>
+
+_(Optional)_ Reactive width value for the modal's bounding box. The field is unset when the modal is not being displayed.
+
+
+</td></tr>
+</tbody></table>

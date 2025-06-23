@@ -26,16 +26,26 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, useTemplateRef } from 'vue'
 import { useDraggable, useElementBounding } from '@vueuse/core'
+import { ref, computed, onMounted, useTemplateRef } from 'vue'
+
+import { createTableStore } from '../stores/table'
 
 const {
+	store,
+	columnsCount,
+	rowIndex,
+	colIndex,
 	start,
 	end,
 	colspan = 1,
 	label,
 	color,
 } = defineProps<{
+	store: ReturnType<typeof createTableStore>
+	columnsCount: number
+	rowIndex: number
+	colIndex: number
 	start?: number
 	end?: number
 	colspan?: number
@@ -53,12 +63,6 @@ onMounted(() => {
 	}
 })
 
-const emit = defineEmits<{
-	'update:start': [value: number]
-	'update:end': [value: number]
-	drag: [{ type: 'bar'; start: number; end: number } | { type: 'resize'; edge: 'start' | 'end'; value: number }]
-}>()
-
 const containerRef = useTemplateRef('container')
 const barRef = useTemplateRef('bar')
 const leftHandleRef = useTemplateRef('leftHandle')
@@ -66,8 +70,8 @@ const rightHandleRef = useTemplateRef('rightHandle')
 
 const { width: totalBarWidth } = useElementBounding(containerRef)
 const { left: barLeft, right: barRight } = useElementBounding(barRef)
-const currentStart = ref(start || 1)
-const currentEnd = ref(end || 4)
+const currentStart = ref(start || 0)
+const currentEnd = ref(end || currentStart.value + colspan)
 const dragStartData = ref({ startX: 0, startPos: 0 })
 
 const pixelsPerColumn = computed(() => (colspan > 0 ? totalBarWidth.value / colspan : 0))
@@ -105,11 +109,22 @@ const { isDragging: isLeftDragging } = useDraggable(leftHandleRef, {
 		if (barRef.value) {
 			const deltaX = x - dragStartData.value.startX
 			const deltaColumns = Math.round(deltaX / pixelsPerColumn.value)
+			const oldStart = currentStart.value
 			const newStart = Math.max(0, Math.min(currentEnd.value - 1, dragStartData.value.startPos + deltaColumns))
 			currentStart.value = newStart
 
-			emit('update:start', newStart)
-			emit('drag', { type: 'resize', edge: 'start', value: newStart })
+			store.updateGanttBar({
+				rowIndex,
+				colIndex,
+				type: 'resize',
+				edge: 'start',
+				oldStart,
+				newStart,
+				end: currentEnd.value,
+				delta: deltaColumns,
+				oldColspan: currentEnd.value - oldStart,
+				newColspan: currentEnd.value - newStart,
+			})
 		}
 	},
 })
@@ -127,7 +142,10 @@ const { isDragging: isRightDragging } = useDraggable(rightHandleRef, {
 		if (isRightDragging.value && barRef.value) {
 			const deltaX = x - dragStartData.value.startX
 			const deltaColumns = deltaX / pixelsPerColumn.value
-			const newEnd = Math.max(currentStart.value + 1, Math.min(colspan, dragStartData.value.startPos + deltaColumns))
+			const newEnd = Math.max(
+				currentStart.value + 1,
+				Math.min(columnsCount, dragStartData.value.startPos + deltaColumns)
+			)
 			barRef.value.style.width = `${((newEnd - currentStart.value) / colspan) * 100}%`
 		}
 	},
@@ -135,11 +153,25 @@ const { isDragging: isRightDragging } = useDraggable(rightHandleRef, {
 		if (barRef.value) {
 			const deltaX = x - dragStartData.value.startX
 			const deltaColumns = Math.round(deltaX / pixelsPerColumn.value)
-			const newEnd = Math.max(currentStart.value + 1, Math.min(colspan, dragStartData.value.startPos + deltaColumns))
+			const oldEnd = currentEnd.value
+			const newEnd = Math.max(
+				currentStart.value + 1,
+				Math.min(columnsCount, dragStartData.value.startPos + deltaColumns)
+			)
 			currentEnd.value = newEnd
 
-			emit('update:end', newEnd)
-			emit('drag', { type: 'resize', edge: 'end', value: newEnd })
+			store.updateGanttBar({
+				rowIndex,
+				colIndex,
+				type: 'resize',
+				edge: 'end',
+				oldEnd,
+				newEnd,
+				start: currentStart.value,
+				delta: deltaColumns,
+				oldColspan: oldEnd - currentStart.value,
+				newColspan: newEnd - currentStart.value,
+			})
 		}
 	},
 })
@@ -159,7 +191,7 @@ const { isDragging: isBarDragging } = useDraggable(barRef, {
 			const deltaX = x - dragStartData.value.startX
 			const deltaColumns = deltaX / pixelsPerColumn.value
 			const barWidth = currentEnd.value - currentStart.value
-			const newStart = Math.max(0, Math.min(dragStartData.value.startPos + deltaColumns, colspan - barWidth))
+			const newStart = Math.max(0, Math.min(dragStartData.value.startPos + deltaColumns, columnsCount - barWidth))
 			barRef.value.style.left = `${(newStart / colspan) * 100}%`
 		}
 	},
@@ -169,22 +201,32 @@ const { isDragging: isBarDragging } = useDraggable(barRef, {
 			const deltaColumns = Math.round(deltaX / pixelsPerColumn.value)
 			const barWidth = currentEnd.value - currentStart.value
 
+			const oldStart = currentStart.value
+			const oldEnd = currentEnd.value
 			let newStart = dragStartData.value.startPos + deltaColumns
 			let newEnd = newStart + barWidth
 			if (newStart < 0) {
 				newStart = 0
 				newEnd = barWidth
-			} else if (newEnd > colspan) {
-				newEnd = colspan
+			} else if (newEnd > columnsCount) {
+				newEnd = columnsCount
 				newStart = newEnd - barWidth
 			}
 
 			currentStart.value = newStart
 			currentEnd.value = newEnd
 
-			emit('update:start', newStart)
-			emit('update:end', newEnd)
-			emit('drag', { type: 'bar', start: newStart, end: newEnd })
+			store.updateGanttBar({
+				rowIndex,
+				colIndex,
+				type: 'bar',
+				oldStart,
+				oldEnd,
+				newStart,
+				newEnd,
+				delta: deltaColumns,
+				colspan: newEnd - newStart,
+			})
 		}
 	},
 })
