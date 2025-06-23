@@ -2,6 +2,18 @@
   "name": "@stonecrop/desktop",
   "entries": [
     {
+      "version": "0.4.17",
+      "tag": "@stonecrop/desktop_v0.4.17",
+      "date": "Mon, 23 Jun 2025 12:02:50 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "add command palette desktop component"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.4.16",
       "tag": "@stonecrop/desktop_v0.4.16",
       "date": "Fri, 23 May 2025 19:01:31 GMT",
