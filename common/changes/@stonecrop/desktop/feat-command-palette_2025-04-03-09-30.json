@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/desktop",
+      "comment": "add command palette desktop component",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/desktop"
+}
