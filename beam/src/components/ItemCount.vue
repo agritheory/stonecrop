@@ -15,7 +15,7 @@
 
 <script setup lang="ts">
 import { useDebounceFn } from '@vueuse/core'
-import { computed, nextTick, type HTMLAttributes } from 'vue'
+import { computed, type HTMLAttributes } from 'vue'
 
 const count = defineModel<number>({ required: true })
 const {
@@ -33,15 +33,8 @@ const {
 const isCountComplete = computed(() => denominator !== 0 && count.value === denominator)
 
 const validate = (payload: ClipboardEvent | InputEvent | MouseEvent) => {
-	const newValue = Number((payload.target as HTMLElement).innerHTML)
-	if (typeof newValue !== 'number' || isNaN(newValue)) {
-		count.value = count.value || 0
-	} else {
-		count.value = denominator > 0 ? Math.min(newValue, denominator) : newValue
-	}
-	nextTick(() => {
-		;(payload.target as HTMLElement).innerHTML = count.value.toString() || '0'
-	})
+	const newValue = Number((payload.target as HTMLElement).innerHTML) || 0
+	count.value = denominator ? Math.min(newValue, denominator) : newValue
 }
 
 const debouncedRequest = useDebounceFn((payload: InputEvent) => validate(payload), debounce)
