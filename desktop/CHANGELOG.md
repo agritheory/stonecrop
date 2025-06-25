@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/desktop
 
-This log was last generated on Fri, 23 May 2025 19:01:31 GMT and should not be manually modified.
+This log was last generated on Mon, 23 Jun 2025 12:02:50 GMT and should not be manually modified.
+
+## 0.4.17
+Mon, 23 Jun 2025 12:02:50 GMT
+
+### Patches
+
+- add command palette desktop component
 
 ## 0.4.16
 Fri, 23 May 2025 19:01:31 GMT
