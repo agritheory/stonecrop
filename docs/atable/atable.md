@@ -169,3 +169,4 @@ Gantt table drag event definition.
 
 </td></tr>
 </tbody></table>
+

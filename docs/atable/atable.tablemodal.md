@@ -245,3 +245,4 @@ _(Optional)_ Reactive width value for the modal's bounding box. The field is uns
 
 </td></tr>
 </tbody></table>
+

@@ -112,3 +112,4 @@ _(Optional)_ The starting column index for the gantt bar.
 
 </td></tr>
 </tbody></table>
+

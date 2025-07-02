@@ -74,3 +74,4 @@ _(Optional)_ The type of view to display the table in. Possible values: - `uncou
 
 </td></tr>
 </tbody></table>
+

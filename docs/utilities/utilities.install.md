@@ -47,6 +47,7 @@ Vue app instance
 
 </td></tr>
 </tbody></table>
+
 **Returns:**
 
 void
