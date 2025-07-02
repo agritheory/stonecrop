@@ -467,16 +467,19 @@ const project_gantt_columns: TableColumn[] = [
 		edit: false,
 		width: '40ch',
 		pinned: true,
-		format: value => {
+		format: (value, context) => {
 			if (value === undefined || value === null) {
 				return ''
 			} else if (Object.keys(value).length > 0) {
+				const indent = context.row.indent || 0
+				const indentSpace = '&nbsp;'.repeat(indent * 4)
+
 				if (value.display === '(Project)') {
-					return `<strong>${value.title}</strong>`
+					return `${indentSpace}<strong>${value.title}</strong>`
 				} else if (value.assignee) {
-					return `${value.title} <small>(${value.assignee})</small>`
+					return `${indentSpace}${value.title} <small>(${value.assignee})</small>`
 				} else {
-					return value.title
+					return `${indentSpace}${value.title}`
 				}
 			}
 		},
@@ -521,7 +524,8 @@ const project_gantt_columns: TableColumn[] = [
 		edit: true,
 		width: '10ch',
 		format: (value, context) => {
-			if (value === undefined || value === null) {
+			// Only show data for task level (indent 2)
+			if (context.row.indent !== 2 || value === undefined || value === null) {
 				return ''
 			} else {
 				return `${value.actual_hours || 0}h`
@@ -536,7 +540,8 @@ const project_gantt_columns: TableColumn[] = [
 		edit: true,
 		width: '10ch',
 		format: (value, context) => {
-			if (value === undefined || value === null) {
+			// Only show data for task level (indent 2)
+			if (context.row.indent !== 2 || value === undefined || value === null) {
 				return ''
 			} else {
 				return `${value.actual_hours || 0}h`
@@ -551,7 +556,8 @@ const project_gantt_columns: TableColumn[] = [
 		edit: true,
 		width: '10ch',
 		format: (value, context) => {
-			if (value === undefined || value === null) {
+			// Only show data for task level (indent 2)
+			if (context.row.indent !== 2 || value === undefined || value === null) {
 				return ''
 			} else {
 				return `${value.actual_hours || 0}h`
@@ -566,7 +572,8 @@ const project_gantt_columns: TableColumn[] = [
 		edit: true,
 		width: '10ch',
 		format: (value, context) => {
-			if (value === undefined || value === null) {
+			// Only show data for task level (indent 2)
+			if (context.row.indent !== 2 || value === undefined || value === null) {
 				return ''
 			} else {
 				return `${value.actual_hours || 0}h`
@@ -581,7 +588,8 @@ const project_gantt_columns: TableColumn[] = [
 		edit: true,
 		width: '10ch',
 		format: (value, context) => {
-			if (value === undefined || value === null) {
+			// Only show data for task level (indent 2)
+			if (context.row.indent !== 2 || value === undefined || value === null) {
 				return ''
 			} else {
 				return `${value.actual_hours || 0}h`
@@ -596,7 +604,8 @@ const project_gantt_columns: TableColumn[] = [
 		edit: true,
 		width: '10ch',
 		format: (value, context) => {
-			if (value === undefined || value === null) {
+			// Only show data for task level (indent 2)
+			if (context.row.indent !== 2 || value === undefined || value === null) {
 				return ''
 			} else {
 				return `${value.actual_hours || 0}h`
@@ -611,7 +620,8 @@ const project_gantt_columns: TableColumn[] = [
 		edit: true,
 		width: '10ch',
 		format: (value, context) => {
-			if (value === undefined || value === null) {
+			// Only show data for task level (indent 2)
+			if (context.row.indent !== 2 || value === undefined || value === null) {
 				return ''
 			} else {
 				return `${value.actual_hours || 0}h`
@@ -626,7 +636,8 @@ const project_gantt_columns: TableColumn[] = [
 		edit: true,
 		width: '10ch',
 		format: (value, context) => {
-			if (value === undefined || value === null) {
+			// Only show data for task level (indent 2)
+			if (context.row.indent !== 2 || value === undefined || value === null) {
 				return ''
 			} else {
 				return `${value.actual_hours || 0}h`
@@ -641,7 +652,8 @@ const project_gantt_columns: TableColumn[] = [
 		edit: true,
 		width: '10ch',
 		format: (value, context) => {
-			if (value === undefined || value === null) {
+			// Only show data for task level (indent 2)
+			if (context.row.indent !== 2 || value === undefined || value === null) {
 				return ''
 			} else {
 				return `${value.actual_hours || 0}h`
@@ -656,7 +668,8 @@ const project_gantt_columns: TableColumn[] = [
 		edit: true,
 		width: '10ch',
 		format: (value, context) => {
-			if (value === undefined || value === null) {
+			// Only show data for task level (indent 2)
+			if (context.row.indent !== 2 || value === undefined || value === null) {
 				return ''
 			} else {
 				return `${value.actual_hours || 0}h`
@@ -671,7 +684,8 @@ const project_gantt_columns: TableColumn[] = [
 		edit: true,
 		width: '10ch',
 		format: (value, context) => {
-			if (value === undefined || value === null) {
+			// Only show data for task level (indent 2)
+			if (context.row.indent !== 2 || value === undefined || value === null) {
 				return ''
 			} else {
 				return `${value.actual_hours || 0}h`
@@ -686,7 +700,8 @@ const project_gantt_columns: TableColumn[] = [
 		edit: true,
 		width: '10ch',
 		format: (value, context) => {
-			if (value === undefined || value === null) {
+			// Only show data for task level (indent 2)
+			if (context.row.indent !== 2 || value === undefined || value === null) {
 				return ''
 			} else {
 				return `${value.planned_hours || 0}h`
@@ -701,7 +716,8 @@ const project_gantt_columns: TableColumn[] = [
 		edit: true,
 		width: '10ch',
 		format: (value, context) => {
-			if (value === undefined || value === null) {
+			// Only show data for task level (indent 2)
+			if (context.row.indent !== 2 || value === undefined || value === null) {
 				return ''
 			} else {
 				return `${value.planned_hours || 0}h`
@@ -716,7 +732,8 @@ const project_gantt_columns: TableColumn[] = [
 		edit: true,
 		width: '10ch',
 		format: (value, context) => {
-			if (value === undefined || value === null) {
+			// Only show data for task level (indent 2)
+			if (context.row.indent !== 2 || value === undefined || value === null) {
 				return ''
 			} else {
 				return `${value.planned_hours || 0}h`
@@ -731,7 +748,8 @@ const project_gantt_columns: TableColumn[] = [
 		edit: true,
 		width: '10ch',
 		format: (value, context) => {
-			if (value === undefined || value === null) {
+			// Only show data for task level (indent 2)
+			if (context.row.indent !== 2 || value === undefined || value === null) {
 				return ''
 			} else {
 				return `${value.planned_hours || 0}h`
@@ -746,7 +764,8 @@ const project_gantt_columns: TableColumn[] = [
 		edit: true,
 		width: '10ch',
 		format: (value, context) => {
-			if (value === undefined || value === null) {
+			// Only show data for task level (indent 2)
+			if (context.row.indent !== 2 || value === undefined || value === null) {
 				return ''
 			} else {
 				return `${value.planned_hours || 0}h`
@@ -776,7 +795,7 @@ const handleGanttDrag = (event: GanttDragEvent) => {
 <docs lang="md">
 # Tree View
 
-The tree view displays hierarchical data with expandable/collapsible nodes. The tree-gantt variant combines this with gantt chart functionality for root-level items.
+The tree view displays hierarchical data with expandable/collapsible nodes. The tree-gantt variant combines this with gantt chart functionality for project and phase levels.
 
 ## Tree View Features
 
@@ -787,17 +806,18 @@ The tree view displays hierarchical data with expandable/collapsible nodes. The 
 ## Tree-Gantt View Features
 
 - Combines tree structure with gantt visualization
-- Gantt bars only appear on root-level items (indent: 0)
+- Gantt bars appear on project (indent: 0) and phase (indent: 1) levels
+- Task level (indent: 2) contains actual data values
 - Maintains tree navigation while showing timeline data
 - Draggable and resizable gantt bars
-- Pinned columns for account information
+- Pinned columns for project information
 
 ## Project-Gantt View Features
 
 - 3-level hierarchy: Project > Phase > Task
 - Visual project status indicators
-- Time tracking with actual vs planned hours
-- Color-coded gantt bars per phase
+- Time tracking data only at task level
+- Color-coded gantt bars for projects and phases
 - Assignee information for tasks
 - Progress tracking across time periods
 
@@ -807,10 +827,9 @@ The tree view displays hierarchical data with expandable/collapsible nodes. The 
 <ATable :rows="treeData" :columns="treeColumns" :config="{ view: 'tree-gantt' }" @gantt:drag="handleGanttDrag" />
 ```
 
-The tree-gantt view is perfect for displaying hierarchical data with timeline components, such as:
+The tree-gantt view is perfect for displaying hierarchical project data with timeline visualization, where:
 
-- Project hierarchies with timelines
-- Organizational charts with budget periods
-- Account structures with financial periods
-- Task management with time tracking
+- Projects and phases provide visual timeline context via gantt bars
+- Tasks contain the actual time tracking and progress data
+- Hierarchical structure maintains project organization
 </docs>

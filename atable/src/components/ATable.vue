@@ -199,7 +199,10 @@ window.addEventListener('keydown', (event: KeyboardEvent) => {
 })
 
 const getProcessedColumnsForRow = (row: TableRow) => {
-	const isGanttRow = row.indent === 0 && (store.config.view === 'gantt' || store.config.view === 'tree-gantt')
+	// Include both project (indent 0) and phase (indent 1) levels for gantt bars
+	const isGanttRow =
+		(row.indent === 0 || (store.config.view === 'tree-gantt' && row.indent === 1)) &&
+		(store.config.view === 'gantt' || store.config.view === 'tree-gantt')
 	if (!isGanttRow || pinnedColumnCount.value === 0) {
 		return store.columns
 	}

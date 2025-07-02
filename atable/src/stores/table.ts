@@ -154,7 +154,11 @@ export const createTableStore = (initData: {
 
 		const isRowGantt = (rowIndex: number) => {
 			const row = rows.value[rowIndex]
-			return (config.value.view === 'gantt' || config.value.view === 'tree-gantt') && row.indent === 0
+			// Include both project (indent 0) and phase (indent 1) levels for tree-gantt view
+			return (
+				(config.value.view === 'gantt' || config.value.view === 'tree-gantt') &&
+				(row.indent === 0 || (config.value.view === 'tree-gantt' && row.indent === 1))
+			)
 		}
 
 		const isRowVisible = (rowIndex: number) => {
@@ -170,7 +174,7 @@ export const createTableStore = (initData: {
 				return ''
 			}
 
-			if (display.value[rowIndex].isRoot || display.value[rowIndex].isParent) {
+			if (display.value[rowIndex].isParent) {
 				return display.value[rowIndex].childrenOpen ? '-' : '+'
 			}
 

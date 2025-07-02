@@ -15,46 +15,6 @@
 		}
 	},
 	{
-		"period_1": {
-			"title": "Planning & Design Phase",
-			"project_code": "ESP-2025-P1",
-			"status": "Active",
-			"planned_hours": 320,
-			"actual_hours": 85,
-			"progress": 26,
-			"period_start": "2025-01-01",
-			"period_end": "2025-01-15"
-		},
-		"period_2": {
-			"title": "Planning & Design Phase",
-			"project_code": "ESP-2025-P1",
-			"status": "Active",
-			"planned_hours": 320,
-			"actual_hours": 165,
-			"progress": 52,
-			"period_start": "2025-01-16",
-			"period_end": "2025-01-31"
-		},
-		"period_3": {
-			"title": "Planning & Design Phase",
-			"project_code": "ESP-2025-P1",
-			"status": "Active",
-			"planned_hours": 320,
-			"actual_hours": 245,
-			"progress": 77,
-			"period_start": "2025-02-01",
-			"period_end": "2025-02-15"
-		},
-		"period_4": {
-			"title": "Planning & Design Phase",
-			"project_code": "ESP-2025-P1",
-			"status": "Completed",
-			"planned_hours": 320,
-			"actual_hours": 320,
-			"progress": 100,
-			"period_start": "2025-02-16",
-			"period_end": "2025-02-28"
-		},
 		"project_name": {
 			"title": "Planning & Design Phase",
 			"project_code": "ESP-2025-P1",
@@ -199,76 +159,6 @@
 		"parent": 1
 	},
 	{
-		"period_5": {
-			"title": "Development Phase",
-			"project_code": "ESP-2025-P2",
-			"status": "Active",
-			"planned_hours": 800,
-			"actual_hours": 120,
-			"progress": 15,
-			"period_start": "2025-03-01",
-			"period_end": "2025-03-15"
-		},
-		"period_6": {
-			"title": "Development Phase",
-			"project_code": "ESP-2025-P2",
-			"status": "Active",
-			"planned_hours": 800,
-			"actual_hours": 240,
-			"progress": 30,
-			"period_start": "2025-03-16",
-			"period_end": "2025-03-31"
-		},
-		"period_7": {
-			"title": "Development Phase",
-			"project_code": "ESP-2025-P2",
-			"status": "Active",
-			"planned_hours": 800,
-			"actual_hours": 360,
-			"progress": 45,
-			"period_start": "2025-04-01",
-			"period_end": "2025-04-15"
-		},
-		"period_8": {
-			"title": "Development Phase",
-			"project_code": "ESP-2025-P2",
-			"status": "Active",
-			"planned_hours": 800,
-			"actual_hours": 480,
-			"progress": 60,
-			"period_start": "2025-04-16",
-			"period_end": "2025-04-30"
-		},
-		"period_9": {
-			"title": "Development Phase",
-			"project_code": "ESP-2025-P2",
-			"status": "Active",
-			"planned_hours": 800,
-			"actual_hours": 600,
-			"progress": 75,
-			"period_start": "2025-05-01",
-			"period_end": "2025-05-15"
-		},
-		"period_10": {
-			"title": "Development Phase",
-			"project_code": "ESP-2025-P2",
-			"status": "Active",
-			"planned_hours": 800,
-			"actual_hours": 720,
-			"progress": 90,
-			"period_start": "2025-05-16",
-			"period_end": "2025-05-31"
-		},
-		"period_11": {
-			"title": "Development Phase",
-			"project_code": "ESP-2025-P2",
-			"status": "On Track",
-			"planned_hours": 800,
-			"actual_hours": 800,
-			"progress": 100,
-			"period_start": "2025-06-01",
-			"period_end": "2025-06-15"
-		},
 		"project_name": {
 			"title": "Development Phase",
 			"project_code": "ESP-2025-P2",
@@ -573,56 +463,6 @@
 		"parent": 6
 	},
 	{
-		"period_12": {
-			"title": "Testing & Deployment Phase",
-			"project_code": "ESP-2025-P3",
-			"status": "Planned",
-			"planned_hours": 400,
-			"actual_hours": 0,
-			"progress": 0,
-			"period_start": "2025-06-16",
-			"period_end": "2025-06-30"
-		},
-		"period_13": {
-			"title": "Testing & Deployment Phase",
-			"project_code": "ESP-2025-P3",
-			"status": "Planned",
-			"planned_hours": 400,
-			"actual_hours": 0,
-			"progress": 25,
-			"period_start": "2025-07-01",
-			"period_end": "2025-07-15"
-		},
-		"period_14": {
-			"title": "Testing & Deployment Phase",
-			"project_code": "ESP-2025-P3",
-			"status": "Planned",
-			"planned_hours": 400,
-			"actual_hours": 0,
-			"progress": 50,
-			"period_start": "2025-07-16",
-			"period_end": "2025-07-31"
-		},
-		"period_15": {
-			"title": "Testing & Deployment Phase",
-			"project_code": "ESP-2025-P3",
-			"status": "Planned",
-			"planned_hours": 400,
-			"actual_hours": 0,
-			"progress": 75,
-			"period_start": "2025-08-01",
-			"period_end": "2025-08-15"
-		},
-		"period_16": {
-			"title": "Testing & Deployment Phase",
-			"project_code": "ESP-2025-P3",
-			"status": "Planned",
-			"planned_hours": 400,
-			"actual_hours": 0,
-			"progress": 100,
-			"period_start": "2025-08-16",
-			"period_end": "2025-08-31"
-		},
 		"project_name": {
 			"title": "Testing & Deployment Phase",
 			"project_code": "ESP-2025-P3",
@@ -635,6 +475,156 @@
 			"startIndex": 11,
 			"colspan": 5
 		}
+	},
+	{
+		"period_12": {
+			"title": "User Acceptance Testing",
+			"task_code": "ESP-2025-T008",
+			"assignee": "Jennifer Lee",
+			"planned_hours": 100,
+			"actual_hours": 0,
+			"progress": 0,
+			"period_start": "2025-06-16",
+			"period_end": "2025-06-30"
+		},
+		"period_13": {
+			"title": "User Acceptance Testing",
+			"task_code": "ESP-2025-T008",
+			"assignee": "Jennifer Lee",
+			"planned_hours": 100,
+			"actual_hours": 0,
+			"progress": 50,
+			"period_start": "2025-07-01",
+			"period_end": "2025-07-15"
+		},
+		"period_14": {
+			"title": "User Acceptance Testing",
+			"task_code": "ESP-2025-T008",
+			"assignee": "Jennifer Lee",
+			"planned_hours": 100,
+			"actual_hours": 0,
+			"progress": 100,
+			"period_start": "2025-07-16",
+			"period_end": "2025-07-31"
+		},
+		"project_name": {
+			"title": "User Acceptance Testing",
+			"task_code": "ESP-2025-T008",
+			"assignee": "Jennifer Lee",
+			"status": "Planned"
+		},
+		"indent": 2,
+		"parent": 11
+	},
+	{
+		"period_13": {
+			"title": "Performance Testing",
+			"task_code": "ESP-2025-T009",
+			"assignee": "Robert Chen",
+			"planned_hours": 80,
+			"actual_hours": 0,
+			"progress": 0,
+			"period_start": "2025-07-01",
+			"period_end": "2025-07-15"
+		},
+		"period_14": {
+			"title": "Performance Testing",
+			"task_code": "ESP-2025-T009",
+			"assignee": "Robert Chen",
+			"planned_hours": 80,
+			"actual_hours": 0,
+			"progress": 60,
+			"period_start": "2025-07-16",
+			"period_end": "2025-07-31"
+		},
+		"period_15": {
+			"title": "Performance Testing",
+			"task_code": "ESP-2025-T009",
+			"assignee": "Robert Chen",
+			"planned_hours": 80,
+			"actual_hours": 0,
+			"progress": 100,
+			"period_start": "2025-08-01",
+			"period_end": "2025-08-15"
+		},
+		"project_name": {
+			"title": "Performance Testing",
+			"task_code": "ESP-2025-T009",
+			"assignee": "Robert Chen",
+			"status": "Planned"
+		},
+		"indent": 2,
+		"parent": 11
+	},
+	{
+		"period_14": {
+			"title": "Production Deployment",
+			"task_code": "ESP-2025-T010",
+			"assignee": "Tech Lead Team",
+			"planned_hours": 60,
+			"actual_hours": 0,
+			"progress": 0,
+			"period_start": "2025-07-16",
+			"period_end": "2025-07-31"
+		},
+		"period_15": {
+			"title": "Production Deployment",
+			"task_code": "ESP-2025-T010",
+			"assignee": "Tech Lead Team",
+			"planned_hours": 60,
+			"actual_hours": 0,
+			"progress": 70,
+			"period_start": "2025-08-01",
+			"period_end": "2025-08-15"
+		},
+		"period_16": {
+			"title": "Production Deployment",
+			"task_code": "ESP-2025-T010",
+			"assignee": "Tech Lead Team",
+			"planned_hours": 60,
+			"actual_hours": 0,
+			"progress": 100,
+			"period_start": "2025-08-16",
+			"period_end": "2025-08-31"
+		},
+		"project_name": {
+			"title": "Production Deployment",
+			"task_code": "ESP-2025-T010",
+			"assignee": "Tech Lead Team",
+			"status": "Planned"
+		},
+		"indent": 2,
+		"parent": 11
+	},
+	{
+		"period_15": {
+			"title": "Documentation & Training",
+			"task_code": "ESP-2025-T011",
+			"assignee": "Technical Writers",
+			"planned_hours": 160,
+			"actual_hours": 0,
+			"progress": 0,
+			"period_start": "2025-08-01",
+			"period_end": "2025-08-15"
+		},
+		"period_16": {
+			"title": "Documentation & Training",
+			"task_code": "ESP-2025-T011",
+			"assignee": "Technical Writers",
+			"planned_hours": 160,
+			"actual_hours": 0,
+			"progress": 100,
+			"period_start": "2025-08-16",
+			"period_end": "2025-08-31"
+		},
+		"project_name": {
+			"title": "Documentation & Training",
+			"task_code": "ESP-2025-T011",
+			"assignee": "Technical Writers",
+			"status": "Planned"
+		},
+		"indent": 2,
+		"parent": 11
 	},
 	{
 		"period_12": {
