@@ -525,7 +525,7 @@ const project_gantt_columns: TableColumn[] = [
 		width: '10ch',
 		format: (value, context) => {
 			// Only show data for task level (indent 2)
-			if (context.row.indent !== 2 || value === undefined || value === null) {
+			if (!value || context.row.indent !== 2) {
 				return ''
 			} else {
 				return `${value.actual_hours || 0}h`
@@ -541,7 +541,7 @@ const project_gantt_columns: TableColumn[] = [
 		width: '10ch',
 		format: (value, context) => {
 			// Only show data for task level (indent 2)
-			if (context.row.indent !== 2 || value === undefined || value === null) {
+			if (!value || context.row.indent !== 2) {
 				return ''
 			} else {
 				return `${value.actual_hours || 0}h`
@@ -557,7 +557,7 @@ const project_gantt_columns: TableColumn[] = [
 		width: '10ch',
 		format: (value, context) => {
 			// Only show data for task level (indent 2)
-			if (context.row.indent !== 2 || value === undefined || value === null) {
+			if (!value || context.row.indent !== 2) {
 				return ''
 			} else {
 				return `${value.actual_hours || 0}h`
@@ -573,7 +573,7 @@ const project_gantt_columns: TableColumn[] = [
 		width: '10ch',
 		format: (value, context) => {
 			// Only show data for task level (indent 2)
-			if (context.row.indent !== 2 || value === undefined || value === null) {
+			if (!value || context.row.indent !== 2) {
 				return ''
 			} else {
 				return `${value.actual_hours || 0}h`
@@ -589,7 +589,7 @@ const project_gantt_columns: TableColumn[] = [
 		width: '10ch',
 		format: (value, context) => {
 			// Only show data for task level (indent 2)
-			if (context.row.indent !== 2 || value === undefined || value === null) {
+			if (!value || context.row.indent !== 2) {
 				return ''
 			} else {
 				return `${value.actual_hours || 0}h`
@@ -605,7 +605,7 @@ const project_gantt_columns: TableColumn[] = [
 		width: '10ch',
 		format: (value, context) => {
 			// Only show data for task level (indent 2)
-			if (context.row.indent !== 2 || value === undefined || value === null) {
+			if (!value || context.row.indent !== 2) {
 				return ''
 			} else {
 				return `${value.actual_hours || 0}h`
@@ -621,7 +621,7 @@ const project_gantt_columns: TableColumn[] = [
 		width: '10ch',
 		format: (value, context) => {
 			// Only show data for task level (indent 2)
-			if (context.row.indent !== 2 || value === undefined || value === null) {
+			if (!value || context.row.indent !== 2) {
 				return ''
 			} else {
 				return `${value.actual_hours || 0}h`
@@ -637,7 +637,7 @@ const project_gantt_columns: TableColumn[] = [
 		width: '10ch',
 		format: (value, context) => {
 			// Only show data for task level (indent 2)
-			if (context.row.indent !== 2 || value === undefined || value === null) {
+			if (!value || context.row.indent !== 2) {
 				return ''
 			} else {
 				return `${value.actual_hours || 0}h`
@@ -653,7 +653,7 @@ const project_gantt_columns: TableColumn[] = [
 		width: '10ch',
 		format: (value, context) => {
 			// Only show data for task level (indent 2)
-			if (context.row.indent !== 2 || value === undefined || value === null) {
+			if (!value || context.row.indent !== 2) {
 				return ''
 			} else {
 				return `${value.actual_hours || 0}h`
@@ -669,7 +669,7 @@ const project_gantt_columns: TableColumn[] = [
 		width: '10ch',
 		format: (value, context) => {
 			// Only show data for task level (indent 2)
-			if (context.row.indent !== 2 || value === undefined || value === null) {
+			if (!value || context.row.indent !== 2) {
 				return ''
 			} else {
 				return `${value.actual_hours || 0}h`
@@ -685,7 +685,7 @@ const project_gantt_columns: TableColumn[] = [
 		width: '10ch',
 		format: (value, context) => {
 			// Only show data for task level (indent 2)
-			if (context.row.indent !== 2 || value === undefined || value === null) {
+			if (!value || context.row.indent !== 2) {
 				return ''
 			} else {
 				return `${value.actual_hours || 0}h`
@@ -701,7 +701,7 @@ const project_gantt_columns: TableColumn[] = [
 		width: '10ch',
 		format: (value, context) => {
 			// Only show data for task level (indent 2)
-			if (context.row.indent !== 2 || value === undefined || value === null) {
+			if (!value || context.row.indent !== 2) {
 				return ''
 			} else {
 				return `${value.planned_hours || 0}h`
@@ -717,7 +717,7 @@ const project_gantt_columns: TableColumn[] = [
 		width: '10ch',
 		format: (value, context) => {
 			// Only show data for task level (indent 2)
-			if (context.row.indent !== 2 || value === undefined || value === null) {
+			if (!value || context.row.indent !== 2) {
 				return ''
 			} else {
 				return `${value.planned_hours || 0}h`
@@ -733,7 +733,7 @@ const project_gantt_columns: TableColumn[] = [
 		width: '10ch',
 		format: (value, context) => {
 			// Only show data for task level (indent 2)
-			if (context.row.indent !== 2 || value === undefined || value === null) {
+			if (!value || context.row.indent !== 2) {
 				return ''
 			} else {
 				return `${value.planned_hours || 0}h`
@@ -749,7 +749,7 @@ const project_gantt_columns: TableColumn[] = [
 		width: '10ch',
 		format: (value, context) => {
 			// Only show data for task level (indent 2)
-			if (context.row.indent !== 2 || value === undefined || value === null) {
+			if (!value || context.row.indent !== 2) {
 				return ''
 			} else {
 				return `${value.planned_hours || 0}h`
@@ -765,7 +765,7 @@ const project_gantt_columns: TableColumn[] = [
 		width: '10ch',
 		format: (value, context) => {
 			// Only show data for task level (indent 2)
-			if (context.row.indent !== 2 || value === undefined || value === null) {
+			if (!value || context.row.indent !== 2) {
 				return ''
 			} else {
 				return `${value.planned_hours || 0}h`

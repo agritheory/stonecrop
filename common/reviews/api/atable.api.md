@@ -173,6 +173,8 @@ colspan?: number | undefined;
 table: Ref<    {}, {}>;
 updates: Ref<Record<string, string>, Record<string, string>>;
 hasPinnedColumns: ComputedRef<boolean>;
+isGanttView: ComputedRef<boolean>;
+isTreeView: ComputedRef<boolean>;
 numberedRowWidth: ComputedRef<string>;
 zeroColumn: ComputedRef<boolean>;
 closeModal: (event: MouseEvent) => void;
@@ -304,6 +306,8 @@ colspan?: number | undefined;
 table: Ref<    {}, {}>;
 updates: Ref<Record<string, string>, Record<string, string>>;
 hasPinnedColumns: ComputedRef<boolean>;
+isGanttView: ComputedRef<boolean>;
+isTreeView: ComputedRef<boolean>;
 numberedRowWidth: ComputedRef<string>;
 zeroColumn: ComputedRef<boolean>;
 closeModal: (event: MouseEvent) => void;
@@ -320,7 +324,7 @@ setCellData: (colIndex: number, rowIndex: number, value: any) => void;
 setCellText: (colIndex: number, rowIndex: number, value: string) => void;
 toggleRowExpand: (rowIndex: number) => void;
 updateGanttBar: (event: GanttDragEvent) => void;
-}, "hasPinnedColumns" | "numberedRowWidth" | "zeroColumn">, Pick<{
+}, "hasPinnedColumns" | "isGanttView" | "isTreeView" | "numberedRowWidth" | "zeroColumn">, Pick<{
 columns: Ref<    {
 name: string;
 align?: CanvasTextAlign | undefined;
@@ -435,6 +439,8 @@ colspan?: number | undefined;
 table: Ref<    {}, {}>;
 updates: Ref<Record<string, string>, Record<string, string>>;
 hasPinnedColumns: ComputedRef<boolean>;
+isGanttView: ComputedRef<boolean>;
+isTreeView: ComputedRef<boolean>;
 numberedRowWidth: ComputedRef<string>;
 zeroColumn: ComputedRef<boolean>;
 closeModal: (event: MouseEvent) => void;

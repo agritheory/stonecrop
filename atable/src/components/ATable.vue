@@ -136,8 +136,8 @@ onMounted(() => {
 	if (columns.some(column => column.pinned)) {
 		assignStickyCellWidths()
 
-		// in tree or tree-gantt view, also add a mutation observer to capture and adjust expanded rows
-		if (store.config.view === 'tree' || store.config.view === 'tree-gantt') {
+		// in tree views, also add a mutation observer to capture and adjust expanded rows
+		if (store.isTreeView) {
 			useMutationObserver(tableRef, assignStickyCellWidths, { childList: true, subtree: true })
 		}
 	}
@@ -199,11 +199,7 @@ window.addEventListener('keydown', (event: KeyboardEvent) => {
 })
 
 const getProcessedColumnsForRow = (row: TableRow) => {
-	// Include both project (indent 0) and phase (indent 1) levels for gantt bars
-	const isGanttRow =
-		(row.indent === 0 || (store.config.view === 'tree-gantt' && row.indent === 1)) &&
-		(store.config.view === 'gantt' || store.config.view === 'tree-gantt')
-	if (!isGanttRow || pinnedColumnCount.value === 0) {
+	if (!row.gantt || pinnedColumnCount.value === 0) {
 		return store.columns
 	}
 

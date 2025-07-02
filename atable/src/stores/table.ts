@@ -88,6 +88,8 @@ export const createTableStore = (initData: {
 
 		// getters
 		const hasPinnedColumns = computed(() => columns.value.some(col => col.pinned))
+		const isGanttView = computed(() => config.value.view === 'gantt' || config.value.view === 'tree-gantt')
+		const isTreeView = computed(() => config.value.view === 'tree' || config.value.view === 'tree-gantt')
 
 		const numberedRowWidth = computed(() => {
 			const indent = Math.ceil(rows.value.length / 100 + 1)
@@ -95,7 +97,7 @@ export const createTableStore = (initData: {
 		})
 
 		const zeroColumn = computed(() =>
-			config.value.view ? ['list', 'tree', 'list-expansion'].includes(config.value.view) : false
+			config.value.view ? ['list', 'tree', 'tree-gantt', 'list-expansion'].includes(config.value.view) : false
 		)
 
 		// actions
@@ -154,19 +156,15 @@ export const createTableStore = (initData: {
 
 		const isRowGantt = (rowIndex: number) => {
 			const row = rows.value[rowIndex]
-			return (config.value.view === 'gantt' || config.value.view === 'tree-gantt') && row.gantt !== undefined
+			return isGanttView.value && row.gantt !== undefined
 		}
 
 		const isRowVisible = (rowIndex: number) => {
-			return (
-				(config.value.view !== 'tree' && config.value.view !== 'tree-gantt') ||
-				display.value[rowIndex].isRoot ||
-				display.value[rowIndex].open
-			)
+			return !isTreeView.value || display.value[rowIndex].isRoot || display.value[rowIndex].open
 		}
 
 		const getRowExpandSymbol = (rowIndex: number) => {
-			if (config.value.view !== 'tree' && config.value.view !== 'tree-gantt') {
+			if (!isTreeView.value) {
 				return ''
 			}
 
@@ -178,7 +176,7 @@ export const createTableStore = (initData: {
 		}
 
 		const toggleRowExpand = (rowIndex: number) => {
-			if (config.value.view === 'tree' || config.value.view === 'tree-gantt') {
+			if (isTreeView.value) {
 				display.value[rowIndex].childrenOpen = !display.value[rowIndex].childrenOpen
 				for (let index = rows.value.length - 1; index >= 0; index--) {
 					if (display.value[index].parent === rowIndex) {
@@ -271,6 +269,8 @@ export const createTableStore = (initData: {
 
 			// getters
 			hasPinnedColumns,
+			isGanttView,
+			isTreeView,
 			numberedRowWidth,
 			zeroColumn,
 
