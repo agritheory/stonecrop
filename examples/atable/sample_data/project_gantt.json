@@ -250,7 +250,7 @@
 			"status": "On Track"
 		},
 		"indent": 2,
-		"parent": 6
+		"parent": 5
 	},
 	{
 		"period_5": {
@@ -330,7 +330,7 @@
 			"status": "On Track"
 		},
 		"indent": 2,
-		"parent": 6
+		"parent": 5
 	},
 	{
 		"period_6": {
@@ -400,7 +400,7 @@
 			"status": "On Track"
 		},
 		"indent": 2,
-		"parent": 6
+		"parent": 5
 	},
 	{
 		"period_7": {
@@ -460,7 +460,7 @@
 			"status": "On Track"
 		},
 		"indent": 2,
-		"parent": 6
+		"parent": 5
 	},
 	{
 		"project_name": {
@@ -473,7 +473,7 @@
 		"gantt": {
 			"color": "#7b1fa2",
 			"startIndex": 11,
-			"colspan": 5
+			"colspan": 6
 		}
 	},
 	{
@@ -514,7 +514,7 @@
 			"status": "Planned"
 		},
 		"indent": 2,
-		"parent": 11
+		"parent": 10
 	},
 	{
 		"period_13": {
@@ -554,7 +554,7 @@
 			"status": "Planned"
 		},
 		"indent": 2,
-		"parent": 11
+		"parent": 10
 	},
 	{
 		"period_14": {
@@ -594,7 +594,7 @@
 			"status": "Planned"
 		},
 		"indent": 2,
-		"parent": 11
+		"parent": 10
 	},
 	{
 		"period_15": {
@@ -624,7 +624,7 @@
 			"status": "Planned"
 		},
 		"indent": 2,
-		"parent": 11
+		"parent": 10
 	},
 	{
 		"period_12": {
@@ -664,7 +664,7 @@
 			"status": "Planned"
 		},
 		"indent": 2,
-		"parent": 11
+		"parent": 10
 	},
 	{
 		"period_13": {
@@ -704,7 +704,7 @@
 			"status": "Planned"
 		},
 		"indent": 2,
-		"parent": 11
+		"parent": 10
 	},
 	{
 		"period_14": {
@@ -744,7 +744,7 @@
 			"status": "Planned"
 		},
 		"indent": 2,
-		"parent": 11
+		"parent": 10
 	},
 	{
 		"period_15": {
@@ -774,6 +774,6 @@
 			"status": "Planned"
 		},
 		"indent": 2,
-		"parent": 11
+		"parent": 10
 	}
 ]
