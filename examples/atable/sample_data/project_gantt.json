@@ -18,7 +18,8 @@
 		"project_name": {
 			"title": "Planning & Design Phase",
 			"project_code": "ESP-2025-P1",
-			"status": "Completed"
+			"status": "Completed",
+			"display": "(Phase)"
 		},
 		"indent": 1,
 		"parent": 0,
@@ -162,7 +163,8 @@
 		"project_name": {
 			"title": "Development Phase",
 			"project_code": "ESP-2025-P2",
-			"status": "Active"
+			"status": "Active",
+			"display": "(Phase)"
 		},
 		"indent": 1,
 		"parent": 0,
@@ -466,7 +468,8 @@
 		"project_name": {
 			"title": "Testing & Deployment Phase",
 			"project_code": "ESP-2025-P3",
-			"status": "Planned"
+			"status": "Planned",
+			"display": "(Phase)"
 		},
 		"indent": 1,
 		"parent": 0,

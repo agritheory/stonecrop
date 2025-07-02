@@ -4,7 +4,7 @@
 			<ATable v-model="gantt.rows" :columns="gantt.columns" :config="gantt.config" @gantt:drag="handleGanttDrag" />
 		</Variant>
 
-		<Variant title="project-gantt">
+		<Variant title="tree">
 			<ATable
 				v-model="project_gantt.rows"
 				:columns="project_gantt.columns"
@@ -460,7 +460,7 @@ const gantt = ref({
 // Project-Gantt columns with period data
 const project_gantt_columns: TableColumn[] = [
 	{
-		label: 'Project / Task',
+		label: 'Project / Phase / Task',
 		name: 'project_name',
 		type: 'Data',
 		align: 'left',
@@ -474,7 +474,7 @@ const project_gantt_columns: TableColumn[] = [
 				const indent = context.row.indent || 0
 				const indentSpace = '&nbsp;'.repeat(indent * 4)
 
-				if (value.display === '(Project)') {
+				if (value.display === '(Project)' || value.display === '(Phase)') {
 					return `${indentSpace}<strong>${value.title}</strong>`
 				} else if (value.assignee) {
 					return `${indentSpace}${value.title} <small>(${value.assignee})</small>`

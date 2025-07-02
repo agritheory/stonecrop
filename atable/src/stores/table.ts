@@ -58,6 +58,10 @@ export const createTableStore = (initData: {
 			const parents = new Set<string | number>()
 			for (let rowIndex = rows.value.length - 1; rowIndex >= 0; rowIndex--) {
 				const row = rows.value[rowIndex]
+				if (row.parent === null) {
+					parents.add(rowIndex)
+				}
+
 				if (row.parent) {
 					parents.add(row.parent)
 				}
@@ -261,18 +265,6 @@ export const createTableStore = (initData: {
 					ganttBar.colspan = ganttBar.endIndex - ganttBar.startIndex
 				}
 			}
-		}
-
-		const isTreeGanttRow = (rowIndex: number) => {
-			return config.value.view === 'tree-gantt' && rows.value[rowIndex].indent === 0
-		}
-
-		const showTreeIndicator = (rowIndex: number) => {
-			const isTreeView = config.value.view === 'tree' || config.value.view === 'tree-gantt'
-			const isGanttGroupRow = config.value.view === 'tree-gantt' && rows.value[rowIndex].indent === 0
-			const hasChildren = display.value[rowIndex].isParent
-
-			return isTreeView && (hasChildren || isGanttGroupRow)
 		}
 
 		return {
