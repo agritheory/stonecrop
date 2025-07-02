@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/utilities
 
-This log was last generated on Mon, 23 Jun 2025 12:02:50 GMT and should not be manually modified.
+This log was last generated on Wed, 02 Jul 2025 09:19:21 GMT and should not be manually modified.
+
+## 0.4.18
+Wed, 02 Jul 2025 09:19:21 GMT
+
+### Patches
+
+- update dependencies
 
 ## 0.4.17
 Mon, 23 Jun 2025 12:02:50 GMT
