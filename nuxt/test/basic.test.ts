@@ -3,8 +3,9 @@ import { describe, it, expect } from 'vitest'
 import { setup, $fetch } from '@nuxt/test-utils/e2e'
 
 describe('ssr', async () => {
+	const path = fileURLToPath(new URL('./fixtures/basic', import.meta.url))
 	await setup({
-		rootDir: fileURLToPath(new URL('./fixtures/basic', import.meta.url)),
+		rootDir: path,
 	})
 
 	it('renders the index page', async () => {

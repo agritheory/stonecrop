@@ -2,12 +2,15 @@ name: Tests
 
 on:
   push:
+    branches:
+      - development
     paths: [nuxt/**]
   pull_request:
+    paths: [nuxt/**]
 
 jobs:
   test:
-    name: Nuxt
+    name: nuxt
     runs-on: ubuntu-latest
 
     steps:

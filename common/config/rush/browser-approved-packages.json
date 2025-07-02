@@ -167,6 +167,10 @@
       "allowedCategories": [ "prototype" ]
     },
     {
+      "name": "happy-dom",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
       "name": "histoire",
       "allowedCategories": [ "prototype", "utilities" ]
     },
@@ -308,6 +312,10 @@
     },
     {
       "name": "vue-toast-notification",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "vue-tsc",
       "allowedCategories": [ "prototype" ]
     },
     {
