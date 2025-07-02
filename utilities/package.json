@@ -45,17 +45,17 @@
 	"devDependencies": {
 		"@microsoft/api-documenter": "^7.26.10",
 		"@rushstack/heft": "^0.68.18",
-		"@typescript-eslint/eslint-plugin": "^7.14.1",
-		"@typescript-eslint/parser": "^7.14.1",
-		"@vitejs/plugin-vue": "^5.2.1",
-		"cypress": "^14.0.3",
-		"eslint": "^8.40.0",
+		"@typescript-eslint/eslint-plugin": "^7.18.0",
+		"@typescript-eslint/parser": "^7.18.0",
+		"@vitejs/plugin-vue": "^5.2.4",
+		"cypress": "^14.5.1",
+		"eslint": "^8.57.1",
 		"eslint-config-prettier": "^8.10.0",
-		"eslint-plugin-vue": "^9.11.1",
+		"eslint-plugin-vue": "^9.33.0",
 		"stonecrop-rig": "workspace:*",
 		"typescript": "^5.8.3",
 		"vite": "^6.3.5",
-		"vue-router": "^4.5.0"
+		"vue-router": "^4.5.1"
 	},
 	"publishConfig": {
 		"access": "public"
