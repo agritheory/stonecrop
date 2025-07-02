@@ -3,7 +3,7 @@
     {
       "packageName": "@stonecrop/node-editor",
       "comment": "update dependencies",
-      "type": "none"
+      "type": "patch"
     }
   ],
   "packageName": "@stonecrop/node-editor"

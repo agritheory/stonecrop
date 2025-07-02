@@ -3,7 +3,7 @@
     {
       "packageName": "@stonecrop/atable",
       "comment": "update dependencies",
-      "type": "none"
+      "type": "patch"
     }
   ],
   "packageName": "@stonecrop/atable"

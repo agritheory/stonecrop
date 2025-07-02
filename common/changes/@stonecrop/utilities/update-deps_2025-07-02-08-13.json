@@ -3,7 +3,7 @@
     {
       "packageName": "@stonecrop/utilities",
       "comment": "update dependencies",
-      "type": "none"
+      "type": "patch"
     }
   ],
   "packageName": "@stonecrop/utilities"

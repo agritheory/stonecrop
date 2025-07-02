@@ -3,7 +3,7 @@
     {
       "packageName": "@stonecrop/aform",
       "comment": "update dependencies",
-      "type": "none"
+      "type": "patch"
     }
   ],
   "packageName": "@stonecrop/aform"

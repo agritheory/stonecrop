@@ -3,7 +3,7 @@
     {
       "packageName": "@stonecrop/graphql-client",
       "comment": "update dependencies",
-      "type": "none"
+      "type": "patch"
     }
   ],
   "packageName": "@stonecrop/graphql-client"
