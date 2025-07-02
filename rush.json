@@ -1,6 +1,6 @@
 {
 	"$schema": "https://developer.microsoft.com/json-schemas/rush/v5/rush.schema.json",
-	"rushVersion": "5.149.1",
+	"rushVersion": "5.155.1",
 	"pnpmVersion": "9.15.5",
 	"telemetryEnabled": false,
 
