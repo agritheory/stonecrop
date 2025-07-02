@@ -185,7 +185,8 @@ export interface TableConfig {
 	 * - `list` - row numbers are displayed in the table
 	 * - `list-expansion` - carets are displayed in the number column that expand/collapse the row inline
 	 * - `tree` - carets are displayed in the number column that expand/collapse grouped rows
-	 * - `tree-gantt` - tree view with Gantt functionality for group rows
+	 * - `gantt` - view that allows specific rows to be displayed with Gantt functionality
+	 * - `tree-gantt` - similar to `gantt`, but allows for tree functionality as well
 	 */
 	view?: 'uncounted' | 'list' | 'list-expansion' | 'tree' | 'gantt' | 'tree-gantt'
 

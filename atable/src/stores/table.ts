@@ -58,10 +58,6 @@ export const createTableStore = (initData: {
 			const parents = new Set<string | number>()
 			for (let rowIndex = rows.value.length - 1; rowIndex >= 0; rowIndex--) {
 				const row = rows.value[rowIndex]
-				if (row.parent === null) {
-					parents.add(rowIndex)
-				}
-
 				if (row.parent) {
 					parents.add(row.parent)
 				}
@@ -158,11 +154,7 @@ export const createTableStore = (initData: {
 
 		const isRowGantt = (rowIndex: number) => {
 			const row = rows.value[rowIndex]
-			// Include both project (indent 0) and phase (indent 1) levels for tree-gantt view
-			return (
-				(config.value.view === 'gantt' || config.value.view === 'tree-gantt') &&
-				(row.indent === 0 || (config.value.view === 'tree-gantt' && row.indent === 1))
-			)
+			return (config.value.view === 'gantt' || config.value.view === 'tree-gantt') && row.gantt !== undefined
 		}
 
 		const isRowVisible = (rowIndex: number) => {
@@ -178,7 +170,7 @@ export const createTableStore = (initData: {
 				return ''
 			}
 
-			if (display.value[rowIndex].isParent) {
+			if (display.value[rowIndex].isRoot || display.value[rowIndex].isParent) {
 				return display.value[rowIndex].childrenOpen ? '-' : '+'
 			}
 
