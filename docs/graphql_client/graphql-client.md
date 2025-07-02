@@ -99,3 +99,4 @@ The type of the response from the `getRecords` query.
 
 </td></tr>
 </tbody></table>
+

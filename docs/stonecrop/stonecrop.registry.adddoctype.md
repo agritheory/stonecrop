@@ -47,6 +47,7 @@ The doctype to fetch metadata for
 
 </td></tr>
 </tbody></table>
+
 **Returns:**
 
 void

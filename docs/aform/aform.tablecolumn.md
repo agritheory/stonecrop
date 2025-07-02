@@ -394,3 +394,4 @@ _(Optional)_ The width of the column. This can be a number (in pixels) or a stri
 
 </td></tr>
 </tbody></table>
+

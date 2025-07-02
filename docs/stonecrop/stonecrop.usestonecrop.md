@@ -47,6 +47,7 @@ _(Optional)_ An existing Stonecrop Registry instance
 
 </td></tr>
 </tbody></table>
+
 **Returns:**
 
 [StonecropReturn](./stonecrop.stonecropreturn.md)

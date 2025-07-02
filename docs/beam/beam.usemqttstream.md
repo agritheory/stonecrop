@@ -52,6 +52,7 @@ MQTT stream options
 
 </td></tr>
 </tbody></table>
+
 **Returns:**
 
 Promise&lt;{ messages: import("vue").Ref&lt;Record&lt;string, string\[\]&gt;, Record&lt;string, string\[\]&gt;&gt;; } \| undefined&gt;
