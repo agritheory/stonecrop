@@ -54,7 +54,7 @@
 		"immutable": "^5.0.3",
 		"monaco-editor": "^0.52.2",
 		"portal-vue": "^3.0.0",
-		"typescript": "~5.6.3",
+		"typescript": "^5.8.3",
 		"vue-router": "^4.5.0"
 	},
 	"engines": {
