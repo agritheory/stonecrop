@@ -40,11 +40,11 @@
 	},
 	"dependencies": {
 		"immutable": "^5.0.3",
-		"pinia": "^3.0.1",
+		"pinia": "^3.0.3",
 		"pinia-shared-state": "^1.0.1",
 		"pinia-undo": "^0.2.4",
 		"pinia-xstate": "^2.2.1",
-		"vue": "^3.5.13",
+		"vue": "^3.5.17",
 		"vue-router": "^4.5.0",
 		"xstate": "^4.38.3"
 	},
@@ -58,11 +58,11 @@
 		"@typescript-eslint/parser": "^7.14.1",
 		"@vitejs/plugin-vue": "^5.2.1",
 		"eslint": "^8.40.0",
-		"eslint-config-prettier": "^8.8.0",
+		"eslint-config-prettier": "^8.10.0",
 		"eslint-plugin-vue": "^9.11.1",
 		"stonecrop-rig": "workspace:*",
 		"typescript": "~5.6.3",
-		"vite": "^6.1.1"
+		"vite": "^6.3.5"
 	},
 	"publishConfig": {
 		"access": "public"
