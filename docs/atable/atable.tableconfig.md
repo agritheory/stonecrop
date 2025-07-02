@@ -64,12 +64,12 @@ _(Optional)_ Control whether the table should be allowed to use the full width o
 
 </td><td>
 
-'uncounted' \| 'list' \| 'list-expansion' \| 'tree' \| 'gantt'
+'uncounted' \| 'list' \| 'list-expansion' \| 'tree' \| 'gantt' \| 'tree-gantt'
 
 
 </td><td>
 
-_(Optional)_ The type of view to display the table in. Possible values: - `uncounted` - row numbers are not displayed in the table - `list` - row numbers are displayed in the table - `list-expansion` - carets are displayed in the number column that expand/collapse the row inline - `tree` - carets are displayed in the number column that expand/collapse grouped rows
+_(Optional)_ The type of view to display the table in. Possible values: - `uncounted` - row numbers are not displayed in the table - `list` - row numbers are displayed in the table - `list-expansion` - carets are displayed in the number column that expand/collapse the row inline - `tree` - carets are displayed in the number column that expand/collapse grouped rows - `tree-gantt` - tree view with Gantt functionality for group rows
 
 
 </td></tr>

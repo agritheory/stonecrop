@@ -136,8 +136,8 @@ onMounted(() => {
 	if (columns.some(column => column.pinned)) {
 		assignStickyCellWidths()
 
-		// in tree view, also add a mutation observer to capture and adjust expanded rows
-		if (store.config.view === 'tree') {
+		// in tree or tree-gantt view, also add a mutation observer to capture and adjust expanded rows
+		if (store.config.view === 'tree' || store.config.view === 'tree-gantt') {
 			useMutationObserver(tableRef, assignStickyCellWidths, { childList: true, subtree: true })
 		}
 	}
@@ -199,7 +199,7 @@ window.addEventListener('keydown', (event: KeyboardEvent) => {
 })
 
 const getProcessedColumnsForRow = (row: TableRow) => {
-	const isGanttRow = row.indent === 0
+	const isGanttRow = row.indent === 0 && (store.config.view === 'gantt' || store.config.view === 'tree-gantt')
 	if (!isGanttRow || pinnedColumnCount.value === 0) {
 		return store.columns
 	}

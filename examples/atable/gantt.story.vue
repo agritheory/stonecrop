@@ -3,13 +3,22 @@
 		<Variant title="default">
 			<ATable v-model="gantt.rows" :columns="gantt.columns" :config="gantt.config" @gantt:drag="handleGanttDrag" />
 		</Variant>
+
+		<Variant title="project-gantt">
+			<ATable
+				v-model="project_gantt.rows"
+				:columns="project_gantt.columns"
+				:config="project_gantt.config"
+				@gantt:drag="handleGanttDrag" />
+		</Variant>
 	</Story>
 </template>
 
 <script lang="ts" setup>
-import type { GanttDragEvent, TableConfig } from '@stonecrop/atable'
+import type { GanttDragEvent, TableColumn, TableConfig } from '@stonecrop/atable'
 import { ref } from 'vue'
 
+import project_data from './sample_data/project_gantt.json'
 import gantt_data from './sample_data/task.json'
 
 const gantt_columns = [
@@ -448,6 +457,310 @@ const gantt = ref({
 	config: { view: 'gantt' } as TableConfig,
 })
 
+// Project-Gantt columns with period data
+const project_gantt_columns: TableColumn[] = [
+	{
+		label: 'Project / Task',
+		name: 'project_name',
+		type: 'Data',
+		align: 'left',
+		edit: false,
+		width: '40ch',
+		pinned: true,
+		format: value => {
+			if (value === undefined || value === null) {
+				return ''
+			} else if (Object.keys(value).length > 0) {
+				if (value.display === '(Project)') {
+					return `<strong>${value.title}</strong>`
+				} else if (value.assignee) {
+					return `${value.title} <small>(${value.assignee})</small>`
+				} else {
+					return value.title
+				}
+			}
+		},
+	},
+	{
+		label: 'Code',
+		name: 'project_code',
+		type: 'Data',
+		align: 'left',
+		edit: false,
+		width: '15ch',
+		pinned: true,
+		format: (value, context) => {
+			const projectName = context.row.project_name
+			return projectName?.project_code || projectName?.task_code || ''
+		},
+	},
+	{
+		label: 'Status',
+		name: 'status',
+		type: 'Data',
+		align: 'center',
+		edit: false,
+		width: '12ch',
+		pinned: true,
+		format: (value, context) => {
+			const status = context.row.project_name?.status || ''
+			const statusColors = {
+				Completed: 'color: #2e7d32; font-weight: bold;',
+				Active: 'color: #f57c00; font-weight: bold;',
+				'On Track': 'color: #1976d2; font-weight: bold;',
+				Planned: 'color: #757575; font-weight: bold;',
+			}
+			return `<span style="${statusColors[status] || ''}">${status}</span>`
+		},
+	},
+	{
+		label: 'Jan 1-15',
+		name: 'period_1',
+		type: 'Data',
+		align: 'right',
+		edit: true,
+		width: '10ch',
+		format: (value, context) => {
+			if (value === undefined || value === null) {
+				return ''
+			} else {
+				return `${value.actual_hours || 0}h`
+			}
+		},
+	},
+	{
+		label: 'Jan 16-31',
+		name: 'period_2',
+		type: 'Data',
+		align: 'right',
+		edit: true,
+		width: '10ch',
+		format: (value, context) => {
+			if (value === undefined || value === null) {
+				return ''
+			} else {
+				return `${value.actual_hours || 0}h`
+			}
+		},
+	},
+	{
+		label: 'Feb 1-15',
+		name: 'period_3',
+		type: 'Data',
+		align: 'right',
+		edit: true,
+		width: '10ch',
+		format: (value, context) => {
+			if (value === undefined || value === null) {
+				return ''
+			} else {
+				return `${value.actual_hours || 0}h`
+			}
+		},
+	},
+	{
+		label: 'Feb 16-28',
+		name: 'period_4',
+		type: 'Data',
+		align: 'right',
+		edit: true,
+		width: '10ch',
+		format: (value, context) => {
+			if (value === undefined || value === null) {
+				return ''
+			} else {
+				return `${value.actual_hours || 0}h`
+			}
+		},
+	},
+	{
+		label: 'Mar 1-15',
+		name: 'period_5',
+		type: 'Data',
+		align: 'right',
+		edit: true,
+		width: '10ch',
+		format: (value, context) => {
+			if (value === undefined || value === null) {
+				return ''
+			} else {
+				return `${value.actual_hours || 0}h`
+			}
+		},
+	},
+	{
+		label: 'Mar 16-31',
+		name: 'period_6',
+		type: 'Data',
+		align: 'right',
+		edit: true,
+		width: '10ch',
+		format: (value, context) => {
+			if (value === undefined || value === null) {
+				return ''
+			} else {
+				return `${value.actual_hours || 0}h`
+			}
+		},
+	},
+	{
+		label: 'Apr 1-15',
+		name: 'period_7',
+		type: 'Data',
+		align: 'right',
+		edit: true,
+		width: '10ch',
+		format: (value, context) => {
+			if (value === undefined || value === null) {
+				return ''
+			} else {
+				return `${value.actual_hours || 0}h`
+			}
+		},
+	},
+	{
+		label: 'Apr 16-30',
+		name: 'period_8',
+		type: 'Data',
+		align: 'right',
+		edit: true,
+		width: '10ch',
+		format: (value, context) => {
+			if (value === undefined || value === null) {
+				return ''
+			} else {
+				return `${value.actual_hours || 0}h`
+			}
+		},
+	},
+	{
+		label: 'May 1-15',
+		name: 'period_9',
+		type: 'Data',
+		align: 'right',
+		edit: true,
+		width: '10ch',
+		format: (value, context) => {
+			if (value === undefined || value === null) {
+				return ''
+			} else {
+				return `${value.actual_hours || 0}h`
+			}
+		},
+	},
+	{
+		label: 'May 16-31',
+		name: 'period_10',
+		type: 'Data',
+		align: 'right',
+		edit: true,
+		width: '10ch',
+		format: (value, context) => {
+			if (value === undefined || value === null) {
+				return ''
+			} else {
+				return `${value.actual_hours || 0}h`
+			}
+		},
+	},
+	{
+		label: 'Jun 1-15',
+		name: 'period_11',
+		type: 'Data',
+		align: 'right',
+		edit: true,
+		width: '10ch',
+		format: (value, context) => {
+			if (value === undefined || value === null) {
+				return ''
+			} else {
+				return `${value.actual_hours || 0}h`
+			}
+		},
+	},
+	{
+		label: 'Jun 16-30',
+		name: 'period_12',
+		type: 'Data',
+		align: 'right',
+		edit: true,
+		width: '10ch',
+		format: (value, context) => {
+			if (value === undefined || value === null) {
+				return ''
+			} else {
+				return `${value.planned_hours || 0}h`
+			}
+		},
+	},
+	{
+		label: 'Jul 1-15',
+		name: 'period_13',
+		type: 'Data',
+		align: 'right',
+		edit: true,
+		width: '10ch',
+		format: (value, context) => {
+			if (value === undefined || value === null) {
+				return ''
+			} else {
+				return `${value.planned_hours || 0}h`
+			}
+		},
+	},
+	{
+		label: 'Jul 16-31',
+		name: 'period_14',
+		type: 'Data',
+		align: 'right',
+		edit: true,
+		width: '10ch',
+		format: (value, context) => {
+			if (value === undefined || value === null) {
+				return ''
+			} else {
+				return `${value.planned_hours || 0}h`
+			}
+		},
+	},
+	{
+		label: 'Aug 1-15',
+		name: 'period_15',
+		type: 'Data',
+		align: 'right',
+		edit: true,
+		width: '10ch',
+		format: (value, context) => {
+			if (value === undefined || value === null) {
+				return ''
+			} else {
+				return `${value.planned_hours || 0}h`
+			}
+		},
+	},
+	{
+		label: 'Aug 16-31',
+		name: 'period_16',
+		type: 'Data',
+		align: 'right',
+		edit: true,
+		width: '10ch',
+		format: (value, context) => {
+			if (value === undefined || value === null) {
+				return ''
+			} else {
+				return `${value.planned_hours || 0}h`
+			}
+		},
+	},
+]
+
+const project_gantt = ref({
+	rows: project_data,
+	columns: project_gantt_columns,
+	config: { view: 'tree-gantt' },
+})
+
 const handleGanttDrag = (event: GanttDragEvent) => {
 	if (event.type === 'bar') {
 		console.log(
@@ -460,4 +773,44 @@ const handleGanttDrag = (event: GanttDragEvent) => {
 </script>
 
 <!-- enter documentation here -->
-<docs lang="md"></docs>
+<docs lang="md">
+# Tree View
+
+The tree view displays hierarchical data with expandable/collapsible nodes. The tree-gantt variant combines this with gantt chart functionality for root-level items.
+
+## Tree View Features
+
+- Hierarchical data display with indentation
+- Expandable/collapsible parent nodes
+- Visual indicators for parent/child relationships
+
+## Tree-Gantt View Features
+
+- Combines tree structure with gantt visualization
+- Gantt bars only appear on root-level items (indent: 0)
+- Maintains tree navigation while showing timeline data
+- Draggable and resizable gantt bars
+- Pinned columns for account information
+
+## Project-Gantt View Features
+
+- 3-level hierarchy: Project > Phase > Task
+- Visual project status indicators
+- Time tracking with actual vs planned hours
+- Color-coded gantt bars per phase
+- Assignee information for tasks
+- Progress tracking across time periods
+
+## Usage
+
+```vue
+<ATable :rows="treeData" :columns="treeColumns" :config="{ view: 'tree-gantt' }" @gantt:drag="handleGanttDrag" />
+```
+
+The tree-gantt view is perfect for displaying hierarchical data with timeline components, such as:
+
+- Project hierarchies with timelines
+- Organizational charts with budget periods
+- Account structures with financial periods
+- Task management with time tracking
+</docs>

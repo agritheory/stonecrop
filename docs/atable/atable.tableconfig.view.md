@@ -4,10 +4,10 @@
 
 ## TableConfig.view property
 
-The type of view to display the table in. Possible values: - `uncounted` - row numbers are not displayed in the table - `list` - row numbers are displayed in the table - `list-expansion` - carets are displayed in the number column that expand/collapse the row inline - `tree` - carets are displayed in the number column that expand/collapse grouped rows
+The type of view to display the table in. Possible values: - `uncounted` - row numbers are not displayed in the table - `list` - row numbers are displayed in the table - `list-expansion` - carets are displayed in the number column that expand/collapse the row inline - `tree` - carets are displayed in the number column that expand/collapse grouped rows - `tree-gantt` - tree view with Gantt functionality for group rows
 
 **Signature:**
 
 ```typescript
-view?: 'uncounted' | 'list' | 'list-expansion' | 'tree' | 'gantt';
+view?: 'uncounted' | 'list' | 'list-expansion' | 'tree' | 'gantt' | 'tree-gantt';
 ```

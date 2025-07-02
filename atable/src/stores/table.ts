@@ -154,15 +154,19 @@ export const createTableStore = (initData: {
 
 		const isRowGantt = (rowIndex: number) => {
 			const row = rows.value[rowIndex]
-			return config.value.view === 'gantt' && row.indent === 0
+			return (config.value.view === 'gantt' || config.value.view === 'tree-gantt') && row.indent === 0
 		}
 
 		const isRowVisible = (rowIndex: number) => {
-			return config.value.view !== 'tree' || display.value[rowIndex].isRoot || display.value[rowIndex].open
+			return (
+				(config.value.view !== 'tree' && config.value.view !== 'tree-gantt') ||
+				display.value[rowIndex].isRoot ||
+				display.value[rowIndex].open
+			)
 		}
 
 		const getRowExpandSymbol = (rowIndex: number) => {
-			if (config.value.view !== 'tree') {
+			if (config.value.view !== 'tree' && config.value.view !== 'tree-gantt') {
 				return ''
 			}
 
@@ -174,7 +178,7 @@ export const createTableStore = (initData: {
 		}
 
 		const toggleRowExpand = (rowIndex: number) => {
-			if (config.value.view === 'tree') {
+			if (config.value.view === 'tree' || config.value.view === 'tree-gantt') {
 				display.value[rowIndex].childrenOpen = !display.value[rowIndex].childrenOpen
 				for (let index = rows.value.length - 1; index >= 0; index--) {
 					if (display.value[index].parent === rowIndex) {
@@ -253,6 +257,18 @@ export const createTableStore = (initData: {
 					ganttBar.colspan = ganttBar.endIndex - ganttBar.startIndex
 				}
 			}
+		}
+
+		const isTreeGanttRow = (rowIndex: number) => {
+			return config.value.view === 'tree-gantt' && rows.value[rowIndex].indent === 0
+		}
+
+		const showTreeIndicator = (rowIndex: number) => {
+			const isTreeView = config.value.view === 'tree' || config.value.view === 'tree-gantt'
+			const isGanttGroupRow = config.value.view === 'tree-gantt' && rows.value[rowIndex].indent === 0
+			const hasChildren = display.value[rowIndex].isParent
+
+			return isTreeView && (hasChildren || isGanttGroupRow)
 		}
 
 		return {

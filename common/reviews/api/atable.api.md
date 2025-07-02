@@ -99,10 +99,10 @@ colspan?: number | undefined;
 originalIndex?: number | undefined;
 }[]>;
 config: Ref<    {
-view?: "uncounted" | "list" | "list-expansion" | "tree" | "gantt" | undefined;
+view?: "uncounted" | "list" | "list-expansion" | "tree" | "gantt" | "tree-gantt" | undefined;
 fullWidth?: boolean | undefined;
 }, TableConfig | {
-view?: "uncounted" | "list" | "list-expansion" | "tree" | "gantt" | undefined;
+view?: "uncounted" | "list" | "list-expansion" | "tree" | "gantt" | "tree-gantt" | undefined;
 fullWidth?: boolean | undefined;
 }>;
 display: Ref<    {
@@ -230,10 +230,10 @@ colspan?: number | undefined;
 originalIndex?: number | undefined;
 }[]>;
 config: Ref<    {
-view?: "uncounted" | "list" | "list-expansion" | "tree" | "gantt" | undefined;
+view?: "uncounted" | "list" | "list-expansion" | "tree" | "gantt" | "tree-gantt" | undefined;
 fullWidth?: boolean | undefined;
 }, TableConfig | {
-view?: "uncounted" | "list" | "list-expansion" | "tree" | "gantt" | undefined;
+view?: "uncounted" | "list" | "list-expansion" | "tree" | "gantt" | "tree-gantt" | undefined;
 fullWidth?: boolean | undefined;
 }>;
 display: Ref<    {
@@ -361,10 +361,10 @@ colspan?: number | undefined;
 originalIndex?: number | undefined;
 }[]>;
 config: Ref<    {
-view?: "uncounted" | "list" | "list-expansion" | "tree" | "gantt" | undefined;
+view?: "uncounted" | "list" | "list-expansion" | "tree" | "gantt" | "tree-gantt" | undefined;
 fullWidth?: boolean | undefined;
 }, TableConfig | {
-view?: "uncounted" | "list" | "list-expansion" | "tree" | "gantt" | undefined;
+view?: "uncounted" | "list" | "list-expansion" | "tree" | "gantt" | "tree-gantt" | undefined;
 fullWidth?: boolean | undefined;
 }>;
 display: Ref<    {
@@ -521,7 +521,7 @@ export interface TableColumn {
 // @public
 export interface TableConfig {
     fullWidth?: boolean;
-    view?: 'uncounted' | 'list' | 'list-expansion' | 'tree' | 'gantt';
+    view?: 'uncounted' | 'list' | 'list-expansion' | 'tree' | 'gantt' | 'tree-gantt';
 }
 
 // @public
