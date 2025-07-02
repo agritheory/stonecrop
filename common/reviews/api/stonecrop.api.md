@@ -143,7 +143,7 @@ export interface TableColumn {
 // @public
 export interface TableConfig {
     fullWidth?: boolean;
-    view?: 'uncounted' | 'list' | 'list-expansion' | 'tree' | 'gantt';
+    view?: 'uncounted' | 'list' | 'list-expansion' | 'tree' | 'gantt' | 'tree-gantt';
 }
 
 // @public
