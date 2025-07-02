@@ -38,7 +38,7 @@
 		"test:ui": "vitest --ui"
 	},
 	"dependencies": {
-		"@nuxt/kit": "^3.15.4",
+		"@nuxt/kit": "^3.17.6",
 		"@stonecrop/aform": "workspace:*",
 		"@stonecrop/atable": "workspace:*",
 		"@stonecrop/stonecrop": "workspace:*",
@@ -47,13 +47,13 @@
 	"devDependencies": {
 		"@nuxt/devtools": "^1.7.0",
 		"@nuxt/module-builder": "^0.8.4",
-		"@nuxt/schema": "^3.15.4",
-		"@nuxt/test-utils": "^3.17.0",
+		"@nuxt/schema": "^3.17.6",
+		"@nuxt/test-utils": "^3.19.2",
 		"eslint": "^8.57.1",
 		"h3": "*",
 		"nitropack": "*",
-		"nuxi": "^3.22.2",
-		"nuxt": "^3.15.4",
+		"nuxi": "^3.25.1",
+		"nuxt": "^3.17.6",
 		"typescript": "^5.8.3",
 		"vue": "^3.5.17",
 		"vite": "^6.3.5",
