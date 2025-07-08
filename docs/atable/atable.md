@@ -67,6 +67,17 @@ Table cell context definition.
 </td></tr>
 <tr><td>
 
+[GanttBarInfo](./atable.ganttbarinfo.md)
+
+
+</td><td>
+
+Gantt bar information for VueFlow integration.
+
+
+</td></tr>
+<tr><td>
+
 [GanttOptions](./atable.ganttoptions.md)
 
 

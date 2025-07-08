@@ -1,4 +1,5 @@
 import { useElementBounding } from '@vueuse/core'
+import type { Ref, ShallowRef } from 'vue'
 
 import { createTableStore } from '../stores/table'
 
@@ -469,4 +470,53 @@ export interface TableModalProps {
 	 * The store for managing the current table's state.
 	 */
 	store: ReturnType<typeof createTableStore>
+}
+
+/**
+ * Gantt bar information for VueFlow integration.
+ * @public
+ */
+export interface GanttBarInfo {
+	/**
+	 * Unique identifier for the gantt bar.
+	 */
+	id: string
+
+	/**
+	 * The row index of the gantt bar.
+	 */
+	rowIndex: number
+
+	/**
+	 * The primary column index of the gantt bar (typically the start index).
+	 */
+	colIndex: number
+
+	/**
+	 * Starting column index of the gantt bar.
+	 */
+	startIndex: Ref<number>
+
+	/**
+	 * Ending column index of the gantt bar.
+	 */
+	endIndex: Ref<number>
+
+	/**
+	 * Color of the gantt bar.
+	 */
+	color: Ref<string>
+
+	/**
+	 * The position of the gantt bar in the ATable component.
+	 */
+	position: {
+		x: ShallowRef<number>
+		y: ShallowRef<number>
+	}
+
+	/**
+	 * Display label for the gantt bar.
+	 */
+	label?: string
 }

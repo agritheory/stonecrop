@@ -4,6 +4,8 @@
 			<!-- Draggable gantt bar -->
 			<div
 				ref="bar"
+				:data-rowindex="rowIndex"
+				:data-colindex="colIndex"
 				class="gantt-bar"
 				:class="{ 'is-dragging': isBarDragging || isLeftDragging || isRightDragging }"
 				:style="barStyle">
@@ -27,7 +29,7 @@
 
 <script setup lang="ts">
 import { useDraggable, useElementBounding } from '@vueuse/core'
-import { ref, computed, onMounted, useTemplateRef } from 'vue'
+import { ref, computed, onMounted, onUnmounted, useTemplateRef } from 'vue'
 
 import { createTableStore } from '../stores/table'
 
@@ -54,14 +56,7 @@ const {
 }>()
 
 const baseColor = ref()
-
-onMounted(() => {
-	if (!color || color == '' || color.length < 6) {
-		baseColor.value = '#cccccc'
-	} else {
-		baseColor.value = color
-	}
-})
+const barId = `gantt-bar-row-${rowIndex}-col-${colIndex}`
 
 const containerRef = useTemplateRef('container')
 const barRef = useTemplateRef('bar')
@@ -73,6 +68,30 @@ const { left: barLeft, right: barRight } = useElementBounding(barRef)
 const currentStart = ref(start || 0)
 const currentEnd = ref(end || currentStart.value + colspan)
 const dragStartData = ref({ startX: 0, startPos: 0 })
+
+onMounted(() => {
+	if (!color || color == '' || color.length < 6) {
+		baseColor.value = '#cccccc'
+	} else {
+		baseColor.value = color
+	}
+
+	const { x, y } = useElementBounding(barRef)
+	store.registerGanttBar({
+		id: barId,
+		rowIndex,
+		colIndex,
+		startIndex: currentStart,
+		endIndex: currentEnd,
+		color: baseColor,
+		label,
+		position: { x, y },
+	})
+})
+
+onUnmounted(() => {
+	store.unregisterGanttBar(barId)
+})
 
 const pixelsPerColumn = computed(() => (colspan > 0 ? totalBarWidth.value / colspan : 0))
 

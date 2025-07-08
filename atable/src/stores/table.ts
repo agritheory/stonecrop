@@ -3,6 +3,7 @@ import { type CSSProperties, computed, ref } from 'vue'
 
 import type {
 	CellContext,
+	GanttBarInfo,
 	GanttDragEvent,
 	TableColumn,
 	TableConfig,
@@ -85,6 +86,7 @@ export const createTableStore = (initData: {
 		const display = ref(createDisplayObject(initData.display))
 		const modal = ref<TableModal>(initData.modal || { visible: false })
 		const updates = ref<Record<string, string>>({})
+		const ganttBars = ref<GanttBarInfo[]>([])
 
 		// getters
 		const hasPinnedColumns = computed(() => columns.value.some(col => col.pinned))
@@ -257,11 +259,30 @@ export const createTableStore = (initData: {
 			}
 		}
 
+		const registerGanttBar = (barInfo: GanttBarInfo) => {
+			const existingIndex = ganttBars.value.findIndex(bar => bar.id === barInfo.id)
+			if (existingIndex >= 0) {
+				// @ts-expect-error TODO: for some reason, the IDE is expecting an unref'd value
+				ganttBars.value[existingIndex] = barInfo
+			} else {
+				// @ts-expect-error TODO: for some reason, the IDE is expecting an unref'd value
+				ganttBars.value.push(barInfo)
+			}
+		}
+
+		const unregisterGanttBar = (barId: string) => {
+			const index = ganttBars.value.findIndex(bar => bar.id === barId)
+			if (index >= 0) {
+				ganttBars.value.splice(index, 1)
+			}
+		}
+
 		return {
 			// state
 			columns,
 			config,
 			display,
+			ganttBars,
 			modal,
 			rows,
 			table,
@@ -285,6 +306,8 @@ export const createTableStore = (initData: {
 			getRowExpandSymbol,
 			isRowGantt,
 			isRowVisible,
+			registerGanttBar,
+			unregisterGanttBar,
 			setCellData,
 			setCellText,
 			toggleRowExpand,

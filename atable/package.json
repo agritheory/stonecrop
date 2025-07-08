@@ -49,6 +49,7 @@
 	"dependencies": {
 		"@stonecrop/themes": "workspace:*",
 		"@stonecrop/utilities": "workspace:*",
+		"@vue-flow/core": "^1.45.0",
 		"@vueuse/components": "^13.4.0",
 		"@vueuse/core": "^13.4.0",
 		"pinia": "^3.0.3",

@@ -17,6 +17,7 @@ import ATableModal from './components/ATableModal.vue';
 import { ComputedRef } from 'vue';
 import { CSSProperties } from 'vue';
 import { Ref } from 'vue';
+import type { ShallowRef } from 'vue';
 import { Store } from 'pinia';
 import { useElementBounding } from '@vueuse/core';
 
@@ -124,6 +125,31 @@ indent?: number | undefined;
 parent?: number | undefined;
 rowModified?: boolean | undefined;
 }[]>;
+ganttBars: Ref<    {
+id: string;
+rowIndex: number;
+colIndex: number;
+startIndex: number;
+endIndex: number;
+color: string;
+position: {
+x: number;
+y: number;
+};
+label?: string | undefined;
+}[], GanttBarInfo[] | {
+id: string;
+rowIndex: number;
+colIndex: number;
+startIndex: number;
+endIndex: number;
+color: string;
+position: {
+x: number;
+y: number;
+};
+label?: string | undefined;
+}[]>;
 modal: Ref<    {
 visible?: boolean | undefined;
 cell?: (HTMLTableCellElement | null) | undefined;
@@ -187,11 +213,13 @@ getIndent: (colIndex: number, indentLevel?: number) => string;
 getRowExpandSymbol: (rowIndex: number) => "" | "-" | "+";
 isRowGantt: (rowIndex: number) => boolean;
 isRowVisible: (rowIndex: number) => boolean | undefined;
+registerGanttBar: (barInfo: GanttBarInfo) => void;
+unregisterGanttBar: (barId: string) => void;
 setCellData: (colIndex: number, rowIndex: number, value: any) => void;
 setCellText: (colIndex: number, rowIndex: number, value: string) => void;
 toggleRowExpand: (rowIndex: number) => void;
 updateGanttBar: (event: GanttDragEvent) => void;
-}, "columns" | "config" | "display" | "modal" | "rows" | "table" | "updates">, Pick<{
+}, "columns" | "config" | "display" | "ganttBars" | "modal" | "rows" | "table" | "updates">, Pick<{
 columns: Ref<    {
 name: string;
 align?: CanvasTextAlign | undefined;
@@ -257,6 +285,31 @@ indent?: number | undefined;
 parent?: number | undefined;
 rowModified?: boolean | undefined;
 }[]>;
+ganttBars: Ref<    {
+id: string;
+rowIndex: number;
+colIndex: number;
+startIndex: number;
+endIndex: number;
+color: string;
+position: {
+x: number;
+y: number;
+};
+label?: string | undefined;
+}[], GanttBarInfo[] | {
+id: string;
+rowIndex: number;
+colIndex: number;
+startIndex: number;
+endIndex: number;
+color: string;
+position: {
+x: number;
+y: number;
+};
+label?: string | undefined;
+}[]>;
 modal: Ref<    {
 visible?: boolean | undefined;
 cell?: (HTMLTableCellElement | null) | undefined;
@@ -320,6 +373,8 @@ getIndent: (colIndex: number, indentLevel?: number) => string;
 getRowExpandSymbol: (rowIndex: number) => "" | "-" | "+";
 isRowGantt: (rowIndex: number) => boolean;
 isRowVisible: (rowIndex: number) => boolean | undefined;
+registerGanttBar: (barInfo: GanttBarInfo) => void;
+unregisterGanttBar: (barId: string) => void;
 setCellData: (colIndex: number, rowIndex: number, value: any) => void;
 setCellText: (colIndex: number, rowIndex: number, value: string) => void;
 toggleRowExpand: (rowIndex: number) => void;
@@ -390,6 +445,31 @@ indent?: number | undefined;
 parent?: number | undefined;
 rowModified?: boolean | undefined;
 }[]>;
+ganttBars: Ref<    {
+id: string;
+rowIndex: number;
+colIndex: number;
+startIndex: number;
+endIndex: number;
+color: string;
+position: {
+x: number;
+y: number;
+};
+label?: string | undefined;
+}[], GanttBarInfo[] | {
+id: string;
+rowIndex: number;
+colIndex: number;
+startIndex: number;
+endIndex: number;
+color: string;
+position: {
+x: number;
+y: number;
+};
+label?: string | undefined;
+}[]>;
 modal: Ref<    {
 visible?: boolean | undefined;
 cell?: (HTMLTableCellElement | null) | undefined;
@@ -453,11 +533,28 @@ getIndent: (colIndex: number, indentLevel?: number) => string;
 getRowExpandSymbol: (rowIndex: number) => "" | "-" | "+";
 isRowGantt: (rowIndex: number) => boolean;
 isRowVisible: (rowIndex: number) => boolean | undefined;
+registerGanttBar: (barInfo: GanttBarInfo) => void;
+unregisterGanttBar: (barId: string) => void;
 setCellData: (colIndex: number, rowIndex: number, value: any) => void;
 setCellText: (colIndex: number, rowIndex: number, value: string) => void;
 toggleRowExpand: (rowIndex: number) => void;
 updateGanttBar: (event: GanttDragEvent) => void;
-}, "closeModal" | "getCellData" | "getCellDisplayValue" | "getFormattedValue" | "getHeaderCellStyle" | "resizeColumn" | "getIndent" | "getRowExpandSymbol" | "isRowGantt" | "isRowVisible" | "setCellData" | "setCellText" | "toggleRowExpand" | "updateGanttBar">>;
+}, "closeModal" | "getCellData" | "getCellDisplayValue" | "getFormattedValue" | "getHeaderCellStyle" | "resizeColumn" | "getIndent" | "getRowExpandSymbol" | "isRowGantt" | "isRowVisible" | "registerGanttBar" | "unregisterGanttBar" | "setCellData" | "setCellText" | "toggleRowExpand" | "updateGanttBar">>;
+
+// @public
+export interface GanttBarInfo {
+    colIndex: number;
+    color: Ref<string>;
+    endIndex: Ref<number>;
+    id: string;
+    label?: string;
+    position: {
+        x: ShallowRef<number>;
+        y: ShallowRef<number>;
+    };
+    rowIndex: number;
+    startIndex: Ref<number>;
+}
 
 // @public
 export type GanttDragEvent = {

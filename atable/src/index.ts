@@ -12,6 +12,7 @@ import ATableModal from './components/ATableModal.vue'
 export { createTableStore } from './stores/table'
 export type {
 	CellContext,
+	GanttBarInfo,
 	GanttDragEvent,
 	GanttOptions,
 	TableColumn,
