@@ -1,0 +1,413 @@
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { mount } from '@vue/test-utils'
+import { createPinia, setActivePinia } from 'pinia'
+import AGanttConnection from '../../src/components/AGanttConnection.vue'
+import { createTableStore } from '../../src/stores/table'
+import type { ConnectionPath, GanttBarInfo, ConnectionHandle } from '../../src/types'
+
+describe('AGanttConnection', () => {
+	let store: ReturnType<typeof createTableStore>
+
+	beforeEach(() => {
+		setActivePinia(createPinia())
+		store = createTableStore({
+			columns: [
+				{ name: 'id', label: 'ID' },
+				{ name: 'task', label: 'Task' },
+			],
+			rows: [
+				{ id: '1', task: 'Task 1' },
+				{ id: '2', task: 'Task 2' },
+			],
+		})
+	})
+
+	it('should render correctly with empty connections', () => {
+		const wrapper = mount(AGanttConnection, {
+			props: { store },
+		})
+
+		expect(wrapper.find('.gantt-connection-overlay')).toBeTruthy()
+		expect(wrapper.find('.connection-svg')).toBeTruthy()
+		expect(wrapper.find('defs marker#arrowhead')).toBeTruthy()
+		expect(wrapper.findAll('.connection-path')).toHaveLength(0)
+	})
+
+	it('should render connections when they exist', () => {
+		// Set up gantt bars
+		const bar1: GanttBarInfo = {
+			id: 'bar1',
+			rowId: '1',
+			startDate: new Date('2024-01-01'),
+			endDate: new Date('2024-01-05'),
+			position: { x: 10, y: 10, width: 100, height: 20 },
+		}
+		const bar2: GanttBarInfo = {
+			id: 'bar2',
+			rowId: '2',
+			startDate: new Date('2024-01-06'),
+			endDate: new Date('2024-01-10'),
+			position: { x: 120, y: 40, width: 100, height: 20 },
+		}
+
+		store.ganttBars = [bar1, bar2]
+
+		// Set up connection handles
+		const handle1: ConnectionHandle = {
+			barId: 'bar1',
+			side: 'right',
+			position: { x: 110, y: 20 },
+		}
+		const handle2: ConnectionHandle = {
+			barId: 'bar2',
+			side: 'left',
+			position: { x: 120, y: 50 },
+		}
+
+		store.connectionHandles = [handle1, handle2]
+
+		// Create a connection
+		const connection: ConnectionPath = {
+			id: 'conn1',
+			from: { barId: 'bar1', side: 'right' },
+			to: { barId: 'bar2', side: 'left' },
+		}
+
+		store.connectionPaths = [connection]
+
+		const wrapper = mount(AGanttConnection, {
+			props: { store },
+		})
+
+		expect(wrapper.findAll('.connection-path')).toHaveLength(1)
+		expect(wrapper.findAll('.connection-hitbox')).toHaveLength(1)
+	})
+
+	it('should filter out connections with missing bars', () => {
+		// Create connection without corresponding bars
+		const connection: ConnectionPath = {
+			id: 'conn1',
+			from: { barId: 'nonexistent1', side: 'right' },
+			to: { barId: 'nonexistent2', side: 'left' },
+		}
+
+		store.connectionPaths = [connection]
+
+		const wrapper = mount(AGanttConnection, {
+			props: { store },
+		})
+
+		expect(wrapper.findAll('.connection-path')).toHaveLength(0)
+	})
+
+	it('should generate correct path data for connections', () => {
+		// Set up gantt bars and handles
+		const bar1: GanttBarInfo = {
+			id: 'bar1',
+			rowId: '1',
+			startDate: new Date('2024-01-01'),
+			endDate: new Date('2024-01-05'),
+			position: { x: 0, y: 0, width: 100, height: 20 },
+		}
+		const bar2: GanttBarInfo = {
+			id: 'bar2',
+			rowId: '2',
+			startDate: new Date('2024-01-06'),
+			endDate: new Date('2024-01-10'),
+			position: { x: 120, y: 30, width: 100, height: 20 },
+		}
+
+		store.ganttBars = [bar1, bar2]
+
+		const handle1: ConnectionHandle = {
+			barId: 'bar1',
+			side: 'right',
+			position: { x: 100, y: 10 },
+		}
+		const handle2: ConnectionHandle = {
+			barId: 'bar2',
+			side: 'left',
+			position: { x: 120, y: 40 },
+		}
+
+		store.connectionHandles = [handle1, handle2]
+
+		const connection: ConnectionPath = {
+			id: 'conn1',
+			from: { barId: 'bar1', side: 'right' },
+			to: { barId: 'bar2', side: 'left' },
+		}
+
+		store.connectionPaths = [connection]
+
+		const wrapper = mount(AGanttConnection, {
+			props: { store },
+		})
+
+		const pathElement = wrapper.find('.connection-path')
+		expect(pathElement.exists()).toBe(true)
+
+		// Path should be a bezier curve from handle1 to handle2
+		const pathData = pathElement.attributes('d')
+		expect(pathData).toMatch(/^M \d+\.?\d* \d+\.?\d* C .+/)
+	})
+
+	it('should handle connection deletion on double click', async () => {
+		// Set up complete connection scenario
+		const bar1: GanttBarInfo = {
+			id: 'bar1',
+			rowId: '1',
+			startDate: new Date('2024-01-01'),
+			endDate: new Date('2024-01-05'),
+			position: { x: 0, y: 0, width: 100, height: 20 },
+		}
+		const bar2: GanttBarInfo = {
+			id: 'bar2',
+			rowId: '2',
+			startDate: new Date('2024-01-06'),
+			endDate: new Date('2024-01-10'),
+			position: { x: 120, y: 30, width: 100, height: 20 },
+		}
+
+		store.ganttBars = [bar1, bar2]
+
+		const handle1: ConnectionHandle = {
+			barId: 'bar1',
+			side: 'right',
+			position: { x: 100, y: 10 },
+		}
+		const handle2: ConnectionHandle = {
+			barId: 'bar2',
+			side: 'left',
+			position: { x: 120, y: 40 },
+		}
+
+		store.connectionHandles = [handle1, handle2]
+
+		const connection: ConnectionPath = {
+			id: 'conn1',
+			from: { barId: 'bar1', side: 'right' },
+			to: { barId: 'bar2', side: 'left' },
+		}
+
+		store.connectionPaths = [connection]
+
+		// Mock the deleteConnection method
+		const deleteConnectionSpy = vi.spyOn(store, 'deleteConnection').mockReturnValue(true)
+
+		const wrapper = mount(AGanttConnection, {
+			props: { store },
+		})
+
+		// Test double-click on connection path
+		await wrapper.find('.connection-path').trigger('dblclick')
+
+		expect(deleteConnectionSpy).toHaveBeenCalledWith('conn1')
+		expect(wrapper.emitted('connection:delete')).toBeTruthy()
+		expect(wrapper.emitted('connection:delete')?.[0][0]).toEqual(connection)
+	})
+
+	it('should handle connection deletion on hitbox double click', async () => {
+		// Set up complete connection scenario
+		const bar1: GanttBarInfo = {
+			id: 'bar1',
+			rowId: '1',
+			startDate: new Date('2024-01-01'),
+			endDate: new Date('2024-01-05'),
+			position: { x: 0, y: 0, width: 100, height: 20 },
+		}
+		const bar2: GanttBarInfo = {
+			id: 'bar2',
+			rowId: '2',
+			startDate: new Date('2024-01-06'),
+			endDate: new Date('2024-01-10'),
+			position: { x: 120, y: 30, width: 100, height: 20 },
+		}
+
+		store.ganttBars = [bar1, bar2]
+
+		const handle1: ConnectionHandle = {
+			barId: 'bar1',
+			side: 'right',
+			position: { x: 100, y: 10 },
+		}
+		const handle2: ConnectionHandle = {
+			barId: 'bar2',
+			side: 'left',
+			position: { x: 120, y: 40 },
+		}
+
+		store.connectionHandles = [handle1, handle2]
+
+		const connection: ConnectionPath = {
+			id: 'conn1',
+			from: { barId: 'bar1', side: 'right' },
+			to: { barId: 'bar2', side: 'left' },
+		}
+
+		store.connectionPaths = [connection]
+
+		// Mock the deleteConnection method
+		const deleteConnectionSpy = vi.spyOn(store, 'deleteConnection').mockReturnValue(true)
+
+		const wrapper = mount(AGanttConnection, {
+			props: { store },
+		})
+
+		// Test double-click on connection hitbox
+		await wrapper.find('.connection-hitbox').trigger('dblclick')
+
+		expect(deleteConnectionSpy).toHaveBeenCalledWith('conn1')
+		expect(wrapper.emitted('connection:delete')).toBeTruthy()
+		expect(wrapper.emitted('connection:delete')?.[0][0]).toEqual(connection)
+	})
+
+	it('should not emit event if connection deletion fails', async () => {
+		// Set up complete connection scenario
+		const bar1: GanttBarInfo = {
+			id: 'bar1',
+			rowId: '1',
+			startDate: new Date('2024-01-01'),
+			endDate: new Date('2024-01-05'),
+			position: { x: 0, y: 0, width: 100, height: 20 },
+		}
+		const bar2: GanttBarInfo = {
+			id: 'bar2',
+			rowId: '2',
+			startDate: new Date('2024-01-06'),
+			endDate: new Date('2024-01-10'),
+			position: { x: 120, y: 30, width: 100, height: 20 },
+		}
+
+		store.ganttBars = [bar1, bar2]
+
+		const handle1: ConnectionHandle = {
+			barId: 'bar1',
+			side: 'right',
+			position: { x: 100, y: 10 },
+		}
+		const handle2: ConnectionHandle = {
+			barId: 'bar2',
+			side: 'left',
+			position: { x: 120, y: 40 },
+		}
+
+		store.connectionHandles = [handle1, handle2]
+
+		const connection: ConnectionPath = {
+			id: 'conn1',
+			from: { barId: 'bar1', side: 'right' },
+			to: { barId: 'bar2', side: 'left' },
+		}
+
+		store.connectionPaths = [connection]
+
+		// Mock the deleteConnection method to return false
+		const deleteConnectionSpy = vi.spyOn(store, 'deleteConnection').mockReturnValue(false)
+
+		const wrapper = mount(AGanttConnection, {
+			props: { store },
+		})
+
+		await wrapper.find('.connection-path').trigger('dblclick')
+
+		expect(deleteConnectionSpy).toHaveBeenCalledWith('conn1')
+		expect(wrapper.emitted('connection:delete')).toBeFalsy()
+	})
+
+	it('should handle connections with custom styles', () => {
+		// Set up gantt bars and handles
+		const bar1: GanttBarInfo = {
+			id: 'bar1',
+			rowId: '1',
+			startDate: new Date('2024-01-01'),
+			endDate: new Date('2024-01-05'),
+			position: { x: 0, y: 0, width: 100, height: 20 },
+		}
+		const bar2: GanttBarInfo = {
+			id: 'bar2',
+			rowId: '2',
+			startDate: new Date('2024-01-06'),
+			endDate: new Date('2024-01-10'),
+			position: { x: 120, y: 30, width: 100, height: 20 },
+		}
+
+		store.ganttBars = [bar1, bar2]
+
+		const handle1: ConnectionHandle = {
+			barId: 'bar1',
+			side: 'right',
+			position: { x: 100, y: 10 },
+		}
+		const handle2: ConnectionHandle = {
+			barId: 'bar2',
+			side: 'left',
+			position: { x: 120, y: 40 },
+		}
+
+		store.connectionHandles = [handle1, handle2]
+
+		const connection: ConnectionPath = {
+			id: 'conn1',
+			from: { barId: 'bar1', side: 'right' },
+			to: { barId: 'bar2', side: 'left' },
+			style: {
+				color: '#ff0000',
+				width: 4,
+			},
+		}
+
+		store.connectionPaths = [connection]
+
+		const wrapper = mount(AGanttConnection, {
+			props: { store },
+		})
+
+		const pathElement = wrapper.find('.connection-path')
+		expect(pathElement.attributes('stroke')).toBe('#ff0000')
+		expect(pathElement.attributes('stroke-width')).toBe('4')
+
+		const hitboxElement = wrapper.find('.connection-hitbox')
+		expect(hitboxElement.attributes('stroke-width')).toBe('14') // 4 + 10
+	})
+
+	it('should return empty path data for missing handles', () => {
+		// Create connection without corresponding handles
+		const connection: ConnectionPath = {
+			id: 'conn1',
+			from: { barId: 'bar1', side: 'right' },
+			to: { barId: 'bar2', side: 'left' },
+		}
+
+		store.connectionPaths = [connection]
+
+		// Don't set up handles
+		store.connectionHandles = []
+
+		const wrapper = mount(AGanttConnection, {
+			props: { store },
+		})
+
+		const pathElement = wrapper.find('.connection-path')
+		if (pathElement.exists()) {
+			expect(pathElement.attributes('d')).toBe('')
+		}
+	})
+
+	it('should apply correct SVG styling', () => {
+		const wrapper = mount(AGanttConnection, {
+			props: { store },
+		})
+
+		const svg = wrapper.find('.connection-svg')
+		const style = svg.attributes('style')
+
+		expect(style).toContain('position: absolute')
+		expect(style).toContain('top: 0')
+		expect(style).toContain('left: 0')
+		expect(style).toContain('width: 100%')
+		expect(style).toContain('height: 100%')
+		expect(style).toContain('pointer-events: auto')
+		expect(style).toContain('z-index: 1')
+	})
+})

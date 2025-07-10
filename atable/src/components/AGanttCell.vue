@@ -438,6 +438,18 @@ function cleanupConnectionDrag(
 		hideConnectionHandles()
 	}
 }
+
+defineExpose({
+	barStyle,
+	cleanupConnectionDrag,
+	currentEnd,
+	handleConnectionDrop,
+	isLeftConnectionDragging,
+	isLeftConnectionVisible,
+	isRightConnectionDragging,
+	isRightConnectionVisible,
+	showDragPreview,
+})
 </script>
 
 <style scoped>

@@ -59,12 +59,15 @@ export const createTableStore = (initData: {
 
 			// TODO: (typing) is this type correct for the parent set?
 			const parents = new Set<string | number>()
-			for (let rowIndex = rows.value.length - 1; rowIndex >= 0; rowIndex--) {
+			for (let rowIndex = 0; rowIndex < rows.value.length; rowIndex++) {
 				const row = rows.value[rowIndex]
-				if (row.parent) {
+				if (row.parent !== null && row.parent !== undefined) {
 					parents.add(row.parent)
 				}
+			}
 
+			for (let rowIndex = 0; rowIndex < rows.value.length; rowIndex++) {
+				const row = rows.value[rowIndex]
 				defaultDisplay[rowIndex] = {
 					childrenOpen: false,
 					expanded: false,
@@ -170,12 +173,16 @@ export const createTableStore = (initData: {
 		}
 
 		const getRowExpandSymbol = (rowIndex: number) => {
-			if (!isTreeView.value) {
+			if (!isTreeView.value && config.value.view !== 'list-expansion') {
 				return ''
 			}
 
-			if (display.value[rowIndex].isRoot || display.value[rowIndex].isParent) {
-				return display.value[rowIndex].childrenOpen ? '-' : '+'
+			if (isTreeView.value && (display.value[rowIndex].isRoot || display.value[rowIndex].isParent)) {
+				return display.value[rowIndex].childrenOpen ? '▼' : '►'
+			}
+
+			if (config.value.view === 'list-expansion') {
+				return display.value[rowIndex].expanded ? '▼' : '►'
 			}
 
 			return ''
@@ -184,10 +191,14 @@ export const createTableStore = (initData: {
 		const toggleRowExpand = (rowIndex: number) => {
 			if (isTreeView.value) {
 				display.value[rowIndex].childrenOpen = !display.value[rowIndex].childrenOpen
-				for (let index = rows.value.length - 1; index >= 0; index--) {
+				const isOpen = display.value[rowIndex].childrenOpen
+
+				for (let index = 0; index < rows.value.length; index++) {
 					if (display.value[index].parent === rowIndex) {
-						display.value[index].open = !display.value[index].open
-						if (display.value[index].childrenOpen) {
+						display.value[index].open = isOpen
+						if (!isOpen) {
+							// If we're closing, also close any children recursively
+							display.value[index].childrenOpen = false
 							toggleRowExpand(index)
 						}
 					}
@@ -299,7 +310,11 @@ export const createTableStore = (initData: {
 			}
 		}
 
-		const createConnection = (fromHandleId: string, toHandleId: string, options?: { style?: ConnectionPath['style']; label?: string }) => {
+		const createConnection = (
+			fromHandleId: string,
+			toHandleId: string,
+			options?: { style?: ConnectionPath['style']; label?: string }
+		) => {
 			const fromHandle = connectionHandles.value.find(h => h.id === fromHandleId)
 			const toHandle = connectionHandles.value.find(h => h.id === toHandleId)
 
@@ -312,14 +327,14 @@ export const createTableStore = (initData: {
 				id: `connection-${fromHandleId}-${toHandleId}`,
 				from: {
 					barId: fromHandle.barId,
-					side: fromHandle.side
+					side: fromHandle.side,
 				},
 				to: {
 					barId: toHandle.barId,
-					side: toHandle.side
+					side: toHandle.side,
 				},
 				style: options?.style,
-				label: options?.label
+				label: options?.label,
 			}
 
 			connectionPaths.value.push(connection)
@@ -336,9 +351,7 @@ export const createTableStore = (initData: {
 		}
 
 		const getConnectionsForBar = (barId: string) => {
-			return connectionPaths.value.filter(conn =>
-				conn.from.barId === barId || conn.to.barId === barId
-			)
+			return connectionPaths.value.filter(conn => conn.from.barId === barId || conn.to.barId === barId)
 		}
 
 		const getHandlesForBar = (barId: string) => {
