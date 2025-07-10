@@ -4,7 +4,7 @@
 
 ## TableColumn.originalIndex property
 
-The starting column index for the Gantt-bar, excluding any pinned columns. This is evaluated automatically while rendering the table.
+The original column index for the Gantt bar, excluding any pinned columns. This is evaluated automatically while rendering the table.
 
 Only applicable for Gantt tables.
 

@@ -134,8 +134,8 @@ export interface TableColumn {
 	ganttComponent?: string
 
 	/**
-	 * The colspan of the Gantt-bar for the column. This is used to determine how many columns
-	 * the Gantt-bar should span.
+	 * The colspan of the Gantt bar for the column. This determines how many columns
+	 * the Gantt bar should span across.
 	 *
 	 * Only applicable for Gantt tables.
 	 *
@@ -144,8 +144,8 @@ export interface TableColumn {
 	colspan?: number
 
 	/**
-	 * The starting column index for the Gantt-bar, excluding any pinned columns. This is
-	 * evaluated automatically while rendering the table.
+	 * The original column index for the Gantt bar, excluding any pinned columns.
+	 * This is evaluated automatically while rendering the table.
 	 *
 	 * Only applicable for Gantt tables.
 	 *
@@ -306,29 +306,33 @@ export interface TableRow {
 }
 
 /**
- * This interface defines the options for a row when it is being viewed as a Gantt chart.
+ * Gantt chart options for table rows.
  * @public
  */
 export interface GanttOptions {
 	/**
-	 * The colour to be applied to the row's gantt bar.
+	 * The color to be applied to the row's gantt bar.
+	 *
+	 * @defaultValue '#cccccc'
 	 */
 	color?: string
 
 	/**
 	 * The starting column index for the gantt bar.
+	 *
+	 * @defaultValue 0
 	 */
 	startIndex?: number
 
 	/**
-	 * The ending column index for the gantt bar. If the endIndex and colspan are not provided,
+	 * The ending column index for the gantt bar. If endIndex and colspan are not provided,
 	 * the bar will stretch to the end of the table.
 	 */
 	endIndex?: number
 
 	/**
-	 * The length of the gantt bar. Useful when only the start index is provided. If the
-	 * colspan and endIndex are not provided, the bar will stretch to the end of the table.
+	 * The length of the gantt bar in columns. Useful when only the start index is provided.
+	 * If colspan and endIndex are not provided, the bar will stretch to the end of the table.
 	 */
 	colspan?: number
 }

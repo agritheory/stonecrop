@@ -109,7 +109,7 @@ number
 
 </td><td>
 
-_(Optional)_ The colspan of the Gantt-bar for the column. This is used to determine how many columns the Gantt-bar should span.
+_(Optional)_ The colspan of the Gantt bar for the column. This determines how many columns the Gantt bar should span across.
 
 Only applicable for Gantt tables.
 
@@ -311,7 +311,7 @@ number
 
 </td><td>
 
-_(Optional)_ The starting column index for the Gantt-bar, excluding any pinned columns. This is evaluated automatically while rendering the table.
+_(Optional)_ The original column index for the Gantt bar, excluding any pinned columns. This is evaluated automatically while rendering the table.
 
 Only applicable for Gantt tables.
 

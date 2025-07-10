@@ -4,7 +4,7 @@
 
 ## GanttOptions.colspan property
 
-The length of the gantt bar. Useful when only the start index is provided. If the colspan and endIndex are not provided, the bar will stretch to the end of the table.
+The length of the gantt bar in columns. Useful when only the start index is provided. If colspan and endIndex are not provided, the bar will stretch to the end of the table.
 
 **Signature:**
 
