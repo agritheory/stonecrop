@@ -520,3 +520,97 @@ export interface GanttBarInfo {
 	 */
 	label?: string
 }
+
+/**
+ * Connection handle information for gantt bar connections.
+ * @public
+ */
+export interface ConnectionHandle {
+	/**
+	 * Unique identifier for the connection handle.
+	 */
+	id: string
+
+	/**
+	 * The row index of the gantt bar this handle belongs to.
+	 */
+	rowIndex: number
+
+	/**
+	 * The column index of the gantt bar this handle belongs to.
+	 */
+	colIndex: number
+
+	/**
+	 * The side of the gantt bar where this handle is located.
+	 */
+	side: 'left' | 'right'
+
+	/**
+	 * The position of the connection handle.
+	 */
+	position: {
+		x: ShallowRef<number>
+		y: ShallowRef<number>
+	}
+
+	/**
+	 * Whether the handle is currently visible (on hover).
+	 */
+	visible: Ref<boolean>
+
+	/**
+	 * Reference to the gantt bar this handle belongs to.
+	 */
+	barId: string
+}
+
+/**
+ * Connection path between two gantt bars.
+ * @public
+ */
+export interface ConnectionPath {
+	/**
+	 * Unique identifier for the connection path.
+	 */
+	id: string
+
+	/**
+	 * The source connection handle.
+	 */
+	from: {
+		barId: string
+		side: 'left' | 'right'
+	}
+
+	/**
+	 * The target connection handle.
+	 */
+	to: {
+		barId: string
+		side: 'left' | 'right'
+	}
+
+	/**
+	 * Optional styling for the connection path.
+	 */
+	style?: {
+		color?: string
+		width?: number
+		dashArray?: string
+	}
+
+	/**
+	 * Optional label for the connection.
+	 */
+	label?: string
+}
+
+/**
+ * Connection event for handling connection creation/deletion.
+ * @public
+ */
+export type ConnectionEvent = {
+	type: 'create' | 'delete'
+	connection: ConnectionPath
+}

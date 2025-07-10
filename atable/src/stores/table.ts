@@ -3,6 +3,8 @@ import { type CSSProperties, computed, ref } from 'vue'
 
 import type {
 	CellContext,
+	ConnectionHandle,
+	ConnectionPath,
 	GanttBarInfo,
 	GanttDragEvent,
 	TableColumn,
@@ -87,6 +89,8 @@ export const createTableStore = (initData: {
 		const modal = ref<TableModal>(initData.modal || { visible: false })
 		const updates = ref<Record<string, string>>({})
 		const ganttBars = ref<GanttBarInfo[]>([])
+		const connectionHandles = ref<ConnectionHandle[]>([])
+		const connectionPaths = ref<ConnectionPath[]>([])
 
 		// getters
 		const hasPinnedColumns = computed(() => columns.value.some(col => col.pinned))
@@ -277,10 +281,76 @@ export const createTableStore = (initData: {
 			}
 		}
 
+		const registerConnectionHandle = (handleInfo: ConnectionHandle) => {
+			const existingIndex = connectionHandles.value.findIndex(handle => handle.id === handleInfo.id)
+			if (existingIndex >= 0) {
+				// @ts-expect-error TODO: for some reason, the IDE is expecting an unref'd value
+				connectionHandles.value[existingIndex] = handleInfo
+			} else {
+				// @ts-expect-error TODO: for some reason, the IDE is expecting an unref'd value
+				connectionHandles.value.push(handleInfo)
+			}
+		}
+
+		const unregisterConnectionHandle = (handleId: string) => {
+			const index = connectionHandles.value.findIndex(handle => handle.id === handleId)
+			if (index >= 0) {
+				connectionHandles.value.splice(index, 1)
+			}
+		}
+
+		const createConnection = (fromHandleId: string, toHandleId: string, options?: { style?: ConnectionPath['style']; label?: string }) => {
+			const fromHandle = connectionHandles.value.find(h => h.id === fromHandleId)
+			const toHandle = connectionHandles.value.find(h => h.id === toHandleId)
+
+			if (!fromHandle || !toHandle) {
+				console.warn('Cannot create connection: handle not found')
+				return null
+			}
+
+			const connection: ConnectionPath = {
+				id: `connection-${fromHandleId}-${toHandleId}`,
+				from: {
+					barId: fromHandle.barId,
+					side: fromHandle.side
+				},
+				to: {
+					barId: toHandle.barId,
+					side: toHandle.side
+				},
+				style: options?.style,
+				label: options?.label
+			}
+
+			connectionPaths.value.push(connection)
+			return connection
+		}
+
+		const deleteConnection = (connectionId: string) => {
+			const index = connectionPaths.value.findIndex(conn => conn.id === connectionId)
+			if (index >= 0) {
+				connectionPaths.value.splice(index, 1)
+				return true
+			}
+			return false
+		}
+
+		const getConnectionsForBar = (barId: string) => {
+			return connectionPaths.value.filter(conn =>
+				conn.from.barId === barId || conn.to.barId === barId
+			)
+		}
+
+		const getHandlesForBar = (barId: string) => {
+			return connectionHandles.value.filter(handle => handle.barId === barId)
+		}
+
 		return {
 			// state
 			columns,
 			config,
+			connectionHandles,
+			connectionPaths,
 			display,
 			ganttBars,
 			modal,
@@ -297,20 +367,26 @@ export const createTableStore = (initData: {
 
 			// actions
 			closeModal,
+			createConnection,
+			deleteConnection,
 			getCellData,
 			getCellDisplayValue,
+			getConnectionsForBar,
 			getFormattedValue,
+			getHandlesForBar,
 			getHeaderCellStyle,
-			resizeColumn,
 			getIndent,
 			getRowExpandSymbol,
 			isRowGantt,
 			isRowVisible,
+			registerConnectionHandle,
 			registerGanttBar,
-			unregisterGanttBar,
+			resizeColumn,
 			setCellData,
 			setCellText,
 			toggleRowExpand,
+			unregisterConnectionHandle,
+			unregisterGanttBar,
 			updateGanttBar,
 		}
 	})

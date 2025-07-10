@@ -8,17 +8,38 @@
 				:data-colindex="colIndex"
 				class="gantt-bar"
 				:class="{ 'is-dragging': isBarDragging || isLeftDragging || isRightDragging }"
-				:style="barStyle">
-				<!-- Left resizer handle -->
-				<div ref="leftHandle" class="gantt-handle left-handle" :class="{ 'is-dragging': isLeftDragging }">
+				:style="barStyle"
+				@mouseenter="showConnectionHandles"
+				@mouseleave="hideConnectionHandles">
+
+				<!-- Connection handles -->
+				<div
+					ref="leftConnectionHandle"
+					class="connection-handle left-connection-handle"
+					:class="{ visible: leftResizeHandleVisible }"
+					@click="onConnectionHandleClick('left')"
+					@mousedown.stop>
+					<div class="connection-dot"></div>
+				</div>
+
+				<div
+					ref="rightConnectionHandle"
+					class="connection-handle right-connection-handle"
+					:class="{ visible: rightResizeHandleVisible }"
+					@click="onConnectionHandleClick('right')"
+					@mousedown.stop>
+					<div class="connection-dot"></div>
+				</div>
+
+				<!-- Resize handles -->
+				<div ref="leftResizeHandle" class="resize-handle left-resize-handle" :class="{ 'is-dragging': isLeftDragging }">
 					<div class="handle-grip"></div>
 					<div class="vertical-indicator left-indicator"></div>
 				</div>
 
 				<label v-if="label" class="gantt-label">{{ label }}</label>
 
-				<!-- Right resizer handle -->
-				<div ref="rightHandle" class="gantt-handle right-handle" :class="{ 'is-dragging': isRightDragging }">
+				<div ref="rightResizeHandle" class="resize-handle right-resize-handle" :class="{ 'is-dragging': isRightDragging }">
 					<div class="handle-grip"></div>
 					<div class="vertical-indicator right-indicator"></div>
 				</div>
@@ -55,13 +76,21 @@ const {
 	color?: string
 }>()
 
+const emit = defineEmits<{
+	'connection:handle-click': [{ barId: string; side: 'left' | 'right'; rowIndex: number; colIndex: number }]
+}>()
+
 const baseColor = ref()
 const barId = `gantt-bar-row-${rowIndex}-col-${colIndex}`
+const leftResizeHandleVisible = ref(false)
+const rightResizeHandleVisible = ref(false)
 
 const containerRef = useTemplateRef('container')
 const barRef = useTemplateRef('bar')
-const leftHandleRef = useTemplateRef('leftHandle')
-const rightHandleRef = useTemplateRef('rightHandle')
+const leftResizeHandleRef = useTemplateRef('leftResizeHandle')
+const rightResizeHandleRef = useTemplateRef('rightResizeHandle')
+const leftConnectionHandleRef = useTemplateRef('leftConnectionHandle')
+const rightConnectionHandleRef = useTemplateRef('rightConnectionHandle')
 
 const { width: totalBarWidth } = useElementBounding(containerRef)
 const { left: barLeft, right: barRight } = useElementBounding(barRef)
@@ -76,7 +105,7 @@ onMounted(() => {
 		baseColor.value = color
 	}
 
-	const { x, y } = useElementBounding(barRef)
+	const { x: barX, y: barY } = useElementBounding(barRef)
 	store.registerGanttBar({
 		id: barId,
 		rowIndex,
@@ -85,12 +114,38 @@ onMounted(() => {
 		endIndex: currentEnd,
 		color: baseColor,
 		label,
-		position: { x, y },
+		position: { x: barX, y: barY },
+	})
+
+	// Register connection handles
+	const { x: leftX, y: leftY } = useElementBounding(leftConnectionHandleRef)
+	const { x: rightX, y: rightY } = useElementBounding(rightConnectionHandleRef)
+
+	store.registerConnectionHandle({
+		id: `${barId}-connection-left`,
+		rowIndex,
+		colIndex,
+		side: 'left',
+		position: { x: leftX, y: leftY },
+		visible: leftResizeHandleVisible,
+		barId,
+	})
+
+	store.registerConnectionHandle({
+		id: `${barId}-connection-right`,
+		rowIndex,
+		colIndex,
+		side: 'right',
+		position: { x: rightX, y: rightY },
+		visible: rightResizeHandleVisible,
+		barId,
 	})
 })
 
 onUnmounted(() => {
 	store.unregisterGanttBar(barId)
+	store.unregisterConnectionHandle(`${barId}-connection-left`)
+	store.unregisterConnectionHandle(`${barId}-connection-right`)
 })
 
 const pixelsPerColumn = computed(() => (colspan > 0 ? totalBarWidth.value / colspan : 0))
@@ -106,7 +161,7 @@ const barStyle = computed(() => {
 	}
 })
 
-const { isDragging: isLeftDragging } = useDraggable(leftHandleRef, {
+const { isDragging: isLeftDragging } = useDraggable(leftResizeHandleRef, {
 	axis: 'x',
 	onStart: () => {
 		if (barRef.value) barRef.value.style.transition = 'none'
@@ -148,7 +203,7 @@ const { isDragging: isLeftDragging } = useDraggable(leftHandleRef, {
 	},
 })
 
-const { isDragging: isRightDragging } = useDraggable(rightHandleRef, {
+const { isDragging: isRightDragging } = useDraggable(rightResizeHandleRef, {
 	axis: 'x',
 	onStart: () => {
 		if (barRef.value) barRef.value.style.transition = 'none'
@@ -249,6 +304,20 @@ const { isDragging: isBarDragging } = useDraggable(barRef, {
 		}
 	},
 })
+
+const showConnectionHandles = () => {
+	leftResizeHandleVisible.value = true
+	rightResizeHandleVisible.value = true
+}
+
+const hideConnectionHandles = () => {
+	leftResizeHandleVisible.value = false
+	rightResizeHandleVisible.value = false
+}
+
+const onConnectionHandleClick = (side: 'left' | 'right') => {
+	emit('connection:handle-click', { barId, side, rowIndex, colIndex })
+}
 </script>
 
 <style scoped>
@@ -300,7 +369,7 @@ const { isDragging: isBarDragging } = useDraggable(barRef, {
 	user-select: none;
 }
 
-.gantt-handle {
+.resize-handle {
 	position: relative;
 	width: 12px;
 	height: 100%;
@@ -312,10 +381,10 @@ const { isDragging: isBarDragging } = useDraggable(barRef, {
 	background: rgba(0, 0, 0, 0.25);
 }
 
-.left-handle {
+.left-resize-handle {
 	border-right: 1px solid rgba(0, 0, 0, 0.5);
 }
-.right-handle {
+.right-resize-handle {
 	border-left: 1px solid rgba(0, 0, 0, 0.5);
 }
 
@@ -326,7 +395,7 @@ const { isDragging: isBarDragging } = useDraggable(barRef, {
 	background: rgba(0, 0, 0, 0.8);
 }
 
-.gantt-handle:hover {
+.resize-handle:hover {
 	background-color: rgba(255, 255, 255, 0.5);
 }
 
@@ -353,7 +422,7 @@ const { isDragging: isBarDragging } = useDraggable(barRef, {
 	transform: translateX(50%);
 }
 
-.gantt-handle.is-dragging .vertical-indicator {
+.resize-handle.is-dragging .vertical-indicator {
 	opacity: 0.7;
 }
 
@@ -368,5 +437,46 @@ const { isDragging: isBarDragging } = useDraggable(barRef, {
 	background-image: linear-gradient(to right, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
 	pointer-events: none;
 	z-index: 1;
+}
+
+.connection-handle {
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+	width: 16px;
+	height: 16px;
+	opacity: 0;
+	transition: opacity 0.2s ease;
+	cursor: pointer;
+	z-index: 15;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.connection-handle.visible {
+	opacity: 1;
+}
+
+.left-connection-handle {
+	left: -16px;
+}
+
+.right-connection-handle {
+	right: -16px;
+}
+
+.connection-dot {
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background-color: #2196f3;
+	border: 2px solid white;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.connection-handle:hover .connection-dot {
+	background-color: #1976d2;
+	transform: scale(1.2);
 }
 </style>

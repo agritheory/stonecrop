@@ -1,80 +1,90 @@
 <template>
-	<table
-		ref="table"
-		class="atable"
-		:style="{
-			width: store.config.fullWidth ? '100%' : 'auto',
-		}"
-		v-on-click-outside="store.closeModal">
-		<slot name="header" :data="store">
-			<ATableHeader :columns="store.columns" :store="store" />
-		</slot>
-
-		<tbody>
-			<slot name="body" :data="store">
-				<ARow v-for="(row, rowIndex) in store.rows" :key="row.id" :row="row" :rowIndex="rowIndex" :store="store">
-					<template v-for="(column, colIndex) in getProcessedColumnsForRow(row)" :key="column.name">
-						<component
-							v-if="column.isGantt"
-							:is="column.ganttComponent || 'AGanttCell'"
-							:store="store"
-							:columnsCount="store.columns.length - pinnedColumnCount"
-							:color="row.gantt?.color"
-							:start="row.gantt?.startIndex"
-							:end="row.gantt?.endIndex"
-							:colspan="column.colspan"
-							:pinned="column.pinned"
-							:rowIndex="rowIndex"
-							:colIndex="column.originalIndex ?? colIndex"
-							:style="{
-								textAlign: column?.align || 'center',
-								minWidth: column?.width || '40ch',
-								width: store.config.fullWidth ? 'auto' : null,
-							}" />
-						<component
-							v-else
-							:is="column.cellComponent || 'ACell'"
-							:store="store"
-							:pinned="column.pinned"
-							:rowIndex="rowIndex"
-							:colIndex="colIndex"
-							:style="{
-								textAlign: column?.align || 'center',
-								width: store.config.fullWidth ? 'auto' : null,
-							}"
-							spellcheck="false" />
-					</template>
-				</ARow>
+	<div class="atable-container" style="position: relative">
+		<!-- Main table view -->
+		<table
+			ref="table"
+			class="atable"
+			:style="{
+				width: store.config.fullWidth ? '100%' : 'auto',
+			}"
+			v-on-click-outside="store.closeModal">
+			<slot name="header" :data="store">
+				<ATableHeader :columns="store.columns" :store="store" />
 			</slot>
-		</tbody>
 
-		<slot name="footer" :data="store" />
-		<slot name="modal" :data="store">
-			<ATableModal v-show="store.modal.visible" :store="store">
-				<template #default>
-					<component
-						:key="`${store.modal.rowIndex}:${store.modal.colIndex}`"
-						:is="store.modal.component"
-						:colIndex="store.modal.colIndex"
-						:rowIndex="store.modal.rowIndex"
-						:store="store"
-						v-bind="store.modal.componentProps" />
-				</template>
-			</ATableModal>
-		</slot>
-	</table>
+			<tbody>
+				<slot name="body" :data="store">
+					<ARow v-for="(row, rowIndex) in store.rows" :key="row.id" :row="row" :rowIndex="rowIndex" :store="store">
+						<template v-for="(column, colIndex) in getProcessedColumnsForRow(row)" :key="column.name">
+							<component
+								v-if="column.isGantt"
+								:is="column.ganttComponent || 'AGanttCell'"
+								:store="store"
+								:columnsCount="store.columns.length - pinnedColumnCount"
+								:color="row.gantt?.color"
+								:start="row.gantt?.startIndex"
+								:end="row.gantt?.endIndex"
+								:colspan="column.colspan"
+								:pinned="column.pinned"
+								:rowIndex="rowIndex"
+								:colIndex="column.originalIndex ?? colIndex"
+								:style="{
+									textAlign: column?.align || 'center',
+									minWidth: column?.width || '40ch',
+									width: store.config.fullWidth ? 'auto' : null,
+								}"
+								@connection:handle-click="handleConnectionClick" />
+							<component
+								v-else
+								:is="column.cellComponent || 'ACell'"
+								:store="store"
+								:pinned="column.pinned"
+								:rowIndex="rowIndex"
+								:colIndex="colIndex"
+								:style="{
+									textAlign: column?.align || 'center',
+									width: store.config.fullWidth ? 'auto' : null,
+								}"
+								spellcheck="false" />
+						</template>
+					</ARow>
+				</slot>
+			</tbody>
+
+			<slot name="footer" :data="store" />
+
+			<!-- Modal overlay -->
+			<slot name="modal" :data="store">
+				<ATableModal v-show="store.modal.visible" :store="store">
+					<template #default>
+						<component
+							:key="`${store.modal.rowIndex}:${store.modal.colIndex}`"
+							:is="store.modal.component"
+							:colIndex="store.modal.colIndex"
+							:rowIndex="store.modal.rowIndex"
+							:store="store"
+							v-bind="store.modal.componentProps" />
+					</template>
+				</ATableModal>
+			</slot>
+		</table>
+
+		<!-- Connection overlay for gantt connections -->
+		<AGanttConnection v-if="store.isGanttView" :store="store" />
+	</div>
 </template>
 
 <script setup lang="ts">
 import { vOnClickOutside } from '@vueuse/components'
 import { useMutationObserver } from '@vueuse/core'
-import { nextTick, watch, onMounted, useTemplateRef, computed } from 'vue'
+import { nextTick, watch, onMounted, useTemplateRef, computed, ref } from 'vue'
 
+import AGanttConnection from './AGanttConnection.vue'
 import ARow from './ARow.vue'
 import ATableHeader from './ATableHeader.vue'
 import ATableModal from './ATableModal.vue'
 import { createTableStore } from '../stores/table'
-import type { GanttDragEvent, TableColumn, TableConfig, TableRow } from '../types'
+import type { ConnectionEvent, GanttDragEvent, TableColumn, TableConfig, TableRow } from '../types'
 
 const {
 	id,
@@ -94,11 +104,13 @@ const emit = defineEmits<{
 	'update:modelValue': [value: TableRow[]]
 	cellUpdate: [{ colIndex: number; rowIndex: number; newValue: any; oldValue: any }]
 	'gantt:drag': [event: GanttDragEvent]
+	'connection:event': [event: ConnectionEvent]
 }>()
 
 const tableRef = useTemplateRef<HTMLTableElement>('table')
 const rowsValue = modelValue ? modelValue : rows
 const store = createTableStore({ columns, rows: rowsValue, id, config })
+const selectedHandle = ref<{ barId: string; side: 'left' | 'right' } | null>(null) // Connection handling state
 
 store.$onAction(({ name, store, args, after }) => {
 	if (name === 'setCellData' || name === 'setCellText') {
@@ -223,10 +235,46 @@ const getProcessedColumnsForRow = (row: TableRow) => {
 	return result
 }
 
-defineExpose({ store })
+const handleConnectionClick = (payload: {
+	barId: string
+	side: 'left' | 'right'
+	rowIndex: number
+	colIndex: number
+}) => {
+	if (!selectedHandle.value) {
+		// First handle selected
+		selectedHandle.value = { barId: payload.barId, side: payload.side }
+	} else {
+		// Second handle selected - create connection
+		if (selectedHandle.value.barId !== payload.barId) {
+			const connection = store.createConnection(
+				`${selectedHandle.value.barId}-connection-${selectedHandle.value.side}`,
+				`${payload.barId}-connection-${payload.side}`
+			)
+
+			if (connection) {
+				emit('connection:event', { type: 'create', connection })
+			}
+		}
+		selectedHandle.value = null
+	}
+}
+
+// Expose store and connection methods
+defineExpose({
+	store,
+	createConnection: store.createConnection,
+	deleteConnection: store.deleteConnection,
+	getConnectionsForBar: store.getConnectionsForBar,
+	getHandlesForBar: store.getHandlesForBar,
+})
 </script>
 
 <style>
+.atable-container {
+	position: relative;
+}
+
 .sticky-index {
 	position: sticky;
 	left: 0px;

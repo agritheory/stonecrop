@@ -170,6 +170,17 @@ Description
 </th></tr></thead>
 <tbody><tr><td>
 
+[ConnectionEvent](./atable.connectionevent.md)
+
+
+</td><td>
+
+Connection event for handling connection creation/deletion.
+
+
+</td></tr>
+<tr><td>
+
 [GanttDragEvent](./atable.ganttdragevent.md)
 
 

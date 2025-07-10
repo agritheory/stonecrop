@@ -1,7 +1,12 @@
 <template>
 	<Story title="gantt">
 		<Variant title="default">
-			<ATable v-model="gantt.rows" :columns="gantt.columns" :config="gantt.config" @gantt:drag="handleGanttDrag" />
+			<ATable
+				v-model="gantt.rows"
+				:columns="gantt.columns"
+				:config="gantt.config"
+				@gantt:drag="handleGanttDrag"
+				@connection:event="handleConnectionEvent" />
 		</Variant>
 
 		<Variant title="tree">
@@ -9,19 +14,20 @@
 				v-model="project_gantt.rows"
 				:columns="project_gantt.columns"
 				:config="project_gantt.config"
-				@gantt:drag="handleGanttDrag" />
+				@gantt:drag="handleGanttDrag"
+				@connection:event="handleConnectionEvent" />
 		</Variant>
 	</Story>
 </template>
 
 <script lang="ts" setup>
-import type { GanttDragEvent, TableColumn, TableConfig } from '@stonecrop/atable'
+import type { ConnectionEvent, GanttDragEvent, TableColumn, TableConfig } from '@stonecrop/atable'
 import { ref } from 'vue'
 
 import project_data from './sample_data/project_gantt.json'
 import gantt_data from './sample_data/task.json'
 
-const gantt_columns = [
+const gantt_columns: TableColumn[] = [
 	{
 		label: 'Group | Resource',
 		name: 'resource_name',
@@ -31,15 +37,14 @@ const gantt_columns = [
 		align: 'left',
 		pinned: true,
 		format: value => {
-			if (value === undefined || value === null) {
-				return ''
-			} else if (Object.keys(value).length > 0) {
+			if (value && Object.keys(value).length > 0) {
 				if (value.resource_group) {
 					return `<strong>${value.resource_group}</strong>`
 				} else {
 					return `${value.resource_name} (${value.resource_display})`
 				}
 			}
+			return ''
 		},
 	},
 	{
@@ -788,6 +793,10 @@ const handleGanttDrag = (event: GanttDragEvent) => {
 	} else if (event.type === 'resize') {
 		console.log(`Bar resized ${event.edge} by ${event.delta} units at row ${event.rowIndex}`)
 	}
+}
+
+const handleConnectionEvent = (event: ConnectionEvent) => {
+	console.log(`Connection ${event.type}:`, event.connection)
 }
 </script>
 
