@@ -33,7 +33,7 @@
 									minWidth: column?.width || '40ch',
 									width: store.config.fullWidth ? 'auto' : null,
 								}"
-								@connection:handle-click="handleConnectionClick" />
+								@connection:create="handleConnectionCreate" />
 							<component
 								v-else
 								:is="column.cellComponent || 'ACell'"
@@ -77,7 +77,7 @@
 <script setup lang="ts">
 import { vOnClickOutside } from '@vueuse/components'
 import { useMutationObserver } from '@vueuse/core'
-import { nextTick, watch, onMounted, useTemplateRef, computed, ref } from 'vue'
+import { computed, nextTick, onMounted, useTemplateRef, watch } from 'vue'
 
 import AGanttConnection from './AGanttConnection.vue'
 import ARow from './ARow.vue'
@@ -110,7 +110,6 @@ const emit = defineEmits<{
 const tableRef = useTemplateRef<HTMLTableElement>('table')
 const rowsValue = modelValue ? modelValue : rows
 const store = createTableStore({ columns, rows: rowsValue, id, config })
-const selectedHandle = ref<{ barId: string; side: 'left' | 'right' } | null>(null) // Connection handling state
 
 store.$onAction(({ name, store, args, after }) => {
 	if (name === 'setCellData' || name === 'setCellText') {
@@ -235,32 +234,10 @@ const getProcessedColumnsForRow = (row: TableRow) => {
 	return result
 }
 
-const handleConnectionClick = (payload: {
-	barId: string
-	side: 'left' | 'right'
-	rowIndex: number
-	colIndex: number
-}) => {
-	if (!selectedHandle.value) {
-		// First handle selected
-		selectedHandle.value = { barId: payload.barId, side: payload.side }
-	} else {
-		// Second handle selected - create connection
-		if (selectedHandle.value.barId !== payload.barId) {
-			const connection = store.createConnection(
-				`${selectedHandle.value.barId}-connection-${selectedHandle.value.side}`,
-				`${payload.barId}-connection-${payload.side}`
-			)
-
-			if (connection) {
-				emit('connection:event', { type: 'create', connection })
-			}
-		}
-		selectedHandle.value = null
-	}
+const handleConnectionCreate = (connection: any) => {
+	emit('connection:event', { type: 'create', connection })
 }
 
-// Expose store and connection methods
 defineExpose({
 	store,
 	createConnection: store.createConnection,

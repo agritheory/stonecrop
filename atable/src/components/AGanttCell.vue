@@ -11,23 +11,20 @@
 				:style="barStyle"
 				@mouseenter="showConnectionHandles"
 				@mouseleave="hideConnectionHandles">
-
 				<!-- Connection handles -->
 				<div
 					ref="leftConnectionHandle"
 					class="connection-handle left-connection-handle"
-					:class="{ visible: leftResizeHandleVisible }"
-					@click="onConnectionHandleClick('left')"
-					@mousedown.stop>
+					:class="{ visible: leftResizeHandleVisible, 'is-dragging': isLeftConnectionDragging }"
+					@mousedown.stop="startConnectionDrag('left', $event)">
 					<div class="connection-dot"></div>
 				</div>
 
 				<div
 					ref="rightConnectionHandle"
 					class="connection-handle right-connection-handle"
-					:class="{ visible: rightResizeHandleVisible }"
-					@click="onConnectionHandleClick('right')"
-					@mousedown.stop>
+					:class="{ visible: rightResizeHandleVisible, 'is-dragging': isRightConnectionDragging }"
+					@mousedown.stop="startConnectionDrag('right', $event)">
 					<div class="connection-dot"></div>
 				</div>
 
@@ -39,12 +36,38 @@
 
 				<label v-if="label" class="gantt-label">{{ label }}</label>
 
-				<div ref="rightResizeHandle" class="resize-handle right-resize-handle" :class="{ 'is-dragging': isRightDragging }">
+				<div
+					ref="rightResizeHandle"
+					class="resize-handle right-resize-handle"
+					:class="{ 'is-dragging': isRightDragging }">
 					<div class="handle-grip"></div>
 					<div class="vertical-indicator right-indicator"></div>
 				</div>
 			</div>
 		</div>
+
+		<!-- Drag preview line -->
+		<svg
+			v-if="isDragPreviewVisible"
+			class="drag-preview-svg"
+			:style="{
+				position: 'fixed',
+				top: 0,
+				left: 0,
+				width: '100vw',
+				height: '100vh',
+				pointerEvents: 'none',
+				zIndex: 1000,
+			}">
+			<line
+				:x1="dragPreview.startX"
+				:y1="dragPreview.startY"
+				:x2="dragPreview.endX"
+				:y2="dragPreview.endY"
+				stroke="#2196f3"
+				stroke-width="2"
+				stroke-dasharray="5,5" />
+		</svg>
 	</td>
 </template>
 
@@ -53,6 +76,7 @@ import { useDraggable, useElementBounding } from '@vueuse/core'
 import { ref, computed, onMounted, onUnmounted, useTemplateRef } from 'vue'
 
 import { createTableStore } from '../stores/table'
+import type { ConnectionPath } from '../types'
 
 const {
 	store,
@@ -77,13 +101,25 @@ const {
 }>()
 
 const emit = defineEmits<{
-	'connection:handle-click': [{ barId: string; side: 'left' | 'right'; rowIndex: number; colIndex: number }]
+	'connection:create': [connection: ConnectionPath]
 }>()
 
 const baseColor = ref()
 const barId = `gantt-bar-row-${rowIndex}-col-${colIndex}`
 const leftResizeHandleVisible = ref(false)
 const rightResizeHandleVisible = ref(false)
+
+// Connection drag state
+const isLeftConnectionDragging = ref(false)
+const isRightConnectionDragging = ref(false)
+const isDragPreviewVisible = ref(false)
+const dragPreview = ref({
+	startX: 0,
+	startY: 0,
+	endX: 0,
+	endY: 0,
+})
+const dragStartSide = ref<'left' | 'right' | null>(null)
 
 const containerRef = useTemplateRef('container')
 const barRef = useTemplateRef('bar')
@@ -311,12 +347,87 @@ const showConnectionHandles = () => {
 }
 
 const hideConnectionHandles = () => {
-	leftResizeHandleVisible.value = false
-	rightResizeHandleVisible.value = false
+	if (!isLeftConnectionDragging.value && !isRightConnectionDragging.value) {
+		leftResizeHandleVisible.value = false
+		rightResizeHandleVisible.value = false
+	}
 }
 
-const onConnectionHandleClick = (side: 'left' | 'right') => {
-	emit('connection:handle-click', { barId, side, rowIndex, colIndex })
+const startConnectionDrag = (side: 'left' | 'right', event: MouseEvent) => {
+	event.preventDefault()
+	event.stopPropagation()
+
+	dragStartSide.value = side
+	isDragPreviewVisible.value = true
+
+	if (side === 'left') {
+		isLeftConnectionDragging.value = true
+	} else {
+		isRightConnectionDragging.value = true
+	}
+
+	const handle = side === 'left' ? leftConnectionHandleRef.value : rightConnectionHandleRef.value
+	const handleRect = handle?.getBoundingClientRect()
+	if (handleRect) {
+		dragPreview.value.startX = handleRect.left + handleRect.width / 2
+		dragPreview.value.startY = handleRect.top + handleRect.height / 2
+		dragPreview.value.endX = dragPreview.value.startX
+		dragPreview.value.endY = dragPreview.value.startY
+	}
+
+	const handleMouseMove = (moveEvent: MouseEvent) => {
+		dragPreview.value.endX = moveEvent.clientX
+		dragPreview.value.endY = moveEvent.clientY
+	}
+
+	const handleMouseUp = (upEvent: MouseEvent) => {
+		// Find target connection handle
+		const targetElement = document.elementFromPoint(upEvent.clientX, upEvent.clientY)
+		const targetHandle = targetElement?.closest('.connection-handle')
+
+		if (
+			targetHandle &&
+			targetHandle !== (side === 'left' ? leftConnectionHandleRef.value : rightConnectionHandleRef.value)
+		) {
+			// Extract target bar info from the target handle
+			const targetBar = targetHandle.closest('.gantt-bar')
+			const targetBarContainer = targetBar?.closest('.aganttcell')
+
+			if (targetBar && targetBarContainer) {
+				const targetRowIndex = parseInt(targetBar.getAttribute('data-rowindex') || '0')
+				const targetColIndex = parseInt(targetBar.getAttribute('data-colindex') || '0')
+				const targetSide = targetHandle.classList.contains('left-connection-handle') ? 'left' : 'right'
+				const targetBarId = `gantt-bar-row-${targetRowIndex}-col-${targetColIndex}`
+
+				// Create connection
+				const connection = store.createConnection(
+					`${barId}-connection-${side}`,
+					`${targetBarId}-connection-${targetSide}`
+				)
+
+				if (connection) {
+					emit('connection:create', connection)
+				}
+			}
+		}
+
+		// Clean up
+		isDragPreviewVisible.value = false
+		isLeftConnectionDragging.value = false
+		isRightConnectionDragging.value = false
+		dragStartSide.value = null
+
+		document.removeEventListener('mousemove', handleMouseMove)
+		document.removeEventListener('mouseup', handleMouseUp)
+
+		// Hide handles if mouse is not over the bar
+		if (!barRef.value?.matches(':hover')) {
+			hideConnectionHandles()
+		}
+	}
+
+	document.addEventListener('mousemove', handleMouseMove)
+	document.addEventListener('mouseup', handleMouseUp)
 }
 </script>
 
@@ -478,5 +589,24 @@ const onConnectionHandleClick = (side: 'left' | 'right') => {
 .connection-handle:hover .connection-dot {
 	background-color: #1976d2;
 	transform: scale(1.2);
+}
+
+.connection-handle.is-dragging {
+	opacity: 1 !important;
+}
+
+.connection-handle.is-dragging .connection-dot {
+	background-color: #1976d2;
+	transform: scale(1.3);
+	box-shadow: 0 2px 8px rgba(33, 150, 243, 0.4);
+}
+
+.drag-preview-svg {
+	pointer-events: none;
+	z-index: 1000;
+}
+
+.connection-handle:hover {
+	cursor: crosshair;
 }
 </style>
