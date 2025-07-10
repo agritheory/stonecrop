@@ -12,7 +12,14 @@
 				zIndex: 1,
 			}">
 			<defs>
-				<marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+				<marker
+					id="arrowhead"
+					markerWidth="10"
+					markerHeight="7"
+					refX="10"
+					refY="3.5"
+					orient="auto"
+					markerUnits="strokeWidth">
 					<polygon points="0 0, 10 3.5, 0 7" fill="currentColor" />
 				</marker>
 			</defs>
@@ -41,7 +48,7 @@ const { store } = defineProps<{
 }>()
 
 const BEZIER_CURVE_FACTOR = 0.5 // Control point offset factor for bezier curves
-const CONNECTION_HANDLE_SIZE = 16 // Width of the connection handles (in px)
+const CONNECTION_HANDLE_SIZE = 16 // Width of the connection handles; this should match the handle size in the AGanttCell component
 
 const visibleConnections = computed(() => {
 	return store.connectionPaths.filter(connection => {
@@ -61,17 +68,18 @@ const getPathData = (connection: ConnectionPath) => {
 
 	if (!fromHandle || !toHandle) return ''
 
-	// Width of the handle; this should match the handle size in the AGanttCell component
 	const fromX = fromHandle.position.x + CONNECTION_HANDLE_SIZE / 2 // Center of the handle
 	const fromY = fromHandle.position.y + CONNECTION_HANDLE_SIZE / 2
 	const toX = toHandle.position.x + CONNECTION_HANDLE_SIZE / 2
 	const toY = toHandle.position.y + CONNECTION_HANDLE_SIZE / 2
 
-	// Create a smooth curved path (in the format: 'M startX startY C interX1 interY1, interX2 interY2, endX endY')
-	const controlPointOffset = Math.abs(toX - fromX) * BEZIER_CURVE_FACTOR
+	// Calculate control points for smooth bezier curve
+	const deltaX = Math.abs(toX - fromX)
+	const controlPointOffset = Math.max(deltaX * BEZIER_CURVE_FACTOR, 50) // Minimum offset for better curves
 	const cp1X = fromX + (connection.from.side === 'left' ? -controlPointOffset : controlPointOffset)
 	const cp2X = toX + (connection.to.side === 'left' ? -controlPointOffset : controlPointOffset)
 
+	// Use cubic bezier curve for smooth connections
 	return `M ${fromX} ${fromY} C ${cp1X} ${fromY}, ${cp2X} ${toY}, ${toX} ${toY}`
 }
 </script>
