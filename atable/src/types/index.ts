@@ -597,7 +597,6 @@ export interface ConnectionPath {
 	style?: {
 		color?: string
 		width?: number
-		dashArray?: string
 	}
 
 	/**

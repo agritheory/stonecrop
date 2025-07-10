@@ -153,7 +153,7 @@ onMounted(() => {
 		position: { x: barX, y: barY },
 	})
 
-	// Register connection handles
+	// Register connection handles with proper position tracking
 	const { x: leftX, y: leftY } = useElementBounding(leftConnectionHandleRef)
 	const { x: rightX, y: rightY } = useElementBounding(rightConnectionHandleRef)
 

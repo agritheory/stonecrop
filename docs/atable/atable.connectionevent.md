@@ -14,3 +14,5 @@ export type ConnectionEvent = {
     connection: ConnectionPath;
 };
 ```
+**References:** [ConnectionPath](./atable.connectionpath.md)
+

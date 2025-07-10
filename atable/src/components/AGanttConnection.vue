@@ -9,19 +9,11 @@
 				width: '100%',
 				height: '100%',
 				pointerEvents: 'none',
-				zIndex: 1
+				zIndex: 1,
 			}">
 			<defs>
-				<marker
-					id="arrowhead"
-					markerWidth="10"
-					markerHeight="7"
-					refX="9"
-					refY="3.5"
-					orient="auto">
-					<polygon
-						points="0 0, 10 3.5, 0 7"
-						fill="currentColor" />
+				<marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+					<polygon points="0 0, 10 3.5, 0 7" fill="currentColor" />
 				</marker>
 			</defs>
 
@@ -31,7 +23,6 @@
 				:d="getPathData(connection)"
 				:stroke="connection.style?.color || '#666'"
 				:stroke-width="connection.style?.width || 2"
-				:stroke-dasharray="connection.style?.dashArray"
 				fill="none"
 				marker-end="url(#arrowhead)"
 				class="connection-path" />
@@ -49,6 +40,9 @@ const { store } = defineProps<{
 	store: ReturnType<typeof createTableStore>
 }>()
 
+const BEZIER_CURVE_FACTOR = 0.5 // Control point offset factor for bezier curves
+const CONNECTION_HANDLE_SIZE = 16 // Width of the connection handles (in px)
+
 const visibleConnections = computed(() => {
 	return store.connectionPaths.filter(connection => {
 		const fromBar = store.ganttBars.find(bar => bar.id === connection.from.barId)
@@ -58,24 +52,23 @@ const visibleConnections = computed(() => {
 })
 
 const getPathData = (connection: ConnectionPath) => {
-	const fromBar = store.ganttBars.find(bar => bar.id === connection.from.barId)
-	const toBar = store.ganttBars.find(bar => bar.id === connection.to.barId)
+	const fromHandle = store.connectionHandles.find(
+		handle => handle.barId === connection.from.barId && handle.side === connection.from.side
+	)
+	const toHandle = store.connectionHandles.find(
+		handle => handle.barId === connection.to.barId && handle.side === connection.to.side
+	)
 
-	if (!fromBar || !toBar) return ''
+	if (!fromHandle || !toHandle) return ''
 
-	// Get connection points based on handle sides
-	const fromX = connection.from.side === 'left'
-		? fromBar.position.x
-		: fromBar.position.x + (fromBar.endIndex - fromBar.startIndex) * 40 // approximate column width
-	const fromY = fromBar.position.y + 20 // center of bar height
+	// Width of the handle; this should match the handle size in the AGanttCell component
+	const fromX = fromHandle.position.x + CONNECTION_HANDLE_SIZE / 2 // Center of the handle
+	const fromY = fromHandle.position.y + CONNECTION_HANDLE_SIZE / 2
+	const toX = toHandle.position.x + CONNECTION_HANDLE_SIZE / 2
+	const toY = toHandle.position.y + CONNECTION_HANDLE_SIZE / 2
 
-	const toX = connection.to.side === 'left'
-		? toBar.position.x
-		: toBar.position.x + (toBar.endIndex - toBar.startIndex) * 40
-	const toY = toBar.position.y + 20
-
-	// Create a smooth curved path
-	const controlPointOffset = Math.abs(toX - fromX) * 0.3
+	// Create a smooth curved path (in the format: 'M startX startY C interX1 interY1, interX2 interY2, endX endY')
+	const controlPointOffset = Math.abs(toX - fromX) * BEZIER_CURVE_FACTOR
 	const cp1X = fromX + (connection.from.side === 'left' ? -controlPointOffset : controlPointOffset)
 	const cp2X = toX + (connection.to.side === 'left' ? -controlPointOffset : controlPointOffset)
 

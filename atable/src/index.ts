@@ -13,6 +13,8 @@ export { createTableStore } from './stores/table'
 export type {
 	CellContext,
 	ConnectionEvent,
+	ConnectionHandle,
+	ConnectionPath,
 	GanttBarInfo,
 	GanttDragEvent,
 	GanttOptions,

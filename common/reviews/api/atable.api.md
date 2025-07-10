@@ -55,6 +55,38 @@ export type ConnectionEvent = {
 };
 
 // @public
+export interface ConnectionHandle {
+    barId: string;
+    colIndex: number;
+    id: string;
+    position: {
+        x: ShallowRef<number>;
+        y: ShallowRef<number>;
+    };
+    rowIndex: number;
+    side: 'left' | 'right';
+    visible: Ref<boolean>;
+}
+
+// @public
+export interface ConnectionPath {
+    from: {
+        barId: string;
+        side: 'left' | 'right';
+    };
+    id: string;
+    label?: string;
+    style?: {
+        color?: string;
+        width?: number;
+    };
+    to: {
+        barId: string;
+        side: 'left' | 'right';
+    };
+}
+
+// @public
 export const createTableStore: (initData: {
     columns: TableColumn[];
     rows: TableRow[];
@@ -148,7 +180,6 @@ side: "left" | "right";
 style?: {
 color?: string | undefined;
 width?: number | undefined;
-dashArray?: string | undefined;
 } | undefined;
 label?: string | undefined;
 }[], ConnectionPath[] | {
@@ -164,7 +195,6 @@ side: "left" | "right";
 style?: {
 color?: string | undefined;
 width?: number | undefined;
-dashArray?: string | undefined;
 } | undefined;
 label?: string | undefined;
 }[]>;
@@ -286,7 +316,6 @@ side: "left" | "right";
 style?: {
 color?: string | undefined;
 width?: number | undefined;
-dashArray?: string | undefined;
 } | undefined;
 label?: string | undefined;
 }[];
@@ -400,7 +429,6 @@ side: "left" | "right";
 style?: {
 color?: string | undefined;
 width?: number | undefined;
-dashArray?: string | undefined;
 } | undefined;
 label?: string | undefined;
 }[], ConnectionPath[] | {
@@ -416,7 +444,6 @@ side: "left" | "right";
 style?: {
 color?: string | undefined;
 width?: number | undefined;
-dashArray?: string | undefined;
 } | undefined;
 label?: string | undefined;
 }[]>;
@@ -538,7 +565,6 @@ side: "left" | "right";
 style?: {
 color?: string | undefined;
 width?: number | undefined;
-dashArray?: string | undefined;
 } | undefined;
 label?: string | undefined;
 }[];
@@ -652,7 +678,6 @@ side: "left" | "right";
 style?: {
 color?: string | undefined;
 width?: number | undefined;
-dashArray?: string | undefined;
 } | undefined;
 label?: string | undefined;
 }[], ConnectionPath[] | {
@@ -668,7 +693,6 @@ side: "left" | "right";
 style?: {
 color?: string | undefined;
 width?: number | undefined;
-dashArray?: string | undefined;
 } | undefined;
 label?: string | undefined;
 }[]>;
@@ -790,7 +814,6 @@ side: "left" | "right";
 style?: {
 color?: string | undefined;
 width?: number | undefined;
-dashArray?: string | undefined;
 } | undefined;
 label?: string | undefined;
 }[];
@@ -951,11 +974,6 @@ export interface TableRow {
     indent?: number;
     parent?: number;
 }
-
-// Warnings were encountered during analysis:
-//
-// src/stores/table.ts:32:2 - (ae-forgotten-export) The symbol "ConnectionHandle" needs to be exported by the entry point index.d.ts
-// src/types/index.ts:615:2 - (ae-forgotten-export) The symbol "ConnectionPath" needs to be exported by the entry point index.d.ts
 
 // (No @packageDocumentation comment for this package)
 

@@ -67,6 +67,28 @@ Table cell context definition.
 </td></tr>
 <tr><td>
 
+[ConnectionHandle](./atable.connectionhandle.md)
+
+
+</td><td>
+
+Connection handle information for gantt bar connections.
+
+
+</td></tr>
+<tr><td>
+
+[ConnectionPath](./atable.connectionpath.md)
+
+
+</td><td>
+
+Connection path between two gantt bars.
+
+
+</td></tr>
+<tr><td>
+
 [GanttBarInfo](./atable.ganttbarinfo.md)
 
 
