@@ -4,7 +4,7 @@
 
 ## TableColumn.colspan property
 
-The colspan of the Gantt-bar for the column. This is used to determine how many columns the Gantt-bar should span.
+The colspan of the Gantt bar for the column. This determines how many columns the Gantt bar should span across.
 
 Only applicable for Gantt tables.
 

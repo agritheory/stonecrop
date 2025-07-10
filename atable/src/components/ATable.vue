@@ -70,7 +70,7 @@
 		</table>
 
 		<!-- Connection overlay for gantt connections -->
-		<AGanttConnection v-if="store.isGanttView" :store="store" />
+		<AGanttConnection v-if="store.isGanttView" :store="store" @connection:delete="handleConnectionDelete" />
 	</div>
 </template>
 
@@ -84,7 +84,7 @@ import ARow from './ARow.vue'
 import ATableHeader from './ATableHeader.vue'
 import ATableModal from './ATableModal.vue'
 import { createTableStore } from '../stores/table'
-import type { ConnectionEvent, GanttDragEvent, TableColumn, TableConfig, TableRow } from '../types'
+import type { ConnectionEvent, ConnectionPath, GanttDragEvent, TableColumn, TableConfig, TableRow } from '../types'
 
 const {
 	id,
@@ -234,8 +234,12 @@ const getProcessedColumnsForRow = (row: TableRow) => {
 	return result
 }
 
-const handleConnectionCreate = (connection: any) => {
+const handleConnectionCreate = (connection: ConnectionPath) => {
 	emit('connection:event', { type: 'create', connection })
+}
+
+const handleConnectionDelete = (connection: ConnectionPath) => {
+	emit('connection:event', { type: 'delete', connection })
 }
 
 defineExpose({

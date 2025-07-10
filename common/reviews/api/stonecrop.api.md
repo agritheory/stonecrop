@@ -11,6 +11,7 @@ import { Map as Map_2 } from 'immutable';
 import { Plugin as Plugin_2 } from 'vue';
 import { Ref } from 'vue';
 import { Router } from 'vue-router';
+import type { ShallowRef } from 'vue';
 import type { StateMachine } from 'xstate';
 import { StoreDefinition } from 'pinia';
 
@@ -27,6 +28,44 @@ export interface CellContext {
     row: TableRow;
     table: {
         [key: string]: any;
+    };
+}
+
+// @public
+export type ConnectionEvent = {
+    type: 'create' | 'delete';
+    connection: ConnectionPath;
+};
+
+// @public
+export interface ConnectionHandle {
+    barId: string;
+    colIndex: number;
+    id: string;
+    position: {
+        x: ShallowRef<number>;
+        y: ShallowRef<number>;
+    };
+    rowIndex: number;
+    side: 'left' | 'right';
+    visible: Ref<boolean>;
+}
+
+// @public
+export interface ConnectionPath {
+    from: {
+        barId: string;
+        side: 'left' | 'right';
+    };
+    id: string;
+    label?: string;
+    style?: {
+        color?: string;
+        width?: number;
+    };
+    to: {
+        barId: string;
+        side: 'left' | 'right';
     };
 }
 
@@ -58,6 +97,51 @@ export type FormSchema = BaseSchema & {
     width?: string;
     mask?: string;
 };
+
+// @public
+export interface GanttBarInfo {
+    colIndex: number;
+    color: Ref<string>;
+    endIndex: Ref<number>;
+    id: string;
+    label?: string;
+    position: {
+        x: ShallowRef<number>;
+        y: ShallowRef<number>;
+    };
+    rowIndex: number;
+    startIndex: Ref<number>;
+}
+
+// @public
+export type GanttDragEvent = {
+    rowIndex: number;
+    colIndex: number;
+    delta: number;
+} & ({
+    type: 'bar';
+    oldStart: number;
+    oldEnd: number;
+    newStart: number;
+    newEnd: number;
+    colspan: number;
+} | {
+    type: 'resize';
+    edge: 'start';
+    oldStart: number;
+    newStart: number;
+    end: number;
+    oldColspan: number;
+    newColspan: number;
+} | {
+    type: 'resize';
+    edge: 'end';
+    oldEnd: number;
+    newEnd: number;
+    start: number;
+    oldColspan: number;
+    newColspan: number;
+});
 
 // @public
 export interface GanttOptions {

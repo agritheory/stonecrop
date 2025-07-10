@@ -8,7 +8,7 @@
 				left: 0,
 				width: '100%',
 				height: '100%',
-				pointerEvents: 'none',
+				pointerEvents: 'auto',
 				zIndex: 1,
 			}">
 			<defs>
@@ -24,6 +24,18 @@
 				</marker>
 			</defs>
 
+			<!-- Invisible wider path for easier double-click interaction -->
+			<path
+				v-for="connection in visibleConnections"
+				:key="`${connection.id}-hitbox`"
+				:d="getPathData(connection)"
+				stroke="transparent"
+				:stroke-width="(connection.style?.width || 2) + 10"
+				fill="none"
+				class="connection-hitbox"
+				@dblclick="handleConnectionDelete(connection)" />
+
+			<!-- Visible connection path -->
 			<path
 				v-for="connection in visibleConnections"
 				:key="connection.id"
@@ -32,7 +44,8 @@
 				:stroke-width="connection.style?.width || 2"
 				fill="none"
 				marker-end="url(#arrowhead)"
-				class="connection-path" />
+				class="connection-path"
+				@dblclick="handleConnectionDelete(connection)" />
 		</svg>
 	</div>
 </template>
@@ -45,6 +58,10 @@ import type { ConnectionPath } from '../types'
 
 const { store } = defineProps<{
 	store: ReturnType<typeof createTableStore>
+}>()
+
+const emit = defineEmits<{
+	'connection:delete': [connection: ConnectionPath]
 }>()
 
 const BEZIER_CURVE_FACTOR = 0.5 // Control point offset factor for bezier curves
@@ -82,6 +99,12 @@ const getPathData = (connection: ConnectionPath) => {
 	// Use cubic bezier curve for smooth connections
 	return `M ${fromX} ${fromY} C ${cp1X} ${fromY}, ${cp2X} ${toY}, ${toX} ${toY}`
 }
+
+const handleConnectionDelete = (connection: ConnectionPath) => {
+	if (store.deleteConnection(connection.id)) {
+		emit('connection:delete', connection)
+	}
+}
 </script>
 
 <style scoped>
@@ -97,9 +120,16 @@ const getPathData = (connection: ConnectionPath) => {
 
 .connection-path {
 	transition: stroke-width 0.2s ease;
+	pointer-events: auto;
+	cursor: pointer;
 }
 
 .connection-path:hover {
 	stroke-width: 3px;
+}
+
+.connection-hitbox {
+	pointer-events: auto;
+	cursor: pointer;
 }
 </style>

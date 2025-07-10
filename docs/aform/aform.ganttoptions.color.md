@@ -4,7 +4,7 @@
 
 ## GanttOptions.color property
 
-The colour to be applied to the row's gantt bar.
+The color to be applied to the row's gantt bar.
 
 **Signature:**
 
