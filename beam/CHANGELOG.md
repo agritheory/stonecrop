@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/beam
 
-This log was last generated on Wed, 02 Jul 2025 09:19:21 GMT and should not be manually modified.
+This log was last generated on Tue, 15 Jul 2025 07:15:19 GMT and should not be manually modified.
+
+## 0.4.19
+Tue, 15 Jul 2025 07:15:19 GMT
+
+### Updates
+
+- Modified validation logic in ItemCount.vue to fix "NaN" display and update issues in ListView inputs.
 
 ## 0.4.18
 Wed, 02 Jul 2025 09:19:21 GMT
