@@ -414,8 +414,8 @@ importers:
         specifier: ^3
         version: 3.0.0(vue@3.5.17(typescript@5.8.3))
       xstate:
-        specifier: ^4.38.3
-        version: 4.38.3
+        specifier: ^5.20.1
+        version: 5.20.1
     devDependencies:
       '@histoire/plugin-vue':
         specifier: ^1.0.0-alpha.2
@@ -542,8 +542,8 @@ importers:
         specifier: ^4.5.1
         version: 4.5.1(vue@3.5.17(typescript@5.8.3))
       xstate:
-        specifier: ^4.38.3
-        version: 4.38.3
+        specifier: ^5.20.1
+        version: 5.20.1
     devDependencies:
       '@microsoft/api-documenter':
         specifier: ^7.26.29
@@ -675,12 +675,9 @@ importers:
       pinia-shared-state:
         specifier: ^1.0.1
         version: 1.0.1(pinia@3.0.3(typescript@5.8.3)(vue@3.5.17(typescript@5.8.3)))
-      pinia-undo:
-        specifier: ^0.2.4
-        version: 0.2.4(pinia@3.0.3(typescript@5.8.3)(vue@3.5.17(typescript@5.8.3)))
       pinia-xstate:
-        specifier: ^2.2.1
-        version: 2.2.1(pinia@3.0.3(typescript@5.8.3)(vue@3.5.17(typescript@5.8.3)))(typescript@5.8.3)(xstate@4.38.3)
+        specifier: ^3.0.0
+        version: 3.0.0(pinia@3.0.3(typescript@5.8.3)(vue@3.5.17(typescript@5.8.3)))(typescript@5.8.3)(xstate@5.20.1)
       vue:
         specifier: ^3.5.17
         version: 3.5.17(typescript@5.8.3)
@@ -688,8 +685,8 @@ importers:
         specifier: ^4.5.1
         version: 4.5.1(vue@3.5.17(typescript@5.8.3))
       xstate:
-        specifier: ^4.38.3
-        version: 4.38.3
+        specifier: ^5.20.1
+        version: 5.20.1
     devDependencies:
       '@microsoft/api-documenter':
         specifier: ^7.26.29
@@ -5024,15 +5021,10 @@ packages:
     peerDependencies:
       pinia: ^3.0.0
 
-  pinia-undo@0.2.4:
-    resolution: {integrity: sha512-czb1fOkTBWJPYkjNTVsGa6x8drL8Kwu9pA6Vldn7pulg3Gc4G17AF5+b01uogH1g00p11T5xQt+3hnRWy4ipkQ==}
+  pinia-xstate@3.0.0:
+    resolution: {integrity: sha512-DEm94ABHooaemtlw7o//ip8jx1nZw7vXxNtHEcoLLzv3bb0nxGNemYhvF0vCwzMnhwEHA6TgqaMHcM6INgoEMA==}
     peerDependencies:
-      pinia: ^2.0.0
-
-  pinia-xstate@2.2.1:
-    resolution: {integrity: sha512-TnNNql9b0AiRxseDNrsInJ5tSdCylwSuTFw0XSgJvDHMCjyYVyXG+EePpajBl66THTycKWpzZ3cBWHMyuL2TXw==}
-    peerDependencies:
-      pinia: ^2.0.0
+      pinia: ^3.0.0
       xstate: ^5.15.0
 
   pinia@3.0.3:
@@ -6003,9 +5995,6 @@ packages:
   undici-types@7.8.0:
     resolution: {integrity: sha512-9UJ2xGDvQ43tYyVMpuHlsgApydB8ZKfVYTsLDhXkFL/6gfkp+U8xTGdh8pMJv1SpZna0zxG1DwsKZsreLbXBxw==}
 
-  undo-stacker@0.2.1:
-    resolution: {integrity: sha512-wEFIuUlJtSB0Rt/LBxPqiZqKN2AMKqjdYIr2VTIPUPOEZxAOVE4zVY+z2b2yPBL1NvLW+Sm/kbCaqeWlINPZNA==}
-
   unenv@2.0.0-rc.18:
     resolution: {integrity: sha512-O0oVQVJ2X3Q8H4HITJr4e2cWxMYBeZ+p8S25yoKCxVCgDWtIJDcgwWNonYz12tI3ylVQCRyPV/Bdq0KJeXo7AA==}
 
@@ -6556,8 +6545,8 @@ packages:
   xmlchars@2.2.0:
     resolution: {integrity: sha512-JZnDKK8B0RCDw84FNdDAIpZK+JuJw+s7Lz8nksI7SIuU3UXJJslUthsi+uWBUYOwPFwW7W7PRLRfUKpxjtjFCw==}
 
-  xstate@4.38.3:
-    resolution: {integrity: sha512-SH7nAaaPQx57dx6qvfcIgqKRXIh4L0A1iYEqim4s1u7c9VoCgzZc+63FY90AKU4ZzOC2cfJzTnpO4zK7fCUzzw==}
+  xstate@5.20.1:
+    resolution: {integrity: sha512-i9ZpNnm/XhCOMUxae1suT8PjYNTStZWbhmuKt4xeTPaYG5TS0Fz0i+Ka5yxoNPpaHW3VW6JIowrwFgSTZONxig==}
 
   y18n@5.0.8:
     resolution: {integrity: sha512-0pfFzegeDWJHJIAmTLRP2DwHjdF5s7jo9tuztdQxAhINCdvS+3nGINqPd00AphqJR/0LhANUS6/+7SCb98YOfA==}
@@ -11526,16 +11515,11 @@ snapshots:
       broadcast-channel: 7.1.0
       pinia: 3.0.3(typescript@5.8.3)(vue@3.5.17(typescript@5.8.3))
 
-  pinia-undo@0.2.4(pinia@3.0.3(typescript@5.8.3)(vue@3.5.17(typescript@5.8.3))):
-    dependencies:
-      pinia: 3.0.3(typescript@5.8.3)(vue@3.5.17(typescript@5.8.3))
-      undo-stacker: 0.2.1
-
-  pinia-xstate@2.2.1(pinia@3.0.3(typescript@5.8.3)(vue@3.5.17(typescript@5.8.3)))(typescript@5.8.3)(xstate@4.38.3):
+  pinia-xstate@3.0.0(pinia@3.0.3(typescript@5.8.3)(vue@3.5.17(typescript@5.8.3)))(typescript@5.8.3)(xstate@5.20.1):
     dependencies:
       pinia: 3.0.3(typescript@5.8.3)(vue@3.5.17(typescript@5.8.3))
       vue: 3.5.17(typescript@5.8.3)
-      xstate: 4.38.3
+      xstate: 5.20.1
     transitivePeerDependencies:
       - typescript
 
@@ -12508,8 +12492,6 @@ snapshots:
 
   undici-types@7.8.0: {}
 
-  undo-stacker@0.2.1: {}
-
   unenv@2.0.0-rc.18:
     dependencies:
       defu: 6.1.4
@@ -13071,7 +13053,7 @@ snapshots:
 
   xmlchars@2.2.0: {}
 
-  xstate@4.38.3: {}
+  xstate@5.20.1: {}
 
   y18n@5.0.8: {}
 

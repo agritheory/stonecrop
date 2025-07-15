@@ -4,15 +4,14 @@
 
 ```ts
 
+import type { AnyStateNodeConfig } from 'xstate';
 import { Component } from 'vue';
 import { List } from 'immutable';
-import type { MachineConfig } from 'xstate';
 import { Map as Map_2 } from 'immutable';
 import { Plugin as Plugin_2 } from 'vue';
 import { Ref } from 'vue';
 import { Router } from 'vue-router';
 import type { ShallowRef } from 'vue';
-import type { StateMachine } from 'xstate';
 import { StoreDefinition } from 'pinia';
 
 // @public
@@ -154,7 +153,7 @@ export interface GanttOptions {
 // @public
 export type ImmutableDoctype = {
     readonly schema?: List<SchemaTypes>;
-    readonly workflow: StateMachine<unknown, any, any>;
+    readonly workflow: AnyStateNodeConfig;
     readonly actions?: Map_2<string, string[]>;
 };
 
@@ -168,7 +167,7 @@ export type InstallOptions = {
 // @public
 export type MutableDoctype = {
     schema?: SchemaTypes[];
-    workflow: MachineConfig<unknown, any, any>;
+    workflow: AnyStateNodeConfig;
     actions?: Record<string, string[]>;
 };
 

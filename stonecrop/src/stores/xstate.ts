@@ -1,34 +1,39 @@
 import { defineStore } from 'pinia'
 import { xstate } from 'pinia-xstate'
-import { createMachine } from 'xstate'
+import { setup } from 'xstate'
 
-export const counterMachine = createMachine(
-	{
-		id: 'counter',
-		initial: 'active',
+export const counterMachine = setup({
+	types: {} as {
 		context: {
-			count: 0,
+			count: number
+		}
+		events: {
+			type: 'INC' | 'DEC'
+		}
+	},
+	actions: {
+		increment: ({ context }) => {
+			context.count = context.count + 1
 		},
-		states: {
-			active: {
-				on: {
-					INC: { actions: 'increment' },
-					DEC: { actions: 'decrement' },
-				},
+		decrement: ({ context }) => {
+			context.count = context.count - 1
+		},
+	},
+}).createMachine({
+	id: 'counter',
+	initial: 'active',
+	context: {
+		count: 0,
+	},
+	states: {
+		active: {
+			on: {
+				INC: { actions: 'increment' },
+				DEC: { actions: 'decrement' },
 			},
 		},
 	},
-	{
-		actions: {
-			increment: context => {
-				context.count = context.count + 1
-			},
-			decrement: context => {
-				context.count = context.count - 1
-			},
-		},
-	}
-)
+})
 
 // create a store using the xstate middleware
 export const useCounterStore = defineStore(counterMachine.id, xstate(counterMachine))

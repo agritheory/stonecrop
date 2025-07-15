@@ -19,7 +19,7 @@ import type { ActionElements } from '@stonecrop/desktop'
 import type { Layout } from '@stonecrop/node-editor'
 import { onBeforeMount, ref } from 'vue'
 import { useRoute } from 'vue-router'
-import { createMachine } from 'xstate'
+import { type AnyStateNodeConfig, createMachine } from 'xstate'
 
 import doctypeSchema from '../assets/doctype_schema.json'
 import { makeServer } from '../server'
@@ -33,7 +33,7 @@ makeServer()
 // fetch data
 const layout = ref<Layout>({})
 const data = ref({})
-const stateConfig = ref({})
+const stateConfig = ref<AnyStateNodeConfig['states']>({})
 
 onBeforeMount(async () => {
 	const doctype = route.params.id.toString()

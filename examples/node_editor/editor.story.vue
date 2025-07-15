@@ -28,7 +28,6 @@ const layout: Layout = {
 }
 
 const fetchMachine = createMachine({
-	predictableActionArguments: true,
 	id: 'fetch',
 	initial: 'idle',
 	context: {

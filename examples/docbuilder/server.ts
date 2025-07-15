@@ -1,5 +1,6 @@
 // src/server.js
 import { createServer, Model, Response } from 'miragejs'
+import type { AnyStateNodeConfig } from 'xstate'
 
 export function makeServer({ environment = 'development' } = {}) {
 	let server = createServer({
@@ -24,7 +25,6 @@ export function makeServer({ environment = 'development' } = {}) {
 						machine: {
 							id: 'Issue',
 							initial: 'New',
-							predictableActionArguments: true,
 							context: {
 								retries: 0,
 							},
@@ -66,7 +66,7 @@ export function makeServer({ environment = 'development' } = {}) {
 									},
 								},
 							},
-						},
+						} as AnyStateNodeConfig,
 						layout: {
 							New: {
 								position: { x: 50, y: 0 },
@@ -92,7 +92,6 @@ export function makeServer({ environment = 'development' } = {}) {
 						machine: {
 							id: 'Assignment',
 							initial: 'New',
-							predictableActionArguments: true,
 							context: {
 								retries: 0,
 							},
@@ -116,7 +115,7 @@ export function makeServer({ environment = 'development' } = {}) {
 									type: 'final',
 								},
 							},
-						},
+						} as AnyStateNodeConfig,
 						layout: {
 							New: {
 								position: { x: 50, y: 50 },
@@ -136,11 +135,7 @@ export function makeServer({ environment = 'development' } = {}) {
 						name: 'user',
 						machine: {
 							id: 'User',
-							invoke: {
-								src: 'Load',
-							},
 							initial: 'Active',
-							predictableActionArguments: true,
 							states: {
 								Active: {
 									on: {
@@ -157,7 +152,7 @@ export function makeServer({ environment = 'development' } = {}) {
 									},
 								},
 							},
-						},
+						} as AnyStateNodeConfig,
 						layout: {
 							Active: {
 								position: { x: 50, y: 0 },
@@ -398,7 +393,7 @@ export function makeServer({ environment = 'development' } = {}) {
 			})
 
 			this.get('/load_state_machine', (schema, request) => {
-				const doctype = request.queryParams.doctype.toString().toLowerCase()
+				const doctype = request.queryParams.doctype?.toString().toLowerCase()
 				const machine = schema.stateMachines.findBy({ name: doctype })
 				return machine
 					? machine.attrs
@@ -406,7 +401,7 @@ export function makeServer({ environment = 'development' } = {}) {
 			})
 
 			this.get('/load_meta', (schema, request) => {
-				const doctype = request.queryParams.doctype.toString().toLowerCase()
+				const doctype = request.queryParams.doctype?.toString().toLowerCase()
 				const meta = schema.meta.findBy({ name: doctype })
 				return meta
 					? meta.attrs.fields
@@ -414,7 +409,7 @@ export function makeServer({ environment = 'development' } = {}) {
 			})
 
 			this.get('/load_side_effects', (schema, request) => {
-				const doctype = request.queryParams.doctype.toString().toLowerCase()
+				const doctype = request.queryParams.doctype?.toString().toLowerCase()
 				const actions = schema.actions.findBy({ name: doctype })
 				return actions
 					? actions.attrs.side_effects
