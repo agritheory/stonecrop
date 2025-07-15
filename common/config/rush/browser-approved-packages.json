@@ -135,6 +135,10 @@
       "allowedCategories": [ "prototype", "utilities" ]
     },
     {
+      "name": "concurrently",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
       "name": "cypress",
       "allowedCategories": [ "prototype", "utilities" ]
     },
