@@ -17,47 +17,87 @@
 <script setup lang="ts">
 import type { ActionElements } from '@stonecrop/desktop'
 import type { Layout } from '@stonecrop/node-editor'
+import { DoctypeMeta, Registry, useStonecrop } from '@stonecrop/stonecrop'
+import { List, Map } from 'immutable'
 import { onBeforeMount, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { type AnyStateNodeConfig, createMachine } from 'xstate'
 
 import doctypeSchema from '../assets/doctype_schema.json'
-import { makeServer } from '../server'
 
 const route = useRoute()
 const formKey = ref(0)
 
-// create mirage server
-makeServer()
-
-// fetch data
-const layout = ref<Layout>({})
-const data = ref({})
-const stateConfig = ref<AnyStateNodeConfig['states']>({})
-
-onBeforeMount(async () => {
-	const doctype = route.params.id.toString()
+// Create a custom getMeta function that fetches data from our API
+async function getMeta(doctype: string): Promise<DoctypeMeta> {
 	const searchParams = new URLSearchParams({ doctype })
 
+	// Fetch schema data
 	const schemaResponse = await fetch('/api/load_meta?' + searchParams.toString())
-	const schemaResponseData: Record<string, any>[] = await schemaResponse.json()
-	data.value['schema_fieldset'] = {}
-	data.value['schema_fieldset']['schema'] = schemaResponseData
+	const schemaData: Record<string, any>[] = await schemaResponse.json()
 
+	// Fetch actions data
 	const actionsResponse = await fetch('/api/load_actions?' + searchParams.toString())
-	const actions: Record<string, any>[] = await actionsResponse.json()
+	const actionsData: Record<string, any>[] = await actionsResponse.json()
 
-	data.value['actions_fieldset'] = {}
-	data.value['actions_fieldset']['actions'] = actions
-
+	// Fetch state machine data
 	const stateResponse = await fetch('/api/load_state_machine?' + searchParams.toString())
 	const stateResponseData: Record<string, any> = await stateResponse.json()
-	const stateMachine = createMachine(stateResponseData.machine)
-	stateConfig.value = stateMachine.config.states
-	layout.value = stateResponseData.layout
 
-	// increment form key to force form re-render
-	formKey.value++
+	// Create DoctypeMeta object with proper typing
+	return new DoctypeMeta(
+		doctype,
+		List(schemaData as any), // Type assertion for the schema data
+		stateResponseData.machine,
+		Map({
+			// Convert actions array to Map format expected by Stonecrop
+			default: actionsData?.map((action: any) => action.name || action) || [],
+		})
+	)
+}
+
+// Create registry with our custom getMeta function
+const registry = new Registry(undefined, getMeta)
+
+// Use Stonecrop composable
+const { stonecrop } = useStonecrop(registry)
+
+// Reactive data for the components
+const data = ref({})
+const layout = ref<Layout>({})
+const stateConfig = ref<AnyStateNodeConfig['states']>({})
+
+// Simple direct approach to test API calls
+onBeforeMount(async () => {
+	const doctype = route.params.id.toString()
+
+	try {
+		// Use our getMeta function to fetch all required data
+		const doctypeMeta = await getMeta(doctype)
+
+		// Set up data directly
+		data.value['schema_fieldset'] = {}
+		data.value['schema_fieldset']['schema'] = doctypeMeta.schema?.toArray() || []
+
+		data.value['actions_fieldset'] = {}
+		data.value['actions_fieldset']['actions'] = doctypeMeta.actions?.get('default') || []
+
+		// Get state machine and layout from the already fetched data
+		const searchParams = new URLSearchParams({ doctype })
+		const stateResponse = await fetch('/api/load_state_machine?' + searchParams.toString())
+		const stateResponseData = await stateResponse.json()
+
+		if (stateResponseData.machine) {
+			const stateMachine = createMachine(stateResponseData.machine)
+			stateConfig.value = stateMachine.config.states
+			layout.value = stateResponseData.layout || {}
+		}
+
+		// Force re-render
+		formKey.value++
+	} catch (error) {
+		console.error('Error in setup:', error)
+	}
 })
 
 // setup page actions
