@@ -9,7 +9,7 @@ Gets the meta for the given doctype
 **Signature:**
 
 ```typescript
-getMeta(doctype: string): DoctypeMeta | Promise<DoctypeMeta> | never;
+getMeta(doctype: string): Promise<DoctypeMeta> | never;
 ```
 
 ## Parameters
@@ -50,7 +50,7 @@ The doctype to get meta for
 
 **Returns:**
 
-[DoctypeMeta](./stonecrop.doctypemeta.md) \| Promise&lt;[DoctypeMeta](./stonecrop.doctypemeta.md)<!-- -->&gt; \| never
+Promise&lt;[DoctypeMeta](./stonecrop.doctypemeta.md)<!-- -->&gt; \| never
 
 The meta for the given doctype
 

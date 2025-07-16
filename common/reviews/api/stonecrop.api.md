@@ -197,7 +197,7 @@ export const Stonecrop: Plugin_2;
 // @public
 export class StonecropClass {
     constructor(registry: Registry, store: ReturnType<typeof useDataStore>);
-    getMeta(doctype: string): DoctypeMeta | Promise<DoctypeMeta> | never;
+    getMeta(doctype: string): Promise<DoctypeMeta> | never;
     getRecord(doctype: DoctypeMeta, id: string): Promise<void>;
     getRecords(doctype: DoctypeMeta, filters?: RequestInit): Promise<void>;
     readonly name = "Stonecrop";

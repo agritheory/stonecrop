@@ -22,17 +22,15 @@ app.use(Stonecrop, {
 	router,
 	getMeta: async (doctype: string) => {
 		const searchParams = new URLSearchParams({ doctype })
+		const doctypeParam = searchParams.toString()
 
-		// Fetch schema data
-		const schemaResponse = await fetch('/api/load_meta?' + searchParams.toString())
+		const schemaResponse = await fetch(`/api/load_meta?${doctypeParam}`)
 		const schemaData: Record<string, any>[] = await schemaResponse.json()
 
-		// Fetch actions data
-		const actionsResponse = await fetch('/api/load_actions?' + searchParams.toString())
+		const actionsResponse = await fetch(`/api/load_actions?${doctypeParam}`)
 		const actionsData: Record<string, any>[] = await actionsResponse.json()
 
-		// Fetch state machine data
-		const stateResponse = await fetch('/api/load_state_machine?' + searchParams.toString())
+		const stateResponse = await fetch(`/api/load_state_machine?${doctypeParam}`)
 		const stateResponseData: Record<string, any> = await stateResponse.json()
 
 		return new DoctypeMeta(

@@ -94,11 +94,11 @@ export class Stonecrop {
 	 * ```
 	 * @see {@link DoctypeMeta}
 	 */
-	getMeta(doctype: string): DoctypeMeta | Promise<DoctypeMeta> | never {
+	async getMeta(doctype: string): Promise<DoctypeMeta> | never {
 		if (!this.registry.getMeta) {
 			throw new NotImplementedError(`getMeta function is not implemented for ${doctype} in the registry`)
 		}
-		return this.registry.getMeta(doctype)
+		return await this.registry.getMeta(doctype)
 	}
 
 	/**
