@@ -290,7 +290,7 @@ export function makeServer({ environment = 'development' } = {}) {
 				actions: [
 					{
 						name: 'issue',
-						side_effects: [
+						actions: [
 							{
 								event_name: 'LOAD',
 								callback: [
@@ -317,7 +317,7 @@ export function makeServer({ environment = 'development' } = {}) {
 					},
 					{
 						name: 'assignment',
-						side_effects: [
+						actions: [
 							{
 								event_name: 'LOAD',
 								callback: [
@@ -344,7 +344,7 @@ export function makeServer({ environment = 'development' } = {}) {
 					},
 					{
 						name: 'user',
-						side_effects: [
+						actions: [
 							{
 								event_name: 'LOAD',
 								callback: [
@@ -408,11 +408,11 @@ export function makeServer({ environment = 'development' } = {}) {
 					: new Response(400, { some: 'Not Found' }, { errors: ['Metadata for Doctype not found'] })
 			})
 
-			this.get('/load_side_effects', (schema, request) => {
+			this.get('/load_actions', (schema, request) => {
 				const doctype = request.queryParams.doctype?.toString().toLowerCase()
 				const actions = schema.actions.findBy({ name: doctype })
 				return actions
-					? actions.attrs.side_effects
+					? actions.attrs.actions
 					: new Response(400, { some: 'Not Found' }, { errors: ['Actions for Doctype not found'] })
 			})
 		},

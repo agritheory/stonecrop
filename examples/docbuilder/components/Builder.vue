@@ -44,10 +44,11 @@ onBeforeMount(async () => {
 	data.value['schema_fieldset'] = {}
 	data.value['schema_fieldset']['schema'] = schemaResponseData
 
-	const actionsResponse = await fetch('/api/load_side_effects?' + searchParams.toString())
+	const actionsResponse = await fetch('/api/load_actions?' + searchParams.toString())
 	const actions: Record<string, any>[] = await actionsResponse.json()
-	data.value['side_effects_fieldset'] = {}
-	data.value['side_effects_fieldset']['side_effects'] = actions
+
+	data.value['actions_fieldset'] = {}
+	data.value['actions_fieldset']['actions'] = actions
 
 	const stateResponse = await fetch('/api/load_state_machine?' + searchParams.toString())
 	const stateResponseData: Record<string, any> = await stateResponse.json()
