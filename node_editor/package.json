@@ -24,7 +24,7 @@
 			},
 			"require": "./dist/node-editor.umd.cjs"
 		},
-		"./styles": "./dist/style.css"
+		"./styles": "./dist/node-editor.css"
 	},
 	"typings": "./dist/src/index.d.ts",
 	"files": [
