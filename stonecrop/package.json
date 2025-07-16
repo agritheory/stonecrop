@@ -37,8 +37,10 @@
 		"docs": "cd ../common/autoinstallers/doc-tools && node generate-docs.mjs stonecrop",
 		"lint": "eslint . --ext .ts,.vue",
 		"preview": "vite preview",
-		"test": "vitest run",
-		"test:watch": "vitest"
+		"test": "vitest run --coverage.enabled false",
+		"test:watch": "vitest watch",
+		"test:coverage": "vitest run --coverage",
+		"test:ui": "vitest --ui"
 	},
 	"dependencies": {
 		"immutable": "^5.1.3",
