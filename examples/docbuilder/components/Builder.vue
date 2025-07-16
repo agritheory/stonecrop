@@ -54,18 +54,22 @@ onMounted(async () => {
 			throw new Error(`No metadata found for doctype: ${doctype}`)
 		}
 
-		// Set up data directly
-		formData.value['schema_fieldset'] = {}
-		formData.value['schema_fieldset']['schema'] = doctypeMeta.schema?.toArray() || []
-
-		formData.value['actions_fieldset'] = {}
-		formData.value['actions_fieldset']['actions'] = doctypeMeta.actions?.get('default') || []
-
-		// Get state machine and layout from the already fetched data
+		// Load the layout
 		const searchParams = new URLSearchParams({ doctype })
-		const stateResponse = await fetch('/api/load_state_machine?' + searchParams.toString())
-		const stateResponseData = await stateResponse.json()
-		layout.value = stateResponseData.layout || {}
+		const layoutResponse = await fetch('/api/load_layout?' + searchParams.toString())
+		const layoutResponseData = await layoutResponse.json()
+		layout.value = layoutResponseData || {}
+
+		// Set up data directly
+		formData.value = {
+			...formData.value,
+			schema_fieldset: {
+				schema: doctypeMeta.schema?.toArray() || [],
+			},
+			actions_fieldset: {
+				actions: doctypeMeta.actions?.get('default') || [],
+			},
+		}
 
 		if (doctypeMeta.workflow) {
 			const stateMachine = createMachine(doctypeMeta.workflow)

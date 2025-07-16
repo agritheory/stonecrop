@@ -415,6 +415,14 @@ export function makeServer({ environment = 'development' } = {}) {
 					? actions.attrs.actions
 					: new Response(400, { some: 'Not Found' }, { errors: ['Actions for Doctype not found'] })
 			})
+
+			this.get('/load_layout', (schema, request) => {
+				const doctype = request.queryParams.doctype?.toString().toLowerCase()
+				const machine = schema.stateMachines.findBy({ name: doctype })
+				return machine
+					? machine.attrs.layout
+					: new Response(400, { some: 'Not Found' }, { errors: ['Layout for Doctype not found'] })
+			})
 		},
 	})
 
