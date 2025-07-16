@@ -176,10 +176,10 @@ export class Registry {
     constructor(router?: Router, getMeta?: (doctype: string) => DoctypeMeta | Promise<DoctypeMeta>);
     addDoctype(doctype: DoctypeMeta): void;
     getMeta?: (doctype: string) => DoctypeMeta | Promise<DoctypeMeta>;
-    name: string;
-    registry: Record<string, DoctypeMeta>;
+    readonly name: string;
+    readonly registry: Record<string, DoctypeMeta>;
     static _root: Registry;
-    router?: Router;
+    readonly router?: Router;
 }
 
 // @public

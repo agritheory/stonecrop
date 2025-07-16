@@ -17,25 +17,19 @@ export default class Registry {
 	 *
 	 * @defaultValue 'Registry'
 	 */
-	name: string
+	readonly name: string
 
 	/**
 	 * The registry property contains a collection of doctypes
 	 * @see {@link DoctypeMeta}
 	 */
-	registry: Record<string, DoctypeMeta>
+	readonly registry: Record<string, DoctypeMeta>
 
 	/**
 	 * The Vue router instance
 	 * @see {@link https://router.vuejs.org/}
 	 */
-	router?: Router
-
-	/**
-	 * The getMeta function fetches doctype metadata from an API
-	 * @see {@link DoctypeMeta}
-	 */
-	getMeta?: (doctype: string) => DoctypeMeta | Promise<DoctypeMeta>
+	readonly router?: Router
 
 	constructor(router?: Router, getMeta?: (doctype: string) => DoctypeMeta | Promise<DoctypeMeta>) {
 		if (Registry._root) {
@@ -47,6 +41,12 @@ export default class Registry {
 		this.router = router
 		this.getMeta = getMeta
 	}
+
+	/**
+	 * The getMeta function fetches doctype metadata from an API
+	 * @see {@link DoctypeMeta}
+	 */
+	getMeta?: (doctype: string) => DoctypeMeta | Promise<DoctypeMeta>
 
 	/**
 	 * Get doctype metadata
