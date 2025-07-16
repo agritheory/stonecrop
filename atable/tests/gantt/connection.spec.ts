@@ -1,6 +1,8 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { ref } from 'vue'
 import { createPinia, setActivePinia } from 'pinia'
+
 import AGanttConnection from '../../src/components/AGanttConnection.vue'
 import { createTableStore } from '../../src/stores/table'
 import type { ConnectionPath, GanttBarInfo, ConnectionHandle } from '../../src/types'
@@ -35,33 +37,29 @@ describe('AGanttConnection', () => {
 
 	it('should render connections when they exist', () => {
 		// Set up gantt bars
-		const bar1: GanttBarInfo = {
+		const bar1: Partial<GanttBarInfo> = {
 			id: 'bar1',
-			rowId: '1',
-			startDate: new Date('2024-01-01'),
-			endDate: new Date('2024-01-05'),
-			position: { x: 10, y: 10, width: 100, height: 20 },
+			position: { x: ref(10), y: ref(10) },
+			color: ref('#ff0000'),
 		}
-		const bar2: GanttBarInfo = {
+		const bar2: Partial<GanttBarInfo> = {
 			id: 'bar2',
-			rowId: '2',
-			startDate: new Date('2024-01-06'),
-			endDate: new Date('2024-01-10'),
-			position: { x: 120, y: 40, width: 100, height: 20 },
+			position: { x: ref(120), y: ref(40) },
+			color: ref('#00ff00'),
 		}
 
 		store.ganttBars = [bar1, bar2]
 
 		// Set up connection handles
-		const handle1: ConnectionHandle = {
+		const handle1: Partial<ConnectionHandle> = {
 			barId: 'bar1',
 			side: 'right',
-			position: { x: 110, y: 20 },
+			position: { x: ref(110), y: ref(20) },
 		}
-		const handle2: ConnectionHandle = {
+		const handle2: Partial<ConnectionHandle> = {
 			barId: 'bar2',
 			side: 'left',
-			position: { x: 120, y: 50 },
+			position: { x: ref(120), y: ref(50) },
 		}
 
 		store.connectionHandles = [handle1, handle2]
@@ -102,32 +100,26 @@ describe('AGanttConnection', () => {
 
 	it('should generate correct path data for connections', () => {
 		// Set up gantt bars and handles
-		const bar1: GanttBarInfo = {
+		const bar1: Partial<GanttBarInfo> = {
 			id: 'bar1',
-			rowId: '1',
-			startDate: new Date('2024-01-01'),
-			endDate: new Date('2024-01-05'),
-			position: { x: 0, y: 0, width: 100, height: 20 },
+			position: { x: ref(0), y: ref(0) },
 		}
-		const bar2: GanttBarInfo = {
+		const bar2: Partial<GanttBarInfo> = {
 			id: 'bar2',
-			rowId: '2',
-			startDate: new Date('2024-01-06'),
-			endDate: new Date('2024-01-10'),
-			position: { x: 120, y: 30, width: 100, height: 20 },
+			position: { x: ref(120), y: ref(30) },
 		}
 
 		store.ganttBars = [bar1, bar2]
 
-		const handle1: ConnectionHandle = {
+		const handle1: Partial<ConnectionHandle> = {
 			barId: 'bar1',
 			side: 'right',
-			position: { x: 100, y: 10 },
+			position: { x: ref(100), y: ref(10) },
 		}
-		const handle2: ConnectionHandle = {
+		const handle2: Partial<ConnectionHandle> = {
 			barId: 'bar2',
 			side: 'left',
-			position: { x: 120, y: 40 },
+			position: { x: ref(120), y: ref(40) },
 		}
 
 		store.connectionHandles = [handle1, handle2]
@@ -154,32 +146,26 @@ describe('AGanttConnection', () => {
 
 	it('should handle connection deletion on double click', async () => {
 		// Set up complete connection scenario
-		const bar1: GanttBarInfo = {
+		const bar1: Partial<GanttBarInfo> = {
 			id: 'bar1',
-			rowId: '1',
-			startDate: new Date('2024-01-01'),
-			endDate: new Date('2024-01-05'),
-			position: { x: 0, y: 0, width: 100, height: 20 },
+			position: { x: ref(0), y: ref(0) },
 		}
-		const bar2: GanttBarInfo = {
+		const bar2: Partial<GanttBarInfo> = {
 			id: 'bar2',
-			rowId: '2',
-			startDate: new Date('2024-01-06'),
-			endDate: new Date('2024-01-10'),
-			position: { x: 120, y: 30, width: 100, height: 20 },
+			position: { x: ref(120), y: ref(30) },
 		}
 
 		store.ganttBars = [bar1, bar2]
 
-		const handle1: ConnectionHandle = {
+		const handle1: Partial<ConnectionHandle> = {
 			barId: 'bar1',
 			side: 'right',
-			position: { x: 100, y: 10 },
+			position: { x: ref(100), y: ref(10) },
 		}
-		const handle2: ConnectionHandle = {
+		const handle2: Partial<ConnectionHandle> = {
 			barId: 'bar2',
 			side: 'left',
-			position: { x: 120, y: 40 },
+			position: { x: ref(120), y: ref(40) },
 		}
 
 		store.connectionHandles = [handle1, handle2]
@@ -209,32 +195,26 @@ describe('AGanttConnection', () => {
 
 	it('should handle connection deletion on hitbox double click', async () => {
 		// Set up complete connection scenario
-		const bar1: GanttBarInfo = {
+		const bar1: Partial<GanttBarInfo> = {
 			id: 'bar1',
-			rowId: '1',
-			startDate: new Date('2024-01-01'),
-			endDate: new Date('2024-01-05'),
-			position: { x: 0, y: 0, width: 100, height: 20 },
+			position: { x: ref(0), y: ref(0) },
 		}
-		const bar2: GanttBarInfo = {
+		const bar2: Partial<GanttBarInfo> = {
 			id: 'bar2',
-			rowId: '2',
-			startDate: new Date('2024-01-06'),
-			endDate: new Date('2024-01-10'),
-			position: { x: 120, y: 30, width: 100, height: 20 },
+			position: { x: ref(120), y: ref(30) },
 		}
 
 		store.ganttBars = [bar1, bar2]
 
-		const handle1: ConnectionHandle = {
+		const handle1: Partial<ConnectionHandle> = {
 			barId: 'bar1',
 			side: 'right',
-			position: { x: 100, y: 10 },
+			position: { x: ref(100), y: ref(10) },
 		}
-		const handle2: ConnectionHandle = {
+		const handle2: Partial<ConnectionHandle> = {
 			barId: 'bar2',
 			side: 'left',
-			position: { x: 120, y: 40 },
+			position: { x: ref(120), y: ref(40) },
 		}
 
 		store.connectionHandles = [handle1, handle2]
@@ -264,32 +244,26 @@ describe('AGanttConnection', () => {
 
 	it('should not emit event if connection deletion fails', async () => {
 		// Set up complete connection scenario
-		const bar1: GanttBarInfo = {
+		const bar1: Partial<GanttBarInfo> = {
 			id: 'bar1',
-			rowId: '1',
-			startDate: new Date('2024-01-01'),
-			endDate: new Date('2024-01-05'),
-			position: { x: 0, y: 0, width: 100, height: 20 },
+			position: { x: ref(0), y: ref(0) },
 		}
-		const bar2: GanttBarInfo = {
+		const bar2: Partial<GanttBarInfo> = {
 			id: 'bar2',
-			rowId: '2',
-			startDate: new Date('2024-01-06'),
-			endDate: new Date('2024-01-10'),
-			position: { x: 120, y: 30, width: 100, height: 20 },
+			position: { x: ref(120), y: ref(30) },
 		}
 
 		store.ganttBars = [bar1, bar2]
 
-		const handle1: ConnectionHandle = {
+		const handle1: Partial<ConnectionHandle> = {
 			barId: 'bar1',
 			side: 'right',
-			position: { x: 100, y: 10 },
+			position: { x: ref(100), y: ref(10) },
 		}
-		const handle2: ConnectionHandle = {
+		const handle2: Partial<ConnectionHandle> = {
 			barId: 'bar2',
 			side: 'left',
-			position: { x: 120, y: 40 },
+			position: { x: ref(120), y: ref(40) },
 		}
 
 		store.connectionHandles = [handle1, handle2]
@@ -317,32 +291,26 @@ describe('AGanttConnection', () => {
 
 	it('should handle connections with custom styles', () => {
 		// Set up gantt bars and handles
-		const bar1: GanttBarInfo = {
+		const bar1: Partial<GanttBarInfo> = {
 			id: 'bar1',
-			rowId: '1',
-			startDate: new Date('2024-01-01'),
-			endDate: new Date('2024-01-05'),
-			position: { x: 0, y: 0, width: 100, height: 20 },
+			position: { x: ref(0), y: ref(0) },
 		}
-		const bar2: GanttBarInfo = {
+		const bar2: Partial<GanttBarInfo> = {
 			id: 'bar2',
-			rowId: '2',
-			startDate: new Date('2024-01-06'),
-			endDate: new Date('2024-01-10'),
-			position: { x: 120, y: 30, width: 100, height: 20 },
+			position: { x: ref(120), y: ref(30) },
 		}
 
 		store.ganttBars = [bar1, bar2]
 
-		const handle1: ConnectionHandle = {
+		const handle1: Partial<ConnectionHandle> = {
 			barId: 'bar1',
 			side: 'right',
-			position: { x: 100, y: 10 },
+			position: { x: ref(100), y: ref(10) },
 		}
-		const handle2: ConnectionHandle = {
+		const handle2: Partial<ConnectionHandle> = {
 			barId: 'bar2',
 			side: 'left',
-			position: { x: 120, y: 40 },
+			position: { x: ref(120), y: ref(40) },
 		}
 
 		store.connectionHandles = [handle1, handle2]
@@ -407,7 +375,7 @@ describe('AGanttConnection', () => {
 		expect(style).toContain('left: 0')
 		expect(style).toContain('width: 100%')
 		expect(style).toContain('height: 100%')
-		expect(style).toContain('pointer-events: auto')
+		expect(style).toContain('pointer-events: none')
 		expect(style).toContain('z-index: 1')
 	})
 })
