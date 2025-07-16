@@ -44,7 +44,7 @@
 				:stroke-width="connection.style?.width || 2"
 				fill="none"
 				marker-end="url(#arrowhead)"
-				class="connection-path"
+				class="connection-path animated-path"
 				@dblclick="handleConnectionDelete(connection)" />
 		</svg>
 	</div>
@@ -122,6 +122,10 @@ const handleConnectionDelete = (connection: ConnectionPath) => {
 	transition: stroke-width 0.2s ease;
 	pointer-events: auto;
 	cursor: pointer;
+	stroke-dasharray: 5px;
+}
+.animated-path {
+	animation: animated-dash infinite 0.5s linear;
 }
 
 .connection-path:hover {
@@ -131,5 +135,13 @@ const handleConnectionDelete = (connection: ConnectionPath) => {
 .connection-hitbox {
 	pointer-events: auto;
 	cursor: pointer;
+}
+@keyframes animated-dash {
+	0% {
+		stroke-dashoffset: 0px;
+	}
+	100% {
+		stroke-dashoffset: -10px;
+	}
 }
 </style>
