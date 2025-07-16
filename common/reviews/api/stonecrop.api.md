@@ -195,8 +195,23 @@ export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema;
 export const Stonecrop: Plugin_2;
 
 // @public
+export class StonecropClass {
+    constructor(registry: Registry, store: ReturnType<typeof useDataStore>);
+    getMeta(doctype: DoctypeMeta): DoctypeMeta | Promise<DoctypeMeta> | never;
+    getRecord(doctype: DoctypeMeta, id: string): Promise<void>;
+    getRecords(doctype: DoctypeMeta, filters?: RequestInit): Promise<void>;
+    readonly name = "Stonecrop";
+    readonly registry: Registry;
+    static _root: StonecropClass;
+    runAction(doctype: DoctypeMeta, action: string, id?: string[]): void;
+    setup(doctype: DoctypeMeta): void;
+    // Warning: (ae-forgotten-export) The symbol "useDataStore" needs to be exported by the entry point index.d.ts
+    store: ReturnType<typeof useDataStore>;
+}
+
+// @public
 export type StonecropReturn = {
-    stonecrop: Ref<Stonecrop_2 | undefined>;
+    stonecrop: Ref<StonecropClass | undefined>;
 };
 
 // @public
@@ -246,10 +261,6 @@ export type TableSchema = BaseSchema & {
 
 // @public
 export function useStonecrop(registry?: Registry): StonecropReturn;
-
-// Warnings were encountered during analysis:
-//
-// src/composable.ts:12:2 - (ae-forgotten-export) The symbol "Stonecrop_2" needs to be exported by the entry point index.d.ts
 
 // (No @packageDocumentation comment for this package)
 

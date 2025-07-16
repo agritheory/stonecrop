@@ -4,7 +4,6 @@ import DoctypeMeta from './doctype'
 import { NotImplementedError } from './exceptions'
 import Registry from './registry'
 import { useDataStore } from './stores/data'
-import type { ImmutableDoctype, Schema } from './types'
 
 /**
  * Stonecrop class
@@ -51,41 +50,9 @@ export class Stonecrop {
 	store: ReturnType<typeof useDataStore>
 
 	/**
-	 * schema - The Stonecrop schema; the schema is a subset of the registry
-	 * @example
-	 * ```ts
-	 * {
-	 * 	doctype: 'Task',
-	 * 	schema: {
-	 * 		title: 'string',
-	 * 		description: 'string',
-	 * 		...
-	 * 	}
-	 * }
-	 * ```
-	 * @see {@link Registry}
-	 * @see {@link DoctypeMeta}
-	 * @see {@link DoctypeMeta.schema}
-	 */
-	schema?: Schema
-
-	/**
-	 * The workflow is a subset of the registry
-	 */
-	workflow?: ImmutableDoctype['workflow']
-
-	/**
-	 * The actions are a subset of the registry
-	 */
-	actions?: ImmutableDoctype['actions']
-
-	/**
 	 * @param registry - The immutable registry
 	 * @param store - The mutable Pinia store
-	 * @param schema - The Stonecrop schema
-	 * @param workflow - The Stonecrop workflow
-	 * @param actions - The Stonecrop actions
-	 * @returns The Stonecrop instance with the given registry, store, schema, workflow, and actions. If a Stonecrop instance has already been created, it returns the existing instance instead of creating a new one.
+	 * @returns The Stonecrop instance with the given registry and store. If a Stonecrop instance has already been created, it returns the existing instance instead of creating a new one.
 	 * @example
 	 * ```ts
 	 * const registry = new Registry()
@@ -93,22 +60,13 @@ export class Stonecrop {
 	 * const stonecrop = new Stonecrop(registry, store)
 	 * ```
 	 */
-	constructor(
-		registry: Registry,
-		store: ReturnType<typeof useDataStore>,
-		schema?: Schema,
-		workflow?: ImmutableDoctype['workflow'],
-		actions?: ImmutableDoctype['actions']
-	) {
+	constructor(registry: Registry, store: ReturnType<typeof useDataStore>) {
 		if (Stonecrop._root) {
 			return Stonecrop._root
 		}
 		Stonecrop._root = this
 		this.registry = registry
 		this.store = store
-		this.schema = schema // new Registry(schema)
-		this.workflow = workflow
-		this.actions = actions
 	}
 
 	/**
@@ -122,8 +80,6 @@ export class Stonecrop {
 	 */
 	setup(doctype: DoctypeMeta): void {
 		void this.getMeta(doctype)
-		this.getWorkflow(doctype)
-		this.getActions(doctype)
 	}
 
 	/**
@@ -140,34 +96,6 @@ export class Stonecrop {
 	 */
 	getMeta(doctype: DoctypeMeta): DoctypeMeta | Promise<DoctypeMeta> | never {
 		return this.registry.getMeta ? this.registry.getMeta(doctype.doctype) : new NotImplementedError(doctype.doctype)
-	}
-
-	/**
-	 * Gets the workflow for the given doctype
-	 * @param doctype - The doctype to get workflow for
-	 * @example
-	 * ```ts
-	 * const doctype = await registry.getMeta('Task')
-	 * stonecrop.getWorkflow(doctype)
-	 * ```
-	 */
-	getWorkflow(doctype: DoctypeMeta): void {
-		const doctypeRegistry = this.registry.registry[doctype.slug]
-		this.workflow = doctypeRegistry.workflow
-	}
-
-	/**
-	 * Gets the actions for the given doctype
-	 * @param doctype - The doctype to get actions for
-	 * @example
-	 * ```ts
-	 * const doctype = await registry.getMeta('Task')
-	 * stonecrop.getActions(doctype)
-	 * ```
-	 */
-	getActions(doctype: DoctypeMeta): void {
-		const doctypeRegistry = this.registry.registry[doctype.slug]
-		this.actions = doctypeRegistry.actions
 	}
 
 	/**
@@ -239,10 +167,11 @@ export class Stonecrop {
 	runAction(doctype: DoctypeMeta, action: string, id?: string[]): void {
 		const doctypeRegistry = this.registry.registry[doctype.slug]
 		const actions = doctypeRegistry.actions?.get(action)
+		const workflow = doctypeRegistry.workflow
 
 		// trigger the action on the state machine
-		if (this.workflow) {
-			const machine = createMachine(this.workflow)
+		if (workflow) {
+			const machine = createMachine(workflow)
 			const actor = createActor(machine)
 			actor.start()
 
