@@ -79,14 +79,14 @@ export class Stonecrop {
 	 * ```
 	 */
 	setup(doctype: DoctypeMeta): void {
-		void this.getMeta(doctype)
+		void this.getMeta(doctype.doctype)
 	}
 
 	/**
 	 * Gets the meta for the given doctype
 	 * @param doctype - The doctype to get meta for
 	 * @returns The meta for the given doctype
-	 * @throws NotImplementedError
+	 * @throws `NotImplementedError` if the `getMeta` function is not implemented for the doctype in the registry
 	 * @example
 	 * ```ts
 	 * const doctype = await registry.getMeta('Task')
@@ -94,8 +94,11 @@ export class Stonecrop {
 	 * ```
 	 * @see {@link DoctypeMeta}
 	 */
-	getMeta(doctype: DoctypeMeta): DoctypeMeta | Promise<DoctypeMeta> | never {
-		return this.registry.getMeta ? this.registry.getMeta(doctype.doctype) : new NotImplementedError(doctype.doctype)
+	getMeta(doctype: string): DoctypeMeta | Promise<DoctypeMeta> | never {
+		if (!this.registry.getMeta) {
+			throw new NotImplementedError(`getMeta function is not implemented for ${doctype} in the registry`)
+		}
+		return this.registry.getMeta(doctype)
 	}
 
 	/**

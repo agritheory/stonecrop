@@ -27,6 +27,8 @@ export function useStonecrop(registry?: Registry): StonecropReturn {
 			registry = inject<Registry>('$registry')
 		}
 
+		if (!registry || !registry.router) return
+
 		let store: ReturnType<typeof useDataStore>
 		try {
 			store = useDataStore()
@@ -34,11 +36,7 @@ export function useStonecrop(registry?: Registry): StonecropReturn {
 			throw new Error('Please enable the Stonecrop plugin before using the Stonecrop composable')
 		}
 
-		// @ts-expect-error TODO: handle empty registry passed to Stonecrop
 		stonecrop.value = new Stonecrop(registry, store)
-
-		if (!registry || !registry.router) return
-
 		const route = registry.router.currentRoute.value
 		const doctypeSlug = route.params.records?.toString().toLowerCase()
 		const recordId = route.params.record?.toString().toLowerCase()

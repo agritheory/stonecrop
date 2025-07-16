@@ -9,7 +9,7 @@ Gets the meta for the given doctype
 **Signature:**
 
 ```typescript
-getMeta(doctype: DoctypeMeta): DoctypeMeta | Promise<DoctypeMeta> | never;
+getMeta(doctype: string): DoctypeMeta | Promise<DoctypeMeta> | never;
 ```
 
 ## Parameters
@@ -37,7 +37,7 @@ doctype
 
 </td><td>
 
-[DoctypeMeta](./stonecrop.doctypemeta.md)
+string
 
 
 </td><td>
@@ -56,7 +56,7 @@ The meta for the given doctype
 
 ## Exceptions
 
-NotImplementedError
+`NotImplementedError` if the `getMeta` function is not implemented for the doctype in the registry
 
 ## Example
 
