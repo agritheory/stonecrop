@@ -1,3 +1,4 @@
+import { List, Map } from 'immutable'
 import { createPinia } from 'pinia'
 import { createApp } from 'vue'
 
@@ -7,7 +8,7 @@ import { install as ATablePlugin } from '@stonecrop/aform'
 import { install as AFormPlugin } from '@stonecrop/atable'
 import { ActionSet, SheetNav } from '@stonecrop/desktop'
 import { install as NodeEditorPlugin } from '@stonecrop/node-editor'
-import { Stonecrop } from '@stonecrop/stonecrop'
+import { DoctypeMeta, Stonecrop } from '@stonecrop/stonecrop'
 
 import App from './App.vue'
 import router from './router'
@@ -17,11 +18,32 @@ const pinia = createPinia()
 app.use(pinia)
 app.use(router)
 
-// Install Stonecrop plugin to enable composables
 app.use(Stonecrop, {
 	router,
-	// We could provide a global getMeta function here if needed
-	// getMeta: async (doctype: string) => { ... }
+	getMeta: async (doctype: string) => {
+		const searchParams = new URLSearchParams({ doctype })
+
+		// Fetch schema data
+		const schemaResponse = await fetch('/api/load_meta?' + searchParams.toString())
+		const schemaData: Record<string, any>[] = await schemaResponse.json()
+
+		// Fetch actions data
+		const actionsResponse = await fetch('/api/load_actions?' + searchParams.toString())
+		const actionsData: Record<string, any>[] = await actionsResponse.json()
+
+		// Fetch state machine data
+		const stateResponse = await fetch('/api/load_state_machine?' + searchParams.toString())
+		const stateResponseData: Record<string, any> = await stateResponse.json()
+
+		return new DoctypeMeta(
+			doctype,
+			List(schemaData as any),
+			stateResponseData.machine,
+			Map({
+				default: actionsData?.map((action: any) => action.name || action) || [],
+			})
+		)
+	},
 })
 
 app.use(AFormPlugin)

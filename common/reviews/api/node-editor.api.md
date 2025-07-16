@@ -4,7 +4,6 @@
 
 ```ts
 
-import type { AnyStateMachine } from 'xstate';
 import type { AnyStateNodeConfig } from 'xstate';
 import type { AnyStateNodeDefinition } from 'xstate';
 import { App } from 'vue';
@@ -17,7 +16,7 @@ import { XYPosition } from '@vue-flow/core';
 
 // @public
 export type EditorStates = {
-    [key: string]: AnyStateMachine | AnyStateNodeDefinition | AnyStateNodeConfig['states'];
+    [key: string]: AnyStateNodeDefinition | AnyStateNodeConfig['states'];
 };
 
 // @public

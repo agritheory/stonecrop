@@ -153,7 +153,7 @@ export interface GanttOptions {
 // @public
 export type ImmutableDoctype = {
     readonly schema?: List<SchemaTypes>;
-    readonly workflow: AnyStateNodeConfig;
+    readonly workflow?: AnyStateNodeConfig;
     readonly actions?: Map_2<string, string[]>;
 };
 
@@ -167,7 +167,7 @@ export type InstallOptions = {
 // @public
 export type MutableDoctype = {
     schema?: SchemaTypes[];
-    workflow: AnyStateNodeConfig;
+    workflow?: AnyStateNodeConfig;
     actions?: Record<string, string[]>;
 };
 
