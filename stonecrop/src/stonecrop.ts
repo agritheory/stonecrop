@@ -176,6 +176,8 @@ export class Stonecrop {
 		if (workflow) {
 			const machine = createMachine(workflow)
 			const actor = createActor(machine)
+
+			// TODO: this shouldn't spawn an actor at the initial state always; look into persistence
 			actor.start()
 			actor.send({ type: action, id })
 
