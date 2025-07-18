@@ -13,7 +13,13 @@ describe('Stonecrop Vue Plugin', () => {
 		app = createApp({})
 		mockRouter = createRouter({
 			history: createWebHistory(),
-			routes: [],
+			routes: [
+				{
+					path: '/',
+					name: 'home',
+					component: { template: '<div>Home</div>' },
+				},
+			],
 		})
 
 		// Reset static instances

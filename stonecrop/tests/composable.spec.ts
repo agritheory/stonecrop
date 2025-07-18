@@ -1,14 +1,10 @@
-import type { SchemaTypes } from '@stonecrop/aform'
 import { mount } from '@vue/test-utils'
-import { List, Map } from 'immutable'
 import { createPinia, setActivePinia } from 'pinia'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { createRouter, createWebHistory } from 'vue-router'
 import { defineComponent } from 'vue'
-import type { UnknownMachineConfig } from 'xstate'
 
 import { useStonecrop } from '../src/composable'
-import DoctypeMeta from '../src/doctype'
 import Registry from '../src/registry'
 
 describe('useStonecrop composable', () => {
@@ -37,39 +33,7 @@ describe('useStonecrop composable', () => {
 		vi.clearAllMocks()
 	})
 
-	const createMockDoctype = (name: string) => {
-		const mockSchema = List([
-			{
-				fieldname: 'title',
-				component: 'ATextInput',
-				label: 'Title',
-			},
-		] as SchemaTypes[])
-
-		const mockWorkflow: UnknownMachineConfig = {
-			id: name.toLowerCase(),
-			initial: 'draft',
-			states: {
-				draft: { on: { load: { target: 'pending' } } },
-				pending: {
-					on: {
-						approve: { target: 'completed' },
-						reject: { target: 'draft' },
-					},
-				},
-				completed: { type: 'final' },
-			},
-		}
-
-		const mockActions = Map({
-			load: ['loadData'],
-			save: ['validateData', 'saveData'],
-		})
-
-		return new DoctypeMeta(name, mockSchema, mockWorkflow, mockActions)
-	}
-
-	it('returns a reactive stonecrop reference', () => {
+	it('returns a stonecrop reference', async () => {
 		const TestComponent = defineComponent({
 			setup() {
 				return useStonecrop(registry)
@@ -77,15 +41,12 @@ describe('useStonecrop composable', () => {
 			template: '<div>test</div>',
 		})
 
-		const wrapper = mount(TestComponent, {
-			global: {
-				plugins: [pinia],
-			},
-		})
+		const wrapper = mount(TestComponent, { global: { plugins: [pinia] } })
 
 		const vm = wrapper.vm as any
 		expect(vm.stonecrop).toBeDefined()
-		expect(vm.stonecrop.value).toBeUndefined() // Initially undefined until mounted
+		expect(vm.stonecrop.registry).toBeDefined()
+		expect(vm.stonecrop.registry).toBeInstanceOf(Registry)
 	})
 
 	it('uses injected registry when no registry is provided', () => {
@@ -107,6 +68,9 @@ describe('useStonecrop composable', () => {
 
 		const vm = wrapper.vm as any
 		expect(vm.stonecrop).toBeDefined()
+		expect(vm.stonecrop.registry).toBeDefined()
+		expect(vm.stonecrop.registry).toBeInstanceOf(Registry)
+		expect(vm.stonecrop.registry.name).toBe(registry.name)
 	})
 
 	it('handles missing Pinia gracefully', async () => {
@@ -124,7 +88,7 @@ describe('useStonecrop composable', () => {
 		}).not.toThrow()
 	})
 
-	it('handles missing router gracefully', async () => {
+	it('handles missing registry router gracefully', async () => {
 		const registryWithoutRouter = new Registry()
 
 		const TestComponent = defineComponent({
@@ -134,20 +98,23 @@ describe('useStonecrop composable', () => {
 			template: '<div>test</div>',
 		})
 
-		const wrapper = mount(TestComponent, {
-			global: {
-				plugins: [pinia],
-			},
-		})
+		const wrapper = mount(TestComponent, { global: { plugins: [pinia] } })
 
 		const vm = wrapper.vm as any
 		expect(vm.stonecrop).toBeDefined()
-		// Should not throw error, just return early
+		expect(vm.stonecrop.registry).toBeDefined()
+		expect(vm.stonecrop.registry.router).toBeDefined()
 	})
 
 	it('handles route with doctype slug', async () => {
-		const mockGetMeta = vi.fn().mockResolvedValue(createMockDoctype('Task'))
+		const mockGetMeta = vi.fn()
 		registry.getMeta = mockGetMeta
+
+		const mockFetch = vi.fn().mockResolvedValue({
+			data: { title: 'Test Task' },
+			json: () => Promise.resolve({ title: 'Test Task' }),
+		})
+		vi.stubGlobal('fetch', mockFetch)
 
 		// Mock router current route
 		vi.spyOn(mockRouter, 'currentRoute', 'get').mockReturnValue({
@@ -176,8 +143,14 @@ describe('useStonecrop composable', () => {
 	})
 
 	it('handles route with both doctype and record id', async () => {
-		const mockGetMeta = vi.fn().mockResolvedValue(createMockDoctype('Task'))
+		const mockGetMeta = vi.fn()
 		registry.getMeta = mockGetMeta
+
+		const mockFetch = vi.fn().mockResolvedValue({
+			data: { id: '123', title: 'Test Task' },
+			json: () => Promise.resolve({ id: '123', title: 'Test Task' }),
+		})
+		vi.stubGlobal('fetch', mockFetch)
 
 		// Mock router current route
 		vi.spyOn(mockRouter, 'currentRoute', 'get').mockReturnValue({
