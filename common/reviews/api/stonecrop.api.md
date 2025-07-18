@@ -13,6 +13,7 @@ import { Ref } from 'vue';
 import { Router } from 'vue-router';
 import type { ShallowRef } from 'vue';
 import { StoreDefinition } from 'pinia';
+import type { UnknownMachineConfig } from 'xstate';
 
 // @public
 export type BaseSchema = {
@@ -153,7 +154,7 @@ export interface GanttOptions {
 // @public
 export type ImmutableDoctype = {
     readonly schema?: List<SchemaTypes>;
-    readonly workflow?: AnyStateNodeConfig;
+    readonly workflow?: UnknownMachineConfig | AnyStateNodeConfig;
     readonly actions?: Map_2<string, string[]>;
 };
 
@@ -167,7 +168,7 @@ export type InstallOptions = {
 // @public
 export type MutableDoctype = {
     schema?: SchemaTypes[];
-    workflow?: AnyStateNodeConfig;
+    workflow?: UnknownMachineConfig | AnyStateNodeConfig;
     actions?: Record<string, string[]>;
 };
 

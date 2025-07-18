@@ -1,4 +1,4 @@
-import { createActor, createMachine, transition } from 'xstate'
+import { createActor, createMachine } from 'xstate'
 
 import DoctypeMeta from './doctype'
 import { NotImplementedError } from './exceptions'
@@ -168,21 +168,16 @@ export class Stonecrop {
 	 * ```
 	 */
 	runAction(doctype: DoctypeMeta, action: string, id?: string[]): void {
-		const doctypeRegistry = this.registry.registry[doctype.slug]
-		const actions = doctypeRegistry.actions?.get(action)
-		const workflow = doctypeRegistry.workflow
+		const registry = this.registry.registry[doctype.slug]
+		const actions = registry.actions?.get(action)
+		const workflow = registry.workflow
 
 		// trigger the action on the state machine
 		if (workflow) {
 			const machine = createMachine(workflow)
 			const actor = createActor(machine)
 			actor.start()
-
-			const initialState = actor.getSnapshot()
-			// eslint-disable-next-line @typescript-eslint/no-unused-vars
-			const [state, nextActions] = transition(machine, machine.resolveState(initialState), { type: action })
-
-			actor.send(nextActions)
+			actor.send({ type: action, id })
 
 			// run actions after state machine transition
 			// TODO: should this happen with or without the workflow?

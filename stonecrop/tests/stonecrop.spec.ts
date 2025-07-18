@@ -3,6 +3,7 @@ import { List, Map } from 'immutable'
 import { createPinia, setActivePinia } from 'pinia'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { createRouter, createWebHistory } from 'vue-router'
+import type { UnknownMachineConfig } from 'xstate'
 
 import DoctypeMeta from '../src/doctype'
 import Registry from '../src/registry'
@@ -48,19 +49,24 @@ describe('Stonecrop class', () => {
 			},
 		] as SchemaTypes[])
 
-		const mockWorkflow = {
+		const mockWorkflow: UnknownMachineConfig = {
 			id: name.toLowerCase(),
 			initial: 'draft',
 			states: {
-				draft: { on: { SUBMIT: 'pending' } },
-				pending: { on: { APPROVE: 'completed', REJECT: 'draft' } },
-				completed: { type: 'final' as const },
+				draft: { on: { load: { target: 'pending' } } },
+				pending: {
+					on: {
+						approve: { target: 'completed' },
+						reject: { target: 'draft' },
+					},
+				},
+				completed: { type: 'final' },
 			},
 		}
 
 		const mockActions = Map({
-			LOAD: ['loadData'],
-			SAVE: ['validateData', 'saveData'],
+			load: ['loadData'],
+			save: ['validateData', 'saveData'],
 		})
 
 		return new DoctypeMeta(name, mockSchema, mockWorkflow, mockActions)
@@ -154,11 +160,12 @@ describe('Stonecrop class', () => {
 		expect(store.record).toEqual(mockRecord)
 	})
 
-	it('runAction processes actions correctly', () => {
+	it('runAction processes transition correctly', () => {
 		// Create a mock doctype with actions that reference existing functions
 		const mockActions = Map({
-			LOAD: ['console.log("loading data")'],
-			SAVE: ['console.log("saving data")'],
+			load: ['console.log("loading data")'],
+			submit: ['console.log("submitting data")'],
+			reject: ['console.log("rejecting data")'],
 		})
 
 		const mockDoctype = new DoctypeMeta(
@@ -168,55 +175,34 @@ describe('Stonecrop class', () => {
 				id: 'task',
 				initial: 'draft',
 				states: {
-					draft: { on: { LOAD: 'pending', SAVE: 'completed' } },
-					pending: { on: { APPROVE: 'completed', REJECT: 'draft' } },
-					completed: { type: 'final' as const },
+					draft: { on: { load: { target: 'pending', actions: [{ type: 'load' }] } } },
+					pending: {
+						on: {
+							approve: { target: 'completed', actions: [{ type: 'submit' }] },
+							reject: { target: 'draft', actions: [{ type: 'reject' }] },
+						},
+					},
+					completed: { type: 'final' },
 				},
 			},
 			mockActions
 		)
-
-		registry.addDoctype(mockDoctype)
-
-		// Just test that the method can be called without throwing
-		// Note: XState integration errors are expected and don't affect core functionality
-		expect(() => stonecrop.runAction(mockDoctype, 'LOAD')).not.toThrow()
-	})
-
-	it('runAction handles workflow transitions', () => {
-		const mockDoctype = createMockDoctype('Task')
-		registry.addDoctype(mockDoctype)
-
-		// Just test that the method can be called without throwing
-		expect(() => stonecrop.runAction(mockDoctype, 'SUBMIT')).not.toThrow()
-	})
-
-	it('runAction executes action functions', () => {
-		const mockActions = Map({
-			TEST_ACTION: ['console.log("test action executed")'],
-		})
-
-		const mockDoctype = new DoctypeMeta(
-			'Task',
-			List([]),
-			{
-				id: 'task',
-				initial: 'draft',
-				states: {
-					draft: { on: { TEST_ACTION: 'completed' } },
-					completed: { type: 'final' as const },
-				},
-			},
-			mockActions
-		)
-
-		registry.addDoctype(mockDoctype)
 
 		const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
 
-		stonecrop.runAction(mockDoctype, 'TEST_ACTION', ['task-1'])
+		registry.addDoctype(mockDoctype)
 
-		expect(consoleSpy).toHaveBeenCalledWith('test action executed')
+		stonecrop.runAction(mockDoctype, 'load')
+		expect(consoleSpy).toHaveBeenNthCalledWith(1, 'loading data')
+
+		// TODO: when persisted state is implemented, we can test the state transitions
+		// stonecrop.runAction(mockDoctype, 'reject')
+		// expect(consoleSpy).toHaveBeenNthCalledWith(2, 'rejecting data')
+		// stonecrop.runAction(mockDoctype, 'load')
+		// expect(consoleSpy).toHaveBeenNthCalledWith(3, 'loading data')
+		// stonecrop.runAction(mockDoctype, 'approve')
+		// expect(consoleSpy).toHaveBeenNthCalledWith(4, 'submitting data')
+
 		consoleSpy.mockRestore()
 	})
 })
