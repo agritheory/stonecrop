@@ -67,4 +67,17 @@ export default class Registry {
 			})
 		}
 	}
+
+	// TODO: should we allow clearing the registry at all?
+	// clear() {
+	// 	this.registry = {}
+	// 	if (this.router) {
+	// 		const routes = this.router.getRoutes()
+	// 		for (const route of routes) {
+	// 			if (route.name) {
+	// 				this.router.removeRoute(route.name)
+	// 			}
+	// 		}
+	// 	}
+	// }
 }
