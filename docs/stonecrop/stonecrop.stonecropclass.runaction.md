@@ -89,7 +89,7 @@ void
 
 ```ts
 const doctype = await registry.getMeta('Task')
-stonecrop.runAction(doctype, 'CREATE')
+stonecrop.runAction(doctype, 'create')
 ```
 
 ## Example 2
@@ -97,7 +97,7 @@ stonecrop.runAction(doctype, 'CREATE')
 
 ```ts
 const doctype = await registry.getMeta('Task')
-stonecrop.runAction(doctype, 'UPDATE', ['TASK-00001'])
+stonecrop.runAction(doctype, 'update', ['TASK-00001'])
 ```
 
 ## Example 3
@@ -105,7 +105,7 @@ stonecrop.runAction(doctype, 'UPDATE', ['TASK-00001'])
 
 ```ts
 const doctype = await registry.getMeta('Task')
-stonecrop.runAction(doctype, 'DELETE', ['TASK-00001'])
+stonecrop.runAction(doctype, 'delete', ['TASK-00001'])
 ```
 
 ## Example 4
@@ -113,6 +113,6 @@ stonecrop.runAction(doctype, 'DELETE', ['TASK-00001'])
 
 ```ts
 const doctype = await registry.getMeta('Task')
-stonecrop.runAction(doctype, 'TRANSITION', ['TASK-00001', 'TASK-00002'])
+stonecrop.runAction(doctype, 'merge', ['TASK-00001', 'TASK-00002'])
 ```
 

@@ -56,8 +56,8 @@ describe('useStonecrop composable', () => {
 		}
 
 		const mockActions = Map({
-			LOAD: ['loadData'],
-			SAVE: ['validateData', 'saveData'],
+			load: ['loadData'],
+			save: ['validateData', 'saveData'],
 		})
 
 		return new DoctypeMeta(name, mockSchema, mockWorkflow, mockActions)

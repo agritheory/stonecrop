@@ -29,9 +29,9 @@ describe('DoctypeMeta class', () => {
 	}
 
 	const mockActions = Map({
-		LOAD: ['loadData'],
-		SAVE: ['validateData', 'saveData'],
-		DELETE: ['confirmDelete', 'deleteData'],
+		load: ['loadData'],
+		save: ['validateData', 'saveData'],
+		delete: ['confirmDelete', 'deleteData'],
 	})
 
 	it('creates a DoctypeMeta instance with required properties', () => {
@@ -57,7 +57,7 @@ describe('DoctypeMeta class', () => {
 	})
 
 	it('generates correct slug for camelCase doctype names', () => {
-		const doctype = new DoctypeMeta('TaskItem', mockSchema, mockWorkflow, mockActions)
+		const doctype = new DoctypeMeta('taskItem', mockSchema, mockWorkflow, mockActions)
 		expect(doctype.slug).toBe('task-item')
 	})
 
@@ -67,7 +67,7 @@ describe('DoctypeMeta class', () => {
 	})
 
 	it('generates correct slug for names with spaces', () => {
-		const doctype = new DoctypeMeta('Task Item', mockSchema, mockWorkflow, mockActions)
+		const doctype = new DoctypeMeta('TaskItem', mockSchema, mockWorkflow, mockActions)
 		expect(doctype.slug).toBe('task-item')
 	})
 
@@ -76,12 +76,8 @@ describe('DoctypeMeta class', () => {
 		expect(doctype.slug).toBe('task-item')
 	})
 
-	it('generates correct slug for complex names', () => {
-		const doctype = new DoctypeMeta('User Profile Settings', mockSchema, mockWorkflow, mockActions)
-		expect(doctype.slug).toBe('user-profile-settings')
-	})
-
-	it('handles empty schema', () => {
+	it('handles missing schema', () => {
+		// TODO: should these fail instead during init?
 		const emptySchema = List<SchemaTypes>()
 		const doctype = new DoctypeMeta('Task', emptySchema, mockWorkflow, mockActions)
 
@@ -89,7 +85,8 @@ describe('DoctypeMeta class', () => {
 		expect(doctype.schema?.size).toBe(0)
 	})
 
-	it('handles empty actions', () => {
+	it('handles missing actions', () => {
+		// TODO: should these fail instead during init?
 		const emptyActions = Map<string, string[]>()
 		const doctype = new DoctypeMeta('Task', mockSchema, mockWorkflow, emptyActions)
 

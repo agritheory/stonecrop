@@ -149,22 +149,22 @@ export class Stonecrop {
 	 * @example
 	 * ```ts
 	 * const doctype = await registry.getMeta('Task')
-	 * stonecrop.runAction(doctype, 'CREATE')
+	 * stonecrop.runAction(doctype, 'create')
 	 * ```
 	 * @example
 	 * ```ts
 	 * const doctype = await registry.getMeta('Task')
-	 * stonecrop.runAction(doctype, 'UPDATE', ['TASK-00001'])
+	 * stonecrop.runAction(doctype, 'update', ['TASK-00001'])
 	 * ```
 	 * @example
 	 * ```ts
 	 * const doctype = await registry.getMeta('Task')
-	 * stonecrop.runAction(doctype, 'DELETE', ['TASK-00001'])
+	 * stonecrop.runAction(doctype, 'delete', ['TASK-00001'])
 	 * ```
 	 * @example
 	 * ```ts
 	 * const doctype = await registry.getMeta('Task')
-	 * stonecrop.runAction(doctype, 'TRANSITION', ['TASK-00001', 'TASK-00002'])
+	 * stonecrop.runAction(doctype, 'merge', ['TASK-00001', 'TASK-00002'])
 	 * ```
 	 */
 	runAction(doctype: DoctypeMeta, action: string, id?: string[]): void {

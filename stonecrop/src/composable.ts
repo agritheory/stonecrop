@@ -60,7 +60,7 @@ export function useStonecrop(registry?: Registry): StonecropReturn {
 				}
 			}
 
-			stonecrop.value.runAction(doctype, 'LOAD', recordId ? [recordId] : undefined)
+			stonecrop.value.runAction(doctype, 'load', recordId ? [recordId] : undefined)
 		}
 	})
 
