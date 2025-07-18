@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { List, Map } from 'immutable'
+import type { UnknownMachineConfig } from 'xstate'
 
 import DoctypeMeta from '../src/doctype'
 import type { SchemaTypes } from '@stonecrop/aform'
@@ -18,13 +19,18 @@ describe('DoctypeMeta class', () => {
 		},
 	] as SchemaTypes[])
 
-	const mockWorkflow = {
+	const mockWorkflow: UnknownMachineConfig = {
 		id: 'task',
 		initial: 'draft',
 		states: {
-			draft: { on: { SUBMIT: 'pending' } },
-			pending: { on: { APPROVE: 'completed', REJECT: 'draft' } },
-			completed: { type: 'final' as const },
+			draft: { on: { load: { target: 'pending' } } },
+			pending: {
+				on: {
+					approve: { target: 'completed' },
+					reject: { target: 'draft' },
+				},
+			},
+			completed: { type: 'final' },
 		},
 	}
 

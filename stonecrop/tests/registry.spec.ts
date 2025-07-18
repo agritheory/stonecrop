@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { List, Map } from 'immutable'
 import { createRouter, createWebHistory } from 'vue-router'
+import type { UnknownMachineConfig } from 'xstate'
 
 import Registry from '../src/registry'
 import DoctypeMeta from '../src/doctype'
@@ -29,13 +30,18 @@ describe('Registry class', () => {
 			},
 		] as SchemaTypes[])
 
-		const mockWorkflow = {
+		const mockWorkflow: UnknownMachineConfig = {
 			id: name.toLowerCase(),
 			initial: 'draft',
 			states: {
-				draft: { on: { SUBMIT: 'pending' } },
-				pending: { on: { APPROVE: 'completed', REJECT: 'draft' } },
-				completed: { type: 'final' as const },
+				draft: { on: { load: { target: 'pending' } } },
+				pending: {
+					on: {
+						approve: { target: 'completed' },
+						reject: { target: 'draft' },
+					},
+				},
+				completed: { type: 'final' },
 			},
 		}
 
@@ -104,7 +110,7 @@ describe('Registry class', () => {
 		const mockDoctype = new DoctypeMeta(
 			'Task',
 			List([]),
-			{ id: 'task', initial: 'draft', states: { draft: { type: 'final' as const } } },
+			{ id: 'task', initial: 'draft', states: { draft: { type: 'final' } } },
 			Map({}),
 			mockComponent
 		)
@@ -128,7 +134,7 @@ describe('Registry class', () => {
 		const mockDoctype = new DoctypeMeta(
 			'Task',
 			List([]),
-			{ id: 'task', initial: 'draft', states: { draft: { type: 'final' as const } } },
+			{ id: 'task', initial: 'draft', states: { draft: { type: 'final' } } },
 			Map({}),
 			mockComponent
 		)
@@ -148,7 +154,7 @@ describe('Registry class', () => {
 		const mockDoctype = new DoctypeMeta(
 			'Task',
 			List([]),
-			{ id: 'task', initial: 'draft', states: { draft: { type: 'final' as const } } },
+			{ id: 'task', initial: 'draft', states: { draft: { type: 'final' } } },
 			Map({}),
 			mockComponent
 		)

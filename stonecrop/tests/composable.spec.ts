@@ -5,6 +5,7 @@ import { createPinia, setActivePinia } from 'pinia'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { createRouter, createWebHistory } from 'vue-router'
 import { defineComponent } from 'vue'
+import type { UnknownMachineConfig } from 'xstate'
 
 import { useStonecrop } from '../src/composable'
 import DoctypeMeta from '../src/doctype'
@@ -45,13 +46,18 @@ describe('useStonecrop composable', () => {
 			},
 		] as SchemaTypes[])
 
-		const mockWorkflow = {
+		const mockWorkflow: UnknownMachineConfig = {
 			id: name.toLowerCase(),
 			initial: 'draft',
 			states: {
-				draft: { on: { SUBMIT: 'pending' } },
-				pending: { on: { APPROVE: 'completed', REJECT: 'draft' } },
-				completed: { type: 'final' as const },
+				draft: { on: { load: { target: 'pending' } } },
+				pending: {
+					on: {
+						approve: { target: 'completed' },
+						reject: { target: 'draft' },
+					},
+				},
+				completed: { type: 'final' },
 			},
 		}
 
