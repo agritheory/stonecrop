@@ -14,6 +14,16 @@
 			<defs>
 				<!-- Define arrowhead marker for connections -->
 				<path id="arrowhead" d="M 0 -7 L 20 0 L 0 7Z" stroke="black" stroke-width="1" fill="currentColor"></path>
+				<marker
+					id="arrowhead-marker"
+					markerWidth="10"
+					markerHeight="7"
+					refX="5"
+					refY="3.5"
+					orient="auto"
+					markerUnits="strokeWidth">
+					<polygon points="0 0, 10 3.5, 0 7" fill="currentColor" />
+				</marker>
 			</defs>
 
 			<!-- Invisible wider path for easier double-click interaction -->
@@ -35,21 +45,10 @@
 				:stroke="connection.style?.color || '#666'"
 				:stroke-width="connection.style?.width || 2"
 				fill="none"
+				marker-mid="url(#arrowhead-marker)"
 				:id="connection.id"
 				class="connection-path animated-path"
 				@dblclick="handleConnectionDelete(connection)"></path>
-			<!-- Since marker-mid only works on vertices, this workaround will place the arrow in the center of the bezier curve -->
-			<use v-for="connection in visibleConnections" href="#arrowhead">
-				<animateMotion
-					calcMode="linear"
-					dur="infinite"
-					repeatCount="infinite"
-					rotate="auto"
-					keyPoints="0.5;0.5"
-					keyTimes="0.0;1.0">
-					<mpath :href="'#' + connection.id" />
-				</animateMotion>
-			</use>
 		</svg>
 	</div>
 </template>
@@ -68,7 +67,7 @@ const emit = defineEmits<{
 	'connection:delete': [connection: ConnectionPath]
 }>()
 
-const BEZIER_CURVE_FACTOR = 0.5 // Control point offset factor for bezier curves
+const BEZIER_CURVE_FACTOR = 0.25 // Control point offset factor for bezier curves
 const CONNECTION_HANDLE_SIZE = 16 // Width of the connection handles; this should match the handle size in the AGanttCell component
 
 const visibleConnections = computed(() => {
@@ -100,11 +99,22 @@ const getPathData = (connection: ConnectionPath) => {
 	const cp1X = fromX + (connection.from.side === 'left' ? -controlPointOffset : controlPointOffset)
 	const cp2X = toX + (connection.to.side === 'left' ? -controlPointOffset : controlPointOffset)
 
-	const centerX = (fromX + toX) / 2
-	const centerY = (fromY + toY) / 2
 	// Use cubic bezier curve for smooth connections
 
+	//calculate the mid point of the curve
+	const m0 = { x: 0.5 * fromX + 0.5 * cp1X, y: 0.5 * fromY + 0.5 * fromY }
+	const m1 = { x: 0.5 * cp1X + 0.5 * cp2X, y: 0.5 * fromY + 0.5 * toY }
+	const m2 = { x: 0.5 * cp2X + 0.5 * toX, y: 0.5 * toY + 0.5 * toY }
+	const m3 = { x: 0.5 * m0.x + 0.5 * m1.x, y: 0.5 * m0.y + 0.5 * m1.y }
+	const m4 = { x: 0.5 * m1.x + 0.5 * m2.x, y: 0.5 * m1.y + 0.5 * m2.y }
+	const midpoint = { x: 0.5 * m3.x + 0.5 * m4.x, y: 0.5 * m3.y + 0.5 * m4.y }
+
+	/* Calculate a single bezier curve 
 	return `M ${fromX} ${fromY} C ${cp1X} ${fromY}, ${cp2X} ${toY}, ${toX} ${toY}`
+	*/
+
+	// Calculate two halves of the bezier curve
+	return `M ${fromX} ${fromY} C ${cp1X} ${fromY}, ${cp1X} ${fromY}, ${midpoint.x} ${midpoint.y} S ${cp2X} ${toY}, ${toX} ${toY},`
 }
 
 const handleConnectionDelete = (connection: ConnectionPath) => {
@@ -130,9 +140,13 @@ const handleConnectionDelete = (connection: ConnectionPath) => {
 	pointer-events: auto;
 	cursor: pointer;
 	stroke-dasharray: 5px;
+	stroke: var(--sc-cell-text-color);
+}
+#arrowhead-marker polygon {
+	fill: var(--sc-cell-text-color);
 }
 .animated-path {
-	animation: animated-dash infinite 0.5s linear;
+	animation: animated-dash infinite 1.5s linear;
 }
 
 .connection-path:hover {
