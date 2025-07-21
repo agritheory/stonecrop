@@ -1,7 +1,12 @@
 <template>
 	<Story title="gantt">
 		<Variant title="default">
-			<ATable v-model="gantt.rows" :columns="gantt.columns" :config="gantt.config" @gantt:drag="handleGanttDrag" />
+			<ATable
+				v-model="gantt.rows"
+				:columns="gantt.columns"
+				:config="gantt.config"
+				@cellUpdate="handleUpdate"
+				@gantt:drag="handleGanttDrag" />
 		</Variant>
 	</Story>
 </template>
@@ -447,6 +452,10 @@ const gantt = ref({
 	columns: gantt_columns,
 	config: { view: 'gantt' } as TableConfig,
 })
+
+const handleUpdate = ({ colIndex, rowIndex, newValue, oldValue }) => {
+	console.log(`Cell updated at (${rowIndex}, ${colIndex}): ${oldValue} -> ${newValue}`)
+}
 
 const handleGanttDrag = (event: GanttDragEvent) => {
 	if (event.type === 'bar') {
