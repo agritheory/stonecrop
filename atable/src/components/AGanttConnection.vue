@@ -48,7 +48,7 @@
 				marker-mid="url(#arrowhead-marker)"
 				:id="connection.id"
 				class="connection-path animated-path"
-				@dblclick="handleConnectionDelete(connection)"></path>
+				@dblclick="handleConnectionDelete(connection)" />
 		</svg>
 	</div>
 </template>
@@ -78,7 +78,7 @@ const visibleConnections = computed(() => {
 	})
 })
 
-const getPathData = (connection: ConnectionPath) => {
+const getPathData = (connection: ConnectionPath, isMarker: Boolean = false) => {
 	const fromHandle = store.connectionHandles.find(
 		handle => handle.barId === connection.from.barId && handle.side === connection.from.side
 	)
@@ -109,12 +109,8 @@ const getPathData = (connection: ConnectionPath) => {
 	const m4 = { x: 0.5 * m1.x + 0.5 * m2.x, y: 0.5 * m1.y + 0.5 * m2.y }
 	const midpoint = { x: 0.5 * m3.x + 0.5 * m4.x, y: 0.5 * m3.y + 0.5 * m4.y }
 
-	/* Calculate a single bezier curve 
-	return `M ${fromX} ${fromY} C ${cp1X} ${fromY}, ${cp2X} ${toY}, ${toX} ${toY}`
-	*/
-
-	// Calculate two halves of the bezier curve
-	return `M ${fromX} ${fromY} C ${cp1X} ${fromY}, ${cp1X} ${fromY}, ${midpoint.x} ${midpoint.y} S ${cp2X} ${toY}, ${toX} ${toY},`
+	// Calculate the bezier curve using two arcs
+	return `M ${fromX} ${fromY} Q ${cp1X} ${fromY}, ${midpoint.x} ${midpoint.y} Q ${cp2X} ${toY}, ${toX} ${toY}`
 }
 
 const handleConnectionDelete = (connection: ConnectionPath) => {

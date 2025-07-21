@@ -480,6 +480,7 @@ defineExpose({
 	transition: left 0.1s ease-out, width 0.1s ease-out;
 	height: 80%;
 	top: 50%;
+	z-index: 2;
 	transform: translateY(-50%);
 }
 
