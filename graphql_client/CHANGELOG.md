@@ -1,6 +1,11 @@
 # Change Log - @stonecrop/graphql-client
 
-This log was last generated on Mon, 21 Jul 2025 07:27:47 GMT and should not be manually modified.
+This log was last generated on Mon, 21 Jul 2025 09:55:33 GMT and should not be manually modified.
+
+## 0.4.23
+Mon, 21 Jul 2025 09:55:33 GMT
+
+_Version update only_
 
 ## 0.4.22
 Mon, 21 Jul 2025 07:27:47 GMT
