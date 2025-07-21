@@ -104,6 +104,8 @@ store.$onAction(({ name, store, args, after }) => {
 		const [colIndex, rowIndex, newValue] = args
 		const oldValue = store.getCellData(colIndex, rowIndex)
 		after(() => {
+			// Update modelValue to trigger update:modelValue event
+			modelValue.value = [...store.rows]
 			emit('cellUpdate', { colIndex, rowIndex, newValue, oldValue })
 		})
 	} else if (name === 'updateGanttBar') {
