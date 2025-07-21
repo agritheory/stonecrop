@@ -44,6 +44,7 @@ describe('table cell component', () => {
 	const props = {
 		columns,
 		modelValue: data,
+		'onUpdate:modelValue': () => {},
 		config: { view: 'list' } as TableConfig,
 	}
 
