@@ -12,16 +12,8 @@
 				zIndex: 1,
 			}">
 			<defs>
-				<marker
-					id="arrowhead"
-					markerWidth="10"
-					markerHeight="7"
-					refX="10"
-					refY="3.5"
-					orient="auto"
-					markerUnits="strokeWidth">
-					<polygon points="0 0, 10 3.5, 0 7" fill="currentColor" />
-				</marker>
+				<!-- Define arrowhead marker for connections -->
+				<path id="arrowhead" d="M 0 -7 L 20 0 L 0 7Z" stroke="black" stroke-width="1" fill="currentColor"></path>
 			</defs>
 
 			<!-- Invisible wider path for easier double-click interaction -->
@@ -43,9 +35,21 @@
 				:stroke="connection.style?.color || '#666'"
 				:stroke-width="connection.style?.width || 2"
 				fill="none"
-				marker-end="url(#arrowhead)"
+				:id="connection.id"
 				class="connection-path animated-path"
-				@dblclick="handleConnectionDelete(connection)" />
+				@dblclick="handleConnectionDelete(connection)"></path>
+			<!-- Since marker-mid only works on vertices, this workaround will place the arrow in the center of the bezier curve -->
+			<use v-for="connection in visibleConnections" href="#arrowhead">
+				<animateMotion
+					calcMode="linear"
+					dur="infinite"
+					repeatCount="infinite"
+					rotate="auto"
+					keyPoints="0.5;0.5"
+					keyTimes="0.0;1.0">
+					<mpath :href="'#' + connection.id" />
+				</animateMotion>
+			</use>
 		</svg>
 	</div>
 </template>
@@ -96,7 +100,10 @@ const getPathData = (connection: ConnectionPath) => {
 	const cp1X = fromX + (connection.from.side === 'left' ? -controlPointOffset : controlPointOffset)
 	const cp2X = toX + (connection.to.side === 'left' ? -controlPointOffset : controlPointOffset)
 
+	const centerX = (fromX + toX) / 2
+	const centerY = (fromY + toY) / 2
 	// Use cubic bezier curve for smooth connections
+
 	return `M ${fromX} ${fromY} C ${cp1X} ${fromY}, ${cp2X} ${toY}, ${toX} ${toY}`
 }
 
