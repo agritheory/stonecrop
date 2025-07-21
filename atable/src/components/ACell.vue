@@ -10,7 +10,7 @@
 		:style="cellStyle"
 		@focus="onFocus"
 		@paste="updateCellData"
-		@input="updateCellData"
+		@input="debouncedUpdateCellData"
 		@click="showModal"
 		class="atable-cell"
 		:class="cellClasses">
@@ -26,7 +26,7 @@
 
 <script setup lang="ts">
 import { KeypressHandlers, defaultKeypressHandlers, useKeyboardNav } from '@stonecrop/utilities'
-import { useElementBounding } from '@vueuse/core'
+import { useDebounceFn, useElementBounding } from '@vueuse/core'
 import { computed, type CSSProperties, ref, useTemplateRef } from 'vue'
 
 import { createTableStore } from '../stores/table'
@@ -39,6 +39,7 @@ const {
 	addNavigation = true,
 	tabIndex = 0,
 	pinned = false,
+	debounce = 300,
 } = defineProps<{
 	colIndex: number
 	rowIndex: number
@@ -46,6 +47,7 @@ const {
 	addNavigation?: boolean | KeypressHandlers
 	tabIndex?: number
 	pinned?: boolean
+	debounce?: number
 }>()
 
 const cellRef = useTemplateRef<HTMLTableCellElement>('cell')
@@ -175,6 +177,8 @@ const updateCellData = (payload: Event) => {
 		store.setCellData(colIndex, rowIndex, target.textContent)
 	}
 }
+
+const debouncedUpdateCellData = useDebounceFn(updateCellData, debounce)
 
 defineExpose({
 	currentData,
