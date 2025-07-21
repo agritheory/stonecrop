@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/atable
 
-This log was last generated on Mon, 21 Jul 2025 06:17:23 GMT and should not be manually modified.
+This log was last generated on Mon, 21 Jul 2025 07:27:47 GMT and should not be manually modified.
+
+## 0.4.22
+Mon, 21 Jul 2025 07:27:47 GMT
+
+### Patches
+
+- add debounce prop to table cell update
 
 ## 0.4.21
 Mon, 21 Jul 2025 06:17:23 GMT

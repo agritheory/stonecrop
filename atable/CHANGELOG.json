@@ -2,6 +2,18 @@
   "name": "@stonecrop/atable",
   "entries": [
     {
+      "version": "0.4.22",
+      "tag": "@stonecrop/atable_v0.4.22",
+      "date": "Mon, 21 Jul 2025 07:27:47 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "add debounce prop to table cell update"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.4.21",
       "tag": "@stonecrop/atable_v0.4.21",
       "date": "Mon, 21 Jul 2025 06:17:23 GMT",
