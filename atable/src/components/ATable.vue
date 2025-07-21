@@ -68,7 +68,7 @@
 <script setup lang="ts">
 import { vOnClickOutside } from '@vueuse/components'
 import { useMutationObserver } from '@vueuse/core'
-import { nextTick, watch, onMounted, useTemplateRef, computed } from 'vue'
+import { nextTick, onMounted, useTemplateRef, computed, watch } from 'vue'
 
 import ARow from './ARow.vue'
 import ATableHeader from './ATableHeader.vue'
@@ -76,28 +76,27 @@ import ATableModal from './ATableModal.vue'
 import { createTableStore } from '../stores/table'
 import type { GanttDragEvent, TableColumn, TableConfig, TableRow } from '../types'
 
+const modelValue = defineModel<TableRow[]>({ required: true })
+
 const {
 	id,
-	modelValue,
 	columns,
 	rows = [],
 	config = new Object(),
 } = defineProps<{
 	id?: string
-	modelValue: TableRow[]
 	columns: TableColumn[]
 	rows?: TableRow[]
 	config?: TableConfig
 }>()
 
 const emit = defineEmits<{
-	'update:modelValue': [value: TableRow[]]
 	cellUpdate: [{ colIndex: number; rowIndex: number; newValue: any; oldValue: any }]
 	'gantt:drag': [event: GanttDragEvent]
 }>()
 
 const tableRef = useTemplateRef<HTMLTableElement>('table')
-const rowsValue = modelValue ? modelValue : rows
+const rowsValue = modelValue.value.length > 0 ? modelValue.value : rows
 const store = createTableStore({ columns, rows: rowsValue, id, config })
 
 store.$onAction(({ name, store, args, after }) => {
@@ -124,10 +123,14 @@ store.$onAction(({ name, store, args, after }) => {
 	}
 })
 
+// Watch for external changes to modelValue and sync to store
 watch(
-	() => store.rows,
-	newValue => {
-		emit('update:modelValue', newValue)
+	() => modelValue.value,
+	newRows => {
+		// Only update if the rows have actually changed (avoid infinite loops)
+		if (JSON.stringify(newRows) !== JSON.stringify(store.rows)) {
+			store.rows = [...newRows]
+		}
 	},
 	{ deep: true }
 )
