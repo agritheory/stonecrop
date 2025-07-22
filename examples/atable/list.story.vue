@@ -75,8 +75,8 @@
 
 							<ATable
 								id="list"
-								:columns="inbox.columns"
 								:rows="chooseRandomData(inbox.rows)"
+								:columns="inbox.columns"
 								:config="{ view: 'list-expansion' }">
 								<template #body="{ data }">
 									<AExpansionRow

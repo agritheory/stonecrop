@@ -107,7 +107,8 @@ const emit = defineEmits<{
 }>()
 
 const tableRef = useTemplateRef<HTMLTableElement>('table')
-const rowsValue = modelValue.value.length > 0 ? modelValue.value : rows
+// Always prefer modelValue over rows prop, even if modelValue is empty
+const rowsValue = modelValue.value
 const store = createTableStore({ columns, rows: rowsValue, id, config })
 
 store.$onAction(({ name, store, args, after }) => {

@@ -141,7 +141,7 @@ describe('AGanttConnection', () => {
 
 		// Path should be a bezier curve from handle1 to handle2
 		const pathData = pathElement.attributes('d')
-		expect(pathData).toMatch(/^M \d+\.?\d* \d+\.?\d* C .+/)
+		expect(pathData).toMatch(/^M \d+\.?\d* \d+\.?\d* Q .+/)
 	})
 
 	it('should handle connection deletion on double click', async () => {

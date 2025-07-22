@@ -838,7 +838,7 @@ The tree view displays hierarchical data with expandable/collapsible nodes. The 
 ## Usage
 
 ```vue
-<ATable :rows="treeData" :columns="treeColumns" :config="{ view: 'tree-gantt' }" @gantt:drag="handleGanttDrag" />
+<ATable v-model="treeData" :columns="treeColumns" :config="{ view: 'tree-gantt' }" @gantt:drag="handleGanttDrag" />
 ```
 
 The tree-gantt view is perfect for displaying hierarchical project data with timeline visualization, where:

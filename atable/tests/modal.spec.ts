@@ -16,6 +16,7 @@ vi.mock('@vueuse/core', () => ({
 		width: { value: 200 },
 		height: { value: 100 },
 	})),
+	useDebounceFn: vi.fn(fn => fn),
 }))
 
 describe('table modal component', () => {

@@ -1,7 +1,22 @@
 import { config, mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { nextTick } from 'vue'
+
+// Mock VueUse functions
+vi.mock('@vueuse/core', () => ({
+	useElementBounding: vi.fn(() => ({
+		width: { value: 200 },
+		height: { value: 100 },
+	})),
+	useDebounceFn: vi.fn(fn => fn),
+	useMutationObserver: vi.fn(),
+}))
+
+vi.mock('@vueuse/components', () => ({
+	vResizeObserver: vi.fn(),
+	vOnClickOutside: vi.fn(),
+}))
 
 import data from './data/http_logs.json'
 import ACell from '../src/components/ACell.vue'
@@ -48,7 +63,7 @@ describe('table component', () => {
 		{ name: 'status', label: 'Status', width: '150px' },
 	]
 
-	const basicRows: TableRow[] = [
+	const getBasicRows = (): TableRow[] => [
 		{ id: 1, name: 'John', status: 'active' },
 		{ id: 2, name: 'Jane', status: 'inactive' },
 	]
@@ -216,7 +231,7 @@ describe('table component', () => {
 		const wrapper = mount(ATable, {
 			props: {
 				columns: basicColumns,
-				modelValue: basicRows,
+				modelValue: getBasicRows(),
 			},
 		})
 
@@ -228,7 +243,7 @@ describe('table component', () => {
 		const wrapper = mount(ATable, {
 			props: {
 				columns: basicColumns,
-				modelValue: basicRows,
+				modelValue: getBasicRows(),
 				config: { fullWidth: true },
 			},
 		})
@@ -241,7 +256,7 @@ describe('table component', () => {
 		const wrapper = mount(ATable, {
 			props: {
 				columns: basicColumns,
-				modelValue: basicRows,
+				modelValue: getBasicRows(),
 			},
 		})
 
@@ -263,13 +278,13 @@ describe('table component', () => {
 		const wrapper = mount(ATable, {
 			props: {
 				columns: basicColumns,
-				modelValue: basicRows,
+				modelValue: getBasicRows(),
 			},
 		})
 
-		// Trigger a row change
+		// Trigger a row change using the proper store method
 		const tableStore = wrapper.vm.store
-		tableStore.rows[0].name = 'Updated Name'
+		tableStore.setCellData(0, 1, 'Updated Name') // Update the 'name' column (index 1)
 
 		await nextTick()
 		expect(wrapper.emitted('update:modelValue')).toBeTruthy()
@@ -342,7 +357,7 @@ describe('table component', () => {
 		const wrapper = mount(ATable, {
 			props: {
 				columns: basicColumns,
-				modelValue: basicRows,
+				modelValue: getBasicRows(),
 			},
 		})
 
@@ -399,7 +414,7 @@ describe('table component', () => {
 		const wrapper = mount(ATable, {
 			props: {
 				columns: basicColumns,
-				modelValue: basicRows,
+				modelValue: getBasicRows(),
 			},
 		})
 
@@ -421,7 +436,7 @@ describe('table component', () => {
 			props: {
 				columns: basicColumns,
 				modelValue: [],
-				rows: basicRows,
+				rows: getBasicRows(),
 			},
 		})
 
@@ -432,7 +447,7 @@ describe('table component', () => {
 		const wrapper = mount(ATable, {
 			props: {
 				columns: basicColumns,
-				modelValue: basicRows,
+				modelValue: getBasicRows(),
 			},
 		})
 
@@ -448,12 +463,12 @@ describe('table component', () => {
 		const wrapper = mount(ATable, {
 			props: {
 				columns: basicColumns,
-				modelValue: basicRows,
+				modelValue: getBasicRows(),
 				rows: [], // This should be ignored since modelValue is provided
 			},
 		})
 
-		expect(wrapper.vm.store.rows).toEqual(basicRows)
+		expect(wrapper.vm.store.rows).toEqual(getBasicRows())
 	})
 
 	it('should use modelValue over rows when both are provided', () => {
@@ -463,7 +478,7 @@ describe('table component', () => {
 			props: {
 				columns: basicColumns,
 				modelValue: modelValueRows,
-				rows: basicRows,
+				rows: getBasicRows(),
 			},
 		})
 
@@ -509,7 +524,7 @@ describe('table component', () => {
 		const wrapper = mount(ATable, {
 			props: {
 				columns: customColumns,
-				modelValue: basicRows,
+				modelValue: getBasicRows(),
 			},
 		})
 
@@ -521,7 +536,7 @@ describe('table component', () => {
 		const wrapper = mount(ATable, {
 			props: {
 				columns: basicColumns,
-				modelValue: basicRows,
+				modelValue: getBasicRows(),
 			},
 			slots: {
 				header: '<div data-test="custom-header">Custom Header</div>',
