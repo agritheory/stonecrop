@@ -431,18 +431,6 @@ describe('table component', () => {
 		})
 	})
 
-	it('should handle rows prop when modelValue is not provided', () => {
-		const wrapper = mount(ATable, {
-			props: {
-				columns: basicColumns,
-				modelValue: [],
-				rows: getBasicRows(),
-			},
-		})
-
-		expect(wrapper.vm.store.rows).toEqual([])
-	})
-
 	it('should expose store and connection methods', () => {
 		const wrapper = mount(ATable, {
 			props: {
@@ -457,62 +445,6 @@ describe('table component', () => {
 		expect(wrapper.vm.deleteConnection).toBe(wrapper.vm.store.deleteConnection)
 		expect(wrapper.vm.getConnectionsForBar).toBe(wrapper.vm.store.getConnectionsForBar)
 		expect(wrapper.vm.getHandlesForBar).toBe(wrapper.vm.store.getHandlesForBar)
-	})
-
-	it('should handle rows prop when modelValue is not provided', () => {
-		const wrapper = mount(ATable, {
-			props: {
-				columns: basicColumns,
-				modelValue: getBasicRows(),
-				rows: [], // This should be ignored since modelValue is provided
-			},
-		})
-
-		expect(wrapper.vm.store.rows).toEqual(getBasicRows())
-	})
-
-	it('should use modelValue over rows when both are provided', () => {
-		const modelValueRows = [{ id: 3, name: 'Model', status: 'test' }]
-
-		const wrapper = mount(ATable, {
-			props: {
-				columns: basicColumns,
-				modelValue: modelValueRows,
-				rows: getBasicRows(),
-			},
-		})
-
-		expect(wrapper.vm.store.rows).toEqual(modelValueRows)
-	})
-
-	it('should handle custom gantt data', () => {
-		const ganttColumns: TableColumn[] = [
-			{ name: 'id', label: 'ID', width: '100px', pinned: true },
-			{ name: 'gantt', label: 'Timeline', width: 'auto' },
-		]
-
-		const ganttRows: TableRow[] = [
-			{
-				id: 1,
-				gantt: {
-					startIndex: 0,
-					endIndex: 5,
-					color: '#ff0000',
-				} as GanttOptions,
-			},
-		]
-
-		const wrapper = mount(ATable, {
-			props: {
-				columns: ganttColumns,
-				modelValue: ganttRows,
-			},
-		})
-
-		// Should render with gantt data
-		expect(wrapper.vm.store.rows[0].gantt?.color).toBe('#ff0000')
-		expect(wrapper.vm.store.rows[0].gantt?.startIndex).toBe(0)
-		expect(wrapper.vm.store.rows[0].gantt?.endIndex).toBe(5)
 	})
 
 	it('should handle custom cell components for regular cells', () => {
@@ -550,5 +482,37 @@ describe('table component', () => {
 		expect(wrapper.find('[data-test="custom-body"]').exists()).toBe(true)
 		expect(wrapper.find('[data-test="custom-footer"]').exists()).toBe(true)
 		expect(wrapper.find('[data-test="custom-modal"]').exists()).toBe(true)
+	})
+})
+
+describe('Gantt View', () => {
+	it('should handle custom gantt data', () => {
+		const ganttColumns: TableColumn[] = [
+			{ name: 'id', label: 'ID', width: '100px', pinned: true },
+			{ name: 'gantt', label: 'Timeline', width: 'auto' },
+		]
+
+		const ganttRows: TableRow[] = [
+			{
+				id: 1,
+				gantt: {
+					startIndex: 0,
+					endIndex: 5,
+					color: '#ff0000',
+				} as GanttOptions,
+			},
+		]
+
+		const wrapper = mount(ATable, {
+			props: {
+				columns: ganttColumns,
+				modelValue: ganttRows,
+			},
+		})
+
+		// Should render with gantt data
+		expect(wrapper.vm.store.rows[0].gantt?.color).toBe('#ff0000')
+		expect(wrapper.vm.store.rows[0].gantt?.startIndex).toBe(0)
+		expect(wrapper.vm.store.rows[0].gantt?.endIndex).toBe(5)
 	})
 })

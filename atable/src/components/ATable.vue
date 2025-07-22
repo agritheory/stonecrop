@@ -91,12 +91,10 @@ const modelValue = defineModel<TableRow[]>({ required: true })
 const {
 	id,
 	columns,
-	rows = [],
 	config = new Object(),
 } = defineProps<{
 	id?: string
 	columns: TableColumn[]
-	rows?: TableRow[]
 	config?: TableConfig
 }>()
 
@@ -107,9 +105,7 @@ const emit = defineEmits<{
 }>()
 
 const tableRef = useTemplateRef<HTMLTableElement>('table')
-// Always prefer modelValue over rows prop, even if modelValue is empty
-const rowsValue = modelValue.value
-const store = createTableStore({ columns, rows: rowsValue, id, config })
+const store = createTableStore({ columns, rows: modelValue.value, id, config })
 
 store.$onAction(({ name, store, args, after }) => {
 	if (name === 'setCellData' || name === 'setCellText') {

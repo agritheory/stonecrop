@@ -1,9 +1,5 @@
 <template>
-	<ATable
-		v-if="isReady"
-		:columns="stonecrop.schema.schema.toArray()"
-		:rows="stonecrop.store.records"
-		:config="config" />
+	<ATable v-model="stonecrop.store.records" :columns="stonecrop.schema.schema.toArray()" :config="config" />
 </template>
 
 <script setup lang="ts">
@@ -15,6 +11,6 @@ import { useStonecrop } from '@stonecrop/stonecrop'
 // default_view key in schema
 // last_used_view_type in application state
 
-const { stonecrop, isReady } = useStonecrop()
+const { stonecrop } = useStonecrop()
 const config = { view: 'list' }
 </script>
