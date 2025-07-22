@@ -13,14 +13,14 @@
 	"scripts": {
 		"_phase:build": "",
 		"build": "",
-		"dev:aform": "cd aform/ && histoire dev & rush build --watch --to @stonecrop/aform",
-		"dev:atable": "cd atable/ && histoire dev & rush build --watch --to @stonecrop/atable",
-		"dev:beam": "cd beam/ && histoire dev & rush build --watch --to @stonecrop/beam",
+		"dev:aform": "./dev-runner.sh aform",
+		"dev:atable": "./dev-runner.sh atable",
+		"dev:beam": "./dev-runner.sh beam",
 		"dev:builder": "vite serve docbuilder/ --config docbuilder/vite.config.ts",
-		"dev:code_editor": "cd code_editor/ && histoire dev & rush build --watch --to @stonecrop/code-editor",
+		"dev:code_editor": "./dev-runner.sh code_editor",
 		"dev:desktop": "vite dev desktop/ --config desktop/vite.config.ts",
 		"dev:graphql_client": "vite dev graphql_client/ --config graphql_client/vite.config.ts",
-		"dev:node_editor": "cd node_editor/ && histoire dev & rush build --watch --to @stonecrop/node-editor"
+		"dev:node_editor": "./dev-runner.sh node_editor"
 	},
 	"dependencies": {
 		"@stonecrop/aform": "workspace:*",
@@ -47,6 +47,7 @@
 		"@typescript-eslint/parser": "^7.18.0",
 		"@vitejs/plugin-vue": "^5.2.4",
 		"@vue-flow/core": "^1.45.0",
+		"concurrently": "^9.2.0",
 		"cypress": "^14.5.1",
 		"eslint": "^8.57.1",
 		"eslint-plugin-vue": "^9.33.0",

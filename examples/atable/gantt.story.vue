@@ -5,6 +5,7 @@
 				v-model="gantt.rows"
 				:columns="gantt.columns"
 				:config="gantt.config"
+				@cellUpdate="handleUpdate"
 				@gantt:drag="handleGanttDrag"
 				@connection:event="handleConnectionEvent" />
 		</Variant>
@@ -784,6 +785,10 @@ const project_gantt = ref({
 	columns: project_gantt_columns,
 	config: { view: 'tree-gantt' },
 })
+
+const handleUpdate = ({ colIndex, rowIndex, newValue, oldValue }) => {
+	console.log(`Cell updated at (${rowIndex}, ${colIndex}): ${oldValue} -> ${newValue}`)
+}
 
 const handleGanttDrag = (event: GanttDragEvent) => {
 	if (event.type === 'bar') {

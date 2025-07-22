@@ -2,6 +2,42 @@
   "name": "@stonecrop/beam",
   "entries": [
     {
+      "version": "0.4.23",
+      "tag": "@stonecrop/beam_v0.4.23",
+      "date": "Mon, 21 Jul 2025 09:55:33 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.4.22",
+      "tag": "@stonecrop/beam_v0.4.22",
+      "date": "Mon, 21 Jul 2025 07:27:47 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.4.21",
+      "tag": "@stonecrop/beam_v0.4.21",
+      "date": "Mon, 21 Jul 2025 06:17:23 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.4.20",
+      "tag": "@stonecrop/beam_v0.4.20",
+      "date": "Tue, 15 Jul 2025 07:37:14 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.4.19",
+      "tag": "@stonecrop/beam_v0.4.19",
+      "date": "Tue, 15 Jul 2025 07:15:19 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Modified validation logic in ItemCount.vue to fix \"NaN\" display and update issues in ListView inputs."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.4.18",
       "tag": "@stonecrop/beam_v0.4.18",
       "date": "Wed, 02 Jul 2025 09:19:21 GMT",
