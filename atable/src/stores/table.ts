@@ -32,17 +32,6 @@ export const createTableStore = (initData: {
 }) => {
 	const id = initData.id || generateHash()
 	const createStore = defineStore(`table-${id}`, () => {
-		// util functions
-		const createTableObject = () => {
-			const table = {}
-			for (const [colIndex, column] of columns.value.entries()) {
-				for (const [rowIndex, row] of rows.value.entries()) {
-					table[`${colIndex}:${rowIndex}`] = row[column.name]
-				}
-			}
-			return table
-		}
-
 		const createDisplayObject = (forceRecalculate = false) => {
 			const defaultDisplay: TableDisplay[] = [Object.assign({}, { rowModified: false })]
 
@@ -87,53 +76,69 @@ export const createTableStore = (initData: {
 		const columns = ref(initData.columns)
 		const rows = ref(initData.rows)
 		const config = ref(initData.config || {})
-		const table = ref(initData.table || createTableObject())
 
 		// Track row modifications and expand states separately from the computed display
 		const rowModifications = ref<Record<number, boolean>>({})
 		const rowExpandStates = ref<Record<number, { childrenOpen?: boolean; expanded?: boolean }>>({})
 
-		// Use a ref instead of computed to have more control over reactivity
-		const displayData = ref<TableDisplay[]>([])
-
-		const calculateDisplay = () => {
-			// Always force recalculation when this method is called
-			const baseDisplay = createDisplayObject(true)
-
-			// Apply persistent modifications and expand states
-			for (let i = 0; i < baseDisplay.length; i++) {
-				if (rowModifications.value[i]) {
-					baseDisplay[i].rowModified = rowModifications.value[i]
-				}
-				if (rowExpandStates.value[i]) {
-					if (rowExpandStates.value[i].childrenOpen !== undefined) {
-						baseDisplay[i].childrenOpen = rowExpandStates.value[i].childrenOpen!
-					}
-					if (rowExpandStates.value[i].expanded !== undefined) {
-						baseDisplay[i].expanded = rowExpandStates.value[i].expanded!
-					}
-				}
+		const table = computed(() => {
+			// if the initial table data is provided and not empty, use it
+			if (initData.table && Object.keys(initData.table).length > 0) {
+				return initData.table
 			}
 
-			// Calculate 'open' property for tree view based on parent's childrenOpen state
-			if (isTreeView.value) {
+			// otherwise, create a new table object from the provided columns and rows
+			const table = {}
+			for (const [colIndex, column] of columns.value.entries()) {
+				for (const [rowIndex, row] of rows.value.entries()) {
+					table[`${colIndex}:${rowIndex}`] = row[column.name]
+				}
+			}
+			return table
+		})
+
+		const display = computed({
+			get: () => {
+				const baseDisplay = createDisplayObject(true)
+
+				// Apply persistent modifications and expand states
 				for (let i = 0; i < baseDisplay.length; i++) {
-					const row = baseDisplay[i]
-					if (!row.isRoot && row.parent !== null && row.parent !== undefined) {
-						// Child row is 'open' if its parent's childrenOpen is true
-						const parentIndex = row.parent
-						if (parentIndex >= 0 && parentIndex < baseDisplay.length) {
-							baseDisplay[i].open = baseDisplay[parentIndex].childrenOpen || false
+					if (rowModifications.value[i]) {
+						baseDisplay[i].rowModified = rowModifications.value[i]
+					}
+					if (rowExpandStates.value[i]) {
+						if (rowExpandStates.value[i].childrenOpen !== undefined) {
+							baseDisplay[i].childrenOpen = rowExpandStates.value[i].childrenOpen!
+						}
+						if (rowExpandStates.value[i].expanded !== undefined) {
+							baseDisplay[i].expanded = rowExpandStates.value[i].expanded!
 						}
 					}
 				}
-			}
 
-			displayData.value = baseDisplay
-			return baseDisplay
-		}
+				// Calculate 'open' property for tree view based on parent's childrenOpen state
+				if (isTreeView.value) {
+					for (let i = 0; i < baseDisplay.length; i++) {
+						const row = baseDisplay[i]
+						if (!row.isRoot && row.parent !== null && row.parent !== undefined) {
+							// Child row is 'open' if its parent's childrenOpen is true
+							const parentIndex = row.parent
+							if (parentIndex >= 0 && parentIndex < baseDisplay.length) {
+								baseDisplay[i].open = baseDisplay[parentIndex].childrenOpen || false
+							}
+						}
+					}
+				}
 
-		const display = computed(() => displayData.value)
+				return baseDisplay
+			},
+			set: (newDisplay: TableDisplay[]) => {
+				// Only update if the new display is different from the current one; also avoids recursive updates
+				if (JSON.stringify(newDisplay) !== JSON.stringify(display.value)) {
+					display.value = newDisplay
+				}
+			},
+		})
 
 		const modal = ref<TableModal>(initData.modal || { visible: false })
 		const updates = ref<Record<string, string>>({})
@@ -155,14 +160,6 @@ export const createTableStore = (initData: {
 			config.value.view ? ['list', 'tree', 'tree-gantt', 'list-expansion'].includes(config.value.view) : false
 		)
 
-		// Initialize display data after all computed properties are defined
-		// Only call calculateDisplay if we don't have a special display format to preserve
-		if (initData.display && '0:0' in initData.display) {
-			displayData.value = initData.display as any
-		} else {
-			calculateDisplay()
-		}
-
 		// actions
 		const getCellData = <T = any>(colIndex: number, rowIndex: number): T => table.value[`${colIndex}:${rowIndex}`]
 		const setCellData = (colIndex: number, rowIndex: number, value: any) => {
@@ -179,14 +176,10 @@ export const createTableStore = (initData: {
 				...rows.value[rowIndex],
 				[col.name]: value,
 			}
-
-			// Recalculate display when rows change
-			calculateDisplay()
 		}
 
 		const updateRows = (newRows: TableRow[]) => {
 			rows.value = newRows
-			calculateDisplay()
 		}
 
 		const setCellText = (colIndex: number, rowIndex: number, value: string) => {
@@ -286,9 +279,6 @@ export const createTableStore = (initData: {
 					expanded: !currentExpanded,
 				}
 			}
-
-			// Recalculate display after updating expand states
-			calculateDisplay()
 		}
 
 		const getCellDisplayValue = (colIndex: number, rowIndex: number) => {
