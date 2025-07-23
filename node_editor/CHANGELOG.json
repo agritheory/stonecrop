@@ -2,6 +2,18 @@
   "name": "@stonecrop/node-editor",
   "entries": [
     {
+      "version": "0.4.24",
+      "tag": "@stonecrop/node-editor_v0.4.24",
+      "date": "Wed, 23 Jul 2025 06:27:53 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "update dependencies"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.4.23",
       "tag": "@stonecrop/node-editor_v0.4.23",
       "date": "Mon, 21 Jul 2025 09:55:33 GMT",
