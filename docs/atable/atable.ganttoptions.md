@@ -4,7 +4,7 @@
 
 ## GanttOptions interface
 
-This interface defines the options for a row when it is being viewed as a Gantt chart.
+Gantt chart options for table rows.
 
 **Signature:**
 
@@ -50,7 +50,7 @@ string
 
 </td><td>
 
-_(Optional)_ The colour to be applied to the row's gantt bar.
+_(Optional)_ The color to be applied to the row's gantt bar.
 
 
 </td></tr>
@@ -69,7 +69,7 @@ number
 
 </td><td>
 
-_(Optional)_ The length of the gantt bar. Useful when only the start index is provided. If the colspan and endIndex are not provided, the bar will stretch to the end of the table.
+_(Optional)_ The length of the gantt bar in columns. Useful when only the start index is provided. If colspan and endIndex are not provided, the bar will stretch to the end of the table.
 
 
 </td></tr>
@@ -88,7 +88,7 @@ number
 
 </td><td>
 
-_(Optional)_ The ending column index for the gantt bar. If the endIndex and colspan are not provided, the bar will stretch to the end of the table.
+_(Optional)_ The ending column index for the gantt bar. If endIndex and colspan are not provided, the bar will stretch to the end of the table.
 
 
 </td></tr>

@@ -17,6 +17,7 @@ import ATableModal from './components/ATableModal.vue';
 import { ComputedRef } from 'vue';
 import { CSSProperties } from 'vue';
 import { Ref } from 'vue';
+import type { ShallowRef } from 'vue';
 import { Store } from 'pinia';
 import { useElementBounding } from '@vueuse/core';
 
@@ -44,6 +45,44 @@ export interface CellContext {
     row: TableRow;
     table: {
         [key: string]: any;
+    };
+}
+
+// @public
+export type ConnectionEvent = {
+    type: 'create' | 'delete';
+    connection: ConnectionPath;
+};
+
+// @public
+export interface ConnectionHandle {
+    barId: string;
+    colIndex: number;
+    id: string;
+    position: {
+        x: ShallowRef<number>;
+        y: ShallowRef<number>;
+    };
+    rowIndex: number;
+    side: 'left' | 'right';
+    visible: Ref<boolean>;
+}
+
+// @public
+export interface ConnectionPath {
+    from: {
+        barId: string;
+        side: 'left' | 'right';
+    };
+    id: string;
+    label?: string;
+    style?: {
+        color?: string;
+        width?: number;
+    };
+    to: {
+        barId: string;
+        side: 'left' | 'right';
     };
 }
 
@@ -99,12 +138,66 @@ colspan?: number | undefined;
 originalIndex?: number | undefined;
 }[]>;
 config: Ref<    {
-view?: "uncounted" | "list" | "list-expansion" | "tree" | "gantt" | undefined;
+view?: "uncounted" | "list" | "list-expansion" | "tree" | "gantt" | "tree-gantt" | undefined;
 fullWidth?: boolean | undefined;
 }, TableConfig | {
-view?: "uncounted" | "list" | "list-expansion" | "tree" | "gantt" | undefined;
+view?: "uncounted" | "list" | "list-expansion" | "tree" | "gantt" | "tree-gantt" | undefined;
 fullWidth?: boolean | undefined;
 }>;
+connectionHandles: Ref<    {
+id: string;
+rowIndex: number;
+colIndex: number;
+side: "left" | "right";
+position: {
+x: number;
+y: number;
+};
+visible: boolean;
+barId: string;
+}[], ConnectionHandle[] | {
+id: string;
+rowIndex: number;
+colIndex: number;
+side: "left" | "right";
+position: {
+x: number;
+y: number;
+};
+visible: boolean;
+barId: string;
+}[]>;
+connectionPaths: Ref<    {
+id: string;
+from: {
+barId: string;
+side: "left" | "right";
+};
+to: {
+barId: string;
+side: "left" | "right";
+};
+style?: {
+color?: string | undefined;
+width?: number | undefined;
+} | undefined;
+label?: string | undefined;
+}[], ConnectionPath[] | {
+id: string;
+from: {
+barId: string;
+side: "left" | "right";
+};
+to: {
+barId: string;
+side: "left" | "right";
+};
+style?: {
+color?: string | undefined;
+width?: number | undefined;
+} | undefined;
+label?: string | undefined;
+}[]>;
 display: Ref<    {
 expanded?: boolean | undefined;
 childrenOpen?: boolean | undefined;
@@ -123,6 +216,31 @@ open?: boolean | undefined;
 indent?: number | undefined;
 parent?: number | undefined;
 rowModified?: boolean | undefined;
+}[]>;
+ganttBars: Ref<    {
+id: string;
+rowIndex: number;
+colIndex: number;
+startIndex: number;
+endIndex: number;
+color: string;
+position: {
+x: number;
+y: number;
+};
+label?: string | undefined;
+}[], GanttBarInfo[] | {
+id: string;
+rowIndex: number;
+colIndex: number;
+startIndex: number;
+endIndex: number;
+color: string;
+position: {
+x: number;
+y: number;
+};
+label?: string | undefined;
 }[]>;
 modal: Ref<    {
 visible?: boolean | undefined;
@@ -173,23 +291,62 @@ colspan?: number | undefined;
 table: Ref<    {}, {}>;
 updates: Ref<Record<string, string>, Record<string, string>>;
 hasPinnedColumns: ComputedRef<boolean>;
+isGanttView: ComputedRef<boolean>;
+isTreeView: ComputedRef<boolean>;
 numberedRowWidth: ComputedRef<string>;
 zeroColumn: ComputedRef<boolean>;
 closeModal: (event: MouseEvent) => void;
+createConnection: (fromHandleId: string, toHandleId: string, options?: {
+style?: ConnectionPath["style"];
+label?: string;
+}) => ConnectionPath | null;
+deleteConnection: (connectionId: string) => boolean;
 getCellData: <T = any>(colIndex: number, rowIndex: number) => T;
 getCellDisplayValue: (colIndex: number, rowIndex: number) => any;
+getConnectionsForBar: (barId: string) => {
+id: string;
+from: {
+barId: string;
+side: "left" | "right";
+};
+to: {
+barId: string;
+side: "left" | "right";
+};
+style?: {
+color?: string | undefined;
+width?: number | undefined;
+} | undefined;
+label?: string | undefined;
+}[];
 getFormattedValue: (colIndex: number, rowIndex: number, value: any) => any;
+getHandlesForBar: (barId: string) => {
+id: string;
+rowIndex: number;
+colIndex: number;
+side: "left" | "right";
+position: {
+x: number;
+y: number;
+};
+visible: boolean;
+barId: string;
+}[];
 getHeaderCellStyle: (column: TableColumn) => CSSProperties;
-resizeColumn: (colIndex: number, newWidth: number) => void;
 getIndent: (colIndex: number, indentLevel?: number) => string;
-getRowExpandSymbol: (rowIndex: number) => "" | "-" | "+";
+getRowExpandSymbol: (rowIndex: number) => "" | "▼" | "►";
 isRowGantt: (rowIndex: number) => boolean;
 isRowVisible: (rowIndex: number) => boolean | undefined;
+registerConnectionHandle: (handleInfo: ConnectionHandle) => void;
+registerGanttBar: (barInfo: GanttBarInfo) => void;
+resizeColumn: (colIndex: number, newWidth: number) => void;
 setCellData: (colIndex: number, rowIndex: number, value: any) => void;
 setCellText: (colIndex: number, rowIndex: number, value: string) => void;
 toggleRowExpand: (rowIndex: number) => void;
+unregisterConnectionHandle: (handleId: string) => void;
+unregisterGanttBar: (barId: string) => void;
 updateGanttBar: (event: GanttDragEvent) => void;
-}, "columns" | "config" | "display" | "modal" | "rows" | "table" | "updates">, Pick<{
+}, "columns" | "config" | "connectionHandles" | "connectionPaths" | "display" | "ganttBars" | "modal" | "rows" | "table" | "updates">, Pick<{
 columns: Ref<    {
 name: string;
 align?: CanvasTextAlign | undefined;
@@ -230,12 +387,66 @@ colspan?: number | undefined;
 originalIndex?: number | undefined;
 }[]>;
 config: Ref<    {
-view?: "uncounted" | "list" | "list-expansion" | "tree" | "gantt" | undefined;
+view?: "uncounted" | "list" | "list-expansion" | "tree" | "gantt" | "tree-gantt" | undefined;
 fullWidth?: boolean | undefined;
 }, TableConfig | {
-view?: "uncounted" | "list" | "list-expansion" | "tree" | "gantt" | undefined;
+view?: "uncounted" | "list" | "list-expansion" | "tree" | "gantt" | "tree-gantt" | undefined;
 fullWidth?: boolean | undefined;
 }>;
+connectionHandles: Ref<    {
+id: string;
+rowIndex: number;
+colIndex: number;
+side: "left" | "right";
+position: {
+x: number;
+y: number;
+};
+visible: boolean;
+barId: string;
+}[], ConnectionHandle[] | {
+id: string;
+rowIndex: number;
+colIndex: number;
+side: "left" | "right";
+position: {
+x: number;
+y: number;
+};
+visible: boolean;
+barId: string;
+}[]>;
+connectionPaths: Ref<    {
+id: string;
+from: {
+barId: string;
+side: "left" | "right";
+};
+to: {
+barId: string;
+side: "left" | "right";
+};
+style?: {
+color?: string | undefined;
+width?: number | undefined;
+} | undefined;
+label?: string | undefined;
+}[], ConnectionPath[] | {
+id: string;
+from: {
+barId: string;
+side: "left" | "right";
+};
+to: {
+barId: string;
+side: "left" | "right";
+};
+style?: {
+color?: string | undefined;
+width?: number | undefined;
+} | undefined;
+label?: string | undefined;
+}[]>;
 display: Ref<    {
 expanded?: boolean | undefined;
 childrenOpen?: boolean | undefined;
@@ -254,6 +465,31 @@ open?: boolean | undefined;
 indent?: number | undefined;
 parent?: number | undefined;
 rowModified?: boolean | undefined;
+}[]>;
+ganttBars: Ref<    {
+id: string;
+rowIndex: number;
+colIndex: number;
+startIndex: number;
+endIndex: number;
+color: string;
+position: {
+x: number;
+y: number;
+};
+label?: string | undefined;
+}[], GanttBarInfo[] | {
+id: string;
+rowIndex: number;
+colIndex: number;
+startIndex: number;
+endIndex: number;
+color: string;
+position: {
+x: number;
+y: number;
+};
+label?: string | undefined;
 }[]>;
 modal: Ref<    {
 visible?: boolean | undefined;
@@ -304,23 +540,62 @@ colspan?: number | undefined;
 table: Ref<    {}, {}>;
 updates: Ref<Record<string, string>, Record<string, string>>;
 hasPinnedColumns: ComputedRef<boolean>;
+isGanttView: ComputedRef<boolean>;
+isTreeView: ComputedRef<boolean>;
 numberedRowWidth: ComputedRef<string>;
 zeroColumn: ComputedRef<boolean>;
 closeModal: (event: MouseEvent) => void;
+createConnection: (fromHandleId: string, toHandleId: string, options?: {
+style?: ConnectionPath["style"];
+label?: string;
+}) => ConnectionPath | null;
+deleteConnection: (connectionId: string) => boolean;
 getCellData: <T = any>(colIndex: number, rowIndex: number) => T;
 getCellDisplayValue: (colIndex: number, rowIndex: number) => any;
+getConnectionsForBar: (barId: string) => {
+id: string;
+from: {
+barId: string;
+side: "left" | "right";
+};
+to: {
+barId: string;
+side: "left" | "right";
+};
+style?: {
+color?: string | undefined;
+width?: number | undefined;
+} | undefined;
+label?: string | undefined;
+}[];
 getFormattedValue: (colIndex: number, rowIndex: number, value: any) => any;
+getHandlesForBar: (barId: string) => {
+id: string;
+rowIndex: number;
+colIndex: number;
+side: "left" | "right";
+position: {
+x: number;
+y: number;
+};
+visible: boolean;
+barId: string;
+}[];
 getHeaderCellStyle: (column: TableColumn) => CSSProperties;
-resizeColumn: (colIndex: number, newWidth: number) => void;
 getIndent: (colIndex: number, indentLevel?: number) => string;
-getRowExpandSymbol: (rowIndex: number) => "" | "-" | "+";
+getRowExpandSymbol: (rowIndex: number) => "" | "▼" | "►";
 isRowGantt: (rowIndex: number) => boolean;
 isRowVisible: (rowIndex: number) => boolean | undefined;
+registerConnectionHandle: (handleInfo: ConnectionHandle) => void;
+registerGanttBar: (barInfo: GanttBarInfo) => void;
+resizeColumn: (colIndex: number, newWidth: number) => void;
 setCellData: (colIndex: number, rowIndex: number, value: any) => void;
 setCellText: (colIndex: number, rowIndex: number, value: string) => void;
 toggleRowExpand: (rowIndex: number) => void;
+unregisterConnectionHandle: (handleId: string) => void;
+unregisterGanttBar: (barId: string) => void;
 updateGanttBar: (event: GanttDragEvent) => void;
-}, "hasPinnedColumns" | "numberedRowWidth" | "zeroColumn">, Pick<{
+}, "hasPinnedColumns" | "isGanttView" | "isTreeView" | "numberedRowWidth" | "zeroColumn">, Pick<{
 columns: Ref<    {
 name: string;
 align?: CanvasTextAlign | undefined;
@@ -361,12 +636,66 @@ colspan?: number | undefined;
 originalIndex?: number | undefined;
 }[]>;
 config: Ref<    {
-view?: "uncounted" | "list" | "list-expansion" | "tree" | "gantt" | undefined;
+view?: "uncounted" | "list" | "list-expansion" | "tree" | "gantt" | "tree-gantt" | undefined;
 fullWidth?: boolean | undefined;
 }, TableConfig | {
-view?: "uncounted" | "list" | "list-expansion" | "tree" | "gantt" | undefined;
+view?: "uncounted" | "list" | "list-expansion" | "tree" | "gantt" | "tree-gantt" | undefined;
 fullWidth?: boolean | undefined;
 }>;
+connectionHandles: Ref<    {
+id: string;
+rowIndex: number;
+colIndex: number;
+side: "left" | "right";
+position: {
+x: number;
+y: number;
+};
+visible: boolean;
+barId: string;
+}[], ConnectionHandle[] | {
+id: string;
+rowIndex: number;
+colIndex: number;
+side: "left" | "right";
+position: {
+x: number;
+y: number;
+};
+visible: boolean;
+barId: string;
+}[]>;
+connectionPaths: Ref<    {
+id: string;
+from: {
+barId: string;
+side: "left" | "right";
+};
+to: {
+barId: string;
+side: "left" | "right";
+};
+style?: {
+color?: string | undefined;
+width?: number | undefined;
+} | undefined;
+label?: string | undefined;
+}[], ConnectionPath[] | {
+id: string;
+from: {
+barId: string;
+side: "left" | "right";
+};
+to: {
+barId: string;
+side: "left" | "right";
+};
+style?: {
+color?: string | undefined;
+width?: number | undefined;
+} | undefined;
+label?: string | undefined;
+}[]>;
 display: Ref<    {
 expanded?: boolean | undefined;
 childrenOpen?: boolean | undefined;
@@ -385,6 +714,31 @@ open?: boolean | undefined;
 indent?: number | undefined;
 parent?: number | undefined;
 rowModified?: boolean | undefined;
+}[]>;
+ganttBars: Ref<    {
+id: string;
+rowIndex: number;
+colIndex: number;
+startIndex: number;
+endIndex: number;
+color: string;
+position: {
+x: number;
+y: number;
+};
+label?: string | undefined;
+}[], GanttBarInfo[] | {
+id: string;
+rowIndex: number;
+colIndex: number;
+startIndex: number;
+endIndex: number;
+color: string;
+position: {
+x: number;
+y: number;
+};
+label?: string | undefined;
 }[]>;
 modal: Ref<    {
 visible?: boolean | undefined;
@@ -435,23 +789,77 @@ colspan?: number | undefined;
 table: Ref<    {}, {}>;
 updates: Ref<Record<string, string>, Record<string, string>>;
 hasPinnedColumns: ComputedRef<boolean>;
+isGanttView: ComputedRef<boolean>;
+isTreeView: ComputedRef<boolean>;
 numberedRowWidth: ComputedRef<string>;
 zeroColumn: ComputedRef<boolean>;
 closeModal: (event: MouseEvent) => void;
+createConnection: (fromHandleId: string, toHandleId: string, options?: {
+style?: ConnectionPath["style"];
+label?: string;
+}) => ConnectionPath | null;
+deleteConnection: (connectionId: string) => boolean;
 getCellData: <T = any>(colIndex: number, rowIndex: number) => T;
 getCellDisplayValue: (colIndex: number, rowIndex: number) => any;
+getConnectionsForBar: (barId: string) => {
+id: string;
+from: {
+barId: string;
+side: "left" | "right";
+};
+to: {
+barId: string;
+side: "left" | "right";
+};
+style?: {
+color?: string | undefined;
+width?: number | undefined;
+} | undefined;
+label?: string | undefined;
+}[];
 getFormattedValue: (colIndex: number, rowIndex: number, value: any) => any;
+getHandlesForBar: (barId: string) => {
+id: string;
+rowIndex: number;
+colIndex: number;
+side: "left" | "right";
+position: {
+x: number;
+y: number;
+};
+visible: boolean;
+barId: string;
+}[];
 getHeaderCellStyle: (column: TableColumn) => CSSProperties;
-resizeColumn: (colIndex: number, newWidth: number) => void;
 getIndent: (colIndex: number, indentLevel?: number) => string;
-getRowExpandSymbol: (rowIndex: number) => "" | "-" | "+";
+getRowExpandSymbol: (rowIndex: number) => "" | "▼" | "►";
 isRowGantt: (rowIndex: number) => boolean;
 isRowVisible: (rowIndex: number) => boolean | undefined;
+registerConnectionHandle: (handleInfo: ConnectionHandle) => void;
+registerGanttBar: (barInfo: GanttBarInfo) => void;
+resizeColumn: (colIndex: number, newWidth: number) => void;
 setCellData: (colIndex: number, rowIndex: number, value: any) => void;
 setCellText: (colIndex: number, rowIndex: number, value: string) => void;
 toggleRowExpand: (rowIndex: number) => void;
+unregisterConnectionHandle: (handleId: string) => void;
+unregisterGanttBar: (barId: string) => void;
 updateGanttBar: (event: GanttDragEvent) => void;
-}, "closeModal" | "getCellData" | "getCellDisplayValue" | "getFormattedValue" | "getHeaderCellStyle" | "resizeColumn" | "getIndent" | "getRowExpandSymbol" | "isRowGantt" | "isRowVisible" | "setCellData" | "setCellText" | "toggleRowExpand" | "updateGanttBar">>;
+}, "closeModal" | "createConnection" | "deleteConnection" | "getCellData" | "getCellDisplayValue" | "getConnectionsForBar" | "getFormattedValue" | "getHandlesForBar" | "getHeaderCellStyle" | "getIndent" | "getRowExpandSymbol" | "isRowGantt" | "isRowVisible" | "registerConnectionHandle" | "registerGanttBar" | "resizeColumn" | "setCellData" | "setCellText" | "toggleRowExpand" | "unregisterConnectionHandle" | "unregisterGanttBar" | "updateGanttBar">>;
+
+// @public
+export interface GanttBarInfo {
+    colIndex: number;
+    color: Ref<string>;
+    endIndex: Ref<number>;
+    id: string;
+    label?: string;
+    position: {
+        x: ShallowRef<number>;
+        y: ShallowRef<number>;
+    };
+    rowIndex: number;
+    startIndex: Ref<number>;
+}
 
 // @public
 export type GanttDragEvent = {
@@ -521,7 +929,7 @@ export interface TableColumn {
 // @public
 export interface TableConfig {
     fullWidth?: boolean;
-    view?: 'uncounted' | 'list' | 'list-expansion' | 'tree' | 'gantt';
+    view?: 'uncounted' | 'list' | 'list-expansion' | 'tree' | 'gantt' | 'tree-gantt';
 }
 
 // @public

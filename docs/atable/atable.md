@@ -67,12 +67,45 @@ Table cell context definition.
 </td></tr>
 <tr><td>
 
+[ConnectionHandle](./atable.connectionhandle.md)
+
+
+</td><td>
+
+Connection handle information for gantt bar connections.
+
+
+</td></tr>
+<tr><td>
+
+[ConnectionPath](./atable.connectionpath.md)
+
+
+</td><td>
+
+Connection path between two gantt bars.
+
+
+</td></tr>
+<tr><td>
+
+[GanttBarInfo](./atable.ganttbarinfo.md)
+
+
+</td><td>
+
+Gantt bar information for VueFlow integration.
+
+
+</td></tr>
+<tr><td>
+
 [GanttOptions](./atable.ganttoptions.md)
 
 
 </td><td>
 
-This interface defines the options for a row when it is being viewed as a Gantt chart.
+Gantt chart options for table rows.
 
 
 </td></tr>
@@ -158,6 +191,17 @@ Description
 
 </th></tr></thead>
 <tbody><tr><td>
+
+[ConnectionEvent](./atable.connectionevent.md)
+
+
+</td><td>
+
+Connection event for handling connection creation/deletion.
+
+
+</td></tr>
+<tr><td>
 
 [GanttDragEvent](./atable.ganttdragevent.md)
 

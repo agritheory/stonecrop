@@ -46,7 +46,7 @@
 		"@typescript-eslint/eslint-plugin": "^7.18.0",
 		"@typescript-eslint/parser": "^7.18.0",
 		"@vitejs/plugin-vue": "^5.2.4",
-		"@vue-flow/core": "^1.42.1",
+		"@vue-flow/core": "^1.45.0",
 		"concurrently": "^9.2.0",
 		"cypress": "^14.5.1",
 		"eslint": "^8.57.1",

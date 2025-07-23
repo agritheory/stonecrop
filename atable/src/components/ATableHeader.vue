@@ -6,7 +6,7 @@
 				id="header-index"
 				:class="[
 					store.hasPinnedColumns ? 'sticky-index' : '',
-					store.config.view === 'tree' ? 'tree-index' : '',
+					store.isTreeView ? 'tree-index' : '',
 					store.config.view === 'list-expansion' ? 'list-expansion-index' : '',
 				]"
 				class="list-index" />

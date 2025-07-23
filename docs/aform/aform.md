@@ -61,7 +61,7 @@ Table cell context definition.
 
 </td><td>
 
-This interface defines the options for a row when it is being viewed as a Gantt chart.
+Gantt chart options for table rows.
 
 
 </td></tr>

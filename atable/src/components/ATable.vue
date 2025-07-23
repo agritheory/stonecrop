@@ -1,103 +1,111 @@
 <template>
-	<table
-		ref="table"
-		class="atable"
-		:style="{
-			width: store.config.fullWidth ? '100%' : 'auto',
-		}"
-		v-on-click-outside="store.closeModal">
-		<slot name="header" :data="store">
-			<ATableHeader :columns="store.columns" :store="store" />
-		</slot>
-
-		<tbody>
-			<slot name="body" :data="store">
-				<ARow v-for="(row, rowIndex) in store.rows" :key="row.id" :row="row" :rowIndex="rowIndex" :store="store">
-					<template v-for="(column, colIndex) in getProcessedColumnsForRow(row)" :key="column.name">
-						<component
-							v-if="column.isGantt"
-							:is="column.ganttComponent || 'AGanttCell'"
-							:store="store"
-							:columnsCount="store.columns.length - pinnedColumnCount"
-							:color="row.gantt?.color"
-							:start="row.gantt?.startIndex"
-							:end="row.gantt?.endIndex"
-							:colspan="column.colspan"
-							:pinned="column.pinned"
-							:rowIndex="rowIndex"
-							:colIndex="column.originalIndex ?? colIndex"
-							:style="{
-								textAlign: column?.align || 'center',
-								minWidth: column?.width || '40ch',
-								width: store.config.fullWidth ? 'auto' : null,
-							}" />
-						<component
-							v-else
-							:is="column.cellComponent || 'ACell'"
-							:store="store"
-							:pinned="column.pinned"
-							:rowIndex="rowIndex"
-							:colIndex="colIndex"
-							:style="{
-								textAlign: column?.align || 'center',
-								width: store.config.fullWidth ? 'auto' : null,
-							}"
-							spellcheck="false" />
-					</template>
-				</ARow>
+	<div class="atable-container" style="position: relative">
+		<!-- Main table view -->
+		<table
+			ref="table"
+			class="atable"
+			:style="{
+				width: store.config.fullWidth ? '100%' : 'auto',
+			}"
+			v-on-click-outside="store.closeModal">
+			<slot name="header" :data="store">
+				<ATableHeader :columns="store.columns" :store="store" />
 			</slot>
-		</tbody>
 
-		<slot name="footer" :data="store" />
-		<slot name="modal" :data="store">
-			<ATableModal v-show="store.modal.visible" :store="store">
-				<template #default>
-					<component
-						:key="`${store.modal.rowIndex}:${store.modal.colIndex}`"
-						:is="store.modal.component"
-						:colIndex="store.modal.colIndex"
-						:rowIndex="store.modal.rowIndex"
-						:store="store"
-						v-bind="store.modal.componentProps" />
-				</template>
-			</ATableModal>
-		</slot>
-	</table>
+			<tbody>
+				<slot name="body" :data="store">
+					<ARow v-for="(row, rowIndex) in store.rows" :key="row.id" :row="row" :rowIndex="rowIndex" :store="store">
+						<template v-for="(column, colIndex) in getProcessedColumnsForRow(row)" :key="column.name">
+							<component
+								v-if="column.isGantt"
+								:is="column.ganttComponent || 'AGanttCell'"
+								:store="store"
+								:columnsCount="store.columns.length - pinnedColumnCount"
+								:color="row.gantt?.color"
+								:start="row.gantt?.startIndex"
+								:end="row.gantt?.endIndex"
+								:colspan="column.colspan"
+								:pinned="column.pinned"
+								:rowIndex="rowIndex"
+								:colIndex="column.originalIndex ?? colIndex"
+								:style="{
+									textAlign: column?.align || 'center',
+									minWidth: column?.width || '40ch',
+									width: store.config.fullWidth ? 'auto' : null,
+								}"
+								@connection:create="handleConnectionCreate" />
+							<component
+								v-else
+								:is="column.cellComponent || 'ACell'"
+								:store="store"
+								:pinned="column.pinned"
+								:rowIndex="rowIndex"
+								:colIndex="colIndex"
+								:style="{
+									textAlign: column?.align || 'center',
+									width: store.config.fullWidth ? 'auto' : null,
+								}"
+								spellcheck="false" />
+						</template>
+					</ARow>
+				</slot>
+			</tbody>
+
+			<slot name="footer" :data="store" />
+
+			<!-- Modal overlay -->
+			<slot name="modal" :data="store">
+				<ATableModal v-show="store.modal.visible" :store="store">
+					<template #default>
+						<component
+							:key="`${store.modal.rowIndex}:${store.modal.colIndex}`"
+							:is="store.modal.component"
+							:colIndex="store.modal.colIndex"
+							:rowIndex="store.modal.rowIndex"
+							:store="store"
+							v-bind="store.modal.componentProps" />
+					</template>
+				</ATableModal>
+			</slot>
+		</table>
+
+		<!-- Connection overlay for gantt connections -->
+		<AGanttConnection v-if="store.isGanttView" :store="store" @connection:delete="handleConnectionDelete" />
+	</div>
 </template>
 
 <script setup lang="ts">
 import { vOnClickOutside } from '@vueuse/components'
 import { useMutationObserver } from '@vueuse/core'
-import { nextTick, onMounted, useTemplateRef, computed, watch } from 'vue'
+import { computed, nextTick, onMounted, useTemplateRef, watch } from 'vue'
 
+import AGanttConnection from './AGanttConnection.vue'
 import ARow from './ARow.vue'
 import ATableHeader from './ATableHeader.vue'
 import ATableModal from './ATableModal.vue'
 import { createTableStore } from '../stores/table'
-import type { GanttDragEvent, TableColumn, TableConfig, TableRow } from '../types'
+import type { ConnectionEvent, ConnectionPath, GanttDragEvent, TableColumn, TableConfig, TableRow } from '../types'
 
 const modelValue = defineModel<TableRow[]>({ required: true })
 
 const {
 	id,
 	columns,
-	rows = [],
 	config = new Object(),
 } = defineProps<{
 	id?: string
 	columns: TableColumn[]
-	rows?: TableRow[]
 	config?: TableConfig
 }>()
 
 const emit = defineEmits<{
 	cellUpdate: [{ colIndex: number; rowIndex: number; newValue: any; oldValue: any }]
 	'gantt:drag': [event: GanttDragEvent]
+	'connection:event': [event: ConnectionEvent]
 }>()
 
 const tableRef = useTemplateRef<HTMLTableElement>('table')
-const rowsValue = modelValue.value.length > 0 ? modelValue.value : rows
-const store = createTableStore({ columns, rows: rowsValue, id, config })
+const store = createTableStore({ columns, rows: modelValue.value, id, config })
 
 store.$onAction(({ name, store, args, after }) => {
 	if (name === 'setCellData' || name === 'setCellText') {
@@ -141,8 +149,8 @@ onMounted(() => {
 	if (columns.some(column => column.pinned)) {
 		assignStickyCellWidths()
 
-		// in tree view, also add a mutation observer to capture and adjust expanded rows
-		if (store.config.view === 'tree') {
+		// in tree views, also add a mutation observer to capture and adjust expanded rows
+		if (store.isTreeView) {
 			useMutationObserver(tableRef, assignStickyCellWidths, { childList: true, subtree: true })
 		}
 	}
@@ -204,8 +212,7 @@ window.addEventListener('keydown', (event: KeyboardEvent) => {
 })
 
 const getProcessedColumnsForRow = (row: TableRow) => {
-	const isGanttRow = row.indent === 0
-	if (!isGanttRow || pinnedColumnCount.value === 0) {
+	if (!row.gantt || pinnedColumnCount.value === 0) {
 		return store.columns
 	}
 
@@ -229,10 +236,28 @@ const getProcessedColumnsForRow = (row: TableRow) => {
 	return result
 }
 
-defineExpose({ store })
+const handleConnectionCreate = (connection: ConnectionPath) => {
+	emit('connection:event', { type: 'create', connection })
+}
+
+const handleConnectionDelete = (connection: ConnectionPath) => {
+	emit('connection:event', { type: 'delete', connection })
+}
+
+defineExpose({
+	store,
+	createConnection: store.createConnection,
+	deleteConnection: store.deleteConnection,
+	getConnectionsForBar: store.getConnectionsForBar,
+	getHandlesForBar: store.getHandlesForBar,
+})
 </script>
 
 <style>
+.atable-container {
+	position: relative;
+}
+
 .sticky-index {
 	position: sticky;
 	left: 0px;

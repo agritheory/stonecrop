@@ -73,11 +73,7 @@
 						<template #content>
 							<AForm class="aform-main aform" v-model="basic_form_schema" :data="data" />
 
-							<ATable
-								id="list"
-								:columns="inbox.columns"
-								:rows="chooseRandomData(inbox.rows)"
-								:config="{ view: 'list-expansion' }">
+							<ATable id="list" v-model="randomInboxData" :columns="inbox.columns" :config="{ view: 'list-expansion' }">
 								<template #body="{ data }">
 									<AExpansionRow
 										:data-id="row.id"
@@ -348,6 +344,8 @@ const chooseRandomData = (rows: any[]) => {
 		.fill(0)
 		.map(() => rows[Math.floor(Math.random() * rows.length)])
 }
+
+const randomInboxData = ref(chooseRandomData(inbox_data))
 
 const getRowCellStyle = (column: TableColumn): CSSProperties => {
 	return {

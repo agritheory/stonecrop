@@ -433,8 +433,8 @@ importers:
         specifier: ^5.2.4
         version: 5.2.4(vite@6.3.5(@types/node@24.0.10)(jiti@2.4.2)(sass@1.89.2)(terser@5.43.1)(yaml@2.8.0))(vue@3.5.17(typescript@5.8.3))
       '@vue-flow/core':
-        specifier: ^1.42.1
-        version: 1.42.1(vue@3.5.17(typescript@5.8.3))
+        specifier: ^1.45.0
+        version: 1.45.0(vue@3.5.17(typescript@5.8.3))
       concurrently:
         specifier: ^9.2.0
         version: 9.2.0
@@ -533,8 +533,8 @@ importers:
   ../../node_editor:
     dependencies:
       '@vue-flow/core':
-        specifier: ^1.42.1
-        version: 1.42.1(vue@3.5.17(typescript@5.8.3))
+        specifier: ^1.45.0
+        version: 1.45.0(vue@3.5.17(typescript@5.8.3))
       vue:
         specifier: ^3.5.17
         version: 3.5.17(typescript@5.8.3)
@@ -2374,8 +2374,8 @@ packages:
   '@volar/typescript@2.4.16':
     resolution: {integrity: sha512-CrRuG20euPerYc4H0kvDWSSLTBo6qgSI1/0BjXL9ogjm5j6l0gIffvNzEvfmVjr8TAuoMPD0NxuEkteIapfZQQ==}
 
-  '@vue-flow/core@1.42.1':
-    resolution: {integrity: sha512-QzzTxMAXfOeETKc+N3XMp5XpiPxKBHK5kq98avgTsE6MXyeU2E8EkANwwgSB/hvJ/k36RjU0Y7BOwCHiqiI1tw==}
+  '@vue-flow/core@1.45.0':
+    resolution: {integrity: sha512-+Qd4fTnCfrhfYQzlHyf5Jt7rNE4PlDnEJEJZH9v6hDZoTOeOy1RhS85cSxKYxdsJ31Ttj2v3yabhoVfBf+bmJA==}
     peerDependencies:
       vue: ^3.3.0
 
@@ -8429,10 +8429,11 @@ snapshots:
       path-browserify: 1.0.1
       vscode-uri: 3.1.0
 
-  '@vue-flow/core@1.42.1(vue@3.5.17(typescript@5.8.3))':
+  '@vue-flow/core@1.45.0(vue@3.5.17(typescript@5.8.3))':
     dependencies:
       '@vueuse/core': 10.11.1(vue@3.5.17(typescript@5.8.3))
       d3-drag: 3.0.0
+      d3-interpolate: 3.0.1
       d3-selection: 3.0.0
       d3-zoom: 3.0.0
       vue: 3.5.17(typescript@5.8.3)

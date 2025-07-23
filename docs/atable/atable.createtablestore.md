@@ -60,12 +60,66 @@ createTableStore: (initData: {
         originalIndex?: number | undefined;
     }[]>;
     config: import("vue").Ref<{
-        view?: "uncounted" | "list" | "list-expansion" | "tree" | "gantt" | undefined;
+        view?: "uncounted" | "list" | "list-expansion" | "tree" | "gantt" | "tree-gantt" | undefined;
         fullWidth?: boolean | undefined;
     }, TableConfig | {
-        view?: "uncounted" | "list" | "list-expansion" | "tree" | "gantt" | undefined;
+        view?: "uncounted" | "list" | "list-expansion" | "tree" | "gantt" | "tree-gantt" | undefined;
         fullWidth?: boolean | undefined;
     }>;
+    connectionHandles: import("vue").Ref<{
+        id: string;
+        rowIndex: number;
+        colIndex: number;
+        side: "left" | "right";
+        position: {
+            x: number;
+            y: number;
+        };
+        visible: boolean;
+        barId: string;
+    }[], ConnectionHandle[] | {
+        id: string;
+        rowIndex: number;
+        colIndex: number;
+        side: "left" | "right";
+        position: {
+            x: number;
+            y: number;
+        };
+        visible: boolean;
+        barId: string;
+    }[]>;
+    connectionPaths: import("vue").Ref<{
+        id: string;
+        from: {
+            barId: string;
+            side: "left" | "right";
+        };
+        to: {
+            barId: string;
+            side: "left" | "right";
+        };
+        style?: {
+            color?: string | undefined;
+            width?: number | undefined;
+        } | undefined;
+        label?: string | undefined;
+    }[], ConnectionPath[] | {
+        id: string;
+        from: {
+            barId: string;
+            side: "left" | "right";
+        };
+        to: {
+            barId: string;
+            side: "left" | "right";
+        };
+        style?: {
+            color?: string | undefined;
+            width?: number | undefined;
+        } | undefined;
+        label?: string | undefined;
+    }[]>;
     display: import("vue").Ref<{
         expanded?: boolean | undefined;
         childrenOpen?: boolean | undefined;
@@ -84,6 +138,31 @@ createTableStore: (initData: {
         indent?: number | undefined;
         parent?: number | undefined;
         rowModified?: boolean | undefined;
+    }[]>;
+    ganttBars: import("vue").Ref<{
+        id: string;
+        rowIndex: number;
+        colIndex: number;
+        startIndex: number;
+        endIndex: number;
+        color: string;
+        position: {
+            x: number;
+            y: number;
+        };
+        label?: string | undefined;
+    }[], GanttBarInfo[] | {
+        id: string;
+        rowIndex: number;
+        colIndex: number;
+        startIndex: number;
+        endIndex: number;
+        color: string;
+        position: {
+            x: number;
+            y: number;
+        };
+        label?: string | undefined;
     }[]>;
     modal: import("vue").Ref<{
         visible?: boolean | undefined;
@@ -134,23 +213,62 @@ createTableStore: (initData: {
     table: import("vue").Ref<{}, {}>;
     updates: import("vue").Ref<Record<string, string>, Record<string, string>>;
     hasPinnedColumns: import("vue").ComputedRef<boolean>;
+    isGanttView: import("vue").ComputedRef<boolean>;
+    isTreeView: import("vue").ComputedRef<boolean>;
     numberedRowWidth: import("vue").ComputedRef<string>;
     zeroColumn: import("vue").ComputedRef<boolean>;
     closeModal: (event: MouseEvent) => void;
+    createConnection: (fromHandleId: string, toHandleId: string, options?: {
+        style?: ConnectionPath["style"];
+        label?: string;
+    }) => ConnectionPath | null;
+    deleteConnection: (connectionId: string) => boolean;
     getCellData: <T = any>(colIndex: number, rowIndex: number) => T;
     getCellDisplayValue: (colIndex: number, rowIndex: number) => any;
+    getConnectionsForBar: (barId: string) => {
+        id: string;
+        from: {
+            barId: string;
+            side: "left" | "right";
+        };
+        to: {
+            barId: string;
+            side: "left" | "right";
+        };
+        style?: {
+            color?: string | undefined;
+            width?: number | undefined;
+        } | undefined;
+        label?: string | undefined;
+    }[];
     getFormattedValue: (colIndex: number, rowIndex: number, value: any) => any;
+    getHandlesForBar: (barId: string) => {
+        id: string;
+        rowIndex: number;
+        colIndex: number;
+        side: "left" | "right";
+        position: {
+            x: number;
+            y: number;
+        };
+        visible: boolean;
+        barId: string;
+    }[];
     getHeaderCellStyle: (column: TableColumn) => CSSProperties;
-    resizeColumn: (colIndex: number, newWidth: number) => void;
     getIndent: (colIndex: number, indentLevel?: number) => string;
-    getRowExpandSymbol: (rowIndex: number) => "" | "-" | "+";
+    getRowExpandSymbol: (rowIndex: number) => "" | "▼" | "►";
     isRowGantt: (rowIndex: number) => boolean;
     isRowVisible: (rowIndex: number) => boolean | undefined;
+    registerConnectionHandle: (handleInfo: ConnectionHandle) => void;
+    registerGanttBar: (barInfo: GanttBarInfo) => void;
+    resizeColumn: (colIndex: number, newWidth: number) => void;
     setCellData: (colIndex: number, rowIndex: number, value: any) => void;
     setCellText: (colIndex: number, rowIndex: number, value: string) => void;
     toggleRowExpand: (rowIndex: number) => void;
+    unregisterConnectionHandle: (handleId: string) => void;
+    unregisterGanttBar: (barId: string) => void;
     updateGanttBar: (event: GanttDragEvent) => void;
-}, "columns" | "config" | "display" | "modal" | "rows" | "table" | "updates">, Pick<{
+}, "columns" | "config" | "connectionHandles" | "connectionPaths" | "display" | "ganttBars" | "modal" | "rows" | "table" | "updates">, Pick<{
     columns: import("vue").Ref<{
         name: string;
         align?: CanvasTextAlign | undefined;
@@ -191,12 +309,66 @@ createTableStore: (initData: {
         originalIndex?: number | undefined;
     }[]>;
     config: import("vue").Ref<{
-        view?: "uncounted" | "list" | "list-expansion" | "tree" | "gantt" | undefined;
+        view?: "uncounted" | "list" | "list-expansion" | "tree" | "gantt" | "tree-gantt" | undefined;
         fullWidth?: boolean | undefined;
     }, TableConfig | {
-        view?: "uncounted" | "list" | "list-expansion" | "tree" | "gantt" | undefined;
+        view?: "uncounted" | "list" | "list-expansion" | "tree" | "gantt" | "tree-gantt" | undefined;
         fullWidth?: boolean | undefined;
     }>;
+    connectionHandles: import("vue").Ref<{
+        id: string;
+        rowIndex: number;
+        colIndex: number;
+        side: "left" | "right";
+        position: {
+            x: number;
+            y: number;
+        };
+        visible: boolean;
+        barId: string;
+    }[], ConnectionHandle[] | {
+        id: string;
+        rowIndex: number;
+        colIndex: number;
+        side: "left" | "right";
+        position: {
+            x: number;
+            y: number;
+        };
+        visible: boolean;
+        barId: string;
+    }[]>;
+    connectionPaths: import("vue").Ref<{
+        id: string;
+        from: {
+            barId: string;
+            side: "left" | "right";
+        };
+        to: {
+            barId: string;
+            side: "left" | "right";
+        };
+        style?: {
+            color?: string | undefined;
+            width?: number | undefined;
+        } | undefined;
+        label?: string | undefined;
+    }[], ConnectionPath[] | {
+        id: string;
+        from: {
+            barId: string;
+            side: "left" | "right";
+        };
+        to: {
+            barId: string;
+            side: "left" | "right";
+        };
+        style?: {
+            color?: string | undefined;
+            width?: number | undefined;
+        } | undefined;
+        label?: string | undefined;
+    }[]>;
     display: import("vue").Ref<{
         expanded?: boolean | undefined;
         childrenOpen?: boolean | undefined;
@@ -215,6 +387,31 @@ createTableStore: (initData: {
         indent?: number | undefined;
         parent?: number | undefined;
         rowModified?: boolean | undefined;
+    }[]>;
+    ganttBars: import("vue").Ref<{
+        id: string;
+        rowIndex: number;
+        colIndex: number;
+        startIndex: number;
+        endIndex: number;
+        color: string;
+        position: {
+            x: number;
+            y: number;
+        };
+        label?: string | undefined;
+    }[], GanttBarInfo[] | {
+        id: string;
+        rowIndex: number;
+        colIndex: number;
+        startIndex: number;
+        endIndex: number;
+        color: string;
+        position: {
+            x: number;
+            y: number;
+        };
+        label?: string | undefined;
     }[]>;
     modal: import("vue").Ref<{
         visible?: boolean | undefined;
@@ -265,23 +462,62 @@ createTableStore: (initData: {
     table: import("vue").Ref<{}, {}>;
     updates: import("vue").Ref<Record<string, string>, Record<string, string>>;
     hasPinnedColumns: import("vue").ComputedRef<boolean>;
+    isGanttView: import("vue").ComputedRef<boolean>;
+    isTreeView: import("vue").ComputedRef<boolean>;
     numberedRowWidth: import("vue").ComputedRef<string>;
     zeroColumn: import("vue").ComputedRef<boolean>;
     closeModal: (event: MouseEvent) => void;
+    createConnection: (fromHandleId: string, toHandleId: string, options?: {
+        style?: ConnectionPath["style"];
+        label?: string;
+    }) => ConnectionPath | null;
+    deleteConnection: (connectionId: string) => boolean;
     getCellData: <T = any>(colIndex: number, rowIndex: number) => T;
     getCellDisplayValue: (colIndex: number, rowIndex: number) => any;
+    getConnectionsForBar: (barId: string) => {
+        id: string;
+        from: {
+            barId: string;
+            side: "left" | "right";
+        };
+        to: {
+            barId: string;
+            side: "left" | "right";
+        };
+        style?: {
+            color?: string | undefined;
+            width?: number | undefined;
+        } | undefined;
+        label?: string | undefined;
+    }[];
     getFormattedValue: (colIndex: number, rowIndex: number, value: any) => any;
+    getHandlesForBar: (barId: string) => {
+        id: string;
+        rowIndex: number;
+        colIndex: number;
+        side: "left" | "right";
+        position: {
+            x: number;
+            y: number;
+        };
+        visible: boolean;
+        barId: string;
+    }[];
     getHeaderCellStyle: (column: TableColumn) => CSSProperties;
-    resizeColumn: (colIndex: number, newWidth: number) => void;
     getIndent: (colIndex: number, indentLevel?: number) => string;
-    getRowExpandSymbol: (rowIndex: number) => "" | "-" | "+";
+    getRowExpandSymbol: (rowIndex: number) => "" | "▼" | "►";
     isRowGantt: (rowIndex: number) => boolean;
     isRowVisible: (rowIndex: number) => boolean | undefined;
+    registerConnectionHandle: (handleInfo: ConnectionHandle) => void;
+    registerGanttBar: (barInfo: GanttBarInfo) => void;
+    resizeColumn: (colIndex: number, newWidth: number) => void;
     setCellData: (colIndex: number, rowIndex: number, value: any) => void;
     setCellText: (colIndex: number, rowIndex: number, value: string) => void;
     toggleRowExpand: (rowIndex: number) => void;
+    unregisterConnectionHandle: (handleId: string) => void;
+    unregisterGanttBar: (barId: string) => void;
     updateGanttBar: (event: GanttDragEvent) => void;
-}, "hasPinnedColumns" | "numberedRowWidth" | "zeroColumn">, Pick<{
+}, "hasPinnedColumns" | "isGanttView" | "isTreeView" | "numberedRowWidth" | "zeroColumn">, Pick<{
     columns: import("vue").Ref<{
         name: string;
         align?: CanvasTextAlign | undefined;
@@ -322,12 +558,66 @@ createTableStore: (initData: {
         originalIndex?: number | undefined;
     }[]>;
     config: import("vue").Ref<{
-        view?: "uncounted" | "list" | "list-expansion" | "tree" | "gantt" | undefined;
+        view?: "uncounted" | "list" | "list-expansion" | "tree" | "gantt" | "tree-gantt" | undefined;
         fullWidth?: boolean | undefined;
     }, TableConfig | {
-        view?: "uncounted" | "list" | "list-expansion" | "tree" | "gantt" | undefined;
+        view?: "uncounted" | "list" | "list-expansion" | "tree" | "gantt" | "tree-gantt" | undefined;
         fullWidth?: boolean | undefined;
     }>;
+    connectionHandles: import("vue").Ref<{
+        id: string;
+        rowIndex: number;
+        colIndex: number;
+        side: "left" | "right";
+        position: {
+            x: number;
+            y: number;
+        };
+        visible: boolean;
+        barId: string;
+    }[], ConnectionHandle[] | {
+        id: string;
+        rowIndex: number;
+        colIndex: number;
+        side: "left" | "right";
+        position: {
+            x: number;
+            y: number;
+        };
+        visible: boolean;
+        barId: string;
+    }[]>;
+    connectionPaths: import("vue").Ref<{
+        id: string;
+        from: {
+            barId: string;
+            side: "left" | "right";
+        };
+        to: {
+            barId: string;
+            side: "left" | "right";
+        };
+        style?: {
+            color?: string | undefined;
+            width?: number | undefined;
+        } | undefined;
+        label?: string | undefined;
+    }[], ConnectionPath[] | {
+        id: string;
+        from: {
+            barId: string;
+            side: "left" | "right";
+        };
+        to: {
+            barId: string;
+            side: "left" | "right";
+        };
+        style?: {
+            color?: string | undefined;
+            width?: number | undefined;
+        } | undefined;
+        label?: string | undefined;
+    }[]>;
     display: import("vue").Ref<{
         expanded?: boolean | undefined;
         childrenOpen?: boolean | undefined;
@@ -346,6 +636,31 @@ createTableStore: (initData: {
         indent?: number | undefined;
         parent?: number | undefined;
         rowModified?: boolean | undefined;
+    }[]>;
+    ganttBars: import("vue").Ref<{
+        id: string;
+        rowIndex: number;
+        colIndex: number;
+        startIndex: number;
+        endIndex: number;
+        color: string;
+        position: {
+            x: number;
+            y: number;
+        };
+        label?: string | undefined;
+    }[], GanttBarInfo[] | {
+        id: string;
+        rowIndex: number;
+        colIndex: number;
+        startIndex: number;
+        endIndex: number;
+        color: string;
+        position: {
+            x: number;
+            y: number;
+        };
+        label?: string | undefined;
     }[]>;
     modal: import("vue").Ref<{
         visible?: boolean | undefined;
@@ -396,23 +711,62 @@ createTableStore: (initData: {
     table: import("vue").Ref<{}, {}>;
     updates: import("vue").Ref<Record<string, string>, Record<string, string>>;
     hasPinnedColumns: import("vue").ComputedRef<boolean>;
+    isGanttView: import("vue").ComputedRef<boolean>;
+    isTreeView: import("vue").ComputedRef<boolean>;
     numberedRowWidth: import("vue").ComputedRef<string>;
     zeroColumn: import("vue").ComputedRef<boolean>;
     closeModal: (event: MouseEvent) => void;
+    createConnection: (fromHandleId: string, toHandleId: string, options?: {
+        style?: ConnectionPath["style"];
+        label?: string;
+    }) => ConnectionPath | null;
+    deleteConnection: (connectionId: string) => boolean;
     getCellData: <T = any>(colIndex: number, rowIndex: number) => T;
     getCellDisplayValue: (colIndex: number, rowIndex: number) => any;
+    getConnectionsForBar: (barId: string) => {
+        id: string;
+        from: {
+            barId: string;
+            side: "left" | "right";
+        };
+        to: {
+            barId: string;
+            side: "left" | "right";
+        };
+        style?: {
+            color?: string | undefined;
+            width?: number | undefined;
+        } | undefined;
+        label?: string | undefined;
+    }[];
     getFormattedValue: (colIndex: number, rowIndex: number, value: any) => any;
+    getHandlesForBar: (barId: string) => {
+        id: string;
+        rowIndex: number;
+        colIndex: number;
+        side: "left" | "right";
+        position: {
+            x: number;
+            y: number;
+        };
+        visible: boolean;
+        barId: string;
+    }[];
     getHeaderCellStyle: (column: TableColumn) => CSSProperties;
-    resizeColumn: (colIndex: number, newWidth: number) => void;
     getIndent: (colIndex: number, indentLevel?: number) => string;
-    getRowExpandSymbol: (rowIndex: number) => "" | "-" | "+";
+    getRowExpandSymbol: (rowIndex: number) => "" | "▼" | "►";
     isRowGantt: (rowIndex: number) => boolean;
     isRowVisible: (rowIndex: number) => boolean | undefined;
+    registerConnectionHandle: (handleInfo: ConnectionHandle) => void;
+    registerGanttBar: (barInfo: GanttBarInfo) => void;
+    resizeColumn: (colIndex: number, newWidth: number) => void;
     setCellData: (colIndex: number, rowIndex: number, value: any) => void;
     setCellText: (colIndex: number, rowIndex: number, value: string) => void;
     toggleRowExpand: (rowIndex: number) => void;
+    unregisterConnectionHandle: (handleId: string) => void;
+    unregisterGanttBar: (barId: string) => void;
     updateGanttBar: (event: GanttDragEvent) => void;
-}, "closeModal" | "getCellData" | "getCellDisplayValue" | "getFormattedValue" | "getHeaderCellStyle" | "resizeColumn" | "getIndent" | "getRowExpandSymbol" | "isRowGantt" | "isRowVisible" | "setCellData" | "setCellText" | "toggleRowExpand" | "updateGanttBar">>
+}, "closeModal" | "createConnection" | "deleteConnection" | "getCellData" | "getCellDisplayValue" | "getConnectionsForBar" | "getFormattedValue" | "getHandlesForBar" | "getHeaderCellStyle" | "getIndent" | "getRowExpandSymbol" | "isRowGantt" | "isRowVisible" | "registerConnectionHandle" | "registerGanttBar" | "resizeColumn" | "setCellData" | "setCellText" | "toggleRowExpand" | "unregisterConnectionHandle" | "unregisterGanttBar" | "updateGanttBar">>
 ```
 
 ## Parameters
@@ -453,7 +807,7 @@ Initial data for the table store
 
 **Returns:**
 
-import("pinia").Store&lt;\`table-${string}\`, Pick&lt;{ columns: import("vue").Ref&lt;{ name: string; align?: CanvasTextAlign \| undefined; edit?: boolean \| undefined; label?: string \| undefined; type?: string \| undefined; width?: string \| undefined; pinned?: boolean \| undefined; resizable?: boolean \| undefined; cellComponent?: string \| undefined; cellComponentProps?: Record&lt;string, any&gt; \| undefined; modalComponent?: string \| ((context: [CellContext](./atable.cellcontext.md)<!-- -->) =&gt; string) \| undefined; modalComponentExtraProps?: Record&lt;string, any&gt; \| undefined; format?: string \| ((value: any, context: [CellContext](./atable.cellcontext.md)<!-- -->) =&gt; string) \| undefined; mask?: ((value: any) =&gt; any) \| undefined; isGantt?: boolean \| undefined; ganttComponent?: string \| undefined; colspan?: number \| undefined; originalIndex?: number \| undefined; }\[\], [TableColumn](./atable.tablecolumn.md)<!-- -->\[\] \| { name: string; align?: CanvasTextAlign \| undefined; edit?: boolean \| undefined; label?: string \| undefined; type?: string \| undefined; width?: string \| undefined; pinned?: boolean \| undefined; resizable?: boolean \| undefined; cellComponent?: string \| undefined; cellComponentProps?: Record&lt;string, any&gt; \| undefined; modalComponent?: string \| ((context: [CellContext](./atable.cellcontext.md)<!-- -->) =&gt; string) \| undefined; modalComponentExtraProps?: Record&lt;string, any&gt; \| undefined; format?: string \| ((value: any, context: [CellContext](./atable.cellcontext.md)<!-- -->) =&gt; string) \| undefined; mask?: ((value: any) =&gt; any) \| undefined; isGantt?: boolean \| undefined; ganttComponent?: string \| undefined; colspan?: number \| undefined; originalIndex?: number \| undefined; }\[\]&gt;; config: import("vue").Ref&lt;{ view?: "uncounted" \| "list" \| "list-expansion" \| "tree" \| "gantt" \| undefined; fullWidth?: boolean \| undefined; }, [TableConfig](./atable.tableconfig.md) \| { view?: "uncounted" \| "list" \| "list-expansion" \| "tree" \| "gantt" \| undefined; fullWidth?: boolean \| undefined; }&gt;; display: import("vue").Ref&lt;{ expanded?: boolean \| undefined; childrenOpen?: boolean \| undefined; isParent?: boolean \| undefined; isRoot?: boolean \| undefined; open?: boolean \| undefined; indent?: number \| undefined; parent?: number \| undefined; rowModified?: boolean \| undefined; }\[\], [TableDisplay](./atable.tabledisplay.md)<!-- -->\[\] \| { expanded?: boolean \| undefined; childrenOpen?: boolean \| undefined; isParent?: boolean \| undefined; isRoot?: boolean \| undefined; open?: boolean \| undefined; indent?: number \| undefined; parent?: number \| undefined; rowModified?: boolean \| undefined; }\[\]&gt;; modal: import("vue").Ref&lt;{ visible?: boolean \| undefined; cell?: (HTMLTableCellElement \| null) \| undefined; parent?: HTMLElement \| undefined; colIndex?: number \| undefined; rowIndex?: number \| undefined; component?: string \| undefined; componentProps?: Record&lt;string, any&gt; \| undefined; bottom?: number \| undefined; height?: number \| undefined; left?: number \| undefined; width?: number \| undefined; }, [TableModal](./atable.tablemodal.md) \| { visible?: boolean \| undefined; cell?: (HTMLTableCellElement \| null) \| undefined; parent?: HTMLElement \| undefined; colIndex?: number \| undefined; rowIndex?: number \| undefined; component?: string \| undefined; componentProps?: Record&lt;string, any&gt; \| undefined; bottom?: number \| undefined; height?: number \| undefined; left?: number \| undefined; width?: number \| undefined; }&gt;; rows: import("vue").Ref&lt;{ \[x: string\]: any; indent?: number \| undefined; parent?: number \| undefined; gantt?: { color?: string \| undefined; startIndex?: number \| undefined; endIndex?: number \| undefined; colspan?: number \| undefined; } \| undefined; }\[\], [TableRow](./atable.tablerow.md)<!-- -->\[\] \| { \[x: string\]: any; indent?: number \| undefined; parent?: number \| undefined; gantt?: { color?: string \| undefined; startIndex?: number \| undefined; endIndex?: number \| undefined; colspan?: number \| undefined; } \| undefined; }\[\]&gt;; table: import("vue").Ref&lt;{}, {}&gt;; updates: import("vue").Ref&lt;Record&lt;string, string&gt;, Record&lt;string, string&gt;&gt;; hasPinnedColumns: import("vue").ComputedRef&lt;boolean&gt;; numberedRowWidth: import("vue").ComputedRef&lt;string&gt;; zeroColumn: import("vue").ComputedRef&lt;boolean&gt;; closeModal: (event: MouseEvent) =&gt; void; getCellData: &lt;T = any&gt;(colIndex: number, rowIndex: number) =&gt; T; getCellDisplayValue: (colIndex: number, rowIndex: number) =&gt; any; getFormattedValue: (colIndex: number, rowIndex: number, value: any) =&gt; any; getHeaderCellStyle: (column: [TableColumn](./atable.tablecolumn.md)<!-- -->) =&gt; CSSProperties; resizeColumn: (colIndex: number, newWidth: number) =&gt; void; getIndent: (colIndex: number, indentLevel?: number) =&gt; string; getRowExpandSymbol: (rowIndex: number) =&gt; "" \| "-" \| "+"; isRowGantt: (rowIndex: number) =&gt; boolean; isRowVisible: (rowIndex: number) =&gt; boolean \| undefined; setCellData: (colIndex: number, rowIndex: number, value: any) =&gt; void; setCellText: (colIndex: number, rowIndex: number, value: string) =&gt; void; toggleRowExpand: (rowIndex: number) =&gt; void; updateGanttBar: (event: [GanttDragEvent](./atable.ganttdragevent.md)<!-- -->) =&gt; void; }, "columns" \| "config" \| "display" \| "modal" \| "rows" \| "table" \| "updates"&gt;, Pick&lt;{ columns: import("vue").Ref&lt;{ name: string; align?: CanvasTextAlign \| undefined; edit?: boolean \| undefined; label?: string \| undefined; type?: string \| undefined; width?: string \| undefined; pinned?: boolean \| undefined; resizable?: boolean \| undefined; cellComponent?: string \| undefined; cellComponentProps?: Record&lt;string, any&gt; \| undefined; modalComponent?: string \| ((context: [CellContext](./atable.cellcontext.md)<!-- -->) =&gt; string) \| undefined; modalComponentExtraProps?: Record&lt;string, any&gt; \| undefined; format?: string \| ((value: any, context: [CellContext](./atable.cellcontext.md)<!-- -->) =&gt; string) \| undefined; mask?: ((value: any) =&gt; any) \| undefined; isGantt?: boolean \| undefined; ganttComponent?: string \| undefined; colspan?: number \| undefined; originalIndex?: number \| undefined; }\[\], [TableColumn](./atable.tablecolumn.md)<!-- -->\[\] \| { name: string; align?: CanvasTextAlign \| undefined; edit?: boolean \| undefined; label?: string \| undefined; type?: string \| undefined; width?: string \| undefined; pinned?: boolean \| undefined; resizable?: boolean \| undefined; cellComponent?: string \| undefined; cellComponentProps?: Record&lt;string, any&gt; \| undefined; modalComponent?: string \| ((context: [CellContext](./atable.cellcontext.md)<!-- -->) =&gt; string) \| undefined; modalComponentExtraProps?: Record&lt;string, any&gt; \| undefined; format?: string \| ((value: any, context: [CellContext](./atable.cellcontext.md)<!-- -->) =&gt; string) \| undefined; mask?: ((value: any) =&gt; any) \| undefined; isGantt?: boolean \| undefined; ganttComponent?: string \| undefined; colspan?: number \| undefined; originalIndex?: number \| undefined; }\[\]&gt;; config: import("vue").Ref&lt;{ view?: "uncounted" \| "list" \| "list-expansion" \| "tree" \| "gantt" \| undefined; fullWidth?: boolean \| undefined; }, [TableConfig](./atable.tableconfig.md) \| { view?: "uncounted" \| "list" \| "list-expansion" \| "tree" \| "gantt" \| undefined; fullWidth?: boolean \| undefined; }&gt;; display: import("vue").Ref&lt;{ expanded?: boolean \| undefined; childrenOpen?: boolean \| undefined; isParent?: boolean \| undefined; isRoot?: boolean \| undefined; open?: boolean \| undefined; indent?: number \| undefined; parent?: number \| undefined; rowModified?: boolean \| undefined; }\[\], [TableDisplay](./atable.tabledisplay.md)<!-- -->\[\] \| { expanded?: boolean \| undefined; childrenOpen?: boolean \| undefined; isParent?: boolean \| undefined; isRoot?: boolean \| undefined; open?: boolean \| undefined; indent?: number \| undefined; parent?: number \| undefined; rowModified?: boolean \| undefined; }\[\]&gt;; modal: import("vue").Ref&lt;{ visible?: boolean \| undefined; cell?: (HTMLTableCellElement \| null) \| undefined; parent?: HTMLElement \| undefined; colIndex?: number \| undefined; rowIndex?: number \| undefined; component?: string \| undefined; componentProps?: Record&lt;string, any&gt; \| undefined; bottom?: number \| undefined; height?: number \| undefined; left?: number \| undefined; width?: number \| undefined; }, [TableModal](./atable.tablemodal.md) \| { visible?: boolean \| undefined; cell?: (HTMLTableCellElement \| null) \| undefined; parent?: HTMLElement \| undefined; colIndex?: number \| undefined; rowIndex?: number \| undefined; component?: string \| undefined; componentProps?: Record&lt;string, any&gt; \| undefined; bottom?: number \| undefined; height?: number \| undefined; left?: number \| undefined; width?: number \| undefined; }&gt;; rows: import("vue").Ref&lt;{ \[x: string\]: any; indent?: number \| undefined; parent?: number \| undefined; gantt?: { color?: string \| undefined; startIndex?: number \| undefined; endIndex?: number \| undefined; colspan?: number \| undefined; } \| undefined; }\[\], [TableRow](./atable.tablerow.md)<!-- -->\[\] \| { \[x: string\]: any; indent?: number \| undefined; parent?: number \| undefined; gantt?: { color?: string \| undefined; startIndex?: number \| undefined; endIndex?: number \| undefined; colspan?: number \| undefined; } \| undefined; }\[\]&gt;; table: import("vue").Ref&lt;{}, {}&gt;; updates: import("vue").Ref&lt;Record&lt;string, string&gt;, Record&lt;string, string&gt;&gt;; hasPinnedColumns: import("vue").ComputedRef&lt;boolean&gt;; numberedRowWidth: import("vue").ComputedRef&lt;string&gt;; zeroColumn: import("vue").ComputedRef&lt;boolean&gt;; closeModal: (event: MouseEvent) =&gt; void; getCellData: &lt;T = any&gt;(colIndex: number, rowIndex: number) =&gt; T; getCellDisplayValue: (colIndex: number, rowIndex: number) =&gt; any; getFormattedValue: (colIndex: number, rowIndex: number, value: any) =&gt; any; getHeaderCellStyle: (column: [TableColumn](./atable.tablecolumn.md)<!-- -->) =&gt; CSSProperties; resizeColumn: (colIndex: number, newWidth: number) =&gt; void; getIndent: (colIndex: number, indentLevel?: number) =&gt; string; getRowExpandSymbol: (rowIndex: number) =&gt; "" \| "-" \| "+"; isRowGantt: (rowIndex: number) =&gt; boolean; isRowVisible: (rowIndex: number) =&gt; boolean \| undefined; setCellData: (colIndex: number, rowIndex: number, value: any) =&gt; void; setCellText: (colIndex: number, rowIndex: number, value: string) =&gt; void; toggleRowExpand: (rowIndex: number) =&gt; void; updateGanttBar: (event: [GanttDragEvent](./atable.ganttdragevent.md)<!-- -->) =&gt; void; }, "hasPinnedColumns" \| "numberedRowWidth" \| "zeroColumn"&gt;, Pick&lt;{ columns: import("vue").Ref&lt;{ name: string; align?: CanvasTextAlign \| undefined; edit?: boolean \| undefined; label?: string \| undefined; type?: string \| undefined; width?: string \| undefined; pinned?: boolean \| undefined; resizable?: boolean \| undefined; cellComponent?: string \| undefined; cellComponentProps?: Record&lt;string, any&gt; \| undefined; modalComponent?: string \| ((context: [CellContext](./atable.cellcontext.md)<!-- -->) =&gt; string) \| undefined; modalComponentExtraProps?: Record&lt;string, any&gt; \| undefined; format?: string \| ((value: any, context: [CellContext](./atable.cellcontext.md)<!-- -->) =&gt; string) \| undefined; mask?: ((value: any) =&gt; any) \| undefined; isGantt?: boolean \| undefined; ganttComponent?: string \| undefined; colspan?: number \| undefined; originalIndex?: number \| undefined; }\[\], [TableColumn](./atable.tablecolumn.md)<!-- -->\[\] \| { name: string; align?: CanvasTextAlign \| undefined; edit?: boolean \| undefined; label?: string \| undefined; type?: string \| undefined; width?: string \| undefined; pinned?: boolean \| undefined; resizable?: boolean \| undefined; cellComponent?: string \| undefined; cellComponentProps?: Record&lt;string, any&gt; \| undefined; modalComponent?: string \| ((context: [CellContext](./atable.cellcontext.md)<!-- -->) =&gt; string) \| undefined; modalComponentExtraProps?: Record&lt;string, any&gt; \| undefined; format?: string \| ((value: any, context: [CellContext](./atable.cellcontext.md)<!-- -->) =&gt; string) \| undefined; mask?: ((value: any) =&gt; any) \| undefined; isGantt?: boolean \| undefined; ganttComponent?: string \| undefined; colspan?: number \| undefined; originalIndex?: number \| undefined; }\[\]&gt;; config: import("vue").Ref&lt;{ view?: "uncounted" \| "list" \| "list-expansion" \| "tree" \| "gantt" \| undefined; fullWidth?: boolean \| undefined; }, [TableConfig](./atable.tableconfig.md) \| { view?: "uncounted" \| "list" \| "list-expansion" \| "tree" \| "gantt" \| undefined; fullWidth?: boolean \| undefined; }&gt;; display: import("vue").Ref&lt;{ expanded?: boolean \| undefined; childrenOpen?: boolean \| undefined; isParent?: boolean \| undefined; isRoot?: boolean \| undefined; open?: boolean \| undefined; indent?: number \| undefined; parent?: number \| undefined; rowModified?: boolean \| undefined; }\[\], [TableDisplay](./atable.tabledisplay.md)<!-- -->\[\] \| { expanded?: boolean \| undefined; childrenOpen?: boolean \| undefined; isParent?: boolean \| undefined; isRoot?: boolean \| undefined; open?: boolean \| undefined; indent?: number \| undefined; parent?: number \| undefined; rowModified?: boolean \| undefined; }\[\]&gt;; modal: import("vue").Ref&lt;{ visible?: boolean \| undefined; cell?: (HTMLTableCellElement \| null) \| undefined; parent?: HTMLElement \| undefined; colIndex?: number \| undefined; rowIndex?: number \| undefined; component?: string \| undefined; componentProps?: Record&lt;string, any&gt; \| undefined; bottom?: number \| undefined; height?: number \| undefined; left?: number \| undefined; width?: number \| undefined; }, [TableModal](./atable.tablemodal.md) \| { visible?: boolean \| undefined; cell?: (HTMLTableCellElement \| null) \| undefined; parent?: HTMLElement \| undefined; colIndex?: number \| undefined; rowIndex?: number \| undefined; component?: string \| undefined; componentProps?: Record&lt;string, any&gt; \| undefined; bottom?: number \| undefined; height?: number \| undefined; left?: number \| undefined; width?: number \| undefined; }&gt;; rows: import("vue").Ref&lt;{ \[x: string\]: any; indent?: number \| undefined; parent?: number \| undefined; gantt?: { color?: string \| undefined; startIndex?: number \| undefined; endIndex?: number \| undefined; colspan?: number \| undefined; } \| undefined; }\[\], [TableRow](./atable.tablerow.md)<!-- -->\[\] \| { \[x: string\]: any; indent?: number \| undefined; parent?: number \| undefined; gantt?: { color?: string \| undefined; startIndex?: number \| undefined; endIndex?: number \| undefined; colspan?: number \| undefined; } \| undefined; }\[\]&gt;; table: import("vue").Ref&lt;{}, {}&gt;; updates: import("vue").Ref&lt;Record&lt;string, string&gt;, Record&lt;string, string&gt;&gt;; hasPinnedColumns: import("vue").ComputedRef&lt;boolean&gt;; numberedRowWidth: import("vue").ComputedRef&lt;string&gt;; zeroColumn: import("vue").ComputedRef&lt;boolean&gt;; closeModal: (event: MouseEvent) =&gt; void; getCellData: &lt;T = any&gt;(colIndex: number, rowIndex: number) =&gt; T; getCellDisplayValue: (colIndex: number, rowIndex: number) =&gt; any; getFormattedValue: (colIndex: number, rowIndex: number, value: any) =&gt; any; getHeaderCellStyle: (column: [TableColumn](./atable.tablecolumn.md)<!-- -->) =&gt; CSSProperties; resizeColumn: (colIndex: number, newWidth: number) =&gt; void; getIndent: (colIndex: number, indentLevel?: number) =&gt; string; getRowExpandSymbol: (rowIndex: number) =&gt; "" \| "-" \| "+"; isRowGantt: (rowIndex: number) =&gt; boolean; isRowVisible: (rowIndex: number) =&gt; boolean \| undefined; setCellData: (colIndex: number, rowIndex: number, value: any) =&gt; void; setCellText: (colIndex: number, rowIndex: number, value: string) =&gt; void; toggleRowExpand: (rowIndex: number) =&gt; void; updateGanttBar: (event: [GanttDragEvent](./atable.ganttdragevent.md)<!-- -->) =&gt; void; }, "closeModal" \| "getCellData" \| "getCellDisplayValue" \| "getFormattedValue" \| "getHeaderCellStyle" \| "resizeColumn" \| "getIndent" \| "getRowExpandSymbol" \| "isRowGantt" \| "isRowVisible" \| "setCellData" \| "setCellText" \| "toggleRowExpand" \| "updateGanttBar"&gt;&gt;
+import("pinia").Store&lt;\`table-${string}\`, Pick&lt;{ columns: import("vue").Ref&lt;{ name: string; align?: CanvasTextAlign \| undefined; edit?: boolean \| undefined; label?: string \| undefined; type?: string \| undefined; width?: string \| undefined; pinned?: boolean \| undefined; resizable?: boolean \| undefined; cellComponent?: string \| undefined; cellComponentProps?: Record&lt;string, any&gt; \| undefined; modalComponent?: string \| ((context: [CellContext](./atable.cellcontext.md)<!-- -->) =&gt; string) \| undefined; modalComponentExtraProps?: Record&lt;string, any&gt; \| undefined; format?: string \| ((value: any, context: [CellContext](./atable.cellcontext.md)<!-- -->) =&gt; string) \| undefined; mask?: ((value: any) =&gt; any) \| undefined; isGantt?: boolean \| undefined; ganttComponent?: string \| undefined; colspan?: number \| undefined; originalIndex?: number \| undefined; }\[\], [TableColumn](./atable.tablecolumn.md)<!-- -->\[\] \| { name: string; align?: CanvasTextAlign \| undefined; edit?: boolean \| undefined; label?: string \| undefined; type?: string \| undefined; width?: string \| undefined; pinned?: boolean \| undefined; resizable?: boolean \| undefined; cellComponent?: string \| undefined; cellComponentProps?: Record&lt;string, any&gt; \| undefined; modalComponent?: string \| ((context: [CellContext](./atable.cellcontext.md)<!-- -->) =&gt; string) \| undefined; modalComponentExtraProps?: Record&lt;string, any&gt; \| undefined; format?: string \| ((value: any, context: [CellContext](./atable.cellcontext.md)<!-- -->) =&gt; string) \| undefined; mask?: ((value: any) =&gt; any) \| undefined; isGantt?: boolean \| undefined; ganttComponent?: string \| undefined; colspan?: number \| undefined; originalIndex?: number \| undefined; }\[\]&gt;; config: import("vue").Ref&lt;{ view?: "uncounted" \| "list" \| "list-expansion" \| "tree" \| "gantt" \| "tree-gantt" \| undefined; fullWidth?: boolean \| undefined; }, [TableConfig](./atable.tableconfig.md) \| { view?: "uncounted" \| "list" \| "list-expansion" \| "tree" \| "gantt" \| "tree-gantt" \| undefined; fullWidth?: boolean \| undefined; }&gt;; connectionHandles: import("vue").Ref&lt;{ id: string; rowIndex: number; colIndex: number; side: "left" \| "right"; position: { x: number; y: number; }; visible: boolean; barId: string; }\[\], [ConnectionHandle](./atable.connectionhandle.md)<!-- -->\[\] \| { id: string; rowIndex: number; colIndex: number; side: "left" \| "right"; position: { x: number; y: number; }; visible: boolean; barId: string; }\[\]&gt;; connectionPaths: import("vue").Ref&lt;{ id: string; from: { barId: string; side: "left" \| "right"; }; to: { barId: string; side: "left" \| "right"; }; style?: { color?: string \| undefined; width?: number \| undefined; } \| undefined; label?: string \| undefined; }\[\], [ConnectionPath](./atable.connectionpath.md)<!-- -->\[\] \| { id: string; from: { barId: string; side: "left" \| "right"; }; to: { barId: string; side: "left" \| "right"; }; style?: { color?: string \| undefined; width?: number \| undefined; } \| undefined; label?: string \| undefined; }\[\]&gt;; display: import("vue").Ref&lt;{ expanded?: boolean \| undefined; childrenOpen?: boolean \| undefined; isParent?: boolean \| undefined; isRoot?: boolean \| undefined; open?: boolean \| undefined; indent?: number \| undefined; parent?: number \| undefined; rowModified?: boolean \| undefined; }\[\], [TableDisplay](./atable.tabledisplay.md)<!-- -->\[\] \| { expanded?: boolean \| undefined; childrenOpen?: boolean \| undefined; isParent?: boolean \| undefined; isRoot?: boolean \| undefined; open?: boolean \| undefined; indent?: number \| undefined; parent?: number \| undefined; rowModified?: boolean \| undefined; }\[\]&gt;; ganttBars: import("vue").Ref&lt;{ id: string; rowIndex: number; colIndex: number; startIndex: number; endIndex: number; color: string; position: { x: number; y: number; }; label?: string \| undefined; }\[\], [GanttBarInfo](./atable.ganttbarinfo.md)<!-- -->\[\] \| { id: string; rowIndex: number; colIndex: number; startIndex: number; endIndex: number; color: string; position: { x: number; y: number; }; label?: string \| undefined; }\[\]&gt;; modal: import("vue").Ref&lt;{ visible?: boolean \| undefined; cell?: (HTMLTableCellElement \| null) \| undefined; parent?: HTMLElement \| undefined; colIndex?: number \| undefined; rowIndex?: number \| undefined; component?: string \| undefined; componentProps?: Record&lt;string, any&gt; \| undefined; bottom?: number \| undefined; height?: number \| undefined; left?: number \| undefined; width?: number \| undefined; }, [TableModal](./atable.tablemodal.md) \| { visible?: boolean \| undefined; cell?: (HTMLTableCellElement \| null) \| undefined; parent?: HTMLElement \| undefined; colIndex?: number \| undefined; rowIndex?: number \| undefined; component?: string \| undefined; componentProps?: Record&lt;string, any&gt; \| undefined; bottom?: number \| undefined; height?: number \| undefined; left?: number \| undefined; width?: number \| undefined; }&gt;; rows: import("vue").Ref&lt;{ \[x: string\]: any; indent?: number \| undefined; parent?: number \| undefined; gantt?: { color?: string \| undefined; startIndex?: number \| undefined; endIndex?: number \| undefined; colspan?: number \| undefined; } \| undefined; }\[\], [TableRow](./atable.tablerow.md)<!-- -->\[\] \| { \[x: string\]: any; indent?: number \| undefined; parent?: number \| undefined; gantt?: { color?: string \| undefined; startIndex?: number \| undefined; endIndex?: number \| undefined; colspan?: number \| undefined; } \| undefined; }\[\]&gt;; table: import("vue").Ref&lt;{}, {}&gt;; updates: import("vue").Ref&lt;Record&lt;string, string&gt;, Record&lt;string, string&gt;&gt;; hasPinnedColumns: import("vue").ComputedRef&lt;boolean&gt;; isGanttView: import("vue").ComputedRef&lt;boolean&gt;; isTreeView: import("vue").ComputedRef&lt;boolean&gt;; numberedRowWidth: import("vue").ComputedRef&lt;string&gt;; zeroColumn: import("vue").ComputedRef&lt;boolean&gt;; closeModal: (event: MouseEvent) =&gt; void; createConnection: (fromHandleId: string, toHandleId: string, options?: { style?: [ConnectionPath](./atable.connectionpath.md)<!-- -->\["style"\]; label?: string; }) =&gt; [ConnectionPath](./atable.connectionpath.md) \| null; deleteConnection: (connectionId: string) =&gt; boolean; getCellData: &lt;T = any&gt;(colIndex: number, rowIndex: number) =&gt; T; getCellDisplayValue: (colIndex: number, rowIndex: number) =&gt; any; getConnectionsForBar: (barId: string) =&gt; { id: string; from: { barId: string; side: "left" \| "right"; }; to: { barId: string; side: "left" \| "right"; }; style?: { color?: string \| undefined; width?: number \| undefined; } \| undefined; label?: string \| undefined; }\[\]; getFormattedValue: (colIndex: number, rowIndex: number, value: any) =&gt; any; getHandlesForBar: (barId: string) =&gt; { id: string; rowIndex: number; colIndex: number; side: "left" \| "right"; position: { x: number; y: number; }; visible: boolean; barId: string; }\[\]; getHeaderCellStyle: (column: [TableColumn](./atable.tablecolumn.md)<!-- -->) =&gt; CSSProperties; getIndent: (colIndex: number, indentLevel?: number) =&gt; string; getRowExpandSymbol: (rowIndex: number) =&gt; "" \| "▼" \| "►"; isRowGantt: (rowIndex: number) =&gt; boolean; isRowVisible: (rowIndex: number) =&gt; boolean \| undefined; registerConnectionHandle: (handleInfo: [ConnectionHandle](./atable.connectionhandle.md)<!-- -->) =&gt; void; registerGanttBar: (barInfo: [GanttBarInfo](./atable.ganttbarinfo.md)<!-- -->) =&gt; void; resizeColumn: (colIndex: number, newWidth: number) =&gt; void; setCellData: (colIndex: number, rowIndex: number, value: any) =&gt; void; setCellText: (colIndex: number, rowIndex: number, value: string) =&gt; void; toggleRowExpand: (rowIndex: number) =&gt; void; unregisterConnectionHandle: (handleId: string) =&gt; void; unregisterGanttBar: (barId: string) =&gt; void; updateGanttBar: (event: [GanttDragEvent](./atable.ganttdragevent.md)<!-- -->) =&gt; void; }, "columns" \| "config" \| "connectionHandles" \| "connectionPaths" \| "display" \| "ganttBars" \| "modal" \| "rows" \| "table" \| "updates"&gt;, Pick&lt;{ columns: import("vue").Ref&lt;{ name: string; align?: CanvasTextAlign \| undefined; edit?: boolean \| undefined; label?: string \| undefined; type?: string \| undefined; width?: string \| undefined; pinned?: boolean \| undefined; resizable?: boolean \| undefined; cellComponent?: string \| undefined; cellComponentProps?: Record&lt;string, any&gt; \| undefined; modalComponent?: string \| ((context: [CellContext](./atable.cellcontext.md)<!-- -->) =&gt; string) \| undefined; modalComponentExtraProps?: Record&lt;string, any&gt; \| undefined; format?: string \| ((value: any, context: [CellContext](./atable.cellcontext.md)<!-- -->) =&gt; string) \| undefined; mask?: ((value: any) =&gt; any) \| undefined; isGantt?: boolean \| undefined; ganttComponent?: string \| undefined; colspan?: number \| undefined; originalIndex?: number \| undefined; }\[\], [TableColumn](./atable.tablecolumn.md)<!-- -->\[\] \| { name: string; align?: CanvasTextAlign \| undefined; edit?: boolean \| undefined; label?: string \| undefined; type?: string \| undefined; width?: string \| undefined; pinned?: boolean \| undefined; resizable?: boolean \| undefined; cellComponent?: string \| undefined; cellComponentProps?: Record&lt;string, any&gt; \| undefined; modalComponent?: string \| ((context: [CellContext](./atable.cellcontext.md)<!-- -->) =&gt; string) \| undefined; modalComponentExtraProps?: Record&lt;string, any&gt; \| undefined; format?: string \| ((value: any, context: [CellContext](./atable.cellcontext.md)<!-- -->) =&gt; string) \| undefined; mask?: ((value: any) =&gt; any) \| undefined; isGantt?: boolean \| undefined; ganttComponent?: string \| undefined; colspan?: number \| undefined; originalIndex?: number \| undefined; }\[\]&gt;; config: import("vue").Ref&lt;{ view?: "uncounted" \| "list" \| "list-expansion" \| "tree" \| "gantt" \| "tree-gantt" \| undefined; fullWidth?: boolean \| undefined; }, [TableConfig](./atable.tableconfig.md) \| { view?: "uncounted" \| "list" \| "list-expansion" \| "tree" \| "gantt" \| "tree-gantt" \| undefined; fullWidth?: boolean \| undefined; }&gt;; connectionHandles: import("vue").Ref&lt;{ id: string; rowIndex: number; colIndex: number; side: "left" \| "right"; position: { x: number; y: number; }; visible: boolean; barId: string; }\[\], [ConnectionHandle](./atable.connectionhandle.md)<!-- -->\[\] \| { id: string; rowIndex: number; colIndex: number; side: "left" \| "right"; position: { x: number; y: number; }; visible: boolean; barId: string; }\[\]&gt;; connectionPaths: import("vue").Ref&lt;{ id: string; from: { barId: string; side: "left" \| "right"; }; to: { barId: string; side: "left" \| "right"; }; style?: { color?: string \| undefined; width?: number \| undefined; } \| undefined; label?: string \| undefined; }\[\], [ConnectionPath](./atable.connectionpath.md)<!-- -->\[\] \| { id: string; from: { barId: string; side: "left" \| "right"; }; to: { barId: string; side: "left" \| "right"; }; style?: { color?: string \| undefined; width?: number \| undefined; } \| undefined; label?: string \| undefined; }\[\]&gt;; display: import("vue").Ref&lt;{ expanded?: boolean \| undefined; childrenOpen?: boolean \| undefined; isParent?: boolean \| undefined; isRoot?: boolean \| undefined; open?: boolean \| undefined; indent?: number \| undefined; parent?: number \| undefined; rowModified?: boolean \| undefined; }\[\], [TableDisplay](./atable.tabledisplay.md)<!-- -->\[\] \| { expanded?: boolean \| undefined; childrenOpen?: boolean \| undefined; isParent?: boolean \| undefined; isRoot?: boolean \| undefined; open?: boolean \| undefined; indent?: number \| undefined; parent?: number \| undefined; rowModified?: boolean \| undefined; }\[\]&gt;; ganttBars: import("vue").Ref&lt;{ id: string; rowIndex: number; colIndex: number; startIndex: number; endIndex: number; color: string; position: { x: number; y: number; }; label?: string \| undefined; }\[\], [GanttBarInfo](./atable.ganttbarinfo.md)<!-- -->\[\] \| { id: string; rowIndex: number; colIndex: number; startIndex: number; endIndex: number; color: string; position: { x: number; y: number; }; label?: string \| undefined; }\[\]&gt;; modal: import("vue").Ref&lt;{ visible?: boolean \| undefined; cell?: (HTMLTableCellElement \| null) \| undefined; parent?: HTMLElement \| undefined; colIndex?: number \| undefined; rowIndex?: number \| undefined; component?: string \| undefined; componentProps?: Record&lt;string, any&gt; \| undefined; bottom?: number \| undefined; height?: number \| undefined; left?: number \| undefined; width?: number \| undefined; }, [TableModal](./atable.tablemodal.md) \| { visible?: boolean \| undefined; cell?: (HTMLTableCellElement \| null) \| undefined; parent?: HTMLElement \| undefined; colIndex?: number \| undefined; rowIndex?: number \| undefined; component?: string \| undefined; componentProps?: Record&lt;string, any&gt; \| undefined; bottom?: number \| undefined; height?: number \| undefined; left?: number \| undefined; width?: number \| undefined; }&gt;; rows: import("vue").Ref&lt;{ \[x: string\]: any; indent?: number \| undefined; parent?: number \| undefined; gantt?: { color?: string \| undefined; startIndex?: number \| undefined; endIndex?: number \| undefined; colspan?: number \| undefined; } \| undefined; }\[\], [TableRow](./atable.tablerow.md)<!-- -->\[\] \| { \[x: string\]: any; indent?: number \| undefined; parent?: number \| undefined; gantt?: { color?: string \| undefined; startIndex?: number \| undefined; endIndex?: number \| undefined; colspan?: number \| undefined; } \| undefined; }\[\]&gt;; table: import("vue").Ref&lt;{}, {}&gt;; updates: import("vue").Ref&lt;Record&lt;string, string&gt;, Record&lt;string, string&gt;&gt;; hasPinnedColumns: import("vue").ComputedRef&lt;boolean&gt;; isGanttView: import("vue").ComputedRef&lt;boolean&gt;; isTreeView: import("vue").ComputedRef&lt;boolean&gt;; numberedRowWidth: import("vue").ComputedRef&lt;string&gt;; zeroColumn: import("vue").ComputedRef&lt;boolean&gt;; closeModal: (event: MouseEvent) =&gt; void; createConnection: (fromHandleId: string, toHandleId: string, options?: { style?: [ConnectionPath](./atable.connectionpath.md)<!-- -->\["style"\]; label?: string; }) =&gt; [ConnectionPath](./atable.connectionpath.md) \| null; deleteConnection: (connectionId: string) =&gt; boolean; getCellData: &lt;T = any&gt;(colIndex: number, rowIndex: number) =&gt; T; getCellDisplayValue: (colIndex: number, rowIndex: number) =&gt; any; getConnectionsForBar: (barId: string) =&gt; { id: string; from: { barId: string; side: "left" \| "right"; }; to: { barId: string; side: "left" \| "right"; }; style?: { color?: string \| undefined; width?: number \| undefined; } \| undefined; label?: string \| undefined; }\[\]; getFormattedValue: (colIndex: number, rowIndex: number, value: any) =&gt; any; getHandlesForBar: (barId: string) =&gt; { id: string; rowIndex: number; colIndex: number; side: "left" \| "right"; position: { x: number; y: number; }; visible: boolean; barId: string; }\[\]; getHeaderCellStyle: (column: [TableColumn](./atable.tablecolumn.md)<!-- -->) =&gt; CSSProperties; getIndent: (colIndex: number, indentLevel?: number) =&gt; string; getRowExpandSymbol: (rowIndex: number) =&gt; "" \| "▼" \| "►"; isRowGantt: (rowIndex: number) =&gt; boolean; isRowVisible: (rowIndex: number) =&gt; boolean \| undefined; registerConnectionHandle: (handleInfo: [ConnectionHandle](./atable.connectionhandle.md)<!-- -->) =&gt; void; registerGanttBar: (barInfo: [GanttBarInfo](./atable.ganttbarinfo.md)<!-- -->) =&gt; void; resizeColumn: (colIndex: number, newWidth: number) =&gt; void; setCellData: (colIndex: number, rowIndex: number, value: any) =&gt; void; setCellText: (colIndex: number, rowIndex: number, value: string) =&gt; void; toggleRowExpand: (rowIndex: number) =&gt; void; unregisterConnectionHandle: (handleId: string) =&gt; void; unregisterGanttBar: (barId: string) =&gt; void; updateGanttBar: (event: [GanttDragEvent](./atable.ganttdragevent.md)<!-- -->) =&gt; void; }, "hasPinnedColumns" \| "isGanttView" \| "isTreeView" \| "numberedRowWidth" \| "zeroColumn"&gt;, Pick&lt;{ columns: import("vue").Ref&lt;{ name: string; align?: CanvasTextAlign \| undefined; edit?: boolean \| undefined; label?: string \| undefined; type?: string \| undefined; width?: string \| undefined; pinned?: boolean \| undefined; resizable?: boolean \| undefined; cellComponent?: string \| undefined; cellComponentProps?: Record&lt;string, any&gt; \| undefined; modalComponent?: string \| ((context: [CellContext](./atable.cellcontext.md)<!-- -->) =&gt; string) \| undefined; modalComponentExtraProps?: Record&lt;string, any&gt; \| undefined; format?: string \| ((value: any, context: [CellContext](./atable.cellcontext.md)<!-- -->) =&gt; string) \| undefined; mask?: ((value: any) =&gt; any) \| undefined; isGantt?: boolean \| undefined; ganttComponent?: string \| undefined; colspan?: number \| undefined; originalIndex?: number \| undefined; }\[\], [TableColumn](./atable.tablecolumn.md)<!-- -->\[\] \| { name: string; align?: CanvasTextAlign \| undefined; edit?: boolean \| undefined; label?: string \| undefined; type?: string \| undefined; width?: string \| undefined; pinned?: boolean \| undefined; resizable?: boolean \| undefined; cellComponent?: string \| undefined; cellComponentProps?: Record&lt;string, any&gt; \| undefined; modalComponent?: string \| ((context: [CellContext](./atable.cellcontext.md)<!-- -->) =&gt; string) \| undefined; modalComponentExtraProps?: Record&lt;string, any&gt; \| undefined; format?: string \| ((value: any, context: [CellContext](./atable.cellcontext.md)<!-- -->) =&gt; string) \| undefined; mask?: ((value: any) =&gt; any) \| undefined; isGantt?: boolean \| undefined; ganttComponent?: string \| undefined; colspan?: number \| undefined; originalIndex?: number \| undefined; }\[\]&gt;; config: import("vue").Ref&lt;{ view?: "uncounted" \| "list" \| "list-expansion" \| "tree" \| "gantt" \| "tree-gantt" \| undefined; fullWidth?: boolean \| undefined; }, [TableConfig](./atable.tableconfig.md) \| { view?: "uncounted" \| "list" \| "list-expansion" \| "tree" \| "gantt" \| "tree-gantt" \| undefined; fullWidth?: boolean \| undefined; }&gt;; connectionHandles: import("vue").Ref&lt;{ id: string; rowIndex: number; colIndex: number; side: "left" \| "right"; position: { x: number; y: number; }; visible: boolean; barId: string; }\[\], [ConnectionHandle](./atable.connectionhandle.md)<!-- -->\[\] \| { id: string; rowIndex: number; colIndex: number; side: "left" \| "right"; position: { x: number; y: number; }; visible: boolean; barId: string; }\[\]&gt;; connectionPaths: import("vue").Ref&lt;{ id: string; from: { barId: string; side: "left" \| "right"; }; to: { barId: string; side: "left" \| "right"; }; style?: { color?: string \| undefined; width?: number \| undefined; } \| undefined; label?: string \| undefined; }\[\], [ConnectionPath](./atable.connectionpath.md)<!-- -->\[\] \| { id: string; from: { barId: string; side: "left" \| "right"; }; to: { barId: string; side: "left" \| "right"; }; style?: { color?: string \| undefined; width?: number \| undefined; } \| undefined; label?: string \| undefined; }\[\]&gt;; display: import("vue").Ref&lt;{ expanded?: boolean \| undefined; childrenOpen?: boolean \| undefined; isParent?: boolean \| undefined; isRoot?: boolean \| undefined; open?: boolean \| undefined; indent?: number \| undefined; parent?: number \| undefined; rowModified?: boolean \| undefined; }\[\], [TableDisplay](./atable.tabledisplay.md)<!-- -->\[\] \| { expanded?: boolean \| undefined; childrenOpen?: boolean \| undefined; isParent?: boolean \| undefined; isRoot?: boolean \| undefined; open?: boolean \| undefined; indent?: number \| undefined; parent?: number \| undefined; rowModified?: boolean \| undefined; }\[\]&gt;; ganttBars: import("vue").Ref&lt;{ id: string; rowIndex: number; colIndex: number; startIndex: number; endIndex: number; color: string; position: { x: number; y: number; }; label?: string \| undefined; }\[\], [GanttBarInfo](./atable.ganttbarinfo.md)<!-- -->\[\] \| { id: string; rowIndex: number; colIndex: number; startIndex: number; endIndex: number; color: string; position: { x: number; y: number; }; label?: string \| undefined; }\[\]&gt;; modal: import("vue").Ref&lt;{ visible?: boolean \| undefined; cell?: (HTMLTableCellElement \| null) \| undefined; parent?: HTMLElement \| undefined; colIndex?: number \| undefined; rowIndex?: number \| undefined; component?: string \| undefined; componentProps?: Record&lt;string, any&gt; \| undefined; bottom?: number \| undefined; height?: number \| undefined; left?: number \| undefined; width?: number \| undefined; }, [TableModal](./atable.tablemodal.md) \| { visible?: boolean \| undefined; cell?: (HTMLTableCellElement \| null) \| undefined; parent?: HTMLElement \| undefined; colIndex?: number \| undefined; rowIndex?: number \| undefined; component?: string \| undefined; componentProps?: Record&lt;string, any&gt; \| undefined; bottom?: number \| undefined; height?: number \| undefined; left?: number \| undefined; width?: number \| undefined; }&gt;; rows: import("vue").Ref&lt;{ \[x: string\]: any; indent?: number \| undefined; parent?: number \| undefined; gantt?: { color?: string \| undefined; startIndex?: number \| undefined; endIndex?: number \| undefined; colspan?: number \| undefined; } \| undefined; }\[\], [TableRow](./atable.tablerow.md)<!-- -->\[\] \| { \[x: string\]: any; indent?: number \| undefined; parent?: number \| undefined; gantt?: { color?: string \| undefined; startIndex?: number \| undefined; endIndex?: number \| undefined; colspan?: number \| undefined; } \| undefined; }\[\]&gt;; table: import("vue").Ref&lt;{}, {}&gt;; updates: import("vue").Ref&lt;Record&lt;string, string&gt;, Record&lt;string, string&gt;&gt;; hasPinnedColumns: import("vue").ComputedRef&lt;boolean&gt;; isGanttView: import("vue").ComputedRef&lt;boolean&gt;; isTreeView: import("vue").ComputedRef&lt;boolean&gt;; numberedRowWidth: import("vue").ComputedRef&lt;string&gt;; zeroColumn: import("vue").ComputedRef&lt;boolean&gt;; closeModal: (event: MouseEvent) =&gt; void; createConnection: (fromHandleId: string, toHandleId: string, options?: { style?: [ConnectionPath](./atable.connectionpath.md)<!-- -->\["style"\]; label?: string; }) =&gt; [ConnectionPath](./atable.connectionpath.md) \| null; deleteConnection: (connectionId: string) =&gt; boolean; getCellData: &lt;T = any&gt;(colIndex: number, rowIndex: number) =&gt; T; getCellDisplayValue: (colIndex: number, rowIndex: number) =&gt; any; getConnectionsForBar: (barId: string) =&gt; { id: string; from: { barId: string; side: "left" \| "right"; }; to: { barId: string; side: "left" \| "right"; }; style?: { color?: string \| undefined; width?: number \| undefined; } \| undefined; label?: string \| undefined; }\[\]; getFormattedValue: (colIndex: number, rowIndex: number, value: any) =&gt; any; getHandlesForBar: (barId: string) =&gt; { id: string; rowIndex: number; colIndex: number; side: "left" \| "right"; position: { x: number; y: number; }; visible: boolean; barId: string; }\[\]; getHeaderCellStyle: (column: [TableColumn](./atable.tablecolumn.md)<!-- -->) =&gt; CSSProperties; getIndent: (colIndex: number, indentLevel?: number) =&gt; string; getRowExpandSymbol: (rowIndex: number) =&gt; "" \| "▼" \| "►"; isRowGantt: (rowIndex: number) =&gt; boolean; isRowVisible: (rowIndex: number) =&gt; boolean \| undefined; registerConnectionHandle: (handleInfo: [ConnectionHandle](./atable.connectionhandle.md)<!-- -->) =&gt; void; registerGanttBar: (barInfo: [GanttBarInfo](./atable.ganttbarinfo.md)<!-- -->) =&gt; void; resizeColumn: (colIndex: number, newWidth: number) =&gt; void; setCellData: (colIndex: number, rowIndex: number, value: any) =&gt; void; setCellText: (colIndex: number, rowIndex: number, value: string) =&gt; void; toggleRowExpand: (rowIndex: number) =&gt; void; unregisterConnectionHandle: (handleId: string) =&gt; void; unregisterGanttBar: (barId: string) =&gt; void; updateGanttBar: (event: [GanttDragEvent](./atable.ganttdragevent.md)<!-- -->) =&gt; void; }, "closeModal" \| "createConnection" \| "deleteConnection" \| "getCellData" \| "getCellDisplayValue" \| "getConnectionsForBar" \| "getFormattedValue" \| "getHandlesForBar" \| "getHeaderCellStyle" \| "getIndent" \| "getRowExpandSymbol" \| "isRowGantt" \| "isRowVisible" \| "registerConnectionHandle" \| "registerGanttBar" \| "resizeColumn" \| "setCellData" \| "setCellText" \| "toggleRowExpand" \| "unregisterConnectionHandle" \| "unregisterGanttBar" \| "updateGanttBar"&gt;&gt;
 
 table store instance
 

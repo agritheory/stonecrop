@@ -4,7 +4,7 @@
 
 ## GanttOptions.endIndex property
 
-The ending column index for the gantt bar. If the endIndex and colspan are not provided, the bar will stretch to the end of the table.
+The ending column index for the gantt bar. If endIndex and colspan are not provided, the bar will stretch to the end of the table.
 
 **Signature:**
 

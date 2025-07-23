@@ -3,6 +3,9 @@ import { type CSSProperties, computed, ref } from 'vue'
 
 import type {
 	CellContext,
+	ConnectionHandle,
+	ConnectionPath,
+	GanttBarInfo,
 	GanttDragEvent,
 	TableColumn,
 	TableConfig,
@@ -56,12 +59,15 @@ export const createTableStore = (initData: {
 
 			// TODO: (typing) is this type correct for the parent set?
 			const parents = new Set<string | number>()
-			for (let rowIndex = rows.value.length - 1; rowIndex >= 0; rowIndex--) {
+			for (let rowIndex = 0; rowIndex < rows.value.length; rowIndex++) {
 				const row = rows.value[rowIndex]
-				if (row.parent) {
+				if (row.parent !== null && row.parent !== undefined) {
 					parents.add(row.parent)
 				}
+			}
 
+			for (let rowIndex = 0; rowIndex < rows.value.length; rowIndex++) {
+				const row = rows.value[rowIndex]
 				defaultDisplay[rowIndex] = {
 					childrenOpen: false,
 					expanded: false,
@@ -85,9 +91,14 @@ export const createTableStore = (initData: {
 		const display = ref(createDisplayObject(initData.display))
 		const modal = ref<TableModal>(initData.modal || { visible: false })
 		const updates = ref<Record<string, string>>({})
+		const ganttBars = ref<GanttBarInfo[]>([])
+		const connectionHandles = ref<ConnectionHandle[]>([])
+		const connectionPaths = ref<ConnectionPath[]>([])
 
 		// getters
 		const hasPinnedColumns = computed(() => columns.value.some(col => col.pinned))
+		const isGanttView = computed(() => config.value.view === 'gantt' || config.value.view === 'tree-gantt')
+		const isTreeView = computed(() => config.value.view === 'tree' || config.value.view === 'tree-gantt')
 
 		const numberedRowWidth = computed(() => {
 			const indent = Math.ceil(rows.value.length / 100 + 1)
@@ -95,7 +106,7 @@ export const createTableStore = (initData: {
 		})
 
 		const zeroColumn = computed(() =>
-			config.value.view ? ['list', 'tree', 'list-expansion'].includes(config.value.view) : false
+			config.value.view ? ['list', 'tree', 'tree-gantt', 'list-expansion'].includes(config.value.view) : false
 		)
 
 		// actions
@@ -158,32 +169,40 @@ export const createTableStore = (initData: {
 
 		const isRowGantt = (rowIndex: number) => {
 			const row = rows.value[rowIndex]
-			return config.value.view === 'gantt' && row.indent === 0
+			return isGanttView.value && row.gantt !== undefined
 		}
 
 		const isRowVisible = (rowIndex: number) => {
-			return config.value.view !== 'tree' || display.value[rowIndex].isRoot || display.value[rowIndex].open
+			return !isTreeView.value || display.value[rowIndex].isRoot || display.value[rowIndex].open
 		}
 
 		const getRowExpandSymbol = (rowIndex: number) => {
-			if (config.value.view !== 'tree') {
+			if (!isTreeView.value && config.value.view !== 'list-expansion') {
 				return ''
 			}
 
-			if (display.value[rowIndex].isRoot || display.value[rowIndex].isParent) {
-				return display.value[rowIndex].childrenOpen ? '-' : '+'
+			if (isTreeView.value && (display.value[rowIndex].isRoot || display.value[rowIndex].isParent)) {
+				return display.value[rowIndex].childrenOpen ? '▼' : '►'
+			}
+
+			if (config.value.view === 'list-expansion') {
+				return display.value[rowIndex].expanded ? '▼' : '►'
 			}
 
 			return ''
 		}
 
 		const toggleRowExpand = (rowIndex: number) => {
-			if (config.value.view === 'tree') {
+			if (isTreeView.value) {
 				display.value[rowIndex].childrenOpen = !display.value[rowIndex].childrenOpen
-				for (let index = rows.value.length - 1; index >= 0; index--) {
+				const isOpen = display.value[rowIndex].childrenOpen
+
+				for (let index = 0; index < rows.value.length; index++) {
 					if (display.value[index].parent === rowIndex) {
-						display.value[index].open = !display.value[index].open
-						if (display.value[index].childrenOpen) {
+						display.value[index].open = isOpen
+						if (!isOpen) {
+							// If we're closing, also close any children recursively
+							display.value[index].childrenOpen = false
 							toggleRowExpand(index)
 						}
 					}
@@ -259,11 +278,98 @@ export const createTableStore = (initData: {
 			}
 		}
 
+		const registerGanttBar = (barInfo: GanttBarInfo) => {
+			const existingIndex = ganttBars.value.findIndex(bar => bar.id === barInfo.id)
+			if (existingIndex >= 0) {
+				// @ts-expect-error TODO: for some reason, the IDE is expecting an unref'd value
+				ganttBars.value[existingIndex] = barInfo
+			} else {
+				// @ts-expect-error TODO: for some reason, the IDE is expecting an unref'd value
+				ganttBars.value.push(barInfo)
+			}
+		}
+
+		const unregisterGanttBar = (barId: string) => {
+			const index = ganttBars.value.findIndex(bar => bar.id === barId)
+			if (index >= 0) {
+				ganttBars.value.splice(index, 1)
+			}
+		}
+
+		const registerConnectionHandle = (handleInfo: ConnectionHandle) => {
+			const existingIndex = connectionHandles.value.findIndex(handle => handle.id === handleInfo.id)
+			if (existingIndex >= 0) {
+				// @ts-expect-error TODO: for some reason, the IDE is expecting an unref'd value
+				connectionHandles.value[existingIndex] = handleInfo
+			} else {
+				// @ts-expect-error TODO: for some reason, the IDE is expecting an unref'd value
+				connectionHandles.value.push(handleInfo)
+			}
+		}
+
+		const unregisterConnectionHandle = (handleId: string) => {
+			const index = connectionHandles.value.findIndex(handle => handle.id === handleId)
+			if (index >= 0) {
+				connectionHandles.value.splice(index, 1)
+			}
+		}
+
+		const createConnection = (
+			fromHandleId: string,
+			toHandleId: string,
+			options?: { style?: ConnectionPath['style']; label?: string }
+		) => {
+			const fromHandle = connectionHandles.value.find(h => h.id === fromHandleId)
+			const toHandle = connectionHandles.value.find(h => h.id === toHandleId)
+
+			if (!fromHandle || !toHandle) {
+				console.warn('Cannot create connection: handle not found')
+				return null
+			}
+
+			const connection: ConnectionPath = {
+				id: `connection-${fromHandleId}-${toHandleId}`,
+				from: {
+					barId: fromHandle.barId,
+					side: fromHandle.side,
+				},
+				to: {
+					barId: toHandle.barId,
+					side: toHandle.side,
+				},
+				style: options?.style,
+				label: options?.label,
+			}
+
+			connectionPaths.value.push(connection)
+			return connection
+		}
+
+		const deleteConnection = (connectionId: string) => {
+			const index = connectionPaths.value.findIndex(conn => conn.id === connectionId)
+			if (index >= 0) {
+				connectionPaths.value.splice(index, 1)
+				return true
+			}
+			return false
+		}
+
+		const getConnectionsForBar = (barId: string) => {
+			return connectionPaths.value.filter(conn => conn.from.barId === barId || conn.to.barId === barId)
+		}
+
+		const getHandlesForBar = (barId: string) => {
+			return connectionHandles.value.filter(handle => handle.barId === barId)
+		}
+
 		return {
 			// state
 			columns,
 			config,
+			connectionHandles,
+			connectionPaths,
 			display,
+			ganttBars,
 			modal,
 			rows,
 			table,
@@ -271,23 +377,33 @@ export const createTableStore = (initData: {
 
 			// getters
 			hasPinnedColumns,
+			isGanttView,
+			isTreeView,
 			numberedRowWidth,
 			zeroColumn,
 
 			// actions
 			closeModal,
+			createConnection,
+			deleteConnection,
 			getCellData,
 			getCellDisplayValue,
+			getConnectionsForBar,
 			getFormattedValue,
+			getHandlesForBar,
 			getHeaderCellStyle,
-			resizeColumn,
 			getIndent,
 			getRowExpandSymbol,
 			isRowGantt,
 			isRowVisible,
+			registerConnectionHandle,
+			registerGanttBar,
+			resizeColumn,
 			setCellData,
 			setCellText,
 			toggleRowExpand,
+			unregisterConnectionHandle,
+			unregisterGanttBar,
 			updateGanttBar,
 		}
 	})

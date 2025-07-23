@@ -93,12 +93,45 @@ Table cell context definition.
 </td></tr>
 <tr><td>
 
+[ConnectionHandle](./stonecrop.connectionhandle.md)
+
+
+</td><td>
+
+Connection handle information for gantt bar connections.
+
+
+</td></tr>
+<tr><td>
+
+[ConnectionPath](./stonecrop.connectionpath.md)
+
+
+</td><td>
+
+Connection path between two gantt bars.
+
+
+</td></tr>
+<tr><td>
+
+[GanttBarInfo](./stonecrop.ganttbarinfo.md)
+
+
+</td><td>
+
+Gantt bar information for VueFlow integration.
+
+
+</td></tr>
+<tr><td>
+
 [GanttOptions](./stonecrop.ganttoptions.md)
 
 
 </td><td>
 
-This interface defines the options for a row when it is being viewed as a Gantt chart.
+Gantt chart options for table rows.
 
 
 </td></tr>
@@ -189,6 +222,17 @@ Basic field structure for AForm schemas
 </td></tr>
 <tr><td>
 
+[ConnectionEvent](./stonecrop.connectionevent.md)
+
+
+</td><td>
+
+Connection event for handling connection creation/deletion.
+
+
+</td></tr>
+<tr><td>
+
 [FieldsetSchema](./stonecrop.fieldsetschema.md)
 
 
@@ -206,6 +250,17 @@ Schema structure for defining fieldsets inside AForm
 </td><td>
 
 Schema structure for defining forms inside AForm
+
+
+</td></tr>
+<tr><td>
+
+[GanttDragEvent](./stonecrop.ganttdragevent.md)
+
+
+</td><td>
+
+Gantt table drag event definition.
 
 
 </td></tr>

@@ -10,7 +10,7 @@
 				{{ rowIndex + 1 }}
 			</td>
 			<td
-				v-else-if="store.config.view === 'tree'"
+				v-else-if="store.isTreeView"
 				:tabIndex="-1"
 				class="tree-index"
 				:class="store.hasPinnedColumns ? 'sticky-index' : ''"

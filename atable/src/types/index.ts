@@ -1,4 +1,5 @@
 import { useElementBounding } from '@vueuse/core'
+import type { Ref, ShallowRef } from 'vue'
 
 import { createTableStore } from '../stores/table'
 
@@ -133,8 +134,8 @@ export interface TableColumn {
 	ganttComponent?: string
 
 	/**
-	 * The colspan of the Gantt-bar for the column. This is used to determine how many columns
-	 * the Gantt-bar should span.
+	 * The colspan of the Gantt bar for the column. This determines how many columns
+	 * the Gantt bar should span across.
 	 *
 	 * Only applicable for Gantt tables.
 	 *
@@ -143,8 +144,8 @@ export interface TableColumn {
 	colspan?: number
 
 	/**
-	 * The starting column index for the Gantt-bar, excluding any pinned columns. This is
-	 * evaluated automatically while rendering the table.
+	 * The original column index for the Gantt bar, excluding any pinned columns.
+	 * This is evaluated automatically while rendering the table.
 	 *
 	 * Only applicable for Gantt tables.
 	 *
@@ -185,8 +186,10 @@ export interface TableConfig {
 	 * - `list` - row numbers are displayed in the table
 	 * - `list-expansion` - carets are displayed in the number column that expand/collapse the row inline
 	 * - `tree` - carets are displayed in the number column that expand/collapse grouped rows
+	 * - `gantt` - view that allows specific rows to be displayed with Gantt functionality
+	 * - `tree-gantt` - similar to `gantt`, but allows for tree functionality as well
 	 */
-	view?: 'uncounted' | 'list' | 'list-expansion' | 'tree' | 'gantt'
+	view?: 'uncounted' | 'list' | 'list-expansion' | 'tree' | 'gantt' | 'tree-gantt'
 
 	/**
 	 * Control whether the table should be allowed to use the full width of its container.
@@ -303,29 +306,33 @@ export interface TableRow {
 }
 
 /**
- * This interface defines the options for a row when it is being viewed as a Gantt chart.
+ * Gantt chart options for table rows.
  * @public
  */
 export interface GanttOptions {
 	/**
-	 * The colour to be applied to the row's gantt bar.
+	 * The color to be applied to the row's gantt bar.
+	 *
+	 * @defaultValue '#cccccc'
 	 */
 	color?: string
 
 	/**
 	 * The starting column index for the gantt bar.
+	 *
+	 * @defaultValue 0
 	 */
 	startIndex?: number
 
 	/**
-	 * The ending column index for the gantt bar. If the endIndex and colspan are not provided,
+	 * The ending column index for the gantt bar. If endIndex and colspan are not provided,
 	 * the bar will stretch to the end of the table.
 	 */
 	endIndex?: number
 
 	/**
-	 * The length of the gantt bar. Useful when only the start index is provided. If the
-	 * colspan and endIndex are not provided, the bar will stretch to the end of the table.
+	 * The length of the gantt bar in columns. Useful when only the start index is provided.
+	 * If colspan and endIndex are not provided, the bar will stretch to the end of the table.
 	 */
 	colspan?: number
 }
@@ -467,4 +474,146 @@ export interface TableModalProps {
 	 * The store for managing the current table's state.
 	 */
 	store: ReturnType<typeof createTableStore>
+}
+
+/**
+ * Gantt bar information for VueFlow integration.
+ * @public
+ */
+export interface GanttBarInfo {
+	/**
+	 * Unique identifier for the gantt bar.
+	 */
+	id: string
+
+	/**
+	 * The row index of the gantt bar.
+	 */
+	rowIndex: number
+
+	/**
+	 * The primary column index of the gantt bar (typically the start index).
+	 */
+	colIndex: number
+
+	/**
+	 * Starting column index of the gantt bar.
+	 */
+	startIndex: Ref<number>
+
+	/**
+	 * Ending column index of the gantt bar.
+	 */
+	endIndex: Ref<number>
+
+	/**
+	 * Color of the gantt bar.
+	 */
+	color: Ref<string>
+
+	/**
+	 * The position of the gantt bar in the ATable component.
+	 */
+	position: {
+		x: ShallowRef<number>
+		y: ShallowRef<number>
+	}
+
+	/**
+	 * Display label for the gantt bar.
+	 */
+	label?: string
+}
+
+/**
+ * Connection handle information for gantt bar connections.
+ * @public
+ */
+export interface ConnectionHandle {
+	/**
+	 * Unique identifier for the connection handle.
+	 */
+	id: string
+
+	/**
+	 * The row index of the gantt bar this handle belongs to.
+	 */
+	rowIndex: number
+
+	/**
+	 * The column index of the gantt bar this handle belongs to.
+	 */
+	colIndex: number
+
+	/**
+	 * The side of the gantt bar where this handle is located.
+	 */
+	side: 'left' | 'right'
+
+	/**
+	 * The position of the connection handle.
+	 */
+	position: {
+		x: ShallowRef<number>
+		y: ShallowRef<number>
+	}
+
+	/**
+	 * Whether the handle is currently visible (on hover).
+	 */
+	visible: Ref<boolean>
+
+	/**
+	 * Reference to the gantt bar this handle belongs to.
+	 */
+	barId: string
+}
+
+/**
+ * Connection path between two gantt bars.
+ * @public
+ */
+export interface ConnectionPath {
+	/**
+	 * Unique identifier for the connection path.
+	 */
+	id: string
+
+	/**
+	 * The source connection handle.
+	 */
+	from: {
+		barId: string
+		side: 'left' | 'right'
+	}
+
+	/**
+	 * The target connection handle.
+	 */
+	to: {
+		barId: string
+		side: 'left' | 'right'
+	}
+
+	/**
+	 * Optional styling for the connection path.
+	 */
+	style?: {
+		color?: string
+		width?: number
+	}
+
+	/**
+	 * Optional label for the connection.
+	 */
+	label?: string
+}
+
+/**
+ * Connection event for handling connection creation/deletion.
+ * @public
+ */
+export type ConnectionEvent = {
+	type: 'create' | 'delete'
+	connection: ConnectionPath
 }
