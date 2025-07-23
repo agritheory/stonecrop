@@ -532,20 +532,6 @@ describe('table store', () => {
 	})
 
 	describe('createDisplayObject edge cases', () => {
-		it('should handle display object with "0:0" key', () => {
-			const existingDisplay = {
-				'0:0': { rowModified: true },
-			} as any
-
-			const newStore = createTableStore({
-				columns: mockColumns,
-				rows: mockRows,
-				display: existingDisplay,
-			})
-
-			expect(newStore.display).toStrictEqual(existingDisplay)
-		})
-
 		it('should handle rows with parent relationships', () => {
 			const treeRows: TableRow[] = [
 				{ id: 1, name: 'Parent', parent: undefined },

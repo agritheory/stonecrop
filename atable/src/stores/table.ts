@@ -26,25 +26,12 @@ export const createTableStore = (initData: {
 	rows: TableRow[]
 	id?: string
 	config?: TableConfig
-	table?: { [key: string]: any }
-	display?: TableDisplay[]
 	modal?: TableModal
 }) => {
 	const id = initData.id || generateHash()
 	const createStore = defineStore(`table-${id}`, () => {
-		const createDisplayObject = (forceRecalculate = false) => {
+		const createDisplayObject = () => {
 			const defaultDisplay: TableDisplay[] = [Object.assign({}, { rowModified: false })]
-
-			// Only use provided display on initial load, not on reactive updates
-			if (!forceRecalculate && initData.display) {
-				if ('0:0' in initData.display) {
-					return initData.display
-				}
-				// else if ('default' in display) {
-				// 	// TODO: (typing) what is the possible input here for 'default'?
-				// 	defaultDisplay = display.default
-				// }
-			}
 
 			// TODO: (typing) is this type correct for the parent set?
 			const parents = new Set<string | number>()
@@ -82,12 +69,6 @@ export const createTableStore = (initData: {
 		const rowExpandStates = ref<Record<number, { childrenOpen?: boolean; expanded?: boolean }>>({})
 
 		const table = computed(() => {
-			// if the initial table data is provided and not empty, use it
-			if (initData.table && Object.keys(initData.table).length > 0) {
-				return initData.table
-			}
-
-			// otherwise, create a new table object from the provided columns and rows
 			const table = {}
 			for (const [colIndex, column] of columns.value.entries()) {
 				for (const [rowIndex, row] of rows.value.entries()) {
@@ -99,7 +80,7 @@ export const createTableStore = (initData: {
 
 		const display = computed({
 			get: () => {
-				const baseDisplay = createDisplayObject(true)
+				const baseDisplay = createDisplayObject()
 
 				// Apply persistent modifications and expand states
 				for (let i = 0; i < baseDisplay.length; i++) {
@@ -392,6 +373,7 @@ export const createTableStore = (initData: {
 			const toHandle = connectionHandles.value.find(h => h.id === toHandleId)
 
 			if (!fromHandle || !toHandle) {
+				// eslint-disable-next-line no-console
 				console.warn('Cannot create connection: handle not found')
 				return null
 			}

@@ -93,10 +93,6 @@ export const createTableStore: (initData: {
     rows: TableRow[];
     id?: string;
     config?: TableConfig;
-    table?: {
-        [key: string]: any;
-    };
-    display?: TableDisplay[];
     modal?: TableModal;
 }) => Store<`table-${string}`, Pick<{
 columns: Ref<    {
