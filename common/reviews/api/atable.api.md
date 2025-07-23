@@ -20,6 +20,7 @@ import { Ref } from 'vue';
 import type { ShallowRef } from 'vue';
 import { Store } from 'pinia';
 import { useElementBounding } from '@vueuse/core';
+import { WritableComputedRef } from 'vue';
 
 export { ACell }
 
@@ -92,10 +93,6 @@ export const createTableStore: (initData: {
     rows: TableRow[];
     id?: string;
     config?: TableConfig;
-    table?: {
-        [key: string]: any;
-    };
-    display?: TableDisplay[];
     modal?: TableModal;
 }) => Store<`table-${string}`, Pick<{
 columns: Ref<    {
@@ -198,25 +195,7 @@ width?: number | undefined;
 } | undefined;
 label?: string | undefined;
 }[]>;
-display: Ref<    {
-expanded?: boolean | undefined;
-childrenOpen?: boolean | undefined;
-isParent?: boolean | undefined;
-isRoot?: boolean | undefined;
-open?: boolean | undefined;
-indent?: number | undefined;
-parent?: number | undefined;
-rowModified?: boolean | undefined;
-}[], TableDisplay[] | {
-expanded?: boolean | undefined;
-childrenOpen?: boolean | undefined;
-isParent?: boolean | undefined;
-isRoot?: boolean | undefined;
-open?: boolean | undefined;
-indent?: number | undefined;
-parent?: number | undefined;
-rowModified?: boolean | undefined;
-}[]>;
+display: WritableComputedRef<TableDisplay[], TableDisplay[]>;
 ganttBars: Ref<    {
 id: string;
 rowIndex: number;
@@ -288,7 +267,7 @@ endIndex?: number | undefined;
 colspan?: number | undefined;
 } | undefined;
 }[]>;
-table: Ref<    {}, {}>;
+table: ComputedRef<    {}>;
 updates: Ref<Record<string, string>, Record<string, string>>;
 hasPinnedColumns: ComputedRef<boolean>;
 isGanttView: ComputedRef<boolean>;
@@ -346,7 +325,8 @@ toggleRowExpand: (rowIndex: number) => void;
 unregisterConnectionHandle: (handleId: string) => void;
 unregisterGanttBar: (barId: string) => void;
 updateGanttBar: (event: GanttDragEvent) => void;
-}, "columns" | "config" | "connectionHandles" | "connectionPaths" | "display" | "ganttBars" | "modal" | "rows" | "table" | "updates">, Pick<{
+updateRows: (newRows: TableRow[]) => void;
+}, "columns" | "config" | "connectionHandles" | "connectionPaths" | "ganttBars" | "modal" | "rows" | "updates">, Pick<{
 columns: Ref<    {
 name: string;
 align?: CanvasTextAlign | undefined;
@@ -447,25 +427,7 @@ width?: number | undefined;
 } | undefined;
 label?: string | undefined;
 }[]>;
-display: Ref<    {
-expanded?: boolean | undefined;
-childrenOpen?: boolean | undefined;
-isParent?: boolean | undefined;
-isRoot?: boolean | undefined;
-open?: boolean | undefined;
-indent?: number | undefined;
-parent?: number | undefined;
-rowModified?: boolean | undefined;
-}[], TableDisplay[] | {
-expanded?: boolean | undefined;
-childrenOpen?: boolean | undefined;
-isParent?: boolean | undefined;
-isRoot?: boolean | undefined;
-open?: boolean | undefined;
-indent?: number | undefined;
-parent?: number | undefined;
-rowModified?: boolean | undefined;
-}[]>;
+display: WritableComputedRef<TableDisplay[], TableDisplay[]>;
 ganttBars: Ref<    {
 id: string;
 rowIndex: number;
@@ -537,7 +499,7 @@ endIndex?: number | undefined;
 colspan?: number | undefined;
 } | undefined;
 }[]>;
-table: Ref<    {}, {}>;
+table: ComputedRef<    {}>;
 updates: Ref<Record<string, string>, Record<string, string>>;
 hasPinnedColumns: ComputedRef<boolean>;
 isGanttView: ComputedRef<boolean>;
@@ -595,7 +557,8 @@ toggleRowExpand: (rowIndex: number) => void;
 unregisterConnectionHandle: (handleId: string) => void;
 unregisterGanttBar: (barId: string) => void;
 updateGanttBar: (event: GanttDragEvent) => void;
-}, "hasPinnedColumns" | "isGanttView" | "isTreeView" | "numberedRowWidth" | "zeroColumn">, Pick<{
+updateRows: (newRows: TableRow[]) => void;
+}, "display" | "table" | "hasPinnedColumns" | "isGanttView" | "isTreeView" | "numberedRowWidth" | "zeroColumn">, Pick<{
 columns: Ref<    {
 name: string;
 align?: CanvasTextAlign | undefined;
@@ -696,25 +659,7 @@ width?: number | undefined;
 } | undefined;
 label?: string | undefined;
 }[]>;
-display: Ref<    {
-expanded?: boolean | undefined;
-childrenOpen?: boolean | undefined;
-isParent?: boolean | undefined;
-isRoot?: boolean | undefined;
-open?: boolean | undefined;
-indent?: number | undefined;
-parent?: number | undefined;
-rowModified?: boolean | undefined;
-}[], TableDisplay[] | {
-expanded?: boolean | undefined;
-childrenOpen?: boolean | undefined;
-isParent?: boolean | undefined;
-isRoot?: boolean | undefined;
-open?: boolean | undefined;
-indent?: number | undefined;
-parent?: number | undefined;
-rowModified?: boolean | undefined;
-}[]>;
+display: WritableComputedRef<TableDisplay[], TableDisplay[]>;
 ganttBars: Ref<    {
 id: string;
 rowIndex: number;
@@ -786,7 +731,7 @@ endIndex?: number | undefined;
 colspan?: number | undefined;
 } | undefined;
 }[]>;
-table: Ref<    {}, {}>;
+table: ComputedRef<    {}>;
 updates: Ref<Record<string, string>, Record<string, string>>;
 hasPinnedColumns: ComputedRef<boolean>;
 isGanttView: ComputedRef<boolean>;
@@ -844,7 +789,8 @@ toggleRowExpand: (rowIndex: number) => void;
 unregisterConnectionHandle: (handleId: string) => void;
 unregisterGanttBar: (barId: string) => void;
 updateGanttBar: (event: GanttDragEvent) => void;
-}, "closeModal" | "createConnection" | "deleteConnection" | "getCellData" | "getCellDisplayValue" | "getConnectionsForBar" | "getFormattedValue" | "getHandlesForBar" | "getHeaderCellStyle" | "getIndent" | "getRowExpandSymbol" | "isRowGantt" | "isRowVisible" | "registerConnectionHandle" | "registerGanttBar" | "resizeColumn" | "setCellData" | "setCellText" | "toggleRowExpand" | "unregisterConnectionHandle" | "unregisterGanttBar" | "updateGanttBar">>;
+updateRows: (newRows: TableRow[]) => void;
+}, "closeModal" | "createConnection" | "deleteConnection" | "getCellData" | "getCellDisplayValue" | "getConnectionsForBar" | "getFormattedValue" | "getHandlesForBar" | "getHeaderCellStyle" | "getIndent" | "getRowExpandSymbol" | "isRowGantt" | "isRowVisible" | "registerConnectionHandle" | "registerGanttBar" | "resizeColumn" | "setCellData" | "setCellText" | "toggleRowExpand" | "unregisterConnectionHandle" | "unregisterGanttBar" | "updateGanttBar" | "updateRows">>;
 
 // @public
 export interface GanttBarInfo {

@@ -26,36 +26,12 @@ export const createTableStore = (initData: {
 	rows: TableRow[]
 	id?: string
 	config?: TableConfig
-	table?: { [key: string]: any }
-	display?: TableDisplay[]
 	modal?: TableModal
 }) => {
 	const id = initData.id || generateHash()
 	const createStore = defineStore(`table-${id}`, () => {
-		// util functions
-		const createTableObject = () => {
-			const table = {}
-			for (const [colIndex, column] of columns.value.entries()) {
-				for (const [rowIndex, row] of rows.value.entries()) {
-					table[`${colIndex}:${rowIndex}`] = row[column.name]
-				}
-			}
-			return table
-		}
-
-		const createDisplayObject = (display?: TableDisplay[]) => {
+		const createDisplayObject = () => {
 			const defaultDisplay: TableDisplay[] = [Object.assign({}, { rowModified: false })]
-
-			// TODO: (typing) what is the type of `display` here?
-			if (display) {
-				if ('0:0' in display) {
-					return display
-				}
-				// else if ('default' in display) {
-				// 	// TODO: (typing) what is the possible input here for 'default'?
-				// 	defaultDisplay = display.default
-				// }
-			}
 
 			// TODO: (typing) is this type correct for the parent set?
 			const parents = new Set<string | number>()
@@ -87,8 +63,64 @@ export const createTableStore = (initData: {
 		const columns = ref(initData.columns)
 		const rows = ref(initData.rows)
 		const config = ref(initData.config || {})
-		const table = ref(initData.table || createTableObject())
-		const display = ref(createDisplayObject(initData.display))
+
+		// Track row modifications and expand states separately from the computed display
+		const rowModifications = ref<Record<number, boolean>>({})
+		const rowExpandStates = ref<Record<number, { childrenOpen?: boolean; expanded?: boolean }>>({})
+
+		const table = computed(() => {
+			const table = {}
+			for (const [colIndex, column] of columns.value.entries()) {
+				for (const [rowIndex, row] of rows.value.entries()) {
+					table[`${colIndex}:${rowIndex}`] = row[column.name]
+				}
+			}
+			return table
+		})
+
+		const display = computed({
+			get: () => {
+				const baseDisplay = createDisplayObject()
+
+				// Apply persistent modifications and expand states
+				for (let i = 0; i < baseDisplay.length; i++) {
+					if (rowModifications.value[i]) {
+						baseDisplay[i].rowModified = rowModifications.value[i]
+					}
+					if (rowExpandStates.value[i]) {
+						if (rowExpandStates.value[i].childrenOpen !== undefined) {
+							baseDisplay[i].childrenOpen = rowExpandStates.value[i].childrenOpen!
+						}
+						if (rowExpandStates.value[i].expanded !== undefined) {
+							baseDisplay[i].expanded = rowExpandStates.value[i].expanded!
+						}
+					}
+				}
+
+				// Calculate 'open' property for tree view based on parent's childrenOpen state
+				if (isTreeView.value) {
+					for (let i = 0; i < baseDisplay.length; i++) {
+						const row = baseDisplay[i]
+						if (!row.isRoot && row.parent !== null && row.parent !== undefined) {
+							// Child row is 'open' if its parent's childrenOpen is true
+							const parentIndex = row.parent
+							if (parentIndex >= 0 && parentIndex < baseDisplay.length) {
+								baseDisplay[i].open = baseDisplay[parentIndex].childrenOpen || false
+							}
+						}
+					}
+				}
+
+				return baseDisplay
+			},
+			set: (newDisplay: TableDisplay[]) => {
+				// Only update if the new display is different from the current one; also avoids recursive updates
+				if (JSON.stringify(newDisplay) !== JSON.stringify(display.value)) {
+					display.value = newDisplay
+				}
+			},
+		})
+
 		const modal = ref<TableModal>(initData.modal || { visible: false })
 		const updates = ref<Record<string, string>>({})
 		const ganttBars = ref<GanttBarInfo[]>([])
@@ -116,7 +148,7 @@ export const createTableStore = (initData: {
 			const col = columns.value[colIndex]
 
 			if (table.value[index] !== value) {
-				display.value[rowIndex].rowModified = true
+				rowModifications.value[rowIndex] = true
 			}
 
 			table.value[index] = value
@@ -127,11 +159,15 @@ export const createTableStore = (initData: {
 			}
 		}
 
+		const updateRows = (newRows: TableRow[]) => {
+			rows.value = newRows
+		}
+
 		const setCellText = (colIndex: number, rowIndex: number, value: string) => {
 			const index = `${colIndex}:${rowIndex}`
 
 			if (table.value[index] !== value) {
-				display.value[rowIndex].rowModified = true
+				rowModifications.value[rowIndex] = true
 				updates.value[index] = value
 			}
 		}
@@ -194,21 +230,35 @@ export const createTableStore = (initData: {
 
 		const toggleRowExpand = (rowIndex: number) => {
 			if (isTreeView.value) {
-				display.value[rowIndex].childrenOpen = !display.value[rowIndex].childrenOpen
-				const isOpen = display.value[rowIndex].childrenOpen
+				const currentState = rowExpandStates.value[rowIndex] || {}
+				const currentChildrenOpen = currentState.childrenOpen ?? display.value[rowIndex].childrenOpen
+				const newChildrenOpen = !currentChildrenOpen
 
-				for (let index = 0; index < rows.value.length; index++) {
-					if (display.value[index].parent === rowIndex) {
-						display.value[index].open = isOpen
-						if (!isOpen) {
-							// If we're closing, also close any children recursively
-							display.value[index].childrenOpen = false
+				rowExpandStates.value[rowIndex] = {
+					...currentState,
+					childrenOpen: newChildrenOpen,
+				}
+
+				// If we're closing, recursively close all descendant nodes
+				if (!newChildrenOpen) {
+					for (let index = 0; index < rows.value.length; index++) {
+						if (display.value[index].parent === rowIndex) {
+							const childState = rowExpandStates.value[index] || {}
+							rowExpandStates.value[index] = {
+								...childState,
+								childrenOpen: false,
+							}
 							toggleRowExpand(index)
 						}
 					}
 				}
 			} else if (config.value.view === 'list-expansion') {
-				display.value[rowIndex].expanded = !display.value[rowIndex].expanded
+				const currentState = rowExpandStates.value[rowIndex] || {}
+				const currentExpanded = currentState.expanded ?? display.value[rowIndex].expanded
+				rowExpandStates.value[rowIndex] = {
+					...currentState,
+					expanded: !currentExpanded,
+				}
 			}
 		}
 
@@ -323,6 +373,7 @@ export const createTableStore = (initData: {
 			const toHandle = connectionHandles.value.find(h => h.id === toHandleId)
 
 			if (!fromHandle || !toHandle) {
+				// eslint-disable-next-line no-console
 				console.warn('Cannot create connection: handle not found')
 				return null
 			}
@@ -405,6 +456,7 @@ export const createTableStore = (initData: {
 			unregisterConnectionHandle,
 			unregisterGanttBar,
 			updateGanttBar,
+			updateRows,
 		}
 	})
 

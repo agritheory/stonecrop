@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/atable",
+      "comment": "build display and table properties dynamically",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/atable"
+}
