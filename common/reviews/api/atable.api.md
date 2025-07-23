@@ -198,16 +198,7 @@ width?: number | undefined;
 } | undefined;
 label?: string | undefined;
 }[]>;
-display: Ref<    {
-expanded?: boolean | undefined;
-childrenOpen?: boolean | undefined;
-isParent?: boolean | undefined;
-isRoot?: boolean | undefined;
-open?: boolean | undefined;
-indent?: number | undefined;
-parent?: number | undefined;
-rowModified?: boolean | undefined;
-}[], TableDisplay[] | {
+display: ComputedRef<    {
 expanded?: boolean | undefined;
 childrenOpen?: boolean | undefined;
 isParent?: boolean | undefined;
@@ -346,7 +337,8 @@ toggleRowExpand: (rowIndex: number) => void;
 unregisterConnectionHandle: (handleId: string) => void;
 unregisterGanttBar: (barId: string) => void;
 updateGanttBar: (event: GanttDragEvent) => void;
-}, "columns" | "config" | "connectionHandles" | "connectionPaths" | "display" | "ganttBars" | "modal" | "rows" | "table" | "updates">, Pick<{
+updateRows: (newRows: TableRow[]) => void;
+}, "columns" | "config" | "connectionHandles" | "connectionPaths" | "ganttBars" | "modal" | "rows" | "table" | "updates">, Pick<{
 columns: Ref<    {
 name: string;
 align?: CanvasTextAlign | undefined;
@@ -447,16 +439,7 @@ width?: number | undefined;
 } | undefined;
 label?: string | undefined;
 }[]>;
-display: Ref<    {
-expanded?: boolean | undefined;
-childrenOpen?: boolean | undefined;
-isParent?: boolean | undefined;
-isRoot?: boolean | undefined;
-open?: boolean | undefined;
-indent?: number | undefined;
-parent?: number | undefined;
-rowModified?: boolean | undefined;
-}[], TableDisplay[] | {
+display: ComputedRef<    {
 expanded?: boolean | undefined;
 childrenOpen?: boolean | undefined;
 isParent?: boolean | undefined;
@@ -595,7 +578,8 @@ toggleRowExpand: (rowIndex: number) => void;
 unregisterConnectionHandle: (handleId: string) => void;
 unregisterGanttBar: (barId: string) => void;
 updateGanttBar: (event: GanttDragEvent) => void;
-}, "hasPinnedColumns" | "isGanttView" | "isTreeView" | "numberedRowWidth" | "zeroColumn">, Pick<{
+updateRows: (newRows: TableRow[]) => void;
+}, "display" | "hasPinnedColumns" | "isGanttView" | "isTreeView" | "numberedRowWidth" | "zeroColumn">, Pick<{
 columns: Ref<    {
 name: string;
 align?: CanvasTextAlign | undefined;
@@ -696,16 +680,7 @@ width?: number | undefined;
 } | undefined;
 label?: string | undefined;
 }[]>;
-display: Ref<    {
-expanded?: boolean | undefined;
-childrenOpen?: boolean | undefined;
-isParent?: boolean | undefined;
-isRoot?: boolean | undefined;
-open?: boolean | undefined;
-indent?: number | undefined;
-parent?: number | undefined;
-rowModified?: boolean | undefined;
-}[], TableDisplay[] | {
+display: ComputedRef<    {
 expanded?: boolean | undefined;
 childrenOpen?: boolean | undefined;
 isParent?: boolean | undefined;
@@ -844,7 +819,8 @@ toggleRowExpand: (rowIndex: number) => void;
 unregisterConnectionHandle: (handleId: string) => void;
 unregisterGanttBar: (barId: string) => void;
 updateGanttBar: (event: GanttDragEvent) => void;
-}, "closeModal" | "createConnection" | "deleteConnection" | "getCellData" | "getCellDisplayValue" | "getConnectionsForBar" | "getFormattedValue" | "getHandlesForBar" | "getHeaderCellStyle" | "getIndent" | "getRowExpandSymbol" | "isRowGantt" | "isRowVisible" | "registerConnectionHandle" | "registerGanttBar" | "resizeColumn" | "setCellData" | "setCellText" | "toggleRowExpand" | "unregisterConnectionHandle" | "unregisterGanttBar" | "updateGanttBar">>;
+updateRows: (newRows: TableRow[]) => void;
+}, "closeModal" | "createConnection" | "deleteConnection" | "getCellData" | "getCellDisplayValue" | "getConnectionsForBar" | "getFormattedValue" | "getHandlesForBar" | "getHeaderCellStyle" | "getIndent" | "getRowExpandSymbol" | "isRowGantt" | "isRowVisible" | "registerConnectionHandle" | "registerGanttBar" | "resizeColumn" | "setCellData" | "setCellText" | "toggleRowExpand" | "unregisterConnectionHandle" | "unregisterGanttBar" | "updateGanttBar" | "updateRows">>;
 
 // @public
 export interface GanttBarInfo {
