@@ -2,6 +2,12 @@
   "name": "@stonecrop/aform",
   "entries": [
     {
+      "version": "0.4.25",
+      "tag": "@stonecrop/aform_v0.4.25",
+      "date": "Wed, 23 Jul 2025 10:44:48 GMT",
+      "comments": {}
+    },
+    {
       "version": "0.4.24",
       "tag": "@stonecrop/aform_v0.4.24",
       "date": "Wed, 23 Jul 2025 06:27:53 GMT",
