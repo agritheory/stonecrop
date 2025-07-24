@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/atable",
+      "comment": "allow reactive columns in table",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/atable"
+}
