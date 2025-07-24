@@ -1,5 +1,5 @@
 <template>
-	<ATable v-model="rows" :columns="columns" :config="{ view: 'list', fullWidth: true }" :key="componentKey">
+	<ATable v-model:rows="rows" v-model:columns="columns" :config="{ view: 'list', fullWidth: true }" :key="componentKey">
 		<template #body="{ data }">
 			<ARow
 				v-for="(row, rowIndex) in data.rows"
@@ -38,7 +38,7 @@ const router = useRouter()
 
 const componentKey = ref(0)
 const rows = ref<TableRow[]>([])
-const columns = [
+const columns = ref<TableColumn[]>([
 	{
 		label: 'Doctype Name',
 		name: 'name',
@@ -47,7 +47,7 @@ const columns = [
 		edit: false,
 		width: '35ch',
 	},
-] as TableColumn[]
+])
 
 onMounted(async () => {
 	const response = await fetch('/api/doctypes')
@@ -75,8 +75,8 @@ const rowNav = {
 		const target =
 			event.target instanceof HTMLTableCellElement ? event.target.parentElement : (event.target as HTMLTableRowElement)
 
-		const $row = target.previousElementSibling
-			? (target.previousElementSibling as HTMLTableRowElement)
+		const $row = target?.previousElementSibling
+			? (target?.previousElementSibling as HTMLTableRowElement)
 			: (target as HTMLTableRowElement)
 
 		$row.focus()
@@ -89,8 +89,8 @@ const rowNav = {
 		const target =
 			event.target instanceof HTMLTableCellElement ? event.target.parentElement : (event.target as HTMLTableRowElement)
 
-		const $row = target.nextElementSibling
-			? (target.nextElementSibling as HTMLTableRowElement)
+		const $row = target?.nextElementSibling
+			? (target?.nextElementSibling as HTMLTableRowElement)
 			: (target as HTMLTableRowElement)
 
 		$row.focus()
