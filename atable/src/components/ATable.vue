@@ -86,15 +86,11 @@ import ATableModal from './ATableModal.vue'
 import { createTableStore } from '../stores/table'
 import type { ConnectionEvent, ConnectionPath, GanttDragEvent, TableColumn, TableConfig, TableRow } from '../types'
 
-const modelValue = defineModel<TableRow[]>({ required: true })
+const rows = defineModel<TableRow[]>('rows', { required: true })
+const columns = defineModel<TableColumn[]>('columns', { required: true })
 
-const {
-	id,
-	columns,
-	config = new Object(),
-} = defineProps<{
+const { id, config = new Object() } = defineProps<{
 	id?: string
-	columns: TableColumn[]
 	config?: TableConfig
 }>()
 
@@ -102,18 +98,19 @@ const emit = defineEmits<{
 	cellUpdate: [{ colIndex: number; rowIndex: number; newValue: any; oldValue: any }]
 	'gantt:drag': [event: GanttDragEvent]
 	'connection:event': [event: ConnectionEvent]
+	'columns:update': [columns: TableColumn[]]
 }>()
 
 const tableRef = useTemplateRef<HTMLTableElement>('table')
-const store = createTableStore({ columns, rows: modelValue.value, id, config })
+const store = createTableStore({ columns: columns.value, rows: rows.value, id, config })
 
 store.$onAction(({ name, store, args, after }) => {
 	if (name === 'setCellData' || name === 'setCellText') {
 		const [colIndex, rowIndex, newValue] = args
 		const oldValue = store.getCellData(colIndex, rowIndex)
 		after(() => {
-			// Update modelValue to trigger update:modelValue event
-			modelValue.value = [...store.rows]
+			// Update rows model to trigger update:rows event
+			rows.value = [...store.rows]
 			emit('cellUpdate', { colIndex, rowIndex, newValue, oldValue })
 		})
 	} else if (name === 'updateGanttBar') {
@@ -130,12 +127,18 @@ store.$onAction(({ name, store, args, after }) => {
 				emit('gantt:drag', event)
 			})
 		}
+	} else if (name === 'resizeColumn') {
+		after(() => {
+			// Update columns model
+			columns.value = [...store.columns]
+			emit('columns:update', [...store.columns])
+		})
 	}
 })
 
-// Watch for external changes to modelValue and sync to store
+// Watch for external changes to rows and sync to store
 watch(
-	() => modelValue.value,
+	() => rows.value,
 	newRows => {
 		// Only update if the rows have actually changed (avoid infinite loops)
 		if (JSON.stringify(newRows) !== JSON.stringify(store.rows)) {
@@ -145,8 +148,21 @@ watch(
 	{ deep: true }
 )
 
+// Watch for changes to columns and sync to store
+watch(
+	columns,
+	newColumns => {
+		// Only update if the columns have actually changed (avoid infinite loops)
+		if (JSON.stringify(newColumns) !== JSON.stringify(store.columns)) {
+			store.columns = [...newColumns]
+			emit('columns:update', [...newColumns] as TableColumn[])
+		}
+	},
+	{ deep: true }
+)
+
 onMounted(() => {
-	if (columns.some(column => column.pinned)) {
+	if (columns.value.some(column => column.pinned)) {
 		assignStickyCellWidths()
 
 		// in tree views, also add a mutation observer to capture and adjust expanded rows

@@ -61,7 +61,53 @@ The primary API for ATable is the column object.
 }
 ```
 
-## Column Data Types
+## v-model:rows and v-model:columns
+
+ATable now requires both rows and columns to be passed as model values using `v-model:rows` and `v-model:columns`. This allows you to dynamically modify both the table data and structure at runtime.
+
+### Basic Usage
+
+```vue
+<template>
+  <ATable
+    v-model:rows="tableData"
+    v-model:columns="tableColumns"
+    @columns:update="onColumnsChange" />
+</template>
+
+<script setup>
+import { ref } from 'vue'
+
+const tableData = ref([...])
+const tableColumns = ref([
+  { name: 'id', label: 'ID', width: '80px', type: 'Data' },
+  { name: 'name', label: 'Name', width: '150px', type: 'Data' },
+])
+
+const onColumnsChange = (columns) => {
+  console.log('Columns updated:', columns)
+}
+</script>
+```
+
+### Features
+
+- **Reactive rows and columns**: Both data and structure can be modified at runtime
+- **Column resizing**: When users resize columns, the model is automatically updated
+- **Event emission**: The `columns:update` event is emitted whenever columns change
+- **Required models**: Both `v-model:rows` and `v-model:columns` are required
+
+### Migration
+
+**Breaking Change**: The `:columns` prop has been removed. Update your existing code:
+
+```vue
+<!-- OLD: This no longer works -->
+<ATable v-model="data" :columns="columns" />
+
+<!-- NEW: Required syntax -->
+<ATable v-model:rows="data" v-model:columns="columns" />
+```## Column Data Types
 
 `v0.1`
 

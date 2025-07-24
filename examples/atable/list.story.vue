@@ -1,7 +1,7 @@
 <template>
 	<Story title="list">
 		<Variant title="row navigation">
-			<ATable id="list" v-model="http_logs.rows" :columns="http_logs.columns" :config="{ view: 'list' }">
+			<ATable id="list" v-model:rows="http_logs.rows" v-model:columns="http_logs.columns" :config="{ view: 'list' }">
 				<template #body="{ data }">
 					<ARow
 						v-for="(row, rowIndex) in data.rows"
@@ -33,19 +33,26 @@
 		<Variant title="pinned columns">
 			<!-- div to make sure modals are positioning relative to the table and not the page -->
 			<div style="position: relative; top: 100px; left: 100px">
-				<ATable v-model="pinned_logs.rows" :columns="pinned_logs.columns" :config="{ view: 'list' }" />
+				<ATable v-model:rows="pinned_logs.rows" v-model:columns="pinned_logs.columns" :config="{ view: 'list' }" />
 			</div>
 		</Variant>
 
 		<Variant title="pinned columns with extra columns">
 			<!-- div to make sure modals are positioning relative to the table and not the page -->
 			<div style="position: relative; top: 100px; left: 100px">
-				<ATable v-model="pinned_extra_logs.rows" :columns="pinned_extra_logs.columns" :config="{ view: 'list' }" />
+				<ATable
+					v-model:rows="pinned_extra_logs.rows"
+					v-model:columns="pinned_extra_logs.columns"
+					:config="{ view: 'list' }" />
 			</div>
 		</Variant>
 
 		<Variant title="expandable">
-			<ATable id="list" v-model="http_logs.rows" :columns="http_logs.columns" :config="{ view: 'list-expansion' }">
+			<ATable
+				id="list"
+				v-model:rows="http_logs.rows"
+				v-model:columns="http_logs.columns"
+				:config="{ view: 'list-expansion' }">
 				<template #body="{ data }">
 					<AExpansionRow
 						:data-id="row.id"
@@ -73,7 +80,11 @@
 						<template #content>
 							<AForm class="aform-main aform" v-model="basic_form_schema" :data="data" />
 
-							<ATable id="list" v-model="randomInboxData" :columns="inbox.columns" :config="{ view: 'list-expansion' }">
+							<ATable
+								id="list"
+								v-model:rows="randomInboxData"
+								v-model:columns="inbox.columns"
+								:config="{ view: 'list-expansion' }">
 								<template #body="{ data }">
 									<AExpansionRow
 										:data-id="row.id"

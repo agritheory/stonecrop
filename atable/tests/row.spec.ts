@@ -44,9 +44,9 @@ describe('table row component', () => {
 	it('verify no expand symbol on list table config', async () => {
 		const wrapper = mount(ATable, {
 			props: {
+				rows: listData,
 				columns,
-				modelValue: listData,
-				'onUpdate:modelValue': () => {},
+				'onUpdate:rows': () => {},
 				config: { view: 'list' },
 			},
 		})
@@ -63,9 +63,9 @@ describe('table row component', () => {
 	it('verify expand symbol on tree table config', async () => {
 		const wrapper = mount(ATable, {
 			props: {
+				rows: listData,
 				columns,
-				modelValue: listData,
-				'onUpdate:modelValue': () => {},
+				'onUpdate:rows': () => {},
 				config: { view: 'tree' },
 			},
 		})
