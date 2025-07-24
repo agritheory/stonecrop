@@ -53,8 +53,8 @@ describe('table modal component', () => {
 	]
 
 	const props = {
+		rows: data,
 		columns,
-		modelValue: data,
 		config: { view: 'list' } as TableConfig,
 	}
 

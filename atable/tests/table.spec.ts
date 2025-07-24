@@ -69,8 +69,8 @@ describe('table component', () => {
 	]
 
 	const defaultProps = {
+		rows: data,
 		columns,
-		modelValue: data,
 		config: { view: 'list' } as TableConfig,
 	}
 
@@ -150,8 +150,8 @@ describe('table component', () => {
 
 		const wrapper = mount(ATable, {
 			props: {
+				rows: data,
 				columns,
-				modelValue: data,
 				config: { view: 'list' },
 			},
 		})
@@ -204,8 +204,8 @@ describe('table component', () => {
 
 		const wrapper = mount(ATable, {
 			props: {
+				rows: data,
 				columns,
-				modelValue: data,
 				config: { view: 'list' },
 			},
 		})
@@ -230,8 +230,8 @@ describe('table component', () => {
 	it('should render with default config when no config provided', () => {
 		const wrapper = mount(ATable, {
 			props: {
+				rows: getBasicRows(),
 				columns: basicColumns,
-				modelValue: getBasicRows(),
 			},
 		})
 
@@ -242,8 +242,8 @@ describe('table component', () => {
 	it('should handle fullWidth configuration', () => {
 		const wrapper = mount(ATable, {
 			props: {
+				rows: getBasicRows(),
 				columns: basicColumns,
-				modelValue: getBasicRows(),
 				config: { fullWidth: true },
 			},
 		})
@@ -255,8 +255,8 @@ describe('table component', () => {
 	it('should emit cellUpdate when cell data changes', async () => {
 		const wrapper = mount(ATable, {
 			props: {
+				rows: getBasicRows(),
 				columns: basicColumns,
-				modelValue: getBasicRows(),
 			},
 		})
 
@@ -274,11 +274,11 @@ describe('table component', () => {
 		})
 	})
 
-	it('should emit update:modelValue when rows change', async () => {
+	it('should emit update:rows when rows change', async () => {
 		const wrapper = mount(ATable, {
 			props: {
+				rows: getBasicRows(),
 				columns: basicColumns,
-				modelValue: getBasicRows(),
 			},
 		})
 
@@ -287,7 +287,7 @@ describe('table component', () => {
 		tableStore.setCellData(0, 1, 'Updated Name') // Update the 'name' column (index 1)
 
 		await nextTick()
-		expect(wrapper.emitted('update:modelValue')).toBeTruthy()
+		expect(wrapper.emitted('update:rows')).toBeTruthy()
 	})
 
 	it('should handle gantt view with gantt bars', () => {
@@ -311,8 +311,8 @@ describe('table component', () => {
 
 		const wrapper = mount(ATable, {
 			props: {
+				rows: ganttRows,
 				columns: ganttColumns,
-				modelValue: ganttRows,
 				config: { view: 'gantt' },
 			},
 		})
@@ -343,8 +343,8 @@ describe('table component', () => {
 
 		const wrapper = mount(ATable, {
 			props: {
+				rows: ganttRows,
 				columns: ganttColumns,
-				modelValue: ganttRows,
 			},
 		})
 
@@ -356,8 +356,8 @@ describe('table component', () => {
 	it('should handle modal visibility and escape key', async () => {
 		const wrapper = mount(ATable, {
 			props: {
+				rows: getBasicRows(),
 				columns: basicColumns,
-				modelValue: getBasicRows(),
 			},
 		})
 
@@ -394,8 +394,8 @@ describe('table component', () => {
 
 		const wrapper = mount(ATable, {
 			props: {
+				rows: ganttRows,
 				columns: ganttColumns,
-				modelValue: ganttRows,
 				config: { view: 'gantt' },
 			},
 		})
@@ -413,8 +413,8 @@ describe('table component', () => {
 	it('should emit cellUpdate when setCellText is called', async () => {
 		const wrapper = mount(ATable, {
 			props: {
+				rows: getBasicRows(),
 				columns: basicColumns,
-				modelValue: getBasicRows(),
 			},
 		})
 
@@ -434,8 +434,8 @@ describe('table component', () => {
 	it('should expose store and connection methods', () => {
 		const wrapper = mount(ATable, {
 			props: {
+				rows: getBasicRows(),
 				columns: basicColumns,
-				modelValue: getBasicRows(),
 			},
 		})
 
@@ -455,8 +455,8 @@ describe('table component', () => {
 
 		const wrapper = mount(ATable, {
 			props: {
+				rows: getBasicRows(),
 				columns: customColumns,
-				modelValue: getBasicRows(),
 			},
 		})
 
@@ -467,8 +467,8 @@ describe('table component', () => {
 	it('should handle slots for header, body, footer, and modal', () => {
 		const wrapper = mount(ATable, {
 			props: {
+				rows: getBasicRows(),
 				columns: basicColumns,
-				modelValue: getBasicRows(),
 			},
 			slots: {
 				header: '<div data-test="custom-header">Custom Header</div>',
@@ -482,6 +482,57 @@ describe('table component', () => {
 		expect(wrapper.find('[data-test="custom-body"]').exists()).toBe(true)
 		expect(wrapper.find('[data-test="custom-footer"]').exists()).toBe(true)
 		expect(wrapper.find('[data-test="custom-modal"]').exists()).toBe(true)
+	})
+
+	it('should support columns as model value', async () => {
+		const initialColumns: TableColumn[] = [
+			{ name: 'id', label: 'ID', width: '100px' },
+			{ name: 'name', label: 'Name', width: '200px' },
+		]
+
+		const wrapper = mount(ATable, {
+			props: {
+				rows: getBasicRows(),
+				columns: initialColumns,
+				'onUpdate:columns': (newColumns: TableColumn[] | undefined) => {
+					if (newColumns) {
+						wrapper.setProps({ columns: newColumns })
+					}
+				},
+			},
+		})
+
+		// Initial columns should be set
+		expect(wrapper.vm.store.columns).toEqual(initialColumns)
+
+		// Trigger a column resize which should emit columns:update
+		const tableStore = wrapper.vm.store
+		tableStore.resizeColumn(0, 150)
+
+		await nextTick()
+
+		// Should emit columns:update event
+		expect(wrapper.emitted('columns:update')).toBeTruthy()
+		const emittedColumns = wrapper.emitted('columns:update')?.[0][0] as TableColumn[]
+		expect(emittedColumns[0].width).toBe('150px')
+	})
+
+	it('should work with v-model:columns using model prop', async () => {
+		const initialColumns: TableColumn[] = [
+			{ name: 'id', label: 'ID', width: '100px' },
+			{ name: 'name', label: 'Name', width: '200px' },
+		]
+
+		// Test using columns model instead of columns prop
+		const wrapper = mount(ATable, {
+			props: {
+				rows: getBasicRows(),
+				columns: initialColumns,
+			},
+		})
+
+		// Should use columns from prop
+		expect(wrapper.vm.store.columns).toEqual(initialColumns)
 	})
 })
 
@@ -505,8 +556,8 @@ describe('Gantt View', () => {
 
 		const wrapper = mount(ATable, {
 			props: {
+				rows: ganttRows,
 				columns: ganttColumns,
-				modelValue: ganttRows,
 			},
 		})
 

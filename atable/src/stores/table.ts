@@ -99,14 +99,31 @@ export const createTableStore = (initData: {
 
 				// Calculate 'open' property for tree view based on parent's childrenOpen state
 				if (isTreeView.value) {
+					// Helper function to check if all ancestors are open
+					const isNodeOpen = (rowIndex: number, display: TableDisplay[]): boolean => {
+						const row = display[rowIndex]
+						if (row.isRoot) {
+							return true // Root nodes are always open
+						}
+
+						if (row.parent === null || row.parent === undefined) {
+							return true
+						}
+
+						const parentIndex = row.parent
+						if (parentIndex < 0 || parentIndex >= display.length) {
+							return false
+						}
+
+						const parent = display[parentIndex]
+						// Node is open if parent's children are open AND parent itself is open
+						return (parent.childrenOpen || false) && isNodeOpen(parentIndex, display)
+					}
+
 					for (let i = 0; i < baseDisplay.length; i++) {
 						const row = baseDisplay[i]
-						if (!row.isRoot && row.parent !== null && row.parent !== undefined) {
-							// Child row is 'open' if its parent's childrenOpen is true
-							const parentIndex = row.parent
-							if (parentIndex >= 0 && parentIndex < baseDisplay.length) {
-								baseDisplay[i].open = baseDisplay[parentIndex].childrenOpen || false
-							}
+						if (!row.isRoot) {
+							baseDisplay[i].open = isNodeOpen(i, baseDisplay)
 						}
 					}
 				}
@@ -241,16 +258,7 @@ export const createTableStore = (initData: {
 
 				// If we're closing, recursively close all descendant nodes
 				if (!newChildrenOpen) {
-					for (let index = 0; index < rows.value.length; index++) {
-						if (display.value[index].parent === rowIndex) {
-							const childState = rowExpandStates.value[index] || {}
-							rowExpandStates.value[index] = {
-								...childState,
-								childrenOpen: false,
-							}
-							toggleRowExpand(index)
-						}
-					}
+					closeDescendants(rowIndex)
 				}
 			} else if (config.value.view === 'list-expansion') {
 				const currentState = rowExpandStates.value[rowIndex] || {}
@@ -258,6 +266,20 @@ export const createTableStore = (initData: {
 				rowExpandStates.value[rowIndex] = {
 					...currentState,
 					expanded: !currentExpanded,
+				}
+			}
+		}
+
+		const closeDescendants = (parentRowIndex: number) => {
+			for (let index = 0; index < rows.value.length; index++) {
+				if (display.value[index].parent === parentRowIndex) {
+					const childState = rowExpandStates.value[index] || {}
+					rowExpandStates.value[index] = {
+						...childState,
+						childrenOpen: false,
+					}
+					// Recursively close this child's descendants
+					closeDescendants(index)
 				}
 			}
 		}

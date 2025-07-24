@@ -42,9 +42,9 @@ describe('table cell component', () => {
 	]
 
 	const props = {
+		rows: data,
 		columns,
-		modelValue: data,
-		'onUpdate:modelValue': () => {},
+		'onUpdate:rows': () => {},
 		config: { view: 'list' } as TableConfig,
 	}
 
@@ -82,7 +82,7 @@ describe('table cell component', () => {
 		vi.advanceTimersByTime(300)
 		await wrapper.vm.$nextTick()
 
-		expect(wrapper.emitted('update:modelValue')).toBeTruthy()
+		expect(wrapper.emitted('update:rows')).toBeTruthy()
 
 		vi.useRealTimers()
 	})

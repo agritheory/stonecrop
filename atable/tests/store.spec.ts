@@ -642,6 +642,132 @@ describe('table store', () => {
 
 			expect(listStore.display[0].expanded).toBe(false)
 		})
+
+		it('should properly hide children when toggling parent node off', () => {
+			const treeRows: TableRow[] = [
+				{ id: 1, name: 'Parent', parent: undefined },
+				{ id: 2, name: 'Child 1', parent: 0 },
+				{ id: 3, name: 'Child 2', parent: 0 },
+			]
+
+			const treeStore = createTableStore({
+				columns: mockColumns,
+				rows: treeRows,
+				config: { view: 'tree' },
+			})
+
+			// Initially children should be closed (not visible)
+			expect(treeStore.display[1].open).toBe(false)
+			expect(treeStore.display[2].open).toBe(false)
+			expect(treeStore.isRowVisible(1)).toBe(false)
+			expect(treeStore.isRowVisible(2)).toBe(false)
+
+			// Toggle parent to open children
+			treeStore.toggleRowExpand(0)
+			expect(treeStore.display[0].childrenOpen).toBe(true)
+			expect(treeStore.display[1].open).toBe(true)
+			expect(treeStore.display[2].open).toBe(true)
+			expect(treeStore.isRowVisible(1)).toBe(true)
+			expect(treeStore.isRowVisible(2)).toBe(true)
+
+			// Toggle parent again to close children
+			treeStore.toggleRowExpand(0)
+			expect(treeStore.display[0].childrenOpen).toBe(false)
+			expect(treeStore.display[1].open).toBe(false)
+			expect(treeStore.display[2].open).toBe(false)
+			expect(treeStore.isRowVisible(1)).toBe(false)
+			expect(treeStore.isRowVisible(2)).toBe(false)
+		})
+
+		it('should handle deep nested tree hierarchy correctly', () => {
+			const deepTreeRows: TableRow[] = [
+				{ id: 1, name: 'Root', parent: undefined },
+				{ id: 2, name: 'Level 1', parent: 0 },
+				{ id: 3, name: 'Level 2a', parent: 1 },
+				{ id: 4, name: 'Level 2b', parent: 1 },
+				{ id: 5, name: 'Level 3', parent: 2 },
+			]
+
+			const treeStore = createTableStore({
+				columns: mockColumns,
+				rows: deepTreeRows,
+				config: { view: 'tree' },
+			})
+
+			// Initially all children should be closed
+			expect(treeStore.isRowVisible(1)).toBe(false) // Level 1
+			expect(treeStore.isRowVisible(2)).toBe(false) // Level 2a
+			expect(treeStore.isRowVisible(3)).toBe(false) // Level 2b
+			expect(treeStore.isRowVisible(4)).toBe(false) // Level 3
+
+			// Open root - should only show Level 1
+			treeStore.toggleRowExpand(0)
+			expect(treeStore.isRowVisible(1)).toBe(true) // Level 1 now visible
+			expect(treeStore.isRowVisible(2)).toBe(false) // Level 2a still hidden
+			expect(treeStore.isRowVisible(3)).toBe(false) // Level 2b still hidden
+			expect(treeStore.isRowVisible(4)).toBe(false) // Level 3 still hidden
+
+			// Open Level 1 - should show Level 2a and Level 2b
+			treeStore.toggleRowExpand(1)
+			expect(treeStore.isRowVisible(2)).toBe(true) // Level 2a now visible
+			expect(treeStore.isRowVisible(3)).toBe(true) // Level 2b now visible
+			expect(treeStore.isRowVisible(4)).toBe(false) // Level 3 still hidden
+
+			// Open Level 2a - should show Level 3
+			treeStore.toggleRowExpand(2)
+			expect(treeStore.isRowVisible(4)).toBe(true) // Level 3 now visible
+
+			// Close root - should hide ALL children
+			treeStore.toggleRowExpand(0)
+			expect(treeStore.isRowVisible(1)).toBe(false) // Level 1 hidden
+			expect(treeStore.isRowVisible(2)).toBe(false) // Level 2a hidden
+			expect(treeStore.isRowVisible(3)).toBe(false) // Level 2b hidden
+			expect(treeStore.isRowVisible(4)).toBe(false) // Level 3 hidden
+		})
+
+		it('should not expand all descendants when toggling a group node twice', () => {
+			const deepTreeRows: TableRow[] = [
+				{ id: 1, name: 'Root', parent: undefined },
+				{ id: 2, name: 'Level 1a', parent: 0 },
+				{ id: 3, name: 'Level 1b', parent: 0 },
+				{ id: 4, name: 'Level 2a', parent: 1 },
+				{ id: 5, name: 'Level 2b', parent: 1 },
+				{ id: 6, name: 'Level 3', parent: 3 },
+			]
+
+			const treeStore = createTableStore({
+				columns: mockColumns,
+				rows: deepTreeRows,
+				config: { view: 'tree' },
+			})
+
+			// First expansion of root - should only show Level 1a and Level 1b
+			treeStore.toggleRowExpand(0)
+			expect(treeStore.isRowVisible(1)).toBe(true) // Level 1a visible
+			expect(treeStore.isRowVisible(2)).toBe(true) // Level 1b visible
+			expect(treeStore.isRowVisible(3)).toBe(false) // Level 2a hidden
+			expect(treeStore.isRowVisible(4)).toBe(false) // Level 2b hidden
+			expect(treeStore.isRowVisible(5)).toBe(false) // Level 3 hidden
+
+			// Collapse root
+			treeStore.toggleRowExpand(0)
+			expect(treeStore.isRowVisible(1)).toBe(false) // Level 1a hidden
+			expect(treeStore.isRowVisible(2)).toBe(false) // Level 1b hidden
+
+			// Second expansion of root - should STILL only show Level 1a and Level 1b, NOT all descendants
+			treeStore.toggleRowExpand(0)
+			expect(treeStore.isRowVisible(1)).toBe(true) // Level 1a visible
+			expect(treeStore.isRowVisible(2)).toBe(true) // Level 1b visible
+			expect(treeStore.isRowVisible(3)).toBe(false) // Level 2a should STILL be hidden
+			expect(treeStore.isRowVisible(4)).toBe(false) // Level 2b should STILL be hidden
+			expect(treeStore.isRowVisible(5)).toBe(false) // Level 3 should STILL be hidden
+
+			// Now expand Level 1a explicitly - should show only its immediate children
+			treeStore.toggleRowExpand(1)
+			expect(treeStore.isRowVisible(3)).toBe(true) // Level 2a now visible
+			expect(treeStore.isRowVisible(4)).toBe(true) // Level 2b now visible
+			expect(treeStore.isRowVisible(5)).toBe(false) // Level 3 still hidden (Level 2a not expanded)
+		})
 	})
 
 	describe('gantt functionality', () => {

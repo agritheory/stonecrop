@@ -1,24 +1,36 @@
 <template>
 	<Story title="default">
 		<Variant title="default">
-			<ATable v-model="default_table.rows" :columns="default_table.columns" :config="default_table.config" />
+			<ATable
+				v-model:rows="default_table.rows"
+				v-model:columns="default_table.columns"
+				:config="default_table.config" />
 		</Variant>
 
 		<Variant title="uncounted">
-			<ATable v-model="uncounted_table.rows" :columns="uncounted_table.columns" :config="uncounted_table.config" />
+			<ATable
+				v-model:rows="uncounted_table.rows"
+				v-model:columns="uncounted_table.columns"
+				:config="uncounted_table.config" />
 		</Variant>
 
 		<Variant title="read-only">
-			<ATable v-model="readonly_table.rows" :columns="readonly_table.columns" :config="readonly_table.config" />
+			<ATable
+				v-model:rows="readonly_table.rows"
+				v-model:columns="readonly_table.columns"
+				:config="readonly_table.config" />
 		</Variant>
 
 		<Variant title="full width">
-			<ATable v-model="full_width_table.rows" :columns="full_width_table.columns" :config="full_width_table.config" />
+			<ATable
+				v-model:rows="full_width_table.rows"
+				v-model:columns="full_width_table.columns"
+				:config="full_width_table.config" />
 		</Variant>
 
 		<Variant title="resizable">
-			<ATable v-model="resizable_1.rows" :columns="resizable_1.columns" :config="resizable_1.config" />
-			<ATable v-model="resizable_2.rows" :columns="resizable_2.columns" :config="resizable_2.config" />
+			<ATable v-model:rows="resizable_1.rows" v-model:columns="resizable_1.columns" :config="resizable_1.config" />
+			<ATable v-model:rows="resizable_2.rows" v-model:columns="resizable_2.columns" :config="resizable_2.config" />
 		</Variant>
 
 		<Variant title="loading options">
@@ -29,8 +41,8 @@
 			<ATableLoading v-show="loading">Loading</ATableLoading>
 			<ATable
 				v-show="!loading"
-				v-model="full_width_table.rows"
-				:columns="full_width_table.columns"
+				v-model:rows="full_width_table.rows"
+				v-model:columns="full_width_table.columns"
 				:config="full_width_table.config" />
 		</Variant>
 	</Story>
@@ -116,7 +128,7 @@ const readonly_columns: TableColumn[] = [
 
 const default_table = reactive({
 	rows,
-	columns: columns,
+	columns,
 	config: { view: 'list' },
 })
 

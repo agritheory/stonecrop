@@ -1,11 +1,11 @@
 <template>
 	<Story title="tree">
 		<Variant title="default">
-			<ATable v-model="coa.rows" :columns="coa.columns" :config="coa.config" />
+			<ATable v-model:rows="coa.rows" v-model:columns="coa.columns" :config="coa.config" />
 		</Variant>
 
 		<Variant title="pinned columns">
-			<ATable v-model="pinned.rows" :columns="pinned.columns" :config="pinned.config" />
+			<ATable v-model:rows="pinned.rows" v-model:columns="pinned.columns" :config="pinned.config" />
 		</Variant>
 	</Story>
 </template>
