@@ -724,6 +724,50 @@ describe('table store', () => {
 			expect(treeStore.isRowVisible(3)).toBe(false) // Level 2b hidden
 			expect(treeStore.isRowVisible(4)).toBe(false) // Level 3 hidden
 		})
+
+		it('should not expand all descendants when toggling a group node twice', () => {
+			const deepTreeRows: TableRow[] = [
+				{ id: 1, name: 'Root', parent: undefined },
+				{ id: 2, name: 'Level 1a', parent: 0 },
+				{ id: 3, name: 'Level 1b', parent: 0 },
+				{ id: 4, name: 'Level 2a', parent: 1 },
+				{ id: 5, name: 'Level 2b', parent: 1 },
+				{ id: 6, name: 'Level 3', parent: 3 },
+			]
+
+			const treeStore = createTableStore({
+				columns: mockColumns,
+				rows: deepTreeRows,
+				config: { view: 'tree' },
+			})
+
+			// First expansion of root - should only show Level 1a and Level 1b
+			treeStore.toggleRowExpand(0)
+			expect(treeStore.isRowVisible(1)).toBe(true) // Level 1a visible
+			expect(treeStore.isRowVisible(2)).toBe(true) // Level 1b visible
+			expect(treeStore.isRowVisible(3)).toBe(false) // Level 2a hidden
+			expect(treeStore.isRowVisible(4)).toBe(false) // Level 2b hidden
+			expect(treeStore.isRowVisible(5)).toBe(false) // Level 3 hidden
+
+			// Collapse root
+			treeStore.toggleRowExpand(0)
+			expect(treeStore.isRowVisible(1)).toBe(false) // Level 1a hidden
+			expect(treeStore.isRowVisible(2)).toBe(false) // Level 1b hidden
+
+			// Second expansion of root - should STILL only show Level 1a and Level 1b, NOT all descendants
+			treeStore.toggleRowExpand(0)
+			expect(treeStore.isRowVisible(1)).toBe(true) // Level 1a visible
+			expect(treeStore.isRowVisible(2)).toBe(true) // Level 1b visible
+			expect(treeStore.isRowVisible(3)).toBe(false) // Level 2a should STILL be hidden
+			expect(treeStore.isRowVisible(4)).toBe(false) // Level 2b should STILL be hidden
+			expect(treeStore.isRowVisible(5)).toBe(false) // Level 3 should STILL be hidden
+
+			// Now expand Level 1a explicitly - should show only its immediate children
+			treeStore.toggleRowExpand(1)
+			expect(treeStore.isRowVisible(3)).toBe(true) // Level 2a now visible
+			expect(treeStore.isRowVisible(4)).toBe(true) // Level 2b now visible
+			expect(treeStore.isRowVisible(5)).toBe(false) // Level 3 still hidden (Level 2a not expanded)
+		})
 	})
 
 	describe('gantt functionality', () => {
