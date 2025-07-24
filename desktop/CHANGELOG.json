@@ -2,6 +2,18 @@
   "name": "@stonecrop/desktop",
   "entries": [
     {
+      "version": "0.4.26",
+      "tag": "@stonecrop/desktop_v0.4.26",
+      "date": "Thu, 24 Jul 2025 10:51:13 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "update table rows and columns format"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.4.25",
       "tag": "@stonecrop/desktop_v0.4.25",
       "date": "Wed, 23 Jul 2025 10:44:48 GMT",
