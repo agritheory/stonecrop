@@ -27,10 +27,8 @@ app.doctype.schema.field.workflow <FSM>
 app.doctype.schema.field.actions <OrderedSet>
 app.doctype.schema.field.value <Store>
 app.doctype.schema.field.value.field.value <Store> // a "sub-form"
-app.doctype.schema.field.value.field[0].value <Store> // also a "sub-form", likely representing a table or list
+app.doctype.schema.field.value.field['a:1'].value <Store> // also a "sub-form", representing a table
 ```
-
-It may make sense to use [automatic injection aliasing](https://vuejs.org/guide/components/provide-inject.html#inject) at the doctype level
 
 ## Base Classes
 The Doctype aligns with a row, record or object in a database. It is required to specify its schema, a Finite State Machine that informs its workflow and a set of functions that are triggered by that FSM's state transitions.
@@ -60,3 +58,50 @@ Stem is a composable singleton that wraps Registry and provides application leve
 - User can define `doctype` and schema from UI
 - Fields are shown as rows in a table
 - FSM is shown as an editable diagram that validates itself
+
+___
+
+# Hierarchical State Tree (HST) Interface Requirements
+
+## Core Requirements
+
+### 1. Data Structure Compatibility
+- **Vue Reactive Objects**: Must work seamlessly with `reactive()`, `ref()`, and `computed()` primitives
+- **Pinia Store Integration**: Compatible with both Options API and Composition API Pinia stores
+- **Immutable Objects**: Support for frozen/immutable configuration objects without breaking reactivity
+
+### 2. Path-Based Addressing System
+- **Dot Notation**: Full support for dot-notation paths (e.g., `"users.123.profile.settings"`)
+- **Dynamic Paths**: Support for programmatically generated path strings (particularly component to HST)
+
+### 3. Hierarchical Navigation
+- **Parent/Child Relationships**: Maintain bidirectional parent-child references
+- **Sibling Access**: Efficient navigation between sibling nodes
+- **Root Access**: Always accessible reference to tree root from any node
+- **Depth Tracking**: Know the depth level of any node in the hierarchy
+- **Breadcrumb Generation**: Generate full path breadcrumbs for any node
+
+Option A: Convention-based triggers
+```typescript
+// When User.EmailAddress.is_primary changes, automatically trigger:
+runAction('validateEmailPrimary') // field-level action
+runAction('UPDATE') // parent transition if validation passes
+```
+
+Option B: Path-based action mapping
+```typescript
+// In doctype definition:
+actions: {
+  'emailAddress.*.is_primary': ['validateEmailPrimary', 'UPDATE'],
+  'profile.name': ['validateName'],
+  // etc.
+}
+```
+Option C: Reactive action declarations
+```typescript
+// In doctype actions:
+onFieldChange('emailAddress.*.is_primary', () => {
+  runAction('validateEmailPrimary')
+  if (valid) runAction('UPDATE')
+})
+```
