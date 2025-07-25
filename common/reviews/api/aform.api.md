@@ -14,6 +14,7 @@ import AFileAttach from './components/form/AFileAttach.vue';
 import AForm from './components/AForm.vue';
 import ANumericInput from './components/form/ANumericInput.vue';
 import type { App } from 'vue';
+import AQuantity from './components/form/AQuantity.vue';
 import ATextInput from './components/form/ATextInput.vue';
 import Login from './components/utilities/Login.vue';
 
@@ -34,6 +35,8 @@ export { AFileAttach }
 export { AForm }
 
 export { ANumericInput }
+
+export { AQuantity }
 
 export { ATextInput }
 
