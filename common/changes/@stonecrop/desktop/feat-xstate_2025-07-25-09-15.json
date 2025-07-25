@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/desktop",
+      "comment": "update style export",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@stonecrop/desktop"
+}
