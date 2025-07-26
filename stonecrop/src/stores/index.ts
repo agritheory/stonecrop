@@ -1,16 +1,5 @@
-import { createPinia } from 'pinia'
-import { PiniaSharedState } from 'pinia-shared-state'
-// import { PiniaUndo } from 'pinia-undo'
+import { HST } from './hst'
 
-const pinia = createPinia()
+const hst = HST.getInstance()
 
-// Pass the plugin to your application's pinia plugin
-pinia.use(
-	PiniaSharedState({
-		enable: true,
-		initialize: true,
-	})
-)
-// pinia.use(PiniaUndo)
-
-export { pinia }
+export { hst }

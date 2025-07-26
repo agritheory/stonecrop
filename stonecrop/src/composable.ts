@@ -1,8 +1,8 @@
+// src/composable.ts
 import { inject, onMounted, Ref, ref } from 'vue'
 
 import Registry from './registry'
 import { Stonecrop } from './stonecrop'
-import { useDataStore } from './stores/data'
 
 /**
  * Stonecrop composable return type
@@ -16,7 +16,7 @@ export type StonecropReturn = {
  * Stonecrop composable
  * @param registry - An existing Stonecrop Registry instance
  * @returns The Stonecrop instance and a boolean indicating if Stonecrop is setup and ready
- * @throws Error if the Stonecrop plugin is not enabled before using the composable
+ * @throws Error if the Registry is not available
  * @public
  */
 export function useStonecrop(registry?: Registry): StonecropReturn {
@@ -27,17 +27,14 @@ export function useStonecrop(registry?: Registry): StonecropReturn {
 			registry = inject<Registry>('$registry')
 		}
 
-		let store: ReturnType<typeof useDataStore>
-		try {
-			store = useDataStore()
-		} catch (e) {
-			throw new Error('Please enable the Stonecrop plugin before using the Stonecrop composable')
+		if (!registry) {
+			throw new Error('Registry not found. Please ensure the Stonecrop plugin is enabled or pass a registry instance.')
 		}
 
-		// @ts-expect-error TODO: handle empty registry passed to Stonecrop
-		stonecrop.value = new Stonecrop(registry, store)
+		// Create Stonecrop instance with HST integration
+		stonecrop.value = new Stonecrop(registry)
 
-		if (!registry || !registry.router) return
+		if (!registry.router) return
 
 		const route = registry.router.currentRoute.value
 		const doctypeSlug = route.params.records?.toString().toLowerCase()

@@ -666,9 +666,15 @@ importers:
 
   ../../stonecrop:
     dependencies:
+      '@vue/test-utils':
+        specifier: ^2.4.6
+        version: 2.4.6
       immutable:
         specifier: ^5.1.3
         version: 5.1.3
+      jsdom:
+        specifier: ^26.1.0
+        version: 26.1.0
       pinia:
         specifier: ^3.0.3
         version: 3.0.3(typescript@5.8.3)(vue@3.5.17(typescript@5.8.3))
@@ -681,9 +687,6 @@ importers:
       pinia-xstate:
         specifier: ^2.2.1
         version: 2.2.1(pinia@3.0.3(typescript@5.8.3)(vue@3.5.17(typescript@5.8.3)))(typescript@5.8.3)(xstate@4.38.3)
-      vitest:
-        specifier: ^3.2.4
-        version: 3.2.4(@types/node@24.0.10)(@vitest/ui@3.2.4)(happy-dom@18.0.1)(jiti@2.4.2)(jsdom@26.1.0)(sass@1.89.2)(terser@5.43.1)(yaml@2.8.0)
       vue:
         specifier: ^3.5.17
         version: 3.5.17(typescript@5.8.3)
@@ -736,6 +739,9 @@ importers:
       vite:
         specifier: ^6.3.5
         version: 6.3.5(@types/node@24.0.10)(jiti@2.4.2)(sass@1.89.2)(terser@5.43.1)(yaml@2.8.0)
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.4(@types/node@24.0.10)(@vitest/ui@3.2.4)(happy-dom@18.0.1)(jiti@2.4.2)(jsdom@26.1.0)(sass@1.89.2)(terser@5.43.1)(yaml@2.8.0)
 
   ../../themes:
     devDependencies:

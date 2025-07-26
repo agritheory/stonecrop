@@ -15,7 +15,20 @@ export type {
 import { type StonecropReturn, useStonecrop } from './composable'
 import DoctypeMeta from './doctype'
 import Registry from './registry'
-import Stonecrop from './plugins'
+import { Stonecrop } from './stonecrop'
+// Export HST for advanced usage
+import { HST, createHST, type HSTNode } from './stores/hst'
+
 export type { ImmutableDoctype, MutableDoctype, Schema, InstallOptions } from './types'
 
-export { DoctypeMeta, Registry, Stonecrop, StonecropReturn, useStonecrop }
+export {
+	DoctypeMeta,
+	Registry,
+	Stonecrop,
+	StonecropReturn,
+	useStonecrop,
+	// HST exports for advanced usage
+	HST,
+	createHST,
+	HSTNode,
+}
