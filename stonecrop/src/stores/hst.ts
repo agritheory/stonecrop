@@ -10,6 +10,57 @@ interface HSTNode {
 	getPath(): string
 	getDepth(): number
 	getBreadcrumbs(): string[]
+	getNode(path: string): HSTNode
+}
+
+// Type definitions for global Registry
+interface RegistryGlobal {
+	Registry?: {
+		_root?: {
+			registry: Record<string, any>
+		}
+	}
+}
+
+// Interface for Immutable-like objects
+interface ImmutableLike {
+	get(key: string): any
+	set(key: string, value: any): ImmutableLike
+	has(key: string): boolean
+	size?: number
+	__ownerID?: any
+	_map?: any
+	_list?: any
+	_origin?: any
+	_capacity?: any
+	_defaultValues?: any
+	_tail?: any
+	_root?: any
+}
+
+// Interface for Vue reactive objects
+interface VueReactive {
+	__v_isReactive: boolean
+	[key: string]: any
+}
+
+// Interface for Pinia stores
+interface PiniaStore {
+	$state?: Record<string, any>
+	$patch?: (partial: Record<string, any>) => void
+	$id?: string
+	[key: string]: any
+}
+
+// Interface for objects with property access
+interface PropertyAccessible {
+	[key: string]: any
+}
+
+// Extend global interfaces
+declare global {
+	interface Window extends RegistryGlobal {}
+	const global: RegistryGlobal | undefined
 }
 
 // Global HST Manager (Singleton)
@@ -26,18 +77,27 @@ class HST {
 	getRegistry(): any {
 		// In test environment, try different ways to access Registry
 		// First, try the global Registry if it exists
-		if (typeof globalThis !== 'undefined' && (globalThis as any).Registry?._root) {
-			return (globalThis as any).Registry._root
+		if (typeof globalThis !== 'undefined') {
+			const globalRegistry = (globalThis as RegistryGlobal).Registry?._root
+			if (globalRegistry) {
+				return globalRegistry
+			}
 		}
 
 		// Try to access through window (browser environment)
-		if (typeof window !== 'undefined' && (window as any).Registry?._root) {
-			return (window as any).Registry._root
+		if (typeof window !== 'undefined') {
+			const windowRegistry = window.Registry?._root
+			if (windowRegistry) {
+				return windowRegistry
+			}
 		}
 
 		// Try to access through global (Node environment)
-		if (typeof global !== 'undefined' && (global as any).Registry?._root) {
-			return (global as any).Registry._root
+		if (typeof global !== 'undefined' && global) {
+			const nodeRegistry = global.Registry?._root
+			if (nodeRegistry) {
+				return nodeRegistry
+			}
 		}
 
 		// If we can't find it globally, it might not be set up
@@ -48,7 +108,10 @@ class HST {
 	// Helper method to get doctype metadata
 	getDoctypeMeta(doctype: string) {
 		const registry = this.getRegistry()
-		return registry?.registry[doctype]
+		if (registry && typeof registry === 'object' && 'registry' in registry) {
+			return (registry as { registry: Record<string, any> }).registry[doctype]
+		}
+		return undefined
 	}
 }
 
@@ -244,7 +307,7 @@ class HSTProxy implements HSTNode {
 		}
 
 		// Plain object
-		return obj[key]
+		return (obj as PropertyAccessible)[key]
 	}
 
 	private setProperty(obj: any, key: string, value: any): void {
@@ -258,44 +321,64 @@ class HSTProxy implements HSTNode {
 			if (obj.$patch) {
 				obj.$patch({ [key]: value })
 			} else {
-				obj[key] = value
+				;(obj as PropertyAccessible)[key] = value
 			}
 			return
 		}
 
 		// Vue reactive or plain object
-		obj[key] = value
+		;(obj as PropertyAccessible)[key] = value
 	}
 
-	private isVueReactive(obj: any): boolean {
-		return obj && typeof obj === 'object' && obj.__v_isReactive === true
+	private isVueReactive(obj: any): obj is VueReactive {
+		return (
+			obj &&
+			typeof obj === 'object' &&
+			'__v_isReactive' in obj &&
+			(obj as { __v_isReactive: boolean }).__v_isReactive === true
+		)
 	}
 
-	private isPiniaStore(obj: any): boolean {
+	private isPiniaStore(obj: any): obj is PiniaStore {
 		return obj && typeof obj === 'object' && ('$state' in obj || '$patch' in obj || '$id' in obj)
 	}
 
-	private isImmutable(obj: any): boolean {
+	private isImmutable(obj: any): obj is ImmutableLike {
 		if (!obj || typeof obj !== 'object') {
 			return false
 		}
 
-		const hasGetMethod = typeof obj.get === 'function'
-		const hasSetMethod = typeof obj.set === 'function'
-		const hasHasMethod = typeof obj.has === 'function'
+		const hasGetMethod = 'get' in obj && typeof (obj as Record<string, unknown>).get === 'function'
+		const hasSetMethod = 'set' in obj && typeof (obj as Record<string, unknown>).set === 'function'
+		const hasHasMethod = 'has' in obj && typeof (obj as Record<string, unknown>).has === 'function'
 
 		const hasImmutableMarkers =
-			obj.__ownerID !== undefined ||
-			obj._map !== undefined ||
-			obj._list !== undefined ||
-			obj._origin !== undefined ||
-			obj._capacity !== undefined ||
-			obj._defaultValues !== undefined ||
-			obj._tail !== undefined ||
-			obj._root !== undefined ||
-			(obj.size !== undefined && hasGetMethod && hasSetMethod)
+			'__ownerID' in obj ||
+			'_map' in obj ||
+			'_list' in obj ||
+			'_origin' in obj ||
+			'_capacity' in obj ||
+			'_defaultValues' in obj ||
+			'_tail' in obj ||
+			'_root' in obj ||
+			('size' in obj && hasGetMethod && hasSetMethod)
 
-		const constructorName = obj.constructor?.name
+		let constructorName: string | undefined
+		try {
+			const objWithConstructor = obj as Record<string, unknown>
+			if (
+				'constructor' in objWithConstructor &&
+				objWithConstructor.constructor &&
+				typeof objWithConstructor.constructor === 'object' &&
+				'name' in objWithConstructor.constructor
+			) {
+				const nameValue = (objWithConstructor.constructor as { name: unknown }).name
+				constructorName = typeof nameValue === 'string' ? nameValue : undefined
+			}
+		} catch {
+			constructorName = undefined
+		}
+
 		const isImmutableConstructor =
 			constructorName &&
 			(constructorName.includes('Map') ||
@@ -305,9 +388,9 @@ class HSTProxy implements HSTNode {
 				constructorName.includes('Seq')) &&
 			(hasGetMethod || hasSetMethod)
 
-		return (
+		return Boolean(
 			(hasGetMethod && hasSetMethod && hasHasMethod && hasImmutableMarkers) ||
-			(hasGetMethod && hasSetMethod && isImmutableConstructor)
+				(hasGetMethod && hasSetMethod && isImmutableConstructor)
 		)
 	}
 

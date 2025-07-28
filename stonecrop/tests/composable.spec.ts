@@ -9,7 +9,7 @@ import { Stonecrop } from '../src/stonecrop'
 import { HST } from '../src/stores/hst'
 import DoctypeMeta from '../src/doctype'
 import { List, Map } from 'immutable'
-import type { UnknownMachineConfig } from 'xstate'
+import { createMachine, type MachineConfig } from 'xstate'
 import type { SchemaTypes } from '@stonecrop/aform'
 
 // Configure jsdom environment
@@ -50,7 +50,7 @@ describe('useStonecrop composable', () => {
 			},
 		] as SchemaTypes[])
 
-		const mockWorkflow: UnknownMachineConfig = {
+		const mockWorkflowConfig: MachineConfig<any, any, any> = {
 			id: name.toLowerCase(),
 			initial: 'draft',
 			states: {
@@ -64,6 +64,8 @@ describe('useStonecrop composable', () => {
 				completed: { type: 'final' },
 			},
 		}
+
+		const mockWorkflow = createMachine(mockWorkflowConfig)
 
 		const mockActions = Map({
 			load: ['loadData'],

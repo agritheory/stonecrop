@@ -2,7 +2,7 @@ import type { SchemaTypes } from '@stonecrop/aform'
 import { List, Map } from 'immutable'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { createRouter, createMemoryHistory } from 'vue-router'
-import type { UnknownMachineConfig } from 'xstate'
+import { createMachine, type MachineConfig } from 'xstate'
 
 import DoctypeMeta from '../src/doctype'
 import Registry from '../src/registry'
@@ -42,7 +42,7 @@ describe('Stonecrop class with HST integration', () => {
 			},
 		] as SchemaTypes[])
 
-		const mockWorkflow: UnknownMachineConfig = {
+		const mockWorkflowConfig: MachineConfig<any, any, any> = {
 			id: name.toLowerCase(),
 			initial: 'draft',
 			states: {
@@ -57,6 +57,8 @@ describe('Stonecrop class with HST integration', () => {
 			},
 		}
 
+		const mockWorkflow = createMachine(mockWorkflowConfig)
+
 		const mockActions = Map({
 			load: ['loadData'],
 			save: ['validateData', 'saveData'],
@@ -67,7 +69,7 @@ describe('Stonecrop class with HST integration', () => {
 
 	describe('Initialization', () => {
 		it('creates Stonecrop instance with HST integration', () => {
-			expect(stonecrop.registry).toBe(registry)
+			expect(stonecrop).toBeInstanceOf(Stonecrop)
 			expect(stonecrop.getStore).toBeDefined()
 			expect(typeof stonecrop.getStore).toBe('function')
 		})

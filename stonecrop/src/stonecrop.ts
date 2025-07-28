@@ -78,7 +78,11 @@ export class Stonecrop {
 	currentRecord(doctype: string | DoctypeMeta): HSTNode | null {
 		const slug = typeof doctype === 'string' ? doctype : doctype.slug
 		this.ensureDoctypeExists(slug)
-		return this.hstStore.get(`${slug}.currentRecord`)
+		const currentRecordId = this.hstStore.get(`${slug}.currentRecord`)
+		if (currentRecordId && typeof currentRecordId === 'string') {
+			return this.getRecordById(doctype, currentRecordId) || null
+		}
+		return null
 	}
 
 	/**
@@ -90,10 +94,8 @@ export class Stonecrop {
 		const slug = typeof doctype === 'string' ? doctype : doctype.slug
 		this.ensureDoctypeExists(slug)
 
-		const record = this.hstStore.get(`${slug}.records.${recordId}`)
-		if (record) {
-			this.hstStore.set(`${slug}.currentRecord`, record)
-		}
+		// Just store the record ID, not the record data itself
+		this.hstStore.set(`${slug}.currentRecord`, recordId)
 	}
 
 	/**
@@ -104,13 +106,11 @@ export class Stonecrop {
 	 */
 	addRecord(doctype: string | DoctypeMeta, recordId: string, recordData: any): void {
 		const slug = typeof doctype === 'string' ? doctype : doctype.slug
-		const doctypeName = typeof doctype === 'string' ? doctype : doctype.doctype
 
 		this.ensureDoctypeExists(slug)
 
-		// Wrap record data with its specific doctype
-		const wrappedRecord = createHST(recordData, doctypeName)
-		this.hstStore.set(`${slug}.records.${recordId}`, wrappedRecord)
+		// Store raw record data - let HST handle wrapping with proper hierarchy
+		this.hstStore.set(`${slug}.records.${recordId}`, recordData)
 	}
 
 	/**
@@ -193,11 +193,11 @@ export class Stonecrop {
 
 	/**
 	 * Run action on doctype (maintains compatibility)
-	 * @param doctype - The doctype
-	 * @param action - The action to run
-	 * @param args - Action arguments
+	 * @param _doctype - The doctype
+	 * @param _action - The action to run
+	 * @param _args - Action arguments
 	 */
-	runAction(doctype: DoctypeMeta, action: string, args?: any[]): void {
+	runAction(_doctype: DoctypeMeta, _action: string, _args?: any[]): void {
 		// Existing action logic would go here
 		// This maintains compatibility with existing composable usage
 	}
