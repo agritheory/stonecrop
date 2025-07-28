@@ -1,12 +1,12 @@
 # Stonecrop Monorepo Architecture - LLM Context Prompt
 
 ## Overview
-Stonecrop is a **schema-driven UI framework** and **event-driven application platform** that provides a unified system for building data-centric applications. It combines declarative schema definitions with finite state machines (FSM) for workflow management and reactive state management.
+Stonecrop is a **schema-driven UI framework** and **event-driven application platform** that provides a unified system for building data-centric applications. It combines declarative schema definitions with finite state machines (FSM) for workflow management and **Hierarchical State Tree (HST)** for advanced state management.
 
 ## Core Philosophy
 - **Schema-Driven**: UI components are generated from declarative JSON schemas
 - **Event-Driven**: Application behavior is controlled through FSM-based workflows
-- **Reactive State Management**: Centralized state with hierarchical organization
+- **Hierarchical State Management**: Advanced tree-structured state with the HST system
 - **Component Composition**: Reusable UI components that work together seamlessly
 
 ## Repository Structure
@@ -23,14 +23,14 @@ Stonecrop is a **schema-driven UI framework** and **event-driven application pla
 ### Core Packages
 
 #### 1. `@stonecrop/stonecrop` (Core Framework)
-**Purpose**: The main orchestration layer and state management system
+**Purpose**: The main orchestration layer and hierarchical state management system
 
 **Key Components**:
-- `Stonecrop` class: Main application controller and orchestration layer
+- `Stonecrop` class: Main application controller with HST integration
 - `Registry` class: Manages doctype definitions with singleton pattern and lazy loading
 - `DoctypeMeta` class: Defines schema, workflow (FSM), and actions for data types
 - `useStonecrop()` composable: Vue.js integration hook
-- **State Management**: Pinia with plugins for shared state, undo functionality, and XState integration
+- **HST (Hierarchical State Tree)**: Advanced state management system with tree navigation and multi-store compatibility
 
 **Architecture Pattern**:
 ```
@@ -39,9 +39,11 @@ Stonecrop Application
 │   ├── DoctypeMeta.schema            // JSON schema definitions
 │   ├── DoctypeMeta.workflow          // XState finite state machines
 │   └── DoctypeMeta.actions           // event-driven action handlers
-└── Stores (Pinia)                    // mutable reactive state
-    ├── useDataStore                  // record data management
-    └── XState integration            // workflow state management
+└── HST Store (hierarchical)           // mutable reactive state with tree navigation
+    ├── Doctype sections             // per-doctype state containers
+    │   ├── records                   // record data
+    │   └── currentRecord             // current active record
+    └── Advanced navigation           // parent/child/sibling access
 ```
 
 **Hierarchical Structure**:
@@ -54,11 +56,21 @@ Registry
 │   └── .component (Vue component)
 └── Routing integration (Vue Router)
 
-Stores (Pinia + plugins)
-├── Data stores (records/record)
-├── Shared state (pinia-shared-state)
-├── Undo/Redo (pinia-undo)
-└── XState integration (pinia-xstate)
+HST Store
+├── Multi-store compatibility
+│   ├── Vue reactive objects
+│   ├── Pinia stores (when used)
+│   ├── Immutable objects
+│   └── Plain JavaScript objects
+├── Tree navigation capabilities
+│   ├── Parent/child relationships
+│   ├── Breadcrumb generation
+│   ├── Depth tracking
+│   └── Path-based addressing
+└── Data organization
+    └── [doctype] sections
+        ├── records/[id]           // individual record data
+        └── currentRecord          // current active record reference
 ```
 
 #### 2. `@stonecrop/aform` (Form Components)
@@ -159,30 +171,38 @@ Stores (Pinia + plugins)
 
 ## Key Architectural Concepts
 
-### 1. Finite State Machines (FSM)
+### 1. Hierarchical State Tree (HST)
+**Advanced state management** with tree navigation capabilities:
+- **Multi-Store Compatibility**: Works seamlessly with Vue reactive objects, Pinia stores, Immutable objects, and plain JavaScript objects
+- **Path-Based Addressing**: Full dot-notation path support (e.g., `"users.123.profile.settings"`)
+- **Tree Navigation**: Parent/child relationships, sibling access, root access, depth tracking, and breadcrumb generation
+- **Automatic Wrapping**: Transparent integration with different data structure types
+- **Singleton Management**: Global HST manager with registry access
+
+### 2. Finite State Machines (FSM)
 **Workflow management** through XState v4.38.3:
 - State transitions for data lifecycle management
 - Event-driven actions with type safety
 - Predictable state changes with guards and actions
 - CRUD operation workflows with visual editing
-- Integration with Pinia stores via pinia-xstate plugin
+- Integration with HST stores for state persistence
 
-### 2. Schema-Driven Architecture
+### 3. Schema-Driven Architecture
 **Declarative approach** where:
 - UI components are generated from JSON schemas
 - Forms, tables, and layouts defined declaratively
 - Type safety through TypeScript
 - Runtime validation and masking
 
-### 3. Registry Pattern
+### 4. Registry Pattern
 **Central management** with singleton pattern:
 - Doctype definitions (similar to database tables/models)
 - Lazy loading of schemas via getMeta function
 - Component registration with automatic routing
 - Vue Router integration for automatic route generation
-- Immutable configuration with mutable state separation
+- Immutable configuration with mutable HST state separation
 
-### 4. Component Composition
+### 5. Component Composition
 **Modular design** allowing:
 - Nested components (tables within forms, forms within fieldsets)
 - Reusable component library
@@ -209,6 +229,9 @@ cd <package-name>
 rushx dev               # Vite dev server
 rushx build             # Build with Heft + Vite
 rushx test              # Vitest tests
+rushx test:watch        # Vitest in watch mode
+rushx test:coverage     # Vitest with coverage
+rushx test:ui           # Vitest UI
 rushx lint              # ESLint
 
 # Documentation
@@ -255,18 +278,42 @@ const formSchema = {
 }
 ```
 
-### State Management
+### HST State Management
 ```typescript
 // Registry-based doctype management
 const registry = new Registry(router, getMeta)
 registry.addDoctype(doctypeMeta)
 
-// Pinia stores with plugins
-const dataStore = useDataStore()  // record management
+// HST integration with automatic store creation
+const stonecrop = new Stonecrop(registry)
 
-// Stonecrop orchestration
-const stonecrop = new Stonecrop(registry, dataStore)
-stonecrop.runAction(doctype, 'LOAD', recordId)
+// Record management with HST
+stonecrop.addRecord('task', '123', recordData)
+const currentRecord = stonecrop.currentRecord('task')
+const records = stonecrop.records('task')
+
+// Advanced HST usage
+const store = stonecrop.getStore()
+const record = store.getNode('task.records.123')
+const parent = record.getParent()
+const breadcrumbs = record.getBreadcrumbs()
+```
+
+### HST Tree Navigation
+```typescript
+// Path-based access
+const user = hst.get('user.profile.settings')
+hst.set('user.profile.settings.theme', 'dark')
+
+// Tree navigation
+const settingsNode = hst.getNode('user.profile.settings')
+const profileNode = settingsNode.getParent()
+const rootNode = settingsNode.getRoot()
+
+// Navigation properties
+const path = settingsNode.getPath()        // 'user.profile.settings'
+const depth = settingsNode.getDepth()      // 3
+const breadcrumbs = settingsNode.getBreadcrumbs()  // ['user', 'profile', 'settings']
 ```
 
 ## Target Use Cases
@@ -284,8 +331,9 @@ stonecrop.runAction(doctype, 'LOAD', recordId)
 5. **Developer Experience**: Rich tooling, component stories, and clear APIs
 6. **Framework Integration**: Vue.js primary with extensible architecture
 7. **Monorepo Benefits**: Shared tooling, consistent versioning, and coordinated releases
-8. **State Separation**: Immutable configuration with mutable reactive state
+8. **Hierarchical State Management**: Tree-structured state with advanced navigation capabilities
+9. **Multi-Store Compatibility**: Seamless integration with different state management patterns
 
 ---
 
-**Note**: This is an active development project with evolving APIs. The architecture supports both prototype development and production applications through its modular design and comprehensive tooling.
+**Note**: This is an active development project with evolving APIs. The architecture supports both prototype development and production applications through its modular design, comprehensive tooling, and the new Hierarchical State Tree (HST) system which provides advanced state management capabilities beyond traditional reactive stores.
