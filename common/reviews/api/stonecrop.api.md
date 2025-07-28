@@ -8,12 +8,10 @@ import { Component } from 'vue';
 import { List } from 'immutable';
 import type { MachineConfig } from 'xstate';
 import { Map as Map_2 } from 'immutable';
-import { Plugin as Plugin_2 } from 'vue';
 import { Ref } from 'vue';
 import { Router } from 'vue-router';
 import type { ShallowRef } from 'vue';
 import type { StateMachine } from 'xstate';
-import { StoreDefinition } from 'pinia';
 
 // @public
 export type BaseSchema = {
@@ -68,6 +66,9 @@ export interface ConnectionPath {
         side: 'left' | 'right';
     };
 }
+
+// @public
+export function createHST(target: any, doctype: string, parentDoctype?: string): HSTNode;
 
 // @public
 export class DoctypeMeta {
@@ -152,6 +153,26 @@ export interface GanttOptions {
 }
 
 // @public
+export class HST {
+    getDoctypeMeta(doctype: string): any;
+    static getInstance(): HST;
+    getRegistry(): any;
+}
+
+// @public
+export interface HSTNode {
+    get(path: string): any;
+    getBreadcrumbs(): string[];
+    getDepth(): number;
+    getNode(path: string): HSTNode;
+    getParent(): HSTNode | null;
+    getPath(): string;
+    getRoot(): HSTNode;
+    has(path: string): boolean;
+    set(path: string, value: any): void;
+}
+
+// @public
 export type ImmutableDoctype = {
     readonly schema?: List<SchemaTypes>;
     readonly workflow: StateMachine<unknown, any, any>;
@@ -193,11 +214,26 @@ export type Schema = {
 export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema;
 
 // @public
-export const Stonecrop: Plugin_2;
+export class Stonecrop {
+    constructor(registry: Registry);
+    addRecord(doctype: string | DoctypeMeta, recordId: string, recordData: any): void;
+    clearRecords(doctype: string | DoctypeMeta): void;
+    currentRecord(doctype: string | DoctypeMeta): HSTNode | null;
+    getRecord(doctype: DoctypeMeta, recordId: string): Promise<void>;
+    getRecordById(doctype: string | DoctypeMeta, recordId: string): HSTNode | undefined;
+    getRecordIds(doctype: string | DoctypeMeta): string[];
+    getRecords(doctype: DoctypeMeta): Promise<void>;
+    getStore(): HSTNode;
+    records(doctype: string | DoctypeMeta): HSTNode;
+    removeRecord(doctype: string | DoctypeMeta, recordId: string): void;
+    runAction(_doctype: DoctypeMeta, _action: string, _args?: any[]): void;
+    setCurrentRecord(doctype: string | DoctypeMeta, recordId: string): void;
+    setup(doctype: DoctypeMeta): void;
+}
 
 // @public
 export type StonecropReturn = {
-    stonecrop: Ref<Stonecrop_2 | undefined>;
+    stonecrop: Ref<Stonecrop | undefined>;
 };
 
 // @public
@@ -247,10 +283,6 @@ export type TableSchema = BaseSchema & {
 
 // @public
 export function useStonecrop(registry?: Registry): StonecropReturn;
-
-// Warnings were encountered during analysis:
-//
-// src/composable.ts:12:2 - (ae-forgotten-export) The symbol "Stonecrop_2" needs to be exported by the entry point index.d.ts
 
 // (No @packageDocumentation comment for this package)
 

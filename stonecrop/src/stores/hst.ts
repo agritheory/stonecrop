@@ -1,15 +1,66 @@
-// Core HST Interface - enhanced with tree navigation
+/**
+ * Core HST Interface - enhanced with tree navigation
+ * Provides a hierarchical state tree interface for navigating and manipulating nested data structures.
+ *
+ * @public
+ */
 interface HSTNode {
+	/**
+	 * Gets a value at the specified path
+	 * @param path - The dot-separated path to the value
+	 * @returns The value at the specified path
+	 */
 	get(path: string): any
+
+	/**
+	 * Sets a value at the specified path
+	 * @param path - The dot-separated path where to set the value
+	 * @param value - The value to set
+	 */
 	set(path: string, value: any): void
+
+	/**
+	 * Checks if a value exists at the specified path
+	 * @param path - The dot-separated path to check
+	 * @returns True if the path exists, false otherwise
+	 */
 	has(path: string): boolean
 
-	// Tree navigation
+	/**
+	 * Gets the parent node in the tree hierarchy
+	 * @returns The parent HSTNode or null if this is the root
+	 */
 	getParent(): HSTNode | null
+
+	/**
+	 * Gets the root node of the tree
+	 * @returns The root HSTNode
+	 */
 	getRoot(): HSTNode
+
+	/**
+	 * Gets the full path from root to this node
+	 * @returns The dot-separated path string
+	 */
 	getPath(): string
+
+	/**
+	 * Gets the depth level of this node in the tree
+	 * @returns The depth as a number (0 for root)
+	 */
 	getDepth(): number
+
+	/**
+	 * Gets an array of path segments from root to this node
+	 * @returns Array of path segments representing breadcrumbs
+	 */
 	getBreadcrumbs(): string[]
+
+	/**
+	 * Gets a child node at the specified relative path
+	 * @param path - The relative path to the child node
+	 * @returns The child HSTNode
+	 */
 	getNode(path: string): HSTNode
 }
 
@@ -63,10 +114,19 @@ declare global {
 	const global: RegistryGlobal | undefined
 }
 
-// Global HST Manager (Singleton)
+/**
+ * Global HST Manager (Singleton)
+ * Manages hierarchical state trees and provides access to the global registry.
+ *
+ * @public
+ */
 class HST {
 	private static instance: HST
 
+	/**
+	 * Gets the singleton instance of HST
+	 * @returns The HST singleton instance
+	 */
 	static getInstance(): HST {
 		if (!HST.instance) {
 			HST.instance = new HST()
@@ -74,6 +134,10 @@ class HST {
 		return HST.instance
 	}
 
+	/**
+	 * Gets the global registry instance
+	 * @returns The global registry object or undefined if not found
+	 */
 	getRegistry(): any {
 		// In test environment, try different ways to access Registry
 		// First, try the global Registry if it exists
@@ -105,7 +169,11 @@ class HST {
 		return undefined
 	}
 
-	// Helper method to get doctype metadata
+	/**
+	 * Helper method to get doctype metadata from the registry
+	 * @param doctype - The name of the doctype to retrieve metadata for
+	 * @returns The doctype metadata object or undefined if not found
+	 */
 	getDoctypeMeta(doctype: string) {
 		const registry = this.getRegistry()
 		if (registry && typeof registry === 'object' && 'registry' in registry) {
@@ -414,7 +482,17 @@ class HSTProxy implements HSTNode {
 	}
 }
 
-// Factory function for HST creation
+/**
+ * Factory function for HST creation
+ * Creates a new HSTNode proxy for hierarchical state tree navigation.
+ *
+ * @param target - The target object to wrap with HST functionality
+ * @param doctype - The document type identifier
+ * @param parentDoctype - Optional parent document type identifier
+ * @returns A new HSTNode proxy instance
+ *
+ * @public
+ */
 function createHST(target: any, doctype: string, parentDoctype?: string): HSTNode {
 	return new HSTProxy(target, doctype, '', null, parentDoctype)
 }
