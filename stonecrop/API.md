@@ -1,4 +1,4 @@
-# Stonecrop Documentation
+# Stonecrop API Reference
 
 > This documentation is automatically generated from the TypeScript API.
 
@@ -468,3 +468,4 @@ new Registry(router: Router, getMeta: (doctype: string) => DoctypeMeta | Promise
 ```typescript
 addDoctype(doctype: DoctypeMeta): void
 ```
+

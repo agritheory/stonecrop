@@ -1,4 +1,4 @@
-# Aform Documentation
+# Aform API Reference
 
 > This documentation is automatically generated from the TypeScript API.
 

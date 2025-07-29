@@ -1,4 +1,4 @@
-# Atable Documentation
+# Atable API Reference
 
 > This documentation is automatically generated from the TypeScript API.
 

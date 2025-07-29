@@ -1,4 +1,4 @@
-# Beam Documentation
+# Beam API Reference
 
 > This documentation is automatically generated from the TypeScript API.
 

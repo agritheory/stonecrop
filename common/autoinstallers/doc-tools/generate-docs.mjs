@@ -32,7 +32,7 @@ if (!projectName) {
 const rootDir = join(__dirname, '../../..')
 const apiModelPath = join(rootDir, `${projectName}/temp/${projectName}.api.json`)
 const apiMarkdownPath = join(rootDir, `common/reviews/api/${projectName}.api.md`)
-const outputPath = join(rootDir, `docs/${projectName}/README.md`)
+const outputPath = join(rootDir, `${projectName}/API.md`)
 
 // Check if the required files exist
 if (!existsSync(apiModelPath)) {
@@ -41,7 +41,7 @@ if (!existsSync(apiModelPath)) {
 
 	// Create a minimal placeholder documentation file
 	const displayName = projectName.charAt(0).toUpperCase() + projectName.slice(1)
-	const placeholderMarkdown = `# ${displayName} Documentation\n\n> No API documentation available - this project may not export public APIs or hasn't been built with API Extractor yet.\n\nTo generate documentation, ensure the project has been built:\n\n\`\`\`bash\nrush build --to ${projectName}\n\`\`\`\n`
+	const placeholderMarkdown = `# ${displayName} API Reference\n\n> No API documentation available - this project may not export public APIs or hasn't been built with API Extractor yet.\n\nTo generate documentation, ensure the project has been built:\n\n\`\`\`bash\nrush build --to ${projectName}\n\`\`\`\n`
 
 	// Ensure the output directory exists
 	mkdirSync(dirname(outputPath), { recursive: true })
@@ -89,7 +89,7 @@ try {
 
 	// Start building the consolidated documentation
 	const displayName = projectName.charAt(0).toUpperCase() + projectName.slice(1)
-	let markdown = `# ${displayName} Documentation\n\n`
+	let markdown = `# ${displayName} API Reference\n\n`
 	markdown += `> This documentation is automatically generated from the TypeScript API.\n\n`
 
 	// Package description (for future enhancement)

@@ -1,4 +1,4 @@
-# Utilities Documentation
+# Utilities API Reference
 
 > This documentation is automatically generated from the TypeScript API.
 

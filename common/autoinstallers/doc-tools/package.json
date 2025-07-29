@@ -2,9 +2,6 @@
 	"name": "doc-tools",
 	"version": "1.0.0",
 	"private": true,
-	"scripts": {
-		"consolidate:atable": "node consolidate-atable-docs.mjs"
-	},
 	"dependencies": {
 		"@microsoft/api-extractor-model": "^7.30.7"
 	}
