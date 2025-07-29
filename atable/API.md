@@ -998,23 +998,23 @@ export interface TableColumn {
 
 | Property | Type | Description |
 |----------|------|-------------|
-| align? | `CanvasTextAlign` | The alignment of the column. Possible values: -  - left aligned -  - center aligned -  - right aligned -  - aligned to the start of the column -  - aligned to the end of the column |
-| cellComponent? | `string` | The component to use to render the cell for the column. If not provided, the table will render the default  element. |
-| cellComponentProps? | `Record<string, any>` | Additional properties to pass to the table's cell component.Only applicable if the  property is set for the column. |
-| colspan? | `number` | The colspan of the Gantt bar for the column. This determines how many columns the Gantt bar should span across.Only applicable for Gantt tables. |
+| align? | `CanvasTextAlign` | `left` (left aligned), `center` (center aligned), `right` (right aligned), `start` (aligned to the start of the column), `end` (aligned to the end of the column) |
+| cellComponent? | `string` | The component to use to render the cell for the column. If not provided, the table will render the default `<td>` element. |
+| cellComponentProps? | `Record<string, any>` | Additional properties to pass to the table's cell component. Only applicable if the `cellComponent` property is set for the column. |
+| colspan? | `number` | The colspan of the Gantt bar for the column. This determines how many columns the Gantt bar should span across. Only applicable for Gantt tables. |
 | edit? | `boolean` | Control whether cells for the column is editable. |
 | format? | `string \| ((value: any, context: CellContext) => string)` | The format function to use to format the value of the cell. This can either be a normal or stringified function that takes the value and the cell context and returns a string. |
-| ganttComponent? | `string` | The component to use to render the Gantt bar for the column.Only applicable for Gantt tables. |
-| isGantt? | `boolean` | Whether the column is a Gantt column.Only applicable for Gantt tables. |
+| ganttComponent? | `string` | The component to use to render the Gantt bar for the column. Only applicable for Gantt tables. |
+| isGantt? | `boolean` | Whether the column is a Gantt column. Only applicable for Gantt tables. |
 | label? | `string` | The label of the column. This is displayed in the table header. |
 | mask? | `(value: any) => any` | The masking function to use to apply an input mask to the cell. This will accept an input value and return the masked value. |
-| modalComponent? | `string \| ((context: CellContext) => string)` | The component to use for the modal. If a function is provided, it will be called with the cell context. The following properties are available on the cell context: -  - the row object -  - the column object -  - the table objectThe function should return the name of the component to use for the modal.Additionally, the following properties will be automatically passed to the modal component: -  - the column index of the current cell -  - the row index of the current cell -  - the table data store |
-| modalComponentExtraProps? | `Record<string, any>` | Additional properties to pass to the modal component.Only applicable if the  property is set for the column. |
+| modalComponent? | `string \| ((context: CellContext) => string)` | `row` (the row object), `column` (the column object), `table` (the table object) The function should return the name of the component to use for the modal. `colIndex` (the column index of the current cell), `rowIndex` (the row index of the current cell), `store` (the table data store) |
+| modalComponentExtraProps? | `Record<string, any>` | Additional properties to pass to the modal component. Only applicable if the `modalComponent` property is set for the column. |
 | name | `string` | The key of the column. This is used to identify the column in the table. |
-| originalIndex? | `number` | The original column index for the Gantt bar, excluding any pinned columns. This is evaluated automatically while rendering the table.Only applicable for Gantt tables. |
+| originalIndex? | `number` | The original column index for the Gantt bar, excluding any pinned columns. This is evaluated automatically while rendering the table. Only applicable for Gantt tables. |
 | pinned? | `boolean` | Control whether the column should be pinned to the table. |
 | resizable? | `boolean` |  |
-| type? | `string` | The data-type of the column. Possible values: -  - the column contains text data -  - the column contains a select input -  - the column contains a date input -  - the column contains a custom component |
+| type? | `string` | `Data` (the column contains text data), `Select` (the column contains a select input), `Date` (the column contains a date input), `component` (the column contains a custom component) |
 | width? | `string` | The width of the column. This can be a number (in pixels) or a string (in CSS units). |
 
 ### TableConfig
@@ -1035,7 +1035,7 @@ export interface TableConfig {
 | Property | Type | Description |
 |----------|------|-------------|
 | fullWidth? | `boolean` | Control whether the table should be allowed to use the full width of its container. |
-| view? | `'uncounted' \| 'list' \| 'list-expansion' \| 'tree' \| 'gantt' \| 'tree-gantt'` | The type of view to display the table in. Possible values: -  - row numbers are not displayed in the table -  - row numbers are displayed in the table -  - carets are displayed in the number column that expand/collapse the row inline -  - carets are displayed in the number column that expand/collapse grouped rows -  - view that allows specific rows to be displayed with Gantt functionality -  - similar to , but allows for tree functionality as well |
+| view? | `'uncounted' \| 'list' \| 'list-expansion' \| 'tree' \| 'gantt' \| 'tree-gantt'` | `uncounted` (row numbers are not displayed in the table), `list` (row numbers are displayed in the table), `list-expansion` (carets are displayed in the number column that expand/collapse the row inline), `tree` (carets are displayed in the number column that expand/collapse grouped rows), `gantt` (view that allows specific rows to be displayed with Gantt functionality), `tree-gantt` (similar to `gantt`, but allows for tree functionality as well) |
 
 ### TableDisplay
 
@@ -1060,13 +1060,13 @@ export interface TableDisplay {
 
 | Property | Type | Description |
 |----------|------|-------------|
-| childrenOpen? | `boolean` | Indicates whether a row node's child nodes are open or closed.Only applicable for tree views. |
-| expanded? | `boolean` | Indicates whether a row node is expanded or collapsed.Only applicable for list-expansion views. |
-| indent? | `number` | The indentation level of the row node.Only applicable for tree and gantt views. |
-| isParent? | `boolean` | Indicates whether a row node is a parent node. This is evaluated automatically while rendering the table.Only applicable for tree views. |
-| isRoot? | `boolean` | Indicates whether a row node is a root node. This is evaluated automatically while rendering the table.Only applicable for tree views. |
-| open? | `boolean` | Indicates whether a row node is visible. This is evaluated automatically while rendering the table.Only applicable for tree views. |
-| parent? | `number` | The HTML parent element for the row node. This is evaluated automatically while rendering the table.Only applicable for tree and gantt views. |
+| childrenOpen? | `boolean` | Indicates whether a row node's child nodes are open or closed. Only applicable for tree views. |
+| expanded? | `boolean` | Indicates whether a row node is expanded or collapsed. Only applicable for list-expansion views. |
+| indent? | `number` | The indentation level of the row node. Only applicable for tree and gantt views. |
+| isParent? | `boolean` | Indicates whether a row node is a parent node. This is evaluated automatically while rendering the table. Only applicable for tree views. |
+| isRoot? | `boolean` | Indicates whether a row node is a root node. This is evaluated automatically while rendering the table. Only applicable for tree views. |
+| open? | `boolean` | Indicates whether a row node is visible. This is evaluated automatically while rendering the table. Only applicable for tree views. |
+| parent? | `number` | The HTML parent element for the row node. This is evaluated automatically while rendering the table. Only applicable for tree and gantt views. |
 | rowModified? | `boolean` | Indicates whether a row node has been modified. This is evaluated automatically when a cell is edited. |
 
 ### TableModal
@@ -1098,7 +1098,7 @@ export interface TableModal {
 | bottom? | `ReturnType<typeof useElementBounding>['bottom']` | Reactive bottom value for the modal's bounding box. The field is unset when the modal is not being displayed. |
 | cell? | `HTMLTableCellElement \| null` | The HTML cell element that the modal is currently being displayed for. The field is unset when the modal is not being displayed. |
 | colIndex? | `number` | The index of the column that the modal is currently being displayed for. The field is unset when the modal is not being displayed. |
-| component? | `string` | The component to use to render the modal. If not provided, the table will try to use the column's  property, if set. If that is not set, the table will not display a modal. |
+| component? | `string` | The component to use to render the modal. If not provided, the table will try to use the column's `modalComponent` property, if set. If that is not set, the table will not display a modal. |
 | componentProps? | `Record<string, any>` | Additional properties to pass to the table's modal component. |
 | height? | `ReturnType<typeof useElementBounding>['height']` | Reactive height value for the modal's bounding box. The field is unset when the modal is not being displayed. |
 | left? | `ReturnType<typeof useElementBounding>['left']` | Reactive left value for the modal's bounding box. The field is unset when the modal is not being displayed. |
@@ -1148,8 +1148,8 @@ export interface TableRow {
 | Property | Type | Description |
 |----------|------|-------------|
 | gantt? | `GanttOptions` | The options to use when rendering the row as a Gantt table. |
-| indent? | `number` | The indentation level of the row node.Only applicable for tree and gantt views. |
-| parent? | `number` | The HTML parent element for the row node. This is evaluated automatically while rendering the table.Only applicable for tree and gantt views. |
+| indent? | `number` | The indentation level of the row node. Only applicable for tree and gantt views. |
+| parent? | `number` | The HTML parent element for the row node. This is evaluated automatically while rendering the table. Only applicable for tree and gantt views. |
 
 ## Type Aliases
 

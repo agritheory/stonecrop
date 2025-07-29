@@ -11,37 +11,240 @@ const __dirname = dirname(__filename)
 // Load the raw JSON to access docComment fields (for future enhancement)
 let rawApiData = null
 
-// Helper function to extract text from TSDoc nodes
+// Helper function to extract text from TSDoc nodes with better formatting
 function extractTextFromTSDocNode(node) {
 	if (!node) return ''
 
-	// If it's a text node with direct text
-	if (node.text !== undefined) {
-		return node.text
-	}
+	// Handle different node types with appropriate formatting
+	switch (node.constructor.name) {
+		case 'DocPlainText':
+			return node.text || ''
 
-	// If it has nodes property (container), recurse
-	if (node.nodes && Array.isArray(node.nodes)) {
-		return node.nodes.map(extractTextFromTSDocNode).join('')
-	}
+		case 'DocCodeSpan':
+			// Use the code getter method to get the content
+			const codeContent = node.code || ''
+			return `\`${codeContent}\``
 
-	// If it has _nodes property (private), recurse
-	if (node._nodes && Array.isArray(node._nodes)) {
-		return node._nodes.map(extractTextFromTSDocNode).join('')
-	}
+		case 'DocSoftBreak':
+			return ' ' // Convert soft breaks to spaces in inline contexts
 
-	// Check for common text properties
-	if (node.content) return node.content
-	if (node.value) return node.value
+		case 'DocParagraph':
+		case 'DocSection':
+			// For containers, recurse through children
+			if (node.nodes && Array.isArray(node.nodes)) {
+				return node.nodes.map(extractTextFromTSDocNode).join('')
+			}
+			if (node._nodes && Array.isArray(node._nodes)) {
+				return node._nodes.map(extractTextFromTSDocNode).join('')
+			}
+			break
+
+		default:
+			// For unknown node types, try common properties
+			if (node.text !== undefined) {
+				return node.text
+			}
+			if (node.content !== undefined) {
+				return node.content
+			}
+			if (node.value !== undefined) {
+				return node.value
+			}
+
+			// Recurse through child nodes if available
+			if (node.nodes && Array.isArray(node.nodes)) {
+				return node.nodes.map(extractTextFromTSDocNode).join('')
+			}
+			if (node._nodes && Array.isArray(node._nodes)) {
+				return node._nodes.map(extractTextFromTSDocNode).join('')
+			}
+	}
 
 	return ''
 }
 
-// Helper function to extract TSDoc summary text
-function extractTSDocSummary(tsdocComment) {
+// Helper function to extract TSDoc summary text with better formatting
+function extractTSDocSummary(tsdocComment, inlineMode = false) {
 	if (!tsdocComment || !tsdocComment.summarySection) return ''
 
-	return extractTextFromTSDocNode(tsdocComment.summarySection).trim()
+	if (inlineMode) {
+		// For inline contexts like table cells, use simpler formatting
+		return extractInlineTSDocContent(tsdocComment.summarySection).trim()
+	} else {
+		// For block contexts, preserve formatting
+		return extractFormattedTSDocContent(tsdocComment.summarySection).trim()
+	}
+}
+
+// Helper function to extract inline TSDoc content for table cells
+function extractInlineTSDocContent(node) {
+	if (!node) return ''
+
+	// Handle different node types with inline formatting
+	switch (node.constructor.name) {
+		case 'DocPlainText':
+			return node.text || ''
+
+		case 'DocCodeSpan':
+			// Use the code getter method to get the content
+			const codeContent = node.code || ''
+			return `\`${codeContent}\``
+
+		case 'DocSoftBreak':
+			return ' ' // Convert line breaks to spaces for inline mode
+
+		case 'DocParagraph':
+			// For paragraphs in inline mode, join with spaces and format bullet points
+			if (node.nodes && Array.isArray(node.nodes)) {
+				const content = node.nodes.map(extractInlineTSDocContent).join('')
+				// Apply inline bullet point formatting
+				return formatInlineBulletPoints(content)
+			}
+			if (node._nodes && Array.isArray(node._nodes)) {
+				const content = node._nodes.map(extractInlineTSDocContent).join('')
+				return formatInlineBulletPoints(content)
+			}
+			break
+
+		case 'DocSection':
+			// For sections, just recurse through children
+			if (node.nodes && Array.isArray(node.nodes)) {
+				return node.nodes.map(extractInlineTSDocContent).join(' ')
+			}
+			if (node._nodes && Array.isArray(node._nodes)) {
+				return node._nodes.map(extractInlineTSDocContent).join(' ')
+			}
+			break
+
+		default:
+			// For unknown node types, try common properties
+			if (node.text !== undefined) {
+				return node.text
+			}
+			if (node.content !== undefined) {
+				return node.content
+			}
+			if (node.value !== undefined) {
+				return node.value
+			}
+
+			// Recurse through child nodes if available
+			if (node.nodes && Array.isArray(node.nodes)) {
+				return node.nodes.map(extractInlineTSDocContent).join(' ')
+			}
+			if (node._nodes && Array.isArray(node._nodes)) {
+				return node._nodes.map(extractInlineTSDocContent).join(' ')
+			}
+	}
+
+	return ''
+}
+
+// Helper function to format bullet points for inline display
+function formatInlineBulletPoints(content) {
+	if (!content) return content
+
+	// Pattern to match bullet points with code spans: "- `code` - description"
+	// For inline mode, format as: "`code` (description), `code2` (description2)"
+	const bulletPattern = /\s*-\s*(`[^`]+`)\s*-\s*([^\n-]+?)(?=\s*-\s*`|\s*$)/g
+
+	const matches = []
+	let match
+	while ((match = bulletPattern.exec(content)) !== null) {
+		matches.push(`${match[1]} (${match[2].trim()})`)
+	}
+
+	if (matches.length > 0) {
+		return matches.join(', ')
+	}
+
+	// If no bullet points found, just clean up the content
+	return content.replace(/\s+/g, ' ').trim()
+}
+
+// Helper function to extract formatted TSDoc content preserving structure
+function extractFormattedTSDocContent(node) {
+	if (!node) return ''
+
+	// Handle different node types with appropriate formatting
+	switch (node.constructor.name) {
+		case 'DocPlainText':
+			return node.text || ''
+
+		case 'DocCodeSpan':
+			// Use the code getter method to get the content
+			const codeContent = node.code || ''
+			return `\`${codeContent}\``
+
+		case 'DocSoftBreak':
+			return '\n' // Preserve line breaks for formatting
+
+		case 'DocParagraph':
+			// For paragraphs, extract content and apply special formatting for lists
+			if (node.nodes && Array.isArray(node.nodes)) {
+				const content = node.nodes.map(extractFormattedTSDocContent).join('')
+				// Post-process to clean up bullet point formatting
+				const formatted = formatBulletPoints(content)
+				return formatted + '\n\n'
+			}
+			if (node._nodes && Array.isArray(node._nodes)) {
+				const content = node._nodes.map(extractFormattedTSDocContent).join('')
+				// Post-process to clean up bullet point formatting
+				const formatted = formatBulletPoints(content)
+				return formatted + '\n\n'
+			}
+			break
+
+		case 'DocSection':
+			// For sections, just recurse through children
+			if (node.nodes && Array.isArray(node.nodes)) {
+				return node.nodes.map(extractFormattedTSDocContent).join('')
+			}
+			if (node._nodes && Array.isArray(node._nodes)) {
+				return node._nodes.map(extractFormattedTSDocContent).join('')
+			}
+			break
+
+		default:
+			// For unknown node types, try common properties
+			if (node.text !== undefined) {
+				return node.text
+			}
+			if (node.content !== undefined) {
+				return node.content
+			}
+			if (node.value !== undefined) {
+				return node.value
+			}
+
+			// Recurse through child nodes if available
+			if (node.nodes && Array.isArray(node.nodes)) {
+				return node.nodes.map(extractFormattedTSDocContent).join('')
+			}
+			if (node._nodes && Array.isArray(node._nodes)) {
+				return node._nodes.map(extractFormattedTSDocContent).join('')
+			}
+	}
+
+	return ''
+}
+
+// Helper function to format bullet points properly
+function formatBulletPoints(content) {
+	if (!content) return content
+
+	// Pattern to match bullet points with code spans: "- `code` - description"
+	// Replace with proper markdown list format
+	const bulletPattern = /\s*-\s*(`[^`]+`)\s*-\s*([^\n-]+?)(?=\s*-\s*`|\s*$)/g
+
+	let formatted = content.replace(bulletPattern, (match, codeSpan, description) => {
+		return `\n- ${codeSpan} - ${description.trim()}`
+	})
+
+	// Clean up multiple newlines and trim
+	formatted = formatted.replace(/\n{3,}/g, '\n\n').trim()
+
+	return formatted
 }
 
 // Helper function to normalize type text for markdown tables
@@ -227,8 +430,8 @@ try {
 				markdown += `| Parameter | Type | Description |\n`
 				markdown += `|-----------|------|-------------|\n`
 				func.parameters.forEach(param => {
-					// Try to extract parameter description from TSDoc
-					const description = extractTSDocSummary(param.tsdocComment) || ''
+					// Try to extract parameter description from TSDoc (inline mode for table)
+					const description = extractTSDocSummary(param.tsdocComment, true) || ''
 					const normalizedType = normalizeTypeForTable(param.parameterTypeExcerpt.text)
 					markdown += `| ${param.name} | \`${normalizedType}\` | ${description} |\n`
 				})
@@ -277,7 +480,7 @@ try {
 				markdown += `|----------|------|-------------|\n`
 				iface.members.forEach(member => {
 					if (member.kind === 'PropertySignature') {
-						const description = extractTSDocSummary(member.tsdocComment) || ''
+						const description = extractTSDocSummary(member.tsdocComment, true) || ''
 						const optional = member.isOptional ? '?' : ''
 						const normalizedType = normalizeTypeForTable(member.propertyTypeExcerpt.text)
 						markdown += `| ${member.displayName}${optional} | \`${normalizedType}\` | ${description} |\n`
@@ -337,7 +540,7 @@ try {
 				markdown += `| Property | Type | Description |\n`
 				markdown += `|----------|------|-------------|\n`
 				properties.forEach(prop => {
-					const description = extractTSDocSummary(prop.tsdocComment) || ''
+					const description = extractTSDocSummary(prop.tsdocComment, true) || ''
 					const normalizedType = normalizeTypeForTable(prop.propertyTypeExcerpt.text)
 					markdown += `| ${prop.displayName} | \`${normalizedType}\` | ${description} |\n`
 				})
