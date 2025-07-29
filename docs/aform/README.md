@@ -2,7 +2,7 @@
 
 > This documentation is automatically generated from the TypeScript API.
 
-<h2>Vue Components</h2>
+## Vue Components
 
 ### ACheckbox
 
@@ -92,7 +92,7 @@ Vue component exported from @stonecrop/aform.
 import { Login } from '@stonecrop/aform'
 ```
 
-<h2>Functions</h2>
+## Functions
 
 ### install
 
@@ -108,7 +108,7 @@ declare function install(app: App): void;
 |-----------|------|-------------|
 | app | `App` |  |
 
-<h2>Interfaces</h2>
+## Interfaces
 
 ### CellContext
 
@@ -242,7 +242,7 @@ export interface TableRow {
 | indent? | `number` |  |
 | parent? | `number` |  |
 
-<h2>Type Aliases</h2>
+## Type Aliases
 
 ### BaseSchema
 

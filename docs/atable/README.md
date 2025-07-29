@@ -2,7 +2,7 @@
 
 > This documentation is automatically generated from the TypeScript API.
 
-<h2>Vue Components</h2>
+## Vue Components
 
 ### ACell
 
@@ -76,7 +76,7 @@ Vue component exported from @stonecrop/atable.
 import { ATableModal } from '@stonecrop/atable'
 ```
 
-<h2>Functions</h2>
+## Functions
 
 ### createTableStore
 
@@ -808,7 +808,7 @@ declare function install(app: App): void;
 |-----------|------|-------------|
 | app | `App` |  |
 
-<h2>Interfaces</h2>
+## Interfaces
 
 ### CellContext
 
@@ -1125,7 +1125,7 @@ export interface TableRow {
 | indent? | `number` |  |
 | parent? | `number` |  |
 
-<h2>Type Aliases</h2>
+## Type Aliases
 
 ### ConnectionEvent
 

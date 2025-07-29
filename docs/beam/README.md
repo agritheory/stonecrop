@@ -2,7 +2,7 @@
 
 > This documentation is automatically generated from the TypeScript API.
 
-<h2>Vue Components</h2>
+## Vue Components
 
 ### ActionFooter
 
@@ -188,7 +188,7 @@ Vue component exported from @stonecrop/beam.
 import { ToggleArrow } from '@stonecrop/beam'
 ```
 
-<h2>Functions</h2>
+## Functions
 
 ### install
 
@@ -220,7 +220,7 @@ useMqttStream: (options: IMqttStream) => Promise<{
 |-----------|------|-------------|
 | options | `IMqttStream` |  |
 
-<h2>Interfaces</h2>
+## Interfaces
 
 ### IMqttStream
 
@@ -238,7 +238,7 @@ export interface IMqttStream {
 |----------|------|-------------|
 | topics? | `string[]` |  |
 
-<h2>Type Aliases</h2>
+## Type Aliases
 
 ### BeamColor
 

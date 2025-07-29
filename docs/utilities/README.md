@@ -2,7 +2,7 @@
 
 > This documentation is automatically generated from the TypeScript API.
 
-<h2>Functions</h2>
+## Functions
 
 ### install
 
@@ -32,7 +32,7 @@ export declare function useKeyboardNav(options: KeyboardNavigationOptions[]): vo
 |-----------|------|-------------|
 | options | `KeyboardNavigationOptions[]` |  |
 
-<h2>Type Aliases</h2>
+## Type Aliases
 
 ### KeyboardNavigationOptions
 
@@ -56,7 +56,7 @@ export type KeypressHandlers = {
 };
 ```
 
-<h2>Variables</h2>
+## Variables
 
 ### defaultKeypressHandlers
 

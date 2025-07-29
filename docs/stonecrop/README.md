@@ -2,7 +2,7 @@
 
 > This documentation is automatically generated from the TypeScript API.
 
-<h2>Other Components</h2>
+## Other Components
 
 ### Stonecrop
 
@@ -10,7 +10,7 @@
 export { Stonecrop }
 ```
 
-<h2>Functions</h2>
+## Functions
 
 ### useStonecrop
 
@@ -26,7 +26,7 @@ export declare function useStonecrop(registry?: Registry): StonecropReturn;
 |-----------|------|-------------|
 | registry | `Registry` |  |
 
-<h2>Interfaces</h2>
+## Interfaces
 
 ### CellContext
 
@@ -257,7 +257,7 @@ export interface TableRow {
 | indent? | `number` |  |
 | parent? | `number` |  |
 
-<h2>Type Aliases</h2>
+## Type Aliases
 
 ### BaseSchema
 
@@ -422,7 +422,7 @@ export type TableSchema = BaseSchema & {
 };
 ```
 
-<h2>Classes</h2>
+## Classes
 
 ### DoctypeMeta
 
@@ -468,4 +468,3 @@ new Registry(router: Router, getMeta: (doctype: string) => DoctypeMeta | Promise
 ```typescript
 addDoctype(doctype: DoctypeMeta): void
 ```
-

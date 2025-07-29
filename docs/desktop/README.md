@@ -2,7 +2,7 @@
 
 > This documentation is automatically generated from the TypeScript API.
 
-<h2>Vue Components</h2>
+## Vue Components
 
 ### ActionSet
 
@@ -44,7 +44,7 @@ Vue component exported from @stonecrop/desktop.
 import { SheetNav } from '@stonecrop/desktop'
 ```
 
-<h2>Other Components</h2>
+## Other Components
 
 ### StonecropDesktop
 
@@ -52,7 +52,7 @@ import { SheetNav } from '@stonecrop/desktop'
 export { StonecropDesktop }
 ```
 
-<h2>Type Aliases</h2>
+## Type Aliases
 
 ### ActionElements
 

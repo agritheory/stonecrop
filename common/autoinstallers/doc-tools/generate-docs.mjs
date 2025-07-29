@@ -144,7 +144,7 @@ try {
 
 	// Generate sections
 	if (componentExports.length > 0) {
-		markdown += `<h2>Vue Components</h2>\n\n`
+		markdown += `## Vue Components\n\n`
 		componentExports.forEach(component => {
 			markdown += `### ${component.displayName}\n\n`
 			markdown += `Vue component exported from @stonecrop/${projectName}.\n\n`
@@ -155,7 +155,7 @@ try {
 	}
 
 	if (components.length > 0) {
-		markdown += `<h2>Other Components</h2>\n\n`
+		markdown += `## Other Components\n\n`
 		components.forEach(component => {
 			markdown += `### ${component.displayName}\n\n`
 			// Component description (for future enhancement)
@@ -170,7 +170,7 @@ try {
 	}
 
 	if (functions.length > 0) {
-		markdown += `<h2>Functions</h2>\n\n`
+		markdown += `## Functions\n\n`
 		functions.forEach(func => {
 			markdown += `### ${func.displayName}\n\n`
 			// Function description (for future enhancement)
@@ -203,7 +203,7 @@ try {
 	}
 
 	if (interfaces.length > 0) {
-		markdown += `<h2>Interfaces</h2>\n\n`
+		markdown += `## Interfaces\n\n`
 		interfaces.forEach(iface => {
 			markdown += `### ${iface.displayName}\n\n`
 			// Interface description (for future enhancement)
@@ -253,7 +253,7 @@ try {
 	}
 
 	if (types.length > 0) {
-		markdown += `<h2>Type Aliases</h2>\n\n`
+		markdown += `## Type Aliases\n\n`
 		types.forEach(type => {
 			markdown += `### ${type.displayName}\n\n`
 			// Type alias description (for future enhancement)
@@ -270,7 +270,7 @@ try {
 	}
 
 	if (classes.length > 0) {
-		markdown += `<h2>Classes</h2>\n\n`
+		markdown += `## Classes\n\n`
 		classes.forEach(cls => {
 			markdown += `### ${cls.displayName}\n\n`
 			// Class description (for future enhancement)
@@ -327,7 +327,7 @@ try {
 	}
 
 	if (variables.length > 0) {
-		markdown += `<h2>Variables</h2>\n\n`
+		markdown += `## Variables\n\n`
 		variables.forEach(variable => {
 			markdown += `### ${variable.displayName}\n\n`
 			// Variable description (for future enhancement)
@@ -344,7 +344,7 @@ try {
 	}
 
 	if (enums.length > 0) {
-		markdown += `<h2>Enums</h2>\n\n`
+		markdown += `## Enums\n\n`
 		enums.forEach(enumItem => {
 			markdown += `### ${enumItem.displayName}\n\n`
 			// Enum item description (for future enhancement)
