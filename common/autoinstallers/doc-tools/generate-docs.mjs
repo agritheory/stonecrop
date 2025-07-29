@@ -23,8 +23,8 @@ function normalizeTypeForTable(typeText) {
 // Get project name from command line arguments
 const projectName = process.argv[2]
 if (!projectName) {
-	console.error('❌ Usage: node consolidate-docs.mjs <project-name>')
-	console.error('   Example: node consolidate-docs.mjs atable')
+	console.error('❌ Usage: node generate-docs.mjs <project-name>')
+	console.error('   Example: node generate-docs.mjs atable')
 	process.exit(1)
 }
 

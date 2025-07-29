@@ -34,7 +34,7 @@
 		"prepublish": "heft build && vite build && rushx docs",
 		"build": "heft build && vite build && rushx docs",
 		"dev": "vite",
-		"docs": "cd ../common/autoinstallers/doc-tools && node consolidate-docs.mjs graphql_client",
+		"docs": "cd ../common/autoinstallers/doc-tools && node generate-docs.mjs graphql_client",
 		"lint": "eslint . --ext .ts,.vue",
 		"preview": "vite preview"
 	},

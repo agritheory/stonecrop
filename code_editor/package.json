@@ -30,7 +30,7 @@
 		"prepublish": "heft build && vite build && rushx docs",
 		"build": "heft build && vite build && rushx docs",
 		"dev": "vite",
-		"docs": "cd ../common/autoinstallers/doc-tools && node consolidate-docs.mjs code_editor",
+		"docs": "cd ../common/autoinstallers/doc-tools && node generate-docs.mjs code_editor",
 		"lint": "eslint . --ext .ts,.vue",
 		"preview": "vite preview"
 	},
