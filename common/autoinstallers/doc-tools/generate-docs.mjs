@@ -1,40 +1,6 @@
 #!/usr/bin/env node
 
-// Try to import the API extractor model with error handling
-let ApiModel
-try {
-	const { ApiModel: ImportedApiModel } = await import('@microsoft/api-extractor-model')
-	ApiModel = ImportedApiModel
-} catch (error) {
-	console.log(`ℹ️  API Extractor dependencies not available - skipping documentation generation`)
-	console.log(`   This typically happens in CI before autoinstallers are updated.`)
-	console.log(`   Run 'rush update-autoinstaller --name doc-tools' to install dependencies.`)
-
-	// Get project name from command line arguments for placeholder generation
-	const projectName = process.argv[2]
-	if (projectName) {
-		const { readFileSync, writeFileSync, existsSync, mkdirSync } = await import('fs')
-		const { join, dirname } = await import('path')
-		const { fileURLToPath } = await import('url')
-
-		const __filename = fileURLToPath(import.meta.url)
-		const __dirname = dirname(__filename)
-
-		// Generate a placeholder documentation file
-		const rootDir = join(__dirname, '../../..')
-		const outputPath = join(rootDir, `${projectName}/API.md`)
-		const displayName = projectName.charAt(0).toUpperCase() + projectName.slice(1)
-		const placeholderMarkdown = `# ${displayName} API Reference\n\n> API documentation dependencies not available - this project's API documentation will be generated when dependencies are installed.\n\nTo generate documentation, run:\n\n\`\`\`bash\nrush update-autoinstaller --name doc-tools\nrush build --to ${projectName}\n\`\`\`\n`
-
-		// Ensure the output directory exists
-		mkdirSync(dirname(outputPath), { recursive: true })
-		writeFileSync(outputPath, placeholderMarkdown, 'utf8')
-		console.log(`📝 Created placeholder documentation at: ${outputPath}`)
-	}
-
-	process.exit(0)
-}
-
+import { ApiModel } from '@microsoft/api-extractor-model'
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
