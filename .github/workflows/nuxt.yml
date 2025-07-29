@@ -30,6 +30,12 @@ jobs:
       - name: Rush Install
         run: node common/scripts/install-run-rush.js install
 
+      - name: Update Autoinstallers
+        run: |
+          node common/scripts/install-run-rush.js update-autoinstaller --name doc-tools
+          node common/scripts/install-run-rush.js update-autoinstaller --name rush-plugins
+          node common/scripts/install-run-rush.js update-autoinstaller --name rush-prettier
+
       - name: Prepare Playground
         working-directory: nuxt/
         run: node ../common/scripts/install-run-rushx.js dev:prepare
