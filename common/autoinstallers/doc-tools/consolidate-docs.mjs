@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { ApiModel } from '@microsoft/api-extractor-model'
-import { readFileSync, writeFileSync } from 'fs'
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
 
@@ -18,14 +18,46 @@ function normalizeTypeForTable(typeText) {
 	// Replace newlines and excessive whitespace with single spaces
 	// Escape pipe characters to prevent breaking markdown table structure
 	return typeText.replace(/\n/g, ' ').replace(/\s+/g, ' ').replace(/\|/g, '\\|').trim()
-} // Path to the API model file for ATable (relative to monorepo root from autoinstaller)
+}
+
+// Get project name from command line arguments
+const projectName = process.argv[2]
+if (!projectName) {
+	console.error('❌ Usage: node consolidate-docs.mjs <project-name>')
+	console.error('   Example: node consolidate-docs.mjs atable')
+	process.exit(1)
+}
+
+// Path to the API model files (relative to monorepo root from autoinstaller)
 const rootDir = join(__dirname, '../../..')
-const apiModelPath = join(rootDir, 'atable/temp/atable.api.json')
-const apiMarkdownPath = join(rootDir, 'common/reviews/api/atable.api.md')
-const outputPath = join(rootDir, 'docs/atable/README.md')
+const apiModelPath = join(rootDir, `${projectName}/temp/${projectName}.api.json`)
+const apiMarkdownPath = join(rootDir, `common/reviews/api/${projectName}.api.md`)
+const outputPath = join(rootDir, `docs/${projectName}/README.md`)
+
+// Check if the required files exist
+if (!existsSync(apiModelPath)) {
+	console.log(`ℹ️  No API model found for "${projectName}" - skipping documentation generation`)
+	console.log(`   (This is normal for projects that don't export public APIs or haven't been built yet)`)
+
+	// Create a minimal placeholder documentation file
+	const displayName = projectName.charAt(0).toUpperCase() + projectName.slice(1)
+	const placeholderMarkdown = `# ${displayName} Documentation\n\n> No API documentation available - this project may not export public APIs or hasn't been built with API Extractor yet.\n\nTo generate documentation, ensure the project has been built:\n\n\`\`\`bash\nrush build --to ${projectName}\n\`\`\`\n`
+
+	// Ensure the output directory exists
+	mkdirSync(dirname(outputPath), { recursive: true })
+	writeFileSync(outputPath, placeholderMarkdown, 'utf8')
+	console.log(`📝 Created placeholder documentation at: ${outputPath}`)
+	process.exit(0)
+}
+
+if (!existsSync(apiMarkdownPath)) {
+	console.warn(`⚠️  API markdown file not found: ${apiMarkdownPath}`)
+	console.warn('   Component imports will be extracted from API model only')
+}
 
 try {
-	console.log('Loading API model from:', apiModelPath)
+	console.log(`📖 Generating documentation for: ${projectName}`)
+	console.log(`📄 Loading API model from: ${apiModelPath}`)
 
 	// Load the raw API data to access docComment fields (for future enhancement)
 	rawApiData = JSON.parse(readFileSync(apiModelPath, 'utf-8'))
@@ -34,28 +66,30 @@ try {
 	const apiModel = new ApiModel()
 	const apiPackage = apiModel.loadPackage(apiModelPath)
 
-	console.log('Package loaded:', apiPackage.displayName)
+	console.log(`📦 Package loaded: ${apiPackage.displayName}`)
 
-	// Also read the API markdown to extract component exports
-	const apiMarkdown = readFileSync(apiMarkdownPath, 'utf8')
-
-	// Extract Vue component exports from the markdown
+	// Extract Vue component exports from the markdown if available
 	const componentExports = []
-	const exportMatches = apiMarkdown.match(/export \{ ([A-Z][a-zA-Z]*) \}/g)
-	if (exportMatches) {
-		exportMatches.forEach(match => {
-			const componentName = match.match(/export \{ ([A-Z][a-zA-Z]*) \}/)[1]
-			if (componentName.startsWith('A')) {
-				componentExports.push({
-					name: componentName,
-					displayName: componentName,
-				})
-			}
-		})
+	if (existsSync(apiMarkdownPath)) {
+		const apiMarkdown = readFileSync(apiMarkdownPath, 'utf8')
+		const exportMatches = apiMarkdown.match(/export \{ ([A-Z][a-zA-Z]*) \}/g)
+		if (exportMatches) {
+			exportMatches.forEach(match => {
+				const componentName = match.match(/export \{ ([A-Z][a-zA-Z]*) \}/)[1]
+				// Look for Vue components (typically start with capital letter)
+				if (componentName.match(/^[A-Z]/)) {
+					componentExports.push({
+						name: componentName,
+						displayName: componentName,
+					})
+				}
+			})
+		}
 	}
 
 	// Start building the consolidated documentation
-	let markdown = `# ATable Documentation\n\n`
+	const displayName = projectName.charAt(0).toUpperCase() + projectName.slice(1)
+	let markdown = `# ${displayName} Documentation\n\n`
 	markdown += `> This documentation is automatically generated from the TypeScript API.\n\n`
 
 	// Package description (for future enhancement)
@@ -96,7 +130,7 @@ try {
 				break
 			case 'Variable':
 				// Check if this is likely a Vue component (exported with capital letter)
-				if (member.displayName.match(/^A[A-Z]/)) {
+				if (member.displayName.match(/^[A-Z]/)) {
 					components.push(member)
 				} else {
 					variables.push(member)
@@ -110,19 +144,18 @@ try {
 
 	// Generate sections
 	if (componentExports.length > 0) {
-		markdown += `<details>\n<summary><h2>Vue Components</h2></summary>\n\n`
+		markdown += `<h2>Vue Components</h2>\n\n`
 		componentExports.forEach(component => {
 			markdown += `### ${component.displayName}\n\n`
-			markdown += `Vue component exported from @stonecrop/atable.\n\n`
+			markdown += `Vue component exported from @stonecrop/${projectName}.\n\n`
 			markdown += `\`\`\`typescript\n`
-			markdown += `import { ${component.displayName} } from '@stonecrop/atable'\n`
+			markdown += `import { ${component.displayName} } from '@stonecrop/${projectName}'\n`
 			markdown += `\`\`\`\n\n`
 		})
-		markdown += `</details>\n\n`
 	}
 
 	if (components.length > 0) {
-		markdown += `<details>\n<summary><h2>Other Components</h2></summary>\n\n`
+		markdown += `<h2>Other Components</h2>\n\n`
 		components.forEach(component => {
 			markdown += `### ${component.displayName}\n\n`
 			// Component description (for future enhancement)
@@ -134,11 +167,10 @@ try {
 			markdown += `export { ${component.displayName} }\n`
 			markdown += `\`\`\`\n\n`
 		})
-		markdown += `</details>\n\n`
 	}
 
 	if (functions.length > 0) {
-		markdown += `<details>\n<summary><h2>Functions</h2></summary>\n\n`
+		markdown += `<h2>Functions</h2>\n\n`
 		functions.forEach(func => {
 			markdown += `### ${func.displayName}\n\n`
 			// Function description (for future enhancement)
@@ -168,11 +200,10 @@ try {
 				markdown += `\n`
 			}
 		})
-		markdown += `</details>\n\n`
 	}
 
 	if (interfaces.length > 0) {
-		markdown += `<details>\n<summary><h2>Interfaces</h2></summary>\n\n`
+		markdown += `<h2>Interfaces</h2>\n\n`
 		interfaces.forEach(iface => {
 			markdown += `### ${iface.displayName}\n\n`
 			// Interface description (for future enhancement)
@@ -219,11 +250,10 @@ try {
 				markdown += `\n`
 			}
 		})
-		markdown += `</details>\n\n`
 	}
 
 	if (types.length > 0) {
-		markdown += `<details>\n<summary><h2>Type Aliases</h2></summary>\n\n`
+		markdown += `<h2>Type Aliases</h2>\n\n`
 		types.forEach(type => {
 			markdown += `### ${type.displayName}\n\n`
 			// Type alias description (for future enhancement)
@@ -237,11 +267,10 @@ try {
 			markdown += `export type ${type.displayName} = ${type.typeExcerpt.text};\n`
 			markdown += `\`\`\`\n\n`
 		})
-		markdown += `</details>\n\n`
 	}
 
 	if (classes.length > 0) {
-		markdown += `<details>\n<summary><h2>Classes</h2></summary>\n\n`
+		markdown += `<h2>Classes</h2>\n\n`
 		classes.forEach(cls => {
 			markdown += `### ${cls.displayName}\n\n`
 			// Class description (for future enhancement)
@@ -295,11 +324,10 @@ try {
 				})
 			}
 		})
-		markdown += `</details>\n\n`
 	}
 
 	if (variables.length > 0) {
-		markdown += `<details>\n<summary><h2>Variables</h2></summary>\n\n`
+		markdown += `<h2>Variables</h2>\n\n`
 		variables.forEach(variable => {
 			markdown += `### ${variable.displayName}\n\n`
 			// Variable description (for future enhancement)
@@ -313,18 +341,19 @@ try {
 			markdown += `export const ${variable.displayName}: ${variable.variableTypeExcerpt.text}\n`
 			markdown += `\`\`\`\n\n`
 		})
-		markdown += `</details>\n\n`
 	}
 
 	if (enums.length > 0) {
-		markdown += `<details>\n<summary><h2>Enums</h2></summary>\n\n`
+		markdown += `<h2>Enums</h2>\n\n`
 		enums.forEach(enumItem => {
 			markdown += `### ${enumItem.displayName}\n\n`
 			// Enum item description (for future enhancement)
 			// const enumItemDoc = extractDocComment(findDocComment(enumItem.canonicalReference));
 			// if (enumItemDoc) {
 			//   markdown += `${enumItemDoc}\n\n`;
-			// }      markdown += `**Members:**\n\n`;
+			// }
+
+			markdown += `**Members:**\n\n`
 			markdown += `\`\`\`typescript\n`
 			markdown += `export enum ${enumItem.displayName} {\n`
 			enumItem.members.forEach(member => {
@@ -333,13 +362,12 @@ try {
 			markdown += `}\n`
 			markdown += `\`\`\`\n\n`
 		})
-		markdown += `</details>\n\n`
 	}
 
 	// Write the consolidated documentation
 	writeFileSync(outputPath, markdown, 'utf8')
 
-	console.log(`\n✅ Consolidated ATable documentation written to: ${outputPath}`)
+	console.log(`\n✅ Consolidated ${displayName} documentation written to: ${outputPath}`)
 	console.log(`📊 Documentation includes:`)
 	console.log(`   - ${componentExports.length} Vue components`)
 	console.log(`   - ${components.length} other components`)
@@ -350,6 +378,6 @@ try {
 	console.log(`   - ${variables.length} variables`)
 	console.log(`   - ${enums.length} enums`)
 } catch (error) {
-	console.error('❌ Error consolidating documentation:', error.message)
+	console.error(`❌ Error consolidating ${projectName} documentation:`, error.message)
 	process.exit(1)
 }

@@ -40,12 +40,13 @@
 			"shellCommand": "pretty-quick --staged" // This will invoke common/autoinstallers/rush-prettier/node_modules/.bin/pretty-quick
 		},
 		{
-			"name": "docs:consolidate-atable",
-			"commandKind": "global",
-			"summary": "Consolidate ATable documentation from API model into a single markdown file.",
+			"name": "docs",
+			"commandKind": "bulk",
+			"summary": "Generate consolidated documentation for all projects",
+			"description": "Generates consolidated TypeScript API documentation for all projects. Creates comprehensive markdown documentation from TypeScript API models, with graceful handling for projects without API exports.",
 			"safeForSimultaneousRushProcesses": true,
-			"autoinstallerName": "doc-tools",
-			"shellCommand": "cd common/autoinstallers/doc-tools && node consolidate-atable-docs.mjs"
+			"ignoreMissingScript": true,
+			"enableParallelism": true
 		},
 		{
 			"commandKind": "phased",

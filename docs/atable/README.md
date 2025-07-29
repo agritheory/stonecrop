@@ -1,9 +1,8 @@
-# ATable Documentation
+# Atable Documentation
 
 > This documentation is automatically generated from the TypeScript API.
 
-<details>
-<summary><h2>Vue Components</h2></summary>
+<h2>Vue Components</h2>
 
 ### ACell
 
@@ -77,10 +76,7 @@ Vue component exported from @stonecrop/atable.
 import { ATableModal } from '@stonecrop/atable'
 ```
 
-</details>
-
-<details>
-<summary><h2>Functions</h2></summary>
+<h2>Functions</h2>
 
 ### createTableStore
 
@@ -812,10 +808,7 @@ declare function install(app: App): void;
 |-----------|------|-------------|
 | app | `App` |  |
 
-</details>
-
-<details>
-<summary><h2>Interfaces</h2></summary>
+<h2>Interfaces</h2>
 
 ### CellContext
 
@@ -1132,10 +1125,7 @@ export interface TableRow {
 | indent? | `number` |  |
 | parent? | `number` |  |
 
-</details>
-
-<details>
-<summary><h2>Type Aliases</h2></summary>
+<h2>Type Aliases</h2>
 
 ### ConnectionEvent
 
@@ -1183,4 +1173,3 @@ export type GanttDragEvent = {
 });
 ```
 
-</details>
