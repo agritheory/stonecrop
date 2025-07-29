@@ -10,6 +10,7 @@
 	},
 	"dependencies": {
 		"@microsoft/api-extractor": "^7.52.8",
+		"@microsoft/api-extractor-model": "^7.30.7",
 		"@rushstack/heft": "^0.74.0",
 		"@rushstack/heft-api-extractor-plugin": "^0.4.8",
 		"@rushstack/heft-typescript-plugin": "^0.9.8",
