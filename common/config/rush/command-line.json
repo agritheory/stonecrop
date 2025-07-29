@@ -40,6 +40,15 @@
 			"shellCommand": "pretty-quick --staged" // This will invoke common/autoinstallers/rush-prettier/node_modules/.bin/pretty-quick
 		},
 		{
+			"name": "docs",
+			"commandKind": "bulk",
+			"summary": "Generate consolidated documentation for all projects",
+			"description": "Generates consolidated TypeScript API documentation for all projects. Creates comprehensive markdown documentation from TypeScript API models, with graceful handling for projects without API exports.",
+			"safeForSimultaneousRushProcesses": true,
+			"ignoreMissingScript": true,
+			"enableParallelism": true
+		},
+		{
 			"commandKind": "phased",
 			"name": "build",
 			"summary": "Build all projects.",

@@ -15,6 +15,10 @@
       "allowedCategories": [ "prototype", "utilities" ]
     },
     {
+      "name": "@microsoft/api-extractor-model",
+      "allowedCategories": [ "prototype", "utilities" ]
+    },
+    {
       "name": "@miragejs/graphql",
       "allowedCategories": [ "prototype", "utilities" ]
     },

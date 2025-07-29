@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/atable",
+      "comment": "update API documentation generation",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/atable"
+}

@@ -17,7 +17,7 @@ Stonecrop is a **schema-driven UI framework** and **event-driven application pla
 - **TypeScript**: Full TypeScript v5.8.3 support with project references
 - **Build System**: Vite for all packages with Heft for TypeScript compilation
 - **Testing**: Vitest for unit testing across packages
-- **Documentation**: API Documenter for generated docs, Histoire.js for component stories
+- **Documentation**: Custom API documentation generator using API Extractor Model, Histoire.js for component stories
 - **Development**: Examples package with interactive component stories
 
 ### Core Packages
@@ -146,7 +146,8 @@ Stores (Pinia + plugins)
   - Component playground with hot reload
   - Story-driven development workflow
   - Per-package example folders (aform, atable, beam, etc.)
-- `/docs`: Generated API documentation using Microsoft API Documenter
+- `API.md`: Generated API documentation in each project directory using custom doc-tools autoinstaller
+- `/common/autoinstallers/doc-tools`: Custom documentation generator using @microsoft/api-extractor-model
 - `/rigs`: Shared build configuration (stonecrop-rig) with standardized tooling
 
 #### Configuration
@@ -211,7 +212,8 @@ rushx test              # Vitest tests
 rushx lint              # ESLint
 
 # Documentation
-rushx docs              # Generate API docs
+rush docs               # Generate API.md files for all projects
+rushx docs              # Generate API.md for current project only
 
 # Release management
 rush change             # Record changes for release

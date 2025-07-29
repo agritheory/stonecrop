@@ -14,7 +14,7 @@ Always reference `.github/ARCHITECTURE.md` in the repository for comprehensive a
 - **TypeScript**: 5.8+ with strict typing
 - **Build System**: Vite + Heft for compilation and bundling
 - **Testing**: Vitest for unit testing
-- **Documentation**: API Documenter + Histoire.js for component stories
+- **Documentation**: Custom API documentation generator using API Extractor Model + Histoire.js for component stories
 
 ## Key Guidelines
 1. **Schema-driven** approach - UI components are generated from JSON schemas
@@ -29,6 +29,7 @@ Always reference `.github/ARCHITECTURE.md` in the repository for comprehensive a
 - Development examples: `rushx dev:aform`, `rushx dev:atable`, etc.
 - Build process: Heft → Vite → API documentation
 - Testing: Individual package tests with `rushx test`
+- Documentation: Auto-generated API.md files using doc-tools autoinstaller
 
 ## State Management Architecture
 - **Registry**: Singleton pattern for doctype definitions (immutable)
@@ -54,6 +55,7 @@ Always reference `.github/ARCHITECTURE.md` in the repository for comprehensive a
 - **desktop**: Desktop-specific UI patterns and command palette
 - **node-editor**: Visual FSM editor with Vue Flow integration
 - **utilities**: Shared helper functions and type utilities
+- **doc-tools**: Autoinstaller for API documentation generation using API Extractor Model
 
 ## Development Workflow
 1. Use component stories in `/examples` for interactive development
@@ -62,4 +64,5 @@ Always reference `.github/ARCHITECTURE.md` in the repository for comprehensive a
 4. Use Pinia stores for all mutable state management
 5. Design XState machines for complex workflows
 6. Write unit tests with Vitest for new functionality
-7. Generate API documentation with `rushx docs`
+7. Generate API documentation with `rush docs` (all projects) or `rushx docs` (current project)
+8. API documentation is auto-generated as `API.md` files in each project directory
