@@ -192,6 +192,8 @@ import { ToggleArrow } from '@stonecrop/beam'
 
 ### install
 
+Install all Beam components
+
 **Signature:**
 
 ```typescript
@@ -205,6 +207,8 @@ declare function install(app: App): void;
 | app | `App` |  |
 
 ### useMqttStream
+
+Use MQTT stream
 
 **Signature:**
 
@@ -223,6 +227,8 @@ useMqttStream: (options: IMqttStream) => Promise<{
 ## Interfaces
 
 ### IMqttStream
+
+MQTT stream options
 
 **Definition:**
 
@@ -261,6 +267,8 @@ export type BeamFilterChoice = {
 
 ### HEX
 
+HEX color string representation
+
 **Definition:**
 
 ```typescript
@@ -269,6 +277,8 @@ export type HEX = `#${string}`;
 
 ### HSL
 
+HSL color string representation
+
 **Definition:**
 
 ```typescript
@@ -276,6 +286,8 @@ export type HSL = `hsl(${number}, ${number}%, ${number}%)`;
 ```
 
 ### HSLA
+
+HSLA color string representation
 
 **Definition:**
 
@@ -308,6 +320,8 @@ export type ListViewItem = {
 
 ### RGB
 
+RGB color string representation
+
 **Definition:**
 
 ```typescript
@@ -315,6 +329,8 @@ export type RGB = `rgb(${number}, ${number}, ${number})`;
 ```
 
 ### RGBA
+
+RGBA color string representation
 
 **Definition:**
 

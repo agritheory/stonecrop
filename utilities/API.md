@@ -6,6 +6,8 @@
 
 ### install
 
+Install all utility components
+
 **Signature:**
 
 ```typescript
@@ -19,6 +21,8 @@ declare function install(app: App): void;
 | app | `App` |  |
 
 ### useKeyboardNav
+
+Keyboard navigation composable
 
 **Signature:**
 
@@ -36,6 +40,8 @@ export declare function useKeyboardNav(options: KeyboardNavigationOptions[]): vo
 
 ### KeyboardNavigationOptions
 
+Keyboard navigation options
+
 **Definition:**
 
 ```typescript
@@ -48,6 +54,8 @@ export type KeyboardNavigationOptions = {
 
 ### KeypressHandlers
 
+Key press handlers
+
 **Definition:**
 
 ```typescript
@@ -59,6 +67,8 @@ export type KeypressHandlers = {
 ## Variables
 
 ### defaultKeypressHandlers
+
+Default keypress handlers for keyboard navigation
 
 **Type:**
 

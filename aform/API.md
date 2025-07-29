@@ -96,6 +96,8 @@ import { Login } from '@stonecrop/aform'
 
 ### install
 
+Install all AForm components
+
 **Signature:**
 
 ```typescript
@@ -111,6 +113,8 @@ declare function install(app: App): void;
 ## Interfaces
 
 ### CellContext
+
+Table cell context definition.
 
 **Definition:**
 
@@ -128,11 +132,13 @@ export interface CellContext {
 
 | Property | Type | Description |
 |----------|------|-------------|
-| column | `TableColumn` |  |
-| row | `TableRow` |  |
-| table | `{ [key: string]: any; }` |  |
+| column | `TableColumn` | The column object for the current cell. |
+| row | `TableRow` | The row object for the current cell. |
+| table | `{ [key: string]: any; }` | The table object for the current cell. |
 
 ### GanttOptions
+
+Gantt chart options for table rows.
 
 **Definition:**
 
@@ -149,12 +155,14 @@ export interface GanttOptions {
 
 | Property | Type | Description |
 |----------|------|-------------|
-| color? | `string` |  |
-| colspan? | `number` |  |
-| endIndex? | `number` |  |
-| startIndex? | `number` |  |
+| color? | `string` | The color to be applied to the row's gantt bar. |
+| colspan? | `number` | The length of the gantt bar in columns. Useful when only the start index is provided. If colspan and endIndex are not provided, the bar will stretch to the end of the table. |
+| endIndex? | `number` | The ending column index for the gantt bar. If endIndex and colspan are not provided, the bar will stretch to the end of the table. |
+| startIndex? | `number` | The starting column index for the gantt bar. |
 
 ### TableColumn
+
+Table column definition.
 
 **Definition:**
 
@@ -185,26 +193,28 @@ export interface TableColumn {
 
 | Property | Type | Description |
 |----------|------|-------------|
-| align? | `CanvasTextAlign` |  |
-| cellComponent? | `string` |  |
-| cellComponentProps? | `Record<string, any>` |  |
-| colspan? | `number` |  |
-| edit? | `boolean` |  |
-| format? | `string \| ((value: any, context: CellContext) => string)` |  |
-| ganttComponent? | `string` |  |
-| isGantt? | `boolean` |  |
-| label? | `string` |  |
-| mask? | `(value: any) => any` |  |
-| modalComponent? | `string \| ((context: CellContext) => string)` |  |
-| modalComponentExtraProps? | `Record<string, any>` |  |
-| name | `string` |  |
-| originalIndex? | `number` |  |
-| pinned? | `boolean` |  |
+| align? | `CanvasTextAlign` | The alignment of the column. Possible values: -  - left aligned -  - center aligned -  - right aligned -  - aligned to the start of the column -  - aligned to the end of the column |
+| cellComponent? | `string` | The component to use to render the cell for the column. If not provided, the table will render the default  element. |
+| cellComponentProps? | `Record<string, any>` | Additional properties to pass to the table's cell component.Only applicable if the  property is set for the column. |
+| colspan? | `number` | The colspan of the Gantt bar for the column. This determines how many columns the Gantt bar should span across.Only applicable for Gantt tables. |
+| edit? | `boolean` | Control whether cells for the column is editable. |
+| format? | `string \| ((value: any, context: CellContext) => string)` | The format function to use to format the value of the cell. This can either be a normal or stringified function that takes the value and the cell context and returns a string. |
+| ganttComponent? | `string` | The component to use to render the Gantt bar for the column.Only applicable for Gantt tables. |
+| isGantt? | `boolean` | Whether the column is a Gantt column.Only applicable for Gantt tables. |
+| label? | `string` | The label of the column. This is displayed in the table header. |
+| mask? | `(value: any) => any` | The masking function to use to apply an input mask to the cell. This will accept an input value and return the masked value. |
+| modalComponent? | `string \| ((context: CellContext) => string)` | The component to use for the modal. If a function is provided, it will be called with the cell context. The following properties are available on the cell context: -  - the row object -  - the column object -  - the table objectThe function should return the name of the component to use for the modal.Additionally, the following properties will be automatically passed to the modal component: -  - the column index of the current cell -  - the row index of the current cell -  - the table data store |
+| modalComponentExtraProps? | `Record<string, any>` | Additional properties to pass to the modal component.Only applicable if the  property is set for the column. |
+| name | `string` | The key of the column. This is used to identify the column in the table. |
+| originalIndex? | `number` | The original column index for the Gantt bar, excluding any pinned columns. This is evaluated automatically while rendering the table.Only applicable for Gantt tables. |
+| pinned? | `boolean` | Control whether the column should be pinned to the table. |
 | resizable? | `boolean` |  |
-| type? | `string` |  |
-| width? | `string` |  |
+| type? | `string` | The data-type of the column. Possible values: -  - the column contains text data -  - the column contains a select input -  - the column contains a date input -  - the column contains a custom component |
+| width? | `string` | The width of the column. This can be a number (in pixels) or a string (in CSS units). |
 
 ### TableConfig
+
+Table configuration definition.
 
 **Definition:**
 
@@ -219,10 +229,12 @@ export interface TableConfig {
 
 | Property | Type | Description |
 |----------|------|-------------|
-| fullWidth? | `boolean` |  |
-| view? | `'uncounted' \| 'list' \| 'list-expansion' \| 'tree' \| 'gantt' \| 'tree-gantt'` |  |
+| fullWidth? | `boolean` | Control whether the table should be allowed to use the full width of its container. |
+| view? | `'uncounted' \| 'list' \| 'list-expansion' \| 'tree' \| 'gantt' \| 'tree-gantt'` | The type of view to display the table in. Possible values: -  - row numbers are not displayed in the table -  - row numbers are displayed in the table -  - carets are displayed in the number column that expand/collapse the row inline -  - carets are displayed in the number column that expand/collapse grouped rows -  - view that allows specific rows to be displayed with Gantt functionality -  - similar to , but allows for tree functionality as well |
 
 ### TableRow
+
+Table row definition.
 
 **Definition:**
 
@@ -238,13 +250,15 @@ export interface TableRow {
 
 | Property | Type | Description |
 |----------|------|-------------|
-| gantt? | `GanttOptions` |  |
-| indent? | `number` |  |
-| parent? | `number` |  |
+| gantt? | `GanttOptions` | The options to use when rendering the row as a Gantt table. |
+| indent? | `number` | The indentation level of the row node.Only applicable for tree and gantt views. |
+| parent? | `number` | The HTML parent element for the row node. This is evaluated automatically while rendering the table.Only applicable for tree and gantt views. |
 
 ## Type Aliases
 
 ### BaseSchema
+
+Basic field structure for AForm schemas
 
 **Definition:**
 
@@ -258,6 +272,8 @@ export type BaseSchema = {
 
 ### FieldsetSchema
 
+Schema structure for defining fieldsets inside AForm
+
 **Definition:**
 
 ```typescript
@@ -269,6 +285,8 @@ export type FieldsetSchema = BaseSchema & {
 ```
 
 ### FormSchema
+
+Schema structure for defining forms inside AForm
 
 **Definition:**
 
@@ -286,6 +304,8 @@ export type FormSchema = BaseSchema & {
 
 ### SchemaTypes
 
+Superset of all schema types for AForm
+
 **Definition:**
 
 ```typescript
@@ -293,6 +313,8 @@ export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema;
 ```
 
 ### TableSchema
+
+Schema structure for defining tables inside AForm
 
 **Definition:**
 

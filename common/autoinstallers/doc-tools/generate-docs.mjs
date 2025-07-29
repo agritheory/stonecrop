@@ -11,6 +11,39 @@ const __dirname = dirname(__filename)
 // Load the raw JSON to access docComment fields (for future enhancement)
 let rawApiData = null
 
+// Helper function to extract text from TSDoc nodes
+function extractTextFromTSDocNode(node) {
+	if (!node) return ''
+
+	// If it's a text node with direct text
+	if (node.text !== undefined) {
+		return node.text
+	}
+
+	// If it has nodes property (container), recurse
+	if (node.nodes && Array.isArray(node.nodes)) {
+		return node.nodes.map(extractTextFromTSDocNode).join('')
+	}
+
+	// If it has _nodes property (private), recurse
+	if (node._nodes && Array.isArray(node._nodes)) {
+		return node._nodes.map(extractTextFromTSDocNode).join('')
+	}
+
+	// Check for common text properties
+	if (node.content) return node.content
+	if (node.value) return node.value
+
+	return ''
+}
+
+// Helper function to extract TSDoc summary text
+function extractTSDocSummary(tsdocComment) {
+	if (!tsdocComment || !tsdocComment.summarySection) return ''
+
+	return extractTextFromTSDocNode(tsdocComment.summarySection).trim()
+}
+
 // Helper function to normalize type text for markdown tables
 function normalizeTypeForTable(typeText) {
 	if (!typeText) return ''
@@ -173,11 +206,12 @@ try {
 		markdown += `## Functions\n\n`
 		functions.forEach(func => {
 			markdown += `### ${func.displayName}\n\n`
-			// Function description (for future enhancement)
-			// const funcDoc = extractDocComment(findDocComment(func.canonicalReference));
-			// if (funcDoc) {
-			//   markdown += `${funcDoc}\n\n`;
-			// }
+
+			// Function description from TSDoc comments
+			const funcDoc = extractTSDocSummary(func.tsdocComment)
+			if (funcDoc) {
+				markdown += `${funcDoc}\n\n`
+			}
 
 			// Add signature
 			if (func.excerpt) {
@@ -193,7 +227,8 @@ try {
 				markdown += `| Parameter | Type | Description |\n`
 				markdown += `|-----------|------|-------------|\n`
 				func.parameters.forEach(param => {
-					const description = '' // TODO: Extract parameter descriptions from JSDoc comments
+					// Try to extract parameter description from TSDoc
+					const description = extractTSDocSummary(param.tsdocComment) || ''
 					const normalizedType = normalizeTypeForTable(param.parameterTypeExcerpt.text)
 					markdown += `| ${param.name} | \`${normalizedType}\` | ${description} |\n`
 				})
@@ -206,11 +241,12 @@ try {
 		markdown += `## Interfaces\n\n`
 		interfaces.forEach(iface => {
 			markdown += `### ${iface.displayName}\n\n`
-			// Interface description (for future enhancement)
-			// const ifaceDoc = extractDocComment(findDocComment(iface.canonicalReference));
-			// if (ifaceDoc) {
-			//   markdown += `${ifaceDoc}\n\n`;
-			// }
+
+			// Interface description from TSDoc comments
+			const interfaceDoc = extractTSDocSummary(iface.tsdocComment)
+			if (interfaceDoc) {
+				markdown += `${interfaceDoc}\n\n`
+			}
 
 			// Add interface signature
 			markdown += `**Definition:**\n\n`
@@ -241,7 +277,7 @@ try {
 				markdown += `|----------|------|-------------|\n`
 				iface.members.forEach(member => {
 					if (member.kind === 'PropertySignature') {
-						const description = '' // TODO: Extract descriptions from JSDoc comments
+						const description = extractTSDocSummary(member.tsdocComment) || ''
 						const optional = member.isOptional ? '?' : ''
 						const normalizedType = normalizeTypeForTable(member.propertyTypeExcerpt.text)
 						markdown += `| ${member.displayName}${optional} | \`${normalizedType}\` | ${description} |\n`
@@ -256,11 +292,12 @@ try {
 		markdown += `## Type Aliases\n\n`
 		types.forEach(type => {
 			markdown += `### ${type.displayName}\n\n`
-			// Type alias description (for future enhancement)
-			// const typeDoc = extractDocComment(findDocComment(type.canonicalReference));
-			// if (typeDoc) {
-			//   markdown += `${typeDoc}\n\n`;
-			// }
+
+			// Type alias description from TSDoc comments
+			const typeDoc = extractTSDocSummary(type.tsdocComment)
+			if (typeDoc) {
+				markdown += `${typeDoc}\n\n`
+			}
 
 			markdown += `**Definition:**\n\n`
 			markdown += `\`\`\`typescript\n`
@@ -273,11 +310,12 @@ try {
 		markdown += `## Classes\n\n`
 		classes.forEach(cls => {
 			markdown += `### ${cls.displayName}\n\n`
-			// Class description (for future enhancement)
-			// const clsDoc = extractDocComment(findDocComment(cls.canonicalReference));
-			// if (clsDoc) {
-			//   markdown += `${clsDoc}\n\n`;
-			// }
+
+			// Class description from TSDoc comments
+			const clsDoc = extractTSDocSummary(cls.tsdocComment)
+			if (clsDoc) {
+				markdown += `${clsDoc}\n\n`
+			}
 
 			// Add constructor if available
 			const constructor = cls.members.find(m => m.kind === 'Constructor')
@@ -299,7 +337,7 @@ try {
 				markdown += `| Property | Type | Description |\n`
 				markdown += `|----------|------|-------------|\n`
 				properties.forEach(prop => {
-					const description = '' // TODO: Extract property descriptions from JSDoc comments
+					const description = extractTSDocSummary(prop.tsdocComment) || ''
 					const normalizedType = normalizeTypeForTable(prop.propertyTypeExcerpt.text)
 					markdown += `| ${prop.displayName} | \`${normalizedType}\` | ${description} |\n`
 				})
@@ -310,11 +348,12 @@ try {
 				markdown += `**Methods:**\n\n`
 				methods.forEach(method => {
 					markdown += `#### ${method.displayName}\n\n`
-					// Method description (for future enhancement)
-					// const methodDoc = extractDocComment(findDocComment(method.canonicalReference));
-					// if (methodDoc) {
-					//   markdown += `${methodDoc}\n\n`;
-					// }
+
+					// Method description from TSDoc comments
+					const methodDoc = extractTSDocSummary(method.tsdocComment)
+					if (methodDoc) {
+						markdown += `${methodDoc}\n\n`
+					}
 
 					markdown += `\`\`\`typescript\n`
 					markdown += `${method.displayName}(${
@@ -330,11 +369,12 @@ try {
 		markdown += `## Variables\n\n`
 		variables.forEach(variable => {
 			markdown += `### ${variable.displayName}\n\n`
-			// Variable description (for future enhancement)
-			// const varDoc = extractDocComment(findDocComment(variable.canonicalReference));
-			// if (varDoc) {
-			//   markdown += `${varDoc}\n\n`;
-			// }
+
+			// Variable description from TSDoc comments
+			const varDoc = extractTSDocSummary(variable.tsdocComment)
+			if (varDoc) {
+				markdown += `${varDoc}\n\n`
+			}
 
 			markdown += `**Type:**\n\n`
 			markdown += `\`\`\`typescript\n`
@@ -347,11 +387,12 @@ try {
 		markdown += `## Enums\n\n`
 		enums.forEach(enumItem => {
 			markdown += `### ${enumItem.displayName}\n\n`
-			// Enum item description (for future enhancement)
-			// const enumItemDoc = extractDocComment(findDocComment(enumItem.canonicalReference));
-			// if (enumItemDoc) {
-			//   markdown += `${enumItemDoc}\n\n`;
-			// }
+
+			// Enum description from TSDoc comments
+			const enumDoc = extractTSDocSummary(enumItem.tsdocComment)
+			if (enumDoc) {
+				markdown += `${enumDoc}\n\n`
+			}
 
 			markdown += `**Members:**\n\n`
 			markdown += `\`\`\`typescript\n`

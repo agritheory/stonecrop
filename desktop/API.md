@@ -56,6 +56,8 @@ export { StonecropDesktop }
 
 ### ActionElements
 
+Superset of all element types in the Action Set
+
 **Definition:**
 
 ```typescript
@@ -63,6 +65,8 @@ export type ActionElements = ButtonElement | DropdownElement;
 ```
 
 ### BaseElement
+
+Base type for elements in the Action Set
 
 **Definition:**
 
@@ -75,6 +79,8 @@ export type BaseElement = {
 
 ### ButtonElement
 
+Button elements
+
 **Definition:**
 
 ```typescript
@@ -84,6 +90,8 @@ export type ButtonElement = BaseElement & ElementAction & {
 ```
 
 ### DropdownElement
+
+Dropdown elements
 
 **Definition:**
 
@@ -95,6 +103,8 @@ export type DropdownElement = BaseElement & {
 ```
 
 ### ElementAction
+
+Element actions
 
 **Definition:**
 
