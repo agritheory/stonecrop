@@ -2,6 +2,18 @@
   "name": "@stonecrop/atable",
   "entries": [
     {
+      "version": "0.4.28",
+      "tag": "@stonecrop/atable_v0.4.28",
+      "date": "Wed, 30 Jul 2025 06:18:12 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "update API documentation generation"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.4.27",
       "tag": "@stonecrop/atable_v0.4.27",
       "date": "Mon, 28 Jul 2025 07:35:21 GMT",
