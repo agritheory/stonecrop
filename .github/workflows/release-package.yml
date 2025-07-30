@@ -32,6 +32,12 @@ jobs:
       - name: Install Rush
         run: node common/scripts/install-run-rush.js install
 
+      - name: Update Autoinstallers
+        run: |
+          node common/scripts/install-run-rush.js update-autoinstaller --name doc-tools
+          node common/scripts/install-run-rush.js update-autoinstaller --name rush-plugins
+          node common/scripts/install-run-rush.js update-autoinstaller --name rush-prettier
+
       - name: Build Stonecrop
         run: node common/scripts/install-run-rush.js rebuild --verbose
 
