@@ -2,15 +2,25 @@
 
 > This documentation is automatically generated from the TypeScript API.
 
-## Other Components
+## Functions
 
-### Stonecrop
+### createHST
+
+Factory function for HST creation Creates a new HSTNode proxy for hierarchical state tree navigation.
+
+**Signature:**
 
 ```typescript
-export { Stonecrop }
+declare function createHST(target: any, doctype: string, parentDoctype?: string): HSTNode;
 ```
 
-## Functions
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| target | `any` |  |
+| doctype | `string` |  |
+| parentDoctype | `string` |  |
 
 ### useStonecrop
 
@@ -180,6 +190,26 @@ export interface GanttOptions {
 | colspan? | `number` | The length of the gantt bar in columns. Useful when only the start index is provided. If colspan and endIndex are not provided, the bar will stretch to the end of the table. |
 | endIndex? | `number` | The ending column index for the gantt bar. If endIndex and colspan are not provided, the bar will stretch to the end of the table. |
 | startIndex? | `number` | The starting column index for the gantt bar. |
+
+### HSTNode
+
+Core HST Interface - enhanced with tree navigation Provides a hierarchical state tree interface for navigating and manipulating nested data structures.
+
+**Definition:**
+
+```typescript
+export interface HSTNode {
+  get(path: string): any;
+  getBreadcrumbs(): string[];
+  getDepth(): number;
+  getNode(path: string): HSTNode;
+  getParent(): HSTNode | null;
+  getPath(): string;
+  getRoot(): HSTNode;
+  has(path: string): boolean;
+  set(path: string, value: any): void;
+}
+```
 
 ### TableColumn
 
@@ -487,6 +517,36 @@ new DoctypeMeta(doctype: string, schema: ImmutableDoctype['schema'], workflow: I
 | slug | `string` | Converts the registered doctype to a slug (kebab-case) |
 | workflow | `ImmutableDoctype['workflow']` | The doctype workflow |
 
+### HST
+
+Global HST Manager (Singleton) Manages hierarchical state trees and provides access to the global registry.
+
+**Methods:**
+
+#### getDoctypeMeta
+
+Helper method to get doctype metadata from the registry
+
+```typescript
+getDoctypeMeta(doctype: string): any
+```
+
+#### getInstance
+
+Gets the singleton instance of HST
+
+```typescript
+getInstance(): HST
+```
+
+#### getRegistry
+
+Gets the global registry instance
+
+```typescript
+getRegistry(): any
+```
+
 ### Registry
 
 Stonecrop Registry class
@@ -515,5 +575,121 @@ Get doctype metadata
 
 ```typescript
 addDoctype(doctype: DoctypeMeta): void
+```
+
+### Stonecrop
+
+Main Stonecrop class with HST integration
+
+**Constructor:**
+
+```typescript
+new Stonecrop(registry: Registry)
+```
+
+**Methods:**
+
+#### addRecord
+
+Add a record to the store
+
+```typescript
+addRecord(doctype: string | DoctypeMeta, recordId: string, recordData: any): void
+```
+
+#### clearRecords
+
+Clear all records for a doctype
+
+```typescript
+clearRecords(doctype: string | DoctypeMeta): void
+```
+
+#### currentRecord
+
+Get current record for a doctype
+
+```typescript
+currentRecord(doctype: string | DoctypeMeta): HSTNode | null
+```
+
+#### getRecord
+
+Get single record from server (maintains compatibility)
+
+```typescript
+getRecord(doctype: DoctypeMeta, recordId: string): Promise<void>
+```
+
+#### getRecordById
+
+Get a specific record
+
+```typescript
+getRecordById(doctype: string | DoctypeMeta, recordId: string): HSTNode | undefined
+```
+
+#### getRecordIds
+
+Get all record IDs for a doctype
+
+```typescript
+getRecordIds(doctype: string | DoctypeMeta): string[]
+```
+
+#### getRecords
+
+Get records from server (maintains compatibility)
+
+```typescript
+getRecords(doctype: DoctypeMeta): Promise<void>
+```
+
+#### getStore
+
+Get the root HST store node for advanced usage
+
+```typescript
+getStore(): HSTNode
+```
+
+#### records
+
+Get records hash for a doctype
+
+```typescript
+records(doctype: string | DoctypeMeta): HSTNode
+```
+
+#### removeRecord
+
+Remove a record from the store
+
+```typescript
+removeRecord(doctype: string | DoctypeMeta, recordId: string): void
+```
+
+#### runAction
+
+Run action on doctype (maintains compatibility)
+
+```typescript
+runAction(_doctype: DoctypeMeta, _action: string, _args: any[]): void
+```
+
+#### setCurrentRecord
+
+Set current record for a doctype
+
+```typescript
+setCurrentRecord(doctype: string | DoctypeMeta, recordId: string): void
+```
+
+#### setup
+
+Setup method for doctype initialization
+
+```typescript
+setup(doctype: DoctypeMeta): void
 ```
 
