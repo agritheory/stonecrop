@@ -59,7 +59,6 @@ export function makeServer() {
 					] as MutableDoctype['schema'],
 					workflow: {
 						id: 'todo',
-						predictableActionArguments: true,
 						initial: 'created',
 						states: {
 							created: { on: { LOAD: 'loaded' } },
@@ -94,7 +93,6 @@ export function makeServer() {
 					] as MutableDoctype['schema'],
 					workflow: {
 						id: 'issue',
-						predictableActionArguments: true,
 						initial: 'created',
 						states: {
 							created: { on: { LOAD: 'loaded' } },

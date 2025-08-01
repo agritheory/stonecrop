@@ -24,7 +24,6 @@ export function makeServer({ environment = 'development' } = {}) {
 						machine: {
 							id: 'Issue',
 							initial: 'New',
-							predictableActionArguments: true,
 							context: {
 								retries: 0,
 							},
@@ -92,7 +91,6 @@ export function makeServer({ environment = 'development' } = {}) {
 						machine: {
 							id: 'Assignment',
 							initial: 'New',
-							predictableActionArguments: true,
 							context: {
 								retries: 0,
 							},
@@ -140,7 +138,6 @@ export function makeServer({ environment = 'development' } = {}) {
 								src: 'Load',
 							},
 							initial: 'Active',
-							predictableActionArguments: true,
 							states: {
 								Active: {
 									on: {

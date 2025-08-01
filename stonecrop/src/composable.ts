@@ -28,7 +28,9 @@ export function useStonecrop(registry?: Registry): StonecropReturn {
 		}
 
 		if (!registry) {
-			throw new Error('Registry not found. Please ensure the Stonecrop plugin is enabled or pass a registry instance.')
+			// Don't throw error, just leave stonecrop undefined
+			// This allows components to handle the missing registry gracefully
+			return
 		}
 
 		// Create Stonecrop instance with HST integration

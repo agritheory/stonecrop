@@ -1,7 +1,6 @@
 import { App, type Plugin } from 'vue'
 
 import Registry from '../registry'
-import { pinia } from '../stores'
 import type { InstallOptions } from '../types'
 
 /**
@@ -43,7 +42,6 @@ const plugin: Plugin = {
 			app.use(appRouter)
 		}
 
-		app.use(pinia)
 		app.provide('$registry', registry)
 
 		if (options?.components) {
