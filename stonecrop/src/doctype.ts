@@ -59,8 +59,19 @@ export default class DoctypeMeta {
 	}
 
 	/**
-	 * Converts the registered doctype to a slug (kebab-case)
+	 * Converts the registered doctype string to a slug (kebab-case). The following conversions are made:
+	 * - It replaces camelCase and PascalCase with kebab-case strings
+	 * - It replaces spaces and underscores with hyphens
+	 * - It converts the string to lowercase
+	 *
 	 * @returns The slugified doctype string
+	 *
+	 * @example
+	 * ```ts
+	 * const doctype = new DoctypeMeta('TaskItem', schema, workflow, actions
+	 * console.log(doctype.slug) // 'task-item'
+	 * ```
+	 *
 	 * @public
 	 */
 	get slug() {

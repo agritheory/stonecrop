@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/node-editor",
-	"version": "0.4.28",
+	"version": "0.4.29",
 	"description": "Node editor UI for Stonecrop",
 	"license": "MIT",
 	"type": "module",
@@ -24,7 +24,7 @@
 			},
 			"require": "./dist/node-editor.umd.cjs"
 		},
-		"./styles": "./dist/style.css"
+		"./styles": "./dist/node-editor.css"
 	},
 	"typings": "./dist/src/index.d.ts",
 	"files": [
@@ -44,7 +44,7 @@
 		"@vue-flow/core": "^1.45.0",
 		"vue": "^3.5.17",
 		"vue-router": "^4.5.1",
-		"xstate": "^4.38.3"
+		"xstate": "^5.20.1"
 	},
 	"devDependencies": {
 		"@microsoft/api-documenter": "^7.26.29",

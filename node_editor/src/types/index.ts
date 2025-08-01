@@ -1,12 +1,12 @@
 import { type Elements, type Element, type XYPosition, Position } from '@vue-flow/core'
-import type { AnyStateMachine, AnyStateNodeDefinition, StatesConfig } from 'xstate'
+import type { AnyStateNodeDefinition, AnyStateNodeConfig } from 'xstate'
 
 /**
  * Editor states
  * @public
  */
 export type EditorStates = {
-	[key: string]: AnyStateMachine | AnyStateNodeDefinition | StatesConfig<any, any, any>
+	[key: string]: AnyStateNodeDefinition | AnyStateNodeConfig['states']
 }
 
 /**

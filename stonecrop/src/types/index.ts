@@ -2,7 +2,7 @@ import type { SchemaTypes } from '@stonecrop/aform'
 import { List, Map } from 'immutable'
 import type { Component } from 'vue'
 import type { Router } from 'vue-router'
-import type { MachineConfig, StateMachine } from 'xstate'
+import type { AnyStateNodeConfig, UnknownMachineConfig } from 'xstate'
 
 import DoctypeMeta from '../doctype'
 
@@ -13,7 +13,7 @@ import DoctypeMeta from '../doctype'
 export type ImmutableDoctype = {
 	// TODO: allow schema to be a function
 	readonly schema?: List<SchemaTypes>
-	readonly workflow: StateMachine<unknown, any, any>
+	readonly workflow?: UnknownMachineConfig | AnyStateNodeConfig
 	readonly actions?: Map<string, string[]>
 }
 
@@ -24,7 +24,7 @@ export type ImmutableDoctype = {
 export type MutableDoctype = {
 	// TODO: allow schema to be a function
 	schema?: SchemaTypes[]
-	workflow: MachineConfig<unknown, any, any>
+	workflow?: UnknownMachineConfig | AnyStateNodeConfig
 	actions?: Record<string, string[]>
 }
 
