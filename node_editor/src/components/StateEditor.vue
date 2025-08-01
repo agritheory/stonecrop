@@ -24,6 +24,10 @@ const elements = computed<FlowElements>({
 		const stateElements: FlowElements = []
 		const stateHash: Record<string, FlowElement> = {}
 
+		if (!states.value) {
+			return stateElements
+		}
+
 		let index = 0
 		for (const [key, value] of Object.entries(states.value)) {
 			const el: Node = {
@@ -34,7 +38,7 @@ const elements = computed<FlowElements>({
 				sourcePosition: layout[key]?.sourcePosition || Position.Right,
 			}
 
-			if (value.type === 'final') {
+			if (value?.type === 'final') {
 				el.type = 'output'
 				el.class = 'default-output-node'
 			}
@@ -43,13 +47,14 @@ const elements = computed<FlowElements>({
 		}
 
 		for (const [key, value] of Object.entries(states.value)) {
-			if (value.on) {
+			if (value?.on) {
 				for (const [edgeKey, edgeValue] of Object.entries(value.on)) {
-					// If the proxy array 'value.on' has more than one edge, 'edgeValue' will contain a proxy object
+					// NOTE: If the proxy array 'value.on' has more than one edge, 'edgeValue' will contain a proxy object
 					// where 'target' can be accessed. Otherwise, 'edgeValue' will be available directly.
+
+					// TODO: resolve type issues with xstate
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 					const target = edgeValue.target || edgeValue
-					// TODO: handle typescript errors for both types of states
-					// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
 					stateElements.push({
 						id: `${key}-${target}`,
 						source: key,
@@ -120,6 +125,9 @@ const onElementsChange = (elements: FlowElements) => {
 		// add edges to states
 		const label = idToLabel[edgeKey]
 		for (const [key, value] of Object.entries(edgeValue)) {
+			if (!states[label]) {
+				states[label] = { on: {} }
+			}
 			states[label].on[key] = value
 		}
 	}

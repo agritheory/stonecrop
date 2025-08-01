@@ -382,7 +382,7 @@ Immutable Doctype type for Stonecrop instances
 ```typescript
 export type ImmutableDoctype = {
     readonly schema?: List<SchemaTypes>;
-    readonly workflow: StateMachine<unknown, any, any>;
+    readonly workflow?: UnknownMachineConfig | AnyStateNodeConfig;
     readonly actions?: Map<string, string[]>;
 };
 ```
@@ -410,7 +410,7 @@ Mutable Doctype type for Stonecrop instances
 ```typescript
 export type MutableDoctype = {
     schema?: SchemaTypes[];
-    workflow: MachineConfig<unknown, any, any>;
+    workflow?: UnknownMachineConfig | AnyStateNodeConfig;
     actions?: Record<string, string[]>;
 };
 ```
@@ -484,7 +484,7 @@ new DoctypeMeta(doctype: string, schema: ImmutableDoctype['schema'], workflow: I
 | component | `Component` | The doctype component |
 | doctype | `string` | The doctype name |
 | schema | `ImmutableDoctype['schema']` | The doctype schema |
-| slug | `string` | Converts the registered doctype to a slug (kebab-case) |
+| slug | `string` | Converts the registered doctype string to a slug (kebab-case). The following conversions are made: - It replaces camelCase and PascalCase with kebab-case strings - It replaces spaces and underscores with hyphens - It converts the string to lowercase |
 | workflow | `ImmutableDoctype['workflow']` | The doctype workflow |
 
 ### Registry
@@ -515,5 +515,66 @@ Get doctype metadata
 
 ```typescript
 addDoctype(doctype: DoctypeMeta): void
+```
+
+### StonecropClass
+
+Stonecrop class
+
+**Constructor:**
+
+```typescript
+new StonecropClass(registry: Registry, store: ReturnType<typeof useDataStore>)
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| _root | `Stonecrop` | The root Stonecrop instance |
+| name | `` | The name of the Stonecrop instance |
+| registry | `Registry` | The registry is an immutable collection of doctypes |
+| store | `ReturnType<typeof useDataStore>` | The Pinia store that manages the mutable records |
+
+**Methods:**
+
+#### getMeta
+
+Gets the meta for the given doctype
+
+```typescript
+getMeta(doctype: string): Promise<DoctypeMeta> | never
+```
+
+#### getRecord
+
+Gets the record for the given doctype and id
+
+```typescript
+getRecord(doctype: DoctypeMeta, id: string): Promise<void>
+```
+
+#### getRecords
+
+Gets the records for the given doctype
+
+```typescript
+getRecords(doctype: DoctypeMeta, filters: RequestInit): Promise<void>
+```
+
+#### runAction
+
+Runs the action for the given doctype and id
+
+```typescript
+runAction(doctype: DoctypeMeta, action: string, id: string[]): void
+```
+
+#### setup
+
+Sets up the Stonecrop instance with the given doctype
+
+```typescript
+setup(doctype: DoctypeMeta): void
 ```
 

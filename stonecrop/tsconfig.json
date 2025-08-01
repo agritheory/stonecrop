@@ -3,5 +3,5 @@
 	"compilerOptions": {
 		"tsBuildInfoFile": "./dist/stonecrop.tsbuildinfo"
 	},
-	"include": ["src/**/*.ts"]
+	"include": ["src/**/*.ts", "tests/**/*.ts"]
 }

@@ -3,13 +3,13 @@
 		<AFieldset label="Workflow" :collapsible="true">
 			<div class="builder-workflow">
 				<StateEditor
-					v-if="stateConfig && Object.keys(stateConfig).length > 0"
-					v-model="stateConfig"
+					v-if="workflowConfig && Object.keys(workflowConfig).length > 0"
+					v-model="workflowConfig"
 					node-container-class="node-editor"
 					:layout="layout" />
 			</div>
 		</AFieldset>
-		<AForm class="aform-main" v-model="doctypeSchema" :data="data" :key="formKey" />
+		<AForm class="aform-main" v-model="doctypeSchema" :data="formData" :key="formKey" />
 		<ActionSet :elements="actionElements" />
 	</div>
 </template>
@@ -17,46 +17,70 @@
 <script setup lang="ts">
 import type { ActionElements } from '@stonecrop/desktop'
 import type { Layout } from '@stonecrop/node-editor'
-import { onBeforeMount, ref } from 'vue'
+import { useStonecrop } from '@stonecrop/stonecrop'
+import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
-import { createMachine } from 'xstate'
+import { type AnyStateNodeConfig, createMachine } from 'xstate'
 
 import doctypeSchema from '../assets/doctype_schema.json'
-import { makeServer } from '../server'
 
 const route = useRoute()
 const formKey = ref(0)
 
-// create mirage server
-makeServer()
+const { stonecrop } = useStonecrop()
 
-// fetch data
+// Reactive data for the components
+const formData = ref({})
 const layout = ref<Layout>({})
-const data = ref({})
-const stateConfig = ref({})
+const workflowConfig = ref<AnyStateNodeConfig['states']>({})
 
-onBeforeMount(async () => {
+// Simple direct approach to test API calls
+onMounted(async () => {
 	const doctype = route.params.id.toString()
-	const searchParams = new URLSearchParams({ doctype })
+	if (!stonecrop.value) {
+		console.error('Stonecrop instance is not available')
+		return
+	}
 
-	const schemaResponse = await fetch('/api/load_meta?' + searchParams.toString())
-	const schemaResponseData: Record<string, any>[] = await schemaResponse.json()
-	data.value['schema_fieldset'] = {}
-	data.value['schema_fieldset']['schema'] = schemaResponseData
+	if (!stonecrop.value.registry.getMeta) {
+		console.error(`getMeta function is not available in the registry for ${doctype}`)
+		return
+	}
 
-	const actionsResponse = await fetch('/api/load_side_effects?' + searchParams.toString())
-	const actions: Record<string, any>[] = await actionsResponse.json()
-	data.value['side_effects_fieldset'] = {}
-	data.value['side_effects_fieldset']['side_effects'] = actions
+	try {
+		// Use our getMeta function to fetch all required data
+		const doctypeMeta = await stonecrop.value.registry.getMeta(doctype)
+		if (!doctypeMeta) {
+			throw new Error(`No metadata found for doctype: ${doctype}`)
+		}
 
-	const stateResponse = await fetch('/api/load_state_machine?' + searchParams.toString())
-	const stateResponseData: Record<string, any> = await stateResponse.json()
-	const stateMachine = createMachine(stateResponseData.machine)
-	stateConfig.value = stateMachine.config.states
-	layout.value = stateResponseData.layout
+		// Load the layout
+		const searchParams = new URLSearchParams({ doctype })
+		const layoutResponse = await fetch('/api/load_layout?' + searchParams.toString())
+		const layoutResponseData = await layoutResponse.json()
+		layout.value = layoutResponseData || {}
 
-	// increment form key to force form re-render
-	formKey.value++
+		// Set up data directly
+		formData.value = {
+			...formData.value,
+			schema_fieldset: {
+				schema: doctypeMeta.schema?.toArray() || [],
+			},
+			actions_fieldset: {
+				actions: doctypeMeta.actions?.get('default') || [],
+			},
+		}
+
+		if (doctypeMeta.workflow) {
+			const stateMachine = createMachine(doctypeMeta.workflow)
+			workflowConfig.value = stateMachine.config.states
+		}
+
+		// Force re-render
+		formKey.value++
+	} catch (error) {
+		console.error('Error in setup:', error)
+	}
 })
 
 // setup page actions
