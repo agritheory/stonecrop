@@ -3,7 +3,7 @@
     {
       "packageName": "@stonecrop/desktop",
       "comment": "update style export",
-      "type": "minor"
+      "type": "patch"
     }
   ],
   "packageName": "@stonecrop/desktop"

@@ -3,7 +3,7 @@
     {
       "packageName": "@stonecrop/stonecrop",
       "comment": "update xstate dependency + add tests",
-      "type": "minor"
+      "type": "patch"
     }
   ],
   "packageName": "@stonecrop/stonecrop"

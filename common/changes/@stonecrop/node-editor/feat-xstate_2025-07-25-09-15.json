@@ -3,7 +3,7 @@
     {
       "packageName": "@stonecrop/node-editor",
       "comment": "update typings",
-      "type": "minor"
+      "type": "patch"
     }
   ],
   "packageName": "@stonecrop/node-editor"
