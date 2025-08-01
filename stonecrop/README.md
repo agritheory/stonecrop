@@ -1,6 +1,72 @@
 # Stonecrop
 _This package is under active development / design._
 
+## Installation & Usage
+
+### Vue Plugin Installation
+
+```typescript
+import { createApp } from 'vue'
+import StonecropPlugin from '@stonecrop/stonecrop'
+
+const app = createApp(App)
+
+// Install the Stonecrop plugin
+app.use(StonecropPlugin, {
+  router,
+  components: {
+    // Register custom components
+  },
+  getMeta: async (doctype: string) => {
+    // Fetch doctype metadata from your API
+    return await fetchDoctypeMeta(doctype)
+  }
+})
+
+app.mount('#app')
+```
+
+### Available Imports
+
+```typescript
+// Default export - Vue plugin (recommended)
+import StonecropPlugin from '@stonecrop/stonecrop'
+
+// Named exports - utilities and classes
+import {
+  Stonecrop,           // Core class
+  Registry,            // Doctype registry
+  useStonecrop,        // Vue composable
+  HST,                 // Hierarchical State Tree
+  createHST,           // HST factory
+  DoctypeMeta          // Doctype metadata class
+} from '@stonecrop/stonecrop'
+
+// Alternative named import for plugin
+import { StonecropPlugin } from '@stonecrop/stonecrop'
+```
+
+### Using the Composable
+
+```typescript
+import { useStonecrop } from '@stonecrop/stonecrop'
+
+export default {
+  setup() {
+    const { stonecrop } = useStonecrop()
+
+    // Access HST store
+    const store = stonecrop.value?.getStore()
+
+    // Work with records
+    const records = stonecrop.value?.records('doctype')
+    const currentRecord = stonecrop.value?.currentRecord('doctype')
+
+    return { stonecrop, records, currentRecord }
+  }
+}
+```
+
 ## Design
 A context will define schema, workflow and actions.
   - Schema describes the data model and layout of the document.

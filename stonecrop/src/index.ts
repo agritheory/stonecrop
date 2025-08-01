@@ -14,9 +14,9 @@ export type {
 
 import { type StonecropReturn, useStonecrop } from './composable'
 import DoctypeMeta from './doctype'
+import plugin from './plugins'
 import Registry from './registry'
 import { Stonecrop } from './stonecrop'
-// Export HST for advanced usage
 import { HST, createHST, type HSTNode } from './stores/hst'
 
 export type { ImmutableDoctype, MutableDoctype, Schema, InstallOptions } from './types'
@@ -31,4 +31,9 @@ export {
 	HST,
 	createHST,
 	HSTNode,
+	// Export plugin as named export too
+	plugin as StonecropPlugin,
 }
+
+// Default export is the Vue plugin for convenience
+export default plugin

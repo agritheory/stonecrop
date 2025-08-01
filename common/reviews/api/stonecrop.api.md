@@ -8,6 +8,7 @@ import { Component } from 'vue';
 import { List } from 'immutable';
 import type { MachineConfig } from 'xstate';
 import { Map as Map_2 } from 'immutable';
+import { Plugin as Plugin_2 } from 'vue';
 import { Ref } from 'vue';
 import { Router } from 'vue-router';
 import type { ShallowRef } from 'vue';
@@ -192,6 +193,11 @@ export type MutableDoctype = {
     workflow: MachineConfig<unknown, any, any>;
     actions?: Record<string, string[]>;
 };
+
+// @public
+const plugin: Plugin_2;
+export { plugin as StonecropPlugin }
+export default plugin;
 
 // @public
 export class Registry {

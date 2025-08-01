@@ -693,3 +693,15 @@ Setup method for doctype initialization
 setup(doctype: DoctypeMeta): void
 ```
 
+## Variables
+
+### plugin
+
+Stonecrop Vue plugin
+
+**Type:**
+
+```typescript
+export const plugin: Plugin
+```
+

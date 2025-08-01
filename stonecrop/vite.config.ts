@@ -21,6 +21,11 @@ export default defineConfig({
 					vue: 'Vue',
 				},
 			},
+			onwarn(warning, warn) {
+				// Suppress the mixed exports warning since it's expected for Vue plugins
+				if (warning.code === 'MIXED_EXPORTS') return
+				warn(warning)
+			},
 		},
 	},
 })

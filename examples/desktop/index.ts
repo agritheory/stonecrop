@@ -7,7 +7,7 @@ import { createMachine } from 'xstate'
 import '@stonecrop/desktop/styles'
 import { ADate, ATextInput } from '@stonecrop/aform'
 import { Doctype, Records, StonecropDesktop } from '@stonecrop/desktop'
-import { DoctypeMeta, Stonecrop, type ImmutableDoctype, type MutableDoctype } from '@stonecrop/stonecrop'
+import Stonecrop, { DoctypeMeta, type ImmutableDoctype, type MutableDoctype } from '@stonecrop/stonecrop'
 
 import Home from './components/Home.vue'
 import App from './App.vue'
@@ -47,7 +47,7 @@ app.use(Stonecrop, {
 		const config: ImmutableDoctype = {
 			schema: List(data.schema),
 			workflow: createMachine(data.workflow),
-			actions: Map(data.actions),
+			actions: Map(data.actions!),
 		}
 
 		return new DoctypeMeta(doctype, config.schema, config.workflow, config.actions)
