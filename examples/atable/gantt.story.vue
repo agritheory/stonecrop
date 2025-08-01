@@ -10,11 +10,30 @@
 				@connection:event="handleConnectionEvent" />
 		</Variant>
 
+		<Variant title="gantt (no dependency graph)">
+			<ATable
+				v-model:rows="gantt.rows"
+				v-model:columns="gantt.columns"
+				:config="gantt_no_deps.config"
+				@cellUpdate="handleUpdate"
+				@gantt:drag="handleGanttDrag"
+				@connection:event="handleConnectionEvent" />
+		</Variant>
+
 		<Variant title="tree">
 			<ATable
 				v-model:rows="project_gantt.rows"
 				v-model:columns="project_gantt.columns"
 				:config="project_gantt.config"
+				@gantt:drag="handleGanttDrag"
+				@connection:event="handleConnectionEvent" />
+		</Variant>
+
+		<Variant title="tree (no dependency graph)">
+			<ATable
+				v-model:rows="project_gantt.rows"
+				v-model:columns="project_gantt.columns"
+				:config="project_gantt_no_deps.config"
 				@gantt:drag="handleGanttDrag"
 				@connection:event="handleConnectionEvent" />
 		</Variant>
@@ -463,6 +482,12 @@ const gantt = ref({
 	config: { view: 'gantt' } as TableConfig,
 })
 
+const gantt_no_deps = ref({
+	rows: gantt_data,
+	columns: gantt_columns,
+	config: { view: 'gantt', dependencyGraph: false } as TableConfig,
+})
+
 // Project-Gantt columns with period data
 const project_gantt_columns: TableColumn[] = [
 	{
@@ -786,6 +811,12 @@ const project_gantt = ref({
 	config: { view: 'tree-gantt' },
 })
 
+const project_gantt_no_deps = ref({
+	rows: project_data,
+	columns: project_gantt_columns,
+	config: { view: 'tree-gantt', dependencyGraph: false },
+})
+
 const handleUpdate = ({ colIndex, rowIndex, newValue, oldValue }) => {
 	console.log(`Cell updated at (${rowIndex}, ${colIndex}): ${oldValue} -> ${newValue}`)
 }
@@ -825,6 +856,29 @@ The tree view displays hierarchical data with expandable/collapsible nodes. The 
 - Maintains tree navigation while showing timeline data
 - Draggable and resizable gantt bars
 - Pinned columns for project information
+
+## Dependency Graph Configuration
+
+Both `gantt` and `tree-gantt` views support optional dependency graph functionality:
+
+- **With dependencies** (default): Connection handles and dependency lines are visible
+- **Without dependencies**: Connection handles and dependency lines are hidden
+
+## Configuration Examples
+
+```vue
+<!-- Gantt with dependencies (default) -->
+<ATable :config="{ view: 'gantt' }" />
+
+<!-- Gantt without dependencies -->
+<ATable :config="{ view: 'gantt', dependencyGraph: false }" />
+
+<!-- Tree-Gantt with dependencies (default) -->
+<ATable :config="{ view: 'tree-gantt' }" />
+
+<!-- Tree-Gantt without dependencies -->
+<ATable :config="{ view: 'tree-gantt', dependencyGraph: false }" />
+```
 
 ## Project-Gantt View Features
 

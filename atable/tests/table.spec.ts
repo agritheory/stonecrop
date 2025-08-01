@@ -321,6 +321,77 @@ describe('table component', () => {
 		expect(wrapper.findComponent({ name: 'AGanttConnection' }).exists()).toBe(true)
 	})
 
+	it('should handle gantt view with dependency graph disabled', () => {
+		const ganttColumns: TableColumn[] = [
+			{ name: 'id', label: 'ID', width: '100px', pinned: true },
+			{ name: 'task', label: 'Task', width: '200px' },
+		]
+
+		const ganttRows: TableRow[] = [
+			{
+				id: 1,
+				task: 'Task 1',
+				gantt: {
+					startIndex: 0,
+					endIndex: 5,
+					color: '#ff0000',
+					colspan: 3,
+				} as GanttOptions,
+			},
+		]
+
+		const wrapper = mount(ATable, {
+			props: {
+				rows: ganttRows,
+				columns: ganttColumns,
+				config: { view: 'gantt', dependencyGraph: false },
+			},
+		})
+
+		// Should NOT render AGanttConnection component when dependency graph is disabled
+		expect(wrapper.findComponent({ name: 'AGanttConnection' }).exists()).toBe(false)
+		// Should still be a gantt view
+		expect(wrapper.vm.store.isGanttView).toBe(true)
+		// Should have dependency graph disabled
+		expect(wrapper.vm.store.isDependencyGraphEnabled).toBe(false)
+	})
+
+	it('should handle tree-gantt view with dependency graph disabled', () => {
+		const ganttColumns: TableColumn[] = [
+			{ name: 'id', label: 'ID', width: '100px', pinned: true },
+			{ name: 'task', label: 'Task', width: '200px' },
+		]
+
+		const ganttRows: TableRow[] = [
+			{
+				id: 1,
+				task: 'Task 1',
+				gantt: {
+					startIndex: 0,
+					endIndex: 5,
+					color: '#ff0000',
+					colspan: 3,
+				} as GanttOptions,
+			},
+		]
+
+		const wrapper = mount(ATable, {
+			props: {
+				rows: ganttRows,
+				columns: ganttColumns,
+				config: { view: 'tree-gantt', dependencyGraph: false },
+			},
+		})
+
+		// Should NOT render AGanttConnection component when dependency graph is disabled
+		expect(wrapper.findComponent({ name: 'AGanttConnection' }).exists()).toBe(false)
+		// Should still be a gantt view and tree view
+		expect(wrapper.vm.store.isGanttView).toBe(true)
+		expect(wrapper.vm.store.isTreeView).toBe(true)
+		// Should have dependency graph disabled
+		expect(wrapper.vm.store.isDependencyGraphEnabled).toBe(false)
+	})
+
 	it('should process columns correctly for gantt rows with pinned columns', () => {
 		const ganttColumns: TableColumn[] = [
 			{ name: 'id', label: 'ID', width: '100px', pinned: true },

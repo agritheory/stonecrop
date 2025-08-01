@@ -197,6 +197,14 @@ export interface TableConfig {
 	 * @defaultValue false
 	 */
 	fullWidth?: boolean
+
+	/**
+	 * Control whether dependency graph connections should be enabled for Gantt views.
+	 * When false, connection handles and dependency lines will be hidden.
+	 *
+	 * @defaultValue true
+	 */
+	dependencyGraph?: boolean
 }
 
 /**
