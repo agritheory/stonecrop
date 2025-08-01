@@ -267,6 +267,7 @@ export interface TableColumn {
 
 // @public
 export interface TableConfig {
+    dependencyGraph?: boolean;
     fullWidth?: boolean;
     view?: 'uncounted' | 'list' | 'list-expansion' | 'tree' | 'gantt' | 'tree-gantt';
 }

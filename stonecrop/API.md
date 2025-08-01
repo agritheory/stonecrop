@@ -271,6 +271,7 @@ Table configuration definition.
 
 ```typescript
 export interface TableConfig {
+  dependencyGraph?: boolean;
   fullWidth?: boolean;
   view?: 'uncounted' | 'list' | 'list-expansion' | 'tree' | 'gantt' | 'tree-gantt';
 }
@@ -280,6 +281,7 @@ export interface TableConfig {
 
 | Property | Type | Description |
 |----------|------|-------------|
+| dependencyGraph? | `boolean` | Control whether dependency graph connections should be enabled for Gantt views. When false, connection handles and dependency lines will be hidden. |
 | fullWidth? | `boolean` | Control whether the table should be allowed to use the full width of its container. |
 | view? | `'uncounted' \| 'list' \| 'list-expansion' \| 'tree' \| 'gantt' \| 'tree-gantt'` | `uncounted` (row numbers are not displayed in the table), `list` (row numbers are displayed in the table), `list-expansion` (carets are displayed in the number column that expand/collapse the row inline), `tree` (carets are displayed in the number column that expand/collapse grouped rows), `gantt` (view that allows specific rows to be displayed with Gantt functionality), `tree-gantt` (similar to `gantt`, but allows for tree functionality as well) |
 

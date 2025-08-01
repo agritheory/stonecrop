@@ -148,6 +148,7 @@ export const createTableStore = (initData: {
 		const hasPinnedColumns = computed(() => columns.value.some(col => col.pinned))
 		const isGanttView = computed(() => config.value.view === 'gantt' || config.value.view === 'tree-gantt')
 		const isTreeView = computed(() => config.value.view === 'tree' || config.value.view === 'tree-gantt')
+		const isDependencyGraphEnabled = computed(() => config.value.dependencyGraph !== false)
 
 		const numberedRowWidth = computed(() => {
 			const indent = Math.ceil(rows.value.length / 100 + 1)
@@ -452,6 +453,7 @@ export const createTableStore = (initData: {
 			hasPinnedColumns,
 			isGanttView,
 			isTreeView,
+			isDependencyGraphEnabled,
 			numberedRowWidth,
 			zeroColumn,
 

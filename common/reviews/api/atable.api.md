@@ -137,9 +137,11 @@ originalIndex?: number | undefined;
 config: Ref<    {
 view?: "uncounted" | "list" | "list-expansion" | "tree" | "gantt" | "tree-gantt" | undefined;
 fullWidth?: boolean | undefined;
+dependencyGraph?: boolean | undefined;
 }, TableConfig | {
 view?: "uncounted" | "list" | "list-expansion" | "tree" | "gantt" | "tree-gantt" | undefined;
 fullWidth?: boolean | undefined;
+dependencyGraph?: boolean | undefined;
 }>;
 connectionHandles: Ref<    {
 id: string;
@@ -272,6 +274,7 @@ updates: Ref<Record<string, string>, Record<string, string>>;
 hasPinnedColumns: ComputedRef<boolean>;
 isGanttView: ComputedRef<boolean>;
 isTreeView: ComputedRef<boolean>;
+isDependencyGraphEnabled: ComputedRef<boolean>;
 numberedRowWidth: ComputedRef<string>;
 zeroColumn: ComputedRef<boolean>;
 closeModal: (event: MouseEvent) => void;
@@ -369,9 +372,11 @@ originalIndex?: number | undefined;
 config: Ref<    {
 view?: "uncounted" | "list" | "list-expansion" | "tree" | "gantt" | "tree-gantt" | undefined;
 fullWidth?: boolean | undefined;
+dependencyGraph?: boolean | undefined;
 }, TableConfig | {
 view?: "uncounted" | "list" | "list-expansion" | "tree" | "gantt" | "tree-gantt" | undefined;
 fullWidth?: boolean | undefined;
+dependencyGraph?: boolean | undefined;
 }>;
 connectionHandles: Ref<    {
 id: string;
@@ -504,6 +509,7 @@ updates: Ref<Record<string, string>, Record<string, string>>;
 hasPinnedColumns: ComputedRef<boolean>;
 isGanttView: ComputedRef<boolean>;
 isTreeView: ComputedRef<boolean>;
+isDependencyGraphEnabled: ComputedRef<boolean>;
 numberedRowWidth: ComputedRef<string>;
 zeroColumn: ComputedRef<boolean>;
 closeModal: (event: MouseEvent) => void;
@@ -558,7 +564,7 @@ unregisterConnectionHandle: (handleId: string) => void;
 unregisterGanttBar: (barId: string) => void;
 updateGanttBar: (event: GanttDragEvent) => void;
 updateRows: (newRows: TableRow[]) => void;
-}, "display" | "table" | "hasPinnedColumns" | "isGanttView" | "isTreeView" | "numberedRowWidth" | "zeroColumn">, Pick<{
+}, "display" | "table" | "hasPinnedColumns" | "isGanttView" | "isTreeView" | "isDependencyGraphEnabled" | "numberedRowWidth" | "zeroColumn">, Pick<{
 columns: Ref<    {
 name: string;
 align?: CanvasTextAlign | undefined;
@@ -601,9 +607,11 @@ originalIndex?: number | undefined;
 config: Ref<    {
 view?: "uncounted" | "list" | "list-expansion" | "tree" | "gantt" | "tree-gantt" | undefined;
 fullWidth?: boolean | undefined;
+dependencyGraph?: boolean | undefined;
 }, TableConfig | {
 view?: "uncounted" | "list" | "list-expansion" | "tree" | "gantt" | "tree-gantt" | undefined;
 fullWidth?: boolean | undefined;
+dependencyGraph?: boolean | undefined;
 }>;
 connectionHandles: Ref<    {
 id: string;
@@ -736,6 +744,7 @@ updates: Ref<Record<string, string>, Record<string, string>>;
 hasPinnedColumns: ComputedRef<boolean>;
 isGanttView: ComputedRef<boolean>;
 isTreeView: ComputedRef<boolean>;
+isDependencyGraphEnabled: ComputedRef<boolean>;
 numberedRowWidth: ComputedRef<string>;
 zeroColumn: ComputedRef<boolean>;
 closeModal: (event: MouseEvent) => void;
@@ -874,6 +883,7 @@ export interface TableColumn {
 
 // @public
 export interface TableConfig {
+    dependencyGraph?: boolean;
     fullWidth?: boolean;
     view?: 'uncounted' | 'list' | 'list-expansion' | 'tree' | 'gantt' | 'tree-gantt';
 }

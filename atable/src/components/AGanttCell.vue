@@ -11,8 +11,9 @@
 				:style="barStyle"
 				@mouseenter="showConnectionHandles"
 				@mouseleave="hideConnectionHandles">
-				<!-- Connection handles for linking bars -->
+				<!-- Connection handles for linking bars - only show if dependency graph is enabled -->
 				<div
+					v-if="store.isDependencyGraphEnabled"
 					ref="leftConnectionHandle"
 					class="connection-handle left-connection-handle"
 					:class="{ visible: isLeftConnectionVisible, 'is-dragging': isLeftConnectionDragging }"
@@ -21,6 +22,7 @@
 				</div>
 
 				<div
+					v-if="store.isDependencyGraphEnabled"
 					ref="rightConnectionHandle"
 					class="connection-handle right-connection-handle"
 					:class="{ visible: isRightConnectionVisible, 'is-dragging': isRightConnectionDragging }"
@@ -46,8 +48,8 @@
 			</div>
 		</div>
 
-		<!-- Connection drag preview line -->
-		<svg v-if="showDragPreview" :style="connectionDragStyle">
+		<!-- Connection drag preview line - only show if dependency graph is enabled -->
+		<svg v-if="store.isDependencyGraphEnabled && showDragPreview" :style="connectionDragStyle">
 			<line
 				:x1="dragPreview.startX"
 				:y1="dragPreview.startY"
@@ -322,36 +324,45 @@ function registerGanttComponents() {
 		position: { x: barX, y: barY },
 	})
 
-	store.registerConnectionHandle({
-		id: `${barId}-connection-left`,
-		rowIndex,
-		colIndex,
-		side: 'left',
-		position: { x: leftX, y: leftY },
-		visible: isLeftConnectionVisible,
-		barId,
-	})
+	// Only register connection handles if dependency graph is enabled
+	if (store.isDependencyGraphEnabled) {
+		store.registerConnectionHandle({
+			id: `${barId}-connection-left`,
+			rowIndex,
+			colIndex,
+			side: 'left',
+			position: { x: leftX, y: leftY },
+			visible: isLeftConnectionVisible,
+			barId,
+		})
 
-	store.registerConnectionHandle({
-		id: `${barId}-connection-right`,
-		rowIndex,
-		colIndex,
-		side: 'right',
-		position: { x: rightX, y: rightY },
-		visible: isRightConnectionVisible,
-		barId,
-	})
+		store.registerConnectionHandle({
+			id: `${barId}-connection-right`,
+			rowIndex,
+			colIndex,
+			side: 'right',
+			position: { x: rightX, y: rightY },
+			visible: isRightConnectionVisible,
+			barId,
+		})
+	}
 }
 
 function unregisterGanttComponents() {
 	store.unregisterGanttBar(barId)
-	store.unregisterConnectionHandle(`${barId}-connection-left`)
-	store.unregisterConnectionHandle(`${barId}-connection-right`)
+	// Only unregister connection handles if dependency graph is enabled
+	if (store.isDependencyGraphEnabled) {
+		store.unregisterConnectionHandle(`${barId}-connection-left`)
+		store.unregisterConnectionHandle(`${barId}-connection-right`)
+	}
 }
 
 function showConnectionHandles() {
-	isLeftConnectionVisible.value = true
-	isRightConnectionVisible.value = true
+	// Only show connection handles if dependency graph is enabled
+	if (store.isDependencyGraphEnabled) {
+		isLeftConnectionVisible.value = true
+		isRightConnectionVisible.value = true
+	}
 }
 
 function hideConnectionHandles() {

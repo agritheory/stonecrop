@@ -70,7 +70,10 @@
 		</table>
 
 		<!-- Connection overlay for gantt connections -->
-		<AGanttConnection v-if="store.isGanttView" :store="store" @connection:delete="handleConnectionDelete" />
+		<AGanttConnection
+			v-if="store.isGanttView && store.isDependencyGraphEnabled"
+			:store="store"
+			@connection:delete="handleConnectionDelete" />
 	</div>
 </template>
 
