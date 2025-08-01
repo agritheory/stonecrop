@@ -2,7 +2,7 @@ import { List, Map } from 'immutable'
 import { createPinia } from 'pinia'
 import { createApp } from 'vue'
 import { RouteRecordRaw } from 'vue-router'
-import { createMachine } from 'xstate'
+import { createActor } from 'xstate'
 
 import '@stonecrop/desktop/styles'
 import { ADate, ATextInput } from '@stonecrop/aform'
@@ -46,7 +46,7 @@ app.use(Stonecrop, {
 		const data = (await response.json()) as MutableDoctype
 		const config: ImmutableDoctype = {
 			schema: List(data.schema),
-			workflow: createMachine(data.workflow),
+			workflow: createActor(data.workflow),
 			actions: Map(data.actions!),
 		}
 

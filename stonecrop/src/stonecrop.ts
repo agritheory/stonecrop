@@ -1,4 +1,3 @@
-// src/stonecrop.ts (updated version)
 import Registry from './registry'
 import DoctypeMeta from './doctype'
 import { HST, createHST, type HSTNode } from './stores/hst'

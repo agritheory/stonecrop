@@ -38,7 +38,7 @@
 		"vite": "^6.3.5",
 		"vue": "^3.5.17",
 		"vue-toast-notification": "^3",
-		"xstate": "^4.38.3"
+		"xstate": "^5.20.1"
 	},
 	"devDependencies": {
 		"@histoire/plugin-vue": "^1.0.0-alpha.2",

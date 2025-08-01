@@ -21,6 +21,7 @@ jobs:
           aform: aform/**
           atable: atable/**
           beam: beam/**
+          stonecrop: stonecrop/**
 
   coverage:
     name: ${{ matrix.package }} (${{ matrix.branch }})

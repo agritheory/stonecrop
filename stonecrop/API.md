@@ -412,7 +412,7 @@ Immutable Doctype type for Stonecrop instances
 ```typescript
 export type ImmutableDoctype = {
     readonly schema?: List<SchemaTypes>;
-    readonly workflow: StateMachine<unknown, any, any>;
+    readonly workflow?: UnknownMachineConfig | AnyStateNodeConfig;
     readonly actions?: Map<string, string[]>;
 };
 ```
@@ -440,7 +440,7 @@ Mutable Doctype type for Stonecrop instances
 ```typescript
 export type MutableDoctype = {
     schema?: SchemaTypes[];
-    workflow: MachineConfig<unknown, any, any>;
+    workflow?: UnknownMachineConfig | AnyStateNodeConfig;
     actions?: Record<string, string[]>;
 };
 ```
@@ -514,7 +514,7 @@ new DoctypeMeta(doctype: string, schema: ImmutableDoctype['schema'], workflow: I
 | component | `Component` | The doctype component |
 | doctype | `string` | The doctype name |
 | schema | `ImmutableDoctype['schema']` | The doctype schema |
-| slug | `string` | Converts the registered doctype to a slug (kebab-case) |
+| slug | `string` | Converts the registered doctype string to a slug (kebab-case). The following conversions are made: - It replaces camelCase and PascalCase with kebab-case strings - It replaces spaces and underscores with hyphens - It converts the string to lowercase |
 | workflow | `ImmutableDoctype['workflow']` | The doctype workflow |
 
 ### HST

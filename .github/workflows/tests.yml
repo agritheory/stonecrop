@@ -23,6 +23,7 @@ jobs:
           aform: aform/**
           atable: atable/**
           beam: beam/**
+          stonecrop: stonecrop/**
 
   test:
     name: ${{ matrix.package }}

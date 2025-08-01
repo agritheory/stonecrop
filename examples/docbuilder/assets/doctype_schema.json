@@ -67,11 +67,11 @@
 		"component": "AFieldset",
 		"collapsible": true,
 		"label": "Events",
-		"fieldname": "side_effects_fieldset",
+		"fieldname": "actions_fieldset",
 		"schema": [
 			{
 				"component": "ATable",
-				"fieldname": "side_effects",
+				"fieldname": "actions",
 				"columns": [
 					{
 						"label": "Event Name",
