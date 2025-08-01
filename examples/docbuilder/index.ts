@@ -8,7 +8,7 @@ import { install as ATablePlugin } from '@stonecrop/aform'
 import { install as AFormPlugin } from '@stonecrop/atable'
 import { ActionSet, SheetNav } from '@stonecrop/desktop'
 import { install as NodeEditorPlugin } from '@stonecrop/node-editor'
-import { DoctypeMeta, Stonecrop } from '@stonecrop/stonecrop'
+import Stonecrop, { DoctypeMeta } from '@stonecrop/stonecrop'
 
 import App from './App.vue'
 import router from './router'

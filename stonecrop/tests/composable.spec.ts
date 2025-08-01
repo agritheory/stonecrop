@@ -124,7 +124,7 @@ describe('useStonecrop composable', () => {
 		expect(vm.stonecrop.registry.name).toBe(registry.name)
 	})
 
-	it('throws error when no registry is available', async () => {
+	it('sets undefined stonecrop instance when no registry is available', async () => {
 		const TestComponent = defineComponent({
 			setup() {
 				return useStonecrop()
