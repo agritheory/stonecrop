@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/atable",
+      "comment": "allow dependency graphs to be disabled",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/atable"
+}
