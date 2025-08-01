@@ -12,12 +12,12 @@ import type { InstallOptions } from '../types'
  * ```ts
  *
  * import { createApp } from 'vue'
- * import StonecropPlugin from '@stonecrop/stonecrop'
+ * import Stonecrop from '@stonecrop/stonecrop'
  *
  * import App from './App.vue'
  *
  * const app = createApp(App)
- * app.use(StonecropPlugin, {
+ * app.use(Stonecrop, {
  *  router,
  *  components: {
  *   // register custom components

@@ -31,9 +31,7 @@ export {
 	HST,
 	createHST,
 	HSTNode,
-	// Export plugin as named export too
-	plugin as StonecropPlugin,
 }
 
-// Default export is the Vue plugin for convenience
+// Default export is the Vue plugin
 export default plugin

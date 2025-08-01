@@ -7,12 +7,12 @@ _This package is under active development / design._
 
 ```typescript
 import { createApp } from 'vue'
-import StonecropPlugin from '@stonecrop/stonecrop'
+import Stonecrop from '@stonecrop/stonecrop'
 
 const app = createApp(App)
 
 // Install the Stonecrop plugin
-app.use(StonecropPlugin, {
+app.use(Stonecrop, {
   router,
   components: {
     // Register custom components
@@ -29,24 +29,19 @@ app.mount('#app')
 ### Available Imports
 
 ```typescript
-// Default export - Vue plugin (recommended)
-import StonecropPlugin from '@stonecrop/stonecrop'
+// Default export - Vue plugin
+import Stonecrop from '@stonecrop/stonecrop'
 
 // Named exports - utilities and classes
 import {
-  Stonecrop,           // Core class
-  Registry,            // Doctype registry
-  useStonecrop,        // Vue composable
-  HST,                 // Hierarchical State Tree
-  createHST,           // HST factory
-  DoctypeMeta          // Doctype metadata class
+  Stonecrop as StonecropClass, // Core class
+  Registry,                    // Doctype registry
+  useStonecrop,                // Vue composable
+  HST,                         // Hierarchical State Tree
+  createHST,                   // HST factory
+  DoctypeMeta                  // Doctype metadata class
 } from '@stonecrop/stonecrop'
-
-// Alternative named import for plugin
-import { StonecropPlugin } from '@stonecrop/stonecrop'
-```
-
-### Using the Composable
+```### Using the Composable
 
 ```typescript
 import { useStonecrop } from '@stonecrop/stonecrop'

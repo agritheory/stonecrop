@@ -257,19 +257,15 @@ import { useStonecrop } from '@stonecrop/stonecrop'
 // In Vue component
 const { stonecrop } = useStonecrop()
 
-// Plugin installation (recommended)
-import StonecropPlugin from '@stonecrop/stonecrop'
-app.use(StonecropPlugin, {
+// Plugin installation
+import Stonecrop from '@stonecrop/stonecrop'
+app.use(Stonecrop, {
   router: router,
   getMeta: async (doctype) => await fetchDoctypeMeta(doctype),
   components: {
     /* custom components */
   }
 })
-
-// Alternative: named import
-import { StonecropPlugin } from '@stonecrop/stonecrop'
-app.use(StonecropPlugin, { /* options */ })
 ```
 
 ### Schema Usage

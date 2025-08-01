@@ -196,7 +196,6 @@ export type MutableDoctype = {
 
 // @public
 const plugin: Plugin_2;
-export { plugin as StonecropPlugin }
 export default plugin;
 
 // @public

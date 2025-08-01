@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { createApp, App } from 'vue'
 import { createRouter, createMemoryHistory } from 'vue-router'
 
-import StonecropPlugin from '../src/plugins'
+import Stonecrop from '../src/plugins'
 import Registry from '../src/registry'
 import { HST } from '../src/stores/hst'
 
@@ -29,7 +29,7 @@ describe('Stonecrop Vue Plugin with HST', () => {
 
 	it('installs plugin without options', () => {
 		expect(() => {
-			app.use(StonecropPlugin)
+			app.use(Stonecrop)
 		}).not.toThrow()
 
 		const registry = app._context.provides.$registry
@@ -39,7 +39,7 @@ describe('Stonecrop Vue Plugin with HST', () => {
 	})
 
 	it('does not install Pinia (HST replaces it)', () => {
-		app.use(StonecropPlugin)
+		app.use(Stonecrop)
 
 		// Check that no Pinia symbol exists in provides
 		const keys = Reflect.ownKeys(app._context.provides)
@@ -48,7 +48,7 @@ describe('Stonecrop Vue Plugin with HST', () => {
 	})
 
 	it('provides access to HST singleton', () => {
-		app.use(StonecropPlugin)
+		app.use(Stonecrop)
 
 		// HST should be accessible as singleton
 		const hst1 = HST.getInstance()
@@ -58,7 +58,7 @@ describe('Stonecrop Vue Plugin with HST', () => {
 
 	it('installs plugin with router option', () => {
 		expect(() => {
-			app.use(StonecropPlugin, { router: mockRouter })
+			app.use(Stonecrop, { router: mockRouter })
 		}).not.toThrow()
 
 		const registry = app._context.provides.$registry
@@ -71,7 +71,7 @@ describe('Stonecrop Vue Plugin with HST', () => {
 		const mockGetMeta = vi.fn()
 
 		expect(() => {
-			app.use(StonecropPlugin, {
+			app.use(Stonecrop, {
 				router: mockRouter,
 				getMeta: mockGetMeta,
 			})
@@ -88,7 +88,7 @@ describe('Stonecrop Vue Plugin with HST', () => {
 		app.config.globalProperties.$router = mockRouter
 
 		expect(() => {
-			app.use(StonecropPlugin)
+			app.use(Stonecrop)
 		}).not.toThrow()
 
 		const registry = app._context.provides.$registry
@@ -104,7 +104,7 @@ describe('Stonecrop Vue Plugin with HST', () => {
 		}
 
 		expect(() => {
-			app.use(StonecropPlugin, {
+			app.use(Stonecrop, {
 				router: mockRouter,
 				components: mockComponents,
 			})
@@ -117,7 +117,7 @@ describe('Stonecrop Vue Plugin with HST', () => {
 	})
 
 	it('Registry and HST singletons work together', () => {
-		app.use(StonecropPlugin, { router: mockRouter })
+		app.use(Stonecrop, { router: mockRouter })
 
 		const registry = app._context.provides.$registry
 		const hst = HST.getInstance()
@@ -140,8 +140,8 @@ describe('Stonecrop Vue Plugin with HST', () => {
 
 	it('handles plugin installation multiple times gracefully', () => {
 		expect(() => {
-			app.use(StonecropPlugin)
-			app.use(StonecropPlugin) // Second installation should not break
+			app.use(Stonecrop)
+			app.use(Stonecrop) // Second installation should not break
 		}).not.toThrow()
 
 		const registry = app._context.provides.$registry
@@ -150,7 +150,7 @@ describe('Stonecrop Vue Plugin with HST', () => {
 	})
 
 	it('provides Registry through injection for composables', () => {
-		app.use(StonecropPlugin, { router: mockRouter })
+		app.use(Stonecrop, { router: mockRouter })
 
 		// Simulate component that uses injection
 		const mockComponent = {
@@ -168,12 +168,12 @@ describe('Stonecrop Vue Plugin with HST', () => {
 
 	it('maintains Registry singleton behavior across plugin installs', () => {
 		// Install on first app
-		app.use(StonecropPlugin, { router: mockRouter })
+		app.use(Stonecrop, { router: mockRouter })
 		const registry1 = app._context.provides.$registry
 
 		// Install on second app
 		const app2 = createApp({})
-		app2.use(StonecropPlugin)
+		app2.use(Stonecrop)
 		const registry2 = app2._context.provides.$registry
 
 		// Should be the same singleton instance
