@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/code-editor",
+      "comment": "update dependencies",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@stonecrop/code-editor"
+}
