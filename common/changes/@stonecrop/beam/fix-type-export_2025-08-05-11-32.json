@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/beam",
+      "comment": "export project types",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/beam"
+}
