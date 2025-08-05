@@ -470,7 +470,7 @@ defineExpose({
 
 .gantt-bar {
 	position: absolute;
-	border-radius: 4px;
+	border-radius: 2px;
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
@@ -478,7 +478,7 @@ defineExpose({
 	box-sizing: border-box;
 	border: 1px solid rgba(0, 0, 0, 0.5);
 	transition: left 0.1s ease-out, width 0.1s ease-out;
-	height: 80%;
+	height: 65%;
 	top: 50%;
 	z-index: 2;
 	transform: translateY(-50%);
