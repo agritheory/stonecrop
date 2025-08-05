@@ -1,7 +1,22 @@
 import { config, mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { nextTick } from 'vue'
+
+// Mock VueUse functions
+vi.mock('@vueuse/core', () => ({
+	useElementBounding: vi.fn(() => ({
+		width: { value: 200 },
+		height: { value: 100 },
+	})),
+	useDebounceFn: vi.fn(fn => fn),
+	useMutationObserver: vi.fn(),
+}))
+
+vi.mock('@vueuse/components', () => ({
+	vResizeObserver: vi.fn(),
+	vOnClickOutside: vi.fn(),
+}))
 
 import data from './data/http_logs.json'
 import ACell from '../src/components/ACell.vue'
@@ -48,7 +63,7 @@ describe('table component', () => {
 		{ name: 'status', label: 'Status', width: '150px' },
 	]
 
-	const basicRows: TableRow[] = [
+	const getBasicRows = (): TableRow[] => [
 		{ id: 1, name: 'John', status: 'active' },
 		{ id: 2, name: 'Jane', status: 'inactive' },
 	]
@@ -216,7 +231,7 @@ describe('table component', () => {
 		const wrapper = mount(ATable, {
 			props: {
 				columns: basicColumns,
-				modelValue: basicRows,
+				modelValue: getBasicRows(),
 			},
 		})
 
@@ -228,7 +243,7 @@ describe('table component', () => {
 		const wrapper = mount(ATable, {
 			props: {
 				columns: basicColumns,
-				modelValue: basicRows,
+				modelValue: getBasicRows(),
 				config: { fullWidth: true },
 			},
 		})
@@ -241,7 +256,7 @@ describe('table component', () => {
 		const wrapper = mount(ATable, {
 			props: {
 				columns: basicColumns,
-				modelValue: basicRows,
+				modelValue: getBasicRows(),
 			},
 		})
 
@@ -263,13 +278,13 @@ describe('table component', () => {
 		const wrapper = mount(ATable, {
 			props: {
 				columns: basicColumns,
-				modelValue: basicRows,
+				modelValue: getBasicRows(),
 			},
 		})
 
-		// Trigger a row change
+		// Trigger a row change using the proper store method
 		const tableStore = wrapper.vm.store
-		tableStore.rows[0].name = 'Updated Name'
+		tableStore.setCellData(0, 1, 'Updated Name') // Update the 'name' column (index 1)
 
 		await nextTick()
 		expect(wrapper.emitted('update:modelValue')).toBeTruthy()
@@ -342,7 +357,7 @@ describe('table component', () => {
 		const wrapper = mount(ATable, {
 			props: {
 				columns: basicColumns,
-				modelValue: basicRows,
+				modelValue: getBasicRows(),
 			},
 		})
 
@@ -399,7 +414,7 @@ describe('table component', () => {
 		const wrapper = mount(ATable, {
 			props: {
 				columns: basicColumns,
-				modelValue: basicRows,
+				modelValue: getBasicRows(),
 			},
 		})
 
@@ -416,23 +431,11 @@ describe('table component', () => {
 		})
 	})
 
-	it('should handle rows prop when modelValue is not provided', () => {
-		const wrapper = mount(ATable, {
-			props: {
-				columns: basicColumns,
-				modelValue: [],
-				rows: basicRows,
-			},
-		})
-
-		expect(wrapper.vm.store.rows).toEqual([])
-	})
-
 	it('should expose store and connection methods', () => {
 		const wrapper = mount(ATable, {
 			props: {
 				columns: basicColumns,
-				modelValue: basicRows,
+				modelValue: getBasicRows(),
 			},
 		})
 
@@ -444,32 +447,45 @@ describe('table component', () => {
 		expect(wrapper.vm.getHandlesForBar).toBe(wrapper.vm.store.getHandlesForBar)
 	})
 
-	it('should handle rows prop when modelValue is not provided', () => {
-		const wrapper = mount(ATable, {
-			props: {
-				columns: basicColumns,
-				modelValue: basicRows,
-				rows: [], // This should be ignored since modelValue is provided
-			},
-		})
-
-		expect(wrapper.vm.store.rows).toEqual(basicRows)
-	})
-
-	it('should use modelValue over rows when both are provided', () => {
-		const modelValueRows = [{ id: 3, name: 'Model', status: 'test' }]
+	it('should handle custom cell components for regular cells', () => {
+		const customColumns: TableColumn[] = [
+			{ name: 'id', label: 'ID', width: '100px', cellComponent: 'CustomCell' },
+			{ name: 'name', label: 'Name', width: '200px' },
+		]
 
 		const wrapper = mount(ATable, {
 			props: {
-				columns: basicColumns,
-				modelValue: modelValueRows,
-				rows: basicRows,
+				columns: customColumns,
+				modelValue: getBasicRows(),
 			},
 		})
 
-		expect(wrapper.vm.store.rows).toEqual(modelValueRows)
+		// Should render with custom cell component specified
+		expect(wrapper.vm.store.columns[0].cellComponent).toBe('CustomCell')
 	})
 
+	it('should handle slots for header, body, footer, and modal', () => {
+		const wrapper = mount(ATable, {
+			props: {
+				columns: basicColumns,
+				modelValue: getBasicRows(),
+			},
+			slots: {
+				header: '<div data-test="custom-header">Custom Header</div>',
+				body: '<div data-test="custom-body">Custom Body</div>',
+				footer: '<div data-test="custom-footer">Custom Footer</div>',
+				modal: '<div data-test="custom-modal">Custom Modal</div>',
+			},
+		})
+
+		expect(wrapper.find('[data-test="custom-header"]').exists()).toBe(true)
+		expect(wrapper.find('[data-test="custom-body"]').exists()).toBe(true)
+		expect(wrapper.find('[data-test="custom-footer"]').exists()).toBe(true)
+		expect(wrapper.find('[data-test="custom-modal"]').exists()).toBe(true)
+	})
+})
+
+describe('Gantt View', () => {
 	it('should handle custom gantt data', () => {
 		const ganttColumns: TableColumn[] = [
 			{ name: 'id', label: 'ID', width: '100px', pinned: true },
@@ -498,42 +514,5 @@ describe('table component', () => {
 		expect(wrapper.vm.store.rows[0].gantt?.color).toBe('#ff0000')
 		expect(wrapper.vm.store.rows[0].gantt?.startIndex).toBe(0)
 		expect(wrapper.vm.store.rows[0].gantt?.endIndex).toBe(5)
-	})
-
-	it('should handle custom cell components for regular cells', () => {
-		const customColumns: TableColumn[] = [
-			{ name: 'id', label: 'ID', width: '100px', cellComponent: 'CustomCell' },
-			{ name: 'name', label: 'Name', width: '200px' },
-		]
-
-		const wrapper = mount(ATable, {
-			props: {
-				columns: customColumns,
-				modelValue: basicRows,
-			},
-		})
-
-		// Should render with custom cell component specified
-		expect(wrapper.vm.store.columns[0].cellComponent).toBe('CustomCell')
-	})
-
-	it('should handle slots for header, body, footer, and modal', () => {
-		const wrapper = mount(ATable, {
-			props: {
-				columns: basicColumns,
-				modelValue: basicRows,
-			},
-			slots: {
-				header: '<div data-test="custom-header">Custom Header</div>',
-				body: '<div data-test="custom-body">Custom Body</div>',
-				footer: '<div data-test="custom-footer">Custom Footer</div>',
-				modal: '<div data-test="custom-modal">Custom Modal</div>',
-			},
-		})
-
-		expect(wrapper.find('[data-test="custom-header"]').exists()).toBe(true)
-		expect(wrapper.find('[data-test="custom-body"]').exists()).toBe(true)
-		expect(wrapper.find('[data-test="custom-footer"]').exists()).toBe(true)
-		expect(wrapper.find('[data-test="custom-modal"]').exists()).toBe(true)
 	})
 })

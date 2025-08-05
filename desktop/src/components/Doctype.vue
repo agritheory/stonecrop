@@ -1,5 +1,5 @@
 <template>
-	<AForm v-if="isReady" class="aform-main" v-model="schema" />
+	<AForm class="aform-main" v-model="schema" />
 </template>
 
 <script setup lang="ts">
@@ -10,16 +10,19 @@ import { AForm } from '@stonecrop/aform'
 import type { SchemaTypes } from '@stonecrop/aform'
 import { /* DoctypeMeta, */ useStonecrop } from '@stonecrop/stonecrop'
 
-const { stonecrop, isReady } = useStonecrop()
+const { stonecrop } = useStonecrop()
 const schema = ref<SchemaTypes[]>([])
 
-watch(isReady, () => {
-	if (isReady.value) {
+watch(stonecrop, () => {
+	if (stonecrop.value) {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-		let newSchema: SchemaTypes[] = stonecrop.value.schema.schema.toArray()
+		let newSchema = stonecrop.value.schema?.schema.toArray()
+		if (!newSchema) {
+			newSchema = []
+		}
 		newSchema.forEach((item, index) => {
-			const record = stonecrop.value.store.record
-			const fieldValue = record[item.fieldname]
+			const record = stonecrop.value?.store.record
+			const fieldValue = record?.[item.fieldname]
 			newSchema[index].value = fieldValue
 		})
 		schema.value = newSchema

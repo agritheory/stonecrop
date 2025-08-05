@@ -19,7 +19,7 @@ import { computed, type HTMLAttributes } from 'vue'
 
 const count = defineModel<number>({ required: true })
 const {
-	denominator,
+	denominator = 0,
 	debounce = 300,
 	editable = true,
 	uom = '',
@@ -30,11 +30,11 @@ const {
 	uom?: string
 }>()
 
-const isCountComplete = computed(() => count.value === denominator)
+const isCountComplete = computed(() => denominator !== 0 && count.value === denominator)
 
 const validate = (payload: ClipboardEvent | InputEvent | MouseEvent) => {
 	const newValue = Number((payload.target as HTMLElement).innerHTML) || 0
-	count.value = Math.min(newValue, denominator)
+	count.value = denominator ? Math.min(newValue, denominator) : newValue
 }
 
 const debouncedRequest = useDebounceFn((payload: InputEvent) => validate(payload), debounce)

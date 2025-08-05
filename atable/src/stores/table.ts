@@ -120,7 +120,11 @@ export const createTableStore = (initData: {
 			}
 
 			table.value[index] = value
-			rows.value[rowIndex][col.name] = value
+			// Create a new row object to ensure reactivity
+			rows.value[rowIndex] = {
+				...rows.value[rowIndex],
+				[col.name]: value,
+			}
 		}
 
 		const setCellText = (colIndex: number, rowIndex: number, value: string) => {

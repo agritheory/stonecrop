@@ -46,6 +46,7 @@ describe('table row component', () => {
 			props: {
 				columns,
 				modelValue: listData,
+				'onUpdate:modelValue': () => {},
 				config: { view: 'list' },
 			},
 		})
@@ -64,6 +65,7 @@ describe('table row component', () => {
 			props: {
 				columns,
 				modelValue: listData,
+				'onUpdate:modelValue': () => {},
 				config: { view: 'tree' },
 			},
 		})

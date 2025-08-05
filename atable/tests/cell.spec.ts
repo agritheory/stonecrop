@@ -1,5 +1,5 @@
 import { setActivePinia, createPinia } from 'pinia'
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { config, mount } from '@vue/test-utils'
 
 import data from './data/http_logs.json'
@@ -44,6 +44,7 @@ describe('table cell component', () => {
 	const props = {
 		columns,
 		modelValue: data,
+		'onUpdate:modelValue': () => {},
 		config: { view: 'list' } as TableConfig,
 	}
 
@@ -64,6 +65,8 @@ describe('table cell component', () => {
 	})
 
 	it('emit update event when cell is edited', async () => {
+		vi.useFakeTimers()
+
 		const wrapper = mount(ATable, { props, global: { components: { ACell } } })
 
 		const dataCells = wrapper.findAllComponents(ACell)
@@ -75,7 +78,12 @@ describe('table cell component', () => {
 		cellElement!.element.textContent = 'POST'
 		await cellElement!.trigger('input')
 
+		// Fast-forward time to trigger debounced function
+		vi.advanceTimersByTime(300)
 		await wrapper.vm.$nextTick()
+
 		expect(wrapper.emitted('update:modelValue')).toBeTruthy()
+
+		vi.useRealTimers()
 	})
 })

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/desktop",
+      "comment": "use modified table APIs",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/desktop"
+}

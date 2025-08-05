@@ -5,6 +5,7 @@
 				v-model="gantt.rows"
 				:columns="gantt.columns"
 				:config="gantt.config"
+				@cellUpdate="handleUpdate"
 				@gantt:drag="handleGanttDrag"
 				@connection:event="handleConnectionEvent" />
 		</Variant>
@@ -785,6 +786,10 @@ const project_gantt = ref({
 	config: { view: 'tree-gantt' },
 })
 
+const handleUpdate = ({ colIndex, rowIndex, newValue, oldValue }) => {
+	console.log(`Cell updated at (${rowIndex}, ${colIndex}): ${oldValue} -> ${newValue}`)
+}
+
 const handleGanttDrag = (event: GanttDragEvent) => {
 	if (event.type === 'bar') {
 		console.log(
@@ -833,7 +838,7 @@ The tree view displays hierarchical data with expandable/collapsible nodes. The 
 ## Usage
 
 ```vue
-<ATable :rows="treeData" :columns="treeColumns" :config="{ view: 'tree-gantt' }" @gantt:drag="handleGanttDrag" />
+<ATable v-model="treeData" :columns="treeColumns" :config="{ view: 'tree-gantt' }" @gantt:drag="handleGanttDrag" />
 ```
 
 The tree-gantt view is perfect for displaying hierarchical project data with timeline visualization, where:
