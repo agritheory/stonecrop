@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/beam
 
-This log was last generated on Fri, 01 Aug 2025 11:21:44 GMT and should not be manually modified.
+This log was last generated on Tue, 05 Aug 2025 11:43:23 GMT and should not be manually modified.
+
+## 0.4.32
+Tue, 05 Aug 2025 11:43:23 GMT
+
+### Patches
+
+- export project types
 
 ## 0.4.31
 Fri, 01 Aug 2025 11:21:44 GMT
