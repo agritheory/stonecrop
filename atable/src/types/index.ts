@@ -205,6 +205,18 @@ export interface TableConfig {
 	 * @defaultValue true
 	 */
 	dependencyGraph?: boolean
+
+	/**
+	 * Default expansion state for tree views. Possible values:
+	 * - `root` - Only top-level nodes are visible (fully collapsed)
+	 * - `branch` - Shows minimal tree to display all gantt nodes. Expands only the necessary paths to gantt nodes, stops at gantt nodes with no gantt descendants
+	 * - `leaf` - All nodes are visible (fully expanded)
+	 *
+	 * Only applicable for tree and tree-gantt views.
+	 *
+	 * @defaultValue undefined (default behavior is now fully expanded like 'leaf' mode)
+	 */
+	defaultTreeExpansion?: 'root' | 'branch' | 'leaf'
 }
 
 /**

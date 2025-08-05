@@ -42,16 +42,62 @@ export const createTableStore = (initData: {
 				}
 			}
 
+			// Helper function to check if a row has gantt data
+			const hasGanttData = (rowIndex: number): boolean => {
+				return rows.value[rowIndex]?.gantt !== undefined
+			}
+
+			// Helper function to check if any descendant has gantt data
+			const hasGanttDescendant = (rowIndex: number): boolean => {
+				for (let i = 0; i < rows.value.length; i++) {
+					if (rows.value[i].parent === rowIndex) {
+						if (hasGanttData(i) || hasGanttDescendant(i)) {
+							return true
+						}
+					}
+				}
+				return false
+			}
+
+			// Helper function to determine if children should be open based on expansion mode
+			const shouldChildrenBeOpen = (rowIndex: number): boolean => {
+				const expansionMode = config.value.defaultTreeExpansion
+				if (!expansionMode) return true // Default behavior - start expanded (leaf mode)
+
+				switch (expansionMode) {
+					case 'root':
+						// Only root nodes are visible, all children start collapsed
+						return false
+					case 'branch':
+						// Only expand if this node leads to gantt nodes OR if this node itself has gantt data AND has gantt children
+						if (hasGanttData(rowIndex)) {
+							// If this node has gantt data, only expand if it has gantt descendants
+							return hasGanttDescendant(rowIndex)
+						} else {
+							// If this node doesn't have gantt data, only expand if it has gantt descendants
+							return hasGanttDescendant(rowIndex)
+						}
+					case 'leaf':
+						// All nodes should be expanded
+						return true
+					default:
+						return true // Default to expanded if unknown mode
+				}
+			}
+
 			for (let rowIndex = 0; rowIndex < rows.value.length; rowIndex++) {
 				const row = rows.value[rowIndex]
+				const isRootNode = row.parent === null || row.parent === undefined
+				const isParentNode = parents.has(rowIndex)
+
 				defaultDisplay[rowIndex] = {
-					childrenOpen: false,
+					childrenOpen: shouldChildrenBeOpen(rowIndex),
 					expanded: false,
 					indent: row.indent || 0,
-					isParent: parents.has(rowIndex),
-					isRoot: row.parent === null || row.parent === undefined,
+					isParent: isParentNode,
+					isRoot: isRootNode,
 					rowModified: false,
-					open: row.parent === null || row.parent === undefined,
+					open: isRootNode, // This will be recalculated later for non-root nodes
 					parent: row.parent,
 				}
 			}

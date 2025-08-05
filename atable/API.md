@@ -135,10 +135,12 @@ createTableStore: (initData: {
         view?: "uncounted" | "list" | "list-expansion" | "tree" | "gantt" | "tree-gantt" | undefined;
         fullWidth?: boolean | undefined;
         dependencyGraph?: boolean | undefined;
+        defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
     }, TableConfig | {
         view?: "uncounted" | "list" | "list-expansion" | "tree" | "gantt" | "tree-gantt" | undefined;
         fullWidth?: boolean | undefined;
         dependencyGraph?: boolean | undefined;
+        defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
     }>;
     connectionHandles: import("vue").Ref<{
         id: string;
@@ -370,10 +372,12 @@ createTableStore: (initData: {
         view?: "uncounted" | "list" | "list-expansion" | "tree" | "gantt" | "tree-gantt" | undefined;
         fullWidth?: boolean | undefined;
         dependencyGraph?: boolean | undefined;
+        defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
     }, TableConfig | {
         view?: "uncounted" | "list" | "list-expansion" | "tree" | "gantt" | "tree-gantt" | undefined;
         fullWidth?: boolean | undefined;
         dependencyGraph?: boolean | undefined;
+        defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
     }>;
     connectionHandles: import("vue").Ref<{
         id: string;
@@ -605,10 +609,12 @@ createTableStore: (initData: {
         view?: "uncounted" | "list" | "list-expansion" | "tree" | "gantt" | "tree-gantt" | undefined;
         fullWidth?: boolean | undefined;
         dependencyGraph?: boolean | undefined;
+        defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
     }, TableConfig | {
         view?: "uncounted" | "list" | "list-expansion" | "tree" | "gantt" | "tree-gantt" | undefined;
         fullWidth?: boolean | undefined;
         dependencyGraph?: boolean | undefined;
+        defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
     }>;
     connectionHandles: import("vue").Ref<{
         id: string;
@@ -1034,6 +1040,7 @@ Table configuration definition.
 
 ```typescript
 export interface TableConfig {
+  defaultTreeExpansion?: 'root' | 'branch' | 'leaf';
   dependencyGraph?: boolean;
   fullWidth?: boolean;
   view?: 'uncounted' | 'list' | 'list-expansion' | 'tree' | 'gantt' | 'tree-gantt';
@@ -1044,6 +1051,7 @@ export interface TableConfig {
 
 | Property | Type | Description |
 |----------|------|-------------|
+| defaultTreeExpansion? | `'root' \| 'branch' \| 'leaf'` | `branch` (Shows minimal tree to display all gantt nodes. Expands only the necessary paths to gantt nodes, stops at gantt nodes with no gantt descendants), `leaf` (All nodes are visible (fully expanded)) Only applicable for tree and tree-gantt views. |
 | dependencyGraph? | `boolean` | Control whether dependency graph connections should be enabled for Gantt views. When false, connection handles and dependency lines will be hidden. |
 | fullWidth? | `boolean` | Control whether the table should be allowed to use the full width of its container. |
 | view? | `'uncounted' \| 'list' \| 'list-expansion' \| 'tree' \| 'gantt' \| 'tree-gantt'` | `uncounted` (row numbers are not displayed in the table), `list` (row numbers are displayed in the table), `list-expansion` (carets are displayed in the number column that expand/collapse the row inline), `tree` (carets are displayed in the number column that expand/collapse grouped rows), `gantt` (view that allows specific rows to be displayed with Gantt functionality), `tree-gantt` (similar to `gantt`, but allows for tree functionality as well) |
