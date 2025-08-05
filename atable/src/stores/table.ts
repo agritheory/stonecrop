@@ -61,7 +61,9 @@ export const createTableStore = (initData: {
 
 			// Helper function to determine if children should be open based on expansion mode
 			const shouldChildrenBeOpen = (rowIndex: number): boolean => {
-				const expansionMode = config.value.defaultTreeExpansion
+				const currentConfig = config.value
+				// Type guard to check if config has defaultTreeExpansion
+				const expansionMode = 'defaultTreeExpansion' in currentConfig ? currentConfig.defaultTreeExpansion : undefined
 				if (!expansionMode) return true // Default behavior - start expanded (leaf mode)
 
 				switch (expansionMode) {
@@ -194,7 +196,11 @@ export const createTableStore = (initData: {
 		const hasPinnedColumns = computed(() => columns.value.some(col => col.pinned))
 		const isGanttView = computed(() => config.value.view === 'gantt' || config.value.view === 'tree-gantt')
 		const isTreeView = computed(() => config.value.view === 'tree' || config.value.view === 'tree-gantt')
-		const isDependencyGraphEnabled = computed(() => config.value.dependencyGraph !== false)
+		const isDependencyGraphEnabled = computed(() => {
+			const currentConfig = config.value
+			// Type guard to check if config has dependencyGraph
+			return 'dependencyGraph' in currentConfig ? currentConfig.dependencyGraph !== false : true
+		})
 
 		const numberedRowWidth = computed(() => {
 			const indent = Math.ceil(rows.value.length / 100 + 1)

@@ -176,27 +176,59 @@ export interface CellContext {
 }
 
 /**
- * Table configuration definition.
+ * Base table configuration properties shared across all view types.
  * @public
  */
-export interface TableConfig {
-	/**
-	 * The type of view to display the table in. Possible values:
-	 * - `uncounted` - row numbers are not displayed in the table
-	 * - `list` - row numbers are displayed in the table
-	 * - `list-expansion` - carets are displayed in the number column that expand/collapse the row inline
-	 * - `tree` - carets are displayed in the number column that expand/collapse grouped rows
-	 * - `gantt` - view that allows specific rows to be displayed with Gantt functionality
-	 * - `tree-gantt` - similar to `gantt`, but allows for tree functionality as well
-	 */
-	view?: 'uncounted' | 'list' | 'list-expansion' | 'tree' | 'gantt' | 'tree-gantt'
-
+export interface BaseTableConfig {
 	/**
 	 * Control whether the table should be allowed to use the full width of its container.
 	 *
 	 * @defaultValue false
 	 */
 	fullWidth?: boolean
+}
+
+/**
+ * Table configuration for basic view types (uncounted, list, list-expansion).
+ * @public
+ */
+export interface BasicTableConfig extends BaseTableConfig {
+	/**
+	 * The type of view to display the table in.
+	 */
+	view?: 'uncounted' | 'list' | 'list-expansion'
+}
+
+/**
+ * Table configuration for tree view types.
+ * @public
+ */
+export interface TreeTableConfig extends BaseTableConfig {
+	/**
+	 * The type of view to display the table in.
+	 */
+	view: 'tree'
+
+	/**
+	 * Default expansion state for tree views. Possible values:
+	 * - `root` - Only top-level nodes are visible (fully collapsed)
+	 * - `branch` - Shows minimal tree to display all gantt nodes. Expands only the necessary paths to gantt nodes, stops at gantt nodes with no gantt descendants
+	 * - `leaf` - All nodes are visible (fully expanded)
+	 *
+	 * @defaultValue undefined (default behavior is now fully expanded like 'leaf' mode)
+	 */
+	defaultTreeExpansion?: 'root' | 'branch' | 'leaf'
+}
+
+/**
+ * Table configuration for gantt view types.
+ * @public
+ */
+export interface GanttTableConfig extends BaseTableConfig {
+	/**
+	 * The type of view to display the table in.
+	 */
+	view: 'gantt'
 
 	/**
 	 * Control whether dependency graph connections should be enabled for Gantt views.
@@ -205,6 +237,17 @@ export interface TableConfig {
 	 * @defaultValue true
 	 */
 	dependencyGraph?: boolean
+}
+
+/**
+ * Table configuration for tree-gantt view types.
+ * @public
+ */
+export interface TreeGanttTableConfig extends BaseTableConfig {
+	/**
+	 * The type of view to display the table in.
+	 */
+	view: 'tree-gantt'
 
 	/**
 	 * Default expansion state for tree views. Possible values:
@@ -212,12 +255,24 @@ export interface TableConfig {
 	 * - `branch` - Shows minimal tree to display all gantt nodes. Expands only the necessary paths to gantt nodes, stops at gantt nodes with no gantt descendants
 	 * - `leaf` - All nodes are visible (fully expanded)
 	 *
-	 * Only applicable for tree and tree-gantt views.
-	 *
 	 * @defaultValue undefined (default behavior is now fully expanded like 'leaf' mode)
 	 */
 	defaultTreeExpansion?: 'root' | 'branch' | 'leaf'
+
+	/**
+	 * Control whether dependency graph connections should be enabled for Gantt views.
+	 * When false, connection handles and dependency lines will be hidden.
+	 *
+	 * @defaultValue true
+	 */
+	dependencyGraph?: boolean
 }
+
+/**
+ * Table configuration definition using discriminated unions for type safety.
+ * @public
+ */
+export type TableConfig = BasicTableConfig | TreeTableConfig | GanttTableConfig | TreeGanttTableConfig
 
 /**
  * Table display definition.

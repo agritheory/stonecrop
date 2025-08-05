@@ -1,5 +1,7 @@
 export type { BaseSchema, FieldsetSchema, FormSchema, SchemaTypes, TableSchema } from '@stonecrop/aform'
 export type {
+	BaseTableConfig,
+	BasicTableConfig,
 	CellContext,
 	ConnectionEvent,
 	ConnectionHandle,
@@ -7,9 +9,12 @@ export type {
 	GanttBarInfo,
 	GanttDragEvent,
 	GanttOptions,
+	GanttTableConfig,
 	TableColumn,
 	TableConfig,
 	TableRow,
+	TreeGanttTableConfig,
+	TreeTableConfig,
 } from '@stonecrop/atable'
 
 import { type StonecropReturn, useStonecrop } from './composable'
