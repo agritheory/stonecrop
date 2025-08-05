@@ -22,6 +22,10 @@
 				"default": "./dist/graphql-client.js"
 			},
 			"require": "./dist/graphql-client.umd.cjs"
+		},
+		"./types": {
+			"import": "./dist/src/types/index.d.ts",
+			"require": "./dist/src/types/index.d.ts"
 		}
 	},
 	"typings": "./dist/src/index.d.ts",

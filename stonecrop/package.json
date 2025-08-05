@@ -23,6 +23,10 @@
 				"default": "./dist/stonecrop.js"
 			},
 			"require": "./dist/stonecrop.umd.cjs"
+		},
+		"./types": {
+			"import": "./dist/src/types/index.d.ts",
+			"require": "./dist/src/types/index.d.ts"
 		}
 	},
 	"typings": "./dist/src/index.d.ts",

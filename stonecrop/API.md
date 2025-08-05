@@ -255,6 +255,98 @@ export interface TableConfig {
 | fullWidth? | `boolean` | Control whether the table should be allowed to use the full width of its container. |
 | view? | `'uncounted' \| 'list' \| 'list-expansion' \| 'tree' \| 'gantt' \| 'tree-gantt'` | `uncounted` (row numbers are not displayed in the table), `list` (row numbers are displayed in the table), `list-expansion` (carets are displayed in the number column that expand/collapse the row inline), `tree` (carets are displayed in the number column that expand/collapse grouped rows), `gantt` (view that allows specific rows to be displayed with Gantt functionality), `tree-gantt` (similar to `gantt`, but allows for tree functionality as well) |
 
+### TableDisplay
+
+Table display definition.
+
+**Definition:**
+
+```typescript
+export interface TableDisplay {
+  childrenOpen?: boolean;
+  expanded?: boolean;
+  indent?: number;
+  isParent?: boolean;
+  isRoot?: boolean;
+  open?: boolean;
+  parent?: number;
+  rowModified?: boolean;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| childrenOpen? | `boolean` | Indicates whether a row node's child nodes are open or closed. Only applicable for tree views. |
+| expanded? | `boolean` | Indicates whether a row node is expanded or collapsed. Only applicable for list-expansion views. |
+| indent? | `number` | The indentation level of the row node. Only applicable for tree and gantt views. |
+| isParent? | `boolean` | Indicates whether a row node is a parent node. This is evaluated automatically while rendering the table. Only applicable for tree views. |
+| isRoot? | `boolean` | Indicates whether a row node is a root node. This is evaluated automatically while rendering the table. Only applicable for tree views. |
+| open? | `boolean` | Indicates whether a row node is visible. This is evaluated automatically while rendering the table. Only applicable for tree views. |
+| parent? | `number` | The HTML parent element for the row node. This is evaluated automatically while rendering the table. Only applicable for tree and gantt views. |
+| rowModified? | `boolean` | Indicates whether a row node has been modified. This is evaluated automatically when a cell is edited. |
+
+### TableModal
+
+Table modal definition.
+
+**Definition:**
+
+```typescript
+export interface TableModal {
+  bottom?: ReturnType<typeof useElementBounding>['bottom'];
+  cell?: HTMLTableCellElement | null;
+  colIndex?: number;
+  component?: string;
+  componentProps?: Record<string, any>;
+  height?: ReturnType<typeof useElementBounding>['height'];
+  left?: ReturnType<typeof useElementBounding>['left'];
+  parent?: HTMLElement;
+  rowIndex?: number;
+  visible?: boolean;
+  width?: ReturnType<typeof useElementBounding>['width'];
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| bottom? | `ReturnType<typeof useElementBounding>['bottom']` | Reactive bottom value for the modal's bounding box. The field is unset when the modal is not being displayed. |
+| cell? | `HTMLTableCellElement \| null` | The HTML cell element that the modal is currently being displayed for. The field is unset when the modal is not being displayed. |
+| colIndex? | `number` | The index of the column that the modal is currently being displayed for. The field is unset when the modal is not being displayed. |
+| component? | `string` | The component to use to render the modal. If not provided, the table will try to use the column's `modalComponent` property, if set. If that is not set, the table will not display a modal. |
+| componentProps? | `Record<string, any>` | Additional properties to pass to the table's modal component. |
+| height? | `ReturnType<typeof useElementBounding>['height']` | Reactive height value for the modal's bounding box. The field is unset when the modal is not being displayed. |
+| left? | `ReturnType<typeof useElementBounding>['left']` | Reactive left value for the modal's bounding box. The field is unset when the modal is not being displayed. |
+| parent? | `HTMLElement` | The HTML parent element that the modal is currently being displayed for. The field is unset when the modal is not being displayed. |
+| rowIndex? | `number` | The index of the row that the modal is currently being displayed for. The field is unset when the modal is not being displayed. |
+| visible? | `boolean` | Indicates whether the table modal is currently visible. |
+| width? | `ReturnType<typeof useElementBounding>['width']` | Reactive width value for the modal's bounding box. The field is unset when the modal is not being displayed. |
+
+### TableModalProps
+
+Table modal component props definition.
+
+**Definition:**
+
+```typescript
+export interface TableModalProps {
+  colIndex: number;
+  rowIndex: number;
+  store: ReturnType<typeof createTableStore>;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| colIndex | `number` | The index of the column that the modal is currently being displayed for. |
+| rowIndex | `number` | The index of the row that the modal is currently being displayed for. |
+| store | `ReturnType<typeof createTableStore>` | The store for managing the current table's state. |
+
 ### TableRow
 
 Table row definition.
@@ -290,6 +382,27 @@ export type BaseSchema = {
     fieldname: string;
     component?: string;
     value?: any;
+};
+```
+
+### ComponentProps
+
+Defined props for AForm components
+
+**Definition:**
+
+```typescript
+export type ComponentProps = {
+    schema?: SchemaTypes;
+    label?: string;
+    mask?: string;
+    required?: boolean;
+    readonly?: boolean;
+    uuid?: string;
+    validation?: {
+        errorMessage: string;
+        [key: string]: any;
+    };
 };
 ```
 

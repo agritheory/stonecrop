@@ -1,22 +1,11 @@
-export type { BaseSchema, FieldsetSchema, FormSchema, SchemaTypes, TableSchema } from '@stonecrop/aform'
-export type {
-	CellContext,
-	ConnectionEvent,
-	ConnectionHandle,
-	ConnectionPath,
-	GanttBarInfo,
-	GanttDragEvent,
-	GanttOptions,
-	TableColumn,
-	TableConfig,
-	TableRow,
-} from '@stonecrop/atable'
+export type * from '@stonecrop/aform/types'
+export type * from '@stonecrop/atable/types'
 
 import { type StonecropReturn, useStonecrop } from './composable'
 import DoctypeMeta from './doctype'
 import Registry from './registry'
 import Stonecrop from './plugins'
 import { Stonecrop as StonecropClass } from './stonecrop'
-export type { ImmutableDoctype, MutableDoctype, Schema, InstallOptions } from './types'
+export type * from './types'
 
 export { DoctypeMeta, Registry, Stonecrop, StonecropClass, StonecropReturn, useStonecrop }

@@ -1,4 +1,4 @@
-export type { CellContext, GanttOptions, TableConfig, TableColumn, TableRow } from '@stonecrop/atable'
+export type * from '@stonecrop/atable/types'
 import type { App } from 'vue'
 
 import ACheckbox from './components/form/ACheckbox.vue'
@@ -12,7 +12,7 @@ import AForm from './components/AForm.vue'
 import ANumericInput from './components/form/ANumericInput.vue'
 import ATextInput from './components/form/ATextInput.vue'
 import Login from './components/utilities/Login.vue'
-export type { BaseSchema, FieldsetSchema, FormSchema, SchemaTypes, TableSchema } from './types'
+export type * from './types'
 
 /**
  * Install all AForm components
