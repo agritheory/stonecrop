@@ -53,7 +53,8 @@
 				:y1="dragPreview.startY"
 				:x2="dragPreview.endX"
 				:y2="dragPreview.endY"
-				stroke="#2196f3"
+				stroke="var(--sc-cell-text-color)"
+				opacity=".5"
 				stroke-width="2"
 				stroke-dasharray="5,5" />
 		</svg>
@@ -605,13 +606,13 @@ defineExpose({
 	width: 8px;
 	height: 8px;
 	border-radius: 50%;
-	background-color: #2196f3;
+	background-color: var(--sc-cell-text-color);
 	border: 2px solid white;
 	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .connection-handle:hover .connection-dot {
-	background-color: #1976d2;
+	background-color: var(--sc-cell-text-color);
 	transform: scale(1.2);
 }
 
@@ -620,7 +621,7 @@ defineExpose({
 }
 
 .connection-handle.is-dragging .connection-dot {
-	background-color: #1976d2;
+	background-color: var(--sc-cell-text-color);
 	transform: scale(1.3);
 	box-shadow: 0 2px 8px rgba(33, 150, 243, 0.4);
 }
