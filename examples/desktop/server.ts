@@ -114,11 +114,11 @@ export function makeServer() {
 			// meta
 			this.get('/meta/to-do', schema => {
 				const meta = schema.first('todoMeta')
-				return meta.attrs
+				return meta?.attrs || {}
 			})
 			this.get('/meta/issue', schema => {
 				const meta = schema.first('issueMeta')
-				return meta.attrs
+				return meta?.attrs || {}
 			})
 
 			// list
@@ -128,11 +128,11 @@ export function makeServer() {
 			// record
 			this.get('/to-do/:id', schema => {
 				const todo = schema.first('todo')
-				return todo.attrs
+				return todo?.attrs || {}
 			})
 			this.get('/issue/:id', schema => {
 				const issue = schema.first('issue')
-				return issue.attrs
+				return issue?.attrs || {}
 			})
 
 			// allow other same-domain and external requests to passthrough normally

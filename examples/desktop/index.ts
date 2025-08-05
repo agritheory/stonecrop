@@ -1,47 +1,37 @@
 import { List, Map } from 'immutable'
 import { createPinia } from 'pinia'
 import { createApp } from 'vue'
-import { RouteRecordRaw } from 'vue-router'
 import { createActor } from 'xstate'
 
 import '@stonecrop/desktop/styles'
 import { ADate, ATextInput } from '@stonecrop/aform'
-import { Doctype, Records, StonecropDesktop } from '@stonecrop/desktop'
+import { StonecropDesktop } from '@stonecrop/desktop'
 import Stonecrop, { DoctypeMeta, type ImmutableDoctype, type MutableDoctype } from '@stonecrop/stonecrop'
 
-import Home from './components/Home.vue'
 import App from './App.vue'
 import router from './router'
 import { makeServer } from './server'
 
 const app = createApp(App)
+
+// Setup MirageJS server
 makeServer()
 
-// setup router
-const routes: RouteRecordRaw[] = [
-	{ path: '/', component: Home, meta: { transition: 'slide-up' } },
-	{ path: '/:records', component: Records, meta: { transition: 'slide-up' } },
-	{ path: '/:records/:record', component: Doctype, meta: { transition: 'slide-up' } },
-]
-
-for (const route of routes) {
-	router.addRoute(route)
-}
-
-// setup Pinia
+// Install plugins in correct order following Vue.js best practices
+// 1. State management first
 const pinia = createPinia()
 app.use(pinia)
 
-// setup Stonecrop
+// 2. Router before any plugins that might use it
+app.use(router)
+
+// 3. Stonecrop plugin (router already available)
 app.use(Stonecrop, {
-	router,
 	components: {
 		ADate,
 		ATextInput,
 	},
-	// TODO: or if doctype is a function [doctype].apply()
 	getMeta: async (doctype: string) => {
-		// TODO: normally this would be configured as a memoized/cached call to a server
 		const response = await fetch(`/meta/${doctype}`)
 		const data = (await response.json()) as MutableDoctype
 		const config: ImmutableDoctype = {
@@ -53,5 +43,9 @@ app.use(Stonecrop, {
 		return new DoctypeMeta(doctype, config.schema, config.workflow, config.actions)
 	},
 })
+
+// 4. Desktop-specific plugin
 app.use(StonecropDesktop)
+
+// Mount the app (Pinia becomes active here)
 app.mount('#app')

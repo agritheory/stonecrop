@@ -11,13 +11,18 @@ import type { InstallOptions } from '../types'
  * ```ts
  *
  * import { createApp } from 'vue'
+ * import { createPinia } from 'pinia'
  * import Stonecrop from '@stonecrop/stonecrop'
  *
  * import App from './App.vue'
+ * import router from './router'
  *
  * const app = createApp(App)
+ *
+ * // Install in correct order
+ * app.use(createPinia())
+ * app.use(router)
  * app.use(Stonecrop, {
- *  router,
  *  components: {
  *   // register custom components
  *  },
@@ -33,17 +38,28 @@ import type { InstallOptions } from '../types'
  */
 const plugin: Plugin = {
 	install: (app: App, options?: InstallOptions) => {
-		// check if the router is already installed via another plugin
+		// Check for existing router installation
 		const existingRouter = app.config.globalProperties.$router
-		const appRouter = existingRouter || options?.router
-		const registry = new Registry(appRouter, options?.getMeta)
+		const providedRouter = options?.router
 
-		if (!existingRouter && appRouter) {
-			app.use(appRouter)
+		// Use existing router or provided router for Registry
+		const appRouter = existingRouter || providedRouter
+
+		if (!existingRouter && providedRouter) {
+			console.warn(
+				'[Stonecrop]: Router provided but not installed. ' +
+					'Please install router before Stonecrop plugin: app.use(router)'
+			)
 		}
 
-		app.provide('$registry', registry)
+		// Create registry with available router
+		const registry = new Registry(appRouter, options?.getMeta)
 
+		// Provide registry to the application
+		app.provide('$registry', registry)
+		app.config.globalProperties.$registry = registry
+
+		// Register custom components
 		if (options?.components) {
 			for (const [tag, component] of Object.entries(options.components)) {
 				app.component(tag, component)
