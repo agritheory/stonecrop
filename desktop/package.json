@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/desktop",
-	"version": "0.4.31",
+	"version": "0.4.32",
 	"description": "Desktop-specific components for Stonecrop UI",
 	"license": "MIT",
 	"type": "module",
@@ -18,11 +18,19 @@
 	},
 	"exports": {
 		".": {
-			"import": "./dist/desktop.js",
+			"import": {
+				"types": "./dist/src/index.d.ts",
+				"default": "./dist/desktop.js"
+			},
 			"require": "./dist/desktop.umd.cjs"
+		},
+		"./types": {
+			"import": "./dist/src/types/index.d.ts",
+			"require": "./dist/src/types/index.d.ts"
 		},
 		"./styles": "./dist/desktop.css"
 	},
+	"typings": "./dist/src/index.d.ts",
 	"files": [
 		"dist/*",
 		"src/*"

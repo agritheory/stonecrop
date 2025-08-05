@@ -10,7 +10,7 @@ import ATableLoading from './components/ATableLoading.vue'
 import ATableLoadingBar from './components/ATableLoadingBar.vue'
 import ATableModal from './components/ATableModal.vue'
 export { createTableStore } from './stores/table'
-export * from './types'
+export type * from './types'
 
 /**
  * Install all ATable components

@@ -15,7 +15,14 @@ import AForm from './components/AForm.vue';
 import ANumericInput from './components/form/ANumericInput.vue';
 import type { App } from 'vue';
 import ATextInput from './components/form/ATextInput.vue';
+import { ComputedRef } from 'vue';
+import { CSSProperties } from 'vue';
 import Login from './components/utilities/Login.vue';
+import { Ref } from 'vue';
+import type { ShallowRef } from 'vue';
+import { Store } from 'pinia';
+import { useElementBounding } from '@vueuse/core';
+import { WritableComputedRef } from 'vue';
 
 export { ACheckbox }
 
@@ -64,6 +71,58 @@ export interface CellContext {
 }
 
 // @public
+export type ComponentProps = {
+    schema?: SchemaTypes;
+    label?: string;
+    mask?: string;
+    required?: boolean;
+    readonly?: boolean;
+    uuid?: string;
+    validation?: {
+        errorMessage: string;
+        [key: string]: any;
+    };
+};
+
+// @public
+export type ConnectionEvent = {
+    type: 'create' | 'delete';
+    connection: ConnectionPath;
+};
+
+// @public
+export interface ConnectionHandle {
+    barId: string;
+    colIndex: number;
+    id: string;
+    position: {
+        x: ShallowRef<number>;
+        y: ShallowRef<number>;
+    };
+    rowIndex: number;
+    side: 'left' | 'right';
+    visible: Ref<boolean>;
+}
+
+// @public
+export interface ConnectionPath {
+    from: {
+        barId: string;
+        side: 'left' | 'right';
+    };
+    id: string;
+    label?: string;
+    style?: {
+        color?: string;
+        width?: number;
+    };
+    to: {
+        barId: string;
+        side: 'left' | 'right';
+    };
+}
+
+// @public
 export type FieldsetSchema = BaseSchema & {
     label?: string;
     schema?: (FormSchema | TableSchema)[];
@@ -80,6 +139,51 @@ export type FormSchema = BaseSchema & {
     width?: string;
     mask?: string;
 };
+
+// @public
+export interface GanttBarInfo {
+    colIndex: number;
+    color: Ref<string>;
+    endIndex: Ref<number>;
+    id: string;
+    label?: string;
+    position: {
+        x: ShallowRef<number>;
+        y: ShallowRef<number>;
+    };
+    rowIndex: number;
+    startIndex: Ref<number>;
+}
+
+// @public
+export type GanttDragEvent = {
+    rowIndex: number;
+    colIndex: number;
+    delta: number;
+} & ({
+    type: 'bar';
+    oldStart: number;
+    oldEnd: number;
+    newStart: number;
+    newEnd: number;
+    colspan: number;
+} | {
+    type: 'resize';
+    edge: 'start';
+    oldStart: number;
+    newStart: number;
+    end: number;
+    oldColspan: number;
+    newColspan: number;
+} | {
+    type: 'resize';
+    edge: 'end';
+    oldEnd: number;
+    newEnd: number;
+    start: number;
+    oldColspan: number;
+    newColspan: number;
+});
 
 // @public
 export interface GanttOptions {
@@ -129,6 +233,42 @@ export interface TableColumn {
 
 // @public
 export type TableConfig = BasicTableConfig | TreeTableConfig | GanttTableConfig | TreeGanttTableConfig;
+
+// @public
+export interface TableDisplay {
+    childrenOpen?: boolean;
+    expanded?: boolean;
+    indent?: number;
+    isParent?: boolean;
+    isRoot?: boolean;
+    open?: boolean;
+    parent?: number;
+    rowModified?: boolean;
+}
+
+// @public
+export interface TableModal {
+    bottom?: ReturnType<typeof useElementBounding>['bottom'];
+    cell?: HTMLTableCellElement | null;
+    colIndex?: number;
+    component?: string;
+    componentProps?: Record<string, any>;
+    height?: ReturnType<typeof useElementBounding>['height'];
+    left?: ReturnType<typeof useElementBounding>['left'];
+    parent?: HTMLElement;
+    rowIndex?: number;
+    visible?: boolean;
+    width?: ReturnType<typeof useElementBounding>['width'];
+}
+
+// @public
+export interface TableModalProps {
+    [key: string]: any;
+    colIndex: number;
+    rowIndex: number;
+    // Warning: (ae-forgotten-export) The symbol "createTableStore" needs to be exported by the entry point index.d.ts
+    store: ReturnType<typeof createTableStore>;
+}
 
 // @public
 export interface TableRow {

@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/beam",
-	"version": "0.4.31",
+	"version": "0.4.32",
 	"license": "MIT",
 	"type": "module",
 	"author": {
@@ -17,11 +17,19 @@
 	},
 	"exports": {
 		".": {
-			"import": "./dist/beam.js",
+			"import": {
+				"types": "./dist/src/index.d.ts",
+				"default": "./dist/beam.js"
+			},
 			"require": "./dist/beam.umd.cjs"
+		},
+		"./types": {
+			"import": "./dist/src/types/index.d.ts",
+			"require": "./dist/src/types/index.d.ts"
 		},
 		"./styles": "./dist/assets/index.css"
 	},
+	"typings": "./dist/src/index.d.ts",
 	"main": "dist/beam.js",
 	"module": "dist/beam.js",
 	"files": [
