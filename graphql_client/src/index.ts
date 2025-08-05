@@ -44,7 +44,7 @@ const metaParser = (obj: string): MetaParser => {
  * @returns The meta information for the doctype
  * @public
  */
-export const methods = {
+const methods = {
 	getMeta: async (doctype: string, url?: string): Promise<MetaResponse> => {
 		const client = new GraphQLClient(url || '/graphql', {
 			jsonSerializer: {
@@ -62,4 +62,5 @@ export const methods = {
 	},
 }
 
-export { Meta, MetaParser, MetaResponse, queries, typeDefs }
+export type { Meta, MetaParser, MetaResponse } from './types'
+export { queries, typeDefs, methods }

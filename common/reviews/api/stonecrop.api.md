@@ -6,14 +6,19 @@
 
 import type { AnyStateNodeConfig } from 'xstate';
 import { Component } from 'vue';
+import { ComputedRef } from 'vue';
+import { CSSProperties } from 'vue';
 import { List } from 'immutable';
 import { Map as Map_2 } from 'immutable';
 import { Plugin as Plugin_2 } from 'vue';
 import { Ref } from 'vue';
 import { Router } from 'vue-router';
 import type { ShallowRef } from 'vue';
+import { Store } from 'pinia';
 import { StoreDefinition } from 'pinia';
 import type { UnknownMachineConfig } from 'xstate';
+import { useElementBounding } from '@vueuse/core';
+import { WritableComputedRef } from 'vue';
 
 // @public
 export type BaseSchema = {
@@ -30,6 +35,20 @@ export interface CellContext {
         [key: string]: any;
     };
 }
+
+// @public
+export type ComponentProps = {
+    schema?: SchemaTypes;
+    label?: string;
+    mask?: string;
+    required?: boolean;
+    readonly?: boolean;
+    uuid?: string;
+    validation?: {
+        errorMessage: string;
+        [key: string]: any;
+    };
+};
 
 // @public
 export type ConnectionEvent = {
@@ -244,6 +263,42 @@ export interface TableConfig {
     dependencyGraph?: boolean;
     fullWidth?: boolean;
     view?: 'uncounted' | 'list' | 'list-expansion' | 'tree' | 'gantt' | 'tree-gantt';
+}
+
+// @public
+export interface TableDisplay {
+    childrenOpen?: boolean;
+    expanded?: boolean;
+    indent?: number;
+    isParent?: boolean;
+    isRoot?: boolean;
+    open?: boolean;
+    parent?: number;
+    rowModified?: boolean;
+}
+
+// @public
+export interface TableModal {
+    bottom?: ReturnType<typeof useElementBounding>['bottom'];
+    cell?: HTMLTableCellElement | null;
+    colIndex?: number;
+    component?: string;
+    componentProps?: Record<string, any>;
+    height?: ReturnType<typeof useElementBounding>['height'];
+    left?: ReturnType<typeof useElementBounding>['left'];
+    parent?: HTMLElement;
+    rowIndex?: number;
+    visible?: boolean;
+    width?: ReturnType<typeof useElementBounding>['width'];
+}
+
+// @public
+export interface TableModalProps {
+    [key: string]: any;
+    colIndex: number;
+    rowIndex: number;
+    // Warning: (ae-forgotten-export) The symbol "createTableStore" needs to be exported by the entry point index.d.ts
+    store: ReturnType<typeof createTableStore>;
 }
 
 // @public

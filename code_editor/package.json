@@ -17,10 +17,14 @@
 	},
 	"exports": {
 		".": {
-			"import": "./dist/code-editor.js",
+			"import": {
+				"types": "./dist/src/index.d.ts",
+				"default": "./dist/code-editor.js"
+			},
 			"require": "./dist/code-editor.umd.cjs"
 		}
 	},
+	"typings": "./dist/src/index.d.ts",
 	"files": [
 		"dist/*",
 		"src/*"
