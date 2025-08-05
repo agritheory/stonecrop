@@ -62,26 +62,21 @@ export const createTableStore = (initData: {
 			// Helper function to determine if children should be open based on expansion mode
 			const shouldChildrenBeOpen = (rowIndex: number): boolean => {
 				const currentConfig = config.value
-				// Type guard to check if config has defaultTreeExpansion
-				const expansionMode = 'defaultTreeExpansion' in currentConfig ? currentConfig.defaultTreeExpansion : undefined
+				const expansionMode =
+					currentConfig.view === 'tree' || currentConfig.view === 'tree-gantt'
+						? currentConfig.defaultTreeExpansion
+						: undefined
+
 				if (!expansionMode) return true // Default behavior - start expanded (leaf mode)
 
 				switch (expansionMode) {
 					case 'root':
-						// Only root nodes are visible, all children start collapsed
-						return false
+						return false // Only root nodes are visible, all children start collapsed
 					case 'branch':
 						// Only expand if this node leads to gantt nodes OR if this node itself has gantt data AND has gantt children
-						if (hasGanttData(rowIndex)) {
-							// If this node has gantt data, only expand if it has gantt descendants
-							return hasGanttDescendant(rowIndex)
-						} else {
-							// If this node doesn't have gantt data, only expand if it has gantt descendants
-							return hasGanttDescendant(rowIndex)
-						}
+						return hasGanttDescendant(rowIndex)
 					case 'leaf':
-						// All nodes should be expanded
-						return true
+						return true // All nodes should be expanded
 					default:
 						return true // Default to expanded if unknown mode
 				}
@@ -198,8 +193,9 @@ export const createTableStore = (initData: {
 		const isTreeView = computed(() => config.value.view === 'tree' || config.value.view === 'tree-gantt')
 		const isDependencyGraphEnabled = computed(() => {
 			const currentConfig = config.value
-			// Type guard to check if config has dependencyGraph
-			return 'dependencyGraph' in currentConfig ? currentConfig.dependencyGraph !== false : true
+			return currentConfig.view === 'gantt' || currentConfig.view === 'tree-gantt'
+				? currentConfig.dependencyGraph !== false
+				: true
 		})
 
 		const numberedRowWidth = computed(() => {

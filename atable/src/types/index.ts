@@ -215,7 +215,7 @@ export interface TreeTableConfig extends BaseTableConfig {
 	 * - `branch` - Shows minimal tree to display all gantt nodes. Expands only the necessary paths to gantt nodes, stops at gantt nodes with no gantt descendants
 	 * - `leaf` - All nodes are visible (fully expanded)
 	 *
-	 * @defaultValue undefined (default behavior is now fully expanded like 'leaf' mode)
+	 * @defaultValue undefined (default behavior is 'leaf' mode)
 	 */
 	defaultTreeExpansion?: 'root' | 'branch' | 'leaf'
 }
@@ -255,7 +255,7 @@ export interface TreeGanttTableConfig extends BaseTableConfig {
 	 * - `branch` - Shows minimal tree to display all gantt nodes. Expands only the necessary paths to gantt nodes, stops at gantt nodes with no gantt descendants
 	 * - `leaf` - All nodes are visible (fully expanded)
 	 *
-	 * @defaultValue undefined (default behavior is now fully expanded like 'leaf' mode)
+	 * @defaultValue undefined (default behavior is 'leaf' mode)
 	 */
 	defaultTreeExpansion?: 'root' | 'branch' | 'leaf'
 

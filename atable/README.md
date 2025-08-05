@@ -52,7 +52,7 @@ const config = {
 - `root`: Only top-level nodes are visible (fully collapsed)
 - `branch`: Shows the minimal tree to display all nodes with gantt data. Only expands nodes that lead to gantt-enabled nodes, stops expanding at gantt nodes that have no gantt descendants
 - `leaf`: All nodes are visible (fully expanded)
-- `undefined` (default): **New default behavior** - all nodes start expanded (same as 'leaf' mode)
+- `undefined` (default): All nodes start expanded (same as 'leaf' mode)
 
 **Example Usage:**
 ```vue
