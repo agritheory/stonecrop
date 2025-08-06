@@ -86,4 +86,74 @@ describe('table cell component', () => {
 
 		vi.useRealTimers()
 	})
+
+	it('should select all text content when cell is focused', async () => {
+		// Mock the Selection API
+		const mockSelection = {
+			removeAllRanges: vi.fn(),
+			addRange: vi.fn(),
+		} as unknown as Selection
+		const mockRange = {
+			selectNodeContents: vi.fn(),
+		} as unknown as Range
+
+		const originalGetSelection = window.getSelection
+		const originalCreateRange = document.createRange
+
+		window.getSelection = vi.fn(() => mockSelection)
+		document.createRange = vi.fn(() => mockRange)
+
+		const wrapper = mount(ATable, { props, global: { components: { ACell } } })
+
+		const dataCells = wrapper.findAllComponents(ACell)
+		const editableCell = dataCells.at(1) // This is an editable cell
+		expect(editableCell?.exists()).toBe(true)
+
+		// Trigger focus on an editable cell
+		await editableCell!.trigger('focus')
+
+		// Verify that the Selection API was called to select all text
+		expect(mockRange.selectNodeContents).toHaveBeenCalledWith(editableCell!.element)
+		expect(mockSelection.removeAllRanges).toHaveBeenCalled()
+		expect(mockSelection.addRange).toHaveBeenCalledWith(mockRange)
+
+		// Restore original functions
+		window.getSelection = originalGetSelection
+		document.createRange = originalCreateRange
+	})
+
+	it('should select all text content when editable cell is clicked', async () => {
+		// Mock the Selection API
+		const mockSelection = {
+			removeAllRanges: vi.fn(),
+			addRange: vi.fn(),
+		} as unknown as Selection
+		const mockRange = {
+			selectNodeContents: vi.fn(),
+		} as unknown as Range
+
+		const originalGetSelection = window.getSelection
+		const originalCreateRange = document.createRange
+
+		window.getSelection = vi.fn(() => mockSelection)
+		document.createRange = vi.fn(() => mockRange)
+
+		const wrapper = mount(ATable, { props, global: { components: { ACell } } })
+
+		const dataCells = wrapper.findAllComponents(ACell)
+		const editableCell = dataCells.at(1) // This is an editable cell
+		expect(editableCell?.exists()).toBe(true)
+
+		// Trigger click on an editable cell
+		await editableCell!.trigger('click')
+
+		// Verify that the Selection API was called to select all text
+		expect(mockRange.selectNodeContents).toHaveBeenCalledWith(editableCell!.element)
+		expect(mockSelection.removeAllRanges).toHaveBeenCalled()
+		expect(mockSelection.addRange).toHaveBeenCalledWith(mockRange)
+
+		// Restore original functions
+		window.getSelection = originalGetSelection
+		document.createRange = originalCreateRange
+	})
 })

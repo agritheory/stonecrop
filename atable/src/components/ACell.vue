@@ -11,7 +11,7 @@
 		@focus="onFocus"
 		@paste="updateCellData"
 		@input="debouncedUpdateCellData"
-		@click="showModal"
+		@click="onCellClick"
 		class="atable-cell"
 		:class="cellClasses">
 		<component
@@ -85,6 +85,14 @@ const cellClasses = computed(() => {
 	}
 })
 
+const onCellClick = () => {
+	// First, select all text if the cell is editable
+	selectAllText()
+
+	// Then handle modal display (original showModal behavior)
+	showModal()
+}
+
 const showModal = () => {
 	const { left, bottom, width, height } = useElementBounding(cellRef)
 
@@ -153,9 +161,24 @@ if (addNavigation) {
 // 	}
 // }
 
+const selectAllText = () => {
+	if (cellRef.value && column.edit) {
+		// Use the Selection API to select all text content in the contenteditable cell
+		const selection = window.getSelection()
+		if (selection) {
+			const range = document.createRange()
+			range.selectNodeContents(cellRef.value)
+			selection.removeAllRanges()
+			selection.addRange(range)
+		}
+	}
+}
+
 const onFocus = () => {
 	if (cellRef.value) {
 		currentData.value = cellRef.value.textContent!
+		// Select all text when the cell receives focus
+		selectAllText()
 	}
 }
 
