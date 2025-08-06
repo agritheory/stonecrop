@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/atable",
+      "comment": "select all text for edit when a cell is focused",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/atable"
+}
