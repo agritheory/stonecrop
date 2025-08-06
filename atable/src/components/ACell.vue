@@ -27,7 +27,7 @@
 <script setup lang="ts">
 import { KeypressHandlers, defaultKeypressHandlers, useKeyboardNav } from '@stonecrop/utilities'
 import { useDebounceFn, useElementBounding } from '@vueuse/core'
-import { computed, type CSSProperties, ref, useTemplateRef } from 'vue'
+import { computed, type CSSProperties, ref, useTemplateRef, nextTick } from 'vue'
 
 import { createTableStore } from '../stores/table'
 import { isHtmlString } from '../utils'
@@ -166,10 +166,17 @@ const selectAllText = () => {
 		// Use the Selection API to select all text content in the contenteditable cell
 		const selection = window.getSelection()
 		if (selection) {
-			const range = document.createRange()
-			range.selectNodeContents(cellRef.value)
-			selection.removeAllRanges()
-			selection.addRange(range)
+			try {
+				const range = document.createRange()
+				if (range.selectNodeContents) {
+					range.selectNodeContents(cellRef.value)
+					selection.removeAllRanges()
+					selection.addRange(range)
+				}
+			} catch (error) {
+				// Fallback for environments where Range API is not fully supported
+				// This is expected in some test environments
+			}
 		}
 	}
 }
@@ -182,11 +189,74 @@ const onFocus = () => {
 	}
 }
 
+const saveCursorPosition = () => {
+	try {
+		const selection = window.getSelection()
+		if (selection && selection.rangeCount > 0 && cellRef.value) {
+			const range = selection.getRangeAt(0)
+			// Save the offset from the start of the cell
+			const preCaretRange = range.cloneRange()
+			if (preCaretRange.selectNodeContents && preCaretRange.setEnd) {
+				preCaretRange.selectNodeContents(cellRef.value)
+				preCaretRange.setEnd(range.endContainer, range.endOffset)
+				return preCaretRange.toString().length
+			}
+		}
+	} catch (error) {
+		// Fallback for environments where Selection API is not fully supported
+	}
+	return 0
+}
+
+const restoreCursorPosition = (position: number) => {
+	if (!cellRef.value) return
+
+	try {
+		const selection = window.getSelection()
+		if (!selection) return
+
+		let charIndex = 0
+		const walker = document.createTreeWalker
+			? document.createTreeWalker(cellRef.value, NodeFilter.SHOW_TEXT, null)
+			: null
+
+		if (!walker) return
+
+		let node: Node | null
+		let range: Range | null = null
+
+		while ((node = walker.nextNode())) {
+			const textNode = node as Text
+			const nextCharIndex = charIndex + textNode.textContent!.length
+
+			if (position <= nextCharIndex) {
+				range = document.createRange()
+				if (range.setStart && range.setEnd) {
+					range.setStart(textNode, position - charIndex)
+					range.setEnd(textNode, position - charIndex)
+					break
+				}
+			}
+			charIndex = nextCharIndex
+		}
+
+		if (range && selection.removeAllRanges && selection.addRange) {
+			selection.removeAllRanges()
+			selection.addRange(range)
+		}
+	} catch (error) {
+		// Fallback for environments where DOM APIs are not fully supported
+	}
+}
+
 const updateCellData = (payload: Event) => {
 	const target = payload.target as HTMLTableCellElement
 	if (target.textContent === currentData.value) {
 		return
 	}
+
+	// Save cursor position before updating
+	const cursorPosition = saveCursorPosition()
 
 	currentData.value = target.textContent!
 
@@ -199,6 +269,11 @@ const updateCellData = (payload: Event) => {
 		cellModified.value = target.textContent !== originalData
 		store.setCellData(colIndex, rowIndex, target.textContent)
 	}
+
+	// Use nextTick to restore cursor position after Vue's reactive updates but before browser repaint
+	void nextTick().then(() => {
+		restoreCursorPosition(cursorPosition)
+	})
 }
 
 const debouncedUpdateCellData = useDebounceFn(updateCellData, debounce)

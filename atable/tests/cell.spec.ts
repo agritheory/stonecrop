@@ -156,4 +156,67 @@ describe('table cell component', () => {
 		window.getSelection = originalGetSelection
 		document.createRange = originalCreateRange
 	})
+
+	it('should preserve cursor position during debounced updates', async () => {
+		vi.useFakeTimers()
+
+		// Mock Selection API for cursor position testing
+		const mockRange = {
+			cloneRange: vi.fn(() => ({
+				selectNodeContents: vi.fn(),
+				setEnd: vi.fn(),
+				toString: vi.fn(() => 'test text'),
+			})),
+			endContainer: {} as Node,
+			endOffset: 5,
+		}
+
+		const mockSelection = {
+			rangeCount: 1,
+			getRangeAt: vi.fn(() => mockRange),
+			removeAllRanges: vi.fn(),
+			addRange: vi.fn(),
+		}
+
+		const mockTreeWalker = {
+			nextNode: vi.fn().mockReturnValueOnce({ textContent: 'test text' }).mockReturnValue(null),
+		}
+
+		const originalGetSelection = window.getSelection
+		const originalCreateRange = document.createRange
+		const originalCreateTreeWalker = document.createTreeWalker
+
+		window.getSelection = vi.fn(() => mockSelection)
+		document.createRange = vi.fn(() => ({
+			setStart: vi.fn(),
+			setEnd: vi.fn(),
+		}))
+		document.createTreeWalker = vi.fn(() => mockTreeWalker)
+
+		const wrapper = mount(ATable, { props, global: { components: { ACell } } })
+
+		const dataCells = wrapper.findAllComponents(ACell)
+		const editableCell = dataCells.at(1)
+		expect(editableCell?.exists()).toBe(true)
+
+		// Focus the cell and simulate typing
+		await editableCell!.trigger('focus')
+		editableCell!.element.textContent = 'new text'
+		await editableCell!.trigger('input')
+
+		// Fast-forward time to trigger debounced function
+		vi.advanceTimersByTime(300)
+		await wrapper.vm.$nextTick()
+
+		// Verify that cursor position functions were called
+		expect(mockSelection.getRangeAt).toHaveBeenCalled()
+		expect(mockRange.cloneRange).toHaveBeenCalled()
+
+		// Restore original functions
+		window.getSelection = originalGetSelection
+		document.createRange = originalCreateRange
+		document.createTreeWalker = originalCreateTreeWalker
+
+		vi.useRealTimers()
+	})
 })
