@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/stonecrop",
-	"version": "0.4.31",
+	"version": "0.4.33",
 	"description": "schema helper",
 	"license": "MIT",
 	"type": "module",
@@ -23,6 +23,10 @@
 				"default": "./dist/stonecrop.js"
 			},
 			"require": "./dist/stonecrop.umd.cjs"
+		},
+		"./types": {
+			"import": "./dist/src/types/index.d.ts",
+			"require": "./dist/src/types/index.d.ts"
 		}
 	},
 	"typings": "./dist/src/index.d.ts",

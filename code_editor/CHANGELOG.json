@@ -2,6 +2,24 @@
   "name": "@stonecrop/code-editor",
   "entries": [
     {
+      "version": "0.4.33",
+      "tag": "@stonecrop/code-editor_v0.4.33",
+      "date": "Wed, 06 Aug 2025 11:40:05 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.4.32",
+      "tag": "@stonecrop/code-editor_v0.4.32",
+      "date": "Tue, 05 Aug 2025 11:43:23 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "export project types"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.4.31",
       "tag": "@stonecrop/code-editor_v0.4.31",
       "date": "Fri, 01 Aug 2025 11:21:44 GMT",

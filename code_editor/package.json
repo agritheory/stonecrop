@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/code-editor",
-	"version": "0.4.31",
+	"version": "0.4.33",
 	"license": "MIT",
 	"type": "module",
 	"author": {
@@ -17,10 +17,14 @@
 	},
 	"exports": {
 		".": {
-			"import": "./dist/code-editor.js",
+			"import": {
+				"types": "./dist/src/index.d.ts",
+				"default": "./dist/code-editor.js"
+			},
 			"require": "./dist/code-editor.umd.cjs"
 		}
 	},
+	"typings": "./dist/src/index.d.ts",
 	"files": [
 		"dist/*",
 		"src/*"

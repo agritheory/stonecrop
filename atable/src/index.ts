@@ -10,21 +10,7 @@ import ATableLoading from './components/ATableLoading.vue'
 import ATableLoadingBar from './components/ATableLoadingBar.vue'
 import ATableModal from './components/ATableModal.vue'
 export { createTableStore } from './stores/table'
-export type {
-	CellContext,
-	ConnectionEvent,
-	ConnectionHandle,
-	ConnectionPath,
-	GanttBarInfo,
-	GanttDragEvent,
-	GanttOptions,
-	TableColumn,
-	TableConfig,
-	TableDisplay,
-	TableModal,
-	TableModalProps,
-	TableRow,
-} from './types'
+export type * from './types'
 
 /**
  * Install all ATable components

@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/aform",
-	"version": "0.4.31",
+	"version": "0.4.33",
 	"license": "MIT",
 	"type": "module",
 	"author": {
@@ -22,6 +22,10 @@
 				"default": "./dist/aform.js"
 			},
 			"require": "./dist/aform.umd.cjs"
+		},
+		"./types": {
+			"import": "./dist/src/types/index.d.ts",
+			"require": "./dist/src/types/index.d.ts"
 		},
 		"./styles": "./dist/assets/index.css"
 	},
