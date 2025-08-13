@@ -123,7 +123,7 @@ describe('HST Real Component Integration', () => {
 
 					// Create form schema that uses HST paths
 					const formSchema = ref(
-						doctype.schema.toArray().map(field => ({
+						doctype.schema?.toArray().map(field => ({
 							...field,
 							value: formData.value[field.fieldname] || getDefaultValue(field.fieldtype),
 						}))
