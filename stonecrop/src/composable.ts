@@ -70,10 +70,9 @@ export function useStonecrop(options?: {
 	recordId?: string
 	enableHST?: boolean
 }): StonecropReturn {
-	// Handle backward compatibility - if first arg is a Registry, convert to options format
-	const normalizedOptions = options instanceof Registry ? { registry: options } : options || {}
+	if (!options) options = {}
 
-	const registry = normalizedOptions.registry || inject<Registry>('$registry')
+	const registry = options.registry || inject<Registry>('$registry')
 	const stonecrop = ref<Stonecrop>()
 	const hstStore = ref<HSTNode>()
 	const formData = ref<Record<string, any>>({})
@@ -90,7 +89,7 @@ export function useStonecrop(options?: {
 		stonecrop.value = new Stonecrop(registry)
 
 		// Handle router-based setup if no specific doctype provided
-		if (!normalizedOptions.doctype && registry.router) {
+		if (!options.doctype && registry.router) {
 			const route = registry.router.currentRoute.value
 			const doctypeSlug = route.params.records?.toString().toLowerCase()
 			const recordId = route.params.record?.toString().toLowerCase()
@@ -117,10 +116,10 @@ export function useStonecrop(options?: {
 		}
 
 		// Handle HST integration if doctype is provided
-		if (normalizedOptions.doctype && normalizedOptions.enableHST !== false) {
+		if (options.doctype && options.enableHST !== false) {
 			hstStore.value = stonecrop.value.getStore()
-			const doctype = normalizedOptions.doctype
-			const recordId = normalizedOptions.recordId
+			const doctype = options.doctype
+			const recordId = options.recordId
 
 			// Initialize record in HST if recordId provided
 			if (recordId && recordId !== 'new') {
@@ -156,7 +155,7 @@ export function useStonecrop(options?: {
 	})
 
 	// HST integration functions (only available when doctype is provided)
-	const hstIntegration = normalizedOptions.doctype
+	const hstIntegration = options.doctype
 		? {
 				/**
 				 * Generates HST path for a field
@@ -165,8 +164,8 @@ export function useStonecrop(options?: {
 				 * @returns HST path string
 				 */
 				provideHSTPath: (fieldname: string, customRecordId?: string): string => {
-					const actualRecordId = customRecordId || normalizedOptions.recordId || 'new'
-					return `${normalizedOptions.doctype!.slug}.records.${actualRecordId}.${fieldname}`
+					const actualRecordId = customRecordId || options.recordId || 'new'
+					return `${options.doctype!.slug}.records.${actualRecordId}.${fieldname}`
 				},
 
 				/**
@@ -174,7 +173,7 @@ export function useStonecrop(options?: {
 				 * @param changeData - The change data from component
 				 */
 				handleHSTChange: (changeData: HSTChangeData): void => {
-					if (!hstStore.value || !stonecrop.value || !normalizedOptions.doctype) {
+					if (!hstStore.value || !stonecrop.value || !options.doctype) {
 						return
 					}
 
@@ -188,7 +187,7 @@ export function useStonecrop(options?: {
 							// Ensure the record exists in HST before setting field values
 							if (!hstStore.value.has(`${doctypeSlug}.records.${recordId}`)) {
 								// Initialize the record with current formData
-								stonecrop.value.addRecord(normalizedOptions.doctype, recordId, { ...formData.value })
+								stonecrop.value.addRecord(options.doctype, recordId, { ...formData.value })
 							}
 
 							// For nested paths, ensure the parent structure exists in HST
@@ -241,7 +240,7 @@ export function useStonecrop(options?: {
 		: {}
 
 	// Provide HST path injection for child components (only when HST is enabled)
-	if (normalizedOptions.doctype && hstIntegration.provideHSTPath && hstIntegration.handleHSTChange) {
+	if (options.doctype && hstIntegration.provideHSTPath && hstIntegration.handleHSTChange) {
 		provide('hstPathProvider', hstIntegration.provideHSTPath)
 		provide('hstChangeHandler', hstIntegration.handleHSTChange)
 	}

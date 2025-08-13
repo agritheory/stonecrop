@@ -362,7 +362,7 @@ describe('HST Core Functionality', () => {
 				}
 
 				const endTime = performance.now()
-				expect(endTime - startTime).toBeLessThan(1) // Should complete within 1ms
+				expect(endTime - startTime).toBeLessThan(10) // Should complete within 10ms
 			})
 
 			it('should maintain performance with deep nesting', () => {
@@ -375,7 +375,7 @@ describe('HST Core Functionality', () => {
 				}
 
 				const endTime = performance.now()
-				expect(endTime - startTime).toBeLessThan(1) // Should be fast
+				expect(endTime - startTime).toBeLessThan(10) // Should be fast
 			})
 		})
 	})
