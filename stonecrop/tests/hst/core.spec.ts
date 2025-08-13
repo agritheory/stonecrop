@@ -375,7 +375,6 @@ describe('HST Core Functionality', () => {
 				}
 
 				const endTime = performance.now()
-				console.log(endTime - startTime)
 				expect(endTime - startTime).toBeLessThan(1) // Should be fast
 			})
 		})

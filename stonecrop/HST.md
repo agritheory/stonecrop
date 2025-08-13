@@ -4,7 +4,6 @@
 graph TB
     subgraph "Vue Application Layer"
         VC[Vue Components]
-        USR[useStonecropReactive]
         USC[useStonecrop]
     end
 
@@ -26,11 +25,11 @@ graph TB
         PR[Provide/Inject]
     end
 
-    VC --> USR
-    USR --> SC
-    USR --> FD
-    USR --> WD
-    USR --> PR
+    VC --> US
+    US --> SC
+    US --> FD
+    US --> WD
+    US --> PR
 
     SC --> REG
     SC --> HST
@@ -42,7 +41,7 @@ graph TB
     WD -.-> HST
     FD -.-> HST
 
-    style USR fill:#e1f5fe
+    style US fill:#e1f5fe
     style HST fill:#f3e5f5
     style FD fill:#e8f5e8
 ```
@@ -57,7 +56,7 @@ graph TB
         TC[Table Components]
     end
 
-    subgraph "useStonecropReactive Composable"
+    subgraph "useStonecrop HST Composable"
         PHST[provideHSTPath]
         HHST[handleHSTChange]
         SDUP[setupDeepReactivity]
@@ -111,36 +110,36 @@ graph TB
 ```mermaid
 sequenceDiagram
     participant C as Component
-    participant USR as useStonecropReactive
+    participant US as useStonecrop
     participant HST as HST Store
     participant FD as formData
     participant VW as Vue Watcher
 
     Note over C,VW: Field-level Change Flow
 
-    C->>USR: handleHSTChange({path, value, fieldname})
+    C->>US: handleHSTChange({path, value, fieldname})
 
-    USR->>HST: Check record exists
+    US->>HST: Check record exists
     alt Record doesn't exist
-        USR->>HST: addRecord(doctype, recordId, formData)
+        US->>HST: addRecord(doctype, recordId, formData)
     end
 
     alt Nested path
-        USR->>HST: Ensure parent structure exists
-        USR->>HST: Create arrays/objects as needed
+        US->>HST: Ensure parent structure exists
+        US->>HST: Create arrays/objects as needed
     end
 
-    USR->>HST: set(path, value)
+    US->>HST: set(path, value)
 
-    USR->>USR: Create newFormData copy
+    US->>US: Create newFormData copy
 
     alt Simple field
-        USR->>USR: newFormData[field] = value
+        US->>US: newFormData[field] = value
     else Nested field
-        USR->>USR: updateNestedObject(newFormData, path, value)
+        US->>US: updateNestedObject(newFormData, path, value)
     end
 
-    USR->>FD: formData.value = newFormData
+    US->>FD: formData.value = newFormData
 
     Note over FD,VW: Vue Reactivity Triggered
     FD->>VW: Reactive change detected
@@ -152,7 +151,7 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant FC as Form Component
-    participant USR as useStonecropReactive
+    participant US as useStonecrop
     participant IC as Input Component
     participant REG as Registry
     participant SC as Stonecrop
@@ -160,35 +159,35 @@ sequenceDiagram
 
     Note over FC,HST: Component Setup and Integration
 
-    FC->>USR: useStonecropReactive(doctype, recordId)
+    FC->>US: useStonecrop({ doctype, recordId })
 
-    USR->>REG: inject('$registry')
-    USR->>SC: new Stonecrop(registry)
-    USR->>HST: stonecrop.getStore()
+    US->>REG: inject('$registry')
+    US->>SC: new Stonecrop(registry)
+    US->>HST: stonecrop.getStore()
 
     alt Existing record
-        USR->>SC: getRecordById(doctype, recordId)
+        US->>SC: getRecordById(doctype, recordId)
         SC->>HST: get record data
-        HST-->>USR: existing formData
+        HST-->>US: existing formData
     else New record
-        USR->>USR: initializeNewRecord(doctype)
+        US->>US: initializeNewRecord(doctype)
     end
 
-    USR->>USR: setupDeepReactivity(formData, hstStore)
+    US->>US: setupDeepReactivity(formData, hstStore)
 
-    USR->>IC: provide('hstPathProvider', provideHSTPath)
-    USR->>IC: provide('hstChangeHandler', handleHSTChange)
+    US->>IC: provide('hstPathProvider', provideHSTPath)
+    US->>IC: provide('hstChangeHandler', handleHSTChange)
 
     Note over IC: Input component usage
-    IC->>USR: inject('hstPathProvider')
-    IC->>USR: provideHSTPath('fieldname')
-    USR-->>IC: 'doctype.records.id.fieldname'
+    IC->>US: inject('hstPathProvider')
+    IC->>US: provideHSTPath('fieldname')
+    US-->>IC: 'doctype.records.id.fieldname'
 
     IC->>IC: User interaction
-    IC->>USR: handleHSTChange(changeData)
+    IC->>US: handleHSTChange(changeData)
 
-    USR->>HST: Update HST store
-    USR->>FC: Update formData (reactive)
+    US->>HST: Update HST store
+    US->>FC: Update formData (reactive)
 ```
 
 ### Deep Reactivity Flow

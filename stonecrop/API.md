@@ -24,19 +24,32 @@ declare function createHST(target: any, doctype: string, parentDoctype?: string)
 
 ### useStonecrop
 
-Stonecrop composable
+Unified Stonecrop composable - handles both general operations and HST reactive integration
+
+**Basic Usage (General Stonecrop operations):**
+
+**With Registry:**
+
+**HST Reactive Forms:**
+
+**Disable HST for performance:**
 
 **Signature:**
 
 ```typescript
-export declare function useStonecrop(registry?: Registry): StonecropReturn;
+export declare function useStonecrop(options?: {
+    registry?: Registry;
+    doctype?: DoctypeMeta;
+    recordId?: string;
+    enableHST?: boolean;
+}): StonecropReturn;
 ```
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| registry | `Registry` |  |
+| options | `{ registry?: Registry; doctype?: DoctypeMeta; recordId?: string; enableHST?: boolean; }` |  |
 
 ## Interfaces
 
@@ -585,13 +598,17 @@ export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema;
 
 ### StonecropReturn
 
-Stonecrop composable return type
+Unified Stonecrop composable return type
 
 **Definition:**
 
 ```typescript
 export type StonecropReturn = {
     stonecrop: Ref<Stonecrop | undefined>;
+    provideHSTPath?: (fieldname: string, recordId?: string) => string;
+    handleHSTChange?: (changeData: HSTChangeData) => void;
+    hstStore?: Ref<HSTNode | undefined>;
+    formData?: Ref<Record<string, any>>;
 };
 ```
 

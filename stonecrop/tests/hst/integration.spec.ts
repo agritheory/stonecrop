@@ -12,7 +12,7 @@ import ADate from '../../../aform/src/components/form/ADate.vue'
 import AComboBox from '../../../aform/src/components/form/AComboBox.vue'
 import ADropdown from '../../../aform/src/components/form/ADropdown.vue'
 import type { SchemaTypes } from '../../../aform/src/types'
-import { useStonecropReactive } from '../../src/composable'
+import { useStonecrop } from '../../src/composable'
 import DoctypeMeta from '../../src/doctype'
 import Registry from '../../src/registry'
 
@@ -116,7 +116,10 @@ describe('HST Real Component Integration', () => {
 					</div>
 				`,
 				setup() {
-					const { formData, handleHSTChange, provideHSTPath, hstStore } = useStonecropReactive(doctype, 'test-task')
+					const { formData, handleHSTChange, provideHSTPath, hstStore } = useStonecrop({
+						doctype,
+						recordId: 'test-task',
+					})
 
 					// Create form schema that uses HST paths
 					const formSchema = ref(
@@ -187,7 +190,7 @@ describe('HST Real Component Integration', () => {
 					/>
 				`,
 				setup() {
-					const { formData, handleHSTChange, provideHSTPath } = useStonecropReactive(doctype, 'test-task')
+					const { formData, handleHSTChange, provideHSTPath } = useStonecrop({ doctype, recordId: 'test-task' })
 
 					const fieldSchema = {
 						fieldname: 'name',
@@ -265,7 +268,7 @@ describe('HST Real Component Integration', () => {
 					</div>
 				`,
 				setup() {
-					const { formData, handleHSTChange, provideHSTPath } = useStonecropReactive(doctype, 'test-task')
+					const { formData, handleHSTChange, provideHSTPath } = useStonecrop({ doctype, recordId: 'test-task' })
 
 					const priorityValue = computed({
 						get: () => formData.value.priority || 1,
@@ -348,7 +351,7 @@ describe('HST Real Component Integration', () => {
 					</div>
 				`,
 				setup() {
-					const { formData, handleHSTChange, provideHSTPath } = useStonecropReactive(doctype, 'test-task')
+					const { formData, handleHSTChange, provideHSTPath } = useStonecrop({ doctype, recordId: 'test-task' })
 
 					const activeValue = computed({
 						get: () => formData.value.active || false,
@@ -426,7 +429,7 @@ describe('HST Real Component Integration', () => {
 					</div>
 				`,
 				setup() {
-					const { formData, handleHSTChange, provideHSTPath } = useStonecropReactive(doctype, 'test-task')
+					const { formData, handleHSTChange, provideHSTPath } = useStonecrop({ doctype, recordId: 'test-task' })
 
 					const metadataValue = computed({
 						get: () => {
@@ -496,7 +499,10 @@ describe('HST Real Component Integration', () => {
 					</div>
 				`,
 				setup() {
-					const { formData, handleHSTChange, provideHSTPath, hstStore } = useStonecropReactive(doctype, 'multi-test')
+					const { formData, handleHSTChange, provideHSTPath, hstStore } = useStonecrop({
+						doctype,
+						recordId: 'multi-test',
+					})
 
 					// Create reactive bindings for each field
 					const nameValue = computed({

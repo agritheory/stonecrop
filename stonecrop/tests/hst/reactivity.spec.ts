@@ -5,7 +5,7 @@ import { nextTick, defineComponent, ref } from 'vue'
 import type { UnknownMachineConfig } from 'xstate'
 
 import type { SchemaTypes } from '@stonecrop/aform'
-import { useStonecropReactive } from '../../src/composable'
+import { useStonecrop } from '../../src/composable'
 import DoctypeMeta from '../../src/doctype'
 import Registry from '../../src/registry'
 
@@ -138,7 +138,10 @@ const MockDoctypeForm = defineComponent({
 	`,
 	setup(props) {
 		// This composable should provide HST integration
-		const { stonecrop, provideHSTPath, handleHSTChange } = useStonecropReactive(props.doctype, props.recordId)
+		const { stonecrop, provideHSTPath, handleHSTChange } = useStonecrop({
+			doctype: props.doctype,
+			recordId: props.recordId,
+		})
 
 		const formData = ref({
 			name: '',
@@ -212,7 +215,7 @@ describe('HST Vue Reactivity', () => {
 
 	describe('HST Path Injection', () => {
 		it('should inject HST path prop into every field component', async () => {
-			// This test should fail initially because useStonecropReactive doesn't exist
+			// This test should fail initially because useStonecrop doesn't exist
 			expect(() => {
 				wrapper = mount(MockDoctypeForm, {
 					props: {
@@ -235,7 +238,7 @@ describe('HST Vue Reactivity', () => {
 
 		it('should provide correct HST paths for nested field structures', async () => {
 			// Skip for now - will implement after basic composable exists
-			// TODO: Implement useStonecropReactive first
+			// TODO: Implement useStonecrop first
 
 			wrapper = mount(MockDoctypeForm, {
 				props: {
@@ -272,7 +275,7 @@ describe('HST Vue Reactivity', () => {
 
 		it('should handle new record creation with proper HST paths', async () => {
 			// Skip for now
-			// TODO: Implement useStonecropReactive first
+			// TODO: Implement useStonecrop first
 
 			wrapper = mount(MockDoctypeForm, {
 				props: {
@@ -304,7 +307,7 @@ describe('HST Vue Reactivity', () => {
 	describe('Field-Level Change Detection', () => {
 		it('should register field changes with HST store and include address', async () => {
 			// Skip for now
-			// TODO: Implement useStonecropReactive first
+			// TODO: Implement useStonecrop first
 
 			const changeSpy = vi.fn()
 
@@ -337,7 +340,7 @@ describe('HST Vue Reactivity', () => {
 			const textInput = wrapper.find('[data-testid="text-input"]')
 			await textInput.setValue('Test Task Name')
 
-			// TODO: Once useStonecropReactive is implemented, this should work
+			// TODO: Once useStonecrop is implemented, this should work
 			// expect(changeSpy).toHaveBeenCalledWith({
 			// 	path: 'task.records.task-123.name',
 			// 	value: 'Test Task Name',
@@ -346,24 +349,24 @@ describe('HST Vue Reactivity', () => {
 		})
 
 		it('should detect changes in complex components like ATable', async () => {
-			// TODO: Implement after useStonecropReactive exists
+			// TODO: Implement after useStonecrop exists
 			expect(true).toBe(true) // Placeholder
 		})
 
 		it('should maintain deep reactivity for nested object changes', async () => {
-			// TODO: Implement after useStonecropReactive exists
+			// TODO: Implement after useStonecrop exists
 			expect(true).toBe(true) // Placeholder
 		})
 	})
 
 	describe('HST Store Integration', () => {
 		it('should sync component data with HST store bidirectionally', async () => {
-			// TODO: Implement after useStonecropReactive exists
+			// TODO: Implement after useStonecrop exists
 			expect(true).toBe(true) // Placeholder
 		})
 
 		it('should handle complex fieldtypes with proper HST structure', async () => {
-			// TODO: Implement after useStonecropReactive exists
+			// TODO: Implement after useStonecrop exists
 			expect(true).toBe(true) // Placeholder
 		})
 	})

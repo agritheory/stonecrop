@@ -5,7 +5,7 @@ import { nextTick, defineComponent } from 'vue'
 import type { UnknownMachineConfig } from 'xstate'
 
 import type { SchemaTypes } from '@stonecrop/aform'
-import { useStonecropReactive } from '../../src/composable'
+import { useStonecrop } from '../../src/composable'
 import DoctypeMeta from '../../src/doctype'
 import Registry from '../../src/registry'
 
@@ -40,15 +40,15 @@ describe('HST Composable Functionality', () => {
 		registry.addDoctype(doctype)
 	})
 
-	describe('useStonecropReactive Composable', () => {
+	describe('useStonecrop HST Composable', () => {
 		it('should create HST integration and provide required functions', async () => {
 			const TestComponent = defineComponent({
 				template: '<div>{{ hstPath }}</div>',
 				setup() {
-					const { stonecrop, provideHSTPath, handleHSTChange, hstStore, formData } = useStonecropReactive(
+					const { stonecrop, provideHSTPath, handleHSTChange, hstStore, formData } = useStonecrop({
 						doctype,
-						'test-123'
-					)
+						recordId: 'test-123',
+					})
 
 					const hstPath = provideHSTPath('name')
 
@@ -92,7 +92,7 @@ describe('HST Composable Functionality', () => {
 			const TestComponent = defineComponent({
 				template: '<div></div>',
 				setup() {
-					return useStonecropReactive(doctype, 'new')
+					return useStonecrop({ doctype, recordId: 'new' })
 				},
 			})
 
@@ -118,7 +118,7 @@ describe('HST Composable Functionality', () => {
 			const TestComponent = defineComponent({
 				template: '<div></div>',
 				setup() {
-					return useStonecropReactive(doctype, 'test-123')
+					return useStonecrop({ doctype, recordId: 'test-123' })
 				},
 			})
 
@@ -158,7 +158,7 @@ describe('HST Composable Functionality', () => {
 			const TestComponent = defineComponent({
 				template: '<div></div>',
 				setup() {
-					return useStonecropReactive(doctype, 'test-123')
+					return useStonecrop({ doctype, recordId: 'test-123' })
 				},
 			})
 
@@ -184,7 +184,7 @@ describe('HST Composable Functionality', () => {
 			const TestComponent = defineComponent({
 				template: '<div></div>',
 				setup() {
-					return useStonecropReactive(doctype, 'test-123')
+					return useStonecrop({ doctype, recordId: 'test-123' })
 				},
 			})
 
@@ -219,7 +219,7 @@ describe('HST Composable Functionality', () => {
 			const TestComponent = defineComponent({
 				template: '<div></div>',
 				setup() {
-					const result = useStonecropReactive(doctype, 'test-123')
+					const result = useStonecrop({ doctype, recordId: 'test-123' })
 
 					// This should also provide the injection for child components
 					return result
@@ -247,7 +247,7 @@ describe('HST Composable Functionality', () => {
 			const TestComponent = defineComponent({
 				template: '<div></div>',
 				setup() {
-					return useStonecropReactive(doctype, 'test-123')
+					return useStonecrop({ doctype, recordId: 'test-123' })
 				},
 			})
 
@@ -264,7 +264,7 @@ describe('HST Composable Functionality', () => {
 			const TestComponent = defineComponent({
 				template: '<div></div>',
 				setup() {
-					return useStonecropReactive(doctype, 'test-123')
+					return useStonecrop({ doctype, recordId: 'test-123' })
 				},
 			})
 

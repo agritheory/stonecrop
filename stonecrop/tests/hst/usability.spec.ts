@@ -7,7 +7,7 @@ import type { UnknownMachineConfig } from 'xstate'
 import ATextInput from '../../../aform/src/components/form/ATextInput.vue'
 import ANumericInput from '../../../aform/src/components/form/ANumericInput.vue'
 import type { SchemaTypes } from '../../../aform/src/types'
-import { useStonecropReactive } from '../../src/composable'
+import { useStonecrop } from '../../src/composable'
 import DoctypeMeta from '../../src/doctype'
 import Registry from '../../src/registry'
 
@@ -52,7 +52,7 @@ describe('HST Edge Cases & Performance', () => {
 				components: { ATextInput },
 				template: `<ATextInput v-model="largeDataValue" @update:modelValue="handleChange" />`,
 				setup() {
-					const { formData, handleHSTChange, provideHSTPath } = useStonecropReactive(doctype, 'large-test')
+					const { formData, handleHSTChange, provideHSTPath } = useStonecrop({ doctype, recordId: 'large-test' })
 
 					// Create a large nested structure
 					const largeData = {
@@ -124,7 +124,7 @@ describe('HST Edge Cases & Performance', () => {
 					</div>
 				`,
 				setup() {
-					const { formData, handleHSTChange, provideHSTPath } = useStonecropReactive(doctype, 'rapid-test')
+					const { formData, handleHSTChange, provideHSTPath } = useStonecrop({ doctype, recordId: 'rapid-test' })
 
 					const nameValue = computed({
 						get: () => formData.value.name || '',
@@ -188,7 +188,7 @@ describe('HST Edge Cases & Performance', () => {
 			const ErrorHandlingTest = defineComponent({
 				template: `<div>{{ testResult }}</div>`,
 				setup() {
-					const { handleHSTChange, formData } = useStonecropReactive(doctype, 'error-test')
+					const { handleHSTChange, formData } = useStonecrop({ doctype, recordId: 'error-test' })
 
 					const testResult = ref('pending')
 
@@ -237,10 +237,10 @@ describe('HST Edge Cases & Performance', () => {
 			const CorruptionRecoveryTest = defineComponent({
 				template: `<div>{{ recoveryStatus }}</div>`,
 				setup() {
-					const { formData, handleHSTChange, provideHSTPath, hstStore } = useStonecropReactive(
+					const { formData, handleHSTChange, provideHSTPath, hstStore } = useStonecrop({
 						doctype,
-						'corruption-test'
-					)
+						recordId: 'corruption-test',
+					})
 
 					const recoveryStatus = ref('pending')
 
@@ -298,7 +298,7 @@ describe('HST Edge Cases & Performance', () => {
 				components: { ATextInput },
 				template: `<ATextInput v-model="arrayValue" @update:modelValue="handleChange" />`,
 				setup() {
-					const { formData, handleHSTChange, provideHSTPath } = useStonecropReactive(doctype, 'array-test')
+					const { formData, handleHSTChange, provideHSTPath } = useStonecrop({ doctype, recordId: 'array-test' })
 
 					const arrayValue = computed({
 						get: () => {
@@ -366,7 +366,7 @@ describe('HST Edge Cases & Performance', () => {
 				components: { ATextInput },
 				template: `<ATextInput v-model="mixedValue" @update:modelValue="handleChange" />`,
 				setup() {
-					const { formData, handleHSTChange, provideHSTPath } = useStonecropReactive(doctype, 'mixed-test')
+					const { formData, handleHSTChange, provideHSTPath } = useStonecrop({ doctype, recordId: 'mixed-test' })
 
 					const mixedValue = computed({
 						get: () => JSON.stringify(formData.value.config || {}),
@@ -451,8 +451,8 @@ describe('HST Edge Cases & Performance', () => {
 				`,
 				setup() {
 					// Two instances accessing the same field (simulating multiple components)
-					const instance1 = useStonecropReactive(doctype, 'shared-test')
-					const instance2 = useStonecropReactive(doctype, 'shared-test') // Same record ID
+					const instance1 = useStonecrop({ doctype, recordId: 'shared-test' })
+					const instance2 = useStonecrop({ doctype, recordId: 'shared-test' }) // Same record ID
 
 					const value1 = computed({
 						get: () => instance1.formData.value.name || '',

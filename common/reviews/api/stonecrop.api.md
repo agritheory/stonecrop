@@ -258,6 +258,10 @@ export class Stonecrop {
 // @public
 export type StonecropReturn = {
     stonecrop: Ref<Stonecrop | undefined>;
+    provideHSTPath?: (fieldname: string, recordId?: string) => string;
+    handleHSTChange?: (changeData: HSTChangeData) => void;
+    hstStore?: Ref<HSTNode | undefined>;
+    formData?: Ref<Record<string, any>>;
 };
 
 // @public
@@ -343,7 +347,16 @@ export type TableSchema = BaseSchema & {
 };
 
 // @public
-export function useStonecrop(registry?: Registry): StonecropReturn;
+export function useStonecrop(options?: {
+    registry?: Registry;
+    doctype?: DoctypeMeta;
+    recordId?: string;
+    enableHST?: boolean;
+}): StonecropReturn;
+
+// Warnings were encountered during analysis:
+//
+// src/composable.ts:16:2 - (ae-forgotten-export) The symbol "HSTChangeData" needs to be exported by the entry point index.d.ts
 
 // (No @packageDocumentation comment for this package)
 

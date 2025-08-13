@@ -7,23 +7,15 @@ import DoctypeMeta from './doctype'
 import type { HSTNode } from './stores/hst'
 
 /**
- * Stonecrop composable return type
+ * Unified Stonecrop composable return type
  * @public
  */
 export type StonecropReturn = {
 	stonecrop: Ref<Stonecrop | undefined>
-}
-
-/**
- * HST Reactive integration return type
- * @public
- */
-export type StonecropReactiveReturn = {
-	stonecrop: Ref<Stonecrop | undefined>
-	provideHSTPath: (fieldname: string, recordId?: string) => string
-	handleHSTChange: (changeData: HSTChangeData) => void
-	hstStore: Ref<HSTNode | undefined>
-	formData: Ref<Record<string, any>>
+	provideHSTPath?: (fieldname: string, recordId?: string) => string
+	handleHSTChange?: (changeData: HSTChangeData) => void
+	hstStore?: Ref<HSTNode | undefined>
+	formData?: Ref<Record<string, any>>
 }
 
 /**
@@ -38,20 +30,56 @@ export type HSTChangeData = {
 }
 
 /**
- * Stonecrop composable
- * @param registry - An existing Stonecrop Registry instance
- * @returns The Stonecrop instance and a boolean indicating if Stonecrop is setup and ready
- * @throws Error if the Registry is not available
+ * Unified Stonecrop composable - handles both general operations and HST reactive integration
+ *
+ * **Basic Usage (General Stonecrop operations):**
+ * ```typescript
+ * const { stonecrop } = useStonecrop()
+ * // Auto-loads based on router, provides basic Stonecrop functionality
+ * ```
+ *
+ * **With Registry:**
+ * ```typescript
+ * const { stonecrop } = useStonecrop({ registry: myRegistry })
+ * ```
+ *
+ * **HST Reactive Forms:**
+ * ```typescript
+ * const { stonecrop, provideHSTPath, handleHSTChange, formData } = useStonecrop({
+ *   doctype: myDoctype,
+ *   recordId: '123',
+ *   enableHST: true
+ * })
+ * ```
+ *
+ * **Disable HST for performance:**
+ * ```typescript
+ * const { stonecrop } = useStonecrop({
+ *   doctype: myDoctype,
+ *   enableHST: false  // Only basic Stonecrop, no reactive forms
+ * })
+ * ```
+ *
+ * @param options - Configuration options for the composable
+ * @returns Stonecrop instance and optional HST integration utilities
  * @public
  */
-export function useStonecrop(registry?: Registry): StonecropReturn {
+export function useStonecrop(options?: {
+	registry?: Registry
+	doctype?: DoctypeMeta
+	recordId?: string
+	enableHST?: boolean
+}): StonecropReturn {
+	// Handle backward compatibility - if first arg is a Registry, convert to options format
+	const normalizedOptions = options instanceof Registry ? { registry: options } : options || {}
+
+	const registry = normalizedOptions.registry || inject<Registry>('$registry')
 	const stonecrop = ref<Stonecrop>()
+	const hstStore = ref<HSTNode>()
+	const formData = ref<Record<string, any>>({})
 
+	// Initialize Stonecrop instance
 	onMounted(async () => {
-		if (!registry) {
-			registry = inject<Registry>('$registry')
-		}
-
 		if (!registry) {
 			// Don't throw error, just leave stonecrop undefined
 			// This allows components to handle the missing registry gracefully
@@ -61,179 +89,166 @@ export function useStonecrop(registry?: Registry): StonecropReturn {
 		// Create Stonecrop instance with HST integration
 		stonecrop.value = new Stonecrop(registry)
 
-		if (!registry.router) return
+		// Handle router-based setup if no specific doctype provided
+		if (!normalizedOptions.doctype && registry.router) {
+			const route = registry.router.currentRoute.value
+			const doctypeSlug = route.params.records?.toString().toLowerCase()
+			const recordId = route.params.record?.toString().toLowerCase()
 
-		const route = registry.router.currentRoute.value
-		const doctypeSlug = route.params.records?.toString().toLowerCase()
-		const recordId = route.params.record?.toString().toLowerCase()
+			// TODO: handle views other than list and form views?
+			if (doctypeSlug || recordId) {
+				// setup doctype via registry
+				const doctype = await registry.getMeta?.(doctypeSlug)
+				if (doctype) {
+					registry.addDoctype(doctype)
+					stonecrop.value.setup(doctype)
 
-		// TODO: handle views other than list and form views?
-		if (!doctypeSlug && !recordId) {
-			return
-		}
-
-		// setup doctype via registry
-		const doctype = await registry.getMeta?.(doctypeSlug)
-		if (doctype) {
-			registry.addDoctype(doctype)
-			stonecrop.value.setup(doctype)
-
-			if (doctypeSlug) {
-				if (recordId) {
-					await stonecrop.value.getRecord(doctype, recordId)
-				} else {
-					await stonecrop.value.getRecords(doctype)
-				}
-			}
-
-			stonecrop.value.runAction(doctype, 'load', recordId ? [recordId] : undefined)
-		}
-	})
-
-	return { stonecrop }
-}
-
-/**
- * HST Reactive integration composable for doctype forms
- * Provides reactive bridge between Vue components and HST store
- * @param doctype - The doctype meta object
- * @param recordId - Optional record ID for existing records
- * @returns HST integration utilities and reactive data
- * @public
- */
-export function useStonecropReactive(doctype: DoctypeMeta, recordId?: string): StonecropReactiveReturn {
-	const registry = inject<Registry>('$registry')
-	const stonecrop = ref<Stonecrop>()
-	const hstStore = ref<HSTNode>()
-	const formData = ref<Record<string, any>>({})
-
-	// Initialize HST integration
-	onMounted(async () => {
-		if (!registry) {
-			return
-		}
-
-		// Create Stonecrop instance if not already available
-		stonecrop.value = new Stonecrop(registry)
-		hstStore.value = stonecrop.value.getStore()
-
-		// Initialize record in HST if recordId provided
-		if (recordId && recordId !== 'new') {
-			// Try to get existing record from HST
-			const existingRecord = stonecrop.value.getRecordById(doctype, recordId)
-			if (existingRecord) {
-				// Get the raw data from HST
-				formData.value = existingRecord.get('') || {}
-			} else {
-				// Load from server if not in HST (only in non-test environment)
-				try {
-					await stonecrop.value.getRecord(doctype, recordId)
-					const loadedRecord = stonecrop.value.getRecordById(doctype, recordId)
-					if (loadedRecord) {
-						formData.value = loadedRecord.get('') || {}
-					}
-				} catch (error) {
-					// In test environment or when server is not available,
-					// initialize with default data
-					formData.value = initializeNewRecord(doctype)
-				}
-			}
-		} else {
-			// Initialize new record structure
-			formData.value = initializeNewRecord(doctype)
-		}
-
-		// Setup deep watching for form data changes
-		setupDeepReactivity(doctype, recordId || 'new', formData, hstStore.value)
-	})
-
-	/**
-	 * Generates HST path for a field
-	 * @param fieldname - The field name
-	 * @param customRecordId - Optional custom record ID
-	 * @returns HST path string
-	 */
-	const provideHSTPath = (fieldname: string, customRecordId?: string): string => {
-		const actualRecordId = customRecordId || recordId || 'new'
-		return `${doctype.slug}.records.${actualRecordId}.${fieldname}`
-	}
-
-	/**
-	 * Handles field-level changes from components
-	 * @param changeData - The change data from component
-	 */
-	const handleHSTChange = (changeData: HSTChangeData): void => {
-		if (!hstStore.value || !stonecrop.value) {
-			return
-		}
-
-		try {
-			// Extract record information from the path to ensure it exists
-			const pathParts = changeData.path.split('.')
-			if (pathParts.length >= 3 && pathParts[1] === 'records') {
-				const doctypeSlug = pathParts[0]
-				const recordId = pathParts[2]
-
-				// Ensure the record exists in HST before setting field values
-				if (!hstStore.value.has(`${doctypeSlug}.records.${recordId}`)) {
-					// Initialize the record with current formData
-					stonecrop.value.addRecord(doctype, recordId, { ...formData.value })
-				}
-
-				// For nested paths, ensure the parent structure exists in HST
-				if (pathParts.length > 4) {
-					const recordPath = `${doctypeSlug}.records.${recordId}`
-					const nestedParts = pathParts.slice(3) // Get the field parts after the record
-
-					// Build up the nested structure in HST, creating objects/arrays as needed
-					let currentPath = recordPath
-					for (let i = 0; i < nestedParts.length - 1; i++) {
-						currentPath += `.${nestedParts[i]}`
-
-						if (!hstStore.value.has(currentPath)) {
-							// Determine if next part is numeric (array index)
-							const nextPart = nestedParts[i + 1]
-							const isArray = !isNaN(Number(nextPart))
-							hstStore.value.set(currentPath, isArray ? [] : {})
+					if (doctypeSlug) {
+						if (recordId) {
+							await stonecrop.value.getRecord(doctype, recordId)
+						} else {
+							await stonecrop.value.getRecords(doctype)
 						}
 					}
+
+					stonecrop.value.runAction(doctype, 'load', recordId ? [recordId] : undefined)
 				}
 			}
+		}
 
-			// Update HST store with the change
-			hstStore.value.set(changeData.path, changeData.value)
+		// Handle HST integration if doctype is provided
+		if (normalizedOptions.doctype && normalizedOptions.enableHST !== false) {
+			hstStore.value = stonecrop.value.getStore()
+			const doctype = normalizedOptions.doctype
+			const recordId = normalizedOptions.recordId
 
-			// Update local form data to maintain consistency
-			const fieldParts = changeData.fieldname.split('.')
-
-			// Always create a new object to ensure reactivity
-			const newFormData = { ...formData.value }
-
-			if (fieldParts.length === 1) {
-				// Simple field update
-				newFormData[fieldParts[0]] = changeData.value
+			// Initialize record in HST if recordId provided
+			if (recordId && recordId !== 'new') {
+				// Try to get existing record from HST
+				const existingRecord = stonecrop.value.getRecordById(doctype, recordId)
+				if (existingRecord) {
+					// Get the raw data from HST
+					formData.value = existingRecord.get('') || {}
+				} else {
+					// Load from server if not in HST (only in non-test environment)
+					try {
+						await stonecrop.value.getRecord(doctype, recordId)
+						const loadedRecord = stonecrop.value.getRecordById(doctype, recordId)
+						if (loadedRecord) {
+							formData.value = loadedRecord.get('') || {}
+						}
+					} catch (error) {
+						// In test environment or when server is not available,
+						// initialize with default data
+						formData.value = initializeNewRecord(doctype)
+					}
+				}
 			} else {
-				// Nested field update
-				updateNestedObject(newFormData, fieldParts, changeData.value)
+				// Initialize new record structure
+				formData.value = initializeNewRecord(doctype)
 			}
 
-			// Replace the entire formData object to trigger Vue reactivity
-			formData.value = newFormData
-		} catch (error) {
-			// Silently handle errors to avoid console warnings
+			// Setup deep watching for form data changes
+			if (hstStore.value) {
+				setupDeepReactivity(doctype, recordId || 'new', formData, hstStore.value)
+			}
 		}
-	}
+	})
 
-	// Provide HST path injection for child components
-	provide('hstPathProvider', provideHSTPath)
-	provide('hstChangeHandler', handleHSTChange)
+	// HST integration functions (only available when doctype is provided)
+	const hstIntegration = normalizedOptions.doctype
+		? {
+				/**
+				 * Generates HST path for a field
+				 * @param fieldname - The field name
+				 * @param customRecordId - Optional custom record ID
+				 * @returns HST path string
+				 */
+				provideHSTPath: (fieldname: string, customRecordId?: string): string => {
+					const actualRecordId = customRecordId || normalizedOptions.recordId || 'new'
+					return `${normalizedOptions.doctype!.slug}.records.${actualRecordId}.${fieldname}`
+				},
+
+				/**
+				 * Handles field-level changes from components
+				 * @param changeData - The change data from component
+				 */
+				handleHSTChange: (changeData: HSTChangeData): void => {
+					if (!hstStore.value || !stonecrop.value || !normalizedOptions.doctype) {
+						return
+					}
+
+					try {
+						// Extract record information from the path to ensure it exists
+						const pathParts = changeData.path.split('.')
+						if (pathParts.length >= 3 && pathParts[1] === 'records') {
+							const doctypeSlug = pathParts[0]
+							const recordId = pathParts[2]
+
+							// Ensure the record exists in HST before setting field values
+							if (!hstStore.value.has(`${doctypeSlug}.records.${recordId}`)) {
+								// Initialize the record with current formData
+								stonecrop.value.addRecord(normalizedOptions.doctype, recordId, { ...formData.value })
+							}
+
+							// For nested paths, ensure the parent structure exists in HST
+							if (pathParts.length > 4) {
+								const recordPath = `${doctypeSlug}.records.${recordId}`
+								const nestedParts = pathParts.slice(3) // Get the field parts after the record
+
+								// Build up the nested structure in HST, creating objects/arrays as needed
+								let currentPath = recordPath
+								for (let i = 0; i < nestedParts.length - 1; i++) {
+									currentPath += `.${nestedParts[i]}`
+
+									if (!hstStore.value.has(currentPath)) {
+										// Determine if next part is numeric (array index)
+										const nextPart = nestedParts[i + 1]
+										const isArray = !isNaN(Number(nextPart))
+										hstStore.value.set(currentPath, isArray ? [] : {})
+									}
+								}
+							}
+						}
+
+						// Update HST store with the change
+						hstStore.value.set(changeData.path, changeData.value)
+
+						// Update local form data to maintain consistency
+						const fieldParts = changeData.fieldname.split('.')
+
+						// Always create a new object to ensure reactivity
+						const newFormData = { ...formData.value }
+
+						if (fieldParts.length === 1) {
+							// Simple field update
+							newFormData[fieldParts[0]] = changeData.value
+						} else {
+							// Nested field update
+							updateNestedObject(newFormData, fieldParts, changeData.value)
+						}
+
+						// Replace the entire formData object to trigger Vue reactivity
+						formData.value = newFormData
+					} catch (error) {
+						// Silently handle errors to avoid console warnings
+					}
+				},
+
+				hstStore,
+				formData,
+		  }
+		: {}
+
+	// Provide HST path injection for child components (only when HST is enabled)
+	if (normalizedOptions.doctype && hstIntegration.provideHSTPath && hstIntegration.handleHSTChange) {
+		provide('hstPathProvider', hstIntegration.provideHSTPath)
+		provide('hstChangeHandler', hstIntegration.handleHSTChange)
+	}
 
 	return {
 		stonecrop,
-		provideHSTPath,
-		handleHSTChange,
-		hstStore,
-		formData,
+		...hstIntegration,
 	}
 }
 
