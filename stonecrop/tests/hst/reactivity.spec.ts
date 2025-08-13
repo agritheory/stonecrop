@@ -1,14 +1,13 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mount, VueWrapper } from '@vue/test-utils'
-import { nextTick, defineComponent, ref } from 'vue'
 import { List, Map } from 'immutable'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { nextTick, defineComponent, ref } from 'vue'
 import type { UnknownMachineConfig } from 'xstate'
-import Registry from '../../src/registry'
-import DoctypeMeta from '../../src/doctype'
-import type { SchemaTypes } from '@stonecrop/aform'
 
-// Import the implemented composable
+import type { SchemaTypes } from '@stonecrop/aform'
 import { useStonecropReactive } from '../../src/composable'
+import DoctypeMeta from '../../src/doctype'
+import Registry from '../../src/registry'
 
 // Mock AForm-like components for testing
 const MockATextInput = defineComponent({
@@ -179,7 +178,7 @@ const MockDoctypeForm = defineComponent({
 	},
 })
 
-describe('HST Reactive Integration', () => {
+describe('HST Vue Reactivity', () => {
 	let registry: Registry
 	let doctype: DoctypeMeta
 	let wrapper: VueWrapper

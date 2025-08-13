@@ -1,14 +1,15 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
-import { nextTick, defineComponent } from 'vue'
 import { List, Map } from 'immutable'
+import { describe, it, expect, beforeEach } from 'vitest'
+import { nextTick, defineComponent } from 'vue'
 import type { UnknownMachineConfig } from 'xstate'
-import Registry from '../../src/registry'
-import DoctypeMeta from '../../src/doctype'
+
 import type { SchemaTypes } from '@stonecrop/aform'
 import { useStonecropReactive } from '../../src/composable'
+import DoctypeMeta from '../../src/doctype'
+import Registry from '../../src/registry'
 
-describe('HST Reactive Integration - Working Tests', () => {
+describe('HST Composable Functionality', () => {
 	let registry: Registry
 	let doctype: DoctypeMeta
 

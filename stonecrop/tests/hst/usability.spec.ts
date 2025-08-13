@@ -1,19 +1,17 @@
-import { describe, it, expect, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
-import { nextTick, defineComponent, computed, ref } from 'vue'
 import { List, Map } from 'immutable'
+import { describe, it, expect, beforeEach } from 'vitest'
+import { nextTick, defineComponent, computed, ref } from 'vue'
 import type { UnknownMachineConfig } from 'xstate'
 
-// Import real AForm components for edge case testing
 import ATextInput from '../../../aform/src/components/form/ATextInput.vue'
 import ANumericInput from '../../../aform/src/components/form/ANumericInput.vue'
-
-import Registry from '../../src/registry'
-import DoctypeMeta from '../../src/doctype'
-import { useStonecropReactive } from '../../src/composable'
 import type { SchemaTypes } from '../../../aform/src/types'
+import { useStonecropReactive } from '../../src/composable'
+import DoctypeMeta from '../../src/doctype'
+import Registry from '../../src/registry'
 
-describe('HST Reactive Integration - Edge Cases & Advanced Scenarios', () => {
+describe('HST Edge Cases & Performance', () => {
 	let registry: Registry
 	let doctype: DoctypeMeta
 

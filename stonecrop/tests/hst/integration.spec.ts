@@ -1,10 +1,9 @@
-import { describe, it, expect, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
-import { nextTick, defineComponent, computed, ref } from 'vue'
 import { List, Map } from 'immutable'
+import { describe, it, expect, beforeEach } from 'vitest'
+import { nextTick, defineComponent, computed, ref } from 'vue'
 import type { UnknownMachineConfig } from 'xstate'
 
-// Import real AForm components
 import AForm from '../../../aform/src/components/AForm.vue'
 import ATextInput from '../../../aform/src/components/form/ATextInput.vue'
 import ANumericInput from '../../../aform/src/components/form/ANumericInput.vue'
@@ -12,14 +11,12 @@ import ACheckbox from '../../../aform/src/components/form/ACheckbox.vue'
 import ADate from '../../../aform/src/components/form/ADate.vue'
 import AComboBox from '../../../aform/src/components/form/AComboBox.vue'
 import ADropdown from '../../../aform/src/components/form/ADropdown.vue'
-
-// Import stonecrop types and components
-import Registry from '../../src/registry'
-import DoctypeMeta from '../../src/doctype'
-import { useStonecropReactive } from '../../src/composable'
 import type { SchemaTypes } from '../../../aform/src/types'
+import { useStonecropReactive } from '../../src/composable'
+import DoctypeMeta from '../../src/doctype'
+import Registry from '../../src/registry'
 
-describe('HST + AForm Real Component Integration', () => {
+describe('HST Real Component Integration', () => {
 	let registry: Registry
 	let doctype: DoctypeMeta
 
