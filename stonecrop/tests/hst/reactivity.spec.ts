@@ -3,13 +3,12 @@ import { mount, VueWrapper } from '@vue/test-utils'
 import { nextTick, defineComponent, ref } from 'vue'
 import { List, Map } from 'immutable'
 import type { UnknownMachineConfig } from 'xstate'
-import { Stonecrop } from '../src/stonecrop'
-import Registry from '../src/registry'
-import DoctypeMeta from '../src/doctype'
+import Registry from '../../src/registry'
+import DoctypeMeta from '../../src/doctype'
 import type { SchemaTypes } from '@stonecrop/aform'
 
 // Import the implemented composable
-import { useStonecropReactive } from '../src/composable'
+import { useStonecropReactive } from '../../src/composable'
 
 // Mock AForm-like components for testing
 const MockATextInput = defineComponent({

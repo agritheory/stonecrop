@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { Map, List } from 'immutable'
-import { createHST, HST, HSTProxy } from '../src/stores/hst' // Adjust path as needed
+import { createHST, HST, HSTProxy } from '../../src/stores/hst' // Adjust path as needed
 
 describe('HST Tree Navigation', () => {
 	describe('Basic Tree Structure', () => {

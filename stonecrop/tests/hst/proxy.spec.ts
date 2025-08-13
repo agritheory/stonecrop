@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { Map, List } from 'immutable'
-import { createHST, HSTProxy } from '../src/stores/hst'
+import { createHST, HSTProxy } from '../../src/stores/hst'
 
 describe('HST Core Get/Set Operations', () => {
 	describe('Plain Objects', () => {
