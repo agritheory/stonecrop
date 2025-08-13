@@ -32,8 +32,6 @@ Unified Stonecrop composable - handles both general operations and HST reactive 
 
 **HST Reactive Forms:**
 
-**Disable HST for performance:**
-
 **Signature:**
 
 ```typescript
@@ -41,7 +39,6 @@ export declare function useStonecrop(options?: {
     registry?: Registry;
     doctype?: DoctypeMeta;
     recordId?: string;
-    enableHST?: boolean;
 }): StonecropReturn;
 ```
 
@@ -49,7 +46,7 @@ export declare function useStonecrop(options?: {
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| options | `{ registry?: Registry; doctype?: DoctypeMeta; recordId?: string; enableHST?: boolean; }` |  |
+| options | `{ registry?: Registry; doctype?: DoctypeMeta; recordId?: string; }` |  |
 
 ## Interfaces
 

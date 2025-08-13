@@ -47,16 +47,7 @@ export type HSTChangeData = {
  * ```typescript
  * const { stonecrop, provideHSTPath, handleHSTChange, formData } = useStonecrop({
  *   doctype: myDoctype,
- *   recordId: '123',
- *   enableHST: true
- * })
- * ```
- *
- * **Disable HST for performance:**
- * ```typescript
- * const { stonecrop } = useStonecrop({
- *   doctype: myDoctype,
- *   enableHST: false  // Only basic Stonecrop, no reactive forms
+ *   recordId: '123'
  * })
  * ```
  *
@@ -68,7 +59,6 @@ export function useStonecrop(options?: {
 	registry?: Registry
 	doctype?: DoctypeMeta
 	recordId?: string
-	enableHST?: boolean
 }): StonecropReturn {
 	if (!options) options = {}
 
@@ -116,7 +106,7 @@ export function useStonecrop(options?: {
 		}
 
 		// Handle HST integration if doctype is provided
-		if (options.doctype && options.enableHST !== false) {
+		if (options.doctype) {
 			hstStore.value = stonecrop.value.getStore()
 			const doctype = options.doctype
 			const recordId = options.recordId

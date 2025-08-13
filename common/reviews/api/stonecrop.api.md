@@ -351,7 +351,6 @@ export function useStonecrop(options?: {
     registry?: Registry;
     doctype?: DoctypeMeta;
     recordId?: string;
-    enableHST?: boolean;
 }): StonecropReturn;
 
 // Warnings were encountered during analysis:
