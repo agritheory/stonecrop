@@ -27,6 +27,11 @@ export type BaseSchema = {
 };
 
 // @public
+export type BaseStonecropReturn = {
+    stonecrop: Ref<Stonecrop | undefined>;
+};
+
+// @public
 export interface CellContext {
     column: TableColumn;
     row: TableRow;
@@ -180,6 +185,14 @@ export class HST {
 }
 
 // @public
+export type HSTChangeData = {
+    path: string;
+    value: any;
+    fieldname: string;
+    recordId?: string;
+};
+
+// @public
 export interface HSTNode {
     get(path: string): any;
     getBreadcrumbs(): string[];
@@ -191,6 +204,14 @@ export interface HSTNode {
     has(path: string): boolean;
     set(path: string, value: any): void;
 }
+
+// @public
+export type HSTStonecropReturn = BaseStonecropReturn & {
+    provideHSTPath: (fieldname: string, recordId?: string) => string;
+    handleHSTChange: (changeData: HSTChangeData) => void;
+    hstStore: Ref<HSTNode | undefined>;
+    formData: Ref<Record<string, any>>;
+};
 
 // @public
 export type ImmutableDoctype = {
@@ -347,15 +368,14 @@ export type TableSchema = BaseSchema & {
 };
 
 // @public
-export function useStonecrop(options?: {
-    registry?: Registry;
-    doctype?: DoctypeMeta;
-    recordId?: string;
-}): StonecropReturn;
+export function useStonecrop(): BaseStonecropReturn;
 
-// Warnings were encountered during analysis:
-//
-// src/composable.ts:16:2 - (ae-forgotten-export) The symbol "HSTChangeData" needs to be exported by the entry point index.d.ts
+// @public (undocumented)
+export function useStonecrop(options: {
+    registry?: Registry;
+    doctype: DoctypeMeta;
+    recordId?: string;
+}): HSTStonecropReturn;
 
 // (No @packageDocumentation comment for this package)
 

@@ -35,18 +35,26 @@ Unified Stonecrop composable - handles both general operations and HST reactive 
 **Signature:**
 
 ```typescript
-export declare function useStonecrop(options?: {
+export declare function useStonecrop(): BaseStonecropReturn;
+```
+
+### useStonecrop
+
+**Signature:**
+
+```typescript
+export declare function useStonecrop(options: {
     registry?: Registry;
-    doctype?: DoctypeMeta;
+    doctype: DoctypeMeta;
     recordId?: string;
-}): StonecropReturn;
+}): HSTStonecropReturn;
 ```
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| options | `{ registry?: Registry; doctype?: DoctypeMeta; recordId?: string; }` |  |
+| options | `{ registry?: Registry; doctype: DoctypeMeta; recordId?: string; }` |  |
 
 ## Interfaces
 
@@ -425,6 +433,18 @@ export type BaseSchema = {
 };
 ```
 
+### BaseStonecropReturn
+
+Base Stonecrop composable return type
+
+**Definition:**
+
+```typescript
+export type BaseStonecropReturn = {
+    stonecrop: Ref<Stonecrop | undefined>;
+};
+```
+
 ### ComponentProps
 
 Defined props for AForm components
@@ -528,6 +548,36 @@ export type GanttDragEvent = {
 });
 ```
 
+### HSTChangeData
+
+HST Change data structure
+
+**Definition:**
+
+```typescript
+export type HSTChangeData = {
+    path: string;
+    value: any;
+    fieldname: string;
+    recordId?: string;
+};
+```
+
+### HSTStonecropReturn
+
+HST-enabled Stonecrop composable return type
+
+**Definition:**
+
+```typescript
+export type HSTStonecropReturn = BaseStonecropReturn & {
+    provideHSTPath: (fieldname: string, recordId?: string) => string;
+    handleHSTChange: (changeData: HSTChangeData) => void;
+    hstStore: Ref<HSTNode | undefined>;
+    formData: Ref<Record<string, any>>;
+};
+```
+
 ### ImmutableDoctype
 
 Immutable Doctype type for Stonecrop instances
@@ -595,7 +645,7 @@ export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema;
 
 ### StonecropReturn
 
-Unified Stonecrop composable return type
+Unified Stonecrop composable return type (legacy - for backward compatibility)
 
 **Definition:**
 

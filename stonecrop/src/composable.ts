@@ -7,7 +7,26 @@ import DoctypeMeta from './doctype'
 import type { HSTNode } from './stores/hst'
 
 /**
- * Unified Stonecrop composable return type
+ * Base Stonecrop composable return type
+ * @public
+ */
+export type BaseStonecropReturn = {
+	stonecrop: Ref<Stonecrop | undefined>
+}
+
+/**
+ * HST-enabled Stonecrop composable return type
+ * @public
+ */
+export type HSTStonecropReturn = BaseStonecropReturn & {
+	provideHSTPath: (fieldname: string, recordId?: string) => string
+	handleHSTChange: (changeData: HSTChangeData) => void
+	hstStore: Ref<HSTNode | undefined>
+	formData: Ref<Record<string, any>>
+}
+
+/**
+ * Unified Stonecrop composable return type (legacy - for backward compatibility)
  * @public
  */
 export type StonecropReturn = {
@@ -55,11 +74,23 @@ export type HSTChangeData = {
  * @returns Stonecrop instance and optional HST integration utilities
  * @public
  */
+export function useStonecrop(): BaseStonecropReturn
+/**
+ * @public
+ */
+export function useStonecrop(options: {
+	registry?: Registry
+	doctype: DoctypeMeta
+	recordId?: string
+}): HSTStonecropReturn
+/**
+ * @public
+ */
 export function useStonecrop(options?: {
 	registry?: Registry
 	doctype?: DoctypeMeta
 	recordId?: string
-}): StonecropReturn {
+}): BaseStonecropReturn | HSTStonecropReturn {
 	if (!options) options = {}
 
 	const registry = options.registry || inject<Registry>('$registry')
@@ -235,10 +266,11 @@ export function useStonecrop(options?: {
 		provide('hstChangeHandler', hstIntegration.handleHSTChange)
 	}
 
-	return {
-		stonecrop,
-		...hstIntegration,
+	if (options.doctype) {
+		return { stonecrop, ...hstIntegration } as HSTStonecropReturn
 	}
+
+	return { stonecrop } as BaseStonecropReturn
 }
 
 /**
