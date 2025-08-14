@@ -4,7 +4,7 @@ import type { Component } from 'vue'
 import type { Router } from 'vue-router'
 import type { AnyStateNodeConfig, UnknownMachineConfig } from 'xstate'
 
-import DoctypeMeta from '../doctype'
+import type DoctypeMeta from '../doctype'
 
 /**
  * Immutable Doctype type for Stonecrop instances

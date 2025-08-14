@@ -78,7 +78,7 @@ describe('useStonecrop composable', () => {
 	it('returns a stonecrop reference with HST integration', async () => {
 		const TestComponent = defineComponent({
 			setup() {
-				return useStonecrop(registry)
+				return useStonecrop({ registry })
 			},
 			template: '<div>test</div>',
 		})
@@ -152,7 +152,7 @@ describe('useStonecrop composable', () => {
 
 		const TestComponent = defineComponent({
 			setup() {
-				return useStonecrop(registryWithoutRouter)
+				return useStonecrop({ registry: registryWithoutRouter })
 			},
 			template: '<div>test</div>',
 		})
@@ -192,7 +192,7 @@ describe('useStonecrop composable', () => {
 
 		const TestComponent = defineComponent({
 			setup() {
-				return useStonecrop(registry)
+				return useStonecrop({ registry })
 			},
 			template: '<div>test</div>',
 		})
@@ -235,7 +235,7 @@ describe('useStonecrop composable', () => {
 
 		const TestComponent = defineComponent({
 			setup() {
-				return useStonecrop(registry)
+				return useStonecrop({ registry })
 			},
 			template: '<div>test</div>',
 		})
@@ -269,7 +269,7 @@ describe('useStonecrop composable', () => {
 
 		const TestComponent = defineComponent({
 			setup() {
-				return useStonecrop(registry)
+				return useStonecrop({ registry })
 			},
 			template: '<div>test</div>',
 		})
@@ -288,7 +288,7 @@ describe('useStonecrop composable', () => {
 
 		const TestComponent = defineComponent({
 			setup() {
-				return useStonecrop(registry)
+				return useStonecrop({ registry })
 			},
 			template: '<div>test</div>',
 		})
