@@ -766,6 +766,12 @@ Main Stonecrop class with HST integration
 new Stonecrop(registry: Registry)
 ```
 
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| registry | `Registry` |  |
+
 **Methods:**
 
 #### addRecord

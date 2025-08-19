@@ -1,7 +1,7 @@
 <template>
 	<div id="home">
 		<pre>Stonecrop: {{ stonecropInfo }}</pre>
-		<Desktop :elements="actionElements" :route="$route" />
+		<Desktop :elements="actionElements" />
 	</div>
 </template>
 

@@ -1,19 +1,17 @@
 import Registry from './registry'
 import DoctypeMeta from './doctype'
-import { HST, createHST, type HSTNode } from './stores/hst'
+import { createHST, type HSTNode } from './stores/hst'
 
 /**
  * Main Stonecrop class with HST integration
  * @public
  */
 export class Stonecrop {
-	private registry: Registry
-	private hst: HST
 	private hstStore: HSTNode
+	readonly registry: Registry
 
 	constructor(registry: Registry) {
 		this.registry = registry
-		this.hst = HST.getInstance()
 
 		// Initialize HST store with auto-sync to Registry
 		this.initializeHSTStore()

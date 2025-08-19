@@ -270,6 +270,8 @@ export class Stonecrop {
     getRecords(doctype: DoctypeMeta): Promise<void>;
     getStore(): HSTNode;
     records(doctype: string | DoctypeMeta): HSTNode;
+    // (undocumented)
+    readonly registry: Registry;
     removeRecord(doctype: string | DoctypeMeta, recordId: string): void;
     runAction(_doctype: DoctypeMeta, _action: string, _args?: any[]): void;
     setCurrentRecord(doctype: string | DoctypeMeta, recordId: string): void;

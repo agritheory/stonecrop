@@ -7,9 +7,7 @@
 import ActionSet from './components/ActionSet.vue';
 import CommandPalette from './components/CommandPalette.vue';
 import Desktop from './components/Desktop.vue';
-import Doctype from './components/Doctype.vue';
 import { Plugin as Plugin_2 } from 'vue';
-import Records from './components/Records.vue';
 import SheetNav from './components/SheetNav.vue';
 
 // @public
@@ -32,8 +30,6 @@ export { CommandPalette }
 
 export { Desktop }
 
-export { Doctype }
-
 // @public
 export type DropdownElement = BaseElement & {
     type: 'dropdown';
@@ -45,8 +41,6 @@ export type ElementAction = BaseElement & {
     link?: string;
     action?: () => void;
 };
-
-export { Records }
 
 export { SheetNav }
 

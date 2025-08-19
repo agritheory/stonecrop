@@ -1,5 +1,5 @@
 import { List, Map } from 'immutable'
-// import { createPinia } from 'pinia'
+import { createPinia } from 'pinia'
 import { createApp } from 'vue'
 import { createActor } from 'xstate'
 
@@ -20,8 +20,8 @@ makeServer()
 
 // Install plugins in correct order following Vue.js best practices
 // 1. State management first
-// const pinia = createPinia()
-// app.use(pinia)
+const pinia = createPinia()
+app.use(pinia)
 
 // 2. Router before any plugins that might use it
 app.use(router)
@@ -47,6 +47,4 @@ app.use(ATable)
 app.use(StonecropDesktop)
 
 // Mount the app (Pinia becomes active here)
-router.isReady().then(() => {
-	app.mount('#app')
-})
+app.mount('#app')
