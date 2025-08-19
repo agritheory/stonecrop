@@ -20,6 +20,14 @@ Vue component exported from @stonecrop/desktop.
 import { CommandPalette } from '@stonecrop/desktop'
 ```
 
+### Desktop
+
+Vue component exported from @stonecrop/desktop.
+
+```typescript
+import { Desktop } from '@stonecrop/desktop'
+```
+
 ### Doctype
 
 Vue component exported from @stonecrop/desktop.

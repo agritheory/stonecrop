@@ -1,15 +1,15 @@
 <template>
 	<div id="home">
-		<pre>{{ stonecropInfo }}</pre>
-		<!-- <Fieldtype></Fieldtype> -->
+		<pre>Stonecrop: {{ stonecropInfo }}</pre>
+		<Desktop :elements="actionElements" :route="$route" />
 	</div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
 import { useStonecrop } from '@stonecrop/stonecrop'
+import { computed } from 'vue'
 
-// import Fieldtype from './Fieldtype.vue'
+import { actionElements } from './mocks/elements'
 
 const { stonecrop } = useStonecrop()
 

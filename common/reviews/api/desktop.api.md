@@ -6,6 +6,7 @@
 
 import ActionSet from './components/ActionSet.vue';
 import CommandPalette from './components/CommandPalette.vue';
+import Desktop from './components/Desktop.vue';
 import Doctype from './components/Doctype.vue';
 import { Plugin as Plugin_2 } from 'vue';
 import Records from './components/Records.vue';
@@ -28,6 +29,8 @@ export type ButtonElement = BaseElement & ElementAction & {
 };
 
 export { CommandPalette }
+
+export { Desktop }
 
 export { Doctype }
 

@@ -62,11 +62,11 @@ import { onMounted, ref } from 'vue'
 
 import type { ActionElements } from '../types'
 
-const { elements } = defineProps<{ elements?: ActionElements[] }>()
+const { elements = [] } = defineProps<{ elements?: ActionElements[] }>()
 
 const _elements = ref(elements)
 const isOpen = ref(false)
-const timeout = ref<number>(null)
+const timeoutId = ref<number | null>(null)
 const hover = ref(false)
 const closeClicked = ref(false)
 
@@ -84,7 +84,7 @@ const closeDropdowns = () => {
 
 const onHover = () => {
 	hover.value = true
-	timeout.value = setTimeout(() => {
+	timeoutId.value = setTimeout(() => {
 		if (hover.value) {
 			isOpen.value = true
 		}
@@ -94,7 +94,7 @@ const onHover = () => {
 const onHoverLeave = () => {
 	hover.value = false
 	closeClicked.value = false
-	clearTimeout(timeout.value)
+	if (timeoutId.value) clearTimeout(timeoutId.value)
 	isOpen.value = false
 }
 

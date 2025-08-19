@@ -5,7 +5,7 @@ export default defineConfig({
 	plugins: [vue()],
 	server: {
 		fs: {
-			allow: ['..'],
+			allow: ['../..'],
 		},
 	},
 })
