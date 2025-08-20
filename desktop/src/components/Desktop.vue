@@ -16,8 +16,9 @@
 			- LoadMockData Results: {{ debugInfo.loadMockDataResults }}
 			- GetRecords Results: {{ debugInfo.getRecordsResults }}
 			- Stonecrop Ready: {{ debugInfo.stonecropReady }}
-			- API Response: {{ debugInfo.apiResponse }}
 			- Watcher Triggered: {{ debugInfo.watcherTriggered }}
+			- Schema: {{ currentViewSchema }}
+			- Data: {{ currentViewData }}
 		</pre
 		>
 
@@ -25,7 +26,7 @@
 		<ActionSet :elements="actionElements" />
 
 		<!-- Main content using AForm -->
-		<AForm v-if="currentViewSchema.length > 0" v-model="currentViewSchema" :data="currentViewData" />
+		<AForm v-if="currentViewData.length > 0" v-model="currentViewSchema" :data="currentViewData" />
 		<div v-else-if="!stonecrop" class="loading"><p>Initializing Stonecrop...</p></div>
 		<div v-else-if="currentView === 'records' && !currentDoctype" class="loading">
 			<p>Loading doctype information...</p>
@@ -57,7 +58,7 @@
 <script setup lang="ts">
 import { useStonecrop } from '@stonecrop/stonecrop'
 import { AForm, type SchemaTypes } from '@stonecrop/aform'
-import { computed, nextTick, onMounted, provide, ref, unref, watch, defineExpose } from 'vue'
+import { computed, nextTick, onMounted, provide, ref, unref, watch } from 'vue'
 
 import ActionSet from './ActionSet.vue'
 import SheetNav from './SheetNav.vue'
@@ -85,7 +86,6 @@ const debugInfo = ref({
 	loadMockDataResults: '',
 	getRecordsResults: '',
 	stonecropReady: false,
-	apiResponse: null as any,
 	watcherTriggered: false,
 })
 
@@ -191,7 +191,7 @@ const actionElements = computed<ActionElements[]>(() => {
 				{
 					type: 'button',
 					label: 'New Record',
-					action: () => createNewRecord(),
+					action: () => void createNewRecord(),
 				},
 				{
 					type: 'button',
@@ -209,19 +209,19 @@ const actionElements = computed<ActionElements[]>(() => {
 					{
 						type: 'button',
 						label: 'Save',
-						action: () => handleSave(),
+						action: () => void handleSave(),
 					},
 					{
 						type: 'button',
 						label: 'Delete',
-						action: () => handleDelete(),
+						action: () => void handleDelete(),
 					}
 				)
 			} else {
 				elements.push({
 					type: 'button',
 					label: 'Save',
-					action: () => handleSave(),
+					action: () => void handleSave(),
 				})
 			}
 			break
@@ -281,7 +281,7 @@ const searchCommands = (query: string): Command[] => {
 		commands.push({
 			title: `Create New ${formatDoctypeName(currentDoctype.value)}`,
 			description: `Create a new ${currentDoctype.value} record`,
-			action: () => createNewRecord(),
+			action: () => void createNewRecord(),
 		})
 	}
 
@@ -323,17 +323,17 @@ const getRecordCount = (doctype: string): number => {
 	return recordIds.length
 }
 
-const navigateToDoctype = (doctype: string) => {
-	void router.value?.push(`/${doctype}`)
+const navigateToDoctype = async (doctype: string) => {
+	await router.value?.push(`/${doctype}`)
 }
 
-const openRecord = (recordId: string) => {
-	void router.value?.push(`/${currentDoctype.value}/${recordId}`)
+const openRecord = async (recordId: string) => {
+	await router.value?.push(`/${currentDoctype.value}/${recordId}`)
 }
 
-const createNewRecord = () => {
+const createNewRecord = async () => {
 	const newId = `new-${Date.now()}`
-	void router.value?.push(`/${currentDoctype.value}/${newId}`)
+	await router.value?.push(`/${currentDoctype.value}/${newId}`)
 }
 
 // Schema generators
@@ -406,6 +406,7 @@ const getDoctypesSchema = (): SchemaTypes[] => {
 }
 
 const getRecordsSchema = (): SchemaTypes[] => {
+	console.log('Getting records schema for:', currentDoctype.value)
 	if (!currentDoctype.value) return []
 	if (!stonecrop.value) return []
 
@@ -421,6 +422,7 @@ const getRecordsSchema = (): SchemaTypes[] => {
 	}
 
 	// If no columns are available, show a loading or empty state
+	console.log('Column Data:', columns)
 	if (columns.length === 0) {
 		return [
 			{
@@ -449,6 +451,7 @@ const getRecordsSchema = (): SchemaTypes[] => {
 		]
 	}
 
+	console.log('Record Data:', records)
 	const rows = records.map((record: any) => ({
 		...record,
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -651,20 +654,9 @@ const getRecords = () => {
 		recordsData ? Object.keys(recordsData).length : 0
 	}`
 
-	// Debug: Add to global window for debugging
-	if (typeof window !== 'undefined') {
-		;(window as any).debugRecords = {
-			stonecrop: !!stonecrop.value,
-			doctype: currentDoctype.value,
-			recordsNode,
-			recordsData,
-			isObject: recordsData && typeof recordsData === 'object',
-			isArray: Array.isArray(recordsData),
-			keys: recordsData ? Object.keys(recordsData) : [],
-		}
-	}
-
+	console.log('Debug Info:', recordsData)
 	if (recordsData && typeof recordsData === 'object' && !Array.isArray(recordsData)) {
+		console.log('Record Keys:', Object.values(recordsData as Record<string, any>))
 		return Object.values(recordsData as Record<string, any>)
 	}
 
@@ -717,9 +709,9 @@ const loadMockData = async (doctype: string) => {
 		const response = await fetch(`/${doctype}`)
 		if (response.ok) {
 			const records = await response.json()
-			debugInfo.value.apiResponse = records
 
 			if (Array.isArray(records) && records.length > 0) {
+				currentViewData.value = records
 				debugInfo.value.loadMockDataResults = `API returned ${records.length} records, adding to HST...`
 
 				// Clear and reload from API
@@ -754,48 +746,6 @@ const loadMockData = async (doctype: string) => {
 	} catch (error) {
 		debugInfo.value.loadMockDataResults = `API error: ${error}, falling back to hardcoded data`
 	}
-
-	// Fallback to hardcoded mock data if API fails
-	const mockData = getMockDataForDoctype(doctype)
-	debugInfo.value.loadMockDataResults += ` | Using hardcoded data: ${mockData.length} records`
-
-	if (mockData.length > 0) {
-		stonecrop.value.clearRecords(doctype)
-
-		let successCount = 0
-		mockData.forEach(record => {
-			stonecrop.value?.addRecord(doctype, record.id, record)
-
-			// Verify the record was added
-			const addedRecord = stonecrop.value?.getRecordById(doctype, record.id)
-			if (addedRecord) {
-				successCount++
-			}
-		})
-
-		debugInfo.value.loadMockDataResults += ` | Successfully added: ${successCount}/${mockData.length} | Final count: ${
-			getRecords().length
-		}`
-	}
-}
-
-const getMockDataForDoctype = (doctype: string): Array<{ id: string; [key: string]: any }> => {
-	switch (doctype) {
-		case 'to-do':
-			return [
-				{ id: '1', first_name: 'Luke', last_name: 'Skywalker', phone: '+1 123 456 7890' },
-				{ id: '2', first_name: 'Leia', last_name: 'Skywalker', phone: '+1 123 456 7891' },
-				{ id: '3', first_name: 'Anakin', last_name: 'Skywalker', phone: '+1 123 456 7892' },
-			]
-		case 'issue':
-			return [
-				{ id: '1', subject: 'First Issue', date: '2022-01-01' },
-				{ id: '2', subject: 'Second Issue', date: '2022-01-02' },
-				{ id: '3', subject: 'Third Issue', date: '2022-01-03' },
-			]
-		default:
-			return []
-	}
 }
 
 // Doctype metadata loader
@@ -822,7 +772,7 @@ const getCurrentRecord = () => {
 }
 
 // Action handlers (will be triggered by button clicks in the UI)
-const handleSave = () => {
+const handleSave = async () => {
 	if (!stonecrop.value) return
 
 	saving.value = true
@@ -837,7 +787,7 @@ const handleSave = () => {
 			stonecrop.value.addRecord(currentDoctype.value, newId, recordData)
 			stonecrop.value.setCurrentRecord(currentDoctype.value, newId)
 
-			void router.value?.replace(`/${currentDoctype.value}/${newId}`)
+			await router.value?.replace(`/${currentDoctype.value}/${newId}`)
 		} else {
 			const recordData = { id: currentRecordId.value, ...formData }
 			stonecrop.value.addRecord(currentDoctype.value, currentRecordId.value, recordData)
@@ -849,16 +799,16 @@ const handleSave = () => {
 	}
 }
 
-const handleCancel = () => {
+const handleCancel = async () => {
 	if (isNewRecord.value) {
-		void router.value?.push(`/${currentDoctype.value}`)
+		await router.value?.push(`/${currentDoctype.value}`)
 	} else {
 		// Reload current record data
 		loadRecordData()
 	}
 }
 
-const handleDelete = (recordId?: string) => {
+const handleDelete = async (recordId?: string) => {
 	if (!stonecrop.value) return
 
 	const targetRecordId = recordId || currentRecordId.value
@@ -868,29 +818,29 @@ const handleDelete = (recordId?: string) => {
 		stonecrop.value.removeRecord(currentDoctype.value, targetRecordId)
 
 		if (currentView.value === 'record') {
-			void router.value?.push(`/${currentDoctype.value}`)
+			await router.value?.push(`/${currentDoctype.value}`)
 		}
 	}
 }
 
 // Event handlers
-const handleClick = (event: Event) => {
+const handleClick = async (event: Event) => {
 	const target = event.target as HTMLElement
 	const action = target.getAttribute('data-action')
 
 	if (action) {
 		switch (action) {
 			case 'create':
-				createNewRecord()
+				await createNewRecord()
 				break
 			case 'save':
-				handleSave()
+				await handleSave()
 				break
 			case 'cancel':
-				handleCancel()
+				await handleCancel()
 				break
 			case 'delete':
-				handleDelete()
+				await handleDelete()
 				break
 		}
 	}
@@ -908,7 +858,7 @@ const handleClick = (event: Event) => {
 				const doctypeCell = cells[1] // Assuming doctype is in second column (first column is index)
 				const doctype = doctypeCell.textContent?.trim()
 				if (doctype) {
-					navigateToDoctype(doctype)
+					await navigateToDoctype(doctype)
 				}
 			}
 		} else if (cellText?.includes('Edit') && row) {
@@ -918,7 +868,7 @@ const handleClick = (event: Event) => {
 				const idCell = cells[0] // Assuming ID is in first column
 				const recordId = idCell.textContent?.trim()
 				if (recordId) {
-					openRecord(recordId)
+					await openRecord(recordId)
 				}
 			}
 		} else if (cellText?.includes('Delete') && row) {
@@ -928,7 +878,7 @@ const handleClick = (event: Event) => {
 				const idCell = cells[0] // Assuming ID is in first column
 				const recordId = idCell.textContent?.trim()
 				if (recordId) {
-					handleDelete(recordId)
+					await handleDelete(recordId)
 				}
 			}
 		}
@@ -957,31 +907,6 @@ watch(
 	},
 	{ immediate: true }
 )
-
-// Test function to manually trigger mock data loading
-const testLoadData = async () => {
-	if (stonecrop.value && currentDoctype.value) {
-		loadDoctypeMetadata(currentDoctype.value)
-		const beforeRecords = getRecords()
-		await loadMockData(currentDoctype.value)
-		const afterRecords = getRecords()
-		return { before: beforeRecords.length, after: afterRecords.length }
-	}
-	return { before: 0, after: 0 }
-}
-
-// Test API directly
-const testAPI = async () => {
-	try {
-		const response = await fetch('/to-do')
-		const data = await response.json()
-		debugInfo.value.apiResponse = data
-		return data
-	} catch (error) {
-		debugInfo.value.apiResponse = { error: String(error) }
-		return { error: String(error) }
-	}
-}
 
 // Watch for when we need to load data for records view
 watch(
@@ -1026,23 +951,6 @@ const loadRecordData = () => {
 		loading.value = false
 	}
 }
-
-// Expose action handlers for use by child components
-defineExpose({
-	createNewRecord,
-	currentDoctype,
-	currentView,
-	getRecords,
-	handleCancel,
-	handleDelete,
-	handleSave,
-	loadMockData,
-	navigateToDoctype,
-	openRecord,
-	testLoadData,
-	testAPI,
-	debugInfo,
-})
 
 // Provide methods for action components
 const desktopMethods = {
