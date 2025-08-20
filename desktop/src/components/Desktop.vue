@@ -1,177 +1,323 @@
 <template>
-	<pre>Stonecrop: {{ stonecropInfo }}</pre>
-	<pre>Route Info: {{ route }}</pre>
+	<div class="desktop">
+		<!-- Debug info -->
+		<pre v-if="showDebug" class="debug-info">Route: {{ route }}</pre>
 
-	<!-- elements -->
-	<ActionSet id="desktop-action-set" :elements="elements" />
-	<SheetNav id="desktop-sheet-nav" :breadcrumbs="breadcrumbs" />
+		<!-- Main content based on route -->
+		<div v-if="currentView === 'doctypes'" class="doctype-list">
+			<h1>Available Doctypes</h1>
+			<div class="doctype-grid">
+				<div
+					v-for="doctype in availableDoctypes"
+					:key="doctype"
+					class="doctype-card"
+					@click="navigateToDoctype(doctype)">
+					<h3>{{ formatDoctypeName(doctype) }}</h3>
+					<p>{{ getRecordCount(doctype) }} records</p>
+				</div>
+			</div>
+		</div>
 
-	<!-- content -->
-	<AForm id="desktop-content" v-model="formSchema" :data="formData" />
+		<div v-else-if="currentView === 'records'" class="records-list">
+			<div class="header">
+				<nav class="breadcrumbs">
+					<router-link to="/">Home</router-link>
+					<span class="separator">/</span>
+					<span class="current">{{ formatDoctypeName(currentDoctype) }}</span>
+				</nav>
+				<h1>{{ formatDoctypeName(currentDoctype) }} Records</h1>
+			</div>
 
-	<!-- modals -->
-	<CommandPalette
-		id="desktop-command-palette"
-		v-if="search"
-		:search="search"
-		:is-open="isCommandPaletteOpen"
-		:placeholder="placeholder"
-		:max-results="maxResults"
-		@select="$emit('select', $event)"
-		@close="$emit('close')">
-		<template #title="{ result }">
-			<slot name="searchTitle" :result="result" />
-		</template>
-		<template #content="{ result }">
-			<slot name="searchContent" :result="result" />
-		</template>
-		<template #empty>
-			<slot name="searchEmpty" />
-		</template>
-	</CommandPalette>
+			<div class="actions">
+				<button @click="createNewRecord" class="btn-primary">New {{ formatDoctypeName(currentDoctype) }}</button>
+			</div>
+
+			<div v-if="loading" class="loading">Loading records...</div>
+
+			<div v-else-if="records.length === 0" class="empty-state">
+				<p>No {{ currentDoctype }} records found.</p>
+				<button @click="createNewRecord" class="btn-primary">Create First Record</button>
+			</div>
+
+			<div v-else class="records-table">
+				<div class="table-header">
+					<div v-for="column in columns" :key="column.fieldname" class="header-cell">
+						{{ column.label }}
+					</div>
+					<div class="header-cell">Actions</div>
+				</div>
+
+				<div v-for="record in records" :key="record.id" class="table-row" @click="openRecord(record.id)">
+					<div v-for="column in columns" :key="column.fieldname" class="table-cell">
+						{{ record[column.fieldname] || '-' }}
+					</div>
+					<div class="table-cell actions-cell">
+						<button @click.stop="openRecord(record.id)" class="btn-secondary btn-sm">Edit</button>
+						<button @click.stop="deleteRecord(record.id)" class="btn-danger btn-sm">Delete</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div v-else-if="currentView === 'record'" class="record-form">
+			<div class="header">
+				<nav class="breadcrumbs">
+					<router-link to="/">Home</router-link>
+					<span class="separator">/</span>
+					<router-link :to="`/${currentDoctype}`">{{ formatDoctypeName(currentDoctype) }}</router-link>
+					<span class="separator">/</span>
+					<span class="current">{{ isNewRecord ? 'New Record' : currentRecordId }}</span>
+				</nav>
+				<h1>
+					{{ isNewRecord ? `New ${formatDoctypeName(currentDoctype)}` : `Edit ${formatDoctypeName(currentDoctype)}` }}
+				</h1>
+			</div>
+
+			<div class="actions">
+				<button @click="saveRecord" class="btn-primary" :disabled="saving">
+					{{ saving ? 'Saving...' : 'Save' }}
+				</button>
+				<button @click="cancelEdit" class="btn-secondary">Cancel</button>
+				<button v-if="!isNewRecord" @click="deleteRecord(currentRecordId)" class="btn-danger">Delete</button>
+			</div>
+
+			<div v-if="loading" class="loading">Loading record...</div>
+
+			<div v-else-if="formSchema.length > 0" class="form-container">
+				<AForm v-model="formSchema" :data="formData" @update:data="handleFormDataUpdate" />
+			</div>
+
+			<div v-else class="error-state">
+				<p>Unable to load form schema for {{ currentDoctype }}</p>
+			</div>
+		</div>
+	</div>
 </template>
 
-<script setup lang="ts" generic="T">
-import { AForm, SchemaTypes } from '@stonecrop/aform'
-import { HST, useStonecrop } from '@stonecrop/stonecrop'
+<script setup lang="ts">
+import { useStonecrop } from '@stonecrop/stonecrop'
+import { AForm, type SchemaTypes } from '@stonecrop/aform'
 import { computed, ref, unref, watch } from 'vue'
 
-import ActionSet from './ActionSet.vue'
-import CommandPalette from './CommandPalette.vue'
-import SheetNav from './SheetNav.vue'
-import { ActionElements } from '../types'
-
-type ActionSetProps = {
-	// action elements to display in the action set
-	elements?: ActionElements[]
+type Props = {
+	availableDoctypes?: string[]
+	showDebug?: boolean
 }
 
-type SheetNavProps = {
-	// breadcrumbs for navigation
-	breadcrumbs?: { title: string; to: string }[]
-}
-
-type CommandPaletteProps = {
-	search?: (query: string) => T[]
-	isCommandPaletteOpen?: boolean
-	placeholder?: string
-	maxResults?: number
-}
-
-type Slots = { searchTitle?: { result: T }; searchContent?: { result: T }; searchEmpty?: null }
-type Props = ActionSetProps & SheetNavProps & CommandPaletteProps
-type Emits = { select: [T]; close: [] }
-
-defineSlots<Slots>()
-defineProps<Props>()
-defineEmits<Emits>()
-
-const { stonecrop } = useStonecrop()
-const route = computed(() => stonecrop.value?.registry.router?.currentRoute)
-const formSchema = ref<SchemaTypes[]>([])
-const formData = ref<Record<string, unknown>>({})
-
-const stonecropInfo = computed(() => {
-	if (!stonecrop.value) {
-		return 'Stonecrop not initialized'
-	}
-
-	// Get store info without circular references
-	const store = stonecrop.value.getStore()
-
-	// Try to get store keys safely without triggering circular ref issues
-	try {
-		// Get just the top-level keys of the store structure
-		const storeData = store.get('')
-		const storeKeys = typeof storeData === 'object' && storeData !== null ? Object.keys(storeData) : []
-
-		return {
-			initialized: !!stonecrop.value,
-			storeKeys,
-			message: 'Stonecrop with HST initialized successfully',
-		}
-	} catch (error) {
-		return {
-			initialized: !!stonecrop.value,
-			error: 'Error accessing store data',
-			message: 'Stonecrop initialized but store data not accessible',
-		}
-	}
+withDefaults(defineProps<Props>(), {
+	availableDoctypes: () => ['to-do', 'issue'],
+	showDebug: false,
 })
 
+const { stonecrop } = useStonecrop()
+
+// State
+const loading = ref(false)
+const saving = ref(false)
+const formSchema = ref<SchemaTypes[]>([])
+const formData = ref<Record<string, any>>({})
+
+// Computed properties for current route context
+const route = computed(() => unref(stonecrop.value?.registry.router?.currentRoute))
+const router = computed(() => stonecrop.value?.registry.router)
+const currentDoctype = computed(() => route.value?.params.doctype as string)
+const currentRecordId = computed(() => route.value?.params.recordId as string)
+const isNewRecord = computed(() => currentRecordId.value?.startsWith('new-'))
+
+// Determine current view based on route
+const currentView = computed(() => {
+	if (!route.value) return 'doctypes'
+
+	const routeName = route.value.name as string
+	const { doctype, recordId } = route.value.params
+
+	// Check route name first for most accurate determination
+	if (routeName === 'record-form' || recordId) {
+		return 'record'
+	} else if (routeName === 'records-list' || doctype) {
+		return 'records'
+	} else if (routeName === 'home' || route.value.path === '/') {
+		return 'doctypes'
+	}
+
+	// Fallback logic for catch-all route using pathMatch
+	const pathParams = route.value.params.pathMatch as string[] | undefined
+	if (pathParams && pathParams.length > 0) {
+		if (pathParams.length === 1) {
+			return 'records'
+		} else if (pathParams.length === 2) {
+			return 'record'
+		}
+	}
+
+	// Default fallback
+	return 'doctypes'
+})
+
+// Get records for current doctype
+const records = computed(() => {
+	if (!stonecrop.value || !currentDoctype.value) return []
+
+	const recordsNode = stonecrop.value.records(currentDoctype.value)
+	const recordsData = recordsNode?.get('')
+
+	if (recordsData && typeof recordsData === 'object' && !Array.isArray(recordsData)) {
+		return Object.values(recordsData as Record<string, any>)
+	}
+
+	return []
+})
+
+// Get columns for records table
+const columns = computed(() => {
+	if (!stonecrop.value || !currentDoctype.value) return []
+
+	try {
+		const registry = stonecrop.value.registry
+		const meta = registry.registry[currentDoctype.value]
+
+		if (meta?.schema) {
+			const schemaArray = 'toArray' in meta.schema ? meta.schema.toArray() : meta.schema
+			return schemaArray.map(field => ({
+				fieldname: field.fieldname,
+				label: ('label' in field && field.label) || field.fieldname,
+				fieldtype: ('fieldtype' in field && field.fieldtype) || 'Data',
+			}))
+		}
+	} catch (error) {
+		// Error getting schema - return empty array
+	}
+
+	return []
+})
+
+// Watch for route changes to load appropriate data
 watch(
-	route,
-	newRoute => {
-		if (!stonecrop.value) return
-
-		const params = unref(newRoute)?.params.pathMatch
-
-		if (!params || params.length === 0) {
-			// root route
-		} else {
-			formData.value = {}
-			const doctype = params[0].toLowerCase()
-			console.log('Doctype:', doctype)
-
-			if (doctype) {
-				// Use HST to get doctype metadata from the global registry
-				const hst = HST.getInstance()
-				const meta = hst.getDoctypeMeta(doctype)
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-				if (!meta?.schema) formData.value.columns = []
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-				const schemaArray = (meta?.schema.toArray() || []) as SchemaTypes[]
-
-				if (params.length === 1) {
-					// doctype list route
-
-					// Get all records for this doctype using HST
-					const recordsNode = stonecrop.value.records(doctype)
-					const recordsData = recordsNode?.get('')
-					console.log('Records data:', recordsData)
-
-					// Convert records hash to array format expected by ATable
-					if (recordsData && typeof recordsData === 'object' && !Array.isArray(recordsData)) {
-						formData.value.rows = Object.values(recordsData as Record<string, unknown>)
-					} else {
-						formData.value.rows = []
-					}
-
-					// Convert schema to table columns
-					formData.value.columns = schemaArray.map((field: SchemaTypes) => ({
-						name: field.fieldname,
-						fieldname: field.fieldname,
-						label: ('label' in field && field.label) || field.fieldname,
-						type: ('fieldtype' in field && field.fieldtype) || 'Data',
-						component: field.component,
-					}))
-					console.log('Records columns:', formData.value.columns)
-				} else {
-					const recordId = params[1]
-					// doctype form route
-					// Get current record data if recordId is provided
-					if (recordId) {
-						const currentRecord = stonecrop.value.currentRecord(doctype)
-						if (currentRecord) {
-							// Extract form data from the current record
-							const recordData = currentRecord.get('')
-							formData.value = recordData || {}
-
-							// Set field values in schema
-							schemaArray.forEach((item, index) => {
-								if (formData.value && item.fieldname in formData.value) {
-									schemaArray[index] = { ...item, value: formData.value[item.fieldname] }
-								}
-							})
-						}
-					}
-
-					console.log('Form data:', formData.value)
-					formSchema.value = schemaArray
-				}
-			}
+	[currentView, currentDoctype, currentRecordId],
+	() => {
+		if (currentView.value === 'record') {
+			loadRecordData()
 		}
 	},
 	{ immediate: true }
 )
+
+// Methods
+const formatDoctypeName = (doctype: string): string => {
+	return doctype
+		.split('-')
+		.map(word => word.charAt(0).toUpperCase() + word.slice(1))
+		.join(' ')
+}
+
+const getRecordCount = (doctype: string): number => {
+	if (!stonecrop.value) return 0
+	const recordIds = stonecrop.value.getRecordIds(doctype)
+	return recordIds.length
+}
+
+const navigateToDoctype = (doctype: string) => {
+	void router.value?.push(`/${doctype}`)
+}
+
+const openRecord = (recordId: string) => {
+	void router.value?.push(`/${currentDoctype.value}/${recordId}`)
+}
+
+const createNewRecord = () => {
+	const newId = `new-${Date.now()}`
+	void router.value?.push(`/${currentDoctype.value}/${newId}`)
+}
+
+const loadRecordData = () => {
+	if (!stonecrop.value || !currentDoctype.value) return
+
+	loading.value = true
+
+	try {
+		// Get schema from registry
+		const registry = stonecrop.value.registry
+		const meta = registry.registry[currentDoctype.value]
+
+		if (meta?.schema) {
+			const schemaArray = 'toArray' in meta.schema ? meta.schema.toArray() : meta.schema
+			formSchema.value = [...schemaArray]
+		}
+
+		if (isNewRecord.value) {
+			// Initialize empty form data for new record
+			formData.value = {}
+			formSchema.value = formSchema.value.map(field => ({
+				...field,
+				value: '',
+			}))
+		} else {
+			// Load existing record data
+			const currentRecord = stonecrop.value.currentRecord(currentDoctype.value)
+			if (currentRecord) {
+				const recordData = currentRecord.get('') || {}
+				formData.value = { ...recordData }
+
+				formSchema.value = formSchema.value.map(field => ({
+					...field,
+					value: (recordData as Record<string, any>)[field.fieldname] || '',
+				}))
+			}
+		}
+	} catch (error) {
+		// Error loading record data
+	} finally {
+		loading.value = false
+	}
+}
+
+const handleFormDataUpdate = (newData: Record<string, any>) => {
+	formData.value = { ...newData }
+}
+
+const saveRecord = () => {
+	if (!stonecrop.value) return
+
+	saving.value = true
+
+	try {
+		const recordData = { ...formData.value }
+
+		if (isNewRecord.value) {
+			const newId = `record-${Date.now()}`
+			recordData.id = newId
+
+			stonecrop.value.addRecord(currentDoctype.value, newId, recordData)
+			stonecrop.value.setCurrentRecord(currentDoctype.value, newId)
+
+			void router.value?.replace(`/${currentDoctype.value}/${newId}`)
+		} else {
+			stonecrop.value.addRecord(currentDoctype.value, currentRecordId.value, recordData)
+		}
+	} catch (error) {
+		// Error saving record
+	} finally {
+		saving.value = false
+	}
+}
+
+const cancelEdit = () => {
+	if (isNewRecord.value) {
+		void router.value?.push(`/${currentDoctype.value}`)
+	} else {
+		loadRecordData()
+	}
+}
+
+const deleteRecord = (recordId: string) => {
+	if (!stonecrop.value) return
+
+	if (confirm('Are you sure you want to delete this record?')) {
+		stonecrop.value.removeRecord(currentDoctype.value, recordId)
+
+		if (currentView.value === 'record') {
+			void router.value?.push(`/${currentDoctype.value}`)
+		}
+	}
+}
 </script>
