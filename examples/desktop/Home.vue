@@ -33,7 +33,95 @@ const showDebug = ref(false) // Set to true for debugging
 	font-size: 0.875rem;
 }
 
-/* Doctype List Styles */
+/* AForm-based View Styles */
+.home-wrapper :deep(.view-header) {
+	margin-bottom: 2rem;
+}
+
+.home-wrapper :deep(.view-header h1) {
+	margin: 0.5rem 0 0 0;
+	color: #1f2937;
+	font-size: 2rem;
+	font-weight: 700;
+}
+
+.home-wrapper :deep(.view-actions) {
+	margin: 1rem 0 2rem 0;
+}
+
+.home-wrapper :deep(.breadcrumbs) {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	margin-bottom: 0.5rem;
+	font-size: 0.875rem;
+	color: #6b7280;
+}
+
+.home-wrapper :deep(.breadcrumbs a) {
+	color: #3b82f6;
+	text-decoration: none;
+	font-weight: 500;
+}
+
+.home-wrapper :deep(.breadcrumbs a:hover) {
+	text-decoration: underline;
+}
+
+.home-wrapper :deep(.separator) {
+	color: #d1d5db;
+	font-weight: 400;
+}
+
+.home-wrapper :deep(.current) {
+	color: #1f2937;
+	font-weight: 600;
+}
+
+.home-wrapper :deep(.empty-state) {
+	text-align: center;
+	padding: 3rem 1rem;
+	color: #6b7280;
+}
+
+.home-wrapper :deep(.empty-state p) {
+	margin-bottom: 1rem;
+	font-size: 1.125rem;
+}
+
+/* Table Styles for AForm */
+.home-wrapper :deep(.aform-table) {
+	background: white;
+	border-radius: 8px;
+	box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+	overflow: hidden;
+}
+
+.home-wrapper :deep(.aform-table table) {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+.home-wrapper :deep(.aform-table th) {
+	background-color: #f9fafb;
+	padding: 0.75rem 1rem;
+	text-align: left;
+	font-weight: 600;
+	color: #374151;
+	border-bottom: 1px solid #e5e7eb;
+}
+
+.home-wrapper :deep(.aform-table td) {
+	padding: 0.75rem 1rem;
+	border-bottom: 1px solid #f3f4f6;
+	color: #374151;
+}
+
+.home-wrapper :deep(.aform-table tbody tr:hover) {
+	background-color: #f9fafb;
+}
+
+/* Doctype List Styles (Legacy - keeping for backward compatibility) */
 .home-wrapper :deep(.doctype-list h1) {
 	margin-bottom: 2rem;
 	color: #1f2937;

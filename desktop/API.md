@@ -28,6 +28,22 @@ Vue component exported from @stonecrop/desktop.
 import { Desktop } from '@stonecrop/desktop'
 ```
 
+### DoctypeActions
+
+Vue component exported from @stonecrop/desktop.
+
+```typescript
+import { DoctypeActions } from '@stonecrop/desktop'
+```
+
+### RecordActions
+
+Vue component exported from @stonecrop/desktop.
+
+```typescript
+import { RecordActions } from '@stonecrop/desktop'
+```
+
 ### SheetNav
 
 Vue component exported from @stonecrop/desktop.
