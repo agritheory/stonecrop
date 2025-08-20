@@ -21,8 +21,8 @@ import type { InstallOptions } from '../types'
  *
  * // Install in correct order
  * app.use(createPinia())
- * app.use(router)
  * app.use(Stonecrop, {
+ *  router,
  *  components: {
  *   // register custom components
  *  },
@@ -30,7 +30,6 @@ import type { InstallOptions } from '../types'
  *   // fetch doctype meta from API
  *  },
  * })
- *
  * app.mount('#app')
  * ```
  *
@@ -41,21 +40,13 @@ const plugin: Plugin = {
 		// Check for existing router installation
 		const existingRouter = app.config.globalProperties.$router
 		const providedRouter = options?.router
-
-		// Use existing router or provided router for Registry
-		const appRouter = existingRouter || providedRouter
-
+		const router = existingRouter || providedRouter
 		if (!existingRouter && providedRouter) {
-			console.warn(
-				'[Stonecrop]: Router provided but not installed. ' +
-					'Please install router before Stonecrop plugin: app.use(router)'
-			)
+			app.use(providedRouter)
 		}
 
 		// Create registry with available router
-		const registry = new Registry(appRouter, options?.getMeta)
-
-		// Provide registry to the application
+		const registry = new Registry(router, options?.getMeta)
 		app.provide('$registry', registry)
 		app.config.globalProperties.$registry = registry
 

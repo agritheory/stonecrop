@@ -23,11 +23,9 @@ makeServer()
 const pinia = createPinia()
 app.use(pinia)
 
-// 2. Router before any plugins that might use it
-app.use(router)
-
-// 3. Stonecrop plugin (router already available)
+// 2. Stonecrop plugin (w/ router)
 app.use(Stonecrop, {
+	router,
 	getMeta: async (doctype: string) => {
 		const response = await fetch(`/meta/${doctype}`)
 		const data = (await response.json()) as MutableDoctype
@@ -41,7 +39,7 @@ app.use(Stonecrop, {
 	},
 })
 
-// 4. Component plugins
+// 3. Component plugins
 app.use(AForm)
 app.use(ATable)
 app.use(StonecropDesktop)

@@ -1,5 +1,6 @@
 <template>
-	<pre>Route Info: {{ stonecrop?.registry.router?.currentRoute }}</pre>
+	<pre>Stonecrop: {{ stonecropInfo }}</pre>
+	<pre>Route Info: {{ route }}</pre>
 
 	<!-- elements -->
 	<ActionSet id="desktop-action-set" :elements="elements" />
@@ -69,6 +70,34 @@ const { stonecrop } = useStonecrop()
 const route = computed(() => stonecrop.value?.registry.router?.currentRoute)
 const formSchema = ref<SchemaTypes[]>([])
 const formData = ref<Record<string, unknown>>({})
+
+const stonecropInfo = computed(() => {
+	if (!stonecrop.value) {
+		return 'Stonecrop not initialized'
+	}
+
+	// Get store info without circular references
+	const store = stonecrop.value.getStore()
+
+	// Try to get store keys safely without triggering circular ref issues
+	try {
+		// Get just the top-level keys of the store structure
+		const storeData = store.get('')
+		const storeKeys = typeof storeData === 'object' && storeData !== null ? Object.keys(storeData) : []
+
+		return {
+			initialized: !!stonecrop.value,
+			storeKeys,
+			message: 'Stonecrop with HST initialized successfully',
+		}
+	} catch (error) {
+		return {
+			initialized: !!stonecrop.value,
+			error: 'Error accessing store data',
+			message: 'Stonecrop initialized but store data not accessible',
+		}
+	}
+})
 
 watch(
 	route,
