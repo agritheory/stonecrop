@@ -3,10 +3,30 @@
 		<!-- Debug info -->
 		<pre v-if="showDebug" class="debug-info">Route: {{ route }}</pre>
 
+		<!-- Action Set -->
+		<ActionSet :elements="actionElements" />
+
 		<!-- Main content using AForm -->
 		<AForm v-if="currentViewSchema.length > 0" v-model="currentViewSchema" :data="currentViewData" />
-
 		<div v-else class="loading">Loading...</div>
+
+		<!-- Sheet Navigation -->
+		<SheetNav :breadcrumbs="navigationBreadcrumbs" />
+
+		<!-- Command Palette -->
+		<CommandPalette
+			:is-open="commandPaletteOpen"
+			:search="searchCommands"
+			placeholder="Type a command or search..."
+			@select="executeCommand"
+			@close="commandPaletteOpen = false">
+			<template #title="{ result }">
+				{{ result.title }}
+			</template>
+			<template #content="{ result }">
+				{{ result.description }}
+			</template>
+		</CommandPalette>
 	</div>
 </template>
 
@@ -14,6 +34,10 @@
 import { useStonecrop } from '@stonecrop/stonecrop'
 import { AForm, type SchemaTypes } from '@stonecrop/aform'
 import { computed, onMounted, provide, ref, unref, watch, defineExpose } from 'vue'
+import ActionSet from './ActionSet.vue'
+import SheetNav from './SheetNav.vue'
+import CommandPalette from './CommandPalette.vue'
+import type { ActionElements } from '../types'
 
 type Props = {
 	availableDoctypes?: string[]
@@ -21,7 +45,7 @@ type Props = {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-	availableDoctypes: () => ['to-do', 'issue'],
+	availableDoctypes: () => [],
 	showDebug: false,
 })
 
@@ -31,7 +55,7 @@ const { stonecrop } = useStonecrop()
 const loading = ref(false)
 const saving = ref(false)
 const currentViewData = ref<Record<string, any>>({})
-
+const commandPaletteOpen = ref(false)
 // Computed properties for current route context
 const route = computed(() => unref(stonecrop.value?.registry.router?.currentRoute))
 const router = computed(() => stonecrop.value?.registry.router)
@@ -83,6 +107,144 @@ const currentViewSchema = computed<SchemaTypes[]>(() => {
 	}
 })
 
+// New component reactive properties
+const actionElements = computed<ActionElements[]>(() => {
+	const elements: ActionElements[] = []
+
+	switch (currentView.value) {
+		case 'doctypes':
+			elements.push({
+				type: 'button',
+				label: 'Refresh',
+				action: () => {
+					// Refresh doctypes
+					window.location.reload()
+				},
+			})
+			break
+		case 'records':
+			elements.push(
+				{
+					type: 'button',
+					label: 'New Record',
+					action: () => createNewRecord(),
+				},
+				{
+					type: 'button',
+					label: 'Refresh',
+					action: () => {
+						// Refresh records
+						window.location.reload()
+					},
+				}
+			)
+			break
+		case 'record':
+			if (!isNewRecord.value) {
+				elements.push(
+					{
+						type: 'button',
+						label: 'Save',
+						action: () => handleSave(),
+					},
+					{
+						type: 'button',
+						label: 'Delete',
+						action: () => handleDelete(),
+					}
+				)
+			} else {
+				elements.push({
+					type: 'button',
+					label: 'Save',
+					action: () => handleSave(),
+				})
+			}
+			break
+	}
+
+	return elements
+})
+
+const navigationBreadcrumbs = computed(() => {
+	const breadcrumbs: { title: string; to: string }[] = []
+
+	if (currentView.value === 'records' && currentDoctype.value) {
+		breadcrumbs.push(
+			{ title: 'Home', to: '/' },
+			{ title: formatDoctypeName(currentDoctype.value), to: `/${currentDoctype.value}` }
+		)
+	} else if (currentView.value === 'record' && currentDoctype.value) {
+		breadcrumbs.push(
+			{ title: 'Home', to: '/' },
+			{ title: formatDoctypeName(currentDoctype.value), to: `/${currentDoctype.value}` },
+			{ title: isNewRecord.value ? 'New Record' : 'Edit Record', to: route.value?.fullPath || '' }
+		)
+	}
+
+	return breadcrumbs
+})
+
+// Command palette functionality
+type Command = {
+	title: string
+	description: string
+	action: () => void
+}
+
+const searchCommands = (query: string): Command[] => {
+	const commands: Command[] = [
+		{
+			title: 'Go Home',
+			description: 'Navigate to the home page',
+			action: () => void router.value?.push('/'),
+		},
+		{
+			title: 'Toggle Command Palette',
+			description: 'Open/close the command palette',
+			action: () => (commandPaletteOpen.value = !commandPaletteOpen.value),
+		},
+	]
+
+	// Add doctype-specific commands
+	if (currentDoctype.value) {
+		commands.push({
+			title: `View ${formatDoctypeName(currentDoctype.value)} Records`,
+			description: `Navigate to ${currentDoctype.value} list`,
+			action: () => void router.value?.push(`/${currentDoctype.value}`),
+		})
+
+		commands.push({
+			title: `Create New ${formatDoctypeName(currentDoctype.value)}`,
+			description: `Create a new ${currentDoctype.value} record`,
+			action: () => createNewRecord(),
+		})
+	}
+
+	// Add available doctypes as commands
+	props.availableDoctypes.forEach(doctype => {
+		commands.push({
+			title: `View ${formatDoctypeName(doctype)}`,
+			description: `Navigate to ${doctype} list`,
+			action: () => void router.value?.push(`/${doctype}`),
+		})
+	})
+
+	// Filter commands based on query
+	if (!query) return commands
+
+	return commands.filter(
+		cmd =>
+			cmd.title.toLowerCase().includes(query.toLowerCase()) ||
+			cmd.description.toLowerCase().includes(query.toLowerCase())
+	)
+}
+
+const executeCommand = (command: Command) => {
+	command.action()
+	commandPaletteOpen.value = false
+}
+
 // Helper functions
 const formatDoctypeName = (doctype: string): string => {
 	return doctype
@@ -119,6 +281,7 @@ const getDoctypesSchema = (): SchemaTypes[] => {
 		doctype,
 		display_name: formatDoctypeName(doctype),
 		record_count: getRecordCount(doctype),
+		actions: 'View Records',
 	}))
 
 	return [
@@ -162,11 +325,10 @@ const getDoctypesSchema = (): SchemaTypes[] => {
 				{
 					label: 'Actions',
 					name: 'actions',
-					type: 'component',
+					type: 'Data',
 					align: 'center' as const,
 					edit: false,
 					width: '20ch',
-					cellComponent: 'DoctypeActions',
 				},
 			],
 			config: {
@@ -189,6 +351,7 @@ const getRecordsSchema = (): SchemaTypes[] => {
 		...record,
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 		id: record.id || '',
+		actions: 'Edit | Delete',
 	}))
 
 	return [
@@ -248,11 +411,10 @@ const getRecordsSchema = (): SchemaTypes[] => {
 							{
 								label: 'Actions',
 								name: 'actions',
-								type: 'component',
+								type: 'Data',
 								align: 'center' as const,
 								edit: false,
 								width: '20ch',
-								cellComponent: 'RecordActions',
 							},
 						],
 						config: {
@@ -453,6 +615,45 @@ const handleClick = (event: Event) => {
 				break
 		}
 	}
+
+	// Handle table cell clicks for actions
+	const cell = target.closest('td, th')
+	if (cell) {
+		const cellText = cell.textContent?.trim()
+		const row = cell.closest('tr')
+
+		if (cellText === 'View Records' && row) {
+			// Get the doctype from the row data
+			const cells = row.querySelectorAll('td')
+			if (cells.length > 0) {
+				const doctypeCell = cells[1] // Assuming doctype is in second column (first column is index)
+				const doctype = doctypeCell.textContent?.trim()
+				if (doctype) {
+					navigateToDoctype(doctype)
+				}
+			}
+		} else if (cellText?.includes('Edit') && row) {
+			// Get the record ID from the row
+			const cells = row.querySelectorAll('td')
+			if (cells.length > 0) {
+				const idCell = cells[0] // Assuming ID is in first column
+				const recordId = idCell.textContent?.trim()
+				if (recordId) {
+					openRecord(recordId)
+				}
+			}
+		} else if (cellText?.includes('Delete') && row) {
+			// Get the record ID from the row
+			const cells = row.querySelectorAll('td')
+			if (cells.length > 0) {
+				const idCell = cells[0] // Assuming ID is in first column
+				const recordId = idCell.textContent?.trim()
+				if (recordId) {
+					handleDelete(recordId)
+				}
+			}
+		}
+	}
 }
 
 // Watch for route changes to load appropriate data
@@ -515,5 +716,25 @@ provide('desktopMethods', desktopMethods)
 // Register action components in Vue app
 onMounted(() => {
 	// Components will be automatically registered via the global component system
+
+	// Add keyboard shortcuts
+	const handleKeydown = (event: KeyboardEvent) => {
+		// Ctrl+K or Cmd+K to open command palette
+		if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
+			event.preventDefault()
+			commandPaletteOpen.value = true
+		}
+		// Escape to close command palette
+		if (event.key === 'Escape' && commandPaletteOpen.value) {
+			commandPaletteOpen.value = false
+		}
+	}
+
+	document.addEventListener('keydown', handleKeydown)
+
+	// Cleanup event listener on unmount
+	return () => {
+		document.removeEventListener('keydown', handleKeydown)
+	}
 })
 </script>

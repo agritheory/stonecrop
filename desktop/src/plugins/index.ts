@@ -3,8 +3,6 @@ import { App, type Plugin } from 'vue'
 import ActionSet from '../components/ActionSet.vue'
 import CommandPalette from '../components/CommandPalette.vue'
 import Desktop from '../components/Desktop.vue'
-import DoctypeActions from '../components/DoctypeActions.vue'
-import RecordActions from '../components/RecordActions.vue'
 import SheetNav from '../components/SheetNav.vue'
 
 /**
@@ -16,8 +14,6 @@ const plugin: Plugin = {
 		app.component('ActionSet', ActionSet)
 		app.component('CommandPalette', CommandPalette)
 		app.component('Desktop', Desktop)
-		app.component('DoctypeActions', DoctypeActions)
-		app.component('RecordActions', RecordActions)
 		app.component('SheetNav', SheetNav)
 	},
 }
