@@ -1,14 +1,38 @@
 <template>
 	<div class="desktop" @click="handleClick">
 		<!-- Debug info -->
-		<pre v-if="showDebug" class="debug-info">Route: {{ route }}</pre>
+		<pre v-if="showDebug" class="debug-info">
+			View: {{ currentView }}
+			Route: {{ route?.path }}
+			Doctype: {{ currentDoctype }}
+			RecordID: {{ currentRecordId }}
+			Schema: {{ currentViewSchema?.length }} items
+			Data: {{ Object.keys(currentViewData).length }} keys
+			Records Count: {{ getRecords().length }}
+			Stonecrop Available: {{ !!stonecrop }}
+
+			Debug Info:
+			- LoadMockData Called: {{ debugInfo.loadMockDataCalled }}
+			- LoadMockData Results: {{ debugInfo.loadMockDataResults }}
+			- GetRecords Results: {{ debugInfo.getRecordsResults }}
+			- Stonecrop Ready: {{ debugInfo.stonecropReady }}
+			- API Response: {{ debugInfo.apiResponse }}
+			- Watcher Triggered: {{ debugInfo.watcherTriggered }}
+		</pre
+		>
 
 		<!-- Action Set -->
 		<ActionSet :elements="actionElements" />
 
 		<!-- Main content using AForm -->
 		<AForm v-if="currentViewSchema.length > 0" v-model="currentViewSchema" :data="currentViewData" />
-		<div v-else class="loading">Loading...</div>
+		<div v-else-if="!stonecrop" class="loading"><p>Initializing Stonecrop...</p></div>
+		<div v-else-if="currentView === 'records' && !currentDoctype" class="loading">
+			<p>Loading doctype information...</p>
+		</div>
+		<div v-else class="loading">
+			<p>Loading {{ currentView }} data...</p>
+		</div>
 
 		<!-- Sheet Navigation -->
 		<SheetNav :breadcrumbs="navigationBreadcrumbs" />
@@ -33,7 +57,8 @@
 <script setup lang="ts">
 import { useStonecrop } from '@stonecrop/stonecrop'
 import { AForm, type SchemaTypes } from '@stonecrop/aform'
-import { computed, onMounted, provide, ref, unref, watch, defineExpose } from 'vue'
+import { computed, nextTick, onMounted, provide, ref, unref, watch, defineExpose } from 'vue'
+
 import ActionSet from './ActionSet.vue'
 import SheetNav from './SheetNav.vue'
 import CommandPalette from './CommandPalette.vue'
@@ -44,10 +69,7 @@ type Props = {
 	showDebug?: boolean
 }
 
-const props = withDefaults(defineProps<Props>(), {
-	availableDoctypes: () => [],
-	showDebug: false,
-})
+const { availableDoctypes = [], showDebug = false } = defineProps<Props>()
 
 const { stonecrop } = useStonecrop()
 
@@ -56,11 +78,53 @@ const loading = ref(false)
 const saving = ref(false)
 const currentViewData = ref<Record<string, any>>({})
 const commandPaletteOpen = ref(false)
+
+// Debug state
+const debugInfo = ref({
+	loadMockDataCalled: false,
+	loadMockDataResults: '',
+	getRecordsResults: '',
+	stonecropReady: false,
+	apiResponse: null as any,
+	watcherTriggered: false,
+})
+
 // Computed properties for current route context
 const route = computed(() => unref(stonecrop.value?.registry.router?.currentRoute))
 const router = computed(() => stonecrop.value?.registry.router)
-const currentDoctype = computed(() => route.value?.params.doctype as string)
-const currentRecordId = computed(() => route.value?.params.recordId as string)
+const currentDoctype = computed(() => {
+	if (!route.value) return ''
+
+	// First try params.doctype
+	if (route.value.params.doctype) {
+		return route.value.params.doctype as string
+	}
+
+	// Then try pathMatch for catch-all routes
+	const pathParams = route.value.params.pathMatch as string[] | undefined
+	if (pathParams && pathParams.length > 0) {
+		return pathParams[0]
+	}
+
+	return ''
+})
+
+const currentRecordId = computed(() => {
+	if (!route.value) return ''
+
+	// First try params.recordId
+	if (route.value.params.recordId) {
+		return route.value.params.recordId as string
+	}
+
+	// Then try pathMatch for catch-all routes
+	const pathParams = route.value.params.pathMatch as string[] | undefined
+	if (pathParams && pathParams.length > 1) {
+		return pathParams[1]
+	}
+
+	return ''
+})
 const isNewRecord = computed(() => currentRecordId.value?.startsWith('new-'))
 
 // Determine current view based on route
@@ -222,7 +286,7 @@ const searchCommands = (query: string): Command[] => {
 	}
 
 	// Add available doctypes as commands
-	props.availableDoctypes.forEach(doctype => {
+	availableDoctypes.forEach(doctype => {
 		commands.push({
 			title: `View ${formatDoctypeName(doctype)}`,
 			description: `Navigate to ${doctype} list`,
@@ -274,9 +338,9 @@ const createNewRecord = () => {
 
 // Schema generators
 const getDoctypesSchema = (): SchemaTypes[] => {
-	if (!props.availableDoctypes.length) return []
+	if (!availableDoctypes.length) return []
 
-	const rows = props.availableDoctypes.map(doctype => ({
+	const rows = availableDoctypes.map(doctype => ({
 		id: doctype,
 		doctype,
 		display_name: formatDoctypeName(doctype),
@@ -343,9 +407,47 @@ const getDoctypesSchema = (): SchemaTypes[] => {
 
 const getRecordsSchema = (): SchemaTypes[] => {
 	if (!currentDoctype.value) return []
+	if (!stonecrop.value) return []
 
 	const records = getRecords()
 	const columns = getColumns()
+
+	// If records are empty but columns exist, try to load mock data
+	if (columns.length > 0 && records.length === 0) {
+		// Trigger async data loading (non-blocking)
+		loadMockData(currentDoctype.value).catch(() => {
+			// Silent error handling
+		})
+	}
+
+	// If no columns are available, show a loading or empty state
+	if (columns.length === 0) {
+		return [
+			{
+				fieldname: 'header',
+				component: 'div',
+				value: `
+					<div class="view-header">
+						<nav class="breadcrumbs">
+							<a href="/">Home</a>
+							<span class="separator">/</span>
+							<span class="current">${formatDoctypeName(currentDoctype.value)}</span>
+						</nav>
+						<h1>${formatDoctypeName(currentDoctype.value)} Records</h1>
+					</div>
+				`,
+			},
+			{
+				fieldname: 'loading',
+				component: 'div',
+				value: `
+					<div class="loading-state">
+						<p>Loading ${formatDoctypeName(currentDoctype.value)} schema...</p>
+					</div>
+				`,
+			},
+		]
+	}
 
 	const rows = records.map((record: any) => ({
 		...record,
@@ -429,12 +531,46 @@ const getRecordsSchema = (): SchemaTypes[] => {
 
 const getRecordFormSchema = (): SchemaTypes[] => {
 	if (!currentDoctype.value) return []
+	if (!stonecrop.value) return []
 
 	try {
 		const registry = stonecrop.value?.registry
 		const meta = registry?.registry[currentDoctype.value]
 
-		if (!meta?.schema) return []
+		if (!meta?.schema) {
+			// Return loading state if schema isn't available yet
+			return [
+				{
+					fieldname: 'header',
+					component: 'div',
+					value: `
+						<div class="view-header">
+							<nav class="breadcrumbs">
+								<a href="/">Home</a>
+								<span class="separator">/</span>
+								<a href="/${currentDoctype.value}">${formatDoctypeName(currentDoctype.value)}</a>
+								<span class="separator">/</span>
+								<span class="current">${isNewRecord.value ? 'New Record' : currentRecordId.value}</span>
+							</nav>
+							<h1>${
+								isNewRecord.value
+									? `New ${formatDoctypeName(currentDoctype.value)}`
+									: `Edit ${formatDoctypeName(currentDoctype.value)}`
+							}</h1>
+						</div>
+					`,
+				},
+				{
+					fieldname: 'loading',
+					component: 'div',
+					value: `
+						<div class="loading-state">
+							<p>Loading ${formatDoctypeName(currentDoctype.value)} form...</p>
+						</div>
+					`,
+				},
+			]
+		}
 
 		const schemaArray = 'toArray' in meta.schema ? meta.schema.toArray() : meta.schema
 		const currentRecord = getCurrentRecord()
@@ -501,10 +637,32 @@ const getRecordFormSchema = (): SchemaTypes[] => {
 
 // Data helpers
 const getRecords = () => {
-	if (!stonecrop.value || !currentDoctype.value) return []
+	debugInfo.value.stonecropReady = !!stonecrop.value
+
+	if (!stonecrop.value || !currentDoctype.value) {
+		debugInfo.value.getRecordsResults = 'No stonecrop or doctype'
+		return []
+	}
 
 	const recordsNode = stonecrop.value.records(currentDoctype.value)
 	const recordsData = recordsNode?.get('')
+
+	debugInfo.value.getRecordsResults = `Node: ${!!recordsNode}, Data: ${typeof recordsData}, Keys: ${
+		recordsData ? Object.keys(recordsData).length : 0
+	}`
+
+	// Debug: Add to global window for debugging
+	if (typeof window !== 'undefined') {
+		;(window as any).debugRecords = {
+			stonecrop: !!stonecrop.value,
+			doctype: currentDoctype.value,
+			recordsNode,
+			recordsData,
+			isObject: recordsData && typeof recordsData === 'object',
+			isArray: Array.isArray(recordsData),
+			keys: recordsData ? Object.keys(recordsData) : [],
+		}
+	}
 
 	if (recordsData && typeof recordsData === 'object' && !Array.isArray(recordsData)) {
 		return Object.values(recordsData as Record<string, any>)
@@ -533,6 +691,127 @@ const getColumns = () => {
 	}
 
 	return []
+}
+
+// Mock data loader - loads sample data when HST is empty
+const loadMockData = async (doctype: string) => {
+	debugInfo.value.loadMockDataCalled = true
+	debugInfo.value.loadMockDataResults = 'Starting...'
+
+	if (!stonecrop.value) {
+		debugInfo.value.loadMockDataResults = 'No stonecrop instance'
+		return
+	}
+
+	// Check if data is already loaded
+	const existingRecords = getRecords()
+	if (existingRecords.length > 0) {
+		debugInfo.value.loadMockDataResults = `Already have ${existingRecords.length} records`
+		return
+	}
+
+	debugInfo.value.loadMockDataResults = 'Attempting API fetch...'
+
+	try {
+		// Try to fetch from the API first (for MirageJS)
+		const response = await fetch(`/${doctype}`)
+		if (response.ok) {
+			const records = await response.json()
+			debugInfo.value.apiResponse = records
+
+			if (Array.isArray(records) && records.length > 0) {
+				debugInfo.value.loadMockDataResults = `API returned ${records.length} records, adding to HST...`
+
+				// Clear and reload from API
+				stonecrop.value.clearRecords(doctype)
+
+				// Add records one by one and check if they're being stored
+				let successCount = 0
+				records.forEach((record: Record<string, any>) => {
+					if (record.id && typeof record.id === 'string') {
+						stonecrop.value?.addRecord(doctype, record.id, record)
+
+						// Verify the record was added
+						const addedRecord = stonecrop.value?.getRecordById(doctype, record.id)
+						if (addedRecord) {
+							successCount++
+						}
+					}
+				})
+
+				debugInfo.value.loadMockDataResults = `Added ${successCount}/${records.length} records from API. Final count: ${
+					getRecords().length
+				}`
+				return
+			} else {
+				debugInfo.value.loadMockDataResults = `API returned non-array or empty: ${typeof records}, length: ${
+					Array.isArray(records) ? records.length : 'N/A'
+				}`
+			}
+		} else {
+			debugInfo.value.loadMockDataResults = `API response not ok: ${response.status}`
+		}
+	} catch (error) {
+		debugInfo.value.loadMockDataResults = `API error: ${error}, falling back to hardcoded data`
+	}
+
+	// Fallback to hardcoded mock data if API fails
+	const mockData = getMockDataForDoctype(doctype)
+	debugInfo.value.loadMockDataResults += ` | Using hardcoded data: ${mockData.length} records`
+
+	if (mockData.length > 0) {
+		stonecrop.value.clearRecords(doctype)
+
+		let successCount = 0
+		mockData.forEach(record => {
+			stonecrop.value?.addRecord(doctype, record.id, record)
+
+			// Verify the record was added
+			const addedRecord = stonecrop.value?.getRecordById(doctype, record.id)
+			if (addedRecord) {
+				successCount++
+			}
+		})
+
+		debugInfo.value.loadMockDataResults += ` | Successfully added: ${successCount}/${mockData.length} | Final count: ${
+			getRecords().length
+		}`
+	}
+}
+
+const getMockDataForDoctype = (doctype: string): Array<{ id: string; [key: string]: any }> => {
+	switch (doctype) {
+		case 'to-do':
+			return [
+				{ id: '1', first_name: 'Luke', last_name: 'Skywalker', phone: '+1 123 456 7890' },
+				{ id: '2', first_name: 'Leia', last_name: 'Skywalker', phone: '+1 123 456 7891' },
+				{ id: '3', first_name: 'Anakin', last_name: 'Skywalker', phone: '+1 123 456 7892' },
+			]
+		case 'issue':
+			return [
+				{ id: '1', subject: 'First Issue', date: '2022-01-01' },
+				{ id: '2', subject: 'Second Issue', date: '2022-01-02' },
+				{ id: '3', subject: 'Third Issue', date: '2022-01-03' },
+			]
+		default:
+			return []
+	}
+}
+
+// Doctype metadata loader
+const loadDoctypeMetadata = (doctype: string) => {
+	if (!stonecrop.value) return
+
+	const registry = stonecrop.value.registry
+	if (registry.registry[doctype]) return // Already loaded
+
+	// For now, let's manually ensure the doctype structure exists in HST
+	// This will trigger ensureDoctypeExists() in Stonecrop
+	try {
+		stonecrop.value.records(doctype)
+	} catch (error) {
+		// Silent error handling
+	}
 }
 
 const getCurrentRecord = () => {
@@ -667,6 +946,63 @@ watch(
 	{ immediate: true }
 )
 
+// Watch for Stonecrop instance to become available
+watch(
+	stonecrop,
+	newStonecrop => {
+		if (newStonecrop) {
+			// Force a re-evaluation of the current view schema when Stonecrop becomes available
+			// This is handled automatically by the reactive computed properties
+		}
+	},
+	{ immediate: true }
+)
+
+// Test function to manually trigger mock data loading
+const testLoadData = async () => {
+	if (stonecrop.value && currentDoctype.value) {
+		loadDoctypeMetadata(currentDoctype.value)
+		const beforeRecords = getRecords()
+		await loadMockData(currentDoctype.value)
+		const afterRecords = getRecords()
+		return { before: beforeRecords.length, after: afterRecords.length }
+	}
+	return { before: 0, after: 0 }
+}
+
+// Test API directly
+const testAPI = async () => {
+	try {
+		const response = await fetch('/to-do')
+		const data = await response.json()
+		debugInfo.value.apiResponse = data
+		return data
+	} catch (error) {
+		debugInfo.value.apiResponse = { error: String(error) }
+		return { error: String(error) }
+	}
+}
+
+// Watch for when we need to load data for records view
+watch(
+	[currentView, currentDoctype, stonecrop],
+	async ([view, doctype, stonecropInstance]) => {
+		debugInfo.value.watcherTriggered = true
+
+		if (view === 'records' && doctype && stonecropInstance) {
+			// First ensure metadata is loaded
+			loadDoctypeMetadata(doctype)
+
+			// Then try to load records data when we're in records view but have no data
+			const records = getRecords()
+			if (records.length === 0) {
+				await loadMockData(doctype)
+			}
+		}
+	},
+	{ immediate: true }
+)
+
 const loadRecordData = () => {
 	if (!stonecrop.value || !currentDoctype.value) return
 
@@ -693,12 +1029,19 @@ const loadRecordData = () => {
 
 // Expose action handlers for use by child components
 defineExpose({
-	navigateToDoctype,
-	openRecord,
 	createNewRecord,
-	handleSave,
+	currentDoctype,
+	currentView,
+	getRecords,
 	handleCancel,
 	handleDelete,
+	handleSave,
+	loadMockData,
+	navigateToDoctype,
+	openRecord,
+	testLoadData,
+	testAPI,
+	debugInfo,
 })
 
 // Provide methods for action components
@@ -715,6 +1058,17 @@ provide('desktopMethods', desktopMethods)
 
 // Register action components in Vue app
 onMounted(() => {
+	// Wait a tick for stonecrop to be ready, then load initial data
+	void nextTick(async () => {
+		if (currentView.value === 'records' && currentDoctype.value && stonecrop.value) {
+			loadDoctypeMetadata(currentDoctype.value)
+			const records = getRecords()
+			if (records.length === 0) {
+				await loadMockData(currentDoctype.value)
+			}
+		}
+	})
+
 	// Components will be automatically registered via the global component system
 
 	// Add keyboard shortcuts

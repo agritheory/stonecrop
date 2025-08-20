@@ -10,7 +10,7 @@ import { ref } from 'vue'
 
 // Configuration
 const availableDoctypes = ref(['to-do', 'issue'])
-const showDebug = ref(false) // Set to true for debugging
+const showDebug = ref(true) // Set to true for debugging
 </script>
 
 <style scoped>

@@ -39,7 +39,6 @@
 		"_phase:build": "heft build && vite build && rushx docs",
 		"prepublish": "heft build && vite build && rushx docs",
 		"build": "heft build && vite build && rushx docs",
-		"dev": "vite",
 		"docs": "cd ../common/autoinstallers/doc-tools && node generate-docs.mjs desktop",
 		"lint": "eslint . --ext .ts,.vue"
 	},
