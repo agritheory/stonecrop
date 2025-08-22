@@ -1,7 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import type { NavigationGuardNext, RouteLocationNormalized } from 'vue-router'
 
-import Home from './Home.vue'
+import Home from './components/Home.vue'
+import View from './components/View.vue'
 
 // Global references that will be set during app initialization
 let globalRegistry: any = null
@@ -25,7 +26,7 @@ const router = createRouter({
 		{
 			path: '/:doctype',
 			name: 'records-list',
-			component: Home,
+			component: View,
 			meta: { title: 'Records List' },
 			beforeEnter: async (to: RouteLocationNormalized, _from: RouteLocationNormalized, next: NavigationGuardNext) => {
 				await setupDoctypeData(to.params.doctype as string)
@@ -35,7 +36,7 @@ const router = createRouter({
 		{
 			path: '/:doctype/:recordId',
 			name: 'record-form',
-			component: Home,
+			component: View,
 			meta: { title: 'Record Details' },
 			beforeEnter: async (to: RouteLocationNormalized, _from: RouteLocationNormalized, next: NavigationGuardNext) => {
 				await setupRecordData(to.params.doctype as string, to.params.recordId as string)
@@ -46,7 +47,7 @@ const router = createRouter({
 		{
 			path: '/:pathMatch(.*)*',
 			name: 'catch-all',
-			component: Home,
+			component: View,
 		},
 	],
 })
