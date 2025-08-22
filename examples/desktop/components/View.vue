@@ -14,7 +14,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-	availableDoctypes: () => ['to-do', 'issue'],
+	availableDoctypes: () => ['todo-list', 'todo-form', 'issue-list', 'issue-form'],
 	showDebug: true,
 })
 

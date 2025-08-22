@@ -71,7 +71,7 @@ async function setupDoctypeData(doctype: string): Promise<void> {
 		}
 
 		// Load all records for this doctype into HST
-		const response = await fetch(`/${doctype}`)
+		const response = await fetch(`/api/${doctype}`)
 		if (response.ok) {
 			const records = await response.json()
 
@@ -109,7 +109,7 @@ async function setupRecordData(doctype: string, recordId: string): Promise<void>
 
 		if (!existingRecord && !recordId.startsWith('new-')) {
 			// Fetch individual record if not in store and not a new record
-			const response = await fetch(`/${doctype}/${recordId}`)
+			const response = await fetch(`/api/${doctype}/${recordId}`)
 			if (response.ok) {
 				const record = await response.json()
 				globalStonecrop.addRecord(doctype, recordId, record)

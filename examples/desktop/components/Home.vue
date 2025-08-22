@@ -8,7 +8,7 @@
 import { AForm } from '@stonecrop/aform'
 import { ref } from 'vue'
 
-const { doctypes = ['to-do', 'issue'] } = defineProps<{ doctypes?: string[] }>()
+const { doctypes = ['todo-list', 'todo-form', 'issue-list', 'issue-form'] } = defineProps<{ doctypes?: string[] }>()
 
 // Create schema for displaying doctypes in an ATable
 const schema = ref([

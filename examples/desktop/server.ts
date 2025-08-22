@@ -24,54 +24,52 @@ const doctypeActions: MutableDoctype['actions'] = {
 export function makeServer() {
 	const server = createServer({
 		models: {
-			todoMeta: Model,
-			todo: Model,
-			issueMeta: Model,
-			issue: Model,
+			'issue-form': Model,
+			'issue-formMeta': Model,
+			'issue-list': Model,
+			'issue-listMeta': Model,
+			'todo-form': Model,
+			'todo-formMeta': Model,
+			'todo-list': Model,
+			'todo-listMeta': Model,
 		},
 
 		seeds(server) {
 			server.db.loadData({
+				// Updated doctypes list with separate list and form types
 				doctypes: [
-					{ id: 'to-do', name: 'To-Do', slug: 'to-do', description: 'Task management', actions: 'View' },
-					{ id: 'issue', name: 'Issue', slug: 'issue', description: 'Issue tracking', actions: 'View' },
+					{
+						id: 'todo-list',
+						name: 'Todo List',
+						slug: 'todo-list',
+						description: 'View and manage todo items',
+						actions: 'View',
+					},
+					{
+						id: 'todo-form',
+						name: 'Todo Form',
+						slug: 'todo-form',
+						description: 'Create and edit todo items',
+						actions: 'View',
+					},
+					{
+						id: 'issue-list',
+						name: 'Issue List',
+						slug: 'issue-list',
+						description: 'View and manage issues',
+						actions: 'View',
+					},
+					{
+						id: 'issue-form',
+						name: 'Issue Form',
+						slug: 'issue-form',
+						description: 'Create and edit issues',
+						actions: 'View',
+					},
 				],
 
-				// Home view schema and data
-				homeMeta: {
-					schema: [
-						{
-							fieldname: 'header',
-							fieldtype: 'HTML',
-							component: 'div',
-							label: 'Desktop Home',
-							value: '<h1>Stonecrop Desktop</h1><p>Select a doctype to begin</p>',
-						},
-						{
-							fieldname: 'doctypes_table',
-							fieldtype: 'Table',
-							component: 'ATable',
-							label: 'Available Doctypes',
-							columns: [
-								{ fieldname: 'name', label: 'Name', fieldtype: 'Data' },
-								{ fieldname: 'slug', label: 'Slug', fieldtype: 'Data' },
-								{ fieldname: 'description', label: 'Description', fieldtype: 'Data' },
-								{ fieldname: 'actions', label: 'Actions', fieldtype: 'Button' },
-							],
-						},
-					] as MutableDoctype['schema'],
-					workflow: {
-						id: 'home',
-						initial: 'loaded',
-						states: {
-							loaded: {},
-						},
-					},
-					actions: {},
-				},
-
-				// Todo list view schema and data
-				todoListMeta: {
+				// Todo List doctype metadata
+				'todo-listMeta': {
 					schema: [
 						{
 							fieldname: 'header',
@@ -108,9 +106,14 @@ export function makeServer() {
 						DELETE: ['() => console.log("Deleting todo")'],
 					},
 				},
+				'todo-lists': [
+					{ id: '1', first_name: 'Luke', last_name: 'Skywalker', phone: '+1 123 456 7890' },
+					{ id: '2', first_name: 'Leia', last_name: 'Skywalker', phone: '+1 123 456 7890' },
+					{ id: '3', first_name: 'Anakin', last_name: 'Skywalker', phone: '+1 123 456 7890' },
+				],
 
-				// Todo form view schema
-				todoFormMeta: {
+				// Todo Form doctype metadata
+				'todo-formMeta': {
 					schema: [
 						{
 							fieldname: 'header',
@@ -163,52 +166,14 @@ export function makeServer() {
 						DELETE: ['() => console.log("Deleting todo")'],
 					},
 				},
-
-				// Todo metadata (existing)
-				todoMeta: {
-					schema: [
-						{
-							name: 'first_name',
-							fieldname: 'first_name',
-							fieldtype: 'Data',
-							component: 'ATextInput',
-							label: 'First Name',
-						},
-						{
-							name: 'last_name',
-							fieldname: 'last_name',
-							fieldtype: 'Data',
-							component: 'ATextInput',
-							label: 'Last Name',
-						},
-						{
-							name: 'phone',
-							fieldname: 'phone',
-							fieldtype: 'Phone',
-							component: 'ATextInput',
-							label: 'Phone',
-							mask: "(locale) => { if (locale === 'en-US') { return '(###) ###-####' } else if (locale === 'en-IN') { return '####-######'} }",
-						},
-					] as MutableDoctype['schema'],
-					workflow: {
-						id: 'todo',
-						initial: 'created',
-						states: {
-							created: { on: { LOAD: 'loaded' } },
-							loaded: { on: { SAVE: 'saved' } },
-							saved: {},
-						},
-					} /* as MutableDoctype['workflow'] */,
-					actions: doctypeActions,
-				},
-				todos: [
+				'todo-forms': [
 					{ id: '1', first_name: 'Luke', last_name: 'Skywalker', phone: '+1 123 456 7890' },
 					{ id: '2', first_name: 'Leia', last_name: 'Skywalker', phone: '+1 123 456 7890' },
 					{ id: '3', first_name: 'Anakin', last_name: 'Skywalker', phone: '+1 123 456 7890' },
 				],
 
-				// Issue list view schema
-				issueListMeta: {
+				// Issue List doctype metadata
+				'issue-listMeta': {
 					schema: [
 						{
 							fieldname: 'header',
@@ -245,9 +210,14 @@ export function makeServer() {
 						DELETE: ['() => console.log("Deleting issue")'],
 					},
 				},
+				'issue-lists': [
+					{ id: '1', subject: 'First Issue', date: '2022-01-01', status: 'Open', priority: 'High' },
+					{ id: '2', subject: 'Second Issue', date: '2022-01-02', status: 'In Progress', priority: 'Medium' },
+					{ id: '3', subject: 'Third Issue', date: '2022-01-03', status: 'Resolved', priority: 'Low' },
+				],
 
-				// Issue form view schema
-				issueFormMeta: {
+				// Issue Form doctype metadata
+				'issue-formMeta': {
 					schema: [
 						{
 							fieldname: 'header',
@@ -313,6 +283,54 @@ export function makeServer() {
 						DELETE: ['() => console.log("Deleting issue")'],
 					},
 				},
+				'issue-forms': [
+					{ id: '1', subject: 'First Issue', date: '2022-01-01', status: 'Open', priority: 'High' },
+					{ id: '2', subject: 'Second Issue', date: '2022-01-02', status: 'In Progress', priority: 'Medium' },
+					{ id: '3', subject: 'Third Issue', date: '2022-01-03', status: 'Resolved', priority: 'Low' },
+				],
+
+				// Todo metadata (existing)
+				todoMeta: {
+					schema: [
+						{
+							name: 'first_name',
+							fieldname: 'first_name',
+							fieldtype: 'Data',
+							component: 'ATextInput',
+							label: 'First Name',
+						},
+						{
+							name: 'last_name',
+							fieldname: 'last_name',
+							fieldtype: 'Data',
+							component: 'ATextInput',
+							label: 'Last Name',
+						},
+						{
+							name: 'phone',
+							fieldname: 'phone',
+							fieldtype: 'Phone',
+							component: 'ATextInput',
+							label: 'Phone',
+							mask: "(locale) => { if (locale === 'en-US') { return '(###) ###-####' } else if (locale === 'en-IN') { return '####-######'} }",
+						},
+					] as MutableDoctype['schema'],
+					workflow: {
+						id: 'todo',
+						initial: 'created',
+						states: {
+							created: { on: { LOAD: 'loaded' } },
+							loaded: { on: { SAVE: 'saved' } },
+							saved: {},
+						},
+					} /* as MutableDoctype['workflow'] */,
+					actions: doctypeActions,
+				},
+				todos: [
+					{ id: '1', first_name: 'Luke', last_name: 'Skywalker', phone: '+1 123 456 7890' },
+					{ id: '2', first_name: 'Leia', last_name: 'Skywalker', phone: '+1 123 456 7890' },
+					{ id: '3', first_name: 'Anakin', last_name: 'Skywalker', phone: '+1 123 456 7890' },
+				],
 
 				// Issue metadata (existing)
 				issueMeta: {
@@ -355,95 +373,68 @@ export function makeServer() {
 			// View-specific meta endpoints
 			this.get('/api/:doctype/meta', (schema, request) => {
 				const doctype = request.params.doctype
-				console.log('view:', request)
+				console.log(`[MirageJS] Getting meta for doctype: ${doctype}`)
 
-				// Handle view-specific schemas
+				// Handle new separate doctypes with hyphenated names
+				const metaKey = `${doctype}Meta`
+				const meta = schema.db[metaKey] as any
+
+				if (meta) {
+					console.log(`[MirageJS] Returning ${metaKey}:`, meta)
+					return meta
+				}
+
+				// Legacy fallback for view-specific schemas
 				if (request.queryParams.view) {
 					const view = Array.isArray(request.queryParams.view) ? request.queryParams.view[0] : request.queryParams.view
-					const metaKey = `${doctype}${view.charAt(0).toUpperCase() + view.slice(1)}Meta`
-					const meta = schema.db[metaKey] as any
+					const legacyMetaKey = `${doctype}${view.charAt(0).toUpperCase() + view.slice(1)}Meta`
+					const legacyMeta = schema.db[legacyMetaKey] as any
 
-					if (meta) {
-						console.log(`[MirageJS] Returning ${metaKey}:`, meta)
-						return meta
+					if (legacyMeta) {
+						console.log(`[MirageJS] Returning legacy ${legacyMetaKey}:`, legacyMeta)
+						return legacyMeta
 					}
 				}
 
-				// Handle home view
-				if (doctype === 'home') {
-					const meta = schema.db.homeMeta as any
-					console.log(`[MirageJS] Returning homeMeta:`, meta)
-					return meta
-				}
-
-				// Handle doctypes list
-				if (doctype === 'doctypes') {
-					const meta = schema.db.homeMeta as any
-					console.log(`[MirageJS] Returning doctypes meta:`, meta)
-					return meta
-				}
-
-				// Fallback to existing meta
-				const meta = schema.db[`${doctype}Meta`] as any
-				console.log(`[MirageJS] Returning ${doctype}Meta:`, meta)
-				return meta
+				console.log(`[MirageJS] No meta found for ${doctype}`)
+				return {}
 			})
 
 			// Data endpoints
 			this.get('/api/:doctype', (schema, request) => {
 				const doctype = request.params.doctype
+				console.log(`[MirageJS] Getting data for doctype: ${doctype}`)
 
-				// Handle doctypes list for home view
-				if (doctype === 'doctypes') {
-					const doctypes = schema.db.doctypes as any[]
-					console.log(`[MirageJS] Returning doctypes list:`, doctypes)
-					return doctypes
+				// Handle new separate doctypes with hyphenated names
+				const dataKey = `${doctype}s`
+				const records = schema.db[dataKey] as any[]
+
+				if (records) {
+					console.log(`[MirageJS] Returning ${dataKey}:`, records)
+					return records
 				}
 
-				// Handle home view data
-				if (doctype === 'home') {
-					const doctypes = schema.db.doctypes as any[]
-					console.log(`[MirageJS] Returning home data (doctypes):`, doctypes)
-					return doctypes
-				}
-
-				const records = schema.db[`${doctype}s`] as any[]
-				console.log(`[MirageJS] Returning ${doctype} records:`, records)
-				return records
+				console.log(`[MirageJS] No data found for ${doctype}`)
+				return []
 			})
 
 			// Record endpoints
 			this.get('/api/:doctype/:id', (schema, request) => {
 				const doctype = request.params.doctype
 				const id = request.params.id
-				const records = schema.db[`${doctype}s`] as any[]
-				const record = records.find((r: any) => r.id === id)
-				console.log(`[MirageJS] Returning ${doctype} record ${id}:`, record)
-				return record
-			})
+				console.log(`[MirageJS] Getting record ${id} for doctype: ${doctype}`)
 
-			// Legacy meta endpoints (for backwards compatibility)
-			this.get('/meta/to-do', schema => {
-				const meta = schema.first('todoMeta')
-				return meta?.attrs || {}
-			})
-			this.get('/meta/issue', schema => {
-				const meta = schema.first('issueMeta')
-				return meta?.attrs || {}
-			})
+				const dataKey = `${doctype}s`
+				const records = schema.db[dataKey] as any[]
 
-			// Legacy list endpoints
-			this.get('/to-do', schema => schema.db.todos)
-			this.get('/issue', schema => schema.db.issues)
+				if (records) {
+					const record = records.find((r: any) => r.id === id)
+					console.log(`[MirageJS] Returning ${doctype} record ${id}:`, record)
+					return record
+				}
 
-			// Legacy record endpoints
-			this.get('/to-do/:id', schema => {
-				const todo = schema.first('todo')
-				return todo?.attrs || {}
-			})
-			this.get('/issue/:id', schema => {
-				const issue = schema.first('issue')
-				return issue?.attrs || {}
+				console.log(`[MirageJS] No record found for ${doctype}:${id}`)
+				return {}
 			})
 
 			// allow other same-domain and external requests to passthrough normally
