@@ -8,7 +8,7 @@
 import { AForm } from '@stonecrop/aform'
 import { ref } from 'vue'
 
-const { doctypes = ['todo-list', 'todo-form', 'issue-list', 'issue-form'] } = defineProps<{ doctypes?: string[] }>()
+const { doctypes = ['todo', 'issue'] } = defineProps<{ doctypes?: string[] }>()
 
 // Create schema for displaying doctypes in an ATable
 const schema = ref([
@@ -19,12 +19,14 @@ const schema = ref([
 			{ name: 'name', label: 'Name', fieldtype: 'Data' },
 			{ name: 'slug', label: 'Slug', fieldtype: 'Data' },
 			{ name: 'description', label: 'Description', fieldtype: 'Data' },
+			{ name: 'routes', label: 'Available Routes', fieldtype: 'Data' },
 		],
 		rows: doctypes.map(doctype => ({
 			id: doctype,
-			name: doctype.charAt(0).toUpperCase() + doctype.slice(1).replace('-', ' '),
+			name: doctype.charAt(0).toUpperCase() + doctype.slice(1),
 			slug: doctype,
-			description: `Manage ${doctype.replace('-', ' ')} records`,
+			description: `Manage ${doctype} records`,
+			routes: `/${doctype}/ (list), /${doctype}/1 (form)`,
 		})),
 	},
 ])

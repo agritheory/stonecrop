@@ -62,26 +62,36 @@ async function setupDoctypeData(doctype: string): Promise<void> {
 	}
 
 	try {
+		// Map route doctypes to list doctypes
+		let actualDoctype = doctype
+		if (doctype === 'todo') {
+			actualDoctype = 'todo-list'
+		} else if (doctype === 'issue') {
+			actualDoctype = 'issue-list'
+		}
+
 		// Get doctype metadata if not already loaded
-		if (!globalRegistry.registry[doctype]) {
-			const doctypeMeta = await globalRegistry.getMeta?.(doctype)
+		if (!globalRegistry.registry[actualDoctype]) {
+			const doctypeMeta = await globalRegistry.getMeta?.(doctype) // Use original doctype for API call
 			if (doctypeMeta) {
-				globalRegistry.addDoctype(doctypeMeta)
+				// Register with the actual doctype name
+				const adjustedMeta = { ...doctypeMeta, name: actualDoctype }
+				globalRegistry.addDoctype(adjustedMeta)
 			}
 		}
 
 		// Load all records for this doctype into HST
-		const response = await fetch(`/api/${doctype}`)
+		const response = await fetch(`/api/${doctype}`) // Use original doctype for API call
 		if (response.ok) {
 			const records = await response.json()
 
-			// Clear existing records and add new ones
-			globalStonecrop.clearRecords(doctype)
+			// Clear existing records and add new ones using actual doctype
+			globalStonecrop.clearRecords(actualDoctype)
 
 			if (Array.isArray(records)) {
 				records.forEach((record: any) => {
 					if (record.id) {
-						globalStonecrop.addRecord(doctype, record.id, record)
+						globalStonecrop.addRecord(actualDoctype, record.id, record)
 					}
 				})
 			}
@@ -101,23 +111,52 @@ async function setupRecordData(doctype: string, recordId: string): Promise<void>
 	}
 
 	try {
-		// Ensure doctype is set up first
-		await setupDoctypeData(doctype)
+		// Map route doctypes to form doctypes for record editing
+		let actualDoctype = doctype
+		if (doctype === 'todo') {
+			actualDoctype = 'todo-form'
+		} else if (doctype === 'issue') {
+			actualDoctype = 'issue-form'
+		}
 
-		// Check if record already exists in HST
-		const existingRecord = globalStonecrop.getRecordById(doctype, recordId)
-
-		if (!existingRecord && !recordId.startsWith('new-')) {
-			// Fetch individual record if not in store and not a new record
-			const response = await fetch(`/api/${doctype}/${recordId}`)
+		// Get form doctype metadata if not already loaded
+		if (!globalRegistry.registry[actualDoctype]) {
+			// Use a special endpoint for form metadata
+			const response = await fetch(`/api/${doctype}/${recordId}/meta`)
 			if (response.ok) {
-				const record = await response.json()
-				globalStonecrop.addRecord(doctype, recordId, record)
+				const metaData = await response.json()
+				const config = {
+					schema: metaData.schema,
+					workflow: metaData.workflow,
+					actions: metaData.actions || {},
+				}
+
+				const doctypeMeta = await globalRegistry.createDoctypeMeta?.(
+					actualDoctype,
+					config.schema,
+					config.workflow,
+					config.actions
+				)
+				if (doctypeMeta) {
+					globalRegistry.addDoctype(doctypeMeta)
+				}
 			}
 		}
 
-		// Set as current record (even for new records)
-		globalStonecrop.setCurrentRecord(doctype, recordId)
+		// Check if record already exists in HST
+		const existingRecord = globalStonecrop.getRecordById(actualDoctype, recordId)
+
+		if (!existingRecord && !recordId.startsWith('new-')) {
+			// Fetch individual record if not in store and not a new record
+			const response = await fetch(`/api/${doctype}/${recordId}`) // Use original doctype for API call
+			if (response.ok) {
+				const record = await response.json()
+				globalStonecrop.addRecord(actualDoctype, recordId, record)
+			}
+		}
+
+		// Set as current record (even for new records) using actual doctype
+		globalStonecrop.setCurrentRecord(actualDoctype, recordId)
 	} catch (error) {
 		console.error(`Failed to setup record data for ${doctype}/${recordId}:`, error)
 	}

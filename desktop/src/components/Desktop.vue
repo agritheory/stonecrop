@@ -706,7 +706,7 @@ const loadMockData = async (doctype: string) => {
 
 	try {
 		// Try to fetch from the API first (for MirageJS)
-		const response = await fetch(`/${doctype}`)
+		const response = await fetch(`/api/${doctype}`)
 		if (response.ok) {
 			const records = await response.json()
 
