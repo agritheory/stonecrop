@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/atable
 
-This log was last generated on Tue, 05 Aug 2025 11:43:23 GMT and should not be manually modified.
+This log was last generated on Wed, 06 Aug 2025 11:40:05 GMT and should not be manually modified.
+
+## 0.4.33
+Wed, 06 Aug 2025 11:40:05 GMT
+
+### Patches
+
+- select all text for edit when a cell is focused
 
 ## 0.4.32
 Tue, 05 Aug 2025 11:43:23 GMT
