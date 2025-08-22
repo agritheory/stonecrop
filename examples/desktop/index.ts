@@ -24,7 +24,7 @@ makeServer()
 
 // Create the getMeta function that will be used by both the plugin and router guards
 const getMeta = async (doctype: string) => {
-	const response = await fetch(`/meta/${doctype}`)
+	const response = await fetch(`/api/${doctype}/meta`)
 	const data = (await response.json()) as MutableDoctype
 	const config: ImmutableDoctype = {
 		schema: List(data.schema),
@@ -41,10 +41,7 @@ const pinia = createPinia()
 app.use(pinia)
 
 // 2. Stonecrop plugin (w/ router) - this will create the registry internally
-app.use(StonecropPlugin, {
-	router,
-	getMeta,
-})
+app.use(StonecropPlugin, { router, getMeta })
 
 // 3. Component plugins
 app.use(AForm)
@@ -52,7 +49,7 @@ app.use(ATable)
 app.use(StonecropDesktop)
 
 // Mount the app first to make the registry available
-const vueApp = app.mount('#app')
+app.mount('#app')
 
 // Set up global references after mounting when registry is available
 const registryFromPlugin = app.config.globalProperties.$registry
