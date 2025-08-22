@@ -28,6 +28,16 @@ export type BaseSchema = {
 };
 
 // @public
+export interface BaseTableConfig {
+    fullWidth?: boolean;
+}
+
+// @public
+export interface BasicTableConfig extends BaseTableConfig {
+    view?: 'uncounted' | 'list' | 'list-expansion';
+}
+
+// @public
 export interface CellContext {
     column: TableColumn;
     row: TableRow;
@@ -171,6 +181,12 @@ export interface GanttOptions {
 }
 
 // @public
+export interface GanttTableConfig extends BaseTableConfig {
+    dependencyGraph?: boolean;
+    view: 'gantt';
+}
+
+// @public
 export type ImmutableDoctype = {
     readonly schema?: List<SchemaTypes>;
     readonly workflow?: UnknownMachineConfig | AnyStateNodeConfig;
@@ -259,11 +275,7 @@ export interface TableColumn {
 }
 
 // @public
-export interface TableConfig {
-    dependencyGraph?: boolean;
-    fullWidth?: boolean;
-    view?: 'uncounted' | 'list' | 'list-expansion' | 'tree' | 'gantt' | 'tree-gantt';
-}
+export type TableConfig = BasicTableConfig | TreeTableConfig | GanttTableConfig | TreeGanttTableConfig;
 
 // @public
 export interface TableDisplay {
@@ -315,6 +327,19 @@ export type TableSchema = BaseSchema & {
     config?: TableConfig;
     rows?: TableRow[];
 };
+
+// @public
+export interface TreeGanttTableConfig extends BaseTableConfig {
+    defaultTreeExpansion?: 'root' | 'branch' | 'leaf';
+    dependencyGraph?: boolean;
+    view: 'tree-gantt';
+}
+
+// @public
+export interface TreeTableConfig extends BaseTableConfig {
+    defaultTreeExpansion?: 'root' | 'branch' | 'leaf';
+    view: 'tree';
+}
 
 // @public
 export function useStonecrop(registry?: Registry): StonecropReturn;

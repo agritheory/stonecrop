@@ -42,16 +42,59 @@ export const createTableStore = (initData: {
 				}
 			}
 
+			// Helper function to check if a row has gantt data
+			const hasGanttData = (rowIndex: number): boolean => {
+				return rows.value[rowIndex]?.gantt !== undefined
+			}
+
+			// Helper function to check if any descendant has gantt data
+			const hasGanttDescendant = (rowIndex: number): boolean => {
+				for (let i = 0; i < rows.value.length; i++) {
+					if (rows.value[i].parent === rowIndex) {
+						if (hasGanttData(i) || hasGanttDescendant(i)) {
+							return true
+						}
+					}
+				}
+				return false
+			}
+
+			// Helper function to determine if children should be open based on expansion mode
+			const shouldChildrenBeOpen = (rowIndex: number): boolean => {
+				const currentConfig = config.value
+				const expansionMode =
+					currentConfig.view === 'tree' || currentConfig.view === 'tree-gantt'
+						? currentConfig.defaultTreeExpansion
+						: undefined
+
+				if (!expansionMode) return true // Default behavior - start expanded (leaf mode)
+
+				switch (expansionMode) {
+					case 'root':
+						return false // Only root nodes are visible, all children start collapsed
+					case 'branch':
+						// Only expand if this node leads to gantt nodes OR if this node itself has gantt data AND has gantt children
+						return hasGanttDescendant(rowIndex)
+					case 'leaf':
+						return true // All nodes should be expanded
+					default:
+						return true // Default to expanded if unknown mode
+				}
+			}
+
 			for (let rowIndex = 0; rowIndex < rows.value.length; rowIndex++) {
 				const row = rows.value[rowIndex]
+				const isRootNode = row.parent === null || row.parent === undefined
+				const isParentNode = parents.has(rowIndex)
+
 				defaultDisplay[rowIndex] = {
-					childrenOpen: false,
+					childrenOpen: shouldChildrenBeOpen(rowIndex),
 					expanded: false,
 					indent: row.indent || 0,
-					isParent: parents.has(rowIndex),
-					isRoot: row.parent === null || row.parent === undefined,
+					isParent: isParentNode,
+					isRoot: isRootNode,
 					rowModified: false,
-					open: row.parent === null || row.parent === undefined,
+					open: isRootNode, // This will be recalculated later for non-root nodes
 					parent: row.parent,
 				}
 			}
@@ -148,7 +191,12 @@ export const createTableStore = (initData: {
 		const hasPinnedColumns = computed(() => columns.value.some(col => col.pinned))
 		const isGanttView = computed(() => config.value.view === 'gantt' || config.value.view === 'tree-gantt')
 		const isTreeView = computed(() => config.value.view === 'tree' || config.value.view === 'tree-gantt')
-		const isDependencyGraphEnabled = computed(() => config.value.dependencyGraph !== false)
+		const isDependencyGraphEnabled = computed(() => {
+			const currentConfig = config.value
+			return currentConfig.view === 'gantt' || currentConfig.view === 'tree-gantt'
+				? currentConfig.dependencyGraph !== false
+				: true
+		})
 
 		const numberedRowWidth = computed(() => {
 			const indent = Math.ceil(rows.value.length / 100 + 1)

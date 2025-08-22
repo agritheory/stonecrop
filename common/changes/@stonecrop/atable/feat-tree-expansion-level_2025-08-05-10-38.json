@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/atable",
+      "comment": "allow default expansion levels to tree-views",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/atable"
+}
