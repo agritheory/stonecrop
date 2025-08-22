@@ -41,6 +41,16 @@ export { ATableLoadingBar }
 export { ATableModal }
 
 // @public
+export interface BaseTableConfig {
+    fullWidth?: boolean;
+}
+
+// @public
+export interface BasicTableConfig extends BaseTableConfig {
+    view?: 'uncounted' | 'list' | 'list-expansion';
+}
+
+// @public
 export interface CellContext {
     column: TableColumn;
     row: TableRow;
@@ -135,13 +145,37 @@ colspan?: number | undefined;
 originalIndex?: number | undefined;
 }[]>;
 config: Ref<    {
-view?: "uncounted" | "list" | "list-expansion" | "tree" | "gantt" | "tree-gantt" | undefined;
+view?: "uncounted" | "list" | "list-expansion" | undefined;
 fullWidth?: boolean | undefined;
+} | {
+view: "tree";
+defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
+fullWidth?: boolean | undefined;
+} | {
+view: "gantt";
 dependencyGraph?: boolean | undefined;
+fullWidth?: boolean | undefined;
+} | {
+view: "tree-gantt";
+defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
+dependencyGraph?: boolean | undefined;
+fullWidth?: boolean | undefined;
 }, TableConfig | {
-view?: "uncounted" | "list" | "list-expansion" | "tree" | "gantt" | "tree-gantt" | undefined;
+view?: "uncounted" | "list" | "list-expansion" | undefined;
 fullWidth?: boolean | undefined;
+} | {
+view: "tree";
+defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
+fullWidth?: boolean | undefined;
+} | {
+view: "gantt";
 dependencyGraph?: boolean | undefined;
+fullWidth?: boolean | undefined;
+} | {
+view: "tree-gantt";
+defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
+dependencyGraph?: boolean | undefined;
+fullWidth?: boolean | undefined;
 }>;
 connectionHandles: Ref<    {
 id: string;
@@ -370,13 +404,37 @@ colspan?: number | undefined;
 originalIndex?: number | undefined;
 }[]>;
 config: Ref<    {
-view?: "uncounted" | "list" | "list-expansion" | "tree" | "gantt" | "tree-gantt" | undefined;
+view?: "uncounted" | "list" | "list-expansion" | undefined;
 fullWidth?: boolean | undefined;
+} | {
+view: "tree";
+defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
+fullWidth?: boolean | undefined;
+} | {
+view: "gantt";
 dependencyGraph?: boolean | undefined;
+fullWidth?: boolean | undefined;
+} | {
+view: "tree-gantt";
+defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
+dependencyGraph?: boolean | undefined;
+fullWidth?: boolean | undefined;
 }, TableConfig | {
-view?: "uncounted" | "list" | "list-expansion" | "tree" | "gantt" | "tree-gantt" | undefined;
+view?: "uncounted" | "list" | "list-expansion" | undefined;
 fullWidth?: boolean | undefined;
+} | {
+view: "tree";
+defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
+fullWidth?: boolean | undefined;
+} | {
+view: "gantt";
 dependencyGraph?: boolean | undefined;
+fullWidth?: boolean | undefined;
+} | {
+view: "tree-gantt";
+defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
+dependencyGraph?: boolean | undefined;
+fullWidth?: boolean | undefined;
 }>;
 connectionHandles: Ref<    {
 id: string;
@@ -605,13 +663,37 @@ colspan?: number | undefined;
 originalIndex?: number | undefined;
 }[]>;
 config: Ref<    {
-view?: "uncounted" | "list" | "list-expansion" | "tree" | "gantt" | "tree-gantt" | undefined;
+view?: "uncounted" | "list" | "list-expansion" | undefined;
 fullWidth?: boolean | undefined;
+} | {
+view: "tree";
+defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
+fullWidth?: boolean | undefined;
+} | {
+view: "gantt";
 dependencyGraph?: boolean | undefined;
+fullWidth?: boolean | undefined;
+} | {
+view: "tree-gantt";
+defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
+dependencyGraph?: boolean | undefined;
+fullWidth?: boolean | undefined;
 }, TableConfig | {
-view?: "uncounted" | "list" | "list-expansion" | "tree" | "gantt" | "tree-gantt" | undefined;
+view?: "uncounted" | "list" | "list-expansion" | undefined;
 fullWidth?: boolean | undefined;
+} | {
+view: "tree";
+defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
+fullWidth?: boolean | undefined;
+} | {
+view: "gantt";
 dependencyGraph?: boolean | undefined;
+fullWidth?: boolean | undefined;
+} | {
+view: "tree-gantt";
+defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
+dependencyGraph?: boolean | undefined;
+fullWidth?: boolean | undefined;
 }>;
 connectionHandles: Ref<    {
 id: string;
@@ -855,6 +937,12 @@ export interface GanttOptions {
 }
 
 // @public
+export interface GanttTableConfig extends BaseTableConfig {
+    dependencyGraph?: boolean;
+    view: 'gantt';
+}
+
+// @public
 export function install(app: App): void;
 
 // @public
@@ -882,11 +970,7 @@ export interface TableColumn {
 }
 
 // @public
-export interface TableConfig {
-    dependencyGraph?: boolean;
-    fullWidth?: boolean;
-    view?: 'uncounted' | 'list' | 'list-expansion' | 'tree' | 'gantt' | 'tree-gantt';
-}
+export type TableConfig = BasicTableConfig | TreeTableConfig | GanttTableConfig | TreeGanttTableConfig;
 
 // @public
 export interface TableDisplay {
@@ -929,6 +1013,19 @@ export interface TableRow {
     gantt?: GanttOptions;
     indent?: number;
     parent?: number;
+}
+
+// @public
+export interface TreeGanttTableConfig extends BaseTableConfig {
+    defaultTreeExpansion?: 'root' | 'branch' | 'leaf';
+    dependencyGraph?: boolean;
+    view: 'tree-gantt';
+}
+
+// @public
+export interface TreeTableConfig extends BaseTableConfig {
+    defaultTreeExpansion?: 'root' | 'branch' | 'leaf';
+    view: 'tree';
 }
 
 // (No @packageDocumentation comment for this package)

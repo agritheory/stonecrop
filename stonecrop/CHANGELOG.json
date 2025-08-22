@@ -2,6 +2,18 @@
   "name": "@stonecrop/stonecrop",
   "entries": [
     {
+      "version": "0.4.34",
+      "tag": "@stonecrop/stonecrop_v0.4.34",
+      "date": "Fri, 22 Aug 2025 11:51:31 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "update API docs"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.4.33",
       "tag": "@stonecrop/stonecrop_v0.4.33",
       "date": "Wed, 06 Aug 2025 11:40:05 GMT",

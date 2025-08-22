@@ -112,6 +112,42 @@ declare function install(app: App): void;
 
 ## Interfaces
 
+### BaseTableConfig
+
+Base table configuration properties shared across all view types.
+
+**Definition:**
+
+```typescript
+export interface BaseTableConfig {
+  fullWidth?: boolean;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| fullWidth? | `boolean` | Control whether the table should be allowed to use the full width of its container. |
+
+### BasicTableConfig
+
+Table configuration for basic view types (uncounted, list, list-expansion).
+
+**Definition:**
+
+```typescript
+export interface BasicTableConfig {
+  view?: 'uncounted' | 'list' | 'list-expansion';
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| view? | `'uncounted' \| 'list' \| 'list-expansion'` | The type of view to display the table in. |
+
 ### CellContext
 
 Table cell context definition.
@@ -263,6 +299,26 @@ export interface GanttOptions {
 | endIndex? | `number` | The ending column index for the gantt bar. If endIndex and colspan are not provided, the bar will stretch to the end of the table. |
 | startIndex? | `number` | The starting column index for the gantt bar. |
 
+### GanttTableConfig
+
+Table configuration for gantt view types.
+
+**Definition:**
+
+```typescript
+export interface GanttTableConfig {
+  dependencyGraph?: boolean;
+  view: 'gantt';
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| dependencyGraph? | `boolean` | Control whether dependency graph connections should be enabled for Gantt views. When false, connection handles and dependency lines will be hidden. |
+| view | `'gantt'` | The type of view to display the table in. |
+
 ### TableColumn
 
 Table column definition.
@@ -314,28 +370,6 @@ export interface TableColumn {
 | resizable? | `boolean` |  |
 | type? | `string` | `Data` (the column contains text data), `Select` (the column contains a select input), `Date` (the column contains a date input), `component` (the column contains a custom component) |
 | width? | `string` | The width of the column. This can be a number (in pixels) or a string (in CSS units). |
-
-### TableConfig
-
-Table configuration definition.
-
-**Definition:**
-
-```typescript
-export interface TableConfig {
-  dependencyGraph?: boolean;
-  fullWidth?: boolean;
-  view?: 'uncounted' | 'list' | 'list-expansion' | 'tree' | 'gantt' | 'tree-gantt';
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| dependencyGraph? | `boolean` | Control whether dependency graph connections should be enabled for Gantt views. When false, connection handles and dependency lines will be hidden. |
-| fullWidth? | `boolean` | Control whether the table should be allowed to use the full width of its container. |
-| view? | `'uncounted' \| 'list' \| 'list-expansion' \| 'tree' \| 'gantt' \| 'tree-gantt'` | `uncounted` (row numbers are not displayed in the table), `list` (row numbers are displayed in the table), `list-expansion` (carets are displayed in the number column that expand/collapse the row inline), `tree` (carets are displayed in the number column that expand/collapse grouped rows), `gantt` (view that allows specific rows to be displayed with Gantt functionality), `tree-gantt` (similar to `gantt`, but allows for tree functionality as well) |
 
 ### TableDisplay
 
@@ -450,6 +484,48 @@ export interface TableRow {
 | gantt? | `GanttOptions` | The options to use when rendering the row as a Gantt table. |
 | indent? | `number` | The indentation level of the row node. Only applicable for tree and gantt views. |
 | parent? | `number` | The HTML parent element for the row node. This is evaluated automatically while rendering the table. Only applicable for tree and gantt views. |
+
+### TreeGanttTableConfig
+
+Table configuration for tree-gantt view types.
+
+**Definition:**
+
+```typescript
+export interface TreeGanttTableConfig {
+  defaultTreeExpansion?: 'root' | 'branch' | 'leaf';
+  dependencyGraph?: boolean;
+  view: 'tree-gantt';
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| defaultTreeExpansion? | `'root' \| 'branch' \| 'leaf'` | `branch` (Shows minimal tree to display all gantt nodes. Expands only the necessary paths to gantt nodes, stops at gantt nodes with no gantt descendants), `leaf` (All nodes are visible (fully expanded)) |
+| dependencyGraph? | `boolean` | Control whether dependency graph connections should be enabled for Gantt views. When false, connection handles and dependency lines will be hidden. |
+| view | `'tree-gantt'` | The type of view to display the table in. |
+
+### TreeTableConfig
+
+Table configuration for tree view types.
+
+**Definition:**
+
+```typescript
+export interface TreeTableConfig {
+  defaultTreeExpansion?: 'root' | 'branch' | 'leaf';
+  view: 'tree';
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| defaultTreeExpansion? | `'root' \| 'branch' \| 'leaf'` | `branch` (Shows minimal tree to display all gantt nodes. Expands only the necessary paths to gantt nodes, stops at gantt nodes with no gantt descendants), `leaf` (All nodes are visible (fully expanded)) |
+| view | `'tree'` | The type of view to display the table in. |
 
 ## Type Aliases
 
@@ -578,6 +654,16 @@ Superset of all schema types for AForm
 
 ```typescript
 export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema;
+```
+
+### TableConfig
+
+Table configuration definition using discriminated unions for type safety.
+
+**Definition:**
+
+```typescript
+export type TableConfig = BasicTableConfig | TreeTableConfig | GanttTableConfig | TreeGanttTableConfig;
 ```
 
 ### TableSchema

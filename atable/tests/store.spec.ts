@@ -585,10 +585,10 @@ describe('table store', () => {
 			const treeStore = createTableStore({
 				columns: mockColumns,
 				rows: treeRows,
-				config: { view: 'tree' },
+				config: { view: 'tree', defaultTreeExpansion: 'root' },
 			})
 
-			// Initially children should be open
+			// Initially children should be closed (using root mode)
 			expect(treeStore.display[1].open).toBe(false)
 			expect(treeStore.display[2].open).toBe(false)
 
@@ -610,10 +610,10 @@ describe('table store', () => {
 			const treeStore = createTableStore({
 				columns: mockColumns,
 				rows: nestedRows,
-				config: { view: 'tree' },
+				config: { view: 'tree', defaultTreeExpansion: 'root' },
 			})
 
-			// Initially child should not be open (since parents are collapsed)
+			// Initially child should not be open (using root mode - parents are collapsed)
 			expect(treeStore.display[2].open).toBe(false)
 
 			// Toggle root to open its children (row 1)
@@ -653,10 +653,10 @@ describe('table store', () => {
 			const treeStore = createTableStore({
 				columns: mockColumns,
 				rows: treeRows,
-				config: { view: 'tree' },
+				config: { view: 'tree', defaultTreeExpansion: 'root' },
 			})
 
-			// Initially children should be closed (not visible)
+			// Initially children should be closed (not visible) using root mode
 			expect(treeStore.display[1].open).toBe(false)
 			expect(treeStore.display[2].open).toBe(false)
 			expect(treeStore.isRowVisible(1)).toBe(false)
@@ -691,7 +691,7 @@ describe('table store', () => {
 			const treeStore = createTableStore({
 				columns: mockColumns,
 				rows: deepTreeRows,
-				config: { view: 'tree' },
+				config: { view: 'tree', defaultTreeExpansion: 'root' },
 			})
 
 			// Initially all children should be closed
@@ -738,7 +738,7 @@ describe('table store', () => {
 			const treeStore = createTableStore({
 				columns: mockColumns,
 				rows: deepTreeRows,
-				config: { view: 'tree' },
+				config: { view: 'tree', defaultTreeExpansion: 'root' },
 			})
 
 			// First expansion of root - should only show Level 1a and Level 1b
@@ -1104,7 +1104,7 @@ describe('table store', () => {
 					{ id: 1, name: 'Parent', parent: undefined },
 					{ id: 2, name: 'Child', parent: 0 },
 				],
-				config: { view: 'tree' },
+				config: { view: 'tree', defaultTreeExpansion: 'root' },
 			})
 
 			// Initially closed
@@ -1141,7 +1141,7 @@ describe('table store', () => {
 					{ id: 1, name: 'Parent', parent: undefined },
 					{ id: 2, name: 'Child', parent: 0 },
 				],
-				config: { view: 'tree' },
+				config: { view: 'tree', defaultTreeExpansion: 'root' },
 			})
 
 			// Parent is always visible

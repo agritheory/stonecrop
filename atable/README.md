@@ -19,6 +19,50 @@
 
 </details>
 
+## Tree View Configuration
+
+ATable supports tree views with configurable default expansion states for hierarchical data. Use the `defaultTreeExpansion` option in your table configuration to control initial expansion behavior:
+
+```js
+// Default behavior (no defaultTreeExpansion specified) - all nodes expanded
+const config = {
+  view: 'tree'
+}
+
+// Only show root nodes (fully collapsed)
+const config = {
+  view: 'tree',
+  defaultTreeExpansion: 'root'
+}
+
+// Show only nodes with gantt data and their paths (branch mode)
+const config = {
+  view: 'tree',
+  defaultTreeExpansion: 'branch'
+}
+
+// Show all nodes (fully expanded) - same as default
+const config = {
+  view: 'tree',
+  defaultTreeExpansion: 'leaf'
+}
+```
+
+**Expansion Modes:**
+- `root`: Only top-level nodes are visible (fully collapsed)
+- `branch`: Shows the minimal tree to display all nodes with gantt data. Only expands nodes that lead to gantt-enabled nodes, stops expanding at gantt nodes that have no gantt descendants
+- `leaf`: All nodes are visible (fully expanded)
+- `undefined` (default): All nodes start expanded (same as 'leaf' mode)
+
+**Example Usage:**
+```vue
+<ATable
+  v-model:rows="treeData"
+  v-model:columns="columns"
+  :config="{ view: 'tree', defaultTreeExpansion: 'branch' }"
+/>
+```
+
 ## Column API
 
 The primary API for ATable is the column object.
