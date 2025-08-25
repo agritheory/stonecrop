@@ -27,7 +27,7 @@ const getMeta = async (doctype: string) => {
 		actions: Map(data.actions!),
 	}
 
-	return new DoctypeMeta(doctype, config.schema, config.workflow, config.actions)
+	return new DoctypeMeta(data.doctype || doctype, config.schema, config.workflow, config.actions)
 }
 
 // Install plugins in correct order following Vue.js best practices

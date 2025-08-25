@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 import type { MutableDoctype } from '@stonecrop/stonecrop'
 import { createServer, Model } from 'miragejs'
+import DbCollection from 'miragejs/db-collection'
 
 export function makeServer() {
 	const server = createServer({
@@ -80,27 +81,12 @@ export function makeServer() {
 
 				// Todo List doctype metadata
 				'todo-listMeta': {
+					doctype: 'todo-list',
 					schema: [
-						{
-							fieldname: 'header',
-							fieldtype: 'HTML',
-							component: 'div',
-							label: 'Todo List',
-							value: '<h1>Todo List</h1><p>Manage your tasks</p>',
-						},
-						{
-							fieldname: 'todos_table',
-							fieldtype: 'Table',
-							component: 'ATable',
-							label: 'Tasks',
-							columns: [
-								{ fieldname: 'id', label: 'ID', fieldtype: 'Data' },
-								{ fieldname: 'first_name', label: 'First Name', fieldtype: 'Data' },
-								{ fieldname: 'last_name', label: 'Last Name', fieldtype: 'Data' },
-								{ fieldname: 'phone', label: 'Phone', fieldtype: 'Phone' },
-								{ fieldname: 'actions', label: 'Actions', fieldtype: 'Button' },
-							],
-						},
+						{ fieldname: 'id', label: 'ID', fieldtype: 'Data' },
+						{ fieldname: 'first_name', label: 'First Name', fieldtype: 'Data' },
+						{ fieldname: 'last_name', label: 'Last Name', fieldtype: 'Data' },
+						{ fieldname: 'phone', label: 'Phone', fieldtype: 'Phone' },
 					] as MutableDoctype['schema'],
 					workflow: {
 						id: 'todoList',
@@ -124,6 +110,7 @@ export function makeServer() {
 
 				// Todo Form doctype metadata
 				'todo-formMeta': {
+					doctype: 'todo-form',
 					schema: [
 						{
 							fieldname: 'header',
@@ -184,27 +171,12 @@ export function makeServer() {
 
 				// Issue List doctype metadata
 				'issue-listMeta': {
+					doctype: 'issue-list',
 					schema: [
-						{
-							fieldname: 'header',
-							fieldtype: 'HTML',
-							component: 'div',
-							label: 'Issue List',
-							value: '<h1>Issue List</h1><p>Track and manage issues</p>',
-						},
-						{
-							fieldname: 'issues_table',
-							fieldtype: 'Table',
-							component: 'ATable',
-							label: 'Issues',
-							columns: [
-								{ fieldname: 'id', label: 'ID', fieldtype: 'Data' },
-								{ fieldname: 'subject', label: 'Subject', fieldtype: 'Data' },
-								{ fieldname: 'date', label: 'Date', fieldtype: 'Date' },
-								{ fieldname: 'status', label: 'Status', fieldtype: 'Select' },
-								{ fieldname: 'actions', label: 'Actions', fieldtype: 'Button' },
-							],
-						},
+						{ fieldname: 'id', label: 'ID', fieldtype: 'Data' },
+						{ fieldname: 'subject', label: 'Subject', fieldtype: 'Data' },
+						{ fieldname: 'date', label: 'Date', fieldtype: 'Date' },
+						{ fieldname: 'status', label: 'Status', fieldtype: 'Select' },
 					] as MutableDoctype['schema'],
 					workflow: {
 						id: 'issueList',
@@ -228,6 +200,7 @@ export function makeServer() {
 
 				// Issue Form doctype metadata
 				'issue-formMeta': {
+					doctype: 'issue-form',
 					schema: [
 						{
 							fieldname: 'header',
@@ -309,8 +282,6 @@ export function makeServer() {
 					return { error: 'Path parameter is required' }
 				}
 
-				console.log(`[MirageJS] Resolving route: ${path}`)
-
 				// Access the raw seed data directly
 				const hierarchy = schema.db.doctypeHierarchy
 
@@ -325,7 +296,7 @@ export function makeServer() {
 					const doctypeConfig = config as any
 
 					if (!doctypeConfig.routePatterns) {
-						console.warn(`[MirageJS] No routePatterns found for doctype: ${doctypeKey}`)
+						// no route patterns found for doctype
 						continue
 					}
 
@@ -359,13 +330,11 @@ export function makeServer() {
 								}
 							}
 
-							console.log(`[MirageJS] Route ${path} resolved to:`, result)
 							return result
 						}
 					}
 				}
 
-				console.log(`[MirageJS] No route pattern found for path: ${path}`)
 				return { error: 'Route not found', path }
 			})
 
@@ -378,7 +347,6 @@ export function makeServer() {
 					hierarchy = hierarchy[0]
 				}
 
-				console.log(`[MirageJS] Returning doctype hierarchy:`, hierarchy)
 				return hierarchy
 			})
 
@@ -395,11 +363,9 @@ export function makeServer() {
 				const doctypeHierarchy = hierarchy[doctype]
 
 				if (doctypeHierarchy) {
-					console.log(`[MirageJS] Returning hierarchy for ${doctype}:`, doctypeHierarchy)
 					return doctypeHierarchy
 				}
 
-				console.log(`[MirageJS] No hierarchy found for ${doctype}`)
 				return {}
 			})
 
@@ -420,6 +386,12 @@ export function makeServer() {
 				// Handle mapped doctypes
 				const metaKey = `${actualDoctype}Meta`
 				const meta = schema.db[metaKey] as any
+
+				// MirageJS stores data as arrays, so get the first item if it's an array
+				if (Array.isArray(meta) && meta.length > 0) {
+					return meta[0]
+				}
+
 				return meta || {}
 			})
 
@@ -455,6 +427,12 @@ export function makeServer() {
 
 				const metaKey = `${actualDoctype}Meta`
 				const meta = schema.db[metaKey] as any
+
+				// MirageJS stores data as arrays, so get the first item if it's an array
+				if (Array.isArray(meta) && meta.length > 0) {
+					return meta[0]
+				}
+
 				return meta || {}
 			})
 
@@ -472,11 +450,12 @@ export function makeServer() {
 				}
 
 				const dataKey = `${actualDoctype}s`
-				const records = schema.db[dataKey] as any[]
+				// @ts-expect-error mismatch between mirage types
+				const records = schema.db[dataKey] as DbCollection
 
 				if (records) {
-					const record = records.find((r: any) => r.id === id)
-					return record
+					const record = records.find(id)
+					return record || {}
 				}
 
 				return {}

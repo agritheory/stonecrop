@@ -245,6 +245,7 @@ export type InstallOptions = {
 
 // @public
 export type MutableDoctype = {
+    doctype?: string;
     schema?: SchemaTypes[];
     workflow?: UnknownMachineConfig | AnyStateNodeConfig;
     actions?: Record<string, string[]>;

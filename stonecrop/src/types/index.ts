@@ -11,8 +11,7 @@ import type DoctypeMeta from '../doctype'
  * @public
  */
 export type ImmutableDoctype = {
-	// TODO: allow schema to be a function
-	readonly schema?: List<SchemaTypes>
+	readonly schema?: List<SchemaTypes> // TODO: allow schema to be a function
 	readonly workflow?: UnknownMachineConfig | AnyStateNodeConfig
 	readonly actions?: Map<string, string[]>
 }
@@ -22,8 +21,8 @@ export type ImmutableDoctype = {
  * @public
  */
 export type MutableDoctype = {
-	// TODO: allow schema to be a function
-	schema?: SchemaTypes[]
+	doctype?: string
+	schema?: SchemaTypes[] // TODO: allow schema to be a function
 	workflow?: UnknownMachineConfig | AnyStateNodeConfig
 	actions?: Record<string, string[]>
 }

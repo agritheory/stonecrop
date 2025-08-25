@@ -1,21 +1,5 @@
 <template>
 	<div class="desktop" @click="handleClick">
-		<!-- Debug info -->
-		<pre v-if="showDebug" class="debug-info">
-			View: {{ currentView }}
-			Route: {{ route?.path }}
-			Doctype: {{ currentDoctype }}
-			RecordID: {{ currentRecordId }}
-			Schema: {{ currentViewSchema?.length }} items
-			Data: {{ Object.keys(currentViewData).length }} keys
-			Records Count: {{ getRecords().length }}
-			Stonecrop Available: {{ !!stonecrop }}
-			Stonecrop Ready: {{ debugInfo.stonecropReady }}
-			Schema: {{ currentViewSchema }}
-			Data: {{ currentViewData }}
-		</pre
-		>
-
 		<!-- Action Set -->
 		<ActionSet :elements="actionElements" />
 
@@ -48,7 +32,7 @@
 
 <script setup lang="ts">
 import { useStonecrop } from '@stonecrop/stonecrop'
-import { AForm, type SchemaTypes } from '@stonecrop/aform'
+import { AForm, type SchemaTypes, type TableColumn, type TableConfig } from '@stonecrop/aform'
 import { computed, nextTick, onMounted, provide, ref, unref, watch } from 'vue'
 
 import ActionSet from './ActionSet.vue'
@@ -58,10 +42,9 @@ import type { ActionElements } from '../types'
 
 type Props = {
 	availableDoctypes?: string[]
-	showDebug?: boolean
 }
 
-const { availableDoctypes = [], showDebug = false } = defineProps<Props>()
+const { availableDoctypes = [] } = defineProps<Props>()
 
 const { stonecrop } = useStonecrop()
 
@@ -70,11 +53,6 @@ const loading = ref(false)
 const saving = ref(false)
 const currentViewData = ref<Record<string, any>>({})
 const commandPaletteOpen = ref(false)
-
-// Debug state (simplified)
-const debugInfo = ref({
-	stonecropReady: false,
-})
 
 // Computed properties for current route context
 const route = computed(() => unref(stonecrop.value?.registry.router?.currentRoute))
@@ -379,7 +357,7 @@ const getDoctypesSchema = (): SchemaTypes[] => {
 					label: 'Doctype',
 					name: 'doctype',
 					type: 'Data',
-					align: 'left' as const,
+					align: 'left',
 					edit: false,
 					width: '20ch',
 				},
@@ -387,7 +365,7 @@ const getDoctypesSchema = (): SchemaTypes[] => {
 					label: 'Name',
 					name: 'display_name',
 					type: 'Data',
-					align: 'left' as const,
+					align: 'left',
 					edit: false,
 					width: '30ch',
 				},
@@ -395,7 +373,7 @@ const getDoctypesSchema = (): SchemaTypes[] => {
 					label: 'Records',
 					name: 'record_count',
 					type: 'Data',
-					align: 'center' as const,
+					align: 'center',
 					edit: false,
 					width: '15ch',
 				},
@@ -403,15 +381,15 @@ const getDoctypesSchema = (): SchemaTypes[] => {
 					label: 'Actions',
 					name: 'actions',
 					type: 'Data',
-					align: 'center' as const,
+					align: 'center',
 					edit: false,
 					width: '20ch',
 				},
-			],
+			] as TableColumn[],
 			config: {
-				view: 'list' as const,
+				view: 'list',
 				fullWidth: true,
-			},
+			} as TableConfig,
 			rows,
 		},
 	]
@@ -510,7 +488,7 @@ const getRecordsSchema = (): SchemaTypes[] => {
 								label: col.label,
 								name: col.fieldname,
 								type: col.fieldtype,
-								align: 'left' as const,
+								align: 'left',
 								edit: false,
 								width: '20ch',
 							})),
@@ -518,15 +496,15 @@ const getRecordsSchema = (): SchemaTypes[] => {
 								label: 'Actions',
 								name: 'actions',
 								type: 'Data',
-								align: 'center' as const,
+								align: 'center',
 								edit: false,
 								width: '20ch',
 							},
-						],
+						] as TableColumn[],
 						config: {
-							view: 'list' as const,
+							view: 'list',
 							fullWidth: true,
-						},
+						} as TableConfig,
 						rows,
 					},
 			  ]),
@@ -619,14 +597,11 @@ const getRecordFormSchema = (): SchemaTypes[] => {
 					</div>
 				`,
 			},
-			{
-				fieldname: 'form_fields',
-				schema: schemaArray.map(field => ({
-					...field,
-					// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-					value: currentRecord?.[field.fieldname] || '',
-				})),
-			},
+			...schemaArray.map(field => ({
+				...field,
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+				value: currentRecord[field.fieldname] || '',
+			})),
 		]
 	} catch (error) {
 		return [
@@ -645,8 +620,6 @@ const getRecordFormSchema = (): SchemaTypes[] => {
 
 // Data helpers
 const getRecords = () => {
-	debugInfo.value.stonecropReady = !!stonecrop.value
-
 	if (!stonecrop.value || !currentDoctype.value) {
 		return []
 	}

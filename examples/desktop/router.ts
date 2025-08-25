@@ -1,5 +1,12 @@
-import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
-import type { NavigationGuardNext, RouteLocationNormalized } from 'vue-router'
+import { DoctypeMeta } from '@stonecrop/stonecrop'
+import { List, Map } from 'immutable'
+import {
+	createRouter,
+	createWebHistory,
+	type NavigationGuardNext,
+	type RouteLocationNormalized,
+	type RouteRecordRaw,
+} from 'vue-router'
 
 import Home from './components/Home.vue'
 import View from './components/View.vue'
@@ -23,7 +30,7 @@ export function setGlobalReferences(registry: any, stonecrop: any) {
  */
 async function setupDoctypeData(doctype: string, actualDoctype?: string): Promise<void> {
 	if (!globalRegistry || !globalStonecrop) {
-		console.warn('Global Stonecrop references not available during route setup')
+		// global Stonecrop references not available during route setup
 		return
 	}
 
@@ -34,12 +41,7 @@ async function setupDoctypeData(doctype: string, actualDoctype?: string): Promis
 		if (!globalRegistry.registry[targetDoctype]) {
 			const doctypeMeta = await globalRegistry.getMeta?.(doctype) // Use original doctype for API call
 			if (doctypeMeta) {
-				// Register with the actual doctype name
-				const adjustedMeta = {
-					...doctypeMeta,
-					name: targetDoctype,
-				}
-				globalRegistry.addDoctype(adjustedMeta)
+				globalRegistry.addDoctype(doctypeMeta)
 			}
 		}
 
@@ -69,7 +71,7 @@ async function setupDoctypeData(doctype: string, actualDoctype?: string): Promis
  */
 async function setupRecordData(doctype: string, recordId: string, actualDoctype?: string): Promise<void> {
 	if (!globalRegistry || !globalStonecrop) {
-		console.warn('Global Stonecrop references not available during route setup')
+		// global Stonecrop references not available during route setup
 		return
 	}
 
@@ -82,18 +84,20 @@ async function setupRecordData(doctype: string, recordId: string, actualDoctype?
 			const response = await fetch(`/api/${doctype}/${recordId}/meta`)
 			if (response.ok) {
 				const metaData = await response.json()
+
 				const config = {
 					schema: metaData.schema,
 					workflow: metaData.workflow,
 					actions: metaData.actions || {},
 				}
 
-				const doctypeMeta = await globalRegistry.createDoctypeMeta?.(
+				const doctypeMeta = new DoctypeMeta(
 					targetDoctype,
-					config.schema,
+					List(config.schema),
 					config.workflow,
-					config.actions
+					Map(config.actions as Record<string, string[]>)
 				)
+
 				if (doctypeMeta) {
 					globalRegistry.addDoctype(doctypeMeta)
 				}
@@ -143,7 +147,7 @@ async function resolveRoute(path: string): Promise<any> {
 		if (response.ok) {
 			const result = await response.json()
 			if (result.error) {
-				console.warn(`[Router] Route resolution failed: ${result.error}`)
+				// route resolution failed
 				return null
 			}
 			return result
@@ -162,13 +166,11 @@ async function registerDoctypeRoutes(doctype: string): Promise<boolean> {
 		return true // Already registered
 	}
 
-	console.log(`[Router] Registering routes for doctype: ${doctype}`)
-
 	try {
 		const hierarchy = await fetchDoctypeHierarchy(doctype)
 
 		if (!hierarchy || !hierarchy.routePatterns) {
-			console.warn(`[Router] No route patterns found for doctype: ${doctype}`)
+			// No route patterns found for doctype
 			return false
 		}
 
@@ -189,8 +191,6 @@ async function registerDoctypeRoutes(doctype: string): Promise<boolean> {
 					const routeDoctype = to.meta.doctype as string
 					const actualDoctype = to.meta.actualDoctype as string
 
-					console.log(`[Router] Setting up route: ${to.path}, doctype: ${routeDoctype}, actual: ${actualDoctype}`)
-
 					if (pattern.meta.type === 'list') {
 						await setupDoctypeData(routeDoctype, actualDoctype)
 					} else if (pattern.meta.type === 'form') {
@@ -203,7 +203,6 @@ async function registerDoctypeRoutes(doctype: string): Promise<boolean> {
 			}
 
 			router.addRoute(route)
-			console.log(`[Router] Added route: ${pattern.pattern} -> ${pattern.doctype}`)
 		})
 
 		registeredDoctypes.add(doctype)
@@ -222,20 +221,18 @@ const routes: RouteRecordRaw[] = [
 		component: Home,
 		meta: { title: 'Home' },
 	},
-	// Catch-all route that handles on-demand route registration
 	{
 		path: '/:pathMatch(.*)*',
 		name: 'catch-all',
 		component: View,
 		beforeEnter: async (to: RouteLocationNormalized, _from: RouteLocationNormalized, next: NavigationGuardNext) => {
 			const path = to.path
-			console.log(`[Router] Handling unknown route: ${path}`)
 
 			// Resolve the route using server endpoint
 			const routeInfo = await resolveRoute(path)
 
 			if (!routeInfo) {
-				console.warn(`[Router] Could not resolve route: ${path}`)
+				// Could not resolve route: ${path}
 				next() // Continue to show catch-all view
 				return
 			}
@@ -245,11 +242,9 @@ const routes: RouteRecordRaw[] = [
 
 			if (registered) {
 				// Route should now be registered, try to navigate to it again
-				console.log(`[Router] Routes registered for ${routeInfo.doctype}, redirecting to: ${path}`)
 				next({ path, replace: true })
 			} else {
 				// Registration failed, continue to catch-all view
-				console.warn(`[Router] Failed to register routes for doctype: ${routeInfo.doctype}`)
 				next()
 			}
 		},
@@ -260,10 +255,5 @@ router = createRouter({
 	history: createWebHistory(),
 	routes,
 })
-
-console.log(
-	'[Router] Created router with base routes:',
-	router.getRoutes().map(r => ({ name: r.name, path: r.path }))
-)
 
 export default router
