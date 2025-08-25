@@ -18,6 +18,7 @@ export function makeServer() {
 		seeds(server) {
 			server.db.loadData({
 				// doctypes list
+				// Updated doctypes list with simplified route structure
 				doctypes: [
 					{
 						id: 'todo',
@@ -34,6 +35,48 @@ export function makeServer() {
 						actions: 'View',
 					},
 				],
+
+				// Doctype hierarchy configuration
+				doctypeHierarchy: {
+					todo: {
+						route: '/todo',
+						currentDoctype: 'todo-list', // Default doctype for this route
+						descendantDoctypes: ['todo-list', 'todo-form'],
+						routePatterns: {
+							list: {
+								pattern: '/todo',
+								doctype: 'todo-list',
+								component: 'View',
+								meta: { title: 'Todo List', type: 'list' },
+							},
+							form: {
+								pattern: '/todo/:recordId',
+								doctype: 'todo-form',
+								component: 'View',
+								meta: { title: 'Todo Form', type: 'form' },
+							},
+						},
+					},
+					issue: {
+						route: '/issue',
+						currentDoctype: 'issue-list', // Default doctype for this route
+						descendantDoctypes: ['issue-list', 'issue-form'],
+						routePatterns: {
+							list: {
+								pattern: '/issue',
+								doctype: 'issue-list',
+								component: 'View',
+								meta: { title: 'Issue List', type: 'list' },
+							},
+							form: {
+								pattern: '/issue/:recordId',
+								doctype: 'issue-form',
+								component: 'View',
+								meta: { title: 'Issue Form', type: 'form' },
+							},
+						},
+					},
+				},
 
 				// Todo List doctype metadata
 				'todo-listMeta': {
@@ -259,6 +302,107 @@ export function makeServer() {
 		},
 
 		routes() {
+			// Route resolution endpoint - determines doctype from route path
+			this.get('/api/resolve-route', (schema, request) => {
+				const path = request.queryParams.path as string
+				if (!path) {
+					return { error: 'Path parameter is required' }
+				}
+
+				console.log(`[MirageJS] Resolving route: ${path}`)
+
+				// Access the raw seed data directly
+				const hierarchy = schema.db.doctypeHierarchy
+
+				// If hierarchy is an array (MirageJS converts objects to arrays), get the first item
+				let hierarchyData = hierarchy
+				if (Array.isArray(hierarchy) && hierarchy.length > 0) {
+					hierarchyData = hierarchy[0]
+				}
+
+				// Find matching route pattern in hierarchy
+				for (const [doctypeKey, config] of Object.entries(hierarchyData)) {
+					const doctypeConfig = config as any
+
+					if (!doctypeConfig.routePatterns) {
+						console.warn(`[MirageJS] No routePatterns found for doctype: ${doctypeKey}`)
+						continue
+					}
+
+					// Check each route pattern for this doctype
+					for (const [patternKey, pattern] of Object.entries(doctypeConfig.routePatterns)) {
+						const routePattern = (pattern as any).pattern
+
+						// Convert Vue route pattern to regex for matching
+						// e.g., '/todo/:recordId' becomes /^\/todo\/([^\/]+)$/
+						const regexPattern = routePattern
+							.replace(/:[^\/]+/g, '([^/]+)') // Replace :param with capture group
+							.replace(/\//g, '\\/') // Escape slashes
+
+						const regex = new RegExp(`^${regexPattern}$`)
+
+						if (regex.test(path)) {
+							const result = {
+								doctype: doctypeKey,
+								actualDoctype: (pattern as any).doctype,
+								routeType: (pattern as any).meta.type,
+								routeName: `${doctypeKey}-${patternKey}`,
+								matchedPattern: routePattern,
+								...((pattern as any).meta || {}),
+							}
+
+							// Extract route parameters if this is a form route
+							if ((pattern as any).meta.type === 'form') {
+								const matches = path.match(regex)
+								if (matches && matches[1]) {
+									result.recordId = matches[1]
+								}
+							}
+
+							console.log(`[MirageJS] Route ${path} resolved to:`, result)
+							return result
+						}
+					}
+				}
+
+				console.log(`[MirageJS] No route pattern found for path: ${path}`)
+				return { error: 'Route not found', path }
+			})
+
+			// Doctype hierarchy endpoint
+			this.get('/api/doctype-hierarchy', schema => {
+				let hierarchy = schema.db.doctypeHierarchy as any
+
+				// If hierarchy is an array (MirageJS converts objects to arrays), get the first item
+				if (Array.isArray(hierarchy) && hierarchy.length > 0) {
+					hierarchy = hierarchy[0]
+				}
+
+				console.log(`[MirageJS] Returning doctype hierarchy:`, hierarchy)
+				return hierarchy
+			})
+
+			// Specific doctype hierarchy endpoint
+			this.get('/api/doctype-hierarchy/:doctype', (schema, request) => {
+				const doctype = request.params.doctype
+				let hierarchy = schema.db.doctypeHierarchy as any
+
+				// If hierarchy is an array (MirageJS converts objects to arrays), get the first item
+				if (Array.isArray(hierarchy) && hierarchy.length > 0) {
+					hierarchy = hierarchy[0]
+				}
+
+				const doctypeHierarchy = hierarchy[doctype]
+
+				if (doctypeHierarchy) {
+					console.log(`[MirageJS] Returning hierarchy for ${doctype}:`, doctypeHierarchy)
+					return doctypeHierarchy
+				}
+
+				console.log(`[MirageJS] No hierarchy found for ${doctype}`)
+				return {}
+			})
+
 			// View-specific meta endpoints
 			this.get('/api/:doctype/meta', (schema, request) => {
 				const doctype = request.params.doctype
