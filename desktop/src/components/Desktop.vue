@@ -10,15 +10,9 @@
 			Data: {{ Object.keys(currentViewData).length }} keys
 			Records Count: {{ getRecords().length }}
 			Stonecrop Available: {{ !!stonecrop }}
-
-			Debug Info:
-			- LoadMockData Called: {{ debugInfo.loadMockDataCalled }}
-			- LoadMockData Results: {{ debugInfo.loadMockDataResults }}
-			- GetRecords Results: {{ debugInfo.getRecordsResults }}
-			- Stonecrop Ready: {{ debugInfo.stonecropReady }}
-			- Watcher Triggered: {{ debugInfo.watcherTriggered }}
-			- Schema: {{ currentViewSchema }}
-			- Data: {{ currentViewData }}
+			Stonecrop Ready: {{ debugInfo.stonecropReady }}
+			Schema: {{ currentViewSchema }}
+			Data: {{ currentViewData }}
 		</pre
 		>
 
@@ -26,11 +20,8 @@
 		<ActionSet :elements="actionElements" />
 
 		<!-- Main content using AForm -->
-		<AForm v-if="currentViewData.length > 0" v-model="currentViewSchema" :data="currentViewData" />
+		<AForm v-if="currentViewSchema.length > 0" v-model="currentViewSchema" :data="currentViewData" />
 		<div v-else-if="!stonecrop" class="loading"><p>Initializing Stonecrop...</p></div>
-		<div v-else-if="currentView === 'records' && !currentDoctype" class="loading">
-			<p>Loading doctype information...</p>
-		</div>
 		<div v-else class="loading">
 			<p>Loading {{ currentView }} data...</p>
 		</div>
@@ -80,13 +71,9 @@ const saving = ref(false)
 const currentViewData = ref<Record<string, any>>({})
 const commandPaletteOpen = ref(false)
 
-// Debug state
+// Debug state (simplified)
 const debugInfo = ref({
-	loadMockDataCalled: false,
-	loadMockDataResults: '',
-	getRecordsResults: '',
 	stonecropReady: false,
-	watcherTriggered: false,
 })
 
 // Computed properties for current route context
@@ -95,15 +82,43 @@ const router = computed(() => stonecrop.value?.registry.router)
 const currentDoctype = computed(() => {
 	if (!route.value) return ''
 
-	// First try params.doctype
+	// First check if we have actualDoctype in meta (from registered routes)
+	if (route.value.meta?.actualDoctype) {
+		return route.value.meta.actualDoctype as string
+	}
+
+	// For named routes, use params.doctype
 	if (route.value.params.doctype) {
 		return route.value.params.doctype as string
 	}
 
-	// Then try pathMatch for catch-all routes
-	const pathParams = route.value.params.pathMatch as string[] | undefined
-	if (pathParams && pathParams.length > 0) {
-		return pathParams[0]
+	// For catch-all routes that haven't been registered yet, extract from path
+	const pathMatch = route.value.params.pathMatch as string[] | undefined
+	if (pathMatch && pathMatch.length > 0) {
+		return pathMatch[0]
+	}
+
+	return ''
+})
+
+// The route doctype for display and navigation (e.g., 'todo')
+const routeDoctype = computed(() => {
+	if (!route.value) return ''
+
+	// Check route meta first
+	if (route.value.meta?.doctype) {
+		return route.value.meta.doctype as string
+	}
+
+	// For named routes, use params.doctype
+	if (route.value.params.doctype) {
+		return route.value.params.doctype as string
+	}
+
+	// For catch-all routes, extract from path
+	const pathMatch = route.value.params.pathMatch as string[] | undefined
+	if (pathMatch && pathMatch.length > 0) {
+		return pathMatch[0]
 	}
 
 	return ''
@@ -112,15 +127,15 @@ const currentDoctype = computed(() => {
 const currentRecordId = computed(() => {
 	if (!route.value) return ''
 
-	// First try params.recordId
+	// For named routes, use params.recordId
 	if (route.value.params.recordId) {
 		return route.value.params.recordId as string
 	}
 
-	// Then try pathMatch for catch-all routes
-	const pathParams = route.value.params.pathMatch as string[] | undefined
-	if (pathParams && pathParams.length > 1) {
-		return pathParams[1]
+	// For catch-all routes that haven't been registered yet, extract from path
+	const pathMatch = route.value.params.pathMatch as string[] | undefined
+	if (pathMatch && pathMatch.length > 1) {
+		return pathMatch[1]
 	}
 
 	return ''
@@ -131,29 +146,27 @@ const isNewRecord = computed(() => currentRecordId.value?.startsWith('new-'))
 const currentView = computed(() => {
 	if (!route.value) return 'doctypes'
 
-	const routeName = route.value.name as string
-	const { doctype, recordId } = route.value.params
-
-	// Check route name first for most accurate determination
-	if (routeName === 'record-form' || recordId) {
-		return 'record'
-	} else if (routeName === 'records-list' || doctype) {
-		return 'records'
-	} else if (routeName === 'home' || route.value.path === '/') {
+	// Home route
+	if (route.value.name === 'home' || route.value.path === '/') {
 		return 'doctypes'
 	}
 
-	// Fallback logic for catch-all route using pathMatch
-	const pathParams = route.value.params.pathMatch as string[] | undefined
-	if (pathParams && pathParams.length > 0) {
-		if (pathParams.length === 1) {
-			return 'records'
-		} else if (pathParams.length === 2) {
+	// Named routes from registered doctypes
+	if (route.value.name && route.value.name !== 'catch-all') {
+		const routeName = route.value.name as string
+		if (routeName.includes('form') || route.value.params.recordId) {
 			return 'record'
+		} else if (routeName.includes('list') || route.value.params.doctype) {
+			return 'records'
 		}
 	}
 
-	// Default fallback
+	// Catch-all route - determine from path structure
+	const pathMatch = route.value.params.pathMatch as string[] | undefined
+	if (pathMatch && pathMatch.length > 0) {
+		return pathMatch.length === 1 ? 'records' : 'record'
+	}
+
 	return 'doctypes'
 })
 
@@ -233,15 +246,15 @@ const actionElements = computed<ActionElements[]>(() => {
 const navigationBreadcrumbs = computed(() => {
 	const breadcrumbs: { title: string; to: string }[] = []
 
-	if (currentView.value === 'records' && currentDoctype.value) {
+	if (currentView.value === 'records' && routeDoctype.value) {
 		breadcrumbs.push(
 			{ title: 'Home', to: '/' },
-			{ title: formatDoctypeName(currentDoctype.value), to: `/${currentDoctype.value}` }
+			{ title: formatDoctypeName(routeDoctype.value), to: `/${routeDoctype.value}` }
 		)
-	} else if (currentView.value === 'record' && currentDoctype.value) {
+	} else if (currentView.value === 'record' && routeDoctype.value) {
 		breadcrumbs.push(
 			{ title: 'Home', to: '/' },
-			{ title: formatDoctypeName(currentDoctype.value), to: `/${currentDoctype.value}` },
+			{ title: formatDoctypeName(routeDoctype.value), to: `/${routeDoctype.value}` },
 			{ title: isNewRecord.value ? 'New Record' : 'Edit Record', to: route.value?.fullPath || '' }
 		)
 	}
@@ -271,16 +284,16 @@ const searchCommands = (query: string): Command[] => {
 	]
 
 	// Add doctype-specific commands
-	if (currentDoctype.value) {
+	if (routeDoctype.value) {
 		commands.push({
-			title: `View ${formatDoctypeName(currentDoctype.value)} Records`,
-			description: `Navigate to ${currentDoctype.value} list`,
-			action: () => void router.value?.push(`/${currentDoctype.value}`),
+			title: `View ${formatDoctypeName(routeDoctype.value)} Records`,
+			description: `Navigate to ${routeDoctype.value} list`,
+			action: () => void router.value?.push(`/${routeDoctype.value}`),
 		})
 
 		commands.push({
-			title: `Create New ${formatDoctypeName(currentDoctype.value)}`,
-			description: `Create a new ${currentDoctype.value} record`,
+			title: `Create New ${formatDoctypeName(routeDoctype.value)}`,
+			description: `Create a new ${routeDoctype.value} record`,
 			action: () => void createNewRecord(),
 		})
 	}
@@ -328,12 +341,12 @@ const navigateToDoctype = async (doctype: string) => {
 }
 
 const openRecord = async (recordId: string) => {
-	await router.value?.push(`/${currentDoctype.value}/${recordId}`)
+	await router.value?.push(`/${routeDoctype.value}/${recordId}`)
 }
 
 const createNewRecord = async () => {
 	const newId = `new-${Date.now()}`
-	await router.value?.push(`/${currentDoctype.value}/${newId}`)
+	await router.value?.push(`/${routeDoctype.value}/${newId}`)
 }
 
 // Schema generators
@@ -398,7 +411,6 @@ const getDoctypesSchema = (): SchemaTypes[] => {
 			config: {
 				view: 'list' as const,
 				fullWidth: true,
-				dependencyGraph: false,
 			},
 			rows,
 		},
@@ -406,23 +418,13 @@ const getDoctypesSchema = (): SchemaTypes[] => {
 }
 
 const getRecordsSchema = (): SchemaTypes[] => {
-	console.log('Getting records schema for:', currentDoctype.value)
 	if (!currentDoctype.value) return []
 	if (!stonecrop.value) return []
 
 	const records = getRecords()
 	const columns = getColumns()
 
-	// If records are empty but columns exist, try to load mock data
-	if (columns.length > 0 && records.length === 0) {
-		// Trigger async data loading (non-blocking)
-		loadMockData(currentDoctype.value).catch(() => {
-			// Silent error handling
-		})
-	}
-
 	// If no columns are available, show a loading or empty state
-	console.log('Column Data:', columns)
 	if (columns.length === 0) {
 		return [
 			{
@@ -433,9 +435,9 @@ const getRecordsSchema = (): SchemaTypes[] => {
 						<nav class="breadcrumbs">
 							<a href="/">Home</a>
 							<span class="separator">/</span>
-							<span class="current">${formatDoctypeName(currentDoctype.value)}</span>
+							<span class="current">${formatDoctypeName(routeDoctype.value || currentDoctype.value)}</span>
 						</nav>
-						<h1>${formatDoctypeName(currentDoctype.value)} Records</h1>
+						<h1>${formatDoctypeName(routeDoctype.value || currentDoctype.value)} Records</h1>
 					</div>
 				`,
 			},
@@ -444,14 +446,13 @@ const getRecordsSchema = (): SchemaTypes[] => {
 				component: 'div',
 				value: `
 					<div class="loading-state">
-						<p>Loading ${formatDoctypeName(currentDoctype.value)} schema...</p>
+						<p>Loading ${formatDoctypeName(routeDoctype.value || currentDoctype.value)} schema...</p>
 					</div>
 				`,
 			},
 		]
 	}
 
-	console.log('Record Data:', records)
 	const rows = records.map((record: any) => ({
 		...record,
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -468,9 +469,9 @@ const getRecordsSchema = (): SchemaTypes[] => {
 					<nav class="breadcrumbs">
 						<a href="/">Home</a>
 						<span class="separator">/</span>
-						<span class="current">${formatDoctypeName(currentDoctype.value)}</span>
+						<span class="current">${formatDoctypeName(routeDoctype.value || currentDoctype.value)}</span>
 					</nav>
-					<h1>${formatDoctypeName(currentDoctype.value)} Records</h1>
+					<h1>${formatDoctypeName(routeDoctype.value || currentDoctype.value)} Records</h1>
 				</div>
 			`,
 		},
@@ -480,7 +481,7 @@ const getRecordsSchema = (): SchemaTypes[] => {
 			value: `
 				<div class="view-actions">
 					<button class="btn-primary" data-action="create">
-						New ${formatDoctypeName(currentDoctype.value)}
+						New ${formatDoctypeName(routeDoctype.value || currentDoctype.value)}
 					</button>
 				</div>
 			`,
@@ -492,7 +493,7 @@ const getRecordsSchema = (): SchemaTypes[] => {
 						component: 'div',
 						value: `
 							<div class="empty-state">
-								<p>No ${currentDoctype.value} records found.</p>
+								<p>No ${routeDoctype.value || currentDoctype.value} records found.</p>
 								<button class="btn-primary" data-action="create">
 									Create First Record
 								</button>
@@ -551,14 +552,16 @@ const getRecordFormSchema = (): SchemaTypes[] => {
 							<nav class="breadcrumbs">
 								<a href="/">Home</a>
 								<span class="separator">/</span>
-								<a href="/${currentDoctype.value}">${formatDoctypeName(currentDoctype.value)}</a>
+								<a href="/${routeDoctype.value || currentDoctype.value}">${formatDoctypeName(
+						routeDoctype.value || currentDoctype.value
+					)}</a>
 								<span class="separator">/</span>
 								<span class="current">${isNewRecord.value ? 'New Record' : currentRecordId.value}</span>
 							</nav>
 							<h1>${
 								isNewRecord.value
-									? `New ${formatDoctypeName(currentDoctype.value)}`
-									: `Edit ${formatDoctypeName(currentDoctype.value)}`
+									? `New ${formatDoctypeName(routeDoctype.value || currentDoctype.value)}`
+									: `Edit ${formatDoctypeName(routeDoctype.value || currentDoctype.value)}`
 							}</h1>
 						</div>
 					`,
@@ -568,7 +571,7 @@ const getRecordFormSchema = (): SchemaTypes[] => {
 					component: 'div',
 					value: `
 						<div class="loading-state">
-							<p>Loading ${formatDoctypeName(currentDoctype.value)} form...</p>
+							<p>Loading ${formatDoctypeName(routeDoctype.value || currentDoctype.value)} form...</p>
 						</div>
 					`,
 				},
@@ -587,15 +590,17 @@ const getRecordFormSchema = (): SchemaTypes[] => {
 						<nav class="breadcrumbs">
 							<a href="/">Home</a>
 							<span class="separator">/</span>
-							<a href="/${currentDoctype.value}">${formatDoctypeName(currentDoctype.value)}</a>
+							<a href="/${routeDoctype.value || currentDoctype.value}">${formatDoctypeName(
+					routeDoctype.value || currentDoctype.value
+				)}</a>
 							<span class="separator">/</span>
 							<span class="current">${isNewRecord.value ? 'New Record' : currentRecordId.value}</span>
 						</nav>
 						<h1>
 							${
 								isNewRecord.value
-									? `New ${formatDoctypeName(currentDoctype.value)}`
-									: `Edit ${formatDoctypeName(currentDoctype.value)}`
+									? `New ${formatDoctypeName(routeDoctype.value || currentDoctype.value)}`
+									: `Edit ${formatDoctypeName(routeDoctype.value || currentDoctype.value)}`
 							}
 						</h1>
 					</div>
@@ -630,7 +635,7 @@ const getRecordFormSchema = (): SchemaTypes[] => {
 				component: 'div',
 				value: `
 					<div class="error-state">
-						<p>Unable to load form schema for ${currentDoctype.value}</p>
+						<p>Unable to load form schema for ${formatDoctypeName(routeDoctype.value || currentDoctype.value)}</p>
 					</div>
 				`,
 			},
@@ -643,20 +648,13 @@ const getRecords = () => {
 	debugInfo.value.stonecropReady = !!stonecrop.value
 
 	if (!stonecrop.value || !currentDoctype.value) {
-		debugInfo.value.getRecordsResults = 'No stonecrop or doctype'
 		return []
 	}
 
 	const recordsNode = stonecrop.value.records(currentDoctype.value)
 	const recordsData = recordsNode?.get('')
 
-	debugInfo.value.getRecordsResults = `Node: ${!!recordsNode}, Data: ${typeof recordsData}, Keys: ${
-		recordsData ? Object.keys(recordsData).length : 0
-	}`
-
-	console.log('Debug Info:', recordsData)
 	if (recordsData && typeof recordsData === 'object' && !Array.isArray(recordsData)) {
-		console.log('Record Keys:', Object.values(recordsData as Record<string, any>))
 		return Object.values(recordsData as Record<string, any>)
 	}
 
@@ -685,82 +683,16 @@ const getColumns = () => {
 	return []
 }
 
-// Mock data loader - loads sample data when HST is empty
-const loadMockData = async (doctype: string) => {
-	debugInfo.value.loadMockDataCalled = true
-	debugInfo.value.loadMockDataResults = 'Starting...'
-
-	if (!stonecrop.value) {
-		debugInfo.value.loadMockDataResults = 'No stonecrop instance'
-		return
-	}
-
-	// Check if data is already loaded
-	const existingRecords = getRecords()
-	if (existingRecords.length > 0) {
-		debugInfo.value.loadMockDataResults = `Already have ${existingRecords.length} records`
-		return
-	}
-
-	debugInfo.value.loadMockDataResults = 'Attempting API fetch...'
-
-	try {
-		// Try to fetch from the API first (for MirageJS)
-		const response = await fetch(`/api/${doctype}`)
-		if (response.ok) {
-			const records = await response.json()
-
-			if (Array.isArray(records) && records.length > 0) {
-				currentViewData.value = records
-				debugInfo.value.loadMockDataResults = `API returned ${records.length} records, adding to HST...`
-
-				// Clear and reload from API
-				stonecrop.value.clearRecords(doctype)
-
-				// Add records one by one and check if they're being stored
-				let successCount = 0
-				records.forEach((record: Record<string, any>) => {
-					if (record.id && typeof record.id === 'string') {
-						stonecrop.value?.addRecord(doctype, record.id, record)
-
-						// Verify the record was added
-						const addedRecord = stonecrop.value?.getRecordById(doctype, record.id)
-						if (addedRecord) {
-							successCount++
-						}
-					}
-				})
-
-				debugInfo.value.loadMockDataResults = `Added ${successCount}/${records.length} records from API. Final count: ${
-					getRecords().length
-				}`
-				return
-			} else {
-				debugInfo.value.loadMockDataResults = `API returned non-array or empty: ${typeof records}, length: ${
-					Array.isArray(records) ? records.length : 'N/A'
-				}`
-			}
-		} else {
-			debugInfo.value.loadMockDataResults = `API response not ok: ${response.status}`
-		}
-	} catch (error) {
-		debugInfo.value.loadMockDataResults = `API error: ${error}, falling back to hardcoded data`
-	}
-}
-
-// Doctype metadata loader
+// Doctype metadata loader - simplified since router handles most of this
 const loadDoctypeMetadata = (doctype: string) => {
 	if (!stonecrop.value) return
 
-	const registry = stonecrop.value.registry
-	if (registry.registry[doctype]) return // Already loaded
-
-	// For now, let's manually ensure the doctype structure exists in HST
-	// This will trigger ensureDoctypeExists() in Stonecrop
+	// Ensure the doctype structure exists in HST
+	// The router should have already loaded the metadata, but this ensures the HST structure exists
 	try {
 		stonecrop.value.records(doctype)
 	} catch (error) {
-		// Silent error handling
+		// Silent error handling - structure will be created if needed
 	}
 }
 
@@ -787,7 +719,7 @@ const handleSave = async () => {
 			stonecrop.value.addRecord(currentDoctype.value, newId, recordData)
 			stonecrop.value.setCurrentRecord(currentDoctype.value, newId)
 
-			await router.value?.replace(`/${currentDoctype.value}/${newId}`)
+			await router.value?.replace(`/${routeDoctype.value}/${newId}`)
 		} else {
 			const recordData = { id: currentRecordId.value, ...formData }
 			stonecrop.value.addRecord(currentDoctype.value, currentRecordId.value, recordData)
@@ -801,7 +733,7 @@ const handleSave = async () => {
 
 const handleCancel = async () => {
 	if (isNewRecord.value) {
-		await router.value?.push(`/${currentDoctype.value}`)
+		await router.value?.push(`/${routeDoctype.value}`)
 	} else {
 		// Reload current record data
 		loadRecordData()
@@ -818,7 +750,7 @@ const handleDelete = async (recordId?: string) => {
 		stonecrop.value.removeRecord(currentDoctype.value, targetRecordId)
 
 		if (currentView.value === 'record') {
-			await router.value?.push(`/${currentDoctype.value}`)
+			await router.value?.push(`/${routeDoctype.value}`)
 		}
 	}
 }
@@ -911,18 +843,10 @@ watch(
 // Watch for when we need to load data for records view
 watch(
 	[currentView, currentDoctype, stonecrop],
-	async ([view, doctype, stonecropInstance]) => {
-		debugInfo.value.watcherTriggered = true
-
+	([view, doctype, stonecropInstance]) => {
 		if (view === 'records' && doctype && stonecropInstance) {
-			// First ensure metadata is loaded
+			// Ensure doctype metadata is loaded
 			loadDoctypeMetadata(doctype)
-
-			// Then try to load records data when we're in records view but have no data
-			const records = getRecords()
-			if (records.length === 0) {
-				await loadMockData(doctype)
-			}
 		}
 	},
 	{ immediate: true }
@@ -967,13 +891,9 @@ provide('desktopMethods', desktopMethods)
 // Register action components in Vue app
 onMounted(() => {
 	// Wait a tick for stonecrop to be ready, then load initial data
-	void nextTick(async () => {
+	void nextTick(() => {
 		if (currentView.value === 'records' && currentDoctype.value && stonecrop.value) {
 			loadDoctypeMetadata(currentDoctype.value)
-			const records = getRecords()
-			if (records.length === 0) {
-				await loadMockData(currentDoctype.value)
-			}
 		}
 	})
 

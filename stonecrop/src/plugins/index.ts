@@ -1,6 +1,7 @@
 import { App, type Plugin } from 'vue'
 
 import Registry from '../registry'
+import { Stonecrop } from '../stonecrop'
 import type { InstallOptions } from '../types'
 
 /**
@@ -49,6 +50,11 @@ const plugin: Plugin = {
 		const registry = new Registry(router, options?.getMeta)
 		app.provide('$registry', registry)
 		app.config.globalProperties.$registry = registry
+
+		// Create and provide a global Stonecrop instance
+		const stonecrop = new Stonecrop(registry)
+		app.provide('$stonecrop', stonecrop)
+		app.config.globalProperties.$stonecrop = stonecrop
 
 		// Register custom components
 		if (options?.components) {

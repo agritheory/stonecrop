@@ -6,12 +6,7 @@ import '@stonecrop/desktop/styles'
 import { install as AForm } from '@stonecrop/aform'
 import { install as ATable } from '@stonecrop/atable'
 import { StonecropDesktop } from '@stonecrop/desktop'
-import StonecropPlugin, {
-	DoctypeMeta,
-	Stonecrop,
-	type ImmutableDoctype,
-	type MutableDoctype,
-} from '@stonecrop/stonecrop'
+import StonecropPlugin, { DoctypeMeta, type ImmutableDoctype, type MutableDoctype } from '@stonecrop/stonecrop'
 
 import App from './App.vue'
 import router, { setGlobalReferences } from './router'
@@ -51,9 +46,9 @@ app.use(StonecropDesktop)
 // Mount the app first to make the registry available
 app.mount('#app')
 
-// Set up global references after mounting when registry is available
+// Set up global references after mounting when registry and stonecrop are available
 const registryFromPlugin = app.config.globalProperties.$registry
-if (registryFromPlugin) {
-	const stonecrop = new Stonecrop(registryFromPlugin)
-	setGlobalReferences(registryFromPlugin, stonecrop)
+const stonecropFromPlugin = app.config.globalProperties.$stonecrop
+if (registryFromPlugin && stonecropFromPlugin) {
+	setGlobalReferences(registryFromPlugin, stonecropFromPlugin)
 }

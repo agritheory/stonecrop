@@ -94,6 +94,7 @@ export function useStonecrop(options?: {
 	if (!options) options = {}
 
 	const registry = options.registry || inject<Registry>('$registry')
+	const providedStonecrop = inject<Stonecrop>('$stonecrop')
 	const stonecrop = ref<Stonecrop>()
 	const hstStore = ref<HSTNode>()
 	const formData = ref<Record<string, any>>({})
@@ -106,8 +107,8 @@ export function useStonecrop(options?: {
 			return
 		}
 
-		// Create Stonecrop instance with HST integration
-		stonecrop.value = new Stonecrop(registry)
+		// Use provided Stonecrop instance if available, otherwise create new one
+		stonecrop.value = providedStonecrop || new Stonecrop(registry)
 
 		// Handle router-based setup if no specific doctype provided
 		if (!options.doctype && registry.router) {

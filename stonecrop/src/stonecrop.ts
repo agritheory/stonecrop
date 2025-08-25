@@ -204,7 +204,7 @@ export class Stonecrop {
 	 * @param doctype - The doctype
 	 */
 	async getRecords(doctype: DoctypeMeta): Promise<void> {
-		const response = await fetch(`/${doctype.slug}`, undefined)
+		const response = await fetch(`/${doctype.slug}`)
 		const records = await response.json()
 
 		// Store each record in HST
