@@ -33,6 +33,10 @@
 			<ATable v-model:rows="resizable_2.rows" v-model:columns="resizable_2.columns" :config="resizable_2.config" />
 		</Variant>
 
+		<Variant title="filterable">
+			<ATable v-model:rows="resizable_1.rows" v-model:columns="resizable_1.columns" :config="resizable_1.config" />
+		</Variant>
+
 		<Variant title="loading options">
 			<ATableLoading>Loading</ATableLoading>
 			<br />
@@ -71,6 +75,7 @@ const columns: TableColumn[] = [
 		align: 'left',
 		edit: false,
 		width: '40ch',
+		sortable: true, // Agregamos sortable
 		format: (value: { title?: string; value?: any }, context) => {
 			return `<a href="${value.title}" target="_blank">${value.title} (IP: ${context.row.ip_address})</a>`
 		},
@@ -82,6 +87,7 @@ const columns: TableColumn[] = [
 		align: 'left',
 		edit: true,
 		width: '20ch',
+		sortable: true, // Agregamos sortable
 	},
 	{
 		label: 'Report Date',
@@ -90,6 +96,7 @@ const columns: TableColumn[] = [
 		align: 'center',
 		edit: true,
 		width: '25ch',
+		sortable: true, // Agregamos sortable
 		modalComponent: 'DateInput',
 		format: (value: number) => new Date(value).toLocaleDateString('en-US'),
 	},

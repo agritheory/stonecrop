@@ -67,6 +67,13 @@ export interface TableColumn {
 	resizable?: boolean
 
 	/**
+	 * Control whether the column should be sortable.
+	 *
+	 * @defaultValue true
+	 */
+	sortable?: boolean
+
+	/**
 	 * The component to use to render the cell for the column. If not provided, the table will
 	 * render the default `<td>` element.
 	 */

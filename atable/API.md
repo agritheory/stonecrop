@@ -101,6 +101,7 @@ createTableStore: (initData: {
         width?: string | undefined;
         pinned?: boolean | undefined;
         resizable?: boolean | undefined;
+        sortable?: boolean | undefined;
         cellComponent?: string | undefined;
         cellComponentProps?: Record<string, any> | undefined;
         modalComponent?: string | ((context: CellContext) => string) | undefined;
@@ -120,6 +121,7 @@ createTableStore: (initData: {
         width?: string | undefined;
         pinned?: boolean | undefined;
         resizable?: boolean | undefined;
+        sortable?: boolean | undefined;
         cellComponent?: string | undefined;
         cellComponentProps?: Record<string, any> | undefined;
         modalComponent?: string | ((context: CellContext) => string) | undefined;
@@ -290,6 +292,16 @@ createTableStore: (initData: {
             colspan?: number | undefined;
         } | undefined;
     }[]>;
+    sortState: import("vue").Ref<{
+        column: number | null;
+        direction: "asc" | "desc" | null;
+    }, {
+        column: number | null;
+        direction: "asc" | "desc" | null;
+    } | {
+        column: number | null;
+        direction: "asc" | "desc" | null;
+    }>;
     table: import("vue").ComputedRef<{}>;
     updates: import("vue").Ref<Record<string, string>, Record<string, string>>;
     hasPinnedColumns: import("vue").ComputedRef<boolean>;
@@ -345,12 +357,13 @@ createTableStore: (initData: {
     resizeColumn: (colIndex: number, newWidth: number) => void;
     setCellData: (colIndex: number, rowIndex: number, value: any) => void;
     setCellText: (colIndex: number, rowIndex: number, value: string) => void;
+    sortByColumn: (colIndex: number) => void;
     toggleRowExpand: (rowIndex: number) => void;
     unregisterConnectionHandle: (handleId: string) => void;
     unregisterGanttBar: (barId: string) => void;
     updateGanttBar: (event: GanttDragEvent) => void;
     updateRows: (newRows: TableRow[]) => void;
-}, "columns" | "config" | "connectionHandles" | "connectionPaths" | "ganttBars" | "modal" | "rows" | "updates">, Pick<{
+}, "columns" | "config" | "connectionHandles" | "connectionPaths" | "ganttBars" | "modal" | "rows" | "sortState" | "updates">, Pick<{
     columns: import("vue").Ref<{
         name: string;
         align?: CanvasTextAlign | undefined;
@@ -360,6 +373,7 @@ createTableStore: (initData: {
         width?: string | undefined;
         pinned?: boolean | undefined;
         resizable?: boolean | undefined;
+        sortable?: boolean | undefined;
         cellComponent?: string | undefined;
         cellComponentProps?: Record<string, any> | undefined;
         modalComponent?: string | ((context: CellContext) => string) | undefined;
@@ -379,6 +393,7 @@ createTableStore: (initData: {
         width?: string | undefined;
         pinned?: boolean | undefined;
         resizable?: boolean | undefined;
+        sortable?: boolean | undefined;
         cellComponent?: string | undefined;
         cellComponentProps?: Record<string, any> | undefined;
         modalComponent?: string | ((context: CellContext) => string) | undefined;
@@ -549,6 +564,16 @@ createTableStore: (initData: {
             colspan?: number | undefined;
         } | undefined;
     }[]>;
+    sortState: import("vue").Ref<{
+        column: number | null;
+        direction: "asc" | "desc" | null;
+    }, {
+        column: number | null;
+        direction: "asc" | "desc" | null;
+    } | {
+        column: number | null;
+        direction: "asc" | "desc" | null;
+    }>;
     table: import("vue").ComputedRef<{}>;
     updates: import("vue").Ref<Record<string, string>, Record<string, string>>;
     hasPinnedColumns: import("vue").ComputedRef<boolean>;
@@ -604,6 +629,7 @@ createTableStore: (initData: {
     resizeColumn: (colIndex: number, newWidth: number) => void;
     setCellData: (colIndex: number, rowIndex: number, value: any) => void;
     setCellText: (colIndex: number, rowIndex: number, value: string) => void;
+    sortByColumn: (colIndex: number) => void;
     toggleRowExpand: (rowIndex: number) => void;
     unregisterConnectionHandle: (handleId: string) => void;
     unregisterGanttBar: (barId: string) => void;
@@ -619,6 +645,7 @@ createTableStore: (initData: {
         width?: string | undefined;
         pinned?: boolean | undefined;
         resizable?: boolean | undefined;
+        sortable?: boolean | undefined;
         cellComponent?: string | undefined;
         cellComponentProps?: Record<string, any> | undefined;
         modalComponent?: string | ((context: CellContext) => string) | undefined;
@@ -638,6 +665,7 @@ createTableStore: (initData: {
         width?: string | undefined;
         pinned?: boolean | undefined;
         resizable?: boolean | undefined;
+        sortable?: boolean | undefined;
         cellComponent?: string | undefined;
         cellComponentProps?: Record<string, any> | undefined;
         modalComponent?: string | ((context: CellContext) => string) | undefined;
@@ -808,6 +836,16 @@ createTableStore: (initData: {
             colspan?: number | undefined;
         } | undefined;
     }[]>;
+    sortState: import("vue").Ref<{
+        column: number | null;
+        direction: "asc" | "desc" | null;
+    }, {
+        column: number | null;
+        direction: "asc" | "desc" | null;
+    } | {
+        column: number | null;
+        direction: "asc" | "desc" | null;
+    }>;
     table: import("vue").ComputedRef<{}>;
     updates: import("vue").Ref<Record<string, string>, Record<string, string>>;
     hasPinnedColumns: import("vue").ComputedRef<boolean>;
@@ -863,12 +901,13 @@ createTableStore: (initData: {
     resizeColumn: (colIndex: number, newWidth: number) => void;
     setCellData: (colIndex: number, rowIndex: number, value: any) => void;
     setCellText: (colIndex: number, rowIndex: number, value: string) => void;
+    sortByColumn: (colIndex: number) => void;
     toggleRowExpand: (rowIndex: number) => void;
     unregisterConnectionHandle: (handleId: string) => void;
     unregisterGanttBar: (barId: string) => void;
     updateGanttBar: (event: GanttDragEvent) => void;
     updateRows: (newRows: TableRow[]) => void;
-}, "closeModal" | "createConnection" | "deleteConnection" | "getCellData" | "getCellDisplayValue" | "getConnectionsForBar" | "getFormattedValue" | "getHandlesForBar" | "getHeaderCellStyle" | "getIndent" | "getRowExpandSymbol" | "isRowGantt" | "isRowVisible" | "registerConnectionHandle" | "registerGanttBar" | "resizeColumn" | "setCellData" | "setCellText" | "toggleRowExpand" | "unregisterConnectionHandle" | "unregisterGanttBar" | "updateGanttBar" | "updateRows">>
+}, "closeModal" | "createConnection" | "deleteConnection" | "getCellData" | "getCellDisplayValue" | "getConnectionsForBar" | "getFormattedValue" | "getHandlesForBar" | "getHeaderCellStyle" | "getIndent" | "getRowExpandSymbol" | "isRowGantt" | "isRowVisible" | "registerConnectionHandle" | "registerGanttBar" | "resizeColumn" | "setCellData" | "setCellText" | "sortByColumn" | "toggleRowExpand" | "unregisterConnectionHandle" | "unregisterGanttBar" | "updateGanttBar" | "updateRows">>
 ```
 
 **Parameters:**
@@ -1126,6 +1165,7 @@ export interface TableColumn {
   originalIndex?: number;
   pinned?: boolean;
   resizable?: boolean;
+  sortable?: boolean;
   type?: string;
   width?: string;
 }
@@ -1151,6 +1191,7 @@ export interface TableColumn {
 | originalIndex? | `number` | The original column index for the Gantt bar, excluding any pinned columns. This is evaluated automatically while rendering the table. Only applicable for Gantt tables. |
 | pinned? | `boolean` | Control whether the column should be pinned to the table. |
 | resizable? | `boolean` |  |
+| sortable? | `boolean` | Control whether the column should be sortable. |
 | type? | `string` | `Data` (the column contains text data), `Select` (the column contains a select input), `Date` (the column contains a date input), `component` (the column contains a custom component) |
 | width? | `string` | The width of the column. This can be a number (in pixels) or a string (in CSS units). |
 

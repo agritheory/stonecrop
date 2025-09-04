@@ -269,6 +269,7 @@ export interface TableColumn {
     pinned?: boolean;
     // (undocumented)
     resizable?: boolean;
+    sortable?: boolean;
     // @beta
     type?: string;
     width?: string;

@@ -17,7 +17,8 @@
 				:data-colindex="colKey"
 				tabindex="-1"
 				:style="store.getHeaderCellStyle(column)"
-				:class="column.pinned ? 'sticky-column' : ''">
+				:class="`${column.pinned ? 'sticky-column' : ''} ${column.sortable === false ? '' : 'cursor-pointer'}`"
+				@click="column.sortable !== false ? handleSort(colKey) : undefined">
 				<slot>{{ column.label || String.fromCharCode(colKey + 97).toUpperCase() }}</slot>
 			</th>
 		</tr>
@@ -33,6 +34,8 @@ const { columns, store } = defineProps<{
 	columns: TableColumn[]
 	store: ReturnType<typeof createTableStore>
 }>()
+
+const handleSort = (colIndex: number) => store.sortByColumn(colIndex)
 
 const onResize = (entries: ReadonlyArray<ResizeObserverEntry>) => {
 	for (const entry of entries) {
@@ -74,5 +77,9 @@ th {
 .list-expansion-index {
 	width: 2ch;
 	margin-left: 5px;
+}
+
+.cursor-pointer {
+	cursor: pointer;
 }
 </style>

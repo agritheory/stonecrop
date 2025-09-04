@@ -343,6 +343,7 @@ export interface TableColumn {
   originalIndex?: number;
   pinned?: boolean;
   resizable?: boolean;
+  sortable?: boolean;
   type?: string;
   width?: string;
 }
@@ -368,6 +369,7 @@ export interface TableColumn {
 | originalIndex? | `number` | The original column index for the Gantt bar, excluding any pinned columns. This is evaluated automatically while rendering the table. Only applicable for Gantt tables. |
 | pinned? | `boolean` | Control whether the column should be pinned to the table. |
 | resizable? | `boolean` |  |
+| sortable? | `boolean` | Control whether the column should be sortable. |
 | type? | `string` | `Data` (the column contains text data), `Select` (the column contains a select input), `Date` (the column contains a date input), `component` (the column contains a custom component) |
 | width? | `string` | The width of the column. This can be a number (in pixels) or a string (in CSS units). |
 

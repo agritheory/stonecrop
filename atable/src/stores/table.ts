@@ -186,6 +186,10 @@ export const createTableStore = (initData: {
 		const ganttBars = ref<GanttBarInfo[]>([])
 		const connectionHandles = ref<ConnectionHandle[]>([])
 		const connectionPaths = ref<ConnectionPath[]>([])
+		const sortState = ref<{ column: number | null; direction: 'asc' | 'desc' | null }>({
+			column: null,
+			direction: null,
+		})
 
 		// getters
 		const hasPinnedColumns = computed(() => columns.value.some(col => col.pinned))
@@ -484,6 +488,59 @@ export const createTableStore = (initData: {
 			return connectionHandles.value.filter(handle => handle.barId === barId)
 		}
 
+		const sortByColumn = (colIndex: number) => {
+			const column = columns.value[colIndex]
+			if (column.sortable === false) return
+
+			let newDirection: 'asc' | 'desc'
+			if (sortState.value.column === colIndex) {
+				if (sortState.value.direction === 'asc') {
+					newDirection = 'desc'
+				} else {
+					newDirection = 'asc'
+				}
+			} else {
+				newDirection = 'asc'
+			}
+
+			sortState.value.column = colIndex
+			sortState.value.direction = newDirection
+
+			const rowsWithIndex = rows.value.map((row, index) => ({
+				row,
+				originalIndex: index,
+				value: row[column.name],
+			}))
+
+			const compare = (a: any, b: any) => {
+				let aVal = a.value
+				let bVal = b.value
+
+				if (aVal === null || aVal === undefined) aVal = ''
+				if (bVal === null || bVal === undefined) bVal = ''
+
+				const aNum = Number(aVal)
+				const bNum = Number(bVal)
+				const isNumeric = !isNaN(aNum) && !isNaN(bNum) && aVal !== '' && bVal !== ''
+
+				if (isNumeric) {
+					return newDirection === 'asc' ? aNum - bNum : bNum - aNum
+				} else {
+					const aStr = String(aVal).toLowerCase()
+					const bStr = String(bVal).toLowerCase()
+					if (newDirection === 'asc') {
+						return aStr.localeCompare(bStr)
+					} else {
+						return bStr.localeCompare(aStr)
+					}
+				}
+			}
+
+			rowsWithIndex.sort(compare)
+
+			rows.value = rowsWithIndex.map(item => item.row)
+		}
+
 		return {
 			// state
 			columns,
@@ -494,6 +551,7 @@ export const createTableStore = (initData: {
 			ganttBars,
 			modal,
 			rows,
+			sortState,
 			table,
 			updates,
 
@@ -524,6 +582,7 @@ export const createTableStore = (initData: {
 			resizeColumn,
 			setCellData,
 			setCellText,
+			sortByColumn,
 			toggleRowExpand,
 			unregisterConnectionHandle,
 			unregisterGanttBar,
