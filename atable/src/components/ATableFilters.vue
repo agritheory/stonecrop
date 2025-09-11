@@ -62,13 +62,13 @@
 				</div>
 
 				<component
-					v-else-if="getFilterType(column) === 'custom' && column.filterComponent"
+					v-else-if="getFilterType(column) === 'component' && column.filterComponent"
 					:is="column.filterComponent"
 					:value="filterValues[column.originalIndex]"
 					:column="column"
 					:colIndex="column.originalIndex"
 					:store="store"
-					@update:value="updateFilter(column.originalIndex, 'custom', $event)" />
+					@update:value="updateFilter(column.originalIndex, 'component', $event)" />
 
 				<button
 					v-if="hasActiveFilter(column.originalIndex)"
