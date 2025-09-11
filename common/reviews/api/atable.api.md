@@ -10,6 +10,7 @@ import AGanttCell from './components/AGanttCell.vue';
 import { App } from 'vue';
 import ARow from './components/ARow.vue';
 import ATable from './components/ATable.vue';
+import ATableFilters from './components/ATableFilters.vue';
 import ATableHeader from './components/ATableHeader.vue';
 import ATableLoading from './components/ATableLoading.vue';
 import ATableLoadingBar from './components/ATableLoadingBar.vue';
@@ -31,6 +32,8 @@ export { AGanttCell }
 export { ARow }
 
 export { ATable }
+
+export { ATableFilters }
 
 export { ATableHeader }
 
@@ -115,6 +118,10 @@ width?: string | undefined;
 pinned?: boolean | undefined;
 resizable?: boolean | undefined;
 sortable?: boolean | undefined;
+filterable?: boolean | undefined;
+filterType?: "text" | "select" | "number" | "date" | "dateRange" | "checkbox" | "component" | undefined;
+filterOptions?: any[] | undefined;
+filterComponent?: string | undefined;
 cellComponent?: string | undefined;
 cellComponentProps?: Record<string, any> | undefined;
 modalComponent?: string | ((context: CellContext) => string) | undefined;
@@ -135,6 +142,10 @@ width?: string | undefined;
 pinned?: boolean | undefined;
 resizable?: boolean | undefined;
 sortable?: boolean | undefined;
+filterable?: boolean | undefined;
+filterType?: "text" | "select" | "number" | "date" | "dateRange" | "checkbox" | "component" | undefined;
+filterOptions?: any[] | undefined;
+filterComponent?: string | undefined;
 cellComponent?: string | undefined;
 cellComponentProps?: Record<string, any> | undefined;
 modalComponent?: string | ((context: CellContext) => string) | undefined;
@@ -234,6 +245,17 @@ width?: number | undefined;
 label?: string | undefined;
 }[]>;
 display: WritableComputedRef<TableDisplay[], TableDisplay[]>;
+filterState: Ref<Record<number, {
+type: string;
+value: any;
+startValue?: any;
+endValue?: any;
+}>, Record<number, {
+type: string;
+value: any;
+startValue?: any;
+endValue?: any;
+}>>;
 ganttBars: Ref<    {
 id: string;
 rowIndex: number;
@@ -317,12 +339,26 @@ direction: "asc" | "desc" | null;
 }>;
 table: ComputedRef<    {}>;
 updates: Ref<Record<string, string>, Record<string, string>>;
+filteredRows: ComputedRef<    {
+originalIndex: number;
+indent?: number | undefined;
+parent?: number | undefined;
+gantt?: {
+color?: string | undefined;
+startIndex?: number | undefined;
+endIndex?: number | undefined;
+colspan?: number | undefined;
+} | undefined;
+}[]>;
 hasPinnedColumns: ComputedRef<boolean>;
 isGanttView: ComputedRef<boolean>;
 isTreeView: ComputedRef<boolean>;
 isDependencyGraphEnabled: ComputedRef<boolean>;
 numberedRowWidth: ComputedRef<string>;
 zeroColumn: ComputedRef<boolean>;
+clearAllFilters: () => void;
+clearFilter: (colIndex: number) => void;
+clearSort: () => void;
 closeModal: (event: MouseEvent) => void;
 createConnection: (fromHandleId: string, toHandleId: string, options?: {
 style?: ConnectionPath["style"];
@@ -370,13 +406,19 @@ registerGanttBar: (barInfo: GanttBarInfo) => void;
 resizeColumn: (colIndex: number, newWidth: number) => void;
 setCellData: (colIndex: number, rowIndex: number, value: any) => void;
 setCellText: (colIndex: number, rowIndex: number, value: string) => void;
+setFilter: (colIndex: number, filter: {
+type: string;
+value: any;
+startValue?: any;
+endValue?: any;
+}) => void;
 sortByColumn: (colIndex: number) => void;
 toggleRowExpand: (rowIndex: number) => void;
 unregisterConnectionHandle: (handleId: string) => void;
 unregisterGanttBar: (barId: string) => void;
 updateGanttBar: (event: GanttDragEvent) => void;
 updateRows: (newRows: TableRow[]) => void;
-}, "columns" | "config" | "connectionHandles" | "connectionPaths" | "ganttBars" | "modal" | "rows" | "sortState" | "updates">, Pick<{
+}, "columns" | "config" | "connectionHandles" | "connectionPaths" | "filterState" | "ganttBars" | "modal" | "rows" | "sortState" | "updates">, Pick<{
 columns: Ref<    {
 name: string;
 align?: CanvasTextAlign | undefined;
@@ -387,6 +429,10 @@ width?: string | undefined;
 pinned?: boolean | undefined;
 resizable?: boolean | undefined;
 sortable?: boolean | undefined;
+filterable?: boolean | undefined;
+filterType?: "text" | "select" | "number" | "date" | "dateRange" | "checkbox" | "component" | undefined;
+filterOptions?: any[] | undefined;
+filterComponent?: string | undefined;
 cellComponent?: string | undefined;
 cellComponentProps?: Record<string, any> | undefined;
 modalComponent?: string | ((context: CellContext) => string) | undefined;
@@ -407,6 +453,10 @@ width?: string | undefined;
 pinned?: boolean | undefined;
 resizable?: boolean | undefined;
 sortable?: boolean | undefined;
+filterable?: boolean | undefined;
+filterType?: "text" | "select" | "number" | "date" | "dateRange" | "checkbox" | "component" | undefined;
+filterOptions?: any[] | undefined;
+filterComponent?: string | undefined;
 cellComponent?: string | undefined;
 cellComponentProps?: Record<string, any> | undefined;
 modalComponent?: string | ((context: CellContext) => string) | undefined;
@@ -506,6 +556,17 @@ width?: number | undefined;
 label?: string | undefined;
 }[]>;
 display: WritableComputedRef<TableDisplay[], TableDisplay[]>;
+filterState: Ref<Record<number, {
+type: string;
+value: any;
+startValue?: any;
+endValue?: any;
+}>, Record<number, {
+type: string;
+value: any;
+startValue?: any;
+endValue?: any;
+}>>;
 ganttBars: Ref<    {
 id: string;
 rowIndex: number;
@@ -589,12 +650,26 @@ direction: "asc" | "desc" | null;
 }>;
 table: ComputedRef<    {}>;
 updates: Ref<Record<string, string>, Record<string, string>>;
+filteredRows: ComputedRef<    {
+originalIndex: number;
+indent?: number | undefined;
+parent?: number | undefined;
+gantt?: {
+color?: string | undefined;
+startIndex?: number | undefined;
+endIndex?: number | undefined;
+colspan?: number | undefined;
+} | undefined;
+}[]>;
 hasPinnedColumns: ComputedRef<boolean>;
 isGanttView: ComputedRef<boolean>;
 isTreeView: ComputedRef<boolean>;
 isDependencyGraphEnabled: ComputedRef<boolean>;
 numberedRowWidth: ComputedRef<string>;
 zeroColumn: ComputedRef<boolean>;
+clearAllFilters: () => void;
+clearFilter: (colIndex: number) => void;
+clearSort: () => void;
 closeModal: (event: MouseEvent) => void;
 createConnection: (fromHandleId: string, toHandleId: string, options?: {
 style?: ConnectionPath["style"];
@@ -642,13 +717,19 @@ registerGanttBar: (barInfo: GanttBarInfo) => void;
 resizeColumn: (colIndex: number, newWidth: number) => void;
 setCellData: (colIndex: number, rowIndex: number, value: any) => void;
 setCellText: (colIndex: number, rowIndex: number, value: string) => void;
+setFilter: (colIndex: number, filter: {
+type: string;
+value: any;
+startValue?: any;
+endValue?: any;
+}) => void;
 sortByColumn: (colIndex: number) => void;
 toggleRowExpand: (rowIndex: number) => void;
 unregisterConnectionHandle: (handleId: string) => void;
 unregisterGanttBar: (barId: string) => void;
 updateGanttBar: (event: GanttDragEvent) => void;
 updateRows: (newRows: TableRow[]) => void;
-}, "display" | "table" | "hasPinnedColumns" | "isGanttView" | "isTreeView" | "isDependencyGraphEnabled" | "numberedRowWidth" | "zeroColumn">, Pick<{
+}, "display" | "table" | "filteredRows" | "hasPinnedColumns" | "isGanttView" | "isTreeView" | "isDependencyGraphEnabled" | "numberedRowWidth" | "zeroColumn">, Pick<{
 columns: Ref<    {
 name: string;
 align?: CanvasTextAlign | undefined;
@@ -659,6 +740,10 @@ width?: string | undefined;
 pinned?: boolean | undefined;
 resizable?: boolean | undefined;
 sortable?: boolean | undefined;
+filterable?: boolean | undefined;
+filterType?: "text" | "select" | "number" | "date" | "dateRange" | "checkbox" | "component" | undefined;
+filterOptions?: any[] | undefined;
+filterComponent?: string | undefined;
 cellComponent?: string | undefined;
 cellComponentProps?: Record<string, any> | undefined;
 modalComponent?: string | ((context: CellContext) => string) | undefined;
@@ -679,6 +764,10 @@ width?: string | undefined;
 pinned?: boolean | undefined;
 resizable?: boolean | undefined;
 sortable?: boolean | undefined;
+filterable?: boolean | undefined;
+filterType?: "text" | "select" | "number" | "date" | "dateRange" | "checkbox" | "component" | undefined;
+filterOptions?: any[] | undefined;
+filterComponent?: string | undefined;
 cellComponent?: string | undefined;
 cellComponentProps?: Record<string, any> | undefined;
 modalComponent?: string | ((context: CellContext) => string) | undefined;
@@ -778,6 +867,17 @@ width?: number | undefined;
 label?: string | undefined;
 }[]>;
 display: WritableComputedRef<TableDisplay[], TableDisplay[]>;
+filterState: Ref<Record<number, {
+type: string;
+value: any;
+startValue?: any;
+endValue?: any;
+}>, Record<number, {
+type: string;
+value: any;
+startValue?: any;
+endValue?: any;
+}>>;
 ganttBars: Ref<    {
 id: string;
 rowIndex: number;
@@ -861,12 +961,26 @@ direction: "asc" | "desc" | null;
 }>;
 table: ComputedRef<    {}>;
 updates: Ref<Record<string, string>, Record<string, string>>;
+filteredRows: ComputedRef<    {
+originalIndex: number;
+indent?: number | undefined;
+parent?: number | undefined;
+gantt?: {
+color?: string | undefined;
+startIndex?: number | undefined;
+endIndex?: number | undefined;
+colspan?: number | undefined;
+} | undefined;
+}[]>;
 hasPinnedColumns: ComputedRef<boolean>;
 isGanttView: ComputedRef<boolean>;
 isTreeView: ComputedRef<boolean>;
 isDependencyGraphEnabled: ComputedRef<boolean>;
 numberedRowWidth: ComputedRef<string>;
 zeroColumn: ComputedRef<boolean>;
+clearAllFilters: () => void;
+clearFilter: (colIndex: number) => void;
+clearSort: () => void;
 closeModal: (event: MouseEvent) => void;
 createConnection: (fromHandleId: string, toHandleId: string, options?: {
 style?: ConnectionPath["style"];
@@ -914,13 +1028,19 @@ registerGanttBar: (barInfo: GanttBarInfo) => void;
 resizeColumn: (colIndex: number, newWidth: number) => void;
 setCellData: (colIndex: number, rowIndex: number, value: any) => void;
 setCellText: (colIndex: number, rowIndex: number, value: string) => void;
+setFilter: (colIndex: number, filter: {
+type: string;
+value: any;
+startValue?: any;
+endValue?: any;
+}) => void;
 sortByColumn: (colIndex: number) => void;
 toggleRowExpand: (rowIndex: number) => void;
 unregisterConnectionHandle: (handleId: string) => void;
 unregisterGanttBar: (barId: string) => void;
 updateGanttBar: (event: GanttDragEvent) => void;
 updateRows: (newRows: TableRow[]) => void;
-}, "closeModal" | "createConnection" | "deleteConnection" | "getCellData" | "getCellDisplayValue" | "getConnectionsForBar" | "getFormattedValue" | "getHandlesForBar" | "getHeaderCellStyle" | "getIndent" | "getRowExpandSymbol" | "isRowGantt" | "isRowVisible" | "registerConnectionHandle" | "registerGanttBar" | "resizeColumn" | "setCellData" | "setCellText" | "sortByColumn" | "toggleRowExpand" | "unregisterConnectionHandle" | "unregisterGanttBar" | "updateGanttBar" | "updateRows">>;
+}, "clearAllFilters" | "clearFilter" | "clearSort" | "closeModal" | "createConnection" | "deleteConnection" | "getCellData" | "getCellDisplayValue" | "getConnectionsForBar" | "getFormattedValue" | "getHandlesForBar" | "getHeaderCellStyle" | "getIndent" | "getRowExpandSymbol" | "isRowGantt" | "isRowVisible" | "registerConnectionHandle" | "registerGanttBar" | "resizeColumn" | "setCellData" | "setCellText" | "setFilter" | "sortByColumn" | "toggleRowExpand" | "unregisterConnectionHandle" | "unregisterGanttBar" | "updateGanttBar" | "updateRows">>;
 
 // @public
 export interface GanttBarInfo {
@@ -991,6 +1111,10 @@ export interface TableColumn {
     cellComponentProps?: Record<string, any>;
     colspan?: number;
     edit?: boolean;
+    filterable?: boolean;
+    filterComponent?: string;
+    filterOptions?: any[];
+    filterType?: 'text' | 'select' | 'number' | 'date' | 'dateRange' | 'checkbox' | 'component';
     format?: string | ((value: any, context: CellContext) => string);
     ganttComponent?: string;
     isGantt?: boolean;
