@@ -1,6 +1,10 @@
 <template>
 	<div class="atable-container" style="position: relative">
 		<!-- Main table view -->
+		<slot name="filters" :data="store">
+			<ATableFilters :columns="store.columns" :store="store" />
+		</slot>
+
 		<table
 			ref="table"
 			class="atable"
@@ -11,10 +15,14 @@
 			<slot name="header" :data="store">
 				<ATableHeader :columns="store.columns" :store="store" />
 			</slot>
-
 			<tbody>
 				<slot name="body" :data="store">
-					<ARow v-for="(row, rowIndex) in store.rows" :key="row.id" :row="row" :rowIndex="rowIndex" :store="store">
+					<ARow
+						v-for="(row, filteredIndex) in store.filteredRows"
+						:key="`${row.originalIndex}-${filteredIndex}`"
+						:row="row"
+						:rowIndex="row.originalIndex"
+						:store="store">
 						<template v-for="(column, colIndex) in getProcessedColumnsForRow(row)" :key="column.name">
 							<component
 								v-if="column.isGantt"
@@ -26,7 +34,7 @@
 								:end="row.gantt?.endIndex"
 								:colspan="column.colspan"
 								:pinned="column.pinned"
-								:rowIndex="rowIndex"
+								:rowIndex="row.originalIndex"
 								:colIndex="column.originalIndex ?? colIndex"
 								:style="{
 									textAlign: column?.align || 'center',
@@ -39,7 +47,7 @@
 								:is="column.cellComponent || 'ACell'"
 								:store="store"
 								:pinned="column.pinned"
-								:rowIndex="rowIndex"
+								:rowIndex="row.originalIndex"
 								:colIndex="colIndex"
 								:style="{
 									textAlign: column?.align || 'center',
@@ -84,6 +92,7 @@ import { computed, nextTick, onMounted, useTemplateRef, watch } from 'vue'
 
 import AGanttConnection from './AGanttConnection.vue'
 import ARow from './ARow.vue'
+import ATableFilters from './ATableFilters.vue'
 import ATableHeader from './ATableHeader.vue'
 import ATableModal from './ATableModal.vue'
 import { createTableStore } from '../stores/table'
