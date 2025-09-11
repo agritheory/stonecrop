@@ -34,7 +34,10 @@
 		</Variant>
 
 		<Variant title="filterable">
-			<ATable v-model:rows="resizable_1.rows" v-model:columns="resizable_1.columns" :config="resizable_1.config" />
+			<ATable
+				v-model:rows="filterable_table.rows"
+				v-model:columns="filterable_table.columns"
+				:config="filterable_table.config" />
 		</Variant>
 
 		<Variant title="loading options">
@@ -75,7 +78,6 @@ const columns: TableColumn[] = [
 		align: 'left',
 		edit: false,
 		width: '40ch',
-		sortable: true, // Agregamos sortable
 		format: (value: { title?: string; value?: any }, context) => {
 			return `<a href="${value.title}" target="_blank">${value.title} (IP: ${context.row.ip_address})</a>`
 		},
@@ -87,7 +89,6 @@ const columns: TableColumn[] = [
 		align: 'left',
 		edit: true,
 		width: '20ch',
-		sortable: true, // Agregamos sortable
 	},
 	{
 		label: 'Report Date',
@@ -96,7 +97,6 @@ const columns: TableColumn[] = [
 		align: 'center',
 		edit: true,
 		width: '25ch',
-		sortable: true, // Agregamos sortable
 		modalComponent: 'DateInput',
 		format: (value: number) => new Date(value).toLocaleDateString('en-US'),
 	},
@@ -130,6 +130,63 @@ const readonly_columns: TableColumn[] = [
 		modalComponent: 'DateInput',
 		modalComponentExtraProps: { readonly: true },
 		format: (value: number) => new Date(value).toLocaleDateString('en-US'),
+	},
+]
+
+const columns_filterable: TableColumn[] = [
+	{
+		label: 'Home Page',
+		name: 'home_page',
+		type: 'Data',
+		align: 'left',
+		edit: false,
+		width: '40ch',
+		sortable: true,
+		filterable: true,
+		filterType: 'text',
+		format: (value: { title?: string; value?: any }, context) => {
+			return `<a href="${value.title}" target="_blank">${value.title} (IP: ${context.row.ip_address})</a>`
+		},
+	},
+	{
+		label: 'HTTP Method',
+		name: 'http_method',
+		type: 'Data',
+		align: 'left',
+		edit: true,
+		width: '20ch',
+		sortable: true,
+		filterable: true,
+		filterType: 'select', // Auto-generate options from data
+	},
+	{
+		label: 'Status',
+		name: 'status',
+		type: 'Data',
+		align: 'center',
+		edit: true,
+		width: '15ch',
+		sortable: true,
+		filterable: true,
+		filterType: 'select', // Auto-generate options from data
+	},
+	{
+		label: 'Report Date',
+		name: 'report_date',
+		type: 'component',
+		align: 'center',
+		edit: true,
+		width: '25ch',
+		sortable: true,
+		filterable: true,
+		filterType: 'dateRange',
+		modalComponent: 'DateInput',
+		format: (value: number) => {
+			const originalDate = new Date(value)
+			const currentYear = new Date().getFullYear()
+			const updatedDate = new Date(currentYear, originalDate.getMonth(), originalDate.getDate())
+			return updatedDate.toLocaleDateString('en-US')
+		},
 	},
 ]
 
@@ -167,6 +224,12 @@ const full_width_table = reactive({
 	rows,
 	columns,
 	config: { view: 'list', fullWidth: true },
+})
+
+const filterable_table = reactive({
+	rows,
+	columns: columns_filterable,
+	config: { view: 'list' },
 })
 </script>
 
