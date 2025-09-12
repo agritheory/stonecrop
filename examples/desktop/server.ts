@@ -338,7 +338,7 @@ export function makeServer() {
 				return { error: 'Route not found', path }
 			})
 
-			// Doctype hierarchy endpoint
+			// Doctype hierarchy endpoint - returns all doctype hierarchies
 			this.get('/api/doctype-hierarchy', schema => {
 				let hierarchy = schema.db.doctypeHierarchy as any
 
@@ -347,7 +347,10 @@ export function makeServer() {
 					hierarchy = hierarchy[0]
 				}
 
-				return hierarchy
+				return {
+					success: true,
+					data: hierarchy,
+				}
 			})
 
 			// Specific doctype hierarchy endpoint
@@ -363,10 +366,16 @@ export function makeServer() {
 				const doctypeHierarchy = hierarchy[doctype]
 
 				if (doctypeHierarchy) {
-					return doctypeHierarchy
+					return {
+						success: true,
+						data: doctypeHierarchy,
+					}
 				}
 
-				return {}
+				return {
+					success: false,
+					error: `Doctype hierarchy not found for: ${doctype}`,
+				}
 			})
 
 			// View-specific meta endpoints

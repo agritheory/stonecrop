@@ -32,6 +32,14 @@ Always reference `.github/ARCHITECTURE.md` in the repository for comprehensive a
 - Testing: Individual package tests with `rushx test`, `rushx test:watch`, `rushx test:coverage`
 - Documentation: Auto-generated API.md files using doc-tools autoinstaller
 
+## Critical Integration Patterns
+- **useStonecrop Composable**: Primary Vue integration point with dual modes:
+  - Basic mode: `useStonecrop()` for router-based setup
+  - HST mode: `useStonecrop({ doctype, recordId })` for reactive forms
+- **Provide/Inject**: HST components use `provideHSTPath` and `handleHSTChange` injections
+- **Examples Shell Script**: `./dev-runner.sh <package>` in `/examples` for live development
+- **Workspace Dependencies**: All packages use `workspace:*` for internal dependencies
+
 ## State Management Architecture
 - **Registry**: Singleton pattern for doctype definitions (immutable)
 - **HST (Hierarchical State Tree)**: Advanced state management with tree navigation
@@ -89,4 +97,42 @@ const breadcrumbs = record.getBreadcrumbs()
 store.set('task.records.123.title', 'Updated Title')
 const title = store.get('task.records.123.title')
 const exists = store.has('task.records.123')
+```
+
+## Vue Integration Patterns
+```typescript
+// HST-reactive form setup
+const { stonecrop, provideHSTPath, handleHSTChange, formData } = useStonecrop({
+  doctype: myDoctype,
+  recordId: 'record-123'
+})
+
+// Field path generation: "doctype.records.id.fieldname"
+const fieldPath = provideHSTPath('title')
+
+// Component change handling with automatic HST sync
+handleHSTChange({ path: fieldPath, value: newValue, fieldname: 'title' })
+
+// Basic Stonecrop (router-driven)
+const { stonecrop } = useStonecrop() // Auto-loads from route params
+```
+
+## Essential Commands
+```bash
+# Initial setup
+rush update && rush rebuild
+
+# Development with hot reload
+cd examples && rushx dev:aform  # or atable, beam, etc.
+
+# Package development
+cd <package> && rushx dev       # Vite dev server
+cd <package> && rushx test:watch # Vitest watch mode
+
+# Documentation generation
+rush docs                       # All packages
+rushx docs                      # Current package only
+
+# Clean slate (when dependencies break)
+rush purge && rush update && rush rebuild
 ```

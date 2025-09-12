@@ -9,7 +9,7 @@ import { StonecropDesktop } from '@stonecrop/desktop'
 import StonecropPlugin, { DoctypeMeta, type ImmutableDoctype, type MutableDoctype } from '@stonecrop/stonecrop'
 
 import App from './App.vue'
-import router, { setGlobalReferences } from './router'
+import router, { setGlobalReferences, initializeRouter } from './router'
 import { makeServer } from './server'
 
 const app = createApp(App)
@@ -51,4 +51,9 @@ const registryFromPlugin = app.config.globalProperties.$registry
 const stonecropFromPlugin = app.config.globalProperties.$stonecrop
 if (registryFromPlugin && stonecropFromPlugin) {
 	setGlobalReferences(registryFromPlugin, stonecropFromPlugin)
+
+	// Initialize router with preloaded doctype hierarchies
+	initializeRouter().catch(error => {
+		console.error('Failed to initialize router:', error)
+	})
 }
