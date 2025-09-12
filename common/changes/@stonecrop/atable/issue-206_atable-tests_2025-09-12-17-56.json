@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/atable",
+      "comment": "Tests ACell added - non-editable cases",
+      "type": "none"
+    }
+  ],
+  "packageName": "@stonecrop/atable"
+}
