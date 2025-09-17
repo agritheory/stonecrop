@@ -1,4 +1,4 @@
-import { DoctypeMeta } from '@stonecrop/stonecrop'
+import { DoctypeMeta, Registry, Stonecrop } from '@stonecrop/stonecrop'
 import { List, Map } from 'immutable'
 import {
 	createRouter,
@@ -11,63 +11,38 @@ import {
 import Home from './components/Home.vue'
 import View from './components/View.vue'
 
-// Global references that will be set during app initialization
-let globalRegistry: any = null
-let globalStonecrop: any = null
-let router: any = null
-
 // Cache for registered doctypes to avoid repeated hierarchy fetches
 const registeredDoctypes = new Set<string>()
 
 // Cache for fetched doctype hierarchies
-const doctypeHierarchyCache: Record<string, any> = {}
+const doctypeHierarchyCache = Map<string, any>()
 
-// Listen for plugin ready event from enhanced StonecropPlugin
-if (typeof window !== 'undefined') {
-	window.addEventListener('stonecrop:plugin-ready', async (event: any) => {
-		const { registry, stonecrop } = event.detail
-		setGlobalReferences(registry, stonecrop)
-		await initializeRouter()
-	})
-}
+// Router instance holder
+let router: any = null
 
-// Export function to set global references (for manual setup if needed)
-export function setGlobalReferences(registry: any, stonecrop: any) {
-	globalRegistry = registry
-	globalStonecrop = stonecrop
-}
+// Scoped references that will be set during initialization
+let scopedRegistry: any = null
+let scopedStonecrop: any = null
 
 /**
- * Cache doctype hierarchies from external source
- * This allows the desktop example to populate the cache during initialization
+ * Setup router runtime context with Registry and Stonecrop instances
+ * This provides the router functions with access to the core instances
  */
-export function cacheHierarchies(hierarchies: Record<string, any>) {
-	Object.keys(hierarchies).forEach(doctype => {
-		doctypeHierarchyCache[doctype] = hierarchies[doctype]
-	})
+export async function setupRouterContext(registry: Registry, stonecrop: Stonecrop): Promise<void> {
+	scopedRegistry = registry
+	scopedStonecrop = stonecrop
+	return await preloadDoctypeHierarchies()
 }
 
 /**
- * Initialize router by checking if doctype hierarchies are already cached
+ * Preload doctype hierarchies by checking if they are already cached
  * This works with the desktop initialization that preloads hierarchies
  */
-export async function initializeRouter(): Promise<void> {
+export async function preloadDoctypeHierarchies(): Promise<void> {
 	try {
 		// Check if hierarchies are already cached from desktop initialization
-		if (Object.keys(doctypeHierarchyCache).length > 0) {
-			console.log(`[Router] Using ${Object.keys(doctypeHierarchyCache).length} pre-cached doctype hierarchies`)
-			return
-		}
-
-		// Fallback: fetch hierarchies if not already cached
-		console.log('[Router] Preloading all doctype hierarchies...')
-		const allHierarchies = await fetchAllDoctypeHierarchies()
-
-		if (allHierarchies) {
-			const doctypeCount = Object.keys(allHierarchies).length
-			console.log(`[Router] Successfully preloaded ${doctypeCount} doctype hierarchies`)
-		} else {
-			console.warn('[Router] Failed to preload doctype hierarchies')
+		if (doctypeHierarchyCache.size === 0) {
+			await fetchAllDoctypeHierarchies()
 		}
 	} catch (error) {
 		console.error('[Router] Error preloading doctype hierarchies:', error)
@@ -78,8 +53,8 @@ export async function initializeRouter(): Promise<void> {
  * Setup doctype metadata and load all records for the doctype
  */
 async function setupDoctypeData(doctype: string, actualDoctype?: string): Promise<void> {
-	if (!globalRegistry || !globalStonecrop) {
-		// global Stonecrop references not available during route setup
+	if (!scopedRegistry || !scopedStonecrop) {
+		// Scoped Stonecrop references not available during route setup
 		return
 	}
 
@@ -87,10 +62,10 @@ async function setupDoctypeData(doctype: string, actualDoctype?: string): Promis
 		const targetDoctype = actualDoctype || doctype
 
 		// Get doctype metadata if not already loaded
-		if (!globalRegistry.registry[targetDoctype]) {
-			const doctypeMeta = await globalRegistry.getMeta?.(doctype) // Use original doctype for API call
+		if (!scopedRegistry.registry[targetDoctype]) {
+			const doctypeMeta = await scopedRegistry.getMeta?.(doctype) // Use original doctype for API call
 			if (doctypeMeta) {
-				globalRegistry.addDoctype(doctypeMeta)
+				scopedRegistry.addDoctype(doctypeMeta)
 			}
 		}
 
@@ -100,12 +75,12 @@ async function setupDoctypeData(doctype: string, actualDoctype?: string): Promis
 			const records = await response.json()
 
 			// Clear existing records and add new ones using actual doctype
-			globalStonecrop.clearRecords(targetDoctype)
+			scopedStonecrop.clearRecords(targetDoctype)
 
 			if (Array.isArray(records)) {
 				records.forEach((record: any) => {
 					if (record.id) {
-						globalStonecrop.addRecord(targetDoctype, record.id, record)
+						scopedStonecrop.addRecord(targetDoctype, record.id, record)
 					}
 				})
 			}
@@ -119,8 +94,8 @@ async function setupDoctypeData(doctype: string, actualDoctype?: string): Promis
  * Setup specific record data and set as current
  */
 async function setupRecordData(doctype: string, recordId: string, actualDoctype?: string): Promise<void> {
-	if (!globalRegistry || !globalStonecrop) {
-		// global Stonecrop references not available during route setup
+	if (!scopedRegistry || !scopedStonecrop) {
+		// Scoped Stonecrop references not available during route setup
 		return
 	}
 
@@ -128,7 +103,7 @@ async function setupRecordData(doctype: string, recordId: string, actualDoctype?
 		const targetDoctype = actualDoctype || doctype
 
 		// Get form doctype metadata if not already loaded
-		if (!globalRegistry.registry[targetDoctype]) {
+		if (!scopedRegistry.registry[targetDoctype]) {
 			// Use a special endpoint for form metadata
 			const response = await fetch(`/api/${doctype}/${recordId}/meta`)
 			if (response.ok) {
@@ -148,25 +123,25 @@ async function setupRecordData(doctype: string, recordId: string, actualDoctype?
 				)
 
 				if (doctypeMeta) {
-					globalRegistry.addDoctype(doctypeMeta)
+					scopedRegistry.addDoctype(doctypeMeta)
 				}
 			}
 		}
 
 		// Check if record already exists in HST
-		const existingRecord = globalStonecrop.getRecordById(targetDoctype, recordId)
+		const existingRecord = scopedStonecrop.getRecordById(targetDoctype, recordId)
 
 		if (!existingRecord && !recordId.startsWith('new-')) {
 			// Fetch individual record if not in store and not a new record
 			const response = await fetch(`/api/${doctype}/${recordId}`) // Use original doctype for API call
 			if (response.ok) {
 				const record = await response.json()
-				globalStonecrop.addRecord(targetDoctype, recordId, record)
+				scopedStonecrop.addRecord(targetDoctype, recordId, record)
 			}
 		}
 
 		// Set as current record (even for new records) using actual doctype
-		globalStonecrop.setCurrentRecord(targetDoctype, recordId)
+		scopedStonecrop.setCurrentRecord(targetDoctype, recordId)
 	} catch (error) {
 		console.error(`Failed to setup record data for ${doctype}/${recordId}:`, error)
 	}
@@ -177,8 +152,8 @@ async function setupRecordData(doctype: string, recordId: string, actualDoctype?
  */
 async function fetchDoctypeHierarchy(doctype: string): Promise<any> {
 	// Check cache first
-	if (doctypeHierarchyCache[doctype]) {
-		return doctypeHierarchyCache[doctype]
+	if (doctypeHierarchyCache.has(doctype)) {
+		return doctypeHierarchyCache.get(doctype)
 	}
 
 	try {
@@ -188,10 +163,9 @@ async function fetchDoctypeHierarchy(doctype: string): Promise<any> {
 
 			if (result.success && result.data) {
 				// Cache the successful result
-				doctypeHierarchyCache[doctype] = result.data
+				doctypeHierarchyCache.set(doctype, result.data)
 				return result.data
 			} else {
-				console.warn(`Doctype hierarchy not found for ${doctype}:`, result.error)
 				return null
 			}
 		} else {
@@ -215,11 +189,10 @@ async function fetchAllDoctypeHierarchies(): Promise<any> {
 			if (result.success && result.data) {
 				// Cache all hierarchies
 				Object.keys(result.data).forEach(doctype => {
-					doctypeHierarchyCache[doctype] = result.data[doctype]
+					doctypeHierarchyCache.set(doctype, result.data[doctype])
 				})
 				return result.data
 			} else {
-				console.warn('Failed to fetch doctype hierarchies:', result.error)
 				return null
 			}
 		} else {
@@ -263,12 +236,10 @@ async function registerDoctypeRoutes(doctype: string): Promise<boolean> {
 		const hierarchy = await fetchDoctypeHierarchy(doctype)
 
 		if (!hierarchy) {
-			console.warn(`[Router] No hierarchy configuration found for doctype: ${doctype}`)
 			return false
 		}
 
 		if (!hierarchy.routePatterns) {
-			console.warn(`[Router] No route patterns found for doctype: ${doctype}`)
 			return false
 		}
 
@@ -277,7 +248,6 @@ async function registerDoctypeRoutes(doctype: string): Promise<boolean> {
 			const pattern = hierarchy.routePatterns[patternKey]
 
 			if (!pattern.pattern || !pattern.doctype) {
-				console.warn(`[Router] Invalid route pattern for ${doctype}.${patternKey}:`, pattern)
 				return
 			}
 
@@ -314,7 +284,6 @@ async function registerDoctypeRoutes(doctype: string): Promise<boolean> {
 		})
 
 		registeredDoctypes.add(doctype)
-		console.log(`[Router] Successfully registered routes for doctype: ${doctype}`)
 		return true
 	} catch (error) {
 		console.error(`[Router] Failed to register routes for doctype ${doctype}:`, error)
@@ -342,14 +311,12 @@ const routes: RouteRecordRaw[] = [
 				const routeInfo = await resolveRoute(path)
 
 				if (!routeInfo) {
-					console.warn(`[Router] Could not resolve route: ${path}`)
 					// Continue to show catch-all view with error state
 					next()
 					return
 				}
 
 				if (routeInfo.error) {
-					console.warn(`[Router] Route resolution failed for ${path}:`, routeInfo.error)
 					next()
 					return
 				}
@@ -358,11 +325,9 @@ const routes: RouteRecordRaw[] = [
 				const registered = await registerDoctypeRoutes(routeInfo.doctype)
 
 				if (registered) {
-					console.log(`[Router] Routes registered for ${routeInfo.doctype}, redirecting to: ${path}`)
 					// Route should now be registered, try to navigate to it again
 					next({ path, replace: true })
 				} else {
-					console.warn(`[Router] Failed to register routes for doctype: ${routeInfo.doctype}`)
 					// Registration failed, continue to catch-all view
 					next()
 				}

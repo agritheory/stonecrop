@@ -18,21 +18,27 @@ The Desktop example demonstrates a comprehensive **schema-driven UI framework** 
 ### Plugin Architecture Best Practices
 1. **Framework Responsibility**: Provide initialization hooks and event mechanisms
 2. **User Responsibility**: Define specific initialization logic, API calls, and business patterns
-3. **Event-Driven Communication**: Use custom events (`stonecrop:plugin-ready`) for decoupled module communication
+3. **Scoped Reference Management**: Use closures and function parameters instead of global state
 4. **No Backwards Compatibility Burden**: All code is subject to change; focus on clean architecture over compatibility
 
-### Auto-Initialization Strategy
-**Final Pattern**:
+### Router Initialization Strategy
+**Final Pattern**: Scoped reference management replaces global state
 ```typescript
-// Framework provides the hook
+// Framework provides the hook with instances
 app.use(StonecropPlugin, {
   autoInitializeRouter: true,
-  onRouterInitialized: async (registry, stonecrop) => {
-    // User defines what initialization means for their application
-    await mySpecificInitializationLogic()
+    onRouterInitialized: async (registry, stonecrop) => {
+    // Setup router context with provided instances (no global state)
+    await setupRouterContext(registry, stonecrop)
+
+    // User defines what initialization means for their app
+    const response = await fetch('/api/doctype-hierarchy')
+    // ... handle user-specific logic
   }
 })
 ```
+
+**Key Learning**: Instead of global references and event listeners, the router now receives Registry and Stonecrop instances directly through the initialization callback, eliminating the need for global state management.
 
 ## Agent Architecture Components
 
@@ -63,32 +69,38 @@ import StonecropPlugin, { DoctypeMeta } from '@stonecrop/stonecrop'
 **Primary Responsibility**: Dynamic route registration and state management
 
 ```typescript
-// Agent state management
-let globalRegistry: any = null
-let globalStonecrop: any = null
+// Agent state management - no more global references
 const registeredDoctypes = new Set<string>()
-const doctypeHierarchyCache = new Map<string, any>()
+const doctypeHierarchyCache: Record<string, any> = {}
 
-// Event-driven initialization (listens to framework events)
-window.addEventListener('stonecrop:plugin-ready', async (event: any) => {
-  const { registry, stonecrop } = event.detail
-  setGlobalReferences(registry, stonecrop)
-  await initializeRouter()
-})
+// Scoped references set during initialization
+let scopedRegistry: any = null
+let scopedStonecrop: any = null
+
+// Direct initialization with instances (replaces event listeners)
+export function setupRouterContext(registry: any, stonecrop: any): Promise<void> {
+  scopedRegistry = registry
+  scopedStonecrop = stonecrop
+  return preloadDoctypeHierarchies()
+}
 ```
 
 **Agent Capabilities**:
-- **Event-Driven Setup**: Responds to framework initialization events
+- **Scoped Instance Management**: Receives Registry and Stonecrop instances directly
 - **Doctype Discovery**: Fetches and caches doctype hierarchies from user-defined APIs
 - **Dynamic Registration**: Registers routes on-demand based on route patterns
 - **State Preparation**: Sets up HST state before route navigation
 - **Workflow Integration**: Connects routes to XState workflow states
 
-**Key Learning**: Router agent now uses event-driven communication instead of manual timing management.
+**Key Learning**: Router agent now uses scoped references instead of global state, eliminating the need for event-driven initialization timing.
 
 **Key Agent Functions**:
 
-#### `initializeRouter()` Agent
+#### `setupRouterContext()` Agent
+- Sets up scoped references to Registry and Stonecrop instances
+- Provides router functions with access to core framework instances
+
+#### `preloadDoctypeHierarchies()` Agent
 - Preloads all doctype hierarchies for performance optimization
 - Caches route configurations to avoid repeated API calls
 
@@ -406,20 +418,22 @@ describe('Workflow Agent', () => {
 ## Cognitive Load Reduction Strategy
 
 ### Problem Solved
-**Before**: Developers needed to understand Vue's mounting lifecycle, extract global properties manually, and coordinate initialization timing.
+**Before**: Developers needed to understand Vue's mounting lifecycle, manage global state, extract global properties manually, and coordinate initialization timing between multiple modules.
 
-**After**: Developers only need to provide their initialization logic in a callback - the framework handles all timing and coordination.
+**After**: Developers only need to provide their initialization logic in a callback - the framework handles all timing, coordination, and instance management.
 
 ### Implementation Pattern
 ```typescript
-// Clean, declarative approach
+// Clean, declarative approach with scoped references
 app.use(StonecropPlugin, {
   router,
   getMeta,
   autoInitializeRouter: true,
   onRouterInitialized: async (registry, stonecrop) => {
+    // Initialize router with provided instances (no global state)
+    await initializeRouterWithInstances(registry, stonecrop)
+
     // User defines what initialization means for their app
-    // e.g., preload doctype hierarchies, setup routes, etc.
     const response = await fetch('/api/doctype-hierarchy')
     // ... handle user-specific logic
   }
@@ -431,22 +445,23 @@ app.mount('#app') // Everything happens automatically after this
 
 **Framework (StonecropPlugin)**:
 - Manages Vue plugin lifecycle
-- Provides initialization hooks
-- Emits events for module communication
+- Provides initialization hooks with instances
 - Handles error boundaries
 - Generic, reusable patterns
+- No assumptions about global state
 
 **User (Desktop Example)**:
+- Manages scoped references through function parameters
 - Defines specific API endpoints
 - Implements business logic patterns
 - Configures doctype hierarchies
 - Handles application-specific initialization
 - Domain-specific concerns
 
-### Event-Driven Communication
-- **Event**: `stonecrop:plugin-ready` → Signals framework is ready
-- **Event**: `stonecrop:init-error` → Signals initialization errors
-- **Pattern**: Decoupled modules can listen for framework events without tight coupling
+### Scoped Reference Management
+- **Pattern**: Function parameters replace global state
+- **Benefit**: Eliminates timing issues and global state pollution
+- **Implementation**: `setupRouterContext(registry, stonecrop)` pattern
 
 ## Deployment Considerations
 

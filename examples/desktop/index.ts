@@ -6,10 +6,16 @@ import '@stonecrop/desktop/styles'
 import { install as AForm } from '@stonecrop/aform'
 import { install as ATable } from '@stonecrop/atable'
 import { StonecropDesktop } from '@stonecrop/desktop'
-import StonecropPlugin, { DoctypeMeta, type ImmutableDoctype, type MutableDoctype } from '@stonecrop/stonecrop'
+import StonecropPlugin, {
+	DoctypeMeta,
+	Registry,
+	Stonecrop,
+	type ImmutableDoctype,
+	type MutableDoctype,
+} from '@stonecrop/stonecrop'
 
 import App from './App.vue'
-import router, { cacheHierarchies } from './router'
+import router, { setupRouterContext } from './router'
 import { makeServer } from './server'
 
 const app = createApp(App)
@@ -40,21 +46,10 @@ app.use(StonecropPlugin, {
 	router,
 	getMeta,
 	autoInitializeRouter: true,
-	onRouterInitialized: async (registry, stonecrop) => {
-		// Desktop-specific initialization logic
-		// This is where we handle doctype hierarchy preloading for this example
-		try {
-			const response = await fetch('/api/doctype-hierarchy')
-			if (response.ok) {
-				const result = await response.json()
-				if (result.success && result.data) {
-					// Cache the hierarchies in the router's hierarchy cache
-					cacheHierarchies(result.data)
-				}
-			}
-		} catch (error) {
-			// Handle hierarchy loading error gracefully
-		}
+	onRouterInitialized: async (registry: Registry, stonecrop: Stonecrop) => {
+		// Setup router context with the provided instances
+		// This automatically handles doctype hierarchy preloading
+		await setupRouterContext(registry, stonecrop)
 	},
 })
 
