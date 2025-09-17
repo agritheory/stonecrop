@@ -1,8 +1,47 @@
-import { App, type Plugin } from 'vue'
+import { App, type Plugin, nextTick } from 'vue'
 
 import Registry from '../registry'
 import { Stonecrop } from '../stonecrop'
 import type { InstallOptions } from '../types'
+
+/**
+ * Setup auto-initialization for user-defined initialization logic
+ * This function handles the post-mount initialization automatically
+ */
+async function setupAutoInitialization(
+	app: App,
+	registry: Registry,
+	stonecrop: Stonecrop,
+	onRouterInitialized?: (registry: Registry, stonecrop: Stonecrop) => void | Promise<void>
+) {
+	// Wait for the next tick to ensure the app is mounted
+	await nextTick()
+
+	try {
+		// Emit a global event that can be picked up by user modules
+		if (typeof window !== 'undefined') {
+			const event = new CustomEvent('stonecrop:plugin-ready', {
+				detail: { registry, stonecrop },
+			})
+			window.dispatchEvent(event)
+		}
+
+		// Call user-provided initialization callback
+		if (onRouterInitialized) {
+			await onRouterInitialized(registry, stonecrop)
+		}
+
+		// Silent success - no console.log in production code
+	} catch (error) {
+		// Silent error handling - applications can listen to events if needed
+		if (typeof window !== 'undefined') {
+			const errorEvent = new CustomEvent('stonecrop:init-error', {
+				detail: { error },
+			})
+			window.dispatchEvent(errorEvent)
+		}
+	}
+}
 
 /**
  * Stonecrop Vue plugin
@@ -24,12 +63,14 @@ import type { InstallOptions } from '../types'
  * app.use(createPinia())
  * app.use(Stonecrop, {
  *  router,
- *  components: {
- *   // register custom components
- *  },
  *  getMeta: async (doctype: string) => {
- *   // fetch doctype meta from API
+ *   // fetch doctype meta from your API
  *  },
+ *  autoInitializeRouter: true,
+ *  onRouterInitialized: async (registry, stonecrop) => {
+ *   // your custom initialization logic here
+ *   // e.g., preload data, setup routes, etc.
+ *  }
  * })
  * app.mount('#app')
  * ```
@@ -61,6 +102,11 @@ const plugin: Plugin = {
 			for (const [tag, component] of Object.entries(options.components)) {
 				app.component(tag, component)
 			}
+		}
+
+		// Setup auto-initialization if requested
+		if (options?.autoInitializeRouter) {
+			void setupAutoInitialization(app, registry, stonecrop, options.onRouterInitialized)
 		}
 	},
 }

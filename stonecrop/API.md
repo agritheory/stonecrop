@@ -679,6 +679,8 @@ export type InstallOptions = {
     router?: Router;
     components?: Record<string, Component>;
     getMeta?: (doctype?: string) => DoctypeMeta | Promise<DoctypeMeta>;
+    autoInitializeRouter?: boolean;
+    onRouterInitialized?: (registry: Registry, stonecrop: Stonecrop) => void | Promise<void>;
 };
 ```
 

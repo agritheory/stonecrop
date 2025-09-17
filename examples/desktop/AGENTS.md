@@ -4,10 +4,40 @@
 
 The Desktop example demonstrates a comprehensive **schema-driven UI framework** with **event-driven workflows** using Stonecrop's Hierarchical State Tree (HST) and XState finite state machines. This example showcases how agents (FSMs) control application behavior through structured workflows and state management.
 
+## Key Architectural Lessons Learned
+
+### Separation of Concerns Principle
+**Critical Learning**: Framework code (Stonecrop core) should never make assumptions about user-specific concepts like API endpoints, data structures, or business logic patterns.
+
+**What Changed**:
+- Initially, StonecropPlugin tried to handle doctype hierarchy initialization automatically
+- This created tight coupling between the framework and specific API patterns
+- **Refactored** to make StonecropPlugin purely generic, handling only the initialization callback mechanism
+- User-specific logic (like `/api/doctype-hierarchy` calls) now belongs in the example/application code
+
+### Plugin Architecture Best Practices
+1. **Framework Responsibility**: Provide initialization hooks and event mechanisms
+2. **User Responsibility**: Define specific initialization logic, API calls, and business patterns
+3. **Event-Driven Communication**: Use custom events (`stonecrop:plugin-ready`) for decoupled module communication
+4. **No Backwards Compatibility Burden**: All code is subject to change; focus on clean architecture over compatibility
+
+### Auto-Initialization Strategy
+**Final Pattern**:
+```typescript
+// Framework provides the hook
+app.use(StonecropPlugin, {
+  autoInitializeRouter: true,
+  onRouterInitialized: async (registry, stonecrop) => {
+    // User defines what initialization means for their application
+    await mySpecificInitializationLogic()
+  }
+})
+```
+
 ## Agent Architecture Components
 
 ### 1. Application Agent (`index.ts`)
-**Primary Responsibility**: Application orchestration and initialization
+**Primary Responsibility**: Application orchestration and user-specific initialization
 
 ```typescript
 // Key dependencies and initialization sequence
@@ -17,15 +47,17 @@ import StonecropPlugin, { DoctypeMeta } from '@stonecrop/stonecrop'
 // Agent capabilities:
 // - Plugin installation and dependency management
 // - Registry setup with getMeta function
-// - Global state initialization via HST
-// - Router integration for workflow navigation
+// - User-specific initialization logic (doctype hierarchies, etc.)
+// - Clean separation between framework and application concerns
 ```
 
 **Agent Workflow**:
-1. **Setup Phase**: Install Pinia → Stonecrop Plugin → Component plugins
+1. **Setup Phase**: Install Pinia → Stonecrop Plugin (with user callback) → Component plugins
 2. **Mount Phase**: Create app instance and mount to DOM
-3. **Initialize Phase**: Extract global references and initialize router
+3. **Auto-Initialize Phase**: Framework triggers user-defined initialization callback
 4. **Runtime Phase**: Handle workflow state changes and route navigation
+
+**Key Learning**: The application agent now owns all business-specific logic, while the framework provides only the initialization hooks.
 
 ### 2. Router Agent (`router.ts`)
 **Primary Responsibility**: Dynamic route registration and state management
@@ -36,13 +68,23 @@ let globalRegistry: any = null
 let globalStonecrop: any = null
 const registeredDoctypes = new Set<string>()
 const doctypeHierarchyCache = new Map<string, any>()
+
+// Event-driven initialization (listens to framework events)
+window.addEventListener('stonecrop:plugin-ready', async (event: any) => {
+  const { registry, stonecrop } = event.detail
+  setGlobalReferences(registry, stonecrop)
+  await initializeRouter()
+})
 ```
 
 **Agent Capabilities**:
-- **Doctype Discovery**: Fetches and caches doctype hierarchies from server
+- **Event-Driven Setup**: Responds to framework initialization events
+- **Doctype Discovery**: Fetches and caches doctype hierarchies from user-defined APIs
 - **Dynamic Registration**: Registers routes on-demand based on route patterns
 - **State Preparation**: Sets up HST state before route navigation
 - **Workflow Integration**: Connects routes to XState workflow states
+
+**Key Learning**: Router agent now uses event-driven communication instead of manual timing management.
 
 **Key Agent Functions**:
 
@@ -360,6 +402,51 @@ describe('Workflow Agent', () => {
 - Verify HST state synchronization across components
 - Validate workflow state persistence during navigation
 - Test dynamic doctype discovery and registration
+
+## Cognitive Load Reduction Strategy
+
+### Problem Solved
+**Before**: Developers needed to understand Vue's mounting lifecycle, extract global properties manually, and coordinate initialization timing.
+
+**After**: Developers only need to provide their initialization logic in a callback - the framework handles all timing and coordination.
+
+### Implementation Pattern
+```typescript
+// Clean, declarative approach
+app.use(StonecropPlugin, {
+  router,
+  getMeta,
+  autoInitializeRouter: true,
+  onRouterInitialized: async (registry, stonecrop) => {
+    // User defines what initialization means for their app
+    // e.g., preload doctype hierarchies, setup routes, etc.
+    const response = await fetch('/api/doctype-hierarchy')
+    // ... handle user-specific logic
+  }
+})
+app.mount('#app') // Everything happens automatically after this
+```
+
+### Framework vs User Responsibilities
+
+**Framework (StonecropPlugin)**:
+- Manages Vue plugin lifecycle
+- Provides initialization hooks
+- Emits events for module communication
+- Handles error boundaries
+- Generic, reusable patterns
+
+**User (Desktop Example)**:
+- Defines specific API endpoints
+- Implements business logic patterns
+- Configures doctype hierarchies
+- Handles application-specific initialization
+- Domain-specific concerns
+
+### Event-Driven Communication
+- **Event**: `stonecrop:plugin-ready` → Signals framework is ready
+- **Event**: `stonecrop:init-error` → Signals initialization errors
+- **Pattern**: Decoupled modules can listen for framework events without tight coupling
 
 ## Deployment Considerations
 

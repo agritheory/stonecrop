@@ -20,20 +20,46 @@ let router: any = null
 const registeredDoctypes = new Set<string>()
 
 // Cache for fetched doctype hierarchies
-const doctypeHierarchyCache = new Map<string, any>()
+const doctypeHierarchyCache: Record<string, any> = {}
 
-// Export function to set global references
+// Listen for plugin ready event from enhanced StonecropPlugin
+if (typeof window !== 'undefined') {
+	window.addEventListener('stonecrop:plugin-ready', async (event: any) => {
+		const { registry, stonecrop } = event.detail
+		setGlobalReferences(registry, stonecrop)
+		await initializeRouter()
+	})
+}
+
+// Export function to set global references (for manual setup if needed)
 export function setGlobalReferences(registry: any, stonecrop: any) {
 	globalRegistry = registry
 	globalStonecrop = stonecrop
 }
 
 /**
- * Initialize router by preloading all doctype hierarchies
- * This improves performance by avoiding individual network requests
+ * Cache doctype hierarchies from external source
+ * This allows the desktop example to populate the cache during initialization
+ */
+export function cacheHierarchies(hierarchies: Record<string, any>) {
+	Object.keys(hierarchies).forEach(doctype => {
+		doctypeHierarchyCache[doctype] = hierarchies[doctype]
+	})
+}
+
+/**
+ * Initialize router by checking if doctype hierarchies are already cached
+ * This works with the desktop initialization that preloads hierarchies
  */
 export async function initializeRouter(): Promise<void> {
 	try {
+		// Check if hierarchies are already cached from desktop initialization
+		if (Object.keys(doctypeHierarchyCache).length > 0) {
+			console.log(`[Router] Using ${Object.keys(doctypeHierarchyCache).length} pre-cached doctype hierarchies`)
+			return
+		}
+
+		// Fallback: fetch hierarchies if not already cached
 		console.log('[Router] Preloading all doctype hierarchies...')
 		const allHierarchies = await fetchAllDoctypeHierarchies()
 
@@ -151,8 +177,8 @@ async function setupRecordData(doctype: string, recordId: string, actualDoctype?
  */
 async function fetchDoctypeHierarchy(doctype: string): Promise<any> {
 	// Check cache first
-	if (doctypeHierarchyCache.has(doctype)) {
-		return doctypeHierarchyCache.get(doctype)
+	if (doctypeHierarchyCache[doctype]) {
+		return doctypeHierarchyCache[doctype]
 	}
 
 	try {
@@ -162,7 +188,7 @@ async function fetchDoctypeHierarchy(doctype: string): Promise<any> {
 
 			if (result.success && result.data) {
 				// Cache the successful result
-				doctypeHierarchyCache.set(doctype, result.data)
+				doctypeHierarchyCache[doctype] = result.data
 				return result.data
 			} else {
 				console.warn(`Doctype hierarchy not found for ${doctype}:`, result.error)
@@ -189,7 +215,7 @@ async function fetchAllDoctypeHierarchies(): Promise<any> {
 			if (result.success && result.data) {
 				// Cache all hierarchies
 				Object.keys(result.data).forEach(doctype => {
-					doctypeHierarchyCache.set(doctype, result.data[doctype])
+					doctypeHierarchyCache[doctype] = result.data[doctype]
 				})
 				return result.data
 			} else {

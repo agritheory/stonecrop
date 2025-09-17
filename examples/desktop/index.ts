@@ -9,7 +9,7 @@ import { StonecropDesktop } from '@stonecrop/desktop'
 import StonecropPlugin, { DoctypeMeta, type ImmutableDoctype, type MutableDoctype } from '@stonecrop/stonecrop'
 
 import App from './App.vue'
-import router, { setGlobalReferences, initializeRouter } from './router'
+import router, { cacheHierarchies } from './router'
 import { makeServer } from './server'
 
 const app = createApp(App)
@@ -17,7 +17,7 @@ const app = createApp(App)
 // Setup MirageJS server
 makeServer()
 
-// Create the getMeta function that will be used by both the plugin and router guards
+// Create the getMeta function that will be used by the plugin
 const getMeta = async (doctype: string) => {
 	const response = await fetch(`/api/${doctype}/meta`)
 	const data = (await response.json()) as MutableDoctype
@@ -35,25 +35,33 @@ const getMeta = async (doctype: string) => {
 const pinia = createPinia()
 app.use(pinia)
 
-// 2. Stonecrop plugin (w/ router) - this will create the registry internally
-app.use(StonecropPlugin, { router, getMeta })
+// 2. Stonecrop plugin with auto-initialization enabled
+app.use(StonecropPlugin, {
+	router,
+	getMeta,
+	autoInitializeRouter: true,
+	onRouterInitialized: async (registry, stonecrop) => {
+		// Desktop-specific initialization logic
+		// This is where we handle doctype hierarchy preloading for this example
+		try {
+			const response = await fetch('/api/doctype-hierarchy')
+			if (response.ok) {
+				const result = await response.json()
+				if (result.success && result.data) {
+					// Cache the hierarchies in the router's hierarchy cache
+					cacheHierarchies(result.data)
+				}
+			}
+		} catch (error) {
+			// Handle hierarchy loading error gracefully
+		}
+	},
+})
 
 // 3. Component plugins
 app.use(AForm)
 app.use(ATable)
 app.use(StonecropDesktop)
 
-// Mount the app first to make the registry available
+// Mount the app - router initialization will happen automatically
 app.mount('#app')
-
-// Set up global references after mounting when registry and stonecrop are available
-const registryFromPlugin = app.config.globalProperties.$registry
-const stonecropFromPlugin = app.config.globalProperties.$stonecrop
-if (registryFromPlugin && stonecropFromPlugin) {
-	setGlobalReferences(registryFromPlugin, stonecropFromPlugin)
-
-	// Initialize router with preloaded doctype hierarchies
-	initializeRouter().catch(error => {
-		console.error('Failed to initialize router:', error)
-	})
-}
