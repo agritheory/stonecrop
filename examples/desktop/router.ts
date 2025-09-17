@@ -328,6 +328,21 @@ const routes: RouteRecordRaw[] = [
 					return
 				}
 
+				// Set route metadata for the plugin to use
+				to.meta.doctype = routeInfo.doctype
+				to.meta.actualDoctype = routeInfo.actualDoctype
+				to.meta.type = routeInfo.routeType
+				if (routeInfo.recordId) {
+					to.meta.recordId = routeInfo.recordId
+				}
+
+				console.log('[Router] Set route metadata:', {
+					doctype: to.meta.doctype,
+					actualDoctype: to.meta.actualDoctype,
+					type: to.meta.type,
+					recordId: to.meta.recordId,
+				})
+
 				// Try to register routes for this doctype
 				const registered = await registerDoctypeRoutes(routeInfo.doctype)
 

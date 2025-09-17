@@ -9,7 +9,7 @@ import { StonecropDesktop } from '@stonecrop/desktop'
 import StonecropPlugin, { DoctypeMeta, type ImmutableDoctype, type MutableDoctype } from '@stonecrop/stonecrop'
 
 import App from './App.vue'
-import router, { setGlobalReferences, initializeRouter } from './router'
+import router from './router-simple'
 import { makeServer } from './server'
 
 const app = createApp(App)
@@ -35,12 +35,10 @@ const getMeta = async (doctype: string) => {
 const pinia = createPinia()
 app.use(pinia)
 
-// 2. Stonecrop plugin (w/ router) - this will create the registry internally and handle initialization automatically
+// 2. Stonecrop plugin (w/ router) - handles data loading automatically!
 app.use(StonecropPlugin, {
 	router,
 	getMeta,
-	setGlobalReferences, // Will be called automatically after mounting
-	initializeRouter, // Will be called automatically after mounting
 })
 
 // 3. Component plugins

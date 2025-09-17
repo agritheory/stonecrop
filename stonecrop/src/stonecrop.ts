@@ -1,3 +1,4 @@
+import { reactive } from 'vue'
 import Registry from './registry'
 import DoctypeMeta from './doctype'
 import { createHST, type HSTNode } from './stores/hst'
@@ -32,7 +33,9 @@ export class Stonecrop {
 			}
 		})
 
-		this.hstStore = createHST(initialStoreStructure, 'StonecropStore')
+		// Make the store structure reactive so Vue can track changes
+		const reactiveStore = reactive(initialStoreStructure)
+		this.hstStore = createHST(reactiveStore, 'StonecropStore')
 	}
 
 	/**
@@ -48,10 +51,13 @@ export class Stonecrop {
 
 			// Auto-create HST store section for new doctype
 			if (!this.hstStore.has(doctype.slug)) {
-				this.hstStore.set(doctype.slug, {
-					records: {},
-					currentRecord: null,
-				})
+				this.hstStore.set(
+					doctype.slug,
+					reactive({
+						records: {},
+						currentRecord: null,
+					})
+				)
 			}
 		}
 	}

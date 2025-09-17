@@ -1,8 +1,148 @@
-import { App, nextTick, type Plugin } from 'vue'
+import { App, type Plugin } from 'vue'
+import type { RouteLocationNormalized } from 'vue-router'
+import { List, Map } from 'immutable'
 
+import DoctypeMeta from '../doctype'
 import Registry from '../registry'
 import { Stonecrop } from '../stonecrop'
 import type { InstallOptions } from '../types'
+
+/**
+ * Setup doctype metadata and load all records for the doctype
+ */
+async function setupDoctypeData(
+	registry: Registry,
+	stonecrop: Stonecrop,
+	doctype: string,
+	actualDoctype?: string,
+	apiBaseUrl = '/api'
+): Promise<void> {
+	try {
+		const targetDoctype = actualDoctype || doctype
+
+		// Get doctype metadata if not already loaded
+		if (!registry.registry[targetDoctype]) {
+			const doctypeMeta = await registry.getMeta?.(doctype) // Use original doctype for API call
+			if (doctypeMeta) {
+				registry.addDoctype(doctypeMeta)
+			}
+		}
+
+		// Load all records for this doctype into HST
+		const response = await fetch(`${apiBaseUrl}/${doctype}`) // Use original doctype for API call
+		if (response.ok) {
+			const records = (await response.json()) as any[]
+
+			// Clear existing records and add new ones using actual doctype
+			stonecrop.clearRecords(targetDoctype)
+
+			if (Array.isArray(records)) {
+				records.forEach((record: any) => {
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+					if (record && typeof record === 'object' && 'id' in record && record.id) {
+						// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
+						stonecrop.addRecord(targetDoctype, String(record.id), record)
+					}
+				})
+			}
+		}
+	} catch (error) {
+		// eslint-disable-next-line no-console
+		console.error(`Failed to setup doctype data for ${doctype}:`, error)
+	}
+}
+
+/**
+ * Setup specific record data and set as current
+ */
+async function setupRecordData(
+	registry: Registry,
+	stonecrop: Stonecrop,
+	doctype: string,
+	recordId: string,
+	actualDoctype?: string,
+	apiBaseUrl = '/api'
+): Promise<void> {
+	try {
+		const targetDoctype = actualDoctype || doctype
+
+		// Get form doctype metadata if not already loaded
+		if (!registry.registry[targetDoctype]) {
+			// Use a special endpoint for form metadata
+			const response = await fetch(`${apiBaseUrl}/${doctype}/${recordId}/meta`)
+			if (response.ok) {
+				const metaData = await response.json()
+
+				// eslint-disable-next-line no-console
+				console.log('[Plugin] setupRecordData - received metadata:', metaData)
+				// eslint-disable-next-line no-console
+				console.log('[Plugin] setupRecordData - schema type:', typeof metaData.schema, Array.isArray(metaData.schema))
+
+				const config = {
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+					schema: metaData.schema,
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+					workflow: metaData.workflow,
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+					actions: metaData.actions || {},
+				}
+
+				// eslint-disable-next-line no-console
+				console.log('[Plugin] setupRecordData - config before DoctypeMeta:', config)
+
+				const doctypeMeta = new DoctypeMeta(
+					targetDoctype,
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+					List(config.schema),
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+					config.workflow,
+					Map(config.actions as Record<string, string[]>)
+				)
+
+				if (doctypeMeta) {
+					registry.addDoctype(doctypeMeta)
+					// eslint-disable-next-line no-console
+					console.log('[Plugin] setupRecordData - added doctypeMeta to registry:', {
+						doctype: doctypeMeta.doctype,
+						slug: doctypeMeta.slug,
+						hasSchema: !!doctypeMeta.schema,
+						schemaSize: doctypeMeta.schema?.size,
+						schemaType: typeof doctypeMeta.schema,
+						isImmutableList: doctypeMeta.schema && 'toArray' in doctypeMeta.schema,
+					})
+
+					// Test accessing from registry immediately
+					const retrievedMeta = registry.registry[doctypeMeta.slug]
+					// eslint-disable-next-line no-console
+					console.log('[Plugin] setupRecordData - immediately retrieved from registry:', {
+						found: !!retrievedMeta,
+						hasSchema: !!retrievedMeta?.schema,
+						schemaSize: retrievedMeta?.schema?.size,
+						sameObject: retrievedMeta === doctypeMeta,
+					})
+				}
+			}
+		}
+
+		// Check if record already exists in HST
+		const existingRecord = stonecrop.getRecordById(targetDoctype, recordId)
+
+		if (!existingRecord && !recordId.startsWith('new-')) {
+			// Fetch individual record if not in store and not a new record
+			const response = await fetch(`${apiBaseUrl}/${doctype}/${recordId}`) // Use original doctype for API call
+			if (response.ok) {
+				const record = await response.json()
+				stonecrop.addRecord(targetDoctype, recordId, record)
+			}
+		}
+
+		// Set as current record (even for new records) using actual doctype
+		stonecrop.setCurrentRecord(targetDoctype, recordId)
+	} catch (error) {
+		// eslint-disable-next-line no-console
+		console.error(`Failed to setup record data for ${doctype}/${recordId}:`, error)
+	}
+}
 
 /**
  * Stonecrop Vue plugin
@@ -16,7 +156,7 @@ import type { InstallOptions } from '../types'
  * import Stonecrop from '@stonecrop/stonecrop'
  *
  * import App from './App.vue'
- * import router, { setGlobalReferences, initializeRouter } from './router'
+ * import router from './router'
  *
  * const app = createApp(App)
  *
@@ -24,14 +164,9 @@ import type { InstallOptions } from '../types'
  * app.use(createPinia())
  * app.use(Stonecrop, {
  *  router,
- *  components: {
- *   // register custom components
- *  },
  *  getMeta: async (doctype: string) => {
  *   // fetch doctype meta from API
  *  },
- *  setGlobalReferences,  // Will be called automatically
- *  initializeRouter,     // Will be called automatically
  * })
  * app.mount('#app')
  * ```
@@ -65,22 +200,36 @@ const plugin: Plugin = {
 			}
 		}
 
-		// Auto-initialize after mounting if enabled (default: true)
-		const autoInitialize = options?.autoInitialize !== false
-		if (autoInitialize && (options?.setGlobalReferences || options?.initializeRouter)) {
-			// Use nextTick to ensure the app is fully mounted
-			void nextTick(() => {
-				// Call setGlobalReferences if provided
-				if (options?.setGlobalReferences) {
-					options.setGlobalReferences(registry, stonecrop)
-				}
+		// Setup automatic router guards if enabled (default: true) and router is available
+		const autoRouterGuards = options?.autoRouterGuards !== false
+		if (autoRouterGuards && router) {
+			const apiBaseUrl = options?.apiBaseUrl || '/api'
 
-				// Call initializeRouter if provided
-				if (options?.initializeRouter) {
-					void options.initializeRouter().catch(error => {
-						// eslint-disable-next-line no-console
-						console.error('Failed to initialize router:', error)
-					})
+			router.afterEach(async (to: RouteLocationNormalized) => {
+				try {
+					// Check if route has stonecrop metadata (set by router beforeEnter guard)
+					const doctype = to.meta.doctype as string
+					const actualDoctype = to.meta.actualDoctype as string
+					const routeType = to.meta.type as string
+
+					if (doctype && routeType) {
+						if (routeType === 'list') {
+							await setupDoctypeData(registry, stonecrop, doctype, actualDoctype, apiBaseUrl)
+						} else if (routeType === 'form') {
+							// Get recordId from params or meta
+							const recordId =
+								(to.params.recordId as string) ||
+								(Array.isArray(to.params.pathMatch) && to.params.pathMatch[1]) ||
+								(to.meta.recordId as string)
+
+							if (recordId) {
+								await setupRecordData(registry, stonecrop, doctype, recordId, actualDoctype, apiBaseUrl)
+							}
+						}
+					}
+				} catch (error) {
+					// eslint-disable-next-line no-console
+					console.error('[Stonecrop] Failed to setup route data:', error)
 				}
 			})
 		}

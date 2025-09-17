@@ -44,22 +44,14 @@ export type InstallOptions = {
 	router?: Router
 	components?: Record<string, Component>
 	getMeta?: (doctype?: string) => DoctypeMeta | Promise<DoctypeMeta>
-
 	/**
-	 * Function to set global references for router guards
-	 * Called automatically after plugin installation
-	 */
-	setGlobalReferences?: (registry: any, stonecrop: any) => void
-
-	/**
-	 * Function to initialize router with preloaded data
-	 * Called automatically after plugin installation
-	 */
-	initializeRouter?: () => Promise<void>
-
-	/**
-	 * Whether to automatically call initialization functions after mounting
+	 * Whether to automatically setup router guards for doctype/record loading
 	 * @defaultValue true
 	 */
-	autoInitialize?: boolean
+	autoRouterGuards?: boolean
+	/**
+	 * Base API URL for fetching doctype data
+	 * @defaultValue "/api"
+	 */
+	apiBaseUrl?: string
 }

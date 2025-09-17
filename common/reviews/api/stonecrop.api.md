@@ -241,9 +241,8 @@ export type InstallOptions = {
     router?: Router;
     components?: Record<string, Component>;
     getMeta?: (doctype?: string) => DoctypeMeta | Promise<DoctypeMeta>;
-    setGlobalReferences?: (registry: any, stonecrop: any) => void;
-    initializeRouter?: () => Promise<void>;
-    autoInitialize?: boolean;
+    autoRouterGuards?: boolean;
+    apiBaseUrl?: string;
 };
 
 // @public

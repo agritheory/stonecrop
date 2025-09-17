@@ -1,4 +1,5 @@
 import { Router } from 'vue-router'
+import { reactive } from 'vue'
 
 import DoctypeMeta from './doctype'
 
@@ -37,7 +38,7 @@ export default class Registry {
 		}
 		Registry._root = this
 		this.name = 'Registry'
-		this.registry = {}
+		this.registry = reactive({})
 		this.router = router
 		this.getMeta = getMeta
 	}
