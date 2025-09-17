@@ -19,12 +19,47 @@ async function setupDoctypeData(
 ): Promise<void> {
 	try {
 		const targetDoctype = actualDoctype || doctype
+		// For list views, we need the list metadata which uses the '-list' suffix
+		const listDoctypeKey = targetDoctype.endsWith('-list') ? targetDoctype : `${targetDoctype}-list`
 
-		// Get doctype metadata if not already loaded
-		if (!registry.registry[targetDoctype]) {
-			const doctypeMeta = await registry.getMeta?.(doctype) // Use original doctype for API call
-			if (doctypeMeta) {
-				registry.addDoctype(doctypeMeta)
+		// Get list doctype metadata if not already loaded
+		if (!registry.registry[listDoctypeKey]) {
+			// Use a special endpoint for list metadata
+			const response = await fetch(`${apiBaseUrl}/${doctype}/meta`)
+			if (response.ok) {
+				const metaData = await response.json()
+
+				// eslint-disable-next-line no-console
+				console.log('[Plugin] setupDoctypeData - received list metadata:', metaData)
+
+				const config = {
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+					schema: metaData.schema,
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+					workflow: metaData.workflow,
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+					actions: metaData.actions || {},
+				}
+
+				const doctypeMeta = new DoctypeMeta(
+					listDoctypeKey, // Use the list doctype key here
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+					List(config.schema),
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+					config.workflow,
+					Map(config.actions as Record<string, string[]>)
+				)
+
+				if (doctypeMeta) {
+					registry.addDoctype(doctypeMeta)
+					// eslint-disable-next-line no-console
+					console.log('[Plugin] setupDoctypeData - added list doctypeMeta to registry:', {
+						doctype: doctypeMeta.doctype,
+						slug: doctypeMeta.slug,
+						hasSchema: !!doctypeMeta.schema,
+						schemaSize: doctypeMeta.schema?.size,
+					})
+				}
 			}
 		}
 
@@ -33,15 +68,15 @@ async function setupDoctypeData(
 		if (response.ok) {
 			const records = (await response.json()) as any[]
 
-			// Clear existing records and add new ones using actual doctype
-			stonecrop.clearRecords(targetDoctype)
+			// Clear existing records and add new ones using base doctype (not list doctype)
+			stonecrop.clearRecords(doctype)
 
 			if (Array.isArray(records)) {
 				records.forEach((record: any) => {
 					// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 					if (record && typeof record === 'object' && 'id' in record && record.id) {
 						// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
-						stonecrop.addRecord(targetDoctype, String(record.id), record)
+						stonecrop.addRecord(doctype, String(record.id), record) // Use base doctype for records
 					}
 				})
 			}

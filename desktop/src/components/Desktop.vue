@@ -62,9 +62,10 @@ const router = computed(() => stonecrop.value?.registry.router)
 const currentDoctype = computed(() => {
 	if (!route.value) return ''
 
-	// First check if we have actualDoctype in meta (from registered routes)
-	if (route.value.meta?.actualDoctype) {
-		return route.value.meta.actualDoctype as string
+	// First check if we have doctype in meta (from registered routes)
+	// Use the base doctype (not actualDoctype) for record data access
+	if (route.value.meta?.doctype) {
+		return route.value.meta.doctype as string
 	}
 
 	// For named routes, use params.doctype
@@ -662,7 +663,10 @@ const getColumns = () => {
 
 	try {
 		const registry = stonecrop.value.registry
-		const meta = registry.registry[currentDoctype.value]
+		// For list views, look for the list metadata with '-list' suffix
+		const listDoctypeKey = currentView.value === 'records' ? `${currentDoctype.value}-list` : currentDoctype.value
+
+		const meta = registry.registry[listDoctypeKey]
 
 		if (meta?.schema) {
 			const schemaArray = 'toArray' in meta.schema ? meta.schema.toArray() : meta.schema
