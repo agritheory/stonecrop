@@ -328,28 +328,23 @@ const routes: RouteRecordRaw[] = [
 					return
 				}
 
-				// Set route metadata for the plugin to use
-				to.meta.doctype = routeInfo.doctype
-				to.meta.actualDoctype = routeInfo.actualDoctype
-				to.meta.type = routeInfo.routeType
-				if (routeInfo.recordId) {
-					to.meta.recordId = routeInfo.recordId
-				}
-
-				console.log('[Router] Set route metadata:', {
-					doctype: to.meta.doctype,
-					actualDoctype: to.meta.actualDoctype,
-					type: to.meta.type,
-					recordId: to.meta.recordId,
-				})
-
 				// Try to register routes for this doctype
 				const registered = await registerDoctypeRoutes(routeInfo.doctype)
 
 				if (registered) {
 					console.log(`[Router] Routes registered for ${routeInfo.doctype}, redirecting to: ${path}`)
 					// Route should now be registered, try to navigate to it again
-					next({ path, replace: true })
+					// Pass the metadata through the redirect to ensure it's available
+					next({
+						path,
+						replace: true,
+						meta: {
+							doctype: routeInfo.doctype,
+							actualDoctype: routeInfo.actualDoctype,
+							type: routeInfo.routeType,
+							recordId: routeInfo.recordId,
+						},
+					})
 				} else {
 					console.warn(`[Router] Failed to register routes for doctype: ${routeInfo.doctype}`)
 					// Registration failed, continue to catch-all view
