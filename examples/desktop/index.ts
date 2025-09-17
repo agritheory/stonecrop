@@ -35,25 +35,18 @@ const getMeta = async (doctype: string) => {
 const pinia = createPinia()
 app.use(pinia)
 
-// 2. Stonecrop plugin (w/ router) - this will create the registry internally
-app.use(StonecropPlugin, { router, getMeta })
+// 2. Stonecrop plugin (w/ router) - this will create the registry internally and handle initialization automatically
+app.use(StonecropPlugin, {
+	router,
+	getMeta,
+	setGlobalReferences, // Will be called automatically after mounting
+	initializeRouter, // Will be called automatically after mounting
+})
 
 // 3. Component plugins
 app.use(AForm)
 app.use(ATable)
 app.use(StonecropDesktop)
 
-// Mount the app first to make the registry available
+// Mount the app - initialization happens automatically!
 app.mount('#app')
-
-// Set up global references after mounting when registry and stonecrop are available
-const registryFromPlugin = app.config.globalProperties.$registry
-const stonecropFromPlugin = app.config.globalProperties.$stonecrop
-if (registryFromPlugin && stonecropFromPlugin) {
-	setGlobalReferences(registryFromPlugin, stonecropFromPlugin)
-
-	// Initialize router with preloaded doctype hierarchies
-	initializeRouter().catch(error => {
-		console.error('Failed to initialize router:', error)
-	})
-}

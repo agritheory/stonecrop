@@ -1,4 +1,4 @@
-import { App, type Plugin } from 'vue'
+import { App, nextTick, type Plugin } from 'vue'
 
 import Registry from '../registry'
 import { Stonecrop } from '../stonecrop'
@@ -16,7 +16,7 @@ import type { InstallOptions } from '../types'
  * import Stonecrop from '@stonecrop/stonecrop'
  *
  * import App from './App.vue'
- * import router from './router'
+ * import router, { setGlobalReferences, initializeRouter } from './router'
  *
  * const app = createApp(App)
  *
@@ -30,6 +30,8 @@ import type { InstallOptions } from '../types'
  *  getMeta: async (doctype: string) => {
  *   // fetch doctype meta from API
  *  },
+ *  setGlobalReferences,  // Will be called automatically
+ *  initializeRouter,     // Will be called automatically
  * })
  * app.mount('#app')
  * ```
@@ -61,6 +63,26 @@ const plugin: Plugin = {
 			for (const [tag, component] of Object.entries(options.components)) {
 				app.component(tag, component)
 			}
+		}
+
+		// Auto-initialize after mounting if enabled (default: true)
+		const autoInitialize = options?.autoInitialize !== false
+		if (autoInitialize && (options?.setGlobalReferences || options?.initializeRouter)) {
+			// Use nextTick to ensure the app is fully mounted
+			void nextTick(() => {
+				// Call setGlobalReferences if provided
+				if (options?.setGlobalReferences) {
+					options.setGlobalReferences(registry, stonecrop)
+				}
+
+				// Call initializeRouter if provided
+				if (options?.initializeRouter) {
+					void options.initializeRouter().catch(error => {
+						// eslint-disable-next-line no-console
+						console.error('Failed to initialize router:', error)
+					})
+				}
+			})
 		}
 	},
 }
