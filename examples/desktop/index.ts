@@ -30,6 +30,19 @@ const getMeta = async (doctype: string) => {
 	return new DoctypeMeta(data.doctype || doctype, config.schema, config.workflow, config.actions)
 }
 
+// Create the getData function that will be used by the plugin to load data
+const getData = async (doctype: string, recordId?: string) => {
+	if (recordId) {
+		// Load individual record
+		const response = await fetch(`/api/${doctype}/${recordId}`)
+		return await response.json()
+	} else {
+		// Load collection of records
+		const response = await fetch(`/api/${doctype}`)
+		return await response.json()
+	}
+}
+
 // Install plugins in correct order following Vue.js best practices
 // 1. State management first
 const pinia = createPinia()
@@ -39,6 +52,7 @@ app.use(pinia)
 app.use(StonecropPlugin, {
 	router,
 	getMeta,
+	getData,
 })
 
 // 3. Component plugins

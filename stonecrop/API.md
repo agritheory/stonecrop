@@ -679,8 +679,8 @@ export type InstallOptions = {
     router?: Router;
     components?: Record<string, Component>;
     getMeta?: (doctype?: string) => DoctypeMeta | Promise<DoctypeMeta>;
+    getData?: (doctype: string, recordId?: string) => Promise<unknown>;
     autoRouterGuards?: boolean;
-    apiBaseUrl?: string;
 };
 ```
 
@@ -822,7 +822,7 @@ Stonecrop Registry class
 **Constructor:**
 
 ```typescript
-new Registry(router: Router, getMeta: (doctype: string) => DoctypeMeta | Promise<DoctypeMeta>)
+new Registry(router: Router, getMeta: (doctype: string) => DoctypeMeta | Promise<DoctypeMeta>, getData: (doctype: string, recordId?: string) => Promise<unknown>)
 ```
 
 **Properties:**
@@ -830,6 +830,7 @@ new Registry(router: Router, getMeta: (doctype: string) => DoctypeMeta | Promise
 | Property | Type | Description |
 |----------|------|-------------|
 | _root | `Registry` | The root Registry instance |
+| getData | `(doctype: string, recordId?: string) => Promise<unknown>` | The getData function fetches doctype data from an API |
 | getMeta | `(doctype: string) => DoctypeMeta \| Promise<DoctypeMeta>` | The getMeta function fetches doctype metadata from an API |
 | name | `string` | The name of the Registry instance |
 | registry | `Record<string, DoctypeMeta>` | The registry property contains a collection of doctypes |

@@ -32,7 +32,11 @@ export default class Registry {
 	 */
 	readonly router?: Router
 
-	constructor(router?: Router, getMeta?: (doctype: string) => DoctypeMeta | Promise<DoctypeMeta>) {
+	constructor(
+		router?: Router,
+		getMeta?: (doctype: string) => DoctypeMeta | Promise<DoctypeMeta>,
+		getData?: (doctype: string, recordId?: string) => Promise<unknown>
+	) {
 		if (Registry._root) {
 			return Registry._root
 		}
@@ -41,6 +45,7 @@ export default class Registry {
 		this.registry = reactive({})
 		this.router = router
 		this.getMeta = getMeta
+		this.getData = getData
 	}
 
 	/**
@@ -48,6 +53,11 @@ export default class Registry {
 	 * @see {@link DoctypeMeta}
 	 */
 	getMeta?: (doctype: string) => DoctypeMeta | Promise<DoctypeMeta>
+
+	/**
+	 * The getData function fetches doctype data from an API
+	 */
+	getData?: (doctype: string, recordId?: string) => Promise<unknown>
 
 	/**
 	 * Get doctype metadata

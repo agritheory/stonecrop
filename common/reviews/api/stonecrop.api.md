@@ -241,8 +241,8 @@ export type InstallOptions = {
     router?: Router;
     components?: Record<string, Component>;
     getMeta?: (doctype?: string) => DoctypeMeta | Promise<DoctypeMeta>;
+    getData?: (doctype: string, recordId?: string) => Promise<unknown>;
     autoRouterGuards?: boolean;
-    apiBaseUrl?: string;
 };
 
 // @public
@@ -259,8 +259,9 @@ export default plugin;
 
 // @public
 export class Registry {
-    constructor(router?: Router, getMeta?: (doctype: string) => DoctypeMeta | Promise<DoctypeMeta>);
+    constructor(router?: Router, getMeta?: (doctype: string) => DoctypeMeta | Promise<DoctypeMeta>, getData?: (doctype: string, recordId?: string) => Promise<unknown>);
     addDoctype(doctype: DoctypeMeta): void;
+    getData?: (doctype: string, recordId?: string) => Promise<unknown>;
     getMeta?: (doctype: string) => DoctypeMeta | Promise<DoctypeMeta>;
     readonly name: string;
     readonly registry: Record<string, DoctypeMeta>;

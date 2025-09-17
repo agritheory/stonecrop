@@ -1,6 +1,5 @@
 import { App, type Plugin } from 'vue'
 import type { RouteLocationNormalized } from 'vue-router'
-import { List, Map } from 'immutable'
 
 import DoctypeMeta from '../doctype'
 import Registry from '../registry'
@@ -8,127 +7,98 @@ import { Stonecrop } from '../stonecrop'
 import type { InstallOptions } from '../types'
 
 /**
- * Setup doctype metadata and load all records for the doctype
+ * Setup doctype metadata for any view type using the provided getMeta function
  */
-async function setupDoctypeData(
+async function setupDoctypeMetadata(
 	registry: Registry,
-	stonecrop: Stonecrop,
 	doctype: string,
 	actualDoctype?: string,
-	apiBaseUrl = '/api'
+	recordId?: string
 ): Promise<void> {
 	try {
 		const targetDoctype = actualDoctype || doctype
-		// For list views, we need the list metadata which uses the '-list' suffix
-		const listDoctypeKey = targetDoctype.endsWith('-list') ? targetDoctype : `${targetDoctype}-list`
 
-		// Get list doctype metadata if not already loaded
-		if (!registry.registry[listDoctypeKey]) {
-			// Use a special endpoint for list metadata
-			const response = await fetch(`${apiBaseUrl}/${doctype}/meta`)
-			if (response.ok) {
-				const metaData = await response.json()
-
-				const config = {
-					schema: metaData.schema,
-					workflow: metaData.workflow,
-					actions: metaData.actions || {},
-				}
-
-				const doctypeMeta = new DoctypeMeta(
-					listDoctypeKey, // Use the list doctype key here
-					List(config.schema),
-					config.workflow,
-					Map(config.actions as Record<string, string[]>)
-				)
-
+		// Get doctype metadata if not already loaded
+		if (!registry.registry[targetDoctype]) {
+			// Use the registry's getMeta function (provided during plugin installation)
+			if (registry.getMeta) {
+				// For record-specific requests, try to get form-specific metadata
+				const metaDoctype = recordId ? `${doctype}/${recordId}` : doctype
+				const doctypeMeta = await registry.getMeta(metaDoctype)
 				if (doctypeMeta) {
-					registry.addDoctype(doctypeMeta)
+					// Update the doctype name to match the target doctype
+					const updatedMeta = new DoctypeMeta(
+						targetDoctype,
+						doctypeMeta.schema,
+						doctypeMeta.workflow,
+						doctypeMeta.actions
+					)
+					registry.addDoctype(updatedMeta)
 				}
-			}
-		}
-
-		// Load all records for this doctype into HST
-		const response = await fetch(`${apiBaseUrl}/${doctype}`) // Use original doctype for API call
-		if (response.ok) {
-			const records = (await response.json()) as any[]
-
-			// Clear existing records and add new ones using base doctype (not list doctype)
-			stonecrop.clearRecords(doctype)
-
-			if (Array.isArray(records)) {
-				records.forEach((record: any) => {
-					if (record && typeof record === 'object' && 'id' in record && record.id) {
-						stonecrop.addRecord(doctype, String(record.id), record) // Use base doctype for records
-					}
-				})
 			}
 		}
 	} catch (error) {
-		console.error(`Failed to setup doctype data for ${doctype}:`, error)
+		// Silent error handling - let the application handle error display
 	}
 }
 
 /**
- * Setup specific record data and set as current
+ * Load data for a doctype using the provided getData function
  */
-async function setupRecordData(
+async function loadRouteData(stonecrop: Stonecrop, doctype: string, recordId?: string): Promise<void> {
+	try {
+		// Use the registry's getData function (provided during plugin installation)
+		if (stonecrop.registry.getData) {
+			if (recordId) {
+				// Load individual record
+				const existingRecord = stonecrop.getRecordById(doctype, recordId)
+				if (!existingRecord && !recordId.startsWith('new-')) {
+					const record = await stonecrop.registry.getData(doctype, recordId)
+					if (record) {
+						stonecrop.addRecord(doctype, recordId, record)
+					}
+				}
+				// Set as current record
+				stonecrop.setCurrentRecord(doctype, recordId)
+			} else {
+				// Load collection of records
+				const records = await stonecrop.registry.getData(doctype)
+				if (Array.isArray(records)) {
+					// Clear existing records and add new ones
+					stonecrop.clearRecords(doctype)
+
+					records.forEach((record: unknown) => {
+						if (record && typeof record === 'object' && 'id' in record && record.id) {
+							stonecrop.addRecord(doctype, String((record as { id: string | number }).id), record)
+						}
+					})
+				}
+			}
+		}
+	} catch (error) {
+		// Silent error handling - let the application handle error display
+	}
+}
+
+/**
+ * Setup route data by loading metadata and data for the current route
+ */
+async function setupRouteData(
 	registry: Registry,
 	stonecrop: Stonecrop,
-	doctype: string,
-	recordId: string,
-	actualDoctype?: string,
-	apiBaseUrl = '/api'
+	routeDoctype: string,
+	actualDoctype: string,
+	recordId?: string
 ): Promise<void> {
 	try {
-		const targetDoctype = actualDoctype || doctype
-		// For form views, we need the form metadata which uses the '-form' suffix
-		const formDoctypeKey = targetDoctype.endsWith('-form') ? targetDoctype : `${targetDoctype}-form`
-		// For record data storage, we use the base doctype (without '-form' suffix)
-		const recordDoctype = doctype // Always use the original doctype for record storage
+		// 1. Setup metadata for the actual doctype (as defined by the route)
+		await setupDoctypeMetadata(registry, routeDoctype, actualDoctype, recordId)
 
-		// Get form doctype metadata if not already loaded
-		if (!registry.registry[formDoctypeKey]) {
-			// Use a special endpoint for form metadata
-			const response = await fetch(`${apiBaseUrl}/${doctype}/${recordId}/meta`)
-			if (response.ok) {
-				const metaData = await response.json()
-
-				const config = {
-					schema: metaData.schema,
-					workflow: metaData.workflow,
-					actions: metaData.actions || {},
-				}
-
-				const doctypeMeta = new DoctypeMeta(
-					formDoctypeKey, // Use the form doctype key here
-					List(config.schema),
-					config.workflow,
-					Map(config.actions as Record<string, string[]>)
-				)
-
-				if (doctypeMeta) {
-					registry.addDoctype(doctypeMeta)
-				}
-			}
-		}
-
-		// Check if record already exists in HST
-		const existingRecord = stonecrop.getRecordById(recordDoctype, recordId)
-
-		if (!existingRecord && !recordId.startsWith('new-')) {
-			// Fetch individual record if not in store and not a new record
-			const response = await fetch(`${apiBaseUrl}/${doctype}/${recordId}`) // Use original doctype for API call
-			if (response.ok) {
-				const record = await response.json()
-				stonecrop.addRecord(recordDoctype, recordId, record)
-			}
-		}
-
-		// Set as current record (even for new records) using record doctype
-		stonecrop.setCurrentRecord(recordDoctype, recordId)
+		// 2. Load data using the base doctype for storage consistency
+		const dataDoctype = routeDoctype // Use route doctype for data storage
+		await loadRouteData(stonecrop, dataDoctype, recordId)
 	} catch (error) {
-		console.error(`Failed to setup record data for ${doctype}/${recordId}:`, error)
+		// Silent error handling - let the application handle error display
 	}
 }
 
@@ -172,7 +142,7 @@ const plugin: Plugin = {
 		}
 
 		// Create registry with available router
-		const registry = new Registry(router, options?.getMeta)
+		const registry = new Registry(router, options?.getMeta, options?.getData)
 		app.provide('$registry', registry)
 		app.config.globalProperties.$registry = registry
 
@@ -191,49 +161,25 @@ const plugin: Plugin = {
 		// Setup automatic router guards if enabled (default: true) and router is available
 		const autoRouterGuards = options?.autoRouterGuards !== false
 		if (autoRouterGuards && router) {
-			const apiBaseUrl = options?.apiBaseUrl || '/api'
-
 			router.afterEach(async (to: RouteLocationNormalized) => {
 				try {
-					// Check if route has stonecrop metadata (set by router beforeEnter guard)
-					let doctype = to.meta.doctype as string
-					let actualDoctype = to.meta.actualDoctype as string
-					let routeType = to.meta.type as string
+					// Only proceed if route has stonecrop metadata (set by router beforeEnter guard)
+					const doctype = to.meta.doctype as string
+					const actualDoctype = to.meta.actualDoctype as string
 
-					// If metadata is missing, try to resolve from the path
-					if (!doctype || !routeType) {
-						try {
-							const response = await fetch(`${apiBaseUrl}/resolve-route?path=${encodeURIComponent(to.path)}`)
-							if (response.ok) {
-								const routeInfo = await response.json()
-								if (routeInfo && !routeInfo.error) {
-									doctype = routeInfo.doctype
-									actualDoctype = routeInfo.actualDoctype
-									routeType = routeInfo.routeType
-								}
-							}
-						} catch (error) {
-							console.warn('[Plugin] Failed to resolve route from API:', error)
-						}
-					}
+					if (doctype && actualDoctype) {
+						// Get recordId from params or meta (optional - used for individual records)
+						const recordId =
+							(to.params.recordId as string) ||
+							(Array.isArray(to.params.pathMatch) && to.params.pathMatch[1]) ||
+							(to.meta.recordId as string) ||
+							undefined
 
-					if (doctype && routeType) {
-						if (routeType === 'list') {
-							await setupDoctypeData(registry, stonecrop, doctype, actualDoctype, apiBaseUrl)
-						} else if (routeType === 'form') {
-							// Get recordId from params or meta
-							const recordId =
-								(to.params.recordId as string) ||
-								(Array.isArray(to.params.pathMatch) && to.params.pathMatch[1]) ||
-								(to.meta.recordId as string)
-
-							if (recordId) {
-								await setupRecordData(registry, stonecrop, doctype, recordId, actualDoctype, apiBaseUrl)
-							}
-						}
+						// Setup route data abstractly - let the application determine view structure
+						await setupRouteData(registry, stonecrop, doctype, actualDoctype, recordId)
 					}
 				} catch (error) {
-					console.error('[Stonecrop] Failed to setup route data:', error)
+					// Silent error handling - let the application handle error display
 				}
 			})
 		}

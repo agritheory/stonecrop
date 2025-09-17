@@ -44,14 +44,10 @@ export type InstallOptions = {
 	router?: Router
 	components?: Record<string, Component>
 	getMeta?: (doctype?: string) => DoctypeMeta | Promise<DoctypeMeta>
+	getData?: (doctype: string, recordId?: string) => Promise<unknown>
 	/**
 	 * Whether to automatically setup router guards for doctype/record loading
 	 * @defaultValue true
 	 */
 	autoRouterGuards?: boolean
-	/**
-	 * Base API URL for fetching doctype data
-	 * @defaultValue "/api"
-	 */
-	apiBaseUrl?: string
 }
