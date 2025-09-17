@@ -1,5 +1,3 @@
-import { DoctypeMeta } from '@stonecrop/stonecrop'
-import { List, Map } from 'immutable'
 import {
 	createRouter,
 	createWebHistory,
@@ -11,292 +9,106 @@ import {
 import Home from './components/Home.vue'
 import View from './components/View.vue'
 
-// Global references that will be set during app initialization
-let globalRegistry: any = null
-let globalStonecrop: any = null
-let router: any = null
-
-// Cache for registered doctypes to avoid repeated hierarchy fetches
-const registeredDoctypes = new Set<string>()
-
-// Cache for fetched doctype hierarchies
-const doctypeHierarchyCache = new Map<string, any>()
-
-// Export function to set global references
-export function setGlobalReferences(registry: any, stonecrop: any) {
-	globalRegistry = registry
-	globalStonecrop = stonecrop
-}
+// Cache for doctype hierarchy to avoid repeated fetches
+let doctypeHierarchy: Record<string, any> | null = null
 
 /**
- * Initialize router by preloading all doctype hierarchies
- * This improves performance by avoiding individual network requests
+ * Fetch and cache the doctype hierarchy from the server
  */
-export async function initializeRouter(): Promise<void> {
-	try {
-		console.log('[Router] Preloading all doctype hierarchies...')
-		const allHierarchies = await fetchAllDoctypeHierarchies()
-
-		if (allHierarchies) {
-			const doctypeCount = Object.keys(allHierarchies).length
-			console.log(`[Router] Successfully preloaded ${doctypeCount} doctype hierarchies`)
-		} else {
-			console.warn('[Router] Failed to preload doctype hierarchies')
-		}
-	} catch (error) {
-		console.error('[Router] Error preloading doctype hierarchies:', error)
-	}
-}
-
-/**
- * Setup doctype metadata and load all records for the doctype
- */
-async function setupDoctypeData(doctype: string, actualDoctype?: string): Promise<void> {
-	if (!globalRegistry || !globalStonecrop) {
-		// global Stonecrop references not available during route setup
-		return
+async function fetchDoctypeHierarchy(): Promise<Record<string, any>> {
+	if (doctypeHierarchy) {
+		return doctypeHierarchy as Record<string, any>
 	}
 
-	try {
-		const targetDoctype = actualDoctype || doctype
-
-		// Get doctype metadata if not already loaded
-		if (!globalRegistry.registry[targetDoctype]) {
-			const doctypeMeta = await globalRegistry.getMeta?.(doctype) // Use original doctype for API call
-			if (doctypeMeta) {
-				globalRegistry.addDoctype(doctypeMeta)
-			}
-		}
-
-		// Load all records for this doctype into HST
-		const response = await fetch(`/api/${doctype}`) // Use original doctype for API call
-		if (response.ok) {
-			const records = await response.json()
-
-			// Clear existing records and add new ones using actual doctype
-			globalStonecrop.clearRecords(targetDoctype)
-
-			if (Array.isArray(records)) {
-				records.forEach((record: any) => {
-					if (record.id) {
-						globalStonecrop.addRecord(targetDoctype, record.id, record)
-					}
-				})
-			}
-		}
-	} catch (error) {
-		console.error(`Failed to setup doctype data for ${doctype}:`, error)
-	}
-}
-
-/**
- * Setup specific record data and set as current
- */
-async function setupRecordData(doctype: string, recordId: string, actualDoctype?: string): Promise<void> {
-	if (!globalRegistry || !globalStonecrop) {
-		// global Stonecrop references not available during route setup
-		return
-	}
-
-	try {
-		const targetDoctype = actualDoctype || doctype
-
-		// Get form doctype metadata if not already loaded
-		if (!globalRegistry.registry[targetDoctype]) {
-			// Use a special endpoint for form metadata
-			const response = await fetch(`/api/${doctype}/${recordId}/meta`)
-			if (response.ok) {
-				const metaData = await response.json()
-
-				const config = {
-					schema: metaData.schema,
-					workflow: metaData.workflow,
-					actions: metaData.actions || {},
-				}
-
-				const doctypeMeta = new DoctypeMeta(
-					targetDoctype,
-					List(config.schema),
-					config.workflow,
-					Map(config.actions as Record<string, string[]>)
-				)
-
-				if (doctypeMeta) {
-					globalRegistry.addDoctype(doctypeMeta)
-				}
-			}
-		}
-
-		// Check if record already exists in HST
-		const existingRecord = globalStonecrop.getRecordById(targetDoctype, recordId)
-
-		if (!existingRecord && !recordId.startsWith('new-')) {
-			// Fetch individual record if not in store and not a new record
-			const response = await fetch(`/api/${doctype}/${recordId}`) // Use original doctype for API call
-			if (response.ok) {
-				const record = await response.json()
-				globalStonecrop.addRecord(targetDoctype, recordId, record)
-			}
-		}
-
-		// Set as current record (even for new records) using actual doctype
-		globalStonecrop.setCurrentRecord(targetDoctype, recordId)
-	} catch (error) {
-		console.error(`Failed to setup record data for ${doctype}/${recordId}:`, error)
-	}
-}
-
-/**
- * Fetch doctype hierarchy for a specific doctype
- */
-async function fetchDoctypeHierarchy(doctype: string): Promise<any> {
-	// Check cache first
-	if (doctypeHierarchyCache.has(doctype)) {
-		return doctypeHierarchyCache.get(doctype)
-	}
-
-	try {
-		const response = await fetch(`/api/doctype-hierarchy/${doctype}`)
-		if (response.ok) {
-			const result = await response.json()
-
-			if (result.success && result.data) {
-				// Cache the successful result
-				doctypeHierarchyCache.set(doctype, result.data)
-				return result.data
-			} else {
-				console.warn(`Doctype hierarchy not found for ${doctype}:`, result.error)
-				return null
-			}
-		} else {
-			console.error(`Failed to fetch doctype hierarchy for ${doctype}: HTTP ${response.status}`)
-		}
-	} catch (error) {
-		console.error(`Failed to fetch doctype hierarchy for ${doctype}:`, error)
-	}
-	return null
-}
-
-/**
- * Fetch all doctype hierarchies from server
- */
-async function fetchAllDoctypeHierarchies(): Promise<any> {
 	try {
 		const response = await fetch('/api/doctype-hierarchy')
 		if (response.ok) {
 			const result = await response.json()
-
 			if (result.success && result.data) {
-				// Cache all hierarchies
-				Object.keys(result.data).forEach(doctype => {
-					doctypeHierarchyCache.set(doctype, result.data[doctype])
-				})
-				return result.data
-			} else {
-				console.warn('Failed to fetch doctype hierarchies:', result.error)
-				return null
+				doctypeHierarchy = result.data
+				return doctypeHierarchy as Record<string, any>
 			}
-		} else {
-			console.error(`Failed to fetch doctype hierarchies: HTTP ${response.status}`)
 		}
 	} catch (error) {
-		console.error('Failed to fetch doctype hierarchies:', error)
+		console.error('Failed to fetch doctype hierarchy:', error)
 	}
-	return null
+
+	// Fallback to empty hierarchy if fetch fails
+	doctypeHierarchy = {}
+	return doctypeHierarchy as Record<string, any>
 }
 
 /**
- * Resolve route path to doctype using server endpoint
+ * Resolve a path to doctype information using the hierarchy
  */
-async function resolveRoute(path: string): Promise<any> {
-	try {
-		const response = await fetch(`/api/resolve-route?path=${encodeURIComponent(path)}`)
-		if (response.ok) {
-			const result = await response.json()
-			if (result.error) {
-				// route resolution failed
-				return null
-			}
-			return result
-		}
-	} catch (error) {
-		console.error(`Failed to resolve route ${path}:`, error)
-	}
-	return null
-}
+function resolvePathFromHierarchy(path: string, hierarchy: Record<string, any>): any {
+	// Find matching route pattern in hierarchy
+	for (const [doctypeKey, config] of Object.entries(hierarchy)) {
+		const doctypeConfig = config as any
 
-/**
- * Register routes for a specific doctype on-demand
- */
-async function registerDoctypeRoutes(doctype: string): Promise<boolean> {
-	if (registeredDoctypes.has(doctype)) {
-		return true // Already registered
-	}
-
-	try {
-		const hierarchy = await fetchDoctypeHierarchy(doctype)
-
-		if (!hierarchy) {
-			console.warn(`[Router] No hierarchy configuration found for doctype: ${doctype}`)
-			return false
+		if (!doctypeConfig.routePatterns) {
+			continue
 		}
 
-		if (!hierarchy.routePatterns) {
-			console.warn(`[Router] No route patterns found for doctype: ${doctype}`)
-			return false
-		}
+		// Check each route pattern for this doctype
+		for (const [patternKey, pattern] of Object.entries(doctypeConfig.routePatterns)) {
+			const routePattern = (pattern as any).pattern
 
-		// Register all route patterns for this doctype
-		Object.keys(hierarchy.routePatterns).forEach(patternKey => {
-			const pattern = hierarchy.routePatterns[patternKey]
+			// Convert Vue route pattern to regex for matching
+			// e.g., '/todo/:recordId' becomes /^\/todo\/([^\/]+)$/
+			const regexPattern = routePattern
+				.replace(/:[^/]+/g, '([^/]+)') // Replace :param with capture group
+				.replace(/\//g, '\\/') // Escape slashes
 
-			if (!pattern.pattern || !pattern.doctype) {
-				console.warn(`[Router] Invalid route pattern for ${doctype}.${patternKey}:`, pattern)
-				return
-			}
+			const regex = new RegExp(`^${regexPattern}$`)
 
-			const route: RouteRecordRaw = {
-				path: pattern.pattern,
-				name: `${doctype}-${patternKey}`,
-				component: View,
-				meta: {
-					...pattern.meta,
-					doctype: doctype,
-					actualDoctype: pattern.doctype,
-				},
-				beforeEnter: async (to: RouteLocationNormalized, _from: RouteLocationNormalized, next: NavigationGuardNext) => {
-					try {
-						const routeDoctype = to.meta.doctype as string
-						const actualDoctype = to.meta.actualDoctype as string
+			if (regex.test(path)) {
+				const result = {
+					doctype: doctypeKey,
+					actualDoctype: (pattern as any).doctype,
+					routeType: (pattern as any).meta.type,
+					routeName: `${doctypeKey}-${patternKey}`,
+					matchedPattern: routePattern,
+					descendantDoctypes: doctypeConfig.descendantDoctypes || [],
+					...((pattern as any).meta || {}),
+				}
 
-						if (pattern.meta.type === 'list') {
-							await setupDoctypeData(routeDoctype, actualDoctype)
-						} else if (pattern.meta.type === 'form') {
-							const recordId = to.params.recordId as string
-							await setupRecordData(routeDoctype, recordId, actualDoctype)
-						}
-
-						next()
-					} catch (error) {
-						console.error(`[Router] Failed to setup route data for ${doctype}:`, error)
-						next(error) // Pass error to Vue Router's error handling
+				// Extract route parameters if this is a form route
+				if ((pattern as any).meta.type === 'form') {
+					const matches = path.match(regex)
+					if (matches && matches[1]) {
+						result.recordId = matches[1]
 					}
-				},
+				}
+
+				return result
 			}
+		}
+	}
 
-			router.addRoute(route)
-		})
+	return null
+}
 
-		registeredDoctypes.add(doctype)
-		console.log(`[Router] Successfully registered routes for doctype: ${doctype}`)
-		return true
+/**
+ * Initialize the router by preloading the doctype hierarchy
+ * Call this during app initialization for better performance
+ */
+export async function initializeRouter(): Promise<void> {
+	try {
+		await fetchDoctypeHierarchy()
 	} catch (error) {
-		console.error(`[Router] Failed to register routes for doctype ${doctype}:`, error)
-		return false
+		console.error('Failed to initialize router hierarchy:', error)
 	}
 }
 
-// Create the router with base routes and catch-all for on-demand registration
+/**
+ * Get the cached doctype hierarchy
+ */
+export function getDoctypeHierarchy(): Record<string, any> | null {
+	return doctypeHierarchy
+}
+
+// Route definitions using hierarchy-based resolution
 const routes: RouteRecordRaw[] = [
 	{
 		path: '/',
@@ -312,54 +124,58 @@ const routes: RouteRecordRaw[] = [
 			const path = to.path
 
 			try {
-				// Resolve the route using server endpoint
-				const routeInfo = await resolveRoute(path)
+				// Fetch doctype hierarchy if not already cached
+				const hierarchy = await fetchDoctypeHierarchy()
 
-				if (!routeInfo) {
-					console.warn(`[Router] Could not resolve route: ${path}`)
-					// Continue to show catch-all view with error state
+				// Resolve the route using the hierarchy
+				const routeInfo = resolvePathFromHierarchy(path, hierarchy)
+
+				if (routeInfo && routeInfo.routeType !== 'not-found') {
+					// Set route metadata that the plugin will use
+					to.meta = {
+						...to.meta,
+						doctype: routeInfo.doctype,
+						actualDoctype: routeInfo.actualDoctype,
+						type: routeInfo.routeType,
+						recordId: routeInfo.recordId,
+						descendantDoctypes: routeInfo.descendantDoctypes,
+						title: routeInfo.title,
+					}
+
 					next()
-					return
-				}
-
-				if (routeInfo.error) {
-					console.warn(`[Router] Route resolution failed for ${path}:`, routeInfo.error)
-					next()
-					return
-				}
-
-				// Try to register routes for this doctype
-				const registered = await registerDoctypeRoutes(routeInfo.doctype)
-
-				if (registered) {
-					console.log(`[Router] Routes registered for ${routeInfo.doctype}, redirecting to: ${path}`)
-					// Route should now be registered, try to navigate to it again
-					// Pass the metadata through the redirect to ensure it's available
-					next({
-						path,
-						replace: true,
-						meta: {
-							doctype: routeInfo.doctype,
-							actualDoctype: routeInfo.actualDoctype,
-							type: routeInfo.routeType,
-							recordId: routeInfo.recordId,
-						},
-					})
 				} else {
-					console.warn(`[Router] Failed to register routes for doctype: ${routeInfo.doctype}`)
-					// Registration failed, continue to catch-all view
-					next()
+					// Route not found in hierarchy, fallback to server resolution
+					console.warn(`Route not found in hierarchy: ${path}, falling back to server resolution`)
+
+					const response = await fetch(`/api/resolve-route?path=${encodeURIComponent(path)}`)
+					if (response.ok) {
+						const serverRouteInfo = await response.json()
+
+						if (!serverRouteInfo.error && serverRouteInfo.routeType !== 'not-found') {
+							to.meta = {
+								...to.meta,
+								doctype: serverRouteInfo.doctype,
+								actualDoctype: serverRouteInfo.actualDoctype,
+								type: serverRouteInfo.routeType,
+								recordId: serverRouteInfo.recordId,
+							}
+							next()
+						} else {
+							next({ name: 'not-found' })
+						}
+					} else {
+						next({ name: 'not-found' })
+					}
 				}
 			} catch (error) {
-				console.error(`[Router] Error in catch-all route handler for ${path}:`, error)
-				// Continue to catch-all view on error
-				next()
+				console.error('Failed to resolve route:', error)
+				next({ name: 'not-found' })
 			}
 		},
 	},
 ]
 
-router = createRouter({
+const router = createRouter({
 	history: createWebHistory(),
 	routes,
 })

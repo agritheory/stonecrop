@@ -146,12 +146,6 @@ const currentView = computed(() => {
 	const pathMatch = route.value.params.pathMatch as string[] | undefined
 	if (pathMatch && pathMatch.length > 0) {
 		const view = pathMatch.length === 1 ? 'records' : 'record'
-		console.log('[Desktop] currentView determined:', {
-			path: route.value.path,
-			pathMatch,
-			view,
-			routeMeta: route.value.meta,
-		})
 		return view
 	}
 
@@ -178,11 +172,9 @@ const getRecordFormSchemaComputed = computed<SchemaTypes[]>(() => {
 	schemaUpdateTrigger.value
 
 	if (!currentDoctype.value) {
-		console.log('[Desktop] getRecordFormSchema: No currentDoctype')
 		return []
 	}
 	if (!stonecrop.value) {
-		console.log('[Desktop] getRecordFormSchema: No stonecrop instance')
 		return []
 	}
 
@@ -194,21 +186,7 @@ const getRecordFormSchemaComputed = computed<SchemaTypes[]>(() => {
 			: `${currentDoctype.value}-form`
 		const meta = registry?.registry[formDoctypeKey]
 
-		console.log('[Desktop] getRecordFormSchema computed debug:', {
-			currentDoctype: currentDoctype.value,
-			formDoctypeKey: formDoctypeKey,
-			registryKeys: Object.keys(registry?.registry || {}),
-			meta: meta,
-			hasSchema: !!meta?.schema,
-			metaKeys: meta ? Object.keys(meta) : 'no meta',
-			schemaValue: meta?.schema,
-			metaIsDoctypeMeta: meta instanceof Object && 'schema' in meta && 'doctype' in meta,
-			schemaSize: meta?.schema?.size,
-			trigger: schemaUpdateTrigger.value,
-		})
-
 		if (!meta?.schema) {
-			console.log('[Desktop] getRecordFormSchema: No schema found, showing loading state')
 			// Return loading state if schema isn't available yet
 			return [
 				{
@@ -277,7 +255,7 @@ const getRecordFormSchemaComputed = computed<SchemaTypes[]>(() => {
 			})),
 		]
 	} catch (error) {
-		console.error('[Desktop] Error in getRecordFormSchemaComputed:', error)
+		// Silent error handling for schema computation
 		return []
 	}
 })
@@ -696,13 +674,6 @@ const loadDoctypeMetadata = (doctype: string) => {
 	}
 }
 
-const getCurrentRecord = () => {
-	if (!stonecrop.value || !currentDoctype.value || isNewRecord.value) return {}
-
-	const currentRecord = stonecrop.value.currentRecord(currentDoctype.value)
-	return currentRecord?.get('') || {}
-}
-
 // Action handlers (will be triggered by button clicks in the UI)
 const handleSave = async () => {
 	if (!stonecrop.value) return
@@ -839,7 +810,6 @@ watch(
 				: `${currentDoctype.value}-form`
 
 			if (newRegistry[formDoctypeKey]?.schema) {
-				console.log('[Desktop] Registry updated with schema, triggering schema re-computation')
 				// Trigger schema computed property to re-run
 				schemaUpdateTrigger.value++
 				loadRecordData()
@@ -855,7 +825,6 @@ watch(
 	},
 	newRecord => {
 		if (newRecord && currentView.value === 'record') {
-			console.log('[Desktop] HST record updated, reloading record data')
 			loadRecordData()
 		}
 	},
@@ -895,19 +864,11 @@ const loadRecordData = () => {
 		if (!isNewRecord.value) {
 			// Load existing record data
 			const currentRecord = stonecrop.value.currentRecord(currentDoctype.value)
-			console.log('[Desktop] loadCurrentRecordData debug:', {
-				currentDoctype: currentDoctype.value,
-				currentRecord: currentRecord,
-				hasCurrentRecord: !!currentRecord,
-				recordData: currentRecord ? currentRecord.get('') : null,
-			})
 
 			if (currentRecord) {
 				const recordData = currentRecord.get('') || {}
 				currentViewData.value = { ...recordData }
-				console.log('[Desktop] Set currentViewData:', currentViewData.value)
 			} else {
-				console.log('[Desktop] No current record found, clearing data')
 				currentViewData.value = {}
 			}
 		} else {
@@ -915,7 +876,8 @@ const loadRecordData = () => {
 			currentViewData.value = {}
 		}
 	} catch (error) {
-		console.error('[Desktop] Error loading record data:', error)
+		// Silent error handling for loading record data
+		currentViewData.value = {}
 	} finally {
 		loading.value = false
 	}

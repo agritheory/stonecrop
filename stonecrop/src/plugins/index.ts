@@ -29,36 +29,21 @@ async function setupDoctypeData(
 			if (response.ok) {
 				const metaData = await response.json()
 
-				// eslint-disable-next-line no-console
-				console.log('[Plugin] setupDoctypeData - received list metadata:', metaData)
-
 				const config = {
-					// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 					schema: metaData.schema,
-					// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 					workflow: metaData.workflow,
-					// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 					actions: metaData.actions || {},
 				}
 
 				const doctypeMeta = new DoctypeMeta(
 					listDoctypeKey, // Use the list doctype key here
-					// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 					List(config.schema),
-					// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 					config.workflow,
 					Map(config.actions as Record<string, string[]>)
 				)
 
 				if (doctypeMeta) {
 					registry.addDoctype(doctypeMeta)
-					// eslint-disable-next-line no-console
-					console.log('[Plugin] setupDoctypeData - added list doctypeMeta to registry:', {
-						doctype: doctypeMeta.doctype,
-						slug: doctypeMeta.slug,
-						hasSchema: !!doctypeMeta.schema,
-						schemaSize: doctypeMeta.schema?.size,
-					})
 				}
 			}
 		}
@@ -73,16 +58,13 @@ async function setupDoctypeData(
 
 			if (Array.isArray(records)) {
 				records.forEach((record: any) => {
-					// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 					if (record && typeof record === 'object' && 'id' in record && record.id) {
-						// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
 						stonecrop.addRecord(doctype, String(record.id), record) // Use base doctype for records
 					}
 				})
 			}
 		}
 	} catch (error) {
-		// eslint-disable-next-line no-console
 		console.error(`Failed to setup doctype data for ${doctype}:`, error)
 	}
 }
@@ -112,53 +94,21 @@ async function setupRecordData(
 			if (response.ok) {
 				const metaData = await response.json()
 
-				// eslint-disable-next-line no-console
-				console.log('[Plugin] setupRecordData - received metadata:', metaData)
-				// eslint-disable-next-line no-console, @typescript-eslint/no-unsafe-member-access
-				console.log('[Plugin] setupRecordData - schema type:', typeof metaData.schema, Array.isArray(metaData.schema))
-
 				const config = {
-					// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 					schema: metaData.schema,
-					// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 					workflow: metaData.workflow,
-					// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 					actions: metaData.actions || {},
 				}
 
-				// eslint-disable-next-line no-console
-				console.log('[Plugin] setupRecordData - config before DoctypeMeta:', config)
-
 				const doctypeMeta = new DoctypeMeta(
 					formDoctypeKey, // Use the form doctype key here
-					// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 					List(config.schema),
-					// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 					config.workflow,
 					Map(config.actions as Record<string, string[]>)
 				)
 
 				if (doctypeMeta) {
 					registry.addDoctype(doctypeMeta)
-					// eslint-disable-next-line no-console
-					console.log('[Plugin] setupRecordData - added doctypeMeta to registry:', {
-						doctype: doctypeMeta.doctype,
-						slug: doctypeMeta.slug,
-						hasSchema: !!doctypeMeta.schema,
-						schemaSize: doctypeMeta.schema?.size,
-						schemaType: typeof doctypeMeta.schema,
-						isImmutableList: doctypeMeta.schema && 'toArray' in doctypeMeta.schema,
-					})
-
-					// Test accessing from registry immediately
-					const retrievedMeta = registry.registry[doctypeMeta.slug]
-					// eslint-disable-next-line no-console
-					console.log('[Plugin] setupRecordData - immediately retrieved from registry:', {
-						found: !!retrievedMeta,
-						hasSchema: !!retrievedMeta?.schema,
-						schemaSize: retrievedMeta?.schema?.size,
-						sameObject: retrievedMeta === doctypeMeta,
-					})
 				}
 			}
 		}
@@ -171,18 +121,13 @@ async function setupRecordData(
 			const response = await fetch(`${apiBaseUrl}/${doctype}/${recordId}`) // Use original doctype for API call
 			if (response.ok) {
 				const record = await response.json()
-				// eslint-disable-next-line no-console
-				console.log('[Plugin] setupRecordData - adding record to HST:', { recordDoctype, recordId, record })
 				stonecrop.addRecord(recordDoctype, recordId, record)
 			}
 		}
 
 		// Set as current record (even for new records) using record doctype
-		// eslint-disable-next-line no-console
-		console.log('[Plugin] setupRecordData - setting current record:', { recordDoctype, recordId })
 		stonecrop.setCurrentRecord(recordDoctype, recordId)
 	} catch (error) {
-		// eslint-disable-next-line no-console
 		console.error(`Failed to setup record data for ${doctype}/${recordId}:`, error)
 	}
 }
@@ -250,20 +195,6 @@ const plugin: Plugin = {
 
 			router.afterEach(async (to: RouteLocationNormalized) => {
 				try {
-					// Debug: Log all available metadata
-					// eslint-disable-next-line no-console
-					console.log('[Plugin] afterEach - route metadata debug:', {
-						path: to.path,
-						metaKeys: Object.keys(to.meta),
-						doctype: to.meta.doctype,
-						actualDoctype: to.meta.actualDoctype,
-						type: to.meta.type,
-						routeType: to.meta.type,
-						recordId: to.meta.recordId,
-						params: to.params,
-						pathMatch: to.params.pathMatch,
-					})
-
 					// Check if route has stonecrop metadata (set by router beforeEnter guard)
 					let doctype = to.meta.doctype as string
 					let actualDoctype = to.meta.actualDoctype as string
@@ -271,35 +202,22 @@ const plugin: Plugin = {
 
 					// If metadata is missing, try to resolve from the path
 					if (!doctype || !routeType) {
-						// eslint-disable-next-line no-console
-						console.log('[Plugin] afterEach - metadata missing, trying to resolve from path:', to.path)
-
 						try {
 							const response = await fetch(`${apiBaseUrl}/resolve-route?path=${encodeURIComponent(to.path)}`)
 							if (response.ok) {
 								const routeInfo = await response.json()
-								// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 								if (routeInfo && !routeInfo.error) {
-									// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 									doctype = routeInfo.doctype
-									// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 									actualDoctype = routeInfo.actualDoctype
-									// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 									routeType = routeInfo.routeType
-									// eslint-disable-next-line no-console
-									console.log('[Plugin] afterEach - resolved from API:', { doctype, actualDoctype, routeType })
 								}
 							}
 						} catch (error) {
-							// eslint-disable-next-line no-console
-							console.warn('[Plugin] afterEach - failed to resolve route from API:', error)
+							console.warn('[Plugin] Failed to resolve route from API:', error)
 						}
 					}
 
 					if (doctype && routeType) {
-						// eslint-disable-next-line no-console
-						console.log('[Plugin] afterEach - processing route:', { doctype, actualDoctype, routeType })
-
 						if (routeType === 'list') {
 							await setupDoctypeData(registry, stonecrop, doctype, actualDoctype, apiBaseUrl)
 						} else if (routeType === 'form') {
@@ -310,20 +228,11 @@ const plugin: Plugin = {
 								(to.meta.recordId as string)
 
 							if (recordId) {
-								// eslint-disable-next-line no-console
-								console.log('[Plugin] afterEach - calling setupRecordData:', { doctype, recordId, actualDoctype })
 								await setupRecordData(registry, stonecrop, doctype, recordId, actualDoctype, apiBaseUrl)
-							} else {
-								// eslint-disable-next-line no-console
-								console.warn('[Plugin] afterEach - no recordId found for form route')
 							}
 						}
-					} else {
-						// eslint-disable-next-line no-console
-						console.log('[Plugin] afterEach - skipping route (no doctype or routeType):', { doctype, routeType })
 					}
 				} catch (error) {
-					// eslint-disable-next-line no-console
 					console.error('[Stonecrop] Failed to setup route data:', error)
 				}
 			})

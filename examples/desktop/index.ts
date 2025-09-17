@@ -9,7 +9,7 @@ import { StonecropDesktop } from '@stonecrop/desktop'
 import StonecropPlugin, { DoctypeMeta, type ImmutableDoctype, type MutableDoctype } from '@stonecrop/stonecrop'
 
 import App from './App.vue'
-import router from './router-simple'
+import router, { initializeRouter } from './router'
 import { makeServer } from './server'
 
 const app = createApp(App)
@@ -45,6 +45,9 @@ app.use(StonecropPlugin, {
 app.use(AForm)
 app.use(ATable)
 app.use(StonecropDesktop)
+
+// Initialize router hierarchy for better performance
+initializeRouter().catch(console.error)
 
 // Mount the app - initialization happens automatically!
 app.mount('#app')
