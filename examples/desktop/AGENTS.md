@@ -1,0 +1,378 @@
+# Desktop Example - Agent Architecture Documentation
+
+## Overview
+
+The Desktop example demonstrates a comprehensive **schema-driven UI framework** with **event-driven workflows** using Stonecrop's Hierarchical State Tree (HST) and XState finite state machines. This example showcases how agents (FSMs) control application behavior through structured workflows and state management.
+
+## Agent Architecture Components
+
+### 1. Application Agent (`index.ts`)
+**Primary Responsibility**: Application orchestration and initialization
+
+```typescript
+// Key dependencies and initialization sequence
+import { StonecropDesktop } from '@stonecrop/desktop'
+import StonecropPlugin, { DoctypeMeta } from '@stonecrop/stonecrop'
+
+// Agent capabilities:
+// - Plugin installation and dependency management
+// - Registry setup with getMeta function
+// - Global state initialization via HST
+// - Router integration for workflow navigation
+```
+
+**Agent Workflow**:
+1. **Setup Phase**: Install Pinia → Stonecrop Plugin → Component plugins
+2. **Mount Phase**: Create app instance and mount to DOM
+3. **Initialize Phase**: Extract global references and initialize router
+4. **Runtime Phase**: Handle workflow state changes and route navigation
+
+### 2. Router Agent (`router.ts`)
+**Primary Responsibility**: Dynamic route registration and state management
+
+```typescript
+// Agent state management
+let globalRegistry: any = null
+let globalStonecrop: any = null
+const registeredDoctypes = new Set<string>()
+const doctypeHierarchyCache = new Map<string, any>()
+```
+
+**Agent Capabilities**:
+- **Doctype Discovery**: Fetches and caches doctype hierarchies from server
+- **Dynamic Registration**: Registers routes on-demand based on route patterns
+- **State Preparation**: Sets up HST state before route navigation
+- **Workflow Integration**: Connects routes to XState workflow states
+
+**Key Agent Functions**:
+
+#### `initializeRouter()` Agent
+- Preloads all doctype hierarchies for performance optimization
+- Caches route configurations to avoid repeated API calls
+
+#### `setupDoctypeData()` Agent
+- Loads doctype metadata into Registry
+- Populates HST with all records for the doctype
+- Manages data freshness and state synchronization
+
+#### `setupRecordData()` Agent
+- Handles individual record state management
+- Sets current record context in HST
+- Manages new vs. existing record workflows
+
+#### `registerDoctypeRoutes()` Agent
+- Dynamic route pattern registration based on server configuration
+- Creates Vue Router routes with HST state guards
+- Manages route-to-workflow mapping
+
+### 3. Server Agent (`server.ts`)
+**Primary Responsibility**: Mock data and workflow simulation using MirageJS
+
+**Agent Configuration**:
+```typescript
+// Doctype hierarchy defines workflow routing patterns
+doctypeHierarchy: {
+  todo: {
+    route: '/todo',
+    currentDoctype: 'todo-list',
+    descendantDoctypes: ['todo-list', 'todo-form'],
+    routePatterns: {
+      list: {
+        pattern: '/todo',
+        doctype: 'todo-list',
+        component: 'View',
+        meta: { title: 'Todo List', type: 'list' }
+      },
+      form: {
+        pattern: '/todo/:recordId',
+        doctype: 'todo-form',
+        component: 'View',
+        meta: { title: 'Todo Form', type: 'form' }
+      }
+    }
+  }
+}
+```
+
+**Workflow Definitions**:
+- **List Workflows**: `loaded` → `creating` → `loaded`
+- **Form Workflows**: `editing` → `saved`/`cancelled`/`deleted`
+
+### 4. Desktop Component Agent (`components/View.vue`)
+**Primary Responsibility**: UI state management and workflow execution
+
+```vue
+<template>
+  <div class="view-wrapper">
+    <Desktop :available-doctypes="availableDoctypes" :show-debug="showDebug" />
+  </div>
+</template>
+```
+
+**Agent Features**:
+- Integrates with `@stonecrop/desktop` component system
+- Provides debug visibility into HST state changes
+- Manages available doctype contexts for workflows
+
+### 5. Home Agent (`components/Home.vue`)
+**Primary Responsibility**: Application landing page and doctype discovery
+
+```typescript
+// Schema-driven table for doctype navigation
+const schema = ref([{
+  component: 'ATable',
+  config: { view: 'list' },
+  columns: [
+    { name: 'name', label: 'Name', fieldtype: 'Data' },
+    { name: 'slug', label: 'Slug', fieldtype: 'Data' },
+    { name: 'description', label: 'Description', fieldtype: 'Data' },
+    { name: 'routes', label: 'Available Routes', fieldtype: 'Data' }
+  ],
+  rows: doctypes.map(doctype => ({
+    // Dynamic route information generation
+  }))
+}])
+```
+
+## Workflow State Machines
+
+### Todo Workflow Agents
+
+#### Todo List FSM
+```typescript
+workflow: {
+  id: 'todoList',
+  initial: 'loaded',
+  states: {
+    loaded: { on: { CREATE: 'creating' } },
+    creating: { on: { SAVE: 'loaded', CANCEL: 'loaded' } }
+  }
+}
+```
+
+#### Todo Form FSM
+```typescript
+workflow: {
+  id: 'todoForm',
+  initial: 'editing',
+  states: {
+    editing: {
+      on: { SAVE: 'saved', CANCEL: 'cancelled', DELETE: 'deleted' }
+    },
+    saved: { on: { EDIT: 'editing' } },
+    cancelled: {},
+    deleted: {}
+  }
+}
+```
+
+### Issue Workflow Agents
+
+#### Issue List FSM
+```typescript
+workflow: {
+  id: 'issueList',
+  initial: 'loaded',
+  states: {
+    loaded: { on: { CREATE: 'creating' } },
+    creating: { on: { SAVE: 'loaded', CANCEL: 'loaded' } }
+  }
+}
+```
+
+#### Issue Form FSM
+```typescript
+workflow: {
+  id: 'issueForm',
+  initial: 'editing',
+  states: {
+    editing: {
+      on: { SAVE: 'saved', CANCEL: 'cancelled', DELETE: 'deleted' }
+    },
+    saved: { on: { EDIT: 'editing' } },
+    cancelled: {},
+    deleted: {}
+  }
+}
+```
+
+## HST Agent Integration
+
+### Hierarchical State Tree Structure
+```
+stonecrop/
+├── todo-list/
+│   ├── records/
+│   │   ├── 1/ (record data)
+│   │   ├── 2/ (record data)
+│   │   └── current → "1"
+│   └── workflow/ (FSM state)
+├── todo-form/
+│   ├── records/
+│   │   ├── 1/ (form data)
+│   │   ├── 2/ (form data)
+│   │   └── current → "1"
+│   └── workflow/ (FSM state)
+└── registry/ (doctype definitions)
+```
+
+### HST Agent Operations
+- **Path Navigation**: `stonecrop.getNode('todo-list.records.1')`
+- **State Synchronization**: `stonecrop.setCurrentRecord('todo-list', recordId)`
+- **Workflow Management**: HST integrates with XState actors for workflow execution
+- **Tree Traversal**: Parent/child relationships for breadcrumb navigation
+
+## Agent Communication Patterns
+
+### 1. Router → HST Agent Flow
+```typescript
+// Route guard triggers HST state preparation
+beforeEnter: async (to, from, next) => {
+  if (pattern.meta.type === 'list') {
+    await setupDoctypeData(routeDoctype, actualDoctype)
+  } else if (pattern.meta.type === 'form') {
+    const recordId = to.params.recordId as string
+    await setupRecordData(routeDoctype, recordId, actualDoctype)
+  }
+  next()
+}
+```
+
+### 2. Server → Registry Agent Flow
+```typescript
+// getMeta function bridges server data to Registry
+const getMeta = async (doctype: string) => {
+  const response = await fetch(`/api/${doctype}/meta`)
+  const data = await response.json()
+  return new DoctypeMeta(data.doctype, List(data.schema), data.workflow, Map(data.actions))
+}
+```
+
+### 3. Component → HST Agent Flow
+```typescript
+// useStonecrop composable provides HST integration
+const { stonecrop, provideHSTPath, handleHSTChange, formData } = useStonecrop({
+  doctype: myDoctype,
+  recordId: 'record-123'
+})
+```
+
+## Action Agent System
+
+### Server-Defined Actions
+```typescript
+actions: {
+  CREATE: ['() => console.log("Creating new todo")'],
+  EDIT: ['() => console.log("Editing todo")'],
+  DELETE: ['() => console.log("Deleting todo")'],
+  SAVE: ['() => console.log("Saving todo")'],
+  CANCEL: ['() => console.log("Cancelling todo edit")']
+}
+```
+
+### Mock Action Elements (`mocks/elements.ts`)
+```typescript
+export const actionElements = [
+  {
+    type: 'button',
+    label: 'Show Alert',
+    action: buttonClicked
+  },
+  {
+    type: 'dropdown',
+    label: 'Action Menu',
+    actions: [
+      { label: 'Show Current Timestamp', action: showCurrentTime },
+      { label: 'Show Random Number', action: showRandomNumber }
+    ]
+  }
+]
+```
+
+## Development Workflow
+
+### Agent Development Commands
+```bash
+# Start desktop example with hot reload
+cd examples && rushx dev:desktop
+
+# Test HST state management
+cd stonecrop && rushx test:watch
+
+# Generate API documentation
+rushx docs
+```
+
+### Agent Debugging
+1. **HST Debug Mode**: Set `showDebug: true` in View component
+2. **Router Debug**: Console logs show route registration and navigation
+3. **Workflow Debug**: XState DevTools integration for FSM inspection
+4. **Network Debug**: MirageJS provides server interaction logging
+
+## Agent Best Practices
+
+### 1. State Management
+- Use HST for all mutable application state
+- Keep workflow state separate from data state
+- Leverage path-based addressing for state access
+
+### 2. Route Management
+- Register routes dynamically based on server configuration
+- Cache doctype hierarchies for performance
+- Use route guards for state preparation
+
+### 3. Workflow Design
+- Design FSMs with clear state transitions
+- Use XState actions for side effects
+- Keep workflows focused on single responsibilities
+
+### 4. Component Integration
+- Use `useStonecrop` composable for HST integration
+- Provide HST paths for field-level reactivity
+- Handle changes through `handleHSTChange` for automatic sync
+
+## Testing Agents
+
+### Unit Testing Approach
+```typescript
+// Test HST state management
+describe('HST Agent', () => {
+  it('should manage record state correctly', () => {
+    const stonecrop = new Stonecrop(registry)
+    stonecrop.addRecord('todo-list', '1', recordData)
+    expect(stonecrop.currentRecord('todo-list')).toBeDefined()
+  })
+})
+
+// Test workflow transitions
+describe('Workflow Agent', () => {
+  it('should transition states correctly', () => {
+    const actor = interpret(todoListMachine)
+    actor.start()
+    actor.send('CREATE')
+    expect(actor.state.value).toBe('creating')
+  })
+})
+```
+
+### Integration Testing
+- Test route registration and navigation
+- Verify HST state synchronization across components
+- Validate workflow state persistence during navigation
+- Test dynamic doctype discovery and registration
+
+## Deployment Considerations
+
+### Production Agent Configuration
+- Implement proper error handling for route resolution failures
+- Add authentication guards to route agents
+- Configure proper caching strategies for doctype hierarchies
+- Set up monitoring for HST state health
+
+### Performance Optimization
+- Preload frequently accessed doctype hierarchies
+- Implement lazy loading for large record sets
+- Use virtual scrolling for large tables
+- Cache workflow configurations to avoid repeated compilation
+
+This agent architecture provides a robust foundation for building complex, workflow-driven applications with predictable state management and dynamic route handling.
