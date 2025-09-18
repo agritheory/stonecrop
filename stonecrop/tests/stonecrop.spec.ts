@@ -2,12 +2,11 @@ import type { SchemaTypes } from '@stonecrop/aform'
 import { List, Map } from 'immutable'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { createRouter, createMemoryHistory } from 'vue-router'
-import { createMachine, type MachineConfig } from 'xstate'
 
 import DoctypeMeta from '../src/doctype'
 import Registry from '../src/registry'
 import { Stonecrop } from '../src/stonecrop'
-import { HST, type HSTNode } from '../src/stores/hst'
+import { ImmutableDoctype } from '../src/types'
 
 // Mock fetch globally
 global.fetch = vi.fn()
@@ -33,20 +32,21 @@ describe('Stonecrop class with HST integration', () => {
 		vi.clearAllMocks()
 	})
 
-	const createMockDoctype = (name: string) => {
-		const mockSchema = List([
-			{
-				fieldname: 'title',
-				component: 'ATextInput',
-				label: 'Title',
-			},
-		] as SchemaTypes[])
+	function createMockDoctype(name: string) {
+		const mockSchema: ImmutableDoctype['schema'] = List<SchemaTypes>([
+			{ name: 'title', label: 'Title', fieldtype: 'Data' } as SchemaTypes,
+			{ name: 'status', label: 'Status', fieldtype: 'Select' } as SchemaTypes,
+		])
 
-		const mockWorkflowConfig: MachineConfig<any, any, any> = {
-			id: name.toLowerCase(),
+		const mockWorkflowConfig: ImmutableDoctype['workflow'] = {
+			id: 'mockWorkflow',
 			initial: 'draft',
 			states: {
-				draft: { on: { load: { target: 'pending' } } },
+				draft: {
+					on: {
+						submit: { target: 'pending' },
+					},
+				},
 				pending: {
 					on: {
 						approve: { target: 'completed' },
@@ -57,14 +57,12 @@ describe('Stonecrop class with HST integration', () => {
 			},
 		}
 
-		const mockWorkflow = createMachine(mockWorkflowConfig)
-
-		const mockActions = Map({
+		const mockActions: ImmutableDoctype['actions'] = Map({
 			load: ['loadData'],
 			save: ['validateData', 'saveData'],
 		})
 
-		return new DoctypeMeta(name, mockSchema, mockWorkflow, mockActions)
+		return new DoctypeMeta(name, mockSchema, mockWorkflowConfig, mockActions)
 	}
 
 	describe('Initialization', () => {
@@ -231,7 +229,7 @@ describe('Stonecrop class with HST integration', () => {
 
 			await stonecrop.getRecords(mockDoctype)
 
-			expect(fetch).toHaveBeenCalledWith('/task', undefined)
+			expect(fetch).toHaveBeenCalledWith('/task')
 
 			// Check that records are stored in HST with proper wrapping
 			const recordIds = stonecrop.getRecordIds('task')
