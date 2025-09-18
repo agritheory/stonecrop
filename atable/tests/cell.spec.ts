@@ -197,6 +197,7 @@ describe('table cell component', () => {
 
 		const dataCells = wrapper.findAllComponents(ACell)
 		const editableCell = dataCells.at(1)
+		console.log('editableCell', editableCell)
 		expect(editableCell?.exists()).toBe(true)
 
 		// Focus the cell and simulate typing
@@ -309,9 +310,7 @@ describe('table cell component', () => {
 			document.createRange = originalCreateRange
 		})
 
-		// TODO: This test reveals a potential bug - non-editable cells should not emit update events
-		// Currently failing because ACell.vue always has @input listeners active regardless of edit state
-		it.skip('should not emit update events when non-editable cell receives input', async () => {
+		it('should not emit update events when non-editable cell receives input', async () => {
 			vi.useFakeTimers()
 			const onUpdateSpy = vi.fn()
 			const isolatedProps = {
