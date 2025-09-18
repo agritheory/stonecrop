@@ -9,37 +9,17 @@ import type { InstallOptions } from '../types'
  * This function handles the post-mount initialization automatically
  */
 async function setupAutoInitialization(
-	app: App,
 	registry: Registry,
 	stonecrop: Stonecrop,
-	onRouterInitialized?: (registry: Registry, stonecrop: Stonecrop) => void | Promise<void>
+	onRouterInitialized: (registry: Registry, stonecrop: Stonecrop) => void | Promise<void>
 ) {
 	// Wait for the next tick to ensure the app is mounted
 	await nextTick()
 
 	try {
-		// Emit a global event that can be picked up by user modules
-		if (typeof window !== 'undefined') {
-			const event = new CustomEvent('stonecrop:plugin-ready', {
-				detail: { registry, stonecrop },
-			})
-			window.dispatchEvent(event)
-		}
-
-		// Call user-provided initialization callback
-		if (onRouterInitialized) {
-			await onRouterInitialized(registry, stonecrop)
-		}
-
-		// Silent success - no console.log in production code
-	} catch (error) {
-		// Silent error handling - applications can listen to events if needed
-		if (typeof window !== 'undefined') {
-			const errorEvent = new CustomEvent('stonecrop:init-error', {
-				detail: { error },
-			})
-			window.dispatchEvent(errorEvent)
-		}
+		await onRouterInitialized(registry, stonecrop)
+	} catch {
+		// Silent error handling - application should handle initialization errors
 	}
 }
 
@@ -49,32 +29,23 @@ async function setupAutoInitialization(
  * @param options - The plugin options
  * @example
  * ```ts
- *
  * import { createApp } from 'vue'
- * import { createPinia } from 'pinia'
  * import Stonecrop from '@stonecrop/stonecrop'
- *
- * import App from './App.vue'
  * import router from './router'
  *
  * const app = createApp(App)
- *
- * // Install in correct order
- * app.use(createPinia())
  * app.use(Stonecrop, {
- *  router,
- *  getMeta: async (doctype: string) => {
- *   // fetch doctype meta from your API
- *  },
- *  autoInitializeRouter: true,
- *  onRouterInitialized: async (registry, stonecrop) => {
- *   // your custom initialization logic here
- *   // e.g., preload data, setup routes, etc.
- *  }
+ *   router,
+ *   getMeta: async (doctype: string) => {
+ *     // fetch doctype meta from your API
+ *   },
+ *   autoInitializeRouter: true,
+ *   onRouterInitialized: async (registry, stonecrop) => {
+ *     // your custom initialization logic here
+ *   }
  * })
  * app.mount('#app')
  * ```
- *
  * @public
  */
 const plugin: Plugin = {
@@ -105,8 +76,8 @@ const plugin: Plugin = {
 		}
 
 		// Setup auto-initialization if requested
-		if (options?.autoInitializeRouter) {
-			void setupAutoInitialization(app, registry, stonecrop, options.onRouterInitialized)
+		if (options?.autoInitializeRouter && options.onRouterInitialized) {
+			void setupAutoInitialization(registry, stonecrop, options.onRouterInitialized)
 		}
 	},
 }

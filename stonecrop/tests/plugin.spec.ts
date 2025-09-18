@@ -225,57 +225,48 @@ describe('Stonecrop Vue Plugin with HST', () => {
 		expect(registry).toBeDefined()
 	})
 
-	it('emits plugin-ready event in browser environment', async () => {
-		// Mock window and dispatchEvent
-		const mockDispatchEvent = vi.fn()
-		const originalWindow = global.window
-		global.window = { dispatchEvent: mockDispatchEvent } as any
+	it('handles auto-initialization callback', async () => {
+		const initCallback = vi.fn().mockResolvedValue(undefined)
 
 		app.use(Stonecrop, {
 			router: mockRouter,
 			autoInitializeRouter: true,
-		})
-
-		await new Promise(resolve => setTimeout(resolve, 0))
-
-		expect(mockDispatchEvent).toHaveBeenCalledWith(
-			expect.objectContaining({
-				type: 'stonecrop:plugin-ready',
-				detail: expect.objectContaining({
-					registry: expect.any(Registry),
-					stonecrop: expect.any(Object),
-				}),
-			})
-		)
-
-		global.window = originalWindow
-	})
-
-	it('handles initialization errors gracefully', async () => {
-		const mockDispatchEvent = vi.fn()
-		const originalWindow = global.window
-		global.window = { dispatchEvent: mockDispatchEvent } as any
-
-		const errorCallback = vi.fn().mockRejectedValue(new Error('Test error'))
-
-		app.use(Stonecrop, {
-			router: mockRouter,
-			autoInitializeRouter: true,
-			onRouterInitialized: errorCallback,
+			onRouterInitialized: initCallback,
 		})
 
 		await new Promise(resolve => setTimeout(resolve, 10))
 
-		expect(mockDispatchEvent).toHaveBeenCalledWith(
-			expect.objectContaining({
-				type: 'stonecrop:init-error',
-				detail: expect.objectContaining({
-					error: expect.any(Error),
-				}),
-			})
-		)
+		expect(initCallback).toHaveBeenCalledWith(expect.any(Registry), expect.any(Object))
+	})
 
-		global.window = originalWindow
+	it('handles initialization errors gracefully', async () => {
+		const errorCallback = vi.fn().mockRejectedValue(new Error('Test error'))
+
+		// Should not throw despite callback error
+		expect(() => {
+			app.use(Stonecrop, {
+				router: mockRouter,
+				autoInitializeRouter: true,
+				onRouterInitialized: errorCallback,
+			})
+		}).not.toThrow()
+
+		await new Promise(resolve => setTimeout(resolve, 10))
+
+		expect(errorCallback).toHaveBeenCalled()
+	})
+
+	it('skips auto-initialization when no callback provided', async () => {
+		app.use(Stonecrop, {
+			router: mockRouter,
+			autoInitializeRouter: true,
+			// No onRouterInitialized callback
+		})
+
+		await new Promise(resolve => setTimeout(resolve, 10))
+
+		// Should not throw or cause issues
+		expect(app.config.globalProperties.$stonecrop).toBeDefined()
 	})
 
 	it('registers custom components when provided', () => {
