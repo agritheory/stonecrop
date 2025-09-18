@@ -4,7 +4,21 @@
 
 The Desktop example demonstrates a comprehensive **schema-driven UI framework** with **event-driven workflows** using Stonecrop's Hierarchical State Tree (HST) and XState finite state machines. This example showcases how agents (FSMs) control application behavior through structured workflows and state management.
 
-## Key Architectural Lessons Learned
+## Test Coverage & Quality Assurance
+
+### Testing Architecture Patterns
+1. **Plugin Testing**: Comprehensive coverage of auto-initialization, event emission patterns, error handling, custom component registration, and router logic
+2. **Store Testing**: HST singleton patterns, HSTProxy path navigation, tree operations, and error boundary testing
+3. **Integration Testing**: HST-Vue reactivity, component composition, and real-world workflow scenarios
+4. **Error Handling**: Graceful degradation patterns, malformed data handling, and recovery mechanisms
+
+### Test Quality Guidelines
+- **Error-first Testing**: Every major code path includes error scenarios and edge cases
+- **Event Coverage**: All plugin events (stonecrop:plugin-ready, stonecrop:init-error) are tested
+- **Tree Navigation**: Full HST path-based access patterns and hierarchical relationships
+- **Vue Integration**: Injection patterns, reactivity sync, and component lifecycle testing
+
+## Key Architectural Lessons
 
 ### Separation of Concerns Principle
 **Critical Learning**: Framework code (Stonecrop core) should never make assumptions about user-specific concepts like API endpoints, data structures, or business logic patterns.

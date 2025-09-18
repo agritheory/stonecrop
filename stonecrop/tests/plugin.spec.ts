@@ -180,4 +180,139 @@ describe('Stonecrop Vue Plugin with HST', () => {
 		expect(registry1).toBe(registry2)
 		expect(Registry._root).toBe(registry1)
 	})
+
+	it('handles auto-initialization with router callback', async () => {
+		const onRouterInitialized = vi.fn()
+
+		app.use(Stonecrop, {
+			router: mockRouter,
+			autoInitializeRouter: true,
+			onRouterInitialized,
+		})
+
+		// Wait for nextTick
+		await new Promise(resolve => setTimeout(resolve, 0))
+
+		expect(onRouterInitialized).toHaveBeenCalled()
+		expect(onRouterInitialized).toHaveBeenCalledWith(expect.any(Registry), expect.any(Object))
+	})
+
+	it('handles auto-initialization with async router callback', async () => {
+		const onRouterInitialized = vi.fn().mockResolvedValue(undefined)
+
+		app.use(Stonecrop, {
+			router: mockRouter,
+			autoInitializeRouter: true,
+			onRouterInitialized,
+		})
+
+		// Wait for async execution
+		await new Promise(resolve => setTimeout(resolve, 10))
+
+		expect(onRouterInitialized).toHaveBeenCalled()
+	})
+
+	it('handles auto-initialization without router callback', async () => {
+		app.use(Stonecrop, {
+			router: mockRouter,
+			autoInitializeRouter: true,
+		})
+
+		// Should not throw even without callback
+		await new Promise(resolve => setTimeout(resolve, 0))
+
+		const registry = app._context.provides.$registry
+		expect(registry).toBeDefined()
+	})
+
+	it('emits plugin-ready event in browser environment', async () => {
+		// Mock window and dispatchEvent
+		const mockDispatchEvent = vi.fn()
+		const originalWindow = global.window
+		global.window = { dispatchEvent: mockDispatchEvent } as any
+
+		app.use(Stonecrop, {
+			router: mockRouter,
+			autoInitializeRouter: true,
+		})
+
+		await new Promise(resolve => setTimeout(resolve, 0))
+
+		expect(mockDispatchEvent).toHaveBeenCalledWith(
+			expect.objectContaining({
+				type: 'stonecrop:plugin-ready',
+				detail: expect.objectContaining({
+					registry: expect.any(Registry),
+					stonecrop: expect.any(Object),
+				}),
+			})
+		)
+
+		global.window = originalWindow
+	})
+
+	it('handles initialization errors gracefully', async () => {
+		const mockDispatchEvent = vi.fn()
+		const originalWindow = global.window
+		global.window = { dispatchEvent: mockDispatchEvent } as any
+
+		const errorCallback = vi.fn().mockRejectedValue(new Error('Test error'))
+
+		app.use(Stonecrop, {
+			router: mockRouter,
+			autoInitializeRouter: true,
+			onRouterInitialized: errorCallback,
+		})
+
+		await new Promise(resolve => setTimeout(resolve, 10))
+
+		expect(mockDispatchEvent).toHaveBeenCalledWith(
+			expect.objectContaining({
+				type: 'stonecrop:init-error',
+				detail: expect.objectContaining({
+					error: expect.any(Error),
+				}),
+			})
+		)
+
+		global.window = originalWindow
+	})
+
+	it('registers custom components when provided', () => {
+		const MockComponent = { template: '<div>Mock</div>' }
+		const spy = vi.spyOn(app, 'component')
+
+		app.use(Stonecrop, {
+			components: {
+				'mock-component': MockComponent,
+			},
+		})
+
+		expect(spy).toHaveBeenCalledWith('mock-component', MockComponent)
+	})
+
+	it('uses existing router when available', () => {
+		// Pre-install router
+		app.use(mockRouter)
+
+		app.use(Stonecrop, {
+			router: createRouter({
+				history: createMemoryHistory(),
+				routes: [],
+			}),
+		})
+
+		const registry = app._context.provides.$registry
+		expect(registry.router).toBe(mockRouter)
+	})
+
+	it('installs provided router when no existing router', () => {
+		const routerSpy = vi.spyOn(app, 'use')
+
+		app.use(Stonecrop, {
+			router: mockRouter,
+		})
+
+		expect(routerSpy).toHaveBeenCalledWith(mockRouter)
+	})
 })
