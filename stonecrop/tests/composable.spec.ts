@@ -1,7 +1,7 @@
 import { mount } from '@vue/test-utils'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { createRouter, createMemoryHistory } from 'vue-router'
-import { defineComponent } from 'vue'
+import { defineComponent, ref, computed } from 'vue'
 
 import { useStonecrop } from '../src/composable'
 import Registry from '../src/registry'
@@ -16,6 +16,40 @@ import type { SchemaTypes } from '@stonecrop/aform'
 /**
  * @vitest-environment jsdom
  */
+
+const createMockDoctype = (name: string) => {
+	const mockSchema = List([
+		{
+			fieldname: 'title',
+			component: 'ATextInput',
+			label: 'Title',
+		},
+	] as SchemaTypes[])
+
+	const mockWorkflowConfig: MachineConfig<any, any, any> = {
+		id: name.toLowerCase(),
+		initial: 'draft',
+		states: {
+			draft: { on: { load: { target: 'pending' } } },
+			pending: {
+				on: {
+					approve: { target: 'completed' },
+					reject: { target: 'draft' },
+				},
+			},
+			completed: { type: 'final' },
+		},
+	}
+
+	const mockWorkflow = createMachine(mockWorkflowConfig)
+
+	const mockActions = Map({
+		load: ['loadData'],
+		save: ['validateData', 'saveData'],
+	})
+
+	return new DoctypeMeta(name, mockSchema, mockWorkflow, mockActions)
+}
 
 describe('useStonecrop composable', () => {
 	let mockRouter: any
@@ -40,40 +74,6 @@ describe('useStonecrop composable', () => {
 		// Reset fetch mock
 		vi.clearAllMocks()
 	})
-
-	const createMockDoctype = (name: string) => {
-		const mockSchema = List([
-			{
-				fieldname: 'title',
-				component: 'ATextInput',
-				label: 'Title',
-			},
-		] as SchemaTypes[])
-
-		const mockWorkflowConfig: MachineConfig<any, any, any> = {
-			id: name.toLowerCase(),
-			initial: 'draft',
-			states: {
-				draft: { on: { load: { target: 'pending' } } },
-				pending: {
-					on: {
-						approve: { target: 'completed' },
-						reject: { target: 'draft' },
-					},
-				},
-				completed: { type: 'final' },
-			},
-		}
-
-		const mockWorkflow = createMachine(mockWorkflowConfig)
-
-		const mockActions = Map({
-			load: ['loadData'],
-			save: ['validateData', 'saveData'],
-		})
-
-		return new DoctypeMeta(name, mockSchema, mockWorkflow, mockActions)
-	}
 
 	it('returns a stonecrop reference with HST integration', async () => {
 		const TestComponent = defineComponent({
@@ -311,5 +311,152 @@ describe('useStonecrop composable', () => {
 			expect(records.getPath).toBeDefined()
 			expect(records.getPath()).toBe('task.records')
 		}
+	})
+})
+
+describe('useStonecrop router-based HST integration', () => {
+	let mockRouter: any
+	let registry: Registry
+
+	beforeEach(() => {
+		// Reset static instances
+		Registry._root = undefined as any
+		;(HST as any).instance = undefined
+
+		mockRouter = createRouter({
+			history: createMemoryHistory(),
+			routes: [
+				{ path: '/records/:records', name: 'list', component: {} },
+				{ path: '/records/:records/:record', name: 'form', component: {} },
+			],
+		})
+
+		registry = new Registry(mockRouter)
+
+		// Reset fetch mock
+		vi.clearAllMocks()
+	})
+
+	it('should initialize HST integration when doctype is loaded from router', async () => {
+		const mockDoctype = createMockDoctype('Issue')
+		const mockGetMeta = vi.fn().mockResolvedValue(mockDoctype)
+		registry.getMeta = mockGetMeta
+
+		vi.spyOn(mockRouter, 'currentRoute', 'get').mockReturnValue({
+			value: {
+				name: 'issue',
+				path: '/issue/1',
+				params: {
+					records: 'issue',
+					record: '1',
+				},
+			},
+		})
+
+		const TestComponent = defineComponent({
+			setup() {
+				// Using composable without explicit doctype, expecting router-based setup
+				const result = useStonecrop({ registry })
+
+				return {
+					...result,
+					// These should be defined but currently aren't
+					hasHSTIntegration: !!(result.formData && result.handleHSTChange),
+				}
+			},
+			template: '<div>{{ hasHSTIntegration }}</div>',
+		})
+
+		const wrapper = mount(TestComponent)
+		await wrapper.vm.$nextTick()
+		await new Promise(resolve => setTimeout(resolve, 50))
+
+		const vm = wrapper.vm as any
+
+		// This test will currently FAIL because router-based setup
+		// doesn't initialize HST integration
+		expect(vm.formData).toBeDefined()
+		expect(vm.handleHSTChange).toBeDefined()
+		expect(vm.provideHSTPath).toBeDefined()
+		expect(vm.hstStore).toBeDefined()
+	})
+
+	it('should handle field changes with router-loaded doctype', async () => {
+		const mockDoctype = createMockDoctype('Todo')
+		const mockGetMeta = vi.fn().mockResolvedValue(mockDoctype)
+		registry.getMeta = mockGetMeta
+
+		vi.spyOn(mockRouter, 'currentRoute', 'get').mockReturnValue({
+			value: {
+				name: 'todo-detail',
+				path: '/todo/1',
+				params: {
+					records: 'todo',
+					record: '1',
+				},
+			},
+		})
+
+		const TestComponent = defineComponent({
+			template: `
+				<div>
+					<input 
+						v-model="title" 
+						@input="handleTitleChange"
+						data-testid="title-input"
+					/>
+					<div data-testid="hst-path">{{ hstPath }}</div>
+				</div>
+			`,
+			setup() {
+				const composableResult = useStonecrop({ registry })
+
+				const title = ref('')
+
+				const handleTitleChange = (event: Event) => {
+					const value = (event.target as HTMLInputElement).value
+
+					// This will fail because handleHSTChange doesn't exist
+					// when doctype is loaded from router
+					if (composableResult.handleHSTChange) {
+						composableResult.handleHSTChange({
+							path: composableResult.provideHSTPath?.('title') || '',
+							value,
+							fieldname: 'title',
+						})
+					}
+				}
+
+				const hstPath = computed(() => {
+					// This will be undefined with current implementation
+					return composableResult.provideHSTPath?.('title') || 'undefined'
+				})
+
+				return {
+					title,
+					handleTitleChange,
+					hstPath,
+					...composableResult,
+				}
+			},
+		})
+
+		const wrapper = mount(TestComponent)
+		await wrapper.vm.$nextTick()
+		await new Promise(resolve => setTimeout(resolve, 50))
+
+		const input = wrapper.find('[data-testid="title-input"]')
+		const pathDiv = wrapper.find('[data-testid="hst-path"]')
+
+		// Verify HST path is generated (will fail currently)
+		expect(pathDiv.text()).not.toBe('undefined')
+		expect(pathDiv.text()).toContain('todo.records.1.title')
+
+		// Simulate field change
+		await input.setValue('New Todo Title')
+
+		const vm = wrapper.vm as any
+		// Verify the change was handled (will fail currently)
+		expect(vm.formData?.title).toBe('New Todo Title')
 	})
 })

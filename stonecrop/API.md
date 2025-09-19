@@ -26,12 +26,6 @@ declare function createHST(target: any, doctype: string, parentDoctype?: string)
 
 Unified Stonecrop composable - handles both general operations and HST reactive integration
 
-**Basic Usage (General Stonecrop operations):**
-
-**With Registry:**
-
-**HST Reactive Forms:**
-
 **Signature:**
 
 ```typescript
