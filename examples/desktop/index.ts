@@ -25,12 +25,19 @@ makeServer()
 
 // Create the getMeta function that will be used by the plugin
 const getMeta = async (doctype: string) => {
-	const response = await fetch(`/api/${doctype}/meta`)
-	const data = (await response.json()) as MutableDoctype
+	// Use the route-based meta endpoint - default to list route when only doctype is provided
+	const route = `/${doctype}`
+	const response = await fetch(`/api/meta?route=${encodeURIComponent(route)}`)
+	const data: MutableDoctype = await response.json()
+
+	if ('error' in data) {
+		throw new Error(`Failed to get metadata: ${data.error}`)
+	}
+
 	const config: ImmutableDoctype = {
 		schema: List(data.schema),
-		workflow: data.workflow, // Store the raw workflow config, not an actor
-		actions: Map(data.actions!),
+		workflow: data.workflow,
+		actions: Map(data.actions || {}),
 	}
 
 	return new DoctypeMeta(data.doctype || doctype, config.schema, config.workflow, config.actions)
@@ -48,7 +55,6 @@ app.use(StonecropPlugin, {
 	autoInitializeRouter: true,
 	onRouterInitialized: async (registry: Registry, stonecrop: Stonecrop) => {
 		// Setup router context with the provided instances
-		// This automatically handles doctype hierarchy preloading
 		await setupRouterContext(registry, stonecrop)
 	},
 })

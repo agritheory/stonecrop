@@ -27,16 +27,20 @@ The Desktop example demonstrates a comprehensive **schema-driven UI framework** 
 - Initially, StonecropPlugin tried to handle doctype hierarchy initialization automatically
 - This created tight coupling between the framework and specific API patterns
 - **Refactored** to make StonecropPlugin purely generic, handling only the initialization callback mechanism
-- User-specific logic (like `/api/doctype-hierarchy` calls) now belongs in the example/application code
+- **Further Evolution**: Removed pre-configured hierarchy endpoints to enable on-demand route setup
+- **Route-Based API**: Evolved to route-centric metadata resolution (`/api/meta?route=/path`)
+- Routes are now registered dynamically as needed, with metadata determined by URL patterns
 
 ### Plugin Architecture Best Practices
 1. **Framework Responsibility**: Provide initialization hooks and event mechanisms
 2. **User Responsibility**: Define specific initialization logic, API calls, and business patterns
 3. **Scoped Reference Management**: Use closures and function parameters instead of global state
-4. **No Backwards Compatibility Burden**: All code is subject to change; focus on clean architecture over compatibility
+4. **On-Demand Route Registration**: Routes are created when needed rather than pre-configured
+5. **Route-Centric API Design**: APIs organized around URL patterns rather than internal doctypes
+6. **No Backwards Compatibility Burden**: All code is subject to change; focus on clean architecture over compatibility
 
 ### Router Initialization Strategy
-**Final Pattern**: Scoped reference management replaces global state
+**Final Pattern**: Scoped reference management with on-demand route setup
 ```typescript
 // Framework provides the hook with instances
 app.use(StonecropPlugin, {
@@ -45,8 +49,8 @@ app.use(StonecropPlugin, {
     // Setup router context with provided instances (no global state)
     await setupRouterContext(registry, stonecrop)
 
-    // User defines what initialization means for their app
-    const response = await fetch('/api/doctype-hierarchy')
+    // Routes are now registered on-demand during navigation
+    // No upfront hierarchy loading required
     // ... handle user-specific logic
   }
 })
@@ -80,47 +84,45 @@ import StonecropPlugin, { DoctypeMeta } from '@stonecrop/stonecrop'
 **Key Learning**: The application agent now owns all business-specific logic, while the framework provides only the initialization hooks.
 
 ### 2. Router Agent (`router.ts`)
-**Primary Responsibility**: Dynamic route registration and state management
+**Primary Responsibility**: On-demand route registration and state management
 
 ```typescript
-// Agent state management - no more global references
+// Agent state management - simplified for on-demand approach
 const registeredDoctypes = new Set<string>()
-const doctypeHierarchyCache: Record<string, any> = {}
 
 // Scoped references set during initialization
 let scopedRegistry: any = null
 let scopedStonecrop: any = null
 
-// Direct initialization with instances (replaces event listeners)
+// Direct initialization with instances (no preloading)
 export function setupRouterContext(registry: any, stonecrop: any): Promise<void> {
   scopedRegistry = registry
   scopedStonecrop = stonecrop
-  return preloadDoctypeHierarchies()
+  // Routes are registered when needed, not preloaded
+  return Promise.resolve()
 }
 ```
 
 **Agent Capabilities**:
 - **Scoped Instance Management**: Receives Registry and Stonecrop instances directly
-- **Doctype Discovery**: Fetches and caches doctype hierarchies from user-defined APIs
-- **Dynamic Registration**: Registers routes on-demand based on route patterns
+- **On-Demand Registration**: Routes are created only when accessed, reducing initial load
+- **Dynamic Route Creation**: Builds routes based on doctype patterns during navigation
 - **State Preparation**: Sets up HST state before route navigation
 - **Workflow Integration**: Connects routes to XState workflow states
+- **Simplified Architecture**: No upfront hierarchy caching or preloading
 
-**Key Learning**: Router agent now uses scoped references instead of global state, eliminating the need for event-driven initialization timing.
+**Key Learning**: Router agent now uses on-demand route creation, eliminating the need for hierarchy preloading and caching.
 
 **Key Agent Functions**:
 
 #### `setupRouterContext()` Agent
 - Sets up scoped references to Registry and Stonecrop instances
 - Provides router functions with access to core framework instances
-
-#### `preloadDoctypeHierarchies()` Agent
-- Preloads all doctype hierarchies for performance optimization
-- Caches route configurations to avoid repeated API calls
+- No longer requires hierarchy preloading
 
 #### `setupDoctypeData()` Agent
-- Loads doctype metadata into Registry
-- Populates HST with all records for the doctype
+- Loads doctype metadata into Registry on-demand
+- Populates HST with records for the doctype when needed
 - Manages data freshness and state synchronization
 
 #### `setupRecordData()` Agent
@@ -129,38 +131,61 @@ export function setupRouterContext(registry: any, stonecrop: any): Promise<void>
 - Manages new vs. existing record workflows
 
 #### `registerDoctypeRoutes()` Agent
-- Dynamic route pattern registration based on server configuration
-- Creates Vue Router routes with HST state guards
-- Manages route-to-workflow mapping
+- On-demand route pattern registration when routes are accessed
+- Creates Vue Router routes with HST state guards dynamically
+- Manages route-to-workflow mapping as needed
 
 ### 3. Server Agent (`server.ts`)
 **Primary Responsibility**: Mock data and workflow simulation using MirageJS
 
-**Agent Configuration**:
+**Agent Configuration** (Simplified):
 ```typescript
-// Doctype hierarchy defines workflow routing patterns
-doctypeHierarchy: {
-  todo: {
-    route: '/todo',
-    currentDoctype: 'todo-list',
-    descendantDoctypes: ['todo-list', 'todo-form'],
-    routePatterns: {
-      list: {
-        pattern: '/todo',
-        doctype: 'todo-list',
-        component: 'View',
-        meta: { title: 'Todo List', type: 'list' }
-      },
-      form: {
-        pattern: '/todo/:recordId',
-        doctype: 'todo-form',
-        component: 'View',
-        meta: { title: 'Todo Form', type: 'form' }
-      }
-    }
-  }
-}
+// Direct doctype definitions without hierarchy preloading
+doctypes: [
+  {
+    id: 'todo',
+    name: 'Todo',
+    slug: 'todo',
+    description: 'Task management - /todo/ (list), /todo/1 (form)',
+    actions: 'View',
+  },
+  {
+    id: 'issue',
+    name: 'Issue',
+    slug: 'issue',
+    description: 'Issue tracking - /issue/ (list), /issue/1 (form)',
+    actions: 'View',
+  },
+]
 ```
+
+**Key Changes**:
+- **Removed**: `/api/doctype-hierarchy` endpoints for preloading route configurations
+- **Removed**: `/api/resolve-route` endpoint for centralized route resolution
+- **Added**: Route-based meta endpoint `/api/meta?route=/path` for automatic doctype resolution
+- **Simplified**: Direct doctype definitions without complex hierarchy structures
+- **On-Demand**: Routes are now created based on navigation patterns rather than server configuration
+
+**Route-Based Meta Endpoint**:
+```typescript
+// Single endpoint that determines doctype from route path
+GET /api/meta?route=/todo              // Returns todo-list metadata
+GET /api/meta?route=/todo/1            // Returns todo-form metadata
+GET /api/meta?route=/issue             // Returns issue-list metadata
+GET /api/meta?route=/issue/1           // Returns issue-form metadata
+```
+
+**Automatic Type Detection**:
+- **List Routes**: Single path segment (`/todo`) → `todo-list` doctype
+- **Form Routes**: Two path segments (`/todo/1`) → `todo-form` doctype
+- **Error Handling**: Invalid routes return appropriate error messages
+
+**Route-Based Benefits**:
+- **Intuitive**: Route parameter matches exactly what appears in browser URL
+- **Automatic Resolution**: No need to specify doctype variant - determined by route structure
+- **Single Endpoint**: All metadata requests follow the same pattern
+- **Error Resilient**: Clear error messages for invalid route formats
+- **URL-Centric**: API is organized around routes rather than internal doctype names
 
 **Workflow Definitions**:
 - **List Workflows**: `loaded` → `creating` → `loaded`
@@ -292,31 +317,50 @@ stonecrop/
 
 ## Agent Communication Patterns
 
-### 1. Router → HST Agent Flow
+### 1. Router → HST Agent Flow (On-Demand)
 ```typescript
-// Route guard triggers HST state preparation
+// Route guard triggers on-demand setup and HST state preparation
 beforeEnter: async (to, from, next) => {
-  if (pattern.meta.type === 'list') {
-    await setupDoctypeData(routeDoctype, actualDoctype)
-  } else if (pattern.meta.type === 'form') {
+  const routePattern = to.path
+
+  // Determine doctype and route type from path pattern
+  if (routePattern.includes('/:')) {
+    // Form route - setup record data on-demand
     const recordId = to.params.recordId as string
-    await setupRecordData(routeDoctype, recordId, actualDoctype)
+    await setupRecordData(doctype, recordId)
+  } else {
+    // List route - setup doctype data on-demand
+    await setupDoctypeData(doctype)
   }
   next()
 }
 ```
 
-### 2. Server → Registry Agent Flow
+### 2. Server → Registry Agent Flow (Route-Based)
 ```typescript
-// getMeta function bridges server data to Registry
+// getMeta function uses route-based meta endpoint
 const getMeta = async (doctype: string) => {
-  const response = await fetch(`/api/${doctype}/meta`)
+  // Default to list route when only doctype is provided
+  const route = `/${doctype}`
+  const response = await fetch(`/api/meta?route=${encodeURIComponent(route)}`)
   const data = await response.json()
+
+  if ('error' in data) {
+    throw new Error(`Failed to get metadata: ${data.error}`)
+  }
+
   return new DoctypeMeta(data.doctype, List(data.schema), data.workflow, Map(data.actions))
+}
+
+// Form-specific metadata fetching in setupRecordData
+const setupRecordData = async (doctype: string, recordId: string) => {
+  const route = `/${doctype}/${recordId}`
+  const response = await fetch(`/api/meta?route=${encodeURIComponent(route)}`)
+  // ... handle form metadata
 }
 ```
 
-### 3. Component → HST Agent Flow
+### 3. Component → HST Agent Flow (Unchanged)
 ```typescript
 // useStonecrop composable provides HST integration
 const { stonecrop, provideHSTPath, handleHSTChange, formData } = useStonecrop({
@@ -432,24 +476,23 @@ describe('Workflow Agent', () => {
 ## Cognitive Load Reduction Strategy
 
 ### Problem Solved
-**Before**: Developers needed to understand Vue's mounting lifecycle, manage global state, extract global properties manually, and coordinate initialization timing between multiple modules.
+**Before**: Developers needed to understand Vue's mounting lifecycle, manage global state, extract global properties manually, coordinate initialization timing between multiple modules, and preload complex hierarchy configurations.
 
-**After**: Developers only need to provide their initialization logic in a callback - the framework handles all timing, coordination, and instance management.
+**After**: Developers only need to provide their initialization logic in a callback - the framework handles all timing, coordination, and instance management. Routes are created on-demand, eliminating upfront configuration overhead.
 
 ### Implementation Pattern
 ```typescript
-// Clean, declarative approach with scoped references
+// Clean, declarative approach with on-demand setup
 app.use(StonecropPlugin, {
   router,
   getMeta,
   autoInitializeRouter: true,
   onRouterInitialized: async (registry, stonecrop) => {
-    // Initialize router with provided instances (no global state)
-    await initializeRouterWithInstances(registry, stonecrop)
+    // Initialize router with provided instances (no hierarchy preloading)
+    await setupRouterContext(registry, stonecrop)
 
-    // User defines what initialization means for their app
-    const response = await fetch('/api/doctype-hierarchy')
-    // ... handle user-specific logic
+    // Routes are registered as needed during navigation
+    // No upfront configuration required
   }
 })
 app.mount('#app') // Everything happens automatically after this
@@ -463,12 +506,13 @@ app.mount('#app') // Everything happens automatically after this
 - Handles error boundaries
 - Generic, reusable patterns
 - No assumptions about global state
+- No assumptions about route configuration patterns
 
 **User (Desktop Example)**:
 - Manages scoped references through function parameters
 - Defines specific API endpoints
 - Implements business logic patterns
-- Configures doctype hierarchies
+- Creates routes on-demand based on navigation patterns
 - Handles application-specific initialization
 - Domain-specific concerns
 
@@ -476,19 +520,22 @@ app.mount('#app') // Everything happens automatically after this
 - **Pattern**: Function parameters replace global state
 - **Benefit**: Eliminates timing issues and global state pollution
 - **Implementation**: `setupRouterContext(registry, stonecrop)` pattern
+- **On-Demand Approach**: Routes created when needed, not preloaded
 
 ## Deployment Considerations
 
 ### Production Agent Configuration
-- Implement proper error handling for route resolution failures
+- Implement proper error handling for on-demand route creation
 - Add authentication guards to route agents
-- Configure proper caching strategies for doctype hierarchies
+- Configure appropriate caching strategies for frequently accessed routes
 - Set up monitoring for HST state health
+- Handle edge cases for invalid route patterns gracefully
 
 ### Performance Optimization
-- Preload frequently accessed doctype hierarchies
-- Implement lazy loading for large record sets
+- Implement lazy loading for large record sets (routes created on access)
 - Use virtual scrolling for large tables
 - Cache workflow configurations to avoid repeated compilation
+- Monitor route creation performance for frequently accessed patterns
+- Consider route pre-registration for critical user paths
 
-This agent architecture provides a robust foundation for building complex, workflow-driven applications with predictable state management and dynamic route handling.
+This agent architecture provides a robust foundation for building complex, workflow-driven applications with predictable state management and on-demand route handling.

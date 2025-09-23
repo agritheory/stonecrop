@@ -37,49 +37,7 @@ export function makeServer() {
 					},
 				],
 
-				// Doctype hierarchy configuration
-				doctypeHierarchy: {
-					todo: {
-						route: '/todo',
-						currentDoctype: 'todo-list', // Default doctype for this route
-						descendantDoctypes: ['todo-list', 'todo-form'],
-						routePatterns: {
-							list: {
-								pattern: '/todo',
-								doctype: 'todo-list',
-								component: 'View',
-								meta: { title: 'Todo List', type: 'list' },
-							},
-							form: {
-								pattern: '/todo/:recordId',
-								doctype: 'todo-form',
-								component: 'View',
-								meta: { title: 'Todo Form', type: 'form' },
-							},
-						},
-					},
-					issue: {
-						route: '/issue',
-						currentDoctype: 'issue-list', // Default doctype for this route
-						descendantDoctypes: ['issue-list', 'issue-form'],
-						routePatterns: {
-							list: {
-								pattern: '/issue',
-								doctype: 'issue-list',
-								component: 'View',
-								meta: { title: 'Issue List', type: 'list' },
-							},
-							form: {
-								pattern: '/issue/:recordId',
-								doctype: 'issue-form',
-								component: 'View',
-								meta: { title: 'Issue Form', type: 'form' },
-							},
-						},
-					},
-				},
-
-				// Todo List doctype metadata
+				// Todo List doctype
 				'todo-listMeta': {
 					doctype: 'todo-list',
 					schema: [
@@ -108,7 +66,7 @@ export function makeServer() {
 					{ id: '3', first_name: 'Anakin', last_name: 'Skywalker', phone: '+1 123 456 7890' },
 				],
 
-				// Todo Form doctype metadata
+				// Todo Form doctype
 				'todo-formMeta': {
 					doctype: 'todo-form',
 					schema: [
@@ -169,7 +127,7 @@ export function makeServer() {
 					{ id: '3', first_name: 'Anakin', last_name: 'Skywalker', phone: '+1 123 456 7890' },
 				],
 
-				// Issue List doctype metadata
+				// Issue List doctype
 				'issue-listMeta': {
 					doctype: 'issue-list',
 					schema: [
@@ -198,7 +156,7 @@ export function makeServer() {
 					{ id: '3', subject: 'Third Issue', date: '2022-01-03', status: 'Resolved', priority: 'Low' },
 				],
 
-				// Issue Form doctype metadata
+				// Issue Form doctype
 				'issue-formMeta': {
 					doctype: 'issue-form',
 					schema: [
@@ -275,124 +233,35 @@ export function makeServer() {
 		},
 
 		routes() {
-			// Route resolution endpoint - determines doctype from route path
-			this.get('/api/resolve-route', (schema, request) => {
-				const path = request.queryParams.path as string
-				if (!path) {
-					return { error: 'Path parameter is required' }
+			// Route-based meta endpoint that determines doctype from route path
+			this.get('/api/meta', (schema, request) => {
+				const route = request.queryParams.route as string
+
+				if (!route) {
+					return { error: 'Route parameter is required' }
 				}
 
-				// Access the raw seed data directly
-				const hierarchy = schema.db.doctypeHierarchy
+				// Parse the route to determine doctype and type
+				const pathSegments = route.split('/').filter(segment => segment.length > 0)
 
-				// If hierarchy is an array (MirageJS converts objects to arrays), get the first item
-				let hierarchyData = hierarchy
-				if (Array.isArray(hierarchy) && hierarchy.length > 0) {
-					hierarchyData = hierarchy[0]
+				if (pathSegments.length === 0) {
+					return { error: 'Invalid route format' }
 				}
 
-				// Find matching route pattern in hierarchy
-				for (const [doctypeKey, config] of Object.entries(hierarchyData)) {
-					const doctypeConfig = config as any
+				const doctype = pathSegments[0]
+				let actualDoctype: string
 
-					if (!doctypeConfig.routePatterns) {
-						// no route patterns found for doctype
-						continue
-					}
-
-					// Check each route pattern for this doctype
-					for (const [patternKey, pattern] of Object.entries(doctypeConfig.routePatterns)) {
-						const routePattern = (pattern as any).pattern
-
-						// Convert Vue route pattern to regex for matching
-						// e.g., '/todo/:recordId' becomes /^\/todo\/([^\/]+)$/
-						const regexPattern = routePattern
-							.replace(/:[^\/]+/g, '([^/]+)') // Replace :param with capture group
-							.replace(/\//g, '\\/') // Escape slashes
-
-						const regex = new RegExp(`^${regexPattern}$`)
-
-						if (regex.test(path)) {
-							const result = {
-								doctype: doctypeKey,
-								actualDoctype: (pattern as any).doctype,
-								routeType: (pattern as any).meta.type,
-								routeName: `${doctypeKey}-${patternKey}`,
-								matchedPattern: routePattern,
-								...((pattern as any).meta || {}),
-							}
-
-							// Extract route parameters if this is a form route
-							if ((pattern as any).meta.type === 'form') {
-								const matches = path.match(regex)
-								if (matches && matches[1]) {
-									result.recordId = matches[1]
-								}
-							}
-
-							return result
-						}
-					}
+				if (pathSegments.length === 1) {
+					// List route: /todo -> todo-list
+					actualDoctype = `${doctype}-list`
+				} else if (pathSegments.length === 2) {
+					// Form route: /todo/1 -> todo-form
+					actualDoctype = `${doctype}-form`
+				} else {
+					return { error: 'Unsupported route format' }
 				}
 
-				return { error: 'Route not found', path }
-			})
-
-			// Doctype hierarchy endpoint - returns all doctype hierarchies
-			this.get('/api/doctype-hierarchy', schema => {
-				let hierarchy = schema.db.doctypeHierarchy as any
-
-				// If hierarchy is an array (MirageJS converts objects to arrays), get the first item
-				if (Array.isArray(hierarchy) && hierarchy.length > 0) {
-					hierarchy = hierarchy[0]
-				}
-
-				return {
-					success: true,
-					data: hierarchy,
-				}
-			})
-
-			// Specific doctype hierarchy endpoint
-			this.get('/api/doctype-hierarchy/:doctype', (schema, request) => {
-				const doctype = request.params.doctype
-				let hierarchy = schema.db.doctypeHierarchy as any
-
-				// If hierarchy is an array (MirageJS converts objects to arrays), get the first item
-				if (Array.isArray(hierarchy) && hierarchy.length > 0) {
-					hierarchy = hierarchy[0]
-				}
-
-				const doctypeHierarchy = hierarchy[doctype]
-
-				if (doctypeHierarchy) {
-					return {
-						success: true,
-						data: doctypeHierarchy,
-					}
-				}
-
-				return {
-					success: false,
-					error: `Doctype hierarchy not found for: ${doctype}`,
-				}
-			})
-
-			// View-specific meta endpoints
-			this.get('/api/:doctype/meta', (schema, request) => {
-				const doctype = request.params.doctype
-
-				// Map simplified routes to specific doctypes
-				let actualDoctype = doctype
-				if (doctype === 'todo') {
-					// For /todo/ route, use todo-list doctype
-					actualDoctype = 'todo-list'
-				} else if (doctype === 'issue') {
-					// For /issue/ route, use issue-list doctype
-					actualDoctype = 'issue-list'
-				}
-
-				// Handle mapped doctypes
+				// Get the metadata
 				const metaKey = `${actualDoctype}Meta`
 				const meta = schema.db[metaKey] as any
 
@@ -401,7 +270,7 @@ export function makeServer() {
 					return meta[0]
 				}
 
-				return meta || {}
+				return meta || { error: 'Metadata not found' }
 			})
 
 			// Data endpoints
@@ -420,29 +289,6 @@ export function makeServer() {
 				const dataKey = `${actualDoctype}s`
 				const records = schema.db[dataKey] as any[]
 				return records || []
-			})
-
-			// Meta endpoint for record forms (to get form-specific metadata)
-			this.get('/api/:doctype/:id/meta', (schema, request) => {
-				const doctype = request.params.doctype
-
-				// Map simplified routes to form doctypes
-				let actualDoctype = doctype
-				if (doctype === 'todo') {
-					actualDoctype = 'todo-form'
-				} else if (doctype === 'issue') {
-					actualDoctype = 'issue-form'
-				}
-
-				const metaKey = `${actualDoctype}Meta`
-				const meta = schema.db[metaKey] as any
-
-				// MirageJS stores data as arrays, so get the first item if it's an array
-				if (Array.isArray(meta) && meta.length > 0) {
-					return meta[0]
-				}
-
-				return meta || {}
 			})
 
 			// Record endpoints
