@@ -716,22 +716,6 @@ Superset of all schema types for AForm
 export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema;
 ```
 
-### StonecropReturn
-
-Unified Stonecrop composable return type (legacy - for backward compatibility)
-
-**Definition:**
-
-```typescript
-export type StonecropReturn = {
-    stonecrop: Ref<Stonecrop | undefined>;
-    provideHSTPath?: (fieldname: string, recordId?: string) => string;
-    handleHSTChange?: (changeData: HSTChangeData) => void;
-    hstStore?: Ref<HSTNode | undefined>;
-    formData?: Ref<Record<string, any>>;
-};
-```
-
 ### TableConfig
 
 Table configuration definition using discriminated unions for type safety.

@@ -8,7 +8,7 @@ import Registry from './registry'
 import { Stonecrop } from './stonecrop'
 import { HST, createHST, type HSTNode } from './stores/hst'
 export type * from './types'
-export type { BaseStonecropReturn, HSTChangeData, HSTStonecropReturn, StonecropReturn } from './composable'
+export type { BaseStonecropReturn, HSTChangeData, HSTStonecropReturn } from './composable'
 
 export {
 	DoctypeMeta,

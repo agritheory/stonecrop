@@ -26,18 +26,6 @@ export type HSTStonecropReturn = BaseStonecropReturn & {
 }
 
 /**
- * Unified Stonecrop composable return type (legacy - for backward compatibility)
- * @public
- */
-export type StonecropReturn = {
-	stonecrop: Ref<Stonecrop | undefined>
-	provideHSTPath?: (fieldname: string, recordId?: string) => string
-	handleHSTChange?: (changeData: HSTChangeData) => void
-	hstStore?: Ref<HSTNode | undefined>
-	formData?: Ref<Record<string, any>>
-}
-
-/**
  * HST Change data structure
  * @public
  */
@@ -130,15 +118,6 @@ export function useStonecrop(options?: {
 
 					if (hstStore.value) {
 						setupDeepReactivity(doctype, recordId || 'new', formData, hstStore.value)
-					}
-
-					// Keep existing behavior for backwards compatibility
-					if (doctypeSlug) {
-						if (recordId) {
-							await stonecrop.value.getRecord(doctype, recordId)
-						} else {
-							await stonecrop.value.getRecords(doctype)
-						}
 					}
 
 					stonecrop.value.runAction(doctype, 'load', recordId ? [recordId] : undefined)

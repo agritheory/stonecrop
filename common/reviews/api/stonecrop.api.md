@@ -296,15 +296,6 @@ export class Stonecrop {
 }
 
 // @public
-export type StonecropReturn = {
-    stonecrop: Ref<Stonecrop | undefined>;
-    provideHSTPath?: (fieldname: string, recordId?: string) => string;
-    handleHSTChange?: (changeData: HSTChangeData) => void;
-    hstStore?: Ref<HSTNode | undefined>;
-    formData?: Ref<Record<string, any>>;
-};
-
-// @public
 export interface TableColumn {
     align?: CanvasTextAlign;
     cellComponent?: string;

@@ -234,27 +234,6 @@ describe('Stonecrop class with HST integration', () => {
 		})
 	})
 
-	describe('Legacy Compatibility', () => {
-		it('maintains setup method for backward compatibility', () => {
-			const mockDoctype = createMockDoctype('Task')
-
-			expect(() => {
-				stonecrop.setup(mockDoctype)
-			}).not.toThrow()
-
-			// Should ensure doctype exists in store
-			expect(stonecrop.getStore().has('task')).toBe(true)
-		})
-
-		it('maintains runAction method for backward compatibility', () => {
-			const mockDoctype = createMockDoctype('Task')
-
-			expect(() => {
-				stonecrop.runAction(mockDoctype, 'load', ['arg1'])
-			}).not.toThrow()
-		})
-	})
-
 	describe('Advanced HST Usage', () => {
 		it('provides access to root HST store', () => {
 			const store = stonecrop.getStore()

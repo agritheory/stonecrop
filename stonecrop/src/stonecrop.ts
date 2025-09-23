@@ -156,9 +156,6 @@ export class Stonecrop {
 	setup(doctype: DoctypeMeta): void {
 		// Ensure doctype exists in store
 		this.ensureDoctypeExists(doctype.slug)
-
-		// Additional setup logic can go here
-		// This method maintains compatibility with existing code
 	}
 
 	/**
