@@ -120,15 +120,12 @@ async function setupRecordData(doctype: string, recordId: string, actualDoctype?
 
 		if (!existingRecord && !recordId.startsWith('new-')) {
 			// Fetch individual record if not in store and not a new record
-			const response = await fetch(`/api/${doctype}/${recordId}`) // Use original doctype for API call
+			const response = await fetch(`/api/${doctype}/${recordId}`)
 			if (response.ok) {
 				const record = await response.json()
 				scopedStonecrop.addRecord(targetDoctype, recordId, record)
 			}
 		}
-
-		// Set as current record (even for new records) using actual doctype
-		scopedStonecrop.setCurrentRecord(targetDoctype, recordId)
 	} catch (error) {
 		console.error(`Failed to setup record data for ${doctype}/${recordId}:`, error)
 	}

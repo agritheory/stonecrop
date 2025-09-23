@@ -295,23 +295,19 @@ workflow: {
 ```
 stonecrop/
 ├── todo-list/
-│   ├── records/
-│   │   ├── 1/ (record data)
-│   │   ├── 2/ (record data)
-│   │   └── current → "1"
+│   ├── 1/ (record data)
+│   ├── 2/ (record data)
 │   └── workflow/ (FSM state)
 ├── todo-form/
-│   ├── records/
-│   │   ├── 1/ (form data)
-│   │   ├── 2/ (form data)
-│   │   └── current → "1"
+│   ├── 1/ (form data)
+│   ├── 2/ (form data)
 │   └── workflow/ (FSM state)
 └── registry/ (doctype definitions)
 ```
 
 ### HST Agent Operations
-- **Path Navigation**: `stonecrop.getNode('todo-list.records.1')`
-- **State Synchronization**: `stonecrop.setCurrentRecord('todo-list', recordId)`
+- **Path Navigation**: `stonecrop.getNode('todo-list.1')`
+- **Record Access**: `stonecrop.getRecordById('todo-list', recordId)`
 - **Workflow Management**: HST integrates with XState actors for workflow execution
 - **Tree Traversal**: Parent/child relationships for breadcrumb navigation
 
@@ -452,7 +448,7 @@ describe('HST Agent', () => {
   it('should manage record state correctly', () => {
     const stonecrop = new Stonecrop(registry)
     stonecrop.addRecord('todo-list', '1', recordData)
-    expect(stonecrop.currentRecord('todo-list')).toBeDefined()
+    expect(stonecrop.getRecordById('todo-list', '1')).toBeDefined()
   })
 })
 

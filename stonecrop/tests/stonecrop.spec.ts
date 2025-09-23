@@ -80,8 +80,6 @@ describe('Stonecrop class with HST integration', () => {
 			const store = newStonecrop.getStore()
 
 			expect(store.has('task')).toBe(true)
-			expect(store.has('task.records')).toBe(true)
-			expect(store.has('task.currentRecord')).toBe(true)
 		})
 
 		it('sets up automatic Registry sync', () => {
@@ -96,8 +94,6 @@ describe('Stonecrop class with HST integration', () => {
 
 			// Should auto-create HST section
 			expect(store.has('task')).toBe(true)
-			expect(store.has('task.records')).toBe(true)
-			expect(store.has('task.currentRecord')).toBe(true)
 		})
 	})
 
@@ -113,14 +109,14 @@ describe('Stonecrop class with HST integration', () => {
 			const records = stonecrop.records('task')
 
 			expect(records.getPath).toBeDefined()
-			expect(records.getPath()).toBe('task.records')
+			expect(records.getPath()).toBe('task')
 			expect(records.getParent).toBeDefined()
 		})
 
 		it('returns records hash using DoctypeMeta object', () => {
 			const records = stonecrop.records(mockDoctype)
 
-			expect(records.getPath()).toBe('task.records')
+			expect(records.getPath()).toBe('task')
 		})
 
 		it('adds record with proper HST wrapping', () => {
@@ -148,22 +144,6 @@ describe('Stonecrop class with HST integration', () => {
 			expect(record!.get('title')).toBe('Test Task')
 		})
 
-		it('manages current record with full HST reference', () => {
-			const recordData = { id: '123', title: 'Test Task' }
-			stonecrop.addRecord('task', '123', recordData)
-
-			// Initially no current record
-			expect(stonecrop.currentRecord('task')).toBeNull()
-
-			// Set current record
-			stonecrop.setCurrentRecord('task', '123')
-
-			const currentRecord = stonecrop.currentRecord('task')
-			expect(currentRecord).toBeDefined()
-			expect(currentRecord!.get('id')).toBe('123')
-			expect(currentRecord!.getPath).toBeDefined()
-		})
-
 		it('gets all record IDs', () => {
 			stonecrop.addRecord('task', '123', { title: 'Task 1' })
 			stonecrop.addRecord('task', '456', { title: 'Task 2' })
@@ -172,38 +152,33 @@ describe('Stonecrop class with HST integration', () => {
 			expect(recordIds).toEqual(['123', '456'])
 		})
 
-		it('removes record and clears current if needed', () => {
+		it('removes record', () => {
 			stonecrop.addRecord('task', '123', { id: '123', title: 'Test Task' })
-			stonecrop.setCurrentRecord('task', '123')
 
-			// Verify record exists and is current
+			// Verify record exists
 			expect(stonecrop.getRecordById('task', '123')).toBeDefined()
-			expect(stonecrop.currentRecord('task')).toBeDefined()
 
 			// Remove record
 			stonecrop.removeRecord('task', '123')
 
-			// Should be gone and current should be cleared
+			// Should be gone
 			expect(stonecrop.getRecordById('task', '123')).toBeUndefined()
-			expect(stonecrop.currentRecord('task')).toBeNull()
 		})
 
 		it('clears all records for doctype', () => {
 			stonecrop.addRecord('task', '123', { title: 'Task 1' })
 			stonecrop.addRecord('task', '456', { title: 'Task 2' })
-			stonecrop.setCurrentRecord('task', '123')
 
 			stonecrop.clearRecords('task')
 
 			expect(stonecrop.getRecordIds('task')).toEqual([])
-			expect(stonecrop.currentRecord('task')).toBeNull()
 		})
 
 		it('ensures doctype exists when accessing records', () => {
 			// Access records for non-existent doctype should create it
 			const records = stonecrop.records('newdoctype')
 
-			expect(records.getPath()).toBe('newdoctype.records')
+			expect(records.getPath()).toBe('newdoctype')
 			expect(stonecrop.getStore().has('newdoctype')).toBe(true)
 		})
 	})
@@ -252,12 +227,10 @@ describe('Stonecrop class with HST integration', () => {
 
 			expect(fetch).toHaveBeenCalledWith('/task/123')
 
-			// Check that record is stored and set as current
+			// Check that record is stored
 			const record = stonecrop.getRecordById('task', '123')
 			expect(record!.get('title')).toBe('Test Task')
-
-			const currentRecord = stonecrop.currentRecord('task')
-			expect(currentRecord!.get('id')).toBe('123')
+			expect(record!.get('id')).toBe('123')
 		})
 	})
 
@@ -302,19 +275,16 @@ describe('Stonecrop class with HST integration', () => {
 			// Let's debug what's in the store
 			const store = stonecrop.getStore()
 			console.log('Store has task:', store.has('task'))
-			console.log('Store has task.records:', store.has('task.records'))
-			console.log('Store has task.records.123:', store.has('task.records.123'))
+			console.log('Store has task.123:', store.has('task.123'))
 
 			const record = stonecrop.getRecordById('task', '123')
 			console.log('Record is:', record)
 			console.log('Record path:', record?.getPath())
 
 			if (record) {
-				const recordsSection = record.getParent()
-				const doctypeSection = recordsSection?.getParent()
+				const doctypeSection = record.getParent()
 				const rootStore = doctypeSection?.getParent()
 
-				expect(recordsSection?.getPath()).toBe('task.records')
 				expect(doctypeSection?.getPath()).toBe('task')
 				expect(rootStore?.getPath()).toBe('')
 			} else {

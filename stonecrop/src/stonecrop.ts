@@ -26,10 +26,7 @@ export class Stonecrop {
 
 		// Auto-populate from existing Registry doctypes
 		Object.keys(this.registry.registry).forEach(doctypeSlug => {
-			initialStoreStructure[doctypeSlug] = {
-				records: {},
-				currentRecord: null,
-			}
+			initialStoreStructure[doctypeSlug] = {}
 		})
 
 		this.hstStore = createHST(initialStoreStructure, 'StonecropStore')
@@ -48,10 +45,7 @@ export class Stonecrop {
 
 			// Auto-create HST store section for new doctype
 			if (!this.hstStore.has(doctype.slug)) {
-				this.hstStore.set(doctype.slug, {
-					records: {},
-					currentRecord: null,
-				})
+				this.hstStore.set(doctype.slug, {})
 			}
 		}
 	}
@@ -64,35 +58,7 @@ export class Stonecrop {
 	records(doctype: string | DoctypeMeta): HSTNode {
 		const slug = typeof doctype === 'string' ? doctype : doctype.slug
 		this.ensureDoctypeExists(slug)
-		return this.hstStore.getNode(`${slug}.records`)
-	}
-
-	/**
-	 * Get current record for a doctype
-	 * @param doctype - The doctype to get current record for
-	 * @returns Current HST node or null
-	 */
-	currentRecord(doctype: string | DoctypeMeta): HSTNode | null {
-		const slug = typeof doctype === 'string' ? doctype : doctype.slug
-		this.ensureDoctypeExists(slug)
-		const currentRecordId = this.hstStore.get(`${slug}.currentRecord`)
-		if (currentRecordId && typeof currentRecordId === 'string') {
-			return this.getRecordById(doctype, currentRecordId) || null
-		}
-		return null
-	}
-
-	/**
-	 * Set current record for a doctype
-	 * @param doctype - The doctype
-	 * @param recordId - The record ID to set as current
-	 */
-	setCurrentRecord(doctype: string | DoctypeMeta, recordId: string): void {
-		const slug = typeof doctype === 'string' ? doctype : doctype.slug
-		this.ensureDoctypeExists(slug)
-
-		// Just store the record ID, not the record data itself
-		this.hstStore.set(`${slug}.currentRecord`, recordId)
+		return this.hstStore.getNode(slug)
 	}
 
 	/**
@@ -107,7 +73,7 @@ export class Stonecrop {
 		this.ensureDoctypeExists(slug)
 
 		// Store raw record data - let HST handle wrapping with proper hierarchy
-		this.hstStore.set(`${slug}.records.${recordId}`, recordData)
+		this.hstStore.set(`${slug}.${recordId}`, recordData)
 	}
 
 	/**
@@ -121,13 +87,19 @@ export class Stonecrop {
 		this.ensureDoctypeExists(slug)
 
 		// First check if the record exists
-		const recordExists = this.hstStore.has(`${slug}.records.${recordId}`)
+		const recordExists = this.hstStore.has(`${slug}.${recordId}`)
 		if (!recordExists) {
 			return undefined
 		}
 
+		// Check if the actual value is undefined (i.e., record was removed)
+		const recordValue = this.hstStore.get(`${slug}.${recordId}`)
+		if (recordValue === undefined) {
+			return undefined
+		}
+
 		// Use getNode to get the properly wrapped HST node with correct parent relationships
-		return this.hstStore.getNode(`${slug}.records.${recordId}`)
+		return this.hstStore.getNode(`${slug}.${recordId}`)
 	}
 
 	/**
@@ -139,16 +111,10 @@ export class Stonecrop {
 		const slug = typeof doctype === 'string' ? doctype : doctype.slug
 		this.ensureDoctypeExists(slug)
 
-		// If removing current record, clear it
-		const currentRecord = this.currentRecord(slug)
-		if (currentRecord && currentRecord.get('id') === recordId) {
-			this.hstStore.set(`${slug}.currentRecord`, null)
+		// Remove the specific record directly by setting to undefined
+		if (this.hstStore.has(`${slug}.${recordId}`)) {
+			this.hstStore.set(`${slug}.${recordId}`, undefined)
 		}
-
-		// Get current records and remove the specific record
-		const records = this.hstStore.get(`${slug}.records`) || {}
-		delete records[recordId]
-		this.hstStore.set(`${slug}.records`, records)
 	}
 
 	/**
@@ -160,8 +126,12 @@ export class Stonecrop {
 		const slug = typeof doctype === 'string' ? doctype : doctype.slug
 		this.ensureDoctypeExists(slug)
 
-		const records = this.hstStore.get(`${slug}.records`)
-		return Object.keys(records || {}).filter(key => records[key] !== undefined)
+		const doctypeNode = this.hstStore.get(slug) as Record<string, any>
+		if (!doctypeNode || typeof doctypeNode !== 'object') {
+			return []
+		}
+
+		return Object.keys(doctypeNode).filter(key => doctypeNode[key] !== undefined)
 	}
 
 	/**
@@ -172,8 +142,11 @@ export class Stonecrop {
 		const slug = typeof doctype === 'string' ? doctype : doctype.slug
 		this.ensureDoctypeExists(slug)
 
-		this.hstStore.set(`${slug}.records`, {})
-		this.hstStore.set(`${slug}.currentRecord`, null)
+		// Get all record IDs and remove them
+		const recordIds = this.getRecordIds(slug)
+		recordIds.forEach(recordId => {
+			this.hstStore.set(`${slug}.${recordId}`, undefined)
+		})
 	}
 
 	/**
@@ -224,9 +197,8 @@ export class Stonecrop {
 		const response = await fetch(`/${doctype.slug}/${recordId}`)
 		const record = await response.json()
 
-		// Store record and set as current
+		// Store record
 		this.addRecord(doctype, recordId, record)
-		this.setCurrentRecord(doctype, recordId)
 	}
 
 	/**
@@ -235,10 +207,7 @@ export class Stonecrop {
 	 */
 	private ensureDoctypeExists(slug: string): void {
 		if (!this.hstStore.has(slug)) {
-			this.hstStore.set(slug, {
-				records: {},
-				currentRecord: null,
-			})
+			this.hstStore.set(slug, {})
 		}
 	}
 

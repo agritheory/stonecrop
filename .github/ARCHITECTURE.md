@@ -41,8 +41,7 @@ Stonecrop Application
 │   └── DoctypeMeta.actions           // event-driven action handlers
 └── HST Store (hierarchical)           // mutable reactive state with tree navigation
     ├── Doctype sections             // per-doctype state containers
-    │   ├── records                   // record data
-    │   └── currentRecord             // current active record
+    │   └── records                   // record data with direct access
     └── Advanced navigation           // parent/child/sibling access
 ```
 
@@ -69,8 +68,7 @@ HST Store
 │   └── Path-based addressing
 └── Data organization
     └── [doctype] sections
-        ├── records/[id]           // individual record data
-        └── currentRecord          // current active record reference
+        └── records/[id]           // individual record data with direct access
 ```
 
 #### 2. `@stonecrop/aform` (Form Components)
@@ -290,12 +288,12 @@ const stonecrop = new Stonecrop(registry)
 
 // Record management with HST
 stonecrop.addRecord('task', '123', recordData)
-const currentRecord = stonecrop.currentRecord('task')
+const record = stonecrop.getRecordById('task', '123')
 const records = stonecrop.records('task')
 
 // Advanced HST usage
 const store = stonecrop.getStore()
-const record = store.getNode('task.records.123')
+const record = store.getNode('task.123')
 const parent = record.getParent()
 const breadcrumbs = record.getBreadcrumbs()
 ```

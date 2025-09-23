@@ -55,9 +55,9 @@ export default {
 
     // Work with records
     const records = stonecrop.value?.records('doctype')
-    const currentRecord = stonecrop.value?.currentRecord('doctype')
+    const record = stonecrop.value?.getRecordById('doctype', recordId)
 
-    return { stonecrop, records, currentRecord }
+    return { stonecrop, records, record }
   }
 }
 ```

@@ -672,8 +672,8 @@ const loadDoctypeMetadata = (doctype: string) => {
 const getCurrentRecord = () => {
 	if (!stonecrop.value || !currentDoctype.value || isNewRecord.value) return {}
 
-	const currentRecord = stonecrop.value.currentRecord(currentDoctype.value)
-	return currentRecord?.get('') || {}
+	const record = stonecrop.value.getRecordById(currentDoctype.value, currentRecordId.value)
+	return record?.get('') || {}
 }
 
 // Action handlers (will be triggered by button clicks in the UI)
@@ -690,7 +690,6 @@ const handleSave = async () => {
 			const recordData = { id: newId, ...formData }
 
 			stonecrop.value.addRecord(currentDoctype.value, newId, recordData)
-			stonecrop.value.setCurrentRecord(currentDoctype.value, newId)
 
 			await router.value?.replace(`/${routeDoctype.value}/${newId}`)
 		} else {
@@ -833,9 +832,9 @@ const loadRecordData = () => {
 	try {
 		if (!isNewRecord.value) {
 			// Load existing record data
-			const currentRecord = stonecrop.value.currentRecord(currentDoctype.value)
-			if (currentRecord) {
-				const recordData = currentRecord.get('') || {}
+			const record = stonecrop.value.getRecordById(currentDoctype.value, currentRecordId.value)
+			if (record) {
+				const recordData = record.get('') || {}
 				currentViewData.value = { ...recordData }
 			}
 		} else {

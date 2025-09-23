@@ -282,7 +282,6 @@ export class Stonecrop {
     constructor(registry: Registry);
     addRecord(doctype: string | DoctypeMeta, recordId: string, recordData: any): void;
     clearRecords(doctype: string | DoctypeMeta): void;
-    currentRecord(doctype: string | DoctypeMeta): HSTNode | null;
     getRecord(doctype: DoctypeMeta, recordId: string): Promise<void>;
     getRecordById(doctype: string | DoctypeMeta, recordId: string): HSTNode | undefined;
     getRecordIds(doctype: string | DoctypeMeta): string[];
@@ -293,7 +292,6 @@ export class Stonecrop {
     readonly registry: Registry;
     removeRecord(doctype: string | DoctypeMeta, recordId: string): void;
     runAction(_doctype: DoctypeMeta, _action: string, _args?: any[]): void;
-    setCurrentRecord(doctype: string | DoctypeMeta, recordId: string): void;
     setup(doctype: DoctypeMeta): void;
 }
 
@@ -398,7 +396,7 @@ export interface TreeTableConfig extends BaseTableConfig {
 }
 
 // @public
-export function useStonecrop(): BaseStonecropReturn;
+export function useStonecrop(): BaseStonecropReturn | HSTStonecropReturn;
 
 // @public (undocumented)
 export function useStonecrop(options: {

@@ -203,7 +203,7 @@ describe('HST Edge Cases & Performance', () => {
 
 							// Non-existent deep path
 							handleHSTChange({
-								path: 'complex.records.error-test.nonexistent.deep.path.value',
+								path: 'complex.error-test.nonexistent.deep.path.value',
 								value: 'test',
 								fieldname: 'nonexistent.deep.path.value',
 							})
@@ -256,7 +256,7 @@ describe('HST Edge Cases & Performance', () => {
 							// Simulate corruption by trying to overwrite with incompatible types
 							if (hstStore.value) {
 								// Try to set an object path to a primitive
-								hstStore.value.set('complex.records', 'invalid_primitive')
+								hstStore.value.set('complex', 'invalid_primitive')
 
 								// Try to continue operations
 								handleHSTChange({

@@ -85,18 +85,18 @@ const store = stonecrop.getStore()
 
 // Record management
 stonecrop.addRecord('task', '123', recordData)
-const currentRecord = stonecrop.currentRecord('task')
+const record = stonecrop.getRecordById('task', '123')
 const records = stonecrop.records('task')
 
 // Tree navigation
-const record = store.getNode('task.records.123')
+const record = store.getNode('task.123')
 const parent = record.getParent()
 const breadcrumbs = record.getBreadcrumbs()
 
 // Path-based access
-store.set('task.records.123.title', 'Updated Title')
-const title = store.get('task.records.123.title')
-const exists = store.has('task.records.123')
+store.set('task.123.title', 'Updated Title')
+const title = store.get('task.123.title')
+const exists = store.has('task.123')
 ```
 
 ## Vue Integration Patterns
@@ -107,7 +107,7 @@ const { stonecrop, provideHSTPath, handleHSTChange, formData } = useStonecrop({
   recordId: 'record-123'
 })
 
-// Field path generation: "doctype.records.id.fieldname"
+// Field path generation: "doctype.recordId.fieldname"
 const fieldPath = provideHSTPath('title')
 
 // Component change handling with automatic HST sync

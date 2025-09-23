@@ -249,10 +249,9 @@ describe('useStonecrop composable', () => {
 		const vm = wrapper.vm as any
 		expect(mockGetMeta).toHaveBeenCalledWith('task')
 
-		// Check that current record is set
+		// Check that stonecrop is working
 		if (vm.stonecrop) {
-			const currentRecord = vm.stonecrop.currentRecord('task')
-			expect(currentRecord).toBeDefined()
+			expect(vm.stonecrop.getRecordIds('task').length).toBeGreaterThan(0)
 		}
 	})
 
@@ -302,14 +301,12 @@ describe('useStonecrop composable', () => {
 		if (vm.stonecrop) {
 			// Test HST-based methods exist
 			expect(typeof vm.stonecrop.records).toBe('function')
-			expect(typeof vm.stonecrop.currentRecord).toBe('function')
-			expect(typeof vm.stonecrop.setCurrentRecord).toBe('function')
 			expect(typeof vm.stonecrop.addRecord).toBe('function')
 
 			// Test that records returns HST node
 			const records = vm.stonecrop.records('task')
 			expect(records.getPath).toBeDefined()
-			expect(records.getPath()).toBe('task.records')
+			expect(records.getPath()).toBe('task')
 		}
 	})
 })
@@ -356,7 +353,7 @@ describe('useStonecrop router-based HST integration', () => {
 		const TestComponent = defineComponent({
 			setup() {
 				// Using composable without explicit doctype, expecting router-based setup
-				const result = useStonecrop({ registry })
+				const result = useStonecrop()
 
 				return {
 					...result,
@@ -367,7 +364,13 @@ describe('useStonecrop router-based HST integration', () => {
 			template: '<div>{{ hasHSTIntegration }}</div>',
 		})
 
-		const wrapper = mount(TestComponent)
+		const wrapper = mount(TestComponent, {
+			global: {
+				provide: {
+					$registry: registry,
+				},
+			},
+		})
 		await wrapper.vm.$nextTick()
 		await new Promise(resolve => setTimeout(resolve, 50))
 
@@ -400,8 +403,8 @@ describe('useStonecrop router-based HST integration', () => {
 		const TestComponent = defineComponent({
 			template: `
 				<div>
-					<input 
-						v-model="title" 
+					<input
+						v-model="title"
 						@input="handleTitleChange"
 						data-testid="title-input"
 					/>
@@ -409,7 +412,7 @@ describe('useStonecrop router-based HST integration', () => {
 				</div>
 			`,
 			setup() {
-				const composableResult = useStonecrop({ registry })
+				const composableResult = useStonecrop()
 
 				const title = ref('')
 
@@ -441,7 +444,13 @@ describe('useStonecrop router-based HST integration', () => {
 			},
 		})
 
-		const wrapper = mount(TestComponent)
+		const wrapper = mount(TestComponent, {
+			global: {
+				provide: {
+					$registry: registry,
+				},
+			},
+		})
 		await wrapper.vm.$nextTick()
 		await new Promise(resolve => setTimeout(resolve, 50))
 
@@ -450,7 +459,7 @@ describe('useStonecrop router-based HST integration', () => {
 
 		// Verify HST path is generated (will fail currently)
 		expect(pathDiv.text()).not.toBe('undefined')
-		expect(pathDiv.text()).toContain('todo.records.1.title')
+		expect(pathDiv.text()).toContain('todo.1.title')
 
 		// Simulate field change
 		await input.setValue('New Todo Title')

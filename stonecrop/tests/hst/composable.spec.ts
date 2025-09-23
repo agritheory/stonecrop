@@ -80,7 +80,7 @@ describe('HST Composable Functionality', () => {
 			expect(typeof vm.handleHSTChange).toBe('function')
 
 			// Check HST path generation
-			expect(vm.hstPath).toBe('task.records.test-123.name')
+			expect(vm.hstPath).toBe('task.test-123.name')
 
 			// Check that HST store is available after mounting
 			expect(vm.hstStore).toBeDefined()
@@ -138,7 +138,7 @@ describe('HST Composable Functionality', () => {
 
 			// Test HST change handling
 			const changeData = {
-				path: 'task.records.test-123.name',
+				path: 'task.test-123.name',
 				value: 'Test Task',
 				fieldname: 'name',
 			}
@@ -150,7 +150,7 @@ describe('HST Composable Functionality', () => {
 
 			// Check that HST store is updated
 			if (vm.hstStore) {
-				expect(vm.hstStore.get('task.records.test-123.name')).toBe('Test Task')
+				expect(vm.hstStore.get('task.test-123.name')).toBe('Test Task')
 			}
 		})
 
@@ -175,9 +175,9 @@ describe('HST Composable Functionality', () => {
 			const vm = wrapper.vm as any
 
 			// Test various path generations
-			expect(vm.provideHSTPath('name')).toBe('task.records.test-123.name')
-			expect(vm.provideHSTPath('active')).toBe('task.records.test-123.active')
-			expect(vm.provideHSTPath('items.0.name')).toBe('task.records.test-123.items.0.name')
+			expect(vm.provideHSTPath('name')).toBe('task.test-123.name')
+			expect(vm.provideHSTPath('active')).toBe('task.test-123.active')
+			expect(vm.provideHSTPath('items.0.name')).toBe('task.test-123.items.0.name')
 		})
 
 		it('should handle complex nested changes', async () => {
@@ -202,7 +202,7 @@ describe('HST Composable Functionality', () => {
 
 			// Test nested field change (like ATable cell)
 			const nestedChangeData = {
-				path: 'task.records.test-123.items.0.name',
+				path: 'task.test-123.items.0.name',
 				value: 'Item Name',
 				fieldname: 'items.0.name',
 			}

@@ -29,7 +29,7 @@ Unified Stonecrop composable - handles both general operations and HST reactive 
 **Signature:**
 
 ```typescript
-export declare function useStonecrop(): BaseStonecropReturn;
+export declare function useStonecrop(): BaseStonecropReturn | HSTStonecropReturn;
 ```
 
 ### useStonecrop
@@ -873,14 +873,6 @@ Clear all records for a doctype
 clearRecords(doctype: string | DoctypeMeta): void
 ```
 
-#### currentRecord
-
-Get current record for a doctype
-
-```typescript
-currentRecord(doctype: string | DoctypeMeta): HSTNode | null
-```
-
 #### getRecord
 
 Get single record from server (maintains compatibility)
@@ -943,14 +935,6 @@ Run action on doctype (maintains compatibility)
 
 ```typescript
 runAction(_doctype: DoctypeMeta, _action: string, _args: any[]): void
-```
-
-#### setCurrentRecord
-
-Set current record for a doctype
-
-```typescript
-setCurrentRecord(doctype: string | DoctypeMeta, recordId: string): void
 ```
 
 #### setup

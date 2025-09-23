@@ -6,21 +6,14 @@
 
 <script setup lang="ts">
 import { Desktop } from '@stonecrop/desktop'
-import { ref } from 'vue'
 
 interface Props {
 	availableDoctypes?: string[]
 	showDebug?: boolean
 }
 
-const props = withDefaults(defineProps<Props>(), {
-	availableDoctypes: () => ['todo-list', 'todo-form', 'issue-list', 'issue-form'],
-	showDebug: true,
-})
-
-// Pass props to Desktop component
-const availableDoctypes = ref(props.availableDoctypes)
-const showDebug = ref(props.showDebug)
+const { availableDoctypes = ['todo-list', 'todo-form', 'issue-list', 'issue-form'], showDebug = true } =
+	defineProps<Props>()
 </script>
 
 <style scoped>

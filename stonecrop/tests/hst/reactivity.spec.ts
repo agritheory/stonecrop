@@ -260,7 +260,7 @@ describe('HST Vue Reactivity', () => {
 			const textInput = wrapper.find('[data-testid="text-input"]')
 			const hstPathSpan = wrapper.find('[data-testid="hst-path"]')
 
-			expect(hstPathSpan.text()).toBe('task.records.task-123.name')
+			expect(hstPathSpan.text()).toBe('task.task-123.name')
 
 			// Simulate typing to verify the path is used correctly
 			await textInput.setValue('New Task Name')
@@ -298,13 +298,13 @@ describe('HST Vue Reactivity', () => {
 			expect(checkbox.exists())
 			expect(table.exists())
 
-			// Paths should follow pattern: doctype.records.recordId.fieldname
-			expect(wrapper.find('[data-testid="hst-path"]').text()).toContain('task.records.task-123.name')
+			// Paths should follow pattern: doctype.recordId.fieldname
+			expect(wrapper.find('[data-testid="hst-path"]').text()).toContain('task.task-123.name')
 
 			const allHstPaths = wrapper.findAll('[data-testid="hst-path"]')
-			expect(allHstPaths[0].text()).toBe('task.records.task-123.name')
-			expect(allHstPaths[1].text()).toBe('task.records.task-123.active')
-			expect(allHstPaths[2].text()).toBe('task.records.task-123.items')
+			expect(allHstPaths[0].text()).toBe('task.task-123.name')
+			expect(allHstPaths[1].text()).toBe('task.task-123.active')
+			expect(allHstPaths[2].text()).toBe('task.task-123.items')
 		})
 
 		it('should handle new record creation with proper HST paths', async () => {
@@ -327,9 +327,9 @@ describe('HST Vue Reactivity', () => {
 
 			await nextTick()
 
-			// For new records, the path should be something like task.records.new
+			// For new records, the path should be something like task.new
 			const hstPathSpan = wrapper.find('[data-testid="hst-path"]')
-			expect(hstPathSpan.text()).toMatch(/task\.records\.(new|__new)/)
+			expect(hstPathSpan.text()).toMatch(/task\.(new|__new)/)
 		})
 	})
 

@@ -55,7 +55,7 @@ export type HSTChangeData = {
  * @returns Stonecrop instance and optional HST integration utilities
  * @public
  */
-export function useStonecrop(): BaseStonecropReturn
+export function useStonecrop(): BaseStonecropReturn | HSTStonecropReturn
 /**
  * @public
  */
@@ -183,7 +183,7 @@ export function useStonecrop(options?: {
 		if (!doctype) return ''
 
 		const actualRecordId = customRecordId || options.recordId || routerRecordId.value || 'new'
-		return `${doctype.slug}.records.${actualRecordId}.${fieldname}`
+		return `${doctype.slug}.${actualRecordId}.${fieldname}`
 	}
 
 	const handleHSTChange = (changeData: HSTChangeData): void => {
@@ -194,17 +194,17 @@ export function useStonecrop(options?: {
 
 		try {
 			const pathParts = changeData.path.split('.')
-			if (pathParts.length >= 3 && pathParts[1] === 'records') {
+			if (pathParts.length >= 2) {
 				const doctypeSlug = pathParts[0]
-				const recordId = pathParts[2]
+				const recordId = pathParts[1]
 
-				if (!hstStore.value.has(`${doctypeSlug}.records.${recordId}`)) {
+				if (!hstStore.value.has(`${doctypeSlug}.${recordId}`)) {
 					stonecrop.value.addRecord(doctype, recordId, { ...formData.value })
 				}
 
-				if (pathParts.length > 4) {
-					const recordPath = `${doctypeSlug}.records.${recordId}`
-					const nestedParts = pathParts.slice(3)
+				if (pathParts.length > 3) {
+					const recordPath = `${doctypeSlug}.${recordId}`
+					const nestedParts = pathParts.slice(2)
 
 					let currentPath = recordPath
 					for (let i = 0; i < nestedParts.length - 1; i++) {
@@ -318,7 +318,7 @@ function setupDeepReactivity(
 	watch(
 		formData,
 		newData => {
-			const recordPath = `${doctype.slug}.records.${recordId}`
+			const recordPath = `${doctype.slug}.${recordId}`
 
 			Object.keys(newData).forEach(fieldname => {
 				const path = `${recordPath}.${fieldname}`
