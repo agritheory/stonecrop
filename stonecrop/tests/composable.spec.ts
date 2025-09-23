@@ -184,9 +184,8 @@ describe('useStonecrop composable', () => {
 		// Mock router current route
 		vi.spyOn(mockRouter, 'currentRoute', 'get').mockReturnValue({
 			value: {
-				params: {
-					records: 'task',
-				},
+				path: '/task',
+				params: {},
 			},
 		})
 
@@ -226,10 +225,8 @@ describe('useStonecrop composable', () => {
 		// Mock router current route
 		vi.spyOn(mockRouter, 'currentRoute', 'get').mockReturnValue({
 			value: {
-				params: {
-					records: 'task',
-					record: '123',
-				},
+				path: '/task/123',
+				params: {},
 			},
 		})
 

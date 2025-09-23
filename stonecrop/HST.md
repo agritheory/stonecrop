@@ -64,7 +64,7 @@ graph TB
     end
 
     subgraph "HST Path Management"
-        PG[Path Generation<br/>doctype.records.id.field]
+        PG[Path Generation<br/>doctype.id.field]
         PS[Path Structure Validation]
         NS[Nested Structure Creation]
     end
@@ -181,7 +181,7 @@ sequenceDiagram
     Note over IC: Input component usage
     IC->>US: inject('hstPathProvider')
     IC->>US: provideHSTPath('fieldname')
-    US-->>IC: 'doctype.records.id.fieldname'
+    US-->>IC: 'doctype.id.fieldname'
 
     IC->>IC: User interaction
     IC->>US: handleHSTChange(changeData)
@@ -256,7 +256,7 @@ graph TB
 
     subgraph "HST Store Layer"
         HST[HST Store Root]
-        DT_REC[doctype.records]
+        DT_REC[doctype.recordId]
         REC_DATA[record.field.data]
     end
 

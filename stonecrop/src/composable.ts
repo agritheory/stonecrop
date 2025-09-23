@@ -83,10 +83,15 @@ export function useStonecrop(options?: {
 		// Handle router-based setup if no specific doctype provided
 		if (!options.doctype && registry.router) {
 			const route = registry.router.currentRoute.value
-			const doctypeSlug = route.params.records?.toString().toLowerCase()
-			const recordId = route.params.record?.toString().toLowerCase()
 
-			if (doctypeSlug || recordId) {
+			// Parse doctype and recordId from path segments instead of route params
+			if (!route.path) return // Early return if no path available
+
+			const pathSegments = route.path.split('/').filter(segment => segment.length > 0)
+			const doctypeSlug = pathSegments[0]?.toLowerCase()
+			const recordId = pathSegments[1]?.toLowerCase()
+
+			if (doctypeSlug) {
 				const doctype = await registry.getMeta?.(doctypeSlug)
 				if (doctype) {
 					registry.addDoctype(doctype)
