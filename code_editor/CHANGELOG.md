@@ -1,6 +1,11 @@
 # Change Log - @stonecrop/code-editor
 
-This log was last generated on Fri, 22 Aug 2025 11:51:31 GMT and should not be manually modified.
+This log was last generated on Wed, 24 Sep 2025 13:45:35 GMT and should not be manually modified.
+
+## 0.4.35
+Wed, 24 Sep 2025 13:45:35 GMT
+
+_Version update only_
 
 ## 0.4.34
 Fri, 22 Aug 2025 11:51:31 GMT
