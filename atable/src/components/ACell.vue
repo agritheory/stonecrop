@@ -250,6 +250,8 @@ const restoreCursorPosition = (position: number) => {
 }
 
 const updateCellData = (payload: Event) => {
+	if (!column.edit) return
+
 	const target = payload.target as HTMLTableCellElement
 	if (target.textContent === currentData.value) {
 		return
