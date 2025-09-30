@@ -415,17 +415,14 @@ class HSTProxy implements HSTNode {
 			const pathSegments = fullPath.split('.')
 			const fieldname = pathSegments.slice(2).join('.') || pathSegments[pathSegments.length - 1]
 
-			// Extract doctype and recordId from path if possible
-			let doctype = this.doctype
+			// Extract doctype and recordId from path
+			// The path should be in format: "doctype.recordId.fieldname"
+			// Use the HST's doctype property which contains the actual doctype name
+			const doctype = this.doctype
 			let recordId: string | undefined
 
-			// If path starts with doctype.recordId pattern and has at least 3 segments
-			if (pathSegments.length >= 3) {
-				// For paths like 'task.123.title', we need to map 'task' back to the proper doctype
-				// We'll use the actual DoctypeMeta.doctype from the stonecrop instance
-				// For now, let's capitalize the first letter as a simple heuristic
-				const pathDoctype = pathSegments[0]
-				doctype = pathDoctype.charAt(0).toUpperCase() + pathDoctype.slice(1)
+			// Extract recordId from path if it follows the expected pattern
+			if (pathSegments.length >= 2) {
 				recordId = pathSegments[1]
 			}
 
@@ -445,6 +442,8 @@ class HSTProxy implements HSTNode {
 			// Silently handle trigger errors to not break the main flow
 			// In production, you might want to log this error
 			if (error instanceof Error) {
+				// eslint-disable-next-line no-console
+				console.warn('Field trigger error:', error.message)
 				// Optional: emit an event or call error handler
 			}
 		}

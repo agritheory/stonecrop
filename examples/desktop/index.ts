@@ -18,6 +18,9 @@ import App from './App.vue'
 import router, { setupRouterContext } from './router'
 import { makeServer } from './server'
 
+// Import field trigger actions - this registers them globally
+import './actions'
+
 const app = createApp(App)
 
 // Setup MirageJS server

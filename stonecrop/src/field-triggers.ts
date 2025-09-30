@@ -98,7 +98,7 @@ export class FieldTriggerEngine {
 		context: FieldChangeContext,
 		options: { timeout?: number } = {}
 	): Promise<FieldTriggerExecutionResult> {
-		const { doctype, recordId, fieldname } = context
+		const { doctype, fieldname } = context
 		const triggers = this.findFieldTriggers(doctype, fieldname)
 
 		if (triggers.length === 0) {
@@ -114,11 +114,6 @@ export class FieldTriggerEngine {
 		const startTime = performance.now()
 		const actionResults: ActionExecutionResult[] = []
 		let stoppedOnError = false
-
-		if (this.options.debug) {
-			// eslint-disable-next-line no-console
-			console.log(`[FieldTriggers] Executing ${triggers.length} actions for ${doctype}.${recordId}.${fieldname}`)
-		}
 
 		// Execute actions sequentially
 		for (const actionName of triggers) {
@@ -165,11 +160,6 @@ export class FieldTriggerEngine {
 			totalExecutionTime,
 			allSucceeded: actionResults.every(r => r.success),
 			stoppedOnError,
-		}
-
-		if (this.options.debug) {
-			// eslint-disable-next-line no-console
-			console.log(`[FieldTriggers] Execution completed in ${totalExecutionTime.toFixed(2)}ms:`, result)
 		}
 
 		return result

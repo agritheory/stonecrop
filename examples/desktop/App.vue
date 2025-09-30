@@ -6,4 +6,11 @@
 			</keep-alive>
 		</transition>
 	</router-view>
+
+	<!-- Field Trigger Notifications -->
+	<FieldTriggerNotifications />
 </template>
+
+<script setup lang="ts">
+import FieldTriggerNotifications from './components/FieldTriggerNotifications.vue'
+</script>

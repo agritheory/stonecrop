@@ -58,6 +58,10 @@ export function makeServer() {
 						CREATE: ['() => console.log("Creating new todo")'],
 						EDIT: ['() => console.log("Editing todo")'],
 						DELETE: ['() => console.log("Deleting todo")'],
+						// Field triggers - automatically executed when fields change
+						first_name: ['validateName', 'updateFullName'],
+						last_name: ['validateName', 'updateFullName'],
+						phone: ['validatePhoneFormat', 'notifyPhoneChange'],
 					},
 				},
 				'todo-lists': [
@@ -75,7 +79,8 @@ export function makeServer() {
 							fieldtype: 'HTML',
 							component: 'div',
 							label: 'Todo Details',
-							value: '<h1>Todo Details</h1><p>Edit task information</p>',
+							value:
+								'<h1>Todo Details</h1><p>Edit task information</p><div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; padding: 12px; margin: 16px 0;"><strong>🔄 Field Trigger Demo:</strong> As you edit fields below, watch for real-time notifications in the top-right corner!</div>',
 						},
 						{
 							fieldname: 'first_name',
@@ -98,6 +103,20 @@ export function makeServer() {
 							label: 'Phone',
 							mask: "(locale) => { if (locale === 'en-US') { return '(###) ###-####' } else if (locale === 'en-IN') { return '####-######'} }",
 						},
+						{
+							fieldname: 'email',
+							fieldtype: 'Data',
+							component: 'ATextInput',
+							label: 'Email',
+							placeholder: 'user@example.com',
+						},
+						{
+							fieldname: 'notes',
+							fieldtype: 'Text',
+							component: 'ATextarea',
+							label: 'Notes',
+							placeholder: 'Additional notes about this todo...',
+						},
 					] as MutableDoctype['schema'],
 					workflow: {
 						id: 'todoForm',
@@ -119,12 +138,39 @@ export function makeServer() {
 						SAVE: ['() => console.log("Saving todo")'],
 						CANCEL: ['() => console.log("Cancelling todo edit")'],
 						DELETE: ['() => console.log("Deleting todo")'],
+						// Field triggers - automatically executed when fields change
+						first_name: ['validateName', 'updateFullName', 'logFieldChange'],
+						last_name: ['validateName', 'updateFullName', 'logFieldChange'],
+						phone: ['validatePhoneFormat', 'notifyPhoneChange', 'logFieldChange'],
+						email: ['validateEmailFormat', 'logFieldChange'],
+						notes: ['validateNotes', 'logFieldChange'],
 					},
 				},
 				'todo-forms': [
-					{ id: '1', first_name: 'Luke', last_name: 'Skywalker', phone: '+1 123 456 7890' },
-					{ id: '2', first_name: 'Leia', last_name: 'Skywalker', phone: '+1 123 456 7890' },
-					{ id: '3', first_name: 'Anakin', last_name: 'Skywalker', phone: '+1 123 456 7890' },
+					{
+						id: '1',
+						first_name: 'Luke',
+						last_name: 'Skywalker',
+						phone: '+1 123 456 7890',
+						email: 'luke@jedi.org',
+						notes: 'A young farm boy from Tatooine',
+					},
+					{
+						id: '2',
+						first_name: 'Leia',
+						last_name: 'Skywalker',
+						phone: '+1 123 456 7890',
+						email: 'leia@rebellion.org',
+						notes: 'Princess and leader of the Rebellion',
+					},
+					{
+						id: '3',
+						first_name: 'Anakin',
+						last_name: 'Skywalker',
+						phone: '+1 123 456 7890',
+						email: 'anakin@empire.gov',
+						notes: 'Former Jedi Knight',
+					},
 				],
 
 				// Issue List doctype
@@ -148,6 +194,11 @@ export function makeServer() {
 						CREATE: ['() => console.log("Creating new issue")'],
 						EDIT: ['() => console.log("Editing issue")'],
 						DELETE: ['() => console.log("Deleting issue")'],
+						// Field triggers - automatically executed when fields change
+						subject: ['validateSubject', 'logFieldChange'],
+						status: ['onStatusChange', 'updateTimestamp', 'logFieldChange'],
+						priority: ['onPriorityChange', 'logFieldChange'],
+						description: ['validateDescription', 'logFieldChange'],
 					},
 				},
 				'issue-lists': [
@@ -165,7 +216,8 @@ export function makeServer() {
 							fieldtype: 'HTML',
 							component: 'div',
 							label: 'Issue Details',
-							value: '<h1>Issue Details</h1><p>Edit issue information</p>',
+							value:
+								'<h1>Issue Details</h1><p>Edit issue information</p><div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; padding: 12px; margin: 16px 0;"><strong>🔄 Field Trigger Demo:</strong> Try changing the status to "Resolved" or priority to "Critical" to see special notifications!</div>',
 						},
 						{
 							fieldname: 'subject',
@@ -222,12 +274,39 @@ export function makeServer() {
 						SAVE: ['() => console.log("Saving issue")'],
 						CANCEL: ['() => console.log("Cancelling issue edit")'],
 						DELETE: ['() => console.log("Deleting issue")'],
+						// Field triggers - automatically executed when fields change
+						subject: ['validateSubject', 'logFieldChange'],
+						status: ['onStatusChange', 'updateTimestamp', 'logFieldChange'],
+						priority: ['onPriorityChange', 'validatePriorityStatus', 'logFieldChange'],
+						description: ['validateDescription', 'logFieldChange'],
+						date: ['validateFutureDate', 'logFieldChange'],
 					},
 				},
 				'issue-forms': [
-					{ id: '1', subject: 'First Issue', date: '2022-01-01', status: 'Open', priority: 'High' },
-					{ id: '2', subject: 'Second Issue', date: '2022-01-02', status: 'In Progress', priority: 'Medium' },
-					{ id: '3', subject: 'Third Issue', date: '2022-01-03', status: 'Resolved', priority: 'Low' },
+					{
+						id: '1',
+						subject: 'First Issue',
+						date: '2022-01-01',
+						status: 'Open',
+						priority: 'High',
+						description: 'This is a detailed description of the first issue.',
+					},
+					{
+						id: '2',
+						subject: 'Second Issue',
+						date: '2022-01-02',
+						status: 'In Progress',
+						priority: 'Medium',
+						description: 'This is a detailed description of the second issue.',
+					},
+					{
+						id: '3',
+						subject: 'Third Issue',
+						date: '2022-01-03',
+						status: 'Resolved',
+						priority: 'Low',
+						description: 'This is a detailed description of the third issue.',
+					},
 				],
 			})
 		},
