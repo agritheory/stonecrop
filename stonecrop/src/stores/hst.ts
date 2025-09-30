@@ -1,3 +1,6 @@
+import { getGlobalTriggerEngine } from '../field-triggers'
+import type { FieldChangeContext } from '../types/field-triggers'
+
 /**
  * Core HST Interface - enhanced with tree navigation
  * Provides a hierarchical state tree interface for navigating and manipulating nested data structures.
@@ -237,7 +240,15 @@ class HSTProxy implements HSTNode {
 	}
 
 	set(path: string, value: any): void {
+		// Get current value for change context
+		const fullPath = this.resolvePath(path)
+		const beforeValue = this.has(path) ? this.get(path) : undefined
+
+		// Update the value
 		this.updateValue(path, value)
+
+		// Trigger field actions asynchronously (don't block the set operation)
+		void this.triggerFieldActions(fullPath, beforeValue, value)
 	}
 
 	has(path: string): boolean {
@@ -398,6 +409,46 @@ class HSTProxy implements HSTNode {
 		;(obj as PropertyAccessible)[key] = value
 	}
 
+	private async triggerFieldActions(fullPath: string, beforeValue: any, afterValue: any): Promise<void> {
+		try {
+			const triggerEngine = getGlobalTriggerEngine()
+			const pathSegments = fullPath.split('.')
+			const fieldname = pathSegments.slice(2).join('.') || pathSegments[pathSegments.length - 1]
+
+			// Extract doctype and recordId from path if possible
+			let doctype = this.doctype
+			let recordId: string | undefined
+
+			// If path starts with doctype.recordId pattern and has at least 3 segments
+			if (pathSegments.length >= 3) {
+				// For paths like 'task.123.title', we need to map 'task' back to the proper doctype
+				// We'll use the actual DoctypeMeta.doctype from the stonecrop instance
+				// For now, let's capitalize the first letter as a simple heuristic
+				const pathDoctype = pathSegments[0]
+				doctype = pathDoctype.charAt(0).toUpperCase() + pathDoctype.slice(1)
+				recordId = pathSegments[1]
+			}
+
+			const context: FieldChangeContext = {
+				path: fullPath,
+				fieldname,
+				beforeValue,
+				afterValue,
+				operation: 'set',
+				doctype,
+				recordId,
+				timestamp: new Date(),
+			}
+
+			await triggerEngine.executeFieldTriggers(context)
+		} catch (error) {
+			// Silently handle trigger errors to not break the main flow
+			// In production, you might want to log this error
+			if (error instanceof Error) {
+				// Optional: emit an event or call error handler
+			}
+		}
+	}
 	private isVueReactive(obj: any): obj is VueReactive {
 		return (
 			obj &&

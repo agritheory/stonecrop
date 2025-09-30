@@ -22,6 +22,39 @@ declare function createHST(target: any, doctype: string, parentDoctype?: string)
 | doctype | `string` |  |
 | parentDoctype | `string` |  |
 
+### getGlobalTriggerEngine
+
+Get or create the global field trigger engine
+
+**Signature:**
+
+```typescript
+export declare function getGlobalTriggerEngine(options?: FieldTriggerOptions): FieldTriggerEngine;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| options | `FieldTriggerOptions` |  |
+
+### registerGlobalAction
+
+Register a global action function that can be used in field triggers
+
+**Signature:**
+
+```typescript
+export declare function registerGlobalAction(name: string, fn: FieldActionFunction): void;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| name | `string` |  |
+| fn | `FieldActionFunction` |  |
+
 ### useStonecrop
 
 Unified Stonecrop composable - handles both general operations and HST reactive integration
@@ -51,6 +84,46 @@ export declare function useStonecrop(options: {
 | options | `{ registry?: Registry; doctype: DoctypeMeta; recordId?: string; }` |  |
 
 ## Interfaces
+
+### ActionExecutionResult
+
+Result of executing a field action
+
+**Definition:**
+
+```typescript
+export interface ActionExecutionResult {
+  action: FieldAction;
+  error?: Error;
+  executionTime: number;
+  success: boolean;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| action | `FieldAction` | The action that was executed |
+| error? | `Error` | Error if execution failed |
+| executionTime | `number` | Execution time in milliseconds |
+| success | `boolean` | Whether the action executed successfully |
+
+### ActionRegistry
+
+Registry for storing global action functions
+
+**Definition:**
+
+```typescript
+export interface ActionRegistry {
+  get(name: string): FieldActionFunction | undefined;
+  has(name: string): boolean;
+  list(): string[];
+  register(name: string, fn: FieldActionFunction): void;
+  unregister(name: string): void;
+}
+```
 
 ### BaseTableConfig
 
@@ -179,6 +252,112 @@ export interface ConnectionPath {
 | label? | `string` | Optional label for the connection. |
 | style? | `{ color?: string; width?: number; }` | Optional styling for the connection path. |
 | to | `{ barId: string; side: 'left' \| 'right'; }` | The target connection handle. |
+
+### FieldChangeContext
+
+Context provided to action functions when field changes occur
+
+**Definition:**
+
+```typescript
+export interface FieldChangeContext {
+  afterValue: any;
+  beforeValue: any;
+  doctype: string;
+  fieldname: string;
+  operation: 'set' | 'delete' | 'patch';
+  path: string;
+  recordId?: string;
+  timestamp: Date;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| afterValue | `any` | Value after the change |
+| beforeValue | `any` | Value before the change |
+| doctype | `string` | The doctype of the record being changed |
+| fieldname | `string` | The field name (last segment of path) |
+| operation | `'set' \| 'delete' \| 'patch'` | The operation type |
+| path | `string` | The HST path that was changed |
+| recordId? | `string` | The record ID if applicable |
+| timestamp | `Date` | Timestamp of the change |
+
+### FieldTriggerConfig
+
+Configuration for a single field trigger
+
+**Definition:**
+
+```typescript
+export interface FieldTriggerConfig {
+  actions: FieldAction[];
+  condition?: (context: FieldChangeContext) => boolean | Promise<boolean>;
+  stopOnError?: boolean;
+  timeout?: number;
+  timing?: 'before' | 'after';
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| actions | `FieldAction[]` | Array of actions to execute when this field changes |
+| condition? | `(context: FieldChangeContext) => boolean \| Promise<boolean>` | Optional condition function to determine if actions should run |
+| stopOnError? | `boolean` | Whether to stop execution on first error (default: true) |
+| timeout? | `number` | Maximum execution time in milliseconds before timeout |
+| timing? | `'before' \| 'after'` | Whether to run actions before or after the value is set (default: 'after') |
+
+### FieldTriggerExecutionResult
+
+Result of executing all actions for a field change
+
+**Definition:**
+
+```typescript
+export interface FieldTriggerExecutionResult {
+  actionResults: ActionExecutionResult[];
+  allSucceeded: boolean;
+  path: string;
+  stoppedOnError: boolean;
+  totalExecutionTime: number;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| actionResults | `ActionExecutionResult[]` | Results for each action that was executed |
+| allSucceeded | `boolean` | Whether all actions succeeded |
+| path | `string` | The path that triggered the actions |
+| stoppedOnError | `boolean` | Whether execution was stopped due to an error |
+| totalExecutionTime | `number` | Total execution time for all actions |
+
+### FieldTriggerOptions
+
+Options for the field trigger system
+
+**Definition:**
+
+```typescript
+export interface FieldTriggerOptions {
+  debug?: boolean;
+  defaultTimeout?: number;
+  errorHandler?: (error: Error, context: FieldChangeContext, action: FieldAction) => void;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| debug? | `boolean` | Whether to log trigger executions for debugging |
+| defaultTimeout? | `number` | Default timeout for action execution in milliseconds |
+| errorHandler? | `(error: Error, context: FieldChangeContext, action: FieldAction) => void` | Custom error handler for action failures |
 
 ### GanttBarInfo
 
@@ -549,6 +728,36 @@ export type ConnectionEvent = {
 };
 ```
 
+### FieldAction
+
+Supported action types for field triggers
+
+**Definition:**
+
+```typescript
+export type FieldAction = FieldActionFunction | FieldActionString;
+```
+
+### FieldActionFunction
+
+Action function that can be triggered by field changes
+
+**Definition:**
+
+```typescript
+export type FieldActionFunction = (context: FieldChangeContext) => void | Promise<void>;
+```
+
+### FieldActionString
+
+String reference to a globally registered action function or inline function
+
+**Definition:**
+
+```typescript
+export type FieldActionString = string;
+```
+
 ### FieldsetSchema
 
 Schema structure for defining fieldsets inside AForm
@@ -561,6 +770,16 @@ export type FieldsetSchema = BaseSchema & {
     schema?: (FormSchema | TableSchema)[];
     collapsible?: boolean;
 };
+```
+
+### FieldTriggerMap
+
+Map of field paths to trigger configurations Supports wildcard patterns like 'emailAddress.*.is_primary'
+
+**Definition:**
+
+```typescript
+export type FieldTriggerMap = Record<string, FieldTriggerConfig | FieldAction[]>;
 ```
 
 ### FormSchema
@@ -756,7 +975,7 @@ new DoctypeMeta(doctype: string, schema: ImmutableDoctype['schema'], workflow: I
 
 | Property | Type | Description |
 |----------|------|-------------|
-| actions | `ImmutableDoctype['actions']` | The doctype actions |
+| actions | `ImmutableDoctype['actions']` | The doctype actions and field triggers |
 | component | `Component` | The doctype component |
 | doctype | `string` | The doctype name |
 | schema | `ImmutableDoctype['schema']` | The doctype schema |

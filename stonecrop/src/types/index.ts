@@ -51,3 +51,6 @@ export type InstallOptions = {
 	/** Callback function called after plugin is ready and mounted */
 	onRouterInitialized?: (registry: Registry, stonecrop: Stonecrop) => void | Promise<void>
 }
+
+// Re-export field trigger types
+export * from './field-triggers'

@@ -1,6 +1,7 @@
 import { Router } from 'vue-router'
 
 import DoctypeMeta from './doctype'
+import { getGlobalTriggerEngine } from './field-triggers'
 
 /**
  * Stonecrop Registry class
@@ -58,6 +59,10 @@ export default class Registry {
 		if (!(doctype.doctype in Object.keys(this.registry))) {
 			this.registry[doctype.slug] = doctype
 		}
+
+		// Register actions (including field triggers) with the field trigger engine
+		const triggerEngine = getGlobalTriggerEngine()
+		triggerEngine.registerDoctypeActions(doctype.doctype, doctype.actions)
 
 		if (doctype.component && this.router && !this.router.hasRoute(doctype.doctype)) {
 			this.router.addRoute({

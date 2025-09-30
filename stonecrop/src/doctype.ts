@@ -29,7 +29,7 @@ export default class DoctypeMeta {
 	readonly workflow: ImmutableDoctype['workflow']
 
 	/**
-	 * The doctype actions
+	 * The doctype actions and field triggers
 	 * @public
 	 * @readonly
 	 */
