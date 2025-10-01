@@ -4,7 +4,7 @@
 		<ActionSet :elements="actionElements" />
 
 		<!-- Main content using AForm -->
-		<AForm v-if="currentViewSchema.length > 0" v-model="currentViewSchema" :data="currentViewData" />
+		<AForm v-if="writableSchema.length > 0" v-model="writableSchema" :data="currentViewData" />
 		<div v-else-if="!stonecrop" class="loading"><p>Initializing Stonecrop...</p></div>
 		<div v-else class="loading">
 			<p>Loading {{ currentView }} data...</p>
@@ -713,9 +713,21 @@ const currentViewSchema = computed<SchemaTypes[]>(() => {
 	}
 })
 
-// Watch for schema changes from AForm and sync field values to HST
+// Writable schema for AForm v-model binding
+const writableSchema = ref<SchemaTypes[]>([])
+
+// Sync computed schema to writable schema when it changes
 watch(
 	currentViewSchema,
+	newSchema => {
+		writableSchema.value = [...newSchema]
+	},
+	{ immediate: true, deep: true }
+)
+
+// Watch for field changes in writable schema and sync to HST
+watch(
+	writableSchema,
 	newSchema => {
 		if (!stonecrop.value || !currentDoctype.value || !currentRecordId.value || isNewRecord.value) {
 			return
