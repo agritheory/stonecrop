@@ -59,7 +59,7 @@ describe('Field Trigger Integration', () => {
 				path: 'task.123.emailAddress.0.is_primary',
 				fieldname: 'emailAddress.0.is_primary',
 				afterValue: true,
-				doctype: 'Task',
+				doctype: 'task', // Uses slug for HST path resolution
 				recordId: '123',
 			})
 		)

@@ -420,6 +420,11 @@ class HSTProxy implements HSTNode {
 
 	private async triggerFieldActions(fullPath: string, beforeValue: any, afterValue: any): Promise<void> {
 		try {
+			// Guard against undefined or null fullPath
+			if (!fullPath || typeof fullPath !== 'string') {
+				return
+			}
+
 			const pathSegments = fullPath.split('.')
 
 			// Only trigger field actions for actual field changes (at least 3 levels deep: doctype.recordId.fieldname)

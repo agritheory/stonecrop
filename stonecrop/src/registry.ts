@@ -62,7 +62,11 @@ export default class Registry {
 
 		// Register actions (including field triggers) with the field trigger engine
 		const triggerEngine = getGlobalTriggerEngine()
+		// Register under both doctype name and slug to handle different lookup patterns
 		triggerEngine.registerDoctypeActions(doctype.doctype, doctype.actions)
+		if (doctype.slug !== doctype.doctype) {
+			triggerEngine.registerDoctypeActions(doctype.slug, doctype.actions)
+		}
 
 		if (doctype.component && this.router && !this.router.hasRoute(doctype.doctype)) {
 			this.router.addRoute({

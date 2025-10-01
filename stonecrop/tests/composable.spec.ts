@@ -203,7 +203,7 @@ describe('useStonecrop composable', () => {
 		await new Promise(resolve => setTimeout(resolve, 10))
 
 		const vm = wrapper.vm as any
-		expect(mockGetMeta).toHaveBeenCalledWith('task')
+		expect(mockGetMeta).toHaveBeenCalledWith('/task')
 
 		// Check that HST store has the doctype section
 		if (vm.stonecrop) {
@@ -244,7 +244,7 @@ describe('useStonecrop composable', () => {
 		await new Promise(resolve => setTimeout(resolve, 10))
 
 		const vm = wrapper.vm as any
-		expect(mockGetMeta).toHaveBeenCalledWith('task')
+		expect(mockGetMeta).toHaveBeenCalledWith('/task/123')
 
 		// Check that stonecrop is working
 		if (vm.stonecrop) {
