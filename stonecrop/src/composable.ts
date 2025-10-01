@@ -124,21 +124,7 @@ export function useStonecrop(options?: {
 					}
 
 					if (hstStore.value) {
-						// Setup reactivity first, then sync initial data
 						setupDeepReactivity(doctype, recordId || 'new', formData, hstStore.value)
-
-						// Sync initial formData to HST store
-						if (Object.keys(formData.value).length > 0) {
-							const recordPath = `${doctype.slug}.${recordId || 'new'}`
-							Object.keys(formData.value).forEach(fieldname => {
-								const path = `${recordPath}.${fieldname}`
-								try {
-									hstStore.value!.set(path, formData.value[fieldname])
-								} catch (error) {
-									// Silently handle errors
-								}
-							})
-						}
 					}
 
 					stonecrop.value.runAction(doctype, 'load', recordId ? [recordId] : undefined)
@@ -172,21 +158,7 @@ export function useStonecrop(options?: {
 			}
 
 			if (hstStore.value) {
-				// Setup reactivity first, then sync initial data
 				setupDeepReactivity(doctype, recordId || 'new', formData, hstStore.value)
-
-				// Sync initial formData to HST store
-				if (Object.keys(formData.value).length > 0) {
-					const recordPath = `${doctype.slug}.${recordId || 'new'}`
-					Object.keys(formData.value).forEach(fieldname => {
-						const path = `${recordPath}.${fieldname}`
-						try {
-							hstStore.value!.set(path, formData.value[fieldname])
-						} catch (error) {
-							// Silently handle errors
-						}
-					})
-				}
 			}
 		}
 	})
