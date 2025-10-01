@@ -67,7 +67,6 @@ registerGlobalAction('validateName', (context: FieldChangeContext) => {
 
 registerGlobalAction('updateFullName', (context: FieldChangeContext) => {
 	const { path, afterValue } = context
-	const pathParts = path.split('.')
 
 	// This would typically update a computed full_name field
 	// For demo purposes, we'll just show a notification

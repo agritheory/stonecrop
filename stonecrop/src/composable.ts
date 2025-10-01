@@ -84,15 +84,17 @@ export function useStonecrop(options?: {
 		if (!options.doctype && registry.router) {
 			const route = registry.router.currentRoute.value
 
-			// Parse doctype and recordId from path segments instead of route params
+			// Parse route path - let the application determine the doctype from the route
 			if (!route.path) return // Early return if no path available
 
 			const pathSegments = route.path.split('/').filter(segment => segment.length > 0)
-			const doctypeSlug = pathSegments[0]?.toLowerCase()
 			const recordId = pathSegments[1]?.toLowerCase()
 
-			if (doctypeSlug) {
-				const doctype = await registry.getMeta?.(doctypeSlug)
+			if (pathSegments.length > 0) {
+				// Use the entire route path for doctype resolution - let the application decide the structure
+				const routePath = route.path
+
+				const doctype = await registry.getMeta?.(routePath)
 				if (doctype) {
 					registry.addDoctype(doctype)
 					stonecrop.value.setup(doctype)
@@ -122,7 +124,21 @@ export function useStonecrop(options?: {
 					}
 
 					if (hstStore.value) {
+						// Setup reactivity first, then sync initial data
 						setupDeepReactivity(doctype, recordId || 'new', formData, hstStore.value)
+
+						// Sync initial formData to HST store
+						if (Object.keys(formData.value).length > 0) {
+							const recordPath = `${doctype.slug}.${recordId || 'new'}`
+							Object.keys(formData.value).forEach(fieldname => {
+								const path = `${recordPath}.${fieldname}`
+								try {
+									hstStore.value!.set(path, formData.value[fieldname])
+								} catch (error) {
+									// Silently handle errors
+								}
+							})
+						}
 					}
 
 					stonecrop.value.runAction(doctype, 'load', recordId ? [recordId] : undefined)
@@ -156,7 +172,21 @@ export function useStonecrop(options?: {
 			}
 
 			if (hstStore.value) {
+				// Setup reactivity first, then sync initial data
 				setupDeepReactivity(doctype, recordId || 'new', formData, hstStore.value)
+
+				// Sync initial formData to HST store
+				if (Object.keys(formData.value).length > 0) {
+					const recordPath = `${doctype.slug}.${recordId || 'new'}`
+					Object.keys(formData.value).forEach(fieldname => {
+						const path = `${recordPath}.${fieldname}`
+						try {
+							hstStore.value!.set(path, formData.value[fieldname])
+						} catch (error) {
+							// Silently handle errors
+						}
+					})
+				}
 			}
 		}
 	})

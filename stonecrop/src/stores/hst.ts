@@ -230,13 +230,22 @@ class HSTProxy implements HSTNode {
 		const fullPath = this.resolvePath(path)
 		const value = this.resolveValue(path)
 
+		// Determine the correct doctype for this node based on the path
+		const pathSegments = fullPath.split('.')
+		let nodeDoctype = this.doctype
+
+		// If we're at the root level and this is a StonecropStore, use the first path segment as the doctype
+		if (this.doctype === 'StonecropStore' && pathSegments.length >= 1) {
+			nodeDoctype = pathSegments[0]
+		}
+
 		// Always wrap in HSTProxy for tree navigation
 		if (typeof value === 'object' && value !== null && !this.isPrimitive(value)) {
-			return new HSTProxy(value, this.doctype, fullPath, this.rootNode, this.parentDoctype)
+			return new HSTProxy(value, nodeDoctype, fullPath, this.rootNode, this.parentDoctype)
 		}
 
 		// For primitives, return a minimal wrapper that throws on tree operations
-		return new HSTProxy(value, this.doctype, fullPath, this.rootNode, this.parentDoctype)
+		return new HSTProxy(value, nodeDoctype, fullPath, this.rootNode, this.parentDoctype)
 	}
 
 	set(path: string, value: any): void {
@@ -411,14 +420,26 @@ class HSTProxy implements HSTNode {
 
 	private async triggerFieldActions(fullPath: string, beforeValue: any, afterValue: any): Promise<void> {
 		try {
-			const triggerEngine = getGlobalTriggerEngine()
 			const pathSegments = fullPath.split('.')
+
+			// Only trigger field actions for actual field changes (at least 3 levels deep: doctype.recordId.fieldname)
+			// Skip triggering for doctype-level or record-level changes
+			if (pathSegments.length < 3) {
+				return
+			}
+
+			const triggerEngine = getGlobalTriggerEngine()
 			const fieldname = pathSegments.slice(2).join('.') || pathSegments[pathSegments.length - 1]
 
-			// Extract doctype and recordId from path
+			// Determine the correct doctype for this path using the same logic as getNode()
 			// The path should be in format: "doctype.recordId.fieldname"
-			// Use the HST's doctype property which contains the actual doctype name
-			const doctype = this.doctype
+			let doctype = this.doctype
+
+			// If we're at the root level and this is a StonecropStore, use the first path segment as the doctype
+			if (this.doctype === 'StonecropStore' && pathSegments.length >= 1) {
+				doctype = pathSegments[0]
+			}
+
 			let recordId: string | undefined
 
 			// Extract recordId from path if it follows the expected pattern

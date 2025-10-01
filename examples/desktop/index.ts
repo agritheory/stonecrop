@@ -28,8 +28,22 @@ makeServer()
 
 // Create the getMeta function that will be used by the plugin
 const getMeta = async (doctype: string) => {
-	// Use the route-based meta endpoint - default to list route when only doctype is provided
-	const route = `/${doctype}`
+	// Handle composite doctype names (e.g., "todo-form", "todo-list")
+	let route: string
+
+	if (doctype.endsWith('-form')) {
+		// For form doctypes, construct a route like /todo/1 (using ID 1 as default)
+		const baseDoctype = doctype.replace('-form', '')
+		route = `/${baseDoctype}/1`
+	} else if (doctype.endsWith('-list')) {
+		// For list doctypes, construct a route like /todo
+		const baseDoctype = doctype.replace('-list', '')
+		route = `/${baseDoctype}`
+	} else {
+		// Fallback: use the doctype as-is for backwards compatibility
+		route = `/${doctype}`
+	}
+
 	const response = await fetch(`/api/meta?route=${encodeURIComponent(route)}`)
 	const data: MutableDoctype = await response.json()
 

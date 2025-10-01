@@ -58,6 +58,50 @@ app.use(StonecropPlugin, {
 
 **Key Learning**: Instead of global references and event listeners, the router now receives Registry and Stonecrop instances directly through the initialization callback, eliminating the need for global state management.
 
+### Framework Agnosticism Principle
+**Critical Learning**: Framework components must remain completely agnostic to application-specific doctype patterns and organization structures.
+
+**Problem**: The `useStonecrop` composable was making hard-coded assumptions about doctype naming conventions:
+- Automatically appending `-form` and `-list` suffixes to route segments
+- Determining doctype variants based on URL pattern analysis
+- Embedding business logic about form vs. list views into the framework
+
+**Solution**:
+- **Route-Centric Resolution**: Pass the entire route path to `registry.getMeta()` and let the application determine the doctype
+- **Application-Controlled Mapping**: The application's `getMeta` function decides how routes map to doctypes
+- **No Framework Assumptions**: Framework code never assumes specific naming patterns or doctype structures
+
+```typescript
+// BEFORE (Framework making assumptions)
+const isFormView = recordId && recordId !== 'new'
+const actualDoctypeSlug = isFormView ? `${doctypeSlug}-form` : `${doctypeSlug}-list`
+const doctype = await registry.getMeta?.(actualDoctypeSlug)
+
+// AFTER (Application controls mapping)
+const routePath = route.path  // "/todo/1" or "/todo"
+const doctype = await registry.getMeta?.(routePath)  // App decides todo-form vs todo-list
+```
+
+### Field Trigger Context Resolution
+**Critical Learning**: HST doctype context must be resolved consistently across all operations, including field triggers.
+
+**Problem**: Field triggers were using the root HST node's doctype ("StonecropStore") instead of the path-specific doctype:
+```typescript
+// WRONG: Uses root doctype
+const doctype = this.doctype  // Always "StonecropStore"
+```
+
+**Solution**: Apply the same doctype resolution logic used in `getNode()` to field trigger execution:
+```typescript
+// CORRECT: Resolve doctype from path
+let doctype = this.doctype
+if (this.doctype === 'StonecropStore' && pathSegments.length >= 1) {
+  doctype = pathSegments[0]  // Extract actual doctype from path
+}
+```
+
+**Impact**: Field triggers now execute with the correct doctype context (e.g., "todo-form" instead of "StonecropStore"), enabling proper action registration and execution.
+
 ## Agent Architecture Components
 
 ### 1. Application Agent (`index.ts`)
@@ -423,11 +467,13 @@ rushx docs
 - Use HST for all mutable application state
 - Keep workflow state separate from data state
 - Leverage path-based addressing for state access
+- Ensure consistent doctype resolution across all HST operations
 
 ### 2. Route Management
 - Register routes dynamically based on server configuration
 - Cache doctype hierarchies for performance
 - Use route guards for state preparation
+- **Never embed doctype structure assumptions in framework code**
 
 ### 3. Workflow Design
 - Design FSMs with clear state transitions
@@ -438,6 +484,12 @@ rushx docs
 - Use `useStonecrop` composable for HST integration
 - Provide HST paths for field-level reactivity
 - Handle changes through `handleHSTChange` for automatic sync
+
+### 5. Framework Agnosticism
+- **Framework Code**: Provide generic hooks and mechanisms, never assume application patterns
+- **Application Code**: Own all business logic, doctype structures, and API patterns
+- **Route Resolution**: Let applications control how routes map to doctypes
+- **Field Triggers**: Ensure doctype context is correctly resolved from HST paths
 
 ## Testing Agents
 

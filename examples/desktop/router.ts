@@ -44,7 +44,7 @@ async function setupDoctypeData(doctype: string, actualDoctype?: string): Promis
 
 		// Get doctype metadata if not already loaded
 		if (!scopedRegistry.registry[targetDoctype]) {
-			const doctypeMeta = await scopedRegistry.getMeta?.(doctype)
+			const doctypeMeta = await scopedRegistry.getMeta?.(targetDoctype)
 			if (doctypeMeta) {
 				scopedRegistry.addDoctype(doctypeMeta)
 			}
