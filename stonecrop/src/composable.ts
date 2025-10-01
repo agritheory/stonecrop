@@ -1,7 +1,7 @@
 // src/composable.ts
 import { inject, onMounted, Ref, ref, watch, provide } from 'vue'
 
-import Registry from './registry'
+import Registry, { type RouteContext } from './registry'
 import { Stonecrop } from './stonecrop'
 import DoctypeMeta from './doctype'
 import type { HSTNode } from './stores/hst'
@@ -91,10 +91,13 @@ export function useStonecrop(options?: {
 			const recordId = pathSegments[1]?.toLowerCase()
 
 			if (pathSegments.length > 0) {
-				// Use the entire route path for doctype resolution - let the application decide the structure
-				const routePath = route.path
+				// Create route context for getMeta function
+				const routeContext: RouteContext = {
+					path: route.path,
+					segments: pathSegments,
+				}
 
-				const doctype = await registry.getMeta?.(routePath)
+				const doctype = await registry.getMeta?.(routeContext)
 				if (doctype) {
 					registry.addDoctype(doctype)
 					stonecrop.value.setup(doctype)

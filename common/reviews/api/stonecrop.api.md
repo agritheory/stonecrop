@@ -323,7 +323,7 @@ export type ImmutableDoctype = {
 export type InstallOptions = {
     router?: Router;
     components?: Record<string, Component>;
-    getMeta?: (doctype?: string) => DoctypeMeta | Promise<DoctypeMeta>;
+    getMeta?: (routeContext: RouteContext) => DoctypeMeta | Promise<DoctypeMeta>;
     autoInitializeRouter?: boolean;
     onRouterInitialized?: (registry: Registry, stonecrop: Stonecrop) => void | Promise<void>;
 };
@@ -353,13 +353,19 @@ export function registerGlobalAction(name: string, fn: FieldActionFunction): voi
 
 // @public
 export class Registry {
-    constructor(router?: Router, getMeta?: (doctype: string) => DoctypeMeta | Promise<DoctypeMeta>);
+    constructor(router?: Router, getMeta?: (routeContext: RouteContext) => DoctypeMeta | Promise<DoctypeMeta>);
     addDoctype(doctype: DoctypeMeta): void;
-    getMeta?: (doctype: string) => DoctypeMeta | Promise<DoctypeMeta>;
+    getMeta?: (routeContext: RouteContext) => DoctypeMeta | Promise<DoctypeMeta>;
     readonly name: string;
     readonly registry: Record<string, DoctypeMeta>;
     static _root: Registry;
     readonly router?: Router;
+}
+
+// @public
+export interface RouteContext {
+    path: string;
+    segments: string[];
 }
 
 // @public

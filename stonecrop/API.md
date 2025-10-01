@@ -458,6 +458,26 @@ export interface HSTNode {
 }
 ```
 
+### RouteContext
+
+Route context passed to getMeta function
+
+**Definition:**
+
+```typescript
+export interface RouteContext {
+  path: string;
+  segments: string[];
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| path | `string` | The full route path (e.g., "/todo/1" or "/todo") |
+| segments | `string[]` | Path segments split by "/" (e.g., ["todo", "1"] or ["todo"]) |
+
 ### TableColumn
 
 Table column definition.
@@ -891,7 +911,7 @@ Install options for Stonecrop Vue plugin
 export type InstallOptions = {
     router?: Router;
     components?: Record<string, Component>;
-    getMeta?: (doctype?: string) => DoctypeMeta | Promise<DoctypeMeta>;
+    getMeta?: (routeContext: RouteContext) => DoctypeMeta | Promise<DoctypeMeta>;
     autoInitializeRouter?: boolean;
     onRouterInitialized?: (registry: Registry, stonecrop: Stonecrop) => void | Promise<void>;
 };
@@ -1019,7 +1039,7 @@ Stonecrop Registry class
 **Constructor:**
 
 ```typescript
-new Registry(router: Router, getMeta: (doctype: string) => DoctypeMeta | Promise<DoctypeMeta>)
+new Registry(router: Router, getMeta: (routeContext: RouteContext) => DoctypeMeta | Promise<DoctypeMeta>)
 ```
 
 **Properties:**
@@ -1027,7 +1047,7 @@ new Registry(router: Router, getMeta: (doctype: string) => DoctypeMeta | Promise
 | Property | Type | Description |
 |----------|------|-------------|
 | _root | `Registry` | The root Registry instance |
-| getMeta | `(doctype: string) => DoctypeMeta \| Promise<DoctypeMeta>` | The getMeta function fetches doctype metadata from an API |
+| getMeta | `(routeContext: RouteContext) => DoctypeMeta \| Promise<DoctypeMeta>` | The getMeta function fetches doctype metadata from an API based on route context |
 | name | `string` | The name of the Registry instance |
 | registry | `Record<string, DoctypeMeta>` | The registry property contains a collection of doctypes |
 | router | `Router` | The Vue router instance |

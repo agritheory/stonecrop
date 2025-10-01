@@ -5,7 +5,7 @@ import type { Router } from 'vue-router'
 import type { AnyStateNodeConfig, UnknownMachineConfig } from 'xstate'
 
 import type DoctypeMeta from '../doctype'
-import Registry from '../registry'
+import Registry, { type RouteContext } from '../registry'
 import { Stonecrop } from '../stonecrop'
 
 /**
@@ -45,7 +45,7 @@ export type Schema = {
 export type InstallOptions = {
 	router?: Router
 	components?: Record<string, Component>
-	getMeta?: (doctype?: string) => DoctypeMeta | Promise<DoctypeMeta>
+	getMeta?: (routeContext: RouteContext) => DoctypeMeta | Promise<DoctypeMeta>
 	/** Automatically run initialization callback after app mounting (default: false) */
 	autoInitializeRouter?: boolean
 	/** Callback function called after plugin is ready and mounted */
