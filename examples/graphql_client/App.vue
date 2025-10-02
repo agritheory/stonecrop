@@ -27,6 +27,6 @@ const { stonecrop } = useStonecrop()
 onMounted(async () => {
 	const response = await fetch('/schema')
 	schema.value = await response.json()
-	data.value = await stonecrop.value.getMeta({ doctype: 'Issue' })
+	if (stonecrop.value) data.value = await stonecrop.value.getMeta('Issue')
 })
 </script>

@@ -857,6 +857,14 @@ Clear all records for a doctype
 clearRecords(doctype: string | DoctypeMeta): void
 ```
 
+#### getMeta
+
+Get doctype metadata from the registry
+
+```typescript
+getMeta(doctype: string): Promise<any>
+```
+
 #### getRecord
 
 Get single record from server (maintains compatibility)
