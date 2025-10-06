@@ -47,6 +47,7 @@ const metaParser = (obj: string): MetaParser => {
 const methods = {
 	getMeta: async (doctype: string, url?: string): Promise<MetaResponse> => {
 		const client = new GraphQLClient(url || '/graphql', {
+			fetch: window.fetch,
 			jsonSerializer: {
 				stringify: obj => JSON.stringify(obj), // process the request object before sending; leave as default JSON
 				parse: metaParser, // process the response meta object
