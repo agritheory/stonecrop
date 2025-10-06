@@ -1,6 +1,18 @@
 import { Router } from 'vue-router'
 
 import DoctypeMeta from './doctype'
+import { getGlobalTriggerEngine } from './field-triggers'
+
+/**
+ * Route context passed to getMeta function
+ * @public
+ */
+export interface RouteContext {
+	/** The full route path (e.g., "/todo/1" or "/todo") */
+	path: string
+	/** Path segments split by "/" (e.g., ["todo", "1"] or ["todo"]) */
+	segments: string[]
+}
 
 /**
  * Stonecrop Registry class
@@ -31,7 +43,7 @@ export default class Registry {
 	 */
 	readonly router?: Router
 
-	constructor(router?: Router, getMeta?: (doctype: string) => DoctypeMeta | Promise<DoctypeMeta>) {
+	constructor(router?: Router, getMeta?: (routeContext: RouteContext) => DoctypeMeta | Promise<DoctypeMeta>) {
 		if (Registry._root) {
 			return Registry._root
 		}
@@ -43,10 +55,10 @@ export default class Registry {
 	}
 
 	/**
-	 * The getMeta function fetches doctype metadata from an API
+	 * The getMeta function fetches doctype metadata from an API based on route context
 	 * @see {@link DoctypeMeta}
 	 */
-	getMeta?: (doctype: string) => DoctypeMeta | Promise<DoctypeMeta>
+	getMeta?: (routeContext: RouteContext) => DoctypeMeta | Promise<DoctypeMeta>
 
 	/**
 	 * Get doctype metadata
@@ -57,6 +69,14 @@ export default class Registry {
 	addDoctype(doctype: DoctypeMeta) {
 		if (!(doctype.doctype in Object.keys(this.registry))) {
 			this.registry[doctype.slug] = doctype
+		}
+
+		// Register actions (including field triggers) with the field trigger engine
+		const triggerEngine = getGlobalTriggerEngine()
+		// Register under both doctype name and slug to handle different lookup patterns
+		triggerEngine.registerDoctypeActions(doctype.doctype, doctype.actions)
+		if (doctype.slug !== doctype.doctype) {
+			triggerEngine.registerDoctypeActions(doctype.slug, doctype.actions)
 		}
 
 		if (doctype.component && this.router && !this.router.hasRoute(doctype.doctype)) {

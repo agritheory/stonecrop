@@ -4,7 +4,7 @@
 		<ActionSet :elements="actionElements" />
 
 		<!-- Main content using AForm -->
-		<AForm v-if="currentViewSchema.length > 0" v-model="currentViewSchema" :data="currentViewData" />
+		<AForm v-if="writableSchema.length > 0" v-model="writableSchema" :data="currentViewData" />
 		<div v-else-if="!stonecrop" class="loading"><p>Initializing Stonecrop...</p></div>
 		<div v-else class="loading">
 			<p>Loading {{ currentView }} data...</p>
@@ -51,8 +51,44 @@ const { stonecrop } = useStonecrop()
 // State
 const loading = ref(false)
 const saving = ref(false)
-const currentViewData = ref<Record<string, any>>({})
 const commandPaletteOpen = ref(false)
+
+// HST-based form data management - field triggers are handled automatically by HST
+
+// Computed property that reads from HST store for reactive form data
+const currentViewData = computed<Record<string, any>>({
+	get() {
+		if (!stonecrop.value || !currentDoctype.value || !currentRecordId.value) {
+			return {}
+		}
+
+		try {
+			const record = stonecrop.value.getRecordById(currentDoctype.value, currentRecordId.value)
+			return record?.get('') || {}
+		} catch {
+			return {}
+		}
+	},
+	set(newData: Record<string, any>) {
+		if (!stonecrop.value || !currentDoctype.value || !currentRecordId.value) {
+			return
+		}
+
+		try {
+			// Update each field in HST, which will automatically trigger field actions
+			const hstStore = stonecrop.value.getStore()
+			for (const [fieldname, value] of Object.entries(newData)) {
+				const fieldPath = `${currentDoctype.value}.${currentRecordId.value}.${fieldname}`
+				hstStore.set(fieldPath, value)
+			}
+		} catch (error) {
+			// eslint-disable-next-line no-console
+			console.warn('HST update failed:', error)
+		}
+	},
+})
+
+// HST-based form data management - field triggers are handled automatically by HST
 
 // Computed properties for current route context
 const route = computed(() => unref(stonecrop.value?.registry.router?.currentRoute))
@@ -148,21 +184,8 @@ const currentView = computed(() => {
 	return 'doctypes'
 })
 
-// Schema for different views
-const currentViewSchema = computed<SchemaTypes[]>(() => {
-	switch (currentView.value) {
-		case 'doctypes':
-			return getDoctypesSchema()
-		case 'records':
-			return getRecordsSchema()
-		case 'record':
-			return getRecordFormSchema()
-		default:
-			return []
-	}
-})
-
-// New component reactive properties
+// Computed properties (now that all helper functions are defined)
+// New component reactive properties// New component reactive properties
 const actionElements = computed<ActionElements[]>(() => {
 	const elements: ActionElements[] = []
 
@@ -300,7 +323,7 @@ const executeCommand = (command: Command) => {
 	commandPaletteOpen.value = false
 }
 
-// Helper functions
+// Helper functions - moved here to avoid "before initialization" errors
 const formatDoctypeName = (doctype: string): string => {
 	return doctype
 		.split('-')
@@ -327,7 +350,20 @@ const createNewRecord = async () => {
 	await router.value?.push(`/${routeDoctype.value}/${newId}`)
 }
 
-// Schema generators
+// Doctype metadata loader - simplified since router handles most of this
+const loadDoctypeMetadata = (doctype: string) => {
+	if (!stonecrop.value) return
+
+	// Ensure the doctype structure exists in HST
+	// The router should have already loaded the metadata, but this ensures the HST structure exists
+	try {
+		stonecrop.value.records(doctype)
+	} catch (error) {
+		// Silent error handling - structure will be created if needed
+	}
+}
+
+// Schema generator functions - moved here to be available to computed properties
 const getDoctypesSchema = (): SchemaTypes[] => {
 	if (!availableDoctypes.length) return []
 
@@ -618,7 +654,7 @@ const getRecordFormSchema = (): SchemaTypes[] => {
 	}
 }
 
-// Data helpers
+// Additional data helper functions
 const getRecords = () => {
 	if (!stonecrop.value || !currentDoctype.value) {
 		return []
@@ -656,25 +692,74 @@ const getColumns = () => {
 	return []
 }
 
-// Doctype metadata loader - simplified since router handles most of this
-const loadDoctypeMetadata = (doctype: string) => {
-	if (!stonecrop.value) return
-
-	// Ensure the doctype structure exists in HST
-	// The router should have already loaded the metadata, but this ensures the HST structure exists
-	try {
-		stonecrop.value.records(doctype)
-	} catch (error) {
-		// Silent error handling - structure will be created if needed
-	}
-}
-
 const getCurrentRecord = () => {
 	if (!stonecrop.value || !currentDoctype.value || isNewRecord.value) return {}
 
 	const record = stonecrop.value.getRecordById(currentDoctype.value, currentRecordId.value)
 	return record?.get('') || {}
 }
+
+// Schema for different views - defined here after all helper functions are available
+const currentViewSchema = computed<SchemaTypes[]>(() => {
+	switch (currentView.value) {
+		case 'doctypes':
+			return getDoctypesSchema()
+		case 'records':
+			return getRecordsSchema()
+		case 'record':
+			return getRecordFormSchema()
+		default:
+			return []
+	}
+})
+
+// Writable schema for AForm v-model binding
+const writableSchema = ref<SchemaTypes[]>([])
+
+// Sync computed schema to writable schema when it changes
+watch(
+	currentViewSchema,
+	newSchema => {
+		writableSchema.value = [...newSchema]
+	},
+	{ immediate: true, deep: true }
+)
+
+// Watch for field changes in writable schema and sync to HST
+watch(
+	writableSchema,
+	newSchema => {
+		if (!stonecrop.value || !currentDoctype.value || !currentRecordId.value || isNewRecord.value) {
+			return
+		}
+
+		try {
+			const hstStore = stonecrop.value.getStore()
+
+			// Process form field updates from schema
+			newSchema.forEach(field => {
+				// Only process fields that have a fieldname and value (form fields)
+				if (
+					field.fieldname &&
+					'value' in field &&
+					!['header', 'actions', 'loading', 'error'].includes(field.fieldname)
+				) {
+					const fieldPath = `${currentDoctype.value}.${currentRecordId.value}.${field.fieldname}`
+					const currentValue = hstStore.has(fieldPath) ? hstStore.get(fieldPath) : undefined
+
+					// Only update if value actually changed to avoid infinite loops
+					if (currentValue !== field.value) {
+						hstStore.set(fieldPath, field.value)
+					}
+				}
+			})
+		} catch (error) {
+			// eslint-disable-next-line no-console
+			console.warn('HST schema sync failed:', error)
+		}
+	},
+	{ deep: true }
+)
 
 // Action handlers (will be triggered by button clicks in the UI)
 const handleSave = async () => {
@@ -831,18 +916,19 @@ const loadRecordData = () => {
 
 	try {
 		if (!isNewRecord.value) {
-			// Load existing record data
+			// For existing records, ensure the record exists in HST
+			// The computed currentViewData will automatically read from HST
 			const record = stonecrop.value.getRecordById(currentDoctype.value, currentRecordId.value)
-			if (record) {
-				const recordData = record.get('') || {}
-				currentViewData.value = { ...recordData }
+			if (!record) {
+				// Record doesn't exist in HST, this is expected for new data loads
+				// eslint-disable-next-line no-console
+				console.log(`📝 [Desktop] Record ${currentRecordId.value} not found in HST for ${currentDoctype.value}`)
 			}
-		} else {
-			// Initialize empty form data for new record
-			currentViewData.value = {}
 		}
+		// For new records, currentViewData computed property will return {} automatically
 	} catch (error) {
-		// Silently handle error
+		// eslint-disable-next-line no-console
+		console.warn('Error loading record data:', error)
 	} finally {
 		loading.value = false
 	}

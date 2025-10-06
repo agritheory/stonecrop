@@ -36,8 +36,9 @@ async function setupAutoInitialization(
  * const app = createApp(App)
  * app.use(Stonecrop, {
  *   router,
- *   getMeta: async (doctype: string) => {
- *     // fetch doctype meta from your API
+ *   getMeta: async (routeContext) => {
+ *     // routeContext contains: { path, segments }
+ *     // fetch doctype meta from your API using the route context
  *   },
  *   autoInitializeRouter: true,
  *   onRouterInitialized: async (registry, stonecrop) => {

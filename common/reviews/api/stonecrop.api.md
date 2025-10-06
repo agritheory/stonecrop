@@ -20,6 +20,23 @@ import { useElementBounding } from '@vueuse/core';
 import { WritableComputedRef } from 'vue';
 
 // @public
+export interface ActionExecutionResult {
+    action: FieldAction;
+    error?: Error;
+    executionTime: number;
+    success: boolean;
+}
+
+// @public
+export interface ActionRegistry {
+    get(name: string): FieldActionFunction | undefined;
+    has(name: string): boolean;
+    list(): string[];
+    register(name: string, fn: FieldActionFunction): void;
+    unregister(name: string): void;
+}
+
+// @public
 export type BaseSchema = {
     fieldname: string;
     component?: string;
@@ -117,11 +134,72 @@ export class DoctypeMeta {
 }
 
 // @public
+export type FieldAction = FieldActionFunction | FieldActionString;
+
+// @public
+export type FieldActionFunction = (context: FieldChangeContext) => void | Promise<void>;
+
+// @public
+export type FieldActionString = string;
+
+// @public
+export interface FieldChangeContext {
+    afterValue: any;
+    beforeValue: any;
+    doctype: string;
+    fieldname: string;
+    operation: 'set' | 'delete' | 'patch';
+    path: string;
+    recordId?: string;
+    timestamp: Date;
+}
+
+// @public
 export type FieldsetSchema = BaseSchema & {
     label?: string;
     schema?: (FormSchema | TableSchema)[];
     collapsible?: boolean;
 };
+
+// @public
+export interface FieldTriggerConfig {
+    actions: FieldAction[];
+    condition?: (context: FieldChangeContext) => boolean | Promise<boolean>;
+    stopOnError?: boolean;
+    timeout?: number;
+    timing?: 'before' | 'after';
+}
+
+// Warning: (ae-internal-missing-underscore) The name "FieldTriggerEngine" should be prefixed with an underscore because the declaration is marked as @internal
+//
+// @internal
+export class FieldTriggerEngine {
+    constructor(options?: FieldTriggerOptions);
+    executeFieldTriggers(context: FieldChangeContext, options?: {
+        timeout?: number;
+    }): Promise<FieldTriggerExecutionResult>;
+    registerAction(name: string, fn: FieldActionFunction): void;
+    registerDoctypeActions(doctype: string, actions: Map_2<string, string[]> | Map<string, string[]> | Record<string, string[]> | undefined): void;
+}
+
+// @public
+export interface FieldTriggerExecutionResult {
+    actionResults: ActionExecutionResult[];
+    allSucceeded: boolean;
+    path: string;
+    stoppedOnError: boolean;
+    totalExecutionTime: number;
+}
+
+// @public
+export type FieldTriggerMap = Record<string, FieldTriggerConfig | FieldAction[]>;
+
+// @public
+export interface FieldTriggerOptions {
+    debug?: boolean;
+    defaultTimeout?: number;
+    errorHandler?: (error: Error, context: FieldChangeContext, action: FieldAction) => void;
+}
 
 // @public
 export type FormSchema = BaseSchema & {
@@ -193,6 +271,11 @@ export interface GanttTableConfig extends BaseTableConfig {
     view: 'gantt';
 }
 
+// Warning: (ae-incompatible-release-tags) The symbol "getGlobalTriggerEngine" is marked as @public, but its signature references "FieldTriggerEngine" which is marked as @internal
+//
+// @public
+export function getGlobalTriggerEngine(options?: FieldTriggerOptions): FieldTriggerEngine;
+
 // @public
 export class HST {
     getDoctypeMeta(doctype: string): any;
@@ -240,7 +323,7 @@ export type ImmutableDoctype = {
 export type InstallOptions = {
     router?: Router;
     components?: Record<string, Component>;
-    getMeta?: (doctype?: string) => DoctypeMeta | Promise<DoctypeMeta>;
+    getMeta?: (routeContext: RouteContext) => DoctypeMeta | Promise<DoctypeMeta>;
     autoInitializeRouter?: boolean;
     onRouterInitialized?: (registry: Registry, stonecrop: Stonecrop) => void | Promise<void>;
 };
@@ -253,19 +336,36 @@ export type MutableDoctype = {
     actions?: Record<string, string[]>;
 };
 
+// Warning: (ae-internal-missing-underscore) The name "PathMatchResult" should be prefixed with an underscore because the declaration is marked as @internal
+//
+// @internal
+export interface PathMatchResult {
+    captures: Record<string, string>;
+    matches: boolean;
+}
+
 // @public
 const plugin: Plugin_2;
 export default plugin;
 
 // @public
+export function registerGlobalAction(name: string, fn: FieldActionFunction): void;
+
+// @public
 export class Registry {
-    constructor(router?: Router, getMeta?: (doctype: string) => DoctypeMeta | Promise<DoctypeMeta>);
+    constructor(router?: Router, getMeta?: (routeContext: RouteContext) => DoctypeMeta | Promise<DoctypeMeta>);
     addDoctype(doctype: DoctypeMeta): void;
-    getMeta?: (doctype: string) => DoctypeMeta | Promise<DoctypeMeta>;
+    getMeta?: (routeContext: RouteContext) => DoctypeMeta | Promise<DoctypeMeta>;
     readonly name: string;
     readonly registry: Record<string, DoctypeMeta>;
     static _root: Registry;
     readonly router?: Router;
+}
+
+// @public
+export interface RouteContext {
+    path: string;
+    segments: string[];
 }
 
 // @public

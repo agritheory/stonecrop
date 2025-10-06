@@ -1,3 +1,6 @@
+import { getGlobalTriggerEngine } from '../field-triggers'
+import type { FieldChangeContext } from '../types/field-triggers'
+
 /**
  * Core HST Interface - enhanced with tree navigation
  * Provides a hierarchical state tree interface for navigating and manipulating nested data structures.
@@ -227,17 +230,34 @@ class HSTProxy implements HSTNode {
 		const fullPath = this.resolvePath(path)
 		const value = this.resolveValue(path)
 
+		// Determine the correct doctype for this node based on the path
+		const pathSegments = fullPath.split('.')
+		let nodeDoctype = this.doctype
+
+		// If we're at the root level and this is a StonecropStore, use the first path segment as the doctype
+		if (this.doctype === 'StonecropStore' && pathSegments.length >= 1) {
+			nodeDoctype = pathSegments[0]
+		}
+
 		// Always wrap in HSTProxy for tree navigation
 		if (typeof value === 'object' && value !== null && !this.isPrimitive(value)) {
-			return new HSTProxy(value, this.doctype, fullPath, this.rootNode, this.parentDoctype)
+			return new HSTProxy(value, nodeDoctype, fullPath, this.rootNode, this.parentDoctype)
 		}
 
 		// For primitives, return a minimal wrapper that throws on tree operations
-		return new HSTProxy(value, this.doctype, fullPath, this.rootNode, this.parentDoctype)
+		return new HSTProxy(value, nodeDoctype, fullPath, this.rootNode, this.parentDoctype)
 	}
 
 	set(path: string, value: any): void {
+		// Get current value for change context
+		const fullPath = this.resolvePath(path)
+		const beforeValue = this.has(path) ? this.get(path) : undefined
+
+		// Update the value
 		this.updateValue(path, value)
+
+		// Trigger field actions asynchronously (don't block the set operation)
+		void this.triggerFieldActions(fullPath, beforeValue, value)
 	}
 
 	has(path: string): boolean {
@@ -398,6 +418,62 @@ class HSTProxy implements HSTNode {
 		;(obj as PropertyAccessible)[key] = value
 	}
 
+	private async triggerFieldActions(fullPath: string, beforeValue: any, afterValue: any): Promise<void> {
+		try {
+			// Guard against undefined or null fullPath
+			if (!fullPath || typeof fullPath !== 'string') {
+				return
+			}
+
+			const pathSegments = fullPath.split('.')
+
+			// Only trigger field actions for actual field changes (at least 3 levels deep: doctype.recordId.fieldname)
+			// Skip triggering for doctype-level or record-level changes
+			if (pathSegments.length < 3) {
+				return
+			}
+
+			const triggerEngine = getGlobalTriggerEngine()
+			const fieldname = pathSegments.slice(2).join('.') || pathSegments[pathSegments.length - 1]
+
+			// Determine the correct doctype for this path using the same logic as getNode()
+			// The path should be in format: "doctype.recordId.fieldname"
+			let doctype = this.doctype
+
+			// If we're at the root level and this is a StonecropStore, use the first path segment as the doctype
+			if (this.doctype === 'StonecropStore' && pathSegments.length >= 1) {
+				doctype = pathSegments[0]
+			}
+
+			let recordId: string | undefined
+
+			// Extract recordId from path if it follows the expected pattern
+			if (pathSegments.length >= 2) {
+				recordId = pathSegments[1]
+			}
+
+			const context: FieldChangeContext = {
+				path: fullPath,
+				fieldname,
+				beforeValue,
+				afterValue,
+				operation: 'set',
+				doctype,
+				recordId,
+				timestamp: new Date(),
+			}
+
+			await triggerEngine.executeFieldTriggers(context)
+		} catch (error) {
+			// Silently handle trigger errors to not break the main flow
+			// In production, you might want to log this error
+			if (error instanceof Error) {
+				// eslint-disable-next-line no-console
+				console.warn('Field trigger error:', error.message)
+				// Optional: emit an event or call error handler
+			}
+		}
+	}
 	private isVueReactive(obj: any): obj is VueReactive {
 		return (
 			obj &&

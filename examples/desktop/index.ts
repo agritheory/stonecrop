@@ -12,11 +12,15 @@ import StonecropPlugin, {
 	Stonecrop,
 	type ImmutableDoctype,
 	type MutableDoctype,
+	type RouteContext,
 } from '@stonecrop/stonecrop'
 
 import App from './App.vue'
 import router, { setupRouterContext } from './router'
 import { makeServer } from './server'
+
+// Import field trigger actions - this registers them globally
+import './actions'
 
 const app = createApp(App)
 
@@ -24,10 +28,8 @@ const app = createApp(App)
 makeServer()
 
 // Create the getMeta function that will be used by the plugin
-const getMeta = async (doctype: string) => {
-	// Use the route-based meta endpoint - default to list route when only doctype is provided
-	const route = `/${doctype}`
-	const response = await fetch(`/api/meta?route=${encodeURIComponent(route)}`)
+const getMeta = async (routeContext: RouteContext) => {
+	const response = await fetch(`/api/meta?route=${encodeURIComponent(routeContext.path)}`)
 	const data: MutableDoctype = await response.json()
 
 	if ('error' in data) {
@@ -40,7 +42,7 @@ const getMeta = async (doctype: string) => {
 		actions: Map(data.actions || {}),
 	}
 
-	return new DoctypeMeta(data.doctype || doctype, config.schema, config.workflow, config.actions)
+	return new DoctypeMeta(data.doctype!, config.schema, config.workflow, config.actions)
 }
 
 // Install plugins in correct order following Vue.js best practices

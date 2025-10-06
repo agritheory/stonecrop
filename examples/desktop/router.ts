@@ -33,7 +33,7 @@ export async function setupRouterContext(registry: Registry, stonecrop: Stonecro
 /**
  * Setup doctype metadata and load all records for the doctype
  */
-async function setupDoctypeData(doctype: string, actualDoctype?: string): Promise<void> {
+async function setupDoctypeData(doctype: string, actualDoctype?: string, routePath?: string): Promise<void> {
 	if (!scopedRegistry || !scopedStonecrop) {
 		// Scoped Stonecrop references not available during route setup
 		return
@@ -44,7 +44,14 @@ async function setupDoctypeData(doctype: string, actualDoctype?: string): Promis
 
 		// Get doctype metadata if not already loaded
 		if (!scopedRegistry.registry[targetDoctype]) {
-			const doctypeMeta = await scopedRegistry.getMeta?.(doctype)
+			// Create RouteContext for getMeta call
+			const defaultPath = routePath || `/${doctype}`
+			const routeContext = {
+				path: defaultPath,
+				segments: defaultPath.split('/').filter(s => s.length > 0),
+			}
+
+			const doctypeMeta = await scopedRegistry.getMeta?.(routeContext)
 			if (doctypeMeta) {
 				scopedRegistry.addDoctype(doctypeMeta)
 			}
@@ -85,33 +92,16 @@ async function setupRecordData(doctype: string, recordId: string, actualDoctype?
 
 		// Get form doctype metadata if not already loaded
 		if (!scopedRegistry.registry[targetDoctype]) {
-			// Use the route-based meta endpoint
+			// Create RouteContext for getMeta call
 			const route = `/${doctype}/${recordId}`
-			const response = await fetch(`/api/meta?route=${encodeURIComponent(route)}`)
-			if (response.ok) {
-				const metaData = await response.json()
+			const routeContext = {
+				path: route,
+				segments: route.split('/').filter(s => s.length > 0),
+			}
 
-				if (metaData.error) {
-					console.error(`Meta endpoint error: ${metaData.error}`)
-					return
-				}
-
-				const config = {
-					schema: metaData.schema,
-					workflow: metaData.workflow,
-					actions: metaData.actions || {},
-				}
-
-				const doctypeMeta = new DoctypeMeta(
-					targetDoctype,
-					List(config.schema),
-					config.workflow,
-					Map(config.actions as Record<string, string[]>)
-				)
-
-				if (doctypeMeta) {
-					scopedRegistry.addDoctype(doctypeMeta)
-				}
+			const doctypeMeta = await scopedRegistry.getMeta?.(routeContext)
+			if (doctypeMeta) {
+				scopedRegistry.addDoctype(doctypeMeta)
 			}
 		}
 
@@ -170,7 +160,7 @@ async function registerDoctypeRoutes(doctype: string): Promise<boolean> {
 				try {
 					const routeDoctype = to.meta.doctype as string
 					const actualDoctype = to.meta.actualDoctype as string
-					await setupDoctypeData(routeDoctype, actualDoctype)
+					await setupDoctypeData(routeDoctype, actualDoctype, to.path)
 					next()
 				} catch (error) {
 					console.error(`[Router] Failed to setup list data for ${doctype}:`, error)
