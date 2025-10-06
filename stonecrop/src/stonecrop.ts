@@ -209,6 +209,18 @@ export class Stonecrop {
 	}
 
 	/**
+	 * Get doctype metadata from the registry
+	 * @param doctype - The doctype to get metadata for
+	 * @returns The doctype metadata
+	 */
+	async getMeta(doctype: string): Promise<any> {
+		if (!this.registry.getMeta) {
+			throw new Error('No getMeta function provided to Registry')
+		}
+		return await this.registry.getMeta(doctype)
+	}
+
+	/**
 	 * Get the root HST store node for advanced usage
 	 * @returns Root HST node
 	 */

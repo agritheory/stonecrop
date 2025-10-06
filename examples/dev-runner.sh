@@ -27,12 +27,17 @@ case $EXAMPLE_NAME in
     "desktop")
         PACKAGE_NAME="@stonecrop/desktop"
         ;;
+    "docbuilder")
+        ;;
+    "graphql_client")
+        PACKAGE_NAME="@stonecrop/graphql-client"
+        ;;
     "node_editor")
         PACKAGE_NAME="@stonecrop/node-editor"
         ;;
     *)
         echo "Unknown example: $EXAMPLE_NAME"
-        echo "Available examples: aform, atable, beam, code_editor, desktop, node_editor"
+        echo "Available examples: aform, atable, beam, code_editor, desktop, docbuilder, graphql_client, node_editor"
         exit 1
         ;;
 esac
@@ -44,12 +49,16 @@ if [ ! -d "$EXAMPLE_NAME" ]; then
 fi
 
 # Run concurrently with histoire dev and rush build watch
-if [ "$EXAMPLE_NAME" == "desktop" ]; then
-    npx concurrently --kill-others --names "histoire,rush" \
+if [ "$EXAMPLE_NAME" == "desktop" ] || [ "$EXAMPLE_NAME" == "graphql_client" ]; then
+    npx concurrently --kill-others --names "server,rush" \
     "cd $EXAMPLE_NAME/ && vite dev ./ --config vite.config.ts" \
     "rush build --watch --to $PACKAGE_NAME"
+elif [ "$EXAMPLE_NAME" == "docbuilder" ]; then
+    npx concurrently --kill-others --names "server,rush" \
+    "cd $EXAMPLE_NAME/ && vite dev ./ --config vite.config.ts" \
+    "rush build --watch"
 else
-    npx concurrently --kill-others --names "histoire,rush" \
+    npx concurrently --kill-others --names "server,rush" \
     "cd $EXAMPLE_NAME/ && histoire dev" \
     "rush build --watch --to $PACKAGE_NAME"
 fi

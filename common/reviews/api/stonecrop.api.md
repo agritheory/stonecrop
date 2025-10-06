@@ -282,6 +282,7 @@ export class Stonecrop {
     constructor(registry: Registry);
     addRecord(doctype: string | DoctypeMeta, recordId: string, recordData: any): void;
     clearRecords(doctype: string | DoctypeMeta): void;
+    getMeta(doctype: string): Promise<any>;
     getRecord(doctype: DoctypeMeta, recordId: string): Promise<void>;
     getRecordById(doctype: string | DoctypeMeta, recordId: string): HSTNode | undefined;
     getRecordIds(doctype: string | DoctypeMeta): string[];
