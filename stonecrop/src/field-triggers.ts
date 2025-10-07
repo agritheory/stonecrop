@@ -6,6 +6,7 @@ import type {
 	FieldTriggerExecutionResult,
 	FieldTriggerOptions,
 	ActionExecutionResult,
+	ActionResult,
 } from './types/field-triggers'
 
 /**
@@ -108,12 +109,16 @@ export class FieldTriggerEngine {
 				totalExecutionTime: 0,
 				allSucceeded: true,
 				stoppedOnError: false,
+				rolledBack: false,
 			}
 		}
 
 		const startTime = performance.now()
 		const actionResults: ActionExecutionResult[] = []
+		const successfulActions: ActionExecutionResult[] = []
 		let stoppedOnError = false
+		let rolledBack = false
+		let rollbackResults: Array<{ success: boolean; error?: Error; executionTime: number }> = []
 
 		// Execute actions sequentially
 		for (const actionName of triggers) {
@@ -121,8 +126,16 @@ export class FieldTriggerEngine {
 				const actionResult = await this.executeAction(actionName, context, options.timeout)
 				actionResults.push(actionResult)
 
-				if (!actionResult.success) {
+				if (actionResult.success) {
+					// Track successful actions that might need rollback
+					successfulActions.push(actionResult)
+				} else {
 					stoppedOnError = true
+					// Execute rollbacks for previously successful actions
+					if (successfulActions.length > 0) {
+						rollbackResults = await this.executeRollbacks(successfulActions)
+						rolledBack = true
+					}
 					break
 				}
 			} catch (error) {
@@ -135,6 +148,12 @@ export class FieldTriggerEngine {
 				}
 				actionResults.push(errorResult)
 				stoppedOnError = true
+
+				// Execute rollbacks for previously successful actions
+				if (successfulActions.length > 0) {
+					rollbackResults = await this.executeRollbacks(successfulActions)
+					rolledBack = true
+				}
 				break
 			}
 		}
@@ -160,9 +179,41 @@ export class FieldTriggerEngine {
 			totalExecutionTime,
 			allSucceeded: actionResults.every(r => r.success),
 			stoppedOnError,
+			rolledBack,
+			rollbackResults: rollbackResults.length > 0 ? rollbackResults : undefined,
 		}
 
 		return result
+	}
+
+	/**
+	 * Execute rollbacks for successful actions in reverse order
+	 */
+	private async executeRollbacks(
+		successfulActions: ActionExecutionResult[]
+	): Promise<Array<{ success: boolean; error?: Error; executionTime: number }>> {
+		const rollbackResults: Array<{ success: boolean; error?: Error; executionTime: number }> = []
+
+		// Execute rollbacks in reverse order (LIFO - Last In, First Out)
+		for (let i = successfulActions.length - 1; i >= 0; i--) {
+			const actionResult = successfulActions[i]
+
+			if (actionResult.rollback) {
+				const startTime = performance.now()
+				try {
+					await actionResult.rollback()
+					const executionTime = performance.now() - startTime
+					rollbackResults.push({ success: true, executionTime })
+				} catch (error) {
+					const executionTime = performance.now() - startTime
+					const rollbackError = error instanceof Error ? error : new Error(String(error))
+					rollbackResults.push({ success: false, error: rollbackError, executionTime })
+					// Continue with other rollbacks even if one fails
+				}
+			}
+		}
+
+		return rollbackResults
 	}
 
 	/**
@@ -255,13 +306,25 @@ export class FieldTriggerEngine {
 				throw new Error(`Action "${actionName}" not found in registry`)
 			}
 
-			await this.executeWithTimeout(actionFn, context, actionTimeout)
+			const result = await this.executeWithTimeout(actionFn, context, actionTimeout)
 			const executionTime = performance.now() - startTime
 
-			return {
-				success: true,
-				executionTime,
-				action: actionName,
+			// Handle ActionResult return value
+			if (result && typeof result === 'object' && ('rollback' in result || 'mutations' in result)) {
+				const actionResult = result as ActionResult
+				return {
+					success: true,
+					executionTime,
+					action: actionName,
+					rollback: actionResult.rollback,
+					mutations: actionResult.mutations,
+				}
+			} else {
+				return {
+					success: true,
+					executionTime,
+					action: actionName,
+				}
 			}
 		} catch (error) {
 			const executionTime = performance.now() - startTime

@@ -96,6 +96,8 @@ export interface ActionExecutionResult {
   action: FieldAction;
   error?: Error;
   executionTime: number;
+  mutations?: Record<string, any>;
+  rollback?: RollbackFunction;
   success: boolean;
 }
 ```
@@ -107,6 +109,8 @@ export interface ActionExecutionResult {
 | action | `FieldAction` | The action that was executed |
 | error? | `Error` | Error if execution failed |
 | executionTime | `number` | Execution time in milliseconds |
+| mutations? | `Record<string, any>` | Mutations made by this action for tracking/assertions |
+| rollback? | `RollbackFunction` | Rollback function if the action supports rollback |
 | success | `boolean` | Whether the action executed successfully |
 
 ### ActionRegistry
@@ -124,6 +128,26 @@ export interface ActionRegistry {
   unregister(name: string): void;
 }
 ```
+
+### ActionResult
+
+Action execution result with optional rollback capability
+
+**Definition:**
+
+```typescript
+export interface ActionResult {
+  mutations?: Record<string, any>;
+  rollback?: RollbackFunction;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| mutations? | `Record<string, any>` | Any data that was mutated/created that can be tracked for assertions |
+| rollback? | `RollbackFunction` | Optional rollback function to undo this action |
 
 ### BaseTableConfig
 
@@ -322,6 +346,12 @@ export interface FieldTriggerExecutionResult {
   actionResults: ActionExecutionResult[];
   allSucceeded: boolean;
   path: string;
+  rollbackResults?: Array<{
+        success: boolean;
+        error?: Error;
+        executionTime: number;
+    }>;
+  rolledBack: boolean;
   stoppedOnError: boolean;
   totalExecutionTime: number;
 }
@@ -334,6 +364,8 @@ export interface FieldTriggerExecutionResult {
 | actionResults | `ActionExecutionResult[]` | Results for each action that was executed |
 | allSucceeded | `boolean` | Whether all actions succeeded |
 | path | `string` | The path that triggered the actions |
+| rollbackResults? | `Array<{ success: boolean; error?: Error; executionTime: number; }>` | Results of rollback operations if any were performed |
+| rolledBack | `boolean` | Whether rollbacks were executed due to failures |
 | stoppedOnError | `boolean` | Whether execution was stopped due to an error |
 | totalExecutionTime | `number` | Total execution time for all actions |
 
@@ -760,12 +792,12 @@ export type FieldAction = FieldActionFunction | FieldActionString;
 
 ### FieldActionFunction
 
-Action function that can be triggered by field changes
+Action function that can be triggered by field changes Can optionally return rollback information
 
 **Definition:**
 
 ```typescript
-export type FieldActionFunction = (context: FieldChangeContext) => void | Promise<void>;
+export type FieldActionFunction = (context: FieldChangeContext) => void | Promise<void> | ActionResult | Promise<ActionResult>;
 ```
 
 ### FieldActionString
@@ -930,6 +962,16 @@ export type MutableDoctype = {
     workflow?: UnknownMachineConfig | AnyStateNodeConfig;
     actions?: Record<string, string[]>;
 };
+```
+
+### RollbackFunction
+
+Rollback function that can undo the effects of an action
+
+**Definition:**
+
+```typescript
+export type RollbackFunction = () => void | Promise<void>;
 ```
 
 ### Schema

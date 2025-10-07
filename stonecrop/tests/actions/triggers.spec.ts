@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { FieldTriggerEngine, getGlobalTriggerEngine, registerGlobalAction } from '../src/field-triggers'
-import type { FieldChangeContext } from '../src/types/field-triggers'
+import { FieldTriggerEngine, getGlobalTriggerEngine, registerGlobalAction } from '../../src/field-triggers'
+import type { FieldChangeContext } from '../../src/types/field-triggers'
 
 describe('Field Trigger System', () => {
 	let triggerEngine: FieldTriggerEngine

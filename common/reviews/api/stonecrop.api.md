@@ -24,6 +24,8 @@ export interface ActionExecutionResult {
     action: FieldAction;
     error?: Error;
     executionTime: number;
+    mutations?: Record<string, any>;
+    rollback?: RollbackFunction;
     success: boolean;
 }
 
@@ -34,6 +36,12 @@ export interface ActionRegistry {
     list(): string[];
     register(name: string, fn: FieldActionFunction): void;
     unregister(name: string): void;
+}
+
+// @public
+export interface ActionResult {
+    mutations?: Record<string, any>;
+    rollback?: RollbackFunction;
 }
 
 // @public
@@ -137,7 +145,7 @@ export class DoctypeMeta {
 export type FieldAction = FieldActionFunction | FieldActionString;
 
 // @public
-export type FieldActionFunction = (context: FieldChangeContext) => void | Promise<void>;
+export type FieldActionFunction = (context: FieldChangeContext) => void | Promise<void> | ActionResult | Promise<ActionResult>;
 
 // @public
 export type FieldActionString = string;
@@ -187,6 +195,12 @@ export interface FieldTriggerExecutionResult {
     actionResults: ActionExecutionResult[];
     allSucceeded: boolean;
     path: string;
+    rollbackResults?: Array<{
+        success: boolean;
+        error?: Error;
+        executionTime: number;
+    }>;
+    rolledBack: boolean;
     stoppedOnError: boolean;
     totalExecutionTime: number;
 }
@@ -361,6 +375,9 @@ export class Registry {
     static _root: Registry;
     readonly router?: Router;
 }
+
+// @public
+export type RollbackFunction = () => void | Promise<void>;
 
 // @public
 export interface RouteContext {

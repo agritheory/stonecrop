@@ -27,10 +27,30 @@ export interface FieldChangeContext {
 }
 
 /**
- * Action function that can be triggered by field changes
+ * Rollback function that can undo the effects of an action
  * @public
  */
-export type FieldActionFunction = (context: FieldChangeContext) => void | Promise<void>
+export type RollbackFunction = () => void | Promise<void>
+
+/**
+ * Action execution result with optional rollback capability
+ * @public
+ */
+export interface ActionResult {
+	/** Optional rollback function to undo this action */
+	rollback?: RollbackFunction
+	/** Any data that was mutated/created that can be tracked for assertions */
+	mutations?: Record<string, any>
+}
+
+/**
+ * Action function that can be triggered by field changes
+ * Can optionally return rollback information
+ * @public
+ */
+export type FieldActionFunction = (
+	context: FieldChangeContext
+) => void | Promise<void> | ActionResult | Promise<ActionResult>
 
 /**
  * String reference to a globally registered action function or inline function
@@ -98,6 +118,10 @@ export interface ActionExecutionResult {
 	executionTime: number
 	/** The action that was executed */
 	action: FieldAction
+	/** Rollback function if the action supports rollback */
+	rollback?: RollbackFunction
+	/** Mutations made by this action for tracking/assertions */
+	mutations?: Record<string, any>
 }
 
 /**
@@ -115,6 +139,10 @@ export interface FieldTriggerExecutionResult {
 	allSucceeded: boolean
 	/** Whether execution was stopped due to an error */
 	stoppedOnError: boolean
+	/** Whether rollbacks were executed due to failures */
+	rolledBack: boolean
+	/** Results of rollback operations if any were performed */
+	rollbackResults?: Array<{ success: boolean; error?: Error; executionTime: number }>
 }
 
 /**
