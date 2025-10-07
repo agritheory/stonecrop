@@ -1101,7 +1101,7 @@ clearRecords(doctype: string | DoctypeMeta): void
 Get doctype metadata from the registry
 
 ```typescript
-getMeta(doctype: string): Promise<any>
+getMeta(context: RouteContext): Promise<any>
 ```
 
 #### getRecord

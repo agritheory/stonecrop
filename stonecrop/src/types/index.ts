@@ -5,8 +5,9 @@ import type { Router } from 'vue-router'
 import type { AnyStateNodeConfig, UnknownMachineConfig } from 'xstate'
 
 import type DoctypeMeta from '../doctype'
-import Registry, { type RouteContext } from '../registry'
+import Registry from '../registry'
 import { Stonecrop } from '../stonecrop'
+import type { RouteContext } from './registry'
 
 /**
  * Immutable Doctype type for Stonecrop instances
@@ -52,5 +53,6 @@ export type InstallOptions = {
 	onRouterInitialized?: (registry: Registry, stonecrop: Stonecrop) => void | Promise<void>
 }
 
-// Re-export field trigger types
+// Re-export types
 export * from './field-triggers'
+export * from './registry'

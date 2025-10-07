@@ -11,7 +11,6 @@ import { HST, createHST, type HSTNode } from './stores/hst'
 export type * from './types'
 export type { BaseStonecropReturn, HSTChangeData, HSTStonecropReturn } from './composable'
 export type { FieldTriggerEngine } from './field-triggers'
-export type { RouteContext } from './registry'
 
 export {
 	DoctypeMeta,
