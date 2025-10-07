@@ -197,6 +197,7 @@ describe('table cell component', () => {
 
 		const dataCells = wrapper.findAllComponents(ACell)
 		const editableCell = dataCells.at(1)
+		console.log('editableCell', editableCell)
 		expect(editableCell?.exists()).toBe(true)
 
 		// Focus the cell and simulate typing
@@ -218,5 +219,141 @@ describe('table cell component', () => {
 		document.createTreeWalker = originalCreateTreeWalker
 
 		vi.useRealTimers()
+	})
+
+	describe('ACell - Non-editable behavior', () => {
+		const nonEditableProps = {
+			rows: data,
+			columns,
+			'onUpdate:rows': () => {},
+			config: { view: 'list' } as TableConfig,
+		}
+
+		it('should have correct DOM attributes when column is not editable', async () => {
+			const wrapper = mount(ATable, { props: nonEditableProps, global: { components: { ACell } } })
+
+			const dataCells = wrapper.findAllComponents(ACell)
+			const nonEditableCell = dataCells.at(0) // First column has edit: false
+
+			expect(nonEditableCell?.exists()).toBe(true)
+			expect(nonEditableCell!.element.getAttribute('contenteditable')).toBe('false')
+			expect(nonEditableCell!.element.getAttribute('data-editable')).toBe('false')
+		})
+
+		it('should not select text when non-editable cell is clicked', async () => {
+			// Mock the Selection API
+			const mockSelection = {
+				removeAllRanges: vi.fn(),
+				addRange: vi.fn(),
+			} as unknown as Selection
+			const mockRange = {
+				selectNodeContents: vi.fn(),
+			} as unknown as Range
+
+			const originalGetSelection = window.getSelection
+			const originalCreateRange = document.createRange
+
+			window.getSelection = vi.fn(() => mockSelection)
+			document.createRange = vi.fn(() => mockRange)
+
+			const wrapper = mount(ATable, { props: nonEditableProps, global: { components: { ACell } } })
+
+			const dataCells = wrapper.findAllComponents(ACell)
+			const nonEditableCell = dataCells.at(0) // First column has edit: false
+			expect(nonEditableCell?.exists()).toBe(true)
+
+			// Trigger click on non-editable cell
+			await nonEditableCell!.trigger('click')
+
+			// Verify that the Selection API was NOT called (text should not be selected)
+			expect(mockRange.selectNodeContents).not.toHaveBeenCalled()
+			expect(mockSelection.removeAllRanges).not.toHaveBeenCalled()
+			expect(mockSelection.addRange).not.toHaveBeenCalled()
+
+			// Restore original functions
+			window.getSelection = originalGetSelection
+			document.createRange = originalCreateRange
+		})
+
+		it('should not select text when non-editable cell is focused', async () => {
+			// Mock the Selection API
+			const mockSelection = {
+				removeAllRanges: vi.fn(),
+				addRange: vi.fn(),
+			} as unknown as Selection
+			const mockRange = {
+				selectNodeContents: vi.fn(),
+			} as unknown as Range
+
+			const originalGetSelection = window.getSelection
+			const originalCreateRange = document.createRange
+
+			window.getSelection = vi.fn(() => mockSelection)
+			document.createRange = vi.fn(() => mockRange)
+
+			const wrapper = mount(ATable, { props: nonEditableProps, global: { components: { ACell } } })
+
+			const dataCells = wrapper.findAllComponents(ACell)
+			const nonEditableCell = dataCells.at(0) // First column has edit: false
+			expect(nonEditableCell?.exists()).toBe(true)
+
+			// Trigger focus on non-editable cell
+			await nonEditableCell!.trigger('focus')
+
+			// Verify that the Selection API was not called (text should not be selected)
+			expect(mockRange.selectNodeContents).not.toHaveBeenCalled()
+			expect(mockSelection.removeAllRanges).not.toHaveBeenCalled()
+			expect(mockSelection.addRange).not.toHaveBeenCalled()
+
+			// Restore original functions
+			window.getSelection = originalGetSelection
+			document.createRange = originalCreateRange
+		})
+
+		it('should not emit update events when non-editable cell receives input', async () => {
+			vi.useFakeTimers()
+			const onUpdateSpy = vi.fn()
+			const isolatedProps = {
+				rows: [...data],
+				columns,
+				'onUpdate:rows': onUpdateSpy,
+				config: { view: 'list' } as TableConfig,
+			}
+
+			const wrapper = mount(ATable, { props: isolatedProps, global: { components: { ACell } } })
+
+			const dataCells = wrapper.findAllComponents(ACell)
+			const nonEditableCell = dataCells.at(0) // First column has edit: false
+
+			expect(nonEditableCell?.exists()).toBe(true)
+			expect(nonEditableCell!.element.getAttribute('contenteditable')).toBe('false')
+
+			const initialEmittedCount = wrapper.emitted('update:rows')?.length || 0
+			await nonEditableCell!.trigger('input')
+
+			vi.advanceTimersByTime(300)
+			await wrapper.vm.$nextTick()
+
+			// Verify that no new update events were emitted from this specific action
+			const finalEmittedCount = wrapper.emitted('update:rows')?.length || 0
+			expect(finalEmittedCount).toBe(initialEmittedCount)
+			expect(onUpdateSpy).not.toHaveBeenCalled()
+
+			vi.useRealTimers()
+		})
+
+		it('should update currentData when non-editable cell is focused (for navigation)', async () => {
+			const wrapper = mount(ATable, { props: nonEditableProps, global: { components: { ACell } } })
+
+			const dataCells = wrapper.findAllComponents(ACell)
+			const nonEditableCell = dataCells.at(0) // First column has edit: false
+			expect(nonEditableCell?.exists()).toBe(true)
+
+			await nonEditableCell!.trigger('focus')
+
+			// Verify that currentData was updated
+			// Note: This is intentional behavior - focus updates currentData even for non-editable cells
+			expect(nonEditableCell!.vm.currentData).toEqual(nonEditableCell!.text())
+		})
 	})
 })
