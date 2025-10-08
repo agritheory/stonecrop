@@ -55,6 +55,24 @@ export declare function registerGlobalAction(name: string, fn: FieldActionFuncti
 | name | `string` |  |
 | fn | `FieldActionFunction` |  |
 
+### setFieldRollback
+
+Configure rollback behavior for a specific field trigger
+
+**Signature:**
+
+```typescript
+export declare function setFieldRollback(doctype: string, fieldname: string, enableRollback: boolean): void;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `string` |  |
+| fieldname | `string` |  |
+| enableRollback | `boolean` |  |
+
 ### useStonecrop
 
 Unified Stonecrop composable - handles both general operations and HST reactive integration
@@ -268,6 +286,7 @@ export interface FieldChangeContext {
   operation: 'set' | 'delete' | 'patch';
   path: string;
   recordId?: string;
+  store?: HSTNode;
   timestamp: Date;
 }
 ```
@@ -283,6 +302,7 @@ export interface FieldChangeContext {
 | operation | `'set' \| 'delete' \| 'patch'` | The operation type |
 | path | `string` | The HST path that was changed |
 | recordId? | `string` | The record ID if applicable |
+| store? | `HSTNode` | Reference to the HST store for state access (optional) |
 | timestamp | `Date` | Timestamp of the change |
 
 ### FieldTriggerConfig
@@ -295,6 +315,7 @@ Configuration for a single field trigger
 export interface FieldTriggerConfig {
   actions: FieldAction[];
   condition?: (context: FieldChangeContext) => boolean | Promise<boolean>;
+  enableRollback?: boolean;
   stopOnError?: boolean;
   timeout?: number;
   timing?: 'before' | 'after';
@@ -307,6 +328,7 @@ export interface FieldTriggerConfig {
 |----------|------|-------------|
 | actions | `FieldAction[]` | Array of actions to execute when this field changes |
 | condition? | `(context: FieldChangeContext) => boolean \| Promise<boolean>` | Optional condition function to determine if actions should run |
+| enableRollback? | `boolean` | Whether to enable automatic rollback for this field trigger (overrides global setting) |
 | stopOnError? | `boolean` | Whether to stop execution on first error (default: true) |
 | timeout? | `number` | Maximum execution time in milliseconds before timeout |
 | timing? | `'before' \| 'after'` | Whether to run actions before or after the value is set (default: 'after') |
@@ -322,6 +344,8 @@ export interface FieldTriggerExecutionResult {
   actionResults: ActionExecutionResult[];
   allSucceeded: boolean;
   path: string;
+  rolledBack: boolean;
+  snapshot?: any;
   stoppedOnError: boolean;
   totalExecutionTime: number;
 }
@@ -334,6 +358,8 @@ export interface FieldTriggerExecutionResult {
 | actionResults | `ActionExecutionResult[]` | Results for each action that was executed |
 | allSucceeded | `boolean` | Whether all actions succeeded |
 | path | `string` | The path that triggered the actions |
+| rolledBack | `boolean` | Whether a rollback was performed |
+| snapshot? | `any` | The snapshot that was captured before execution |
 | stoppedOnError | `boolean` | Whether execution was stopped due to an error |
 | totalExecutionTime | `number` | Total execution time for all actions |
 
@@ -347,6 +373,7 @@ Options for the field trigger system
 export interface FieldTriggerOptions {
   debug?: boolean;
   defaultTimeout?: number;
+  enableRollback?: boolean;
   errorHandler?: (error: Error, context: FieldChangeContext, action: FieldAction) => void;
 }
 ```
@@ -357,6 +384,7 @@ export interface FieldTriggerOptions {
 |----------|------|-------------|
 | debug? | `boolean` | Whether to log trigger executions for debugging |
 | defaultTimeout? | `number` | Default timeout for action execution in milliseconds |
+| enableRollback? | `boolean` | Whether to enable automatic rollback on failure (default: true) |
 | errorHandler? | `(error: Error, context: FieldChangeContext, action: FieldAction) => void` | Custom error handler for action failures |
 
 ### GanttBarInfo
@@ -1027,6 +1055,7 @@ Execute field triggers for a changed field
 ```typescript
 executeFieldTriggers(context: FieldChangeContext, options: {
         timeout?: number;
+        enableRollback?: boolean;
     }): Promise<FieldTriggerExecutionResult>
 ```
 
@@ -1044,6 +1073,14 @@ Register actions from a doctype - both regular actions and field triggers
 
 ```typescript
 registerDoctypeActions(doctype: string, actions: ImmutableMap<string, string[]> | Map<string, string[]> | Record<string, string[]> | undefined): void
+```
+
+#### setFieldRollback
+
+Configure rollback behavior for a specific field trigger
+
+```typescript
+setFieldRollback(doctype: string, fieldname: string, enableRollback: boolean): void
 ```
 
 ### HST

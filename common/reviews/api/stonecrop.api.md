@@ -151,6 +151,7 @@ export interface FieldChangeContext {
     operation: 'set' | 'delete' | 'patch';
     path: string;
     recordId?: string;
+    store?: HSTNode;
     timestamp: Date;
 }
 
@@ -165,6 +166,7 @@ export type FieldsetSchema = BaseSchema & {
 export interface FieldTriggerConfig {
     actions: FieldAction[];
     condition?: (context: FieldChangeContext) => boolean | Promise<boolean>;
+    enableRollback?: boolean;
     stopOnError?: boolean;
     timeout?: number;
     timing?: 'before' | 'after';
@@ -175,10 +177,12 @@ export class FieldTriggerEngine {
     constructor(options?: FieldTriggerOptions);
     executeFieldTriggers(context: FieldChangeContext, options?: {
         timeout?: number;
+        enableRollback?: boolean;
     }): Promise<FieldTriggerExecutionResult>;
     registerAction(name: string, fn: FieldActionFunction): void;
     registerDoctypeActions(doctype: string, actions: Map_2<string, string[]> | Map<string, string[]> | Record<string, string[]> | undefined): void;
     static _root: FieldTriggerEngine;
+    setFieldRollback(doctype: string, fieldname: string, enableRollback: boolean): void;
 }
 
 // @public
@@ -186,6 +190,8 @@ export interface FieldTriggerExecutionResult {
     actionResults: ActionExecutionResult[];
     allSucceeded: boolean;
     path: string;
+    rolledBack: boolean;
+    snapshot?: any;
     stoppedOnError: boolean;
     totalExecutionTime: number;
 }
@@ -197,6 +203,7 @@ export type FieldTriggerMap = Record<string, FieldTriggerConfig | FieldAction[]>
 export interface FieldTriggerOptions {
     debug?: boolean;
     defaultTimeout?: number;
+    enableRollback?: boolean;
     errorHandler?: (error: Error, context: FieldChangeContext, action: FieldAction) => void;
 }
 
@@ -373,6 +380,9 @@ export type Schema = {
 
 // @public
 export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema;
+
+// @public
+export function setFieldRollback(doctype: string, fieldname: string, enableRollback: boolean): void;
 
 // @public
 export class Stonecrop {

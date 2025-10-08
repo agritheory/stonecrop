@@ -461,6 +461,7 @@ class HSTProxy implements HSTNode {
 				doctype,
 				recordId,
 				timestamp: new Date(),
+				store: this.rootNode || undefined, // Pass the root store for snapshot/rollback capabilities
 			}
 
 			await triggerEngine.executeFieldTriggers(context)

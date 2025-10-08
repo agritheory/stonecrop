@@ -11,6 +11,7 @@ The field trigger system leverages the Registry architecture with these key comp
 - **HST Integration**: Automatic detection and triggering on `set()` operations
 - **Pattern Matching**: Support for wildcards and complex path patterns
 - **Sequential Execution**: Actions run in order with stop-on-error behavior
+- **Automatic Rollback**: Snapshot-based rollback ensures data integrity when actions fail (enabled by default)
 - **Error Tracking**: Comprehensive result tracking for debugging and monitoring
 
 ## Table of Contents
@@ -22,6 +23,7 @@ The field trigger system leverages the Registry architecture with these key comp
 - [Pattern Matching](#pattern-matching)
 - [Advanced Configuration](#advanced-configuration)
 - [Error Handling](#error-handling)
+- [Automatic Rollback](#automatic-rollback)
 - [Best Practices](#best-practices)
 - [Schema Composability](#schema-composability)
 - [API Reference](#api-reference)
@@ -395,6 +397,225 @@ describe('Field Trigger Error Handling', () => {
 })
 ```
 
+## Automatic Rollback
+
+The field trigger system includes **snapshot-based automatic rollback** to ensure data integrity when actions fail. This provides transactional-like behavior at the record level.
+
+### How Rollback Works
+
+1. **Snapshot Capture**: Before executing actions, the system creates a deep copy of the entire record
+2. **Sequential Execution**: Actions run one at a time in order
+3. **Stop on Error**: If an action fails, execution stops immediately
+4. **Automatic Rollback**: The record is restored to the captured snapshot state
+
+This ensures that either all actions succeed, or no changes persist - preventing partial updates.
+
+### Configuration
+
+Rollback is **enabled by default** and can be controlled at three levels with priority order:
+
+**Execution-Level > Field-Level > Global-Level**
+
+#### Global Configuration (Default for All)
+
+```typescript
+import { FieldTriggerEngine, getGlobalTriggerEngine } from '@stonecrop/stonecrop'
+
+// Rollback enabled (default)
+const engine = new FieldTriggerEngine({
+  enableRollback: true,  // default: true
+  debug: true            // includes snapshot in result for debugging
+})
+
+// Disable rollback globally
+const noRollbackEngine = new FieldTriggerEngine({
+  enableRollback: false
+})
+
+// Or use the global instance (rollback enabled by default)
+const globalEngine = getGlobalTriggerEngine()
+```
+
+#### Field-Level Configuration (Per Field Trigger)
+
+```typescript
+import { setFieldRollback } from '@stonecrop/stonecrop'
+
+// Disable rollback for specific fields (overrides global)
+setFieldRollback('Contact', 'auditLog', false)   // No rollback for auditLog
+setFieldRollback('Contact', 'lastSeen', false)   // No rollback for lastSeen
+
+// Keep rollback for other fields (use global default)
+// 'email', 'phone', etc. will use global setting
+```
+
+#### Execution-Level Configuration (Per Execution)
+
+```typescript
+// Override rollback for specific execution (highest priority)
+const result = await engine.executeFieldTriggers(context, {
+  enableRollback: false  // Disables rollback just for this execution
+})
+
+// Or force enable
+const result2 = await engine.executeFieldTriggers(context, {
+  enableRollback: true  // Enables rollback even if disabled at field/global level
+})
+```
+
+### Rollback Result
+
+The execution result includes rollback information:
+
+```typescript
+interface FieldTriggerExecutionResult {
+  rolledBack: boolean      // Whether rollback was performed
+  snapshot?: any           // The captured snapshot (debug mode only)
+  allSucceeded: boolean    // Whether all actions succeeded
+  stoppedOnError: boolean  // Whether execution stopped due to error
+  actionResults: ActionExecutionResult[]
+  // ... other properties
+}
+```
+
+### Example: Actions Modify State Then Fail
+
+```typescript
+import { registerGlobalAction } from '@stonecrop/stonecrop'
+import { Map } from 'immutable'
+
+// First action modifies the record
+registerGlobalAction('validateAndUpdate', (context) => {
+  if (context.store) {
+    // These changes will be rolled back if a later action fails
+    context.store.set('Contact.contact-1.status', 'validating')
+    context.store.set('Contact.contact-1.lastChecked', new Date())
+    context.store.set('Contact.contact-1.validationCount',
+      context.store.get('Contact.contact-1.validationCount') + 1
+    )
+  }
+})
+
+// Second action fails
+registerGlobalAction('sendEmail', () => {
+  throw new Error('Email service unavailable')
+})
+
+// Define field triggers
+const actions = Map({
+  'email': ['validateAndUpdate', 'sendEmail']
+})
+
+// When email field changes:
+// 1. Snapshot captured: { status: 'active', email: 'old@example.com', validationCount: 0, ... }
+// 2. validateAndUpdate runs: modifies status, lastChecked, and validationCount
+// 3. sendEmail fails: Error thrown
+// 4. Automatic rollback: Record restored to original snapshot state
+// Result: All changes reverted - it's all or nothing!
+```
+
+### Rollback Behavior
+
+**What Gets Rolled Back:**
+- All field changes made by any executed actions
+- Changes to nested objects and arrays
+- The entire record state is restored atomically
+
+**What Doesn't Get Rolled Back:**
+- External side effects (API calls, database operations)
+- Changes to other records in the store
+- File system operations
+- Console logs or monitoring calls
+
+### Limitations and Considerations
+
+1. **Record-Level Only**: Rollback restores the entire record, not individual fields
+2. **Requires HST Store**: Rollback only works when `context.store` is available (automatic when triggered by HST)
+3. **Deep Copy Limitation**: Uses `JSON.parse(JSON.stringify())` - functions and special objects are not preserved
+4. **No Cross-Record Rollback**: Only rolls back the changed record, not related records
+5. **Side Effects Not Reversed**: External operations cannot be automatically undone
+
+**Example of non-rolled-back side effects:**
+```typescript
+registerGlobalAction('logAndFail', async (context) => {
+  // This API call happens but won't be reversed
+  await fetch('/api/audit-log', {
+    method: 'POST',
+    body: JSON.stringify({ change: context.path })
+  })
+
+  // This console.log happens but won't be "undone"
+  console.log('Field changed:', context.path)
+
+  throw new Error('Action failed')
+})
+// The record will rollback, but the API call and console.log already happened
+```
+
+### When to Disable Rollback
+
+Consider disabling rollback when:
+
+- **No Record Mutations**: Actions only perform external operations (logging, notifications)
+- **Manual State Management**: You're handling state rollback at the application level
+- **Performance Critical**: Snapshot overhead is unacceptable for high-frequency changes
+- **External Systems**: Actions work primarily with APIs where rollback doesn't apply
+
+Rollback can be controlled at three levels with this priority:
+
+**1. Execution-Level (Highest Priority)**
+```typescript
+// Override rollback for a specific execution
+await engine.executeFieldTriggers(context, {
+  enableRollback: false  // Disables rollback for this execution only
+})
+```
+
+**2. Field-Level**
+```typescript
+import { setFieldRollback } from '@stonecrop/stonecrop'
+
+// Disable rollback for specific field triggers
+setFieldRollback('Contact', 'email', false)      // email field: no rollback
+setFieldRollback('Contact', 'auditLog', false)   // auditLog field: no rollback
+// Other fields use global default
+
+// Re-enable for a field
+setFieldRollback('Contact', 'email', true)
+```
+
+**3. Global-Level (Lowest Priority)**
+```typescript
+// Disable rollback for all field triggers by default
+const engine = new FieldTriggerEngine({
+  enableRollback: false,
+  defaultTimeout: 1000
+})
+
+registerGlobalAction('auditLog', async (context) => {
+  // Just logs - no record mutations
+  await logChange(context.path, context.afterValue)
+})
+```
+
+**Priority Example:**
+```typescript
+import { setFieldRollback, FieldTriggerEngine } from '@stonecrop/stonecrop'
+
+// Global: rollback enabled (default)
+const engine = new FieldTriggerEngine({ enableRollback: true })
+
+// Field level: disable for 'auditLog'
+setFieldRollback('Contact', 'auditLog', false)
+
+// Execution level: force enable for specific case
+await engine.executeFieldTriggers(auditContext, {
+  enableRollback: true  // Overrides field-level setting
+})
+
+// Result: This execution WILL have rollback enabled
+```
+
 ## Best Practices
 
 ### 1. Action Naming
@@ -625,6 +846,19 @@ getGlobalTriggerEngine(options?: FieldTriggerOptions): FieldTriggerEngine
 
 // Register a global action function
 registerGlobalAction(name: string, fn: FieldActionFunction): void
+
+// Configure rollback behavior for a specific field trigger
+setFieldRollback(doctype: string, fieldname: string, enableRollback: boolean): void
+```
+
+### Execution Options
+
+```typescript
+// Per-execution rollback control
+await engine.executeFieldTriggers(context, {
+  timeout?: number          // Override default timeout
+  enableRollback?: boolean  // Override field/global rollback setting
+})
 ```
 
 ### Types

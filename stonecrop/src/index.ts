@@ -3,7 +3,7 @@ export type * from '@stonecrop/atable/types'
 
 import { useStonecrop } from './composable'
 import DoctypeMeta from './doctype'
-import { getGlobalTriggerEngine, registerGlobalAction } from './field-triggers'
+import { getGlobalTriggerEngine, registerGlobalAction, setFieldRollback } from './field-triggers'
 import plugin from './plugins'
 import Registry from './registry'
 import { Stonecrop } from './stonecrop'
@@ -30,6 +30,7 @@ export {
 	// Field trigger system exports
 	getGlobalTriggerEngine,
 	registerGlobalAction,
+	setFieldRollback,
 }
 
 // Default export is the Vue plugin
