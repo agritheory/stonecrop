@@ -178,9 +178,7 @@ export interface FieldTriggerConfig {
     timing?: 'before' | 'after';
 }
 
-// Warning: (ae-internal-missing-underscore) The name "FieldTriggerEngine" should be prefixed with an underscore because the declaration is marked as @internal
-//
-// @internal
+// @public
 export class FieldTriggerEngine {
     constructor(options?: FieldTriggerOptions);
     executeFieldTriggers(context: FieldChangeContext, options?: {
@@ -188,6 +186,7 @@ export class FieldTriggerEngine {
     }): Promise<FieldTriggerExecutionResult>;
     registerAction(name: string, fn: FieldActionFunction): void;
     registerDoctypeActions(doctype: string, actions: Map_2<string, string[]> | Map<string, string[]> | Record<string, string[]> | undefined): void;
+    static _root: FieldTriggerEngine;
 }
 
 // @public
@@ -285,8 +284,6 @@ export interface GanttTableConfig extends BaseTableConfig {
     view: 'gantt';
 }
 
-// Warning: (ae-incompatible-release-tags) The symbol "getGlobalTriggerEngine" is marked as @public, but its signature references "FieldTriggerEngine" which is marked as @internal
-//
 // @public
 export function getGlobalTriggerEngine(options?: FieldTriggerOptions): FieldTriggerEngine;
 

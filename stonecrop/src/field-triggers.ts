@@ -10,40 +10,25 @@ import type {
 } from './types/field-triggers'
 
 /**
- * Global field trigger engine instance
- */
-let globalTriggerEngine: FieldTriggerEngine | undefined
-
-/**
- * Get or create the global field trigger engine
- * @public
- */
-export function getGlobalTriggerEngine(options?: FieldTriggerOptions): FieldTriggerEngine {
-	if (!globalTriggerEngine) {
-		globalTriggerEngine = new FieldTriggerEngine(options)
-	}
-	return globalTriggerEngine
-}
-
-/**
- * Register a global action function that can be used in field triggers
- * @public
- */
-export function registerGlobalAction(name: string, fn: FieldActionFunction): void {
-	const engine = getGlobalTriggerEngine()
-	engine.registerAction(name, fn)
-}
-
-/**
  * Field trigger execution engine integrated with Registry
- * @internal
+ * Singleton pattern following Registry implementation
+ * @public
  */
 export class FieldTriggerEngine {
+	/**
+	 * The root FieldTriggerEngine instance
+	 */
+	static _root: FieldTriggerEngine
+
 	private options: FieldTriggerOptions & { defaultTimeout: number; debug: boolean }
 	private doctypeActions = new Map<string, Map<string, string[]>>() // doctype -> action/field -> functions
 	private globalActions = new Map<string, FieldActionFunction>() // action name -> function
 
 	constructor(options: FieldTriggerOptions = {}) {
+		if (FieldTriggerEngine._root) {
+			return FieldTriggerEngine._root
+		}
+		FieldTriggerEngine._root = this
 		this.options = {
 			defaultTimeout: options.defaultTimeout ?? 5000,
 			debug: options.debug ?? false,
@@ -363,4 +348,21 @@ export class FieldTriggerEngine {
 				})
 		})
 	}
+}
+
+/**
+ * Get or create the global field trigger engine singleton
+ * @public
+ */
+export function getGlobalTriggerEngine(options?: FieldTriggerOptions): FieldTriggerEngine {
+	return new FieldTriggerEngine(options)
+}
+
+/**
+ * Register a global action function that can be used in field triggers
+ * @public
+ */
+export function registerGlobalAction(name: string, fn: FieldActionFunction): void {
+	const engine = getGlobalTriggerEngine()
+	engine.registerAction(name, fn)
 }

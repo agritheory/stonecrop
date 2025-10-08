@@ -24,7 +24,7 @@ declare function createHST(target: any, doctype: string, parentDoctype?: string)
 
 ### getGlobalTriggerEngine
 
-Get or create the global field trigger engine
+Get or create the global field trigger engine singleton
 
 **Signature:**
 
@@ -1043,6 +1043,50 @@ new DoctypeMeta(doctype: string, schema: ImmutableDoctype['schema'], workflow: I
 | schema | `ImmutableDoctype['schema']` | The doctype schema |
 | slug | `string` | Converts the registered doctype string to a slug (kebab-case). The following conversions are made: - It replaces camelCase and PascalCase with kebab-case strings - It replaces spaces and underscores with hyphens - It converts the string to lowercase |
 | workflow | `ImmutableDoctype['workflow']` | The doctype workflow |
+
+### FieldTriggerEngine
+
+Field trigger execution engine integrated with Registry Singleton pattern following Registry implementation
+
+**Constructor:**
+
+```typescript
+new FieldTriggerEngine(options: FieldTriggerOptions)
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| _root | `FieldTriggerEngine` | The root FieldTriggerEngine instance |
+
+**Methods:**
+
+#### executeFieldTriggers
+
+Execute field triggers for a changed field
+
+```typescript
+executeFieldTriggers(context: FieldChangeContext, options: {
+        timeout?: number;
+    }): Promise<FieldTriggerExecutionResult>
+```
+
+#### registerAction
+
+Register a global action function
+
+```typescript
+registerAction(name: string, fn: FieldActionFunction): void
+```
+
+#### registerDoctypeActions
+
+Register actions from a doctype - both regular actions and field triggers
+
+```typescript
+registerDoctypeActions(doctype: string, actions: ImmutableMap<string, string[]> | Map<string, string[]> | Record<string, string[]> | undefined): void
+```
 
 ### HST
 

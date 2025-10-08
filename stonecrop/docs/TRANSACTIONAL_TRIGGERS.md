@@ -134,7 +134,7 @@ interface ActionResult {
 }
 ```
 
-### FieldTriggerExecutionResult (Enhanced)
+### FieldTriggerExecutionResult
 
 ```typescript
 interface FieldTriggerExecutionResult {
@@ -150,7 +150,7 @@ interface FieldTriggerExecutionResult {
 }
 ```
 
-### ActionExecutionResult (Enhanced)
+### ActionExecutionResult
 
 ```typescript
 interface ActionExecutionResult {

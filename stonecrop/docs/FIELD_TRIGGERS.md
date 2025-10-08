@@ -7,9 +7,28 @@ The Stonecrop field trigger system enables automatic execution of actions when s
 The field trigger system leverages the existing Registry architecture with these key components:
 
 - **Unified Actions Map**: Field triggers are defined alongside regular actions in the doctype's actions Map
-- **Field Trigger Engine**: Executes actions when field changes occur
+- **Field Trigger Engine**: Singleton instance that executes actions when field changes occur
 - **HST Integration**: Automatic detection and triggering on `set()` operations
 - **Pattern Matching**: Support for wildcards and complex path patterns
+
+## Architecture
+
+The `FieldTriggerEngine` uses a **singleton pattern** similar to the Registry:
+
+```typescript
+// Creating new instances returns the same singleton
+const engine1 = new FieldTriggerEngine()
+const engine2 = new FieldTriggerEngine()
+// engine1 === engine2 === FieldTriggerEngine._root
+
+// Alternatively, use the helper function
+const engine = getGlobalTriggerEngine()
+```
+
+This ensures:
+- Consistent action registry across the application
+- Shared doctype action mappings
+- Single source of truth for field trigger configuration
 
 ## Basic Usage
 
