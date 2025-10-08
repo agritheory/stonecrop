@@ -13,11 +13,9 @@ export type { BaseStonecropReturn, HSTChangeData, HSTStonecropReturn } from './c
 export type { FieldTriggerEngine } from './field-triggers'
 export type {
 	FieldChangeContext,
-	ActionResult,
 	FieldTriggerExecutionResult,
 	ActionExecutionResult,
 	FieldActionFunction,
-	RollbackFunction,
 } from './types/field-triggers'
 
 export {

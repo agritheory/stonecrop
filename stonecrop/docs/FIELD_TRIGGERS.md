@@ -1,19 +1,35 @@
 # Field-Level Action Triggers
 
-The Stonecrop field trigger system enables automatic execution of actions when specific HST paths are mutated. This bridges browser-side mutations with the Stonecrop action system, providing a reactive way to respond to data changes.
+The Stonecrop field trigger system enables automatic execution of actions when specific HST paths are mutated. This provides a declarative, reactive way to respond to data changes with sequential action execution and comprehensive error handling.
 
 ## Overview
 
-The field trigger system leverages the existing Registry architecture with these key components:
+The field trigger system leverages the Registry architecture with these key components:
 
 - **Unified Actions Map**: Field triggers are defined alongside regular actions in the doctype's actions Map
 - **Field Trigger Engine**: Singleton instance that executes actions when field changes occur
 - **HST Integration**: Automatic detection and triggering on `set()` operations
 - **Pattern Matching**: Support for wildcards and complex path patterns
+- **Sequential Execution**: Actions run in order with stop-on-error behavior
+- **Error Tracking**: Comprehensive result tracking for debugging and monitoring
+
+## Table of Contents
+
+- [Architecture](#architecture)
+- [Basic Usage](#basic-usage)
+- [Action Function Interface](#action-function-interface)
+- [Execution Model](#execution-model)
+- [Pattern Matching](#pattern-matching)
+- [Advanced Configuration](#advanced-configuration)
+- [Error Handling](#error-handling)
+- [Best Practices](#best-practices)
+- [Schema Composability](#schema-composability)
+- [API Reference](#api-reference)
+- [Migration Guide](#migration-guide)
 
 ## Architecture
 
-The `FieldTriggerEngine` uses a **singleton pattern** similar to the Registry:
+The `FieldTriggerEngine` uses a **singleton pattern**:
 
 ```typescript
 // Creating new instances returns the same singleton
@@ -96,7 +112,7 @@ store.set('Contact.contact-1.status', 'completed')
 
 ## Action Function Interface
 
-Action functions receive a `FieldChangeContext` object:
+Action functions are simple, focused functions that receive a `FieldChangeContext` object:
 
 ```typescript
 interface FieldChangeContext {
@@ -110,11 +126,74 @@ interface FieldChangeContext {
   timestamp: Date       // When the change occurred
 }
 
+// Action function signature
+type FieldActionFunction = (context: FieldChangeContext) => void | Promise<void>
+
 // Example action function
 const validateEmail: FieldActionFunction = (context) => {
   if (context.fieldname === 'email' && !isValidEmail(context.afterValue)) {
     throw new Error('Invalid email format')
   }
+}
+```
+
+Actions execute sequentially in the order defined. If an action throws an error, execution stops and subsequent actions do not run.
+
+## Execution Model
+
+### Sequential Execution
+
+Actions execute in the order they're defined:
+
+```typescript
+const actions = Map({
+  'emailAddress': ['validateEmail', 'sendNotification', 'updateTimestamp']
+})
+```
+
+If `validateEmail` succeeds, `sendNotification` runs. If `sendNotification` fails, `updateTimestamp` never runs.
+
+### Stop on Error
+
+By default, execution stops when an action fails:
+
+```typescript
+registerGlobalAction('validateEmail', (context) => {
+  if (!isValidEmail(context.afterValue)) {
+    throw new Error('Invalid email format')
+  }
+})
+
+const result = await engine.executeFieldTriggers(context)
+
+// result.allSucceeded = false
+// result.stoppedOnError = true
+// result.actionResults[0].success = false
+// result.actionResults[0].error = Error('Invalid email format')
+```
+
+### Action Results
+
+Each action execution returns a result:
+
+```typescript
+interface ActionExecutionResult {
+  success: boolean           // Did the action complete?
+  error?: Error             // Error if failed
+  executionTime: number     // How long it took (ms)
+  action: FieldAction       // Which action was executed
+}
+```
+
+The overall execution result:
+
+```typescript
+interface FieldTriggerExecutionResult {
+  path: string                        // The field path that triggered
+  actionResults: ActionExecutionResult[]  // Results for each action
+  totalExecutionTime: number          // Total time for all actions
+  allSucceeded: boolean               // Did all actions succeed?
+  stoppedOnError: boolean             // Did execution stop due to error?
 }
 ```
 
@@ -233,18 +312,86 @@ const actions = Map({
 
 ## Error Handling
 
-### Global Error Handler
+### 1. Validation Actions
 
-You can configure global error handling when getting the trigger engine:
+Throw errors to prevent further processing:
+
+```typescript
+registerGlobalAction('validateRequired', (context) => {
+  if (!context.afterValue) {
+    throw new Error(`${context.fieldname} is required`)
+  }
+})
+```
+
+### 2. Global Error Handler
+
+Handle all action errors in one place:
 
 ```typescript
 import { getGlobalTriggerEngine } from '@stonecrop/stonecrop'
 
 getGlobalTriggerEngine({
   errorHandler: (error, context, action) => {
-    console.error('Field trigger error:', error)
-    // Custom error handling logic
+    console.error(`Action ${action} failed on ${context.path}:`, error)
+    logToMonitoring(error, context)
   }
+})
+```
+
+### 3. Defensive Actions
+
+Handle errors internally instead of throwing:
+
+```typescript
+registerGlobalAction('sendEmail', async (context) => {
+  try {
+    await emailService.send(context.afterValue)
+  } catch (error) {
+    // Log but don't throw - allow execution to continue
+    console.warn('Email send failed:', error)
+  }
+})
+```
+
+### 4. Timeouts
+
+Actions have configurable timeouts to prevent hanging:
+
+```typescript
+const engine = new FieldTriggerEngine({
+  defaultTimeout: 5000  // 5 seconds
+})
+
+// Or per-execution:
+await engine.executeFieldTriggers(context, { timeout: 10000 })
+```
+
+### 5. Testing Error Scenarios
+
+```typescript
+import { describe, it, expect, vi } from 'vitest'
+
+describe('Field Trigger Error Handling', () => {
+  it('should stop execution on first error', async () => {
+    const action1 = vi.fn()  // This should run
+    const action2 = vi.fn().mockImplementation(() => {
+      throw new Error('Action 2 failed')
+    })
+    const action3 = vi.fn()  // This should NOT run
+
+    engine.registerAction('action1', action1)
+    engine.registerAction('action2', action2)
+    engine.registerAction('action3', action3)
+
+    const result = await engine.executeFieldTriggers(context)
+
+    expect(result.allSucceeded).toBe(false)
+    expect(result.stoppedOnError).toBe(true)
+    expect(action1).toHaveBeenCalled()
+    expect(action2).toHaveBeenCalled()
+    expect(action3).not.toHaveBeenCalled()  // Stopped after action2 failed
+  })
 })
 ```
 
@@ -266,9 +413,90 @@ registerGlobalAction('validate', validator)
 registerGlobalAction('update', updater)
 ```
 
-### 2. Error Resilience
+### 2. Design for Failure
 
-Design actions to be resilient:
+Actions should be small, focused, and handle their own edge cases:
+
+```typescript
+// Good: Focused, handles edge cases
+registerGlobalAction('validateEmail', (context) => {
+  const email = context.afterValue
+  if (!email || !email.includes('@')) {
+    throw new Error('Invalid email format')
+  }
+})
+
+// Bad: Too broad, unclear failure points
+registerGlobalAction('processUser', (context) => {
+  validateEmail(context.afterValue)
+  sendWelcomeEmail(context.afterValue)
+  updateDatabase(context.afterValue)
+  notifyAdmins(context.afterValue)
+})
+```
+
+### 3. Order Matters
+
+Put validation actions first, side-effects last:
+
+```typescript
+const actions = Map({
+  'emailAddress': [
+    'validateEmail',      // Validation first
+    'checkDuplicates',    // More validation
+    'sendWelcomeEmail',   // Side effects after validation
+    'updateTimestamp'     // Final housekeeping
+  ]
+})
+```
+
+### 4. Don't Assume State
+
+Each action receives only the field change context. Don't assume previous actions succeeded:
+
+```typescript
+// Good: Self-contained
+registerGlobalAction('sendEmail', (context) => {
+  if (!isValidEmail(context.afterValue)) {
+    throw new Error('Cannot send to invalid email')
+  }
+  emailService.send(context.afterValue)
+})
+
+// Bad: Assumes validation already happened
+registerGlobalAction('sendEmail', (context) => {
+  // Assumes validateEmail already ran - dangerous!
+  emailService.send(context.afterValue)
+})
+```
+
+### 5. Use Error Handler for Cross-Cutting Concerns
+
+Don't repeat logging/monitoring in every action:
+
+```typescript
+const engine = new FieldTriggerEngine({
+  errorHandler: (error, context, action) => {
+    // Centralized logging
+    logger.error({
+      action,
+      path: context.path,
+      error: error.message,
+      timestamp: context.timestamp
+    })
+
+    // Centralized monitoring
+    monitor.recordError('field_trigger_failure', {
+      doctype: context.doctype,
+      field: context.fieldname
+    })
+  }
+})
+```
+
+### 6. Error Resilience
+
+Design actions to be resilient when appropriate:
 
 ```typescript
 import { registerGlobalAction } from '@stonecrop/stonecrop'
@@ -285,7 +513,7 @@ const robustAction = async (context) => {
 registerGlobalAction('robustAction', robustAction)
 ```
 
-### 3. Performance Considerations
+### 7. Performance Considerations
 
 - Keep actions lightweight for frequently changed fields
 - Avoid expensive operations in field triggers
@@ -304,7 +532,7 @@ const actions = Map({
 })
 ```
 
-### 4. Testing Actions
+### 8. Testing Actions
 
 Test your actions in isolation:
 
@@ -430,33 +658,3 @@ const actions = Map({
 const doctype = new DoctypeMeta('Contact', schema, workflow, actions, component)
 registry.addDoctype(doctype)  // Field triggers are registered here
 ```
-
-## Migration Guide
-
-If you're migrating from a manual event system:
-
-### Before
-
-```typescript
-// Manual event handling
-store.on('change', (path, value) => {
-  if (path.endsWith('.email')) {
-    validateEmail(value)
-  }
-})
-```
-
-### After
-
-```typescript
-// Declarative field triggers in doctype actions
-import { Map } from 'immutable'
-
-const actions = Map({
-  'email': ['validateEmail']
-})
-
-const doctype = new DoctypeMeta('Contact', schema, workflow, actions, component)
-```
-
-This provides better type safety, automatic pattern matching, cleaner organization, and seamless integration with the existing Stonecrop Registry system.
