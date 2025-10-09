@@ -151,6 +151,7 @@ export interface FieldChangeContext {
     operation: 'set' | 'delete' | 'patch';
     path: string;
     recordId?: string;
+    store?: HSTNode;
     timestamp: Date;
 }
 
@@ -165,21 +166,23 @@ export type FieldsetSchema = BaseSchema & {
 export interface FieldTriggerConfig {
     actions: FieldAction[];
     condition?: (context: FieldChangeContext) => boolean | Promise<boolean>;
+    enableRollback?: boolean;
     stopOnError?: boolean;
     timeout?: number;
     timing?: 'before' | 'after';
 }
 
-// Warning: (ae-internal-missing-underscore) The name "FieldTriggerEngine" should be prefixed with an underscore because the declaration is marked as @internal
-//
-// @internal
+// @public
 export class FieldTriggerEngine {
     constructor(options?: FieldTriggerOptions);
     executeFieldTriggers(context: FieldChangeContext, options?: {
         timeout?: number;
+        enableRollback?: boolean;
     }): Promise<FieldTriggerExecutionResult>;
     registerAction(name: string, fn: FieldActionFunction): void;
     registerDoctypeActions(doctype: string, actions: Map_2<string, string[]> | Map<string, string[]> | Record<string, string[]> | undefined): void;
+    static _root: FieldTriggerEngine;
+    setFieldRollback(doctype: string, fieldname: string, enableRollback: boolean): void;
 }
 
 // @public
@@ -187,6 +190,8 @@ export interface FieldTriggerExecutionResult {
     actionResults: ActionExecutionResult[];
     allSucceeded: boolean;
     path: string;
+    rolledBack: boolean;
+    snapshot?: any;
     stoppedOnError: boolean;
     totalExecutionTime: number;
 }
@@ -198,6 +203,7 @@ export type FieldTriggerMap = Record<string, FieldTriggerConfig | FieldAction[]>
 export interface FieldTriggerOptions {
     debug?: boolean;
     defaultTimeout?: number;
+    enableRollback?: boolean;
     errorHandler?: (error: Error, context: FieldChangeContext, action: FieldAction) => void;
 }
 
@@ -271,8 +277,6 @@ export interface GanttTableConfig extends BaseTableConfig {
     view: 'gantt';
 }
 
-// Warning: (ae-incompatible-release-tags) The symbol "getGlobalTriggerEngine" is marked as @public, but its signature references "FieldTriggerEngine" which is marked as @internal
-//
 // @public
 export function getGlobalTriggerEngine(options?: FieldTriggerOptions): FieldTriggerEngine;
 
@@ -378,11 +382,14 @@ export type Schema = {
 export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema;
 
 // @public
+export function setFieldRollback(doctype: string, fieldname: string, enableRollback: boolean): void;
+
+// @public
 export class Stonecrop {
     constructor(registry: Registry);
     addRecord(doctype: string | DoctypeMeta, recordId: string, recordData: any): void;
     clearRecords(doctype: string | DoctypeMeta): void;
-    getMeta(doctype: string): Promise<any>;
+    getMeta(context: RouteContext): Promise<any>;
     getRecord(doctype: DoctypeMeta, recordId: string): Promise<void>;
     getRecordById(doctype: string | DoctypeMeta, recordId: string): HSTNode | undefined;
     getRecordIds(doctype: string | DoctypeMeta): string[];

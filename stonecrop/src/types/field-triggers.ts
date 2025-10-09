@@ -3,6 +3,8 @@
  * @public
  */
 
+import { HSTNode } from '../stores/hst'
+
 /**
  * Context provided to action functions when field changes occur
  * @public
@@ -24,6 +26,8 @@ export interface FieldChangeContext {
 	recordId?: string
 	/** Timestamp of the change */
 	timestamp: Date
+	/** Reference to the HST store for state access (optional) */
+	store?: HSTNode
 }
 
 /**
@@ -59,6 +63,8 @@ export interface FieldTriggerConfig {
 	stopOnError?: boolean
 	/** Maximum execution time in milliseconds before timeout */
 	timeout?: number
+	/** Whether to enable automatic rollback for this field trigger (overrides global setting) */
+	enableRollback?: boolean
 }
 
 /**
@@ -115,6 +121,10 @@ export interface FieldTriggerExecutionResult {
 	allSucceeded: boolean
 	/** Whether execution was stopped due to an error */
 	stoppedOnError: boolean
+	/** Whether a rollback was performed */
+	rolledBack: boolean
+	/** The snapshot that was captured before execution */
+	snapshot?: any
 }
 
 /**
@@ -128,6 +138,8 @@ export interface FieldTriggerOptions {
 	debug?: boolean
 	/** Custom error handler for action failures */
 	errorHandler?: (error: Error, context: FieldChangeContext, action: FieldAction) => void
+	/** Whether to enable automatic rollback on failure (default: true) */
+	enableRollback?: boolean
 }
 
 /**

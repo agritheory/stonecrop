@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { FieldTriggerEngine, getGlobalTriggerEngine, registerGlobalAction } from '../src/field-triggers'
-import type { FieldChangeContext } from '../src/types/field-triggers'
+import { FieldTriggerEngine, getGlobalTriggerEngine, registerGlobalAction } from '../../src/field-triggers'
+import type { FieldChangeContext } from '../../src/types/field-triggers'
 
 describe('Field Trigger System', () => {
 	let triggerEngine: FieldTriggerEngine
@@ -182,6 +182,20 @@ describe('Field Trigger System', () => {
 			const engine2 = getGlobalTriggerEngine()
 
 			expect(engine1).toBe(engine2) // Same instance
+		})
+
+		it('should use singleton pattern', () => {
+			const existingEngine = FieldTriggerEngine._root
+
+			const engine1 = new FieldTriggerEngine({ defaultTimeout: 3000 })
+			const engine2 = new FieldTriggerEngine({ defaultTimeout: 5000 })
+
+			expect(engine1).toBe(engine2)
+			expect(engine1).toBe(existingEngine)
+			expect(engine2).toBe(FieldTriggerEngine._root)
+
+			const engine3 = getGlobalTriggerEngine()
+			expect(engine1).toBe(engine3)
 		})
 
 		it('should allow registering global actions', () => {

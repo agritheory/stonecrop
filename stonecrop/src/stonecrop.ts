@@ -1,6 +1,7 @@
 import Registry from './registry'
 import DoctypeMeta from './doctype'
 import { createHST, type HSTNode } from './stores/hst'
+import type { RouteContext } from './types/registry'
 
 /**
  * Main Stonecrop class with HST integration
@@ -210,14 +211,14 @@ export class Stonecrop {
 
 	/**
 	 * Get doctype metadata from the registry
-	 * @param doctype - The doctype to get metadata for
+	 * @param context - The route context
 	 * @returns The doctype metadata
 	 */
-	async getMeta(doctype: string): Promise<any> {
+	async getMeta(context: RouteContext): Promise<any> {
 		if (!this.registry.getMeta) {
 			throw new Error('No getMeta function provided to Registry')
 		}
-		return await this.registry.getMeta(doctype)
+		return await this.registry.getMeta(context)
 	}
 
 	/**

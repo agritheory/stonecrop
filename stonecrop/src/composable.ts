@@ -1,10 +1,11 @@
 // src/composable.ts
 import { inject, onMounted, Ref, ref, watch, provide } from 'vue'
 
-import Registry, { type RouteContext } from './registry'
+import Registry from './registry'
 import { Stonecrop } from './stonecrop'
 import DoctypeMeta from './doctype'
 import type { HSTNode } from './stores/hst'
+import { RouteContext } from './types/registry'
 
 /**
  * Base Stonecrop composable return type

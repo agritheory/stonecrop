@@ -1,11 +1,11 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { Map, List } from 'immutable'
 import type { UnknownMachineConfig } from 'xstate'
-import DoctypeMeta from '../src/doctype'
-import Registry from '../src/registry'
-import { Stonecrop } from '../src/stonecrop'
-import { registerGlobalAction } from '../src/field-triggers'
-import type { FieldActionFunction } from '../src/types/field-triggers'
+import DoctypeMeta from '../../src/doctype'
+import Registry from '../../src/registry'
+import { Stonecrop } from '../../src/stonecrop'
+import { registerGlobalAction } from '../../src/field-triggers'
+import type { FieldActionFunction } from '../../src/types/field-triggers'
 
 describe('Field Trigger Integration', () => {
 	let registry: Registry
