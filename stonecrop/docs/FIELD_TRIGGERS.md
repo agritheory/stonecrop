@@ -139,6 +139,8 @@ const validateEmail: FieldActionFunction = (context) => {
 }
 ```
 
+**Note:** Field triggers are separate from schema-driven mask and format functions. The schema system provides declarative validation, masking (input transformation), and formatting (display transformation) at the field definition level, while field triggers enable action execution when field values change. Use schema validation for data integrity rules, and field triggers for business logic, notifications, and side effects.
+
 Actions execute sequentially in the order defined. If an action throws an error, execution stops and subsequent actions do not run.
 
 ## Execution Model
@@ -201,7 +203,7 @@ interface FieldTriggerExecutionResult {
 
 ## Pattern Matching
 
-Field trigger patterns support powerful matching capabilities:
+Field trigger patterns support the following matching capabilities:
 
 ### Basic Patterns
 
@@ -673,10 +675,10 @@ const actions = Map({
 
 ### 4. Don't Assume State
 
-Each action receives only the field change context. Don't assume previous actions succeeded:
+Each action receives only the field change context. While it is possible that a previous function did not succeed and suppressed any errors, this is generally considered an antipattern. It is likely that previous actions mutate the document, but not necessarily the state of the individual field.
 
 ```typescript
-// Good: Self-contained
+// Good: Self-contained, validates what it needs
 registerGlobalAction('sendEmail', (context) => {
   if (!isValidEmail(context.afterValue)) {
     throw new Error('Cannot send to invalid email')
@@ -684,10 +686,22 @@ registerGlobalAction('sendEmail', (context) => {
   emailService.send(context.afterValue)
 })
 
-// Bad: Assumes validation already happened
+// Antipattern: Assumes validation already happened and swallowed errors
 registerGlobalAction('sendEmail', (context) => {
-  // Assumes validateEmail already ran - dangerous!
+  // Dangerous assumption - previous actions might have failed silently
   emailService.send(context.afterValue)
+})
+
+// Note: Previous actions may have mutated other fields in the record
+registerGlobalAction('updateRelatedFields', (context) => {
+  // Safe: Access other fields if needed, but validate assumptions
+  if (context.store) {
+    const status = context.store.get(`${context.doctype}.${context.recordId}.status`)
+    // Previous actions might have changed status
+    if (status === 'validated') {
+      // Proceed with related field updates
+    }
+  }
 })
 ```
 
