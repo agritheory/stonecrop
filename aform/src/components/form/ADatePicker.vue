@@ -7,6 +7,17 @@
 					<th colspan="5" :tabindex="-1">{{ monthAndYear }}</th>
 					<td id="next-month-btn" :tabindex="-1" @click="nextMonth">&gt;</td>
 				</tr>
+				<tr v-if="selectRange">
+					<td colspan="7">
+						<div class="date-input">
+							<input v-model="startDateInput" class="date-input-start" type="text" placeholder="start date" />
+							<div>-</div>
+							<input v-model="endDateInput" class="date-input-end" type="text" placeholder="end date" />
+							<button @click="applyDates">&check;</button>
+						</div>
+						<!-- {{ formattedDateRange }} -->
+					</td>
+				</tr>
 				<tr class="days-header">
 					<td>M</td>
 					<td>T</td>
@@ -22,15 +33,20 @@
 						v-for="colNo in numberOfColumns"
 						ref="celldate"
 						:key="getCurrentCell(rowNo, colNo)"
+						class="date-cell"
 						:contenteditable="false"
 						:spellcheck="false"
 						:tabindex="0"
 						:class="{
 							todaysDate: isTodaysDate(getCurrentDate(rowNo, colNo)),
 							selectedDate: isSelectedDate(getCurrentDate(rowNo, colNo)),
+							withinRange: selectRange ? isInDateRange(getCurrentDate(rowNo, colNo)) : false,
+							startDate: selectRange ? isStartDate(getCurrentDate(rowNo, colNo)) : false,
+							endDate: selectRange ? isEndDate(getCurrentDate(rowNo, colNo)) : false,
 						}"
 						@click.prevent.stop="selectDate(getCurrentCell(rowNo, colNo))"
-						@keydown.enter="selectDate(getCurrentCell(rowNo, colNo))">
+						@keydown.enter="selectDate(getCurrentCell(rowNo, colNo))"
+						@mouseover="hoverDate(getCurrentCell(rowNo, colNo))">
 						{{ new Date(getCurrentDate(rowNo, colNo)).getDate() }}
 					</td>
 				</tr>
@@ -41,7 +57,7 @@
 
 <script setup lang="ts">
 import { defaultKeypressHandlers, useKeyboardNav } from '@stonecrop/utilities'
-import { computed, nextTick, onMounted, ref, useTemplateRef, watch } from 'vue'
+import { computed, nextTick, onMounted, ref, useTemplateRef, watch, reactive } from 'vue'
 
 const numberOfRows = 6
 const numberOfColumns = 7
@@ -52,13 +68,28 @@ const currentMonth = ref<number>(selectedDate.value.getMonth())
 const currentYear = ref<number>(selectedDate.value.getFullYear())
 const currentDates = ref<number[]>([])
 const datepickerRef = useTemplateRef<HTMLDivElement>('datepicker')
+const hoveredDate = ref(new Date(date.value))
+
+const startDateInput = ref(null)
+const endDateInput = ref(null)
+
+const selectedDateRange = reactive({
+	start_date: new Date(),
+	end_date: new Date(),
+})
+
+const props = defineProps({
+	selectRange: {
+		type: Boolean,
+		default: false,
+	},
+})
 
 onMounted(async () => {
+	// datePickerStart.value.value =
 	populateMonth()
-
 	// required to allow the elements to be focused in the next step
 	await nextTick()
-
 	const $selectedDate = document.getElementsByClassName('selectedDate')
 	if ($selectedDate.length > 0) {
 		;($selectedDate[0] as HTMLElement).focus()
@@ -104,6 +135,34 @@ const nextMonth = () => {
 	}
 }
 
+const applyDates = () => {
+	//check the start and end dates
+	let start_date = new Date(startDateInput.value)
+	let end_date = new Date(endDateInput.value)
+
+	if (start_date.getTime() > end_date.getTime() && end_date.getTime()) {
+		//swap the dates if end date is before start date
+		const temp_date = start_date
+		const temp_value = startDateInput.value
+		start_date = end_date
+		end_date = temp_date
+		startDateInput.value = endDateInput.value
+		endDateInput.value = temp_value
+	}
+	if (start_date.getTime()) {
+		selectedDateRange.start_date = start_date
+		selectedDate.value = start_date
+	} else {
+		selectedDateRange.start_date = new Date()
+		selectedDate.value = new Date()
+	}
+	if (end_date.getTime()) {
+		selectedDateRange.end_date = end_date
+	} else {
+		selectedDateRange.end_date = new Date()
+	}
+}
+
 const isTodaysDate = (day: string | number | Date) => {
 	const todaysDate = new Date()
 	if (currentMonth.value !== todaysDate.getMonth()) {
@@ -115,17 +174,64 @@ const isTodaysDate = (day: string | number | Date) => {
 const isSelectedDate = (day: string | number | Date) => {
 	return new Date(day).toDateString() === new Date(selectedDate.value).toDateString()
 }
+const isStartDate = (day: string | number | Date) => {
+	return new Date(day).toDateString() === new Date(selectedDateRange.start_date).toDateString()
+}
+const isEndDate = (day: string | number | Date) => {
+	return new Date(day).toDateString() === new Date(selectedDateRange.end_date).toDateString()
+}
 
 const getCurrentCell = (rowNo: number, colNo: number) => {
 	return (rowNo - 1) * numberOfColumns + colNo
 }
 
+const isInDateRange = (day: string | number | Date) => {
+	//apply the withinRange class to all days within the selected range
+
+	const this_date = new Date(day)
+	const start_date = new Date(selectedDateRange.start_date)
+	const end_date =
+		selectedDateRange.end_date != null ? new Date(selectedDateRange.end_date) : new Date(hoveredDate.value)
+
+	if (selectedDateRange.start_date != null)
+		return this_date.getTime() > start_date.getTime() && this_date.getTime() < end_date.getTime()
+	return false
+}
+
 const getCurrentDate = (rowNo: number, colNo: number) => {
 	return currentDates.value[getCurrentCell(rowNo, colNo)]
 }
-
+const hoverDate = (currentIndex: number) => {
+	hoveredDate.value = new Date(currentDates.value[currentIndex])
+}
 const selectDate = (currentIndex: number) => {
 	date.value = selectedDate.value = new Date(currentDates.value[currentIndex])
+
+	//If selectRange prop is set to true, set range start and end points on selection
+
+	if (props.selectRange) {
+		if (
+			selectedDateRange.start_date == null ||
+			selectedDateRange.end_date != null ||
+			selectedDate.value.getTime() < selectedDateRange.start_date.getTime()
+		) {
+			selectedDateRange.start_date = date.value
+			selectedDateRange.end_date = null
+			startDateInput.value = parseDateToString(date.value)
+		} else {
+			selectedDateRange.end_date = date.value
+			endDateInput.value = parseDateToString(date.value)
+		}
+	}
+}
+
+const parseDateToString = (date: Date) => {
+	let date_string = ''
+	if (!date.getTime()) {
+		return ''
+	}
+	date_string += date.getMonth() + 1 + '/' + date.getDate() + '/' + date.getFullYear()
+	return date_string
 }
 
 const monthAndYear = computed(() => {
@@ -156,7 +262,7 @@ useKeyboardNav([
 	},
 ])
 
-defineExpose({ currentMonth, currentYear, selectedDate })
+defineExpose({ currentMonth, currentYear, selectedDate, selectedDateRange })
 </script>
 
 <style scoped>
@@ -182,26 +288,45 @@ defineExpose({ currentMonth, currentYear, selectedDate })
 	outline: 2px solid transparent;
 	min-width: 3ch;
 	max-width: 3ch;
+	cursor: pointer;
+}
+.adatepicker td.date-cell:hover {
+	background: var(--sc-gray-10);
 }
 
 .adatepicker td:focus,
 .adatepicker td:focus-within {
-	outline: 1px dashed black;
+	/* outline: 1px dashed black; */
 	box-shadow: none;
 	overflow: hidden;
 	min-height: 1.15em;
 	max-height: 1.15em;
 	overflow: hidden;
 }
-.adatepicker .selectedDate {
-	outline: 1px solid black;
+.adatepicker .selectedDate,
+.adatepicker .startDate,
+.adatepicker .endDate {
+	/* outline: 1px solid black; */
 	background: var(--sc-gray-20);
 	font-weight: bolder;
+}
+.adatepicker .startDate {
+	/* border-radius: 5px 0px 0px 5px; */
+	border-left: 1px solid var(--sc-gray-50);
+	background: var(--sc-gray-20) !important;
+}
+.adatepicker .endDate {
+	border-right: 1px solid var(--sc-gray-50);
+	/* border-radius: 0px 5px 5px 0px; */
+	background: var(--sc-gray-20) !important;
+}
+.adatepicker .withinRange {
+	background: var(--sc-gray-5);
 }
 
 .adatepicker .todaysDate {
 	font-weight: bolder;
-	text-decoration: underline;
+	/* text-decoration: underline; */
 	color: black;
 }
 .days-header > td {
@@ -209,5 +334,14 @@ defineExpose({ currentMonth, currentYear, selectedDate })
 }
 .prev-date {
 	color: var(--sc-gray-20);
+}
+
+.adatepicker .date-input {
+	display: flex;
+	width: 100%;
+	gap: 5px;
+}
+.adatepicker .date-input > input {
+	width: 50%;
 }
 </style>
