@@ -273,6 +273,17 @@ const schema = ref([{
 
 ## Workflow State Machines
 
+### XState Transition Integration
+
+The desktop example demonstrates **automatic XState transition triggering** using HST integration. When workflow transitions occur, registered transition actions are automatically executed.
+
+**Benefits**:
+- **Declarative Workflows**: Define workflow behavior in transition actions, not scattered throughout components
+- **Consistent Side Effects**: All SAVE operations execute the same validation, logging, and notification logic
+- **Testable**: Transition actions can be unit tested independently of components
+- **Reusable**: Shared transition actions work across all doctypes (SAVE, CANCEL, DELETE)
+- **Context-Aware**: Actions receive full FSM state context (currentState, targetState, fsmContext)
+
 ### Todo Workflow Agents
 
 #### Todo List FSM
@@ -414,13 +425,112 @@ const { stonecrop, provideHSTPath, handleHSTChange, formData } = useStonecrop({
 ### Server-Defined Actions
 ```typescript
 actions: {
-  CREATE: ['() => console.log("Creating new todo")'],
-  EDIT: ['() => console.log("Editing todo")'],
-  DELETE: ['() => console.log("Deleting todo")'],
-  SAVE: ['() => console.log("Saving todo")'],
-  CANCEL: ['() => console.log("Cancelling todo edit")']
+  // XState transition actions (uppercase convention) - MUST be arrays
+  SAVE: ['SAVE'],     // Triggers XState transition action
+  CANCEL: ['CANCEL'], // Triggers XState transition action
+  DELETE: ['DELETE'], // Triggers XState transition action
+  CREATE: ['CREATE'], // Triggers XState transition action
+
+  // Field trigger actions (lowercase/camelCase convention)
+  first_name: ['validateName', 'updateFullName', 'logFieldChange'],
+  last_name: ['validateName', 'updateFullName', 'logFieldChange'],
+  phone: ['validatePhoneFormat', 'notifyPhoneChange', 'logFieldChange']
 }
 ```
+
+### XState Transition Actions
+
+The desktop example demonstrates **XState transition integration** using the uppercase convention pattern. Transition actions are automatically triggered when FSM state transitions occur.
+
+#### Transition Action Registration
+```typescript
+// Register transition actions using registerTransitionAction
+registerTransitionAction('SAVE', (context: TransitionChangeContext) => {
+  const { transition, doctype, recordId, currentState, targetState, fsmContext } = context
+
+  console.log('💾 SAVE Transition:', {
+    doctype,
+    recordId,
+    from: currentState,
+    to: targetState,
+    fsmContext,
+  })
+
+  addNotification(`💾 Saving ${doctype} record ${recordId}...`, 'info')
+
+  // Simulate save operation
+  setTimeout(() => {
+    addNotification(`✅ ${doctype} record ${recordId} saved successfully!`, 'success')
+  }, 500)
+})
+```
+
+#### Available Transition Actions
+- **SAVE**: Triggered when saving a record (editing → saved)
+- **CANCEL**: Triggered when canceling edits (editing → cancelled)
+- **DELETE**: Triggered when deleting a record (editing → deleted)
+- **CREATE**: Triggered when creating a new record (loaded → creating)
+- **EDIT**: Triggered when editing a record (saved → editing)
+- **VALIDATE**: Triggered for validation workflows
+- **SUBMIT**: Triggered for submission workflows
+
+#### Triggering Transitions from Components
+
+The Desktop component integrates XState transitions with UI actions:
+
+```typescript
+const handleSave = async () => {
+  if (!stonecrop.value) return
+
+  const formData = currentViewData.value || {}
+  const recordData = { id: currentRecordId.value, ...formData }
+  stonecrop.value.addRecord(currentDoctype.value, currentRecordId.value, recordData)
+
+  // Trigger SAVE transition
+  const node = stonecrop.value.getRecordById(currentDoctype.value, currentRecordId.value)
+  if (node) {
+    await node.triggerTransition('SAVE', {
+      currentState: 'editing',
+      targetState: 'saved',
+      fsmContext: recordData,
+    })
+  }
+}
+```
+
+#### Transition vs Field Trigger Actions
+
+**XState Transition Actions** (Uppercase):
+- Follow uppercase convention: `SAVE`, `CANCEL`, `DELETE`, `CREATE`
+- Triggered by FSM state transitions
+- Receive `TransitionChangeContext` with FSM state info
+- Registered using `registerTransitionAction()`
+- Example: Saving a record, canceling edits, workflow validation
+
+**Field Trigger Actions** (Lowercase/CamelCase):
+- Follow lowercase/camelCase convention: `validateName`, `updateFullName`
+- Triggered by field value changes
+- Receive `FieldChangeContext` with field change info
+- Registered using `registerGlobalAction()`
+- Example: Field validation, auto-fill, change notifications
+
+#### Context Passing
+
+Transition actions receive comprehensive context:
+```typescript
+interface TransitionChangeContext extends FieldChangeContext {
+  transition: string       // Transition name (e.g., "SAVE")
+  currentState?: string    // Current FSM state (e.g., "editing")
+  targetState?: string     // Target FSM state (e.g., "saved")
+  fsmContext?: any        // FSM context data
+}
+```
+
+This allows transition actions to:
+- Access current record data through `path`
+- Know the FSM state flow through `currentState` and `targetState`
+- Receive workflow context through `fsmContext`
+- Execute side effects like API calls, notifications, or state updates
 
 ### Mock Action Elements (`mocks/elements.ts`)
 ```typescript
@@ -492,6 +602,55 @@ rushx docs
 - **Field Triggers**: Ensure doctype context is correctly resolved from HST paths
 
 ## Testing Agents
+
+### XState Transition Testing
+
+To test XState transition integration:
+
+```bash
+# Start the desktop example
+cd examples && rushx dev:desktop
+```
+
+Then navigate to http://localhost:5173/ and:
+
+**UI-Based Transition Triggering** (New in Desktop Example):
+
+The desktop example includes a **Transitions dropdown** in the action bar for easy transition testing:
+
+1. **Access the dropdown**: Open any record (e.g., `/todo/1` or `/issue/1`)
+2. **Find "Transitions" dropdown**: Located in the top action bar, next to Save/Delete buttons
+3. **View available transitions**: Click to see transitions for current FSM state:
+   - `SAVE (→ saved)` - Save the record
+   - `CANCEL (→ cancelled)` - Cancel editing
+   - `DELETE (→ deleted)` - Delete the record
+4. **Trigger transitions**: Click any transition to execute it with full context
+5. **Watch feedback**: Notifications appear in top-right corner, console shows detailed logs
+
+**Manual Test Cases**:
+
+1. **Test CREATE transition**: Click on a doctype list (e.g., Todo) and click "Create New"
+2. **Test SAVE transition**:
+   - Edit a record and click "Save" button, OR
+   - Use "Transitions" dropdown → select "SAVE (→ saved)"
+   - Watch for 💾 notification → ✅ success notification
+3. **Test CANCEL transition**:
+   - Edit a record and click "Cancel" button, OR
+   - Use "Transitions" dropdown → select "CANCEL (→ cancelled)"
+   - Watch for ❌ notification
+4. **Test DELETE transition**:
+   - Click "Delete" button, OR
+   - Use "Transitions" dropdown → select "DELETE (→ deleted)"
+   - Watch for 🗑️ notification
+5. **Test Field Triggers**: Edit any field and watch for validation notifications in real-time
+
+**Expected Behavior**:
+- **Transitions dropdown** shows only valid transitions for the current FSM state
+- Dropdown label shows transition name and target state (e.g., "SAVE (→ saved)")
+- Transition actions trigger notifications with appropriate icons (💾, ❌, 🗑️, etc.)
+- Console logs show detailed transition context including FSM states
+- Notifications appear in the top-right corner with proper styling
+- Field triggers continue to work alongside transition actions
 
 ### Unit Testing Approach
 ```typescript
