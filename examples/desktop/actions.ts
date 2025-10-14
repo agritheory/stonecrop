@@ -2,7 +2,13 @@
  * Field trigger action functions for the Desktop example
  * This demonstrates the field trigger system in action
  */
-import { registerGlobalAction, getGlobalTriggerEngine, type FieldChangeContext } from '@stonecrop/stonecrop'
+import {
+	registerGlobalAction,
+	registerTransitionAction,
+	getGlobalTriggerEngine,
+	type FieldChangeContext,
+	type TransitionChangeContext,
+} from '@stonecrop/stonecrop'
 import { reactive } from 'vue'
 
 // ============= DEBUGGING AND NOTIFICATIONS =============
@@ -298,3 +304,119 @@ if (engine) {
 		])
 	)
 }
+
+// ============= XSTATE TRANSITION ACTIONS =============
+// These are transition actions that follow the uppercase convention
+// They are automatically triggered when XState FSM transitions occur
+
+registerTransitionAction('SAVE', (context: TransitionChangeContext) => {
+	const { transition, doctype, recordId, currentState, targetState, fsmContext } = context
+
+	console.log('💾 SAVE Transition:', {
+		doctype,
+		recordId,
+		from: currentState,
+		to: targetState,
+		fsmContext,
+	})
+
+	addNotification(`💾 Saving ${doctype} record ${recordId}...`, 'info')
+
+	// Simulate save operation
+	setTimeout(() => {
+		addNotification(`✅ ${doctype} record ${recordId} saved successfully!`, 'success')
+	}, 500)
+})
+
+registerTransitionAction('CANCEL', (context: TransitionChangeContext) => {
+	const { transition, doctype, recordId, currentState, targetState } = context
+
+	console.log('❌ CANCEL Transition:', {
+		doctype,
+		recordId,
+		from: currentState,
+		to: targetState,
+	})
+
+	addNotification(`❌ Cancelled editing ${doctype} record ${recordId}`, 'warning')
+})
+
+registerTransitionAction('DELETE', (context: TransitionChangeContext) => {
+	const { transition, doctype, recordId, currentState, targetState } = context
+
+	console.log('🗑️ DELETE Transition:', {
+		doctype,
+		recordId,
+		from: currentState,
+		to: targetState,
+	})
+
+	addNotification(`🗑️ Deleting ${doctype} record ${recordId}...`, 'warning')
+
+	// Simulate delete operation
+	setTimeout(() => {
+		addNotification(`🗑️ ${doctype} record ${recordId} deleted successfully`, 'info')
+	}, 500)
+})
+
+registerTransitionAction('CREATE', (context: TransitionChangeContext) => {
+	const { transition, doctype, currentState, targetState } = context
+
+	console.log('➕ CREATE Transition:', {
+		doctype,
+		from: currentState,
+		to: targetState,
+	})
+
+	addNotification(`➕ Creating new ${doctype} record...`, 'info')
+})
+
+registerTransitionAction('EDIT', (context: TransitionChangeContext) => {
+	const { transition, doctype, recordId, currentState, targetState } = context
+
+	console.log('✏️ EDIT Transition:', {
+		doctype,
+		recordId,
+		from: currentState,
+		to: targetState,
+	})
+
+	addNotification(`✏️ Editing ${doctype} record ${recordId}`, 'info')
+})
+
+registerTransitionAction('VALIDATE', (context: TransitionChangeContext) => {
+	const { transition, doctype, recordId, fsmContext } = context
+
+	console.log('✓ VALIDATE Transition:', {
+		doctype,
+		recordId,
+		fsmContext,
+	})
+
+	// Example validation logic
+	const hasErrors = false // In real app, check validation state
+
+	if (hasErrors) {
+		addNotification(`⚠️ Validation failed for ${doctype} record ${recordId}`, 'error')
+	} else {
+		addNotification(`✓ Validation passed for ${doctype} record ${recordId}`, 'success')
+	}
+})
+
+registerTransitionAction('SUBMIT', (context: TransitionChangeContext) => {
+	const { transition, doctype, recordId, currentState, targetState } = context
+
+	console.log('📤 SUBMIT Transition:', {
+		doctype,
+		recordId,
+		from: currentState,
+		to: targetState,
+	})
+
+	addNotification(`📤 Submitting ${doctype} record ${recordId}...`, 'info')
+
+	// Simulate submit operation
+	setTimeout(() => {
+		addNotification(`✅ ${doctype} record ${recordId} submitted successfully!`, 'success')
+	}, 700)
+})

@@ -55,9 +55,8 @@ export function makeServer() {
 						},
 					},
 					actions: {
-						CREATE: ['() => console.log("Creating new todo")'],
-						EDIT: ['() => console.log("Editing todo")'],
-						DELETE: ['() => console.log("Deleting todo")'],
+						// XState transition actions (uppercase convention)
+						CREATE: 'CREATE', // Triggers XState transition action
 						// Field triggers - automatically executed when fields change
 						first_name: ['validateName', 'updateFullName'],
 						last_name: ['validateName', 'updateFullName'],
@@ -135,9 +134,10 @@ export function makeServer() {
 						},
 					},
 					actions: {
-						SAVE: ['() => console.log("Saving todo")'],
-						CANCEL: ['() => console.log("Cancelling todo edit")'],
-						DELETE: ['() => console.log("Deleting todo")'],
+						// XState transition actions (uppercase convention)
+						SAVE: ['SAVE'],
+						CANCEL: ['CANCEL'],
+						DELETE: ['DELETE'],
 						// Field triggers - automatically executed when fields change
 						first_name: ['validateName', 'updateFullName', 'logFieldChange'],
 						last_name: ['validateName', 'updateFullName', 'logFieldChange'],
@@ -191,9 +191,8 @@ export function makeServer() {
 						},
 					},
 					actions: {
-						CREATE: ['() => console.log("Creating new issue")'],
-						EDIT: ['() => console.log("Editing issue")'],
-						DELETE: ['() => console.log("Deleting issue")'],
+						// XState transition actions (uppercase convention)
+						CREATE: 'CREATE',
 						// Field triggers - automatically executed when fields change
 						subject: ['validateSubject', 'logFieldChange'],
 						status: ['onStatusChange', 'updateTimestamp', 'logFieldChange'],
@@ -271,9 +270,10 @@ export function makeServer() {
 						},
 					},
 					actions: {
-						SAVE: ['() => console.log("Saving issue")'],
-						CANCEL: ['() => console.log("Cancelling issue edit")'],
-						DELETE: ['() => console.log("Deleting issue")'],
+						// XState transition actions (uppercase convention)
+						SAVE: ['SAVE'],
+						CANCEL: ['CANCEL'],
+						DELETE: ['DELETE'],
 						// Field triggers - automatically executed when fields change
 						subject: ['validateSubject', 'logFieldChange'],
 						status: ['onStatusChange', 'updateTimestamp', 'logFieldChange'],

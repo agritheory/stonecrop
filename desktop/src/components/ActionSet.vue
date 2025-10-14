@@ -38,14 +38,18 @@
 			</div>
 		</div>
 		<div style="margin-right: 30px"></div>
-		<div class="action-element" v-for="(el, index) in _elements" :key="el.label">
-			<button v-if="el.type == 'button'" :onclick="el.action" class="button-default">{{ el.label }}</button>
+		<div class="action-element" v-for="(el, index) in elements" :key="el.label">
+			<button v-if="el.type == 'button'" @click="handleClick(el.action, el.label)" class="button-default">
+				{{ el.label }}
+			</button>
 			<div v-if="el.type == 'dropdown'">
 				<button class="button-default" @click="toggleDropdown(index)">{{ el.label }}</button>
-				<div class="dropdown-container" v-show="el.show">
+				<div class="dropdown-container" v-show="dropdownStates[index]">
 					<div class="dropdown">
-						<div v-for="item in el.actions" :key="item.label">
-							<button v-if="item.action != null" :onclick="item.action" class="dropdown-item">{{ item.label }}</button>
+						<div v-for="(item, itemIndex) in el.actions" :key="item.label">
+							<button v-if="item.action != null" @click="handleClick(item.action, item.label)" class="dropdown-item">
+								{{ item.label }}
+							</button>
 							<a v-else-if="item.link != null" :href="item.link"
 								><button class="dropdown-item">{{ item.label }}</button></a
 							>
@@ -63,8 +67,13 @@ import { onMounted, ref } from 'vue'
 import type { ActionElements } from '../types'
 
 const { elements = [] } = defineProps<{ elements?: ActionElements[] }>()
+const emit = defineEmits<{
+	actionClick: [label: string, action: (() => void | Promise<void>) | undefined]
+}>()
 
-const _elements = ref(elements)
+// Track dropdown open state separately (index -> boolean)
+const dropdownStates = ref<Record<number, boolean>>({})
+
 const isOpen = ref(false)
 const timeoutId = ref<number | null>(null)
 const hover = ref(false)
@@ -75,11 +84,7 @@ onMounted(() => {
 })
 
 const closeDropdowns = () => {
-	for (const element of _elements.value) {
-		if (element.type === 'dropdown') {
-			element.show = false
-		}
-	}
+	dropdownStates.value = {}
 }
 
 const onHover = () => {
@@ -99,9 +104,16 @@ const onHoverLeave = () => {
 }
 
 const toggleDropdown = (index: number) => {
-	const showDropdown = !_elements.value[index].show
+	const showDropdown = !dropdownStates.value[index]
 	closeDropdowns()
-	_elements.value[index].show = showDropdown
+	if (showDropdown) {
+		dropdownStates.value[index] = true
+	}
+}
+
+const handleClick = (action: (() => void | Promise<void>) | undefined, label: string) => {
+	// Emit event to parent - parent will handle execution
+	emit('actionClick', label, action)
 }
 </script>
 
@@ -208,6 +220,7 @@ const toggleDropdown = (index: number) => {
 .action-element {
 	margin-left: 5px;
 	margin-right: 5px;
+	position: relative; /* Make this the positioning context for absolute children */
 }
 button.button-default {
 	background-color: #ffffff;
@@ -230,13 +243,13 @@ button.button-default:hover {
 
 .dropdown {
 	position: absolute;
-	top: 5px;
-	right: 0;
+	left: 0;
 	min-width: 200px;
 	box-shadow: 0 0.5rem 1rem rgb(0 0 0 / 18%);
 	border-radius: 10px;
 	background-color: #ffffff;
 	padding: 10px;
+	z-index: 1000;
 }
 
 button.dropdown-item {

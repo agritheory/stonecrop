@@ -251,14 +251,8 @@ describe('Stonecrop class with HST integration', () => {
 
 			stonecrop.addRecord('task', '123', { id: '123', title: 'Test Task' })
 
-			// Let's debug what's in the store
 			const store = stonecrop.getStore()
-			console.log('Store has task:', store.has('task'))
-			console.log('Store has task.123:', store.has('task.123'))
-
 			const record = stonecrop.getRecordById('task', '123')
-			console.log('Record is:', record)
-			console.log('Record path:', record?.getPath())
 
 			if (record) {
 				const doctypeSection = record.getParent()

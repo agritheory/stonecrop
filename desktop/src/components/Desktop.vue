@@ -1,7 +1,7 @@
 <template>
 	<div class="desktop" @click="handleClick">
 		<!-- Action Set -->
-		<ActionSet :elements="actionElements" />
+		<ActionSet :elements="actionElements" @action-click="handleActionClick" />
 
 		<!-- Main content using AForm -->
 		<AForm v-if="writableSchema.length > 0" v-model="writableSchema" :data="currentViewData" />
@@ -158,7 +158,9 @@ const isNewRecord = computed(() => currentRecordId.value?.startsWith('new-'))
 
 // Determine current view based on route
 const currentView = computed(() => {
-	if (!route.value) return 'doctypes'
+	if (!route.value) {
+		return 'doctypes'
+	}
 
 	// Home route
 	if (route.value.name === 'home' || route.value.path === '/') {
@@ -178,13 +180,73 @@ const currentView = computed(() => {
 	// Catch-all route - determine from path structure
 	const pathMatch = route.value.params.pathMatch as string[] | undefined
 	if (pathMatch && pathMatch.length > 0) {
-		return pathMatch.length === 1 ? 'records' : 'record'
+		const view = pathMatch.length === 1 ? 'records' : 'record'
+		return view
 	}
 
 	return 'doctypes'
 })
 
 // Computed properties (now that all helper functions are defined)
+// Helper function to get available transitions for current record
+const getAvailableTransitions = () => {
+	if (!stonecrop.value || !currentDoctype.value || !currentRecordId.value) {
+		return []
+	}
+
+	try {
+		const registry = stonecrop.value.registry
+		const meta = registry.registry[currentDoctype.value]
+
+		if (!meta?.workflow?.states) {
+			return []
+		}
+
+		// Get current FSM state (for now, use workflow initial state or 'editing')
+		// In a full implementation, this would track actual FSM state
+		const currentState = isNewRecord.value ? 'creating' : 'editing'
+		const stateConfig = meta.workflow.states[currentState]
+
+		if (!stateConfig?.on) {
+			return []
+		}
+
+		// Get available transitions from current state
+		const transitions = Object.keys(stateConfig.on)
+
+		// Create action elements for each transition
+		const actionElements = transitions.map(transition => {
+			const targetState = stateConfig.on?.[transition]
+			const targetStateName = typeof targetState === 'string' ? targetState : 'unknown'
+
+			const actionFn = async () => {
+				const node = stonecrop.value?.getRecordById(currentDoctype.value, currentRecordId.value)
+				if (node) {
+					const recordData = currentViewData.value || {}
+					await node.triggerTransition(transition, {
+						currentState,
+						targetState: targetStateName,
+						fsmContext: recordData,
+					})
+				}
+			}
+
+			const element = {
+				label: `${transition} (→ ${targetStateName})`,
+				action: actionFn,
+			}
+
+			return element
+		})
+
+		return actionElements
+	} catch (error) {
+		// eslint-disable-next-line no-console
+		console.warn('Error getting available transitions:', error)
+		return []
+	}
+}
+
 // New component reactive properties// New component reactive properties
 const actionElements = computed<ActionElements[]>(() => {
 	const elements: ActionElements[] = []
@@ -217,28 +279,18 @@ const actionElements = computed<ActionElements[]>(() => {
 				}
 			)
 			break
-		case 'record':
-			if (!isNewRecord.value) {
-				elements.push(
-					{
-						type: 'button',
-						label: 'Save',
-						action: () => void handleSave(),
-					},
-					{
-						type: 'button',
-						label: 'Delete',
-						action: () => void handleDelete(),
-					}
-				)
-			} else {
+		case 'record': {
+			// Add XState Transitions dropdown for record view
+			const transitionActions = getAvailableTransitions()
+			if (transitionActions.length > 0) {
 				elements.push({
-					type: 'button',
-					label: 'Save',
-					action: () => void handleSave(),
+					type: 'dropdown',
+					label: 'Actions',
+					actions: transitionActions,
 				})
 			}
 			break
+		}
 	}
 
 	return elements
@@ -763,6 +815,7 @@ watch(
 
 // Action handlers (will be triggered by button clicks in the UI)
 const handleSave = async () => {
+	// eslint-disable-next-line no-console
 	if (!stonecrop.value) return
 
 	saving.value = true
@@ -776,10 +829,30 @@ const handleSave = async () => {
 
 			stonecrop.value.addRecord(currentDoctype.value, newId, recordData)
 
+			// Trigger SAVE transition for new record
+			const node = stonecrop.value.getRecordById(currentDoctype.value, newId)
+			if (node) {
+				await node.triggerTransition('SAVE', {
+					currentState: 'creating',
+					targetState: 'saved',
+					fsmContext: recordData,
+				})
+			}
+
 			await router.value?.replace(`/${routeDoctype.value}/${newId}`)
 		} else {
 			const recordData = { id: currentRecordId.value, ...formData }
 			stonecrop.value.addRecord(currentDoctype.value, currentRecordId.value, recordData)
+
+			// Trigger SAVE transition for existing record
+			const node = stonecrop.value.getRecordById(currentDoctype.value, currentRecordId.value)
+			if (node) {
+				await node.triggerTransition('SAVE', {
+					currentState: 'editing',
+					targetState: 'saved',
+					fsmContext: recordData,
+				})
+			}
 		}
 	} catch (error) {
 		// Silently handle error
@@ -790,10 +863,29 @@ const handleSave = async () => {
 
 const handleCancel = async () => {
 	if (isNewRecord.value) {
+		// For new records, we don't have a specific record node yet
+		// Just navigate back without triggering transition
 		await router.value?.push(`/${routeDoctype.value}`)
 	} else {
+		// Trigger CANCEL transition for existing record
+		if (stonecrop.value) {
+			const node = stonecrop.value.getRecordById(currentDoctype.value, currentRecordId.value)
+			if (node) {
+				await node.triggerTransition('CANCEL', {
+					currentState: 'editing',
+					targetState: 'cancelled',
+				})
+			}
+		}
 		// Reload current record data
 		loadRecordData()
+	}
+}
+
+const handleActionClick = (label: string, action: (() => void | Promise<void>) | undefined) => {
+	// eslint-disable-next-line no-console
+	if (action) {
+		void action()
 	}
 }
 
@@ -804,6 +896,15 @@ const handleDelete = async (recordId?: string) => {
 	if (!targetRecordId) return
 
 	if (confirm('Are you sure you want to delete this record?')) {
+		// Trigger DELETE transition before removing
+		const node = stonecrop.value.getRecordById(currentDoctype.value, targetRecordId)
+		if (node) {
+			await node.triggerTransition('DELETE', {
+				currentState: 'editing',
+				targetState: 'deleted',
+			})
+		}
+
 		stonecrop.value.removeRecord(currentDoctype.value, targetRecordId)
 
 		if (currentView.value === 'record') {
@@ -918,12 +1019,7 @@ const loadRecordData = () => {
 		if (!isNewRecord.value) {
 			// For existing records, ensure the record exists in HST
 			// The computed currentViewData will automatically read from HST
-			const record = stonecrop.value.getRecordById(currentDoctype.value, currentRecordId.value)
-			if (!record) {
-				// Record doesn't exist in HST, this is expected for new data loads
-				// eslint-disable-next-line no-console
-				console.log(`📝 [Desktop] Record ${currentRecordId.value} not found in HST for ${currentDoctype.value}`)
-			}
+			stonecrop.value.getRecordById(currentDoctype.value, currentRecordId.value)
 		}
 		// For new records, currentViewData computed property will return {} automatically
 	} catch (error) {

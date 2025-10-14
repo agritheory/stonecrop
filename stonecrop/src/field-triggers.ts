@@ -6,6 +6,9 @@ import type {
 	FieldTriggerExecutionResult,
 	FieldTriggerOptions,
 	ActionExecutionResult,
+	TransitionChangeContext,
+	TransitionActionFunction,
+	TransitionExecutionResult,
 } from './types/field-triggers'
 
 /**
@@ -21,8 +24,10 @@ export class FieldTriggerEngine {
 
 	private options: FieldTriggerOptions & { defaultTimeout: number; debug: boolean; enableRollback: boolean }
 	private doctypeActions = new Map<string, Map<string, string[]>>() // doctype -> action/field -> functions
+	private doctypeTransitions = new Map<string, Map<string, string[]>>() // doctype -> transition -> functions
 	private fieldRollbackConfig = new Map<string, Map<string, boolean>>() // doctype -> field -> rollback enabled
 	private globalActions = new Map<string, FieldActionFunction>() // action name -> function
+	private globalTransitionActions = new Map<string, TransitionActionFunction>() // transition action name -> function
 
 	constructor(options: FieldTriggerOptions = {}) {
 		if (FieldTriggerEngine._root) {
@@ -45,6 +50,13 @@ export class FieldTriggerEngine {
 	}
 
 	/**
+	 * Register a global XState transition action function
+	 */
+	registerTransitionAction(name: string, fn: TransitionActionFunction): void {
+		this.globalTransitionActions.set(name, fn)
+	}
+
+	/**
 	 * Configure rollback behavior for a specific field trigger
 	 */
 	setFieldRollback(doctype: string, fieldname: string, enableRollback: boolean): void {
@@ -63,6 +75,7 @@ export class FieldTriggerEngine {
 
 	/**
 	 * Register actions from a doctype - both regular actions and field triggers
+	 * Separates XState transitions (uppercase) from field triggers (lowercase)
 	 */
 	registerDoctypeActions(
 		doctype: string,
@@ -71,6 +84,7 @@ export class FieldTriggerEngine {
 		if (!actions) return
 
 		const actionMap = new Map<string, string[]>()
+		const transitionMap = new Map<string, string[]>()
 
 		// Convert from different Map types to regular Map
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -78,21 +92,50 @@ export class FieldTriggerEngine {
 			// Immutable Map
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			;(actions as any).entrySeq().forEach(([key, value]: [string, string[]]) => {
-				actionMap.set(key, value)
+				this.categorizeAction(key, value, actionMap, transitionMap)
 			})
 		} else if (actions instanceof Map) {
 			// Regular Map
 			for (const [key, value] of actions) {
-				actionMap.set(key, value)
+				this.categorizeAction(key, value, actionMap, transitionMap)
 			}
 		} else if (actions && typeof actions === 'object') {
 			// Plain object
 			Object.entries(actions).forEach(([key, value]) => {
-				actionMap.set(key, value as string[])
+				this.categorizeAction(key, value as string[], actionMap, transitionMap)
 			})
 		}
 
+		// Always set the maps, even if empty
 		this.doctypeActions.set(doctype, actionMap)
+		this.doctypeTransitions.set(doctype, transitionMap)
+	}
+
+	/**
+	 * Categorize an action as either a field trigger or XState transition
+	 * Uses uppercase convention: UPPERCASE = transition, lowercase/mixed = field trigger
+	 */
+	private categorizeAction(
+		key: string,
+		value: string[],
+		actionMap: Map<string, string[]>,
+		transitionMap: Map<string, string[]>
+	): void {
+		// Check if the key is all uppercase (XState transition convention)
+		if (this.isTransitionKey(key)) {
+			transitionMap.set(key, value)
+		} else {
+			actionMap.set(key, value)
+		}
+	}
+
+	/**
+	 * Determine if a key represents an XState transition
+	 * Transitions are identified by being all uppercase
+	 */
+	private isTransitionKey(key: string): boolean {
+		// Must be all uppercase letters/numbers/underscores
+		return /^[A-Z0-9_]+$/.test(key) && key.length > 0
 	}
 
 	/**
@@ -192,6 +235,126 @@ export class FieldTriggerEngine {
 		}
 
 		return result
+	}
+
+	/**
+	 * Execute XState transition actions
+	 * Similar to field triggers but specifically for FSM state transitions
+	 */
+	async executeTransitionActions(
+		context: TransitionChangeContext,
+		options: { timeout?: number } = {}
+	): Promise<TransitionExecutionResult[]> {
+		const { doctype, transition } = context
+		const transitionActions = this.findTransitionActions(doctype, transition)
+
+		if (transitionActions.length === 0) {
+			return []
+		}
+
+		const results: TransitionExecutionResult[] = []
+
+		// Execute transition actions sequentially
+		for (const actionName of transitionActions) {
+			try {
+				const actionResult = await this.executeTransitionAction(actionName, context, options.timeout)
+				results.push(actionResult)
+
+				if (!actionResult.success) {
+					// Stop on first error for transitions
+					break
+				}
+			} catch (error) {
+				const actionError = error instanceof Error ? error : new Error(String(error))
+				const errorResult: TransitionExecutionResult = {
+					success: false,
+					error: actionError,
+					executionTime: 0,
+					action: actionName,
+					transition,
+				}
+				results.push(errorResult)
+				break
+			}
+		}
+
+		// Call global error handler if configured and errors occurred
+		const failedResults = results.filter(r => !r.success)
+		if (failedResults.length > 0 && this.options.errorHandler) {
+			for (const failedResult of failedResults) {
+				try {
+					// Call with FieldChangeContext (base context type)
+					this.options.errorHandler(failedResult.error!, context, failedResult.action)
+				} catch (handlerError) {
+					// eslint-disable-next-line no-console
+					console.error('[FieldTriggers] Error in global error handler:', handlerError)
+				}
+			}
+		}
+
+		return results
+	}
+
+	/**
+	 * Find transition actions for a specific doctype and transition
+	 */
+	private findTransitionActions(doctype: string, transition: string): string[] {
+		const doctypeTransitions = this.doctypeTransitions.get(doctype)
+		if (!doctypeTransitions) return []
+
+		return doctypeTransitions.get(transition) || []
+	}
+
+	/**
+	 * Execute a single transition action by name
+	 */
+	private async executeTransitionAction(
+		actionName: string,
+		context: TransitionChangeContext,
+		timeout?: number
+	): Promise<TransitionExecutionResult> {
+		const startTime = performance.now()
+		const actionTimeout = timeout ?? this.options.defaultTimeout
+
+		try {
+			// Look up action in transition-specific registry first, then fall back to global
+			let actionFn = this.globalTransitionActions.get(actionName)
+
+			// If not found in transition registry, try regular action registry
+			// This allows sharing actions between field triggers and transitions
+			if (!actionFn) {
+				const regularActionFn = this.globalActions.get(actionName)
+				if (regularActionFn) {
+					// Wrap regular action to accept TransitionChangeContext
+					actionFn = regularActionFn as unknown as TransitionActionFunction
+				}
+			}
+
+			if (!actionFn) {
+				throw new Error(`Transition action "${actionName}" not found in registry`)
+			}
+
+			await this.executeWithTimeout(actionFn as FieldActionFunction, context, actionTimeout)
+			const executionTime = performance.now() - startTime
+
+			return {
+				success: true,
+				executionTime,
+				action: actionName,
+				transition: context.transition,
+			}
+		} catch (error) {
+			const executionTime = performance.now() - startTime
+			const actionError = error instanceof Error ? error : new Error(String(error))
+
+			return {
+				success: false,
+				error: actionError,
+				executionTime,
+				action: actionName,
+				transition: context.transition,
+			}
+		}
 	}
 
 	/**
@@ -407,10 +570,55 @@ export function registerGlobalAction(name: string, fn: FieldActionFunction): voi
 }
 
 /**
+ * Register a global XState transition action function
+ * @public
+ */
+export function registerTransitionAction(name: string, fn: TransitionActionFunction): void {
+	const engine = getGlobalTriggerEngine()
+	engine.registerTransitionAction(name, fn)
+}
+
+/**
  * Configure rollback behavior for a specific field trigger
  * @public
  */
 export function setFieldRollback(doctype: string, fieldname: string, enableRollback: boolean): void {
 	const engine = getGlobalTriggerEngine()
 	engine.setFieldRollback(doctype, fieldname, enableRollback)
+}
+
+/**
+ * Manually trigger an XState transition for a specific doctype/record
+ * This can be called directly when you need to execute transition actions programmatically
+ * @public
+ */
+export async function triggerTransition(
+	doctype: string,
+	transition: string,
+	options?: {
+		recordId?: string
+		currentState?: string
+		targetState?: string
+		fsmContext?: Record<string, any>
+		path?: string
+	}
+): Promise<any> {
+	const engine = getGlobalTriggerEngine()
+
+	const context: TransitionChangeContext = {
+		path: options?.path || (options?.recordId ? `${doctype}.${options.recordId}` : doctype),
+		fieldname: '',
+		beforeValue: undefined,
+		afterValue: undefined,
+		operation: 'set',
+		doctype,
+		recordId: options?.recordId,
+		timestamp: new Date(),
+		transition,
+		currentState: options?.currentState,
+		targetState: options?.targetState,
+		fsmContext: options?.fsmContext,
+	}
+
+	return await engine.executeTransitionActions(context)
 }
