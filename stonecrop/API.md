@@ -55,6 +55,23 @@ export declare function registerGlobalAction(name: string, fn: FieldActionFuncti
 | name | `string` |  |
 | fn | `FieldActionFunction` |  |
 
+### registerTransitionAction
+
+Register a global XState transition action function
+
+**Signature:**
+
+```typescript
+export declare function registerTransitionAction(name: string, fn: TransitionActionFunction): void;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| name | `string` |  |
+| fn | `TransitionActionFunction` |  |
+
 ### setFieldRollback
 
 Configure rollback behavior for a specific field trigger
@@ -72,6 +89,30 @@ export declare function setFieldRollback(doctype: string, fieldname: string, ena
 | doctype | `string` |  |
 | fieldname | `string` |  |
 | enableRollback | `boolean` |  |
+
+### triggerTransition
+
+Manually trigger an XState transition for a specific doctype/record This can be called directly when you need to execute transition actions programmatically
+
+**Signature:**
+
+```typescript
+export declare function triggerTransition(doctype: string, transition: string, options?: {
+    recordId?: string;
+    currentState?: string;
+    targetState?: string;
+    fsmContext?: Record<string, any>;
+    path?: string;
+}): Promise<any>;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `string` |  |
+| transition | `string` |  |
+| options | `{ recordId?: string; currentState?: string; targetState?: string; fsmContext?: Record<string, any>; path?: string; }` |  |
 
 ### useStonecrop
 
@@ -483,6 +524,11 @@ export interface HSTNode {
   getRoot(): HSTNode;
   has(path: string): boolean;
   set(path: string, value: any): void;
+  triggerTransition(transition: string, context: {
+        currentState?: string;
+        targetState?: string;
+        fsmContext?: Record<string, any>;
+    }): Promise<any>;
 }
 ```
 
@@ -671,6 +717,56 @@ export interface TableRow {
 | gantt? | `GanttOptions` | The options to use when rendering the row as a Gantt table. |
 | indent? | `number` | The indentation level of the row node. Only applicable for tree and gantt views. |
 | parent? | `number` | The HTML parent element for the row node. This is evaluated automatically while rendering the table. Only applicable for tree and gantt views. |
+
+### TransitionChangeContext
+
+Context provided to XState transition action functions Extends FieldChangeContext with FSM-specific data
+
+**Definition:**
+
+```typescript
+export interface TransitionChangeContext {
+  currentState?: string;
+  fsmContext?: Record<string, any>;
+  targetState?: string;
+  transition: string;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| currentState? | `string` | Current workflow state before transition |
+| fsmContext? | `Record<string, any>` | Additional FSM context data |
+| targetState? | `string` | Target workflow state after transition |
+| transition | `string` | The XState transition name that triggered this action |
+
+### TransitionExecutionResult
+
+Result of executing an XState transition action
+
+**Definition:**
+
+```typescript
+export interface TransitionExecutionResult {
+  action: TransitionAction;
+  error?: Error;
+  executionTime: number;
+  success: boolean;
+  transition: string;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| action | `TransitionAction` | The action that was executed |
+| error? | `Error` | Error if execution failed |
+| executionTime | `number` | Execution time in milliseconds |
+| success | `boolean` | Whether the action executed successfully |
+| transition | `string` | The transition name that was executed |
 
 ### TreeGanttTableConfig
 
@@ -1007,6 +1103,26 @@ export type TableSchema = BaseSchema & {
 };
 ```
 
+### TransitionAction
+
+Supported action types for XState transitions Can be either a transition-specific function or a string reference
+
+**Definition:**
+
+```typescript
+export type TransitionAction = TransitionActionFunction | FieldActionString;
+```
+
+### TransitionActionFunction
+
+Action function for XState transition triggers Receives enhanced context with FSM state information
+
+**Definition:**
+
+```typescript
+export type TransitionActionFunction = (context: TransitionChangeContext) => void | Promise<void>;
+```
+
 ## Classes
 
 ### DoctypeMeta
@@ -1059,6 +1175,16 @@ executeFieldTriggers(context: FieldChangeContext, options: {
     }): Promise<FieldTriggerExecutionResult>
 ```
 
+#### executeTransitionActions
+
+Execute XState transition actions Similar to field triggers but specifically for FSM state transitions
+
+```typescript
+executeTransitionActions(context: TransitionChangeContext, options: {
+        timeout?: number;
+    }): Promise<TransitionExecutionResult[]>
+```
+
 #### registerAction
 
 Register a global action function
@@ -1069,10 +1195,18 @@ registerAction(name: string, fn: FieldActionFunction): void
 
 #### registerDoctypeActions
 
-Register actions from a doctype - both regular actions and field triggers
+Register actions from a doctype - both regular actions and field triggers Separates XState transitions (uppercase) from field triggers (lowercase)
 
 ```typescript
 registerDoctypeActions(doctype: string, actions: ImmutableMap<string, string[]> | Map<string, string[]> | Record<string, string[]> | undefined): void
+```
+
+#### registerTransitionAction
+
+Register a global XState transition action function
+
+```typescript
+registerTransitionAction(name: string, fn: TransitionActionFunction): void
 ```
 
 #### setFieldRollback

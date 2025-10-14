@@ -179,8 +179,12 @@ export class FieldTriggerEngine {
         timeout?: number;
         enableRollback?: boolean;
     }): Promise<FieldTriggerExecutionResult>;
+    executeTransitionActions(context: TransitionChangeContext, options?: {
+        timeout?: number;
+    }): Promise<TransitionExecutionResult[]>;
     registerAction(name: string, fn: FieldActionFunction): void;
     registerDoctypeActions(doctype: string, actions: Map_2<string, string[]> | Map<string, string[]> | Record<string, string[]> | undefined): void;
+    registerTransitionAction(name: string, fn: TransitionActionFunction): void;
     static _root: FieldTriggerEngine;
     setFieldRollback(doctype: string, fieldname: string, enableRollback: boolean): void;
 }
@@ -306,6 +310,11 @@ export interface HSTNode {
     getRoot(): HSTNode;
     has(path: string): boolean;
     set(path: string, value: any): void;
+    triggerTransition(transition: string, context?: {
+        currentState?: string;
+        targetState?: string;
+        fsmContext?: Record<string, any>;
+    }): Promise<any>;
 }
 
 // @public
@@ -354,6 +363,9 @@ export default plugin;
 
 // @public
 export function registerGlobalAction(name: string, fn: FieldActionFunction): void;
+
+// @public
+export function registerTransitionAction(name: string, fn: TransitionActionFunction): void;
 
 // @public
 export class Registry {
@@ -482,6 +494,29 @@ export type TableSchema = BaseSchema & {
 };
 
 // @public
+export type TransitionAction = TransitionActionFunction | FieldActionString;
+
+// @public
+export type TransitionActionFunction = (context: TransitionChangeContext) => void | Promise<void>;
+
+// @public
+export interface TransitionChangeContext extends FieldChangeContext {
+    currentState?: string;
+    fsmContext?: Record<string, any>;
+    targetState?: string;
+    transition: string;
+}
+
+// @public
+export interface TransitionExecutionResult {
+    action: TransitionAction;
+    error?: Error;
+    executionTime: number;
+    success: boolean;
+    transition: string;
+}
+
+// @public
 export interface TreeGanttTableConfig extends BaseTableConfig {
     defaultTreeExpansion?: 'root' | 'branch' | 'leaf';
     dependencyGraph?: boolean;
@@ -493,6 +528,15 @@ export interface TreeTableConfig extends BaseTableConfig {
     defaultTreeExpansion?: 'root' | 'branch' | 'leaf';
     view: 'tree';
 }
+
+// @public
+export function triggerTransition(doctype: string, transition: string, options?: {
+    recordId?: string;
+    currentState?: string;
+    targetState?: string;
+    fsmContext?: Record<string, any>;
+    path?: string;
+}): Promise<any>;
 
 // @public
 export function useStonecrop(): BaseStonecropReturn | HSTStonecropReturn;

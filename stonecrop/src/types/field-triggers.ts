@@ -31,10 +31,33 @@ export interface FieldChangeContext {
 }
 
 /**
+ * Context provided to XState transition action functions
+ * Extends FieldChangeContext with FSM-specific data
+ * @public
+ */
+export interface TransitionChangeContext extends FieldChangeContext {
+	/** The XState transition name that triggered this action */
+	transition: string
+	/** Current workflow state before transition */
+	currentState?: string
+	/** Target workflow state after transition */
+	targetState?: string
+	/** Additional FSM context data */
+	fsmContext?: Record<string, any>
+}
+
+/**
  * Action function that can be triggered by field changes
  * @public
  */
 export type FieldActionFunction = (context: FieldChangeContext) => void | Promise<void>
+
+/**
+ * Action function for XState transition triggers
+ * Receives enhanced context with FSM state information
+ * @public
+ */
+export type TransitionActionFunction = (context: TransitionChangeContext) => void | Promise<void>
 
 /**
  * String reference to a globally registered action function or inline function
@@ -47,6 +70,13 @@ export type FieldActionString = string
  * @public
  */
 export type FieldAction = FieldActionFunction | FieldActionString
+
+/**
+ * Supported action types for XState transitions
+ * Can be either a transition-specific function or a string reference
+ * @public
+ */
+export type TransitionAction = TransitionActionFunction | FieldActionString
 
 /**
  * Configuration for a single field trigger
@@ -104,6 +134,23 @@ export interface ActionExecutionResult {
 	executionTime: number
 	/** The action that was executed */
 	action: FieldAction
+}
+
+/**
+ * Result of executing an XState transition action
+ * @public
+ */
+export interface TransitionExecutionResult {
+	/** Whether the action executed successfully */
+	success: boolean
+	/** Error if execution failed */
+	error?: Error
+	/** Execution time in milliseconds */
+	executionTime: number
+	/** The action that was executed */
+	action: TransitionAction
+	/** The transition name that was executed */
+	transition: string
 }
 
 /**

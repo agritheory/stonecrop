@@ -1,5 +1,5 @@
 import { getGlobalTriggerEngine } from '../field-triggers'
-import type { FieldChangeContext } from '../types/field-triggers'
+import type { FieldChangeContext, TransitionChangeContext } from '../types/field-triggers'
 
 /**
  * Core HST Interface - enhanced with tree navigation
@@ -65,6 +65,17 @@ interface HSTNode {
 	 * @returns The child HSTNode
 	 */
 	getNode(path: string): HSTNode
+
+	/**
+	 * Trigger an XState transition with optional context data
+	 * @param transition - The transition name (should be uppercase per convention)
+	 * @param context - Optional additional FSM context data
+	 * @returns Promise resolving to the transition execution results
+	 */
+	triggerTransition(
+		transition: string,
+		context?: { currentState?: string; targetState?: string; fsmContext?: Record<string, any> }
+	): Promise<any>
 }
 
 // Type definitions for global Registry
@@ -328,6 +339,51 @@ class HSTProxy implements HSTNode {
 
 	getBreadcrumbs(): string[] {
 		return this.parentPath ? this.parentPath.split('.') : []
+	}
+
+	/**
+	 * Trigger an XState transition with optional context data
+	 */
+	async triggerTransition(
+		transition: string,
+		context?: { currentState?: string; targetState?: string; fsmContext?: Record<string, any> }
+	): Promise<any> {
+		const triggerEngine = getGlobalTriggerEngine()
+
+		// Determine doctype and recordId from the current path
+		const pathSegments = this.parentPath.split('.')
+		let doctype = this.doctype
+		let recordId: string | undefined
+
+		// If we're at the root level and this is a StonecropStore, use the first path segment as the doctype
+		if (this.doctype === 'StonecropStore' && pathSegments.length >= 1) {
+			doctype = pathSegments[0]
+		}
+
+		// Extract recordId from path if it follows the expected pattern
+		if (pathSegments.length >= 2) {
+			recordId = pathSegments[1]
+		}
+
+		// Build transition context
+		const transitionContext: TransitionChangeContext = {
+			path: this.parentPath,
+			fieldname: '', // No specific field for transitions
+			beforeValue: undefined,
+			afterValue: undefined,
+			operation: 'set',
+			doctype,
+			recordId,
+			timestamp: new Date(),
+			store: this.rootNode || undefined,
+			transition,
+			currentState: context?.currentState,
+			targetState: context?.targetState,
+			fsmContext: context?.fsmContext,
+		}
+
+		// Execute transition actions
+		return await triggerEngine.executeTransitionActions(transitionContext)
 	}
 
 	// Private helper methods

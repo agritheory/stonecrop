@@ -3,7 +3,13 @@ export type * from '@stonecrop/atable/types'
 
 import { useStonecrop } from './composable'
 import DoctypeMeta from './doctype'
-import { getGlobalTriggerEngine, registerGlobalAction, setFieldRollback } from './field-triggers'
+import {
+	getGlobalTriggerEngine,
+	registerGlobalAction,
+	registerTransitionAction,
+	setFieldRollback,
+	triggerTransition,
+} from './field-triggers'
 import plugin from './plugins'
 import Registry from './registry'
 import { Stonecrop } from './stonecrop'
@@ -13,9 +19,12 @@ export type { BaseStonecropReturn, HSTChangeData, HSTStonecropReturn } from './c
 export type { FieldTriggerEngine } from './field-triggers'
 export type {
 	FieldChangeContext,
+	TransitionChangeContext,
 	FieldTriggerExecutionResult,
 	ActionExecutionResult,
+	TransitionExecutionResult,
 	FieldActionFunction,
+	TransitionActionFunction,
 } from './types/field-triggers'
 
 export {
@@ -30,7 +39,9 @@ export {
 	// Field trigger system exports
 	getGlobalTriggerEngine,
 	registerGlobalAction,
+	registerTransitionAction,
 	setFieldRollback,
+	triggerTransition,
 }
 
 // Default export is the Vue plugin
