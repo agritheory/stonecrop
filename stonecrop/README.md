@@ -1,6 +1,14 @@
 # Stonecrop
 _This package is under active development / design._
 
+## Features
+
+- **Hierarchical State Tree (HST)**: Advanced state management with tree navigation
+- **Operation Log**: Global undo/redo with time-travel debugging
+- **Field Triggers**: Event-driven field actions integrated with XState
+- **VueUse Integration**: Leverages battle-tested VueUse composables for keyboard shortcuts and persistence
+- **Comprehensive Testing**: 200+ tests ensuring reliability
+
 ## Installation & Usage
 
 ### Vue Plugin Installation

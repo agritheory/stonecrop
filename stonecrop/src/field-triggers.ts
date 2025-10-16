@@ -1,5 +1,6 @@
 /* eslint-disable no-new-func, no-eval */
 import type { Map as ImmutableMap } from 'immutable'
+import { useOperationLogStore } from './stores/operation-log'
 import type {
 	FieldActionFunction,
 	FieldChangeContext,
@@ -621,4 +622,22 @@ export async function triggerTransition(
 	}
 
 	return await engine.executeTransitionActions(context)
+}
+
+/**
+ * Mark a specific operation as irreversible.
+ * Used to prevent undo of critical operations like publishing or deletion.
+ * @param operationId - The ID of the operation to mark as irreversible
+ * @param reason - Human-readable reason why the operation cannot be undone
+ * @public
+ */
+export function markOperationIrreversible(operationId: string | undefined, reason: string): void {
+	if (!operationId) return
+
+	try {
+		const store = useOperationLogStore()
+		store.markIrreversible(operationId, reason)
+	} catch {
+		// Operation log is optional
+	}
 }

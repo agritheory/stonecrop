@@ -38,6 +38,23 @@ export declare function getGlobalTriggerEngine(options?: FieldTriggerOptions): F
 |-----------|------|-------------|
 | options | `FieldTriggerOptions` |  |
 
+### markOperationIrreversible
+
+Mark a specific operation as irreversible. Used to prevent undo of critical operations like publishing or deletion.
+
+**Signature:**
+
+```typescript
+export declare function markOperationIrreversible(operationId: string | undefined, reason: string): void;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| operationId | `string \| undefined` |  |
+| reason | `string` |  |
+
 ### registerGlobalAction
 
 Register a global action function that can be used in field triggers
@@ -114,6 +131,82 @@ export declare function triggerTransition(doctype: string, transition: string, o
 | transition | `string` |  |
 | options | `{ recordId?: string; currentState?: string; targetState?: string; fsmContext?: Record<string, any>; path?: string; }` |  |
 
+### useOperationLog
+
+Composable for operation log management Provides easy access to undo/redo functionality and operation history
+
+**Signature:**
+
+```typescript
+export declare function useOperationLog(config?: Partial<OperationLogConfig>): {
+    operations: import("vue").Ref<{
+        id: string;
+        type: import("..").HSTOperationType;
+        path: string;
+        fieldname: string;
+        beforeValue: any;
+        afterValue: any;
+        doctype: string;
+        recordId?: string | undefined;
+        timestamp: Date;
+        source?: import("..").OperationSource | undefined;
+        reversible: boolean;
+        irreversibleReason?: string | undefined;
+        transition?: string | undefined;
+        currentState?: string | undefined;
+        targetState?: string | undefined;
+        userId?: string | undefined;
+        metadata?: Record<string, any> | undefined;
+        parentOperationId?: string | undefined;
+        childOperationIds?: string[] | undefined;
+    }[], import("..").HSTOperation[] | {
+        id: string;
+        type: import("..").HSTOperationType;
+        path: string;
+        fieldname: string;
+        beforeValue: any;
+        afterValue: any;
+        doctype: string;
+        recordId?: string | undefined;
+        timestamp: Date;
+        source?: import("..").OperationSource | undefined;
+        reversible: boolean;
+        irreversibleReason?: string | undefined;
+        transition?: string | undefined;
+        currentState?: string | undefined;
+        targetState?: string | undefined;
+        userId?: string | undefined;
+        metadata?: Record<string, any> | undefined;
+        parentOperationId?: string | undefined;
+        childOperationIds?: string[] | undefined;
+    }[]>;
+    currentIndex: import("vue").Ref<number, number>;
+    undoRedoState: import("vue").ComputedRef<import("..").UndoRedoState>;
+    canUndo: import("vue").ComputedRef<boolean>;
+    canRedo: import("vue").ComputedRef<boolean>;
+    undoCount: import("vue").ComputedRef<number>;
+    redoCount: import("vue").ComputedRef<number>;
+    undo: (hstStore: HSTNode) => boolean;
+    redo: (hstStore: HSTNode) => boolean;
+    startBatch: () => void;
+    commitBatch: (description?: string) => string | null;
+    cancelBatch: () => void;
+    clear: () => void;
+    getOperationsFor: (doctype: string, recordId?: string) => import("..").HSTOperation[];
+    getSnapshot: () => import("..").OperationLogSnapshot;
+    createSyncDelta: () => SyncDelta;
+    applySyncDelta: (delta: SyncDelta) => void;
+    markIrreversible: (operationId: string, reason: string) => void;
+    configure: (options: Partial<OperationLogConfig>) => void;
+};
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| config | `Partial<OperationLogConfig>` |  |
+
 ### useStonecrop
 
 Unified Stonecrop composable - handles both general operations and HST reactive integration
@@ -141,6 +234,40 @@ export declare function useStonecrop(options: {
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | options | `{ registry?: Registry; doctype: DoctypeMeta; recordId?: string; }` |  |
+
+### useUndoRedoShortcuts
+
+Keyboard shortcut handler for undo/redo Automatically binds Ctrl+Z (undo) and Ctrl+Shift+Z/Ctrl+Y (redo) using VueUse
+
+**Signature:**
+
+```typescript
+export declare function useUndoRedoShortcuts(hstStore: HSTNode, enabled?: boolean): void;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| hstStore | `HSTNode` |  |
+| enabled | `boolean` |  |
+
+### withBatch
+
+Batch operation helper Wraps a function execution in a batch operation
+
+**Signature:**
+
+```typescript
+export declare function withBatch<T>(fn: () => T | Promise<T>, description?: string): Promise<string | null>;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| fn | `() => T \| Promise<T>` |  |
+| description | `string` |  |
 
 ## Interfaces
 
@@ -219,6 +346,32 @@ export interface BasicTableConfig {
 | Property | Type | Description |
 |----------|------|-------------|
 | view? | `'uncounted' \| 'list' \| 'list-expansion'` | The type of view to display the table in. |
+
+### BatchOperation
+
+Batch operation wrapper
+
+**Definition:**
+
+```typescript
+export interface BatchOperation {
+  description?: string;
+  id: string;
+  operations: HSTOperation[];
+  reversible: boolean;
+  timestamp: Date;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| description? | `string` |  |
+| id | `string` |  |
+| operations | `HSTOperation[]` |  |
+| reversible | `boolean` |  |
+| timestamp | `Date` |  |
 
 ### CellContext
 
@@ -311,6 +464,32 @@ export interface ConnectionPath {
 | label? | `string` | Optional label for the connection. |
 | style? | `{ color?: string; width?: number; }` | Optional styling for the connection path. |
 | to | `{ barId: string; side: 'left' \| 'right'; }` | The target connection handle. |
+
+### CrossTabMessage
+
+Cross-tab message payload
+
+**Definition:**
+
+```typescript
+export interface CrossTabMessage {
+  clientId: string;
+  operation?: HSTOperation;
+  operations?: HSTOperation[];
+  timestamp: Date;
+  type: CrossTabMessageType;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| clientId | `string` |  |
+| operation? | `HSTOperation` |  |
+| operations? | `HSTOperation[]` |  |
+| timestamp | `Date` |  |
+| type | `CrossTabMessageType` |  |
 
 ### FieldChangeContext
 
@@ -523,7 +702,7 @@ export interface HSTNode {
   getPath(): string;
   getRoot(): HSTNode;
   has(path: string): boolean;
-  set(path: string, value: any): void;
+  set(path: string, value: any, source: 'user' | 'system' | 'sync' | 'undo' | 'redo'): void;
   triggerTransition(transition: string, context: {
         currentState?: string;
         targetState?: string;
@@ -531,6 +710,124 @@ export interface HSTNode {
     }): Promise<any>;
 }
 ```
+
+### HSTOperation
+
+Complete metadata for an HST mutation Enables time travel, synchronization, and audit trails
+
+**Definition:**
+
+```typescript
+export interface HSTOperation {
+  afterValue: any;
+  beforeValue: any;
+  childOperationIds?: string[];
+  currentState?: string;
+  doctype: string;
+  fieldname: string;
+  id: string;
+  irreversibleReason?: string;
+  metadata?: Record<string, any>;
+  parentOperationId?: string;
+  path: string;
+  recordId?: string;
+  reversible: boolean;
+  source?: OperationSource;
+  targetState?: string;
+  timestamp: Date;
+  transition?: string;
+  type: HSTOperationType;
+  userId?: string;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| afterValue | `any` | Value after the operation |
+| beforeValue | `any` | Value before the operation |
+| childOperationIds? | `string[]` | Child operation IDs for batch operations |
+| currentState? | `string` | XState current state before transition |
+| doctype | `string` | Doctype this operation affects |
+| fieldname | `string` | Field name extracted from path |
+| id | `string` | Unique operation identifier |
+| irreversibleReason? | `string` | Reason if operation is irreversible |
+| metadata? | `Record<string, any>` | Additional metadata for custom use cases |
+| parentOperationId? | `string` | Parent operation ID for batch operations |
+| path | `string` | Full HST path affected (e.g., "task.123.title") |
+| recordId? | `string` | Record ID if applicable |
+| reversible | `boolean` | Whether this operation can be undone |
+| source? | `OperationSource` | Source of the operation (defaults to 'user' if not specified) |
+| targetState? | `string` | XState target state after transition |
+| timestamp | `Date` | Timestamp of the operation |
+| transition? | `string` | XState transition name if triggered by FSM |
+| type | `HSTOperationType` | Type of operation performed |
+| userId? | `string` | User or session identifier |
+
+### OperationLogConfig
+
+Operation log configuration
+
+**Definition:**
+
+```typescript
+export interface OperationLogConfig {
+  autoSyncInterval?: number;
+  enableCrossTabSync?: boolean;
+  enablePersistence?: boolean;
+  enableServerSync?: boolean;
+  maxOperations?: number;
+  operationFilter?: (operation: HSTOperation) => boolean;
+  persistenceKeyPrefix?: string;
+  serverSyncEndpoint?: string;
+  userId?: string;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| autoSyncInterval? | `number` | Auto-sync interval in milliseconds (default: 30000) |
+| enableCrossTabSync? | `boolean` | Enable cross-tab synchronization (default: true) |
+| enablePersistence? | `boolean` | Enable operation persistence to localStorage (default: false) |
+| enableServerSync? | `boolean` | Enable server synchronization (default: false) |
+| maxOperations? | `number` | Maximum operations to store (default: 100) |
+| operationFilter? | `(operation: HSTOperation) => boolean` | Custom operation filter |
+| persistenceKeyPrefix? | `string` | Persistence key prefix |
+| serverSyncEndpoint? | `string` | Server sync endpoint |
+| userId? | `string` | User identifier for multi-user scenarios |
+
+### OperationLogSnapshot
+
+Operation log snapshot for debugging
+
+**Definition:**
+
+```typescript
+export interface OperationLogSnapshot {
+  currentIndex: number;
+  irreversibleOperations: number;
+  newestOperation?: Date;
+  oldestOperation?: Date;
+  operations: HSTOperation[];
+  reversibleOperations: number;
+  totalOperations: number;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| currentIndex | `number` |  |
+| irreversibleOperations | `number` |  |
+| newestOperation? | `Date` |  |
+| oldestOperation? | `Date` |  |
+| operations | `HSTOperation[]` |  |
+| reversibleOperations | `number` |  |
+| totalOperations | `number` |  |
 
 ### RouteContext
 
@@ -551,6 +848,32 @@ export interface RouteContext {
 |----------|------|-------------|
 | path | `string` | The full route path (e.g., "/todo/1" or "/todo") |
 | segments | `string[]` | Path segments split by "/" (e.g., ["todo", "1"] or ["todo"]) |
+
+### SyncDelta
+
+Delta for server synchronization Compact representation for network transmission
+
+**Definition:**
+
+```typescript
+export interface SyncDelta {
+  clientId: string;
+  conflictStrategy?: 'latest-wins' | 'manual' | 'merge';
+  currentTimestamp: Date;
+  lastSyncTimestamp: Date;
+  operations: HSTOperation[];
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| clientId | `string` | Client/tab identifier |
+| conflictStrategy? | `'latest-wins' \| 'manual' \| 'merge'` | Conflict resolution strategy |
+| currentTimestamp | `Date` | Current timestamp |
+| lastSyncTimestamp | `Date` | Last sync timestamp |
+| operations | `HSTOperation[]` | Operations since last sync |
 
 ### TableColumn
 
@@ -810,6 +1133,32 @@ export interface TreeTableConfig {
 | defaultTreeExpansion? | `'root' \| 'branch' \| 'leaf'` | `branch` (Shows minimal tree to display all gantt nodes. Expands only the necessary paths to gantt nodes, stops at gantt nodes with no gantt descendants), `leaf` (All nodes are visible (fully expanded)) |
 | view | `'tree'` | The type of view to display the table in. |
 
+### UndoRedoState
+
+Undo/Redo state
+
+**Definition:**
+
+```typescript
+export interface UndoRedoState {
+  canRedo: boolean;
+  canUndo: boolean;
+  currentIndex: number;
+  redoCount: number;
+  undoCount: number;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| canRedo | `boolean` | Can redo |
+| canUndo | `boolean` | Can undo |
+| currentIndex | `number` | Current operation index |
+| redoCount | `number` | Number of operations available for redo |
+| undoCount | `number` | Number of operations available for undo |
+
 ## Type Aliases
 
 ### BaseSchema
@@ -870,6 +1219,16 @@ export type ConnectionEvent = {
     type: 'create' | 'delete';
     connection: ConnectionPath;
 };
+```
+
+### CrossTabMessageType
+
+Cross-tab message types
+
+**Definition:**
+
+```typescript
+export type CrossTabMessageType = 'operation' | 'undo' | 'redo' | 'sync-request' | 'sync-response';
 ```
 
 ### FieldAction
@@ -996,6 +1355,28 @@ export type HSTChangeData = {
 };
 ```
 
+### HSTOperationInput
+
+Input type for adding operations Excludes system-generated fields (id, timestamp)
+
+**Definition:**
+
+```typescript
+export type HSTOperationInput = Omit<HSTOperation, 'id' | 'timestamp' | 'source'> & {
+    source?: OperationSource;
+};
+```
+
+### HSTOperationType
+
+Type of HST operation
+
+**Definition:**
+
+```typescript
+export type HSTOperationType = 'set' | 'delete' | 'batch' | 'transition';
+```
+
 ### HSTStonecropReturn
 
 HST-enabled Stonecrop composable return type
@@ -1054,6 +1435,16 @@ export type MutableDoctype = {
     workflow?: UnknownMachineConfig | AnyStateNodeConfig;
     actions?: Record<string, string[]>;
 };
+```
+
+### OperationSource
+
+Operation source - where the change originated
+
+**Definition:**
+
+```typescript
+export type OperationSource = 'user' | 'system' | 'sync' | 'undo' | 'redo';
 ```
 
 ### Schema
@@ -1401,5 +1792,267 @@ Stonecrop Vue plugin
 
 ```typescript
 export const plugin: Plugin
+```
+
+### useOperationLogStore
+
+Global HST Operation Log Store Tracks all mutations with full metadata for undo/redo, sync, and audit
+
+**Type:**
+
+```typescript
+export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operation-log", Pick<{
+    operations: import("vue").Ref<{
+        id: string;
+        type: import("..").HSTOperationType;
+        path: string;
+        fieldname: string;
+        beforeValue: any;
+        afterValue: any;
+        doctype: string;
+        recordId?: string | undefined;
+        timestamp: Date;
+        source?: OperationSource | undefined;
+        reversible: boolean;
+        irreversibleReason?: string | undefined;
+        transition?: string | undefined;
+        currentState?: string | undefined;
+        targetState?: string | undefined;
+        userId?: string | undefined;
+        metadata?: Record<string, any> | undefined;
+        parentOperationId?: string | undefined;
+        childOperationIds?: string[] | undefined;
+    }[], HSTOperation[] | {
+        id: string;
+        type: import("..").HSTOperationType;
+        path: string;
+        fieldname: string;
+        beforeValue: any;
+        afterValue: any;
+        doctype: string;
+        recordId?: string | undefined;
+        timestamp: Date;
+        source?: OperationSource | undefined;
+        reversible: boolean;
+        irreversibleReason?: string | undefined;
+        transition?: string | undefined;
+        currentState?: string | undefined;
+        targetState?: string | undefined;
+        userId?: string | undefined;
+        metadata?: Record<string, any> | undefined;
+        parentOperationId?: string | undefined;
+        childOperationIds?: string[] | undefined;
+    }[]>;
+    currentIndex: import("vue").Ref<number, number>;
+    config: import("vue").Ref<{
+        maxOperations?: number | undefined;
+        enableCrossTabSync?: boolean | undefined;
+        enableServerSync?: boolean | undefined;
+        serverSyncEndpoint?: string | undefined;
+        autoSyncInterval?: number | undefined;
+        enablePersistence?: boolean | undefined;
+        persistenceKeyPrefix?: string | undefined;
+        userId?: string | undefined;
+        operationFilter?: ((operation: HSTOperation) => boolean) | undefined;
+    }, OperationLogConfig | {
+        maxOperations?: number | undefined;
+        enableCrossTabSync?: boolean | undefined;
+        enableServerSync?: boolean | undefined;
+        serverSyncEndpoint?: string | undefined;
+        autoSyncInterval?: number | undefined;
+        enablePersistence?: boolean | undefined;
+        persistenceKeyPrefix?: string | undefined;
+        userId?: string | undefined;
+        operationFilter?: ((operation: HSTOperation) => boolean) | undefined;
+    }>;
+    clientId: import("vue").Ref<string, string>;
+    undoRedoState: import("vue").ComputedRef<UndoRedoState>;
+    canUndo: import("vue").ComputedRef<boolean>;
+    canRedo: import("vue").ComputedRef<boolean>;
+    undoCount: import("vue").ComputedRef<number>;
+    redoCount: import("vue").ComputedRef<number>;
+    configure: (options: Partial<OperationLogConfig>) => void;
+    addOperation: (operation: HSTOperationInput, source?: OperationSource) => string;
+    startBatch: () => void;
+    commitBatch: (description?: string) => string | null;
+    cancelBatch: () => void;
+    undo: (store: HSTNode) => boolean;
+    redo: (store: HSTNode) => boolean;
+    clear: () => void;
+    getOperationsFor: (doctype: string, recordId?: string) => HSTOperation[];
+    getOperationsSince: (timestamp: Date) => HSTOperation[];
+    createSyncDelta: () => SyncDelta;
+    applySyncDelta: (delta: SyncDelta) => void;
+    getSnapshot: () => OperationLogSnapshot;
+    markIrreversible: (operationId: string, reason: string) => void;
+}, "operations" | "clientId" | "currentIndex" | "config">, Pick<{
+    operations: import("vue").Ref<{
+        id: string;
+        type: import("..").HSTOperationType;
+        path: string;
+        fieldname: string;
+        beforeValue: any;
+        afterValue: any;
+        doctype: string;
+        recordId?: string | undefined;
+        timestamp: Date;
+        source?: OperationSource | undefined;
+        reversible: boolean;
+        irreversibleReason?: string | undefined;
+        transition?: string | undefined;
+        currentState?: string | undefined;
+        targetState?: string | undefined;
+        userId?: string | undefined;
+        metadata?: Record<string, any> | undefined;
+        parentOperationId?: string | undefined;
+        childOperationIds?: string[] | undefined;
+    }[], HSTOperation[] | {
+        id: string;
+        type: import("..").HSTOperationType;
+        path: string;
+        fieldname: string;
+        beforeValue: any;
+        afterValue: any;
+        doctype: string;
+        recordId?: string | undefined;
+        timestamp: Date;
+        source?: OperationSource | undefined;
+        reversible: boolean;
+        irreversibleReason?: string | undefined;
+        transition?: string | undefined;
+        currentState?: string | undefined;
+        targetState?: string | undefined;
+        userId?: string | undefined;
+        metadata?: Record<string, any> | undefined;
+        parentOperationId?: string | undefined;
+        childOperationIds?: string[] | undefined;
+    }[]>;
+    currentIndex: import("vue").Ref<number, number>;
+    config: import("vue").Ref<{
+        maxOperations?: number | undefined;
+        enableCrossTabSync?: boolean | undefined;
+        enableServerSync?: boolean | undefined;
+        serverSyncEndpoint?: string | undefined;
+        autoSyncInterval?: number | undefined;
+        enablePersistence?: boolean | undefined;
+        persistenceKeyPrefix?: string | undefined;
+        userId?: string | undefined;
+        operationFilter?: ((operation: HSTOperation) => boolean) | undefined;
+    }, OperationLogConfig | {
+        maxOperations?: number | undefined;
+        enableCrossTabSync?: boolean | undefined;
+        enableServerSync?: boolean | undefined;
+        serverSyncEndpoint?: string | undefined;
+        autoSyncInterval?: number | undefined;
+        enablePersistence?: boolean | undefined;
+        persistenceKeyPrefix?: string | undefined;
+        userId?: string | undefined;
+        operationFilter?: ((operation: HSTOperation) => boolean) | undefined;
+    }>;
+    clientId: import("vue").Ref<string, string>;
+    undoRedoState: import("vue").ComputedRef<UndoRedoState>;
+    canUndo: import("vue").ComputedRef<boolean>;
+    canRedo: import("vue").ComputedRef<boolean>;
+    undoCount: import("vue").ComputedRef<number>;
+    redoCount: import("vue").ComputedRef<number>;
+    configure: (options: Partial<OperationLogConfig>) => void;
+    addOperation: (operation: HSTOperationInput, source?: OperationSource) => string;
+    startBatch: () => void;
+    commitBatch: (description?: string) => string | null;
+    cancelBatch: () => void;
+    undo: (store: HSTNode) => boolean;
+    redo: (store: HSTNode) => boolean;
+    clear: () => void;
+    getOperationsFor: (doctype: string, recordId?: string) => HSTOperation[];
+    getOperationsSince: (timestamp: Date) => HSTOperation[];
+    createSyncDelta: () => SyncDelta;
+    applySyncDelta: (delta: SyncDelta) => void;
+    getSnapshot: () => OperationLogSnapshot;
+    markIrreversible: (operationId: string, reason: string) => void;
+}, "undoRedoState" | "canUndo" | "canRedo" | "undoCount" | "redoCount">, Pick<{
+    operations: import("vue").Ref<{
+        id: string;
+        type: import("..").HSTOperationType;
+        path: string;
+        fieldname: string;
+        beforeValue: any;
+        afterValue: any;
+        doctype: string;
+        recordId?: string | undefined;
+        timestamp: Date;
+        source?: OperationSource | undefined;
+        reversible: boolean;
+        irreversibleReason?: string | undefined;
+        transition?: string | undefined;
+        currentState?: string | undefined;
+        targetState?: string | undefined;
+        userId?: string | undefined;
+        metadata?: Record<string, any> | undefined;
+        parentOperationId?: string | undefined;
+        childOperationIds?: string[] | undefined;
+    }[], HSTOperation[] | {
+        id: string;
+        type: import("..").HSTOperationType;
+        path: string;
+        fieldname: string;
+        beforeValue: any;
+        afterValue: any;
+        doctype: string;
+        recordId?: string | undefined;
+        timestamp: Date;
+        source?: OperationSource | undefined;
+        reversible: boolean;
+        irreversibleReason?: string | undefined;
+        transition?: string | undefined;
+        currentState?: string | undefined;
+        targetState?: string | undefined;
+        userId?: string | undefined;
+        metadata?: Record<string, any> | undefined;
+        parentOperationId?: string | undefined;
+        childOperationIds?: string[] | undefined;
+    }[]>;
+    currentIndex: import("vue").Ref<number, number>;
+    config: import("vue").Ref<{
+        maxOperations?: number | undefined;
+        enableCrossTabSync?: boolean | undefined;
+        enableServerSync?: boolean | undefined;
+        serverSyncEndpoint?: string | undefined;
+        autoSyncInterval?: number | undefined;
+        enablePersistence?: boolean | undefined;
+        persistenceKeyPrefix?: string | undefined;
+        userId?: string | undefined;
+        operationFilter?: ((operation: HSTOperation) => boolean) | undefined;
+    }, OperationLogConfig | {
+        maxOperations?: number | undefined;
+        enableCrossTabSync?: boolean | undefined;
+        enableServerSync?: boolean | undefined;
+        serverSyncEndpoint?: string | undefined;
+        autoSyncInterval?: number | undefined;
+        enablePersistence?: boolean | undefined;
+        persistenceKeyPrefix?: string | undefined;
+        userId?: string | undefined;
+        operationFilter?: ((operation: HSTOperation) => boolean) | undefined;
+    }>;
+    clientId: import("vue").Ref<string, string>;
+    undoRedoState: import("vue").ComputedRef<UndoRedoState>;
+    canUndo: import("vue").ComputedRef<boolean>;
+    canRedo: import("vue").ComputedRef<boolean>;
+    undoCount: import("vue").ComputedRef<number>;
+    redoCount: import("vue").ComputedRef<number>;
+    configure: (options: Partial<OperationLogConfig>) => void;
+    addOperation: (operation: HSTOperationInput, source?: OperationSource) => string;
+    startBatch: () => void;
+    commitBatch: (description?: string) => string | null;
+    cancelBatch: () => void;
+    undo: (store: HSTNode) => boolean;
+    redo: (store: HSTNode) => boolean;
+    clear: () => void;
+    getOperationsFor: (doctype: string, recordId?: string) => HSTOperation[];
+    getOperationsSince: (timestamp: Date) => HSTOperation[];
+    createSyncDelta: () => SyncDelta;
+    applySyncDelta: (delta: SyncDelta) => void;
+    getSnapshot: () => OperationLogSnapshot;
+    markIrreversible: (operationId: string, reason: string) => void;
+}, "undo" | "redo" | "configure" | "addOperation" | "startBatch" | "commitBatch" | "cancelBatch" | "clear" | "getOperationsFor" | "getOperationsSince" | "createSyncDelta" | "applySyncDelta" | "getSnapshot" | "markIrreversible">>
 ```
 

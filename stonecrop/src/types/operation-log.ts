@@ -1,0 +1,204 @@
+/**
+ * Type of HST operation
+ * @public
+ */
+export type HSTOperationType = 'set' | 'delete' | 'batch' | 'transition'
+
+/**
+ * Operation source - where the change originated
+ * @public
+ */
+export type OperationSource = 'user' | 'system' | 'sync' | 'undo' | 'redo'
+
+/**
+ * Complete metadata for an HST mutation
+ * Enables time travel, synchronization, and audit trails
+ * @public
+ */
+export interface HSTOperation {
+	/** Unique operation identifier */
+	id: string
+
+	/** Type of operation performed */
+	type: HSTOperationType
+
+	/** Full HST path affected (e.g., "task.123.title") */
+	path: string
+
+	/** Field name extracted from path */
+	fieldname: string
+
+	/** Value before the operation */
+	beforeValue: any
+
+	/** Value after the operation */
+	afterValue: any
+
+	/** Doctype this operation affects */
+	doctype: string
+
+	/** Record ID if applicable */
+	recordId?: string
+
+	/** Timestamp of the operation */
+	timestamp: Date
+
+	/** Source of the operation (defaults to 'user' if not specified) */
+	source?: OperationSource
+
+	/** Whether this operation can be undone */
+	reversible: boolean
+
+	/** Reason if operation is irreversible */
+	irreversibleReason?: string
+
+	/** XState transition name if triggered by FSM */
+	transition?: string
+
+	/** XState current state before transition */
+	currentState?: string
+
+	/** XState target state after transition */
+	targetState?: string
+
+	/** User or session identifier */
+	userId?: string
+
+	/** Additional metadata for custom use cases */
+	metadata?: Record<string, any>
+
+	/** Parent operation ID for batch operations */
+	parentOperationId?: string
+
+	/** Child operation IDs for batch operations */
+	childOperationIds?: string[]
+}
+
+/**
+ * Input type for adding operations
+ * Excludes system-generated fields (id, timestamp)
+ * @public
+ */
+export type HSTOperationInput = Omit<HSTOperation, 'id' | 'timestamp' | 'source'> & {
+	source?: OperationSource
+}
+
+/**
+ * Batch operation wrapper
+ * @public
+ */
+export interface BatchOperation {
+	id: string
+	operations: HSTOperation[]
+	timestamp: Date
+	description?: string
+	reversible: boolean
+}
+
+/**
+ * Delta for server synchronization
+ * Compact representation for network transmission
+ * @public
+ */
+export interface SyncDelta {
+	/** Operations since last sync */
+	operations: HSTOperation[]
+
+	/** Last sync timestamp */
+	lastSyncTimestamp: Date
+
+	/** Current timestamp */
+	currentTimestamp: Date
+
+	/** Client/tab identifier */
+	clientId: string
+
+	/** Conflict resolution strategy */
+	conflictStrategy?: 'latest-wins' | 'manual' | 'merge'
+}
+
+/**
+ * Operation log configuration
+ * @public
+ */
+export interface OperationLogConfig {
+	/** Maximum operations to store (default: 100) */
+	maxOperations?: number
+
+	/** Enable cross-tab synchronization (default: true) */
+	enableCrossTabSync?: boolean
+
+	/** Enable server synchronization (default: false) */
+	enableServerSync?: boolean
+
+	/** Server sync endpoint */
+	serverSyncEndpoint?: string
+
+	/** Auto-sync interval in milliseconds (default: 30000) */
+	autoSyncInterval?: number
+
+	/** Enable operation persistence to localStorage (default: false) */
+	enablePersistence?: boolean
+
+	/** Persistence key prefix */
+	persistenceKeyPrefix?: string
+
+	/** User identifier for multi-user scenarios */
+	userId?: string
+
+	/** Custom operation filter */
+	operationFilter?: (operation: HSTOperation) => boolean
+}
+
+/**
+ * Undo/Redo state
+ * @public
+ */
+export interface UndoRedoState {
+	/** Can undo */
+	canUndo: boolean
+
+	/** Can redo */
+	canRedo: boolean
+
+	/** Number of operations available for undo */
+	undoCount: number
+
+	/** Number of operations available for redo */
+	redoCount: number
+
+	/** Current operation index */
+	currentIndex: number
+}
+
+/**
+ * Operation log snapshot for debugging
+ * @public
+ */
+export interface OperationLogSnapshot {
+	operations: HSTOperation[]
+	currentIndex: number
+	totalOperations: number
+	reversibleOperations: number
+	irreversibleOperations: number
+	oldestOperation?: Date
+	newestOperation?: Date
+}
+
+/**
+ * Cross-tab message types
+ * @public
+ */
+export type CrossTabMessageType = 'operation' | 'undo' | 'redo' | 'sync-request' | 'sync-response'
+
+/**
+ * Cross-tab message payload
+ * @public
+ */
+export interface CrossTabMessage {
+	type: CrossTabMessageType
+	operation?: HSTOperation
+	operations?: HSTOperation[]
+	clientId: string
+	timestamp: Date
+}

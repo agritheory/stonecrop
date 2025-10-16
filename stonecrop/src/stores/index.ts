@@ -15,3 +15,5 @@ pinia.use(
 )
 
 export { hst, pinia }
+export { useOperationLogStore } from './operation-log'
+export type { HSTNode } from './hst'
