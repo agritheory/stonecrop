@@ -389,18 +389,24 @@ export const useOperationLogStore = defineStore('hst-operation-log', () => {
 	 * Revert an operation (apply beforeValue)
 	 */
 	function revertOperation(operation: HSTOperation, store: HSTNode) {
-		if (operation.type === 'set' && store && typeof store.set === 'function') {
+		// Both 'set' and 'delete' operations can be reverted by setting to beforeValue
+		if ((operation.type === 'set' || operation.type === 'delete') && store && typeof store.set === 'function') {
 			store.set(operation.path, operation.beforeValue, 'undo')
 		}
+		// Note: 'transition' operations are marked as non-reversible, so they won't reach here
+		// Note: 'batch' operations are handled separately in the undo function
 	}
 
 	/**
 	 * Apply an operation (apply afterValue)
 	 */
 	function applyOperation(operation: HSTOperation, store: HSTNode) {
-		if (operation.type === 'set' && store && typeof store.set === 'function') {
+		// Both 'set' and 'delete' operations can be applied by setting to afterValue
+		if ((operation.type === 'set' || operation.type === 'delete') && store && typeof store.set === 'function') {
 			store.set(operation.path, operation.afterValue, 'redo')
 		}
+		// Note: 'transition' operations are marked as non-reversible, so they won't reach here
+		// Note: 'batch' operations are handled separately in the redo function
 	}
 
 	/**

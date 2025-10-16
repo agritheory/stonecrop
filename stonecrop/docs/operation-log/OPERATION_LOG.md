@@ -166,18 +166,19 @@ registerTransitionAction('COMMIT_INVOICE', async (context) => {
   - Example: Editing form fields, updating properties
   - Can be undone/redone
 
+- **`DELETE`**: Record or field deletions (reversible)
+  - Example: Deleting records, removing field values (setting to undefined)
+  - Automatically detected when setting a value to `undefined` (if previousValue was not undefined)
+  - Can be undone to restore deleted data
+  - **Note**: Setting `undefined` on a non-existent path logs as SET, not DELETE
+
 - **`TRANSITION`**: FSM state transitions (non-reversible)
   - Example: SAVE (editing → saved), CANCEL (editing → cancelled), DELETE (active → deleted)
   - Cannot be undone (workflow transitions are one-way)
   - Metadata includes transition details and FSM context
 
-- **`DELETE`**: Record deletions (reversible)
-  - Can be undone to restore deleted records
-
 - **`BATCH`**: Grouped operations (reversible)
-  - Multiple operations treated as single undo/redo unit
-
-### Cross-Tab Synchronization
+  - Multiple operations treated as single undo/redo unit### Cross-Tab Synchronization
 
 Cross-tab sync is enabled by default and uses the `BroadcastChannel` API:
 

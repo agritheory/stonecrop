@@ -32,8 +32,6 @@
 
 <script setup lang="ts">
 import { useStonecrop } from '@stonecrop/stonecrop'
-// TEMP: Disabled for debugging
-// import { useOperationLog, useUndoRedoShortcuts } from '@stonecrop/stonecrop'
 import { AForm, type SchemaTypes, type TableColumn, type TableConfig } from '@stonecrop/aform'
 import { computed, nextTick, onMounted, provide, ref, unref, watch } from 'vue'
 
@@ -44,61 +42,11 @@ import type { ActionElements } from '../types'
 
 type Props = {
 	availableDoctypes?: string[]
-	showDebug?: boolean
 }
 
-const { availableDoctypes = [], showDebug = false } = defineProps<Props>()
+const { availableDoctypes = [] } = defineProps<Props>()
 
 const { stonecrop } = useStonecrop()
-
-// TEMPORARILY DISABLED: Operation Log integration
-// Debugging Pinia initialization timing issues
-/*
-// Track whether Pinia is ready for operation log
-const piniaReady = ref(false)
-
-// Operation Log integration - lazy loaded to ensure Pinia is available
-let operationLog: ReturnType<typeof useOperationLog> | null = null
-
-const getOperationLog = () => {
-	if (!operationLog && stonecrop.value && piniaReady.value) {
-		operationLog = useOperationLog()
-	}
-	return operationLog
-}
-
-// Computed properties for operation log state - safe defaults when not ready
-const canUndo = computed(() => getOperationLog()?.canUndo.value ?? false)
-const canRedo = computed(() => getOperationLog()?.canRedo.value ?? false)
-const undoCount = computed(() => getOperationLog()?.undoCount.value ?? 0)
-const redoCount = computed(() => getOperationLog()?.redoCount.value ?? 0)
-
-// Enable keyboard shortcuts after component is mounted (when Pinia is ready)
-onMounted(() => {
-	// Use nextTick to ensure Pinia is fully initialized
-	void nextTick(() => {
-		piniaReady.value = true
-		if (stonecrop.value) {
-			const hstStore = stonecrop.value.getStore()
-			useUndoRedoShortcuts(hstStore, true)
-		}
-	})
-})
-
-// Helper function to perform undo with HST store
-const handleUndo = () => {
-	if (!stonecrop.value) return
-	const hstStore = stonecrop.value.getStore()
-	getOperationLog()?.undo(hstStore)
-}
-
-// Helper function to perform redo with HST store
-const handleRedo = () => {
-	if (!stonecrop.value) return
-	const hstStore = stonecrop.value.getStore()
-	getOperationLog()?.redo(hstStore)
-}
-*/
 
 // State
 const loading = ref(false)
@@ -332,9 +280,6 @@ const actionElements = computed<ActionElements[]>(() => {
 			)
 			break
 		case 'record': {
-			// TODO: Add Undo/Redo buttons after fixing Pinia initialization timing
-			// Temporarily disabled to debug Pinia errors
-
 			// Add XState Transitions dropdown for record view
 			const transitionActions = getAvailableTransitions()
 			if (transitionActions.length > 0) {

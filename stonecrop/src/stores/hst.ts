@@ -287,10 +287,14 @@ class HSTProxy implements HSTNode {
 				const recordId = pathSegments.length >= 2 ? pathSegments[1] : undefined
 				const fieldname = pathSegments.slice(2).join('.') || pathSegments[pathSegments.length - 1]
 
+				// Detect if this is a DELETE operation (setting to undefined when a value existed)
+				const isDelete = value === undefined && beforeValue !== undefined
+				const operationType: 'set' | 'delete' = isDelete ? 'delete' : 'set'
+
 				// eslint-disable-next-line @typescript-eslint/no-unsafe-call
 				logStore.addOperation(
 					{
-						type: 'set' as const,
+						type: operationType,
 						path: fullPath,
 						fieldname,
 						beforeValue,

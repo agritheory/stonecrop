@@ -371,12 +371,26 @@ elements.push(
    - Reversible: Yes (can be undone/redone)
    - Example: Editing form fields, updating record properties
 
-2. **TRANSITION Operations**: FSM state transitions tracked automatically
+2. **DELETE Operations**: Record or field deletions tracked automatically
+   - Type: `DELETE`
+   - Shows: Path, field name, before value (deleted data), after value (undefined)
+   - Reversible: Yes (can be undone to restore deleted data)
+   - Example: Deleting records via `removeRecord()`, setting fields to `undefined`
+   - **Auto-Detection**: Automatically logged when `set(path, undefined)` is called on an existing value
+   - **Note**: Setting `undefined` on non-existent paths logs as SET, not DELETE
+
+3. **TRANSITION Operations**: FSM state transitions tracked automatically
    - Type: `TRANSITION`
    - Shows: Path, transition name (as field), before/after states
    - Reversible: No (workflow transitions are one-way)
    - Example: SAVE (editing → saved), CANCEL (editing → cancelled)
    - Metadata: Includes transition details, FSM context
+
+4. **BATCH Operations**: Grouped operations tracked as single unit
+   - Type: `BATCH`
+   - Contains multiple child operations (SET, DELETE, or both)
+   - Reversible: Yes (undoing/redoing batch affects all child operations)
+   - Example: Form submission with multiple field changes
 
 **HST Integration for FSM Transitions**:
 ```typescript

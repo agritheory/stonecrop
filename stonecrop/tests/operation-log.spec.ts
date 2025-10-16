@@ -54,6 +54,54 @@ describe('Operation Log Store', () => {
 			expect(operation.timestamp).toBeInstanceOf(Date)
 		})
 
+		it('should detect DELETE operations when setting to undefined', () => {
+			const store = useOperationLogStore()
+			const data = { title: 'Test Task', status: 'active' }
+			const hstStore = createHST({ task: { '123': data } }, 'StonecropStore')
+
+			// Delete a record by setting to undefined
+			hstStore.set('task.123', undefined)
+
+			expect(store.operations).toHaveLength(1)
+			const operation = store.operations[0]
+			expect(operation.type).toBe('delete')
+			expect(operation.beforeValue).toEqual(data)
+			expect(operation.afterValue).toBe(undefined)
+			expect(operation.reversible).toBe(true)
+		})
+
+		it('should track DELETE operations with correct metadata', () => {
+			const store = useOperationLogStore()
+			const recordData = { id: '123', title: 'Test Task', status: 'active' }
+			const hstStore = createHST({ task: { '123': recordData } }, 'StonecropStore')
+
+			// Delete record
+			hstStore.set('task.123', undefined)
+
+			const operation = store.operations[0]
+			expect(operation.type).toBe('delete')
+			expect(operation.doctype).toBe('task')
+			expect(operation.recordId).toBe('123')
+			expect(operation.path).toBe('task.123')
+			expect(operation.beforeValue).toEqual(recordData)
+			expect(operation.afterValue).toBe(undefined)
+		})
+
+		it('should NOT log as DELETE when setting undefined on non-existent path', () => {
+			const store = useOperationLogStore()
+			const hstStore = createHST({ task: {} }, 'StonecropStore')
+
+			// Try to delete something that doesn't exist
+			hstStore.set('task.999', undefined)
+
+			expect(store.operations).toHaveLength(1)
+			const operation = store.operations[0]
+			// Should be SET since beforeValue was undefined
+			expect(operation.type).toBe('set')
+			expect(operation.beforeValue).toBe(undefined)
+			expect(operation.afterValue).toBe(undefined)
+		})
+
 		it('should enforce max operations limit', () => {
 			const store = useOperationLogStore()
 			store.configure({ maxOperations: 3 })
@@ -145,6 +193,47 @@ describe('Operation Log Store', () => {
 			})
 
 			expect(store.canUndo).toBe(false)
+		})
+
+		it('should undo a DELETE operation and restore the record', () => {
+			const store = useOperationLogStore()
+			const recordData = { id: '123', title: 'Test Task', status: 'active' }
+			const hstStore = createHST({ task: { '123': recordData } }, 'StonecropStore')
+
+			// Delete the record
+			hstStore.set('task.123', undefined)
+
+			expect(store.operations).toHaveLength(1)
+			expect(store.operations[0].type).toBe('delete')
+			expect(hstStore.get('task.123')).toBe(undefined)
+
+			// Undo the delete
+			store.undo(hstStore)
+
+			// Record should be restored
+			expect(hstStore.get('task.123')).toEqual(recordData)
+			expect(store.canUndo).toBe(false)
+			expect(store.canRedo).toBe(true)
+		})
+
+		it('should redo a DELETE operation', () => {
+			const store = useOperationLogStore()
+			const recordData = { id: '123', title: 'Test Task' }
+			const hstStore = createHST({ task: { '123': recordData } }, 'StonecropStore')
+
+			// Delete the record
+			hstStore.set('task.123', undefined)
+			expect(hstStore.get('task.123')).toBe(undefined)
+
+			// Undo the delete
+			store.undo(hstStore)
+			expect(hstStore.get('task.123')).toEqual(recordData)
+
+			// Redo the delete
+			store.redo(hstStore)
+			expect(hstStore.get('task.123')).toBe(undefined)
+			expect(store.canUndo).toBe(true)
+			expect(store.canRedo).toBe(false)
 		})
 	})
 
