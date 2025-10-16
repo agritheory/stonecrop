@@ -422,6 +422,31 @@ class HSTProxy implements HSTNode {
 			fsmContext: context?.fsmContext,
 		}
 
+		// Log FSM transition operation
+		const logStore = getOperationLogStore()
+		if (logStore && typeof logStore.addOperation === 'function') {
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-call
+			logStore.addOperation(
+				{
+					type: 'transition' as const,
+					path: this.parentPath,
+					fieldname: transition,
+					beforeValue: context?.currentState,
+					afterValue: context?.targetState,
+					doctype,
+					recordId,
+					reversible: false, // FSM transitions are generally not reversible
+					metadata: {
+						transition,
+						currentState: context?.currentState,
+						targetState: context?.targetState,
+						fsmContext: context?.fsmContext,
+					},
+				},
+				'user'
+			)
+		}
+
 		// Execute transition actions
 		return await triggerEngine.executeTransitionActions(transitionContext)
 	}

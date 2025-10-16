@@ -274,44 +274,69 @@ const schema = ref([{
 ### 6. Operation Log Agent (`useOperationLog` composable)
 **Primary Responsibility**: Undo/redo state management and operation history tracking
 
-The Operation Log Agent provides a complete undo/redo system integrated with HST. It tracks all field changes, enables keyboard shortcuts, and provides visual feedback for operation history.
+The Operation Log Agent provides a complete audit trail system integrated with HST. It tracks all field changes and FSM state transitions, enables keyboard shortcuts for undo/redo, and provides visual feedback for operation history.
 
-**Agent Architecture**:
+**Pinia Integration Architecture**:
+The operation log is now automatically initialized by the Stonecrop plugin when Pinia is available:
+
 ```typescript
-// Desktop.vue integration
-import { useOperationLog, useUndoRedoShortcuts } from '@stonecrop/stonecrop'
+// Stonecrop Plugin (plugins/index.ts)
+// Initialize operation log store if Pinia is available
+try {
+  const pinia = app.config.globalProperties.$pinia as Pinia | undefined
+  if (pinia) {
+    // Initialize the operation log store with the app's Pinia instance
+    const operationLogStore = useOperationLogStore(pinia)
 
-// Initialize operation log
-const { undo, redo, canUndo, canRedo, undoCount, redoCount } = useOperationLog()
-
-// Enable keyboard shortcuts (Ctrl+Z, Ctrl+Shift+Z, Ctrl+Y)
-watch(stonecrop, newStonecrop => {
-  if (newStonecrop) {
-    const hstStore = newStonecrop.getStore()
-    useUndoRedoShortcuts(hstStore, true)
+    // Provide the store so components can access it
+    app.provide('$operationLogStore', operationLogStore)
+    app.config.globalProperties.$operationLogStore = operationLogStore
   }
-}, { immediate: true })
-
-// Undo/redo handlers
-const handleUndo = () => {
-  if (!stonecrop.value) return
-  const hstStore = stonecrop.value.getStore()
-  undo(hstStore)
+} catch (error) {
+  // Pinia not available - operation log won't work, but app should still function
 }
+```
 
-const handleRedo = () => {
-  if (!stonecrop.value) return
-  const hstStore = stonecrop.value.getStore()
-  redo(hstStore)
+**Component Integration**:
+```typescript
+// View.vue - Desktop example
+import { useOperationLog } from '@stonecrop/stonecrop'
+
+// Use the real operation log composable
+// The Stonecrop plugin has already initialized the store with the app's Pinia instance
+const { operations, currentIndex, canUndo, canRedo } = useOperationLog()
+
+// Operation log is always ready since it's injected by the Stonecrop plugin
+const operationLogReady = computed(() => true)
+```
+
+**Composable Architecture**:
+```typescript
+// operation-log.ts composable
+export function useOperationLog(config?: Partial<OperationLogConfig>) {
+  // Try to use the injected store from the Stonecrop plugin first
+  // This ensures we use the same Pinia instance as the app
+  const injectedStore = inject<ReturnType<typeof useOperationLogStore> | undefined>('$operationLogStore', undefined)
+  const store = injectedStore || useOperationLogStore()
+
+  // Apply configuration if provided
+  if (config) {
+    store.configure(config)
+  }
+
+  // Return operation log interface...
 }
 ```
 
 **Agent Features**:
-- **Automatic Operation Tracking**: All HST field changes are automatically logged
+- **Automatic Operation Tracking**: All HST field changes and FSM transitions are automatically logged
+- **Field Change Operations**: Tracks SET operations for field value changes
+- **FSM Transition Operations**: Tracks TRANSITION operations for workflow state changes (e.g., SAVE, CANCEL, DELETE)
 - **Keyboard Shortcuts**: VueUse-based shortcuts (Ctrl+Z, Ctrl+Shift+Z, Ctrl+Y, Meta key variants)
 - **Visual Feedback**: Undo/redo buttons show operation count and disabled state
-- **Operation History**: Debug panel displays full operation log with timestamps
+- **Operation History**: Debug panel displays full operation log with timestamps and operation types
 - **State Management**: Pinia store maintains operation history across components
+- **Framework Integration**: Initialized automatically by Stonecrop plugin when Pinia is available
 
 **UI Integration**:
 ```typescript
@@ -333,10 +358,63 @@ elements.push(
 ```
 
 **Operation Log Panel** (`components/OperationLogPanel.vue`):
-- Displays operation history with type, path, field name, and value changes
+- Displays operation history with type (SET or TRANSITION), path, field name, and value changes
 - Shows current operation index and undo/redo availability
 - Visual distinction for past operations vs current state
 - Real-time updates as operations are performed
+- Supports both field change operations and FSM transition operations
+
+**Operation Types**:
+1. **SET Operations**: Field value changes tracked automatically
+   - Type: `SET`
+   - Shows: Path, field name, before/after values
+   - Reversible: Yes (can be undone/redone)
+   - Example: Editing form fields, updating record properties
+
+2. **TRANSITION Operations**: FSM state transitions tracked automatically
+   - Type: `TRANSITION`
+   - Shows: Path, transition name (as field), before/after states
+   - Reversible: No (workflow transitions are one-way)
+   - Example: SAVE (editing → saved), CANCEL (editing → cancelled)
+   - Metadata: Includes transition details, FSM context
+
+**HST Integration for FSM Transitions**:
+```typescript
+// HST Store (stores/hst.ts)
+async triggerTransition(
+  transition: string,
+  context?: { currentState?: string; targetState?: string; fsmContext?: Record<string, any> }
+): Promise<any> {
+  // ... FSM context building ...
+
+  // Log FSM transition operation
+  const logStore = getOperationLogStore()
+  if (logStore && typeof logStore.addOperation === 'function') {
+    logStore.addOperation(
+      {
+        type: 'transition' as const,
+        path: this.parentPath,
+        fieldname: transition,  // e.g., "SAVE", "CANCEL"
+        beforeValue: context?.currentState,  // e.g., "editing"
+        afterValue: context?.targetState,    // e.g., "saved"
+        doctype,
+        recordId,
+        reversible: false,  // FSM transitions are not reversible
+        metadata: {
+          transition,
+          currentState: context?.currentState,
+          targetState: context?.targetState,
+          fsmContext: context?.fsmContext,
+        },
+      },
+      'user'
+    )
+  }
+
+  // Execute transition actions
+  return await triggerEngine.executeTransitionActions(transitionContext)
+}
+```
 
 **VueUse Integration**:
 The keyboard shortcut system uses VueUse composables for cross-platform compatibility:
@@ -798,6 +876,8 @@ Navigate to http://localhost:5173/ and test undo/redo functionality:
    - View operation history with timestamps
    - Observe current operation highlighted
    - See before/after values for each operation
+   - **Verify operation types**: SET operations show field changes, TRANSITION operations show state changes
+   - **Check reversibility**: SET operations show "Can Undo: ✓", TRANSITION operations show "Can Undo: ✗"
    - Close panel with ✕ button
 
 6. **Test Disabled States**:
@@ -847,14 +927,18 @@ The desktop example includes a **Transitions dropdown** in the action bar for ea
    - Edit a record and click "Save" button, OR
    - Use "Transitions" dropdown → select "SAVE (→ saved)"
    - Watch for 💾 notification → ✅ success notification
+   - **Open Operation Log Panel**: Verify TRANSITION operation appears with Field: SAVE, Before: editing, After: saved
+   - **Check reversibility**: TRANSITION operations show "Can Undo: ✗"
 3. **Test CANCEL transition**:
    - Edit a record and click "Cancel" button, OR
    - Use "Transitions" dropdown → select "CANCEL (→ cancelled)"
    - Watch for ❌ notification
+   - **Operation Log**: Verify TRANSITION operation with Field: CANCEL appears
 4. **Test DELETE transition**:
    - Click "Delete" button, OR
    - Use "Transitions" dropdown → select "DELETE (→ deleted)"
    - Watch for 🗑️ notification
+   - **Operation Log**: Verify TRANSITION operation with Field: DELETE appears
 5. **Test Field Triggers**: Edit any field and watch for validation notifications in real-time
 
 **Expected Behavior**:
@@ -864,6 +948,9 @@ The desktop example includes a **Transitions dropdown** in the action bar for ea
 - Console logs show detailed transition context including FSM states
 - Notifications appear in the top-right corner with proper styling
 - Field triggers continue to work alongside transition actions
+- **FSM transitions logged**: All FSM transitions appear in Operation Log as TRANSITION operations
+- **Operation types distinguished**: SET operations (field changes) vs TRANSITION operations (state changes)
+- **Reversibility respected**: TRANSITION operations are non-reversible (can't be undone)
 
 ### Unit Testing Approach
 ```typescript

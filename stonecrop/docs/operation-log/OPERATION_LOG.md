@@ -18,15 +18,17 @@ The HST Operation Log is a global Pinia-based store that tracks all HST mutation
 
 1. **`useOperationLogStore`** - Global Pinia store for operation tracking
 2. **`HSTOperation`** - Complete metadata interface for each mutation
+   - **Types**: `SET` (field changes), `TRANSITION` (FSM state changes), `DELETE` (record deletion), `BATCH` (grouped operations)
+   - **Reversibility**: SET/DELETE/BATCH operations can be undone, TRANSITION operations cannot
 3. **`useOperationLog`** - Vue composable for easy integration
 4. **`useUndoRedoShortcuts`** - Keyboard shortcut handler (powered by VueUse)
 5. **`withBatch`** - Batch operation helper
 
 ### Integration Points
 
-- **HSTProxy**: Automatically logs all `set()` operations
+- **HSTProxy**: Automatically logs all `set()` operations as `SET` type
 - **Field Triggers**: Can mark operations as irreversible
-- **XState Transitions**: Integrated with FSM workflows
+- **XState Transitions**: Automatically logs FSM transitions as `TRANSITION` type (non-reversible)
 - **VueUse Integration**: Leverages `useMagicKeys`, `useLocalStorage` for reduced maintenance
 - **Cross-Tab Sync**: Uses `BroadcastChannel` API (transparent to users)
 - **LocalStorage**: Automatic persistence with custom serializers
@@ -118,6 +120,29 @@ registerGlobalAction('submitOrder', async (context) => {
 
 ### XState Integration
 
+FSM transitions are automatically logged as `TRANSITION` operations:
+
+```typescript
+// FSM transitions are logged automatically by HSTNode.triggerTransition()
+// No manual setup required - just trigger transitions normally
+
+// In your component:
+const node = hstStore.value.getNode('task.123')
+await node?.triggerTransition('SAVE')  // Automatically logged as TRANSITION
+
+// The operation log will capture:
+// - type: 'transition'
+// - fieldname: 'SAVE' (transition name)
+// - beforeValue: 'editing' (current FSM state)
+// - afterValue: 'saved' (target FSM state)
+// - reversible: false (FSM transitions cannot be undone)
+// - metadata: { transition, currentState, targetState, fsmContext }
+```
+
+**Manual Irreversibility for Transition Actions:**
+
+If you need to mark specific transition actions as irreversible:
+
 ```typescript
 import { registerTransitionAction, markOperationIrreversible } from '@stonecrop/stonecrop'
 
@@ -126,13 +151,31 @@ registerTransitionAction('COMMIT_INVOICE', async (context) => {
   // Save to database
   await database.saveInvoice(context.fsmContext?.invoice)
 
-  // Mark as irreversible since it's committed to the database
+  // Mark the RELATED FIELD OPERATIONS as irreversible (not the transition itself)
+  // Transitions are already non-reversible
   markOperationIrreversible(
     context.metadata?.operationId,
     'Invoice committed to database'
   )
 })
 ```
+
+**Operation Types:**
+
+- **`SET`**: Field value changes (reversible)
+  - Example: Editing form fields, updating properties
+  - Can be undone/redone
+
+- **`TRANSITION`**: FSM state transitions (non-reversible)
+  - Example: SAVE (editing → saved), CANCEL (editing → cancelled), DELETE (active → deleted)
+  - Cannot be undone (workflow transitions are one-way)
+  - Metadata includes transition details and FSM context
+
+- **`DELETE`**: Record deletions (reversible)
+  - Can be undone to restore deleted records
+
+- **`BATCH`**: Grouped operations (reversible)
+  - Multiple operations treated as single undo/redo unit
 
 ### Cross-Tab Synchronization
 
