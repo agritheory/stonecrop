@@ -24,6 +24,7 @@ export type BaseElement = {
 // @public
 export type ButtonElement = BaseElement & ElementAction & {
     type: 'button';
+    disabled?: boolean;
 };
 
 export { CommandPalette }

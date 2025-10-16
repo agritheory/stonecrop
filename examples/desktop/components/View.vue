@@ -1,11 +1,30 @@
 <template>
 	<div class="view-wrapper">
 		<Desktop :available-doctypes="availableDoctypes" :show-debug="showDebug" />
+
+		<!-- Operation Log Panel - pass operation log data as props -->
+		<OperationLogPanel
+			v-if="showDebug && operationLogReady"
+			:show="showOperationLog"
+			:operations="operations"
+			:current-index="currentIndex"
+			:can-undo="canUndo"
+			:can-redo="canRedo"
+			@close="showOperationLog = false" />
+
+		<!-- Toggle button for operation log -->
+		<button v-if="showDebug" class="operation-log-toggle" @click="toggleOperationLog">
+			{{ showOperationLog ? '✕' : '📋' }} Operation Log
+		</button>
 	</div>
 </template>
 
 <script setup lang="ts">
 import { Desktop } from '@stonecrop/desktop'
+import { useOperationLog } from '@stonecrop/stonecrop'
+import { ref, computed } from 'vue'
+
+import OperationLogPanel from './OperationLogPanel.vue'
 
 interface Props {
 	availableDoctypes?: string[]
@@ -14,6 +33,19 @@ interface Props {
 
 const { availableDoctypes = ['todo-list', 'todo-form', 'issue-list', 'issue-form'], showDebug = true } =
 	defineProps<Props>()
+
+const showOperationLog = ref(false)
+
+// Use the real operation log composable
+// The Stonecrop plugin has already initialized the store with the app's Pinia instance
+const { operations, currentIndex, canUndo, canRedo } = useOperationLog()
+
+// Operation log is always ready since it's injected by the Stonecrop plugin
+const operationLogReady = computed(() => true)
+
+function toggleOperationLog() {
+	showOperationLog.value = !showOperationLog.value
+}
 </script>
 
 <style scoped>
@@ -85,6 +117,34 @@ const { availableDoctypes = ['todo-list', 'todo-form', 'issue-list', 'issue-form
 	text-align: center;
 	padding: 3rem 1rem;
 	color: #6b7280;
+}
+
+/* Operation Log Toggle Button */
+.operation-log-toggle {
+	position: fixed;
+	bottom: 20px;
+	right: 20px;
+	background: #3b82f6;
+	color: white;
+	border: none;
+	padding: 0.75rem 1.25rem;
+	border-radius: 24px;
+	font-weight: 600;
+	font-size: 0.875rem;
+	cursor: pointer;
+	box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+	transition: all 0.2s ease;
+	z-index: 999;
+}
+
+.operation-log-toggle:hover {
+	background: #2563eb;
+	box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+	transform: translateY(-2px);
+}
+
+.operation-log-toggle:active {
+	transform: translateY(0);
 }
 
 .view-wrapper :deep(.empty-state p) {

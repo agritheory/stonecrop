@@ -1,5 +1,6 @@
 import { useMagicKeys, whenever } from '@vueuse/core'
 import { storeToRefs } from 'pinia'
+import { inject } from 'vue'
 
 import type { HSTNode } from '../stores/hst'
 import { useOperationLogStore } from '../stores/operation-log'
@@ -31,7 +32,10 @@ import type { OperationLogConfig, SyncDelta } from '../types/operation-log'
  * @public
  */
 export function useOperationLog(config?: Partial<OperationLogConfig>) {
-	const store = useOperationLogStore()
+	// Try to use the injected store from the Stonecrop plugin first
+	// This ensures we use the same Pinia instance as the app
+	const injectedStore = inject<ReturnType<typeof useOperationLogStore> | undefined>('$operationLogStore', undefined)
+	const store = injectedStore || useOperationLogStore()
 
 	// Apply configuration if provided
 	if (config) {

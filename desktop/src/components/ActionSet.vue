@@ -39,7 +39,11 @@
 		</div>
 		<div style="margin-right: 30px"></div>
 		<div class="action-element" v-for="(el, index) in elements" :key="el.label">
-			<button v-if="el.type == 'button'" @click="handleClick(el.action, el.label)" class="button-default">
+			<button
+				v-if="el.type == 'button'"
+				@click="handleClick(el.action, el.label)"
+				:disabled="el.disabled"
+				class="button-default">
 				{{ el.label }}
 			</button>
 			<div v-if="el.type == 'dropdown'">
@@ -235,6 +239,17 @@ button.button-default {
 
 button.button-default:hover {
 	background-color: #f2f2f2;
+}
+
+button.button-default:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+	background-color: #f5f5f5;
+	color: #999;
+}
+
+button.button-default:disabled:hover {
+	background-color: #f5f5f5;
 }
 
 .dropdown-container {
