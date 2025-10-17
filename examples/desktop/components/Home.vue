@@ -35,6 +35,7 @@ const schema = ref([
 <style scoped>
 .home-wrapper {
 	min-height: 100vh;
+	box-sizing: border-box; /* Include padding in height calculation */
 	background-color: #f9fafb;
 	padding: 2rem;
 }

@@ -51,13 +51,10 @@ function toggleOperationLog() {
 <style scoped>
 .view-wrapper {
 	min-height: 100vh;
+	box-sizing: border-box; /* Include padding in height calculation */
 	background-color: #f9fafb;
 	padding: 2rem;
-}
-
-/* Desktop Component Styling */
-.view-wrapper :deep(.desktop) {
-	min-height: calc(100vh - 4rem);
+	padding-bottom: 4rem; /* Extra padding for SheetNav */
 }
 
 .view-wrapper :deep(.debug-info) {
@@ -123,7 +120,7 @@ function toggleOperationLog() {
 .operation-log-toggle {
 	position: fixed;
 	bottom: 20px;
-	right: 20px;
+	left: 20px; /* Changed from right to left */
 	background: #3b82f6;
 	color: white;
 	border: none;

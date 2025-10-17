@@ -88,8 +88,8 @@ const formatValue = (value: any): string => {
 <style scoped>
 .operation-log-panel {
 	position: fixed;
-	right: 20px;
-	top: 100px;
+	left: 20px;
+	bottom: 80px; /* Position above the button (button height ~40px + 20px bottom + 20px spacing) */
 	width: 400px;
 	max-height: 600px;
 	background: white;

@@ -170,6 +170,7 @@ const handleClick = (action: (() => void | Promise<void>) | undefined, label: st
 	flex-direction: row-reverse;
 	background-color: white;
 	overflow: hidden;
+	z-index: 1001; /* Above SheetNav (100) and operation log button (999) */
 }
 
 .action-menu-icon {
@@ -258,7 +259,7 @@ button.button-default:disabled:hover {
 
 .dropdown {
 	position: absolute;
-	left: 0;
+	right: 0;
 	min-width: 200px;
 	box-shadow: 0 0.5rem 1rem rgb(0 0 0 / 18%);
 	border-radius: 10px;
