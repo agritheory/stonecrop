@@ -455,4 +455,404 @@ describe('Operation Log Store', () => {
 			expect(store.undoRedoState.undoCount).toBe(1)
 		})
 	})
+
+	describe('Cross-Tab Sync', () => {
+		let mockBroadcastChannel: {
+			addEventListener: ReturnType<typeof vi.fn>
+			postMessage: ReturnType<typeof vi.fn>
+			close: ReturnType<typeof vi.fn>
+			onmessage: ((event: MessageEvent) => void) | null
+		}
+		let messageHandlers: Map<string, (event: MessageEvent) => void>
+
+		beforeEach(() => {
+			// Mock BroadcastChannel
+			messageHandlers = new Map()
+
+			mockBroadcastChannel = {
+				addEventListener: vi.fn((type: string, handler: (event: MessageEvent) => void) => {
+					messageHandlers.set(type, handler)
+				}),
+				postMessage: vi.fn(),
+				close: vi.fn(),
+				onmessage: null,
+			}
+			;(global as any).BroadcastChannel = vi.fn(() => mockBroadcastChannel)
+		})
+
+		it('should setup BroadcastChannel when enabled', () => {
+			const store = useOperationLogStore()
+
+			store.configure({
+				enableCrossTabSync: true,
+			})
+
+			// Add an operation to trigger broadcast setup
+			store.addOperation({
+				type: 'set',
+				path: 'task.123.title',
+				fieldname: 'title',
+				beforeValue: 'Old',
+				afterValue: 'New',
+				doctype: 'task',
+				reversible: true,
+			})
+
+			expect(mockBroadcastChannel.addEventListener).toHaveBeenCalledWith('message', expect.any(Function))
+		})
+
+		it('should not setup BroadcastChannel when disabled', () => {
+			const store = useOperationLogStore()
+
+			store.configure({
+				enableCrossTabSync: false,
+			})
+
+			store.addOperation({
+				type: 'set',
+				path: 'task.123.title',
+				fieldname: 'title',
+				beforeValue: 'Old',
+				afterValue: 'New',
+				doctype: 'task',
+				reversible: true,
+			})
+
+			expect(mockBroadcastChannel.addEventListener).not.toHaveBeenCalled()
+		})
+
+		it('should broadcast operations to other tabs', () => {
+			const store = useOperationLogStore()
+
+			store.configure({
+				enableCrossTabSync: true,
+			})
+
+			store.addOperation({
+				type: 'set',
+				path: 'task.123.title',
+				fieldname: 'title',
+				beforeValue: 'Old',
+				afterValue: 'New',
+				doctype: 'task',
+				reversible: true,
+			})
+
+			expect(mockBroadcastChannel.postMessage).toHaveBeenCalled()
+
+			// Verify message structure
+			const message = mockBroadcastChannel.postMessage.mock.calls[0][0]
+			expect(message).toHaveProperty('type', 'operation')
+			expect(message).toHaveProperty('operation')
+			expect(message).toHaveProperty('clientId')
+			expect(message).toHaveProperty('timestamp')
+			expect(message.operation).toHaveProperty('type', 'set')
+			expect(message.operation).toHaveProperty('path', 'task.123.title')
+		})
+
+		it('should receive operations from other tabs', () => {
+			const store = useOperationLogStore()
+
+			store.configure({
+				enableCrossTabSync: true,
+			})
+
+			store.addOperation({
+				type: 'set',
+				path: 'task.123.title',
+				fieldname: 'title',
+				beforeValue: 'Old',
+				afterValue: 'New',
+				doctype: 'task',
+				reversible: true,
+			})
+
+			const initialCount = store.operations.length
+
+			// Simulate receiving a message from another tab
+			const messageHandler = messageHandlers.get('message')
+			expect(messageHandler).toBeDefined()
+
+			const incomingMessage = {
+				type: 'operation',
+				clientId: 'different-client-id',
+				timestamp: new Date().toISOString(),
+				operation: {
+					id: 'op-2',
+					type: 'set',
+					path: 'task.456.status',
+					fieldname: 'status',
+					beforeValue: 'open',
+					afterValue: 'closed',
+					doctype: 'task',
+					recordId: '456',
+					reversible: true,
+					timestamp: new Date().toISOString(),
+					source: 'user',
+				},
+			}
+
+			messageHandler!(new MessageEvent('message', { data: incomingMessage }))
+
+			// Should add the operation from the other tab
+			expect(store.operations.length).toBe(initialCount + 1)
+			const addedOp = store.operations[store.operations.length - 1]
+			expect(addedOp.path).toBe('task.456.status')
+			expect(addedOp.source).toBe('sync')
+		})
+
+		it('should ignore messages from the same client', () => {
+			const store = useOperationLogStore()
+
+			store.configure({
+				enableCrossTabSync: true,
+			})
+
+			// Add operation to trigger setup and get clientId
+			store.addOperation({
+				type: 'set',
+				path: 'task.123.title',
+				fieldname: 'title',
+				beforeValue: 'Old',
+				afterValue: 'New',
+				doctype: 'task',
+				reversible: true,
+			})
+
+			const initialCount = store.operations.length
+
+			// Get the broadcast message to extract clientId
+			const broadcastMessage = mockBroadcastChannel.postMessage.mock.calls[0][0]
+			const clientId = broadcastMessage.clientId
+
+			// Simulate receiving a message from the same client
+			const messageHandler = messageHandlers.get('message')
+			const incomingMessage = {
+				type: 'operation',
+				clientId: clientId, // Same client ID
+				timestamp: new Date().toISOString(),
+				operation: {
+					id: 'op-2',
+					type: 'set',
+					path: 'task.456.status',
+					fieldname: 'status',
+					beforeValue: 'open',
+					afterValue: 'closed',
+					doctype: 'task',
+					reversible: true,
+					timestamp: new Date().toISOString(),
+					source: 'user',
+				},
+			}
+
+			messageHandler!(new MessageEvent('message', { data: incomingMessage }))
+
+			// Should NOT add the operation (same client)
+			expect(store.operations.length).toBe(initialCount)
+		})
+
+		it('should serialize and deserialize Date objects correctly', () => {
+			const store = useOperationLogStore()
+
+			store.configure({
+				enableCrossTabSync: true,
+			})
+
+			store.addOperation({
+				type: 'set',
+				path: 'task.123.title',
+				fieldname: 'title',
+				beforeValue: 'Old',
+				afterValue: 'New',
+				doctype: 'task',
+				reversible: true,
+			})
+
+			// Check that the broadcast message has serialized timestamps
+			const message = mockBroadcastChannel.postMessage.mock.calls[0][0]
+			expect(typeof message.timestamp).toBe('string')
+			expect(typeof message.operation.timestamp).toBe('string')
+
+			// Verify it's a valid ISO string
+			expect(() => new Date(message.timestamp)).not.toThrow()
+			expect(() => new Date(message.operation.timestamp)).not.toThrow()
+		})
+
+		it('should broadcast batch operations correctly', () => {
+			const store = useOperationLogStore()
+
+			store.configure({
+				enableCrossTabSync: true,
+			})
+
+			store.startBatch()
+
+			store.addOperation({
+				type: 'set',
+				path: 'task.123.title',
+				fieldname: 'title',
+				beforeValue: 'Old',
+				afterValue: 'New',
+				doctype: 'task',
+				reversible: true,
+			})
+
+			store.addOperation({
+				type: 'set',
+				path: 'task.123.status',
+				fieldname: 'status',
+				beforeValue: 'open',
+				afterValue: 'closed',
+				doctype: 'task',
+				reversible: true,
+			})
+
+			store.commitBatch()
+
+			// Should have broadcast the batch
+			expect(mockBroadcastChannel.postMessage).toHaveBeenCalled()
+
+			// Find the batch broadcast (last call)
+			const calls = mockBroadcastChannel.postMessage.mock.calls
+			const batchMessage = calls[calls.length - 1][0]
+
+			expect(batchMessage.type).toBe('operation')
+			expect(batchMessage.operations).toBeDefined()
+			expect(batchMessage.operations.length).toBeGreaterThan(2) // 2 child ops + 1 batch op
+		})
+
+		it('should receive batch operations from other tabs', () => {
+			const store = useOperationLogStore()
+
+			store.configure({
+				enableCrossTabSync: true,
+			})
+
+			store.addOperation({
+				type: 'set',
+				path: 'task.123.title',
+				fieldname: 'title',
+				beforeValue: 'Old',
+				afterValue: 'New',
+				doctype: 'task',
+				reversible: true,
+			})
+
+			const initialCount = store.operations.length
+
+			// Simulate receiving batch operations from another tab
+			const messageHandler = messageHandlers.get('message')
+
+			const incomingMessage = {
+				type: 'operation',
+				clientId: 'different-client-id',
+				timestamp: new Date().toISOString(),
+				operations: [
+					{
+						id: 'op-2',
+						type: 'set',
+						path: 'task.456.title',
+						fieldname: 'title',
+						beforeValue: 'A',
+						afterValue: 'B',
+						doctype: 'task',
+						reversible: true,
+						timestamp: new Date().toISOString(),
+						source: 'user',
+					},
+					{
+						id: 'op-3',
+						type: 'set',
+						path: 'task.456.status',
+						fieldname: 'status',
+						beforeValue: 'open',
+						afterValue: 'closed',
+						doctype: 'task',
+						reversible: true,
+						timestamp: new Date().toISOString(),
+						source: 'user',
+					},
+					{
+						id: 'batch-1',
+						type: 'batch',
+						label: 'Batch update',
+						childOperationIds: ['op-2', 'op-3'],
+						doctype: 'task',
+						reversible: true,
+						timestamp: new Date().toISOString(),
+						source: 'user',
+					},
+				],
+			}
+
+			messageHandler!(new MessageEvent('message', { data: incomingMessage }))
+
+			// Should add all operations from the batch
+			expect(store.operations.length).toBe(initialCount + 3)
+			expect(store.operations[store.operations.length - 1].type).toBe('batch')
+		})
+
+		it('should handle malformed messages gracefully', () => {
+			const store = useOperationLogStore()
+
+			store.configure({
+				enableCrossTabSync: true,
+			})
+
+			// Trigger setup
+			store.addOperation({
+				type: 'set',
+				path: 'task.123.title',
+				fieldname: 'title',
+				beforeValue: 'Old',
+				afterValue: 'New',
+				doctype: 'task',
+				reversible: true,
+			})
+
+			const initialCount = store.operations.length
+			const messageHandler = messageHandlers.get('message')
+
+			// Test various malformed messages
+			const malformedMessages = [
+				null,
+				undefined,
+				'string',
+				123,
+				{}, // Missing required fields
+				{ type: 'unknown' }, // Unknown type
+				{ type: 'operation' }, // Missing operation/operations
+			]
+
+			malformedMessages.forEach(message => {
+				messageHandler!(new MessageEvent('message', { data: message }))
+			})
+
+			// Should not crash and should not add any operations
+			expect(store.operations.length).toBe(initialCount)
+		})
+
+		it('should work when BroadcastChannel is not available', () => {
+			delete (global as any).BroadcastChannel
+
+			const store = useOperationLogStore()
+
+			store.configure({
+				enableCrossTabSync: true,
+			})
+
+			// Should not crash when BroadcastChannel is unavailable
+			expect(() => {
+				store.addOperation({
+					type: 'set',
+					path: 'task.123.title',
+					fieldname: 'title',
+					beforeValue: 'Old',
+					afterValue: 'New',
+					doctype: 'task',
+					reversible: true,
+				})
+			}).not.toThrow()
+		})
+	})
 })
