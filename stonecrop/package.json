@@ -51,8 +51,8 @@
 		"pinia-shared-state": "^1.0.1",
 		"pinia-xstate": "^3.0.0",
 		"pinia": "^3.0.3",
-		"vue-router": "^4.5.1",
-		"vue": "^3.5.18",
+		"vue-router": "^4.6.3",
+		"vue": "^3.5.22",
 		"xstate": "^5.20.1"
 	},
 	"devDependencies": {
@@ -70,14 +70,14 @@
 		"eslint-plugin-vue": "^9.33.0",
 		"jsdom": "^26.1.0",
 		"stonecrop-rig": "workspace:*",
-		"typescript": "^5.8.3",
-		"vite": "^7.0.6",
+		"typescript": "^5.9.3",
+		"vite": "^7.1.1",
 		"vitest": "^3.2.4"
 	},
 	"publishConfig": {
 		"access": "public"
 	},
 	"engines": {
-		"node": ">=20.11.0"
+		"node": ">=22.5.0"
 	}
 }

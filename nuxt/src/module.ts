@@ -1,16 +1,23 @@
-import { defineNuxtModule, addPlugin, createResolver, extendPages, addLayout } from '@nuxt/kit'
 import { existsSync, readdirSync } from 'node:fs'
 import { extname } from 'node:path'
+import { defineNuxtModule, addPlugin, createResolver, extendPages, addLayout } from '@nuxt/kit'
+import type { Nuxt } from '@nuxt/schema' // do not remove this import since it causes a build issue
 
 const { resolve } = createResolver(import.meta.url)
 
-export default defineNuxtModule({
+// Define module options interface
+export interface ModuleOptions {
+	router?: Record<string, any>
+	docbuilder?: boolean
+}
+
+export default defineNuxtModule<ModuleOptions>({
 	meta: {
 		name: '@stonecrop/nuxt',
 		configKey: 'stonecrop',
 	},
 
-	defaults: nuxt => {
+	defaults: (_nuxt: Nuxt) => {
 		return {
 			router: {},
 			docbuilder: false,

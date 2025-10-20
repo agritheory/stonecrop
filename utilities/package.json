@@ -44,7 +44,7 @@
 	},
 	"dependencies": {
 		"@vueuse/core": "^13.6.0",
-		"vue": "^3.5.18"
+		"vue": "^3.5.22"
 	},
 	"devDependencies": {
 		"@microsoft/api-documenter": "^7.26.31",
@@ -57,14 +57,14 @@
 		"eslint-config-prettier": "^8.10.0",
 		"eslint-plugin-vue": "^9.33.0",
 		"stonecrop-rig": "workspace:*",
-		"typescript": "^5.8.3",
-		"vite": "^7.0.6",
-		"vue-router": "^4.5.1"
+		"typescript": "^5.9.3",
+		"vite": "^7.1.1",
+		"vue-router": "^4.6.3"
 	},
 	"publishConfig": {
 		"access": "public"
 	},
 	"engines": {
-		"node": ">=20.11.0"
+		"node": ">=22.5.0"
 	}
 }
