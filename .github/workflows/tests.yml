@@ -51,10 +51,7 @@ jobs:
 
       - name: Update Autoinstallers
         run: |
-          # Only update autoinstallers that exist in this branch
-          if [ -f "common/autoinstallers/doc-tools/package.json" ]; then
-            node common/scripts/install-run-rush.js update-autoinstaller --name doc-tools
-          fi
+          node common/scripts/install-run-rush.js update-autoinstaller --name doc-tools
           node common/scripts/install-run-rush.js update-autoinstaller --name rush-plugins
           node common/scripts/install-run-rush.js update-autoinstaller --name rush-prettier
 
