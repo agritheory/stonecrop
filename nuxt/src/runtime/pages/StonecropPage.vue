@@ -1,5 +1,4 @@
 <template>
-	<div>Stonecrop Page</div>
 	<AForm v-model="schema" :data="schemaData" :key="componentKey" />
 </template>
 
