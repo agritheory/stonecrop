@@ -10,10 +10,20 @@
 				<tr v-if="selectRange">
 					<td colspan="7">
 						<div class="date-input">
-							<input v-model="startDateInput" class="date-input-start" type="text" placeholder="start date" />
+							<input
+								v-model="startDateInput"
+								class="date-input-start aform_input-field"
+								type="text"
+								placeholder="start date"
+								@keydown="enterDate" />
 							<div>-</div>
-							<input v-model="endDateInput" class="date-input-end" type="text" placeholder="end date" />
-							<button @click="applyDates">&check;</button>
+							<input
+								v-model="endDateInput"
+								class="date-input-end aform_input-field"
+								type="text"
+								placeholder="end date"
+								@keydown="enterDate" />
+							<button @click="applyDates" class="date-input-button">&check;</button>
 						</div>
 						<!-- {{ formattedDateRange }} -->
 					</td>
@@ -187,15 +197,13 @@ const getCurrentCell = (rowNo: number, colNo: number) => {
 
 const isInDateRange = (day: string | number | Date) => {
 	//apply the withinRange class to all days within the selected range
-
 	const this_date = new Date(day)
-	const start_date = new Date(selectedDateRange.start_date)
-	const end_date =
-		selectedDateRange.end_date != null ? new Date(selectedDateRange.end_date) : new Date(hoveredDate.value)
+	let start_date = new Date(selectedDateRange.start_date)
+	let end_date = selectedDateRange.end_date != null ? new Date(selectedDateRange.end_date) : new Date(hoveredDate.value)
 
-	if (selectedDateRange.start_date != null)
-		return this_date.getTime() > start_date.getTime() && this_date.getTime() < end_date.getTime()
-	return false
+	if (start_date.getTime() > end_date.getTime()) [start_date, end_date] = [end_date, start_date]
+
+	return this_date.getTime() > start_date.getTime() && this_date.getTime() < end_date.getTime()
 }
 
 const getCurrentDate = (rowNo: number, colNo: number) => {
@@ -207,27 +215,26 @@ const hoverDate = (currentIndex: number) => {
 const selectDate = (currentIndex: number) => {
 	date.value = selectedDate.value = new Date(currentDates.value[currentIndex])
 
-	//If selectRange prop is set to true, set range start and end points on selection
-
 	if (props.selectRange) {
-		if (
-			selectedDateRange.start_date == null ||
-			selectedDateRange.end_date != null ||
-			selectedDate.value.getTime() < selectedDateRange.start_date.getTime()
-		) {
+		if (selectedDateRange.start_date == null || selectedDateRange.end_date != null) {
 			selectedDateRange.start_date = date.value
 			selectedDateRange.end_date = null
-			startDateInput.value = parseDateToString(date.value)
+		} else if (selectedDate.value.getTime() < selectedDateRange.start_date.getTime()) {
+			//set it as the start date and swap them
+			selectedDateRange.end_date = selectedDateRange.start_date
+			selectedDateRange.start_date = date.value
 		} else {
 			selectedDateRange.end_date = date.value
-			endDateInput.value = parseDateToString(date.value)
 		}
 	}
+
+	startDateInput.value = parseDateToString(selectedDateRange.start_date)
+	endDateInput.value = parseDateToString(selectedDateRange.end_date)
 }
 
 const parseDateToString = (date: Date) => {
 	let date_string = ''
-	if (!date.getTime()) {
+	if (date == null || !date.getTime()) {
 		return ''
 	}
 	date_string += date.getMonth() + 1 + '/' + date.getDate() + '/' + date.getFullYear()
@@ -240,6 +247,9 @@ const monthAndYear = computed(() => {
 		month: 'long',
 	})
 })
+const enterDate = event => {
+	if (event.key === 'Enter') applyDates()
+}
 
 // setup keyboard navigation
 useKeyboardNav([
@@ -340,8 +350,12 @@ defineExpose({ currentMonth, currentYear, selectedDate, selectedDateRange })
 	display: flex;
 	width: 100%;
 	gap: 5px;
+	align-items: center;
 }
 .adatepicker .date-input > input {
 	width: 50%;
+	padding: 2px;
+}
+.date-input-button {
 }
 </style>

@@ -1,11 +1,11 @@
 <template>
 	<Story>
 		<Variant title="Date Picker">
-			<h3>Default Date</h3>
-			<ADatePicker />
-
 			<h3>Date with Range Selection</h3>
 			<ADatePicker select-range />
+
+			<h3>Default Date</h3>
+			<ADatePicker />
 
 			<h3>Custom Date</h3>
 			<ADatePicker v-model="defaultDate" />
