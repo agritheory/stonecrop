@@ -8,19 +8,26 @@ import type { AnyStateNodeConfig } from 'xstate';
 import { Component } from 'vue';
 import { ComputedRef } from 'vue';
 import { CSSProperties } from 'vue';
-import { HSTOperation as HSTOperation_2 } from '..';
-import { HSTOperationType as HSTOperationType_2 } from '..';
+import { HSTOperation as HSTOperation_2 } from './types';
+import { HSTOperation as HSTOperation_3 } from '..';
+import { HSTOperationInput as HSTOperationInput_2 } from './types';
+import { HSTOperationType as HSTOperationType_2 } from './types';
+import { HSTOperationType as HSTOperationType_3 } from '..';
 import { List } from 'immutable';
 import { Map as Map_2 } from 'immutable';
-import { OperationLogSnapshot as OperationLogSnapshot_2 } from '..';
-import { OperationSource as OperationSource_2 } from '..';
+import { OperationLogSnapshot as OperationLogSnapshot_2 } from './types';
+import { OperationLogSnapshot as OperationLogSnapshot_3 } from '..';
+import { OperationSource as OperationSource_2 } from './types';
+import { OperationSource as OperationSource_3 } from '..';
 import { Plugin as Plugin_2 } from 'vue';
 import { Ref } from 'vue';
 import { Router } from 'vue-router';
 import type { ShallowRef } from 'vue';
 import { Store } from 'pinia';
 import { StoreDefinition } from 'pinia';
-import { UndoRedoState as UndoRedoState_2 } from '..';
+import { SyncDelta as SyncDelta_2 } from './types';
+import { UndoRedoState as UndoRedoState_2 } from './types';
+import { UndoRedoState as UndoRedoState_3 } from '..';
 import type { UnknownMachineConfig } from 'xstate';
 import { useElementBounding } from '@vueuse/core';
 import { WritableComputedRef } from 'vue';
@@ -52,6 +59,7 @@ export type BaseSchema = {
 // @public
 export type BaseStonecropReturn = {
     stonecrop: Ref<Stonecrop | undefined>;
+    operationLog: OperationLogAPI;
 };
 
 // @public
@@ -66,15 +74,10 @@ export interface BasicTableConfig extends BaseTableConfig {
 
 // @public
 export interface BatchOperation {
-    // (undocumented)
     description?: string;
-    // (undocumented)
     id: string;
-    // (undocumented)
     operations: HSTOperation[];
-    // (undocumented)
     reversible: boolean;
-    // (undocumented)
     timestamp: Date;
 }
 
@@ -144,15 +147,10 @@ export function createHST(target: any, doctype: string, parentDoctype?: string):
 
 // @public
 export interface CrossTabMessage {
-    // (undocumented)
     clientId: string;
-    // (undocumented)
     operation?: HSTOperation;
-    // (undocumented)
     operations?: HSTOperation[];
-    // (undocumented)
     timestamp: Date;
-    // (undocumented)
     type: CrossTabMessageType;
 }
 
@@ -421,6 +419,35 @@ export type MutableDoctype = {
 };
 
 // @public
+export type OperationLogAPI = {
+    operations: Ref<HSTOperation[]>;
+    currentIndex: Ref<number>;
+    undoRedoState: ComputedRef<{
+        canUndo: boolean;
+        canRedo: boolean;
+        undoCount: number;
+        redoCount: number;
+        currentIndex: number;
+    }>;
+    canUndo: ComputedRef<boolean>;
+    canRedo: ComputedRef<boolean>;
+    undoCount: ComputedRef<number>;
+    redoCount: ComputedRef<number>;
+    undo: (hstStore: HSTNode) => boolean;
+    redo: (hstStore: HSTNode) => boolean;
+    startBatch: () => void;
+    commitBatch: (description?: string) => string | null;
+    cancelBatch: () => void;
+    clear: () => void;
+    getOperationsFor: (doctype: string, recordId?: string) => HSTOperation[];
+    getSnapshot: () => OperationLogSnapshot;
+    createSyncDelta: () => SyncDelta;
+    applySyncDelta: (delta: SyncDelta) => void;
+    markIrreversible: (operationId: string, reason: string) => void;
+    configure: (options: Partial<OperationLogConfig>) => void;
+};
+
+// @public
 export interface OperationLogConfig {
     autoSyncInterval?: number;
     enableCrossTabSync?: boolean;
@@ -435,29 +462,20 @@ export interface OperationLogConfig {
 
 // @public
 export interface OperationLogSnapshot {
-    // (undocumented)
     currentIndex: number;
-    // (undocumented)
     irreversibleOperations: number;
-    // (undocumented)
     newestOperation?: Date;
-    // (undocumented)
     oldestOperation?: Date;
-    // (undocumented)
     operations: HSTOperation[];
-    // (undocumented)
     reversibleOperations: number;
-    // (undocumented)
     totalOperations: number;
 }
 
 // @public
 export type OperationSource = 'user' | 'system' | 'sync' | 'undo' | 'redo';
 
-// Warning: (ae-internal-missing-underscore) The name "PathMatchResult" should be prefixed with an underscore because the declaration is marked as @internal
-//
 // @internal
-export interface PathMatchResult {
+export interface _PathMatchResult {
     captures: Record<string, string>;
     matches: boolean;
 }
@@ -503,17 +521,270 @@ export function setFieldRollback(doctype: string, fieldname: string, enableRollb
 
 // @public
 export class Stonecrop {
-    constructor(registry: Registry);
+    constructor(registry: Registry, operationLogConfig?: Partial<OperationLogConfig>);
     addRecord(doctype: string | DoctypeMeta, recordId: string, recordData: any): void;
     clearRecords(doctype: string | DoctypeMeta): void;
     getMeta(context: RouteContext): Promise<any>;
+    // @internal
+    getOperationLogStore(): Store<"hst-operation-log", Pick<{
+    operations: Ref<    {
+    id: string;
+    type: HSTOperationType_2;
+    path: string;
+    fieldname: string;
+    beforeValue: any;
+    afterValue: any;
+    doctype: string;
+    recordId?: string | undefined;
+    timestamp: Date;
+    source?: OperationSource_2 | undefined;
+    reversible: boolean;
+    irreversibleReason?: string | undefined;
+    transition?: string | undefined;
+    currentState?: string | undefined;
+    targetState?: string | undefined;
+    userId?: string | undefined;
+    metadata?: Record<string, any> | undefined;
+    parentOperationId?: string | undefined;
+    childOperationIds?: string[] | undefined;
+    }[], HSTOperation_2[] | {
+    id: string;
+    type: HSTOperationType_2;
+    path: string;
+    fieldname: string;
+    beforeValue: any;
+    afterValue: any;
+    doctype: string;
+    recordId?: string | undefined;
+    timestamp: Date;
+    source?: OperationSource_2 | undefined;
+    reversible: boolean;
+    irreversibleReason?: string | undefined;
+    transition?: string | undefined;
+    currentState?: string | undefined;
+    targetState?: string | undefined;
+    userId?: string | undefined;
+    metadata?: Record<string, any> | undefined;
+    parentOperationId?: string | undefined;
+    childOperationIds?: string[] | undefined;
+    }[]>;
+    currentIndex: Ref<number, number>;
+    config: Ref<    {
+    maxOperations?: number | undefined;
+    enableCrossTabSync?: boolean | undefined;
+    enableServerSync?: boolean | undefined;
+    serverSyncEndpoint?: string | undefined;
+    autoSyncInterval?: number | undefined;
+    enablePersistence?: boolean | undefined;
+    persistenceKeyPrefix?: string | undefined;
+    userId?: string | undefined;
+    operationFilter?: ((operation: HSTOperation_2) => boolean) | undefined;
+    }, OperationLogConfig | {
+    maxOperations?: number | undefined;
+    enableCrossTabSync?: boolean | undefined;
+    enableServerSync?: boolean | undefined;
+    serverSyncEndpoint?: string | undefined;
+    autoSyncInterval?: number | undefined;
+    enablePersistence?: boolean | undefined;
+    persistenceKeyPrefix?: string | undefined;
+    userId?: string | undefined;
+    operationFilter?: ((operation: HSTOperation_2) => boolean) | undefined;
+    }>;
+    clientId: Ref<string, string>;
+    undoRedoState: ComputedRef<UndoRedoState_2>;
+    canUndo: ComputedRef<boolean>;
+    canRedo: ComputedRef<boolean>;
+    undoCount: ComputedRef<number>;
+    redoCount: ComputedRef<number>;
+    configure: (options: Partial<OperationLogConfig>) => void;
+    addOperation: (operation: HSTOperationInput_2, source?: OperationSource_2) => string;
+    startBatch: () => void;
+    commitBatch: (description?: string) => string | null;
+    cancelBatch: () => void;
+    undo: (store: HSTNode) => boolean;
+    redo: (store: HSTNode) => boolean;
+    clear: () => void;
+    getOperationsFor: (doctype: string, recordId?: string) => HSTOperation_2[];
+    getOperationsSince: (timestamp: Date) => HSTOperation_2[];
+    createSyncDelta: () => SyncDelta_2;
+    applySyncDelta: (delta: SyncDelta_2) => void;
+    getSnapshot: () => OperationLogSnapshot_2;
+    markIrreversible: (operationId: string, reason: string) => void;
+    }, "operations" | "clientId" | "currentIndex" | "config">, Pick<{
+    operations: Ref<    {
+    id: string;
+    type: HSTOperationType_2;
+    path: string;
+    fieldname: string;
+    beforeValue: any;
+    afterValue: any;
+    doctype: string;
+    recordId?: string | undefined;
+    timestamp: Date;
+    source?: OperationSource_2 | undefined;
+    reversible: boolean;
+    irreversibleReason?: string | undefined;
+    transition?: string | undefined;
+    currentState?: string | undefined;
+    targetState?: string | undefined;
+    userId?: string | undefined;
+    metadata?: Record<string, any> | undefined;
+    parentOperationId?: string | undefined;
+    childOperationIds?: string[] | undefined;
+    }[], HSTOperation_2[] | {
+    id: string;
+    type: HSTOperationType_2;
+    path: string;
+    fieldname: string;
+    beforeValue: any;
+    afterValue: any;
+    doctype: string;
+    recordId?: string | undefined;
+    timestamp: Date;
+    source?: OperationSource_2 | undefined;
+    reversible: boolean;
+    irreversibleReason?: string | undefined;
+    transition?: string | undefined;
+    currentState?: string | undefined;
+    targetState?: string | undefined;
+    userId?: string | undefined;
+    metadata?: Record<string, any> | undefined;
+    parentOperationId?: string | undefined;
+    childOperationIds?: string[] | undefined;
+    }[]>;
+    currentIndex: Ref<number, number>;
+    config: Ref<    {
+    maxOperations?: number | undefined;
+    enableCrossTabSync?: boolean | undefined;
+    enableServerSync?: boolean | undefined;
+    serverSyncEndpoint?: string | undefined;
+    autoSyncInterval?: number | undefined;
+    enablePersistence?: boolean | undefined;
+    persistenceKeyPrefix?: string | undefined;
+    userId?: string | undefined;
+    operationFilter?: ((operation: HSTOperation_2) => boolean) | undefined;
+    }, OperationLogConfig | {
+    maxOperations?: number | undefined;
+    enableCrossTabSync?: boolean | undefined;
+    enableServerSync?: boolean | undefined;
+    serverSyncEndpoint?: string | undefined;
+    autoSyncInterval?: number | undefined;
+    enablePersistence?: boolean | undefined;
+    persistenceKeyPrefix?: string | undefined;
+    userId?: string | undefined;
+    operationFilter?: ((operation: HSTOperation_2) => boolean) | undefined;
+    }>;
+    clientId: Ref<string, string>;
+    undoRedoState: ComputedRef<UndoRedoState_2>;
+    canUndo: ComputedRef<boolean>;
+    canRedo: ComputedRef<boolean>;
+    undoCount: ComputedRef<number>;
+    redoCount: ComputedRef<number>;
+    configure: (options: Partial<OperationLogConfig>) => void;
+    addOperation: (operation: HSTOperationInput_2, source?: OperationSource_2) => string;
+    startBatch: () => void;
+    commitBatch: (description?: string) => string | null;
+    cancelBatch: () => void;
+    undo: (store: HSTNode) => boolean;
+    redo: (store: HSTNode) => boolean;
+    clear: () => void;
+    getOperationsFor: (doctype: string, recordId?: string) => HSTOperation_2[];
+    getOperationsSince: (timestamp: Date) => HSTOperation_2[];
+    createSyncDelta: () => SyncDelta_2;
+    applySyncDelta: (delta: SyncDelta_2) => void;
+    getSnapshot: () => OperationLogSnapshot_2;
+    markIrreversible: (operationId: string, reason: string) => void;
+    }, "undoRedoState" | "canUndo" | "canRedo" | "undoCount" | "redoCount">, Pick<{
+    operations: Ref<    {
+    id: string;
+    type: HSTOperationType_2;
+    path: string;
+    fieldname: string;
+    beforeValue: any;
+    afterValue: any;
+    doctype: string;
+    recordId?: string | undefined;
+    timestamp: Date;
+    source?: OperationSource_2 | undefined;
+    reversible: boolean;
+    irreversibleReason?: string | undefined;
+    transition?: string | undefined;
+    currentState?: string | undefined;
+    targetState?: string | undefined;
+    userId?: string | undefined;
+    metadata?: Record<string, any> | undefined;
+    parentOperationId?: string | undefined;
+    childOperationIds?: string[] | undefined;
+    }[], HSTOperation_2[] | {
+    id: string;
+    type: HSTOperationType_2;
+    path: string;
+    fieldname: string;
+    beforeValue: any;
+    afterValue: any;
+    doctype: string;
+    recordId?: string | undefined;
+    timestamp: Date;
+    source?: OperationSource_2 | undefined;
+    reversible: boolean;
+    irreversibleReason?: string | undefined;
+    transition?: string | undefined;
+    currentState?: string | undefined;
+    targetState?: string | undefined;
+    userId?: string | undefined;
+    metadata?: Record<string, any> | undefined;
+    parentOperationId?: string | undefined;
+    childOperationIds?: string[] | undefined;
+    }[]>;
+    currentIndex: Ref<number, number>;
+    config: Ref<    {
+    maxOperations?: number | undefined;
+    enableCrossTabSync?: boolean | undefined;
+    enableServerSync?: boolean | undefined;
+    serverSyncEndpoint?: string | undefined;
+    autoSyncInterval?: number | undefined;
+    enablePersistence?: boolean | undefined;
+    persistenceKeyPrefix?: string | undefined;
+    userId?: string | undefined;
+    operationFilter?: ((operation: HSTOperation_2) => boolean) | undefined;
+    }, OperationLogConfig | {
+    maxOperations?: number | undefined;
+    enableCrossTabSync?: boolean | undefined;
+    enableServerSync?: boolean | undefined;
+    serverSyncEndpoint?: string | undefined;
+    autoSyncInterval?: number | undefined;
+    enablePersistence?: boolean | undefined;
+    persistenceKeyPrefix?: string | undefined;
+    userId?: string | undefined;
+    operationFilter?: ((operation: HSTOperation_2) => boolean) | undefined;
+    }>;
+    clientId: Ref<string, string>;
+    undoRedoState: ComputedRef<UndoRedoState_2>;
+    canUndo: ComputedRef<boolean>;
+    canRedo: ComputedRef<boolean>;
+    undoCount: ComputedRef<number>;
+    redoCount: ComputedRef<number>;
+    configure: (options: Partial<OperationLogConfig>) => void;
+    addOperation: (operation: HSTOperationInput_2, source?: OperationSource_2) => string;
+    startBatch: () => void;
+    commitBatch: (description?: string) => string | null;
+    cancelBatch: () => void;
+    undo: (store: HSTNode) => boolean;
+    redo: (store: HSTNode) => boolean;
+    clear: () => void;
+    getOperationsFor: (doctype: string, recordId?: string) => HSTOperation_2[];
+    getOperationsSince: (timestamp: Date) => HSTOperation_2[];
+    createSyncDelta: () => SyncDelta_2;
+    applySyncDelta: (delta: SyncDelta_2) => void;
+    getSnapshot: () => OperationLogSnapshot_2;
+    markIrreversible: (operationId: string, reason: string) => void;
+    }, "undo" | "redo" | "configure" | "addOperation" | "startBatch" | "commitBatch" | "cancelBatch" | "clear" | "getOperationsFor" | "getOperationsSince" | "createSyncDelta" | "applySyncDelta" | "getSnapshot" | "markIrreversible">>;
     getRecord(doctype: DoctypeMeta, recordId: string): Promise<void>;
     getRecordById(doctype: string | DoctypeMeta, recordId: string): HSTNode | undefined;
     getRecordIds(doctype: string | DoctypeMeta): string[];
     getRecords(doctype: DoctypeMeta): Promise<void>;
     getStore(): HSTNode;
     records(doctype: string | DoctypeMeta): HSTNode;
-    // (undocumented)
     readonly registry: Registry;
     removeRecord(doctype: string | DoctypeMeta, recordId: string): void;
     runAction(_doctype: DoctypeMeta, _action: string, _args?: any[]): void;
@@ -546,7 +817,6 @@ export interface TableColumn {
     name: string;
     originalIndex?: number;
     pinned?: boolean;
-    // (undocumented)
     resizable?: boolean;
     // @beta
     type?: string;
@@ -665,7 +935,7 @@ export interface UndoRedoState {
 export function useOperationLog(config?: Partial<OperationLogConfig>): {
     operations: Ref<    {
     id: string;
-    type: HSTOperationType_2;
+    type: HSTOperationType_3;
     path: string;
     fieldname: string;
     beforeValue: any;
@@ -673,7 +943,7 @@ export function useOperationLog(config?: Partial<OperationLogConfig>): {
     doctype: string;
     recordId?: string | undefined;
     timestamp: Date;
-    source?: OperationSource_2 | undefined;
+    source?: OperationSource_3 | undefined;
     reversible: boolean;
     irreversibleReason?: string | undefined;
     transition?: string | undefined;
@@ -683,9 +953,9 @@ export function useOperationLog(config?: Partial<OperationLogConfig>): {
     metadata?: Record<string, any> | undefined;
     parentOperationId?: string | undefined;
     childOperationIds?: string[] | undefined;
-    }[], HSTOperation_2[] | {
+    }[], HSTOperation_3[] | {
     id: string;
-    type: HSTOperationType_2;
+    type: HSTOperationType_3;
     path: string;
     fieldname: string;
     beforeValue: any;
@@ -693,7 +963,7 @@ export function useOperationLog(config?: Partial<OperationLogConfig>): {
     doctype: string;
     recordId?: string | undefined;
     timestamp: Date;
-    source?: OperationSource_2 | undefined;
+    source?: OperationSource_3 | undefined;
     reversible: boolean;
     irreversibleReason?: string | undefined;
     transition?: string | undefined;
@@ -705,7 +975,7 @@ export function useOperationLog(config?: Partial<OperationLogConfig>): {
     childOperationIds?: string[] | undefined;
     }[]>;
     currentIndex: Ref<number, number>;
-    undoRedoState: ComputedRef<UndoRedoState_2>;
+    undoRedoState: ComputedRef<UndoRedoState_3>;
     canUndo: ComputedRef<boolean>;
     canRedo: ComputedRef<boolean>;
     undoCount: ComputedRef<number>;
@@ -716,8 +986,8 @@ export function useOperationLog(config?: Partial<OperationLogConfig>): {
     commitBatch: (description?: string) => string | null;
     cancelBatch: () => void;
     clear: () => void;
-    getOperationsFor: (doctype: string, recordId?: string) => HSTOperation_2[];
-    getSnapshot: () => OperationLogSnapshot_2;
+    getOperationsFor: (doctype: string, recordId?: string) => HSTOperation_3[];
+    getSnapshot: () => OperationLogSnapshot_3;
     createSyncDelta: () => SyncDelta;
     applySyncDelta: (delta: SyncDelta) => void;
     markIrreversible: (operationId: string, reason: string) => void;
@@ -728,7 +998,7 @@ export function useOperationLog(config?: Partial<OperationLogConfig>): {
 export const useOperationLogStore: StoreDefinition<"hst-operation-log", Pick<{
 operations: Ref<    {
 id: string;
-type: HSTOperationType_2;
+type: HSTOperationType_3;
 path: string;
 fieldname: string;
 beforeValue: any;
@@ -748,7 +1018,7 @@ parentOperationId?: string | undefined;
 childOperationIds?: string[] | undefined;
 }[], HSTOperation[] | {
 id: string;
-type: HSTOperationType_2;
+type: HSTOperationType_3;
 path: string;
 fieldname: string;
 beforeValue: any;
@@ -812,7 +1082,7 @@ markIrreversible: (operationId: string, reason: string) => void;
 }, "operations" | "clientId" | "currentIndex" | "config">, Pick<{
 operations: Ref<    {
 id: string;
-type: HSTOperationType_2;
+type: HSTOperationType_3;
 path: string;
 fieldname: string;
 beforeValue: any;
@@ -832,7 +1102,7 @@ parentOperationId?: string | undefined;
 childOperationIds?: string[] | undefined;
 }[], HSTOperation[] | {
 id: string;
-type: HSTOperationType_2;
+type: HSTOperationType_3;
 path: string;
 fieldname: string;
 beforeValue: any;
@@ -896,7 +1166,7 @@ markIrreversible: (operationId: string, reason: string) => void;
 }, "undoRedoState" | "canUndo" | "canRedo" | "undoCount" | "redoCount">, Pick<{
 operations: Ref<    {
 id: string;
-type: HSTOperationType_2;
+type: HSTOperationType_3;
 path: string;
 fieldname: string;
 beforeValue: any;
@@ -916,7 +1186,7 @@ parentOperationId?: string | undefined;
 childOperationIds?: string[] | undefined;
 }[], HSTOperation[] | {
 id: string;
-type: HSTOperationType_2;
+type: HSTOperationType_3;
 path: string;
 fieldname: string;
 beforeValue: any;
@@ -982,7 +1252,7 @@ markIrreversible: (operationId: string, reason: string) => void;
 // @public
 export function useStonecrop(): BaseStonecropReturn | HSTStonecropReturn;
 
-// @public (undocumented)
+// @public
 export function useStonecrop(options: {
     registry?: Registry;
     doctype: DoctypeMeta;

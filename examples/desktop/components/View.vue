@@ -4,7 +4,7 @@
 
 		<!-- Operation Log Panel - pass operation log data as props -->
 		<OperationLogPanel
-			v-if="showDebug && operationLogReady"
+			v-if="showDebug"
 			:show="showOperationLog"
 			:operations="operations"
 			:current-index="currentIndex"
@@ -21,8 +21,8 @@
 
 <script setup lang="ts">
 import { Desktop } from '@stonecrop/desktop'
-import { useOperationLog } from '@stonecrop/stonecrop'
-import { ref, computed } from 'vue'
+import { useStonecrop } from '@stonecrop/stonecrop'
+import { ref } from 'vue'
 
 import OperationLogPanel from './OperationLogPanel.vue'
 
@@ -36,12 +36,10 @@ const { availableDoctypes = ['todo-list', 'todo-form', 'issue-list', 'issue-form
 
 const showOperationLog = ref(false)
 
-// Use the real operation log composable
-// The Stonecrop plugin has already initialized the store with the app's Pinia instance
-const { operations, currentIndex, canUndo, canRedo } = useOperationLog()
-
-// Operation log is always ready since it's injected by the Stonecrop plugin
-const operationLogReady = computed(() => true)
+// Single unified interface - everything from useStonecrop
+const {
+	operationLog: { operations, currentIndex, canUndo, canRedo },
+} = useStonecrop()
 
 function toggleOperationLog() {
 	showOperationLog.value = !showOperationLog.value

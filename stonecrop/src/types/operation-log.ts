@@ -88,10 +88,15 @@ export type HSTOperationInput = Omit<HSTOperation, 'id' | 'timestamp' | 'source'
  * @public
  */
 export interface BatchOperation {
+	/** Unique batch identifier */
 	id: string
+	/** Operations included in this batch */
 	operations: HSTOperation[]
+	/** When the batch was created */
 	timestamp: Date
+	/** Optional description of what this batch represents */
 	description?: string
+	/** Whether the entire batch can be undone */
 	reversible: boolean
 }
 
@@ -176,12 +181,19 @@ export interface UndoRedoState {
  * @public
  */
 export interface OperationLogSnapshot {
+	/** All operations in the log */
 	operations: HSTOperation[]
+	/** Current operation index in the history */
 	currentIndex: number
+	/** Total number of operations */
 	totalOperations: number
+	/** Number of operations that can be undone */
 	reversibleOperations: number
+	/** Number of operations that cannot be undone */
 	irreversibleOperations: number
+	/** Timestamp of the oldest operation */
 	oldestOperation?: Date
+	/** Timestamp of the newest operation */
 	newestOperation?: Date
 }
 
@@ -196,9 +208,14 @@ export type CrossTabMessageType = 'operation' | 'undo' | 'redo' | 'sync-request'
  * @public
  */
 export interface CrossTabMessage {
+	/** Type of cross-tab message */
 	type: CrossTabMessageType
+	/** Single operation for operation/undo/redo messages */
 	operation?: HSTOperation
+	/** Multiple operations for sync messages */
 	operations?: HSTOperation[]
+	/** Identifier of the client/tab sending the message */
 	clientId: string
+	/** When the message was sent */
 	timestamp: Date
 }

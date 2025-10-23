@@ -193,7 +193,7 @@ export interface FieldTriggerOptions {
  * Pattern matching result for wildcard paths
  * @internal
  */
-export interface PathMatchResult {
+export interface _PathMatchResult {
 	/** Whether the path matches the pattern */
 	matches: boolean
 	/** Captured wildcard values */

@@ -1,22 +1,45 @@
-import Registry from './registry'
 import DoctypeMeta from './doctype'
+import Registry from './registry'
 import { createHST, type HSTNode } from './stores/hst'
+import { useOperationLogStore } from './stores/operation-log'
+import type { OperationLogConfig } from './types/operation-log'
 import type { RouteContext } from './types/registry'
 
 /**
- * Main Stonecrop class with HST integration
+ * Main Stonecrop class with HST integration and built-in Operation Log
  * @public
  */
 export class Stonecrop {
 	private hstStore: HSTNode
+	private _operationLogStore?: ReturnType<typeof useOperationLogStore>
+	private _operationLogConfig?: Partial<OperationLogConfig>
+
+	/** The registry instance containing all doctype definitions */
 	readonly registry: Registry
 
-	constructor(registry: Registry) {
+	constructor(registry: Registry, operationLogConfig?: Partial<OperationLogConfig>) {
 		this.registry = registry
+
+		// Store config for lazy initialization
+		this._operationLogConfig = operationLogConfig
 
 		// Initialize HST store with auto-sync to Registry
 		this.initializeHSTStore()
 		this.setupRegistrySync()
+	}
+
+	/**
+	 * Get the operation log store (lazy initialization)
+	 * @internal
+	 */
+	getOperationLogStore() {
+		if (!this._operationLogStore) {
+			this._operationLogStore = useOperationLogStore()
+			if (this._operationLogConfig) {
+				this._operationLogStore.configure(this._operationLogConfig)
+			}
+		}
+		return this._operationLogStore
 	}
 
 	/**

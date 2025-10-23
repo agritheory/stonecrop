@@ -219,6 +219,8 @@ export declare function useStonecrop(): BaseStonecropReturn | HSTStonecropReturn
 
 ### useStonecrop
 
+Unified Stonecrop composable with HST integration for a specific doctype and record
+
 **Signature:**
 
 ```typescript
@@ -367,11 +369,11 @@ export interface BatchOperation {
 
 | Property | Type | Description |
 |----------|------|-------------|
-| description? | `string` |  |
-| id | `string` |  |
-| operations | `HSTOperation[]` |  |
-| reversible | `boolean` |  |
-| timestamp | `Date` |  |
+| description? | `string` | Optional description of what this batch represents |
+| id | `string` | Unique batch identifier |
+| operations | `HSTOperation[]` | Operations included in this batch |
+| reversible | `boolean` | Whether the entire batch can be undone |
+| timestamp | `Date` | When the batch was created |
 
 ### CellContext
 
@@ -485,11 +487,11 @@ export interface CrossTabMessage {
 
 | Property | Type | Description |
 |----------|------|-------------|
-| clientId | `string` |  |
-| operation? | `HSTOperation` |  |
-| operations? | `HSTOperation[]` |  |
-| timestamp | `Date` |  |
-| type | `CrossTabMessageType` |  |
+| clientId | `string` | Identifier of the client/tab sending the message |
+| operation? | `HSTOperation` | Single operation for operation/undo/redo messages |
+| operations? | `HSTOperation[]` | Multiple operations for sync messages |
+| timestamp | `Date` | When the message was sent |
+| type | `CrossTabMessageType` | Type of cross-tab message |
 
 ### FieldChangeContext
 
@@ -821,13 +823,13 @@ export interface OperationLogSnapshot {
 
 | Property | Type | Description |
 |----------|------|-------------|
-| currentIndex | `number` |  |
-| irreversibleOperations | `number` |  |
-| newestOperation? | `Date` |  |
-| oldestOperation? | `Date` |  |
-| operations | `HSTOperation[]` |  |
-| reversibleOperations | `number` |  |
-| totalOperations | `number` |  |
+| currentIndex | `number` | Current operation index in the history |
+| irreversibleOperations | `number` | Number of operations that cannot be undone |
+| newestOperation? | `Date` | Timestamp of the newest operation |
+| oldestOperation? | `Date` | Timestamp of the oldest operation |
+| operations | `HSTOperation[]` | All operations in the log |
+| reversibleOperations | `number` | Number of operations that can be undone |
+| totalOperations | `number` | Total number of operations |
 
 ### RouteContext
 
@@ -923,7 +925,7 @@ export interface TableColumn {
 | name | `string` | The key of the column. This is used to identify the column in the table. |
 | originalIndex? | `number` | The original column index for the Gantt bar, excluding any pinned columns. This is evaluated automatically while rendering the table. Only applicable for Gantt tables. |
 | pinned? | `boolean` | Control whether the column should be pinned to the table. |
-| resizable? | `boolean` |  |
+| resizable? | `boolean` | Control whether the column can be resized by the user. |
 | type? | `string` | `Data` (the column contains text data), `Select` (the column contains a select input), `Date` (the column contains a date input), `component` (the column contains a custom component) |
 | width? | `string` | The width of the column. This can be a number (in pixels) or a string (in CSS units). |
 
@@ -1177,13 +1179,14 @@ export type BaseSchema = {
 
 ### BaseStonecropReturn
 
-Base Stonecrop composable return type
+Base Stonecrop composable return type - includes operation log functionality
 
 **Definition:**
 
 ```typescript
 export type BaseStonecropReturn = {
     stonecrop: Ref<Stonecrop | undefined>;
+    operationLog: OperationLogAPI;
 };
 ```
 
@@ -1437,6 +1440,42 @@ export type MutableDoctype = {
 };
 ```
 
+### OperationLogAPI
+
+Operation Log API - nested object containing all operation log functionality
+
+**Definition:**
+
+```typescript
+export type OperationLogAPI = {
+    operations: Ref<HSTOperation[]>;
+    currentIndex: Ref<number>;
+    undoRedoState: ComputedRef<{
+        canUndo: boolean;
+        canRedo: boolean;
+        undoCount: number;
+        redoCount: number;
+        currentIndex: number;
+    }>;
+    canUndo: ComputedRef<boolean>;
+    canRedo: ComputedRef<boolean>;
+    undoCount: ComputedRef<number>;
+    redoCount: ComputedRef<number>;
+    undo: (hstStore: HSTNode) => boolean;
+    redo: (hstStore: HSTNode) => boolean;
+    startBatch: () => void;
+    commitBatch: (description?: string) => string | null;
+    cancelBatch: () => void;
+    clear: () => void;
+    getOperationsFor: (doctype: string, recordId?: string) => HSTOperation[];
+    getSnapshot: () => OperationLogSnapshot;
+    createSyncDelta: () => SyncDelta;
+    applySyncDelta: (delta: SyncDelta) => void;
+    markIrreversible: (operationId: string, reason: string) => void;
+    configure: (options: Partial<OperationLogConfig>) => void;
+};
+```
+
 ### OperationSource
 
 Operation source - where the change originated
@@ -1670,19 +1709,19 @@ addDoctype(doctype: DoctypeMeta): void
 
 ### Stonecrop
 
-Main Stonecrop class with HST integration
+Main Stonecrop class with HST integration and built-in Operation Log
 
 **Constructor:**
 
 ```typescript
-new Stonecrop(registry: Registry)
+new Stonecrop(registry: Registry, operationLogConfig: Partial<OperationLogConfig>)
 ```
 
 **Properties:**
 
 | Property | Type | Description |
 |----------|------|-------------|
-| registry | `Registry` |  |
+| registry | `Registry` | The registry instance containing all doctype definitions |
 
 **Methods:**
 

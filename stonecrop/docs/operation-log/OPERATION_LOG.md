@@ -38,10 +38,28 @@ The HST Operation Log is a global Pinia-based store that tracks all HST mutation
 ### Basic Setup
 
 ```typescript
-import { useOperationLog, useStonecrop } from '@stonecrop/stonecrop'
+import { useStonecrop } from '@stonecrop/stonecrop'
 
-const { stonecrop, hstStore } = useStonecrop({ doctype, recordId })
-const { undo, redo, canUndo, canRedo, configure } = useOperationLog()
+// Single composable with HST and operation log
+const {
+  stonecrop,
+  hstStore,
+  formData,
+  provideHSTPath,
+  handleHSTChange,
+  operationLog  // All operation log functionality nested here
+} = useStonecrop({ doctype, recordId })
+
+// Destructure what you need from operationLog
+const {
+  undo,
+  redo,
+  canUndo,
+  canRedo,
+  configure,
+  operations,
+  currentIndex
+} = operationLog
 
 // Configure the operation log
 configure({
@@ -66,12 +84,12 @@ if (canRedo.value) {
 Keyboard shortcuts use VueUse's `useMagicKeys` composable for better reliability and cross-platform support.
 
 ```typescript
-import { useUndoRedoShortcuts, useStonecrop } from '@stonecrop/stonecrop'
+import { useStonecrop } from '@stonecrop/stonecrop'
 
-const { hstStore } = useStonecrop({ doctype, recordId })
+const { hstStore, operationLog } = useStonecrop({ doctype, recordId })
 
-// Setup is now automatic - just call the composable
-useUndoRedoShortcuts(hstStore.value)
+// Setup keyboard shortcuts from operation log
+operationLog.setupUndoRedoShortcuts(hstStore.value)
 
 // Keyboard shortcuts are automatically active:
 // - Ctrl+Z / Cmd+Z = undo
@@ -79,18 +97,18 @@ useUndoRedoShortcuts(hstStore.value)
 // - Ctrl+Y = redo (Windows/Linux)
 
 // Optionally disable shortcuts
-useUndoRedoShortcuts(hstStore.value, false)
+operationLog.setupUndoRedoShortcuts(hstStore.value, false)
 ```
 
 ### Batch Operations
 
 ```typescript
-import { withBatch, useStonecrop } from '@stonecrop/stonecrop'
+import { useStonecrop } from '@stonecrop/stonecrop'
 
-const { hstStore } = useStonecrop({ doctype, recordId })
+const { hstStore, operationLog } = useStonecrop({ doctype, recordId })
 
 // All operations in the batch are treated as a single undo/redo unit
-const batchId = await withBatch(() => {
+const batchId = await operationLog.withBatch(() => {
   hstStore.value.set('task.123.title', 'New Title')
   hstStore.value.set('task.123.status', 'active')
   hstStore.value.set('task.123.priority', 'high')
@@ -183,9 +201,11 @@ registerTransitionAction('COMMIT_INVOICE', async (context) => {
 Cross-tab sync is enabled by default and uses the `BroadcastChannel` API:
 
 ```typescript
-const { configure } = useOperationLog()
+import { useStonecrop } from '@stonecrop/stonecrop'
 
-configure({
+const { operationLog } = useStonecrop({ doctype, recordId })
+
+operationLog.configure({
   enableCrossTabSync: true  // Default: true
 })
 
@@ -196,30 +216,34 @@ configure({
 ### Server Synchronization
 
 ```typescript
-const { configure, createSyncDelta, applySyncDelta } = useOperationLog()
+import { useStonecrop } from '@stonecrop/stonecrop'
 
-configure({
+const { operationLog } = useStonecrop({ doctype, recordId })
+
+operationLog.configure({
   enableServerSync: true,
   serverSyncEndpoint: '/api/sync',
   autoSyncInterval: 30000  // Sync every 30 seconds
 })
 
 // Manual sync
-const delta = createSyncDelta()
+const delta = operationLog.createSyncDelta()
 const response = await fetch('/api/sync', {
   method: 'POST',
   body: JSON.stringify(delta)
 })
 const serverDelta = await response.json()
-applySyncDelta(serverDelta)
+operationLog.applySyncDelta(serverDelta)
 ```
 
 ### Persistence
 
 ```typescript
-const { configure } = useOperationLog()
+import { useStonecrop } from '@stonecrop/stonecrop'
 
-configure({
+const { operationLog } = useStonecrop({ doctype, recordId })
+
+operationLog.configure({
   enablePersistence: true,
   persistenceKeyPrefix: 'stonecrop-ops'
 })
@@ -231,9 +255,11 @@ configure({
 ### Advanced: Operation Filtering
 
 ```typescript
-const { configure } = useOperationLog()
+import { useStonecrop } from '@stonecrop/stonecrop'
 
-configure({
+const { operationLog } = useStonecrop({ doctype, recordId })
+
+operationLog.configure({
   operationFilter: (operation) => {
     // Only track operations for specific doctypes
     return ['task', 'project', 'invoice'].includes(operation.doctype)
@@ -244,16 +270,18 @@ configure({
 ### Debugging
 
 ```typescript
-const { getSnapshot, operations } = useOperationLog()
+import { useStonecrop } from '@stonecrop/stonecrop'
+
+const { operationLog } = useStonecrop({ doctype, recordId })
 
 // Get a snapshot for debugging
-const snapshot = getSnapshot()
+const snapshot = operationLog.getSnapshot()
 console.log('Total operations:', snapshot.totalOperations)
 console.log('Reversible:', snapshot.reversibleOperations)
 console.log('Irreversible:', snapshot.irreversibleOperations)
 
 // Access raw operations array
-console.log('All operations:', operations.value)
+console.log('All operations:', operationLog.operations.value)
 ```
 
 ## Configuration Options
@@ -294,10 +322,12 @@ registerGlobalAction('sendEmail', async (context) => {
 Group related field changes into batches:
 
 ```typescript
-await withBatch(() => {
-  store.set('invoice.123.status', 'paid')
-  store.set('invoice.123.paidDate', new Date())
-  store.set('invoice.123.paymentMethod', 'credit_card')
+const { hstStore, operationLog } = useStonecrop({ doctype, recordId })
+
+await operationLog.withBatch(() => {
+  hstStore.value.set('invoice.123.status', 'paid')
+  hstStore.value.set('invoice.123.paidDate', new Date())
+  hstStore.value.set('invoice.123.paymentMethod', 'credit_card')
 }, 'Mark invoice as paid')
 ```
 
@@ -306,7 +336,9 @@ await withBatch(() => {
 Configure appropriate limits based on memory constraints:
 
 ```typescript
-configure({
+const { operationLog } = useStonecrop({ doctype, recordId })
+
+operationLog.configure({
   maxOperations: 50,  // Keep last 50 operations
   operationFilter: (op) => {
     // Only track user-initiated changes
@@ -320,7 +352,9 @@ configure({
 When syncing across tabs or with server:
 
 ```typescript
-configure({
+const { operationLog } = useStonecrop({ doctype, recordId })
+
+operationLog.configure({
   conflictStrategy: 'latest-wins'  // or 'manual' or 'merge'
 })
 ```
