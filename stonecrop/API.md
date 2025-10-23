@@ -18,9 +18,9 @@ declare function createHST(target: any, doctype: string, parentDoctype?: string)
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| target | `any` |  |
-| doctype | `string` |  |
-| parentDoctype | `string` |  |
+| target | `any` | The target object to wrap with HST functionality |
+| doctype | `string` | The document type identifier |
+| parentDoctype | `string` | Optional parent document type identifier |
 
 ### getGlobalTriggerEngine
 
@@ -36,7 +36,7 @@ export declare function getGlobalTriggerEngine(options?: FieldTriggerOptions): F
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| options | `FieldTriggerOptions` |  |
+| options | `FieldTriggerOptions` | Optional configuration for the field trigger engine |
 
 ### markOperationIrreversible
 
@@ -52,8 +52,8 @@ export declare function markOperationIrreversible(operationId: string | undefine
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| operationId | `string \| undefined` |  |
-| reason | `string` |  |
+| operationId | `string \| undefined` | The ID of the operation to mark as irreversible |
+| reason | `string` | Human-readable reason why the operation cannot be undone |
 
 ### registerGlobalAction
 
@@ -69,8 +69,8 @@ export declare function registerGlobalAction(name: string, fn: FieldActionFuncti
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| name | `string` |  |
-| fn | `FieldActionFunction` |  |
+| name | `string` | The name of the action to register |
+| fn | `FieldActionFunction` | The action function to execute when the trigger fires |
 
 ### registerTransitionAction
 
@@ -86,8 +86,8 @@ export declare function registerTransitionAction(name: string, fn: TransitionAct
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| name | `string` |  |
-| fn | `TransitionActionFunction` |  |
+| name | `string` | The name of the transition action to register |
+| fn | `TransitionActionFunction` | The transition action function to execute |
 
 ### setFieldRollback
 
@@ -103,9 +103,9 @@ export declare function setFieldRollback(doctype: string, fieldname: string, ena
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| doctype | `string` |  |
-| fieldname | `string` |  |
-| enableRollback | `boolean` |  |
+| doctype | `string` | The doctype name |
+| fieldname | `string` | The field name |
+| enableRollback | `boolean` | Whether to enable automatic rollback for this field |
 
 ### triggerTransition
 
@@ -127,9 +127,9 @@ export declare function triggerTransition(doctype: string, transition: string, o
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| doctype | `string` |  |
-| transition | `string` |  |
-| options | `{ recordId?: string; currentState?: string; targetState?: string; fsmContext?: Record<string, any>; path?: string; }` |  |
+| doctype | `string` | The doctype name |
+| transition | `string` | The XState transition name to trigger |
+| options | `{ recordId?: string; currentState?: string; targetState?: string; fsmContext?: Record<string, any>; path?: string; }` | Optional configuration for the transition |
 
 ### useOperationLog
 
@@ -205,7 +205,7 @@ export declare function useOperationLog(config?: Partial<OperationLogConfig>): {
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| config | `Partial<OperationLogConfig>` |  |
+| config | `Partial<OperationLogConfig>` | Optional configuration for the operation log |
 
 ### useStonecrop
 
@@ -235,7 +235,7 @@ export declare function useStonecrop(options: {
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| options | `{ registry?: Registry; doctype: DoctypeMeta; recordId?: string; }` |  |
+| options | `{ registry?: Registry; doctype: DoctypeMeta; recordId?: string; }` | Configuration with doctype and optional recordId |
 
 ### useUndoRedoShortcuts
 
@@ -251,8 +251,8 @@ export declare function useUndoRedoShortcuts(hstStore: HSTNode, enabled?: boolea
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| hstStore | `HSTNode` |  |
-| enabled | `boolean` |  |
+| hstStore | `HSTNode` | The HST store to operate on |
+| enabled | `boolean` | Whether shortcuts are enabled (default: true) |
 
 ### withBatch
 
@@ -268,8 +268,8 @@ export declare function withBatch<T>(fn: () => T | Promise<T>, description?: str
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| fn | `() => T \| Promise<T>` |  |
-| description | `string` |  |
+| fn | `() => T \| Promise<T>` | The function to execute within a batch |
+| description | `string` | Optional description for the batch |
 
 ## Interfaces
 
@@ -1565,6 +1565,16 @@ Doctype Meta class
 new DoctypeMeta(doctype: string, schema: ImmutableDoctype['schema'], workflow: ImmutableDoctype['workflow'], actions: ImmutableDoctype['actions'], component: Component)
 ```
 
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `string` | The doctype name |
+| schema | `ImmutableDoctype['schema']` | The doctype schema definition |
+| workflow | `ImmutableDoctype['workflow']` | The doctype workflow configuration (XState machine) |
+| actions | `ImmutableDoctype['actions']` | The doctype actions and field triggers |
+| component | `Component` | Optional Vue component for rendering the doctype |
+
 **Properties:**
 
 | Property | Type | Description |
@@ -1586,6 +1596,12 @@ Field trigger execution engine integrated with Registry Singleton pattern follow
 new FieldTriggerEngine(options: FieldTriggerOptions)
 ```
 
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| options | `FieldTriggerOptions` | Configuration options for the field trigger engine |
+
 **Properties:**
 
 | Property | Type | Description |
@@ -1605,6 +1621,13 @@ executeFieldTriggers(context: FieldChangeContext, options: {
     }): Promise<FieldTriggerExecutionResult>
 ```
 
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| context | `FieldChangeContext` | The field change context |
+| options | `{ timeout?: number; enableRollback?: boolean; }` | Execution options (timeout and enableRollback) |
+
 #### executeTransitionActions
 
 Execute XState transition actions Similar to field triggers but specifically for FSM state transitions
@@ -1615,6 +1638,13 @@ executeTransitionActions(context: TransitionChangeContext, options: {
     }): Promise<TransitionExecutionResult[]>
 ```
 
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| context | `TransitionChangeContext` | The transition change context |
+| options | `{ timeout?: number; }` | Execution options (timeout) |
+
 #### registerAction
 
 Register a global action function
@@ -1622,6 +1652,13 @@ Register a global action function
 ```typescript
 registerAction(name: string, fn: FieldActionFunction): void
 ```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| name | `string` | The name of the action |
+| fn | `FieldActionFunction` | The action function |
 
 #### registerDoctypeActions
 
@@ -1631,6 +1668,13 @@ Register actions from a doctype - both regular actions and field triggers Separa
 registerDoctypeActions(doctype: string, actions: ImmutableMap<string, string[]> | Map<string, string[]> | Record<string, string[]> | undefined): void
 ```
 
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `string` | The doctype name |
+| actions | `ImmutableMap<string, string[]> \| Map<string, string[]> \| Record<string, string[]> \| undefined` | The actions to register (supports Immutable Map, Map, or plain object) |
+
 #### registerTransitionAction
 
 Register a global XState transition action function
@@ -1639,6 +1683,13 @@ Register a global XState transition action function
 registerTransitionAction(name: string, fn: TransitionActionFunction): void
 ```
 
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| name | `string` | The name of the transition action |
+| fn | `TransitionActionFunction` | The transition action function |
+
 #### setFieldRollback
 
 Configure rollback behavior for a specific field trigger
@@ -1646,6 +1697,14 @@ Configure rollback behavior for a specific field trigger
 ```typescript
 setFieldRollback(doctype: string, fieldname: string, enableRollback: boolean): void
 ```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `string` | The doctype name |
+| fieldname | `string` | The field name |
+| enableRollback | `boolean` | Whether to enable rollback |
 
 ### HST
 
@@ -1660,6 +1719,12 @@ Helper method to get doctype metadata from the registry
 ```typescript
 getDoctypeMeta(doctype: string): any
 ```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `string` | The name of the doctype to retrieve metadata for |
 
 #### getInstance
 
@@ -1687,6 +1752,13 @@ Stonecrop Registry class
 new Registry(router: Router, getMeta: (routeContext: RouteContext) => DoctypeMeta | Promise<DoctypeMeta>)
 ```
 
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| router | `Router` | Optional Vue router instance for route management |
+| getMeta | `(routeContext: RouteContext) => DoctypeMeta \| Promise<DoctypeMeta>` | Optional function to fetch doctype metadata from an API |
+
 **Properties:**
 
 | Property | Type | Description |
@@ -1707,6 +1779,12 @@ Get doctype metadata
 addDoctype(doctype: DoctypeMeta): void
 ```
 
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `DoctypeMeta` | The doctype to fetch metadata for |
+
 ### Stonecrop
 
 Main Stonecrop class with HST integration and built-in Operation Log
@@ -1716,6 +1794,13 @@ Main Stonecrop class with HST integration and built-in Operation Log
 ```typescript
 new Stonecrop(registry: Registry, operationLogConfig: Partial<OperationLogConfig>)
 ```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| registry | `Registry` | The Registry instance containing doctype definitions |
+| operationLogConfig | `Partial<OperationLogConfig>` | Optional configuration for the operation log |
 
 **Properties:**
 
@@ -1733,6 +1818,14 @@ Add a record to the store
 addRecord(doctype: string | DoctypeMeta, recordId: string, recordData: any): void
 ```
 
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `string \| DoctypeMeta` | The doctype |
+| recordId | `string` | The record ID |
+| recordData | `any` | The record data |
+
 #### clearRecords
 
 Clear all records for a doctype
@@ -1740,6 +1833,12 @@ Clear all records for a doctype
 ```typescript
 clearRecords(doctype: string | DoctypeMeta): void
 ```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `string \| DoctypeMeta` | The doctype |
 
 #### getMeta
 
@@ -1749,6 +1848,12 @@ Get doctype metadata from the registry
 getMeta(context: RouteContext): Promise<any>
 ```
 
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| context | `RouteContext` | The route context |
+
 #### getRecord
 
 Get single record from server (maintains compatibility)
@@ -1756,6 +1861,13 @@ Get single record from server (maintains compatibility)
 ```typescript
 getRecord(doctype: DoctypeMeta, recordId: string): Promise<void>
 ```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `DoctypeMeta` | The doctype |
+| recordId | `string` | The record ID |
 
 #### getRecordById
 
@@ -1765,6 +1877,13 @@ Get a specific record
 getRecordById(doctype: string | DoctypeMeta, recordId: string): HSTNode | undefined
 ```
 
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `string \| DoctypeMeta` | The doctype |
+| recordId | `string` | The record ID |
+
 #### getRecordIds
 
 Get all record IDs for a doctype
@@ -1773,6 +1892,12 @@ Get all record IDs for a doctype
 getRecordIds(doctype: string | DoctypeMeta): string[]
 ```
 
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `string \| DoctypeMeta` | The doctype |
+
 #### getRecords
 
 Get records from server (maintains compatibility)
@@ -1780,6 +1905,12 @@ Get records from server (maintains compatibility)
 ```typescript
 getRecords(doctype: DoctypeMeta): Promise<void>
 ```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `DoctypeMeta` | The doctype |
 
 #### getStore
 
@@ -1797,6 +1928,12 @@ Get records hash for a doctype
 records(doctype: string | DoctypeMeta): HSTNode
 ```
 
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `string \| DoctypeMeta` | The doctype to get records for |
+
 #### removeRecord
 
 Remove a record from the store
@@ -1804,6 +1941,13 @@ Remove a record from the store
 ```typescript
 removeRecord(doctype: string | DoctypeMeta, recordId: string): void
 ```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `string \| DoctypeMeta` | The doctype |
+| recordId | `string` | The record ID |
 
 #### runAction
 
@@ -1813,6 +1957,14 @@ Run action on doctype (maintains compatibility)
 runAction(_doctype: DoctypeMeta, _action: string, _args: any[]): void
 ```
 
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| _doctype | `DoctypeMeta` | The doctype |
+| _action | `string` | The action to run |
+| _args | `any[]` | Action arguments |
+
 #### setup
 
 Setup method for doctype initialization
@@ -1820,6 +1972,12 @@ Setup method for doctype initialization
 ```typescript
 setup(doctype: DoctypeMeta): void
 ```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `DoctypeMeta` | The doctype to setup |
 
 ## Variables
 

@@ -17,6 +17,11 @@ export class Stonecrop {
 	/** The registry instance containing all doctype definitions */
 	readonly registry: Registry
 
+	/**
+	 * Creates a new Stonecrop instance with HST integration
+	 * @param registry - The Registry instance containing doctype definitions
+	 * @param operationLogConfig - Optional configuration for the operation log
+	 */
 	constructor(registry: Registry, operationLogConfig?: Partial<OperationLogConfig>) {
 		this.registry = registry
 

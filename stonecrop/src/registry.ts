@@ -33,6 +33,11 @@ export default class Registry {
 	 */
 	readonly router?: Router
 
+	/**
+	 * Creates a new Registry instance (singleton pattern)
+	 * @param router - Optional Vue router instance for route management
+	 * @param getMeta - Optional function to fetch doctype metadata from an API
+	 */
 	constructor(router?: Router, getMeta?: (routeContext: RouteContext) => DoctypeMeta | Promise<DoctypeMeta>) {
 		if (Registry._root) {
 			return Registry._root
