@@ -7,6 +7,7 @@
 				@keydown="getKeyInput($event, 'hours')"
 				@blur="setHour"
 				@keyup.enter="setHour"
+				@focus="focusInput"
 				ref="hours-field"
 				class="aform_input-field hours"
 				maxLength="2"
@@ -17,6 +18,7 @@
 				@keydown="getKeyInput($event, 'minutes')"
 				@blur="setMinutes"
 				@keyup.enter="setMinutes"
+				@focus="focusInput"
 				ref="minutes-field"
 				class="aform_input-field minutes"
 				maxLength="2"
@@ -27,11 +29,20 @@
 				@keydown="getKeyInput($event, 'seconds')"
 				@blur="setSeconds"
 				@keyup.enter="setSeconds"
+				@focus="focusInput"
 				ref="seconds-field"
 				class="aform_input-field seconds"
 				maxLength="2"
 				:value="getSeconds()" />
-			<select class="aform-select meridiem-selector" ref="meridiem-selector" v-model="time.meridiem">
+			<select
+				class="aform-select meridiem-selector"
+				ref="meridiem-selector"
+				v-model="time.meridiem"
+				@focus="
+					() => {
+						pasting = false
+					}
+				">
 				<option value="AM">AM</option>
 				<option value="PM">PM</option>
 			</select>
@@ -50,6 +61,8 @@ const props = defineProps({
 		default: false,
 	},
 })
+
+let pasting = false
 
 const time = reactive({
 	hours: 12,
@@ -88,7 +101,11 @@ watch(time, () => {
 		time.hours = 12
 	}
 })
+const focusInput = event => {
+	event.target.select()
+}
 const pasteInput = event => {
+	pasting = true
 	let clipboardData, pastedData
 
 	event.stopPropagation()
@@ -119,7 +136,6 @@ const pasteInput = event => {
 	time.seconds = Number(time_units[2])
 	time.minutes = Number(time_units[1])
 	time.hours = Number(time_units[0])
-	console.log(time.hours)
 
 	meridiemSelector.value.focus()
 }
@@ -138,12 +154,13 @@ const getKeyInput = (event, unit) => {
 	}
 }
 
+//bug with computed not updating when a property of time updates, made these methods for now as a workaround
+
 // const getHour = computed(()=>{
-//   console.log(time.hours)
+
 //   return time.hours>9?String(time.hours):"0"+String(time.hours)
 // })
 const getHour = () => {
-	console.log(time.hours)
 	return time.hours > 9 ? String(time.hours) : '0' + String(time.hours)
 }
 const getMinutes = () => {
@@ -154,9 +171,11 @@ const getSeconds = () => {
 }
 
 const setHour = event => {
-	time.hours = Number(event.target.value)
-	if (time.hours >= 12) time.hours = 12
-	else if (time.hours <= 1) time.hours = 1
+	if (!pasting) {
+		time.hours = Number(event.target.value)
+		if (time.hours >= 12) time.hours = 12
+		else if (time.hours <= 1) time.hours = 1
+	}
 }
 const setMinutes = event => {
 	let val = Number(event.target.value)
