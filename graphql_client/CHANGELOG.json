@@ -2,6 +2,18 @@
   "name": "@stonecrop/graphql-client",
   "entries": [
     {
+      "version": "0.4.36",
+      "tag": "@stonecrop/graphql-client_v0.4.36",
+      "date": "Mon, 27 Oct 2025 18:08:26 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "bump dependencies"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.4.35",
       "tag": "@stonecrop/graphql-client_v0.4.35",
       "date": "Wed, 24 Sep 2025 13:45:35 GMT",
