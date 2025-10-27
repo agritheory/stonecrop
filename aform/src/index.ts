@@ -7,6 +7,7 @@ import AComboBox from './components/form/AComboBox.vue'
 import ADate from './components/form/ADate.vue'
 import ADropdown from './components/form/ADropdown.vue'
 import ADatePicker from './components/form/ADatePicker.vue'
+import ADateTime from './components/form/ADateTime.vue'
 import AFieldset from './components/form/AFieldset.vue'
 import AFileAttach from './components/form/AFileAttach.vue'
 import AForm from './components/AForm.vue'
@@ -27,6 +28,7 @@ function install(app: App /* options */) {
 	app.component('ADate', ADate)
 	app.component('ADropdown', ADropdown)
 	app.component('ADatePicker', ADatePicker)
+	app.component('ADateTime', ADateTime)
 	app.component('AFieldset', AFieldset)
 	app.component('AFileAttach', AFileAttach)
 	app.component('AForm', AForm)
@@ -40,6 +42,7 @@ export {
 	ADate,
 	ADropdown,
 	ADatePicker,
+	ADateTime,
 	AFieldset,
 	AFileAttach,
 	AForm,

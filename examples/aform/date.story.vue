@@ -1,6 +1,8 @@
 <template>
 	<Story>
 		<Variant title="Date Picker">
+			<h3>DateTime Component</h3>
+			<ADateTime />
 			<h3>Date with Range Selection</h3>
 			<ADatePicker select-range />
 
