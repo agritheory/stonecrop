@@ -9,9 +9,9 @@ Always reference `.github/ARCHITECTURE.md` in the repository for comprehensive a
 ## Core Technology Stack
 - **Framework**: Vue.js 3.5+ with Composition API
 - **State Management**: Pinia 3.0+ with plugins (shared-state, undo, xstate)
-- **Workflow Engine**: XState 4.38+ for finite state machines
-- **Monorepo**: Rush.js 5.155+ with pnpm 9.15+
-- **TypeScript**: 5.8+ with strict typing
+- **Workflow Engine**: XState 5.20+ for finite state machines
+- **Monorepo**: Rush.js 5.155+ with pnpm 10.18+
+- **TypeScript**: 5.9+ with strict typing
 - **Build System**: Vite + Heft for compilation and bundling
 - **Testing**: Vitest for unit testing
 - **Documentation**: Custom API documentation generator using API Extractor Model + Histoire.js for component stories

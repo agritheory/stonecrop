@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/graphql-client",
+      "comment": "bump dependencies",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/graphql-client"
+}

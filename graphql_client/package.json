@@ -61,15 +61,15 @@
 		"eslint-plugin-vue": "^9.33.0",
 		"miragejs": "^0.1.48",
 		"stonecrop-rig": "workspace:*",
-		"typescript": "^5.8.3",
-		"vite": "^7.0.6",
-		"vue": "^3.5.18",
-		"vue-router": "^4.5.1"
+		"typescript": "^5.9.3",
+		"vite": "^7.1.1",
+		"vue": "^3.5.22",
+		"vue-router": "^4.6.3"
 	},
 	"publishConfig": {
 		"access": "public"
 	},
 	"engines": {
-		"node": ">=20.11.0"
+		"node": ">=22.5.0"
 	}
 }
