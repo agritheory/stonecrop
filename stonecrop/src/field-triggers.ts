@@ -1,5 +1,6 @@
 /* eslint-disable no-new-func, no-eval */
 import type { Map as ImmutableMap } from 'immutable'
+import { useOperationLogStore } from './stores/operation-log'
 import type {
 	FieldActionFunction,
 	FieldChangeContext,
@@ -29,6 +30,10 @@ export class FieldTriggerEngine {
 	private globalActions = new Map<string, FieldActionFunction>() // action name -> function
 	private globalTransitionActions = new Map<string, TransitionActionFunction>() // transition action name -> function
 
+	/**
+	 * Creates a new FieldTriggerEngine instance (singleton pattern)
+	 * @param options - Configuration options for the field trigger engine
+	 */
 	constructor(options: FieldTriggerOptions = {}) {
 		if (FieldTriggerEngine._root) {
 			return FieldTriggerEngine._root
@@ -44,6 +49,8 @@ export class FieldTriggerEngine {
 
 	/**
 	 * Register a global action function
+	 * @param name - The name of the action
+	 * @param fn - The action function
 	 */
 	registerAction(name: string, fn: FieldActionFunction): void {
 		this.globalActions.set(name, fn)
@@ -51,6 +58,8 @@ export class FieldTriggerEngine {
 
 	/**
 	 * Register a global XState transition action function
+	 * @param name - The name of the transition action
+	 * @param fn - The transition action function
 	 */
 	registerTransitionAction(name: string, fn: TransitionActionFunction): void {
 		this.globalTransitionActions.set(name, fn)
@@ -58,6 +67,9 @@ export class FieldTriggerEngine {
 
 	/**
 	 * Configure rollback behavior for a specific field trigger
+	 * @param doctype - The doctype name
+	 * @param fieldname - The field name
+	 * @param enableRollback - Whether to enable rollback
 	 */
 	setFieldRollback(doctype: string, fieldname: string, enableRollback: boolean): void {
 		if (!this.fieldRollbackConfig.has(doctype)) {
@@ -76,6 +88,8 @@ export class FieldTriggerEngine {
 	/**
 	 * Register actions from a doctype - both regular actions and field triggers
 	 * Separates XState transitions (uppercase) from field triggers (lowercase)
+	 * @param doctype - The doctype name
+	 * @param actions - The actions to register (supports Immutable Map, Map, or plain object)
 	 */
 	registerDoctypeActions(
 		doctype: string,
@@ -140,6 +154,8 @@ export class FieldTriggerEngine {
 
 	/**
 	 * Execute field triggers for a changed field
+	 * @param context - The field change context
+	 * @param options - Execution options (timeout and enableRollback)
 	 */
 	async executeFieldTriggers(
 		context: FieldChangeContext,
@@ -240,6 +256,8 @@ export class FieldTriggerEngine {
 	/**
 	 * Execute XState transition actions
 	 * Similar to field triggers but specifically for FSM state transitions
+	 * @param context - The transition change context
+	 * @param options - Execution options (timeout)
 	 */
 	async executeTransitionActions(
 		context: TransitionChangeContext,
@@ -554,6 +572,7 @@ export class FieldTriggerEngine {
 
 /**
  * Get or create the global field trigger engine singleton
+ * @param options - Optional configuration for the field trigger engine
  * @public
  */
 export function getGlobalTriggerEngine(options?: FieldTriggerOptions): FieldTriggerEngine {
@@ -562,6 +581,8 @@ export function getGlobalTriggerEngine(options?: FieldTriggerOptions): FieldTrig
 
 /**
  * Register a global action function that can be used in field triggers
+ * @param name - The name of the action to register
+ * @param fn - The action function to execute when the trigger fires
  * @public
  */
 export function registerGlobalAction(name: string, fn: FieldActionFunction): void {
@@ -571,6 +592,8 @@ export function registerGlobalAction(name: string, fn: FieldActionFunction): voi
 
 /**
  * Register a global XState transition action function
+ * @param name - The name of the transition action to register
+ * @param fn - The transition action function to execute
  * @public
  */
 export function registerTransitionAction(name: string, fn: TransitionActionFunction): void {
@@ -580,6 +603,9 @@ export function registerTransitionAction(name: string, fn: TransitionActionFunct
 
 /**
  * Configure rollback behavior for a specific field trigger
+ * @param doctype - The doctype name
+ * @param fieldname - The field name
+ * @param enableRollback - Whether to enable automatic rollback for this field
  * @public
  */
 export function setFieldRollback(doctype: string, fieldname: string, enableRollback: boolean): void {
@@ -590,6 +616,9 @@ export function setFieldRollback(doctype: string, fieldname: string, enableRollb
 /**
  * Manually trigger an XState transition for a specific doctype/record
  * This can be called directly when you need to execute transition actions programmatically
+ * @param doctype - The doctype name
+ * @param transition - The XState transition name to trigger
+ * @param options - Optional configuration for the transition
  * @public
  */
 export async function triggerTransition(
@@ -621,4 +650,22 @@ export async function triggerTransition(
 	}
 
 	return await engine.executeTransitionActions(context)
+}
+
+/**
+ * Mark a specific operation as irreversible.
+ * Used to prevent undo of critical operations like publishing or deletion.
+ * @param operationId - The ID of the operation to mark as irreversible
+ * @param reason - Human-readable reason why the operation cannot be undone
+ * @public
+ */
+export function markOperationIrreversible(operationId: string | undefined, reason: string): void {
+	if (!operationId) return
+
+	try {
+		const store = useOperationLogStore()
+		store.markIrreversible(operationId, reason)
+	} catch {
+		// Operation log is optional
+	}
 }

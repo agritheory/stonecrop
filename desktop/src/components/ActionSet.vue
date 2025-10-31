@@ -39,7 +39,11 @@
 		</div>
 		<div style="margin-right: 30px"></div>
 		<div class="action-element" v-for="(el, index) in elements" :key="el.label">
-			<button v-if="el.type == 'button'" @click="handleClick(el.action, el.label)" class="button-default">
+			<button
+				v-if="el.type == 'button'"
+				@click="handleClick(el.action, el.label)"
+				:disabled="el.disabled"
+				class="button-default">
 				{{ el.label }}
 			</button>
 			<div v-if="el.type == 'dropdown'">
@@ -166,6 +170,7 @@ const handleClick = (action: (() => void | Promise<void>) | undefined, label: st
 	flex-direction: row-reverse;
 	background-color: white;
 	overflow: hidden;
+	z-index: 1001; /* Above SheetNav (100) and operation log button (999) */
 }
 
 .action-menu-icon {
@@ -237,13 +242,24 @@ button.button-default:hover {
 	background-color: #f2f2f2;
 }
 
+button.button-default:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+	background-color: #f5f5f5;
+	color: #999;
+}
+
+button.button-default:disabled:hover {
+	background-color: #f5f5f5;
+}
+
 .dropdown-container {
 	position: relative;
 }
 
 .dropdown {
 	position: absolute;
-	left: 0;
+	right: 0;
 	min-width: 200px;
 	box-shadow: 0 0.5rem 1rem rgb(0 0 0 / 18%);
 	border-radius: 10px;

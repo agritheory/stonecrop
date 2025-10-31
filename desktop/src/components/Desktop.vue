@@ -40,11 +40,7 @@ import SheetNav from './SheetNav.vue'
 import CommandPalette from './CommandPalette.vue'
 import type { ActionElements } from '../types'
 
-type Props = {
-	availableDoctypes?: string[]
-}
-
-const { availableDoctypes = [] } = defineProps<Props>()
+const { availableDoctypes = [] } = defineProps<{ availableDoctypes?: string[] }>()
 
 const { stonecrop } = useStonecrop()
 

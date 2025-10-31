@@ -1,22 +1,50 @@
-import Registry from './registry'
 import DoctypeMeta from './doctype'
+import Registry from './registry'
 import { createHST, type HSTNode } from './stores/hst'
+import { useOperationLogStore } from './stores/operation-log'
+import type { OperationLogConfig } from './types/operation-log'
 import type { RouteContext } from './types/registry'
 
 /**
- * Main Stonecrop class with HST integration
+ * Main Stonecrop class with HST integration and built-in Operation Log
  * @public
  */
 export class Stonecrop {
 	private hstStore: HSTNode
+	private _operationLogStore?: ReturnType<typeof useOperationLogStore>
+	private _operationLogConfig?: Partial<OperationLogConfig>
+
+	/** The registry instance containing all doctype definitions */
 	readonly registry: Registry
 
-	constructor(registry: Registry) {
+	/**
+	 * Creates a new Stonecrop instance with HST integration
+	 * @param registry - The Registry instance containing doctype definitions
+	 * @param operationLogConfig - Optional configuration for the operation log
+	 */
+	constructor(registry: Registry, operationLogConfig?: Partial<OperationLogConfig>) {
 		this.registry = registry
+
+		// Store config for lazy initialization
+		this._operationLogConfig = operationLogConfig
 
 		// Initialize HST store with auto-sync to Registry
 		this.initializeHSTStore()
 		this.setupRegistrySync()
+	}
+
+	/**
+	 * Get the operation log store (lazy initialization)
+	 * @internal
+	 */
+	getOperationLogStore() {
+		if (!this._operationLogStore) {
+			this._operationLogStore = useOperationLogStore()
+			if (this._operationLogConfig) {
+				this._operationLogStore.configure(this._operationLogConfig)
+			}
+		}
+		return this._operationLogStore
 	}
 
 	/**
@@ -160,14 +188,43 @@ export class Stonecrop {
 	}
 
 	/**
-	 * Run action on doctype (maintains compatibility)
-	 * @param _doctype - The doctype
-	 * @param _action - The action to run
-	 * @param _args - Action arguments
+	 * Run action on doctype
+	 * Executes the action and logs it to the operation log for audit tracking
+	 * @param doctype - The doctype
+	 * @param action - The action to run
+	 * @param args - Action arguments (typically record IDs)
 	 */
-	runAction(_doctype: DoctypeMeta, _action: string, _args?: any[]): void {
-		// Existing action logic would go here
-		// This maintains compatibility with existing composable usage
+	runAction(doctype: DoctypeMeta, action: string, args?: any[]): void {
+		const registry = this.registry.registry[doctype.slug]
+		const actions = registry?.actions?.get(action)
+		const recordIds = Array.isArray(args) ? args.filter((arg): arg is string => typeof arg === 'string') : undefined
+
+		// Log action execution start
+		const opLogStore = this.getOperationLogStore()
+		let actionResult: 'success' | 'failure' | 'pending' = 'success'
+		let actionError: string | undefined
+
+		try {
+			// Execute action functions
+			if (actions && actions.length > 0) {
+				actions.forEach(actionStr => {
+					try {
+						// eslint-disable-next-line @typescript-eslint/no-implied-eval
+						const actionFn = new Function('args', actionStr)
+						actionFn(args)
+					} catch (error) {
+						actionResult = 'failure'
+						actionError = error instanceof Error ? error.message : 'Unknown error'
+						throw error
+					}
+				})
+			}
+		} catch (error) {
+			// Error already set in inner catch
+		} finally {
+			// Log the action execution to operation log
+			opLogStore.logAction(doctype.doctype, action, recordIds, actionResult, actionError)
+		}
 	}
 
 	/**

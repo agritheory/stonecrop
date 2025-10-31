@@ -1,5 +1,18 @@
 import { getGlobalTriggerEngine } from '../field-triggers'
 import type { FieldChangeContext, TransitionChangeContext } from '../types/field-triggers'
+import { useOperationLogStore } from './operation-log'
+
+/**
+ * Get the operation log store if available
+ */
+function getOperationLogStore() {
+	try {
+		return useOperationLogStore()
+	} catch {
+		// Operation log is optional
+		return null
+	}
+}
 
 /**
  * Core HST Interface - enhanced with tree navigation
@@ -19,8 +32,9 @@ interface HSTNode {
 	 * Sets a value at the specified path
 	 * @param path - The dot-separated path where to set the value
 	 * @param value - The value to set
+	 * @param source - Optional source of the operation (user, system, sync, undo, redo)
 	 */
-	set(path: string, value: any): void
+	set(path: string, value: any, source?: 'user' | 'system' | 'sync' | 'undo' | 'redo'): void
 
 	/**
 	 * Checks if a value exists at the specified path
@@ -259,10 +273,40 @@ class HSTProxy implements HSTNode {
 		return new HSTProxy(value, nodeDoctype, fullPath, this.rootNode, this.parentDoctype)
 	}
 
-	set(path: string, value: any): void {
+	set(path: string, value: any, source: 'user' | 'system' | 'sync' | 'undo' | 'redo' = 'user'): void {
 		// Get current value for change context
 		const fullPath = this.resolvePath(path)
 		const beforeValue = this.has(path) ? this.get(path) : undefined
+
+		// Log operation if not from undo/redo and store is available
+		if (source !== 'undo' && source !== 'redo') {
+			const logStore = getOperationLogStore()
+			if (logStore && typeof logStore.addOperation === 'function') {
+				const pathSegments = fullPath.split('.')
+				const doctype = this.doctype === 'StonecropStore' && pathSegments.length >= 1 ? pathSegments[0] : this.doctype
+				const recordId = pathSegments.length >= 2 ? pathSegments[1] : undefined
+				const fieldname = pathSegments.slice(2).join('.') || pathSegments[pathSegments.length - 1]
+
+				// Detect if this is a DELETE operation (setting to undefined when a value existed)
+				const isDelete = value === undefined && beforeValue !== undefined
+				const operationType: 'set' | 'delete' = isDelete ? 'delete' : 'set'
+
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-call
+				logStore.addOperation(
+					{
+						type: operationType,
+						path: fullPath,
+						fieldname,
+						beforeValue,
+						afterValue: value,
+						doctype,
+						recordId,
+						reversible: true, // Default to reversible, can be changed by field triggers
+					},
+					source
+				)
+			}
+		}
 
 		// Update the value
 		this.updateValue(path, value)
@@ -380,6 +424,31 @@ class HSTProxy implements HSTNode {
 			currentState: context?.currentState,
 			targetState: context?.targetState,
 			fsmContext: context?.fsmContext,
+		}
+
+		// Log FSM transition operation
+		const logStore = getOperationLogStore()
+		if (logStore && typeof logStore.addOperation === 'function') {
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-call
+			logStore.addOperation(
+				{
+					type: 'transition' as const,
+					path: this.parentPath,
+					fieldname: transition,
+					beforeValue: context?.currentState,
+					afterValue: context?.targetState,
+					doctype,
+					recordId,
+					reversible: false, // FSM transitions are generally not reversible
+					metadata: {
+						transition,
+						currentState: context?.currentState,
+						targetState: context?.targetState,
+						fsmContext: context?.fsmContext,
+					},
+				},
+				'user'
+			)
 		}
 
 		// Execute transition actions

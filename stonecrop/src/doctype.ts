@@ -41,9 +41,15 @@ export default class DoctypeMeta {
 	 * @readonly
 	 */
 	readonly component?: Component
-	// TODO: allow different components for different views; probably
-	// should be defined in the schema instead?
 
+	/**
+	 * Creates a new DoctypeMeta instance
+	 * @param doctype - The doctype name
+	 * @param schema - The doctype schema definition
+	 * @param workflow - The doctype workflow configuration (XState machine)
+	 * @param actions - The doctype actions and field triggers
+	 * @param component - Optional Vue component for rendering the doctype
+	 */
 	constructor(
 		doctype: string,
 		schema: ImmutableDoctype['schema'],

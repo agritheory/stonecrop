@@ -4,7 +4,7 @@
 This is the Stonecrop monorepo - a **schema-driven UI framework** with **event-driven workflows** using XState finite state machines and **Hierarchical State Tree (HST)** for advanced state management.
 
 ## Architecture Reference
-Always reference `.github/ARCHITECTURE.md` in the repository for comprehensive architectural understanding before making suggestions or changes.
+Always reference `.github/ARCHITECTURE.md` in the repository for architectural understanding before making suggestions or changes.
 
 ## Core Technology Stack
 - **Framework**: Vue.js 3.5+ with Composition API

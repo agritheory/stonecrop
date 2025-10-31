@@ -2,9 +2,11 @@ export type * from '@stonecrop/aform/types'
 export type * from '@stonecrop/atable/types'
 
 import { useStonecrop } from './composable'
+import { useOperationLog, useUndoRedoShortcuts, withBatch } from './composables/operation-log'
 import DoctypeMeta from './doctype'
 import {
 	getGlobalTriggerEngine,
+	markOperationIrreversible,
 	registerGlobalAction,
 	registerTransitionAction,
 	setFieldRollback,
@@ -14,8 +16,9 @@ import plugin from './plugins'
 import Registry from './registry'
 import { Stonecrop } from './stonecrop'
 import { HST, createHST, type HSTNode } from './stores/hst'
+import { useOperationLogStore } from './stores/operation-log'
 export type * from './types'
-export type { BaseStonecropReturn, HSTChangeData, HSTStonecropReturn } from './composable'
+export type { BaseStonecropReturn, HSTChangeData, HSTStonecropReturn, OperationLogAPI } from './composable'
 export type { FieldTriggerEngine } from './field-triggers'
 export type {
 	FieldChangeContext,
@@ -42,6 +45,12 @@ export {
 	registerTransitionAction,
 	setFieldRollback,
 	triggerTransition,
+	markOperationIrreversible,
+	// Operation log exports
+	useOperationLog,
+	useOperationLogStore,
+	useUndoRedoShortcuts,
+	withBatch,
 }
 
 // Default export is the Vue plugin

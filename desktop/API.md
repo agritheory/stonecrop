@@ -78,6 +78,7 @@ Button elements
 ```typescript
 export type ButtonElement = BaseElement & ElementAction & {
     type: 'button';
+    disabled?: boolean;
 };
 ```
 

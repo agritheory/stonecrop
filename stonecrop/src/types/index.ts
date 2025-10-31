@@ -56,3 +56,4 @@ export type InstallOptions = {
 // Re-export types
 export * from './field-triggers'
 export * from './registry'
+export * from './operation-log'

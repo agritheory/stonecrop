@@ -335,4 +335,4 @@ const breadcrumbs = settingsNode.getBreadcrumbs()  // ['user', 'profile', 'setti
 
 ---
 
-**Note**: This is an active development project with evolving APIs. The architecture supports both prototype development and production applications through its modular design, comprehensive tooling, and the new Hierarchical State Tree (HST) system which provides advanced state management capabilities beyond traditional reactive stores.
+**Note**: This is an active development project with evolving APIs. The architecture supports both prototype development and production applications through its modular design, tooling, and the new Hierarchical State Tree (HST) system which provides advanced state management capabilities beyond traditional reactive stores.

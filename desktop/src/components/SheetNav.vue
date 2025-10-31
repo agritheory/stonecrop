@@ -9,7 +9,7 @@
 				@click="navigateHome"
 				@keydown.enter="navigateHome"
 				:style="{ display: breadcrumbsVisibile ? 'block' : 'none' }">
-				<router-link to="/home" tabindex="0">
+				<router-link to="/" tabindex="0">
 					<svg
 						version="1.1"
 						id="Capa_1"
@@ -120,17 +120,22 @@ footer {
 	bottom: 0px;
 	width: 100%;
 	background-color: transparent;
-	height: 2rem;
+	height: auto; /* Allow footer to grow with content */
+	min-height: 2rem;
 	z-index: 100;
 	text-align: left;
 	font-size: 100%;
 	display: flex;
 	justify-content: right;
-	padding-bottom: 0.2rem;
+	padding-right: 2rem; /* Match view-wrapper horizontal padding */
+	box-sizing: border-box; /* Include padding in width calculation */
 }
 ul {
 	display: flex;
 	flex-direction: row-reverse;
+	margin: 0;
+	padding: 0;
+	list-style: none;
 }
 
 .tabs li {
@@ -144,7 +149,12 @@ ul {
 }
 .tabs a {
 	float: left;
-	padding: 1ch 4ch 4ch 4ch;
+	padding: 0.5rem 1.5rem; /* Reduced padding for reasonable tab height */
+	height: 2.25rem; /* Fixed height for consistency across all tabs */
+	box-sizing: border-box; /* Include padding in height calculation */
+	display: flex;
+	align-items: center;
+	justify-content: center;
 	text-decoration: none;
 	color: black;
 	background: #aaa;
@@ -243,14 +253,16 @@ ul {
 	right: -20px;
 }
 .hidebreadcrumbs a {
-	width: 1ch;
-	min-width: calc(66px - 4ch);
+	min-width: 2.5rem;
+	width: 2.5rem;
+	height: 2.25rem; /* Fixed height for consistency */
 	background-color: #ffffff;
-	padding-left: 2ch;
-	padding-right: 2ch;
-	padding-top: 3px;
-	font-size: 150%;
+	padding: 0.5rem;
+	font-size: 1.25rem;
 	text-align: center;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 .rotated {
 	/* border: 1px solid red; */
@@ -286,38 +298,39 @@ a:focus {
 	z-index: 3;
 }
 .hometab a {
-	width: 1ch;
-	min-width: calc(66px - 4ch);
+	min-width: 2.5rem;
+	height: 2.25rem; /* Fixed height for consistency */
 	background-color: #ffffff;
-	padding-left: 2ch;
-	padding-right: 2ch;
-	padding-top: 6px;
+	padding: 0.5rem;
 	text-align: center;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 .hometab svg {
-	height: 14pt;
-	width: 14pt;
+	height: 1rem;
+	width: 1rem;
 }
 .searchtab a {
-	/* width: 100%; */
-	min-width: calc(66px - 4ch);
+	min-width: 2.5rem;
+	height: 2.25rem; /* Fixed height for consistency */
 	background-color: #ffffff;
-	padding-left: 2ch;
-	padding-right: 2ch;
-	padding-top: 11px;
-	font-size: 150%;
+	padding: 0.5rem;
+	display: flex;
 	align-items: center;
+	justify-content: center;
 }
 .searchtab svg {
-	padding-left: 0.25ch;
+	width: 0.875rem;
+	height: 0.875rem;
 }
 .searchtab input {
-	margin-top: -4px;
 	outline: none;
 	border: none;
 	border-bottom: 1.5px solid black;
 	background-color: transparent;
 	text-align: right;
-	font-size: 11pt;
+	font-size: 0.875rem;
+	padding: 0.25rem;
 }
 </style>

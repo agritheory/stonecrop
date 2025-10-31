@@ -1,8 +1,10 @@
 import { App, type Plugin, nextTick } from 'vue'
+import type { Pinia } from 'pinia'
 
 import Registry from '../registry'
 import { Stonecrop } from '../stonecrop'
 import type { InstallOptions } from '../types'
+import { useOperationLogStore } from '../stores/operation-log'
 
 /**
  * Setup auto-initialization for user-defined initialization logic
@@ -68,6 +70,23 @@ const plugin: Plugin = {
 		const stonecrop = new Stonecrop(registry)
 		app.provide('$stonecrop', stonecrop)
 		app.config.globalProperties.$stonecrop = stonecrop
+
+		// Initialize operation log store if Pinia is available
+		// This ensures the store is created with the app's Pinia instance
+		try {
+			const pinia = app.config.globalProperties.$pinia as Pinia | undefined
+			if (pinia) {
+				// Initialize the operation log store with the app's Pinia instance
+				const operationLogStore = useOperationLogStore(pinia)
+
+				// Provide the store so components can access it
+				app.provide('$operationLogStore', operationLogStore)
+				app.config.globalProperties.$operationLogStore = operationLogStore
+			}
+		} catch (error) {
+			// Pinia not available - operation log won't work, but app should still function
+			console.warn('Pinia not available - operation log features will be disabled:', error)
+		}
 
 		// Register custom components
 		if (options?.components) {

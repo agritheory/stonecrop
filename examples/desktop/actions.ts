@@ -310,7 +310,7 @@ if (engine) {
 // They are automatically triggered when XState FSM transitions occur
 
 registerTransitionAction('SAVE', (context: TransitionChangeContext) => {
-	const { transition, doctype, recordId, currentState, targetState, fsmContext } = context
+	const { doctype, recordId, currentState, targetState, fsmContext } = context
 
 	console.log('💾 SAVE Transition:', {
 		doctype,
@@ -329,7 +329,7 @@ registerTransitionAction('SAVE', (context: TransitionChangeContext) => {
 })
 
 registerTransitionAction('CANCEL', (context: TransitionChangeContext) => {
-	const { transition, doctype, recordId, currentState, targetState } = context
+	const { doctype, recordId, currentState, targetState } = context
 
 	console.log('❌ CANCEL Transition:', {
 		doctype,
@@ -342,7 +342,7 @@ registerTransitionAction('CANCEL', (context: TransitionChangeContext) => {
 })
 
 registerTransitionAction('DELETE', (context: TransitionChangeContext) => {
-	const { transition, doctype, recordId, currentState, targetState } = context
+	const { doctype, recordId, currentState, targetState } = context
 
 	console.log('🗑️ DELETE Transition:', {
 		doctype,
@@ -360,7 +360,7 @@ registerTransitionAction('DELETE', (context: TransitionChangeContext) => {
 })
 
 registerTransitionAction('CREATE', (context: TransitionChangeContext) => {
-	const { transition, doctype, currentState, targetState } = context
+	const { doctype, currentState, targetState } = context
 
 	console.log('➕ CREATE Transition:', {
 		doctype,
@@ -372,7 +372,7 @@ registerTransitionAction('CREATE', (context: TransitionChangeContext) => {
 })
 
 registerTransitionAction('EDIT', (context: TransitionChangeContext) => {
-	const { transition, doctype, recordId, currentState, targetState } = context
+	const { doctype, recordId, currentState, targetState } = context
 
 	console.log('✏️ EDIT Transition:', {
 		doctype,
@@ -385,7 +385,7 @@ registerTransitionAction('EDIT', (context: TransitionChangeContext) => {
 })
 
 registerTransitionAction('VALIDATE', (context: TransitionChangeContext) => {
-	const { transition, doctype, recordId, fsmContext } = context
+	const { doctype, recordId, fsmContext } = context
 
 	console.log('✓ VALIDATE Transition:', {
 		doctype,
@@ -404,7 +404,7 @@ registerTransitionAction('VALIDATE', (context: TransitionChangeContext) => {
 })
 
 registerTransitionAction('SUBMIT', (context: TransitionChangeContext) => {
-	const { transition, doctype, recordId, currentState, targetState } = context
+	const { doctype, recordId, currentState, targetState } = context
 
 	console.log('📤 SUBMIT Transition:', {
 		doctype,

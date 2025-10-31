@@ -1,11 +1,30 @@
 <template>
 	<div class="view-wrapper">
 		<Desktop :available-doctypes="availableDoctypes" :show-debug="showDebug" />
+
+		<!-- Operation Log Panel - pass operation log data as props -->
+		<OperationLogPanel
+			v-if="showDebug"
+			:show="showOperationLog"
+			:operations="operations"
+			:current-index="currentIndex"
+			:can-undo="canUndo"
+			:can-redo="canRedo"
+			@close="showOperationLog = false" />
+
+		<!-- Toggle button for operation log -->
+		<button v-if="showDebug" class="operation-log-toggle" @click="toggleOperationLog">
+			{{ showOperationLog ? '✕' : '📋' }} Operation Log
+		</button>
 	</div>
 </template>
 
 <script setup lang="ts">
 import { Desktop } from '@stonecrop/desktop'
+import { useStonecrop } from '@stonecrop/stonecrop'
+import { ref } from 'vue'
+
+import OperationLogPanel from './OperationLogPanel.vue'
 
 interface Props {
 	availableDoctypes?: string[]
@@ -14,18 +33,26 @@ interface Props {
 
 const { availableDoctypes = ['todo-list', 'todo-form', 'issue-list', 'issue-form'], showDebug = true } =
 	defineProps<Props>()
+
+const showOperationLog = ref(false)
+
+// Single unified interface - everything from useStonecrop
+const {
+	operationLog: { operations, currentIndex, canUndo, canRedo },
+} = useStonecrop()
+
+function toggleOperationLog() {
+	showOperationLog.value = !showOperationLog.value
+}
 </script>
 
 <style scoped>
 .view-wrapper {
 	min-height: 100vh;
+	box-sizing: border-box; /* Include padding in height calculation */
 	background-color: #f9fafb;
 	padding: 2rem;
-}
-
-/* Desktop Component Styling */
-.view-wrapper :deep(.desktop) {
-	min-height: calc(100vh - 4rem);
+	padding-bottom: 4rem; /* Extra padding for SheetNav */
 }
 
 .view-wrapper :deep(.debug-info) {
@@ -85,6 +112,34 @@ const { availableDoctypes = ['todo-list', 'todo-form', 'issue-list', 'issue-form
 	text-align: center;
 	padding: 3rem 1rem;
 	color: #6b7280;
+}
+
+/* Operation Log Toggle Button */
+.operation-log-toggle {
+	position: fixed;
+	bottom: 20px;
+	left: 20px; /* Changed from right to left */
+	background: #3b82f6;
+	color: white;
+	border: none;
+	padding: 0.75rem 1.25rem;
+	border-radius: 24px;
+	font-weight: 600;
+	font-size: 0.875rem;
+	cursor: pointer;
+	box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+	transition: all 0.2s ease;
+	z-index: 999;
+}
+
+.operation-log-toggle:hover {
+	background: #2563eb;
+	box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+	transform: translateY(-2px);
+}
+
+.operation-log-toggle:active {
+	transform: translateY(0);
 }
 
 .view-wrapper :deep(.empty-state p) {

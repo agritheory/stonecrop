@@ -2,12 +2,12 @@
 
 ## Overview
 
-The Desktop example demonstrates a comprehensive **schema-driven UI framework** with **event-driven workflows** using Stonecrop's Hierarchical State Tree (HST) and XState finite state machines. This example showcases how agents (FSMs) control application behavior through structured workflows and state management.
+The Desktop example demonstrates a **schema-driven UI framework** with **event-driven workflows** using Stonecrop's Hierarchical State Tree (HST) and XState finite state machines. This example showcases how agents (FSMs) control application behavior through structured workflows and state management.
 
 ## Test Coverage & Quality Assurance
 
 ### Testing Architecture Patterns
-1. **Plugin Testing**: Comprehensive coverage of auto-initialization, callback handling, error handling, custom component registration, and router logic
+1. **Plugin Testing**: Considerable coverage of auto-initialization, callback handling, error handling, custom component registration, and router logic
 2. **Store Testing**: HST singleton patterns, HSTProxy path navigation, tree operations, and error boundary testing
 3. **Integration Testing**: HST-Vue reactivity, component composition, and real-world workflow scenarios
 4. **Error Handling**: Graceful degradation patterns, malformed data handling, and recovery mechanisms
@@ -271,6 +271,190 @@ const schema = ref([{
 }])
 ```
 
+### 6. Operation Log Agent (`useOperationLog` composable)
+**Primary Responsibility**: Undo/redo state management and operation history tracking
+
+The Operation Log Agent provides a complete audit trail system integrated with HST. It tracks all field changes and FSM state transitions, enables keyboard shortcuts for undo/redo, and provides visual feedback for operation history.
+
+**Pinia Integration Architecture**:
+The operation log is now automatically initialized by the Stonecrop plugin when Pinia is available:
+
+```typescript
+// Stonecrop Plugin (plugins/index.ts)
+// Initialize operation log store if Pinia is available
+try {
+  const pinia = app.config.globalProperties.$pinia as Pinia | undefined
+  if (pinia) {
+    // Initialize the operation log store with the app's Pinia instance
+    const operationLogStore = useOperationLogStore(pinia)
+
+    // Provide the store so components can access it
+    app.provide('$operationLogStore', operationLogStore)
+    app.config.globalProperties.$operationLogStore = operationLogStore
+  }
+} catch (error) {
+  // Pinia not available - operation log won't work, but app should still function
+}
+```
+
+**Component Integration**:
+```typescript
+// View.vue - Desktop example
+import { useOperationLog } from '@stonecrop/stonecrop'
+
+// Use the real operation log composable
+// The Stonecrop plugin has already initialized the store with the app's Pinia instance
+const { operations, currentIndex, canUndo, canRedo } = useOperationLog()
+
+// Operation log is always ready since it's injected by the Stonecrop plugin
+const operationLogReady = computed(() => true)
+```
+
+**Composable Architecture**:
+```typescript
+// operation-log.ts composable
+export function useOperationLog(config?: Partial<OperationLogConfig>) {
+  // Try to use the injected store from the Stonecrop plugin first
+  // This ensures we use the same Pinia instance as the app
+  const injectedStore = inject<ReturnType<typeof useOperationLogStore> | undefined>('$operationLogStore', undefined)
+  const store = injectedStore || useOperationLogStore()
+
+  // Apply configuration if provided
+  if (config) {
+    store.configure(config)
+  }
+
+  // Return operation log interface...
+}
+```
+
+**Agent Features**:
+- **Automatic Operation Tracking**: All HST field changes and FSM transitions are automatically logged
+- **Field Change Operations**: Tracks SET operations for field value changes
+- **FSM Transition Operations**: Tracks TRANSITION operations for workflow state changes (e.g., SAVE, CANCEL, DELETE)
+- **Keyboard Shortcuts**: VueUse-based shortcuts (Ctrl+Z, Ctrl+Shift+Z, Ctrl+Y, Meta key variants)
+- **Visual Feedback**: Undo/redo buttons show operation count and disabled state
+- **Operation History**: Debug panel displays full operation log with timestamps and operation types
+- **State Management**: Pinia store maintains operation history across components
+- **Framework Integration**: Initialized automatically by Stonecrop plugin when Pinia is available
+
+**UI Integration**:
+```typescript
+// Action elements for record view
+elements.push(
+  {
+    type: 'button',
+    label: `⟲ Undo${undoCount.value > 0 ? ` (${undoCount.value})` : ''}`,
+    action: handleUndo,
+    disabled: !canUndo.value,
+  },
+  {
+    type: 'button',
+    label: `⟳ Redo${redoCount.value > 0 ? ` (${redoCount.value})` : ''}`,
+    action: handleRedo,
+    disabled: !canRedo.value,
+  }
+)
+```
+
+**Operation Log Panel** (`components/OperationLogPanel.vue`):
+- Displays operation history with type (SET or TRANSITION), path, field name, and value changes
+- Shows current operation index and undo/redo availability
+- Visual distinction for past operations vs current state
+- Real-time updates as operations are performed
+- Supports both field change operations and FSM transition operations
+
+**Operation Types**:
+1. **SET Operations**: Field value changes tracked automatically
+   - Type: `SET`
+   - Shows: Path, field name, before/after values
+   - Reversible: Yes (can be undone/redone)
+   - Example: Editing form fields, updating record properties
+
+2. **DELETE Operations**: Record or field deletions tracked automatically
+   - Type: `DELETE`
+   - Shows: Path, field name, before value (deleted data), after value (undefined)
+   - Reversible: Yes (can be undone to restore deleted data)
+   - Example: Deleting records via `removeRecord()`, setting fields to `undefined`
+   - **Auto-Detection**: Automatically logged when `set(path, undefined)` is called on an existing value
+   - **Note**: Setting `undefined` on non-existent paths logs as SET, not DELETE
+
+3. **TRANSITION Operations**: FSM state transitions tracked automatically
+   - Type: `TRANSITION`
+   - Shows: Path, transition name (as field), before/after states
+   - Reversible: No (workflow transitions are one-way)
+   - Example: SAVE (editing → saved), CANCEL (editing → cancelled)
+   - Metadata: Includes transition details, FSM context
+
+4. **BATCH Operations**: Grouped operations tracked as single unit
+   - Type: `BATCH`
+   - Contains multiple child operations (SET, DELETE, or both)
+   - Reversible: Yes (undoing/redoing batch affects all child operations)
+   - Example: Form submission with multiple field changes
+
+**HST Integration for FSM Transitions**:
+```typescript
+// HST Store (stores/hst.ts)
+async triggerTransition(
+  transition: string,
+  context?: { currentState?: string; targetState?: string; fsmContext?: Record<string, any> }
+): Promise<any> {
+  // ... FSM context building ...
+
+  // Log FSM transition operation
+  const logStore = getOperationLogStore()
+  if (logStore && typeof logStore.addOperation === 'function') {
+    logStore.addOperation(
+      {
+        type: 'transition' as const,
+        path: this.parentPath,
+        fieldname: transition,  // e.g., "SAVE", "CANCEL"
+        beforeValue: context?.currentState,  // e.g., "editing"
+        afterValue: context?.targetState,    // e.g., "saved"
+        doctype,
+        recordId,
+        reversible: false,  // FSM transitions are not reversible
+        metadata: {
+          transition,
+          currentState: context?.currentState,
+          targetState: context?.targetState,
+          fsmContext: context?.fsmContext,
+        },
+      },
+      'user'
+    )
+  }
+
+  // Execute transition actions
+  return await triggerEngine.executeTransitionActions(transitionContext)
+}
+```
+
+**VueUse Integration**:
+The keyboard shortcut system uses VueUse composables for cross-platform compatibility:
+- **useMagicKeys**: Keyboard event detection with key combination support
+- **whenever**: Conditional watchers for shortcut triggers
+- **Cross-platform**: Supports both Ctrl (Windows/Linux) and Meta (Mac) modifiers
+
+**Key Benefits**:
+- **Non-intrusive**: Automatically tracks changes without requiring explicit operation registration
+- **HST Integration**: Works seamlessly with existing HST field change system
+- **Debug-friendly**: Optional operation log panel for development and troubleshooting
+- **Accessible**: Keyboard shortcuts follow standard conventions
+- **Reactive**: UI updates automatically based on operation log state
+
+**Testing Keyboard Shortcuts**:
+```bash
+# Start desktop example
+cd examples && rushx dev:desktop
+
+# Navigate to any record view (e.g., /todo/1)
+# Make field changes
+# Press Ctrl+Z to undo (or Cmd+Z on Mac)
+# Press Ctrl+Shift+Z or Ctrl+Y to redo (or Cmd+Shift+Z on Mac)
+# Toggle operation log panel with debug button
+```
+
 ## Workflow State Machines
 
 ### XState Transition Integration
@@ -411,13 +595,46 @@ const setupRecordData = async (doctype: string, recordId: string) => {
 }
 ```
 
-### 3. Component → HST Agent Flow (Unchanged)
+### 3. Component → HST Agent Flow
 ```typescript
 // useStonecrop composable provides HST integration
 const { stonecrop, provideHSTPath, handleHSTChange, formData } = useStonecrop({
   doctype: myDoctype,
   recordId: 'record-123'
 })
+```
+
+### 4. Operation Log → HST Agent Flow
+```typescript
+// Operation log automatically tracks HST changes
+// When a field changes in HST:
+hstStore.set('todo-form.1.title', 'Updated Title')  // HST change
+
+// ↓ Operation Log intercepts through HST middleware
+// ↓ Creates operation record with beforeValue/afterValue
+// ↓ Stores in operation history
+
+// User triggers undo
+handleUndo()  // Calls undo(hstStore)
+
+// ↓ Operation Log retrieves last operation
+// ↓ Reverts HST to previous state
+// ↓ Updates currentIndex in operation history
+
+hstStore.get('todo-form.1.title')  // Returns original value
+```
+
+**Flow Diagram**:
+```
+User Input → Component → HST Store → Operation Log (record)
+                                   ↓
+                              Pinia Store (persist)
+                                   ↓
+Keyboard Shortcut → useUndoRedoShortcuts → Operation Log (undo/redo)
+                                                ↓
+                                           HST Store (revert)
+                                                ↓
+                                           Component (update)
 ```
 
 ## Action Agent System
@@ -516,7 +733,7 @@ const handleSave = async () => {
 
 #### Context Passing
 
-Transition actions receive comprehensive context:
+Transition actions receive field context:
 ```typescript
 interface TransitionChangeContext extends FieldChangeContext {
   transition: string       // Transition name (e.g., "SAVE")
@@ -570,6 +787,27 @@ rushx docs
 2. **Router Debug**: Console logs show route registration and navigation
 3. **Workflow Debug**: XState DevTools integration for FSM inspection
 4. **Network Debug**: MirageJS provides server interaction logging
+5. **Operation Log Debug**: Toggle operation log panel to view change history
+
+### Operation Log Debugging
+The Operation Log Panel provides debugging for undo/redo functionality:
+
+```typescript
+// Enable operation log panel in View.vue
+const showOperationLog = ref(false)  // Toggle with debug button
+```
+
+**Panel Features**:
+- **Operation History**: View all field changes with timestamps
+- **Current Index**: See position in undo/redo stack
+- **State Indicators**: Visual feedback for canUndo/canRedo
+- **Operation Details**: Path, field name, before/after values for each operation
+- **Real-time Updates**: Panel updates as operations are performed
+
+**Keyboard Shortcuts**:
+- `Ctrl+Z` (or `Cmd+Z` on Mac): Undo last operation
+- `Ctrl+Shift+Z` or `Ctrl+Y` (or `Cmd+Shift+Z` on Mac): Redo operation
+- Works across all form fields automatically
 
 ## Agent Best Practices
 
@@ -578,6 +816,7 @@ rushx docs
 - Keep workflow state separate from data state
 - Leverage path-based addressing for state access
 - Ensure consistent doctype resolution across all HST operations
+- **Enable operation log for undo/redo functionality in form views**
 
 ### 2. Route Management
 - Register routes dynamically based on server configuration
@@ -594,6 +833,7 @@ rushx docs
 - Use `useStonecrop` composable for HST integration
 - Provide HST paths for field-level reactivity
 - Handle changes through `handleHSTChange` for automatic sync
+- **Integrate useOperationLog for undo/redo in data editing views**
 
 ### 5. Framework Agnosticism
 - **Framework Code**: Provide generic hooks and mechanisms, never assume application patterns
@@ -601,7 +841,74 @@ rushx docs
 - **Route Resolution**: Let applications control how routes map to doctypes
 - **Field Triggers**: Ensure doctype context is correctly resolved from HST paths
 
+### 6. Operation Log Integration
+- **Automatic Tracking**: Operation log automatically tracks all HST field changes
+- **Keyboard Shortcuts**: Use useUndoRedoShortcuts for standard keyboard support
+- **Visual Feedback**: Display undo/redo buttons with operation counts
+- **Debug Panel**: Enable operation log panel for development and troubleshooting
+- **State Awareness**: Disable undo/redo buttons when not available
+
 ## Testing Agents
+
+### Operation Log Testing
+
+To test operation log integration:
+
+```bash
+# Start the desktop example
+cd examples && rushx dev:desktop
+```
+
+Navigate to http://localhost:5173/ and test undo/redo functionality:
+
+**Manual Test Cases**:
+
+1. **Test Field Changes**:
+   - Open any record (e.g., `/todo/1`)
+   - Edit multiple fields (title, description, status)
+   - Watch undo button show operation count: `⟲ Undo (3)`
+   - Observe redo button is disabled
+
+2. **Test Undo**:
+   - Click `⟲ Undo` button or press `Ctrl+Z`
+   - Field value reverts to previous state
+   - Undo count decreases, redo count increases
+   - Verify field changes are reversed in order
+
+3. **Test Redo**:
+   - After undo, click `⟳ Redo` button or press `Ctrl+Shift+Z`
+   - Field value returns to edited state
+   - Redo count decreases, undo count increases
+
+4. **Test Keyboard Shortcuts**:
+   - Mac: Press `Cmd+Z` for undo, `Cmd+Shift+Z` for redo
+   - Windows/Linux: Press `Ctrl+Z` for undo, `Ctrl+Y` or `Ctrl+Shift+Z` for redo
+   - Verify shortcuts work without clicking buttons
+
+5. **Test Operation Log Panel**:
+   - Click "📋 Operation Log" button (bottom-right)
+   - View operation history with timestamps
+   - Observe current operation highlighted
+   - See before/after values for each operation
+   - **Verify operation types**: SET operations show field changes, TRANSITION operations show state changes
+   - **Check reversibility**: SET operations show "Can Undo: ✓", TRANSITION operations show "Can Undo: ✗"
+   - Close panel with ✕ button
+
+6. **Test Disabled States**:
+   - Open new record
+   - Verify undo button is disabled (no operations)
+   - Make changes, undo all
+   - Verify undo button disabled, redo button enabled
+   - Redo all changes
+   - Verify redo button disabled, undo button enabled
+
+**Expected Behavior**:
+- All field changes tracked automatically
+- Undo/redo buttons show correct operation counts
+- Buttons disabled when operations not available
+- Keyboard shortcuts work across platforms
+- Operation log panel shows detailed history
+- Operations execute in correct order (LIFO for undo, FIFO for redo)
 
 ### XState Transition Testing
 
@@ -634,14 +941,18 @@ The desktop example includes a **Transitions dropdown** in the action bar for ea
    - Edit a record and click "Save" button, OR
    - Use "Transitions" dropdown → select "SAVE (→ saved)"
    - Watch for 💾 notification → ✅ success notification
+   - **Open Operation Log Panel**: Verify TRANSITION operation appears with Field: SAVE, Before: editing, After: saved
+   - **Check reversibility**: TRANSITION operations show "Can Undo: ✗"
 3. **Test CANCEL transition**:
    - Edit a record and click "Cancel" button, OR
    - Use "Transitions" dropdown → select "CANCEL (→ cancelled)"
    - Watch for ❌ notification
+   - **Operation Log**: Verify TRANSITION operation with Field: CANCEL appears
 4. **Test DELETE transition**:
    - Click "Delete" button, OR
    - Use "Transitions" dropdown → select "DELETE (→ deleted)"
    - Watch for 🗑️ notification
+   - **Operation Log**: Verify TRANSITION operation with Field: DELETE appears
 5. **Test Field Triggers**: Edit any field and watch for validation notifications in real-time
 
 **Expected Behavior**:
@@ -651,6 +962,9 @@ The desktop example includes a **Transitions dropdown** in the action bar for ea
 - Console logs show detailed transition context including FSM states
 - Notifications appear in the top-right corner with proper styling
 - Field triggers continue to work alongside transition actions
+- **FSM transitions logged**: All FSM transitions appear in Operation Log as TRANSITION operations
+- **Operation types distinguished**: SET operations (field changes) vs TRANSITION operations (state changes)
+- **Reversibility respected**: TRANSITION operations are non-reversible (can't be undone)
 
 ### Unit Testing Approach
 ```typescript
@@ -672,6 +986,33 @@ describe('Workflow Agent', () => {
     expect(actor.state.value).toBe('creating')
   })
 })
+
+// Test operation log
+describe('Operation Log Agent', () => {
+  it('should track field changes', () => {
+    const { operations } = useOperationLog()
+    const hstStore = stonecrop.getStore()
+
+    hstStore.set('todo-form.1.title', 'New Title')
+    expect(operations.value).toHaveLength(1)
+    expect(operations.value[0].fieldname).toBe('title')
+  })
+
+  it('should undo/redo operations', () => {
+    const { undo, redo, canUndo, canRedo } = useOperationLog()
+    const hstStore = stonecrop.getStore()
+
+    hstStore.set('todo-form.1.title', 'New Title')
+    expect(canUndo.value).toBe(true)
+
+    undo(hstStore)
+    expect(hstStore.get('todo-form.1.title')).toBe('Old Title')
+    expect(canRedo.value).toBe(true)
+
+    redo(hstStore)
+    expect(hstStore.get('todo-form.1.title')).toBe('New Title')
+  })
+})
 ```
 
 ### Integration Testing
@@ -679,6 +1020,59 @@ describe('Workflow Agent', () => {
 - Verify HST state synchronization across components
 - Validate workflow state persistence during navigation
 - Test dynamic doctype discovery and registration
+- **Verify operation log tracks changes across route navigation**
+- **Test undo/redo functionality with multiple field changes**
+- **Validate keyboard shortcuts work in different browsers**
+
+## VueUse Integration Patterns
+
+### Keyboard Shortcut System
+
+The desktop example demonstrates **VueUse integration** for keyboard shortcuts using composables from `@vueuse/core` and `@vueuse/shared`.
+
+**Architecture**:
+```typescript
+import { useMagicKeys } from '@vueuse/core'
+import { whenever } from '@vueuse/shared'
+
+// Initialize keyboard event detection
+const keys = useMagicKeys()
+
+// Setup conditional watchers for shortcuts
+whenever(keys['Ctrl+Z'], () => {
+  if (canUndo.value) {
+    void undo(hstStore)
+  }
+})
+
+whenever(keys['Meta+Z'], () => {  // Mac support
+  if (canUndo.value) {
+    void undo(hstStore)
+  }
+})
+```
+
+**Key Components**:
+- **useMagicKeys**: Returns reactive refs for all keyboard key states
+- **whenever**: Conditional watcher that executes callback when condition is true
+- **Cross-platform**: Supports Ctrl (Windows/Linux) and Meta (Mac) modifiers
+- **Non-blocking**: Shortcuts work without preventing default browser behavior
+
+**Benefits**:
+- **Type-safe**: Full TypeScript support with proper type definitions
+- **Reactive**: Automatic cleanup when component unmounts
+- **Composable**: Easy to integrate with other VueUse composables
+- **Platform-aware**: Handles platform-specific key modifiers automatically
+
+**Supported Shortcuts**:
+- `Ctrl+Z` / `Cmd+Z`: Undo last operation
+- `Ctrl+Shift+Z` / `Cmd+Shift+Z`: Redo operation
+- `Ctrl+Y`: Alternative redo (Windows convention)
+
+**Implementation Notes**:
+- VueUse 13.6.0 requires separate imports for `useMagicKeys` and `whenever`
+- TypeScript configuration requires `"moduleResolution": "bundler"` for ESM types
+- `@vueuse/shared` must be added as explicit dependency
 
 ## Cognitive Load Reduction Strategy
 
@@ -714,6 +1108,7 @@ app.mount('#app') // Everything happens automatically after this
 - Generic, reusable patterns
 - No assumptions about global state
 - No assumptions about route configuration patterns
+- **Provides operation log infrastructure**
 
 **User (Desktop Example)**:
 - Manages scoped references through function parameters
@@ -722,6 +1117,7 @@ app.mount('#app') // Everything happens automatically after this
 - Creates routes on-demand based on navigation patterns
 - Handles application-specific initialization
 - Domain-specific concerns
+- **Integrates operation log in UI components**
 
 ### Scoped Reference Management
 - **Pattern**: Function parameters replace global state
@@ -737,6 +1133,8 @@ app.mount('#app') // Everything happens automatically after this
 - Configure appropriate caching strategies for frequently accessed routes
 - Set up monitoring for HST state health
 - Handle edge cases for invalid route patterns gracefully
+- **Configure operation log limits for production environments**
+- **Implement operation log persistence strategies if needed**
 
 ### Performance Optimization
 - Implement lazy loading for large record sets (routes created on access)
@@ -744,5 +1142,8 @@ app.mount('#app') // Everything happens automatically after this
 - Cache workflow configurations to avoid repeated compilation
 - Monitor route creation performance for frequently accessed patterns
 - Consider route pre-registration for critical user paths
+- **Limit operation log history size in production** (default: 50 operations)
+- **Disable cross-tab sync if not needed** (reduces overhead)
+- **Consider disabling persistence for high-frequency edit scenarios**
 
-This agent architecture provides a robust foundation for building complex, workflow-driven applications with predictable state management and on-demand route handling.
+This agent architecture provides a robust foundation for building complex, workflow-driven applications with predictable state management, undo/redo functionality, and on-demand route handling.

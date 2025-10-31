@@ -18,9 +18,9 @@ declare function createHST(target: any, doctype: string, parentDoctype?: string)
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| target | `any` |  |
-| doctype | `string` |  |
-| parentDoctype | `string` |  |
+| target | `any` | The target object to wrap with HST functionality |
+| doctype | `string` | The document type identifier |
+| parentDoctype | `string` | Optional parent document type identifier |
 
 ### getGlobalTriggerEngine
 
@@ -36,7 +36,24 @@ export declare function getGlobalTriggerEngine(options?: FieldTriggerOptions): F
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| options | `FieldTriggerOptions` |  |
+| options | `FieldTriggerOptions` | Optional configuration for the field trigger engine |
+
+### markOperationIrreversible
+
+Mark a specific operation as irreversible. Used to prevent undo of critical operations like publishing or deletion.
+
+**Signature:**
+
+```typescript
+export declare function markOperationIrreversible(operationId: string | undefined, reason: string): void;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| operationId | `string \| undefined` | The ID of the operation to mark as irreversible |
+| reason | `string` | Human-readable reason why the operation cannot be undone |
 
 ### registerGlobalAction
 
@@ -52,8 +69,8 @@ export declare function registerGlobalAction(name: string, fn: FieldActionFuncti
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| name | `string` |  |
-| fn | `FieldActionFunction` |  |
+| name | `string` | The name of the action to register |
+| fn | `FieldActionFunction` | The action function to execute when the trigger fires |
 
 ### registerTransitionAction
 
@@ -69,8 +86,8 @@ export declare function registerTransitionAction(name: string, fn: TransitionAct
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| name | `string` |  |
-| fn | `TransitionActionFunction` |  |
+| name | `string` | The name of the transition action to register |
+| fn | `TransitionActionFunction` | The transition action function to execute |
 
 ### setFieldRollback
 
@@ -86,9 +103,9 @@ export declare function setFieldRollback(doctype: string, fieldname: string, ena
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| doctype | `string` |  |
-| fieldname | `string` |  |
-| enableRollback | `boolean` |  |
+| doctype | `string` | The doctype name |
+| fieldname | `string` | The field name |
+| enableRollback | `boolean` | Whether to enable automatic rollback for this field |
 
 ### triggerTransition
 
@@ -110,9 +127,92 @@ export declare function triggerTransition(doctype: string, transition: string, o
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| doctype | `string` |  |
-| transition | `string` |  |
-| options | `{ recordId?: string; currentState?: string; targetState?: string; fsmContext?: Record<string, any>; path?: string; }` |  |
+| doctype | `string` | The doctype name |
+| transition | `string` | The XState transition name to trigger |
+| options | `{ recordId?: string; currentState?: string; targetState?: string; fsmContext?: Record<string, any>; path?: string; }` | Optional configuration for the transition |
+
+### useOperationLog
+
+Composable for operation log management Provides easy access to undo/redo functionality and operation history
+
+**Signature:**
+
+```typescript
+export declare function useOperationLog(config?: Partial<OperationLogConfig>): {
+    operations: import("vue").Ref<{
+        id: string;
+        type: import("..").HSTOperationType;
+        path: string;
+        fieldname: string;
+        beforeValue: any;
+        afterValue: any;
+        doctype: string;
+        recordId?: string | undefined;
+        timestamp: Date;
+        source?: import("..").OperationSource | undefined;
+        reversible: boolean;
+        irreversibleReason?: string | undefined;
+        transition?: string | undefined;
+        currentState?: string | undefined;
+        targetState?: string | undefined;
+        actionName?: string | undefined;
+        actionRecordIds?: string[] | undefined;
+        actionResult?: "success" | "failure" | "pending" | undefined;
+        actionError?: string | undefined;
+        userId?: string | undefined;
+        metadata?: Record<string, any> | undefined;
+        parentOperationId?: string | undefined;
+        childOperationIds?: string[] | undefined;
+    }[], import("..").HSTOperation[] | {
+        id: string;
+        type: import("..").HSTOperationType;
+        path: string;
+        fieldname: string;
+        beforeValue: any;
+        afterValue: any;
+        doctype: string;
+        recordId?: string | undefined;
+        timestamp: Date;
+        source?: import("..").OperationSource | undefined;
+        reversible: boolean;
+        irreversibleReason?: string | undefined;
+        transition?: string | undefined;
+        currentState?: string | undefined;
+        targetState?: string | undefined;
+        actionName?: string | undefined;
+        actionRecordIds?: string[] | undefined;
+        actionResult?: "success" | "failure" | "pending" | undefined;
+        actionError?: string | undefined;
+        userId?: string | undefined;
+        metadata?: Record<string, any> | undefined;
+        parentOperationId?: string | undefined;
+        childOperationIds?: string[] | undefined;
+    }[]>;
+    currentIndex: import("vue").Ref<number, number>;
+    undoRedoState: import("vue").ComputedRef<import("..").UndoRedoState>;
+    canUndo: import("vue").ComputedRef<boolean>;
+    canRedo: import("vue").ComputedRef<boolean>;
+    undoCount: import("vue").ComputedRef<number>;
+    redoCount: import("vue").ComputedRef<number>;
+    undo: (hstStore: HSTNode) => boolean;
+    redo: (hstStore: HSTNode) => boolean;
+    startBatch: () => void;
+    commitBatch: (description?: string) => string | null;
+    cancelBatch: () => void;
+    clear: () => void;
+    getOperationsFor: (doctype: string, recordId?: string) => import("..").HSTOperation[];
+    getSnapshot: () => import("..").OperationLogSnapshot;
+    markIrreversible: (operationId: string, reason: string) => void;
+    logAction: (doctype: string, actionName: string, recordIds?: string[], result?: "success" | "failure" | "pending", error?: string) => string;
+    configure: (options: Partial<OperationLogConfig>) => void;
+};
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| config | `Partial<OperationLogConfig>` | Optional configuration for the operation log |
 
 ### useStonecrop
 
@@ -125,6 +225,8 @@ export declare function useStonecrop(): BaseStonecropReturn | HSTStonecropReturn
 ```
 
 ### useStonecrop
+
+Unified Stonecrop composable with HST integration for a specific doctype and record
 
 **Signature:**
 
@@ -140,7 +242,41 @@ export declare function useStonecrop(options: {
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| options | `{ registry?: Registry; doctype: DoctypeMeta; recordId?: string; }` |  |
+| options | `{ registry?: Registry; doctype: DoctypeMeta; recordId?: string; }` | Configuration with doctype and optional recordId |
+
+### useUndoRedoShortcuts
+
+Keyboard shortcut handler for undo/redo Automatically binds Ctrl+Z (undo) and Ctrl+Shift+Z/Ctrl+Y (redo) using VueUse
+
+**Signature:**
+
+```typescript
+export declare function useUndoRedoShortcuts(hstStore: HSTNode, enabled?: boolean): void;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| hstStore | `HSTNode` | The HST store to operate on |
+| enabled | `boolean` | Whether shortcuts are enabled (default: true) |
+
+### withBatch
+
+Batch operation helper Wraps a function execution in a batch operation
+
+**Signature:**
+
+```typescript
+export declare function withBatch<T>(fn: () => T | Promise<T>, description?: string): Promise<string | null>;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| fn | `() => T \| Promise<T>` | The function to execute within a batch |
+| description | `string` | Optional description for the batch |
 
 ## Interfaces
 
@@ -219,6 +355,32 @@ export interface BasicTableConfig {
 | Property | Type | Description |
 |----------|------|-------------|
 | view? | `'uncounted' \| 'list' \| 'list-expansion'` | The type of view to display the table in. |
+
+### BatchOperation
+
+Batch operation wrapper
+
+**Definition:**
+
+```typescript
+export interface BatchOperation {
+  description?: string;
+  id: string;
+  operations: HSTOperation[];
+  reversible: boolean;
+  timestamp: Date;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| description? | `string` | Optional description of what this batch represents |
+| id | `string` | Unique batch identifier |
+| operations | `HSTOperation[]` | Operations included in this batch |
+| reversible | `boolean` | Whether the entire batch can be undone |
+| timestamp | `Date` | When the batch was created |
 
 ### CellContext
 
@@ -311,6 +473,32 @@ export interface ConnectionPath {
 | label? | `string` | Optional label for the connection. |
 | style? | `{ color?: string; width?: number; }` | Optional styling for the connection path. |
 | to | `{ barId: string; side: 'left' \| 'right'; }` | The target connection handle. |
+
+### CrossTabMessage
+
+Cross-tab message payload
+
+**Definition:**
+
+```typescript
+export interface CrossTabMessage {
+  clientId: string;
+  operation?: HSTOperation;
+  operations?: HSTOperation[];
+  timestamp: Date;
+  type: CrossTabMessageType;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| clientId | `string` | Identifier of the client/tab sending the message |
+| operation? | `HSTOperation` | Single operation for operation/undo/redo messages |
+| operations? | `HSTOperation[]` | Multiple operations for sync messages |
+| timestamp | `Date` | When the message was sent |
+| type | `CrossTabMessageType` | Type of cross-tab message |
 
 ### FieldChangeContext
 
@@ -523,7 +711,7 @@ export interface HSTNode {
   getPath(): string;
   getRoot(): HSTNode;
   has(path: string): boolean;
-  set(path: string, value: any): void;
+  set(path: string, value: any, source: 'user' | 'system' | 'sync' | 'undo' | 'redo'): void;
   triggerTransition(transition: string, context: {
         currentState?: string;
         targetState?: string;
@@ -531,6 +719,128 @@ export interface HSTNode {
     }): Promise<any>;
 }
 ```
+
+### HSTOperation
+
+Complete metadata for an HST mutation Enables time travel, synchronization, and audit trails
+
+**Definition:**
+
+```typescript
+export interface HSTOperation {
+  actionError?: string;
+  actionName?: string;
+  actionRecordIds?: string[];
+  actionResult?: 'success' | 'failure' | 'pending';
+  afterValue: any;
+  beforeValue: any;
+  childOperationIds?: string[];
+  currentState?: string;
+  doctype: string;
+  fieldname: string;
+  id: string;
+  irreversibleReason?: string;
+  metadata?: Record<string, any>;
+  parentOperationId?: string;
+  path: string;
+  recordId?: string;
+  reversible: boolean;
+  source?: OperationSource;
+  targetState?: string;
+  timestamp: Date;
+  transition?: string;
+  type: HSTOperationType;
+  userId?: string;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| actionError? | `string` | Error message if action execution failed |
+| actionName? | `string` | Action name if operation is an action execution (type: 'action') |
+| actionRecordIds? | `string[]` | Record IDs that the action was executed on |
+| actionResult? | `'success' \| 'failure' \| 'pending'` | Result or status of the action execution |
+| afterValue | `any` | Value after the operation |
+| beforeValue | `any` | Value before the operation |
+| childOperationIds? | `string[]` | Child operation IDs for batch operations |
+| currentState? | `string` | XState current state before transition |
+| doctype | `string` | Doctype this operation affects |
+| fieldname | `string` | Field name extracted from path |
+| id | `string` | Unique operation identifier |
+| irreversibleReason? | `string` | Reason if operation is irreversible |
+| metadata? | `Record<string, any>` | Additional metadata for custom use cases |
+| parentOperationId? | `string` | Parent operation ID for batch operations |
+| path | `string` | Full HST path affected (e.g., "task.123.title") |
+| recordId? | `string` | Record ID if applicable |
+| reversible | `boolean` | Whether this operation can be undone |
+| source? | `OperationSource` | Source of the operation (defaults to 'user' if not specified) |
+| targetState? | `string` | XState target state after transition |
+| timestamp | `Date` | Timestamp of the operation |
+| transition? | `string` | XState transition name if triggered by FSM |
+| type | `HSTOperationType` | Type of operation performed |
+| userId? | `string` | User or session identifier |
+
+### OperationLogConfig
+
+Operation log configuration
+
+**Definition:**
+
+```typescript
+export interface OperationLogConfig {
+  autoSyncInterval?: number;
+  enableCrossTabSync?: boolean;
+  enablePersistence?: boolean;
+  maxOperations?: number;
+  operationFilter?: (operation: HSTOperation) => boolean;
+  persistenceKeyPrefix?: string;
+  userId?: string;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| autoSyncInterval? | `number` | Auto-sync interval in milliseconds (default: 30000) |
+| enableCrossTabSync? | `boolean` | Enable cross-tab synchronization (default: true) |
+| enablePersistence? | `boolean` | Enable operation persistence to localStorage (default: false) |
+| maxOperations? | `number` | Maximum operations to store (default: 100) |
+| operationFilter? | `(operation: HSTOperation) => boolean` | Custom operation filter |
+| persistenceKeyPrefix? | `string` | Persistence key prefix |
+| userId? | `string` | User identifier for multi-user scenarios |
+
+### OperationLogSnapshot
+
+Operation log snapshot for debugging
+
+**Definition:**
+
+```typescript
+export interface OperationLogSnapshot {
+  currentIndex: number;
+  irreversibleOperations: number;
+  newestOperation?: Date;
+  oldestOperation?: Date;
+  operations: HSTOperation[];
+  reversibleOperations: number;
+  totalOperations: number;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| currentIndex | `number` | Current operation index in the history |
+| irreversibleOperations | `number` | Number of operations that cannot be undone |
+| newestOperation? | `Date` | Timestamp of the newest operation |
+| oldestOperation? | `Date` | Timestamp of the oldest operation |
+| operations | `HSTOperation[]` | All operations in the log |
+| reversibleOperations | `number` | Number of operations that can be undone |
+| totalOperations | `number` | Total number of operations |
 
 ### RouteContext
 
@@ -600,7 +910,7 @@ export interface TableColumn {
 | name | `string` | The key of the column. This is used to identify the column in the table. |
 | originalIndex? | `number` | The original column index for the Gantt bar, excluding any pinned columns. This is evaluated automatically while rendering the table. Only applicable for Gantt tables. |
 | pinned? | `boolean` | Control whether the column should be pinned to the table. |
-| resizable? | `boolean` |  |
+| resizable? | `boolean` | Control whether the column can be resized by the user. |
 | type? | `string` | `Data` (the column contains text data), `Select` (the column contains a select input), `Date` (the column contains a date input), `component` (the column contains a custom component) |
 | width? | `string` | The width of the column. This can be a number (in pixels) or a string (in CSS units). |
 
@@ -810,6 +1120,32 @@ export interface TreeTableConfig {
 | defaultTreeExpansion? | `'root' \| 'branch' \| 'leaf'` | `branch` (Shows minimal tree to display all gantt nodes. Expands only the necessary paths to gantt nodes, stops at gantt nodes with no gantt descendants), `leaf` (All nodes are visible (fully expanded)) |
 | view | `'tree'` | The type of view to display the table in. |
 
+### UndoRedoState
+
+Undo/Redo state
+
+**Definition:**
+
+```typescript
+export interface UndoRedoState {
+  canRedo: boolean;
+  canUndo: boolean;
+  currentIndex: number;
+  redoCount: number;
+  undoCount: number;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| canRedo | `boolean` | Can redo |
+| canUndo | `boolean` | Can undo |
+| currentIndex | `number` | Current operation index |
+| redoCount | `number` | Number of operations available for redo |
+| undoCount | `number` | Number of operations available for undo |
+
 ## Type Aliases
 
 ### BaseSchema
@@ -828,13 +1164,14 @@ export type BaseSchema = {
 
 ### BaseStonecropReturn
 
-Base Stonecrop composable return type
+Base Stonecrop composable return type - includes operation log functionality
 
 **Definition:**
 
 ```typescript
 export type BaseStonecropReturn = {
     stonecrop: Ref<Stonecrop | undefined>;
+    operationLog: OperationLogAPI;
 };
 ```
 
@@ -870,6 +1207,16 @@ export type ConnectionEvent = {
     type: 'create' | 'delete';
     connection: ConnectionPath;
 };
+```
+
+### CrossTabMessageType
+
+Cross-tab message types
+
+**Definition:**
+
+```typescript
+export type CrossTabMessageType = 'operation' | 'undo' | 'redo' | 'sync-request' | 'sync-response';
 ```
 
 ### FieldAction
@@ -996,6 +1343,28 @@ export type HSTChangeData = {
 };
 ```
 
+### HSTOperationInput
+
+Input type for adding operations Excludes system-generated fields (id, timestamp)
+
+**Definition:**
+
+```typescript
+export type HSTOperationInput = Omit<HSTOperation, 'id' | 'timestamp' | 'source'> & {
+    source?: OperationSource;
+};
+```
+
+### HSTOperationType
+
+Type of HST operation
+
+**Definition:**
+
+```typescript
+export type HSTOperationType = 'set' | 'delete' | 'batch' | 'transition' | 'action';
+```
+
 ### HSTStonecropReturn
 
 HST-enabled Stonecrop composable return type
@@ -1054,6 +1423,51 @@ export type MutableDoctype = {
     workflow?: UnknownMachineConfig | AnyStateNodeConfig;
     actions?: Record<string, string[]>;
 };
+```
+
+### OperationLogAPI
+
+Operation Log API - nested object containing all operation log functionality
+
+**Definition:**
+
+```typescript
+export type OperationLogAPI = {
+    operations: Ref<HSTOperation[]>;
+    currentIndex: Ref<number>;
+    undoRedoState: ComputedRef<{
+        canUndo: boolean;
+        canRedo: boolean;
+        undoCount: number;
+        redoCount: number;
+        currentIndex: number;
+    }>;
+    canUndo: ComputedRef<boolean>;
+    canRedo: ComputedRef<boolean>;
+    undoCount: ComputedRef<number>;
+    redoCount: ComputedRef<number>;
+    undo: (hstStore: HSTNode) => boolean;
+    redo: (hstStore: HSTNode) => boolean;
+    startBatch: () => void;
+    commitBatch: (description?: string) => string | null;
+    cancelBatch: () => void;
+    clear: () => void;
+    getOperationsFor: (doctype: string, recordId?: string) => HSTOperation[];
+    getSnapshot: () => OperationLogSnapshot;
+    markIrreversible: (operationId: string, reason: string) => void;
+    logAction: (doctype: string, actionName: string, recordIds?: string[], result?: 'success' | 'failure' | 'pending', error?: string) => string;
+    configure: (options: Partial<OperationLogConfig>) => void;
+};
+```
+
+### OperationSource
+
+Operation source - where the change originated
+
+**Definition:**
+
+```typescript
+export type OperationSource = 'user' | 'system' | 'sync' | 'undo' | 'redo';
 ```
 
 ### Schema
@@ -1135,6 +1549,16 @@ Doctype Meta class
 new DoctypeMeta(doctype: string, schema: ImmutableDoctype['schema'], workflow: ImmutableDoctype['workflow'], actions: ImmutableDoctype['actions'], component: Component)
 ```
 
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `string` | The doctype name |
+| schema | `ImmutableDoctype['schema']` | The doctype schema definition |
+| workflow | `ImmutableDoctype['workflow']` | The doctype workflow configuration (XState machine) |
+| actions | `ImmutableDoctype['actions']` | The doctype actions and field triggers |
+| component | `Component` | Optional Vue component for rendering the doctype |
+
 **Properties:**
 
 | Property | Type | Description |
@@ -1156,6 +1580,12 @@ Field trigger execution engine integrated with Registry Singleton pattern follow
 new FieldTriggerEngine(options: FieldTriggerOptions)
 ```
 
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| options | `FieldTriggerOptions` | Configuration options for the field trigger engine |
+
 **Properties:**
 
 | Property | Type | Description |
@@ -1175,6 +1605,13 @@ executeFieldTriggers(context: FieldChangeContext, options: {
     }): Promise<FieldTriggerExecutionResult>
 ```
 
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| context | `FieldChangeContext` | The field change context |
+| options | `{ timeout?: number; enableRollback?: boolean; }` | Execution options (timeout and enableRollback) |
+
 #### executeTransitionActions
 
 Execute XState transition actions Similar to field triggers but specifically for FSM state transitions
@@ -1185,6 +1622,13 @@ executeTransitionActions(context: TransitionChangeContext, options: {
     }): Promise<TransitionExecutionResult[]>
 ```
 
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| context | `TransitionChangeContext` | The transition change context |
+| options | `{ timeout?: number; }` | Execution options (timeout) |
+
 #### registerAction
 
 Register a global action function
@@ -1192,6 +1636,13 @@ Register a global action function
 ```typescript
 registerAction(name: string, fn: FieldActionFunction): void
 ```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| name | `string` | The name of the action |
+| fn | `FieldActionFunction` | The action function |
 
 #### registerDoctypeActions
 
@@ -1201,6 +1652,13 @@ Register actions from a doctype - both regular actions and field triggers Separa
 registerDoctypeActions(doctype: string, actions: ImmutableMap<string, string[]> | Map<string, string[]> | Record<string, string[]> | undefined): void
 ```
 
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `string` | The doctype name |
+| actions | `ImmutableMap<string, string[]> \| Map<string, string[]> \| Record<string, string[]> \| undefined` | The actions to register (supports Immutable Map, Map, or plain object) |
+
 #### registerTransitionAction
 
 Register a global XState transition action function
@@ -1209,6 +1667,13 @@ Register a global XState transition action function
 registerTransitionAction(name: string, fn: TransitionActionFunction): void
 ```
 
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| name | `string` | The name of the transition action |
+| fn | `TransitionActionFunction` | The transition action function |
+
 #### setFieldRollback
 
 Configure rollback behavior for a specific field trigger
@@ -1216,6 +1681,14 @@ Configure rollback behavior for a specific field trigger
 ```typescript
 setFieldRollback(doctype: string, fieldname: string, enableRollback: boolean): void
 ```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `string` | The doctype name |
+| fieldname | `string` | The field name |
+| enableRollback | `boolean` | Whether to enable rollback |
 
 ### HST
 
@@ -1230,6 +1703,12 @@ Helper method to get doctype metadata from the registry
 ```typescript
 getDoctypeMeta(doctype: string): any
 ```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `string` | The name of the doctype to retrieve metadata for |
 
 #### getInstance
 
@@ -1257,6 +1736,13 @@ Stonecrop Registry class
 new Registry(router: Router, getMeta: (routeContext: RouteContext) => DoctypeMeta | Promise<DoctypeMeta>)
 ```
 
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| router | `Router` | Optional Vue router instance for route management |
+| getMeta | `(routeContext: RouteContext) => DoctypeMeta \| Promise<DoctypeMeta>` | Optional function to fetch doctype metadata from an API |
+
 **Properties:**
 
 | Property | Type | Description |
@@ -1277,21 +1763,34 @@ Get doctype metadata
 addDoctype(doctype: DoctypeMeta): void
 ```
 
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `DoctypeMeta` | The doctype to fetch metadata for |
+
 ### Stonecrop
 
-Main Stonecrop class with HST integration
+Main Stonecrop class with HST integration and built-in Operation Log
 
 **Constructor:**
 
 ```typescript
-new Stonecrop(registry: Registry)
+new Stonecrop(registry: Registry, operationLogConfig: Partial<OperationLogConfig>)
 ```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| registry | `Registry` | The Registry instance containing doctype definitions |
+| operationLogConfig | `Partial<OperationLogConfig>` | Optional configuration for the operation log |
 
 **Properties:**
 
 | Property | Type | Description |
 |----------|------|-------------|
-| registry | `Registry` |  |
+| registry | `Registry` | The registry instance containing all doctype definitions |
 
 **Methods:**
 
@@ -1303,6 +1802,14 @@ Add a record to the store
 addRecord(doctype: string | DoctypeMeta, recordId: string, recordData: any): void
 ```
 
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `string \| DoctypeMeta` | The doctype |
+| recordId | `string` | The record ID |
+| recordData | `any` | The record data |
+
 #### clearRecords
 
 Clear all records for a doctype
@@ -1310,6 +1817,12 @@ Clear all records for a doctype
 ```typescript
 clearRecords(doctype: string | DoctypeMeta): void
 ```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `string \| DoctypeMeta` | The doctype |
 
 #### getMeta
 
@@ -1319,6 +1832,12 @@ Get doctype metadata from the registry
 getMeta(context: RouteContext): Promise<any>
 ```
 
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| context | `RouteContext` | The route context |
+
 #### getRecord
 
 Get single record from server (maintains compatibility)
@@ -1326,6 +1845,13 @@ Get single record from server (maintains compatibility)
 ```typescript
 getRecord(doctype: DoctypeMeta, recordId: string): Promise<void>
 ```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `DoctypeMeta` | The doctype |
+| recordId | `string` | The record ID |
 
 #### getRecordById
 
@@ -1335,6 +1861,13 @@ Get a specific record
 getRecordById(doctype: string | DoctypeMeta, recordId: string): HSTNode | undefined
 ```
 
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `string \| DoctypeMeta` | The doctype |
+| recordId | `string` | The record ID |
+
 #### getRecordIds
 
 Get all record IDs for a doctype
@@ -1343,6 +1876,12 @@ Get all record IDs for a doctype
 getRecordIds(doctype: string | DoctypeMeta): string[]
 ```
 
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `string \| DoctypeMeta` | The doctype |
+
 #### getRecords
 
 Get records from server (maintains compatibility)
@@ -1350,6 +1889,12 @@ Get records from server (maintains compatibility)
 ```typescript
 getRecords(doctype: DoctypeMeta): Promise<void>
 ```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `DoctypeMeta` | The doctype |
 
 #### getStore
 
@@ -1367,6 +1912,12 @@ Get records hash for a doctype
 records(doctype: string | DoctypeMeta): HSTNode
 ```
 
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `string \| DoctypeMeta` | The doctype to get records for |
+
 #### removeRecord
 
 Remove a record from the store
@@ -1375,13 +1926,28 @@ Remove a record from the store
 removeRecord(doctype: string | DoctypeMeta, recordId: string): void
 ```
 
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `string \| DoctypeMeta` | The doctype |
+| recordId | `string` | The record ID |
+
 #### runAction
 
-Run action on doctype (maintains compatibility)
+Run action on doctype Executes the action and logs it to the operation log for audit tracking
 
 ```typescript
-runAction(_doctype: DoctypeMeta, _action: string, _args: any[]): void
+runAction(doctype: DoctypeMeta, action: string, args: any[]): void
 ```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `DoctypeMeta` | The doctype |
+| action | `string` | The action to run |
+| args | `any[]` | Action arguments (typically record IDs) |
 
 #### setup
 
@@ -1390,6 +1956,12 @@ Setup method for doctype initialization
 ```typescript
 setup(doctype: DoctypeMeta): void
 ```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `DoctypeMeta` | The doctype to setup |
 
 ## Variables
 
@@ -1401,5 +1973,273 @@ Stonecrop Vue plugin
 
 ```typescript
 export const plugin: Plugin
+```
+
+### useOperationLogStore
+
+Global HST Operation Log Store Tracks all mutations with full metadata for undo/redo, sync, and audit
+
+**Type:**
+
+```typescript
+export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operation-log", Pick<{
+    operations: import("vue").Ref<{
+        id: string;
+        type: import("..").HSTOperationType;
+        path: string;
+        fieldname: string;
+        beforeValue: any;
+        afterValue: any;
+        doctype: string;
+        recordId?: string | undefined;
+        timestamp: Date;
+        source?: OperationSource | undefined;
+        reversible: boolean;
+        irreversibleReason?: string | undefined;
+        transition?: string | undefined;
+        currentState?: string | undefined;
+        targetState?: string | undefined;
+        actionName?: string | undefined;
+        actionRecordIds?: string[] | undefined;
+        actionResult?: "success" | "failure" | "pending" | undefined;
+        actionError?: string | undefined;
+        userId?: string | undefined;
+        metadata?: Record<string, any> | undefined;
+        parentOperationId?: string | undefined;
+        childOperationIds?: string[] | undefined;
+    }[], HSTOperation[] | {
+        id: string;
+        type: import("..").HSTOperationType;
+        path: string;
+        fieldname: string;
+        beforeValue: any;
+        afterValue: any;
+        doctype: string;
+        recordId?: string | undefined;
+        timestamp: Date;
+        source?: OperationSource | undefined;
+        reversible: boolean;
+        irreversibleReason?: string | undefined;
+        transition?: string | undefined;
+        currentState?: string | undefined;
+        targetState?: string | undefined;
+        actionName?: string | undefined;
+        actionRecordIds?: string[] | undefined;
+        actionResult?: "success" | "failure" | "pending" | undefined;
+        actionError?: string | undefined;
+        userId?: string | undefined;
+        metadata?: Record<string, any> | undefined;
+        parentOperationId?: string | undefined;
+        childOperationIds?: string[] | undefined;
+    }[]>;
+    currentIndex: import("vue").Ref<number, number>;
+    config: import("vue").Ref<{
+        maxOperations?: number | undefined;
+        enableCrossTabSync?: boolean | undefined;
+        autoSyncInterval?: number | undefined;
+        enablePersistence?: boolean | undefined;
+        persistenceKeyPrefix?: string | undefined;
+        userId?: string | undefined;
+        operationFilter?: ((operation: HSTOperation) => boolean) | undefined;
+    }, OperationLogConfig | {
+        maxOperations?: number | undefined;
+        enableCrossTabSync?: boolean | undefined;
+        autoSyncInterval?: number | undefined;
+        enablePersistence?: boolean | undefined;
+        persistenceKeyPrefix?: string | undefined;
+        userId?: string | undefined;
+        operationFilter?: ((operation: HSTOperation) => boolean) | undefined;
+    }>;
+    clientId: import("vue").Ref<string, string>;
+    undoRedoState: import("vue").ComputedRef<UndoRedoState>;
+    canUndo: import("vue").ComputedRef<boolean>;
+    canRedo: import("vue").ComputedRef<boolean>;
+    undoCount: import("vue").ComputedRef<number>;
+    redoCount: import("vue").ComputedRef<number>;
+    configure: (options: Partial<OperationLogConfig>) => void;
+    addOperation: (operation: HSTOperationInput, source?: OperationSource) => string;
+    startBatch: () => void;
+    commitBatch: (description?: string) => string | null;
+    cancelBatch: () => void;
+    undo: (store: HSTNode) => boolean;
+    redo: (store: HSTNode) => boolean;
+    clear: () => void;
+    getOperationsFor: (doctype: string, recordId?: string) => HSTOperation[];
+    getSnapshot: () => OperationLogSnapshot;
+    markIrreversible: (operationId: string, reason: string) => void;
+    logAction: (doctype: string, actionName: string, recordIds?: string[], result?: "success" | "failure" | "pending", error?: string) => string;
+}, "operations" | "clientId" | "currentIndex" | "config">, Pick<{
+    operations: import("vue").Ref<{
+        id: string;
+        type: import("..").HSTOperationType;
+        path: string;
+        fieldname: string;
+        beforeValue: any;
+        afterValue: any;
+        doctype: string;
+        recordId?: string | undefined;
+        timestamp: Date;
+        source?: OperationSource | undefined;
+        reversible: boolean;
+        irreversibleReason?: string | undefined;
+        transition?: string | undefined;
+        currentState?: string | undefined;
+        targetState?: string | undefined;
+        actionName?: string | undefined;
+        actionRecordIds?: string[] | undefined;
+        actionResult?: "success" | "failure" | "pending" | undefined;
+        actionError?: string | undefined;
+        userId?: string | undefined;
+        metadata?: Record<string, any> | undefined;
+        parentOperationId?: string | undefined;
+        childOperationIds?: string[] | undefined;
+    }[], HSTOperation[] | {
+        id: string;
+        type: import("..").HSTOperationType;
+        path: string;
+        fieldname: string;
+        beforeValue: any;
+        afterValue: any;
+        doctype: string;
+        recordId?: string | undefined;
+        timestamp: Date;
+        source?: OperationSource | undefined;
+        reversible: boolean;
+        irreversibleReason?: string | undefined;
+        transition?: string | undefined;
+        currentState?: string | undefined;
+        targetState?: string | undefined;
+        actionName?: string | undefined;
+        actionRecordIds?: string[] | undefined;
+        actionResult?: "success" | "failure" | "pending" | undefined;
+        actionError?: string | undefined;
+        userId?: string | undefined;
+        metadata?: Record<string, any> | undefined;
+        parentOperationId?: string | undefined;
+        childOperationIds?: string[] | undefined;
+    }[]>;
+    currentIndex: import("vue").Ref<number, number>;
+    config: import("vue").Ref<{
+        maxOperations?: number | undefined;
+        enableCrossTabSync?: boolean | undefined;
+        autoSyncInterval?: number | undefined;
+        enablePersistence?: boolean | undefined;
+        persistenceKeyPrefix?: string | undefined;
+        userId?: string | undefined;
+        operationFilter?: ((operation: HSTOperation) => boolean) | undefined;
+    }, OperationLogConfig | {
+        maxOperations?: number | undefined;
+        enableCrossTabSync?: boolean | undefined;
+        autoSyncInterval?: number | undefined;
+        enablePersistence?: boolean | undefined;
+        persistenceKeyPrefix?: string | undefined;
+        userId?: string | undefined;
+        operationFilter?: ((operation: HSTOperation) => boolean) | undefined;
+    }>;
+    clientId: import("vue").Ref<string, string>;
+    undoRedoState: import("vue").ComputedRef<UndoRedoState>;
+    canUndo: import("vue").ComputedRef<boolean>;
+    canRedo: import("vue").ComputedRef<boolean>;
+    undoCount: import("vue").ComputedRef<number>;
+    redoCount: import("vue").ComputedRef<number>;
+    configure: (options: Partial<OperationLogConfig>) => void;
+    addOperation: (operation: HSTOperationInput, source?: OperationSource) => string;
+    startBatch: () => void;
+    commitBatch: (description?: string) => string | null;
+    cancelBatch: () => void;
+    undo: (store: HSTNode) => boolean;
+    redo: (store: HSTNode) => boolean;
+    clear: () => void;
+    getOperationsFor: (doctype: string, recordId?: string) => HSTOperation[];
+    getSnapshot: () => OperationLogSnapshot;
+    markIrreversible: (operationId: string, reason: string) => void;
+    logAction: (doctype: string, actionName: string, recordIds?: string[], result?: "success" | "failure" | "pending", error?: string) => string;
+}, "undoRedoState" | "canUndo" | "canRedo" | "undoCount" | "redoCount">, Pick<{
+    operations: import("vue").Ref<{
+        id: string;
+        type: import("..").HSTOperationType;
+        path: string;
+        fieldname: string;
+        beforeValue: any;
+        afterValue: any;
+        doctype: string;
+        recordId?: string | undefined;
+        timestamp: Date;
+        source?: OperationSource | undefined;
+        reversible: boolean;
+        irreversibleReason?: string | undefined;
+        transition?: string | undefined;
+        currentState?: string | undefined;
+        targetState?: string | undefined;
+        actionName?: string | undefined;
+        actionRecordIds?: string[] | undefined;
+        actionResult?: "success" | "failure" | "pending" | undefined;
+        actionError?: string | undefined;
+        userId?: string | undefined;
+        metadata?: Record<string, any> | undefined;
+        parentOperationId?: string | undefined;
+        childOperationIds?: string[] | undefined;
+    }[], HSTOperation[] | {
+        id: string;
+        type: import("..").HSTOperationType;
+        path: string;
+        fieldname: string;
+        beforeValue: any;
+        afterValue: any;
+        doctype: string;
+        recordId?: string | undefined;
+        timestamp: Date;
+        source?: OperationSource | undefined;
+        reversible: boolean;
+        irreversibleReason?: string | undefined;
+        transition?: string | undefined;
+        currentState?: string | undefined;
+        targetState?: string | undefined;
+        actionName?: string | undefined;
+        actionRecordIds?: string[] | undefined;
+        actionResult?: "success" | "failure" | "pending" | undefined;
+        actionError?: string | undefined;
+        userId?: string | undefined;
+        metadata?: Record<string, any> | undefined;
+        parentOperationId?: string | undefined;
+        childOperationIds?: string[] | undefined;
+    }[]>;
+    currentIndex: import("vue").Ref<number, number>;
+    config: import("vue").Ref<{
+        maxOperations?: number | undefined;
+        enableCrossTabSync?: boolean | undefined;
+        autoSyncInterval?: number | undefined;
+        enablePersistence?: boolean | undefined;
+        persistenceKeyPrefix?: string | undefined;
+        userId?: string | undefined;
+        operationFilter?: ((operation: HSTOperation) => boolean) | undefined;
+    }, OperationLogConfig | {
+        maxOperations?: number | undefined;
+        enableCrossTabSync?: boolean | undefined;
+        autoSyncInterval?: number | undefined;
+        enablePersistence?: boolean | undefined;
+        persistenceKeyPrefix?: string | undefined;
+        userId?: string | undefined;
+        operationFilter?: ((operation: HSTOperation) => boolean) | undefined;
+    }>;
+    clientId: import("vue").Ref<string, string>;
+    undoRedoState: import("vue").ComputedRef<UndoRedoState>;
+    canUndo: import("vue").ComputedRef<boolean>;
+    canRedo: import("vue").ComputedRef<boolean>;
+    undoCount: import("vue").ComputedRef<number>;
+    redoCount: import("vue").ComputedRef<number>;
+    configure: (options: Partial<OperationLogConfig>) => void;
+    addOperation: (operation: HSTOperationInput, source?: OperationSource) => string;
+    startBatch: () => void;
+    commitBatch: (description?: string) => string | null;
+    cancelBatch: () => void;
+    undo: (store: HSTNode) => boolean;
+    redo: (store: HSTNode) => boolean;
+    clear: () => void;
+    getOperationsFor: (doctype: string, recordId?: string) => HSTOperation[];
+    getSnapshot: () => OperationLogSnapshot;
+    markIrreversible: (operationId: string, reason: string) => void;
+    logAction: (doctype: string, actionName: string, recordIds?: string[], result?: "success" | "failure" | "pending", error?: string) => string;
+}, "undo" | "redo" | "configure" | "addOperation" | "startBatch" | "commitBatch" | "cancelBatch" | "clear" | "getOperationsFor" | "getSnapshot" | "markIrreversible" | "logAction">>
 ```
 

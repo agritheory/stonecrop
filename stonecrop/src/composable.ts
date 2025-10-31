@@ -1,18 +1,58 @@
 // src/composable.ts
-import { inject, onMounted, Ref, ref, watch, provide } from 'vue'
+import { inject, onMounted, Ref, ref, watch, provide, computed, ComputedRef } from 'vue'
 
 import Registry from './registry'
 import { Stonecrop } from './stonecrop'
 import DoctypeMeta from './doctype'
 import type { HSTNode } from './stores/hst'
 import { RouteContext } from './types/registry'
+import { storeToRefs } from 'pinia'
+import type { HSTOperation, OperationLogConfig, OperationLogSnapshot } from './types/operation-log'
 
 /**
- * Base Stonecrop composable return type
+ * Operation Log API - nested object containing all operation log functionality
+ * @public
+ */
+export type OperationLogAPI = {
+	operations: Ref<HSTOperation[]>
+	currentIndex: Ref<number>
+	undoRedoState: ComputedRef<{
+		canUndo: boolean
+		canRedo: boolean
+		undoCount: number
+		redoCount: number
+		currentIndex: number
+	}>
+	canUndo: ComputedRef<boolean>
+	canRedo: ComputedRef<boolean>
+	undoCount: ComputedRef<number>
+	redoCount: ComputedRef<number>
+	undo: (hstStore: HSTNode) => boolean
+	redo: (hstStore: HSTNode) => boolean
+	startBatch: () => void
+	commitBatch: (description?: string) => string | null
+	cancelBatch: () => void
+	clear: () => void
+	getOperationsFor: (doctype: string, recordId?: string) => HSTOperation[]
+	getSnapshot: () => OperationLogSnapshot
+	markIrreversible: (operationId: string, reason: string) => void
+	logAction: (
+		doctype: string,
+		actionName: string,
+		recordIds?: string[],
+		result?: 'success' | 'failure' | 'pending',
+		error?: string
+	) => string
+	configure: (options: Partial<OperationLogConfig>) => void
+}
+
+/**
+ * Base Stonecrop composable return type - includes operation log functionality
  * @public
  */
 export type BaseStonecropReturn = {
 	stonecrop: Ref<Stonecrop | undefined>
+	operationLog: OperationLogAPI
 }
 
 /**
@@ -46,6 +86,10 @@ export type HSTChangeData = {
  */
 export function useStonecrop(): BaseStonecropReturn | HSTStonecropReturn
 /**
+ * Unified Stonecrop composable with HST integration for a specific doctype and record
+ *
+ * @param options - Configuration with doctype and optional recordId
+ * @returns Stonecrop instance with full HST integration utilities
  * @public
  */
 export function useStonecrop(options: {
@@ -73,6 +117,83 @@ export function useStonecrop(options?: {
 	const routerDoctype = ref<DoctypeMeta | undefined>()
 	const routerRecordId = ref<string | undefined>()
 
+	// Operation log state and methods - will be populated after stonecrop instance is created
+	const operations = ref<HSTOperation[]>([])
+	const currentIndex = ref(-1)
+	const canUndo = computed(() => stonecrop.value?.getOperationLogStore().canUndo ?? false)
+	const canRedo = computed(() => stonecrop.value?.getOperationLogStore().canRedo ?? false)
+	const undoCount = computed(() => stonecrop.value?.getOperationLogStore().undoCount ?? 0)
+	const redoCount = computed(() => stonecrop.value?.getOperationLogStore().redoCount ?? 0)
+	const undoRedoState = computed(
+		() =>
+			stonecrop.value?.getOperationLogStore().undoRedoState ?? {
+				canUndo: false,
+				canRedo: false,
+				undoCount: 0,
+				redoCount: 0,
+				currentIndex: -1,
+			}
+	)
+
+	// Operation log methods
+	const undo = (hstStore: HSTNode): boolean => {
+		return stonecrop.value?.getOperationLogStore().undo(hstStore) ?? false
+	}
+
+	const redo = (hstStore: HSTNode): boolean => {
+		return stonecrop.value?.getOperationLogStore().redo(hstStore) ?? false
+	}
+
+	const startBatch = () => {
+		stonecrop.value?.getOperationLogStore().startBatch()
+	}
+
+	const commitBatch = (description?: string): string | null => {
+		return stonecrop.value?.getOperationLogStore().commitBatch(description) ?? null
+	}
+
+	const cancelBatch = () => {
+		stonecrop.value?.getOperationLogStore().cancelBatch()
+	}
+
+	const clear = () => {
+		stonecrop.value?.getOperationLogStore().clear()
+	}
+
+	const getOperationsFor = (doctype: string, recordId?: string) => {
+		return stonecrop.value?.getOperationLogStore().getOperationsFor(doctype, recordId) ?? []
+	}
+
+	const getSnapshot = () => {
+		return (
+			stonecrop.value?.getOperationLogStore().getSnapshot() ?? {
+				operations: [],
+				currentIndex: -1,
+				totalOperations: 0,
+				reversibleOperations: 0,
+				irreversibleOperations: 0,
+			}
+		)
+	}
+
+	const markIrreversible = (operationId: string, reason: string) => {
+		stonecrop.value?.getOperationLogStore().markIrreversible(operationId, reason)
+	}
+
+	const logAction = (
+		doctype: string,
+		actionName: string,
+		recordIds?: string[],
+		result: 'success' | 'failure' | 'pending' = 'success',
+		error?: string
+	): string => {
+		return stonecrop.value?.getOperationLogStore().logAction(doctype, actionName, recordIds, result, error) ?? ''
+	}
+
+	const configure = (config: Partial<OperationLogConfig>) => {
+		stonecrop.value?.getOperationLogStore().configure(config)
+	}
+
 	// Initialize Stonecrop instance
 	onMounted(async () => {
 		if (!registry) {
@@ -80,6 +201,31 @@ export function useStonecrop(options?: {
 		}
 
 		stonecrop.value = providedStonecrop || new Stonecrop(registry)
+
+		// Set up reactive refs from operation log store - only if Pinia is available
+		try {
+			const opLogStore = stonecrop.value.getOperationLogStore()
+			const opLogRefs = storeToRefs(opLogStore)
+			operations.value = opLogRefs.operations.value
+			currentIndex.value = opLogRefs.currentIndex.value
+
+			// Watch for changes in operation log state
+			watch(
+				() => opLogRefs.operations.value,
+				newOps => {
+					operations.value = newOps
+				}
+			)
+			watch(
+				() => opLogRefs.currentIndex.value,
+				newIndex => {
+					currentIndex.value = newIndex
+				}
+			)
+		} catch {
+			// Pinia not available (e.g., in tests) - operation log features will not be available
+			// Silently fail - operation log is optional
+		}
 
 		// Handle router-based setup if no specific doctype provided
 		if (!options.doctype && registry.router) {
@@ -232,11 +378,33 @@ export function useStonecrop(options?: {
 		provide('hstChangeHandler', handleHSTChange)
 	}
 
+	// Create operation log API object
+	const operationLog: OperationLogAPI = {
+		operations,
+		currentIndex,
+		undoRedoState,
+		canUndo,
+		canRedo,
+		undoCount,
+		redoCount,
+		undo,
+		redo,
+		startBatch,
+		commitBatch,
+		cancelBatch,
+		clear,
+		getOperationsFor,
+		getSnapshot,
+		markIrreversible,
+		logAction,
+		configure,
+	}
 	// Always return HST functions if doctype is provided or will be loaded from router
 	if (options.doctype) {
 		// Explicit doctype - return HST immediately
 		return {
 			stonecrop,
+			operationLog,
 			provideHSTPath,
 			handleHSTChange,
 			hstStore,
@@ -246,6 +414,7 @@ export function useStonecrop(options?: {
 		// Router-based - return HST (will be populated after mount)
 		return {
 			stonecrop,
+			operationLog,
 			provideHSTPath,
 			handleHSTChange,
 			hstStore,
@@ -254,7 +423,10 @@ export function useStonecrop(options?: {
 	}
 
 	// No doctype and no router - basic mode
-	return { stonecrop } as BaseStonecropReturn
+	return {
+		stonecrop,
+		operationLog,
+	} as BaseStonecropReturn
 }
 
 /**
