@@ -27,7 +27,7 @@ const getOutput = computed(() => {
 })
 
 const getColor = (color: BeamColor) => {
-	return color.substr(0, 2) == '--' ? `var(${color})` : color
+	return color?.substring(0, 2) == '--' ? `var(${color})` : color
 }
 </script>
 

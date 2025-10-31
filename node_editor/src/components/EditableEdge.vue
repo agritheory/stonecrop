@@ -14,8 +14,8 @@
 			<div v-if="showInput" class="label-input-wrapper">
 				<input
 					ref="labelInput"
-					class="label-input"
 					v-model="newLabel"
+					class="label-input"
 					@blur="showInput = false"
 					@keypress.enter="submitNewLabel" />
 			</div>

@@ -17,6 +17,7 @@ import BeamModal from './components/BeamModal.vue';
 import BeamModalOutlet from './components/BeamModalOutlet.vue';
 import BeamProgress from './components/BeamProgress.vue';
 import Confirm from './components/Confirm.vue';
+import { CSSProperties } from 'vue';
 import FixedTop from './components/FixedTop.vue';
 import type { IClientOptions } from 'mqtt';
 import ItemCheck from './components/ItemCheck.vue';
@@ -38,7 +39,7 @@ export { BeamArrow }
 export { BeamBtn }
 
 // @public (undocumented)
-export type BeamColor = RGB | RGBA | HEX | HSL | HSLA | string;
+export type BeamColor = RGB | RGBA | HEX | HSL | HSLA | CSSProperties['color'];
 
 export { BeamDayDivider }
 

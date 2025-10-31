@@ -14,6 +14,7 @@ import { computed } from 'vue'
 
 const { stonecrop } = useStonecrop()
 const rows = computed(() => stonecrop.value?.store.records)
+// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
 const columns = computed((): TableColumn[] => stonecrop.value?.schema?.schema?.toArray())
 const config = { view: 'list' }
 </script>

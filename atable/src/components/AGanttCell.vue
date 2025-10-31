@@ -75,9 +75,9 @@ const {
 	rowIndex,
 	colIndex,
 	start = 0,
-	end,
+	end = 0,
 	colspan = 1,
-	label,
+	label = '',
 	color = '#cccccc',
 } = defineProps<{
 	store: ReturnType<typeof createTableStore>
@@ -100,12 +100,12 @@ const barColor = ref(color.length >= 6 ? color : '#cccccc')
 const barId = `gantt-bar-row-${rowIndex}-col-${colIndex}`
 
 // Template refs
-const containerRef = useTemplateRef('container')
-const barRef = useTemplateRef('bar')
-const leftResizeHandleRef = useTemplateRef('leftResizeHandle')
-const rightResizeHandleRef = useTemplateRef('rightResizeHandle')
-const leftConnectionHandleRef = useTemplateRef('leftConnectionHandle')
-const rightConnectionHandleRef = useTemplateRef('rightConnectionHandle')
+const containerRef = useTemplateRef<HTMLDivElement>('container')
+const barRef = useTemplateRef<HTMLDivElement>('bar')
+const leftResizeHandleRef = useTemplateRef<HTMLDivElement>('leftResizeHandle')
+const rightResizeHandleRef = useTemplateRef<HTMLDivElement>('rightResizeHandle')
+const leftConnectionHandleRef = useTemplateRef<HTMLDivElement>('leftConnectionHandle')
+const rightConnectionHandleRef = useTemplateRef<HTMLDivElement>('rightConnectionHandle')
 
 // Position tracking
 const { width: totalBarWidth } = useElementBounding(containerRef)

@@ -251,7 +251,7 @@ export interface IMqttStream {
 **Definition:**
 
 ```typescript
-export type BeamColor = RGB | RGBA | HEX | HSL | HSLA | string;
+export type BeamColor = RGB | RGBA | HEX | HSL | HSLA | CSSProperties['color'];
 ```
 
 ### BeamFilterChoice

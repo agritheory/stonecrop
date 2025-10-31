@@ -13,11 +13,11 @@
 							<label id="login-email" for="email" class="aform_field-label">Email</label>
 							<input
 								id="email"
+								v-model="email"
 								class="aform_input-field"
 								name="email"
 								placeholder="name@example.com"
 								type="email"
-								v-model="email"
 								auto-capitalize="none"
 								auto-complete="email"
 								auto-correct="off"
@@ -28,14 +28,14 @@
 							<label id="login-password" for="password" class="aform_field-label">Password</label>
 							<input
 								id="password"
+								v-model="password"
 								class="aform_input-field"
 								name="password"
 								type="password"
-								v-model="password"
 								:disabled="isLoading" />
 						</div>
 
-						<button class="btn" @click="onSubmit" :disabled="isLoading || !email || !password">
+						<button class="btn" :disabled="isLoading || !email || !password" @click="onSubmit">
 							<span v-if="isLoading" class="material-symbols-outlined loading-icon">progress_activity</span>
 							<span id="login-form-button">Login</span>
 						</button>

@@ -185,8 +185,12 @@ export class Stonecrop {
 			// TODO: should this happen with or without the workflow?
 			if (actions && actions.length > 0) {
 				actions.forEach(action => {
+					// TODO: Replace Function constructor with a safer action execution mechanism
+					// This is currently flagged as a security risk (implied eval)
+					// Consider using a registry of pre-defined action functions instead
 					// eslint-disable-next-line @typescript-eslint/no-implied-eval
 					const actionFn = new Function(action)
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-call
 					actionFn(id)
 				})
 			}

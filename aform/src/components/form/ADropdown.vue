@@ -1,5 +1,5 @@
 <template>
-	<div class="autocomplete" :class="{ isOpen: dropdown.open }" v-on-click-outside="onClickOutside">
+	<div v-on-click-outside="onClickOutside" class="autocomplete" :class="{ isOpen: dropdown.open }">
 		<div class="input-wrapper">
 			<input
 				v-model="search"
@@ -12,15 +12,15 @@
 				@keydown.esc="onClickOutside"
 				@keydown.tab="onClickOutside" />
 
-			<ul id="autocomplete-results" v-show="dropdown.open" class="autocomplete-results">
-				<li class="loading autocomplete-result" v-if="dropdown.loading">Loading results...</li>
+			<ul v-show="dropdown.open" id="autocomplete-results" class="autocomplete-results">
+				<li v-if="dropdown.loading" class="loading autocomplete-result">Loading results...</li>
 				<li
-					v-else
 					v-for="(result, i) in dropdown.results"
+					v-else
 					:key="result"
-					@click.stop="setResult(result)"
 					class="autocomplete-result"
-					:class="{ 'is-active': i === dropdown.activeItemIndex }">
+					:class="{ 'is-active': i === dropdown.activeItemIndex }"
+					@click.stop="setResult(result)">
 					{{ result }}
 				</li>
 			</ul>
@@ -33,7 +33,12 @@
 import { vOnClickOutside } from '@vueuse/components'
 import { reactive } from 'vue'
 
-const { label, items, isAsync, filterFunction } = defineProps<{
+const {
+	label,
+	items = [],
+	isAsync = false,
+	filterFunction = undefined,
+} = defineProps<{
 	label: string
 	items?: string[]
 	isAsync?: boolean
@@ -52,11 +57,12 @@ const onClickOutside = () => closeDropdown()
 
 const filter = async () => {
 	dropdown.open = true
+	dropdown.activeItemIndex = null
 	if (filterFunction) {
 		if (isAsync) dropdown.loading = true
 		try {
 			const filteredResults = await filterFunction(search.value || '')
-			dropdown.results = filteredResults
+			dropdown.results = filteredResults || []
 		} catch {
 			dropdown.results = []
 		} finally {
@@ -109,7 +115,11 @@ const selectPrevResult = () => {
 	const resultsLength = dropdown.results?.length || 0
 	if (dropdown.activeItemIndex != null) {
 		const currentIndex = isNaN(dropdown.activeItemIndex) ? 0 : dropdown.activeItemIndex
-		dropdown.activeItemIndex = (currentIndex - 1 + resultsLength) % resultsLength
+		if (currentIndex === 0) {
+			dropdown.activeItemIndex = null
+		} else {
+			dropdown.activeItemIndex = currentIndex - 1
+		}
 	} else {
 		dropdown.activeItemIndex = resultsLength - 1
 	}

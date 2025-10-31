@@ -21,7 +21,7 @@ const NAMED_MASKS = {
  */
 function extractMaskFn(mask: string): ((args: any) => string) | void {
 	try {
-		// eslint-disable-next-line @typescript-eslint/no-implied-eval
+		// eslint-disable-next-line @typescript-eslint/no-implied-eval, @typescript-eslint/no-unsafe-call
 		return Function(`"use strict";return (${mask})`)()
 	} catch (error) {
 		if (error instanceof ReferenceError) {

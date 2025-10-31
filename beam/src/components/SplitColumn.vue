@@ -1,7 +1,5 @@
 <template>
-	<div
-		class="two-column"
-		:style="{ justifyContent: justifyContent || 'space-between', alignItems: alignItems || 'flex-start' }">
+	<div class="two-column" :style="{ justifyContent, alignItems }">
 		<div class="column column-left">
 			<slot name="left"></slot>
 		</div>
@@ -12,9 +10,11 @@
 </template>
 
 <script setup lang="ts">
-const { justifyContent, alignItems } = defineProps<{
-	justifyContent?: string
-	alignItems?: string
+import type { CSSProperties } from 'vue'
+
+const { justifyContent = 'space-between', alignItems = 'flex-start' } = defineProps<{
+	justifyContent?: CSSProperties['justifyContent']
+	alignItems?: CSSProperties['alignItems']
 }>()
 </script>
 

@@ -11,14 +11,14 @@ Install all utility components
 **Signature:**
 
 ```typescript
-declare function install(app: App): void;
+declare function install(_app: App): void;
 ```
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| app | `App` |  |
+| _app | `App` |  |
 
 ### useKeyboardNav
 

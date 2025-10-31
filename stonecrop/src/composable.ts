@@ -32,16 +32,14 @@ export function useStonecrop(registry?: Registry): StonecropReturn {
 		let store: ReturnType<typeof useDataStore>
 		try {
 			store = useDataStore()
-		} catch (e) {
+		} catch {
 			throw new Error('Please enable the Stonecrop plugin before using the Stonecrop composable')
 		}
 
 		stonecrop.value = new Stonecrop(registry, store)
 		const route = registry.router.currentRoute.value
 		const doctypeSlug = route.params.records?.toString().toLowerCase()
-		const recordId = route.params.record?.toString().toLowerCase()
-
-		// TODO: handle views other than list and form views?
+		const recordId = route.params.record?.toString().toLowerCase() // TODO: handle views other than list and form views?
 		if (!doctypeSlug && !recordId) {
 			return
 		}

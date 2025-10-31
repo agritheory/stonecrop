@@ -8,7 +8,7 @@ const { resolve } = createResolver(import.meta.url)
 
 // Define module options interface
 export interface ModuleOptions {
-	router?: Record<string, any>
+	router?: Record<string, unknown>
 	docbuilder?: boolean
 }
 

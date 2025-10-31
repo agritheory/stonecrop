@@ -3,31 +3,31 @@
 		<!-- Main table view -->
 		<table
 			ref="table"
+			v-on-click-outside="store.closeModal"
 			class="atable"
 			:style="{
 				width: store.config.fullWidth ? '100%' : 'auto',
-			}"
-			v-on-click-outside="store.closeModal">
+			}">
 			<slot name="header" :data="store">
 				<ATableHeader :columns="store.columns" :store="store" />
 			</slot>
 
 			<tbody>
 				<slot name="body" :data="store">
-					<ARow v-for="(row, rowIndex) in store.rows" :key="row.id" :row="row" :rowIndex="rowIndex" :store="store">
+					<ARow v-for="(row, rowIndex) in store.rows" :key="row.id" :row="row" :row-index="rowIndex" :store="store">
 						<template v-for="(column, colIndex) in getProcessedColumnsForRow(row)" :key="column.name">
 							<component
-								v-if="column.isGantt"
 								:is="column.ganttComponent || 'AGanttCell'"
+								v-if="column.isGantt"
 								:store="store"
-								:columnsCount="store.columns.length - pinnedColumnCount"
+								:columns-count="store.columns.length - pinnedColumnCount"
 								:color="row.gantt?.color"
 								:start="row.gantt?.startIndex"
 								:end="row.gantt?.endIndex"
 								:colspan="column.colspan"
 								:pinned="column.pinned"
-								:rowIndex="rowIndex"
-								:colIndex="column.originalIndex ?? colIndex"
+								:row-index="rowIndex"
+								:col-index="column.originalIndex ?? colIndex"
 								:style="{
 									textAlign: column?.align || 'center',
 									minWidth: column?.width || '40ch',
@@ -35,12 +35,12 @@
 								}"
 								@connection:create="handleConnectionCreate" />
 							<component
-								v-else
 								:is="column.cellComponent || 'ACell'"
+								v-else
 								:store="store"
 								:pinned="column.pinned"
-								:rowIndex="rowIndex"
-								:colIndex="colIndex"
+								:row-index="rowIndex"
+								:col-index="colIndex"
 								:style="{
 									textAlign: column?.align || 'center',
 									width: store.config.fullWidth ? 'auto' : null,
@@ -58,10 +58,10 @@
 				<ATableModal v-show="store.modal.visible" :store="store">
 					<template #default>
 						<component
-							:key="`${store.modal.rowIndex}:${store.modal.colIndex}`"
 							:is="store.modal.component"
-							:colIndex="store.modal.colIndex"
-							:rowIndex="store.modal.rowIndex"
+							:key="`${store.modal.rowIndex}:${store.modal.colIndex}`"
+							:col-index="store.modal.colIndex"
+							:row-index="store.modal.rowIndex"
 							:store="store"
 							v-bind="store.modal.componentProps" />
 					</template>
@@ -92,7 +92,7 @@ import type { ConnectionEvent, ConnectionPath, GanttDragEvent, TableColumn, Tabl
 const rows = defineModel<TableRow[]>('rows', { required: true })
 const columns = defineModel<TableColumn[]>('columns', { required: true })
 
-const { id, config = new Object() } = defineProps<{
+const { id = '', config = new Object() } = defineProps<{
 	id?: string
 	config?: TableConfig
 }>()

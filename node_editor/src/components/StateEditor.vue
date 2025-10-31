@@ -13,7 +13,7 @@ import type { EditorStates, FlowElement, FlowElements, Layout } from '../types'
 
 const emit = defineEmits(['update:modelValue'])
 const states = defineModel<EditorStates>()
-const { layout, nodeContainerClass } = defineProps<{
+const { layout, nodeContainerClass = '' } = defineProps<{
 	layout: Layout
 	nodeContainerClass?: HTMLAttributes['class']
 }>()
@@ -53,7 +53,6 @@ const elements = computed<FlowElements>({
 					// where 'target' can be accessed. Otherwise, 'edgeValue' will be available directly.
 
 					// TODO: resolve type issues with xstate
-					// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 					const target = edgeValue.target || edgeValue
 					stateElements.push({
 						id: `${key}-${target}`,
@@ -63,7 +62,6 @@ const elements = computed<FlowElements>({
 						animated: true,
 					})
 
-					// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 					hasInputs[target] = true
 				}
 			}
