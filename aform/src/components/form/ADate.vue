@@ -1,10 +1,10 @@
 <template>
 	<div>
 		<input
-			v-model="inputDate"
-			ref="date"
-			type="date"
 			:id="uuid"
+			ref="date"
+			v-model="inputDate"
+			type="date"
 			:disabled="readonly"
 			:required="required"
 			@click="showPicker" />

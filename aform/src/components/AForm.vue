@@ -1,11 +1,11 @@
 <template>
 	<form class="aform">
 		<component
-			v-for="(componentObj, key) in modelValue"
 			:is="componentObj.component"
+			v-for="(componentObj, key) in modelValue"
 			:key="key"
-			:schema="componentObj"
 			v-model="childModels[key].value"
+			:schema="componentObj"
 			:data="formData[componentObj.fieldname]"
 			:readonly="readonly"
 			v-bind="componentProps(componentObj)">

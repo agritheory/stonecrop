@@ -3,6 +3,10 @@
   "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/approved-packages.schema.json",
   "packages": [
     {
+      "name": "@eslint/js",
+      "allowedCategories": [ "prototype", "utilities" ]
+    },
+    {
       "name": "@histoire/plugin-vue",
       "allowedCategories": [ "prototype", "utilities" ]
     },
@@ -103,14 +107,6 @@
       "allowedCategories": [ "prototype" ]
     },
     {
-      "name": "@typescript-eslint/eslint-plugin",
-      "allowedCategories": [ "prototype", "utilities" ]
-    },
-    {
-      "name": "@typescript-eslint/parser",
-      "allowedCategories": [ "prototype", "utilities" ]
-    },
-    {
       "name": "@vitejs/plugin-vue",
       "allowedCategories": [ "prototype", "utilities" ]
     },
@@ -164,6 +160,10 @@
     },
     {
       "name": "eslint-plugin-vue",
+      "allowedCategories": [ "prototype", "utilities" ]
+    },
+    {
+      "name": "globals",
       "allowedCategories": [ "prototype", "utilities" ]
     },
     {
@@ -284,6 +284,10 @@
     },
     {
       "name": "typescript",
+      "allowedCategories": [ "prototype", "utilities" ]
+    },
+    {
+      "name": "typescript-eslint",
       "allowedCategories": [ "prototype", "utilities" ]
     },
     {

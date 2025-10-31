@@ -185,7 +185,6 @@ export class Stonecrop {
 			// TODO: should this happen with or without the workflow?
 			if (actions && actions.length > 0) {
 				actions.forEach(action => {
-					// eslint-disable-next-line @typescript-eslint/no-implied-eval
 					const actionFn = new Function(action)
 					actionFn(id)
 				})

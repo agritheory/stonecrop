@@ -15,7 +15,6 @@ const schema = ref<SchemaTypes[]>([])
 
 watch(stonecrop, () => {
 	if (stonecrop.value) {
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
 		let newSchema = stonecrop.value.schema?.schema.toArray()
 		if (!newSchema) {
 			newSchema = []

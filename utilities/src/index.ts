@@ -8,7 +8,6 @@ export type * from './types'
  * @param app - Vue app instance
  * @public
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function install(app: App /* options */) {}
 
 export { defaultKeypressHandlers, install, useKeyboardNav }

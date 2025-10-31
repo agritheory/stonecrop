@@ -18,7 +18,6 @@ const { width: modalWidth, height: modalHeight } = useElementBounding(amodalRef)
 const amodalStyles = computed(() => {
 	if (!(store.modal.height && store.modal.width && store.modal.left && store.modal.bottom)) return
 
-	// eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
 	const table = store.modal.cell?.closest('table')!
 	const maxHeight = table.offsetHeight || 0
 	const maxWidth = table.offsetWidth || 0

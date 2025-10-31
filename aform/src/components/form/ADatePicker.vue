@@ -1,11 +1,11 @@
 <template>
-	<div class="adatepicker" tabindex="0" ref="datepicker">
+	<div ref="datepicker" class="adatepicker" tabindex="0">
 		<table>
 			<tbody>
 				<tr>
-					<td id="previous-month-btn" @click="previousMonth" :tabindex="-1">&lt;</td>
+					<td id="previous-month-btn" :tabindex="-1" @click="previousMonth">&lt;</td>
 					<th colspan="5" :tabindex="-1">{{ monthAndYear }}</th>
-					<td id="next-month-btn" @click="nextMonth" :tabindex="-1">&gt;</td>
+					<td id="next-month-btn" :tabindex="-1" @click="nextMonth">&gt;</td>
 				</tr>
 				<tr class="days-header">
 					<td>M</td>
@@ -25,12 +25,12 @@
 						:contenteditable="false"
 						:spellcheck="false"
 						:tabindex="0"
-						@click.prevent.stop="selectDate(getCurrentCell(rowNo, colNo))"
-						@keydown.enter="selectDate(getCurrentCell(rowNo, colNo))"
 						:class="{
 							todaysDate: isTodaysDate(getCurrentDate(rowNo, colNo)),
 							selectedDate: isSelectedDate(getCurrentDate(rowNo, colNo)),
-						}">
+						}"
+						@click.prevent.stop="selectDate(getCurrentCell(rowNo, colNo))"
+						@keydown.enter="selectDate(getCurrentCell(rowNo, colNo))">
 						{{ new Date(getCurrentDate(rowNo, colNo)).getDate() }}
 					</td>
 				</tr>
@@ -149,7 +149,7 @@ useKeyboardNav([
 				'keydown.shift.pagedown': nextYear,
 				// TODO: this is a hack to override the stonecrop enter handler;
 				// store context inside the component so that handlers can be setup consistently
-				// eslint-disable-next-line @typescript-eslint/no-empty-function
+
 				'keydown.enter': () => {}, // select this date
 			},
 		},

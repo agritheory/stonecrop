@@ -53,7 +53,6 @@ const elements = computed<FlowElements>({
 					// where 'target' can be accessed. Otherwise, 'edgeValue' will be available directly.
 
 					// TODO: resolve type issues with xstate
-					// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 					const target = edgeValue.target || edgeValue
 					stateElements.push({
 						id: `${key}-${target}`,
@@ -63,7 +62,6 @@ const elements = computed<FlowElements>({
 						animated: true,
 					})
 
-					// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 					hasInputs[target] = true
 				}
 			}

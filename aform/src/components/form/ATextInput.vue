@@ -1,15 +1,15 @@
 <template>
 	<div class="aform_form-element">
 		<input
-			class="aform_input-field"
-			v-model="inputText"
 			:id="uuid"
+			v-model="inputText"
+			v-mask="mask"
+			class="aform_input-field"
 			:disabled="readonly"
 			:maxlength="mask ? maskFilled && mask.length : undefined"
-			:required="required"
-			v-mask="mask" />
+			:required="required" />
 		<label class="aform_field-label" :for="uuid">{{ label }} </label>
-		<p class="aform_error" v-show="validation.errorMessage" v-html="validation.errorMessage"></p>
+		<p v-show="validation.errorMessage" class="aform_error" v-html="validation.errorMessage"></p>
 	</div>
 </template>
 

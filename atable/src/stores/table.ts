@@ -351,7 +351,6 @@ export const createTableStore = (initData: {
 				return format(value, { table: table.value, row, column })
 			} else if (typeof format === 'string') {
 				// parse format function from string
-				// eslint-disable-next-line @typescript-eslint/no-implied-eval
 				const formatFn: (value: any, context?: CellContext) => string = Function(`"use strict";return (${format})`)()
 				return formatFn(value, { table: table.value, row, column })
 			}
