@@ -48,6 +48,7 @@ export default defineConfig({
 				functions: 70,
 				statements: 70,
 			},
+			include: ['src/**/*.{ts,vue}'],
 			exclude: [
 				...coverageConfigDefaults.exclude,
 				'src/index.ts', // ignore the entry file
