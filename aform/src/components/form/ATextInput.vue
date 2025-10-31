@@ -6,7 +6,7 @@
 			v-mask="mask"
 			class="aform_input-field"
 			:disabled="readonly"
-			:maxlength="mask ? maskFilled && mask.length : undefined"
+			:maxlength="mask ? (maskFilled ? mask.length : undefined) : undefined"
 			:required="required" />
 		<label class="aform_field-label" :for="uuid">{{ label }} </label>
 		<p v-show="validation.errorMessage" class="aform_error" v-html="validation.errorMessage"></p>
@@ -20,7 +20,7 @@ import { useStringMask as vMask } from '../../directives/mask'
 import { ComponentProps } from '../../types'
 
 const {
-	schema, // don't remove to allow masking to work
+	_schema, // don't remove to allow masking to work
 	label,
 	mask,
 	required,

@@ -1,12 +1,12 @@
 <template>
-	<div class="amodal" ref="amodal" tabindex="-1" @click.stop @input.stop :style="amodalStyles">
+	<div ref="amodal" class="amodal" tabindex="-1" :style="amodalStyles" @click.stop @input.stop>
 		<slot />
 	</div>
 </template>
 
 <script setup lang="ts">
 import { useElementBounding } from '@vueuse/core'
-import { useTemplateRef, computed } from 'vue'
+import { useTemplateRef, computed, type StyleValue } from 'vue'
 
 import { createTableStore } from '../stores/table'
 
@@ -15,10 +15,12 @@ const { store } = defineProps<{ store: ReturnType<typeof createTableStore> }>()
 const amodalRef = useTemplateRef('amodal')
 const { width: modalWidth, height: modalHeight } = useElementBounding(amodalRef)
 
-const amodalStyles = computed(() => {
+const amodalStyles = computed((): StyleValue => {
 	if (!(store.modal.height && store.modal.width && store.modal.left && store.modal.bottom)) return
 
-	const table = store.modal.cell?.closest('table')!
+	const table = store.modal.cell?.closest('table')
+	if (!table) return {}
+
 	const maxHeight = table.offsetHeight || 0
 	const maxWidth = table.offsetWidth || 0
 

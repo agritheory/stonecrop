@@ -22,11 +22,14 @@
 
 		<VueFlow
 			v-if="vueFlowElements && vueFlowElements.length"
+			v-model="vueFlowElements"
 			class="nowheel"
 			:prevent-scrolling="true"
 			:zoom-on-scroll="false"
 			:fit-view-on-init="true"
-			v-model="vueFlowElements"
+			@connect="handleConnect"
+			@pane-ready="setInstance"
+			@edge-context-menu="handleEdgeContextMenu"
 			@wheel.prevent="onWheel">
 			<template #node-editable="props">
 				<EditableNode v-bind="props" @change="labelChanged($event, props.id)" />
@@ -39,14 +42,23 @@
 </template>
 
 <script setup lang="ts">
-import { type VueFlowStore, Position, VueFlow, useVueFlow, Connection, Node } from '@vue-flow/core'
+import {
+	type VueFlowStore,
+	Position,
+	VueFlow,
+	useVueFlow,
+	Connection,
+	Node,
+	EdgeMouseEvent,
+	DefaultEdge,
+} from '@vue-flow/core'
 import { type HTMLAttributes, ref, computed, defineEmits, onBeforeUnmount, onMounted } from 'vue'
 
 import EditableEdge from './EditableEdge.vue'
 import EditableNode from './EditableNode.vue'
 import type { FlowElements } from '../types'
 
-const { modelValue, nodeContainerClass } = defineProps<{
+const { modelValue, nodeContainerClass = '' } = defineProps<{
 	modelValue: FlowElements
 	nodeContainerClass?: HTMLAttributes['class']
 }>()
@@ -103,7 +115,7 @@ const elements = computed({
 		emit('update:modelValue', JSON.parse(JSON.stringify(newValue)))
 	},
 })
-const { onConnect, addEdges, onEdgeContextMenu, onPaneReady, removeEdges } = useVueFlow()
+const { addEdges, removeEdges } = useVueFlow()
 
 onMounted(() => {
 	document.removeEventListener('keypress', handleKeypress)
@@ -114,9 +126,9 @@ onBeforeUnmount(() => {
 	document.removeEventListener('keypress', handleKeypress)
 })
 
-onPaneReady(instance => {
+const setInstance = (instance: VueFlowStore) => {
 	vueFlowInstance.value = instance
-})
+}
 
 vueFlowElements.value = elements.value
 
@@ -133,6 +145,7 @@ const shiftTerminal = (currentTerminal: Position) => {
 const shiftOutput = () => {
 	if (activeElementIndex.value > -1) {
 		const activeNode = vueFlowElements.value[activeElementIndex.value] as Node
+		if (!activeNode.sourcePosition) return
 		activeNode.sourcePosition = shiftTerminal(activeNode.sourcePosition)
 	}
 }
@@ -140,6 +153,7 @@ const shiftOutput = () => {
 const shiftInput = () => {
 	if (activeElementIndex.value > -1) {
 		const activeNode = vueFlowElements.value[activeElementIndex.value] as Node
+		if (!activeNode.targetPosition) return
 		activeNode.targetPosition = shiftTerminal(activeNode.targetPosition)
 	}
 }
@@ -151,16 +165,16 @@ const onWheel = (event: WheelEvent) => {
 const handleKeypress = (event: KeyboardEvent) => {
 	if (hover.value && event.ctrlKey == true) {
 		if (event.key == '+' || event.key == '=') {
-			void vueFlowInstance.value.zoomIn()
+			void vueFlowInstance.value?.zoomIn()
 		}
 		if (event.key == '-') {
-			void vueFlowInstance.value.zoomOut()
+			void vueFlowInstance.value?.zoomOut()
 		}
 	}
 }
 
 const fitView = async () => {
-	await vueFlowInstance.value.fitView()
+	await vueFlowInstance.value?.fitView()
 }
 
 const addNode = () => {
@@ -168,7 +182,7 @@ const addNode = () => {
 	let newNodePosition = { x: Math.random() * 200, y: Math.random() * 200 }
 	if (activeElementIndex.value > -1) {
 		const activeNode = vueFlowElements.value[activeElementIndex.value]
-		if (activeNode.data.hasOutput) {
+		if (activeNode.data?.hasOutput) {
 			newNodePosition = { x: (activeNode as Node).position.x + 200, y: (activeNode as Node).position.y + 50 }
 			makeEdge = true
 		}
@@ -214,21 +228,21 @@ const addNode = () => {
 	}
 }
 
-const labelChanged = (e, id) => {
+const labelChanged = (event: DefaultEdge['label'], id: DefaultEdge['id']) => {
 	for (let j = 0; j < vueFlowElements.value.length; j++) {
 		if (vueFlowElements.value[j].id == id) {
-			vueFlowElements.value[j].label = e
+			vueFlowElements.value[j].label = event
 			break
 		}
 	}
 }
 
-const handleConnect = (connection: Connection) => {
+const handleConnect = (event: Connection) => {
 	const id = vueFlowElements.value.length
 	const newEdge = {
 		id: `edge-${id}`,
-		source: connection.source,
-		target: connection.target,
+		source: event.source,
+		target: event.target,
 		type: 'editable',
 		label: `New Edge`,
 		interactionWidth: 400,
@@ -242,15 +256,9 @@ const handleConnect = (connection: Connection) => {
 	addEdges([newEdge])
 }
 
-onConnect(handleConnect)
-
-const handleEdgeRemove = edgeId => {
-	removeEdges(edgeId)
+const handleEdgeContextMenu = (event: EdgeMouseEvent) => {
+	removeEdges(event.edge.id)
 }
-
-onEdgeContextMenu(({ event, edge }) => {
-	handleEdgeRemove(edge.id)
-})
 </script>
 
 <style>

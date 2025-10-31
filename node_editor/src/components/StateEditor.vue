@@ -13,7 +13,7 @@ import type { EditorStates, FlowElement, FlowElements, Layout } from '../types'
 
 const emit = defineEmits(['update:modelValue'])
 const states = defineModel<EditorStates>()
-const { layout, nodeContainerClass } = defineProps<{
+const { layout, nodeContainerClass = '' } = defineProps<{
 	layout: Layout
 	nodeContainerClass?: HTMLAttributes['class']
 }>()

@@ -17,11 +17,16 @@ import CollapseButton from '../base/CollapseButton.vue'
 import AForm from '../AForm.vue'
 import { SchemaTypes } from '../../types'
 
-const { schema, label, collapsible, data } = defineProps<{
+const {
+	schema,
+	label,
+	collapsible,
+	data = {},
+} = defineProps<{
 	schema: SchemaTypes[]
 	label: string
 	collapsible?: boolean
-	data?: any
+	data?: Record<string, any>
 }>()
 
 const collapsed = ref(false)

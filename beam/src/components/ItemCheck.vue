@@ -1,6 +1,6 @@
 <template>
 	<label class="container">
-		<input type="checkbox" v-model="value" tabindex="-1" />
+		<input v-model="value" type="checkbox" tabindex="-1" />
 		<div class="checkmark" tabindex="0"></div>
 	</label>
 </template>

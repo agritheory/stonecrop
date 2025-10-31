@@ -1,6 +1,6 @@
 <template>
 	<portal to="beam_modal_outlet">
-		<div class="beam_modal" v-show="showModal">
+		<div v-show="showModal" class="beam_modal">
 			<BeamBtn @click="$emit('closemodal')">Close Modal</BeamBtn>
 			<slot @closemodal="$emit('closemodal')" @confirmmodal="$emit('confirmmodal')"></slot>
 		</div>
@@ -8,6 +8,7 @@
 </template>
 
 <script setup lang="ts">
+defineEmits<{ closemodal: []; confirmmodal: [] }>()
 defineProps<{ showModal: boolean }>()
 </script>
 

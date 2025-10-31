@@ -12,7 +12,7 @@ import { Ref } from 'vue';
 export const defaultKeypressHandlers: KeypressHandlers;
 
 // @public
-export function install(app: App): void;
+export function install(_app: App): void;
 
 // @public
 export type KeyboardNavigationOptions = {

@@ -9,5 +9,6 @@
 </template>
 
 <script setup lang="ts">
+// TODO: change props from individual elements to the store object
 defineProps(['event', 'cellData', 'tableID'])
 </script>

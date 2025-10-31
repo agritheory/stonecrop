@@ -24,7 +24,7 @@ const {
 	editable = true,
 	uom = '',
 } = defineProps<{
-	denominator: number
+	denominator?: number
 	debounce?: number
 	editable?: HTMLAttributes['contenteditable']
 	uom?: string

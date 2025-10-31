@@ -1,4 +1,5 @@
 import type { IClientOptions } from 'mqtt'
+import { CSSProperties } from 'vue'
 
 /**
  * @public
@@ -20,12 +21,10 @@ export type ListViewItem = {
 	route?: string
 }
 
-// TODO: the `string` at the end should be replaced by `DataType.Color`
-// in the `csstype` lib but import seems to be missing
 /**
  * @public
  */
-export type BeamColor = RGB | RGBA | HEX | HSL | HSLA | string
+export type BeamColor = RGB | RGBA | HEX | HSL | HSLA | CSSProperties['color']
 
 /**
  * @public

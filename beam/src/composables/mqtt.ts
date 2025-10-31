@@ -95,7 +95,7 @@ export const isPortActive = async (host: string, port: number) => {
 			// If we get here, there might be something running on the port
 			return true
 		}
-	} catch (error) {
+	} catch {
 		return false
 	}
 }

@@ -7,9 +7,9 @@
 		<div class="action-menu-icon">
 			<div id="chevron" @click="closeClicked = !closeClicked">
 				<svg
+					id="Layer_1"
 					class="leftBar"
 					version="1.1"
-					id="Layer_1"
 					xmlns="http://www.w3.org/2000/svg"
 					xmlns:xlink="http://www.w3.org/1999/xlink"
 					x="0px"
@@ -22,9 +22,9 @@
 				</svg>
 
 				<svg
+					id="Layer_1"
 					class="rightBar"
 					version="1.1"
-					id="Layer_1"
 					xmlns="http://www.w3.org/2000/svg"
 					xmlns:xlink="http://www.w3.org/1999/xlink"
 					x="0px"
@@ -38,11 +38,11 @@
 			</div>
 		</div>
 		<div style="margin-right: 30px"></div>
-		<div class="action-element" v-for="(el, index) in _elements" :key="el.label">
+		<div v-for="(el, index) in _elements" :key="el.label" class="action-element">
 			<button v-if="el.type == 'button'" :onclick="el.action" class="button-default">{{ el.label }}</button>
 			<div v-if="el.type == 'dropdown'">
 				<button class="button-default" @click="toggleDropdown(index)">{{ el.label }}</button>
-				<div class="dropdown-container" v-show="el.show">
+				<div v-show="el.show" class="dropdown-container">
 					<div class="dropdown">
 						<div v-for="item in el.actions" :key="item.label">
 							<button v-if="item.action != null" :onclick="item.action" class="dropdown-item">{{ item.label }}</button>
@@ -62,11 +62,11 @@ import { onMounted, ref } from 'vue'
 
 import type { ActionElements } from '../types'
 
-const { elements } = defineProps<{ elements?: ActionElements[] }>()
+const { elements = [] } = defineProps<{ elements?: ActionElements[] }>()
 
 const _elements = ref(elements)
 const isOpen = ref(false)
-const timeout = ref<number>(null)
+const timeoutId = ref<number>(-1)
 const hover = ref(false)
 const closeClicked = ref(false)
 
@@ -84,7 +84,7 @@ const closeDropdowns = () => {
 
 const onHover = () => {
 	hover.value = true
-	timeout.value = setTimeout(() => {
+	timeoutId.value = setTimeout(() => {
 		if (hover.value) {
 			isOpen.value = true
 		}
@@ -94,7 +94,7 @@ const onHover = () => {
 const onHoverLeave = () => {
 	hover.value = false
 	closeClicked.value = false
-	clearTimeout(timeout.value)
+	clearTimeout(timeoutId.value)
 	isOpen.value = false
 }
 

@@ -8,16 +8,9 @@
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error|Error}
  * @public
  */
-export function NotImplementedError(message: string) {
-	this.message = message || ''
+export class NotImplementedError extends Error {
+	constructor(message: string = '') {
+		super(message)
+		this.name = 'NotImplemented'
+	}
 }
-
-NotImplementedError.prototype = Object.create(Error.prototype, {
-	constructor: { value: NotImplementedError },
-	name: { value: 'NotImplemented' },
-	stack: {
-		get: function () {
-			return new Error().stack
-		},
-	},
-})

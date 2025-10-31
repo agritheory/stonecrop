@@ -1,7 +1,7 @@
 <template>
 	<div v-on-click-outside="() => (isMenuOpen = false)" class="beam_filter-container">
 		<BeamHeading class="beam_filter-option-heading">{{ title }}</BeamHeading>
-		<div @click="isMenuOpen = !isMenuOpen" class="beam_filter-option">
+		<div class="beam_filter-option" @click="isMenuOpen = !isMenuOpen">
 			<div class="beam_filter-option-select">
 				<div class="beam_filter-arrow">
 					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 35.36 70.71">
@@ -13,12 +13,12 @@
 				</div>
 			</div>
 
-			<ul ref="menu" v-if="isMenuOpen" class="beam_filter-select-menu">
+			<ul v-if="isMenuOpen" ref="menu" class="beam_filter-select-menu">
 				<li
 					v-for="choice in choices"
+					:key="choice.value"
 					:class="{ selected: label == choice.label }"
 					:data-value="choice.value"
-					:key="choice.value"
 					class="beam_filter-select-option"
 					@click="selectChoice(choice)">
 					{{ choice.label }}
@@ -36,7 +36,7 @@ import { BeamFilterChoice } from '../types'
 
 const emit = defineEmits<{ select: [choice: BeamFilterChoice] }>()
 
-const { title = 'title', choices = [] } = defineProps<{
+const { choices, title = 'title' } = defineProps<{
 	choices: BeamFilterChoice[]
 	title?: string
 }>()

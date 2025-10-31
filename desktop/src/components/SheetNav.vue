@@ -6,13 +6,13 @@
 			</li>
 			<li
 				class="hometab"
+				:style="{ display: breadcrumbsVisibile ? 'block' : 'none' }"
 				@click="navigateHome"
-				@keydown.enter="navigateHome"
-				:style="{ display: breadcrumbsVisibile ? 'block' : 'none' }">
+				@keydown.enter="navigateHome">
 				<router-link to="/home" tabindex="0">
 					<svg
-						version="1.1"
 						id="Capa_1"
+						version="1.1"
 						xmlns="http://www.w3.org/2000/svg"
 						xmlns:xlink="http://www.w3.org/1999/xlink"
 						x="0px"
@@ -38,29 +38,29 @@
 			</li>
 			<li
 				class="searchtab"
+				:style="{ display: breadcrumbsVisibile ? 'block' : 'none' }"
 				@click="toggleSearch"
-				@keydown.enter="toggleSearch"
-				:style="{ display: breadcrumbsVisibile ? 'block' : 'none' }">
+				@keydown.enter="toggleSearch">
 				<a tabindex="0">
 					<span :style="{ display: searchVisibile ? 'none' : 'block' }">
 						<svg style="width: 11pt">
 							<g transform="matrix(-0.08088215,0,0,0.08088215,9.8016177,3.1263021e-6)">
 								<path
+									id="path2"
 									d="M 93.148438,80.832031 C 109.5,57.742188 104.03125,25.769531 80.941406,9.421875 57.851562,-6.925781 25.878906,-1.460938 9.53125,21.632812 -6.816406,44.722656 -1.351562,76.691406 21.742188,93.039062 38.222656,104.70703 60.011719,105.60547 77.394531,95.339844 l 37.769529,37.542966 c 4.07813,4.29297 10.86328,4.46485 15.15625,0.38672 4.29297,-4.07422 4.46485,-10.85937 0.39063,-15.15234 -0.12891,-0.13672 -0.25391,-0.26172 -0.39063,-0.39063 z m -41.839844,3.5 C 33.0625,84.335938 18.269531,69.554688 18.257812,51.308594 18.253906,33.0625 33.035156,18.269531 51.285156,18.261719 c 18.222656,-0.0078 33.007813,14.75 33.042969,32.972656 0.03125,18.25 -14.742187,33.066406 -32.996094,33.097656 -0.0078,0 -0.01172,0 -0.02344,0 z m 0,0"
-									style="fill: #000000; fill-opacity: 1; fill-rule: nonzero; stroke: none"
-									id="path2" />
+									style="fill: #000000; fill-opacity: 1; fill-rule: nonzero; stroke: none" />
 							</g>
 						</svg>
 					</span>
 					<input
-						v-model="searchText"
 						ref="searchinput"
+						v-model="searchText"
 						:style="{ display: searchVisibile ? 'block' : 'none' }"
+						type="text"
 						@click="handleSearchInput($event)"
 						@input="handleSearchInput($event)"
 						@blur="handleSearch($event)"
-						@keydown.enter="handleSearch($event)"
-						type="text" />
+						@keydown.enter="handleSearch($event)" />
 				</a>
 			</li>
 			<li

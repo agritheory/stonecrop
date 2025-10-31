@@ -33,7 +33,12 @@
 import { vOnClickOutside } from '@vueuse/components'
 import { reactive } from 'vue'
 
-const { label, items, isAsync, filterFunction } = defineProps<{
+const {
+	label,
+	items = [],
+	isAsync,
+	filterFunction = () => {},
+} = defineProps<{
 	label: string
 	items?: string[]
 	isAsync?: boolean
@@ -56,7 +61,7 @@ const filter = async () => {
 		if (isAsync) dropdown.loading = true
 		try {
 			const filteredResults = await filterFunction(search.value || '')
-			dropdown.results = filteredResults
+			dropdown.results = filteredResults || []
 		} catch {
 			dropdown.results = []
 		} finally {

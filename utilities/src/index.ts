@@ -8,6 +8,6 @@ export type * from './types'
  * @param app - Vue app instance
  * @public
  */
-function install(app: App /* options */) {}
+function install(_app: App /* options */) {}
 
 export { defaultKeypressHandlers, install, useKeyboardNav }

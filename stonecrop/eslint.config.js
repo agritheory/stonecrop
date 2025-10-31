@@ -18,7 +18,7 @@ export default defineConfig(
 	// TypeScript ESLint recommended + type-checked rules
 	...tseslint.configs.recommendedTypeChecked,
 
-	// Vue 3 essential rules
+	// Vue 3 recommended rules
 	...pluginVue.configs['flat/recommended'],
 
 	// Configuration for TypeScript and Vue files
@@ -51,6 +51,13 @@ export default defineConfig(
 			'@typescript-eslint/no-explicit-any': 'off',
 			'@typescript-eslint/no-unsafe-assignment': 'off',
 			'@typescript-eslint/no-unsafe-return': 'off',
+			'@typescript-eslint/no-unused-vars': [
+				'error',
+				{
+					argsIgnorePattern: '^_',
+					varsIgnorePattern: '^_',
+				},
+			],
 		},
 	},
 

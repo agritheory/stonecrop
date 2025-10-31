@@ -16,7 +16,7 @@
 import { ComponentProps } from '../../types'
 
 const {
-	schema, // don't remove to allow masking to work
+	_schema, // don't remove to allow masking to work
 	label,
 	required,
 	readonly,
