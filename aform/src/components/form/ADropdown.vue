@@ -36,8 +36,8 @@ import { reactive } from 'vue'
 const {
 	label,
 	items = [],
-	isAsync,
-	filterFunction = () => {},
+	isAsync = false,
+	filterFunction = undefined,
 } = defineProps<{
 	label: string
 	items?: string[]
@@ -57,6 +57,7 @@ const onClickOutside = () => closeDropdown()
 
 const filter = async () => {
 	dropdown.open = true
+	dropdown.activeItemIndex = null
 	if (filterFunction) {
 		if (isAsync) dropdown.loading = true
 		try {
@@ -114,7 +115,11 @@ const selectPrevResult = () => {
 	const resultsLength = dropdown.results?.length || 0
 	if (dropdown.activeItemIndex != null) {
 		const currentIndex = isNaN(dropdown.activeItemIndex) ? 0 : dropdown.activeItemIndex
-		dropdown.activeItemIndex = (currentIndex - 1 + resultsLength) % resultsLength
+		if (currentIndex === 0) {
+			dropdown.activeItemIndex = null
+		} else {
+			dropdown.activeItemIndex = currentIndex - 1
+		}
 	} else {
 		dropdown.activeItemIndex = resultsLength - 1
 	}

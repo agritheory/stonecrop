@@ -143,10 +143,6 @@
       "allowedCategories": [ "prototype" ]
     },
     {
-      "name": "cypress",
-      "allowedCategories": [ "prototype", "utilities" ]
-    },
-    {
       "name": "decimal.js",
       "allowedCategories": [ "utilities" ]
     },
