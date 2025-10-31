@@ -194,8 +194,6 @@ export declare function useOperationLog(config?: Partial<OperationLogConfig>): {
     clear: () => void;
     getOperationsFor: (doctype: string, recordId?: string) => import("..").HSTOperation[];
     getSnapshot: () => import("..").OperationLogSnapshot;
-    createSyncDelta: () => SyncDelta;
-    applySyncDelta: (delta: SyncDelta) => void;
     markIrreversible: (operationId: string, reason: string) => void;
     configure: (options: Partial<OperationLogConfig>) => void;
 };
@@ -778,11 +776,9 @@ export interface OperationLogConfig {
   autoSyncInterval?: number;
   enableCrossTabSync?: boolean;
   enablePersistence?: boolean;
-  enableServerSync?: boolean;
   maxOperations?: number;
   operationFilter?: (operation: HSTOperation) => boolean;
   persistenceKeyPrefix?: string;
-  serverSyncEndpoint?: string;
   userId?: string;
 }
 ```
@@ -794,11 +790,9 @@ export interface OperationLogConfig {
 | autoSyncInterval? | `number` | Auto-sync interval in milliseconds (default: 30000) |
 | enableCrossTabSync? | `boolean` | Enable cross-tab synchronization (default: true) |
 | enablePersistence? | `boolean` | Enable operation persistence to localStorage (default: false) |
-| enableServerSync? | `boolean` | Enable server synchronization (default: false) |
 | maxOperations? | `number` | Maximum operations to store (default: 100) |
 | operationFilter? | `(operation: HSTOperation) => boolean` | Custom operation filter |
 | persistenceKeyPrefix? | `string` | Persistence key prefix |
-| serverSyncEndpoint? | `string` | Server sync endpoint |
 | userId? | `string` | User identifier for multi-user scenarios |
 
 ### OperationLogSnapshot
@@ -850,32 +844,6 @@ export interface RouteContext {
 |----------|------|-------------|
 | path | `string` | The full route path (e.g., "/todo/1" or "/todo") |
 | segments | `string[]` | Path segments split by "/" (e.g., ["todo", "1"] or ["todo"]) |
-
-### SyncDelta
-
-Delta for server synchronization Compact representation for network transmission
-
-**Definition:**
-
-```typescript
-export interface SyncDelta {
-  clientId: string;
-  conflictStrategy?: 'latest-wins' | 'manual' | 'merge';
-  currentTimestamp: Date;
-  lastSyncTimestamp: Date;
-  operations: HSTOperation[];
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| clientId | `string` | Client/tab identifier |
-| conflictStrategy? | `'latest-wins' \| 'manual' \| 'merge'` | Conflict resolution strategy |
-| currentTimestamp | `Date` | Current timestamp |
-| lastSyncTimestamp | `Date` | Last sync timestamp |
-| operations | `HSTOperation[]` | Operations since last sync |
 
 ### TableColumn
 
@@ -1469,8 +1437,6 @@ export type OperationLogAPI = {
     clear: () => void;
     getOperationsFor: (doctype: string, recordId?: string) => HSTOperation[];
     getSnapshot: () => OperationLogSnapshot;
-    createSyncDelta: () => SyncDelta;
-    applySyncDelta: (delta: SyncDelta) => void;
     markIrreversible: (operationId: string, reason: string) => void;
     configure: (options: Partial<OperationLogConfig>) => void;
 };
@@ -2044,8 +2010,6 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
     config: import("vue").Ref<{
         maxOperations?: number | undefined;
         enableCrossTabSync?: boolean | undefined;
-        enableServerSync?: boolean | undefined;
-        serverSyncEndpoint?: string | undefined;
         autoSyncInterval?: number | undefined;
         enablePersistence?: boolean | undefined;
         persistenceKeyPrefix?: string | undefined;
@@ -2054,8 +2018,6 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
     }, OperationLogConfig | {
         maxOperations?: number | undefined;
         enableCrossTabSync?: boolean | undefined;
-        enableServerSync?: boolean | undefined;
-        serverSyncEndpoint?: string | undefined;
         autoSyncInterval?: number | undefined;
         enablePersistence?: boolean | undefined;
         persistenceKeyPrefix?: string | undefined;
@@ -2077,9 +2039,6 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
     redo: (store: HSTNode) => boolean;
     clear: () => void;
     getOperationsFor: (doctype: string, recordId?: string) => HSTOperation[];
-    getOperationsSince: (timestamp: Date) => HSTOperation[];
-    createSyncDelta: () => SyncDelta;
-    applySyncDelta: (delta: SyncDelta) => void;
     getSnapshot: () => OperationLogSnapshot;
     markIrreversible: (operationId: string, reason: string) => void;
 }, "operations" | "clientId" | "currentIndex" | "config">, Pick<{
@@ -2128,8 +2087,6 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
     config: import("vue").Ref<{
         maxOperations?: number | undefined;
         enableCrossTabSync?: boolean | undefined;
-        enableServerSync?: boolean | undefined;
-        serverSyncEndpoint?: string | undefined;
         autoSyncInterval?: number | undefined;
         enablePersistence?: boolean | undefined;
         persistenceKeyPrefix?: string | undefined;
@@ -2138,8 +2095,6 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
     }, OperationLogConfig | {
         maxOperations?: number | undefined;
         enableCrossTabSync?: boolean | undefined;
-        enableServerSync?: boolean | undefined;
-        serverSyncEndpoint?: string | undefined;
         autoSyncInterval?: number | undefined;
         enablePersistence?: boolean | undefined;
         persistenceKeyPrefix?: string | undefined;
@@ -2161,9 +2116,6 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
     redo: (store: HSTNode) => boolean;
     clear: () => void;
     getOperationsFor: (doctype: string, recordId?: string) => HSTOperation[];
-    getOperationsSince: (timestamp: Date) => HSTOperation[];
-    createSyncDelta: () => SyncDelta;
-    applySyncDelta: (delta: SyncDelta) => void;
     getSnapshot: () => OperationLogSnapshot;
     markIrreversible: (operationId: string, reason: string) => void;
 }, "undoRedoState" | "canUndo" | "canRedo" | "undoCount" | "redoCount">, Pick<{
@@ -2212,8 +2164,6 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
     config: import("vue").Ref<{
         maxOperations?: number | undefined;
         enableCrossTabSync?: boolean | undefined;
-        enableServerSync?: boolean | undefined;
-        serverSyncEndpoint?: string | undefined;
         autoSyncInterval?: number | undefined;
         enablePersistence?: boolean | undefined;
         persistenceKeyPrefix?: string | undefined;
@@ -2222,8 +2172,6 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
     }, OperationLogConfig | {
         maxOperations?: number | undefined;
         enableCrossTabSync?: boolean | undefined;
-        enableServerSync?: boolean | undefined;
-        serverSyncEndpoint?: string | undefined;
         autoSyncInterval?: number | undefined;
         enablePersistence?: boolean | undefined;
         persistenceKeyPrefix?: string | undefined;
@@ -2245,11 +2193,8 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
     redo: (store: HSTNode) => boolean;
     clear: () => void;
     getOperationsFor: (doctype: string, recordId?: string) => HSTOperation[];
-    getOperationsSince: (timestamp: Date) => HSTOperation[];
-    createSyncDelta: () => SyncDelta;
-    applySyncDelta: (delta: SyncDelta) => void;
     getSnapshot: () => OperationLogSnapshot;
     markIrreversible: (operationId: string, reason: string) => void;
-}, "undo" | "redo" | "configure" | "addOperation" | "startBatch" | "commitBatch" | "cancelBatch" | "clear" | "getOperationsFor" | "getOperationsSince" | "createSyncDelta" | "applySyncDelta" | "getSnapshot" | "markIrreversible">>
+}, "undo" | "redo" | "configure" | "addOperation" | "startBatch" | "commitBatch" | "cancelBatch" | "clear" | "getOperationsFor" | "getSnapshot" | "markIrreversible">>
 ```
 

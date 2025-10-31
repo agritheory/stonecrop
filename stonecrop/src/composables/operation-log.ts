@@ -4,7 +4,7 @@ import { inject } from 'vue'
 
 import type { HSTNode } from '../stores/hst'
 import { useOperationLogStore } from '../stores/operation-log'
-import type { OperationLogConfig, SyncDelta } from '../types/operation-log'
+import type { OperationLogConfig } from '../types/operation-log'
 
 /**
  * Composable for operation log management
@@ -102,20 +102,6 @@ export function useOperationLog(config?: Partial<OperationLogConfig>) {
 	}
 
 	/**
-	 * Create a sync delta for server synchronization
-	 */
-	function createSyncDelta() {
-		return store.createSyncDelta()
-	}
-
-	/**
-	 * Apply a sync delta from the server
-	 */
-	function applySyncDelta(delta: SyncDelta) {
-		store.applySyncDelta(delta)
-	}
-
-	/**
 	 * Mark an operation as irreversible
 	 */
 	function markIrreversible(operationId: string, reason: string) {
@@ -148,8 +134,6 @@ export function useOperationLog(config?: Partial<OperationLogConfig>) {
 		clear,
 		getOperationsFor,
 		getSnapshot,
-		createSyncDelta,
-		applySyncDelta,
 		markIrreversible,
 		configure,
 	}

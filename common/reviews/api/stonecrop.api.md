@@ -25,7 +25,6 @@ import { Router } from 'vue-router';
 import type { ShallowRef } from 'vue';
 import { Store } from 'pinia';
 import { StoreDefinition } from 'pinia';
-import { SyncDelta as SyncDelta_2 } from './types';
 import { UndoRedoState as UndoRedoState_2 } from './types';
 import { UndoRedoState as UndoRedoState_3 } from '..';
 import type { UnknownMachineConfig } from 'xstate';
@@ -441,8 +440,6 @@ export type OperationLogAPI = {
     clear: () => void;
     getOperationsFor: (doctype: string, recordId?: string) => HSTOperation[];
     getSnapshot: () => OperationLogSnapshot;
-    createSyncDelta: () => SyncDelta;
-    applySyncDelta: (delta: SyncDelta) => void;
     markIrreversible: (operationId: string, reason: string) => void;
     configure: (options: Partial<OperationLogConfig>) => void;
 };
@@ -452,11 +449,9 @@ export interface OperationLogConfig {
     autoSyncInterval?: number;
     enableCrossTabSync?: boolean;
     enablePersistence?: boolean;
-    enableServerSync?: boolean;
     maxOperations?: number;
     operationFilter?: (operation: HSTOperation) => boolean;
     persistenceKeyPrefix?: string;
-    serverSyncEndpoint?: string;
     userId?: string;
 }
 
@@ -572,8 +567,6 @@ export class Stonecrop {
     config: Ref<    {
     maxOperations?: number | undefined;
     enableCrossTabSync?: boolean | undefined;
-    enableServerSync?: boolean | undefined;
-    serverSyncEndpoint?: string | undefined;
     autoSyncInterval?: number | undefined;
     enablePersistence?: boolean | undefined;
     persistenceKeyPrefix?: string | undefined;
@@ -582,8 +575,6 @@ export class Stonecrop {
     }, OperationLogConfig | {
     maxOperations?: number | undefined;
     enableCrossTabSync?: boolean | undefined;
-    enableServerSync?: boolean | undefined;
-    serverSyncEndpoint?: string | undefined;
     autoSyncInterval?: number | undefined;
     enablePersistence?: boolean | undefined;
     persistenceKeyPrefix?: string | undefined;
@@ -605,9 +596,6 @@ export class Stonecrop {
     redo: (store: HSTNode) => boolean;
     clear: () => void;
     getOperationsFor: (doctype: string, recordId?: string) => HSTOperation_2[];
-    getOperationsSince: (timestamp: Date) => HSTOperation_2[];
-    createSyncDelta: () => SyncDelta_2;
-    applySyncDelta: (delta: SyncDelta_2) => void;
     getSnapshot: () => OperationLogSnapshot_2;
     markIrreversible: (operationId: string, reason: string) => void;
     }, "operations" | "clientId" | "currentIndex" | "config">, Pick<{
@@ -656,8 +644,6 @@ export class Stonecrop {
     config: Ref<    {
     maxOperations?: number | undefined;
     enableCrossTabSync?: boolean | undefined;
-    enableServerSync?: boolean | undefined;
-    serverSyncEndpoint?: string | undefined;
     autoSyncInterval?: number | undefined;
     enablePersistence?: boolean | undefined;
     persistenceKeyPrefix?: string | undefined;
@@ -666,8 +652,6 @@ export class Stonecrop {
     }, OperationLogConfig | {
     maxOperations?: number | undefined;
     enableCrossTabSync?: boolean | undefined;
-    enableServerSync?: boolean | undefined;
-    serverSyncEndpoint?: string | undefined;
     autoSyncInterval?: number | undefined;
     enablePersistence?: boolean | undefined;
     persistenceKeyPrefix?: string | undefined;
@@ -689,9 +673,6 @@ export class Stonecrop {
     redo: (store: HSTNode) => boolean;
     clear: () => void;
     getOperationsFor: (doctype: string, recordId?: string) => HSTOperation_2[];
-    getOperationsSince: (timestamp: Date) => HSTOperation_2[];
-    createSyncDelta: () => SyncDelta_2;
-    applySyncDelta: (delta: SyncDelta_2) => void;
     getSnapshot: () => OperationLogSnapshot_2;
     markIrreversible: (operationId: string, reason: string) => void;
     }, "undoRedoState" | "canUndo" | "canRedo" | "undoCount" | "redoCount">, Pick<{
@@ -740,8 +721,6 @@ export class Stonecrop {
     config: Ref<    {
     maxOperations?: number | undefined;
     enableCrossTabSync?: boolean | undefined;
-    enableServerSync?: boolean | undefined;
-    serverSyncEndpoint?: string | undefined;
     autoSyncInterval?: number | undefined;
     enablePersistence?: boolean | undefined;
     persistenceKeyPrefix?: string | undefined;
@@ -750,8 +729,6 @@ export class Stonecrop {
     }, OperationLogConfig | {
     maxOperations?: number | undefined;
     enableCrossTabSync?: boolean | undefined;
-    enableServerSync?: boolean | undefined;
-    serverSyncEndpoint?: string | undefined;
     autoSyncInterval?: number | undefined;
     enablePersistence?: boolean | undefined;
     persistenceKeyPrefix?: string | undefined;
@@ -773,12 +750,9 @@ export class Stonecrop {
     redo: (store: HSTNode) => boolean;
     clear: () => void;
     getOperationsFor: (doctype: string, recordId?: string) => HSTOperation_2[];
-    getOperationsSince: (timestamp: Date) => HSTOperation_2[];
-    createSyncDelta: () => SyncDelta_2;
-    applySyncDelta: (delta: SyncDelta_2) => void;
     getSnapshot: () => OperationLogSnapshot_2;
     markIrreversible: (operationId: string, reason: string) => void;
-    }, "undo" | "redo" | "configure" | "addOperation" | "startBatch" | "commitBatch" | "cancelBatch" | "clear" | "getOperationsFor" | "getOperationsSince" | "createSyncDelta" | "applySyncDelta" | "getSnapshot" | "markIrreversible">>;
+    }, "undo" | "redo" | "configure" | "addOperation" | "startBatch" | "commitBatch" | "cancelBatch" | "clear" | "getOperationsFor" | "getSnapshot" | "markIrreversible">>;
     getRecord(doctype: DoctypeMeta, recordId: string): Promise<void>;
     getRecordById(doctype: string | DoctypeMeta, recordId: string): HSTNode | undefined;
     getRecordIds(doctype: string | DoctypeMeta): string[];
@@ -789,15 +763,6 @@ export class Stonecrop {
     removeRecord(doctype: string | DoctypeMeta, recordId: string): void;
     runAction(_doctype: DoctypeMeta, _action: string, _args?: any[]): void;
     setup(doctype: DoctypeMeta): void;
-}
-
-// @public
-export interface SyncDelta {
-    clientId: string;
-    conflictStrategy?: 'latest-wins' | 'manual' | 'merge';
-    currentTimestamp: Date;
-    lastSyncTimestamp: Date;
-    operations: HSTOperation[];
 }
 
 // @public
@@ -988,8 +953,6 @@ export function useOperationLog(config?: Partial<OperationLogConfig>): {
     clear: () => void;
     getOperationsFor: (doctype: string, recordId?: string) => HSTOperation_3[];
     getSnapshot: () => OperationLogSnapshot_3;
-    createSyncDelta: () => SyncDelta;
-    applySyncDelta: (delta: SyncDelta) => void;
     markIrreversible: (operationId: string, reason: string) => void;
     configure: (options: Partial<OperationLogConfig>) => void;
 };
@@ -1041,8 +1004,6 @@ currentIndex: Ref<number, number>;
 config: Ref<    {
 maxOperations?: number | undefined;
 enableCrossTabSync?: boolean | undefined;
-enableServerSync?: boolean | undefined;
-serverSyncEndpoint?: string | undefined;
 autoSyncInterval?: number | undefined;
 enablePersistence?: boolean | undefined;
 persistenceKeyPrefix?: string | undefined;
@@ -1051,8 +1012,6 @@ operationFilter?: ((operation: HSTOperation) => boolean) | undefined;
 }, OperationLogConfig | {
 maxOperations?: number | undefined;
 enableCrossTabSync?: boolean | undefined;
-enableServerSync?: boolean | undefined;
-serverSyncEndpoint?: string | undefined;
 autoSyncInterval?: number | undefined;
 enablePersistence?: boolean | undefined;
 persistenceKeyPrefix?: string | undefined;
@@ -1074,9 +1033,6 @@ undo: (store: HSTNode) => boolean;
 redo: (store: HSTNode) => boolean;
 clear: () => void;
 getOperationsFor: (doctype: string, recordId?: string) => HSTOperation[];
-getOperationsSince: (timestamp: Date) => HSTOperation[];
-createSyncDelta: () => SyncDelta;
-applySyncDelta: (delta: SyncDelta) => void;
 getSnapshot: () => OperationLogSnapshot;
 markIrreversible: (operationId: string, reason: string) => void;
 }, "operations" | "clientId" | "currentIndex" | "config">, Pick<{
@@ -1125,8 +1081,6 @@ currentIndex: Ref<number, number>;
 config: Ref<    {
 maxOperations?: number | undefined;
 enableCrossTabSync?: boolean | undefined;
-enableServerSync?: boolean | undefined;
-serverSyncEndpoint?: string | undefined;
 autoSyncInterval?: number | undefined;
 enablePersistence?: boolean | undefined;
 persistenceKeyPrefix?: string | undefined;
@@ -1135,8 +1089,6 @@ operationFilter?: ((operation: HSTOperation) => boolean) | undefined;
 }, OperationLogConfig | {
 maxOperations?: number | undefined;
 enableCrossTabSync?: boolean | undefined;
-enableServerSync?: boolean | undefined;
-serverSyncEndpoint?: string | undefined;
 autoSyncInterval?: number | undefined;
 enablePersistence?: boolean | undefined;
 persistenceKeyPrefix?: string | undefined;
@@ -1158,9 +1110,6 @@ undo: (store: HSTNode) => boolean;
 redo: (store: HSTNode) => boolean;
 clear: () => void;
 getOperationsFor: (doctype: string, recordId?: string) => HSTOperation[];
-getOperationsSince: (timestamp: Date) => HSTOperation[];
-createSyncDelta: () => SyncDelta;
-applySyncDelta: (delta: SyncDelta) => void;
 getSnapshot: () => OperationLogSnapshot;
 markIrreversible: (operationId: string, reason: string) => void;
 }, "undoRedoState" | "canUndo" | "canRedo" | "undoCount" | "redoCount">, Pick<{
@@ -1209,8 +1158,6 @@ currentIndex: Ref<number, number>;
 config: Ref<    {
 maxOperations?: number | undefined;
 enableCrossTabSync?: boolean | undefined;
-enableServerSync?: boolean | undefined;
-serverSyncEndpoint?: string | undefined;
 autoSyncInterval?: number | undefined;
 enablePersistence?: boolean | undefined;
 persistenceKeyPrefix?: string | undefined;
@@ -1219,8 +1166,6 @@ operationFilter?: ((operation: HSTOperation) => boolean) | undefined;
 }, OperationLogConfig | {
 maxOperations?: number | undefined;
 enableCrossTabSync?: boolean | undefined;
-enableServerSync?: boolean | undefined;
-serverSyncEndpoint?: string | undefined;
 autoSyncInterval?: number | undefined;
 enablePersistence?: boolean | undefined;
 persistenceKeyPrefix?: string | undefined;
@@ -1242,12 +1187,9 @@ undo: (store: HSTNode) => boolean;
 redo: (store: HSTNode) => boolean;
 clear: () => void;
 getOperationsFor: (doctype: string, recordId?: string) => HSTOperation[];
-getOperationsSince: (timestamp: Date) => HSTOperation[];
-createSyncDelta: () => SyncDelta;
-applySyncDelta: (delta: SyncDelta) => void;
 getSnapshot: () => OperationLogSnapshot;
 markIrreversible: (operationId: string, reason: string) => void;
-}, "undo" | "redo" | "configure" | "addOperation" | "startBatch" | "commitBatch" | "cancelBatch" | "clear" | "getOperationsFor" | "getOperationsSince" | "createSyncDelta" | "applySyncDelta" | "getSnapshot" | "markIrreversible">>;
+}, "undo" | "redo" | "configure" | "addOperation" | "startBatch" | "commitBatch" | "cancelBatch" | "clear" | "getOperationsFor" | "getSnapshot" | "markIrreversible">>;
 
 // @public
 export function useStonecrop(): BaseStonecropReturn | HSTStonecropReturn;

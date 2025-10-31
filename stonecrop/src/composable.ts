@@ -7,7 +7,7 @@ import DoctypeMeta from './doctype'
 import type { HSTNode } from './stores/hst'
 import { RouteContext } from './types/registry'
 import { storeToRefs } from 'pinia'
-import type { HSTOperation, OperationLogConfig, SyncDelta, OperationLogSnapshot } from './types/operation-log'
+import type { HSTOperation, OperationLogConfig, OperationLogSnapshot } from './types/operation-log'
 
 /**
  * Operation Log API - nested object containing all operation log functionality
@@ -35,8 +35,6 @@ export type OperationLogAPI = {
 	clear: () => void
 	getOperationsFor: (doctype: string, recordId?: string) => HSTOperation[]
 	getSnapshot: () => OperationLogSnapshot
-	createSyncDelta: () => SyncDelta
-	applySyncDelta: (delta: SyncDelta) => void
 	markIrreversible: (operationId: string, reason: string) => void
 	configure: (options: Partial<OperationLogConfig>) => void
 }
@@ -171,25 +169,9 @@ export function useStonecrop(options?: {
 		)
 	}
 
-	const createSyncDelta = () => {
-		return (
-			stonecrop.value?.getOperationLogStore().createSyncDelta() ?? {
-				operations: [],
-				lastSyncTimestamp: new Date(),
-				currentTimestamp: new Date(),
-				clientId: '',
-			}
-		)
-	}
-
-	const applySyncDelta = (delta: SyncDelta) => {
-		stonecrop.value?.getOperationLogStore().applySyncDelta(delta)
-	}
-
 	const markIrreversible = (operationId: string, reason: string) => {
 		stonecrop.value?.getOperationLogStore().markIrreversible(operationId, reason)
 	}
-
 	const configure = (config: Partial<OperationLogConfig>) => {
 		stonecrop.value?.getOperationLogStore().configure(config)
 	}
@@ -395,12 +377,9 @@ export function useStonecrop(options?: {
 		clear,
 		getOperationsFor,
 		getSnapshot,
-		createSyncDelta,
-		applySyncDelta,
 		markIrreversible,
 		configure,
 	}
-
 	// Always return HST functions if doctype is provided or will be loaded from router
 	if (options.doctype) {
 		// Explicit doctype - return HST immediately

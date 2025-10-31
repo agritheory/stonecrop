@@ -186,84 +186,6 @@ describe('Operation Log Composable', () => {
 			expect(snapshot.totalOperations).toBe(1)
 		})
 
-		it('should create a sync delta', async () => {
-			const { createSyncDelta, applySyncDelta } = useOperationLog()
-
-			// First sync - should be empty since lastSyncTimestamp is initialized to now
-			const initialDelta = createSyncDelta()
-			expect(initialDelta).toHaveProperty('operations')
-			expect(initialDelta).toHaveProperty('lastSyncTimestamp')
-			expect(initialDelta).toHaveProperty('currentTimestamp')
-
-			// Simulate sync from server with a timestamp in the past
-			const pastTimestamp = new Date(Date.now() - 1000) // 1 second ago
-
-			const mockSyncOp = {
-				id: 'synced-1',
-				type: 'set' as const,
-				path: 'task.123.title',
-				fieldname: 'title',
-				beforeValue: 'Initial Title',
-				afterValue: 'Synced Change',
-				doctype: 'task',
-				recordId: '123',
-				timestamp: pastTimestamp,
-				source: 'sync' as const,
-				reversible: true,
-			}
-
-			applySyncDelta({
-				operations: [mockSyncOp],
-				lastSyncTimestamp: pastTimestamp,
-				currentTimestamp: pastTimestamp,
-				clientId: 'server',
-			})
-
-			// Small delay to ensure timestamp difference
-			await new Promise(resolve => setTimeout(resolve, 10))
-
-			// Now make a local change
-			hstStore.set('task.123.title', 'Local Change')
-
-			// Second sync should include the local change
-			const secondDelta = createSyncDelta()
-			expect(secondDelta.operations.length).toBeGreaterThan(0)
-			expect(secondDelta.operations.some(op => op.path === 'task.123.title' && op.afterValue === 'Local Change')).toBe(
-				true
-			)
-		})
-
-		it('should apply a sync delta', () => {
-			const { applySyncDelta, operations } = useOperationLog()
-
-			const delta = {
-				operations: [
-					{
-						id: 'sync-1',
-						type: 'set' as const,
-						path: 'task.123.title',
-						fieldname: 'title',
-						beforeValue: 'Old',
-						afterValue: 'Synced',
-						doctype: 'task',
-						recordId: '123',
-						timestamp: new Date(),
-						source: 'sync' as const,
-						reversible: true,
-					},
-				],
-				lastSyncTimestamp: new Date(Date.now() - 1000),
-				currentTimestamp: new Date(),
-				clientId: 'test-client',
-			}
-
-			const initialCount = operations.value.length
-			applySyncDelta(delta)
-
-			expect(operations.value.length).toBe(initialCount + 1)
-			expect(operations.value[operations.value.length - 1].source).toBe('sync')
-		})
-
 		it('should mark an operation as irreversible', () => {
 			const { markIrreversible, operations } = useOperationLog()
 
@@ -272,7 +194,6 @@ describe('Operation Log Composable', () => {
 			const opId = operations.value[0].id
 
 			markIrreversible(opId, 'Cannot unpublish')
-
 			const operation = operations.value.find(op => op.id === opId)
 			expect(operation?.reversible).toBe(false)
 			expect(operation?.irreversibleReason).toBe('Cannot unpublish')

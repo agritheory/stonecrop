@@ -101,28 +101,6 @@ export interface BatchOperation {
 }
 
 /**
- * Delta for server synchronization
- * Compact representation for network transmission
- * @public
- */
-export interface SyncDelta {
-	/** Operations since last sync */
-	operations: HSTOperation[]
-
-	/** Last sync timestamp */
-	lastSyncTimestamp: Date
-
-	/** Current timestamp */
-	currentTimestamp: Date
-
-	/** Client/tab identifier */
-	clientId: string
-
-	/** Conflict resolution strategy */
-	conflictStrategy?: 'latest-wins' | 'manual' | 'merge'
-}
-
-/**
  * Operation log configuration
  * @public
  */
@@ -132,12 +110,6 @@ export interface OperationLogConfig {
 
 	/** Enable cross-tab synchronization (default: true) */
 	enableCrossTabSync?: boolean
-
-	/** Enable server synchronization (default: false) */
-	enableServerSync?: boolean
-
-	/** Server sync endpoint */
-	serverSyncEndpoint?: string
 
 	/** Auto-sync interval in milliseconds (default: 30000) */
 	autoSyncInterval?: number

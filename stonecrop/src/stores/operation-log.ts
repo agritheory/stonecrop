@@ -7,7 +7,6 @@ import type {
 	OperationLogConfig,
 	UndoRedoState,
 	OperationLogSnapshot,
-	SyncDelta,
 	CrossTabMessage,
 	OperationSource,
 } from '../types/operation-log'
@@ -98,7 +97,6 @@ export const useOperationLogStore = defineStore('hst-operation-log', () => {
 	const config = ref<OperationLogConfig>({
 		maxOperations: 100,
 		enableCrossTabSync: true,
-		enableServerSync: false,
 		autoSyncInterval: 30000,
 		enablePersistence: false,
 		persistenceKeyPrefix: 'stonecrop-ops',
@@ -108,7 +106,6 @@ export const useOperationLogStore = defineStore('hst-operation-log', () => {
 	const operations = ref<HSTOperation[]>([])
 	const currentIndex = ref(-1) // Points to the last applied operation
 	const clientId = ref(generateId())
-	const lastSyncTimestamp = ref(new Date())
 	const batchMode = ref(false)
 	const currentBatch = ref<HSTOperation[]>([])
 	const currentBatchId = ref<string | null>(null)
@@ -166,11 +163,6 @@ export const useOperationLogStore = defineStore('hst-operation-log', () => {
 		// Set up cross-tab sync if enabled
 		if (config.value.enableCrossTabSync) {
 			setupCrossTabSync()
-		}
-
-		// Set up server sync if enabled
-		if (config.value.enableServerSync && config.value.autoSyncInterval) {
-			setupServerSync()
 		}
 	}
 
@@ -410,39 +402,6 @@ export const useOperationLogStore = defineStore('hst-operation-log', () => {
 	}
 
 	/**
-	 * Get operations since a timestamp (for server sync)
-	 */
-	function getOperationsSince(timestamp: Date): HSTOperation[] {
-		return operations.value.filter(op => op.timestamp > timestamp && op.source !== 'sync')
-	}
-
-	/**
-	 * Create sync delta for server
-	 */
-	function createSyncDelta(): SyncDelta {
-		return {
-			operations: getOperationsSince(lastSyncTimestamp.value),
-			lastSyncTimestamp: lastSyncTimestamp.value,
-			currentTimestamp: new Date(),
-			clientId: clientId.value,
-		}
-	}
-
-	/**
-	 * Apply sync delta from server
-	 */
-	function applySyncDelta(delta: SyncDelta) {
-		delta.operations.forEach(operation => {
-			// Add operations from server with 'sync' source
-			const fullOp: HSTOperation = { ...operation, source: 'sync' }
-			operations.value.push(fullOp)
-		})
-
-		lastSyncTimestamp.value = delta.currentTimestamp
-		currentIndex.value = operations.value.length - 1
-	}
-
-	/**
 	 * Get operation log snapshot for debugging
 	 */
 	function getSnapshot(): OperationLogSnapshot {
@@ -466,7 +425,6 @@ export const useOperationLogStore = defineStore('hst-operation-log', () => {
 	function clear() {
 		operations.value = []
 		currentIndex.value = -1
-		lastSyncTimestamp.value = new Date()
 	}
 
 	/**
@@ -645,34 +603,6 @@ export const useOperationLogStore = defineStore('hst-operation-log', () => {
 		)
 	}
 
-	// Server synchronization
-	function setupServerSync() {
-		if (!config.value.serverSyncEndpoint || !config.value.autoSyncInterval) return
-
-		setInterval(async () => {
-			try {
-				const delta = createSyncDelta()
-				if (delta.operations.length === 0) return
-
-				const response = await fetch(config.value.serverSyncEndpoint!, {
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify(delta),
-				})
-
-				if (response.ok) {
-					lastSyncTimestamp.value = new Date()
-				}
-			} catch (error) {
-				// Log error in development
-				if (typeof console !== 'undefined') {
-					// eslint-disable-next-line no-console
-					console.error('Server sync failed:', error)
-				}
-			}
-		}, config.value.autoSyncInterval)
-	}
-
 	return {
 		// State
 		operations,
@@ -697,9 +627,6 @@ export const useOperationLogStore = defineStore('hst-operation-log', () => {
 		redo,
 		clear,
 		getOperationsFor,
-		getOperationsSince,
-		createSyncDelta,
-		applySyncDelta,
 		getSnapshot,
 		markIrreversible,
 	}
