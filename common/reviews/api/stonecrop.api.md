@@ -353,6 +353,10 @@ export interface HSTNode {
 
 // @public
 export interface HSTOperation {
+    actionError?: string;
+    actionName?: string;
+    actionRecordIds?: string[];
+    actionResult?: 'success' | 'failure' | 'pending';
     afterValue: any;
     beforeValue: any;
     childOperationIds?: string[];
@@ -380,7 +384,7 @@ export type HSTOperationInput = Omit<HSTOperation, 'id' | 'timestamp' | 'source'
 };
 
 // @public
-export type HSTOperationType = 'set' | 'delete' | 'batch' | 'transition';
+export type HSTOperationType = 'set' | 'delete' | 'batch' | 'transition' | 'action';
 
 // @public
 export type HSTStonecropReturn = BaseStonecropReturn & {
@@ -441,6 +445,7 @@ export type OperationLogAPI = {
     getOperationsFor: (doctype: string, recordId?: string) => HSTOperation[];
     getSnapshot: () => OperationLogSnapshot;
     markIrreversible: (operationId: string, reason: string) => void;
+    logAction: (doctype: string, actionName: string, recordIds?: string[], result?: 'success' | 'failure' | 'pending', error?: string) => string;
     configure: (options: Partial<OperationLogConfig>) => void;
 };
 
@@ -538,6 +543,10 @@ export class Stonecrop {
     transition?: string | undefined;
     currentState?: string | undefined;
     targetState?: string | undefined;
+    actionName?: string | undefined;
+    actionRecordIds?: string[] | undefined;
+    actionResult?: "success" | "failure" | "pending" | undefined;
+    actionError?: string | undefined;
     userId?: string | undefined;
     metadata?: Record<string, any> | undefined;
     parentOperationId?: string | undefined;
@@ -558,6 +567,10 @@ export class Stonecrop {
     transition?: string | undefined;
     currentState?: string | undefined;
     targetState?: string | undefined;
+    actionName?: string | undefined;
+    actionRecordIds?: string[] | undefined;
+    actionResult?: "success" | "failure" | "pending" | undefined;
+    actionError?: string | undefined;
     userId?: string | undefined;
     metadata?: Record<string, any> | undefined;
     parentOperationId?: string | undefined;
@@ -598,6 +611,7 @@ export class Stonecrop {
     getOperationsFor: (doctype: string, recordId?: string) => HSTOperation_2[];
     getSnapshot: () => OperationLogSnapshot_2;
     markIrreversible: (operationId: string, reason: string) => void;
+    logAction: (doctype: string, actionName: string, recordIds?: string[], result?: "success" | "failure" | "pending", error?: string) => string;
     }, "operations" | "clientId" | "currentIndex" | "config">, Pick<{
     operations: Ref<    {
     id: string;
@@ -615,6 +629,10 @@ export class Stonecrop {
     transition?: string | undefined;
     currentState?: string | undefined;
     targetState?: string | undefined;
+    actionName?: string | undefined;
+    actionRecordIds?: string[] | undefined;
+    actionResult?: "success" | "failure" | "pending" | undefined;
+    actionError?: string | undefined;
     userId?: string | undefined;
     metadata?: Record<string, any> | undefined;
     parentOperationId?: string | undefined;
@@ -635,6 +653,10 @@ export class Stonecrop {
     transition?: string | undefined;
     currentState?: string | undefined;
     targetState?: string | undefined;
+    actionName?: string | undefined;
+    actionRecordIds?: string[] | undefined;
+    actionResult?: "success" | "failure" | "pending" | undefined;
+    actionError?: string | undefined;
     userId?: string | undefined;
     metadata?: Record<string, any> | undefined;
     parentOperationId?: string | undefined;
@@ -675,6 +697,7 @@ export class Stonecrop {
     getOperationsFor: (doctype: string, recordId?: string) => HSTOperation_2[];
     getSnapshot: () => OperationLogSnapshot_2;
     markIrreversible: (operationId: string, reason: string) => void;
+    logAction: (doctype: string, actionName: string, recordIds?: string[], result?: "success" | "failure" | "pending", error?: string) => string;
     }, "undoRedoState" | "canUndo" | "canRedo" | "undoCount" | "redoCount">, Pick<{
     operations: Ref<    {
     id: string;
@@ -692,6 +715,10 @@ export class Stonecrop {
     transition?: string | undefined;
     currentState?: string | undefined;
     targetState?: string | undefined;
+    actionName?: string | undefined;
+    actionRecordIds?: string[] | undefined;
+    actionResult?: "success" | "failure" | "pending" | undefined;
+    actionError?: string | undefined;
     userId?: string | undefined;
     metadata?: Record<string, any> | undefined;
     parentOperationId?: string | undefined;
@@ -712,6 +739,10 @@ export class Stonecrop {
     transition?: string | undefined;
     currentState?: string | undefined;
     targetState?: string | undefined;
+    actionName?: string | undefined;
+    actionRecordIds?: string[] | undefined;
+    actionResult?: "success" | "failure" | "pending" | undefined;
+    actionError?: string | undefined;
     userId?: string | undefined;
     metadata?: Record<string, any> | undefined;
     parentOperationId?: string | undefined;
@@ -752,7 +783,8 @@ export class Stonecrop {
     getOperationsFor: (doctype: string, recordId?: string) => HSTOperation_2[];
     getSnapshot: () => OperationLogSnapshot_2;
     markIrreversible: (operationId: string, reason: string) => void;
-    }, "undo" | "redo" | "configure" | "addOperation" | "startBatch" | "commitBatch" | "cancelBatch" | "clear" | "getOperationsFor" | "getSnapshot" | "markIrreversible">>;
+    logAction: (doctype: string, actionName: string, recordIds?: string[], result?: "success" | "failure" | "pending", error?: string) => string;
+    }, "undo" | "redo" | "configure" | "addOperation" | "startBatch" | "commitBatch" | "cancelBatch" | "clear" | "getOperationsFor" | "getSnapshot" | "markIrreversible" | "logAction">>;
     getRecord(doctype: DoctypeMeta, recordId: string): Promise<void>;
     getRecordById(doctype: string | DoctypeMeta, recordId: string): HSTNode | undefined;
     getRecordIds(doctype: string | DoctypeMeta): string[];
@@ -761,7 +793,7 @@ export class Stonecrop {
     records(doctype: string | DoctypeMeta): HSTNode;
     readonly registry: Registry;
     removeRecord(doctype: string | DoctypeMeta, recordId: string): void;
-    runAction(_doctype: DoctypeMeta, _action: string, _args?: any[]): void;
+    runAction(doctype: DoctypeMeta, action: string, args?: any[]): void;
     setup(doctype: DoctypeMeta): void;
 }
 
@@ -914,6 +946,10 @@ export function useOperationLog(config?: Partial<OperationLogConfig>): {
     transition?: string | undefined;
     currentState?: string | undefined;
     targetState?: string | undefined;
+    actionName?: string | undefined;
+    actionRecordIds?: string[] | undefined;
+    actionResult?: "success" | "failure" | "pending" | undefined;
+    actionError?: string | undefined;
     userId?: string | undefined;
     metadata?: Record<string, any> | undefined;
     parentOperationId?: string | undefined;
@@ -934,6 +970,10 @@ export function useOperationLog(config?: Partial<OperationLogConfig>): {
     transition?: string | undefined;
     currentState?: string | undefined;
     targetState?: string | undefined;
+    actionName?: string | undefined;
+    actionRecordIds?: string[] | undefined;
+    actionResult?: "success" | "failure" | "pending" | undefined;
+    actionError?: string | undefined;
     userId?: string | undefined;
     metadata?: Record<string, any> | undefined;
     parentOperationId?: string | undefined;
@@ -954,6 +994,7 @@ export function useOperationLog(config?: Partial<OperationLogConfig>): {
     getOperationsFor: (doctype: string, recordId?: string) => HSTOperation_3[];
     getSnapshot: () => OperationLogSnapshot_3;
     markIrreversible: (operationId: string, reason: string) => void;
+    logAction: (doctype: string, actionName: string, recordIds?: string[], result?: "success" | "failure" | "pending", error?: string) => string;
     configure: (options: Partial<OperationLogConfig>) => void;
 };
 
@@ -975,6 +1016,10 @@ irreversibleReason?: string | undefined;
 transition?: string | undefined;
 currentState?: string | undefined;
 targetState?: string | undefined;
+actionName?: string | undefined;
+actionRecordIds?: string[] | undefined;
+actionResult?: "success" | "failure" | "pending" | undefined;
+actionError?: string | undefined;
 userId?: string | undefined;
 metadata?: Record<string, any> | undefined;
 parentOperationId?: string | undefined;
@@ -995,6 +1040,10 @@ irreversibleReason?: string | undefined;
 transition?: string | undefined;
 currentState?: string | undefined;
 targetState?: string | undefined;
+actionName?: string | undefined;
+actionRecordIds?: string[] | undefined;
+actionResult?: "success" | "failure" | "pending" | undefined;
+actionError?: string | undefined;
 userId?: string | undefined;
 metadata?: Record<string, any> | undefined;
 parentOperationId?: string | undefined;
@@ -1035,6 +1084,7 @@ clear: () => void;
 getOperationsFor: (doctype: string, recordId?: string) => HSTOperation[];
 getSnapshot: () => OperationLogSnapshot;
 markIrreversible: (operationId: string, reason: string) => void;
+logAction: (doctype: string, actionName: string, recordIds?: string[], result?: "success" | "failure" | "pending", error?: string) => string;
 }, "operations" | "clientId" | "currentIndex" | "config">, Pick<{
 operations: Ref<    {
 id: string;
@@ -1052,6 +1102,10 @@ irreversibleReason?: string | undefined;
 transition?: string | undefined;
 currentState?: string | undefined;
 targetState?: string | undefined;
+actionName?: string | undefined;
+actionRecordIds?: string[] | undefined;
+actionResult?: "success" | "failure" | "pending" | undefined;
+actionError?: string | undefined;
 userId?: string | undefined;
 metadata?: Record<string, any> | undefined;
 parentOperationId?: string | undefined;
@@ -1072,6 +1126,10 @@ irreversibleReason?: string | undefined;
 transition?: string | undefined;
 currentState?: string | undefined;
 targetState?: string | undefined;
+actionName?: string | undefined;
+actionRecordIds?: string[] | undefined;
+actionResult?: "success" | "failure" | "pending" | undefined;
+actionError?: string | undefined;
 userId?: string | undefined;
 metadata?: Record<string, any> | undefined;
 parentOperationId?: string | undefined;
@@ -1112,6 +1170,7 @@ clear: () => void;
 getOperationsFor: (doctype: string, recordId?: string) => HSTOperation[];
 getSnapshot: () => OperationLogSnapshot;
 markIrreversible: (operationId: string, reason: string) => void;
+logAction: (doctype: string, actionName: string, recordIds?: string[], result?: "success" | "failure" | "pending", error?: string) => string;
 }, "undoRedoState" | "canUndo" | "canRedo" | "undoCount" | "redoCount">, Pick<{
 operations: Ref<    {
 id: string;
@@ -1129,6 +1188,10 @@ irreversibleReason?: string | undefined;
 transition?: string | undefined;
 currentState?: string | undefined;
 targetState?: string | undefined;
+actionName?: string | undefined;
+actionRecordIds?: string[] | undefined;
+actionResult?: "success" | "failure" | "pending" | undefined;
+actionError?: string | undefined;
 userId?: string | undefined;
 metadata?: Record<string, any> | undefined;
 parentOperationId?: string | undefined;
@@ -1149,6 +1212,10 @@ irreversibleReason?: string | undefined;
 transition?: string | undefined;
 currentState?: string | undefined;
 targetState?: string | undefined;
+actionName?: string | undefined;
+actionRecordIds?: string[] | undefined;
+actionResult?: "success" | "failure" | "pending" | undefined;
+actionError?: string | undefined;
 userId?: string | undefined;
 metadata?: Record<string, any> | undefined;
 parentOperationId?: string | undefined;
@@ -1189,7 +1256,8 @@ clear: () => void;
 getOperationsFor: (doctype: string, recordId?: string) => HSTOperation[];
 getSnapshot: () => OperationLogSnapshot;
 markIrreversible: (operationId: string, reason: string) => void;
-}, "undo" | "redo" | "configure" | "addOperation" | "startBatch" | "commitBatch" | "cancelBatch" | "clear" | "getOperationsFor" | "getSnapshot" | "markIrreversible">>;
+logAction: (doctype: string, actionName: string, recordIds?: string[], result?: "success" | "failure" | "pending", error?: string) => string;
+}, "undo" | "redo" | "configure" | "addOperation" | "startBatch" | "commitBatch" | "cancelBatch" | "clear" | "getOperationsFor" | "getSnapshot" | "markIrreversible" | "logAction">>;
 
 // @public
 export function useStonecrop(): BaseStonecropReturn | HSTStonecropReturn;

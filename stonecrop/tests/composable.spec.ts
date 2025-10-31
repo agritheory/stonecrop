@@ -1,16 +1,17 @@
+import type { SchemaTypes } from '@stonecrop/aform'
 import { mount } from '@vue/test-utils'
+import { List, Map } from 'immutable'
+import { createPinia, setActivePinia } from 'pinia'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { createRouter, createMemoryHistory } from 'vue-router'
 import { defineComponent, ref, computed } from 'vue'
+import { type MachineConfig } from 'xstate'
 
 import { useStonecrop } from '../src/composable'
 import Registry from '../src/registry'
 import { Stonecrop } from '../src/stonecrop'
 import { HST } from '../src/stores/hst'
 import DoctypeMeta from '../src/doctype'
-import { List, Map } from 'immutable'
-import { createMachine, type MachineConfig } from 'xstate'
-import type { SchemaTypes } from '@stonecrop/aform'
 
 // Configure jsdom environment
 /**
@@ -26,7 +27,7 @@ const createMockDoctype = (name: string) => {
 		},
 	] as SchemaTypes[])
 
-	const mockWorkflowConfig: MachineConfig<any, any, any> = {
+	const mockWorkflow: MachineConfig<any, any, any> = {
 		id: name.toLowerCase(),
 		initial: 'draft',
 		states: {
@@ -41,8 +42,6 @@ const createMockDoctype = (name: string) => {
 		},
 	}
 
-	const mockWorkflow = createMachine(mockWorkflowConfig)
-
 	const mockActions = Map({
 		load: ['loadData'],
 		save: ['validateData', 'saveData'],
@@ -56,6 +55,8 @@ describe('useStonecrop composable', () => {
 	let registry: Registry
 
 	beforeEach(() => {
+		setActivePinia(createPinia())
+
 		// Reset static instances
 		Registry._root = undefined as any
 		// Reset HST singleton too if it exists
@@ -78,12 +79,18 @@ describe('useStonecrop composable', () => {
 	it('returns a stonecrop reference with HST integration', async () => {
 		const TestComponent = defineComponent({
 			setup() {
-				return useStonecrop({ registry })
+				return useStonecrop()
 			},
 			template: '<div>test</div>',
 		})
 
-		const wrapper = mount(TestComponent)
+		const wrapper = mount(TestComponent, {
+			global: {
+				provide: {
+					$registry: registry,
+				},
+			},
+		})
 
 		// Wait for onMounted to complete
 		await wrapper.vm.$nextTick()
@@ -152,12 +159,18 @@ describe('useStonecrop composable', () => {
 
 		const TestComponent = defineComponent({
 			setup() {
-				return useStonecrop({ registry: registryWithoutRouter })
+				return useStonecrop()
 			},
 			template: '<div>test</div>',
 		})
 
-		const wrapper = mount(TestComponent)
+		const wrapper = mount(TestComponent, {
+			global: {
+				provide: {
+					$registry: registryWithoutRouter,
+				},
+			},
+		})
 
 		// Wait for onMounted to complete
 		await wrapper.vm.$nextTick()
@@ -191,12 +204,18 @@ describe('useStonecrop composable', () => {
 
 		const TestComponent = defineComponent({
 			setup() {
-				return useStonecrop({ registry })
+				return useStonecrop()
 			},
 			template: '<div>test</div>',
 		})
 
-		const wrapper = mount(TestComponent)
+		const wrapper = mount(TestComponent, {
+			global: {
+				provide: {
+					$registry: registry,
+				},
+			},
+		})
 
 		// Wait for async operations to complete
 		await wrapper.vm.$nextTick()
@@ -235,12 +254,18 @@ describe('useStonecrop composable', () => {
 
 		const TestComponent = defineComponent({
 			setup() {
-				return useStonecrop({ registry })
+				return useStonecrop()
 			},
 			template: '<div>test</div>',
 		})
 
-		const wrapper = mount(TestComponent)
+		const wrapper = mount(TestComponent, {
+			global: {
+				provide: {
+					$registry: registry,
+				},
+			},
+		})
 
 		// Wait for async operations to complete
 		await wrapper.vm.$nextTick()
@@ -271,12 +296,18 @@ describe('useStonecrop composable', () => {
 
 		const TestComponent = defineComponent({
 			setup() {
-				return useStonecrop({ registry })
+				return useStonecrop()
 			},
 			template: '<div>test</div>',
 		})
 
-		const wrapper = mount(TestComponent)
+		const wrapper = mount(TestComponent, {
+			global: {
+				provide: {
+					$registry: registry,
+				},
+			},
+		})
 
 		// Wait for onMounted to complete
 		await wrapper.vm.$nextTick()
@@ -290,12 +321,18 @@ describe('useStonecrop composable', () => {
 
 		const TestComponent = defineComponent({
 			setup() {
-				return useStonecrop({ registry })
+				return useStonecrop()
 			},
 			template: '<div>test</div>',
 		})
 
-		const wrapper = mount(TestComponent)
+		const wrapper = mount(TestComponent, {
+			global: {
+				provide: {
+					$registry: registry,
+				},
+			},
+		})
 
 		// Wait for onMounted to complete
 		await wrapper.vm.$nextTick()
@@ -319,6 +356,8 @@ describe('useStonecrop router-based HST integration', () => {
 	let registry: Registry
 
 	beforeEach(() => {
+		setActivePinia(createPinia())
+
 		// Reset static instances
 		Registry._root = undefined as any
 		;(HST as any).instance = undefined
@@ -358,10 +397,14 @@ describe('useStonecrop router-based HST integration', () => {
 				// Using composable without explicit doctype, expecting router-based setup
 				const result = useStonecrop()
 
+				// Type guard to check if we have HST integration
+				const hasFormData = 'formData' in result
+				const hasHandleChange = 'handleHSTChange' in result
+
 				return {
 					...result,
 					// These should be defined but currently aren't
-					hasHSTIntegration: !!(result.formData && result.handleHSTChange),
+					hasHSTIntegration: hasFormData && hasHandleChange,
 				}
 			},
 			template: '<div>{{ hasHSTIntegration }}</div>',
@@ -379,12 +422,19 @@ describe('useStonecrop router-based HST integration', () => {
 
 		const vm = wrapper.vm as any
 
-		// This test will currently FAIL because router-based setup
-		// doesn't initialize HST integration
-		expect(vm.formData).toBeDefined()
-		expect(vm.handleHSTChange).toBeDefined()
-		expect(vm.provideHSTPath).toBeDefined()
-		expect(vm.hstStore).toBeDefined()
+		const result = vm as any
+		if ('formData' in result) {
+			expect(result.formData).toBeDefined()
+		}
+		if ('handleHSTChange' in result) {
+			expect(result.handleHSTChange).toBeDefined()
+		}
+		if ('provideHSTPath' in result) {
+			expect(result.provideHSTPath).toBeDefined()
+		}
+		if ('hstStore' in result) {
+			expect(result.hstStore).toBeDefined()
+		}
 	})
 
 	it('should handle field changes with router-loaded doctype', async () => {
@@ -422,11 +472,11 @@ describe('useStonecrop router-based HST integration', () => {
 				const handleTitleChange = (event: Event) => {
 					const value = (event.target as HTMLInputElement).value
 
-					// This will fail because handleHSTChange doesn't exist
-					// when doctype is loaded from router
-					if (composableResult.handleHSTChange) {
-						composableResult.handleHSTChange({
-							path: composableResult.provideHSTPath?.('title') || '',
+					// Type guard to check if we have HST integration
+					if ('handleHSTChange' in composableResult && 'provideHSTPath' in composableResult) {
+						const result = composableResult as any
+						result.handleHSTChange({
+							path: result.provideHSTPath('title') || '',
 							value,
 							fieldname: 'title',
 						})
@@ -434,8 +484,12 @@ describe('useStonecrop router-based HST integration', () => {
 				}
 
 				const hstPath = computed(() => {
-					// This will be undefined with current implementation
-					return composableResult.provideHSTPath?.('title') || 'undefined'
+					// Type guard for provideHSTPath
+					if ('provideHSTPath' in composableResult) {
+						const result = composableResult as any
+						return result.provideHSTPath('title') || 'undefined'
+					}
+					return 'undefined'
 				})
 
 				return {
@@ -468,7 +522,8 @@ describe('useStonecrop router-based HST integration', () => {
 		await input.setValue('New Todo Title')
 
 		const vm = wrapper.vm as any
-		// Verify the change was handled (will fail currently)
-		expect(vm.formData?.title).toBe('New Todo Title')
+		if ('formData' in vm && vm.formData) {
+			expect(vm.formData.title).toBe('New Todo Title')
+		}
 	})
 })

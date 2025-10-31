@@ -2,12 +2,12 @@
 
 ## Overview
 
-The Desktop example demonstrates a comprehensive **schema-driven UI framework** with **event-driven workflows** using Stonecrop's Hierarchical State Tree (HST) and XState finite state machines. This example showcases how agents (FSMs) control application behavior through structured workflows and state management.
+The Desktop example demonstrates a **schema-driven UI framework** with **event-driven workflows** using Stonecrop's Hierarchical State Tree (HST) and XState finite state machines. This example showcases how agents (FSMs) control application behavior through structured workflows and state management.
 
 ## Test Coverage & Quality Assurance
 
 ### Testing Architecture Patterns
-1. **Plugin Testing**: Comprehensive coverage of auto-initialization, callback handling, error handling, custom component registration, and router logic
+1. **Plugin Testing**: Considerable coverage of auto-initialization, callback handling, error handling, custom component registration, and router logic
 2. **Store Testing**: HST singleton patterns, HSTProxy path navigation, tree operations, and error boundary testing
 3. **Integration Testing**: HST-Vue reactivity, component composition, and real-world workflow scenarios
 4. **Error Handling**: Graceful degradation patterns, malformed data handling, and recovery mechanisms
@@ -733,7 +733,7 @@ const handleSave = async () => {
 
 #### Context Passing
 
-Transition actions receive comprehensive context:
+Transition actions receive field context:
 ```typescript
 interface TransitionChangeContext extends FieldChangeContext {
   transition: string       // Transition name (e.g., "SAVE")
@@ -790,7 +790,7 @@ rushx docs
 5. **Operation Log Debug**: Toggle operation log panel to view change history
 
 ### Operation Log Debugging
-The Operation Log Panel provides comprehensive debugging for undo/redo functionality:
+The Operation Log Panel provides debugging for undo/redo functionality:
 
 ```typescript
 // Enable operation log panel in View.vue
@@ -1146,4 +1146,4 @@ app.mount('#app') // Everything happens automatically after this
 - **Disable cross-tab sync if not needed** (reduces overhead)
 - **Consider disabling persistence for high-frequency edit scenarios**
 
-This agent architecture provides a robust foundation for building complex, workflow-driven applications with predictable state management, comprehensive undo/redo functionality, and on-demand route handling.
+This agent architecture provides a robust foundation for building complex, workflow-driven applications with predictable state management, undo/redo functionality, and on-demand route handling.

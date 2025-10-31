@@ -155,6 +155,10 @@ export declare function useOperationLog(config?: Partial<OperationLogConfig>): {
         transition?: string | undefined;
         currentState?: string | undefined;
         targetState?: string | undefined;
+        actionName?: string | undefined;
+        actionRecordIds?: string[] | undefined;
+        actionResult?: "success" | "failure" | "pending" | undefined;
+        actionError?: string | undefined;
         userId?: string | undefined;
         metadata?: Record<string, any> | undefined;
         parentOperationId?: string | undefined;
@@ -175,6 +179,10 @@ export declare function useOperationLog(config?: Partial<OperationLogConfig>): {
         transition?: string | undefined;
         currentState?: string | undefined;
         targetState?: string | undefined;
+        actionName?: string | undefined;
+        actionRecordIds?: string[] | undefined;
+        actionResult?: "success" | "failure" | "pending" | undefined;
+        actionError?: string | undefined;
         userId?: string | undefined;
         metadata?: Record<string, any> | undefined;
         parentOperationId?: string | undefined;
@@ -195,6 +203,7 @@ export declare function useOperationLog(config?: Partial<OperationLogConfig>): {
     getOperationsFor: (doctype: string, recordId?: string) => import("..").HSTOperation[];
     getSnapshot: () => import("..").OperationLogSnapshot;
     markIrreversible: (operationId: string, reason: string) => void;
+    logAction: (doctype: string, actionName: string, recordIds?: string[], result?: "success" | "failure" | "pending", error?: string) => string;
     configure: (options: Partial<OperationLogConfig>) => void;
 };
 ```
@@ -719,6 +728,10 @@ Complete metadata for an HST mutation Enables time travel, synchronization, and 
 
 ```typescript
 export interface HSTOperation {
+  actionError?: string;
+  actionName?: string;
+  actionRecordIds?: string[];
+  actionResult?: 'success' | 'failure' | 'pending';
   afterValue: any;
   beforeValue: any;
   childOperationIds?: string[];
@@ -745,6 +758,10 @@ export interface HSTOperation {
 
 | Property | Type | Description |
 |----------|------|-------------|
+| actionError? | `string` | Error message if action execution failed |
+| actionName? | `string` | Action name if operation is an action execution (type: 'action') |
+| actionRecordIds? | `string[]` | Record IDs that the action was executed on |
+| actionResult? | `'success' \| 'failure' \| 'pending'` | Result or status of the action execution |
 | afterValue | `any` | Value after the operation |
 | beforeValue | `any` | Value before the operation |
 | childOperationIds? | `string[]` | Child operation IDs for batch operations |
@@ -1345,7 +1362,7 @@ Type of HST operation
 **Definition:**
 
 ```typescript
-export type HSTOperationType = 'set' | 'delete' | 'batch' | 'transition';
+export type HSTOperationType = 'set' | 'delete' | 'batch' | 'transition' | 'action';
 ```
 
 ### HSTStonecropReturn
@@ -1438,6 +1455,7 @@ export type OperationLogAPI = {
     getOperationsFor: (doctype: string, recordId?: string) => HSTOperation[];
     getSnapshot: () => OperationLogSnapshot;
     markIrreversible: (operationId: string, reason: string) => void;
+    logAction: (doctype: string, actionName: string, recordIds?: string[], result?: 'success' | 'failure' | 'pending', error?: string) => string;
     configure: (options: Partial<OperationLogConfig>) => void;
 };
 ```
@@ -1917,19 +1935,19 @@ removeRecord(doctype: string | DoctypeMeta, recordId: string): void
 
 #### runAction
 
-Run action on doctype (maintains compatibility)
+Run action on doctype Executes the action and logs it to the operation log for audit tracking
 
 ```typescript
-runAction(_doctype: DoctypeMeta, _action: string, _args: any[]): void
+runAction(doctype: DoctypeMeta, action: string, args: any[]): void
 ```
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| _doctype | `DoctypeMeta` | The doctype |
-| _action | `string` | The action to run |
-| _args | `any[]` | Action arguments |
+| doctype | `DoctypeMeta` | The doctype |
+| action | `string` | The action to run |
+| args | `any[]` | Action arguments (typically record IDs) |
 
 #### setup
 
@@ -1981,6 +1999,10 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
         transition?: string | undefined;
         currentState?: string | undefined;
         targetState?: string | undefined;
+        actionName?: string | undefined;
+        actionRecordIds?: string[] | undefined;
+        actionResult?: "success" | "failure" | "pending" | undefined;
+        actionError?: string | undefined;
         userId?: string | undefined;
         metadata?: Record<string, any> | undefined;
         parentOperationId?: string | undefined;
@@ -2001,6 +2023,10 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
         transition?: string | undefined;
         currentState?: string | undefined;
         targetState?: string | undefined;
+        actionName?: string | undefined;
+        actionRecordIds?: string[] | undefined;
+        actionResult?: "success" | "failure" | "pending" | undefined;
+        actionError?: string | undefined;
         userId?: string | undefined;
         metadata?: Record<string, any> | undefined;
         parentOperationId?: string | undefined;
@@ -2041,6 +2067,7 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
     getOperationsFor: (doctype: string, recordId?: string) => HSTOperation[];
     getSnapshot: () => OperationLogSnapshot;
     markIrreversible: (operationId: string, reason: string) => void;
+    logAction: (doctype: string, actionName: string, recordIds?: string[], result?: "success" | "failure" | "pending", error?: string) => string;
 }, "operations" | "clientId" | "currentIndex" | "config">, Pick<{
     operations: import("vue").Ref<{
         id: string;
@@ -2058,6 +2085,10 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
         transition?: string | undefined;
         currentState?: string | undefined;
         targetState?: string | undefined;
+        actionName?: string | undefined;
+        actionRecordIds?: string[] | undefined;
+        actionResult?: "success" | "failure" | "pending" | undefined;
+        actionError?: string | undefined;
         userId?: string | undefined;
         metadata?: Record<string, any> | undefined;
         parentOperationId?: string | undefined;
@@ -2078,6 +2109,10 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
         transition?: string | undefined;
         currentState?: string | undefined;
         targetState?: string | undefined;
+        actionName?: string | undefined;
+        actionRecordIds?: string[] | undefined;
+        actionResult?: "success" | "failure" | "pending" | undefined;
+        actionError?: string | undefined;
         userId?: string | undefined;
         metadata?: Record<string, any> | undefined;
         parentOperationId?: string | undefined;
@@ -2118,6 +2153,7 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
     getOperationsFor: (doctype: string, recordId?: string) => HSTOperation[];
     getSnapshot: () => OperationLogSnapshot;
     markIrreversible: (operationId: string, reason: string) => void;
+    logAction: (doctype: string, actionName: string, recordIds?: string[], result?: "success" | "failure" | "pending", error?: string) => string;
 }, "undoRedoState" | "canUndo" | "canRedo" | "undoCount" | "redoCount">, Pick<{
     operations: import("vue").Ref<{
         id: string;
@@ -2135,6 +2171,10 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
         transition?: string | undefined;
         currentState?: string | undefined;
         targetState?: string | undefined;
+        actionName?: string | undefined;
+        actionRecordIds?: string[] | undefined;
+        actionResult?: "success" | "failure" | "pending" | undefined;
+        actionError?: string | undefined;
         userId?: string | undefined;
         metadata?: Record<string, any> | undefined;
         parentOperationId?: string | undefined;
@@ -2155,6 +2195,10 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
         transition?: string | undefined;
         currentState?: string | undefined;
         targetState?: string | undefined;
+        actionName?: string | undefined;
+        actionRecordIds?: string[] | undefined;
+        actionResult?: "success" | "failure" | "pending" | undefined;
+        actionError?: string | undefined;
         userId?: string | undefined;
         metadata?: Record<string, any> | undefined;
         parentOperationId?: string | undefined;
@@ -2195,6 +2239,7 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
     getOperationsFor: (doctype: string, recordId?: string) => HSTOperation[];
     getSnapshot: () => OperationLogSnapshot;
     markIrreversible: (operationId: string, reason: string) => void;
-}, "undo" | "redo" | "configure" | "addOperation" | "startBatch" | "commitBatch" | "cancelBatch" | "clear" | "getOperationsFor" | "getSnapshot" | "markIrreversible">>
+    logAction: (doctype: string, actionName: string, recordIds?: string[], result?: "success" | "failure" | "pending", error?: string) => string;
+}, "undo" | "redo" | "configure" | "addOperation" | "startBatch" | "commitBatch" | "cancelBatch" | "clear" | "getOperationsFor" | "getSnapshot" | "markIrreversible" | "logAction">>
 ```
 

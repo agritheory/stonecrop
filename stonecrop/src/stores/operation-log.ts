@@ -436,6 +436,8 @@ export const useOperationLogStore = defineStore('hst-operation-log', () => {
 
 	/**
 	 * Mark an operation as irreversible
+	 * @param operationId - The ID of the operation to mark
+	 * @param reason - The reason why the operation is irreversible
 	 */
 	function markIrreversible(operationId: string, reason: string) {
 		const operation = operations.value.find(op => op.id === operationId)
@@ -443,6 +445,41 @@ export const useOperationLogStore = defineStore('hst-operation-log', () => {
 			operation.reversible = false
 			operation.irreversibleReason = reason
 		}
+	}
+
+	/**
+	 * Log an action execution (stateless actions like print, email, etc.)
+	 * These operations are tracked but typically not reversible
+	 * @param doctype - The doctype the action was executed on
+	 * @param actionName - The name of the action that was executed
+	 * @param recordIds - Optional array of record IDs the action was executed on
+	 * @param result - The result of the action execution
+	 * @param error - Optional error message if action failed
+	 * @returns The operation ID
+	 */
+	function logAction(
+		doctype: string,
+		actionName: string,
+		recordIds?: string[],
+		result: 'success' | 'failure' | 'pending' = 'success',
+		error?: string
+	): string {
+		const operation: HSTOperationInput = {
+			type: 'action',
+			path: recordIds && recordIds.length > 0 ? `${doctype}.${recordIds[0]}` : doctype,
+			fieldname: '',
+			beforeValue: null,
+			afterValue: null,
+			doctype,
+			recordId: recordIds && recordIds.length > 0 ? recordIds[0] : undefined,
+			reversible: false, // Actions are typically not reversible
+			actionName,
+			actionRecordIds: recordIds,
+			actionResult: result,
+			actionError: error,
+		}
+
+		return addOperation(operation)
 	}
 
 	// Cross-tab synchronization
@@ -629,5 +666,6 @@ export const useOperationLogStore = defineStore('hst-operation-log', () => {
 		getOperationsFor,
 		getSnapshot,
 		markIrreversible,
+		logAction,
 	}
 })

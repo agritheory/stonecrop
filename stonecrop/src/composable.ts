@@ -36,6 +36,13 @@ export type OperationLogAPI = {
 	getOperationsFor: (doctype: string, recordId?: string) => HSTOperation[]
 	getSnapshot: () => OperationLogSnapshot
 	markIrreversible: (operationId: string, reason: string) => void
+	logAction: (
+		doctype: string,
+		actionName: string,
+		recordIds?: string[],
+		result?: 'success' | 'failure' | 'pending',
+		error?: string
+	) => string
 	configure: (options: Partial<OperationLogConfig>) => void
 }
 
@@ -172,6 +179,17 @@ export function useStonecrop(options?: {
 	const markIrreversible = (operationId: string, reason: string) => {
 		stonecrop.value?.getOperationLogStore().markIrreversible(operationId, reason)
 	}
+
+	const logAction = (
+		doctype: string,
+		actionName: string,
+		recordIds?: string[],
+		result: 'success' | 'failure' | 'pending' = 'success',
+		error?: string
+	): string => {
+		return stonecrop.value?.getOperationLogStore().logAction(doctype, actionName, recordIds, result, error) ?? ''
+	}
+
 	const configure = (config: Partial<OperationLogConfig>) => {
 		stonecrop.value?.getOperationLogStore().configure(config)
 	}
@@ -378,6 +396,7 @@ export function useStonecrop(options?: {
 		getOperationsFor,
 		getSnapshot,
 		markIrreversible,
+		logAction,
 		configure,
 	}
 	// Always return HST functions if doctype is provided or will be loaded from router

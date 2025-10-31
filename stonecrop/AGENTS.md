@@ -105,6 +105,7 @@ const { stonecrop, operationLog, hstStore, formData, provideHSTPath, handleHSTCh
   - `undo(hstStore)`, `redo(hstStore)`
   - `startBatch()`, `commitBatch()`, `cancelBatch()`
   - `configure(config)`, `getSnapshot()`, `clear()`
+  - `logAction(doctype, actionName, recordIds?, result?, error?)` - Track action executions
   - `withBatch(fn, description)`, `setupUndoRedoShortcuts()`
   - `createSyncDelta()`, `applySyncDelta(delta)`
 
@@ -118,6 +119,13 @@ const { stonecrop, operationLog, hstStore, formData, provideHSTPath, handleHSTCh
   - Cross-tab sync via BroadcastChannel
   - LocalStorage persistence
   - XState transition tracking (non-reversible)
+  - **Action tracking**: Records stateless action executions (print, email, archive, etc.)
+- **Operation Types**:
+  - `set`: Field value changes (reversible)
+  - `delete`: Record/field deletions (reversible)
+  - `batch`: Grouped operations (reversible if all children are)
+  - `transition`: XState state transitions (non-reversible)
+  - `action`: Stateless action executions (non-reversible)
 - **Integration**: Automatically initialized when `getOperationLogStore()` is called
 
 ### Field Triggers (`field-triggers.ts`)
@@ -194,6 +202,38 @@ operationLog.configure({ maxOperations: 100 })
 - **Pinia unavailability**: Silent catch in composable (optional feature)
 - **Field trigger failures**: Automatic rollback with console logging
 - **XState errors**: Propagate to caller
+
+### 5. Action Tracking
+The operation log can track stateless action executions for audit purposes:
+
+```typescript
+// Manual action tracking
+const { operationLog } = useStonecrop({ doctype, recordId })
+operationLog.logAction(
+  'task',                    // doctype
+  'archive',                 // action name
+  ['123', '456'],           // record IDs (optional)
+  'success',                // result: 'success' | 'failure' | 'pending'
+  undefined                 // error message (optional)
+)
+
+// Automatic tracking via runAction()
+const stonecrop = new Stonecrop(registry)
+await stonecrop.runAction(
+  'task',
+  'sendEmail',
+  '123',
+  { to: 'user@example.com', subject: 'Task Update' }
+)
+// Automatically logs action with success/failure status
+```
+
+**Key Points**:
+- Actions are marked as non-reversible (stateless operations)
+- Supports tracking multiple record IDs per action
+- Captures error messages for failed actions
+- Maintains chronological audit trail
+- `runAction()` automatically logs execution to operation log
 
 ## Testing Patterns
 

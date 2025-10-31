@@ -103,13 +103,35 @@ export function useOperationLog(config?: Partial<OperationLogConfig>) {
 
 	/**
 	 * Mark an operation as irreversible
+	 * @param operationId - The ID of the operation to mark
+	 * @param reason - The reason why the operation is irreversible
 	 */
 	function markIrreversible(operationId: string, reason: string) {
 		store.markIrreversible(operationId, reason)
 	}
 
 	/**
+	 * Log an action execution (stateless actions like print, email, etc.)
+	 * @param doctype - The doctype the action was executed on
+	 * @param actionName - The name of the action that was executed
+	 * @param recordIds - Optional array of record IDs the action was executed on
+	 * @param result - The result of the action execution
+	 * @param error - Optional error message if action failed
+	 * @returns The operation ID
+	 */
+	function logAction(
+		doctype: string,
+		actionName: string,
+		recordIds?: string[],
+		result: 'success' | 'failure' | 'pending' = 'success',
+		error?: string
+	): string {
+		return store.logAction(doctype, actionName, recordIds, result, error)
+	}
+
+	/**
 	 * Update configuration
+	 * @param options - Configuration options to update
 	 */
 	function configure(options: Partial<OperationLogConfig>) {
 		store.configure(options)
@@ -135,6 +157,7 @@ export function useOperationLog(config?: Partial<OperationLogConfig>) {
 		getOperationsFor,
 		getSnapshot,
 		markIrreversible,
+		logAction,
 		configure,
 	}
 }

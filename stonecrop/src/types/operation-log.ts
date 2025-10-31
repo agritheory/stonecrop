@@ -2,7 +2,7 @@
  * Type of HST operation
  * @public
  */
-export type HSTOperationType = 'set' | 'delete' | 'batch' | 'transition'
+export type HSTOperationType = 'set' | 'delete' | 'batch' | 'transition' | 'action'
 
 /**
  * Operation source - where the change originated
@@ -60,6 +60,18 @@ export interface HSTOperation {
 
 	/** XState target state after transition */
 	targetState?: string
+
+	/** Action name if operation is an action execution (type: 'action') */
+	actionName?: string
+
+	/** Record IDs that the action was executed on */
+	actionRecordIds?: string[]
+
+	/** Result or status of the action execution */
+	actionResult?: 'success' | 'failure' | 'pending'
+
+	/** Error message if action execution failed */
+	actionError?: string
 
 	/** User or session identifier */
 	userId?: string
