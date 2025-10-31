@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v5
 
       - name: Run Prettier
         id: prettier-run
@@ -33,10 +33,10 @@ jobs:
     name: Sort package.json
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         name: Checkout
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         name: Install Node.js
         with:
           cache-dependency-path: '**/config/rush/pnpm-lock.yaml'
