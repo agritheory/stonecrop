@@ -35,6 +35,10 @@
       "allowedCategories": [ "prototype" ]
     },
     {
+      "name": "@nuxt/eslint",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
       "name": "@nuxt/eslint-config",
       "allowedCategories": [ "prototype" ]
     },

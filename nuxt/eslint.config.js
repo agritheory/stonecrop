@@ -1,7 +1,13 @@
 // @ts-check
 import eslint from '@eslint/js'
-import { createConfigForNuxt } from '@nuxt/eslint-config'
+import { createConfigForNuxt } from '@nuxt/eslint-config/flat'
 
 export default createConfigForNuxt({
-	// Nuxt ESLint options here
+	features: {
+		tooling: true,
+		stylistic: true,
+	},
+	dirs: {
+		src: ['./playground'],
+	},
 }).prepend(eslint.configs.recommended)
