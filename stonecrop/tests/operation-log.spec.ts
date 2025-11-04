@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useOperationLogStore } from '../src/stores/operation-log'
 import { createHST } from '../src/stores/hst'
@@ -464,8 +464,15 @@ describe('Operation Log Store', () => {
 			onmessage: ((event: MessageEvent) => void) | null
 		}
 		let messageHandlers: Map<string, (event: MessageEvent) => void>
+		let originalBroadcastChannel: any
 
 		beforeEach(() => {
+			// Reset Pinia to ensure clean state
+			setActivePinia(createPinia())
+
+			// Save original BroadcastChannel
+			originalBroadcastChannel = (global as any).BroadcastChannel
+
 			// Mock BroadcastChannel
 			messageHandlers = new Map()
 
@@ -477,7 +484,28 @@ describe('Operation Log Store', () => {
 				close: vi.fn(),
 				onmessage: null,
 			}
-			;(global as any).BroadcastChannel = vi.fn(() => mockBroadcastChannel)
+
+			// Create a proper constructor mock
+			const BroadcastChannelMock = vi.fn(function (this: any) {
+				return mockBroadcastChannel
+			}) as any
+			BroadcastChannelMock.prototype = {}
+			;(global as any).BroadcastChannel = BroadcastChannelMock
+		})
+
+		afterEach(() => {
+			// Restore original BroadcastChannel
+			if (originalBroadcastChannel === undefined) {
+				delete (global as any).BroadcastChannel
+			} else {
+				;(global as any).BroadcastChannel = originalBroadcastChannel
+			}
+
+			// Clean up message handlers
+			messageHandlers.clear()
+
+			// Reset Pinia again to clean up any lingering state
+			setActivePinia(createPinia())
 		})
 
 		it('should setup BroadcastChannel when enabled', () => {
