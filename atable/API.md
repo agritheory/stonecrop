@@ -875,7 +875,7 @@ createTableStore: (initData: {
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| initData | `{ columns: TableColumn[]; rows: TableRow[]; id?: string; config?: TableConfig; modal?: TableModal; }` |  |
+| initData | `{ columns: TableColumn[]; rows: TableRow[]; id?: string; config?: TableConfig; modal?: TableModal; }` | Initial data for the table store |
 
 ### install
 
@@ -891,7 +891,7 @@ declare function install(app: App): void;
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| app | `App` |  |
+| app | `App` | Vue app instance |
 
 ## Interfaces
 

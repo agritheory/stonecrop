@@ -1,6 +1,6 @@
 <template>
 	<div class="beam_filters">
-		<div @click="isFilterExpanded = !isFilterExpanded" class="beam_filters-heading">
+		<div class="beam_filters-heading" @click="isFilterExpanded = !isFilterExpanded">
 			<ToggleArrow :open="isFilterExpanded" />
 			<BeamHeading>Filter</BeamHeading>
 		</div>

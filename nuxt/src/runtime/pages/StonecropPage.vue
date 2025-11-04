@@ -1,6 +1,5 @@
 <template>
-	<div>Stonecrop Page</div>
-	<AForm v-model="schema" :data="schemaData" :key="componentKey" />
+	<AForm :key="componentKey" v-model="schema" :data="schemaData" />
 </template>
 
 <script setup lang="ts">
@@ -10,7 +9,7 @@ import { onMounted, ref } from 'vue'
 
 const route = useRoute()
 const schema = ref<SchemaTypes[]>([])
-const schemaData = ref<any[]>([])
+const schemaData = ref<unknown[]>([])
 const componentKey = ref(0)
 
 onMounted(async () => {
@@ -18,7 +17,7 @@ onMounted(async () => {
 	schema.value = route.meta.schema as SchemaTypes[]
 
 	const res = await $fetch(`/api${route.path}`)
-	schemaData.value = res as any[]
+	schemaData.value = res as unknown[]
 
 	// re-render form when data is available
 	componentKey.value++

@@ -3,14 +3,14 @@
 		<label class="aform_field-label" :for="uuid">{{ label }}</label>
 		<span class="aform_checkbox-container aform_input-field">
 			<input
+				:id="uuid"
 				v-model="checkbox"
 				type="checkbox"
-				:id="uuid"
 				class="aform_checkbox"
 				:readonly="readonly"
 				:required="required" />
 		</span>
-		<p class="aform_error" v-show="validation.errorMessage" v-html="validation.errorMessage"></p>
+		<p v-show="validation.errorMessage" class="aform_error" v-html="validation.errorMessage"></p>
 	</div>
 </template>
 
@@ -20,7 +20,7 @@ import { InputHTMLAttributes } from 'vue'
 import { ComponentProps } from '../../types'
 
 const {
-	schema, // don't remove to allow masking to work
+	_schema, // don't remove to allow masking to work
 	label,
 	required,
 	readonly,

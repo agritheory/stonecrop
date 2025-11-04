@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/nuxt",
-	"version": "0.4.35",
+	"version": "0.4.37",
 	"description": "Nuxt module for Stonecrop",
 	"license": "MIT",
 	"type": "module",
@@ -35,36 +35,44 @@
 		"prepublish": "rushx dev:prepare && nuxt-module-build build",
 		"prepack": "rushx dev:prepare && nuxt-module-build build",
 		"build": "rushx dev:prepare && nuxt-module-build build",
-		"dev": "nuxi dev playground",
+		"dev": "rushx dev:prepare && nuxi dev playground",
 		"dev:build": "nuxi build playground",
 		"dev:prepare": "nuxt-module-build build --stub && nuxt-module-build prepare && nuxi prepare playground",
-		"lint": "eslint . --ext .ts,.vue",
-		"test": "vitest",
-		"test:ui": "vitest --ui"
+		"lint": "eslint .",
+		"test": "vitest run",
+		"test:ui": "vitest --ui",
+		"test:watch": "vitest watch",
+		"test:types": "vue-tsc --noEmit && cd playground && vue-tsc --noEmit"
 	},
 	"dependencies": {
-		"@nuxt/kit": "^3.17.6",
+		"@nuxt/kit": "^4.2.0",
 		"@stonecrop/aform": "workspace:*",
 		"@stonecrop/atable": "workspace:*",
 		"@stonecrop/stonecrop": "workspace:*",
 		"pinia": "^3.0.3"
 	},
 	"devDependencies": {
-		"@nuxt/devtools": "^2.6.2",
-		"@nuxt/module-builder": "^1.0.1",
-		"@nuxt/schema": "^3.17.6",
-		"@nuxt/test-utils": "^3.19.2",
-		"eslint": "^8.57.1",
-		"happy-dom": "^18.0.1",
-		"h3": "*",
-		"nitropack": "*",
-		"nuxi": "^3.25.1",
-		"nuxt": "^3.17.6",
-		"typescript": "^5.8.3",
-		"vue": "^3.5.18",
-		"vite": "^7.0.6",
-		"vitest": "^3.2.4",
-		"vue-router": "^4.5.1",
-		"vue-tsc": "~2.2.10"
+		"@eslint/js": "^9.38.0",
+		"@nuxt/devtools": "^3.0.0",
+		"@nuxt/eslint": "1.10.0",
+		"@nuxt/eslint-config": "^1.10.0",
+		"@nuxt/module-builder": "^1.0.2",
+		"@nuxt/schema": "^4.2.0",
+		"@nuxt/test-utils": "^3.20.1",
+		"eslint": "^9.38.0",
+		"eslint-config-prettier": "^10.1.8",
+		"eslint-plugin-vue": "^10.5.1",
+		"globals": "^16.4.0",
+		"nuxt": "^4.2.0",
+		"typescript": "^5.9.3",
+		"typescript-eslint": "^8.46.2",
+		"vue": "^3.5.22",
+		"vite": "^7.1.1",
+		"vitest": "^4.0.5",
+		"vue-router": "^4.6.3",
+		"vue-tsc": "^3.1.2"
+	},
+	"engines": {
+		"node": ">=22.5.0"
 	}
 }

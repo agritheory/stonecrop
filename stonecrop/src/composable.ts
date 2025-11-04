@@ -265,7 +265,7 @@ export function useStonecrop(options?: {
 								if (loadedRecord) {
 									formData.value = loadedRecord.get('') || {}
 								}
-							} catch (error) {
+							} catch {
 								formData.value = initializeNewRecord(doctype)
 							}
 						}
@@ -299,7 +299,7 @@ export function useStonecrop(options?: {
 						if (loadedRecord) {
 							formData.value = loadedRecord.get('') || {}
 						}
-					} catch (error) {
+					} catch {
 						formData.value = initializeNewRecord(doctype)
 					}
 				}
@@ -367,7 +367,7 @@ export function useStonecrop(options?: {
 			}
 
 			formData.value = newFormData
-		} catch (error) {
+		} catch {
 			// Silently handle errors
 		}
 	}
@@ -486,7 +486,7 @@ function setupDeepReactivity(
 				const path = `${recordPath}.${fieldname}`
 				try {
 					hstStore.set(path, newData[fieldname])
-				} catch (error) {
+				} catch {
 					// Silently handle errors
 				}
 			})

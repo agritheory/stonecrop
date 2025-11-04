@@ -7,9 +7,9 @@
 		<div class="action-menu-icon">
 			<div id="chevron" @click="closeClicked = !closeClicked">
 				<svg
+					id="Layer_1"
 					class="leftBar"
 					version="1.1"
-					id="Layer_1"
 					xmlns="http://www.w3.org/2000/svg"
 					xmlns:xlink="http://www.w3.org/1999/xlink"
 					x="0px"
@@ -22,9 +22,9 @@
 				</svg>
 
 				<svg
+					id="Layer_1"
 					class="rightBar"
 					version="1.1"
-					id="Layer_1"
 					xmlns="http://www.w3.org/2000/svg"
 					xmlns:xlink="http://www.w3.org/1999/xlink"
 					x="0px"
@@ -38,20 +38,20 @@
 			</div>
 		</div>
 		<div style="margin-right: 30px"></div>
-		<div class="action-element" v-for="(el, index) in elements" :key="el.label">
+		<div v-for="(el, index) in elements" :key="el.label" class="action-element">
 			<button
 				v-if="el.type == 'button'"
-				@click="handleClick(el.action, el.label)"
 				:disabled="el.disabled"
-				class="button-default">
+				class="button-default"
+				@click="handleClick(el.action, el.label)">
 				{{ el.label }}
 			</button>
 			<div v-if="el.type == 'dropdown'">
 				<button class="button-default" @click="toggleDropdown(index)">{{ el.label }}</button>
-				<div class="dropdown-container" v-show="dropdownStates[index]">
+				<div v-show="dropdownStates[index]" class="dropdown-container">
 					<div class="dropdown">
 						<div v-for="(item, itemIndex) in el.actions" :key="item.label">
-							<button v-if="item.action != null" @click="handleClick(item.action, item.label)" class="dropdown-item">
+							<button v-if="item.action != null" class="dropdown-item" @click="handleClick(item.action, item.label)">
 								{{ item.label }}
 							</button>
 							<a v-else-if="item.link != null" :href="item.link"
@@ -79,7 +79,7 @@ const emit = defineEmits<{
 const dropdownStates = ref<Record<number, boolean>>({})
 
 const isOpen = ref(false)
-const timeoutId = ref<number | null>(null)
+const timeoutId = ref<number>(-1)
 const hover = ref(false)
 const closeClicked = ref(false)
 
@@ -103,7 +103,7 @@ const onHover = () => {
 const onHoverLeave = () => {
 	hover.value = false
 	closeClicked.value = false
-	if (timeoutId.value) clearTimeout(timeoutId.value)
+	clearTimeout(timeoutId.value)
 	isOpen.value = false
 }
 

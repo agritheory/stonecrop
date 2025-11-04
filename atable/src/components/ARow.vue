@@ -1,7 +1,7 @@
 <template>
-	<tr ref="rowEl" :tabindex="tabIndex" v-show="isRowVisible" class="atable-row">
+	<tr v-show="isRowVisible" ref="rowEl" :tabindex="tabIndex" class="atable-row">
 		<!-- render numbered/tree view index; skip render for uncounted lists -->
-		<slot name="index" v-if="store.config.view !== 'uncounted'">
+		<slot v-if="store.config.view !== 'uncounted'" name="index">
 			<td
 				v-if="store.config.view === 'list'"
 				:tabIndex="-1"

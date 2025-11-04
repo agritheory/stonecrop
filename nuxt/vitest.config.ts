@@ -1,8 +1,6 @@
 import { defineVitestConfig } from '@nuxt/test-utils/config'
 
 export default defineVitestConfig({
-	test: {
-		globals: true,
-		environment: 'nuxt',
-	},
+	// defineVitestConfig automatically sets up the correct environment
+	// Don't override environment here - it breaks the automatic Nuxt environment setup
 })

@@ -1,4 +1,4 @@
-import { mount } from '@vue/test-utils'
+import { mount, flushPromises } from '@vue/test-utils'
 import { describe, it, expect, vi } from 'vitest'
 
 import ADropdown from '../src/components/form/ADropdown.vue'
@@ -26,14 +26,19 @@ describe('dropdown input component', () => {
 			props: { modelValue: dropdownData.value, label: dropdownData.label, items: dropdownData.items },
 		})
 
-		await wrapper.find('input').setValue('')
+		const input = wrapper.find('input')
+		await input.trigger('focus')
+		await input.setValue('')
+		await flushPromises()
+		await wrapper.vm.$nextTick()
+
 		let updateEvents = wrapper.emitted('update:modelValue')
 		expect(updateEvents).toHaveLength(1)
 		expect(updateEvents![0]).toEqual([''])
 
 		const liElements = wrapper.findAll('li')
 		const firstLiElement = liElements.at(0)
-		firstLiElement!.trigger('click')
+		await firstLiElement!.trigger('click')
 		await wrapper.vm.$nextTick()
 
 		updateEvents = wrapper.emitted('update:modelValue')
@@ -49,30 +54,40 @@ describe('dropdown input component', () => {
 		const input = wrapper.find('input')
 
 		// trigger the dropdown
+		await input.trigger('focus')
 		await input.setValue('')
+		await flushPromises()
+		await wrapper.vm.$nextTick()
+
 		let updateEvents = wrapper.emitted('update:modelValue')
 		expect(updateEvents).toHaveLength(1)
 		expect(updateEvents![0]).toEqual([''])
 
-		// arrow down to select the second item
-		await input.trigger('keydown', { key: 'ArrowDown' })
-		await input.trigger('keydown', { key: 'ArrowDown' })
-		await input.trigger('keydown', { key: 'Enter' })
+		// arrow down to select the second item (index 1, which is 'Orange')
+		await input.trigger('keydown.down')
+		await input.trigger('keydown.down')
+		await input.trigger('keydown.enter')
+		await wrapper.vm.$nextTick()
 
 		updateEvents = wrapper.emitted('update:modelValue')
 		expect(updateEvents).toHaveLength(2)
 		expect(updateEvents![1]).toEqual(['Orange'])
 
 		// trigger the dropdown again
+		await input.trigger('focus')
 		await input.setValue('')
+		await flushPromises()
+		await wrapper.vm.$nextTick()
+
 		updateEvents = wrapper.emitted('update:modelValue')
 		expect(updateEvents).toHaveLength(3)
 		expect(updateEvents![2]).toEqual([''])
 
 		// arrow down and back up to select the first item
-		await input.trigger('keydown', { key: 'ArrowDown' })
-		await input.trigger('keydown', { key: 'ArrowUp' })
-		await input.trigger('keydown', { key: 'Enter' })
+		await input.trigger('keydown.down')
+		await input.trigger('keydown.up')
+		await input.trigger('keydown.enter')
+		await wrapper.vm.$nextTick()
 
 		updateEvents = wrapper.emitted('update:modelValue')
 		expect(updateEvents).toHaveLength(4)
@@ -84,14 +99,19 @@ describe('dropdown input component', () => {
 			props: { modelValue: dropdownData.value, label: dropdownData.label, items: dropdownData.items, isAsync: false },
 		})
 
-		await wrapper.find('input').setValue('')
+		const input = wrapper.find('input')
+		await input.trigger('focus')
+		await input.setValue('')
+		await flushPromises()
+		await wrapper.vm.$nextTick()
+
 		let valueUpdateEvents = wrapper.emitted('update:modelValue')
 		expect(valueUpdateEvents).toHaveLength(1)
 		expect(valueUpdateEvents![0]).toEqual([''])
 
 		const liElements = wrapper.findAll('li')
 		const firstLiElement = liElements.at(0)
-		firstLiElement!.trigger('click')
+		await firstLiElement!.trigger('click')
 		await wrapper.vm.$nextTick()
 
 		valueUpdateEvents = wrapper.emitted('update:modelValue')

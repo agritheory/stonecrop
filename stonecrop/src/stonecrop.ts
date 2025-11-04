@@ -70,6 +70,7 @@ export class Stonecrop {
 
 		this.registry.addDoctype = (doctype: DoctypeMeta) => {
 			// Call original method
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-call
 			originalAddDoctype(doctype)
 
 			// Auto-create HST store section for new doctype
@@ -211,6 +212,7 @@ export class Stonecrop {
 					try {
 						// eslint-disable-next-line @typescript-eslint/no-implied-eval
 						const actionFn = new Function('args', actionStr)
+						// eslint-disable-next-line @typescript-eslint/no-unsafe-call
 						actionFn(args)
 					} catch (error) {
 						actionResult = 'failure'
@@ -219,7 +221,7 @@ export class Stonecrop {
 					}
 				})
 			}
-		} catch (error) {
+		} catch {
 			// Error already set in inner catch
 		} finally {
 			// Log the action execution to operation log

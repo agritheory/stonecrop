@@ -108,7 +108,7 @@ declare function install(app: App): void;
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| app | `App` |  |
+| app | `App` | Vue app instance |
 
 ## Interfaces
 

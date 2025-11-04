@@ -1,12 +1,11 @@
 import {
 	type ConfigurableWindow,
 	type MaybeComputedElementRef,
-	type MaybeRefOrGetter,
 	defaultWindow,
 	unrefElement,
 	useEventListener,
 } from '@vueuse/core'
-import { ref, watch } from 'vue'
+import { ref, watch, type MaybeRefOrGetter } from 'vue'
 
 export interface UseElementVisibilityOptions extends ConfigurableWindow {
 	scrollTarget?: MaybeRefOrGetter<HTMLElement | undefined | null>

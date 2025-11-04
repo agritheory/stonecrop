@@ -14,7 +14,7 @@ This project has the following system dependencies:
 
 - [`pnpm`](https://pnpm.io/) (using yarn or npm will break packages)
 - [`rush`](https://rushjs.io/)
-- Node v20 LTS ([installation instructions](https://nodejs.org/en/download/package-manager))
+- Node v22 LTS ([installation instructions](https://nodejs.org/en/download/package-manager))
 
 ```bash
 git clone stonecrop

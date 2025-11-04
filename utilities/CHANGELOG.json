@@ -2,6 +2,30 @@
   "name": "@stonecrop/utilities",
   "entries": [
     {
+      "version": "0.4.37",
+      "tag": "@stonecrop/utilities_v0.4.37",
+      "date": "Fri, 31 Oct 2025 12:25:20 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "update dependencies"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.4.36",
+      "tag": "@stonecrop/utilities_v0.4.36",
+      "date": "Mon, 27 Oct 2025 18:08:26 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "bump dependencies"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.4.35",
       "tag": "@stonecrop/utilities_v0.4.35",
       "date": "Wed, 24 Sep 2025 13:45:35 GMT",

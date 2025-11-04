@@ -1,14 +1,14 @@
 <template>
 	<div class="aform_form-element">
 		<input
-			class="aform_input-field"
-			v-model="inputNumber"
-			type="number"
 			:id="uuid"
+			v-model="inputNumber"
+			class="aform_input-field"
+			type="number"
 			:disabled="readonly"
 			:required="required" />
 		<label class="aform_field-label" :for="uuid">{{ label }}</label>
-		<p class="aform_error" v-show="validation.errorMessage" v-html="validation.errorMessage"></p>
+		<p v-show="validation.errorMessage" class="aform_error" v-html="validation.errorMessage"></p>
 	</div>
 </template>
 
@@ -16,7 +16,7 @@
 import { ComponentProps } from '../../types'
 
 const {
-	schema, // don't remove to allow masking to work
+	_schema, // don't remove to allow masking to work
 	label,
 	required,
 	readonly,
