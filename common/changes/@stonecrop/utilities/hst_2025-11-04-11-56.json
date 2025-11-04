@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/utilities",
+      "comment": "update API docs",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@stonecrop/utilities"
+}

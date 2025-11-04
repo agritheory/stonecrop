@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/aform",
+      "comment": "update API docs",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@stonecrop/aform"
+}
