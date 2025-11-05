@@ -20,20 +20,12 @@ Vue component exported from @stonecrop/desktop.
 import { CommandPalette } from '@stonecrop/desktop'
 ```
 
-### Doctype
+### Desktop
 
 Vue component exported from @stonecrop/desktop.
 
 ```typescript
-import { Doctype } from '@stonecrop/desktop'
-```
-
-### Records
-
-Vue component exported from @stonecrop/desktop.
-
-```typescript
-import { Records } from '@stonecrop/desktop'
+import { Desktop } from '@stonecrop/desktop'
 ```
 
 ### SheetNav
@@ -86,6 +78,7 @@ Button elements
 ```typescript
 export type ButtonElement = BaseElement & ElementAction & {
     type: 'button';
+    disabled?: boolean;
 };
 ```
 

@@ -64,6 +64,12 @@ export interface TableColumn {
 	 * @defaultValue false
 	 */
 	pinned?: boolean
+
+	/**
+	 * Control whether the column can be resized by the user.
+	 *
+	 * @defaultValue false
+	 */
 	resizable?: boolean
 
 	/**

@@ -1,59 +1,52 @@
 import type { SchemaTypes } from '@stonecrop/aform'
 import { List, Map } from 'immutable'
-import { createPinia, setActivePinia } from 'pinia'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { createRouter, createWebHistory } from 'vue-router'
-import type { UnknownMachineConfig } from 'xstate'
+import { createRouter, createMemoryHistory } from 'vue-router'
 
 import DoctypeMeta from '../src/doctype'
 import Registry from '../src/registry'
 import { Stonecrop } from '../src/stonecrop'
-import { useDataStore } from '../src/stores/data'
+import { ImmutableDoctype } from '../src/types'
 
 // Mock fetch globally
 global.fetch = vi.fn()
 
-describe('Stonecrop class', () => {
+describe('Stonecrop class with HST integration', () => {
 	let registry: Registry
-	let store: ReturnType<typeof useDataStore>
 	let stonecrop: Stonecrop
 	let mockRouter: any
 
 	beforeEach(() => {
-		const pinia = createPinia()
-		setActivePinia(pinia)
-
-		// Reset static instance
-		Stonecrop._root = undefined as any
+		// Reset static instances
 		Registry._root = undefined as any
 
 		mockRouter = createRouter({
-			history: createWebHistory(),
+			history: createMemoryHistory(),
 			routes: [],
 		})
 
 		registry = new Registry(mockRouter)
-		store = useDataStore()
-		stonecrop = new Stonecrop(registry, store)
+		stonecrop = new Stonecrop(registry)
 
 		// Reset fetch mock
 		vi.clearAllMocks()
 	})
 
-	const createMockDoctype = (name: string) => {
-		const mockSchema = List([
-			{
-				fieldname: 'title',
-				component: 'ATextInput',
-				label: 'Title',
-			},
-		] as SchemaTypes[])
+	function createMockDoctype(name: string) {
+		const mockSchema: ImmutableDoctype['schema'] = List<SchemaTypes>([
+			{ name: 'title', label: 'Title', fieldtype: 'Data' } as SchemaTypes,
+			{ name: 'status', label: 'Status', fieldtype: 'Select' } as SchemaTypes,
+		])
 
-		const mockWorkflow: UnknownMachineConfig = {
-			id: name.toLowerCase(),
+		const mockWorkflowConfig: ImmutableDoctype['workflow'] = {
+			id: 'mockWorkflow',
 			initial: 'draft',
 			states: {
-				draft: { on: { load: { target: 'pending' } } },
+				draft: {
+					on: {
+						submit: { target: 'pending' },
+					},
+				},
 				pending: {
 					on: {
 						approve: { target: 'completed' },
@@ -64,145 +57,237 @@ describe('Stonecrop class', () => {
 			},
 		}
 
-		const mockActions = Map({
+		const mockActions: ImmutableDoctype['actions'] = Map({
 			load: ['loadData'],
 			save: ['validateData', 'saveData'],
 		})
 
-		return new DoctypeMeta(name, mockSchema, mockWorkflow, mockActions)
+		return new DoctypeMeta(name, mockSchema, mockWorkflowConfig, mockActions)
 	}
 
-	it('creates Stonecrop instance with correct properties', () => {
-		expect(stonecrop.name).toBe('Stonecrop')
-		expect(stonecrop.registry).toBe(registry)
-		expect(stonecrop.store).toBe(store)
-	})
-
-	it('implements singleton pattern', () => {
-		const stonecrop1 = new Stonecrop(registry, store)
-		const stonecrop2 = new Stonecrop(registry, store)
-
-		expect(stonecrop1).toBe(stonecrop2)
-		expect(Stonecrop._root).toBe(stonecrop1)
-	})
-
-	it('sets up doctype correctly', () => {
-		const mockDoctype = createMockDoctype('Task')
-		const getMetaSpy = vi.spyOn(stonecrop, 'getMeta').mockResolvedValue(mockDoctype)
-
-		stonecrop.setup(mockDoctype)
-
-		expect(getMetaSpy).toHaveBeenCalledWith('Task')
-	})
-
-	it('getMeta returns doctype when registry has getMeta function', async () => {
-		const mockDoctype = createMockDoctype('Task')
-		registry.getMeta = vi.fn().mockResolvedValue(mockDoctype)
-
-		const result = await stonecrop.getMeta('Task')
-
-		expect(result).toBe(mockDoctype)
-		expect(registry.getMeta).toHaveBeenCalledWith('Task')
-	})
-
-	it('getMeta throws NotImplementedError when registry has no getMeta function', async () => {
-		registry.getMeta = undefined
-
-		await expect(stonecrop.getMeta('Task')).rejects.toThrow(
-			'getMeta function is not implemented for Task in the registry'
-		)
-	})
-
-	it('getRecords fetches and stores records', async () => {
-		const mockDoctype = createMockDoctype('Task')
-		const mockRecords = [
-			{ id: '1', title: 'Task 1' },
-			{ id: '2', title: 'Task 2' },
-		]
-
-		const mockResponse = {
-			json: vi.fn().mockResolvedValue(mockRecords),
-		}
-		vi.mocked(fetch).mockResolvedValue(mockResponse as any)
-
-		await stonecrop.getRecords(mockDoctype)
-
-		expect(fetch).toHaveBeenCalledWith('/task', undefined)
-		expect(store.records).toEqual(mockRecords)
-	})
-
-	it('getRecords handles filters', async () => {
-		const mockDoctype = createMockDoctype('Task')
-		const filters = { body: JSON.stringify({ status: 'Open' }) }
-
-		const mockResponse = {
-			json: vi.fn().mockResolvedValue([]),
-		}
-		vi.mocked(fetch).mockResolvedValue(mockResponse as any)
-
-		await stonecrop.getRecords(mockDoctype, filters)
-
-		expect(fetch).toHaveBeenCalledWith('/task', filters)
-	})
-
-	it('getRecord fetches and stores single record', async () => {
-		const mockDoctype = createMockDoctype('Task')
-		const mockRecord = { id: '123', title: 'Test Task' }
-
-		const mockResponse = {
-			json: vi.fn().mockResolvedValue(mockRecord),
-		}
-		vi.mocked(fetch).mockResolvedValue(mockResponse as any)
-
-		await stonecrop.getRecord(mockDoctype, '123')
-
-		expect(fetch).toHaveBeenCalledWith('/task/123')
-		expect(store.record).toEqual(mockRecord)
-	})
-
-	it('runAction processes transition correctly', () => {
-		// Create a mock doctype with actions that reference existing functions
-		const mockActions = Map({
-			load: ['console.log("loading data")'],
-			submit: ['console.log("submitting data")'],
-			reject: ['console.log("rejecting data")'],
+	describe('Initialization', () => {
+		it('creates Stonecrop instance with HST integration', () => {
+			expect(stonecrop).toBeInstanceOf(Stonecrop)
+			expect(stonecrop.getStore).toBeDefined()
+			expect(typeof stonecrop.getStore).toBe('function')
 		})
 
-		const mockDoctype = new DoctypeMeta(
-			'Task',
-			List([]),
-			{
-				id: 'task',
-				initial: 'draft',
-				states: {
-					draft: { on: { load: { target: 'pending', actions: [{ type: 'load' }] } } },
-					pending: {
-						on: {
-							approve: { target: 'completed', actions: [{ type: 'submit' }] },
-							reject: { target: 'draft', actions: [{ type: 'reject' }] },
-						},
+		it('initializes HST store with existing Registry doctypes', () => {
+			const mockDoctype = createMockDoctype('Task')
+			registry.addDoctype(mockDoctype)
+
+			const newStonecrop = new Stonecrop(registry)
+			const store = newStonecrop.getStore()
+
+			expect(store.has('task')).toBe(true)
+		})
+
+		it('sets up automatic Registry sync', () => {
+			const store = stonecrop.getStore()
+
+			// Initially no doctype
+			expect(store.has('task')).toBe(false)
+
+			// Add doctype to registry
+			const mockDoctype = createMockDoctype('Task')
+			registry.addDoctype(mockDoctype)
+
+			// Should auto-create HST section
+			expect(store.has('task')).toBe(true)
+		})
+	})
+
+	describe('HST Record Management', () => {
+		let mockDoctype: DoctypeMeta
+
+		beforeEach(() => {
+			mockDoctype = createMockDoctype('Task')
+			registry.addDoctype(mockDoctype)
+		})
+
+		it('returns records hash as HST node', () => {
+			const records = stonecrop.records('task')
+
+			expect(records.getPath).toBeDefined()
+			expect(records.getPath()).toBe('task')
+			expect(records.getParent).toBeDefined()
+		})
+
+		it('returns records hash using DoctypeMeta object', () => {
+			const records = stonecrop.records(mockDoctype)
+
+			expect(records.getPath()).toBe('task')
+		})
+
+		it('adds record with proper HST wrapping', () => {
+			const recordData = { id: '123', title: 'Test Task' }
+
+			stonecrop.addRecord('task', '123', recordData)
+
+			const record = stonecrop.getRecordById('task', '123')
+			expect(record).toBeDefined()
+			expect(record!.get('id')).toBe('123')
+			expect(record!.get('title')).toBe('Test Task')
+
+			// Should have tree navigation capabilities
+			expect(record!.getPath).toBeDefined()
+			expect(record!.getParent).toBeDefined()
+		})
+
+		it('adds record using DoctypeMeta object', () => {
+			const recordData = { id: '123', title: 'Test Task' }
+
+			stonecrop.addRecord(mockDoctype, '123', recordData)
+
+			const record = stonecrop.getRecordById(mockDoctype, '123')
+			expect(record).toBeDefined()
+			expect(record!.get('title')).toBe('Test Task')
+		})
+
+		it('gets all record IDs', () => {
+			stonecrop.addRecord('task', '123', { title: 'Task 1' })
+			stonecrop.addRecord('task', '456', { title: 'Task 2' })
+
+			const recordIds = stonecrop.getRecordIds('task')
+			expect(recordIds).toEqual(['123', '456'])
+		})
+
+		it('removes record', () => {
+			stonecrop.addRecord('task', '123', { id: '123', title: 'Test Task' })
+
+			// Verify record exists
+			expect(stonecrop.getRecordById('task', '123')).toBeDefined()
+
+			// Remove record
+			stonecrop.removeRecord('task', '123')
+
+			// Should be gone
+			expect(stonecrop.getRecordById('task', '123')).toBeUndefined()
+		})
+
+		it('clears all records for doctype', () => {
+			stonecrop.addRecord('task', '123', { title: 'Task 1' })
+			stonecrop.addRecord('task', '456', { title: 'Task 2' })
+
+			stonecrop.clearRecords('task')
+
+			expect(stonecrop.getRecordIds('task')).toEqual([])
+		})
+
+		it('ensures doctype exists when accessing records', () => {
+			// Access records for non-existent doctype should create it
+			const records = stonecrop.records('newdoctype')
+
+			expect(records.getPath()).toBe('newdoctype')
+			expect(stonecrop.getStore().has('newdoctype')).toBe(true)
+		})
+	})
+
+	describe('Server Integration', () => {
+		let mockDoctype: DoctypeMeta
+
+		beforeEach(() => {
+			mockDoctype = createMockDoctype('Task')
+			registry.addDoctype(mockDoctype)
+		})
+
+		it('getRecords fetches and stores records in HST', async () => {
+			const mockRecords = [
+				{ id: '1', title: 'Task 1' },
+				{ id: '2', title: 'Task 2' },
+			]
+
+			const mockResponse = {
+				json: vi.fn().mockResolvedValue(mockRecords),
+			}
+			vi.mocked(fetch).mockResolvedValue(mockResponse as any)
+
+			await stonecrop.getRecords(mockDoctype)
+
+			expect(fetch).toHaveBeenCalledWith('/task')
+
+			// Check that records are stored in HST with proper wrapping
+			const recordIds = stonecrop.getRecordIds('task')
+			expect(recordIds).toEqual(['1', '2'])
+
+			const record1 = stonecrop.getRecordById('task', '1')
+			expect(record1!.get('title')).toBe('Task 1')
+			expect(record1!.getPath).toBeDefined()
+		})
+
+		it('getRecord fetches and stores single record', async () => {
+			const mockRecord = { id: '123', title: 'Test Task' }
+
+			const mockResponse = {
+				json: vi.fn().mockResolvedValue(mockRecord),
+			}
+			vi.mocked(fetch).mockResolvedValue(mockResponse as any)
+
+			await stonecrop.getRecord(mockDoctype, '123')
+
+			expect(fetch).toHaveBeenCalledWith('/task/123')
+
+			// Check that record is stored
+			const record = stonecrop.getRecordById('task', '123')
+			expect(record!.get('title')).toBe('Test Task')
+			expect(record!.get('id')).toBe('123')
+		})
+	})
+
+	describe('Advanced HST Usage', () => {
+		it('provides access to root HST store', () => {
+			const store = stonecrop.getStore()
+
+			expect(store.get).toBeDefined()
+			expect(store.set).toBeDefined()
+			expect(store.has).toBeDefined()
+			expect(store.getPath).toBeDefined()
+			expect(store.getPath()).toBe('')
+		})
+
+		it('supports tree navigation between records and store sections', () => {
+			const mockDoctype = createMockDoctype('Task')
+			registry.addDoctype(mockDoctype)
+
+			stonecrop.addRecord('task', '123', { id: '123', title: 'Test Task' })
+
+			const store = stonecrop.getStore()
+			const record = stonecrop.getRecordById('task', '123')
+
+			if (record) {
+				const doctypeSection = record.getParent()
+				const rootStore = doctypeSection?.getParent()
+
+				expect(doctypeSection?.getPath()).toBe('task')
+				expect(rootStore?.getPath()).toBe('')
+			} else {
+				throw new Error('Record not found')
+			}
+		})
+
+		it('supports nested record data with tree navigation', () => {
+			const mockDoctype = createMockDoctype('Task')
+			registry.addDoctype(mockDoctype)
+
+			const recordData = {
+				id: '123',
+				title: 'Test Task',
+				details: {
+					priority: 'high',
+					assignee: {
+						name: 'John Doe',
+						email: 'john@example.com',
 					},
-					completed: { type: 'final' },
 				},
-			},
-			mockActions
-		)
+			}
 
-		const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+			stonecrop.addRecord('task', '123', recordData)
 
-		registry.addDoctype(mockDoctype)
+			const record = stonecrop.getRecordById('task', '123')!
+			const assignee = record.getNode('details.assignee')
 
-		stonecrop.runAction(mockDoctype, 'load')
-		expect(consoleSpy).toHaveBeenNthCalledWith(1, 'loading data')
-
-		// TODO: when persisted state is implemented, we can test the state transitions
-		// stonecrop.runAction(mockDoctype, 'reject')
-		// expect(consoleSpy).toHaveBeenNthCalledWith(2, 'rejecting data')
-		// stonecrop.runAction(mockDoctype, 'load')
-		// expect(consoleSpy).toHaveBeenNthCalledWith(3, 'loading data')
-		// stonecrop.runAction(mockDoctype, 'approve')
-		// expect(consoleSpy).toHaveBeenNthCalledWith(4, 'submitting data')
-
-		consoleSpy.mockRestore()
+			expect(assignee.get('name')).toBe('John Doe')
+			expect(assignee.getParent()!.getPath()).toContain('details')
+		})
 	})
 })

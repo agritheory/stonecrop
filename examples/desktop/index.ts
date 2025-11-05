@@ -1,57 +1,70 @@
 import { List, Map } from 'immutable'
 import { createPinia } from 'pinia'
 import { createApp } from 'vue'
-import { RouteRecordRaw } from 'vue-router'
-import { createActor } from 'xstate'
 
 import '@stonecrop/desktop/styles'
-import { ADate, ATextInput } from '@stonecrop/aform'
-import { Doctype, Records, StonecropDesktop } from '@stonecrop/desktop'
-import { DoctypeMeta, Stonecrop, type ImmutableDoctype, type MutableDoctype } from '@stonecrop/stonecrop'
+import { install as AForm } from '@stonecrop/aform'
+import { install as ATable } from '@stonecrop/atable'
+import { StonecropDesktop } from '@stonecrop/desktop'
+import StonecropPlugin, {
+	DoctypeMeta,
+	Registry,
+	Stonecrop,
+	type ImmutableDoctype,
+	type MutableDoctype,
+	type RouteContext,
+} from '@stonecrop/stonecrop'
 
-import Home from './components/Home.vue'
 import App from './App.vue'
-import router from './router'
+import router, { setupRouterContext } from './router'
 import { makeServer } from './server'
 
+// Import field trigger actions - this registers them globally
+import './actions'
+
 const app = createApp(App)
+
+// Setup MirageJS server
 makeServer()
 
-// setup router
-const routes: RouteRecordRaw[] = [
-	{ path: '/', component: Home, meta: { transition: 'slide-up' } },
-	{ path: '/:records', component: Records, meta: { transition: 'slide-up' } },
-	{ path: '/:records/:record', component: Doctype, meta: { transition: 'slide-up' } },
-]
+// Create the getMeta function that will be used by the plugin
+const getMeta = async (routeContext: RouteContext) => {
+	const response = await fetch(`/api/meta?route=${encodeURIComponent(routeContext.path)}`)
+	const data: MutableDoctype = await response.json()
 
-for (const route of routes) {
-	router.addRoute(route)
+	if ('error' in data) {
+		throw new Error(`Failed to get metadata: ${data.error}`)
+	}
+
+	const config: ImmutableDoctype = {
+		schema: List(data.schema),
+		workflow: data.workflow,
+		actions: Map(data.actions || {}),
+	}
+
+	return new DoctypeMeta(data.doctype!, config.schema, config.workflow, config.actions)
 }
 
-// setup Pinia
+// Install plugins in correct order following Vue.js best practices
+// 1. State management first
 const pinia = createPinia()
 app.use(pinia)
 
-// setup Stonecrop
-app.use(Stonecrop, {
+// 2. Stonecrop plugin with auto-initialization enabled
+app.use(StonecropPlugin, {
 	router,
-	components: {
-		ADate,
-		ATextInput,
-	},
-	// TODO: or if doctype is a function [doctype].apply()
-	getMeta: async (doctype: string) => {
-		// TODO: normally this would be configured as a memoized/cached call to a server
-		const response = await fetch(`/meta/${doctype}`)
-		const data = (await response.json()) as MutableDoctype
-		const config: ImmutableDoctype = {
-			schema: List(data.schema),
-			workflow: createActor(data.workflow),
-			actions: Map(data.actions),
-		}
-
-		return new DoctypeMeta(doctype, config.schema, config.workflow, config.actions)
+	getMeta,
+	autoInitializeRouter: true,
+	onRouterInitialized: async (registry: Registry, stonecrop: Stonecrop) => {
+		// Setup router context with the provided instances
+		await setupRouterContext(registry, stonecrop)
 	},
 })
+
+// 3. Component plugins
+app.use(AForm)
+app.use(ATable)
 app.use(StonecropDesktop)
+
+// Mount the app - router initialization will happen automatically
 app.mount('#app')

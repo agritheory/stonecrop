@@ -34,7 +34,7 @@ export declare function useKeyboardNav(options: KeyboardNavigationOptions[]): vo
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| options | `KeyboardNavigationOptions[]` |  |
+| options | `KeyboardNavigationOptions[]` | Keyboard navigation options |
 
 ## Type Aliases
 

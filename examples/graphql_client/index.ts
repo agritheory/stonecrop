@@ -1,5 +1,5 @@
 import { methods } from '@stonecrop/graphql-client'
-import { Stonecrop } from '@stonecrop/stonecrop'
+import Stonecrop from '@stonecrop/stonecrop'
 import { createApp } from 'vue'
 import { createRouter, createWebHistory } from 'vue-router'
 

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/graphql-client",
+      "comment": "use window.fetch for compatibility",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@stonecrop/graphql-client"
+}

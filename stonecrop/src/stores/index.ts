@@ -1,6 +1,9 @@
 import { createPinia } from 'pinia'
 import { PiniaSharedState } from 'pinia-shared-state'
 
+import { HST } from './hst'
+
+const hst = HST.getInstance()
 const pinia = createPinia()
 
 // Pass the plugin to your application's pinia plugin
@@ -11,4 +14,6 @@ pinia.use(
 	})
 )
 
-export { pinia }
+export { hst, pinia }
+export { useOperationLogStore } from './operation-log'
+export type { HSTNode } from './hst'

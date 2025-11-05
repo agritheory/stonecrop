@@ -4,15 +4,17 @@ import type { Component } from 'vue'
 import type { Router } from 'vue-router'
 import type { AnyStateNodeConfig, UnknownMachineConfig } from 'xstate'
 
-import DoctypeMeta from '../doctype'
+import type DoctypeMeta from '../doctype'
+import Registry from '../registry'
+import { Stonecrop } from '../stonecrop'
+import type { RouteContext } from './registry'
 
 /**
  * Immutable Doctype type for Stonecrop instances
  * @public
  */
 export type ImmutableDoctype = {
-	// TODO: allow schema to be a function
-	readonly schema?: List<SchemaTypes>
+	readonly schema?: List<SchemaTypes> // TODO: allow schema to be a function
 	readonly workflow?: UnknownMachineConfig | AnyStateNodeConfig
 	readonly actions?: Map<string, string[]>
 }
@@ -22,8 +24,8 @@ export type ImmutableDoctype = {
  * @public
  */
 export type MutableDoctype = {
-	// TODO: allow schema to be a function
-	schema?: SchemaTypes[]
+	doctype?: string
+	schema?: SchemaTypes[] // TODO: allow schema to be a function
 	workflow?: UnknownMachineConfig | AnyStateNodeConfig
 	actions?: Record<string, string[]>
 }
@@ -44,5 +46,14 @@ export type Schema = {
 export type InstallOptions = {
 	router?: Router
 	components?: Record<string, Component>
-	getMeta?: (doctype?: string) => DoctypeMeta | Promise<DoctypeMeta>
+	getMeta?: (routeContext: RouteContext) => DoctypeMeta | Promise<DoctypeMeta>
+	/** Automatically run initialization callback after app mounting (default: false) */
+	autoInitializeRouter?: boolean
+	/** Callback function called after plugin is ready and mounted */
+	onRouterInitialized?: (registry: Registry, stonecrop: Stonecrop) => void | Promise<void>
 }
+
+// Re-export types
+export * from './field-triggers'
+export * from './registry'
+export * from './operation-log'

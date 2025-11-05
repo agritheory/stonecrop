@@ -162,6 +162,29 @@ function formatInlineBulletPoints(content) {
 	return content.replace(/\s+/g, ' ').trim()
 }
 
+// Helper function to parse @param descriptions from TSDoc comments
+function parseParamDescriptions(tsdocComment) {
+	const paramDescriptions = {}
+
+	if (!tsdocComment || !tsdocComment.params) {
+		return paramDescriptions
+	}
+
+	// The params block contains @param tags
+	for (const paramBlock of tsdocComment.params.blocks) {
+		const parameterName = paramBlock.parameterName
+		if (paramBlock.content && paramBlock.content.nodes) {
+			// Extract the description text from the content nodes
+			const description = extractInlineTSDocContent(paramBlock.content).trim()
+			if (description) {
+				paramDescriptions[parameterName] = description
+			}
+		}
+	}
+
+	return paramDescriptions
+}
+
 // Helper function to extract formatted TSDoc content preserving structure
 function extractFormattedTSDocContent(node) {
 	if (!node) return ''
@@ -429,9 +452,13 @@ try {
 				markdown += `**Parameters:**\n\n`
 				markdown += `| Parameter | Type | Description |\n`
 				markdown += `|-----------|------|-------------|\n`
+
+				// Parse @param descriptions from the function's TSDoc comment
+				const paramDescriptions = parseParamDescriptions(func.tsdocComment)
+
 				func.parameters.forEach(param => {
-					// Try to extract parameter description from TSDoc (inline mode for table)
-					const description = extractTSDocSummary(param.tsdocComment, true) || ''
+					// Try to get description from parsed @param tags, fall back to param's tsdocComment
+					const description = paramDescriptions[param.name] || extractTSDocSummary(param.tsdocComment, true) || ''
 					const normalizedType = normalizeTypeForTable(param.parameterTypeExcerpt.text)
 					markdown += `| ${param.name} | \`${normalizedType}\` | ${description} |\n`
 				})
@@ -529,6 +556,31 @@ try {
 					constructor.parameters?.map(p => `${p.name}: ${p.parameterTypeExcerpt.text}`).join(', ') || ''
 				})\n`
 				markdown += `\`\`\`\n\n`
+
+				// Add parameter descriptions if constructor has parameters
+				if (constructor.parameters && constructor.parameters.length > 0) {
+					// Parse @param descriptions from the constructor's TSDoc comment
+					const paramDescriptions = parseParamDescriptions(constructor.tsdocComment)
+
+					// Only show parameter table if we have descriptions
+					const hasDescriptions = constructor.parameters.some(
+						p => paramDescriptions[p.name] || extractTSDocSummary(p.tsdocComment, true)
+					)
+
+					if (hasDescriptions) {
+						markdown += `**Parameters:**\n\n`
+						markdown += `| Parameter | Type | Description |\n`
+						markdown += `|-----------|------|-------------|\n`
+
+						constructor.parameters.forEach(param => {
+							// Try to get description from parsed @param tags, fall back to param's tsdocComment
+							const description = paramDescriptions[param.name] || extractTSDocSummary(param.tsdocComment, true) || ''
+							const normalizedType = normalizeTypeForTable(param.parameterTypeExcerpt.text)
+							markdown += `| ${param.name} | \`${normalizedType}\` | ${description} |\n`
+						})
+						markdown += `\n`
+					}
+				}
 			}
 
 			// Add methods and properties
@@ -563,6 +615,31 @@ try {
 						method.parameters?.map(p => `${p.name}: ${p.parameterTypeExcerpt.text}`).join(', ') || ''
 					}): ${method.returnTypeExcerpt.text}\n`
 					markdown += `\`\`\`\n\n`
+
+					// Add parameter descriptions if method has parameters
+					if (method.parameters && method.parameters.length > 0) {
+						// Parse @param descriptions from the method's TSDoc comment
+						const paramDescriptions = parseParamDescriptions(method.tsdocComment)
+
+						// Only show parameter table if we have descriptions
+						const hasDescriptions = method.parameters.some(
+							p => paramDescriptions[p.name] || extractTSDocSummary(p.tsdocComment, true)
+						)
+
+						if (hasDescriptions) {
+							markdown += `**Parameters:**\n\n`
+							markdown += `| Parameter | Type | Description |\n`
+							markdown += `|-----------|------|-------------|\n`
+
+							method.parameters.forEach(param => {
+								// Try to get description from parsed @param tags, fall back to param's tsdocComment
+								const description = paramDescriptions[param.name] || extractTSDocSummary(param.tsdocComment, true) || ''
+								const normalizedType = normalizeTypeForTable(param.parameterTypeExcerpt.text)
+								markdown += `| ${param.name} | \`${normalizedType}\` | ${description} |\n`
+							})
+							markdown += `\n`
+						}
+					}
 				})
 			}
 		})

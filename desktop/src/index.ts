@@ -1,9 +1,8 @@
 import ActionSet from './components/ActionSet.vue'
 import CommandPalette from './components/CommandPalette.vue'
-import Doctype from './components/Doctype.vue'
-import Records from './components/Records.vue'
+import Desktop from './components/Desktop.vue'
 import SheetNav from './components/SheetNav.vue'
 import StonecropDesktop from './plugins'
 export type * from './types'
 
-export { ActionSet, CommandPalette, Doctype, Records, SheetNav, StonecropDesktop }
+export { ActionSet, CommandPalette, Desktop, SheetNav, StonecropDesktop }

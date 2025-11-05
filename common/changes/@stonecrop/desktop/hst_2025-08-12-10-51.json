@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/desktop",
+      "comment": "update desktop story to use HST",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@stonecrop/desktop"
+}

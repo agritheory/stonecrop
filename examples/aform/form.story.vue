@@ -47,7 +47,7 @@ const fieldset_schema = ref(basic_fieldset_schema)
 const table_schema = ref(basic_table_schema)
 const fieldset_table_schema_ref = ref(fieldset_table_schema)
 
-const data = ref([])
+const data = ref({})
 const locale = ref('en-US')
 const formKey = ref(0)
 watch(locale, () => {

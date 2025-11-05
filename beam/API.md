@@ -204,7 +204,7 @@ declare function install(app: App): void;
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| app | `App` |  |
+| app | `App` | Vue app instance |
 
 ### useMqttStream
 
@@ -222,7 +222,7 @@ useMqttStream: (options: IMqttStream) => Promise<{
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| options | `IMqttStream` |  |
+| options | `IMqttStream` | MQTT stream options |
 
 ## Interfaces
 

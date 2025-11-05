@@ -2,14 +2,17 @@
 	"compilerOptions": {
 		"target": "esnext",
 		"module": "preserve",
+		"moduleResolution": "bundler",
 		"lib": ["dom", "dom.iterable", "esnext"],
 		"outDir": "${configDir}/dist",
+		"allowImportingTsExtensions": true,
 		"composite": true,
 		"declaration": true,
 		"declarationMap": true,
 		"disableReferencedProjectLoad": true,
 		"emitDeclarationOnly": true,
 		"isolatedModules": true,
+		"resolveJsonModule": true,
 		"skipLibCheck": true,
 		"strictNullChecks": true
 	},
