@@ -2,47 +2,41 @@
 	<div class="adate_time">
 		<div class="adate_time_fields">
 			<input
+				v-model.number="time_data.hours"
+				@paste="pasteInput($event, true)"
+				@focus="focusInput"
+				@blur="confirmTime"
+				@keydown.enter.prevent="confirmTime"
+				@keydown.up.prevent="tick('hours')"
+				@keydown.down.prevent="tick('hours', -1)"
+				type="number" />
+			<span class="colon">:</span>
+			<input
+				v-model.number="time_data.minutes"
 				@paste="pasteInput"
-				@input="validateInput"
-				@keydown="getKeyInput($event, 'hours')"
-				@blur="setHour"
-				@keyup.enter="setHour"
 				@focus="focusInput"
-				ref="hours-field"
-				class="aform_input-field hours"
-				maxLength="2"
-				:value="getHour()" />
-			<span class="colon">:</span>
+				@blur="confirmTime"
+				@keydown.enter.prevent="confirmTime"
+				@keydown.up.prevent="tick('minutes')"
+				@keydown.down.prevent="tick('minutes', -1)"
+				type="number" />
+			<span v-if="props.useSeconds" class="colon">:</span>
 			<input
-				@input="validateInput"
-				@keydown="getKeyInput($event, 'minutes')"
-				@blur="setMinutes"
-				@keyup.enter="setMinutes"
+				v-if="props.useSeconds"
+				v-model.number="time_data.seconds"
+				@paste="pasteInput"
 				@focus="focusInput"
-				ref="minutes-field"
-				class="aform_input-field minutes"
-				maxLength="2"
-				:value="getMinutes()" />
-			<span class="colon">:</span>
-			<input
-				@input="validateInput"
-				@keydown="getKeyInput($event, 'seconds')"
-				@blur="setSeconds"
-				@keyup.enter="setSeconds"
-				@focus="focusInput"
-				ref="seconds-field"
-				class="aform_input-field seconds"
-				maxLength="2"
-				:value="getSeconds()" />
+				@blur="confirmTime"
+				@keydown.enter.prevent="confirmTime"
+				@keydown.up.prevent="tick('seconds')"
+				@keydown.down.prevent="tick('seconds', -1)"
+				type="number" />
 			<select
-				class="aform-select meridiem-selector"
+				v-if="!props.allowMilitaryTime"
 				ref="meridiem-selector"
-				v-model="time.meridiem"
-				@focus="
-					() => {
-						pasting = false
-					}
-				">
+				class="aform-select meridiem-selector"
+				@change="confirmTime"
+				v-model="meridiem">
 				<option value="AM">AM</option>
 				<option value="PM">PM</option>
 			</select>
@@ -51,61 +45,142 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, computed, useTemplateRef, defineProps, watch } from 'vue'
+import { ref, reactive, computed, useTemplateRef, defineProps, watch, defineModel, defineEmits, onMounted } from 'vue'
 
-const meridiemSelector = useTemplateRef('meridiem-selector')
-
+/* Props */
 const props = defineProps({
 	allowMilitaryTime: {
 		type: Boolean,
 		default: false,
 	},
+	defaultHours: {
+		type: Number,
+		default: 12,
+	},
+	defaultMinutes: {
+		type: Number,
+		default: 0,
+	},
+	defaultSeconds: {
+		type: Number,
+		default: 0,
+	},
+	defaultMeridiem: {
+		type: String,
+		default: 'AM',
+	},
+	useSeconds: {
+		type: Boolean,
+		default: true,
+	},
 })
 
-let pasting = false
+/* Emits */
+const emit = defineEmits(['get-time'])
 
-const time = reactive({
-	hours: 12,
-	minutes: 0,
-	seconds: 0,
-	meridiem: 'AM',
+/* Template Refs */
+const meridiemSelector = useTemplateRef('meridiem-selector')
+
+/* Actual time values held for each time unit */
+const time_data = reactive({
+	hours: props.defaultHours,
+	minutes: props.defaultMinutes,
+	seconds: props.defaultSeconds,
 })
 
-watch(
-	() => time.hours,
-	(oldVal, newVal) => {
-		if ((oldVal == 11 && newVal == 12) || (oldVal == 12 && newVal == 11)) changeMeridiem()
-	}
-)
+const meridiem = ref(props.defaultMeridiem == 'AM' ? 'AM' : 'PM')
 
-watch(time, () => {
-	if (time.seconds > 59) {
-		time.seconds = 0
-		time.minutes++
-	} else if (time.seconds < 0) {
-		time.seconds = 59
-		time.minutes--
-	}
-	//MINUTES
-	if (time.minutes > 59) {
-		time.minutes = 0
-		time.hours++
-	} else if (time.minutes < 0) {
-		time.minutes = 59
-		time.hours--
-	}
-	//HOURS
-	if (time.hours > 12) {
-		time.hours = 1
-	} else if (time.hours < 1) {
-		time.hours = 12
-	}
+onMounted(() => {
+	//set all fields to default values
+	confirmTime(false)
 })
+
+/* Sets the time_data to match the input fields, called on blur or Enter, can set sendEmit to false to prevent emiting the time data */
+const confirmTime = (sendEmit = true) => {
+	const maxHours = props.allowMilitaryTime ? 23 : 12
+	if (time_data.hours > maxHours || time_data.hours == '') time_data.hours = maxHours
+	if (time_data.minutes > 59 || time_data.minutes == '') time_data.minutes = 0
+	if (time_data.seconds > 59 || time_data.seconds == '') time_data.seconds = 0
+	padString()
+	if (sendEmit) emitTime()
+}
+
+/* on emit, format the time_data to a generic object */
+const emitTime = () => {
+	emit('get-time', {
+		hours: time_data.hours,
+		minutes: time_data.minutes,
+		seconds: time_data.seconds,
+		meridiem: meridiem.value,
+	})
+}
+
+/* pad the time strings with leading 0's if they are less than 10 */
+const padString = () => {
+	for (let str in time_data) {
+		time_data[str] = String(time_data[str]).padStart(2, '0')
+	}
+}
+
 const focusInput = event => {
 	event.target.select()
 }
-const pasteInput = event => {
-	pasting = true
+
+const tick = (target, amount = 1) => {
+	const maxHours = props.allowMilitaryTime ? 23 : 12
+	const minHours = props.allowMilitaryTime ? 0 : 1
+
+	if (target == 'hours') time_data.hours = Number(time_data.hours) + amount
+	else if (target == 'minutes') time_data.minutes = Number(time_data.minutes) + amount
+	else if (target == 'seconds') time_data.seconds = Number(time_data.seconds) + amount
+
+	if (time_data.seconds < 0) time_data.minutes--
+	else if (time_data.seconds > 59) time_data.minutes++
+	if (time_data.minutes < 0) time_data.hours--
+	else if (time_data.minutes > 59) time_data.hours++
+
+	time_data.hours = formatTime(time_data.hours, minHours, maxHours)
+	time_data.minutes = formatTime(time_data.minutes, 0, 59)
+	time_data.seconds = formatTime(time_data.seconds, 0, 59)
+
+	padString()
+}
+
+/* Watchers */
+watch(
+	() => time_data.hours,
+	(newVal, oldVal) => {
+		if ((oldVal == 11 && newVal == 12) || (oldVal == 12 && newVal == 11)) changeMeridiem()
+		time_data.hours = newVal > 99 ? oldVal : newVal
+	}
+)
+watch(
+	() => time_data.minutes,
+	(newVal, oldVal) => {
+		time_data.minutes = newVal > 99 ? oldVal : newVal
+	}
+)
+watch(
+	() => time_data.seconds,
+	(newVal, oldVal) => {
+		time_data.seconds = newVal > 99 ? oldVal : newVal
+	}
+)
+
+const formatTime = (target, min, max) => {
+	if (target > max) return min
+	else if (target < min) return max
+	return target
+}
+
+const changeMeridiem = () => {
+	meridiem.value = meridiem.value == 'PM' ? 'AM' : 'PM'
+	emitTime()
+}
+
+const pasteInput = (event, pasteAllFields = false) => {
+	//pasteAllFields will apply the paste effect to all input fields, should only be used on the first field/hour
+
 	let clipboardData, pastedData
 
 	event.stopPropagation()
@@ -116,98 +191,27 @@ const pasteInput = event => {
 
 	pastedData = pastedData.replace(/[^0-9]/g, '')
 
-	//Pad the pasted data with 0's depending on string length, to resemble format 00:00:00
-	if (pastedData.length % 2 != 0) {
-		//pad the start with a 0
-		pastedData = '0' + pastedData
-	}
+	if (pasteAllFields) {
+		//Pad the pasted data with 0's depending on string length, to resemble format 00:00:00, hours, minutes, seconds
+		if (pastedData.length % 2 != 0) pastedData = '0' + pastedData
+		if (pastedData.length < 3) pastedData += '00'
+		if (pastedData.length < 5) pastedData += '00'
 
-	if (pastedData.length < 3) {
-		// no minutes, pad 0's
-		pastedData += '00'
-	}
-	if (pastedData.length < 5) {
-		//no seconds, pad 0's
-		pastedData += '00'
-	}
+		const time_units = pastedData.match(/(..?)/g)
 
-	const time_units = pastedData.match(/(..?)/g)
+		time_data.seconds = Number(time_units[2])
+		time_data.minutes = Number(time_units[1])
+		time_data.hours = Number(time_units[0])
+		confirmTime()
+		if (!props.allowMilitaryTime) meridiemSelector.value.focus()
+	} else {
+		if (pastedData.length > 2) pastedData = pastedData.slice(0, 2)
+		event.target.value = pastedData
 
-	time.seconds = Number(time_units[2])
-	time.minutes = Number(time_units[1])
-	time.hours = Number(time_units[0])
-
-	meridiemSelector.value.focus()
-}
-
-const getKeyInput = (event, unit) => {
-	if (!time.hasOwnProperty(unit)) return
-
-	if (event.key == 'ArrowUp') {
-		event.preventDefault()
-		time[unit]++
-	} else if (event.key == 'ArrowDown') {
-		event.preventDefault()
-		time[unit]--
-	} else if (event.key == 'Enter') {
-		event.preventDefault()
+		//manually call the input event to force v-model update
+		event.target.dispatchEvent(new Event('input'))
 	}
 }
-
-//bug with computed not updating when a property of time updates, made these methods for now as a workaround
-
-// const getHour = computed(()=>{
-
-//   return time.hours>9?String(time.hours):"0"+String(time.hours)
-// })
-const getHour = () => {
-	return time.hours > 9 ? String(time.hours) : '0' + String(time.hours)
-}
-const getMinutes = () => {
-	return time.minutes > 9 ? String(time.minutes) : '0' + String(time.minutes)
-}
-const getSeconds = () => {
-	return time.seconds > 9 ? String(time.seconds) : '0' + String(time.seconds)
-}
-
-const setHour = event => {
-	if (!pasting) {
-		time.hours = Number(event.target.value)
-		if (time.hours >= 12) time.hours = 12
-		else if (time.hours <= 1) time.hours = 1
-	}
-}
-const setMinutes = event => {
-	let val = Number(event.target.value)
-	if (val >= 59) {
-		val = 59
-	} else if (val <= 0) {
-		val = 0
-	}
-	time.minutes = val
-}
-const setSeconds = event => {
-	let val = Number(event.target.value)
-	if (val >= 59) {
-		val = 59
-	} else if (val <= 0) {
-		val = 0
-	}
-	time.seconds = val
-}
-const validateInput = event => {
-	//make sure only numbers are entered
-	event.target.value = event.target.value.replace(/[^0-9]/g, '')
-}
-
-const changeMeridiem = () => {
-	time.meridiem = time.meridiem == 'PM' ? 'AM' : 'PM'
-}
-const formatTime = computed(() => {
-	return time.hours + ':' + time.minutes + ':' + time.seconds
-})
-
-defineExpose({ time })
 </script>
 
 <style scoped>
@@ -216,22 +220,28 @@ defineExpose({ time })
 }
 .adate_time_fields {
 	display: flex;
-	align-items: normal;
+	align-items: stretch;
 	max-width: 300px;
 	gap: 5px;
+	justify-content: center;
 }
 .adate_time_fields > input {
-	width: 40px;
+	min-width: 30px;
 	padding: 2px;
 	text-align: center;
 	display: inline-block;
+	flex-basis: 0;
 }
-.meridiem-selection {
+.meridiem-selector {
 	cursor: pointer;
 	display: inline-block;
 	flex-basis: 0;
 	padding: 5px;
 	user-select: none;
+}
+.meridiem-selector:focus {
+	outline: 2px solid black;
+	outline-offset: -2px;
 }
 .adate_time_segment {
 	display: flex;
@@ -240,18 +250,16 @@ defineExpose({ time })
 }
 .colon {
 	display: flex;
-	align-items: center;
+	align-items: normal;
 }
 .aform_form-btn {
 	cursor: pointer;
 }
 .aform-select {
 	border-radius: 0px;
-	border: 2px solid rgb(118, 118, 118);
-	outline: 1px solid var(--sc-input-border-color);
-	outline-offset: -1px;
+	border: 1px solid rgb(118, 118, 118);
 	font-size: 1rem;
-	padding: 0.5rem;
+	padding: 0rem;
 	margin: 0;
 	border-radius: 0;
 	box-sizing: border-box;
@@ -261,5 +269,13 @@ defineExpose({ time })
 }
 .meridiem-selector {
 	margin-left: 6px;
+}
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
+	-webkit-appearance: none;
+	margin: 0;
+}
+input[type='number'] {
+	-moz-appearance: textfield;
 }
 </style>
