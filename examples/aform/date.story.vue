@@ -35,7 +35,6 @@ const seconds = ref(0)
 const meridiem = ref('')
 
 const formattedTime = computed(() => {
-	// return hours.value+":"+minutes.value+":"+seconds.value+meridiem.value
 	return [hours.value, minutes.value, seconds.value].join(':') + meridiem.value
 })
 

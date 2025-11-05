@@ -15,6 +15,7 @@
 								class="date-input-start aform_input-field"
 								type="text"
 								placeholder="start date"
+								@blur="applyDates"
 								@keydown="enterDate" />
 							<div>-</div>
 							<input
@@ -22,8 +23,8 @@
 								class="date-input-end aform_input-field"
 								type="text"
 								placeholder="end date"
+								@blur="applyDates"
 								@keydown="enterDate" />
-							<button @click="applyDates" class="date-input-button">&check;</button>
 						</div>
 						<!-- {{ formattedDateRange }} -->
 					</td>
@@ -80,8 +81,8 @@ const currentDates = ref<number[]>([])
 const datepickerRef = useTemplateRef<HTMLDivElement>('datepicker')
 const hoveredDate = ref(new Date(date.value))
 
-const startDateInput = ref(null)
-const endDateInput = ref(null)
+const startDateInput = ref('')
+const endDateInput = ref('')
 
 const selectedDateRange = reactive({
 	start_date: new Date(),
@@ -96,7 +97,6 @@ const props = defineProps({
 })
 
 onMounted(async () => {
-	// datePickerStart.value.value =
 	populateMonth()
 	// required to allow the elements to be focused in the next step
 	await nextTick()
@@ -147,8 +147,18 @@ const nextMonth = () => {
 
 const applyDates = () => {
 	//check the start and end dates
-	let start_date = new Date(startDateInput.value)
-	let end_date = new Date(endDateInput.value)
+	let start_date = startDateInput.value == '' ? new Date() : new Date(startDateInput.value)
+	let end_date = endDateInput.value == '' ? new Date() : new Date(endDateInput.value)
+
+	if (endDateInput.value == '') {
+		if (startDateInput.value == '') {
+			end_date = new Date()
+		} else {
+			end_date = new Date(startDateInput.value)
+		}
+	} else {
+		end_date = new Date(endDateInput.value)
+	}
 
 	if (start_date.getTime() > end_date.getTime() && end_date.getTime()) {
 		//swap the dates if end date is before start date
