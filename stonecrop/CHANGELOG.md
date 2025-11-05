@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/stonecrop
 
-This log was last generated on Fri, 31 Oct 2025 12:25:20 GMT and should not be manually modified.
+This log was last generated on Wed, 05 Nov 2025 12:38:13 GMT and should not be manually modified.
+
+## 0.5.0
+Wed, 05 Nov 2025 12:38:13 GMT
+
+### Minor changes
+
+- update data structure to HST
 
 ## 0.4.37
 Fri, 31 Oct 2025 12:25:20 GMT
