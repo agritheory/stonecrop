@@ -112,6 +112,7 @@ const emitTime = () => {
 		minutes: time_data.minutes,
 		seconds: time_data.seconds,
 		meridiem: meridiem.value,
+		militaryTime: meridiem.value == 'PM' && time_data.hours < 12 ? time_data.hours + 12 : time_data.hours,
 	})
 }
 
@@ -217,6 +218,10 @@ const pasteInput = (event, pasteAllFields = false) => {
 <style scoped>
 .adate_time {
 	width: 100%;
+	padding: 10px;
+	box-sizing: border-box;
+	font-size: 1rem;
+	background: var(--sc-gray-10);
 }
 .adate_time_fields {
 	display: flex;

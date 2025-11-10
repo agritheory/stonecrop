@@ -96,6 +96,8 @@ const props = defineProps({
 	},
 })
 
+const emit = defineEmits(['get-date'])
+
 onMounted(async () => {
 	populateMonth()
 	// required to allow the elements to be focused in the next step
@@ -181,6 +183,7 @@ const applyDates = () => {
 	} else {
 		selectedDateRange.end_date = new Date()
 	}
+	emit('get-date', { start: selectedDateRange.start_date, end: selectedDateRange.end_date })
 }
 
 const isTodaysDate = (day: string | number | Date) => {
@@ -240,6 +243,7 @@ const selectDate = (currentIndex: number) => {
 
 	startDateInput.value = parseDateToString(selectedDateRange.start_date)
 	endDateInput.value = parseDateToString(selectedDateRange.end_date)
+	emit('get-date', { start: selectedDateRange.start_date, end: selectedDateRange.end_date })
 }
 
 const parseDateToString = (date: Date) => {
@@ -293,6 +297,7 @@ defineExpose({ currentMonth, currentYear, selectedDate, selectedDateRange })
 	color: var(--sc-cell-text-color);
 	outline: none;
 	border-collapse: collapse;
+	margin-bottom: 10px;
 	/* width: calc(100% - 4px); */
 }
 
@@ -365,7 +370,5 @@ defineExpose({ currentMonth, currentYear, selectedDate, selectedDateRange })
 .adatepicker .date-input > input {
 	width: 50%;
 	padding: 2px;
-}
-.date-input-button {
 }
 </style>
