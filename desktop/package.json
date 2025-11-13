@@ -39,7 +39,7 @@
 		"_phase:build": "heft build && vite build && rushx docs",
 		"prepublish": "heft build && vite build && rushx docs",
 		"build": "heft build && vite build && rushx docs",
-		"docs": "cd ../common/autoinstallers/doc-tools && node generate-docs.mjs desktop",
+		"docs": "bash ../common/scripts/run-docs.sh desktop",
 		"lint": "eslint ."
 	},
 	"dependencies": {
