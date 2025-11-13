@@ -47,16 +47,18 @@ export default defineNuxtModule<ModuleOptions>({
 				extendPages(async pages => {
 					try {
 						const pagePaths = pages.map(page => page.path)
-						if (pagePaths.includes('/')) {
-							logger.error('Conflict found: existing root page "/" detected.')
-							throw new Error('[@stonecrop/nuxt] Conflict found with existing root page')
-						}
 
-						pages.unshift({
-							name: 'stonecrop-home',
-							path: '/',
-							file: homepage,
-						})
+						// Only add the module's home page if there isn't already a root page
+						if (!pagePaths.includes('/')) {
+							pages.unshift({
+								name: 'stonecrop-home',
+								path: '/',
+								file: homepage,
+							})
+							logger.log('Added Stonecrop home page at /')
+						} else {
+							logger.log('Skipping Stonecrop home page: root page already exists')
+						}
 
 						for (const schema of schemas) {
 							try {

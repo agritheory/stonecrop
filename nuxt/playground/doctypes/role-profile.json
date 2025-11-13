@@ -1,0 +1,35 @@
+{
+	"schema": [
+		{
+			"fieldname": "profile_name",
+			"label": "Profile Name",
+			"fieldtype": "Data",
+			"required": true
+		},
+		{
+			"fieldname": "description",
+			"label": "Description",
+			"fieldtype": "Text"
+		},
+		{
+			"fieldname": "roles",
+			"label": "Roles",
+			"fieldtype": "Table",
+			"options": [
+				{
+					"fieldname": "role",
+					"label": "Role",
+					"fieldtype": "Link",
+					"options": "Role",
+					"required": true
+				}
+			]
+		},
+		{
+			"fieldname": "active",
+			"label": "Active",
+			"fieldtype": "Check",
+			"default": true
+		}
+	]
+}
