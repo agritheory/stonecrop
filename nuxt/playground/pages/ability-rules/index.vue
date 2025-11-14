@@ -12,17 +12,12 @@
 
 <script setup lang="ts">
 import type { TableColumn, TableConfig, TableRow } from '@stonecrop/atable'
-import { ref } from 'vue'
 
 const route = useRoute()
 const router = useRouter()
 
-// Sample data
-const abilityRules = ref<TableRow[]>([
-	{ id: '1', role_id: '1', doctype: 'User', action: 'create', subject: 'all', inverted: false, active: true },
-	{ id: '2', role_id: '2', doctype: 'User', action: 'read', subject: 'own', inverted: false, active: true },
-	{ id: '3', role_id: '3', doctype: 'User', action: 'update', subject: 'own', inverted: false, active: true },
-])
+// Fetch ability rules from API
+const { data: abilityRules } = await useFetch<TableRow[]>('/api/ability-rules')
 
 const columns: TableColumn[] = [
 	{ label: 'Role', name: 'role_id', type: 'Link', width: '20ch' },

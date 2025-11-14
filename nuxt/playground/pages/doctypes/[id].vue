@@ -20,29 +20,31 @@ const { stonecrop, provideHSTPath, handleHSTChange, formData } = useStonecrop({
 	recordId: doctypeId.value === 'new' ? undefined : doctypeId.value,
 })
 
-// Sample doctype data
-const doctypeData = ref(
+// Fetch doctype data from API or use empty object for new doctypes
+const { data: doctypeData } =
 	doctypeId.value === 'new'
 		? {
-				name: '',
-				module: '',
-				description: '',
-				is_submittable: false,
-				is_tree: false,
-				fields: [],
-				state_machine_id: null,
+				data: ref({
+					name: '',
+					module: '',
+					description: '',
+					is_submittable: false,
+					is_tree: false,
+					fields: [],
+					state_machine_id: null,
+				}),
 		  }
-		: {
-				id: doctypeId.value,
-				name: 'User',
-				module: 'Core',
-				description: 'User account management',
-				is_submittable: false,
-				is_tree: false,
-				fields: [{ fieldname: 'username', label: 'Username', fieldtype: 'Data', required: true, read_only: false }],
-				state_machine_id: null,
-		  }
-)
+		: await useFetch(`/api/doctypes/${doctypeId.value}`, {
+				default: () => ({
+					name: '',
+					module: '',
+					description: '',
+					is_submittable: false,
+					is_tree: false,
+					fields: [],
+					state_machine_id: null,
+				}),
+		  })
 
 async function handleSave() {
 	console.log('Saving doctype:', doctypeData.value)

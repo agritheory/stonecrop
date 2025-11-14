@@ -20,18 +20,13 @@ const { stonecrop, provideHSTPath, handleHSTChange, formData } = useStonecrop({
 	recordId: roleId.value === 'new' ? undefined : roleId.value,
 })
 
-// Sample role data
-const roleData = ref(
+// Fetch role data from API or use empty object for new roles
+const { data: roleData } =
 	roleId.value === 'new'
-		? { role_name: '', description: '', parent_role: null, active: true }
-		: {
-				id: roleId.value,
-				role_name: 'Administrator',
-				description: 'Full system access',
-				parent_role: null,
-				active: true,
-		  }
-)
+		? { data: ref({ role_name: '', description: '', parent_role: null, active: true }) }
+		: await useFetch(`/api/roles/${roleId.value}`, {
+				default: () => ({ role_name: '', description: '', parent_role: null, active: true }),
+		  })
 
 async function handleSave() {
 	console.log('Saving role:', roleData.value)

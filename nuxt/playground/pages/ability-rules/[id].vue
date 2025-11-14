@@ -20,21 +20,31 @@ const { stonecrop, provideHSTPath, handleHSTChange, formData } = useStonecrop({
 	recordId: ruleId.value === 'new' ? undefined : ruleId.value,
 })
 
-// Sample rule data
-const ruleData = ref(
+// Fetch ability rule data from API or use empty object for new rules
+const { data: ruleData } =
 	ruleId.value === 'new'
-		? { role_id: '', doctype: '', action: '', subject: 'all', conditions: null, inverted: false, active: true }
-		: {
-				id: ruleId.value,
-				role_id: '1',
-				doctype: 'User',
-				action: 'create',
-				subject: 'all',
-				conditions: null,
-				inverted: false,
-				active: true,
+		? {
+				data: ref({
+					role_id: '',
+					doctype: '',
+					action: '',
+					subject: 'all',
+					conditions: null,
+					inverted: false,
+					active: true,
+				}),
 		  }
-)
+		: await useFetch(`/api/ability-rules/${ruleId.value}`, {
+				default: () => ({
+					role_id: '',
+					doctype: '',
+					action: '',
+					subject: 'all',
+					conditions: null,
+					inverted: false,
+					active: true,
+				}),
+		  })
 
 async function handleSave() {
 	console.log('Saving ability rule:', ruleData.value)

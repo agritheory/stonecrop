@@ -12,17 +12,12 @@
 
 <script setup lang="ts">
 import type { TableColumn, TableConfig, TableRow } from '@stonecrop/atable'
-import { ref } from 'vue'
 
 const route = useRoute()
 const router = useRouter()
 
-// Sample data - will be replaced with API calls
-const roles = ref<TableRow[]>([
-	{ id: '1', role_name: 'Administrator', description: 'Full system access', active: true, parent_role: null },
-	{ id: '2', role_name: 'Manager', description: 'Manage team and resources', active: true, parent_role: '1' },
-	{ id: '3', role_name: 'User', description: 'Basic user access', active: true, parent_role: '2' },
-])
+// Fetch roles from API
+const { data: roles } = await useFetch<TableRow[]>('/api/roles')
 
 const columns: TableColumn[] = [
 	{ label: 'Role Name', name: 'role_name', type: 'Data', width: '25ch' },

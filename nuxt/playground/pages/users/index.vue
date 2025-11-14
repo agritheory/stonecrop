@@ -12,16 +12,11 @@
 
 <script setup lang="ts">
 import type { TableColumn, TableConfig, TableRow } from '@stonecrop/atable'
-import { ref } from 'vue'
 
 const router = useRouter()
 
-// Sample data - will be replaced with API calls
-const users = ref<TableRow[]>([
-	{ id: '1', username: 'admin', disabled: false, created_at: '2024-01-01', modified_at: '2024-01-15' },
-	{ id: '2', username: 'user1', disabled: false, created_at: '2024-01-02', modified_at: '2024-01-16' },
-	{ id: '3', username: 'user2', disabled: true, created_at: '2024-01-03', modified_at: '2024-01-17' },
-])
+// Fetch users from API
+const { data: users } = await useFetch<TableRow[]>('/api/users')
 
 const columns: TableColumn[] = [
 	{ label: 'Username', name: 'username', type: 'Data', width: '20ch' },

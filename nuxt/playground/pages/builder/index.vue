@@ -12,63 +12,11 @@
 
 <script setup lang="ts">
 import type { TableRow, TableColumn, TableConfig } from '@stonecrop/atable'
-import { ref } from 'vue'
 
 const router = useRouter()
 
-// Available DocTypes for builder
-const doctypes = ref<TableRow[]>([
-	{
-		id: '1',
-		name: 'user',
-		displayName: 'User',
-		module: 'Core',
-		description: 'User accounts with role-based access control',
-		hasStateMachine: true,
-		fields: 3,
-		abilityRules: 5,
-	},
-	{
-		id: '2',
-		name: 'role',
-		displayName: 'Role',
-		module: 'Core',
-		description: 'User roles for permission management',
-		hasStateMachine: false,
-		fields: 4,
-		abilityRules: 3,
-	},
-	{
-		id: '3',
-		name: 'role-profile',
-		displayName: 'Role Profile',
-		module: 'Core',
-		description: 'Group of roles for easier assignment',
-		hasStateMachine: false,
-		fields: 3,
-		abilityRules: 2,
-	},
-	{
-		id: '4',
-		name: 'ability-rule',
-		displayName: 'Ability Rule',
-		module: 'Core',
-		description: 'Permission rules for role-based access control',
-		hasStateMachine: false,
-		fields: 5,
-		abilityRules: 1,
-	},
-	{
-		id: '5',
-		name: 'doctype',
-		displayName: 'DocType',
-		module: 'Core',
-		description: 'Document type definition with fields and metadata',
-		hasStateMachine: false,
-		fields: 8,
-		abilityRules: 4,
-	},
-])
+// Fetch available DocTypes for builder from API
+const { data: doctypes } = await useFetch<TableRow[]>('/api/builder/doctypes')
 
 const columns: TableColumn[] = [
 	{ label: 'DocType', name: 'displayName', type: 'Data', width: '20ch' },

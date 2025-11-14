@@ -20,20 +20,13 @@ const { stonecrop, provideHSTPath, handleHSTChange, formData } = useStonecrop({
 	recordId: userId.value === 'new' ? undefined : userId.value,
 })
 
-// Sample user data - will be replaced with API
-const userData = ref(
+// Fetch user data from API or use empty object for new users
+const { data: userData } =
 	userId.value === 'new'
-		? { username: '', disabled: false, has_roles: [] }
-		: {
-				id: userId.value,
-				username: 'admin',
-				disabled: false,
-				has_roles: [
-					{ role_id: '1', role_name: 'Administrator', active: true },
-					{ role_id: '2', role_name: 'User', active: true },
-				],
-		  }
-)
+		? { data: ref({ username: '', disabled: false, has_roles: [] }) }
+		: await useFetch(`/api/users/${userId.value}`, {
+				default: () => ({ username: '', disabled: false, has_roles: [] }),
+		  })
 
 async function handleSave() {
 	// API call to save user

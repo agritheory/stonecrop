@@ -12,16 +12,11 @@
 
 <script setup lang="ts">
 import type { TableRow, TableColumn, TableConfig } from '@stonecrop/atable'
-import { ref } from 'vue'
 
 const router = useRouter()
 
-// Sample data
-const doctypes = ref<TableRow[]>([
-	{ id: '1', name: 'User', module: 'Core', is_submittable: false, is_tree: false },
-	{ id: '2', name: 'Role', module: 'Core', is_submittable: false, is_tree: true },
-	{ id: '3', name: 'Task', module: 'Projects', is_submittable: true, is_tree: false },
-])
+// Fetch doctypes from API
+const { data: doctypes } = await useFetch<TableRow[]>('/api/doctypes')
 
 const columns: TableColumn[] = [
 	{ label: 'Name', name: 'name', type: 'Data', width: '25ch' },
