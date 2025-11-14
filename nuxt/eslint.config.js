@@ -10,4 +10,11 @@ export default createConfigForNuxt({
 	dirs: {
 		src: ['./playground'],
 	},
-}).prepend(eslint.configs.recommended)
+})
+	.prepend(eslint.configs.recommended)
+	.append({
+		rules: {
+			'@stylistic/no-tabs': 'off',
+			'@stylistic/indent': 'off',
+		},
+	})
