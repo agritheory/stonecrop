@@ -1,6 +1,120 @@
+<template>
+	<div class="builder-container">
+		<div v-if="loading" class="loading">Loading DocBuilder...</div>
+		<div v-else class="builder-wrapper">
+			<!-- Title Section -->
+			<div class="builder-title">
+				<h1>DocBuilder: {{ doctypeName }}</h1>
+			</div>
+
+			<!-- Main Content -->
+			<div class="builder-content">
+				<!-- DocType Information -->
+				<section class="builder-section">
+					<h2>DocType Information</h2>
+					<div class="info-grid">
+						<div class="info-item">
+							<label>Name:</label>
+							<span>{{ doctype?.name }}</span>
+						</div>
+						<div class="info-item">
+							<label>Module:</label>
+							<span>{{ doctype?.module }}</span>
+						</div>
+						<div class="info-item">
+							<label>Submittable:</label>
+							<span>{{ doctype?.is_submittable ? 'Yes' : 'No' }}</span>
+						</div>
+						<div class="info-item">
+							<label>Tree:</label>
+							<span>{{ doctype?.is_tree ? 'Yes' : 'No' }}</span>
+						</div>
+					</div>
+					<div class="info-description">
+						<label>Description:</label>
+						<p>{{ doctype?.description || 'No description provided' }}</p>
+					</div>
+				</section>
+
+				<!-- Fields -->
+				<section class="builder-section">
+					<h2>Fields ({{ doctype?.fields?.length || 0 }})</h2>
+					<div class="fields-list">
+						<div v-for="field in doctype?.fields" :key="field.fieldname" class="field-item">
+							<div class="field-header">
+								<span class="field-name">{{ field.fieldname }}</span>
+								<span class="field-type">{{ field.fieldtype }}</span>
+							</div>
+							<div class="field-label">
+								{{ field.label }}
+							</div>
+							<div class="field-attrs">
+								<span v-if="field.required" class="attr-badge">Required</span>
+								<span v-if="field.read_only" class="attr-badge">Read Only</span>
+								<span v-if="field.options" class="attr-badge">Options: {{ field.options }}</span>
+							</div>
+						</div>
+					</div>
+				</section>
+
+				<!-- Ability Rules -->
+				<section class="builder-section">
+					<div class="section-header">
+						<h2>Ability Rules ({{ abilityRules.length }})</h2>
+						<button class="btn-primary" @click="handleNewRule">New Rule</button>
+					</div>
+					<ATable
+						v-if="abilityRules.length > 0"
+						:columns="rulesColumns"
+						:rows="abilityRules"
+						:config="config"
+						@row-click="handleRuleClick" />
+					<p v-else class="empty-state">No ability rules configured for this DocType</p>
+				</section>
+
+				<!-- State Machine -->
+				<section class="builder-section">
+					<h2>State Machine</h2>
+					<div v-if="stateMachine">
+						<div class="state-machine-info">
+							<div class="info-grid">
+								<div class="info-item">
+									<label>Machine ID:</label>
+									<span>{{ stateMachine.machine_id }}</span>
+								</div>
+								<div class="info-item">
+									<label>Name:</label>
+									<span>{{ stateMachine.name }}</span>
+								</div>
+								<div class="info-item">
+									<label>Version:</label>
+									<span>{{ stateMachine.version }}</span>
+								</div>
+								<div class="info-item">
+									<label>Initial State:</label>
+									<span class="state-badge">{{ stateMachine.initial_state }}</span>
+								</div>
+							</div>
+						</div>
+
+						<!-- Visual State Machine Editor -->
+						<div v-if="workflowConfig && Object.keys(workflowConfig).length > 0" class="state-machine-editor">
+							<ClientOnly>
+								<StateEditor v-model="workflowConfig" node-container-class="node-editor" :layout="layout" />
+							</ClientOnly>
+						</div>
+					</div>
+					<p v-else class="empty-state">No state machine configured for this DocType</p>
+				</section>
+			</div>
+		</div>
+	</div>
+</template>
+
 <script setup lang="ts">
-import { ref, computed, onMounted, nextTick } from 'vue'
+import type { TableConfig } from '@stonecrop/atable'
 import type { Layout } from '@stonecrop/node-editor'
+import { ref, computed, onMounted, nextTick } from 'vue'
 import '@vue-flow/core/dist/style.css'
 import '@vue-flow/core/dist/theme-default.css'
 
@@ -14,6 +128,11 @@ const stateMachine = ref<any>(null)
 const workflowConfig = ref<any>({})
 const layout = ref<Layout>({})
 const loading = ref(true)
+
+const config: TableConfig = {
+	fullWidth: true,
+	view: 'uncounted',
+}
 
 // Convert our state machine format to XState config format
 function convertToXStateConfig(machine: any) {
@@ -119,118 +238,6 @@ function handleNewRule() {
 	router.push(`/ability-rules/new?doctype=${doctypeName.value}`)
 }
 </script>
-
-<template>
-	<div class="builder-container">
-		<div v-if="loading" class="loading">Loading DocBuilder...</div>
-		<div v-else class="builder-wrapper">
-			<!-- Title Section -->
-			<div class="builder-title">
-				<h1>DocBuilder: {{ doctypeName }}</h1>
-			</div>
-
-			<!-- Main Content -->
-			<div class="builder-content">
-				<!-- DocType Information -->
-				<section class="builder-section">
-					<h2>DocType Information</h2>
-					<div class="info-grid">
-						<div class="info-item">
-							<label>Name:</label>
-							<span>{{ doctype?.name }}</span>
-						</div>
-						<div class="info-item">
-							<label>Module:</label>
-							<span>{{ doctype?.module }}</span>
-						</div>
-						<div class="info-item">
-							<label>Submittable:</label>
-							<span>{{ doctype?.is_submittable ? 'Yes' : 'No' }}</span>
-						</div>
-						<div class="info-item">
-							<label>Tree:</label>
-							<span>{{ doctype?.is_tree ? 'Yes' : 'No' }}</span>
-						</div>
-					</div>
-					<div class="info-description">
-						<label>Description:</label>
-						<p>{{ doctype?.description || 'No description provided' }}</p>
-					</div>
-				</section>
-
-				<!-- Fields -->
-				<section class="builder-section">
-					<h2>Fields ({{ doctype?.fields?.length || 0 }})</h2>
-					<div class="fields-list">
-						<div v-for="field in doctype?.fields" :key="field.fieldname" class="field-item">
-							<div class="field-header">
-								<span class="field-name">{{ field.fieldname }}</span>
-								<span class="field-type">{{ field.fieldtype }}</span>
-							</div>
-							<div class="field-label">
-								{{ field.label }}
-							</div>
-							<div class="field-attrs">
-								<span v-if="field.required" class="attr-badge">Required</span>
-								<span v-if="field.read_only" class="attr-badge">Read Only</span>
-								<span v-if="field.options" class="attr-badge">Options: {{ field.options }}</span>
-							</div>
-						</div>
-					</div>
-				</section>
-
-				<!-- Ability Rules -->
-				<section class="builder-section">
-					<div class="section-header">
-						<h2>Ability Rules ({{ abilityRules.length }})</h2>
-						<button class="btn-primary" @click="handleNewRule">New Rule</button>
-					</div>
-					<ATable
-						v-if="abilityRules.length > 0"
-						:columns="rulesColumns"
-						:rows="abilityRules"
-						@row-click="handleRuleClick" />
-					<p v-else class="empty-state">No ability rules configured for this DocType</p>
-				</section>
-
-				<!-- State Machine -->
-				<section class="builder-section">
-					<h2>State Machine</h2>
-					<div v-if="stateMachine">
-						<div class="state-machine-info">
-							<div class="info-grid">
-								<div class="info-item">
-									<label>Machine ID:</label>
-									<span>{{ stateMachine.machine_id }}</span>
-								</div>
-								<div class="info-item">
-									<label>Name:</label>
-									<span>{{ stateMachine.name }}</span>
-								</div>
-								<div class="info-item">
-									<label>Version:</label>
-									<span>{{ stateMachine.version }}</span>
-								</div>
-								<div class="info-item">
-									<label>Initial State:</label>
-									<span class="state-badge">{{ stateMachine.initial_state }}</span>
-								</div>
-							</div>
-						</div>
-
-						<!-- Visual State Machine Editor -->
-						<div v-if="workflowConfig && Object.keys(workflowConfig).length > 0" class="state-machine-editor">
-							<ClientOnly>
-								<StateEditor v-model="workflowConfig" node-container-class="node-editor" :layout="layout" />
-							</ClientOnly>
-						</div>
-					</div>
-					<p v-else class="empty-state">No state machine configured for this DocType</p>
-				</section>
-			</div>
-		</div>
-	</div>
-</template>
 
 <style scoped>
 .builder-container {

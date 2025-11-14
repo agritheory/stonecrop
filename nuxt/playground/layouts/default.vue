@@ -286,4 +286,34 @@ body {
 	color: #051410;
 	transform: translateX(-2px);
 }
+
+/* Global Table Styling */
+.app-layout :deep(.atable) {
+	background: rgba(255, 255, 255, 0.95);
+	backdrop-filter: blur(10px);
+	border-radius: 1rem;
+	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+	border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.app-layout :deep(.atable tbody tr) {
+	cursor: pointer;
+	transition: background-color 0.15s ease;
+}
+
+.app-layout :deep(.atable tbody tr:hover) {
+	background: rgba(0, 220, 130, 0.05);
+}
+
+.app-layout :deep(.atable th) {
+	background: rgba(0, 220, 130, 0.1);
+	color: #1a202c;
+	font-weight: 600;
+	padding: 1rem;
+}
+
+.app-layout :deep(.atable td) {
+	padding: 1rem;
+	color: #2d3748;
+}
 </style>

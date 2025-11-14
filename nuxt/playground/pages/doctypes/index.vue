@@ -1,22 +1,38 @@
+<template>
+	<div class="page-container">
+		<div class="page-header">
+			<h1>DocTypes</h1>
+			<button class="btn-primary" @click="handleNew">New DocType</button>
+		</div>
+		<ClientOnly>
+			<ATable :columns="columns" :rows="doctypes" :config="config" @row-click="handleRowClick" />
+		</ClientOnly>
+	</div>
+</template>
+
 <script setup lang="ts">
+import type { TableRow, TableColumn, TableConfig } from '@stonecrop/atable'
 import { ref } from 'vue'
 
-const route = useRoute()
 const router = useRouter()
 
 // Sample data
-const doctypes = ref([
+const doctypes = ref<TableRow[]>([
 	{ id: '1', name: 'User', module: 'Core', is_submittable: false, is_tree: false },
 	{ id: '2', name: 'Role', module: 'Core', is_submittable: false, is_tree: true },
 	{ id: '3', name: 'Task', module: 'Projects', is_submittable: true, is_tree: false },
 ])
 
-const columns = [
-	{ label: 'Name', name: 'name', fieldname: 'name', fieldtype: 'Data', width: '25ch' },
-	{ label: 'Module', name: 'module', fieldname: 'module', fieldtype: 'Data', width: '20ch' },
-	{ label: 'Submittable', name: 'is_submittable', fieldname: 'is_submittable', fieldtype: 'Check', width: '12ch' },
-	{ label: 'Tree', name: 'is_tree', fieldname: 'is_tree', fieldtype: 'Check', width: '10ch' },
+const columns: TableColumn[] = [
+	{ label: 'Name', name: 'name', type: 'Data', width: '25ch' },
+	{ label: 'Module', name: 'module', type: 'Data', width: '20ch' },
+	{ label: 'Submittable', name: 'is_submittable', type: 'Check', width: '12ch' },
+	{ label: 'Tree', name: 'is_tree', type: 'Check', width: '10ch' },
 ]
+
+const config: TableConfig = {
+	fullWidth: true,
+}
 
 function handleRowClick(row: any) {
 	router.push(`/doctypes/${row.id}`)
@@ -26,18 +42,6 @@ function handleNew() {
 	router.push('/doctypes/new')
 }
 </script>
-
-<template>
-	<div class="page-container">
-		<div class="page-header">
-			<h1>DocTypes</h1>
-			<button class="btn-primary" @click="handleNew">New DocType</button>
-		</div>
-		<ClientOnly>
-			<ATable :columns="columns" :rows="doctypes" @row-click="handleRowClick" />
-		</ClientOnly>
-	</div>
-</template>
 
 <style scoped>
 .page-container {
