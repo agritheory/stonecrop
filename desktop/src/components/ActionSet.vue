@@ -176,7 +176,7 @@ const handleClick = (action: (() => void | Promise<void>) | undefined, label: st
 .action-menu-icon {
 	position: absolute;
 	top: 6px;
-	right: 8px;
+	right: 4px;
 }
 
 .action-menu-icon svg {
