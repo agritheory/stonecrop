@@ -19,10 +19,16 @@
 			"options": [
 				{
 					"fieldname": "role_id",
-					"label": "Role",
+					"label": "Role ID",
 					"fieldtype": "Link",
 					"options": "Role",
 					"required": true
+				},
+				{
+					"fieldname": "role_name",
+					"label": "Role Name",
+					"fieldtype": "Data",
+					"readonly": true
 				},
 				{
 					"fieldname": "active",

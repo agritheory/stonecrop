@@ -48,7 +48,6 @@ const { data: doctypeData } =
 
 async function handleSave() {
 	console.log('Saving doctype:', doctypeData.value)
-	router.push('/doctypes')
 }
 
 function handleCancel() {

@@ -14,11 +14,26 @@ const profileDoctype = {
 	schema: hydrateSchema(profileDoctypeJson.schema),
 }
 
-// Initialize Stonecrop with HST
-const { stonecrop, provideHSTPath, handleHSTChange, formData } = useStonecrop({
-	doctype: profileDoctype as any,
-	recordId: profileId.value === 'new' ? undefined : profileId.value,
-})
+// Initialize Stonecrop with basic mode
+const { stonecrop, operationLog } = useStonecrop()
+
+// Extract HST store for components
+const hstStore = computed(() => stonecrop.value?.getStore())
+
+// Extract operation log data
+const { operations, currentIndex, canUndo, canRedo } = operationLog
+
+function undo() {
+	if (hstStore.value) {
+		operationLog.undo(hstStore.value)
+	}
+}
+
+function redo() {
+	if (hstStore.value) {
+		operationLog.redo(hstStore.value)
+	}
+}
 
 // Fetch role profile data from API or use empty object for new profiles
 const { data: profileData } =
@@ -28,9 +43,32 @@ const { data: profileData } =
 				default: () => ({ profile_name: '', description: '', roles: [], active: true }),
 		  })
 
+// Add role profile data to HST store when available
+watch(
+	[stonecrop, profileData],
+	() => {
+		if (stonecrop.value && profileData.value && profileId.value !== 'new') {
+			stonecrop.value.addRecord('role-profile', profileId.value, profileData.value)
+		}
+	},
+	{ immediate: true }
+)
+
+// Get reactive form data from HST store
+const formData = computed(() => {
+	if (profileId.value === 'new') {
+		return profileData.value
+	}
+	if (hstStore.value && profileId.value) {
+		const record = hstStore.value.getNode(`role-profile.${profileId.value}`)
+		// Use get('') to get the entire record object from the node
+		return record ? record.get('') : profileData.value
+	}
+	return profileData.value
+})
+
 async function handleSave() {
 	console.log('Saving profile:', profileData.value)
-	router.push('/role-profiles')
 }
 
 function handleCancel() {
@@ -39,28 +77,75 @@ function handleCancel() {
 </script>
 
 <template>
-	<div class="page-container">
-		<div class="page-header">
-			<h1>{{ profileId === 'new' ? 'New Role Profile' : `Profile: ${profileData.profile_name}` }}</h1>
-			<div class="button-group">
-				<button class="btn-secondary" @click="handleCancel">Cancel</button>
-				<button class="btn-primary" @click="handleSave">Save</button>
+	<div class="page-container-with-sidebar">
+		<!-- Main Content -->
+		<div class="main-content">
+			<!-- HST Breadcrumbs -->
+			<ClientOnly>
+				<HSTBreadcrumbs v-if="profileId !== 'new'" doctype="role-profile" :record-id="profileId" />
+			</ClientOnly>
+
+			<div class="page-header">
+				<h1>{{ profileId === 'new' ? 'New Role Profile' : `Profile: ${profileData.profile_name}` }}</h1>
+				<div class="button-group">
+					<!-- HST Controls -->
+					<button v-if="profileId !== 'new'" :disabled="!canUndo" class="btn-icon" title="Undo" @click="undo">↶</button>
+					<button v-if="profileId !== 'new'" :disabled="!canRedo" class="btn-icon" title="Redo" @click="redo">↷</button>
+					<button class="btn-secondary" @click="handleCancel">Cancel</button>
+					<button class="btn-primary" @click="handleSave">Save</button>
+				</div>
+			</div>
+
+			<div class="form-container">
+				<ClientOnly>
+					<AForm v-model="(profileDoctype as any).schema" :data="profileData" />
+				</ClientOnly>
 			</div>
 		</div>
 
-		<div class="form-container">
-			<ClientOnly>
-				<AForm v-model="(profileDoctype as any).schema" :data="profileData" />
-			</ClientOnly>
-		</div>
+		<!-- HST Sidebar -->
+		<ClientOnly>
+			<div v-if="profileId !== 'new'" class="hst-sidebar">
+				<div class="sidebar-section">
+					<h3 class="sidebar-title">State Tree</h3>
+					<div class="sidebar-content">
+						<HSTStateViewer v-if="hstStore" :store="hstStore" />
+					</div>
+				</div>
+
+				<div class="sidebar-section">
+					<h3 class="sidebar-title">Operation Log</h3>
+					<div class="sidebar-content sidebar-scroll">
+						<HSTOperationLog
+							:show="true"
+							:operations="operations"
+							:current-index="currentIndex"
+							:can-undo="canUndo"
+							:can-redo="canRedo"
+							:inline="true" />
+					</div>
+				</div>
+			</div>
+		</ClientOnly>
 	</div>
 </template>
 
 <style scoped>
-.page-container {
-	padding: 2rem;
-	max-width: 1200px;
+.page-container-with-sidebar {
+	display: grid;
+	grid-template-columns: 1fr 400px;
+	gap: 0;
+	padding: 0;
+	max-width: 100%;
 	margin: 0 auto;
+	min-height: 100vh;
+	background: #f9fafb;
+}
+
+.main-content {
+	min-width: 0;
+	padding: 2rem;
+	background: #ffffff;
 }
 
 .page-header {
@@ -72,7 +157,30 @@ function handleCancel() {
 
 .button-group {
 	display: flex;
-	gap: 1rem;
+	gap: 0.5rem;
+	align-items: center;
+}
+
+.btn-icon {
+	padding: 0.5rem;
+	background: #f3f4f6;
+	color: #1f2937;
+	border: 1px solid #d1d5db;
+	border-radius: 0.375rem;
+	cursor: pointer;
+	font-size: 1.25rem;
+	line-height: 1;
+	transition: all 0.2s ease;
+}
+
+.btn-icon:hover:not(:disabled) {
+	background: #e5e7eb;
+	border-color: #9ca3af;
+}
+
+.btn-icon:disabled {
+	opacity: 0.4;
+	cursor: not-allowed;
 }
 
 .btn-primary {
@@ -106,5 +214,66 @@ function handleCancel() {
 	padding: 2rem;
 	border-radius: 0.5rem;
 	box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+}
+
+.hst-sidebar {
+	display: flex;
+	flex-direction: column;
+	gap: 1.5rem;
+	position: sticky;
+	top: 2rem;
+	align-self: start;
+	max-height: calc(100vh - 4rem);
+	overflow: hidden;
+}
+
+.sidebar-section {
+	background: white;
+	border-radius: 0.5rem;
+	box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
+}
+
+.sidebar-section:first-child,
+.sidebar-section:last-child {
+	flex: 1;
+	min-height: 0;
+}
+
+.sidebar-title {
+	padding: 1rem 1.5rem;
+	margin: 0;
+	font-size: 1rem;
+	font-weight: 600;
+	color: #1f2937;
+	border-bottom: 1px solid #e5e7eb;
+	background: #f9fafb;
+}
+
+.sidebar-content {
+	padding: 1rem;
+	flex: 1;
+	min-height: 0;
+	overflow: auto;
+}
+
+@media (max-width: 1400px) {
+	.page-container-with-sidebar {
+		grid-template-columns: 1fr 350px;
+	}
+}
+
+@media (max-width: 1024px) {
+	.page-container-with-sidebar {
+		grid-template-columns: 1fr;
+	}
+
+	.hst-sidebar {
+		position: relative;
+		top: 0;
+		max-height: none;
+	}
 }
 </style>

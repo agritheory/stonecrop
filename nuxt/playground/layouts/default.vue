@@ -34,7 +34,7 @@ const breadcrumbs = computed(() => {
 		if (segment === 'doctypes') title = 'DocTypes'
 
 		// If it's an ID segment (UUID or number), use a more descriptive title
-		if (i === parts.length - 1 && (segment.match(/^[0-9a-f-]+$/i) || !isNaN(Number(segment)))) {
+		if (i === parts.length - 1 && (segment.match(/^[0-9a-f-]+$/i) || !Number.isNaN(Number(segment)))) {
 			const parent = parts[i - 1]
 			if (parent === 'users') title = `User: ${segment.slice(0, 8)}`
 			else if (parent === 'roles') title = `Role: ${segment.slice(0, 8)}`
