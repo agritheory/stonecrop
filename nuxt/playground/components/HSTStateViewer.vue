@@ -1,7 +1,7 @@
 <template>
 	<div class="hst-state-viewer">
 		<div class="viewer-header">
-			<h3>HST State Tree</h3>
+			<h3>Global State Tree</h3>
 			<div class="viewer-actions">
 				<button class="action-btn" @click="refreshTree">🔄</button>
 				<button class="action-btn" @click="expandAll">{{ allExpanded ? '▼' : '▶' }}</button>

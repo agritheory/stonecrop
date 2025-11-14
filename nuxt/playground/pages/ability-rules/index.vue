@@ -59,37 +59,5 @@ function handleNew() {
 </script>
 
 <style scoped>
-.page-container {
-	padding: 2rem;
-}
-
-.page-header {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	margin-bottom: 2rem;
-}
-
-.btn-primary {
-	padding: 0.5rem 1rem;
-	background: #4f46e5;
-	color: white;
-	border: none;
-	border-radius: 0.375rem;
-	cursor: pointer;
-}
-
-.btn-primary:hover {
-	background: #4338ca;
-}
-
-/* Make table rows clickable */
-:deep(tbody tr) {
-	cursor: pointer;
-	transition: background-color 0.15s ease;
-}
-
-:deep(tbody tr:hover) {
-	background-color: #f3f4f6;
-}
+/* List page styles are now in ~/assets/styles/common.css */
 </style>

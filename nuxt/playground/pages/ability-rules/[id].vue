@@ -122,29 +122,13 @@ function handleCancel() {
 		</div>
 
 		<!-- HST Sidebar -->
-		<ClientOnly>
-			<div v-if="ruleId !== 'new'" class="hst-sidebar">
-				<div class="sidebar-section">
-					<h3 class="sidebar-title">State Tree</h3>
-					<div class="sidebar-content">
-						<HSTStateViewer v-if="hstStore" :store="hstStore" />
-					</div>
-				</div>
-
-				<div class="sidebar-section">
-					<h3 class="sidebar-title">Operation Log</h3>
-					<div class="sidebar-content sidebar-scroll">
-						<HSTOperationLog
-							:show="true"
-							:operations="operations"
-							:current-index="currentIndex"
-							:can-undo="canUndo"
-							:can-redo="canRedo"
-							:inline="true" />
-					</div>
-				</div>
-			</div>
-		</ClientOnly>
+		<HSTSidebar
+			v-if="ruleId !== 'new'"
+			:hst-store="hstStore"
+			:operations="operations"
+			:current-index="currentIndex"
+			:can-undo="canUndo"
+			:can-redo="canRedo" />
 	</div>
 </template>
 
@@ -237,12 +221,16 @@ function handleCancel() {
 .hst-sidebar {
 	display: flex;
 	flex-direction: column;
-	gap: 1.5rem;
+	gap: 0;
 	position: sticky;
-	top: 2rem;
-	align-self: start;
-	max-height: calc(100vh - 4rem);
+	top: 0;
+	align-self: stretch;
+	min-height: 100vh;
+	max-height: 100vh;
 	overflow: hidden;
+	background: #f3f4f6;
+	border-left: 3px solid #e5e7eb;
+	padding: 1.5rem;
 }
 
 .sidebar-section {
@@ -252,22 +240,34 @@ function handleCancel() {
 	overflow: hidden;
 	display: flex;
 	flex-direction: column;
+	margin-bottom: 1.5rem;
+	border: 1px solid #e5e7eb;
 }
 
-.sidebar-section:first-child,
 .sidebar-section:last-child {
-	flex: 1;
+	margin-bottom: 0;
+}
+
+.sidebar-section:first-child {
+	flex: 0 0 auto;
+	max-height: 300px;
+}
+
+.sidebar-section:last-child {
+	flex: 1 1 auto;
 	min-height: 0;
 }
 
 .sidebar-title {
 	padding: 1rem 1.5rem;
 	margin: 0;
-	font-size: 1rem;
+	font-size: 0.875rem;
 	font-weight: 600;
-	color: #1f2937;
+	color: #374151;
 	border-bottom: 1px solid #e5e7eb;
 	background: #f9fafb;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
 }
 
 .sidebar-content {

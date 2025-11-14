@@ -20,6 +20,13 @@ const router = useRouter()
 // Fetch role profiles from API
 const { data: roleProfiles } = await useFetch<TableRow[]>('/api/role-profiles')
 
+const { handleTableClick } = useTableNavigation({
+	data: roleProfiles,
+	router,
+	basePath: '/role-profiles',
+	identifierField: 'profile_name',
+})
+
 const columns: TableColumn[] = [
 	{ label: 'Profile Name', name: 'profile_name', type: 'Data', width: '30ch' },
 	{ label: 'Description', name: 'description', type: 'Text', width: '40ch' },
@@ -30,61 +37,11 @@ const config: TableConfig = {
 	fullWidth: true,
 }
 
-function handleTableClick(event: MouseEvent) {
-	// Find the closest row element
-	const target = event.target as HTMLElement
-	const row = target.closest('tbody tr')
-
-	if (row) {
-		// Get the first cell (profile_name) to identify the row
-		const firstCell = row.querySelector('td')
-		if (firstCell && roleProfiles.value) {
-			const profileName = firstCell.textContent?.trim()
-			const profile = roleProfiles.value.find((p: any) => p.profile_name === profileName)
-			if (profile) {
-				router.push(`/role-profiles/${profile.id}`)
-			}
-		}
-	}
-}
-
 function handleNew() {
 	router.push('/role-profiles/new')
 }
 </script>
 
 <style scoped>
-.page-container {
-	padding: 2rem;
-}
-
-.page-header {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	margin-bottom: 2rem;
-}
-
-.btn-primary {
-	padding: 0.5rem 1rem;
-	background: #4f46e5;
-	color: white;
-	border: none;
-	border-radius: 0.375rem;
-	cursor: pointer;
-}
-
-.btn-primary:hover {
-	background: #4338ca;
-}
-
-/* Make table rows clickable */
-:deep(tbody tr) {
-	cursor: pointer;
-	transition: background-color 0.15s ease;
-}
-
-:deep(tbody tr:hover) {
-	background-color: #f3f4f6;
-}
+/* List page styles are now in ~/assets/styles/common.css */
 </style>

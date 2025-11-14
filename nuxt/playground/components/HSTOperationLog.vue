@@ -1,7 +1,7 @@
 <template>
 	<div v-if="show" :class="inline ? 'operation-log-inline' : 'operation-log-panel'">
 		<div class="panel-header">
-			<h3>HST Operation Log</h3>
+			<h3>Global Operation Log</h3>
 			<button v-if="!inline" class="close-button" @click="$emit('close')">✕</button>
 		</div>
 		<div class="panel-content">
