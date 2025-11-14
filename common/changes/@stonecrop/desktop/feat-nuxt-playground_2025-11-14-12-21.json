@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/desktop",
+      "comment": "update ActionSet styles",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/desktop"
+}
