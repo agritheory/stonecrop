@@ -5,7 +5,9 @@
 			<button class="btn-primary" @click="handleNew">New Rule</button>
 		</div>
 		<ClientOnly>
-			<ATable :columns="columns" :rows="abilityRules" :config="config" @row-click="handleRowClick" />
+			<div @click="handleTableClick">
+				<ATable :columns="columns" :rows="abilityRules" :config="config" />
+			</div>
 		</ClientOnly>
 	</div>
 </template>
@@ -32,8 +34,23 @@ const config: TableConfig = {
 	fullWidth: true,
 }
 
-function handleRowClick(row: any) {
-	router.push(`/ability-rules/${row.id}`)
+function handleTableClick(event: MouseEvent) {
+	// Find the closest row element
+	const target = event.target as HTMLElement
+	const row = target.closest('tbody tr')
+
+	if (row) {
+		// Get all cells to match the row
+		const cells = Array.from(row.querySelectorAll('td'))
+		if (cells.length >= 2 && abilityRules.value) {
+			const roleId = cells[0]?.textContent?.trim()
+			const doctype = cells[1]?.textContent?.trim()
+			const rule = abilityRules.value.find((r: any) => r.role_id === roleId && r.doctype === doctype)
+			if (rule) {
+				router.push(`/ability-rules/${rule.id}`)
+			}
+		}
+	}
 }
 
 function handleNew() {
@@ -64,5 +81,15 @@ function handleNew() {
 
 .btn-primary:hover {
 	background: #4338ca;
+}
+
+/* Make table rows clickable */
+:deep(tbody tr) {
+	cursor: pointer;
+	transition: background-color 0.15s ease;
+}
+
+:deep(tbody tr:hover) {
+	background-color: #f3f4f6;
 }
 </style>

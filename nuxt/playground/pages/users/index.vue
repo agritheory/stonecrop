@@ -5,7 +5,9 @@
 			<button class="btn-primary" @click="handleNewUser">New User</button>
 		</div>
 		<ClientOnly>
-			<ATable :columns="columns" :rows="users" :config="config" @row-click="handleRowClick" />
+			<div @click="handleTableClick">
+				<ATable :columns="columns" :rows="users" :config="config" />
+			</div>
 		</ClientOnly>
 	</div>
 </template>
@@ -29,8 +31,22 @@ const config: TableConfig = {
 	fullWidth: true,
 }
 
-function handleRowClick(row: any) {
-	router.push(`/users/${row.id}`)
+function handleTableClick(event: MouseEvent) {
+	// Find the closest row element
+	const target = event.target as HTMLElement
+	const row = target.closest('tbody tr')
+
+	if (row) {
+		// Get the first cell (username) to identify the row
+		const firstCell = row.querySelector('td')
+		if (firstCell && users.value) {
+			const username = firstCell.textContent?.trim()
+			const user = users.value.find((u: any) => u.username === username)
+			if (user) {
+				router.push(`/users/${user.id}`)
+			}
+		}
+	}
 }
 
 function handleNewUser() {
@@ -61,5 +77,15 @@ function handleNewUser() {
 
 .btn-primary:hover {
 	background: #4338ca;
+}
+
+/* Make table rows clickable */
+:deep(tbody tr) {
+	cursor: pointer;
+	transition: background-color 0.15s ease;
+}
+
+:deep(tbody tr:hover) {
+	background-color: #f3f4f6;
 }
 </style>

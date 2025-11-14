@@ -5,7 +5,9 @@
 			<button class="btn-primary" @click="handleNewRole">New Role</button>
 		</div>
 		<ClientOnly>
-			<ATable :columns="columns" :rows="roles" :config="config" @row-click="handleRowClick" />
+			<div @click="handleTableClick">
+				<ATable :columns="columns" :rows="roles" :config="config" />
+			</div>
 		</ClientOnly>
 	</div>
 </template>
@@ -29,8 +31,22 @@ const config: TableConfig = {
 	fullWidth: true,
 }
 
-function handleRowClick(row: any) {
-	router.push(`/roles/${row.id}`)
+function handleTableClick(event: MouseEvent) {
+	// Find the closest row element
+	const target = event.target as HTMLElement
+	const row = target.closest('tbody tr')
+
+	if (row) {
+		// Get the first cell (role_name) to identify the row
+		const firstCell = row.querySelector('td')
+		if (firstCell && roles.value) {
+			const roleName = firstCell.textContent?.trim()
+			const role = roles.value.find((r: any) => r.role_name === roleName)
+			if (role) {
+				router.push(`/roles/${role.id}`)
+			}
+		}
+	}
 }
 
 function handleNewRole() {
@@ -61,5 +77,15 @@ function handleNewRole() {
 
 .btn-primary:hover {
 	background: #4338ca;
+}
+
+/* Make table rows clickable */
+:deep(tbody tr) {
+	cursor: pointer;
+	transition: background-color 0.15s ease;
+}
+
+:deep(tbody tr:hover) {
+	background-color: #f3f4f6;
 }
 </style>
