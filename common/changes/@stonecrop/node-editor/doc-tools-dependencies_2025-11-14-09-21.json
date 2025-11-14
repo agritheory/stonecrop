@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/node-editor",
+      "comment": "update docs script",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/node-editor"
+}
