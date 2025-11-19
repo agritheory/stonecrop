@@ -114,10 +114,10 @@ const handleActionClick = async (label: string, action?: () => void | Promise<vo
 
 body {
 	margin: 0;
-	font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+	font-family: var(--sc-font-family);
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
-	background: #f3f4f6;
+	background: var(--sc-gray-5);
 }
 
 #__nuxt {
@@ -130,11 +130,11 @@ body {
 	min-height: 100vh;
 	display: flex;
 	flex-direction: column;
-	background: linear-gradient(135deg, #020420 0%, #0f0f23 100%);
+	background: var(--sc-gray-5);
 }
 
 .app-layout.is-home {
-	background: linear-gradient(135deg, #020420 0%, #0f0f23 100%);
+	background: var(--sc-brand-color);
 }
 
 .app-main {
@@ -142,87 +142,75 @@ body {
 	padding: 2rem;
 }
 
-/* Don't apply white background to home page content */
+/* Apply container background to non-home pages */
 .app-layout:not(.is-home) .app-main > :deep(*:first-child) {
-	background: rgba(255, 255, 255, 0.98);
-	backdrop-filter: blur(10px);
-	border-radius: 1rem;
+	background: var(--sc-form-background);
+	border-radius: 0.25rem;
 	padding: 2rem;
-	box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-	border: 1px solid rgba(0, 220, 130, 0.1);
+	box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+	border: 1px solid var(--sc-form-border);
 }
 
-/* Home page should have proper text color */
+/* Home page styling */
 .app-layout.is-home {
-	color: white;
+	color: var(--sc-primary-text-color);
 }
 
-/* Override SheetNav styles for Nuxt theme */
+/* SheetNav styles using Stonecrop theme */
 .app-layout :deep(footer) {
 	padding: 0 1rem 0 0;
 }
 
 .app-layout :deep(.tabs a) {
-	color: #0a1f1a;
-	background: rgba(0, 220, 130, 0.5);
-	backdrop-filter: blur(10px);
-	border: 1px solid rgba(0, 220, 130, 0.6);
-	outline: 1px solid rgba(0, 220, 130, 0.4);
+	color: var(--sc-gray-80);
+	background: var(--sc-btn-color);
+	border: 1px solid var(--sc-btn-border);
 	transition: all 0.2s ease;
-	font-weight: 600;
 }
 
 .app-layout :deep(.tabs a:hover) {
-	background: rgba(0, 220, 130, 0.7);
-	transform: translateY(-2px);
-	border-color: rgba(0, 220, 130, 0.8);
-	color: #051410;
+	background: var(--sc-btn-hover);
 }
 
 .app-layout :deep(.router-link-active) {
-	background: rgba(0, 220, 130, 0.8) !important;
-	border-color: #00dc82 !important;
-	color: #051410 !important;
+	background: var(--sc-primary-color) !important;
+	border-color: var(--sc-primary-color) !important;
+	color: var(--sc-primary-text-color) !important;
 }
 
 .app-layout :deep(.hidebreadcrumbs a),
 .app-layout :deep(.hometab a),
 .app-layout :deep(.searchtab a) {
-	background: rgba(0, 220, 130, 0.5);
-	backdrop-filter: blur(10px);
-	border: 1px solid rgba(0, 220, 130, 0.6);
-	color: #0a1f1a;
-	font-weight: 600;
+	background: var(--sc-btn-color);
+	border: 1px solid var(--sc-btn-border);
+	color: var(--sc-gray-80);
 }
 
 .app-layout :deep(.hidebreadcrumbs a:hover),
 .app-layout :deep(.hometab a:hover),
 .app-layout :deep(.searchtab a:hover) {
-	background: rgba(0, 220, 130, 0.7);
-	color: #051410;
+	background: var(--sc-btn-hover);
 }
 
 .app-layout :deep(.hometab svg path),
 .app-layout :deep(.searchtab svg path) {
-	fill: #0a1f1a;
+	fill: var(--sc-gray-80);
 }
 
 .app-layout :deep(.searchtab input) {
-	border-bottom-color: rgba(0, 220, 130, 0.8);
-	color: #0a1f1a;
-	font-weight: 600;
+	border-bottom-color: var(--sc-input-active-border-color);
+	color: var(--sc-gray-80);
 }
 
 .app-layout :deep(.searchtab input::placeholder) {
-	color: rgba(10, 31, 26, 0.6);
+	color: var(--sc-input-label-color);
 }
 
-/* Override ActionSet styles for Nuxt theme */
+/* ActionSet styles using Stonecrop theme */
 .app-layout :deep(.action-set) {
-	background: rgba(0, 220, 130, 0.5);
-	backdrop-filter: blur(10px);
-	border: 1px solid rgba(0, 220, 130, 0.6);
-	box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+	background: var(--sc-form-background);
+	border: 1px solid var(--sc-form-border);
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 	padding: 20px 20px 20px 20px !important;
 }
 
@@ -238,29 +226,25 @@ body {
 }
 
 .app-layout :deep(.action-menu-icon svg) {
-	fill: #0a1f1a;
+	fill: var(--sc-gray-80);
 }
 
 .app-layout :deep(.button-default) {
-	background: rgba(0, 220, 130, 0.4);
-	color: #0a1f1a;
-	border: 1px solid rgba(0, 220, 130, 0.6);
-	backdrop-filter: blur(5px);
+	background: var(--sc-btn-color);
+	color: var(--sc-btn-label-color);
+	border: 1px solid var(--sc-btn-border);
 	transition: all 0.2s ease;
-	font-weight: 600;
 }
 
 .app-layout :deep(.button-default:hover) {
-	background: rgba(0, 220, 130, 0.7);
-	color: #051410;
-	transform: translateY(-2px);
-	box-shadow: 0 4px 12px rgba(0, 220, 130, 0.5);
+	background: var(--sc-btn-hover);
 }
 
 .app-layout :deep(.button-default:disabled) {
-	background: rgba(255, 255, 255, 0.05);
-	color: rgba(255, 255, 255, 0.3);
-	border-color: rgba(255, 255, 255, 0.1);
+	background: var(--sc-input-field-disabled-background);
+	color: var(--sc-gray-50);
+	border-color: var(--sc-gray-20);
+	opacity: 0.6;
 }
 
 .app-layout :deep(.button-default:disabled:hover) {
@@ -268,32 +252,27 @@ body {
 }
 
 .app-layout :deep(.dropdown) {
-	background: rgba(0, 220, 130, 0.6);
-	backdrop-filter: blur(15px);
-	border: 1px solid rgba(0, 220, 130, 0.7);
-	box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+	background: var(--sc-form-background);
+	border: 1px solid var(--sc-form-border);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .app-layout :deep(.dropdown-item) {
-	background: rgba(255, 255, 255, 0.1);
-	color: #0a1f1a;
+	background: var(--sc-form-background);
+	color: var(--sc-gray-80);
 	transition: all 0.2s ease;
-	font-weight: 600;
 }
 
 .app-layout :deep(.dropdown-item:hover) {
-	background: rgba(255, 255, 255, 0.25);
-	color: #051410;
-	transform: translateX(-2px);
+	background: var(--sc-btn-hover);
 }
 
-/* Global Table Styling */
+/* Global Table Styling using Stonecrop theme */
 .app-layout :deep(.atable) {
-	background: rgba(255, 255, 255, 0.95);
-	backdrop-filter: blur(10px);
-	border-radius: 1rem;
-	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-	border: 1px solid rgba(0, 0, 0, 0.05);
+	background: var(--sc-form-background);
+	border-radius: 0.25rem;
+	box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+	border: 1px solid var(--sc-form-border);
 }
 
 .app-layout :deep(.atable tbody tr) {
@@ -302,18 +281,18 @@ body {
 }
 
 .app-layout :deep(.atable tbody tr:hover) {
-	background: rgba(0, 220, 130, 0.05);
+	background: var(--sc-gray-5);
 }
 
 .app-layout :deep(.atable th) {
-	background: rgba(0, 220, 130, 0.1);
-	color: #1a202c;
+	background: var(--sc-gray-10);
+	color: var(--sc-gray-80);
 	font-weight: 600;
 	padding: 1rem;
 }
 
 .app-layout :deep(.atable td) {
 	padding: 1rem;
-	color: #2d3748;
+	color: var(--sc-cell-text-color);
 }
 </style>

@@ -112,8 +112,8 @@ const navigationItems = [
 <style scoped>
 .home-container {
 	min-height: 100vh;
-	background: linear-gradient(135deg, #020420 0%, #0f0f23 100%);
-	color: white;
+	background: var(--sc-brand-color);
+	color: var(--sc-primary-text-color);
 }
 
 .home-header {
@@ -163,20 +163,20 @@ const navigationItems = [
 	position: relative;
 	display: block;
 	padding: 2rem;
-	background: rgba(0, 220, 130, 0.1);
+	background: rgba(255, 255, 255, 0.05);
 	backdrop-filter: blur(10px);
-	border: 1px solid rgba(0, 220, 130, 0.3);
-	border-radius: 1rem;
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	border-radius: 0.5rem;
 	text-decoration: none;
-	color: white;
+	color: var(--sc-primary-text-color);
 	transition: all 0.3s ease;
 }
 
 .nav-card:hover {
-	background: rgba(0, 220, 130, 0.2);
+	background: rgba(255, 255, 255, 0.1);
 	transform: translateY(-4px);
-	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-	border-color: rgba(0, 220, 130, 0.5);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+	border-color: var(--sc-primary-color);
 }
 
 .nav-card h3 {
@@ -210,10 +210,10 @@ const navigationItems = [
 .tech-stack {
 	margin-top: 4rem;
 	padding: 2rem;
-	background: rgba(0, 220, 130, 0.05);
+	background: rgba(255, 255, 255, 0.05);
 	backdrop-filter: blur(10px);
-	border: 1px solid rgba(0, 220, 130, 0.2);
-	border-radius: 1rem;
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	border-radius: 0.5rem;
 }
 
 .features-section h2,
@@ -231,9 +231,9 @@ const navigationItems = [
 
 .feature-card {
 	padding: 1.5rem;
-	background: rgba(0, 220, 130, 0.05);
-	border: 1px solid rgba(0, 220, 130, 0.15);
-	border-radius: 0.75rem;
+	background: rgba(255, 255, 255, 0.03);
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	border-radius: 0.5rem;
 }
 
 .feature-icon {
@@ -271,6 +271,6 @@ const navigationItems = [
 }
 
 .tech-stack strong {
-	color: #00dc82;
+	color: var(--sc-primary-color);
 }
 </style>
