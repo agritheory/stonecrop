@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/stonecrop",
-	"version": "0.5.0",
+	"version": "0.6.0",
 	"description": "schema helper",
 	"license": "MIT",
 	"type": "module",
@@ -38,7 +38,7 @@
 		"_phase:build": "heft build && vite build && rushx docs",
 		"prepublish": "heft build && vite build && rushx docs",
 		"build": "heft build && vite build && rushx docs",
-		"docs": "cd ../common/autoinstallers/doc-tools && node generate-docs.mjs stonecrop",
+		"docs": "bash ../common/scripts/run-docs.sh stonecrop",
 		"lint": "eslint .",
 		"preview": "vite preview",
 		"test": "vitest run --coverage.enabled false",

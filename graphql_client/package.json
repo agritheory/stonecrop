@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/graphql-client",
-	"version": "0.5.0",
+	"version": "0.6.0",
 	"license": "MIT",
 	"type": "module",
 	"author": {
@@ -38,7 +38,7 @@
 		"prepublish": "heft build && vite build && rushx docs",
 		"build": "heft build && vite build && rushx docs",
 		"dev": "vite",
-		"docs": "cd ../common/autoinstallers/doc-tools && node generate-docs.mjs graphql_client",
+		"docs": "bash ../common/scripts/run-docs.sh graphql_client",
 		"lint": "eslint .",
 		"preview": "vite preview"
 	},
