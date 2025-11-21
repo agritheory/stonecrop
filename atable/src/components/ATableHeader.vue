@@ -1,5 +1,6 @@
 <template>
 	<thead v-if="columns.length">
+		<!-- Header row -->
 		<tr class="atable-header-row" tabindex="-1">
 			<th
 				v-if="store.zeroColumn"
@@ -22,11 +23,31 @@
 				<slot>{{ column.label || String.fromCharCode(colKey + 97).toUpperCase() }}</slot>
 			</th>
 		</tr>
+		<!-- Filters row -->
+		<tr v-if="filterableColumns.length > 0" class="atable-filters-row">
+			<th
+				v-if="store.zeroColumn"
+				:class="[
+					store.hasPinnedColumns ? 'sticky-index' : '',
+					store.isTreeView ? 'tree-index' : '',
+					store.config.view === 'list-expansion' ? 'list-expansion-index' : '',
+				]"
+				class="list-index" />
+			<th
+				v-for="(column, colKey) in columns"
+				:key="`filter-${column.name}`"
+				:class="`${column.pinned ? 'sticky-column' : ''}`"
+				:style="store.getHeaderCellStyle(column)">
+				<ATableColumnFilter v-if="column.filterable" :column="column" :col-index="colKey" :store="store" />
+			</th>
+		</tr>
 	</thead>
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { vResizeObserver } from '@vueuse/components'
+import ATableColumnFilter from './ATableColumnFilter.vue'
 import { createTableStore } from '../stores/table'
 import type { TableColumn } from '../types'
 
@@ -34,6 +55,8 @@ const { columns, store } = defineProps<{
 	columns: TableColumn[]
 	store: ReturnType<typeof createTableStore>
 }>()
+
+const filterableColumns = computed(() => columns.filter(column => column.filterable))
 
 const handleSort = (colIndex: number) => store.sortByColumn(colIndex)
 
@@ -81,5 +104,10 @@ th {
 
 .cursor-pointer {
 	cursor: pointer;
+}
+
+.atable-filters-row th {
+	padding: 0.25rem 0.5ch;
+	vertical-align: top;
 }
 </style>

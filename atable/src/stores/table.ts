@@ -582,14 +582,6 @@ export const createTableStore = (initData: {
 			const filterType = column.filterType || 'text'
 			const value = filter.value
 
-			console.log('applyFilter:', {
-				columnName: column.name,
-				filterType,
-				cellValue,
-				filterValue: value,
-				filter,
-			})
-
 			if (!value && filterType !== 'dateRange' && filterType !== 'checkbox') return true
 
 			switch (filterType) {
@@ -602,9 +594,7 @@ export const createTableStore = (initData: {
 					} else {
 						searchableText = String(cellValue || '')
 					}
-					const result = searchableText.toLowerCase().includes(String(value).toLowerCase())
-					console.log('text filter result:', result, 'for', searchableText, 'contains', value)
-					return result
+					return searchableText.toLowerCase().includes(String(value).toLowerCase())
 
 				case 'number':
 					const numValue = Number(cellValue)
@@ -634,20 +624,11 @@ export const createTableStore = (initData: {
 						cellDate = new Date(cellValue)
 					}
 					const filterDate = new Date(value)
-					const dateResult = cellDate.toDateString() === filterDate.toDateString()
-					console.log('date filter:', {
-						cellDate: cellDate.toDateString(),
-						filterDate: filterDate.toDateString(),
-						cellValue,
-						value,
-						result: dateResult,
-					})
-					return dateResult
+					return cellDate.toDateString() === filterDate.toDateString()
 
 				case 'dateRange':
 					const startValue = filter.startValue
 					const endValue = filter.endValue
-					console.log(1, startValue, endValue)
 					if (!startValue && !endValue) return true
 
 					// Handle both timestamp numbers and date strings
@@ -660,7 +641,6 @@ export const createTableStore = (initData: {
 					} else {
 						cellDateRange = new Date(cellValue)
 					}
-					console.log(2, cellDateRange, new Date(startValue), new Date(endValue))
 					if (startValue && cellDateRange < new Date(startValue)) return false
 					if (endValue && cellDateRange > new Date(endValue)) return false
 

@@ -44,14 +44,6 @@ Vue component exported from @stonecrop/atable.
 import { ATable } from '@stonecrop/atable'
 ```
 
-### ATableFilters
-
-Vue component exported from @stonecrop/atable.
-
-```typescript
-import { ATableFilters } from '@stonecrop/atable'
-```
-
 ### ATableHeader
 
 Vue component exported from @stonecrop/atable.

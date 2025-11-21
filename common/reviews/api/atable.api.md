@@ -10,7 +10,6 @@ import AGanttCell from './components/AGanttCell.vue';
 import { App } from 'vue';
 import ARow from './components/ARow.vue';
 import ATable from './components/ATable.vue';
-import ATableFilters from './components/ATableFilters.vue';
 import ATableHeader from './components/ATableHeader.vue';
 import ATableLoading from './components/ATableLoading.vue';
 import ATableLoadingBar from './components/ATableLoadingBar.vue';
@@ -32,8 +31,6 @@ export { AGanttCell }
 export { ARow }
 
 export { ATable }
-
-export { ATableFilters }
 
 export { ATableHeader }
 

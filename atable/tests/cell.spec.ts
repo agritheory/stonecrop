@@ -197,7 +197,6 @@ describe('table cell component', () => {
 
 		const dataCells = wrapper.findAllComponents(ACell)
 		const editableCell = dataCells.at(1)
-		console.log('editableCell', editableCell)
 		expect(editableCell?.exists()).toBe(true)
 
 		// Focus the cell and simulate typing

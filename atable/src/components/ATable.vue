@@ -1,10 +1,6 @@
 <template>
 	<div class="atable-container" style="position: relative">
 		<!-- Main table view -->
-		<slot name="filters" :data="store">
-			<ATableFilters :columns="store.columns" :store="store" />
-		</slot>
-
 		<table
 			ref="table"
 			v-on-click-outside="store.closeModal"
@@ -92,7 +88,6 @@ import { computed, nextTick, onMounted, useTemplateRef, watch } from 'vue'
 
 import AGanttConnection from './AGanttConnection.vue'
 import ARow from './ARow.vue'
-import ATableFilters from './ATableFilters.vue'
 import ATableHeader from './ATableHeader.vue'
 import ATableModal from './ATableModal.vue'
 import { createTableStore } from '../stores/table'
