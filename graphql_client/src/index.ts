@@ -19,19 +19,19 @@ const metaParser = (obj: string): MetaParser => {
 	return JSON.parse(obj, (key, value) => {
 		if (typeof value === 'string') {
 			try {
-				return JSON.parse(value, (key, value) => {
+				return JSON.parse(value, (_key, value) => {
 					if (typeof value === 'string' && !isNaN(Number(value))) {
 						return new Decimal(value)
 					}
 
 					return value
 				})
-			} catch (error) {
+			} catch {
 				// if the value is not a stringified JSON, return as it is
 				return value
 			}
 		} else if (!isNaN(Number(value))) {
-			return new Decimal(value)
+			return new Decimal(value as string | number)
 		}
 		return value
 	})
@@ -47,6 +47,7 @@ const metaParser = (obj: string): MetaParser => {
 const methods = {
 	getMeta: async (doctype: string, url?: string): Promise<MetaResponse> => {
 		const client = new GraphQLClient(url || '/graphql', {
+			fetch: window.fetch,
 			jsonSerializer: {
 				stringify: obj => JSON.stringify(obj), // process the request object before sending; leave as default JSON
 				parse: metaParser, // process the response meta object

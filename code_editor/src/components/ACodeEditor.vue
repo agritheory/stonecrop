@@ -1,6 +1,6 @@
 <template>
 	<div id="editor-container">
-		<div ref="aCodeEditor" id="editor-area"></div>
+		<div id="editor-area" ref="aCodeEditor"></div>
 	</div>
 </template>
 
@@ -11,7 +11,7 @@ import { onMounted, useTemplateRef } from 'vue'
 
 import { theme } from '../theme/code_editor/agritheory'
 
-const { options } = defineProps<{ options?: editor.IStandaloneEditorConstructionOptions }>()
+const { options = {} } = defineProps<{ options?: editor.IStandaloneEditorConstructionOptions }>()
 
 const editorRef = useTemplateRef<HTMLDivElement>('aCodeEditor')
 const editorOptions = {
@@ -28,7 +28,10 @@ onMounted(async () => {
 
 	editor.defineTheme('agritheory', theme)
 	editor.setTheme('agritheory')
-	editor.create(editorRef.value, editorOptions)
+
+	if (editorRef.value) {
+		editor.create(editorRef.value, editorOptions)
+	}
 })
 </script>
 

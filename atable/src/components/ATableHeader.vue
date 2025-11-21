@@ -12,8 +12,8 @@
 				class="list-index" />
 			<th
 				v-for="(column, colKey) in columns"
-				v-resize-observer="onResize"
 				:key="column.name"
+				v-resize-observer="onResize"
 				:data-colindex="colKey"
 				tabindex="-1"
 				:style="store.getHeaderCellStyle(column)"

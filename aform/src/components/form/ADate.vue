@@ -1,10 +1,10 @@
 <template>
 	<div>
 		<input
-			v-model="inputDate"
-			ref="date"
-			type="date"
 			:id="uuid"
+			ref="date"
+			v-model="inputDate"
+			type="date"
 			:disabled="readonly"
 			:required="required"
 			@click="showPicker" />
@@ -19,7 +19,7 @@ import { useTemplateRef } from 'vue'
 import { ComponentProps } from '../../types'
 
 const {
-	schema, // don't remove to allow masking to work
+	_schema, // don't remove to allow masking to work
 	label = 'Date',
 	required,
 	readonly,

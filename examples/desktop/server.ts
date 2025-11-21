@@ -1,138 +1,398 @@
 /* eslint-disable no-console */
 import type { MutableDoctype } from '@stonecrop/stonecrop'
 import { createServer, Model } from 'miragejs'
-
-const doctypeActions: MutableDoctype['actions'] = {
-	LOAD: [
-		(() => {
-			console.log('load event')
-		}).toString(),
-		(() => {
-			console.log('load event side effect')
-		}).toString(),
-	],
-	SAVE: [
-		(() => {
-			console.log('save event')
-		}).toString(),
-		(() => {
-			console.log('after save event')
-		}).toString(),
-	],
-}
+import DbCollection from 'miragejs/db-collection'
 
 export function makeServer() {
 	const server = createServer({
 		models: {
-			todoMeta: Model,
-			todo: Model,
-			issueMeta: Model,
-			issue: Model,
+			'issue-form': Model,
+			'issue-formMeta': Model,
+			'issue-list': Model,
+			'issue-listMeta': Model,
+			'todo-form': Model,
+			'todo-formMeta': Model,
+			'todo-list': Model,
+			'todo-listMeta': Model,
 		},
 
 		seeds(server) {
 			server.db.loadData({
-				todoMeta: {
+				// doctypes list
+				// Updated doctypes list with simplified route structure
+				doctypes: [
+					{
+						id: 'todo',
+						name: 'Todo',
+						slug: 'todo',
+						description: 'Task management - /todo/ (list), /todo/1 (form)',
+						actions: 'View',
+					},
+					{
+						id: 'issue',
+						name: 'Issue',
+						slug: 'issue',
+						description: 'Issue tracking - /issue/ (list), /issue/1 (form)',
+						actions: 'View',
+					},
+				],
+
+				// Todo List doctype
+				'todo-listMeta': {
+					doctype: 'todo-list',
+					schema: [
+						{ fieldname: 'id', label: 'ID', fieldtype: 'Data' },
+						{ fieldname: 'first_name', label: 'First Name', fieldtype: 'Data' },
+						{ fieldname: 'last_name', label: 'Last Name', fieldtype: 'Data' },
+						{ fieldname: 'phone', label: 'Phone', fieldtype: 'Phone' },
+					] as MutableDoctype['schema'],
+					workflow: {
+						id: 'todoList',
+						initial: 'loaded',
+						states: {
+							loaded: { on: { CREATE: 'creating' } },
+							creating: { on: { SAVE: 'loaded', CANCEL: 'loaded' } },
+						},
+					},
+					actions: {
+						// XState transition actions (uppercase convention)
+						CREATE: 'CREATE', // Triggers XState transition action
+						// Field triggers - automatically executed when fields change
+						first_name: ['validateName', 'updateFullName'],
+						last_name: ['validateName', 'updateFullName'],
+						phone: ['validatePhoneFormat', 'notifyPhoneChange'],
+					},
+				},
+				'todo-lists': [
+					{ id: '1', first_name: 'Luke', last_name: 'Skywalker', phone: '+1 123 456 7890' },
+					{ id: '2', first_name: 'Leia', last_name: 'Skywalker', phone: '+1 123 456 7890' },
+					{ id: '3', first_name: 'Anakin', last_name: 'Skywalker', phone: '+1 123 456 7890' },
+				],
+
+				// Todo Form doctype
+				'todo-formMeta': {
+					doctype: 'todo-form',
 					schema: [
 						{
-							name: 'first_name',
+							fieldname: 'header',
+							fieldtype: 'HTML',
+							component: 'div',
+							label: 'Todo Details',
+							value:
+								'<h1>Todo Details</h1><p>Edit task information</p><div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; padding: 12px; margin: 16px 0;"><strong>🔄 Field Trigger Demo:</strong> As you edit fields below, watch for real-time notifications in the top-right corner!</div>',
+						},
+						{
 							fieldname: 'first_name',
 							fieldtype: 'Data',
 							component: 'ATextInput',
 							label: 'First Name',
+							required: true,
 						},
 						{
-							name: 'last_name',
 							fieldname: 'last_name',
 							fieldtype: 'Data',
 							component: 'ATextInput',
 							label: 'Last Name',
+							required: true,
 						},
 						{
-							name: 'phone',
 							fieldname: 'phone',
 							fieldtype: 'Phone',
 							component: 'ATextInput',
 							label: 'Phone',
 							mask: "(locale) => { if (locale === 'en-US') { return '(###) ###-####' } else if (locale === 'en-IN') { return '####-######'} }",
 						},
+						{
+							fieldname: 'email',
+							fieldtype: 'Data',
+							component: 'ATextInput',
+							label: 'Email',
+							placeholder: 'user@example.com',
+						},
+						{
+							fieldname: 'notes',
+							fieldtype: 'Text',
+							component: 'ATextarea',
+							label: 'Notes',
+							placeholder: 'Additional notes about this todo...',
+						},
 					] as MutableDoctype['schema'],
 					workflow: {
-						id: 'todo',
-						initial: 'created',
+						id: 'todoForm',
+						initial: 'editing',
 						states: {
-							created: { on: { LOAD: 'loaded' } },
-							loaded: { on: { SAVE: 'saved' } },
-							saved: {},
+							editing: {
+								on: {
+									SAVE: 'saved',
+									CANCEL: 'cancelled',
+									DELETE: 'deleted',
+								},
+							},
+							saved: { on: { EDIT: 'editing' } },
+							cancelled: {},
+							deleted: {},
 						},
-					} /* as MutableDoctype['workflow'] */,
-					actions: doctypeActions,
+					},
+					actions: {
+						// XState transition actions (uppercase convention)
+						SAVE: ['SAVE'],
+						CANCEL: ['CANCEL'],
+						DELETE: ['DELETE'],
+						// Field triggers - automatically executed when fields change
+						first_name: ['validateName', 'updateFullName', 'logFieldChange'],
+						last_name: ['validateName', 'updateFullName', 'logFieldChange'],
+						phone: ['validatePhoneFormat', 'notifyPhoneChange', 'logFieldChange'],
+						email: ['validateEmailFormat', 'logFieldChange'],
+						notes: ['validateNotes', 'logFieldChange'],
+					},
 				},
-				todos: [
-					{ id: '1', first_name: 'Luke', last_name: 'Skywalker', phone: '+1 123 456 7890' },
-					{ id: '2', first_name: 'Leia', last_name: 'Skywalker', phone: '+1 123 456 7890' },
-					{ id: '3', first_name: 'Anakin', last_name: 'Skywalker', phone: '+1 123 456 7890' },
+				'todo-forms': [
+					{
+						id: '1',
+						first_name: 'Luke',
+						last_name: 'Skywalker',
+						phone: '+1 123 456 7890',
+						email: 'luke@jedi.org',
+						notes: 'A young farm boy from Tatooine',
+					},
+					{
+						id: '2',
+						first_name: 'Leia',
+						last_name: 'Skywalker',
+						phone: '+1 123 456 7890',
+						email: 'leia@rebellion.org',
+						notes: 'Princess and leader of the Rebellion',
+					},
+					{
+						id: '3',
+						first_name: 'Anakin',
+						last_name: 'Skywalker',
+						phone: '+1 123 456 7890',
+						email: 'anakin@empire.gov',
+						notes: 'Former Jedi Knight',
+					},
 				],
-				// transitions: load, report, assign, triage, resolve, archive
-				issueMeta: {
+
+				// Issue List doctype
+				'issue-listMeta': {
+					doctype: 'issue-list',
+					schema: [
+						{ fieldname: 'id', label: 'ID', fieldtype: 'Data' },
+						{ fieldname: 'subject', label: 'Subject', fieldtype: 'Data' },
+						{ fieldname: 'date', label: 'Date', fieldtype: 'Date' },
+						{ fieldname: 'status', label: 'Status', fieldtype: 'Select' },
+					] as MutableDoctype['schema'],
+					workflow: {
+						id: 'issueList',
+						initial: 'loaded',
+						states: {
+							loaded: { on: { CREATE: 'creating' } },
+							creating: { on: { SAVE: 'loaded', CANCEL: 'loaded' } },
+						},
+					},
+					actions: {
+						// XState transition actions (uppercase convention)
+						CREATE: 'CREATE',
+						// Field triggers - automatically executed when fields change
+						subject: ['validateSubject', 'logFieldChange'],
+						status: ['onStatusChange', 'updateTimestamp', 'logFieldChange'],
+						priority: ['onPriorityChange', 'logFieldChange'],
+						description: ['validateDescription', 'logFieldChange'],
+					},
+				},
+				'issue-lists': [
+					{ id: '1', subject: 'First Issue', date: '2022-01-01', status: 'Open', priority: 'High' },
+					{ id: '2', subject: 'Second Issue', date: '2022-01-02', status: 'In Progress', priority: 'Medium' },
+					{ id: '3', subject: 'Third Issue', date: '2022-01-03', status: 'Resolved', priority: 'Low' },
+				],
+
+				// Issue Form doctype
+				'issue-formMeta': {
+					doctype: 'issue-form',
 					schema: [
 						{
-							name: 'subject',
+							fieldname: 'header',
+							fieldtype: 'HTML',
+							component: 'div',
+							label: 'Issue Details',
+							value:
+								'<h1>Issue Details</h1><p>Edit issue information</p><div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; padding: 12px; margin: 16px 0;"><strong>🔄 Field Trigger Demo:</strong> Try changing the status to "Resolved" or priority to "Critical" to see special notifications!</div>',
+						},
+						{
 							fieldname: 'subject',
 							fieldtype: 'Data',
 							component: 'ATextInput',
 							label: 'Subject',
+							required: true,
 						},
 						{
-							name: 'date',
 							fieldname: 'date',
 							fieldtype: 'Date',
 							component: 'ADate',
 							label: 'Date',
+							required: true,
+						},
+						{
+							fieldname: 'description',
+							fieldtype: 'Text',
+							component: 'ATextarea',
+							label: 'Description',
+						},
+						{
+							fieldname: 'status',
+							fieldtype: 'Select',
+							component: 'ASelect',
+							label: 'Status',
+							options: ['Open', 'In Progress', 'Resolved', 'Closed'],
+						},
+						{
+							fieldname: 'priority',
+							fieldtype: 'Select',
+							component: 'ASelect',
+							label: 'Priority',
+							options: ['Low', 'Medium', 'High', 'Critical'],
 						},
 					] as MutableDoctype['schema'],
 					workflow: {
-						id: 'issue',
-						initial: 'created',
+						id: 'issueForm',
+						initial: 'editing',
 						states: {
-							created: { on: { LOAD: 'loaded' } },
-							loaded: { on: { SAVE: 'saved' } },
-							saved: {},
+							editing: {
+								on: {
+									SAVE: 'saved',
+									CANCEL: 'cancelled',
+									DELETE: 'deleted',
+								},
+							},
+							saved: { on: { EDIT: 'editing' } },
+							cancelled: {},
+							deleted: {},
 						},
-					} /* as MutableDoctype['workflow'] */,
-					actions: doctypeActions,
+					},
+					actions: {
+						// XState transition actions (uppercase convention)
+						SAVE: ['SAVE'],
+						CANCEL: ['CANCEL'],
+						DELETE: ['DELETE'],
+						// Field triggers - automatically executed when fields change
+						subject: ['validateSubject', 'logFieldChange'],
+						status: ['onStatusChange', 'updateTimestamp', 'logFieldChange'],
+						priority: ['onPriorityChange', 'validatePriorityStatus', 'logFieldChange'],
+						description: ['validateDescription', 'logFieldChange'],
+						date: ['validateFutureDate', 'logFieldChange'],
+					},
 				},
-				issues: [
-					{ id: '1', subject: 'First Issue', date: '2022-01-01' },
-					{ id: '2', subject: 'Second Issue', date: '2022-01-01' },
-					{ id: '3', subject: 'Third Issue', date: '2022-01-01' },
+				'issue-forms': [
+					{
+						id: '1',
+						subject: 'First Issue',
+						date: '2022-01-01',
+						status: 'Open',
+						priority: 'High',
+						description: 'This is a detailed description of the first issue.',
+					},
+					{
+						id: '2',
+						subject: 'Second Issue',
+						date: '2022-01-02',
+						status: 'In Progress',
+						priority: 'Medium',
+						description: 'This is a detailed description of the second issue.',
+					},
+					{
+						id: '3',
+						subject: 'Third Issue',
+						date: '2022-01-03',
+						status: 'Resolved',
+						priority: 'Low',
+						description: 'This is a detailed description of the third issue.',
+					},
 				],
 			})
 		},
 
 		routes() {
-			// meta
-			this.get('/meta/to-do', schema => {
-				const meta = schema.first('todoMeta')
-				return meta.attrs
-			})
-			this.get('/meta/issue', schema => {
-				const meta = schema.first('issueMeta')
-				return meta.attrs
+			// Route-based meta endpoint that determines doctype from route path
+			this.get('/api/meta', (schema, request) => {
+				const route = request.queryParams.route as string
+
+				if (!route) {
+					return { error: 'Route parameter is required' }
+				}
+
+				// Parse the route to determine doctype and type
+				const pathSegments = route.split('/').filter(segment => segment.length > 0)
+
+				if (pathSegments.length === 0) {
+					return { error: 'Invalid route format' }
+				}
+
+				const doctype = pathSegments[0]
+				let actualDoctype: string
+
+				if (pathSegments.length === 1) {
+					// List route: /todo -> todo-list
+					actualDoctype = `${doctype}-list`
+				} else if (pathSegments.length === 2) {
+					// Form route: /todo/1 -> todo-form
+					actualDoctype = `${doctype}-form`
+				} else {
+					return { error: 'Unsupported route format' }
+				}
+
+				// Get the metadata
+				const metaKey = `${actualDoctype}Meta`
+				const meta = schema.db[metaKey] as any
+
+				// MirageJS stores data as arrays, so get the first item if it's an array
+				if (Array.isArray(meta) && meta.length > 0) {
+					return meta[0]
+				}
+
+				return meta || { error: 'Metadata not found' }
 			})
 
-			// list
-			this.get('/to-do', schema => schema.db.todos)
-			this.get('/issue', schema => schema.db.issues)
+			// Data endpoints
+			this.get('/api/:doctype', (schema, request) => {
+				const doctype = request.params.doctype
 
-			// record
-			this.get('/to-do/:id', schema => {
-				const todo = schema.first('todo')
-				return todo.attrs
+				// Map simplified routes to specific doctypes
+				let actualDoctype = doctype
+				if (doctype === 'todo') {
+					actualDoctype = 'todo-list'
+				} else if (doctype === 'issue') {
+					actualDoctype = 'issue-list'
+				}
+
+				// Handle mapped doctypes
+				const dataKey = `${actualDoctype}s`
+				const records = schema.db[dataKey] as any[]
+				return records || []
 			})
-			this.get('/issue/:id', schema => {
-				const issue = schema.first('issue')
-				return issue.attrs
+
+			// Record endpoints
+			this.get('/api/:doctype/:id', (schema, request) => {
+				const doctype = request.params.doctype
+				const id = request.params.id
+
+				// Map simplified routes to specific doctypes for forms
+				let actualDoctype = doctype
+				if (doctype === 'todo') {
+					actualDoctype = 'todo-form'
+				} else if (doctype === 'issue') {
+					actualDoctype = 'issue-form'
+				}
+
+				const dataKey = `${actualDoctype}s`
+				// @ts-expect-error mismatch between mirage types
+				const records = schema.db[dataKey] as DbCollection
+
+				if (records) {
+					const record = records.find(id)
+					return record || {}
+				}
+
+				return {}
 			})
 
 			// allow other same-domain and external requests to passthrough normally

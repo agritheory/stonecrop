@@ -204,7 +204,7 @@ declare function install(app: App): void;
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| app | `App` |  |
+| app | `App` | Vue app instance |
 
 ### useMqttStream
 
@@ -222,7 +222,7 @@ useMqttStream: (options: IMqttStream) => Promise<{
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| options | `IMqttStream` |  |
+| options | `IMqttStream` | MQTT stream options |
 
 ## Interfaces
 
@@ -251,7 +251,7 @@ export interface IMqttStream {
 **Definition:**
 
 ```typescript
-export type BeamColor = RGB | RGBA | HEX | HSL | HSLA | string;
+export type BeamColor = RGB | RGBA | HEX | HSL | HSLA | CSSProperties['color'];
 ```
 
 ### BeamFilterChoice

@@ -8,15 +8,15 @@
 		:tabindex="tabIndex"
 		:spellcheck="false"
 		:style="cellStyle"
+		class="atable-cell"
+		:class="cellClasses"
 		@focus="onFocus"
 		@paste="updateCellData"
 		@input="debouncedUpdateCellData"
-		@click="onCellClick"
-		class="atable-cell"
-		:class="cellClasses">
+		@click="onCellClick">
 		<component
-			v-if="column.cellComponent"
 			:is="column.cellComponent"
+			v-if="column.cellComponent"
 			:value="displayValue"
 			v-bind="column.cellComponentProps" />
 		<span v-else-if="isHtmlValue" v-html="displayValue" />
@@ -173,7 +173,7 @@ const selectAllText = () => {
 					selection.removeAllRanges()
 					selection.addRange(range)
 				}
-			} catch (error) {
+			} catch {
 				// Fallback for environments where Range API is not fully supported
 				// This is expected in some test environments
 			}
@@ -202,7 +202,7 @@ const saveCursorPosition = () => {
 				return preCaretRange.toString().length
 			}
 		}
-	} catch (error) {
+	} catch {
 		// Fallback for environments where Selection API is not fully supported
 	}
 	return 0
@@ -227,7 +227,7 @@ const restoreCursorPosition = (position: number) => {
 
 		while ((node = walker.nextNode())) {
 			const textNode = node as Text
-			const nextCharIndex = charIndex + textNode.textContent!.length
+			const nextCharIndex = charIndex + textNode.textContent.length
 
 			if (position <= nextCharIndex) {
 				range = document.createRange()
@@ -244,12 +244,14 @@ const restoreCursorPosition = (position: number) => {
 			selection.removeAllRanges()
 			selection.addRange(range)
 		}
-	} catch (error) {
+	} catch {
 		// Fallback for environments where DOM APIs are not fully supported
 	}
 }
 
 const updateCellData = (payload: Event) => {
+	if (!column.edit) return
+
 	const target = payload.target as HTMLTableCellElement
 	if (target.textContent === currentData.value) {
 		return
@@ -264,7 +266,7 @@ const updateCellData = (payload: Event) => {
 	if (column.format) {
 		cellModified.value = target.textContent !== store.getFormattedValue(colIndex, rowIndex, originalData)
 		// TODO: need to setup reverse format function?
-		store.setCellText(colIndex, rowIndex, target.textContent!)
+		store.setCellText(colIndex, rowIndex, target.textContent)
 	} else {
 		cellModified.value = target.textContent !== originalData
 		store.setCellData(colIndex, rowIndex, target.textContent)

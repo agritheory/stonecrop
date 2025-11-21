@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/code-editor",
-	"version": "0.4.34",
+	"version": "0.6.0",
 	"license": "MIT",
 	"type": "module",
 	"author": {
@@ -34,37 +34,37 @@
 		"prepublish": "heft build && vite build && rushx docs",
 		"build": "heft build && vite build && rushx docs",
 		"dev": "vite",
-		"docs": "cd ../common/autoinstallers/doc-tools && node generate-docs.mjs code_editor",
-		"lint": "eslint . --ext .ts,.vue",
+		"docs": "bash ../common/scripts/run-docs.sh code_editor",
+		"lint": "eslint .",
 		"preview": "vite preview"
 	},
 	"dependencies": {
 		"@stonecrop/themes": "workspace:*",
 		"@stonecrop/utilities": "workspace:*",
-		"@monaco-editor/loader": "^1.5.0",
-		"monaco-editor": "^0.52.2",
-		"vue": "^3.5.18"
+		"@monaco-editor/loader": "^1.6.1",
+		"monaco-editor": "^0.54.0",
+		"vue": "^3.5.22"
 	},
 	"devDependencies": {
-		"@microsoft/api-documenter": "^7.26.31",
-		"@rushstack/heft": "^0.74.2",
+		"@eslint/js": "^9.38.0",
+		"@microsoft/api-documenter": "^7.27.3",
+		"@rushstack/heft": "^1.1.3",
 		"@stonecrop/atable": "workspace:*",
-		"@typescript-eslint/eslint-plugin": "^7.18.0",
-		"@typescript-eslint/parser": "^7.18.0",
 		"@vitejs/plugin-vue": "^6.0.1",
-		"cypress": "^14.5.3",
-		"eslint": "^8.57.1",
-		"eslint-config-prettier": "^8.10.0",
-		"eslint-plugin-vue": "^9.33.0",
+		"eslint": "^9.38.0",
+		"eslint-config-prettier": "^10.1.8",
+		"eslint-plugin-vue": "^10.5.1",
+		"globals": "^16.4.0",
 		"stonecrop-rig": "workspace:*",
-		"typescript": "^5.8.3",
-		"vite": "^7.0.6",
-		"vue-router": "^4.5.1"
+		"typescript": "^5.9.3",
+		"typescript-eslint": "^8.46.2",
+		"vite": "^7.1.1",
+		"vue-router": "^4.6.3"
 	},
 	"publishConfig": {
 		"access": "public"
 	},
 	"engines": {
-		"node": ">=20.11.0"
+		"node": ">=22.5.0"
 	}
 }

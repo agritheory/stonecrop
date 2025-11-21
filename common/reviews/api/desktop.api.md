@@ -6,9 +6,8 @@
 
 import ActionSet from './components/ActionSet.vue';
 import CommandPalette from './components/CommandPalette.vue';
-import Doctype from './components/Doctype.vue';
+import Desktop from './components/Desktop.vue';
 import { Plugin as Plugin_2 } from 'vue';
-import Records from './components/Records.vue';
 import SheetNav from './components/SheetNav.vue';
 
 // @public
@@ -25,11 +24,12 @@ export type BaseElement = {
 // @public
 export type ButtonElement = BaseElement & ElementAction & {
     type: 'button';
+    disabled?: boolean;
 };
 
 export { CommandPalette }
 
-export { Doctype }
+export { Desktop }
 
 // @public
 export type DropdownElement = BaseElement & {
@@ -42,8 +42,6 @@ export type ElementAction = BaseElement & {
     link?: string;
     action?: () => void;
 };
-
-export { Records }
 
 export { SheetNav }
 

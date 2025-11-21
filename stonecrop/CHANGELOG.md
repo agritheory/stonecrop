@@ -1,6 +1,39 @@
 # Change Log - @stonecrop/stonecrop
 
-This log was last generated on Fri, 22 Aug 2025 11:51:31 GMT and should not be manually modified.
+This log was last generated on Fri, 14 Nov 2025 09:26:38 GMT and should not be manually modified.
+
+## 0.6.0
+Fri, 14 Nov 2025 09:26:38 GMT
+
+### Patches
+
+- update docs script
+
+## 0.5.0
+Wed, 05 Nov 2025 12:38:13 GMT
+
+### Minor changes
+
+- update data structure to HST
+
+## 0.4.37
+Fri, 31 Oct 2025 12:25:20 GMT
+
+### Patches
+
+- update dependencies
+
+## 0.4.36
+Mon, 27 Oct 2025 18:08:26 GMT
+
+### Patches
+
+- bump dependencies
+
+## 0.4.35
+Wed, 24 Sep 2025 13:45:35 GMT
+
+_Version update only_
 
 ## 0.4.34
 Fri, 22 Aug 2025 11:51:31 GMT

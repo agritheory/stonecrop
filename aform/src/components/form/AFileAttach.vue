@@ -11,10 +11,10 @@
 			</div>
 		</template>
 
-		<button type="button" @click="open()" class="aform_form-btn">
+		<button type="button" class="aform_form-btn" @click="open()">
 			{{ label }}
 		</button>
-		<button type="button" :disabled="!files" @click="reset()" class="aform_form-btn">Reset</button>
+		<button type="button" :disabled="!files" class="aform_form-btn" @click="reset()">Reset</button>
 	</div>
 </template>
 

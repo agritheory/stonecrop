@@ -1,6 +1,6 @@
 <template>
 	<tr v-bind="$attrs" ref="rowEl" :tabindex="tabIndex" class="expandable-row">
-		<td :tabIndex="-1" @click="store.toggleRowExpand(rowIndex)" class="row-index">
+		<td :tabIndex="-1" class="row-index" @click="store.toggleRowExpand(rowIndex)">
 			{{ rowExpandSymbol }}
 		</td>
 		<slot name="row" />
@@ -13,7 +13,7 @@
 </template>
 
 <script setup lang="ts">
-import { type KeypressHandlers, useKeyboardNav } from '@stonecrop/utilities'
+import { defaultKeypressHandlers, type KeypressHandlers, useKeyboardNav } from '@stonecrop/utilities'
 import { computed, useTemplateRef } from 'vue'
 
 import { createTableStore } from '../stores/table'
@@ -22,7 +22,7 @@ const {
 	rowIndex,
 	store,
 	tabIndex = -1,
-	addNavigation,
+	addNavigation = defaultKeypressHandlers,
 } = defineProps<{
 	rowIndex: number
 	store: ReturnType<typeof createTableStore>

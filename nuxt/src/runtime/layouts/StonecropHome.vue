@@ -1,5 +1,4 @@
 <template>
-	<div>Stonecrop Home</div>
 	<pre>{{ stonecrop }}</pre>
 </template>
 

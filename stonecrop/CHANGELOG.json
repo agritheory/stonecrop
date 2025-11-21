@@ -2,6 +2,60 @@
   "name": "@stonecrop/stonecrop",
   "entries": [
     {
+      "version": "0.6.0",
+      "tag": "@stonecrop/stonecrop_v0.6.0",
+      "date": "Fri, 14 Nov 2025 09:26:38 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "update docs script"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.5.0",
+      "tag": "@stonecrop/stonecrop_v0.5.0",
+      "date": "Wed, 05 Nov 2025 12:38:13 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "update data structure to HST"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.4.37",
+      "tag": "@stonecrop/stonecrop_v0.4.37",
+      "date": "Fri, 31 Oct 2025 12:25:20 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "update dependencies"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.4.36",
+      "tag": "@stonecrop/stonecrop_v0.4.36",
+      "date": "Mon, 27 Oct 2025 18:08:26 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "bump dependencies"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.4.35",
+      "tag": "@stonecrop/stonecrop_v0.4.35",
+      "date": "Wed, 24 Sep 2025 13:45:35 GMT",
+      "comments": {}
+    },
+    {
       "version": "0.4.34",
       "tag": "@stonecrop/stonecrop_v0.4.34",
       "date": "Fri, 22 Aug 2025 11:51:31 GMT",

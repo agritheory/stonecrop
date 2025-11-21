@@ -1039,7 +1039,7 @@ createTableStore: (initData: {
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| initData | `{ columns: TableColumn[]; rows: TableRow[]; id?: string; config?: TableConfig; modal?: TableModal; }` |  |
+| initData | `{ columns: TableColumn[]; rows: TableRow[]; id?: string; config?: TableConfig; modal?: TableModal; }` | Initial data for the table store |
 
 ### install
 
@@ -1055,7 +1055,7 @@ declare function install(app: App): void;
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| app | `App` |  |
+| app | `App` | Vue app instance |
 
 ## Interfaces
 
@@ -1323,8 +1323,7 @@ export interface TableColumn {
 | name | `string` | The key of the column. This is used to identify the column in the table. |
 | originalIndex? | `number` | The original column index for the Gantt bar, excluding any pinned columns. This is evaluated automatically while rendering the table. Only applicable for Gantt tables. |
 | pinned? | `boolean` | Control whether the column should be pinned to the table. |
-| resizable? | `boolean` |  |
-| sortable? | `boolean` | Control whether the column should be sortable. |
+| resizable? | `boolean` | Control whether the column can be resized by the user. |
 | type? | `string` | `Data` (the column contains text data), `Select` (the column contains a select input), `Date` (the column contains a date input), `component` (the column contains a custom component) |
 | width? | `string` | The width of the column. This can be a number (in pixels) or a string (in CSS units). |
 

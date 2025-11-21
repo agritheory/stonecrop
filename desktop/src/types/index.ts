@@ -23,6 +23,7 @@ export type ElementAction = BaseElement & {
 export type ButtonElement = BaseElement &
 	ElementAction & {
 		type: 'button'
+		disabled?: boolean
 	}
 
 /**

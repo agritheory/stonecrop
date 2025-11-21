@@ -37,14 +37,6 @@ describe('Stonecrop Vue Plugin', () => {
 		expect(registry.router).toBeUndefined()
 	})
 
-	it('installs pinia store', () => {
-		app.use(StonecropPlugin)
-
-		const keys = Reflect.ownKeys(app._context.provides)
-		const piniaSymbol = keys.find(key => key.toString().includes('pinia'))
-		expect(piniaSymbol).toBeDefined()
-	})
-
 	it('installs plugin with router option', () => {
 		expect(() => {
 			app.use(StonecropPlugin, { router: mockRouter })

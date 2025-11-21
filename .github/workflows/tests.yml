@@ -37,12 +37,12 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Install Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 22
           cache-dependency-path: '**/config/rush/pnpm-lock.yaml'
           registry-url: https://registry.npmjs.org/
 
@@ -51,10 +51,7 @@ jobs:
 
       - name: Update Autoinstallers
         run: |
-          # Only update autoinstallers that exist in this branch
-          if [ -f "common/autoinstallers/doc-tools/package.json" ]; then
-            node common/scripts/install-run-rush.js update-autoinstaller --name doc-tools
-          fi
+          node common/scripts/install-run-rush.js update-autoinstaller --name doc-tools
           node common/scripts/install-run-rush.js update-autoinstaller --name rush-plugins
           node common/scripts/install-run-rush.js update-autoinstaller --name rush-prettier
 

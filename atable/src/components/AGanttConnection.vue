@@ -40,13 +40,13 @@
 			<!-- Visible connection path -->
 			<path
 				v-for="connection in visibleConnections"
+				:id="connection.id"
 				:key="connection.id"
 				:d="getPathData(connection)"
 				:stroke="connection.style?.color || '#666'"
 				:stroke-width="connection.style?.width || 2"
 				fill="none"
 				marker-mid="url(#arrowhead-marker)"
-				:id="connection.id"
 				class="connection-path animated-path"
 				@dblclick="handleConnectionDelete(connection)" />
 		</svg>
@@ -78,7 +78,7 @@ const visibleConnections = computed(() => {
 	})
 })
 
-const getPathData = (connection: ConnectionPath, isMarker: Boolean = false) => {
+const getPathData = (connection: ConnectionPath) => {
 	const fromHandle = store.connectionHandles.find(
 		handle => handle.barId === connection.from.barId && handle.side === connection.from.side
 	)

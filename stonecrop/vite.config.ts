@@ -23,11 +23,17 @@ export default defineConfig({
 					vue: 'Vue',
 				},
 			},
+			onwarn(warning, warn) {
+				// Suppress the mixed exports warning since it's expected for Vue plugins
+				if (warning.code === 'MIXED_EXPORTS') return
+				warn(warning)
+			},
 		},
 	},
 	test: {
 		globals: true,
 		environment: 'jsdom',
+		setupFiles: ['./tests/setup.ts'],
 		coverage: {
 			enabled: true,
 			provider: 'istanbul',
@@ -40,6 +46,7 @@ export default defineConfig({
 				functions: 70,
 				statements: 70,
 			},
+			include: ['src/**/*.{ts,vue}'],
 			exclude: [
 				...coverageConfigDefaults.exclude,
 				'src/index.ts', // ignore the entry file
