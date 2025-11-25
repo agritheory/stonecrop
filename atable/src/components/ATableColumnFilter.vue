@@ -35,20 +35,20 @@
 			v-model="filterValue"
 			type="date"
 			class="filter-input"
-			@input="updateFilter(filterValue)" />
+			@change="updateFilter(filterValue)" />
 
 		<div v-else-if="column.filterType === 'dateRange'" class="date-range-filter">
 			<input
 				v-model="dateFilter.startValue"
 				type="date"
 				class="filter-input"
-				@input="updateDateRangeFilter('start', dateFilter.startValue)" />
+				@change="updateDateRangeFilter('start', dateFilter.startValue)" />
 			<span class="clear-btn"> - </span>
 			<input
 				v-model="dateFilter.endValue"
 				type="date"
 				class="filter-input"
-				@input="updateDateRangeFilter('end', dateFilter.endValue)" />
+				@change="updateDateRangeFilter('end', dateFilter.endValue)" />
 		</div>
 
 		<component
