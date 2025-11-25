@@ -157,7 +157,13 @@ const columns_filterable: TableColumn[] = [
 		width: '20ch',
 		sortable: true,
 		filterable: true,
-		filterType: 'select', // Auto-generate options from data
+		filterType: 'select',
+		filterOptions: [
+			{ label: 'GET', value: 'GET' },
+			{ label: 'POST', value: 'POST' },
+			{ label: 'PUT', value: 'PUT' },
+			{ label: 'DELETE', value: 'DELETE' },
+		],
 	},
 	{
 		label: 'Status',

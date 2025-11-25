@@ -664,15 +664,6 @@ export const createTableStore = (initData: {
 			delete filterState.value[colIndex]
 		}
 
-		const clearAllFilters = () => {
-			filterState.value = {}
-		}
-
-		const clearSort = () => {
-			sortState.value.column = null
-			sortState.value.direction = null
-		}
-
 		return {
 			// state
 			columns,
@@ -698,9 +689,7 @@ export const createTableStore = (initData: {
 			zeroColumn,
 
 			// actions
-			clearAllFilters,
 			clearFilter,
-			clearSort,
 			closeModal,
 			createConnection,
 			deleteConnection,

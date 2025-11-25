@@ -340,9 +340,7 @@ createTableStore: (initData: {
     isDependencyGraphEnabled: import("vue").ComputedRef<boolean>;
     numberedRowWidth: import("vue").ComputedRef<string>;
     zeroColumn: import("vue").ComputedRef<boolean>;
-    clearAllFilters: () => void;
     clearFilter: (colIndex: number) => void;
-    clearSort: () => void;
     closeModal: (event: MouseEvent) => void;
     createConnection: (fromHandleId: string, toHandleId: string, options?: {
         style?: ConnectionPath["style"];
@@ -651,9 +649,7 @@ createTableStore: (initData: {
     isDependencyGraphEnabled: import("vue").ComputedRef<boolean>;
     numberedRowWidth: import("vue").ComputedRef<string>;
     zeroColumn: import("vue").ComputedRef<boolean>;
-    clearAllFilters: () => void;
     clearFilter: (colIndex: number) => void;
-    clearSort: () => void;
     closeModal: (event: MouseEvent) => void;
     createConnection: (fromHandleId: string, toHandleId: string, options?: {
         style?: ConnectionPath["style"];
@@ -962,9 +958,7 @@ createTableStore: (initData: {
     isDependencyGraphEnabled: import("vue").ComputedRef<boolean>;
     numberedRowWidth: import("vue").ComputedRef<string>;
     zeroColumn: import("vue").ComputedRef<boolean>;
-    clearAllFilters: () => void;
     clearFilter: (colIndex: number) => void;
-    clearSort: () => void;
     closeModal: (event: MouseEvent) => void;
     createConnection: (fromHandleId: string, toHandleId: string, options?: {
         style?: ConnectionPath["style"];
@@ -1024,7 +1018,7 @@ createTableStore: (initData: {
     unregisterGanttBar: (barId: string) => void;
     updateGanttBar: (event: GanttDragEvent) => void;
     updateRows: (newRows: TableRow[]) => void;
-}, "clearAllFilters" | "clearFilter" | "clearSort" | "closeModal" | "createConnection" | "deleteConnection" | "getCellData" | "getCellDisplayValue" | "getConnectionsForBar" | "getFormattedValue" | "getHandlesForBar" | "getHeaderCellStyle" | "getIndent" | "getRowExpandSymbol" | "isRowGantt" | "isRowVisible" | "registerConnectionHandle" | "registerGanttBar" | "resizeColumn" | "setCellData" | "setCellText" | "setFilter" | "sortByColumn" | "toggleRowExpand" | "unregisterConnectionHandle" | "unregisterGanttBar" | "updateGanttBar" | "updateRows">>
+}, "clearFilter" | "closeModal" | "createConnection" | "deleteConnection" | "getCellData" | "getCellDisplayValue" | "getConnectionsForBar" | "getFormattedValue" | "getHandlesForBar" | "getHeaderCellStyle" | "getIndent" | "getRowExpandSymbol" | "isRowGantt" | "isRowVisible" | "registerConnectionHandle" | "registerGanttBar" | "resizeColumn" | "setCellData" | "setCellText" | "setFilter" | "sortByColumn" | "toggleRowExpand" | "unregisterConnectionHandle" | "unregisterGanttBar" | "updateGanttBar" | "updateRows">>
 ```
 
 **Parameters:**
