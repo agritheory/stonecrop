@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@stonecrop/atable",
-      "comment": "Sorting and Filtering feature added by props",
+      "comment": "Added a new component that allows sorting and filtering props, resolving issue #258.",
       "type": "patch"
     }
   ],

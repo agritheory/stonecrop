@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/stonecrop",
+      "comment": "Edited API.md to document new sorting and filtering features in ATable component.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@stonecrop/stonecrop"
+}
