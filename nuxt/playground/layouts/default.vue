@@ -6,7 +6,14 @@ import type { ActionElements } from '../../../desktop/src/types'
 const route = useRoute()
 const router = useRouter()
 
-const isHome = computed(() => route.path === '/')
+// Use route.path to check if we're on home page
+// Default to false (non-home) to prevent flash of home styles on other pages
+const isHome = computed(() => {
+	return route.path === '/'
+})
+
+// Form actions from pages
+const { getActionSetElements } = useFormActions()
 
 // Breadcrumbs based on current route
 const breadcrumbs = computed(() => {
@@ -39,7 +46,7 @@ const breadcrumbs = computed(() => {
 			if (parent === 'users') title = `User: ${segment.slice(0, 8)}`
 			else if (parent === 'roles') title = `Role: ${segment.slice(0, 8)}`
 			else if (parent === 'role-profiles') title = `Profile: ${segment.slice(0, 8)}`
-			else if (parent === 'ability-rules') title = `Rule: ${segment.slice(0, 8)}`
+			else if (parent === 'ability-rules') title = `Ability Rule: ${segment.slice(0, 8)}`
 			else if (parent === 'doctypes') title = `DocType: ${segment}`
 			else if (parent === 'builder') title = `Builder: ${segment}`
 		}
@@ -50,9 +57,12 @@ const breadcrumbs = computed(() => {
 	return crumbs
 })
 
-// ActionSet elements - enhanced with navigation links
+// ActionSet elements - enhanced with navigation links and form actions
 const actionSetElements = computed<ActionElements[]>(() => {
 	const elements: ActionElements[] = []
+
+	// Add form actions first (Undo, Redo, Cancel, Save)
+	elements.push(...getActionSetElements())
 
 	// Navigation dropdown (always available except on home)
 	if (!isHome.value) {
@@ -96,8 +106,13 @@ const handleActionClick = async (label: string, action?: () => void | Promise<vo
 			<slot />
 		</main>
 
-		<!-- SheetNav Footer (hidden on home page) -->
-		<SheetNav v-if="!isHome && breadcrumbs.length > 0" :breadcrumbs="breadcrumbs" />
+		<!-- SheetNav Footer (hidden on home page) - client-only to avoid hydration issues -->
+		<ClientOnly v-if="!isHome && breadcrumbs.length > 0">
+			<SheetNav :breadcrumbs="breadcrumbs" />
+			<template #fallback>
+				<div class="sheetnav-placeholder" />
+			</template>
+		</ClientOnly>
 
 		<!-- ActionSet Floating Controls (hidden on home page) -->
 		<ActionSet
@@ -142,8 +157,13 @@ body {
 	padding: 2rem;
 }
 
-/* Apply container background to non-home pages */
-.app-layout:not(.is-home) .app-main > :deep(*:first-child) {
+/* Remove padding when app-main contains a sidebar layout to prevent overflow */
+.app-main:has(> .page-container-with-sidebar) {
+	padding: 0;
+}
+
+/* Apply container background to non-home pages (skip pages with sidebar layouts) */
+.app-layout:not(.is-home) .app-main > :deep(*:first-child:not(.page-container-with-sidebar)) {
 	background: var(--sc-form-background);
 	border-radius: 0.25rem;
 	padding: 2rem;
@@ -151,59 +171,26 @@ body {
 	border: 1px solid var(--sc-form-border);
 }
 
+/* For pages with sidebar, remove outer padding to prevent overflow */
+.app-layout:not(.is-home) .app-main > :deep(.page-container-with-sidebar) {
+	background: transparent;
+	border: none;
+	box-shadow: none;
+}
+
 /* Home page styling */
 .app-layout.is-home {
 	color: var(--sc-primary-text-color);
 }
 
-/* SheetNav styles using Stonecrop theme */
-.app-layout :deep(footer) {
-	padding: 0 1rem 0 0;
-}
-
-.app-layout :deep(.tabs a) {
-	color: var(--sc-gray-80);
-	background: var(--sc-btn-color);
-	border: 1px solid var(--sc-btn-border);
-	transition: all 0.2s ease;
-}
-
-.app-layout :deep(.tabs a:hover) {
-	background: var(--sc-btn-hover);
-}
-
-.app-layout :deep(.router-link-active) {
-	background: var(--sc-primary-color) !important;
-	border-color: var(--sc-primary-color) !important;
-	color: var(--sc-primary-text-color) !important;
-}
-
-.app-layout :deep(.hidebreadcrumbs a),
-.app-layout :deep(.hometab a),
-.app-layout :deep(.searchtab a) {
-	background: var(--sc-btn-color);
-	border: 1px solid var(--sc-btn-border);
-	color: var(--sc-gray-80);
-}
-
-.app-layout :deep(.hidebreadcrumbs a:hover),
-.app-layout :deep(.hometab a:hover),
-.app-layout :deep(.searchtab a:hover) {
-	background: var(--sc-btn-hover);
-}
-
-.app-layout :deep(.hometab svg path),
-.app-layout :deep(.searchtab svg path) {
-	fill: var(--sc-gray-80);
-}
-
-.app-layout :deep(.searchtab input) {
-	border-bottom-color: var(--sc-input-active-border-color);
-	color: var(--sc-gray-80);
-}
-
-.app-layout :deep(.searchtab input::placeholder) {
-	color: var(--sc-input-label-color);
+/* SheetNav placeholder for SSR */
+.sheetnav-placeholder {
+	position: fixed;
+	bottom: 0;
+	right: 0;
+	height: 2.6rem;
+	width: 200px;
+	background: transparent;
 }
 
 /* ActionSet styles using Stonecrop theme */
@@ -222,7 +209,7 @@ body {
 
 .app-layout :deep(.action-set.collapse:hover),
 .app-layout :deep(.action-set.collapse.open-set) {
-	max-width: 500px !important;
+	max-width: 600px !important;
 }
 
 .app-layout :deep(.action-menu-icon svg) {
@@ -234,6 +221,12 @@ body {
 	color: var(--sc-btn-label-color);
 	border: 1px solid var(--sc-btn-border);
 	transition: all 0.2s ease;
+	/* Ensure consistent height for all buttons regardless of content */
+	height: 27px;
+	line-height: 1;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
 }
 
 .app-layout :deep(.button-default:hover) {

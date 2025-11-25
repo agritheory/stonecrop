@@ -130,7 +130,6 @@ const layout = ref<Layout>({})
 const loading = ref(true)
 
 const config: TableConfig = {
-	fullWidth: true,
 	view: 'uncounted',
 }
 

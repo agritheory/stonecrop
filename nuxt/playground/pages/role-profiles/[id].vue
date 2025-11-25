@@ -74,28 +74,29 @@ async function handleSave() {
 function handleCancel() {
 	router.back()
 }
+
+// Set up form actions for the ActionSet toolbar
+const { setFormActions, clearFormActions } = useFormActions()
+
+watchEffect(() => {
+	setFormActions({
+		undo: profileId.value !== 'new' ? { action: undo, disabled: !canUndo.value } : undefined,
+		redo: profileId.value !== 'new' ? { action: redo, disabled: !canRedo.value } : undefined,
+		cancel: { action: handleCancel },
+		save: { action: handleSave },
+	})
+})
+
+// Clear form actions when leaving the page
+onUnmounted(() => {
+	clearFormActions()
+})
 </script>
 
 <template>
 	<div class="page-container-with-sidebar">
 		<!-- Main Content -->
 		<div class="main-content">
-			<!-- HST Breadcrumbs -->
-			<ClientOnly>
-				<HSTBreadcrumbs v-if="profileId !== 'new'" doctype="role-profile" :record-id="profileId" />
-			</ClientOnly>
-
-			<div class="page-header">
-				<h1>{{ profileId === 'new' ? 'New Role Profile' : `Profile: ${profileData.profile_name}` }}</h1>
-				<div class="button-group">
-					<!-- HST Controls -->
-					<button v-if="profileId !== 'new'" :disabled="!canUndo" class="btn-icon" title="Undo" @click="undo">↶</button>
-					<button v-if="profileId !== 'new'" :disabled="!canRedo" class="btn-icon" title="Redo" @click="redo">↷</button>
-					<button class="btn-secondary" @click="handleCancel">Cancel</button>
-					<button class="btn-primary" @click="handleSave">Save</button>
-				</div>
-			</div>
-
 			<div class="form-container">
 				<ClientOnly>
 					<AForm v-model="(profileDoctype as any).schema" :data="profileData" />

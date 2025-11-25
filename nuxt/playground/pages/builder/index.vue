@@ -28,7 +28,6 @@ const columns: TableColumn[] = [
 ]
 
 const config: TableConfig = {
-	fullWidth: true,
 	view: 'uncounted',
 }
 

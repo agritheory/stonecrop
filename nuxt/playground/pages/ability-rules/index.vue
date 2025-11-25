@@ -6,14 +6,14 @@
 		</div>
 		<ClientOnly>
 			<div @click="handleTableClick">
-				<ATable :columns="columns" :rows="abilityRules" :config="config" />
+				<ATable :columns="columns" :rows="abilityRules" />
 			</div>
 		</ClientOnly>
 	</div>
 </template>
 
 <script setup lang="ts">
-import type { TableColumn, TableConfig, TableRow } from '@stonecrop/atable'
+import type { TableColumn, TableRow } from '@stonecrop/atable'
 
 const route = useRoute()
 const router = useRouter()
@@ -29,10 +29,6 @@ const columns: TableColumn[] = [
 	{ label: 'Inverted', name: 'inverted', type: 'Check', width: '10ch' },
 	{ label: 'Active', name: 'active', type: 'Check', width: '10ch' },
 ]
-
-const config: TableConfig = {
-	fullWidth: true,
-}
 
 function handleTableClick(event: MouseEvent) {
 	// Find the closest row element

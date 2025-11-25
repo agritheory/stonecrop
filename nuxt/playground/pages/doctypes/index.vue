@@ -5,13 +5,13 @@
 			<button class="btn-primary" @click="handleNew">New DocType</button>
 		</div>
 		<ClientOnly>
-			<ATable :columns="columns" :rows="doctypes" :config="config" @row-click="handleRowClick" />
+			<ATable :columns="columns" :rows="doctypes" @row-click="handleRowClick" />
 		</ClientOnly>
 	</div>
 </template>
 
 <script setup lang="ts">
-import type { TableRow, TableColumn, TableConfig } from '@stonecrop/atable'
+import type { TableRow, TableColumn } from '@stonecrop/atable'
 
 const router = useRouter()
 
@@ -24,10 +24,6 @@ const columns: TableColumn[] = [
 	{ label: 'Submittable', name: 'is_submittable', type: 'Check', width: '12ch' },
 	{ label: 'Tree', name: 'is_tree', type: 'Check', width: '10ch' },
 ]
-
-const config: TableConfig = {
-	fullWidth: true,
-}
 
 function handleRowClick(row: any) {
 	router.push(`/doctypes/${row.id}`)

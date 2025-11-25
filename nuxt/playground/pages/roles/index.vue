@@ -6,14 +6,14 @@
 		</div>
 		<ClientOnly>
 			<div @click="handleTableClick">
-				<ATable :columns="columns" :rows="roles" :config="config" />
+				<ATable :columns="columns" :rows="roles" />
 			</div>
 		</ClientOnly>
 	</div>
 </template>
 
 <script setup lang="ts">
-import type { TableColumn, TableConfig, TableRow } from '@stonecrop/atable'
+import type { TableColumn, TableRow } from '@stonecrop/atable'
 
 const router = useRouter()
 
@@ -32,10 +32,6 @@ const columns: TableColumn[] = [
 	{ label: 'Description', name: 'description', type: 'Text', width: '40ch' },
 	{ label: 'Active', name: 'active', type: 'Check', width: '10ch' },
 ]
-
-const config: TableConfig = {
-	fullWidth: true,
-}
 
 function handleNewRole() {
 	router.push('/roles/new')
