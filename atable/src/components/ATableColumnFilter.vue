@@ -5,21 +5,17 @@
 			v-model="filterValue"
 			type="text"
 			class="filter-input"
-			@input="updateFilter('text', filterValue)" />
+			@input="updateFilter(filterValue)" />
 
 		<input
 			v-else-if="column.filterType === 'number'"
 			v-model="filterValue"
 			type="number"
 			class="filter-input"
-			@input="updateFilter('number', filterValue)" />
+			@input="updateFilter(filterValue)" />
 
 		<label v-else-if="column.filterType === 'checkbox'" class="checkbox-filter">
-			<input
-				v-model="filterValue"
-				type="checkbox"
-				class="filter-checkbox"
-				@change="updateFilter('checkbox', filterValue)" />
+			<input v-model="filterValue" type="checkbox" class="filter-checkbox" @change="updateFilter(filterValue)" />
 			<span>{{ column.label }}</span>
 		</label>
 
@@ -27,7 +23,7 @@
 			v-else-if="column.filterType === 'select'"
 			v-model="filterValue"
 			class="filter-select"
-			@change="updateFilter('select', filterValue)">
+			@change="updateFilter(filterValue)">
 			<option value="">All</option>
 			<option v-for="option in getSelectOptions(column)" :key="option.value || option" :value="option.value || option">
 				{{ option.label || option }}
@@ -39,7 +35,7 @@
 			v-model="filterValue"
 			type="date"
 			class="filter-input"
-			@input="updateFilter('date', filterValue)" />
+			@input="updateFilter(filterValue)" />
 
 		<div v-else-if="column.filterType === 'dateRange'" class="date-range-filter">
 			<input
@@ -62,7 +58,7 @@
 			:column="column"
 			:colIndex="colIndex"
 			:store="store"
-			@update:value="updateFilter('component', $event)" />
+			@update:value="updateFilter($event)" />
 
 		<button v-if="hasActiveFilter" @click="clearFilter" class="clear-btn" title="Clear">×</button>
 	</div>
@@ -108,13 +104,13 @@ const hasActiveFilter = computed(() => {
 })
 
 // Filter actions
-const updateFilter = (type: string, value: any) => {
-	if (!value && type !== 'checkbox') {
+const updateFilter = (value: any) => {
+	if (!value && column.filterType !== 'checkbox') {
 		store.clearFilter(colIndex)
 		filterValue.value = ''
 	} else {
 		filterValue.value = value
-		store.setFilter(colIndex, { type, value })
+		store.setFilter(colIndex, { value })
 	}
 }
 
@@ -129,7 +125,6 @@ const updateDateRangeFilter = (rangeType: 'start' | 'end', value: any) => {
 		store.clearFilter(colIndex)
 	} else {
 		store.setFilter(colIndex, {
-			type: 'dateRange',
 			value: null,
 			startValue: dateFilter.startValue,
 			endValue: dateFilter.endValue,

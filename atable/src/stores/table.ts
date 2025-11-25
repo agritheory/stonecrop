@@ -194,7 +194,6 @@ export const createTableStore = (initData: {
 			Record<
 				number,
 				{
-					type: string
 					value: any
 					startValue?: any
 					endValue?: any
@@ -651,7 +650,7 @@ export const createTableStore = (initData: {
 			}
 		}
 
-		const setFilter = (colIndex: number, filter: { type: string; value: any; startValue?: any; endValue?: any }) => {
+		const setFilter = (colIndex: number, filter: { value: any; startValue?: any; endValue?: any }) => {
 			if (!filter.value && !filter.startValue && !filter.endValue) {
 				// Remove filter if empty
 				delete filterState.value[colIndex]

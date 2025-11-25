@@ -230,12 +230,10 @@ createTableStore: (initData: {
     }[]>;
     display: import("vue").WritableComputedRef<TableDisplay[], TableDisplay[]>;
     filterState: import("vue").Ref<Record<number, {
-        type: string;
         value: any;
         startValue?: any;
         endValue?: any;
     }>, Record<number, {
-        type: string;
         value: any;
         startValue?: any;
         endValue?: any;
@@ -389,7 +387,6 @@ createTableStore: (initData: {
     setCellData: (colIndex: number, rowIndex: number, value: any) => void;
     setCellText: (colIndex: number, rowIndex: number, value: string) => void;
     setFilter: (colIndex: number, filter: {
-        type: string;
         value: any;
         startValue?: any;
         endValue?: any;
@@ -539,12 +536,10 @@ createTableStore: (initData: {
     }[]>;
     display: import("vue").WritableComputedRef<TableDisplay[], TableDisplay[]>;
     filterState: import("vue").Ref<Record<number, {
-        type: string;
         value: any;
         startValue?: any;
         endValue?: any;
     }>, Record<number, {
-        type: string;
         value: any;
         startValue?: any;
         endValue?: any;
@@ -698,7 +693,6 @@ createTableStore: (initData: {
     setCellData: (colIndex: number, rowIndex: number, value: any) => void;
     setCellText: (colIndex: number, rowIndex: number, value: string) => void;
     setFilter: (colIndex: number, filter: {
-        type: string;
         value: any;
         startValue?: any;
         endValue?: any;
@@ -848,12 +842,10 @@ createTableStore: (initData: {
     }[]>;
     display: import("vue").WritableComputedRef<TableDisplay[], TableDisplay[]>;
     filterState: import("vue").Ref<Record<number, {
-        type: string;
         value: any;
         startValue?: any;
         endValue?: any;
     }>, Record<number, {
-        type: string;
         value: any;
         startValue?: any;
         endValue?: any;
@@ -1007,7 +999,6 @@ createTableStore: (initData: {
     setCellData: (colIndex: number, rowIndex: number, value: any) => void;
     setCellText: (colIndex: number, rowIndex: number, value: string) => void;
     setFilter: (colIndex: number, filter: {
-        type: string;
         value: any;
         startValue?: any;
         endValue?: any;

@@ -243,12 +243,10 @@ label?: string | undefined;
 }[]>;
 display: WritableComputedRef<TableDisplay[], TableDisplay[]>;
 filterState: Ref<Record<number, {
-type: string;
 value: any;
 startValue?: any;
 endValue?: any;
 }>, Record<number, {
-type: string;
 value: any;
 startValue?: any;
 endValue?: any;
@@ -402,7 +400,6 @@ resizeColumn: (colIndex: number, newWidth: number) => void;
 setCellData: (colIndex: number, rowIndex: number, value: any) => void;
 setCellText: (colIndex: number, rowIndex: number, value: string) => void;
 setFilter: (colIndex: number, filter: {
-type: string;
 value: any;
 startValue?: any;
 endValue?: any;
@@ -552,12 +549,10 @@ label?: string | undefined;
 }[]>;
 display: WritableComputedRef<TableDisplay[], TableDisplay[]>;
 filterState: Ref<Record<number, {
-type: string;
 value: any;
 startValue?: any;
 endValue?: any;
 }>, Record<number, {
-type: string;
 value: any;
 startValue?: any;
 endValue?: any;
@@ -711,7 +706,6 @@ resizeColumn: (colIndex: number, newWidth: number) => void;
 setCellData: (colIndex: number, rowIndex: number, value: any) => void;
 setCellText: (colIndex: number, rowIndex: number, value: string) => void;
 setFilter: (colIndex: number, filter: {
-type: string;
 value: any;
 startValue?: any;
 endValue?: any;
@@ -861,12 +855,10 @@ label?: string | undefined;
 }[]>;
 display: WritableComputedRef<TableDisplay[], TableDisplay[]>;
 filterState: Ref<Record<number, {
-type: string;
 value: any;
 startValue?: any;
 endValue?: any;
 }>, Record<number, {
-type: string;
 value: any;
 startValue?: any;
 endValue?: any;
@@ -1020,7 +1012,6 @@ resizeColumn: (colIndex: number, newWidth: number) => void;
 setCellData: (colIndex: number, rowIndex: number, value: any) => void;
 setCellText: (colIndex: number, rowIndex: number, value: string) => void;
 setFilter: (colIndex: number, filter: {
-type: string;
 value: any;
 startValue?: any;
 endValue?: any;
