@@ -1,20 +1,20 @@
 <template>
 	<div class="column-filter">
 		<input
-			v-if="getFilterType(column) === 'text'"
+			v-if="(column.filterType || 'text') === 'text'"
 			v-model="filterValue"
 			type="text"
 			class="filter-input"
 			@input="updateFilter('text', filterValue)" />
 
 		<input
-			v-else-if="getFilterType(column) === 'number'"
+			v-else-if="column.filterType === 'number'"
 			v-model="filterValue"
 			type="number"
 			class="filter-input"
 			@input="updateFilter('number', filterValue)" />
 
-		<label v-else-if="getFilterType(column) === 'checkbox'" class="checkbox-filter">
+		<label v-else-if="column.filterType === 'checkbox'" class="checkbox-filter">
 			<input
 				v-model="filterValue"
 				type="checkbox"
@@ -24,7 +24,7 @@
 		</label>
 
 		<select
-			v-else-if="getFilterType(column) === 'select'"
+			v-else-if="column.filterType === 'select'"
 			v-model="filterValue"
 			class="filter-select"
 			@change="updateFilter('select', filterValue)">
@@ -35,13 +35,13 @@
 		</select>
 
 		<input
-			v-else-if="getFilterType(column) === 'date'"
+			v-else-if="column.filterType === 'date'"
 			v-model="filterValue"
 			type="date"
 			class="filter-input"
 			@input="updateFilter('date', filterValue)" />
 
-		<div v-else-if="getFilterType(column) === 'dateRange'" class="date-range-filter">
+		<div v-else-if="column.filterType === 'dateRange'" class="date-range-filter">
 			<input
 				v-model="dateFilter.startValue"
 				type="date"
@@ -56,7 +56,7 @@
 		</div>
 
 		<component
-			v-else-if="getFilterType(column) === 'component' && column.filterComponent"
+			v-else-if="column.filterType === 'component' && column.filterComponent"
 			:is="column.filterComponent"
 			:value="filterValue"
 			:column="column"
@@ -84,8 +84,6 @@ const dateFilter = reactive({
 	startValue: '' as string,
 	endValue: '' as string,
 })
-
-const getFilterType = (column: TableColumn): string => column.filterType || 'text'
 
 const getSelectOptions = (column: TableColumn): any[] => {
 	if (column.filterOptions) return column.filterOptions
