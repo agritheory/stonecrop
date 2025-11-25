@@ -43,16 +43,16 @@
 
 		<div v-else-if="getFilterType(column) === 'dateRange'" class="date-range-filter">
 			<input
-				v-model="filterStartValue"
+				v-model="dateFilter.startValue"
 				type="date"
 				class="filter-input"
-				@input="updateDateRangeFilter('start', filterStartValue)" />
+				@input="updateDateRangeFilter('start', dateFilter.startValue)" />
 			<span class="clear-btn"> - </span>
 			<input
-				v-model="filterEndValue"
+				v-model="dateFilter.endValue"
 				type="date"
 				class="filter-input"
-				@input="updateDateRangeFilter('end', filterEndValue)" />
+				@input="updateDateRangeFilter('end', dateFilter.endValue)" />
 		</div>
 
 		<component
@@ -69,7 +69,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { createTableStore } from '../stores/table'
 import type { TableColumn } from '../types'
 
@@ -80,8 +80,10 @@ const { column, colIndex, store } = defineProps<{
 }>()
 
 const filterValue = ref<any>('')
-const filterStartValue = ref<any>('')
-const filterEndValue = ref<any>('')
+const dateFilter = reactive({
+	startValue: '' as string,
+	endValue: '' as string,
+})
 
 const getFilterType = (column: TableColumn): string => column.filterType || 'text'
 
@@ -104,7 +106,7 @@ const getSelectOptions = (column: TableColumn): any[] => {
 }
 
 const hasActiveFilter = computed(() => {
-	return !!(filterValue.value || filterStartValue.value || filterEndValue.value)
+	return !!(filterValue.value || dateFilter.startValue || dateFilter.endValue)
 })
 
 // Filter actions
@@ -120,30 +122,27 @@ const updateFilter = (type: string, value: any) => {
 
 const updateDateRangeFilter = (rangeType: 'start' | 'end', value: any) => {
 	if (rangeType === 'start') {
-		filterStartValue.value = value
+		dateFilter.startValue = value
 	} else {
-		filterEndValue.value = value
+		dateFilter.endValue = value
 	}
 
-	const startValue = filterStartValue.value
-	const endValue = filterEndValue.value
-
-	if (!startValue && !endValue) {
+	if (!dateFilter.startValue && !dateFilter.endValue) {
 		store.clearFilter(colIndex)
 	} else {
 		store.setFilter(colIndex, {
 			type: 'dateRange',
 			value: null,
-			startValue,
-			endValue,
+			startValue: dateFilter.startValue,
+			endValue: dateFilter.endValue,
 		})
 	}
 }
 
 const clearFilter = () => {
 	filterValue.value = ''
-	filterStartValue.value = ''
-	filterEndValue.value = ''
+	dateFilter.startValue = ''
+	dateFilter.endValue = ''
 	store.clearFilter(colIndex)
 }
 </script>
