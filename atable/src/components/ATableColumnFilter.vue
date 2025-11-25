@@ -43,7 +43,7 @@
 				type="date"
 				class="filter-input"
 				@change="updateDateRangeFilter('start', dateFilter.startValue)" />
-			<span class="clear-btn"> - </span>
+			<span class="date-separator">-</span>
 			<input
 				v-model="dateFilter.endValue"
 				type="date"
@@ -191,13 +191,21 @@ const clearFilter = () => {
 	min-width: 0;
 }
 
-.clear-btn {
-	background: none;
-	border: none;
-	color: var(--sc-primary-text-color);
-	cursor: pointer;
-	font-size: 1.25rem;
+.date-separator {
+	color: var(--sc-gray-50);
+	font-weight: 500;
 	padding: 0 0.25rem;
+	flex-shrink: 0;
+}
+
+.clear-btn {
+	background: var(--sc-gray-10, #f0f0f0);
+	border: 1px solid var(--sc-form-border);
+	border-radius: 3px;
+	color: var(--sc-gray-70);
+	cursor: pointer;
+	font-size: 1rem;
+	padding: 0.15rem 0.4rem;
 	line-height: 1;
 	flex-shrink: 0;
 }
