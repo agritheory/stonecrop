@@ -16,6 +16,25 @@ import type {
 import { generateHash } from '../utils'
 
 /**
+ * Represents the state of a single filter
+ * @public
+ */
+export interface FilterState {
+	/** The main filter value */
+	value: any
+	/** Start value for date range filters */
+	startValue?: any
+	/** End value for date range filters */
+	endValue?: any
+}
+
+/**
+ * Record mapping column indices to their filter states
+ * @public
+ */
+export type FilterStateRecord = Record<number, FilterState>
+
+/**
  * Create a table store
  * @param initData - Initial data for the table store
  * @returns table store instance
@@ -190,16 +209,7 @@ export const createTableStore = (initData: {
 			column: null,
 			direction: null,
 		})
-		const filterState = ref<
-			Record<
-				number,
-				{
-					value: any
-					startValue?: any
-					endValue?: any
-				}
-			>
-		>({})
+		const filterState = ref<FilterStateRecord>({})
 
 		// getters
 		const hasPinnedColumns = computed(() => columns.value.some(col => col.pinned))
@@ -577,7 +587,7 @@ export const createTableStore = (initData: {
 			// This ensures that sorting works on filtered data without modifying the original rows
 		}
 
-		const applyFilter = (cellValue: any, filter: any, column: TableColumn): boolean => {
+		const applyFilter = (cellValue: any, filter: FilterState, column: TableColumn): boolean => {
 			const filterType = column.filterType || 'text'
 			const value = filter.value
 
@@ -650,7 +660,7 @@ export const createTableStore = (initData: {
 			}
 		}
 
-		const setFilter = (colIndex: number, filter: { value: any; startValue?: any; endValue?: any }) => {
+		const setFilter = (colIndex: number, filter: FilterState) => {
 			if (!filter.value && !filter.startValue && !filter.endValue) {
 				// Remove filter if empty
 				delete filterState.value[colIndex]

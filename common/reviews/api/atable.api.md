@@ -242,15 +242,7 @@ width?: number | undefined;
 label?: string | undefined;
 }[]>;
 display: WritableComputedRef<TableDisplay[], TableDisplay[]>;
-filterState: Ref<Record<number, {
-value: any;
-startValue?: any;
-endValue?: any;
-}>, Record<number, {
-value: any;
-startValue?: any;
-endValue?: any;
-}>>;
+filterState: Ref<FilterStateRecord, FilterStateRecord>;
 ganttBars: Ref<    {
 id: string;
 rowIndex: number;
@@ -399,11 +391,7 @@ registerGanttBar: (barInfo: GanttBarInfo) => void;
 resizeColumn: (colIndex: number, newWidth: number) => void;
 setCellData: (colIndex: number, rowIndex: number, value: any) => void;
 setCellText: (colIndex: number, rowIndex: number, value: string) => void;
-setFilter: (colIndex: number, filter: {
-value: any;
-startValue?: any;
-endValue?: any;
-}) => void;
+setFilter: (colIndex: number, filter: FilterState) => void;
 sortByColumn: (colIndex: number) => void;
 toggleRowExpand: (rowIndex: number) => void;
 unregisterConnectionHandle: (handleId: string) => void;
@@ -548,15 +536,7 @@ width?: number | undefined;
 label?: string | undefined;
 }[]>;
 display: WritableComputedRef<TableDisplay[], TableDisplay[]>;
-filterState: Ref<Record<number, {
-value: any;
-startValue?: any;
-endValue?: any;
-}>, Record<number, {
-value: any;
-startValue?: any;
-endValue?: any;
-}>>;
+filterState: Ref<FilterStateRecord, FilterStateRecord>;
 ganttBars: Ref<    {
 id: string;
 rowIndex: number;
@@ -705,11 +685,7 @@ registerGanttBar: (barInfo: GanttBarInfo) => void;
 resizeColumn: (colIndex: number, newWidth: number) => void;
 setCellData: (colIndex: number, rowIndex: number, value: any) => void;
 setCellText: (colIndex: number, rowIndex: number, value: string) => void;
-setFilter: (colIndex: number, filter: {
-value: any;
-startValue?: any;
-endValue?: any;
-}) => void;
+setFilter: (colIndex: number, filter: FilterState) => void;
 sortByColumn: (colIndex: number) => void;
 toggleRowExpand: (rowIndex: number) => void;
 unregisterConnectionHandle: (handleId: string) => void;
@@ -854,15 +830,7 @@ width?: number | undefined;
 label?: string | undefined;
 }[]>;
 display: WritableComputedRef<TableDisplay[], TableDisplay[]>;
-filterState: Ref<Record<number, {
-value: any;
-startValue?: any;
-endValue?: any;
-}>, Record<number, {
-value: any;
-startValue?: any;
-endValue?: any;
-}>>;
+filterState: Ref<FilterStateRecord, FilterStateRecord>;
 ganttBars: Ref<    {
 id: string;
 rowIndex: number;
@@ -1011,11 +979,7 @@ registerGanttBar: (barInfo: GanttBarInfo) => void;
 resizeColumn: (colIndex: number, newWidth: number) => void;
 setCellData: (colIndex: number, rowIndex: number, value: any) => void;
 setCellText: (colIndex: number, rowIndex: number, value: string) => void;
-setFilter: (colIndex: number, filter: {
-value: any;
-startValue?: any;
-endValue?: any;
-}) => void;
+setFilter: (colIndex: number, filter: FilterState) => void;
 sortByColumn: (colIndex: number) => void;
 toggleRowExpand: (rowIndex: number) => void;
 unregisterConnectionHandle: (handleId: string) => void;
@@ -1023,6 +987,16 @@ unregisterGanttBar: (barId: string) => void;
 updateGanttBar: (event: GanttDragEvent) => void;
 updateRows: (newRows: TableRow[]) => void;
 }, "clearFilter" | "closeModal" | "createConnection" | "deleteConnection" | "getCellData" | "getCellDisplayValue" | "getConnectionsForBar" | "getFormattedValue" | "getHandlesForBar" | "getHeaderCellStyle" | "getIndent" | "getRowExpandSymbol" | "isRowGantt" | "isRowVisible" | "registerConnectionHandle" | "registerGanttBar" | "resizeColumn" | "setCellData" | "setCellText" | "setFilter" | "sortByColumn" | "toggleRowExpand" | "unregisterConnectionHandle" | "unregisterGanttBar" | "updateGanttBar" | "updateRows">>;
+
+// @public
+export interface FilterState {
+    endValue?: any;
+    startValue?: any;
+    value: any;
+}
+
+// @public
+export type FilterStateRecord = Record<number, FilterState>;
 
 // @public
 export interface GanttBarInfo {

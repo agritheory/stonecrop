@@ -229,15 +229,7 @@ createTableStore: (initData: {
         label?: string | undefined;
     }[]>;
     display: import("vue").WritableComputedRef<TableDisplay[], TableDisplay[]>;
-    filterState: import("vue").Ref<Record<number, {
-        value: any;
-        startValue?: any;
-        endValue?: any;
-    }>, Record<number, {
-        value: any;
-        startValue?: any;
-        endValue?: any;
-    }>>;
+    filterState: import("vue").Ref<FilterStateRecord, FilterStateRecord>;
     ganttBars: import("vue").Ref<{
         id: string;
         rowIndex: number;
@@ -386,11 +378,7 @@ createTableStore: (initData: {
     resizeColumn: (colIndex: number, newWidth: number) => void;
     setCellData: (colIndex: number, rowIndex: number, value: any) => void;
     setCellText: (colIndex: number, rowIndex: number, value: string) => void;
-    setFilter: (colIndex: number, filter: {
-        value: any;
-        startValue?: any;
-        endValue?: any;
-    }) => void;
+    setFilter: (colIndex: number, filter: FilterState) => void;
     sortByColumn: (colIndex: number) => void;
     toggleRowExpand: (rowIndex: number) => void;
     unregisterConnectionHandle: (handleId: string) => void;
@@ -535,15 +523,7 @@ createTableStore: (initData: {
         label?: string | undefined;
     }[]>;
     display: import("vue").WritableComputedRef<TableDisplay[], TableDisplay[]>;
-    filterState: import("vue").Ref<Record<number, {
-        value: any;
-        startValue?: any;
-        endValue?: any;
-    }>, Record<number, {
-        value: any;
-        startValue?: any;
-        endValue?: any;
-    }>>;
+    filterState: import("vue").Ref<FilterStateRecord, FilterStateRecord>;
     ganttBars: import("vue").Ref<{
         id: string;
         rowIndex: number;
@@ -692,11 +672,7 @@ createTableStore: (initData: {
     resizeColumn: (colIndex: number, newWidth: number) => void;
     setCellData: (colIndex: number, rowIndex: number, value: any) => void;
     setCellText: (colIndex: number, rowIndex: number, value: string) => void;
-    setFilter: (colIndex: number, filter: {
-        value: any;
-        startValue?: any;
-        endValue?: any;
-    }) => void;
+    setFilter: (colIndex: number, filter: FilterState) => void;
     sortByColumn: (colIndex: number) => void;
     toggleRowExpand: (rowIndex: number) => void;
     unregisterConnectionHandle: (handleId: string) => void;
@@ -841,15 +817,7 @@ createTableStore: (initData: {
         label?: string | undefined;
     }[]>;
     display: import("vue").WritableComputedRef<TableDisplay[], TableDisplay[]>;
-    filterState: import("vue").Ref<Record<number, {
-        value: any;
-        startValue?: any;
-        endValue?: any;
-    }>, Record<number, {
-        value: any;
-        startValue?: any;
-        endValue?: any;
-    }>>;
+    filterState: import("vue").Ref<FilterStateRecord, FilterStateRecord>;
     ganttBars: import("vue").Ref<{
         id: string;
         rowIndex: number;
@@ -998,11 +966,7 @@ createTableStore: (initData: {
     resizeColumn: (colIndex: number, newWidth: number) => void;
     setCellData: (colIndex: number, rowIndex: number, value: any) => void;
     setCellText: (colIndex: number, rowIndex: number, value: string) => void;
-    setFilter: (colIndex: number, filter: {
-        value: any;
-        startValue?: any;
-        endValue?: any;
-    }) => void;
+    setFilter: (colIndex: number, filter: FilterState) => void;
     sortByColumn: (colIndex: number) => void;
     toggleRowExpand: (rowIndex: number) => void;
     unregisterConnectionHandle: (handleId: string) => void;
@@ -1163,6 +1127,28 @@ export interface ConnectionPath {
 | label? | `string` | Optional label for the connection. |
 | style? | `{ color?: string; width?: number; }` | Optional styling for the connection path. |
 | to | `{ barId: string; side: 'left' \| 'right'; }` | The target connection handle. |
+
+### FilterState
+
+Represents the state of a single filter
+
+**Definition:**
+
+```typescript
+export interface FilterState {
+  endValue?: any;
+  startValue?: any;
+  value: any;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| endValue? | `any` | End value for date range filters |
+| startValue? | `any` | Start value for date range filters |
+| value | `any` | The main filter value |
 
 ### GanttBarInfo
 
@@ -1474,6 +1460,16 @@ export type ConnectionEvent = {
     type: 'create' | 'delete';
     connection: ConnectionPath;
 };
+```
+
+### FilterStateRecord
+
+Record mapping column indices to their filter states
+
+**Definition:**
+
+```typescript
+export type FilterStateRecord = Record<number, FilterState>;
 ```
 
 ### GanttDragEvent
