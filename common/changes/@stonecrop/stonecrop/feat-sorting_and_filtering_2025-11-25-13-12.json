@@ -3,7 +3,7 @@
     {
       "packageName": "@stonecrop/stonecrop",
       "comment": "Edited API.md to document new sorting and filtering features in ATable component.",
-      "type": "none"
+      "type": "patch"
     }
   ],
   "packageName": "@stonecrop/stonecrop"
