@@ -233,4 +233,162 @@ describe('ATableHeader component', () => {
 		// Verify that resizeColumn was called (indirectly through store)
 		expect(store.columns[0].width).toBeDefined()
 	})
+
+	it('should handle sortable columns click', async () => {
+		const sortableColumns = mockColumns.map(col => ({ ...col, sortable: true }))
+
+		const wrapper = mount(ATableHeader, {
+			props: {
+				columns: sortableColumns,
+				store,
+			},
+			global: {
+				directives: {
+					'resize-observer': mockVResizeObserver,
+				},
+			},
+		})
+
+		const spy = vi.spyOn(store, 'sortByColumn')
+		const headerCells = wrapper.findAll('th')
+
+		await headerCells[1].trigger('click')
+		expect(spy).toHaveBeenCalledWith(0)
+	})
+
+	it('should not call sortByColumn when sortable is false', async () => {
+		const nonSortableColumns = mockColumns.map(col => ({ ...col, sortable: false }))
+
+		const wrapper = mount(ATableHeader, {
+			props: {
+				columns: nonSortableColumns,
+				store,
+			},
+			global: {
+				directives: {
+					'resize-observer': mockVResizeObserver,
+				},
+			},
+		})
+
+		const spy = vi.spyOn(store, 'sortByColumn')
+		const headerCells = wrapper.findAll('th')
+
+		await headerCells[1].trigger('click')
+		expect(spy).not.toHaveBeenCalled()
+	})
+
+	it('should handle empty borderBoxSize in resize observer', () => {
+		const wrapper = mount(ATableHeader, {
+			props: {
+				columns: mockColumns,
+				store,
+			},
+			global: {
+				directives: {
+					'resize-observer': mockVResizeObserver,
+				},
+			},
+		})
+
+		const component = wrapper.vm as any
+		const spy = vi.spyOn(store, 'resizeColumn')
+
+		// Mock entry with empty borderBoxSize
+		const mockEntry = {
+			borderBoxSize: [],
+			target: {
+				dataset: { colindex: '0' },
+			},
+		}
+
+		component.onResize([mockEntry])
+
+		// Should not call resizeColumn
+		expect(spy).not.toHaveBeenCalled()
+	})
+
+	it('should not resize when width has not changed', () => {
+		// Create store with numeric width
+		const numericColumns = mockColumns.map(col => ({ ...col, width: 100 }))
+		const numericStore = createTableStore({
+			columns: numericColumns,
+			rows: mockRows,
+			config: { view: 'list' } as TableConfig,
+		})
+
+		const wrapper = mount(ATableHeader, {
+			props: {
+				columns: numericColumns,
+				store: numericStore,
+			},
+			global: {
+				directives: {
+					'resize-observer': mockVResizeObserver,
+				},
+			},
+		})
+
+		const component = wrapper.vm as any
+		const spy = vi.spyOn(numericStore, 'resizeColumn')
+
+		// Mock entry with same width
+		const mockEntry = {
+			borderBoxSize: [
+				{
+					inlineSize: 100,
+				},
+			],
+			target: {
+				dataset: { colindex: '0' },
+			},
+		}
+
+		component.onResize([mockEntry])
+
+		// Should not call resizeColumn when width is the same
+		expect(spy).not.toHaveBeenCalled()
+	})
+
+	it('should call resizeColumn when width has changed', () => {
+		// Create store with numeric width
+		const numericColumns = mockColumns.map(col => ({ ...col, width: 100 }))
+		const numericStore = createTableStore({
+			columns: numericColumns,
+			rows: mockRows,
+			config: { view: 'list' } as TableConfig,
+		})
+
+		const wrapper = mount(ATableHeader, {
+			props: {
+				columns: numericColumns,
+				store: numericStore,
+			},
+			global: {
+				directives: {
+					'resize-observer': mockVResizeObserver,
+				},
+			},
+		})
+
+		const component = wrapper.vm as any
+		const spy = vi.spyOn(numericStore, 'resizeColumn')
+
+		// Mock entry with different width
+		const mockEntry = {
+			borderBoxSize: [
+				{
+					inlineSize: 150, // Changed from 100
+				},
+			],
+			target: {
+				dataset: { colindex: '0' },
+			},
+		}
+
+		component.onResize([mockEntry])
+
+		// Should call resizeColumn with new width
+		expect(spy).toHaveBeenCalledWith(0, 150)
+	})
 })
