@@ -1,0 +1,94 @@
+{
+	"schema": [
+		{
+			"fieldname": "name",
+			"label": "DocType Name",
+			"fieldtype": "Data",
+			"required": true
+		},
+		{
+			"fieldname": "module",
+			"label": "Module",
+			"fieldtype": "Data"
+		},
+		{
+			"fieldname": "description",
+			"label": "Description",
+			"fieldtype": "Text"
+		},
+		{
+			"fieldname": "is_submittable",
+			"label": "Is Submittable",
+			"fieldtype": "Check",
+			"default": false
+		},
+		{
+			"fieldname": "is_tree",
+			"label": "Is Tree",
+			"fieldtype": "Check",
+			"default": false
+		},
+		{
+			"fieldname": "fields",
+			"label": "Fields",
+			"fieldtype": "Table",
+			"options": [
+				{
+					"fieldname": "fieldname",
+					"label": "Fieldname",
+					"fieldtype": "Data",
+					"required": true
+				},
+				{
+					"fieldname": "label",
+					"label": "Label",
+					"fieldtype": "Data",
+					"required": true
+				},
+				{
+					"fieldname": "fieldtype",
+					"label": "Field Type",
+					"fieldtype": "Select",
+					"options": [
+						"Data",
+						"Text",
+						"Select",
+						"Link",
+						"Check",
+						"Date",
+						"Datetime",
+						"Int",
+						"Float",
+						"Currency",
+						"Table",
+						"Code"
+					],
+					"required": true
+				},
+				{
+					"fieldname": "options",
+					"label": "Options",
+					"fieldtype": "Text"
+				},
+				{
+					"fieldname": "required",
+					"label": "Required",
+					"fieldtype": "Check",
+					"default": false
+				},
+				{
+					"fieldname": "read_only",
+					"label": "Read Only",
+					"fieldtype": "Check",
+					"default": false
+				}
+			]
+		},
+		{
+			"fieldname": "state_machine_id",
+			"label": "State Machine",
+			"fieldtype": "Link",
+			"options": "StatechartMachine"
+		}
+	]
+}

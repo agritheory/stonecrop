@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/aform",
+      "comment": "watch for changes in props data",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/aform"
+}

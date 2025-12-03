@@ -14,7 +14,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watchEffect } from 'vue'
 
 import type { SchemaTypes } from '../types'
 
@@ -26,6 +26,20 @@ const { modelValue, data, readonly } = defineProps<{
 }>()
 
 const formData = ref(data || {})
+
+// Sync data values into schema immediately and on changes
+watchEffect(() => {
+	if (data) {
+		formData.value = data
+		// Sync data values into schema
+		modelValue.forEach(field => {
+			if (field.fieldname && data[field.fieldname] !== undefined) {
+				// eslint-disable-next-line vue/no-mutating-props
+				field.value = data[field.fieldname]
+			}
+		})
+	}
+})
 
 const componentProps = (componentObj: SchemaTypes) => {
 	let propsToPass = {}

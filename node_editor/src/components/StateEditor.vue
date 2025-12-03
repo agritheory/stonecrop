@@ -60,6 +60,7 @@ const elements = computed<FlowElements>({
 						target: target,
 						label: edgeKey,
 						animated: true,
+						type: 'smoothstep', // Use smoothstep for better separation of bidirectional edges
 					})
 
 					hasInputs[target] = true

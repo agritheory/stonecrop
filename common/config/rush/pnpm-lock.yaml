@@ -596,6 +596,9 @@ importers:
       '@stonecrop/atable':
         specifier: workspace:*
         version: link:../atable
+      '@stonecrop/node-editor':
+        specifier: workspace:*
+        version: link:../node_editor
       '@stonecrop/stonecrop':
         specifier: workspace:*
         version: link:../stonecrop

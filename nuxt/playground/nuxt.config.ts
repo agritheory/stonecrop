@@ -1,10 +1,14 @@
 import { defineNuxtConfig } from 'nuxt/config'
+import { resolve } from 'path'
 
 import NuxtStonecrop from '../src/module'
 
+const themePath = resolve(__dirname, '../../themes/default/default.css')
+
 export default defineNuxtConfig({
 	modules: [NuxtStonecrop],
-	stonecrop: {},
 	devtools: { enabled: true },
 	compatibilityDate: '2024-12-13',
+	stonecrop: {},
+	css: [themePath, '~/assets/styles/common.css'],
 })
