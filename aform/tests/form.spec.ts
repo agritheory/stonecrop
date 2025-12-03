@@ -41,4 +41,71 @@ describe('AForm Component', () => {
 			],
 		])
 	})
+
+	it('should handle componentProps with rows data for nested tables', () => {
+		const wrapperWithTable = mount(AForm, {
+			props: {
+				modelValue: [
+					{
+						fieldname: 'items',
+						component: 'ATable',
+						label: 'Items',
+						rows: [],
+					},
+				] as SchemaTypes[],
+				data: {
+					items: [
+						{ id: 1, name: 'Item 1' },
+						{ id: 2, name: 'Item 2' },
+					],
+				},
+			},
+		})
+
+		expect(wrapperWithTable.vm).toBeTruthy()
+	})
+
+	it('should handle componentProps when rows is not empty', () => {
+		const wrapperWithData = mount(AForm, {
+			props: {
+				modelValue: [
+					{
+						fieldname: 'items',
+						component: 'ATable',
+						label: 'Items',
+						rows: [{ id: 1, name: 'Existing' }],
+					},
+				] as SchemaTypes[],
+				data: {
+					items: [
+						{ id: 1, name: 'Item 1' },
+						{ id: 2, name: 'Item 2' },
+					],
+				},
+			},
+		})
+
+		expect(wrapperWithData.vm).toBeTruthy()
+	})
+
+	it('should handle readonly prop', () => {
+		const readonlyWrapper = mount(AForm, {
+			props: {
+				modelValue: [
+					{
+						fieldname: 'first_name',
+						component: 'ATextInput',
+						label: 'First Name',
+					},
+				] as SchemaTypes[],
+				data: {},
+				readonly: true,
+			},
+			components: {
+				ATextInput,
+			},
+		})
+
+		expect(readonlyWrapper.vm).toBeTruthy()
+	})
 })

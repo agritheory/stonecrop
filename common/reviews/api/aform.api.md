@@ -214,6 +214,10 @@ export interface TableColumn {
     cellComponentProps?: Record<string, any>;
     colspan?: number;
     edit?: boolean;
+    filterable?: boolean;
+    filterComponent?: string;
+    filterOptions?: any[];
+    filterType?: 'text' | 'select' | 'number' | 'date' | 'dateRange' | 'checkbox' | 'component';
     format?: string | ((value: any, context: CellContext) => string);
     ganttComponent?: string;
     isGantt?: boolean;
@@ -225,6 +229,7 @@ export interface TableColumn {
     originalIndex?: number;
     pinned?: boolean;
     resizable?: boolean;
+    sortable?: boolean;
     // @beta
     type?: string;
     width?: string;

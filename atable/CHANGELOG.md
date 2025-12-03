@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/atable
 
-This log was last generated on Fri, 14 Nov 2025 09:26:38 GMT and should not be manually modified.
+This log was last generated on Wed, 03 Dec 2025 11:14:09 GMT and should not be manually modified.
+
+## 0.6.1
+Wed, 03 Dec 2025 11:14:09 GMT
+
+### Patches
+
+- Added a new component that allows sorting and filtering props, resolving issue #258.
 
 ## 0.6.0
 Fri, 14 Nov 2025 09:26:38 GMT

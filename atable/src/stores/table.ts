@@ -16,6 +16,25 @@ import type {
 import { generateHash } from '../utils'
 
 /**
+ * Represents the state of a single filter
+ * @public
+ */
+export interface FilterState {
+	/** The main filter value */
+	value: any
+	/** Start value for date range filters */
+	startValue?: any
+	/** End value for date range filters */
+	endValue?: any
+}
+
+/**
+ * Record mapping column indices to their filter states
+ * @public
+ */
+export type FilterStateRecord = Record<number, FilterState>
+
+/**
  * Create a table store
  * @param initData - Initial data for the table store
  * @returns table store instance
@@ -186,6 +205,11 @@ export const createTableStore = (initData: {
 		const ganttBars = ref<GanttBarInfo[]>([])
 		const connectionHandles = ref<ConnectionHandle[]>([])
 		const connectionPaths = ref<ConnectionPath[]>([])
+		const sortState = ref<{ column: number | null; direction: 'asc' | 'desc' | null }>({
+			column: null,
+			direction: null,
+		})
+		const filterState = ref<FilterStateRecord>({})
 
 		// getters
 		const hasPinnedColumns = computed(() => columns.value.some(col => col.pinned))
@@ -206,6 +230,63 @@ export const createTableStore = (initData: {
 		const zeroColumn = computed(() =>
 			config.value.view ? ['list', 'tree', 'tree-gantt', 'list-expansion'].includes(config.value.view) : false
 		)
+
+		const filteredRows = computed(() => {
+			let filtered = rows.value.map((row, originalIndex) => ({
+				...row,
+				originalIndex,
+			}))
+
+			// Apply filters
+			Object.entries(filterState.value).forEach(([colIndexStr, filter]) => {
+				const colIndex = parseInt(colIndexStr)
+				const column = columns.value[colIndex]
+
+				if (!column) return
+
+				// Skip if filter has no value (except for dateRange and checkbox which can have different value structures)
+				const hasFilterValue =
+					filter.value ||
+					filter.startValue ||
+					filter.endValue ||
+					(column.filterType === 'checkbox' && filter.value !== undefined)
+
+				if (!hasFilterValue) return
+
+				filtered = filtered.filter(row => {
+					const cellValue = row[column.name]
+					return applyFilter(cellValue, filter, column)
+				})
+			})
+
+			// Apply sorting if active
+			if (sortState.value.column !== null && sortState.value.direction) {
+				const column = columns.value[sortState.value.column]
+				const direction = sortState.value.direction
+
+				filtered.sort((a, b) => {
+					let aVal = a[column.name]
+					let bVal = b[column.name]
+
+					if (aVal === null || aVal === undefined) aVal = ''
+					if (bVal === null || bVal === undefined) bVal = ''
+
+					const aNum = Number(aVal)
+					const bNum = Number(bVal)
+					const isNumeric = !isNaN(aNum) && !isNaN(bNum) && aVal !== '' && bVal !== ''
+
+					if (isNumeric) {
+						return direction === 'asc' ? aNum - bNum : bNum - aNum
+					} else {
+						const aStr = String(aVal).toLowerCase()
+						const bStr = String(bVal).toLowerCase()
+						return direction === 'asc' ? aStr.localeCompare(bStr) : bStr.localeCompare(aStr)
+					}
+				})
+			}
+
+			return filtered
+		})
 
 		// actions
 		const getCellData = <T = any>(colIndex: number, rowIndex: number): T => table.value[`${colIndex}:${rowIndex}`]
@@ -484,6 +565,118 @@ export const createTableStore = (initData: {
 			return connectionHandles.value.filter(handle => handle.barId === barId)
 		}
 
+		const sortByColumn = (colIndex: number) => {
+			const column = columns.value[colIndex]
+			if (column.sortable === false) return
+
+			let newDirection: 'asc' | 'desc'
+			if (sortState.value.column === colIndex) {
+				if (sortState.value.direction === 'asc') {
+					newDirection = 'desc'
+				} else {
+					newDirection = 'asc'
+				}
+			} else {
+				newDirection = 'asc'
+			}
+
+			sortState.value.column = colIndex
+			sortState.value.direction = newDirection
+
+			// Note: The actual sorting is now handled in the filteredRows computed property
+			// This ensures that sorting works on filtered data without modifying the original rows
+		}
+
+		const applyFilter = (cellValue: any, filter: FilterState, column: TableColumn): boolean => {
+			const filterType = column.filterType || 'text'
+			const value = filter.value
+
+			if (!value && filterType !== 'dateRange' && filterType !== 'checkbox') return true
+
+			switch (filterType) {
+				case 'text': {
+					// Handle objects with nested properties
+					let searchableText = ''
+					if (typeof cellValue === 'object' && cellValue !== null) {
+						// If it's an object, search in all string values
+						searchableText = Object.values(cellValue as Record<string, unknown>).join(' ')
+					} else {
+						searchableText = String(cellValue || '')
+					}
+					return searchableText.toLowerCase().includes(String(value).toLowerCase())
+				}
+
+				case 'number': {
+					const numValue = Number(cellValue)
+					const filterNum = Number(value)
+					return !isNaN(numValue) && !isNaN(filterNum) && numValue === filterNum
+				}
+
+				case 'select':
+					return cellValue === value
+
+				case 'checkbox':
+					// For checkbox filter, if checked (true), show only truthy values
+					// If unchecked (false/undefined), show all values
+					if (value === true) {
+						return !!cellValue
+					}
+					return true
+
+				case 'date': {
+					// Handle both timestamp numbers and date strings
+					let cellDate: Date
+					if (typeof cellValue === 'number') {
+						// Apply the same year transformation as in the format function
+						const originalDate = new Date(cellValue)
+						const currentYear = new Date().getFullYear()
+						cellDate = new Date(currentYear, originalDate.getMonth(), originalDate.getDate())
+					} else {
+						cellDate = new Date(String(cellValue))
+					}
+					const filterDate = new Date(String(value))
+					return cellDate.toDateString() === filterDate.toDateString()
+				}
+
+				case 'dateRange': {
+					const startValue = filter.startValue
+					const endValue = filter.endValue
+					if (!startValue && !endValue) return true
+
+					// Handle both timestamp numbers and date strings
+					let cellDateRange: Date
+					if (typeof cellValue === 'number') {
+						// Apply the same year transformation as in the format function
+						const originalDate = new Date(cellValue)
+						const currentYear = new Date().getFullYear()
+						cellDateRange = new Date(currentYear, originalDate.getMonth(), originalDate.getDate())
+					} else {
+						cellDateRange = new Date(String(cellValue))
+					}
+					if (startValue && cellDateRange < new Date(String(startValue))) return false
+					if (endValue && cellDateRange > new Date(String(endValue))) return false
+
+					return true
+				}
+
+				default:
+					return true
+			}
+		}
+
+		const setFilter = (colIndex: number, filter: FilterState) => {
+			if (!filter.value && !filter.startValue && !filter.endValue) {
+				// Remove filter if empty
+				delete filterState.value[colIndex]
+			} else {
+				filterState.value[colIndex] = filter
+			}
+		}
+
+		const clearFilter = (colIndex: number) => {
+			delete filterState.value[colIndex]
+		}
+
 		return {
 			// state
 			columns,
@@ -491,13 +684,16 @@ export const createTableStore = (initData: {
 			connectionHandles,
 			connectionPaths,
 			display,
+			filterState,
 			ganttBars,
 			modal,
 			rows,
+			sortState,
 			table,
 			updates,
 
 			// getters
+			filteredRows,
 			hasPinnedColumns,
 			isGanttView,
 			isTreeView,
@@ -506,6 +702,7 @@ export const createTableStore = (initData: {
 			zeroColumn,
 
 			// actions
+			clearFilter,
 			closeModal,
 			createConnection,
 			deleteConnection,
@@ -524,6 +721,8 @@ export const createTableStore = (initData: {
 			resizeColumn,
 			setCellData,
 			setCellText,
+			setFilter,
+			sortByColumn,
 			toggleRowExpand,
 			unregisterConnectionHandle,
 			unregisterGanttBar,

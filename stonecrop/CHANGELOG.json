@@ -2,6 +2,18 @@
   "name": "@stonecrop/stonecrop",
   "entries": [
     {
+      "version": "0.6.1",
+      "tag": "@stonecrop/stonecrop_v0.6.1",
+      "date": "Wed, 03 Dec 2025 11:14:09 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Edited API.md to document new sorting and filtering features in ATable component."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.6.0",
       "tag": "@stonecrop/stonecrop_v0.6.0",
       "date": "Fri, 14 Nov 2025 09:26:38 GMT",

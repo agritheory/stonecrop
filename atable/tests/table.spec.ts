@@ -638,3 +638,451 @@ describe('Gantt View', () => {
 		expect(wrapper.vm.store.rows[0].gantt?.endIndex).toBe(5)
 	})
 })
+
+describe('Sorting and Filtering', () => {
+	beforeEach(() => {
+		setActivePinia(createPinia())
+	})
+
+	describe('Sorting functionality', () => {
+		it('should sort rows by column in ascending order', async () => {
+			const sortableColumns: TableColumn[] = [
+				{ name: 'id', label: 'ID', width: '100px', sortable: true },
+				{ name: 'name', label: 'Name', width: '200px', sortable: true },
+			]
+
+			const rows: TableRow[] = [
+				{ id: 3, name: 'Charlie' },
+				{ id: 1, name: 'Alice' },
+				{ id: 2, name: 'Bob' },
+			]
+
+			const wrapper = mount(ATable, {
+				props: {
+					rows,
+					columns: sortableColumns,
+				},
+			})
+
+			const store = wrapper.vm.store
+
+			// Sort by ID column
+			store.sortByColumn(0)
+			await nextTick()
+
+			expect(store.sortState.column).toBe(0)
+			expect(store.sortState.direction).toBe('asc')
+			expect(store.filteredRows[0].id).toBe(1)
+			expect(store.filteredRows[1].id).toBe(2)
+			expect(store.filteredRows[2].id).toBe(3)
+		})
+
+		it('should sort rows by column in descending order', async () => {
+			const sortableColumns: TableColumn[] = [
+				{ name: 'id', label: 'ID', width: '100px', sortable: true },
+				{ name: 'name', label: 'Name', width: '200px', sortable: true },
+			]
+
+			const rows: TableRow[] = [
+				{ id: 3, name: 'Charlie' },
+				{ id: 1, name: 'Alice' },
+				{ id: 2, name: 'Bob' },
+			]
+
+			const wrapper = mount(ATable, {
+				props: {
+					rows,
+					columns: sortableColumns,
+				},
+			})
+
+			const store = wrapper.vm.store
+
+			// Sort ascending first, then descending
+			store.sortByColumn(0)
+			store.sortByColumn(0)
+			await nextTick()
+
+			expect(store.sortState.direction).toBe('desc')
+			expect(store.filteredRows[0].id).toBe(3)
+			expect(store.filteredRows[1].id).toBe(2)
+			expect(store.filteredRows[2].id).toBe(1)
+		})
+
+		it('should toggle sort direction on multiple clicks', async () => {
+			const sortableColumns: TableColumn[] = [{ name: 'id', label: 'ID', width: '100px', sortable: true }]
+
+			const rows: TableRow[] = [
+				{ id: 3, name: 'Charlie' },
+				{ id: 1, name: 'Alice' },
+			]
+
+			const wrapper = mount(ATable, {
+				props: {
+					rows,
+					columns: sortableColumns,
+				},
+			})
+
+			const store = wrapper.vm.store
+
+			// First click: asc
+			store.sortByColumn(0)
+			expect(store.sortState.direction).toBe('asc')
+
+			// Second click: desc
+			store.sortByColumn(0)
+			expect(store.sortState.direction).toBe('desc')
+
+			// Third click: back to asc
+			store.sortByColumn(0)
+			expect(store.sortState.direction).toBe('asc')
+		})
+
+		it('should reset sort when clicking different column', async () => {
+			const sortableColumns: TableColumn[] = [
+				{ name: 'id', label: 'ID', width: '100px', sortable: true },
+				{ name: 'name', label: 'Name', width: '200px', sortable: true },
+			]
+
+			const rows: TableRow[] = [
+				{ id: 3, name: 'Charlie' },
+				{ id: 1, name: 'Alice' },
+			]
+
+			const wrapper = mount(ATable, {
+				props: {
+					rows,
+					columns: sortableColumns,
+				},
+			})
+
+			const store = wrapper.vm.store
+
+			// Sort by first column
+			store.sortByColumn(0)
+			expect(store.sortState.column).toBe(0)
+			expect(store.sortState.direction).toBe('asc')
+
+			// Sort by second column should reset to asc
+			store.sortByColumn(1)
+			expect(store.sortState.column).toBe(1)
+			expect(store.sortState.direction).toBe('asc')
+		})
+	})
+
+	describe('Filtering functionality', () => {
+		it('should filter text columns', async () => {
+			const filterableColumns: TableColumn[] = [
+				{ name: 'name', label: 'Name', width: '200px', filterable: true, filterType: 'text' },
+				{ name: 'status', label: 'Status', width: '150px' },
+			]
+
+			const rows: TableRow[] = [
+				{ id: 1, name: 'Alice', status: 'active' },
+				{ id: 2, name: 'Bob', status: 'inactive' },
+				{ id: 3, name: 'Charlie', status: 'active' },
+			]
+
+			const wrapper = mount(ATable, {
+				props: {
+					rows,
+					columns: filterableColumns,
+				},
+			})
+
+			const store = wrapper.vm.store
+
+			// Filter by name
+			store.setFilter(0, { value: 'ali' })
+			await nextTick()
+
+			expect(store.filteredRows.length).toBe(1)
+			expect(store.filteredRows[0].name).toBe('Alice')
+		})
+
+		it('should filter number columns', async () => {
+			const filterableColumns: TableColumn[] = [
+				{ name: 'id', label: 'ID', width: '100px', filterable: true, filterType: 'number' },
+				{ name: 'name', label: 'Name', width: '200px' },
+			]
+
+			const rows: TableRow[] = [
+				{ id: 1, name: 'Alice' },
+				{ id: 2, name: 'Bob' },
+				{ id: 3, name: 'Charlie' },
+			]
+
+			const wrapper = mount(ATable, {
+				props: {
+					rows,
+					columns: filterableColumns,
+				},
+			})
+
+			const store = wrapper.vm.store
+
+			// Filter by id
+			store.setFilter(0, { value: '2' })
+			await nextTick()
+
+			expect(store.filteredRows.length).toBe(1)
+			expect(store.filteredRows[0].id).toBe(2)
+		})
+
+		it('should filter select columns', async () => {
+			const filterableColumns: TableColumn[] = [
+				{ name: 'name', label: 'Name', width: '200px' },
+				{ name: 'status', label: 'Status', width: '150px', filterable: true, filterType: 'select' },
+			]
+
+			const rows: TableRow[] = [
+				{ id: 1, name: 'Alice', status: 'active' },
+				{ id: 2, name: 'Bob', status: 'inactive' },
+				{ id: 3, name: 'Charlie', status: 'active' },
+			]
+
+			const wrapper = mount(ATable, {
+				props: {
+					rows,
+					columns: filterableColumns,
+				},
+			})
+
+			const store = wrapper.vm.store
+
+			// Filter by status
+			store.setFilter(1, { value: 'active' })
+			await nextTick()
+
+			expect(store.filteredRows.length).toBe(2)
+			expect(store.filteredRows[0].name).toBe('Alice')
+			expect(store.filteredRows[1].name).toBe('Charlie')
+		})
+
+		it('should filter date columns', async () => {
+			const filterableColumns: TableColumn[] = [
+				{ name: 'name', label: 'Name', width: '200px' },
+				{ name: 'date', label: 'Date', width: '150px', filterable: true, filterType: 'date' },
+			]
+
+			const rows: TableRow[] = [
+				{ id: 1, name: 'Alice', date: '2024-01-15' },
+				{ id: 2, name: 'Bob', date: '2024-02-20' },
+				{ id: 3, name: 'Charlie', date: '2024-03-10' },
+			]
+
+			const wrapper = mount(ATable, {
+				props: {
+					rows,
+					columns: filterableColumns,
+				},
+			})
+
+			const store = wrapper.vm.store
+
+			// Filter by date
+			store.setFilter(1, { value: '2024-02-20' })
+			await nextTick()
+
+			expect(store.filteredRows.length).toBe(1)
+			expect(store.filteredRows[0].name).toBe('Bob')
+		})
+
+		it('should filter dateRange columns', async () => {
+			const filterableColumns: TableColumn[] = [
+				{ name: 'name', label: 'Name', width: '200px' },
+				{ name: 'date', label: 'Date', width: '150px', filterable: true, filterType: 'dateRange' },
+			]
+
+			const rows: TableRow[] = [
+				{ id: 1, name: 'Alice', date: '2024-01-15' },
+				{ id: 2, name: 'Bob', date: '2024-02-20' },
+				{ id: 3, name: 'Charlie', date: '2024-03-10' },
+			]
+
+			const wrapper = mount(ATable, {
+				props: {
+					rows,
+					columns: filterableColumns,
+				},
+			})
+
+			const store = wrapper.vm.store
+
+			// Filter by date range
+			store.setFilter(1, { startValue: '2024-01-01', endValue: '2024-02-28' })
+			await nextTick()
+
+			expect(store.filteredRows.length).toBe(2)
+			expect(store.filteredRows[0].name).toBe('Alice')
+			expect(store.filteredRows[1].name).toBe('Bob')
+		})
+
+		it('should filter checkbox columns', async () => {
+			const filterableColumns: TableColumn[] = [
+				{ name: 'name', label: 'Name', width: '200px' },
+				{ name: 'active', label: 'Active', width: '100px', filterable: true, filterType: 'checkbox' },
+			]
+
+			const rows: TableRow[] = [
+				{ id: 1, name: 'Alice', active: true },
+				{ id: 2, name: 'Bob', active: false },
+				{ id: 3, name: 'Charlie', active: true },
+			]
+
+			const wrapper = mount(ATable, {
+				props: {
+					rows,
+					columns: filterableColumns,
+				},
+			})
+
+			const store = wrapper.vm.store
+
+			// Filter by checkbox
+			store.setFilter(1, { value: true })
+			await nextTick()
+
+			expect(store.filteredRows.length).toBe(2)
+			expect(store.filteredRows[0].name).toBe('Alice')
+			expect(store.filteredRows[1].name).toBe('Charlie')
+		})
+
+		it('should clear filter', async () => {
+			const filterableColumns: TableColumn[] = [
+				{ name: 'name', label: 'Name', width: '200px', filterable: true, filterType: 'text' },
+			]
+
+			const rows: TableRow[] = [
+				{ id: 1, name: 'Alice' },
+				{ id: 2, name: 'Bob' },
+			]
+
+			const wrapper = mount(ATable, {
+				props: {
+					rows,
+					columns: filterableColumns,
+				},
+			})
+
+			const store = wrapper.vm.store
+
+			// Apply filter
+			store.setFilter(0, { value: 'ali' })
+			await nextTick()
+			expect(store.filteredRows.length).toBe(1)
+
+			// Clear filter
+			store.clearFilter(0)
+			await nextTick()
+			expect(store.filteredRows.length).toBe(2)
+		})
+
+		it('should combine multiple filters', async () => {
+			const filterableColumns: TableColumn[] = [
+				{ name: 'name', label: 'Name', width: '200px', filterable: true, filterType: 'text' },
+				{ name: 'status', label: 'Status', width: '150px', filterable: true, filterType: 'select' },
+			]
+
+			const rows: TableRow[] = [
+				{ id: 1, name: 'Alice', status: 'active' },
+				{ id: 2, name: 'Bob', status: 'inactive' },
+				{ id: 3, name: 'Charlie', status: 'active' },
+				{ id: 4, name: 'Anna', status: 'inactive' },
+			]
+
+			const wrapper = mount(ATable, {
+				props: {
+					rows,
+					columns: filterableColumns,
+				},
+			})
+
+			const store = wrapper.vm.store
+
+			// Apply both filters
+			store.setFilter(0, { value: 'a' }) // Names containing 'a'
+			store.setFilter(1, { value: 'active' }) // Status = active
+			await nextTick()
+
+			expect(store.filteredRows.length).toBe(2)
+			expect(store.filteredRows[0].name).toBe('Alice')
+			expect(store.filteredRows[1].name).toBe('Charlie')
+		})
+	})
+
+	describe('Combined sorting and filtering', () => {
+		it('should filter first, then sort', async () => {
+			const columns: TableColumn[] = [
+				{ name: 'name', label: 'Name', width: '200px', filterable: true, filterType: 'text', sortable: true },
+				{ name: 'status', label: 'Status', width: '150px', filterable: true, filterType: 'select' },
+			]
+
+			const rows: TableRow[] = [
+				{ id: 1, name: 'Charlie', status: 'active' },
+				{ id: 2, name: 'Alice', status: 'active' },
+				{ id: 3, name: 'Bob', status: 'inactive' },
+				{ id: 4, name: 'David', status: 'active' },
+			]
+
+			const wrapper = mount(ATable, {
+				props: {
+					rows,
+					columns,
+				},
+			})
+
+			const store = wrapper.vm.store
+
+			// Filter by status first
+			store.setFilter(1, { value: 'active' })
+			await nextTick()
+
+			// Then sort by name
+			store.sortByColumn(0)
+			await nextTick()
+
+			expect(store.filteredRows.length).toBe(3)
+			expect(store.filteredRows[0].name).toBe('Alice')
+			expect(store.filteredRows[1].name).toBe('Charlie')
+			expect(store.filteredRows[2].name).toBe('David')
+		})
+
+		it('should maintain sort when filter changes', async () => {
+			const columns: TableColumn[] = [
+				{ name: 'name', label: 'Name', width: '200px', filterable: true, filterType: 'text', sortable: true },
+				{ name: 'age', label: 'Age', width: '100px', sortable: true },
+			]
+
+			const rows: TableRow[] = [
+				{ id: 1, name: 'Charlie', age: 30 },
+				{ id: 2, name: 'Alice', age: 25 },
+				{ id: 3, name: 'Bob', age: 35 },
+			]
+
+			const wrapper = mount(ATable, {
+				props: {
+					rows,
+					columns,
+				},
+			})
+
+			const store = wrapper.vm.store
+
+			// Sort by name first
+			store.sortByColumn(0)
+			await nextTick()
+
+			expect(store.filteredRows[0].name).toBe('Alice')
+
+			// Apply filter - sort should persist
+			store.setFilter(0, { value: 'a' })
+			await nextTick()
+
+			expect(store.filteredRows.length).toBe(2)
+			expect(store.filteredRows[0].name).toBe('Alice') // Still sorted
+			expect(store.filteredRows[1].name).toBe('Charlie')
+		})
+	})
+})

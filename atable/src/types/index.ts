@@ -73,6 +73,37 @@ export interface TableColumn {
 	resizable?: boolean
 
 	/**
+	 * Control whether the column should be sortable.
+	 *
+	 * @defaultValue true
+	 */
+	sortable?: boolean
+
+	/**
+	 * Control whether the column should be filterable and define filter configuration.
+	 *
+	 * @defaultValue true
+	 */
+	filterable?: boolean
+
+	/**
+	 * The type of filter for the column.
+	 *
+	 * @defaultValue 'text'
+	 */
+	filterType?: 'text' | 'select' | 'number' | 'date' | 'dateRange' | 'checkbox' | 'component'
+
+	/**
+	 * Options for select-type filters.
+	 */
+	filterOptions?: any[]
+
+	/**
+	 * Custom component for filtering.
+	 */
+	filterComponent?: string
+
+	/**
 	 * The component to use to render the cell for the column. If not provided, the table will
 	 * render the default `<td>` element.
 	 */
