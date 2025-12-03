@@ -594,21 +594,23 @@ export const createTableStore = (initData: {
 			if (!value && filterType !== 'dateRange' && filterType !== 'checkbox') return true
 
 			switch (filterType) {
-				case 'text':
+				case 'text': {
 					// Handle objects with nested properties
 					let searchableText = ''
 					if (typeof cellValue === 'object' && cellValue !== null) {
 						// If it's an object, search in all string values
-						searchableText = Object.values(cellValue).join(' ')
+						searchableText = Object.values(cellValue as Record<string, unknown>).join(' ')
 					} else {
 						searchableText = String(cellValue || '')
 					}
 					return searchableText.toLowerCase().includes(String(value).toLowerCase())
+				}
 
-				case 'number':
+				case 'number': {
 					const numValue = Number(cellValue)
 					const filterNum = Number(value)
 					return !isNaN(numValue) && !isNaN(filterNum) && numValue === filterNum
+				}
 
 				case 'select':
 					return cellValue === value
@@ -621,39 +623,41 @@ export const createTableStore = (initData: {
 					}
 					return true
 
-				case 'date':
+				case 'date': {
 					// Handle both timestamp numbers and date strings
-					let cellDate
+					let cellDate: Date
 					if (typeof cellValue === 'number') {
 						// Apply the same year transformation as in the format function
 						const originalDate = new Date(cellValue)
 						const currentYear = new Date().getFullYear()
 						cellDate = new Date(currentYear, originalDate.getMonth(), originalDate.getDate())
 					} else {
-						cellDate = new Date(cellValue)
+						cellDate = new Date(String(cellValue))
 					}
-					const filterDate = new Date(value)
+					const filterDate = new Date(String(value))
 					return cellDate.toDateString() === filterDate.toDateString()
+				}
 
-				case 'dateRange':
+				case 'dateRange': {
 					const startValue = filter.startValue
 					const endValue = filter.endValue
 					if (!startValue && !endValue) return true
 
 					// Handle both timestamp numbers and date strings
-					let cellDateRange
+					let cellDateRange: Date
 					if (typeof cellValue === 'number') {
 						// Apply the same year transformation as in the format function
 						const originalDate = new Date(cellValue)
 						const currentYear = new Date().getFullYear()
 						cellDateRange = new Date(currentYear, originalDate.getMonth(), originalDate.getDate())
 					} else {
-						cellDateRange = new Date(cellValue)
+						cellDateRange = new Date(String(cellValue))
 					}
-					if (startValue && cellDateRange < new Date(startValue)) return false
-					if (endValue && cellDateRange > new Date(endValue)) return false
+					if (startValue && cellDateRange < new Date(String(startValue))) return false
+					if (endValue && cellDateRange > new Date(String(endValue))) return false
 
 					return true
+				}
 
 				default:
 					return true
