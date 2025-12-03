@@ -2,6 +2,18 @@
   "name": "@stonecrop/nuxt",
   "entries": [
     {
+      "version": "0.6.2",
+      "tag": "@stonecrop/nuxt_v0.6.2",
+      "date": "Wed, 03 Dec 2025 13:42:21 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "add Stonecrop playground to Nuxt"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.6.1",
       "tag": "@stonecrop/nuxt_v0.6.1",
       "date": "Wed, 03 Dec 2025 11:14:09 GMT",

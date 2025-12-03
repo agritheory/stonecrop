@@ -2,6 +2,18 @@
   "name": "@stonecrop/aform",
   "entries": [
     {
+      "version": "0.6.2",
+      "tag": "@stonecrop/aform_v0.6.2",
+      "date": "Wed, 03 Dec 2025 13:42:21 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "watch for changes in props data"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.6.1",
       "tag": "@stonecrop/aform_v0.6.1",
       "date": "Wed, 03 Dec 2025 11:14:09 GMT",
