@@ -332,6 +332,10 @@ export interface TableColumn {
   cellComponentProps?: Record<string, any>;
   colspan?: number;
   edit?: boolean;
+  filterable?: boolean;
+  filterComponent?: string;
+  filterOptions?: any[];
+  filterType?: 'text' | 'select' | 'number' | 'date' | 'dateRange' | 'checkbox' | 'component';
   format?: string | ((value: any, context: CellContext) => string);
   ganttComponent?: string;
   isGantt?: boolean;
@@ -343,6 +347,7 @@ export interface TableColumn {
   originalIndex?: number;
   pinned?: boolean;
   resizable?: boolean;
+  sortable?: boolean;
   type?: string;
   width?: string;
 }
@@ -357,6 +362,10 @@ export interface TableColumn {
 | cellComponentProps? | `Record<string, any>` | Additional properties to pass to the table's cell component. Only applicable if the `cellComponent` property is set for the column. |
 | colspan? | `number` | The colspan of the Gantt bar for the column. This determines how many columns the Gantt bar should span across. Only applicable for Gantt tables. |
 | edit? | `boolean` | Control whether cells for the column is editable. |
+| filterable? | `boolean` | Control whether the column should be filterable and define filter configuration. |
+| filterComponent? | `string` | Custom component for filtering. |
+| filterOptions? | `any[]` | Options for select-type filters. |
+| filterType? | `'text' \| 'select' \| 'number' \| 'date' \| 'dateRange' \| 'checkbox' \| 'component'` | The type of filter for the column. |
 | format? | `string \| ((value: any, context: CellContext) => string)` | The format function to use to format the value of the cell. This can either be a normal or stringified function that takes the value and the cell context and returns a string. |
 | ganttComponent? | `string` | The component to use to render the Gantt bar for the column. Only applicable for Gantt tables. |
 | isGantt? | `boolean` | Whether the column is a Gantt column. Only applicable for Gantt tables. |
@@ -368,6 +377,7 @@ export interface TableColumn {
 | originalIndex? | `number` | The original column index for the Gantt bar, excluding any pinned columns. This is evaluated automatically while rendering the table. Only applicable for Gantt tables. |
 | pinned? | `boolean` | Control whether the column should be pinned to the table. |
 | resizable? | `boolean` | Control whether the column can be resized by the user. |
+| sortable? | `boolean` | Control whether the column should be sortable. |
 | type? | `string` | `Data` (the column contains text data), `Select` (the column contains a select input), `Date` (the column contains a date input), `component` (the column contains a custom component) |
 | width? | `string` | The width of the column. This can be a number (in pixels) or a string (in CSS units). |
 

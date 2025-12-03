@@ -11,10 +11,14 @@
 			<slot name="header" :data="store">
 				<ATableHeader :columns="store.columns" :store="store" />
 			</slot>
-
 			<tbody>
 				<slot name="body" :data="store">
-					<ARow v-for="(row, rowIndex) in store.rows" :key="row.id" :row="row" :row-index="rowIndex" :store="store">
+					<ARow
+						v-for="(row, filteredIndex) in store.filteredRows"
+						:key="`${row.originalIndex}-${filteredIndex}`"
+						:row="row"
+						:rowIndex="row.originalIndex"
+						:store="store">
 						<template v-for="(column, colIndex) in getProcessedColumnsForRow(row)" :key="column.name">
 							<component
 								:is="column.ganttComponent || 'AGanttCell'"
@@ -26,8 +30,8 @@
 								:end="row.gantt?.endIndex"
 								:colspan="column.colspan"
 								:pinned="column.pinned"
-								:row-index="rowIndex"
-								:col-index="column.originalIndex ?? colIndex"
+								:rowIndex="row.originalIndex"
+								:colIndex="column.originalIndex ?? colIndex"
 								:style="{
 									textAlign: column?.align || 'center',
 									minWidth: column?.width || '40ch',
@@ -39,8 +43,8 @@
 								v-else
 								:store="store"
 								:pinned="column.pinned"
-								:row-index="rowIndex"
-								:col-index="colIndex"
+								:rowIndex="row.originalIndex"
+								:colIndex="colIndex"
 								:style="{
 									textAlign: column?.align || 'center',
 									width: store.config.fullWidth ? 'auto' : null,

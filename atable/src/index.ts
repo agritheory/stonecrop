@@ -10,6 +10,7 @@ import ATableLoading from './components/ATableLoading.vue'
 import ATableLoadingBar from './components/ATableLoadingBar.vue'
 import ATableModal from './components/ATableModal.vue'
 export { createTableStore } from './stores/table'
+export type { FilterState, FilterStateRecord } from './stores/table'
 export type * from './types'
 
 /**

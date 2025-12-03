@@ -101,6 +101,11 @@ createTableStore: (initData: {
         width?: string | undefined;
         pinned?: boolean | undefined;
         resizable?: boolean | undefined;
+        sortable?: boolean | undefined;
+        filterable?: boolean | undefined;
+        filterType?: "text" | "select" | "number" | "date" | "dateRange" | "checkbox" | "component" | undefined;
+        filterOptions?: any[] | undefined;
+        filterComponent?: string | undefined;
         cellComponent?: string | undefined;
         cellComponentProps?: Record<string, any> | undefined;
         modalComponent?: string | ((context: CellContext) => string) | undefined;
@@ -120,6 +125,11 @@ createTableStore: (initData: {
         width?: string | undefined;
         pinned?: boolean | undefined;
         resizable?: boolean | undefined;
+        sortable?: boolean | undefined;
+        filterable?: boolean | undefined;
+        filterType?: "text" | "select" | "number" | "date" | "dateRange" | "checkbox" | "component" | undefined;
+        filterOptions?: any[] | undefined;
+        filterComponent?: string | undefined;
         cellComponent?: string | undefined;
         cellComponentProps?: Record<string, any> | undefined;
         modalComponent?: string | ((context: CellContext) => string) | undefined;
@@ -219,6 +229,7 @@ createTableStore: (initData: {
         label?: string | undefined;
     }[]>;
     display: import("vue").WritableComputedRef<TableDisplay[], TableDisplay[]>;
+    filterState: import("vue").Ref<FilterStateRecord, FilterStateRecord>;
     ganttBars: import("vue").Ref<{
         id: string;
         rowIndex: number;
@@ -290,14 +301,36 @@ createTableStore: (initData: {
             colspan?: number | undefined;
         } | undefined;
     }[]>;
+    sortState: import("vue").Ref<{
+        column: number | null;
+        direction: "asc" | "desc" | null;
+    }, {
+        column: number | null;
+        direction: "asc" | "desc" | null;
+    } | {
+        column: number | null;
+        direction: "asc" | "desc" | null;
+    }>;
     table: import("vue").ComputedRef<{}>;
     updates: import("vue").Ref<Record<string, string>, Record<string, string>>;
+    filteredRows: import("vue").ComputedRef<{
+        originalIndex: number;
+        indent?: number | undefined;
+        parent?: number | undefined;
+        gantt?: {
+            color?: string | undefined;
+            startIndex?: number | undefined;
+            endIndex?: number | undefined;
+            colspan?: number | undefined;
+        } | undefined;
+    }[]>;
     hasPinnedColumns: import("vue").ComputedRef<boolean>;
     isGanttView: import("vue").ComputedRef<boolean>;
     isTreeView: import("vue").ComputedRef<boolean>;
     isDependencyGraphEnabled: import("vue").ComputedRef<boolean>;
     numberedRowWidth: import("vue").ComputedRef<string>;
     zeroColumn: import("vue").ComputedRef<boolean>;
+    clearFilter: (colIndex: number) => void;
     closeModal: (event: MouseEvent) => void;
     createConnection: (fromHandleId: string, toHandleId: string, options?: {
         style?: ConnectionPath["style"];
@@ -345,12 +378,14 @@ createTableStore: (initData: {
     resizeColumn: (colIndex: number, newWidth: number) => void;
     setCellData: (colIndex: number, rowIndex: number, value: any) => void;
     setCellText: (colIndex: number, rowIndex: number, value: string) => void;
+    setFilter: (colIndex: number, filter: FilterState) => void;
+    sortByColumn: (colIndex: number) => void;
     toggleRowExpand: (rowIndex: number) => void;
     unregisterConnectionHandle: (handleId: string) => void;
     unregisterGanttBar: (barId: string) => void;
     updateGanttBar: (event: GanttDragEvent) => void;
     updateRows: (newRows: TableRow[]) => void;
-}, "columns" | "config" | "connectionHandles" | "connectionPaths" | "ganttBars" | "modal" | "rows" | "updates">, Pick<{
+}, "columns" | "config" | "connectionHandles" | "connectionPaths" | "filterState" | "ganttBars" | "modal" | "rows" | "sortState" | "updates">, Pick<{
     columns: import("vue").Ref<{
         name: string;
         align?: CanvasTextAlign | undefined;
@@ -360,6 +395,11 @@ createTableStore: (initData: {
         width?: string | undefined;
         pinned?: boolean | undefined;
         resizable?: boolean | undefined;
+        sortable?: boolean | undefined;
+        filterable?: boolean | undefined;
+        filterType?: "text" | "select" | "number" | "date" | "dateRange" | "checkbox" | "component" | undefined;
+        filterOptions?: any[] | undefined;
+        filterComponent?: string | undefined;
         cellComponent?: string | undefined;
         cellComponentProps?: Record<string, any> | undefined;
         modalComponent?: string | ((context: CellContext) => string) | undefined;
@@ -379,6 +419,11 @@ createTableStore: (initData: {
         width?: string | undefined;
         pinned?: boolean | undefined;
         resizable?: boolean | undefined;
+        sortable?: boolean | undefined;
+        filterable?: boolean | undefined;
+        filterType?: "text" | "select" | "number" | "date" | "dateRange" | "checkbox" | "component" | undefined;
+        filterOptions?: any[] | undefined;
+        filterComponent?: string | undefined;
         cellComponent?: string | undefined;
         cellComponentProps?: Record<string, any> | undefined;
         modalComponent?: string | ((context: CellContext) => string) | undefined;
@@ -478,6 +523,7 @@ createTableStore: (initData: {
         label?: string | undefined;
     }[]>;
     display: import("vue").WritableComputedRef<TableDisplay[], TableDisplay[]>;
+    filterState: import("vue").Ref<FilterStateRecord, FilterStateRecord>;
     ganttBars: import("vue").Ref<{
         id: string;
         rowIndex: number;
@@ -549,14 +595,36 @@ createTableStore: (initData: {
             colspan?: number | undefined;
         } | undefined;
     }[]>;
+    sortState: import("vue").Ref<{
+        column: number | null;
+        direction: "asc" | "desc" | null;
+    }, {
+        column: number | null;
+        direction: "asc" | "desc" | null;
+    } | {
+        column: number | null;
+        direction: "asc" | "desc" | null;
+    }>;
     table: import("vue").ComputedRef<{}>;
     updates: import("vue").Ref<Record<string, string>, Record<string, string>>;
+    filteredRows: import("vue").ComputedRef<{
+        originalIndex: number;
+        indent?: number | undefined;
+        parent?: number | undefined;
+        gantt?: {
+            color?: string | undefined;
+            startIndex?: number | undefined;
+            endIndex?: number | undefined;
+            colspan?: number | undefined;
+        } | undefined;
+    }[]>;
     hasPinnedColumns: import("vue").ComputedRef<boolean>;
     isGanttView: import("vue").ComputedRef<boolean>;
     isTreeView: import("vue").ComputedRef<boolean>;
     isDependencyGraphEnabled: import("vue").ComputedRef<boolean>;
     numberedRowWidth: import("vue").ComputedRef<string>;
     zeroColumn: import("vue").ComputedRef<boolean>;
+    clearFilter: (colIndex: number) => void;
     closeModal: (event: MouseEvent) => void;
     createConnection: (fromHandleId: string, toHandleId: string, options?: {
         style?: ConnectionPath["style"];
@@ -604,12 +672,14 @@ createTableStore: (initData: {
     resizeColumn: (colIndex: number, newWidth: number) => void;
     setCellData: (colIndex: number, rowIndex: number, value: any) => void;
     setCellText: (colIndex: number, rowIndex: number, value: string) => void;
+    setFilter: (colIndex: number, filter: FilterState) => void;
+    sortByColumn: (colIndex: number) => void;
     toggleRowExpand: (rowIndex: number) => void;
     unregisterConnectionHandle: (handleId: string) => void;
     unregisterGanttBar: (barId: string) => void;
     updateGanttBar: (event: GanttDragEvent) => void;
     updateRows: (newRows: TableRow[]) => void;
-}, "display" | "table" | "hasPinnedColumns" | "isGanttView" | "isTreeView" | "isDependencyGraphEnabled" | "numberedRowWidth" | "zeroColumn">, Pick<{
+}, "display" | "table" | "filteredRows" | "hasPinnedColumns" | "isGanttView" | "isTreeView" | "isDependencyGraphEnabled" | "numberedRowWidth" | "zeroColumn">, Pick<{
     columns: import("vue").Ref<{
         name: string;
         align?: CanvasTextAlign | undefined;
@@ -619,6 +689,11 @@ createTableStore: (initData: {
         width?: string | undefined;
         pinned?: boolean | undefined;
         resizable?: boolean | undefined;
+        sortable?: boolean | undefined;
+        filterable?: boolean | undefined;
+        filterType?: "text" | "select" | "number" | "date" | "dateRange" | "checkbox" | "component" | undefined;
+        filterOptions?: any[] | undefined;
+        filterComponent?: string | undefined;
         cellComponent?: string | undefined;
         cellComponentProps?: Record<string, any> | undefined;
         modalComponent?: string | ((context: CellContext) => string) | undefined;
@@ -638,6 +713,11 @@ createTableStore: (initData: {
         width?: string | undefined;
         pinned?: boolean | undefined;
         resizable?: boolean | undefined;
+        sortable?: boolean | undefined;
+        filterable?: boolean | undefined;
+        filterType?: "text" | "select" | "number" | "date" | "dateRange" | "checkbox" | "component" | undefined;
+        filterOptions?: any[] | undefined;
+        filterComponent?: string | undefined;
         cellComponent?: string | undefined;
         cellComponentProps?: Record<string, any> | undefined;
         modalComponent?: string | ((context: CellContext) => string) | undefined;
@@ -737,6 +817,7 @@ createTableStore: (initData: {
         label?: string | undefined;
     }[]>;
     display: import("vue").WritableComputedRef<TableDisplay[], TableDisplay[]>;
+    filterState: import("vue").Ref<FilterStateRecord, FilterStateRecord>;
     ganttBars: import("vue").Ref<{
         id: string;
         rowIndex: number;
@@ -808,14 +889,36 @@ createTableStore: (initData: {
             colspan?: number | undefined;
         } | undefined;
     }[]>;
+    sortState: import("vue").Ref<{
+        column: number | null;
+        direction: "asc" | "desc" | null;
+    }, {
+        column: number | null;
+        direction: "asc" | "desc" | null;
+    } | {
+        column: number | null;
+        direction: "asc" | "desc" | null;
+    }>;
     table: import("vue").ComputedRef<{}>;
     updates: import("vue").Ref<Record<string, string>, Record<string, string>>;
+    filteredRows: import("vue").ComputedRef<{
+        originalIndex: number;
+        indent?: number | undefined;
+        parent?: number | undefined;
+        gantt?: {
+            color?: string | undefined;
+            startIndex?: number | undefined;
+            endIndex?: number | undefined;
+            colspan?: number | undefined;
+        } | undefined;
+    }[]>;
     hasPinnedColumns: import("vue").ComputedRef<boolean>;
     isGanttView: import("vue").ComputedRef<boolean>;
     isTreeView: import("vue").ComputedRef<boolean>;
     isDependencyGraphEnabled: import("vue").ComputedRef<boolean>;
     numberedRowWidth: import("vue").ComputedRef<string>;
     zeroColumn: import("vue").ComputedRef<boolean>;
+    clearFilter: (colIndex: number) => void;
     closeModal: (event: MouseEvent) => void;
     createConnection: (fromHandleId: string, toHandleId: string, options?: {
         style?: ConnectionPath["style"];
@@ -863,12 +966,14 @@ createTableStore: (initData: {
     resizeColumn: (colIndex: number, newWidth: number) => void;
     setCellData: (colIndex: number, rowIndex: number, value: any) => void;
     setCellText: (colIndex: number, rowIndex: number, value: string) => void;
+    setFilter: (colIndex: number, filter: FilterState) => void;
+    sortByColumn: (colIndex: number) => void;
     toggleRowExpand: (rowIndex: number) => void;
     unregisterConnectionHandle: (handleId: string) => void;
     unregisterGanttBar: (barId: string) => void;
     updateGanttBar: (event: GanttDragEvent) => void;
     updateRows: (newRows: TableRow[]) => void;
-}, "closeModal" | "createConnection" | "deleteConnection" | "getCellData" | "getCellDisplayValue" | "getConnectionsForBar" | "getFormattedValue" | "getHandlesForBar" | "getHeaderCellStyle" | "getIndent" | "getRowExpandSymbol" | "isRowGantt" | "isRowVisible" | "registerConnectionHandle" | "registerGanttBar" | "resizeColumn" | "setCellData" | "setCellText" | "toggleRowExpand" | "unregisterConnectionHandle" | "unregisterGanttBar" | "updateGanttBar" | "updateRows">>
+}, "clearFilter" | "closeModal" | "createConnection" | "deleteConnection" | "getCellData" | "getCellDisplayValue" | "getConnectionsForBar" | "getFormattedValue" | "getHandlesForBar" | "getHeaderCellStyle" | "getIndent" | "getRowExpandSymbol" | "isRowGantt" | "isRowVisible" | "registerConnectionHandle" | "registerGanttBar" | "resizeColumn" | "setCellData" | "setCellText" | "setFilter" | "sortByColumn" | "toggleRowExpand" | "unregisterConnectionHandle" | "unregisterGanttBar" | "updateGanttBar" | "updateRows">>
 ```
 
 **Parameters:**
@@ -1023,6 +1128,28 @@ export interface ConnectionPath {
 | style? | `{ color?: string; width?: number; }` | Optional styling for the connection path. |
 | to | `{ barId: string; side: 'left' \| 'right'; }` | The target connection handle. |
 
+### FilterState
+
+Represents the state of a single filter
+
+**Definition:**
+
+```typescript
+export interface FilterState {
+  endValue?: any;
+  startValue?: any;
+  value: any;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| endValue? | `any` | End value for date range filters |
+| startValue? | `any` | Start value for date range filters |
+| value | `any` | The main filter value |
+
 ### GanttBarInfo
 
 Gantt bar information for VueFlow integration.
@@ -1115,6 +1242,10 @@ export interface TableColumn {
   cellComponentProps?: Record<string, any>;
   colspan?: number;
   edit?: boolean;
+  filterable?: boolean;
+  filterComponent?: string;
+  filterOptions?: any[];
+  filterType?: 'text' | 'select' | 'number' | 'date' | 'dateRange' | 'checkbox' | 'component';
   format?: string | ((value: any, context: CellContext) => string);
   ganttComponent?: string;
   isGantt?: boolean;
@@ -1126,6 +1257,7 @@ export interface TableColumn {
   originalIndex?: number;
   pinned?: boolean;
   resizable?: boolean;
+  sortable?: boolean;
   type?: string;
   width?: string;
 }
@@ -1140,6 +1272,10 @@ export interface TableColumn {
 | cellComponentProps? | `Record<string, any>` | Additional properties to pass to the table's cell component. Only applicable if the `cellComponent` property is set for the column. |
 | colspan? | `number` | The colspan of the Gantt bar for the column. This determines how many columns the Gantt bar should span across. Only applicable for Gantt tables. |
 | edit? | `boolean` | Control whether cells for the column is editable. |
+| filterable? | `boolean` | Control whether the column should be filterable and define filter configuration. |
+| filterComponent? | `string` | Custom component for filtering. |
+| filterOptions? | `any[]` | Options for select-type filters. |
+| filterType? | `'text' \| 'select' \| 'number' \| 'date' \| 'dateRange' \| 'checkbox' \| 'component'` | The type of filter for the column. |
 | format? | `string \| ((value: any, context: CellContext) => string)` | The format function to use to format the value of the cell. This can either be a normal or stringified function that takes the value and the cell context and returns a string. |
 | ganttComponent? | `string` | The component to use to render the Gantt bar for the column. Only applicable for Gantt tables. |
 | isGantt? | `boolean` | Whether the column is a Gantt column. Only applicable for Gantt tables. |
@@ -1151,6 +1287,7 @@ export interface TableColumn {
 | originalIndex? | `number` | The original column index for the Gantt bar, excluding any pinned columns. This is evaluated automatically while rendering the table. Only applicable for Gantt tables. |
 | pinned? | `boolean` | Control whether the column should be pinned to the table. |
 | resizable? | `boolean` | Control whether the column can be resized by the user. |
+| sortable? | `boolean` | Control whether the column should be sortable. |
 | type? | `string` | `Data` (the column contains text data), `Select` (the column contains a select input), `Date` (the column contains a date input), `component` (the column contains a custom component) |
 | width? | `string` | The width of the column. This can be a number (in pixels) or a string (in CSS units). |
 
@@ -1323,6 +1460,16 @@ export type ConnectionEvent = {
     type: 'create' | 'delete';
     connection: ConnectionPath;
 };
+```
+
+### FilterStateRecord
+
+Record mapping column indices to their filter states
+
+**Definition:**
+
+```typescript
+export type FilterStateRecord = Record<number, FilterState>;
 ```
 
 ### GanttDragEvent

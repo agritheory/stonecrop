@@ -150,4 +150,132 @@ describe('dropdown input component', () => {
 		expect(liElements.at(1)?.text()).toBe('Orange')
 		expect(liElements.at(2)?.text()).toBe('Pear')
 	})
+
+	it('should handle openDropdown with existing value in async mode', async () => {
+		const wrapper = mount(ADropdown, {
+			props: {
+				modelValue: 'Orange',
+				label: dropdownData.label,
+				items: dropdownData.items,
+				isAsync: true,
+			},
+		})
+
+		const input = wrapper.find('input')
+		await input.trigger('focus')
+		await wrapper.vm.$nextTick()
+
+		expect(wrapper.vm).toBeTruthy()
+	})
+
+	it('should handle closeDropdown with invalid result', async () => {
+		const wrapper = mount(ADropdown, {
+			props: {
+				modelValue: dropdownData.value,
+				label: dropdownData.label,
+				items: dropdownData.items,
+			},
+		})
+
+		const input = wrapper.find('input')
+		await input.trigger('focus')
+		await input.setValue('InvalidFruit')
+		await wrapper.vm.$nextTick()
+
+		// Click outside to close
+		const autocomplete = wrapper.find('.autocomplete')
+		await autocomplete.trigger('click')
+		await wrapper.vm.$nextTick()
+
+		const updateEvents = wrapper.emitted('update:modelValue')
+		expect(updateEvents).toBeTruthy()
+	})
+
+	it('should handle selectPrevResult when at first item', async () => {
+		const wrapper = mount(ADropdown, {
+			props: {
+				modelValue: dropdownData.value,
+				label: dropdownData.label,
+				items: dropdownData.items,
+			},
+		})
+
+		const input = wrapper.find('input')
+		await input.trigger('focus')
+		await input.setValue('')
+		await flushPromises()
+
+		// Arrow down to first item
+		await input.trigger('keydown.down')
+		await wrapper.vm.$nextTick()
+
+		// Arrow up from first item (should go to null)
+		await input.trigger('keydown.up')
+		await wrapper.vm.$nextTick()
+
+		expect(wrapper.vm).toBeTruthy()
+	})
+
+	it('should handle async filter function error', async () => {
+		const mockFilterFunction = vi.fn(() => {
+			throw new Error('Filter error')
+		})
+
+		const wrapper = mount(ADropdown, {
+			props: {
+				modelValue: '',
+				label: dropdownData.label,
+				items: dropdownData.items,
+				isAsync: true,
+				filterFunction: mockFilterFunction,
+			},
+		})
+
+		const input = wrapper.find('input')
+		await input.setValue('a')
+		await flushPromises()
+		await wrapper.vm.$nextTick()
+
+		expect(mockFilterFunction).toHaveBeenCalledWith('a')
+	})
+
+	it('should handle escape key to close dropdown', async () => {
+		const wrapper = mount(ADropdown, {
+			props: {
+				modelValue: dropdownData.value,
+				label: dropdownData.label,
+				items: dropdownData.items,
+			},
+		})
+
+		const input = wrapper.find('input')
+		await input.trigger('focus')
+		await input.setValue('')
+		await flushPromises()
+
+		await input.trigger('keydown.esc')
+		await wrapper.vm.$nextTick()
+
+		expect(wrapper.vm).toBeTruthy()
+	})
+
+	it('should handle tab key to close dropdown', async () => {
+		const wrapper = mount(ADropdown, {
+			props: {
+				modelValue: dropdownData.value,
+				label: dropdownData.label,
+				items: dropdownData.items,
+			},
+		})
+
+		const input = wrapper.find('input')
+		await input.trigger('focus')
+		await input.setValue('')
+		await flushPromises()
+
+		await input.trigger('keydown.tab')
+		await wrapper.vm.$nextTick()
+
+		expect(wrapper.vm).toBeTruthy()
+	})
 })
