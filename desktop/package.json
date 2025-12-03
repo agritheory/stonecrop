@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/desktop",
-	"version": "0.6.1",
+	"version": "0.6.2",
 	"description": "Desktop-specific components for Stonecrop UI",
 	"license": "MIT",
 	"type": "module",
