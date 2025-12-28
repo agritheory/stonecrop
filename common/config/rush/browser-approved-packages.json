@@ -255,6 +255,10 @@
       "allowedCategories": [ "prototype" ]
     },
     {
+      "name": "postgraphile",
+      "allowedCategories": [ "utilities" ]
+    },
+    {
       "name": "prettier",
       "allowedCategories": [ "prototype" ]
     },

@@ -93,6 +93,12 @@
 			"projectFolder": "rigs/stonecrop-rig",
 			"reviewCategory": "utilities",
 			"shouldPublish": false
+		},
+		{
+			"packageName": "@stonecrop/graphql-middleware",
+			"projectFolder": "graphql_middleware",
+			"reviewCategory": "utilities",
+			"versionPolicyName": "stonecrop"
 		}
 	]
 }

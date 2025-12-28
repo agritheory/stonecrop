@@ -45,7 +45,7 @@
 	"dependencies": {
 		"@stonecrop/stonecrop": "workspace:*",
 		"decimal.js": "^10.4.3",
-		"graphql": "~16.6.0",
+		"graphql": "^16.9.0",
 		"graphql-request": "~6.0.0"
 	},
 	"devDependencies": {
