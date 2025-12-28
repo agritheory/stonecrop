@@ -7,22 +7,26 @@
 	"types": "./dist/index.d.ts",
 	"exports": {
 		".": {
+			"types": "./dist/index.d.ts",
 			"import": "./dist/index.js",
-			"require": "./dist/index.cjs",
-			"types": "./dist/index.d.ts"
+			"require": "./dist/index.cjs"
 		}
 	},
 	"files": [
 		"dist"
 	],
 	"scripts": {
+		"_phase:build": "vite build",
+		"prepublish": "vite build",
 		"build": "vite build",
 		"test": "vitest run",
 		"test:watch": "vitest"
 	},
 	"dependencies": {
 		"graphql": "^16.9.0",
-		"postgraphile": "^5.0.0-rc.3"
+		"pgsql-ast-parser": "^12.0.1",
+		"postgraphile": "^5.0.0-rc.3",
+		"zod": "^3.24.0"
 	},
 	"devDependencies": {
 		"@types/node": "^22.0.0",

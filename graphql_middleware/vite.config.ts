@@ -1,6 +1,9 @@
-import { resolve } from 'node:path'
+import { resolve, dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vite'
 import dts from 'vite-plugin-dts'
+
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
 export default defineConfig({
 	plugins: [
@@ -16,7 +19,16 @@ export default defineConfig({
 			fileName: format => `index.${format === 'es' ? 'js' : 'cjs'}`,
 		},
 		rollupOptions: {
-			external: ['node:fs', 'node:path', 'graphql', 'postgraphile', 'postgraphile/utils', 'postgraphile/grafast'],
+			external: [
+				'node:fs',
+				'node:path',
+				'graphql',
+				'pgsql-ast-parser',
+				'postgraphile',
+				'postgraphile/utils',
+				'postgraphile/grafast',
+				'zod',
+			],
 		},
 	},
 })

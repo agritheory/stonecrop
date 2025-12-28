@@ -1,4 +1,4 @@
-# @rockfoil/stonecrop
+# @stonecrop/graphql-middleware
 
 GraphQL backend for the Stonecrop framework. Provides a generic, ORM-like interface over PostGraphile.
 
@@ -16,7 +16,7 @@ import {
 	loadDoctypes,
 	registerBuiltinHandlers,
 	registerHandler,
-} from '@rockfoil/stonecrop'
+} from '@stonecrop/graphql-middleware'
 
 // Load doctype definitions from JSON files
 loadDoctypes('./doctypes')
@@ -54,7 +54,7 @@ const preset: GraphileConfig.Preset = {
 ### Client Usage
 
 ```typescript
-import { StonecropClient } from '@rockfoil/stonecrop'
+import { StonecropClient } from '@stonecrop/graphql-middleware'
 
 const client = new StonecropClient({
 	endpoint: 'http://localhost:4000/graphql',

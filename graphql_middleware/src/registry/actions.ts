@@ -1,49 +1,162 @@
-import type { ActionHandler } from '../types'
+import type { ActionHandler, ActionContext, DoctypeMeta } from '../types'
 
 const handlerRegistry: Map<string, ActionHandler> = new Map()
 
+/**
+ * Register an action handler
+ */
 export function registerHandler(name: string, handler: ActionHandler): void {
 	handlerRegistry.set(name, handler)
 }
 
+/**
+ * Get a registered handler by name
+ */
 export function getHandler(name: string): ActionHandler | undefined {
 	return handlerRegistry.get(name)
 }
 
+/**
+ * Check if a handler is registered
+ */
 export function hasHandler(name: string): boolean {
 	return handlerRegistry.has(name)
 }
 
+/**
+ * Clear all registered handlers
+ */
 export function clearHandlers(): void {
 	handlerRegistry.clear()
 }
 
-// Built-in handlers
+// =============================================================================
+// Built-in Handlers
+// =============================================================================
 
-export const builtinHandlers: Record<string, ActionHandler> = {
-	validateRequiredFields: async (args, context) => {
-		const [record] = args as [Record<string, unknown>]
-		const { doctype } = context
+/**
+ * Validate that all required fields are present in a record
+ */
+const validateRequiredFields: ActionHandler = async (args, context) => {
+	const [record] = args as [Record<string, unknown>]
+	const { doctype } = context
 
-		const missing: string[] = []
-		for (const field of doctype.fields) {
-			if (field.required && (record[field.fieldname] === undefined || record[field.fieldname] === null)) {
-				missing.push(field.label ?? field.fieldname)
-			}
+	const missing: string[] = []
+	for (const field of doctype.fields) {
+		if (field.required && (record[field.fieldname] === undefined || record[field.fieldname] === null)) {
+			missing.push(field.label ?? field.fieldname)
 		}
+	}
 
-		if (missing.length > 0) {
-			throw new Error(`Missing required fields: ${missing.join(', ')}`)
-		}
+	if (missing.length > 0) {
+		throw new Error(`Missing required fields: ${missing.join(', ')}`)
+	}
 
-		return { valid: true }
-	},
-
-	noop: async () => {
-		return { ok: true }
-	},
+	return { valid: true }
 }
 
+/**
+ * Validate field types match expected types
+ */
+const validateFieldTypes: ActionHandler = async (args, context) => {
+	const [record] = args as [Record<string, unknown>]
+	const { doctype } = context
+
+	const errors: string[] = []
+
+	for (const field of doctype.fields) {
+		const value = record[field.fieldname]
+		if (value === undefined || value === null) continue
+
+		const error = validateFieldValue(field.fieldname, value, field.fieldtype)
+		if (error) errors.push(error)
+	}
+
+	if (errors.length > 0) {
+		throw new Error(`Field type validation failed:\n${errors.join('\n')}`)
+	}
+
+	return { valid: true }
+}
+
+/**
+ * Validate a single field value against its expected type
+ */
+function validateFieldValue(fieldname: string, value: unknown, fieldtype: string): string | null {
+	switch (fieldtype) {
+		case 'Int':
+			if (typeof value !== 'number' || !Number.isInteger(value)) {
+				return `${fieldname}: expected integer, got ${typeof value}`
+			}
+			break
+
+		case 'Float':
+		case 'Decimal':
+		case 'Currency':
+		case 'Quantity':
+			if (typeof value !== 'number' && typeof value !== 'string') {
+				return `${fieldname}: expected number, got ${typeof value}`
+			}
+			break
+
+		case 'Check':
+			if (typeof value !== 'boolean') {
+				return `${fieldname}: expected boolean, got ${typeof value}`
+			}
+			break
+
+		case 'Data':
+		case 'Text':
+		case 'Code':
+		case 'Link':
+			if (typeof value !== 'string') {
+				return `${fieldname}: expected string, got ${typeof value}`
+			}
+			break
+
+		case 'Date':
+		case 'Time':
+		case 'Datetime':
+			if (typeof value !== 'string' && !(value instanceof Date)) {
+				return `${fieldname}: expected date string or Date, got ${typeof value}`
+			}
+			break
+
+		case 'JSON':
+			if (typeof value !== 'object') {
+				return `${fieldname}: expected object, got ${typeof value}`
+			}
+			break
+
+		case 'Table':
+			if (!Array.isArray(value)) {
+				return `${fieldname}: expected array, got ${typeof value}`
+			}
+			break
+	}
+
+	return null
+}
+
+/**
+ * No-op handler for testing or placeholder actions
+ */
+const noop: ActionHandler = async () => {
+	return { ok: true }
+}
+
+/**
+ * Built-in handlers available for registration
+ */
+export const builtinHandlers: Record<string, ActionHandler> = {
+	validateRequiredFields,
+	validateFieldTypes,
+	noop,
+}
+
+/**
+ * Register all built-in handlers
+ */
 export function registerBuiltinHandlers(): void {
 	for (const [name, handler] of Object.entries(builtinHandlers)) {
 		registerHandler(name, handler)

@@ -1,4 +1,4 @@
-import type { DoctypeMeta, RouteContext, GraphQLExecutor, ActionHandler } from '../types'
+import type { DoctypeMeta, RouteContext, GraphQLExecutor } from '../types'
 
 export interface StonecropClientOptions {
 	endpoint: string
@@ -25,7 +25,10 @@ export class StonecropClient implements GraphQLExecutor {
 			body: JSON.stringify({ query, variables }),
 		})
 
-		const json = await response.json()
+		const json = (await response.json()) as {
+			data?: T
+			errors?: Array<{ message: string }>
+		}
 
 		if (json.errors?.length) {
 			throw new Error(json.errors[0].message)
@@ -47,18 +50,24 @@ export class StonecropClient implements GraphQLExecutor {
 			query GetMeta($doctype: String!) {
 				stonecropMeta(doctype: $doctype) {
 					name
+					slug
 					tableName
 					fields {
 						fieldname
 						fieldtype
+						component
 						label
 						required
+						readOnly
 						options
+						precision
+						scale
 					}
 					workflow {
 						states
 						actions
 					}
+					inherits
 					listDoctype
 					parentDoctype
 				}
@@ -80,18 +89,24 @@ export class StonecropClient implements GraphQLExecutor {
 			query GetAllMeta {
 				stonecropAllMeta {
 					name
+					slug
 					tableName
 					fields {
 						fieldname
 						fieldtype
+						component
 						label
 						required
+						readOnly
 						options
+						precision
+						scale
 					}
 					workflow {
 						states
 						actions
 					}
+					inherits
 					listDoctype
 					parentDoctype
 				}

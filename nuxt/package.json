@@ -48,6 +48,7 @@
 		"@nuxt/kit": "^4.2.0",
 		"@stonecrop/aform": "workspace:*",
 		"@stonecrop/atable": "workspace:*",
+		"@stonecrop/graphql-middleware": "workspace:*",
 		"@stonecrop/node-editor": "workspace:*",
 		"@stonecrop/stonecrop": "workspace:*",
 		"pinia": "^3.0.3"

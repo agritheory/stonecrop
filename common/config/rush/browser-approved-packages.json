@@ -95,6 +95,10 @@
       "allowedCategories": [ "prototype" ]
     },
     {
+      "name": "@stonecrop/graphql-middleware",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
       "name": "@stonecrop/node-editor",
       "allowedCategories": [ "prototype" ]
     },
@@ -239,6 +243,10 @@
       "allowedCategories": [ "prototype" ]
     },
     {
+      "name": "pgsql-ast-parser",
+      "allowedCategories": [ "utilities" ]
+    },
+    {
       "name": "pinia",
       "allowedCategories": [ "prototype" ]
     },
@@ -337,6 +345,10 @@
     {
       "name": "xstate",
       "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "zod",
+      "allowedCategories": [ "utilities" ]
     }
   ]
 }
