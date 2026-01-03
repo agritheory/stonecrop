@@ -33,7 +33,7 @@ export type ComponentProps = {
 	 * Indicate whether elements inside the component are read-only
 	 * @public
 	 */
-	readonly?: boolean
+	readOnly?: boolean
 
 	/**
 	 * Set a unique identifier for elements inside the component

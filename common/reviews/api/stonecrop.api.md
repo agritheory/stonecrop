@@ -95,7 +95,7 @@ export type ComponentProps = {
     label?: string;
     mask?: string;
     required?: boolean;
-    readonly?: boolean;
+    readOnly?: boolean;
     uuid?: string;
     validation?: {
         errorMessage: string;
@@ -804,6 +804,7 @@ export interface TableColumn {
     cellComponentProps?: Record<string, any>;
     colspan?: number;
     edit?: boolean;
+    fieldtype?: string;
     filterable?: boolean;
     filterComponent?: string;
     filterOptions?: any[];
@@ -820,8 +821,6 @@ export interface TableColumn {
     pinned?: boolean;
     resizable?: boolean;
     sortable?: boolean;
-    // @beta
-    type?: string;
     width?: string;
 }
 

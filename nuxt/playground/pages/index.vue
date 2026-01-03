@@ -19,12 +19,12 @@ const navigationItems = [
 			{
 				name: 'User Builder',
 				path: '/builder/user',
-				description: 'Visual builder for User doctype with state machines',
+				description: 'Visual builder for User doctype with workflows',
 			},
 			{
 				name: 'Role Builder',
 				path: '/builder/role',
-				description: 'Visual builder for Role doctype with state machines',
+				description: 'Visual builder for Role doctype with workflows',
 			},
 			{
 				name: 'Profile Builder',
@@ -80,11 +80,11 @@ const navigationItems = [
 					<div class="feature-card">
 						<div class="feature-icon">🔧</div>
 						<h3>DocBuilder</h3>
-						<p>Visual builder for DocTypes with ability rules and state machines</p>
+						<p>Visual builder for DocTypes with ability rules and workflows</p>
 					</div>
 					<div class="feature-card">
 						<div class="feature-icon">🔄</div>
-						<h3>State Machines</h3>
+						<h3>Workflows</h3>
 						<p>XState-powered FSM workflow integration with DocTypes</p>
 					</div>
 					<div class="feature-card">

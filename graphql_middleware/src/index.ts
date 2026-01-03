@@ -1,39 +1,48 @@
-// Types - Zod schemas and inferred types
+// Re-export all schema types from @stonecrop/schema
 export {
-	// Zod schemas (for custom validation/extension)
+	// Field types
 	StonecropFieldType,
-	FieldOptions,
+	TYPE_MAP,
+	getDefaultComponent,
+
+	// Field schema
 	FieldMeta,
-	ActionDefinition,
-	WorkflowMeta,
+	FieldOptions,
+	FieldValidation,
+
+	// Doctype schema
 	DoctypeMeta,
-	PostgresType,
+	WorkflowMeta,
+	ActionDefinition,
 
 	// Validation helpers
-	validateDoctype,
 	validateField,
-	parseDoctype,
+	validateDoctype,
 	parseField,
-} from './types'
+	parseDoctype,
 
-// Type-only exports
+	// DDL to Doctype conversion
+	convertSchema,
+	parseDDL,
+	normalizeType,
+	mapColumnToField,
+	PG_TYPE_MAP,
+	TYPE_ALIASES,
+} from '@stonecrop/schema'
+
 export type {
-	// Validation types
 	ValidationResult,
 	ValidationError,
-
-	// Runtime context types
-	RouteContext,
-	ActionContext,
-	ActionHandler,
-	GraphQLExecutor,
-
-	// Conversion types
+	ConvertedDoctype,
+	ConversionFieldMeta,
 	ParsedColumn,
 	ParsedTable,
 	ConversionOptions,
-	ConversionFieldMeta,
-} from './types'
+	PostgresType,
+} from '@stonecrop/schema'
+
+// Runtime context types (unique to graphql_middleware)
+export type { RouteContext, ActionContext, ActionHandler, GraphQLExecutor } from './types'
 
 // Doctype registry
 export {
@@ -58,11 +67,6 @@ export {
 	registerBuiltinHandlers,
 	builtinHandlers,
 } from './registry/actions'
-
-// DDL to Doctype conversion
-export { convertSchema, parseDDL, normalizeType, mapColumnToField, TYPE_MAP, TYPE_ALIASES } from './converter'
-
-export type { ConvertedDoctype } from './converter'
 
 // PostGraphile plugin
 export { createStonecropPlugin } from './plugin/postgraphile'

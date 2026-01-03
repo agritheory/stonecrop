@@ -1,10 +1,14 @@
 [
 	{
+		"fieldname": "table_fieldset",
+		"fieldtype": "Data",
 		"component": "AFieldset",
 		"collapsible": true,
 		"label": "Table/Fieldset",
 		"schema": [
 			{
+				"fieldname": "http_logs",
+				"fieldtype": "Doctype",
 				"component": "ATable",
 				"columns": [
 					{
@@ -48,6 +52,7 @@
 						"label": "Report Date",
 						"name": "report_date",
 						"fieldname": "report_date",
+						"fieldtype": "Date",
 						"modalComponent": "ADatePicker",
 						"align": "center",
 						"edit": true,

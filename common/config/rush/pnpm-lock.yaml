@@ -535,18 +535,15 @@ importers:
 
   ../../graphql_middleware:
     dependencies:
+      '@stonecrop/schema':
+        specifier: workspace:*
+        version: link:../schema
       graphql:
         specifier: ^16.9.0
         version: 16.9.0
-      pgsql-ast-parser:
-        specifier: ^12.0.1
-        version: 12.0.1
       postgraphile:
         specifier: ^5.0.0-rc.3
         version: 5.0.0-rc.3(crossws@0.3.5)(graphql@16.9.0)(h3@1.15.4)
-      zod:
-        specifier: ^3.24.0
-        version: 3.24.0
     devDependencies:
       '@types/node':
         specifier: ^22.0.0
@@ -633,6 +630,9 @@ importers:
       '@stonecrop/node-editor':
         specifier: workspace:*
         version: link:../node_editor
+      '@stonecrop/schema':
+        specifier: workspace:*
+        version: link:../schema
       '@stonecrop/stonecrop':
         specifier: workspace:*
         version: link:../stonecrop
@@ -715,6 +715,31 @@ importers:
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
+
+  ../../schema:
+    dependencies:
+      pgsql-ast-parser:
+        specifier: ^12.0.1
+        version: 12.0.1
+      zod:
+        specifier: ^3.24.0
+        version: 3.24.0
+    devDependencies:
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.0.0
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+      vite:
+        specifier: ^7.1.1
+        version: 7.1.1(@types/node@22.0.0)(jiti@2.6.1)(sass@1.89.2)(terser@5.43.1)(yaml@2.8.1)
+      vite-plugin-dts:
+        specifier: ^4.0.0
+        version: 4.0.0(@types/node@22.0.0)(rollup@4.52.5)(typescript@5.9.3)(vite@7.1.1(@types/node@22.0.0)(jiti@2.6.1)(sass@1.89.2)(terser@5.43.1)(yaml@2.8.1))
+      vitest:
+        specifier: ^4.0.5
+        version: 4.0.5(@types/node@22.0.0)(@vitest/ui@4.0.5)(jiti@2.6.1)(jsdom@27.1.0)(sass@1.89.2)(terser@5.43.1)(yaml@2.8.1)
 
   ../../stonecrop:
     dependencies:
@@ -9644,7 +9669,7 @@ snapshots:
   '@types/fs-extra@11.0.4':
     dependencies:
       '@types/jsonfile': 6.1.4
-      '@types/node': 22.19.1
+      '@types/node': 22.0.0
 
   '@types/hast@3.0.4':
     dependencies:
@@ -9658,7 +9683,7 @@ snapshots:
 
   '@types/jsonfile@6.1.4':
     dependencies:
-      '@types/node': 22.19.1
+      '@types/node': 22.0.0
 
   '@types/linkify-it@5.0.0': {}
 
@@ -9695,7 +9720,7 @@ snapshots:
 
   '@types/readable-stream@4.0.21':
     dependencies:
-      '@types/node': 22.19.1
+      '@types/node': 22.0.0
 
   '@types/resolve@1.20.2': {}
 

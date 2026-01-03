@@ -1,11 +1,5 @@
-import type {
-	PostgresType,
-	StonecropFieldType,
-	FieldMeta,
-	ParsedColumn,
-	ParsedTable,
-	ConversionFieldMeta,
-} from '../types'
+import type { StonecropFieldType } from '../fieldtype'
+import type { PostgresType, ParsedColumn, ParsedTable, ConversionFieldMeta } from './postgres-types'
 
 interface FieldTemplate {
 	component: string
@@ -13,7 +7,11 @@ interface FieldTemplate {
 	_unmapped?: boolean
 }
 
-const TYPE_MAP: Record<PostgresType, FieldTemplate> = {
+/**
+ * Mapping from PostgreSQL types to Stonecrop field types
+ * @public
+ */
+export const PG_TYPE_MAP: Record<PostgresType, FieldTemplate> = {
 	// ═══════════════════════════════════════════════════════════════
 	// TEXT
 	// ═══════════════════════════════════════════════════════════════
@@ -113,7 +111,11 @@ const TYPE_MAP: Record<PostgresType, FieldTemplate> = {
 	unknown: { component: 'ATextInput', fieldtype: 'Data', _unmapped: true },
 }
 
-const TYPE_ALIASES: Record<string, PostgresType> = {
+/**
+ * PostgreSQL type aliases to canonical types
+ * @public
+ */
+export const TYPE_ALIASES: Record<string, PostgresType> = {
 	// Integer
 	int: 'integer',
 	int2: 'smallint',
@@ -147,12 +149,13 @@ const TYPE_ALIASES: Record<string, PostgresType> = {
 
 /**
  * Normalize raw PostgreSQL type string to canonical PostgresType
+ * @public
  */
 export function normalizeType(rawType: string): PostgresType {
 	const lower = rawType.toLowerCase().trim()
 
 	// Direct match
-	if (lower in TYPE_MAP) {
+	if (lower in PG_TYPE_MAP) {
 		return lower as PostgresType
 	}
 
@@ -163,7 +166,7 @@ export function normalizeType(rawType: string): PostgresType {
 
 	// Strip type parameters: varchar(255) → varchar
 	const baseType = lower.replace(/\([^)]*\)/, '').trim()
-	if (baseType in TYPE_MAP) {
+	if (baseType in PG_TYPE_MAP) {
 		return baseType as PostgresType
 	}
 	if (baseType in TYPE_ALIASES) {
@@ -175,6 +178,7 @@ export function normalizeType(rawType: string): PostgresType {
 
 /**
  * Map a parsed column to a Stonecrop field definition
+ * @public
  */
 export function mapColumnToField(
 	column: ParsedColumn,
@@ -193,13 +197,13 @@ export function mapColumnToField(
 		}
 	}
 
-	// Array → Table
+	// Array → Doctype (child table)
 	if (column.arrayDimensions > 0) {
 		const field: ConversionFieldMeta = {
 			fieldname: column.name,
 			label: toLabel(column.name),
 			component: 'ATable',
-			fieldtype: 'Table',
+			fieldtype: 'Doctype',
 			required: !column.nullable,
 		}
 		if (options.includeUnmappedMeta) {
@@ -208,7 +212,7 @@ export function mapColumnToField(
 		return field
 	}
 
-	const template = TYPE_MAP[column.normalizedType] ?? TYPE_MAP.unknown
+	const template = PG_TYPE_MAP[column.normalizedType] ?? PG_TYPE_MAP.unknown
 
 	const field: ConversionFieldMeta = {
 		fieldname: column.name,
@@ -220,11 +224,11 @@ export function mapColumnToField(
 		default: parseDefault(column.defaultValue, column.normalizedType),
 	}
 
-	// Include precision/scale for decimal types
+	// Include precision/scale for decimal types via options
 	if (column.precision !== undefined) {
-		field.precision = column.precision
+		field.options = { precision: column.precision }
 		if (column.scale !== undefined) {
-			field.scale = column.scale
+			;(field.options as Record<string, unknown>).scale = column.scale
 		}
 	}
 
@@ -300,5 +304,3 @@ function parseDefault(value: string | undefined, dataType: PostgresType): unknow
 			return undefined
 	}
 }
-
-export { TYPE_MAP, TYPE_ALIASES }

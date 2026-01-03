@@ -11,6 +11,7 @@ describe('AForm Component', () => {
 			modelValue: [
 				{
 					fieldname: 'first_name',
+					fieldtype: 'Data',
 					component: 'ATextInput',
 					label: 'First Name',
 				},
@@ -34,6 +35,7 @@ describe('AForm Component', () => {
 			[
 				{
 					fieldname: 'first_name',
+					fieldtype: 'Data',
 					component: 'ATextInput',
 					label: 'First Name',
 					value: 'Steve',
@@ -48,6 +50,7 @@ describe('AForm Component', () => {
 				modelValue: [
 					{
 						fieldname: 'items',
+						fieldtype: 'Doctype',
 						component: 'ATable',
 						label: 'Items',
 						rows: [],
@@ -71,6 +74,7 @@ describe('AForm Component', () => {
 				modelValue: [
 					{
 						fieldname: 'items',
+						fieldtype: 'Doctype',
 						component: 'ATable',
 						label: 'Items',
 						rows: [{ id: 1, name: 'Existing' }],
@@ -94,12 +98,13 @@ describe('AForm Component', () => {
 				modelValue: [
 					{
 						fieldname: 'first_name',
+						fieldtype: 'Data',
 						component: 'ATextInput',
 						label: 'First Name',
 					},
 				] as SchemaTypes[],
 				data: {},
-				readonly: true,
+				readOnly: true,
 			},
 			components: {
 				ATextInput,

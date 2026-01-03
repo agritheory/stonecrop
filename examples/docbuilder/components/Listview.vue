@@ -42,7 +42,7 @@ const columns = ref<TableColumn[]>([
 	{
 		label: 'Doctype Name',
 		name: 'name',
-		type: 'Data',
+		fieldtype: 'Data',
 		align: 'left',
 		edit: false,
 		width: '35ch',

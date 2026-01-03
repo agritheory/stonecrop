@@ -53,7 +53,7 @@ const gantt_columns: TableColumn[] = [
 		name: 'resource_name',
 		edit: false,
 		width: '50ch',
-		type: 'Data',
+		fieldtype: 'Data',
 		align: 'left',
 		pinned: true,
 		format: value => {
@@ -72,7 +72,7 @@ const gantt_columns: TableColumn[] = [
 		name: 'total',
 		edit: false,
 		width: '12ch',
-		type: 'Data',
+		fieldtype: 'Data',
 		align: 'right',
 		pinned: true,
 		format: (value, context) => {
@@ -89,7 +89,7 @@ const gantt_columns: TableColumn[] = [
 		name: 'period_1',
 		edit: true,
 		width: '12ch',
-		type: 'Data',
+		fieldtype: 'Data',
 		align: 'right',
 		format: (value, context) => {
 			if (value === undefined || value === null) {
@@ -104,7 +104,7 @@ const gantt_columns: TableColumn[] = [
 		name: 'period_2',
 		edit: true,
 		width: '12ch',
-		type: 'Data',
+		fieldtype: 'Data',
 		align: 'right',
 		format: (value, context) => {
 			if (value === undefined || value === null) {
@@ -119,7 +119,7 @@ const gantt_columns: TableColumn[] = [
 		name: 'period_3',
 		edit: true,
 		width: '12ch',
-		type: 'Data',
+		fieldtype: 'Data',
 		align: 'right',
 		format: (value, context) => {
 			if (value === undefined || value === null) {
@@ -134,7 +134,7 @@ const gantt_columns: TableColumn[] = [
 		name: 'period_4',
 		edit: true,
 		width: '12ch',
-		type: 'Data',
+		fieldtype: 'Data',
 		align: 'right',
 		format: (value, context) => {
 			if (value === undefined || value === null) {
@@ -149,7 +149,7 @@ const gantt_columns: TableColumn[] = [
 		name: 'period_5',
 		edit: true,
 		width: '12ch',
-		type: 'Data',
+		fieldtype: 'Data',
 		align: 'right',
 		format: (value, context) => {
 			if (value === undefined || value === null) {
@@ -164,7 +164,7 @@ const gantt_columns: TableColumn[] = [
 		name: 'period_6',
 		edit: true,
 		width: '12ch',
-		type: 'Data',
+		fieldtype: 'Data',
 		align: 'right',
 		format: (value, context) => {
 			if (value === undefined || value === null) {
@@ -179,7 +179,7 @@ const gantt_columns: TableColumn[] = [
 		name: 'period_7',
 		edit: true,
 		width: '12ch',
-		type: 'Data',
+		fieldtype: 'Data',
 		align: 'right',
 		format: (value, context) => {
 			if (value === undefined || value === null) {
@@ -194,7 +194,7 @@ const gantt_columns: TableColumn[] = [
 		name: 'period_8',
 		edit: true,
 		width: '12ch',
-		type: 'Data',
+		fieldtype: 'Data',
 		align: 'right',
 		format: (value, context) => {
 			if (value === undefined || value === null) {
@@ -209,7 +209,7 @@ const gantt_columns: TableColumn[] = [
 		name: 'period_9',
 		edit: true,
 		width: '12ch',
-		type: 'Data',
+		fieldtype: 'Data',
 		align: 'right',
 		format: (value, context) => {
 			if (value === undefined || value === null) {
@@ -224,7 +224,7 @@ const gantt_columns: TableColumn[] = [
 		name: 'period_10',
 		edit: true,
 		width: '12ch',
-		type: 'Data',
+		fieldtype: 'Data',
 		align: 'right',
 		format: (value, context) => {
 			if (value === undefined || value === null) {
@@ -239,7 +239,7 @@ const gantt_columns: TableColumn[] = [
 		name: 'period_11',
 		edit: true,
 		width: '12ch',
-		type: 'Data',
+		fieldtype: 'Data',
 		align: 'right',
 		format: (value, context) => {
 			if (value === undefined || value === null) {
@@ -254,7 +254,7 @@ const gantt_columns: TableColumn[] = [
 		name: 'period_12',
 		edit: true,
 		width: '12ch',
-		type: 'Data',
+		fieldtype: 'Data',
 		align: 'right',
 		format: (value, context) => {
 			if (value === undefined || value === null) {
@@ -269,7 +269,7 @@ const gantt_columns: TableColumn[] = [
 		name: 'period_13',
 		edit: true,
 		width: '12ch',
-		type: 'Data',
+		fieldtype: 'Data',
 		align: 'right',
 		format: (value, context) => {
 			if (value === undefined || value === null) {
@@ -284,7 +284,7 @@ const gantt_columns: TableColumn[] = [
 		name: 'period_14',
 		edit: true,
 		width: '12ch',
-		type: 'Data',
+		fieldtype: 'Data',
 		align: 'right',
 		format: (value, context) => {
 			if (value === undefined || value === null) {
@@ -299,7 +299,7 @@ const gantt_columns: TableColumn[] = [
 		name: 'period_15',
 		edit: true,
 		width: '12ch',
-		type: 'Data',
+		fieldtype: 'Data',
 		align: 'right',
 		format: (value, context) => {
 			if (value === undefined || value === null) {
@@ -314,7 +314,7 @@ const gantt_columns: TableColumn[] = [
 		name: 'period_16',
 		edit: true,
 		width: '12ch',
-		type: 'Data',
+		fieldtype: 'Data',
 		align: 'right',
 		format: (value, context) => {
 			if (value === undefined || value === null) {
@@ -329,7 +329,7 @@ const gantt_columns: TableColumn[] = [
 		name: 'period_17',
 		edit: true,
 		width: '12ch',
-		type: 'Data',
+		fieldtype: 'Data',
 		align: 'right',
 		format: (value, context) => {
 			if (value === undefined || value === null) {
@@ -344,7 +344,7 @@ const gantt_columns: TableColumn[] = [
 		name: 'period_18',
 		edit: true,
 		width: '12ch',
-		type: 'Data',
+		fieldtype: 'Data',
 		align: 'right',
 		format: (value, context) => {
 			if (value === undefined || value === null) {
@@ -359,7 +359,7 @@ const gantt_columns: TableColumn[] = [
 		name: 'period_19',
 		edit: true,
 		width: '12ch',
-		type: 'Data',
+		fieldtype: 'Data',
 		align: 'right',
 		format: (value, context) => {
 			if (value === undefined || value === null) {
@@ -374,7 +374,7 @@ const gantt_columns: TableColumn[] = [
 		name: 'period_20',
 		edit: true,
 		width: '12ch',
-		type: 'Data',
+		fieldtype: 'Data',
 		align: 'right',
 		format: (value, context) => {
 			if (value === undefined || value === null) {
@@ -389,7 +389,7 @@ const gantt_columns: TableColumn[] = [
 		name: 'period_21',
 		edit: true,
 		width: '12ch',
-		type: 'Data',
+		fieldtype: 'Data',
 		align: 'right',
 		format: (value, context) => {
 			if (value === undefined || value === null) {
@@ -404,7 +404,7 @@ const gantt_columns: TableColumn[] = [
 		name: 'period_22',
 		edit: true,
 		width: '12ch',
-		type: 'Data',
+		fieldtype: 'Data',
 		align: 'right',
 		format: (value, context) => {
 			if (value === undefined || value === null) {
@@ -419,7 +419,7 @@ const gantt_columns: TableColumn[] = [
 		name: 'period_23',
 		edit: true,
 		width: '12ch',
-		type: 'Data',
+		fieldtype: 'Data',
 		align: 'right',
 		format: (value, context) => {
 			if (value === undefined || value === null) {
@@ -434,7 +434,7 @@ const gantt_columns: TableColumn[] = [
 		name: 'period_24',
 		edit: true,
 		width: '12ch',
-		type: 'Data',
+		fieldtype: 'Data',
 		align: 'right',
 		format: (value, context) => {
 			if (value === undefined || value === null) {
@@ -449,7 +449,7 @@ const gantt_columns: TableColumn[] = [
 		name: 'period_25',
 		edit: true,
 		width: '12ch',
-		type: 'Data',
+		fieldtype: 'Data',
 		align: 'right',
 		format: (value, context) => {
 			if (value === undefined || value === null) {
@@ -464,7 +464,7 @@ const gantt_columns: TableColumn[] = [
 		name: 'period_26',
 		edit: true,
 		width: '12ch',
-		type: 'Data',
+		fieldtype: 'Data',
 		align: 'right',
 		format: (value, context) => {
 			if (value === undefined || value === null) {
@@ -493,7 +493,7 @@ const project_gantt_columns: TableColumn[] = [
 	{
 		label: 'Project / Phase / Task',
 		name: 'project_name',
-		type: 'Data',
+		fieldtype: 'Data',
 		align: 'left',
 		edit: false,
 		width: '40ch',
@@ -518,7 +518,7 @@ const project_gantt_columns: TableColumn[] = [
 	{
 		label: 'Code',
 		name: 'project_code',
-		type: 'Data',
+		fieldtype: 'Data',
 		align: 'left',
 		edit: false,
 		width: '15ch',
@@ -531,7 +531,7 @@ const project_gantt_columns: TableColumn[] = [
 	{
 		label: 'Status',
 		name: 'status',
-		type: 'Data',
+		fieldtype: 'Data',
 		align: 'center',
 		edit: false,
 		width: '12ch',
@@ -550,7 +550,7 @@ const project_gantt_columns: TableColumn[] = [
 	{
 		label: 'Jan 1-15',
 		name: 'period_1',
-		type: 'Data',
+		fieldtype: 'Data',
 		align: 'right',
 		edit: true,
 		width: '10ch',
@@ -566,7 +566,7 @@ const project_gantt_columns: TableColumn[] = [
 	{
 		label: 'Jan 16-31',
 		name: 'period_2',
-		type: 'Data',
+		fieldtype: 'Data',
 		align: 'right',
 		edit: true,
 		width: '10ch',
@@ -582,7 +582,7 @@ const project_gantt_columns: TableColumn[] = [
 	{
 		label: 'Feb 1-15',
 		name: 'period_3',
-		type: 'Data',
+		fieldtype: 'Data',
 		align: 'right',
 		edit: true,
 		width: '10ch',
@@ -598,7 +598,7 @@ const project_gantt_columns: TableColumn[] = [
 	{
 		label: 'Feb 16-28',
 		name: 'period_4',
-		type: 'Data',
+		fieldtype: 'Data',
 		align: 'right',
 		edit: true,
 		width: '10ch',
@@ -614,7 +614,7 @@ const project_gantt_columns: TableColumn[] = [
 	{
 		label: 'Mar 1-15',
 		name: 'period_5',
-		type: 'Data',
+		fieldtype: 'Data',
 		align: 'right',
 		edit: true,
 		width: '10ch',
@@ -630,7 +630,7 @@ const project_gantt_columns: TableColumn[] = [
 	{
 		label: 'Mar 16-31',
 		name: 'period_6',
-		type: 'Data',
+		fieldtype: 'Data',
 		align: 'right',
 		edit: true,
 		width: '10ch',
@@ -646,7 +646,7 @@ const project_gantt_columns: TableColumn[] = [
 	{
 		label: 'Apr 1-15',
 		name: 'period_7',
-		type: 'Data',
+		fieldtype: 'Data',
 		align: 'right',
 		edit: true,
 		width: '10ch',
@@ -662,7 +662,7 @@ const project_gantt_columns: TableColumn[] = [
 	{
 		label: 'Apr 16-30',
 		name: 'period_8',
-		type: 'Data',
+		fieldtype: 'Data',
 		align: 'right',
 		edit: true,
 		width: '10ch',
@@ -678,7 +678,7 @@ const project_gantt_columns: TableColumn[] = [
 	{
 		label: 'May 1-15',
 		name: 'period_9',
-		type: 'Data',
+		fieldtype: 'Data',
 		align: 'right',
 		edit: true,
 		width: '10ch',
@@ -694,7 +694,7 @@ const project_gantt_columns: TableColumn[] = [
 	{
 		label: 'May 16-31',
 		name: 'period_10',
-		type: 'Data',
+		fieldtype: 'Data',
 		align: 'right',
 		edit: true,
 		width: '10ch',
@@ -710,7 +710,7 @@ const project_gantt_columns: TableColumn[] = [
 	{
 		label: 'Jun 1-15',
 		name: 'period_11',
-		type: 'Data',
+		fieldtype: 'Data',
 		align: 'right',
 		edit: true,
 		width: '10ch',
@@ -726,7 +726,7 @@ const project_gantt_columns: TableColumn[] = [
 	{
 		label: 'Jun 16-30',
 		name: 'period_12',
-		type: 'Data',
+		fieldtype: 'Data',
 		align: 'right',
 		edit: true,
 		width: '10ch',
@@ -742,7 +742,7 @@ const project_gantt_columns: TableColumn[] = [
 	{
 		label: 'Jul 1-15',
 		name: 'period_13',
-		type: 'Data',
+		fieldtype: 'Data',
 		align: 'right',
 		edit: true,
 		width: '10ch',
@@ -758,7 +758,7 @@ const project_gantt_columns: TableColumn[] = [
 	{
 		label: 'Jul 16-31',
 		name: 'period_14',
-		type: 'Data',
+		fieldtype: 'Data',
 		align: 'right',
 		edit: true,
 		width: '10ch',
@@ -774,7 +774,7 @@ const project_gantt_columns: TableColumn[] = [
 	{
 		label: 'Aug 1-15',
 		name: 'period_15',
-		type: 'Data',
+		fieldtype: 'Data',
 		align: 'right',
 		edit: true,
 		width: '10ch',
@@ -790,7 +790,7 @@ const project_gantt_columns: TableColumn[] = [
 	{
 		label: 'Aug 16-31',
 		name: 'period_16',
-		type: 'Data',
+		fieldtype: 'Data',
 		align: 'right',
 		edit: true,
 		width: '10ch',

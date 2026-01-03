@@ -5,7 +5,7 @@
 			ref="date"
 			v-model="inputDate"
 			type="date"
-			:disabled="readonly"
+			:disabled="readOnly"
 			:required="required"
 			@click="showPicker" />
 		<label :for="uuid">{{ label }}</label>
@@ -19,10 +19,9 @@ import { useTemplateRef } from 'vue'
 import { ComponentProps } from '../../types'
 
 const {
-	_schema, // don't remove to allow masking to work
 	label = 'Date',
 	required,
-	readonly,
+	readOnly,
 	uuid,
 	validation = { errorMessage: '&nbsp;' },
 } = defineProps<ComponentProps>()

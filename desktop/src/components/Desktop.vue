@@ -440,7 +440,7 @@ const getDoctypesSchema = (): SchemaTypes[] => {
 				{
 					label: 'Doctype',
 					name: 'doctype',
-					type: 'Data',
+					fieldtype: 'Data',
 					align: 'left',
 					edit: false,
 					width: '20ch',
@@ -448,7 +448,7 @@ const getDoctypesSchema = (): SchemaTypes[] => {
 				{
 					label: 'Name',
 					name: 'display_name',
-					type: 'Data',
+					fieldtype: 'Data',
 					align: 'left',
 					edit: false,
 					width: '30ch',
@@ -456,7 +456,7 @@ const getDoctypesSchema = (): SchemaTypes[] => {
 				{
 					label: 'Records',
 					name: 'record_count',
-					type: 'Data',
+					fieldtype: 'Int',
 					align: 'center',
 					edit: false,
 					width: '15ch',
@@ -464,7 +464,7 @@ const getDoctypesSchema = (): SchemaTypes[] => {
 				{
 					label: 'Actions',
 					name: 'actions',
-					type: 'Data',
+					fieldtype: 'Data',
 					align: 'center',
 					edit: false,
 					width: '20ch',
@@ -571,7 +571,7 @@ const getRecordsSchema = (): SchemaTypes[] => {
 							...columns.map(col => ({
 								label: col.label,
 								name: col.fieldname,
-								type: col.fieldtype,
+								fieldtype: col.fieldtype,
 								align: 'left',
 								edit: false,
 								width: '20ch',
@@ -579,7 +579,7 @@ const getRecordsSchema = (): SchemaTypes[] => {
 							{
 								label: 'Actions',
 								name: 'actions',
-								type: 'Data',
+								fieldtype: 'Data',
 								align: 'center',
 								edit: false,
 								width: '20ch',

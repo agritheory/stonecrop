@@ -11,11 +11,12 @@ import type {
 	ColumnConstraintDefault,
 } from 'pgsql-ast-parser'
 
-import type { ParsedTable, ParsedColumn } from '../types'
+import type { ParsedTable, ParsedColumn } from './postgres-types'
 import { normalizeType } from './type-map'
 
 /**
  * Parse PostgreSQL DDL and extract table definitions
+ * @public
  */
 export function parseDDL(sql: string): ParsedTable[] {
 	const statements = parse(sql, { locationTracking: false })

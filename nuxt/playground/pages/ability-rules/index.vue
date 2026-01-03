@@ -22,12 +22,12 @@ const router = useRouter()
 const { data: abilityRules } = await useFetch<TableRow[]>('/api/ability-rules')
 
 const columns: TableColumn[] = [
-	{ label: 'Role', name: 'role_id', type: 'Link', width: '20ch' },
-	{ label: 'DocType', name: 'doctype', type: 'Link', width: '20ch' },
-	{ label: 'Action', name: 'action', type: 'Select', width: '15ch' },
-	{ label: 'Subject', name: 'subject', type: 'Select', width: '15ch' },
-	{ label: 'Inverted', name: 'inverted', type: 'Check', width: '10ch' },
-	{ label: 'Active', name: 'active', type: 'Check', width: '10ch' },
+	{ label: 'Role', name: 'role_id', fieldtype: 'Link', width: '20ch' },
+	{ label: 'DocType', name: 'doctype', fieldtype: 'Link', width: '20ch' },
+	{ label: 'Action', name: 'action', fieldtype: 'Select', width: '15ch' },
+	{ label: 'Subject', name: 'subject', fieldtype: 'Select', width: '15ch' },
+	{ label: 'Inverted', name: 'inverted', fieldtype: 'Check', width: '10ch' },
+	{ label: 'Active', name: 'active', fieldtype: 'Check', width: '10ch' },
 ]
 
 function handleTableClick(event: MouseEvent) {

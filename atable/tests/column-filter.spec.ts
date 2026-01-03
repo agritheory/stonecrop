@@ -21,7 +21,7 @@ describe('Column Filter Component', () => {
 		baseColumn = {
 			name: 'name',
 			label: 'Name',
-			type: 'Data',
+			fieldtype: 'Data',
 		}
 	})
 

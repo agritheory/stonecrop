@@ -103,6 +103,10 @@
       "allowedCategories": [ "prototype" ]
     },
     {
+      "name": "@stonecrop/schema",
+      "allowedCategories": [ "prototype", "utilities" ]
+    },
+    {
       "name": "@stonecrop/stonecrop",
       "allowedCategories": [ "prototype", "utilities" ]
     },

@@ -67,9 +67,9 @@ const config = {
 
 The primary API for ATable is the column object.
 
-- `title`: String; optional
+- `label`: String; optional (the display label for the column header)
 - `name`: String; required (a reference to the column that must follow rules for valid JS variable naming)
-- `type`: String; optional (a valid data types, full list [below](#column-data-types))
+- `fieldtype`: String; optional (a valid field type, full list [below](#column-data-types))
 - `align`: String; optional (one of `left`, `right` or `center`; defaults to `center`)
 - `edit`: Boolean; optional (indicates if the field is editable; defaults to `false`)
 - `width`: String; optional (used to indicate the width of the cell; defaults to `40ch`)
@@ -78,16 +78,16 @@ The primary API for ATable is the column object.
 
 ```js
 {
-  title: 'Batch Name',
+  label: 'Batch Name',
   name: 'name',
-  type: 'Data',
+  fieldtype: 'Data',
   align: 'right',
   edit: false,
 },
 {
-  title: 'Species',
+  label: 'Species',
   name: 'species',
-  type: 'Select',
+  fieldtype: 'Select',
   align: 'left',
   edit: true,
   width: '30ch',
@@ -95,9 +95,9 @@ The primary API for ATable is the column object.
   options: () => ['Rainbow Trout', 'Steelhead', 'Golden Trout', 'Pacific Salmon']
 },
 {
-  title: 'Date',
+  label: 'Date',
   name: 'set_date',
-  type: 'Date',
+  fieldtype: 'Date',
   align: 'center',
   edit: true,
   width: '30ch',
@@ -124,8 +124,8 @@ import { ref } from 'vue'
 
 const tableData = ref([...])
 const tableColumns = ref([
-  { name: 'id', label: 'ID', width: '80px', type: 'Data' },
-  { name: 'name', label: 'Name', width: '150px', type: 'Data' },
+  { name: 'id', label: 'ID', width: '80px', fieldtype: 'Int' },
+  { name: 'name', label: 'Name', width: '150px', fieldtype: 'Data' },
 ])
 
 const onColumnsChange = (columns) => {

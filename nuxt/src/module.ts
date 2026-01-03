@@ -1,7 +1,15 @@
 import { existsSync } from 'node:fs'
 import { readFile, readdir } from 'node:fs/promises'
 import { extname } from 'node:path'
-import { addLayout, addPlugin, createResolver, defineNuxtModule, extendPages, useLogger } from '@nuxt/kit'
+import {
+	addLayout,
+	addPlugin,
+	addServerHandler,
+	createResolver,
+	defineNuxtModule,
+	extendPages,
+	useLogger,
+} from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema' // do not remove this import since it causes a build issue
 
 const { resolve } = createResolver(import.meta.url)
@@ -9,7 +17,10 @@ const { resolve } = createResolver(import.meta.url)
 // Define module options interface
 export interface ModuleOptions {
 	router?: Record<string, unknown>
+	/** Enable the DocBuilder feature with /docbuilder routes */
 	docbuilder?: boolean
+	/** Path to doctypes folder (defaults to 'doctypes' in srcDir) */
+	doctypesDir?: string
 }
 
 export default defineNuxtModule<ModuleOptions>({
@@ -22,6 +33,7 @@ export default defineNuxtModule<ModuleOptions>({
 		return {
 			router: {},
 			docbuilder: false,
+			doctypesDir: undefined,
 		}
 	},
 
@@ -117,6 +129,56 @@ export default defineNuxtModule<ModuleOptions>({
 					throw doctypeError
 				}
 			}
+		}
+
+		// Setup DocBuilder if enabled
+		if (_options.docbuilder) {
+			logger.log('DocBuilder enabled, adding routes and handlers')
+
+			const pagesDir = resolve('runtime/pages')
+			const docBuilderIndex = resolve(pagesDir, 'DocBuilderIndex.vue')
+			const docBuilderDetail = resolve(pagesDir, 'DocBuilderDetail.vue')
+
+			extendPages(pages => {
+				// Add docbuilder index page
+				pages.push({
+					name: 'docbuilder-index',
+					path: '/docbuilder',
+					file: docBuilderIndex,
+				})
+
+				// Add docbuilder detail page
+				pages.push({
+					name: 'docbuilder-detail',
+					path: '/docbuilder/:doctype',
+					file: docBuilderDetail,
+				})
+
+				logger.log('Added DocBuilder pages at /docbuilder')
+			})
+
+			// Add server handlers for docbuilder API
+			const handlersDir = resolve('runtime/server/api/docbuilder')
+			addServerHandler({
+				route: '/api/docbuilder/doctypes',
+				handler: resolve(handlersDir, 'doctypes.get'),
+			})
+			addServerHandler({
+				route: '/api/docbuilder/:doctype',
+				handler: resolve(handlersDir, '[doctype].get'),
+			})
+			addServerHandler({
+				route: '/api/docbuilder/validate',
+				method: 'post',
+				handler: resolve(handlersDir, 'validate.post'),
+			})
+			addServerHandler({
+				route: '/api/docbuilder/save',
+				method: 'post',
+				handler: resolve(handlersDir, 'save.post'),
+			})
+
+			logger.log('Added DocBuilder API handlers')
 		}
 
 		// Do not add the extension since the `.ts` will be transpiled to `.mjs` after `npm run prepack`

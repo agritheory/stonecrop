@@ -35,9 +35,9 @@ const sampleData: TableRow[] = [
 
 const tableRows = ref<TableRow[]>([...sampleData])
 const tableColumns = ref<TableColumn[]>([
-	{ name: 'id', label: 'ID', width: '80px', type: 'Data' },
-	{ name: 'name', label: 'Name', width: '150px', type: 'Data' },
-	{ name: 'age', label: 'Age', width: '100px', type: 'Data' },
+	{ name: 'id', label: 'ID', width: '80px', fieldtype: 'Int' },
+	{ name: 'name', label: 'Name', width: '150px', fieldtype: 'Data' },
+	{ name: 'age', label: 'Age', width: '100px', fieldtype: 'Int' },
 ])
 
 const tableConfig: TableConfig = {
@@ -55,7 +55,7 @@ const addColumn = () => {
 		name: `column_${columnCount + 1}`,
 		label: `Column ${columnCount + 1}`,
 		width: '120px',
-		type: 'Data',
+		fieldtype: 'Data',
 	}
 	tableColumns.value.push(newColumn)
 

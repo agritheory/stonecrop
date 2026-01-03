@@ -28,9 +28,9 @@ const { handleTableClick } = useTableNavigation({
 })
 
 const columns: TableColumn[] = [
-	{ label: 'Profile Name', name: 'profile_name', type: 'Data', width: '30ch' },
-	{ label: 'Description', name: 'description', type: 'Text', width: '40ch' },
-	{ label: 'Active', name: 'active', type: 'Check', width: '10ch' },
+	{ label: 'Profile Name', name: 'profile_name', fieldtype: 'Data', width: '30ch' },
+	{ label: 'Description', name: 'description', fieldtype: 'Text', width: '40ch' },
+	{ label: 'Active', name: 'active', fieldtype: 'Check', width: '10ch' },
 ]
 
 function handleNew() {

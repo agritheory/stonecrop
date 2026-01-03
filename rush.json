@@ -95,6 +95,12 @@
 			"shouldPublish": false
 		},
 		{
+			"packageName": "@stonecrop/schema",
+			"projectFolder": "schema",
+			"reviewCategory": "utilities",
+			"versionPolicyName": "stonecrop"
+		},
+		{
 			"packageName": "@stonecrop/graphql-middleware",
 			"projectFolder": "graphql_middleware",
 			"reviewCategory": "utilities",

@@ -41,15 +41,12 @@ export interface TableColumn {
 	label?: string
 
 	/**
-	 * The data-type of the column. Possible values:
-	 * - `Data` - the column contains text data
-	 * - `Select` - the column contains a select input
-	 * - `Date` - the column contains a date input
-	 * - `component` - the column contains a custom component
+	 * The semantic field type of the column. Uses the same StonecropFieldType enum as forms.
+	 * Common values: 'Data', 'Text', 'Int', 'Float', 'Date', 'Select', 'Link', 'Check', etc.
 	 *
-	 * @beta
+	 * @public
 	 */
-	type?: string
+	fieldtype?: string
 
 	/**
 	 * The width of the column. This can be a number (in pixels) or a string (in CSS units).

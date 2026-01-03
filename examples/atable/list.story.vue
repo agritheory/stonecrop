@@ -133,21 +133,25 @@ import http_data from './sample_data/http_logs.json'
 const basic_form_schema = ref([
 	{
 		fieldname: 'first_name',
+		fieldtype: 'Data',
 		component: 'ATextInput',
 		label: 'First Name',
 	},
 	{
 		fieldname: 'middle_name',
+		fieldtype: 'Data',
 		component: 'ATextInput',
 		label: 'Middle Name',
 	},
 	{
 		fieldname: 'last_name',
+		fieldtype: 'Data',
 		component: 'ATextInput',
 		label: 'Last Name',
 	},
 	{
 		fieldname: 'age',
+		fieldtype: 'Int',
 		component: 'ANumericInput',
 		label: 'Age',
 	},
@@ -159,18 +163,19 @@ const basic_form_schema = ref([
 	},
 	{
 		fieldname: 'card',
-		fieldtype: 'Card',
+		fieldtype: 'Data',
 		component: 'ATextInput',
 		label: 'Card',
 	},
 	{
 		fieldname: 'phone',
-		fieldtype: 'Phone',
+		fieldtype: 'Data',
 		component: 'ATextInput',
 		label: 'Phone',
 	},
 	{
 		fieldname: 'attach_file',
+		fieldtype: 'Attach',
 		component: 'AFileAttach',
 		label: 'Attach Files',
 	},
@@ -182,7 +187,7 @@ const http_logs = ref({
 		{
 			label: 'Home Page',
 			name: 'home_page',
-			type: 'Data',
+			fieldtype: 'Data',
 			align: 'left',
 			edit: false,
 			width: '35ch',
@@ -193,7 +198,7 @@ const http_logs = ref({
 		{
 			label: 'HTTP Method',
 			name: 'http_method',
-			type: 'Data',
+			fieldtype: 'Data',
 			align: 'left',
 			edit: true,
 			width: '20ch',
@@ -201,7 +206,7 @@ const http_logs = ref({
 		{
 			label: 'Report Date',
 			name: 'report_date',
-			type: 'component',
+			fieldtype: 'Date',
 			align: 'center',
 			edit: true,
 			width: '25ch',
@@ -217,7 +222,7 @@ const pinned_logs = ref({
 		{
 			label: 'Home Page',
 			name: 'home_page',
-			type: 'Data',
+			fieldtype: 'Data',
 			align: 'left',
 			edit: false,
 			width: '30ch',
@@ -227,7 +232,7 @@ const pinned_logs = ref({
 		{
 			label: 'HTTP Method',
 			name: 'http_method',
-			type: 'Data',
+			fieldtype: 'Data',
 			align: 'left',
 			edit: true,
 			width: '20ch',
@@ -236,7 +241,7 @@ const pinned_logs = ref({
 		{
 			label: 'Report Date',
 			name: 'report_date',
-			type: 'component',
+			fieldtype: 'Date',
 			align: 'center',
 			edit: true,
 			width: '25ch',
@@ -252,7 +257,7 @@ const pinned_extra_logs = ref({
 		{
 			label: 'Home Page',
 			name: 'home_page',
-			type: 'Data',
+			fieldtype: 'Data',
 			align: 'left',
 			edit: false,
 			width: '30ch',
@@ -262,7 +267,7 @@ const pinned_extra_logs = ref({
 		{
 			label: 'Report Date',
 			name: 'report_date',
-			type: 'component',
+			fieldtype: 'Date',
 			align: 'center',
 			edit: true,
 			width: '25ch',
@@ -273,7 +278,7 @@ const pinned_extra_logs = ref({
 		{
 			label: 'HTTP Method',
 			name: 'http_method',
-			type: 'Data',
+			fieldtype: 'Data',
 			align: 'left',
 			edit: true,
 			width: '20ch',
@@ -282,7 +287,7 @@ const pinned_extra_logs = ref({
 		{
 			label: 'HTTP Method',
 			name: 'http_method',
-			type: 'Data',
+			fieldtype: 'Data',
 			align: 'left',
 			edit: true,
 			width: '20ch',
@@ -291,7 +296,7 @@ const pinned_extra_logs = ref({
 		{
 			label: 'HTTP Method',
 			name: 'http_method',
-			type: 'Data',
+			fieldtype: 'Data',
 			align: 'left',
 			edit: true,
 			width: '20ch',
@@ -300,7 +305,7 @@ const pinned_extra_logs = ref({
 		{
 			label: 'Report Date',
 			name: 'report_date',
-			type: 'component',
+			fieldtype: 'Date',
 			align: 'center',
 			edit: true,
 			width: '25ch',
@@ -311,7 +316,7 @@ const pinned_extra_logs = ref({
 		{
 			label: 'HTTP Method',
 			name: 'http_method',
-			type: 'Data',
+			fieldtype: 'Data',
 			align: 'left',
 			edit: true,
 			width: '20ch',
@@ -326,7 +331,7 @@ const inbox = ref({
 		{
 			label: 'ID',
 			name: 'id',
-			type: 'Data',
+			fieldtype: 'Int',
 			align: 'left',
 			edit: true,
 			width: '20ch',
@@ -334,7 +339,7 @@ const inbox = ref({
 		{
 			label: 'Email',
 			name: 'email',
-			type: 'Data',
+			fieldtype: 'Data',
 			align: 'left',
 			edit: false,
 			width: '35ch',
@@ -342,7 +347,7 @@ const inbox = ref({
 		{
 			label: 'Name',
 			name: 'name',
-			type: 'Data',
+			fieldtype: 'Data',
 			align: 'left',
 			edit: true,
 			width: '35ch',

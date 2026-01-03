@@ -2,7 +2,7 @@
 	<div class="builder-index-container">
 		<div class="builder-index-header">
 			<h1>DocType Builder</h1>
-			<p class="subtitle">Select a DocType to view its schema, fields, permissions, and state machine</p>
+			<p class="subtitle">Select a DocType to view its schema, fields, permissions, and workflow</p>
 		</div>
 		<ClientOnly>
 			<ATable :columns="columns" :rows="doctypes" :config="config" @row-click="handleRowClick" />
@@ -19,12 +19,12 @@ const router = useRouter()
 const { data: doctypes } = await useFetch<TableRow[]>('/api/builder/doctypes')
 
 const columns: TableColumn[] = [
-	{ label: 'DocType', name: 'displayName', type: 'Data', width: '20ch' },
-	{ label: 'Module', name: 'module', type: 'Data', width: '15ch' },
-	{ label: 'Description', name: 'description', type: 'Data', width: '40ch' },
-	{ label: 'Fields', name: 'fields', type: 'Int', width: '10ch' },
-	{ label: 'Rules', name: 'abilityRules', type: 'Int', width: '10ch' },
-	{ label: 'State Machine', name: 'hasStateMachine', type: 'Check', width: '15ch' },
+	{ label: 'DocType', name: 'displayName', fieldtype: 'Data', width: '20ch' },
+	{ label: 'Module', name: 'module', fieldtype: 'Data', width: '15ch' },
+	{ label: 'Description', name: 'description', fieldtype: 'Data', width: '40ch' },
+	{ label: 'Fields', name: 'fields', fieldtype: 'Int', width: '10ch' },
+	{ label: 'Rules', name: 'abilityRules', fieldtype: 'Int', width: '10ch' },
+	{ label: 'Workflow', name: 'hasWorkflow', fieldtype: 'Check', width: '15ch' },
 ]
 
 const config: TableConfig = {

@@ -50,6 +50,7 @@
 		"@stonecrop/atable": "workspace:*",
 		"@stonecrop/graphql-middleware": "workspace:*",
 		"@stonecrop/node-editor": "workspace:*",
+		"@stonecrop/schema": "workspace:*",
 		"@stonecrop/stonecrop": "workspace:*",
 		"pinia": "^3.0.3"
 	},

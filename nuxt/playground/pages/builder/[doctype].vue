@@ -5,6 +5,37 @@
 			<!-- Title Section -->
 			<div class="builder-title">
 				<h1>DocBuilder: {{ doctypeName }}</h1>
+				<div class="builder-actions">
+					<button class="btn-secondary" :disabled="validating" @click="validateSchema">
+						{{ validating ? 'Validating...' : 'Validate Schema' }}
+					</button>
+					<button class="btn-primary" :disabled="saving" @click="saveToDisk">
+						{{ saving ? 'Saving...' : 'Save to Disk' }}
+					</button>
+				</div>
+			</div>
+
+			<!-- Validation Result -->
+			<div v-if="validationResult" class="validation-result" :class="validationResult.success ? 'success' : 'error'">
+				<div class="validation-header">
+					<span class="validation-icon">{{ validationResult.success ? '✓' : '✗' }}</span>
+					<span class="validation-title">{{
+						validationResult.success ? 'Schema is valid!' : 'Schema validation failed'
+					}}</span>
+					<button class="dismiss-btn" @click="dismissValidation">×</button>
+				</div>
+				<ul v-if="!validationResult.success && validationResult.errors.length > 0" class="validation-errors">
+					<li v-for="(error, index) in validationResult.errors" :key="index">
+						<code>{{ error.path.join('.') || 'root' }}</code
+						>: {{ error.message }}
+					</li>
+				</ul>
+			</div>
+
+			<!-- Save Message -->
+			<div v-if="saveMessage" class="save-message" :class="saveMessage.type">
+				<span>{{ saveMessage.text }}</span>
+				<button class="dismiss-btn" @click="dismissSaveMessage">×</button>
 			</div>
 
 			<!-- Main Content -->
@@ -72,11 +103,11 @@
 					<p v-else class="empty-state">No ability rules configured for this DocType</p>
 				</section>
 
-				<!-- State Machine -->
+				<!-- Workflow -->
 				<section class="builder-section">
-					<h2>State Machine</h2>
+					<h2>Workflow</h2>
 					<div v-if="stateMachine">
-						<div class="state-machine-info">
+						<div class="workflow-info">
 							<div class="info-grid">
 								<div class="info-item">
 									<label>Machine ID:</label>
@@ -97,14 +128,14 @@
 							</div>
 						</div>
 
-						<!-- Visual State Machine Editor -->
-						<div v-if="workflowConfig && Object.keys(workflowConfig).length > 0" class="state-machine-editor">
+						<!-- Visual Workflow Editor -->
+						<div v-if="workflowConfig && Object.keys(workflowConfig).length > 0" class="workflow-editor">
 							<ClientOnly>
 								<StateEditor v-model="workflowConfig" node-container-class="node-editor" :layout="layout" />
 							</ClientOnly>
 						</div>
 					</div>
-					<p v-else class="empty-state">No state machine configured for this DocType</p>
+					<p v-else class="empty-state">No workflow configured for this DocType</p>
 				</section>
 			</div>
 		</div>
@@ -114,6 +145,7 @@
 <script setup lang="ts">
 import type { TableConfig } from '@stonecrop/atable'
 import type { Layout } from '@stonecrop/node-editor'
+import type { ValidationResult } from '@stonecrop/schema'
 import { ref, computed, onMounted, nextTick } from 'vue'
 import '@vue-flow/core/dist/style.css'
 import '@vue-flow/core/dist/theme-default.css'
@@ -128,6 +160,10 @@ const stateMachine = ref<any>(null)
 const workflowConfig = ref<any>({})
 const layout = ref<Layout>({})
 const loading = ref(true)
+const validationResult = ref<ValidationResult | null>(null)
+const validating = ref(false)
+const saving = ref(false)
+const saveMessage = ref<{ type: 'success' | 'error'; text: string } | null>(null)
 
 const config: TableConfig = {
 	view: 'uncounted',
@@ -236,6 +272,55 @@ function handleRuleClick(rule: any) {
 function handleNewRule() {
 	router.push(`/ability-rules/new?doctype=${doctypeName.value}`)
 }
+
+async function validateSchema() {
+	validating.value = true
+	validationResult.value = null
+	try {
+		const result = await $fetch<ValidationResult>('/api/builder/validate', {
+			method: 'POST',
+			body: {
+				doctype: doctypeName.value,
+				fields: doctype.value?.fields || [],
+			},
+		})
+		validationResult.value = result
+	} catch (error: any) {
+		validationResult.value = {
+			success: false,
+			errors: [{ path: [], message: error.message || 'Validation request failed' }],
+		}
+	} finally {
+		validating.value = false
+	}
+}
+
+async function saveToDisk() {
+	saving.value = true
+	saveMessage.value = null
+	try {
+		await $fetch('/api/builder/save', {
+			method: 'POST',
+			body: {
+				doctype: doctypeName.value,
+				schema: doctype.value?.fields || [],
+			},
+		})
+		saveMessage.value = { type: 'success', text: 'Schema saved successfully!' }
+	} catch (error: any) {
+		saveMessage.value = { type: 'error', text: error.message || 'Failed to save schema' }
+	} finally {
+		saving.value = false
+	}
+}
+
+function dismissValidation() {
+	validationResult.value = null
+}
+
+function dismissSaveMessage() {
+	saveMessage.value = null
+}
 </script>
 
 <style scoped>
@@ -258,9 +343,139 @@ function handleNewRule() {
 
 .builder-title h1 {
 	font-size: 2.5rem;
-	margin: 0;
+	margin: 0 0 1rem 0;
 	font-weight: 700;
-	color: #1a202c; /* Dark text for readability on white background */
+	color: #1a202c;
+}
+
+.builder-actions {
+	display: flex;
+	gap: 1rem;
+	justify-content: center;
+}
+
+.btn-secondary {
+	padding: 0.5rem 1rem;
+	background: #e5e7eb;
+	color: #374151;
+	border: 1px solid #d1d5db;
+	border-radius: 0.5rem;
+	cursor: pointer;
+	font-weight: 500;
+	transition: all 0.2s;
+}
+
+.btn-secondary:hover:not(:disabled) {
+	background: #d1d5db;
+	transform: translateY(-1px);
+}
+
+.btn-secondary:disabled,
+.btn-primary:disabled {
+	opacity: 0.6;
+	cursor: not-allowed;
+}
+
+.validation-result {
+	padding: 1rem 1.5rem;
+	border-radius: 0.75rem;
+	margin-bottom: 1rem;
+}
+
+.validation-result.success {
+	background: #d1fae5;
+	border: 1px solid #10b981;
+}
+
+.validation-result.error {
+	background: #fee2e2;
+	border: 1px solid #ef4444;
+}
+
+.validation-header {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+}
+
+.validation-icon {
+	font-size: 1.25rem;
+	font-weight: bold;
+}
+
+.validation-result.success .validation-icon {
+	color: #10b981;
+}
+
+.validation-result.error .validation-icon {
+	color: #ef4444;
+}
+
+.validation-title {
+	font-weight: 600;
+	flex: 1;
+}
+
+.validation-result.success .validation-title {
+	color: #065f46;
+}
+
+.validation-result.error .validation-title {
+	color: #991b1b;
+}
+
+.dismiss-btn {
+	background: none;
+	border: none;
+	font-size: 1.5rem;
+	cursor: pointer;
+	padding: 0;
+	line-height: 1;
+	opacity: 0.6;
+	transition: opacity 0.2s;
+}
+
+.dismiss-btn:hover {
+	opacity: 1;
+}
+
+.validation-errors {
+	margin: 1rem 0 0 0;
+	padding-left: 1.5rem;
+	list-style-type: disc;
+}
+
+.validation-errors li {
+	margin-bottom: 0.5rem;
+	color: #991b1b;
+}
+
+.validation-errors code {
+	background: rgba(0, 0, 0, 0.1);
+	padding: 0.125rem 0.375rem;
+	border-radius: 0.25rem;
+	font-size: 0.875rem;
+}
+
+.save-message {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 1rem 1.5rem;
+	border-radius: 0.75rem;
+	margin-bottom: 1rem;
+}
+
+.save-message.success {
+	background: #d1fae5;
+	border: 1px solid #10b981;
+	color: #065f46;
+}
+
+.save-message.error {
+	background: #fee2e2;
+	border: 1px solid #ef4444;
+	color: #991b1b;
 }
 
 .loading {
@@ -430,7 +645,7 @@ function handleNewRule() {
 	font-style: italic;
 }
 
-.state-machine-info h3 {
+.workflow-info h3 {
 	margin: 1.5rem 0 1rem 0;
 	font-size: 1.125rem;
 	font-weight: 600;
@@ -524,7 +739,7 @@ function handleNewRule() {
 	border-radius: 0.25rem;
 }
 
-.state-machine-editor {
+.workflow-editor {
 	margin-top: 1.5rem;
 	background: white;
 	border: 2px solid rgba(102, 126, 234, 0.3);
@@ -533,13 +748,13 @@ function handleNewRule() {
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.state-machine-editor :deep(.vue-flow) {
+.workflow-editor :deep(.vue-flow) {
 	width: 100%;
 	height: 500px;
 	background: linear-gradient(to bottom, #f9fafb, #f3f4f6);
 }
 
-.state-machine-editor :deep(.vue-flow__node) {
+.workflow-editor :deep(.vue-flow__node) {
 	background: white;
 	border: 2px solid #667eea;
 	border-radius: 0.75rem;
@@ -550,16 +765,16 @@ function handleNewRule() {
 	transition: all 0.2s;
 }
 
-.state-machine-editor :deep(.vue-flow__node:hover) {
+.workflow-editor :deep(.vue-flow__node:hover) {
 	transform: translateY(-2px);
 	box-shadow: 0 6px 16px rgba(102, 126, 234, 0.3);
 }
 
-.state-machine-editor :deep(.vue-flow__edge) {
+.workflow-editor :deep(.vue-flow__edge) {
 	z-index: 5;
 }
 
-.state-machine-editor :deep(.vue-flow__edge-label) {
+.workflow-editor :deep(.vue-flow__edge-label) {
 	background: white !important;
 	border: 2px solid #667eea !important;
 	border-radius: 0.375rem !important;
@@ -575,21 +790,21 @@ function handleNewRule() {
 }
 
 /* Offset specific edge labels to prevent overlap on bidirectional edges */
-.state-machine-editor :deep(.vue-flow__edge-label.edge-label-suspend) {
+.workflow-editor :deep(.vue-flow__edge-label.edge-label-suspend) {
 	transform: translate(0, -15px);
 }
 
-.state-machine-editor :deep(.vue-flow__edge-label.edge-label-reactivate) {
+.workflow-editor :deep(.vue-flow__edge-label.edge-label-reactivate) {
 	transform: translate(0, 15px);
 }
 
-.state-machine-editor :deep(.vue-flow__edge-path) {
+.workflow-editor :deep(.vue-flow__edge-path) {
 	stroke: #667eea;
 	stroke-width: 2.5;
 	marker-end: url(#arrowclosed);
 }
 
-.state-machine-editor :deep(.vue-flow__edge-text) {
+.workflow-editor :deep(.vue-flow__edge-text) {
 	fill: #1e40af;
 	font-size: 0.75rem;
 	font-weight: 600;
@@ -597,14 +812,14 @@ function handleNewRule() {
 	text-anchor: middle;
 }
 
-.state-machine-editor :deep(.vue-flow__edge-textbg) {
+.workflow-editor :deep(.vue-flow__edge-textbg) {
 	fill: white;
 	fill-opacity: 1;
 	rx: 4;
 	ry: 4;
 }
 
-.state-machine-editor :deep(.vue-flow__edge-label) {
+.workflow-editor :deep(.vue-flow__edge-label) {
 	background: white !important;
 	border: 1px solid #3b82f6 !important;
 	border-radius: 0.25rem !important;
@@ -652,7 +867,7 @@ function handleNewRule() {
 }
 
 /* Style the node editor chart controls */
-.state-machine-editor :deep(.chart-controls) {
+.workflow-editor :deep(.chart-controls) {
 	padding: 0.75rem 1rem;
 	background: linear-gradient(to right, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
 	border-bottom: 1px solid rgba(102, 126, 234, 0.2);
@@ -662,7 +877,7 @@ function handleNewRule() {
 	justify-content: space-between;
 }
 
-.state-machine-editor :deep(.chart-controls-left) {
+.workflow-editor :deep(.chart-controls-left) {
 	display: flex;
 	align-items: center;
 	gap: 0.5rem;
@@ -670,22 +885,22 @@ function handleNewRule() {
 	color: #374151;
 }
 
-.state-machine-editor :deep(.chart-controls-left b) {
+.workflow-editor :deep(.chart-controls-left b) {
 	font-weight: 600;
 	color: #111827;
 }
 
-.state-machine-editor :deep(.chart-controls-right) {
+.workflow-editor :deep(.chart-controls-right) {
 	display: flex;
 	align-items: center;
 	gap: 0.5rem;
 }
 
-.state-machine-editor :deep(.chart-controls-right div) {
+.workflow-editor :deep(.chart-controls-right div) {
 	margin-left: 0;
 }
 
-.state-machine-editor :deep(.button-default) {
+.workflow-editor :deep(.button-default) {
 	padding: 0.5rem 1rem;
 	background: #667eea;
 	color: white;
@@ -697,13 +912,13 @@ function handleNewRule() {
 	transition: all 0.2s;
 }
 
-.state-machine-editor :deep(.button-default:hover) {
+.workflow-editor :deep(.button-default:hover) {
 	background: #5568d3;
 	transform: translateY(-1px);
 	box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
-.state-machine-editor :deep(.button-default:active) {
+.workflow-editor :deep(.button-default:active) {
 	background: #4a5bb8;
 	transform: translateY(0);
 }
