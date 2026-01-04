@@ -1,0 +1,13 @@
+{
+	"extends": "../tsconfig.options.json",
+	"compilerOptions": {
+		"rootDir": "./src",
+		"baseUrl": ".",
+		"moduleResolution": "bundler",
+		"paths": {
+			"@/*": ["src/*"]
+		}
+	},
+	"include": ["src/**/*.ts"],
+	"exclude": ["node_modules", "dist", "tests/**/*"]
+}

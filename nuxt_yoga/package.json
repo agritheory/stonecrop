@@ -1,0 +1,81 @@
+{
+	"name": "@stonecrop/nuxt-yoga",
+	"version": "1.0.0",
+	"description": "Yoga Graphql server as Nuxt Module",
+	"license": "MIT",
+	"type": "module",
+	"author": {
+		"name": "Tyler Matteson",
+		"email": "tyler@agritheory.com"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/agritheory/stonecrop",
+		"directory": "nuxt_yoga"
+	},
+	"bugs": {
+		"url": "https://github.com/agritheory/stonecrop/issues"
+	},
+	"exports": {
+		".": {
+			"import": "./dist/module.mjs",
+			"types": "./dist/types.d.mts"
+		}
+	},
+	"main": "./dist/module.mjs",
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "rushx dev:prepare && rushx prepack",
+		"build:module": "rushx dev:prepare && rushx prepack",
+		"dev": "nuxi dev playground",
+		"dev:build": "nuxi build playground",
+		"dev:prepare": "nuxt-module-build build --stub && nuxt-module-build prepare && nuxi prepare playground",
+		"prepack": "nuxt-module-build build",
+		"server": "cd playground && tsx watch server/mock_remote_schema.ts",
+		"lint": "eslint .",
+		"test": "rushx build && vitest run test/schema.test.ts",
+		"test:ci": "vitest run --run test/schema.test.ts",
+		"test:watch": "vitest watch",
+		"test:types": "vue-tsc --noEmit && cd playground && vue-tsc --noEmit"
+	},
+	"dependencies": {
+		"@graphql-codegen/core": "^5.0.0",
+		"@graphql-codegen/plugin-helpers": "^6.0.0",
+		"@graphql-codegen/typescript": "^5.0.0",
+		"@graphql-codegen/typescript-resolvers": "^5.0.0",
+		"@graphql-tools/graphql-file-loader": "^8.1.2",
+		"@graphql-tools/load": "^8.1.2",
+		"@graphql-tools/merge": "^9.1.1",
+		"@graphql-tools/schema": "^10.0.25",
+		"@graphql-tools/stitch": "^10.0.2",
+		"@graphql-tools/utils": "^10.9.1",
+		"@graphql-tools/wrap": "^11.0.1",
+		"globby": "^14.1.0",
+		"graphql": "^16.11.0",
+		"graphql-yoga": "^5.16.0",
+		"ofetch": "^1.4.1",
+		"ohash": "^2.0.11"
+	},
+	"devDependencies": {
+		"@nuxt/devtools": "^3.0.0",
+		"@nuxt/eslint-config": "^1.10.0",
+		"@nuxt/kit": "^4.2.0",
+		"@nuxt/module-builder": "^1.0.2",
+		"@nuxt/schema": "^4.2.0",
+		"@nuxt/test-utils": "^3.20.1",
+		"@vitest/coverage-istanbul": "^4.0.5",
+		"@types/node": "^20.19.17",
+		"changelogen": "^0.6.2",
+		"eslint": "^9.38.0",
+		"jsdom": "^27.1.0",
+		"nuxi": "^3.28.0",
+		"nuxt": "^4.2.0",
+		"tsx": "^4.20.5",
+		"typescript": "^5.9.3",
+		"vite": "^7.1.7",
+		"vitest": "^4.0.5",
+		"vue-tsc": "^3.1.2"
+	}
+}

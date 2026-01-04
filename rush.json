@@ -93,6 +93,24 @@
 			"projectFolder": "rigs/stonecrop-rig",
 			"reviewCategory": "utilities",
 			"shouldPublish": false
+		},
+		{
+			"packageName": "@stonecrop/rockfoil",
+			"projectFolder": "rockfoil",
+			"reviewCategory": "production",
+			"versionPolicyName": "stonecrop"
+		},
+		{
+			"packageName": "@stonecrop/casl-middleware",
+			"projectFolder": "casl_middleware",
+			"reviewCategory": "production",
+			"versionPolicyName": "stonecrop"
+		},
+		{
+			"packageName": "@stonecrop/nuxt-yoga",
+			"projectFolder": "nuxt_yoga",
+			"reviewCategory": "production",
+			"versionPolicyName": "stonecrop"
 		}
 	]
 }

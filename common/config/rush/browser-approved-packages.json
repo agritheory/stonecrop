@@ -3,8 +3,56 @@
   "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/approved-packages.schema.json",
   "packages": [
     {
+      "name": "@casl/ability",
+      "allowedCategories": [ "production", "prototype" ]
+    },
+    {
       "name": "@eslint/js",
       "allowedCategories": [ "prototype", "utilities" ]
+    },
+    {
+      "name": "@graphql-codegen/core",
+      "allowedCategories": [ "production", "prototype" ]
+    },
+    {
+      "name": "@graphql-codegen/plugin-helpers",
+      "allowedCategories": [ "production", "prototype" ]
+    },
+    {
+      "name": "@graphql-codegen/typescript",
+      "allowedCategories": [ "production", "prototype" ]
+    },
+    {
+      "name": "@graphql-codegen/typescript-resolvers",
+      "allowedCategories": [ "production", "prototype" ]
+    },
+    {
+      "name": "@graphql-tools/graphql-file-loader",
+      "allowedCategories": [ "production", "prototype" ]
+    },
+    {
+      "name": "@graphql-tools/load",
+      "allowedCategories": [ "production", "prototype" ]
+    },
+    {
+      "name": "@graphql-tools/merge",
+      "allowedCategories": [ "production", "prototype" ]
+    },
+    {
+      "name": "@graphql-tools/schema",
+      "allowedCategories": [ "production", "prototype" ]
+    },
+    {
+      "name": "@graphql-tools/stitch",
+      "allowedCategories": [ "production", "prototype" ]
+    },
+    {
+      "name": "@graphql-tools/utils",
+      "allowedCategories": [ "production", "prototype" ]
+    },
+    {
+      "name": "@graphql-tools/wrap",
+      "allowedCategories": [ "production", "prototype" ]
     },
     {
       "name": "@histoire/plugin-vue",
@@ -32,31 +80,31 @@
     },
     {
       "name": "@nuxt/devtools",
-      "allowedCategories": [ "prototype" ]
+      "allowedCategories": [ "production", "prototype" ]
     },
     {
       "name": "@nuxt/eslint",
-      "allowedCategories": [ "prototype" ]
+      "allowedCategories": [ "production", "prototype" ]
     },
     {
       "name": "@nuxt/eslint-config",
-      "allowedCategories": [ "prototype" ]
+      "allowedCategories": [ "production", "prototype" ]
     },
     {
       "name": "@nuxt/kit",
-      "allowedCategories": [ "prototype" ]
+      "allowedCategories": [ "production", "prototype" ]
     },
     {
       "name": "@nuxt/module-builder",
-      "allowedCategories": [ "prototype" ]
+      "allowedCategories": [ "production", "prototype" ]
     },
     {
       "name": "@nuxt/schema",
-      "allowedCategories": [ "prototype" ]
+      "allowedCategories": [ "production", "prototype" ]
     },
     {
       "name": "@nuxt/test-utils",
-      "allowedCategories": [ "prototype" ]
+      "allowedCategories": [ "production", "prototype" ]
     },
     {
       "name": "@rushstack/heft",
@@ -83,6 +131,10 @@
       "allowedCategories": [ "prototype" ]
     },
     {
+      "name": "@stonecrop/casl-middleware",
+      "allowedCategories": [ "production", "prototype" ]
+    },
+    {
       "name": "@stonecrop/code-editor",
       "allowedCategories": [ "prototype" ]
     },
@@ -97,6 +149,14 @@
     {
       "name": "@stonecrop/node-editor",
       "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "@stonecrop/nuxt-yoga",
+      "allowedCategories": [ "production", "prototype" ]
+    },
+    {
+      "name": "@stonecrop/rockfoil",
+      "allowedCategories": [ "production", "prototype" ]
     },
     {
       "name": "@stonecrop/stonecrop",
@@ -116,11 +176,11 @@
     },
     {
       "name": "@vitest/coverage-istanbul",
-      "allowedCategories": [ "prototype", "utilities" ]
+      "allowedCategories": [ "production", "prototype", "utilities" ]
     },
     {
       "name": "@vitest/ui",
-      "allowedCategories": [ "prototype", "utilities" ]
+      "allowedCategories": [ "production", "prototype", "utilities" ]
     },
     {
       "name": "@vue-flow/core",
@@ -143,6 +203,10 @@
       "allowedCategories": [ "prototype", "utilities" ]
     },
     {
+      "name": "changelogen",
+      "allowedCategories": [ "production", "prototype" ]
+    },
+    {
       "name": "concurrently",
       "allowedCategories": [ "prototype" ]
     },
@@ -152,7 +216,7 @@
     },
     {
       "name": "eslint",
-      "allowedCategories": [ "prototype", "utilities" ]
+      "allowedCategories": [ "production", "prototype", "utilities" ]
     },
     {
       "name": "eslint-config-prettier",
@@ -167,12 +231,32 @@
       "allowedCategories": [ "prototype", "utilities" ]
     },
     {
+      "name": "globby",
+      "allowedCategories": [ "production", "prototype" ]
+    },
+    {
+      "name": "graphile-build",
+      "allowedCategories": [ "production", "prototype" ]
+    },
+    {
       "name": "graphql",
-      "allowedCategories": [ "utilities" ]
+      "allowedCategories": [ "production", "utilities" ]
+    },
+    {
+      "name": "graphql-middleware",
+      "allowedCategories": [ "production", "prototype" ]
     },
     {
       "name": "graphql-request",
       "allowedCategories": [ "utilities" ]
+    },
+    {
+      "name": "graphql-tag",
+      "allowedCategories": [ "production", "prototype" ]
+    },
+    {
+      "name": "graphql-yoga",
+      "allowedCategories": [ "production", "prototype" ]
     },
     {
       "name": "h3",
@@ -192,11 +276,19 @@
     },
     {
       "name": "jsdom",
-      "allowedCategories": [ "prototype" ]
+      "allowedCategories": [ "production", "prototype" ]
+    },
+    {
+      "name": "jsonwebtoken",
+      "allowedCategories": [ "production", "prototype" ]
     },
     {
       "name": "localforage",
       "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "madr",
+      "allowedCategories": [ "production", "prototype" ]
     },
     {
       "name": "miragejs",
@@ -220,11 +312,19 @@
     },
     {
       "name": "nuxi",
-      "allowedCategories": [ "prototype" ]
+      "allowedCategories": [ "production", "prototype" ]
     },
     {
       "name": "nuxt",
-      "allowedCategories": [ "prototype" ]
+      "allowedCategories": [ "production", "prototype" ]
+    },
+    {
+      "name": "ofetch",
+      "allowedCategories": [ "production", "prototype" ]
+    },
+    {
+      "name": "ohash",
+      "allowedCategories": [ "production", "prototype" ]
     },
     {
       "name": "onscan.js",
@@ -255,12 +355,20 @@
       "allowedCategories": [ "prototype" ]
     },
     {
+      "name": "postgraphile",
+      "allowedCategories": [ "production", "prototype" ]
+    },
+    {
       "name": "prettier",
-      "allowedCategories": [ "prototype" ]
+      "allowedCategories": [ "production", "prototype" ]
     },
     {
       "name": "pretty-quick",
       "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "rimraf",
+      "allowedCategories": [ "production", "prototype" ]
     },
     {
       "name": "sass",
@@ -283,8 +391,12 @@
       "allowedCategories": [ "prototype" ]
     },
     {
+      "name": "tsx",
+      "allowedCategories": [ "production", "prototype" ]
+    },
+    {
       "name": "typescript",
-      "allowedCategories": [ "prototype", "utilities" ]
+      "allowedCategories": [ "production", "prototype", "utilities" ]
     },
     {
       "name": "typescript-eslint",
@@ -296,7 +408,7 @@
     },
     {
       "name": "vite",
-      "allowedCategories": [ "prototype", "utilities" ]
+      "allowedCategories": [ "production", "prototype", "utilities" ]
     },
     {
       "name": "vite-plugin-dts",
@@ -308,7 +420,7 @@
     },
     {
       "name": "vitest",
-      "allowedCategories": [ "prototype", "utilities" ]
+      "allowedCategories": [ "production", "prototype", "utilities" ]
     },
     {
       "name": "vue",
@@ -328,7 +440,7 @@
     },
     {
       "name": "vue-tsc",
-      "allowedCategories": [ "prototype" ]
+      "allowedCategories": [ "production", "prototype" ]
     },
     {
       "name": "xstate",

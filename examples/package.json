@@ -35,7 +35,7 @@
 		"@miragejs/graphql": "^0.1.13",
 		"miragejs": "^0.1.48",
 		"pinia": "^3.0.3",
-		"vite": "^7.1.1",
+		"vite": "^7.1.7",
 		"vue": "^3.5.22",
 		"vue-toast-notification": "^3",
 		"xstate": "^5.20.1"
