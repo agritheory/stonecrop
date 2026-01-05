@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/nuxt
 
-This log was last generated on Wed, 03 Dec 2025 13:42:21 GMT and should not be manually modified.
+This log was last generated on Mon, 05 Jan 2026 10:50:40 GMT and should not be manually modified.
+
+## 0.6.3
+Mon, 05 Jan 2026 10:50:40 GMT
+
+### Patches
+
+- update browserslist
 
 ## 0.6.2
 Wed, 03 Dec 2025 13:42:21 GMT
