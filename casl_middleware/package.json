@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/casl-middleware",
-	"version": "0.6.2",
+	"version": "0.6.3",
 	"license": "MIT",
 	"type": "module",
 	"author": {
@@ -8,7 +8,6 @@
 		"email": "support@agritheory.dev"
 	},
 	"description": "CASL authorization middleware for GraphQL servers",
-	"homepage": "https://github.com/agritheory/stonecrop#readme",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/agritheory/stonecrop",
@@ -88,5 +87,8 @@
 		"postgraphile": {
 			"optional": true
 		}
+	},
+	"engines": {
+		"node": ">=22.5.0"
 	}
 }

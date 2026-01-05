@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/rockfoil",
-	"version": "0.6.2",
+	"version": "0.6.3",
 	"license": "MIT",
 	"type": "module",
 	"author": {
@@ -64,5 +64,8 @@
 		"typescript": "^5.9.3",
 		"vite": "^7.3.0",
 		"vitest": "^4.0.16"
+	},
+	"engines": {
+		"node": ">=22.5.0"
 	}
 }

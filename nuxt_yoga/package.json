@@ -1,13 +1,13 @@
 {
 	"name": "@stonecrop/nuxt-yoga",
-	"version": "0.6.2",
-	"description": "Yoga Graphql server as Nuxt Module",
+	"version": "0.6.3",
 	"license": "MIT",
 	"type": "module",
 	"author": {
 		"name": "Tyler Matteson",
 		"email": "tyler@agritheory.com"
 	},
+	"description": "Yoga Graphql server as Nuxt Module",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/agritheory/stonecrop",
@@ -23,20 +23,28 @@
 		}
 	},
 	"main": "./dist/module.mjs",
+	"typesVersions": {
+		"*": {
+			".": [
+				"./dist/types.d.mts"
+			]
+		}
+	},
 	"files": [
 		"dist"
 	],
 	"scripts": {
-		"build": "rushx dev:prepare && rushx prepack",
-		"build:module": "rushx dev:prepare && rushx prepack",
-		"dev": "nuxi dev playground",
+		"_phase:build": "rushx dev:prepare && nuxt-module-build build",
+		"prepublish": "rushx dev:prepare && nuxt-module-build build",
+		"prepack": "rushx dev:prepare && nuxt-module-build build",
+		"build": "rushx dev:prepare && nuxt-module-build build",
+		"dev": "rushx dev:prepare && nuxi dev playground",
 		"dev:build": "nuxi build playground",
 		"dev:prepare": "nuxt-module-build build --stub && nuxt-module-build prepare && nuxi prepare playground",
-		"prepack": "nuxt-module-build build",
 		"server": "cd playground && tsx watch server/mock_remote_schema.ts",
 		"lint": "eslint .",
-		"test": "rushx build && vitest run test/schema.test.ts",
-		"test:ci": "vitest run --run test/schema.test.ts",
+		"test": "vitest run",
+		"test:ui": "vitest --ui",
 		"test:watch": "vitest watch",
 		"test:types": "vue-tsc --noEmit && cd playground && vue-tsc --noEmit"
 	},
@@ -76,5 +84,8 @@
 		"vite": "^7.3.0",
 		"vitest": "^4.0.16",
 		"vue-tsc": "^3.2.1"
+	},
+	"engines": {
+		"node": ">=22.5.0"
 	}
 }
