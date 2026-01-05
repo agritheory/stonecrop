@@ -23,6 +23,9 @@ jobs:
           aform: aform/**
           atable: atable/**
           beam: beam/**
+          casl_middleware: casl_middleware/**
+          nuxt_yoga: nuxt_yoga/**
+          rockfoil: rockfoil/**
           stonecrop: stonecrop/**
 
   test:
