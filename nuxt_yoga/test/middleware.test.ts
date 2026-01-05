@@ -1,17 +1,14 @@
-// nuxt-yoga/test/middleware.test.ts
-import { fileURLToPath } from 'node:url'
+import { resolve } from 'node:path'
+import { setup, $fetch } from '@nuxt/test-utils/e2e'
 import { describe, it, expect } from 'vitest'
-import { setup, $fetch } from '@nuxt/test-utils'
 
 describe('middleware', async () => {
 	await setup({
-		rootDir: fileURLToPath(new URL('./fixtures/middleware', import.meta.url)),
-		dev: true,
-		server: true,
+		rootDir: resolve(__dirname, 'fixtures/middleware'),
 	})
 
 	it('should execute middleware in order', async () => {
-		const response = await $fetch('/graphql/', {
+		const response = await $fetch<{ data: { middlewareTest: string } }>('/graphql/', {
 			method: 'POST',
 			body: {
 				query: '{ middlewareTest }',
@@ -23,7 +20,7 @@ describe('middleware', async () => {
 	})
 
 	it('should pass context through middleware chain', async () => {
-		const response = await $fetch('/graphql/', {
+		const response = await $fetch<{ data: { contextTest: string } }>('/graphql/', {
 			method: 'POST',
 			headers: {
 				'x-test-header': 'test-value',

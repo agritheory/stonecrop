@@ -8,6 +8,7 @@ export default defineNuxtConfig({
 		cache: {
 			enabled: true,
 			devMode: true,
+			apiEnabled: true,
 		},
 	},
 })

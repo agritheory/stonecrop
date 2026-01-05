@@ -1,13 +1,16 @@
-// nuxt-yoga/test/basic.test.ts
-import { fileURLToPath } from 'node:url'
+import { resolve } from 'node:path'
+import { setup, $fetch } from '@nuxt/test-utils/e2e'
 import { describe, it, expect } from 'vitest'
-import { setup, $fetch } from '@nuxt/test-utils'
+
+type GraphQLResponse<T> = {
+	data: T
+	success?: boolean
+	errors?: Array<{ message: string }>
+}
 
 describe('nuxt-yoga basic', async () => {
 	await setup({
-		rootDir: fileURLToPath(new URL('./fixtures/basic', import.meta.url)),
-		dev: true,
-		server: true,
+		rootDir: resolve(__dirname, 'fixtures/basic'),
 	})
 
 	it('should load the module', () => {
@@ -16,7 +19,7 @@ describe('nuxt-yoga basic', async () => {
 	})
 
 	it('should expose graphql endpoint', async () => {
-		const response = await $fetch('/graphql/', {
+		const response = await $fetch<GraphQLResponse<{ __typename: string }>>('/graphql/', {
 			method: 'POST',
 			body: {
 				query: '{ __typename }',
@@ -27,7 +30,7 @@ describe('nuxt-yoga basic', async () => {
 	})
 
 	it('should execute a simple query', async () => {
-		const response = await $fetch('/graphql/', {
+		const response = await $fetch<GraphQLResponse<{ hello: string }>>('/graphql/', {
 			method: 'POST',
 			body: {
 				query: '{ hello }',
@@ -37,7 +40,7 @@ describe('nuxt-yoga basic', async () => {
 	})
 
 	it('should execute ping query', async () => {
-		const response = await $fetch('/graphql/', {
+		const response = await $fetch<GraphQLResponse<{ ping: boolean }>>('/graphql/', {
 			method: 'POST',
 			body: {
 				query: '{ ping }',
@@ -47,7 +50,7 @@ describe('nuxt-yoga basic', async () => {
 	})
 
 	it('should execute a mutation', async () => {
-		const response = await $fetch('/graphql/', {
+		const response = await $fetch<GraphQLResponse<{ echo: string }>>('/graphql/', {
 			method: 'POST',
 			body: {
 				query: 'mutation { echo(message: "test") }',
@@ -57,14 +60,14 @@ describe('nuxt-yoga basic', async () => {
 	})
 
 	it('should expose cache API', async () => {
-		const response = await $fetch('/graphql/cache?action=stats')
+		const response = await $fetch<GraphQLResponse<{ totalEntries: number }>>('/graphql/cache?action=stats')
 		expect(response.success).toBe(true)
 		expect(response.data).toBeDefined()
 		expect(response.data.totalEntries).toBeTypeOf('number')
 	})
 
 	it('should clear cache', async () => {
-		const response = await $fetch('/graphql/cache?action=clear')
+		const response = await $fetch<{ success: boolean; message: string }>('/graphql/cache?action=clear')
 		expect(response.success).toBe(true)
 		expect(response.message).toContain('Cleared')
 	})

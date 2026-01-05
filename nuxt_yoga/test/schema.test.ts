@@ -1,7 +1,7 @@
-// nuxt-yoga/test/schema.test.ts
-import { describe, it, expect } from 'vitest'
-import { loadSchemaFromFiles } from '../src/schema_loader'
 import { join } from 'node:path'
+import { describe, it, expect } from 'vitest'
+
+import { loadSchemaFromFiles } from '../src/schema_loader'
 
 describe('schema loader', () => {
 	it('should load a single schema file', async () => {

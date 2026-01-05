@@ -1,13 +1,10 @@
-// nuxt-yoga/test/error-handling.test.ts
-import { fileURLToPath } from 'node:url'
+import { resolve } from 'node:path'
+import { setup, $fetch } from '@nuxt/test-utils/e2e'
 import { describe, it, expect } from 'vitest'
-import { setup, $fetch } from '@nuxt/test-utils'
 
 describe('error handling', async () => {
 	await setup({
-		rootDir: fileURLToPath(new URL('./fixtures/basic', import.meta.url)),
-		dev: true,
-		server: true,
+		rootDir: resolve(__dirname, 'fixtures/basic'),
 	})
 
 	it('should handle malformed queries', async () => {
@@ -37,18 +34,18 @@ describe('error handling', async () => {
 	})
 
 	it('should handle non-existent fields', async () => {
-		const response = await $fetch('/graphql/', {
+		const response = await $fetch<{ errors?: { message: string }[] }>('/graphql/', {
 			method: 'POST',
 			body: {
 				query: '{ nonExistentField }',
 			},
 		})
 		expect(response.errors).toBeDefined()
-		expect(response.errors.length).toBeGreaterThan(0)
+		expect(response.errors!.length).toBeGreaterThan(0)
 	})
 
 	it('should handle cache API with invalid action', async () => {
-		const response = await $fetch('/graphql/cache?action=invalid')
+		const response = await $fetch<{ success: boolean; availableActions: string[] }>('/graphql/cache?action=invalid')
 		expect(response.success).toBe(false)
 		expect(response.availableActions).toBeDefined()
 	})

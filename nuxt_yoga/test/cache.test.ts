@@ -1,13 +1,10 @@
-// nuxt-yoga/test/cache.test.ts
-import { fileURLToPath } from 'node:url'
-import { describe, it, expect, beforeAll } from 'vitest'
-import { setup, $fetch } from '@nuxt/test-utils'
+import { resolve } from 'node:path'
+import { setup, $fetch } from '@nuxt/test-utils/e2e'
+import { describe, it, expect } from 'vitest'
 
 describe('cache functionality', async () => {
 	await setup({
-		rootDir: fileURLToPath(new URL('./fixtures/basic', import.meta.url)),
-		dev: true,
-		server: true,
+		rootDir: resolve(__dirname, 'fixtures/basic'),
 	})
 
 	it('should cache responses', async () => {
@@ -32,7 +29,7 @@ describe('cache functionality', async () => {
 	})
 
 	it('should get cache statistics', async () => {
-		const stats = await $fetch('/graphql/cache?action=stats')
+		const stats = await $fetch<{ success: boolean; data: { entries: any[] } }>('/graphql/cache?action=stats')
 
 		expect(stats.success).toBe(true)
 		expect(stats.data).toBeDefined()
@@ -41,14 +38,17 @@ describe('cache functionality', async () => {
 
 	it('should clear cache on demand', async () => {
 		// Get initial stats
-		const statsBefore = await $fetch('/graphql/cache?action=stats')
+		const statsBefore = await $fetch<{ success: boolean; data: { totalEntries: number } }>(
+			'/graphql/cache?action=stats'
+		)
+		expect(statsBefore.data.totalEntries).toBeGreaterThan(0)
 
 		// Clear cache
-		const clearResponse = await $fetch('/graphql/cache?action=clear')
+		const clearResponse = await $fetch<{ success: boolean; message: string }>('/graphql/cache?action=clear')
 		expect(clearResponse.success).toBe(true)
 
 		// Stats should show no entries
-		const statsAfter = await $fetch('/graphql/cache?action=stats')
+		const statsAfter = await $fetch<{ success: boolean; data: { totalEntries: number } }>('/graphql/cache?action=stats')
 		expect(statsAfter.data.totalEntries).toBe(0)
 	})
 })

@@ -1,5 +1,6 @@
 import { join } from 'node:path'
 import { createResolver, defineNuxtModule, useLogger } from '@nuxt/kit'
+import type { Nuxt } from '@nuxt/schema' // do not remove this import since it causes a build issue
 
 import type { ModuleOptions } from './types'
 
@@ -11,7 +12,7 @@ export default defineNuxtModule<ModuleOptions>({
 		configKey: 'yoga',
 	},
 
-	defaults: _nuxt => ({
+	defaults: (_nuxt: Nuxt) => ({
 		schema: './server/**/*.graphql',
 		resolvers: './server/resolvers.ts',
 		url: '/graphql/',
@@ -93,7 +94,7 @@ export default defineNuxtModule<ModuleOptions>({
 
 		// Watch for schema and resolver changes in dev mode
 		if (nuxt.options.dev) {
-			const schemaGlobs = Array.isArray(options.schema) ? options.schema : [options.schema]
+			// const schemaGlobs = Array.isArray(options.schema) ? options.schema : [options.schema]
 			let cacheClearing = false
 
 			nuxt.hook('builder:watch', async (event, path) => {

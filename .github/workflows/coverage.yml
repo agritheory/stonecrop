@@ -21,6 +21,8 @@ jobs:
           aform: aform/**
           atable: atable/**
           beam: beam/**
+          casl_middleware: casl_middleware/**
+          rockfoil: rockfoil/**
           stonecrop: stonecrop/**
 
   coverage:
