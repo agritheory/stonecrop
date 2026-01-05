@@ -211,6 +211,14 @@
       "allowedCategories": [ "prototype", "utilities" ]
     },
     {
+      "name": "baseline-browser-mapping",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "browserslist",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
       "name": "changelogen",
       "allowedCategories": [ "production", "prototype" ]
     },
