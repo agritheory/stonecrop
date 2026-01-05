@@ -1,0 +1,76 @@
+{
+	"name": "@stonecrop/nuxt-grafserv",
+	"version": "1.0.0",
+	"description": "Pluggable Grafserv GraphQL server as Nuxt Module",
+	"license": "MIT",
+	"type": "module",
+	"author": {
+		"name": "Tyler Matteson",
+		"email": "tyler@agritheory.com"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/agritheory/stonecrop",
+		"directory": "nuxt_grafserv"
+	},
+	"bugs": {
+		"url": "https://github.com/agritheory/stonecrop/issues"
+	},
+	"exports": {
+		".": {
+			"import": "./dist/module.mjs",
+			"types": "./dist/types.d.mts"
+		}
+	},
+	"main": "./dist/module.mjs",
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"_phase:build": "rushx dev:prepare && rushx prepack",
+		"build": "rushx dev:prepare && rushx prepack",
+		"build:module": "rushx dev:prepare && rushx prepack",
+		"dev": "nuxi dev playground",
+		"dev:build": "nuxi build playground",
+		"dev:prepare": "nuxt-module-build build --stub && nuxt-module-build prepare && nuxi prepare playground",
+		"prepack": "nuxt-module-build build",
+		"lint": "eslint .",
+		"test": "vitest run",
+		"test:ci": "vitest run --run",
+		"test:watch": "vitest watch",
+		"test:types": "vue-tsc --noEmit && cd playground && vue-tsc --noEmit"
+	},
+	"dependencies": {
+		"@graphql-tools/graphql-file-loader": "^8.1.2",
+		"@graphql-tools/load": "^8.1.2",
+		"@graphql-tools/stitch": "^10.0.2",
+		"@graphql-tools/wrap": "^11.0.1",
+		"@stonecrop/graphql-middleware": "workspace:*",
+		"grafast": "^1.0.0-rc.3",
+		"grafserv": "^1.0.0-rc.3",
+		"graphile-config": "^1.0.0-rc.2",
+		"graphql": "^16.11.0"
+	},
+	"devDependencies": {
+		"@nuxt/devtools": "^3.0.0",
+		"@nuxt/eslint-config": "^1.10.0",
+		"@nuxt/kit": "^4.2.0",
+		"@nuxt/module-builder": "^1.0.2",
+		"@nuxt/schema": "^4.2.0",
+		"@nuxt/test-utils": "^3.20.1",
+		"@vitest/coverage-istanbul": "^4.0.5",
+		"@types/node": "^22.0.0",
+		"h3": "^1.15.4",
+		"nitropack": "^2.11.12",
+		"changelogen": "^0.6.2",
+		"eslint": "^9.38.0",
+		"jsdom": "^27.1.0",
+		"nuxi": "^3.28.0",
+		"nuxt": "^4.2.0",
+		"tsx": "^4.20.5",
+		"typescript": "^5.9.3",
+		"vite": "^7.1.7",
+		"vitest": "^4.0.5",
+		"vue-tsc": "^3.1.2"
+	}
+}

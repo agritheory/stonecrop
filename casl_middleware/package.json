@@ -1,0 +1,87 @@
+{
+	"name": "@stonecrop/casl-middleware",
+	"version": "1.0.0",
+	"description": "CASL authorization middleware for GraphQL servers",
+	"type": "module",
+	"license": "MIT",
+	"homepage": "https://github.com/agritheory/stonecrop#readme",
+	"author": {
+		"name": "Tyler Matteson",
+		"email": "support@agritheory.dev"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/agritheory/stonecrop",
+		"directory": "casl_middleware"
+	},
+	"bugs": {
+		"url": "https://github.com/agritheory/stonecrop/issues"
+	},
+	"exports": {
+		".": {
+			"import": {
+				"types": "./dist/index.d.ts",
+				"default": "./dist/index.js"
+			}
+		}
+	},
+	"typings": "./dist/index.d.ts",
+	"files": [
+		"dist/*",
+		"src/*"
+	],
+	"scripts": {
+		"build": "vite build && tsc --emitDeclarationOnly",
+		"dev": "vite build --watch",
+		"clean": "rimraf dist *.tsbuildinfo",
+		"lint": "eslint . --ext .ts",
+		"lint:fix": "eslint . --ext .ts --fix",
+		"format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
+		"test": "vitest run --coverage.enabled false",
+		"test:coverage": "vitest run --coverage",
+		"test:watch": "vitest watch",
+		"typecheck": "tsc --noEmit"
+	},
+	"keywords": [
+		"casl",
+		"graphql",
+		"authorization",
+		"middleware",
+		"postgraphile",
+		"rockfoil"
+	],
+	"dependencies": {
+		"@casl/ability": "^6.7.3",
+		"graphql": "^16.11.0",
+		"graphql-tag": "^2.12.6",
+		"jsonwebtoken": "~9.0.2"
+	},
+	"devDependencies": {
+		"@graphql-tools/merge": "^9.1.1",
+		"@graphql-tools/schema": "^10.0.25",
+		"@graphql-tools/utils": "^10.9.1",
+		"@types/node": "^22.0.0",
+		"@vitest/coverage-istanbul": "^4.0.5",
+		"eslint": "^9.38.0",
+		"graphql-middleware": "^6.1.35",
+		"graphql-yoga": "^5.16.0",
+		"jsdom": "^27.1.0",
+		"postgraphile": "^5.0.0-rc.3",
+		"prettier": "^3.3.3",
+		"rimraf": "^5.0.5",
+		"tsx": "^4.20.5",
+		"typescript": "^5.9.3",
+		"vite": "^7.1.7",
+		"vitest": "^4.0.5",
+		"@types/jsonwebtoken": "~9.0.10"
+	},
+	"peerDependencies": {
+		"graphql-yoga": "^5.16.0",
+		"postgraphile": "^5.0.0-rc.3"
+	},
+	"peerDependenciesMeta": {
+		"postgraphile": {
+			"optional": true
+		}
+	}
+}

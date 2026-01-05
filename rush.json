@@ -105,6 +105,24 @@
 			"projectFolder": "graphql_middleware",
 			"reviewCategory": "utilities",
 			"versionPolicyName": "stonecrop"
+		},
+		{
+			"packageName": "@stonecrop/rockfoil",
+			"projectFolder": "rockfoil",
+			"reviewCategory": "production",
+			"versionPolicyName": "stonecrop"
+		},
+		{
+			"packageName": "@stonecrop/casl-middleware",
+			"projectFolder": "casl_middleware",
+			"reviewCategory": "production",
+			"versionPolicyName": "stonecrop"
+		},
+		{
+			"packageName": "@stonecrop/nuxt-grafserv",
+			"projectFolder": "nuxt_grafserv",
+			"reviewCategory": "production",
+			"versionPolicyName": "stonecrop"
 		}
 	]
 }

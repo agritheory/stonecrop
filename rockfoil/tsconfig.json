@@ -1,0 +1,12 @@
+{
+	"extends": "../tsconfig.options.json",
+	"compilerOptions": {
+		"rootDir": "src",
+		"outDir": "dist",
+		"moduleResolution": "bundler",
+		"types": ["vitest/globals", "vitest/jsdom"],
+		"tsBuildInfoFile": "./dist/tsconfig.tsbuildinfo"
+	},
+	"include": ["./**/*", "./**/*.ts"],
+	"exclude": ["node_modules", "dist", "tests", "vite.config.ts", "**/*.test.ts", "**/*.spec.ts"]
+}
