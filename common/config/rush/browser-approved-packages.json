@@ -211,6 +211,10 @@
       "allowedCategories": [ "production", "prototype" ]
     },
     {
+      "name": "browserslist",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
       "name": "concurrently",
       "allowedCategories": [ "prototype" ]
     },

@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/nuxt",
-	"version": "0.6.2",
+	"version": "0.6.3",
 	"description": "Nuxt module for Stonecrop",
 	"license": "MIT",
 	"type": "module",
@@ -61,6 +61,7 @@
 		"@nuxt/schema": "^4.2.2",
 		"@nuxt/test-utils": "^3.22.0",
 		"baseline-browser-mapping": "latest",
+		"browserslist": "latest",
 		"eslint": "^9.39.2",
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-vue": "^10.6.2",
