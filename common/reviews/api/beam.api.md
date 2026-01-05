@@ -38,14 +38,14 @@ export { BeamArrow }
 
 export { BeamBtn }
 
-// @public (undocumented)
+// @public
 export type BeamColor = RGB | RGBA | HEX | HSL | HSLA | CSSProperties['color'];
 
 export { BeamDayDivider }
 
 export { BeamFilter }
 
-// @public (undocumented)
+// @public
 export type BeamFilterChoice = {
     label: string;
     value: string;
@@ -78,7 +78,6 @@ export type HSLA = `hsl(${number}, ${number}%, ${number}%), ${number}`;
 
 // @public
 export interface IMqttStream extends IClientOptions {
-    // (undocumented)
     topics?: string[];
 }
 
@@ -95,7 +94,7 @@ export { ListItem }
 
 export { ListView }
 
-// @public (undocumented)
+// @public
 export type ListViewItem = {
     barcode?: string;
     checked?: boolean;

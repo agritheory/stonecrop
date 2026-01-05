@@ -68,7 +68,7 @@ describe('JWT Middleware', () => {
 
 	describe('createJWTMiddleware', () => {
 		let mockContext: Context
-		let mockNext: ReturnType<typeof vi.fn>
+		let mockNext: any
 
 		beforeEach(() => {
 			mockContext = {
@@ -267,7 +267,7 @@ describe('JWT Middleware', () => {
 				secret: TEST_SECRET,
 			})
 
-			const req = {
+			const req: any = {
 				headers: {
 					authorization: `Bearer ${token}`,
 				},

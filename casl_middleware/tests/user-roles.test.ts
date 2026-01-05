@@ -1,18 +1,37 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { GraphQLError, GraphQLResolveInfo } from 'graphql'
-import { PureAbility, AbilityBuilder } from '@casl/ability'
+import { PureAbility, AbilityBuilder, AbilityClass } from '@casl/ability'
 import { createCaslMiddleware } from '../src/middleware/graphql'
 import { Context } from '../src/types'
+import { AppAbility } from '../src/middleware/ability'
+
+const Ability = PureAbility as AbilityClass<AppAbility>
 
 // Helper to create abilities with proper matchers
-const createTestAbility = (rules: any[]) => {
-	const { can, cannot, build } = new AbilityBuilder(PureAbility)
+const createTestAbility = (rules: any[]): AppAbility => {
+	const { can, cannot, build } = new AbilityBuilder<AppAbility>(Ability)
 
 	rules.forEach(rule => {
 		if (rule.inverted) {
-			cannot(rule.action, rule.subject, rule.fields, rule.conditions)
+			if (rule.fields && rule.conditions) {
+				cannot(rule.action, rule.subject, rule.fields, rule.conditions)
+			} else if (rule.fields) {
+				cannot(rule.action, rule.subject, rule.fields)
+			} else if (rule.conditions) {
+				cannot(rule.action, rule.subject, rule.conditions)
+			} else {
+				cannot(rule.action, rule.subject)
+			}
 		} else {
-			can(rule.action, rule.subject, rule.fields, rule.conditions)
+			if (rule.fields && rule.conditions) {
+				can(rule.action, rule.subject, rule.fields, rule.conditions)
+			} else if (rule.fields) {
+				can(rule.action, rule.subject, rule.fields)
+			} else if (rule.conditions) {
+				can(rule.action, rule.subject, rule.conditions)
+			} else {
+				can(rule.action, rule.subject)
+			}
 		}
 	})
 
@@ -44,9 +63,9 @@ const createTestAbility = (rules: any[]) => {
 }
 
 describe('CASL GraphQL Middleware', () => {
-	let mockResolve: ReturnType<typeof vi.fn>
+	let mockResolve: any
 	let mockContext: Context
-	let mockInfo: Partial<GraphQLResolveInfo>
+	let mockInfo: any
 
 	beforeEach(() => {
 		mockResolve = vi.fn().mockResolvedValue({ data: 'test' })

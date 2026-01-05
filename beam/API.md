@@ -228,7 +228,7 @@ useMqttStream: (options: IMqttStream) => Promise<{
 
 ### IMqttStream
 
-MQTT stream options
+MQTT stream configuration options extending MQTT client options
 
 **Definition:**
 
@@ -242,11 +242,13 @@ export interface IMqttStream {
 
 | Property | Type | Description |
 |----------|------|-------------|
-| topics? | `string[]` |  |
+| topics? | `string[]` | List of MQTT topics to subscribe to |
 
 ## Type Aliases
 
 ### BeamColor
+
+Color value that can be RGB, RGBA, HEX, HSL, HSLA, or any valid CSS color string
 
 **Definition:**
 
@@ -255,6 +257,8 @@ export type BeamColor = RGB | RGBA | HEX | HSL | HSLA | CSSProperties['color'];
 ```
 
 ### BeamFilterChoice
+
+Filter choice option with a label and value
 
 **Definition:**
 
@@ -296,6 +300,8 @@ export type HSLA = `hsl(${number}, ${number}%, ${number}%), ${number}`;
 ```
 
 ### ListViewItem
+
+Configuration object for a single item in a ListView component
 
 **Definition:**
 

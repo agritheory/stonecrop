@@ -1,9 +1,28 @@
 /// <reference types="vitest" />
 
+import { resolve } from 'path'
 import { coverageConfigDefaults, defineConfig } from 'vitest/config'
+
+const projectRootDir = resolve(__dirname)
 
 // https://vitejs.dev/config/
 export default defineConfig({
+	build: {
+		emptyOutDir: false,
+		sourcemap: true,
+		// Server-side library - only output ES modules
+		target: 'node18',
+		lib: {
+			entry: resolve(projectRootDir, 'src/index.ts'),
+			name: '@stonecrop/rockfoil',
+			formats: ['es'],
+			fileName: 'index',
+		},
+		rollupOptions: {
+			// Externalize Node.js built-ins for server-side library
+			external: [/^node:/, 'assert', 'util', 'crypto'],
+		},
+	},
 	test: {
 		globals: true,
 		environment: 'jsdom',
@@ -19,7 +38,12 @@ export default defineConfig({
 				functions: 30,
 				statements: 30,
 			},
-			exclude: [...coverageConfigDefaults.exclude],
+			include: ['src/**/*.ts'],
+			exclude: [
+				...coverageConfigDefaults.exclude,
+				'src/index.ts', // ignore the entry file
+				'types/**', // ignore types
+			],
 		},
 	},
 })
