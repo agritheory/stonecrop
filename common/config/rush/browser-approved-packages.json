@@ -472,7 +472,7 @@
     },
     {
       "name": "zod",
-      "allowedCategories": [ "utilities" ]
+      "allowedCategories": [ "production", "utilities" ]
     }
   ]
 }

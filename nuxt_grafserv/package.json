@@ -52,14 +52,18 @@
 		"graphql": "^16.11.0"
 	},
 	"devDependencies": {
+		"@casl/ability": "^6.7.3",
 		"@nuxt/devtools": "^3.0.0",
 		"@nuxt/eslint-config": "^1.10.0",
 		"@nuxt/kit": "^4.2.0",
 		"@nuxt/module-builder": "^1.0.2",
 		"@nuxt/schema": "^4.2.0",
 		"@nuxt/test-utils": "^3.20.1",
+		"@stonecrop/casl-middleware": "workspace:*",
+		"@stonecrop/rockfoil": "workspace:*",
 		"@vitest/coverage-istanbul": "^4.0.5",
 		"@types/node": "^22.0.0",
+		"zod": "^3.24.0",
 		"h3": "^1.15.4",
 		"nitropack": "^2.11.12",
 		"changelogen": "^0.6.2",
@@ -72,5 +76,17 @@
 		"vite": "^7.1.7",
 		"vitest": "^4.0.5",
 		"vue-tsc": "^3.1.2"
+	},
+	"peerDependencies": {
+		"@stonecrop/casl-middleware": "workspace:*",
+		"@stonecrop/rockfoil": "workspace:*"
+	},
+	"peerDependenciesMeta": {
+		"@stonecrop/casl-middleware": {
+			"optional": true
+		},
+		"@stonecrop/rockfoil": {
+			"optional": true
+		}
 	}
 }
