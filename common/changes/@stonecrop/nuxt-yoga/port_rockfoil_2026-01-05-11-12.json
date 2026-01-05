@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/nuxt-yoga",
+      "comment": "add nuxt yoga package",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@stonecrop/nuxt-yoga"
+}

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/rockfoil",
+      "comment": "add rockfoil package",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@stonecrop/rockfoil"
+}
