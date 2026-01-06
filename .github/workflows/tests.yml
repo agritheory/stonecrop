@@ -23,6 +23,9 @@ jobs:
           aform: aform/**
           atable: atable/**
           beam: beam/**
+          casl_middleware: casl_middleware/**
+          nuxt_grafserv: nuxt_grafserv/**
+          rockfoil: rockfoil/**
           stonecrop: stonecrop/**
 
   test:
@@ -37,7 +40,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Install Node
         uses: actions/setup-node@v6
