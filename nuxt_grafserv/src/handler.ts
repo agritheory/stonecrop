@@ -1,12 +1,12 @@
-import { grafserv } from 'grafserv/h3/v1'
-import { makeGrafastSchema } from 'grafast'
 import { GraphQLFileLoader } from '@graphql-tools/graphql-file-loader'
-import { loadSchema } from '@graphql-tools/load'
-import { defineEventHandler, type H3Event, readBody, getQuery } from 'h3'
-import { useRuntimeConfig } from 'nitropack/runtime'
+import { loadTypedefs } from '@graphql-tools/load'
+import { makeGrafastSchema, type GrafastSchemaConfig } from 'grafast'
+import { grafserv } from 'grafserv/h3/v1'
 import type { GraphQLSchema } from 'graphql'
+import { defineEventHandler, type H3Event } from 'h3'
+import { useRuntimeConfig } from 'nitropack/runtime'
 
-import type { ModuleOptions, GrafastContext } from './types'
+import type { ModuleOptions, GrafastContext, MiddlewareFunction } from './types'
 
 // Cache for the grafserv instance
 let grafservInstance: ReturnType<typeof grafserv> | null = null
@@ -15,11 +15,17 @@ let cachedSchema: GraphQLSchema | null = null
 /**
  * Load schema from file path(s) using graphql-tools
  */
-async function loadSchemaFromFiles(schemaPath: string | string[]): Promise<GraphQLSchema> {
+async function loadSchemaFromFiles(schemaPath: string | string[]): Promise<string> {
 	const paths = Array.isArray(schemaPath) ? schemaPath : [schemaPath]
-	return loadSchema(paths, {
+	const sources = await loadTypedefs(paths, {
 		loaders: [new GraphQLFileLoader()],
 	})
+
+	// Combine all type definitions into a single string
+	return sources
+		.map(source => source.rawSDL || '')
+		.filter(Boolean)
+		.join('\n')
 }
 
 /**
@@ -39,22 +45,22 @@ async function getSchema(options: ModuleOptions): Promise<GraphQLSchema> {
 		// Load from file path(s)
 		const typeDefs = await loadSchemaFromFiles(options.schema)
 
-		// Load resolvers if provided
-		let resolvers = {}
-		if (options.resolvers) {
+		// Load resolvers/objects if provided
+		let grafastConfig: GrafastSchemaConfig = { typeDefs }
+		if (options.resolversPath) {
 			try {
-				const resolverModule = await import('#internal/grafserv/resolvers')
-				resolvers = resolverModule.default || resolverModule
+				const resolverModule = await import(options.resolversPath)
+				const resolvers: Omit<GrafastSchemaConfig, 'typeDefs'> = resolverModule.default || resolverModule
+				grafastConfig = { typeDefs, ...resolvers }
+				console.log('[@stonecrop/nuxt-grafserv] Resolvers loaded successfully from:', options.resolversPath)
 			} catch (e) {
-				console.warn('[@stonecrop/nuxt-grafserv] Could not load resolvers:', e)
+				console.error('[@stonecrop/nuxt-grafserv] Failed to load resolvers from', options.resolversPath, ':', e)
+				throw e
 			}
 		}
 
-		// Create schema with grafast
-		schema = makeGrafastSchema({
-			typeDefs,
-			resolvers,
-		})
+		// Create schema using Grafast's makeGrafastSchema
+		schema = makeGrafastSchema(grafastConfig)
 	} else {
 		throw new Error('[@stonecrop/nuxt-grafserv] No schema provided. Configure schema path or provider function.')
 	}
@@ -66,7 +72,7 @@ async function getSchema(options: ModuleOptions): Promise<GraphQLSchema> {
 /**
  * Get or create the grafserv instance
  */
-async function getGrafservInstance(options: ModuleOptions): Promise<ReturnType<typeof grafserv>> {
+export async function getGrafservInstance(options: ModuleOptions): Promise<ReturnType<typeof grafserv>> {
 	if (grafservInstance) {
 		return grafservInstance
 	}
@@ -74,14 +80,31 @@ async function getGrafservInstance(options: ModuleOptions): Promise<ReturnType<t
 	const schema = await getSchema(options)
 	const isDev = process.env.NODE_ENV === 'development'
 
-	// Create grafserv instance with the schema
-	grafservInstance = grafserv({
+	// Create grafserv instance with the schema and proper configuration
+	// grafserv uses GraphQL-config preset structure
+	const grafservConfig = {
 		schema,
-		graphiql: options.graphiql ?? isDev,
-		websockets: options.grafserv?.websockets ?? false,
-	})
+		preset: {
+			grafserv: {
+				graphqlPath: options.url || '/graphql/',
+				graphiqlPath: options.url || '/graphql/',
+				graphiql: options.graphiql ?? isDev,
+				graphiqlOnGraphQLGET: true,
+				graphqlOverGET: true, // Enable GET requests for GraphQL
+				websockets: options.grafserv?.websockets ?? false,
+				introspection: options.grafserv?.introspection ?? isDev,
+			},
+		},
+	}
 
-	console.log('[@stonecrop/nuxt-grafserv] Grafserv instance created')
+	grafservInstance = grafserv(grafservConfig)
+
+	console.log('[@stonecrop/nuxt-grafserv] Grafserv instance created with preset:', {
+		graphqlPath: grafservConfig.preset.grafserv.graphqlPath,
+		graphiql: grafservConfig.preset.grafserv.graphiql,
+		graphiqlOnGraphQLGET: grafservConfig.preset.grafserv.graphiqlOnGraphQLGET,
+		graphqlOverGET: grafservConfig.preset.grafserv.graphqlOverGET,
+	})
 	return grafservInstance
 }
 
@@ -108,6 +131,10 @@ async function applyMiddleware(
 	const applyNext = async (index: number): Promise<GrafastContext> => {
 		if (index >= middleware.length) {
 			return context
+		}
+
+		if (!middleware[index]) {
+			return applyNext(index + 1)
 		}
 
 		return middleware[index](context, () => applyNext(index + 1))
@@ -140,8 +167,20 @@ export default defineEventHandler(async (event: H3Event) => {
 			params: event.context.params || {},
 		}
 
-		// Apply middleware
-		const middleware = options.middleware || []
+		// Load and apply middleware from virtual module
+		let middleware: MiddlewareFunction[] = []
+		try {
+			// @ts-expect-error - virtual module may not exist
+			const middlewareModule = await import('#internal/grafserv/middleware')
+			middleware = middlewareModule.default || []
+		} catch (error) {
+			// No middleware configured
+			console.log(
+				'[@stonecrop/nuxt-grafserv] No middleware module found, proceeding without middleware. Error: ',
+				error
+			)
+		}
+
 		await applyMiddleware(context, middleware)
 
 		// Get grafserv instance

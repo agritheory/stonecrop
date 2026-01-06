@@ -3,7 +3,7 @@ import NuxtGrafserv from '../src/module'
 import type { ModuleOptions, GrafastContext } from '../src/types'
 
 export default defineNuxtConfig({
-	compatibilityDate: '2025-01-01',
+	compatibilityDate: '2026-01-01',
 	modules: [NuxtGrafserv],
 
 	grafserv: {

@@ -227,6 +227,10 @@
       "allowedCategories": [ "prototype" ]
     },
     {
+      "name": "debug",
+      "allowedCategories": [ "production" ]
+    },
+    {
       "name": "decimal.js",
       "allowedCategories": [ "utilities" ]
     },

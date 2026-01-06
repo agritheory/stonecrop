@@ -785,6 +785,9 @@ importers:
       '@stonecrop/graphql-middleware':
         specifier: workspace:*
         version: link:../graphql_middleware
+      debug:
+        specifier: ^4.4.3
+        version: 4.4.3
       grafast:
         specifier: ^1.0.0-rc.3
         version: 1.0.0-rc.3(@envelop/core@5.4.0)(graphql@16.12.0)

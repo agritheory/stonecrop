@@ -1,7 +1,10 @@
 /**
  * GraphQL resolvers for nuxt-grafserv playground
  * Uses in-memory data stores for demonstration
+ * Modernized with Grafast plan resolvers
  */
+
+import { constant, lambda, Step, type GrafastSchemaConfig } from 'grafast'
 
 // In-memory data stores
 interface User {
@@ -98,158 +101,202 @@ let nextUserId = 4
 let nextOrderId = 3
 let nextItemId = 4
 
-export default {
-	Query: {
-		/**
-		 * Simple hello world
-		 */
-		hello: () => 'world',
+const resolvers: Omit<GrafastSchemaConfig, 'typeDefs'> = {
+	objects: {
+		Query: {
+			plans: {
+				/**
+				 * Simple hello world
+				 */
+				hello: () => constant('world'),
 
-		/**
-		 * Health check
-		 */
-		ping: () => true,
+				/**
+				 * Health check
+				 */
+				ping: () => constant(true),
 
-		/**
-		 * Get all users
-		 */
-		users: () => Array.from(users.values()),
+				/**
+				 * Get all users
+				 */
+				users: () => constant(Array.from(users.values())),
 
-		/**
-		 * Get user by ID
-		 */
-		user: (_: unknown, { id }: { id: string }) => users.get(id) || null,
+				/**
+				 * Get user by ID
+				 */
+				user: (_$source, fieldArgs) => {
+					const { $id } = fieldArgs
+					return lambda($id, (id: string) => users.get(id) || null)
+				},
 
-		/**
-		 * Get all orders
-		 */
-		orders: () => Array.from(orders.values()),
+				/**
+				 * Get all orders
+				 */
+				orders: () => constant(Array.from(orders.values())),
 
-		/**
-		 * Get orders for a specific user
-		 */
-		userOrders: (_: unknown, { userId }: { userId: string }) =>
-			Array.from(orders.values()).filter(order => order.userId === userId),
-	},
+				/**
+				 * Get orders for a specific user
+				 */
+				userOrders: (_$source, fieldArgs) => {
+					const { $userId } = fieldArgs
+					return lambda($userId, (userId: string) =>
+						Array.from(orders.values()).filter(order => order.userId === userId)
+					)
+				},
+			},
+		},
 
-	Mutation: {
-		/**
-		 * Echo back the message
-		 */
-		echo: (_: unknown, { message }: { message: string }) => message,
+		Mutation: {
+			plans: {
+				/**
+				 * Echo back the message
+				 */
+				echo: (_$source, fieldArgs) => {
+					const { $message } = fieldArgs
+					return $message
+				},
 
-		/**
-		 * Create a new user
-		 */
-		createUser: (_: unknown, { name, email }: { name: string; email: string }) => {
-			const id = String(nextUserId++)
-			const now = new Date().toISOString()
-			const user: User = {
-				id,
-				name,
-				email,
-				role: 'user',
-				createdAt: now,
-				updatedAt: now,
-			}
-			users.set(id, user)
-			console.log(`[Playground] Created user: ${user.name} (${user.id})`)
-			return user
+				/**
+				 * Create a new user
+				 */
+				createUser: (_$source, fieldArgs) => {
+					const { $name, $email } = fieldArgs
+					if (!$name || !$email) {
+						throw new Error('Name and email are required to create a user')
+					}
+					return lambda([$name, $email], ([name, email]: readonly [string, string]) => {
+						const id = String(nextUserId++)
+						const now = new Date().toISOString()
+						const user: User = {
+							id,
+							name,
+							email,
+							role: 'user',
+							createdAt: now,
+							updatedAt: now,
+						}
+						users.set(id, user)
+						return user
+					})
+				},
+
+				/**
+				 * Update an existing user
+				 */
+				updateUser: (_$source, fieldArgs) => {
+					const { $id, $name, $email, $role } = fieldArgs
+					if (!$id || (!$name && !$email && !$role)) {
+						throw new Error('User ID and at least one field to update are required')
+					}
+
+					// Filter out undefined steps
+					const steps = [$id, $name, $email, $role].filter((step): step is typeof $id => step !== undefined)
+					return lambda(steps, (values: any[]) => {
+						const [id, name, email, role] = values as [string, string | undefined, string | undefined, string | undefined]
+						const user = users.get(id)
+						if (!user) return null
+
+						if (name !== undefined) user.name = name
+						if (email !== undefined) user.email = email
+						if (role !== undefined) user.role = role
+						user.updatedAt = new Date().toISOString()
+
+						users.set(id, user)
+						return user
+					})
+				},
+
+				/**
+				 * Delete a user
+				 */
+				deleteUser: (_$source, fieldArgs) => {
+					const { $id } = fieldArgs
+					return lambda($id, (id: string) => {
+						const deleted = users.delete(id)
+						if (deleted) {
+						}
+						return deleted
+					})
+				},
+
+				/**
+				 * Create a new order
+				 */
+				createOrder: (_$source, fieldArgs) => {
+					const { $userId, $items } = fieldArgs
+					if (!$userId || !$items) {
+						throw new Error('UserId and items are required')
+					}
+					return lambda([$userId, $items], ([userId, items]: readonly [string, Array<{ productName: string; quantity: number; price: number }>]) => {
+						const user = users.get(userId)
+						if (!user) {
+							throw new Error(`User not found: ${userId}`)
+						}
+
+						const orderId = String(nextOrderId++)
+						const orderItems: OrderItem[] = items.map((item: any) => ({
+							id: String(nextItemId++),
+							...item,
+						}))
+
+						const total = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
+
+						const order: Order = {
+							id: orderId,
+							userId,
+							status: 'pending',
+							total,
+							items: orderItems,
+							createdAt: new Date().toISOString(),
+						}
+
+						orders.set(orderId, order)
+						return order
+					})
+				},
+
+				/**
+				 * Update order status
+				 */
+				updateOrderStatus: (_$source, fieldArgs) => {
+					const { $id, $status } = fieldArgs
+					if (!$id || !$status) {
+						throw new Error('Order ID and status are required')
+					}
+					return lambda([$id, $status], ([id, status]: readonly [string, string]) => {
+						const order = orders.get(id)
+						if (!order) return null
+
+						order.status = status
+						orders.set(id, order)
+						return order
+					})
+				},
+			},
 		},
 
 		/**
-		 * Update an existing user
+		 * User type resolvers
 		 */
-		updateUser: (
-			_: unknown,
-			{ id, name, email, role }: { id: string; name?: string; email?: string; role?: string }
-		) => {
-			const user = users.get(id)
-			if (!user) return null
-
-			if (name !== undefined) user.name = name
-			if (email !== undefined) user.email = email
-			if (role !== undefined) user.role = role
-			user.updatedAt = new Date().toISOString()
-
-			users.set(id, user)
-			console.log(`[Playground] Updated user: ${user.name} (${user.id})`)
-			return user
+		User: {
+			plans: {
+				// Field resolvers if needed - default plan resolver will handle fields
+			},
 		},
 
 		/**
-		 * Delete a user
+		 * Order type resolvers
 		 */
-		deleteUser: (_: unknown, { id }: { id: string }) => {
-			const deleted = users.delete(id)
-			if (deleted) {
-				console.log(`[Playground] Deleted user: ${id}`)
-			}
-			return deleted
+		Order: {
+			plans: {
+				/**
+				 * Resolve the user for an order
+				 */
+				user: ($order: Step<Order>) => {
+					return lambda($order, (order) => users.get(order.userId) || null)
+				},
+			},
 		},
-
-		/**
-		 * Create a new order
-		 */
-		createOrder: (
-			_: unknown,
-			{ userId, items }: { userId: string; items: Array<{ productName: string; quantity: number; price: number }> }
-		) => {
-			const user = users.get(userId)
-			if (!user) {
-				throw new Error(`User not found: ${userId}`)
-			}
-
-			const orderId = String(nextOrderId++)
-			const orderItems: OrderItem[] = items.map(item => ({
-				id: String(nextItemId++),
-				...item,
-			}))
-
-			const total = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
-
-			const order: Order = {
-				id: orderId,
-				userId,
-				status: 'pending',
-				total,
-				items: orderItems,
-				createdAt: new Date().toISOString(),
-			}
-
-			orders.set(orderId, order)
-			console.log(`[Playground] Created order: ${orderId} for user ${userId}`)
-			return order
-		},
-
-		/**
-		 * Update order status
-		 */
-		updateOrderStatus: (_: unknown, { id, status }: { id: string; status: string }) => {
-			const order = orders.get(id)
-			if (!order) return null
-
-			order.status = status
-			orders.set(id, order)
-			console.log(`[Playground] Updated order ${id} status to: ${status}`)
-			return order
-		},
-	},
-
-	/**
-	 * User type resolvers
-	 */
-	User: {
-		// Field resolvers if needed
-	},
-
-	/**
-	 * Order type resolvers
-	 */
-	Order: {
-		/**
-		 * Resolve the user for an order
-		 */
-		user: (order: Order) => users.get(order.userId) || null,
 	},
 }
+
+export default resolvers

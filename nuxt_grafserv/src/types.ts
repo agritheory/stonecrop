@@ -33,6 +33,12 @@ export interface ModuleOptions {
 	/** Path to resolvers file (for .graphql schema files) */
 	resolvers?: string
 
+	/**
+	 * Resolved path to resolvers file (set internally)
+	 * @internal
+	 */
+	resolversPath?: string
+
 	/** GraphQL endpoint URL (default: '/graphql/') */
 	url?: string
 

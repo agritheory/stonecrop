@@ -29,7 +29,7 @@ export default defineNuxtModule<ModuleOptions>({
 
 		// Register configuration in nitro runtime config
 		nuxt.hook('nitro:config', config => {
-			const resolverPath = options.resolvers ? join(nuxt.options.srcDir, options.resolvers) : undefined
+			const resolversPath = options.resolvers ? join(nuxt.options.srcDir, options.resolvers) : undefined
 
 			config.runtimeConfig = config.runtimeConfig || {}
 			config.runtimeConfig.grafserv = {
@@ -41,15 +41,12 @@ export default defineNuxtModule<ModuleOptions>({
 						: Array.isArray(options.schema)
 						? options.schema.map(s => join(nuxt.options.srcDir, s))
 						: options.schema, // function passed through
+				// Add resolved resolver path
+				resolversPath: resolversPath,
 			}
 
 			// Create virtual modules
 			config.virtual = config.virtual || {}
-
-			// Resolver virtual module
-			if (resolverPath) {
-				config.virtual['#internal/grafserv/resolvers'] = `export { default } from '${resolverPath}'`
-			}
 
 			// Middleware virtual module
 			const middlewareCode = options.middleware?.length
@@ -57,18 +54,30 @@ export default defineNuxtModule<ModuleOptions>({
 				: 'export default []'
 			config.virtual['#internal/grafserv/middleware'] = middlewareCode
 
-			// Add externals for Grafast packages
+			// Configure externals - don't inline grafast/grafserv to avoid CommonJS/ESM issues
 			config.externals = config.externals || {}
 			config.externals.inline = config.externals.inline || []
-			config.externals.inline.push(
+
+			// Inline only the graphql-tools packages
+			config.externals.inline.push('@graphql-tools/schema', '@graphql-tools/load', '@graphql-tools/graphql-file-loader')
+
+			// External packages should NOT be inlined to preserve their module system
+			config.externals.external = config.externals.external || []
+			const externalPackages = [
 				'grafast',
 				'grafserv',
 				'grafserv/h3/v1',
 				'graphile-config',
-				'@graphql-tools/schema',
-				'@graphql-tools/load',
-				'@graphql-tools/graphql-file-loader'
-			)
+				'debug',
+				'chalk',
+				'@graphile/lru',
+			]
+
+			externalPackages.forEach(pkg => {
+				if (!config.externals!.external!.includes(pkg)) {
+					config.externals!.external!.push(pkg)
+				}
+			})
 		})
 
 		// Set up Grafast handler
@@ -77,6 +86,11 @@ export default defineNuxtModule<ModuleOptions>({
 			config.handlers.push({
 				route: options.url || '/graphql/',
 				handler: resolve('./handler'),
+			})
+			// Add handler for Ruru static assets
+			config.handlers.push({
+				route: '/ruru-static/**',
+				handler: resolve('./ruru-static'),
 			})
 			// Add cache API endpoint
 			config.handlers.push({
