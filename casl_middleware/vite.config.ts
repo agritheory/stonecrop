@@ -1,55 +1,27 @@
 /// <reference types="vitest" />
-import { coverageConfigDefaults, defineConfig } from 'vitest/config'
-import { resolve } from 'node:path'
 
+import { resolve } from 'path'
+import { coverageConfigDefaults, defineConfig } from 'vitest/config'
+
+const projectRootDir = resolve(__dirname)
+
+// https://vitejs.dev/config/
 export default defineConfig({
 	build: {
+		emptyOutDir: false,
+		sourcemap: true,
+		// Server-side library - only output ES modules
+		target: 'node18',
 		lib: {
-			entry: resolve(__dirname, 'src/index.ts'),
-			name: 'CaslMiddleware',
-			fileName: format => `index.${format === 'es' ? 'js' : 'cjs'}`,
-			formats: ['es', 'cjs'],
+			entry: resolve(projectRootDir, 'src/index.ts'),
+			name: '@stonecrop/casl-middleware',
+			formats: ['es'],
+			fileName: 'index',
 		},
 		rollupOptions: {
-			external: [
-				// Core dependencies
-				'graphql',
-				'graphql-tag',
-				'@casl/ability',
-				'@casl/prisma',
-
-				// PostGraphile and related packages
-				'postgraphile',
-				'postgraphile/utils',
-				'postgraphile/grafast',
-				'postgraphile/presets/amber',
-				'postgraphile/presets/v4',
-				'postgraphile/adaptors/pg',
-				'graphile-utils',
-				'graphile-build',
-				'graphile-config',
-				'grafast',
-				'@dataplan/pg',
-				'pg-sql2',
-
-				// GraphQL tools
-				'@graphql-tools/schema',
-				'@graphql-tools/utils',
-				'@graphql-tools/merge',
-				'graphql-middleware',
-				'graphql-yoga',
-
-				// Node.js built-ins
-				/^node:/,
-				'crypto',
-				'util',
-				'assert',
-				'fs',
-				'path',
-			],
+			// Externalize Node.js built-ins for server-side library
+			external: [/^node:/, 'assert', 'util', 'crypto'],
 		},
-		target: 'node18', // Change from 'esnext' to 'node18' since this is a Node.js library
-		sourcemap: true,
 	},
 	test: {
 		globals: true,
@@ -69,7 +41,12 @@ export default defineConfig({
 				functions: 70,
 				statements: 70,
 			},
-			exclude: [...coverageConfigDefaults.exclude],
+			include: ['src/**/*.ts'],
+			exclude: [
+				...coverageConfigDefaults.exclude,
+				'src/index.ts', // ignore the entry file
+				'types/**', // ignore types
+			],
 		},
 	},
 })

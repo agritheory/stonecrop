@@ -35,6 +35,12 @@
 			"versionPolicyName": "stonecrop"
 		},
 		{
+			"packageName": "@stonecrop/casl-middleware",
+			"projectFolder": "casl_middleware",
+			"reviewCategory": "production",
+			"versionPolicyName": "stonecrop"
+		},
+		{
 			"packageName": "@stonecrop/code-editor",
 			"projectFolder": "code_editor",
 			"reviewCategory": "prototype",
@@ -59,6 +65,12 @@
 			"versionPolicyName": "stonecrop"
 		},
 		{
+			"packageName": "@stonecrop/graphql-middleware",
+			"projectFolder": "graphql_middleware",
+			"reviewCategory": "utilities",
+			"versionPolicyName": "stonecrop"
+		},
+		{
 			"packageName": "@stonecrop/node-editor",
 			"projectFolder": "node_editor",
 			"reviewCategory": "prototype",
@@ -68,6 +80,24 @@
 			"packageName": "@stonecrop/nuxt",
 			"projectFolder": "nuxt",
 			"reviewCategory": "prototype",
+			"versionPolicyName": "stonecrop"
+		},
+		{
+			"packageName": "@stonecrop/nuxt-grafserv",
+			"projectFolder": "nuxt_grafserv",
+			"reviewCategory": "production",
+			"versionPolicyName": "stonecrop"
+		},
+		{
+			"packageName": "@stonecrop/rockfoil",
+			"projectFolder": "rockfoil",
+			"reviewCategory": "production",
+			"versionPolicyName": "stonecrop"
+		},
+		{
+			"packageName": "@stonecrop/schema",
+			"projectFolder": "schema",
+			"reviewCategory": "utilities",
 			"versionPolicyName": "stonecrop"
 		},
 		{
@@ -93,36 +123,6 @@
 			"projectFolder": "rigs/stonecrop-rig",
 			"reviewCategory": "utilities",
 			"shouldPublish": false
-		},
-		{
-			"packageName": "@stonecrop/schema",
-			"projectFolder": "schema",
-			"reviewCategory": "utilities",
-			"versionPolicyName": "stonecrop"
-		},
-		{
-			"packageName": "@stonecrop/graphql-middleware",
-			"projectFolder": "graphql_middleware",
-			"reviewCategory": "utilities",
-			"versionPolicyName": "stonecrop"
-		},
-		{
-			"packageName": "@stonecrop/rockfoil",
-			"projectFolder": "rockfoil",
-			"reviewCategory": "production",
-			"versionPolicyName": "stonecrop"
-		},
-		{
-			"packageName": "@stonecrop/casl-middleware",
-			"projectFolder": "casl_middleware",
-			"reviewCategory": "production",
-			"versionPolicyName": "stonecrop"
-		},
-		{
-			"packageName": "@stonecrop/nuxt-grafserv",
-			"projectFolder": "nuxt_grafserv",
-			"reviewCategory": "production",
-			"versionPolicyName": "stonecrop"
 		}
 	]
 }

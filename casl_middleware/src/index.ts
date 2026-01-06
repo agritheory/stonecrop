@@ -1,10 +1,8 @@
-export { createAbility, detectSubjectType } from './middleware/ability'
-export type { AppAbility } from './middleware/ability'
-
+export { createAbility, detectSubjectType, type AppAbility, type AbilityBuilderFunction } from './middleware/ability'
+export { createApolloPlugin } from './middleware/apollo'
 export { createCaslMiddleware } from './middleware/graphql'
-
-export { postgraphileCaslPlugin } from './helpers'
 export { pglCaslPlugin } from './middleware/postgraphile'
+export { createYogaPlugin } from './middleware/yoga'
 
 export type {
 	User,

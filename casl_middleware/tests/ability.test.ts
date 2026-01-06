@@ -1,12 +1,15 @@
+import { AbilityBuilder, PureAbility, subject, AbilityClass } from '@casl/ability'
 import { describe, it, expect } from 'vitest'
-import { AbilityBuilder, PureAbility, subject } from '@casl/ability'
-import { createAbility, detectSubjectType } from '../src/middleware/ability'
+
+import { createAbility, detectSubjectType, AppAbility } from '../src/middleware/ability'
+
+const Ability = PureAbility as AbilityClass<AppAbility>
 
 describe('Ability Creation', () => {
 	describe('createAbility', () => {
 		// Create a test builder with proper matchers - using the same detectSubjectType as production
 		const testBuilder = (user?: any) => {
-			const { can, cannot, build } = new AbilityBuilder(PureAbility)
+			const { can, cannot, build } = new AbilityBuilder<AppAbility>(Ability)
 
 			if (!user) {
 				can('read', 'Query')
@@ -107,7 +110,7 @@ describe('Ability Creation', () => {
 	describe('Custom Ability Builder', () => {
 		it('should allow custom ability definitions', () => {
 			const customCreateAbility = (user?: { id: string; permissions?: string[] }) => {
-				const { can, build } = new AbilityBuilder(PureAbility)
+				const { can, build } = new AbilityBuilder<AppAbility>(Ability)
 
 				if (user?.permissions?.includes('read:posts')) {
 					can('read', 'Post')

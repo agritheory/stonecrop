@@ -20,7 +20,7 @@ describe('Yoga CASL Plugin', () => {
 		}
 
 		// Execute the plugin
-		await yogaCaslPlugin.onContextBuilding(contextParams as any)
+		await yogaCaslPlugin.onContextBuilding!(contextParams as any)
 
 		expect(extendContext).toHaveBeenCalled()
 		expect(extendContext).toHaveBeenCalledWith(
@@ -46,7 +46,7 @@ describe('Yoga CASL Plugin', () => {
 			extendContext,
 		}
 
-		await yogaCaslPlugin.onContextBuilding(contextParams as any)
+		await yogaCaslPlugin.onContextBuilding!(contextParams as any)
 
 		// Check that the ability was created with editor permissions
 		expect(extendedData.ability).toBeDefined()

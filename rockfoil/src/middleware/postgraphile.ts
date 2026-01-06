@@ -2,6 +2,10 @@ import { makeWrapPlansPlugin } from 'postgraphile/utils'
 
 import type { HookConfig, HookPlan } from '../types'
 
+/**
+ * Creates a PostGraphile plugin that wraps GraphQL query and mutation plans with before/after hooks
+ * @public
+ */
 export const createPglRockfoilPlugin = (hookMap: HookConfig) => {
 	const queryPlans: HookPlan = {}
 	const mutationPlans: HookPlan = {}

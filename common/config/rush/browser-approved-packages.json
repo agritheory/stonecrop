@@ -108,7 +108,7 @@
     },
     {
       "name": "@rushstack/heft",
-      "allowedCategories": [ "prototype", "utilities" ]
+      "allowedCategories": [ "production", "prototype", "utilities" ]
     },
     {
       "name": "@rushstack/heft-api-extractor-plugin",
@@ -412,7 +412,7 @@
     },
     {
       "name": "stonecrop-rig",
-      "allowedCategories": [ "prototype", "utilities" ]
+      "allowedCategories": [ "production", "prototype", "utilities" ]
     },
     {
       "name": "ts-node",
@@ -421,10 +421,6 @@
     {
       "name": "tsc",
       "allowedCategories": [ "prototype" ]
-    },
-    {
-      "name": "tsx",
-      "allowedCategories": [ "production", "prototype" ]
     },
     {
       "name": "typescript",

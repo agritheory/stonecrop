@@ -1,9 +1,14 @@
 import { extendSchema, gql } from 'postgraphile/utils'
 import type { ExecutableStep } from 'postgraphile/grafast'
+import type { GraphileConfig } from 'postgraphile/graphile-build'
 
 import { createAbility } from './ability'
 
-export const pglCaslPlugin = extendSchema(build => {
+/**
+ * PostGraphile plugin for CASL authorization
+ * @public
+ */
+export const pglCaslPlugin: GraphileConfig.Plugin = extendSchema(build => {
 	const {
 		grafast: { constant, object, sideEffect },
 	} = build
@@ -35,48 +40,52 @@ export const pglCaslPlugin = extendSchema(build => {
 			}
 		`,
 
-		plans: {
+		objects: {
 			Query: {
-				getSecretData() {
-					// TODO: This should be protected by CASL
-					// const $ability = context<Context>().get('ability')
-					// if (!$ability.can('read', 'SecretData')) {
-					// 	throw new Error('Access denied')
-					// }
+				plans: {
+					getSecretData() {
+						// TODO: This should be protected by CASL
+						// const $ability = context<Context>().get('ability')
+						// if (!$ability.can('read', 'SecretData')) {
+						// 	throw new Error('Access denied')
+						// }
 
-					return object({
-						id: constant('123'),
-						content: constant('This is protected content'),
-					})
+						return object({
+							id: constant('123'),
+							content: constant('This is protected content'),
+						})
+					},
 				},
 			},
 
 			Mutation: {
-				createAbility(_plan: any, fieldArgs: any) {
-					const $input = fieldArgs.getRaw().input
-					const $userId = $input.userId
-					const $roles = $input.roles
+				plans: {
+					createAbility(_plan: any, fieldArgs: any) {
+						const $input = fieldArgs.getRaw().input
+						const $userId = $input.userId
+						const $roles = $input.roles
 
-					return sideEffect(
-						[$userId as ExecutableStep, $roles as ExecutableStep],
-						async ([userId, roles]: [string, string[]]) => {
-							// Make this async
-							try {
-								const ability = await createAbility({ id: userId, roles }) // Await here
-								return {
-									success: true,
-									ability: ability.rules,
-									message: 'Ability created successfully',
-								}
-							} catch (error) {
-								return {
-									success: false,
-									ability: null,
-									message: error instanceof Error ? error.message : 'Unknown error occurred',
+						return sideEffect(
+							[$userId as ExecutableStep, $roles as ExecutableStep],
+							async ([userId, roles]: [string, string[]]) => {
+								// Make this async
+								try {
+									const ability = await createAbility({ id: userId, roles }) // Await here
+									return {
+										success: true,
+										ability: ability.rules,
+										message: 'Ability created successfully',
+									}
+								} catch (error) {
+									return {
+										success: false,
+										ability: null,
+										message: error instanceof Error ? error.message : 'Unknown error occurred',
+									}
 								}
 							}
-						}
-					)
+						)
+					},
 				},
 			},
 		},
