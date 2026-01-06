@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/graphql-middleware",
+      "comment": "add graphQL middleware package",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@stonecrop/graphql-middleware"
+}

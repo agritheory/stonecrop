@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/aform",
+      "comment": "change readonly props and update deps",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@stonecrop/aform"
+}

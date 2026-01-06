@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/desktop",
+      "comment": "update atable API and deps",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@stonecrop/desktop"
+}
