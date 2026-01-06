@@ -4,7 +4,7 @@
  * Modernized with Grafast plan resolvers
  */
 
-import { constant, lambda, Step, type GrafastSchemaConfig } from 'grafast'
+import { constant, lambda, context, Step, type GrafastSchemaConfig } from 'grafast'
 
 // In-memory data stores
 interface User {
@@ -32,74 +32,114 @@ interface Order {
 	createdAt: string
 }
 
-// Sample data
-const users: Map<string, User> = new Map([
-	[
-		'1',
-		{
-			id: '1',
-			name: 'Alice Admin',
-			email: 'alice@example.com',
-			role: 'admin',
-			createdAt: new Date().toISOString(),
-			updatedAt: new Date().toISOString(),
-		},
-	],
-	[
-		'2',
-		{
-			id: '2',
-			name: 'Bob User',
-			email: 'bob@example.com',
-			role: 'user',
-			createdAt: new Date().toISOString(),
-			updatedAt: new Date().toISOString(),
-		},
-	],
-	[
-		'3',
-		{
-			id: '3',
-			name: 'Charlie Guest',
-			email: 'charlie@example.com',
-			role: 'guest',
-			createdAt: new Date().toISOString(),
-			updatedAt: new Date().toISOString(),
-		},
-	],
-])
+// Use globalThis to persist data across module reloads (HMR)
+interface GlobalStore {
+	users?: Map<string, User>
+	orders?: Map<string, Order>
+	nextUserId?: number
+	nextOrderId?: number
+	nextItemId?: number
+}
 
-const orders: Map<string, Order> = new Map([
-	[
-		'1',
-		{
-			id: '1',
-			userId: '2',
-			status: 'pending',
-			total: 99.99,
-			items: [
-				{ id: '1', productName: 'Widget A', quantity: 2, price: 29.99 },
-				{ id: '2', productName: 'Widget B', quantity: 1, price: 40.01 },
+declare global {
+	// eslint-disable-next-line no-var
+	var __grafserv_store: GlobalStore | undefined
+}
+
+// Initialize store if it doesn't exist
+if (!global.__grafserv_store) {
+	global.__grafserv_store = {
+		users: new Map([
+			[
+				'1',
+				{
+					id: '1',
+					name: 'Alice Admin',
+					email: 'alice@example.com',
+					role: 'admin',
+					createdAt: new Date().toISOString(),
+					updatedAt: new Date().toISOString(),
+				},
 			],
-			createdAt: new Date().toISOString(),
-		},
-	],
-	[
-		'2',
-		{
-			id: '2',
-			userId: '2',
-			status: 'completed',
-			total: 150.0,
-			items: [{ id: '3', productName: 'Premium Widget', quantity: 1, price: 150.0 }],
-			createdAt: new Date().toISOString(),
-		},
-	],
-])
+			[
+				'2',
+				{
+					id: '2',
+					name: 'Bob User',
+					email: 'bob@example.com',
+					role: 'user',
+					createdAt: new Date().toISOString(),
+					updatedAt: new Date().toISOString(),
+				},
+			],
+			[
+				'3',
+				{
+					id: '3',
+					name: 'Charlie Guest',
+					email: 'charlie@example.com',
+					role: 'guest',
+					createdAt: new Date().toISOString(),
+					updatedAt: new Date().toISOString(),
+				},
+			],
+		]),
+		orders: new Map([
+			[
+				'1',
+				{
+					id: '1',
+					userId: '2',
+					status: 'pending',
+					total: 99.99,
+					items: [
+						{ id: '1', productName: 'Widget A', quantity: 2, price: 29.99 },
+						{ id: '2', productName: 'Widget B', quantity: 1, price: 40.01 },
+					],
+					createdAt: new Date().toISOString(),
+				},
+			],
+			[
+				'2',
+				{
+					id: '2',
+					userId: '2',
+					status: 'completed',
+					total: 150.0,
+					items: [{ id: '3', productName: 'Premium Widget', quantity: 1, price: 150.0 }],
+					createdAt: new Date().toISOString(),
+				},
+			],
+		]),
+		nextUserId: 4,
+		nextOrderId: 3,
+		nextItemId: 4,
+	}
+}
 
-let nextUserId = 4
-let nextOrderId = 3
-let nextItemId = 4
+// Reference the global store
+const users = global.__grafserv_store.users!
+const orders = global.__grafserv_store.orders!
+const counters = {
+	get nextUserId() {
+		return global.__grafserv_store!.nextUserId!
+	},
+	set nextUserId(val: number) {
+		global.__grafserv_store!.nextUserId = val
+	},
+	get nextOrderId() {
+		return global.__grafserv_store!.nextOrderId!
+	},
+	set nextOrderId(val: number) {
+		global.__grafserv_store!.nextOrderId = val
+	},
+	get nextItemId() {
+		return global.__grafserv_store!.nextItemId!
+	},
+	set nextItemId(val: number) {
+		global.__grafserv_store!.nextItemId = val
+	},
+}
 
 const resolvers: Omit<GrafastSchemaConfig, 'typeDefs'> = {
 	objects: {
@@ -118,7 +158,10 @@ const resolvers: Omit<GrafastSchemaConfig, 'typeDefs'> = {
 				/**
 				 * Get all users
 				 */
-				users: () => constant(Array.from(users.values())),
+				users: () => {
+					const $context = context()
+					return lambda($context, () => Array.from(users.values()))
+				},
 
 				/**
 				 * Get user by ID
@@ -131,7 +174,10 @@ const resolvers: Omit<GrafastSchemaConfig, 'typeDefs'> = {
 				/**
 				 * Get all orders
 				 */
-				orders: () => constant(Array.from(orders.values())),
+				orders: () => {
+					const $context = context()
+					return lambda($context, () => Array.from(orders.values()))
+				},
 
 				/**
 				 * Get orders for a specific user
@@ -164,7 +210,7 @@ const resolvers: Omit<GrafastSchemaConfig, 'typeDefs'> = {
 						throw new Error('Name and email are required to create a user')
 					}
 					return lambda([$name, $email], ([name, email]: readonly [string, string]) => {
-						const id = String(nextUserId++)
+						const id = String(counters.nextUserId++)
 						const now = new Date().toISOString()
 						const user: User = {
 							id,
@@ -191,7 +237,12 @@ const resolvers: Omit<GrafastSchemaConfig, 'typeDefs'> = {
 					// Filter out undefined steps
 					const steps = [$id, $name, $email, $role].filter((step): step is typeof $id => step !== undefined)
 					return lambda(steps, (values: any[]) => {
-						const [id, name, email, role] = values as [string, string | undefined, string | undefined, string | undefined]
+						const [id, name, email, role] = values as [
+							string,
+							string | undefined,
+							string | undefined,
+							string | undefined
+						]
 						const user = users.get(id)
 						if (!user) return null
 
@@ -226,32 +277,36 @@ const resolvers: Omit<GrafastSchemaConfig, 'typeDefs'> = {
 					if (!$userId || !$items) {
 						throw new Error('UserId and items are required')
 					}
-					return lambda([$userId, $items], ([userId, items]: readonly [string, Array<{ productName: string; quantity: number; price: number }>]) => {
-						const user = users.get(userId)
-						if (!user) {
-							throw new Error(`User not found: ${userId}`)
+
+					return lambda(
+						[$userId, $items],
+						([userId, items]: readonly [string, Array<{ productName: string; quantity: number; price: number }>]) => {
+							const user = users.get(userId)
+							if (!user) {
+								throw new Error(`User not found: ${userId}`)
+							}
+
+							const orderId = String(counters.nextOrderId++)
+							const orderItems: OrderItem[] = items.map((item: any) => ({
+								id: String(counters.nextItemId++),
+								...item,
+							}))
+
+							const total = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
+
+							const order: Order = {
+								id: orderId,
+								userId,
+								status: 'pending',
+								total,
+								items: orderItems,
+								createdAt: new Date().toISOString(),
+							}
+
+							orders.set(orderId, order)
+							return order
 						}
-
-						const orderId = String(nextOrderId++)
-						const orderItems: OrderItem[] = items.map((item: any) => ({
-							id: String(nextItemId++),
-							...item,
-						}))
-
-						const total = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
-
-						const order: Order = {
-							id: orderId,
-							userId,
-							status: 'pending',
-							total,
-							items: orderItems,
-							createdAt: new Date().toISOString(),
-						}
-
-						orders.set(orderId, order)
-						return order
-					})
+					)
 				},
 
 				/**
@@ -292,7 +347,7 @@ const resolvers: Omit<GrafastSchemaConfig, 'typeDefs'> = {
 				 * Resolve the user for an order
 				 */
 				user: ($order: Step<Order>) => {
-					return lambda($order, (order) => users.get(order.userId) || null)
+					return lambda($order, order => users.get(order.userId) || null)
 				},
 			},
 		},

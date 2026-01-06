@@ -1,11 +1,11 @@
 import { defineEventHandler, getQuery, createError } from 'h3'
-import { clearGrafservCache } from './handler'
+import { invalidateCache } from './handler'
 
 /**
  * Cache management endpoint for the Grafserv module.
  *
  * Actions:
- * - clear: Clear the Grafserv instance cache
+ * - clear: Invalidate the Grafserv instance cache (will reload on next request)
  * - status: Get cache status information
  */
 export default defineEventHandler(async event => {
@@ -24,8 +24,8 @@ export default defineEventHandler(async event => {
 
 	switch (action) {
 		case 'clear':
-			await clearGrafservCache()
-			return { success: true, message: 'Grafserv cache cleared' }
+			invalidateCache()
+			return { success: true, message: 'Grafserv cache invalidated, will reload on next request' }
 
 		case 'status':
 			return {

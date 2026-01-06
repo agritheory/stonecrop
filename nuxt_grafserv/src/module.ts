@@ -1,3 +1,4 @@
+import { writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { createResolver, defineNuxtModule, useLogger } from '@nuxt/kit'
 
@@ -116,7 +117,7 @@ export default defineNuxtModule<ModuleOptions>({
 
 		// Watch for schema and resolver changes in dev mode
 		if (nuxt.options.dev) {
-			let cacheClearing = false
+			let debounceTimer: NodeJS.Timeout | null = null
 
 			nuxt.hook('builder:watch', async (event, path) => {
 				const isSchemaFile = path.endsWith('.graphql')
@@ -125,19 +126,25 @@ export default defineNuxtModule<ModuleOptions>({
 				if (isSchemaFile || isResolverFile) {
 					logger.info(`${path} changed`)
 
-					if (!cacheClearing) {
-						cacheClearing = true
-						try {
-							logger.info('Clearing Grafserv cache...')
-							const { clearGrafservCache } = await import(resolve('./handler'))
-							await clearGrafservCache()
-							logger.success('Cache cleared, schema reloaded')
-						} catch (error) {
-							logger.error('Failed to clear cache:', error)
-						} finally {
-							cacheClearing = false
-						}
+					// Debounce cache invalidation
+					if (debounceTimer) {
+						clearTimeout(debounceTimer)
 					}
+
+					debounceTimer = setTimeout(() => {
+						try {
+							logger.info('Invalidating Grafserv cache...')
+							// Write a flag file that the handler checks
+							// This avoids dynamic imports and TDZ issues
+							const flagPath = resolve(nuxt.options.buildDir, '.grafserv-cache-invalidate')
+							writeFileSync(flagPath, Date.now().toString())
+							logger.success('Cache invalidated, will reload on next request')
+						} catch (error) {
+							logger.error('Failed to invalidate cache:', error)
+						} finally {
+							debounceTimer = null
+						}
+					}, 100)
 				}
 			})
 		}

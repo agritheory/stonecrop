@@ -1,3 +1,5 @@
+import { existsSync, unlinkSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { GraphQLFileLoader } from '@graphql-tools/graphql-file-loader'
 import { loadTypedefs } from '@graphql-tools/load'
 import { makeGrafastSchema, type GrafastSchemaConfig } from 'grafast'
@@ -11,6 +13,34 @@ import type { ModuleOptions, GrafastContext, MiddlewareFunction } from './types'
 // Cache for the grafserv instance
 let grafservInstance: ReturnType<typeof grafserv> | null = null
 let cachedSchema: GraphQLSchema | null = null
+let cacheInvalidated = false
+
+/**
+ * Check if cache should be invalidated based on flag file
+ */
+function checkCacheInvalidation(): void {
+	if (process.env.NODE_ENV !== 'development') {
+		return
+	}
+
+	try {
+		// Check for flag file in Nitro build directory
+		const buildDir = process.env.NITRO_BUILD_DIR || '.nuxt'
+		const flagPath = resolve(buildDir, '.grafserv-cache-invalidate')
+
+		if (existsSync(flagPath)) {
+			cacheInvalidated = true
+			// Remove the flag file after reading
+			try {
+				unlinkSync(flagPath)
+			} catch {
+				// Ignore errors when removing flag file
+			}
+		}
+	} catch {
+		// Ignore errors when checking flag file
+	}
+}
 
 /**
  * Load schema from file path(s) using graphql-tools
@@ -32,6 +62,12 @@ async function loadSchemaFromFiles(schemaPath: string | string[]): Promise<strin
  * Get the GraphQL schema based on configuration
  */
 async function getSchema(options: ModuleOptions): Promise<GraphQLSchema> {
+	// Clear cache if invalidation flag is set
+	if (cacheInvalidated) {
+		cachedSchema = null
+		cacheInvalidated = false
+	}
+
 	if (cachedSchema) {
 		return cachedSchema
 	}
@@ -73,6 +109,13 @@ async function getSchema(options: ModuleOptions): Promise<GraphQLSchema> {
  * Get or create the grafserv instance
  */
 export async function getGrafservInstance(options: ModuleOptions): Promise<ReturnType<typeof grafserv>> {
+	// Clear cache if invalidation flag is set
+	if (cacheInvalidated) {
+		grafservInstance = null
+		cachedSchema = null
+		cacheInvalidated = false
+	}
+
 	if (grafservInstance) {
 		return grafservInstance
 	}
@@ -109,12 +152,11 @@ export async function getGrafservInstance(options: ModuleOptions): Promise<Retur
 }
 
 /**
- * Clear the cached instances (useful for development hot reload)
+ * Mark cache as invalid (useful for development hot reload)
+ * Cache will be cleared on next request
  */
-export async function clearGrafservCache(): Promise<void> {
-	grafservInstance = null
-	cachedSchema = null
-	console.log('[@stonecrop/nuxt-grafserv] Cache cleared')
+export function invalidateCache(): void {
+	cacheInvalidated = true
 }
 
 /**
@@ -151,11 +193,8 @@ export default defineEventHandler(async (event: H3Event) => {
 	const options = config.grafserv as ModuleOptions
 
 	try {
-		// Handle cache clear endpoint (useful for development)
-		if (event.node.req.url?.includes('/__grafserv_cache_clear') && process.env.NODE_ENV === 'development') {
-			await clearGrafservCache()
-			return { success: true, message: 'Cache cleared' }
-		}
+		// Check for cache invalidation flag in development
+		checkCacheInvalidation()
 
 		// Build context for middleware
 		const { req } = event.node
