@@ -4,15 +4,83 @@
 
 ```ts
 
+import type { AnyStateNodeConfig } from 'xstate';
 import { App } from 'vue';
 import { ComponentPublicInstance } from 'vue';
 import { Ref } from 'vue';
 
 // @public
+export function camelToLabel(camelCase: string): string;
+
+// @public
+export function camelToSnake(camelCase: string): string;
+
+// @public
+export interface ConversionResult {
+    doctype: string;
+    relationships: Array<{
+        fieldname: string;
+        targetDoctype: string;
+        targetField: string;
+    }>;
+    schema: Array<{
+        fieldname: string;
+        label: string;
+        fieldtype: StonecropFieldType;
+        required?: boolean;
+        readonly?: boolean;
+        options?: string;
+        default?: any;
+    }>;
+}
+
+// @public
+export function convertSQLName(sqlName: string): NameConversion;
+
+// @public
+export function convertSQLNames(sqlNames: string[]): NameConversion[];
+
+// @public
+export function convertTableToSchema(table: SQLTable, namingConverter?: (sqlName: string) => {
+    fieldname: string;
+    label: string;
+}): ConversionResult;
+
+// @public
+export function createNameMapping(sqlNames: string[]): {
+    sqlToFieldname: Map<string, string>;
+    fieldnameToSQL: Map<string, string>;
+    conversions: NameConversion[];
+};
+
+// @public
 export const defaultKeypressHandlers: KeypressHandlers;
 
 // @public
+export function detectStatusColumn(table: SQLTable): SQLColumn | undefined;
+
+// @public
+export function extractStateValues(column: SQLColumn): string[];
+
+// @public
+export function generateTransitionName(fromState: string, toState: string): string;
+
+// @public
+export function generateWorkflowLayout(states: string[], horizontal?: boolean): Record<string, {
+    position: {
+        x: number;
+        y: number;
+    };
+}>;
+
+// @public
 export function install(_app: App): void;
+
+// @public
+export function introspectSQL(ddl: string, namingConverter?: (sqlName: string) => {
+    fieldname: string;
+    label: string;
+}): ConversionResult[];
 
 // @public
 export type KeyboardNavigationOptions = {
@@ -27,7 +95,65 @@ export type KeypressHandlers = {
 };
 
 // @public
+export function mapSQLTypeToFieldType(sqlType: string, enumValues?: string[]): StonecropFieldType;
+
+// @public
+export interface NameConversion {
+    fieldname: string;
+    label: string;
+    originalName: string;
+}
+
+// @public
+export function parseDDL(ddl: string): SQLTable[];
+
+// @public
+export function scaffoldWorkflow(states: string[], machineId: string): WorkflowScaffold;
+
+// @public
+export function scaffoldWorkflowFromTable(table: SQLTable, machineId?: string): WorkflowScaffold | undefined;
+
+// @public
+export function snakeToCamel(snakeCase: string): string;
+
+// @public
+export function snakeToLabel(snakeCase: string): string;
+
+// @public
+export interface SQLColumn {
+    checkConstraint?: string;
+    defaultValue?: string;
+    enumValues?: string[];
+    foreignKey?: {
+        table: string;
+        column: string;
+    };
+    name: string;
+    notNull: boolean;
+    primaryKey: boolean;
+    sqlType: string;
+    unique: boolean;
+}
+
+// @public
+export interface SQLTable {
+    columns: SQLColumn[];
+    name: string;
+    schema?: string;
+}
+
+// @public
+export type StonecropFieldType = 'Data' | 'Text' | 'Int' | 'Float' | 'Check' | 'Datetime' | 'Date' | 'Time' | 'Select' | 'Link' | 'Table' | 'Code' | 'Phone' | 'Currency';
+
+// @public
 export function useKeyboardNav(options: KeyboardNavigationOptions[]): void;
+
+// @public
+export interface WorkflowScaffold {
+    actions: Record<string, string[]>;
+    sourceColumn?: string;
+    workflow: AnyStateNodeConfig;
+}
 
 // (No @packageDocumentation comment for this package)
 

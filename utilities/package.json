@@ -26,6 +26,18 @@
 		"./types": {
 			"import": "./dist/src/types/index.d.ts",
 			"require": "./dist/src/types/index.d.ts"
+		},
+		"./sql-introspection": {
+			"import": "./dist/src/sql-introspection.d.ts",
+			"require": "./dist/src/sql-introspection.d.ts"
+		},
+		"./naming-conventions": {
+			"import": "./dist/src/naming-conventions.d.ts",
+			"require": "./dist/src/naming-conventions.d.ts"
+		},
+		"./workflow-scaffolder": {
+			"import": "./dist/src/workflow-scaffolder.d.ts",
+			"require": "./dist/src/workflow-scaffolder.d.ts"
 		}
 	},
 	"typings": "./dist/src/index.d.ts",
@@ -44,7 +56,8 @@
 	},
 	"dependencies": {
 		"@vueuse/core": "^14.0.0",
-		"vue": "^3.5.22"
+		"vue": "^3.5.22",
+		"xstate": "^5.20.1"
 	},
 	"devDependencies": {
 		"@eslint/js": "^9.38.0",

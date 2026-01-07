@@ -145,6 +145,9 @@ export interface ConnectionPath {
 export function createHST(target: any, doctype: string, parentDoctype?: string): HSTNode;
 
 // @public
+export function createValidator(registry: Registry, options?: Partial<ValidatorOptions>): SchemaValidator;
+
+// @public
 export interface CrossTabMessage {
     clientId: string;
     operation?: HSTOperation;
@@ -515,6 +518,12 @@ export type Schema = {
 
 // @public
 export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema;
+
+// @public
+export class SchemaValidator {
+    constructor(options?: ValidatorOptions);
+    validate(doctype: string, schema: List<SchemaTypes> | SchemaTypes[] | undefined, workflow?: AnyStateNodeConfig, actions?: Map_2<string, string[]> | Map<string, string[]>): ValidationResult;
+}
 
 // @public
 export function setFieldRollback(doctype: string, fieldname: string, enableRollback: boolean): void;
@@ -1276,6 +1285,44 @@ export function useStonecrop(options: {
 
 // @public
 export function useUndoRedoShortcuts(hstStore: HSTNode, enabled?: boolean): void;
+
+// @public
+export function validateSchema(doctype: string, schema: List<SchemaTypes> | SchemaTypes[] | undefined, registry: Registry, workflow?: AnyStateNodeConfig, actions?: Map_2<string, string[]> | Map<string, string[]>): ValidationResult;
+
+// @public
+export interface ValidationIssue {
+    context?: Record<string, unknown>;
+    doctype?: string;
+    fieldname?: string;
+    message: string;
+    rule: string;
+    severity: ValidationSeverity;
+}
+
+// @public
+export interface ValidationResult {
+    errorCount: number;
+    infoCount: number;
+    issues: ValidationIssue[];
+    valid: boolean;
+    warningCount: number;
+}
+
+// @public
+export enum ValidationSeverity {
+    ERROR = "error",
+    INFO = "info",
+    WARNING = "warning"
+}
+
+// @public
+export interface ValidatorOptions {
+    registry?: Registry;
+    validateActions?: boolean;
+    validateLinkTargets?: boolean;
+    validateRequiredProperties?: boolean;
+    validateWorkflows?: boolean;
+}
 
 // @public
 export function withBatch<T>(fn: () => T | Promise<T>, description?: string): Promise<string | null>;

@@ -340,7 +340,7 @@
     },
     {
       "name": "xstate",
-      "allowedCategories": [ "prototype" ]
+      "allowedCategories": [ "prototype", "utilities" ]
     }
   ]
 }

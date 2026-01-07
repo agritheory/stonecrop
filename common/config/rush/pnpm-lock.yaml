@@ -401,6 +401,9 @@ importers:
       '@stonecrop/themes':
         specifier: workspace:*
         version: link:../themes
+      '@stonecrop/utilities':
+        specifier: workspace:*
+        version: link:../utilities
       miragejs:
         specifier: ^0.1.48
         version: 0.1.48
@@ -784,6 +787,9 @@ importers:
       vue:
         specifier: ^3.5.22
         version: 3.5.22(typescript@5.9.3)
+      xstate:
+        specifier: ^5.20.1
+        version: 5.20.1
     devDependencies:
       '@eslint/js':
         specifier: ^9.38.0

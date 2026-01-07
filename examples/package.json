@@ -32,6 +32,7 @@
 		"@stonecrop/node-editor": "workspace:*",
 		"@stonecrop/stonecrop": "workspace:*",
 		"@stonecrop/themes": "workspace:*",
+		"@stonecrop/utilities": "workspace:*",
 		"@miragejs/graphql": "^0.1.13",
 		"miragejs": "^0.1.48",
 		"pinia": "^3.0.3",
