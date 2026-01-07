@@ -33,8 +33,8 @@
 			<AFieldset label="Workflow" :collapsible="true">
 				<div class="builder-workflow">
 					<StateEditor
-						v-if="workflowConfig && Object.keys(workflowConfig).length > 0"
-						v-model="workflowConfig"
+						v-if="workflowConfig && workflowConfig.states && Object.keys(workflowConfig.states).length > 0"
+						v-model="workflowConfig.states"
 						node-container-class="node-editor"
 						:layout="layout" />
 				</div>
@@ -86,7 +86,7 @@ const isLoading = ref(true)
 const doctypeSchema = ref<SchemaTypes[]>(doctypeSchemaJson as SchemaTypes[])
 const formData = ref<BuilderFormData>({})
 const layout = ref<Layout>({})
-const workflowConfig = ref<AnyStateNodeConfig['states']>({})
+const workflowConfig = ref<AnyStateNodeConfig | undefined>()
 
 // Simple direct approach to test API calls
 onMounted(async () => {
@@ -133,7 +133,7 @@ onMounted(async () => {
 
 		if (doctypeMeta.workflow) {
 			const stateMachine = createMachine(doctypeMeta.workflow)
-			workflowConfig.value = stateMachine.config.states
+			workflowConfig.value = stateMachine.config
 		}
 
 		isLoading.value = false
@@ -157,17 +157,17 @@ watch(
 			// Convert to List if needed
 			const schemaList = Array.isArray(schemaData) ? List(schemaData as SchemaTypes[]) : schemaData
 
-			// Get workflow config
-			const workflow =
-				workflowConfig.value && Object.keys(workflowConfig.value).length > 0
-					? ({ states: workflowConfig.value } as AnyStateNodeConfig)
-					: undefined
-
 			// Type guard for actions - ensure it's Map or undefined
 			const actions = actionsData instanceof Map ? actionsData : undefined
 
 			// Validate
-			validationResult.value = validateSchema(doctype, schemaList, stonecrop.value.registry, workflow, actions)
+			validationResult.value = validateSchema(
+				doctype,
+				schemaList,
+				stonecrop.value.registry,
+				workflowConfig.value,
+				actions
+			)
 
 			// Reset warnings dismissed when new validation occurs
 			if (validationResult.value.issues.length > 0) {
