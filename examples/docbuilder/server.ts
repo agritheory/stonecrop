@@ -394,33 +394,33 @@ export function makeServer({ environment = 'development' } = {}) {
 
 			this.get('/load_state_machine', (schema, request) => {
 				const doctype = request.queryParams.doctype?.toString().toLowerCase()
-				const machine = schema.stateMachines.findBy({ name: doctype })
+				const machine = schema.db.stateMachines.findBy({ name: doctype })
 				return machine
-					? machine.attrs
+					? machine
 					: new Response(400, { some: 'Not Found' }, { errors: ['StateMachine for Doctype not found'] })
 			})
 
 			this.get('/load_meta', (schema, request) => {
 				const doctype = request.queryParams.doctype?.toString().toLowerCase()
-				const meta = schema.meta.findBy({ name: doctype })
+				const meta = schema.db.meta.findBy({ name: doctype })
 				return meta
-					? meta.attrs.fields
+					? meta.fields
 					: new Response(400, { some: 'Not Found' }, { errors: ['Metadata for Doctype not found'] })
 			})
 
 			this.get('/load_actions', (schema, request) => {
 				const doctype = request.queryParams.doctype?.toString().toLowerCase()
-				const actions = schema.actions.findBy({ name: doctype })
+				const actions = schema.db.actions.findBy({ name: doctype })
 				return actions
-					? actions.attrs.actions
+					? actions.actions
 					: new Response(400, { some: 'Not Found' }, { errors: ['Actions for Doctype not found'] })
 			})
 
 			this.get('/load_layout', (schema, request) => {
 				const doctype = request.queryParams.doctype?.toString().toLowerCase()
-				const machine = schema.stateMachines.findBy({ name: doctype })
+				const machine = schema.db.stateMachines.findBy({ name: doctype })
 				return machine
-					? machine.attrs.layout
+					? machine.layout
 					: new Response(400, { some: 'Not Found' }, { errors: ['Layout for Doctype not found'] })
 			})
 		},
