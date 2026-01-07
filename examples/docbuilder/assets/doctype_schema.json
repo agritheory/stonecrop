@@ -11,7 +11,7 @@
 				"columns": [
 					{
 						"label": "ID",
-						"name": "id",
+						"name": "fieldname",
 						"fieldtype": "Data",
 						"align": "left",
 						"edit": false,
@@ -51,7 +51,7 @@
 					},
 					{
 						"label": "Read Only",
-						"name": "read_only",
+						"name": "readonly",
 						"component": "<input type=\"radio\"/>",
 						"align": "left",
 						"edit": true,

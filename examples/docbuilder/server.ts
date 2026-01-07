@@ -349,10 +349,10 @@ export function makeServer({ environment = 'development' } = {}) {
 								event_name: 'LOAD',
 								callback: [
 									(() => {
-										console.log('load todo')
+										console.log('load user')
 									}).toString(),
 									(() => {
-										console.log('load todo side effect')
+										console.log('load user side effect')
 									}).toString(),
 								],
 							},
@@ -360,10 +360,10 @@ export function makeServer({ environment = 'development' } = {}) {
 								event_name: 'SAVE',
 								callback: [
 									(() => {
-										console.log('save todo')
+										console.log('save user')
 									}).toString(),
 									(() => {
-										console.log('after save todo')
+										console.log('after save user')
 									}).toString(),
 								],
 							},

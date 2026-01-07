@@ -40,7 +40,7 @@ app.use(Stonecrop, {
 			List(schemaData as any),
 			stateResponseData.machine,
 			Map({
-				default: actionsData?.map((action: any) => action.name || action) || [],
+				default: actionsData || [],
 			})
 		)
 	},
