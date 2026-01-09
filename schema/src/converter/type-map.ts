@@ -1,5 +1,6 @@
 import type { StonecropFieldType } from '../fieldtype'
 import type { PostgresType, ParsedColumn, ParsedTable, ConversionFieldMeta } from './postgres-types'
+import { convertSQLName, toSlug } from './naming'
 
 interface FieldTemplate {
 	component: string
@@ -177,19 +178,35 @@ export function normalizeType(rawType: string): PostgresType {
 }
 
 /**
+ * Options for column to field mapping
+ * @public
+ */
+export interface MapColumnOptions {
+	/** Include unmapped type metadata in output */
+	includeUnmappedMeta?: boolean
+	/** Use camelCase for field names (default: false, keeps snake_case) */
+	useCamelCase?: boolean
+}
+
+/**
  * Map a parsed column to a Stonecrop field definition
  * @public
  */
 export function mapColumnToField(
 	column: ParsedColumn,
 	_tableRegistry: Map<string, ParsedTable>,
-	options: { includeUnmappedMeta?: boolean } = {}
+	options: MapColumnOptions = {}
 ): ConversionFieldMeta {
+	// Get fieldname and label using naming conventions
+	const { fieldname, label } = options.useCamelCase
+		? convertSQLName(column.name)
+		: { fieldname: column.name, label: toLabel(column.name) }
+
 	// Foreign key → Link
 	if (column.reference) {
 		return {
-			fieldname: column.name,
-			label: toLabel(column.name),
+			fieldname,
+			label,
 			component: 'ALink',
 			fieldtype: 'Link',
 			options: toSlug(column.reference.table),
@@ -200,8 +217,8 @@ export function mapColumnToField(
 	// Array → Doctype (child table)
 	if (column.arrayDimensions > 0) {
 		const field: ConversionFieldMeta = {
-			fieldname: column.name,
-			label: toLabel(column.name),
+			fieldname,
+			label,
 			component: 'ATable',
 			fieldtype: 'Doctype',
 			required: !column.nullable,
@@ -215,8 +232,8 @@ export function mapColumnToField(
 	const template = PG_TYPE_MAP[column.normalizedType] ?? PG_TYPE_MAP.unknown
 
 	const field: ConversionFieldMeta = {
-		fieldname: column.name,
-		label: toLabel(column.name),
+		fieldname,
+		label,
 		component: template.component,
 		fieldtype: template.fieldtype,
 		required: !column.nullable && !column.isGenerated,
@@ -242,23 +259,13 @@ export function mapColumnToField(
 }
 
 /**
- * Convert snake_case to Title Case label
+ * Convert snake_case to Title Case label (for non-camelCase mode)
  */
 function toLabel(fieldname: string): string {
 	return fieldname
 		.replace(/_/g, ' ')
 		.replace(/([a-z])([A-Z])/g, '$1 $2')
 		.replace(/\b\w/g, c => c.toUpperCase())
-}
-
-/**
- * Convert to kebab-case slug
- */
-function toSlug(name: string): string {
-	return name
-		.replace(/([a-z])([A-Z])/g, '$1-$2')
-		.replace(/[\s_]+/g, '-')
-		.toLowerCase()
 }
 
 /**

@@ -110,6 +110,10 @@ export interface ParsedTable {
 	schema?: string
 	columns: ParsedColumn[]
 	inherits?: string[]
+	/** Table comment from COMMENT ON TABLE statement */
+	comment?: string
+	/** Doctype name extracted from comment (if using @doctype convention) */
+	doctypeName?: string
 }
 
 /**
@@ -127,6 +131,8 @@ export interface ConversionOptions {
 	inheritanceMode: 'flatten' | 'reference'
 	/** Include unmapped type metadata in output */
 	includeUnmappedMeta?: boolean
+	/** Use camelCase for field names (default: false, keeps snake_case) */
+	useCamelCase?: boolean
 }
 
 /**

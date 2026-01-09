@@ -22,6 +22,7 @@ jobs:
           atable: atable/**
           beam: beam/**
           stonecrop: stonecrop/**
+          utilities: utilities/**
 
   coverage:
     name: ${{ matrix.package }} (${{ matrix.branch }})
@@ -107,13 +108,15 @@ jobs:
         run: node common/scripts/install-run-rush.js install
 
       - name: Download PR Branch Coverage
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: coverage-${{ matrix.package }}-pull-request
           path: ${{ matrix.package }}/coverage
 
       - name: Download Base Branch Coverage
-        uses: actions/download-artifact@v6
+        id: download-base
+        continue-on-error: true
+        uses: actions/download-artifact@v7
         with:
           name: coverage-${{ matrix.package }}-development
           path: ${{ matrix.package }}/coverage-base
@@ -124,4 +127,4 @@ jobs:
           working-directory: ${{ matrix.package }}
           file-coverage-mode: 'all'
           vite-config-path: 'vite.config.ts'
-          json-summary-compare-path: coverage-base/coverage-summary.json
+          json-summary-compare-path: ${{ steps.download-base.outcome == 'success' && 'coverage-base/coverage-summary.json' || '' }}

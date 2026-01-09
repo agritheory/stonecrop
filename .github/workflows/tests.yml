@@ -24,6 +24,7 @@ jobs:
           atable: atable/**
           beam: beam/**
           stonecrop: stonecrop/**
+          utilities: utilities/**
 
   test:
     name: ${{ matrix.package }}

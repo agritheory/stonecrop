@@ -8,7 +8,7 @@ import { install as ATablePlugin } from '@stonecrop/aform'
 import { install as AFormPlugin } from '@stonecrop/atable'
 import { ActionSet, SheetNav } from '@stonecrop/desktop'
 import { install as NodeEditorPlugin } from '@stonecrop/node-editor'
-import Stonecrop, { DoctypeMeta } from '@stonecrop/stonecrop'
+import Stonecrop, { DoctypeMeta, type RouteContext } from '@stonecrop/stonecrop'
 
 import App from './App.vue'
 import router from './router'
@@ -20,7 +20,9 @@ app.use(router)
 
 app.use(Stonecrop, {
 	router,
-	getMeta: async (doctype: string) => {
+	getMeta: async (routeContext: RouteContext) => {
+		// Extract doctype from route segments (e.g., /Issue -> "Issue")
+		const doctype = routeContext.segments[0] || 'Issue'
 		const searchParams = new URLSearchParams({ doctype })
 		const doctypeParam = searchParams.toString()
 
@@ -38,7 +40,7 @@ app.use(Stonecrop, {
 			List(schemaData as any),
 			stateResponseData.machine,
 			Map({
-				default: actionsData?.map((action: any) => action.name || action) || [],
+				default: actionsData || [],
 			})
 		)
 	},

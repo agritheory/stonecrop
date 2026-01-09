@@ -31,6 +31,18 @@ export {
 	type ParsedTable,
 	type ConversionOptions,
 	type PostgresType,
+	type MapColumnOptions,
+	// Naming utilities
+	snakeToCamel,
+	camelToSnake,
+	snakeToLabel,
+	camelToLabel,
+	convertSQLName,
+	convertSQLNames,
+	createNameMapping,
+	toPascalCase,
+	toSlug,
+	type NameConversion,
 } from './converter'
 
 // Type-only exports for consumers who just need types

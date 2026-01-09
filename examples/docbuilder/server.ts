@@ -172,48 +172,48 @@ export function makeServer({ environment = 'development' } = {}) {
 						name: 'issue',
 						fields: [
 							{
-								id: 'subject',
+								fieldname: 'subject',
 								label: 'Subject',
 								fieldtype: 'Data',
 								required: true,
 							},
 							{
-								id: 'description',
+								fieldname: 'description',
 								label: 'Description',
 								fieldtype: 'Long Text',
 								required: true,
 							},
 							{
-								id: 'reported_date',
+								fieldname: 'reported_date',
 								label: 'Report Date',
 								fieldtype: 'Date',
-								read_only: true,
+								readonly: true,
 							},
 							{
-								id: 'assigned_date',
+								fieldname: 'assigned_date',
 								label: 'Assigned Date',
 								fieldtype: 'Date',
-								read_only: true,
+								readonly: true,
 							},
 							{
-								id: 'assigned_to',
+								fieldname: 'assigned_to',
 								label: 'Assigned To',
 								fieldtype: 'AutocompleteMultiSelect',
 							},
 							{
-								id: 'resolved_date',
+								fieldname: 'resolved_date',
 								label: 'Resolved Date',
 								fieldtype: 'Date',
-								read_only: true,
+								readonly: true,
 							},
 							{
-								id: 'closed_date',
+								fieldname: 'closed_date',
 								label: 'Closed Date',
 								fieldtype: 'Date',
-								read_only: true,
+								readonly: true,
 							},
 							{
-								id: 'resolution',
+								fieldname: 'resolution',
 								label: 'Resolution',
 								fieldtype: 'Long Text',
 							},
@@ -223,38 +223,38 @@ export function makeServer({ environment = 'development' } = {}) {
 						name: 'assignment',
 						fields: [
 							{
-								id: 'user',
+								fieldname: 'user',
 								label: 'User',
 								fieldtype: 'Autocomplete',
 								required: true,
 							},
 							{
-								id: 'issue',
+								fieldname: 'issue',
 								label: 'Issue',
 								fieldtype: 'Autocomplete',
 								required: true,
 							},
 							{
-								id: 'due_date',
+								fieldname: 'due_date',
 								label: 'Due Date',
 								fieldtype: 'Date',
 							},
 							{
-								id: 'assigned_date',
+								fieldname: 'assigned_date',
 								label: 'Assigned Date',
 								fieldtype: 'Date',
-								read_only: true,
+								readonly: true,
 							},
 							{
-								id: 'assigned_by',
+								fieldname: 'assigned_by',
 								label: 'Assigned By',
 								fieldtype: 'Autocomplete',
 							},
 							{
-								id: 'completed_date',
+								fieldname: 'completed_date',
 								label: 'Completed Date',
 								fieldtype: 'Date',
-								read_only: true,
+								readonly: true,
 							},
 						],
 					},
@@ -262,24 +262,24 @@ export function makeServer({ environment = 'development' } = {}) {
 						name: 'user',
 						fields: [
 							{
-								id: 'username',
+								fieldname: 'username',
 								label: 'Username',
 								fieldtype: 'Data',
 								required: true,
 							},
 							{
-								id: 'first_name',
+								fieldname: 'first_name',
 								label: 'First Name',
 								fieldtype: 'Data',
 								required: true,
 							},
 							{
-								id: 'last_name',
+								fieldname: 'last_name',
 								label: 'Last Name',
 								fieldtype: 'Data',
 							},
 							{
-								id: 'email',
+								fieldname: 'email',
 								label: 'Email Address',
 								fieldtype: 'Data',
 								required: true,
@@ -349,10 +349,10 @@ export function makeServer({ environment = 'development' } = {}) {
 								event_name: 'LOAD',
 								callback: [
 									(() => {
-										console.log('load todo')
+										console.log('load user')
 									}).toString(),
 									(() => {
-										console.log('load todo side effect')
+										console.log('load user side effect')
 									}).toString(),
 								],
 							},
@@ -360,10 +360,10 @@ export function makeServer({ environment = 'development' } = {}) {
 								event_name: 'SAVE',
 								callback: [
 									(() => {
-										console.log('save todo')
+										console.log('save user')
 									}).toString(),
 									(() => {
-										console.log('after save todo')
+										console.log('after save user')
 									}).toString(),
 								],
 							},
@@ -394,33 +394,33 @@ export function makeServer({ environment = 'development' } = {}) {
 
 			this.get('/load_state_machine', (schema, request) => {
 				const doctype = request.queryParams.doctype?.toString().toLowerCase()
-				const machine = schema.stateMachines.findBy({ name: doctype })
+				const machine = schema.db.stateMachines.findBy({ name: doctype })
 				return machine
-					? machine.attrs
+					? machine
 					: new Response(400, { some: 'Not Found' }, { errors: ['StateMachine for Doctype not found'] })
 			})
 
 			this.get('/load_meta', (schema, request) => {
 				const doctype = request.queryParams.doctype?.toString().toLowerCase()
-				const meta = schema.meta.findBy({ name: doctype })
+				const meta = schema.db.meta.findBy({ name: doctype })
 				return meta
-					? meta.attrs.fields
+					? meta.fields
 					: new Response(400, { some: 'Not Found' }, { errors: ['Metadata for Doctype not found'] })
 			})
 
 			this.get('/load_actions', (schema, request) => {
 				const doctype = request.queryParams.doctype?.toString().toLowerCase()
-				const actions = schema.actions.findBy({ name: doctype })
+				const actions = schema.db.actions.findBy({ name: doctype })
 				return actions
-					? actions.attrs.actions
+					? actions.actions
 					: new Response(400, { some: 'Not Found' }, { errors: ['Actions for Doctype not found'] })
 			})
 
 			this.get('/load_layout', (schema, request) => {
 				const doctype = request.queryParams.doctype?.toString().toLowerCase()
-				const machine = schema.stateMachines.findBy({ name: doctype })
+				const machine = schema.db.stateMachines.findBy({ name: doctype })
 				return machine
-					? machine.attrs.layout
+					? machine.layout
 					: new Response(400, { some: 'Not Found' }, { errors: ['Layout for Doctype not found'] })
 			})
 		},
