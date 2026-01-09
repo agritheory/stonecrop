@@ -52,9 +52,18 @@ export default defineNuxtModule<ModuleOptions>({
 			}
 
 			// Middleware virtual module
-			const middlewareCode = options.middleware?.length
-				? `export default [${options.middleware.map(fn => fn.toString()).join(',')}]`
-				: 'export default []'
+			let middlewareCode: string
+			if (options.middlewarePath) {
+				// Use external middleware file (recommended - preserves imports)
+				const middlewarePath = join(nuxt.options.srcDir, options.middlewarePath)
+				middlewareCode = `export { default } from '${middlewarePath}'`
+			} else if (options.middleware?.length) {
+				// Inline middleware (deprecated - cannot reference external modules)
+				logger.warn('Inline middleware is deprecated. Use middlewarePath for middleware with external dependencies.')
+				middlewareCode = `export default [${options.middleware.map(fn => fn.toString()).join(',')}]`
+			} else {
+				middlewareCode = 'export default []'
+			}
 			config.virtual['#internal/grafserv/middleware'] = middlewareCode
 
 			// Add externals for Grafast packages
@@ -76,12 +85,17 @@ export default defineNuxtModule<ModuleOptions>({
 			config.handlers = config.handlers || []
 			config.handlers.push({
 				route: options.url || '/graphql/',
-				handler: resolve('./handler'),
+				handler: resolve('./runtime/handler'),
 			})
 			// Add cache API endpoint
 			config.handlers.push({
 				route: '/graphql/cache',
-				handler: resolve('./cache'),
+				handler: resolve('./runtime/cache'),
+			})
+			// Add handler for Ruru (GraphiQL) static assets
+			config.handlers.push({
+				route: '/ruru-static/**',
+				handler: resolve('./runtime/handler'),
 			})
 		})
 
@@ -115,7 +129,7 @@ export default defineNuxtModule<ModuleOptions>({
 						cacheClearing = true
 						try {
 							logger.info('Clearing Grafserv cache...')
-							const { clearGrafservCache } = await import(resolve('./handler'))
+							const { clearGrafservCache } = await import(resolve('./runtime/handler'))
 							await clearGrafservCache()
 							logger.success('Cache cleared, schema reloaded')
 						} catch (error) {

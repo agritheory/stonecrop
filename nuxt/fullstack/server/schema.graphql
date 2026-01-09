@@ -1,0 +1,206 @@
+# @stonecrop/nuxt fullstack playground GraphQL Schema
+# Demonstrates integration with Stonecrop middleware for doctype-driven data access
+#
+# Data Flow:
+# - getMeta: Returns doctype schema from /fullstack/doctypes/*.json
+# - stonecropRecord/stonecropRecords: Proxies to MockGraphQLExecutor
+# - stonecropAction: Executes registered action handlers
+
+# ============================================
+# JSON Scalar for dynamic data
+# ============================================
+
+scalar JSON
+
+# ============================================
+# Stonecrop Meta Types
+# Types returned by getMeta and stonecropAllMeta
+# ============================================
+
+"""
+Field metadata from doctype schema
+"""
+type FieldMeta {
+	fieldname: String!
+	fieldtype: String!
+	label: String
+	required: Boolean
+	readOnly: Boolean
+	options: JSON
+	default: JSON
+	width: String
+	validation: JSON
+}
+
+"""
+Action definition for doctype workflow
+"""
+type ActionDefinition {
+	label: String!
+	handler: String!
+	requiredFields: [String!]
+	allowedStates: [String!]
+	confirm: Boolean
+	args: JSON
+}
+
+"""
+Workflow metadata with states and actions
+"""
+type WorkflowMeta {
+	states: [String!]
+	actions: JSON
+}
+
+"""
+Complete doctype metadata
+"""
+type DoctypeMeta {
+	name: String!
+	slug: String
+	tableName: String
+	fields: [FieldMeta!]!
+	workflow: WorkflowMeta
+	inherits: String
+	listDoctype: String
+	parentDoctype: String
+}
+
+# ============================================
+# Stonecrop Record Types
+# Generic record access via MockGraphQLExecutor
+# ============================================
+
+"""
+Result of a single record query
+"""
+type RecordResult {
+	data: JSON
+	doctype: String!
+}
+
+"""
+Result of a list query with count
+"""
+type RecordsResult {
+	data: [JSON!]!
+	doctype: String!
+	count: Int!
+}
+
+"""
+Result of an action execution
+"""
+type ActionResult {
+	success: Boolean!
+	data: JSON
+	error: String
+}
+
+# ============================================
+# System Types
+# ============================================
+
+type HealthStatus {
+	status: String!
+	timestamp: String!
+	version: String!
+}
+
+type ServerInfo {
+	name: String!
+	version: String!
+	environment: String!
+	features: [String!]!
+}
+
+# ============================================
+# Queries
+# ============================================
+
+type Query {
+	# -------------------------------------------
+	# Stonecrop Doctype Meta Queries
+	# Returns schema definitions from /doctypes/*.json
+	# -------------------------------------------
+
+	"""
+	Get metadata for a specific doctype by name
+	"""
+	getMeta(doctype: String!): DoctypeMeta
+
+	"""
+	Alias for getMeta - matches graphql_client query name
+	"""
+	stonecropMeta(doctype: String!): DoctypeMeta
+
+	"""
+	Get all registered doctype metadata
+	"""
+	stonecropAllMeta: [DoctypeMeta!]!
+
+	# -------------------------------------------
+	# Stonecrop Record Queries
+	# Proxies to MockGraphQLExecutor -> in-memory data
+	# -------------------------------------------
+
+	"""
+	Get a single record by doctype and ID
+	"""
+	stonecropRecord(doctype: String!, id: String!): RecordResult
+
+	"""
+	Get multiple records with optional filtering
+	"""
+	stonecropRecords(doctype: String!, filters: JSON, orderBy: String, limit: Int, offset: Int): RecordsResult
+
+	# -------------------------------------------
+	# System Queries
+	# -------------------------------------------
+
+	"""
+	Health check endpoint
+	"""
+	healthCheck: HealthStatus!
+
+	"""
+	Server information and enabled features
+	"""
+	serverInfo: ServerInfo!
+}
+
+# ============================================
+# Mutations
+# ============================================
+
+type Mutation {
+	# -------------------------------------------
+	# Stonecrop Action Mutation
+	# Executes registered action handlers
+	# -------------------------------------------
+
+	"""
+	Execute a doctype action (e.g., activate_user, submit_order)
+	"""
+	stonecropAction(doctype: String!, action: String!, args: JSON): ActionResult!
+
+	# -------------------------------------------
+	# Stonecrop Record Mutations
+	# CRUD operations via MockGraphQLExecutor
+	# -------------------------------------------
+
+	"""
+	Create a new record
+	"""
+	stonecropCreate(doctype: String!, input: JSON!): RecordResult!
+
+	"""
+	Update an existing record
+	"""
+	stonecropUpdate(doctype: String!, id: String!, patch: JSON!): RecordResult
+
+	"""
+	Delete a record
+	"""
+	stonecropDelete(doctype: String!, id: String!): ActionResult!
+}

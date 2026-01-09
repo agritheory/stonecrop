@@ -98,11 +98,11 @@ const groupedPermissions = computed(() => {
 .error {
 	padding: 1rem;
 	text-align: center;
-	color: #6b7280;
+	color: var(--sc-gray-50);
 }
 
 .error {
-	color: #ef4444;
+	color: var(--sc-brand-danger);
 }
 
 .permissions-grid {
@@ -111,18 +111,19 @@ const groupedPermissions = computed(() => {
 }
 
 .doctype-permissions {
-	border: 1px solid #e5e7eb;
-	border-radius: 0.5rem;
+	border: 1px solid var(--sc-gray-10);
+	border-radius: 0.25rem;
 	overflow: hidden;
 }
 
 .doctype-title {
 	margin: 0;
 	padding: 1rem;
-	background: #f9fafb;
-	border-bottom: 1px solid #e5e7eb;
+	background: var(--sc-gray-5);
+	border-bottom: 1px solid var(--sc-gray-10);
 	font-size: 1rem;
 	font-weight: 600;
+	color: var(--sc-gray-80);
 }
 
 .permissions-table {
@@ -135,15 +136,16 @@ const groupedPermissions = computed(() => {
 	text-align: left;
 	font-size: 0.875rem;
 	font-weight: 500;
-	color: #6b7280;
-	background: #f9fafb;
-	border-bottom: 1px solid #e5e7eb;
+	color: var(--sc-gray-50);
+	background: var(--sc-gray-5);
+	border-bottom: 1px solid var(--sc-gray-10);
 }
 
 .permissions-table td {
 	padding: 0.75rem 1rem;
 	font-size: 0.875rem;
-	border-bottom: 1px solid #e5e7eb;
+	border-bottom: 1px solid var(--sc-gray-10);
+	color: var(--sc-cell-text-color);
 }
 
 .permissions-table tbody tr:last-child td {
@@ -151,33 +153,35 @@ const groupedPermissions = computed(() => {
 }
 
 .permissions-table tbody tr.allowed {
-	background: #f0fdf4;
+	background: var(--sc-cell-changed-color);
 }
 
 .permissions-table tbody tr.denied {
-	background: #fef2f2;
+	background: var(--sc-gray-5);
 }
 
 .badge {
 	display: inline-block;
 	padding: 0.25rem 0.75rem;
-	border-radius: 9999px;
+	border-radius: 0.25rem;
 	font-size: 0.75rem;
 	font-weight: 500;
 }
 
 .badge-success {
-	background: #dcfce7;
-	color: #166534;
+	background: var(--sc-form-background);
+	color: var(--sc-brand-success);
+	border: 1px solid var(--sc-brand-success);
 }
 
 .badge-danger {
-	background: #fee2e2;
-	color: #991b1b;
+	background: var(--sc-form-background);
+	color: var(--sc-brand-danger);
+	border: 1px solid var(--sc-brand-danger);
 }
 
 .rule-source {
-	color: #6b7280;
+	color: var(--sc-gray-50);
 	font-size: 0.8125rem;
 }
 </style>

@@ -63,32 +63,26 @@ const navigationItems = [
 				<h2>Features Demonstrated</h2>
 				<div class="features-grid">
 					<div class="feature-card">
-						<div class="feature-icon">📊</div>
 						<h3>Table Views (ATable)</h3>
 						<p>Editable tables with Excel-like navigation for listing records</p>
 					</div>
 					<div class="feature-card">
-						<div class="feature-icon">📝</div>
 						<h3>Form Views (AForm)</h3>
 						<p>Schema-driven forms with HST integration for editing records</p>
 					</div>
 					<div class="feature-card">
-						<div class="feature-icon">🔐</div>
 						<h3>Effective Permissions</h3>
 						<p>Custom component displaying computed permissions from orpin SQL functions</p>
 					</div>
 					<div class="feature-card">
-						<div class="feature-icon">🔧</div>
 						<h3>DocBuilder</h3>
 						<p>Visual builder for DocTypes with ability rules and workflows</p>
 					</div>
 					<div class="feature-card">
-						<div class="feature-icon">🔄</div>
 						<h3>Workflows</h3>
 						<p>XState-powered FSM workflow integration with DocTypes</p>
 					</div>
 					<div class="feature-card">
-						<div class="feature-icon">🌳</div>
 						<h3>HST Integration</h3>
 						<p>Hierarchical State Tree for advanced state management</p>
 					</div>
@@ -112,8 +106,8 @@ const navigationItems = [
 <style scoped>
 .home-container {
 	min-height: 100vh;
-	background: var(--sc-brand-color);
-	color: var(--sc-primary-text-color);
+	font-family: var(--sc-font-family);
+	background: var(--sc-form-background);
 }
 
 .home-header {
@@ -127,14 +121,15 @@ const navigationItems = [
 	font-size: 3rem;
 	margin: 0 0 1rem 0;
 	font-weight: 700;
+	color: var(--sc-gray-80);
 }
 
 .subtitle {
 	font-size: 1.25rem;
-	opacity: 0.9;
 	max-width: 800px;
 	margin: 0 auto;
 	line-height: 1.6;
+	color: var(--sc-gray-60);
 }
 
 .home-content {
@@ -151,6 +146,7 @@ const navigationItems = [
 	font-size: 1.75rem;
 	margin-bottom: 1.5rem;
 	font-weight: 600;
+	color: var(--sc-gray-80);
 }
 
 .nav-grid {
@@ -163,20 +159,16 @@ const navigationItems = [
 	position: relative;
 	display: block;
 	padding: 2rem;
-	background: rgba(255, 255, 255, 0.05);
-	backdrop-filter: blur(10px);
-	border: 1px solid rgba(255, 255, 255, 0.1);
-	border-radius: 0.5rem;
+	background: var(--sc-form-background);
+	border: 1px solid var(--sc-gray-20);
+	border-left: 4px solid var(--sc-gray-20);
+	border-radius: 0;
 	text-decoration: none;
-	color: var(--sc-primary-text-color);
-	transition: all 0.3s ease;
+	color: var(--sc-gray-80);
 }
 
 .nav-card:hover {
-	background: rgba(255, 255, 255, 0.1);
-	transform: translateY(-4px);
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-	border-color: var(--sc-primary-color);
+	background: var(--sc-gray-5);
 }
 
 .nav-card h3 {
@@ -187,7 +179,7 @@ const navigationItems = [
 
 .nav-card p {
 	margin: 0;
-	opacity: 0.9;
+	color: var(--sc-gray-60);
 	line-height: 1.5;
 }
 
@@ -197,23 +189,21 @@ const navigationItems = [
 	top: 50%;
 	transform: translateY(-50%);
 	font-size: 2rem;
-	opacity: 0.5;
-	transition: all 0.3s ease;
+	color: var(--sc-gray-50);
 }
 
 .nav-card:hover .nav-arrow {
-	opacity: 1;
-	transform: translateY(-50%) translateX(0.5rem);
+	color: var(--sc-primary-color);
 }
 
 .features-section,
 .tech-stack {
 	margin-top: 4rem;
 	padding: 2rem;
-	background: rgba(255, 255, 255, 0.05);
-	backdrop-filter: blur(10px);
-	border: 1px solid rgba(255, 255, 255, 0.1);
-	border-radius: 0.5rem;
+	background: var(--sc-form-background);
+	border: 1px solid var(--sc-gray-20);
+	border-left: 4px solid var(--sc-gray-20);
+	border-radius: 0;
 }
 
 .features-section h2,
@@ -221,6 +211,7 @@ const navigationItems = [
 	font-size: 1.75rem;
 	margin-bottom: 2rem;
 	font-weight: 600;
+	color: var(--sc-gray-80);
 }
 
 .features-grid {
@@ -231,25 +222,22 @@ const navigationItems = [
 
 .feature-card {
 	padding: 1.5rem;
-	background: rgba(255, 255, 255, 0.03);
-	border: 1px solid rgba(255, 255, 255, 0.1);
-	border-radius: 0.5rem;
-}
-
-.feature-icon {
-	font-size: 2.5rem;
-	margin-bottom: 1rem;
+	background: var(--sc-gray-5);
+	border: 1px solid var(--sc-gray-10);
+	border-left: 4px solid var(--sc-gray-20);
+	border-radius: 0;
 }
 
 .feature-card h3 {
 	margin: 0 0 0.5rem 0;
 	font-size: 1.25rem;
 	font-weight: 600;
+	color: var(--sc-gray-80);
 }
 
 .feature-card p {
 	margin: 0;
-	opacity: 0.9;
+	color: var(--sc-gray-60);
 	font-size: 0.9rem;
 	line-height: 1.5;
 }
@@ -262,8 +250,9 @@ const navigationItems = [
 
 .tech-stack li {
 	padding: 0.75rem 0;
-	border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+	border-bottom: 1px solid var(--sc-gray-10);
 	line-height: 1.6;
+	color: var(--sc-gray-80);
 }
 
 .tech-stack li:last-child {

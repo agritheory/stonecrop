@@ -611,6 +611,9 @@ importers:
       postgraphile:
         specifier: ^5.0.0-rc.3
         version: 5.0.0-rc.3(@envelop/core@5.4.0)(@whatwg-node/server@0.9.71)(crossws@0.3.5)(graphql@16.11.0)(h3@1.15.4)
+      zod:
+        specifier: ^3.24.0
+        version: 3.24.0
     devDependencies:
       '@types/node':
         specifier: ^22.0.0
@@ -691,12 +694,18 @@ importers:
       '@stonecrop/atable':
         specifier: workspace:*
         version: link:../atable
+      '@stonecrop/casl-middleware':
+        specifier: workspace:*
+        version: link:../casl_middleware
       '@stonecrop/graphql-middleware':
         specifier: workspace:*
         version: link:../graphql_middleware
       '@stonecrop/node-editor':
         specifier: workspace:*
         version: link:../node_editor
+      '@stonecrop/nuxt-grafserv':
+        specifier: workspace:*
+        version: link:../nuxt_grafserv
       '@stonecrop/schema':
         specifier: workspace:*
         version: link:../schema

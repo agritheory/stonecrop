@@ -75,11 +75,6 @@ export default defineNuxtModule<ModuleOptions>({
 						for (const schema of schemas) {
 							try {
 								const schemaName = schema.replace('.json', '')
-								if (pagePaths.includes(`/${schemaName}`)) {
-									logger.warn(`Skipping doctype '${schemaName}': conflicts with existing page`)
-									continue
-								}
-
 								const schemaPath = resolve(doctypesDir, schema)
 								const fileContents = await readFile(schemaPath, 'utf-8')
 
@@ -91,18 +86,36 @@ export default defineNuxtModule<ModuleOptions>({
 									continue
 								}
 
-								if (schemaData.schema) {
+								// Support both formats: 'schema' array (legacy) or 'fields' array (DoctypeMeta)
+								const schemaFields = schemaData.schema || schemaData.fields
+								if (!schemaFields) {
+									logger.warn(`Schema file '${schema}' missing 'schema' or 'fields' property, skipping`)
+									continue
+								}
+
+								// Route pattern from doctype:
+								// - slug defines the base route (e.g., "user", "user/:id", "kanban/:id/:scope?")
+								// - Each doctype is a single route - no auto-generation of list/form pairs
+								// Examples:
+								//   user-table.json with slug "user" → /user (table view)
+								//   user.json with slug "user/:id" → /user/:id (form view)
+								//   kanban.json with slug "kanban/:id/:scope?" → /kanban/:id with optional scope
+								const routePath = schemaData.slug || schemaName.toLowerCase()
+
+								// Add route for this doctype
+								if (!pagePaths.includes(`/${routePath}`)) {
 									pages.unshift({
 										name: `stonecrop-${schemaName}`,
-										path: `/${schemaName}`,
+										path: `/${routePath}`,
 										file: stonecropPage,
 										meta: {
-											schema: schemaData.schema,
+											schema: schemaFields,
+											doctype: schemaData,
 										},
 									})
-									logger.log(`Added page for doctype: ${schemaName}`)
+									logger.log(`Added route: /${routePath} (${schemaName})`)
 								} else {
-									logger.warn(`Schema file '${schema}' missing 'schema' property, skipping`)
+									logger.warn(`Route /${routePath} already exists, skipping ${schemaName}`)
 								}
 							} catch (schemaError) {
 								logger.error(`Error processing schema '${schema}':`, schemaError)

@@ -53,44 +53,12 @@ function handleRowClick(row: any) {
 	font-size: 2.5rem;
 	margin: 0 0 1rem;
 	font-weight: 700;
-	color: #1a202c;
+	color: var(--sc-gray-80);
 }
 
 .subtitle {
 	font-size: 1.125rem;
-	color: #4a5568;
+	color: var(--sc-gray-60);
 	margin: 0;
-}
-
-/* Table styling */
-:deep(.atable) {
-	background: rgba(255, 255, 255, 0.95);
-	backdrop-filter: blur(10px);
-	border-radius: 1rem;
-	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-	border: 1px solid rgba(0, 0, 0, 0.05);
-}
-
-:deep(.atable tbody tr),
-.clickable-row {
-	cursor: pointer;
-	transition: background-color 0.15s ease;
-}
-
-:deep(.atable tbody tr:hover),
-.clickable-row:hover {
-	background: rgba(0, 220, 130, 0.05);
-}
-
-:deep(.atable th) {
-	background: rgba(0, 220, 130, 0.1);
-	color: #1a202c;
-	font-weight: 600;
-	padding: 1rem;
-}
-
-:deep(.atable td) {
-	padding: 1rem;
-	color: #2d3748;
 }
 </style>

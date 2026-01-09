@@ -1,25 +1,43 @@
 import { grafserv } from 'grafserv/h3/v1'
 import { makeGrafastSchema } from 'grafast'
 import { GraphQLFileLoader } from '@graphql-tools/graphql-file-loader'
-import { loadSchema } from '@graphql-tools/load'
-import { defineEventHandler, type H3Event, readBody, getQuery } from 'h3'
+import { loadTypedefs } from '@graphql-tools/load'
+import { defineEventHandler, type H3Event } from 'h3'
 import { useRuntimeConfig } from 'nitropack/runtime'
-import type { GraphQLSchema } from 'graphql'
+import type { GraphQLSchema, DocumentNode } from 'graphql'
 
-import type { ModuleOptions, GrafastContext } from './types'
+import type { ModuleOptions, GrafastContext, MiddlewareFunction } from '../types'
+
+// Lazy-load middleware from virtual module (preserves function references)
+let middlewareFunctions: MiddlewareFunction[] | null = null
+
+async function getMiddleware(): Promise<MiddlewareFunction[]> {
+	if (middlewareFunctions !== null) {
+		return middlewareFunctions
+	}
+	try {
+		// @ts-expect-error - virtual module
+		const mod = await import('#internal/grafserv/middleware')
+		middlewareFunctions = mod.default || []
+	} catch {
+		middlewareFunctions = []
+	}
+	return middlewareFunctions
+}
 
 // Cache for the grafserv instance
 let grafservInstance: ReturnType<typeof grafserv> | null = null
 let cachedSchema: GraphQLSchema | null = null
 
 /**
- * Load schema from file path(s) using graphql-tools
+ * Load typeDefs from file path(s) using graphql-tools
  */
-async function loadSchemaFromFiles(schemaPath: string | string[]): Promise<GraphQLSchema> {
+async function loadTypeDefsFromFiles(schemaPath: string | string[]): Promise<DocumentNode[]> {
 	const paths = Array.isArray(schemaPath) ? schemaPath : [schemaPath]
-	return loadSchema(paths, {
+	const sources = await loadTypedefs(paths, {
 		loaders: [new GraphQLFileLoader()],
 	})
+	return sources.map(source => source.document!).filter(Boolean)
 }
 
 /**
@@ -37,14 +55,30 @@ async function getSchema(options: ModuleOptions): Promise<GraphQLSchema> {
 		schema = await options.schema()
 	} else if (options.schema) {
 		// Load from file path(s)
-		const typeDefs = await loadSchemaFromFiles(options.schema)
+		const typeDefDocs = await loadTypeDefsFromFiles(options.schema)
 
 		// Load resolvers if provided
-		let resolvers = {}
+		let plans: Record<string, Record<string, { resolve: unknown }>> = {}
 		if (options.resolvers) {
 			try {
 				const resolverModule = await import('#internal/grafserv/resolvers')
-				resolvers = resolverModule.default || resolverModule
+				const resolvers = resolverModule.default || resolverModule
+				console.log('[@stonecrop/nuxt-grafserv] Resolvers loaded:', Object.keys(resolvers))
+
+				// Transform GraphQL-style resolvers to Grafast plans format
+				// Grafast expects { Type: { field: { resolve: fn } } } not { Type: { field: fn } }
+				for (const typeName of Object.keys(resolvers)) {
+					plans[typeName] = {}
+					const typeResolvers = resolvers[typeName]
+					for (const fieldName of Object.keys(typeResolvers)) {
+						const resolver = typeResolvers[fieldName]
+						if (typeof resolver === 'function') {
+							plans[typeName][fieldName] = { resolve: resolver }
+						} else {
+							plans[typeName][fieldName] = resolver
+						}
+					}
+				}
 			} catch (e) {
 				console.warn('[@stonecrop/nuxt-grafserv] Could not load resolvers:', e)
 			}
@@ -52,8 +86,8 @@ async function getSchema(options: ModuleOptions): Promise<GraphQLSchema> {
 
 		// Create schema with grafast
 		schema = makeGrafastSchema({
-			typeDefs,
-			resolvers,
+			typeDefs: typeDefDocs,
+			plans,
 		})
 	} else {
 		throw new Error('[@stonecrop/nuxt-grafserv] No schema provided. Configure schema path or provider function.')
@@ -140,14 +174,28 @@ export default defineEventHandler(async (event: H3Event) => {
 			params: event.context.params || {},
 		}
 
-		// Apply middleware
-		const middleware = options.middleware || []
+		// Apply middleware from virtual module
+		const middleware = await getMiddleware()
 		await applyMiddleware(context, middleware)
 
 		// Get grafserv instance
 		const serv = await getGrafservInstance(options)
 
-		// Handle the GraphQL request
+		// Check URL to determine what type of request this is
+		const url = event.node.req.url || ''
+		const method = event.node.req.method || 'GET'
+
+		// Handle Ruru static assets (CSS/JS)
+		if (url.includes('/ruru-static/')) {
+			return serv.handleGraphiqlStaticEvent(event)
+		}
+
+		// Handle GraphiQL HTML page (GET request to /graphql/)
+		if (method === 'GET' && url.match(/\/graphql\/?(\?.*)?$/)) {
+			return serv.handleGraphiqlEvent(event)
+		}
+
+		// Handle GraphQL requests (POST)
 		return serv.handleGraphQLEvent(event)
 	} catch (error) {
 		console.error('[@stonecrop/nuxt-grafserv] Error in GraphQL handler:', error)

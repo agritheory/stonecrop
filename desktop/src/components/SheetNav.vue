@@ -10,22 +10,30 @@
 				@click="navigateHome"
 				@keydown.enter="navigateHome">
 				<router-link to="/" tabindex="0">
-					<span class="icon-placeholder" aria-label="Home">🏠</span>
+					<svg class="icon" aria-label="Home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<path d="M3 12l9-9 9 9" />
+						<path d="M9 21V12h6v9" />
+					</svg>
 				</router-link>
 			</li>
 			<li
 				:class="['searchtab', { 'search-active': searchVisible }]"
 				:style="{ display: breadcrumbsVisibile ? 'block' : 'none' }">
 				<a tabindex="0">
-					<span
+					<svg
 						v-show="!searchVisible"
-						class="search-icon"
+						class="icon search-icon"
 						role="button"
 						aria-label="Search"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
 						@click="toggleSearch"
-						@keydown.enter="toggleSearch"
-						>🔍</span
-					>
+						@keydown.enter="toggleSearch">
+						<circle cx="11" cy="11" r="7" />
+						<path d="M21 21l-4.35-4.35" />
+					</svg>
 					<input
 						v-show="searchVisible"
 						ref="searchinput"
@@ -97,13 +105,13 @@ footer {
 	width: 100%;
 	background-color: transparent;
 	height: auto;
-	min-height: 2rem;
+	min-height: 2.4rem;
 	z-index: 100;
 	text-align: left;
 	font-size: 100%;
 	display: flex;
 	justify-content: right;
-	padding: 0 1rem 0 0;
+	padding: 0 0.75rem 0 0;
 	box-sizing: border-box;
 }
 ul {
@@ -121,29 +129,26 @@ ul {
 	margin-left: -1px;
 }
 
-/* Base tab styling - 15% larger for easier interaction */
+/* Base tab styling */
 .tabs a {
 	float: left;
-	padding: 0.575rem 1.725rem;
-	height: 2.6rem;
+	padding: 0.5rem 1rem;
+	height: 2.4rem;
 	box-sizing: border-box;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	text-decoration: none;
-	color: var(--sc-gray-80, #333);
+	color: var(--sc-gray-60, #666);
 	background: var(--sc-btn-color, #ffffff);
 	border: 1px solid var(--sc-btn-border, #ccc);
-	font-size: 1.15rem;
-	transition: all 0.2s ease;
+	font-size: 0.85rem;
+	font-family: var(--sc-font-family, system-ui, sans-serif);
+	transition: all 0.15s ease;
 
-	/* Only round the top corners */
-	-webkit-border-top-left-radius: 15px;
-	-webkit-border-top-right-radius: 15px;
-	-moz-border-radius-topleft: 15px;
-	-moz-border-radius-topright: 15px;
-	border-top-left-radius: 15px;
-	border-top-right-radius: 15px;
+	/* Minimal ornamentation - subtle top radius only */
+	border-top-left-radius: 2px;
+	border-top-right-radius: 2px;
 }
 
 .tabs a:hover {
@@ -157,84 +162,21 @@ ul {
 	color: var(--sc-primary-text-color, #fff) !important;
 }
 
-.tabs li:before,
-.tabs li:after,
-.tabs li a:before,
-.tabs li a:after {
-	position: absolute;
-	bottom: 0;
-}
+/* Pseudo-elements removed - minimal ornamentation style */
 
-.tabs li:last-child:after,
-.tabs li:last-child a:after,
-.tabs li:first-child:before,
-.tabs li:first-child a:before,
-.tabs .router-link-active:after,
-.tabs .router-link-active:before,
-.tabs .router-link-active a:after,
-.tabs .router-link-active a:before {
-	content: '';
-}
-
-.tabs .router-link-active:before,
-.tabs .router-link-active:after {
-	background: transparent;
-	z-index: 1;
-}
-
-/* Squares */
-.tabs li:before,
-.tabs li:after {
-	background: transparent;
-	width: 10px;
-	height: 10px;
-}
-.tabs li:before {
-	left: -10px;
-}
-.tabs li:after {
-	right: -10px;
-}
-
-/* Circles */
-.tabs li a:after,
-.tabs li a:before {
-	width: 20px;
-	height: 20px;
-	-webkit-border-radius: 10px;
-	-moz-border-radius: 10px;
-	border-radius: 10px;
-	background: transparent;
-	z-index: 2;
-}
-.tabs .router-link-active a:after,
-.tabs .router-link-active a:before {
-	background: transparent;
-}
-.tabs li:first-child.router-link-active a:before,
-.tabs li:last-child.router-link-active a:after {
-	background: transparent;
-}
-.tabs li a:before {
-	left: -20px;
-}
-.tabs li a:after {
-	right: -20px;
-}
-
-/* Hide breadcrumbs tab - 15% larger */
+/* Hide breadcrumbs tab */
 .hidebreadcrumbs a {
-	min-width: 2.875rem;
-	width: 2.875rem;
-	height: 2.6rem;
-	padding: 0.575rem;
+	min-width: 2.4rem;
+	width: 2.4rem;
+	height: 2.4rem;
+	padding: 0.5rem;
 	background: var(--sc-btn-color, #ffffff);
 	border: 1px solid var(--sc-btn-border, #ccc);
-	color: var(--sc-gray-80, #333);
+	color: var(--sc-gray-60, #666);
 }
 
 .hidebreadcrumbs a div {
-	font-size: 1.45rem;
+	font-size: 1.2rem;
 }
 
 .rotated {
@@ -270,50 +212,45 @@ a:focus {
 	z-index: 3;
 }
 
-/* Home tab - 15% larger */
+/* Home tab */
 .hometab a {
-	min-width: 2.875rem;
-	width: 2.875rem;
-	height: 2.6rem;
-	padding: 0.575rem;
+	min-width: 2.4rem;
+	width: 2.4rem;
+	height: 2.4rem;
+	padding: 0.5rem;
 	background: var(--sc-btn-color, #ffffff);
 	border: 1px solid var(--sc-btn-border, #ccc);
-	color: var(--sc-gray-80, #333);
+	color: var(--sc-gray-60, #666);
 }
 
-.hometab .icon-placeholder {
-	font-size: 1.15rem;
-	line-height: 1;
+/* SVG icon styling */
+.icon {
+	width: 1rem;
+	height: 1rem;
+	stroke: currentColor;
+	flex-shrink: 0;
 }
 
-/* Search tab with animation - similar to ActionSet expand/collapse */
+/* Search tab with animation */
 .searchtab {
 	overflow: hidden;
 }
 
 .searchtab a {
-	min-width: 2.875rem;
-	height: 2.6rem;
-	padding: 0.575rem;
+	min-width: 2.4rem;
+	height: 2.4rem;
+	padding: 0.5rem;
 	background: var(--sc-btn-color, #ffffff);
 	border: 1px solid var(--sc-btn-border, #ccc);
-	color: var(--sc-gray-80, #333);
+	color: var(--sc-gray-60, #666);
 	overflow: hidden;
 	/* Animation for smooth expand/collapse */
-	max-width: 2.875rem;
+	max-width: 2.4rem;
 	transition: max-width 0.35s ease-in-out, padding 0.35s ease-in-out, background 0.2s ease;
 }
 
 .searchtab .search-icon {
-	font-size: 1.15rem;
-	width: 1.15rem;
-	height: 1.15rem;
-	line-height: 1;
 	cursor: pointer;
-	flex-shrink: 0;
-	display: flex;
-	align-items: center;
-	justify-content: center;
 }
 
 .searchtab input {
@@ -344,10 +281,10 @@ a:focus {
 
 /* Search active state - expanded with animation */
 .searchtab.search-active a {
-	max-width: 220px;
+	max-width: 200px;
 	min-width: auto;
 	width: auto;
-	padding: 0.575rem 0.75rem;
+	padding: 0.5rem 0.75rem;
 }
 
 .searchtab.search-active input {

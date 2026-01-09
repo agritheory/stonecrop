@@ -96,9 +96,9 @@ const formatValue = (value: any): string => {
 	left: 20px;
 	bottom: 80px;
 	width: 400px;
-	background: white;
-	border-radius: 8px;
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	background: var(--sc-form-background);
+	border-radius: 0.25rem;
+	border: 1px solid var(--sc-form-border);
 	overflow: hidden;
 	z-index: 1000;
 }
@@ -108,15 +108,15 @@ const formatValue = (value: any): string => {
 	justify-content: space-between;
 	align-items: center;
 	padding: 1rem;
-	background: #f3f4f6;
-	border-bottom: 1px solid #e5e7eb;
+	background: var(--sc-gray-5);
+	border-bottom: 1px solid var(--sc-gray-10);
 }
 
 .panel-header h3 {
 	margin: 0;
 	font-size: 1rem;
 	font-weight: 600;
-	color: #1f2937;
+	color: var(--sc-gray-80);
 }
 
 .close-button {
@@ -124,7 +124,7 @@ const formatValue = (value: any): string => {
 	border: none;
 	font-size: 1.25rem;
 	cursor: pointer;
-	color: #6b7280;
+	color: var(--sc-gray-50);
 	padding: 0;
 	width: 24px;
 	height: 24px;
@@ -134,7 +134,7 @@ const formatValue = (value: any): string => {
 }
 
 .close-button:hover {
-	color: #1f2937;
+	color: var(--sc-gray-80);
 }
 
 .panel-content {
@@ -143,8 +143,8 @@ const formatValue = (value: any): string => {
 
 .log-stats {
 	padding: 1rem;
-	background: #fafafa;
-	border-bottom: 1px solid #e5e7eb;
+	background: var(--sc-gray-5);
+	border-bottom: 1px solid var(--sc-gray-10);
 }
 
 .stat {
@@ -159,19 +159,19 @@ const formatValue = (value: any): string => {
 }
 
 .stat-label {
-	color: #6b7280;
+	color: var(--sc-gray-50);
 	font-weight: 500;
 }
 
 .stat-value {
-	color: #1f2937;
+	color: var(--sc-gray-80);
 	font-weight: 600;
 }
 
 .empty-state {
 	padding: 3rem 1.5rem;
 	text-align: center;
-	color: #6b7280;
+	color: var(--sc-gray-50);
 }
 
 .operations-list {
@@ -179,17 +179,16 @@ const formatValue = (value: any): string => {
 }
 
 .operation-item {
-	background: white;
-	border: 1px solid #e5e7eb;
-	border-radius: 6px;
+	background: var(--sc-form-background);
+	border: 1px solid var(--sc-gray-10);
+	border-radius: 0.25rem;
 	padding: 0.75rem;
 	margin-bottom: 0.5rem;
-	transition: all 0.2s ease;
 }
 
 .operation-item.current {
-	border-color: #3b82f6;
-	background: #eff6ff;
+	border-color: var(--sc-primary-color);
+	background: var(--sc-cell-changed-color);
 }
 
 .operation-item.past {
@@ -205,14 +204,14 @@ const formatValue = (value: any): string => {
 
 .operation-type {
 	font-weight: 600;
-	color: #1f2937;
+	color: var(--sc-gray-80);
 	font-size: 0.875rem;
 	text-transform: uppercase;
 }
 
 .operation-time {
 	font-size: 0.75rem;
-	color: #9ca3af;
+	color: var(--sc-gray-50);
 }
 
 .operation-details {
@@ -229,13 +228,13 @@ const formatValue = (value: any): string => {
 }
 
 .detail-label {
-	color: #6b7280;
+	color: var(--sc-gray-50);
 	font-weight: 500;
 	min-width: 60px;
 }
 
 .detail-value {
-	color: #1f2937;
+	color: var(--sc-gray-80);
 	word-break: break-all;
 	flex: 1;
 	font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;

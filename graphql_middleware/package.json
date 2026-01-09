@@ -25,7 +25,8 @@
 	"dependencies": {
 		"@stonecrop/schema": "workspace:*",
 		"graphql": "^16.11.0",
-		"postgraphile": "^5.0.0-rc.3"
+		"postgraphile": "^5.0.0-rc.3",
+		"zod": "^3.24.0"
 	},
 	"devDependencies": {
 		"@types/node": "^22.0.0",

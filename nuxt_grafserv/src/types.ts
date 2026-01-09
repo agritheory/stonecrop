@@ -39,7 +39,19 @@ export interface ModuleOptions {
 	/** Whether to enable GraphiQL IDE (default: true in dev, false in prod) */
 	graphiql?: boolean
 
-	/** Middleware functions to process requests */
+	/**
+	 * Path to middleware file that exports an array of middleware functions.
+	 * This is the recommended approach as it preserves imports/dependencies.
+	 * Example: './server/middleware.ts'
+	 */
+	middlewarePath?: string
+
+	/**
+	 * Middleware functions to process requests (inline).
+	 * Note: Inline middleware cannot reference external modules.
+	 * For middleware with dependencies, use middlewarePath instead.
+	 * @deprecated Use middlewarePath for middleware with external dependencies
+	 */
 	middleware?: MiddlewareFunction[]
 
 	/** Custom Graphile preset to extend (for advanced grafast configuration) */

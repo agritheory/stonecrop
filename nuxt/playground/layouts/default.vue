@@ -64,21 +64,24 @@ const actionSetElements = computed<ActionElements[]>(() => {
 	// Add form actions first (Undo, Redo, Cancel, Save)
 	elements.push(...getActionSetElements())
 
-	// Navigation dropdown (always available except on home)
+	// Navigation dropdown (always available)
+	const navActions = [
+		{ label: 'Users', action: () => router.push('/users') },
+		{ label: 'Roles', action: () => router.push('/roles') },
+		{ label: 'Profiles', action: () => router.push('/role-profiles') },
+		{ label: 'Rules', action: () => router.push('/ability-rules') },
+		{ label: 'DocTypes', action: () => router.push('/doctypes') },
+	]
+
 	if (!isHome.value) {
-		elements.push({
-			type: 'dropdown',
-			label: 'Navigate',
-			actions: [
-				{ label: 'Home', action: () => router.push('/') },
-				{ label: 'Users', action: () => router.push('/users') },
-				{ label: 'Roles', action: () => router.push('/roles') },
-				{ label: 'Profiles', action: () => router.push('/role-profiles') },
-				{ label: 'Rules', action: () => router.push('/ability-rules') },
-				{ label: 'DocTypes', action: () => router.push('/doctypes') },
-			],
-		})
+		navActions.unshift({ label: 'Home', action: () => router.push('/') })
 	}
+
+	elements.push({
+		type: 'dropdown',
+		label: 'Navigate',
+		actions: navActions,
+	})
 
 	// Back button (when not on index pages)
 	const path = route.path
@@ -101,24 +104,21 @@ const handleActionClick = async (label: string, action?: () => void | Promise<vo
 </script>
 
 <template>
-	<div class="app-layout" :class="{ 'is-home': isHome }">
+	<div class="app-layout">
 		<main class="app-main">
 			<slot />
 		</main>
 
-		<!-- SheetNav Footer (hidden on home page) - client-only to avoid hydration issues -->
-		<ClientOnly v-if="!isHome && breadcrumbs.length > 0">
+		<!-- SheetNav Footer - client-only to avoid hydration issues -->
+		<ClientOnly>
 			<SheetNav :breadcrumbs="breadcrumbs" />
 			<template #fallback>
 				<div class="sheetnav-placeholder" />
 			</template>
 		</ClientOnly>
 
-		<!-- ActionSet Floating Controls (hidden on home page) -->
-		<ActionSet
-			v-if="!isHome && actionSetElements.length > 0"
-			:elements="actionSetElements"
-			@action-click="handleActionClick" />
+		<!-- ActionSet Floating Controls -->
+		<ActionSet v-if="actionSetElements.length > 0" :elements="actionSetElements" @action-click="handleActionClick" />
 	</div>
 </template>
 
@@ -130,13 +130,7 @@ const handleActionClick = async (label: string, action?: () => void | Promise<vo
 body {
 	margin: 0;
 	font-family: var(--sc-font-family);
-	-webkit-font-smoothing: antialiased;
-	-moz-osx-font-smoothing: grayscale;
 	background: var(--sc-gray-5);
-}
-
-#__nuxt {
-	min-height: 100vh;
 }
 </style>
 
@@ -145,11 +139,7 @@ body {
 	min-height: 100vh;
 	display: flex;
 	flex-direction: column;
-	background: var(--sc-gray-5);
-}
-
-.app-layout.is-home {
-	background: var(--sc-brand-color);
+	background: var(--sc-form-background);
 }
 
 .app-main {
@@ -157,135 +147,22 @@ body {
 	padding: 2rem;
 }
 
-/* Remove padding when app-main contains a sidebar layout to prevent overflow */
 .app-main:has(> .page-container-with-sidebar) {
 	padding: 0;
 }
 
-/* Apply container background to non-home pages (skip pages with sidebar layouts) */
-.app-layout:not(.is-home) .app-main > :deep(*:first-child:not(.page-container-with-sidebar)) {
+.app-layout .app-main > :deep(*:first-child:not(.page-container-with-sidebar):not(.home-container)) {
 	background: var(--sc-form-background);
-	border-radius: 0.25rem;
+	border-radius: 0;
 	padding: 2rem;
-	box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-	border: 1px solid var(--sc-form-border);
+	border-left: 4px solid var(--sc-gray-20);
 }
 
-/* For pages with sidebar, remove outer padding to prevent overflow */
-.app-layout:not(.is-home) .app-main > :deep(.page-container-with-sidebar) {
-	background: transparent;
-	border: none;
-	box-shadow: none;
-}
-
-/* Home page styling */
-.app-layout.is-home {
-	color: var(--sc-primary-text-color);
-}
-
-/* SheetNav placeholder for SSR */
 .sheetnav-placeholder {
 	position: fixed;
 	bottom: 0;
 	right: 0;
 	height: 2.6rem;
 	width: 200px;
-	background: transparent;
-}
-
-/* ActionSet styles using Stonecrop theme */
-.app-layout :deep(.action-set) {
-	background: var(--sc-form-background);
-	border: 1px solid var(--sc-form-border);
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-	padding: 20px 20px 20px 20px !important;
-}
-
-.app-layout :deep(.action-set.collapse),
-.app-layout :deep(.action-set.collapse.hovered-and-closed:hover) {
-	max-width: 60px !important;
-	padding: 20px 20px 20px 20px !important;
-}
-
-.app-layout :deep(.action-set.collapse:hover),
-.app-layout :deep(.action-set.collapse.open-set) {
-	max-width: 600px !important;
-}
-
-.app-layout :deep(.action-menu-icon svg) {
-	fill: var(--sc-gray-80);
-}
-
-.app-layout :deep(.button-default) {
-	background: var(--sc-btn-color);
-	color: var(--sc-btn-label-color);
-	border: 1px solid var(--sc-btn-border);
-	transition: all 0.2s ease;
-	/* Ensure consistent height for all buttons regardless of content */
-	height: 27px;
-	line-height: 1;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-}
-
-.app-layout :deep(.button-default:hover) {
-	background: var(--sc-btn-hover);
-}
-
-.app-layout :deep(.button-default:disabled) {
-	background: var(--sc-input-field-disabled-background);
-	color: var(--sc-gray-50);
-	border-color: var(--sc-gray-20);
-	opacity: 0.6;
-}
-
-.app-layout :deep(.button-default:disabled:hover) {
-	transform: none;
-}
-
-.app-layout :deep(.dropdown) {
-	background: var(--sc-form-background);
-	border: 1px solid var(--sc-form-border);
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.app-layout :deep(.dropdown-item) {
-	background: var(--sc-form-background);
-	color: var(--sc-gray-80);
-	transition: all 0.2s ease;
-}
-
-.app-layout :deep(.dropdown-item:hover) {
-	background: var(--sc-btn-hover);
-}
-
-/* Global Table Styling using Stonecrop theme */
-.app-layout :deep(.atable) {
-	background: var(--sc-form-background);
-	border-radius: 0.25rem;
-	box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-	border: 1px solid var(--sc-form-border);
-}
-
-.app-layout :deep(.atable tbody tr) {
-	cursor: pointer;
-	transition: background-color 0.15s ease;
-}
-
-.app-layout :deep(.atable tbody tr:hover) {
-	background: var(--sc-gray-5);
-}
-
-.app-layout :deep(.atable th) {
-	background: var(--sc-gray-10);
-	color: var(--sc-gray-80);
-	font-weight: 600;
-	padding: 1rem;
-}
-
-.app-layout :deep(.atable td) {
-	padding: 1rem;
-	color: var(--sc-cell-text-color);
 }
 </style>

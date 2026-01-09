@@ -345,7 +345,7 @@ function dismissSaveMessage() {
 	font-size: 2.5rem;
 	margin: 0 0 1rem 0;
 	font-weight: 700;
-	color: #1a202c;
+	color: var(--sc-gray-80);
 }
 
 .builder-actions {
@@ -356,18 +356,16 @@ function dismissSaveMessage() {
 
 .btn-secondary {
 	padding: 0.5rem 1rem;
-	background: #e5e7eb;
-	color: #374151;
-	border: 1px solid #d1d5db;
-	border-radius: 0.5rem;
+	background: var(--sc-btn-color);
+	color: var(--sc-btn-label-color);
+	border: 1px solid var(--sc-btn-border);
+	border-radius: 0.25rem;
 	cursor: pointer;
 	font-weight: 500;
-	transition: all 0.2s;
 }
 
 .btn-secondary:hover:not(:disabled) {
-	background: #d1d5db;
-	transform: translateY(-1px);
+	background: var(--sc-btn-hover);
 }
 
 .btn-secondary:disabled,
@@ -378,18 +376,18 @@ function dismissSaveMessage() {
 
 .validation-result {
 	padding: 1rem 1.5rem;
-	border-radius: 0.75rem;
+	border-radius: 0.25rem;
 	margin-bottom: 1rem;
 }
 
 .validation-result.success {
-	background: #d1fae5;
-	border: 1px solid #10b981;
+	background: var(--sc-form-background);
+	border: 1px solid var(--sc-brand-success);
 }
 
 .validation-result.error {
-	background: #fee2e2;
-	border: 1px solid #ef4444;
+	background: var(--sc-form-background);
+	border: 1px solid var(--sc-brand-danger);
 }
 
 .validation-header {
@@ -404,11 +402,11 @@ function dismissSaveMessage() {
 }
 
 .validation-result.success .validation-icon {
-	color: #10b981;
+	color: var(--sc-brand-success);
 }
 
 .validation-result.error .validation-icon {
-	color: #ef4444;
+	color: var(--sc-brand-danger);
 }
 
 .validation-title {
@@ -417,11 +415,11 @@ function dismissSaveMessage() {
 }
 
 .validation-result.success .validation-title {
-	color: #065f46;
+	color: var(--sc-brand-success);
 }
 
 .validation-result.error .validation-title {
-	color: #991b1b;
+	color: var(--sc-brand-danger);
 }
 
 .dismiss-btn {
@@ -432,7 +430,6 @@ function dismissSaveMessage() {
 	padding: 0;
 	line-height: 1;
 	opacity: 0.6;
-	transition: opacity 0.2s;
 }
 
 .dismiss-btn:hover {
@@ -447,11 +444,11 @@ function dismissSaveMessage() {
 
 .validation-errors li {
 	margin-bottom: 0.5rem;
-	color: #991b1b;
+	color: var(--sc-brand-danger);
 }
 
 .validation-errors code {
-	background: rgba(0, 0, 0, 0.1);
+	background: var(--sc-gray-5);
 	padding: 0.125rem 0.375rem;
 	border-radius: 0.25rem;
 	font-size: 0.875rem;
@@ -462,26 +459,26 @@ function dismissSaveMessage() {
 	align-items: center;
 	justify-content: space-between;
 	padding: 1rem 1.5rem;
-	border-radius: 0.75rem;
+	border-radius: 0.25rem;
 	margin-bottom: 1rem;
 }
 
 .save-message.success {
-	background: #d1fae5;
-	border: 1px solid #10b981;
-	color: #065f46;
+	background: var(--sc-form-background);
+	border: 1px solid var(--sc-brand-success);
+	color: var(--sc-brand-success);
 }
 
 .save-message.error {
-	background: #fee2e2;
-	border: 1px solid #ef4444;
-	color: #991b1b;
+	background: var(--sc-form-background);
+	border: 1px solid var(--sc-brand-danger);
+	color: var(--sc-brand-danger);
 }
 
 .loading {
 	text-align: center;
 	padding: 4rem;
-	color: white;
+	color: var(--sc-gray-50);
 	font-size: 1.25rem;
 }
 
@@ -492,19 +489,17 @@ function dismissSaveMessage() {
 }
 
 .builder-section {
-	background: rgba(255, 255, 255, 0.95);
-	backdrop-filter: blur(10px);
+	background: var(--sc-form-background);
 	padding: 2rem;
-	border-radius: 1rem;
-	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-	border: 1px solid rgba(255, 255, 255, 0.3);
+	border-radius: 0.25rem;
+	border: 1px solid var(--sc-form-border);
 }
 
 .builder-section h2 {
 	margin: 0 0 1.5rem 0;
 	font-size: 1.5rem;
 	font-weight: 600;
-	color: #1f2937;
+	color: var(--sc-gray-80);
 }
 
 .section-header {
@@ -516,24 +511,21 @@ function dismissSaveMessage() {
 
 .section-header h2 {
 	margin: 0;
-	color: #1f2937;
+	color: var(--sc-gray-80);
 }
 
 .btn-primary {
 	padding: 0.5rem 1rem;
-	background: #667eea;
-	color: white;
+	background: var(--sc-primary-color);
+	color: var(--sc-primary-text-color);
 	border: none;
-	border-radius: 0.5rem;
+	border-radius: 0.25rem;
 	cursor: pointer;
 	font-weight: 500;
-	transition: all 0.2s;
 }
 
 .btn-primary:hover {
-	background: #5568d3;
-	transform: translateY(-1px);
-	box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+	opacity: 0.9;
 }
 
 .info-grid {
@@ -552,12 +544,12 @@ function dismissSaveMessage() {
 .info-item label {
 	font-size: 0.875rem;
 	font-weight: 500;
-	color: #6b7280;
+	color: var(--sc-gray-50);
 }
 
 .info-item span {
 	font-size: 1rem;
-	color: #111827;
+	color: var(--sc-gray-80);
 }
 
 .info-description {
@@ -568,13 +560,13 @@ function dismissSaveMessage() {
 	display: block;
 	font-size: 0.875rem;
 	font-weight: 500;
-	color: #6b7280;
+	color: var(--sc-gray-50);
 	margin-bottom: 0.5rem;
 }
 
 .info-description p {
 	margin: 0;
-	color: #374151;
+	color: var(--sc-gray-80);
 }
 
 .fields-list {
@@ -584,15 +576,13 @@ function dismissSaveMessage() {
 
 .field-item {
 	padding: 1rem;
-	background: #f3f4f6;
-	border: 1px solid #e5e7eb;
-	border-radius: 0.5rem;
-	transition: all 0.2s;
+	background: var(--sc-gray-5);
+	border: 1px solid var(--sc-gray-10);
+	border-radius: 0.25rem;
 }
 
 .field-item:hover {
-	background: #e5e7eb;
-	transform: translateX(4px);
+	background: var(--sc-gray-10);
 }
 
 .field-header {
@@ -605,20 +595,20 @@ function dismissSaveMessage() {
 .field-name {
 	font-family: 'Monaco', 'Courier New', monospace;
 	font-weight: 600;
-	color: #111827;
+	color: var(--sc-gray-80);
 }
 
 .field-type {
 	font-size: 0.875rem;
 	padding: 0.25rem 0.5rem;
-	background: #dbeafe;
-	color: #1e40af;
-	border-radius: 0.375rem;
+	background: var(--sc-cell-changed-color);
+	color: var(--sc-primary-color);
+	border-radius: 0.25rem;
 	font-weight: 500;
 }
 
 .field-label {
-	color: #6b7280;
+	color: var(--sc-gray-50);
 	margin-bottom: 0.5rem;
 }
 
@@ -631,17 +621,17 @@ function dismissSaveMessage() {
 .attr-badge {
 	font-size: 0.75rem;
 	padding: 0.25rem 0.5rem;
-	background: #e5e7eb;
-	color: #374151;
+	background: var(--sc-gray-10);
+	color: var(--sc-gray-80);
 	border-radius: 0.25rem;
 }
 
 .empty-state {
 	padding: 2rem;
 	text-align: center;
-	color: #6b7280;
-	background: #f3f4f6;
-	border-radius: 0.5rem;
+	color: var(--sc-gray-50);
+	background: var(--sc-gray-5);
+	border-radius: 0.25rem;
 	font-style: italic;
 }
 
@@ -653,9 +643,9 @@ function dismissSaveMessage() {
 
 .state-badge {
 	padding: 0.25rem 0.75rem;
-	background: #dbeafe;
-	color: #1e40af;
-	border-radius: 0.375rem;
+	background: var(--sc-cell-changed-color);
+	color: var(--sc-primary-color);
+	border-radius: 0.25rem;
 	font-weight: 600;
 }
 
@@ -667,9 +657,9 @@ function dismissSaveMessage() {
 
 .state-card {
 	padding: 1rem;
-	background: #f9fafb;
-	border: 2px solid #e5e7eb;
-	border-radius: 0.5rem;
+	background: var(--sc-gray-5);
+	border: 2px solid var(--sc-gray-10);
+	border-radius: 0.25rem;
 }
 
 .state-header {
@@ -681,19 +671,19 @@ function dismissSaveMessage() {
 
 .state-key {
 	font-weight: 600;
-	color: #111827;
+	color: var(--sc-gray-80);
 }
 
 .state-type {
 	font-size: 0.75rem;
 	padding: 0.25rem 0.5rem;
-	background: #e5e7eb;
-	color: #374151;
+	background: var(--sc-gray-10);
+	color: var(--sc-gray-80);
 	border-radius: 0.25rem;
 }
 
 .state-name {
-	color: #6b7280;
+	color: var(--sc-gray-50);
 	font-size: 0.875rem;
 }
 
@@ -708,66 +698,59 @@ function dismissSaveMessage() {
 	align-items: center;
 	gap: 0.75rem;
 	padding: 0.75rem;
-	background: #f9fafb;
-	border: 1px solid #e5e7eb;
-	border-radius: 0.375rem;
+	background: var(--sc-gray-5);
+	border: 1px solid var(--sc-gray-10);
+	border-radius: 0.25rem;
 	font-size: 0.875rem;
 }
 
 .transition-source,
 .transition-target {
 	font-weight: 600;
-	color: #111827;
+	color: var(--sc-gray-80);
 }
 
 .transition-arrow {
-	color: #6b7280;
+	color: var(--sc-gray-50);
 	font-size: 1.25rem;
 }
 
 .transition-event {
 	padding: 0.25rem 0.5rem;
-	background: #dbeafe;
-	color: #1e40af;
+	background: var(--sc-cell-changed-color);
+	color: var(--sc-primary-color);
 	border-radius: 0.25rem;
 }
 
 .transition-guard {
 	padding: 0.25rem 0.5rem;
-	background: #fef3c7;
-	color: #92400e;
+	background: var(--sc-form-background);
+	color: var(--sc-brand-warning);
+	border: 1px solid var(--sc-brand-warning);
 	border-radius: 0.25rem;
 }
 
 .workflow-editor {
 	margin-top: 1.5rem;
-	background: white;
-	border: 2px solid rgba(102, 126, 234, 0.3);
-	border-radius: 0.75rem;
+	background: var(--sc-form-background);
+	border: 2px solid var(--sc-primary-color);
+	border-radius: 0.25rem;
 	overflow: hidden;
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .workflow-editor :deep(.vue-flow) {
 	width: 100%;
 	height: 500px;
-	background: linear-gradient(to bottom, #f9fafb, #f3f4f6);
+	background: var(--sc-gray-5);
 }
 
 .workflow-editor :deep(.vue-flow__node) {
-	background: white;
-	border: 2px solid #667eea;
-	border-radius: 0.75rem;
+	background: var(--sc-form-background);
+	border: 2px solid var(--sc-primary-color);
+	border-radius: 0.25rem;
 	padding: 1rem;
 	font-weight: 600;
 	z-index: 10;
-	box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
-	transition: all 0.2s;
-}
-
-.workflow-editor :deep(.vue-flow__node:hover) {
-	transform: translateY(-2px);
-	box-shadow: 0 6px 16px rgba(102, 126, 234, 0.3);
 }
 
 .workflow-editor :deep(.vue-flow__edge) {
@@ -775,18 +758,15 @@ function dismissSaveMessage() {
 }
 
 .workflow-editor :deep(.vue-flow__edge-label) {
-	background: white !important;
-	border: 2px solid #667eea !important;
-	border-radius: 0.375rem !important;
-	padding: 0.375rem 0.75rem !important;
+	background: var(--sc-form-background) !important;
+	border: 1px solid var(--sc-primary-color) !important;
+	border-radius: 0.25rem !important;
+	padding: 0.25rem 0.5rem !important;
 	font-size: 0.75rem !important;
 	font-weight: 600 !important;
-	color: #1e40af !important;
-	box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3) !important;
+	color: var(--sc-primary-color) !important;
 	white-space: nowrap !important;
 	pointer-events: all !important;
-	z-index: 8 !important;
-	position: relative !important;
 }
 
 /* Offset specific edge labels to prevent overlap on bidirectional edges */
@@ -799,13 +779,13 @@ function dismissSaveMessage() {
 }
 
 .workflow-editor :deep(.vue-flow__edge-path) {
-	stroke: #667eea;
+	stroke: var(--sc-primary-color);
 	stroke-width: 2.5;
 	marker-end: url(#arrowclosed);
 }
 
 .workflow-editor :deep(.vue-flow__edge-text) {
-	fill: #1e40af;
+	fill: var(--sc-primary-color);
 	font-size: 0.75rem;
 	font-weight: 600;
 	dominant-baseline: central;
@@ -813,64 +793,51 @@ function dismissSaveMessage() {
 }
 
 .workflow-editor :deep(.vue-flow__edge-textbg) {
-	fill: white;
+	fill: var(--sc-form-background);
 	fill-opacity: 1;
 	rx: 4;
 	ry: 4;
-}
-
-.workflow-editor :deep(.vue-flow__edge-label) {
-	background: white !important;
-	border: 1px solid #3b82f6 !important;
-	border-radius: 0.25rem !important;
-	padding: 0.25rem 0.5rem !important;
-	font-size: 0.75rem !important;
-	font-weight: 600 !important;
-	color: #1e40af !important;
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
-	white-space: nowrap !important;
-	pointer-events: all !important;
 }
 
 .machine-controls {
 	display: flex;
 	gap: 0.75rem;
 	padding: 1rem;
-	background: #f9fafb;
-	border-bottom: 1px solid #e5e7eb;
+	background: var(--sc-gray-5);
+	border-bottom: 1px solid var(--sc-gray-10);
 	align-items: center;
 }
 
 .machine-controls p {
 	margin: 0;
 	font-size: 0.875rem;
-	color: #6b7280;
+	color: var(--sc-gray-50);
 }
 
 .machine-controls strong {
-	color: #111827;
+	color: var(--sc-gray-80);
 }
 
 .machine-controls button {
 	padding: 0.5rem 1rem;
-	background: #3b82f6;
-	color: white;
+	background: var(--sc-primary-color);
+	color: var(--sc-primary-text-color);
 	border: none;
-	border-radius: 0.375rem;
+	border-radius: 0.25rem;
 	cursor: pointer;
 	font-size: 0.875rem;
 	font-weight: 500;
 }
 
 .machine-controls button:hover {
-	background: #2563eb;
+	opacity: 0.9;
 }
 
 /* Style the node editor chart controls */
 .workflow-editor :deep(.chart-controls) {
 	padding: 0.75rem 1rem;
-	background: linear-gradient(to right, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
-	border-bottom: 1px solid rgba(102, 126, 234, 0.2);
+	background: var(--sc-gray-5);
+	border-bottom: 1px solid var(--sc-gray-10);
 	height: auto;
 	display: flex;
 	align-items: center;
@@ -882,12 +849,12 @@ function dismissSaveMessage() {
 	align-items: center;
 	gap: 0.5rem;
 	font-size: 0.875rem;
-	color: #374151;
+	color: var(--sc-gray-80);
 }
 
 .workflow-editor :deep(.chart-controls-left b) {
 	font-weight: 600;
-	color: #111827;
+	color: var(--sc-gray-80);
 }
 
 .workflow-editor :deep(.chart-controls-right) {
@@ -902,24 +869,16 @@ function dismissSaveMessage() {
 
 .workflow-editor :deep(.button-default) {
 	padding: 0.5rem 1rem;
-	background: #667eea;
-	color: white;
+	background: var(--sc-primary-color);
+	color: var(--sc-primary-text-color);
 	border: none;
-	border-radius: 0.5rem;
+	border-radius: 0.25rem;
 	cursor: pointer;
 	font-size: 0.875rem;
 	font-weight: 600;
-	transition: all 0.2s;
 }
 
 .workflow-editor :deep(.button-default:hover) {
-	background: #5568d3;
-	transform: translateY(-1px);
-	box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-}
-
-.workflow-editor :deep(.button-default:active) {
-	background: #4a5bb8;
-	transform: translateY(0);
+	opacity: 0.9;
 }
 </style>
