@@ -331,9 +331,8 @@ if (import.meta.env.DEV) {
 
 ## More Information
 
-- Full documentation: `/docs/OPERATION_LOG.md`
-- Implementation details: `/IMPLEMENTATION_SUMMARY.md`
-- API documentation: `/API.md`
+- Full documentation: `/docs/operation-log.md`
+- API documentation: `/api.md`
 - Test examples: `/tests/operation-log.spec.ts`
 
 ## Support

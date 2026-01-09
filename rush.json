@@ -123,6 +123,12 @@
 			"projectFolder": "nuxt_grafserv",
 			"reviewCategory": "production",
 			"versionPolicyName": "stonecrop"
+		},
+		{
+			"packageName": "@stonecrop/docs",
+			"projectFolder": "docs",
+			"reviewCategory": "documentation",
+			"shouldPublish": false
 		}
 	]
 }

@@ -30,7 +30,10 @@
 		"src/*"
 	],
 	"scripts": {
-		"build": "tsc --build tsconfig.json",
+		"_phase:build": "tsc --build tsconfig.json && rushx docs",
+		"prepublish": "tsc --build tsconfig.json && rushx docs",
+		"build": "tsc --build tsconfig.json && rushx docs",
+		"docs": "bash ../common/scripts/run-docs.sh rockfoil",
 		"test": "vitest",
 		"test:coverage": "vitest run --coverage",
 		"test:ui": "vitest --ui"

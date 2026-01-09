@@ -16,9 +16,10 @@
 		"dist"
 	],
 	"scripts": {
-		"_phase:build": "vite build",
-		"prepublish": "vite build",
-		"build": "vite build",
+		"_phase:build": "vite build && rushx docs",
+		"prepublish": "vite build && rushx docs",
+		"build": "vite build && rushx docs",
+		"docs": "bash ../common/scripts/run-docs.sh graphql_middleware",
 		"test": "vitest run",
 		"test:watch": "vitest"
 	},

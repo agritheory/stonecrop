@@ -1,0 +1,697 @@
+---
+title: AForm API Reference
+description: Schema-driven form components
+---
+
+# Aform API Reference
+
+> This documentation is automatically generated from the TypeScript API.
+
+## Vue Components
+
+### ACheckbox
+
+Vue component exported from @stonecrop/aform.
+
+```typescript
+import { ACheckbox } from '@stonecrop/aform'
+```
+
+### AComboBox
+
+Vue component exported from @stonecrop/aform.
+
+```typescript
+import { AComboBox } from '@stonecrop/aform'
+```
+
+### ADate
+
+Vue component exported from @stonecrop/aform.
+
+```typescript
+import { ADate } from '@stonecrop/aform'
+```
+
+### ADatePicker
+
+Vue component exported from @stonecrop/aform.
+
+```typescript
+import { ADatePicker } from '@stonecrop/aform'
+```
+
+### ADropdown
+
+Vue component exported from @stonecrop/aform.
+
+```typescript
+import { ADropdown } from '@stonecrop/aform'
+```
+
+### AFieldset
+
+Vue component exported from @stonecrop/aform.
+
+```typescript
+import { AFieldset } from '@stonecrop/aform'
+```
+
+### AFileAttach
+
+Vue component exported from @stonecrop/aform.
+
+```typescript
+import { AFileAttach } from '@stonecrop/aform'
+```
+
+### AForm
+
+Vue component exported from @stonecrop/aform.
+
+```typescript
+import { AForm } from '@stonecrop/aform'
+```
+
+### ANumericInput
+
+Vue component exported from @stonecrop/aform.
+
+```typescript
+import { ANumericInput } from '@stonecrop/aform'
+```
+
+### ATextInput
+
+Vue component exported from @stonecrop/aform.
+
+```typescript
+import { ATextInput } from '@stonecrop/aform'
+```
+
+### Login
+
+Vue component exported from @stonecrop/aform.
+
+```typescript
+import { Login } from '@stonecrop/aform'
+```
+
+## Functions
+
+### install
+
+Install all AForm components
+
+**Signature:**
+
+```typescript
+declare function install(app: App): void;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| app | `App` | Vue app instance |
+
+## Interfaces
+
+### BaseTableConfig
+
+Base table configuration properties shared across all view types.
+
+**Definition:**
+
+```typescript
+export interface BaseTableConfig {
+  fullWidth?: boolean;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| fullWidth? | `boolean` | Control whether the table should be allowed to use the full width of its container. |
+
+### BasicTableConfig
+
+Table configuration for basic view types (uncounted, list, list-expansion).
+
+**Definition:**
+
+```typescript
+export interface BasicTableConfig {
+  view?: 'uncounted' | 'list' | 'list-expansion';
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| view? | `'uncounted' \| 'list' \| 'list-expansion'` | The type of view to display the table in. |
+
+### CellContext
+
+Table cell context definition.
+
+**Definition:**
+
+```typescript
+export interface CellContext {
+  column: TableColumn;
+  row: TableRow;
+  table: {
+        [key: string]: any;
+    };
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| column | `TableColumn` | The column object for the current cell. |
+| row | `TableRow` | The row object for the current cell. |
+| table | `{ [key: string]: any; }` | The table object for the current cell. |
+
+### ConnectionHandle
+
+Connection handle information for gantt bar connections.
+
+**Definition:**
+
+```typescript
+export interface ConnectionHandle {
+  barId: string;
+  colIndex: number;
+  id: string;
+  position: {
+        x: ShallowRef<number>;
+        y: ShallowRef<number>;
+    };
+  rowIndex: number;
+  side: 'left' | 'right';
+  visible: Ref<boolean>;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| barId | `string` | Reference to the gantt bar this handle belongs to. |
+| colIndex | `number` | The column index of the gantt bar this handle belongs to. |
+| id | `string` | Unique identifier for the connection handle. |
+| position | `{ x: ShallowRef<number>; y: ShallowRef<number>; }` | The position of the connection handle. |
+| rowIndex | `number` | The row index of the gantt bar this handle belongs to. |
+| side | `'left' \| 'right'` | The side of the gantt bar where this handle is located. |
+| visible | `Ref<boolean>` | Whether the handle is currently visible (on hover). |
+
+### ConnectionPath
+
+Connection path between two gantt bars.
+
+**Definition:**
+
+```typescript
+export interface ConnectionPath {
+  from: {
+        barId: string;
+        side: 'left' | 'right';
+    };
+  id: string;
+  label?: string;
+  style?: {
+        color?: string;
+        width?: number;
+    };
+  to: {
+        barId: string;
+        side: 'left' | 'right';
+    };
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| from | `{ barId: string; side: 'left' \| 'right'; }` | The source connection handle. |
+| id | `string` | Unique identifier for the connection path. |
+| label? | `string` | Optional label for the connection. |
+| style? | `{ color?: string; width?: number; }` | Optional styling for the connection path. |
+| to | `{ barId: string; side: 'left' \| 'right'; }` | The target connection handle. |
+
+### GanttBarInfo
+
+Gantt bar information for VueFlow integration.
+
+**Definition:**
+
+```typescript
+export interface GanttBarInfo {
+  colIndex: number;
+  color: Ref<string>;
+  endIndex: Ref<number>;
+  id: string;
+  label?: string;
+  position: {
+        x: ShallowRef<number>;
+        y: ShallowRef<number>;
+    };
+  rowIndex: number;
+  startIndex: Ref<number>;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| colIndex | `number` | The primary column index of the gantt bar (typically the start index). |
+| color | `Ref<string>` | Color of the gantt bar. |
+| endIndex | `Ref<number>` | Ending column index of the gantt bar. |
+| id | `string` | Unique identifier for the gantt bar. |
+| label? | `string` | Display label for the gantt bar. |
+| position | `{ x: ShallowRef<number>; y: ShallowRef<number>; }` | The position of the gantt bar in the ATable component. |
+| rowIndex | `number` | The row index of the gantt bar. |
+| startIndex | `Ref<number>` | Starting column index of the gantt bar. |
+
+### GanttOptions
+
+Gantt chart options for table rows.
+
+**Definition:**
+
+```typescript
+export interface GanttOptions {
+  color?: string;
+  colspan?: number;
+  endIndex?: number;
+  startIndex?: number;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| color? | `string` | The color to be applied to the row's gantt bar. |
+| colspan? | `number` | The length of the gantt bar in columns. Useful when only the start index is provided. If colspan and endIndex are not provided, the bar will stretch to the end of the table. |
+| endIndex? | `number` | The ending column index for the gantt bar. If endIndex and colspan are not provided, the bar will stretch to the end of the table. |
+| startIndex? | `number` | The starting column index for the gantt bar. |
+
+### GanttTableConfig
+
+Table configuration for gantt view types.
+
+**Definition:**
+
+```typescript
+export interface GanttTableConfig {
+  dependencyGraph?: boolean;
+  view: 'gantt';
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| dependencyGraph? | `boolean` | Control whether dependency graph connections should be enabled for Gantt views. When false, connection handles and dependency lines will be hidden. |
+| view | `'gantt'` | The type of view to display the table in. |
+
+### TableColumn
+
+Table column definition.
+
+**Definition:**
+
+```typescript
+export interface TableColumn {
+  align?: CanvasTextAlign;
+  cellComponent?: string;
+  cellComponentProps?: Record<string, any>;
+  colspan?: number;
+  edit?: boolean;
+  fieldtype?: string;
+  filterable?: boolean;
+  filterComponent?: string;
+  filterOptions?: any[];
+  filterType?: 'text' | 'select' | 'number' | 'date' | 'dateRange' | 'checkbox' | 'component';
+  format?: string | ((value: any, context: CellContext) => string);
+  ganttComponent?: string;
+  isGantt?: boolean;
+  label?: string;
+  mask?: (value: any) => any;
+  modalComponent?: string | ((context: CellContext) => string);
+  modalComponentExtraProps?: Record<string, any>;
+  name: string;
+  originalIndex?: number;
+  pinned?: boolean;
+  resizable?: boolean;
+  sortable?: boolean;
+  width?: string;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| align? | `CanvasTextAlign` | `left` (left aligned), `center` (center aligned), `right` (right aligned), `start` (aligned to the start of the column), `end` (aligned to the end of the column) |
+| cellComponent? | `string` | The component to use to render the cell for the column. If not provided, the table will render the default `<td>` element. |
+| cellComponentProps? | `Record<string, any>` | Additional properties to pass to the table's cell component. Only applicable if the `cellComponent` property is set for the column. |
+| colspan? | `number` | The colspan of the Gantt bar for the column. This determines how many columns the Gantt bar should span across. Only applicable for Gantt tables. |
+| edit? | `boolean` | Control whether cells for the column is editable. |
+| fieldtype? | `string` | The semantic field type of the column. Uses the same StonecropFieldType enum as forms. Common values: 'Data', 'Text', 'Int', 'Float', 'Date', 'Select', 'Link', 'Check', etc. |
+| filterable? | `boolean` | Control whether the column should be filterable and define filter configuration. |
+| filterComponent? | `string` | Custom component for filtering. |
+| filterOptions? | `any[]` | Options for select-type filters. |
+| filterType? | `'text' \| 'select' \| 'number' \| 'date' \| 'dateRange' \| 'checkbox' \| 'component'` | The type of filter for the column. |
+| format? | `string \| ((value: any, context: CellContext) => string)` | The format function to use to format the value of the cell. This can either be a normal or stringified function that takes the value and the cell context and returns a string. |
+| ganttComponent? | `string` | The component to use to render the Gantt bar for the column. Only applicable for Gantt tables. |
+| isGantt? | `boolean` | Whether the column is a Gantt column. Only applicable for Gantt tables. |
+| label? | `string` | The label of the column. This is displayed in the table header. |
+| mask? | `(value: any) => any` | The masking function to use to apply an input mask to the cell. This will accept an input value and return the masked value. |
+| modalComponent? | `string \| ((context: CellContext) => string)` | `row` (the row object), `column` (the column object), `table` (the table object) The function should return the name of the component to use for the modal. `colIndex` (the column index of the current cell), `rowIndex` (the row index of the current cell), `store` (the table data store) |
+| modalComponentExtraProps? | `Record<string, any>` | Additional properties to pass to the modal component. Only applicable if the `modalComponent` property is set for the column. |
+| name | `string` | The key of the column. This is used to identify the column in the table. |
+| originalIndex? | `number` | The original column index for the Gantt bar, excluding any pinned columns. This is evaluated automatically while rendering the table. Only applicable for Gantt tables. |
+| pinned? | `boolean` | Control whether the column should be pinned to the table. |
+| resizable? | `boolean` | Control whether the column can be resized by the user. |
+| sortable? | `boolean` | Control whether the column should be sortable. |
+| width? | `string` | The width of the column. This can be a number (in pixels) or a string (in CSS units). |
+
+### TableDisplay
+
+Table display definition.
+
+**Definition:**
+
+```typescript
+export interface TableDisplay {
+  childrenOpen?: boolean;
+  expanded?: boolean;
+  indent?: number;
+  isParent?: boolean;
+  isRoot?: boolean;
+  open?: boolean;
+  parent?: number;
+  rowModified?: boolean;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| childrenOpen? | `boolean` | Indicates whether a row node's child nodes are open or closed. Only applicable for tree views. |
+| expanded? | `boolean` | Indicates whether a row node is expanded or collapsed. Only applicable for list-expansion views. |
+| indent? | `number` | The indentation level of the row node. Only applicable for tree and gantt views. |
+| isParent? | `boolean` | Indicates whether a row node is a parent node. This is evaluated automatically while rendering the table. Only applicable for tree views. |
+| isRoot? | `boolean` | Indicates whether a row node is a root node. This is evaluated automatically while rendering the table. Only applicable for tree views. |
+| open? | `boolean` | Indicates whether a row node is visible. This is evaluated automatically while rendering the table. Only applicable for tree views. |
+| parent? | `number` | The HTML parent element for the row node. This is evaluated automatically while rendering the table. Only applicable for tree and gantt views. |
+| rowModified? | `boolean` | Indicates whether a row node has been modified. This is evaluated automatically when a cell is edited. |
+
+### TableModal
+
+Table modal definition.
+
+**Definition:**
+
+```typescript
+export interface TableModal {
+  bottom?: ReturnType<typeof useElementBounding>['bottom'];
+  cell?: HTMLTableCellElement | null;
+  colIndex?: number;
+  component?: string;
+  componentProps?: Record<string, any>;
+  height?: ReturnType<typeof useElementBounding>['height'];
+  left?: ReturnType<typeof useElementBounding>['left'];
+  parent?: HTMLElement;
+  rowIndex?: number;
+  visible?: boolean;
+  width?: ReturnType<typeof useElementBounding>['width'];
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| bottom? | `ReturnType<typeof useElementBounding>['bottom']` | Reactive bottom value for the modal's bounding box. The field is unset when the modal is not being displayed. |
+| cell? | `HTMLTableCellElement \| null` | The HTML cell element that the modal is currently being displayed for. The field is unset when the modal is not being displayed. |
+| colIndex? | `number` | The index of the column that the modal is currently being displayed for. The field is unset when the modal is not being displayed. |
+| component? | `string` | The component to use to render the modal. If not provided, the table will try to use the column's `modalComponent` property, if set. If that is not set, the table will not display a modal. |
+| componentProps? | `Record<string, any>` | Additional properties to pass to the table's modal component. |
+| height? | `ReturnType<typeof useElementBounding>['height']` | Reactive height value for the modal's bounding box. The field is unset when the modal is not being displayed. |
+| left? | `ReturnType<typeof useElementBounding>['left']` | Reactive left value for the modal's bounding box. The field is unset when the modal is not being displayed. |
+| parent? | `HTMLElement` | The HTML parent element that the modal is currently being displayed for. The field is unset when the modal is not being displayed. |
+| rowIndex? | `number` | The index of the row that the modal is currently being displayed for. The field is unset when the modal is not being displayed. |
+| visible? | `boolean` | Indicates whether the table modal is currently visible. |
+| width? | `ReturnType<typeof useElementBounding>['width']` | Reactive width value for the modal's bounding box. The field is unset when the modal is not being displayed. |
+
+### TableModalProps
+
+Table modal component props definition.
+
+**Definition:**
+
+```typescript
+export interface TableModalProps {
+  colIndex: number;
+  rowIndex: number;
+  store: ReturnType<typeof createTableStore>;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| colIndex | `number` | The index of the column that the modal is currently being displayed for. |
+| rowIndex | `number` | The index of the row that the modal is currently being displayed for. |
+| store | `ReturnType<typeof createTableStore>` | The store for managing the current table's state. |
+
+### TableRow
+
+Table row definition.
+
+**Definition:**
+
+```typescript
+export interface TableRow {
+  gantt?: GanttOptions;
+  indent?: number;
+  parent?: number;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| gantt? | `GanttOptions` | The options to use when rendering the row as a Gantt table. |
+| indent? | `number` | The indentation level of the row node. Only applicable for tree and gantt views. |
+| parent? | `number` | The HTML parent element for the row node. This is evaluated automatically while rendering the table. Only applicable for tree and gantt views. |
+
+### TreeGanttTableConfig
+
+Table configuration for tree-gantt view types.
+
+**Definition:**
+
+```typescript
+export interface TreeGanttTableConfig {
+  defaultTreeExpansion?: 'root' | 'branch' | 'leaf';
+  dependencyGraph?: boolean;
+  view: 'tree-gantt';
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| defaultTreeExpansion? | `'root' \| 'branch' \| 'leaf'` | `branch` (Shows minimal tree to display all gantt nodes. Expands only the necessary paths to gantt nodes, stops at gantt nodes with no gantt descendants), `leaf` (All nodes are visible (fully expanded)) |
+| dependencyGraph? | `boolean` | Control whether dependency graph connections should be enabled for Gantt views. When false, connection handles and dependency lines will be hidden. |
+| view | `'tree-gantt'` | The type of view to display the table in. |
+
+### TreeTableConfig
+
+Table configuration for tree view types.
+
+**Definition:**
+
+```typescript
+export interface TreeTableConfig {
+  defaultTreeExpansion?: 'root' | 'branch' | 'leaf';
+  view: 'tree';
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| defaultTreeExpansion? | `'root' \| 'branch' \| 'leaf'` | `branch` (Shows minimal tree to display all gantt nodes. Expands only the necessary paths to gantt nodes, stops at gantt nodes with no gantt descendants), `leaf` (All nodes are visible (fully expanded)) |
+| view | `'tree'` | The type of view to display the table in. |
+
+## Type Aliases
+
+### BaseSchema
+
+Basic field structure for AForm schemas
+
+**Definition:**
+
+```typescript
+export type BaseSchema = {
+    fieldname: string;
+    component?: string;
+    value?: any;
+};
+```
+
+### ComponentProps
+
+Defined props for AForm components
+
+**Definition:**
+
+```typescript
+export type ComponentProps = {
+    schema?: SchemaTypes;
+    label?: string;
+    mask?: string;
+    required?: boolean;
+    readOnly?: boolean;
+    uuid?: string;
+    validation?: {
+        errorMessage: string;
+        [key: string]: any;
+    };
+};
+```
+
+### ConnectionEvent
+
+Connection event for handling connection creation/deletion.
+
+**Definition:**
+
+```typescript
+export type ConnectionEvent = {
+    type: 'create' | 'delete';
+    connection: ConnectionPath;
+};
+```
+
+### FieldsetSchema
+
+Schema structure for defining fieldsets inside AForm
+
+**Definition:**
+
+```typescript
+export type FieldsetSchema = BaseSchema & {
+    label?: string;
+    schema?: (FormSchema | TableSchema)[];
+    collapsible?: boolean;
+};
+```
+
+### FormSchema
+
+Schema structure for defining forms inside AForm
+
+**Definition:**
+
+```typescript
+export type FormSchema = BaseSchema & {
+    align?: string;
+    edit?: boolean;
+    fieldtype?: string;
+    label?: string;
+    name?: string;
+    width?: string;
+    mask?: string;
+};
+```
+
+### GanttDragEvent
+
+Gantt table drag event definition.
+
+**Definition:**
+
+```typescript
+export type GanttDragEvent = {
+    rowIndex: number;
+    colIndex: number;
+    delta: number;
+} & ({
+    type: 'bar';
+    oldStart: number;
+    oldEnd: number;
+    newStart: number;
+    newEnd: number;
+    colspan: number;
+} | {
+    type: 'resize';
+    edge: 'start';
+    oldStart: number;
+    newStart: number;
+    end: number;
+    oldColspan: number;
+    newColspan: number;
+} | {
+    type: 'resize';
+    edge: 'end';
+    oldEnd: number;
+    newEnd: number;
+    start: number;
+    oldColspan: number;
+    newColspan: number;
+});
+```
+
+### SchemaTypes
+
+Superset of all schema types for AForm
+
+**Definition:**
+
+```typescript
+export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema;
+```
+
+### TableConfig
+
+Table configuration definition using discriminated unions for type safety.
+
+**Definition:**
+
+```typescript
+export type TableConfig = BasicTableConfig | TreeTableConfig | GanttTableConfig | TreeGanttTableConfig;
+```
+
+### TableSchema
+
+Schema structure for defining tables inside AForm
+
+**Definition:**
+
+```typescript
+export type TableSchema = BaseSchema & {
+    columns?: TableColumn[];
+    config?: TableConfig;
+    rows?: TableRow[];
+};
+```
+

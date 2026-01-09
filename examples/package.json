@@ -13,6 +13,8 @@
 	"scripts": {
 		"_phase:build": "",
 		"build": "",
+		"story": "histoire dev",
+		"build:stories": "histoire build",
 		"dev:aform": "./dev-runner.sh aform",
 		"dev:atable": "./dev-runner.sh atable",
 		"dev:beam": "./dev-runner.sh beam",

@@ -31,7 +31,10 @@
 		"src/*"
 	],
 	"scripts": {
-		"build": "vite build && tsc --emitDeclarationOnly",
+		"_phase:build": "vite build && tsc --emitDeclarationOnly && rushx docs",
+		"prepublish": "vite build && tsc --emitDeclarationOnly && rushx docs",
+		"build": "vite build && tsc --emitDeclarationOnly && rushx docs",
+		"docs": "bash ../common/scripts/run-docs.sh casl_middleware",
 		"dev": "vite build --watch",
 		"clean": "rimraf dist *.tsbuildinfo",
 		"lint": "eslint . --ext .ts",

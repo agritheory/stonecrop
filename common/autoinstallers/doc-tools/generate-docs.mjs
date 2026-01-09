@@ -291,7 +291,7 @@ if (!projectName) {
 const rootDir = join(__dirname, '../../..')
 const apiModelPath = join(rootDir, `${projectName}/temp/${projectName}.api.json`)
 const apiMarkdownPath = join(rootDir, `common/reviews/api/${projectName}.api.md`)
-const outputPath = join(rootDir, `${projectName}/API.md`)
+const outputPath = join(rootDir, `${projectName}/api.md`)
 
 // Check if the required files exist
 if (!existsSync(apiModelPath)) {
