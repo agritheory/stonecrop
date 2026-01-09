@@ -1,9 +1,25 @@
 import { defineConfig } from 'vitepress'
 import { withMermaid } from 'vitepress-plugin-mermaid'
 
+// Plugin to rewrite /stories/ to /stories/index.html
+function storiesRewritePlugin() {
+	return {
+		name: 'stories-rewrite',
+		configureServer(server) {
+			server.middlewares.use((req, res, next) => {
+				if (req.url === '/stories' || req.url === '/stories/') {
+					req.url = '/stories/index.html'
+				}
+				next()
+			})
+		},
+	}
+}
+
 export default withMermaid(
 	defineConfig({
 		vite: {
+			plugins: [storiesRewritePlugin()],
 			optimizeDeps: {
 				include: ['mermaid', 'dayjs'],
 			},
@@ -23,7 +39,7 @@ export default withMermaid(
 				{ text: 'Guides', link: '/guides/' },
 				{ text: 'Tutorials', link: '/tutorials/' },
 				{ text: 'Reference', link: '/reference/' },
-				{ text: 'Examples', link: '/stories/index.html' },
+				{ text: 'Examples', link: '/stories/', target: '_self' },
 			],
 
 			sidebar: {

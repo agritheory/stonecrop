@@ -44,7 +44,7 @@ export default defineConfig({
 			light: '/logo.svg',
 			dark: '/logo.svg',
 		},
-		logoHref: '../',
+		logoHref: '/',
 		colors: {
 			primary: {
 				50: '#f0f9f0',
