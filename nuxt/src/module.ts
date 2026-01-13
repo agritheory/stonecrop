@@ -1,6 +1,6 @@
-import { existsSync } from 'node:fs'
+import { existsSync, realpathSync } from 'node:fs'
 import { readFile, readdir } from 'node:fs/promises'
-import { extname } from 'node:path'
+import { extname, dirname } from 'node:path'
 import {
 	addLayout,
 	addPlugin,
@@ -23,6 +23,16 @@ export interface ModuleOptions {
 	doctypesDir?: string
 }
 
+// Stonecrop packages that need to be transpiled (they import CSS in their dist bundles)
+const STONECROP_PACKAGES = [
+	'@stonecrop/aform',
+	'@stonecrop/atable',
+	'@stonecrop/stonecrop',
+	'@stonecrop/node-editor',
+	'@stonecrop/utilities',
+	'@stonecrop/themes',
+]
+
 export default defineNuxtModule<ModuleOptions>({
 	meta: {
 		name: '@stonecrop/nuxt',
@@ -39,6 +49,74 @@ export default defineNuxtModule<ModuleOptions>({
 
 	async setup(_options, nuxt) {
 		const logger = useLogger('@stonecrop/nuxt', { level: nuxt.options.dev ? 3 : 0 })
+
+		// Add Stonecrop packages to transpile so Vite handles CSS imports during SSR
+		// These packages use vite-plugin-lib-inject-css which adds CSS imports to the JS bundle
+		// Node.js ESM loader doesn't understand CSS, so we need Vite to process them
+		nuxt.options.build.transpile = nuxt.options.build.transpile || []
+		for (const pkg of STONECROP_PACKAGES) {
+			if (!nuxt.options.build.transpile.includes(pkg)) {
+				nuxt.options.build.transpile.push(pkg)
+			}
+		}
+		logger.log('Added Stonecrop packages to build.transpile for SSR CSS handling')
+
+		// Handle symlinked packages during development
+		// When packages are linked (e.g., via pnpm link), their real paths may be outside
+		// Vite's default fs.allow list. We detect this module's real path and add the monorepo root.
+		nuxt.hook('vite:extendConfig', config => {
+			const allowPaths = new Set<string>()
+
+			// Check if @stonecrop/nuxt itself is symlinked by checking the node_modules path
+			const nuxtModulePath = `${nuxt.options.rootDir}/node_modules/@stonecrop/nuxt`
+
+			try {
+				if (existsSync(nuxtModulePath)) {
+					const realNuxtModulePath = realpathSync(nuxtModulePath)
+
+					if (realNuxtModulePath !== nuxtModulePath) {
+						// @stonecrop/nuxt is symlinked - add the monorepo root
+						// realPath will be something like /path/to/monorepo/nuxt
+						// Go up one level to get the monorepo root
+						const monorepoRoot = dirname(realNuxtModulePath)
+						allowPaths.add(monorepoRoot)
+						logger.log(`@stonecrop/nuxt is symlinked, adding monorepo root: ${monorepoRoot}`)
+					}
+				}
+			} catch (e) {
+				logger.log(`Error checking @stonecrop/nuxt symlink: ${e instanceof Error ? e.message : String(e)}`)
+			}
+
+			// Also check individual packages in node_modules
+			for (const pkg of STONECROP_PACKAGES) {
+				const pkgPath = `${nuxt.options.rootDir}/node_modules/${pkg}`
+				try {
+					if (existsSync(pkgPath)) {
+						const realPath = realpathSync(pkgPath)
+						if (realPath !== pkgPath) {
+							// Package is symlinked, add its root directory
+							allowPaths.add(realPath)
+							logger.log(`Adding symlinked package to fs.allow: ${realPath}`)
+						}
+					}
+				} catch {
+					// Error checking path, skip
+				}
+			}
+
+			if (allowPaths.size > 0) {
+				config.server = config.server || {}
+				config.server.fs = config.server.fs || {}
+				config.server.fs.allow = config.server.fs.allow || []
+
+				for (const path of allowPaths) {
+					if (!config.server.fs.allow.includes(path)) {
+						config.server.fs.allow.push(path)
+					}
+				}
+				logger.log(`Vite fs.allow updated with ${allowPaths.size} path(s)`)
+			}
+		})
 
 		// add the base Stonecrop layout from the module
 		const layoutsDir = resolve('runtime/layouts')
