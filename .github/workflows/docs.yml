@@ -29,14 +29,14 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Install Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 22
-          cache: 'npm'
-          cache-dependency-path: 'common/config/rush/pnpm-lock.yaml'
+          cache-dependency-path: '**/config/rush/pnpm-lock.yaml'
+          registry-url: https://registry.npmjs.org/
 
       - name: Rush Install
         run: node common/scripts/install-run-rush.js install
@@ -44,27 +44,21 @@ jobs:
       - name: Update Autoinstallers
         run: |
           node common/scripts/install-run-rush.js update-autoinstaller --name doc-tools
+          node common/scripts/install-run-rush.js update-autoinstaller --name rush-plugins
+          node common/scripts/install-run-rush.js update-autoinstaller --name rush-prettier
 
       - name: Rush Build
         run: node common/scripts/install-run-rush.js rebuild --verbose
 
-      - name: Build Histoire Stories
+      - name: Build Histoire Stories + Vitepress
         working-directory: ./examples
-        run: node ../common/scripts/install-run-rushx.js build:stories
-
-      - name: Aggregate API Docs
-        working-directory: ./docs
-        run: node scripts/aggregate-api.mjs
-
-      - name: Build VitePress
-        working-directory: ./docs
-        run: node ../common/scripts/install-run-rushx.js build
+        run: node ../common/scripts/install-run-rushx.js build:full
 
       - name: Setup Pages
-        uses: actions/configure-pages@v4
+        uses: actions/configure-pages@v5
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
         with:
           path: docs/.vitepress/dist
 
@@ -80,4 +74,3 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-

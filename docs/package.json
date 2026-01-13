@@ -6,7 +6,7 @@
 	"scripts": {
 		"dev": "rushx build:full && vitepress dev",
 		"preview": "rushx build:full && vitepress preview",
-		"build": "node scripts/aggregate-api.mjs && vitepress build",
+		"build": "bash ../common/scripts/run-docs.sh --aggregate && vitepress build",
 		"build:stories": "cd ../examples && rushx build:stories",
 		"build:full": "rushx build:stories && rushx build"
 	},

@@ -35,7 +35,7 @@
 		"prepublish": "rushx dev:prepare && nuxt-module-build build",
 		"prepack": "rushx dev:prepare && nuxt-module-build build",
 		"build": "rushx dev:prepare && nuxt-module-build build",
-		"docs": "cp dist/module.d.mts dist/module.d.ts && rush-pnpm api-extractor run --local && node ../../common/autoinstallers/doc-tools/generate-docs.mjs nuxt",
+		"docs": "echo 'Nuxt modules use custom build system - skipping API docs generation'",
 		"dev": "rushx dev:prepare && nuxi dev playground",
 		"dev:basic": "rushx dev:prepare && nuxi dev playground",
 		"dev:full": "rushx dev:prepare:full && nuxi dev fullstack",

@@ -7,7 +7,7 @@
  * and adds VitePress frontmatter for proper rendering.
  */
 
-import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync } from 'fs'
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
 
@@ -15,7 +15,7 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
 const rootDir = join(__dirname, '../..')
-const referenceDir = join(__dirname, '../reference')
+const referenceDir = join(rootDir, 'docs/reference')
 
 // Package configurations
 const packages = [
@@ -98,18 +98,21 @@ This package may not export public APIs, or documentation hasn't been generated 
 To generate API documentation, ensure the package has been built:
 
 \`\`\`bash
-rush build --to @stonecrop/${pkg.name}
+cd ${pkg.folder}
+rushx build
 \`\`\`
 `
+
 		writeFileSync(destPath, placeholder, 'utf8')
 		skipped++
 		continue
 	}
 
 	try {
+		// Read the source API markdown
 		let content = readFileSync(sourcePath, 'utf8')
 
-		// Add VitePress frontmatter if not present
+		// Add VitePress frontmatter if not already present
 		if (!content.startsWith('---')) {
 			const frontmatter = `---
 title: ${pkg.title} API Reference
@@ -120,13 +123,18 @@ description: ${pkg.description}
 			content = frontmatter + content
 		}
 
+		// Write to reference directory
 		writeFileSync(destPath, content, 'utf8')
-		console.log(`✅ ${pkg.title}: Copied to reference/${pkg.name}.md`)
+		console.log(`✅ ${pkg.title}: Copied to docs/reference/${pkg.name}.md`)
 		processed++
 	} catch (error) {
-		console.error(`❌ ${pkg.title}: Error processing - ${error.message}`)
+		console.error(`❌ Error processing ${pkg.title}:`, error.message)
+		skipped++
 	}
 }
 
-console.log(`\n📊 Summary: ${processed} copied, ${skipped} placeholders created`)
-console.log(`📁 Output directory: ${referenceDir}`)
+console.log(`\n📊 Summary:`)
+console.log(`   ✅ Processed: ${processed}`)
+console.log(`   ⏭️  Skipped: ${skipped}`)
+console.log(`   📁 Total: ${packages.length}`)
+console.log(`\n✨ API documentation aggregation complete!`)
