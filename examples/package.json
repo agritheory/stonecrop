@@ -35,29 +35,29 @@
 		"@stonecrop/utilities": "workspace:*",
 		"@miragejs/graphql": "^0.1.13",
 		"miragejs": "^0.1.48",
-		"pinia": "^3.0.3",
-		"vite": "^7.1.7",
-		"vue": "^3.5.22",
+		"pinia": "^3.0.4",
+		"vite": "^7.3.1",
+		"vue": "^3.5.26",
 		"vue-toast-notification": "^3",
-		"xstate": "^5.20.1"
+		"xstate": "^5.25.0"
 	},
 	"devDependencies": {
-		"@eslint/js": "^9.38.0",
+		"@eslint/js": "^9.39.2",
 		"@histoire/plugin-vue": "^1.0.0-alpha.4",
-		"@monaco-editor/loader": "^1.6.1",
-		"@vitejs/plugin-vue": "^6.0.1",
-		"@vue-flow/core": "^1.47.0",
+		"@monaco-editor/loader": "^1.7.0",
+		"@vitejs/plugin-vue": "^6.0.3",
+		"@vue-flow/core": "^1.48.1",
 		"concurrently": "^9.2.0",
-		"eslint": "^9.38.0",
-		"eslint-plugin-vue": "^10.5.1",
-		"globals": "^16.4.0",
+		"eslint": "^9.39.2",
+		"eslint-plugin-vue": "^10.6.2",
+		"globals": "^17.0.0",
 		"histoire": "^1.0.0-alpha.4",
 		"immutable": "^5.1.4",
-		"monaco-editor": "^0.54.0",
+		"monaco-editor": "^0.55.1",
 		"portal-vue": "^3.0.0",
 		"typescript": "^5.9.3",
-		"typescript-eslint": "^8.46.2",
-		"vue-router": "^4.6.3"
+		"typescript-eslint": "^8.53.0",
+		"vue-router": "^4.6.4"
 	},
 	"engines": {
 		"node": ">=22.5.0"
