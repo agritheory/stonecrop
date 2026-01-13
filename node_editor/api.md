@@ -1,9 +1,102 @@
 # Node_editor API Reference
 
-> No API documentation available - this project may not export public APIs or hasn't been built with API Extractor yet.
+> This documentation is automatically generated from the TypeScript API.
 
-To generate documentation, ensure the project has been built:
+## Vue Components
 
-```bash
-rush build --to node_editor
+### NodeEditor
+
+Vue component exported from @stonecrop/node_editor.
+
+```typescript
+import { NodeEditor } from '@stonecrop/node_editor'
 ```
+
+### StateEditor
+
+Vue component exported from @stonecrop/node_editor.
+
+```typescript
+import { StateEditor } from '@stonecrop/node_editor'
+```
+
+## Functions
+
+### install
+
+Install all Node Editor components
+
+**Signature:**
+
+```typescript
+declare function install(app: App): void;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| app | `App` | Vue app instance |
+
+## Type Aliases
+
+### EditorStates
+
+Editor states
+
+**Definition:**
+
+```typescript
+export type EditorStates = {
+    [key: string]: AnyStateNodeDefinition | AnyStateNodeConfig['states'];
+};
+```
+
+### FlowElement
+
+Flow element
+
+**Definition:**
+
+```typescript
+export type FlowElement = Element<{
+    hasInput?: boolean;
+    hasOutput?: boolean;
+}, {
+    hasInput?: boolean;
+    hasOutput?: boolean;
+}>;
+```
+
+### FlowElements
+
+Flow elements
+
+**Definition:**
+
+```typescript
+export type FlowElements = Elements<{
+    hasInput?: boolean;
+    hasOutput?: boolean;
+}, {
+    hasInput?: boolean;
+    hasOutput?: boolean;
+}>;
+```
+
+### Layout
+
+Node layout
+
+**Definition:**
+
+```typescript
+export type Layout = {
+    [key: string]: {
+        position?: XYPosition;
+        targetPosition?: Position;
+        sourcePosition?: Position;
+    };
+};
+```
+

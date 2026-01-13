@@ -27,7 +27,6 @@ export default defineConfig({
 				'postgraphile',
 				'postgraphile/utils',
 				'postgraphile/grafast',
-				'zod',
 			],
 		},
 	},

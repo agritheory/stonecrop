@@ -5,11 +5,21 @@ import { getMeta, getAllMeta, hasMeta } from '../registry/doctypes'
 import { getHandler } from '../registry/actions'
 import type { ActionContext, DoctypeMeta, GraphQLExecutor } from '../types'
 
+/**
+ * Options for creating a Stonecrop PostGraphile plugin
+ * @public
+ */
 export interface StonecropPluginOptions {
 	executor: GraphQLExecutor
 }
 
-export const createStonecropPlugin = (options: StonecropPluginOptions) => {
+/**
+ * Create a PostGraphile plugin that extends the GraphQL schema with Stonecrop functionality
+ * @param options - Plugin configuration options
+ * @returns A PostGraphile plugin
+ * @public
+ */
+export const createStonecropPlugin = (options: StonecropPluginOptions): ReturnType<typeof makeExtendSchemaPlugin> => {
 	return makeExtendSchemaPlugin(() => {
 		return {
 			typeDefs: gql`
@@ -213,12 +223,12 @@ function buildRecordQuery(meta: DoctypeMeta): string {
 	const queryName = `${toSingularName(meta.tableName!)}ById`
 
 	return `
-    query GetRecord($id: UUID!) {
-      ${queryName}(id: $id) {
-        ${fieldNames}
-      }
-    }
-  `
+		query GetRecord($id: UUID!) {
+			${queryName}(id: $id) {
+				${fieldNames}
+			}
+		}
+	`
 }
 
 function buildListQuery(meta: DoctypeMeta, args: { limit?: number; offset?: number; orderBy?: string }): string {
@@ -233,14 +243,14 @@ function buildListQuery(meta: DoctypeMeta, args: { limit?: number; offset?: numb
 	const argsStr = queryArgs.length > 0 ? `(${queryArgs.join(', ')})` : ''
 
 	return `
-    query GetRecords($limit: Int, $offset: Int, $orderBy: [${toCamelCase(meta.tableName!)}OrderBy!]) {
-      ${connectionName}${argsStr} {
-        nodes {
-          ${fieldNames}
-        }
-      }
-    }
-  `
+		query GetRecords($limit: Int, $offset: Int, $orderBy: [${toCamelCase(meta.tableName!)}OrderBy!]) {
+			${connectionName}${argsStr} {
+				nodes {
+				${fieldNames}
+				}
+			}
+		}
+	`
 }
 
 function extractSingleResult(result: unknown, meta: DoctypeMeta): unknown {

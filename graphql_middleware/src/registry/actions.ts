@@ -4,6 +4,7 @@ const handlerRegistry: Map<string, ActionHandler> = new Map()
 
 /**
  * Register an action handler
+ * @public
  */
 export function registerHandler(name: string, handler: ActionHandler): void {
 	handlerRegistry.set(name, handler)
@@ -11,6 +12,7 @@ export function registerHandler(name: string, handler: ActionHandler): void {
 
 /**
  * Get a registered handler by name
+ * @public
  */
 export function getHandler(name: string): ActionHandler | undefined {
 	return handlerRegistry.get(name)
@@ -18,6 +20,7 @@ export function getHandler(name: string): ActionHandler | undefined {
 
 /**
  * Check if a handler is registered
+ * @public
  */
 export function hasHandler(name: string): boolean {
 	return handlerRegistry.has(name)
@@ -25,6 +28,7 @@ export function hasHandler(name: string): boolean {
 
 /**
  * Clear all registered handlers
+ * @public
  */
 export function clearHandlers(): void {
 	handlerRegistry.clear()
@@ -147,6 +151,7 @@ const noop: ActionHandler = async () => {
 
 /**
  * Built-in handlers available for registration
+ * @public
  */
 export const builtinHandlers: Record<string, ActionHandler> = {
 	validateRequiredFields,
@@ -156,6 +161,7 @@ export const builtinHandlers: Record<string, ActionHandler> = {
 
 /**
  * Register all built-in handlers
+ * @public
  */
 export function registerBuiltinHandlers(): void {
 	for (const [name, handler] of Object.entries(builtinHandlers)) {

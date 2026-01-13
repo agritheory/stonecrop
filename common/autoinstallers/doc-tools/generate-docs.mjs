@@ -287,10 +287,14 @@ if (!projectName) {
 	process.exit(1)
 }
 
+// Normalize project name for API files (convert underscores to hyphens)
+// Package folders may use underscores (casl_middleware) but API Extractor uses hyphens (casl-middleware)
+const normalizedProjectName = projectName.replace(/_/g, '-')
+
 // Path to the API model files (relative to monorepo root from autoinstaller)
 const rootDir = join(__dirname, '../../..')
-const apiModelPath = join(rootDir, `${projectName}/temp/${projectName}.api.json`)
-const apiMarkdownPath = join(rootDir, `common/reviews/api/${projectName}.api.md`)
+const apiModelPath = join(rootDir, `${projectName}/temp/${normalizedProjectName}.api.json`)
+const apiMarkdownPath = join(rootDir, `common/reviews/api/${normalizedProjectName}.api.md`)
 const outputPath = join(rootDir, `${projectName}/api.md`)
 
 // Check if the required files exist

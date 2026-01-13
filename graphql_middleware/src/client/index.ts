@@ -1,10 +1,18 @@
 import type { DoctypeMeta, RouteContext, GraphQLExecutor } from '../types'
 
+/**
+ * Options for creating a Stonecrop client
+ * @public
+ */
 export interface StonecropClientOptions {
 	endpoint: string
 	headers?: Record<string, string>
 }
 
+/**
+ * Client for interacting with Stonecrop GraphQL API
+ * @public
+ */
 export class StonecropClient implements GraphQLExecutor {
 	private endpoint: string
 	private headers: Record<string, string>

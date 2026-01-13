@@ -32,9 +32,9 @@ export type StonecropFieldType = z.infer<typeof StonecropFieldType>
 
 /**
  * Field template for TYPE_MAP entries
- * @internal
+ * @public
  */
-interface FieldTemplate {
+export interface FieldTemplate {
 	component: string
 	fieldtype: StonecropFieldType
 }

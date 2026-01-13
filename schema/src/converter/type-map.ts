@@ -1,10 +1,8 @@
-import type { StonecropFieldType } from '../fieldtype'
+import type { StonecropFieldType, FieldTemplate as BaseFieldTemplate } from '../fieldtype'
 import type { PostgresType, ParsedColumn, ParsedTable, ConversionFieldMeta } from './postgres-types'
 import { convertSQLName, toSlug } from './naming'
 
-interface FieldTemplate {
-	component: string
-	fieldtype: StonecropFieldType
+interface FieldTemplate extends BaseFieldTemplate {
 	_unmapped?: boolean
 }
 

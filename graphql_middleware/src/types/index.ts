@@ -30,6 +30,7 @@ import type { DoctypeMeta } from '@stonecrop/schema'
 
 /**
  * Route context for identifying what doctype/record we're working with
+ * @public
  */
 export interface RouteContext {
 	doctype: string
@@ -39,6 +40,7 @@ export interface RouteContext {
 
 /**
  * GraphQL executor interface for running queries/mutations
+ * @public
  */
 export interface GraphQLExecutor {
 	query<T = unknown>(query: string, variables?: Record<string, unknown>): Promise<T>
@@ -47,6 +49,7 @@ export interface GraphQLExecutor {
 
 /**
  * Context passed to action handlers
+ * @public
  */
 export interface ActionContext {
 	doctype: DoctypeMeta
@@ -56,5 +59,6 @@ export interface ActionContext {
 
 /**
  * Action handler function signature
+ * @public
  */
 export type ActionHandler = (args: unknown[], context: ActionContext) => Promise<unknown>
