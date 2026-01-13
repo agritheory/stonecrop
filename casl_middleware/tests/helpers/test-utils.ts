@@ -1,13 +1,15 @@
-import { GraphQLSchema } from 'graphql'
-import { makeExecutableSchema } from '@graphql-tools/schema'
 import { PureAbility } from '@casl/ability'
+import { makeExecutableSchema } from '@graphql-tools/schema'
+import { GraphQLSchema } from 'graphql'
+
+import type { AppAbility } from '../../src/middleware/ability'
 import { Context, User } from '../../src/types'
 
 /**
  * Create a mock GraphQL context for testing
  */
-export const createMockContext = (user?: User, ability?: PureAbility): Context => {
-	const defaultAbility = new PureAbility([{ action: 'read', subject: 'Query' }])
+export const createMockContext = (user?: User, ability?: AppAbility): Context => {
+	const defaultAbility = new PureAbility<[string, any]>([{ action: 'read', subject: 'Query' }]) as AppAbility
 
 	return {
 		user: user || undefined,

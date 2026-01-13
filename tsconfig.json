@@ -6,11 +6,15 @@
 		{ "path": "./aform" },
 		{ "path": "./atable" },
 		{ "path": "./beam" },
+		{ "path": "./casl_middleware" },
 		{ "path": "./code_editor" },
 		{ "path": "./desktop" },
 		{ "path": "./examples" },
 		{ "path": "./graphql_client" },
+		{ "path": "./graphql_middleware" },
 		{ "path": "./node_editor" },
+		{ "path": "./rockfoil" },
+		{ "path": "./schema" },
 		{ "path": "./stonecrop" },
 		{ "path": "./utilities" }
 	]

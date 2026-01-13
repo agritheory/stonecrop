@@ -1,7 +1,19 @@
-import { AbilityBuilder, PureAbility, AbilityClass, FieldMatcher, ConditionsMatcher } from '@casl/ability'
-import { Context } from '../types'
+import {
+	AbilityBuilder,
+	PureAbility,
+	type AbilityClass,
+	type FieldMatcher,
+	type ConditionsMatcher,
+} from '@casl/ability'
 
-// Shared function to detect subject type from objects
+import type { Context } from '../types'
+
+/**
+ * Detects the subject type from an object for CASL authorization
+ * @param object - The object to detect the subject type from
+ * @returns The subject type string
+ * @public
+ */
 export const detectSubjectType = (object: any): string => {
 	// Handle CASL's subject() helper objects
 	if (object && typeof object === 'object') {
@@ -40,7 +52,16 @@ const conditionsMatcher: ConditionsMatcher<any> = conditions => object => {
 	})
 }
 
-export type AppAbility = PureAbility<[string, string], any>
+/**
+ * CASL ability type for authorization with flexible subject types
+ * @public
+ */
+export type AppAbility = PureAbility<[string, any], any>
+
+/**
+ * Function type for building user abilities
+ * @public
+ */
 export type AbilityBuilderFunction = (user?: Context['user']) => Promise<AppAbility> | AppAbility
 
 const Ability = PureAbility as AbilityClass<AppAbility>
@@ -62,6 +83,10 @@ export const defaultAbilityBuilder = (user?: Context['user']): AppAbility => {
 
 /**
  * Create ability using a provided builder function
+ * @param user - User information for building the ability
+ * @param builderFn - Function to build the ability
+ * @returns Promise resolving to the created ability
+ * @public
  */
 export const createAbility = async (
 	user?: Context['user'],

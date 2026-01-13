@@ -17,6 +17,8 @@ import Registry from './registry'
 import { Stonecrop } from './stonecrop'
 import { HST, createHST, type HSTNode } from './stores/hst'
 import { useOperationLogStore } from './stores/operation-log'
+// Export schema validator
+import { SchemaValidator, createValidator, validateSchema } from './schema-validator'
 export type * from './types'
 export type { BaseStonecropReturn, HSTChangeData, HSTStonecropReturn, OperationLogAPI } from './composable'
 export type { FieldTriggerEngine } from './field-triggers'
@@ -29,6 +31,9 @@ export type {
 	FieldActionFunction,
 	TransitionActionFunction,
 } from './types/field-triggers'
+// Export schema validator types
+export type { ValidationIssue, ValidationResult, ValidatorOptions } from './schema-validator'
+export { ValidationSeverity } from './schema-validator'
 
 export {
 	DoctypeMeta,
@@ -46,6 +51,10 @@ export {
 	setFieldRollback,
 	triggerTransition,
 	markOperationIrreversible,
+	// Schema validator exports
+	SchemaValidator,
+	createValidator,
+	validateSchema,
 	// Operation log exports
 	useOperationLog,
 	useOperationLogStore,

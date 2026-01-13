@@ -1,13 +1,13 @@
 {
 	"name": "@stonecrop/rockfoil",
-	"version": "1.0.0",
-	"type": "module",
+	"version": "0.7.0",
 	"license": "MIT",
-	"homepage": "https://github.com/agritheory/rockfoil#readme",
+	"type": "module",
 	"author": {
 		"name": "Tyler Matteson",
 		"email": "tyler@agritheory.com"
 	},
+	"homepage": "https://github.com/agritheory/rockfoil#readme",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/agritheory/stonecrop",
@@ -19,10 +19,16 @@
 	"exports": {
 		".": {
 			"import": {
-				"default": "./dist/index.js",
-				"types": "./dist/index.d.ts"
-			}
-		}
+				"types": "./dist/src/index.d.ts",
+				"default": "./dist/rockfoil.js"
+			},
+			"require": "./dist/rockfoil.umd.cjs"
+		},
+		"./types": {
+			"import": "./dist/src/types/index.d.ts",
+			"require": "./dist/src/types/index.d.ts"
+		},
+		"./styles": "./dist/assets/index.css"
 	},
 	"typings": "./dist/index.d.ts",
 	"files": [
@@ -30,27 +36,36 @@
 		"src/*"
 	],
 	"scripts": {
-		"_phase:build": "tsc --build tsconfig.json && rushx docs",
-		"prepublish": "tsc --build tsconfig.json && rushx docs",
-		"build": "tsc --build tsconfig.json && rushx docs",
+		"_phase:build": "heft build && vite build && rushx docs",
+		"prepublish": "heft build && vite build && rushx docs",
+		"build": "heft build && vite build && rushx docs",
+		"dev": "vite",
 		"docs": "bash ../common/scripts/run-docs.sh rockfoil",
-		"test": "vitest",
+		"lint": "eslint .",
+		"preview": "vite preview",
+		"test": "vitest run --coverage.enabled false",
+		"test:watch": "vitest watch",
 		"test:coverage": "vitest run --coverage",
 		"test:ui": "vitest --ui"
 	},
 	"dependencies": {
-		"graphql": "^16.11.0",
+		"graphql": "^16.12.0",
 		"postgraphile": "^5.0.0-rc.3"
 	},
 	"devDependencies": {
-		"@types/node": "^22.0.0",
-		"@vitest/coverage-istanbul": "^4.0.5",
-		"@vitest/ui": "^4.0.5",
-		"graphile-build": "^5.0.0-beta.38",
-		"jsdom": "^27.1.0",
+		"@rushstack/heft": "^1.1.7",
+		"@types/node": "^22.19.5",
+		"@vitest/coverage-istanbul": "^4.0.17",
+		"@vitest/ui": "^4.0.17",
+		"graphile-build": "^5.0.0-rc.2",
+		"jsdom": "^27.4.0",
 		"madr": "^4.0.0",
+		"stonecrop-rig": "workspace:*",
 		"typescript": "^5.9.3",
-		"vite": "^7.1.7",
-		"vitest": "^4.0.5"
+		"vite": "^7.3.1",
+		"vitest": "^4.0.17"
+	},
+	"engines": {
+		"node": ">=22.5.0"
 	}
 }

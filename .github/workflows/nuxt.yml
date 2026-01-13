@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Enable Corepack
         run: corepack enable
@@ -36,12 +36,12 @@ jobs:
           node common/scripts/install-run-rush.js update-autoinstaller --name rush-plugins
           node common/scripts/install-run-rush.js update-autoinstaller --name rush-prettier
 
+      - name: Rush Build
+        run: node common/scripts/install-run-rush.js rebuild --verbose
+
       - name: Prepare Playground
         working-directory: nuxt/
         run: node ../common/scripts/install-run-rushx.js dev:prepare
-
-      - name: Rush Build
-        run: node common/scripts/install-run-rush.js rebuild --verbose
 
       - name: Run Tests
         working-directory: nuxt/

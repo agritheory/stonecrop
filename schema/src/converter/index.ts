@@ -1,5 +1,6 @@
 import { parseDDL } from './parser'
 import { mapColumnToField } from './type-map'
+import { toPascalCase, toSlug } from './naming'
 import type { DoctypeMeta } from '../doctype'
 import type { ParsedTable, ConversionOptions, ConversionFieldMeta } from './postgres-types'
 
@@ -55,6 +56,7 @@ function buildDoctype(
 				for (const col of parent.columns) {
 					const field = mapColumnToField(col, tableMap, {
 						includeUnmappedMeta: options.includeUnmappedMeta,
+						useCamelCase: options.useCamelCase,
 					})
 					fieldMap.set(field.fieldname, field)
 				}
@@ -66,6 +68,7 @@ function buildDoctype(
 	for (const col of table.columns) {
 		const field = mapColumnToField(col, tableMap, {
 			includeUnmappedMeta: options.includeUnmappedMeta,
+			useCamelCase: options.useCamelCase,
 		})
 		fieldMap.set(field.fieldname, field)
 	}
@@ -83,8 +86,11 @@ function buildDoctype(
 	// Clean up undefined optional fields
 	fields = fields.map(cleanField)
 
+	// Use @doctype name from comment if available, otherwise derive from table name
+	const doctypeName = table.doctypeName ?? toPascalCase(table.name)
+
 	return {
-		name: toPascalCase(table.name),
+		name: doctypeName,
 		slug: toSlug(table.name),
 		tableName: table.name,
 		fields,
@@ -113,27 +119,22 @@ function cleanField(field: ConversionFieldMeta): ConversionFieldMeta {
 	return cleaned
 }
 
-/**
- * Convert to kebab-case slug
- */
-function toSlug(name: string): string {
-	return name
-		.replace(/([a-z])([A-Z])/g, '$1-$2')
-		.replace(/[\s_]+/g, '-')
-		.toLowerCase()
-}
-
-/**
- * Convert to PascalCase
- */
-function toPascalCase(name: string): string {
-	return name
-		.split(/[-_\s]+/)
-		.map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-		.join('')
-}
-
 // Re-exports
 export { parseDDL } from './parser'
 export { normalizeType, mapColumnToField, PG_TYPE_MAP, TYPE_ALIASES } from './type-map'
+export type { MapColumnOptions } from './type-map'
 export type { ConversionFieldMeta, ParsedColumn, ParsedTable, ConversionOptions, PostgresType } from './postgres-types'
+
+// Naming utilities
+export {
+	snakeToCamel,
+	camelToSnake,
+	snakeToLabel,
+	camelToLabel,
+	convertSQLName,
+	convertSQLNames,
+	createNameMapping,
+	toPascalCase,
+	toSlug,
+} from './naming'
+export type { NameConversion } from './naming'

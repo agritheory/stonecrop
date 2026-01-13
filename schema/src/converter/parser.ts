@@ -9,10 +9,24 @@ import type {
 	ArrayDataTypeDef,
 	ColumnConstraintReference,
 	ColumnConstraintDefault,
+	CommentStatement,
 } from 'pgsql-ast-parser'
 
 import type { ParsedTable, ParsedColumn } from './postgres-types'
 import { normalizeType } from './type-map'
+
+/**
+ * Extract doctype name from table comment using @doctype convention
+ * @example
+ * ```sql
+ * COMMENT ON TABLE sales_order IS '@doctype SalesOrder - Main sales document';
+ * ```
+ */
+function extractDoctypeName(comment: string): string | undefined {
+	// Match @doctype followed by the name (until whitespace, dash, or end)
+	const match = comment.match(/@doctype\s+([A-Za-z][A-Za-z0-9]*)/)
+	return match?.[1]
+}
 
 /**
  * Parse PostgreSQL DDL and extract table definitions
@@ -21,11 +35,30 @@ import { normalizeType } from './type-map'
 export function parseDDL(sql: string): ParsedTable[] {
 	const statements = parse(sql, { locationTracking: false })
 	const tables: ParsedTable[] = []
+	const tableComments = new Map<string, string>()
 
+	// First pass: collect all table comments
+	for (const stmt of statements) {
+		if (isCommentStatement(stmt) && stmt.on.type === 'table') {
+			const tableName = stmt.on.name.name
+			tableComments.set(tableName, stmt.comment)
+		}
+	}
+
+	// Second pass: parse CREATE TABLE statements
 	for (const stmt of statements) {
 		if (isCreateTable(stmt)) {
 			try {
-				tables.push(parseCreateTable(stmt))
+				const table = parseCreateTable(stmt)
+
+				// Attach comment if found
+				const comment = tableComments.get(table.name)
+				if (comment) {
+					table.comment = comment
+					table.doctypeName = extractDoctypeName(comment)
+				}
+
+				tables.push(table)
 			} catch (err) {
 				// Log but continue parsing other tables
 				console.warn(`Failed to parse table ${stmt.name?.name}: ${err}`)
@@ -41,6 +74,13 @@ export function parseDDL(sql: string): ParsedTable[] {
  */
 function isCreateTable(stmt: Statement): stmt is CreateTableStatement {
 	return stmt.type === 'create table'
+}
+
+/**
+ * Type guard for COMMENT statements
+ */
+function isCommentStatement(stmt: Statement): stmt is CommentStatement {
+	return stmt.type === 'comment'
 }
 
 /**

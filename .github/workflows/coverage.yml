@@ -21,6 +21,8 @@ jobs:
           aform: aform/**
           atable: atable/**
           beam: beam/**
+          casl_middleware: casl_middleware/**
+          rockfoil: rockfoil/**
           stonecrop: stonecrop/**
 
   coverage:
@@ -46,7 +48,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           ref: ${{ matrix.branch }}
 
@@ -75,7 +77,7 @@ jobs:
 
       - name: Upload Coverage
         if: always() # upload the coverage report even if tests are failing
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: coverage-${{ matrix.package }}-${{ matrix.artifact }}
           path: ./${{ matrix.package }}/coverage
@@ -92,7 +94,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           ref: ${{ github.event.pull_request.head.ref }}
 
@@ -107,13 +109,15 @@ jobs:
         run: node common/scripts/install-run-rush.js install
 
       - name: Download PR Branch Coverage
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: coverage-${{ matrix.package }}-pull-request
           path: ${{ matrix.package }}/coverage
 
       - name: Download Base Branch Coverage
-        uses: actions/download-artifact@v6
+        id: download-base
+        continue-on-error: true
+        uses: actions/download-artifact@v7
         with:
           name: coverage-${{ matrix.package }}-development
           path: ${{ matrix.package }}/coverage-base
@@ -124,4 +128,4 @@ jobs:
           working-directory: ${{ matrix.package }}
           file-coverage-mode: 'all'
           vite-config-path: 'vite.config.ts'
-          json-summary-compare-path: coverage-base/coverage-summary.json
+          json-summary-compare-path: ${{ steps.download-base.outcome == 'success' && 'coverage-base/coverage-summary.json' || '' }}

@@ -1,5 +1,3 @@
-// casl-middleware/tests/jwt.test.ts
-
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import jwt from 'jsonwebtoken'
 import {
@@ -68,7 +66,7 @@ describe('JWT Middleware', () => {
 
 	describe('createJWTMiddleware', () => {
 		let mockContext: Context
-		let mockNext: ReturnType<typeof vi.fn>
+		let mockNext: any
 
 		beforeEach(() => {
 			mockContext = {
@@ -267,7 +265,7 @@ describe('JWT Middleware', () => {
 				secret: TEST_SECRET,
 			})
 
-			const req = {
+			const req: any = {
 				headers: {
 					authorization: `Bearer ${token}`,
 				},

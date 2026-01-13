@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest'
 
 // Mock postgraphile/utils with a simple implementation
 vi.mock('postgraphile/utils', () => ({
-	makeWrapPlansPlugin: (config: any) => ({
+	wrapPlans: (config: any) => ({
 		name: 'TestPlugin',
 		version: '1.0.0',
 		_config: config, // Store config for testing
