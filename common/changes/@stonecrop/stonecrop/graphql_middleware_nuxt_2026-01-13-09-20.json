@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/stonecrop",
+      "comment": "add schema-validator tool",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@stonecrop/stonecrop"
+}

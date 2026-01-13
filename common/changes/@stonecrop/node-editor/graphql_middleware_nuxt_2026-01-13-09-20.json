@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/node-editor",
+      "comment": "update deps",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@stonecrop/node-editor"
+}

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/atable",
+      "comment": "change schema value from type -> fieldtype",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@stonecrop/atable"
+}

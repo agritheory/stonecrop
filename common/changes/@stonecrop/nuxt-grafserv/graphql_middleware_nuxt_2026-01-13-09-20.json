@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/nuxt-grafserv",
+      "comment": "add Nuxt-Grafserv package",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@stonecrop/nuxt-grafserv"
+}
