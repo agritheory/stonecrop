@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/nuxt-grafserv",
-	"version": "1.0.0",
+	"version": "0.6.3",
 	"description": "Pluggable Grafserv GraphQL server as Nuxt Module",
 	"license": "MIT",
 	"type": "module",
@@ -53,6 +53,7 @@
 	},
 	"devDependencies": {
 		"@casl/ability": "^6.7.5",
+		"@eslint/js": "^9.39.2",
 		"@nuxt/devtools": "^3.1.1",
 		"@nuxt/eslint-config": "^1.12.1",
 		"@nuxt/kit": "^4.2.2",

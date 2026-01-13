@@ -268,6 +268,9 @@ importers:
       '@graphql-tools/utils':
         specifier: ^11.0.0
         version: 11.0.0(graphql@16.12.0)
+      '@rushstack/heft':
+        specifier: ^1.1.7
+        version: 1.1.7(@types/node@22.19.5)
       '@types/jsonwebtoken':
         specifier: ~9.0.10
         version: 9.0.10
@@ -292,6 +295,9 @@ importers:
       postgraphile:
         specifier: ^5.0.0-rc.3
         version: 5.0.0-rc.3(@envelop/core@5.4.0)(crossws@0.3.5)(graphql@16.12.0)(h3@1.15.4)
+      stonecrop-rig:
+        specifier: workspace:*
+        version: link:../rigs/stonecrop-rig
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
@@ -807,6 +813,9 @@ importers:
       '@casl/ability':
         specifier: ^6.7.5
         version: 6.7.5
+      '@eslint/js':
+        specifier: ^9.39.2
+        version: 9.39.2
       '@nuxt/devtools':
         specifier: ^3.1.1
         version: 3.1.1(vite@7.3.1(@types/node@22.19.5)(jiti@2.6.1)(sass@1.97.2)(terser@5.44.1)(yaml@2.8.2))(vue@3.5.26(typescript@5.9.3))
@@ -898,6 +907,9 @@ importers:
         specifier: ^5.0.0-rc.3
         version: 5.0.0-rc.3(@envelop/core@5.4.0)(crossws@0.3.5)(graphql@16.12.0)(h3@1.15.4)
     devDependencies:
+      '@rushstack/heft':
+        specifier: ^1.1.7
+        version: 1.1.7(@types/node@22.19.5)
       '@types/node':
         specifier: ^22.19.5
         version: 22.19.5
@@ -916,6 +928,9 @@ importers:
       madr:
         specifier: ^4.0.0
         version: 4.0.0
+      stonecrop-rig:
+        specifier: workspace:*
+        version: link:../rigs/stonecrop-rig
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
@@ -4569,8 +4584,8 @@ packages:
     resolution: {integrity: sha512-Dv0BYn4waOWse94j16rsZ5w/0zoaCa74O3q6IZjMqaXbtT92Q+Sb6pPk+phGzD8Xh+nueQmSRI3tSCaHKidzKw==}
     engines: {node: '>=18.2.0'}
 
-  fastq@1.20.1:
-    resolution: {integrity: sha512-GGToxJ/w1x32s/D2EKND7kTil4n8OVk/9mycTc4VDza13lOvpUZTGX3mFSCtV9ksdGBVzvsyAVLM6mHFThxXxw==}
+  fastq@1.19.1:
+    resolution: {integrity: sha512-GwLTyxkCXjXbxqIhTsMI2Nui8huMPtnxg7krajPJAjnEG/iiOS7i+zCtWGZR9G0NBKbXKh6X9m9UIsYX/N6vvQ==}
 
   fdir@6.5.0:
     resolution: {integrity: sha512-tIbYtZbucOs0BRGqPJkshJUYdL+SDH7dVM8gjy+ERp3WAUjLEFJE+02kanyHtwjWOnwrKYBiwAmM0p4kLJAnXg==}
@@ -8603,7 +8618,7 @@ snapshots:
   '@nodelib/fs.walk@1.2.8':
     dependencies:
       '@nodelib/fs.scandir': 2.1.5
-      fastq: 1.20.1
+      fastq: 1.19.1
 
   '@nuxt/cli@3.32.0(cac@6.7.14)(magicast@0.5.1)':
     dependencies:
@@ -11394,7 +11409,7 @@ snapshots:
       '@babel/runtime': 7.28.4
       tslib: 2.8.1
 
-  fastq@1.20.1:
+  fastq@1.19.1:
     dependencies:
       reusify: 1.1.0
 

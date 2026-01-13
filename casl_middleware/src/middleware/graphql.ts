@@ -58,7 +58,12 @@ const checkPermission = (context: Context, action: string, subjectName: string, 
 	}
 }
 
-// CASL GraphQL middleware factory
+/**
+ * Creates CASL authorization middleware for GraphQL resolvers
+ * @param options - Configuration options for the middleware
+ * @returns Middleware function that wraps resolvers with authorization checks
+ * @public
+ */
 export const createCaslMiddleware = (options: MiddlewareOptions = {}) => {
 	const {
 		subjectMap = {},

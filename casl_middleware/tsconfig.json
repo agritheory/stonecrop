@@ -1,13 +1,8 @@
 {
-	"extends": "../tsconfig.options.json",
+	"extends": "../tsconfig.json",
 	"compilerOptions": {
-		"rootDir": "./src",
-		"baseUrl": ".",
-		"moduleResolution": "bundler",
-		"paths": {
-			"@/*": ["src/*"]
-		}
+		"tsBuildInfoFile": "./dist/casl_middleware.tsbuildinfo",
+		"types": ["vitest/globals", "vitest/jsdom"]
 	},
-	"include": ["src/**/*.ts"],
-	"exclude": ["node_modules", "dist", "tests/**/*"]
+	"include": ["src/**/*.ts", "tests/**/*.spec.ts", "tests/**/*.ts"]
 }

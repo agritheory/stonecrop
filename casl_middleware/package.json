@@ -1,14 +1,14 @@
 {
 	"name": "@stonecrop/casl-middleware",
-	"version": "1.0.0",
-	"description": "CASL authorization middleware for GraphQL servers",
-	"type": "module",
+	"version": "0.6.3",
 	"license": "MIT",
+	"type": "module",
 	"homepage": "https://github.com/agritheory/stonecrop#readme",
 	"author": {
 		"name": "Tyler Matteson",
 		"email": "support@agritheory.dev"
 	},
+	"description": "CASL authorization middleware for GraphQL servers",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/agritheory/stonecrop",
@@ -20,26 +20,32 @@
 	"exports": {
 		".": {
 			"import": {
-				"types": "./dist/index.d.ts",
-				"default": "./dist/index.js"
+				"types": "./dist/src/index.d.ts",
+				"default": "./dist/casl_middleware.js"
 			}
+		},
+		"./types": {
+			"import": "./dist/src/types/index.d.ts",
+			"require": "./dist/src/types/index.d.ts"
 		}
 	},
-	"typings": "./dist/index.d.ts",
+	"typings": "./dist/src/index.d.ts",
 	"files": [
 		"dist/*",
 		"src/*"
 	],
 	"scripts": {
-		"build": "vite build && tsc --emitDeclarationOnly",
-		"dev": "vite build --watch",
-		"lint": "eslint . --ext .ts",
-		"lint:fix": "eslint . --ext .ts --fix",
-		"format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
+		"_phase:build": "heft build && vite build && rushx docs",
+		"prepublish": "heft build && vite build && rushx docs",
+		"build": "heft build && vite build && rushx docs",
+		"dev": "vite",
+		"docs": "bash ../common/scripts/run-docs.sh aform",
+		"lint": "eslint .",
+		"preview": "vite preview",
 		"test": "vitest run --coverage.enabled false",
-		"test:coverage": "vitest run --coverage",
 		"test:watch": "vitest watch",
-		"typecheck": "tsc --noEmit"
+		"test:coverage": "vitest run --coverage",
+		"test:ui": "vitest --ui"
 	},
 	"keywords": [
 		"casl",
@@ -59,6 +65,7 @@
 		"@graphql-tools/merge": "^9.1.7",
 		"@graphql-tools/schema": "^10.0.31",
 		"@graphql-tools/utils": "^11.0.0",
+		"@rushstack/heft": "^1.1.7",
 		"@types/node": "^22.19.5",
 		"@vitest/coverage-istanbul": "^4.0.17",
 		"eslint": "^9.39.2",
@@ -66,6 +73,7 @@
 		"graphql-yoga": "^5.18.0",
 		"jsdom": "^27.4.0",
 		"postgraphile": "^5.0.0-rc.3",
+		"stonecrop-rig": "workspace:*",
 		"typescript": "^5.9.3",
 		"vite": "^7.3.1",
 		"vitest": "^4.0.17",
