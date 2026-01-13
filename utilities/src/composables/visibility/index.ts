@@ -25,8 +25,8 @@ export interface UseElementVisibilityOptions extends ConfigurableWindow {
  * (Last verified: v10.9.0 on May 2, 2024)
  *
  * @see https://v9-13-0.vueuse.org/core/useElementVisibility
- * @param element
- * @param options
+ * @param element - Element to track visibility for
+ * @param options - Configuration options (window, scrollTarget)
  */
 export function useElementVisibility(
 	element: MaybeComputedElementRef,

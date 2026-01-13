@@ -23,7 +23,7 @@ declare function install(_app: App): void;
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| _app | `App` |  |
+| _app | `App` | Vue app instance |
 
 ### useKeyboardNav
 

@@ -4,6 +4,7 @@ import type { HookConfig, HookPlan } from '../types'
 
 /**
  * Creates a PostGraphile plugin that wraps GraphQL query and mutation plans with before/after hooks
+ * @param hookMap - Configuration mapping field names to before/after hook functions
  * @public
  */
 export const createPglRockfoilPlugin = (hookMap: HookConfig) => {

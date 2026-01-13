@@ -9,11 +9,14 @@ import type { ParsedTable, ConversionOptions, ConversionFieldMeta } from './post
  * @public
  */
 export interface ConvertedDoctype extends Omit<DoctypeMeta, 'fields'> {
+	/** Field definitions with optional conversion metadata */
 	fields: ConversionFieldMeta[]
 }
 
 /**
  * Convert PostgreSQL DDL to Stonecrop doctype schemas
+ * @param sql - PostgreSQL DDL statements to convert
+ * @param options - Conversion options for controlling output format
  * @public
  */
 export function convertSchema(

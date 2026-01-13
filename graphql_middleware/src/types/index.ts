@@ -33,8 +33,11 @@ import type { DoctypeMeta } from '@stonecrop/schema'
  * @public
  */
 export interface RouteContext {
+	/** Doctype name (e.g., 'Task', 'Customer') */
 	doctype: string
+	/** Optional record ID for viewing/editing a specific record */
 	recordId?: string
+	/** Additional context properties */
 	[key: string]: unknown
 }
 
@@ -43,7 +46,9 @@ export interface RouteContext {
  * @public
  */
 export interface GraphQLExecutor {
+	/** Execute a GraphQL query */
 	query<T = unknown>(query: string, variables?: Record<string, unknown>): Promise<T>
+	/** Execute a GraphQL mutation */
 	mutate<T = unknown>(mutation: string, variables?: Record<string, unknown>): Promise<T>
 }
 
@@ -52,8 +57,11 @@ export interface GraphQLExecutor {
  * @public
  */
 export interface ActionContext {
+	/** Doctype metadata for the action being executed */
 	doctype: DoctypeMeta
+	/** GraphQL executor for running queries/mutations within the action */
 	executor: GraphQLExecutor
+	/** Additional context properties */
 	[key: string]: unknown
 }
 

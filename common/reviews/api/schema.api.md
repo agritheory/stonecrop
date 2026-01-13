@@ -30,7 +30,7 @@ export const ActionDefinition: z.ZodObject<{
     args?: Record<string, unknown> | undefined;
 }>;
 
-// @public (undocumented)
+// @public
 export type ActionDefinition = z.infer<typeof ActionDefinition>;
 
 // @public
@@ -41,9 +41,7 @@ export function camelToSnake(camelCase: string): string;
 
 // @public
 export interface ConversionFieldMeta extends FieldMeta {
-    // (undocumented)
     _pgType?: string;
-    // (undocumented)
     _unmapped?: boolean;
 }
 
@@ -59,7 +57,6 @@ export interface ConversionOptions {
 
 // @public
 export interface ConvertedDoctype extends Omit<DoctypeMeta, 'fields'> {
-    // (undocumented)
     fields: ConversionFieldMeta[];
 }
 
@@ -267,7 +264,7 @@ const DoctypeMeta: z.ZodObject<{
     parentDoctype?: string | undefined;
 }>;
 
-// @public (undocumented)
+// @public
 type DoctypeMeta = z.infer<typeof DoctypeMeta>;
 export { DoctypeMeta }
 export { DoctypeMeta as DoctypeMetaType }
@@ -333,7 +330,7 @@ const FieldMeta: z.ZodObject<{
     mask?: string | undefined;
 }>;
 
-// @public (undocumented)
+// @public
 type FieldMeta = z.infer<typeof FieldMeta>;
 export { FieldMeta }
 export { FieldMeta as FieldMetaType }
@@ -341,7 +338,7 @@ export { FieldMeta as FieldMetaType }
 // @public
 const FieldOptions: z.ZodUnion<[z.ZodString, z.ZodArray<z.ZodString, "many">, z.ZodRecord<z.ZodString, z.ZodUnknown>]>;
 
-// @public (undocumented)
+// @public
 type FieldOptions = z.infer<typeof FieldOptions>;
 export { FieldOptions }
 export { FieldOptions as FieldOptionsType }
@@ -355,7 +352,7 @@ export const FieldValidation: z.ZodObject<{
     errorMessage: z.ZodString;
 }, z.ZodTypeAny, "passthrough">>;
 
-// @public (undocumented)
+// @public
 export type FieldValidation = z.infer<typeof FieldValidation>;
 
 // @public
@@ -382,32 +379,21 @@ export function normalizeType(rawType: string): PostgresType;
 
 // @public
 export interface ParsedColumn {
-    // (undocumented)
     arrayDimensions: number;
-    // (undocumented)
     dataType: string;
-    // (undocumented)
     defaultValue?: string;
-    // (undocumented)
     isGenerated: boolean;
-    // (undocumented)
     length?: number;
-    // (undocumented)
     name: string;
-    // (undocumented)
     normalizedType: PostgresType;
-    // (undocumented)
     nullable: boolean;
-    // (undocumented)
     precision?: number;
-    // (undocumented)
     reference?: {
         schema?: string;
         table: string;
         column: string;
         onDelete?: 'CASCADE' | 'SET NULL' | 'RESTRICT' | 'NO ACTION';
     };
-    // (undocumented)
     scale?: number;
 }
 
@@ -419,15 +405,11 @@ export function parseDoctype(data: unknown): DoctypeMeta;
 
 // @public
 export interface ParsedTable {
-    // (undocumented)
     columns: ParsedColumn[];
     comment?: string;
     doctypeName?: string;
-    // (undocumented)
     inherits?: string[];
-    // (undocumented)
     name: string;
-    // (undocumented)
     schema?: string;
 }
 
@@ -442,7 +424,7 @@ export const PG_TYPE_MAP: Record<PostgresType, FieldTemplate_2>;
 // @public
 export const PostgresType: z.ZodEnum<["text", "varchar", "char", "citext", "smallint", "integer", "bigint", "serial", "bigserial", "smallserial", "numeric", "decimal", "real", "double precision", "money", "boolean", "date", "time", "timetz", "timestamp", "timestamptz", "interval", "int4range", "int8range", "numrange", "daterange", "tsrange", "tstzrange", "bytea", "uuid", "json", "jsonb", "bit", "varbit", "xml", "unit", "cube", "unknown"]>;
 
-// @public (undocumented)
+// @public
 export type PostgresType = z.infer<typeof PostgresType>;
 
 // @public
@@ -454,7 +436,7 @@ export function snakeToLabel(snakeCase: string): string;
 // @public
 const StonecropFieldType: z.ZodEnum<["Data", "Text", "Int", "Float", "Decimal", "Check", "Date", "Time", "Datetime", "Duration", "DateRange", "JSON", "Code", "Link", "Doctype", "Attach", "Currency", "Quantity", "Select"]>;
 
-// @public (undocumented)
+// @public
 type StonecropFieldType = z.infer<typeof StonecropFieldType>;
 export { StonecropFieldType }
 export { StonecropFieldType as StonecropFieldTypeValue }
@@ -538,7 +520,7 @@ const WorkflowMeta: z.ZodObject<{
     }> | undefined;
 }>;
 
-// @public (undocumented)
+// @public
 type WorkflowMeta = z.infer<typeof WorkflowMeta>;
 export { WorkflowMeta }
 export { WorkflowMeta as WorkflowMetaType }

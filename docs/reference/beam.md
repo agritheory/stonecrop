@@ -247,11 +247,13 @@ export interface IMqttStream {
 
 | Property | Type | Description |
 |----------|------|-------------|
-| topics? | `string[]` |  |
+| topics? | `string[]` | MQTT topics to subscribe to |
 
 ## Type Aliases
 
 ### BeamColor
+
+Union type for color values - supports RGB, RGBA, HEX, HSL, HSLA, or CSS color string
 
 **Definition:**
 
@@ -260,6 +262,8 @@ export type BeamColor = RGB | RGBA | HEX | HSL | HSLA | CSSProperties['color'];
 ```
 
 ### BeamFilterChoice
+
+Filter choice with label and value for BeamFilter component
 
 **Definition:**
 
@@ -301,6 +305,8 @@ export type HSLA = `hsl(${number}, ${number}%, ${number}%), ${number}`;
 ```
 
 ### ListViewItem
+
+Configuration object for ListView component items
 
 **Definition:**
 

@@ -23,7 +23,7 @@ createPglRockfoilPlugin: (hookMap: HookConfig) => GraphileConfig.Plugin
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| hookMap | `HookConfig` |  |
+| hookMap | `HookConfig` | Configuration mapping field names to before/after hook functions |
 
 ## Interfaces
 

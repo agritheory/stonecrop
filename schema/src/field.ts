@@ -19,7 +19,10 @@ export const FieldOptions = z.union([
 	z.record(z.string(), z.unknown()), // Config: \{ precision: 10, scale: 2 \}
 ])
 
-/** @public */
+/**
+ * Field options type inferred from Zod schema
+ * @public
+ */
 export type FieldOptions = z.infer<typeof FieldOptions>
 
 /**
@@ -33,7 +36,10 @@ export const FieldValidation = z
 	})
 	.passthrough()
 
-/** @public */
+/**
+ * Field validation type inferred from Zod schema
+ * @public
+ */
 export type FieldValidation = z.infer<typeof FieldValidation>
 
 /**
@@ -112,5 +118,8 @@ export const FieldMeta = z.object({
 	validation: FieldValidation.optional(),
 })
 
-/** @public */
+/**
+ * Field metadata type inferred from Zod schema
+ * @public
+ */
 export type FieldMeta = z.infer<typeof FieldMeta>

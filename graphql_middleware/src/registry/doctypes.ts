@@ -11,7 +11,12 @@ const doctypeRegistry: Map<string, DoctypeMeta> = new Map()
  * @public
  */
 export class DoctypeValidationError extends Error {
-	constructor(public readonly file: string, public readonly errors: ValidationError[]) {
+	constructor(
+		/** File path or name where the validation error occurred */
+		public readonly file: string,
+		/** List of validation errors found */
+		public readonly errors: ValidationError[]
+	) {
 		const errorMessages = errors.map(e => `  ${e.path.join('.')}: ${e.message}`).join('\n')
 		super(`Invalid doctype definition in ${file}:\n${errorMessages}`)
 		this.name = 'DoctypeValidationError'
@@ -31,6 +36,8 @@ export interface LoadDoctypesOptions {
 
 /**
  * Load doctype definitions from a directory of JSON files
+ * @param dir - Directory path containing doctype JSON files
+ * @param options - Options for loading doctypes (continueOnError, onError callback)
  * @public
  */
 export function loadDoctypes(dir: string, options: LoadDoctypesOptions = {}): void {
@@ -86,6 +93,8 @@ function loadDoctypeFile(filePath: string, options: LoadDoctypesOptions): void {
 
 /**
  * Load doctypes from an object (for programmatic use)
+ * @param doctypes - Object mapping doctype names to doctype definitions
+ * @param options - Options for loading doctypes (continueOnError, onError callback)
  * @public
  */
 export function loadDoctypesFromObject(doctypes: Record<string, unknown>, options: LoadDoctypesOptions = {}): void {
@@ -108,6 +117,7 @@ export function loadDoctypesFromObject(doctypes: Record<string, unknown>, option
 
 /**
  * Get a doctype by name
+ * @param name - Name of the doctype to retrieve
  * @public
  */
 export function getMeta(name: string): DoctypeMeta | undefined {
@@ -124,6 +134,7 @@ export function getAllMeta(): DoctypeMeta[] {
 
 /**
  * Check if a doctype is registered
+ * @param name - Name of the doctype to check
  * @public
  */
 export function hasMeta(name: string): boolean {

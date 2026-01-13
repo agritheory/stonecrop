@@ -11,6 +11,7 @@ import type { ActionContext, DoctypeMeta, GraphQLExecutor } from '../types'
  * @public
  */
 export interface StonecropPluginOptions {
+	/** GraphQL executor for running queries/mutations */
 	executor: GraphQLExecutor
 }
 

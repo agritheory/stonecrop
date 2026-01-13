@@ -5,7 +5,9 @@ import type { DoctypeMeta, RouteContext, GraphQLExecutor } from '../types'
  * @public
  */
 export interface StonecropClientOptions {
+	/** GraphQL endpoint URL */
 	endpoint: string
+	/** Additional HTTP headers to include in requests */
 	headers?: Record<string, string>
 }
 
@@ -26,6 +28,11 @@ export class StonecropClient implements GraphQLExecutor {
 		}
 	}
 
+	/**
+	 * Execute a GraphQL query
+	 * @param query - GraphQL query string
+	 * @param variables - Query variables
+	 */
 	async query<T = unknown>(query: string, variables?: Record<string, unknown>): Promise<T> {
 		const response = await fetch(this.endpoint, {
 			method: 'POST',
@@ -45,10 +52,19 @@ export class StonecropClient implements GraphQLExecutor {
 		return json.data as T
 	}
 
+	/**
+	 * Execute a GraphQL mutation
+	 * @param mutation - GraphQL mutation string
+	 * @param variables - Mutation variables
+	 */
 	async mutate<T = unknown>(mutation: string, variables?: Record<string, unknown>): Promise<T> {
 		return this.query<T>(mutation, variables)
 	}
 
+	/**
+	 * Get doctype metadata
+	 * @param context - Route context containing doctype name
+	 */
 	async getMeta(context: RouteContext): Promise<DoctypeMeta | null> {
 		const cached = this.metaCache.get(context.doctype)
 		if (cached) return cached
@@ -91,6 +107,9 @@ export class StonecropClient implements GraphQLExecutor {
 		return result.stonecropMeta
 	}
 
+	/**
+	 * Get all doctype metadata
+	 */
 	async getAllMeta(): Promise<DoctypeMeta[]> {
 		const result = await this.query<{ stonecropAllMeta: DoctypeMeta[] }>(
 			`
@@ -129,6 +148,11 @@ export class StonecropClient implements GraphQLExecutor {
 		return result.stonecropAllMeta
 	}
 
+	/**
+	 * Get a single record by ID
+	 * @param doctype - Doctype metadata
+	 * @param recordId - Record ID to fetch
+	 */
 	async getRecord(doctype: DoctypeMeta, recordId: string): Promise<Record<string, unknown> | null> {
 		const result = await this.query<{
 			stonecropRecord: { data: Record<string, unknown> | null }
@@ -146,6 +170,11 @@ export class StonecropClient implements GraphQLExecutor {
 		return result.stonecropRecord.data
 	}
 
+	/**
+	 * Get multiple records with optional filtering and pagination
+	 * @param doctype - Doctype metadata
+	 * @param options - Query options (filters, orderBy, limit, offset)
+	 */
 	async getRecords(
 		doctype: DoctypeMeta,
 		options?: {
@@ -187,6 +216,12 @@ export class StonecropClient implements GraphQLExecutor {
 		return result.stonecropRecords.data
 	}
 
+	/**
+	 * Execute a doctype action
+	 * @param doctype - Doctype metadata
+	 * @param action - Action name to execute
+	 * @param args - Action arguments
+	 */
 	async runAction(
 		doctype: DoctypeMeta,
 		action: string,
@@ -214,6 +249,9 @@ export class StonecropClient implements GraphQLExecutor {
 		return result.stonecropAction
 	}
 
+	/**
+	 * Clear the cached doctype metadata
+	 */
 	clearMetaCache(): void {
 		this.metaCache.clear()
 	}

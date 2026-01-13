@@ -148,6 +148,7 @@ export const TYPE_ALIASES: Record<string, PostgresType> = {
 
 /**
  * Normalize raw PostgreSQL type string to canonical PostgresType
+ * @param rawType - Raw PostgreSQL type string (e.g., 'character varying', 'int4')
  * @public
  */
 export function normalizeType(rawType: string): PostgresType {
@@ -188,6 +189,9 @@ export interface MapColumnOptions {
 
 /**
  * Map a parsed column to a Stonecrop field definition
+ * @param column - Parsed PostgreSQL column information
+ * @param _tableRegistry - Map of table names to parsed table definitions (for reference resolution)
+ * @param options - Mapping options for field naming and metadata
  * @public
  */
 export function mapColumnToField(

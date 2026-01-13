@@ -4,6 +4,8 @@ const handlerRegistry: Map<string, ActionHandler> = new Map()
 
 /**
  * Register an action handler
+ * @param name - Unique name for the action handler
+ * @param handler - Action handler function to register
  * @public
  */
 export function registerHandler(name: string, handler: ActionHandler): void {
@@ -12,6 +14,7 @@ export function registerHandler(name: string, handler: ActionHandler): void {
 
 /**
  * Get a registered handler by name
+ * @param name - Name of the action handler to retrieve
  * @public
  */
 export function getHandler(name: string): ActionHandler | undefined {
@@ -20,6 +23,7 @@ export function getHandler(name: string): ActionHandler | undefined {
 
 /**
  * Check if a handler is registered
+ * @param name - Name of the action handler to check
  * @public
  */
 export function hasHandler(name: string): boolean {

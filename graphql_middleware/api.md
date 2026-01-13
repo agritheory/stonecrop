@@ -106,8 +106,8 @@ export declare function convertSchema(sql: string, options?: ConversionOptions):
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| sql | `string` |  |
-| options | `ConversionOptions` |  |
+| sql | `string` | PostgreSQL DDL statements to convert |
+| options | `ConversionOptions` | Conversion options for controlling output format |
 
 ### createStonecropPlugin
 
@@ -165,7 +165,7 @@ export declare function getHandler(name: string): ActionHandler | undefined;
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| name | `string` |  |
+| name | `string` | Name of the action handler to retrieve |
 
 ### getMeta
 
@@ -181,7 +181,7 @@ export declare function getMeta(name: string): DoctypeMeta | undefined;
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| name | `string` |  |
+| name | `string` | Name of the doctype to retrieve |
 
 ### hasHandler
 
@@ -197,7 +197,7 @@ export declare function hasHandler(name: string): boolean;
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| name | `string` |  |
+| name | `string` | Name of the action handler to check |
 
 ### hasMeta
 
@@ -213,7 +213,7 @@ export declare function hasMeta(name: string): boolean;
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| name | `string` |  |
+| name | `string` | Name of the doctype to check |
 
 ### loadDoctypes
 
@@ -229,8 +229,8 @@ export declare function loadDoctypes(dir: string, options?: LoadDoctypesOptions)
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| dir | `string` |  |
-| options | `LoadDoctypesOptions` |  |
+| dir | `string` | Directory path containing doctype JSON files |
+| options | `LoadDoctypesOptions` | Options for loading doctypes (continueOnError, onError callback) |
 
 ### loadDoctypesFromObject
 
@@ -246,8 +246,8 @@ export declare function loadDoctypesFromObject(doctypes: Record<string, unknown>
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| doctypes | `Record<string, unknown>` |  |
-| options | `LoadDoctypesOptions` |  |
+| doctypes | `Record<string, unknown>` | Object mapping doctype names to doctype definitions |
+| options | `LoadDoctypesOptions` | Options for loading doctypes (continueOnError, onError callback) |
 
 ### mapColumnToField
 
@@ -263,9 +263,9 @@ export declare function mapColumnToField(column: ParsedColumn, _tableRegistry: M
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| column | `ParsedColumn` |  |
-| _tableRegistry | `Map<string, ParsedTable>` |  |
-| options | `MapColumnOptions` |  |
+| column | `ParsedColumn` | Parsed PostgreSQL column information |
+| _tableRegistry | `Map<string, ParsedTable>` | Map of table names to parsed table definitions (for reference resolution) |
+| options | `MapColumnOptions` | Mapping options for field naming and metadata |
 
 ### normalizeType
 
@@ -281,7 +281,7 @@ export declare function normalizeType(rawType: string): PostgresType;
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| rawType | `string` |  |
+| rawType | `string` | Raw PostgreSQL type string (e.g., 'character varying', 'int4') |
 
 ### parseDDL
 
@@ -297,7 +297,7 @@ export declare function parseDDL(sql: string): ParsedTable[];
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| sql | `string` |  |
+| sql | `string` | PostgreSQL DDL statements to parse |
 
 ### parseDoctype
 
@@ -355,8 +355,8 @@ export declare function registerHandler(name: string, handler: ActionHandler): v
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| name | `string` |  |
-| handler | `ActionHandler` |  |
+| name | `string` | Unique name for the action handler |
+| handler | `ActionHandler` | Action handler function to register |
 
 ### validateDoctype
 
@@ -419,8 +419,8 @@ export interface ActionContext {
 
 | Property | Type | Description |
 |----------|------|-------------|
-| doctype | `DoctypeMeta` |  |
-| executor | `GraphQLExecutor` |  |
+| doctype | `DoctypeMeta` | Doctype metadata for the action being executed |
+| executor | `GraphQLExecutor` | GraphQL executor for running queries/mutations within the action |
 
 ### ConversionFieldMeta
 
@@ -439,8 +439,8 @@ export interface ConversionFieldMeta {
 
 | Property | Type | Description |
 |----------|------|-------------|
-| _pgType? | `string` |  |
-| _unmapped? | `boolean` |  |
+| _pgType? | `string` | Original PostgreSQL type (for debugging/reference) |
+| _unmapped? | `boolean` | Marks fields that couldn't be automatically mapped |
 
 ### ConversionOptions
 
@@ -486,7 +486,7 @@ export interface ConvertedDoctype {
 
 | Property | Type | Description |
 |----------|------|-------------|
-| fields | `ConversionFieldMeta[]` |  |
+| fields | `ConversionFieldMeta[]` | Field definitions with optional conversion metadata |
 
 ### GraphQLExecutor
 
@@ -552,17 +552,17 @@ export interface ParsedColumn {
 
 | Property | Type | Description |
 |----------|------|-------------|
-| arrayDimensions | `number` |  |
-| dataType | `string` |  |
-| defaultValue? | `string` |  |
-| isGenerated | `boolean` |  |
-| length? | `number` |  |
-| name | `string` |  |
-| normalizedType | `PostgresType` |  |
-| nullable | `boolean` |  |
-| precision? | `number` |  |
-| reference? | `{ schema?: string; table: string; column: string; onDelete?: 'CASCADE' \| 'SET NULL' \| 'RESTRICT' \| 'NO ACTION'; }` |  |
-| scale? | `number` |  |
+| arrayDimensions | `number` | Number of array dimensions (0 for non-array types) |
+| dataType | `string` | Raw PostgreSQL data type string |
+| defaultValue? | `string` | Default value expression (if specified) |
+| isGenerated | `boolean` | Whether the column is auto-generated (GENERATED ALWAYS) |
+| length? | `number` | Character/binary length constraint (for VARCHAR, CHAR, BIT types) |
+| name | `string` | Column name (from SQL definition) |
+| normalizedType | `PostgresType` | Normalized PostgreSQL type (mapped to standard types) |
+| nullable | `boolean` | Whether the column allows NULL values |
+| precision? | `number` | Numeric precision (for NUMERIC/DECIMAL types) |
+| reference? | `{ schema?: string; table: string; column: string; onDelete?: 'CASCADE' \| 'SET NULL' \| 'RESTRICT' \| 'NO ACTION'; }` | Foreign key reference information (if column references another table) |
+| scale? | `number` | Numeric scale (for NUMERIC/DECIMAL types) |
 
 ### ParsedTable
 
@@ -585,12 +585,12 @@ export interface ParsedTable {
 
 | Property | Type | Description |
 |----------|------|-------------|
-| columns | `ParsedColumn[]` |  |
+| columns | `ParsedColumn[]` | Column definitions parsed from the table |
 | comment? | `string` | Table comment from COMMENT ON TABLE statement |
 | doctypeName? | `string` | Doctype name extracted from comment (if using doctype convention) |
-| inherits? | `string[]` |  |
-| name | `string` |  |
-| schema? | `string` |  |
+| inherits? | `string[]` | Parent table names (for PostgreSQL table inheritance) |
+| name | `string` | Table name (from CREATE TABLE statement) |
+| schema? | `string` | Schema name (if specified, defaults to 'public') |
 
 ### RouteContext
 
@@ -609,8 +609,8 @@ export interface RouteContext {
 
 | Property | Type | Description |
 |----------|------|-------------|
-| doctype | `string` |  |
-| recordId? | `string` |  |
+| doctype | `string` | Doctype name (e.g., 'Task', 'Customer') |
+| recordId? | `string` | Optional record ID for viewing/editing a specific record |
 
 ### StonecropClientOptions
 
@@ -629,8 +629,8 @@ export interface StonecropClientOptions {
 
 | Property | Type | Description |
 |----------|------|-------------|
-| endpoint | `string` |  |
-| headers? | `Record<string, string>` |  |
+| endpoint | `string` | GraphQL endpoint URL |
+| headers? | `Record<string, string>` | Additional HTTP headers to include in requests |
 
 ### StonecropPluginOptions
 
@@ -648,7 +648,7 @@ export interface StonecropPluginOptions {
 
 | Property | Type | Description |
 |----------|------|-------------|
-| executor | `GraphQLExecutor` |  |
+| executor | `GraphQLExecutor` | GraphQL executor for running queries/mutations |
 
 ### ValidationError
 
@@ -694,6 +694,8 @@ export interface ValidationResult {
 
 ### ActionDefinition
 
+Action definition type inferred from Zod schema
+
 **Definition:**
 
 ```typescript
@@ -712,6 +714,8 @@ export type ActionHandler = (args: unknown[], context: ActionContext) => Promise
 
 ### DoctypeMeta
 
+Doctype metadata type inferred from Zod schema
+
 **Definition:**
 
 ```typescript
@@ -719,6 +723,8 @@ export type DoctypeMeta = z.infer<typeof DoctypeMeta>;
 ```
 
 ### FieldMeta
+
+Field metadata type inferred from Zod schema
 
 **Definition:**
 
@@ -728,6 +734,8 @@ export type FieldMeta = z.infer<typeof FieldMeta>;
 
 ### FieldOptions
 
+Field options type inferred from Zod schema
+
 **Definition:**
 
 ```typescript
@@ -735,6 +743,8 @@ export type FieldOptions = z.infer<typeof FieldOptions>;
 ```
 
 ### FieldValidation
+
+Field validation type inferred from Zod schema
 
 **Definition:**
 
@@ -744,6 +754,8 @@ export type FieldValidation = z.infer<typeof FieldValidation>;
 
 ### PostgresType
 
+PostgreSQL type enum inferred from Zod schema
+
 **Definition:**
 
 ```typescript
@@ -752,6 +764,8 @@ export type PostgresType = z.infer<typeof PostgresType>;
 
 ### StonecropFieldType
 
+Stonecrop field type enum inferred from Zod schema
+
 **Definition:**
 
 ```typescript
@@ -759,6 +773,8 @@ export type StonecropFieldType = z.infer<typeof StonecropFieldType>;
 ```
 
 ### WorkflowMeta
+
+Workflow metadata type inferred from Zod schema
 
 **Definition:**
 
@@ -782,8 +798,8 @@ new DoctypeValidationError(file: string, errors: ValidationError[])
 
 | Property | Type | Description |
 |----------|------|-------------|
-| errors | `ValidationError[]` |  |
-| file | `string` |  |
+| errors | `ValidationError[]` | List of validation errors found |
+| file | `string` | File path or name where the validation error occurred |
 
 ### StonecropClient
 
@@ -799,11 +815,15 @@ new StonecropClient(options: StonecropClientOptions)
 
 #### clearMetaCache
 
+Clear the cached doctype metadata
+
 ```typescript
 clearMetaCache(): void
 ```
 
 #### getAllMeta
+
+Get all doctype metadata
 
 ```typescript
 getAllMeta(): Promise<DoctypeMeta[]>
@@ -811,17 +831,36 @@ getAllMeta(): Promise<DoctypeMeta[]>
 
 #### getMeta
 
+Get doctype metadata
+
 ```typescript
 getMeta(context: RouteContext): Promise<DoctypeMeta | null>
 ```
 
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| context | `RouteContext` | Route context containing doctype name |
+
 #### getRecord
+
+Get a single record by ID
 
 ```typescript
 getRecord(doctype: DoctypeMeta, recordId: string): Promise<Record<string, unknown> | null>
 ```
 
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `DoctypeMeta` | Doctype metadata |
+| recordId | `string` | Record ID to fetch |
+
 #### getRecords
+
+Get multiple records with optional filtering and pagination
 
 ```typescript
 getRecords(doctype: DoctypeMeta, options: {
@@ -832,19 +871,46 @@ getRecords(doctype: DoctypeMeta, options: {
     }): Promise<Record<string, unknown>[]>
 ```
 
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `DoctypeMeta` | Doctype metadata |
+| options | `{ filters?: Record<string, unknown>; orderBy?: string; limit?: number; offset?: number; }` | Query options (filters, orderBy, limit, offset) |
+
 #### mutate
+
+Execute a GraphQL mutation
 
 ```typescript
 mutate(mutation: string, variables: Record<string, unknown>): Promise<T>
 ```
 
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| mutation | `string` | GraphQL mutation string |
+| variables | `Record<string, unknown>` | Mutation variables |
+
 #### query
+
+Execute a GraphQL query
 
 ```typescript
 query(query: string, variables: Record<string, unknown>): Promise<T>
 ```
 
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| query | `string` | GraphQL query string |
+| variables | `Record<string, unknown>` | Query variables |
+
 #### runAction
+
+Execute a doctype action
 
 ```typescript
 runAction(doctype: DoctypeMeta, action: string, args: unknown[]): Promise<{
@@ -853,6 +919,14 @@ runAction(doctype: DoctypeMeta, action: string, args: unknown[]): Promise<{
         error: string | null;
     }>
 ```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `DoctypeMeta` | Doctype metadata |
+| action | `string` | Action name to execute |
+| args | `unknown[]` | Action arguments |
 
 ## Variables
 

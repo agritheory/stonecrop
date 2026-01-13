@@ -17,5 +17,6 @@ This package may not export public APIs, or documentation hasn't been generated 
 To generate API documentation, ensure the package has been built:
 
 ```bash
-rush build --to @stonecrop/nuxt
+cd nuxt
+rushx build
 ```

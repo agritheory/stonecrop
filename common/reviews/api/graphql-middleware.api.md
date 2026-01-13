@@ -9,11 +9,8 @@ import { z } from 'zod';
 
 // @public
 export interface ActionContext {
-    // (undocumented)
     [key: string]: unknown;
-    // (undocumented)
     doctype: DoctypeMeta;
-    // (undocumented)
     executor: GraphQLExecutor;
 }
 
@@ -41,7 +38,7 @@ export const ActionDefinition: z.ZodObject<{
     args?: Record<string, unknown> | undefined;
 }>;
 
-// @public (undocumented)
+// @public
 export type ActionDefinition = z.infer<typeof ActionDefinition>;
 
 // @public
@@ -58,9 +55,7 @@ export function clearRegistry(): void;
 
 // @public
 export interface ConversionFieldMeta extends FieldMeta {
-    // (undocumented)
     _pgType?: string;
-    // (undocumented)
     _unmapped?: boolean;
 }
 
@@ -76,7 +71,6 @@ export interface ConversionOptions {
 
 // @public
 export interface ConvertedDoctype extends Omit<DoctypeMeta, 'fields'> {
-    // (undocumented)
     fields: ConversionFieldMeta[];
 }
 
@@ -274,15 +268,15 @@ export const DoctypeMeta: z.ZodObject<{
     parentDoctype?: string | undefined;
 }>;
 
-// @public (undocumented)
+// @public
 export type DoctypeMeta = z.infer<typeof DoctypeMeta>;
 
 // @public
 export class DoctypeValidationError extends Error {
-    constructor(file: string, errors: ValidationError[]);
-    // (undocumented)
+    constructor(
+    file: string,
+    errors: ValidationError[]);
     readonly errors: ValidationError[];
-    // (undocumented)
     readonly file: string;
 }
 
@@ -347,13 +341,13 @@ export const FieldMeta: z.ZodObject<{
     mask?: string | undefined;
 }>;
 
-// @public (undocumented)
+// @public
 export type FieldMeta = z.infer<typeof FieldMeta>;
 
 // @public
 export const FieldOptions: z.ZodUnion<[z.ZodString, z.ZodArray<z.ZodString, "many">, z.ZodRecord<z.ZodString, z.ZodUnknown>]>;
 
-// @public (undocumented)
+// @public
 export type FieldOptions = z.infer<typeof FieldOptions>;
 
 // @public
@@ -365,7 +359,7 @@ export const FieldValidation: z.ZodObject<{
     errorMessage: z.ZodString;
 }, z.ZodTypeAny, "passthrough">>;
 
-// @public (undocumented)
+// @public
 export type FieldValidation = z.infer<typeof FieldValidation>;
 
 // @public
@@ -382,9 +376,7 @@ export function getMeta(name: string): DoctypeMeta | undefined;
 
 // @public
 export interface GraphQLExecutor {
-    // (undocumented)
     mutate<T = unknown>(mutation: string, variables?: Record<string, unknown>): Promise<T>;
-    // (undocumented)
     query<T = unknown>(query: string, variables?: Record<string, unknown>): Promise<T>;
 }
 
@@ -416,32 +408,21 @@ export function normalizeType(rawType: string): PostgresType;
 
 // @public
 export interface ParsedColumn {
-    // (undocumented)
     arrayDimensions: number;
-    // (undocumented)
     dataType: string;
-    // (undocumented)
     defaultValue?: string;
-    // (undocumented)
     isGenerated: boolean;
-    // (undocumented)
     length?: number;
-    // (undocumented)
     name: string;
-    // (undocumented)
     normalizedType: PostgresType;
-    // (undocumented)
     nullable: boolean;
-    // (undocumented)
     precision?: number;
-    // (undocumented)
     reference?: {
         schema?: string;
         table: string;
         column: string;
         onDelete?: 'CASCADE' | 'SET NULL' | 'RESTRICT' | 'NO ACTION';
     };
-    // (undocumented)
     scale?: number;
 }
 
@@ -453,15 +434,11 @@ export function parseDoctype(data: unknown): DoctypeMeta;
 
 // @public
 export interface ParsedTable {
-    // (undocumented)
     columns: ParsedColumn[];
     comment?: string;
     doctypeName?: string;
-    // (undocumented)
     inherits?: string[];
-    // (undocumented)
     name: string;
-    // (undocumented)
     schema?: string;
 }
 
@@ -476,7 +453,7 @@ export const PG_TYPE_MAP: Record<PostgresType, FieldTemplate_2>;
 // @public
 export const PostgresType: z.ZodEnum<["text", "varchar", "char", "citext", "smallint", "integer", "bigint", "serial", "bigserial", "smallserial", "numeric", "decimal", "real", "double precision", "money", "boolean", "date", "time", "timetz", "timestamp", "timestamptz", "interval", "int4range", "int8range", "numrange", "daterange", "tsrange", "tstzrange", "bytea", "uuid", "json", "jsonb", "bit", "varbit", "xml", "unit", "cube", "unknown"]>;
 
-// @public (undocumented)
+// @public
 export type PostgresType = z.infer<typeof PostgresType>;
 
 // @public
@@ -487,37 +464,26 @@ export function registerHandler(name: string, handler: ActionHandler): void;
 
 // @public
 export interface RouteContext {
-    // (undocumented)
     [key: string]: unknown;
-    // (undocumented)
     doctype: string;
-    // (undocumented)
     recordId?: string;
 }
 
 // @public
 export class StonecropClient implements GraphQLExecutor {
     constructor(options: StonecropClientOptions);
-    // (undocumented)
     clearMetaCache(): void;
-    // (undocumented)
     getAllMeta(): Promise<DoctypeMeta[]>;
-    // (undocumented)
     getMeta(context: RouteContext): Promise<DoctypeMeta | null>;
-    // (undocumented)
     getRecord(doctype: DoctypeMeta, recordId: string): Promise<Record<string, unknown> | null>;
-    // (undocumented)
     getRecords(doctype: DoctypeMeta, options?: {
         filters?: Record<string, unknown>;
         orderBy?: string;
         limit?: number;
         offset?: number;
     }): Promise<Record<string, unknown>[]>;
-    // (undocumented)
     mutate<T = unknown>(mutation: string, variables?: Record<string, unknown>): Promise<T>;
-    // (undocumented)
     query<T = unknown>(query: string, variables?: Record<string, unknown>): Promise<T>;
-    // (undocumented)
     runAction(doctype: DoctypeMeta, action: string, args?: unknown[]): Promise<{
         success: boolean;
         data: unknown;
@@ -527,21 +493,18 @@ export class StonecropClient implements GraphQLExecutor {
 
 // @public
 export interface StonecropClientOptions {
-    // (undocumented)
     endpoint: string;
-    // (undocumented)
     headers?: Record<string, string>;
 }
 
 // @public
 export const StonecropFieldType: z.ZodEnum<["Data", "Text", "Int", "Float", "Decimal", "Check", "Date", "Time", "Datetime", "Duration", "DateRange", "JSON", "Code", "Link", "Doctype", "Attach", "Currency", "Quantity", "Select"]>;
 
-// @public (undocumented)
+// @public
 export type StonecropFieldType = z.infer<typeof StonecropFieldType>;
 
 // @public
 export interface StonecropPluginOptions {
-    // (undocumented)
     executor: GraphQLExecutor;
 }
 
@@ -621,7 +584,7 @@ export const WorkflowMeta: z.ZodObject<{
     }> | undefined;
 }>;
 
-// @public (undocumented)
+// @public
 export type WorkflowMeta = z.infer<typeof WorkflowMeta>;
 
 // (No @packageDocumentation comment for this package)

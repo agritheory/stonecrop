@@ -27,7 +27,10 @@ export const StonecropFieldType = z.enum([
 	'Select', // Dropdown selection
 ])
 
-/** @public */
+/**
+ * Stonecrop field type enum inferred from Zod schema
+ * @public
+ */
 export type StonecropFieldType = z.infer<typeof StonecropFieldType>
 
 /**
