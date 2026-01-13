@@ -4,11 +4,11 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"dev": "vitepress dev",
+		"dev": "rushx build:full && vitepress dev",
+		"preview": "rushx build:full && vitepress preview",
 		"build": "node scripts/aggregate-api.mjs && vitepress build",
 		"build:stories": "cd ../examples && rushx build:stories",
-		"build:full": "rushx build:stories && node scripts/aggregate-api.mjs && vitepress build",
-		"preview": "vitepress preview"
+		"build:full": "rushx build:stories && rushx build"
 	},
 	"devDependencies": {
 		"mermaid": "^11.12.2",

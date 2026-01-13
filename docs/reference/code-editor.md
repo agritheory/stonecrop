@@ -5,10 +5,33 @@ description: Monaco-based code editor
 
 # Code_editor API Reference
 
-> No API documentation available - this project may not export public APIs or hasn't been built with API Extractor yet.
+> This documentation is automatically generated from the TypeScript API.
 
-To generate documentation, ensure the project has been built:
+## Vue Components
 
-```bash
-rush build --to code_editor
+### ACodeEditor
+
+Vue component exported from @stonecrop/code_editor.
+
+```typescript
+import { ACodeEditor } from '@stonecrop/code_editor'
 ```
+
+## Functions
+
+### install
+
+Install all Code Editor components
+
+**Signature:**
+
+```typescript
+declare function install(app: App): void;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| app | `App` | Vue app instance |
+
