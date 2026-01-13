@@ -5,10 +5,47 @@ description: Server-side utilities
 
 # Rockfoil API Reference
 
-> No API documentation available - this project may not export public APIs or hasn't been built with API Extractor yet.
+> This documentation is automatically generated from the TypeScript API.
 
-To generate documentation, ensure the project has been built:
+## Functions
 
-```bash
-rush build --to rockfoil
+### createPglRockfoilPlugin
+
+Creates a PostGraphile plugin that wraps GraphQL query and mutation plans with before/after hooks
+
+**Signature:**
+
+```typescript
+createPglRockfoilPlugin: (hookMap: HookConfig) => GraphileConfig.Plugin
 ```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| hookMap | `HookConfig` |  |
+
+## Interfaces
+
+### HookConfig
+
+Configuration object mapping field names to their before/after hooks for queries and mutations
+
+**Definition:**
+
+```typescript
+export interface HookConfig {
+}
+```
+
+### HookPlan
+
+Internal mapping of field names to their plan wrapper rules
+
+**Definition:**
+
+```typescript
+export interface HookPlan {
+}
+```
+

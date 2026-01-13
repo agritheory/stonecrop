@@ -39,7 +39,7 @@
 		"prepublish": "heft build && vite build && rushx docs",
 		"build": "heft build && vite build && rushx docs",
 		"dev": "vite",
-		"docs": "bash ../common/scripts/run-docs.sh aform",
+		"docs": "bash ../common/scripts/run-docs.sh casl_middleware",
 		"lint": "eslint .",
 		"preview": "vite preview",
 		"test": "vitest run --coverage.enabled false",

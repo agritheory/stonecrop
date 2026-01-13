@@ -415,6 +415,10 @@
       "allowedCategories": [ "prototype" ]
     },
     {
+      "name": "search-insights",
+      "allowedCategories": [ "documentation" ]
+    },
+    {
       "name": "stonecrop-rig",
       "allowedCategories": [ "production", "prototype", "utilities" ]
     },
