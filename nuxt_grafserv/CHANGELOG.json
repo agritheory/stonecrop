@@ -1,0 +1,17 @@
+{
+  "name": "@stonecrop/nuxt-grafserv",
+  "entries": [
+    {
+      "version": "0.7.0",
+      "tag": "@stonecrop/nuxt-grafserv_v0.7.0",
+      "date": "Tue, 13 Jan 2026 09:40:41 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "add Nuxt-Grafserv package"
+          }
+        ]
+      }
+    }
+  ]
+}

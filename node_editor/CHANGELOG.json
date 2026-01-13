@@ -2,6 +2,18 @@
   "name": "@stonecrop/node-editor",
   "entries": [
     {
+      "version": "0.7.0",
+      "tag": "@stonecrop/node-editor_v0.7.0",
+      "date": "Tue, 13 Jan 2026 09:40:41 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "update deps"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.6.3",
       "tag": "@stonecrop/node-editor_v0.6.3",
       "date": "Mon, 05 Jan 2026 10:50:40 GMT",
