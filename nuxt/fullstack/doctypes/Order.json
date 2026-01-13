@@ -1,0 +1,120 @@
+{
+	"name": "Order",
+	"slug": "order/:id",
+	"tableName": "orders",
+	"fields": [
+		{
+			"fieldname": "id",
+			"fieldtype": "Data",
+			"label": "ID",
+			"readOnly": true
+		},
+		{
+			"fieldname": "orderNumber",
+			"fieldtype": "Data",
+			"label": "Order Number",
+			"readOnly": true,
+			"width": "15ch"
+		},
+		{
+			"fieldname": "userId",
+			"fieldtype": "Link",
+			"label": "Customer",
+			"options": "user",
+			"required": true
+		},
+		{
+			"fieldname": "status",
+			"fieldtype": "Select",
+			"label": "Status",
+			"options": ["DRAFT", "PENDING", "PROCESSING", "SHIPPED", "COMPLETED", "CANCELLED"],
+			"default": "DRAFT"
+		},
+		{
+			"fieldname": "total",
+			"fieldtype": "Currency",
+			"label": "Total",
+			"readOnly": true
+		},
+		{
+			"fieldname": "items",
+			"fieldtype": "Doctype",
+			"label": "Order Items",
+			"options": "order-item"
+		},
+		{
+			"fieldname": "shippingAddress",
+			"fieldtype": "Text",
+			"label": "Shipping Address"
+		},
+		{
+			"fieldname": "billingAddress",
+			"fieldtype": "Text",
+			"label": "Billing Address"
+		},
+		{
+			"fieldname": "createdAt",
+			"fieldtype": "Datetime",
+			"label": "Created At",
+			"readOnly": true
+		},
+		{
+			"fieldname": "updatedAt",
+			"fieldtype": "Datetime",
+			"label": "Updated At",
+			"readOnly": true
+		},
+		{
+			"fieldname": "processedAt",
+			"fieldtype": "Datetime",
+			"label": "Processed At",
+			"readOnly": true
+		},
+		{
+			"fieldname": "shippedAt",
+			"fieldtype": "Datetime",
+			"label": "Shipped At",
+			"readOnly": true
+		},
+		{
+			"fieldname": "completedAt",
+			"fieldtype": "Datetime",
+			"label": "Completed At",
+			"readOnly": true
+		}
+	],
+	"workflow": {
+		"states": ["DRAFT", "PENDING", "PROCESSING", "SHIPPED", "COMPLETED", "CANCELLED"],
+		"actions": {
+			"submit": {
+				"label": "Submit Order",
+				"handler": "submit_order",
+				"allowedStates": ["DRAFT"],
+				"requiredFields": ["userId", "items", "shippingAddress"]
+			},
+			"process": {
+				"label": "Process Order",
+				"handler": "process_order",
+				"allowedStates": ["PENDING"],
+				"confirm": true
+			},
+			"ship": {
+				"label": "Ship Order",
+				"handler": "ship_order",
+				"allowedStates": ["PROCESSING"],
+				"confirm": true
+			},
+			"complete": {
+				"label": "Complete Order",
+				"handler": "complete_order",
+				"allowedStates": ["SHIPPED"]
+			},
+			"cancel": {
+				"label": "Cancel Order",
+				"handler": "cancel_order",
+				"allowedStates": ["DRAFT", "PENDING", "PROCESSING"],
+				"confirm": true
+			}
+		}
+	}
+}

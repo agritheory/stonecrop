@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/nuxt",
+      "comment": "add fullstack example",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@stonecrop/nuxt"
+}

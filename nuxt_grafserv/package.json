@@ -1,0 +1,100 @@
+{
+	"name": "@stonecrop/nuxt-grafserv",
+	"version": "0.6.3",
+	"description": "Pluggable Grafserv GraphQL server as Nuxt Module",
+	"license": "MIT",
+	"type": "module",
+	"author": {
+		"name": "Tyler Matteson",
+		"email": "tyler@agritheory.com"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/agritheory/stonecrop",
+		"directory": "nuxt_grafserv"
+	},
+	"bugs": {
+		"url": "https://github.com/agritheory/stonecrop/issues"
+	},
+	"exports": {
+		".": {
+			"import": "./dist/module.mjs",
+			"types": "./dist/types.d.mts"
+		},
+		"./runtime/*": "./dist/runtime/*"
+	},
+	"main": "./dist/module.mjs",
+	"types": "./dist/types.d.mts",
+	"typesVersions": {
+		"*": {
+			".": [
+				"./dist/types.d.mts"
+			]
+		}
+	},
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"_phase:build": "rushx dev:prepare && rushx prepack",
+		"build": "rushx dev:prepare && rushx prepack",
+		"build:module": "rushx dev:prepare && rushx prepack",
+		"dev": "nuxi dev playground",
+		"dev:build": "nuxi build playground",
+		"dev:prepare": "nuxt-module-build build --stub && nuxt-module-build prepare && nuxi prepare playground",
+		"prepack": "nuxt-module-build build",
+		"lint": "eslint .",
+		"test": "vitest run",
+		"test:ci": "vitest run --run",
+		"test:watch": "vitest watch",
+		"test:types": "vue-tsc --noEmit && cd playground && vue-tsc --noEmit"
+	},
+	"dependencies": {
+		"@graphql-tools/graphql-file-loader": "^8.1.9",
+		"@graphql-tools/load": "^8.1.8",
+		"@graphql-tools/stitch": "^10.1.8",
+		"@graphql-tools/wrap": "^11.1.4",
+		"@stonecrop/graphql-middleware": "workspace:*",
+		"grafast": "^1.0.0-rc.3",
+		"grafserv": "^1.0.0-rc.3",
+		"graphile-config": "^1.0.0-rc.2",
+		"graphql": "^16.12.0"
+	},
+	"devDependencies": {
+		"@casl/ability": "^6.7.5",
+		"@eslint/js": "^9.39.2",
+		"@nuxt/devtools": "^3.1.1",
+		"@nuxt/eslint-config": "^1.12.1",
+		"@nuxt/kit": "^4.2.2",
+		"@nuxt/module-builder": "^1.0.2",
+		"@nuxt/schema": "^4.2.2",
+		"@nuxt/test-utils": "^3.23.0",
+		"@stonecrop/casl-middleware": "workspace:*",
+		"@stonecrop/rockfoil": "workspace:*",
+		"@vitest/coverage-istanbul": "^4.0.17",
+		"@types/node": "^22.19.5",
+		"zod": "^3.25.76",
+		"h3": "^1.15.4",
+		"nitropack": "^2.13.0",
+		"changelogen": "^0.6.2",
+		"eslint": "^9.39.2",
+		"jsdom": "^27.4.0",
+		"nuxt": "^4.2.2",
+		"typescript": "^5.9.3",
+		"vite": "^7.3.1",
+		"vitest": "^4.0.17",
+		"vue-tsc": "^3.2.2"
+	},
+	"peerDependencies": {
+		"@stonecrop/casl-middleware": "workspace:*",
+		"@stonecrop/rockfoil": "workspace:*"
+	},
+	"peerDependenciesMeta": {
+		"@stonecrop/casl-middleware": {
+			"optional": true
+		},
+		"@stonecrop/rockfoil": {
+			"optional": true
+		}
+	}
+}

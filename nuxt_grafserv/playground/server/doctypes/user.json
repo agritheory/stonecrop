@@ -1,0 +1,68 @@
+{
+	"name": "User",
+	"tableName": "users",
+	"fields": [
+		{
+			"fieldname": "id",
+			"fieldtype": "Data",
+			"label": "ID",
+			"required": true
+		},
+		{
+			"fieldname": "name",
+			"fieldtype": "Data",
+			"label": "Name",
+			"required": true
+		},
+		{
+			"fieldname": "email",
+			"fieldtype": "Data",
+			"label": "Email",
+			"required": true,
+			"options": {
+				"format": "email"
+			}
+		},
+		{
+			"fieldname": "role",
+			"fieldtype": "Select",
+			"label": "Role",
+			"required": true,
+			"options": {
+				"values": ["admin", "user", "guest"]
+			}
+		},
+		{
+			"fieldname": "createdAt",
+			"fieldtype": "Datetime",
+			"label": "Created At"
+		},
+		{
+			"fieldname": "updatedAt",
+			"fieldtype": "Datetime",
+			"label": "Updated At"
+		}
+	],
+	"workflow": {
+		"states": ["active", "suspended", "deleted"],
+		"actions": {
+			"suspend": {
+				"label": "Suspend User",
+				"handler": "suspend_user",
+				"allowedStates": ["active"],
+				"confirm": true
+			},
+			"activate": {
+				"label": "Activate User",
+				"handler": "activate_user",
+				"allowedStates": ["suspended"]
+			},
+			"delete": {
+				"label": "Delete User",
+				"handler": "delete_user",
+				"allowedStates": ["active", "suspended"],
+				"confirm": true
+			}
+		}
+	}
+}

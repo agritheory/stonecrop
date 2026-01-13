@@ -14,16 +14,8 @@
 		{
 			"fieldname": "roles",
 			"label": "Roles",
-			"fieldtype": "Table",
-			"options": [
-				{
-					"fieldname": "role",
-					"label": "Role",
-					"fieldtype": "Link",
-					"options": "Role",
-					"required": true
-				}
-			]
+			"fieldtype": "Doctype",
+			"options": "RoleProfileRole"
 		},
 		{
 			"fieldname": "active",

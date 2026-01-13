@@ -1,6 +1,6 @@
 {
 	"$schema": "https://developer.microsoft.com/json-schemas/rush/v5/rush.schema.json",
-	"rushVersion": "5.162.0",
+	"rushVersion": "5.166.0",
 	"pnpmVersion": "10.18.3",
 	"telemetryEnabled": false,
 
@@ -35,6 +35,12 @@
 			"versionPolicyName": "stonecrop"
 		},
 		{
+			"packageName": "@stonecrop/casl-middleware",
+			"projectFolder": "casl_middleware",
+			"reviewCategory": "production",
+			"versionPolicyName": "stonecrop"
+		},
+		{
 			"packageName": "@stonecrop/code-editor",
 			"projectFolder": "code_editor",
 			"reviewCategory": "prototype",
@@ -59,6 +65,12 @@
 			"versionPolicyName": "stonecrop"
 		},
 		{
+			"packageName": "@stonecrop/graphql-middleware",
+			"projectFolder": "graphql_middleware",
+			"reviewCategory": "utilities",
+			"versionPolicyName": "stonecrop"
+		},
+		{
 			"packageName": "@stonecrop/node-editor",
 			"projectFolder": "node_editor",
 			"reviewCategory": "prototype",
@@ -68,6 +80,24 @@
 			"packageName": "@stonecrop/nuxt",
 			"projectFolder": "nuxt",
 			"reviewCategory": "prototype",
+			"versionPolicyName": "stonecrop"
+		},
+		{
+			"packageName": "@stonecrop/nuxt-grafserv",
+			"projectFolder": "nuxt_grafserv",
+			"reviewCategory": "production",
+			"versionPolicyName": "stonecrop"
+		},
+		{
+			"packageName": "@stonecrop/rockfoil",
+			"projectFolder": "rockfoil",
+			"reviewCategory": "production",
+			"versionPolicyName": "stonecrop"
+		},
+		{
+			"packageName": "@stonecrop/schema",
+			"projectFolder": "schema",
+			"reviewCategory": "utilities",
 			"versionPolicyName": "stonecrop"
 		},
 		{

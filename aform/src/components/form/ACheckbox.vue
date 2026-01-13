@@ -7,7 +7,7 @@
 				v-model="checkbox"
 				type="checkbox"
 				class="aform_checkbox"
-				:readonly="readonly"
+				:readonly="readOnly"
 				:required="required" />
 		</span>
 		<p v-show="validation.errorMessage" class="aform_error" v-html="validation.errorMessage"></p>
@@ -19,14 +19,7 @@ import { InputHTMLAttributes } from 'vue'
 
 import { ComponentProps } from '../../types'
 
-const {
-	_schema, // don't remove to allow masking to work
-	label,
-	required,
-	readonly,
-	uuid,
-	validation = { errorMessage: '&nbsp;' },
-} = defineProps<ComponentProps>()
+const { label, required, readOnly, uuid, validation = { errorMessage: '&nbsp;' } } = defineProps<ComponentProps>()
 const checkbox = defineModel<InputHTMLAttributes['checked']>()
 </script>
 

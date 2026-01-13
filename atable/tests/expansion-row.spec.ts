@@ -8,8 +8,8 @@ import type { TableColumn } from '../src/types'
 
 describe('AExpansionRow component', () => {
 	const mockColumns: TableColumn[] = [
-		{ name: 'col1', label: 'Column 1', type: 'Data', align: 'left', edit: false },
-		{ name: 'col2', label: 'Column 2', type: 'Data', align: 'center', edit: true },
+		{ name: 'col1', label: 'Column 1', fieldtype: 'Data', align: 'left', edit: false },
+		{ name: 'col2', label: 'Column 2', fieldtype: 'Data', align: 'center', edit: true },
 	]
 
 	const mockRows = [

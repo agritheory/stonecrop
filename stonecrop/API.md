@@ -22,6 +22,23 @@ declare function createHST(target: any, doctype: string, parentDoctype?: string)
 | doctype | `string` | The document type identifier |
 | parentDoctype | `string` | Optional parent document type identifier |
 
+### createValidator
+
+Creates a validator with the given registry
+
+**Signature:**
+
+```typescript
+export declare function createValidator(registry: Registry, options?: Partial<ValidatorOptions>): SchemaValidator;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| registry | `Registry` | Registry instance |
+| options | `Partial<ValidatorOptions>` | Additional validator options |
+
 ### getGlobalTriggerEngine
 
 Get or create the global field trigger engine singleton
@@ -260,6 +277,26 @@ export declare function useUndoRedoShortcuts(hstStore: HSTNode, enabled?: boolea
 |-----------|------|-------------|
 | hstStore | `HSTNode` | The HST store to operate on |
 | enabled | `boolean` | Whether shortcuts are enabled (default: true) |
+
+### validateSchema
+
+Quick validation helper
+
+**Signature:**
+
+```typescript
+export declare function validateSchema(doctype: string, schema: List<SchemaTypes> | SchemaTypes[] | undefined, registry: Registry, workflow?: AnyStateNodeConfig, actions?: ImmutableMap<string, string[]> | Map<string, string[]>): ValidationResult;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `string` | Doctype name |
+| schema | `List<SchemaTypes> \| SchemaTypes[] \| undefined` | Schema fields |
+| registry | `Registry` | Registry instance |
+| workflow | `AnyStateNodeConfig` | Optional workflow configuration |
+| actions | `ImmutableMap<string, string[]> \| Map<string, string[]>` | Optional actions map |
 
 ### withBatch
 
@@ -875,6 +912,7 @@ export interface TableColumn {
   cellComponentProps?: Record<string, any>;
   colspan?: number;
   edit?: boolean;
+  fieldtype?: string;
   filterable?: boolean;
   filterComponent?: string;
   filterOptions?: any[];
@@ -891,7 +929,6 @@ export interface TableColumn {
   pinned?: boolean;
   resizable?: boolean;
   sortable?: boolean;
-  type?: string;
   width?: string;
 }
 ```
@@ -905,6 +942,7 @@ export interface TableColumn {
 | cellComponentProps? | `Record<string, any>` | Additional properties to pass to the table's cell component. Only applicable if the `cellComponent` property is set for the column. |
 | colspan? | `number` | The colspan of the Gantt bar for the column. This determines how many columns the Gantt bar should span across. Only applicable for Gantt tables. |
 | edit? | `boolean` | Control whether cells for the column is editable. |
+| fieldtype? | `string` | The semantic field type of the column. Uses the same StonecropFieldType enum as forms. Common values: 'Data', 'Text', 'Int', 'Float', 'Date', 'Select', 'Link', 'Check', etc. |
 | filterable? | `boolean` | Control whether the column should be filterable and define filter configuration. |
 | filterComponent? | `string` | Custom component for filtering. |
 | filterOptions? | `any[]` | Options for select-type filters. |
@@ -921,7 +959,6 @@ export interface TableColumn {
 | pinned? | `boolean` | Control whether the column should be pinned to the table. |
 | resizable? | `boolean` | Control whether the column can be resized by the user. |
 | sortable? | `boolean` | Control whether the column should be sortable. |
-| type? | `string` | `Data` (the column contains text data), `Select` (the column contains a select input), `Date` (the column contains a date input), `component` (the column contains a custom component) |
 | width? | `string` | The width of the column. This can be a number (in pixels) or a string (in CSS units). |
 
 ### TableDisplay
@@ -1156,6 +1193,86 @@ export interface UndoRedoState {
 | redoCount | `number` | Number of operations available for redo |
 | undoCount | `number` | Number of operations available for undo |
 
+### ValidationIssue
+
+Validation issue
+
+**Definition:**
+
+```typescript
+export interface ValidationIssue {
+  context?: Record<string, unknown>;
+  doctype?: string;
+  fieldname?: string;
+  message: string;
+  rule: string;
+  severity: ValidationSeverity;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| context? | `Record<string, unknown>` | Additional context |
+| doctype? | `string` | Doctype name |
+| fieldname? | `string` | Field name if applicable |
+| message | `string` | Human-readable message |
+| rule | `string` | Validation rule that failed |
+| severity | `ValidationSeverity` | Severity level |
+
+### ValidationResult
+
+Validation result
+
+**Definition:**
+
+```typescript
+export interface ValidationResult {
+  errorCount: number;
+  infoCount: number;
+  issues: ValidationIssue[];
+  valid: boolean;
+  warningCount: number;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| errorCount | `number` | Count of errors |
+| infoCount | `number` | Count of info messages |
+| issues | `ValidationIssue[]` | List of validation issues |
+| valid | `boolean` | Whether validation passed (no blocking errors) |
+| warningCount | `number` | Count of warnings |
+
+### ValidatorOptions
+
+Schema validator options
+
+**Definition:**
+
+```typescript
+export interface ValidatorOptions {
+  registry?: Registry;
+  validateActions?: boolean;
+  validateLinkTargets?: boolean;
+  validateRequiredProperties?: boolean;
+  validateWorkflows?: boolean;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| registry? | `Registry` | Registry instance for doctype lookups |
+| validateActions? | `boolean` | Whether to validate action registration |
+| validateLinkTargets? | `boolean` | Whether to validate Link field targets |
+| validateRequiredProperties? | `boolean` | Whether to validate required schema properties |
+| validateWorkflows? | `boolean` | Whether to validate workflow reachability |
+
 ## Type Aliases
 
 ### BaseSchema
@@ -1197,7 +1314,7 @@ export type ComponentProps = {
     label?: string;
     mask?: string;
     required?: boolean;
-    readonly?: boolean;
+    readOnly?: boolean;
     uuid?: string;
     validation?: {
         errorMessage: string;
@@ -1779,6 +1896,41 @@ addDoctype(doctype: DoctypeMeta): void
 |-----------|------|-------------|
 | doctype | `DoctypeMeta` | The doctype to fetch metadata for |
 
+### SchemaValidator
+
+Schema validator class
+
+**Constructor:**
+
+```typescript
+new SchemaValidator(options: ValidatorOptions)
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| options | `ValidatorOptions` | Validator configuration options |
+
+**Methods:**
+
+#### validate
+
+Validates a complete doctype schema
+
+```typescript
+validate(doctype: string, schema: List<SchemaTypes> | SchemaTypes[] | undefined, workflow: AnyStateNodeConfig, actions: ImmutableMap<string, string[]> | Map<string, string[]>): ValidationResult
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `string` | Doctype name |
+| schema | `List<SchemaTypes> \| SchemaTypes[] \| undefined` | Schema fields (List or Array) |
+| workflow | `AnyStateNodeConfig` | Optional workflow configuration |
+| actions | `ImmutableMap<string, string[]> \| Map<string, string[]>` | Optional actions map |
+
 ### Stonecrop
 
 Main Stonecrop class with HST integration and built-in Operation Log
@@ -2251,5 +2403,21 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
     markIrreversible: (operationId: string, reason: string) => void;
     logAction: (doctype: string, actionName: string, recordIds?: string[], result?: "success" | "failure" | "pending", error?: string) => string;
 }, "undo" | "redo" | "configure" | "addOperation" | "startBatch" | "commitBatch" | "cancelBatch" | "clear" | "getOperationsFor" | "getSnapshot" | "markIrreversible" | "logAction">>
+```
+
+## Enums
+
+### ValidationSeverity
+
+Validation severity levels
+
+**Members:**
+
+```typescript
+export enum ValidationSeverity {
+  ERROR = "error",
+  INFO = "info",
+  WARNING = "warning",
+}
 ```
 

@@ -172,9 +172,9 @@ export const TreeNode: Component = defineComponent({
 
 <style scoped>
 .hst-state-viewer {
-	background: white;
-	border-radius: 8px;
-	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+	background: var(--sc-form-background);
+	border-radius: 0.25rem;
+	border: 1px solid var(--sc-form-border);
 	overflow: hidden;
 }
 
@@ -183,15 +183,15 @@ export const TreeNode: Component = defineComponent({
 	justify-content: space-between;
 	align-items: center;
 	padding: 1rem;
-	background: #f3f4f6;
-	border-bottom: 1px solid #e5e7eb;
+	background: var(--sc-gray-5);
+	border-bottom: 1px solid var(--sc-gray-10);
 }
 
 .viewer-header h3 {
 	margin: 0;
 	font-size: 1rem;
 	font-weight: 600;
-	color: #1f2937;
+	color: var(--sc-gray-80);
 }
 
 .viewer-actions {
@@ -201,18 +201,17 @@ export const TreeNode: Component = defineComponent({
 
 .action-btn {
 	padding: 0.375rem 0.75rem;
-	background: white;
-	border: 1px solid #d1d5db;
-	border-radius: 4px;
+	background: var(--sc-btn-color);
+	border: 1px solid var(--sc-btn-border);
+	border-radius: 0.25rem;
 	font-size: 0.875rem;
 	cursor: pointer;
-	color: #374151;
+	color: var(--sc-btn-label-color);
 	font-weight: 500;
 }
 
 .action-btn:hover {
-	background: #f9fafb;
-	border-color: #9ca3af;
+	background: var(--sc-btn-hover);
 }
 
 .tree-container {
@@ -225,7 +224,7 @@ export const TreeNode: Component = defineComponent({
 .empty-state {
 	padding: 2rem 1rem;
 	text-align: center;
-	color: #6b7280;
+	color: var(--sc-gray-50);
 }
 
 .tree-nodes {
@@ -240,8 +239,7 @@ export const TreeNode: Component = defineComponent({
 	display: flex;
 	align-items: center;
 	padding: 0.25rem 0;
-	border-radius: 3px;
-	transition: background 0.15s ease;
+	border-radius: 0.25rem;
 }
 
 .node-header.clickable {
@@ -249,14 +247,14 @@ export const TreeNode: Component = defineComponent({
 }
 
 .node-header.clickable:hover {
-	background: #f9fafb;
+	background: var(--sc-gray-5);
 }
 
 .expand-icon {
 	display: inline-block;
 	width: 16px;
 	text-align: center;
-	color: #6b7280;
+	color: var(--sc-gray-50);
 	font-size: 0.75rem;
 	margin-right: 0.25rem;
 }
@@ -268,17 +266,17 @@ export const TreeNode: Component = defineComponent({
 }
 
 .node-key {
-	color: #7c3aed;
+	color: var(--sc-primary-color);
 	font-weight: 600;
 }
 
 .node-separator {
-	color: #6b7280;
+	color: var(--sc-gray-50);
 	margin: 0 0.25rem;
 }
 
 .node-value {
-	color: #059669;
+	color: var(--sc-brand-success);
 }
 
 .node-children {

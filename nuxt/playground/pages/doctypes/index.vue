@@ -19,10 +19,10 @@ const router = useRouter()
 const { data: doctypes } = await useFetch<TableRow[]>('/api/doctypes')
 
 const columns: TableColumn[] = [
-	{ label: 'Name', name: 'name', type: 'Data', width: '25ch' },
-	{ label: 'Module', name: 'module', type: 'Data', width: '20ch' },
-	{ label: 'Submittable', name: 'is_submittable', type: 'Check', width: '12ch' },
-	{ label: 'Tree', name: 'is_tree', type: 'Check', width: '10ch' },
+	{ label: 'Name', name: 'name', fieldtype: 'Data', width: '25ch' },
+	{ label: 'Module', name: 'module', fieldtype: 'Data', width: '20ch' },
+	{ label: 'Submittable', name: 'is_submittable', fieldtype: 'Check', width: '12ch' },
+	{ label: 'Tree', name: 'is_tree', fieldtype: 'Check', width: '10ch' },
 ]
 
 function handleRowClick(row: any) {

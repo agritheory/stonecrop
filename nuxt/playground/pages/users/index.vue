@@ -28,10 +28,10 @@ const { handleTableClick } = useTableNavigation({
 })
 
 const columns: TableColumn[] = [
-	{ label: 'Username', name: 'username', type: 'Data', width: '20ch' },
-	{ label: 'Disabled', name: 'disabled', type: 'Check', width: '10ch' },
-	{ label: 'Created', name: 'created_at', type: 'Date', width: '20ch' },
-	{ label: 'Modified', name: 'modified_at', type: 'Date', width: '20ch' },
+	{ label: 'Username', name: 'username', fieldtype: 'Data', width: '20ch' },
+	{ label: 'Disabled', name: 'disabled', fieldtype: 'Check', width: '10ch' },
+	{ label: 'Created', name: 'created_at', fieldtype: 'Date', width: '20ch' },
+	{ label: 'Modified', name: 'modified_at', fieldtype: 'Date', width: '20ch' },
 ]
 
 function handleNewUser() {

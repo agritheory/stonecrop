@@ -1,0 +1,51 @@
+{
+	"name": "Order",
+	"slug": "order",
+	"tableName": "orders",
+	"schema": [
+		{
+			"component": "ATable",
+			"columns": [
+				{
+					"name": "id",
+					"label": "ID",
+					"fieldtype": "Data",
+					"width": "8ch"
+				},
+				{
+					"name": "orderNumber",
+					"label": "Order No.",
+					"fieldtype": "Data",
+					"width": "14ch"
+				},
+				{
+					"name": "userId",
+					"label": "Customer",
+					"fieldtype": "Link",
+					"width": "10ch"
+				},
+				{
+					"name": "status",
+					"label": "Status",
+					"fieldtype": "Data",
+					"width": "12ch"
+				},
+				{
+					"name": "total",
+					"label": "Total",
+					"fieldtype": "Currency",
+					"width": "10ch"
+				},
+				{
+					"name": "createdAt",
+					"label": "Created",
+					"fieldtype": "Datetime",
+					"width": "18ch"
+				}
+			],
+			"config": {
+				"view": "list"
+			}
+		}
+	]
+}

@@ -25,7 +25,7 @@ describe('date component', () => {
 	it('date input is disabled by default', async () => {
 		const wrapper = mount(ADate, {
 			props: {
-				readonly: true,
+				readOnly: true,
 			},
 		})
 

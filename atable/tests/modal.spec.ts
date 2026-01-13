@@ -26,7 +26,7 @@ describe('table modal component', () => {
 		{
 			label: 'Home Page',
 			name: 'home_page',
-			type: 'Data',
+			fieldtype: 'Data',
 			align: 'left',
 			edit: false,
 			width: '35ch',
@@ -35,7 +35,7 @@ describe('table modal component', () => {
 		{
 			label: 'HTTP Method',
 			name: 'http_method',
-			type: 'Data',
+			fieldtype: 'Data',
 			align: 'left',
 			edit: true,
 			width: '20ch',
@@ -43,7 +43,7 @@ describe('table modal component', () => {
 		{
 			label: 'Report Date',
 			name: 'report_date',
-			type: 'component',
+			fieldtype: 'Date',
 			align: 'center',
 			edit: true,
 			width: '25ch',

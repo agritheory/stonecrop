@@ -1,0 +1,104 @@
+{
+	"name": "User",
+	"slug": "user/:id",
+	"tableName": "users",
+	"fields": [
+		{
+			"fieldname": "id",
+			"fieldtype": "Data",
+			"label": "ID",
+			"readOnly": true
+		},
+		{
+			"fieldname": "email",
+			"fieldtype": "Data",
+			"label": "Email",
+			"required": true,
+			"validation": {
+				"errorMessage": "Valid email is required"
+			}
+		},
+		{
+			"fieldname": "name",
+			"fieldtype": "Data",
+			"label": "Name",
+			"required": true,
+			"width": "30ch"
+		},
+		{
+			"fieldname": "role",
+			"fieldtype": "Select",
+			"label": "Role",
+			"options": ["ADMIN", "MANAGER", "USER", "GUEST"],
+			"default": "USER"
+		},
+		{
+			"fieldname": "status",
+			"fieldtype": "Select",
+			"label": "Status",
+			"options": ["ACTIVE", "SUSPENDED", "PENDING", "DELETED"],
+			"default": "PENDING"
+		},
+		{
+			"fieldname": "createdAt",
+			"fieldtype": "Datetime",
+			"label": "Created At",
+			"readOnly": true
+		},
+		{
+			"fieldname": "updatedAt",
+			"fieldtype": "Datetime",
+			"label": "Updated At",
+			"readOnly": true
+		},
+		{
+			"fieldname": "lastLogin",
+			"fieldtype": "Datetime",
+			"label": "Last Login",
+			"readOnly": true
+		},
+		{
+			"fieldname": "avatar",
+			"fieldtype": "Attach",
+			"label": "Avatar"
+		},
+		{
+			"fieldname": "bio",
+			"fieldtype": "Text",
+			"label": "Bio"
+		},
+		{
+			"fieldname": "phone",
+			"fieldtype": "Data",
+			"label": "Phone"
+		},
+		{
+			"fieldname": "address",
+			"fieldtype": "Text",
+			"label": "Address"
+		}
+	],
+	"workflow": {
+		"states": ["PENDING", "ACTIVE", "SUSPENDED", "DELETED"],
+		"actions": {
+			"activate": {
+				"label": "Activate User",
+				"handler": "activate_user",
+				"allowedStates": ["PENDING", "SUSPENDED"],
+				"confirm": true
+			},
+			"suspend": {
+				"label": "Suspend User",
+				"handler": "suspend_user",
+				"allowedStates": ["ACTIVE"],
+				"confirm": true
+			},
+			"delete": {
+				"label": "Delete User",
+				"handler": "delete_user",
+				"allowedStates": ["ACTIVE", "SUSPENDED", "PENDING"],
+				"confirm": true
+			}
+		}
+	}
+}

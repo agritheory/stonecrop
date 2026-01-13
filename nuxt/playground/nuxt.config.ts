@@ -9,6 +9,8 @@ export default defineNuxtConfig({
 	modules: [NuxtStonecrop],
 	devtools: { enabled: true },
 	compatibilityDate: '2024-12-13',
-	stonecrop: {},
+	stonecrop: {
+		docbuilder: true,
+	},
 	css: [themePath, '~/assets/styles/common.css'],
 })

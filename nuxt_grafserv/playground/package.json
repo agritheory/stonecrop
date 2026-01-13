@@ -1,0 +1,13 @@
+{
+	"private": true,
+	"name": "@stonecrop/nuxt-yoga-playground",
+	"type": "module",
+	"scripts": {
+		"dev": "nuxi dev --host",
+		"build": "nuxi build",
+		"generate": "nuxi generate"
+	},
+	"dependencies": {
+		"nuxt": "^4.1.2"
+	}
+}

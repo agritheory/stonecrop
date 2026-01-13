@@ -14,9 +14,9 @@ const mockVResizeObserver = {
 
 describe('ATableHeader component', () => {
 	const mockColumns: TableColumn[] = [
-		{ name: 'col1', label: 'Column 1', type: 'Data', align: 'left', edit: false, width: '100px' },
-		{ name: 'col2', label: 'Column 2', type: 'Data', align: 'center', edit: true, width: '150px' },
-		{ name: 'col3', label: '', type: 'Data', align: 'right', edit: false, width: '200px' },
+		{ name: 'col1', label: 'Column 1', fieldtype: 'Data', align: 'left', edit: false, width: '100px' },
+		{ name: 'col2', label: 'Column 2', fieldtype: 'Data', align: 'center', edit: true, width: '150px' },
+		{ name: 'col3', label: '', fieldtype: 'Data', align: 'right', edit: false, width: '200px' },
 	]
 
 	const mockRows = [{ col1: 'value1', col2: 'value2', col3: 'value3' }]

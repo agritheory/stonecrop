@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/casl-middleware",
+      "comment": "add CASL middleware package",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@stonecrop/casl-middleware"
+}

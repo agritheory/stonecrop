@@ -1,0 +1,91 @@
+{
+	"name": "@stonecrop/casl-middleware",
+	"version": "0.6.3",
+	"license": "MIT",
+	"type": "module",
+	"homepage": "https://github.com/agritheory/stonecrop#readme",
+	"author": {
+		"name": "Tyler Matteson",
+		"email": "support@agritheory.dev"
+	},
+	"description": "CASL authorization middleware for GraphQL servers",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/agritheory/stonecrop",
+		"directory": "casl_middleware"
+	},
+	"bugs": {
+		"url": "https://github.com/agritheory/stonecrop/issues"
+	},
+	"exports": {
+		".": {
+			"import": {
+				"types": "./dist/src/index.d.ts",
+				"default": "./dist/casl_middleware.js"
+			}
+		},
+		"./types": {
+			"import": "./dist/src/types/index.d.ts",
+			"require": "./dist/src/types/index.d.ts"
+		}
+	},
+	"typings": "./dist/src/index.d.ts",
+	"files": [
+		"dist/*",
+		"src/*"
+	],
+	"scripts": {
+		"_phase:build": "heft build && vite build && rushx docs",
+		"prepublish": "heft build && vite build && rushx docs",
+		"build": "heft build && vite build && rushx docs",
+		"dev": "vite",
+		"docs": "bash ../common/scripts/run-docs.sh aform",
+		"lint": "eslint .",
+		"preview": "vite preview",
+		"test": "vitest run --coverage.enabled false",
+		"test:watch": "vitest watch",
+		"test:coverage": "vitest run --coverage",
+		"test:ui": "vitest --ui"
+	},
+	"keywords": [
+		"casl",
+		"graphql",
+		"authorization",
+		"middleware",
+		"postgraphile",
+		"rockfoil"
+	],
+	"dependencies": {
+		"@casl/ability": "^6.7.5",
+		"graphql": "^16.12.0",
+		"graphql-tag": "^2.12.6",
+		"jsonwebtoken": "^9.0.3"
+	},
+	"devDependencies": {
+		"@graphql-tools/merge": "^9.1.7",
+		"@graphql-tools/schema": "^10.0.31",
+		"@graphql-tools/utils": "^11.0.0",
+		"@rushstack/heft": "^1.1.7",
+		"@types/node": "^22.19.5",
+		"@vitest/coverage-istanbul": "^4.0.17",
+		"eslint": "^9.39.2",
+		"graphql-middleware": "^6.1.35",
+		"graphql-yoga": "^5.18.0",
+		"jsdom": "^27.4.0",
+		"postgraphile": "^5.0.0-rc.3",
+		"stonecrop-rig": "workspace:*",
+		"typescript": "^5.9.3",
+		"vite": "^7.3.1",
+		"vitest": "^4.0.17",
+		"@types/jsonwebtoken": "~9.0.10"
+	},
+	"peerDependencies": {
+		"graphql-yoga": "^5.18.0",
+		"postgraphile": "^5.0.0-rc.3"
+	},
+	"peerDependenciesMeta": {
+		"postgraphile": {
+			"optional": true
+		}
+	}
+}

@@ -74,7 +74,7 @@ const columns: TableColumn[] = [
 	{
 		label: 'Home Page',
 		name: 'home_page',
-		type: 'Data',
+		fieldtype: 'Data',
 		align: 'left',
 		edit: false,
 		width: '40ch',
@@ -85,7 +85,7 @@ const columns: TableColumn[] = [
 	{
 		label: 'HTTP Method',
 		name: 'http_method',
-		type: 'Data',
+		fieldtype: 'Data',
 		align: 'left',
 		edit: true,
 		width: '20ch',
@@ -93,7 +93,7 @@ const columns: TableColumn[] = [
 	{
 		label: 'Report Date',
 		name: 'report_date',
-		type: 'component',
+		fieldtype: 'Date',
 		align: 'center',
 		edit: true,
 		width: '25ch',
@@ -106,7 +106,7 @@ const readonly_columns: TableColumn[] = [
 	{
 		label: 'Home Page',
 		name: 'home_page',
-		type: 'Data',
+		fieldtype: 'Data',
 		align: 'left',
 		edit: false,
 		width: '40ch',
@@ -115,7 +115,7 @@ const readonly_columns: TableColumn[] = [
 	{
 		label: 'HTTP Method',
 		name: 'http_method',
-		type: 'Data',
+		fieldtype: 'Data',
 		align: 'left',
 		edit: false,
 		width: '20ch',
@@ -123,12 +123,12 @@ const readonly_columns: TableColumn[] = [
 	{
 		label: 'Report Date',
 		name: 'report_date',
-		type: 'component',
+		fieldtype: 'Date',
 		align: 'center',
 		edit: false,
 		width: '25ch',
 		modalComponent: 'DateInput',
-		modalComponentExtraProps: { readonly: true },
+		modalComponentExtraProps: { readOnly: true },
 		format: (value: number) => new Date(value).toLocaleDateString('en-US'),
 	},
 ]
@@ -137,7 +137,7 @@ const columns_filterable: TableColumn[] = [
 	{
 		label: 'Home Page',
 		name: 'home_page',
-		type: 'Data',
+		fieldtype: 'Data',
 		align: 'left',
 		edit: false,
 		width: '40ch',
@@ -151,7 +151,7 @@ const columns_filterable: TableColumn[] = [
 	{
 		label: 'HTTP Method',
 		name: 'http_method',
-		type: 'Data',
+		fieldtype: 'Data',
 		align: 'left',
 		edit: true,
 		width: '20ch',
@@ -168,7 +168,7 @@ const columns_filterable: TableColumn[] = [
 	{
 		label: 'Status',
 		name: 'status',
-		type: 'Data',
+		fieldtype: 'Data',
 		align: 'center',
 		edit: true,
 		width: '15ch',
@@ -179,7 +179,7 @@ const columns_filterable: TableColumn[] = [
 	{
 		label: 'Report Date',
 		name: 'report_date',
-		type: 'component',
+		fieldtype: 'Date',
 		align: 'center',
 		edit: true,
 		width: '25ch',

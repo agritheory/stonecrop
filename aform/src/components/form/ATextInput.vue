@@ -5,7 +5,7 @@
 			v-model="inputText"
 			v-mask="mask"
 			class="aform_input-field"
-			:disabled="readonly"
+			:disabled="readOnly"
 			:maxlength="mask ? (maskFilled ? mask.length : undefined) : undefined"
 			:required="required" />
 		<label class="aform_field-label" :for="uuid">{{ label }} </label>
@@ -19,15 +19,7 @@ import { /* inject, */ ref } from 'vue'
 import { useStringMask as vMask } from '../../directives/mask'
 import { ComponentProps } from '../../types'
 
-const {
-	_schema, // don't remove to allow masking to work
-	label,
-	mask,
-	required,
-	readonly,
-	uuid,
-	validation = { errorMessage: '&nbsp;' },
-} = defineProps<ComponentProps>()
+const { label, mask, required, readOnly, uuid, validation = { errorMessage: '&nbsp;' } } = defineProps<ComponentProps>()
 
 // TODO: setup maskFilled as a computed property
 const maskFilled = ref(true)

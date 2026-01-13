@@ -7,7 +7,7 @@
 			v-model="childModels[key].value"
 			:schema="componentObj"
 			:data="formData[componentObj.fieldname]"
-			:readonly="readonly"
+			:readOnly="readOnly"
 			v-bind="componentProps(componentObj)">
 		</component>
 	</form>
@@ -19,10 +19,10 @@ import { ref, computed, watchEffect } from 'vue'
 import type { SchemaTypes } from '../types'
 
 const emit = defineEmits(['update:modelValue'])
-const { modelValue, data, readonly } = defineProps<{
+const { modelValue, data, readOnly } = defineProps<{
 	modelValue: SchemaTypes[]
 	data: Record<string, any>
-	readonly?: boolean
+	readOnly?: boolean
 }>()
 
 const formData = ref(data || {})

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/desktop",
+      "comment": "update schema + deps",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@stonecrop/desktop"
+}

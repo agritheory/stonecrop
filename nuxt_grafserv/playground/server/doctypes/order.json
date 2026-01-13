@@ -1,0 +1,73 @@
+{
+	"name": "Order",
+	"tableName": "orders",
+	"fields": [
+		{
+			"fieldname": "id",
+			"fieldtype": "Data",
+			"label": "ID",
+			"required": true
+		},
+		{
+			"fieldname": "userId",
+			"fieldtype": "Link",
+			"label": "User",
+			"required": true,
+			"options": {
+				"doctype": "User"
+			}
+		},
+		{
+			"fieldname": "status",
+			"fieldtype": "Select",
+			"label": "Status",
+			"required": true,
+			"options": {
+				"values": ["pending", "processing", "shipped", "completed", "cancelled"]
+			}
+		},
+		{
+			"fieldname": "total",
+			"fieldtype": "Currency",
+			"label": "Total",
+			"required": true
+		},
+		{
+			"fieldname": "items",
+			"fieldtype": "JSON",
+			"label": "Items"
+		},
+		{
+			"fieldname": "createdAt",
+			"fieldtype": "Datetime",
+			"label": "Created At"
+		}
+	],
+	"workflow": {
+		"states": ["pending", "processing", "shipped", "completed", "cancelled"],
+		"actions": {
+			"process": {
+				"label": "Start Processing",
+				"handler": "process_order",
+				"allowedStates": ["pending"]
+			},
+			"ship": {
+				"label": "Ship Order",
+				"handler": "ship_order",
+				"allowedStates": ["processing"]
+			},
+			"complete": {
+				"label": "Mark Completed",
+				"handler": "complete_order",
+				"allowedStates": ["shipped"]
+			},
+			"cancel": {
+				"label": "Cancel Order",
+				"handler": "cancel_order",
+				"allowedStates": ["pending", "processing"],
+				"confirm": true
+			}
+		}
+	},
+	"parentDoctype": "User"
+}

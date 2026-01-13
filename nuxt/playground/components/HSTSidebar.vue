@@ -50,20 +50,19 @@ defineProps<Props>()
 	min-height: 100vh;
 	max-height: 100vh;
 	overflow: hidden;
-	background: #f3f4f6;
-	border-left: 3px solid #e5e7eb;
+	background: var(--sc-gray-5);
+	border-left: 3px solid var(--sc-gray-10);
 	padding: 1.5rem;
 }
 
 .sidebar-section {
-	background: white;
-	border-radius: 0.5rem;
-	box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+	background: var(--sc-form-background);
+	border-radius: 0.25rem;
 	overflow: hidden;
 	display: flex;
 	flex-direction: column;
 	margin-bottom: 1.5rem;
-	border: 1px solid #e5e7eb;
+	border: 1px solid var(--sc-gray-10);
 }
 
 .sidebar-section:last-child {
@@ -85,9 +84,9 @@ defineProps<Props>()
 	margin: 0;
 	font-size: 0.875rem;
 	font-weight: 600;
-	color: #374151;
-	border-bottom: 1px solid #e5e7eb;
-	background: #f9fafb;
+	color: var(--sc-gray-80);
+	border-bottom: 1px solid var(--sc-gray-10);
+	background: var(--sc-gray-5);
 	text-transform: uppercase;
 	letter-spacing: 0.05em;
 }
@@ -97,7 +96,7 @@ defineProps<Props>()
 	flex: 1;
 	min-height: 0;
 	overflow: auto;
-	background: white;
+	background: var(--sc-form-background);
 }
 
 @media (max-width: 1024px) {
@@ -106,8 +105,8 @@ defineProps<Props>()
 		top: 0;
 		max-height: none;
 		border-left: none;
-		border-top: 3px solid #e5e7eb;
-		background: #f9fafb;
+		border-top: 3px solid var(--sc-gray-10);
+		background: var(--sc-gray-5);
 	}
 }
 </style>
