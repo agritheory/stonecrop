@@ -1,11 +1,12 @@
 import { join } from 'node:path'
 import { createResolver, defineNuxtModule, useLogger } from '@nuxt/kit'
+import type { NuxtModule } from '@nuxt/schema'
 
 import type { ModuleOptions } from './types'
 
 const logger = useLogger('nuxt-grafserv')
 
-export default defineNuxtModule<ModuleOptions>({
+const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
 	meta: {
 		name: 'nuxt-grafserv',
 		configKey: 'grafserv',
@@ -145,3 +146,5 @@ export default defineNuxtModule<ModuleOptions>({
 		logger.success('[@stonecrop/nuxt-grafserv] Module initialized')
 	},
 })
+
+export default module
