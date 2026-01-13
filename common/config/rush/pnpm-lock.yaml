@@ -1078,9 +1078,6 @@ importers:
       '@vitejs/plugin-vue':
         specifier: ^6.0.3
         version: 6.0.3(vite@7.3.1(@types/node@22.19.5)(jiti@2.6.1)(sass@1.97.2)(terser@5.44.1)(yaml@2.8.2))(vue@3.5.26(typescript@5.9.3))
-      '@vitest/coverage-istanbul':
-        specifier: ^4.0.17
-        version: 4.0.17(vitest@4.0.17)
       eslint:
         specifier: ^9.39.2
         version: 9.39.2(jiti@2.6.1)
@@ -1105,9 +1102,6 @@ importers:
       vite:
         specifier: ^7.3.1
         version: 7.3.1(@types/node@22.19.5)(jiti@2.6.1)(sass@1.97.2)(terser@5.44.1)(yaml@2.8.2)
-      vitest:
-        specifier: ^4.0.17
-        version: 4.0.17(@types/node@22.19.5)(@vitest/ui@4.0.17)(jiti@2.6.1)(jsdom@27.4.0)(sass@1.97.2)(terser@5.44.1)(yaml@2.8.2)
       vue-router:
         specifier: ^4.6.4
         version: 4.6.4(vue@3.5.26(typescript@5.9.3))

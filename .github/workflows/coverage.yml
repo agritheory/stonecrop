@@ -24,7 +24,6 @@ jobs:
           casl_middleware: casl_middleware/**
           rockfoil: rockfoil/**
           stonecrop: stonecrop/**
-          utilities: utilities/**
 
   coverage:
     name: ${{ matrix.package }} (${{ matrix.branch }})

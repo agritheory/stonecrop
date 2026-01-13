@@ -28,7 +28,6 @@ jobs:
           rockfoil: rockfoil/**
           schema: schema/**
           stonecrop: stonecrop/**
-          utilities: utilities/**
 
   test:
     name: ${{ matrix.package }}
