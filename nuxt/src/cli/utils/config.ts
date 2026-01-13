@@ -1,0 +1,184 @@
+/**
+ * Utilities for manipulating nuxt.config.ts
+ */
+
+import { readFile, writeFile } from 'node:fs/promises'
+import { existsSync } from 'node:fs'
+import { join } from 'pathe'
+import consola from 'consola'
+
+export interface NuxtConfigUpdate {
+	/** Module to add to the modules array */
+	module?: string
+	/** Module options to add (key in defineNuxtConfig) */
+	moduleOptions?: {
+		key: string
+		value: string
+	}
+	/** Import to add at the top of the file */
+	import?: string
+}
+
+/**
+ * Check if a module is already configured in nuxt.config.ts
+ */
+export async function hasModule(cwd: string, moduleName: string): Promise<boolean> {
+	const configPath = findNuxtConfig(cwd)
+	if (!configPath) return false
+
+	const content = await readFile(configPath, 'utf-8')
+
+	// Check for module in modules array
+	const modulePatterns = [
+		new RegExp(`['"\`]${escapeRegex(moduleName)}['"\`]`),
+		new RegExp(`from\\s+['"\`]${escapeRegex(moduleName)}['"\`]`),
+	]
+
+	return modulePatterns.some(pattern => pattern.test(content))
+}
+
+/**
+ * Find the nuxt.config file in the project
+ */
+export function findNuxtConfig(cwd: string): string | null {
+	const candidates = ['nuxt.config.ts', 'nuxt.config.js', 'nuxt.config.mjs']
+
+	for (const candidate of candidates) {
+		const fullPath = join(cwd, candidate)
+		if (existsSync(fullPath)) {
+			return fullPath
+		}
+	}
+
+	return null
+}
+
+/**
+ * Update nuxt.config.ts with new module configuration
+ *
+ * This uses string manipulation rather than AST parsing for simplicity
+ * and to preserve formatting/comments as much as possible.
+ */
+export async function updateNuxtConfig(cwd: string, updates: NuxtConfigUpdate): Promise<boolean> {
+	const configPath = findNuxtConfig(cwd)
+	if (!configPath) {
+		consola.error('Could not find nuxt.config.ts in', cwd)
+		return false
+	}
+
+	let content = await readFile(configPath, 'utf-8')
+	let modified = false
+
+	// Add import if specified
+	if (updates.import) {
+		if (!content.includes(updates.import)) {
+			// Find the first import or the start of the file
+			const importMatch = content.match(/^import\s+/m)
+			if (importMatch && importMatch.index !== undefined) {
+				// Add after existing imports
+				const lastImportMatch = content.match(/^import\s+.*$/gm)
+				if (lastImportMatch) {
+					const lastImport = lastImportMatch[lastImportMatch.length - 1]
+					const lastImportIndex = content.lastIndexOf(lastImport)
+					const insertIndex = lastImportIndex + lastImport.length
+					content = content.slice(0, insertIndex) + '\n' + updates.import + content.slice(insertIndex)
+				}
+			} else {
+				// Add at the start of the file
+				content = updates.import + '\n\n' + content
+			}
+			modified = true
+		}
+	}
+
+	// Add module to modules array
+	if (updates.module) {
+		const moduleEntry = updates.module
+
+		// Check if module is already present
+		if (!content.includes(moduleEntry)) {
+			// Find the modules array
+			const modulesMatch = content.match(/modules\s*:\s*\[/)
+			if (modulesMatch && modulesMatch.index !== undefined) {
+				// Find the closing bracket
+				const startIndex = modulesMatch.index + modulesMatch[0].length
+				const closingIndex = findMatchingBracket(content, startIndex - 1)
+
+				if (closingIndex !== -1) {
+					// Check if array is empty
+					const arrayContent = content.slice(startIndex, closingIndex).trim()
+					const separator = arrayContent.length > 0 ? ', ' : ''
+
+					content = content.slice(0, closingIndex) + separator + moduleEntry + content.slice(closingIndex)
+					modified = true
+				}
+			} else {
+				// modules array doesn't exist, we need to add it
+				const defineNuxtConfigMatch = content.match(/defineNuxtConfig\s*\(\s*\{/)
+				if (defineNuxtConfigMatch && defineNuxtConfigMatch.index !== undefined) {
+					const insertIndex = defineNuxtConfigMatch.index + defineNuxtConfigMatch[0].length
+					content = content.slice(0, insertIndex) + `\n\tmodules: [${moduleEntry}],` + content.slice(insertIndex)
+					modified = true
+				}
+			}
+		}
+	}
+
+	// Add module options
+	if (updates.moduleOptions) {
+		const { key, value } = updates.moduleOptions
+
+		// Check if the key already exists
+		const keyPattern = new RegExp(`${escapeRegex(key)}\\s*:`)
+		if (!keyPattern.test(content)) {
+			// Find defineNuxtConfig and add the option
+			const defineNuxtConfigMatch = content.match(/defineNuxtConfig\s*\(\s*\{/)
+			if (defineNuxtConfigMatch && defineNuxtConfigMatch.index !== undefined) {
+				// Find a good place to insert (after modules if it exists, otherwise at the start)
+				const modulesEndMatch = content.match(/modules\s*:\s*\[[^\]]*\]\s*,?/)
+				if (modulesEndMatch && modulesEndMatch.index !== undefined) {
+					const insertIndex = modulesEndMatch.index + modulesEndMatch[0].length
+					content = content.slice(0, insertIndex) + `\n\n\t${key}: ${value},` + content.slice(insertIndex)
+				} else {
+					const insertIndex = defineNuxtConfigMatch.index + defineNuxtConfigMatch[0].length
+					content = content.slice(0, insertIndex) + `\n\t${key}: ${value},` + content.slice(insertIndex)
+				}
+				modified = true
+			}
+		}
+	}
+
+	if (modified) {
+		await writeFile(configPath, content, 'utf-8')
+		consola.success(`Updated ${configPath}`)
+	}
+
+	return modified
+}
+
+/**
+ * Find the matching closing bracket
+ */
+function findMatchingBracket(content: string, openIndex: number): number {
+	const openChar = content[openIndex]
+	const closeChar = openChar === '[' ? ']' : openChar === '{' ? '}' : ')'
+
+	let depth = 1
+	let i = openIndex + 1
+
+	while (i < content.length && depth > 0) {
+		const char = content[i]
+		if (char === openChar) depth++
+		else if (char === closeChar) depth--
+		i++
+	}
+
+	return depth === 0 ? i - 1 : -1
+}
+
+/**
+ * Escape special regex characters
+ */
+function escapeRegex(str: string): string {
+	return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}

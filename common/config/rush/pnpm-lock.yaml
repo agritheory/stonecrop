@@ -730,9 +730,24 @@ importers:
       '@stonecrop/stonecrop':
         specifier: workspace:*
         version: link:../stonecrop
+      citty:
+        specifier: ^0.1.6
+        version: 0.1.6
+      consola:
+        specifier: ^3.4.0
+        version: 3.4.2
+      jiti:
+        specifier: ^2.4.2
+        version: 2.6.1
+      pathe:
+        specifier: ^2.0.3
+        version: 2.0.3
       pinia:
         specifier: ^3.0.4
         version: 3.0.4(typescript@5.9.3)(vue@3.5.26(typescript@5.9.3))
+      prompts:
+        specifier: ^2.4.2
+        version: 2.4.2
     devDependencies:
       '@eslint/js':
         specifier: ^9.39.2
@@ -755,6 +770,9 @@ importers:
       '@nuxt/test-utils':
         specifier: ^3.23.0
         version: 3.23.0(@vitest/ui@4.0.17)(@vue/test-utils@2.4.6)(jsdom@27.4.0)(magicast@0.5.1)(typescript@5.9.3)(vitest@4.0.17)
+      '@types/prompts':
+        specifier: ^2.4.9
+        version: 2.4.9
       baseline-browser-mapping:
         specifier: latest
         version: 2.9.11
@@ -3726,6 +3744,9 @@ packages:
 
   '@types/pluralize@0.0.33':
     resolution: {integrity: sha512-JOqsl+ZoCpP4e8TDke9W79FDcSgPAR0l6pixx2JHkhnRjvShyYiAYw2LVsnA7K08Y6DeOnaU6ujmENO4os/cYg==}
+
+  '@types/prompts@2.4.9':
+    resolution: {integrity: sha512-qTxFi6Buiu8+50/+3DGIWLHM6QuWsEKugJnnP6iv2Mc4ncxE4A/OJkjuVOA+5X0X1S/nq5VJRa8Lu+nwcvbrKA==}
 
   '@types/readable-stream@4.0.23':
     resolution: {integrity: sha512-wwXrtQvbMHxCbBgjHaMGEmImFTQxxpfMOR/ZoQnXxB1woqkUbdLGFDgauo00Py9IudiaqSeiBiulSV9i6XIPig==}
@@ -11126,6 +11147,11 @@ snapshots:
       pg-types: 2.2.0
 
   '@types/pluralize@0.0.33': {}
+
+  '@types/prompts@2.4.9':
+    dependencies:
+      '@types/node': 22.19.5
+      kleur: 3.0.3
 
   '@types/readable-stream@4.0.23':
     dependencies:

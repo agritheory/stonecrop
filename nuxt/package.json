@@ -13,6 +13,9 @@
 		"url": "https://github.com/agritheory/stonecrop",
 		"directory": "nuxt"
 	},
+	"bin": {
+		"stonecrop-nuxt": "./bin/init.mjs"
+	},
 	"exports": {
 		".": {
 			"types": "./dist/types.d.mts",
@@ -28,7 +31,10 @@
 		}
 	},
 	"files": [
-		"dist"
+		"dist",
+		"bin",
+		"templates",
+		"src/cli"
 	],
 	"scripts": {
 		"_phase:build": "rushx dev:prepare && nuxt-module-build build",
@@ -58,7 +64,12 @@
 		"@stonecrop/nuxt-grafserv": "workspace:*",
 		"@stonecrop/schema": "workspace:*",
 		"@stonecrop/stonecrop": "workspace:*",
-		"pinia": "^3.0.4"
+		"pinia": "^3.0.4",
+		"citty": "^0.1.6",
+		"consola": "^3.4.0",
+		"jiti": "^2.4.2",
+		"pathe": "^2.0.3",
+		"prompts": "^2.4.2"
 	},
 	"devDependencies": {
 		"@eslint/js": "^9.39.2",
@@ -68,6 +79,7 @@
 		"@nuxt/module-builder": "^1.0.2",
 		"@nuxt/schema": "^4.2.2",
 		"@nuxt/test-utils": "^3.23.0",
+		"@types/prompts": "^2.4.9",
 		"browserslist": "latest",
 		"baseline-browser-mapping": "latest",
 		"eslint": "^9.39.2",
