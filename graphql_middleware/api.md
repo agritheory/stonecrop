@@ -116,7 +116,7 @@ Create a PostGraphile plugin that extends the GraphQL schema with Stonecrop func
 **Signature:**
 
 ```typescript
-createStonecropPlugin: (options: StonecropPluginOptions) => ReturnType<typeof makeExtendSchemaPlugin>
+createStonecropPlugin: (options: StonecropPluginOptions) => GraphileConfig.Plugin
 ```
 
 **Parameters:**

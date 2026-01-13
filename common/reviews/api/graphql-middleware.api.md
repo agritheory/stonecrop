@@ -4,7 +4,7 @@
 
 ```ts
 
-import { makeExtendSchemaPlugin } from 'postgraphile/utils';
+import { GraphileConfig as GraphileConfig_2 } from 'postgraphile/graphile-build';
 import { z } from 'zod';
 
 // @public
@@ -84,7 +84,7 @@ export interface ConvertedDoctype extends Omit<DoctypeMeta, 'fields'> {
 export function convertSchema(sql: string, options?: ConversionOptions): ConvertedDoctype[];
 
 // @public
-export const createStonecropPlugin: (options: StonecropPluginOptions) => ReturnType<typeof makeExtendSchemaPlugin>;
+export const createStonecropPlugin: (options: StonecropPluginOptions) => GraphileConfig_2.Plugin;
 
 // @public
 export const DoctypeMeta: z.ZodObject<{
