@@ -76,6 +76,7 @@ export const PostgresType = z.enum([
 	'unknown',
 ])
 
+/** @public */
 export type PostgresType = z.infer<typeof PostgresType>
 
 /**
@@ -112,7 +113,7 @@ export interface ParsedTable {
 	inherits?: string[]
 	/** Table comment from COMMENT ON TABLE statement */
 	comment?: string
-	/** Doctype name extracted from comment (if using @doctype convention) */
+	/** Doctype name extracted from comment (if using \@doctype convention) */
 	doctypeName?: string
 }
 
