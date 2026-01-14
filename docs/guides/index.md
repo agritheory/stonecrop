@@ -36,6 +36,5 @@ Guides are being developed based on common questions and use cases. Planned topi
 ## Quick Links
 
 - [API Reference](/reference/) — Technical documentation for all packages
-- [Architecture](/explanation/architecture) — Understand the system design
-- [State Machines](/explanation/state-machines) — XState integration patterns
-
+- [Core Concepts](/explanation/core-concepts) — Understand the system design
+- [Doctypes](/explanation/doctype) — Document types and workflows

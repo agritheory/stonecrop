@@ -21,6 +21,5 @@ Tutorials are being developed. Check back soon for:
 While tutorials are in development, you can explore:
 
 - [API Reference](/reference/) — Technical documentation for all packages
-- [Architecture](/explanation/architecture) — Understand the system design
-- [HST Design](/explanation/hst-design) — Learn about state management
-
+- [Core Concepts](/explanation/core-concepts) — Understand HST and system architecture
+- [Doctypes](/explanation/doctype) — Document types and workflows
