@@ -142,7 +142,7 @@ MIT License
 
 ## TODOs
 
-- [ ] Add comprehensive test suite
+- [ ] Add test suite
 - [ ] Add more framework integrations
 - [ ] Implement ability persistence
 - [ ] Add more examples for different use cases

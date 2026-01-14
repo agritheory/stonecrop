@@ -319,6 +319,10 @@
       "allowedCategories": [ "production", "prototype" ]
     },
     {
+      "name": "mermaid",
+      "allowedCategories": [ "documentation" ]
+    },
+    {
       "name": "miragejs",
       "allowedCategories": [ "prototype", "utilities" ]
     },
@@ -411,6 +415,10 @@
       "allowedCategories": [ "prototype" ]
     },
     {
+      "name": "search-insights",
+      "allowedCategories": [ "documentation" ]
+    },
+    {
       "name": "stonecrop-rig",
       "allowedCategories": [ "production", "prototype", "utilities" ]
     },
@@ -449,6 +457,14 @@
     {
       "name": "vite-plugin-lib-inject-css",
       "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "vitepress",
+      "allowedCategories": [ "documentation" ]
+    },
+    {
+      "name": "vitepress-plugin-mermaid",
+      "allowedCategories": [ "documentation" ]
     },
     {
       "name": "vitest",

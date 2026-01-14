@@ -16,20 +16,22 @@
 		"dist"
 	],
 	"scripts": {
-		"_phase:build": "vite build",
-		"prepublish": "vite build",
-		"build": "vite build",
+		"_phase:build": "heft build && vite build && rushx docs",
+		"prepublish": "heft build && vite build && rushx docs",
+		"build": "heft build && vite build && rushx docs",
+		"docs": "bash ../common/scripts/run-docs.sh graphql_middleware",
 		"test": "vitest run",
 		"test:watch": "vitest"
 	},
 	"dependencies": {
 		"@stonecrop/schema": "workspace:*",
 		"graphql": "^16.12.0",
-		"postgraphile": "^5.0.0-rc.3",
-		"zod": "^3.25.76"
+		"postgraphile": "^5.0.0-rc.3"
 	},
 	"devDependencies": {
+		"@rushstack/heft": "^1.1.7",
 		"@types/node": "^22.19.5",
+		"stonecrop-rig": "workspace:*",
 		"typescript": "^5.9.3",
 		"vite": "^7.3.1",
 		"vite-plugin-dts": "^4.5.4",

@@ -1,0 +1,114 @@
+/**
+ * CSS Reset for Histoire Sandbox
+ * Prevents VitePress/external styles from leaking into component previews
+ */
+
+/* Reset VitePress CSS variables that might leak */
+:root,
+:host,
+.histoire-story-render-container,
+[data-v-app] {
+	/* Unset VitePress variables */
+	--vp-c-bg: initial;
+	--vp-c-bg-soft: initial;
+	--vp-c-bg-mute: initial;
+	--vp-c-text-1: initial;
+	--vp-c-text-2: initial;
+	--vp-c-text-3: initial;
+	--vp-c-brand-1: initial;
+	--vp-c-brand-2: initial;
+	--vp-c-divider: initial;
+}
+
+/* Histoire sandbox container reset */
+.histoire-story-render-container,
+.__histoire-sandbox,
+[data-histoire-id] {
+	all: initial;
+	display: block;
+	font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+	font-size: 16px;
+	line-height: 1.5;
+	color: #333;
+	background: #fff;
+	box-sizing: border-box;
+}
+
+/* Ensure all children use border-box */
+.histoire-story-render-container *,
+.histoire-story-render-container *::before,
+.histoire-story-render-container *::after,
+.__histoire-sandbox *,
+.__histoire-sandbox *::before,
+.__histoire-sandbox *::after {
+	box-sizing: border-box;
+}
+
+/* Reset typography */
+.histoire-story-render-container h1,
+.histoire-story-render-container h2,
+.histoire-story-render-container h3,
+.histoire-story-render-container h4,
+.histoire-story-render-container h5,
+.histoire-story-render-container h6 {
+	margin: 0;
+	font-weight: 600;
+	line-height: 1.25;
+	border: none;
+	padding: 0;
+}
+
+.histoire-story-render-container p {
+	margin: 0;
+}
+
+.histoire-story-render-container a {
+	color: inherit;
+	text-decoration: none;
+}
+
+/* Reset form elements */
+.histoire-story-render-container button,
+.histoire-story-render-container input,
+.histoire-story-render-container textarea,
+.histoire-story-render-container select {
+	font-family: inherit;
+	font-size: inherit;
+	line-height: inherit;
+	color: inherit;
+	background: initial;
+	border: initial;
+	padding: initial;
+	margin: initial;
+}
+
+.histoire-story-render-container button {
+	cursor: pointer;
+}
+
+/* Reset table */
+.histoire-story-render-container table {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+
+.histoire-story-render-container th,
+.histoire-story-render-container td {
+	padding: 0;
+	border: none;
+}
+
+/* Reset images */
+.histoire-story-render-container img,
+.histoire-story-render-container svg {
+	max-width: 100%;
+	height: auto;
+}
+
+/* Reset lists */
+.histoire-story-render-container ul,
+.histoire-story-render-container ol {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}

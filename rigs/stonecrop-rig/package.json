@@ -1,6 +1,6 @@
 {
 	"name": "stonecrop-rig",
-	"version": "0.2.22",
+	"version": "0.7.0",
 	"description": "Rig setup for Stonecrop monorepo",
 	"license": "MIT",
 	"private": "true",

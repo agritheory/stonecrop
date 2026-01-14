@@ -2,6 +2,7 @@ import type { IClientOptions } from 'mqtt'
 import { CSSProperties } from 'vue'
 
 /**
+ * Configuration object for ListView component items
  * @public
  */
 export type ListViewItem = {
@@ -22,11 +23,13 @@ export type ListViewItem = {
 }
 
 /**
+ * Union type for color values - supports RGB, RGBA, HEX, HSL, HSLA, or CSS color string
  * @public
  */
 export type BeamColor = RGB | RGBA | HEX | HSL | HSLA | CSSProperties['color']
 
 /**
+ * Filter choice with label and value for BeamFilter component
  * @public
  */
 export type BeamFilterChoice = {
@@ -69,5 +72,6 @@ export type HEX = `#${string}`
  * @public
  */
 export interface IMqttStream extends IClientOptions {
+	/** MQTT topics to subscribe to */
 	topics?: string[]
 }

@@ -1,6 +1,6 @@
 import { parseDDL } from './parser'
 import { mapColumnToField } from './type-map'
-import { toPascalCase, toSlug, convertSQLName } from './naming'
+import { toPascalCase, toSlug } from './naming'
 import type { DoctypeMeta } from '../doctype'
 import type { ParsedTable, ConversionOptions, ConversionFieldMeta } from './postgres-types'
 
@@ -9,11 +9,14 @@ import type { ParsedTable, ConversionOptions, ConversionFieldMeta } from './post
  * @public
  */
 export interface ConvertedDoctype extends Omit<DoctypeMeta, 'fields'> {
+	/** Field definitions with optional conversion metadata */
 	fields: ConversionFieldMeta[]
 }
 
 /**
  * Convert PostgreSQL DDL to Stonecrop doctype schemas
+ * @param sql - PostgreSQL DDL statements to convert
+ * @param options - Conversion options for controlling output format
  * @public
  */
 export function convertSchema(

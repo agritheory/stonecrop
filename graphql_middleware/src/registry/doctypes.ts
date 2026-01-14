@@ -6,14 +6,27 @@ import type { DoctypeMeta, ValidationError } from '../types'
 
 const doctypeRegistry: Map<string, DoctypeMeta> = new Map()
 
+/**
+ * Error thrown when a doctype definition fails validation
+ * @public
+ */
 export class DoctypeValidationError extends Error {
-	constructor(public readonly file: string, public readonly errors: ValidationError[]) {
+	constructor(
+		/** File path or name where the validation error occurred */
+		public readonly file: string,
+		/** List of validation errors found */
+		public readonly errors: ValidationError[]
+	) {
 		const errorMessages = errors.map(e => `  ${e.path.join('.')}: ${e.message}`).join('\n')
 		super(`Invalid doctype definition in ${file}:\n${errorMessages}`)
 		this.name = 'DoctypeValidationError'
 	}
 }
 
+/**
+ * Options for loading doctype definitions
+ * @public
+ */
 export interface LoadDoctypesOptions {
 	/** Continue loading other files if one fails validation */
 	continueOnError?: boolean
@@ -23,6 +36,9 @@ export interface LoadDoctypesOptions {
 
 /**
  * Load doctype definitions from a directory of JSON files
+ * @param dir - Directory path containing doctype JSON files
+ * @param options - Options for loading doctypes (continueOnError, onError callback)
+ * @public
  */
 export function loadDoctypes(dir: string, options: LoadDoctypesOptions = {}): void {
 	const entries = readdirSync(dir)
@@ -77,6 +93,9 @@ function loadDoctypeFile(filePath: string, options: LoadDoctypesOptions): void {
 
 /**
  * Load doctypes from an object (for programmatic use)
+ * @param doctypes - Object mapping doctype names to doctype definitions
+ * @param options - Options for loading doctypes (continueOnError, onError callback)
+ * @public
  */
 export function loadDoctypesFromObject(doctypes: Record<string, unknown>, options: LoadDoctypesOptions = {}): void {
 	for (const [name, data] of Object.entries(doctypes)) {
@@ -98,6 +117,8 @@ export function loadDoctypesFromObject(doctypes: Record<string, unknown>, option
 
 /**
  * Get a doctype by name
+ * @param name - Name of the doctype to retrieve
+ * @public
  */
 export function getMeta(name: string): DoctypeMeta | undefined {
 	return doctypeRegistry.get(name)
@@ -105,6 +126,7 @@ export function getMeta(name: string): DoctypeMeta | undefined {
 
 /**
  * Get all loaded doctypes
+ * @public
  */
 export function getAllMeta(): DoctypeMeta[] {
 	return Array.from(doctypeRegistry.values())
@@ -112,6 +134,8 @@ export function getAllMeta(): DoctypeMeta[] {
 
 /**
  * Check if a doctype is registered
+ * @param name - Name of the doctype to check
+ * @public
  */
 export function hasMeta(name: string): boolean {
 	return doctypeRegistry.has(name)
@@ -119,6 +143,7 @@ export function hasMeta(name: string): boolean {
 
 /**
  * Clear all registered doctypes
+ * @public
  */
 export function clearRegistry(): void {
 	doctypeRegistry.clear()
@@ -127,6 +152,7 @@ export function clearRegistry(): void {
 /**
  * Validate cross-doctype references (Link fields, inherits, etc.)
  * Call after all doctypes are loaded.
+ * @public
  */
 export function validateReferences(): ValidationError[] {
 	const errors: ValidationError[] = []

@@ -1,4 +1,10 @@
-import { AbilityBuilder, PureAbility, type AbilityClass, type FieldMatcher, type ConditionsMatcher } from '@casl/ability'
+import {
+	AbilityBuilder,
+	PureAbility,
+	type AbilityClass,
+	type FieldMatcher,
+	type ConditionsMatcher,
+} from '@casl/ability'
 
 import type { Context } from '../types'
 

@@ -135,3 +135,13 @@ tsdoc-metadata.json
 .vercel_build_output
 .build-*
 .netlify
+
+# AI agent instruction files (local only)
+**/AGENTS.md
+
+# VitePress build output
+docs/.vitepress/dist/
+docs/.vitepress/cache/
+
+# Histoire build output (generated from examples)
+docs/public/stories/

@@ -42,11 +42,11 @@
 		{
 			"name": "docs",
 			"commandKind": "bulk",
-			"summary": "Generate consolidated documentation for all projects",
-			"description": "Generates consolidated TypeScript API documentation for all projects. Creates comprehensive markdown documentation from TypeScript API models, with graceful handling for projects without API exports.",
-			"safeForSimultaneousRushProcesses": true,
+			"summary": "Generate API documentation for all projects",
+			"description": "Generates individual api.md files for all projects. Use 'bash common/scripts/docs-full.sh' to include aggregation.",
+			"enableParallelism": true,
 			"ignoreMissingScript": true,
-			"enableParallelism": true
+			"allowWarningsInSuccessfulBuild": true
 		},
 		{
 			"commandKind": "phased",

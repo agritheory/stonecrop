@@ -26,6 +26,10 @@ export const ActionDefinition = z.object({
 	args: z.record(z.string(), z.unknown()).optional(),
 })
 
+/**
+ * Action definition type inferred from Zod schema
+ * @public
+ */
 export type ActionDefinition = z.infer<typeof ActionDefinition>
 
 /**
@@ -40,6 +44,10 @@ export const WorkflowMeta = z.object({
 	actions: z.record(z.string(), ActionDefinition).optional(),
 })
 
+/**
+ * Workflow metadata type inferred from Zod schema
+ * @public
+ */
 export type WorkflowMeta = z.infer<typeof WorkflowMeta>
 
 /**
@@ -72,4 +80,8 @@ export const DoctypeMeta = z.object({
 	parentDoctype: z.string().optional(),
 })
 
+/**
+ * Doctype metadata type inferred from Zod schema
+ * @public
+ */
 export type DoctypeMeta = z.infer<typeof DoctypeMeta>

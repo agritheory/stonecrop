@@ -1,16 +1,28 @@
-import { makeExtendSchemaPlugin, gql } from 'postgraphile/utils'
-import { context, object } from 'postgraphile/grafast'
+import { extendSchema, gql } from 'postgraphile/utils'
+import { constant, lambda, object, loadOne } from 'postgraphile/grafast'
+import { GraphileConfig } from 'postgraphile/graphile-build'
 
-import { getMeta, getAllMeta, hasMeta } from '../registry/doctypes'
 import { getHandler } from '../registry/actions'
+import { getMeta, getAllMeta } from '../registry/doctypes'
 import type { ActionContext, DoctypeMeta, GraphQLExecutor } from '../types'
 
+/**
+ * Options for creating a Stonecrop PostGraphile plugin
+ * @public
+ */
 export interface StonecropPluginOptions {
+	/** GraphQL executor for running queries/mutations */
 	executor: GraphQLExecutor
 }
 
-export const createStonecropPlugin = (options: StonecropPluginOptions) => {
-	return makeExtendSchemaPlugin(() => {
+/**
+ * Create a PostGraphile plugin that extends the GraphQL schema with Stonecrop functionality
+ * @param options - Plugin configuration options
+ * @returns A PostGraphile plugin
+ * @public
+ */
+export const createStonecropPlugin = (options: StonecropPluginOptions): GraphileConfig.Plugin => {
+	return extendSchema(() => {
 		return {
 			typeDefs: gql`
 				scalar JSON
@@ -75,114 +87,170 @@ export const createStonecropPlugin = (options: StonecropPluginOptions) => {
 				}
 			`,
 
-			resolvers: {
+			objects: {
 				Query: {
-					stonecropMeta(_parent, args: { doctype: string }) {
-						return getMeta(args.doctype) ?? null
-					},
+					plans: {
+						stonecropMeta(_plan: any, fieldArgs: any) {
+							const $doctype = fieldArgs.getRaw().doctype
+							return lambda($doctype, doctype => {
+								const meta = getMeta(doctype as string)
+								return meta ?? null
+							})
+						},
 
-					stonecropAllMeta() {
-						return getAllMeta()
-					},
+						stonecropAllMeta() {
+							return constant(getAllMeta())
+						},
 
-					async stonecropRecord(_parent, args: { doctype: string; id: string }) {
-						const meta = getMeta(args.doctype)
-						if (!meta) {
-							throw new Error(`Unknown doctype: ${args.doctype}`)
-						}
+						stonecropRecord(_plan: any, fieldArgs: any) {
+							const $doctype = fieldArgs.getRaw().doctype
+							const $id = fieldArgs.getRaw().id
 
-						if (!meta.tableName) {
-							throw new Error(`Doctype ${args.doctype} has no table mapping`)
-						}
+							return loadOne(object({ doctype: $doctype, id: $id }), async (specs: readonly any[]) => {
+								return await Promise.all(
+									specs.map(async spec => {
+										const meta = getMeta(spec.doctype)
+										if (!meta) {
+											throw new Error(`Unknown doctype: ${spec.doctype}`)
+										}
 
-						const query = buildRecordQuery(meta)
-						const result = await options.executor.query(query, { id: args.id })
+										if (!meta.tableName) {
+											throw new Error(`Doctype ${spec.doctype} has no table mapping`)
+										}
 
-						return {
-							data: extractSingleResult(result, meta),
-							doctype: args.doctype,
-						}
-					},
+										const query = buildRecordQuery(meta)
+										const result = await options.executor.query(query, { id: spec.id })
 
-					async stonecropRecords(
-						_parent,
-						args: {
-							doctype: string
-							filters?: Record<string, unknown>
-							orderBy?: string
-							limit?: number
-							offset?: number
-						}
-					) {
-						const meta = getMeta(args.doctype)
-						if (!meta) {
-							throw new Error(`Unknown doctype: ${args.doctype}`)
-						}
+										return {
+											data: extractSingleResult(result, meta),
+											doctype: spec.doctype,
+										}
+									})
+								)
+							})
+						},
 
-						if (!meta.tableName) {
-							throw new Error(`Doctype ${args.doctype} has no table mapping`)
-						}
+						stonecropRecords(_plan: any, fieldArgs: any) {
+							const $args = fieldArgs.getRaw()
+							const $doctype = $args.doctype
+							const $filters = $args.filters
+							const $orderBy = $args.orderBy
+							const $limit = $args.limit
+							const $offset = $args.offset
 
-						const query = buildListQuery(meta, args)
-						const result = await options.executor.query(query, args)
-						const data = extractListResult(result, meta)
+							return loadOne(
+								object({
+									doctype: $doctype,
+									filters: $filters,
+									orderBy: $orderBy,
+									limit: $limit,
+									offset: $offset,
+								}),
+								async (specs: readonly any[]) => {
+									return await Promise.all(
+										specs.map(async spec => {
+											const meta = getMeta(spec.doctype)
+											if (!meta) {
+												throw new Error(`Unknown doctype: ${spec.doctype}`)
+											}
 
-						return {
-							data,
-							doctype: args.doctype,
-							count: data.length,
-						}
+											if (!meta.tableName) {
+												throw new Error(`Doctype ${spec.doctype} has no table mapping`)
+											}
+
+											const query = buildListQuery(meta, {
+												limit: spec.limit,
+												offset: spec.offset,
+												orderBy: spec.orderBy,
+											})
+											const result = await options.executor.query(query, {
+												limit: spec.limit,
+												offset: spec.offset,
+												orderBy: spec.orderBy,
+											})
+											const data = extractListResult(result, meta)
+
+											return {
+												data,
+												doctype: spec.doctype,
+												count: data.length,
+											}
+										})
+									)
+								}
+							)
+						},
 					},
 				},
 
 				Mutation: {
-					async stonecropAction(_parent, args: { doctype: string; action: string; args?: unknown[] }) {
-						const meta = getMeta(args.doctype)
-						if (!meta) {
-							return {
-								success: false,
-								data: null,
-								error: `Unknown doctype: ${args.doctype}`,
-							}
-						}
+					plans: {
+						stonecropAction(_plan: any, fieldArgs: any) {
+							const $args = fieldArgs.getRaw()
+							const $doctype = $args.doctype
+							const $action = $args.action
+							const $actionArgs = $args.args
 
-						const actionDef = meta.workflow?.actions?.[args.action]
-						if (!actionDef) {
-							return {
-								success: false,
-								data: null,
-								error: `Unknown action: ${args.action} on ${args.doctype}`,
-							}
-						}
+							return loadOne(
+								object({
+									doctype: $doctype,
+									action: $action,
+									actionArgs: $actionArgs,
+								}),
+								async (specs: readonly any[]) => {
+									return await Promise.all(
+										specs.map(async spec => {
+											const meta = getMeta(spec.doctype)
+											if (!meta) {
+												return {
+													success: false,
+													data: null,
+													error: `Unknown doctype: ${spec.doctype}`,
+												}
+											}
 
-						const handler = getHandler(actionDef.handler)
-						if (!handler) {
-							return {
-								success: false,
-								data: null,
-								error: `Handler not registered: ${actionDef.handler}`,
-							}
-						}
+											const actionDef = meta.workflow?.actions?.[spec.action]
+											if (!actionDef) {
+												return {
+													success: false,
+													data: null,
+													error: `Unknown action: ${spec.action} on ${spec.doctype}`,
+												}
+											}
 
-						const actionContext: ActionContext = {
-							doctype: meta,
-							executor: options.executor,
-						}
+											const handler = getHandler(actionDef.handler)
+											if (!handler) {
+												return {
+													success: false,
+													data: null,
+													error: `Handler not registered: ${actionDef.handler}`,
+												}
+											}
 
-						try {
-							const result = await handler(args.args ?? [], actionContext)
-							return {
-								success: true,
-								data: result,
-								error: null,
-							}
-						} catch (err) {
-							return {
-								success: false,
-								data: null,
-								error: err instanceof Error ? err.message : String(err),
-							}
-						}
+											const actionContext: ActionContext = {
+												doctype: meta,
+												executor: options.executor,
+											}
+
+											try {
+												const result = await handler(spec.actionArgs ?? [], actionContext)
+												return {
+													success: true,
+													data: result,
+													error: null,
+												}
+											} catch (err) {
+												return {
+													success: false,
+													data: null,
+													error: err instanceof Error ? err.message : String(err),
+												}
+											}
+										})
+									)
+								}
+							)
+						},
 					},
 				},
 			},
@@ -213,12 +281,12 @@ function buildRecordQuery(meta: DoctypeMeta): string {
 	const queryName = `${toSingularName(meta.tableName!)}ById`
 
 	return `
-    query GetRecord($id: UUID!) {
-      ${queryName}(id: $id) {
-        ${fieldNames}
-      }
-    }
-  `
+		query GetRecord($id: UUID!) {
+			${queryName}(id: $id) {
+				${fieldNames}
+			}
+		}
+	`
 }
 
 function buildListQuery(meta: DoctypeMeta, args: { limit?: number; offset?: number; orderBy?: string }): string {
@@ -233,14 +301,14 @@ function buildListQuery(meta: DoctypeMeta, args: { limit?: number; offset?: numb
 	const argsStr = queryArgs.length > 0 ? `(${queryArgs.join(', ')})` : ''
 
 	return `
-    query GetRecords($limit: Int, $offset: Int, $orderBy: [${toCamelCase(meta.tableName!)}OrderBy!]) {
-      ${connectionName}${argsStr} {
-        nodes {
-          ${fieldNames}
-        }
-      }
-    }
-  `
+		query GetRecords($limit: Int, $offset: Int, $orderBy: [${toCamelCase(meta.tableName!)}OrderBy!]) {
+			${connectionName}${argsStr} {
+				nodes {
+				${fieldNames}
+				}
+			}
+		}
+	`
 }
 
 function extractSingleResult(result: unknown, meta: DoctypeMeta): unknown {

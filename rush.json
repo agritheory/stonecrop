@@ -123,6 +123,12 @@
 			"projectFolder": "rigs/stonecrop-rig",
 			"reviewCategory": "utilities",
 			"shouldPublish": false
+		},
+		{
+			"packageName": "@stonecrop/docs",
+			"projectFolder": "docs",
+			"reviewCategory": "documentation",
+			"shouldPublish": false
 		}
 	]
 }

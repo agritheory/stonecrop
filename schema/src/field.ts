@@ -8,17 +8,21 @@ import { StonecropFieldType } from './fieldtype'
  * Usage by fieldtype:
  * - Link/Doctype: target doctype slug as string ("customer", "sales-order-item")
  * - Select: array of choices (["Draft", "Submitted", "Cancelled"])
- * - Decimal: config object ({ precision: 10, scale: 2 })
- * - Code: config object ({ language: "python" })
+ * - Decimal: config object (\{ precision: 10, scale: 2 \})
+ * - Code: config object (\{ language: "python" \})
  *
  * @public
  */
 export const FieldOptions = z.union([
 	z.string(), // Link/Doctype target: "customer"
 	z.array(z.string()), // Select choices: ["A", "B", "C"]
-	z.record(z.string(), z.unknown()), // Config: { precision: 10, scale: 2 }
+	z.record(z.string(), z.unknown()), // Config: \{ precision: 10, scale: 2 \}
 ])
 
+/**
+ * Field options type inferred from Zod schema
+ * @public
+ */
 export type FieldOptions = z.infer<typeof FieldOptions>
 
 /**
@@ -32,6 +36,10 @@ export const FieldValidation = z
 	})
 	.passthrough()
 
+/**
+ * Field validation type inferred from Zod schema
+ * @public
+ */
 export type FieldValidation = z.infer<typeof FieldValidation>
 
 /**
@@ -96,8 +104,8 @@ export const FieldMeta = z.object({
 	 * - Link: target doctype slug ("customer")
 	 * - Doctype: child doctype slug ("sales-order-item")
 	 * - Select: choices array (["Draft", "Submitted"])
-	 * - Decimal: { precision, scale }
-	 * - Code: { language }
+	 * - Decimal: \{ precision, scale \}
+	 * - Code: \{ language \}
 	 */
 	options: FieldOptions.optional(),
 
@@ -110,4 +118,8 @@ export const FieldMeta = z.object({
 	validation: FieldValidation.optional(),
 })
 
+/**
+ * Field metadata type inferred from Zod schema
+ * @public
+ */
 export type FieldMeta = z.infer<typeof FieldMeta>

@@ -30,6 +30,7 @@ function extractDoctypeName(comment: string): string | undefined {
 
 /**
  * Parse PostgreSQL DDL and extract table definitions
+ * @param sql - PostgreSQL DDL statements to parse
  * @public
  */
 export function parseDDL(sql: string): ParsedTable[] {
