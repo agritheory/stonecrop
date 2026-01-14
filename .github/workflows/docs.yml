@@ -19,7 +19,7 @@ permissions:
 
 # Allow only one concurrent deployment
 concurrency:
-  group: pages
+  group: ${{ github.workflow }}-pages
   cancel-in-progress: false
 
 jobs:
@@ -51,7 +51,7 @@ jobs:
         run: node common/scripts/install-run-rush.js rebuild --verbose
 
       - name: Build Histoire Stories + Vitepress
-        working-directory: ./examples
+        working-directory: ./docs
         run: node ../common/scripts/install-run-rushx.js build:full
 
       - name: Setup Pages
@@ -63,12 +63,13 @@ jobs:
           path: docs/.vitepress/dist
 
   deploy:
+    needs: build
     name: Deploy to GitHub Pages
+    runs-on: ubuntu-latest
+
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    needs: build
-    runs-on: ubuntu-latest
 
     steps:
       - name: Deploy to GitHub Pages
