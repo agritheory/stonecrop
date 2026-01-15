@@ -27,7 +27,6 @@ Always reference `.github/ARCHITECTURE.md` in the repository for architectural u
 ## Development Context
 - Use Rush commands: `rush update`, `rush rebuild`, `rushx <command>`
 - Package structure: `@stonecrop/<package-name>`
-- Development examples: `rushx dev:aform`, `rushx dev:atable`, etc.
 - Build process: Heft → Vite → API documentation
 - Testing: Individual package tests with `rushx test`, `rushx test:watch`, `rushx test:coverage`
 - Documentation: Auto-generated API.md files using doc-tools autoinstaller
@@ -37,7 +36,6 @@ Always reference `.github/ARCHITECTURE.md` in the repository for architectural u
   - Basic mode: `useStonecrop()` for router-based setup
   - HST mode: `useStonecrop({ doctype, recordId })` for reactive forms
 - **Provide/Inject**: HST components use `provideHSTPath` and `handleHSTChange` injections
-- **Examples Shell Script**: `./dev-runner.sh <package>` in `/examples` for live development
 - **Workspace Dependencies**: All packages use `workspace:*` for internal dependencies
 
 ## State Management Architecture
@@ -121,9 +119,6 @@ const { stonecrop } = useStonecrop() // Auto-loads from route params
 ```bash
 # Initial setup
 rush update && rush rebuild
-
-# Development with hot reload
-cd examples && rushx dev:aform  # or atable, beam, etc.
 
 # Package development
 cd <package> && rushx dev       # Vite dev server

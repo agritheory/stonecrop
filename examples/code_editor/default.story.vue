@@ -1,6 +1,8 @@
 <template>
 	<Story title="default">
-		<ACodeEditor id="code-editor" :options="options" />
+		<div id="code-editor">
+			<ACodeEditor :options="options" />
+		</div>
 	</Story>
 </template>
 

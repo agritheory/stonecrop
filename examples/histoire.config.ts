@@ -1,11 +1,16 @@
-import { defineConfig } from 'histoire'
 import { HstVue } from '@histoire/plugin-vue'
 import vue from '@vitejs/plugin-vue'
+import { defineConfig } from 'histoire'
 
 export default defineConfig({
+	// For static deployment within docs
+	routerMode: 'hash',
+	outDir: '../docs/public/stories',
+
 	plugins: [HstVue()],
 	setupFile: './histoire.setup.ts',
 	storyMatch: ['**/*.story.vue'],
+
 	// CSS isolation for sandbox previews
 	sandboxDarkClass: 'dark',
 	tree: {
@@ -39,11 +44,13 @@ export default defineConfig({
 	},
 	theme: {
 		title: 'Stonecrop',
-		logo: {
-			square: '/logo.svg',
-			light: '/logo.svg',
-			dark: '/logo.svg',
-		},
+		// Logo paths work in build mode but not dev mode
+		// Uncomment for production builds:
+		// logo: {
+		// 	square: '/logo.svg',
+		// 	light: '/logo.svg',
+		// 	dark: '/logo.svg',
+		// },
 		logoHref: '/',
 		colors: {
 			primary: {
@@ -64,7 +71,14 @@ export default defineConfig({
 		plugins: [vue()],
 		base: '/stories/',
 	},
-	// For static deployment within docs
-	routerMode: 'hash',
-	outDir: '../docs/public/stories',
+	build: {
+		// Exclude large dependencies from the single vendor chunk
+		// This creates separate chunks that can be lazy-loaded per-story
+		excludeFromVendorsChunk: [
+			'monaco-editor', // Code editor - huge (3MB+)
+			'@monaco-editor/loader',
+			'@vue-flow/core', // Visual node editor (1MB+)
+			'xstate', // State machine library
+		],
+	},
 })

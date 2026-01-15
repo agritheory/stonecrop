@@ -1,7 +1,5 @@
 <template>
-	<div id="editor-container">
-		<div id="editor-area" ref="aCodeEditor"></div>
-	</div>
+	<div id="editor-container" ref="aCodeEditor" />
 </template>
 
 <script setup lang="ts">
@@ -24,19 +22,19 @@ const editorOptions = {
 
 onMounted(async () => {
 	const monacoInstance = await loader.init()
-	const editor = monacoInstance.editor
+	const editorInstance = monacoInstance.editor
 
-	editor.defineTheme('agritheory', theme)
-	editor.setTheme('agritheory')
+	editorInstance.defineTheme('agritheory', theme)
+	editorInstance.setTheme('agritheory')
 
 	if (editorRef.value) {
-		editor.create(editorRef.value, editorOptions)
+		editorInstance.create(editorRef.value, editorOptions)
 	}
 })
 </script>
 
-<style scoped>
-#editor-area {
+<style>
+#editor-container {
 	width: 100%;
 	height: 100%;
 }
