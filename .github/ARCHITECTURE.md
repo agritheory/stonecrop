@@ -215,13 +215,6 @@ HST Store
 rush update
 rush rebuild
 
-# Development with examples
-cd examples
-rushx dev:aform          # aform component stories
-rushx dev:atable         # atable component stories
-rushx dev:beam           # beam component stories
-rushx dev:builder        # documentation builder
-
 # Package development
 cd <package-name>
 rushx dev               # Vite dev server

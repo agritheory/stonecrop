@@ -14,15 +14,7 @@
 		"_phase:build": "",
 		"build": "",
 		"story": "histoire dev",
-		"build:stories": "histoire build",
-		"dev:aform": "./dev-runner.sh aform",
-		"dev:atable": "./dev-runner.sh atable",
-		"dev:beam": "./dev-runner.sh beam",
-		"dev:builder": "./dev-runner.sh docbuilder",
-		"dev:code_editor": "./dev-runner.sh code_editor",
-		"dev:desktop": "./dev-runner.sh desktop",
-		"dev:graphql_client": "./dev-runner.sh graphql_client",
-		"dev:node_editor": "./dev-runner.sh node_editor"
+		"build:stories": "histoire build"
 	},
 	"dependencies": {
 		"@stonecrop/aform": "workspace:*",

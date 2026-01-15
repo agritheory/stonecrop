@@ -212,10 +212,6 @@ rush update
 
 # Start the dev server
 rushx dev
-
-# Or from the examples directory
-cd examples
-./dev-runner.sh nuxt
 ```
 
 The playground will be available at `http://localhost:3000`
