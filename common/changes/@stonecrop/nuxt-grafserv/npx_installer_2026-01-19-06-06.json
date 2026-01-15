@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/nuxt-grafserv",
+      "comment": "update nuxtrc file",
+      "type": "none"
+    }
+  ],
+  "packageName": "@stonecrop/nuxt-grafserv"
+}
