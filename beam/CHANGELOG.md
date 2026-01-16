@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/beam
 
-This log was last generated on Thu, 15 Jan 2026 12:08:58 GMT and should not be manually modified.
+This log was last generated on Fri, 16 Jan 2026 10:57:34 GMT and should not be manually modified.
+
+## 0.7.3
+Fri, 16 Jan 2026 10:57:34 GMT
+
+### Patches
+
+- update test coverage
 
 ## 0.7.2
 Thu, 15 Jan 2026 12:08:58 GMT
