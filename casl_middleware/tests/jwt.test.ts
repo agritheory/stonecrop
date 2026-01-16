@@ -485,3 +485,426 @@ describe('JWT Configuration Validation', () => {
 		}).not.toThrow()
 	})
 })
+
+describe('JWT Middleware - Advanced Tests', () => {
+	const SECRET = 'test-secret-key'
+
+	beforeEach(() => {
+		vi.clearAllMocks()
+		// Clear environment for tests
+		delete process.env.NODE_ENV
+	})
+
+	describe('Configuration validation', () => {
+		it('should throw error when enabled without secret or publicKey', () => {
+			expect(() => createJWTMiddleware({ enabled: true })).toThrow('JWT middleware requires either secret or publicKey')
+		})
+
+		it('should not throw when disabled without secret', () => {
+			expect(() => createJWTMiddleware({ enabled: false })).not.toThrow()
+		})
+
+		it('should accept publicKey instead of secret', () => {
+			const publicKey = '-----BEGIN PUBLIC KEY-----\ntest\n-----END PUBLIC KEY-----'
+			expect(() => createJWTMiddleware({ enabled: true, publicKey })).not.toThrow()
+		})
+	})
+
+	describe('Token extraction from different header sources', () => {
+		it('should extract token from req.headers.get', async () => {
+			const middleware = createJWTMiddleware({ secret: SECRET })
+			const token = jwt.sign({ sub: '123', roles: ['user'] }, SECRET)
+
+			const context: any = {
+				req: {
+					headers: {
+						get: vi.fn((name: string) => (name === 'authorization' ? `Bearer ${token}` : null)),
+					},
+				},
+			}
+
+			const next = vi.fn().mockResolvedValue('success')
+			await middleware(context, next)
+
+			expect(context.user).toEqual({ id: '123', roles: ['user'], sub: '123', iat: expect.any(Number) })
+			expect(next).toHaveBeenCalled()
+		})
+
+		it('should extract token from request.headers.get', async () => {
+			const middleware = createJWTMiddleware({ secret: SECRET })
+			const token = jwt.sign({ sub: '123', roles: ['user'] }, SECRET)
+
+			const context: any = {
+				request: {
+					headers: {
+						get: vi.fn((name: string) => (name === 'authorization' ? `Bearer ${token}` : null)),
+					},
+				},
+			}
+
+			const next = vi.fn().mockResolvedValue('success')
+			await middleware(context, next)
+
+			expect(context.user).toEqual({ id: '123', roles: ['user'], sub: '123', iat: expect.any(Number) })
+			expect(next).toHaveBeenCalled()
+		})
+
+		it('should extract token from context.headers object', async () => {
+			const middleware = createJWTMiddleware({ secret: SECRET })
+			const token = jwt.sign({ sub: '123', roles: ['user'] }, SECRET)
+
+			const context: any = {
+				headers: {
+					authorization: `Bearer ${token}`,
+				},
+			}
+
+			const next = vi.fn().mockResolvedValue('success')
+			await middleware(context, next)
+
+			expect(context.user).toEqual({ id: '123', roles: ['user'], sub: '123', iat: expect.any(Number) })
+			expect(next).toHaveBeenCalled()
+		})
+
+		it('should use custom header name', async () => {
+			const middleware = createJWTMiddleware({ secret: SECRET, headerName: 'x-auth-token' })
+			const token = jwt.sign({ sub: '123', roles: ['user'] }, SECRET)
+
+			const context: any = {
+				headers: {
+					'x-auth-token': `Bearer ${token}`,
+				},
+			}
+
+			const next = vi.fn().mockResolvedValue('success')
+			await middleware(context, next)
+
+			expect(context.user).toBeDefined()
+			expect(next).toHaveBeenCalled()
+		})
+	})
+
+	describe('Token prefix handling', () => {
+		it('should handle token without Bearer prefix', async () => {
+			const middleware = createJWTMiddleware({ secret: SECRET, tokenPrefix: '' })
+			const token = jwt.sign({ sub: '123', roles: ['user'] }, SECRET)
+
+			const context: any = {
+				headers: {
+					authorization: token,
+				},
+			}
+
+			const next = vi.fn().mockResolvedValue('success')
+			await middleware(context, next)
+
+			expect(context.user).toBeDefined()
+			expect(next).toHaveBeenCalled()
+		})
+
+		it('should handle custom token prefix', async () => {
+			const middleware = createJWTMiddleware({ secret: SECRET, tokenPrefix: 'Token ' })
+			const token = jwt.sign({ sub: '123', roles: ['user'] }, SECRET)
+
+			const context: any = {
+				headers: {
+					authorization: `Token ${token}`,
+				},
+			}
+
+			const next = vi.fn().mockResolvedValue('success')
+			await middleware(context, next)
+
+			expect(context.user).toBeDefined()
+			expect(next).toHaveBeenCalled()
+		})
+	})
+
+	describe('Optional mode', () => {
+		it('should continue without error when optional and no token provided', async () => {
+			const middleware = createJWTMiddleware({ secret: SECRET, optional: true })
+
+			const context: any = {
+				headers: {},
+			}
+
+			const next = vi.fn().mockResolvedValue('success')
+			const result = await middleware(context, next)
+
+			expect(result).toBe('success')
+			expect(context.user).toBeUndefined()
+			expect(next).toHaveBeenCalled()
+		})
+
+		it('should log warning in development mode when token is invalid', async () => {
+			process.env.NODE_ENV = 'development'
+			const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+			const middleware = createJWTMiddleware({ secret: SECRET, optional: true })
+
+			const context: any = {
+				headers: {
+					authorization: 'Bearer invalid-token',
+				},
+			}
+
+			const next = vi.fn().mockResolvedValue('success')
+			await middleware(context, next)
+
+			expect(consoleSpy).toHaveBeenCalled()
+			expect(next).toHaveBeenCalled()
+
+			consoleSpy.mockRestore()
+		})
+
+		it('should not log warning in production mode when token is invalid', async () => {
+			process.env.NODE_ENV = 'production'
+			const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+			const middleware = createJWTMiddleware({ secret: SECRET, optional: true })
+
+			const context: any = {
+				headers: {
+					authorization: 'Bearer invalid-token',
+				},
+			}
+
+			const next = vi.fn().mockResolvedValue('success')
+			await middleware(context, next)
+
+			expect(consoleSpy).not.toHaveBeenCalled()
+			expect(next).toHaveBeenCalled()
+
+			consoleSpy.mockRestore()
+		})
+	})
+
+	describe('Token verification options', () => {
+		it('should verify token with issuer', async () => {
+			const middleware = createJWTMiddleware({ secret: SECRET, issuer: 'test-issuer' })
+			const token = jwt.sign({ sub: '123', roles: ['user'] }, SECRET, { issuer: 'test-issuer' })
+
+			const context: any = {
+				headers: {
+					authorization: `Bearer ${token}`,
+				},
+			}
+
+			const next = vi.fn().mockResolvedValue('success')
+			await middleware(context, next)
+
+			expect(context.user).toBeDefined()
+			expect(next).toHaveBeenCalled()
+		})
+
+		it('should reject token with wrong issuer', async () => {
+			const middleware = createJWTMiddleware({ secret: SECRET, issuer: 'expected-issuer' })
+			const token = jwt.sign({ sub: '123', roles: ['user'] }, SECRET, { issuer: 'wrong-issuer' })
+
+			const context: any = {
+				headers: {
+					authorization: `Bearer ${token}`,
+				},
+			}
+
+			const next = vi.fn()
+			await expect(middleware(context, next)).rejects.toThrow()
+		})
+
+		it('should verify token with audience', async () => {
+			const middleware = createJWTMiddleware({ secret: SECRET, audience: 'test-audience' })
+			const token = jwt.sign({ sub: '123', roles: ['user'] }, SECRET, { audience: 'test-audience' })
+
+			const context: any = {
+				headers: {
+					authorization: `Bearer ${token}`,
+				},
+			}
+
+			const next = vi.fn().mockResolvedValue('success')
+			await middleware(context, next)
+
+			expect(context.user).toBeDefined()
+			expect(next).toHaveBeenCalled()
+		})
+
+		it('should handle maxAge verification', async () => {
+			const middleware = createJWTMiddleware({ secret: SECRET, maxAge: '1h' })
+			const token = jwt.sign({ sub: '123', roles: ['user'] }, SECRET)
+
+			const context: any = {
+				headers: {
+					authorization: `Bearer ${token}`,
+				},
+			}
+
+			const next = vi.fn().mockResolvedValue('success')
+			await middleware(context, next)
+
+			expect(context.user).toBeDefined()
+			expect(next).toHaveBeenCalled()
+		})
+
+		it('should use custom algorithms', async () => {
+			const middleware = createJWTMiddleware({ secret: SECRET, algorithms: ['HS384'] })
+			const token = jwt.sign({ sub: '123', roles: ['user'] }, SECRET, { algorithm: 'HS384' })
+
+			const context: any = {
+				headers: {
+					authorization: `Bearer ${token}`,
+				},
+			}
+
+			const next = vi.fn().mockResolvedValue('success')
+			await middleware(context, next)
+
+			expect(context.user).toBeDefined()
+			expect(next).toHaveBeenCalled()
+		})
+	})
+
+	describe('Custom user extractor', () => {
+		it('should use custom extractUser function', async () => {
+			const customExtractor = (payload: any) => ({
+				id: payload.user_id,
+				roles: payload.user_roles,
+				email: payload.email,
+			})
+
+			const middleware = createJWTMiddleware({ secret: SECRET, extractUser: customExtractor })
+			const token = jwt.sign({ user_id: '123', user_roles: ['admin'], email: 'test@example.com' }, SECRET)
+
+			const context: any = {
+				headers: {
+					authorization: `Bearer ${token}`,
+				},
+			}
+
+			const next = vi.fn().mockResolvedValue('success')
+			await middleware(context, next)
+
+			expect(context.user).toEqual({
+				id: '123',
+				roles: ['admin'],
+				email: 'test@example.com',
+			})
+			expect(next).toHaveBeenCalled()
+		})
+
+		it('should handle extractUser returning undefined', async () => {
+			const customExtractor = () => undefined
+
+			const middleware = createJWTMiddleware({ secret: SECRET, extractUser: customExtractor })
+			const token = jwt.sign({ sub: '123' }, SECRET)
+
+			const context: any = {
+				headers: {
+					authorization: `Bearer ${token}`,
+				},
+			}
+
+			const next = vi.fn().mockResolvedValue('success')
+			await middleware(context, next)
+
+			expect(context.user).toBeUndefined()
+			// jwtPayload is only set when user is defined
+			expect(context.jwtPayload).toBeUndefined()
+			expect(next).toHaveBeenCalled()
+		})
+	})
+
+	describe('Error handling', () => {
+		it('should throw error when required and no token provided', async () => {
+			const middleware = createJWTMiddleware({ secret: SECRET, optional: false })
+
+			const context: any = {
+				headers: {},
+			}
+
+			const next = vi.fn()
+			await expect(middleware(context, next)).rejects.toThrow('No authorization header found')
+		})
+
+		it('should throw specific error for expired token', async () => {
+			const middleware = createJWTMiddleware({ secret: SECRET })
+			const token = jwt.sign({ sub: '123', roles: ['user'] }, SECRET, { expiresIn: '-1s' })
+
+			const context: any = {
+				headers: {
+					authorization: `Bearer ${token}`,
+				},
+			}
+
+			const next = vi.fn()
+			await expect(middleware(context, next)).rejects.toThrow('Token has expired')
+		})
+
+		it('should throw specific error for invalid signature', async () => {
+			const middleware = createJWTMiddleware({ secret: SECRET })
+			const token = jwt.sign({ sub: '123', roles: ['user'] }, 'wrong-secret')
+
+			const context: any = {
+				headers: {
+					authorization: `Bearer ${token}`,
+				},
+			}
+
+			const next = vi.fn()
+			await expect(middleware(context, next)).rejects.toThrow('Invalid token')
+		})
+
+		it('should throw error for malformed token', async () => {
+			const middleware = createJWTMiddleware({ secret: SECRET })
+
+			const context: any = {
+				headers: {
+					authorization: 'Bearer malformed.token',
+				},
+			}
+
+			const next = vi.fn()
+			await expect(middleware(context, next)).rejects.toThrow()
+		})
+	})
+
+	describe('JWT payload storage', () => {
+		it('should store JWT payload in context', async () => {
+			const middleware = createJWTMiddleware({ secret: SECRET })
+			const payload = { sub: '123', roles: ['user'], custom: 'data' }
+			const token = jwt.sign(payload, SECRET)
+
+			const context: any = {
+				headers: {
+					authorization: `Bearer ${token}`,
+				},
+			}
+
+			const next = vi.fn().mockResolvedValue('success')
+			await middleware(context, next)
+
+			expect(context.jwtPayload).toBeDefined()
+			expect(context.jwtPayload.sub).toBe('123')
+			expect(context.jwtPayload.custom).toBe('data')
+			expect(next).toHaveBeenCalled()
+		})
+	})
+
+	describe('Disabled mode', () => {
+		it('should skip JWT verification when disabled', async () => {
+			const middleware = createJWTMiddleware({ enabled: false, secret: SECRET })
+
+			const context: any = {
+				headers: {
+					authorization: 'Bearer invalid-token',
+				},
+			}
+
+			const next = vi.fn().mockResolvedValue('success')
+			const result = await middleware(context, next)
+
+			expect(result).toBe('success')
+			expect(context.user).toBeUndefined()
+			expect(next).toHaveBeenCalled()
+		})
+	})
+})

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/beam",
+      "comment": "update test coverage",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/beam"
+}
