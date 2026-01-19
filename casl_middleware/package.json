@@ -21,7 +21,7 @@
 		".": {
 			"import": {
 				"types": "./dist/src/index.d.ts",
-				"default": "./dist/casl_middleware.js"
+				"default": "./dist/casl-middleware.js"
 			}
 		},
 		"./types": {

@@ -168,12 +168,13 @@ export async function runInstaller(options: InstallerOptions): Promise<void> {
 	}
 
 	consola.info(`Start development server:`)
-	consola.info(`   npx nuxi dev`)
+	consola.info(`   pnpm dev`)
 	console.log()
 
 	if (selectedFeatures.graphql) {
 		consola.info(`Access GraphiQL:`)
 		consola.info(`   http://localhost:3000/graphql/`)
+		consola.info(`   (Make sure to restart your dev server if it's already running)`)
 		console.log()
 	}
 }

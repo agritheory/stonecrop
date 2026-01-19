@@ -26,14 +26,17 @@ export interface GrafservInstallerOptions {
 export async function installGrafserv(options: GrafservInstallerOptions): Promise<boolean> {
 	const {
 		cwd,
-		schemaPath = './server/schema.graphql',
-		resolversPath = './server/resolvers.ts',
+		schemaPath = 'server/schema.graphql',
+		resolversPath = 'server/resolvers.ts',
 		endpoint = '/graphql/',
 	} = options
 
 	consola.start('Installing @stonecrop/nuxt-grafserv GraphQL server...')
 
 	try {
+		// Scaffold server files first
+		await scaffoldServerFiles(cwd)
+
 		// Add dependencies - use latest published versions
 		await addDependencies(cwd, {
 			'@stonecrop/nuxt-grafserv': 'latest',
@@ -59,7 +62,7 @@ export async function installGrafserv(options: GrafservInstallerOptions): Promis
 		graphiql: true,
 
 		// Middleware file path (for auth, logging, etc.)
-		middlewarePath: './server/middleware.ts',
+		middlewarePath: 'server/middleware.ts',
 
 		// Grafserv options
 		grafserv: {
@@ -70,9 +73,7 @@ export async function installGrafserv(options: GrafservInstallerOptions): Promis
 			},
 		})
 
-		// Scaffold server files
-		await scaffoldServerFiles(cwd)
-
+		consola.info('Make sure @stonecrop/nuxt-grafserv is in your modules array')
 		consola.success('@stonecrop/nuxt-grafserv installed successfully')
 		return true
 	} catch (error) {

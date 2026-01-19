@@ -61,6 +61,21 @@ export default defineNuxtModule<ModuleOptions>({
 		}
 		logger.log('Added Stonecrop packages to build.transpile for SSR CSS handling')
 
+		// Configure Nitro to bundle Stonecrop packages instead of treating them as external
+		// This is critical for handling CSS imports in the distributed packages
+		nuxt.hook('nitro:config', config => {
+			config.externals = config.externals || {}
+			config.externals.inline = config.externals.inline || []
+
+			for (const pkg of STONECROP_PACKAGES) {
+				if (!config.externals.inline.includes(pkg)) {
+					config.externals.inline.push(pkg)
+				}
+			}
+
+			logger.log('Added Stonecrop packages to Nitro externals.inline for CSS bundling')
+		})
+
 		// Handle symlinked packages during development
 		// When packages are linked (e.g., via pnpm link), their real paths may be outside
 		// Vite's default fs.allow list. We detect this module's real path and add the monorepo root.

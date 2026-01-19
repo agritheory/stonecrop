@@ -17,6 +17,10 @@ export interface NuxtConfigUpdate {
 	}
 	/** Import to add at the top of the file */
 	import?: string
+	/** Nitro configuration to add */
+	nitroConfig?: {
+		externalsInline?: string[]
+	}
 }
 
 /**
@@ -144,6 +148,74 @@ export async function updateNuxtConfig(cwd: string, updates: NuxtConfigUpdate): 
 					content = content.slice(0, insertIndex) + `\n\t${key}: ${value},` + content.slice(insertIndex)
 				}
 				modified = true
+			}
+		}
+	}
+
+	// Add Nitro configuration
+	if (updates.nitroConfig) {
+		// Check if nitro config already exists
+		const nitroMatch = content.match(/nitro\s*:\s*\{/)
+
+		if (updates.nitroConfig.externalsInline) {
+			const packagesStr = updates.nitroConfig.externalsInline.map(pkg => `'${pkg}'`).join(', ')
+
+			if (nitroMatch && nitroMatch.index !== undefined) {
+				// Nitro config exists, check if externals.inline exists
+				const externalsMatch = content.match(/externals\s*:\s*\{/)
+
+				if (externalsMatch && externalsMatch.index !== undefined && externalsMatch.index > nitroMatch.index) {
+					// Check if inline array exists
+					const inlineMatch = content.match(/inline\s*:\s*\[/)
+
+					if (inlineMatch && inlineMatch.index !== undefined && inlineMatch.index > externalsMatch.index) {
+						// inline array exists, add packages if not present
+						const startIndex = inlineMatch.index + inlineMatch[0].length
+						const closingIndex = findMatchingBracket(content, startIndex - 1)
+
+						if (closingIndex !== -1) {
+							const arrayContent = content.slice(startIndex, closingIndex).trim()
+							const separator = arrayContent.length > 0 ? ', ' : ''
+							content = content.slice(0, closingIndex) + separator + packagesStr + content.slice(closingIndex)
+							modified = true
+						}
+					} else {
+						// externals exists but no inline, add it
+						const startIndex = externalsMatch.index + externalsMatch[0].length
+						content = content.slice(0, startIndex) + `\n\t\t\tinline: [${packagesStr}],` + content.slice(startIndex)
+						modified = true
+					}
+				} else {
+					// nitro exists but no externals, add it
+					const startIndex = nitroMatch.index + nitroMatch[0].length
+					content =
+						content.slice(0, startIndex) +
+						`\n\t\texternals: {\n\t\t\tinline: [${packagesStr}],\n\t\t},` +
+						content.slice(startIndex)
+					modified = true
+				}
+			} else {
+				// No nitro config, add everything - insert after modules array
+				const defineNuxtConfigMatch = content.match(/defineNuxtConfig\s*\(\s*\{/)
+				if (defineNuxtConfigMatch && defineNuxtConfigMatch.index !== undefined) {
+					// Try to find modules array to insert after it
+					const modulesEndMatch = content.match(/modules\s*:\s*\[[^\]]*\]\s*,?/)
+					if (modulesEndMatch && modulesEndMatch.index !== undefined) {
+						const insertIndex = modulesEndMatch.index + modulesEndMatch[0].length
+						content =
+							content.slice(0, insertIndex) +
+							`\n\n\t// Nitro configuration for Stonecrop CSS handling\n\tnitro: {\n\t\texternals: {\n\t\t\tinline: [${packagesStr}],\n\t\t},\n\t},` +
+							content.slice(insertIndex)
+					} else {
+						// No modules, add at the start of config
+						const insertIndex = defineNuxtConfigMatch.index + defineNuxtConfigMatch[0].length
+						content =
+							content.slice(0, insertIndex) +
+							`\n\t// Nitro configuration for Stonecrop CSS handling\n\tnitro: {\n\t\texternals: {\n\t\t\tinline: [${packagesStr}],\n\t\t},\n\t},` +
+							content.slice(insertIndex)
+					}
+					modified = true
+				}
 			}
 		}
 	}
