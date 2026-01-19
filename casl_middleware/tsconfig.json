@@ -1,7 +1,7 @@
 {
 	"extends": "../tsconfig.json",
 	"compilerOptions": {
-		"tsBuildInfoFile": "./dist/casl_middleware.tsbuildinfo",
+		"tsBuildInfoFile": "./dist/casl-middleware.tsbuildinfo",
 		"types": ["vitest/globals", "vitest/jsdom"]
 	},
 	"include": ["src/**/*.ts", "tests/**/*.spec.ts", "tests/**/*.ts"]

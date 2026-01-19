@@ -3,7 +3,7 @@
     {
       "packageName": "@stonecrop/nuxt-grafserv",
       "comment": "update nuxtrc file",
-      "type": "none"
+      "type": "patch"
     }
   ],
   "packageName": "@stonecrop/nuxt-grafserv"

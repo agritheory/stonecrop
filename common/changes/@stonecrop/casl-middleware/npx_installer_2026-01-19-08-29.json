@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/casl-middleware",
+      "comment": "fix dist target",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/casl-middleware"
+}
