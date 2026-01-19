@@ -45,7 +45,7 @@ export async function installGrafserv(options: GrafservInstallerOptions): Promis
 		})
 
 		// Update nuxt.config.ts
-		await updateNuxtConfig(cwd, {
+		const configUpdated = await updateNuxtConfig(cwd, {
 			import: "import type { ModuleOptions as GrafservOptions } from '@stonecrop/nuxt-grafserv'",
 			module: "'@stonecrop/nuxt-grafserv'",
 			moduleOptions: {
@@ -73,7 +73,11 @@ export async function installGrafserv(options: GrafservInstallerOptions): Promis
 			},
 		})
 
-		consola.info('Make sure @stonecrop/nuxt-grafserv is in your modules array')
+		if (!configUpdated) {
+			consola.warn('Could not automatically update nuxt.config.ts')
+			consola.info('Please add @stonecrop/nuxt-grafserv to your modules array manually')
+		}
+
 		consola.success('@stonecrop/nuxt-grafserv installed successfully')
 		return true
 	} catch (error) {

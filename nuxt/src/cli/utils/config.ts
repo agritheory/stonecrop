@@ -101,31 +101,33 @@ export async function updateNuxtConfig(cwd: string, updates: NuxtConfigUpdate): 
 	if (updates.module) {
 		const moduleEntry = updates.module
 
-		// Check if module is already present
-		if (!content.includes(moduleEntry)) {
-			// Find the modules array
-			const modulesMatch = content.match(/modules\s*:\s*\[/)
-			if (modulesMatch && modulesMatch.index !== undefined) {
-				// Find the closing bracket
-				const startIndex = modulesMatch.index + modulesMatch[0].length
-				const closingIndex = findMatchingBracket(content, startIndex - 1)
+		// Find the modules array
+		const modulesMatch = content.match(/modules\s*:\s*\[/)
+		if (modulesMatch && modulesMatch.index !== undefined) {
+			// Find the closing bracket
+			const startIndex = modulesMatch.index + modulesMatch[0].length
+			const closingIndex = findMatchingBracket(content, startIndex - 1)
 
-				if (closingIndex !== -1) {
+			if (closingIndex !== -1) {
+				// Check if module is already present in the modules array (not just anywhere in the file)
+				const arrayContent = content.slice(startIndex, closingIndex)
+				const moduleAlreadyExists = arrayContent.includes(moduleEntry)
+
+				if (!moduleAlreadyExists) {
 					// Check if array is empty
-					const arrayContent = content.slice(startIndex, closingIndex).trim()
-					const separator = arrayContent.length > 0 ? ', ' : ''
+					const separator = arrayContent.trim().length > 0 ? ', ' : ''
 
 					content = content.slice(0, closingIndex) + separator + moduleEntry + content.slice(closingIndex)
 					modified = true
 				}
-			} else {
-				// modules array doesn't exist, we need to add it
-				const defineNuxtConfigMatch = content.match(/defineNuxtConfig\s*\(\s*\{/)
-				if (defineNuxtConfigMatch && defineNuxtConfigMatch.index !== undefined) {
-					const insertIndex = defineNuxtConfigMatch.index + defineNuxtConfigMatch[0].length
-					content = content.slice(0, insertIndex) + `\n\tmodules: [${moduleEntry}],` + content.slice(insertIndex)
-					modified = true
-				}
+			}
+		} else {
+			// modules array doesn't exist, we need to add it
+			const defineNuxtConfigMatch = content.match(/defineNuxtConfig\s*\(\s*\{/)
+			if (defineNuxtConfigMatch && defineNuxtConfigMatch.index !== undefined) {
+				const insertIndex = defineNuxtConfigMatch.index + defineNuxtConfigMatch[0].length
+				content = content.slice(0, insertIndex) + `\n\tmodules: [${moduleEntry}],` + content.slice(insertIndex)
+				modified = true
 			}
 		}
 	}
