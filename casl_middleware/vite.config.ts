@@ -18,8 +18,21 @@ export default defineConfig({
 			formats: ['es'],
 		},
 		rollupOptions: {
-			// Externalize Node.js built-ins for server-side library
-			external: [/^node:/, 'assert', 'util', 'crypto'],
+			// Externalize dependencies - they should not be bundled into the library
+			external: [
+				/^node:/,
+				'assert',
+				'util',
+				'crypto',
+				'grafast',
+				'graphql',
+				'graphql-tag',
+				'jsonwebtoken',
+				'@casl/ability',
+				'postgraphile',
+				/^postgraphile\//,
+				'graphql-yoga',
+			],
 		},
 	},
 	test: {

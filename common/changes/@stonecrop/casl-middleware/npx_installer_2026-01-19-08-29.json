@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@stonecrop/casl-middleware",
-      "comment": "fix dist target",
+      "comment": "reduce build package size by externalizing dependencies",
       "type": "patch"
     }
   ],
