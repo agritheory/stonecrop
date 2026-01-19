@@ -13,8 +13,8 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
 	},
 
 	defaults: _nuxt => ({
-		schema: './server/**/*.graphql',
-		resolvers: './server/resolvers.ts',
+		schema: 'server/**/*.graphql',
+		resolvers: 'server/resolvers.ts',
 		url: '/graphql/',
 		graphiql: undefined, // Will default based on dev mode
 		middleware: [],
@@ -180,3 +180,6 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
 })
 
 export default module
+
+// Re-export types for use in nuxt.config.ts
+export type { ModuleOptions, GrafastContext, MiddlewareFunction, SchemaProvider } from './types'

@@ -40,8 +40,8 @@ npm install @stonecrop/nuxt-grafserv
 export default defineNuxtConfig({
   modules: ['@stonecrop/nuxt-grafserv'],
   grafserv: {
-    schema: './server/**/*.graphql',
-    resolvers: './server/resolvers.ts',
+    schema: 'server/**/*.graphql',
+    resolvers: 'server/resolvers.ts',
     url: '/graphql/',
   }
 })
@@ -56,17 +56,17 @@ export default defineNuxtConfig({
   modules: ['@stonecrop/nuxt-grafserv'],
   grafserv: {
     // Path to your GraphQL schema files
-    schema: './server/**/*.graphql',
-    
+    schema: 'server/**/*.graphql',
+
     // Path to your resolvers
-    resolvers: './server/resolvers.ts',
-    
+    resolvers: 'server/resolvers.ts',
+
     // GraphQL endpoint URL (default: /graphql/)
     url: '/graphql/',
-    
+
     // Enable GraphiQL IDE (default: true in dev, false in prod)
     graphiql: true,
-    
+
     // Middleware functions
     middleware: [
       async (ctx, next) => {
@@ -76,7 +76,7 @@ export default defineNuxtConfig({
         return result
       }
     ],
-    
+
     // Grafserv-specific options
     grafserv: {
       websockets: false,

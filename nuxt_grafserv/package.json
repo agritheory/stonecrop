@@ -19,16 +19,16 @@
 	"exports": {
 		".": {
 			"import": "./dist/module.mjs",
-			"types": "./dist/types.d.mts"
+			"types": "./dist/module.d.mts"
 		},
 		"./runtime/*": "./dist/runtime/*"
 	},
 	"main": "./dist/module.mjs",
-	"types": "./dist/types.d.mts",
+	"types": "./dist/module.d.mts",
 	"typesVersions": {
 		"*": {
 			".": [
-				"./dist/types.d.mts"
+				"./dist/module.d.mts"
 			]
 		}
 	},

@@ -26,8 +26,8 @@ describe('Nuxt Grafserv Integration (Placeholder)', () => {
 	describe('Configuration Validation', () => {
 		it('should accept valid grafserv options', () => {
 			const options = {
-				schema: './server/schema.graphql',
-				resolvers: './server/resolvers.ts',
+				schema: 'server/schema.graphql',
+				resolvers: 'server/resolvers.ts',
 				url: '/graphql/',
 				graphiql: true,
 			}

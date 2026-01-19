@@ -42,7 +42,7 @@ export interface ModuleOptions {
 	/**
 	 * Path to middleware file that exports an array of middleware functions.
 	 * This is the recommended approach as it preserves imports/dependencies.
-	 * Example: './server/middleware.ts'
+	 * Example: 'server/middleware.ts'
 	 */
 	middlewarePath?: string
 

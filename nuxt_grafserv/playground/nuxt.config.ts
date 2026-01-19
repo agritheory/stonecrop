@@ -1,4 +1,3 @@
-// nuxt-grafserv/playground/nuxt.config.ts
 import NuxtGrafserv from '../src/module'
 import type { ModuleOptions } from '../src/types'
 
@@ -8,10 +7,10 @@ export default defineNuxtConfig({
 
 	grafserv: {
 		// Path to GraphQL schema files
-		schema: './server/schema.graphql',
+		schema: 'server/schema.graphql',
 
 		// Path to resolvers
-		resolvers: './server/resolvers.ts',
+		resolvers: 'server/resolvers.ts',
 
 		// GraphQL endpoint URL
 		url: '/graphql/',
@@ -20,7 +19,7 @@ export default defineNuxtConfig({
 		graphiql: true,
 
 		// Path to middleware file (recommended approach)
-		middlewarePath: './server/middleware.ts',
+		middlewarePath: 'server/middleware.ts',
 
 		// Grafserv options
 		grafserv: {
