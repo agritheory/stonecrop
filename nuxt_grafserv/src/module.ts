@@ -4,11 +4,11 @@ import type { NuxtModule } from '@nuxt/schema'
 
 import type { ModuleOptions } from './types'
 
-const logger = useLogger('nuxt-grafserv')
+const logger = useLogger('@stonecrop/nuxt-grafserv')
 
 const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
 	meta: {
-		name: 'nuxt-grafserv',
+		name: '@stonecrop/nuxt-grafserv',
 		configKey: 'grafserv',
 	},
 
@@ -136,7 +136,7 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
 		if (options.url) {
 			nuxt.hook('devtools:customTabs', tabs => {
 				tabs.push({
-					name: 'nuxt-grafserv',
+					name: '@stonecrop/nuxt-grafserv',
 					title: 'GraphQL (Grafserv)',
 					icon: 'simple-icons:graphql',
 					view: {

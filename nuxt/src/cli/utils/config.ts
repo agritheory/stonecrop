@@ -80,12 +80,14 @@ export async function updateNuxtConfig(cwd: string, updates: NuxtConfigUpdate): 
 			const importMatch = content.match(/^import\s+/m)
 			if (importMatch && importMatch.index !== undefined) {
 				// Add after existing imports
-				const lastImportMatch = content.match(/^import\s+.*$/gm)
-				if (lastImportMatch) {
+				const lastImportMatch = content.match(/^import\s.*$/gm)
+				if (lastImportMatch && lastImportMatch.length > 0) {
 					const lastImport = lastImportMatch[lastImportMatch.length - 1]
-					const lastImportIndex = content.lastIndexOf(lastImport)
-					const insertIndex = lastImportIndex + lastImport.length
-					content = content.slice(0, insertIndex) + '\n' + updates.import + content.slice(insertIndex)
+					if (lastImport) {
+						const lastImportIndex = content.lastIndexOf(lastImport)
+						const insertIndex = lastImportIndex + lastImport.length
+						content = content.slice(0, insertIndex) + '\n' + updates.import + content.slice(insertIndex)
+					}
 				}
 			} else {
 				// Add at the start of the file
