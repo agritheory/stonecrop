@@ -64,10 +64,11 @@ export async function installGrafserv(options: GrafservInstallerOptions): Promis
 		// Middleware file path (for auth, logging, etc.)
 		middlewarePath: 'server/middleware.ts',
 
-		// Grafserv options
-		grafserv: {
-			websockets: false,
-			introspection: true,
+		// Graphile preset with grafserv options
+		preset: {
+			grafserv: {
+				websockets: false,
+			},
 		},
 	} as GrafservOptions`,
 			},
