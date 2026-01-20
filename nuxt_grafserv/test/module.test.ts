@@ -86,7 +86,7 @@ describe('Grafserv Module', () => {
 				schema: 'server/**/*.graphql',
 				resolvers: 'server/resolvers.ts',
 				url: '/graphql/',
-				graphiqlPath: undefined,
+
 				graphiql: undefined,
 				plugins: [],
 				preset: {
@@ -316,21 +316,6 @@ describe('Grafserv Module', () => {
 
 			const cacheHandler = nitroConfig.handlers.find(h => h.route === '/graphql/cache')
 			expect(cacheHandler).toBeDefined()
-		})
-
-		it('should use custom graphiqlPath when provided', () => {
-			const options: ModuleOptions = {
-				schema: 'server/**/*.graphql',
-				resolvers: 'server/resolvers.ts',
-				url: '/graphql/',
-				graphiqlPath: '/custom-ruru/',
-				plugins: [],
-			}
-
-			module.setup(options, mockNuxt)
-
-			const ruruHandler = nitroConfig.handlers.find(h => h.handler.includes('ruru') && !h.route.includes('static'))
-			expect(ruruHandler?.route).toBe('/custom-ruru/')
 		})
 	})
 

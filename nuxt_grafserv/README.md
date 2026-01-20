@@ -27,9 +27,8 @@ This module uses modern Grafserv patterns with three key components:
 3. **Objects Structure**: Uses Grafast's modern `objects/interfaces/enums` schema building pattern for better type safety
 
 The module automatically registers these handlers:
-- `{url}` - GraphQL operations endpoint
-- `{graphiqlPath || url}` - GraphiQL/Ruru interactive IDE
-- `/ruru-static/**` - Static assets for the IDE
+- `{url}` - Unified GraphQL operations and Ruru UI endpoint
+- `/ruru-static/**` - Static assets for the Ruru IDE
 
 ## Quick Setup
 
@@ -54,8 +53,7 @@ export default defineNuxtConfig({
   grafserv: {
     schema: 'server/**/*.graphql',
     resolvers: 'server/resolvers.ts',
-    url: '/graphql/',
-    graphiqlPath: '/graphql/', // Optional: separate path for GraphiQL UI
+    url: '/graphql/', // Serves both GraphQL API and Ruru UI
   }
 })
 ```
@@ -68,19 +66,10 @@ export default defineNuxtConfig({
 |--------|------|---------|-------------|
 | `schema` | `string \| string[] \| SchemaProvider` | `'server/**/*.graphql'` | Path(s) to GraphQL schema files or schema provider function |
 | `resolvers` | `string` | `'server/resolvers.ts'` | Path to resolvers file |
-| `url` | `string` | `'/graphql/'` | GraphQL endpoint URL |
-| `graphiqlPath` | `string` | Same as `url` | GraphiQL/Ruru UI endpoint URL |
+| `url` | `string` | `'/graphql/'` | GraphQL endpoint URL (also serves Ruru UI) |
 | `graphiql` | `boolean` | `true` in dev, `false` in prod | Enable GraphiQL IDE |
-| `middlewarePath` | `string` | `undefined` | **Recommended**: Path to middleware file (e.g., `'server/middleware.ts'`) |
-| `middleware` | `MiddlewareFunction[]` | `[]` | **Alternative**: Inline middleware functions (cannot reference external modules) |
+| `middlewarePath` | `string` | `undefined` | Path to middleware file (e.g., `'server/middleware.ts'`) |
 | `preset` | `GraphileConfig.Preset` | `{ grafserv: { websockets: false } }` | Custom Graphile preset for advanced configuration |
-| `preset.grafserv.websockets` | `boolean` | `false` | Enable WebSocket support |
-| `preset.grafserv.graphqlOverGET` | `boolean` | `false` | Enable GraphQL queries over GET requests |
-| `preset.grafserv.maxRequestLength` | `number` | `100000` | Maximum request body size in bytes |
-| `preset.grafserv.dangerouslyAllowAllCORSRequests` | `boolean` | `false` | ⚠️ Allow all CORS requests (dev only) |
-| `preset.grafserv.allowedRequestContentTypes` | `string[]` | `['application/json', 'application/graphql+json']` | Allowed Content-Type headers |
-| `preset.grafserv.persistedOperationsDirectory` | `string` | `undefined` | Directory for persisted operations |
-| `preset.grafserv.allowUnpersistedOperation` | `boolean \| function` | `true` | Allow unpersisted operations |
 
 ### Full Configuration Example
 
@@ -93,8 +82,7 @@ export default defineNuxtConfig({
     resolvers: 'server/resolvers.ts',
 
     // Endpoints
-    url: '/graphql/',
-    graphiqlPath: '/graphiql/', // Separate UI path
+    url: '/graphql/', // Serves both GraphQL API and Ruru UI
     graphiql: true,
 
     // Middleware (file-based - recommended)
@@ -155,7 +143,7 @@ export default {
 
 ## Middleware
 
-### File-Based Middleware (Recommended)
+### File-Based Middleware
 
 Create a middleware file that exports an array of middleware functions. This approach preserves imports and external dependencies:
 
@@ -199,32 +187,6 @@ export default defineNuxtConfig({
   }
 })
 ```
-
-### Inline Middleware (Alternative)
-
-For simple middleware without external dependencies:
-
-```ts
-grafserv: {
-  middleware: [
-    // Logging middleware
-    async (ctx, next) => {
-      const start = Date.now()
-      const result = await next()
-      console.log(`Request took ${Date.now() - start}ms`)
-      return result
-    },
-    // Context enrichment
-    async (ctx, next) => {
-      ctx.requestId = Math.random().toString(36)
-      ctx.timestamp = new Date()
-      return next()
-    }
-  ]
-}
-```
-
-**Note**: Inline middleware cannot reference external modules or imports. Use `middlewarePath` for middleware with dependencies.
 
 ## Advanced Usage
 

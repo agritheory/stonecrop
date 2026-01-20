@@ -76,10 +76,12 @@ async function getSchema(options: ModuleOptions): Promise<GraphQLSchema> {
 		const objects: Record<string, any> = {}
 		if (options.resolvers) {
 			try {
+				// Import resolvers through virtual module so Nitro's alias applies
+				// This ensures resolver's grafast imports use the same instance as the handler
 				// @ts-expect-error - virtual module
 				const resolverModule = await import('#internal/grafserv/resolvers')
 				const resolvers = resolverModule.default || resolverModule
-				console.log('[@stonecrop/nuxt-grafserv] Resolvers loaded:', Object.keys(resolvers))
+				console.debug('[@stonecrop/nuxt-grafserv] Resolvers loaded:', Object.keys(resolvers))
 
 				// Transform resolvers to Grafast objects structure
 				// Auto-detect if resolvers already have plans key (new format)
@@ -98,15 +100,22 @@ async function getSchema(options: ModuleOptions): Promise<GraphQLSchema> {
 					}
 				}
 			} catch (e) {
+				console.error('[@stonecrop/nuxt-grafserv] Error loading resolvers:', e)
 				console.warn('[@stonecrop/nuxt-grafserv] Could not load resolvers:', e)
 			}
 		}
 
-		// Create schema with grafast using objects structure
-		schema = makeGrafastSchema({
-			typeDefs: typeDefDocs,
-			objects,
-		})
+		// Important: Create schema lazily to ensure it's in the right execution context
+		try {
+			schema = makeGrafastSchema({
+				typeDefs: typeDefDocs,
+				objects,
+			})
+			console.debug('[@stonecrop/nuxt-grafserv] Grafast schema created successfully')
+		} catch (error) {
+			console.error('[@stonecrop/nuxt-grafserv] Error creating Grafast schema:', error)
+			throw error
+		}
 	} else {
 		throw new Error('[@stonecrop/nuxt-grafserv] No schema provided. Configure schema path or provider function.')
 	}
@@ -167,7 +176,8 @@ async function applyMiddleware(context: GrafastContext, middleware: MiddlewareFu
 }
 
 /**
- * Main H3 event handler for GraphQL requests
+ * Main H3 event handler for GraphQL requests and Ruru UI
+ * Routes between GraphQL operations and GraphiQL UI based on request type
  */
 export default defineEventHandler(async (event: H3Event) => {
 	const config = useRuntimeConfig()
@@ -191,8 +201,14 @@ export default defineEventHandler(async (event: H3Event) => {
 		// Get grafserv instance
 		const serv = await getGrafservInstance(options)
 
-		// Handle GraphQL requests
-		return serv.handleGraphQLEvent(event)
+		// Try GraphQL handler first - it will return null if not a GraphQL operation
+		const graphqlResult = await serv.handleGraphQLEvent(event)
+		if (graphqlResult !== null) {
+			return graphqlResult
+		}
+
+		// If not a GraphQL operation, try GraphiQL UI handler
+		return serv.handleGraphiqlEvent(event)
 	} catch (error) {
 		console.error('[@stonecrop/nuxt-grafserv] Error in GraphQL handler:', error)
 		throw error

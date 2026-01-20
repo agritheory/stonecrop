@@ -25,7 +25,7 @@ export async function installRockfoil(options: RockfoilInstallerOptions): Promis
 		// Add dependencies - use latest published version
 		await addDependencies(cwd, {
 			'@stonecrop/rockfoil': 'latest',
-			postgraphile: '^5.0.0-rc.3',
+			postgraphile: '^5.0.0-rc.4',
 		})
 
 		// Update middleware.ts to include Rockfoil if it exists

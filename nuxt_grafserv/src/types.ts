@@ -36,9 +36,6 @@ export interface ModuleOptions {
 	/** GraphQL endpoint URL (default: '/graphql/') */
 	url?: string
 
-	/** GraphiQL/Ruru UI endpoint URL (default: same as url) */
-	graphiqlPath?: string
-
 	/** Whether to enable GraphiQL IDE (default: true in dev, false in prod) */
 	graphiql?: boolean
 

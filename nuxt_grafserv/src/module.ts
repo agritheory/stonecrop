@@ -1,4 +1,5 @@
 import { join } from 'node:path'
+import { createRequire } from 'node:module'
 import { createResolver, defineNuxtModule, useLogger } from '@nuxt/kit'
 import type { NuxtModule } from '@nuxt/schema'
 
@@ -16,7 +17,6 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
 		schema: 'server/**/*.graphql',
 		resolvers: 'server/resolvers.ts',
 		url: '/graphql/',
-		graphiqlPath: undefined, // Will default to url
 		graphiql: undefined, // Will default based on dev mode
 		plugins: [],
 		preset: {
@@ -28,6 +28,7 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
 
 	setup(options, nuxt) {
 		const { resolve } = createResolver(import.meta.url)
+		const require = createRequire(import.meta.url)
 
 		// Register configuration in nitro runtime config
 		nuxt.hook('nitro:config', config => {
@@ -47,11 +48,7 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
 				if (path.startsWith('/')) {
 					return path // Already absolute
 				}
-				// Use our custom alias that points to rootDir/server
-				// Remove 'server/' prefix and use alias instead
-				if (path.startsWith('server/')) {
-					return `#grafserv-server/${path.substring(7)}`
-				}
+				// Return absolute path for runtime import, not alias
 				return join(nuxt.options.rootDir, path)
 			}
 
@@ -61,10 +58,13 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
 			logger.info(`Grafserv server alias: ${config.alias['#grafserv-server']}`)
 
 			const resolverPath = options.resolvers ? resolveForVirtualModule(options.resolvers) : undefined
+			logger.info(`Resolved resolver path: ${resolverPath}`)
 
 			config.runtimeConfig = config.runtimeConfig || {}
 			config.runtimeConfig.grafserv = {
 				...options,
+				// Pass resolved resolver path for direct import
+				resolversPath: resolverPath,
 				// Resolve schema paths from project root
 				schema:
 					typeof options.schema === 'string'
@@ -79,7 +79,6 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
 
 			// Resolver virtual module
 			if (resolverPath) {
-				logger.info(`Creating virtual module for resolvers: ${resolverPath}`)
 				config.virtual['#internal/grafserv/resolvers'] = `export { default } from '${resolverPath}'`
 			}
 
@@ -89,35 +88,33 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
 				: 'export default []'
 			config.virtual['#internal/grafserv/middleware'] = middlewareCode
 
-			// Externalize Grafast packages to avoid bundling issues with CommonJS dependencies
+			// Externalize Grafast to prevent module instance mismatch
+			// Only externalize grafast - let other packages bundle normally
 			config.externals = config.externals || {}
 			config.externals.external = config.externals.external || []
 			config.externals.external.push(
 				'grafast',
-				'grafserv',
-				'grafserv/h3/v1',
-				'graphile-config',
 				'@graphql-tools/schema',
 				'@graphql-tools/load',
-				'@graphql-tools/graphql-file-loader',
-				'debug' // CommonJS module that causes interop issues when bundled
+				'@graphql-tools/graphql-file-loader'
 			)
+
+			// CRITICAL: Alias grafast to ensure resolver and handler use the same instance
+			// This prevents "Now is not a valid time to call currentLayerPlan" errors
+			// NOTE: We do NOT externalize the resolver file - it must be bundled for alias to work
+			const grafastPath = require.resolve('grafast')
+			config.alias = config.alias || {}
+			config.alias['grafast'] = grafastPath
 		})
 
 		// Set up Grafast handler
 		nuxt.hook('nitro:config', config => {
 			config.handlers = config.handlers || []
 
-			// GraphQL operations handler
+			// Unified GraphQL and Ruru UI handler
 			config.handlers.push({
 				route: options.url || '/graphql/',
-				handler: resolve('./runtime/graphql'),
-			})
-
-			// GraphiQL/Ruru UI handler
-			config.handlers.push({
-				route: options.graphiqlPath || options.url || '/graphql/',
-				handler: resolve('./runtime/ruru'),
+				handler: resolve('./runtime/handler'),
 			})
 
 			// Ruru static assets handler
@@ -158,8 +155,6 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
 				const isResolverFile = options.resolvers && path.includes(options.resolvers.replace('./', ''))
 
 				if (isSchemaFile || isResolverFile) {
-					logger.info(`${path} changed`)
-
 					if (!cacheClearing) {
 						cacheClearing = true
 						try {
