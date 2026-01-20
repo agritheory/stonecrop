@@ -16,12 +16,13 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
 		schema: 'server/**/*.graphql',
 		resolvers: 'server/resolvers.ts',
 		url: '/graphql/',
+		graphiqlPath: undefined, // Will default to url
 		graphiql: undefined, // Will default based on dev mode
-		middleware: [],
 		plugins: [],
-		grafserv: {
-			websockets: false,
-			introspection: undefined, // Will default based on dev mode
+		preset: {
+			grafserv: {
+				websockets: false,
+			},
 		},
 	}),
 
@@ -83,19 +84,9 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
 			}
 
 			// Middleware virtual module
-			let middlewareCode: string
-			if (options.middlewarePath) {
-				// Use external middleware file (recommended - preserves imports)
-				const middlewarePath = resolveForVirtualModule(options.middlewarePath)
-				logger.info(`Creating virtual module for middleware: ${middlewarePath}`)
-				middlewareCode = `export { default } from '${middlewarePath}'`
-			} else if (options.middleware?.length) {
-				// Inline middleware (deprecated - cannot reference external modules)
-				logger.warn('Inline middleware is deprecated. Use middlewarePath for middleware with external dependencies.')
-				middlewareCode = `export default [${options.middleware.map(fn => fn.toString()).join(',')}]`
-			} else {
-				middlewareCode = 'export default []'
-			}
+			const middlewareCode = options.middlewarePath
+				? `export { default } from '${resolveForVirtualModule(options.middlewarePath)}'`
+				: 'export default []'
 			config.virtual['#internal/grafserv/middleware'] = middlewareCode
 
 			// Externalize Grafast packages to avoid bundling issues with CommonJS dependencies
@@ -116,25 +107,36 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
 		// Set up Grafast handler
 		nuxt.hook('nitro:config', config => {
 			config.handlers = config.handlers || []
+
+			// GraphQL operations handler
 			config.handlers.push({
 				route: options.url || '/graphql/',
-				handler: resolve('./runtime/handler'),
+				handler: resolve('./runtime/graphql'),
 			})
-			// Add cache API endpoint
+
+			// GraphiQL/Ruru UI handler
+			config.handlers.push({
+				route: options.graphiqlPath || options.url || '/graphql/',
+				handler: resolve('./runtime/ruru'),
+			})
+
+			// Ruru static assets handler
+			config.handlers.push({
+				route: '/ruru-static/**',
+				handler: resolve('./runtime/ruru-static'),
+			})
+
+			// Cache API endpoint
 			config.handlers.push({
 				route: '/graphql/cache',
 				handler: resolve('./runtime/cache'),
-			})
-			// Add handler for Ruru (GraphiQL) static assets
-			config.handlers.push({
-				route: '/ruru-static/**',
-				handler: resolve('./runtime/handler'),
 			})
 		})
 
 		// Add custom devtools tab
 		if (options.url) {
-			nuxt.hook('devtools:customTabs', tabs => {
+			// @ts-expect-error - devtools:customTabs hook may not be in all Nuxt versions
+			nuxt.hook('devtools:customTabs', (tabs: unknown[]) => {
 				tabs.push({
 					name: '@stonecrop/nuxt-grafserv',
 					title: 'GraphQL (Grafserv)',

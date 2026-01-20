@@ -36,35 +36,22 @@ export interface ModuleOptions {
 	/** GraphQL endpoint URL (default: '/graphql/') */
 	url?: string
 
+	/** GraphiQL/Ruru UI endpoint URL (default: same as url) */
+	graphiqlPath?: string
+
 	/** Whether to enable GraphiQL IDE (default: true in dev, false in prod) */
 	graphiql?: boolean
 
 	/**
-	 * Path to middleware file that exports an array of middleware functions.
-	 * This is the recommended approach as it preserves imports/dependencies.
+	 * Path to middleware file that exports an array of middleware functions,
+	 * preserving all imports/dependencies.
 	 * Example: 'server/middleware.ts'
 	 */
 	middlewarePath?: string
-
-	/**
-	 * Middleware functions to process requests (inline).
-	 * Note: Inline middleware cannot reference external modules.
-	 * For middleware with dependencies, use middlewarePath instead.
-	 * @deprecated Use middlewarePath for middleware with external dependencies
-	 */
-	middleware?: MiddlewareFunction[]
 
 	/** Custom Graphile preset to extend (for advanced grafast configuration) */
 	preset?: GraphileConfig.Preset
 
 	/** Additional Graphile plugins */
 	plugins?: GraphileConfig.Plugin[]
-
-	/** Grafserv options */
-	grafserv?: {
-		/** Whether to enable the GraphQL websocket endpoint */
-		websockets?: boolean
-		/** Whether to enable introspection (default: true in dev) */
-		introspection?: boolean
-	}
 }

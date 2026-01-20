@@ -9,7 +9,7 @@ import type { ModuleOptions as GrafservOptions } from '@stonecrop/nuxt-grafserv'
 const themePath = resolve(__dirname, '../../themes/default/default.css')
 
 export default defineNuxtConfig({
-	compatibilityDate: '2025-01-01',
+	compatibilityDate: '2026-01-01',
 
 	// Load both Stonecrop modules
 	modules: [NuxtStonecrop, NuxtGrafserv],
