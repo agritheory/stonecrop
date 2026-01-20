@@ -383,4 +383,99 @@ describe('Handler Functions', () => {
 			expect(executionOrder).toEqual(['middleware1'])
 		})
 	})
+
+	describe('getMiddleware', () => {
+		it('should handle middleware import errors', async () => {
+			// Mock the middleware module to throw an error
+			vi.doMock('#internal/grafserv/middleware', () => {
+				throw new Error('Module not found')
+			})
+
+			// Reset modules to pick up new mock
+			vi.resetModules()
+
+			const { getGrafservInstance, clearGrafservCache } = await import('../src/runtime/handler')
+
+			await clearGrafservCache()
+
+			const options: ModuleOptions = {
+				schema: 'test.graphql',
+			}
+
+			// Should not throw - middleware errors are caught
+			await expect(getGrafservInstance(options)).resolves.toBeDefined()
+		})
+
+		it('should handle middleware module without default export', async () => {
+			vi.doMock('#internal/grafserv/middleware', () => ({}))
+
+			vi.resetModules()
+
+			const { getGrafservInstance, clearGrafservCache } = await import('../src/runtime/handler')
+
+			await clearGrafservCache()
+
+			const options: ModuleOptions = {
+				schema: 'test.graphql',
+			}
+
+			await expect(getGrafservInstance(options)).resolves.toBeDefined()
+		})
+	})
+
+	describe('getSchema', () => {
+		it('should handle schema provider function', async () => {
+			const { getGrafservInstance, clearGrafservCache } = await import('../src/runtime/handler')
+
+			await clearGrafservCache()
+
+			const mockSchema = { _type: 'MockSchema', _source: 'function' }
+			const schemaProvider = vi.fn(async () => mockSchema)
+
+			const options: ModuleOptions = {
+				schema: schemaProvider,
+			}
+
+			await getGrafservInstance(options)
+
+			expect(schemaProvider).toHaveBeenCalled()
+		})
+
+		it('should handle resolver load error', async () => {
+			const { getGrafservInstance, clearGrafservCache } = await import('../src/runtime/handler')
+
+			await clearGrafservCache()
+
+			// Mock console.warn to suppress expected error output
+			const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+			// Mock the resolvers module to throw
+			vi.doMock('#internal/grafserv/resolvers', () => {
+				throw new Error('Cannot find resolvers')
+			})
+
+			const options: ModuleOptions = {
+				schema: 'test.graphql',
+				resolvers: 'server/resolvers.ts',
+			}
+
+			// Should not throw - resolver errors are caught and logged
+			await expect(getGrafservInstance(options)).resolves.toBeDefined()
+			expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('Could not load resolvers'), expect.any(Error))
+
+			warnSpy.mockRestore()
+		})
+
+		it('should throw error when no schema provided', async () => {
+			const { getGrafservInstance, clearGrafservCache } = await import('../src/runtime/handler')
+
+			await clearGrafservCache()
+
+			const options: ModuleOptions = {
+				schema: undefined as any,
+			}
+
+			await expect(getGrafservInstance(options)).rejects.toThrow('[@stonecrop/nuxt-grafserv] No schema provided')
+		})
+	})
 })
