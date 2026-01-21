@@ -1,4 +1,3 @@
-// nuxt-grafserv/test/schema.test.ts
 import { describe, it, expect } from 'vitest'
 
 describe('nuxt-grafserv module configuration', () => {
@@ -21,8 +20,8 @@ describe('nuxt-grafserv module configuration', () => {
 
 		// The meta property is set on the module function
 		if ('meta' in nuxtModule) {
-			expect((nuxtModule as any).meta.name).toBe('nuxt-grafserv')
-			expect((nuxtModule as any).meta.configKey).toBe('grafserv')
+			expect((nuxtModule as { meta: { name: string } }).meta.name).toBe('nuxt-grafserv')
+			expect((nuxtModule as { meta: { configKey: string } }).meta.configKey).toBe('grafserv')
 		}
 	})
 

@@ -1,4 +1,3 @@
-// nuxt-grafserv/test/fixtures/basic/nuxt.config.ts
 export default defineNuxtConfig({
 	modules: ['../../../src/module'],
 	grafserv: {

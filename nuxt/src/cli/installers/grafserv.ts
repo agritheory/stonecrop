@@ -62,9 +62,6 @@ export async function installGrafserv(options: GrafservInstallerOptions): Promis
 		// Enable GraphiQL in development
 		graphiql: true,
 
-		// Middleware file path (for auth, logging, etc.)
-		middlewarePath: 'server/middleware.ts',
-
 		// Graphile preset with grafserv options
 		preset: {
 			grafserv: {
@@ -120,14 +117,14 @@ async function scaffoldServerFiles(cwd: string): Promise<void> {
 		consola.info('server/resolvers.ts already exists, skipping')
 	}
 
-	// Scaffold middleware.ts
-	const middlewarePath = join(serverDir, 'middleware.ts')
-	if (!existsSync(middlewarePath)) {
-		const middlewareTemplate = await loadTemplate('middleware.ts')
-		await writeFile(middlewarePath, middlewareTemplate, 'utf-8')
-		consola.info('Created server/middleware.ts')
+	// Scaffold plugins.ts
+	const pluginsPath = join(serverDir, 'plugins.ts')
+	if (!existsSync(pluginsPath)) {
+		const pluginsTemplate = await loadTemplate('plugins.ts')
+		await writeFile(pluginsPath, pluginsTemplate, 'utf-8')
+		consola.info('Created server/plugins.ts')
 	} else {
-		consola.info('server/middleware.ts already exists, skipping')
+		consola.info('server/plugins.ts already exists, skipping')
 	}
 }
 
@@ -223,42 +220,87 @@ export const resolvers = {
 
 export default resolvers
 `,
-		'middleware.ts': `/**
- * GraphQL Middleware Chain
- * Add authentication, logging, and other middleware here
+		'plugins.ts': `/**
+ * Grafserv Plugins
+ * Add custom middleware and hooks via Grafserv plugins
+ *
+ * @see https://grafast.org/grafserv/plugins
  */
 
-import type { GrafastContext, MiddlewareFunction } from '@stonecrop/nuxt-grafserv'
+import type { GraphileConfig } from 'graphile-config'
 
-const middleware: MiddlewareFunction[] = [
-	// Request logging middleware
-	async (ctx: GrafastContext, next) => {
-		const start = Date.now()
-		const requestId = \`req-\${Date.now()}-\${Math.random().toString(36).slice(2, 9)}\`
-		ctx.requestId = requestId
+/**
+ * Example: Request logging plugin
+ */
+const loggingPlugin: GraphileConfig.Plugin = {
+	name: 'request-logging',
+	version: '1.0.0',
+	grafserv: {
+		middleware: {
+			processGraphQLRequestBody: async (next, event) => {
+				const start = Date.now()
+				console.log('[GraphQL] Request started:', {
+					path: event.request.url,
+					method: event.request.method,
+				})
 
-		console.log(\`[\${requestId}] GraphQL request started\`)
+				const result = await next()
 
-		const result = await next()
+				const duration = Date.now() - start
+				console.log(\`[GraphQL] Request completed in \${duration}ms\`)
 
-		const duration = Date.now() - start
-		console.log(\`[\${requestId}] GraphQL request completed in \${duration}ms\`)
-
-		return result
+				return result
+			},
+		},
 	},
+}
 
-	// Authentication middleware (example)
-	async (ctx: GrafastContext, next) => {
-		// TODO: Implement your authentication logic
-		// const authHeader = ctx.req.headers.get('authorization')
-		// ctx.user = await validateToken(authHeader)
+/**
+ * Example: Authentication plugin
+ */
+const authPlugin: GraphileConfig.Plugin = {
+	name: 'authentication',
+	version: '1.0.0',
+	grafserv: {
+		middleware: {
+			processGraphQLRequestBody: async (next, event) => {
+				// Extract authentication from headers
+				const authHeader = event.request.headers.get('authorization')
 
-		ctx.user = { id: 'anonymous', roles: ['guest'] }
-		return next()
+				if (authHeader?.startsWith('Bearer ')) {
+					const token = authHeader.slice(7)
+					// TODO: Validate token and set user context
+					console.log('[Auth] Token received:', token)
+				} else {
+					console.log('[Auth] Anonymous request')
+				}
+
+				return next()
+			},
+		},
 	},
+}
+
+/**
+ * Export all plugins
+ * Import these in your nuxt.config.ts:
+ *
+ * import plugins from './server/plugins'
+ *
+ * export default defineNuxtConfig({
+ *   grafserv: {
+ *     preset: {
+ *       plugins
+ *     }
+ *   }
+ * })
+ */
+export const plugins: GraphileConfig.Plugin[] = [
+	loggingPlugin,
+	// authPlugin, // Uncomment to enable authentication
 ]
 
-export default middleware
+export default plugins
 `,
 	}
 

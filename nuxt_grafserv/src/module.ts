@@ -82,12 +82,6 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
 				config.virtual['#internal/grafserv/resolvers'] = `export { default } from '${resolverPath}'`
 			}
 
-			// Middleware virtual module
-			const middlewareCode = options.middlewarePath
-				? `export { default } from '${resolveForVirtualModule(options.middlewarePath)}'`
-				: 'export default []'
-			config.virtual['#internal/grafserv/middleware'] = middlewareCode
-
 			// Externalize Grafast to prevent module instance mismatch
 			// Only externalize grafast - let other packages bundle normally
 			config.externals = config.externals || {}
@@ -179,4 +173,4 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
 export default module
 
 // Re-export types for use in nuxt.config.ts
-export type { ModuleOptions, GrafastContext, MiddlewareFunction, SchemaProvider } from './types'
+export type { ModuleOptions, SchemaProvider } from './types'
