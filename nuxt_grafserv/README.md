@@ -11,8 +11,7 @@ Pluggable Grafserv GraphQL server as a Nuxt Module. Uses the Grafast execution e
 - 🚀 &nbsp;Grafserv Server Integration
 - ⚡️ &nbsp;Grafast Execution Engine (faster than [`graphql-js`](https://github.com/graphql/graphql-js))
 - 🔄 &nbsp;Schema Stitching Support
-- 🛠 &nbsp;Middleware Support with File-based Loading
-- 📦 &nbsp;Graphile Preset System for Advanced Configuration
+-  &nbsp;Graphile Preset System for Advanced Configuration
 - 📝 &nbsp;TypeScript Support
 - 🔍 &nbsp;GraphiQL/Ruru Interface
 - ⚡️ &nbsp;Hot Module Reloading
@@ -68,8 +67,8 @@ export default defineNuxtConfig({
 | `resolvers` | `string` | `'server/resolvers.ts'` | Path to resolvers file |
 | `url` | `string` | `'/graphql/'` | GraphQL endpoint URL (also serves Ruru UI) |
 | `graphiql` | `boolean` | `true` in dev, `false` in prod | Enable GraphiQL IDE |
-| `middlewarePath` | `string` | `undefined` | Path to middleware file (e.g., `'server/middleware.ts'`) |
-| `preset` | `GraphileConfig.Preset` | `{ grafserv: { websockets: false } }` | Custom Graphile preset for advanced configuration |
+| `preset` | `GraphileConfig.Preset` | `undefined` | Custom Graphile preset for advanced configuration |
+| `plugins` | `GraphileConfig.Plugin[]` | `[]` | Additional Graphile plugins (use for middleware, etc.) |
 
 ### Full Configuration Example
 
@@ -84,9 +83,6 @@ export default defineNuxtConfig({
     // Endpoints
     url: '/graphql/', // Serves both GraphQL API and Ruru UI
     graphiql: true,
-
-    // Middleware (file-based - recommended)
-    middlewarePath: 'server/middleware.ts',
 
     // Graphile preset with grafserv options
     preset: {
@@ -141,52 +137,99 @@ export default {
 }
 ```
 
-## Middleware
+## Advanced Usage
 
-### File-Based Middleware
+### Middleware via Grafserv Plugins
 
-Create a middleware file that exports an array of middleware functions. This approach preserves imports and external dependencies:
+For middleware functionality (authentication, logging, etc.), use Grafserv plugins. The CLI installer creates a `server/plugins.ts` file with examples.
 
-**`server/middleware.ts`:**
-
-```typescript
-import type { MiddlewareFunction } from '@stonecrop/nuxt-grafserv'
-
-// Logging middleware
-const loggingMiddleware: MiddlewareFunction = async (ctx, next) => {
-  const start = Date.now()
-  const result = await next()
-  console.log(`Request took ${Date.now() - start}ms`)
-  return result
-}
-
-// Authentication middleware (can import external modules)
-import { verifyToken } from './auth'
-
-const authMiddleware: MiddlewareFunction = async (ctx, next) => {
-  const token = ctx.req.headers.get('authorization')
-  if (!token) {
-    throw new Error('Unauthorized')
-  }
-
-  const user = await verifyToken(token)
-  ctx.user = user // Extend context
-
-  return next()
-}
-
-export default [loggingMiddleware, authMiddleware]
-```
-
-**`nuxt.config.ts`:**
+#### Inline Plugin Configuration
 
 ```ts
 export default defineNuxtConfig({
   grafserv: {
-    middlewarePath: 'server/middleware.ts'
+    preset: {
+      plugins: [
+        {
+          name: 'request-logging',
+          version: '1.0.0',
+          grafserv: {
+            middleware: {
+              processGraphQLRequestBody: async (next, event) => {
+                const start = Date.now()
+                console.log('[GraphQL] Request started')
+
+                const result = await next()
+
+                console.log(`[GraphQL] Completed in ${Date.now() - start}ms`)
+                return result
+              }
+            }
+          }
+        }
+      ]
+    }
   }
 })
 ```
+
+#### Using External Plugin File
+
+```ts
+// nuxt.config.ts
+import plugins from './server/plugins'
+
+export default defineNuxtConfig({
+  grafserv: {
+    schema: 'server/schema.graphql',
+    resolvers: 'server/resolvers.ts',
+    preset: {
+      plugins
+    }
+  }
+})
+```
+
+```ts
+// server/plugins.ts
+import type { GraphileConfig } from 'graphile-config'
+
+const loggingPlugin: GraphileConfig.Plugin = {
+  name: 'request-logging',
+  version: '1.0.0',
+  grafserv: {
+    middleware: {
+      processGraphQLRequestBody: async (next, event) => {
+        console.log('Processing:', event.request.url)
+        return next()
+      }
+    }
+  }
+}
+
+const authPlugin: GraphileConfig.Plugin = {
+  name: 'authentication',
+  version: '1.0.0',
+  grafserv: {
+    middleware: {
+      processGraphQLRequestBody: async (next, event) => {
+        const token = event.request.headers.get('authorization')
+        // TODO: Validate token and add user to context
+        return next()
+      }
+    }
+  }
+}
+
+export default [loggingPlugin, authPlugin]
+```
+
+#### Available Middleware Hooks
+
+- `processRequest` - Process all incoming requests
+- `processGraphQLRequestBody` - Process GraphQL request bodies
+- `ruruHTML` - Customize Ruru IDE HTML generation
+- `onSubscribe` - Handle GraphQL subscriptions
 
 ## Advanced Usage
 

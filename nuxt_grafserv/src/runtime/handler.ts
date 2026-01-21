@@ -2,29 +2,11 @@ import { GraphQLFileLoader } from '@graphql-tools/graphql-file-loader'
 import { loadTypedefs } from '@graphql-tools/load'
 import { grafserv } from 'grafserv/h3/v1'
 import { makeGrafastSchema } from 'grafast'
-import type { GraphileConfig } from 'graphile-config'
 import type { GraphQLSchema, DocumentNode } from 'graphql'
 import { defineEventHandler, type H3Event } from 'h3'
 import { useRuntimeConfig } from 'nitropack/runtime'
 
-import type { ModuleOptions, GrafastContext, MiddlewareFunction } from '../types'
-
-// Lazy-load middleware from virtual module (preserves function references)
-let middlewareFunctions: MiddlewareFunction[] | null = null
-
-async function getMiddleware(): Promise<MiddlewareFunction[]> {
-	if (middlewareFunctions !== null) {
-		return middlewareFunctions
-	}
-	try {
-		// @ts-expect-error - virtual module
-		const mod = await import('#internal/grafserv/middleware')
-		middlewareFunctions = mod.default || []
-	} catch {
-		middlewareFunctions = []
-	}
-	return middlewareFunctions || []
-}
+import type { ModuleOptions } from '../types'
 
 // Cache for the grafserv instance
 let grafservInstance: ReturnType<typeof grafserv> | null = null
@@ -39,19 +21,6 @@ async function loadTypeDefsFromFiles(schemaPath: string | string[]): Promise<Doc
 		loaders: [new GraphQLFileLoader()],
 	})
 	return sources.map(source => source.document!).filter(Boolean)
-}
-
-/**
- * Build a Graphile preset from module options
- * Merges user-provided preset with module configuration options
- */
-function buildPreset(options: ModuleOptions): GraphileConfig.Preset {
-	const preset: GraphileConfig.Preset = {
-		...options.preset,
-		plugins: options.plugins || options.preset?.plugins || [],
-	}
-
-	return preset
 }
 
 /**
@@ -135,8 +104,7 @@ export async function getGrafservInstance(options: ModuleOptions): Promise<Retur
 	}
 
 	const schema = await getSchema(options)
-	const preset = buildPreset(options)
-	grafservInstance = grafserv({ schema, preset })
+	grafservInstance = grafserv({ schema, preset: options.preset })
 
 	console.log('[@stonecrop/nuxt-grafserv] Grafserv instance created')
 	return grafservInstance
@@ -152,30 +120,6 @@ export async function clearGrafservCache(): Promise<void> {
 }
 
 /**
- * Apply middleware chain to context
- */
-async function applyMiddleware(context: GrafastContext, middleware: MiddlewareFunction[]): Promise<GrafastContext> {
-	if (!middleware || middleware.length === 0) {
-		return context
-	}
-
-	const applyNext = async (index: number): Promise<GrafastContext> => {
-		if (index >= middleware.length) {
-			return context
-		}
-
-		const middlewareFn = middleware[index]
-		if (!middlewareFn) {
-			return applyNext(index + 1)
-		}
-
-		return middlewareFn(context, () => applyNext(index + 1))
-	}
-
-	return applyNext(0)
-}
-
-/**
  * Main H3 event handler for GraphQL requests and Ruru UI
  * Routes between GraphQL operations and GraphiQL UI based on request type
  */
@@ -184,20 +128,6 @@ export default defineEventHandler(async (event: H3Event) => {
 	const options = config.grafserv as ModuleOptions
 
 	try {
-		// Build context for middleware
-		const { req } = event.node
-		const context: GrafastContext = {
-			req: new Request(new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`), {
-				method: req.method,
-				headers: req.headers as HeadersInit,
-			}),
-			params: event.context.params || {},
-		}
-
-		// Apply middleware from virtual module
-		const middleware = await getMiddleware()
-		await applyMiddleware(context, middleware)
-
 		// Get grafserv instance
 		const serv = await getGrafservInstance(options)
 

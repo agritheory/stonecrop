@@ -3,7 +3,7 @@
 import type { EventHandler, H3Event } from 'h3'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-import type { GrafastContext, MiddlewareFunction, ModuleOptions } from '../../src/types'
+import type { ModuleOptions } from '../../src/types'
 
 // Mock H3 and Nitro
 vi.mock('h3', () => ({
@@ -141,56 +141,6 @@ describe('Nuxt Grafserv Integration', () => {
 		})
 	})
 
-	describe('Middleware Chain', () => {
-		it('should apply middleware in correct order', async () => {
-			const { clearGrafservCache } = await import('../../src/runtime/handler')
-			await clearGrafservCache()
-
-			const executionOrder: string[] = []
-
-			// Mock middleware virtual module
-			vi.doMock('#internal/grafserv/middleware', () => ({
-				default: [
-					async (ctx, next) => {
-						executionOrder.push('middleware1-before')
-						ctx.middleware1 = true
-						const result = await next()
-						executionOrder.push('middleware1-after')
-						return result
-					},
-					async (ctx, next) => {
-						executionOrder.push('middleware2-before')
-						ctx.middleware2 = true
-						const result = await next()
-						executionOrder.push('middleware2-after')
-						return result
-					},
-				] as MiddlewareFunction[],
-			}))
-
-			const handler = await import('../../src/runtime/handler')
-			const mockEvent = {
-				node: {
-					req: {
-						url: '/graphql/',
-						method: 'POST',
-						headers: { host: 'localhost' },
-					},
-				},
-				context: { params: {} },
-			}
-
-			await handler.default(mockEvent as H3Event)
-
-			expect(executionOrder).toEqual([
-				'middleware1-before',
-				'middleware2-before',
-				'middleware2-after',
-				'middleware1-after',
-			])
-		})
-	})
-
 	describe('Preset Merging', () => {
 		it('should use grafserv options from preset', async () => {
 			const { grafserv } = await import('grafserv/h3/v1')
@@ -222,44 +172,6 @@ describe('Nuxt Grafserv Integration', () => {
 					}),
 				})
 			)
-		})
-	})
-
-	describe('Context Structure', () => {
-		it('should create context with Web standard Request object', async () => {
-			// Mock middleware to capture context BEFORE importing handler
-			let capturedContext: Partial<GrafastContext> = {}
-			vi.doMock('#internal/grafserv/middleware', () => ({
-				default: [
-					async (ctx, next) => {
-						capturedContext = ctx
-						return next()
-					},
-				] as MiddlewareFunction[],
-			}))
-
-			// Clear cache and re-import handler to pick up mocked middleware
-			const { clearGrafservCache } = await import('../../src/runtime/handler')
-			await clearGrafservCache()
-			vi.resetModules()
-
-			const handler = await import('../../src/runtime/handler')
-			const mockEvent = {
-				node: {
-					req: {
-						url: '/graphql/',
-						method: 'POST',
-						headers: { host: 'localhost', authorization: 'Bearer token' },
-					},
-				},
-				context: { params: { id: '123' } },
-			}
-
-			await handler.default(mockEvent as H3Event)
-
-			expect(capturedContext).toBeDefined()
-			expect(capturedContext.req).toBeInstanceOf(Request)
-			expect(capturedContext.params).toEqual({ id: '123' })
 		})
 	})
 })

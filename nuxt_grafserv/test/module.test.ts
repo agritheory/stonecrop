@@ -125,7 +125,6 @@ describe('Grafserv Module', () => {
 				schema: 'server/**/*.graphql',
 				resolvers: 'server/resolvers.ts',
 				url: '/graphql/',
-				plugins: [],
 			}
 
 			module.setup(options, mockNuxt)
@@ -138,7 +137,6 @@ describe('Grafserv Module', () => {
 				schema: 'server/**/*.graphql',
 				resolvers: 'server/resolvers.ts',
 				url: '/graphql/',
-				plugins: [],
 			}
 
 			module.setup(options, mockNuxt)
@@ -151,7 +149,6 @@ describe('Grafserv Module', () => {
 				schema: 'server/**/*.graphql',
 				resolvers: 'server/resolvers.ts',
 				url: '/graphql/',
-				plugins: [],
 			}
 
 			module.setup(options, mockNuxt)
@@ -165,7 +162,6 @@ describe('Grafserv Module', () => {
 				schema: '/absolute/path/schema.graphql',
 				resolvers: 'server/resolvers.ts',
 				url: '/graphql/',
-				plugins: [],
 			}
 
 			module.setup(options, mockNuxt)
@@ -178,7 +174,6 @@ describe('Grafserv Module', () => {
 				schema: ['server/schema1.graphql', 'server/schema2.graphql'],
 				resolvers: 'server/resolvers.ts',
 				url: '/graphql/',
-				plugins: [],
 			}
 
 			module.setup(options, mockNuxt)
@@ -195,7 +190,6 @@ describe('Grafserv Module', () => {
 				schema: schemaFn,
 				resolvers: 'server/resolvers.ts',
 				url: '/graphql/',
-				plugins: [],
 			}
 
 			module.setup(options, mockNuxt)
@@ -208,40 +202,12 @@ describe('Grafserv Module', () => {
 				schema: 'server/**/*.graphql',
 				resolvers: 'server/resolvers.ts',
 				url: '/graphql/',
-				plugins: [],
 			}
 
 			module.setup(options, mockNuxt)
 
 			expect(nitroConfig.virtual['#internal/grafserv/resolvers']).toBeDefined()
-			expect(nitroConfig.virtual['#internal/grafserv/resolvers']).toContain('#grafserv-server/resolvers.ts')
-		})
-
-		it('should create empty middleware module when no middlewarePath', () => {
-			const options: ModuleOptions = {
-				schema: 'server/**/*.graphql',
-				resolvers: 'server/resolvers.ts',
-				url: '/graphql/',
-				plugins: [],
-			}
-
-			module.setup(options, mockNuxt)
-
-			expect(nitroConfig.virtual['#internal/grafserv/middleware']).toBe('export default []')
-		})
-
-		it('should create middleware module when middlewarePath provided', () => {
-			const options: ModuleOptions = {
-				schema: 'server/**/*.graphql',
-				resolvers: 'server/resolvers.ts',
-				middlewarePath: 'server/middleware.ts',
-				url: '/graphql/',
-				plugins: [],
-			}
-
-			module.setup(options, mockNuxt)
-
-			expect(nitroConfig.virtual['#internal/grafserv/middleware']).toContain('#grafserv-server/middleware.ts')
+			expect(nitroConfig.virtual['#internal/grafserv/resolvers']).toContain('server/resolvers.ts')
 		})
 
 		it('should externalize Grafast packages', () => {
@@ -249,16 +215,14 @@ describe('Grafserv Module', () => {
 				schema: 'server/**/*.graphql',
 				resolvers: 'server/resolvers.ts',
 				url: '/graphql/',
-				plugins: [],
 			}
 
 			module.setup(options, mockNuxt)
 
 			expect(nitroConfig.externals.external).toContain('grafast')
-			expect(nitroConfig.externals.external).toContain('grafserv')
-			expect(nitroConfig.externals.external).toContain('grafserv/h3/v1')
-			expect(nitroConfig.externals.external).toContain('graphile-config')
-			expect(nitroConfig.externals.external).toContain('debug')
+			expect(nitroConfig.externals.external).toContain('@graphql-tools/schema')
+			expect(nitroConfig.externals.external).toContain('@graphql-tools/load')
+			expect(nitroConfig.externals.external).toContain('@graphql-tools/graphql-file-loader')
 		})
 
 		it('should register GraphQL handler', () => {
@@ -266,12 +230,11 @@ describe('Grafserv Module', () => {
 				schema: 'server/**/*.graphql',
 				resolvers: 'server/resolvers.ts',
 				url: '/graphql/',
-				plugins: [],
 			}
 
 			module.setup(options, mockNuxt)
 
-			const graphqlHandler = nitroConfig.handlers.find(h => h.handler.includes('graphql'))
+			const graphqlHandler = nitroConfig.handlers.find(h => h.handler.includes('handler') && h.route === '/graphql/')
 			expect(graphqlHandler).toBeDefined()
 			expect(graphqlHandler?.route).toBe('/graphql/')
 		})
@@ -281,7 +244,6 @@ describe('Grafserv Module', () => {
 				schema: 'server/**/*.graphql',
 				resolvers: 'server/resolvers.ts',
 				url: '/graphql/',
-				plugins: [],
 			}
 
 			module.setup(options, mockNuxt)
@@ -295,7 +257,6 @@ describe('Grafserv Module', () => {
 				schema: 'server/**/*.graphql',
 				resolvers: 'server/resolvers.ts',
 				url: '/graphql/',
-				plugins: [],
 			}
 
 			module.setup(options, mockNuxt)
@@ -309,7 +270,6 @@ describe('Grafserv Module', () => {
 				schema: 'server/**/*.graphql',
 				resolvers: 'server/resolvers.ts',
 				url: '/graphql/',
-				plugins: [],
 			}
 
 			module.setup(options, mockNuxt)
@@ -327,7 +287,6 @@ describe('Grafserv Module', () => {
 				schema: 'server/**/*.graphql',
 				resolvers: 'server/resolvers.ts',
 				url: '/graphql/',
-				plugins: [],
 			}
 
 			module.setup(options, mockNuxt)
@@ -342,7 +301,6 @@ describe('Grafserv Module', () => {
 				schema: 'server/**/*.graphql',
 				resolvers: 'server/resolvers.ts',
 				url: '/graphql/',
-				plugins: [],
 			}
 
 			module.setup(options, mockNuxt)
@@ -358,7 +316,6 @@ describe('Grafserv Module', () => {
 				schema: 'server/**/*.graphql',
 				resolvers: 'server/resolvers.ts',
 				url: '/graphql/',
-				plugins: [],
 			}
 
 			module.setup(options, mockNuxt)
@@ -370,7 +327,6 @@ describe('Grafserv Module', () => {
 			const options: ModuleOptions = {
 				schema: 'server/**/*.graphql',
 				resolvers: 'server/resolvers.ts',
-				plugins: [],
 			}
 
 			module.setup(options, mockNuxt)

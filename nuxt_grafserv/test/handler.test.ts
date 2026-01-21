@@ -1,5 +1,4 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import type { GraphileConfig } from 'graphile-config'
 import type { ModuleOptions } from '../src/types'
 
 describe('Handler Functions', () => {
@@ -46,85 +45,6 @@ describe('Handler Functions', () => {
 
 	afterEach(() => {
 		vi.resetModules()
-	})
-
-	describe('buildPreset', () => {
-		it('should build preset with user preset options', async () => {
-			const { grafserv } = await import('grafserv/h3/v1')
-			const { getGrafservInstance, clearGrafservCache } = await import('../src/runtime/handler')
-
-			await clearGrafservCache()
-
-			const options: ModuleOptions = {
-				schema: 'test.graphql',
-				preset: {
-					grafserv: {
-						websockets: true,
-						maxRequestLength: 100000,
-						graphqlOverGET: true,
-					},
-				},
-			}
-
-			await getGrafservInstance(options)
-
-			expect(grafserv).toHaveBeenCalledWith(
-				expect.objectContaining({
-					preset: expect.objectContaining({
-						grafserv: expect.objectContaining({
-							websockets: true,
-							graphqlOverGET: true,
-							maxRequestLength: 100000,
-						}),
-					}),
-				})
-			)
-		})
-
-		it('should handle missing preset', async () => {
-			const { grafserv } = await import('grafserv/h3/v1')
-			const { getGrafservInstance, clearGrafservCache } = await import('../src/runtime/handler')
-
-			await clearGrafservCache()
-
-			const options: ModuleOptions = {
-				schema: 'test.graphql',
-			}
-
-			await getGrafservInstance(options)
-
-			expect(grafserv).toHaveBeenCalledWith(
-				expect.objectContaining({
-					preset: expect.objectContaining({
-						plugins: [],
-					}),
-				})
-			)
-		})
-
-		it('should merge plugins array', async () => {
-			const { grafserv } = await import('grafserv/h3/v1')
-			const { getGrafservInstance, clearGrafservCache } = await import('../src/runtime/handler')
-
-			await clearGrafservCache()
-
-			const mockPlugin = { name: 'test-plugin' } as GraphileConfig.Plugin
-
-			const options: ModuleOptions = {
-				schema: 'test.graphql',
-				plugins: [mockPlugin],
-			}
-
-			await getGrafservInstance(options)
-
-			expect(grafserv).toHaveBeenCalledWith(
-				expect.objectContaining({
-					preset: expect.objectContaining({
-						plugins: [mockPlugin],
-					}),
-				})
-			)
-		})
 	})
 
 	describe('getSchema - resolver transformation', () => {
@@ -433,37 +353,12 @@ describe('Handler Functions', () => {
 			const schemaProvider = vi.fn(async () => mockSchema)
 
 			const options: ModuleOptions = {
-				schema: schemaProvider,
+				schema: schemaProvider as unknown as ModuleOptions['schema'],
 			}
 
 			await getGrafservInstance(options)
 
 			expect(schemaProvider).toHaveBeenCalled()
-		})
-
-		it('should handle resolver load error', async () => {
-			const { getGrafservInstance, clearGrafservCache } = await import('../src/runtime/handler')
-
-			await clearGrafservCache()
-
-			// Mock console.warn to suppress expected error output
-			const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
-
-			// Mock the resolvers module to throw
-			vi.doMock('#internal/grafserv/resolvers', () => {
-				throw new Error('Cannot find resolvers')
-			})
-
-			const options: ModuleOptions = {
-				schema: 'test.graphql',
-				resolvers: 'server/resolvers.ts',
-			}
-
-			// Should not throw - resolver errors are caught and logged
-			await expect(getGrafservInstance(options)).resolves.toBeDefined()
-			expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('Could not load resolvers'), expect.any(Error))
-
-			warnSpy.mockRestore()
 		})
 
 		it('should throw error when no schema provided', async () => {
@@ -472,7 +367,7 @@ describe('Handler Functions', () => {
 			await clearGrafservCache()
 
 			const options: ModuleOptions = {
-				schema: undefined as any,
+				schema: undefined as unknown as ModuleOptions['schema'],
 			}
 
 			await expect(getGrafservInstance(options)).rejects.toThrow('[@stonecrop/nuxt-grafserv] No schema provided')

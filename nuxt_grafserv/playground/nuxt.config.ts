@@ -18,9 +18,6 @@ export default defineNuxtConfig({
 		// Enable GraphiQL in development
 		graphiql: true,
 
-		// Path to middleware file (recommended approach)
-		middlewarePath: 'server/middleware.ts',
-
 		// Graphile preset with grafserv options
 		preset: {
 			grafserv: {
