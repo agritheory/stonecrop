@@ -3,7 +3,7 @@
  * Uses in-memory data stores for demonstration
  */
 
-import { constant, GrafastSchemaConfig, lambda } from 'grafast'
+import { type GrafastSchemaConfig, Step, access, constant, filter, lambda, object } from 'grafast'
 
 // In-memory data stores
 interface User {
@@ -123,7 +123,7 @@ const resolvers: GrafastSchemaConfig['objects'] = {
 			 */
 			user: (_source, fieldArgs) => {
 				const { $id } = fieldArgs
-				return lambda($id, id => users.get(id) || null)
+				return lambda($id, id => users.get(id) ?? null)
 			},
 
 			/**
@@ -136,7 +136,10 @@ const resolvers: GrafastSchemaConfig['objects'] = {
 			 */
 			userOrders: (_source, fieldArgs) => {
 				const { $userId } = fieldArgs
-				return lambda($userId, userId => Array.from(orders.values()).filter(order => order.userId === userId))
+				const $allOrders = constant(Array.from(orders.values()))
+				return filter($allOrders, $order =>
+					lambda([access($order, 'userId'), $userId], ([orderUserId, userId]) => orderUserId === userId)
+				)
 			},
 		},
 	},
@@ -156,18 +159,20 @@ const resolvers: GrafastSchemaConfig['objects'] = {
 			 */
 			createUser: (_source, fieldArgs) => {
 				const { $name, $email } = fieldArgs
-				return lambda([$name, $email], ([name, email]) => {
-					const id = String(nextUserId++)
-					const now = new Date().toISOString()
-					const user: User = {
-						id,
-						name,
-						email,
-						role: 'user',
-						createdAt: now,
-						updatedAt: now,
-					}
-					users.set(id, user)
+				const $id = constant(String(nextUserId++))
+				const $now = constant(new Date().toISOString())
+
+				const $user = object({
+					id: $id,
+					name: $name,
+					email: $email,
+					role: constant('user'),
+					createdAt: $now,
+					updatedAt: $now,
+				})
+
+				return lambda($user, user => {
+					users.set(user.id, user)
 					console.log(`[Playground] Created user: ${user.name} (${user.id})`)
 					return user
 				})
@@ -278,11 +283,9 @@ const resolvers: GrafastSchemaConfig['objects'] = {
 			/**
 			 * Resolve the user for an order
 			 */
-			user: $order => {
-				return lambda($order, order => {
-					const typedOrder = order as Order
-					return users.get(typedOrder.userId) || null
-				})
+			user: ($order: Step<Order>) => {
+				const $userId = access($order, 'userId')
+				return lambda($userId, userId => users.get(userId as string) ?? null)
 			},
 		},
 	},
