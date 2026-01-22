@@ -126,15 +126,26 @@ type Mutation {
 2. Create your resolvers (`server/resolvers.ts`):
 
 ```typescript
-export default {
+import { constant, lambda, type GrafastSchemaConfig } from 'grafast'
+
+const resolvers: GrafastSchemaConfig['objects'] = {
   Query: {
-    hello: () => 'world',
-    ping: () => true
+    plans: {
+      hello: () => constant('world'),
+      ping: () => constant(true)
+    }
   },
   Mutation: {
-    echo: (_: unknown, { message }: { message: string }) => message
+    plans: {
+      echo: (_source, fieldArgs) => {
+        const { $message } = fieldArgs
+        return $message
+      }
+    }
   }
 }
+
+export default resolvers
 ```
 
 ## Advanced Usage
@@ -282,17 +293,56 @@ export default defineEventHandler(async (event) => {
 
 ### Schema Building with Objects Structure
 
-The module uses Grafast's modern objects structure for better type safety. Your resolvers are automatically transformed:
+The module uses Grafast's modern objects structure for better type safety and performance:
 
 ```typescript
-export default {
+import { constant, lambda, access, type GrafastSchemaConfig } from 'grafast'
+
+const resolvers: GrafastSchemaConfig['objects'] = {
   Query: {
     plans: {
-      hello: () => 'world'
+      // Static values use constant()
+      hello: () => constant('world'),
+
+      // Arguments accessed via fieldArgs with $ prefix
+      user: (_source, fieldArgs) => {
+        const { $id } = fieldArgs
+        return lambda($id, (id) => getUserById(id))
+      },
+
+      // Multiple arguments
+      search: (_source, fieldArgs) => {
+        const { $query, $limit } = fieldArgs
+        return lambda([$query, $limit], ([query, limit]) => {
+          return searchUsers(query, limit)
+        })
+      }
+    }
+  },
+
+  // Field resolvers for types
+  User: {
+    plans: {
+      // Access source object properties
+      fullName: ($user) => {
+        return lambda($user, (user) => {
+          const typed = user as { firstName: string; lastName: string }
+          return `${typed.firstName} ${typed.lastName}`
+        })
+      }
     }
   }
 }
+
+export default resolvers
 ```
+
+**Key Concepts:**
+- All resolvers return **steps** (constant, lambda, access, etc.), not plain values
+- Arguments are accessed via `fieldArgs.$argumentName` (note the `$` prefix)
+- Use `lambda()` to transform step values at execution time
+- Use `constant()` for static values
+- Source objects (`$source`, `$user`, etc.) are also steps that need `lambda()` to access their properties
 
 ## Development
 
