@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/nuxt",
+      "comment": "add npx installer",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/nuxt"
+}

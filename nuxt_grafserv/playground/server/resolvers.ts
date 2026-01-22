@@ -3,6 +3,8 @@
  * Uses in-memory data stores for demonstration
  */
 
+import { type GrafastSchemaConfig, Step, access, constant, filter, lambda, object } from 'grafast'
+
 // In-memory data stores
 interface User {
 	id: string
@@ -98,141 +100,169 @@ let nextUserId = 4
 let nextOrderId = 3
 let nextItemId = 4
 
-export default {
+const resolvers: GrafastSchemaConfig['objects'] = {
 	Query: {
-		/**
-		 * Simple hello world
-		 */
-		hello: () => 'world',
+		plans: {
+			/**
+			 * Simple hello world
+			 */
+			hello: () => constant('world'),
 
-		/**
-		 * Health check
-		 */
-		ping: () => true,
+			/**
+			 * Health check
+			 */
+			ping: () => constant(true),
 
-		/**
-		 * Get all users
-		 */
-		users: () => Array.from(users.values()),
+			/**
+			 * Get all users
+			 */
+			users: () => constant(Array.from(users.values())),
 
-		/**
-		 * Get user by ID
-		 */
-		user: (_: unknown, { id }: { id: string }) => users.get(id) || null,
+			/**
+			 * Get user by ID
+			 */
+			user: (_source, fieldArgs) => {
+				const { $id } = fieldArgs
+				return lambda($id, id => users.get(id) ?? null)
+			},
 
-		/**
-		 * Get all orders
-		 */
-		orders: () => Array.from(orders.values()),
+			/**
+			 * Get all orders
+			 */
+			orders: () => constant(Array.from(orders.values())),
 
-		/**
-		 * Get orders for a specific user
-		 */
-		userOrders: (_: unknown, { userId }: { userId: string }) =>
-			Array.from(orders.values()).filter(order => order.userId === userId),
+			/**
+			 * Get orders for a specific user
+			 */
+			userOrders: (_source, fieldArgs) => {
+				const { $userId } = fieldArgs
+				const $allOrders = constant(Array.from(orders.values()))
+				return filter($allOrders, $order =>
+					lambda([access($order, 'userId'), $userId], ([orderUserId, userId]) => orderUserId === userId)
+				)
+			},
+		},
 	},
 
 	Mutation: {
-		/**
-		 * Echo back the message
-		 */
-		echo: (_: unknown, { message }: { message: string }) => message,
+		plans: {
+			/**
+			 * Echo back the message
+			 */
+			echo: (_source, fieldArgs) => {
+				const { $message } = fieldArgs
+				return $message
+			},
 
-		/**
-		 * Create a new user
-		 */
-		createUser: (_: unknown, { name, email }: { name: string; email: string }) => {
-			const id = String(nextUserId++)
-			const now = new Date().toISOString()
-			const user: User = {
-				id,
-				name,
-				email,
-				role: 'user',
-				createdAt: now,
-				updatedAt: now,
-			}
-			users.set(id, user)
-			console.log(`[Playground] Created user: ${user.name} (${user.id})`)
-			return user
-		},
+			/**
+			 * Create a new user
+			 */
+			createUser: (_source, fieldArgs) => {
+				const { $name, $email } = fieldArgs
+				const $id = constant(String(nextUserId++))
+				const $now = constant(new Date().toISOString())
 
-		/**
-		 * Update an existing user
-		 */
-		updateUser: (
-			_: unknown,
-			{ id, name, email, role }: { id: string; name?: string; email?: string; role?: string }
-		) => {
-			const user = users.get(id)
-			if (!user) return null
+				const $user = object({
+					id: $id,
+					name: $name,
+					email: $email,
+					role: constant('user'),
+					createdAt: $now,
+					updatedAt: $now,
+				})
 
-			if (name !== undefined) user.name = name
-			if (email !== undefined) user.email = email
-			if (role !== undefined) user.role = role
-			user.updatedAt = new Date().toISOString()
+				return lambda($user, user => {
+					users.set(user.id, user)
+					console.log(`[Playground] Created user: ${user.name} (${user.id})`)
+					return user
+				})
+			},
 
-			users.set(id, user)
-			console.log(`[Playground] Updated user: ${user.name} (${user.id})`)
-			return user
-		},
+			/**
+			 * Update an existing user
+			 */
+			updateUser: (_source, fieldArgs) => {
+				const { $id, $name, $email, $role } = fieldArgs
+				return lambda([$id, $name, $email, $role], ([id, name, email, role]) => {
+					const user = users.get(id)
+					if (!user) return null
 
-		/**
-		 * Delete a user
-		 */
-		deleteUser: (_: unknown, { id }: { id: string }) => {
-			const deleted = users.delete(id)
-			if (deleted) {
-				console.log(`[Playground] Deleted user: ${id}`)
-			}
-			return deleted
-		},
+					if (name !== undefined) user.name = name
+					if (email !== undefined) user.email = email
+					if (role !== undefined) user.role = role
+					user.updatedAt = new Date().toISOString()
 
-		/**
-		 * Create a new order
-		 */
-		createOrder: (
-			_: unknown,
-			{ userId, items }: { userId: string; items: Array<{ productName: string; quantity: number; price: number }> }
-		) => {
-			const user = users.get(userId)
-			if (!user) {
-				throw new Error(`User not found: ${userId}`)
-			}
+					users.set(id, user)
+					console.log(`[Playground] Updated user: ${user.name} (${user.id})`)
+					return user
+				})
+			},
 
-			const orderId = String(nextOrderId++)
-			const orderItems: OrderItem[] = items.map(item => ({
-				id: String(nextItemId++),
-				...item,
-			}))
+			/**
+			 * Delete a user
+			 */
+			deleteUser: (_source, fieldArgs) => {
+				const { $id } = fieldArgs
+				return lambda($id, id => {
+					const deleted = users.delete(id)
+					if (deleted) {
+						console.log(`[Playground] Deleted user: ${id}`)
+					}
+					return deleted
+				})
+			},
 
-			const total = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
+			/**
+			 * Create a new order
+			 */
+			createOrder: (_source, fieldArgs) => {
+				const { $userId, $items } = fieldArgs
+				return lambda([$userId, $items], ([userId, items]) => {
+					const user = users.get(userId)
+					if (!user) {
+						throw new Error(`User not found: ${userId}`)
+					}
 
-			const order: Order = {
-				id: orderId,
-				userId,
-				status: 'pending',
-				total,
-				items: orderItems,
-				createdAt: new Date().toISOString(),
-			}
+					const orderId = String(nextOrderId++)
+					const orderItems: OrderItem[] = items.map(
+						(item: { productName: string; quantity: number; price: number }) => ({
+							id: String(nextItemId++),
+							...item,
+						})
+					)
 
-			orders.set(orderId, order)
-			console.log(`[Playground] Created order: ${orderId} for user ${userId}`)
-			return order
-		},
+					const total = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
 
-		/**
-		 * Update order status
-		 */
-		updateOrderStatus: (_: unknown, { id, status }: { id: string; status: string }) => {
-			const order = orders.get(id)
-			if (!order) return null
+					const order: Order = {
+						id: orderId,
+						userId,
+						status: 'pending',
+						total,
+						items: orderItems,
+						createdAt: new Date().toISOString(),
+					}
 
-			order.status = status
-			orders.set(id, order)
-			console.log(`[Playground] Updated order ${id} status to: ${status}`)
-			return order
+					orders.set(orderId, order)
+					console.log(`[Playground] Created order: ${orderId} for user ${userId}`)
+					return order
+				})
+			},
+
+			/**
+			 * Update order status
+			 */
+			updateOrderStatus: (_source, fieldArgs) => {
+				const { $id, $status } = fieldArgs
+				return lambda([$id, $status], ([id, status]) => {
+					const order = orders.get(id)
+					if (!order) return null
+
+					order.status = status
+					orders.set(id, order)
+					console.log(`[Playground] Updated order ${id} status to: ${status}`)
+					return order
+				})
+			},
 		},
 	},
 
@@ -240,16 +270,25 @@ export default {
 	 * User type resolvers
 	 */
 	User: {
-		// Field resolvers if needed
+		plans: {
+			// Field resolvers if needed
+		},
 	},
 
 	/**
 	 * Order type resolvers
 	 */
 	Order: {
-		/**
-		 * Resolve the user for an order
-		 */
-		user: (order: Order) => users.get(order.userId) || null,
+		plans: {
+			/**
+			 * Resolve the user for an order
+			 */
+			user: ($order: Step<Order>) => {
+				const $userId = access($order, 'userId')
+				return lambda($userId, userId => users.get(userId as string) ?? null)
+			},
+		},
 	},
 }
+
+export default resolvers

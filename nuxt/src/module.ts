@@ -5,12 +5,15 @@ import {
 	addLayout,
 	addPlugin,
 	addServerHandler,
+	addVitePlugin,
 	createResolver,
 	defineNuxtModule,
 	extendPages,
 	useLogger,
 } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema' // do not remove this import since it causes a build issue
+
+import { createSymlinkedPackagesPlugin } from './plugins/symlinking'
 
 const { resolve } = createResolver(import.meta.url)
 
@@ -22,6 +25,16 @@ export interface ModuleOptions {
 	/** Path to doctypes folder (defaults to 'doctypes' in srcDir) */
 	doctypesDir?: string
 }
+
+// Stonecrop packages that need to be transpiled (they import CSS in their dist bundles)
+const STONECROP_PACKAGES = [
+	'@stonecrop/aform',
+	'@stonecrop/atable',
+	'@stonecrop/stonecrop',
+	'@stonecrop/node-editor',
+	'@stonecrop/utilities',
+	'@stonecrop/themes',
+]
 
 export default defineNuxtModule<ModuleOptions>({
 	meta: {
@@ -37,8 +50,44 @@ export default defineNuxtModule<ModuleOptions>({
 		}
 	},
 
-	async setup(_options, nuxt) {
+	async setup(options, nuxt) {
 		const logger = useLogger('@stonecrop/nuxt', { level: nuxt.options.dev ? 3 : 0 })
+
+		// Add Stonecrop packages to transpile so Vite handles CSS imports during SSR
+		// These packages use vite-plugin-lib-inject-css which adds CSS imports to the JS bundle
+		// Node.js ESM loader doesn't understand CSS, so we need Vite to process them
+		nuxt.options.build.transpile = nuxt.options.build.transpile || []
+		for (const pkg of STONECROP_PACKAGES) {
+			if (!nuxt.options.build.transpile.includes(pkg)) {
+				nuxt.options.build.transpile.push(pkg)
+			}
+		}
+		logger.log('Added Stonecrop packages to build.transpile for SSR CSS handling')
+
+		// Configure Nitro to bundle Stonecrop packages instead of treating them as external
+		// This is critical for handling CSS imports in the distributed packages
+		nuxt.hook('nitro:config', config => {
+			config.externals = config.externals || {}
+			config.externals.inline = config.externals.inline || []
+
+			for (const pkg of STONECROP_PACKAGES) {
+				if (!config.externals.inline.includes(pkg)) {
+					config.externals.inline.push(pkg)
+				}
+			}
+
+			logger.log('Added Stonecrop packages to Nitro externals.inline for CSS bundling')
+		})
+
+		// Add Vite plugin to handle symlinked packages during development
+		if (nuxt.options.dev) {
+			const symlinkedPackagesPlugin = createSymlinkedPackagesPlugin({
+				rootDir: nuxt.options.rootDir,
+				packages: STONECROP_PACKAGES,
+				logger: (msg: string) => logger.log(msg),
+			})
+			addVitePlugin(symlinkedPackagesPlugin)
+		}
 
 		// add the base Stonecrop layout from the module
 		const layoutsDir = resolve('runtime/layouts')
@@ -145,7 +194,7 @@ export default defineNuxtModule<ModuleOptions>({
 		}
 
 		// Setup DocBuilder if enabled
-		if (_options.docbuilder) {
+		if (options.docbuilder) {
 			logger.log('DocBuilder enabled, adding routes and handlers')
 
 			const pagesDir = resolve('runtime/pages')

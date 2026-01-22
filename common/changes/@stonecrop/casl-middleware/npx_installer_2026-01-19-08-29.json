@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/casl-middleware",
+      "comment": "reduce build package size by externalizing dependencies",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/casl-middleware"
+}

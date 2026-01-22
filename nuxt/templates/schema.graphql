@@ -1,0 +1,129 @@
+# Stonecrop GraphQL Schema
+# Add your type definitions here
+
+scalar JSON
+
+# ============================================
+# Stonecrop Meta Types
+# ============================================
+
+"""
+Field metadata from doctype schema
+"""
+type FieldMeta {
+	fieldname: String!
+	fieldtype: String!
+	label: String
+	required: Boolean
+	readOnly: Boolean
+	options: JSON
+	default: JSON
+	width: String
+	validation: JSON
+}
+
+"""
+Workflow metadata with states and actions
+"""
+type WorkflowMeta {
+	states: [String!]
+	actions: JSON
+}
+
+"""
+Complete doctype metadata
+"""
+type DoctypeMeta {
+	name: String!
+	slug: String
+	tableName: String
+	fields: [FieldMeta!]!
+	workflow: WorkflowMeta
+	inherits: String
+	listDoctype: String
+	parentDoctype: String
+}
+
+# ============================================
+# Result Types
+# ============================================
+
+type HealthStatus {
+	status: String!
+	timestamp: String!
+	version: String!
+}
+
+type RecordResult {
+	data: JSON
+	doctype: String!
+}
+
+type RecordsResult {
+	data: [JSON!]!
+	doctype: String!
+	count: Int!
+}
+
+type ActionResult {
+	success: Boolean!
+	data: JSON
+	error: String
+}
+
+# ============================================
+# Queries
+# ============================================
+
+type Query {
+	"""
+	Health check endpoint
+	"""
+	healthCheck: HealthStatus!
+
+	"""
+	Get metadata for a doctype
+	"""
+	getMeta(doctype: String!): DoctypeMeta
+
+	"""
+	Get all registered doctype metadata
+	"""
+	stonecropAllMeta: [DoctypeMeta!]!
+
+	"""
+	Get a single record by doctype and ID
+	"""
+	stonecropRecord(doctype: String!, id: String!): RecordResult
+
+	"""
+	Get multiple records with optional filtering
+	"""
+	stonecropRecords(doctype: String!, filters: JSON, orderBy: String, limit: Int, offset: Int): RecordsResult
+}
+
+# ============================================
+# Mutations
+# ============================================
+
+type Mutation {
+	"""
+	Execute a doctype action
+	"""
+	stonecropAction(doctype: String!, action: String!, args: JSON): ActionResult!
+
+	"""
+	Create a new record
+	"""
+	stonecropCreate(doctype: String!, input: JSON!): RecordResult!
+
+	"""
+	Update an existing record
+	"""
+	stonecropUpdate(doctype: String!, id: String!, patch: JSON!): RecordResult
+
+	"""
+	Delete a record
+	"""
+	stonecropDelete(doctype: String!, id: String!): ActionResult!
+}

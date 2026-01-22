@@ -21,7 +21,7 @@
 		".": {
 			"import": {
 				"types": "./dist/src/index.d.ts",
-				"default": "./dist/casl_middleware.js"
+				"default": "./dist/casl-middleware.js"
 			}
 		},
 		"./types": {
@@ -56,7 +56,7 @@
 		"rockfoil"
 	],
 	"dependencies": {
-		"@casl/ability": "^6.7.5",
+		"@casl/ability": "^6.8.0",
 		"graphql": "^16.12.0",
 		"graphql-tag": "^2.12.6",
 		"jsonwebtoken": "^9.0.3"
@@ -72,7 +72,7 @@
 		"graphql-middleware": "^6.1.35",
 		"graphql-yoga": "^5.18.0",
 		"jsdom": "^27.4.0",
-		"postgraphile": "^5.0.0-rc.3",
+		"postgraphile": "^5.0.0-rc.4",
 		"stonecrop-rig": "workspace:*",
 		"typescript": "^5.9.3",
 		"vite": "^7.3.1",
@@ -81,7 +81,7 @@
 	},
 	"peerDependencies": {
 		"graphql-yoga": "^5.18.0",
-		"postgraphile": "^5.0.0-rc.3"
+		"postgraphile": "^5.0.0-rc.4"
 	},
 	"peerDependenciesMeta": {
 		"postgraphile": {

@@ -50,7 +50,7 @@
 	},
 	"dependencies": {
 		"graphql": "^16.12.0",
-		"postgraphile": "^5.0.0-rc.3"
+		"postgraphile": "^5.0.0-rc.4"
 	},
 	"devDependencies": {
 		"@rushstack/heft": "^1.1.7",

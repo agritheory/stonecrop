@@ -1,29 +1,12 @@
-import { grafserv } from 'grafserv/h3/v1'
-import { makeGrafastSchema } from 'grafast'
 import { GraphQLFileLoader } from '@graphql-tools/graphql-file-loader'
 import { loadTypedefs } from '@graphql-tools/load'
+import { grafserv } from 'grafserv/h3/v1'
+import { makeGrafastSchema } from 'grafast'
+import type { GraphQLSchema, DocumentNode } from 'graphql'
 import { defineEventHandler, type H3Event } from 'h3'
 import { useRuntimeConfig } from 'nitropack/runtime'
-import type { GraphQLSchema, DocumentNode } from 'graphql'
 
-import type { ModuleOptions, GrafastContext, MiddlewareFunction } from '../types'
-
-// Lazy-load middleware from virtual module (preserves function references)
-let middlewareFunctions: MiddlewareFunction[] | null = null
-
-async function getMiddleware(): Promise<MiddlewareFunction[]> {
-	if (middlewareFunctions !== null) {
-		return middlewareFunctions
-	}
-	try {
-		// @ts-expect-error - virtual module
-		const mod = await import('#internal/grafserv/middleware')
-		middlewareFunctions = mod.default || []
-	} catch {
-		middlewareFunctions = []
-	}
-	return middlewareFunctions
-}
+import type { ModuleOptions } from '../types'
 
 // Cache for the grafserv instance
 let grafservInstance: ReturnType<typeof grafserv> | null = null
@@ -58,37 +41,50 @@ async function getSchema(options: ModuleOptions): Promise<GraphQLSchema> {
 		const typeDefDocs = await loadTypeDefsFromFiles(options.schema)
 
 		// Load resolvers if provided
-		let plans: Record<string, Record<string, { resolve: unknown }>> = {}
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		const objects: Record<string, any> = {}
 		if (options.resolvers) {
 			try {
+				// Import resolvers through virtual module so Nitro's alias applies
+				// This ensures resolver's grafast imports use the same instance as the handler
+				// @ts-expect-error - virtual module
 				const resolverModule = await import('#internal/grafserv/resolvers')
 				const resolvers = resolverModule.default || resolverModule
-				console.log('[@stonecrop/nuxt-grafserv] Resolvers loaded:', Object.keys(resolvers))
+				console.debug('[@stonecrop/nuxt-grafserv] Resolvers loaded:', Object.keys(resolvers))
 
-				// Transform GraphQL-style resolvers to Grafast plans format
-				// Grafast expects { Type: { field: { resolve: fn } } } not { Type: { field: fn } }
+				// Transform resolvers to Grafast objects structure
+				// Auto-detect if resolvers already have plans key (new format)
+				// Otherwise, wrap them (backward compatibility)
 				for (const typeName of Object.keys(resolvers)) {
-					plans[typeName] = {}
 					const typeResolvers = resolvers[typeName]
-					for (const fieldName of Object.keys(typeResolvers)) {
-						const resolver = typeResolvers[fieldName]
-						if (typeof resolver === 'function') {
-							plans[typeName][fieldName] = { resolve: resolver }
-						} else {
-							plans[typeName][fieldName] = resolver
-						}
+
+					// Check if already in objects format with plans key
+					if (typeResolvers && typeof typeResolvers === 'object' && 'plans' in typeResolvers) {
+						// Already in new format: { TypeName: { plans: { fieldName: fn } } }
+						objects[typeName] = typeResolvers
+					} else {
+						// Old format: { TypeName: { fieldName: fn } }
+						// Auto-wrap for backward compatibility
+						objects[typeName] = { plans: typeResolvers }
 					}
 				}
 			} catch (e) {
+				console.error('[@stonecrop/nuxt-grafserv] Error loading resolvers:', e)
 				console.warn('[@stonecrop/nuxt-grafserv] Could not load resolvers:', e)
 			}
 		}
 
-		// Create schema with grafast
-		schema = makeGrafastSchema({
-			typeDefs: typeDefDocs,
-			plans,
-		})
+		// Important: Create schema lazily to ensure it's in the right execution context
+		try {
+			schema = makeGrafastSchema({
+				typeDefs: typeDefDocs,
+				objects,
+			})
+			console.debug('[@stonecrop/nuxt-grafserv] Grafast schema created successfully')
+		} catch (error) {
+			console.error('[@stonecrop/nuxt-grafserv] Error creating Grafast schema:', error)
+			throw error
+		}
 	} else {
 		throw new Error('[@stonecrop/nuxt-grafserv] No schema provided. Configure schema path or provider function.')
 	}
@@ -99,21 +95,16 @@ async function getSchema(options: ModuleOptions): Promise<GraphQLSchema> {
 
 /**
  * Get or create the grafserv instance
+ * Exported for use by separate handler files
  */
-async function getGrafservInstance(options: ModuleOptions): Promise<ReturnType<typeof grafserv>> {
+export async function getGrafservInstance(options: ModuleOptions): Promise<ReturnType<typeof grafserv>> {
 	if (grafservInstance) {
+		console.log('[@stonecrop/nuxt-grafserv] Returning cached grafserv instance')
 		return grafservInstance
 	}
 
 	const schema = await getSchema(options)
-	const isDev = process.env.NODE_ENV === 'development'
-
-	// Create grafserv instance with the schema
-	grafservInstance = grafserv({
-		schema,
-		graphiql: options.graphiql ?? isDev,
-		websockets: options.grafserv?.websockets ?? false,
-	})
+	grafservInstance = grafserv({ schema, preset: options.preset })
 
 	console.log('[@stonecrop/nuxt-grafserv] Grafserv instance created')
 	return grafservInstance
@@ -129,74 +120,25 @@ export async function clearGrafservCache(): Promise<void> {
 }
 
 /**
- * Apply middleware chain to context
- */
-async function applyMiddleware(
-	context: GrafastContext,
-	middleware: ModuleOptions['middleware']
-): Promise<GrafastContext> {
-	if (!middleware || middleware.length === 0) {
-		return context
-	}
-
-	const applyNext = async (index: number): Promise<GrafastContext> => {
-		if (index >= middleware.length) {
-			return context
-		}
-
-		return middleware[index](context, () => applyNext(index + 1))
-	}
-
-	return applyNext(0)
-}
-
-/**
- * Main H3 event handler for GraphQL requests
+ * Main H3 event handler for GraphQL requests and Ruru UI
+ * Routes between GraphQL operations and GraphiQL UI based on request type
  */
 export default defineEventHandler(async (event: H3Event) => {
 	const config = useRuntimeConfig()
 	const options = config.grafserv as ModuleOptions
 
 	try {
-		// Handle cache clear endpoint (useful for development)
-		if (event.node.req.url?.includes('/__grafserv_cache_clear') && process.env.NODE_ENV === 'development') {
-			await clearGrafservCache()
-			return { success: true, message: 'Cache cleared' }
-		}
-
-		// Build context for middleware
-		const { req } = event.node
-		const context: GrafastContext = {
-			req: new Request(new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`), {
-				method: req.method,
-				headers: req.headers as HeadersInit,
-			}),
-			params: event.context.params || {},
-		}
-
-		// Apply middleware from virtual module
-		const middleware = await getMiddleware()
-		await applyMiddleware(context, middleware)
-
 		// Get grafserv instance
 		const serv = await getGrafservInstance(options)
 
-		// Check URL to determine what type of request this is
-		const url = event.node.req.url || ''
-		const method = event.node.req.method || 'GET'
-
-		// Handle Ruru static assets (CSS/JS)
-		if (url.includes('/ruru-static/')) {
-			return serv.handleGraphiqlStaticEvent(event)
+		// Try GraphQL handler first - it will return null if not a GraphQL operation
+		const graphqlResult = await serv.handleGraphQLEvent(event)
+		if (graphqlResult !== null) {
+			return graphqlResult
 		}
 
-		// Handle GraphiQL HTML page (GET request to /graphql/)
-		if (method === 'GET' && url.match(/\/graphql\/?(\?.*)?$/)) {
-			return serv.handleGraphiqlEvent(event)
-		}
-
-		// Handle GraphQL requests (POST)
-		return serv.handleGraphQLEvent(event)
+		// If not a GraphQL operation, try GraphiQL UI handler
+		return serv.handleGraphiqlEvent(event)
 	} catch (error) {
 		console.error('[@stonecrop/nuxt-grafserv] Error in GraphQL handler:', error)
 		throw error

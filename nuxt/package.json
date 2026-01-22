@@ -13,6 +13,9 @@
 		"url": "https://github.com/agritheory/stonecrop",
 		"directory": "nuxt"
 	},
+	"bin": {
+		"stonecrop-nuxt": "./bin/init.mjs"
+	},
 	"exports": {
 		".": {
 			"types": "./dist/types.d.mts",
@@ -28,7 +31,10 @@
 		}
 	},
 	"files": [
-		"dist"
+		"dist",
+		"bin",
+		"templates",
+		"src/cli"
 	],
 	"scripts": {
 		"_phase:build": "rushx dev:prepare && nuxt-module-build build",
@@ -45,6 +51,7 @@
 		"lint": "eslint .",
 		"test": "vitest run",
 		"test:ui": "vitest --ui",
+		"test:coverage": "vitest run --coverage",
 		"test:watch": "vitest watch",
 		"test:types": "vue-tsc --noEmit && cd playground && vue-tsc --noEmit"
 	},
@@ -58,7 +65,12 @@
 		"@stonecrop/nuxt-grafserv": "workspace:*",
 		"@stonecrop/schema": "workspace:*",
 		"@stonecrop/stonecrop": "workspace:*",
-		"pinia": "^3.0.4"
+		"pinia": "^3.0.4",
+		"citty": "^0.1.6",
+		"consola": "^3.4.0",
+		"jiti": "^2.4.2",
+		"pathe": "^2.0.3",
+		"prompts": "^2.4.2"
 	},
 	"devDependencies": {
 		"@eslint/js": "^9.39.2",
@@ -68,6 +80,8 @@
 		"@nuxt/module-builder": "^1.0.2",
 		"@nuxt/schema": "^4.2.2",
 		"@nuxt/test-utils": "^3.23.0",
+		"@vitest/coverage-istanbul": "^4.0.17",
+		"@types/prompts": "^2.4.9",
 		"browserslist": "latest",
 		"baseline-browser-mapping": "latest",
 		"eslint": "^9.39.2",
@@ -75,6 +89,7 @@
 		"eslint-plugin-vue": "^10.6.2",
 		"globals": "^17.0.0",
 		"nuxt": "^4.2.2",
+		"postgraphile": "^5.0.0-rc.4",
 		"typescript": "^5.9.3",
 		"typescript-eslint": "^8.53.0",
 		"vue": "^3.5.26",

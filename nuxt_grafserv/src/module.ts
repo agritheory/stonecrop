@@ -1,46 +1,76 @@
 import { join } from 'node:path'
+import { createRequire } from 'node:module'
 import { createResolver, defineNuxtModule, useLogger } from '@nuxt/kit'
 import type { NuxtModule } from '@nuxt/schema'
 
 import type { ModuleOptions } from './types'
 
-const logger = useLogger('nuxt-grafserv')
+const logger = useLogger('@stonecrop/nuxt-grafserv')
 
 const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
 	meta: {
-		name: 'nuxt-grafserv',
+		name: '@stonecrop/nuxt-grafserv',
 		configKey: 'grafserv',
 	},
 
 	defaults: _nuxt => ({
-		schema: './server/**/*.graphql',
-		resolvers: './server/resolvers.ts',
+		schema: 'server/**/*.graphql',
+		resolvers: 'server/resolvers.ts',
 		url: '/graphql/',
 		graphiql: undefined, // Will default based on dev mode
-		middleware: [],
 		plugins: [],
-		grafserv: {
-			websockets: false,
-			introspection: undefined, // Will default based on dev mode
+		preset: {
+			grafserv: {
+				websockets: false,
+			},
 		},
 	}),
 
 	setup(options, nuxt) {
 		const { resolve } = createResolver(import.meta.url)
+		const require = createRequire(import.meta.url)
 
 		// Register configuration in nitro runtime config
 		nuxt.hook('nitro:config', config => {
-			const resolverPath = options.resolvers ? join(nuxt.options.srcDir, options.resolvers) : undefined
+			// Add Nitro alias for server directory to handle projects with app/ srcDir
+			config.alias = config.alias || {}
+			config.alias['#grafserv-server'] = join(nuxt.options.rootDir, 'server')
+
+			// Resolve paths
+			const resolveForSchema = (path: string) => {
+				if (path.startsWith('/')) {
+					return path // Already absolute
+				}
+				return join(nuxt.options.rootDir, path)
+			}
+
+			const resolveForVirtualModule = (path: string) => {
+				if (path.startsWith('/')) {
+					return path // Already absolute
+				}
+				// Return absolute path for runtime import, not alias
+				return join(nuxt.options.rootDir, path)
+			}
+
+			logger.info(`Nitro srcDir: ${config.srcDir}`)
+			logger.info(`Nuxt srcDir: ${nuxt.options.srcDir}`)
+			logger.info(`Nuxt rootDir: ${nuxt.options.rootDir}`)
+			logger.info(`Grafserv server alias: ${config.alias['#grafserv-server']}`)
+
+			const resolverPath = options.resolvers ? resolveForVirtualModule(options.resolvers) : undefined
+			logger.info(`Resolved resolver path: ${resolverPath}`)
 
 			config.runtimeConfig = config.runtimeConfig || {}
 			config.runtimeConfig.grafserv = {
 				...options,
-				// Resolve schema paths
+				// Pass resolved resolver path for direct import
+				resolversPath: resolverPath,
+				// Resolve schema paths from project root
 				schema:
 					typeof options.schema === 'string'
-						? join(nuxt.options.srcDir, options.schema)
+						? resolveForSchema(options.schema)
 						: Array.isArray(options.schema)
-						? options.schema.map(s => join(nuxt.options.srcDir, s))
+						? options.schema.map(s => resolveForSchema(s))
 						: options.schema, // function passed through
 			}
 
@@ -52,59 +82,54 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
 				config.virtual['#internal/grafserv/resolvers'] = `export { default } from '${resolverPath}'`
 			}
 
-			// Middleware virtual module
-			let middlewareCode: string
-			if (options.middlewarePath) {
-				// Use external middleware file (recommended - preserves imports)
-				const middlewarePath = join(nuxt.options.srcDir, options.middlewarePath)
-				middlewareCode = `export { default } from '${middlewarePath}'`
-			} else if (options.middleware?.length) {
-				// Inline middleware (deprecated - cannot reference external modules)
-				logger.warn('Inline middleware is deprecated. Use middlewarePath for middleware with external dependencies.')
-				middlewareCode = `export default [${options.middleware.map(fn => fn.toString()).join(',')}]`
-			} else {
-				middlewareCode = 'export default []'
-			}
-			config.virtual['#internal/grafserv/middleware'] = middlewareCode
-
-			// Add externals for Grafast packages
+			// Externalize Grafast to prevent module instance mismatch
+			// Only externalize grafast - let other packages bundle normally
 			config.externals = config.externals || {}
-			config.externals.inline = config.externals.inline || []
-			config.externals.inline.push(
+			config.externals.external = config.externals.external || []
+			config.externals.external.push(
 				'grafast',
-				'grafserv',
-				'grafserv/h3/v1',
-				'graphile-config',
 				'@graphql-tools/schema',
 				'@graphql-tools/load',
 				'@graphql-tools/graphql-file-loader'
 			)
+
+			// CRITICAL: Alias grafast to ensure resolver and handler use the same instance
+			// This prevents "Now is not a valid time to call currentLayerPlan" errors
+			// NOTE: We do NOT externalize the resolver file - it must be bundled for alias to work
+			const grafastPath = require.resolve('grafast')
+			config.alias = config.alias || {}
+			config.alias['grafast'] = grafastPath
 		})
 
 		// Set up Grafast handler
 		nuxt.hook('nitro:config', config => {
 			config.handlers = config.handlers || []
+
+			// Unified GraphQL and Ruru UI handler
 			config.handlers.push({
 				route: options.url || '/graphql/',
 				handler: resolve('./runtime/handler'),
 			})
-			// Add cache API endpoint
+
+			// Ruru static assets handler
+			config.handlers.push({
+				route: '/ruru-static/**',
+				handler: resolve('./runtime/ruru-static'),
+			})
+
+			// Cache API endpoint
 			config.handlers.push({
 				route: '/graphql/cache',
 				handler: resolve('./runtime/cache'),
-			})
-			// Add handler for Ruru (GraphiQL) static assets
-			config.handlers.push({
-				route: '/ruru-static/**',
-				handler: resolve('./runtime/handler'),
 			})
 		})
 
 		// Add custom devtools tab
 		if (options.url) {
-			nuxt.hook('devtools:customTabs', tabs => {
+			// @ts-expect-error - devtools:customTabs hook may not be in all Nuxt versions
+			nuxt.hook('devtools:customTabs', (tabs: unknown[]) => {
 				tabs.push({
-					name: 'nuxt-grafserv',
+					name: '@stonecrop/nuxt-grafserv',
 					title: 'GraphQL (Grafserv)',
 					icon: 'simple-icons:graphql',
 					view: {
@@ -124,8 +149,6 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
 				const isResolverFile = options.resolvers && path.includes(options.resolvers.replace('./', ''))
 
 				if (isSchemaFile || isResolverFile) {
-					logger.info(`${path} changed`)
-
 					if (!cacheClearing) {
 						cacheClearing = true
 						try {
@@ -148,3 +171,6 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
 })
 
 export default module
+
+// Re-export types for use in nuxt.config.ts
+export type { ModuleOptions, SchemaProvider } from './types'

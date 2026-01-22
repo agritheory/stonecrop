@@ -28,7 +28,39 @@ Stonecrop is a **schema-driven UI framework** that generates forms, tables, and 
 
 ## Quick Setup
 
-Install the module to your Nuxt application:
+### Option 1: Interactive Installer (Recommended)
+
+Use the Stonecrop CLI to interactively install features:
+
+```bash
+npx @stonecrop/nuxt init
+```
+
+This will prompt you to select which features to install:
+- **@stonecrop/nuxt** - Frontend module with schema-driven UI
+- **@stonecrop/graphql-client** - GraphQL client with Stonecrop integration
+- **@stonecrop/nuxt-grafserv** - GraphQL server with Grafserv
+- **@stonecrop/casl-middleware** - CASL authorization
+- **@stonecrop/rockfoil** - PostGraphile middleware for database-driven GraphQL
+- **Sample doctypes** - Example doctype files to get started
+
+You can also use flags for non-interactive installation:
+
+```bash
+# Install everything
+npx @stonecrop/nuxt init --frontend --graphql-client --graphql --casl --rockfoil --doctypes --yes
+
+# Install just the frontend module
+npx @stonecrop/nuxt init --frontend
+
+# Add GraphQL server to existing setup
+npx @stonecrop/nuxt init --graphql
+
+# Add PostGraphile middleware
+npx @stonecrop/nuxt init --rockfoil
+```
+
+### Option 2: Manual Installation
 
 ```bash
 npx nuxi module add @stonecrop/nuxt
@@ -296,6 +328,78 @@ npm run lint
 npm run test
 npm run test:watch
 ```
+
+### Testing the CLI Locally
+
+To test the `npx @stonecrop/nuxt init` command from another directory outside this project:
+
+**1. Build the monorepo (from stonecrop root):**
+
+```bash
+cd /path/to/stonecrop
+rush update
+rush build
+```
+
+**2. Create a test Nuxt project (in a separate directory):**
+
+```bash
+cd /tmp  # or any directory outside stonecrop
+npx nuxi init my-test-app
+cd my-test-app
+npm install
+```
+
+**3. Run the CLI using the local package:**
+
+```bash
+# Option A: Run from within the nuxt package directory (simplest)
+# This ensures Node can find the dependencies
+cd /path/to/stonecrop/nuxt
+node bin/init.mjs init --cwd /tmp/my-test-app
+
+# Option B: Use pnpm link (from the test project)
+cd /path/to/stonecrop/nuxt
+pnpm link --global
+cd /tmp/my-test-app
+pnpm link --global @stonecrop/nuxt
+npx stonecrop-nuxt init
+
+# Option C: Use npm pack to create a tarball (simulates real npm install)
+cd /path/to/stonecrop/nuxt
+npm pack
+cd /tmp/my-test-app
+npm install /path/to/stonecrop/nuxt/stonecrop-nuxt-0.6.3.tgz
+npx stonecrop-nuxt init
+```
+
+> **Note:** Option A uses `--cwd` to specify the target directory while running from within
+> the nuxt package where dependencies are available. Options B and C install the package
+> into the test project so dependencies are resolved correctly.
+
+**4. Interactive testing:**
+
+The CLI will detect that you're in a Nuxt project and prompt for features:
+
+```
+🌱 Stonecrop Nuxt Installer
+
+✔ Nuxt project detected
+
+? Select features to install
+  ◉ @stonecrop/nuxt - Frontend module
+  ◯ @stonecrop/nuxt-grafserv - GraphQL server
+  ◯ @stonecrop/casl-middleware - Authorization
+  ◉ Sample doctypes
+```
+
+**5. Verify the installation:**
+
+After running the installer, check:
+- `package.json` has the new dependencies
+- `nuxt.config.ts` has the module configuration
+- `doctypes/` folder contains sample schemas (if selected)
+- `server/` folder contains GraphQL files (if selected)
 
 <!-- Badges -->
 [npm-version-src]: https://img.shields.io/npm/v/@stonecrop/nuxt/latest.svg?style=flat&colorA=020420&colorB=00DC82

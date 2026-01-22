@@ -1,8 +1,0 @@
-type Query {
-	hello: String!
-	ping: Boolean!
-}
-
-type Mutation {
-	echo(message: String!): String!
-}
