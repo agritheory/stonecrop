@@ -11,18 +11,18 @@ Pluggable Grafserv GraphQL server as a Nuxt Module. Uses the Grafast execution e
 - 🚀 &nbsp;Grafserv Server Integration
 - ⚡️ &nbsp;Grafast Execution Engine (faster than [`graphql-js`](https://github.com/graphql/graphql-js))
 - 🔄 &nbsp;Schema Stitching Support
--  &nbsp;Graphile Preset System for Advanced Configuration
+- 🔍 &nbsp;Graphile Preset System for Advanced Configuration
 - 📝 &nbsp;TypeScript Support
 - 🔍 &nbsp;GraphiQL/Ruru Interface
 - ⚡️ &nbsp;Hot Module Reloading
-- 🎯 &nbsp;Separate Route Handlers for GraphQL, UI, and Static Assets
+- 🎯 &nbsp;Separate Route Handlers for GraphQL/UI and Static Assets
 
 ## Architecture
 
 This module uses modern Grafserv patterns with three key components:
 
 1. **Preset-Based Configuration**: Leverages Graphile's preset system for extensibility and plugin support
-2. **Separate Route Handlers**: Three dedicated handlers for GraphQL operations, GraphiQL UI, and static assets
+2. **Separate Route Handlers**: Two dedicated handlers for GraphQL operations/UI and static assets
 3. **Objects Structure**: Uses Grafast's modern `objects/interfaces/enums` schema building pattern for better type safety
 
 The module automatically registers these handlers:
@@ -68,7 +68,6 @@ export default defineNuxtConfig({
 | `url` | `string` | `'/graphql/'` | GraphQL endpoint URL (also serves Ruru UI) |
 | `graphiql` | `boolean` | `true` in dev, `false` in prod | Enable GraphiQL IDE |
 | `preset` | `GraphileConfig.Preset` | `undefined` | Custom Graphile preset for advanced configuration |
-| `plugins` | `GraphileConfig.Plugin[]` | `[]` | Additional Graphile plugins (use for middleware, etc.) |
 
 ### Full Configuration Example
 
@@ -99,11 +98,6 @@ export default defineNuxtConfig({
         explain: true, // Enable plan diagrams
       }
     },
-
-    // Additional plugins
-    plugins: [
-      // Add Graphile plugins here
-    ]
   }
 })
 ```
@@ -126,7 +120,7 @@ type Mutation {
 2. Create your resolvers (`server/resolvers.ts`):
 
 ```typescript
-import { constant, lambda, type GrafastSchemaConfig } from 'grafast'
+import { constant, lambda, access, object, filter, type GrafastSchemaConfig } from 'grafast'
 
 const resolvers: GrafastSchemaConfig['objects'] = {
   Query: {
@@ -293,10 +287,10 @@ export default defineEventHandler(async (event) => {
 
 ### Schema Building with Objects Structure
 
-The module uses Grafast's modern objects structure for better type safety and performance:
+The module uses Grafast's modern objects structure for better type safety and performance. Leverage Grafast's standard steps for common operations:
 
 ```typescript
-import { constant, lambda, access, type GrafastSchemaConfig } from 'grafast'
+import { constant, lambda, access, object, filter, type GrafastSchemaConfig } from 'grafast'
 
 const resolvers: GrafastSchemaConfig['objects'] = {
   Query: {
@@ -310,11 +304,39 @@ const resolvers: GrafastSchemaConfig['objects'] = {
         return lambda($id, (id) => getUserById(id))
       },
 
-      // Multiple arguments
-      search: (_source, fieldArgs) => {
-        const { $query, $limit } = fieldArgs
-        return lambda([$query, $limit], ([query, limit]) => {
-          return searchUsers(query, limit)
+      // Use filter() for list filtering
+      userOrders: (_source, fieldArgs) => {
+        const { $userId } = fieldArgs
+        const $allOrders = constant(getAllOrders())
+        return filter($allOrders, $order =>
+          lambda([access($order, 'userId'), $userId],
+            ([orderUserId, userId]) => orderUserId === userId
+          )
+        )
+      }
+    }
+  },
+
+  Mutation: {
+    plans: {
+      // Use object() to compose objects from steps
+      createUser: (_source, fieldArgs) => {
+        const { $name, $email } = fieldArgs
+        const $id = constant(generateId())
+        const $now = constant(new Date().toISOString())
+
+        const $user = object({
+          id: $id,
+          name: $name,
+          email: $email,
+          role: constant('user'),
+          createdAt: $now,
+          updatedAt: $now
+        })
+
+        return lambda($user, user => {
+          saveUser(user)
+          return user
         })
       }
     }
@@ -323,12 +345,22 @@ const resolvers: GrafastSchemaConfig['objects'] = {
   // Field resolvers for types
   User: {
     plans: {
-      // Access source object properties
       fullName: ($user) => {
         return lambda($user, (user) => {
           const typed = user as { firstName: string; lastName: string }
           return `${typed.firstName} ${typed.lastName}`
         })
+      }
+    }
+  },
+
+  // Related type resolvers
+  Order: {
+    plans: {
+      // Use access() to extract properties before lookups
+      user: ($order) => {
+        const $userId = access($order, 'userId')
+        return lambda($userId, userId => getUserById(userId as string) ?? null)
       }
     }
   }
@@ -338,11 +370,26 @@ export default resolvers
 ```
 
 **Key Concepts:**
-- All resolvers return **steps** (constant, lambda, access, etc.), not plain values
+- All resolvers return **steps** (constant, lambda, access, object, filter, etc.), not plain values
 - Arguments are accessed via `fieldArgs.$argumentName` (note the `$` prefix)
-- Use `lambda()` to transform step values at execution time
 - Use `constant()` for static values
-- Source objects (`$source`, `$user`, etc.) are also steps that need `lambda()` to access their properties
+- Use `lambda()` to transform step values at execution time
+- Use `access()` to extract object properties (more efficient than lambda for simple property access)
+- Use `object()` to compose objects from multiple steps
+- Use `filter()` for list filtering operations
+- Source objects (`$source`, `$user`, `$order`, etc.) are also steps that need `lambda()` or `access()` to work with their properties
+
+**Standard Steps Reference:**
+- `constant()` - Create a step from a static value
+- `lambda()` - Transform step values with execution-time callbacks
+- `access()` - Extract properties from object steps
+- `object()` - Compose objects from multiple steps
+- `filter()` - Filter list steps based on conditions
+- `list()` - Create lists from step tuples
+- `first()`/`last()` - Get first/last elements from lists
+- `loadOne()`/`loadMany()` - Batch data loading (DataLoader-style)
+
+For the complete list, see [Grafast Standard Steps](https://grafast.org/grafast/standard-steps)
 
 ## Development
 
