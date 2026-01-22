@@ -28,8 +28,6 @@ export interface DetectedFeatures {
 	hasSchema: boolean
 	/** Does server/resolvers.ts exist? */
 	hasResolvers: boolean
-	/** Does server/middleware.ts exist? */
-	hasMiddleware: boolean
 }
 
 /**
@@ -47,7 +45,6 @@ export async function detectFeatures(cwd: string): Promise<DetectedFeatures> {
 		hasServerDir: false,
 		hasSchema: false,
 		hasResolvers: false,
-		hasMiddleware: false,
 	}
 
 	// Check if this is a Nuxt project
@@ -87,8 +84,6 @@ export async function detectFeatures(cwd: string): Promise<DetectedFeatures> {
 	result.hasSchema = existsSync(join(cwd, 'server', 'schema.graphql'))
 	result.hasResolvers =
 		existsSync(join(cwd, 'server', 'resolvers.ts')) || existsSync(join(cwd, 'server', 'resolvers.js'))
-	result.hasMiddleware =
-		existsSync(join(cwd, 'server', 'middleware.ts')) || existsSync(join(cwd, 'server', 'middleware.js'))
 
 	return result
 }

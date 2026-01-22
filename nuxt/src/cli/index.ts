@@ -89,7 +89,7 @@ export async function runInstaller(options: InstallerOptions): Promise<void> {
 		console.log()
 	}
 
-	// Install GraphQL server (before CASL/Rockfoil since they modify middleware.ts)
+	// Install GraphQL server
 	if (selectedFeatures.graphql) {
 		const success = await installGrafserv({ cwd })
 		results.push({ feature: '@stonecrop/nuxt-grafserv', success })
@@ -152,9 +152,9 @@ export async function runInstaller(options: InstallerOptions): Promise<void> {
 	}
 
 	if (selectedFeatures.rockfoil) {
-		consola.info(`${stepNum}. Configure Rockfoil in server/middleware.ts:`)
+		consola.info(`${stepNum}. Configure Rockfoil:`)
 		consola.info(`   - Set DATABASE_URL environment variable`)
-		consola.info(`   - Uncomment and configure the Rockfoil middleware`)
+		consola.info(`   - Configure the Rockfoil plugin options in nuxt.config.ts`)
 		console.log()
 		stepNum++
 	}
