@@ -2,6 +2,18 @@
   "name": "@stonecrop/rockfoil",
   "entries": [
     {
+      "version": "0.7.5",
+      "tag": "@stonecrop/rockfoil_v0.7.5",
+      "date": "Thu, 22 Jan 2026 09:30:36 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "update deps"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.7.4",
       "tag": "@stonecrop/rockfoil_v0.7.4",
       "date": "Tue, 20 Jan 2026 08:45:49 GMT",
