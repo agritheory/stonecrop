@@ -210,6 +210,92 @@ export interface CellContext {
 }
 
 /**
+ * Row action type identifiers.
+ * @public
+ */
+export type RowActionType = 'add' | 'delete' | 'duplicate' | 'insertAbove' | 'insertBelow' | 'move'
+
+/**
+ * Options for configuring individual row actions.
+ * @public
+ */
+export interface RowActionOptions {
+	/**
+	 * Whether the action is enabled.
+	 *
+	 * @defaultValue true
+	 */
+	enabled?: boolean
+
+	/**
+	 * Custom label for the action (used in dropdown mode).
+	 */
+	label?: string
+
+	/**
+	 * Custom icon override (raw SVG string).
+	 */
+	icon?: string
+
+	/**
+	 * Custom handler for the action. Return false to prevent the default behavior.
+	 *
+	 * @param rowIndex - The index of the row the action is being performed on
+	 * @param store - The table store instance
+	 * @returns void or false to prevent default behavior
+	 */
+	handler?: (rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean
+}
+
+/**
+ * Configuration for row-level actions (add, delete, duplicate, etc.).
+ * @public
+ */
+export interface RowActionsConfig {
+	/**
+	 * Whether row actions are enabled.
+	 *
+	 * @defaultValue false
+	 */
+	enabled: boolean
+
+	/**
+	 * Position of the row actions column relative to the index column.
+	 *
+	 * @defaultValue 'before-index'
+	 */
+	position?: 'before-index' | 'after-index' | 'end'
+
+	/**
+	 * Pixel width threshold at which to switch from icons to dropdown mode.
+	 * Set to 0 to always use icons, or a large number to always use dropdown.
+	 *
+	 * @defaultValue 150
+	 */
+	dropdownThreshold?: number
+
+	/**
+	 * Force dropdown mode regardless of available width.
+	 *
+	 * @defaultValue false
+	 */
+	forceDropdown?: boolean
+
+	/**
+	 * Configuration for individual actions. Set to true to enable with defaults,
+	 * false to disable, or provide RowActionOptions for custom configuration.
+	 */
+	actions?: {
+		add?: boolean | RowActionOptions
+		delete?: boolean | RowActionOptions
+		duplicate?: boolean | RowActionOptions
+		insertAbove?: boolean | RowActionOptions
+		insertBelow?: boolean | RowActionOptions
+		move?: boolean | RowActionOptions
+	}
+}
+
+/**
  * Base table configuration properties shared across all view types.
  * @public
  */
@@ -220,6 +306,11 @@ export interface BaseTableConfig {
 	 * @defaultValue false
 	 */
 	fullWidth?: boolean
+
+	/**
+	 * Configuration for row-level actions (add, delete, duplicate, etc.).
+	 */
+	rowActions?: RowActionsConfig
 }
 
 /**
@@ -725,4 +816,51 @@ export interface ConnectionPath {
 export type ConnectionEvent = {
 	type: 'create' | 'delete'
 	connection: ConnectionPath
+}
+
+/**
+ * Event payload for row:add event.
+ * @public
+ */
+export interface RowAddEvent {
+	rowIndex: number
+	row: TableRow
+}
+
+/**
+ * Event payload for row:delete event.
+ * @public
+ */
+export interface RowDeleteEvent {
+	rowIndex: number
+	row: TableRow
+}
+
+/**
+ * Event payload for row:duplicate event.
+ * @public
+ */
+export interface RowDuplicateEvent {
+	sourceIndex: number
+	newIndex: number
+	row: TableRow
+}
+
+/**
+ * Event payload for row:insert-above and row:insert-below events.
+ * @public
+ */
+export interface RowInsertEvent {
+	targetIndex: number
+	newIndex: number
+	row: TableRow
+}
+
+/**
+ * Event payload for row:move event.
+ * @public
+ */
+export interface RowMoveEvent {
+	fromIndex: number
+	toIndex: number
 }

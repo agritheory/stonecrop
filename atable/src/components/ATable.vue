@@ -18,7 +18,8 @@
 						:key="`${row.originalIndex}-${filteredIndex}`"
 						:row="row"
 						:rowIndex="row.originalIndex"
-						:store="store">
+						:store="store"
+						@row:action="handleRowAction">
 						<template v-for="(column, colIndex) in getProcessedColumnsForRow(row)" :key="column.name">
 							<component
 								:is="column.ganttComponent || 'AGanttCell'"
@@ -91,7 +92,20 @@ import ARow from './ARow.vue'
 import ATableHeader from './ATableHeader.vue'
 import ATableModal from './ATableModal.vue'
 import { createTableStore } from '../stores/table'
-import type { ConnectionEvent, ConnectionPath, GanttDragEvent, TableColumn, TableConfig, TableRow } from '../types'
+import type {
+	ConnectionEvent,
+	ConnectionPath,
+	GanttDragEvent,
+	RowActionType,
+	RowAddEvent,
+	RowDeleteEvent,
+	RowDuplicateEvent,
+	RowInsertEvent,
+	RowMoveEvent,
+	TableColumn,
+	TableConfig,
+	TableRow,
+} from '../types'
 
 const rows = defineModel<TableRow[]>('rows', { required: true })
 const columns = defineModel<TableColumn[]>('columns', { required: true })
@@ -106,6 +120,12 @@ const emit = defineEmits<{
 	'gantt:drag': [event: GanttDragEvent]
 	'connection:event': [event: ConnectionEvent]
 	'columns:update': [columns: TableColumn[]]
+	'row:add': [event: RowAddEvent]
+	'row:delete': [event: RowDeleteEvent]
+	'row:duplicate': [event: RowDuplicateEvent]
+	'row:insert-above': [event: RowInsertEvent]
+	'row:insert-below': [event: RowInsertEvent]
+	'row:move': [event: RowMoveEvent]
 }>()
 
 const tableRef = useTemplateRef<HTMLTableElement>('table')
@@ -267,12 +287,73 @@ const handleConnectionDelete = (connection: ConnectionPath) => {
 	emit('connection:event', { type: 'delete', connection })
 }
 
+/**
+ * Handle row action events from ARow components.
+ * Performs the default action and emits the appropriate event.
+ */
+const handleRowAction = (actionType: RowActionType, rowIndex: number) => {
+	switch (actionType) {
+		case 'add': {
+			// Add a new row after the current row
+			const newIndex = store.addRow({}, rowIndex + 1)
+			const newRow = store.rows[newIndex]
+			rows.value = [...store.rows]
+			emit('row:add', { rowIndex: newIndex, row: newRow })
+			break
+		}
+		case 'delete': {
+			const deletedRow = store.deleteRow(rowIndex)
+			if (deletedRow) {
+				rows.value = [...store.rows]
+				emit('row:delete', { rowIndex, row: deletedRow })
+			}
+			break
+		}
+		case 'duplicate': {
+			const newIndex = store.duplicateRow(rowIndex)
+			if (newIndex >= 0) {
+				const newRow = store.rows[newIndex]
+				rows.value = [...store.rows]
+				emit('row:duplicate', { sourceIndex: rowIndex, newIndex, row: newRow })
+			}
+			break
+		}
+		case 'insertAbove': {
+			const newIndex = store.insertRowAbove(rowIndex)
+			const newRow = store.rows[newIndex]
+			rows.value = [...store.rows]
+			emit('row:insert-above', { targetIndex: rowIndex, newIndex, row: newRow })
+			break
+		}
+		case 'insertBelow': {
+			const newIndex = store.insertRowBelow(rowIndex)
+			const newRow = store.rows[newIndex]
+			rows.value = [...store.rows]
+			emit('row:insert-below', { targetIndex: rowIndex, newIndex, row: newRow })
+			break
+		}
+		case 'move': {
+			// Move action requires a target index - for now, emit an event
+			// The consumer should handle showing a UI for selecting the target
+			emit('row:move', { fromIndex: rowIndex, toIndex: -1 })
+			break
+		}
+	}
+}
+
 defineExpose({
 	store,
 	createConnection: store.createConnection,
 	deleteConnection: store.deleteConnection,
 	getConnectionsForBar: store.getConnectionsForBar,
 	getHandlesForBar: store.getHandlesForBar,
+	// Row action methods
+	addRow: store.addRow,
+	deleteRow: store.deleteRow,
+	duplicateRow: store.duplicateRow,
+	insertRowAbove: store.insertRowAbove,
+	insertRowBelow: store.insertRowBelow,
+	moveRow: store.moveRow,
 })
 </script>
 
