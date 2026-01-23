@@ -1,5 +1,14 @@
 <template>
 	<tr v-show="isRowVisible" ref="rowEl" :tabindex="tabIndex" class="atable-row">
+		<!-- Row actions before index (default position) -->
+		<ARowActions
+			v-if="showRowActions && actionsPosition === 'before-index'"
+			:row-index="rowIndex"
+			:store="store"
+			:config="rowActionsConfig"
+			:position="actionsPosition"
+			@action="onRowAction" />
+
 		<!-- render numbered/tree view index; skip render for uncounted lists -->
 		<slot v-if="store.config.view !== 'uncounted'" name="index">
 			<td
@@ -19,8 +28,26 @@
 			</td>
 		</slot>
 
+		<!-- Row actions after index -->
+		<ARowActions
+			v-if="showRowActions && actionsPosition === 'after-index'"
+			:row-index="rowIndex"
+			:store="store"
+			:config="rowActionsConfig"
+			:position="actionsPosition"
+			@action="onRowAction" />
+
 		<!-- render cell content -->
 		<slot></slot>
+
+		<!-- Row actions at end -->
+		<ARowActions
+			v-if="showRowActions && actionsPosition === 'end'"
+			:row-index="rowIndex"
+			:store="store"
+			:config="rowActionsConfig"
+			:position="actionsPosition"
+			@action="onRowAction" />
 	</tr>
 </template>
 
@@ -28,7 +55,9 @@
 import { type KeypressHandlers, useKeyboardNav, defaultKeypressHandlers } from '@stonecrop/utilities'
 import { computed, useTemplateRef } from 'vue'
 
+import ARowActions from './ARowActions.vue'
 import { createTableStore } from '../stores/table'
+import type { RowActionsConfig, RowActionType } from '../types'
 
 const {
 	rowIndex,
@@ -42,10 +71,31 @@ const {
 	addNavigation?: boolean | KeypressHandlers
 }>()
 
+const emit = defineEmits<{
+	'row:action': [type: RowActionType, rowIndex: number]
+}>()
+
 const rowRef = useTemplateRef<HTMLTableRowElement>('rowEl')
 
 const isRowVisible = computed(() => store.isRowVisible(rowIndex))
 const rowExpandSymbol = computed(() => store.getRowExpandSymbol(rowIndex))
+
+// Row actions configuration
+const rowActionsConfig = computed<RowActionsConfig>(() => {
+	return store.config.rowActions || { enabled: false }
+})
+
+const showRowActions = computed(() => {
+	return rowActionsConfig.value.enabled
+})
+
+const actionsPosition = computed(() => {
+	return rowActionsConfig.value.position || 'before-index'
+})
+
+const onRowAction = (actionType: RowActionType, index: number) => {
+	emit('row:action', actionType, index)
+}
 
 if (addNavigation) {
 	let handlers = defaultKeypressHandlers
