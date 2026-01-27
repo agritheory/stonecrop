@@ -15,7 +15,7 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
 
 	defaults: _nuxt => ({
 		schema: 'server/**/*.graphql',
-		resolvers: 'server/resolvers.ts',
+		resolvers: undefined, // Optional - not needed for PostGraphile setups
 		url: '/graphql/',
 		graphiql: undefined, // Will default based on dev mode
 		plugins: [],
@@ -36,7 +36,7 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
 			config.alias = config.alias || {}
 			config.alias['#grafserv-server'] = join(nuxt.options.rootDir, 'server')
 
-			// Resolve paths
+			// Resolve paths based on schema type
 			const resolveForSchema = (path: string) => {
 				if (path.startsWith('/')) {
 					return path // Already absolute
@@ -57,21 +57,42 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
 			logger.info(`Nuxt rootDir: ${nuxt.options.rootDir}`)
 			logger.info(`Grafserv server alias: ${config.alias['#grafserv-server']}`)
 
+			// Handle resolvers (optional)
 			const resolverPath = options.resolvers ? resolveForVirtualModule(options.resolvers) : undefined
-			logger.info(`Resolved resolver path: ${resolverPath}`)
+			if (resolverPath) {
+				logger.info(`Resolved resolver path: ${resolverPath}`)
+			} else {
+				logger.info('No resolvers configured (normal for PostGraphile setups)')
+			}
+
+			// Determine schema type and handle appropriately
+			let runtimeSchema: ModuleOptions['schema']
+			if (
+				typeof options.schema === 'function' ||
+				(options.schema && typeof options.schema === 'object' && 'getSchema' in options.schema)
+			) {
+				// PostGraphile instance or function - pass through directly
+				runtimeSchema = options.schema
+				logger.info('Using schema provider function or PostGraphile instance')
+			} else if (typeof options.schema === 'string') {
+				// String path - resolve it
+				runtimeSchema = resolveForSchema(options.schema)
+				logger.info(`Resolved schema path: ${runtimeSchema}`)
+			} else if (Array.isArray(options.schema)) {
+				// Array of paths - resolve each
+				runtimeSchema = options.schema.map(s => resolveForSchema(s))
+				logger.info(`Resolved schema paths: ${runtimeSchema.join(', ')}`)
+			} else {
+				runtimeSchema = options.schema
+			}
 
 			config.runtimeConfig = config.runtimeConfig || {}
 			config.runtimeConfig.grafserv = {
 				...options,
 				// Pass resolved resolver path for direct import
 				resolversPath: resolverPath,
-				// Resolve schema paths from project root
-				schema:
-					typeof options.schema === 'string'
-						? resolveForSchema(options.schema)
-						: Array.isArray(options.schema)
-						? options.schema.map(s => resolveForSchema(s))
-						: options.schema, // function passed through
+				// Pass schema (either resolved paths or function/instance)
+				schema: runtimeSchema,
 			}
 
 			// Create virtual modules

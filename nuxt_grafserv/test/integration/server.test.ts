@@ -5,6 +5,15 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 import type { ModuleOptions } from '../../src/types'
 
+// Mock virtual modules FIRST before any other imports
+vi.mock('#internal/grafserv/resolvers', () => ({
+	default: {},
+}))
+
+vi.mock('#internal/grafserv/middleware', () => ({
+	default: [],
+}))
+
 // Mock H3 and Nitro
 vi.mock('h3', () => ({
 	defineEventHandler: (handler: EventHandler) => handler,
@@ -55,6 +64,7 @@ vi.mock('@graphql-tools/graphql-file-loader', () => ({
 describe('Nuxt Grafserv Integration', () => {
 	beforeEach(() => {
 		vi.clearAllMocks()
+		vi.resetModules() // Reset module cache to pick up fresh mocks
 	})
 
 	describe('Module Configuration', () => {
@@ -65,11 +75,11 @@ describe('Nuxt Grafserv Integration', () => {
 			// defineNuxtModule returns a setup function
 		})
 
-		it('should export types', async () => {
+		it('should export module', async () => {
 			const module = await import('../../src/module')
-			// Check that named exports exist
-			expect(module.ModuleOptions).toBeUndefined() // Type-only export
-			expect(module.default).toBeDefined() // Default export is the module function
+			// Check that default export exists (the module function)
+			expect(module.default).toBeDefined()
+			expect(typeof module.default).toBe('function')
 		})
 	})
 

@@ -24,6 +24,13 @@ async function loadTypeDefsFromFiles(schemaPath: string | string[]): Promise<Doc
 }
 
 /**
+ * Check if value is a PostGraphile instance
+ */
+function isPostGraphileInstance(value: unknown): value is { getSchema(): unknown; getSchemaResult(): unknown } {
+	return value !== null && typeof value === 'object' && 'getSchema' in value && typeof value.getSchema === 'function'
+}
+
+/**
  * Get the GraphQL schema based on configuration
  */
 async function getSchema(options: ModuleOptions): Promise<GraphQLSchema> {
@@ -33,14 +40,31 @@ async function getSchema(options: ModuleOptions): Promise<GraphQLSchema> {
 
 	let schema: GraphQLSchema
 
-	if (typeof options.schema === 'function') {
+	// Handle PostGraphile instance
+	if (isPostGraphileInstance(options.schema)) {
+		console.debug('[@stonecrop/nuxt-grafserv] Using PostGraphile instance for schema')
+		try {
+			// Try getSchemaResult first (returns { schema, resolvedPreset })
+			if ('getSchemaResult' in options.schema && typeof options.schema.getSchemaResult === 'function') {
+				const result = await options.schema.getSchemaResult()
+				schema = result.schema
+			} else {
+				// Fall back to getSchema
+				schema = await options.schema.getSchema()
+			}
+			console.debug('[@stonecrop/nuxt-grafserv] PostGraphile schema loaded successfully')
+		} catch (error) {
+			console.error('[@stonecrop/nuxt-grafserv] Error loading PostGraphile schema:', error)
+			throw error
+		}
+	} else if (typeof options.schema === 'function') {
 		// Schema provider function
 		schema = await options.schema()
 	} else if (options.schema) {
 		// Load from file path(s)
 		const typeDefDocs = await loadTypeDefsFromFiles(options.schema)
 
-		// Load resolvers if provided
+		// Load resolvers if provided (optional - PostGraphile doesn't need this)
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		const objects: Record<string, any> = {}
 		if (options.resolvers) {
@@ -70,8 +94,12 @@ async function getSchema(options: ModuleOptions): Promise<GraphQLSchema> {
 				}
 			} catch (e) {
 				console.error('[@stonecrop/nuxt-grafserv] Error loading resolvers:', e)
-				console.warn('[@stonecrop/nuxt-grafserv] Could not load resolvers:', e)
+				console.warn('[@stonecrop/nuxt-grafserv] Continuing without resolvers - this is normal for PostGraphile setups')
 			}
+		} else {
+			console.debug(
+				'[@stonecrop/nuxt-grafserv] No resolvers specified - using schema-only mode (normal for PostGraphile)'
+			)
 		}
 
 		// Important: Create schema lazily to ensure it's in the right execution context
@@ -86,7 +114,9 @@ async function getSchema(options: ModuleOptions): Promise<GraphQLSchema> {
 			throw error
 		}
 	} else {
-		throw new Error('[@stonecrop/nuxt-grafserv] No schema provided. Configure schema path or provider function.')
+		throw new Error(
+			'[@stonecrop/nuxt-grafserv] No schema provided. Configure schema path, provider function, or PostGraphile instance.'
+		)
 	}
 
 	cachedSchema = schema

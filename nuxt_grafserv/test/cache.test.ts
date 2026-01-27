@@ -1,6 +1,15 @@
 import { getQuery, createError, type H3Event } from 'h3'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
+// Mock virtual modules FIRST
+vi.mock('#internal/grafserv/resolvers', () => ({
+	default: {},
+}))
+
+vi.mock('#internal/grafserv/middleware', () => ({
+	default: [],
+}))
+
 // Mock h3
 vi.mock('h3', () => ({
 	defineEventHandler: vi.fn(handler => handler),
@@ -20,6 +29,7 @@ describe('Cache Handler', () => {
 	beforeEach(() => {
 		originalEnv = process.env.NODE_ENV
 		vi.clearAllMocks()
+		vi.resetModules() // Reset module cache between tests
 	})
 
 	afterEach(() => {

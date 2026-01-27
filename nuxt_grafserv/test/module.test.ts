@@ -84,7 +84,7 @@ describe('Grafserv Module', () => {
 
 			expect(defaults).toMatchObject({
 				schema: 'server/**/*.graphql',
-				resolvers: 'server/resolvers.ts',
+				resolvers: undefined, // Optional - not needed for PostGraphile
 				url: '/graphql/',
 
 				graphiql: undefined,
