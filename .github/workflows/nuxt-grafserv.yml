@@ -1,0 +1,48 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - development
+    paths: [nuxt_grafserv/**]
+  pull_request:
+    paths: [nuxt_grafserv/**]
+
+jobs:
+  test:
+    name: nuxt_grafserv
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache-dependency-path: '**/config/rush/pnpm-lock.yaml'
+          registry-url: https://registry.npmjs.org/
+
+      - name: Rush Install
+        run: node common/scripts/install-run-rush.js install
+
+      - name: Update Autoinstallers
+        run: |
+          node common/scripts/install-run-rush.js update-autoinstaller --name doc-tools
+          node common/scripts/install-run-rush.js update-autoinstaller --name rush-plugins
+          node common/scripts/install-run-rush.js update-autoinstaller --name rush-prettier
+
+      - name: Rush Build
+        run: node common/scripts/install-run-rush.js rebuild --to @stonecrop/nuxt-grafserv --verbose
+
+      - name: Prepare Playground
+        working-directory: nuxt_grafserv/
+        run: node ../common/scripts/install-run-rushx.js dev:prepare
+
+      - name: Run Tests
+        working-directory: nuxt_grafserv/
+        run: node ../common/scripts/install-run-rushx.js test
