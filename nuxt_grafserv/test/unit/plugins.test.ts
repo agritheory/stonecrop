@@ -1,7 +1,7 @@
 import type { GraphileConfig } from 'graphile-config'
 import { describe, it, expect, vi } from 'vitest'
 
-import type { ModuleOptions } from '../src/types'
+import type { ModuleOptions } from '../../src/types'
 
 // Mock virtual modules FIRST
 vi.mock('#internal/grafserv/resolvers', () => ({
@@ -44,7 +44,7 @@ vi.mock('@graphql-tools/graphql-file-loader', () => ({
 describe('Grafserv Plugins', () => {
 	describe('Plugin Integration', () => {
 		it('should pass plugins to grafserv preset', async () => {
-			const { getGrafservInstance, clearGrafservCache } = await import('../src/runtime/handler')
+			const { getGrafservInstance, clearGrafservCache } = await import('../../src/runtime/handler')
 
 			await clearGrafservCache()
 

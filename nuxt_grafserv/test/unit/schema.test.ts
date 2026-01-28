@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 
 describe('nuxt-grafserv module configuration', () => {
 	it('should export a valid Nuxt module', async () => {
-		const module = await import('../src/module')
+		const module = await import('../../src/module')
 		const nuxtModule = module.default
 
 		// Check that the module is a function or object with setup
@@ -11,7 +11,7 @@ describe('nuxt-grafserv module configuration', () => {
 	})
 
 	it('should have module metadata accessible via getOptions', async () => {
-		const module = await import('../src/module')
+		const module = await import('../../src/module')
 		const nuxtModule = module.default
 
 		// The nuxt module is a function with attached properties
@@ -26,7 +26,7 @@ describe('nuxt-grafserv module configuration', () => {
 	})
 
 	it('should export ModuleOptions type', async () => {
-		const types = await import('../src/types')
+		const types = await import('../../src/types')
 		// Type imports work if this doesn't throw
 		expect(types).toBeDefined()
 	})

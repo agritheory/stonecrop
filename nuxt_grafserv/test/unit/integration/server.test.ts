@@ -3,7 +3,7 @@
 import type { EventHandler, H3Event } from 'h3'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-import type { ModuleOptions } from '../../src/types'
+import type { ModuleOptions } from '../../../src/types'
 
 // Mock virtual modules FIRST before any other imports
 vi.mock('#internal/grafserv/resolvers', () => ({
@@ -69,14 +69,14 @@ describe('Nuxt Grafserv Integration', () => {
 
 	describe('Module Configuration', () => {
 		it('should export module as a function', async () => {
-			const module = await import('../../src/module')
+			const module = await import('../../../src/module')
 			expect(module.default).toBeDefined()
 			expect(typeof module.default).toBe('function')
 			// defineNuxtModule returns a setup function
 		})
 
 		it('should export module', async () => {
-			const module = await import('../../src/module')
+			const module = await import('../../../src/module')
 			// Check that default export exists (the module function)
 			expect(module.default).toBeDefined()
 			expect(typeof module.default).toBe('function')
@@ -85,10 +85,10 @@ describe('Nuxt Grafserv Integration', () => {
 
 	describe('Handler Endpoints', () => {
 		it('should call handleGraphQLEvent for GraphQL handler', async () => {
-			const { clearGrafservCache } = await import('../../src/runtime/handler')
+			const { clearGrafservCache } = await import('../../../src/runtime/handler')
 			await clearGrafservCache()
 
-			const graphqlHandler = await import('../../src/runtime/graphql')
+			const graphqlHandler = await import('../../../src/runtime/graphql')
 
 			const mockEvent = {
 				node: {
@@ -107,10 +107,10 @@ describe('Nuxt Grafserv Integration', () => {
 		})
 
 		it('should call handleGraphiqlEvent for Ruru handler', async () => {
-			const { clearGrafservCache } = await import('../../src/runtime/handler')
+			const { clearGrafservCache } = await import('../../../src/runtime/handler')
 			await clearGrafservCache()
 
-			const ruruHandler = await import('../../src/runtime/ruru')
+			const ruruHandler = await import('../../../src/runtime/ruru')
 
 			const mockEvent = {
 				node: {
@@ -129,10 +129,10 @@ describe('Nuxt Grafserv Integration', () => {
 		})
 
 		it('should call handleGraphiqlStaticEvent for static assets handler', async () => {
-			const { clearGrafservCache } = await import('../../src/runtime/handler')
+			const { clearGrafservCache } = await import('../../../src/runtime/handler')
 			await clearGrafservCache()
 
-			const staticHandler = await import('../../src/runtime/ruru-static')
+			const staticHandler = await import('../../../src/runtime/ruru-static')
 
 			const mockEvent = {
 				node: {
@@ -154,7 +154,7 @@ describe('Nuxt Grafserv Integration', () => {
 	describe('Preset Merging', () => {
 		it('should use grafserv options from preset', async () => {
 			const { grafserv } = await import('grafserv/h3/v1')
-			const { getGrafservInstance, clearGrafservCache } = await import('../../src/runtime/handler')
+			const { getGrafservInstance, clearGrafservCache } = await import('../../../src/runtime/handler')
 
 			await clearGrafservCache()
 

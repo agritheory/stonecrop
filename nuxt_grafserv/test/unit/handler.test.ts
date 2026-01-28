@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
-import type { ModuleOptions } from '../src/types'
+import type { ModuleOptions } from '../../src/types'
 
 // CRITICAL: Mock virtual modules BEFORE importing types or anything else
 vi.mock('#internal/grafserv/resolvers', () => ({
@@ -66,7 +66,7 @@ describe('Handler Functions', () => {
 	describe('getSchema - resolver transformation', () => {
 		it('should auto-wrap old format resolvers', async () => {
 			const { makeGrafastSchema } = await import('grafast')
-			const { getGrafservInstance, clearGrafservCache } = await import('../src/runtime/handler')
+			const { getGrafservInstance, clearGrafservCache } = await import('../../src/runtime/handler')
 
 			await clearGrafservCache()
 
@@ -89,7 +89,7 @@ describe('Handler Functions', () => {
 
 		it('should not double-wrap new format resolvers', async () => {
 			const { makeGrafastSchema } = await import('grafast')
-			const { getGrafservInstance, clearGrafservCache } = await import('../src/runtime/handler')
+			const { getGrafservInstance, clearGrafservCache } = await import('../../src/runtime/handler')
 
 			await clearGrafservCache()
 
@@ -113,7 +113,7 @@ describe('Handler Functions', () => {
 	describe('getGrafservInstance', () => {
 		it('should cache grafserv instance', async () => {
 			const { grafserv } = await import('grafserv/h3/v1')
-			const { getGrafservInstance, clearGrafservCache } = await import('../src/runtime/handler')
+			const { getGrafservInstance, clearGrafservCache } = await import('../../src/runtime/handler')
 
 			await clearGrafservCache()
 
@@ -132,7 +132,7 @@ describe('Handler Functions', () => {
 
 		it('should clear cache when requested', async () => {
 			const { grafserv } = await import('grafserv/h3/v1')
-			const { getGrafservInstance, clearGrafservCache } = await import('../src/runtime/handler')
+			const { getGrafservInstance, clearGrafservCache } = await import('../../src/runtime/handler')
 
 			await clearGrafservCache()
 
@@ -154,7 +154,7 @@ describe('Handler Functions', () => {
 
 		it('should pass schema and preset to grafserv', async () => {
 			const { grafserv } = await import('grafserv/h3/v1')
-			const { getGrafservInstance, clearGrafservCache } = await import('../src/runtime/handler')
+			const { getGrafservInstance, clearGrafservCache } = await import('../../src/runtime/handler')
 
 			await clearGrafservCache()
 
@@ -298,7 +298,7 @@ describe('Handler Functions', () => {
 
 	describe('getMiddleware', () => {
 		it('should handle middleware import errors', async () => {
-			const { getGrafservInstance, clearGrafservCache } = await import('../src/runtime/handler')
+			const { getGrafservInstance, clearGrafservCache } = await import('../../src/runtime/handler')
 
 			await clearGrafservCache()
 
@@ -312,7 +312,7 @@ describe('Handler Functions', () => {
 		})
 
 		it('should handle middleware module without default export', async () => {
-			const { getGrafservInstance, clearGrafservCache } = await import('../src/runtime/handler')
+			const { getGrafservInstance, clearGrafservCache } = await import('../../src/runtime/handler')
 
 			await clearGrafservCache()
 
@@ -327,7 +327,7 @@ describe('Handler Functions', () => {
 
 	describe('getSchema', () => {
 		it('should handle schema provider function', async () => {
-			const { getGrafservInstance, clearGrafservCache } = await import('../src/runtime/handler')
+			const { getGrafservInstance, clearGrafservCache } = await import('../../src/runtime/handler')
 
 			await clearGrafservCache()
 
@@ -344,7 +344,7 @@ describe('Handler Functions', () => {
 		})
 
 		it('should throw error when no schema provided', async () => {
-			const { getGrafservInstance, clearGrafservCache } = await import('../src/runtime/handler')
+			const { getGrafservInstance, clearGrafservCache } = await import('../../src/runtime/handler')
 
 			await clearGrafservCache()
 
@@ -355,6 +355,62 @@ describe('Handler Functions', () => {
 			await expect(getGrafservInstance(options)).rejects.toThrow(
 				'No schema provided. Configure schema path, provider function, or PostGraphile instance'
 			)
+		})
+
+		it('should handle PostGraphile instance with only getSchema method', async () => {
+			const { getGrafservInstance, clearGrafservCache } = await import('../../src/runtime/handler')
+
+			await clearGrafservCache()
+
+			const mockSchema = { _type: 'MockSchema', _source: 'postgraphile' }
+			const postgraphileInstance = {
+				getSchema: vi.fn(async () => mockSchema),
+			}
+
+			const options: ModuleOptions = {
+				schema: postgraphileInstance as unknown as ModuleOptions['schema'],
+			}
+
+			await getGrafservInstance(options)
+
+			expect(postgraphileInstance.getSchema).toHaveBeenCalled()
+		})
+
+		it('should handle PostGraphile getSchema error', async () => {
+			const { getGrafservInstance, clearGrafservCache } = await import('../../src/runtime/handler')
+
+			await clearGrafservCache()
+
+			const postgraphileInstance = {
+				getSchema: vi.fn(async () => {
+					throw new Error('PostGraphile connection failed')
+				}),
+			}
+
+			const options: ModuleOptions = {
+				schema: postgraphileInstance as unknown as ModuleOptions['schema'],
+			}
+
+			await expect(getGrafservInstance(options)).rejects.toThrow('PostGraphile connection failed')
+		})
+
+		it('should handle PostGraphile getSchemaResult error', async () => {
+			const { getGrafservInstance, clearGrafservCache } = await import('../../src/runtime/handler')
+
+			await clearGrafservCache()
+
+			const postgraphileInstance = {
+				getSchema: vi.fn(),
+				getSchemaResult: vi.fn(async () => {
+					throw new Error('PostGraphile preset resolution failed')
+				}),
+			}
+
+			const options: ModuleOptions = {
+				schema: postgraphileInstance as unknown as ModuleOptions['schema'],
+			}
+
+			await expect(getGrafservInstance(options)).rejects.toThrow('PostGraphile preset resolution failed')
 		})
 	})
 })
