@@ -18,7 +18,7 @@ export default defineVitestConfig({
 				'**/*.config.*',
 				'**/*.d.ts',
 			],
-			include: ['src/**/*.ts', 'src/**/*.js'],
+			include: ['src/**/*.ts'],
 			thresholds: {
 				lines: 70,
 				functions: 70,

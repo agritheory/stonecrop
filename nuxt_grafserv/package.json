@@ -48,6 +48,7 @@
 		"test": "vitest run",
 		"test:ci": "vitest run --run",
 		"test:coverage": "vitest run --coverage",
+		"test:e2e": "vitest run test/e2e",
 		"test:watch": "vitest watch",
 		"test:types": "vue-tsc --noEmit && cd playground && vue-tsc --noEmit"
 	},
@@ -81,6 +82,7 @@
 		"eslint": "^9.39.2",
 		"jsdom": "^27.4.0",
 		"nuxt": "^4.2.2",
+		"postgraphile": "^5.0.0-rc.4",
 		"typescript": "^5.9.3",
 		"vite": "^7.3.1",
 		"vitest": "^4.0.17",

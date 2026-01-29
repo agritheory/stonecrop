@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-import type { ModuleOptions } from '../src/types'
+import type { ModuleOptions } from '../../src/types'
 
 interface MockNitroConfig {
 	alias: Record<string, string>
@@ -67,7 +67,7 @@ describe('Grafserv Module', () => {
 		}
 
 		// Import module
-		const moduleExport = await import('../src/module')
+		const moduleExport = await import('../../src/module')
 		module = moduleExport.default as unknown as TestModule
 	})
 
@@ -84,7 +84,7 @@ describe('Grafserv Module', () => {
 
 			expect(defaults).toMatchObject({
 				schema: 'server/**/*.graphql',
-				resolvers: 'server/resolvers.ts',
+				resolvers: undefined, // Optional - not needed for PostGraphile
 				url: '/graphql/',
 
 				graphiql: undefined,

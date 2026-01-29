@@ -63,8 +63,8 @@ export default defineNuxtConfig({
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `schema` | `string \| string[] \| SchemaProvider` | `'server/**/*.graphql'` | Path(s) to GraphQL schema files or schema provider function |
-| `resolvers` | `string` | `'server/resolvers.ts'` | Path to resolvers file |
+| `schema` | `string \| string[] \| SchemaProvider \| PostGraphileInstance` | `'server/**/*.graphql'` | Path(s) to GraphQL schema files, schema provider function, or PostGraphile instance |
+| `resolvers` | `string` | `undefined` | Path to resolvers file (optional - not needed for PostGraphile) |
 | `url` | `string` | `'/graphql/'` | GraphQL endpoint URL (also serves Ruru UI) |
 | `graphiql` | `boolean` | `true` in dev, `false` in prod | Enable GraphiQL IDE |
 | `preset` | `GraphileConfig.Preset` | `undefined` | Custom Graphile preset for advanced configuration |
@@ -237,6 +237,134 @@ export default [loggingPlugin, authPlugin]
 - `onSubscribe` - Handle GraphQL subscriptions
 
 ## Advanced Usage
+
+### PostGraphile Integration
+
+This module has first-class support for PostGraphile, enabling instant GraphQL APIs from PostgreSQL databases. PostGraphile generates the complete schema and resolvers, so you don't need to define them manually.
+
+#### Setup with PostGraphile
+
+1. Install PostGraphile:
+
+```bash
+pnpm add postgraphile @graphile/crystal graphile-build-pg
+```
+
+2. Create a PostGraphile schema provider (`server/graphql/schema.ts`):
+
+```typescript
+import { postgraphile } from 'postgraphile'
+import type { GraphQLSchema } from 'graphql'
+
+// Define your PostGraphile preset
+const preset = {
+  pgServices: [
+    {
+      name: 'main',
+      connectionString: process.env.DATABASE_URL || 'postgres://localhost/mydb',
+      schemas: ['public'],
+    },
+  ],
+  grafserv: {
+    websockets: false, // Disable websockets for Nuxt compatibility
+  },
+}
+
+// Create PostGraphile instance
+const pgl = postgraphile(preset)
+
+// Export schema provider function
+export async function createPostGraphileSchema(): Promise<GraphQLSchema> {
+  const { schema } = await pgl.getSchemaResult()
+  return schema
+}
+
+// Export the instance if you need direct access
+export { pgl }
+```
+
+3. Configure Nuxt to use the PostGraphile schema:
+
+```typescript
+// nuxt.config.ts
+import { createPostGraphileSchema } from './server/graphql/schema'
+
+export default defineNuxtConfig({
+  modules: ['@stonecrop/nuxt-grafserv'],
+  grafserv: {
+    // Use PostGraphile schema provider function
+    schema: createPostGraphileSchema,
+    // No resolvers needed - PostGraphile generates everything
+    url: '/graphql',
+    graphiql: true, // Enable Ruru IDE
+  }
+})
+```
+
+#### Direct PostGraphile Instance Usage
+
+You can also pass a PostGraphile instance directly:
+
+```typescript
+// nuxt.config.ts
+import { pgl } from './server/graphql/schema'
+
+export default defineNuxtConfig({
+  grafserv: {
+    schema: pgl, // Pass PostGraphile instance directly
+    url: '/graphql',
+  }
+})
+```
+
+#### PostGraphile with Custom Plugins
+
+Enhance your PostGraphile setup with custom plugins:
+
+```typescript
+// server/graphql/schema.ts
+import { postgraphile } from 'postgraphile'
+import { PostGraphileAmberPreset } from 'postgraphile/presets/amber'
+import PgSimplifyInflectorPlugin from '@graphile-contrib/pg-simplify-inflector'
+
+const preset = {
+  extends: [PostGraphileAmberPreset],
+  plugins: [PgSimplifyInflectorPlugin],
+  pgServices: [
+    {
+      name: 'main',
+      connectionString: process.env.DATABASE_URL,
+      schemas: ['public'],
+    },
+  ],
+  grafserv: {
+    websockets: false,
+  },
+  grafast: {
+    explain: process.env.NODE_ENV === 'development', // Enable plan diagrams in dev
+  },
+  schema: {
+    // Add custom behavior overrides
+    defaultBehavior: 'connection', // Enable Relay-style connections by default
+  },
+}
+
+const pgl = postgraphile(preset)
+
+export async function createPostGraphileSchema() {
+  const { schema } = await pgl.getSchemaResult()
+  return schema
+}
+```
+
+#### Benefits of PostGraphile Integration
+
+- **Zero Schema Definition**: Automatically generates GraphQL schema from PostgreSQL
+- **Auto-Generated Resolvers**: All queries and mutations created from database schema
+- **Real-time Subscriptions**: Live query support via PostgreSQL LISTEN/NOTIFY
+- **Row-Level Security**: Leverages PostgreSQL RLS for authorization
+- **High Performance**: Uses Grafast execution engine with intelligent batching
+- **Type Safety**: Full TypeScript support for generated schema
 
 ### Custom Graphile Preset
 

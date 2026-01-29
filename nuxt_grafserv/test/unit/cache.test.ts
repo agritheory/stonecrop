@@ -1,6 +1,15 @@
 import { getQuery, createError, type H3Event } from 'h3'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
+// Mock virtual modules FIRST
+vi.mock('#internal/grafserv/resolvers', () => ({
+	default: {},
+}))
+
+vi.mock('#internal/grafserv/middleware', () => ({
+	default: [],
+}))
+
 // Mock h3
 vi.mock('h3', () => ({
 	defineEventHandler: vi.fn(handler => handler),
@@ -9,8 +18,9 @@ vi.mock('h3', () => ({
 }))
 
 // Mock the handler module
-vi.mock('../src/runtime/handler', () => ({
-	clearGrafservCache: vi.fn().mockResolvedValue(undefined),
+const mockClearGrafservCache = vi.fn().mockResolvedValue(undefined)
+vi.mock('../../src/runtime/handler', () => ({
+	clearGrafservCache: mockClearGrafservCache,
 }))
 
 describe('Cache Handler', () => {
@@ -20,6 +30,7 @@ describe('Cache Handler', () => {
 	beforeEach(() => {
 		originalEnv = process.env.NODE_ENV
 		vi.clearAllMocks()
+		vi.resetModules() // Reset module cache between tests
 	})
 
 	afterEach(() => {
@@ -31,7 +42,7 @@ describe('Cache Handler', () => {
 			process.env.NODE_ENV = 'development'
 			vi.mocked(getQuery).mockReturnValue({ action: 'status' })
 
-			const { default: cacheHandler } = await import('../src/runtime/cache')
+			const { default: cacheHandler } = await import('../../src/runtime/cache')
 			const result = await cacheHandler(mockEvent)
 
 			expect(result).toEqual({
@@ -49,7 +60,7 @@ describe('Cache Handler', () => {
 			const mockError = new Error('Cache API is disabled in production')
 			vi.mocked(createError).mockReturnValue(mockError as ReturnType<typeof createError>)
 
-			const { default: cacheHandler } = await import('../src/runtime/cache')
+			const { default: cacheHandler } = await import('../../src/runtime/cache')
 
 			await expect(cacheHandler(mockEvent)).rejects.toThrow('Cache API is disabled in production')
 		})
@@ -60,12 +71,11 @@ describe('Cache Handler', () => {
 			process.env.NODE_ENV = 'development'
 			vi.mocked(getQuery).mockReturnValue({ action: 'clear' })
 
-			const { default: cacheHandler } = await import('../src/runtime/cache')
-			const { clearGrafservCache } = await import('../src/runtime/handler')
+			const { default: cacheHandler } = await import('../../src/runtime/cache')
 
 			const result = await cacheHandler(mockEvent)
 
-			expect(clearGrafservCache).toHaveBeenCalledOnce()
+			expect(mockClearGrafservCache).toHaveBeenCalledOnce()
 			expect(result).toEqual({
 				success: true,
 				message: 'Grafserv cache cleared',
@@ -78,7 +88,7 @@ describe('Cache Handler', () => {
 			process.env.NODE_ENV = 'development'
 			vi.mocked(getQuery).mockReturnValue({ action: 'status' })
 
-			const { default: cacheHandler } = await import('../src/runtime/cache')
+			const { default: cacheHandler } = await import('../../src/runtime/cache')
 			const result = await cacheHandler(mockEvent)
 
 			expect(result).toEqual({
@@ -95,7 +105,7 @@ describe('Cache Handler', () => {
 			process.env.NODE_ENV = 'development'
 			vi.mocked(getQuery).mockReturnValue({ action: 'invalid' })
 
-			const { default: cacheHandler } = await import('../src/runtime/cache')
+			const { default: cacheHandler } = await import('../../src/runtime/cache')
 			const result = await cacheHandler(mockEvent)
 
 			expect(result).toEqual({
@@ -109,7 +119,7 @@ describe('Cache Handler', () => {
 			process.env.NODE_ENV = 'development'
 			vi.mocked(getQuery).mockReturnValue({})
 
-			const { default: cacheHandler } = await import('../src/runtime/cache')
+			const { default: cacheHandler } = await import('../../src/runtime/cache')
 			const result = await cacheHandler(mockEvent)
 
 			expect(result).toEqual({

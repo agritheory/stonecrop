@@ -1,3 +1,4 @@
+import type { PromiseOrDirect } from 'grafast'
 import type { GraphQLSchema } from 'graphql'
 import type { GraphileConfig } from 'graphile-config'
 
@@ -7,13 +8,21 @@ import type { GraphileConfig } from 'graphile-config'
 export type SchemaProvider = () => GraphQLSchema | Promise<GraphQLSchema>
 
 /**
+ * PostGraphile instance interface (minimal type for compatibility)
+ */
+export interface PostGraphileInstance {
+	getSchema(): PromiseOrDirect<GraphQLSchema>
+	getSchemaResult(): PromiseOrDirect<{ schema: GraphQLSchema; resolvedPreset: GraphileConfig.ResolvedPreset }>
+}
+
+/**
  * Configuration for the Grafast module
  */
 export interface ModuleOptions {
-	/** Path to schema file(s) or a schema provider function */
-	schema?: string | string[] | SchemaProvider
+	/** Path to schema file(s), a schema provider function, or a PostGraphile instance */
+	schema?: string | string[] | SchemaProvider | PostGraphileInstance
 
-	/** Path to resolvers file (for .graphql schema files) */
+	/** Path to resolvers file (optional, only needed for .graphql schema files without PostGraphile) */
 	resolvers?: string
 
 	/** GraphQL endpoint URL (default: '/graphql/') */
