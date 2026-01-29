@@ -2,6 +2,18 @@
   "name": "@stonecrop/nuxt-grafserv",
   "entries": [
     {
+      "version": "0.7.6",
+      "tag": "@stonecrop/nuxt-grafserv_v0.7.6",
+      "date": "Thu, 29 Jan 2026 14:44:10 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "add support for postgraphile"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.7.5",
       "tag": "@stonecrop/nuxt-grafserv_v0.7.5",
       "date": "Thu, 22 Jan 2026 09:30:36 GMT",
