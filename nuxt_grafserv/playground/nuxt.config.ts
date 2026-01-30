@@ -6,6 +6,9 @@ export default defineNuxtConfig({
 	modules: [NuxtGrafserv],
 
 	grafserv: {
+		// Configuration type - 'schema' for file-based schemas
+		type: 'schema',
+
 		// Path to GraphQL schema files
 		schema: 'server/schema.graphql',
 
@@ -17,27 +20,5 @@ export default defineNuxtConfig({
 
 		// Enable GraphiQL in development
 		graphiql: true,
-
-		// Graphile preset with grafserv options
-		preset: {
-			grafserv: {
-				websockets: false,
-			},
-
-			// Nitro config for development
-			nitro: {
-				storage: {
-					cache: {
-						driver: 'memory',
-					},
-				},
-			},
-
-			// Development server config
-			devServer: {
-				port: 3000,
-				host: 'localhost',
-			},
-		},
 	} as ModuleOptions,
 })

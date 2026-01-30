@@ -1,11 +1,61 @@
 import { join } from 'node:path'
 import { createRequire } from 'node:module'
-import { createResolver, defineNuxtModule, useLogger } from '@nuxt/kit'
+import { addTemplate, createResolver, defineNuxtModule, useLogger } from '@nuxt/kit'
 import type { NuxtModule } from '@nuxt/schema'
 
-import type { ModuleOptions } from './types'
+import type { ModuleOptions, PostGraphileConfig, SchemaConfig } from './types'
 
 const logger = useLogger('@stonecrop/nuxt-grafserv')
+
+/**
+ * Validate module configuration
+ */
+function validateConfig(options: Partial<ModuleOptions>): asserts options is ModuleOptions {
+	if (!options.type) {
+		throw new Error(
+			`[@stonecrop/nuxt-grafserv] Configuration error: 'type' field is required. ` +
+				`Must be either 'postgraphile' or 'schema'. ` +
+				`\nExample: grafserv: { type: 'postgraphile', preset: { ... } }`
+		)
+	}
+
+	if (options.type === 'postgraphile') {
+		const config = options as Partial<PostGraphileConfig>
+		if (!config.preset) {
+			throw new Error(
+				`[@stonecrop/nuxt-grafserv] PostGraphile configuration error: 'preset' field is required when type is 'postgraphile'. ` +
+					`\nExample: { type: 'postgraphile', preset: { extends: [PostGraphileAmberPreset], ... } }`
+			)
+		}
+		// Warn if schema/resolvers are provided with postgraphile type
+		if ('schema' in config || 'resolvers' in config) {
+			logger.warn(
+				`PostGraphile configuration should not include 'schema' or 'resolvers' fields. ` +
+					`The schema is generated from the 'preset' configuration.`
+			)
+		}
+	} else if (options.type === 'schema') {
+		const config = options as Partial<SchemaConfig>
+		if (!config.schema) {
+			throw new Error(
+				`[@stonecrop/nuxt-grafserv] Schema configuration error: 'schema' field is required when type is 'schema'. ` +
+					`\nExample: { type: 'schema', schema: 'server/**/*.graphql', resolvers: 'server/resolvers/index.ts' }`
+			)
+		}
+		// Warn if preset is provided with schema type
+		if ('preset' in config) {
+			logger.warn(
+				`Schema configuration should not include 'preset' field. ` +
+					`Use type: 'postgraphile' for PostGraphile preset configuration.`
+			)
+		}
+	} else {
+		throw new Error(
+			`[@stonecrop/nuxt-grafserv] Configuration error: Invalid type '${(options as any).type}'. ` +
+				`Must be either 'postgraphile' or 'schema'.`
+		)
+	}
+}
 
 const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
 	meta: {
@@ -13,20 +63,17 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
 		configKey: 'grafserv',
 	},
 
-	defaults: _nuxt => ({
-		schema: 'server/**/*.graphql',
-		resolvers: undefined, // Optional - not needed for PostGraphile setups
-		url: '/graphql/',
-		graphiql: undefined, // Will default based on dev mode
-		plugins: [],
-		preset: {
-			grafserv: {
-				websockets: false,
-			},
-		},
-	}),
-
+	// No defaults - user must provide complete config with type discriminator
+	// Use undefined instead of {} to ensure user config is passed as-is
 	setup(options, nuxt) {
+		// Skip validation if options is empty (happens during nuxt-module-build prepare)
+		if (Object.keys(options).length === 0) {
+			return
+		}
+
+		// Validate configuration early
+		validateConfig(options)
+
 		const { resolve } = createResolver(import.meta.url)
 		const require = createRequire(import.meta.url)
 
@@ -57,50 +104,73 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
 			logger.info(`Nuxt rootDir: ${nuxt.options.rootDir}`)
 			logger.info(`Grafserv server alias: ${config.alias['#grafserv-server']}`)
 
-			// Handle resolvers (optional)
-			const resolverPath = options.resolvers ? resolveForVirtualModule(options.resolvers) : undefined
-			if (resolverPath) {
-				logger.info(`Resolved resolver path: ${resolverPath}`)
-			} else {
-				logger.info('No resolvers configured (normal for PostGraphile setups)')
-			}
+			// Handle configuration based on type
+			if (options.type === 'postgraphile') {
+				logger.info('Using PostGraphile preset configuration')
 
-			// Determine schema type and handle appropriately
-			let runtimeSchema: ModuleOptions['schema']
-			if (
-				typeof options.schema === 'function' ||
-				(options.schema && typeof options.schema === 'object' && 'getSchema' in options.schema)
-			) {
-				// PostGraphile instance or function - pass through directly
-				runtimeSchema = options.schema
-				logger.info('Using schema provider function or PostGraphile instance')
-			} else if (typeof options.schema === 'string') {
-				// String path - resolve it
-				runtimeSchema = resolveForSchema(options.schema)
-				logger.info(`Resolved schema path: ${runtimeSchema}`)
-			} else if (Array.isArray(options.schema)) {
-				// Array of paths - resolve each
-				runtimeSchema = options.schema.map(s => resolveForSchema(s))
-				logger.info(`Resolved schema paths: ${runtimeSchema.join(', ')}`)
-			} else {
-				runtimeSchema = options.schema
-			}
+				// Create template file for preset to avoid serialization issues
+				// PostGraphile presets contain frozen objects that cannot be serialized to runtimeConfig
+				const template = addTemplate({
+					filename: 'grafserv-preset.mjs',
+					write: true,
+					getContents: () => {
+						// Note: This is a simplified approach that assumes preset is serializable as JSON
+						// For complex presets with functions/classes, users should create a preset file and import it
+						return `export const preset = ${JSON.stringify(options.preset, null, 2)}`
+					},
+				})
 
-			config.runtimeConfig = config.runtimeConfig || {}
-			config.runtimeConfig.grafserv = {
-				...options,
-				// Pass resolved resolver path for direct import
-				resolversPath: resolverPath,
-				// Pass schema (either resolved paths or function/instance)
-				schema: runtimeSchema,
-			}
+				// Store minimal config in runtime config (without preset) and the path to the preset module
+				config.runtimeConfig = config.runtimeConfig || {}
+				config.runtimeConfig.grafserv = {
+					type: 'postgraphile' as const,
+					url: options.url || '/graphql/',
+					graphiql: options.graphiql,
+					presetPath: template.dst,
+				}
+			} else if (options.type === 'schema') {
+				logger.info('Using schema configuration')
 
-			// Create virtual modules
-			config.virtual = config.virtual || {}
+				// Handle resolvers (optional)
+				const resolverPath = options.resolvers ? resolveForVirtualModule(options.resolvers) : undefined
+				if (resolverPath) {
+					logger.info(`Resolved resolver path: ${resolverPath}`)
+				} else {
+					logger.info('No resolvers configured')
+				}
 
-			// Resolver virtual module
-			if (resolverPath) {
-				config.virtual['#internal/grafserv/resolvers'] = `export { default } from '${resolverPath}'`
+				// Determine schema type and handle appropriately
+				let runtimeSchema: SchemaConfig['schema']
+				if (typeof options.schema === 'function') {
+					// Function - pass through directly
+					runtimeSchema = options.schema
+					logger.info('Using schema provider function')
+				} else if (typeof options.schema === 'string') {
+					// String path - resolve it
+					runtimeSchema = resolveForSchema(options.schema)
+					logger.info(`Resolved schema path: ${runtimeSchema}`)
+				} else if (Array.isArray(options.schema)) {
+					// Array of paths - resolve each
+					runtimeSchema = options.schema.map(s => resolveForSchema(s))
+					logger.info(`Resolved schema paths: ${runtimeSchema.join(', ')}`)
+				} else {
+					runtimeSchema = options.schema
+				}
+
+				config.runtimeConfig = config.runtimeConfig || {}
+				config.runtimeConfig.grafserv = {
+					type: 'schema' as const,
+					schema: runtimeSchema,
+					resolversPath: resolverPath,
+					url: options.url || '/graphql/',
+					graphiql: options.graphiql,
+				}
+
+				// Create virtual modules for resolvers
+				config.virtual = config.virtual || {}
+				if (resolverPath) {
+					config.virtual['#internal/grafserv/resolvers'] = `export { default } from '${resolverPath}'`
+				}
 			}
 
 			// Externalize Grafast to prevent module instance mismatch
@@ -167,7 +237,8 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
 
 			nuxt.hook('builder:watch', async (event, path) => {
 				const isSchemaFile = path.endsWith('.graphql')
-				const isResolverFile = options.resolvers && path.includes(options.resolvers.replace('./', ''))
+				const isResolverFile =
+					options.type === 'schema' && options.resolvers && path.includes(options.resolvers.replace('./', ''))
 
 				if (isSchemaFile || isResolverFile) {
 					if (!cacheClearing) {
@@ -194,4 +265,4 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
 export default module
 
 // Re-export types for use in nuxt.config.ts
-export type { ModuleOptions, SchemaProvider } from './types'
+export type { ModuleOptions, PostGraphileConfig, SchemaConfig, SchemaProvider } from './types'

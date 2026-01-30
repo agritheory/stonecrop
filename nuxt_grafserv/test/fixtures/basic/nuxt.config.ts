@@ -4,6 +4,9 @@ export default defineNuxtConfig({
 	modules: [NuxtGrafserv],
 
 	grafserv: {
+		// Configuration type - 'schema' for file-based schemas
+		type: 'schema',
+
 		// Path to GraphQL schema file
 		schema: 'server/schema.graphql',
 

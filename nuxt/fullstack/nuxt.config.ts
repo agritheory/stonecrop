@@ -21,6 +21,9 @@ export default defineNuxtConfig({
 
 	// Grafserv GraphQL server configuration
 	grafserv: {
+		// Configuration type - 'schema' for file-based schemas
+		type: 'schema',
+
 		// GraphQL schema and resolvers
 		schema: './server/schema.graphql',
 		resolvers: './server/resolvers.ts',
@@ -30,37 +33,31 @@ export default defineNuxtConfig({
 
 		// Enable GraphiQL in development
 		graphiql: true,
+	} as GrafservOptions,
 
-		// Graphile preset with grafserv options
-		preset: {
-			grafserv: {
-				websockets: false,
-			},
-			// CSS theme
-			css: [themePath, '~/assets/styles/common.css'],
+	// CSS theme
+	css: [themePath, '~/assets/styles/common.css'],
 
-			// Development tools
-			devtools: { enabled: true },
+	// Development tools
+	devtools: { enabled: true },
 
-			// Nitro server configuration
-			nitro: {
-				storage: {
-					cache: {
-						driver: 'memory',
-					},
-				},
-				// Don't bundle grafast - let Node.js handle it natively
-				// This fixes ESM/CJS interop issues with the debug package
-				externals: {
-					external: ['grafast', 'grafserv', 'grafserv/h3/v1', 'graphile-config', 'debug'],
-				},
-			},
-
-			// Dev server
-			devServer: {
-				port: 3001, // Different port from regular playground
-				host: 'localhost',
+	// Nitro server configuration
+	nitro: {
+		storage: {
+			cache: {
+				driver: 'memory',
 			},
 		},
-	} as GrafservOptions,
+		// Don't bundle grafast - let Node.js handle it natively
+		// This fixes ESM/CJS interop issues with the debug package
+		externals: {
+			external: ['grafast', 'grafserv', 'grafserv/h3/v1', 'graphile-config', 'debug'],
+		},
+	},
+
+	// Dev server
+	devServer: {
+		port: 3001, // Different port from regular playground
+		host: 'localhost',
+	},
 })

@@ -31,78 +31,168 @@ The module automatically registers these handlers:
 
 ## Quick Setup
 
-1. Add `@stonecrop/nuxt-grafserv` dependency to your project:
+### PostGraphile Integration (Recommended)
+
+For PostGraphile users, this is the recommended configuration approach:
+
+1. Add dependencies:
 
 ```bash
 # Using pnpm
-pnpm add @stonecrop/nuxt-grafserv
+pnpm add @stonecrop/nuxt-grafserv postgraphile
 
 # Using yarn
-yarn add @stonecrop/nuxt-grafserv
+yarn add @stonecrop/nuxt-grafserv postgraphile
 
 # Using npm
-npm install @stonecrop/nuxt-grafserv
+npm install @stonecrop/nuxt-grafserv postgraphile
 ```
 
-2. Add `@stonecrop/nuxt-grafserv` to the `modules` section of `nuxt.config.ts`:
+2. Configure in `nuxt.config.ts`:
+
+```ts
+import { PostGraphileAmberPreset } from 'postgraphile/presets/amber'
+import { makePgService } from 'postgraphile/adaptors/pg'
+
+export default defineNuxtConfig({
+  modules: ['@stonecrop/nuxt-grafserv'],
+  grafserv: {
+    type: 'postgraphile', // Required: specify configuration type
+    preset: {
+      extends: [PostGraphileAmberPreset],
+      pgServices: [
+        makePgService({
+          connectionString: process.env.DATABASE_URL || 'postgresql://localhost/mydb',
+          schemas: ['public'],
+        }),
+      ],
+    },
+    url: '/graphql',
+    graphiql: true,
+  }
+})
+```
+
+### Custom Schema Configuration
+
+For custom GraphQL schemas with your own resolvers:
+
+1. Add dependency:
+
+```bash
+pnpm add @stonecrop/nuxt-grafserv
+```
+
+2. Configure in `nuxt.config.ts`:
 
 ```ts
 export default defineNuxtConfig({
   modules: ['@stonecrop/nuxt-grafserv'],
   grafserv: {
+    type: 'schema', // Required: specify configuration type
     schema: 'server/**/*.graphql',
     resolvers: 'server/resolvers.ts',
-    url: '/graphql/', // Serves both GraphQL API and Ruru UI
+    url: '/graphql',
+    graphiql: true,
   }
 })
 ```
 
 ## Configuration
 
-### All Available Options
+The module supports two configuration types using a discriminated union pattern:
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `schema` | `string \| string[] \| SchemaProvider \| PostGraphileInstance` | `'server/**/*.graphql'` | Path(s) to GraphQL schema files, schema provider function, or PostGraphile instance |
-| `resolvers` | `string` | `undefined` | Path to resolvers file (optional - not needed for PostGraphile) |
-| `url` | `string` | `'/graphql/'` | GraphQL endpoint URL (also serves Ruru UI) |
-| `graphiql` | `boolean` | `true` in dev, `false` in prod | Enable GraphiQL IDE |
-| `preset` | `GraphileConfig.Preset` | `undefined` | Custom Graphile preset for advanced configuration |
+### PostGraphile Configuration
 
-### Full Configuration Example
+Use `type: 'postgraphile'` for PostGraphile-based GraphQL APIs:
+
+| Option | Type | Required | Description |
+|--------|------|----------|-------------|
+| `type` | `'postgraphile'` | ✅ | Configuration type discriminator |
+| `preset` | `GraphileConfig.Preset` | ✅ | PostGraphile preset passed to makeSchema() |
+| `url` | `string` | ❌ | GraphQL endpoint URL (default: '/graphql/') |
+| `graphiql` | `boolean` | ❌ | Enable GraphiQL IDE (default: true in dev, false in prod) |
+
+**Example:**
+
+```ts
+import { PostGraphileAmberPreset } from 'postgraphile/presets/amber'
+import { makePgService } from 'postgraphile/adaptors/pg'
+
+export default defineNuxtConfig({
+  grafserv: {
+    type: 'postgraphile',
+    preset: {
+      extends: [PostGraphileAmberPreset],
+      pgServices: [
+        makePgService({
+          connectionString: process.env.DATABASE_URL,
+          schemas: ['public'],
+        }),
+      ],
+      plugins: [MyCustomPlugin],
+    },
+    url: '/graphql',
+    graphiql: true,
+  }
+})
+```
+
+### Schema Configuration
+
+Use `type: 'schema'` for custom GraphQL schemas with Grafast resolvers:
+
+| Option | Type | Required | Description |
+|--------|------|----------|-------------|
+| `type` | `'schema'` | ✅ | Configuration type discriminator |
+| `schema` | `string \| string[] \| SchemaProvider` | ✅ | Path(s) to .graphql files or schema provider function |
+| `resolvers` | `string` | ❌ | Path to resolvers file (required for .graphql files) |
+| `url` | `string` | ❌ | GraphQL endpoint URL (default: '/graphql/') |
+| `graphiql` | `boolean` | ❌ | Enable GraphiQL IDE (default: true in dev, false in prod) |
+
+**Example with files:**
 
 ```ts
 export default defineNuxtConfig({
-  modules: ['@stonecrop/nuxt-grafserv'],
   grafserv: {
-    // Schema configuration
+    type: 'schema',
     schema: 'server/**/*.graphql',
     resolvers: 'server/resolvers.ts',
+    url: '/graphql',
+  }
+})
+```
 
-    // Endpoints
-    url: '/graphql/', // Serves both GraphQL API and Ruru UI
-    graphiql: true,
+**Example with schema provider function:**
 
-    // Graphile preset with grafserv options
-    preset: {
-      grafserv: {
-        websockets: false,
-        graphqlOverGET: true, // Enable GET requests for queries
-        maxRequestLength: 100000,
-        allowedRequestContentTypes: [
-          'application/json',
-          'application/graphql+json'
-        ]
-      },
-      grafast: {
-        explain: true, // Enable plan diagrams
-      }
+```ts
+export default defineNuxtConfig({
+  grafserv: {
+    type: 'schema',
+    schema: async () => {
+      // Return a GraphQLSchema instance
+      return myCustomSchema
     },
   }
 })
 ```
 
+### Configuration Comparison
+
+| Feature | PostGraphile Config | Schema Config |
+|---------|---------------------|---------------|
+| Type discriminator | `type: 'postgraphile'` | `type: 'schema'` |
+| Schema source | Generated from preset | Files or function |
+| Resolvers | Auto-generated by PostGraphile | Must provide via resolvers file |
+| Primary use case | PostgreSQL-backed APIs | Custom GraphQL APIs |
+| Setup complexity | Minimal (DB connection only) | Moderate (schema + resolvers) |
+| Plugin system | PostGraphile plugins | Grafast standard steps |
+
 ## Basic Usage
+
+### Schema Configuration Example
+
+For custom schemas with resolvers:
 
 1. Create your GraphQL schema (`server/schema.graphql`):
 
@@ -120,7 +210,7 @@ type Mutation {
 2. Create your resolvers (`server/resolvers.ts`):
 
 ```typescript
-import { constant, lambda, access, object, filter, type GrafastSchemaConfig } from 'grafast'
+import { constant, lambda, type GrafastSchemaConfig } from 'grafast'
 
 const resolvers: GrafastSchemaConfig['objects'] = {
   Query: {
@@ -142,18 +232,68 @@ const resolvers: GrafastSchemaConfig['objects'] = {
 export default resolvers
 ```
 
-## Advanced Usage
-
-### Middleware via Grafserv Plugins
-
-For middleware functionality (authentication, logging, etc.), use Grafserv plugins. The CLI installer creates a `server/plugins.ts` file with examples.
-
-#### Inline Plugin Configuration
+3. Configure Nuxt:
 
 ```ts
 export default defineNuxtConfig({
+  modules: ['@stonecrop/nuxt-grafserv'],
   grafserv: {
+    type: 'schema',
+    schema: 'server/schema.graphql',
+    resolvers: 'server/resolvers.ts',
+  }
+})
+```
+
+### PostGraphile Configuration Example
+
+For database-backed GraphQL APIs:
+
+1. Configure PostGraphile in `nuxt.config.ts`:
+
+```ts
+import { PostGraphileAmberPreset } from 'postgraphile/presets/amber'
+import { makePgService } from 'postgraphile/adaptors/pg'
+
+export default defineNuxtConfig({
+  modules: ['@stonecrop/nuxt-grafserv'],
+  grafserv: {
+    type: 'postgraphile',
     preset: {
+      extends: [PostGraphileAmberPreset],
+      pgServices: [
+        makePgService({
+          connectionString: process.env.DATABASE_URL,
+          schemas: ['public'],
+        }),
+      ],
+    },
+  }
+})
+```
+
+2. That's it! PostGraphile automatically generates your GraphQL schema from your PostgreSQL database.
+
+## Advanced Usage
+
+## Advanced Usage
+
+### Grafserv Middleware and Plugins
+
+For cross-cutting concerns like authentication, logging, or rate limiting, use Grafserv plugins through the preset configuration. This works for both PostGraphile and Schema configurations.
+
+#### Inline Plugin Configuration (PostGraphile)
+
+```ts
+import { PostGraphileAmberPreset } from 'postgraphile/presets/amber'
+import { makePgService } from 'postgraphile/adaptors/pg'
+
+export default defineNuxtConfig({
+  grafserv: {
+    type: 'postgraphile',
+    preset: {
+      extends: [PostGraphileAmberPreset],
+      pgServices: [makePgService({ /* ... */ })],
       plugins: [
         {
           name: 'request-logging',
@@ -163,9 +303,7 @@ export default defineNuxtConfig({
               processGraphQLRequestBody: async (next, event) => {
                 const start = Date.now()
                 console.log('[GraphQL] Request started')
-
                 const result = await next()
-
                 console.log(`[GraphQL] Completed in ${Date.now() - start}ms`)
                 return result
               }
@@ -178,17 +316,34 @@ export default defineNuxtConfig({
 })
 ```
 
+#### Inline Plugin Configuration (Schema)
+
+```ts
+export default defineNuxtConfig({
+  grafserv: {
+    type: 'schema',
+    schema: 'server/**/*.graphql',
+    resolvers: 'server/resolvers.ts',
+    // Note: For Schema config, advanced plugin configuration should be done
+    // through a preset configuration or custom schema provider
+  }
+})
+```
+
 #### Using External Plugin File
 
 ```ts
 // nuxt.config.ts
+import { PostGraphileAmberPreset } from 'postgraphile/presets/amber'
+import { makePgService } from 'postgraphile/adaptors/pg'
 import plugins from './server/plugins'
 
 export default defineNuxtConfig({
   grafserv: {
-    schema: 'server/schema.graphql',
-    resolvers: 'server/resolvers.ts',
+    type: 'postgraphile',
     preset: {
+      extends: [PostGraphileAmberPreset],
+      pgServices: [makePgService({ /* ... */ })],
       plugins
     }
   }
@@ -219,7 +374,10 @@ const authPlugin: GraphileConfig.Plugin = {
     middleware: {
       processGraphQLRequestBody: async (next, event) => {
         const token = event.request.headers.get('authorization')
-        // TODO: Validate token and add user to context
+        // Validate token and add user to context
+        if (!token) {
+          throw new Error('Unauthorized')
+        }
         return next()
       }
     }
@@ -236,166 +394,128 @@ export default [loggingPlugin, authPlugin]
 - `ruruHTML` - Customize Ruru IDE HTML generation
 - `onSubscribe` - Handle GraphQL subscriptions
 
-## Advanced Usage
+## PostGraphile Integration
 
-### PostGraphile Integration
+This module has first-class support for PostGraphile v5 using the preset configuration pattern. PostGraphile automatically generates your complete GraphQL schema and resolvers from your PostgreSQL database.
 
-This module has first-class support for PostGraphile, enabling instant GraphQL APIs from PostgreSQL databases. PostGraphile generates the complete schema and resolvers, so you don't need to define them manually.
-
-#### Setup with PostGraphile
-
-1. Install PostGraphile:
+### Prerequisites
 
 ```bash
-pnpm add postgraphile @graphile/crystal graphile-build-pg
+pnpm add postgraphile
 ```
 
-2. Create a PostGraphile schema provider (`server/graphql/schema.ts`):
-
-```typescript
-import { postgraphile } from 'postgraphile'
-import type { GraphQLSchema } from 'graphql'
-
-// Define your PostGraphile preset
-const preset = {
-  pgServices: [
-    {
-      name: 'main',
-      connectionString: process.env.DATABASE_URL || 'postgres://localhost/mydb',
-      schemas: ['public'],
-    },
-  ],
-  grafserv: {
-    websockets: false, // Disable websockets for Nuxt compatibility
-  },
-}
-
-// Create PostGraphile instance
-const pgl = postgraphile(preset)
-
-// Export schema provider function
-export async function createPostGraphileSchema(): Promise<GraphQLSchema> {
-  const { schema } = await pgl.getSchemaResult()
-  return schema
-}
-
-// Export the instance if you need direct access
-export { pgl }
-```
-
-3. Configure Nuxt to use the PostGraphile schema:
+### Basic PostGraphile Setup
 
 ```typescript
 // nuxt.config.ts
-import { createPostGraphileSchema } from './server/graphql/schema'
+import { PostGraphileAmberPreset } from 'postgraphile/presets/amber'
+import { makePgService } from 'postgraphile/adaptors/pg'
 
 export default defineNuxtConfig({
   modules: ['@stonecrop/nuxt-grafserv'],
   grafserv: {
-    // Use PostGraphile schema provider function
-    schema: createPostGraphileSchema,
-    // No resolvers needed - PostGraphile generates everything
+    type: 'postgraphile',
+    preset: {
+      extends: [PostGraphileAmberPreset],
+      pgServices: [
+        makePgService({
+          connectionString: process.env.DATABASE_URL || 'postgresql://localhost/mydb',
+          schemas: ['public'],
+        }),
+      ],
+    },
     url: '/graphql',
-    graphiql: true, // Enable Ruru IDE
+    graphiql: true,
   }
 })
 ```
 
-#### Direct PostGraphile Instance Usage
+### PostGraphile with Custom Plugins
 
-You can also pass a PostGraphile instance directly:
+Enhance your PostGraphile setup with community plugins:
 
 ```typescript
 // nuxt.config.ts
-import { pgl } from './server/graphql/schema'
-
-export default defineNuxtConfig({
-  grafserv: {
-    schema: pgl, // Pass PostGraphile instance directly
-    url: '/graphql',
-  }
-})
-```
-
-#### PostGraphile with Custom Plugins
-
-Enhance your PostGraphile setup with custom plugins:
-
-```typescript
-// server/graphql/schema.ts
-import { postgraphile } from 'postgraphile'
 import { PostGraphileAmberPreset } from 'postgraphile/presets/amber'
+import { makePgService } from 'postgraphile/adaptors/pg'
 import PgSimplifyInflectorPlugin from '@graphile-contrib/pg-simplify-inflector'
 
-const preset = {
-  extends: [PostGraphileAmberPreset],
-  plugins: [PgSimplifyInflectorPlugin],
-  pgServices: [
-    {
-      name: 'main',
-      connectionString: process.env.DATABASE_URL,
-      schemas: ['public'],
-    },
-  ],
-  grafserv: {
-    websockets: false,
-  },
-  grafast: {
-    explain: process.env.NODE_ENV === 'development', // Enable plan diagrams in dev
-  },
-  schema: {
-    // Add custom behavior overrides
-    defaultBehavior: 'connection', // Enable Relay-style connections by default
-  },
-}
-
-const pgl = postgraphile(preset)
-
-export async function createPostGraphileSchema() {
-  const { schema } = await pgl.getSchemaResult()
-  return schema
-}
-```
-
-#### Benefits of PostGraphile Integration
-
-- **Zero Schema Definition**: Automatically generates GraphQL schema from PostgreSQL
-- **Auto-Generated Resolvers**: All queries and mutations created from database schema
-- **Real-time Subscriptions**: Live query support via PostgreSQL LISTEN/NOTIFY
-- **Row-Level Security**: Leverages PostgreSQL RLS for authorization
-- **High Performance**: Uses Grafast execution engine with intelligent batching
-- **Type Safety**: Full TypeScript support for generated schema
-
-### Custom Graphile Preset
-
-Leverage the full power of the Graphile ecosystem with custom presets:
-
-```ts
-import { PostGraphileAmberPreset } from 'postgraphile/presets/amber'
-
 export default defineNuxtConfig({
   grafserv: {
+    type: 'postgraphile',
     preset: {
       extends: [PostGraphileAmberPreset],
-      grafast: {
-        explain: true, // Enable plan diagrams for debugging
-        context: {
-          // Custom context available in all resolvers
-          apiVersion: '1.0'
-        }
+      plugins: [PgSimplifyInflectorPlugin],
+      pgServices: [
+        makePgService({
+          connectionString: process.env.DATABASE_URL,
+          schemas: ['public'],
+        }),
+      ],
+      schema: {
+        defaultBehavior: 'connection', // Enable Relay-style connections
       },
-      grafserv: {
-        graphqlOverGET: true,
-        maxRequestLength: 200000
-      }
-    }
+      grafast: {
+        explain: process.env.NODE_ENV === 'development', // Plan diagrams in dev
+      },
+    },
   }
 })
 ```
+
+### Advanced PostGraphile Configuration
+
+```typescript
+import { PostGraphileAmberPreset } from 'postgraphile/presets/amber'
+import { makePgService } from 'postgraphile/adaptors/pg'
+
+export default defineNuxtConfig({
+  grafserv: {
+    type: 'postgraphile',
+    preset: {
+      extends: [PostGraphileAmberPreset],
+      pgServices: [
+        makePgService({
+          connectionString: process.env.DATABASE_URL,
+          schemas: ['public', 'app_private'],
+          superuserConnectionString: process.env.SUPERUSER_DATABASE_URL, // For watch mode
+          pubsub: true, // Enable LISTEN/NOTIFY for subscriptions
+        }),
+      ],
+      gather: {
+        // Smart tags for schema customization
+        pgJwtTypes: 'app_public.jwt_token',
+      },
+      schema: {
+        // Behavior overrides
+        defaultBehavior: '-insert -update -delete', // Read-only by default
+        pgJwtSecret: process.env.JWT_SECRET,
+      },
+      grafast: {
+        explain: true,
+        context: (requestContext) => ({
+          // Custom context for all resolvers
+          userId: requestContext.user?.id,
+        }),
+      },
+    },
+  }
+})
+```
+
+### Benefits of PostGraphile Integration
+
+- **Zero Schema Definition**: Automatically generates GraphQL schema from PostgreSQL
+- **Auto-Generated Resolvers**: All queries, mutations, and subscriptions from database
+- **Real-time Subscriptions**: Live queries via PostgreSQL LISTEN/NOTIFY
+- **Row-Level Security**: Leverages PostgreSQL RLS for fine-grained authorization
+- **High Performance**: Grafast execution engine with intelligent query planning
+- **Type Safety**: Full TypeScript support for generated schema
+- **Plugin Ecosystem**: Rich collection of community plugins for extended functionality
 
 ### Accessing Grafserv Instance
 
-For advanced use cases, you can access the grafserv instance directly:
+For advanced use cases, you can access the grafserv instance directly in server routes:
 
 ```ts
 // server/api/custom.ts
@@ -406,10 +526,13 @@ export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
   const serv = await getGrafservInstance(config.grafserv)
 
-  // Access grafserv methods or configuration
-  const preset = serv.getPreset()
+  // Access grafserv methods
+  // Note: serv contains the grafserv instance with your schema
 
-  return { preset }
+  return {
+    status: 'GraphQL server is running',
+    endpoint: config.grafserv.url
+  }
 })
 ```
 
