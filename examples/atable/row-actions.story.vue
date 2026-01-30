@@ -96,9 +96,9 @@ const columns: TableColumn[] = [
 		label: 'ID',
 		name: 'id',
 		fieldtype: 'Int',
-		align: 'center',
+		align: 'left',
 		edit: false,
-		width: '8ch',
+		width: '3ch',
 	},
 	{
 		label: 'Name',

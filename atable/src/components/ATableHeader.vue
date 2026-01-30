@@ -103,6 +103,7 @@ const onResize = (entries: ReadonlyArray<ResizeObserverEntry>) => {
 .atable-header-row th {
 	padding-left: 0.5ch !important;
 	font-weight: 700;
+	min-width: 4ch;
 	padding-top: var(--sc-atable-row-padding);
 	padding-bottom: var(--sc-atable-row-padding);
 	box-sizing: border-box;

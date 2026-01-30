@@ -284,6 +284,10 @@ const executeAction = (actionType: RowActionType) => {
 	position: relative;
 	display: inline-block;
 }
+.row-actions-dropdown:has(button:focus) {
+	outline: 2px solid var(--sc-focus-cell-outline);
+	outline-offset: -2px;
+}
 
 .row-actions-toggle {
 	display: inline-flex;
@@ -306,8 +310,8 @@ const executeAction = (actionType: RowActionType) => {
 }
 
 .row-actions-toggle:focus {
-	outline: 2px solid var(--sc-focus-cell-outline, #3b82f6);
-	outline-offset: 1px;
+	/* outline: 2px solid var(--sc-focus-cell-outline, #3b82f6);
+	outline-offset: 1px; */
 }
 
 .dropdown-icon {

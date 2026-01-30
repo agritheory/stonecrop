@@ -135,7 +135,7 @@ if (addNavigation) {
 	padding-right: 0.5em;
 	text-align: left;
 	user-select: none;
-	width: 7ch;
+	/* width: 7ch; */
 	text-overflow: ellipsis;
 	overflow: hidden;
 	box-sizing: border-box;
