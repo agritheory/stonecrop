@@ -60,11 +60,9 @@
 		"@stonecrop/graphql-middleware": "workspace:*",
 		"grafast": "^1.0.0-rc.4",
 		"grafserv": "^1.0.0-rc.4",
-		"graphile-config": "^1.0.0-rc.3",
 		"graphql": "^16.12.0"
 	},
 	"devDependencies": {
-		"@casl/ability": "^6.8.0",
 		"@eslint/js": "^9.39.2",
 		"@nuxt/devtools": "^3.1.1",
 		"@nuxt/eslint-config": "^1.12.1",
@@ -72,8 +70,6 @@
 		"@nuxt/module-builder": "^1.0.2",
 		"@nuxt/schema": "^4.2.2",
 		"@nuxt/test-utils": "^3.23.0",
-		"@stonecrop/casl-middleware": "workspace:*",
-		"@stonecrop/rockfoil": "workspace:*",
 		"@vitest/coverage-istanbul": "^4.0.17",
 		"@types/node": "^22.19.5",
 		"h3": "^1.15.5",
@@ -90,13 +86,21 @@
 	},
 	"peerDependencies": {
 		"@stonecrop/casl-middleware": "workspace:*",
-		"@stonecrop/rockfoil": "workspace:*"
+		"@stonecrop/rockfoil": "workspace:*",
+		"postgraphile": "^5.0.0-rc.4",
+		"graphile-config": "^1.0.0-rc.3"
 	},
 	"peerDependenciesMeta": {
 		"@stonecrop/casl-middleware": {
 			"optional": true
 		},
 		"@stonecrop/rockfoil": {
+			"optional": true
+		},
+		"postgraphile": {
+			"optional": true
+		},
+		"graphile-config": {
 			"optional": true
 		}
 	}

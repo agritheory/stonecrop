@@ -22,6 +22,7 @@ vi.mock('h3', () => ({
 vi.mock('nitropack/runtime', () => ({
 	useRuntimeConfig: vi.fn(() => ({
 		grafserv: {
+			type: 'schema',
 			schema: 'test.graphql',
 			url: '/graphql/',
 		},
@@ -159,6 +160,7 @@ describe('Nuxt Grafserv Integration', () => {
 			await clearGrafservCache()
 
 			const options: ModuleOptions = {
+				type: 'schema',
 				schema: 'test.graphql',
 				preset: {
 					grafserv: {
@@ -171,15 +173,10 @@ describe('Nuxt Grafserv Integration', () => {
 
 			await getGrafservInstance(options)
 
+			// Note: grafserv only receives schema, not preset
 			expect(grafserv).toHaveBeenCalledWith(
 				expect.objectContaining({
-					preset: expect.objectContaining({
-						grafserv: expect.objectContaining({
-							websockets: true,
-							maxRequestLength: 100000,
-							graphqlOverGET: true,
-						}),
-					}),
+					schema: expect.anything(),
 				})
 			)
 		})

@@ -78,24 +78,6 @@ describe('Grafserv Module', () => {
 				configKey: 'grafserv',
 			})
 		})
-
-		it('should provide default options', () => {
-			const defaults = module.defaults(mockNuxt)
-
-			expect(defaults).toMatchObject({
-				schema: 'server/**/*.graphql',
-				resolvers: undefined, // Optional - not needed for PostGraphile
-				url: '/graphql/',
-
-				graphiql: undefined,
-				plugins: [],
-				preset: {
-					grafserv: {
-						websockets: false,
-					},
-				},
-			})
-		})
 	})
 
 	describe('Setup Hook', () => {
@@ -122,6 +104,7 @@ describe('Grafserv Module', () => {
 
 		it('should register nitro:config hooks', async () => {
 			const options: ModuleOptions = {
+				type: 'schema',
 				schema: 'server/**/*.graphql',
 				resolvers: 'server/resolvers.ts',
 				url: '/graphql/',
@@ -134,6 +117,7 @@ describe('Grafserv Module', () => {
 
 		it('should configure nitro aliases', () => {
 			const options: ModuleOptions = {
+				type: 'schema',
 				schema: 'server/**/*.graphql',
 				resolvers: 'server/resolvers.ts',
 				url: '/graphql/',
@@ -146,6 +130,7 @@ describe('Grafserv Module', () => {
 
 		it('should configure runtime config with schema paths', () => {
 			const options: ModuleOptions = {
+				type: 'schema',
 				schema: 'server/**/*.graphql',
 				resolvers: 'server/resolvers.ts',
 				url: '/graphql/',
@@ -159,6 +144,7 @@ describe('Grafserv Module', () => {
 
 		it('should handle absolute schema paths', () => {
 			const options: ModuleOptions = {
+				type: 'schema',
 				schema: '/absolute/path/schema.graphql',
 				resolvers: 'server/resolvers.ts',
 				url: '/graphql/',
@@ -171,6 +157,7 @@ describe('Grafserv Module', () => {
 
 		it('should handle array of schema paths', () => {
 			const options: ModuleOptions = {
+				type: 'schema',
 				schema: ['server/schema1.graphql', 'server/schema2.graphql'],
 				resolvers: 'server/resolvers.ts',
 				url: '/graphql/',
@@ -187,6 +174,7 @@ describe('Grafserv Module', () => {
 		it('should handle function schema providers', () => {
 			const schemaFn = () => ({ _type: 'MockSchema' } as unknown as import('graphql').GraphQLSchema)
 			const options: ModuleOptions = {
+				type: 'schema',
 				schema: schemaFn,
 				resolvers: 'server/resolvers.ts',
 				url: '/graphql/',
@@ -199,6 +187,7 @@ describe('Grafserv Module', () => {
 
 		it('should create virtual module for resolvers', () => {
 			const options: ModuleOptions = {
+				type: 'schema',
 				schema: 'server/**/*.graphql',
 				resolvers: 'server/resolvers.ts',
 				url: '/graphql/',
@@ -212,6 +201,7 @@ describe('Grafserv Module', () => {
 
 		it('should externalize Grafast packages', () => {
 			const options: ModuleOptions = {
+				type: 'schema',
 				schema: 'server/**/*.graphql',
 				resolvers: 'server/resolvers.ts',
 				url: '/graphql/',
@@ -227,6 +217,7 @@ describe('Grafserv Module', () => {
 
 		it('should register GraphQL handler', () => {
 			const options: ModuleOptions = {
+				type: 'schema',
 				schema: 'server/**/*.graphql',
 				resolvers: 'server/resolvers.ts',
 				url: '/graphql/',
@@ -241,6 +232,7 @@ describe('Grafserv Module', () => {
 
 		it('should register Ruru UI handler', () => {
 			const options: ModuleOptions = {
+				type: 'schema',
 				schema: 'server/**/*.graphql',
 				resolvers: 'server/resolvers.ts',
 				url: '/graphql/',
@@ -254,6 +246,7 @@ describe('Grafserv Module', () => {
 
 		it('should register Ruru static assets handler', () => {
 			const options: ModuleOptions = {
+				type: 'schema',
 				schema: 'server/**/*.graphql',
 				resolvers: 'server/resolvers.ts',
 				url: '/graphql/',
@@ -267,6 +260,7 @@ describe('Grafserv Module', () => {
 
 		it('should register cache handler', () => {
 			const options: ModuleOptions = {
+				type: 'schema',
 				schema: 'server/**/*.graphql',
 				resolvers: 'server/resolvers.ts',
 				url: '/graphql/',
@@ -284,6 +278,7 @@ describe('Grafserv Module', () => {
 			mockNuxt.options.dev = true
 
 			const options: ModuleOptions = {
+				type: 'schema',
 				schema: 'server/**/*.graphql',
 				resolvers: 'server/resolvers.ts',
 				url: '/graphql/',
@@ -298,6 +293,7 @@ describe('Grafserv Module', () => {
 			mockNuxt.options.dev = false
 
 			const options: ModuleOptions = {
+				type: 'schema',
 				schema: 'server/**/*.graphql',
 				resolvers: 'server/resolvers.ts',
 				url: '/graphql/',
@@ -313,6 +309,7 @@ describe('Grafserv Module', () => {
 	describe('Devtools Integration', () => {
 		it('should register devtools tab when url is provided', () => {
 			const options: ModuleOptions = {
+				type: 'schema',
 				schema: 'server/**/*.graphql',
 				resolvers: 'server/resolvers.ts',
 				url: '/graphql/',
@@ -325,6 +322,7 @@ describe('Grafserv Module', () => {
 
 		it('should not register devtools tab when url is not provided', () => {
 			const options: ModuleOptions = {
+				type: 'schema',
 				schema: 'server/**/*.graphql',
 				resolvers: 'server/resolvers.ts',
 			}

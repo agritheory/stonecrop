@@ -54,6 +54,7 @@ describe('Grafserv Plugins', () => {
 			}
 
 			const options: ModuleOptions = {
+				type: 'schema',
 				schema: 'type Query { hello: String }',
 				preset: {
 					plugins: [plugin],
