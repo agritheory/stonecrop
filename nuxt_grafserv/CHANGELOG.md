@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/nuxt-grafserv
 
-This log was last generated on Thu, 29 Jan 2026 14:44:10 GMT and should not be manually modified.
+This log was last generated on Fri, 30 Jan 2026 15:29:48 GMT and should not be manually modified.
+
+## 0.7.7
+Fri, 30 Jan 2026 15:29:48 GMT
+
+### Patches
+
+- make postgraphile support more robust
 
 ## 0.7.6
 Thu, 29 Jan 2026 14:44:10 GMT
