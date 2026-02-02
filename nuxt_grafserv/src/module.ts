@@ -1,6 +1,7 @@
-import { join } from 'node:path'
+import { existsSync } from 'node:fs'
 import { createRequire } from 'node:module'
-import { addTemplate, createResolver, defineNuxtModule, useLogger } from '@nuxt/kit'
+import { join } from 'node:path'
+import { createResolver, defineNuxtModule, useLogger } from '@nuxt/kit'
 import type { NuxtModule } from '@nuxt/schema'
 
 import type { ModuleOptions, PostGraphileConfig, SchemaConfig } from './types'
@@ -51,7 +52,7 @@ function validateConfig(options: Partial<ModuleOptions>): asserts options is Mod
 		}
 	} else {
 		throw new Error(
-			`[@stonecrop/nuxt-grafserv] Configuration error: Invalid type '${(options as any).type}'. ` +
+			`[@stonecrop/nuxt-grafserv] Configuration error: Invalid type '${(options as Partial<ModuleOptions>).type}'. ` +
 				`Must be either 'postgraphile' or 'schema'.`
 		)
 	}
@@ -108,25 +109,61 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
 			if (options.type === 'postgraphile') {
 				logger.info('Using PostGraphile preset configuration')
 
-				// Create template file for preset to avoid serialization issues
-				// PostGraphile presets contain frozen objects that cannot be serialized to runtimeConfig
-				const template = addTemplate({
-					filename: 'grafserv-preset.mjs',
-					write: true,
-					getContents: () => {
-						// Note: This is a simplified approach that assumes preset is serializable as JSON
-						// For complex presets with functions/classes, users should create a preset file and import it
-						return `export const preset = ${JSON.stringify(options.preset, null, 2)}`
-					},
-				})
+				// Resolve preset file path and try common extensions if needed
+				let presetPath = resolveForVirtualModule(options.preset)
 
-				// Store minimal config in runtime config (without preset) and the path to the preset module
+				// If file doesn't exist, try common extensions
+				if (!existsSync(presetPath)) {
+					const extensions = ['.ts', '.js', '.mjs']
+					let found = false
+
+					for (const ext of extensions) {
+						const pathWithExt = presetPath + ext
+						if (existsSync(pathWithExt)) {
+							presetPath = pathWithExt
+							found = true
+							break
+						}
+					}
+
+					if (!found) {
+						throw new Error(
+							`[@stonecrop/nuxt-grafserv] Preset file not found: ${presetPath}\n` +
+								`Tried extensions: ${extensions.join(', ')}\n\n` +
+								`Create the preset file with your PostGraphile configuration:\n\n` +
+								`// ${options.preset}.ts (or .js, .mjs)\n` +
+								`import { PostGraphileAmberPreset } from 'postgraphile/presets/amber'\n` +
+								`import { makePgService } from 'postgraphile/adaptors/pg'\n\n` +
+								`export default {\n` +
+								`  extends: [PostGraphileAmberPreset],\n` +
+								`  pgServices: [makePgService({ connectionString: process.env.DATABASE_URL, schemas: ['public'] })],\n` +
+								`  plugins: [],\n` +
+								`}\n`
+						)
+					}
+				}
+
+				logger.info(`Resolved preset path: ${presetPath}`)
+
+				// Create virtual module that imports preset and creates PostGraphile instance
+				// This approach follows PostGraphile's library mode pattern and avoids
+				// runtime preset imports which cause GraphQL module duplication
+				config.virtual = config.virtual || {}
+				config.virtual['#internal/grafserv/pgl'] = [
+					`import { postgraphile } from 'postgraphile'`,
+					`import preset from '${presetPath}'`,
+					``,
+					`// Create PostGraphile instance with the preset`,
+					`// This handles schema building, watch mode, and lifecycle`,
+					`export const pgl = postgraphile(preset)`,
+				].join('\n')
+
+				// Store minimal runtime config
 				config.runtimeConfig = config.runtimeConfig || {}
 				config.runtimeConfig.grafserv = {
 					type: 'postgraphile' as const,
 					url: options.url || '/graphql/',
 					graphiql: options.graphiql,
-					presetPath: template.dst,
 				}
 			} else if (options.type === 'schema') {
 				logger.info('Using schema configuration')
@@ -173,12 +210,16 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
 				}
 			}
 
-			// Externalize Grafast to prevent module instance mismatch
-			// Only externalize grafast - let other packages bundle normally
+			// Externalize Grafast and GraphQL to prevent module instance mismatch
+			// CRITICAL: graphql must be externalized to prevent duplicate module errors
 			config.externals = config.externals || {}
 			config.externals.external = config.externals.external || []
 			config.externals.external.push(
+				'graphql',
 				'grafast',
+				'postgraphile',
+				'graphile-config',
+				'graphile-build',
 				'@graphql-tools/schema',
 				'@graphql-tools/load',
 				'@graphql-tools/graphql-file-loader'
@@ -190,6 +231,13 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
 			const grafastPath = require.resolve('grafast')
 			config.alias = config.alias || {}
 			config.alias['grafast'] = grafastPath
+
+			// Configure TypeScript module resolution for preset files
+			config.typescript = config.typescript || {}
+			config.typescript.tsConfig = config.typescript.tsConfig || {}
+			config.typescript.tsConfig.compilerOptions = config.typescript.tsConfig.compilerOptions || {}
+			config.typescript.tsConfig.compilerOptions.allowImportingTsExtensions = true
+			config.typescript.tsConfig.compilerOptions.moduleResolution = 'bundler'
 		})
 
 		// Set up Grafast handler
@@ -239,8 +287,9 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
 				const isSchemaFile = path.endsWith('.graphql')
 				const isResolverFile =
 					options.type === 'schema' && options.resolvers && path.includes(options.resolvers.replace('./', ''))
+				const isPresetFile = options.type === 'postgraphile' && path.includes(options.preset.replace('./', ''))
 
-				if (isSchemaFile || isResolverFile) {
+				if (isSchemaFile || isResolverFile || isPresetFile) {
 					if (!cacheClearing) {
 						cacheClearing = true
 						try {

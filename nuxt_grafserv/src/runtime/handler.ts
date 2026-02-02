@@ -6,7 +6,7 @@ import type { GraphQLSchema, DocumentNode } from 'graphql'
 import { defineEventHandler, type H3Event } from 'h3'
 import { useRuntimeConfig } from 'nitropack/runtime'
 
-import type { ModuleOptions, PostGraphileConfig, SchemaConfig } from '../types'
+import type { ModuleOptions } from '../types'
 
 // Cache for the grafserv instance
 let grafservInstance: ReturnType<typeof grafserv> | null = null
@@ -34,25 +34,19 @@ async function getSchema(options: ModuleOptions): Promise<GraphQLSchema> {
 	let schema: GraphQLSchema
 
 	if (options.type === 'postgraphile') {
-		// PostGraphile preset configuration
-		console.debug('[@stonecrop/nuxt-grafserv] Creating schema from PostGraphile preset')
+		// PostGraphile instance configuration
+		console.debug('[@stonecrop/nuxt-grafserv] Getting schema from PostGraphile instance')
 		try {
-			// Dynamically import makeSchema from postgraphile
-			const { makeSchema } = await import('postgraphile')
+			// Import the PostGraphile instance created at build time
+			// This instance was created with the preset, avoiding runtime preset imports
+			// @ts-expect-error - virtual module
+			const { pgl } = await import('#internal/grafserv/pgl')
 
-			// Import preset from template file using runtime config path
-			// The path is set by addTemplate in module.ts
-			const config = useRuntimeConfig()
-			if (config.grafserv.type !== 'postgraphile') {
-				throw new Error('Expected PostGraphile configuration')
-			}
-			// @ts-expect-error - presetPath exists on PostGraphile runtime config
-			const presetModule = await import(config.grafserv.presetPath)
-			const preset = presetModule.preset
-
-			const result = await makeSchema(preset)
-			schema = result.schema
-			console.debug('[@stonecrop/nuxt-grafserv] PostGraphile schema created successfully')
+			// Get the schema from the instance
+			// This supports watch mode and always returns the latest schema
+			console.debug('[@stonecrop/nuxt-grafserv] Calling pgl.getSchema()')
+			schema = await pgl.getSchema()
+			console.debug('[@stonecrop/nuxt-grafserv] PostGraphile schema retrieved successfully')
 		} catch (error) {
 			if (error instanceof Error && 'code' in error && error.code === 'MODULE_NOT_FOUND') {
 				throw new Error(
@@ -60,7 +54,7 @@ async function getSchema(options: ModuleOptions): Promise<GraphQLSchema> {
 						'Install it with: npm install postgraphile'
 				)
 			}
-			console.error('[@stonecrop/nuxt-grafserv] Error creating PostGraphile schema:', error)
+			console.error('[@stonecrop/nuxt-grafserv] Error getting PostGraphile schema:', error)
 			throw error
 		}
 	} else if (options.type === 'schema') {
@@ -121,7 +115,9 @@ async function getSchema(options: ModuleOptions): Promise<GraphQLSchema> {
 			}
 		}
 	} else {
-		throw new Error(`[@stonecrop/nuxt-grafserv] Invalid configuration type: ${(options as any).type}`)
+		throw new Error(
+			`[@stonecrop/nuxt-grafserv] Invalid configuration type: ${(options as Partial<ModuleOptions>).type}`
+		)
 	}
 
 	cachedSchema = schema

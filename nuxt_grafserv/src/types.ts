@@ -1,5 +1,4 @@
 import type { GraphQLSchema } from 'graphql'
-import type { GraphileConfig } from 'graphile-config'
 
 /**
  * Schema provider function - returns a GraphQL schema
@@ -10,27 +9,34 @@ export type SchemaProvider = () => GraphQLSchema | Promise<GraphQLSchema>
  * PostGraphile configuration using preset
  *
  * This is the recommended approach for PostGraphile integration.
- * The preset is passed to PostGraphile's makeSchema() function to generate the GraphQL schema.
+ * The preset file path is resolved and imported at runtime, then passed to PostGraphile's makeSchema() function.
+ *
+ * Note: Inline preset objects are not supported due to Nitro's build/runtime separation.
+ * Complex objects with extends arrays, plugins, and functions cannot be serialized across this boundary.
  *
  * @example
  * ```typescript
+ * // 1. Create server/graphile.preset.ts
  * import { PostGraphileAmberPreset } from 'postgraphile/presets/amber'
  * import { makePgService } from 'postgraphile/adaptors/pg'
  *
+ * export default {
+ *   extends: [PostGraphileAmberPreset],
+ *   pgServices: [
+ *     makePgService({
+ *       connectionString: process.env.DATABASE_URL,
+ *       schemas: ['public'],
+ *     }),
+ *   ],
+ *   plugins: [MyCustomPlugin],
+ * }
+ *
+ * // 2. Reference the preset file in nuxt.config.ts
  * export default defineNuxtConfig({
  *   modules: ['@stonecrop/nuxt-grafserv'],
  *   grafserv: {
  *     type: 'postgraphile',
- *     preset: {
- *       extends: [PostGraphileAmberPreset],
- *       pgServices: [
- *         makePgService({
- *           connectionString: process.env.DATABASE_URL,
- *           schemas: ['public'],
- *         }),
- *       ],
- *       plugins: [MyCustomPlugin],
- *     },
+ *     preset: './server/graphile.preset.ts',
  *     url: '/graphql',
  *     graphiql: true,
  *   },
@@ -41,8 +47,18 @@ export interface PostGraphileConfig {
 	/** Configuration type discriminator */
 	type: 'postgraphile'
 
-	/** PostGraphile preset configuration - passed to makeSchema() */
-	preset: GraphileConfig.Preset
+	/**
+	 * Path to PostGraphile preset file
+	 *
+	 * The preset file must export the preset configuration using default export:
+	 * `export default { extends: [...], pgServices: [...], plugins: [...] }`
+	 *
+	 * A PostGraphile instance will be created from this preset at build time.
+	 *
+	 * @example './server/graphile.preset.ts'
+	 * @example './server/graphile.preset.js'
+	 */
+	preset: string
 
 	/** GraphQL endpoint URL (default: '/graphql/') */
 	url?: string

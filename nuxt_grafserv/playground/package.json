@@ -1,6 +1,6 @@
 {
 	"private": true,
-	"name": "@stonecrop/nuxt-yoga-playground",
+	"name": "@stonecrop/nuxt-grafserv-playground",
 	"type": "module",
 	"scripts": {
 		"dev": "nuxi dev --host",
