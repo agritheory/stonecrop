@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/nuxt-grafserv",
+      "comment": "update peer dependencies",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/nuxt-grafserv"
+}
