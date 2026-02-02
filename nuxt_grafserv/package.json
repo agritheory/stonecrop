@@ -85,8 +85,8 @@
 		"vue-tsc": "^3.2.2"
 	},
 	"peerDependencies": {
-		"@stonecrop/casl-middleware": "workspace:*",
-		"@stonecrop/rockfoil": "workspace:*",
+		"@stonecrop/casl-middleware": "*",
+		"@stonecrop/rockfoil": "*",
 		"postgraphile": "^5.0.0-rc.4",
 		"graphile-config": "^1.0.0-rc.3"
 	},
