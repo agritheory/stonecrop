@@ -1,6 +1,11 @@
 # Change Log - @stonecrop/atable
 
-This log was last generated on Fri, 30 Jan 2026 15:29:48 GMT and should not be manually modified.
+This log was last generated on Mon, 02 Feb 2026 05:56:02 GMT and should not be manually modified.
+
+## 0.7.8
+Mon, 02 Feb 2026 05:56:02 GMT
+
+_Version update only_
 
 ## 0.7.7
 Fri, 30 Jan 2026 15:29:48 GMT
