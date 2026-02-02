@@ -136,6 +136,7 @@ if (addNavigation) {
 	text-align: left;
 	user-select: none;
 	/* width: 7ch; */
+	border-top: 1px solid var(--sc-row-border-color);
 	text-overflow: ellipsis;
 	overflow: hidden;
 	box-sizing: border-box;
