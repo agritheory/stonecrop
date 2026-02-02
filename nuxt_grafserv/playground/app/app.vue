@@ -1,7 +1,6 @@
-<!-- nuxt-yoga/playground/app.vue -->
 <template>
 	<div>
-		<h1>Nuxt Yoga GraphQL Module Playground</h1>
+		<h1>GraphQL Module Playground</h1>
 		<p>GraphQL endpoint is running at <a href="/graphql/" target="_blank">/graphql/</a></p>
 
 		<div class="cache-controls">
