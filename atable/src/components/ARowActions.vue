@@ -50,7 +50,7 @@
 </template>
 
 <script setup lang="ts">
-import { useResizeObserver } from '@vueuse/core'
+import { useResizeObserver, onClickOutside } from '@vueuse/core'
 import { computed, ref, useTemplateRef, onMounted, onUnmounted } from 'vue'
 
 import { actionIcons } from '../icons'
@@ -65,7 +65,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-	action: [type: RowActionType, rowIndex: number]
+	action: [type: RowActionType, rowIndex: number],
 }>()
 
 const actionsCellRef = useTemplateRef<HTMLTableCellElement>('actionsCell')
@@ -195,19 +195,8 @@ const checkDropdownPosition = () => {
 	}
 }
 
-// Close dropdown when clicking outside
-const handleClickOutside = (event: MouseEvent) => {
-	if (dropdownOpen.value && actionsCellRef.value && !actionsCellRef.value.contains(event.target as Node)) {
-		dropdownOpen.value = false
-	}
-}
-
-onMounted(() => {
-	document.addEventListener('click', handleClickOutside)
-})
-
-onUnmounted(() => {
-	document.removeEventListener('click', handleClickOutside)
+onClickOutside(actionsCellRef, ()=>{
+	dropdownOpen.value = false
 })
 
 // Execute an action
