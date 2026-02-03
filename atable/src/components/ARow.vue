@@ -7,7 +7,8 @@
 			:store="store"
 			:config="rowActionsConfig"
 			:position="actionsPosition"
-			@action="onRowAction" />
+			@action="onRowAction"
+			/>
 
 		<!-- render numbered/tree view index; skip render for uncounted lists -->
 		<slot v-if="store.config.view !== 'uncounted'" name="index">
