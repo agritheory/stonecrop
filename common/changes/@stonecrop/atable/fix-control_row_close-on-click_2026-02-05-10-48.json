@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@stonecrop/atable",
-      "comment": "Add Row Control component and examples",
+      "comment": "close action dropdowns when toggling another dropdown",
       "type": "patch"
     }
   ],
