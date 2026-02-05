@@ -3,7 +3,7 @@
     {
       "packageName": "@stonecrop/stonecrop",
       "comment": "",
-      "type": "none"
+      "type": "patch"
     }
   ],
   "packageName": "@stonecrop/stonecrop"
