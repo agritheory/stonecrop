@@ -51,11 +51,11 @@
 
 <script setup lang="ts">
 import { useResizeObserver, onClickOutside } from '@vueuse/core'
-import { computed, ref, useTemplateRef, onMounted, onUnmounted } from 'vue'
+import { computed, ref, useTemplateRef } from 'vue'
 
 import { actionIcons } from '../icons'
 import { createTableStore } from '../stores/table'
-import type { RowActionsConfig, RowActionType, RowActionOptions } from '../types'
+import type { RowActionsConfig, RowActionType } from '../types'
 
 const props = defineProps<{
 	rowIndex: number
@@ -65,7 +65,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-	action: [type: RowActionType, rowIndex: number],
+	action: [type: RowActionType, rowIndex: number]
 }>()
 
 const actionsCellRef = useTemplateRef<HTMLTableCellElement>('actionsCell')
@@ -106,10 +106,9 @@ const enabledActions = computed(() => {
 		let icon = actionIcons[type]
 
 		if (typeof actionConfig === 'object') {
-			const opts = actionConfig as RowActionOptions
-			enabled = opts.enabled !== false
-			label = opts.label || label
-			icon = opts.icon || icon
+			enabled = actionConfig.enabled !== false
+			label = actionConfig.label || label
+			icon = actionConfig.icon || icon
 		}
 
 		if (enabled) {
@@ -195,7 +194,7 @@ const checkDropdownPosition = () => {
 	}
 }
 
-onClickOutside(actionsCellRef, ()=>{
+onClickOutside(actionsCellRef, () => {
 	dropdownOpen.value = false
 })
 
