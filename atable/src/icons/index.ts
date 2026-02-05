@@ -21,6 +21,8 @@ export { AddIcon, DeleteIcon, DuplicateIcon, InsertAboveIcon, InsertBelowIcon, M
 
 /**
  * Map of action types to their default icons.
+ *
+ * @public
  */
 export const actionIcons: Record<string, string> = {
 	add: AddIcon as string,
