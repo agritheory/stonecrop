@@ -109,6 +109,13 @@ export const FieldMeta = z.object({
 	 */
 	options: FieldOptions.optional(),
 
+	/**
+	 * Whether this field represents an array/collection (for Doctype fields).
+	 * - true: 1:many relationship (e.g., Order → LineItems[])
+	 * - false/undefined: 1:1 relationship (e.g., Customer → Address)
+	 */
+	isArray: z.boolean().optional(),
+
 	/** Input mask pattern (e.g., "##/##/####" for dates) */
 	mask: z.string().optional(),
 

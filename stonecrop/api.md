@@ -148,6 +148,24 @@ export declare function triggerTransition(doctype: string, transition: string, o
 | transition | `string` | The XState transition name to trigger |
 | options | `{ recordId?: string; currentState?: string; targetState?: string; fsmContext?: Record<string, any>; path?: string; }` | Optional configuration for the transition |
 
+### useNestedSchema
+
+Composable for managing nested schema loading and initialization
+
+This composable provides utilities for working with nested doctypes in forms without being tightly coupled to Stonecrop or any specific state management solution.
+
+**Signature:**
+
+```typescript
+export declare function useNestedSchema(options: UseNestedSchemaOptions): UseNestedSchemaReturn;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| options | `UseNestedSchemaOptions` |  |
+
 ### useOperationLog
 
 Composable for operation log management Provides easy access to undo/redo functionality and operation history
@@ -899,6 +917,30 @@ export interface RouteContext {
 | path | `string` | The full route path (e.g., "/todo/1" or "/todo") |
 | segments | `string[]` | Path segments split by "/" (e.g., ["todo", "1"] or ["todo"]) |
 
+### SchemaRegistry
+
+Registry interface for schema lookup Compatible with Stonecrop Registry but doesn't require it as a dependency
+
+**Definition:**
+
+```typescript
+export interface SchemaRegistry {
+  preloadNestedSchemas?: (doctypeSlug: string) => Promise<void>;
+  registry: Record<string, {
+        doctype: string;
+        slug: string;
+        schema?: SchemaTypes[] | Iterable<SchemaTypes>;
+    }>;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| preloadNestedSchemas? | `(doctypeSlug: string) => Promise<void>` |  |
+| registry | `Record<string, { doctype: string; slug: string; schema?: SchemaTypes[] \| Iterable<SchemaTypes>; }>` |  |
+
 ### TableColumn
 
 Table column definition.
@@ -1192,6 +1234,64 @@ export interface UndoRedoState {
 | currentIndex | `number` | Current operation index |
 | redoCount | `number` | Number of operations available for redo |
 | undoCount | `number` | Number of operations available for undo |
+
+### UseNestedSchemaOptions
+
+Options for useNestedSchema composable
+
+**Definition:**
+
+```typescript
+export interface UseNestedSchemaOptions {
+  doctype: string;
+  initialData?: any;
+  isArray?: boolean;
+  registry?: SchemaRegistry;
+  schema?: SchemaTypes[];
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| doctype | `string` | The target doctype slug to load schema for |
+| initialData? | `any` | Initial data for the nested form(s) |
+| isArray? | `boolean` | Whether this represents an array of nested forms (1:many) Default: false (single nested form, 1:1) |
+| registry? | `SchemaRegistry` | Registry instance for schema lookup (optional) If not provided, you must supply schema directly via setSchema |
+| schema? | `SchemaTypes[]` | Direct schema array to use instead of loading from registry |
+
+### UseNestedSchemaReturn
+
+Return type for useNestedSchema composable
+
+**Definition:**
+
+```typescript
+export interface UseNestedSchemaReturn {
+  doctypeName: Ref<string>;
+  error: Ref<string | undefined>;
+  initializeArray: (count: number) => Record<string, any>[];
+  initializeRecord: () => Record<string, any>;
+  loading: Ref<boolean>;
+  loadSchema: () => Promise<void>;
+  schema: Ref<SchemaTypes[] | undefined>;
+  setSchema: (newSchema: SchemaTypes[]) => void;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| doctypeName | `Ref<string>` | Get the doctype name (display name) |
+| error | `Ref<string \| undefined>` | Error message if schema loading fails |
+| initializeArray | `(count: number) => Record<string, any>[]` | Initialize array of records |
+| initializeRecord | `() => Record<string, any>` | Initialize empty record data based on schema |
+| loading | `Ref<boolean>` | Loading state |
+| loadSchema | `() => Promise<void>` | Load schema from registry |
+| schema | `Ref<SchemaTypes[] \| undefined>` | The loaded/provided nested schema |
+| setSchema | `(newSchema: SchemaTypes[]) => void` | Manually set schema (useful if not using registry) |
 
 ### ValidationIssue
 
@@ -1504,6 +1604,12 @@ export type HSTStonecropReturn = BaseStonecropReturn & {
     handleHSTChange: (changeData: HSTChangeData) => void;
     hstStore: Ref<HSTNode | undefined>;
     formData: Ref<Record<string, any>>;
+    loadNestedData: (parentPath: string, childDoctype: DoctypeMeta, recordId?: string) => Promise<Record<string, any>>;
+    saveRecursive: (doctype: DoctypeMeta, recordId: string) => Promise<Record<string, any>>;
+    createNestedContext: (basePath: string, childDoctype: DoctypeMeta) => {
+        provideHSTPath: (fieldname: string) => string;
+        handleHSTChange: (changeData: HSTChangeData) => void;
+    };
 };
 ```
 
@@ -1895,6 +2001,21 @@ addDoctype(doctype: DoctypeMeta): void
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | doctype | `DoctypeMeta` | The doctype to fetch metadata for |
+
+#### preloadNestedSchemas
+
+Recursively preload schemas for nested Doctype fields
+
+```typescript
+preloadNestedSchemas(doctypeSlug: string, visited: Set<string>): Promise<void>
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctypeSlug | `string` | The doctype slug to preload nested schemas for |
+| visited | `Set<string>` | Set of already visited doctype slugs to prevent circular dependencies |
 
 ### SchemaValidator
 

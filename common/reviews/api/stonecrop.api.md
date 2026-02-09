@@ -384,6 +384,12 @@ export type HSTStonecropReturn = BaseStonecropReturn & {
     handleHSTChange: (changeData: HSTChangeData) => void;
     hstStore: Ref<HSTNode | undefined>;
     formData: Ref<Record<string, any>>;
+    loadNestedData: (parentPath: string, childDoctype: DoctypeMeta, recordId?: string) => Promise<Record<string, any>>;
+    saveRecursive: (doctype: DoctypeMeta, recordId: string) => Promise<Record<string, any>>;
+    createNestedContext: (basePath: string, childDoctype: DoctypeMeta) => {
+        provideHSTPath: (fieldname: string) => string;
+        handleHSTChange: (changeData: HSTChangeData) => void;
+    };
 };
 
 // @public
@@ -488,6 +494,7 @@ export class Registry {
     addDoctype(doctype: DoctypeMeta): void;
     getMeta?: (routeContext: RouteContext) => DoctypeMeta | Promise<DoctypeMeta>;
     readonly name: string;
+    preloadNestedSchemas(doctypeSlug: string, visited?: Set<string>): Promise<void>;
     readonly registry: Record<string, DoctypeMeta>;
     static _root: Registry;
     readonly router?: Router;
@@ -504,6 +511,18 @@ export type Schema = {
     doctype: string;
     schema: List<SchemaTypes>;
 };
+
+// @public
+export interface SchemaRegistry {
+    // (undocumented)
+    preloadNestedSchemas?: (doctypeSlug: string) => Promise<void>;
+    // (undocumented)
+    registry: Record<string, {
+        doctype: string;
+        slug: string;
+        schema?: SchemaTypes[] | Iterable<SchemaTypes>;
+    }>;
+}
 
 // @public
 export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema;
@@ -928,6 +947,30 @@ export interface UndoRedoState {
     currentIndex: number;
     redoCount: number;
     undoCount: number;
+}
+
+// @public
+export function useNestedSchema(options: UseNestedSchemaOptions): UseNestedSchemaReturn;
+
+// @public
+export interface UseNestedSchemaOptions {
+    doctype: string;
+    initialData?: any;
+    isArray?: boolean;
+    registry?: SchemaRegistry;
+    schema?: SchemaTypes[];
+}
+
+// @public
+export interface UseNestedSchemaReturn {
+    doctypeName: Ref<string>;
+    error: Ref<string | undefined>;
+    initializeArray: (count: number) => Record<string, any>[];
+    initializeRecord: () => Record<string, any>;
+    loading: Ref<boolean>;
+    loadSchema: () => Promise<void>;
+    schema: Ref<SchemaTypes[] | undefined>;
+    setSchema: (newSchema: SchemaTypes[]) => void;
 }
 
 // @public

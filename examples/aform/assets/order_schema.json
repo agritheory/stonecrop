@@ -1,0 +1,28 @@
+[
+	{
+		"fieldname": "order_number",
+		"fieldtype": "Data",
+		"component": "ATextInput",
+		"label": "Order Number",
+		"required": true
+	},
+	{
+		"fieldname": "order_date",
+		"fieldtype": "Date",
+		"component": "ADatePicker",
+		"label": "Order Date"
+	},
+	{
+		"fieldname": "customer_name",
+		"fieldtype": "Data",
+		"component": "ATextInput",
+		"label": "Customer Name"
+	},
+	{
+		"fieldname": "line_items",
+		"fieldtype": "Doctype",
+		"options": "line-item",
+		"isArray": true,
+		"label": "Line Items"
+	}
+]

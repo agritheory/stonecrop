@@ -1,0 +1,20 @@
+[
+	{
+		"fieldname": "product",
+		"fieldtype": "Data",
+		"component": "ATextInput",
+		"label": "Product"
+	},
+	{
+		"fieldname": "quantity",
+		"fieldtype": "Int",
+		"component": "ANumericInput",
+		"label": "Quantity"
+	},
+	{
+		"fieldname": "price",
+		"fieldtype": "Float",
+		"component": "ANumericInput",
+		"label": "Price"
+	}
+]

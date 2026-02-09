@@ -1,0 +1,28 @@
+[
+	{
+		"fieldname": "customer_name",
+		"fieldtype": "Data",
+		"component": "ATextInput",
+		"label": "Customer Name",
+		"required": true
+	},
+	{
+		"fieldname": "email",
+		"fieldtype": "Data",
+		"component": "ATextInput",
+		"label": "Email"
+	},
+	{
+		"fieldname": "phone",
+		"fieldtype": "Data",
+		"component": "ATextInput",
+		"label": "Phone"
+	},
+	{
+		"fieldname": "address",
+		"fieldtype": "Doctype",
+		"options": "address",
+		"isArray": false,
+		"label": "Address"
+	}
+]

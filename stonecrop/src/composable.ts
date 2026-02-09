@@ -64,6 +64,15 @@ export type HSTStonecropReturn = BaseStonecropReturn & {
 	handleHSTChange: (changeData: HSTChangeData) => void
 	hstStore: Ref<HSTNode | undefined>
 	formData: Ref<Record<string, any>>
+	loadNestedData: (parentPath: string, childDoctype: DoctypeMeta, recordId?: string) => Promise<Record<string, any>>
+	saveRecursive: (doctype: DoctypeMeta, recordId: string) => Promise<Record<string, any>>
+	createNestedContext: (
+		basePath: string,
+		childDoctype: DoctypeMeta
+	) => {
+		provideHSTPath: (fieldname: string) => string
+		handleHSTChange: (changeData: HSTChangeData) => void
+	}
 }
 
 /**
@@ -378,6 +387,134 @@ export function useStonecrop(options?: {
 		provide('hstChangeHandler', handleHSTChange)
 	}
 
+	/**
+	 * Load nested doctype data from API or initialize empty structure
+	 * @param parentPath - The parent path (e.g., "customer.123.address")
+	 * @param childDoctype - The child doctype metadata
+	 * @param recordId - Optional record ID to load
+	 * @returns Promise resolving to the loaded or initialized data
+	 */
+	const loadNestedData = async (
+		parentPath: string,
+		childDoctype: DoctypeMeta,
+		recordId?: string
+	): Promise<Record<string, any>> => {
+		if (!stonecrop.value) {
+			return initializeNewRecord(childDoctype)
+		}
+
+		// If recordId provided, try to load existing data
+		if (recordId) {
+			try {
+				// Check if data already exists in HST
+				const existingData = hstStore.value?.get(parentPath)
+				if (existingData && typeof existingData === 'object') {
+					return existingData as Record<string, any>
+				}
+
+				// TODO: Add API fetch logic here if needed
+				// For now, initialize new record
+				return initializeNewRecord(childDoctype)
+			} catch {
+				return initializeNewRecord(childDoctype)
+			}
+		}
+
+		// Initialize new record
+		return initializeNewRecord(childDoctype)
+	}
+
+	/**
+	 * Recursively save a record with all nested doctype fields
+	 * @param doctype - The doctype metadata
+	 * @param recordId - The record ID to save
+	 * @returns Promise resolving to the complete save payload
+	 */
+	const saveRecursive = async (doctype: DoctypeMeta, recordId: string): Promise<Record<string, any>> => {
+		if (!hstStore.value || !stonecrop.value) {
+			throw new Error('HST store not initialized')
+		}
+
+		const recordPath = `${doctype.slug}.${recordId}`
+		const recordData = hstStore.value.get(recordPath) || {}
+
+		// Build the save payload
+		const payload: Record<string, any> = { ...recordData }
+
+		// Find all Doctype fields in the schema
+		const schemaArray = doctype.schema
+			? Array.isArray(doctype.schema)
+				? doctype.schema
+				: Array.from(doctype.schema)
+			: []
+		const doctypeFields = schemaArray.filter(field => 'fieldtype' in field && field.fieldtype === 'Doctype')
+
+		// Recursively collect nested data
+		for (const field of doctypeFields) {
+			if (!('options' in field) || typeof field.options !== 'string') continue
+
+			const nestedDoctypeSlug = field.options
+			const nestedDoctype = registry?.registry[nestedDoctypeSlug]
+
+			if (!nestedDoctype) {
+				console.warn(`Nested doctype '${nestedDoctypeSlug}' not found in registry`)
+				continue
+			}
+
+			const fieldPath = `${recordPath}.${field.fieldname}`
+
+			// Handle array fields (1:many)
+			if ('isArray' in field && field.isArray) {
+				const nestedArray = hstStore.value.get(fieldPath) || []
+				const nestedPayloads: any[] = []
+
+				if (Array.isArray(nestedArray)) {
+					for (let i = 0; i < nestedArray.length; i++) {
+						const nestedRecordPath = `${fieldPath}[${i}]`
+						// Recursively save nested record
+						const nestedData = await collectNestedData(nestedDoctype, nestedRecordPath, hstStore.value, registry)
+						nestedPayloads.push(nestedData)
+					}
+				}
+
+				payload[field.fieldname] = nestedPayloads
+			} else {
+				// Handle single nested object (1:1)
+				const nestedData = await collectNestedData(nestedDoctype, fieldPath, hstStore.value, registry)
+				payload[field.fieldname] = nestedData
+			}
+		}
+
+		return payload
+	}
+
+	/**
+	 * Create a nested context for child forms
+	 * @param basePath - The base path for the nested context (e.g., "customer.123.address")
+	 * @param childDoctype - The child doctype metadata
+	 * @returns Object with scoped provideHSTPath and handleHSTChange
+	 */
+	const createNestedContext = (basePath: string, childDoctype: DoctypeMeta) => {
+		const nestedProvideHSTPath = (fieldname: string): string => {
+			return `${basePath}.${fieldname}`
+		}
+
+		const nestedHandleHSTChange = (changeData: HSTChangeData): void => {
+			// Update the path to be relative to the nested base path
+			const nestedPath = changeData.path.startsWith(basePath) ? changeData.path : `${basePath}.${changeData.fieldname}`
+
+			handleHSTChange({
+				...changeData,
+				path: nestedPath,
+			})
+		}
+
+		return {
+			provideHSTPath: nestedProvideHSTPath,
+			handleHSTChange: nestedHandleHSTChange,
+		}
+	}
+
 	// Create operation log API object
 	const operationLog: OperationLogAPI = {
 		operations,
@@ -409,6 +546,9 @@ export function useStonecrop(options?: {
 			handleHSTChange,
 			hstStore,
 			formData,
+			loadNestedData,
+			saveRecursive,
+			createNestedContext,
 		} as HSTStonecropReturn
 	} else if (!options.doctype && registry?.router) {
 		// Router-based - return HST (will be populated after mount)
@@ -419,6 +559,9 @@ export function useStonecrop(options?: {
 			handleHSTChange,
 			hstStore,
 			formData,
+			loadNestedData,
+			saveRecursive,
+			createNestedContext,
 		} as HSTStonecropReturn
 	}
 
@@ -513,4 +656,67 @@ function updateNestedObject(obj: any, path: string[], value: any): void {
 
 	const finalKey = path[path.length - 1]
 	current[finalKey] = value
+}
+
+/**
+ * Recursively collect nested data from HST for save operation
+ * @param doctype - The doctype metadata
+ * @param basePath - The base path in HST (e.g., "customer.123.address")
+ * @param hstStore - The HST store instance
+ * @param registry - The registry instance
+ * @returns The collected data object
+ */
+async function collectNestedData(
+	doctype: DoctypeMeta,
+	basePath: string,
+	hstStore: HSTNode,
+	registry?: Registry
+): Promise<Record<string, any>> {
+	const data = hstStore.get(basePath) || {}
+	const payload: Record<string, any> = { ...data }
+
+	// Find all Doctype fields in this doctype's schema
+	const schemaArray = doctype.schema
+		? Array.isArray(doctype.schema)
+			? doctype.schema
+			: Array.from(doctype.schema)
+		: []
+	const doctypeFields = schemaArray.filter(field => 'fieldtype' in field && field.fieldtype === 'Doctype')
+
+	// Recursively collect nested data
+	for (const field of doctypeFields) {
+		if (!('options' in field) || typeof field.options !== 'string') continue
+
+		const nestedDoctypeSlug = field.options
+		const nestedDoctype = registry?.registry[nestedDoctypeSlug]
+
+		if (!nestedDoctype) {
+			console.warn(`Nested doctype '${nestedDoctypeSlug}' not found in registry`)
+			continue
+		}
+
+		const fieldPath = `${basePath}.${field.fieldname}`
+
+		// Handle array fields (1:many)
+		if ('isArray' in field && field.isArray) {
+			const nestedArray = hstStore.get(fieldPath) || []
+			const nestedPayloads: any[] = []
+
+			if (Array.isArray(nestedArray)) {
+				for (let i = 0; i < nestedArray.length; i++) {
+					const nestedRecordPath = `${fieldPath}[${i}]`
+					const nestedData = await collectNestedData(nestedDoctype, nestedRecordPath, hstStore, registry)
+					nestedPayloads.push(nestedData)
+				}
+			}
+
+			payload[field.fieldname] = nestedPayloads
+		} else {
+			// Handle single nested object (1:1)
+			const nestedData = await collectNestedData(nestedDoctype, fieldPath, hstStore, registry)
+			payload[field.fieldname] = nestedData
+		}
+	}
+
+	return payload
 }

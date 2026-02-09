@@ -1,0 +1,26 @@
+[
+	{
+		"fieldname": "street",
+		"fieldtype": "Data",
+		"component": "ATextInput",
+		"label": "Street"
+	},
+	{
+		"fieldname": "city",
+		"fieldtype": "Data",
+		"component": "ATextInput",
+		"label": "City"
+	},
+	{
+		"fieldname": "state",
+		"fieldtype": "Data",
+		"component": "ATextInput",
+		"label": "State"
+	},
+	{
+		"fieldname": "zip_code",
+		"fieldtype": "Data",
+		"component": "ATextInput",
+		"label": "Zip Code"
+	}
+]
