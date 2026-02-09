@@ -1,3 +1,4 @@
+import { reactive } from 'vue'
 import DoctypeMeta from './doctype'
 import Registry from './registry'
 import { createHST, type HSTNode } from './stores/hst'
@@ -58,7 +59,9 @@ export class Stonecrop {
 			initialStoreStructure[doctypeSlug] = {}
 		})
 
-		this.hstStore = createHST(initialStoreStructure, 'StonecropStore')
+		// Wrap the store in Vue's reactive() for automatic change detection
+		// This enables Vue computed properties to track HST store changes
+		this.hstStore = createHST(reactive(initialStoreStructure), 'StonecropStore')
 	}
 
 	/**

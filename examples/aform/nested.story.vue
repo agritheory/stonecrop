@@ -132,8 +132,8 @@ const OrderForm = defineComponent({
 			order_date: '2026-02-09',
 			customer_name: 'Jane Smith',
 			line_items: [
-				{ product: 'Widget A', quantity: 2, price: 19.99 },
-				{ product: 'Widget B', quantity: 1, price: 29.99 },
+				{ _id: '1', product: 'Widget A', quantity: 2, price: 19.99 },
+				{ _id: '2', product: 'Widget B', quantity: 1, price: 29.99 },
 			],
 		})
 
@@ -147,7 +147,8 @@ const OrderForm = defineComponent({
 		})
 
 		const addLineItem = () => {
-			orderData.value.line_items.push(initializeRecord() as any)
+			const newItem = { ...initializeRecord(), _id: Date.now().toString() } as any
+			orderData.value.line_items.push(newItem)
 		}
 
 		const removeLineItem = (index: number) => {
@@ -167,7 +168,7 @@ const OrderForm = defineComponent({
 				? h('div', { class: 'nested-array-section' }, [
 						h('h4', 'Line Items (Array of Nested Schemas)'),
 						...this.orderData.line_items.map((item, index) =>
-							h('div', { key: index, class: 'array-item' }, [
+							h('div', { key: item._id, class: 'array-item' }, [
 								h('div', { class: 'array-item-header' }, [
 									h('span', `Item ${index + 1}`),
 									h(
@@ -180,8 +181,13 @@ const OrderForm = defineComponent({
 									),
 								]),
 								h(AForm, {
-									modelValue: this.lineItemSchema,
+									modelValue: JSON.parse(JSON.stringify(this.lineItemSchema)),
 									data: item,
+									'onUpdate:data': (val: any) => {
+										const newItems = [...this.orderData.line_items]
+										newItems[index] = val
+										this.orderData.line_items = newItems
+									},
 								}),
 							])
 						),
@@ -402,18 +408,48 @@ const HSTDemo = defineComponent({
 		const customerPath = `customer.${customerId}`
 		const addressPath = `${customerPath}.address`
 
-		// Use refs for form data (mutable by AForm)
-		const customerFormData = ref({
-			customer_name: '',
-			email: '',
-			phone: '',
+		// Computed properties with getter/setter for HST synchronization
+		const customerFormData = computed({
+			get: () => {
+				const data = store.get(customerPath)
+				return {
+					customer_name: data?.customer_name || '',
+					email: data?.email || '',
+					phone: data?.phone || '',
+				}
+			},
+			set: newData => {
+				Object.keys(newData).forEach(key => {
+					if (key !== 'address') {
+						store.set(`${customerPath}.${key}`, newData[key])
+					}
+				})
+			},
 		})
 
-		const addressFormData = ref({
-			street: '',
-			city: '',
-			state: '',
-			zip_code: '',
+		const addressFormData = computed({
+			get: () => {
+				const data = store.get(addressPath)
+				// Return null if address doesn't exist (deleted)
+				if (!data || !store.has(addressPath)) {
+					return null
+				}
+				return {
+					street: data?.street || '',
+					city: data?.city || '',
+					state: data?.state || '',
+					zip_code: data?.zip_code || '',
+				}
+			},
+			set: newData => {
+				// Set the entire address object first
+				store.set(addressPath, newData)
+				// Also update the parent customer's address field
+				const customerData = store.get(customerPath)
+				if (customerData) {
+					store.set(customerPath, { ...customerData, address: newData })
+				}
+			},
 		})
 
 		// Computed HST data that automatically updates when store changes
@@ -440,47 +476,7 @@ const HSTDemo = defineComponent({
 			},
 		}))
 
-		// Initialize form refs from HST on mount
-		onMounted(() => {
-			const customerHSTData = store.get(customerPath)
-			if (customerHSTData) {
-				customerFormData.value = {
-					customer_name: customerHSTData.customer_name,
-					email: customerHSTData.email,
-					phone: customerHSTData.phone,
-				}
-			}
-
-			const addressHSTData = store.get(addressPath)
-			if (addressHSTData) {
-				addressFormData.value = { ...addressHSTData }
-			}
-		})
-
-		// Watch for AForm mutations and sync to HST immediately
-		watch(
-			customerFormData,
-			newData => {
-				Object.keys(newData).forEach(key => {
-					if (key !== 'address') {
-						store.set(`${customerPath}.${key}`, newData[key])
-					}
-				})
-			},
-			{ deep: true }
-		)
-
-		watch(
-			addressFormData,
-			newData => {
-				Object.keys(newData).forEach(key => {
-					store.set(`${addressPath}.${key}`, newData[key])
-				})
-			},
-			{ deep: true }
-		)
-
-		// HST operations - update both store and form refs
+		// HST operations
 		const resetData = () => {
 			const newCustomerData = {
 				customer_name: 'Alice Johnson',
@@ -494,24 +490,15 @@ const HSTDemo = defineComponent({
 				},
 			}
 			stonecrop.addRecord('customer', customerId, newCustomerData)
-			// Sync to form refs
-			customerFormData.value = {
-				customer_name: newCustomerData.customer_name,
-				email: newCustomerData.email,
-				phone: newCustomerData.phone,
-			}
-			addressFormData.value = { ...newCustomerData.address }
 		}
 
 		const deleteAddress = () => {
-			// Delete from HST
-			store.set(addressPath, undefined)
-			// Clear form ref
-			addressFormData.value = {
-				street: '',
-				city: '',
-				state: '',
-				zip_code: '',
+			// Get the current customer data and remove the address property
+			const customerData = store.get(customerPath)
+			if (customerData) {
+				const { address, ...rest } = customerData
+				// Set the customer without the address property in a single operation
+				store.set(customerPath, rest)
 			}
 		}
 
@@ -522,10 +509,12 @@ const HSTDemo = defineComponent({
 				state: 'OR',
 				zip_code: '97205',
 			}
-			// Update HST
 			store.set(addressPath, newAddress)
-			// Update form ref
-			addressFormData.value = { ...newAddress }
+			// Also update the parent customer to include address
+			const customerData = store.get(customerPath)
+			if (customerData) {
+				store.set(customerPath, { ...customerData, address: newAddress })
+			}
 		}
 
 		return {
@@ -559,7 +548,13 @@ const HSTDemo = defineComponent({
 						this.customerSchema
 							? h(AForm, {
 									modelValue: this.customerSchema.filter((f: any) => f.fieldtype !== 'Doctype'),
+									'onUpdate:modelValue': (val: any) => {
+										this.customerSchema = val
+									},
 									data: this.customerFormData,
+									'onUpdate:data': (val: any) => {
+										this.customerFormData = val
+									},
 							  })
 							: null,
 					]),
@@ -587,10 +582,16 @@ const HSTDemo = defineComponent({
 							]),
 						]),
 						h('div', { class: 'path-indicator' }, `HST Path: ${this.addressPath}`),
-						this.addressSchema
+						this.addressSchema && this.addressFormData
 							? h(AForm, {
 									modelValue: this.addressSchema,
+									'onUpdate:modelValue': (val: any) => {
+										this.addressSchema = val
+									},
 									data: this.addressFormData,
+									'onUpdate:data': (val: any) => {
+										this.addressFormData = val
+									},
 							  })
 							: null,
 					]),
@@ -701,8 +702,8 @@ const HSTArrayDemo = defineComponent({
 			order_date: '2026-02-09',
 			customer_name: 'Bob Smith',
 			line_items: [
-				{ product: 'Widget A', quantity: 2, price: 19.99 },
-				{ product: 'Widget B', quantity: 1, price: 29.99 },
+				{ _id: '1', product: 'Widget A', quantity: 2, price: 19.99 },
+				{ _id: '2', product: 'Widget B', quantity: 1, price: 29.99 },
 			],
 		}
 
@@ -724,14 +725,34 @@ const HSTArrayDemo = defineComponent({
 		const orderPath = `order.${orderId}`
 		const lineItemsPath = `${orderPath}.line_items`
 
-		// Use refs for form data (mutable by AForm)
-		const orderFormData = ref({
-			order_number: '',
-			order_date: '',
-			customer_name: '',
+		// Computed properties with getter/setter for HST synchronization
+		const orderFormData = computed({
+			get: () => {
+				const data = store.get(orderPath)
+				return {
+					order_number: data?.order_number || '',
+					order_date: data?.order_date || '',
+					customer_name: data?.customer_name || '',
+				}
+			},
+			set: newData => {
+				Object.keys(newData).forEach(key => {
+					if (key !== 'line_items') {
+						store.set(`${orderPath}.${key}`, newData[key])
+					}
+				})
+			},
 		})
 
-		const lineItemsFormData = ref<any[]>([])
+		const lineItemsFormData = computed({
+			get: () => {
+				const items = store.get(lineItemsPath) || []
+				return Array.isArray(items) ? items : []
+			},
+			set: newData => {
+				store.set(lineItemsPath, newData)
+			},
+		})
 
 		// Computed HST data that automatically updates when store changes
 		const hstData = computed(() => {
@@ -763,76 +784,29 @@ const HSTArrayDemo = defineComponent({
 			}
 		})
 
-		// Initialize form refs from HST on mount
-		onMounted(() => {
-			const orderHSTData = store.get(orderPath)
-			if (orderHSTData) {
-				orderFormData.value = {
-					order_number: orderHSTData.order_number,
-					order_date: orderHSTData.order_date,
-					customer_name: orderHSTData.customer_name,
-				}
-			}
-
-			const lineItemsHSTData = store.get(lineItemsPath)
-			if (lineItemsHSTData && Array.isArray(lineItemsHSTData)) {
-				// Deep clone array to avoid shared references
-				lineItemsFormData.value = lineItemsHSTData.map((item: any) => ({ ...item }))
-			}
-		})
-
-		// Watch for AForm mutations and sync to HST immediately
-		watch(
-			orderFormData,
-			newData => {
-				Object.keys(newData).forEach(key => {
-					if (key !== 'line_items') {
-						store.set(`${orderPath}.${key}`, newData[key])
-					}
-				})
-			},
-			{ deep: true }
-		)
-
-		watch(
-			lineItemsFormData,
-			newData => {
-				// Sync entire array to HST
-				store.set(lineItemsPath, newData)
-			},
-			{ deep: true }
-		)
-
-		// HST operations - update both store and form refs
+		// HST operations
 		const resetData = () => {
 			const newOrderData = {
 				order_number: 'ORD-2026-001',
 				order_date: '2026-02-09',
 				customer_name: 'Bob Smith',
 				line_items: [
-					{ product: 'Widget A', quantity: 2, price: 19.99 },
-					{ product: 'Widget B', quantity: 1, price: 29.99 },
+					{ _id: '1', product: 'Widget A', quantity: 2, price: 19.99 },
+					{ _id: '2', product: 'Widget B', quantity: 1, price: 29.99 },
 				],
 			}
 			stonecrop.addRecord('order', orderId, newOrderData)
-			// Sync to form refs
-			orderFormData.value = {
-				order_number: newOrderData.order_number,
-				order_date: newOrderData.order_date,
-				customer_name: newOrderData.customer_name,
-			}
-			lineItemsFormData.value = newOrderData.line_items.map(item => ({ ...item }))
 		}
 
 		const addLineItem = () => {
-			const newItem = initializeRecord() as any
-			// Update form ref (watch will sync to HST)
-			lineItemsFormData.value.push(newItem)
+			const newItem = { ...initializeRecord(), _id: Date.now().toString() } as any
+			const currentItems = lineItemsFormData.value
+			lineItemsFormData.value = [...currentItems, newItem]
 		}
 
 		const removeLineItem = (index: number) => {
-			// Update form ref (watch will sync to HST)
-			lineItemsFormData.value.splice(index, 1)
+			const currentItems = lineItemsFormData.value
+			lineItemsFormData.value = currentItems.filter((_, i) => i !== index)
 		}
 
 		return {
@@ -866,7 +840,13 @@ const HSTArrayDemo = defineComponent({
 						this.orderSchema
 							? h(AForm, {
 									modelValue: this.orderSchema.filter((f: any) => f.fieldtype !== 'Doctype'),
+									'onUpdate:modelValue': (val: any) => {
+										this.orderSchema = val
+									},
 									data: this.orderFormData,
+									'onUpdate:data': (val: any) => {
+										this.orderFormData = val
+									},
 							  })
 							: null,
 					]),
@@ -877,7 +857,7 @@ const HSTArrayDemo = defineComponent({
 
 						// Render each line item
 						...this.lineItemsFormData.map((item: any, index: number) =>
-							h('div', { key: index, class: 'array-item-hst' }, [
+							h('div', { key: item._id || index, class: 'array-item-hst' }, [
 								h('div', { class: 'array-item-header' }, [
 									h('span', [h('strong', `Item ${index + 1}`), h('code', { class: 'path-badge' }, `[${index}]`)]),
 									h(
@@ -891,8 +871,17 @@ const HSTArrayDemo = defineComponent({
 								]),
 								this.lineItemSchema
 									? h(AForm, {
-											modelValue: this.lineItemSchema,
-											data: item,
+											key: `line-item-hst-${item._id || index}-${item.product || ''}-${item.quantity || 0}-${
+												item.price || 0
+											}`,
+											modelValue: JSON.parse(JSON.stringify(this.lineItemSchema)),
+											data: { ...this.lineItemsFormData[index] },
+											'onUpdate:data': (val: any) => {
+												const currentItems = this.lineItemsFormData.map((item: any, i: number) =>
+													i === index ? { ...val } : item
+												)
+												this.lineItemsFormData = currentItems
+											},
 									  })
 									: null,
 							])

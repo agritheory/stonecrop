@@ -6,7 +6,7 @@
 			:key="key"
 			v-model="childModels[key].value"
 			:schema="componentObj"
-			:data="formData[componentObj.fieldname]"
+			:data="dataModel[componentObj.fieldname]"
 			:readOnly="readOnly"
 			v-bind="componentProps(componentObj)">
 		</component>
@@ -14,28 +14,24 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watchEffect } from 'vue'
+import { computed, watchEffect, ref } from 'vue'
 
 import type { SchemaTypes } from '../types'
 
-const emit = defineEmits(['update:modelValue'])
-const { modelValue, data, readOnly } = defineProps<{
+const emit = defineEmits(['update:modelValue', 'update:data'])
+const dataModel = defineModel<Record<string, any>>('data', { required: true })
+const { modelValue, readOnly } = defineProps<{
 	modelValue: SchemaTypes[]
-	data: Record<string, any>
 	readOnly?: boolean
 }>()
 
-const formData = ref(data || {})
-
 // Sync data values into schema immediately and on changes
 watchEffect(() => {
-	if (data) {
-		formData.value = data
+	if (dataModel.value) {
 		// Sync data values into schema
 		modelValue.forEach(field => {
-			if (field.fieldname && data[field.fieldname] !== undefined) {
-				// eslint-disable-next-line vue/no-mutating-props
-				field.value = data[field.fieldname]
+			if (field.fieldname && dataModel.value[field.fieldname] !== undefined) {
+				field.value = dataModel.value[field.fieldname]
 			}
 		})
 	}
@@ -52,33 +48,45 @@ const componentProps = (componentObj: SchemaTypes) => {
 		// TODO: there's probably a better way to do this
 		if (key === 'rows') {
 			if (value && (value as any[]).length === 0) {
-				propsToPass['rows'] = formData.value[componentObj.fieldname]
+				propsToPass['rows'] = dataModel.value[componentObj.fieldname]
 			}
 		}
 	}
 	return propsToPass
 }
 
-const childModels = computed({
-	get: () => {
-		return modelValue.map((val, i) => {
+// Create stable computed refs array to avoid recreation on every access
+const childModelsCache = ref<ReturnType<typeof computed>[]>([])
+
+// Watch for schema changes and update cache (avoiding side effects in computed)
+watchEffect(() => {
+	// Recreate cache only if length changed
+	if (childModelsCache.value.length !== modelValue.length) {
+		childModelsCache.value = modelValue.map((val, i) => {
 			return computed({
 				get() {
 					return val.value
 				},
 				set: newValue => {
+					const fieldname = modelValue[i].fieldname
 					// Find the component in modelValue and update it
 					// eslint-disable-next-line vue/no-mutating-props
 					modelValue[i].value = newValue
+					// Also sync to data model for two-way binding
+					if (fieldname && dataModel.value) {
+						dataModel.value[fieldname] = newValue
+						// Manually emit to trigger parent's update:data handler
+						emit('update:data', dataModel.value)
+					}
 					emit('update:modelValue', modelValue)
 				},
 			})
 		})
-	},
-	set: (/* newValue */) => {
-		//emit('update:modelValue', '')
-	},
+	}
 })
+
+// Computed just returns the cached models (no side effects)
+const childModels = computed(() => childModelsCache.value)
 </script>
 
 <style>
