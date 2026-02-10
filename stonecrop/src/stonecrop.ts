@@ -238,10 +238,10 @@ export class Stonecrop {
 	 */
 	async getRecords(doctype: DoctypeMeta): Promise<void> {
 		const response = await fetch(`/${doctype.slug}`)
-		const records = await response.json()
+		const records = (await response.json()) as { id: string }[]
 
 		// Store each record in HST
-		records.forEach((record: any) => {
+		records.forEach(record => {
 			if (record.id) {
 				this.addRecord(doctype, record.id, record)
 			}

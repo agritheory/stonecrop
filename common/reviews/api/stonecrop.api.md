@@ -384,7 +384,7 @@ export type HSTStonecropReturn = BaseStonecropReturn & {
     handleHSTChange: (changeData: HSTChangeData) => void;
     hstStore: Ref<HSTNode | undefined>;
     formData: Ref<Record<string, any>>;
-    loadNestedData: (parentPath: string, childDoctype: DoctypeMeta, recordId?: string) => Promise<Record<string, any>>;
+    loadNestedData: (parentPath: string, childDoctype: DoctypeMeta, recordId?: string) => Record<string, any>;
     saveRecursive: (doctype: DoctypeMeta, recordId: string) => Promise<Record<string, any>>;
     createNestedContext: (basePath: string, childDoctype: DoctypeMeta) => {
         provideHSTPath: (fieldname: string) => string;
@@ -956,7 +956,6 @@ export function useNestedSchema(options: UseNestedSchemaOptions): UseNestedSchem
 export interface UseNestedSchemaOptions {
     doctype: string;
     initialData?: any;
-    isArray?: boolean;
     registry?: SchemaRegistry;
     schema?: SchemaTypes[];
 }

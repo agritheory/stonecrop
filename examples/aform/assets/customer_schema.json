@@ -22,7 +22,6 @@
 		"fieldname": "address",
 		"fieldtype": "Doctype",
 		"options": "address",
-		"isArray": false,
 		"label": "Address"
 	}
 ]

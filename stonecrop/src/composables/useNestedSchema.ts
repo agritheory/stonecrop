@@ -41,13 +41,7 @@ export interface UseNestedSchemaOptions {
 	schema?: SchemaTypes[]
 
 	/**
-	 * Whether this represents an array of nested forms (1:many)
-	 * Default: false (single nested form, 1:1)
-	 */
-	isArray?: boolean
-
-	/**
-	 * Initial data for the nested form(s)
+	 * Initial data for the nested form
 	 */
 	initialData?: any
 }
@@ -103,6 +97,9 @@ export interface UseNestedSchemaReturn {
  *
  * This composable provides utilities for working with nested doctypes in forms
  * without being tightly coupled to Stonecrop or any specific state management solution.
+ *
+ * **Note:** This composable supports 1:1 nested schemas only. For 1:many relationships,
+ * use nested table schemas which provide proper doctype mapping.
  *
  * @example
  * ```typescript
@@ -220,12 +217,8 @@ export function useNestedSchema(options: UseNestedSchemaOptions): UseNestedSchem
 					initialData[fieldname] = 0
 					break
 				case 'Doctype':
-					// Initialize nested Doctype fields based on isArray
-					if ('isArray' in field && field.isArray) {
-						initialData[fieldname] = []
-					} else {
-						initialData[fieldname] = {}
-					}
+					// Initialize nested Doctype fields as empty objects (1:1 only)
+					initialData[fieldname] = {}
 					break
 				case 'JSON':
 					initialData[fieldname] = {}

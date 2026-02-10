@@ -99,7 +99,6 @@ export const DoctypeMeta: z.ZodObject<{
         value: z.ZodOptional<z.ZodUnknown>;
         default: z.ZodOptional<z.ZodUnknown>;
         options: z.ZodOptional<z.ZodUnion<[z.ZodString, z.ZodArray<z.ZodString, "many">, z.ZodRecord<z.ZodString, z.ZodUnknown>]>>;
-        isArray: z.ZodOptional<z.ZodBoolean>;
         mask: z.ZodOptional<z.ZodString>;
         validation: z.ZodOptional<z.ZodObject<{
             errorMessage: z.ZodString;
@@ -125,7 +124,6 @@ export const DoctypeMeta: z.ZodObject<{
         edit?: boolean | undefined;
         hidden?: boolean | undefined;
         default?: unknown;
-        isArray?: boolean | undefined;
         mask?: string | undefined;
     }, {
         fieldname: string;
@@ -144,7 +142,6 @@ export const DoctypeMeta: z.ZodObject<{
         edit?: boolean | undefined;
         hidden?: boolean | undefined;
         default?: unknown;
-        isArray?: boolean | undefined;
         mask?: string | undefined;
     }>, "many">;
     workflow: z.ZodOptional<z.ZodObject<{
@@ -214,7 +211,6 @@ export const DoctypeMeta: z.ZodObject<{
         edit?: boolean | undefined;
         hidden?: boolean | undefined;
         default?: unknown;
-        isArray?: boolean | undefined;
         mask?: string | undefined;
     }[];
     slug?: string | undefined;
@@ -252,7 +248,6 @@ export const DoctypeMeta: z.ZodObject<{
         edit?: boolean | undefined;
         hidden?: boolean | undefined;
         default?: unknown;
-        isArray?: boolean | undefined;
         mask?: string | undefined;
     }[];
     slug?: string | undefined;
@@ -300,7 +295,6 @@ export const FieldMeta: z.ZodObject<{
     value: z.ZodOptional<z.ZodUnknown>;
     default: z.ZodOptional<z.ZodUnknown>;
     options: z.ZodOptional<z.ZodUnion<[z.ZodString, z.ZodArray<z.ZodString, "many">, z.ZodRecord<z.ZodString, z.ZodUnknown>]>>;
-    isArray: z.ZodOptional<z.ZodBoolean>;
     mask: z.ZodOptional<z.ZodString>;
     validation: z.ZodOptional<z.ZodObject<{
         errorMessage: z.ZodString;
@@ -326,7 +320,6 @@ export const FieldMeta: z.ZodObject<{
     edit?: boolean | undefined;
     hidden?: boolean | undefined;
     default?: unknown;
-    isArray?: boolean | undefined;
     mask?: string | undefined;
 }, {
     fieldname: string;
@@ -345,7 +338,6 @@ export const FieldMeta: z.ZodObject<{
     edit?: boolean | undefined;
     hidden?: boolean | undefined;
     default?: unknown;
-    isArray?: boolean | undefined;
     mask?: string | undefined;
 }>;
 

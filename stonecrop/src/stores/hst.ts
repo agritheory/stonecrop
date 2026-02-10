@@ -138,6 +138,7 @@ interface PropertyAccessible {
 
 // Extend global interfaces
 declare global {
+	// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 	interface Window extends RegistryGlobal {}
 	const global: RegistryGlobal | undefined
 }
@@ -291,7 +292,6 @@ class HSTProxy implements HSTNode {
 				const isDelete = value === undefined && beforeValue !== undefined
 				const operationType: 'set' | 'delete' = isDelete ? 'delete' : 'set'
 
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-call
 				logStore.addOperation(
 					{
 						type: operationType,
@@ -429,7 +429,6 @@ class HSTProxy implements HSTNode {
 		// Log FSM transition operation
 		const logStore = getOperationLogStore()
 		if (logStore && typeof logStore.addOperation === 'function') {
-			// eslint-disable-next-line @typescript-eslint/no-unsafe-call
 			logStore.addOperation(
 				{
 					type: 'transition' as const,

@@ -1,36 +1,16 @@
 <template>
 	<Story title="nested schema" group="aform">
-		<Variant title="1:1" :setup-app="setupApp">
+		<Variant title="standard" :setup-app="setupApp">
 			<div>
 				<h3>Customer with Address</h3>
 				<CustomerForm />
 			</div>
 		</Variant>
 
-		<Variant title="1:many" :setup-app="setupApp">
-			<div>
-				<h3>Order with Line Items</h3>
-				<OrderForm />
-			</div>
-		</Variant>
-
-		<Variant title="Interactive" :setup-app="setupApp">
-			<div>
-				<ComposableDemo />
-			</div>
-		</Variant>
-
-		<Variant title="HST Integration" :setup-app="setupApp">
+		<Variant title="HST integration" :setup-app="setupApp">
 			<div>
 				<h3>Hierarchical State Tree with Nested Forms</h3>
 				<HSTDemo />
-			</div>
-		</Variant>
-
-		<Variant title="HST (1:many)" :setup-app="setupApp">
-			<div>
-				<h3>HST with Array of Nested Forms</h3>
-				<HSTArrayDemo />
 			</div>
 		</Variant>
 	</Story>
@@ -40,12 +20,10 @@
 import { AForm } from '@stonecrop/aform'
 import { Registry, DoctypeMeta, useNestedSchema, Stonecrop } from '@stonecrop/stonecrop'
 import { List } from 'immutable'
-import { type App, defineComponent, ref, h, watch, computed, onMounted } from 'vue'
+import { type App, defineComponent, ref, h, computed } from 'vue'
 
 import addressSchemaJson from './assets/address_schema.json'
 import customerSchemaJson from './assets/customer_schema.json'
-import lineItemSchemaJson from './assets/line_item_schema.json'
-import orderSchemaJson from './assets/order_schema.json'
 
 let registryInstance: Registry | undefined
 
@@ -60,14 +38,6 @@ const setupApp = ({ app }: { app: App }) => {
 	// Register Customer doctype
 	const customerDoctype = new DoctypeMeta('Customer', List(customerSchemaJson), undefined, undefined)
 	registryInstance.addDoctype(customerDoctype)
-
-	// Register Line Item doctype
-	const lineItemDoctype = new DoctypeMeta('LineItem', List(lineItemSchemaJson), undefined, undefined)
-	registryInstance.addDoctype(lineItemDoctype)
-
-	// Register Order doctype
-	const orderDoctype = new DoctypeMeta('Order', List(orderSchemaJson), undefined, undefined)
-	registryInstance.addDoctype(orderDoctype)
 
 	// Provide to app
 	app.provide('$registry', registryInstance)
@@ -119,252 +89,6 @@ const CustomerForm = defineComponent({
 				h('h4', 'Data Structure:'),
 				h('pre', JSON.stringify(this.customerData, null, 2)),
 			]),
-		])
-	},
-})
-
-// Custom component demonstrating 1:many nested forms
-const OrderForm = defineComponent({
-	name: 'OrderForm',
-	setup() {
-		const orderData = ref({
-			order_number: 'ORD-001',
-			order_date: '2026-02-09',
-			customer_name: 'Jane Smith',
-			line_items: [
-				{ _id: '1', product: 'Widget A', quantity: 2, price: 19.99 },
-				{ _id: '2', product: 'Widget B', quantity: 1, price: 29.99 },
-			],
-		})
-
-		const orderSchemaRef = ref(orderSchemaJson.filter(f => f.fieldtype !== 'Doctype'))
-
-		// Use nested schema composable for line items
-		const { schema: lineItemSchema, initializeRecord } = useNestedSchema({
-			doctype: 'line-item',
-			registry: registryInstance,
-			isArray: true,
-		})
-
-		const addLineItem = () => {
-			const newItem = { ...initializeRecord(), _id: Date.now().toString() } as any
-			orderData.value.line_items.push(newItem)
-		}
-
-		const removeLineItem = (index: number) => {
-			orderData.value.line_items.splice(index, 1)
-		}
-
-		return { orderSchemaRef, orderData, lineItemSchema, addLineItem, removeLineItem }
-	},
-	render() {
-		return h('div', { class: 'nested-form-example' }, [
-			h('h4', 'Order Information'),
-			h(AForm, {
-				modelValue: this.orderSchemaRef,
-				data: this.orderData,
-			}),
-			this.lineItemSchema
-				? h('div', { class: 'nested-array-section' }, [
-						h('h4', 'Line Items (Array of Nested Schemas)'),
-						...this.orderData.line_items.map((item, index) =>
-							h('div', { key: item._id, class: 'array-item' }, [
-								h('div', { class: 'array-item-header' }, [
-									h('span', `Item ${index + 1}`),
-									h(
-										'button',
-										{
-											class: 'remove-btn',
-											onClick: () => this.removeLineItem(index),
-										},
-										'Remove'
-									),
-								]),
-								h(AForm, {
-									modelValue: JSON.parse(JSON.stringify(this.lineItemSchema)),
-									data: item,
-									'onUpdate:data': (val: any) => {
-										const newItems = [...this.orderData.line_items]
-										newItems[index] = val
-										this.orderData.line_items = newItems
-									},
-								}),
-							])
-						),
-						h(
-							'button',
-							{
-								class: 'add-btn',
-								onClick: this.addLineItem,
-							},
-							'+ Add Line Item'
-						),
-				  ])
-				: null,
-			h('div', { class: 'data-preview' }, [
-				h('h4', 'Data Structure:'),
-				h('pre', JSON.stringify(this.orderData, null, 2)),
-			]),
-		])
-	},
-})
-
-// Composable API demonstration with working example
-const ComposableDemo = defineComponent({
-	name: 'ComposableDemo',
-	setup() {
-		// Load address schema using the composable
-		const {
-			schema: addressSchema,
-			loading: addressLoading,
-			error: addressError,
-			initializeRecord,
-			initializeArray,
-		} = useNestedSchema({
-			doctype: 'address',
-			registry: registryInstance,
-		})
-
-		// Initialize a single address
-		const singleAddress = ref<Record<string, any>>({})
-		const addressArray = ref<Record<string, any>[]>([])
-
-		// Watch for schema to load, then initialize data
-		const schemaLoaded = ref(false)
-		const initializeSingleAddress = () => {
-			singleAddress.value = initializeRecord()
-			schemaLoaded.value = true
-		}
-
-		const initializeAddresses = () => {
-			addressArray.value = initializeArray(2)
-		}
-
-		const addAddress = () => {
-			addressArray.value.push(initializeRecord())
-		}
-
-		const removeAddress = (index: number) => {
-			addressArray.value.splice(index, 1)
-		}
-
-		return {
-			addressSchema,
-			addressLoading,
-			addressError,
-			singleAddress,
-			addressArray,
-			schemaLoaded,
-			initializeSingleAddress,
-			initializeAddresses,
-			addAddress,
-			removeAddress,
-		}
-	},
-	render() {
-		return h('div', { class: 'composable-demo' }, [
-			h('h4', 'Interactive Composable Demo'),
-			h('p', 'This demonstrates useNestedSchema loading and initializing data in real-time.'),
-
-			// Loading state
-			this.addressLoading ? h('div', { class: 'loading' }, 'Loading schema...') : null,
-
-			// Error state
-			this.addressError ? h('div', { class: 'error' }, `Error: ${this.addressError}`) : null,
-
-			// Schema loaded - show examples
-			this.addressSchema
-				? h('div', { class: 'demo-sections' }, [
-						// Single record example
-						h('div', { class: 'demo-section' }, [
-							h('h5', 'Single Record (1:1)'),
-							h('p', { class: 'demo-description' }, 'Click to initialize an empty address:'),
-							!this.schemaLoaded
-								? h(
-										'button',
-										{
-											class: 'demo-btn',
-											onClick: this.initializeSingleAddress,
-										},
-										'Initialize Single Address'
-								  )
-								: h('div', [
-										h('div', { class: 'schema-form' }, [
-											h(AForm, {
-												modelValue: this.addressSchema,
-												data: this.singleAddress,
-											}),
-										]),
-										h('div', { class: 'data-preview small' }, [
-											h('strong', 'Data:'),
-											h('pre', JSON.stringify(this.singleAddress, null, 2)),
-										]),
-								  ]),
-						]),
-
-						// Array example
-						h('div', { class: 'demo-section' }, [
-							h('h5', 'Array of Records (1:many)'),
-							h('p', { class: 'demo-description' }, 'Click to initialize multiple addresses:'),
-							this.addressArray.length === 0
-								? h(
-										'button',
-										{
-											class: 'demo-btn',
-											onClick: this.initializeAddresses,
-										},
-										'Initialize Array (2 addresses)'
-								  )
-								: h('div', [
-										...this.addressArray.map((addr, index) =>
-											h('div', { key: index, class: 'array-item-demo' }, [
-												h('div', { class: 'array-item-header' }, [
-													h('strong', `Address ${index + 1}`),
-													h(
-														'button',
-														{
-															class: 'remove-btn-small',
-															onClick: () => this.removeAddress(index),
-														},
-														'×'
-													),
-												]),
-												h(AForm, {
-													modelValue: this.addressSchema,
-													data: addr,
-												}),
-											])
-										),
-										h(
-											'button',
-											{
-												class: 'add-btn-small',
-												onClick: this.addAddress,
-											},
-											'+ Add Another Address'
-										),
-										h('div', { class: 'data-preview small' }, [
-											h('strong', 'Array Data:'),
-											h('pre', JSON.stringify(this.addressArray, null, 2)),
-										]),
-								  ]),
-						]),
-
-						// Code reference
-						h('div', { class: 'demo-section code-reference' }, [
-							h('h5', 'Code Used:'),
-							h('div', { class: 'code-example' }, [
-								h('pre', 'const { schema, initializeRecord, initializeArray } = useNestedSchema({'),
-								h('pre', '  doctype: "address",'),
-								h('pre', '  registry: registryInstance'),
-								h('pre', '})'),
-								h('pre', ''),
-								h('pre', 'const singleAddress = initializeRecord()'),
-								h('pre', 'const multipleAddresses = initializeArray(2)'),
-							]),
-						]),
-				  ])
-				: null,
 		])
 	},
 })
@@ -679,307 +403,6 @@ const HSTDemo = defineComponent({
 							h('li', [h('code', 'store.getNode(path)'), ' - Get HST node object']),
 							h('li', [h('code', 'node.getParent()'), ' - Get parent node']),
 							h('li', [h('code', 'node.getBreadcrumbs()'), ' - Get path ancestry']),
-						]),
-					]),
-				]),
-			]),
-		])
-	},
-})
-
-// HST Integration for 1:many (array) - Orders with Line Items
-const HSTArrayDemo = defineComponent({
-	name: 'HSTArrayDemo',
-	setup() {
-		// Create Stonecrop instance with HST
-		const stonecrop = new Stonecrop(registryInstance!)
-		const store = stonecrop.getStore()
-
-		// Initialize an order record with line items
-		const orderId = 'ord-001'
-		const orderData = {
-			order_number: 'ORD-2026-001',
-			order_date: '2026-02-09',
-			customer_name: 'Bob Smith',
-			line_items: [
-				{ _id: '1', product: 'Widget A', quantity: 2, price: 19.99 },
-				{ _id: '2', product: 'Widget B', quantity: 1, price: 29.99 },
-			],
-		}
-
-		// Add to HST
-		stonecrop.addRecord('order', orderId, orderData)
-
-		// Load schemas
-		const { schema: orderSchema } = useNestedSchema({
-			doctype: 'order',
-			registry: registryInstance,
-		})
-		const { schema: lineItemSchema, initializeRecord } = useNestedSchema({
-			doctype: 'line-item',
-			registry: registryInstance,
-			isArray: true,
-		})
-
-		// HST paths
-		const orderPath = `order.${orderId}`
-		const lineItemsPath = `${orderPath}.line_items`
-
-		// Computed properties with getter/setter for HST synchronization
-		const orderFormData = computed({
-			get: () => {
-				const data = store.get(orderPath)
-				return {
-					order_number: data?.order_number || '',
-					order_date: data?.order_date || '',
-					customer_name: data?.customer_name || '',
-				}
-			},
-			set: newData => {
-				Object.keys(newData).forEach(key => {
-					if (key !== 'line_items') {
-						store.set(`${orderPath}.${key}`, newData[key])
-					}
-				})
-			},
-		})
-
-		const lineItemsFormData = computed({
-			get: () => {
-				const items = store.get(lineItemsPath) || []
-				return Array.isArray(items) ? items : []
-			},
-			set: newData => {
-				store.set(lineItemsPath, newData)
-			},
-		})
-
-		// Computed HST data that automatically updates when store changes
-		const hstData = computed(() => {
-			const lineItems = store.get(lineItemsPath) || []
-			return {
-				order: store.get(orderPath),
-				orderNode: {
-					path: orderPath,
-					exists: store.has(orderPath),
-					parent: store.getNode(orderPath)?.getParent()?.getPath() || 'root',
-					breadcrumbs: store
-						.getNode(orderPath)
-						?.getBreadcrumbs()
-						.map(n => store.getNode(n).getPath()),
-				},
-				lineItems,
-				lineItemNodes: lineItems.map((_: any, index: number) => {
-					const itemPath = `${lineItemsPath}[${index}]`
-					return {
-						path: itemPath,
-						exists: store.has(itemPath),
-						parent: store.getNode(itemPath)?.getParent()?.getPath() || 'root',
-						breadcrumbs: store
-							.getNode(itemPath)
-							?.getBreadcrumbs()
-							.map(n => store.getNode(n).getPath()),
-					}
-				}),
-			}
-		})
-
-		// HST operations
-		const resetData = () => {
-			const newOrderData = {
-				order_number: 'ORD-2026-001',
-				order_date: '2026-02-09',
-				customer_name: 'Bob Smith',
-				line_items: [
-					{ _id: '1', product: 'Widget A', quantity: 2, price: 19.99 },
-					{ _id: '2', product: 'Widget B', quantity: 1, price: 29.99 },
-				],
-			}
-			stonecrop.addRecord('order', orderId, newOrderData)
-		}
-
-		const addLineItem = () => {
-			const newItem = { ...initializeRecord(), _id: Date.now().toString() } as any
-			const currentItems = lineItemsFormData.value
-			lineItemsFormData.value = [...currentItems, newItem]
-		}
-
-		const removeLineItem = (index: number) => {
-			const currentItems = lineItemsFormData.value
-			lineItemsFormData.value = currentItems.filter((_, i) => i !== index)
-		}
-
-		return {
-			orderSchema,
-			lineItemSchema,
-			orderFormData,
-			lineItemsFormData,
-			hstData,
-			orderPath,
-			lineItemsPath,
-			resetData,
-			addLineItem,
-			removeLineItem,
-			store,
-		}
-	},
-	render() {
-		return h('div', { class: 'hst-demo' }, [
-			h('p', { class: 'hst-description' }, [
-				'This demonstrates HST managing ',
-				h('strong', 'arrays of nested data'),
-				'. Add/remove line items and edit forms to see HST array paths update in real-time.',
-			]),
-
-			h('div', { class: 'hst-layout' }, [
-				// Left: Forms
-				h('div', { class: 'hst-forms' }, [
-					h('div', { class: 'hst-form-section' }, [
-						h('h4', 'Order Form'),
-						h('div', { class: 'path-indicator' }, `HST Path: ${this.orderPath}`),
-						this.orderSchema
-							? h(AForm, {
-									modelValue: this.orderSchema.filter((f: any) => f.fieldtype !== 'Doctype'),
-									'onUpdate:modelValue': (val: any) => {
-										this.orderSchema = val
-									},
-									data: this.orderFormData,
-									'onUpdate:data': (val: any) => {
-										this.orderFormData = val
-									},
-							  })
-							: null,
-					]),
-
-					h('div', { class: 'hst-form-section' }, [
-						h('h4', 'Line Items (Array)'),
-						h('div', { class: 'path-indicator' }, `HST Path: ${this.lineItemsPath}`),
-
-						// Render each line item
-						...this.lineItemsFormData.map((item: any, index: number) =>
-							h('div', { key: item._id || index, class: 'array-item-hst' }, [
-								h('div', { class: 'array-item-header' }, [
-									h('span', [h('strong', `Item ${index + 1}`), h('code', { class: 'path-badge' }, `[${index}]`)]),
-									h(
-										'button',
-										{
-											class: 'btn-danger-small',
-											onClick: () => this.removeLineItem(index),
-										},
-										'Remove'
-									),
-								]),
-								this.lineItemSchema
-									? h(AForm, {
-											key: `line-item-hst-${item._id || index}-${item.product || ''}-${item.quantity || 0}-${
-												item.price || 0
-											}`,
-											modelValue: JSON.parse(JSON.stringify(this.lineItemSchema)),
-											data: { ...this.lineItemsFormData[index] },
-											'onUpdate:data': (val: any) => {
-												const currentItems = this.lineItemsFormData.map((item: any, i: number) =>
-													i === index ? { ...val } : item
-												)
-												this.lineItemsFormData = currentItems
-											},
-									  })
-									: null,
-							])
-						),
-
-						h(
-							'button',
-							{
-								class: 'add-btn-small',
-								onClick: this.addLineItem,
-							},
-							'+ Add Line Item'
-						),
-					]),
-
-					h(
-						'button',
-						{
-							class: 'reset-button',
-							onClick: this.resetData,
-						},
-						'🔄 Reset All Data'
-					),
-				]),
-
-				// Right: HST State Visualization
-				h('div', { class: 'hst-state' }, [
-					h('h4', 'HST State Tree'),
-
-					// Order node info
-					h('div', { class: 'hst-node-card' }, [
-						h('div', { class: 'node-header' }, [
-							h('span', { class: 'node-type' }, '📦 Order'),
-							h('span', { class: 'node-status exists' }, '✓ Exists'),
-						]),
-						h('div', { class: 'node-details' }, [
-							h('div', { class: 'detail-row' }, [h('strong', 'Path:'), h('code', this.hstData.orderNode?.path || '')]),
-							h('div', { class: 'detail-row' }, [
-								h('strong', 'Parent:'),
-								h('code', this.hstData.orderNode?.parent || ''),
-							]),
-						]),
-						h('div', { class: 'node-data' }, [
-							h('strong', 'Data (excluding line_items):'),
-							h(
-								'pre',
-								JSON.stringify(
-									{
-										order_number: this.hstData.order?.order_number,
-										order_date: this.hstData.order?.order_date,
-										customer_name: this.hstData.order?.customer_name,
-									},
-									null,
-									2
-								)
-							),
-						]),
-					]),
-
-					// Line items array node
-					h('div', { class: 'hst-node-card nested' }, [
-						h('div', { class: 'node-header' }, [
-							h('span', { class: 'node-type' }, '📋 Line Items Array'),
-							h('span', { class: 'node-status exists' }, `✓ ${this.hstData.lineItems?.length || 0} items`),
-						]),
-						h('div', { class: 'node-details' }, [
-							h('div', { class: 'detail-row' }, [h('strong', 'Path:'), h('code', this.lineItemsPath)]),
-						]),
-
-						// Individual line item nodes
-						...(this.hstData.lineItemNodes || []).map((node: any, index: number) =>
-							h('div', { key: index, class: 'array-node-item' }, [
-								h('div', { class: 'array-node-header' }, [
-									h('span', { class: 'node-type-small' }, `Item [${index}]`),
-									h('span', { class: 'node-status-small exists' }, '✓'),
-								]),
-								h('div', { class: 'node-details-compact' }, [
-									h('div', { class: 'detail-row' }, [
-										h('strong', 'Path:'),
-										h('code', { class: 'small-code' }, node.path || ''),
-									]),
-								]),
-								h('div', { class: 'node-data-compact' }, [
-									h('pre', JSON.stringify(this.hstData.lineItems[index], null, 2)),
-								]),
-							])
-						),
-					]),
-
-					// HST Methods demo
-					h('div', { class: 'hst-methods-info' }, [
-						h('h5', '🔧 HST Array Methods:'),
-						h('ul', [
-							h('li', [h('code', 'store.get("path.items")'), ' - Get entire array']),
-							h('li', [h('code', 'store.set("path.items", array)'), ' - Replace array']),
-							h('li', [h('code', 'store.get("path.items[0]")'), ' - Get array item']),
-							h('li', [h('code', 'store.set("path.items[0].field", value)'), ' - Update item field']),
-							h('li', [h('code', 'store.getNode("path.items[0]")'), ' - Navigate to array item']),
 						]),
 					]),
 				]),
@@ -1633,6 +1056,8 @@ const HSTArrayDemo = defineComponent({
 
 This story demonstrates how to use the `useNestedSchema` composable from `@stonecrop/stonecrop` to work with nested doctypes in forms.
 
+**Note:** This implementation supports **1:1 nested schemas only**. For managing collections of records (1:many relationships), use nested table schemas which provide proper doctype mapping and state management.
+
 ## Variants
 
 ### Manual (1:1) - Single Nested Form
@@ -1648,20 +1073,6 @@ Demonstrates a **one-to-one** relationship where a Customer doctype has a single
 
 **Use Case:** When you have a parent record that contains exactly one nested record (e.g., Customer → Address, User → Profile, Invoice → Billing Info)
 
-### Manual (1:many) - Array of Nested Forms
-
-Demonstrates a **one-to-many** relationship where an Order doctype contains multiple Line Item doctypes.
-
-**Key Features:**
-
-- Pre-populated with sample order and 2 line items
-- Uses `useNestedSchema({ doctype: 'line-item', registry, isArray: true })`
-- Implements add/remove functionality for line items
-- Shows how to structure data with an array of nested objects (`order.line_items[]`)
-- Dynamically creates forms for each array item
-
-**Use Case:** When you have a parent record that can contain multiple nested records (e.g., Order → Line Items, Invoice → Invoice Items, Survey → Questions)
-
 ### Composable - Interactive API Demo
 
 An **interactive educational demo** showing how `useNestedSchema` works under the hood.
@@ -1670,7 +1081,7 @@ An **interactive educational demo** showing how `useNestedSchema` works under th
 
 - Demonstrates loading states and error handling
 - Interactive buttons to trigger `initializeRecord()` and `initializeArray()`
-- Shows both single record (1:1) and array (1:many) initialization
+- Shows single record (1:1) initialization
 - Live JSON preview of data structure
 - Code examples showing API usage
 
@@ -1692,22 +1103,6 @@ Demonstrates how the **Hierarchical State Tree (HST)** manages nested data with 
 
 **Use Case:** Understanding how HST manages hierarchical data, debugging state issues, learning path-based state management patterns, and seeing the relationship between forms and the underlying state tree
 
-### HST (1:many) - Array State Management Demo
-
-Demonstrates how the **Hierarchical State Tree (HST)** manages **arrays of nested data** with **real-time array visualization**.
-
-**Key Features:**
-
-- HST managing one-to-many relationships (Order → Line Items array)
-- Array path notation: `order.ord-001.line_items[0]`, `order.ord-001.line_items[1]`
-- Add/remove array items and watch HST update in real-time
-- Individual HST nodes for each array element
-- Shows how arrays are stored and traversed in the HST
-- Path-based array operations: `store.set("path.items[0].field", value)`
-- Live visualization of array structure in HST
-
-**Use Case:** Understanding HST array management, debugging array state issues, learning how to work with collections in HST, and seeing how add/remove operations affect the state tree
-
 ## API Reference
 
 ### useNestedSchema Options
@@ -1718,13 +1113,12 @@ const {
 	loading, // Ref<boolean> - Loading state
 	error, // Ref<string> - Error message if loading fails
 	initializeRecord, // () => Record<string, any> - Create empty record
-	initializeArray, // (count: number) => Record<string, any>[] - Create array
+	initializeArray, // (count: number) => Record<string, any>[] - Create array (utility only)
 	loadSchema, // () => Promise<void> - Manually reload schema
 } = useNestedSchema({
 	doctype: 'address', // Required: doctype slug to load
 	registry: registryInstance, // Optional: registry for schema lookup
 	schema: schemaArray, // Optional: provide schema directly
-	isArray: false, // Optional: whether this is 1:many (default: false)
 })
 ```
 
@@ -1732,6 +1126,7 @@ const {
 
 - The composable automatically loads the schema from the registry on initialization
 - `initializeRecord()` creates an empty record with default values based on the schema
-- The `isArray` option is primarily for documentation - the composable works the same way for both 1:1 and 1:many
+- Only 1:1 nested relationships are supported for forms
+- For 1:many relationships, use nested table schemas instead
 - All examples use render functions (`h()`) instead of templates to avoid runtime template compilation requirements
 </docs>

@@ -2,13 +2,15 @@
 
 ## Overview
 
-AForm now supports nested schemas through the `useNestedSchema` composable from `@stonecrop/stonecrop`. This allows you to dynamically load and initialize nested form structures without tight coupling to any specific state management solution.
+AForm supports nested schemas through the `useNestedSchema` composable from `@stonecrop/stonecrop`. This allows you to dynamically load and initialize nested form structures without tight coupling to any specific state management solution.
+
+**Note:** This implementation supports **1:1 nested schemas only**. For managing collections of records (1:many relationships), use nested table schemas which provide proper doctype mapping and state management.
 
 ## Key Features
 
 - **No Dependencies**: The composable is part of Stonecrop's core schema management
 - **Flexible Schema Source**: Load from a registry or provide schemas directly
-- **1:1 and 1:many Support**: Handle both single nested forms and arrays of nested forms
+- **1:1 Relationship Support**: Handle single nested forms within parent records
 - **Type-Safe**: Full TypeScript support with interfaces
 - **Initialization Helpers**: Built-in methods to initialize empty records with default values
 
@@ -60,52 +62,22 @@ const customerData = ref({
 </template>
 ```
 
-### Array of Nested Forms (1:many Relationship)
+### Initializing Empty Nested Records
 
-```vue
-<script setup lang="ts">
-import { ref } from 'vue'
-import { useNestedSchema } from '@stonecrop/stonecrop'
-import { AForm } from '@stonecrop/aform'
+Use `initializeRecord()` to create an empty nested object with proper default values:
 
-// Load nested schema for array items
-const { schema: lineItemSchema, initializeRecord } = useNestedSchema({
-  doctype: 'line-item',
+```typescript
+const { schema: addressSchema, initializeRecord } = useNestedSchema({
+  doctype: 'address',
   registry: myRegistry,
-  isArray: true,
 })
 
-const orderData = ref({
-  order_number: 'ORD-001',
-  line_items: [
-    { product: 'Widget A', quantity: 2, price: 19.99 },
-  ],
+// Create a new customer with an initialized nested address
+const newCustomer = ref({
+  name: '',
+  email: '',
+  address: initializeRecord(), // Creates { street: '', city: '', state: '', zip_code: '' }
 })
-
-const addLineItem = () => {
-  orderData.value.line_items.push(initializeRecord())
-}
-
-const removeLineItem = (index: number) => {
-  orderData.value.line_items.splice(index, 1)
-}
-</script>
-
-<template>
-  <div>
-    <!-- Order fields -->
-    <input v-model="orderData.order_number" />
-
-    <!-- Array of nested schemas -->
-    <div v-if="lineItemSchema">
-      <div v-for="(item, index) in orderData.line_items" :key="index">
-        <AForm :modelValue="lineItemSchema" :data="item" />
-        <button @click="removeLineItem(index)">Remove</button>
-      </div>
-      <button @click="addLineItem">Add Line Item</button>
-    </div>
-  </div>
-</template>
 ```
 
 ## API Reference
@@ -135,13 +107,7 @@ interface UseNestedSchemaOptions {
   schema?: SchemaTypes[]
 
   /**
-   * Whether this represents an array of nested forms (1:many)
-   * Default: false (single nested form, 1:1)
-   */
-  isArray?: boolean
-
-  /**
-   * Initial data for the nested form(s)
+   * Initial data for the nested form
    */
   initialData?: any
 }
@@ -177,7 +143,7 @@ interface UseNestedSchemaReturn {
   initializeRecord: () => Record<string, any>
 
   /**
-   * Initialize an array of empty records
+   * Initialize an array of empty records (utility for array initialization)
    */
   initializeArray: (count: number) => Record<string, any>[]
 
@@ -215,11 +181,13 @@ The Stonecrop `Registry` class implements this interface automatically.
 
 ## Examples
 
-See `/examples/aform/nested-doctype.story.vue` for complete working examples demonstrating:
+See `/examples/aform/nested.story.vue` for complete working examples demonstrating:
 
 1. Manual integration of single nested forms (1:1)
-2. Manual integration of array nested forms (1:many)
-3. Composable API usage patterns
+2. Composable API usage patterns
+3. HST integration with nested schemas
+
+For managing collections of records, use nested table schemas instead.
 
 ## Benefits
 
@@ -239,33 +207,3 @@ When you provide a registry, the composable:
 4. Handles async loading with proper loading/error states
 
 Without a registry, you can provide schemas directly for maximum flexibility.
-
-## Migration from ADoctypeField Component
-
-If you were using the previous `ADoctypeField` component (which has been removed), you can recreate similar functionality using the composable:
-
-**Before:**
-```vue
-<ADoctypeField
-  :doctype="'address'"
-  :data="customerData.address"
-/>
-```
-
-**After:**
-```vue
-<script setup>
-const { schema: addressSchema } = useNestedSchema({
-  doctype: 'address',
-  registry: myRegistry
-})
-</script>
-
-<template>
-  <div v-if="addressSchema">
-    <AForm :modelValue="addressSchema" :data="customerData.address" />
-  </div>
-</template>
-```
-
-This gives you full control over the rendering while leveraging the same schema loading utilities.

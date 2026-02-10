@@ -154,6 +154,8 @@ Composable for managing nested schema loading and initialization
 
 This composable provides utilities for working with nested doctypes in forms without being tightly coupled to Stonecrop or any specific state management solution.
 
+**Note:** This composable supports 1:1 nested schemas only. For 1:many relationships, use nested table schemas which provide proper doctype mapping.
+
 **Signature:**
 
 ```typescript
@@ -1245,7 +1247,6 @@ Options for useNestedSchema composable
 export interface UseNestedSchemaOptions {
   doctype: string;
   initialData?: any;
-  isArray?: boolean;
   registry?: SchemaRegistry;
   schema?: SchemaTypes[];
 }
@@ -1256,8 +1257,7 @@ export interface UseNestedSchemaOptions {
 | Property | Type | Description |
 |----------|------|-------------|
 | doctype | `string` | The target doctype slug to load schema for |
-| initialData? | `any` | Initial data for the nested form(s) |
-| isArray? | `boolean` | Whether this represents an array of nested forms (1:many) Default: false (single nested form, 1:1) |
+| initialData? | `any` | Initial data for the nested form |
 | registry? | `SchemaRegistry` | Registry instance for schema lookup (optional) If not provided, you must supply schema directly via setSchema |
 | schema? | `SchemaTypes[]` | Direct schema array to use instead of loading from registry |
 
@@ -1604,7 +1604,7 @@ export type HSTStonecropReturn = BaseStonecropReturn & {
     handleHSTChange: (changeData: HSTChangeData) => void;
     hstStore: Ref<HSTNode | undefined>;
     formData: Ref<Record<string, any>>;
-    loadNestedData: (parentPath: string, childDoctype: DoctypeMeta, recordId?: string) => Promise<Record<string, any>>;
+    loadNestedData: (parentPath: string, childDoctype: DoctypeMeta, recordId?: string) => Record<string, any>;
     saveRecursive: (doctype: DoctypeMeta, recordId: string) => Promise<Record<string, any>>;
     createNestedContext: (basePath: string, childDoctype: DoctypeMeta) => {
         provideHSTPath: (fieldname: string) => string;

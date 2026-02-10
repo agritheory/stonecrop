@@ -8,8 +8,6 @@ describe('Nested Doctype Support', () => {
 	let stonecrop: Stonecrop
 	let customerDoctype: DoctypeMeta
 	let addressDoctype: DoctypeMeta
-	let orderDoctype: DoctypeMeta
-	let lineItemDoctype: DoctypeMeta
 
 	beforeEach(() => {
 		registry = new Registry()
@@ -32,34 +30,10 @@ describe('Nested Doctype Support', () => {
 				fieldname: 'address',
 				fieldtype: 'Doctype',
 				options: 'address',
-				isArray: false,
 			},
 		])
 		customerDoctype = new DoctypeMeta('customer', customerSchema as any, undefined, undefined)
 		registry.addDoctype(customerDoctype)
-
-		// LineItem doctype
-		const lineItemSchema = List([
-			{ fieldname: 'product', fieldtype: 'Data', component: 'ATextInput' },
-			{ fieldname: 'quantity', fieldtype: 'Int', component: 'ANumericInput' },
-			{ fieldname: 'price', fieldtype: 'Float', component: 'ANumericInput' },
-		])
-		lineItemDoctype = new DoctypeMeta('line-item', lineItemSchema as any, undefined, undefined)
-		registry.addDoctype(lineItemDoctype)
-
-		// Order doctype with nested LineItems (1:many)
-		const orderSchema = List([
-			{ fieldname: 'order_number', fieldtype: 'Data', component: 'ATextInput' },
-			{ fieldname: 'order_date', fieldtype: 'Date', component: 'ADatePicker' },
-			{
-				fieldname: 'line_items',
-				fieldtype: 'Doctype',
-				options: 'line-item',
-				isArray: true,
-			},
-		])
-		orderDoctype = new DoctypeMeta('order', orderSchema as any, undefined, undefined)
-		registry.addDoctype(orderDoctype)
 
 		stonecrop = new Stonecrop(registry)
 	})
@@ -84,7 +58,6 @@ describe('Nested Doctype Support', () => {
 					fieldname: 'test_field',
 					fieldtype: 'Doctype',
 					options: 'nonexistent-doctype',
-					isArray: false,
 				},
 			])
 			const testDoctype = new DoctypeMeta('test', testSchema as any, undefined, undefined)
@@ -101,7 +74,6 @@ describe('Nested Doctype Support', () => {
 					fieldname: 'ref',
 					fieldtype: 'Doctype',
 					options: 'doctype2',
-					isArray: false,
 				},
 			])
 			const doctype1 = new DoctypeMeta('doctype1', doctype1Schema as any, undefined, undefined)
@@ -111,7 +83,6 @@ describe('Nested Doctype Support', () => {
 					fieldname: 'ref',
 					fieldtype: 'Doctype',
 					options: 'doctype1',
-					isArray: false,
 				},
 			])
 			const doctype2 = new DoctypeMeta('doctype2', doctype2Schema as any, undefined, undefined)
@@ -121,70 +92,6 @@ describe('Nested Doctype Support', () => {
 
 			// Should handle circular reference without infinite loop
 			await expect(registry.preloadNestedSchemas('doctype1')).resolves.not.toThrow()
-		})
-	})
-
-	describe('HST array path support', () => {
-		it('supports array bracket notation in paths', () => {
-			const store = stonecrop.getStore()
-
-			// Set up order with line items array
-			stonecrop.addRecord(orderDoctype, 'o1', {
-				order_number: 'ORD-001',
-				line_items: [
-					{ product: 'Widget A', quantity: 2, price: 19.99 },
-					{ product: 'Widget B', quantity: 1, price: 29.99 },
-				],
-			})
-
-			// Test bracket notation access
-			const product1 = store.get('order.o1.line_items[0].product')
-			expect(product1).toBe('Widget A')
-
-			const quantity2 = store.get('order.o1.line_items[1].quantity')
-			expect(quantity2).toBe(1)
-		})
-
-		it('supports dot notation with array indices', () => {
-			const store = stonecrop.getStore()
-
-			stonecrop.addRecord(orderDoctype, 'o2', {
-				order_number: 'ORD-002',
-				line_items: [{ product: 'Gadget X', quantity: 5, price: 9.99 }],
-			})
-
-			// Test dot notation access (alternative to bracket notation)
-			const product = store.get('order.o2.line_items.0.product')
-			expect(product).toBe('Gadget X')
-		})
-
-		it('sets values in array using bracket notation', () => {
-			const store = stonecrop.getStore()
-
-			stonecrop.addRecord(orderDoctype, 'o3', {
-				order_number: 'ORD-003',
-				line_items: [{ product: 'Item 1', quantity: 1, price: 10 }],
-			})
-
-			// Update using bracket notation
-			store.set('order.o3.line_items[0].quantity', 5)
-
-			// Verify change
-			const updatedQuantity = store.get('order.o3.line_items[0].quantity')
-			expect(updatedQuantity).toBe(5)
-		})
-
-		it('checks existence of nested array paths', () => {
-			const store = stonecrop.getStore()
-
-			stonecrop.addRecord(orderDoctype, 'o4', {
-				order_number: 'ORD-004',
-				line_items: [{ product: 'Test Product', quantity: 1, price: 5 }],
-			})
-
-			expect(store.has('order.o4.line_items[0]')).toBe(true)
-			expect(store.has('order.o4.line_items[0].product')).toBe(true)
-			expect(store.has('order.o4.line_items[999]')).toBe(false)
 		})
 	})
 
@@ -228,44 +135,6 @@ describe('Nested Doctype Support', () => {
 			// Verify street changed but city remained
 			expect(store.get('customer.c2.address.street')).toBe('789 Elm St')
 			expect(store.get('customer.c2.address.city')).toBe('Portland')
-		})
-	})
-
-	describe('Embedded nested arrays (1:many)', () => {
-		it('stores array of nested doctype data in parent path', () => {
-			const store = stonecrop.getStore()
-
-			stonecrop.addRecord(orderDoctype, 'o5', {
-				order_number: 'ORD-005',
-				line_items: [
-					{ product: 'Product A', quantity: 2, price: 15 },
-					{ product: 'Product B', quantity: 3, price: 20 },
-				],
-			})
-
-			// Verify array is embedded
-			const lineItems = store.get('order.o5.line_items')
-			expect(Array.isArray(lineItems)).toBe(true)
-			expect(lineItems).toHaveLength(2)
-		})
-
-		it('navigates tree structure for nested arrays', () => {
-			const store = stonecrop.getStore()
-
-			stonecrop.addRecord(orderDoctype, 'o6', {
-				order_number: 'ORD-006',
-				line_items: [{ product: 'Widget', quantity: 1, price: 100 }],
-			})
-
-			// Get node and verify tree navigation
-			const orderNode = store.getNode('order.o6')
-			expect(orderNode).toBeDefined()
-
-			const lineItemsNode = orderNode.getNode('line_items')
-			expect(lineItemsNode).toBeDefined()
-
-			// Verify path
-			expect(lineItemsNode.getPath()).toBe('order.o6.line_items')
 		})
 	})
 

@@ -64,7 +64,7 @@ export type HSTStonecropReturn = BaseStonecropReturn & {
 	handleHSTChange: (changeData: HSTChangeData) => void
 	hstStore: Ref<HSTNode | undefined>
 	formData: Ref<Record<string, any>>
-	loadNestedData: (parentPath: string, childDoctype: DoctypeMeta, recordId?: string) => Promise<Record<string, any>>
+	loadNestedData: (parentPath: string, childDoctype: DoctypeMeta, recordId?: string) => Record<string, any>
 	saveRecursive: (doctype: DoctypeMeta, recordId: string) => Promise<Record<string, any>>
 	createNestedContext: (
 		basePath: string,
@@ -394,11 +394,7 @@ export function useStonecrop(options?: {
 	 * @param recordId - Optional record ID to load
 	 * @returns Promise resolving to the loaded or initialized data
 	 */
-	const loadNestedData = async (
-		parentPath: string,
-		childDoctype: DoctypeMeta,
-		recordId?: string
-	): Promise<Record<string, any>> => {
+	const loadNestedData = (parentPath: string, childDoctype: DoctypeMeta, recordId?: string): Record<string, any> => {
 		if (!stonecrop.value) {
 			return initializeNewRecord(childDoctype)
 		}
@@ -451,38 +447,28 @@ export function useStonecrop(options?: {
 
 		// Recursively collect nested data
 		for (const field of doctypeFields) {
-			if (!('options' in field) || typeof field.options !== 'string') continue
+			if (!('options' in field) || !('fieldname' in field)) continue
 
-			const nestedDoctypeSlug = field.options
+			// TypeScript doesn't narrow types after 'in' checks - runtime validation is performed
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+			const fieldOptions = field.options
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+			const fieldname = field.fieldname
+
+			if (typeof fieldOptions !== 'string' || typeof fieldname !== 'string') continue
+
+			const nestedDoctypeSlug = fieldOptions
 			const nestedDoctype = registry?.registry[nestedDoctypeSlug]
 
 			if (!nestedDoctype) {
-				console.warn(`Nested doctype '${nestedDoctypeSlug}' not found in registry`)
 				continue
 			}
 
-			const fieldPath = `${recordPath}.${field.fieldname}`
+			const fieldPath = `${recordPath}.${fieldname}`
 
-			// Handle array fields (1:many)
-			if ('isArray' in field && field.isArray) {
-				const nestedArray = hstStore.value.get(fieldPath) || []
-				const nestedPayloads: any[] = []
-
-				if (Array.isArray(nestedArray)) {
-					for (let i = 0; i < nestedArray.length; i++) {
-						const nestedRecordPath = `${fieldPath}[${i}]`
-						// Recursively save nested record
-						const nestedData = await collectNestedData(nestedDoctype, nestedRecordPath, hstStore.value, registry)
-						nestedPayloads.push(nestedData)
-					}
-				}
-
-				payload[field.fieldname] = nestedPayloads
-			} else {
-				// Handle single nested object (1:1)
-				const nestedData = await collectNestedData(nestedDoctype, fieldPath, hstStore.value, registry)
-				payload[field.fieldname] = nestedData
-			}
+			// Handle single nested object (1:1 only)
+			const nestedData = await collectNestedData(nestedDoctype, fieldPath, hstStore.value, registry)
+			payload[fieldname] = nestedData
 		}
 
 		return payload
@@ -491,10 +477,10 @@ export function useStonecrop(options?: {
 	/**
 	 * Create a nested context for child forms
 	 * @param basePath - The base path for the nested context (e.g., "customer.123.address")
-	 * @param childDoctype - The child doctype metadata
+	 * @param _childDoctype - The child doctype metadata (unused but kept for API consistency)
 	 * @returns Object with scoped provideHSTPath and handleHSTChange
 	 */
-	const createNestedContext = (basePath: string, childDoctype: DoctypeMeta) => {
+	const createNestedContext = (basePath: string, _childDoctype: DoctypeMeta) => {
 		const nestedProvideHSTPath = (fieldname: string): string => {
 			return `${basePath}.${fieldname}`
 		}
@@ -685,37 +671,28 @@ async function collectNestedData(
 
 	// Recursively collect nested data
 	for (const field of doctypeFields) {
-		if (!('options' in field) || typeof field.options !== 'string') continue
+		if (!('options' in field) || !('fieldname' in field)) continue
 
-		const nestedDoctypeSlug = field.options
+		// TypeScript doesn't narrow types after 'in' checks - runtime validation is performed
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+		const fieldOptions = field.options
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+		const fieldname = field.fieldname
+
+		if (typeof fieldOptions !== 'string' || typeof fieldname !== 'string') continue
+
+		const nestedDoctypeSlug = fieldOptions
 		const nestedDoctype = registry?.registry[nestedDoctypeSlug]
 
 		if (!nestedDoctype) {
-			console.warn(`Nested doctype '${nestedDoctypeSlug}' not found in registry`)
 			continue
 		}
 
-		const fieldPath = `${basePath}.${field.fieldname}`
+		const fieldPath = `${basePath}.${fieldname}`
 
-		// Handle array fields (1:many)
-		if ('isArray' in field && field.isArray) {
-			const nestedArray = hstStore.get(fieldPath) || []
-			const nestedPayloads: any[] = []
-
-			if (Array.isArray(nestedArray)) {
-				for (let i = 0; i < nestedArray.length; i++) {
-					const nestedRecordPath = `${fieldPath}[${i}]`
-					const nestedData = await collectNestedData(nestedDoctype, nestedRecordPath, hstStore, registry)
-					nestedPayloads.push(nestedData)
-				}
-			}
-
-			payload[field.fieldname] = nestedPayloads
-		} else {
-			// Handle single nested object (1:1)
-			const nestedData = await collectNestedData(nestedDoctype, fieldPath, hstStore, registry)
-			payload[field.fieldname] = nestedData
-		}
+		// Handle single nested object (1:1 only)
+		const nestedData = await collectNestedData(nestedDoctype, fieldPath, hstStore, registry)
+		payload[fieldname] = nestedData
 	}
 
 	return payload
