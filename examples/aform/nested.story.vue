@@ -18,7 +18,7 @@
 
 <script setup lang="ts">
 import { AForm } from '@stonecrop/aform'
-import { Registry, DoctypeMeta, useNestedSchema, Stonecrop } from '@stonecrop/stonecrop'
+import { Registry, DoctypeMeta, Stonecrop } from '@stonecrop/stonecrop'
 import { List } from 'immutable'
 import { type App, defineComponent, ref, h, computed } from 'vue'
 
@@ -32,18 +32,18 @@ const setupApp = ({ app }: { app: App }) => {
 	registryInstance = new Registry()
 
 	// Register Address doctype
-	const addressDoctype = new DoctypeMeta('Address', List(addressSchemaJson), undefined, undefined)
+	const addressDoctype = new DoctypeMeta('Address', List(addressSchemaJson.fields), undefined, undefined)
 	registryInstance.addDoctype(addressDoctype)
 
 	// Register Customer doctype
-	const customerDoctype = new DoctypeMeta('Customer', List(customerSchemaJson), undefined, undefined)
+	const customerDoctype = new DoctypeMeta('Customer', List(customerSchemaJson.fields), undefined, undefined)
 	registryInstance.addDoctype(customerDoctype)
 
 	// Provide to app
 	app.provide('$registry', registryInstance)
 }
 
-// Custom component demonstrating 1:1 nested form
+// Simple component demonstrating automatic nested form rendering
 const CustomerForm = defineComponent({
 	name: 'CustomerForm',
 	setup() {
@@ -59,32 +59,21 @@ const CustomerForm = defineComponent({
 			},
 		})
 
-		const customerSchemaRef = ref(customerSchemaJson.filter(f => f.fieldtype !== 'Doctype'))
-
-		// Use nested schema composable for the address field
-		const { schema: addressSchema, initializeRecord } = useNestedSchema({
-			doctype: 'address',
-			registry: registryInstance,
-		})
-
-		return { customerSchemaRef, customerData, addressSchema, initializeRecord }
+		const customerSchemaRef = ref(customerSchemaJson.fields)
+		return { customerSchemaRef, customerData }
 	},
 	render() {
 		return h('div', { class: 'nested-form-example' }, [
 			h('h4', 'Customer Information'),
+			h(
+				'p',
+				{ class: 'info-text' },
+				'The address form is automatically rendered from the Doctype field - no manual setup required!'
+			),
 			h(AForm, {
-				modelValue: this.customerSchemaRef,
+				schema: this.customerSchemaRef,
 				data: this.customerData,
 			}),
-			this.addressSchema
-				? h('div', { class: 'nested-section' }, [
-						h('h4', 'Address (Nested Schema)'),
-						h(AForm, {
-							modelValue: this.addressSchema,
-							data: this.customerData.address,
-						}),
-				  ])
-				: null,
 			h('div', { class: 'data-preview' }, [
 				h('h4', 'Data Structure:'),
 				h('pre', JSON.stringify(this.customerData, null, 2)),
@@ -118,15 +107,9 @@ const HSTDemo = defineComponent({
 		// Add to HST
 		stonecrop.addRecord('customer', customerId, customerData)
 
-		// Load schemas
-		const { schema: customerSchema } = useNestedSchema({
-			doctype: 'customer',
-			registry: registryInstance,
-		})
-		const { schema: addressSchema } = useNestedSchema({
-			doctype: 'address',
-			registry: registryInstance,
-		})
+		// Get schemas from registry (converted from Immutable.List)
+		const customerSchema = ref(Array.from(registryInstance!.registry['customer'].schema || []))
+		const addressSchema = ref(Array.from(registryInstance!.registry['address'].schema || []))
 
 		// HST paths
 		const customerPath = `customer.${customerId}`
@@ -271,8 +254,8 @@ const HSTDemo = defineComponent({
 						h('div', { class: 'path-indicator' }, `HST Path: ${this.customerPath}`),
 						this.customerSchema
 							? h(AForm, {
-									modelValue: this.customerSchema.filter((f: any) => f.fieldtype !== 'Doctype'),
-									'onUpdate:modelValue': (val: any) => {
+									schema: this.customerSchema.filter((f: any) => f.fieldtype !== 'Doctype'),
+									'onUpdate:schema': (val: any) => {
 										this.customerSchema = val
 									},
 									data: this.customerFormData,
@@ -308,8 +291,8 @@ const HSTDemo = defineComponent({
 						h('div', { class: 'path-indicator' }, `HST Path: ${this.addressPath}`),
 						this.addressSchema && this.addressFormData
 							? h(AForm, {
-									modelValue: this.addressSchema,
-									'onUpdate:modelValue': (val: any) => {
+									schema: this.addressSchema,
+									'onUpdate:schema': (val: any) => {
 										this.addressSchema = val
 									},
 									data: this.addressFormData,
@@ -1054,38 +1037,36 @@ const HSTDemo = defineComponent({
 <docs lang="md">
 # Nested Schema Support
 
-This story demonstrates how to use the `useNestedSchema` composable from `@stonecrop/stonecrop` to work with nested doctypes in forms.
+This story demonstrates how AForm automatically renders nested doctypes without any manual configuration.
 
 **Note:** This implementation supports **1:1 nested schemas only**. For managing collections of records (1:many relationships), use nested table schemas which provide proper doctype mapping and state management.
 
+## How It Works
+
+When AForm encounters a field with `fieldtype: "Doctype"`, it automatically:
+
+1. Loads the nested schema from the registry using the `options` value
+2. Initializes empty nested data if not provided
+3. Renders a nested AForm recursively with proper styling
+4. Manages two-way data binding for nested fields
+
+**Zero Configuration Required** - Just pass your schema to AForm and nested forms appear automatically!
+
 ## Variants
 
-### Manual (1:1) - Single Nested Form
+### Standard - Zero Configuration Nested Forms
 
-Demonstrates a **one-to-one** relationship where a Customer doctype has a single embedded Address doctype.
+Demonstrates how AForm **automatically renders** nested doctypes without any manual setup.
 
 **Key Features:**
 
+- Pass the full customer schema to AForm (including the Doctype field)
+- Address form renders automatically
 - Pre-populated with sample customer and address data
-- Uses `useNestedSchema({ doctype: 'address', registry })` to load the address schema
-- Renders parent fields and nested fields separately using `AForm`
-- Shows how to structure data with an embedded object (`customer.address`)
+- Automatic two-way data binding for nested fields
+- Nested forms styled with visual hierarchy
 
-**Use Case:** When you have a parent record that contains exactly one nested record (e.g., Customer → Address, User → Profile, Invoice → Billing Info)
-
-### Composable - Interactive API Demo
-
-An **interactive educational demo** showing how `useNestedSchema` works under the hood.
-
-**Key Features:**
-
-- Demonstrates loading states and error handling
-- Interactive buttons to trigger `initializeRecord()` and `initializeArray()`
-- Shows single record (1:1) initialization
-- Live JSON preview of data structure
-- Code examples showing API usage
-
-**Use Case:** Reference for developers learning how to use the composable, understanding the API surface, and seeing the composable's reactive behavior
+**Use Case:** Standard pattern for any parent record with a single nested record (e.g., Customer → Address, User → Profile, Invoice → Billing Info)
 
 ### HST Integration - State Management Demo
 
@@ -1094,6 +1075,7 @@ Demonstrates how the **Hierarchical State Tree (HST)** manages nested data with 
 **Key Features:**
 
 - Creates a Stonecrop instance with HST store
+- Automatic nested form rendering with HST path management
 - Two-way binding between forms and HST paths (`customer.cust-001`, `customer.cust-001.address`)
 - Real-time visualization of HST node structure
 - Interactive HST operations: delete/restore nested nodes
@@ -1103,30 +1085,34 @@ Demonstrates how the **Hierarchical State Tree (HST)** manages nested data with 
 
 **Use Case:** Understanding how HST manages hierarchical data, debugging state issues, learning path-based state management patterns, and seeing the relationship between forms and the underlying state tree
 
-## API Reference
-
-### useNestedSchema Options
-
-```typescript
-const {
-	schema, // Ref<SchemaTypes[]> - The loaded schema
-	loading, // Ref<boolean> - Loading state
-	error, // Ref<string> - Error message if loading fails
-	initializeRecord, // () => Record<string, any> - Create empty record
-	initializeArray, // (count: number) => Record<string, any>[] - Create array (utility only)
-	loadSchema, // () => Promise<void> - Manually reload schema
-} = useNestedSchema({
-	doctype: 'address', // Required: doctype slug to load
-	registry: registryInstance, // Optional: registry for schema lookup
-	schema: schemaArray, // Optional: provide schema directly
-})
-```
-
 ## Implementation Notes
 
-- The composable automatically loads the schema from the registry on initialization
-- `initializeRecord()` creates an empty record with default values based on the schema
+- AForm automatically detects `fieldtype: "Doctype"` fields and renders nested forms
+- Nested schemas are loaded from the registry (injected via `app.provide('$registry', registry)`)
+- Nested data is automatically initialized with default values if not provided
+- Two-way data binding works seamlessly for nested fields
 - Only 1:1 nested relationships are supported for forms
 - For 1:many relationships, use nested table schemas instead
 - All examples use render functions (`h()`) instead of templates to avoid runtime template compilation requirements
+
+## Zero Configuration Required
+
+Simply pass your schema to AForm - nested forms render automatically:
+
+```typescript
+// Register your doctypes in the registry
+registry.addDoctype(addressDoctype)
+registry.addDoctype(customerDoctype)
+
+// Just pass the full schema with the Doctype field!
+<AForm :schema="customerSchema" v-model:data="customerData" />
+// Address form renders automatically - no manual setup! 🎉
+```
+
+**Key Points:**
+
+- ✅ Nested schemas load automatically from the registry
+- ✅ Nested data initializes with proper defaults
+- ✅ Two-way binding works seamlessly across all nested levels
+- ✅ Styling and behavior consistent with parent forms
 </docs>

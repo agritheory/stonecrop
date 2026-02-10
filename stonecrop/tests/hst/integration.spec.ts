@@ -105,9 +105,9 @@ describe('HST Real Component Integration', () => {
 				template: `
 					<div>
 						<AForm
-							v-model="formSchema"
-							:data="formData"
-							@update:modelValue="handleFormUpdate"
+							:schema="formSchema"
+							v-model:data="formData"
+							@update:schema="handleFormUpdate"
 						/>
 						<div class="debug-info">
 							<div>HST Data: {{ JSON.stringify(hstFormData) }}</div>

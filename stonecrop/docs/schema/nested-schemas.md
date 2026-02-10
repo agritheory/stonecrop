@@ -2,208 +2,241 @@
 
 ## Overview
 
-AForm supports nested schemas through the `useNestedSchema` composable from `@stonecrop/stonecrop`. This allows you to dynamically load and initialize nested form structures without tight coupling to any specific state management solution.
+AForm automatically renders nested forms when it encounters a `Doctype` field in your schema. No manual configuration required!
 
 **Note:** This implementation supports **1:1 nested schemas only**. For managing collections of records (1:many relationships), use nested table schemas which provide proper doctype mapping and state management.
 
 ## Key Features
 
-- **No Dependencies**: The composable is part of Stonecrop's core schema management
-- **Flexible Schema Source**: Load from a registry or provide schemas directly
-- **1:1 Relationship Support**: Handle single nested forms within parent records
-- **Type-Safe**: Full TypeScript support with interfaces
-- **Initialization Helpers**: Built-in methods to initialize empty records with default values
+- **Zero Configuration**: Pass your schema to AForm - nested forms render automatically
+- **Automatic Schema Loading**: AForm loads nested schemas from the registry automatically
+- **Automatic Initialization**: Empty nested records are initialized with proper defaults
+- **Two-Way Binding**: Nested field changes sync automatically with your data model
+- **Visual Hierarchy**: Nested forms styled with clear visual separation
 
-## Installation
+## How It Works
 
-The composable is exported from `@stonecrop/stonecrop`:
+When AForm encounters a field with `fieldtype: "Doctype"`, it automatically:
 
-```typescript
-import { useNestedSchema } from '@stonecrop/stonecrop'
+1. Loads the nested schema from the registry using the `options` value (the nested doctype slug)
+2. Initializes empty nested data if not provided
+3. Renders a nested AForm recursively with proper styling
+4. Manages two-way data binding for all nested fields
+
+## Loading Flow Diagram
+
 ```
+┌────────────────────────────────────────────────────────────┐
+│ 1. Schema Definition (JSON)                                │
+├────────────────────────────────────────────────────────────┤
+│  address_schema.json              customer_schema.json     │
+│  { name, slug, fields }           { name, slug, fields }   │
+│                                    ↓                       │
+│                                   [fieldtype: "Doctype",   │
+│                                    options: "address"]     │
+└────────────────┬────────────────────────────┬──────────────┘
+                 ↓                            ↓
+┌────────────────────────────────────────────────────────────┐
+│ 2. Registry Registration                                   │
+├────────────────────────────────────────────────────────────┤
+│  registry.addDoctype('Address', ...)                       │
+│  registry.addDoctype('Customer', ...)                      │
+│  app.provide('$registry', registry)                        │
+└────────────────────────────┬───────────────────────────────┘
+                             ↓
+┌────────────────────────────────────────────────────────────┐
+│ 3. AForm Component Receives Parent Schema                  │
+├────────────────────────────────────────────────────────────┤
+│  <AForm :schema="customerSchema.fields" ... />             │
+│                                                            │
+│  ↓ watchEffect monitors schema                             │
+│  ↓ Detects field with fieldtype: "Doctype"                 │
+└────────────────────────────┬───────────────────────────────┘
+                             ↓
+┌────────────────────────────────────────────────────────────┐
+│ 4. Automatic Nested Schema Loading                         │
+├────────────────────────────────────────────────────────────┤
+│  const registry = inject('$registry')                      │
+│  const nestedDoctype = field.options  // "address"         │
+│  const nestedSchema = registry.getDoctype(nestedDoctype)   │
+│  nestedSchemas[fieldname] = nestedSchema                   │
+└────────────────────────────┬───────────────────────────────┘
+                             ↓
+┌────────────────────────────────────────────────────────────┐
+│ 5. Recursive Rendering                                     │
+├────────────────────────────────────────────────────────────┤
+│  <div class="aform-nested-section">                        │
+│    <label>Address</label>                                  │
+│    <AForm                                                  │
+│      :schema="nestedSchemas['address']"                    │
+│      v-model:data="nestedData['address']"                  │
+│    />                                                      │
+│  </div>                                                    │
+│                                                            │
+│  ↓ Two-way binding automatically syncs nested changes      │
+└────────────────────────────────────────────────────────────┘
+```
+
+**Key Points:**
+- **Zero configuration required** - AForm handles everything automatically
+- **Registry is injected** via Vue's provide/inject system
+- **Detection happens reactively** through watchEffect
+- **Recursive rendering** allows unlimited nesting depth
+- **Data binding** works seamlessly at all levels
 
 ## Basic Usage
 
-### Single Nested Form (1:1 Relationship)
+### 1. Define Your Schemas
+
+**address_schema.json:**
+```json
+{
+  "name": "Address",
+  "slug": "address",
+  "fields": [
+    { "fieldname": "street", "fieldtype": "Data", "label": "Street" },
+    { "fieldname": "city", "fieldtype": "Data", "label": "City" },
+    { "fieldname": "state", "fieldtype": "Data", "label": "State" },
+    { "fieldname": "zip_code", "fieldtype": "Data", "label": "Zip Code" }
+  ]
+}
+```
+
+**customer_schema.json:**
+```json
+{
+  "name": "Customer",
+  "slug": "customer",
+  "fields": [
+    { "fieldname": "customer_name", "fieldtype": "Data", "label": "Customer Name" },
+    { "fieldname": "email", "fieldtype": "Data", "label": "Email" },
+    { "fieldname": "phone", "fieldtype": "Data", "label": "Phone" },
+    {
+      "fieldname": "address",
+      "fieldtype": "Doctype",
+      "options": "address",
+      "label": "Address"
+    }
+  ]
+}
+```
+
+The `options` field must match the slug of a registered doctype in your registry.
+
+### 2. Register Doctypes
+
+```typescript
+import { Registry, DoctypeMeta } from '@stonecrop/stonecrop'
+import { List } from 'immutable'
+import addressSchema from './address_schema.json'
+import customerSchema from './customer_schema.json'
+
+const registry = new Registry()
+
+// Register the nested doctype first
+const addressDoctype = new DoctypeMeta('Address', List(addressSchema.fields), undefined, undefined)
+registry.addDoctype(addressDoctype)
+
+// Register the parent doctype
+const customerDoctype = new DoctypeMeta('Customer', List(customerSchema.fields), undefined, undefined)
+registry.addDoctype(customerDoctype)
+
+// Provide registry to your Vue app
+app.provide('$registry', registry)
+```
+
+### 3. Use AForm - That's It!
 
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useNestedSchema } from '@stonecrop/stonecrop'
 import { AForm } from '@stonecrop/aform'
+import customerSchema from './customer_schema.json'
 
-// Load the nested schema
-const { schema: addressSchema, initializeRecord } = useNestedSchema({
-  doctype: 'address',
-  registry: myRegistry, // Optional: any object implementing SchemaRegistry interface
-})
-
-// Your parent form data
 const customerData = ref({
-  name: 'John Doe',
+  customer_name: 'John Doe',
+  email: 'john@example.com',
+  phone: '555-0123',
   address: {
     street: '123 Main St',
     city: 'Springfield',
+    state: 'IL',
+    zip_code: '62701',
   },
 })
 </script>
 
 <template>
-  <div>
-    <!-- Parent form fields -->
-    <input v-model="customerData.name" />
-
-    <!-- Nested schema -->
-    <div v-if="addressSchema">
-      <h3>Address</h3>
-      <AForm :modelValue="addressSchema" :data="customerData.address" />
-    </div>
-  </div>
+  <AForm :schema="customerSchema.fields" v-model:data="customerData" />
+  <!-- The address form renders automatically inside! ✨ -->
 </template>
 ```
 
-### Initializing Empty Nested Records
+That's it! The nested address form appears automatically with proper styling and two-way binding.
 
-Use `initializeRecord()` to create an empty nested object with proper default values:
+## Data Structure
 
-```typescript
-const { schema: addressSchema, initializeRecord } = useNestedSchema({
-  doctype: 'address',
-  registry: myRegistry,
-})
-
-// Create a new customer with an initialized nested address
-const newCustomer = ref({
-  name: '',
-  email: '',
-  address: initializeRecord(), // Creates { street: '', city: '', state: '', zip_code: '' }
-})
-```
-
-## API Reference
-
-### `useNestedSchema(options)`
-
-Creates a composable for loading and working with nested schemas.
-
-#### Options
+Your data should have nested objects matching the schema structure:
 
 ```typescript
-interface UseNestedSchemaOptions {
-  /**
-   * The target doctype slug to load schema for
-   */
-  doctype: string
-
-  /**
-   * Registry instance for schema lookup (optional)
-   * If not provided, you must supply schema directly via setSchema
-   */
-  registry?: SchemaRegistry
-
-  /**
-   * Direct schema array to use instead of loading from registry
-   */
-  schema?: SchemaTypes[]
-
-  /**
-   * Initial data for the nested form
-   */
-  initialData?: any
+{
+  customer_name: 'John Doe',
+  email: 'john@example.com',
+  phone: '555-0123',
+  address: {  // ← Nested object for Doctype field
+    street: '123 Main St',
+    city: 'Springfield',
+    state: 'IL',
+    zip_code: '62701',
+  },
 }
 ```
 
-#### Returns
+If the nested object doesn't exist, AForm will initialize it automatically with default values.
 
-```typescript
-interface UseNestedSchemaReturn {
-  /**
-   * Reactive reference to the loaded schema
-   */
-  schema: Ref<SchemaTypes[] | null>
+## Benefits
 
-  /**
-   * Error state if schema loading fails
-   */
-  error: Ref<Error | null>
-
-  /**
-   * Loading state during async schema loading
-   */
-  loading: Ref<boolean>
-
-  /**
-   * The normalized doctype name
-   */
-  doctypeName: Ref<string>
-
-  /**
-   * Initialize a single empty record with default values
-   */
-  initializeRecord: () => Record<string, any>
-
-  /**
-   * Initialize an array of empty records (utility for array initialization)
-   */
-  initializeArray: (count: number) => Record<string, any>[]
-
-  /**
-   * Load or reload the schema from the registry
-   */
-  loadSchema: () => Promise<void>
-
-  /**
-   * Manually set the schema
-   */
-  setSchema: (newSchema: SchemaTypes[]) => void
-}
-```
-
-### SchemaRegistry Interface
-
-Your registry object must implement this interface to be compatible:
-
-```typescript
-interface SchemaRegistry {
-  registry: Record<
-    string,
-    {
-      doctype: string
-      slug: string
-      schema?: SchemaTypes[] | Iterable<SchemaTypes>
-    }
-  >
-  preloadNestedSchemas?: (doctypeSlug: string) => Promise<void>
-}
-```
-
-The Stonecrop `Registry` class implements this interface automatically.
+- **Developer Experience**: No boilerplate code, no manual schema loading, no separate rendering
+- **Type Safety**: Schema validation happens automatically via Zod validators
+- **Maintainability**: Change your schema in one place - the UI updates automatically
+- **Consistency**: Nested forms inherit the same styling and behavior as parent forms
+- **Reactivity**: Vue's two-way binding works seamlessly with nested data
 
 ## Examples
 
 See `/examples/aform/nested.story.vue` for complete working examples demonstrating:
 
-1. Manual integration of single nested forms (1:1)
-2. Composable API usage patterns
-3. HST integration with nested schemas
-
-For managing collections of records, use nested table schemas instead.
-
-## Benefits
-
-- **Decoupled Architecture**: AForm doesn't depend on Stonecrop
-- **Flexibility**: You control how nested forms are rendered
-- **Type Safety**: Full TypeScript support
-- **Customizable**: Build your own nested form components using the composable
-- **Progressive Enhancement**: Start simple, add complexity as needed
+1. Automatic nested form rendering (standard variant)
+2. HST integration with nested schemas
+3. Real-time state visualization
 
 ## Under the Hood
 
-When you provide a registry, the composable:
+AForm automatically handles nested schema rendering by:
 
-1. Looks up the doctype in the registry
-2. Retrieves the schema (converts from Immutable.List if needed)
-3. Provides initialization helpers based on the schema structure
-4. Handles async loading with proper loading/error states
+- Injecting the registry from Vue's provide/inject system
+- Detecting fields with `fieldtype: "Doctype"`
+- Loading nested schemas using the `options` value as the doctype slug
+- Initializing nested data with proper defaults based on field types
+- Recursively rendering nested AForms with proper data binding
 
-Without a registry, you can provide schemas directly for maximum flexibility.
+This is all handled automatically - no manual configuration required.
+
+## Nested Table Schemas
+
+For **1:many relationships** (collections of records), use ATable with a `Table` fieldtype instead:
+
+```json
+{
+  "fieldname": "line_items",
+  "fieldtype": "Table",
+  "options": "sales_order_item",
+  "label": "Line Items"
+}
+```
+
+ATable provides:
+- Grid-based editing with Excel-like navigation
+- Add/remove rows
+- Bulk operations
+- Better performance for collections

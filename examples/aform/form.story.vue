@@ -1,7 +1,7 @@
 <template>
 	<Story>
 		<Variant title="Form" :setup-app="formSetup">
-			<AForm class="aform-main" v-model="form_schema" :data="data" :key="formKey" />
+			<AForm class="aform-main" :schema="form_schema" v-model:data="data" :key="formKey" />
 
 			<template #controls>
 				<HstRadio
@@ -20,16 +20,16 @@
 			</template>
 		</Variant>
 		<Variant title="Form (Read-Only)">
-			<AForm class="aform-main" v-model="basic_form_schema" :data="data" :readOnly="true" />
+			<AForm class="aform-main" :schema="basic_form_schema" v-model:data="data" :readOnly="true" />
 		</Variant>
 		<Variant title="Table">
-			<AForm class="aform-main" v-model="table_schema" :data="data" />
+			<AForm class="aform-main" :schema="table_schema" v-model:data="data" />
 		</Variant>
 		<Variant title="Fieldset">
-			<AForm class="aform-main" v-model="fieldset_schema" :data="data" />
+			<AForm class="aform-main" :schema="fieldset_schema" v-model:data="data" />
 		</Variant>
 		<Variant title="Fieldset with Table">
-			<AForm class="aform-main" v-model="fieldset_table_schema_ref" :data="data" />
+			<AForm class="aform-main" :schema="fieldset_table_schema_ref" v-model:data="data" />
 		</Variant>
 	</Story>
 </template>

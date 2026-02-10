@@ -3,7 +3,6 @@ export type * from '@stonecrop/atable/types'
 
 import { useStonecrop } from './composable'
 import { useOperationLog, useUndoRedoShortcuts, withBatch } from './composables/operation-log'
-import { useNestedSchema } from './composables/useNestedSchema'
 import DoctypeMeta from './doctype'
 import {
 	getGlobalTriggerEngine,
@@ -23,7 +22,6 @@ import { SchemaValidator, createValidator, validateSchema } from './schema-valid
 export type * from './types'
 export type { BaseStonecropReturn, HSTChangeData, HSTStonecropReturn, OperationLogAPI } from './composable'
 export type { FieldTriggerEngine } from './field-triggers'
-export type { SchemaRegistry, UseNestedSchemaOptions, UseNestedSchemaReturn } from './composables/useNestedSchema'
 export type {
 	FieldChangeContext,
 	TransitionChangeContext,
@@ -42,7 +40,6 @@ export {
 	Registry,
 	Stonecrop,
 	useStonecrop,
-	useNestedSchema,
 	// HST exports for advanced usage
 	HST,
 	createHST,

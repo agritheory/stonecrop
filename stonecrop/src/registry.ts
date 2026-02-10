@@ -83,60 +83,6 @@ export default class Registry {
 		}
 	}
 
-	/**
-	 * Recursively preload schemas for nested Doctype fields
-	 * @param doctypeSlug - The doctype slug to preload nested schemas for
-	 * @param visited - Set of already visited doctype slugs to prevent circular dependencies
-	 * @returns Promise that resolves when all nested schemas are loaded
-	 */
-	async preloadNestedSchemas(doctypeSlug: string, visited: Set<string> = new Set()): Promise<void> {
-		// Prevent circular dependencies
-		if (visited.has(doctypeSlug)) {
-			return
-		}
-		visited.add(doctypeSlug)
-
-		// Get the doctype metadata
-		const doctype = this.registry[doctypeSlug]
-		if (!doctype) {
-			console.warn(`Doctype '${doctypeSlug}' not found in registry`)
-			return
-		}
-
-		// Find all Doctype fields in the schema
-		const schemaArray = doctype.schema
-			? Array.isArray(doctype.schema)
-				? doctype.schema
-				: Array.from(doctype.schema)
-			: []
-		const doctypeFields = schemaArray.filter(field => 'fieldtype' in field && field.fieldtype === 'Doctype')
-
-		// Load schemas for nested doctypes
-		for (const field of doctypeFields) {
-			if ('options' in field && typeof field.options === 'string') {
-				const nestedDoctypeSlug = field.options
-
-				// If nested doctype not in registry and getMeta function exists, load it
-				if (!this.registry[nestedDoctypeSlug] && this.getMeta) {
-					try {
-						const nestedMeta = await this.getMeta({
-							doctype: nestedDoctypeSlug,
-							path: '',
-							segments: [],
-						} as RouteContext)
-						this.addDoctype(nestedMeta)
-					} catch (error) {
-						console.error(`Failed to load nested doctype '${nestedDoctypeSlug}':`, error)
-						continue
-					}
-				}
-
-				// Recursively preload schemas for this nested doctype
-				await this.preloadNestedSchemas(nestedDoctypeSlug, visited)
-			}
-		}
-	}
-
 	// TODO: should we allow clearing the registry at all?
 	// clear() {
 	// 	this.registry = {}

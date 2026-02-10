@@ -8,6 +8,7 @@ import type { HSTNode } from './stores/hst'
 import { RouteContext } from './types/registry'
 import { storeToRefs } from 'pinia'
 import type { HSTOperation, OperationLogConfig, OperationLogSnapshot } from './types/operation-log'
+import { SchemaTypes } from '@stonecrop/aform'
 
 /**
  * Operation Log API - nested object containing all operation log functionality
@@ -438,11 +439,9 @@ export function useStonecrop(options?: {
 		const payload: Record<string, any> = { ...recordData }
 
 		// Find all Doctype fields in the schema
-		const schemaArray = doctype.schema
-			? Array.isArray(doctype.schema)
-				? doctype.schema
-				: Array.from(doctype.schema)
-			: []
+		const schemaArray = (
+			doctype.schema ? (Array.isArray(doctype.schema) ? doctype.schema : Array.from(doctype.schema)) : []
+		) as SchemaTypes[]
 		const doctypeFields = schemaArray.filter(field => 'fieldtype' in field && field.fieldtype === 'Doctype')
 
 		// Recursively collect nested data
@@ -450,9 +449,7 @@ export function useStonecrop(options?: {
 			if (!('options' in field) || !('fieldname' in field)) continue
 
 			// TypeScript doesn't narrow types after 'in' checks - runtime validation is performed
-			// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 			const fieldOptions = field.options
-			// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 			const fieldname = field.fieldname
 
 			if (typeof fieldOptions !== 'string' || typeof fieldname !== 'string') continue
@@ -662,11 +659,9 @@ async function collectNestedData(
 	const payload: Record<string, any> = { ...data }
 
 	// Find all Doctype fields in this doctype's schema
-	const schemaArray = doctype.schema
-		? Array.isArray(doctype.schema)
-			? doctype.schema
-			: Array.from(doctype.schema)
-		: []
+	const schemaArray = (
+		doctype.schema ? (Array.isArray(doctype.schema) ? doctype.schema : Array.from(doctype.schema)) : []
+	) as SchemaTypes[]
 	const doctypeFields = schemaArray.filter(field => 'fieldtype' in field && field.fieldtype === 'Doctype')
 
 	// Recursively collect nested data
@@ -674,9 +669,7 @@ async function collectNestedData(
 		if (!('options' in field) || !('fieldname' in field)) continue
 
 		// TypeScript doesn't narrow types after 'in' checks - runtime validation is performed
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 		const fieldOptions = field.options
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 		const fieldname = field.fieldname
 
 		if (typeof fieldOptions !== 'string' || typeof fieldname !== 'string') continue

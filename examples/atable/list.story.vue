@@ -78,10 +78,10 @@
 								:style="getRowCellStyle(col)" />
 						</template>
 						<template #content>
-							<AForm class="aform-main aform" v-model="basic_form_schema" :data="data" />
+							<AForm class="aform-main aform" :schema="basic_form_schema" v-model:data="formData" />
 
 							<ATable
-								id="list"
+								id="nested-list"
 								v-model:rows="randomInboxData"
 								v-model:columns="inbox.columns"
 								:config="{ view: 'list-expansion' }">
@@ -110,7 +110,7 @@
 												:style="getRowCellStyle(col)" />
 										</template>
 										<template #content>
-											<AForm class="aform-main aform" v-model="basic_form_schema" :data="data" />
+											<AForm class="aform-main aform" :schema="basic_form_schema" v-model:data="formData" />
 										</template>
 									</AExpansionRow>
 								</template>
@@ -363,6 +363,8 @@ const chooseRandomData = (rows: any[]) => {
 
 const randomInboxData = ref(chooseRandomData(inbox_data))
 
+const formData = ref({})
+
 const getRowCellStyle = (column: TableColumn): CSSProperties => {
 	return {
 		width: column?.width || '40ch',
@@ -378,6 +380,8 @@ const rowNav = {
 		const target =
 			event.target instanceof HTMLTableCellElement ? event.target.parentElement : (event.target as HTMLTableRowElement)
 
+		if (!target) return
+
 		const $row = target.previousElementSibling
 			? (target.previousElementSibling as HTMLTableRowElement)
 			: (target as HTMLTableRowElement)
@@ -391,6 +395,8 @@ const rowNav = {
 
 		const target =
 			event.target instanceof HTMLTableCellElement ? event.target.parentElement : (event.target as HTMLTableRowElement)
+
+		if (!target) return
 
 		const $row = target.nextElementSibling
 			? (target.nextElementSibling as HTMLTableRowElement)

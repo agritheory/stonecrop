@@ -38,63 +38,6 @@ describe('Nested Doctype Support', () => {
 		stonecrop = new Stonecrop(registry)
 	})
 
-	describe('Registry nested schema preloading', () => {
-		it('preloads nested schemas recursively', async () => {
-			// Initially only customer and address are registered
-			expect(registry.registry['customer']).toBeDefined()
-			expect(registry.registry['address']).toBeDefined()
-
-			// Preload nested schemas
-			await registry.preloadNestedSchemas('customer')
-
-			// Address should still be in registry (already there)
-			expect(registry.registry['address']).toBeDefined()
-		})
-
-		it('handles missing nested doctypes gracefully', async () => {
-			// Create a doctype with reference to non-existent nested doctype
-			const testSchema = List([
-				{
-					fieldname: 'test_field',
-					fieldtype: 'Doctype',
-					options: 'nonexistent-doctype',
-				},
-			])
-			const testDoctype = new DoctypeMeta('test', testSchema as any, undefined, undefined)
-			registry.addDoctype(testDoctype)
-
-			// Should not throw error
-			await expect(registry.preloadNestedSchemas('test')).resolves.not.toThrow()
-		})
-
-		it('prevents circular dependency issues', async () => {
-			// Create two doctypes that reference each other
-			const doctype1Schema = List([
-				{
-					fieldname: 'ref',
-					fieldtype: 'Doctype',
-					options: 'doctype2',
-				},
-			])
-			const doctype1 = new DoctypeMeta('doctype1', doctype1Schema as any, undefined, undefined)
-
-			const doctype2Schema = List([
-				{
-					fieldname: 'ref',
-					fieldtype: 'Doctype',
-					options: 'doctype1',
-				},
-			])
-			const doctype2 = new DoctypeMeta('doctype2', doctype2Schema as any, undefined, undefined)
-
-			registry.addDoctype(doctype1)
-			registry.addDoctype(doctype2)
-
-			// Should handle circular reference without infinite loop
-			await expect(registry.preloadNestedSchemas('doctype1')).resolves.not.toThrow()
-		})
-	})
-
 	describe('Embedded nested data (1:1)', () => {
 		it('stores nested doctype data in parent path', () => {
 			const store = stonecrop.getStore()

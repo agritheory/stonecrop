@@ -8,7 +8,7 @@ import type { SchemaTypes } from '../src/types'
 describe('AForm Component', () => {
 	const wrapper = mount(AForm, {
 		props: {
-			modelValue: [
+			schema: [
 				{
 					fieldname: 'first_name',
 					fieldtype: 'Data',
@@ -29,7 +29,7 @@ describe('AForm Component', () => {
 		await aTextInputWrapper.find('input').setValue('Steve')
 		await wrapper.vm.$nextTick()
 
-		const updateEvents = wrapper.emitted('update:modelValue')
+		const updateEvents = wrapper.emitted('update:schema')
 		expect(updateEvents).toBeTruthy()
 		expect(updateEvents![0]).toEqual([
 			[
@@ -47,7 +47,7 @@ describe('AForm Component', () => {
 	it('should handle componentProps with rows data for nested tables', () => {
 		const wrapperWithTable = mount(AForm, {
 			props: {
-				modelValue: [
+				schema: [
 					{
 						fieldname: 'items',
 						fieldtype: 'Doctype',
@@ -71,7 +71,7 @@ describe('AForm Component', () => {
 	it('should handle componentProps when rows is not empty', () => {
 		const wrapperWithData = mount(AForm, {
 			props: {
-				modelValue: [
+				schema: [
 					{
 						fieldname: 'items',
 						fieldtype: 'Doctype',
@@ -95,7 +95,7 @@ describe('AForm Component', () => {
 	it('should handle readonly prop', () => {
 		const readonlyWrapper = mount(AForm, {
 			props: {
-				modelValue: [
+				schema: [
 					{
 						fieldname: 'first_name',
 						fieldtype: 'Data',
