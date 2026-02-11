@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/aform",
+      "comment": "support nested schemas",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@stonecrop/aform"
+}

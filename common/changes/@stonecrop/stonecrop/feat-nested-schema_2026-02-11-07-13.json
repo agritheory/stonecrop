@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/stonecrop",
+      "comment": "resolve nested schemas",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@stonecrop/stonecrop"
+}
