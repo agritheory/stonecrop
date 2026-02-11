@@ -193,7 +193,55 @@ export type FieldsetSchema = BaseSchema & {
 }
 
 /**
+ * Schema structure for defining nested doctype fields inside AForm
+ *
+ * @remarks
+ * When a field has `fieldtype: 'Doctype'`, the `options` property contains the slug
+ * of the referenced doctype. The `schema` property is populated by the framework's
+ * `registry.resolveSchema()` method with the resolved child schema fields.
+ *
+ * Before resolution: `{ fieldname: 'address', fieldtype: 'Doctype', options: 'address' }`
+ * After resolution: `{ fieldname: 'address', fieldtype: 'Doctype', options: 'address', schema: [...resolved fields...] }`
+ *
+ * Users can also manually provide the `schema` property without using the framework registry.
+ *
+ * @public
+ */
+export type DoctypeSchema = BaseSchema & {
+	/**
+	 * The field type - must be 'Doctype' for nested doctype fields
+	 * @public
+	 */
+	fieldtype: 'Doctype'
+
+	/**
+	 * The slug of the referenced doctype in the registry
+	 * @public
+	 */
+	options: string
+
+	/**
+	 * The label to display above the nested form section
+	 * @public
+	 */
+	label?: string
+
+	/**
+	 * The resolved child schema fields, populated by `registry.resolveSchema()`
+	 * or provided manually for standalone usage
+	 * @public
+	 */
+	schema?: SchemaTypes[]
+
+	/**
+	 * Indicate whether the nested form is read-only
+	 * @public
+	 */
+	readOnly?: boolean
+}
+
+/**
  * Superset of all schema types for AForm
  * @public
  */
-export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema
+export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema | DoctypeSchema

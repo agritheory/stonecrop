@@ -1,15 +1,22 @@
 <template>
 	<Story title="nested schema" group="aform">
-		<Variant title="standard" :setup-app="setupApp">
+		<Variant title="resolved schema" :setup-app="setupApp">
 			<div>
-				<h3>Customer with Address</h3>
-				<CustomerForm />
+				<h3>Registry.resolveSchema() — Automatic Nested Forms</h3>
+				<ResolvedSchemaDemo />
+			</div>
+		</Variant>
+
+		<Variant title="standalone (no framework)" :setup-app="setupApp">
+			<div>
+				<h3>Standalone — Manual Schema Embedding</h3>
+				<StandaloneDemo />
 			</div>
 		</Variant>
 
 		<Variant title="HST integration" :setup-app="setupApp">
 			<div>
-				<h3>Hierarchical State Tree with Nested Forms</h3>
+				<h3>HST + Resolved Schema</h3>
 				<HSTDemo />
 			</div>
 		</Variant>
@@ -18,6 +25,7 @@
 
 <script setup lang="ts">
 import { AForm } from '@stonecrop/aform'
+import type { SchemaTypes } from '@stonecrop/aform'
 import { Registry, DoctypeMeta, Stonecrop } from '@stonecrop/stonecrop'
 import { List } from 'immutable'
 import { type App, defineComponent, ref, h, computed } from 'vue'
@@ -28,24 +36,26 @@ import customerSchemaJson from './assets/customer_schema.json'
 let registryInstance: Registry | undefined
 
 const setupApp = ({ app }: { app: App }) => {
-	// Create Registry
 	registryInstance = new Registry()
 
-	// Register Address doctype
 	const addressDoctype = new DoctypeMeta('Address', List(addressSchemaJson.fields), undefined, undefined)
 	registryInstance.addDoctype(addressDoctype)
 
-	// Register Customer doctype
 	const customerDoctype = new DoctypeMeta('Customer', List(customerSchemaJson.fields), undefined, undefined)
 	registryInstance.addDoctype(customerDoctype)
 
-	// Provide to app
 	app.provide('$registry', registryInstance)
 }
 
-// Simple component demonstrating automatic nested form rendering
-const CustomerForm = defineComponent({
-	name: 'CustomerForm',
+/**
+ * Variant 1 — resolveSchema()
+ *
+ * The Registry walks the schema, finds Doctype fields, looks up the child doctype,
+ * and embeds a `schema` array on each one. AForm just checks `'schema' in field`
+ * and recurses — zero knowledge of the Registry.
+ */
+const ResolvedSchemaDemo = defineComponent({
+	name: 'ResolvedSchemaDemo',
 	setup() {
 		const customerData = ref({
 			customer_name: 'John Doe',
@@ -59,8 +69,10 @@ const CustomerForm = defineComponent({
 			},
 		})
 
-		const customerSchemaRef = ref(customerSchemaJson.fields)
-		return { customerSchemaRef, customerData }
+		// One call resolves the full tree — nested Doctype fields get `schema` embedded
+		const resolvedSchema = ref<SchemaTypes[]>(registryInstance!.resolveSchema(customerSchemaJson.fields))
+
+		return { resolvedSchema, customerData }
 	},
 	render() {
 		return h('div', { class: 'nested-form-example' }, [
@@ -68,31 +80,110 @@ const CustomerForm = defineComponent({
 			h(
 				'p',
 				{ class: 'info-text' },
-				'The address form is automatically rendered from the Doctype field - no manual setup required!'
+				'registry.resolveSchema() embeds the Address schema inside the Doctype field. AForm renders it automatically.'
 			),
 			h(AForm, {
-				schema: this.customerSchemaRef,
+				schema: this.resolvedSchema,
 				data: this.customerData,
 			}),
 			h('div', { class: 'data-preview' }, [
-				h('h4', 'Data Structure:'),
+				h('h4', 'Resolved Schema (abbreviated):'),
+				h(
+					'pre',
+					JSON.stringify(
+						this.resolvedSchema.map((f: any) => ({
+							fieldname: f.fieldname,
+							fieldtype: f.fieldtype,
+							...(f.schema ? { schema: `[${f.schema.length} fields]` } : {}),
+						})),
+						null,
+						2
+					)
+				),
+			]),
+			h('div', { class: 'data-preview' }, [
+				h('h4', 'Form Data:'),
 				h('pre', JSON.stringify(this.customerData, null, 2)),
 			]),
 		])
 	},
 })
 
-// HST Integration demonstration
+/**
+ * Variant 2 — Standalone (no Registry)
+ *
+ * AForm doesn't care where the `schema` property comes from. Here we manually attach it to
+ * demonstrate standalone usage without the Stonecrop framework.
+ */
+const StandaloneDemo = defineComponent({
+	name: 'StandaloneDemo',
+	setup() {
+		const data = ref({
+			invoice_number: 'INV-001',
+			billing: {
+				street: '99 Commerce Blvd',
+				city: 'Austin',
+				state: 'TX',
+				zip_code: '73301',
+			},
+		})
+
+		// Build schema by hand — no Registry required
+		const schema = ref<SchemaTypes[]>([
+			{
+				fieldname: 'invoice_number',
+				fieldtype: 'Data',
+				component: 'ATextInput',
+				label: 'Invoice Number',
+			} as SchemaTypes,
+			{
+				fieldname: 'billing',
+				fieldtype: 'Doctype',
+				options: 'address',
+				label: 'Billing Address',
+				// Manually embedded child schema — AForm checks `'schema' in field`
+				schema: [
+					{ fieldname: 'street', fieldtype: 'Data', component: 'ATextInput', label: 'Street' },
+					{ fieldname: 'city', fieldtype: 'Data', component: 'ATextInput', label: 'City' },
+					{ fieldname: 'state', fieldtype: 'Data', component: 'ATextInput', label: 'State' },
+					{ fieldname: 'zip_code', fieldtype: 'Data', component: 'ATextInput', label: 'Zip Code' },
+				],
+			} as SchemaTypes,
+		])
+
+		return { schema, data }
+	},
+	render() {
+		return h('div', { class: 'nested-form-example' }, [
+			h('h4', 'Invoice with Billing Address'),
+			h(
+				'p',
+				{ class: 'info-text' },
+				'No Registry involved — the schema property is set manually. AForm just checks for its presence.'
+			),
+			h(AForm, {
+				schema: this.schema,
+				data: this.data,
+			}),
+			h('div', { class: 'data-preview' }, [h('h4', 'Form Data:'), h('pre', JSON.stringify(this.data, null, 2))]),
+		])
+	},
+})
+
+/**
+ * Variant 3 — HST Integration
+ *
+ * Resolved schema passed as a single prop to one AForm instance.
+ * HST manages the state tree; the form renders the full hierarchy.
+ */
 const HSTDemo = defineComponent({
 	name: 'HSTDemo',
 	setup() {
-		// Create Stonecrop instance with HST
 		const stonecrop = new Stonecrop(registryInstance!)
 		const store = stonecrop.getStore()
 
-		// Initialize a customer record with nested address
 		const customerId = 'cust-001'
-		const customerData = {
+		const initialData = {
 			customer_name: 'Alice Johnson',
 			email: 'alice@example.com',
 			phone: '555-9876',
@@ -104,62 +195,29 @@ const HSTDemo = defineComponent({
 			},
 		}
 
-		// Add to HST
-		stonecrop.addRecord('customer', customerId, customerData)
+		stonecrop.addRecord('customer', customerId, initialData)
 
-		// Get schemas from registry (converted from Immutable.List)
-		const customerSchema = ref(Array.from(registryInstance!.registry['customer'].schema || []))
-		const addressSchema = ref(Array.from(registryInstance!.registry['address'].schema || []))
+		// Resolve the entire schema tree once
+		const resolvedSchema = ref<SchemaTypes[]>(
+			registryInstance!.resolveSchema(Array.from(registryInstance!.registry['customer'].schema || []))
+		)
 
-		// HST paths
 		const customerPath = `customer.${customerId}`
-		const addressPath = `${customerPath}.address`
 
-		// Computed properties with getter/setter for HST synchronization
+		// Single computed wrapping the full customer data (including nested address)
 		const customerFormData = computed({
 			get: () => {
 				const data = store.get(customerPath)
-				return {
-					customer_name: data?.customer_name || '',
-					email: data?.email || '',
-					phone: data?.phone || '',
-				}
+				return data || {}
 			},
 			set: newData => {
 				Object.keys(newData).forEach(key => {
-					if (key !== 'address') {
-						store.set(`${customerPath}.${key}`, newData[key])
-					}
+					store.set(`${customerPath}.${key}`, newData[key])
 				})
 			},
 		})
 
-		const addressFormData = computed({
-			get: () => {
-				const data = store.get(addressPath)
-				// Return null if address doesn't exist (deleted)
-				if (!data || !store.has(addressPath)) {
-					return null
-				}
-				return {
-					street: data?.street || '',
-					city: data?.city || '',
-					state: data?.state || '',
-					zip_code: data?.zip_code || '',
-				}
-			},
-			set: newData => {
-				// Set the entire address object first
-				store.set(addressPath, newData)
-				// Also update the parent customer's address field
-				const customerData = store.get(customerPath)
-				if (customerData) {
-					store.set(customerPath, { ...customerData, address: newData })
-				}
-			},
-		})
-
-		// Computed HST data that automatically updates when store changes
+		// Computed HST state for visualization
 		const hstData = computed(() => ({
 			customer: store.get(customerPath),
 			customerNode: {
@@ -169,159 +227,69 @@ const HSTDemo = defineComponent({
 				breadcrumbs: store
 					.getNode(customerPath)
 					?.getBreadcrumbs()
-					.map(n => store.getNode(n).getPath()),
+					.map((n: string) => store.getNode(n).getPath()),
 			},
-			address: store.get(addressPath),
+			address: store.get(`${customerPath}.address`),
 			addressNode: {
-				path: addressPath,
-				exists: store.has(addressPath),
-				parent: store.getNode(addressPath)?.getParent()?.getPath() || 'root',
+				path: `${customerPath}.address`,
+				exists: store.has(`${customerPath}.address`),
+				parent: store.getNode(`${customerPath}.address`)?.getParent()?.getPath() || 'root',
 				breadcrumbs: store
-					.getNode(addressPath)
+					.getNode(`${customerPath}.address`)
 					?.getBreadcrumbs()
-					.map(n => store.getNode(n).getPath()),
+					.map((n: string) => store.getNode(n).getPath()),
 			},
 		}))
 
-		// HST operations
 		const resetData = () => {
-			const newCustomerData = {
-				customer_name: 'Alice Johnson',
-				email: 'alice@example.com',
-				phone: '555-9876',
-				address: {
-					street: '456 Oak Ave',
-					city: 'Portland',
-					state: 'OR',
-					zip_code: '97205',
-				},
-			}
-			stonecrop.addRecord('customer', customerId, newCustomerData)
-		}
-
-		const deleteAddress = () => {
-			// Get the current customer data and remove the address property
-			const customerData = store.get(customerPath)
-			if (customerData) {
-				const { address, ...rest } = customerData
-				// Set the customer without the address property in a single operation
-				store.set(customerPath, rest)
-			}
-		}
-
-		const restoreAddress = () => {
-			const newAddress = {
-				street: '456 Oak Ave',
-				city: 'Portland',
-				state: 'OR',
-				zip_code: '97205',
-			}
-			store.set(addressPath, newAddress)
-			// Also update the parent customer to include address
-			const customerData = store.get(customerPath)
-			if (customerData) {
-				store.set(customerPath, { ...customerData, address: newAddress })
-			}
+			stonecrop.addRecord('customer', customerId, initialData)
 		}
 
 		return {
-			customerSchema,
-			addressSchema,
+			resolvedSchema,
 			customerFormData,
-			addressFormData,
 			hstData,
 			customerPath,
-			addressPath,
 			resetData,
-			deleteAddress,
-			restoreAddress,
-			store,
 		}
 	},
 	render() {
 		return h('div', { class: 'hst-demo' }, [
 			h('p', { class: 'hst-description' }, [
-				'This demonstrates how the ',
-				h('strong', 'Hierarchical State Tree (HST)'),
-				' manages nested data. Edit the forms below and watch the HST state update in real-time.',
+				'One resolved schema, one AForm, one data object. The ',
+				h('strong', 'HST'),
+				' manages the tree; AForm renders the full hierarchy via the embedded schema property.',
 			]),
 
 			h('div', { class: 'hst-layout' }, [
-				// Left: Forms
+				// Left: Single form with resolved schema
 				h('div', { class: 'hst-forms' }, [
 					h('div', { class: 'hst-form-section' }, [
-						h('h4', 'Customer Form'),
+						h('h4', 'Customer + Address (single AForm)'),
 						h('div', { class: 'path-indicator' }, `HST Path: ${this.customerPath}`),
-						this.customerSchema
-							? h(AForm, {
-									schema: this.customerSchema.filter((f: any) => f.fieldtype !== 'Doctype'),
-									'onUpdate:schema': (val: any) => {
-										this.customerSchema = val
-									},
-									data: this.customerFormData,
-									'onUpdate:data': (val: any) => {
-										this.customerFormData = val
-									},
-							  })
-							: null,
+						h(AForm, {
+							schema: this.resolvedSchema,
+							'onUpdate:schema': (val: any) => {
+								this.resolvedSchema = val
+							},
+							data: this.customerFormData,
+							'onUpdate:data': (val: any) => {
+								this.customerFormData = val
+							},
+						}),
 					]),
 
-					h('div', { class: 'hst-form-section' }, [
-						h('div', { class: 'section-header' }, [
-							h('h4', 'Address Form (Nested)'),
-							h('div', { class: 'action-buttons' }, [
-								h(
-									'button',
-									{
-										class: 'btn-danger-small',
-										onClick: this.deleteAddress,
-									},
-									'Delete'
-								),
-								h(
-									'button',
-									{
-										class: 'btn-success-small',
-										onClick: this.restoreAddress,
-									},
-									'Restore'
-								),
-							]),
-						]),
-						h('div', { class: 'path-indicator' }, `HST Path: ${this.addressPath}`),
-						this.addressSchema && this.addressFormData
-							? h(AForm, {
-									schema: this.addressSchema,
-									'onUpdate:schema': (val: any) => {
-										this.addressSchema = val
-									},
-									data: this.addressFormData,
-									'onUpdate:data': (val: any) => {
-										this.addressFormData = val
-									},
-							  })
-							: null,
-					]),
-
-					h(
-						'button',
-						{
-							class: 'reset-button',
-							onClick: this.resetData,
-						},
-						'🔄 Reset All Data'
-					),
+					h('button', { class: 'reset-button', onClick: this.resetData }, 'Reset Data'),
 				]),
 
 				// Right: HST State Visualization
 				h('div', { class: 'hst-state' }, [
 					h('h4', 'HST State Tree'),
 
-					// Customer node info
 					h('div', { class: 'hst-node-card' }, [
 						h('div', { class: 'node-header' }, [
-							h('span', { class: 'node-type' }, '📦 Customer'),
-							h('span', { class: 'node-status exists' }, '✓ Exists'),
+							h('span', { class: 'node-type' }, 'Customer'),
+							h('span', { class: 'node-status exists' }, 'exists'),
 						]),
 						h('div', { class: 'node-details' }, [
 							h('div', { class: 'detail-row' }, [
@@ -329,12 +297,8 @@ const HSTDemo = defineComponent({
 								h('code', this.hstData.customerNode?.path || ''),
 							]),
 							h('div', { class: 'detail-row' }, [
-								h('strong', 'Parent:'),
-								h('code', this.hstData.customerNode?.parent || ''),
-							]),
-							h('div', { class: 'detail-row' }, [
 								h('strong', 'Breadcrumbs:'),
-								h('code', (this.hstData.customerNode?.breadcrumbs || []).join(' → ') || 'None'),
+								h('code', (this.hstData.customerNode?.breadcrumbs || []).join(' > ') || 'None'),
 							]),
 						]),
 						h('div', { class: 'node-data' }, [
@@ -343,16 +307,15 @@ const HSTDemo = defineComponent({
 						]),
 					]),
 
-					// Address node info
 					h('div', { class: 'hst-node-card nested' }, [
 						h('div', { class: 'node-header' }, [
-							h('span', { class: 'node-type' }, '📍 Address (Nested)'),
+							h('span', { class: 'node-type' }, 'Address (nested)'),
 							h(
 								'span',
 								{
 									class: this.hstData.addressNode?.exists ? 'node-status exists' : 'node-status deleted',
 								},
-								this.hstData.addressNode?.exists ? '✓ Exists' : '✗ Deleted'
+								this.hstData.addressNode?.exists ? 'exists' : 'deleted'
 							),
 						]),
 						h('div', { class: 'node-details' }, [
@@ -364,28 +327,10 @@ const HSTDemo = defineComponent({
 								h('strong', 'Parent:'),
 								h('code', this.hstData.addressNode?.parent || ''),
 							]),
-							h('div', { class: 'detail-row' }, [
-								h('strong', 'Breadcrumbs:'),
-								h('code', (this.hstData.addressNode?.breadcrumbs || []).join(' → ') || 'None'),
-							]),
 						]),
 						h('div', { class: 'node-data' }, [
 							h('strong', 'Data:'),
-							h('pre', this.hstData.address ? JSON.stringify(this.hstData.address, null, 2) : '(deleted)'),
-						]),
-					]),
-
-					// HST Methods demo
-					h('div', { class: 'hst-methods-info' }, [
-						h('h5', '🔧 HST Methods Used:'),
-						h('ul', [
-							h('li', [h('code', 'store.get(path)'), ' - Get data at path']),
-							h('li', [h('code', 'store.set(path, value)'), ' - Set data at path']),
-							h('li', [h('code', 'store.has(path)'), ' - Check if path exists']),
-							h('li', [h('code', 'store.delete(path)'), ' - Delete node at path']),
-							h('li', [h('code', 'store.getNode(path)'), ' - Get HST node object']),
-							h('li', [h('code', 'node.getParent()'), ' - Get parent node']),
-							h('li', [h('code', 'node.getBreadcrumbs()'), ' - Get path ancestry']),
+							h('pre', this.hstData.address ? JSON.stringify(this.hstData.address, null, 2) : '(not present)'),
 						]),
 					]),
 				]),
@@ -396,6 +341,7 @@ const HSTDemo = defineComponent({
 </script>
 
 <style scoped>
+/* Shared */
 .nested-form-example {
 	background: #f9f9f9;
 	padding: 1.5rem;
@@ -403,68 +349,13 @@ const HSTDemo = defineComponent({
 	margin-bottom: 2rem;
 }
 
-.nested-section {
-	margin-top: 2rem;
-	padding: 1rem;
-	background: white;
-	border-left: 4px solid #4a90e2;
-	border-radius: 4px;
-}
-
-.nested-array-section {
-	margin-top: 2rem;
-}
-
-.array-item {
-	background: white;
-	padding: 1rem;
+.info-text {
+	color: #555;
 	margin-bottom: 1rem;
-	border-radius: 4px;
-	border: 1px solid #e0e0e0;
-}
-
-.array-item-header {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	margin-bottom: 1rem;
-	padding-bottom: 0.5rem;
-	border-bottom: 2px solid #f0f0f0;
-	font-weight: 600;
-}
-
-.remove-btn {
-	background: #e74c3c;
-	color: white;
-	border: none;
-	padding: 0.4rem 0.8rem;
-	border-radius: 4px;
-	cursor: pointer;
-	font-size: 0.9rem;
-}
-
-.remove-btn:hover {
-	background: #c0392b;
-}
-
-.add-btn {
-	background: #27ae60;
-	color: white;
-	border: none;
-	padding: 0.6rem 1.2rem;
-	border-radius: 4px;
-	cursor: pointer;
-	font-size: 1rem;
-	width: 100%;
-	margin-top: 1rem;
-}
-
-.add-btn:hover {
-	background: #229954;
 }
 
 .data-preview {
-	margin-top: 2rem;
+	margin-top: 1.5rem;
 	padding: 1rem;
 	background: #2c3e50;
 	color: #ecf0f1;
@@ -480,190 +371,10 @@ const HSTDemo = defineComponent({
 	overflow-x: auto;
 	margin: 0;
 	color: #ecf0f1;
-}
-
-.composable-demo {
-	padding: 1.5rem;
-	background: #f9f9f9;
-	border-radius: 8px;
-}
-
-.demo-sections {
-	display: flex;
-	flex-direction: column;
-	gap: 2rem;
-	margin-top: 1rem;
-}
-
-.demo-section {
-	background: white;
-	padding: 1.5rem;
-	border-radius: 8px;
-	border: 1px solid #e0e0e0;
-}
-
-.demo-section h5 {
-	margin-top: 0;
-	color: #2c3e50;
-	border-bottom: 2px solid #3498db;
-	padding-bottom: 0.5rem;
-}
-
-.demo-description {
-	color: #666;
-	margin-bottom: 1rem;
-}
-
-.demo-btn {
-	background: #3498db;
-	color: white;
-	border: none;
-	padding: 0.75rem 1.5rem;
-	border-radius: 4px;
-	cursor: pointer;
-	font-size: 1rem;
-	font-weight: 500;
-	transition: background 0.2s;
-}
-
-.demo-btn:hover {
-	background: #2980b9;
-}
-
-.schema-form {
-	background: #fafafa;
-	padding: 1rem;
-	border-radius: 4px;
-	margin: 1rem 0;
-}
-
-.array-item-demo {
-	background: #fafafa;
-	padding: 1rem;
-	margin-bottom: 1rem;
-	border-radius: 4px;
-	border: 1px solid #ddd;
-}
-
-.array-item-demo .array-item-header {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	margin-bottom: 1rem;
-	padding-bottom: 0.5rem;
-	border-bottom: 2px solid #e0e0e0;
-}
-
-.remove-btn-small {
-	background: #e74c3c;
-	color: white;
-	border: none;
-	padding: 0.25rem 0.75rem;
-	border-radius: 4px;
-	cursor: pointer;
-	font-size: 1.2rem;
-	font-weight: bold;
-	line-height: 1;
-}
-
-.remove-btn-small:hover {
-	background: #c0392b;
-}
-
-.add-btn-small {
-	background: #27ae60;
-	color: white;
-	border: none;
-	padding: 0.5rem 1rem;
-	border-radius: 4px;
-	cursor: pointer;
-	font-size: 0.9rem;
-	margin-top: 0.5rem;
-}
-
-.add-btn-small:hover {
-	background: #229954;
-}
-
-.data-preview.small {
-	margin-top: 1rem;
-	padding: 0.75rem;
 	font-size: 0.85rem;
 }
 
-.data-preview.small strong {
-	display: block;
-	margin-bottom: 0.5rem;
-	color: #3498db;
-}
-
-.data-preview.small pre {
-	font-size: 0.8rem;
-	max-height: 200px;
-	overflow-y: auto;
-}
-
-.code-reference {
-	background: #2c3e50;
-	color: white;
-}
-
-.code-reference h5 {
-	color: white;
-	border-bottom-color: #3498db;
-}
-
-.loading {
-	padding: 1rem;
-	text-align: center;
-	color: #3498db;
-	font-weight: 500;
-}
-
-.error {
-	padding: 1rem;
-	background: #ffe6e6;
-	color: #c0392b;
-	border-radius: 4px;
-	margin: 1rem 0;
-}
-
-.code-example {
-	background: #2c3e50;
-	color: #ecf0f1;
-	padding: 1rem;
-	border-radius: 4px;
-	margin: 1rem 0;
-	overflow-x: auto;
-}
-
-.code-example pre {
-	margin: 0;
-	font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
-	font-size: 0.9rem;
-	line-height: 1.5;
-}
-
-.composable-demo ul {
-	list-style: none;
-	padding-left: 0;
-}
-
-.composable-demo li {
-	padding: 0.5rem 0;
-	padding-left: 1.5rem;
-	position: relative;
-}
-
-.composable-demo li::before {
-	content: '✓';
-	position: absolute;
-	left: 0;
-	color: #27ae60;
-	font-weight: bold;
-}
-
-/* HST Demo Styles */
+/* HST Demo */
 .hst-demo {
 	background: #f9f9f9;
 	padding: 1.5rem;
@@ -683,7 +394,7 @@ const HSTDemo = defineComponent({
 	display: grid;
 	grid-template-columns: 1fr 1fr;
 	gap: 2rem;
-	min-height: 600px;
+	min-height: 400px;
 }
 
 .hst-forms {
@@ -697,51 +408,6 @@ const HSTDemo = defineComponent({
 	padding: 1.5rem;
 	border-radius: 8px;
 	border: 1px solid #e0e0e0;
-}
-
-.section-header {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	margin-bottom: 0.5rem;
-}
-
-.section-header h4 {
-	margin: 0;
-}
-
-.action-buttons {
-	display: flex;
-	gap: 0.5rem;
-}
-
-.btn-danger-small,
-.btn-success-small {
-	padding: 0.4rem 0.8rem;
-	border: none;
-	border-radius: 4px;
-	cursor: pointer;
-	font-size: 0.85rem;
-	font-weight: 500;
-	transition: background 0.2s;
-}
-
-.btn-danger-small {
-	background: #e74c3c;
-	color: white;
-}
-
-.btn-danger-small:hover {
-	background: #c0392b;
-}
-
-.btn-success-small {
-	background: #27ae60;
-	color: white;
-}
-
-.btn-success-small:hover {
-	background: #229954;
 }
 
 .hst-form-section h4 {
@@ -899,220 +565,47 @@ const HSTDemo = defineComponent({
 	word-break: break-all;
 	color: #ecf0f1;
 }
-
-.hst-methods-info {
-	background: #e8f4f8;
-	padding: 1rem;
-	border-radius: 4px;
-	border-left: 4px solid #3498db;
-}
-
-.hst-methods-info h5 {
-	margin-top: 0;
-	color: #2c3e50;
-}
-
-.hst-methods-info ul {
-	list-style: none;
-	padding-left: 0;
-	margin: 0;
-}
-
-.hst-methods-info li {
-	padding: 0.4rem 0;
-	color: #555;
-}
-
-.hst-methods-info code {
-	background: #2c3e50;
-	color: #3498db;
-	padding: 0.2rem 0.5rem;
-	border-radius: 3px;
-	font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
-	font-size: 0.85rem;
-	font-weight: 600;
-}
-
-/* Array item styles for HST demo */
-.array-item-hst {
-	background: #f8f9fa;
-	padding: 1rem;
-	margin-bottom: 1rem;
-	border-radius: 4px;
-	border-left: 3px solid #3498db;
-}
-
-.array-item-hst .array-item-header {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	margin-bottom: 1rem;
-	padding-bottom: 0.5rem;
-	border-bottom: 2px solid #e0e0e0;
-}
-
-.path-badge {
-	display: inline-block;
-	background: #3498db;
-	color: white;
-	padding: 0.15rem 0.5rem;
-	border-radius: 3px;
-	font-size: 0.85rem;
-	margin-left: 0.5rem;
-	font-weight: normal;
-}
-
-/* Array node visualization in HST state */
-.array-node-item {
-	background: #ffffff;
-	border: 1px solid #bdc3c7;
-	border-radius: 4px;
-	padding: 0.75rem;
-	margin-top: 0.75rem;
-	margin-left: 1rem;
-}
-
-.array-node-header {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	padding-bottom: 0.5rem;
-	border-bottom: 1px solid #e0e0e0;
-	margin-bottom: 0.5rem;
-}
-
-.node-type-small {
-	font-weight: 600;
-	font-size: 0.9rem;
-	color: #2c3e50;
-}
-
-.node-status-small {
-	padding: 0.15rem 0.5rem;
-	border-radius: 8px;
-	font-size: 0.75rem;
-	font-weight: 600;
-}
-
-.node-status-small.exists {
-	background: #d4edda;
-	color: #155724;
-}
-
-.node-details-compact {
-	background: #f8f9fa;
-	padding: 0.5rem;
-	border-radius: 3px;
-	margin-bottom: 0.5rem;
-}
-
-.node-details-compact .detail-row {
-	margin-bottom: 0;
-}
-
-.node-details-compact .small-code {
-	font-size: 0.75rem;
-	padding: 0.15rem 0.4rem;
-}
-
-.node-data-compact {
-	background: #2c3e50;
-	color: #ecf0f1;
-	padding: 0.5rem;
-	border-radius: 3px;
-	font-size: 0.8rem;
-}
-
-.node-data-compact pre {
-	margin: 0;
-	font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
-	font-size: 0.75rem;
-	line-height: 1.3;
-	white-space: pre-wrap;
-	word-break: break-all;
-	color: #ecf0f1;
-}
 </style>
 
 <docs lang="md">
 # Nested Schema Support
 
-This story demonstrates how AForm automatically renders nested doctypes without any manual configuration.
+Demonstrates how `Registry.resolveSchema()` embeds child schemas on `Doctype` fields, and AForm renders them recursively without knowing anything about the Registry.
 
-**Note:** This implementation supports **1:1 nested schemas only**. For managing collections of records (1:many relationships), use nested table schemas which provide proper doctype mapping and state management.
+**1:1 relationships only.** For 1:many, use table schemas.
 
 ## How It Works
 
-When AForm encounters a field with `fieldtype: "Doctype"`, it automatically:
+1. Register doctypes in the Registry
+2. Call `registry.resolveSchema(schema)` — walks the tree and attaches `schema` arrays to Doctype fields
+3. Pass the resolved schema to `<AForm>` — it checks `'schema' in field` and recurses
 
-1. Loads the nested schema from the registry using the `options` value
-2. Initializes empty nested data if not provided
-3. Renders a nested AForm recursively with proper styling
-4. Manages two-way data binding for nested fields
-
-**Zero Configuration Required** - Just pass your schema to AForm and nested forms appear automatically!
+AForm is a pure renderer. Resolution lives in the framework (Registry).
 
 ## Variants
 
-### Standard - Zero Configuration Nested Forms
+### Resolved Schema
 
-Demonstrates how AForm **automatically renders** nested doctypes without any manual setup.
+Shows `registry.resolveSchema()` in action. One call, one `<AForm>`, automatic nesting.
 
-**Key Features:**
+### Standalone (no framework)
 
-- Pass the full customer schema to AForm (including the Doctype field)
-- Address form renders automatically
-- Pre-populated with sample customer and address data
-- Automatic two-way data binding for nested fields
-- Nested forms styled with visual hierarchy
+Manually attaches a `schema` array to a field. No Registry, no framework — AForm just checks for the property.
 
-**Use Case:** Standard pattern for any parent record with a single nested record (e.g., Customer → Address, User → Profile, Invoice → Billing Info)
+### HST Integration
 
-### HST Integration - State Management Demo
+A single resolved schema passed to one `<AForm>`, with HST managing the underlying state tree. The visualization panel shows HST paths, breadcrumbs, and live data.
 
-Demonstrates how the **Hierarchical State Tree (HST)** manages nested data with **real-time state visualization**.
-
-**Key Features:**
-
-- Creates a Stonecrop instance with HST store
-- Automatic nested form rendering with HST path management
-- Two-way binding between forms and HST paths (`customer.cust-001`, `customer.cust-001.address`)
-- Real-time visualization of HST node structure
-- Interactive HST operations: delete/restore nested nodes
-- Shows HST navigation methods: `getNode()`, `getParent()`, `getBreadcrumbs()`
-- Path-based data access with dot notation
-- Live preview of HST state changes
-
-**Use Case:** Understanding how HST manages hierarchical data, debugging state issues, learning path-based state management patterns, and seeing the relationship between forms and the underlying state tree
-
-## Implementation Notes
-
-- AForm automatically detects `fieldtype: "Doctype"` fields and renders nested forms
-- Nested schemas are loaded from the registry (injected via `app.provide('$registry', registry)`)
-- Nested data is automatically initialized with default values if not provided
-- Two-way data binding works seamlessly for nested fields
-- Only 1:1 nested relationships are supported for forms
-- For 1:many relationships, use nested table schemas instead
-- All examples use render functions (`h()`) instead of templates to avoid runtime template compilation requirements
-
-## Zero Configuration Required
-
-Simply pass your schema to AForm - nested forms render automatically:
+## Usage
 
 ```typescript
-// Register your doctypes in the registry
+const registry = new Registry()
 registry.addDoctype(addressDoctype)
 registry.addDoctype(customerDoctype)
 
-// Just pass the full schema with the Doctype field!
-<AForm :schema="customerSchema" v-model:data="customerData" />
-// Address form renders automatically - no manual setup! 🎉
+const resolved = registry.resolveSchema(customerSchemaJson.fields)
+// resolved[2].schema === [street, city, state, zip_code]
+
+<AForm :schema="resolved" v-model:data="customerData" />
 ```
-
-**Key Points:**
-
-- ✅ Nested schemas load automatically from the registry
-- ✅ Nested data initializes with proper defaults
-- ✅ Two-way binding works seamlessly across all nested levels
-- ✅ Styling and behavior consistent with parent forms
 </docs>

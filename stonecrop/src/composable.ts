@@ -8,7 +8,7 @@ import type { HSTNode } from './stores/hst'
 import { RouteContext } from './types/registry'
 import { storeToRefs } from 'pinia'
 import type { HSTOperation, OperationLogConfig, OperationLogSnapshot } from './types/operation-log'
-import { SchemaTypes } from '@stonecrop/aform'
+import { SchemaTypes, DoctypeSchema } from '@stonecrop/aform'
 
 /**
  * Operation Log API - nested object containing all operation log functionality
@@ -65,6 +65,7 @@ export type HSTStonecropReturn = BaseStonecropReturn & {
 	handleHSTChange: (changeData: HSTChangeData) => void
 	hstStore: Ref<HSTNode | undefined>
 	formData: Ref<Record<string, any>>
+	resolvedSchema: Ref<SchemaTypes[]>
 	loadNestedData: (parentPath: string, childDoctype: DoctypeMeta, recordId?: string) => Record<string, any>
 	saveRecursive: (doctype: DoctypeMeta, recordId: string) => Promise<Record<string, any>>
 	createNestedContext: (
@@ -126,6 +127,19 @@ export function useStonecrop(options?: {
 	// Use refs for router-loaded doctype to maintain reactivity
 	const routerDoctype = ref<DoctypeMeta | undefined>()
 	const routerRecordId = ref<string | undefined>()
+
+	// Resolved schema with nested Doctype fields expanded
+	const resolvedSchema = ref<SchemaTypes[]>([])
+
+	// Auto-resolve schema when doctype is available
+	if (options.doctype && registry) {
+		const schemaArray = options.doctype.schema
+			? Array.isArray(options.doctype.schema)
+				? options.doctype.schema
+				: Array.from(options.doctype.schema)
+			: []
+		resolvedSchema.value = registry.resolveSchema(schemaArray as SchemaTypes[])
+	}
 
 	// Operation log state and methods - will be populated after stonecrop instance is created
 	const operations = ref<HSTOperation[]>([])
@@ -263,6 +277,16 @@ export function useStonecrop(options?: {
 					routerDoctype.value = doctype
 					routerRecordId.value = recordId
 					hstStore.value = stonecrop.value.getStore()
+
+					// Resolve schema for router-loaded doctype
+					if (registry) {
+						const schemaArray = doctype.schema
+							? Array.isArray(doctype.schema)
+								? doctype.schema
+								: Array.from(doctype.schema)
+							: []
+						resolvedSchema.value = registry.resolveSchema(schemaArray as SchemaTypes[])
+					}
 
 					if (recordId && recordId !== 'new') {
 						const existingRecord = stonecrop.value.getRecordById(doctype, recordId)
@@ -435,37 +459,24 @@ export function useStonecrop(options?: {
 		const recordPath = `${doctype.slug}.${recordId}`
 		const recordData = hstStore.value.get(recordPath) || {}
 
-		// Build the save payload
+		// Build the save payload using resolved schema
 		const payload: Record<string, any> = { ...recordData }
 
-		// Find all Doctype fields in the schema
+		// Use resolveSchema to get the full resolved tree, then walk Doctype fields
 		const schemaArray = (
 			doctype.schema ? (Array.isArray(doctype.schema) ? doctype.schema : Array.from(doctype.schema)) : []
 		) as SchemaTypes[]
-		const doctypeFields = schemaArray.filter(field => 'fieldtype' in field && field.fieldtype === 'Doctype')
+		const resolved = registry ? registry.resolveSchema(schemaArray) : schemaArray
+		const doctypeFields = resolved.filter(
+			field => 'fieldtype' in field && field.fieldtype === 'Doctype' && 'schema' in field && Array.isArray(field.schema)
+		)
 
-		// Recursively collect nested data
+		// Recursively collect nested data from HST using resolved schemas
 		for (const field of doctypeFields) {
-			if (!('options' in field) || !('fieldname' in field)) continue
-
-			// TypeScript doesn't narrow types after 'in' checks - runtime validation is performed
-			const fieldOptions = field.options
-			const fieldname = field.fieldname
-
-			if (typeof fieldOptions !== 'string' || typeof fieldname !== 'string') continue
-
-			const nestedDoctypeSlug = fieldOptions
-			const nestedDoctype = registry?.registry[nestedDoctypeSlug]
-
-			if (!nestedDoctype) {
-				continue
-			}
-
-			const fieldPath = `${recordPath}.${fieldname}`
-
-			// Handle single nested object (1:1 only)
-			const nestedData = await collectNestedData(nestedDoctype, fieldPath, hstStore.value, registry)
-			payload[fieldname] = nestedData
+			const doctypeField = field as DoctypeSchema
+			const fieldPath = `${recordPath}.${doctypeField.fieldname}`
+			const nestedData = collectNestedData(doctypeField.schema!, fieldPath, hstStore.value)
+			payload[doctypeField.fieldname] = nestedData
 		}
 
 		return payload
@@ -529,6 +540,7 @@ export function useStonecrop(options?: {
 			handleHSTChange,
 			hstStore,
 			formData,
+			resolvedSchema,
 			loadNestedData,
 			saveRecursive,
 			createNestedContext,
@@ -542,6 +554,7 @@ export function useStonecrop(options?: {
 			handleHSTChange,
 			hstStore,
 			formData,
+			resolvedSchema,
 			loadNestedData,
 			saveRecursive,
 			createNestedContext,
@@ -642,50 +655,27 @@ function updateNestedObject(obj: any, path: string[], value: any): void {
 }
 
 /**
- * Recursively collect nested data from HST for save operation
- * @param doctype - The doctype metadata
+ * Recursively collect nested data from HST using pre-resolved schemas
+ * @param resolvedSchema - The already-resolved schema (with nested schemas embedded)
  * @param basePath - The base path in HST (e.g., "customer.123.address")
  * @param hstStore - The HST store instance
- * @param registry - The registry instance
  * @returns The collected data object
  */
-async function collectNestedData(
-	doctype: DoctypeMeta,
-	basePath: string,
-	hstStore: HSTNode,
-	registry?: Registry
-): Promise<Record<string, any>> {
+function collectNestedData(resolvedSchema: SchemaTypes[], basePath: string, hstStore: HSTNode): Record<string, any> {
 	const data = hstStore.get(basePath) || {}
 	const payload: Record<string, any> = { ...data }
 
-	// Find all Doctype fields in this doctype's schema
-	const schemaArray = (
-		doctype.schema ? (Array.isArray(doctype.schema) ? doctype.schema : Array.from(doctype.schema)) : []
-	) as SchemaTypes[]
-	const doctypeFields = schemaArray.filter(field => 'fieldtype' in field && field.fieldtype === 'Doctype')
+	// Find Doctype fields that have resolved child schemas
+	const doctypeFields = resolvedSchema.filter(
+		field => 'fieldtype' in field && field.fieldtype === 'Doctype' && 'schema' in field && Array.isArray(field.schema)
+	)
 
 	// Recursively collect nested data
 	for (const field of doctypeFields) {
-		if (!('options' in field) || !('fieldname' in field)) continue
-
-		// TypeScript doesn't narrow types after 'in' checks - runtime validation is performed
-		const fieldOptions = field.options
-		const fieldname = field.fieldname
-
-		if (typeof fieldOptions !== 'string' || typeof fieldname !== 'string') continue
-
-		const nestedDoctypeSlug = fieldOptions
-		const nestedDoctype = registry?.registry[nestedDoctypeSlug]
-
-		if (!nestedDoctype) {
-			continue
-		}
-
-		const fieldPath = `${basePath}.${fieldname}`
-
-		// Handle single nested object (1:1 only)
-		const nestedData = await collectNestedData(nestedDoctype, fieldPath, hstStore, registry)
-		payload[fieldname] = nestedData
+		const doctypeField = field as DoctypeSchema
+		const fieldPath = `${basePath}.${doctypeField.fieldname}`
+		const nestedData = collectNestedData(doctypeField.schema!, fieldPath, hstStore)
+		payload[doctypeField.fieldname] = nestedData
 	}
 
 	return payload

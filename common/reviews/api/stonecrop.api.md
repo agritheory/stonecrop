@@ -160,6 +160,15 @@ export class DoctypeMeta {
 }
 
 // @public
+export type DoctypeSchema = BaseSchema & {
+    fieldtype: 'Doctype';
+    options: string;
+    label?: string;
+    schema?: SchemaTypes[];
+    readOnly?: boolean;
+};
+
+// @public
 export type FieldAction = FieldActionFunction | FieldActionString;
 
 // @public
@@ -384,6 +393,7 @@ export type HSTStonecropReturn = BaseStonecropReturn & {
     handleHSTChange: (changeData: HSTChangeData) => void;
     hstStore: Ref<HSTNode | undefined>;
     formData: Ref<Record<string, any>>;
+    resolvedSchema: Ref<SchemaTypes[]>;
     loadNestedData: (parentPath: string, childDoctype: DoctypeMeta, recordId?: string) => Record<string, any>;
     saveRecursive: (doctype: DoctypeMeta, recordId: string) => Promise<Record<string, any>>;
     createNestedContext: (basePath: string, childDoctype: DoctypeMeta) => {
@@ -493,8 +503,10 @@ export class Registry {
     constructor(router?: Router, getMeta?: (routeContext: RouteContext) => DoctypeMeta | Promise<DoctypeMeta>);
     addDoctype(doctype: DoctypeMeta): void;
     getMeta?: (routeContext: RouteContext) => DoctypeMeta | Promise<DoctypeMeta>;
+    initializeRecord(schema: SchemaTypes[]): Record<string, any>;
     readonly name: string;
     readonly registry: Record<string, DoctypeMeta>;
+    resolveSchema(schema: SchemaTypes[], visited?: Set<string>): SchemaTypes[];
     static _root: Registry;
     readonly router?: Router;
 }
@@ -512,7 +524,7 @@ export type Schema = {
 };
 
 // @public
-export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema;
+export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema | DoctypeSchema;
 
 // @public
 export class SchemaValidator {

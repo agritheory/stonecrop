@@ -1,20 +1,20 @@
 <template>
 	<form class="aform">
 		<template v-for="(componentObj, key) in schema" :key="key">
-			<!-- Nested Doctype field - automatically rendered -->
+			<!-- Nested schema field (Doctype or any field with resolved schema) -->
 			<div
-				v-if="(componentObj as any).fieldtype === 'Doctype' && nestedSchemas[componentObj.fieldname]"
+				v-if="'schema' in componentObj && Array.isArray(componentObj.schema) && componentObj.schema.length > 0"
 				class="aform-nested-section">
 				<h4 v-if="(componentObj as any).label" class="aform-nested-label">
 					{{ (componentObj as any).label }}
 				</h4>
 				<AForm
 					v-model:data="nestedData[componentObj.fieldname]"
-					:schema="nestedSchemas[componentObj.fieldname]"
+					:schema="componentObj.schema"
 					:read-only="readOnly || (componentObj as any).readOnly" />
 			</div>
 
-			<!-- Regular field (non-Doctype) -->
+			<!-- Regular field -->
 			<component
 				:is="componentObj.component"
 				v-else
@@ -29,58 +29,28 @@
 </template>
 
 <script setup lang="ts">
-import { computed, watchEffect, ref, inject } from 'vue'
-import type { FormSchema, SchemaTypes } from '../types'
+import { computed, watchEffect, ref } from 'vue'
 
-// Import types from stonecrop for registry
-interface SchemaRegistry {
-	registry: Record<string, { doctype: string; slug: string; schema?: SchemaTypes[] }>
-}
+import type { SchemaTypes } from '../types'
 
 const emit = defineEmits(['update:schema', 'update:data'])
 const dataModel = defineModel<Record<string, any>>('data', { required: true })
-const { schema, readOnly } = defineProps<{
-	schema: SchemaTypes[]
-	readOnly?: boolean
-}>()
+const { schema, readOnly } = defineProps<{ schema: SchemaTypes[]; readOnly?: boolean }>()
 
-// Inject registry for nested schema loading (optional)
-const registry = inject<SchemaRegistry | undefined>('$registry', undefined)
-
-// Load nested schemas for Doctype fields
-const nestedSchemas = ref<Record<string, SchemaTypes[]>>({})
+// Reactive nested data refs for two-way binding with nested AForm instances
 const nestedData = ref<Record<string, any>>({})
 
-// Helper function to check if field has a property
-function hasProperty<K extends string>(obj: any, key: K): obj is Record<K, any> {
-	return obj && key in obj
-}
-
-// Initialize nested schemas and data when component mounts or schema changes
+// Initialize and sync nested data from dataModel for fields with resolved schemas
 watchEffect(() => {
-	if (!registry || !schema) return
+	if (!schema || !dataModel.value) return
 
 	schema.forEach(field => {
-		// Check if this is a Doctype field (using duck typing)
-		if (
-			hasProperty(field, 'fieldtype') &&
-			field.fieldtype === 'Doctype' &&
-			hasProperty(field, 'options') &&
-			typeof field.options === 'string'
-		) {
-			const doctypeSlug = field.options
-			const doctype = registry.registry[doctypeSlug]
-
-			if (doctype && doctype.schema) {
-				// Convert schema if it's an Iterable (Immutable.List)
-				const schemaArray: SchemaTypes[] = Array.isArray(doctype.schema) ? doctype.schema : Array.from(doctype.schema)
-				nestedSchemas.value[field.fieldname] = schemaArray
-
-				// Initialize nested data if it doesn't exist
-				if (!dataModel.value[field.fieldname]) {
-					dataModel.value[field.fieldname] = initializeNestedRecord(schemaArray)
-				}
+		if ('schema' in field && Array.isArray(field.schema) && field.schema.length > 0) {
+			// Initialize nested data from parent data model if not yet present
+			if (!nestedData.value[field.fieldname] && dataModel.value[field.fieldname]) {
 				nestedData.value[field.fieldname] = dataModel.value[field.fieldname]
+			} else if (!nestedData.value[field.fieldname]) {
+				nestedData.value[field.fieldname] = {}
 			}
 		}
 	})
@@ -95,37 +65,6 @@ watchEffect(() => {
 		}
 	})
 })
-
-// Initialize a nested record with default values based on schema
-function initializeNestedRecord(schema: FormSchema[]): Record<string, any> {
-	const record: Record<string, any> = {}
-	schema.forEach(field => {
-		const fieldtype = field.fieldtype || 'Data'
-		switch (fieldtype) {
-			case 'Data':
-			case 'Text':
-				record[field.fieldname] = ''
-				break
-			case 'Check':
-				record[field.fieldname] = false
-				break
-			case 'Int':
-			case 'Float':
-				record[field.fieldname] = 0
-				break
-			case 'Table':
-				record[field.fieldname] = []
-				break
-			case 'JSON':
-			case 'Doctype':
-				record[field.fieldname] = {}
-				break
-			default:
-				record[field.fieldname] = null
-		}
-	})
-	return record
-}
 
 // Sync data values into schema immediately and on changes
 watchEffect(() => {
