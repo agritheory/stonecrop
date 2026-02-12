@@ -295,16 +295,6 @@ Your data should have nested objects matching the schema structure:
 
 If the nested object doesn't exist, AForm will initialize it automatically with default values.
 
-## Benefits
-
-- **Clear Separation of Concerns**: Registry handles schema resolution, AForm handles rendering
-- **Framework Flexibility**: Use with full Stonecrop integration or as standalone components
-- **Type Safety**: Schema validation happens at resolution time via Registry validators
-- **Maintainability**: Change your schema in one place - the UI updates automatically
-- **Consistency**: Nested forms inherit the same styling and behavior as parent forms
-- **Reactivity**: Vue's two-way binding works seamlessly with nested data
-- **Testability**: AForm can be tested with pre-resolved schemas (no Registry mocking needed)
-
 ## Examples
 
 See [examples/aform/nested.story.vue](../../../examples/aform/nested.story.vue) for complete working examples demonstrating:
@@ -441,34 +431,3 @@ ATable provides:
 - Add/remove rows
 - Bulk operations
 - Better performance for collections
-
-## Summary: Three Modes of Operation
-
-### 1. Full Stonecrop Integration (Recommended)
-```typescript
-const { resolvedSchema, formData } = useStonecrop({ registry, doctype, recordId })
-```
-✅ Automatic schema resolution
-✅ HST state management
-✅ Nested data synchronization
-✅ Undo/redo support
-
-### 2. Manual Registry Resolution
-```typescript
-const resolvedSchema = registry.resolveSchema(schemaArray)
-```
-✅ Schema resolution and validation
-✅ Doctype reusability
-✅ Works without HST
-⚠️ Manual state management
-
-### 3. Standalone AForm
-```typescript
-const schema = [{ fieldname: 'nested', schema: childSchema }]
-```
-✅ No framework dependencies
-✅ Quick prototyping
-⚠️ Manual schema embedding
-⚠️ No doctype reuse
-
-Choose the mode that best fits your application architecture and requirements.
