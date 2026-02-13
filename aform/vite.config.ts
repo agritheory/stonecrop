@@ -17,12 +17,13 @@ export default defineConfig({
 			name: '@stonecrop/aform',
 		},
 		rollupOptions: {
-			external: ['vue'],
+			external: ['vue', 'pinia'],
 			output: {
 				chunkFileNames: 'chunks/[name].[hash].js',
 				assetFileNames: 'assets/[name].[ext]',
 				globals: {
 					vue: 'Vue',
+					pinia: 'pinia',
 				},
 			},
 		},

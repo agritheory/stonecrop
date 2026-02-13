@@ -1640,7 +1640,7 @@ Superset of all schema types for AForm
 **Definition:**
 
 ```typescript
-export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema | DoctypeSchema;
+export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema | DoctypeSchema | TableDoctypeSchema;
 ```
 
 ### TableConfig
@@ -1651,6 +1651,24 @@ Table configuration definition using discriminated unions for type safety.
 
 ```typescript
 export type TableConfig = BasicTableConfig | TreeTableConfig | GanttTableConfig | TreeGanttTableConfig;
+```
+
+### TableDoctypeSchema
+
+Schema structure for defining 1:many child table fields inside AForm
+
+**Definition:**
+
+```typescript
+export type TableDoctypeSchema = BaseSchema & {
+    fieldtype: 'Table';
+    options: string;
+    label?: string;
+    columns?: TableColumn[];
+    config?: TableConfig;
+    rows?: TableRow[];
+    readOnly?: boolean;
+};
 ```
 
 ### TableSchema
@@ -1935,7 +1953,7 @@ initializeRecord(schema: SchemaTypes[]): Record<string, any>
 
 #### resolveSchema
 
-Resolve nested Doctype fields in a schema by embedding child schemas inline.
+Resolve nested Doctype and Table fields in a schema by embedding child schemas inline.
 
 ```typescript
 resolveSchema(schema: SchemaTypes[], visited: Set<string>): SchemaTypes[]

@@ -241,7 +241,66 @@ export type DoctypeSchema = BaseSchema & {
 }
 
 /**
+ * Schema structure for defining 1:many child table fields inside AForm
+ *
+ * @remarks
+ * When a field has `fieldtype: 'Table'`, the `options` property contains the slug
+ * of the child doctype whose records appear as table rows.
+ *
+ * `Registry.resolveSchema()` auto-derives `columns` from the child doctype's schema
+ * fields and sets sensible defaults for `component` (`'ATable'`) and `config` (`{ view: 'list' }`).
+ *
+ * Users can override any auto-derived property by specifying it explicitly on the schema field.
+ * Row data comes from the parent form's data model at `data[fieldname]` (an array).
+ *
+ * @public
+ */
+export type TableDoctypeSchema = BaseSchema & {
+	/**
+	 * The field type — must be 'Table' for 1:many child table fields
+	 * @public
+	 */
+	fieldtype: 'Table'
+
+	/**
+	 * The slug of the child doctype in the registry
+	 * @public
+	 */
+	options: string
+
+	/**
+	 * The label to display above the table section
+	 * @public
+	 */
+	label?: string
+
+	/**
+	 * Table columns — auto-derived from child doctype schema if not provided
+	 * @public
+	 */
+	columns?: TableColumn[]
+
+	/**
+	 * Table configuration — defaults to `{ view: 'list' }` if not provided
+	 * @public
+	 */
+	config?: TableConfig
+
+	/**
+	 * Table rows — populated from the parent form's data model at `data[fieldname]`
+	 * @public
+	 */
+	rows?: TableRow[]
+
+	/**
+	 * Indicate whether the table is read-only
+	 * @public
+	 */
+	readOnly?: boolean
+}
+
+/**
  * Superset of all schema types for AForm
  * @public
  */
-export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema | DoctypeSchema
+export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema | DoctypeSchema | TableDoctypeSchema

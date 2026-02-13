@@ -20,6 +20,13 @@
 				<HSTDemo />
 			</div>
 		</Variant>
+
+		<Variant title="1:many (address list)" :setup-app="setupApp">
+			<div>
+				<h3>1:Many — Parent Form with Child Table</h3>
+				<AddressListDemo />
+			</div>
+		</Variant>
 	</Story>
 </template>
 
@@ -32,6 +39,7 @@ import { type App, defineComponent, ref, h, computed } from 'vue'
 
 import addressSchemaJson from './assets/address_schema.json'
 import customerSchemaJson from './assets/customer_schema.json'
+import customerWithAddressesSchemaJson from './assets/customer_with_addresses_schema.json'
 
 let registryInstance: Registry | undefined
 
@@ -43,6 +51,14 @@ const setupApp = ({ app }: { app: App }) => {
 
 	const customerDoctype = new DoctypeMeta('Customer', List(customerSchemaJson.fields), undefined, undefined)
 	registryInstance.addDoctype(customerDoctype)
+
+	const customerWithAddressesDoctype = new DoctypeMeta(
+		'CustomerWithAddresses',
+		List(customerWithAddressesSchemaJson.fields),
+		undefined,
+		undefined
+	)
+	registryInstance.addDoctype(customerWithAddressesDoctype)
 
 	app.provide('$registry', registryInstance)
 }
@@ -338,6 +354,85 @@ const HSTDemo = defineComponent({
 		])
 	},
 })
+
+/**
+ * Variant 4 — 1:Many (Address List)
+ *
+ * A parent Customer form with scalar fields rendered normally, and a child
+ * `addresses` array rendered as an ATable. The schema uses `fieldtype: 'Table'`
+ * with `options: 'address'` — resolveSchema auto-derives columns from the
+ * Address doctype's fields and sets the component to ATable.
+ */
+const AddressListDemo = defineComponent({
+	name: 'AddressListDemo',
+	setup() {
+		const customerData = ref({
+			customer_name: 'Alice Johnson',
+			email: 'alice@example.com',
+			phone: '555-9876',
+			addresses: [
+				{ street: '123 Main St', city: 'Springfield', state: 'IL', zip_code: '62701' },
+				{ street: '456 Oak Ave', city: 'Portland', state: 'OR', zip_code: '97205' },
+				{ street: '789 Pine Rd', city: 'Austin', state: 'TX', zip_code: '73301' },
+			],
+		})
+
+		// resolveSchema handles both Doctype (1:1) and Table (1:many) fields
+		const resolvedSchema = ref<SchemaTypes[]>(registryInstance!.resolveSchema(customerWithAddressesSchemaJson.fields))
+
+		return { resolvedSchema, customerData }
+	},
+	render() {
+		return h('div', { class: 'nested-form-example' }, [
+			h('h4', 'Customer with Multiple Addresses'),
+			h(
+				'p',
+				{ class: 'info-text' },
+				"The \"addresses\" field uses fieldtype: 'Table' with options: 'address'. " +
+					'resolveSchema() auto-derives columns from the Address doctype and sets component to ATable.'
+			),
+			h(AForm, {
+				schema: this.resolvedSchema,
+				'onUpdate:schema': (val: any) => {
+					this.resolvedSchema = val
+				},
+				data: this.customerData,
+				'onUpdate:data': (val: any) => {
+					this.customerData = val
+				},
+			}),
+			h('div', { class: 'data-preview' }, [
+				h('h4', 'Resolved Schema (abbreviated):'),
+				h(
+					'pre',
+					JSON.stringify(
+						this.resolvedSchema.map((f: any) => ({
+							fieldname: f.fieldname,
+							fieldtype: f.fieldtype,
+							...(f.component ? { component: f.component } : {}),
+							...(f.columns
+								? {
+										columns: f.columns.map((c: any) => ({
+											name: c.name,
+											label: c.label,
+											fieldtype: c.fieldtype,
+										})),
+								  }
+								: {}),
+							...(f.config ? { config: f.config } : {}),
+						})),
+						null,
+						2
+					)
+				),
+			]),
+			h('div', { class: 'data-preview' }, [
+				h('h4', 'Form Data:'),
+				h('pre', JSON.stringify(this.customerData, null, 2)),
+			]),
+		])
+	},
+})
 </script>
 
 <style scoped>
@@ -570,15 +665,25 @@ const HSTDemo = defineComponent({
 <docs lang="md">
 # Nested Schema Support
 
-Demonstrates how `Registry.resolveSchema()` embeds child schemas on `Doctype` fields, and AForm renders them recursively without knowing anything about the Registry.
-
-**1:1 relationships only.** For 1:many, use table schemas.
+Demonstrates how `Registry.resolveSchema()` embeds child schemas on `Doctype` fields (1:1)
+and auto-derives table columns for `Table` fields (1:many). AForm renders both patterns
+without knowing anything about the Registry.
 
 ## How It Works
 
+### 1:1 (Doctype fields)
+
 1. Register doctypes in the Registry
-2. Call `registry.resolveSchema(schema)` — walks the tree and attaches `schema` arrays to Doctype fields
+2. Call `registry.resolveSchema(schema)` — attaches `schema` arrays to Doctype fields
 3. Pass the resolved schema to `<AForm>` — it checks `'schema' in field` and recurses
+
+### 1:Many (Table fields)
+
+1. Register parent and child doctypes in the Registry
+2. Call `registry.resolveSchema(schema)` — for `fieldtype: 'Table'` fields, auto-derives
+   `columns` from the child doctype's schema, sets `component: 'ATable'` and `config: { view: 'list' }`
+3. Pass the resolved schema to `<AForm>` — the child array data at `data[fieldname]`
+   flows into ATable's rows via the `componentProps` fallback
 
 AForm is a pure renderer. Resolution lives in the framework (Registry).
 
@@ -586,25 +691,33 @@ AForm is a pure renderer. Resolution lives in the framework (Registry).
 
 ### Resolved Schema
 
-Shows `registry.resolveSchema()` in action. One call, one `<AForm>`, automatic nesting.
+Shows `registry.resolveSchema()` for 1:1 nesting. One call, one `<AForm>`, automatic nesting.
 
 ### Standalone (no framework)
 
-Manually attaches a `schema` array to a field. No Registry, no framework — AForm just checks for the property.
+Manually attaches a `schema` array to a field. No Registry, no framework.
 
 ### HST Integration
 
-A single resolved schema passed to one `<AForm>`, with HST managing the underlying state tree. The visualization panel shows HST paths, breadcrumbs, and live data.
+A single resolved schema passed to one `<AForm>`, with HST managing the underlying state tree.
+
+### 1:Many (Address List)
+
+A parent Customer form with scalar fields + an `addresses` array rendered as ATable.
+`resolveSchema()` auto-derives columns from the Address doctype. Users can override
+columns, config, or component by specifying them explicitly on the schema field.
 
 ## Usage
 
 ```typescript
-const registry = new Registry()
-registry.addDoctype(addressDoctype)
-registry.addDoctype(customerDoctype)
+// 1:1 nesting
+const resolved = registry.resolveSchema(customerSchema)
+// resolved[3].schema === [street, city, state, zip_code]
 
-const resolved = registry.resolveSchema(customerSchemaJson.fields)
-// resolved[2].schema === [street, city, state, zip_code]
+// 1:many table
+const resolved = registry.resolveSchema(customerWithAddressesSchema)
+// resolved[3].columns === [{ name: 'street', ... }, { name: 'city', ... }, ...]
+// resolved[3].component === 'ATable'
 
 <AForm :schema="resolved" v-model:data="customerData" />
 ```

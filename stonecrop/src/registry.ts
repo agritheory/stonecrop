@@ -85,12 +85,17 @@ export default class Registry {
 	}
 
 	/**
-	 * Resolve nested Doctype fields in a schema by embedding child schemas inline.
+	 * Resolve nested Doctype and Table fields in a schema by embedding child schemas inline.
 	 *
 	 * @remarks
 	 * Walks the schema array and for each field with `fieldtype: 'Doctype'` and a string
 	 * `options` value, looks up the referenced doctype in the registry and embeds its schema
 	 * as the field's `schema` property. Recurses for deeply nested doctypes.
+	 *
+	 * For fields with `fieldtype: 'Table'`, looks up the referenced child doctype and
+	 * auto-derives `columns` from its schema fields (unless columns are already provided).
+	 * Also sets sensible defaults for `component` (`'ATable'`) and `config` (`{ view: 'list' }`).
+	 * Row data is expected to come from the parent form's data model at `data[fieldname]`.
 	 *
 	 * Returns a new array — does not mutate the original schema.
 	 *
@@ -138,6 +143,58 @@ export default class Registry {
 					seen.delete(doctypeSlug)
 
 					return { ...field, schema: resolvedChild }
+				}
+			}
+
+			// Resolve Table fieldtype — 1:many child doctype rendered as ATable
+			if (
+				'fieldtype' in field &&
+				field.fieldtype === 'Table' &&
+				'options' in field &&
+				typeof field.options === 'string'
+			) {
+				const doctypeSlug = field.options as string
+
+				// Circular reference protection
+				if (seen.has(doctypeSlug)) {
+					return { ...field }
+				}
+
+				const doctype = this.registry[doctypeSlug]
+				if (doctype && doctype.schema) {
+					const childSchema: SchemaTypes[] = Array.isArray(doctype.schema) ? doctype.schema : Array.from(doctype.schema)
+					const resolved: Record<string, any> = { ...field }
+
+					// Auto-derive columns from child schema fields if not already provided
+					if (!('columns' in field) || !field.columns) {
+						resolved.columns = childSchema.map(childField => ({
+							name: childField.fieldname,
+							fieldname: childField.fieldname,
+							label: ('label' in childField && childField.label) || childField.fieldname,
+							fieldtype: 'fieldtype' in childField ? childField.fieldtype : 'Data',
+							align: ('align' in childField && childField.align) || 'left',
+							edit: 'edit' in childField ? childField.edit : true,
+							width: ('width' in childField && childField.width) || '20ch',
+						}))
+					}
+
+					// Set default component if not already specified
+					if (!resolved.component) {
+						resolved.component = 'ATable'
+					}
+
+					// Set default config if not already specified
+					if (!('config' in field) || !field.config) {
+						resolved.config = { view: 'list' }
+					}
+
+					// Initialize rows to empty array so componentProps fallback
+					// routes data from the form's dataModel[fieldname]
+					if (!('rows' in field) || !field.rows) {
+						resolved.rows = []
+					}
+
+					return resolved as SchemaTypes
 				}
 			}
 

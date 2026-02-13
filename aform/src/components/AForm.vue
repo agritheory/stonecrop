@@ -86,10 +86,10 @@ const componentProps = (componentObj: SchemaTypes) => {
 		}
 
 		// handle ATable data formats in case the table is nested under an AForm;
-		// TODO: there's probably a better way to do this
+		// when resolveSchema sets rows: [], this fallback routes data from dataModel[fieldname]
 		if (key === 'rows') {
-			if (value && (value as any[]).length === 0) {
-				propsToPass['rows'] = dataModel.value[componentObj.fieldname]
+			if (!value || (Array.isArray(value) && (value as any[]).length === 0)) {
+				propsToPass['rows'] = dataModel.value[componentObj.fieldname] || []
 			}
 		}
 	}

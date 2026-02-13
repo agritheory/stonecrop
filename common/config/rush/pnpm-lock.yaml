@@ -12,6 +12,9 @@ importers:
 
   ../../aform:
     dependencies:
+      '@stonecrop/atable':
+        specifier: workspace:*
+        version: link:../atable
       '@stonecrop/themes':
         specifier: workspace:*
         version: link:../themes
@@ -24,6 +27,9 @@ importers:
       '@vueuse/core':
         specifier: ^14.1.0
         version: 14.1.0(vue@3.5.26(typescript@5.9.3))
+      pinia:
+        specifier: ^3.0.4
+        version: 3.0.4(typescript@5.9.3)(vue@3.5.26(typescript@5.9.3))
       vue:
         specifier: ^3.5.26
         version: 3.5.26(typescript@5.9.3)
@@ -37,9 +43,6 @@ importers:
       '@rushstack/heft':
         specifier: ^1.1.7
         version: 1.1.7(@types/node@22.19.5)
-      '@stonecrop/atable':
-        specifier: workspace:*
-        version: link:../atable
       '@vitejs/plugin-vue':
         specifier: ^6.0.3
         version: 6.0.3(vite@7.3.1(@types/node@22.19.5)(jiti@2.6.1)(sass@1.97.2)(terser@5.44.1)(yaml@2.8.2))(vue@3.5.26(typescript@5.9.3))

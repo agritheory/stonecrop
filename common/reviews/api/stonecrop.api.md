@@ -524,7 +524,7 @@ export type Schema = {
 };
 
 // @public
-export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema | DoctypeSchema;
+export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema | DoctypeSchema | TableDoctypeSchema;
 
 // @public
 export class SchemaValidator {
@@ -854,6 +854,17 @@ export interface TableDisplay {
     parent?: number;
     rowModified?: boolean;
 }
+
+// @public
+export type TableDoctypeSchema = BaseSchema & {
+    fieldtype: 'Table';
+    options: string;
+    label?: string;
+    columns?: TableColumn[];
+    config?: TableConfig;
+    rows?: TableRow[];
+    readOnly?: boolean;
+};
 
 // @public
 export interface TableModal {

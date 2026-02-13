@@ -1,0 +1,31 @@
+{
+	"name": "CustomerWithAddresses",
+	"slug": "customer_with_addresses",
+	"fields": [
+		{
+			"fieldname": "customer_name",
+			"fieldtype": "Data",
+			"component": "ATextInput",
+			"label": "Customer Name",
+			"required": true
+		},
+		{
+			"fieldname": "email",
+			"fieldtype": "Data",
+			"component": "ATextInput",
+			"label": "Email"
+		},
+		{
+			"fieldname": "phone",
+			"fieldtype": "Data",
+			"component": "ATextInput",
+			"label": "Phone"
+		},
+		{
+			"fieldname": "addresses",
+			"fieldtype": "Table",
+			"options": "address",
+			"label": "Addresses"
+		}
+	]
+}
