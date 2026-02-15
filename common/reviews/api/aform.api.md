@@ -123,6 +123,15 @@ export interface ConnectionPath {
 }
 
 // @public
+export type DoctypeSchema = BaseSchema & {
+    fieldtype: 'Doctype';
+    options: string;
+    label?: string;
+    schema?: SchemaTypes[];
+    readOnly?: boolean;
+};
+
+// @public
 export type FieldsetSchema = BaseSchema & {
     label?: string;
     schema?: (FormSchema | TableSchema)[];
@@ -205,7 +214,7 @@ export function install(app: App): void;
 export { Login }
 
 // @public
-export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema;
+export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema | DoctypeSchema | TableDoctypeSchema;
 
 // @public
 export interface TableColumn {
@@ -248,6 +257,17 @@ export interface TableDisplay {
     parent?: number;
     rowModified?: boolean;
 }
+
+// @public
+export type TableDoctypeSchema = BaseSchema & {
+    fieldtype: 'Table';
+    options: string;
+    label?: string;
+    columns?: TableColumn[];
+    config?: TableConfig;
+    rows?: TableRow[];
+    readOnly?: boolean;
+};
 
 // @public
 export interface TableModal {

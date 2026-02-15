@@ -1,84 +1,135 @@
 <template>
 	<form class="aform">
-		<component
-			:is="componentObj.component"
-			v-for="(componentObj, key) in modelValue"
-			:key="key"
-			v-model="childModels[key].value"
-			:schema="componentObj"
-			:data="formData[componentObj.fieldname]"
-			:readOnly="readOnly"
-			v-bind="componentProps(componentObj)">
-		</component>
+		<template v-for="(componentObj, key) in schema" :key="key">
+			<!-- Nested schema field (Doctype or any field with resolved schema) -->
+			<div
+				v-if="'schema' in componentObj && Array.isArray(componentObj.schema) && componentObj.schema.length > 0"
+				class="aform-nested-section">
+				<h4 v-if="(componentObj as any).label" class="aform-nested-label">
+					{{ (componentObj as any).label }}
+				</h4>
+				<AForm
+					v-model:data="nestedData[componentObj.fieldname]"
+					:schema="componentObj.schema"
+					:read-only="readOnly || (componentObj as any).readOnly" />
+			</div>
+
+			<!-- Regular field -->
+			<component
+				:is="componentObj.component"
+				v-else
+				v-model="childModels[key].value"
+				:schema="componentObj"
+				:data="dataModel[componentObj.fieldname]"
+				:read-only="readOnly"
+				v-bind="componentProps(componentObj)">
+			</component>
+		</template>
 	</form>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watchEffect } from 'vue'
+import { computed, watchEffect, ref } from 'vue'
 
 import type { SchemaTypes } from '../types'
 
-const emit = defineEmits(['update:modelValue'])
-const { modelValue, data, readOnly } = defineProps<{
-	modelValue: SchemaTypes[]
-	data: Record<string, any>
-	readOnly?: boolean
-}>()
+const emit = defineEmits(['update:schema', 'update:data'])
+const dataModel = defineModel<Record<string, any>>('data', { required: true })
+const { schema, readOnly } = defineProps<{ schema: SchemaTypes[]; readOnly?: boolean }>()
 
-const formData = ref(data || {})
+// Reactive nested data refs for two-way binding with nested AForm instances
+const nestedData = ref<Record<string, any>>({})
+
+// Initialize and sync nested data from dataModel for fields with resolved schemas
+watchEffect(() => {
+	if (!schema || !dataModel.value) return
+
+	schema.forEach(field => {
+		if ('schema' in field && Array.isArray(field.schema) && field.schema.length > 0) {
+			// Initialize nested data from parent data model if not yet present
+			if (!nestedData.value[field.fieldname] && dataModel.value[field.fieldname]) {
+				nestedData.value[field.fieldname] = dataModel.value[field.fieldname]
+			} else if (!nestedData.value[field.fieldname]) {
+				nestedData.value[field.fieldname] = {}
+			}
+		}
+	})
+})
+
+// Sync nested data changes back to main data model
+watchEffect(() => {
+	Object.keys(nestedData.value).forEach(fieldname => {
+		if (dataModel.value && nestedData.value[fieldname] !== dataModel.value[fieldname]) {
+			dataModel.value[fieldname] = nestedData.value[fieldname]
+			emit('update:data', dataModel.value)
+		}
+	})
+})
 
 // Sync data values into schema immediately and on changes
 watchEffect(() => {
-	if (data) {
-		formData.value = data
+	if (dataModel.value && schema) {
 		// Sync data values into schema
-		modelValue.forEach(field => {
-			if (field.fieldname && data[field.fieldname] !== undefined) {
-				// eslint-disable-next-line vue/no-mutating-props
-				field.value = data[field.fieldname]
+		schema.forEach(field => {
+			if (field.fieldname && dataModel.value[field.fieldname] !== undefined) {
+				field.value = dataModel.value[field.fieldname]
 			}
 		})
 	}
 })
 
 const componentProps = (componentObj: SchemaTypes) => {
-	let propsToPass = {}
+	const propsToPass: Record<string, any> = {}
 	for (const [key, value] of Object.entries(componentObj)) {
 		if (!['component', 'fieldtype'].includes(key)) {
 			propsToPass[key] = value
 		}
 
-		// handle ATable data formats in case the table is nested under an AFormm;
-		// TODO: there's probably a better way to do this
+		// handle ATable data formats in case the table is nested under an AForm;
+		// when resolveSchema sets rows: [], this fallback routes data from dataModel[fieldname]
 		if (key === 'rows') {
-			if (value && (value as any[]).length === 0) {
-				propsToPass['rows'] = formData.value[componentObj.fieldname]
+			if (!value || (Array.isArray(value) && (value as any[]).length === 0)) {
+				propsToPass['rows'] = dataModel.value[componentObj.fieldname] || []
 			}
 		}
 	}
 	return propsToPass
 }
 
-const childModels = computed({
-	get: () => {
-		return modelValue.map((val, i) => {
+// Create stable computed refs array to avoid recreation on every access
+const childModelsCache = ref<ReturnType<typeof computed>[]>([])
+
+// Watch for schema changes and update cache (avoiding side effects in computed)
+watchEffect(() => {
+	if (!schema) return
+
+	// Recreate cache only if length changed
+	if (childModelsCache.value.length !== schema.length) {
+		childModelsCache.value = schema.map((val, i) => {
 			return computed({
 				get() {
 					return val.value
 				},
 				set: newValue => {
-					// Find the component in modelValue and update it
+					const fieldname = schema[i].fieldname
+					// Find the component in schema and update it
 					// eslint-disable-next-line vue/no-mutating-props
-					modelValue[i].value = newValue
-					emit('update:modelValue', modelValue)
+					schema[i].value = newValue
+					// Also sync to data model for two-way binding
+					if (fieldname && dataModel.value) {
+						dataModel.value[fieldname] = newValue
+						// Manually emit to trigger parent's update:data handler
+						emit('update:data', dataModel.value)
+					}
+					emit('update:schema', schema)
 				},
 			})
 		})
-	},
-	set: (/* newValue */) => {
-		//emit('update:modelValue', '')
-	},
+	}
 })
+
+// Computed just returns the cached models (no side effects)
+const childModels = computed(() => childModelsCache.value)
 </script>
 
 <style>
@@ -189,5 +240,23 @@ p.aform_error {
 	.aform {
 		flex-direction: column;
 	}
+}
+
+/* Nested form section */
+.aform-nested-section {
+	width: 100%;
+	padding: 0.5rem 0;
+}
+
+.aform-nested-label {
+	font-size: 0.9rem;
+	font-weight: 600;
+	margin: 0 0 0.5rem 0;
+	color: var(--sc-input-label-color, #666);
+}
+
+.aform-nested-section .aform {
+	border-left-width: 2px;
+	margin-left: 0.5rem;
 }
 </style>

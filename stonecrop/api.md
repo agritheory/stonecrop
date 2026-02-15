@@ -1346,6 +1346,22 @@ Cross-tab message types
 export type CrossTabMessageType = 'operation' | 'undo' | 'redo' | 'sync-request' | 'sync-response';
 ```
 
+### DoctypeSchema
+
+Schema structure for defining nested doctype fields inside AForm
+
+**Definition:**
+
+```typescript
+export type DoctypeSchema = BaseSchema & {
+    fieldtype: 'Doctype';
+    options: string;
+    label?: string;
+    schema?: SchemaTypes[];
+    readOnly?: boolean;
+};
+```
+
 ### FieldAction
 
 Supported action types for field triggers
@@ -1504,6 +1520,13 @@ export type HSTStonecropReturn = BaseStonecropReturn & {
     handleHSTChange: (changeData: HSTChangeData) => void;
     hstStore: Ref<HSTNode | undefined>;
     formData: Ref<Record<string, any>>;
+    resolvedSchema: Ref<SchemaTypes[]>;
+    loadNestedData: (parentPath: string, childDoctype: DoctypeMeta, recordId?: string) => Record<string, any>;
+    saveRecursive: (doctype: DoctypeMeta, recordId: string) => Promise<Record<string, any>>;
+    createNestedContext: (basePath: string, childDoctype: DoctypeMeta) => {
+        provideHSTPath: (fieldname: string) => string;
+        handleHSTChange: (changeData: HSTChangeData) => void;
+    };
 };
 ```
 
@@ -1617,7 +1640,7 @@ Superset of all schema types for AForm
 **Definition:**
 
 ```typescript
-export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema;
+export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema | DoctypeSchema | TableDoctypeSchema;
 ```
 
 ### TableConfig
@@ -1628,6 +1651,24 @@ Table configuration definition using discriminated unions for type safety.
 
 ```typescript
 export type TableConfig = BasicTableConfig | TreeTableConfig | GanttTableConfig | TreeGanttTableConfig;
+```
+
+### TableDoctypeSchema
+
+Schema structure for defining 1:many child table fields inside AForm
+
+**Definition:**
+
+```typescript
+export type TableDoctypeSchema = BaseSchema & {
+    fieldtype: 'Table';
+    options: string;
+    label?: string;
+    columns?: TableColumn[];
+    config?: TableConfig;
+    rows?: TableRow[];
+    readOnly?: boolean;
+};
 ```
 
 ### TableSchema
@@ -1895,6 +1936,35 @@ addDoctype(doctype: DoctypeMeta): void
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | doctype | `DoctypeMeta` | The doctype to fetch metadata for |
+
+#### initializeRecord
+
+Initialize a new record with default values based on a schema.
+
+```typescript
+initializeRecord(schema: SchemaTypes[]): Record<string, any>
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| schema | `SchemaTypes[]` | The schema array to derive defaults from |
+
+#### resolveSchema
+
+Resolve nested Doctype and Table fields in a schema by embedding child schemas inline.
+
+```typescript
+resolveSchema(schema: SchemaTypes[], visited: Set<string>): SchemaTypes[]
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| schema | `SchemaTypes[]` | The schema array to resolve |
+| visited | `Set<string>` |  |
 
 ### SchemaValidator
 

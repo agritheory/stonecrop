@@ -48,17 +48,18 @@
 		"test:ui": "vitest --ui"
 	},
 	"dependencies": {
+		"@stonecrop/atable": "workspace:*",
 		"@stonecrop/themes": "workspace:*",
 		"@stonecrop/utilities": "workspace:*",
 		"@vueuse/core": "^14.1.0",
 		"@vueuse/components": "^14.1.0",
+		"pinia": "^3.0.4",
 		"vue": "^3.5.26"
 	},
 	"devDependencies": {
 		"@eslint/js": "^9.39.2",
 		"@microsoft/api-documenter": "^7.28.2",
 		"@rushstack/heft": "^1.1.7",
-		"@stonecrop/atable": "workspace:*",
 		"@vitejs/plugin-vue": "^6.0.3",
 		"@vitest/coverage-istanbul": "^4.0.17",
 		"@vitest/ui": "^4.0.17",
@@ -75,9 +76,6 @@
 		"vite": "^7.3.1",
 		"vitest": "^4.0.17",
 		"vue-router": "^4.6.4"
-	},
-	"peerDependencies": {
-		"@stonecrop/atable": "workspace:*"
 	},
 	"publishConfig": {
 		"access": "public"

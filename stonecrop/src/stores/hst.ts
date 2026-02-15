@@ -138,6 +138,7 @@ interface PropertyAccessible {
 
 // Extend global interfaces
 declare global {
+	// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 	interface Window extends RegistryGlobal {}
 	const global: RegistryGlobal | undefined
 }
@@ -291,7 +292,6 @@ class HSTProxy implements HSTNode {
 				const isDelete = value === undefined && beforeValue !== undefined
 				const operationType: 'set' | 'delete' = isDelete ? 'delete' : 'set'
 
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-call
 				logStore.addOperation(
 					{
 						type: operationType,
@@ -429,7 +429,6 @@ class HSTProxy implements HSTNode {
 		// Log FSM transition operation
 		const logStore = getOperationLogStore()
 		if (logStore && typeof logStore.addOperation === 'function') {
-			// eslint-disable-next-line @typescript-eslint/no-unsafe-call
 			logStore.addOperation(
 				{
 					type: 'transition' as const,
@@ -678,9 +677,20 @@ class HSTProxy implements HSTNode {
 		)
 	}
 
+	/**
+	 * Parse a path string into segments, handling both dot notation and array bracket notation
+	 * @param path - The path string to parse (e.g., "order.456.line_items[0].product")
+	 * @returns Array of path segments (e.g., ['order', '456', 'line_items', '0', 'product'])
+	 */
 	private parsePath(path: string): string[] {
 		if (!path) return []
-		return path.split('.').filter(segment => segment.length > 0)
+
+		// Replace array bracket notation with dot notation
+		// items[0] → items.0
+		// items[0][1] → items.0.1
+		const normalizedPath = path.replace(/\[(\d+)\]/g, '.$1')
+
+		return normalizedPath.split('.').filter(segment => segment.length > 0)
 	}
 }
 

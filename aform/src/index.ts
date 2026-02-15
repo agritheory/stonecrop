@@ -1,4 +1,5 @@
 export type * from '@stonecrop/atable/types'
+import { install as installATable } from '@stonecrop/atable'
 import type { App } from 'vue'
 
 import ACheckbox from './components/form/ACheckbox.vue'
@@ -20,6 +21,7 @@ export type * from './types'
  * @public
  */
 function install(app: App /* options */) {
+	app.use(installATable) // Install ATable components for use within AForm
 	app.component('ACheckbox', ACheckbox)
 	app.component('ACombobox', AComboBox)
 	app.component('ADate', ADate)

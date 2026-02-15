@@ -1,3 +1,4 @@
+import { reactive } from 'vue'
 import DoctypeMeta from './doctype'
 import Registry from './registry'
 import { createHST, type HSTNode } from './stores/hst'
@@ -58,7 +59,9 @@ export class Stonecrop {
 			initialStoreStructure[doctypeSlug] = {}
 		})
 
-		this.hstStore = createHST(initialStoreStructure, 'StonecropStore')
+		// Wrap the store in Vue's reactive() for automatic change detection
+		// This enables Vue computed properties to track HST store changes
+		this.hstStore = createHST(reactive(initialStoreStructure), 'StonecropStore')
 	}
 
 	/**
@@ -235,10 +238,10 @@ export class Stonecrop {
 	 */
 	async getRecords(doctype: DoctypeMeta): Promise<void> {
 		const response = await fetch(`/${doctype.slug}`)
-		const records = await response.json()
+		const records = (await response.json()) as { id: string }[]
 
 		// Store each record in HST
-		records.forEach((record: any) => {
+		records.forEach(record => {
 			if (record.id) {
 				this.addRecord(doctype, record.id, record)
 			}

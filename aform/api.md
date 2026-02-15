@@ -587,6 +587,22 @@ export type ConnectionEvent = {
 };
 ```
 
+### DoctypeSchema
+
+Schema structure for defining nested doctype fields inside AForm
+
+**Definition:**
+
+```typescript
+export type DoctypeSchema = BaseSchema & {
+    fieldtype: 'Doctype';
+    options: string;
+    label?: string;
+    schema?: SchemaTypes[];
+    readOnly?: boolean;
+};
+```
+
 ### FieldsetSchema
 
 Schema structure for defining fieldsets inside AForm
@@ -663,7 +679,7 @@ Superset of all schema types for AForm
 **Definition:**
 
 ```typescript
-export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema;
+export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema | DoctypeSchema | TableDoctypeSchema;
 ```
 
 ### TableConfig
@@ -674,6 +690,24 @@ Table configuration definition using discriminated unions for type safety.
 
 ```typescript
 export type TableConfig = BasicTableConfig | TreeTableConfig | GanttTableConfig | TreeGanttTableConfig;
+```
+
+### TableDoctypeSchema
+
+Schema structure for defining 1:many child table fields inside AForm
+
+**Definition:**
+
+```typescript
+export type TableDoctypeSchema = BaseSchema & {
+    fieldtype: 'Table';
+    options: string;
+    label?: string;
+    columns?: TableColumn[];
+    config?: TableConfig;
+    rows?: TableRow[];
+    readOnly?: boolean;
+};
 ```
 
 ### TableSchema
