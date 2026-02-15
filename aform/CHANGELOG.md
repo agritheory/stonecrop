@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/aform
 
-This log was last generated on Mon, 02 Feb 2026 09:13:25 GMT and should not be manually modified.
+This log was last generated on Sun, 15 Feb 2026 23:48:12 GMT and should not be manually modified.
+
+## 0.8.0
+Sun, 15 Feb 2026 23:48:12 GMT
+
+### Minor changes
+
+- support nested schemas
 
 ## 0.7.9
 Mon, 02 Feb 2026 09:13:25 GMT

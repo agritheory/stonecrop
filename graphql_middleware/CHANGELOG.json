@@ -2,6 +2,12 @@
   "name": "@stonecrop/graphql-middleware",
   "entries": [
     {
+      "version": "0.8.0",
+      "tag": "@stonecrop/graphql-middleware_v0.8.0",
+      "date": "Sun, 15 Feb 2026 23:48:12 GMT",
+      "comments": {}
+    },
+    {
       "version": "0.7.9",
       "tag": "@stonecrop/graphql-middleware_v0.7.9",
       "date": "Mon, 02 Feb 2026 09:13:25 GMT",
