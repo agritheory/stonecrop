@@ -3,7 +3,16 @@ import { defineVitestConfig } from '@nuxt/test-utils/config'
 export default defineVitestConfig({
 	// defineVitestConfig automatically sets up the correct environment
 	// Don't override environment here - it breaks the automatic Nuxt environment setup
+	resolve: {
+		alias: {
+			'#internal/grafserv/resolvers': new URL('./test/mocks/resolvers.ts', import.meta.url).pathname,
+			'#internal/grafserv/middleware': new URL('./test/mocks/middleware.ts', import.meta.url).pathname,
+			'#internal/grafserv/pgl': new URL('./test/mocks/pgl.ts', import.meta.url).pathname,
+			'#build/grafserv-preset': new URL('./test/mocks/preset.ts', import.meta.url).pathname,
+		},
+	},
 	test: {
+		setupFiles: ['./test/setup.ts'],
 		coverage: {
 			provider: 'istanbul',
 			reporter: ['text', 'json', 'html', 'lcov'],

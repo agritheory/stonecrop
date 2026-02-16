@@ -492,11 +492,11 @@
     },
     {
       "name": "vue",
-      "allowedCategories": [ "prototype", "utilities" ]
+      "allowedCategories": [ "production", "prototype", "utilities" ]
     },
     {
       "name": "vue-router",
-      "allowedCategories": [ "prototype", "utilities" ]
+      "allowedCategories": [ "production", "prototype", "utilities" ]
     },
     {
       "name": "vue-template-compiler",
