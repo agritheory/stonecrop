@@ -7,8 +7,7 @@
 			:store="store"
 			:config="rowActionsConfig"
 			:position="actionsPosition"
-			@action="onRowAction"
-			/>
+			@action="onRowAction" />
 
 		<!-- render numbered/tree view index; skip render for uncounted lists -->
 		<slot v-if="store.config.view !== 'uncounted'" name="index">
@@ -124,8 +123,16 @@ if (addNavigation) {
 	background-color: white;
 }
 
+.atable-row:last-child > td {
+	border-bottom: 1px solid var(--sc-row-border-color);
+}
+
 .atable-row > td:first-child {
 	border-left: 4px solid var(--sc-row-border-color);
+}
+
+.atable-row > td:last-child {
+	border-right: 1px solid var(--sc-row-border-color);
 }
 
 .list-index {
