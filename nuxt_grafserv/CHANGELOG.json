@@ -2,6 +2,18 @@
   "name": "@stonecrop/nuxt-grafserv",
   "entries": [
     {
+      "version": "0.8.4",
+      "tag": "@stonecrop/nuxt-grafserv_v0.8.4",
+      "date": "Mon, 16 Feb 2026 12:52:52 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "update deps"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.8.3",
       "tag": "@stonecrop/nuxt-grafserv_v0.8.3",
       "date": "Mon, 16 Feb 2026 12:41:19 GMT",

@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/stonecrop
 
-This log was last generated on Mon, 16 Feb 2026 12:41:19 GMT and should not be manually modified.
+This log was last generated on Mon, 16 Feb 2026 12:52:52 GMT and should not be manually modified.
+
+## 0.8.4
+Mon, 16 Feb 2026 12:52:52 GMT
+
+### Patches
+
+- update deps
 
 ## 0.8.3
 Mon, 16 Feb 2026 12:41:19 GMT
