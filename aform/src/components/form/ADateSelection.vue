@@ -1,3 +1,5 @@
+<!-- This serves as a wrapper component for ADatePicker and ADateTime in one component -->
+
 <template>
 	<div class="adate-selection">
 		<ADatePicker v-if="showDate" :select-range="selectRange" @get-date="handleDate" />
@@ -14,7 +16,7 @@
 	</div>
 </template>
 <script setup lang="ts">
-import { provide, defineProps, reactive, defineEmits } from 'vue'
+import { provide, defineProps, defineEmits, ref } from 'vue'
 
 defineProps({
 	showDate: {
@@ -55,58 +57,17 @@ defineProps({
 	},
 })
 
-const emit = defineEmits(['get-date'])
-
-const date = reactive({
-	start: new Date(),
-	end: new Date(),
-})
-const time = reactive({
-	hours: 0,
-	minutes: 0,
-	seconds: 0,
-	meridiem: 'AM',
-	militaryTime: 0,
-})
+const emit = defineEmits(['get-date', 'get-time'])
 
 //provides prop to datepicker child
 provide('select-range', true)
 
 const handleDate = data => {
-	date.start = data.start
-	date.end = data.end
-	updateTime(date.start)
-	if (date.end != null) updateTime(date.end)
-
-	const dateObject = {
-		date: date,
-		time: time,
-	}
-
-	emit('get-date', dateObject)
-}
-
-const updateTime = date => {
-	date.setHours(time.hours)
-	date.setMinutes(time.minutes)
-	date.setSeconds(time.seconds)
+	emit('get-date', data)
 }
 
 const handleTime = data => {
-	time.hours = data.hours
-	time.minutes = data.minutes
-	time.seconds = data.seconds
-	time.meridiem = data.meridiem
-
-	updateTime(date.start)
-	if (date.end != null) updateTime(date.end)
-
-	const dateObject = {
-		date: date,
-		time: time,
-	}
-
-	emit('get-date', dateObject)
+	emit('get-time', data)
 }
 </script>
 <style scoped>

@@ -92,7 +92,7 @@ const meridiem = ref(props.defaultMeridiem == 'AM' ? 'AM' : 'PM')
 
 onMounted(() => {
 	//set all fields to default values
-	confirmTime(false)
+	confirmTime()
 })
 
 /* Sets the time_data to match the input fields, called on blur or Enter, can set sendEmit to false to prevent emiting the time data */
@@ -217,7 +217,7 @@ const pasteInput = (event, pasteAllFields = false) => {
 
 <style scoped>
 .adate_time {
-	width: 100%;
+	width: auto;
 	padding: 10px;
 	box-sizing: border-box;
 	font-size: 1rem;
@@ -226,9 +226,8 @@ const pasteInput = (event, pasteAllFields = false) => {
 .adate_time_fields {
 	display: flex;
 	align-items: stretch;
-	max-width: 300px;
 	gap: 5px;
-	justify-content: center;
+	justify-content: flex-start;
 }
 .adate_time_fields > input {
 	min-width: 30px;

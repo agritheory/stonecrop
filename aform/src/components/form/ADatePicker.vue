@@ -11,19 +11,21 @@
 					<td colspan="7">
 						<div class="date-input">
 							<input
-								v-model="startDateInput"
+								:value="getStartDate"
+								ref="start-date-input"
 								class="date-input-start aform_input-field"
 								type="text"
 								placeholder="start date"
-								@blur="applyDates"
+								@blur="enterInputDate()"
 								@keydown="enterDate" />
 							<div>-</div>
 							<input
-								v-model="endDateInput"
+								:value="getEndDate"
+								ref="end-date-input"
 								class="date-input-end aform_input-field"
 								type="text"
 								placeholder="end date"
-								@blur="applyDates"
+								@blur="enterInputDate()"
 								@keydown="enterDate" />
 						</div>
 						<!-- {{ formattedDateRange }} -->
@@ -67,27 +69,32 @@
 </template>
 
 <script setup lang="ts">
-import { defaultKeypressHandlers, useKeyboardNav } from '@stonecrop/utilities'
-import { computed, nextTick, onMounted, ref, useTemplateRef, watch, reactive } from 'vue'
+/* removed keyboard nav temportarily since it interfered with user experience navigating input fields */
+// import { defaultKeypressHandlers, useKeyboardNav } from '@stonecrop/utilities'
+import { computed, nextTick, onMounted, ref, useTemplateRef, watch } from 'vue'
+
+/*******************
+Const
+*******************/
 
 const numberOfRows = 6
 const numberOfColumns = 7
-
 const date = defineModel<number | Date>({ default: new Date() })
 const selectedDate = ref(new Date(date.value))
 const currentMonth = ref<number>(selectedDate.value.getMonth())
 const currentYear = ref<number>(selectedDate.value.getFullYear())
 const currentDates = ref<number[]>([])
-const datepickerRef = useTemplateRef<HTMLDivElement>('datepicker')
+/* needed for keyboard navigation. uncomment if implementing */
+//const datepickerRef = useTemplateRef<HTMLDivElement>('datepicker')
 const hoveredDate = ref(new Date(date.value))
+const start_date = ref(new Date())
+const end_date = ref(new Date())
+const startDateInput = useTemplateRef('start-date-input')
+const endDateInput = useTemplateRef('end-date-input')
 
-const startDateInput = ref('')
-const endDateInput = ref('')
-
-const selectedDateRange = reactive({
-	start_date: new Date(),
-	end_date: new Date(),
-})
+/*******************
+Props
+*******************/
 
 const props = defineProps({
 	selectRange: {
@@ -96,22 +103,84 @@ const props = defineProps({
 	},
 })
 
+/*******************
+Emits
+*******************/
+
 const emit = defineEmits(['get-date'])
 
-onMounted(async () => {
-	populateMonth()
-	// required to allow the elements to be focused in the next step
-	await nextTick()
-	const $selectedDate = document.getElementsByClassName('selectedDate')
-	if ($selectedDate.length > 0) {
-		;($selectedDate[0] as HTMLElement).focus()
-	} else {
-		const $todaysDate = document.getElementsByClassName('todaysDate')
-		if ($todaysDate.length > 0) {
-			;($todaysDate[0] as HTMLElement).focus()
-		}
-	}
+/*******************
+Computed
+*******************/
+
+const monthAndYear = computed(() => {
+	return new Date(currentYear.value, currentMonth.value, 1).toLocaleDateString(undefined, {
+		year: 'numeric',
+		month: 'long',
+	})
 })
+const getStartDate = computed(()=>{
+	return (start_date.value!=''&& start_date.value!=null)?parseDateToString(start_date.value):''
+})
+
+const getEndDate = computed(()=>{
+	return parseDateToString(end_date.value)
+})
+
+/*******************
+Functions
+*******************/
+
+const parseDateToString = (date: Date) => {
+	if(date!=null){
+		let date_string = ''
+		if (!validateDate(date))return ''
+		date_string += date.getMonth() + 1 + '/' + date.getDate() + '/' + date.getFullYear()
+		return date_string
+	}
+}
+
+const isTodaysDate = (day: string | number | Date) => {
+	const todaysDate = new Date()
+	if (currentMonth.value !== todaysDate.getMonth()) return
+	return todaysDate.toDateString() === new Date(day).toDateString()
+}
+
+const isSelectedDate = (day: string | number | Date) => {
+	return new Date(day).toDateString() === new Date(selectedDate.value).toDateString()
+}
+
+const isStartDate = (day: string | number | Date) => {
+	if(!validateDate(start_date.value))return false
+	return new Date(day).toDateString() === start_date.value.toDateString()
+}
+
+const isEndDate = (day: string | number | Date) => {
+	if(!validateDate(end_date.value))return false
+	return new Date(day).toDateString() === end_date.value.toDateString()
+}
+
+const getCurrentCell = (rowNo: number, colNo: number) => {
+	return (rowNo - 1) * numberOfColumns + colNo
+}
+
+const isInDateRange = (day: string | number | Date) => {
+	if(!validateDate(start_date.value))return false
+	const this_date = new Date(day)
+
+	//the end is either the selected end date or wherever the user is hovering
+	let temp_end_date = end_date.value != null ? end_date.value : new Date(hoveredDate.value)
+
+	return this_date.getTime() > start_date.value.getTime() && this_date.getTime() < temp_end_date.getTime()
+}
+
+const getCurrentDate = (rowNo: number, colNo: number) => {
+	return currentDates.value[getCurrentCell(rowNo, colNo)]
+}
+
+const hoverDate = (currentIndex: number) => {
+	hoveredDate.value = new Date(currentDates.value[currentIndex])
+}
 
 const populateMonth = () => {
 	currentDates.value = []
@@ -124,8 +193,6 @@ const populateMonth = () => {
 		currentDates.value.push(calendarStartDay + dayIndex * 86400000)
 	}
 }
-
-watch([currentMonth, currentYear], populateMonth)
 const previousYear = () => (currentYear.value -= 1)
 const nextYear = () => (currentYear.value += 1)
 
@@ -147,146 +214,138 @@ const nextMonth = () => {
 	}
 }
 
-const applyDates = () => {
-	//check the start and end dates
-	let start_date = startDateInput.value == '' ? new Date() : new Date(startDateInput.value)
-	let end_date = endDateInput.value == '' ? new Date() : new Date(endDateInput.value)
-
-	if (endDateInput.value == '') {
-		if (startDateInput.value == '') {
-			end_date = new Date()
-		} else {
-			end_date = new Date(startDateInput.value)
-		}
-	} else {
-		end_date = new Date(endDateInput.value)
-	}
-
-	if (start_date.getTime() > end_date.getTime() && end_date.getTime()) {
-		//swap the dates if end date is before start date
-		const temp_date = start_date
-		const temp_value = startDateInput.value
-		start_date = end_date
-		end_date = temp_date
-		startDateInput.value = endDateInput.value
-		endDateInput.value = temp_value
-	}
-	if (start_date.getTime()) {
-		selectedDateRange.start_date = start_date
-		selectedDate.value = start_date
-	} else {
-		selectedDateRange.start_date = new Date()
-		selectedDate.value = new Date()
-	}
-	if (end_date.getTime()) {
-		selectedDateRange.end_date = end_date
-	} else {
-		selectedDateRange.end_date = new Date()
-	}
-	emit('get-date', { start: selectedDateRange.start_date, end: selectedDateRange.end_date })
+const enterDate = event => {
+	if (event.key === 'Enter') enterInputDate()
 }
 
-const isTodaysDate = (day: string | number | Date) => {
-	const todaysDate = new Date()
-	if (currentMonth.value !== todaysDate.getMonth()) {
-		return
-	}
-	return todaysDate.toDateString() === new Date(day).toDateString()
-}
+// useKeyboardNav([
+// 	{
+// 		parent: datepickerRef,
+// 		selectors: 'td',
+// 		handlers: {
+// 			...defaultKeypressHandlers,
+// 			...{
+// 				'keydown.pageup': previousMonth,
+// 				'keydown.shift.pageup': previousYear,
+// 				'keydown.pagedown': nextMonth,
+// 				'keydown.shift.pagedown': nextYear,
+// 				// TODO: this is a hack to override the stonecrop enter handler;
+// 				// store context inside the component so that handlers can be setup consistently
+// 				// eslint-disable-next-line @typescript-eslint/no-empty-function
+// 				'keydown.enter': () => {}, // select this date
+// 			},
+// 		},
+// 	},
+// ])
 
-const isSelectedDate = (day: string | number | Date) => {
-	return new Date(day).toDateString() === new Date(selectedDate.value).toDateString()
-}
-const isStartDate = (day: string | number | Date) => {
-	return new Date(day).toDateString() === new Date(selectedDateRange.start_date).toDateString()
-}
-const isEndDate = (day: string | number | Date) => {
-	return new Date(day).toDateString() === new Date(selectedDateRange.end_date).toDateString()
-}
-
-const getCurrentCell = (rowNo: number, colNo: number) => {
-	return (rowNo - 1) * numberOfColumns + colNo
-}
-
-const isInDateRange = (day: string | number | Date) => {
-	//apply the withinRange class to all days within the selected range
-	const this_date = new Date(day)
-	let start_date = new Date(selectedDateRange.start_date)
-	let end_date = selectedDateRange.end_date != null ? new Date(selectedDateRange.end_date) : new Date(hoveredDate.value)
-
-	if (start_date.getTime() > end_date.getTime()) [start_date, end_date] = [end_date, start_date]
-
-	return this_date.getTime() > start_date.getTime() && this_date.getTime() < end_date.getTime()
-}
-
-const getCurrentDate = (rowNo: number, colNo: number) => {
-	return currentDates.value[getCurrentCell(rowNo, colNo)]
-}
-const hoverDate = (currentIndex: number) => {
-	hoveredDate.value = new Date(currentDates.value[currentIndex])
-}
 const selectDate = (currentIndex: number) => {
+
 	date.value = selectedDate.value = new Date(currentDates.value[currentIndex])
 
 	if (props.selectRange) {
-		if (selectedDateRange.start_date == null || selectedDateRange.end_date != null) {
-			selectedDateRange.start_date = date.value
-			selectedDateRange.end_date = null
-		} else if (selectedDate.value.getTime() < selectedDateRange.start_date.getTime()) {
-			//set it as the start date and swap them
-			selectedDateRange.end_date = selectedDateRange.start_date
-			selectedDateRange.start_date = date.value
+		if (start_date.value == null || end_date.value != null) {
+			start_date.value = date.value
+			end_date.value = null
+		} else if (selectedDate.value.getTime() < start_date.value.getTime()) {
+			end_date.value = null
+			start_date.value = date.value
 		} else {
-			selectedDateRange.end_date = date.value
+			end_date.value = date.value
+		}
+		startDateInput.value.value = parseDateToString(start_date.value)
+		endDateInput.value.value = parseDateToString(end_date.value)
+	}
+	emitData()
+}
+
+const testDateOrder = ()=>{
+	if(end_date.value.getTime()<start_date.value.getTime())[start_date.value, end_date.value] = [end_date.value, start_date.value]
+}
+
+const validateDate = date=>{
+	return date instanceof Date && !isNaN(date.getTime())
+}
+
+const enterInputDate = () => {
+	if(startDateInput.value.value==''){
+		start_date.value = null
+	}else{
+		const start = new Date(startDateInput.value.value)
+		start_date.value = validateDate(start)?start:null
+	}
+
+	if(endDateInput.value.value==''){
+		end_date.value = null
+	}else{
+		const end = new Date(endDateInput.value.value)
+		end_date.value = validateDate(end)?end:null
+	}
+
+	if(validateDate(start_date.value)){
+		if(validateDate(end_date.value))testDateOrder()
+		selectedDate.value = start_date.value
+	}
+
+	emitData()
+}
+
+const emitData = ()=>{
+	emit('get-date', {start:props.selectRange?start_date.value:null, end:props.selectRange?end_date.value:null, selected:selectedDate.value})
+}
+
+
+/*******************
+Hooks
+*******************/
+
+onMounted(async () => {
+	populateMonth()
+	// required to allow the elements to be focused in the next step
+	await nextTick()
+	const $selectedDate = document.getElementsByClassName('selectedDate')
+	if ($selectedDate.length > 0) {
+		;($selectedDate[0] as HTMLElement).focus()
+	} else {
+		const $todaysDate = document.getElementsByClassName('todaysDate')
+		if ($todaysDate.length > 0) {
+			;($todaysDate[0] as HTMLElement).focus()
 		}
 	}
-
-	startDateInput.value = parseDateToString(selectedDateRange.start_date)
-	endDateInput.value = parseDateToString(selectedDateRange.end_date)
-	emit('get-date', { start: selectedDateRange.start_date, end: selectedDateRange.end_date })
-}
-
-const parseDateToString = (date: Date) => {
-	let date_string = ''
-	if (date == null || !date.getTime()) {
-		return ''
-	}
-	date_string += date.getMonth() + 1 + '/' + date.getDate() + '/' + date.getFullYear()
-	return date_string
-}
-
-const monthAndYear = computed(() => {
-	return new Date(currentYear.value, currentMonth.value, 1).toLocaleDateString(undefined, {
-		year: 'numeric',
-		month: 'long',
-	})
 })
-const enterDate = event => {
-	if (event.key === 'Enter') applyDates()
-}
 
 // setup keyboard navigation
-useKeyboardNav([
-	{
-		parent: datepickerRef,
-		selectors: 'td',
-		handlers: {
-			...defaultKeypressHandlers,
-			...{
-				'keydown.pageup': previousMonth,
-				'keydown.shift.pageup': previousYear,
-				'keydown.pagedown': nextMonth,
-				'keydown.shift.pagedown': nextYear,
-				// TODO: this is a hack to override the stonecrop enter handler;
-				// store context inside the component so that handlers can be setup consistently
+// useKeyboardNav([
+// 	{
+// 		parent: datepickerRef,
+// 		selectors: 'td',
+// 		handlers: {
+// 			...defaultKeypressHandlers,
+// 			...{
+// 				'keydown.pageup': previousMonth,
+// 				'keydown.shift.pageup': previousYear,
+// 				'keydown.pagedown': nextMonth,
+// 				'keydown.shift.pagedown': nextYear,
+// 				// TODO: this is a hack to override the stonecrop enter handler;
+// 				// store context inside the component so that handlers can be setup consistently
 
-				'keydown.enter': () => {}, // select this date
-			},
-		},
-	},
-])
+// 				'keydown.enter': () => {}, // select this date
+// 			},
+// 		},
+// 	},
+// ])
 
-defineExpose({ currentMonth, currentYear, selectedDate, selectedDateRange })
+/*******************
+Watchers
+*******************/
+
+watch([currentMonth, currentYear], populateMonth)
+
+/*******************
+Expose
+*******************/
+
+defineExpose({ currentMonth, currentYear, selectedDate })
+
 </script>
 
 <style scoped>
