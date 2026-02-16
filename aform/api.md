@@ -121,6 +121,7 @@ Base table configuration properties shared across all view types.
 ```typescript
 export interface BaseTableConfig {
   fullWidth?: boolean;
+  rowActions?: RowActionsConfig;
 }
 ```
 
@@ -129,6 +130,7 @@ export interface BaseTableConfig {
 | Property | Type | Description |
 |----------|------|-------------|
 | fullWidth? | `boolean` | Control whether the table should be allowed to use the full width of its container. |
+| rowActions? | `RowActionsConfig` | Configuration for row-level actions (add, delete, duplicate, etc.). |
 
 ### BasicTableConfig
 
@@ -318,6 +320,167 @@ export interface GanttTableConfig {
 |----------|------|-------------|
 | dependencyGraph? | `boolean` | Control whether dependency graph connections should be enabled for Gantt views. When false, connection handles and dependency lines will be hidden. |
 | view | `'gantt'` | The type of view to display the table in. |
+
+### RowActionOptions
+
+Options for configuring individual row actions.
+
+**Definition:**
+
+```typescript
+export interface RowActionOptions {
+  enabled?: boolean;
+  handler?: (rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean;
+  icon?: string;
+  label?: string;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| enabled? | `boolean` | Whether the action is enabled. |
+| handler? | `(rowIndex: number, store: ReturnType<typeof createTableStore>) => void \| boolean` | Custom handler for the action. Return false to prevent the default behavior. |
+| icon? | `string` | Custom icon override (raw SVG string). |
+| label? | `string` | Custom label for the action (used in dropdown mode). |
+
+### RowActionsConfig
+
+Configuration for row-level actions (add, delete, duplicate, etc.).
+
+**Definition:**
+
+```typescript
+export interface RowActionsConfig {
+  actions?: {
+        add?: boolean | RowActionOptions;
+        delete?: boolean | RowActionOptions;
+        duplicate?: boolean | RowActionOptions;
+        insertAbove?: boolean | RowActionOptions;
+        insertBelow?: boolean | RowActionOptions;
+        move?: boolean | RowActionOptions;
+    };
+  dropdownThreshold?: number;
+  enabled: boolean;
+  forceDropdown?: boolean;
+  position?: 'before-index' | 'after-index' | 'end';
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| actions? | `{ add?: boolean \| RowActionOptions; delete?: boolean \| RowActionOptions; duplicate?: boolean \| RowActionOptions; insertAbove?: boolean \| RowActionOptions; insertBelow?: boolean \| RowActionOptions; move?: boolean \| RowActionOptions; }` | Configuration for individual actions. Set to true to enable with defaults, false to disable, or provide RowActionOptions for custom configuration. |
+| dropdownThreshold? | `number` | Pixel width threshold at which to switch from icons to dropdown mode. Set to 0 to always use icons, or a large number to always use dropdown. |
+| enabled | `boolean` | Whether row actions are enabled. |
+| forceDropdown? | `boolean` | Force dropdown mode regardless of available width. |
+| position? | `'before-index' \| 'after-index' \| 'end'` | Position of the row actions column relative to the index column. |
+
+### RowAddEvent
+
+Event payload for row:add event.
+
+**Definition:**
+
+```typescript
+export interface RowAddEvent {
+  row: TableRow;
+  rowIndex: number;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| row | `TableRow` |  |
+| rowIndex | `number` |  |
+
+### RowDeleteEvent
+
+Event payload for row:delete event.
+
+**Definition:**
+
+```typescript
+export interface RowDeleteEvent {
+  row: TableRow;
+  rowIndex: number;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| row | `TableRow` |  |
+| rowIndex | `number` |  |
+
+### RowDuplicateEvent
+
+Event payload for row:duplicate event.
+
+**Definition:**
+
+```typescript
+export interface RowDuplicateEvent {
+  newIndex: number;
+  row: TableRow;
+  sourceIndex: number;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| newIndex | `number` |  |
+| row | `TableRow` |  |
+| sourceIndex | `number` |  |
+
+### RowInsertEvent
+
+Event payload for row:insert-above and row:insert-below events.
+
+**Definition:**
+
+```typescript
+export interface RowInsertEvent {
+  newIndex: number;
+  row: TableRow;
+  targetIndex: number;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| newIndex | `number` |  |
+| row | `TableRow` |  |
+| targetIndex | `number` |  |
+
+### RowMoveEvent
+
+Event payload for row:move event.
+
+**Definition:**
+
+```typescript
+export interface RowMoveEvent {
+  fromIndex: number;
+  toIndex: number;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| fromIndex | `number` |  |
+| toIndex | `number` |  |
 
 ### TableColumn
 
@@ -670,6 +833,16 @@ export type GanttDragEvent = {
     oldColspan: number;
     newColspan: number;
 });
+```
+
+### RowActionType
+
+Row action type identifiers.
+
+**Definition:**
+
+```typescript
+export type RowActionType = 'add' | 'delete' | 'duplicate' | 'insertAbove' | 'insertBelow' | 'move';
 ```
 
 ### SchemaTypes
