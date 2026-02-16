@@ -1,6 +1,11 @@
 # Change Log - @stonecrop/graphql-client
 
-This log was last generated on Mon, 16 Feb 2026 12:52:52 GMT and should not be manually modified.
+This log was last generated on Mon, 16 Feb 2026 15:53:50 GMT and should not be manually modified.
+
+## 0.8.5
+Mon, 16 Feb 2026 15:53:50 GMT
+
+_Version update only_
 
 ## 0.8.4
 Mon, 16 Feb 2026 12:52:52 GMT
