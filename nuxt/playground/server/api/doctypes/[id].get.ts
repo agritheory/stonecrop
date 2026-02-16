@@ -48,7 +48,7 @@ export default defineEventHandler(event => {
 	const doctype = doctypes[id || '']
 	if (!doctype) {
 		throw createError({
-			statusCode: 404,
+			status: 404,
 			message: `DocType '${id}' not found`,
 		})
 	}

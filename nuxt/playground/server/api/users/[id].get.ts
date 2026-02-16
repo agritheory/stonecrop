@@ -51,7 +51,7 @@ export default defineEventHandler(event => {
 	const user = users[id || '']
 	if (!user) {
 		throw createError({
-			statusCode: 404,
+			status: 404,
 			message: `User '${id}' not found`,
 		})
 	}

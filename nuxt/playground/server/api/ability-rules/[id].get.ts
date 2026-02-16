@@ -68,7 +68,7 @@ export default defineEventHandler(event => {
 	const rule = abilityRules[id || '']
 	if (!rule) {
 		throw createError({
-			statusCode: 404,
+			status: 404,
 			message: `Ability Rule '${id}' not found`,
 		})
 	}

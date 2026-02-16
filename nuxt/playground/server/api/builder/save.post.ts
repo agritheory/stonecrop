@@ -8,14 +8,14 @@ export default defineEventHandler(async event => {
 
 	if (!body.doctype || typeof body.doctype !== 'string') {
 		throw createError({
-			statusCode: 400,
+			status: 400,
 			message: 'Missing or invalid doctype name',
 		})
 	}
 
 	if (!body.schema || !Array.isArray(body.schema)) {
 		throw createError({
-			statusCode: 400,
+			status: 400,
 			message: 'Missing or invalid schema array',
 		})
 	}
@@ -36,7 +36,7 @@ export default defineEventHandler(async event => {
 		} catch (mkdirError: any) {
 			console.error('[save.post] Failed to create directory:', mkdirError)
 			throw createError({
-				statusCode: 500,
+				status: 500,
 				message: `Failed to create doctypes directory: ${mkdirError.message}`,
 			})
 		}
@@ -48,7 +48,7 @@ export default defineEventHandler(async event => {
 	// Ensure we're not writing outside doctypes folder
 	if (!filePath.startsWith(doctypesDir)) {
 		throw createError({
-			statusCode: 400,
+			status: 400,
 			message: 'Invalid doctype name',
 		})
 	}
@@ -64,7 +64,7 @@ export default defineEventHandler(async event => {
 	} catch (error: any) {
 		console.error('[save.post] Failed to write file:', error)
 		throw createError({
-			statusCode: 500,
+			status: 500,
 			message: `Failed to save file: ${error.message}`,
 		})
 	}

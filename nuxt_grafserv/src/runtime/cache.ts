@@ -14,8 +14,8 @@ export default defineEventHandler(async event => {
 
 	if (!allowCacheApi) {
 		throw createError({
-			statusCode: 403,
-			statusMessage: 'Cache API is disabled in production',
+			status: 403,
+			statusText: 'Cache API is disabled in production',
 		})
 	}
 

@@ -19,7 +19,7 @@ export default defineEventHandler(async event => {
 	const doctypeSchema = doctypeSchemas[doctype || '']
 	if (!doctypeSchema) {
 		throw createError({
-			statusCode: 404,
+			status: 404,
 			message: `DocType '${doctype}' not found`,
 		})
 	}
