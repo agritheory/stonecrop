@@ -1096,6 +1096,174 @@ describe('table store', () => {
 		})
 	})
 
+	describe('row action methods', () => {
+		it('should add a row at the end by default', () => {
+			const testStore = createTableStore({ columns: mockColumns, rows: [...mockRows] })
+			const initialLength = testStore.rows.length
+			const newIndex = testStore.addRow({ id: 99, name: 'New', status: 'pending' })
+
+			expect(newIndex).toBe(initialLength)
+			expect(testStore.rows.length).toBe(initialLength + 1)
+			expect(testStore.rows[newIndex].name).toBe('New')
+		})
+
+		it('should add a row at the start', () => {
+			const testStore = createTableStore({ columns: mockColumns, rows: [...mockRows] })
+			const initialLength = testStore.rows.length
+			const newIndex = testStore.addRow({ id: 99, name: 'First', status: 'pending' }, 'start')
+
+			expect(newIndex).toBe(0)
+			expect(testStore.rows.length).toBe(initialLength + 1)
+			expect(testStore.rows[0].name).toBe('First')
+		})
+
+		it('should add a row at a specific index', () => {
+			const testStore = createTableStore({ columns: mockColumns, rows: [...mockRows] })
+			const initialLength = testStore.rows.length
+			const newIndex = testStore.addRow({ id: 99, name: 'Middle', status: 'pending' }, 1)
+
+			expect(newIndex).toBe(1)
+			expect(testStore.rows.length).toBe(initialLength + 1)
+			expect(testStore.rows[1].name).toBe('Middle')
+		})
+
+		it('should add a row with default empty values when no data provided', () => {
+			const testStore = createTableStore({ columns: mockColumns, rows: [...mockRows] })
+			const newIndex = testStore.addRow()
+
+			expect(testStore.rows[newIndex].id).toBe('')
+			expect(testStore.rows[newIndex].name).toBe('')
+			expect(testStore.rows[newIndex].status).toBe('')
+		})
+
+		it('should delete a row and return the deleted row', () => {
+			const testStore = createTableStore({ columns: mockColumns, rows: [...mockRows] })
+			const initialLength = testStore.rows.length
+			const rowToDelete = { ...testStore.rows[1] }
+			const deletedRow = testStore.deleteRow(1)
+
+			expect(deletedRow).toEqual(rowToDelete)
+			expect(testStore.rows.length).toBe(initialLength - 1)
+			expect(testStore.rows.find(r => r.id === rowToDelete.id)).toBeUndefined()
+		})
+
+		it('should return null when deleting with invalid index', () => {
+			const testStore = createTableStore({ columns: mockColumns, rows: [...mockRows] })
+			const result = testStore.deleteRow(-1)
+			expect(result).toBeNull()
+
+			const result2 = testStore.deleteRow(999)
+			expect(result2).toBeNull()
+		})
+
+		it('should duplicate a row', () => {
+			const testStore = createTableStore({ columns: mockColumns, rows: [...mockRows] })
+			const initialLength = testStore.rows.length
+			const originalRow = testStore.rows[0]
+			const newIndex = testStore.duplicateRow(0)
+
+			expect(newIndex).toBe(1)
+			expect(testStore.rows.length).toBe(initialLength + 1)
+			expect(testStore.rows[newIndex].name).toBe(originalRow.name)
+			expect(testStore.rows[newIndex].id).toBe(originalRow.id)
+		})
+
+		it('should return -1 when duplicating with invalid index', () => {
+			const testStore = createTableStore({ columns: mockColumns, rows: [...mockRows] })
+			const result = testStore.duplicateRow(-1)
+			expect(result).toBe(-1)
+
+			const result2 = testStore.duplicateRow(999)
+			expect(result2).toBe(-1)
+		})
+
+		it('should insert a row above', () => {
+			const testStore = createTableStore({ columns: mockColumns, rows: [...mockRows] })
+			const initialLength = testStore.rows.length
+			const newIndex = testStore.insertRowAbove(1, { id: 99, name: 'Above', status: 'new' })
+
+			expect(newIndex).toBe(1)
+			expect(testStore.rows.length).toBe(initialLength + 1)
+			expect(testStore.rows[1].name).toBe('Above')
+		})
+
+		it('should insert a row below', () => {
+			const testStore = createTableStore({ columns: mockColumns, rows: [...mockRows] })
+			const initialLength = testStore.rows.length
+			const newIndex = testStore.insertRowBelow(1, { id: 99, name: 'Below', status: 'new' })
+
+			expect(newIndex).toBe(2)
+			expect(testStore.rows.length).toBe(initialLength + 1)
+			expect(testStore.rows[2].name).toBe('Below')
+		})
+
+		it('should move a row down', () => {
+			// Use fresh rows to avoid mutation from other tests
+			const freshRows: TableRow[] = [
+				{ id: 1, name: 'John', status: 'active' },
+				{ id: 2, name: 'Jane', status: 'inactive' },
+				{ id: 3, name: 'Bob', status: 'active' },
+			]
+			const testStore = createTableStore({ columns: mockColumns, rows: freshRows })
+			const success = testStore.moveRow(0, 2)
+
+			expect(success).toBe(true)
+			expect(testStore.rows[0].name).toBe('Jane')
+			expect(testStore.rows[1].name).toBe('Bob')
+			expect(testStore.rows[2].name).toBe('John')
+		})
+
+		it('should move a row up', () => {
+			// Use fresh rows to avoid mutation from other tests
+			const freshRows: TableRow[] = [
+				{ id: 1, name: 'John', status: 'active' },
+				{ id: 2, name: 'Jane', status: 'inactive' },
+				{ id: 3, name: 'Bob', status: 'active' },
+			]
+			const testStore = createTableStore({ columns: mockColumns, rows: freshRows })
+			const success = testStore.moveRow(2, 0)
+
+			expect(success).toBe(true)
+			expect(testStore.rows[0].name).toBe('Bob')
+			expect(testStore.rows[1].name).toBe('John')
+			expect(testStore.rows[2].name).toBe('Jane')
+		})
+
+		it('should return false when moving with invalid indices', () => {
+			const testStore = createTableStore({ columns: mockColumns, rows: [...mockRows] })
+			expect(testStore.moveRow(-1, 1)).toBe(false)
+			expect(testStore.moveRow(0, 999)).toBe(false)
+			expect(testStore.moveRow(1, 1)).toBe(false) // Same index
+		})
+
+		it('should preserve row modifications when deleting rows', () => {
+			const testStore = createTableStore({ columns: mockColumns, rows: [...mockRows] })
+			// Modify row 2
+			testStore.setCellData(1, 2, 'Modified')
+			expect(testStore.display[2].rowModified).toBe(true)
+
+			// Delete row 1 (before the modified row)
+			testStore.deleteRow(1)
+
+			// Row 2 is now row 1, and should still be modified
+			expect(testStore.display[1].rowModified).toBe(true)
+		})
+
+		it('should preserve row modifications when moving rows', () => {
+			const testStore = createTableStore({ columns: mockColumns, rows: [...mockRows] })
+			// Modify row 0
+			testStore.setCellData(1, 0, 'Modified John')
+			expect(testStore.display[0].rowModified).toBe(true)
+
+			// Move row 0 to position 2
+			testStore.moveRow(0, 2)
+
+			// The modified row should now be at index 2 and still be modified
+			expect(testStore.rows[2].name).toBe('Modified John')
+			expect(testStore.display[2].rowModified).toBe(true)
+		})
+	})
+
 	describe('utility methods', () => {
 		it('should get row expand symbol for tree view', () => {
 			const treeStore = createTableStore({

@@ -8,7 +8,7 @@ export default defineEventHandler(async event => {
 
 	if (!doctype) {
 		throw createError({
-			statusCode: 400,
+			status: 400,
 			message: 'Missing doctype parameter',
 		})
 	}
@@ -20,14 +20,14 @@ export default defineEventHandler(async event => {
 	// Security check
 	if (!filePath.startsWith(doctypesDir)) {
 		throw createError({
-			statusCode: 400,
+			status: 400,
 			message: 'Invalid doctype name',
 		})
 	}
 
 	if (!existsSync(filePath)) {
 		throw createError({
-			statusCode: 404,
+			status: 404,
 			message: `DocType '${doctype}' not found`,
 		})
 	}
@@ -46,7 +46,7 @@ export default defineEventHandler(async event => {
 		}
 	} catch (error: any) {
 		throw createError({
-			statusCode: 500,
+			status: 500,
 			message: `Failed to read doctype: ${error.message}`,
 		})
 	}

@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/schema",
-	"version": "0.8.0",
+	"version": "0.8.4",
 	"type": "module",
 	"main": "./dist/index.cjs",
 	"module": "./dist/index.js",
@@ -36,6 +36,6 @@
 		"typescript": "^5.9.3",
 		"vite": "^7.3.1",
 		"vite-plugin-dts": "^4.5.4",
-		"vitest": "^4.0.17"
+		"vitest": "^4.0.18"
 	}
 }

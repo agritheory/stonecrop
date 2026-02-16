@@ -57,6 +57,7 @@ export type BaseSchema = {
 // @public
 export interface BaseTableConfig {
     fullWidth?: boolean;
+    rowActions?: RowActionsConfig;
 }
 
 // @public
@@ -217,6 +218,78 @@ export function install(app: App): void;
 export { Login }
 
 // @public
+export interface RowActionOptions {
+    enabled?: boolean;
+    // Warning: (ae-forgotten-export) The symbol "createTableStore" needs to be exported by the entry point index.d.ts
+    handler?: (rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean;
+    icon?: string;
+    label?: string;
+}
+
+// @public
+export interface RowActionsConfig {
+    actions?: {
+        add?: boolean | RowActionOptions;
+        delete?: boolean | RowActionOptions;
+        duplicate?: boolean | RowActionOptions;
+        insertAbove?: boolean | RowActionOptions;
+        insertBelow?: boolean | RowActionOptions;
+        move?: boolean | RowActionOptions;
+    };
+    dropdownThreshold?: number;
+    enabled: boolean;
+    forceDropdown?: boolean;
+    position?: 'before-index' | 'after-index' | 'end';
+}
+
+// @public
+export type RowActionType = 'add' | 'delete' | 'duplicate' | 'insertAbove' | 'insertBelow' | 'move';
+
+// @public
+export interface RowAddEvent {
+    // (undocumented)
+    row: TableRow;
+    // (undocumented)
+    rowIndex: number;
+}
+
+// @public
+export interface RowDeleteEvent {
+    // (undocumented)
+    row: TableRow;
+    // (undocumented)
+    rowIndex: number;
+}
+
+// @public
+export interface RowDuplicateEvent {
+    // (undocumented)
+    newIndex: number;
+    // (undocumented)
+    row: TableRow;
+    // (undocumented)
+    sourceIndex: number;
+}
+
+// @public
+export interface RowInsertEvent {
+    // (undocumented)
+    newIndex: number;
+    // (undocumented)
+    row: TableRow;
+    // (undocumented)
+    targetIndex: number;
+}
+
+// @public
+export interface RowMoveEvent {
+    // (undocumented)
+    fromIndex: number;
+    // (undocumented)
+    toIndex: number;
+}
+
+// @public
 export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema | DoctypeSchema | TableDoctypeSchema;
 
 // @public
@@ -292,7 +365,6 @@ export interface TableModalProps {
     [key: string]: any;
     colIndex: number;
     rowIndex: number;
-    // Warning: (ae-forgotten-export) The symbol "createTableStore" needs to be exported by the entry point index.d.ts
     store: ReturnType<typeof createTableStore>;
 }
 

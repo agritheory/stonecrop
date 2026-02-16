@@ -43,7 +43,7 @@ export default defineEventHandler(event => {
 	const role = roles[id || '']
 	if (!role) {
 		throw createError({
-			statusCode: 404,
+			status: 404,
 			message: `Role '${id}' not found`,
 		})
 	}
