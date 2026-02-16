@@ -36,7 +36,7 @@ export default defineEventHandler(event => {
 	const profile = roleProfiles[id || '']
 	if (!profile) {
 		throw createError({
-			statusCode: 404,
+			status: 404,
 			message: `Role Profile '${id}' not found`,
 		})
 	}

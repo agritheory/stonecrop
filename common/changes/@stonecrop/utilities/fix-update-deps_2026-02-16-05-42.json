@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/utilities",
+      "comment": "update deps",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/utilities"
+}

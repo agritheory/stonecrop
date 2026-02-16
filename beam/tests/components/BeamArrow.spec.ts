@@ -31,6 +31,6 @@ describe('BeamArrow', () => {
 			},
 		})
 		const polygon = wrapper.find('polygon')
-		expect(polygon.attributes('style')).toContain('#00ff00')
+		expect(polygon.attributes('style')).toContain('rgb(0, 255, 0)')
 	})
 })

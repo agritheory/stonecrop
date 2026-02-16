@@ -7,7 +7,7 @@ export default defineEventHandler(async event => {
 
 	if (!body.fields || !Array.isArray(body.fields)) {
 		throw createError({
-			statusCode: 400,
+			status: 400,
 			message: 'Missing or invalid fields array',
 		})
 	}
