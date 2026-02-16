@@ -677,6 +677,203 @@ export const createTableStore = (initData: {
 			delete filterState.value[colIndex]
 		}
 
+		// Row action methods
+
+		/**
+		 * Add a new row to the table.
+		 * @param rowData - Optional partial row data to initialize the new row with
+		 * @param position - Where to insert the row: 'start', 'end', or a specific index
+		 * @returns The index of the newly added row
+		 */
+		const addRow = (rowData?: Partial<TableRow>, position: 'start' | 'end' | number = 'end'): number => {
+			// Create a new row with default empty values for each column
+			const newRow: TableRow = {}
+			for (const column of columns.value) {
+				newRow[column.name] = ''
+			}
+
+			// Merge in any provided row data
+			if (rowData) {
+				Object.assign(newRow, rowData)
+			}
+
+			let insertIndex: number
+			if (position === 'start') {
+				insertIndex = 0
+				rows.value.unshift(newRow)
+			} else if (position === 'end') {
+				insertIndex = rows.value.length
+				rows.value.push(newRow)
+			} else {
+				insertIndex = Math.max(0, Math.min(position, rows.value.length))
+				rows.value.splice(insertIndex, 0, newRow)
+			}
+
+			return insertIndex
+		}
+
+		/**
+		 * Delete a row from the table.
+		 * @param rowIndex - The index of the row to delete
+		 * @returns The deleted row, or null if the index was invalid
+		 */
+		const deleteRow = (rowIndex: number): TableRow | null => {
+			if (rowIndex < 0 || rowIndex >= rows.value.length) {
+				return null
+			}
+
+			const [deletedRow] = rows.value.splice(rowIndex, 1)
+
+			// Clean up row modifications tracking for the deleted row
+			delete rowModifications.value[rowIndex]
+			delete rowExpandStates.value[rowIndex]
+
+			// Shift modification/expand state indices for rows after the deleted one
+			const newModifications: Record<number, boolean> = {}
+			const newExpandStates: Record<number, { childrenOpen?: boolean; expanded?: boolean }> = {}
+
+			for (const [key, value] of Object.entries(rowModifications.value)) {
+				const idx = parseInt(key)
+				if (idx > rowIndex) {
+					newModifications[idx - 1] = value
+				} else {
+					newModifications[idx] = value
+				}
+			}
+
+			for (const [key, value] of Object.entries(rowExpandStates.value)) {
+				const idx = parseInt(key)
+				if (idx > rowIndex) {
+					newExpandStates[idx - 1] = value
+				} else {
+					newExpandStates[idx] = value
+				}
+			}
+
+			rowModifications.value = newModifications
+			rowExpandStates.value = newExpandStates
+
+			return deletedRow
+		}
+
+		/**
+		 * Duplicate a row in the table.
+		 * @param rowIndex - The index of the row to duplicate
+		 * @returns The index of the new duplicated row, or -1 if the index was invalid
+		 */
+		const duplicateRow = (rowIndex: number): number => {
+			if (rowIndex < 0 || rowIndex >= rows.value.length) {
+				return -1
+			}
+
+			// Deep clone the row data
+			const originalRow = rows.value[rowIndex]
+			const duplicatedRow: TableRow = JSON.parse(JSON.stringify(originalRow))
+
+			// Insert the duplicated row after the original
+			const newIndex = rowIndex + 1
+			rows.value.splice(newIndex, 0, duplicatedRow)
+
+			return newIndex
+		}
+
+		/**
+		 * Insert a new row above the specified row.
+		 * @param rowIndex - The index of the row to insert above
+		 * @param rowData - Optional partial row data to initialize the new row with
+		 * @returns The index of the newly inserted row
+		 */
+		const insertRowAbove = (rowIndex: number, rowData?: Partial<TableRow>): number => {
+			const insertIndex = Math.max(0, rowIndex)
+			return addRow(rowData, insertIndex)
+		}
+
+		/**
+		 * Insert a new row below the specified row.
+		 * @param rowIndex - The index of the row to insert below
+		 * @param rowData - Optional partial row data to initialize the new row with
+		 * @returns The index of the newly inserted row
+		 */
+		const insertRowBelow = (rowIndex: number, rowData?: Partial<TableRow>): number => {
+			const insertIndex = Math.min(rowIndex + 1, rows.value.length)
+			return addRow(rowData, insertIndex)
+		}
+
+		/**
+		 * Move a row from one position to another.
+		 * @param fromIndex - The current index of the row to move
+		 * @param toIndex - The target index to move the row to
+		 * @returns true if the move was successful, false otherwise
+		 */
+		const moveRow = (fromIndex: number, toIndex: number): boolean => {
+			// Validate indices
+			if (
+				fromIndex < 0 ||
+				fromIndex >= rows.value.length ||
+				toIndex < 0 ||
+				toIndex >= rows.value.length ||
+				fromIndex === toIndex
+			) {
+				return false
+			}
+
+			// Remove the row from its current position
+			const [movedRow] = rows.value.splice(fromIndex, 1)
+
+			// Insert at the new position
+			rows.value.splice(toIndex, 0, movedRow)
+
+			// Update row modification and expand state indices
+			const newModifications: Record<number, boolean> = {}
+			const newExpandStates: Record<number, { childrenOpen?: boolean; expanded?: boolean }> = {}
+
+			for (const [key, value] of Object.entries(rowModifications.value)) {
+				const idx = parseInt(key)
+				let newIdx = idx
+
+				if (idx === fromIndex) {
+					// The moved row
+					newIdx = toIndex
+				} else if (fromIndex < toIndex) {
+					// Moving down: rows between fromIndex and toIndex shift up
+					if (idx > fromIndex && idx <= toIndex) {
+						newIdx = idx - 1
+					}
+				} else {
+					// Moving up: rows between toIndex and fromIndex shift down
+					if (idx >= toIndex && idx < fromIndex) {
+						newIdx = idx + 1
+					}
+				}
+
+				newModifications[newIdx] = value
+			}
+
+			for (const [key, value] of Object.entries(rowExpandStates.value)) {
+				const idx = parseInt(key)
+				let newIdx = idx
+
+				if (idx === fromIndex) {
+					newIdx = toIndex
+				} else if (fromIndex < toIndex) {
+					if (idx > fromIndex && idx <= toIndex) {
+						newIdx = idx - 1
+					}
+				} else {
+					if (idx >= toIndex && idx < fromIndex) {
+						newIdx = idx + 1
+					}
+				}
+
+				newExpandStates[newIdx] = value
+			}
+
+			rowModifications.value = newModifications
+			rowExpandStates.value = newExpandStates
+
+			return true
+		}
+
 		return {
 			// state
 			columns,
@@ -702,10 +899,13 @@ export const createTableStore = (initData: {
 			zeroColumn,
 
 			// actions
+			addRow,
 			clearFilter,
 			closeModal,
 			createConnection,
 			deleteConnection,
+			deleteRow,
+			duplicateRow,
 			getCellData,
 			getCellDisplayValue,
 			getConnectionsForBar,
@@ -714,8 +914,11 @@ export const createTableStore = (initData: {
 			getHeaderCellStyle,
 			getIndent,
 			getRowExpandSymbol,
+			insertRowAbove,
+			insertRowBelow,
 			isRowGantt,
 			isRowVisible,
+			moveRow,
 			registerConnectionHandle,
 			registerGanttBar,
 			resizeColumn,
