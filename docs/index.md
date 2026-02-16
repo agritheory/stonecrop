@@ -17,16 +17,20 @@ hero:
       link: https://github.com/agritheory/stonecrop
 
 features:
-  - icon: 📝
+  - icon:
+      src: ./assets/schema-icon.svg
     title: Schema-Driven Forms
     details: AForm renders forms from schema definitions with built-in validation, masking, and field types.
-  - icon: 📊
+  - icon: 
+      src: ./assets/advanced-tables-icon.svg
     title: Advanced Tables
     details: ATable provides sortable, filterable tables with tree views, Gantt charts, and inline editing.
-  - icon: 🔄
+  - icon:
+      src: ./assets/state-management-icon.svg
     title: State Management
     details: Hierarchical State Tree (HST) with undo/redo, field triggers, and XState workflow integration.
-  - icon: 🔌
+  - icon:
+      src: ./assets/graph-ql-logo.svg
     title: GraphQL Integration
     details: Full-stack GraphQL middleware with PostGraphile, CASL authorization, and Nuxt modules.
 ---
