@@ -1,6 +1,14 @@
 # Change Log - @stonecrop/atable
 
-This log was last generated on Mon, 16 Feb 2026 12:31:33 GMT and should not be manually modified.
+This log was last generated on Mon, 16 Feb 2026 12:36:20 GMT and should not be manually modified.
+
+## 0.8.2
+Mon, 16 Feb 2026 12:36:20 GMT
+
+### Patches
+
+- Add Row Control component and examples
+- close action dropdowns when toggling another dropdown
 
 ## 0.8.1
 Mon, 16 Feb 2026 12:31:33 GMT

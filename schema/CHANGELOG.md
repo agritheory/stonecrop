@@ -1,6 +1,11 @@
 # Change Log - @stonecrop/schema
 
-This log was last generated on Mon, 16 Feb 2026 12:31:33 GMT and should not be manually modified.
+This log was last generated on Mon, 16 Feb 2026 12:36:20 GMT and should not be manually modified.
+
+## 0.8.2
+Mon, 16 Feb 2026 12:36:20 GMT
+
+_Version update only_
 
 ## 0.8.1
 Mon, 16 Feb 2026 12:31:33 GMT
