@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/nuxt
 
-This log was last generated on Mon, 16 Feb 2026 15:59:33 GMT and should not be manually modified.
+This log was last generated on Tue, 17 Feb 2026 15:48:19 GMT and should not be manually modified.
+
+## 0.8.7
+Tue, 17 Feb 2026 15:48:19 GMT
+
+### Patches
+
+- update form API usage
 
 ## 0.8.6
 Mon, 16 Feb 2026 15:59:33 GMT
