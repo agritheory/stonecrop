@@ -15,11 +15,10 @@ export {
 export type {
 	ValidationResult,
 	ValidationError,
-	ConversionFieldMeta,
-	ParsedColumn,
-	ParsedTable,
-	ConversionOptions,
-	PostgresType,
+	IntrospectionSource,
+	GraphQLConversionOptions,
+	GraphQLConversionFieldMeta,
+	ConvertedGraphQLDoctype,
 } from '@stonecrop/schema'
 
 // =============================================================================

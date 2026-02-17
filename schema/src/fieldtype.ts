@@ -34,11 +34,18 @@ export const StonecropFieldType = z.enum([
 export type StonecropFieldType = z.infer<typeof StonecropFieldType>
 
 /**
- * Field template for TYPE_MAP entries
+ * Field template for TYPE_MAP entries.
+ * Defines the default component and semantic field type for a field.
  * @public
  */
 export interface FieldTemplate {
+	/**
+	 * The Vue component name to render this field (e.g., 'ATextInput', 'ADropdown')
+	 */
 	component: string
+	/**
+	 * The semantic field type (e.g., 'Data', 'Int', 'Select')
+	 */
 	fieldtype: StonecropFieldType
 }
 

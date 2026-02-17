@@ -15,6 +15,9 @@
 	"files": [
 		"dist"
 	],
+	"bin": {
+		"stonecrop-schema": "./dist/cli.js"
+	},
 	"scripts": {
 		"_phase:build": "heft build && vite build && rushx docs",
 		"prepublish": "heft build && vite build && rushx docs",
@@ -23,15 +26,18 @@
 		"preview": "vite preview",
 		"test": "vitest run --coverage.enabled false",
 		"test:watch": "vitest watch",
+		"test:coverage": "vitest run --coverage",
 		"test:ui": "vitest --ui"
 	},
 	"dependencies": {
-		"pgsql-ast-parser": "^12.0.1",
+		"graphql": "^16.12.0",
 		"zod": "^3.25.76"
 	},
 	"devDependencies": {
 		"@rushstack/heft": "^1.1.7",
 		"@types/node": "^22.19.5",
+		"@vitest/coverage-istanbul": "^4.0.18",
+		"jsdom": "^28.1.0",
 		"stonecrop-rig": "workspace:*",
 		"typescript": "^5.9.3",
 		"vite": "^7.3.1",

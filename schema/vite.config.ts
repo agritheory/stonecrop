@@ -1,5 +1,5 @@
 import { resolve } from 'node:path'
-import { defineConfig } from 'vite'
+import { coverageConfigDefaults, defineConfig } from 'vitest/config'
 import dts from 'vite-plugin-dts'
 
 export default defineConfig({
@@ -11,13 +11,39 @@ export default defineConfig({
 	],
 	build: {
 		lib: {
-			entry: resolve(__dirname, 'src/index.ts'),
-			name: 'StonecropSchema',
+			entry: {
+				index: resolve(__dirname, 'src/index.ts'),
+				cli: resolve(__dirname, 'src/cli.ts'),
+			},
+			name: '@stonecrop/schema',
 			formats: ['es', 'cjs'],
-			fileName: format => `index.${format === 'es' ? 'js' : 'cjs'}`,
+			fileName: (format, entryName) => `${entryName}.${format === 'es' ? 'js' : 'cjs'}`,
 		},
 		rollupOptions: {
-			external: ['zod'],
+			external: ['zod', 'graphql', 'node:util', 'node:fs', 'node:path'],
+		},
+	},
+	test: {
+		globals: true,
+		environment: 'jsdom',
+		coverage: {
+			enabled: true,
+			provider: 'istanbul',
+			reporter: ['text', 'json-summary', 'json'], // required for Github Actions CI
+			reportOnFailure: true,
+			skipFull: true,
+			thresholds: {
+				lines: 70,
+				branches: 70,
+				functions: 70,
+				statements: 70,
+			},
+			include: ['src/**/*.{ts,vue}'],
+			exclude: [
+				...coverageConfigDefaults.exclude,
+				'src/index.ts', // ignore the entry file
+				'src/cli.ts', // ignore the CLI entry point
+			],
 		},
 	},
 })

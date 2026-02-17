@@ -1,29 +1,42 @@
-// Sample DDL for testing converter
-const sampleDDL = `
-CREATE TABLE users (
-	id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-	username VARCHAR(255) NOT NULL,
-	email VARCHAR(255) NOT NULL,
-	disabled BOOLEAN NOT NULL DEFAULT false,
-	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE TABLE roles (
-	id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-	role_name VARCHAR(255) NOT NULL,
-	description TEXT,
-	parent_role_id UUID REFERENCES roles(id) ON DELETE SET NULL
-);
-
-CREATE TABLE tasks (
-	id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-	title VARCHAR(255) NOT NULL,
-	status VARCHAR(50) NOT NULL DEFAULT 'Draft',
-	priority INTEGER NOT NULL DEFAULT 0,
-	due_date DATE,
-	estimated_hours NUMERIC(5, 2)
-);
-`
+// Sample doctypes for testing middleware
+const sampleDoctypes: Record<string, any> = {
+	Users: {
+		name: 'Users',
+		slug: 'users',
+		tableName: 'users',
+		fields: [
+			{ fieldname: 'id', fieldtype: 'Data', component: 'ATextInput', label: 'Id' },
+			{ fieldname: 'username', fieldtype: 'Data', component: 'ATextInput', label: 'Username', required: true },
+			{ fieldname: 'email', fieldtype: 'Data', component: 'ATextInput', label: 'Email', required: true },
+			{ fieldname: 'disabled', fieldtype: 'Check', component: 'ACheckbox', label: 'Disabled', default: false },
+			{ fieldname: 'createdAt', fieldtype: 'Datetime', component: 'ADatetimePicker', label: 'Created At' },
+		],
+	},
+	Roles: {
+		name: 'Roles',
+		slug: 'roles',
+		tableName: 'roles',
+		fields: [
+			{ fieldname: 'id', fieldtype: 'Data', component: 'ATextInput', label: 'Id' },
+			{ fieldname: 'roleName', fieldtype: 'Data', component: 'ATextInput', label: 'Role Name', required: true },
+			{ fieldname: 'description', fieldtype: 'Text', component: 'ATextInput', label: 'Description' },
+			{ fieldname: 'parentRoleId', fieldtype: 'Link', component: 'ALink', label: 'Parent Role', options: 'roles' },
+		],
+	},
+	Tasks: {
+		name: 'Tasks',
+		slug: 'tasks',
+		tableName: 'tasks',
+		fields: [
+			{ fieldname: 'id', fieldtype: 'Data', component: 'ATextInput', label: 'Id' },
+			{ fieldname: 'title', fieldtype: 'Data', component: 'ATextInput', label: 'Title', required: true },
+			{ fieldname: 'status', fieldtype: 'Data', component: 'ATextInput', label: 'Status', default: 'Draft' },
+			{ fieldname: 'priority', fieldtype: 'Int', component: 'ANumericInput', label: 'Priority', default: 0 },
+			{ fieldname: 'dueDate', fieldtype: 'Date', component: 'ADatePicker', label: 'Due Date' },
+			{ fieldname: 'estimatedHours', fieldtype: 'Decimal', component: 'ADecimalInput', label: 'Estimated Hours' },
+		],
+	},
+}
 
 // Cache the import
 let middleware: any = null
@@ -47,58 +60,27 @@ export default defineEventHandler(async event => {
 		}
 	}
 
-	const {
-		convertSchema,
-		loadDoctypesFromObject,
-		getMeta,
-		getAllMeta,
-		clearRegistry,
-		validateReferences,
-		validateDoctype,
-	} = mw
+	const { loadDoctypesFromObject, getMeta, getAllMeta, clearRegistry, validateReferences, validateDoctype } = mw
 
 	const query = getQuery(event)
 	const action = query.action as string
 
 	try {
 		switch (action) {
-			case 'convert': {
-				const doctypes = convertSchema(sampleDDL, {
-					inheritanceMode: 'flatten',
-					includeUnmappedMeta: true,
-				})
-				return {
-					success: true,
-					action: 'convert',
-					description: 'Converted PostgreSQL DDL to Stonecrop doctypes',
-					result: doctypes,
-				}
-			}
-
 			case 'load': {
 				clearRegistry()
-				const converted = convertSchema(sampleDDL, { inheritanceMode: 'flatten' })
-				const doctypeMap: Record<string, any> = {}
-				for (const dt of converted) {
-					doctypeMap[dt.name] = dt
-				}
-				loadDoctypesFromObject(doctypeMap)
+				loadDoctypesFromObject(sampleDoctypes)
 				return {
 					success: true,
 					action: 'load',
-					description: 'Loaded converted doctypes into registry',
+					description: 'Loaded sample doctypes into registry',
 					loaded: getAllMeta().map((d: any) => d.name),
 				}
 			}
 
 			case 'validate-refs': {
 				clearRegistry()
-				const converted = convertSchema(sampleDDL, { inheritanceMode: 'flatten' })
-				const doctypeMap: Record<string, any> = {}
-				for (const dt of converted) {
-					doctypeMap[dt.name] = dt
-				}
-				loadDoctypesFromObject(doctypeMap)
+				loadDoctypesFromObject(sampleDoctypes)
 				const errors = validateReferences()
 				return {
 					success: errors.length === 0,
@@ -152,12 +134,7 @@ export default defineEventHandler(async event => {
 
 				if (getAllMeta().length === 0) {
 					clearRegistry()
-					const converted = convertSchema(sampleDDL, { inheritanceMode: 'flatten' })
-					const doctypeMap: Record<string, any> = {}
-					for (const dt of converted) {
-						doctypeMap[dt.name] = dt
-					}
-					loadDoctypesFromObject(doctypeMap)
+					loadDoctypesFromObject(sampleDoctypes)
 				}
 
 				const meta = getMeta(doctype)
@@ -176,8 +153,7 @@ export default defineEventHandler(async event => {
 					action: 'help',
 					description: 'GraphQL Middleware Test Endpoint',
 					availableActions: [
-						{ action: 'convert', description: 'Convert sample DDL to doctypes' },
-						{ action: 'load', description: 'Load converted doctypes into registry' },
+						{ action: 'load', description: 'Load sample doctypes into registry' },
 						{ action: 'validate-refs', description: 'Validate cross-doctype references' },
 						{ action: 'validate-schema', description: 'Test Zod schema validation' },
 						{ action: 'get-meta', description: 'Get doctype from registry' },

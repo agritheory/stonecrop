@@ -1,469 +1,666 @@
 import { describe, it, expect } from 'vitest'
-import { convertSchema, parseDDL, normalizeType, mapColumnToField, PG_TYPE_MAP, TYPE_ALIASES } from '../src/converter'
-import type { ParsedColumn, ParsedTable } from '../src/converter'
+import { buildSchema, introspectionFromSchema, type IntrospectionQuery } from 'graphql'
 
-describe('Schema Converter', () => {
-	describe('normalizeType', () => {
-		it('should normalize integer type aliases', () => {
-			expect(normalizeType('int')).toBe('integer')
-			expect(normalizeType('int2')).toBe('smallint')
-			expect(normalizeType('int4')).toBe('integer')
-			expect(normalizeType('int8')).toBe('bigint')
+import {
+	convertGraphQLSchema,
+	GQL_SCALAR_MAP,
+	WELL_KNOWN_SCALARS,
+	INTERNAL_SCALARS,
+	buildScalarMap,
+	defaultIsEntityType,
+	defaultIsEntityField,
+	classifyFieldType,
+} from '../src/converter'
+import { validateDoctype } from '../src/validation'
+
+// ═══════════════════════════════════════════════════════════════
+// Helper: Build introspection from SDL for testing
+// ═══════════════════════════════════════════════════════════════
+
+function sdlToIntrospection(sdl: string): IntrospectionQuery {
+	const schema = buildSchema(sdl)
+	return introspectionFromSchema(schema)
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Test SDL schemas
+// ═══════════════════════════════════════════════════════════════
+
+const basicSdl = `
+type Query {
+	user(id: ID!): User
+	users: UserConnection
+	post(id: ID!): Post
+}
+
+type User {
+	id: ID!
+	name: String!
+	email: String
+	active: Boolean!
+	age: Int
+	score: Float
+}
+
+type Post {
+	id: ID!
+	title: String!
+	body: String
+	author: User!
+	status: PostStatus!
+	comments: CommentConnection
+}
+
+type Comment {
+	id: ID!
+	text: String!
+	author: User!
+}
+
+enum PostStatus {
+	DRAFT
+	PUBLISHED
+	ARCHIVED
+}
+
+type UserConnection {
+	edges: [UserEdge]
+	totalCount: Int
+}
+
+type UserEdge {
+	node: User
+	cursor: String
+}
+
+type CommentConnection {
+	edges: [CommentEdge]
+	totalCount: Int
+}
+
+type CommentEdge {
+	node: Comment
+	cursor: String
+}
+
+type UserInput {
+	name: String!
+	email: String
+}
+
+type UserPatch {
+	name: String
+	email: String
+}
+
+type CreateUserPayload {
+	user: User
+}
+`
+
+// ═══════════════════════════════════════════════════════════════
+// Scalar Maps
+// ═══════════════════════════════════════════════════════════════
+
+describe('GQL_SCALAR_MAP', () => {
+	it('should map all standard GraphQL scalars', () => {
+		expect(GQL_SCALAR_MAP.String).toEqual({ component: 'ATextInput', fieldtype: 'Data' })
+		expect(GQL_SCALAR_MAP.Int).toEqual({ component: 'ANumericInput', fieldtype: 'Int' })
+		expect(GQL_SCALAR_MAP.Float).toEqual({ component: 'ANumericInput', fieldtype: 'Float' })
+		expect(GQL_SCALAR_MAP.Boolean).toEqual({ component: 'ACheckbox', fieldtype: 'Check' })
+		expect(GQL_SCALAR_MAP.ID).toEqual({ component: 'ATextInput', fieldtype: 'Data' })
+	})
+})
+
+describe('WELL_KNOWN_SCALARS', () => {
+	it('should map common custom scalars', () => {
+		expect(WELL_KNOWN_SCALARS.BigFloat).toEqual({ component: 'ADecimalInput', fieldtype: 'Decimal' })
+		expect(WELL_KNOWN_SCALARS.UUID).toEqual({ component: 'ATextInput', fieldtype: 'Data' })
+		expect(WELL_KNOWN_SCALARS.DateTime).toEqual({ component: 'ADatetimePicker', fieldtype: 'Datetime' })
+		expect(WELL_KNOWN_SCALARS.Datetime).toEqual({ component: 'ADatetimePicker', fieldtype: 'Datetime' })
+		expect(WELL_KNOWN_SCALARS.Date).toEqual({ component: 'ADatePicker', fieldtype: 'Date' })
+		expect(WELL_KNOWN_SCALARS.Time).toEqual({ component: 'ATimeInput', fieldtype: 'Time' })
+		expect(WELL_KNOWN_SCALARS.JSON).toEqual({ component: 'ACodeEditor', fieldtype: 'JSON' })
+		expect(WELL_KNOWN_SCALARS.BigInt).toEqual({ component: 'ANumericInput', fieldtype: 'Int' })
+		expect(WELL_KNOWN_SCALARS.Duration).toEqual({ component: 'ADurationInput', fieldtype: 'Duration' })
+	})
+
+	it('should include all entries with valid Stonecrop field types', () => {
+		const validTypes = [
+			'Data',
+			'Text',
+			'Int',
+			'Float',
+			'Decimal',
+			'Check',
+			'Date',
+			'Time',
+			'Datetime',
+			'Duration',
+			'DateRange',
+			'JSON',
+			'Code',
+			'Link',
+			'Doctype',
+			'Attach',
+			'Currency',
+			'Quantity',
+			'Select',
+		]
+		for (const [name, template] of Object.entries(WELL_KNOWN_SCALARS)) {
+			expect(validTypes).toContain(template.fieldtype)
+			expect(template.component).toBeTruthy()
+		}
+	})
+})
+
+describe('INTERNAL_SCALARS', () => {
+	it('should include Cursor', () => {
+		expect(INTERNAL_SCALARS.has('Cursor')).toBe(true)
+	})
+})
+
+describe('buildScalarMap', () => {
+	it('should merge standard and well-known scalars', () => {
+		const map = buildScalarMap()
+		expect(map.String).toEqual(GQL_SCALAR_MAP.String)
+		expect(map.BigFloat).toEqual(WELL_KNOWN_SCALARS.BigFloat)
+	})
+
+	it('should let standard scalars override well-known names', () => {
+		const map = buildScalarMap()
+		// String is in both (should always use the standard one)
+		expect(map.String).toEqual(GQL_SCALAR_MAP.String)
+	})
+
+	it('should let custom scalars override everything', () => {
+		const map = buildScalarMap({
+			String: { component: 'CustomInput', fieldtype: 'Text' },
+			MyScalar: { component: 'MyComponent', fieldtype: 'Currency' },
+		})
+		expect(map.String).toEqual({ component: 'CustomInput', fieldtype: 'Text' })
+		expect(map.MyScalar).toEqual({ component: 'MyComponent', fieldtype: 'Currency' })
+	})
+
+	it('should default component and fieldtype for partial custom scalars', () => {
+		const map = buildScalarMap({
+			Partial: { fieldtype: 'Decimal' },
+		})
+		expect(map.Partial).toEqual({ component: 'ATextInput', fieldtype: 'Decimal' })
+	})
+})
+
+// ═══════════════════════════════════════════════════════════════
+// Entity Type Detection
+// ═══════════════════════════════════════════════════════════════
+
+describe('defaultIsEntityType', () => {
+	const schema = buildSchema(basicSdl)
+	const typeMap = schema.getTypeMap()
+
+	function getObjectType(name: string) {
+		const type = typeMap[name]
+		if (!type || type.constructor.name !== 'GraphQLObjectType') {
+			throw new Error(`${name} is not an object type`)
+		}
+		return type as any
+	}
+
+	it('should identify entity types', () => {
+		expect(defaultIsEntityType('User', getObjectType('User'))).toBe(true)
+		expect(defaultIsEntityType('Post', getObjectType('Post'))).toBe(true)
+		expect(defaultIsEntityType('Comment', getObjectType('Comment'))).toBe(true)
+	})
+
+	it('should exclude Connection types', () => {
+		expect(defaultIsEntityType('UserConnection', getObjectType('UserConnection'))).toBe(false)
+		expect(defaultIsEntityType('CommentConnection', getObjectType('CommentConnection'))).toBe(false)
+	})
+
+	it('should exclude Edge types', () => {
+		expect(defaultIsEntityType('UserEdge', getObjectType('UserEdge'))).toBe(false)
+		expect(defaultIsEntityType('CommentEdge', getObjectType('CommentEdge'))).toBe(false)
+	})
+
+	it('should exclude Input types', () => {
+		expect(defaultIsEntityType('UserInput', getObjectType('UserInput'))).toBe(false)
+	})
+
+	it('should exclude Patch types', () => {
+		expect(defaultIsEntityType('UserPatch', getObjectType('UserPatch'))).toBe(false)
+	})
+
+	it('should exclude Payload types', () => {
+		expect(defaultIsEntityType('CreateUserPayload', getObjectType('CreateUserPayload'))).toBe(false)
+	})
+
+	it('should exclude root operation types', () => {
+		expect(defaultIsEntityType('Query', getObjectType('Query'))).toBe(false)
+	})
+
+	it('should exclude introspection types', () => {
+		// __Schema, __Type, etc. start with __
+		expect(defaultIsEntityType('__Schema', getObjectType('__Schema'))).toBe(false)
+		expect(defaultIsEntityType('__Type', getObjectType('__Type'))).toBe(false)
+	})
+})
+
+// ═══════════════════════════════════════════════════════════════
+// Entity Field Detection
+// ═══════════════════════════════════════════════════════════════
+
+describe('defaultIsEntityField', () => {
+	const schema = buildSchema(basicSdl)
+	const userType = schema.getType('User') as any
+	const userFields = userType.getFields()
+
+	it('should include regular fields', () => {
+		expect(defaultIsEntityField('id', userFields.id, userType)).toBe(true)
+		expect(defaultIsEntityField('name', userFields.name, userType)).toBe(true)
+		expect(defaultIsEntityField('email', userFields.email, userType)).toBe(true)
+	})
+
+	it('should skip nodeId', () => {
+		expect(defaultIsEntityField('nodeId', userFields.id, userType)).toBe(false)
+	})
+
+	it('should skip __typename', () => {
+		expect(defaultIsEntityField('__typename', userFields.id, userType)).toBe(false)
+	})
+
+	it('should skip clientMutationId', () => {
+		expect(defaultIsEntityField('clientMutationId', userFields.id, userType)).toBe(false)
+	})
+})
+
+// ═══════════════════════════════════════════════════════════════
+// Field Classification
+// ═══════════════════════════════════════════════════════════════
+
+describe('classifyFieldType', () => {
+	const schema = buildSchema(basicSdl)
+	const entityTypes = new Set(['User', 'Post', 'Comment'])
+	const postType = schema.getType('Post') as any
+	const postFields = postType.getFields()
+	const userType = schema.getType('User') as any
+	const userFields = userType.getFields()
+
+	it('should classify String as Data', () => {
+		const field = classifyFieldType('name', userFields.name, entityTypes)
+		expect(field.fieldtype).toBe('Data')
+		expect(field.component).toBe('ATextInput')
+		expect(field.required).toBe(true) // String!
+	})
+
+	it('should classify ID as Data', () => {
+		const field = classifyFieldType('id', userFields.id, entityTypes)
+		expect(field.fieldtype).toBe('Data')
+		expect(field.required).toBe(true) // ID!
+	})
+
+	it('should classify Boolean as Check', () => {
+		const field = classifyFieldType('active', userFields.active, entityTypes)
+		expect(field.fieldtype).toBe('Check')
+		expect(field.component).toBe('ACheckbox')
+		expect(field.required).toBe(true) // Boolean!
+	})
+
+	it('should classify Int as Int', () => {
+		const field = classifyFieldType('age', userFields.age, entityTypes)
+		expect(field.fieldtype).toBe('Int')
+		expect(field.component).toBe('ANumericInput')
+		expect(field.required).toBeUndefined() // nullable Int
+	})
+
+	it('should classify Float as Float', () => {
+		const field = classifyFieldType('score', userFields.score, entityTypes)
+		expect(field.fieldtype).toBe('Float')
+		expect(field.component).toBe('ANumericInput')
+	})
+
+	it('should classify optional String without required', () => {
+		const field = classifyFieldType('email', userFields.email, entityTypes)
+		expect(field.fieldtype).toBe('Data')
+		expect(field.required).toBeUndefined()
+	})
+
+	it('should classify enum as Select', () => {
+		const field = classifyFieldType('status', postFields.status, entityTypes)
+		expect(field.fieldtype).toBe('Select')
+		expect(field.component).toBe('ADropdown')
+		expect(field.options).toEqual(['DRAFT', 'PUBLISHED', 'ARCHIVED'])
+		expect(field.required).toBe(true) // PostStatus!
+	})
+
+	it('should classify entity reference as Link', () => {
+		const field = classifyFieldType('author', postFields.author, entityTypes)
+		expect(field.fieldtype).toBe('Link')
+		expect(field.component).toBe('ALink')
+		expect(field.options).toBe('user')
+		expect(field.required).toBe(true) // User!
+	})
+
+	it('should classify Connection field as Doctype', () => {
+		const field = classifyFieldType('comments', postFields.comments, entityTypes)
+		expect(field.fieldtype).toBe('Doctype')
+		expect(field.component).toBe('ATable')
+		expect(field.options).toBe('comment')
+	})
+
+	it('should include unmapped meta when requested', () => {
+		// Create a schema with a custom scalar
+		const customSdl = `
+			scalar MyCustomType
+			type Query { test: TestEntity }
+			type TestEntity { field1: MyCustomType }
+		`
+		const customSchema = buildSchema(customSdl)
+		const testType = customSchema.getType('TestEntity') as any
+		const testFields = testType.getFields()
+
+		const field = classifyFieldType('field1', testFields.field1, new Set(['TestEntity']), {
+			includeUnmappedMeta: true,
+		})
+		expect(field._unmapped).toBe(true)
+		expect(field._graphqlType).toBe('MyCustomType')
+	})
+
+	it('should use custom scalars', () => {
+		const customSdl = `
+			scalar Money
+			type Query { test: TestEntity }
+			type TestEntity { amount: Money }
+		`
+		const customSchema = buildSchema(customSdl)
+		const testType = customSchema.getType('TestEntity') as any
+		const testFields = testType.getFields()
+
+		const field = classifyFieldType('amount', testFields.amount, new Set(['TestEntity']), {
+			customScalars: {
+				Money: { component: 'ACurrencyInput', fieldtype: 'Currency' },
+			},
+		})
+		expect(field.fieldtype).toBe('Currency')
+		expect(field.component).toBe('ACurrencyInput')
+	})
+
+	it('should generate a label from the field name', () => {
+		const field = classifyFieldType('name', userFields.name, entityTypes)
+		expect(field.label).toBe('Name')
+	})
+})
+
+// ═══════════════════════════════════════════════════════════════
+// End-to-End Conversion
+// ═══════════════════════════════════════════════════════════════
+
+describe('convertGraphQLSchema', () => {
+	describe('from SDL', () => {
+		it('should convert entity types to doctypes', () => {
+			const doctypes = convertGraphQLSchema(basicSdl)
+
+			expect(doctypes.length).toBe(3) // User, Post, Comment
+			const names = doctypes.map(d => d.name).sort()
+			expect(names).toEqual(['Comment', 'Post', 'User'])
 		})
 
-		it('should normalize float type aliases', () => {
-			expect(normalizeType('float')).toBe('real')
-			expect(normalizeType('float4')).toBe('real')
-			expect(normalizeType('float8')).toBe('double precision')
+		it('should exclude synthetic types', () => {
+			const doctypes = convertGraphQLSchema(basicSdl)
+			const names = doctypes.map(d => d.name)
+
+			expect(names).not.toContain('UserConnection')
+			expect(names).not.toContain('UserEdge')
+			expect(names).not.toContain('CommentConnection')
+			expect(names).not.toContain('CommentEdge')
+			expect(names).not.toContain('UserInput')
+			expect(names).not.toContain('UserPatch')
+			expect(names).not.toContain('CreateUserPayload')
+			expect(names).not.toContain('Query')
 		})
 
-		it('should normalize boolean alias', () => {
-			expect(normalizeType('bool')).toBe('boolean')
+		it('should generate correct slugs', () => {
+			const doctypes = convertGraphQLSchema(basicSdl)
+			const user = doctypes.find(d => d.name === 'User')!
+			const post = doctypes.find(d => d.name === 'Post')!
+
+			expect(user.slug).toBe('user')
+			expect(post.slug).toBe('post')
 		})
 
-		it('should normalize character type aliases', () => {
-			expect(normalizeType('character')).toBe('char')
-			expect(normalizeType('character varying')).toBe('varchar')
+		it('should derive table names', () => {
+			const doctypes = convertGraphQLSchema(basicSdl)
+			const user = doctypes.find(d => d.name === 'User')!
+			const post = doctypes.find(d => d.name === 'Post')!
+
+			expect(user.tableName).toBe('user')
+			expect(post.tableName).toBe('post')
 		})
 
-		it('should normalize timestamp aliases', () => {
-			expect(normalizeType('timestamp without time zone')).toBe('timestamp')
-			expect(normalizeType('timestamp with time zone')).toBe('timestamptz')
+		it('should correctly classify fields on User', () => {
+			const doctypes = convertGraphQLSchema(basicSdl)
+			const user = doctypes.find(d => d.name === 'User')!
+
+			const idField = user.fields.find(f => f.fieldname === 'id')!
+			expect(idField.fieldtype).toBe('Data')
+			expect(idField.required).toBe(true)
+
+			const nameField = user.fields.find(f => f.fieldname === 'name')!
+			expect(nameField.fieldtype).toBe('Data')
+			expect(nameField.required).toBe(true)
+
+			const emailField = user.fields.find(f => f.fieldname === 'email')!
+			expect(emailField.fieldtype).toBe('Data')
+			expect(emailField.required).toBeUndefined()
+
+			const activeField = user.fields.find(f => f.fieldname === 'active')!
+			expect(activeField.fieldtype).toBe('Check')
+			expect(activeField.required).toBe(true)
+
+			const ageField = user.fields.find(f => f.fieldname === 'age')!
+			expect(ageField.fieldtype).toBe('Int')
+
+			const scoreField = user.fields.find(f => f.fieldname === 'score')!
+			expect(scoreField.fieldtype).toBe('Float')
 		})
 
-		it('should return unknown for unrecognized types', () => {
-			expect(normalizeType('custom_type')).toBe('unknown')
-		})
+		it('should correctly classify fields on Post', () => {
+			const doctypes = convertGraphQLSchema(basicSdl)
+			const post = doctypes.find(d => d.name === 'Post')!
 
-		it('should handle case insensitivity', () => {
-			expect(normalizeType('INTEGER')).toBe('integer')
-			expect(normalizeType('VARCHAR')).toBe('varchar')
-			expect(normalizeType('Boolean')).toBe('boolean')
-		})
+			const authorField = post.fields.find(f => f.fieldname === 'author')!
+			expect(authorField.fieldtype).toBe('Link')
+			expect(authorField.options).toBe('user')
 
-		it('should strip type parameters', () => {
-			expect(normalizeType('varchar(255)')).toBe('varchar')
-			expect(normalizeType('numeric(10,2)')).toBe('numeric')
+			const statusField = post.fields.find(f => f.fieldname === 'status')!
+			expect(statusField.fieldtype).toBe('Select')
+			expect(statusField.options).toEqual(['DRAFT', 'PUBLISHED', 'ARCHIVED'])
+
+			const commentsField = post.fields.find(f => f.fieldname === 'comments')!
+			expect(commentsField.fieldtype).toBe('Doctype')
+			expect(commentsField.options).toBe('comment')
 		})
 	})
 
-	describe('PG_TYPE_MAP', () => {
-		it('should map integer types to Int fieldtype', () => {
-			expect(PG_TYPE_MAP.integer.fieldtype).toBe('Int')
-			expect(PG_TYPE_MAP.smallint.fieldtype).toBe('Int')
-			expect(PG_TYPE_MAP.bigint.fieldtype).toBe('Int')
-			expect(PG_TYPE_MAP.serial.fieldtype).toBe('Int')
-		})
+	describe('from introspection', () => {
+		it('should produce same results as SDL', () => {
+			const fromSdl = convertGraphQLSchema(basicSdl)
+			const introspection = sdlToIntrospection(basicSdl)
+			const fromIntrospection = convertGraphQLSchema(introspection)
 
-		it('should map float types to Float fieldtype', () => {
-			expect(PG_TYPE_MAP.real.fieldtype).toBe('Float')
-			expect(PG_TYPE_MAP['double precision'].fieldtype).toBe('Float')
-		})
+			expect(fromIntrospection.length).toBe(fromSdl.length)
 
-		it('should map decimal types to Decimal fieldtype', () => {
-			expect(PG_TYPE_MAP.numeric.fieldtype).toBe('Decimal')
-			expect(PG_TYPE_MAP.decimal.fieldtype).toBe('Decimal')
-			expect(PG_TYPE_MAP.money.fieldtype).toBe('Decimal')
-		})
-
-		it('should map text types correctly', () => {
-			expect(PG_TYPE_MAP.varchar.fieldtype).toBe('Data')
-			expect(PG_TYPE_MAP.text.fieldtype).toBe('Text')
-			expect(PG_TYPE_MAP.char.fieldtype).toBe('Data')
-		})
-
-		it('should map date/time types correctly', () => {
-			expect(PG_TYPE_MAP.date.fieldtype).toBe('Date')
-			expect(PG_TYPE_MAP.timestamp.fieldtype).toBe('Datetime')
-			expect(PG_TYPE_MAP.timestamptz.fieldtype).toBe('Datetime')
-			expect(PG_TYPE_MAP.time.fieldtype).toBe('Time')
-			expect(PG_TYPE_MAP.interval.fieldtype).toBe('Duration')
-		})
-
-		it('should map boolean to Check', () => {
-			expect(PG_TYPE_MAP.boolean.fieldtype).toBe('Check')
-		})
-
-		it('should map JSON types to JSON fieldtype', () => {
-			expect(PG_TYPE_MAP.json.fieldtype).toBe('JSON')
-			expect(PG_TYPE_MAP.jsonb.fieldtype).toBe('JSON')
-		})
-
-		it('should include component mappings', () => {
-			expect(PG_TYPE_MAP.integer.component).toBe('ANumericInput')
-			expect(PG_TYPE_MAP.text.component).toBe('ATextInput')
-			expect(PG_TYPE_MAP.boolean.component).toBe('ACheckbox')
-			expect(PG_TYPE_MAP.date.component).toBe('ADatePicker')
+			const sdlNames = fromSdl.map(d => d.name).sort()
+			const introspectionNames = fromIntrospection.map(d => d.name).sort()
+			expect(introspectionNames).toEqual(sdlNames)
 		})
 	})
 
-	describe('parseDDL', () => {
-		it('should parse simple CREATE TABLE statement', () => {
-			const ddl = `
-				CREATE TABLE users (
-					id serial PRIMARY KEY,
-					name varchar(255) NOT NULL,
-					email varchar(255) UNIQUE
-				);
-			`
-			const result = parseDDL(ddl)
-
-			expect(result).toHaveLength(1)
-			expect(result[0].name).toBe('users')
-			expect(result[0].columns).toHaveLength(3)
-			expect(result[0].columns.map(c => c.name)).toContain('id')
-			expect(result[0].columns.map(c => c.name)).toContain('name')
-			expect(result[0].columns.map(c => c.name)).toContain('email')
-		})
-
-		it('should parse table with various field types', () => {
-			const ddl = `
-				CREATE TABLE posts (
-					id serial PRIMARY KEY,
-					title varchar(255) NOT NULL,
-					content text,
-					published_date date,
-					created_at timestamp,
-					is_published boolean DEFAULT false
-				);
-			`
-			const result = parseDDL(ddl)
-
-			expect(result).toHaveLength(1)
-			const columns = result[0].columns
-			expect(columns.find(c => c.name === 'content')).toBeDefined()
-			expect(columns.find(c => c.name === 'published_date')).toBeDefined()
-			expect(columns.find(c => c.name === 'created_at')).toBeDefined()
-			expect(columns.find(c => c.name === 'is_published')).toBeDefined()
-		})
-
-		it('should parse table with foreign keys', () => {
-			const ddl = `
-				CREATE TABLE comments (
-					id serial PRIMARY KEY,
-					post_id integer REFERENCES posts(id),
-					user_id integer REFERENCES users(id),
-					content text NOT NULL
-				);
-			`
-			const result = parseDDL(ddl)
-
-			expect(result).toHaveLength(1)
-			const postIdCol = result[0].columns.find(c => c.name === 'post_id')
-			expect(postIdCol?.reference).toBeDefined()
-			expect(postIdCol?.reference?.table).toBe('posts')
-			expect(postIdCol?.reference?.column).toBe('id')
-		})
-
-		it('should handle IF NOT EXISTS', () => {
-			const ddl = 'CREATE TABLE IF NOT EXISTS products (id integer);'
-			const result = parseDDL(ddl)
-			expect(result).toHaveLength(1)
-			expect(result[0].name).toBe('products')
-		})
-
-		it('should handle multiple CREATE TABLE statements', () => {
-			const ddl = `
-				CREATE TABLE users (id integer);
-				CREATE TABLE posts (id integer);
-			`
-			const result = parseDDL(ddl)
-			expect(result).toHaveLength(2)
-			expect(result[0].name).toBe('users')
-			expect(result[1].name).toBe('posts')
-		})
-
-		it('should parse NOT NULL constraint', () => {
-			const ddl = `
-				CREATE TABLE products (
-					id serial PRIMARY KEY,
-					name varchar(255) NOT NULL,
-					description text
-				);
-			`
-			const result = parseDDL(ddl)
-			const nameCol = result[0].columns.find(c => c.name === 'name')
-			const descCol = result[0].columns.find(c => c.name === 'description')
-			expect(nameCol?.nullable).toBe(false)
-			expect(descCol?.nullable).toBe(true)
-		})
-
-		it('should parse default values', () => {
-			const ddl = `
-				CREATE TABLE settings (
-					id serial PRIMARY KEY,
-					enabled boolean DEFAULT true,
-					count integer DEFAULT 0
-				);
-			`
-			const result = parseDDL(ddl)
-			const enabledCol = result[0].columns.find(c => c.name === 'enabled')
-			const countCol = result[0].columns.find(c => c.name === 'count')
-			// AST parser wraps expressions in parens
-			expect(enabledCol?.defaultValue).toBe('(true)')
-			expect(countCol?.defaultValue).toBe('(0)')
-		})
-
-		it('should parse table comments for doctype names', () => {
-			const ddl = `
-				CREATE TABLE sales_order (
-					id serial PRIMARY KEY,
-					customer_id integer
-				);
-				COMMENT ON TABLE sales_order IS '@doctype SalesOrder - Main sales document';
-			`
-			const result = parseDDL(ddl)
-			expect(result).toHaveLength(1)
-			expect(result[0].comment).toBe('@doctype SalesOrder - Main sales document')
-			expect(result[0].doctypeName).toBe('SalesOrder')
-		})
-
-		it('should handle table inheritance', () => {
-			const ddl = `
-				CREATE TABLE base_entity (
-					id serial PRIMARY KEY,
-					created_at timestamp DEFAULT now()
-				);
-				CREATE TABLE products (
-					name varchar(255) NOT NULL,
-					price numeric(10,2)
-				) INHERITS (base_entity);
-			`
-			const result = parseDDL(ddl)
-			expect(result).toHaveLength(2)
-			const products = result.find(t => t.name === 'products')
-			expect(products?.inherits).toContain('base_entity')
-		})
-	})
-
-	describe('mapColumnToField', () => {
-		const emptyRegistry = new Map<string, ParsedTable>()
-
-		it('should map a simple varchar column', () => {
-			const column: ParsedColumn = {
-				name: 'email',
-				dataType: 'varchar',
-				normalizedType: 'varchar',
-				nullable: false,
-				isGenerated: false,
-				arrayDimensions: 0,
-			}
-			const field = mapColumnToField(column, emptyRegistry)
-
-			expect(field.fieldname).toBe('email')
-			expect(field.fieldtype).toBe('Data')
-			expect(field.component).toBe('ATextInput')
-			expect(field.required).toBe(true)
-		})
-
-		it('should map foreign key to Link field', () => {
-			const column: ParsedColumn = {
-				name: 'user_id',
-				dataType: 'integer',
-				normalizedType: 'integer',
-				nullable: false,
-				isGenerated: false,
-				arrayDimensions: 0,
-				reference: { table: 'users', column: 'id' },
-			}
-			const field = mapColumnToField(column, emptyRegistry)
-
-			expect(field.fieldtype).toBe('Link')
-			expect(field.component).toBe('ALink')
-			expect(field.options).toBe('users')
-		})
-
-		it('should map array types to Doctype', () => {
-			const column: ParsedColumn = {
-				name: 'tags',
-				dataType: 'text',
-				normalizedType: 'text',
-				nullable: true,
-				isGenerated: false,
-				arrayDimensions: 1,
-			}
-			const field = mapColumnToField(column, emptyRegistry)
-
-			expect(field.fieldtype).toBe('Doctype')
-			expect(field.component).toBe('ATable')
-		})
-
-		it('should mark generated columns as readOnly', () => {
-			const column: ParsedColumn = {
-				name: 'total',
-				dataType: 'numeric',
-				normalizedType: 'numeric',
-				nullable: true,
-				isGenerated: true,
-				arrayDimensions: 0,
-			}
-			const field = mapColumnToField(column, emptyRegistry)
-
-			expect(field.readOnly).toBe(true)
-			expect(field.required).toBe(false)
-		})
-
-		it('should use camelCase when option is set', () => {
-			const column: ParsedColumn = {
-				name: 'user_email',
-				dataType: 'varchar',
-				normalizedType: 'varchar',
-				nullable: true,
-				isGenerated: false,
-				arrayDimensions: 0,
-			}
-			const field = mapColumnToField(column, emptyRegistry, { useCamelCase: true })
-
-			expect(field.fieldname).toBe('userEmail')
-			expect(field.label).toBe('User Email')
-		})
-
-		it('should include precision for decimal types', () => {
-			const column: ParsedColumn = {
-				name: 'price',
-				dataType: 'numeric',
-				normalizedType: 'numeric',
-				nullable: true,
-				isGenerated: false,
-				arrayDimensions: 0,
-				precision: 10,
-				scale: 2,
-			}
-			const field = mapColumnToField(column, emptyRegistry)
-
-			expect(field.options).toEqual({ precision: 10, scale: 2 })
-		})
-	})
-
-	describe('convertSchema', () => {
-		it('should convert DDL to doctype schemas', () => {
-			const ddl = `
-				CREATE TABLE users (
-					id serial PRIMARY KEY,
-					email varchar(255) NOT NULL
-				);
-			`
-			const result = convertSchema(ddl, { inheritanceMode: 'flatten' })
-
-			expect(result).toHaveLength(1)
-			expect(result[0].name).toBe('Users')
-			expect(result[0].slug).toBe('users')
-			expect(result[0].tableName).toBe('users')
-			expect(result[0].fields.length).toBeGreaterThanOrEqual(1)
-		})
-
-		it('should use @doctype name from comment', () => {
-			const ddl = `
-				CREATE TABLE sales_order (
-					id serial PRIMARY KEY
-				);
-				COMMENT ON TABLE sales_order IS '@doctype SalesOrder';
-			`
-			const result = convertSchema(ddl, { inheritanceMode: 'flatten' })
-
-			expect(result[0].name).toBe('SalesOrder')
-			expect(result[0].slug).toBe('sales-order')
-		})
-
-		it('should handle foreign keys as Link fields', () => {
-			const ddl = `
-				CREATE TABLE users (id serial PRIMARY KEY);
-				CREATE TABLE posts (
-					id serial PRIMARY KEY,
-					user_id integer REFERENCES users(id)
-				);
-			`
-			const result = convertSchema(ddl, { inheritanceMode: 'flatten' })
-
-			const posts = result.find(d => d.tableName === 'posts')
-			const userIdField = posts?.fields.find(f => f.fieldname === 'user_id')
-			expect(userIdField?.fieldtype).toBe('Link')
-			expect(userIdField?.options).toBe('users')
-		})
-
-		it('should flatten inherited fields', () => {
-			const ddl = `
-				CREATE TABLE base_entity (
-					id serial PRIMARY KEY,
-					created_at timestamp DEFAULT now()
-				);
-				CREATE TABLE products (
-					name varchar(255) NOT NULL
-				) INHERITS (base_entity);
-			`
-			const result = convertSchema(ddl, { inheritanceMode: 'flatten' })
-
-			const products = result.find(d => d.tableName === 'products')
-			expect(products?.fields.map(f => f.fieldname)).toContain('id')
-			expect(products?.fields.map(f => f.fieldname)).toContain('created_at')
-			expect(products?.fields.map(f => f.fieldname)).toContain('name')
-		})
-
-		it('should exclude specified tables', () => {
-			const ddl = `
-				CREATE TABLE users (id serial PRIMARY KEY);
-				CREATE TABLE internal_logs (id serial PRIMARY KEY);
-				CREATE TABLE posts (id serial PRIMARY KEY);
-			`
-			const result = convertSchema(ddl, {
-				inheritanceMode: 'flatten',
-				exclude: ['internal_logs'],
+	describe('options', () => {
+		it('should filter by include list', () => {
+			const doctypes = convertGraphQLSchema(basicSdl, {
+				include: ['User'],
 			})
-
-			expect(result).toHaveLength(2)
-			expect(result.map(d => d.tableName)).not.toContain('internal_logs')
+			expect(doctypes.length).toBe(1)
+			expect(doctypes[0].name).toBe('User')
 		})
 
-		it('should filter by schema', () => {
-			const ddl = `
-				CREATE TABLE public.users (id serial PRIMARY KEY);
-				CREATE TABLE audit.logs (id serial PRIMARY KEY);
-			`
-			const result = convertSchema(ddl, {
-				inheritanceMode: 'flatten',
-				schema: 'public',
+		it('should filter by exclude list', () => {
+			const doctypes = convertGraphQLSchema(basicSdl, {
+				exclude: ['Comment'],
 			})
-
-			expect(result).toHaveLength(1)
-			expect(result[0].tableName).toBe('users')
+			const names = doctypes.map(d => d.name)
+			expect(names).toContain('User')
+			expect(names).toContain('Post')
+			expect(names).not.toContain('Comment')
 		})
 
 		it('should apply type overrides', () => {
-			const ddl = `
-				CREATE TABLE products (
-					id serial PRIMARY KEY,
-					image_data bytea
-				);
-			`
-			const result = convertSchema(ddl, {
-				inheritanceMode: 'flatten',
+			const doctypes = convertGraphQLSchema(basicSdl, {
 				typeOverrides: {
-					image_data: { fieldtype: 'Attach', component: 'AFileAttach' },
+					User: {
+						email: { fieldtype: 'Text', component: 'ATextarea' },
+					},
 				},
 			})
-
-			const imageField = result[0].fields.find(f => f.fieldname === 'image_data')
-			expect(imageField?.fieldtype).toBe('Attach')
-			expect(imageField?.component).toBe('AFileAttach')
+			const user = doctypes.find(d => d.name === 'User')!
+			const emailField = user.fields.find(f => f.fieldname === 'email')!
+			expect(emailField.fieldtype).toBe('Text')
+			expect(emailField.component).toBe('ATextarea')
 		})
 
-		it('should use camelCase when option is set', () => {
-			const ddl = `
-				CREATE TABLE user_profiles (
-					user_id serial PRIMARY KEY,
-					first_name varchar(255),
-					last_name varchar(255)
-				);
-			`
-			const result = convertSchema(ddl, {
-				inheritanceMode: 'flatten',
-				useCamelCase: true,
+		it('should use custom isEntityType', () => {
+			const doctypes = convertGraphQLSchema(basicSdl, {
+				isEntityType: typeName => typeName === 'User',
 			})
+			expect(doctypes.length).toBe(1)
+			expect(doctypes[0].name).toBe('User')
+		})
 
-			const fields = result[0].fields
-			expect(fields.map(f => f.fieldname)).toContain('userId')
-			expect(fields.map(f => f.fieldname)).toContain('firstName')
-			expect(fields.map(f => f.fieldname)).toContain('lastName')
+		it('should use custom isEntityField', () => {
+			const doctypes = convertGraphQLSchema(basicSdl, {
+				isEntityField: fieldName => fieldName !== 'email',
+			})
+			const user = doctypes.find(d => d.name === 'User')!
+			const fieldNames = user.fields.map(f => f.fieldname)
+			expect(fieldNames).not.toContain('email')
+			expect(fieldNames).toContain('name')
+		})
+
+		it('should use custom classifyField', () => {
+			const doctypes = convertGraphQLSchema(basicSdl, {
+				classifyField: fieldName => {
+					if (fieldName === 'email') {
+						return { fieldtype: 'Code', component: 'ACodeEditor', label: 'Email Address' }
+					}
+					return null // fall through to default
+				},
+			})
+			const user = doctypes.find(d => d.name === 'User')!
+			const emailField = user.fields.find(f => f.fieldname === 'email')!
+			expect(emailField.fieldtype).toBe('Code')
+			expect(emailField.component).toBe('ACodeEditor')
+			expect(emailField.label).toBe('Email Address')
+		})
+
+		it('should use custom deriveTableName', () => {
+			const doctypes = convertGraphQLSchema(basicSdl, {
+				deriveTableName: typeName => `app_${typeName.toLowerCase()}s`,
+			})
+			const user = doctypes.find(d => d.name === 'User')!
+			expect(user.tableName).toBe('app_users')
+		})
+
+		it('should omit tableName when deriveTableName returns undefined', () => {
+			const doctypes = convertGraphQLSchema(basicSdl, {
+				deriveTableName: () => undefined,
+			})
+			const user = doctypes.find(d => d.name === 'User')!
+			expect(user.tableName).toBeUndefined()
+		})
+
+		it('should include unmapped meta when requested', () => {
+			const doctypes = convertGraphQLSchema(basicSdl, {
+				includeUnmappedMeta: true,
+			})
+			const user = doctypes.find(d => d.name === 'User')!
+			expect(user._graphqlTypeName).toBe('User')
+		})
+
+		it('should not include unmapped meta by default', () => {
+			const doctypes = convertGraphQLSchema(basicSdl)
+			const user = doctypes.find(d => d.name === 'User')!
+			expect(user._graphqlTypeName).toBeUndefined()
+		})
+
+		it('should use custom scalars', () => {
+			const customSdl = `
+				scalar Money
+				type Query { test: Product }
+				type Product {
+					id: ID!
+					name: String!
+					price: Money!
+				}
+			`
+			const doctypes = convertGraphQLSchema(customSdl, {
+				customScalars: {
+					Money: { component: 'ACurrencyInput', fieldtype: 'Currency' },
+				},
+			})
+			expect(doctypes.length).toBe(1)
+			const product = doctypes[0]
+			const priceField = product.fields.find(f => f.fieldname === 'price')!
+			expect(priceField.fieldtype).toBe('Currency')
+			expect(priceField.component).toBe('ACurrencyInput')
+		})
+	})
+
+	describe('multi-word type names', () => {
+		it('should handle PascalCase type names', () => {
+			const sdl = `
+				type Query { order: SalesOrder }
+				type SalesOrder {
+					id: ID!
+					orderNumber: String!
+				}
+			`
+			const doctypes = convertGraphQLSchema(sdl)
+			expect(doctypes.length).toBe(1)
+			expect(doctypes[0].name).toBe('SalesOrder')
+			expect(doctypes[0].slug).toBe('sales-order')
+			expect(doctypes[0].tableName).toBe('sales_order')
+		})
+	})
+
+	describe('list fields', () => {
+		it('should classify list of entity type as Doctype', () => {
+			const sdl = `
+				type Query { order: Order }
+				type Order {
+					id: ID!
+					items: [OrderItem!]!
+				}
+				type OrderItem {
+					id: ID!
+					quantity: Int!
+				}
+			`
+			const doctypes = convertGraphQLSchema(sdl)
+			const order = doctypes.find(d => d.name === 'Order')!
+			const itemsField = order.fields.find(f => f.fieldname === 'items')!
+			expect(itemsField.fieldtype).toBe('Doctype')
+			expect(itemsField.options).toBe('order-item')
+		})
+	})
+
+	describe('validation compatibility', () => {
+		it('should produce doctypes that pass Zod validation', () => {
+			const doctypes = convertGraphQLSchema(basicSdl)
+
+			for (const doctype of doctypes) {
+				const result = validateDoctype(doctype)
+				expect(result.success).toBe(true)
+			}
 		})
 	})
 })
