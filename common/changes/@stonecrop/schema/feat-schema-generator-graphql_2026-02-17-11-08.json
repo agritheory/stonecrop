@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/schema",
+      "comment": "replace DDL generator with GraphQL generator",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/schema"
+}

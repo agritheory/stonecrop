@@ -316,7 +316,7 @@
     },
     {
       "name": "jsdom",
-      "allowedCategories": [ "production", "prototype" ]
+      "allowedCategories": [ "production", "prototype", "utilities" ]
     },
     {
       "name": "jsonwebtoken",
@@ -385,10 +385,6 @@
     {
       "name": "pathe",
       "allowedCategories": [ "prototype" ]
-    },
-    {
-      "name": "pgsql-ast-parser",
-      "allowedCategories": [ "utilities" ]
     },
     {
       "name": "pinia",

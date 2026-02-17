@@ -17,35 +17,27 @@ export {
 	type ValidationError,
 } from './validation'
 
-// DDL to Doctype conversion
+// GraphQL to Doctype conversion
 export {
-	convertSchema,
-	parseDDL,
-	normalizeType,
-	mapColumnToField,
-	PG_TYPE_MAP,
-	TYPE_ALIASES,
-	type ConvertedDoctype,
-	type ConversionFieldMeta,
-	type ParsedColumn,
-	type ParsedTable,
-	type ConversionOptions,
-	type PostgresType,
-	type MapColumnOptions,
-	// Naming utilities
-	snakeToCamel,
-	camelToSnake,
-	snakeToLabel,
-	camelToLabel,
-	convertSQLName,
-	convertSQLNames,
-	createNameMapping,
-	toPascalCase,
-	toSlug,
-	type NameConversion,
+	convertGraphQLSchema,
+	GQL_SCALAR_MAP,
+	WELL_KNOWN_SCALARS,
+	INTERNAL_SCALARS,
+	buildScalarMap,
+	defaultIsEntityType,
+	defaultIsEntityField,
+	classifyFieldType,
+	type IntrospectionSource,
+	type GraphQLConversionOptions,
+	type GraphQLConversionFieldMeta,
+	type ConvertedGraphQLDoctype,
 } from './converter'
+
+// Naming utilities
+export { toSlug, toPascalCase, pascalToSnake, snakeToCamel, camelToSnake, snakeToLabel, camelToLabel } from './naming'
 
 // Type-only exports for consumers who just need types
 export type { StonecropFieldType as StonecropFieldTypeValue } from './fieldtype'
 export type { FieldMeta as FieldMetaType, FieldOptions as FieldOptionsType } from './field'
+export type { FieldTemplate } from './fieldtype'
 export type { DoctypeMeta as DoctypeMetaType, WorkflowMeta as WorkflowMetaType } from './doctype'

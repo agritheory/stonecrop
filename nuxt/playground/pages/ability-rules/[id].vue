@@ -117,7 +117,7 @@ onUnmounted(() => {
 		<div class="main-content">
 			<div class="form-container">
 				<ClientOnly>
-					<AForm v-model="(ruleDoctype as any).schema" :data="ruleData" />
+					<AForm v-model:data="ruleData" :schema="ruleDoctype.schema" />
 				</ClientOnly>
 			</div>
 		</div>

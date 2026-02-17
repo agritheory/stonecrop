@@ -14,20 +14,12 @@ export default defineConfig({
 	build: {
 		lib: {
 			entry: resolve(__dirname, 'src/index.ts'),
-			name: 'StonecropGraphQLMiddleware',
+			name: '@stonecrop/graphql-middleware',
 			formats: ['es', 'cjs'],
 			fileName: format => `index.${format === 'es' ? 'js' : 'cjs'}`,
 		},
 		rollupOptions: {
-			external: [
-				'node:fs',
-				'node:path',
-				'graphql',
-				'pgsql-ast-parser',
-				'postgraphile',
-				'postgraphile/utils',
-				'postgraphile/grafast',
-			],
+			external: ['node:fs', 'node:path', 'graphql', 'postgraphile', 'postgraphile/utils', 'postgraphile/grafast'],
 		},
 	},
 })

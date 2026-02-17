@@ -12,6 +12,7 @@ const fieldtypeToComponent: Record<string, string> = {
 	Select: 'ADropdown',
 	Link: 'AComboBox',
 	Table: 'ATable',
+	Doctype: 'ATable', // Doctype renders as a table of related records
 	JSON: 'ATextInput', // Default to text input for JSON
 	// Add more mappings as needed
 }
@@ -36,6 +37,16 @@ export function hydrateSchema(schema: any[]): any[] {
 				fieldtype: col.fieldtype || 'Data',
 			}))
 			// Initialize empty rows array
+			hydratedField.rows = []
+		}
+
+		// Special handling for Doctype fieldtype (related records displayed as table)
+		if (field.fieldtype === 'Doctype') {
+			// Use columns if provided in the schema
+			if (field.columns && Array.isArray(field.columns)) {
+				hydratedField.columns = field.columns
+			}
+			// Will be populated from data via AForm's componentProps
 			hydratedField.rows = []
 		}
 

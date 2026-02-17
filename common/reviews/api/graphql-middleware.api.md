@@ -5,6 +5,9 @@
 ```ts
 
 import { GraphileConfig as GraphileConfig_2 } from 'postgraphile/graphile-build';
+import { GraphQLField } from 'graphql';
+import { GraphQLObjectType } from 'graphql';
+import { IntrospectionQuery } from 'graphql';
 import { z } from 'zod';
 
 // @public
@@ -48,37 +51,37 @@ export type ActionHandler = (args: unknown[], context: ActionContext) => Promise
 export const builtinHandlers: Record<string, ActionHandler>;
 
 // @public
+export function camelToLabel(camelCase: string): string;
+
+// @public
+export function camelToSnake(camelCase: string): string;
+
+// @public
+export function classifyFieldType(fieldName: string, field: GraphQLField<unknown, unknown>, entityTypes: Set<string>, options?: GraphQLConversionOptions): GraphQLConversionFieldMeta;
+
+// @public
 export function clearHandlers(): void;
 
 // @public
 export function clearRegistry(): void;
 
 // @public
-export interface ConversionFieldMeta extends FieldMeta {
-    _pgType?: string;
-    _unmapped?: boolean;
+export interface ConvertedGraphQLDoctype extends Omit<DoctypeMeta, 'fields'> {
+    fields: GraphQLConversionFieldMeta[];
+    _graphqlTypeName?: string;
 }
 
 // @public
-export interface ConversionOptions {
-    exclude?: string[];
-    includeUnmappedMeta?: boolean;
-    inheritanceMode: 'flatten' | 'reference';
-    schema?: string;
-    typeOverrides?: Record<string, Partial<FieldMeta>>;
-    useCamelCase?: boolean;
-}
-
-// @public
-export interface ConvertedDoctype extends Omit<DoctypeMeta, 'fields'> {
-    fields: ConversionFieldMeta[];
-}
-
-// @public
-export function convertSchema(sql: string, options?: ConversionOptions): ConvertedDoctype[];
+export function convertGraphQLSchema(source: IntrospectionSource, options?: GraphQLConversionOptions): ConvertedGraphQLDoctype[];
 
 // @public
 export const createStonecropPlugin: (options: StonecropPluginOptions) => GraphileConfig_2.Plugin;
+
+// @public
+export function defaultIsEntityField(fieldName: string, _field: GraphQLField<unknown, unknown>, _parentType: GraphQLObjectType): boolean;
+
+// @public
+export function defaultIsEntityType(typeName: string, type: GraphQLObjectType): boolean;
 
 // @public
 export const DoctypeMeta: z.ZodObject<{
@@ -374,6 +377,30 @@ export function getHandler(name: string): ActionHandler | undefined;
 // @public
 export function getMeta(name: string): DoctypeMeta | undefined;
 
+// Warning: (ae-forgotten-export) The symbol "FieldTemplate" needs to be exported by the entry point index.d.ts
+//
+// @public
+export const GQL_SCALAR_MAP: Record<string, FieldTemplate>;
+
+// @public
+export interface GraphQLConversionFieldMeta extends FieldMeta {
+    _graphqlType?: string;
+    _unmapped?: boolean;
+}
+
+// @public
+export interface GraphQLConversionOptions {
+    classifyField?: (fieldName: string, field: GraphQLField<unknown, unknown>, parentType: GraphQLObjectType) => Partial<FieldMeta> | null;
+    customScalars?: Record<string, Partial<FieldTemplate>>;
+    deriveTableName?: (typeName: string) => string | undefined;
+    exclude?: string[];
+    include?: string[];
+    includeUnmappedMeta?: boolean;
+    isEntityField?: (fieldName: string, field: GraphQLField<unknown, unknown>, parentType: GraphQLObjectType) => boolean;
+    isEntityType?: (typeName: string, type: GraphQLObjectType) => boolean;
+    typeOverrides?: Record<string, Record<string, Partial<FieldMeta>>>;
+}
+
 // @public
 export interface GraphQLExecutor {
     mutate<T = unknown>(mutation: string, variables?: Record<string, unknown>): Promise<T>;
@@ -387,6 +414,9 @@ export function hasHandler(name: string): boolean;
 export function hasMeta(name: string): boolean;
 
 // @public
+export type IntrospectionSource = IntrospectionQuery | string;
+
+// @public
 export function loadDoctypes(dir: string, options?: LoadDoctypesOptions): void;
 
 // @public
@@ -398,63 +428,14 @@ export interface LoadDoctypesOptions {
     onError?: (file: string, errors: ValidationError[]) => void;
 }
 
-// Warning: (ae-forgotten-export) The symbol "MapColumnOptions" needs to be exported by the entry point index.d.ts
-//
-// @public
-export function mapColumnToField(column: ParsedColumn, _tableRegistry: Map<string, ParsedTable>, options?: MapColumnOptions): ConversionFieldMeta;
-
-// @public
-export function normalizeType(rawType: string): PostgresType;
-
-// @public
-export interface ParsedColumn {
-    arrayDimensions: number;
-    dataType: string;
-    defaultValue?: string;
-    isGenerated: boolean;
-    length?: number;
-    name: string;
-    normalizedType: PostgresType;
-    nullable: boolean;
-    precision?: number;
-    reference?: {
-        schema?: string;
-        table: string;
-        column: string;
-        onDelete?: 'CASCADE' | 'SET NULL' | 'RESTRICT' | 'NO ACTION';
-    };
-    scale?: number;
-}
-
-// @public
-export function parseDDL(sql: string): ParsedTable[];
-
 // @public
 export function parseDoctype(data: unknown): DoctypeMeta;
 
 // @public
-export interface ParsedTable {
-    columns: ParsedColumn[];
-    comment?: string;
-    doctypeName?: string;
-    inherits?: string[];
-    name: string;
-    schema?: string;
-}
-
-// @public
 export function parseField(data: unknown): FieldMeta;
 
-// Warning: (ae-forgotten-export) The symbol "FieldTemplate_2" needs to be exported by the entry point index.d.ts
-//
 // @public
-export const PG_TYPE_MAP: Record<PostgresType, FieldTemplate_2>;
-
-// @public
-export const PostgresType: z.ZodEnum<["text", "varchar", "char", "citext", "smallint", "integer", "bigint", "serial", "bigserial", "smallserial", "numeric", "decimal", "real", "double precision", "money", "boolean", "date", "time", "timetz", "timestamp", "timestamptz", "interval", "int4range", "int8range", "numrange", "daterange", "tsrange", "tstzrange", "bytea", "uuid", "json", "jsonb", "bit", "varbit", "xml", "unit", "cube", "unknown"]>;
-
-// @public
-export type PostgresType = z.infer<typeof PostgresType>;
+export function pascalToSnake(pascal: string): string;
 
 // @public
 export function registerBuiltinHandlers(): void;
@@ -468,6 +449,12 @@ export interface RouteContext {
     doctype: string;
     recordId?: string;
 }
+
+// @public
+export function snakeToCamel(snakeCase: string): string;
+
+// @public
+export function snakeToLabel(snakeCase: string): string;
 
 // @public
 export class StonecropClient implements GraphQLExecutor {
@@ -509,10 +496,11 @@ export interface StonecropPluginOptions {
 }
 
 // @public
-export const TYPE_ALIASES: Record<string, PostgresType>;
+export function toPascalCase(tableName: string): string;
 
-// Warning: (ae-forgotten-export) The symbol "FieldTemplate" needs to be exported by the entry point index.d.ts
-//
+// @public
+export function toSlug(name: string): string;
+
 // @public
 export const TYPE_MAP: Record<StonecropFieldType, FieldTemplate>;
 
@@ -536,6 +524,9 @@ export interface ValidationResult {
     errors: ValidationError[];
     success: boolean;
 }
+
+// @public
+export const WELL_KNOWN_SCALARS: Record<string, FieldTemplate>;
 
 // @public
 export const WorkflowMeta: z.ZodObject<{

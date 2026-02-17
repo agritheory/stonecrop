@@ -23,6 +23,7 @@ jobs:
           beam: beam/**
           casl_middleware: casl_middleware/**
           rockfoil: rockfoil/**
+          schema: schema/**
           stonecrop: stonecrop/**
 
   coverage:

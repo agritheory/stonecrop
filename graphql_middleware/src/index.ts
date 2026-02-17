@@ -21,24 +21,31 @@ export {
 	parseField,
 	parseDoctype,
 
-	// DDL to Doctype conversion
-	convertSchema,
-	parseDDL,
-	normalizeType,
-	mapColumnToField,
-	PG_TYPE_MAP,
-	TYPE_ALIASES,
+	// GraphQL to Doctype conversion
+	convertGraphQLSchema,
+	GQL_SCALAR_MAP,
+	WELL_KNOWN_SCALARS,
+	defaultIsEntityType,
+	defaultIsEntityField,
+	classifyFieldType,
+
+	// Naming utilities
+	toSlug,
+	toPascalCase,
+	pascalToSnake,
+	snakeToCamel,
+	camelToSnake,
+	snakeToLabel,
+	camelToLabel,
 } from '@stonecrop/schema'
 
 export type {
 	ValidationResult,
 	ValidationError,
-	ConvertedDoctype,
-	ConversionFieldMeta,
-	ParsedColumn,
-	ParsedTable,
-	ConversionOptions,
-	PostgresType,
+	IntrospectionSource,
+	GraphQLConversionOptions,
+	GraphQLConversionFieldMeta,
+	ConvertedGraphQLDoctype,
 } from '@stonecrop/schema'
 
 // Runtime context types (unique to graphql_middleware)

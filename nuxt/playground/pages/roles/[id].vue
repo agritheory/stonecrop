@@ -99,7 +99,7 @@ onUnmounted(() => {
 		<div class="main-content">
 			<div class="form-container">
 				<ClientOnly>
-					<AForm v-model="(roleDoctype as any).schema" :data="roleData" />
+					<AForm v-model:data="roleData" :schema="roleDoctype.schema" />
 				</ClientOnly>
 			</div>
 		</div>

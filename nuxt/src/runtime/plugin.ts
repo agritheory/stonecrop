@@ -1,5 +1,4 @@
 import { install as AForm } from '@stonecrop/aform'
-import { install as ATable } from '@stonecrop/atable'
 import { install as NodeEditor } from '@stonecrop/node-editor'
 import StonecropPlugin from '@stonecrop/stonecrop'
 import { createPinia } from 'pinia'
@@ -12,7 +11,6 @@ export default defineNuxtPlugin(nuxt => {
 	const app = nuxt.vueApp
 	app.use(pinia)
 	app.use(AForm)
-	app.use(ATable)
 	app.use(NodeEditor)
 	app.use(StonecropPlugin, { router })
 })
