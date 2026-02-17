@@ -72,7 +72,7 @@ function openBuilder() {
 
 		<div class="form-container">
 			<ClientOnly>
-				<AForm v-model="(doctypeSchema as any).schema" :data="doctypeData" />
+				<AForm v-model:data="doctypeData" :schema="doctypeSchema.schema" />
 			</ClientOnly>
 		</div>
 	</div>

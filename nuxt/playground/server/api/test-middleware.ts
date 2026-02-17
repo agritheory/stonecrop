@@ -20,7 +20,7 @@ const sampleDoctypes: Record<string, any> = {
 			{ fieldname: 'id', fieldtype: 'Data', component: 'ATextInput', label: 'Id' },
 			{ fieldname: 'roleName', fieldtype: 'Data', component: 'ATextInput', label: 'Role Name', required: true },
 			{ fieldname: 'description', fieldtype: 'Text', component: 'ATextInput', label: 'Description' },
-			{ fieldname: 'parentRoleId', fieldtype: 'Link', component: 'ALink', label: 'Parent Role', options: 'roles' },
+			{ fieldname: 'parentRoleId', fieldtype: 'Link', component: 'ALink', label: 'Parent Role', options: 'Roles' },
 		],
 	},
 	Tasks: {
@@ -38,14 +38,22 @@ const sampleDoctypes: Record<string, any> = {
 	},
 }
 
-// Cache the import
+// Cache the imports
 let middleware: any = null
+let schemaValidation: any = null
 
 async function getMiddleware() {
 	if (!middleware) {
 		middleware = await import('@stonecrop/graphql-middleware')
 	}
 	return middleware
+}
+
+async function getSchemaValidation() {
+	if (!schemaValidation) {
+		schemaValidation = await import('@stonecrop/schema')
+	}
+	return schemaValidation
 }
 
 export default defineEventHandler(async event => {
@@ -91,8 +99,12 @@ export default defineEventHandler(async event => {
 			}
 
 			case 'validate-schema': {
+				const schema = await getSchemaValidation()
+				const { validateDoctype, validateField, parseDoctype } = schema
+
 				const goodDoctype = {
 					name: 'TestDoctype',
+					slug: 'test-doctype',
 					fields: [
 						{
 							fieldname: 'title',
@@ -101,27 +113,76 @@ export default defineEventHandler(async event => {
 							label: 'Title',
 							required: true,
 						},
+						{
+							fieldname: 'status',
+							fieldtype: 'Select',
+							component: 'ADropdown',
+							label: 'Status',
+							options: ['Draft', 'Published'],
+						},
 					],
 				}
 
 				const badDoctype = {
-					name: '',
+					name: '', // Invalid: empty name
 					fields: [
 						{
 							fieldname: 'test',
-							fieldtype: 'InvalidType',
+							fieldtype: 'InvalidType', // Invalid: not a valid fieldtype
 							component: 'ATextInput',
 						},
 					],
 				}
 
+				const missingFieldtype = {
+					name: 'BadDoctype',
+					fields: [
+						{
+							fieldname: 'test',
+							// Missing fieldtype!
+							component: 'ATextInput',
+						},
+					],
+				}
+
+				const goodValidation = validateDoctype(goodDoctype)
+				const badValidation = validateDoctype(badDoctype)
+				const missingValidation = validateDoctype(missingFieldtype)
+
+				// Test parseDoctype (throws on invalid)
+				let parseResult
+				try {
+					parseResult = {
+						success: true,
+						parsed: parseDoctype(goodDoctype),
+					}
+				} catch (e) {
+					parseResult = {
+						success: false,
+						error: e instanceof Error ? e.message : String(e),
+					}
+				}
+
 				return {
 					success: true,
 					action: 'validate-schema',
-					description: 'Tested Zod schema validation',
+					description: 'Tested @stonecrop/schema validation APIs',
 					results: {
-						validDoctype: validateDoctype(goodDoctype),
-						invalidDoctype: validateDoctype(badDoctype),
+						validDoctype: {
+							input: goodDoctype,
+							validation: goodValidation,
+							parsed: parseResult,
+						},
+						invalidDoctype: {
+							input: badDoctype,
+							validation: badValidation,
+							errors: badValidation.errors,
+						},
+						missingFieldtype: {
+							input: missingFieldtype,
+							validation: missingValidation,
+							errors: missingValidation.errors,
+						},
 					},
 				}
 			}
@@ -155,7 +216,7 @@ export default defineEventHandler(async event => {
 					availableActions: [
 						{ action: 'load', description: 'Load sample doctypes into registry' },
 						{ action: 'validate-refs', description: 'Validate cross-doctype references' },
-						{ action: 'validate-schema', description: 'Test Zod schema validation' },
+						{ action: 'validate-schema', description: 'Test @stonecrop/schema validation APIs' },
 						{ action: 'get-meta', description: 'Get doctype from registry' },
 					],
 				}
