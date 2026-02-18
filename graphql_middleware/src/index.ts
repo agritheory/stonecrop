@@ -78,7 +78,7 @@ export {
 // PostGraphile plugin
 export { createStonecropPlugin } from './plugin/postgraphile'
 
-export type { StonecropPluginOptions } from './plugin/postgraphile'
+export type { StonecropPluginOptions, StonecropInflectionConfig } from './plugin/postgraphile'
 
 // Client
 export { StonecropClient } from './client'

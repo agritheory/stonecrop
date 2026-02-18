@@ -19,7 +19,17 @@ export default defineConfig({
 			fileName: format => `index.${format === 'es' ? 'js' : 'cjs'}`,
 		},
 		rollupOptions: {
-			external: ['node:fs', 'node:path', 'graphql', 'postgraphile', 'postgraphile/utils', 'postgraphile/grafast'],
+			external: [
+				'node:fs',
+				'node:path',
+				'graphql',
+				'postgraphile',
+				'postgraphile/utils',
+				'postgraphile/grafast',
+				'postgraphile/graphile-build',
+				'@stonecrop/schema',
+				'zod',
+			],
 		},
 	},
 })
