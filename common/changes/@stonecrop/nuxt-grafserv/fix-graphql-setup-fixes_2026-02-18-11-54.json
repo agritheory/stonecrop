@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/nuxt-grafserv",
+      "comment": "preserve execution context in postgraphile mode",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/nuxt-grafserv"
+}
