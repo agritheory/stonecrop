@@ -685,6 +685,30 @@ export interface StonecropClientOptions {
 | endpoint | `string` | GraphQL endpoint URL |
 | headers? | `Record<string, string>` | Additional HTTP headers to include in requests |
 
+### StonecropInflectionConfig
+
+Inflection callbacks for mapping table names to GraphQL query field names. Override these when using a non-Amber inflection preset (e.g., V4, SimplifyInflection).
+
+Defaults match the PostGraphile Amber preset conventions.
+
+**Definition:**
+
+```typescript
+export interface StonecropInflectionConfig {
+  connectionFieldName?: (tableName: string) => string;
+  orderByTypeName?: (tableName: string) => string;
+  recordFieldName?: (tableName: string) => string;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| connectionFieldName? | `(tableName: string) => string` | Given a table name, return the GraphQL field name for fetching a list/connection. |
+| orderByTypeName? | `(tableName: string) => string` | Given a table name, return the GraphQL OrderBy enum type name. |
+| recordFieldName? | `(tableName: string) => string` | Given a table name, return the GraphQL field name for fetching a single record by ID. |
+
 ### StonecropPluginOptions
 
 Options for creating a Stonecrop PostGraphile plugin
@@ -694,6 +718,7 @@ Options for creating a Stonecrop PostGraphile plugin
 ```typescript
 export interface StonecropPluginOptions {
   executor: GraphQLExecutor;
+  inflection?: StonecropInflectionConfig;
 }
 ```
 
@@ -702,6 +727,7 @@ export interface StonecropPluginOptions {
 | Property | Type | Description |
 |----------|------|-------------|
 | executor | `GraphQLExecutor` | GraphQL executor for running queries/mutations |
+| inflection? | `StonecropInflectionConfig` | Override inflection conventions for mapping table names to GraphQL field names. Defaults to PostGraphile Amber preset conventions. |
 
 ### ValidationError
 

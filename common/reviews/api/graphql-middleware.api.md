@@ -491,8 +491,16 @@ export const StonecropFieldType: z.ZodEnum<["Data", "Text", "Int", "Float", "Dec
 export type StonecropFieldType = z.infer<typeof StonecropFieldType>;
 
 // @public
+export interface StonecropInflectionConfig {
+    connectionFieldName?: (tableName: string) => string;
+    orderByTypeName?: (tableName: string) => string;
+    recordFieldName?: (tableName: string) => string;
+}
+
+// @public
 export interface StonecropPluginOptions {
     executor: GraphQLExecutor;
+    inflection?: StonecropInflectionConfig;
 }
 
 // @public

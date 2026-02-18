@@ -7,12 +7,47 @@ import { getMeta, getAllMeta } from '../registry/doctypes'
 import type { ActionContext, DoctypeMeta, GraphQLExecutor } from '../types'
 
 /**
+ * Inflection callbacks for mapping table names to GraphQL query field names.
+ * Override these when using a non-Amber inflection preset (e.g., V4, SimplifyInflection).
+ *
+ * Defaults match the PostGraphile Amber preset conventions.
+ * @public
+ */
+export interface StonecropInflectionConfig {
+	/**
+	 * Given a table name, return the GraphQL field name for fetching a single record by ID.
+	 * @example Amber default: "sales_orders" → "salesOrderById"
+	 * @example V4 preset: "sales_orders" → "salesOrderByRowId"
+	 */
+	recordFieldName?: (tableName: string) => string
+
+	/**
+	 * Given a table name, return the GraphQL field name for fetching a list/connection.
+	 * @example Amber default: "sales_orders" → "allSalesOrders"
+	 * @example SimplifyInflection: "sales_orders" → "salesOrders"
+	 */
+	connectionFieldName?: (tableName: string) => string
+
+	/**
+	 * Given a table name, return the GraphQL OrderBy enum type name.
+	 * @example Amber default: "sales_orders" → "SalesOrdersOrderBy"
+	 */
+	orderByTypeName?: (tableName: string) => string
+}
+
+/**
  * Options for creating a Stonecrop PostGraphile plugin
  * @public
  */
 export interface StonecropPluginOptions {
 	/** GraphQL executor for running queries/mutations */
 	executor: GraphQLExecutor
+
+	/**
+	 * Override inflection conventions for mapping table names to GraphQL field names.
+	 * Defaults to PostGraphile Amber preset conventions.
+	 */
+	inflection?: StonecropInflectionConfig
 }
 
 /**
@@ -22,12 +57,15 @@ export interface StonecropPluginOptions {
  * @public
  */
 export const createStonecropPlugin = (options: StonecropPluginOptions): GraphileConfig.Plugin => {
+	// Resolve inflection callbacks with Amber defaults
+	const recordFieldName = options.inflection?.recordFieldName ?? defaultRecordFieldName
+	const connectionFieldName = options.inflection?.connectionFieldName ?? defaultConnectionFieldName
+	const orderByTypeName = options.inflection?.orderByTypeName ?? defaultOrderByTypeName
+
 	return extendSchema(() => {
 		return {
 			typeDefs: gql`
-				scalar JSON
-
-				type FieldMeta {
+				type StonecropFieldMeta {
 					fieldname: String!
 					fieldtype: String!
 					label: String
@@ -35,7 +73,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions): Graphile
 					options: JSON
 				}
 
-				type ActionDefinition {
+				type StonecropActionDefinition {
 					label: String!
 					handler: String!
 					requiredFields: [String!]
@@ -44,46 +82,52 @@ export const createStonecropPlugin = (options: StonecropPluginOptions): Graphile
 					args: JSON
 				}
 
-				type WorkflowMeta {
+				type StonecropWorkflowMeta {
 					states: [String!]
 					actions: JSON
 				}
 
-				type DoctypeMeta {
+				type StonecropDoctypeMeta {
 					name: String!
 					tableName: String
-					fields: [FieldMeta!]!
-					workflow: WorkflowMeta
+					fields: [StonecropFieldMeta!]!
+					workflow: StonecropWorkflowMeta
 					listDoctype: String
 					parentDoctype: String
 				}
 
-				type RecordResult {
+				type StonecropRecordResult {
 					data: JSON
 					doctype: String!
 				}
 
-				type RecordsResult {
+				type StonecropRecordsResult {
 					data: [JSON!]!
 					doctype: String!
 					count: Int!
 				}
 
-				type ActionResult {
+				type StonecropActionResult {
 					success: Boolean!
 					data: JSON
 					error: String
 				}
 
-				type Query {
-					stonecropMeta(doctype: String!): DoctypeMeta
-					stonecropAllMeta: [DoctypeMeta!]!
-					stonecropRecord(doctype: String!, id: String!): RecordResult
-					stonecropRecords(doctype: String!, filters: JSON, orderBy: String, limit: Int, offset: Int): RecordsResult
+				extend type Query {
+					stonecropMeta(doctype: String!): StonecropDoctypeMeta
+					stonecropAllMeta: [StonecropDoctypeMeta!]!
+					stonecropRecord(doctype: String!, id: String!): StonecropRecordResult
+					stonecropRecords(
+						doctype: String!
+						filters: JSON
+						orderBy: String
+						limit: Int
+						offset: Int
+					): StonecropRecordsResult
 				}
 
-				type Mutation {
-					stonecropAction(doctype: String!, action: String!, args: JSON): ActionResult!
+				extend type Mutation {
+					stonecropAction(doctype: String!, action: String!, args: JSON): StonecropActionResult!
 				}
 			`,
 
@@ -118,11 +162,11 @@ export const createStonecropPlugin = (options: StonecropPluginOptions): Graphile
 											throw new Error(`Doctype ${spec.doctype} has no table mapping`)
 										}
 
-										const query = buildRecordQuery(meta)
+										const query = buildRecordQuery(meta, recordFieldName)
 										const result = await options.executor.query(query, { id: spec.id })
 
 										return {
-											data: extractSingleResult(result, meta),
+											data: extractSingleResult(result, meta, recordFieldName),
 											doctype: spec.doctype,
 										}
 									})
@@ -158,17 +202,22 @@ export const createStonecropPlugin = (options: StonecropPluginOptions): Graphile
 												throw new Error(`Doctype ${spec.doctype} has no table mapping`)
 											}
 
-											const query = buildListQuery(meta, {
-												limit: spec.limit,
-												offset: spec.offset,
-												orderBy: spec.orderBy,
-											})
+											const query = buildListQuery(
+												meta,
+												{
+													limit: spec.limit,
+													offset: spec.offset,
+													orderBy: spec.orderBy,
+												},
+												connectionFieldName,
+												orderByTypeName
+											)
 											const result = await options.executor.query(query, {
 												limit: spec.limit,
 												offset: spec.offset,
 												orderBy: spec.orderBy,
 											})
-											const data = extractListResult(result, meta)
+											const data = extractListResult(result, meta, connectionFieldName)
 
 											return {
 												data,
@@ -258,27 +307,43 @@ export const createStonecropPlugin = (options: StonecropPluginOptions): Graphile
 	})
 }
 
-// Query builders - these generate GraphQL queries to send to the underlying schema
+// =============================================================================
+// Inflection helpers — default to PostGraphile Amber preset conventions
+// =============================================================================
 
 function toCamelCase(str: string): string {
 	return str.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase())
 }
 
-function toConnectionName(tableName: string): string {
-	// sales_orders -> allSalesOrders
-	const camel = toCamelCase(tableName)
-	return `all${camel.charAt(0).toUpperCase()}${camel.slice(1)}`
+function toPascalCase(str: string): string {
+	const camel = toCamelCase(str)
+	return camel.charAt(0).toUpperCase() + camel.slice(1)
 }
 
-function toSingularName(tableName: string): string {
-	// sales_orders -> salesOrder (remove trailing 's' and camelCase)
+/** Amber default: sales_orders → salesOrderById */
+function defaultRecordFieldName(tableName: string): string {
+	// sales_orders -> salesOrder (remove trailing 's' and camelCase) + ById
 	const singular = tableName.replace(/s$/, '')
-	return toCamelCase(singular)
+	return `${toCamelCase(singular)}ById`
 }
 
-function buildRecordQuery(meta: DoctypeMeta): string {
+/** Amber default: sales_orders → allSalesOrders */
+function defaultConnectionFieldName(tableName: string): string {
+	return `all${toPascalCase(tableName)}`
+}
+
+/** Amber default: sales_orders → SalesOrdersOrderBy */
+function defaultOrderByTypeName(tableName: string): string {
+	return `${toPascalCase(tableName)}OrderBy`
+}
+
+// =============================================================================
+// Query builders — generate GraphQL queries to send to the underlying schema
+// =============================================================================
+
+function buildRecordQuery(meta: DoctypeMeta, recordFieldName: (t: string) => string): string {
 	const fieldNames = meta.fields.map(f => f.fieldname).join('\n      ')
-	const queryName = `${toSingularName(meta.tableName!)}ById`
+	const queryName = recordFieldName(meta.tableName!)
 
 	return `
 		query GetRecord($id: UUID!) {
@@ -289,9 +354,15 @@ function buildRecordQuery(meta: DoctypeMeta): string {
 	`
 }
 
-function buildListQuery(meta: DoctypeMeta, args: { limit?: number; offset?: number; orderBy?: string }): string {
+function buildListQuery(
+	meta: DoctypeMeta,
+	args: { limit?: number; offset?: number; orderBy?: string },
+	connectionFieldName: (t: string) => string,
+	orderByTypeName: (t: string) => string
+): string {
 	const fieldNames = meta.fields.map(f => f.fieldname).join('\n          ')
-	const connectionName = toConnectionName(meta.tableName!)
+	const connectionName = connectionFieldName(meta.tableName!)
+	const orderByType = orderByTypeName(meta.tableName!)
 
 	const queryArgs: string[] = []
 	if (args.limit) queryArgs.push(`first: $limit`)
@@ -301,7 +372,7 @@ function buildListQuery(meta: DoctypeMeta, args: { limit?: number; offset?: numb
 	const argsStr = queryArgs.length > 0 ? `(${queryArgs.join(', ')})` : ''
 
 	return `
-		query GetRecords($limit: Int, $offset: Int, $orderBy: [${toCamelCase(meta.tableName!)}OrderBy!]) {
+		query GetRecords($limit: Int, $offset: Int, $orderBy: [${orderByType}!]) {
 			${connectionName}${argsStr} {
 				nodes {
 				${fieldNames}
@@ -311,13 +382,13 @@ function buildListQuery(meta: DoctypeMeta, args: { limit?: number; offset?: numb
 	`
 }
 
-function extractSingleResult(result: unknown, meta: DoctypeMeta): unknown {
-	const queryName = `${toSingularName(meta.tableName!)}ById`
+function extractSingleResult(result: unknown, meta: DoctypeMeta, recordFieldName: (t: string) => string): unknown {
+	const queryName = recordFieldName(meta.tableName!)
 	return (result as Record<string, unknown>)[queryName]
 }
 
-function extractListResult(result: unknown, meta: DoctypeMeta): unknown[] {
-	const connectionName = toConnectionName(meta.tableName!)
+function extractListResult(result: unknown, meta: DoctypeMeta, connectionFieldName: (t: string) => string): unknown[] {
+	const connectionName = connectionFieldName(meta.tableName!)
 	const connection = (result as Record<string, unknown>)[connectionName] as {
 		nodes: unknown[]
 	}
