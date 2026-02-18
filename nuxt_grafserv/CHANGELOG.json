@@ -2,6 +2,18 @@
   "name": "@stonecrop/nuxt-grafserv",
   "entries": [
     {
+      "version": "0.8.8",
+      "tag": "@stonecrop/nuxt-grafserv_v0.8.8",
+      "date": "Wed, 18 Feb 2026 12:40:37 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "preserve execution context in postgraphile mode"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.8.7",
       "tag": "@stonecrop/nuxt-grafserv_v0.8.7",
       "date": "Tue, 17 Feb 2026 15:48:19 GMT",

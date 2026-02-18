@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/graphql-middleware
 
-This log was last generated on Tue, 17 Feb 2026 15:48:19 GMT and should not be manually modified.
+This log was last generated on Wed, 18 Feb 2026 12:40:37 GMT and should not be manually modified.
+
+## 0.8.8
+Wed, 18 Feb 2026 12:40:37 GMT
+
+### Patches
+
+- remove conflicting scalar description
 
 ## 0.8.7
 Tue, 17 Feb 2026 15:48:19 GMT
