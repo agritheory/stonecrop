@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/rockfoil",
+      "comment": "update dependencies",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/rockfoil"
+}
