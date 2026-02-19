@@ -467,10 +467,6 @@
       "allowedCategories": [ "production", "prototype", "utilities" ]
     },
     {
-      "name": "vite-plugin-dts",
-      "allowedCategories": [ "prototype", "utilities" ]
-    },
-    {
       "name": "vite-plugin-lib-inject-css",
       "allowedCategories": [ "prototype" ]
     },

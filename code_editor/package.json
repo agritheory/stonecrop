@@ -48,7 +48,7 @@
 	"devDependencies": {
 		"@eslint/js": "^9.39.2",
 		"@microsoft/api-documenter": "^7.28.2",
-		"@rushstack/heft": "^1.1.7",
+		"@rushstack/heft": "^1.2.0",
 		"@stonecrop/atable": "workspace:*",
 		"@vitejs/plugin-vue": "^6.0.3",
 		"eslint": "^9.39.2",

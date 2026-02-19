@@ -7,7 +7,7 @@
 import { GraphileConfig as GraphileConfig_2 } from 'postgraphile/graphile-build';
 import { GraphQLField } from 'graphql';
 import { GraphQLObjectType } from 'graphql';
-import { IntrospectionQuery } from 'graphql';
+import type { IntrospectionQuery } from 'graphql';
 import { z } from 'zod';
 
 // @public
