@@ -851,6 +851,9 @@ importers:
       graphql:
         specifier: ^16.12.0
         version: 16.12.0
+      postgraphile:
+        specifier: ^5.0.0-rc.7
+        version: 5.0.0-rc.7(@envelop/core@5.5.1)(graphql@16.12.0)(h3@1.15.5)(use-sync-external-store@1.6.0)
     devDependencies:
       '@eslint/js':
         specifier: ^9.39.2
@@ -897,9 +900,6 @@ importers:
       nuxt:
         specifier: ^4.3.1
         version: 4.3.1(@parcel/watcher@2.5.6)(@types/node@22.19.5)(@vue/compiler-sfc@3.5.28)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.2(jiti@2.6.1))(ioredis@5.9.3)(magicast@0.5.2)(optionator@0.9.4)(rollup@4.57.1)(sass@1.97.2)(terser@5.46.0)(typescript@5.9.3)(vite@7.3.1(@types/node@22.19.5)(jiti@2.6.1)(sass@1.97.2)(terser@5.46.0)(yaml@2.8.2))(vue-tsc@3.2.2(typescript@5.9.3))(yaml@2.8.2)
-      postgraphile:
-        specifier: ^5.0.0-rc.7
-        version: 5.0.0-rc.7(@envelop/core@5.5.1)(graphql@16.12.0)(h3@1.15.5)(use-sync-external-store@1.6.0)
       typescript:
         specifier: ^5.9.3
         version: 5.9.3

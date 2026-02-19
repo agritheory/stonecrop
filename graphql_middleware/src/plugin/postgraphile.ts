@@ -134,9 +134,8 @@ export const createStonecropPlugin = (options: StonecropPluginOptions): Graphile
 			objects: {
 				Query: {
 					plans: {
-						stonecropMeta(_plan: any, fieldArgs: any) {
-							const $doctype = fieldArgs.getRaw().doctype
-							return lambda($doctype, doctype => {
+						stonecropMeta(_: any, { $doctype }: any) {
+							return lambda($doctype, (doctype: unknown) => {
 								const meta = getMeta(doctype as string)
 								return meta ?? null
 							})
@@ -146,10 +145,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions): Graphile
 							return constant(getAllMeta())
 						},
 
-						stonecropRecord(_plan: any, fieldArgs: any) {
-							const $doctype = fieldArgs.getRaw().doctype
-							const $id = fieldArgs.getRaw().id
-
+						stonecropRecord(_: any, { $doctype, $id }: any) {
 							return loadOne(object({ doctype: $doctype, id: $id }), async (specs: readonly any[]) => {
 								return await Promise.all(
 									specs.map(async spec => {
@@ -174,14 +170,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions): Graphile
 							})
 						},
 
-						stonecropRecords(_plan: any, fieldArgs: any) {
-							const $args = fieldArgs.getRaw()
-							const $doctype = $args.doctype
-							const $filters = $args.filters
-							const $orderBy = $args.orderBy
-							const $limit = $args.limit
-							const $offset = $args.offset
-
+						stonecropRecords(_: any, { $doctype, $filters, $orderBy, $limit, $offset }: any) {
 							return loadOne(
 								object({
 									doctype: $doctype,
@@ -234,12 +223,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions): Graphile
 
 				Mutation: {
 					plans: {
-						stonecropAction(_plan: any, fieldArgs: any) {
-							const $args = fieldArgs.getRaw()
-							const $doctype = $args.doctype
-							const $action = $args.action
-							const $actionArgs = $args.args
-
+						stonecropAction(_: any, { $doctype, $action, $args: $actionArgs }: any) {
 							return loadOne(
 								object({
 									doctype: $doctype,
