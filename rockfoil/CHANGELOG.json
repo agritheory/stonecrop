@@ -2,6 +2,18 @@
   "name": "@stonecrop/rockfoil",
   "entries": [
     {
+      "version": "0.8.9",
+      "tag": "@stonecrop/rockfoil_v0.8.9",
+      "date": "Thu, 19 Feb 2026 10:23:03 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "update dependencies"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.8.8",
       "tag": "@stonecrop/rockfoil_v0.8.8",
       "date": "Wed, 18 Feb 2026 12:40:37 GMT",
