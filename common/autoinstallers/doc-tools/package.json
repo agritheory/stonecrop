@@ -3,6 +3,6 @@
 	"version": "1.0.0",
 	"private": true,
 	"dependencies": {
-		"@microsoft/api-extractor-model": "^7.30.7"
+		"@microsoft/api-extractor-model": "^7.33.0"
 	}
 }

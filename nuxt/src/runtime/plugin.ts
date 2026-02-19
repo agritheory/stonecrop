@@ -5,11 +5,16 @@ import { createPinia } from 'pinia'
 import { defineNuxtPlugin, useRouter } from 'nuxt/app'
 
 export default defineNuxtPlugin(nuxt => {
-	const pinia = createPinia()
 	const router = useRouter()
 
 	const app = nuxt.vueApp
-	app.use(pinia)
+
+	// Only create Pinia if not already installed (e.g., by pinia, nuxt)
+	if (!app.config.globalProperties.$pinia) {
+		const pinia = createPinia()
+		app.use(pinia)
+	}
+
 	app.use(AForm)
 	app.use(NodeEditor)
 	app.use(StonecropPlugin, { router })

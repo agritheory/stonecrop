@@ -65,7 +65,7 @@
 		"@graphql-tools/merge": "^9.1.7",
 		"@graphql-tools/schema": "^10.0.31",
 		"@graphql-tools/utils": "^11.0.0",
-		"@rushstack/heft": "^1.1.7",
+		"@rushstack/heft": "^1.2.0",
 		"@types/node": "^22.19.5",
 		"@vitest/coverage-istanbul": "^4.0.18",
 		"eslint": "^9.39.2",

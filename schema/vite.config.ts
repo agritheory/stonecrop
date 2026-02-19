@@ -1,15 +1,11 @@
 import { resolve } from 'node:path'
 import { coverageConfigDefaults, defineConfig } from 'vitest/config'
-import dts from 'vite-plugin-dts'
 
 export default defineConfig({
-	plugins: [
-		dts({
-			include: ['src/**/*'],
-			rollupTypes: true,
-		}),
-	],
+	plugins: [],
 	build: {
+		emptyOutDir: false,
+		sourcemap: true,
 		lib: {
 			entry: {
 				index: resolve(__dirname, 'src/index.ts'),
