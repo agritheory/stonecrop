@@ -2,6 +2,18 @@
   "name": "@stonecrop/nuxt",
   "entries": [
     {
+      "version": "0.8.10",
+      "tag": "@stonecrop/nuxt_v0.8.10",
+      "date": "Tue, 24 Feb 2026 12:37:35 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "allow components to be rendered correctly"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.8.9",
       "tag": "@stonecrop/nuxt_v0.8.9",
       "date": "Thu, 19 Feb 2026 10:23:03 GMT",
