@@ -23,6 +23,7 @@
  */
 import { useRoute, useRouter } from 'nuxt/app'
 import { onMounted, ref, computed, watch, markRaw, type Component } from 'vue'
+import { getDefaultComponent } from '@stonecrop/schema'
 
 interface FieldMeta {
 	fieldname: string
@@ -59,10 +60,11 @@ const schemaFields = computed(() => route.meta.schema as FieldMeta[] | undefined
 const rootComponent = computed<Component | string>(() => {
 	const fields = schemaFields.value || []
 
-	// Check if schema defines a specific root component (e.g., ATable, Kanban)
-	const rootField = fields.find(f => f.component)
+	// Only treat a field as a "root component" if it explicitly defines a Doctype/ATable view.
+	// CLI-generated schemas set `component` on every field (e.g., ATextInput, ANumericInput),
+	// so checking for any field with `component` would incorrectly pick the first scalar field.
+	const rootField = fields.find(f => f.fieldtype === 'Doctype' && f.component === 'ATable')
 	if (rootField?.component) {
-		// Return the component name - Vue will resolve it
 		return rootField.component
 	}
 
@@ -73,7 +75,7 @@ const rootComponent = computed<Component | string>(() => {
 // Build props for the root component
 const componentProps = computed(() => {
 	const fields = schemaFields.value || []
-	const rootField = fields.find(f => f.component)
+	const rootField = fields.find(f => f.fieldtype === 'Doctype' && f.component === 'ATable')
 
 	if (rootField?.component === 'ATable') {
 		// Table view: pass columns and rows
@@ -93,9 +95,9 @@ const componentProps = computed(() => {
 
 // Build table columns from fields
 function buildColumnsFromFields(fields: FieldMeta[]) {
-	const excludeTypes = ['Text', 'Attach', 'JSON', 'Table']
+	const excludeTypes = ['Text', 'Attach', 'JSON', 'Table', 'Doctype', 'Link']
 	return fields
-		.filter(f => !excludeTypes.includes(f.fieldtype) && !f.component)
+		.filter(f => !excludeTypes.includes(f.fieldtype))
 		.slice(0, 8)
 		.map(f => ({
 			name: f.fieldname,
@@ -105,31 +107,14 @@ function buildColumnsFromFields(fields: FieldMeta[]) {
 		}))
 }
 
-// Map fieldtype to AForm component
-function fieldtypeToComponent(fieldtype: string): string {
-	const mapping: Record<string, string> = {
-		Data: 'ATextInput',
-		Text: 'ATextInput',
-		Check: 'ACheckbox',
-		Int: 'ANumericInput',
-		Float: 'ANumericInput',
-		Date: 'ADate',
-		Datetime: 'ADate',
-		Select: 'ADropdown',
-		Link: 'AComboBox',
-		Attach: 'ATextInput',
-	}
-	return mapping[fieldtype] || 'ATextInput'
-}
-
 // Build AForm schema from doctype fields
 function buildFormSchema(fields: FieldMeta[]) {
 	return fields
-		.filter(f => !f.component) // Exclude root components like ATable
+		.filter(f => f.fieldtype !== 'Doctype') // Exclude child tables (require special rendering)
 		.map(f => ({
 			fieldname: f.fieldname,
 			label: f.label || f.fieldname,
-			component: fieldtypeToComponent(f.fieldtype),
+			component: f.component || getDefaultComponent(f.fieldtype as any),
 			fieldtype: f.fieldtype,
 			required: f.required,
 			readOnly: f.readOnly,
@@ -141,7 +126,7 @@ function buildFormSchema(fields: FieldMeta[]) {
 // Determine if this is a list view or detail view
 const isListView = computed(() => {
 	const fields = schemaFields.value || []
-	const rootField = fields.find(f => f.component)
+	const rootField = fields.find(f => f.fieldtype === 'Doctype' && f.component === 'ATable')
 	return rootField?.component === 'ATable'
 })
 

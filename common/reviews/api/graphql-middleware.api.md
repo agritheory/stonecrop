@@ -47,6 +47,20 @@ export type ActionDefinition = z.infer<typeof ActionDefinition>;
 // @public
 export type ActionHandler = (args: unknown[], context: ActionContext) => Promise<unknown>;
 
+// Warning: (ae-internal-missing-underscore) The name "buildListQuery" should be prefixed with an underscore because the declaration is marked as @internal
+//
+// @internal
+export function buildListQuery(meta: DoctypeMeta, args: {
+    limit?: number;
+    offset?: number;
+    orderBy?: string;
+}, connectionFieldName: (t: string) => string, orderByTypeName: (t: string) => string): string;
+
+// Warning: (ae-internal-missing-underscore) The name "buildRecordQuery" should be prefixed with an underscore because the declaration is marked as @internal
+//
+// @internal
+export function buildRecordQuery(meta: DoctypeMeta, recordFieldName: (t: string) => string): string;
+
 // @public
 export const builtinHandlers: Record<string, ActionHandler>;
 
@@ -77,11 +91,26 @@ export function convertGraphQLSchema(source: IntrospectionSource, options?: Grap
 // @public
 export const createStonecropPlugin: (options: StonecropPluginOptions) => GraphileConfig_2.Plugin;
 
+// Warning: (ae-internal-missing-underscore) The name "defaultConnectionFieldName" should be prefixed with an underscore because the declaration is marked as @internal
+//
+// @internal
+export function defaultConnectionFieldName(tableName: string): string;
+
 // @public
 export function defaultIsEntityField(fieldName: string, _field: GraphQLField<unknown, unknown>, _parentType: GraphQLObjectType): boolean;
 
 // @public
 export function defaultIsEntityType(typeName: string, type: GraphQLObjectType): boolean;
+
+// Warning: (ae-internal-missing-underscore) The name "defaultOrderByTypeName" should be prefixed with an underscore because the declaration is marked as @internal
+//
+// @internal
+export function defaultOrderByTypeName(tableName: string): string;
+
+// Warning: (ae-internal-missing-underscore) The name "defaultRecordFieldName" should be prefixed with an underscore because the declaration is marked as @internal
+//
+// @internal
+export function defaultRecordFieldName(tableName: string): string;
 
 // @public
 export const DoctypeMeta: z.ZodObject<{
@@ -437,11 +466,21 @@ export function parseField(data: unknown): FieldMeta;
 // @public
 export function pascalToSnake(pascal: string): string;
 
+// Warning: (ae-internal-missing-underscore) The name "queryableFieldNames" should be prefixed with an underscore because the declaration is marked as @internal
+//
+// @internal
+export function queryableFieldNames(meta: DoctypeMeta): string;
+
 // @public
 export function registerBuiltinHandlers(): void;
 
 // @public
 export function registerHandler(name: string, handler: ActionHandler): void;
+
+// Warning: (ae-internal-missing-underscore) The name "RELATION_FIELDTYPES" should be prefixed with an underscore because the declaration is marked as @internal
+//
+// @internal
+export const RELATION_FIELDTYPES: Set<string>;
 
 // @public
 export interface RouteContext {
