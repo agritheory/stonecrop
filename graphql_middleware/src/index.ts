@@ -80,6 +80,17 @@ export { createStonecropPlugin } from './plugin/postgraphile'
 
 export type { StonecropPluginOptions, StonecropInflectionConfig } from './plugin/postgraphile'
 
+// Query builders and inflection helpers (exported for testing and advanced usage)
+export {
+	defaultRecordFieldName,
+	defaultConnectionFieldName,
+	defaultOrderByTypeName,
+	buildRecordQuery,
+	buildListQuery,
+	queryableFieldNames,
+	RELATION_FIELDTYPES,
+} from './plugin/postgraphile'
+
 // Client
 export { StonecropClient } from './client'
 

@@ -20,6 +20,7 @@ export default defineConfig({
 				'node:fs',
 				'node:path',
 				'graphql',
+				'pluralize',
 				'postgraphile',
 				'postgraphile/utils',
 				'postgraphile/grafast',

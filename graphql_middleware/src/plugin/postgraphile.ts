@@ -2,6 +2,9 @@ import { extendSchema, gql } from 'postgraphile/utils'
 import { constant, lambda, object, loadOne } from 'postgraphile/grafast'
 import { GraphileConfig } from 'postgraphile/graphile-build'
 
+import pluralize from 'pluralize'
+
+import { snakeToCamel, toPascalCase } from '@stonecrop/schema'
 import { getHandler } from '../registry/actions'
 import { getMeta, getAllMeta } from '../registry/doctypes'
 import type { ActionContext, DoctypeMeta, GraphQLExecutor } from '../types'
@@ -293,30 +296,34 @@ export const createStonecropPlugin = (options: StonecropPluginOptions): Graphile
 
 // =============================================================================
 // Inflection helpers — default to PostGraphile Amber preset conventions
+// Uses `pluralize` for proper English singularization (handles irregular
+// plurals like statuses→status, categories→category, addresses→address).
+// snakeToCamel / toPascalCase are imported from @stonecrop/schema.
 // =============================================================================
 
-function toCamelCase(str: string): string {
-	return str.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase())
-}
-
-function toPascalCase(str: string): string {
-	const camel = toCamelCase(str)
-	return camel.charAt(0).toUpperCase() + camel.slice(1)
-}
-
-/** Amber default: sales_orders → salesOrderById */
+/**
+ * Amber default: sales_orders → salesOrderById
+ * Uses `pluralize` for proper singularization of irregular plurals.
+ * Override via `StonecropInflectionConfig.recordFieldName` for non-standard PK columns.
+ * @internal
+ */
 function defaultRecordFieldName(tableName: string): string {
-	// sales_orders -> salesOrder (remove trailing 's' and camelCase) + ById
-	const singular = tableName.replace(/s$/, '')
-	return `${toCamelCase(singular)}ById`
+	const singular = pluralize.singular(tableName)
+	return `${snakeToCamel(singular)}ById`
 }
 
-/** Amber default: sales_orders → allSalesOrders */
+/**
+ * Amber default: sales_orders → allSalesOrders
+ * @internal
+ */
 function defaultConnectionFieldName(tableName: string): string {
 	return `all${toPascalCase(tableName)}`
 }
 
-/** Amber default: sales_orders → SalesOrdersOrderBy */
+/**
+ * Amber default: sales_orders → SalesOrdersOrderBy
+ * @internal
+ */
 function defaultOrderByTypeName(tableName: string): string {
 	return `${toPascalCase(tableName)}OrderBy`
 }
@@ -325,8 +332,32 @@ function defaultOrderByTypeName(tableName: string): string {
 // Query builders — generate GraphQL queries to send to the underlying schema
 // =============================================================================
 
+/**
+ * Fieldtypes that map to GraphQL object/connection types and require sub-selections.
+ * These fields are excluded from generated query field selections.
+ * @internal
+ */
+const RELATION_FIELDTYPES = new Set(['Link', 'Doctype'])
+
+/**
+ * Filter fields to only those directly queryable as scalars, excluding Link and Doctype
+ * relation fields that require GraphQL sub-selections.
+ * @internal
+ */
+function queryableFieldNames(meta: DoctypeMeta): string {
+	return meta.fields
+		.filter(f => !RELATION_FIELDTYPES.has(f.fieldtype))
+		.map(f => f.fieldname)
+		.join('\n      ')
+}
+
+/**
+ * Build a GraphQL query to fetch a single record by ID.
+ * Excludes Link and Doctype relation fields from the selection set.
+ * @internal
+ */
 function buildRecordQuery(meta: DoctypeMeta, recordFieldName: (t: string) => string): string {
-	const fieldNames = meta.fields.map(f => f.fieldname).join('\n      ')
+	const fieldNames = queryableFieldNames(meta)
 	const queryName = recordFieldName(meta.tableName!)
 
 	return `
@@ -338,25 +369,43 @@ function buildRecordQuery(meta: DoctypeMeta, recordFieldName: (t: string) => str
 	`
 }
 
+/**
+ * Build a GraphQL connection query to fetch a list of records.
+ * Only declares variables ($limit, $offset, $orderBy) that are actually used in the query,
+ * avoiding GraphQL spec §5.8.3 violations from unused variable declarations.
+ * Excludes Link and Doctype relation fields from the selection set.
+ * @internal
+ */
 function buildListQuery(
 	meta: DoctypeMeta,
 	args: { limit?: number; offset?: number; orderBy?: string },
 	connectionFieldName: (t: string) => string,
 	orderByTypeName: (t: string) => string
 ): string {
-	const fieldNames = meta.fields.map(f => f.fieldname).join('\n          ')
+	const fieldNames = queryableFieldNames(meta)
 	const connectionName = connectionFieldName(meta.tableName!)
 	const orderByType = orderByTypeName(meta.tableName!)
 
+	const varDecls: string[] = []
 	const queryArgs: string[] = []
-	if (args.limit) queryArgs.push(`first: $limit`)
-	if (args.offset) queryArgs.push(`offset: $offset`)
-	if (args.orderBy) queryArgs.push(`orderBy: $orderBy`)
+	if (args.limit) {
+		varDecls.push('$limit: Int')
+		queryArgs.push(`first: $limit`)
+	}
+	if (args.offset) {
+		varDecls.push('$offset: Int')
+		queryArgs.push(`offset: $offset`)
+	}
+	if (args.orderBy) {
+		varDecls.push(`$orderBy: [${orderByType}!]`)
+		queryArgs.push(`orderBy: $orderBy`)
+	}
 
+	const varStr = varDecls.length > 0 ? `(${varDecls.join(', ')})` : ''
 	const argsStr = queryArgs.length > 0 ? `(${queryArgs.join(', ')})` : ''
 
 	return `
-		query GetRecords($limit: Int, $offset: Int, $orderBy: [${orderByType}!]) {
+		query GetRecords${varStr} {
 			${connectionName}${argsStr} {
 				nodes {
 				${fieldNames}
@@ -377,4 +426,18 @@ function extractListResult(result: unknown, meta: DoctypeMeta, connectionFieldNa
 		nodes: unknown[]
 	}
 	return connection?.nodes ?? []
+}
+
+// =============================================================================
+// Exported for testing and advanced usage
+// =============================================================================
+
+export {
+	defaultRecordFieldName,
+	defaultConnectionFieldName,
+	defaultOrderByTypeName,
+	buildRecordQuery,
+	buildListQuery,
+	queryableFieldNames,
+	RELATION_FIELDTYPES,
 }
