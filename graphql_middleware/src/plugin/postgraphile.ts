@@ -7,7 +7,8 @@ import pluralize from 'pluralize'
 import { snakeToCamel, toPascalCase } from '@stonecrop/schema'
 import { getHandler } from '../registry/actions'
 import { getMeta, getAllMeta } from '../registry/doctypes'
-import type { ActionContext, DoctypeMeta, GraphQLExecutor } from '../types'
+import type { DoctypeMeta } from '@stonecrop/schema'
+import type { ActionContext, GraphQLExecutor } from '../types'
 
 /**
  * Inflection callbacks for mapping table names to GraphQL query field names.
@@ -36,6 +37,20 @@ export interface StonecropInflectionConfig {
 	 * @example Amber default: "sales_orders" → "SalesOrdersOrderBy"
 	 */
 	orderByTypeName?: (tableName: string) => string
+
+	/**
+	 * Given a table name, return the GraphQL argument name used to look up a record by PK.
+	 * @example Amber default (Relay Global ID): "sales_orders" → "id"
+	 * @example row_id PK: "sales_orders" → "rowId"
+	 */
+	recordArgName?: (tableName: string) => string
+
+	/**
+	 * Given a table name, return the GraphQL variable type for the PK argument.
+	 * @example Default UUID PK: "sales_orders" → "UUID!"
+	 * @example Integer PK: "sales_orders" → "Int!"
+	 */
+	recordArgType?: (tableName: string) => string
 }
 
 /**
@@ -64,6 +79,8 @@ export const createStonecropPlugin = (options: StonecropPluginOptions): Graphile
 	const recordFieldName = options.inflection?.recordFieldName ?? defaultRecordFieldName
 	const connectionFieldName = options.inflection?.connectionFieldName ?? defaultConnectionFieldName
 	const orderByTypeName = options.inflection?.orderByTypeName ?? defaultOrderByTypeName
+	const recordArgName = options.inflection?.recordArgName ?? defaultRecordArgName
+	const recordArgType = options.inflection?.recordArgType ?? defaultRecordArgType
 
 	return extendSchema(() => {
 		return {
@@ -161,8 +178,10 @@ export const createStonecropPlugin = (options: StonecropPluginOptions): Graphile
 											throw new Error(`Doctype ${spec.doctype} has no table mapping`)
 										}
 
-										const query = buildRecordQuery(meta, recordFieldName)
-										const result = await options.executor.query(query, { id: spec.id })
+										const query = buildRecordQuery(meta, recordFieldName, recordArgName, recordArgType)
+										const result = await options.executor.query(query, {
+											[recordArgName(meta.tableName!)]: spec.id,
+										})
 
 										return {
 											data: extractSingleResult(result, meta, recordFieldName),
@@ -305,7 +324,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions): Graphile
  * Amber default: sales_orders → salesOrderById
  * Uses `pluralize` for proper singularization of irregular plurals.
  * Override via `StonecropInflectionConfig.recordFieldName` for non-standard PK columns.
- * @internal
+ * @public
  */
 function defaultRecordFieldName(tableName: string): string {
 	const singular = pluralize.singular(tableName)
@@ -314,7 +333,7 @@ function defaultRecordFieldName(tableName: string): string {
 
 /**
  * Amber default: sales_orders → allSalesOrders
- * @internal
+ * @public
  */
 function defaultConnectionFieldName(tableName: string): string {
 	return `all${toPascalCase(tableName)}`
@@ -322,10 +341,30 @@ function defaultConnectionFieldName(tableName: string): string {
 
 /**
  * Amber default: sales_orders → SalesOrdersOrderBy
- * @internal
+ * @public
  */
 function defaultOrderByTypeName(tableName: string): string {
 	return `${toPascalCase(tableName)}OrderBy`
+}
+
+/**
+ * Default PK argument name: 'id' (standard Relay Global ID pattern).
+ * Override via `StonecropInflectionConfig.recordArgName` when using row_id columns;
+ * PostGraphile Amber generates `rowId: UUID!` for those fields.
+ * @internal
+ */
+function defaultRecordArgName(_tableName: string): string {
+	return 'id'
+}
+
+/**
+ * Default PK argument type: 'UUID!' (PostGraphile Amber default for UUID PKs).
+ * Override via `StonecropInflectionConfig.recordArgType` when using non-UUID PKs
+ * such as integer serials or Relay Global IDs ('ID!').
+ * @internal
+ */
+function defaultRecordArgType(_tableName: string): string {
+	return 'UUID!'
 }
 
 // =============================================================================
@@ -335,14 +374,14 @@ function defaultOrderByTypeName(tableName: string): string {
 /**
  * Fieldtypes that map to GraphQL object/connection types and require sub-selections.
  * These fields are excluded from generated query field selections.
- * @internal
+ * @public
  */
 const RELATION_FIELDTYPES = new Set(['Link', 'Doctype'])
 
 /**
  * Filter fields to only those directly queryable as scalars, excluding Link and Doctype
  * relation fields that require GraphQL sub-selections.
- * @internal
+ * @public
  */
 function queryableFieldNames(meta: DoctypeMeta): string {
 	return meta.fields
@@ -354,15 +393,25 @@ function queryableFieldNames(meta: DoctypeMeta): string {
 /**
  * Build a GraphQL query to fetch a single record by ID.
  * Excludes Link and Doctype relation fields from the selection set.
- * @internal
+ * The PK argument name and type are configurable via `StonecropInflectionConfig.recordArgName`
+ * and `StonecropInflectionConfig.recordArgType` to match the target schema's conventions
+ * (e.g. `rowId: UUID!` for PostGraphile Amber with row_id columns).
+ * @public
  */
-function buildRecordQuery(meta: DoctypeMeta, recordFieldName: (t: string) => string): string {
+function buildRecordQuery(
+	meta: DoctypeMeta,
+	recordFieldName: (t: string) => string,
+	recordArgName: (t: string) => string,
+	recordArgType: (t: string) => string
+): string {
 	const fieldNames = queryableFieldNames(meta)
 	const queryName = recordFieldName(meta.tableName!)
+	const argName = recordArgName(meta.tableName!)
+	const argType = recordArgType(meta.tableName!)
 
 	return `
-		query GetRecord($id: UUID!) {
-			${queryName}(id: $id) {
+		query GetRecord($${argName}: ${argType}) {
+			${queryName}(${argName}: $${argName}) {
 				${fieldNames}
 			}
 		}
@@ -374,7 +423,7 @@ function buildRecordQuery(meta: DoctypeMeta, recordFieldName: (t: string) => str
  * Only declares variables ($limit, $offset, $orderBy) that are actually used in the query,
  * avoiding GraphQL spec §5.8.3 violations from unused variable declarations.
  * Excludes Link and Doctype relation fields from the selection set.
- * @internal
+ * @public
  */
 function buildListQuery(
 	meta: DoctypeMeta,
@@ -415,11 +464,20 @@ function buildListQuery(
 	`
 }
 
+/**
+ * Extract a single record from a PostGraphile query result using the record field name.
+ * @internal
+ */
 function extractSingleResult(result: unknown, meta: DoctypeMeta, recordFieldName: (t: string) => string): unknown {
 	const queryName = recordFieldName(meta.tableName!)
 	return (result as Record<string, unknown>)[queryName]
 }
 
+/**
+ * Extract the list of nodes from a PostGraphile connection query result.
+ * Returns an empty array if the connection field is absent.
+ * @internal
+ */
 function extractListResult(result: unknown, meta: DoctypeMeta, connectionFieldName: (t: string) => string): unknown[] {
 	const connectionName = connectionFieldName(meta.tableName!)
 	const connection = (result as Record<string, unknown>)[connectionName] as {
@@ -436,8 +494,12 @@ export {
 	defaultRecordFieldName,
 	defaultConnectionFieldName,
 	defaultOrderByTypeName,
+	defaultRecordArgName,
+	defaultRecordArgType,
 	buildRecordQuery,
 	buildListQuery,
 	queryableFieldNames,
 	RELATION_FIELDTYPES,
+	extractSingleResult,
+	extractListResult,
 }

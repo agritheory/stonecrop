@@ -1,4 +1,6 @@
-import type { DoctypeMeta, RouteContext, GraphQLExecutor } from '../types'
+import type { DoctypeMeta, RouteContext } from '@stonecrop/schema'
+
+export type { RouteContext }
 
 /**
  * Options for creating a Stonecrop client
@@ -15,7 +17,7 @@ export interface StonecropClientOptions {
  * Client for interacting with Stonecrop GraphQL API
  * @public
  */
-export class StonecropClient implements GraphQLExecutor {
+export class StonecropClient {
 	private endpoint: string
 	private headers: Record<string, string>
 	private metaCache: Map<string, DoctypeMeta> = new Map()

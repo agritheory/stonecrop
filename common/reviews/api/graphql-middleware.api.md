@@ -5,9 +5,6 @@
 ```ts
 
 import { GraphileConfig as GraphileConfig_2 } from 'postgraphile/graphile-build';
-import { GraphQLField } from 'graphql';
-import { GraphQLObjectType } from 'graphql';
-import type { IntrospectionQuery } from 'graphql';
 import { z } from 'zod';
 
 // @public
@@ -18,60 +15,20 @@ export interface ActionContext {
 }
 
 // @public
-export const ActionDefinition: z.ZodObject<{
-    label: z.ZodString;
-    handler: z.ZodString;
-    requiredFields: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
-    allowedStates: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
-    confirm: z.ZodOptional<z.ZodBoolean>;
-    args: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodUnknown>>;
-}, "strip", z.ZodTypeAny, {
-    label: string;
-    handler: string;
-    requiredFields?: string[] | undefined;
-    allowedStates?: string[] | undefined;
-    confirm?: boolean | undefined;
-    args?: Record<string, unknown> | undefined;
-}, {
-    label: string;
-    handler: string;
-    requiredFields?: string[] | undefined;
-    allowedStates?: string[] | undefined;
-    confirm?: boolean | undefined;
-    args?: Record<string, unknown> | undefined;
-}>;
-
-// @public
-export type ActionDefinition = z.infer<typeof ActionDefinition>;
-
-// @public
 export type ActionHandler = (args: unknown[], context: ActionContext) => Promise<unknown>;
 
-// Warning: (ae-internal-missing-underscore) The name "buildListQuery" should be prefixed with an underscore because the declaration is marked as @internal
-//
-// @internal
+// @public
 export function buildListQuery(meta: DoctypeMeta, args: {
     limit?: number;
     offset?: number;
     orderBy?: string;
 }, connectionFieldName: (t: string) => string, orderByTypeName: (t: string) => string): string;
 
-// Warning: (ae-internal-missing-underscore) The name "buildRecordQuery" should be prefixed with an underscore because the declaration is marked as @internal
-//
-// @internal
-export function buildRecordQuery(meta: DoctypeMeta, recordFieldName: (t: string) => string): string;
+// @public
+export function buildRecordQuery(meta: DoctypeMeta, recordFieldName: (t: string) => string, recordArgName: (t: string) => string, recordArgType: (t: string) => string): string;
 
 // @public
 export const builtinHandlers: Record<string, ActionHandler>;
-
-// @public
-export function camelToLabel(camelCase: string): string;
-
-// @public
-export function camelToSnake(camelCase: string): string;
-
-// @public
-export function classifyFieldType(fieldName: string, field: GraphQLField<unknown, unknown>, entityTypes: Set<string>, options?: GraphQLConversionOptions): GraphQLConversionFieldMeta;
 
 // @public
 export function clearHandlers(): void;
@@ -80,36 +37,15 @@ export function clearHandlers(): void;
 export function clearRegistry(): void;
 
 // @public
-export interface ConvertedGraphQLDoctype extends Omit<DoctypeMeta, 'fields'> {
-    fields: GraphQLConversionFieldMeta[];
-    _graphqlTypeName?: string;
-}
-
-// @public
-export function convertGraphQLSchema(source: IntrospectionSource, options?: GraphQLConversionOptions): ConvertedGraphQLDoctype[];
-
-// @public
 export const createStonecropPlugin: (options: StonecropPluginOptions) => GraphileConfig_2.Plugin;
 
-// Warning: (ae-internal-missing-underscore) The name "defaultConnectionFieldName" should be prefixed with an underscore because the declaration is marked as @internal
-//
-// @internal
+// @public
 export function defaultConnectionFieldName(tableName: string): string;
 
 // @public
-export function defaultIsEntityField(fieldName: string, _field: GraphQLField<unknown, unknown>, _parentType: GraphQLObjectType): boolean;
-
-// @public
-export function defaultIsEntityType(typeName: string, type: GraphQLObjectType): boolean;
-
-// Warning: (ae-internal-missing-underscore) The name "defaultOrderByTypeName" should be prefixed with an underscore because the declaration is marked as @internal
-//
-// @internal
 export function defaultOrderByTypeName(tableName: string): string;
 
-// Warning: (ae-internal-missing-underscore) The name "defaultRecordFieldName" should be prefixed with an underscore because the declaration is marked as @internal
-//
-// @internal
+// @public
 export function defaultRecordFieldName(tableName: string): string;
 
 // @public
@@ -313,122 +249,13 @@ export class DoctypeValidationError extends Error {
 }
 
 // @public
-export const FieldMeta: z.ZodObject<{
-    fieldname: z.ZodString;
-    fieldtype: z.ZodEnum<["Data", "Text", "Int", "Float", "Decimal", "Check", "Date", "Time", "Datetime", "Duration", "DateRange", "JSON", "Code", "Link", "Doctype", "Attach", "Currency", "Quantity", "Select"]>;
-    component: z.ZodOptional<z.ZodString>;
-    label: z.ZodOptional<z.ZodString>;
-    width: z.ZodOptional<z.ZodString>;
-    align: z.ZodOptional<z.ZodEnum<["left", "center", "right", "start", "end"]>>;
-    required: z.ZodOptional<z.ZodBoolean>;
-    readOnly: z.ZodOptional<z.ZodBoolean>;
-    edit: z.ZodOptional<z.ZodBoolean>;
-    hidden: z.ZodOptional<z.ZodBoolean>;
-    value: z.ZodOptional<z.ZodUnknown>;
-    default: z.ZodOptional<z.ZodUnknown>;
-    options: z.ZodOptional<z.ZodUnion<[z.ZodString, z.ZodArray<z.ZodString, "many">, z.ZodRecord<z.ZodString, z.ZodUnknown>]>>;
-    mask: z.ZodOptional<z.ZodString>;
-    validation: z.ZodOptional<z.ZodObject<{
-        errorMessage: z.ZodString;
-    }, "passthrough", z.ZodTypeAny, z.objectOutputType<{
-        errorMessage: z.ZodString;
-    }, z.ZodTypeAny, "passthrough">, z.objectInputType<{
-        errorMessage: z.ZodString;
-    }, z.ZodTypeAny, "passthrough">>>;
-}, "strip", z.ZodTypeAny, {
-    fieldname: string;
-    fieldtype: "Data" | "Text" | "Int" | "Float" | "Decimal" | "Check" | "Date" | "Time" | "Datetime" | "Duration" | "DateRange" | "JSON" | "Code" | "Link" | "Doctype" | "Attach" | "Currency" | "Quantity" | "Select";
-    value?: unknown;
-    options?: string | string[] | Record<string, unknown> | undefined;
-    validation?: z.objectOutputType<{
-        errorMessage: z.ZodString;
-    }, z.ZodTypeAny, "passthrough"> | undefined;
-    component?: string | undefined;
-    label?: string | undefined;
-    width?: string | undefined;
-    align?: "left" | "center" | "right" | "start" | "end" | undefined;
-    required?: boolean | undefined;
-    readOnly?: boolean | undefined;
-    edit?: boolean | undefined;
-    hidden?: boolean | undefined;
-    default?: unknown;
-    mask?: string | undefined;
-}, {
-    fieldname: string;
-    fieldtype: "Data" | "Text" | "Int" | "Float" | "Decimal" | "Check" | "Date" | "Time" | "Datetime" | "Duration" | "DateRange" | "JSON" | "Code" | "Link" | "Doctype" | "Attach" | "Currency" | "Quantity" | "Select";
-    value?: unknown;
-    options?: string | string[] | Record<string, unknown> | undefined;
-    validation?: z.objectInputType<{
-        errorMessage: z.ZodString;
-    }, z.ZodTypeAny, "passthrough"> | undefined;
-    component?: string | undefined;
-    label?: string | undefined;
-    width?: string | undefined;
-    align?: "left" | "center" | "right" | "start" | "end" | undefined;
-    required?: boolean | undefined;
-    readOnly?: boolean | undefined;
-    edit?: boolean | undefined;
-    hidden?: boolean | undefined;
-    default?: unknown;
-    mask?: string | undefined;
-}>;
-
-// @public
-export type FieldMeta = z.infer<typeof FieldMeta>;
-
-// @public
-export const FieldOptions: z.ZodUnion<[z.ZodString, z.ZodArray<z.ZodString, "many">, z.ZodRecord<z.ZodString, z.ZodUnknown>]>;
-
-// @public
-export type FieldOptions = z.infer<typeof FieldOptions>;
-
-// @public
-export const FieldValidation: z.ZodObject<{
-    errorMessage: z.ZodString;
-}, "passthrough", z.ZodTypeAny, z.objectOutputType<{
-    errorMessage: z.ZodString;
-}, z.ZodTypeAny, "passthrough">, z.objectInputType<{
-    errorMessage: z.ZodString;
-}, z.ZodTypeAny, "passthrough">>;
-
-// @public
-export type FieldValidation = z.infer<typeof FieldValidation>;
-
-// @public
 export function getAllMeta(): DoctypeMeta[];
-
-// @public
-export function getDefaultComponent(fieldtype: StonecropFieldType): string;
 
 // @public
 export function getHandler(name: string): ActionHandler | undefined;
 
 // @public
 export function getMeta(name: string): DoctypeMeta | undefined;
-
-// Warning: (ae-forgotten-export) The symbol "FieldTemplate" needs to be exported by the entry point index.d.ts
-//
-// @public
-export const GQL_SCALAR_MAP: Record<string, FieldTemplate>;
-
-// @public
-export interface GraphQLConversionFieldMeta extends FieldMeta {
-    _graphqlType?: string;
-    _unmapped?: boolean;
-}
-
-// @public
-export interface GraphQLConversionOptions {
-    classifyField?: (fieldName: string, field: GraphQLField<unknown, unknown>, parentType: GraphQLObjectType) => Partial<FieldMeta> | null;
-    customScalars?: Record<string, Partial<FieldTemplate>>;
-    deriveTableName?: (typeName: string) => string | undefined;
-    exclude?: string[];
-    include?: string[];
-    includeUnmappedMeta?: boolean;
-    isEntityField?: (fieldName: string, field: GraphQLField<unknown, unknown>, parentType: GraphQLObjectType) => boolean;
-    isEntityType?: (typeName: string, type: GraphQLObjectType) => boolean;
-    typeOverrides?: Record<string, Record<string, Partial<FieldMeta>>>;
-}
 
 // @public
 export interface GraphQLExecutor {
@@ -443,9 +270,6 @@ export function hasHandler(name: string): boolean;
 export function hasMeta(name: string): boolean;
 
 // @public
-export type IntrospectionSource = IntrospectionQuery | string;
-
-// @public
 export function loadDoctypes(dir: string, options?: LoadDoctypesOptions): void;
 
 // @public
@@ -458,17 +282,6 @@ export interface LoadDoctypesOptions {
 }
 
 // @public
-export function parseDoctype(data: unknown): DoctypeMeta;
-
-// @public
-export function parseField(data: unknown): FieldMeta;
-
-// @public
-export function pascalToSnake(pascal: string): string;
-
-// Warning: (ae-internal-missing-underscore) The name "queryableFieldNames" should be prefixed with an underscore because the declaration is marked as @internal
-//
-// @internal
 export function queryableFieldNames(meta: DoctypeMeta): string;
 
 // @public
@@ -477,62 +290,15 @@ export function registerBuiltinHandlers(): void;
 // @public
 export function registerHandler(name: string, handler: ActionHandler): void;
 
-// Warning: (ae-internal-missing-underscore) The name "RELATION_FIELDTYPES" should be prefixed with an underscore because the declaration is marked as @internal
-//
-// @internal
+// @public
 export const RELATION_FIELDTYPES: Set<string>;
-
-// @public
-export interface RouteContext {
-    [key: string]: unknown;
-    doctype: string;
-    recordId?: string;
-}
-
-// @public
-export function snakeToCamel(snakeCase: string): string;
-
-// @public
-export function snakeToLabel(snakeCase: string): string;
-
-// @public
-export class StonecropClient implements GraphQLExecutor {
-    constructor(options: StonecropClientOptions);
-    clearMetaCache(): void;
-    getAllMeta(): Promise<DoctypeMeta[]>;
-    getMeta(context: RouteContext): Promise<DoctypeMeta | null>;
-    getRecord(doctype: DoctypeMeta, recordId: string): Promise<Record<string, unknown> | null>;
-    getRecords(doctype: DoctypeMeta, options?: {
-        filters?: Record<string, unknown>;
-        orderBy?: string;
-        limit?: number;
-        offset?: number;
-    }): Promise<Record<string, unknown>[]>;
-    mutate<T = unknown>(mutation: string, variables?: Record<string, unknown>): Promise<T>;
-    query<T = unknown>(query: string, variables?: Record<string, unknown>): Promise<T>;
-    runAction(doctype: DoctypeMeta, action: string, args?: unknown[]): Promise<{
-        success: boolean;
-        data: unknown;
-        error: string | null;
-    }>;
-}
-
-// @public
-export interface StonecropClientOptions {
-    endpoint: string;
-    headers?: Record<string, string>;
-}
-
-// @public
-export const StonecropFieldType: z.ZodEnum<["Data", "Text", "Int", "Float", "Decimal", "Check", "Date", "Time", "Datetime", "Duration", "DateRange", "JSON", "Code", "Link", "Doctype", "Attach", "Currency", "Quantity", "Select"]>;
-
-// @public
-export type StonecropFieldType = z.infer<typeof StonecropFieldType>;
 
 // @public
 export interface StonecropInflectionConfig {
     connectionFieldName?: (tableName: string) => string;
     orderByTypeName?: (tableName: string) => string;
+    recordArgName?: (tableName: string) => string;
+    recordArgType?: (tableName: string) => string;
     recordFieldName?: (tableName: string) => string;
 }
 
@@ -543,21 +309,6 @@ export interface StonecropPluginOptions {
 }
 
 // @public
-export function toPascalCase(tableName: string): string;
-
-// @public
-export function toSlug(name: string): string;
-
-// @public
-export const TYPE_MAP: Record<StonecropFieldType, FieldTemplate>;
-
-// @public
-export function validateDoctype(data: unknown): ValidationResult;
-
-// @public
-export function validateField(data: unknown): ValidationResult;
-
-// @public
 export function validateReferences(): ValidationError[];
 
 // @public
@@ -565,65 +316,6 @@ export interface ValidationError {
     message: string;
     path: (string | number)[];
 }
-
-// @public
-export interface ValidationResult {
-    errors: ValidationError[];
-    success: boolean;
-}
-
-// @public
-export const WELL_KNOWN_SCALARS: Record<string, FieldTemplate>;
-
-// @public
-export const WorkflowMeta: z.ZodObject<{
-    states: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
-    actions: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodObject<{
-        label: z.ZodString;
-        handler: z.ZodString;
-        requiredFields: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
-        allowedStates: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
-        confirm: z.ZodOptional<z.ZodBoolean>;
-        args: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodUnknown>>;
-    }, "strip", z.ZodTypeAny, {
-        label: string;
-        handler: string;
-        requiredFields?: string[] | undefined;
-        allowedStates?: string[] | undefined;
-        confirm?: boolean | undefined;
-        args?: Record<string, unknown> | undefined;
-    }, {
-        label: string;
-        handler: string;
-        requiredFields?: string[] | undefined;
-        allowedStates?: string[] | undefined;
-        confirm?: boolean | undefined;
-        args?: Record<string, unknown> | undefined;
-    }>>>;
-}, "strip", z.ZodTypeAny, {
-    states?: string[] | undefined;
-    actions?: Record<string, {
-        label: string;
-        handler: string;
-        requiredFields?: string[] | undefined;
-        allowedStates?: string[] | undefined;
-        confirm?: boolean | undefined;
-        args?: Record<string, unknown> | undefined;
-    }> | undefined;
-}, {
-    states?: string[] | undefined;
-    actions?: Record<string, {
-        label: string;
-        handler: string;
-        requiredFields?: string[] | undefined;
-        allowedStates?: string[] | undefined;
-        confirm?: boolean | undefined;
-        args?: Record<string, unknown> | undefined;
-    }> | undefined;
-}>;
-
-// @public
-export type WorkflowMeta = z.infer<typeof WorkflowMeta>;
 
 // (No @packageDocumentation comment for this package)
 

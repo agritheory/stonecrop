@@ -1,16 +1,20 @@
-import { describe, it, expect } from 'vitest'
+import type { DoctypeMeta } from '@stonecrop/schema'
+import { describe, it, expect, vi } from 'vitest'
 
 import {
 	defaultRecordFieldName,
 	defaultConnectionFieldName,
 	defaultOrderByTypeName,
+	defaultRecordArgName,
+	defaultRecordArgType,
 	buildRecordQuery,
 	buildListQuery,
 	queryableFieldNames,
 	RELATION_FIELDTYPES,
+	extractSingleResult,
+	extractListResult,
+	createStonecropPlugin,
 } from '../src/plugin/postgraphile'
-
-import type { DoctypeMeta } from '@stonecrop/schema'
 
 // ---------------------------------------------------------------------------
 // Test fixtures
@@ -99,6 +103,20 @@ describe('defaultOrderByTypeName', () => {
 	})
 })
 
+describe('defaultRecordArgName', () => {
+	it('returns "id" for all table names (standard Relay Global ID)', () => {
+		expect(defaultRecordArgName('resources')).toBe('id')
+		expect(defaultRecordArgName('sales_orders')).toBe('id')
+	})
+})
+
+describe('defaultRecordArgType', () => {
+	it('returns "UUID!" for all table names (Amber default)', () => {
+		expect(defaultRecordArgType('resources')).toBe('UUID!')
+		expect(defaultRecordArgType('sales_orders')).toBe('UUID!')
+	})
+})
+
 // ===========================================================================
 // Query builders — relation field filtering (Issue 5)
 // ===========================================================================
@@ -140,8 +158,8 @@ describe('RELATION_FIELDTYPES', () => {
 // ===========================================================================
 
 describe('buildRecordQuery', () => {
-	it('generates valid query with only scalar fields', () => {
-		const query = buildRecordQuery(scalarOnlyMeta, defaultRecordFieldName)
+	it('generates valid query with default arg name/type', () => {
+		const query = buildRecordQuery(scalarOnlyMeta, defaultRecordFieldName, defaultRecordArgName, defaultRecordArgType)
 		expect(query).toContain('query GetRecord($id: UUID!)')
 		expect(query).toContain('resourceById(id: $id)')
 		expect(query).toContain('id')
@@ -150,7 +168,7 @@ describe('buildRecordQuery', () => {
 	})
 
 	it('excludes relation fields from selection', () => {
-		const query = buildRecordQuery(mixedFieldsMeta, defaultRecordFieldName)
+		const query = buildRecordQuery(mixedFieldsMeta, defaultRecordFieldName, defaultRecordArgName, defaultRecordArgType)
 		expect(query).toContain('title')
 		expect(query).toContain('rating')
 		expect(query).not.toContain('userByCreatedBy')
@@ -158,9 +176,28 @@ describe('buildRecordQuery', () => {
 	})
 
 	it('uses custom recordFieldName inflection', () => {
-		const customInflection = (t: string) => `${t}ByRowId`
-		const query = buildRecordQuery(scalarOnlyMeta, customInflection)
-		expect(query).toContain('resourcesByRowId(id: $id)')
+		const customFieldName = (_t: string) => 'resourceByRowId'
+		const customArgName = (_t: string) => 'rowId'
+		const query = buildRecordQuery(scalarOnlyMeta, customFieldName, customArgName, defaultRecordArgType)
+		expect(query).toContain('query GetRecord($rowId: UUID!)')
+		expect(query).toContain('resourceByRowId(rowId: $rowId)')
+	})
+
+	it('uses custom recordArgName and recordArgType together', () => {
+		const customFieldName = (_t: string) => 'resourceById'
+		const customArgName = (_t: string) => 'nodeId'
+		const customArgType = (_t: string) => 'ID!'
+		const query = buildRecordQuery(scalarOnlyMeta, customFieldName, customArgName, customArgType)
+		expect(query).toContain('query GetRecord($nodeId: ID!)')
+		expect(query).toContain('resourceById(nodeId: $nodeId)')
+	})
+
+	it('row_id pattern: rowId arg with UUID! type', () => {
+		const rowIdFieldName = (t: string) => `${defaultRecordFieldName(t).replace(/ById$/, 'ByRowId')}`
+		const rowIdArgName = (_t: string) => 'rowId'
+		const query = buildRecordQuery(scalarOnlyMeta, rowIdFieldName, rowIdArgName, defaultRecordArgType)
+		expect(query).toContain('query GetRecord($rowId: UUID!)')
+		expect(query).toContain('resourceByRowId(rowId: $rowId)')
 	})
 })
 
@@ -226,5 +263,94 @@ describe('buildListQuery', () => {
 		expect(query).toContain('rating')
 		expect(query).not.toContain('userByCreatedBy')
 		expect(query).not.toContain('recipeIngredientsByRecipeId')
+	})
+})
+
+// ===========================================================================
+// extractSingleResult
+// ===========================================================================
+
+describe('extractSingleResult', () => {
+	it('extracts the record from the result using the field name', () => {
+		const record = { id: '1', name: 'Test' }
+		const result = { resourceById: record }
+		const extracted = extractSingleResult(result, scalarOnlyMeta, defaultRecordFieldName)
+		expect(extracted).toBe(record)
+	})
+
+	it('returns undefined when field is absent', () => {
+		const result = {}
+		const extracted = extractSingleResult(result, scalarOnlyMeta, defaultRecordFieldName)
+		expect(extracted).toBeUndefined()
+	})
+
+	it('uses custom recordFieldName inflection', () => {
+		const record = { id: '1' }
+		const result = { resourceByRowId: record }
+		const extracted = extractSingleResult(result, scalarOnlyMeta, () => 'resourceByRowId')
+		expect(extracted).toBe(record)
+	})
+})
+
+// ===========================================================================
+// extractListResult
+// ===========================================================================
+
+describe('extractListResult', () => {
+	it('extracts the nodes array from the connection', () => {
+		const nodes = [{ id: '1' }, { id: '2' }]
+		const result = { allResources: { nodes } }
+		const extracted = extractListResult(result, scalarOnlyMeta, defaultConnectionFieldName)
+		expect(extracted).toEqual(nodes)
+	})
+
+	it('returns empty array when connection field is absent', () => {
+		const result = {}
+		const extracted = extractListResult(result, scalarOnlyMeta, defaultConnectionFieldName)
+		expect(extracted).toEqual([])
+	})
+
+	it('returns empty array when nodes is absent', () => {
+		const result = { allResources: {} }
+		const extracted = extractListResult(result, scalarOnlyMeta, defaultConnectionFieldName)
+		expect(extracted).toEqual([])
+	})
+})
+
+// ===========================================================================
+// createStonecropPlugin — inflection resolution coverage
+// ===========================================================================
+
+describe('createStonecropPlugin', () => {
+	const mockExecutor = { query: vi.fn(), mutate: vi.fn() }
+
+	it('creates a plugin with default inflection', () => {
+		const plugin = createStonecropPlugin({ executor: mockExecutor })
+		expect(plugin).toBeDefined()
+	})
+
+	it('accepts partial inflection overrides', () => {
+		const plugin = createStonecropPlugin({
+			executor: mockExecutor,
+			inflection: {
+				recordFieldName: t => `${t}ByRowId`,
+				recordArgName: () => 'rowId',
+			},
+		})
+		expect(plugin).toBeDefined()
+	})
+
+	it('accepts full inflection overrides', () => {
+		const plugin = createStonecropPlugin({
+			executor: mockExecutor,
+			inflection: {
+				recordFieldName: t => `custom_${t}`,
+				connectionFieldName: t => `list_${t}`,
+				orderByTypeName: t => `${t}Sort`,
+				recordArgName: () => 'nodeId',
+				recordArgType: () => 'ID!',
+			},
+		})
+		expect(plugin).toBeDefined()
 	})
 })

@@ -1,44 +1,8 @@
-// Re-export all schema types from @stonecrop/schema for backward compatibility
-export {
-	StonecropFieldType,
-	FieldOptions,
-	FieldMeta,
-	ActionDefinition,
-	WorkflowMeta,
-	DoctypeMeta,
-	validateDoctype,
-	validateField,
-	parseDoctype,
-	parseField,
-} from '@stonecrop/schema'
-
-export type {
-	ValidationResult,
-	ValidationError,
-	IntrospectionSource,
-	GraphQLConversionOptions,
-	GraphQLConversionFieldMeta,
-	ConvertedGraphQLDoctype,
-} from '@stonecrop/schema'
-
 // =============================================================================
 // Runtime Context Types (unique to graphql_middleware)
 // =============================================================================
 
 import type { DoctypeMeta } from '@stonecrop/schema'
-
-/**
- * Route context for identifying what doctype/record we're working with
- * @public
- */
-export interface RouteContext {
-	/** Doctype name (e.g., 'Task', 'Customer') */
-	doctype: string
-	/** Optional record ID for viewing/editing a specific record */
-	recordId?: string
-	/** Additional context properties */
-	[key: string]: unknown
-}
 
 /**
  * GraphQL executor interface for running queries/mutations

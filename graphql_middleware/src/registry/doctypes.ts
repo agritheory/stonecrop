@@ -1,8 +1,8 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 
-import { parseDoctype, validateDoctype } from '../types'
-import type { DoctypeMeta, ValidationError } from '../types'
+import { parseDoctype, validateDoctype } from '@stonecrop/schema'
+import type { DoctypeMeta, ValidationError } from '@stonecrop/schema'
 
 const doctypeRegistry: Map<string, DoctypeMeta> = new Map()
 

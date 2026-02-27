@@ -1,4 +1,5 @@
-import type { ActionHandler, ActionContext, DoctypeMeta } from '../types'
+import type { DoctypeMeta } from '@stonecrop/schema'
+import type { ActionHandler, ActionContext } from '../types'
 
 const handlerRegistry: Map<string, ActionHandler> = new Map()
 
