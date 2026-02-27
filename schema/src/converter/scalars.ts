@@ -74,7 +74,7 @@ export const INTERNAL_SCALARS = new Set(['Cursor'])
  *
  * @param customScalars - User-provided scalar overrides
  * @returns Merged scalar map
- * @internal
+ * @public
  */
 export function buildScalarMap(customScalars?: Record<string, Partial<FieldTemplate>>): Record<string, FieldTemplate> {
 	const merged: Record<string, FieldTemplate> = { ...WELL_KNOWN_SCALARS }

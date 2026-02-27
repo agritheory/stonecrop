@@ -2,11 +2,19 @@
 
 > This documentation is automatically generated from the TypeScript API.
 
+## Other Components
+
+### DoctypeMeta
+
+```typescript
+export { DoctypeMeta }
+```
+
 ## Interfaces
 
 ### RouteContext
 
-Route context for identifying what doctype/record we're working with
+Route context for identifying what doctype/record we're working with. Used by graphql-middleware and graphql-client to resolve schema metadata.
 
 **Definition:**
 
@@ -45,6 +53,16 @@ export interface StonecropClientOptions {
 | headers? | `Record<string, string>` | Additional HTTP headers to include in requests |
 
 ## Type Aliases
+
+### DoctypeMeta
+
+Doctype metadata type inferred from Zod schema
+
+**Definition:**
+
+```typescript
+export type DoctypeMeta = z.infer<typeof DoctypeMeta>;
+```
 
 ### Meta
 

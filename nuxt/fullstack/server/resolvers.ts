@@ -8,7 +8,9 @@
  * - stonecropCreate/stonecropUpdate/stonecropDelete: CRUD via executor
  */
 
-import { getMeta, getAllMeta, getHandler, type DoctypeMeta, type ActionContext } from '@stonecrop/graphql-middleware'
+import { getMeta, getAllMeta, getHandler, type ActionContext } from '@stonecrop/graphql-middleware'
+import type { DoctypeMeta } from '@stonecrop/schema'
+
 import { mockExecutor } from './mock-executor'
 
 // ============================================

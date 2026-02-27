@@ -7,7 +7,8 @@ import pluralize from 'pluralize'
 import { snakeToCamel, toPascalCase } from '@stonecrop/schema'
 import { getHandler } from '../registry/actions'
 import { getMeta, getAllMeta } from '../registry/doctypes'
-import type { ActionContext, DoctypeMeta, GraphQLExecutor } from '../types'
+import type { DoctypeMeta } from '@stonecrop/schema'
+import type { ActionContext, GraphQLExecutor } from '../types'
 
 /**
  * Inflection callbacks for mapping table names to GraphQL query field names.
@@ -323,7 +324,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions): Graphile
  * Amber default: sales_orders → salesOrderById
  * Uses `pluralize` for proper singularization of irregular plurals.
  * Override via `StonecropInflectionConfig.recordFieldName` for non-standard PK columns.
- * @internal
+ * @public
  */
 function defaultRecordFieldName(tableName: string): string {
 	const singular = pluralize.singular(tableName)
@@ -332,7 +333,7 @@ function defaultRecordFieldName(tableName: string): string {
 
 /**
  * Amber default: sales_orders → allSalesOrders
- * @internal
+ * @public
  */
 function defaultConnectionFieldName(tableName: string): string {
 	return `all${toPascalCase(tableName)}`
@@ -340,7 +341,7 @@ function defaultConnectionFieldName(tableName: string): string {
 
 /**
  * Amber default: sales_orders → SalesOrdersOrderBy
- * @internal
+ * @public
  */
 function defaultOrderByTypeName(tableName: string): string {
 	return `${toPascalCase(tableName)}OrderBy`
@@ -373,14 +374,14 @@ function defaultRecordArgType(_tableName: string): string {
 /**
  * Fieldtypes that map to GraphQL object/connection types and require sub-selections.
  * These fields are excluded from generated query field selections.
- * @internal
+ * @public
  */
 const RELATION_FIELDTYPES = new Set(['Link', 'Doctype'])
 
 /**
  * Filter fields to only those directly queryable as scalars, excluding Link and Doctype
  * relation fields that require GraphQL sub-selections.
- * @internal
+ * @public
  */
 function queryableFieldNames(meta: DoctypeMeta): string {
 	return meta.fields
@@ -395,7 +396,7 @@ function queryableFieldNames(meta: DoctypeMeta): string {
  * The PK argument name and type are configurable via `StonecropInflectionConfig.recordArgName`
  * and `StonecropInflectionConfig.recordArgType` to match the target schema's conventions
  * (e.g. `rowId: UUID!` for PostGraphile Amber with row_id columns).
- * @internal
+ * @public
  */
 function buildRecordQuery(
 	meta: DoctypeMeta,
@@ -422,7 +423,7 @@ function buildRecordQuery(
  * Only declares variables ($limit, $offset, $orderBy) that are actually used in the query,
  * avoiding GraphQL spec §5.8.3 violations from unused variable declarations.
  * Excludes Link and Doctype relation fields from the selection set.
- * @internal
+ * @public
  */
 function buildListQuery(
 	meta: DoctypeMeta,

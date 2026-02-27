@@ -36,9 +36,7 @@ export const ActionDefinition: z.ZodObject<{
 // @public
 export type ActionDefinition = z.infer<typeof ActionDefinition>;
 
-// Warning: (ae-internal-missing-underscore) The name "buildScalarMap" should be prefixed with an underscore because the declaration is marked as @internal
-//
-// @internal
+// @public
 export function buildScalarMap(customScalars?: Record<string, Partial<FieldTemplate>>): Record<string, FieldTemplate>;
 
 // @public
@@ -389,6 +387,13 @@ export function parseField(data: unknown): FieldMeta;
 
 // @public
 export function pascalToSnake(pascal: string): string;
+
+// @public
+export interface RouteContext {
+    [key: string]: unknown;
+    doctype: string;
+    recordId?: string;
+}
 
 // @public
 export function snakeToCamel(snakeCase: string): string;

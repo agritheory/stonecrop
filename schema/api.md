@@ -114,6 +114,22 @@ export { WorkflowMeta }
 
 ## Functions
 
+### buildScalarMap
+
+Build a merged scalar map from the built-in maps and user-provided custom scalars. Precedence (highest to lowest): customScalars → GQL_SCALAR_MAP → WELL_KNOWN_SCALARS
+
+**Signature:**
+
+```typescript
+export declare function buildScalarMap(customScalars?: Record<string, Partial<FieldTemplate>>): Record<string, FieldTemplate>;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| customScalars | `Record<string, Partial<FieldTemplate>>` | User-provided scalar overrides |
+
 ### camelToLabel
 
 Converts camelCase to Title Case label
@@ -478,6 +494,26 @@ export interface GraphQLConversionOptions {
 | isEntityField? | `(fieldName: string, field: GraphQLField<unknown, unknown>, parentType: GraphQLObjectType) => boolean` | Custom function to filter which fields on an entity type are included. When provided, replaces the default field filter. The default filter excludes `nodeId`, `__typename`, and `clientMutationId`. |
 | isEntityType? | `(typeName: string, type: GraphQLObjectType) => boolean` | Custom function to determine if a GraphQL object type represents an entity (→ doctype). When provided, replaces the default heuristic entirely. The default heuristic excludes types matching synthetic patterns: `*Connection`, `*Edge`, `*Input`, `*Patch`, `*Payload`, `*Condition`, `*Filter`, `*OrderBy`, `*Aggregate`, `Query`, `Mutation`, `Subscription`, `__*`. |
 | typeOverrides? | `Record<string, Record<string, Partial<FieldMeta>>>` | Per-type, per-field overrides for the converted field definitions. Outer key is the GraphQL type name, inner key is the field name. |
+
+### RouteContext
+
+Route context for identifying what doctype/record we're working with. Used by graphql-middleware and graphql-client to resolve schema metadata.
+
+**Definition:**
+
+```typescript
+export interface RouteContext {
+  doctype: string;
+  recordId?: string;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| doctype | `string` | Doctype name (e.g., 'Task', 'Customer') |
+| recordId? | `string` | Optional record ID for viewing/editing a specific record |
 
 ### ValidationError
 

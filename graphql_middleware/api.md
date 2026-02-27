@@ -4,120 +4,61 @@
 
 ## Other Components
 
-### ActionDefinition
-
-```typescript
-export { ActionDefinition }
-```
-
 ### DoctypeMeta
 
 ```typescript
 export { DoctypeMeta }
 ```
 
-### FieldMeta
+### RELATION_FIELDTYPES
 
 ```typescript
-export { FieldMeta }
-```
-
-### FieldOptions
-
-```typescript
-export { FieldOptions }
-```
-
-### FieldValidation
-
-```typescript
-export { FieldValidation }
-```
-
-### GQL_SCALAR_MAP
-
-```typescript
-export { GQL_SCALAR_MAP }
-```
-
-### StonecropFieldType
-
-```typescript
-export { StonecropFieldType }
-```
-
-### TYPE_MAP
-
-```typescript
-export { TYPE_MAP }
-```
-
-### WELL_KNOWN_SCALARS
-
-```typescript
-export { WELL_KNOWN_SCALARS }
-```
-
-### WorkflowMeta
-
-```typescript
-export { WorkflowMeta }
+export { RELATION_FIELDTYPES }
 ```
 
 ## Functions
 
-### camelToLabel
+### buildListQuery
 
-Converts camelCase to Title Case label
+Build a GraphQL connection query to fetch a list of records. Only declares variables ($limit, $offset, $orderBy) that are actually used in the query, avoiding GraphQL spec §5.8.3 violations from unused variable declarations. Excludes Link and Doctype relation fields from the selection set.
 
 **Signature:**
 
 ```typescript
-export declare function camelToLabel(camelCase: string): string;
+declare function buildListQuery(meta: DoctypeMeta, args: {
+    limit?: number;
+    offset?: number;
+    orderBy?: string;
+}, connectionFieldName: (t: string) => string, orderByTypeName: (t: string) => string): string;
 ```
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| camelCase | `string` | Camel case string |
+| meta | `DoctypeMeta` |  |
+| args | `{ limit?: number; offset?: number; orderBy?: string; }` |  |
+| connectionFieldName | `(t: string) => string` |  |
+| orderByTypeName | `(t: string) => string` |  |
 
-### camelToSnake
+### buildRecordQuery
 
-Converts camelCase to snake_case
+Build a GraphQL query to fetch a single record by ID. Excludes Link and Doctype relation fields from the selection set. The PK argument name and type are configurable via `StonecropInflectionConfig.recordArgName` and `StonecropInflectionConfig.recordArgType` to match the target schema's conventions (e.g. `rowId: UUID!` for PostGraphile Amber with row_id columns).
 
 **Signature:**
 
 ```typescript
-export declare function camelToSnake(camelCase: string): string;
+declare function buildRecordQuery(meta: DoctypeMeta, recordFieldName: (t: string) => string, recordArgName: (t: string) => string, recordArgType: (t: string) => string): string;
 ```
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| camelCase | `string` | Camel case string |
-
-### classifyFieldType
-
-Classify a single GraphQL field into a Stonecrop field definition.
-
-Classification rules (in order): 1. Scalar types → look up in merged scalar map 2. Enum types → `Select` with enum values as options 3. Object types that are entities → `Link` with slug as options 4. Object types that are Connections → `Doctype` with node type slug as options 5. List of entity type → `Doctype` with item type slug as options 6. Anything else → `Data` with `_unmapped: true`
-
-**Signature:**
-
-```typescript
-export declare function classifyFieldType(fieldName: string, field: GraphQLField<unknown, unknown>, entityTypes: Set<string>, options?: GraphQLConversionOptions): GraphQLConversionFieldMeta;
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| fieldName | `string` | The GraphQL field name |
-| field | `GraphQLField<unknown, unknown>` | The GraphQL field definition |
-| entityTypes | `Set<string>` | Set of type names classified as entities |
-| options | `GraphQLConversionOptions` | Conversion options (for custom scalars, unmapped meta, etc.) |
+| meta | `DoctypeMeta` |  |
+| recordFieldName | `(t: string) => string` |  |
+| recordArgName | `(t: string) => string` |  |
+| recordArgType | `(t: string) => string` |  |
 
 ### clearHandlers
 
@@ -139,25 +80,6 @@ Clear all registered doctypes
 export declare function clearRegistry(): void;
 ```
 
-### convertGraphQLSchema
-
-Convert a GraphQL schema to Stonecrop doctype schemas.
-
-Accepts either an `IntrospectionQuery` result object or an SDL string. Entity types are identified using heuristics (or a custom `isEntityType` function) and converted to `DoctypeMeta`-compatible JSON objects.
-
-**Signature:**
-
-```typescript
-export declare function convertGraphQLSchema(source: IntrospectionSource, options?: GraphQLConversionOptions): ConvertedGraphQLDoctype[];
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| source | `IntrospectionSource` | GraphQL introspection result or SDL string |
-| options | `GraphQLConversionOptions` | Conversion options for controlling output format and behavior |
-
 ### createStonecropPlugin
 
 Create a PostGraphile plugin that extends the GraphQL schema with Stonecrop functionality
@@ -174,42 +96,53 @@ createStonecropPlugin: (options: StonecropPluginOptions) => GraphileConfig.Plugi
 |-----------|------|-------------|
 | options | `StonecropPluginOptions` | Plugin configuration options |
 
-### defaultIsEntityField
+### defaultConnectionFieldName
 
-Default heuristic to filter fields on entity types. Skips internal fields that don't represent meaningful data.
+Amber default: sales_orders → allSalesOrders
 
 **Signature:**
 
 ```typescript
-export declare function defaultIsEntityField(fieldName: string, _field: GraphQLField<unknown, unknown>, _parentType: GraphQLObjectType): boolean;
+declare function defaultConnectionFieldName(tableName: string): string;
 ```
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| fieldName | `string` | The GraphQL field name |
-| _field | `GraphQLField<unknown, unknown>` | The GraphQL field definition (unused in default implementation) |
-| _parentType | `GraphQLObjectType` | The parent entity type (unused in default implementation) |
+| tableName | `string` |  |
 
-### defaultIsEntityType
+### defaultOrderByTypeName
 
-Default heuristic to determine if a GraphQL object type represents an entity. An entity type becomes a Stonecrop doctype.
-
-This heuristic excludes: - Introspection types (`__*`) - Root operation types (`Query`, `Mutation`, `Subscription`) - Types with synthetic suffixes (e.g., `*Connection`, `*Edge`, `*Input`) - Types starting with `Node` interface marker (exact match only)
+Amber default: sales_orders → SalesOrdersOrderBy
 
 **Signature:**
 
 ```typescript
-export declare function defaultIsEntityType(typeName: string, type: GraphQLObjectType): boolean;
+declare function defaultOrderByTypeName(tableName: string): string;
 ```
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| typeName | `string` | The GraphQL type name |
-| type | `GraphQLObjectType` | The GraphQL object type definition |
+| tableName | `string` |  |
+
+### defaultRecordFieldName
+
+Amber default: sales_orders → salesOrderById Uses `pluralize` for proper singularization of irregular plurals. Override via `StonecropInflectionConfig.recordFieldName` for non-standard PK columns.
+
+**Signature:**
+
+```typescript
+declare function defaultRecordFieldName(tableName: string): string;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| tableName | `string` |  |
 
 ### getAllMeta
 
@@ -220,22 +153,6 @@ Get all loaded doctypes
 ```typescript
 export declare function getAllMeta(): DoctypeMeta[];
 ```
-
-### getDefaultComponent
-
-Get the default component for a field type
-
-**Signature:**
-
-```typescript
-export declare function getDefaultComponent(fieldtype: StonecropFieldType): string;
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| fieldtype | `StonecropFieldType` | The semantic field type |
 
 ### getHandler
 
@@ -335,53 +252,21 @@ export declare function loadDoctypesFromObject(doctypes: Record<string, unknown>
 | doctypes | `Record<string, unknown>` | Object mapping doctype names to doctype definitions |
 | options | `LoadDoctypesOptions` | Options for loading doctypes (continueOnError, onError callback) |
 
-### parseDoctype
+### queryableFieldNames
 
-Parse and validate a doctype, throwing on failure
+Filter fields to only those directly queryable as scalars, excluding Link and Doctype relation fields that require GraphQL sub-selections.
 
 **Signature:**
 
 ```typescript
-export declare function parseDoctype(data: unknown): DoctypeMeta;
+declare function queryableFieldNames(meta: DoctypeMeta): string;
 ```
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| data | `unknown` | Data to parse |
-
-### parseField
-
-Parse and validate a field, throwing on failure
-
-**Signature:**
-
-```typescript
-export declare function parseField(data: unknown): FieldMeta;
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| data | `unknown` | Data to parse |
-
-### pascalToSnake
-
-Convert PascalCase to snake_case (e.g., for deriving table names from type names)
-
-**Signature:**
-
-```typescript
-export declare function pascalToSnake(pascal: string): string;
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| pascal | `string` | PascalCase string |
+| meta | `DoctypeMeta` |  |
 
 ### registerBuiltinHandlers
 
@@ -409,102 +294,6 @@ export declare function registerHandler(name: string, handler: ActionHandler): v
 |-----------|------|-------------|
 | name | `string` | Unique name for the action handler |
 | handler | `ActionHandler` | Action handler function to register |
-
-### snakeToCamel
-
-Converts snake_case to camelCase
-
-**Signature:**
-
-```typescript
-export declare function snakeToCamel(snakeCase: string): string;
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| snakeCase | `string` | Snake case string |
-
-### snakeToLabel
-
-Converts snake_case to Title Case label
-
-**Signature:**
-
-```typescript
-export declare function snakeToLabel(snakeCase: string): string;
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| snakeCase | `string` | Snake case string |
-
-### toPascalCase
-
-Convert table name to PascalCase doctype name
-
-**Signature:**
-
-```typescript
-export declare function toPascalCase(tableName: string): string;
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| tableName | `string` | SQL table name (snake_case) |
-
-### toSlug
-
-Convert to kebab-case slug
-
-**Signature:**
-
-```typescript
-export declare function toSlug(name: string): string;
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| name | `string` | Name to convert |
-
-### validateDoctype
-
-Validate a doctype definition
-
-**Signature:**
-
-```typescript
-export declare function validateDoctype(data: unknown): ValidationResult;
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| data | `unknown` | Data to validate |
-
-### validateField
-
-Validate a field definition
-
-**Signature:**
-
-```typescript
-export declare function validateField(data: unknown): ValidationResult;
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| data | `unknown` | Data to validate |
 
 ### validateReferences
 
@@ -538,80 +327,6 @@ export interface ActionContext {
 | doctype | `DoctypeMeta` | Doctype metadata for the action being executed |
 | executor | `GraphQLExecutor` | GraphQL executor for running queries/mutations within the action |
 
-### ConvertedGraphQLDoctype
-
-Output of GraphQL schema conversion — one per entity type.
-
-**Definition:**
-
-```typescript
-export interface ConvertedGraphQLDoctype {
-  _graphqlTypeName?: string;
-  fields: GraphQLConversionFieldMeta[];
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| _graphqlTypeName? | `string` | Original GraphQL type name (for debugging/reference) |
-| fields | `GraphQLConversionFieldMeta[]` | Field definitions with optional GraphQL conversion metadata |
-
-### GraphQLConversionFieldMeta
-
-Extended field metadata with optional GraphQL conversion metadata. Only present when `includeUnmappedMeta` is enabled.
-
-**Definition:**
-
-```typescript
-export interface GraphQLConversionFieldMeta {
-  _graphqlType?: string;
-  _unmapped?: boolean;
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| _graphqlType? | `string` | Original GraphQL type name (for debugging/reference) |
-| _unmapped? | `boolean` | Marks fields that couldn't be automatically mapped |
-
-### GraphQLConversionOptions
-
-Options for converting a GraphQL schema to Stonecrop doctype schemas. All hooks are optional — sensible defaults are provided for common GraphQL patterns.
-
-**Definition:**
-
-```typescript
-export interface GraphQLConversionOptions {
-  classifyField?: (fieldName: string, field: GraphQLField<unknown, unknown>, parentType: GraphQLObjectType) => Partial<FieldMeta> | null;
-  customScalars?: Record<string, Partial<FieldTemplate>>;
-  deriveTableName?: (typeName: string) => string | undefined;
-  exclude?: string[];
-  include?: string[];
-  includeUnmappedMeta?: boolean;
-  isEntityField?: (fieldName: string, field: GraphQLField<unknown, unknown>, parentType: GraphQLObjectType) => boolean;
-  isEntityType?: (typeName: string, type: GraphQLObjectType) => boolean;
-  typeOverrides?: Record<string, Record<string, Partial<FieldMeta>>>;
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| classifyField? | `(fieldName: string, field: GraphQLField<unknown, unknown>, parentType: GraphQLObjectType) => Partial<FieldMeta> \| null` | Escape hatch: fully override the classification of a specific field. When this returns a non-null value, it is used as the field definition (merged with the field name). Return `null` to fall through to default classification. |
-| customScalars? | `Record<string, Partial<FieldTemplate>>` | Map custom or non-standard GraphQL scalar types to Stonecrop field types. Merged with the built-in scalar maps (GQL_SCALAR_MAP + WELL_KNOWN_SCALARS). User-provided entries take highest precedence. |
-| deriveTableName? | `(typeName: string) => string \| undefined` | Custom function to derive the database table name from a GraphQL type name. The default converts PascalCase to snake_case (e.g., `SalesOrder` → `sales_order`). Return `undefined` to omit `tableName` from the output. |
-| exclude? | `string[]` | GraphQL type names to exclude from conversion. Applied after `isEntityType` filtering. |
-| include? | `string[]` | Whitelist of GraphQL type names to convert. When provided, only these types are considered (after `isEntityType` filtering). |
-| includeUnmappedMeta? | `boolean` | Include `_graphqlType` and `_unmapped` metadata on converted fields. Useful for debugging conversions. Defaults to `false`. |
-| isEntityField? | `(fieldName: string, field: GraphQLField<unknown, unknown>, parentType: GraphQLObjectType) => boolean` | Custom function to filter which fields on an entity type are included. When provided, replaces the default field filter. The default filter excludes `nodeId`, `__typename`, and `clientMutationId`. |
-| isEntityType? | `(typeName: string, type: GraphQLObjectType) => boolean` | Custom function to determine if a GraphQL object type represents an entity (→ doctype). When provided, replaces the default heuristic entirely. The default heuristic excludes types matching synthetic patterns: `*Connection`, `*Edge`, `*Input`, `*Patch`, `*Payload`, `*Condition`, `*Filter`, `*OrderBy`, `*Aggregate`, `Query`, `Mutation`, `Subscription`, `__*`. |
-| typeOverrides? | `Record<string, Record<string, Partial<FieldMeta>>>` | Per-type, per-field overrides for the converted field definitions. Outer key is the GraphQL type name, inner key is the field name. |
-
 ### GraphQLExecutor
 
 GraphQL executor interface for running queries/mutations
@@ -644,26 +359,6 @@ export interface LoadDoctypesOptions {
 |----------|------|-------------|
 | continueOnError? | `boolean` | Continue loading other files if one fails validation |
 | onError? | `(file: string, errors: ValidationError[]) => void` | Callback for validation errors when continueOnError is true |
-
-### RouteContext
-
-Route context for identifying what doctype/record we're working with
-
-**Definition:**
-
-```typescript
-export interface RouteContext {
-  doctype: string;
-  recordId?: string;
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| doctype | `string` | Doctype name (e.g., 'Task', 'Customer') |
-| recordId? | `string` | Optional record ID for viewing/editing a specific record |
 
 ### StonecropInflectionConfig
 
@@ -733,37 +428,7 @@ export interface ValidationError {
 | message | `string` | Error message |
 | path | `(string \| number)[]` | Path to the invalid property |
 
-### ValidationResult
-
-Result of a validation operation
-
-**Definition:**
-
-```typescript
-export interface ValidationResult {
-  errors: ValidationError[];
-  success: boolean;
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| errors | `ValidationError[]` | List of validation errors (empty if success) |
-| success | `boolean` | Whether validation passed |
-
 ## Type Aliases
-
-### ActionDefinition
-
-Action definition type inferred from Zod schema
-
-**Definition:**
-
-```typescript
-export type ActionDefinition = z.infer<typeof ActionDefinition>;
-```
 
 ### ActionHandler
 
@@ -783,70 +448,6 @@ Doctype metadata type inferred from Zod schema
 
 ```typescript
 export type DoctypeMeta = z.infer<typeof DoctypeMeta>;
-```
-
-### FieldMeta
-
-Field metadata type inferred from Zod schema
-
-**Definition:**
-
-```typescript
-export type FieldMeta = z.infer<typeof FieldMeta>;
-```
-
-### FieldOptions
-
-Field options type inferred from Zod schema
-
-**Definition:**
-
-```typescript
-export type FieldOptions = z.infer<typeof FieldOptions>;
-```
-
-### FieldValidation
-
-Field validation type inferred from Zod schema
-
-**Definition:**
-
-```typescript
-export type FieldValidation = z.infer<typeof FieldValidation>;
-```
-
-### IntrospectionSource
-
-Input source for the GraphQL schema converter. Accepts either a standard GraphQL introspection result or an SDL string.
-
-- `IntrospectionQuery`: The raw result of a GraphQL introspection query (from any server) - `string`: An SDL (Schema Definition Language) string
-
-Note: URL fetching is intentionally not supported in the library API. Use the CLI (`stonecrop-schema generate --endpoint <url>`) for endpoint fetching, or fetch the introspection result yourself and pass it in.
-
-**Definition:**
-
-```typescript
-export type IntrospectionSource = IntrospectionQuery | string;
-```
-
-### StonecropFieldType
-
-Stonecrop field type enum inferred from Zod schema
-
-**Definition:**
-
-```typescript
-export type StonecropFieldType = z.infer<typeof StonecropFieldType>;
-```
-
-### WorkflowMeta
-
-Workflow metadata type inferred from Zod schema
-
-**Definition:**
-
-```typescript
-export type WorkflowMeta = z.infer<typeof WorkflowMeta>;
 ```
 
 ## Classes

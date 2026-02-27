@@ -1,17 +1,6 @@
-import type { DoctypeMeta } from '@stonecrop/schema'
+import type { DoctypeMeta, RouteContext } from '@stonecrop/schema'
 
-/**
- * Route context for identifying what doctype/record we're working with
- * @public
- */
-export interface RouteContext {
-	/** Doctype name (e.g., 'Task', 'Customer') */
-	doctype: string
-	/** Optional record ID for viewing/editing a specific record */
-	recordId?: string
-	/** Additional context properties */
-	[key: string]: unknown
-}
+export type { RouteContext }
 
 /**
  * Options for creating a Stonecrop client
