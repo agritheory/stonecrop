@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/graphql-client",
-	"version": "0.8.10",
+	"version": "0.8.11",
 	"license": "MIT",
 	"type": "module",
 	"author": {
