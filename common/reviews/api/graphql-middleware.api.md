@@ -496,34 +496,6 @@ export function snakeToCamel(snakeCase: string): string;
 export function snakeToLabel(snakeCase: string): string;
 
 // @public
-export class StonecropClient implements GraphQLExecutor {
-    constructor(options: StonecropClientOptions);
-    clearMetaCache(): void;
-    getAllMeta(): Promise<DoctypeMeta[]>;
-    getMeta(context: RouteContext): Promise<DoctypeMeta | null>;
-    getRecord(doctype: DoctypeMeta, recordId: string): Promise<Record<string, unknown> | null>;
-    getRecords(doctype: DoctypeMeta, options?: {
-        filters?: Record<string, unknown>;
-        orderBy?: string;
-        limit?: number;
-        offset?: number;
-    }): Promise<Record<string, unknown>[]>;
-    mutate<T = unknown>(mutation: string, variables?: Record<string, unknown>): Promise<T>;
-    query<T = unknown>(query: string, variables?: Record<string, unknown>): Promise<T>;
-    runAction(doctype: DoctypeMeta, action: string, args?: unknown[]): Promise<{
-        success: boolean;
-        data: unknown;
-        error: string | null;
-    }>;
-}
-
-// @public
-export interface StonecropClientOptions {
-    endpoint: string;
-    headers?: Record<string, string>;
-}
-
-// @public
 export const StonecropFieldType: z.ZodEnum<["Data", "Text", "Int", "Float", "Decimal", "Check", "Date", "Time", "Datetime", "Duration", "DateRange", "JSON", "Code", "Link", "Doctype", "Attach", "Currency", "Quantity", "Select"]>;
 
 // @public

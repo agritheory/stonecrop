@@ -463,11 +463,20 @@ function buildListQuery(
 	`
 }
 
+/**
+ * Extract a single record from a PostGraphile query result using the record field name.
+ * @internal
+ */
 function extractSingleResult(result: unknown, meta: DoctypeMeta, recordFieldName: (t: string) => string): unknown {
 	const queryName = recordFieldName(meta.tableName!)
 	return (result as Record<string, unknown>)[queryName]
 }
 
+/**
+ * Extract the list of nodes from a PostGraphile connection query result.
+ * Returns an empty array if the connection field is absent.
+ * @internal
+ */
 function extractListResult(result: unknown, meta: DoctypeMeta, connectionFieldName: (t: string) => string): unknown[] {
 	const connectionName = connectionFieldName(meta.tableName!)
 	const connection = (result as Record<string, unknown>)[connectionName] as {
@@ -490,4 +499,6 @@ export {
 	buildListQuery,
 	queryableFieldNames,
 	RELATION_FIELDTYPES,
+	extractSingleResult,
+	extractListResult,
 }

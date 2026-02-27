@@ -65,3 +65,5 @@ const methods = {
 
 export type { Meta, MetaParser, MetaResponse } from './types'
 export { queries, typeDefs, methods }
+export { StonecropClient } from './client'
+export type { StonecropClientOptions, RouteContext } from './client'

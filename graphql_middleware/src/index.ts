@@ -90,8 +90,3 @@ export {
 	queryableFieldNames,
 	RELATION_FIELDTYPES,
 } from './plugin/postgraphile'
-
-// Client
-export { StonecropClient } from './client'
-
-export type { StonecropClientOptions } from './client'

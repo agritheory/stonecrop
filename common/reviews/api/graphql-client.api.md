@@ -4,6 +4,8 @@
 
 ```ts
 
+import { z } from 'zod';
+
 // @public
 export type Meta = {
     variables: {
@@ -47,6 +49,42 @@ export const methods: {
 export const queries: {
     getMeta: string;
 };
+
+// @public
+export interface RouteContext {
+    [key: string]: unknown;
+    doctype: string;
+    recordId?: string;
+}
+
+// @public
+export class StonecropClient {
+    constructor(options: StonecropClientOptions);
+    clearMetaCache(): void;
+    getAllMeta(): Promise<DoctypeMeta[]>;
+    // Warning: (ae-forgotten-export) The symbol "DoctypeMeta" needs to be exported by the entry point index.d.ts
+    getMeta(context: RouteContext): Promise<DoctypeMeta | null>;
+    getRecord(doctype: DoctypeMeta, recordId: string): Promise<Record<string, unknown> | null>;
+    getRecords(doctype: DoctypeMeta, options?: {
+        filters?: Record<string, unknown>;
+        orderBy?: string;
+        limit?: number;
+        offset?: number;
+    }): Promise<Record<string, unknown>[]>;
+    mutate<T = unknown>(mutation: string, variables?: Record<string, unknown>): Promise<T>;
+    query<T = unknown>(query: string, variables?: Record<string, unknown>): Promise<T>;
+    runAction(doctype: DoctypeMeta, action: string, args?: unknown[]): Promise<{
+        success: boolean;
+        data: unknown;
+        error: string | null;
+    }>;
+}
+
+// @public
+export interface StonecropClientOptions {
+    endpoint: string;
+    headers?: Record<string, string>;
+}
 
 // @public
 export const typeDefs: string;

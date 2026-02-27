@@ -1,4 +1,5 @@
-import { describe, it, expect } from 'vitest'
+import type { DoctypeMeta } from '@stonecrop/schema'
+import { describe, it, expect, vi } from 'vitest'
 
 import {
 	defaultRecordFieldName,
@@ -10,9 +11,10 @@ import {
 	buildListQuery,
 	queryableFieldNames,
 	RELATION_FIELDTYPES,
+	extractSingleResult,
+	extractListResult,
+	createStonecropPlugin,
 } from '../src/plugin/postgraphile'
-
-import type { DoctypeMeta } from '@stonecrop/schema'
 
 // ---------------------------------------------------------------------------
 // Test fixtures
@@ -261,5 +263,94 @@ describe('buildListQuery', () => {
 		expect(query).toContain('rating')
 		expect(query).not.toContain('userByCreatedBy')
 		expect(query).not.toContain('recipeIngredientsByRecipeId')
+	})
+})
+
+// ===========================================================================
+// extractSingleResult
+// ===========================================================================
+
+describe('extractSingleResult', () => {
+	it('extracts the record from the result using the field name', () => {
+		const record = { id: '1', name: 'Test' }
+		const result = { resourceById: record }
+		const extracted = extractSingleResult(result, scalarOnlyMeta, defaultRecordFieldName)
+		expect(extracted).toBe(record)
+	})
+
+	it('returns undefined when field is absent', () => {
+		const result = {}
+		const extracted = extractSingleResult(result, scalarOnlyMeta, defaultRecordFieldName)
+		expect(extracted).toBeUndefined()
+	})
+
+	it('uses custom recordFieldName inflection', () => {
+		const record = { id: '1' }
+		const result = { resourceByRowId: record }
+		const extracted = extractSingleResult(result, scalarOnlyMeta, () => 'resourceByRowId')
+		expect(extracted).toBe(record)
+	})
+})
+
+// ===========================================================================
+// extractListResult
+// ===========================================================================
+
+describe('extractListResult', () => {
+	it('extracts the nodes array from the connection', () => {
+		const nodes = [{ id: '1' }, { id: '2' }]
+		const result = { allResources: { nodes } }
+		const extracted = extractListResult(result, scalarOnlyMeta, defaultConnectionFieldName)
+		expect(extracted).toEqual(nodes)
+	})
+
+	it('returns empty array when connection field is absent', () => {
+		const result = {}
+		const extracted = extractListResult(result, scalarOnlyMeta, defaultConnectionFieldName)
+		expect(extracted).toEqual([])
+	})
+
+	it('returns empty array when nodes is absent', () => {
+		const result = { allResources: {} }
+		const extracted = extractListResult(result, scalarOnlyMeta, defaultConnectionFieldName)
+		expect(extracted).toEqual([])
+	})
+})
+
+// ===========================================================================
+// createStonecropPlugin — inflection resolution coverage
+// ===========================================================================
+
+describe('createStonecropPlugin', () => {
+	const mockExecutor = { query: vi.fn(), mutate: vi.fn() }
+
+	it('creates a plugin with default inflection', () => {
+		const plugin = createStonecropPlugin({ executor: mockExecutor })
+		expect(plugin).toBeDefined()
+	})
+
+	it('accepts partial inflection overrides', () => {
+		const plugin = createStonecropPlugin({
+			executor: mockExecutor,
+			inflection: {
+				recordFieldName: t => `${t}ByRowId`,
+				recordArgName: () => 'rowId',
+			},
+		})
+		expect(plugin).toBeDefined()
+	})
+
+	it('accepts full inflection overrides', () => {
+		const plugin = createStonecropPlugin({
+			executor: mockExecutor,
+			inflection: {
+				recordFieldName: t => `custom_${t}`,
+				connectionFieldName: t => `list_${t}`,
+				orderByTypeName: t => `${t}Sort`,
+				recordArgName: () => 'nodeId',
+				recordArgType: () => 'ID!',
+			},
+		})
+		expect(plugin).toBeDefined()
 	})
 })
