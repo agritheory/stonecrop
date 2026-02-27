@@ -2,6 +2,18 @@
   "name": "@stonecrop/graphql-middleware",
   "entries": [
     {
+      "version": "0.8.11",
+      "tag": "@stonecrop/graphql-middleware_v0.8.11",
+      "date": "Fri, 27 Feb 2026 09:52:57 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "allow configurable PKs for graphql inflection"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.8.10",
       "tag": "@stonecrop/graphql-middleware_v0.8.10",
       "date": "Tue, 24 Feb 2026 12:37:35 GMT",
