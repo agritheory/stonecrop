@@ -697,6 +697,8 @@ Defaults match the PostGraphile Amber preset conventions.
 export interface StonecropInflectionConfig {
   connectionFieldName?: (tableName: string) => string;
   orderByTypeName?: (tableName: string) => string;
+  recordArgName?: (tableName: string) => string;
+  recordArgType?: (tableName: string) => string;
   recordFieldName?: (tableName: string) => string;
 }
 ```
@@ -707,6 +709,8 @@ export interface StonecropInflectionConfig {
 |----------|------|-------------|
 | connectionFieldName? | `(tableName: string) => string` | Given a table name, return the GraphQL field name for fetching a list/connection. |
 | orderByTypeName? | `(tableName: string) => string` | Given a table name, return the GraphQL OrderBy enum type name. |
+| recordArgName? | `(tableName: string) => string` | Given a table name, return the GraphQL argument name used to look up a record by PK. |
+| recordArgType? | `(tableName: string) => string` | Given a table name, return the GraphQL variable type for the PK argument. |
 | recordFieldName? | `(tableName: string) => string` | Given a table name, return the GraphQL field name for fetching a single record by ID. |
 
 ### StonecropPluginOptions

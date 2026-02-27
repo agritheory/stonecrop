@@ -59,7 +59,7 @@ export function buildListQuery(meta: DoctypeMeta, args: {
 // Warning: (ae-internal-missing-underscore) The name "buildRecordQuery" should be prefixed with an underscore because the declaration is marked as @internal
 //
 // @internal
-export function buildRecordQuery(meta: DoctypeMeta, recordFieldName: (t: string) => string): string;
+export function buildRecordQuery(meta: DoctypeMeta, recordFieldName: (t: string) => string, recordArgName: (t: string) => string, recordArgType: (t: string) => string): string;
 
 // @public
 export const builtinHandlers: Record<string, ActionHandler>;
@@ -533,6 +533,8 @@ export type StonecropFieldType = z.infer<typeof StonecropFieldType>;
 export interface StonecropInflectionConfig {
     connectionFieldName?: (tableName: string) => string;
     orderByTypeName?: (tableName: string) => string;
+    recordArgName?: (tableName: string) => string;
+    recordArgType?: (tableName: string) => string;
     recordFieldName?: (tableName: string) => string;
 }
 

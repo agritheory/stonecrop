@@ -4,6 +4,8 @@ import {
 	defaultRecordFieldName,
 	defaultConnectionFieldName,
 	defaultOrderByTypeName,
+	defaultRecordArgName,
+	defaultRecordArgType,
 	buildRecordQuery,
 	buildListQuery,
 	queryableFieldNames,
@@ -99,6 +101,20 @@ describe('defaultOrderByTypeName', () => {
 	})
 })
 
+describe('defaultRecordArgName', () => {
+	it('returns "id" for all table names (standard Relay Global ID)', () => {
+		expect(defaultRecordArgName('resources')).toBe('id')
+		expect(defaultRecordArgName('sales_orders')).toBe('id')
+	})
+})
+
+describe('defaultRecordArgType', () => {
+	it('returns "UUID!" for all table names (Amber default)', () => {
+		expect(defaultRecordArgType('resources')).toBe('UUID!')
+		expect(defaultRecordArgType('sales_orders')).toBe('UUID!')
+	})
+})
+
 // ===========================================================================
 // Query builders — relation field filtering (Issue 5)
 // ===========================================================================
@@ -140,8 +156,8 @@ describe('RELATION_FIELDTYPES', () => {
 // ===========================================================================
 
 describe('buildRecordQuery', () => {
-	it('generates valid query with only scalar fields', () => {
-		const query = buildRecordQuery(scalarOnlyMeta, defaultRecordFieldName)
+	it('generates valid query with default arg name/type', () => {
+		const query = buildRecordQuery(scalarOnlyMeta, defaultRecordFieldName, defaultRecordArgName, defaultRecordArgType)
 		expect(query).toContain('query GetRecord($id: UUID!)')
 		expect(query).toContain('resourceById(id: $id)')
 		expect(query).toContain('id')
@@ -150,7 +166,7 @@ describe('buildRecordQuery', () => {
 	})
 
 	it('excludes relation fields from selection', () => {
-		const query = buildRecordQuery(mixedFieldsMeta, defaultRecordFieldName)
+		const query = buildRecordQuery(mixedFieldsMeta, defaultRecordFieldName, defaultRecordArgName, defaultRecordArgType)
 		expect(query).toContain('title')
 		expect(query).toContain('rating')
 		expect(query).not.toContain('userByCreatedBy')
@@ -158,9 +174,28 @@ describe('buildRecordQuery', () => {
 	})
 
 	it('uses custom recordFieldName inflection', () => {
-		const customInflection = (t: string) => `${t}ByRowId`
-		const query = buildRecordQuery(scalarOnlyMeta, customInflection)
-		expect(query).toContain('resourcesByRowId(id: $id)')
+		const customFieldName = (_t: string) => 'resourceByRowId'
+		const customArgName = (_t: string) => 'rowId'
+		const query = buildRecordQuery(scalarOnlyMeta, customFieldName, customArgName, defaultRecordArgType)
+		expect(query).toContain('query GetRecord($rowId: UUID!)')
+		expect(query).toContain('resourceByRowId(rowId: $rowId)')
+	})
+
+	it('uses custom recordArgName and recordArgType together', () => {
+		const customFieldName = (_t: string) => 'resourceById'
+		const customArgName = (_t: string) => 'nodeId'
+		const customArgType = (_t: string) => 'ID!'
+		const query = buildRecordQuery(scalarOnlyMeta, customFieldName, customArgName, customArgType)
+		expect(query).toContain('query GetRecord($nodeId: ID!)')
+		expect(query).toContain('resourceById(nodeId: $nodeId)')
+	})
+
+	it('row_id pattern: rowId arg with UUID! type', () => {
+		const rowIdFieldName = (t: string) => `${defaultRecordFieldName(t).replace(/ById$/, 'ByRowId')}`
+		const rowIdArgName = (_t: string) => 'rowId'
+		const query = buildRecordQuery(scalarOnlyMeta, rowIdFieldName, rowIdArgName, defaultRecordArgType)
+		expect(query).toContain('query GetRecord($rowId: UUID!)')
+		expect(query).toContain('resourceByRowId(rowId: $rowId)')
 	})
 })
 

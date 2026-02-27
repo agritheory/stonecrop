@@ -36,6 +36,20 @@ export interface StonecropInflectionConfig {
 	 * @example Amber default: "sales_orders" → "SalesOrdersOrderBy"
 	 */
 	orderByTypeName?: (tableName: string) => string
+
+	/**
+	 * Given a table name, return the GraphQL argument name used to look up a record by PK.
+	 * @example Amber default (Relay Global ID): "sales_orders" → "id"
+	 * @example row_id PK: "sales_orders" → "rowId"
+	 */
+	recordArgName?: (tableName: string) => string
+
+	/**
+	 * Given a table name, return the GraphQL variable type for the PK argument.
+	 * @example Default UUID PK: "sales_orders" → "UUID!"
+	 * @example Integer PK: "sales_orders" → "Int!"
+	 */
+	recordArgType?: (tableName: string) => string
 }
 
 /**
@@ -64,6 +78,8 @@ export const createStonecropPlugin = (options: StonecropPluginOptions): Graphile
 	const recordFieldName = options.inflection?.recordFieldName ?? defaultRecordFieldName
 	const connectionFieldName = options.inflection?.connectionFieldName ?? defaultConnectionFieldName
 	const orderByTypeName = options.inflection?.orderByTypeName ?? defaultOrderByTypeName
+	const recordArgName = options.inflection?.recordArgName ?? defaultRecordArgName
+	const recordArgType = options.inflection?.recordArgType ?? defaultRecordArgType
 
 	return extendSchema(() => {
 		return {
@@ -161,8 +177,10 @@ export const createStonecropPlugin = (options: StonecropPluginOptions): Graphile
 											throw new Error(`Doctype ${spec.doctype} has no table mapping`)
 										}
 
-										const query = buildRecordQuery(meta, recordFieldName)
-										const result = await options.executor.query(query, { id: spec.id })
+										const query = buildRecordQuery(meta, recordFieldName, recordArgName, recordArgType)
+										const result = await options.executor.query(query, {
+											[recordArgName(meta.tableName!)]: spec.id,
+										})
 
 										return {
 											data: extractSingleResult(result, meta, recordFieldName),
@@ -328,6 +346,26 @@ function defaultOrderByTypeName(tableName: string): string {
 	return `${toPascalCase(tableName)}OrderBy`
 }
 
+/**
+ * Default PK argument name: 'id' (standard Relay Global ID pattern).
+ * Override via `StonecropInflectionConfig.recordArgName` when using row_id columns;
+ * PostGraphile Amber generates `rowId: UUID!` for those fields.
+ * @internal
+ */
+function defaultRecordArgName(_tableName: string): string {
+	return 'id'
+}
+
+/**
+ * Default PK argument type: 'UUID!' (PostGraphile Amber default for UUID PKs).
+ * Override via `StonecropInflectionConfig.recordArgType` when using non-UUID PKs
+ * such as integer serials or Relay Global IDs ('ID!').
+ * @internal
+ */
+function defaultRecordArgType(_tableName: string): string {
+	return 'UUID!'
+}
+
 // =============================================================================
 // Query builders — generate GraphQL queries to send to the underlying schema
 // =============================================================================
@@ -354,15 +392,25 @@ function queryableFieldNames(meta: DoctypeMeta): string {
 /**
  * Build a GraphQL query to fetch a single record by ID.
  * Excludes Link and Doctype relation fields from the selection set.
+ * The PK argument name and type are configurable via `StonecropInflectionConfig.recordArgName`
+ * and `StonecropInflectionConfig.recordArgType` to match the target schema's conventions
+ * (e.g. `rowId: UUID!` for PostGraphile Amber with row_id columns).
  * @internal
  */
-function buildRecordQuery(meta: DoctypeMeta, recordFieldName: (t: string) => string): string {
+function buildRecordQuery(
+	meta: DoctypeMeta,
+	recordFieldName: (t: string) => string,
+	recordArgName: (t: string) => string,
+	recordArgType: (t: string) => string
+): string {
 	const fieldNames = queryableFieldNames(meta)
 	const queryName = recordFieldName(meta.tableName!)
+	const argName = recordArgName(meta.tableName!)
+	const argType = recordArgType(meta.tableName!)
 
 	return `
-		query GetRecord($id: UUID!) {
-			${queryName}(id: $id) {
+		query GetRecord($${argName}: ${argType}) {
+			${queryName}(${argName}: $${argName}) {
 				${fieldNames}
 			}
 		}
@@ -436,6 +484,8 @@ export {
 	defaultRecordFieldName,
 	defaultConnectionFieldName,
 	defaultOrderByTypeName,
+	defaultRecordArgName,
+	defaultRecordArgType,
 	buildRecordQuery,
 	buildListQuery,
 	queryableFieldNames,
