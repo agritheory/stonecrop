@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/schema",
+      "comment": "add route context type",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/schema"
+}
