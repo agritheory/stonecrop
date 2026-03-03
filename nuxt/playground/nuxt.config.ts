@@ -8,7 +8,7 @@ const themePath = resolve(__dirname, '../../themes/default/default.css')
 export default defineNuxtConfig({
 	modules: [NuxtStonecrop],
 	devtools: { enabled: true },
-	compatibilityDate: '2024-12-13',
+	compatibilityDate: '2026-01-01',
 	stonecrop: {
 		docbuilder: true,
 	},

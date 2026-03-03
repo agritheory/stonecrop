@@ -14,6 +14,7 @@ export default defineVitestConfig({
 	test: {
 		setupFiles: ['./test/setup.ts'],
 		coverage: {
+			enabled: true,
 			provider: 'istanbul',
 			reporter: ['text', 'json', 'html', 'lcov'],
 			exclude: [

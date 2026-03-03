@@ -5,6 +5,7 @@ export default defineVitestConfig({
 	// Don't override environment here - it breaks the automatic Nuxt environment setup
 	test: {
 		coverage: {
+			enabled: true,
 			provider: 'istanbul',
 			reporter: ['text', 'json', 'html', 'lcov'],
 			exclude: [

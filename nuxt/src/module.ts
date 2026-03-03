@@ -14,6 +14,12 @@ import {
 import type { Nuxt } from '@nuxt/schema' // do not remove this import since it causes a build issue
 
 import { createSymlinkedPackagesPlugin } from './plugins/symlinking'
+import { resolveStrategy, singleStrategy, resourceStrategy } from './strategies'
+import type { RouteStrategy, RouteStrategyFn, ParsedDoctype, PageResolver } from './strategies'
+
+// Re-export strategy types and functions for consumers
+export type { RouteStrategy, RouteStrategyFn, ParsedDoctype, PageResolver }
+export { singleStrategy, resourceStrategy }
 
 const { resolve } = createResolver(import.meta.url)
 
@@ -24,6 +30,18 @@ export interface ModuleOptions {
 	docbuilder?: boolean
 	/** Path to doctypes folder (defaults to 'doctypes' in srcDir) */
 	doctypesDir?: string
+	/**
+	 * Controls how doctype JSON files are mapped to routes.
+	 *
+	 * - `'single'` — One route per JSON file. The `slug` field controls the full
+	 *   route path including any parameters (e.g., `"user/:id"`).
+	 * - `'resource'` — Two routes per doctype: `/<slug>` (list) and `/<slug>/:id` (detail).
+	 *   Child doctypes (those with `parentDoctype`) are skipped.
+	 * - A custom `RouteStrategyFn` for full control over route generation.
+	 *
+	 * @defaultValue `'single'`
+	 */
+	routeStrategy?: RouteStrategy
 }
 
 // Stonecrop packages that need to be transpiled (they import CSS in their dist bundles)
@@ -47,6 +65,7 @@ export default defineNuxtModule<ModuleOptions>({
 			router: {},
 			docbuilder: false,
 			doctypesDir: undefined,
+			routeStrategy: 'single',
 		}
 	},
 
@@ -102,83 +121,68 @@ export default defineNuxtModule<ModuleOptions>({
 			try {
 				const dirContents = await readdir(doctypesDir)
 				const schemas = dirContents.filter(file => extname(file) === '.json')
-				const pagesDir = resolve('runtime/pages')
-				const stonecropPage = resolve(pagesDir, 'StonecropPage.vue')
 
-				extendPages(async pages => {
+				// Parse all doctype JSON files into ParsedDoctype objects
+				const doctypes: ParsedDoctype[] = []
+				for (const schema of schemas) {
 					try {
-						const pagePaths = pages.map(page => page.path)
+						const schemaPath = resolve(doctypesDir, schema)
+						const fileContents = await readFile(schemaPath, 'utf-8')
 
-						// Only add the module's home page if there isn't already a root page
-						if (!pagePaths.includes('/')) {
-							pages.unshift({
-								name: 'stonecrop-home',
-								path: '/',
-								file: homepage,
-							})
-							logger.log('Added Stonecrop home page at /')
+						let schemaData: { schema?: Record<string, unknown>[]; fields?: Record<string, unknown>[] }
+						try {
+							schemaData = JSON.parse(fileContents)
+						} catch (parseError) {
+							logger.error(`Failed to parse schema file '${schema}':`, parseError)
+							continue
+						}
+
+						const schemaFields = schemaData.schema || schemaData.fields
+						if (!schemaFields) {
+							logger.warn(`Schema file '${schema}' missing 'schema' or 'fields' property, skipping`)
+							continue
+						}
+
+						doctypes.push({
+							fileName: schema.replace('.json', ''),
+							data: schemaData,
+							fields: schemaFields,
+						})
+					} catch (schemaError) {
+						logger.error(`Error processing schema '${schema}':`, schemaError)
+					}
+				}
+
+				// Resolve the route strategy
+				const strategy = resolveStrategy(options.routeStrategy || 'single')
+				const pagesDir = resolve('runtime/pages')
+				const pageResolver: PageResolver = (pageName: string) => resolve(pagesDir, pageName)
+
+				extendPages(pages => {
+					const pagePaths = pages.map(page => page.path)
+
+					// Only add the module's home page if there isn't already a root page
+					if (!pagePaths.includes('/')) {
+						pages.unshift({
+							name: 'stonecrop-home',
+							path: '/',
+							file: homepage,
+						})
+						logger.log('Added Stonecrop home page at /')
+					} else {
+						logger.log('Skipping Stonecrop home page: root page already exists')
+					}
+
+					// Generate routes via the selected strategy
+					const generatedPages = strategy(doctypes, pageResolver)
+
+					for (const page of generatedPages) {
+						if (!pagePaths.includes(page.path)) {
+							pages.unshift(page)
+							logger.log(`Added route: ${page.path} (${page.name})`)
 						} else {
-							logger.log('Skipping Stonecrop home page: root page already exists')
+							logger.warn(`Route ${page.path} already exists, skipping ${page.name}`)
 						}
-
-						for (const schema of schemas) {
-							try {
-								const schemaName = schema.replace('.json', '')
-								const schemaPath = resolve(doctypesDir, schema)
-								const fileContents = await readFile(schemaPath, 'utf-8')
-
-								let schemaData
-								try {
-									schemaData = JSON.parse(fileContents)
-								} catch (parseError) {
-									logger.error(`Failed to parse schema file '${schema}':`, parseError)
-									continue
-								}
-
-								// Support both formats: 'schema' array (legacy) or 'fields' array (DoctypeMeta)
-								const schemaFields = schemaData.schema || schemaData.fields
-								if (!schemaFields) {
-									logger.warn(`Schema file '${schema}' missing 'schema' or 'fields' property, skipping`)
-									continue
-								}
-
-								// Route pattern from doctype:
-								// - slug defines the base route (e.g., "user", "user/:id", "kanban/:id/:scope?")
-								// - Each doctype is a single route - no auto-generation of list/form pairs
-								// Examples:
-								//   user-table.json with slug "user" → /user (table view)
-								//   user.json with slug "user/:id" → /user/:id (form view)
-								//   kanban.json with slug "kanban/:id/:scope?" → /kanban/:id with optional scope
-								const routePath = schemaData.slug || schemaName.toLowerCase()
-
-								// Add route for this doctype
-								if (!pagePaths.includes(`/${routePath}`)) {
-									pages.unshift({
-										name: `stonecrop-${schemaName}`,
-										path: `/${routePath}`,
-										file: stonecropPage,
-										meta: {
-											schema: schemaFields,
-											doctype: schemaData,
-										},
-									})
-									logger.log(`Added route: /${routePath} (${schemaName})`)
-								} else {
-									logger.warn(`Route /${routePath} already exists, skipping ${schemaName}`)
-								}
-							} catch (schemaError) {
-								logger.error(`Error processing schema '${schema}':`, schemaError)
-								// Continue processing other schemas
-							}
-						}
-					} catch (pagesError) {
-						// Re-throw critical page setup errors
-						logger.error('Failed to setup doctype pages:', pagesError)
-						throw new Error(
-							`[@stonecrop/nuxt] Failed to setup pages: ${
-								pagesError instanceof Error ? pagesError.message : String(pagesError)
-							}`
-						)
 					}
 				})
 			} catch (doctypeError) {
