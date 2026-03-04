@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/atable",
+      "comment": "add row-click and row-open event emitters",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/atable"
+}
