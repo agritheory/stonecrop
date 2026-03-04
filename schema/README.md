@@ -200,6 +200,90 @@ try {
 }
 ```
 
+## GraphQL to Doctype CLI
+
+The `stonecrop-schema generate` command converts a GraphQL schema into Stonecrop doctype JSON files.
+
+### Basic usage
+
+```bash
+# From a live GraphQL endpoint
+stonecrop-schema generate -e http://localhost:3000/graphql -o ./app/doctypes
+
+# From a saved introspection JSON file
+stonecrop-schema generate -i introspection.json -o ./app/doctypes
+
+# From an SDL file
+stonecrop-schema generate -s schema.graphql -o ./app/doctypes
+```
+
+### Filtering types
+
+GraphQL schemas (especially PostGraphile) expose many internal types. Use `--include` to
+allowlist exactly the types you need, rather than having to `--exclude` everything you don't:
+
+```bash
+# Only generate doctypes for these three types
+stonecrop-schema generate -e http://localhost:3000/graphql -o ./app/doctypes \
+  --include 'SalesOrder,Customer,Item'
+
+# Alternatively, exclude specific types
+stonecrop-schema generate -e http://localhost:3000/graphql -o ./app/doctypes \
+  --exclude 'PageInfo,StonecropActionDefinition'
+```
+
+`--include` and `--exclude` can be combined: `--include` is applied first (narrowing the set),
+then `--exclude` removes any remaining unwanted names.
+
+### All options
+
+| Flag | Short | Description |
+|------|-------|-------------|
+| `--endpoint <url>` | `-e` | Fetch introspection from a live GraphQL endpoint |
+| `--introspection <file>` | `-i` | Read from a saved introspection JSON file |
+| `--sdl <file>` | `-s` | Read from a GraphQL SDL (`.graphql`) file |
+| `--output <dir>` | `-o` | Directory to write doctype JSON files (required) |
+| `--include <types>` | | Comma-separated allowlist of type names to generate |
+| `--exclude <types>` | | Comma-separated list of type names to skip |
+| `--overrides <file>` | | JSON file with per-type, per-field overrides |
+| `--custom-scalars <file>` | | JSON file mapping custom scalar names to field templates |
+| `--include-unmapped` | | Retain `_graphqlType` metadata on fields with no mapping |
+| `--help` | `-h` | Show help |
+
+### Custom scalars
+
+For servers that use non-standard scalars (e.g. PostGraphile's `BigFloat`, `Datetime`), provide
+a JSON mapping file:
+
+```json
+{
+  "BigFloat": { "component": "ADecimalInput", "fieldtype": "Decimal" },
+  "Datetime":  { "component": "ADatetimeInput", "fieldtype": "Datetime" }
+}
+```
+
+```bash
+stonecrop-schema generate -e http://localhost:3000/graphql -o ./app/doctypes \
+  --custom-scalars custom-scalars.json
+```
+
+### Per-field overrides
+
+Override the generated field definition for specific types and fields:
+
+```json
+{
+  "SalesOrder": {
+    "totalAmount": { "fieldtype": "Currency", "component": "ACurrencyInput" }
+  }
+}
+```
+
+```bash
+stonecrop-schema generate -e http://localhost:3000/graphql -o ./app/doctypes \
+  --overrides overrides.json
+```
+
 ## DDL Conversion
 
 Convert PostgreSQL DDL statements to Stonecrop doctype schemas:
