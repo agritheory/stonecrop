@@ -29,6 +29,7 @@ jobs:
           stonecrop: stonecrop/**
 
   coverage:
+    if: ${{ needs.changes.outputs.packages != '[]' }}
     name: ${{ matrix.package }} (${{ matrix.branch }})
     needs: changes
     runs-on: ubuntu-latest

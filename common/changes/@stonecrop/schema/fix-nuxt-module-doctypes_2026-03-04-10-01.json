@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/schema",
+      "comment": "update README with CLI documentation",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/schema"
+}
