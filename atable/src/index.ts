@@ -15,7 +15,16 @@ export type { FilterState, FilterStateRecord } from './stores/table'
 export type * from './types'
 
 // Icon exports
-export { AddIcon, DeleteIcon, DuplicateIcon, InsertAboveIcon, InsertBelowIcon, MoveIcon, actionIcons } from './icons'
+export {
+	AddIcon,
+	DeleteIcon,
+	DuplicateIcon,
+	InsertAboveIcon,
+	InsertBelowIcon,
+	MoveIcon,
+	OpenIcon,
+	actionIcons,
+} from './icons'
 
 /**
  * Install all ATable components

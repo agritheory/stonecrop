@@ -99,7 +99,7 @@
 						:columns="rulesColumns"
 						:rows="abilityRules"
 						:config="config"
-						@row-click="handleRuleClick" />
+						@row:click="handleRuleClick" />
 					<p v-else class="empty-state">No ability rules configured for this DocType</p>
 				</section>
 
@@ -143,7 +143,7 @@
 </template>
 
 <script setup lang="ts">
-import type { TableConfig } from '@stonecrop/atable'
+import type { TableConfig, RowClickEvent } from '@stonecrop/atable'
 import type { Layout } from '@stonecrop/node-editor'
 import type { ValidationResult } from '@stonecrop/schema'
 import { ref, computed, onMounted, nextTick } from 'vue'
@@ -265,7 +265,7 @@ const rulesColumns = [
 	{ label: 'Inverted', name: 'inverted', fieldname: 'inverted', fieldtype: 'Check', width: '10ch' },
 ]
 
-function handleRuleClick(rule: any) {
+function handleRuleClick({ row: rule }: RowClickEvent) {
 	router.push(`/ability-rules/${rule.id}`)
 }
 

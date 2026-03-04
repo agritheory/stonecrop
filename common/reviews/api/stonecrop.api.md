@@ -52,6 +52,7 @@ export type BaseStonecropReturn = {
 
 // @public
 export interface BaseTableConfig {
+    clickable?: boolean;
     fullWidth?: boolean;
     rowActions?: RowActionsConfig;
 }
@@ -530,6 +531,7 @@ export interface RowActionOptions {
 // @public
 export interface RowActionsConfig {
     actions?: {
+        open?: boolean | RowActionOptions;
         add?: boolean | RowActionOptions;
         delete?: boolean | RowActionOptions;
         duplicate?: boolean | RowActionOptions;
@@ -544,49 +546,44 @@ export interface RowActionsConfig {
 }
 
 // @public
-export type RowActionType = 'add' | 'delete' | 'duplicate' | 'insertAbove' | 'insertBelow' | 'move';
+export type RowActionType = 'open' | 'add' | 'delete' | 'duplicate' | 'insertAbove' | 'insertBelow' | 'move';
 
 // @public
 export interface RowAddEvent {
-    // (undocumented)
     row: TableRow;
-    // (undocumented)
+    rowIndex: number;
+}
+
+// @public
+export interface RowClickEvent {
+    event?: MouseEvent;
+    row: TableRow;
     rowIndex: number;
 }
 
 // @public
 export interface RowDeleteEvent {
-    // (undocumented)
     row: TableRow;
-    // (undocumented)
     rowIndex: number;
 }
 
 // @public
 export interface RowDuplicateEvent {
-    // (undocumented)
     newIndex: number;
-    // (undocumented)
     row: TableRow;
-    // (undocumented)
     sourceIndex: number;
 }
 
 // @public
 export interface RowInsertEvent {
-    // (undocumented)
     newIndex: number;
-    // (undocumented)
     row: TableRow;
-    // (undocumented)
     targetIndex: number;
 }
 
 // @public
 export interface RowMoveEvent {
-    // (undocumented)
     fromIndex: number;
-    // (undocumented)
     toIndex: number;
 }
 

@@ -5,13 +5,13 @@
 			<p class="subtitle">Select a DocType to view its schema, fields, permissions, and workflow</p>
 		</div>
 		<ClientOnly>
-			<ATable :columns="columns" :rows="doctypes" :config="config" @row-click="handleRowClick" />
+			<ATable :columns="columns" :rows="doctypes" :config="config" @row:click="handleRowClick" />
 		</ClientOnly>
 	</div>
 </template>
 
 <script setup lang="ts">
-import type { TableRow, TableColumn, TableConfig } from '@stonecrop/atable'
+import type { TableRow, TableColumn, TableConfig, RowClickEvent } from '@stonecrop/atable'
 
 const router = useRouter()
 
@@ -31,7 +31,7 @@ const config: TableConfig = {
 	view: 'uncounted',
 }
 
-function handleRowClick(row: any) {
+function handleRowClick({ row }: RowClickEvent) {
 	// Navigate to the specific builder page using the lowercase 'name' field
 	router.push(`/builder/${row.name}`)
 }

@@ -16,8 +16,10 @@ import InsertAboveIcon from './stonecrop-ui-icon-insert-above.svg?raw'
 import InsertBelowIcon from './stonecrop-ui-icon-insert-below.svg?raw'
 // @ts-expect-error Vite raw import
 import MoveIcon from './stonecrop-ui-icon-move.svg?raw'
+// @ts-expect-error Vite raw import
+import OpenIcon from './stonecrop-ui-icon-open.svg?raw'
 
-export { AddIcon, DeleteIcon, DuplicateIcon, InsertAboveIcon, InsertBelowIcon, MoveIcon }
+export { AddIcon, DeleteIcon, DuplicateIcon, InsertAboveIcon, InsertBelowIcon, MoveIcon, OpenIcon }
 
 /**
  * Map of action types to their default icons.
@@ -31,4 +33,5 @@ export const actionIcons: Record<string, string> = {
 	insertAbove: InsertAboveIcon as string,
 	insertBelow: InsertBelowIcon as string,
 	move: MoveIcon as string,
+	open: OpenIcon as string,
 }

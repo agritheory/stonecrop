@@ -1,5 +1,11 @@
 <template>
-	<tr v-show="isRowVisible" ref="rowEl" :tabindex="tabIndex" class="atable-row">
+	<tr
+		v-show="isRowVisible"
+		ref="rowEl"
+		:tabindex="tabIndex"
+		class="atable-row"
+		:class="{ 'atable-row-clickable': isClickable }"
+		@click="onRowClick">
 		<!-- Row actions before index (default position) -->
 		<ARowActions
 			v-if="showRowActions && actionsPosition === 'before-index'"
@@ -72,13 +78,15 @@ const {
 }>()
 
 const emit = defineEmits<{
-	'row:action': [type: RowActionType, rowIndex: number]
+	'row:action': [type: RowActionType, rowIndex: number, event?: MouseEvent]
+	'row:click': [rowIndex: number, event: MouseEvent]
 }>()
 
 const rowRef = useTemplateRef<HTMLTableRowElement>('rowEl')
 
 const isRowVisible = computed(() => store.isRowVisible(rowIndex))
 const rowExpandSymbol = computed(() => store.getRowExpandSymbol(rowIndex))
+const isClickable = computed(() => store.config.clickable ?? false)
 
 // Row actions configuration
 const rowActionsConfig = computed<RowActionsConfig>(() => {
@@ -93,8 +101,15 @@ const actionsPosition = computed(() => {
 	return rowActionsConfig.value.position || 'before-index'
 })
 
-const onRowAction = (actionType: RowActionType, index: number) => {
-	emit('row:action', actionType, index)
+const onRowAction = (actionType: RowActionType, index: number, event?: MouseEvent) => {
+	emit('row:action', actionType, index, event)
+}
+
+const onRowClick = (event: MouseEvent) => {
+	// Ignore clicks on the row actions cell or tree expand cell
+	const target = event.target as HTMLElement
+	if (target.closest('.atable-row-actions') || target.closest('.tree-index')) return
+	emit('row:click', rowIndex, event)
 }
 
 if (addNavigation) {
@@ -121,6 +136,14 @@ if (addNavigation) {
 
 .atable-row {
 	background-color: white;
+}
+
+.atable-row-clickable {
+	cursor: pointer;
+}
+
+.atable-row-clickable:hover > td {
+	background-color: var(--sc-row-hover-color, #f0f4f8);
 }
 
 .atable-row:last-child > td {

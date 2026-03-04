@@ -23,6 +23,7 @@ import DuplicateIcon from './stonecrop-ui-icon-duplicate.svg?raw';
 import InsertAboveIcon from './stonecrop-ui-icon-insert-above.svg?raw';
 import InsertBelowIcon from './stonecrop-ui-icon-insert-below.svg?raw';
 import MoveIcon from './stonecrop-ui-icon-move.svg?raw';
+import OpenIcon from './stonecrop-ui-icon-open.svg?raw';
 import { Ref } from 'vue';
 import type { ShallowRef } from 'vue';
 import { Store } from 'pinia';
@@ -56,6 +57,7 @@ export { ATableModal }
 
 // @public
 export interface BaseTableConfig {
+    clickable?: boolean;
     fullWidth?: boolean;
     rowActions?: RowActionsConfig;
 }
@@ -172,12 +174,19 @@ originalIndex?: number | undefined;
 config: Ref<    {
 view?: "uncounted" | "list" | "list-expansion" | undefined;
 fullWidth?: boolean | undefined;
+clickable?: boolean | undefined;
 rowActions?: {
 enabled: boolean;
 position?: "before-index" | "after-index" | "end" | undefined;
 dropdownThreshold?: number | undefined;
 forceDropdown?: boolean | undefined;
 actions?: {
+open?: boolean | {
+enabled?: boolean | undefined;
+label?: string | undefined;
+icon?: string | undefined;
+handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
+} | undefined;
 add?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
@@ -220,12 +229,19 @@ handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => voi
 view: "tree";
 defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
 fullWidth?: boolean | undefined;
+clickable?: boolean | undefined;
 rowActions?: {
 enabled: boolean;
 position?: "before-index" | "after-index" | "end" | undefined;
 dropdownThreshold?: number | undefined;
 forceDropdown?: boolean | undefined;
 actions?: {
+open?: boolean | {
+enabled?: boolean | undefined;
+label?: string | undefined;
+icon?: string | undefined;
+handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
+} | undefined;
 add?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
@@ -268,12 +284,19 @@ handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => voi
 view: "gantt";
 dependencyGraph?: boolean | undefined;
 fullWidth?: boolean | undefined;
+clickable?: boolean | undefined;
 rowActions?: {
 enabled: boolean;
 position?: "before-index" | "after-index" | "end" | undefined;
 dropdownThreshold?: number | undefined;
 forceDropdown?: boolean | undefined;
 actions?: {
+open?: boolean | {
+enabled?: boolean | undefined;
+label?: string | undefined;
+icon?: string | undefined;
+handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
+} | undefined;
 add?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
@@ -317,12 +340,19 @@ view: "tree-gantt";
 defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
 dependencyGraph?: boolean | undefined;
 fullWidth?: boolean | undefined;
+clickable?: boolean | undefined;
 rowActions?: {
 enabled: boolean;
 position?: "before-index" | "after-index" | "end" | undefined;
 dropdownThreshold?: number | undefined;
 forceDropdown?: boolean | undefined;
 actions?: {
+open?: boolean | {
+enabled?: boolean | undefined;
+label?: string | undefined;
+icon?: string | undefined;
+handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
+} | undefined;
 add?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
@@ -364,12 +394,19 @@ handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => voi
 }, TableConfig | {
 view?: "uncounted" | "list" | "list-expansion" | undefined;
 fullWidth?: boolean | undefined;
+clickable?: boolean | undefined;
 rowActions?: {
 enabled: boolean;
 position?: "before-index" | "after-index" | "end" | undefined;
 dropdownThreshold?: number | undefined;
 forceDropdown?: boolean | undefined;
 actions?: {
+open?: boolean | {
+enabled?: boolean | undefined;
+label?: string | undefined;
+icon?: string | undefined;
+handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
+} | undefined;
 add?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
@@ -412,12 +449,19 @@ handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => voi
 view: "tree";
 defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
 fullWidth?: boolean | undefined;
+clickable?: boolean | undefined;
 rowActions?: {
 enabled: boolean;
 position?: "before-index" | "after-index" | "end" | undefined;
 dropdownThreshold?: number | undefined;
 forceDropdown?: boolean | undefined;
 actions?: {
+open?: boolean | {
+enabled?: boolean | undefined;
+label?: string | undefined;
+icon?: string | undefined;
+handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
+} | undefined;
 add?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
@@ -460,12 +504,19 @@ handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => voi
 view: "gantt";
 dependencyGraph?: boolean | undefined;
 fullWidth?: boolean | undefined;
+clickable?: boolean | undefined;
 rowActions?: {
 enabled: boolean;
 position?: "before-index" | "after-index" | "end" | undefined;
 dropdownThreshold?: number | undefined;
 forceDropdown?: boolean | undefined;
 actions?: {
+open?: boolean | {
+enabled?: boolean | undefined;
+label?: string | undefined;
+icon?: string | undefined;
+handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
+} | undefined;
 add?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
@@ -509,12 +560,19 @@ view: "tree-gantt";
 defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
 dependencyGraph?: boolean | undefined;
 fullWidth?: boolean | undefined;
+clickable?: boolean | undefined;
 rowActions?: {
 enabled: boolean;
 position?: "before-index" | "after-index" | "end" | undefined;
 dropdownThreshold?: number | undefined;
 forceDropdown?: boolean | undefined;
 actions?: {
+open?: boolean | {
+enabled?: boolean | undefined;
+label?: string | undefined;
+icon?: string | undefined;
+handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
+} | undefined;
 add?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
@@ -824,12 +882,19 @@ originalIndex?: number | undefined;
 config: Ref<    {
 view?: "uncounted" | "list" | "list-expansion" | undefined;
 fullWidth?: boolean | undefined;
+clickable?: boolean | undefined;
 rowActions?: {
 enabled: boolean;
 position?: "before-index" | "after-index" | "end" | undefined;
 dropdownThreshold?: number | undefined;
 forceDropdown?: boolean | undefined;
 actions?: {
+open?: boolean | {
+enabled?: boolean | undefined;
+label?: string | undefined;
+icon?: string | undefined;
+handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
+} | undefined;
 add?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
@@ -872,12 +937,19 @@ handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => voi
 view: "tree";
 defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
 fullWidth?: boolean | undefined;
+clickable?: boolean | undefined;
 rowActions?: {
 enabled: boolean;
 position?: "before-index" | "after-index" | "end" | undefined;
 dropdownThreshold?: number | undefined;
 forceDropdown?: boolean | undefined;
 actions?: {
+open?: boolean | {
+enabled?: boolean | undefined;
+label?: string | undefined;
+icon?: string | undefined;
+handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
+} | undefined;
 add?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
@@ -920,12 +992,19 @@ handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => voi
 view: "gantt";
 dependencyGraph?: boolean | undefined;
 fullWidth?: boolean | undefined;
+clickable?: boolean | undefined;
 rowActions?: {
 enabled: boolean;
 position?: "before-index" | "after-index" | "end" | undefined;
 dropdownThreshold?: number | undefined;
 forceDropdown?: boolean | undefined;
 actions?: {
+open?: boolean | {
+enabled?: boolean | undefined;
+label?: string | undefined;
+icon?: string | undefined;
+handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
+} | undefined;
 add?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
@@ -969,12 +1048,19 @@ view: "tree-gantt";
 defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
 dependencyGraph?: boolean | undefined;
 fullWidth?: boolean | undefined;
+clickable?: boolean | undefined;
 rowActions?: {
 enabled: boolean;
 position?: "before-index" | "after-index" | "end" | undefined;
 dropdownThreshold?: number | undefined;
 forceDropdown?: boolean | undefined;
 actions?: {
+open?: boolean | {
+enabled?: boolean | undefined;
+label?: string | undefined;
+icon?: string | undefined;
+handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
+} | undefined;
 add?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
@@ -1016,12 +1102,19 @@ handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => voi
 }, TableConfig | {
 view?: "uncounted" | "list" | "list-expansion" | undefined;
 fullWidth?: boolean | undefined;
+clickable?: boolean | undefined;
 rowActions?: {
 enabled: boolean;
 position?: "before-index" | "after-index" | "end" | undefined;
 dropdownThreshold?: number | undefined;
 forceDropdown?: boolean | undefined;
 actions?: {
+open?: boolean | {
+enabled?: boolean | undefined;
+label?: string | undefined;
+icon?: string | undefined;
+handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
+} | undefined;
 add?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
@@ -1064,12 +1157,19 @@ handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => voi
 view: "tree";
 defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
 fullWidth?: boolean | undefined;
+clickable?: boolean | undefined;
 rowActions?: {
 enabled: boolean;
 position?: "before-index" | "after-index" | "end" | undefined;
 dropdownThreshold?: number | undefined;
 forceDropdown?: boolean | undefined;
 actions?: {
+open?: boolean | {
+enabled?: boolean | undefined;
+label?: string | undefined;
+icon?: string | undefined;
+handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
+} | undefined;
 add?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
@@ -1112,12 +1212,19 @@ handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => voi
 view: "gantt";
 dependencyGraph?: boolean | undefined;
 fullWidth?: boolean | undefined;
+clickable?: boolean | undefined;
 rowActions?: {
 enabled: boolean;
 position?: "before-index" | "after-index" | "end" | undefined;
 dropdownThreshold?: number | undefined;
 forceDropdown?: boolean | undefined;
 actions?: {
+open?: boolean | {
+enabled?: boolean | undefined;
+label?: string | undefined;
+icon?: string | undefined;
+handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
+} | undefined;
 add?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
@@ -1161,12 +1268,19 @@ view: "tree-gantt";
 defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
 dependencyGraph?: boolean | undefined;
 fullWidth?: boolean | undefined;
+clickable?: boolean | undefined;
 rowActions?: {
 enabled: boolean;
 position?: "before-index" | "after-index" | "end" | undefined;
 dropdownThreshold?: number | undefined;
 forceDropdown?: boolean | undefined;
 actions?: {
+open?: boolean | {
+enabled?: boolean | undefined;
+label?: string | undefined;
+icon?: string | undefined;
+handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
+} | undefined;
 add?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
@@ -1476,12 +1590,19 @@ originalIndex?: number | undefined;
 config: Ref<    {
 view?: "uncounted" | "list" | "list-expansion" | undefined;
 fullWidth?: boolean | undefined;
+clickable?: boolean | undefined;
 rowActions?: {
 enabled: boolean;
 position?: "before-index" | "after-index" | "end" | undefined;
 dropdownThreshold?: number | undefined;
 forceDropdown?: boolean | undefined;
 actions?: {
+open?: boolean | {
+enabled?: boolean | undefined;
+label?: string | undefined;
+icon?: string | undefined;
+handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
+} | undefined;
 add?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
@@ -1524,12 +1645,19 @@ handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => voi
 view: "tree";
 defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
 fullWidth?: boolean | undefined;
+clickable?: boolean | undefined;
 rowActions?: {
 enabled: boolean;
 position?: "before-index" | "after-index" | "end" | undefined;
 dropdownThreshold?: number | undefined;
 forceDropdown?: boolean | undefined;
 actions?: {
+open?: boolean | {
+enabled?: boolean | undefined;
+label?: string | undefined;
+icon?: string | undefined;
+handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
+} | undefined;
 add?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
@@ -1572,12 +1700,19 @@ handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => voi
 view: "gantt";
 dependencyGraph?: boolean | undefined;
 fullWidth?: boolean | undefined;
+clickable?: boolean | undefined;
 rowActions?: {
 enabled: boolean;
 position?: "before-index" | "after-index" | "end" | undefined;
 dropdownThreshold?: number | undefined;
 forceDropdown?: boolean | undefined;
 actions?: {
+open?: boolean | {
+enabled?: boolean | undefined;
+label?: string | undefined;
+icon?: string | undefined;
+handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
+} | undefined;
 add?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
@@ -1621,12 +1756,19 @@ view: "tree-gantt";
 defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
 dependencyGraph?: boolean | undefined;
 fullWidth?: boolean | undefined;
+clickable?: boolean | undefined;
 rowActions?: {
 enabled: boolean;
 position?: "before-index" | "after-index" | "end" | undefined;
 dropdownThreshold?: number | undefined;
 forceDropdown?: boolean | undefined;
 actions?: {
+open?: boolean | {
+enabled?: boolean | undefined;
+label?: string | undefined;
+icon?: string | undefined;
+handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
+} | undefined;
 add?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
@@ -1668,12 +1810,19 @@ handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => voi
 }, TableConfig | {
 view?: "uncounted" | "list" | "list-expansion" | undefined;
 fullWidth?: boolean | undefined;
+clickable?: boolean | undefined;
 rowActions?: {
 enabled: boolean;
 position?: "before-index" | "after-index" | "end" | undefined;
 dropdownThreshold?: number | undefined;
 forceDropdown?: boolean | undefined;
 actions?: {
+open?: boolean | {
+enabled?: boolean | undefined;
+label?: string | undefined;
+icon?: string | undefined;
+handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
+} | undefined;
 add?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
@@ -1716,12 +1865,19 @@ handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => voi
 view: "tree";
 defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
 fullWidth?: boolean | undefined;
+clickable?: boolean | undefined;
 rowActions?: {
 enabled: boolean;
 position?: "before-index" | "after-index" | "end" | undefined;
 dropdownThreshold?: number | undefined;
 forceDropdown?: boolean | undefined;
 actions?: {
+open?: boolean | {
+enabled?: boolean | undefined;
+label?: string | undefined;
+icon?: string | undefined;
+handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
+} | undefined;
 add?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
@@ -1764,12 +1920,19 @@ handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => voi
 view: "gantt";
 dependencyGraph?: boolean | undefined;
 fullWidth?: boolean | undefined;
+clickable?: boolean | undefined;
 rowActions?: {
 enabled: boolean;
 position?: "before-index" | "after-index" | "end" | undefined;
 dropdownThreshold?: number | undefined;
 forceDropdown?: boolean | undefined;
 actions?: {
+open?: boolean | {
+enabled?: boolean | undefined;
+label?: string | undefined;
+icon?: string | undefined;
+handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
+} | undefined;
 add?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
@@ -1813,12 +1976,19 @@ view: "tree-gantt";
 defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
 dependencyGraph?: boolean | undefined;
 fullWidth?: boolean | undefined;
+clickable?: boolean | undefined;
 rowActions?: {
 enabled: boolean;
 position?: "before-index" | "after-index" | "end" | undefined;
 dropdownThreshold?: number | undefined;
 forceDropdown?: boolean | undefined;
 actions?: {
+open?: boolean | {
+enabled?: boolean | undefined;
+label?: string | undefined;
+icon?: string | undefined;
+handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
+} | undefined;
 add?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
@@ -2159,6 +2329,8 @@ export function install(app: App): void;
 
 export { MoveIcon }
 
+export { OpenIcon }
+
 // @public
 export interface RowActionOptions {
     enabled?: boolean;
@@ -2170,6 +2342,7 @@ export interface RowActionOptions {
 // @public
 export interface RowActionsConfig {
     actions?: {
+        open?: boolean | RowActionOptions;
         add?: boolean | RowActionOptions;
         delete?: boolean | RowActionOptions;
         duplicate?: boolean | RowActionOptions;
@@ -2184,49 +2357,44 @@ export interface RowActionsConfig {
 }
 
 // @public
-export type RowActionType = 'add' | 'delete' | 'duplicate' | 'insertAbove' | 'insertBelow' | 'move';
+export type RowActionType = 'open' | 'add' | 'delete' | 'duplicate' | 'insertAbove' | 'insertBelow' | 'move';
 
 // @public
 export interface RowAddEvent {
-    // (undocumented)
     row: TableRow;
-    // (undocumented)
+    rowIndex: number;
+}
+
+// @public
+export interface RowClickEvent {
+    event?: MouseEvent;
+    row: TableRow;
     rowIndex: number;
 }
 
 // @public
 export interface RowDeleteEvent {
-    // (undocumented)
     row: TableRow;
-    // (undocumented)
     rowIndex: number;
 }
 
 // @public
 export interface RowDuplicateEvent {
-    // (undocumented)
     newIndex: number;
-    // (undocumented)
     row: TableRow;
-    // (undocumented)
     sourceIndex: number;
 }
 
 // @public
 export interface RowInsertEvent {
-    // (undocumented)
     newIndex: number;
-    // (undocumented)
     row: TableRow;
-    // (undocumented)
     targetIndex: number;
 }
 
 // @public
 export interface RowMoveEvent {
-    // (undocumented)
     fromIndex: number;
-    // (undocumented)
     toIndex: number;
 }
 

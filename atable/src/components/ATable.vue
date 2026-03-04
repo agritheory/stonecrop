@@ -17,9 +17,10 @@
 						v-for="(row, filteredIndex) in store.filteredRows"
 						:key="`${row.originalIndex}-${filteredIndex}`"
 						:row="row"
-						:rowIndex="row.originalIndex"
+						:row-index="row.originalIndex"
 						:store="store"
-						@row:action="handleRowAction">
+						@row:action="handleRowAction"
+						@row:click="handleRowClick">
 						<template v-for="(column, colIndex) in getProcessedColumnsForRow(row)" :key="column.name">
 							<component
 								:is="column.ganttComponent || 'AGanttCell'"
@@ -31,8 +32,8 @@
 								:end="row.gantt?.endIndex"
 								:colspan="column.colspan"
 								:pinned="column.pinned"
-								:rowIndex="row.originalIndex"
-								:colIndex="column.originalIndex ?? colIndex"
+								:row-index="row.originalIndex"
+								:col-index="column.originalIndex ?? colIndex"
 								:style="{
 									textAlign: column?.align || 'center',
 									minWidth: column?.width || '40ch',
@@ -44,8 +45,8 @@
 								v-else
 								:store="store"
 								:pinned="column.pinned"
-								:rowIndex="row.originalIndex"
-								:colIndex="colIndex"
+								:row-index="row.originalIndex"
+								:col-index="colIndex"
 								:style="{
 									textAlign: column?.align || 'center',
 									width: store.config.fullWidth ? 'auto' : null,
@@ -98,6 +99,7 @@ import type {
 	GanttDragEvent,
 	RowActionType,
 	RowAddEvent,
+	RowClickEvent,
 	RowDeleteEvent,
 	RowDuplicateEvent,
 	RowInsertEvent,
@@ -121,11 +123,13 @@ const emit = defineEmits<{
 	'connection:event': [event: ConnectionEvent]
 	'columns:update': [columns: TableColumn[]]
 	'row:add': [event: RowAddEvent]
+	'row:click': [event: RowClickEvent]
 	'row:delete': [event: RowDeleteEvent]
 	'row:duplicate': [event: RowDuplicateEvent]
 	'row:insert-above': [event: RowInsertEvent]
 	'row:insert-below': [event: RowInsertEvent]
 	'row:move': [event: RowMoveEvent]
+	'row:open': [event: RowClickEvent]
 }>()
 
 const tableRef = useTemplateRef<HTMLTableElement>('table')
@@ -288,10 +292,18 @@ const handleConnectionDelete = (connection: ConnectionPath) => {
 }
 
 /**
+ * Handle row click events from ARow components.
+ */
+const handleRowClick = (rowIndex: number, event: MouseEvent) => {
+	const row = store.rows[rowIndex]
+	emit('row:click', { row, rowIndex, event })
+}
+
+/**
  * Handle row action events from ARow components.
  * Performs the default action and emits the appropriate event.
  */
-const handleRowAction = (actionType: RowActionType, rowIndex: number) => {
+const handleRowAction = (actionType: RowActionType, rowIndex: number, event?: MouseEvent) => {
 	switch (actionType) {
 		case 'add': {
 			// Add a new row after the current row
@@ -336,6 +348,11 @@ const handleRowAction = (actionType: RowActionType, rowIndex: number) => {
 			// Move action requires a target index - for now, emit an event
 			// The consumer should handle showing a UI for selecting the target
 			emit('row:move', { fromIndex: rowIndex, toIndex: -1 })
+			break
+		}
+		case 'open': {
+			const row = store.rows[rowIndex]
+			emit('row:open', { row, rowIndex, event })
 			break
 		}
 	}

@@ -213,7 +213,7 @@ export interface CellContext {
  * Row action type identifiers.
  * @public
  */
-export type RowActionType = 'add' | 'delete' | 'duplicate' | 'insertAbove' | 'insertBelow' | 'move'
+export type RowActionType = 'open' | 'add' | 'delete' | 'duplicate' | 'insertAbove' | 'insertBelow' | 'move'
 
 /**
  * Options for configuring individual row actions.
@@ -286,6 +286,7 @@ export interface RowActionsConfig {
 	 * false to disable, or provide RowActionOptions for custom configuration.
 	 */
 	actions?: {
+		open?: boolean | RowActionOptions
 		add?: boolean | RowActionOptions
 		delete?: boolean | RowActionOptions
 		duplicate?: boolean | RowActionOptions
@@ -306,6 +307,14 @@ export interface BaseTableConfig {
 	 * @defaultValue false
 	 */
 	fullWidth?: boolean
+
+	/**
+	 * When true, rows show a pointer cursor and a hover highlight, signalling they are
+	 * clickable. Emits `row:click` on every row click.
+	 *
+	 * @defaultValue false
+	 */
+	clickable?: boolean
 
 	/**
 	 * Configuration for row-level actions (add, delete, duplicate, etc.).
@@ -823,7 +832,9 @@ export type ConnectionEvent = {
  * @public
  */
 export interface RowAddEvent {
+	/** The index of the newly added row. */
 	rowIndex: number
+	/** The data for the newly added row. */
 	row: TableRow
 }
 
@@ -832,7 +843,9 @@ export interface RowAddEvent {
  * @public
  */
 export interface RowDeleteEvent {
+	/** The index of the deleted row (before deletion). */
 	rowIndex: number
+	/** The data of the deleted row. */
 	row: TableRow
 }
 
@@ -841,8 +854,11 @@ export interface RowDeleteEvent {
  * @public
  */
 export interface RowDuplicateEvent {
+	/** The index of the original row that was duplicated. */
 	sourceIndex: number
+	/** The index of the newly created duplicate row. */
 	newIndex: number
+	/** The data of the newly created duplicate row. */
 	row: TableRow
 }
 
@@ -851,8 +867,11 @@ export interface RowDuplicateEvent {
  * @public
  */
 export interface RowInsertEvent {
+	/** The index of the reference row relative to which the new row was inserted. */
 	targetIndex: number
+	/** The index at which the new row was inserted. */
 	newIndex: number
+	/** The data of the newly inserted row. */
 	row: TableRow
 }
 
@@ -861,6 +880,25 @@ export interface RowInsertEvent {
  * @public
  */
 export interface RowMoveEvent {
+	/** The index the row was moved from. */
 	fromIndex: number
+	/** The index the row was moved to. */
 	toIndex: number
+}
+
+/**
+ * Event payload for row:click and row:open events.
+ * @public
+ */
+export interface RowClickEvent {
+	/** The data of the clicked row. */
+	row: TableRow
+	/** The index of the clicked row. */
+	rowIndex: number
+	/**
+	 * The originating DOM MouseEvent. Present for all real user interactions.
+	 * Inspect `event.ctrlKey` / `event.metaKey` for new-tab navigation,
+	 * `event.button === 1` for middle-click, etc.
+	 */
+	event?: MouseEvent
 }

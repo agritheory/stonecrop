@@ -26,7 +26,7 @@
 					type="button"
 					class="row-action-menu-item"
 					role="menuitem"
-					@click.stop="executeAction(action.type)">
+					@click.stop="executeAction(action.type, $event)">
 					<span class="action-icon" v-html="action.icon" />
 					<span class="action-label">{{ action.label }}</span>
 				</button>
@@ -42,7 +42,7 @@
 				class="row-action-btn"
 				:title="action.label"
 				:aria-label="action.label"
-				@click.stop="executeAction(action.type)">
+				@click.stop="executeAction(action.type, $event)">
 				<span class="action-icon" v-html="action.icon" />
 			</button>
 		</div>
@@ -65,7 +65,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-	action: [type: RowActionType, rowIndex: number]
+	action: [type: RowActionType, rowIndex: number, event?: MouseEvent]
 }>()
 
 const actionsCellRef = useTemplateRef<HTMLTableCellElement>('actionsCell')
@@ -77,6 +77,7 @@ const menuPosition = ref({ top: 0, left: 0 })
 
 // Default labels for actions
 const defaultLabels: Record<RowActionType, string> = {
+	open: 'Open Row',
 	add: 'Add Row',
 	delete: 'Delete Row',
 	duplicate: 'Duplicate Row',
@@ -90,7 +91,7 @@ const enabledActions = computed(() => {
 	const actions: Array<{ type: RowActionType; label: string; icon: string }> = []
 	const configActions = props.config.actions || {}
 
-	const actionTypes: RowActionType[] = ['add', 'delete', 'duplicate', 'insertAbove', 'insertBelow', 'move']
+	const actionTypes: RowActionType[] = ['open', 'add', 'delete', 'duplicate', 'insertAbove', 'insertBelow', 'move']
 
 	for (const type of actionTypes) {
 		const actionConfig = configActions[type]
@@ -199,7 +200,7 @@ onClickOutside(actionsCellRef, () => {
 })
 
 // Execute an action
-const executeAction = (actionType: RowActionType) => {
+const executeAction = (actionType: RowActionType, event?: MouseEvent) => {
 	dropdownOpen.value = false
 
 	// Check for custom handler
@@ -213,7 +214,7 @@ const executeAction = (actionType: RowActionType) => {
 	}
 
 	// Emit the action event for parent to handle
-	emit('action', actionType, props.rowIndex)
+	emit('action', actionType, props.rowIndex, event)
 }
 </script>
 
