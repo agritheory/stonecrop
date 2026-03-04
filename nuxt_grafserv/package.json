@@ -47,7 +47,7 @@
 		"lint": "eslint .",
 		"test": "vitest run",
 		"test:ci": "vitest run --run",
-		"test:coverage": "vitest run --coverage",
+		"test:coverage": "vitest run --coverage.enabled --coverage.provider=istanbul",
 		"test:e2e": "vitest run test/e2e",
 		"test:watch": "vitest watch",
 		"test:types": "vue-tsc --noEmit && cd playground && vue-tsc --noEmit"

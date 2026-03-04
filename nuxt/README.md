@@ -19,12 +19,11 @@ Stonecrop is a **schema-driven UI framework** that generates forms, tables, and 
 
 ## Module Features
 
-- **Automatic Page Generation**: Creates routes from DocType schemas in your `/doctypes` folder
-- **Form & Table Components**: Pre-configured AForm and ATable components with HST integration
+- **Route Generation**: Scans your `/doctypes` folder and registers routes using your own page components
 - **Plugin System**: Auto-registers Stonecrop composables and utilities
 - **Theme Support**: Import and customize Stonecrop themes
 - **TypeScript First**: Full type safety and IntelliSense support
-- **Zero Config**: Works out of the box with sensible defaults
+- **Thin Wrapper**: The module is intentionally opinion-free — page rendering, queries, and navigation stay in your application
 
 ## Quick Setup
 
@@ -99,7 +98,7 @@ Create a JSON schema in `/doctypes/task.json`:
 }
 ```
 
-The module automatically generates routes at `/task` for this DocType.
+The module picks up this file and, if `pageComponent` is configured, registers a route at the doctype's `slug` value (or `task` if no slug is set), passing the parsed schema into `route.meta`.
 
 ### Use the Stonecrop Composable
 
@@ -184,13 +183,14 @@ export default defineNuxtConfig({
   modules: ['@stonecrop/nuxt'],
 
   stonecrop: {
-    // Enable DocBuilder for visual schema editing
-    docbuilder: true,
+    // Point to your own page component for slug-based routing (one route per doctype)
+    pageComponent: 'pages/StonecropPage.vue',
 
-    // Custom router configuration
-    router: {
-      // Router options
-    }
+    // Or supply a custom strategy for full control
+    // routeStrategy: (doctypes) => [...],
+
+    // Enable DocBuilder for visual schema editing
+    docbuilder: false,
   },
 
   // Import Stonecrop theme
@@ -201,24 +201,77 @@ export default defineNuxtConfig({
 })
 ```
 
-## Module Behavior
+### Module Options
 
-### Automatic Page Generation
+| Option | Type | Description |
+|--------|------|-------------|
+| `pageComponent` | `string` | Path (relative to `srcDir`) to your page component. The module registers one route per doctype at `/<slug>`, passing `schema` and `doctype` in `route.meta`. |
+| `routeStrategy` | `RouteStrategyFn` | Custom function receiving all parsed doctypes; returns a `NuxtPage[]`. Takes priority over `pageComponent`. |
+| `docbuilder` | `boolean` | Enable the DocBuilder feature at `/docbuilder`. Defaults to `false`. |
+| `doctypesDir` | `string` | Override the doctypes directory path. Defaults to `doctypes/` inside `srcDir`. |
 
-The module scans your `/doctypes` folder and creates routes automatically:
+If neither `pageComponent` nor `routeStrategy` is configured the module logs a warning and skips doctype route registration.
+
+## Route Generation
+
+### Default: slug-based routing
+
+The module scans your `doctypes/` folder and registers one route per JSON file:
 
 ```
 doctypes/
-  ├── task.json       → /task
-  ├── user.json       → /user
-  └── project.json    → /project
+  ├── task.json        → /task  (if no slug field)
+  ├── user.json        → /user/:id  (if slug is "user/:id")
+  └── project.json     → /project
 ```
 
-Each route uses the `StonecropPage.vue` layout that provides:
-- List view with ATable component
-- Detail view with AForm component
-- HST state management
-- Router integration for navigation
+Each route's `meta` contains the parsed doctype:
+
+```typescript
+route.meta.schema   // ParsedDoctype['fields']
+route.meta.doctype  // ParsedDoctype['data']
+```
+
+Your page component receives these via `useRoute()`:
+
+```vue
+<script setup lang="ts">
+const route = useRoute()
+const schema = route.meta.schema   // array of field definitions
+const doctype = route.meta.doctype // full doctype JSON object
+</script>
+```
+
+### Custom route strategy
+
+For full control — multiple routes per doctype, conditional skipping, custom meta — provide a `RouteStrategyFn`:
+
+```typescript
+import type { RouteStrategyFn } from '@stonecrop/nuxt'
+import { resolve } from 'path'
+
+const myStrategy: RouteStrategyFn = (doctypes) =>
+  doctypes
+    .filter(({ data }) => !data.parentDoctype) // skip child tables
+    .flatMap(({ fileName, data, fields }) => [
+      {
+        name: `${fileName}-list`,
+        path: `/${data.slug ?? fileName.toLowerCase()}`,
+        file: resolve('./pages/ListPage.vue'),
+        meta: { schema: fields, doctype: data, viewMode: 'list' },
+      },
+      {
+        name: `${fileName}-detail`,
+        path: `/${data.slug ?? fileName.toLowerCase()}/:id`,
+        file: resolve('./pages/DetailPage.vue'),
+        meta: { schema: fields, doctype: data, viewMode: 'detail' },
+      },
+    ])
+
+export default defineNuxtConfig({
+  stonecrop: { routeStrategy: myStrategy },
+})
+```
 
 ### Plugin Registration
 
