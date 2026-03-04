@@ -23,10 +23,9 @@ const { resolve } = createResolver(import.meta.url)
 
 // Define module options interface
 export interface ModuleOptions {
-	router?: Record<string, unknown>
 	/** Enable the DocBuilder feature with /docbuilder routes */
 	docbuilder?: boolean
-	/** Path to doctypes folder (defaults to 'doctypes' in srcDir) */
+	/** Path to doctypes folder relative to srcDir (defaults to 'doctypes', resolving to app/doctypes) */
 	doctypesDir?: string
 	/**
 	 * Path to the page component used for default slug-based routing.
@@ -74,9 +73,8 @@ export default defineNuxtModule<ModuleOptions>({
 
 	defaults: (_nuxt: Nuxt) => {
 		return {
-			router: {},
 			docbuilder: false,
-			doctypesDir: undefined,
+			doctypesDir: 'doctypes',
 		}
 	},
 
@@ -126,7 +124,7 @@ export default defineNuxtModule<ModuleOptions>({
 
 		// find doctype schemas in the nuxt application and add them as pages
 		const appDir = nuxt.options.srcDir
-		const doctypesDir = resolve(appDir, 'doctypes')
+		const doctypesDir = resolve(appDir, options.doctypesDir ?? 'doctypes')
 
 		if (existsSync(doctypesDir)) {
 			try {
