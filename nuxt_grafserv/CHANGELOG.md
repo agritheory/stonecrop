@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/nuxt-grafserv
 
-This log was last generated on Fri, 27 Feb 2026 09:52:57 GMT and should not be manually modified.
+This log was last generated on Wed, 04 Mar 2026 09:14:53 GMT and should not be manually modified.
+
+## 0.8.12
+Wed, 04 Mar 2026 09:14:53 GMT
+
+### Patches
+
+- update test coverage provider
 
 ## 0.8.11
 Fri, 27 Feb 2026 09:52:57 GMT
