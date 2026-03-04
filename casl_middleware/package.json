@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/casl-middleware",
-	"version": "0.8.11",
+	"version": "0.8.12",
 	"license": "MIT",
 	"type": "module",
 	"homepage": "https://github.com/agritheory/stonecrop#readme",
