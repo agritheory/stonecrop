@@ -11,15 +11,13 @@ import {
 	extendPages,
 	useLogger,
 } from '@nuxt/kit'
-import type { Nuxt } from '@nuxt/schema' // do not remove this import since it causes a build issue
+import type { Nuxt, NuxtPage } from '@nuxt/schema' // do not remove this import since it causes a build issue
 
 import { createSymlinkedPackagesPlugin } from './plugins/symlinking'
-import { resolveStrategy, singleStrategy, resourceStrategy } from './strategies'
-import type { RouteStrategy, RouteStrategyFn, ParsedDoctype, PageResolver } from './strategies'
+import type { RouteStrategyFn, ParsedDoctype } from './types'
 
-// Re-export strategy types and functions for consumers
-export type { RouteStrategy, RouteStrategyFn, ParsedDoctype, PageResolver }
-export { singleStrategy, resourceStrategy }
+// Re-export strategy types for consumers
+export type { RouteStrategyFn, ParsedDoctype }
 
 const { resolve } = createResolver(import.meta.url)
 
@@ -31,17 +29,31 @@ export interface ModuleOptions {
 	/** Path to doctypes folder (defaults to 'doctypes' in srcDir) */
 	doctypesDir?: string
 	/**
-	 * Controls how doctype JSON files are mapped to routes.
+	 * Path to the page component used for default slug-based routing.
+	 * When `routeStrategy` is not set, one route per doctype is registered
+	 * at `/<slug>` (or `/<fileName>` if no slug) using this component.
 	 *
-	 * - `'single'` — One route per JSON file. The `slug` field controls the full
-	 *   route path including any parameters (e.g., `"user/:id"`).
-	 * - `'resource'` — Two routes per doctype: `/<slug>` (list) and `/<slug>/:id` (detail).
-	 *   Child doctypes (those with `parentDoctype`) are skipped.
-	 * - A custom `RouteStrategyFn` for full control over route generation.
+	 * The path is resolved relative to the application's `srcDir`.
 	 *
-	 * @defaultValue `'single'`
+	 * @example `'pages/StonecropPage.vue'`
 	 */
-	routeStrategy?: RouteStrategy
+	pageComponent?: string
+	/**
+	 * Custom route strategy function for full control over route generation.
+	 * When provided, `pageComponent` is ignored and this function is called
+	 * with all parsed doctypes to produce the NuxtPage array.
+	 *
+	 * @example
+	 * ```typescript
+	 * routeStrategy: (doctypes) => doctypes.map(({ fileName, data, fields }) => ({
+	 *   name: `stonecrop-${fileName}`,
+	 *   path: `/${data.slug || fileName.toLowerCase()}`,
+	 *   file: resolve('./pages/MyPage.vue'),
+	 *   meta: { schema: fields, doctype: data },
+	 * }))
+	 * ```
+	 */
+	routeStrategy?: RouteStrategyFn
 }
 
 // Stonecrop packages that need to be transpiled (they import CSS in their dist bundles)
@@ -65,7 +77,6 @@ export default defineNuxtModule<ModuleOptions>({
 			router: {},
 			docbuilder: false,
 			doctypesDir: undefined,
-			routeStrategy: 'single',
 		}
 	},
 
@@ -153,11 +164,6 @@ export default defineNuxtModule<ModuleOptions>({
 					}
 				}
 
-				// Resolve the route strategy
-				const strategy = resolveStrategy(options.routeStrategy || 'single')
-				const pagesDir = resolve('runtime/pages')
-				const pageResolver: PageResolver = (pageName: string) => resolve(pagesDir, pageName)
-
 				extendPages(pages => {
 					const pagePaths = pages.map(page => page.path)
 
@@ -173,8 +179,31 @@ export default defineNuxtModule<ModuleOptions>({
 						logger.log('Skipping Stonecrop home page: root page already exists')
 					}
 
-					// Generate routes via the selected strategy
-					const generatedPages = strategy(doctypes, pageResolver)
+					// Generate routes: custom strategy takes priority, then slug-based default
+					let generatedPages: NuxtPage[] = []
+
+					if (options.routeStrategy) {
+						// User-provided strategy has full control
+						generatedPages = options.routeStrategy(doctypes)
+					} else if (options.pageComponent) {
+						// Default slug-based routing with user's page component
+						const componentPath = resolve(appDir, options.pageComponent)
+						generatedPages = doctypes.map(({ fileName, data, fields }) => {
+							const slug = (data.slug as string) || fileName.toLowerCase()
+							return {
+								name: `stonecrop-${fileName}`,
+								path: `/${slug}`,
+								file: componentPath,
+								meta: { schema: fields, doctype: data },
+							}
+						})
+					} else {
+						logger.warn(
+							'No routeStrategy or pageComponent configured — ' +
+								'doctype routes will not be registered. ' +
+								'Set pageComponent to a page path or provide a routeStrategy function.'
+						)
+					}
 
 					for (const page of generatedPages) {
 						if (!pagePaths.includes(page.path)) {
