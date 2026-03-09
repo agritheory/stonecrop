@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/desktop",
+      "comment": "add vue peer dependencies",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@stonecrop/desktop"
+}

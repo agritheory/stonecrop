@@ -1,7 +1,6 @@
 {
 	"name": "@stonecrop/desktop",
 	"version": "0.8.13",
-	"description": "Desktop-specific components for Stonecrop UI",
 	"license": "MIT",
 	"type": "module",
 	"author": {
@@ -16,28 +15,25 @@
 	"bugs": {
 		"url": "https://github.com/agritheory/stonecrop/issues"
 	},
+	"types": "./dist/desktop.d.ts",
 	"exports": {
 		".": {
-			"import": {
-				"types": "./dist/src/index.d.ts",
-				"default": "./dist/desktop.js"
-			},
-			"require": "./dist/desktop.umd.cjs"
+			"types": "./dist/desktop.d.ts",
+			"import": "./dist/desktop.js"
 		},
-		"./types": {
-			"import": "./dist/src/types/index.d.ts",
-			"require": "./dist/src/types/index.d.ts"
-		},
-		"./styles": "./dist/desktop.css"
+		"./styles": "./dist/desktop.css",
+		"./types": "./dist/src/types/index.d.ts"
 	},
-	"typings": "./dist/src/index.d.ts",
 	"files": [
 		"dist/*",
 		"src/*"
 	],
+	"sideEffects": [
+		"**/*.css"
+	],
 	"scripts": {
 		"_phase:build": "heft build && vite build && rushx docs",
-		"prepublish": "heft build && vite build && rushx docs",
+		"prepublishOnly": "heft build && vite build && rushx docs",
 		"build": "heft build && vite build && rushx docs",
 		"docs": "bash ../common/scripts/run-docs.sh desktop",
 		"lint": "eslint ."
@@ -46,7 +42,9 @@
 		"@stonecrop/aform": "workspace:*",
 		"@stonecrop/atable": "workspace:*",
 		"@stonecrop/stonecrop": "workspace:*",
-		"@stonecrop/themes": "workspace:*",
+		"@stonecrop/themes": "workspace:*"
+	},
+	"peerDependencies": {
 		"vue": "^3.5.28"
 	},
 	"devDependencies": {
@@ -63,9 +61,11 @@
 		"stonecrop-rig": "workspace:*",
 		"typescript": "^5.9.3",
 		"typescript-eslint": "^8.53.0",
+		"vue": "^3.5.28",
 		"vite": "^7.3.1",
 		"vue-router": "^5.0.2"
 	},
+	"description": "Desktop-specific components for Stonecrop UI",
 	"publishConfig": {
 		"access": "public"
 	},

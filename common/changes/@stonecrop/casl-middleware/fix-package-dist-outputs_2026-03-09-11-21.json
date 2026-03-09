@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/casl-middleware",
+      "comment": "add vue peer dependencies",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@stonecrop/casl-middleware"
+}
