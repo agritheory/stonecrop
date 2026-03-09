@@ -12,9 +12,11 @@
 	"files": [
 		"dist"
 	],
+	"description": "GraphQL middleware for PostGraphile and Stonecrop schema",
+	"sideEffects": false,
 	"scripts": {
 		"_phase:build": "heft build && vite build && rushx docs",
-		"prepublish": "heft build && vite build && rushx docs",
+		"prepublishOnly": "heft build && vite build && rushx docs",
 		"build": "heft build && vite build && rushx docs",
 		"docs": "bash ../common/scripts/run-docs.sh graphql_middleware",
 		"test": "vitest run --coverage.enabled false",

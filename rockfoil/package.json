@@ -29,9 +29,13 @@
 		"dist/*",
 		"src/*"
 	],
+	"description": "PostGraphile plugin for Stonecrop schema integration",
+	"sideEffects": [
+		"**/*.css"
+	],
 	"scripts": {
 		"_phase:build": "heft build && vite build && rushx docs",
-		"prepublish": "heft build && vite build && rushx docs",
+		"prepublishOnly": "heft build && vite build && rushx docs",
 		"build": "heft build && vite build && rushx docs",
 		"dev": "vite",
 		"docs": "bash ../common/scripts/run-docs.sh rockfoil",

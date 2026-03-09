@@ -28,9 +28,12 @@
 		"dist/*",
 		"src/*"
 	],
+	"sideEffects": [
+		"**/*.css"
+	],
 	"scripts": {
 		"_phase:build": "heft build && vite build && rushx docs",
-		"prepublish": "heft build && vite build && rushx docs",
+		"prepublishOnly": "heft build && vite build && rushx docs",
 		"build": "heft build && vite build && rushx docs",
 		"dev": "vite",
 		"docs": "bash ../common/scripts/run-docs.sh node_editor",
@@ -39,9 +42,11 @@
 	},
 	"dependencies": {
 		"@vue-flow/core": "^1.48.1",
-		"vue": "^3.5.28",
-		"vue-router": "^5.0.2",
 		"xstate": "^5.25.0"
+	},
+	"peerDependencies": {
+		"vue": "^3.5.28",
+		"vue-router": "^5.0.2"
 	},
 	"devDependencies": {
 		"@eslint/js": "^9.39.2",
@@ -55,6 +60,8 @@
 		"stonecrop-rig": "workspace:*",
 		"typescript": "^5.9.3",
 		"typescript-eslint": "^8.53.0",
+		"vue": "^3.5.28",
+		"vue-router": "^5.0.2",
 		"vite": "^7.3.1"
 	},
 	"description": "Node editor UI for Stonecrop",

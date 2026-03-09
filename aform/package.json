@@ -15,6 +15,7 @@
 	"bugs": {
 		"url": "https://github.com/agritheory/stonecrop/issues"
 	},
+	"description": "Schema-driven form components for Stonecrop",
 	"types": "./dist/aform.d.ts",
 	"exports": {
 		".": {
@@ -28,9 +29,12 @@
 		"dist/*",
 		"src/*"
 	],
+	"sideEffects": [
+		"**/*.css"
+	],
 	"scripts": {
 		"_phase:build": "heft build && vite build && rushx docs",
-		"prepublish": "heft build && vite build && rushx docs",
+		"prepublishOnly": "heft build && vite build && rushx docs",
 		"build": "heft build && vite build && rushx docs",
 		"dev": "vite",
 		"docs": "bash ../common/scripts/run-docs.sh aform",
@@ -46,7 +50,9 @@
 		"@stonecrop/themes": "workspace:*",
 		"@stonecrop/utilities": "workspace:*",
 		"@vueuse/core": "^14.2.1",
-		"@vueuse/components": "^14.2.1",
+		"@vueuse/components": "^14.2.1"
+	},
+	"peerDependencies": {
 		"pinia": "^3.0.4",
 		"vue": "^3.5.28"
 	},
@@ -68,6 +74,8 @@
 		"typescript": "^5.9.3",
 		"vite-plugin-lib-inject-css": "^2.2.2",
 		"vite": "^7.3.1",
+		"pinia": "^3.0.4",
+		"vue": "^3.5.28",
 		"vitest": "^4.0.18",
 		"vue-router": "^5.0.2"
 	},
