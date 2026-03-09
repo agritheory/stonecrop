@@ -9,7 +9,8 @@
 					{{ (componentObj as any).label }}
 				</h4>
 				<AForm
-					v-model:data="nestedData[componentObj.fieldname]"
+					:data="nestedData[componentObj.fieldname]"
+					@update:data="val => updateNestedData(componentObj.fieldname, val)"
 					:schema="componentObj.schema"
 					:read-only="readOnly || (componentObj as any).readOnly" />
 			</div>
@@ -29,7 +30,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, watchEffect, ref } from 'vue'
+import { computed, watchEffect, watch, ref } from 'vue'
 
 import type { SchemaTypes } from '../types'
 
@@ -40,31 +41,32 @@ const { schema, readOnly } = defineProps<{ schema: SchemaTypes[]; readOnly?: boo
 // Reactive nested data refs for two-way binding with nested AForm instances
 const nestedData = ref<Record<string, any>>({})
 
-// Initialize and sync nested data from dataModel for fields with resolved schemas
-watchEffect(() => {
-	if (!schema || !dataModel.value) return
-
-	schema.forEach(field => {
-		if ('schema' in field && Array.isArray(field.schema) && field.schema.length > 0) {
-			// Initialize nested data from parent data model if not yet present
-			if (!nestedData.value[field.fieldname] && dataModel.value[field.fieldname]) {
-				nestedData.value[field.fieldname] = dataModel.value[field.fieldname]
-			} else if (!nestedData.value[field.fieldname]) {
-				nestedData.value[field.fieldname] = {}
+// Sync external dataModel changes into nestedData (one-way, no emit back).
+// Uses a shallow watch so only top-level object replacement (e.g. parent reset)
+// triggers a sync — property mutations from within are handled by updateNestedData.
+watch(
+	() => dataModel.value,
+	newData => {
+		if (!schema || !newData) return
+		schema.forEach(field => {
+			if ('schema' in field && Array.isArray(field.schema) && field.schema.length > 0) {
+				nestedData.value[field.fieldname] = newData[field.fieldname] ?? {}
 			}
-		}
-	})
-})
+		})
+	},
+	{ immediate: true }
+)
 
-// Sync nested data changes back to main data model
-watchEffect(() => {
-	Object.keys(nestedData.value).forEach(fieldname => {
-		if (dataModel.value && nestedData.value[fieldname] !== dataModel.value[fieldname]) {
-			dataModel.value[fieldname] = nestedData.value[fieldname]
-			emit('update:data', dataModel.value)
-		}
-	})
-})
+// Called by the nested <AForm>'s @update:data handler.
+// Updates nestedData locally and propagates upward in one step,
+// avoiding the watchEffect feedback loop that occurred with v-model.
+const updateNestedData = (fieldname: string, val: any) => {
+	nestedData.value[fieldname] = val
+	if (dataModel.value) {
+		dataModel.value[fieldname] = val
+		emit('update:data', dataModel.value)
+	}
+}
 
 // Sync data values into schema immediately and on changes
 watchEffect(() => {

@@ -9,73 +9,61 @@ description: PostGraphile middleware for Stonecrop
 
 ## Other Components
 
-### ActionDefinition
-
-```typescript
-export { ActionDefinition }
-```
-
 ### DoctypeMeta
 
 ```typescript
 export { DoctypeMeta }
 ```
 
-### FieldMeta
+### RELATION_FIELDTYPES
 
 ```typescript
-export { FieldMeta }
-```
-
-### FieldOptions
-
-```typescript
-export { FieldOptions }
-```
-
-### FieldValidation
-
-```typescript
-export { FieldValidation }
-```
-
-### PG_TYPE_MAP
-
-```typescript
-export { PG_TYPE_MAP }
-```
-
-### PostgresType
-
-```typescript
-export { PostgresType }
-```
-
-### StonecropFieldType
-
-```typescript
-export { StonecropFieldType }
-```
-
-### TYPE_ALIASES
-
-```typescript
-export { TYPE_ALIASES }
-```
-
-### TYPE_MAP
-
-```typescript
-export { TYPE_MAP }
-```
-
-### WorkflowMeta
-
-```typescript
-export { WorkflowMeta }
+export { RELATION_FIELDTYPES }
 ```
 
 ## Functions
+
+### buildListQuery
+
+Build a GraphQL connection query to fetch a list of records. Only declares variables ($limit, $offset, $orderBy) that are actually used in the query, avoiding GraphQL spec §5.8.3 violations from unused variable declarations. Excludes Link and Doctype relation fields from the selection set.
+
+**Signature:**
+
+```typescript
+declare function buildListQuery(meta: DoctypeMeta, args: {
+    limit?: number;
+    offset?: number;
+    orderBy?: string;
+}, connectionFieldName: (t: string) => string, orderByTypeName: (t: string) => string): string;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| meta | `DoctypeMeta` |  |
+| args | `{ limit?: number; offset?: number; orderBy?: string; }` |  |
+| connectionFieldName | `(t: string) => string` |  |
+| orderByTypeName | `(t: string) => string` |  |
+
+### buildRecordQuery
+
+Build a GraphQL query to fetch a single record by ID. Excludes Link and Doctype relation fields from the selection set. The PK argument name and type are configurable via `StonecropInflectionConfig.recordArgName` and `StonecropInflectionConfig.recordArgType` to match the target schema's conventions (e.g. `rowId: UUID!` for PostGraphile Amber with row_id columns).
+
+**Signature:**
+
+```typescript
+declare function buildRecordQuery(meta: DoctypeMeta, recordFieldName: (t: string) => string, recordArgName: (t: string) => string, recordArgType: (t: string) => string): string;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| meta | `DoctypeMeta` |  |
+| recordFieldName | `(t: string) => string` |  |
+| recordArgName | `(t: string) => string` |  |
+| recordArgType | `(t: string) => string` |  |
 
 ### clearHandlers
 
@@ -97,23 +85,6 @@ Clear all registered doctypes
 export declare function clearRegistry(): void;
 ```
 
-### convertSchema
-
-Convert PostgreSQL DDL to Stonecrop doctype schemas
-
-**Signature:**
-
-```typescript
-export declare function convertSchema(sql: string, options?: ConversionOptions): ConvertedDoctype[];
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| sql | `string` | PostgreSQL DDL statements to convert |
-| options | `ConversionOptions` | Conversion options for controlling output format |
-
 ### createStonecropPlugin
 
 Create a PostGraphile plugin that extends the GraphQL schema with Stonecrop functionality
@@ -130,6 +101,54 @@ createStonecropPlugin: (options: StonecropPluginOptions) => GraphileConfig.Plugi
 |-----------|------|-------------|
 | options | `StonecropPluginOptions` | Plugin configuration options |
 
+### defaultConnectionFieldName
+
+Amber default: sales_orders → allSalesOrders
+
+**Signature:**
+
+```typescript
+declare function defaultConnectionFieldName(tableName: string): string;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| tableName | `string` |  |
+
+### defaultOrderByTypeName
+
+Amber default: sales_orders → SalesOrdersOrderBy
+
+**Signature:**
+
+```typescript
+declare function defaultOrderByTypeName(tableName: string): string;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| tableName | `string` |  |
+
+### defaultRecordFieldName
+
+Amber default: sales_orders → salesOrderById Uses `pluralize` for proper singularization of irregular plurals. Override via `StonecropInflectionConfig.recordFieldName` for non-standard PK columns.
+
+**Signature:**
+
+```typescript
+declare function defaultRecordFieldName(tableName: string): string;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| tableName | `string` |  |
+
 ### getAllMeta
 
 Get all loaded doctypes
@@ -139,22 +158,6 @@ Get all loaded doctypes
 ```typescript
 export declare function getAllMeta(): DoctypeMeta[];
 ```
-
-### getDefaultComponent
-
-Get the default component for a field type
-
-**Signature:**
-
-```typescript
-export declare function getDefaultComponent(fieldtype: StonecropFieldType): string;
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| fieldtype | `StonecropFieldType` | The semantic field type |
 
 ### getHandler
 
@@ -254,87 +257,21 @@ export declare function loadDoctypesFromObject(doctypes: Record<string, unknown>
 | doctypes | `Record<string, unknown>` | Object mapping doctype names to doctype definitions |
 | options | `LoadDoctypesOptions` | Options for loading doctypes (continueOnError, onError callback) |
 
-### mapColumnToField
+### queryableFieldNames
 
-Map a parsed column to a Stonecrop field definition
+Filter fields to only those directly queryable as scalars, excluding Link and Doctype relation fields that require GraphQL sub-selections.
 
 **Signature:**
 
 ```typescript
-export declare function mapColumnToField(column: ParsedColumn, _tableRegistry: Map<string, ParsedTable>, options?: MapColumnOptions): ConversionFieldMeta;
+declare function queryableFieldNames(meta: DoctypeMeta): string;
 ```
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| column | `ParsedColumn` | Parsed PostgreSQL column information |
-| _tableRegistry | `Map<string, ParsedTable>` | Map of table names to parsed table definitions (for reference resolution) |
-| options | `MapColumnOptions` | Mapping options for field naming and metadata |
-
-### normalizeType
-
-Normalize raw PostgreSQL type string to canonical PostgresType
-
-**Signature:**
-
-```typescript
-export declare function normalizeType(rawType: string): PostgresType;
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| rawType | `string` | Raw PostgreSQL type string (e.g., 'character varying', 'int4') |
-
-### parseDDL
-
-Parse PostgreSQL DDL and extract table definitions
-
-**Signature:**
-
-```typescript
-export declare function parseDDL(sql: string): ParsedTable[];
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| sql | `string` | PostgreSQL DDL statements to parse |
-
-### parseDoctype
-
-Parse and validate a doctype, throwing on failure
-
-**Signature:**
-
-```typescript
-export declare function parseDoctype(data: unknown): DoctypeMeta;
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| data | `unknown` | Data to parse |
-
-### parseField
-
-Parse and validate a field, throwing on failure
-
-**Signature:**
-
-```typescript
-export declare function parseField(data: unknown): FieldMeta;
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| data | `unknown` | Data to parse |
+| meta | `DoctypeMeta` |  |
 
 ### registerBuiltinHandlers
 
@@ -362,38 +299,6 @@ export declare function registerHandler(name: string, handler: ActionHandler): v
 |-----------|------|-------------|
 | name | `string` | Unique name for the action handler |
 | handler | `ActionHandler` | Action handler function to register |
-
-### validateDoctype
-
-Validate a doctype definition
-
-**Signature:**
-
-```typescript
-export declare function validateDoctype(data: unknown): ValidationResult;
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| data | `unknown` | Data to validate |
-
-### validateField
-
-Validate a field definition
-
-**Signature:**
-
-```typescript
-export declare function validateField(data: unknown): ValidationResult;
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| data | `unknown` | Data to validate |
 
 ### validateReferences
 
@@ -426,72 +331,6 @@ export interface ActionContext {
 |----------|------|-------------|
 | doctype | `DoctypeMeta` | Doctype metadata for the action being executed |
 | executor | `GraphQLExecutor` | GraphQL executor for running queries/mutations within the action |
-
-### ConversionFieldMeta
-
-Extended field with conversion metadata (only used during schema-tools output)
-
-**Definition:**
-
-```typescript
-export interface ConversionFieldMeta {
-  _pgType?: string;
-  _unmapped?: boolean;
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| _pgType? | `string` | Original PostgreSQL type (for debugging/reference) |
-| _unmapped? | `boolean` | Marks fields that couldn't be automatically mapped |
-
-### ConversionOptions
-
-Options for DDL to doctype conversion
-
-**Definition:**
-
-```typescript
-export interface ConversionOptions {
-  exclude?: string[];
-  includeUnmappedMeta?: boolean;
-  inheritanceMode: 'flatten' | 'reference';
-  schema?: string;
-  typeOverrides?: Record<string, Partial<FieldMeta>>;
-  useCamelCase?: boolean;
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| exclude? | `string[]` | Tables to exclude |
-| includeUnmappedMeta? | `boolean` | Include unmapped type metadata in output |
-| inheritanceMode | `'flatten' \| 'reference'` | How to handle inherited fields |
-| schema? | `string` | Schema to filter tables by |
-| typeOverrides? | `Record<string, Partial<FieldMeta>>` | Override type mappings |
-| useCamelCase? | `boolean` | Use camelCase for field names (default: false, keeps snake_case) |
-
-### ConvertedDoctype
-
-Output of schema conversion - uses DoctypeMeta but with optional conversion metadata
-
-**Definition:**
-
-```typescript
-export interface ConvertedDoctype {
-  fields: ConversionFieldMeta[];
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| fields | `ConversionFieldMeta[]` | Field definitions with optional conversion metadata |
 
 ### GraphQLExecutor
 
@@ -526,30 +365,21 @@ export interface LoadDoctypesOptions {
 | continueOnError? | `boolean` | Continue loading other files if one fails validation |
 | onError? | `(file: string, errors: ValidationError[]) => void` | Callback for validation errors when continueOnError is true |
 
-### ParsedColumn
+### StonecropInflectionConfig
 
-Intermediate representation of a parsed column (from DDL)
+Inflection callbacks for mapping table names to GraphQL query field names. Override these when using a non-Amber inflection preset (e.g., V4, SimplifyInflection).
+
+Defaults match the PostGraphile Amber preset conventions.
 
 **Definition:**
 
 ```typescript
-export interface ParsedColumn {
-  arrayDimensions: number;
-  dataType: string;
-  defaultValue?: string;
-  isGenerated: boolean;
-  length?: number;
-  name: string;
-  normalizedType: PostgresType;
-  nullable: boolean;
-  precision?: number;
-  reference?: {
-        schema?: string;
-        table: string;
-        column: string;
-        onDelete?: 'CASCADE' | 'SET NULL' | 'RESTRICT' | 'NO ACTION';
-    };
-  scale?: number;
+export interface StonecropInflectionConfig {
+  connectionFieldName?: (tableName: string) => string;
+  orderByTypeName?: (tableName: string) => string;
+  recordArgName?: (tableName: string) => string;
+  recordArgType?: (tableName: string) => string;
+  recordFieldName?: (tableName: string) => string;
 }
 ```
 
@@ -557,85 +387,11 @@ export interface ParsedColumn {
 
 | Property | Type | Description |
 |----------|------|-------------|
-| arrayDimensions | `number` | Number of array dimensions (0 for non-array types) |
-| dataType | `string` | Raw PostgreSQL data type string |
-| defaultValue? | `string` | Default value expression (if specified) |
-| isGenerated | `boolean` | Whether the column is auto-generated (GENERATED ALWAYS) |
-| length? | `number` | Character/binary length constraint (for VARCHAR, CHAR, BIT types) |
-| name | `string` | Column name (from SQL definition) |
-| normalizedType | `PostgresType` | Normalized PostgreSQL type (mapped to standard types) |
-| nullable | `boolean` | Whether the column allows NULL values |
-| precision? | `number` | Numeric precision (for NUMERIC/DECIMAL types) |
-| reference? | `{ schema?: string; table: string; column: string; onDelete?: 'CASCADE' \| 'SET NULL' \| 'RESTRICT' \| 'NO ACTION'; }` | Foreign key reference information (if column references another table) |
-| scale? | `number` | Numeric scale (for NUMERIC/DECIMAL types) |
-
-### ParsedTable
-
-Intermediate representation of a parsed table (from DDL)
-
-**Definition:**
-
-```typescript
-export interface ParsedTable {
-  columns: ParsedColumn[];
-  comment?: string;
-  doctypeName?: string;
-  inherits?: string[];
-  name: string;
-  schema?: string;
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| columns | `ParsedColumn[]` | Column definitions parsed from the table |
-| comment? | `string` | Table comment from COMMENT ON TABLE statement |
-| doctypeName? | `string` | Doctype name extracted from comment (if using doctype convention) |
-| inherits? | `string[]` | Parent table names (for PostgreSQL table inheritance) |
-| name | `string` | Table name (from CREATE TABLE statement) |
-| schema? | `string` | Schema name (if specified, defaults to 'public') |
-
-### RouteContext
-
-Route context for identifying what doctype/record we're working with
-
-**Definition:**
-
-```typescript
-export interface RouteContext {
-  doctype: string;
-  recordId?: string;
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| doctype | `string` | Doctype name (e.g., 'Task', 'Customer') |
-| recordId? | `string` | Optional record ID for viewing/editing a specific record |
-
-### StonecropClientOptions
-
-Options for creating a Stonecrop client
-
-**Definition:**
-
-```typescript
-export interface StonecropClientOptions {
-  endpoint: string;
-  headers?: Record<string, string>;
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| endpoint | `string` | GraphQL endpoint URL |
-| headers? | `Record<string, string>` | Additional HTTP headers to include in requests |
+| connectionFieldName? | `(tableName: string) => string` | Given a table name, return the GraphQL field name for fetching a list/connection. |
+| orderByTypeName? | `(tableName: string) => string` | Given a table name, return the GraphQL OrderBy enum type name. |
+| recordArgName? | `(tableName: string) => string` | Given a table name, return the GraphQL argument name used to look up a record by PK. |
+| recordArgType? | `(tableName: string) => string` | Given a table name, return the GraphQL variable type for the PK argument. |
+| recordFieldName? | `(tableName: string) => string` | Given a table name, return the GraphQL field name for fetching a single record by ID. |
 
 ### StonecropPluginOptions
 
@@ -646,6 +402,7 @@ Options for creating a Stonecrop PostGraphile plugin
 ```typescript
 export interface StonecropPluginOptions {
   executor: GraphQLExecutor;
+  inflection?: StonecropInflectionConfig;
 }
 ```
 
@@ -654,6 +411,7 @@ export interface StonecropPluginOptions {
 | Property | Type | Description |
 |----------|------|-------------|
 | executor | `GraphQLExecutor` | GraphQL executor for running queries/mutations |
+| inflection? | `StonecropInflectionConfig` | Override inflection conventions for mapping table names to GraphQL field names. Defaults to PostGraphile Amber preset conventions. |
 
 ### ValidationError
 
@@ -675,37 +433,7 @@ export interface ValidationError {
 | message | `string` | Error message |
 | path | `(string \| number)[]` | Path to the invalid property |
 
-### ValidationResult
-
-Result of a validation operation
-
-**Definition:**
-
-```typescript
-export interface ValidationResult {
-  errors: ValidationError[];
-  success: boolean;
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| errors | `ValidationError[]` | List of validation errors (empty if success) |
-| success | `boolean` | Whether validation passed |
-
 ## Type Aliases
-
-### ActionDefinition
-
-Action definition type inferred from Zod schema
-
-**Definition:**
-
-```typescript
-export type ActionDefinition = z.infer<typeof ActionDefinition>;
-```
 
 ### ActionHandler
 
@@ -727,66 +455,6 @@ Doctype metadata type inferred from Zod schema
 export type DoctypeMeta = z.infer<typeof DoctypeMeta>;
 ```
 
-### FieldMeta
-
-Field metadata type inferred from Zod schema
-
-**Definition:**
-
-```typescript
-export type FieldMeta = z.infer<typeof FieldMeta>;
-```
-
-### FieldOptions
-
-Field options type inferred from Zod schema
-
-**Definition:**
-
-```typescript
-export type FieldOptions = z.infer<typeof FieldOptions>;
-```
-
-### FieldValidation
-
-Field validation type inferred from Zod schema
-
-**Definition:**
-
-```typescript
-export type FieldValidation = z.infer<typeof FieldValidation>;
-```
-
-### PostgresType
-
-PostgreSQL type enum inferred from Zod schema
-
-**Definition:**
-
-```typescript
-export type PostgresType = z.infer<typeof PostgresType>;
-```
-
-### StonecropFieldType
-
-Stonecrop field type enum inferred from Zod schema
-
-**Definition:**
-
-```typescript
-export type StonecropFieldType = z.infer<typeof StonecropFieldType>;
-```
-
-### WorkflowMeta
-
-Workflow metadata type inferred from Zod schema
-
-**Definition:**
-
-```typescript
-export type WorkflowMeta = z.infer<typeof WorkflowMeta>;
-```
-
 ## Classes
 
 ### DoctypeValidationError
@@ -805,133 +473,6 @@ new DoctypeValidationError(file: string, errors: ValidationError[])
 |----------|------|-------------|
 | errors | `ValidationError[]` | List of validation errors found |
 | file | `string` | File path or name where the validation error occurred |
-
-### StonecropClient
-
-Client for interacting with Stonecrop GraphQL API
-
-**Constructor:**
-
-```typescript
-new StonecropClient(options: StonecropClientOptions)
-```
-
-**Methods:**
-
-#### clearMetaCache
-
-Clear the cached doctype metadata
-
-```typescript
-clearMetaCache(): void
-```
-
-#### getAllMeta
-
-Get all doctype metadata
-
-```typescript
-getAllMeta(): Promise<DoctypeMeta[]>
-```
-
-#### getMeta
-
-Get doctype metadata
-
-```typescript
-getMeta(context: RouteContext): Promise<DoctypeMeta | null>
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| context | `RouteContext` | Route context containing doctype name |
-
-#### getRecord
-
-Get a single record by ID
-
-```typescript
-getRecord(doctype: DoctypeMeta, recordId: string): Promise<Record<string, unknown> | null>
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| doctype | `DoctypeMeta` | Doctype metadata |
-| recordId | `string` | Record ID to fetch |
-
-#### getRecords
-
-Get multiple records with optional filtering and pagination
-
-```typescript
-getRecords(doctype: DoctypeMeta, options: {
-        filters?: Record<string, unknown>;
-        orderBy?: string;
-        limit?: number;
-        offset?: number;
-    }): Promise<Record<string, unknown>[]>
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| doctype | `DoctypeMeta` | Doctype metadata |
-| options | `{ filters?: Record<string, unknown>; orderBy?: string; limit?: number; offset?: number; }` | Query options (filters, orderBy, limit, offset) |
-
-#### mutate
-
-Execute a GraphQL mutation
-
-```typescript
-mutate(mutation: string, variables: Record<string, unknown>): Promise<T>
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| mutation | `string` | GraphQL mutation string |
-| variables | `Record<string, unknown>` | Mutation variables |
-
-#### query
-
-Execute a GraphQL query
-
-```typescript
-query(query: string, variables: Record<string, unknown>): Promise<T>
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| query | `string` | GraphQL query string |
-| variables | `Record<string, unknown>` | Query variables |
-
-#### runAction
-
-Execute a doctype action
-
-```typescript
-runAction(doctype: DoctypeMeta, action: string, args: unknown[]): Promise<{
-        success: boolean;
-        data: unknown;
-        error: string | null;
-    }>
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| doctype | `DoctypeMeta` | Doctype metadata |
-| action | `string` | Action name to execute |
-| args | `unknown[]` | Action arguments |
 
 ## Variables
 

@@ -7,7 +7,67 @@ description: GraphQL client utilities
 
 > This documentation is automatically generated from the TypeScript API.
 
+## Other Components
+
+### DoctypeMeta
+
+```typescript
+export { DoctypeMeta }
+```
+
+## Interfaces
+
+### RouteContext
+
+Route context for identifying what doctype/record we're working with. Used by graphql-middleware and graphql-client to resolve schema metadata.
+
+**Definition:**
+
+```typescript
+export interface RouteContext {
+  doctype: string;
+  recordId?: string;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| doctype | `string` | Doctype name (e.g., 'Task', 'Customer') |
+| recordId? | `string` | Optional record ID for viewing/editing a specific record |
+
+### StonecropClientOptions
+
+Options for creating a Stonecrop client
+
+**Definition:**
+
+```typescript
+export interface StonecropClientOptions {
+  endpoint: string;
+  headers?: Record<string, string>;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| endpoint | `string` | GraphQL endpoint URL |
+| headers? | `Record<string, string>` | Additional HTTP headers to include in requests |
+
 ## Type Aliases
+
+### DoctypeMeta
+
+Doctype metadata type inferred from Zod schema
+
+**Definition:**
+
+```typescript
+export type DoctypeMeta = z.infer<typeof DoctypeMeta>;
+```
 
 ### Meta
 
@@ -63,6 +123,135 @@ export type MetaResponse = {
     }[];
 };
 ```
+
+## Classes
+
+### StonecropClient
+
+Client for interacting with Stonecrop GraphQL API
+
+**Constructor:**
+
+```typescript
+new StonecropClient(options: StonecropClientOptions)
+```
+
+**Methods:**
+
+#### clearMetaCache
+
+Clear the cached doctype metadata
+
+```typescript
+clearMetaCache(): void
+```
+
+#### getAllMeta
+
+Get all doctype metadata
+
+```typescript
+getAllMeta(): Promise<DoctypeMeta[]>
+```
+
+#### getMeta
+
+Get doctype metadata
+
+```typescript
+getMeta(context: RouteContext): Promise<DoctypeMeta | null>
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| context | `RouteContext` | Route context containing doctype name |
+
+#### getRecord
+
+Get a single record by ID
+
+```typescript
+getRecord(doctype: DoctypeMeta, recordId: string): Promise<Record<string, unknown> | null>
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `DoctypeMeta` | Doctype metadata |
+| recordId | `string` | Record ID to fetch |
+
+#### getRecords
+
+Get multiple records with optional filtering and pagination
+
+```typescript
+getRecords(doctype: DoctypeMeta, options: {
+        filters?: Record<string, unknown>;
+        orderBy?: string;
+        limit?: number;
+        offset?: number;
+    }): Promise<Record<string, unknown>[]>
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `DoctypeMeta` | Doctype metadata |
+| options | `{ filters?: Record<string, unknown>; orderBy?: string; limit?: number; offset?: number; }` | Query options (filters, orderBy, limit, offset) |
+
+#### mutate
+
+Execute a GraphQL mutation
+
+```typescript
+mutate(mutation: string, variables: Record<string, unknown>): Promise<T>
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| mutation | `string` | GraphQL mutation string |
+| variables | `Record<string, unknown>` | Mutation variables |
+
+#### query
+
+Execute a GraphQL query
+
+```typescript
+query(query: string, variables: Record<string, unknown>): Promise<T>
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| query | `string` | GraphQL query string |
+| variables | `Record<string, unknown>` | Query variables |
+
+#### runAction
+
+Execute a doctype action
+
+```typescript
+runAction(doctype: DoctypeMeta, action: string, args: unknown[]): Promise<{
+        success: boolean;
+        data: unknown;
+        error: string | null;
+    }>
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `DoctypeMeta` | Doctype metadata |
+| action | `string` | Action name to execute |
+| args | `unknown[]` | Action arguments |
 
 ## Variables
 
