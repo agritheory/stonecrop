@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/aform",
+      "comment": "only generate ESM output",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@stonecrop/aform"
+}

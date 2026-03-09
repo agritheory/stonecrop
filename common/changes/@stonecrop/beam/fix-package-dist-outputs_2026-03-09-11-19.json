@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/beam",
+      "comment": "only generate ESM output",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@stonecrop/beam"
+}

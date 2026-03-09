@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/node-editor",
+      "comment": "add vue peer dependencies",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@stonecrop/node-editor"
+}

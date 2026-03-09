@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/code-editor",
+      "comment": "only generate ESM output",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@stonecrop/code-editor"
+}
