@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/schema",
+      "comment": "update eslint and tsconfig",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/schema"
+}
