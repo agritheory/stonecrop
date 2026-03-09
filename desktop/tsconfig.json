@@ -3,5 +3,5 @@
 	"compilerOptions": {
 		"tsBuildInfoFile": "./dist/desktop.tsbuildinfo"
 	},
-	"include": ["src/**/*.ts", "src/**/*.vue", "tests/**/*.ts", "tests/**/*.vue"]
+	"include": ["src/**/*.ts", "src/**/*.vue"]
 }

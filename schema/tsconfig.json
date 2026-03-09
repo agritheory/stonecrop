@@ -4,5 +4,5 @@
 		"tsBuildInfoFile": "./dist/schema.tsbuildinfo",
 		"types": ["vitest/globals", "vitest/jsdom", "node"]
 	},
-	"include": ["src/**/*.ts", "tests/**/*.spec.ts", "tests/**/*.ts"]
+	"include": ["src/**/*.ts"]
 }
