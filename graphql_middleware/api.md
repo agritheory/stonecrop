@@ -4,6 +4,12 @@
 
 ## Other Components
 
+### BUILTIN_WRITE_ACTIONS
+
+```typescript
+export { BUILTIN_WRITE_ACTIONS }
+```
+
 ### DoctypeMeta
 
 ```typescript
@@ -17,6 +23,42 @@ export { RELATION_FIELDTYPES }
 ```
 
 ## Functions
+
+### buildCreateMutation
+
+Build a GraphQL mutation to create a new record. Uses the PostGraphile Amber convention of nesting the input under the type name: `createResource(input: { resource: { ...fields } })`. The selection set uses scalar fields only (same exclusion rules as query builders).
+
+**Signature:**
+
+```typescript
+declare function buildCreateMutation(meta: DoctypeMeta, createMutationName: (t: string) => string, recordTypeName: (t: string) => string): string;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| meta | `DoctypeMeta` |  |
+| createMutationName | `(t: string) => string` |  |
+| recordTypeName | `(t: string) => string` |  |
+
+### buildDeleteMutation
+
+Build a GraphQL mutation to delete a record by its PK. Uses the PostGraphile Amber convention: `deleteResourceById(input: { id })`. The selection set uses scalar fields only (the deleted record is returned).
+
+**Signature:**
+
+```typescript
+declare function buildDeleteMutation(meta: DoctypeMeta, deleteMutationName: (t: string) => string, recordTypeName: (t: string) => string): string;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| meta | `DoctypeMeta` |  |
+| deleteMutationName | `(t: string) => string` |  |
+| recordTypeName | `(t: string) => string` |  |
 
 ### buildListQuery
 
@@ -59,6 +101,24 @@ declare function buildRecordQuery(meta: DoctypeMeta, recordFieldName: (t: string
 | recordFieldName | `(t: string) => string` |  |
 | recordArgName | `(t: string) => string` |  |
 | recordArgType | `(t: string) => string` |  |
+
+### buildUpdateMutation
+
+Build a GraphQL mutation to update an existing record by its PK. Uses the PostGraphile Amber convention: `updateResourceById(input: { id, patch: { ...fields } })`. The selection set uses scalar fields only.
+
+**Signature:**
+
+```typescript
+declare function buildUpdateMutation(meta: DoctypeMeta, updateMutationName: (t: string) => string, recordTypeName: (t: string) => string): string;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| meta | `DoctypeMeta` |  |
+| updateMutationName | `(t: string) => string` |  |
+| recordTypeName | `(t: string) => string` |  |
 
 ### clearHandlers
 
@@ -112,6 +172,38 @@ declare function defaultConnectionFieldName(tableName: string): string;
 |-----------|------|-------------|
 | tableName | `string` |  |
 
+### defaultCreateMutationName
+
+Amber default: resources → createResource, sales_orders → createSalesOrder
+
+**Signature:**
+
+```typescript
+declare function defaultCreateMutationName(tableName: string): string;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| tableName | `string` |  |
+
+### defaultDeleteMutationName
+
+Amber default: resources → deleteResourceById, sales_orders → deleteSalesOrderById
+
+**Signature:**
+
+```typescript
+declare function defaultDeleteMutationName(tableName: string): string;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| tableName | `string` |  |
+
 ### defaultOrderByTypeName
 
 Amber default: sales_orders → SalesOrdersOrderBy
@@ -128,6 +220,38 @@ declare function defaultOrderByTypeName(tableName: string): string;
 |-----------|------|-------------|
 | tableName | `string` |  |
 
+### defaultRecordArgName
+
+Default PK argument name: 'id' (standard Relay Global ID pattern). Override via `StonecropInflectionConfig.recordArgName` when using row_id columns; PostGraphile Amber generates `rowId: UUID!` for those fields.
+
+**Signature:**
+
+```typescript
+declare function defaultRecordArgName(_tableName: string): string;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| _tableName | `string` |  |
+
+### defaultRecordArgType
+
+Default PK argument type: 'UUID!' (PostGraphile Amber default for UUID PKs). Override via `StonecropInflectionConfig.recordArgType` when using non-UUID PKs such as integer serials or Relay Global IDs ('ID!').
+
+**Signature:**
+
+```typescript
+declare function defaultRecordArgType(_tableName: string): string;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| _tableName | `string` |  |
+
 ### defaultRecordFieldName
 
 Amber default: sales_orders → salesOrderById Uses `pluralize` for proper singularization of irregular plurals. Override via `StonecropInflectionConfig.recordFieldName` for non-standard PK columns.
@@ -143,6 +267,56 @@ declare function defaultRecordFieldName(tableName: string): string;
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | tableName | `string` |  |
+
+### defaultRecordTypeName
+
+Amber default: resources → resource, sales_orders → salesOrder Returns the camelCase type name that PostGraphile nests the record under inside mutation result payloads (e.g. `createResource.resource`, `updateResourceById.resource`).
+
+**Signature:**
+
+```typescript
+declare function defaultRecordTypeName(tableName: string): string;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| tableName | `string` |  |
+
+### defaultUpdateMutationName
+
+Amber default: resources → updateResourceById, sales_orders → updateSalesOrderById
+
+**Signature:**
+
+```typescript
+declare function defaultUpdateMutationName(tableName: string): string;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| tableName | `string` |  |
+
+### extractMutationResult
+
+Extract the record from a PostGraphile mutation result. PostGraphile nests the returned record under the type name inside the mutation field, e.g. `result.createResource.resource`, `result.updateResourceById.resource`.
+
+**Signature:**
+
+```typescript
+declare function extractMutationResult(result: unknown, mutationFieldName: string, recordTypeName: string): unknown;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| result | `unknown` |  |
+| mutationFieldName | `string` |  |
+| recordTypeName | `string` |  |
 
 ### getAllMeta
 
@@ -295,6 +469,26 @@ export declare function registerHandler(name: string, handler: ActionHandler): v
 | name | `string` | Unique name for the action handler |
 | handler | `ActionHandler` | Action handler function to register |
 
+### registerWriteHandlers
+
+Register built-in write action handlers for `create`, `update`, and `delete`.
+
+Each handler receives standard args: - `create`: `args[0]` = record data (`Record<string, unknown>`) - `update`: `args[0]` = record id (`string`), `args[1]` = patch (`Record<string, unknown>`) - `delete`: `args[0]` = record id (`string`)
+
+The handlers translate these into PostGraphile mutations via the configured inflection. Call this at app startup, before the first `stonecropAction` request arrives.
+
+**Signature:**
+
+```typescript
+export declare function registerWriteHandlers(inflection?: StonecropInflectionConfig): void;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| inflection | `StonecropInflectionConfig` | Optional inflection overrides. Defaults match PostGraphile Amber conventions. |
+
 ### validateReferences
 
 Validate cross-doctype references (Link fields, inherits, etc.) Call after all doctypes are loaded.
@@ -371,10 +565,14 @@ Defaults match the PostGraphile Amber preset conventions.
 ```typescript
 export interface StonecropInflectionConfig {
   connectionFieldName?: (tableName: string) => string;
+  createMutationName?: (tableName: string) => string;
+  deleteMutationName?: (tableName: string) => string;
   orderByTypeName?: (tableName: string) => string;
   recordArgName?: (tableName: string) => string;
   recordArgType?: (tableName: string) => string;
   recordFieldName?: (tableName: string) => string;
+  recordTypeName?: (tableName: string) => string;
+  updateMutationName?: (tableName: string) => string;
 }
 ```
 
@@ -383,10 +581,14 @@ export interface StonecropInflectionConfig {
 | Property | Type | Description |
 |----------|------|-------------|
 | connectionFieldName? | `(tableName: string) => string` | Given a table name, return the GraphQL field name for fetching a list/connection. |
+| createMutationName? | `(tableName: string) => string` | Given a table name, return the GraphQL mutation field name for creating a record. |
+| deleteMutationName? | `(tableName: string) => string` | Given a table name, return the GraphQL mutation field name for deleting a record. |
 | orderByTypeName? | `(tableName: string) => string` | Given a table name, return the GraphQL OrderBy enum type name. |
 | recordArgName? | `(tableName: string) => string` | Given a table name, return the GraphQL argument name used to look up a record by PK. |
 | recordArgType? | `(tableName: string) => string` | Given a table name, return the GraphQL variable type for the PK argument. |
 | recordFieldName? | `(tableName: string) => string` | Given a table name, return the GraphQL field name for fetching a single record by ID. |
+| recordTypeName? | `(tableName: string) => string` | Given a table name, return the camelCase type name used in mutation result payloads. PostGraphile nests the returned record under this key inside the mutation result. |
+| updateMutationName? | `(tableName: string) => string` | Given a table name, return the GraphQL mutation field name for updating a record. |
 
 ### StonecropPluginOptions
 

@@ -325,3 +325,79 @@ describe('StonecropClient.clearMetaCache', () => {
 		expect(mockFetch).toHaveBeenCalledTimes(2)
 	})
 })
+
+// ===========================================================================
+// createRecord / saveRecord / deleteRecord — convenience wrappers
+// ===========================================================================
+
+describe('StonecropClient.createRecord', () => {
+	it('delegates to runAction with action "create" and data as first arg', async () => {
+		const client = new StonecropClient({ endpoint: ENDPOINT })
+		mockFetch.mockReturnValue(
+			makeFetchResponse({
+				stonecropAction: { success: true, data: { id: 'new-1', title: 'Task A' }, error: null },
+			})
+		)
+
+		const result = await client.createRecord(taskMeta as any, { title: 'Task A' })
+		expect(result.success).toBe(true)
+		expect(result.data).toEqual({ id: 'new-1', title: 'Task A' })
+
+		const [, options] = mockFetch.mock.calls[0]
+		const body = JSON.parse(options.body as string)
+		expect(body.variables.doctype).toBe('Task')
+		expect(body.variables.action).toBe('create')
+		expect(body.variables.args).toEqual([{ title: 'Task A' }])
+	})
+})
+
+describe('StonecropClient.saveRecord', () => {
+	it('delegates to runAction with action "update", id, and patch', async () => {
+		const client = new StonecropClient({ endpoint: ENDPOINT })
+		mockFetch.mockReturnValue(
+			makeFetchResponse({
+				stonecropAction: { success: true, data: { id: 'rec-1', title: 'Updated' }, error: null },
+			})
+		)
+
+		const result = await client.saveRecord(taskMeta as any, 'rec-1', { title: 'Updated' })
+		expect(result.success).toBe(true)
+
+		const [, options] = mockFetch.mock.calls[0]
+		const body = JSON.parse(options.body as string)
+		expect(body.variables.action).toBe('update')
+		expect(body.variables.args).toEqual(['rec-1', { title: 'Updated' }])
+	})
+})
+
+describe('StonecropClient.deleteRecord', () => {
+	it('delegates to runAction with action "delete" and the record id', async () => {
+		const client = new StonecropClient({ endpoint: ENDPOINT })
+		mockFetch.mockReturnValue(
+			makeFetchResponse({
+				stonecropAction: { success: true, data: { id: 'rec-2' }, error: null },
+			})
+		)
+
+		const result = await client.deleteRecord(taskMeta as any, 'rec-2')
+		expect(result.success).toBe(true)
+
+		const [, options] = mockFetch.mock.calls[0]
+		const body = JSON.parse(options.body as string)
+		expect(body.variables.action).toBe('delete')
+		expect(body.variables.args).toEqual(['rec-2'])
+	})
+
+	it('returns success: false when server reports an error', async () => {
+		const client = new StonecropClient({ endpoint: ENDPOINT })
+		mockFetch.mockReturnValue(
+			makeFetchResponse({
+				stonecropAction: { success: false, data: null, error: 'Record not found' },
+			})
+		)
+
+		const result = await client.deleteRecord(taskMeta as any, 'missing-id')
+		expect(result.success).toBe(false)
+		expect(result.error).toBe('Record not found')
+	})
+})
