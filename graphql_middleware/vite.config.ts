@@ -11,8 +11,8 @@ export default defineConfig({
 		lib: {
 			entry: resolve(__dirname, 'src/index.ts'),
 			name: '@stonecrop/graphql-middleware',
-			formats: ['es', 'cjs'],
-			fileName: format => `index.${format === 'es' ? 'js' : 'cjs'}`,
+			formats: ['es'],
+			fileName: () => 'index.js',
 		},
 		rollupOptions: {
 			external: [

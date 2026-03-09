@@ -15,21 +15,15 @@
 	"bugs": {
 		"url": "https://github.com/agritheory/stonecrop/issues"
 	},
+	"types": "./dist/aform.d.ts",
 	"exports": {
 		".": {
-			"import": {
-				"types": "./dist/src/index.d.ts",
-				"default": "./dist/aform.js"
-			},
-			"require": "./dist/aform.umd.cjs"
+			"types": "./dist/aform.d.ts",
+			"import": "./dist/aform.js"
 		},
-		"./types": {
-			"import": "./dist/src/types/index.d.ts",
-			"require": "./dist/src/types/index.d.ts"
-		},
-		"./styles": "./dist/assets/index.css"
+		"./styles": "./dist/assets/index.css",
+		"./types": "./dist/src/types/index.d.ts"
 	},
-	"typings": "./dist/src/index.d.ts",
 	"files": [
 		"dist/*",
 		"src/*"

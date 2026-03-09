@@ -1,7 +1,6 @@
 {
 	"name": "@stonecrop/stonecrop",
 	"version": "0.8.13",
-	"description": "schema helper",
 	"license": "MIT",
 	"type": "module",
 	"author": {
@@ -16,20 +15,14 @@
 	"bugs": {
 		"url": "https://github.com/agritheory/stonecrop/issues"
 	},
+	"types": "./dist/stonecrop.d.ts",
 	"exports": {
 		".": {
-			"import": {
-				"types": "./dist/src/index.d.ts",
-				"default": "./dist/stonecrop.js"
-			},
-			"require": "./dist/stonecrop.umd.cjs"
+			"types": "./dist/stonecrop.d.ts",
+			"import": "./dist/stonecrop.js"
 		},
-		"./types": {
-			"import": "./dist/src/types/index.d.ts",
-			"require": "./dist/src/types/index.d.ts"
-		}
+		"./types": "./dist/src/types/index.d.ts"
 	},
-	"typings": "./dist/src/index.d.ts",
 	"files": [
 		"dist/*",
 		"src/*"
@@ -76,6 +69,7 @@
 		"vite": "^7.3.1",
 		"vitest": "^4.0.18"
 	},
+	"description": "schema helper",
 	"publishConfig": {
 		"access": "public"
 	},

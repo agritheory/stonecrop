@@ -15,21 +15,15 @@
 	"bugs": {
 		"url": "https://github.com/agritheory/stonecrop/issues"
 	},
+	"types": "./dist/atable.d.ts",
 	"exports": {
 		".": {
-			"import": {
-				"types": "./dist/src/index.d.ts",
-				"default": "./dist/atable.js"
-			},
-			"require": "./dist/atable.umd.cjs"
+			"types": "./dist/atable.d.ts",
+			"import": "./dist/atable.js"
 		},
-		"./types": {
-			"import": "./dist/src/types/index.d.ts",
-			"require": "./dist/src/types/index.d.ts"
-		},
-		"./styles": "./dist/assets/index.css"
+		"./styles": "./dist/assets/index.css",
+		"./types": "./dist/src/types/index.d.ts"
 	},
-	"typings": "./dist/src/index.d.ts",
 	"files": [
 		"dist/*",
 		"src/*"

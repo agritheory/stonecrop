@@ -15,16 +15,13 @@
 	"bugs": {
 		"url": "https://github.com/agritheory/stonecrop/issues"
 	},
+	"types": "./dist/code-editor.d.ts",
 	"exports": {
 		".": {
-			"import": {
-				"types": "./dist/src/index.d.ts",
-				"default": "./dist/code-editor.js"
-			},
-			"require": "./dist/code-editor.umd.cjs"
+			"types": "./dist/code-editor.d.ts",
+			"import": "./dist/code-editor.js"
 		}
 	},
-	"typings": "./dist/src/index.d.ts",
 	"files": [
 		"dist/*",
 		"src/*"

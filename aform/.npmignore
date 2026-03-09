@@ -28,4 +28,4 @@
 # DO NOT MODIFY THE TEMPLATE ABOVE THIS LINE
 #--------------------------------------------
 
-# (Add your project-specific overrides here)
+/dist/*.tsbuildinfo

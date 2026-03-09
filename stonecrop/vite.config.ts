@@ -15,6 +15,7 @@ export default defineConfig({
 		lib: {
 			entry: resolve(projectRootDir, 'src/index.ts'),
 			name: '@stonecrop/stonecrop',
+			formats: ['es'],
 		},
 		rollupOptions: {
 			external: ['vue'],

@@ -1,7 +1,6 @@
 {
 	"name": "@stonecrop/node-editor",
 	"version": "0.8.13",
-	"description": "Node editor UI for Stonecrop",
 	"license": "MIT",
 	"type": "module",
 	"author": {
@@ -16,21 +15,15 @@
 	"bugs": {
 		"url": "https://github.com/agritheory/stonecrop/issues"
 	},
+	"types": "./dist/node-editor.d.ts",
 	"exports": {
 		".": {
-			"import": {
-				"types": "./dist/src/index.d.ts",
-				"default": "./dist/node-editor.js"
-			},
-			"require": "./dist/node-editor.umd.cjs"
+			"types": "./dist/node-editor.d.ts",
+			"import": "./dist/node-editor.js"
 		},
-		"./types": {
-			"import": "./dist/src/types/index.d.ts",
-			"require": "./dist/src/types/index.d.ts"
-		},
-		"./styles": "./dist/node-editor.css"
+		"./styles": "./dist/node-editor.css",
+		"./types": "./dist/src/types/index.d.ts"
 	},
-	"typings": "./dist/src/index.d.ts",
 	"files": [
 		"dist/*",
 		"src/*"
@@ -64,6 +57,7 @@
 		"typescript-eslint": "^8.53.0",
 		"vite": "^7.3.1"
 	},
+	"description": "Node editor UI for Stonecrop",
 	"publishConfig": {
 		"access": "public"
 	},

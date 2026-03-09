@@ -2,13 +2,25 @@
 
 > This documentation is automatically generated from the TypeScript API.
 
-## Other Components
+## Vue Components
 
 ### DoctypeMeta
 
+Vue component exported from @stonecrop/graphql_middleware.
+
 ```typescript
-export { DoctypeMeta }
+import { DoctypeMeta } from '@stonecrop/graphql_middleware'
 ```
+
+### ValidationError
+
+Vue component exported from @stonecrop/graphql_middleware.
+
+```typescript
+import { ValidationError } from '@stonecrop/graphql_middleware'
+```
+
+## Other Components
 
 ### RELATION_FIELDTYPES
 
@@ -408,26 +420,6 @@ export interface StonecropPluginOptions {
 | executor | `GraphQLExecutor` | GraphQL executor for running queries/mutations |
 | inflection? | `StonecropInflectionConfig` | Override inflection conventions for mapping table names to GraphQL field names. Defaults to PostGraphile Amber preset conventions. |
 
-### ValidationError
-
-Validation error with path information
-
-**Definition:**
-
-```typescript
-export interface ValidationError {
-  message: string;
-  path: (string | number)[];
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| message | `string` | Error message |
-| path | `(string \| number)[]` | Path to the invalid property |
-
 ## Type Aliases
 
 ### ActionHandler
@@ -438,16 +430,6 @@ Action handler function signature
 
 ```typescript
 export type ActionHandler = (args: unknown[], context: ActionContext) => Promise<unknown>;
-```
-
-### DoctypeMeta
-
-Doctype metadata type inferred from Zod schema
-
-**Definition:**
-
-```typescript
-export type DoctypeMeta = z.infer<typeof DoctypeMeta>;
 ```
 
 ## Classes
