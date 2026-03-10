@@ -2,7 +2,6 @@
 	<div class="page-container">
 		<div class="page-header">
 			<h1>Users</h1>
-			<button class="btn-primary" @click="handleNewUser">New User</button>
 		</div>
 		<ClientOnly>
 			<div @click="handleTableClick">
@@ -33,10 +32,6 @@ const columns: TableColumn[] = [
 	{ label: 'Created', name: 'created_at', fieldtype: 'Date', width: '20ch' },
 	{ label: 'Modified', name: 'modified_at', fieldtype: 'Date', width: '20ch' },
 ]
-
-function handleNewUser() {
-	router.push('/users/new')
-}
 </script>
 
 <style scoped>
