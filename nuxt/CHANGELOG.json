@@ -2,6 +2,12 @@
   "name": "@stonecrop/nuxt",
   "entries": [
     {
+      "version": "0.9.1",
+      "tag": "@stonecrop/nuxt_v0.9.1",
+      "date": "Tue, 10 Mar 2026 10:44:46 GMT",
+      "comments": {}
+    },
+    {
       "version": "0.9.0",
       "tag": "@stonecrop/nuxt_v0.9.0",
       "date": "Mon, 09 Mar 2026 13:28:09 GMT",

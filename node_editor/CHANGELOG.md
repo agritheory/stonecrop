@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/node-editor
 
-This log was last generated on Mon, 09 Mar 2026 13:28:09 GMT and should not be manually modified.
+This log was last generated on Tue, 10 Mar 2026 10:44:46 GMT and should not be manually modified.
+
+## 0.9.1
+Tue, 10 Mar 2026 10:44:46 GMT
+
+### Patches
+
+- update eslint and tsconfig
 
 ## 0.9.0
 Mon, 09 Mar 2026 13:28:09 GMT

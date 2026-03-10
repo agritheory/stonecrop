@@ -2,6 +2,18 @@
   "name": "@stonecrop/stonecrop",
   "entries": [
     {
+      "version": "0.9.1",
+      "tag": "@stonecrop/stonecrop_v0.9.1",
+      "date": "Tue, 10 Mar 2026 10:44:46 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "update eslint and tsconfig"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.9.0",
       "tag": "@stonecrop/stonecrop_v0.9.0",
       "date": "Mon, 09 Mar 2026 13:28:09 GMT",
