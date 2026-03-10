@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/aform
 
-This log was last generated on Tue, 10 Mar 2026 10:44:46 GMT and should not be manually modified.
+This log was last generated on Tue, 10 Mar 2026 11:23:09 GMT and should not be manually modified.
+
+## 0.9.2
+Tue, 10 Mar 2026 11:23:09 GMT
+
+### Patches
+
+- handle infinite loop when setting up form component
 
 ## 0.9.1
 Tue, 10 Mar 2026 10:44:46 GMT

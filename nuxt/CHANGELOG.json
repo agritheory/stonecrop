@@ -2,6 +2,18 @@
   "name": "@stonecrop/nuxt",
   "entries": [
     {
+      "version": "0.9.2",
+      "tag": "@stonecrop/nuxt_v0.9.2",
+      "date": "Tue, 10 Mar 2026 11:23:09 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "expose doctypes directory to runtime config + add fallback for schema fields"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.9.1",
       "tag": "@stonecrop/nuxt_v0.9.1",
       "date": "Tue, 10 Mar 2026 10:44:46 GMT",
