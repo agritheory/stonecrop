@@ -7,13 +7,25 @@ description: PostGraphile middleware for Stonecrop
 
 > This documentation is automatically generated from the TypeScript API.
 
-## Other Components
+## Vue Components
 
 ### DoctypeMeta
 
+Vue component exported from @stonecrop/graphql_middleware.
+
 ```typescript
-export { DoctypeMeta }
+import { DoctypeMeta } from '@stonecrop/graphql_middleware'
 ```
+
+### ValidationError
+
+Vue component exported from @stonecrop/graphql_middleware.
+
+```typescript
+import { ValidationError } from '@stonecrop/graphql_middleware'
+```
+
+## Other Components
 
 ### RELATION_FIELDTYPES
 
@@ -132,6 +144,38 @@ declare function defaultOrderByTypeName(tableName: string): string;
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | tableName | `string` |  |
+
+### defaultRecordArgName
+
+Default PK argument name: 'id' (standard Relay Global ID pattern). Override via `StonecropInflectionConfig.recordArgName` when using row_id columns; PostGraphile Amber generates `rowId: UUID!` for those fields.
+
+**Signature:**
+
+```typescript
+declare function defaultRecordArgName(_tableName: string): string;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| _tableName | `string` |  |
+
+### defaultRecordArgType
+
+Default PK argument type: 'UUID!' (PostGraphile Amber default for UUID PKs). Override via `StonecropInflectionConfig.recordArgType` when using non-UUID PKs such as integer serials or Relay Global IDs ('ID!').
+
+**Signature:**
+
+```typescript
+declare function defaultRecordArgType(_tableName: string): string;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| _tableName | `string` |  |
 
 ### defaultRecordFieldName
 
@@ -413,26 +457,6 @@ export interface StonecropPluginOptions {
 | executor | `GraphQLExecutor` | GraphQL executor for running queries/mutations |
 | inflection? | `StonecropInflectionConfig` | Override inflection conventions for mapping table names to GraphQL field names. Defaults to PostGraphile Amber preset conventions. |
 
-### ValidationError
-
-Validation error with path information
-
-**Definition:**
-
-```typescript
-export interface ValidationError {
-  message: string;
-  path: (string | number)[];
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| message | `string` | Error message |
-| path | `(string \| number)[]` | Path to the invalid property |
-
 ## Type Aliases
 
 ### ActionHandler
@@ -443,16 +467,6 @@ Action handler function signature
 
 ```typescript
 export type ActionHandler = (args: unknown[], context: ActionContext) => Promise<unknown>;
-```
-
-### DoctypeMeta
-
-Doctype metadata type inferred from Zod schema
-
-**Definition:**
-
-```typescript
-export type DoctypeMeta = z.infer<typeof DoctypeMeta>;
 ```
 
 ## Classes

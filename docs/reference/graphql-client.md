@@ -7,35 +7,25 @@ description: GraphQL client utilities
 
 > This documentation is automatically generated from the TypeScript API.
 
-## Other Components
+## Vue Components
 
 ### DoctypeMeta
 
-```typescript
-export { DoctypeMeta }
-```
+Vue component exported from @stonecrop/graphql_client.
 
-## Interfaces
+```typescript
+import { DoctypeMeta } from '@stonecrop/graphql_client'
+```
 
 ### RouteContext
 
-Route context for identifying what doctype/record we're working with. Used by graphql-middleware and graphql-client to resolve schema metadata.
-
-**Definition:**
+Vue component exported from @stonecrop/graphql_client.
 
 ```typescript
-export interface RouteContext {
-  doctype: string;
-  recordId?: string;
-}
+import { RouteContext } from '@stonecrop/graphql_client'
 ```
 
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| doctype | `string` | Doctype name (e.g., 'Task', 'Customer') |
-| recordId? | `string` | Optional record ID for viewing/editing a specific record |
+## Interfaces
 
 ### StonecropClientOptions
 
@@ -58,16 +48,6 @@ export interface StonecropClientOptions {
 | headers? | `Record<string, string>` | Additional HTTP headers to include in requests |
 
 ## Type Aliases
-
-### DoctypeMeta
-
-Doctype metadata type inferred from Zod schema
-
-**Definition:**
-
-```typescript
-export type DoctypeMeta = z.infer<typeof DoctypeMeta>;
-```
 
 ### Meta
 
