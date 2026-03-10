@@ -18,12 +18,6 @@ export interface ActionContext {
 export type ActionHandler = (args: unknown[], context: ActionContext) => Promise<unknown>;
 
 // @public
-export function buildCreateMutation(meta: DoctypeMeta, createMutationName: (t: string) => string, recordTypeName: (t: string) => string): string;
-
-// @public
-export function buildDeleteMutation(meta: DoctypeMeta, deleteMutationName: (t: string) => string, recordTypeName: (t: string) => string): string;
-
-// @public
 export function buildListQuery(meta: DoctypeMeta, args: {
     limit?: number;
     offset?: number;
@@ -32,12 +26,6 @@ export function buildListQuery(meta: DoctypeMeta, args: {
 
 // @public
 export function buildRecordQuery(meta: DoctypeMeta, recordFieldName: (t: string) => string, recordArgName: (t: string) => string, recordArgType: (t: string) => string): string;
-
-// @public
-export function buildUpdateMutation(meta: DoctypeMeta, updateMutationName: (t: string) => string, recordTypeName: (t: string) => string): string;
-
-// @public
-export const BUILTIN_WRITE_ACTIONS: Set<string>;
 
 // @public
 export const builtinHandlers: Record<string, ActionHandler>;
@@ -55,12 +43,6 @@ export const createStonecropPlugin: (options: StonecropPluginOptions) => Graphil
 export function defaultConnectionFieldName(tableName: string): string;
 
 // @public
-export function defaultCreateMutationName(tableName: string): string;
-
-// @public
-export function defaultDeleteMutationName(tableName: string): string;
-
-// @public
 export function defaultOrderByTypeName(tableName: string): string;
 
 // @public
@@ -71,12 +53,6 @@ export function defaultRecordArgType(_tableName: string): string;
 
 // @public
 export function defaultRecordFieldName(tableName: string): string;
-
-// @public
-export function defaultRecordTypeName(tableName: string): string;
-
-// @public
-export function defaultUpdateMutationName(tableName: string): string;
 
 // @public
 export const DoctypeMeta: z.ZodObject<{
@@ -279,9 +255,6 @@ export class DoctypeValidationError extends Error {
 }
 
 // @public
-export function extractMutationResult(result: unknown, mutationFieldName: string, recordTypeName: string): unknown;
-
-// @public
 export function getAllMeta(): DoctypeMeta[];
 
 // @public
@@ -324,22 +297,15 @@ export function registerBuiltinHandlers(): void;
 export function registerHandler(name: string, handler: ActionHandler): void;
 
 // @public
-export function registerWriteHandlers(inflection?: StonecropInflectionConfig): void;
-
-// @public
 export const RELATION_FIELDTYPES: Set<string>;
 
 // @public
 export interface StonecropInflectionConfig {
     connectionFieldName?: (tableName: string) => string;
-    createMutationName?: (tableName: string) => string;
-    deleteMutationName?: (tableName: string) => string;
     orderByTypeName?: (tableName: string) => string;
     recordArgName?: (tableName: string) => string;
     recordArgType?: (tableName: string) => string;
     recordFieldName?: (tableName: string) => string;
-    recordTypeName?: (tableName: string) => string;
-    updateMutationName?: (tableName: string) => string;
 }
 
 // @public

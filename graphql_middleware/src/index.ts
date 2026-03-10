@@ -28,7 +28,7 @@ export {
 } from './registry/actions'
 
 // PostGraphile plugin
-export { createStonecropPlugin, registerWriteHandlers } from './plugin/postgraphile'
+export { createStonecropPlugin } from './plugin/postgraphile'
 
 export type { StonecropPluginOptions, StonecropInflectionConfig } from './plugin/postgraphile'
 
@@ -39,17 +39,8 @@ export {
 	defaultOrderByTypeName,
 	defaultRecordArgName,
 	defaultRecordArgType,
-	defaultCreateMutationName,
-	defaultUpdateMutationName,
-	defaultDeleteMutationName,
-	defaultRecordTypeName,
 	buildRecordQuery,
 	buildListQuery,
-	buildCreateMutation,
-	buildUpdateMutation,
-	buildDeleteMutation,
 	queryableFieldNames,
 	RELATION_FIELDTYPES,
-	BUILTIN_WRITE_ACTIONS,
-	extractMutationResult,
 } from './plugin/postgraphile'

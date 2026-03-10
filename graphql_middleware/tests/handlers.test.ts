@@ -1,7 +1,6 @@
 import type { DoctypeMeta } from '@stonecrop/schema'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-import { registerWriteHandlers } from '../src/plugin/postgraphile'
 import { clearHandlers, hasHandler, getHandler, registerHandler } from '../src/registry/actions'
 import type { ActionHandler } from '../src/types'
 
@@ -21,52 +20,48 @@ const scalarOnlyMeta: DoctypeMeta = {
 }
 
 // ===========================================================================
-// registerWriteHandlers
+// handler registration
 // ===========================================================================
 
-describe('registerWriteHandlers', () => {
+describe('handler registration', () => {
 	beforeEach(() => {
 		clearHandlers()
 	})
 
-	it('registers create, update, and delete handlers', () => {
-		registerWriteHandlers()
-		expect(hasHandler('create')).toBe(true)
-		expect(hasHandler('update')).toBe(true)
-		expect(hasHandler('delete')).toBe(true)
+	it('registers and retrieves a handler by name', () => {
+		const handler: ActionHandler = vi.fn()
+		registerHandler('submit', handler)
+		expect(getHandler('submit')).toBe(handler)
 	})
 
-	it('does not register handlers for other action names', () => {
-		registerWriteHandlers()
+	it('hasHandler returns true after registration', () => {
+		registerHandler('approve', vi.fn())
+		expect(hasHandler('approve')).toBe(true)
+	})
+
+	it('hasHandler returns false for unregistered names', () => {
+		expect(hasHandler('nonexistent')).toBe(false)
+	})
+
+	it('clearHandlers removes all registered handlers', () => {
+		registerHandler('submit', vi.fn())
+		registerHandler('approve', vi.fn())
+		clearHandlers()
 		expect(hasHandler('submit')).toBe(false)
 		expect(hasHandler('approve')).toBe(false)
 	})
 
-	it('registered create handler is callable', async () => {
-		registerWriteHandlers()
-		const handler = getHandler('create')
-		expect(handler).toBeDefined()
-		expect(typeof handler).toBe('function')
+	it('re-registering the same name replaces the previous handler', () => {
+		const first: ActionHandler = vi.fn()
+		const second: ActionHandler = vi.fn()
+		registerHandler('submit', first)
+		registerHandler('submit', second)
+		expect(getHandler('submit')).toBe(second)
+		expect(getHandler('submit')).not.toBe(first)
 	})
 
-	it('registered update handler is callable', async () => {
-		registerWriteHandlers()
-		const handler = getHandler('update')
-		expect(handler).toBeDefined()
-		expect(typeof handler).toBe('function')
-	})
-
-	it('registered delete handler is callable', async () => {
-		registerWriteHandlers()
-		const handler = getHandler('delete')
-		expect(handler).toBeDefined()
-		expect(typeof handler).toBe('function')
-	})
-
-	it('re-registers handlers on repeated calls without error', () => {
-		registerWriteHandlers()
-		expect(() => registerWriteHandlers()).not.toThrow()
-		expect(hasHandler('create')).toBe(true)
+	it('getHandler returns undefined for unregistered names', () => {
+		expect(getHandler('nonexistent')).toBeUndefined()
 	})
 })
 
@@ -74,26 +69,26 @@ describe('registerWriteHandlers', () => {
 // Custom handler patterns
 // ===========================================================================
 
-describe('overriding a built-in write handler', () => {
+describe('overriding a registered handler', () => {
 	beforeEach(() => {
 		clearHandlers()
-		registerWriteHandlers()
+		registerHandler('submit', vi.fn().mockResolvedValue({ success: true, data: null, error: null }))
 	})
 
-	it('allows a custom handler to replace the built-in create handler', () => {
-		const customCreate: ActionHandler = vi.fn().mockResolvedValue({ success: true, data: { id: '99' }, error: null })
-		registerHandler('create', customCreate)
-		const handler = getHandler('create')
-		expect(handler).toBe(customCreate)
+	it('allows a custom handler to replace an existing handler', () => {
+		const customHandler: ActionHandler = vi.fn().mockResolvedValue({ success: true, data: { id: '99' }, error: null })
+		registerHandler('submit', customHandler)
+		const handler = getHandler('submit')
+		expect(handler).toBe(customHandler)
 	})
 
-	it('calls the custom handler instead of the built-in when the action runs', async () => {
-		const customCreate: ActionHandler = vi.fn().mockResolvedValue({ success: true, data: { id: '99' }, error: null })
-		registerHandler('create', customCreate)
-		const handler = getHandler('create')!
+	it('calls the replacement handler instead of the original when the action runs', async () => {
+		const override: ActionHandler = vi.fn().mockResolvedValue({ success: true, data: { id: '99' }, error: null })
+		registerHandler('submit', override)
+		const handler = getHandler('submit')!
 		const mockExecutor = { query: vi.fn(), mutate: vi.fn() }
 		const result = await handler([{ name: 'Override Test' }], { doctype: scalarOnlyMeta, executor: mockExecutor })
-		expect(customCreate).toHaveBeenCalledWith([{ name: 'Override Test' }], {
+		expect(override).toHaveBeenCalledWith([{ name: 'Override Test' }], {
 			doctype: scalarOnlyMeta,
 			executor: mockExecutor,
 		})
@@ -101,37 +96,40 @@ describe('overriding a built-in write handler', () => {
 	})
 })
 
-describe('wrapping a built-in write handler', () => {
+describe('wrapping a registered handler', () => {
 	beforeEach(() => {
 		clearHandlers()
-		registerWriteHandlers()
 	})
 
-	it('allows a wrapper to call through to the built-in handler', async () => {
-		const original = getHandler('update')!
+	it('allows a wrapper to call through to the original handler', async () => {
+		const original: ActionHandler = vi.fn().mockResolvedValue({ ok: true })
+		registerHandler('approve', original)
+		const capturedOriginal = getHandler('approve')!
 		const calls: string[] = []
-		const mockExecutor = { query: vi.fn(), mutate: vi.fn().mockResolvedValue({}) }
+		const mockExecutor = { query: vi.fn(), mutate: vi.fn() }
 
 		const wrapper: ActionHandler = vi.fn().mockImplementation(async (args, context) => {
 			calls.push('before')
-			const result = await original(args, context)
+			const result = await capturedOriginal(args, context)
 			calls.push('after')
 			return result
 		})
 
-		registerHandler('update', wrapper)
-		await wrapper(['1', { name: 'Wrapped' }], { doctype: scalarOnlyMeta, executor: mockExecutor })
+		registerHandler('approve', wrapper)
+		await getHandler('approve')!(['arg1'], { doctype: scalarOnlyMeta, executor: mockExecutor })
 
 		expect(calls).toContain('before')
 	})
 
 	it('receives the same arguments as the original handler', async () => {
-		const original = getHandler('delete')!
-		const spy = vi.fn().mockImplementation(original)
-		registerHandler('delete', spy)
+		const original: ActionHandler = vi.fn().mockResolvedValue({ ok: true })
+		registerHandler('process', original)
+		const capturedOriginal = getHandler('process')!
+		const spy = vi.fn().mockImplementation(capturedOriginal)
+		registerHandler('process', spy)
 
-		const handler = getHandler('delete')!
-		const mockExecutor = { query: vi.fn(), mutate: vi.fn().mockResolvedValue({}) }
+		const handler = getHandler('process')!
+		const mockExecutor = { query: vi.fn(), mutate: vi.fn() }
 		await handler(['rec-42'], { doctype: scalarOnlyMeta, executor: mockExecutor })
 
 		expect(spy).toHaveBeenCalledWith(['rec-42'], { doctype: scalarOnlyMeta, executor: mockExecutor })
@@ -141,7 +139,6 @@ describe('wrapping a built-in write handler', () => {
 describe('workflow action definition routes to a named custom handler', () => {
 	beforeEach(() => {
 		clearHandlers()
-		registerWriteHandlers()
 	})
 
 	it('a named handler can be registered independently of built-in actions', () => {

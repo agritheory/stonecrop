@@ -252,47 +252,6 @@ export class StonecropClient {
 	}
 
 	/**
-	 * Create a new record via the built-in `create` action.
-	 * Requires `registerWriteHandlers()` to have been called on the server.
-	 * @param doctype - Doctype metadata
-	 * @param data - Field values for the new record
-	 */
-	async createRecord(
-		doctype: DoctypeMeta,
-		data: Record<string, unknown>
-	): Promise<{ success: boolean; data: unknown; error: string | null }> {
-		return this.runAction(doctype, 'create', [data])
-	}
-
-	/**
-	 * Update an existing record via the built-in `update` action.
-	 * Requires `registerWriteHandlers()` to have been called on the server.
-	 * @param doctype - Doctype metadata
-	 * @param id - Record ID (PK)
-	 * @param patch - Fields to update
-	 */
-	async saveRecord(
-		doctype: DoctypeMeta,
-		id: string,
-		patch: Record<string, unknown>
-	): Promise<{ success: boolean; data: unknown; error: string | null }> {
-		return this.runAction(doctype, 'update', [id, patch])
-	}
-
-	/**
-	 * Delete a record via the built-in `delete` action.
-	 * Requires `registerWriteHandlers()` to have been called on the server.
-	 * @param doctype - Doctype metadata
-	 * @param id - Record ID (PK) to delete
-	 */
-	async deleteRecord(
-		doctype: DoctypeMeta,
-		id: string
-	): Promise<{ success: boolean; data: unknown; error: string | null }> {
-		return this.runAction(doctype, 'delete', [id])
-	}
-
-	/**
 	 * Clear the cached doctype metadata
 	 */
 	clearMetaCache(): void {

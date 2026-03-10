@@ -141,44 +141,6 @@ Clear the cached doctype metadata
 clearMetaCache(): void
 ```
 
-#### createRecord
-
-Create a new record via the built-in `create` action. Requires `registerWriteHandlers()` to have been called on the server.
-
-```typescript
-createRecord(doctype: DoctypeMeta, data: Record<string, unknown>): Promise<{
-        success: boolean;
-        data: unknown;
-        error: string | null;
-    }>
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| doctype | `DoctypeMeta` | Doctype metadata |
-| data | `Record<string, unknown>` | Field values for the new record |
-
-#### deleteRecord
-
-Delete a record via the built-in `delete` action. Requires `registerWriteHandlers()` to have been called on the server.
-
-```typescript
-deleteRecord(doctype: DoctypeMeta, id: string): Promise<{
-        success: boolean;
-        data: unknown;
-        error: string | null;
-    }>
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| doctype | `DoctypeMeta` | Doctype metadata |
-| id | `string` | Record ID (PK) to delete |
-
 #### getAllMeta
 
 Get all doctype metadata
@@ -285,26 +247,6 @@ runAction(doctype: DoctypeMeta, action: string, args: unknown[]): Promise<{
 | doctype | `DoctypeMeta` | Doctype metadata |
 | action | `string` | Action name to execute |
 | args | `unknown[]` | Action arguments |
-
-#### saveRecord
-
-Update an existing record via the built-in `update` action. Requires `registerWriteHandlers()` to have been called on the server.
-
-```typescript
-saveRecord(doctype: DoctypeMeta, id: string, patch: Record<string, unknown>): Promise<{
-        success: boolean;
-        data: unknown;
-        error: string | null;
-    }>
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| doctype | `DoctypeMeta` | Doctype metadata |
-| id | `string` | Record ID (PK) |
-| patch | `Record<string, unknown>` | Fields to update |
 
 ## Variables
 

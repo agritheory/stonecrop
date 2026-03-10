@@ -252,16 +252,6 @@ export interface RouteContext {
 export class StonecropClient {
     constructor(options: StonecropClientOptions);
     clearMetaCache(): void;
-    createRecord(doctype: DoctypeMeta, data: Record<string, unknown>): Promise<{
-        success: boolean;
-        data: unknown;
-        error: string | null;
-    }>;
-    deleteRecord(doctype: DoctypeMeta, id: string): Promise<{
-        success: boolean;
-        data: unknown;
-        error: string | null;
-    }>;
     getAllMeta(): Promise<DoctypeMeta[]>;
     getMeta(context: RouteContext): Promise<DoctypeMeta | null>;
     getRecord(doctype: DoctypeMeta, recordId: string): Promise<Record<string, unknown> | null>;
@@ -274,11 +264,6 @@ export class StonecropClient {
     mutate<T = unknown>(mutation: string, variables?: Record<string, unknown>): Promise<T>;
     query<T = unknown>(query: string, variables?: Record<string, unknown>): Promise<T>;
     runAction(doctype: DoctypeMeta, action: string, args?: unknown[]): Promise<{
-        success: boolean;
-        data: unknown;
-        error: string | null;
-    }>;
-    saveRecord(doctype: DoctypeMeta, id: string, patch: Record<string, unknown>): Promise<{
         success: boolean;
         data: unknown;
         error: string | null;

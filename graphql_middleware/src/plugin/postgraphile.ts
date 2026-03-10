@@ -50,42 +50,7 @@ export interface StonecropInflectionConfig {
 	 * @example Integer PK: "sales_orders" → "Int!"
 	 */
 	recordArgType?: (tableName: string) => string
-
-	/**
-	 * Given a table name, return the GraphQL mutation field name for creating a record.
-	 * @example Amber default: "resources" → "createResource"
-	 * @example snake_case: "sales_orders" → "createSalesOrder"
-	 */
-	createMutationName?: (tableName: string) => string
-
-	/**
-	 * Given a table name, return the GraphQL mutation field name for updating a record.
-	 * @example Amber default: "resources" → "updateResourceById"
-	 * @example row_id variant: "resources" → "updateResourceByRowId"
-	 */
-	updateMutationName?: (tableName: string) => string
-
-	/**
-	 * Given a table name, return the GraphQL mutation field name for deleting a record.
-	 * @example Amber default: "resources" → "deleteResourceById"
-	 * @example row_id variant: "resources" → "deleteResourceByRowId"
-	 */
-	deleteMutationName?: (tableName: string) => string
-
-	/**
-	 * Given a table name, return the camelCase type name used in mutation result payloads.
-	 * PostGraphile nests the returned record under this key inside the mutation result.
-	 * @example Amber default: "resources" → "resource", "sales_orders" → "salesOrder"
-	 */
-	recordTypeName?: (tableName: string) => string
 }
-
-/**
- * Action names that map to built-in write operations when no workflow action
- * definition is found. Requires `registerWriteHandlers()` to have been called.
- * @public
- */
-const BUILTIN_WRITE_ACTIONS = new Set(['create', 'update', 'delete'])
 
 /**
  * Options for creating a Stonecrop PostGraphile plugin
@@ -299,21 +264,14 @@ export const createStonecropPlugin = (options: StonecropPluginOptions): Graphile
 											}
 
 											const actionDef = meta.workflow?.actions?.[spec.action]
-											let handlerName: string
-											if (actionDef) {
-												handlerName = actionDef.handler
-											} else if (meta.tableName && BUILTIN_WRITE_ACTIONS.has(spec.action)) {
-												// Fall back to built-in write handler when no explicit workflow action is defined.
-												// Requires registerWriteHandlers() to have been called at app startup.
-												handlerName = spec.action
-											} else {
+											if (!actionDef) {
 												return {
 													success: false,
 													data: null,
 													error: `Unknown action: ${spec.action} on ${spec.doctype}`,
 												}
 											}
-
+											const handlerName = actionDef.handler
 											const handler = getHandler(handlerName)
 											if (!handler) {
 												return {
@@ -406,43 +364,6 @@ function defaultRecordArgName(_tableName: string): string {
  */
 function defaultRecordArgType(_tableName: string): string {
 	return 'UUID!'
-}
-
-/**
- * Amber default: resources → createResource, sales_orders → createSalesOrder
- * @public
- */
-function defaultCreateMutationName(tableName: string): string {
-	const singular = pluralize.singular(tableName)
-	return `create${toPascalCase(singular)}`
-}
-
-/**
- * Amber default: resources → updateResourceById, sales_orders → updateSalesOrderById
- * @public
- */
-function defaultUpdateMutationName(tableName: string): string {
-	const singular = pluralize.singular(tableName)
-	return `update${toPascalCase(singular)}ById`
-}
-
-/**
- * Amber default: resources → deleteResourceById, sales_orders → deleteSalesOrderById
- * @public
- */
-function defaultDeleteMutationName(tableName: string): string {
-	const singular = pluralize.singular(tableName)
-	return `delete${toPascalCase(singular)}ById`
-}
-
-/**
- * Amber default: resources → resource, sales_orders → salesOrder
- * Returns the camelCase type name that PostGraphile nests the record under inside
- * mutation result payloads (e.g. `createResource.resource`, `updateResourceById.resource`).
- * @public
- */
-function defaultRecordTypeName(tableName: string): string {
-	return snakeToCamel(pluralize.singular(tableName))
 }
 
 // =============================================================================
@@ -565,167 +486,6 @@ function extractListResult(result: unknown, meta: DoctypeMeta, connectionFieldNa
 }
 
 // =============================================================================
-// Mutation builders — generate GraphQL mutations to send to the underlying schema
-// =============================================================================
-
-/**
- * Derive the typed input object name from a mutation field name.
- * e.g. createResource → CreateResourceInput, updateResourceById → UpdateResourceByIdInput
- * @internal
- */
-function mutationInputTypeName(mutationName: string): string {
-	return mutationName.charAt(0).toUpperCase() + mutationName.slice(1) + 'Input'
-}
-
-/**
- * Build a GraphQL mutation to create a new record.
- * Uses the PostGraphile Amber convention of nesting the input under the type name:
- * `createResource(input: { resource: { ...fields } })`.
- * The selection set uses scalar fields only (same exclusion rules as query builders).
- * @public
- */
-function buildCreateMutation(
-	meta: DoctypeMeta,
-	createMutationName: (t: string) => string,
-	recordTypeName: (t: string) => string
-): string {
-	const mutationName = createMutationName(meta.tableName!)
-	const inputType = mutationInputTypeName(mutationName)
-	const typeName = recordTypeName(meta.tableName!)
-	const fieldNames = queryableFieldNames(meta)
-
-	return `
-		mutation CreateRecord($input: ${inputType}!) {
-			${mutationName}(input: $input) {
-				${typeName} {
-					${fieldNames}
-				}
-			}
-		}
-	`
-}
-
-/**
- * Build a GraphQL mutation to update an existing record by its PK.
- * Uses the PostGraphile Amber convention: `updateResourceById(input: { id, patch: { ...fields } })`.
- * The selection set uses scalar fields only.
- * @public
- */
-function buildUpdateMutation(
-	meta: DoctypeMeta,
-	updateMutationName: (t: string) => string,
-	recordTypeName: (t: string) => string
-): string {
-	const mutationName = updateMutationName(meta.tableName!)
-	const inputType = mutationInputTypeName(mutationName)
-	const typeName = recordTypeName(meta.tableName!)
-	const fieldNames = queryableFieldNames(meta)
-
-	return `
-		mutation UpdateRecord($input: ${inputType}!) {
-			${mutationName}(input: $input) {
-				${typeName} {
-					${fieldNames}
-				}
-			}
-		}
-	`
-}
-
-/**
- * Build a GraphQL mutation to delete a record by its PK.
- * Uses the PostGraphile Amber convention: `deleteResourceById(input: { id })`.
- * The selection set uses scalar fields only (the deleted record is returned).
- * @public
- */
-function buildDeleteMutation(
-	meta: DoctypeMeta,
-	deleteMutationName: (t: string) => string,
-	recordTypeName: (t: string) => string
-): string {
-	const mutationName = deleteMutationName(meta.tableName!)
-	const inputType = mutationInputTypeName(mutationName)
-	const typeName = recordTypeName(meta.tableName!)
-	const fieldNames = queryableFieldNames(meta)
-
-	return `
-		mutation DeleteRecord($input: ${inputType}!) {
-			${mutationName}(input: $input) {
-				${typeName} {
-					${fieldNames}
-				}
-			}
-		}
-	`
-}
-
-/**
- * Extract the record from a PostGraphile mutation result.
- * PostGraphile nests the returned record under the type name inside the mutation field,
- * e.g. `result.createResource.resource`, `result.updateResourceById.resource`.
- * @public
- */
-function extractMutationResult(result: unknown, mutationFieldName: string, recordTypeName: string): unknown {
-	const mutationResult = (result as Record<string, unknown>)[mutationFieldName] as Record<string, unknown>
-	return mutationResult?.[recordTypeName]
-}
-
-// =============================================================================
-// Write action handlers — register built-in create/update/delete handlers
-// =============================================================================
-
-/**
- * Register built-in write action handlers for `create`, `update`, and `delete`.
- *
- * Each handler receives standard args:
- * - `create`:  `args[0]` = record data (`Record<string, unknown>`)
- * - `update`:  `args[0]` = record id (`string`), `args[1]` = patch (`Record<string, unknown>`)
- * - `delete`:  `args[0]` = record id (`string`)
- *
- * The handlers translate these into PostGraphile mutations via the configured inflection.
- * Call this at app startup, before the first `stonecropAction` request arrives.
- *
- * @param inflection - Optional inflection overrides. Defaults match PostGraphile Amber conventions.
- * @public
- */
-export function registerWriteHandlers(inflection?: StonecropInflectionConfig): void {
-	const createMutName = inflection?.createMutationName ?? defaultCreateMutationName
-	const updateMutName = inflection?.updateMutationName ?? defaultUpdateMutationName
-	const deleteMutName = inflection?.deleteMutationName ?? defaultDeleteMutationName
-	const recTypeName = inflection?.recordTypeName ?? defaultRecordTypeName
-	const recArgName = inflection?.recordArgName ?? defaultRecordArgName
-
-	registerHandler('create', async (args, context) => {
-		const [data] = args as [Record<string, unknown>]
-		const { doctype, executor } = context
-		const typeName = recTypeName(doctype.tableName!)
-		const mutation = buildCreateMutation(doctype, createMutName, recTypeName)
-		const result = await executor.mutate(mutation, { input: { [typeName]: data } })
-		return extractMutationResult(result, createMutName(doctype.tableName!), typeName)
-	})
-
-	registerHandler('update', async (args, context) => {
-		const [id, patch] = args as [string, Record<string, unknown>]
-		const { doctype, executor } = context
-		const typeName = recTypeName(doctype.tableName!)
-		const pkArgName = recArgName(doctype.tableName!)
-		const mutation = buildUpdateMutation(doctype, updateMutName, recTypeName)
-		const result = await executor.mutate(mutation, { input: { [pkArgName]: id, patch } })
-		return extractMutationResult(result, updateMutName(doctype.tableName!), typeName)
-	})
-
-	registerHandler('delete', async (args, context) => {
-		const [id] = args as [string]
-		const { doctype, executor } = context
-		const typeName = recTypeName(doctype.tableName!)
-		const pkArgName = recArgName(doctype.tableName!)
-		const mutation = buildDeleteMutation(doctype, deleteMutName, recTypeName)
-		const result = await executor.mutate(mutation, { input: { [pkArgName]: id } })
-		return extractMutationResult(result, deleteMutName(doctype.tableName!), typeName)
-	})
-}
-
-// =============================================================================
 // Exported for testing and advanced usage
 // =============================================================================
 
@@ -735,19 +495,10 @@ export {
 	defaultOrderByTypeName,
 	defaultRecordArgName,
 	defaultRecordArgType,
-	defaultCreateMutationName,
-	defaultUpdateMutationName,
-	defaultDeleteMutationName,
-	defaultRecordTypeName,
 	buildRecordQuery,
 	buildListQuery,
-	buildCreateMutation,
-	buildUpdateMutation,
-	buildDeleteMutation,
 	queryableFieldNames,
 	RELATION_FIELDTYPES,
-	BUILTIN_WRITE_ACTIONS,
 	extractSingleResult,
 	extractListResult,
-	extractMutationResult,
 }

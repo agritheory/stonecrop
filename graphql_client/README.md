@@ -53,27 +53,6 @@ const orders = await client.getRecords(meta, {
 // → Record<string, unknown>[]
 ```
 
-### Write operations
-
-Requires `registerWriteHandlers()` to have been called on the server.
-
-```typescript
-// Create
-const created = await client.createRecord(meta, {
-  customer: 'cust-1',
-  status: 'Draft',
-})
-
-// Update (partial patch)
-const updated = await client.saveRecord(meta, 'uuid-here', { status: 'Submitted' })
-
-// Delete
-const deleted = await client.deleteRecord(meta, 'uuid-here')
-
-// All three return:
-// { success: boolean; data: unknown; error: string | null }
-```
-
 ### Actions
 
 ```typescript
@@ -81,8 +60,6 @@ const deleted = await client.deleteRecord(meta, 'uuid-here')
 const result = await client.runAction(meta, 'submit', ['uuid-here'])
 // → { success: boolean; data: unknown; error: string | null }
 ```
-
-`createRecord`, `saveRecord`, and `deleteRecord` are convenience wrappers around `runAction` — they map to the built-in `create`, `update`, and `delete` action names respectively.
 
 ### Raw GraphQL
 

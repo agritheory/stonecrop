@@ -6,10 +6,6 @@ import {
 	defaultOrderByTypeName,
 	defaultRecordArgName,
 	defaultRecordArgType,
-	defaultCreateMutationName,
-	defaultUpdateMutationName,
-	defaultDeleteMutationName,
-	defaultRecordTypeName,
 } from '../src/plugin/postgraphile'
 
 // ===========================================================================
@@ -73,59 +69,5 @@ describe('defaultRecordArgType', () => {
 	it('returns "UUID!" for all table names (Amber default)', () => {
 		expect(defaultRecordArgType('resources')).toBe('UUID!')
 		expect(defaultRecordArgType('sales_orders')).toBe('UUID!')
-	})
-})
-
-// ===========================================================================
-// Write mutation inflection helpers
-// ===========================================================================
-
-describe('defaultCreateMutationName', () => {
-	it('singularizes and prefixes with create', () => {
-		expect(defaultCreateMutationName('resources')).toBe('createResource')
-	})
-
-	it('handles snake_case table names', () => {
-		expect(defaultCreateMutationName('sales_orders')).toBe('createSalesOrder')
-	})
-
-	it('handles irregular plurals', () => {
-		expect(defaultCreateMutationName('statuses')).toBe('createStatus')
-		expect(defaultCreateMutationName('categories')).toBe('createCategory')
-	})
-})
-
-describe('defaultUpdateMutationName', () => {
-	it('singularizes and wraps with update…ById', () => {
-		expect(defaultUpdateMutationName('resources')).toBe('updateResourceById')
-	})
-
-	it('handles snake_case table names', () => {
-		expect(defaultUpdateMutationName('sales_orders')).toBe('updateSalesOrderById')
-	})
-})
-
-describe('defaultDeleteMutationName', () => {
-	it('singularizes and wraps with delete…ById', () => {
-		expect(defaultDeleteMutationName('resources')).toBe('deleteResourceById')
-	})
-
-	it('handles snake_case table names', () => {
-		expect(defaultDeleteMutationName('sales_orders')).toBe('deleteSalesOrderById')
-	})
-})
-
-describe('defaultRecordTypeName', () => {
-	it('returns singular camelCase for simple plurals', () => {
-		expect(defaultRecordTypeName('resources')).toBe('resource')
-	})
-
-	it('returns singular camelCase for snake_case table names', () => {
-		expect(defaultRecordTypeName('sales_orders')).toBe('salesOrder')
-	})
-
-	it('handles irregular plurals', () => {
-		expect(defaultRecordTypeName('statuses')).toBe('status')
-		expect(defaultRecordTypeName('categories')).toBe('category')
 	})
 })
