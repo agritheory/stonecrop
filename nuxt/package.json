@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/nuxt",
-	"version": "0.9.0",
+	"version": "0.9.1",
 	"description": "Nuxt module for Stonecrop",
 	"license": "MIT",
 	"type": "module",
