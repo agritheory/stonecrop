@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/aform",
+      "comment": "update eslint and tsconfig",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/aform"
+}

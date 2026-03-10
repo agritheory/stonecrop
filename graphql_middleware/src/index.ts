@@ -37,6 +37,8 @@ export {
 	defaultRecordFieldName,
 	defaultConnectionFieldName,
 	defaultOrderByTypeName,
+	defaultRecordArgName,
+	defaultRecordArgType,
 	buildRecordQuery,
 	buildListQuery,
 	queryableFieldNames,
