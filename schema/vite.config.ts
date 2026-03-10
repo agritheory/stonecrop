@@ -12,8 +12,8 @@ export default defineConfig({
 				cli: resolve(__dirname, 'src/cli.ts'),
 			},
 			name: '@stonecrop/schema',
-			formats: ['es', 'cjs'],
-			fileName: (format, entryName) => `${entryName}.${format === 'es' ? 'js' : 'cjs'}`,
+			formats: ['es'],
+			fileName: (_format, entryName) => `${entryName}.js`,
 		},
 		rollupOptions: {
 			external: ['zod', 'graphql', 'node:util', 'node:fs', 'node:path'],

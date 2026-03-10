@@ -27,12 +27,6 @@ importers:
       '@vueuse/core':
         specifier: ^14.2.1
         version: 14.2.1(vue@3.5.28(typescript@5.9.3))
-      pinia:
-        specifier: ^3.0.4
-        version: 3.0.4(typescript@5.9.3)(vue@3.5.28(typescript@5.9.3))
-      vue:
-        specifier: ^3.5.28
-        version: 3.5.28(typescript@5.9.3)
     devDependencies:
       '@eslint/js':
         specifier: ^9.39.2
@@ -70,6 +64,9 @@ importers:
       jsdom:
         specifier: ^28.1.0
         version: 28.1.0
+      pinia:
+        specifier: ^3.0.4
+        version: 3.0.4(typescript@5.9.3)(vue@3.5.28(typescript@5.9.3))
       stonecrop-rig:
         specifier: workspace:*
         version: link:../rigs/stonecrop-rig
@@ -88,6 +85,9 @@ importers:
       vitest:
         specifier: ^4.0.18
         version: 4.0.18(@types/node@22.19.11)(@vitest/ui@4.0.18)(jiti@2.6.1)(jsdom@28.1.0)(sass@1.97.2)(terser@5.46.0)(yaml@2.8.2)
+      vue:
+        specifier: ^3.5.28
+        version: 3.5.28(typescript@5.9.3)
       vue-router:
         specifier: ^5.0.2
         version: 5.0.2(@vue/compiler-sfc@3.5.28)(pinia@3.0.4(typescript@5.9.3)(vue@3.5.28(typescript@5.9.3)))(vue@3.5.28(typescript@5.9.3))
@@ -106,12 +106,6 @@ importers:
       '@vueuse/core':
         specifier: ^14.2.1
         version: 14.2.1(vue@3.5.28(typescript@5.9.3))
-      pinia:
-        specifier: ^3.0.4
-        version: 3.0.4(typescript@5.9.3)(vue@3.5.28(typescript@5.9.3))
-      vue:
-        specifier: ^3.5.28
-        version: 3.5.28(typescript@5.9.3)
     devDependencies:
       '@eslint/js':
         specifier: ^9.39.2
@@ -149,6 +143,9 @@ importers:
       jsdom:
         specifier: ^28.1.0
         version: 28.1.0
+      pinia:
+        specifier: ^3.0.4
+        version: 3.0.4(typescript@5.9.3)(vue@3.5.28(typescript@5.9.3))
       stonecrop-rig:
         specifier: workspace:*
         version: link:../rigs/stonecrop-rig
@@ -167,6 +164,9 @@ importers:
       vitest:
         specifier: ^4.0.18
         version: 4.0.18(@types/node@22.19.11)(@vitest/ui@4.0.18)(jiti@2.6.1)(jsdom@28.1.0)(sass@1.97.2)(terser@5.46.0)(yaml@2.8.2)
+      vue:
+        specifier: ^3.5.28
+        version: 3.5.28(typescript@5.9.3)
       vue-router:
         specifier: ^5.0.2
         version: 5.0.2(@vue/compiler-sfc@3.5.28)(pinia@3.0.4(typescript@5.9.3)(vue@3.5.28(typescript@5.9.3)))(vue@3.5.28(typescript@5.9.3))
@@ -185,9 +185,6 @@ importers:
       onscan.js:
         specifier: ^1.5.2
         version: 1.5.2
-      vue:
-        specifier: ^3.5.28
-        version: 3.5.28(typescript@5.9.3)
     devDependencies:
       '@eslint/js':
         specifier: ^9.39.2
@@ -243,6 +240,9 @@ importers:
       vitest:
         specifier: ^4.0.18
         version: 4.0.18(@types/node@22.19.11)(@vitest/ui@4.0.18)(jiti@2.6.1)(jsdom@28.1.0)(sass@1.97.2)(terser@5.46.0)(yaml@2.8.2)
+      vue:
+        specifier: ^3.5.28
+        version: 3.5.28(typescript@5.9.3)
       vue-router:
         specifier: ^5.0.2
         version: 5.0.2(@vue/compiler-sfc@3.5.28)(pinia@3.0.4(typescript@5.9.3)(vue@3.5.28(typescript@5.9.3)))(vue@3.5.28(typescript@5.9.3))
@@ -325,9 +325,6 @@ importers:
       monaco-editor:
         specifier: ^0.55.1
         version: 0.55.1
-      vue:
-        specifier: ^3.5.28
-        version: 3.5.28(typescript@5.9.3)
     devDependencies:
       '@eslint/js':
         specifier: ^9.39.2
@@ -368,6 +365,9 @@ importers:
       vite:
         specifier: ^7.3.1
         version: 7.3.1(@types/node@22.19.11)(jiti@2.6.1)(sass@1.97.2)(terser@5.46.0)(yaml@2.8.2)
+      vue:
+        specifier: ^3.5.28
+        version: 3.5.28(typescript@5.9.3)
       vue-router:
         specifier: ^5.0.2
         version: 5.0.2(@vue/compiler-sfc@3.5.28)(pinia@3.0.4(typescript@5.9.3)(vue@3.5.28(typescript@5.9.3)))(vue@3.5.28(typescript@5.9.3))
@@ -386,9 +386,6 @@ importers:
       '@stonecrop/themes':
         specifier: workspace:*
         version: link:../themes
-      vue:
-        specifier: ^3.5.28
-        version: 3.5.28(typescript@5.9.3)
     devDependencies:
       '@eslint/js':
         specifier: ^9.39.2
@@ -432,6 +429,9 @@ importers:
       vite:
         specifier: ^7.3.1
         version: 7.3.1(@types/node@22.19.11)(jiti@2.6.1)(sass@1.97.2)(terser@5.46.0)(yaml@2.8.2)
+      vue:
+        specifier: ^3.5.28
+        version: 3.5.28(typescript@5.9.3)
       vue-router:
         specifier: ^5.0.2
         version: 5.0.2(@vue/compiler-sfc@3.5.28)(pinia@3.0.4(typescript@5.9.3)(vue@3.5.28(typescript@5.9.3)))(vue@3.5.28(typescript@5.9.3))
@@ -498,6 +498,9 @@ importers:
       vue:
         specifier: ^3.5.28
         version: 3.5.28(typescript@5.9.3)
+      vue-router:
+        specifier: ^5.0.2
+        version: 5.0.2(@vue/compiler-sfc@3.5.28)(pinia@3.0.4(typescript@5.9.3)(vue@3.5.28(typescript@5.9.3)))(vue@3.5.28(typescript@5.9.3))
       vue-toast-notification:
         specifier: ^3.1.3
         version: 3.1.3(vue@3.5.28(typescript@5.9.3))
@@ -550,9 +553,6 @@ importers:
       typescript-eslint:
         specifier: ^8.53.0
         version: 8.53.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)
-      vue-router:
-        specifier: ^5.0.2
-        version: 5.0.2(@vue/compiler-sfc@3.5.28)(pinia@3.0.4(typescript@5.9.3)(vue@3.5.28(typescript@5.9.3)))(vue@3.5.28(typescript@5.9.3))
 
   ../../graphql_client:
     dependencies:
@@ -675,12 +675,6 @@ importers:
       '@vue-flow/core':
         specifier: ^1.48.1
         version: 1.48.1(vue@3.5.28(typescript@5.9.3))
-      vue:
-        specifier: ^3.5.28
-        version: 3.5.28(typescript@5.9.3)
-      vue-router:
-        specifier: ^5.0.2
-        version: 5.0.2(@vue/compiler-sfc@3.5.28)(pinia@3.0.4(typescript@5.9.3)(vue@3.5.28(typescript@5.9.3)))(vue@3.5.28(typescript@5.9.3))
       xstate:
         specifier: ^5.25.0
         version: 5.25.0
@@ -721,6 +715,12 @@ importers:
       vite:
         specifier: ^7.3.1
         version: 7.3.1(@types/node@22.19.11)(jiti@2.6.1)(sass@1.97.2)(terser@5.46.0)(yaml@2.8.2)
+      vue:
+        specifier: ^3.5.28
+        version: 3.5.28(typescript@5.9.3)
+      vue-router:
+        specifier: ^5.0.2
+        version: 5.0.2(@vue/compiler-sfc@3.5.28)(pinia@3.0.4(typescript@5.9.3)(vue@3.5.28(typescript@5.9.3)))(vue@3.5.28(typescript@5.9.3))
 
   ../../nuxt:
     dependencies:
@@ -1043,21 +1043,12 @@ importers:
       immutable:
         specifier: ^5.1.4
         version: 5.1.4
-      pinia:
-        specifier: ^3.0.4
-        version: 3.0.4(typescript@5.9.3)(vue@3.5.28(typescript@5.9.3))
       pinia-shared-state:
         specifier: ^1.0.1
         version: 1.0.1(pinia@3.0.4(typescript@5.9.3)(vue@3.5.28(typescript@5.9.3)))
       pinia-xstate:
         specifier: ^3.0.0
         version: 3.0.0(pinia@3.0.4(typescript@5.9.3)(vue@3.5.28(typescript@5.9.3)))(typescript@5.9.3)(xstate@5.25.0)
-      vue:
-        specifier: ^3.5.28
-        version: 3.5.28(typescript@5.9.3)
-      vue-router:
-        specifier: ^5.0.2
-        version: 5.0.2(@vue/compiler-sfc@3.5.28)(pinia@3.0.4(typescript@5.9.3)(vue@3.5.28(typescript@5.9.3)))(vue@3.5.28(typescript@5.9.3))
       xstate:
         specifier: ^5.25.0
         version: 5.25.0
@@ -1101,6 +1092,9 @@ importers:
       jsdom:
         specifier: ^28.1.0
         version: 28.1.0
+      pinia:
+        specifier: ^3.0.4
+        version: 3.0.4(typescript@5.9.3)(vue@3.5.28(typescript@5.9.3))
       stonecrop-rig:
         specifier: workspace:*
         version: link:../rigs/stonecrop-rig
@@ -1116,6 +1110,12 @@ importers:
       vitest:
         specifier: ^4.0.18
         version: 4.0.18(@types/node@22.19.11)(@vitest/ui@4.0.18)(jiti@2.6.1)(jsdom@28.1.0)(sass@1.97.2)(terser@5.46.0)(yaml@2.8.2)
+      vue:
+        specifier: ^3.5.28
+        version: 3.5.28(typescript@5.9.3)
+      vue-router:
+        specifier: ^5.0.2
+        version: 5.0.2(@vue/compiler-sfc@3.5.28)(pinia@3.0.4(typescript@5.9.3)(vue@3.5.28(typescript@5.9.3)))(vue@3.5.28(typescript@5.9.3))
 
   ../../themes:
     devDependencies:
@@ -1128,9 +1128,6 @@ importers:
       '@vueuse/core':
         specifier: ^14.2.1
         version: 14.2.1(vue@3.5.28(typescript@5.9.3))
-      vue:
-        specifier: ^3.5.28
-        version: 3.5.28(typescript@5.9.3)
       xstate:
         specifier: ^5.25.0
         version: 5.25.0
@@ -1171,6 +1168,9 @@ importers:
       vite:
         specifier: ^7.3.1
         version: 7.3.1(@types/node@22.19.11)(jiti@2.6.1)(sass@1.97.2)(terser@5.46.0)(yaml@2.8.2)
+      vue:
+        specifier: ^3.5.28
+        version: 3.5.28(typescript@5.9.3)
       vue-router:
         specifier: ^5.0.2
         version: 5.0.2(@vue/compiler-sfc@3.5.28)(pinia@3.0.4(typescript@5.9.3)(vue@3.5.28(typescript@5.9.3)))(vue@3.5.28(typescript@5.9.3))

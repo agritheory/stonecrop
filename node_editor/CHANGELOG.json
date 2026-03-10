@@ -2,6 +2,33 @@
   "name": "@stonecrop/node-editor",
   "entries": [
     {
+      "version": "0.9.1",
+      "tag": "@stonecrop/node-editor_v0.9.1",
+      "date": "Tue, 10 Mar 2026 10:44:46 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "update eslint and tsconfig"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.9.0",
+      "tag": "@stonecrop/node-editor_v0.9.0",
+      "date": "Mon, 09 Mar 2026 13:28:09 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "only generate ESM output"
+          },
+          {
+            "comment": "add vue peer dependencies"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.8.13",
       "tag": "@stonecrop/node-editor_v0.8.13",
       "date": "Wed, 04 Mar 2026 10:33:21 GMT",
