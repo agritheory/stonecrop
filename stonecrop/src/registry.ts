@@ -63,7 +63,7 @@ export default class Registry {
 	 * @see {@link DoctypeMeta}
 	 */
 	addDoctype(doctype: DoctypeMeta) {
-		if (!(doctype.doctype in Object.keys(this.registry))) {
+		if (!(doctype.slug in this.registry)) {
 			this.registry[doctype.slug] = doctype
 		}
 

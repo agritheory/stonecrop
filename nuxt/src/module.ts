@@ -126,6 +126,13 @@ export default defineNuxtModule<ModuleOptions>({
 		const appDir = nuxt.options.srcDir
 		const doctypesDir = resolve(appDir, options.doctypesDir ?? 'doctypes')
 
+		// Expose the resolved absolute doctypesDir to server-side handlers via runtimeConfig
+		// Without this, server API handlers fall back to process.cwd()/doctypes which is wrong
+		nuxt.options.runtimeConfig.stonecrop = {
+			...((nuxt.options.runtimeConfig.stonecrop as Record<string, unknown>) ?? {}),
+			doctypesDir,
+		}
+
 		if (existsSync(doctypesDir)) {
 			try {
 				const dirContents = await readdir(doctypesDir)

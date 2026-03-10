@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/beam",
-	"version": "0.8.13",
+	"version": "0.9.1",
 	"license": "MIT",
 	"type": "module",
 	"author": {
@@ -15,30 +15,26 @@
 	"bugs": {
 		"url": "https://github.com/agritheory/stonecrop/issues"
 	},
+	"description": "UI component library for Stonecrop",
+	"types": "./dist/beam.d.ts",
 	"exports": {
 		".": {
-			"import": {
-				"types": "./dist/src/index.d.ts",
-				"default": "./dist/beam.js"
-			},
-			"require": "./dist/beam.umd.cjs"
+			"types": "./dist/beam.d.ts",
+			"import": "./dist/beam.js"
 		},
-		"./types": {
-			"import": "./dist/src/types/index.d.ts",
-			"require": "./dist/src/types/index.d.ts"
-		},
-		"./styles": "./dist/assets/index.css"
+		"./styles": "./dist/assets/index.css",
+		"./types": "./dist/src/types/index.d.ts"
 	},
-	"typings": "./dist/src/index.d.ts",
-	"main": "dist/beam.js",
-	"module": "dist/beam.js",
 	"files": [
 		"dist/*",
 		"src/*"
 	],
+	"sideEffects": [
+		"**/*.css"
+	],
 	"scripts": {
 		"_phase:build": "heft build && vite build && rushx docs",
-		"prepublish": "heft build && vite build && rushx docs",
+		"prepublishOnly": "heft build && vite build && rushx docs",
 		"build": "heft build && vite build && rushx docs",
 		"dev": "vite",
 		"docs": "bash ../common/scripts/run-docs.sh beam",
@@ -53,7 +49,9 @@
 		"@vueuse/components": "^14.2.1",
 		"@vueuse/core": "^14.2.1",
 		"mqtt": "^5.14.1",
-		"onscan.js": "^1.5.2",
+		"onscan.js": "^1.5.2"
+	},
+	"peerDependencies": {
 		"vue": "^3.5.28"
 	},
 	"devDependencies": {
@@ -74,6 +72,7 @@
 		"typescript-eslint": "^8.53.0",
 		"vite-plugin-lib-inject-css": "^2.2.2",
 		"vite": "^7.3.1",
+		"vue": "^3.5.28",
 		"vitest": "^4.0.18",
 		"vue-router": "^5.0.2"
 	},

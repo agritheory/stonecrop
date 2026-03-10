@@ -1,6 +1,21 @@
 # Change Log - @stonecrop/code-editor
 
-This log was last generated on Wed, 04 Mar 2026 10:33:21 GMT and should not be manually modified.
+This log was last generated on Tue, 10 Mar 2026 10:44:46 GMT and should not be manually modified.
+
+## 0.9.1
+Tue, 10 Mar 2026 10:44:46 GMT
+
+### Patches
+
+- update eslint and tsconfig
+
+## 0.9.0
+Mon, 09 Mar 2026 13:28:09 GMT
+
+### Minor changes
+
+- only generate ESM output
+- add vue peer dependencies
 
 ## 0.8.13
 Wed, 04 Mar 2026 10:33:21 GMT

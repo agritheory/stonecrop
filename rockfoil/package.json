@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/rockfoil",
-	"version": "0.8.13",
+	"version": "0.9.1",
 	"license": "MIT",
 	"type": "module",
 	"author": {
@@ -16,28 +16,26 @@
 	"bugs": {
 		"url": "https://github.com/agritheory/stonecrop/issues"
 	},
+	"types": "./dist/rockfoil.d.ts",
 	"exports": {
 		".": {
-			"import": {
-				"types": "./dist/src/index.d.ts",
-				"default": "./dist/rockfoil.js"
-			},
-			"require": "./dist/rockfoil.umd.cjs"
+			"types": "./dist/rockfoil.d.ts",
+			"import": "./dist/rockfoil.js"
 		},
-		"./types": {
-			"import": "./dist/src/types/index.d.ts",
-			"require": "./dist/src/types/index.d.ts"
-		},
-		"./styles": "./dist/assets/index.css"
+		"./styles": "./dist/assets/index.css",
+		"./types": "./dist/src/types/index.d.ts"
 	},
-	"typings": "./dist/index.d.ts",
 	"files": [
 		"dist/*",
 		"src/*"
 	],
+	"description": "PostGraphile plugin for Stonecrop schema integration",
+	"sideEffects": [
+		"**/*.css"
+	],
 	"scripts": {
 		"_phase:build": "heft build && vite build && rushx docs",
-		"prepublish": "heft build && vite build && rushx docs",
+		"prepublishOnly": "heft build && vite build && rushx docs",
 		"build": "heft build && vite build && rushx docs",
 		"dev": "vite",
 		"docs": "bash ../common/scripts/run-docs.sh rockfoil",
