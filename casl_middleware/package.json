@@ -1,14 +1,13 @@
 {
 	"name": "@stonecrop/casl-middleware",
-	"version": "0.8.13",
+	"version": "0.9.0",
 	"license": "MIT",
 	"type": "module",
-	"homepage": "https://github.com/agritheory/stonecrop#readme",
 	"author": {
 		"name": "Tyler Matteson",
 		"email": "support@agritheory.dev"
 	},
-	"description": "CASL authorization middleware for GraphQL servers",
+	"homepage": "https://github.com/agritheory/stonecrop#readme",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/agritheory/stonecrop",
@@ -17,26 +16,22 @@
 	"bugs": {
 		"url": "https://github.com/agritheory/stonecrop/issues"
 	},
+	"types": "./dist/casl-middleware.d.ts",
 	"exports": {
 		".": {
-			"import": {
-				"types": "./dist/src/index.d.ts",
-				"default": "./dist/casl-middleware.js"
-			}
+			"types": "./dist/casl-middleware.d.ts",
+			"import": "./dist/casl-middleware.js"
 		},
-		"./types": {
-			"import": "./dist/src/types/index.d.ts",
-			"require": "./dist/src/types/index.d.ts"
-		}
+		"./types": "./dist/src/types/index.d.ts"
 	},
-	"typings": "./dist/src/index.d.ts",
 	"files": [
 		"dist/*",
 		"src/*"
 	],
+	"sideEffects": false,
 	"scripts": {
 		"_phase:build": "heft build && vite build && rushx docs",
-		"prepublish": "heft build && vite build && rushx docs",
+		"prepublishOnly": "heft build && vite build && rushx docs",
 		"build": "heft build && vite build && rushx docs",
 		"dev": "vite",
 		"docs": "bash ../common/scripts/run-docs.sh casl_middleware",
@@ -47,14 +42,6 @@
 		"test:coverage": "vitest run --coverage",
 		"test:ui": "vitest --ui"
 	},
-	"keywords": [
-		"casl",
-		"graphql",
-		"authorization",
-		"middleware",
-		"postgraphile",
-		"rockfoil"
-	],
 	"dependencies": {
 		"@casl/ability": "^6.8.0",
 		"graphql": "^16.12.0",
@@ -83,6 +70,15 @@
 		"graphql-yoga": "^5.18.0",
 		"postgraphile": "^5.0.0-rc.7"
 	},
+	"description": "CASL authorization middleware for GraphQL servers",
+	"keywords": [
+		"casl",
+		"graphql",
+		"authorization",
+		"middleware",
+		"postgraphile",
+		"rockfoil"
+	],
 	"peerDependenciesMeta": {
 		"postgraphile": {
 			"optional": true

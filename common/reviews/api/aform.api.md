@@ -15,14 +15,10 @@ import AForm from './components/AForm.vue';
 import ANumericInput from './components/form/ANumericInput.vue';
 import type { App } from 'vue';
 import ATextInput from './components/form/ATextInput.vue';
-import { ComputedRef } from 'vue';
-import { CSSProperties } from 'vue';
 import Login from './components/utilities/Login.vue';
-import { Ref } from 'vue';
-import type { ShallowRef } from 'vue';
-import { Store } from 'pinia';
-import { useElementBounding } from '@vueuse/core';
-import { WritableComputedRef } from 'vue';
+import type { TableColumn } from '@stonecrop/atable';
+import type { TableConfig } from '@stonecrop/atable';
+import type { TableRow } from '@stonecrop/atable';
 
 export { ACheckbox }
 
@@ -52,26 +48,6 @@ export type BaseSchema = {
 };
 
 // @public
-export interface BaseTableConfig {
-    fullWidth?: boolean;
-    rowActions?: RowActionsConfig;
-}
-
-// @public
-export interface BasicTableConfig extends BaseTableConfig {
-    view?: 'uncounted' | 'list' | 'list-expansion';
-}
-
-// @public
-export interface CellContext {
-    column: TableColumn;
-    row: TableRow;
-    table: {
-        [key: string]: any;
-    };
-}
-
-// @public
 export type ComponentProps = {
     schema?: SchemaTypes;
     label?: string;
@@ -84,44 +60,6 @@ export type ComponentProps = {
         [key: string]: any;
     };
 };
-
-// @public
-export type ConnectionEvent = {
-    type: 'create' | 'delete';
-    connection: ConnectionPath;
-};
-
-// @public
-export interface ConnectionHandle {
-    barId: string;
-    colIndex: number;
-    id: string;
-    position: {
-        x: ShallowRef<number>;
-        y: ShallowRef<number>;
-    };
-    rowIndex: number;
-    side: 'left' | 'right';
-    visible: Ref<boolean>;
-}
-
-// @public
-export interface ConnectionPath {
-    from: {
-        barId: string;
-        side: 'left' | 'right';
-    };
-    id: string;
-    label?: string;
-    style?: {
-        color?: string;
-        width?: number;
-    };
-    to: {
-        barId: string;
-        side: 'left' | 'right';
-    };
-}
 
 // @public
 export type DoctypeSchema = BaseSchema & {
@@ -151,185 +89,12 @@ export type FormSchema = BaseSchema & {
 };
 
 // @public
-export interface GanttBarInfo {
-    colIndex: number;
-    color: Ref<string>;
-    endIndex: Ref<number>;
-    id: string;
-    label?: string;
-    position: {
-        x: ShallowRef<number>;
-        y: ShallowRef<number>;
-    };
-    rowIndex: number;
-    startIndex: Ref<number>;
-}
-
-// @public
-export type GanttDragEvent = {
-    rowIndex: number;
-    colIndex: number;
-    delta: number;
-} & ({
-    type: 'bar';
-    oldStart: number;
-    oldEnd: number;
-    newStart: number;
-    newEnd: number;
-    colspan: number;
-} | {
-    type: 'resize';
-    edge: 'start';
-    oldStart: number;
-    newStart: number;
-    end: number;
-    oldColspan: number;
-    newColspan: number;
-} | {
-    type: 'resize';
-    edge: 'end';
-    oldEnd: number;
-    newEnd: number;
-    start: number;
-    oldColspan: number;
-    newColspan: number;
-});
-
-// @public
-export interface GanttOptions {
-    color?: string;
-    colspan?: number;
-    endIndex?: number;
-    startIndex?: number;
-}
-
-// @public
-export interface GanttTableConfig extends BaseTableConfig {
-    dependencyGraph?: boolean;
-    view: 'gantt';
-}
-
-// @public
 export function install(app: App): void;
 
 export { Login }
 
 // @public
-export interface RowActionOptions {
-    enabled?: boolean;
-    // Warning: (ae-forgotten-export) The symbol "createTableStore" needs to be exported by the entry point index.d.ts
-    handler?: (rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean;
-    icon?: string;
-    label?: string;
-}
-
-// @public
-export interface RowActionsConfig {
-    actions?: {
-        add?: boolean | RowActionOptions;
-        delete?: boolean | RowActionOptions;
-        duplicate?: boolean | RowActionOptions;
-        insertAbove?: boolean | RowActionOptions;
-        insertBelow?: boolean | RowActionOptions;
-        move?: boolean | RowActionOptions;
-    };
-    dropdownThreshold?: number;
-    enabled: boolean;
-    forceDropdown?: boolean;
-    position?: 'before-index' | 'after-index' | 'end';
-}
-
-// @public
-export type RowActionType = 'add' | 'delete' | 'duplicate' | 'insertAbove' | 'insertBelow' | 'move';
-
-// @public
-export interface RowAddEvent {
-    // (undocumented)
-    row: TableRow;
-    // (undocumented)
-    rowIndex: number;
-}
-
-// @public
-export interface RowDeleteEvent {
-    // (undocumented)
-    row: TableRow;
-    // (undocumented)
-    rowIndex: number;
-}
-
-// @public
-export interface RowDuplicateEvent {
-    // (undocumented)
-    newIndex: number;
-    // (undocumented)
-    row: TableRow;
-    // (undocumented)
-    sourceIndex: number;
-}
-
-// @public
-export interface RowInsertEvent {
-    // (undocumented)
-    newIndex: number;
-    // (undocumented)
-    row: TableRow;
-    // (undocumented)
-    targetIndex: number;
-}
-
-// @public
-export interface RowMoveEvent {
-    // (undocumented)
-    fromIndex: number;
-    // (undocumented)
-    toIndex: number;
-}
-
-// @public
 export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema | DoctypeSchema | TableDoctypeSchema;
-
-// @public
-export interface TableColumn {
-    align?: CanvasTextAlign;
-    cellComponent?: string;
-    cellComponentProps?: Record<string, any>;
-    colspan?: number;
-    edit?: boolean;
-    fieldtype?: string;
-    filterable?: boolean;
-    filterComponent?: string;
-    filterOptions?: any[];
-    filterType?: 'text' | 'select' | 'number' | 'date' | 'dateRange' | 'checkbox' | 'component';
-    format?: string | ((value: any, context: CellContext) => string);
-    ganttComponent?: string;
-    isGantt?: boolean;
-    label?: string;
-    mask?: (value: any) => any;
-    modalComponent?: string | ((context: CellContext) => string);
-    modalComponentExtraProps?: Record<string, any>;
-    name: string;
-    originalIndex?: number;
-    pinned?: boolean;
-    resizable?: boolean;
-    sortable?: boolean;
-    width?: string;
-}
-
-// @public
-export type TableConfig = BasicTableConfig | TreeTableConfig | GanttTableConfig | TreeGanttTableConfig;
-
-// @public
-export interface TableDisplay {
-    childrenOpen?: boolean;
-    expanded?: boolean;
-    indent?: number;
-    isParent?: boolean;
-    isRoot?: boolean;
-    open?: boolean;
-    parent?: number;
-    rowModified?: boolean;
-}
 
 // @public
 export type TableDoctypeSchema = BaseSchema & {
@@ -343,55 +108,14 @@ export type TableDoctypeSchema = BaseSchema & {
 };
 
 // @public
-export interface TableModal {
-    bottom?: ReturnType<typeof useElementBounding>['bottom'];
-    cell?: HTMLTableCellElement | null;
-    colIndex?: number;
-    component?: string;
-    componentProps?: Record<string, any>;
-    height?: ReturnType<typeof useElementBounding>['height'];
-    left?: ReturnType<typeof useElementBounding>['left'];
-    parent?: HTMLElement;
-    rowIndex?: number;
-    visible?: boolean;
-    width?: ReturnType<typeof useElementBounding>['width'];
-}
-
-// @public
-export interface TableModalProps {
-    [key: string]: any;
-    colIndex: number;
-    rowIndex: number;
-    store: ReturnType<typeof createTableStore>;
-}
-
-// @public
-export interface TableRow {
-    [key: string]: any;
-    gantt?: GanttOptions;
-    indent?: number;
-    parent?: number;
-}
-
-// @public
 export type TableSchema = BaseSchema & {
     columns?: TableColumn[];
     config?: TableConfig;
     rows?: TableRow[];
 };
 
-// @public
-export interface TreeGanttTableConfig extends BaseTableConfig {
-    defaultTreeExpansion?: 'root' | 'branch' | 'leaf';
-    dependencyGraph?: boolean;
-    view: 'tree-gantt';
-}
 
-// @public
-export interface TreeTableConfig extends BaseTableConfig {
-    defaultTreeExpansion?: 'root' | 'branch' | 'leaf';
-    view: 'tree';
-}
+export * from "@stonecrop/atable/types";
 
 // (No @packageDocumentation comment for this package)
 

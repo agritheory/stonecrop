@@ -10,6 +10,7 @@ export default defineConfig({
 		lib: {
 			entry: resolve(projectRootDir, 'src/index.ts'),
 			name: '@stonecrop/graphql-client',
+			formats: ['es'],
 		},
 	},
 	test: {

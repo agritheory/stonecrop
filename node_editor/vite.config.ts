@@ -12,12 +12,14 @@ export default defineConfig({
 		lib: {
 			entry: resolve(projectRootDir, 'src/index.ts'),
 			name: '@stonecrop/node-editor',
+			formats: ['es'],
 		},
 		rollupOptions: {
-			external: ['vue'],
+			external: ['vue', 'vue-router'],
 			output: {
 				globals: {
 					vue: 'Vue',
+					'vue-router': 'VueRouter',
 				},
 			},
 		},

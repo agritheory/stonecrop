@@ -1,7 +1,6 @@
 {
 	"name": "@stonecrop/stonecrop",
-	"version": "0.8.13",
-	"description": "schema helper",
+	"version": "0.9.0",
 	"license": "MIT",
 	"type": "module",
 	"author": {
@@ -16,27 +15,22 @@
 	"bugs": {
 		"url": "https://github.com/agritheory/stonecrop/issues"
 	},
+	"types": "./dist/stonecrop.d.ts",
 	"exports": {
 		".": {
-			"import": {
-				"types": "./dist/src/index.d.ts",
-				"default": "./dist/stonecrop.js"
-			},
-			"require": "./dist/stonecrop.umd.cjs"
+			"types": "./dist/stonecrop.d.ts",
+			"import": "./dist/stonecrop.js"
 		},
-		"./types": {
-			"import": "./dist/src/types/index.d.ts",
-			"require": "./dist/src/types/index.d.ts"
-		}
+		"./types": "./dist/src/types/index.d.ts"
 	},
-	"typings": "./dist/src/index.d.ts",
 	"files": [
 		"dist/*",
 		"src/*"
 	],
+	"sideEffects": false,
 	"scripts": {
 		"_phase:build": "heft build && vite build && rushx docs",
-		"prepublish": "heft build && vite build && rushx docs",
+		"prepublishOnly": "heft build && vite build && rushx docs",
 		"build": "heft build && vite build && rushx docs",
 		"docs": "bash ../common/scripts/run-docs.sh stonecrop",
 		"lint": "eslint .",
@@ -51,10 +45,12 @@
 		"immutable": "^5.1.4",
 		"pinia-shared-state": "^1.0.1",
 		"pinia-xstate": "^3.0.0",
-		"pinia": "^3.0.4",
-		"vue-router": "^5.0.2",
-		"vue": "^3.5.28",
 		"xstate": "^5.25.0"
+	},
+	"peerDependencies": {
+		"pinia": "^3.0.4",
+		"vue": "^3.5.28",
+		"vue-router": "^5.0.2"
 	},
 	"devDependencies": {
 		"@eslint/js": "^9.39.2",
@@ -72,10 +68,14 @@
 		"jsdom": "^28.1.0",
 		"stonecrop-rig": "workspace:*",
 		"typescript": "^5.9.3",
+		"pinia": "^3.0.4",
 		"typescript-eslint": "^8.53.0",
+		"vue": "^3.5.28",
+		"vue-router": "^5.0.2",
 		"vite": "^7.3.1",
 		"vitest": "^4.0.18"
 	},
+	"description": "Schema-driven framework with XState workflows and HST state management",
 	"publishConfig": {
 		"access": "public"
 	},

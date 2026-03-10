@@ -12,8 +12,8 @@
 	{
 		"definitionName": "lockStepVersion",
 		"policyName": "stonecrop",
-		"version": "0.8.13",
-		"nextBump": "patch"
+		"version": "0.9.0",
+		"nextBump": "minor"
 	}
 	// {
 	//   /**
