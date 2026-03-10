@@ -2,6 +2,18 @@
   "name": "@stonecrop/stonecrop",
   "entries": [
     {
+      "version": "0.9.2",
+      "tag": "@stonecrop/stonecrop_v0.9.2",
+      "date": "Tue, 10 Mar 2026 11:23:09 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "fix addDoctype duplicate check"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.9.1",
       "tag": "@stonecrop/stonecrop_v0.9.1",
       "date": "Tue, 10 Mar 2026 10:44:46 GMT",

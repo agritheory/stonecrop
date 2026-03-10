@@ -2,6 +2,18 @@
   "name": "@stonecrop/aform",
   "entries": [
     {
+      "version": "0.9.2",
+      "tag": "@stonecrop/aform_v0.9.2",
+      "date": "Tue, 10 Mar 2026 11:23:09 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "handle infinite loop when setting up form component"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.9.1",
       "tag": "@stonecrop/aform_v0.9.1",
       "date": "Tue, 10 Mar 2026 10:44:46 GMT",
