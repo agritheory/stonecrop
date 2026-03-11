@@ -4,7 +4,6 @@ import { createApp } from 'vue'
 
 import '@stonecrop/desktop/styles'
 import { install as AForm } from '@stonecrop/aform'
-import { install as ATable } from '@stonecrop/atable'
 import { StonecropDesktop } from '@stonecrop/desktop'
 import StonecropPlugin, {
 	DoctypeMeta,
@@ -62,8 +61,8 @@ app.use(StonecropPlugin, {
 })
 
 // 3. Component plugins
+// Note: AForm internally installs ATable, so ATable must not be installed separately
 app.use(AForm)
-app.use(ATable)
 app.use(StonecropDesktop)
 
 // Mount the app - router initialization will happen automatically

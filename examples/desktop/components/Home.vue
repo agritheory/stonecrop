@@ -1,6 +1,6 @@
 <template>
 	<div class="home-wrapper">
-		<AForm v-model="schema" />
+		<AForm :schema="schema" v-model:data="tableData" />
 	</div>
 </template>
 
@@ -9,6 +9,8 @@ import { AForm } from '@stonecrop/aform'
 import { ref } from 'vue'
 
 const { doctypes = ['todo', 'issue'] } = defineProps<{ doctypes?: string[] }>()
+
+const tableData = ref<Record<string, any>>({})
 
 // Create schema for displaying doctypes in an ATable
 const schema = ref([

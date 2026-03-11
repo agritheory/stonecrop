@@ -4,7 +4,7 @@
 		<ActionSet :elements="actionElements" @action-click="handleActionClick" />
 
 		<!-- Main content using AForm -->
-		<AForm v-if="writableSchema.length > 0" v-model="writableSchema" :data="currentViewData" />
+		<AForm v-if="currentViewSchema.length > 0" :schema="currentViewSchema" v-model:data="currentViewData" />
 		<div v-else-if="!stonecrop" class="loading"><p>Initializing Stonecrop...</p></div>
 		<div v-else class="loading">
 			<p>Loading {{ currentView }} data...</p>
@@ -760,54 +760,6 @@ const currentViewSchema = computed<SchemaTypes[]>(() => {
 			return []
 	}
 })
-
-// Writable schema for AForm v-model binding
-const writableSchema = ref<SchemaTypes[]>([])
-
-// Sync computed schema to writable schema when it changes
-watch(
-	currentViewSchema,
-	newSchema => {
-		writableSchema.value = [...newSchema]
-	},
-	{ immediate: true, deep: true }
-)
-
-// Watch for field changes in writable schema and sync to HST
-watch(
-	writableSchema,
-	newSchema => {
-		if (!stonecrop.value || !currentDoctype.value || !currentRecordId.value || isNewRecord.value) {
-			return
-		}
-
-		try {
-			const hstStore = stonecrop.value.getStore()
-
-			// Process form field updates from schema
-			newSchema.forEach(field => {
-				// Only process fields that have a fieldname and value (form fields)
-				if (
-					field.fieldname &&
-					'value' in field &&
-					!['header', 'actions', 'loading', 'error'].includes(field.fieldname)
-				) {
-					const fieldPath = `${currentDoctype.value}.${currentRecordId.value}.${field.fieldname}`
-					const currentValue = hstStore.has(fieldPath) ? hstStore.get(fieldPath) : undefined
-
-					// Only update if value actually changed to avoid infinite loops
-					if (currentValue !== field.value) {
-						hstStore.set(fieldPath, field.value)
-					}
-				}
-			})
-		} catch (error) {
-			// eslint-disable-next-line no-console
-			console.warn('HST schema sync failed:', error)
-		}
-	},
-	{ deep: true }
-)
 
 // Action handlers (will be triggered by button clicks in the UI)
 const handleSave = async () => {

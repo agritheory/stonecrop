@@ -122,7 +122,6 @@ Basic field structure for AForm schemas
 export type BaseSchema = {
     fieldname: string;
     component?: string;
-    value?: any;
 };
 ```
 

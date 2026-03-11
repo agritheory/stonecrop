@@ -64,21 +64,9 @@ const updateNestedData = (fieldname: string, val: any) => {
 	nestedData.value[fieldname] = val
 	if (dataModel.value) {
 		dataModel.value[fieldname] = val
-		emit('update:data', dataModel.value)
+		emit('update:data', { ...dataModel.value })
 	}
 }
-
-// Sync data values into schema immediately and on changes
-watchEffect(() => {
-	if (dataModel.value && schema) {
-		// Sync data values into schema
-		schema.forEach(field => {
-			if (field.fieldname && dataModel.value[field.fieldname] !== undefined) {
-				field.value = dataModel.value[field.fieldname]
-			}
-		})
-	}
-})
 
 const componentProps = (componentObj: SchemaTypes) => {
 	const propsToPass: Record<string, any> = {}
@@ -107,21 +95,16 @@ watchEffect(() => {
 
 	// Recreate cache only if length changed
 	if (childModelsCache.value.length !== schema.length) {
-		childModelsCache.value = schema.map((val, i) => {
+		childModelsCache.value = schema.map((_val, i) => {
 			return computed({
 				get() {
-					return val.value
+					return dataModel.value?.[schema[i].fieldname]
 				},
 				set: newValue => {
 					const fieldname = schema[i].fieldname
-					// Find the component in schema and update it
-					// eslint-disable-next-line vue/no-mutating-props
-					schema[i].value = newValue
-					// Also sync to data model for two-way binding
 					if (fieldname && dataModel.value) {
 						dataModel.value[fieldname] = newValue
-						// Manually emit to trigger parent's update:data handler
-						emit('update:data', dataModel.value)
+						emit('update:data', { ...dataModel.value })
 					}
 					emit('update:schema', schema)
 				},

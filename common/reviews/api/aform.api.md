@@ -44,7 +44,6 @@ export { ATextInput }
 export type BaseSchema = {
     fieldname: string;
     component?: string;
-    value?: any;
 };
 
 // @public

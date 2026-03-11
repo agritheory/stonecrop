@@ -77,12 +77,6 @@ export type BaseSchema = {
 	 * @public
 	 */
 	component?: string
-
-	/**
-	 * A placeholder value for the field
-	 * @beta
-	 */
-	value?: any
 }
 
 /**

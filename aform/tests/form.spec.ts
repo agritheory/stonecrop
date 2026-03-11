@@ -29,19 +29,9 @@ describe('AForm Component', () => {
 		await aTextInputWrapper.find('input').setValue('Steve')
 		await wrapper.vm.$nextTick()
 
-		const updateEvents = wrapper.emitted('update:schema')
-		expect(updateEvents).toBeTruthy()
-		expect(updateEvents![0]).toEqual([
-			[
-				{
-					fieldname: 'first_name',
-					fieldtype: 'Data',
-					component: 'ATextInput',
-					label: 'First Name',
-					value: 'Steve',
-				},
-			],
-		])
+		const updateDataEvents = wrapper.emitted('update:data')
+		expect(updateDataEvents).toBeTruthy()
+		expect((updateDataEvents![updateDataEvents!.length - 1][0] as Record<string, any>).first_name).toBe('Steve')
 	})
 
 	it('should handle componentProps with rows data for nested tables', () => {
