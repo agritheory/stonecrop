@@ -41,4 +41,26 @@ describe('date component', () => {
 		await $input.trigger('click')
 		expect($input.element.showPicker).toBeUndefined()
 	})
+
+	it('formats date value on input change', async () => {
+		const wrapper = mount(ADate)
+		const $input = wrapper.find('input')
+		await $input.setValue('2023-06-15')
+		await wrapper.vm.$nextTick()
+		expect(($input.element as HTMLInputElement).value).toBe('2023-06-15')
+	})
+
+	it('renders in display mode with formatted date', () => {
+		const wrapper = mount(ADate, {
+			props: { modelValue: '2021-01-01', mode: 'display' },
+		})
+		expect(wrapper.find('input').exists()).toBe(false)
+		expect(wrapper.find('.aform_display-value').exists()).toBe(true)
+	})
+
+	it('renders in display mode with empty span when no value', () => {
+		const wrapper = mount(ADate, { props: { mode: 'display' } })
+		expect(wrapper.find('input').exists()).toBe(false)
+		expect(wrapper.find('.aform_display-value').text()).toBe('')
+	})
 })
