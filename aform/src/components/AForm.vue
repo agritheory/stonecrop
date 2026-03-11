@@ -10,9 +10,9 @@
 				</h4>
 				<AForm
 					:data="nestedData[componentObj.fieldname]"
-					@update:data="val => updateNestedData(componentObj.fieldname, val)"
+					:mode="resolvedMode(componentObj)"
 					:schema="componentObj.schema"
-					:mode="resolvedMode(componentObj)" />
+					@update:data="val => updateNestedData(componentObj.fieldname, val)" />
 			</div>
 
 			<!-- Regular field -->
@@ -36,7 +36,7 @@ import type { SchemaTypes, FormMode } from '../types'
 
 const emit = defineEmits(['update:schema', 'update:data'])
 const dataModel = defineModel<Record<string, any>>('data', { required: true })
-const { schema, mode } = defineProps<{ schema: SchemaTypes[]; mode?: FormMode }>()
+const { schema, mode = 'edit' } = defineProps<{ schema: SchemaTypes[]; mode?: FormMode }>()
 
 // Reactive nested data refs for two-way binding with nested AForm instances
 const nestedData = ref<Record<string, any>>({})
@@ -80,7 +80,7 @@ const componentProps = (componentObj: SchemaTypes) => {
 		// handle ATable data formats in case the table is nested under an AForm;
 		// when resolveSchema sets rows: [], this fallback routes data from dataModel[fieldname]
 		if (key === 'rows') {
-			if (!value || (Array.isArray(value) && (value as any[]).length === 0)) {
+			if (!value || (Array.isArray(value) && value.length === 0)) {
 				propsToPass['rows'] = dataModel.value[componentObj.fieldname] || []
 			}
 		}
@@ -92,7 +92,7 @@ const effectiveFormMode = computed<FormMode>(() => mode ?? 'edit')
 
 // Resolve the effective mode for a schema field, allowing per-field overrides
 function resolvedMode(componentObj: SchemaTypes): FormMode {
-	const fieldMode = (componentObj as any).mode as FormMode | undefined
+	const fieldMode = componentObj.mode
 	if (fieldMode) return fieldMode
 	return effectiveFormMode.value
 }

@@ -5,7 +5,7 @@
 			<CollapseButton v-if="collapsible" :collapsed="collapsed" />
 		</legend>
 		<slot :collapsed="collapsed">
-			<AForm v-show="!collapsed" :schema="formSchema" v-model:data="formData" :mode="mode" />
+			<AForm v-show="!collapsed" v-model:data="formData" :schema="formSchema" :mode="mode" />
 		</slot>
 	</fieldset>
 </template>
@@ -22,7 +22,7 @@ const {
 	label,
 	collapsible,
 	data = {},
-	mode,
+	mode = 'edit',
 } = defineProps<{
 	schema: SchemaTypes[]
 	label: string
