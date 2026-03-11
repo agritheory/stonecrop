@@ -60,7 +60,10 @@ const currentViewData = computed<Record<string, any>>({
 
 		try {
 			const record = stonecrop.value.getRecordById(currentDoctype.value, currentRecordId.value)
-			return record?.get('') || {}
+			// Return a plain shallow copy so AForm mutations don't propagate directly into
+			// the HST reactive object, which would bypass field-trigger diffing and cause
+			// setupDeepReactivity to fire triggers for all fields on every keystroke.
+			return { ...(record?.get('') || {}) }
 		} catch {
 			return {}
 		}
@@ -71,11 +74,14 @@ const currentViewData = computed<Record<string, any>>({
 		}
 
 		try {
-			// Update each field in HST, which will automatically trigger field actions
+			// Only update fields that actually changed to avoid triggering actions for unchanged fields
 			const hstStore = stonecrop.value.getStore()
 			for (const [fieldname, value] of Object.entries(newData)) {
 				const fieldPath = `${currentDoctype.value}.${currentRecordId.value}.${fieldname}`
-				hstStore.set(fieldPath, value)
+				const currentValue = hstStore.has(fieldPath) ? hstStore.get(fieldPath) : undefined
+				if (currentValue !== value) {
+					hstStore.set(fieldPath, value)
+				}
 			}
 		} catch (error) {
 			// eslint-disable-next-line no-console

@@ -549,6 +549,11 @@ class HSTProxy implements HSTNode {
 				return
 			}
 
+			// Skip triggering when the value did not actually change
+			if (Object.is(beforeValue, afterValue)) {
+				return
+			}
+
 			const pathSegments = fullPath.split('.')
 
 			// Only trigger field actions for actual field changes (at least 3 levels deep: doctype.recordId.fieldname)
