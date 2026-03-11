@@ -1,9 +1,14 @@
 <template>
-	<div v-on-click-outside="onClickOutside" class="autocomplete" :class="{ isOpen: dropdown.open }">
+	<div v-if="mode === 'display'" class="input-wrapper">
+		<span class="aform_display-value">{{ search ?? '' }}</span>
+		<label>{{ label }}</label>
+	</div>
+	<div v-else v-on-click-outside="onClickOutside" class="autocomplete" :class="{ isOpen: dropdown.open }">
 		<div class="input-wrapper">
 			<input
 				v-model="search"
 				type="text"
+				:disabled="mode === 'read'"
 				@input="filter"
 				@focus="openDropdown"
 				@keydown.down="selectNextResult"
@@ -33,17 +38,21 @@
 import { vOnClickOutside } from '@vueuse/components'
 import { reactive } from 'vue'
 
+import type { ComponentProps } from '../../types'
+
 const {
 	label,
 	items = [],
 	isAsync = false,
 	filterFunction = undefined,
-} = defineProps<{
-	label: string
-	items?: string[]
-	isAsync?: boolean
-	filterFunction?: (search: string) => string[] | Promise<string[]>
-}>()
+	mode,
+} = defineProps<
+	ComponentProps & {
+		items?: string[]
+		isAsync?: boolean
+		filterFunction?: (search: string) => string[] | Promise<string[]>
+	}
+>()
 const search = defineModel<string>()
 
 const dropdown = reactive({

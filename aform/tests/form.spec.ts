@@ -82,7 +82,7 @@ describe('AForm Component', () => {
 		expect(wrapperWithData.vm).toBeTruthy()
 	})
 
-	it('should handle readonly prop', () => {
+	it('should handle mode prop', () => {
 		const readonlyWrapper = mount(AForm, {
 			props: {
 				schema: [
@@ -94,7 +94,7 @@ describe('AForm Component', () => {
 					},
 				] as SchemaTypes[],
 				data: {},
-				readOnly: true,
+				mode: 'read',
 			},
 			components: {
 				ATextInput,

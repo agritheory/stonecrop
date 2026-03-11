@@ -12,7 +12,7 @@
 					:data="nestedData[componentObj.fieldname]"
 					@update:data="val => updateNestedData(componentObj.fieldname, val)"
 					:schema="componentObj.schema"
-					:read-only="readOnly || (componentObj as any).readOnly" />
+					:mode="resolvedMode(componentObj)" />
 			</div>
 
 			<!-- Regular field -->
@@ -22,7 +22,7 @@
 				v-model="childModels[key].value"
 				:schema="componentObj"
 				:data="dataModel[componentObj.fieldname]"
-				:read-only="readOnly"
+				:mode="resolvedMode(componentObj)"
 				v-bind="componentProps(componentObj)">
 			</component>
 		</template>
@@ -32,11 +32,11 @@
 <script setup lang="ts">
 import { computed, watchEffect, watch, ref } from 'vue'
 
-import type { SchemaTypes } from '../types'
+import type { SchemaTypes, FormMode } from '../types'
 
 const emit = defineEmits(['update:schema', 'update:data'])
 const dataModel = defineModel<Record<string, any>>('data', { required: true })
-const { schema, readOnly } = defineProps<{ schema: SchemaTypes[]; readOnly?: boolean }>()
+const { schema, mode } = defineProps<{ schema: SchemaTypes[]; mode?: FormMode }>()
 
 // Reactive nested data refs for two-way binding with nested AForm instances
 const nestedData = ref<Record<string, any>>({})
@@ -71,7 +71,9 @@ const updateNestedData = (fieldname: string, val: any) => {
 const componentProps = (componentObj: SchemaTypes) => {
 	const propsToPass: Record<string, any> = {}
 	for (const [key, value] of Object.entries(componentObj)) {
-		if (!['component', 'fieldtype'].includes(key)) {
+		// 'mode' is excluded here because it is handled by resolvedMode()
+		// and passed explicitly via :mode to avoid conflicting with the form-level defaults.
+		if (!['component', 'fieldtype', 'mode'].includes(key)) {
 			propsToPass[key] = value
 		}
 
@@ -84,6 +86,15 @@ const componentProps = (componentObj: SchemaTypes) => {
 		}
 	}
 	return propsToPass
+}
+
+const effectiveFormMode = computed<FormMode>(() => mode ?? 'edit')
+
+// Resolve the effective mode for a schema field, allowing per-field overrides
+function resolvedMode(componentObj: SchemaTypes): FormMode {
+	const fieldMode = (componentObj as any).mode as FormMode | undefined
+	if (fieldMode) return fieldMode
+	return effectiveFormMode.value
 }
 
 // Create stable computed refs array to avoid recreation on every access
@@ -144,6 +155,14 @@ const childModels = computed(() => childModelsCache.value)
 }
 .aform_input-field:focus {
 	outline: 1px solid var(--sc-input-active-border-color);
+}
+
+.aform_display-value {
+	display: block;
+	padding: 0.5rem;
+	min-height: 2rem;
+	color: var(--sc-cell-text-color);
+	word-break: break-word;
 }
 
 .aform_input-field:focus + .aform_field-label {

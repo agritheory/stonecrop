@@ -9,6 +9,9 @@
 </template>
 
 <script setup lang="ts">
+import type { ComponentProps } from '../../types'
+
 // TODO: change props from individual elements to the store object
-defineProps(['event', 'cellData', 'tableID'])
+// TODO: implement full mode/display support
+defineProps<ComponentProps & { event?: any; cellData?: any; tableID?: string }>()
 </script>

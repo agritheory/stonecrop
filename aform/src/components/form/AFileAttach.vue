@@ -1,20 +1,32 @@
 <template>
 	<div class="aform_form-element aform_file-attach aform__grid--full">
-		<template v-if="files">
-			<div class="aform_file-attach-feedback">
-				<p>
-					You have selected: <b>{{ fileLengthText }}</b>
-				</p>
-				<li v-for="file of files" :key="file.name">
-					{{ file.name }}
-				</li>
-			</div>
+		<template v-if="mode === 'display'">
+			<template v-if="files">
+				<div class="aform_file-attach-feedback">
+					<p>
+						<b>{{ fileLengthText }}</b>
+					</p>
+					<li v-for="file of files" :key="file.name">{{ file.name }}</li>
+				</div>
+			</template>
+			<span v-else class="aform_display-value">No file selected</span>
 		</template>
-
-		<button type="button" class="aform_form-btn" @click="open()">
-			{{ label }}
-		</button>
-		<button type="button" :disabled="!files" class="aform_form-btn" @click="reset()">Reset</button>
+		<template v-else>
+			<template v-if="files">
+				<div class="aform_file-attach-feedback">
+					<p>
+						You have selected: <b>{{ fileLengthText }}</b>
+					</p>
+					<li v-for="file of files" :key="file.name">
+						{{ file.name }}
+					</li>
+				</div>
+			</template>
+			<button type="button" class="aform_form-btn" :disabled="mode === 'read'" @click="open()">
+				{{ label }}
+			</button>
+			<button type="button" :disabled="!files || mode === 'read'" class="aform_form-btn" @click="reset()">Reset</button>
+		</template>
 	</div>
 </template>
 
@@ -22,11 +34,14 @@
 import { useFileDialog } from '@vueuse/core'
 import { computed } from 'vue'
 
-const { label } = defineProps<{ label: string }>()
+import type { ComponentProps } from '../../types'
+
+const { label, mode } = defineProps<ComponentProps>()
 const { files, open, reset, onChange } = useFileDialog()
 
 const fileLengthText = computed(() => {
-	return `${files.value.length} ${files.value.length === 1 ? 'file' : 'files'}`
+	const count = files.value?.length ?? 0
+	return `${count} ${count === 1 ? 'file' : 'files'}`
 })
 
 onChange(files => files)

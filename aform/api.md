@@ -122,6 +122,7 @@ Basic field structure for AForm schemas
 export type BaseSchema = {
     fieldname: string;
     component?: string;
+    mode?: FormMode;
 };
 ```
 
@@ -137,7 +138,7 @@ export type ComponentProps = {
     label?: string;
     mask?: string;
     required?: boolean;
-    readOnly?: boolean;
+    mode?: FormMode;
     uuid?: string;
     validation?: {
         errorMessage: string;
@@ -158,7 +159,6 @@ export type DoctypeSchema = BaseSchema & {
     options: string;
     label?: string;
     schema?: SchemaTypes[];
-    readOnly?: boolean;
 };
 ```
 
@@ -174,6 +174,16 @@ export type FieldsetSchema = BaseSchema & {
     schema?: (FormSchema | TableSchema)[];
     collapsible?: boolean;
 };
+```
+
+### FormMode
+
+The rendering mode for AForm components
+
+**Definition:**
+
+```typescript
+export type FormMode = 'edit' | 'read' | 'display';
 ```
 
 ### FormSchema
@@ -218,7 +228,6 @@ export type TableDoctypeSchema = BaseSchema & {
     columns?: TableColumn[];
     config?: TableConfig;
     rows?: TableRow[];
-    readOnly?: boolean;
 };
 ```
 

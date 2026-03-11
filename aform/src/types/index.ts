@@ -1,6 +1,12 @@
 import type { TableColumn, TableConfig, TableRow } from '@stonecrop/atable'
 
 /**
+ * The rendering mode for AForm components
+ * @public
+ */
+export type FormMode = 'edit' | 'read' | 'display'
+
+/**
  * Defined props for AForm components
  * @public
  */
@@ -30,10 +36,10 @@ export type ComponentProps = {
 	required?: boolean
 
 	/**
-	 * Indicate whether elements inside the component are read-only
+	 * The rendering mode for the component
 	 * @public
 	 */
-	readOnly?: boolean
+	mode?: FormMode
 
 	/**
 	 * Set a unique identifier for elements inside the component
@@ -77,6 +83,12 @@ export type BaseSchema = {
 	 * @public
 	 */
 	component?: string
+
+	/**
+	 * Per-field rendering mode override; takes precedence over the AForm-level `mode` prop
+	 * @public
+	 */
+	mode?: FormMode
 }
 
 /**
@@ -226,12 +238,6 @@ export type DoctypeSchema = BaseSchema & {
 	 * @public
 	 */
 	schema?: SchemaTypes[]
-
-	/**
-	 * Indicate whether the nested form is read-only
-	 * @public
-	 */
-	readOnly?: boolean
 }
 
 /**
@@ -285,12 +291,6 @@ export type TableDoctypeSchema = BaseSchema & {
 	 * @public
 	 */
 	rows?: TableRow[]
-
-	/**
-	 * Indicate whether the table is read-only
-	 * @public
-	 */
-	readOnly?: boolean
 }
 
 /**

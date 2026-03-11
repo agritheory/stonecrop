@@ -5,7 +5,7 @@
 			<CollapseButton v-if="collapsible" :collapsed="collapsed" />
 		</legend>
 		<slot :collapsed="collapsed">
-			<AForm v-show="!collapsed" :schema="formSchema" v-model:data="formData" />
+			<AForm v-show="!collapsed" :schema="formSchema" v-model:data="formData" :mode="mode" :read-only="readOnly" />
 		</slot>
 	</fieldset>
 </template>
@@ -15,18 +15,24 @@ import { ref } from 'vue'
 
 import CollapseButton from '../base/CollapseButton.vue'
 import AForm from '../AForm.vue'
-import { SchemaTypes } from '../../types'
+import type { SchemaTypes, FormMode } from '../../types'
 
 const {
 	schema,
 	label,
 	collapsible,
 	data = {},
+	mode,
+	readOnly,
 } = defineProps<{
 	schema: SchemaTypes[]
 	label: string
 	collapsible?: boolean
 	data?: Record<string, any>
+	/** Rendering mode forwarded to the inner AForm */
+	mode?: FormMode
+	/** @deprecated Use mode instead */
+	readOnly?: boolean
 }>()
 
 const collapsed = ref(false)

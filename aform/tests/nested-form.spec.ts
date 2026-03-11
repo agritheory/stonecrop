@@ -271,7 +271,7 @@ describe('AForm Nested Schema Rendering', () => {
 		expect(nestedSections.length).toBe(0)
 	})
 
-	it('passes readOnly to nested AForm', async () => {
+	it('passes mode to nested AForm', async () => {
 		const wrapper = mount(AForm, {
 			props: {
 				schema: nestedSchema,
@@ -279,7 +279,7 @@ describe('AForm Nested Schema Rendering', () => {
 					name: 'John',
 					address: { street: '123 Main St', city: 'Springfield' },
 				},
-				readOnly: true,
+				mode: 'read',
 			},
 			global: {
 				components: { ATextInput },
@@ -289,14 +289,14 @@ describe('AForm Nested Schema Rendering', () => {
 		await wrapper.vm.$nextTick()
 		await flushPromises()
 
-		// The nested AForm should receive readOnly
+		// The nested AForm should receive mode
 		const nestedForms = wrapper.findAllComponents(AForm)
 		if (nestedForms.length > 1) {
-			expect(nestedForms[1].props('readOnly')).toBe(true)
+			expect(nestedForms[1].props('mode')).toBe('read')
 		}
 	})
 
-	it('passes per-field readOnly to nested AForm', async () => {
+	it('passes per-field mode to nested AForm', async () => {
 		const schemaWithReadOnly: SchemaTypes[] = [
 			{
 				fieldname: 'name',
@@ -309,7 +309,7 @@ describe('AForm Nested Schema Rendering', () => {
 				fieldtype: 'Doctype',
 				options: 'address',
 				label: 'Address',
-				readOnly: true,
+				mode: 'read',
 				schema: addressSchema,
 			},
 		] as SchemaTypes[]
@@ -330,10 +330,10 @@ describe('AForm Nested Schema Rendering', () => {
 		await wrapper.vm.$nextTick()
 		await flushPromises()
 
-		// The nested AForm should receive readOnly from the field
+		// The nested AForm should receive mode from the field
 		const nestedForms = wrapper.findAllComponents(AForm)
 		if (nestedForms.length > 1) {
-			expect(nestedForms[1].props('readOnly')).toBe(true)
+			expect(nestedForms[1].props('mode')).toBe('read')
 		}
 	})
 

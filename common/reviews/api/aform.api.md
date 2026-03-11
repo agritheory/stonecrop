@@ -44,6 +44,7 @@ export { ATextInput }
 export type BaseSchema = {
     fieldname: string;
     component?: string;
+    mode?: FormMode;
 };
 
 // @public
@@ -52,7 +53,7 @@ export type ComponentProps = {
     label?: string;
     mask?: string;
     required?: boolean;
-    readOnly?: boolean;
+    mode?: FormMode;
     uuid?: string;
     validation?: {
         errorMessage: string;
@@ -66,7 +67,6 @@ export type DoctypeSchema = BaseSchema & {
     options: string;
     label?: string;
     schema?: SchemaTypes[];
-    readOnly?: boolean;
 };
 
 // @public
@@ -75,6 +75,9 @@ export type FieldsetSchema = BaseSchema & {
     schema?: (FormSchema | TableSchema)[];
     collapsible?: boolean;
 };
+
+// @public
+export type FormMode = 'edit' | 'read' | 'display';
 
 // @public
 export type FormSchema = BaseSchema & {
@@ -103,7 +106,6 @@ export type TableDoctypeSchema = BaseSchema & {
     columns?: TableColumn[];
     config?: TableConfig;
     rows?: TableRow[];
-    readOnly?: boolean;
 };
 
 // @public
