@@ -5,7 +5,7 @@
 			<CollapseButton v-if="collapsible" :collapsed="collapsed" />
 		</legend>
 		<slot :collapsed="collapsed">
-			<AForm v-show="!collapsed" :schema="formSchema" v-model:data="formData" :mode="mode" :read-only="readOnly" />
+			<AForm v-show="!collapsed" :schema="formSchema" v-model:data="formData" :mode="mode" />
 		</slot>
 	</fieldset>
 </template>
@@ -23,7 +23,6 @@ const {
 	collapsible,
 	data = {},
 	mode,
-	readOnly,
 } = defineProps<{
 	schema: SchemaTypes[]
 	label: string
@@ -31,8 +30,6 @@ const {
 	data?: Record<string, any>
 	/** Rendering mode forwarded to the inner AForm */
 	mode?: FormMode
-	/** @deprecated Use mode instead */
-	readOnly?: boolean
 }>()
 
 const collapsed = ref(false)

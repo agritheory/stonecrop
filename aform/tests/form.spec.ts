@@ -83,7 +83,7 @@ describe('AForm Component', () => {
 	})
 
 	it('should handle mode prop', () => {
-		const readonlyWrapper = mount(AForm, {
+		const modeWrapper = mount(AForm, {
 			props: {
 				schema: [
 					{
@@ -101,6 +101,6 @@ describe('AForm Component', () => {
 			},
 		})
 
-		expect(readonlyWrapper.vm).toBeTruthy()
+		expect(modeWrapper.vm).toBeTruthy()
 	})
 })

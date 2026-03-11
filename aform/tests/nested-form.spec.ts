@@ -297,7 +297,7 @@ describe('AForm Nested Schema Rendering', () => {
 	})
 
 	it('passes per-field mode to nested AForm', async () => {
-		const schemaWithReadOnly: SchemaTypes[] = [
+		const schemaWithMode: SchemaTypes[] = [
 			{
 				fieldname: 'name',
 				fieldtype: 'Data',
@@ -316,7 +316,7 @@ describe('AForm Nested Schema Rendering', () => {
 
 		const wrapper = mount(AForm, {
 			props: {
-				schema: schemaWithReadOnly,
+				schema: schemaWithMode,
 				data: {
 					name: 'John',
 					address: { street: '123 Main St', city: 'Springfield' },

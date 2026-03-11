@@ -97,7 +97,7 @@ AForm:
 │    <AForm                                                  │
 │      :schema="field.schema"                                │
 │      v-model:data="nestedData[field.fieldname]"            │
-│      :read-only="readOnly || field.readOnly"               │
+│      :mode="field.mode ?? mode"                            │
 │    />                                                      │
 │  </div>                                                    │
 │                                                            │
@@ -365,7 +365,7 @@ AForm detects nested schemas and renders recursively:
     <AForm
       v-model:data="nestedData[field.fieldname]"
       :schema="field.schema"
-      :read-only="readOnly || field.readOnly"
+      :mode="field.mode ?? mode"
     />
   </div>
 
