@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/desktop",
+      "comment": "adopt new AForm API",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/desktop"
+}
