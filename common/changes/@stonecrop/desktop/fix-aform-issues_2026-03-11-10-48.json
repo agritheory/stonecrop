@@ -2,8 +2,8 @@
   "changes": [
     {
       "packageName": "@stonecrop/desktop",
-      "comment": "adopt new AForm API",
-      "type": "minor"
+      "comment": "update eslint config",
+      "type": "patch"
     }
   ],
   "packageName": "@stonecrop/desktop"

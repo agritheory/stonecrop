@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/beam",
+      "comment": "update eslint config",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/beam"
+}

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/atable",
+      "comment": "update eslint config",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/atable"
+}
