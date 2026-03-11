@@ -278,4 +278,35 @@ describe('dropdown input component', () => {
 
 		expect(wrapper.vm).toBeTruthy()
 	})
+
+	it('pressing up with no selection jumps to last item', async () => {
+		const wrapper = mount(ADropdown, {
+			props: { modelValue: '', label: dropdownData.label, items: dropdownData.items },
+		})
+
+		const input = wrapper.find('input')
+		await input.trigger('focus')
+		await input.setValue('')
+		await flushPromises()
+		await wrapper.vm.$nextTick()
+
+		// activeItemIndex is null; pressing Up should set it to last index
+		await input.trigger('keydown.up')
+		await input.trigger('keydown.enter')
+		await wrapper.vm.$nextTick()
+
+		const updateEvents = wrapper.emitted('update:modelValue')
+		expect(updateEvents).toBeTruthy()
+		// last item in ['Apple', 'Orange', 'Pear', 'Kiwi', 'Grape'] is 'Grape'
+		const lastEvent = updateEvents![updateEvents!.length - 1]
+		expect(lastEvent).toEqual(['Grape'])
+	})
+
+	it('renders in display mode as text without input', () => {
+		const wrapper = mount(ADropdown, {
+			props: { modelValue: 'Apple', label: dropdownData.label, items: dropdownData.items, mode: 'display' },
+		})
+		expect(wrapper.find('input').exists()).toBe(false)
+		expect(wrapper.find('.aform_display-value').text()).toBe('Apple')
+	})
 })

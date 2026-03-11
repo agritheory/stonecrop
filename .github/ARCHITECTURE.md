@@ -79,7 +79,7 @@ HST Store
 - Field types: Data, Select, Currency, Quantity, Date, etc.
 - Validation and masking support
 - Nested fieldsets and tables within forms
-- Read-only and edit modes
+- Multi-mode forms: `edit` (fully interactive), `read` (disabled inputs), `display` (visual-only)
 
 #### 3. `@stonecrop/atable` (Table Components)
 **Purpose**: Advanced data table with spreadsheet-like functionality

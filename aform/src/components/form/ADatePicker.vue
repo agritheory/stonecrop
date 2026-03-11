@@ -1,5 +1,9 @@
 <template>
-	<div ref="datepicker" class="adatepicker" tabindex="0">
+	<template v-if="mode === 'display' || mode === 'read'">
+		<span class="aform_display-value">{{ date ? new Date(date).toLocaleDateString() : '' }}</span>
+		<label v-if="label">{{ label }}</label>
+	</template>
+	<div v-else ref="datepicker" class="adatepicker" tabindex="0">
 		<table>
 			<tbody>
 				<tr>
@@ -43,8 +47,12 @@
 import { defaultKeypressHandlers, useKeyboardNav } from '@stonecrop/utilities'
 import { computed, nextTick, onMounted, ref, useTemplateRef, watch } from 'vue'
 
+import type { ComponentProps } from '../../types'
+
 const numberOfRows = 6
 const numberOfColumns = 7
+
+const { mode, label } = defineProps<ComponentProps>()
 
 const date = defineModel<number | Date>({ default: new Date() })
 const selectedDate = ref(new Date(date.value))

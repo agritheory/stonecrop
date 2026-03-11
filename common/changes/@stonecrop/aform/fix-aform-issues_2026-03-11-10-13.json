@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/aform",
+      "comment": "separate data layer from the schema",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@stonecrop/aform"
+}

@@ -10,9 +10,9 @@
 				</h4>
 				<AForm
 					:data="nestedData[componentObj.fieldname]"
-					@update:data="val => updateNestedData(componentObj.fieldname, val)"
+					:mode="resolvedMode(componentObj)"
 					:schema="componentObj.schema"
-					:read-only="readOnly || (componentObj as any).readOnly" />
+					@update:data="val => updateNestedData(componentObj.fieldname, val)" />
 			</div>
 
 			<!-- Regular field -->
@@ -22,7 +22,7 @@
 				v-model="childModels[key].value"
 				:schema="componentObj"
 				:data="dataModel[componentObj.fieldname]"
-				:read-only="readOnly"
+				:mode="resolvedMode(componentObj)"
 				v-bind="componentProps(componentObj)">
 			</component>
 		</template>
@@ -32,11 +32,11 @@
 <script setup lang="ts">
 import { computed, watchEffect, watch, ref } from 'vue'
 
-import type { SchemaTypes } from '../types'
+import type { SchemaTypes, FormMode } from '../types'
 
 const emit = defineEmits(['update:schema', 'update:data'])
 const dataModel = defineModel<Record<string, any>>('data', { required: true })
-const { schema, readOnly } = defineProps<{ schema: SchemaTypes[]; readOnly?: boolean }>()
+const { schema, mode = 'edit' } = defineProps<{ schema: SchemaTypes[]; mode?: FormMode }>()
 
 // Reactive nested data refs for two-way binding with nested AForm instances
 const nestedData = ref<Record<string, any>>({})
@@ -64,38 +64,37 @@ const updateNestedData = (fieldname: string, val: any) => {
 	nestedData.value[fieldname] = val
 	if (dataModel.value) {
 		dataModel.value[fieldname] = val
-		emit('update:data', dataModel.value)
+		emit('update:data', { ...dataModel.value })
 	}
 }
-
-// Sync data values into schema immediately and on changes
-watchEffect(() => {
-	if (dataModel.value && schema) {
-		// Sync data values into schema
-		schema.forEach(field => {
-			if (field.fieldname && dataModel.value[field.fieldname] !== undefined) {
-				field.value = dataModel.value[field.fieldname]
-			}
-		})
-	}
-})
 
 const componentProps = (componentObj: SchemaTypes) => {
 	const propsToPass: Record<string, any> = {}
 	for (const [key, value] of Object.entries(componentObj)) {
-		if (!['component', 'fieldtype'].includes(key)) {
+		// 'mode' is excluded here because it is handled by resolvedMode()
+		// and passed explicitly via :mode to avoid conflicting with the form-level defaults.
+		if (!['component', 'fieldtype', 'mode'].includes(key)) {
 			propsToPass[key] = value
 		}
 
 		// handle ATable data formats in case the table is nested under an AForm;
 		// when resolveSchema sets rows: [], this fallback routes data from dataModel[fieldname]
 		if (key === 'rows') {
-			if (!value || (Array.isArray(value) && (value as any[]).length === 0)) {
+			if (!value || (Array.isArray(value) && value.length === 0)) {
 				propsToPass['rows'] = dataModel.value[componentObj.fieldname] || []
 			}
 		}
 	}
 	return propsToPass
+}
+
+const effectiveFormMode = computed<FormMode>(() => mode ?? 'edit')
+
+// Resolve the effective mode for a schema field, allowing per-field overrides
+function resolvedMode(componentObj: SchemaTypes): FormMode {
+	const fieldMode = componentObj.mode
+	if (fieldMode) return fieldMode
+	return effectiveFormMode.value
 }
 
 // Create stable computed refs array to avoid recreation on every access
@@ -107,21 +106,16 @@ watchEffect(() => {
 
 	// Recreate cache only if length changed
 	if (childModelsCache.value.length !== schema.length) {
-		childModelsCache.value = schema.map((val, i) => {
+		childModelsCache.value = schema.map((_val, i) => {
 			return computed({
 				get() {
-					return val.value
+					return dataModel.value?.[schema[i].fieldname]
 				},
 				set: newValue => {
 					const fieldname = schema[i].fieldname
-					// Find the component in schema and update it
-					// eslint-disable-next-line vue/no-mutating-props
-					schema[i].value = newValue
-					// Also sync to data model for two-way binding
 					if (fieldname && dataModel.value) {
 						dataModel.value[fieldname] = newValue
-						// Manually emit to trigger parent's update:data handler
-						emit('update:data', dataModel.value)
+						emit('update:data', { ...dataModel.value })
 					}
 					emit('update:schema', schema)
 				},
@@ -161,6 +155,14 @@ const childModels = computed(() => childModelsCache.value)
 }
 .aform_input-field:focus {
 	outline: 1px solid var(--sc-input-active-border-color);
+}
+
+.aform_display-value {
+	display: block;
+	padding: 0.5rem;
+	min-height: 2rem;
+	color: var(--sc-cell-text-color);
+	word-break: break-word;
 }
 
 .aform_input-field:focus + .aform_field-label {

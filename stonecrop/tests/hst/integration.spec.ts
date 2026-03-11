@@ -107,7 +107,6 @@ describe('HST Real Component Integration', () => {
 						<AForm
 							:schema="formSchema"
 							v-model:data="formData"
-							@update:schema="handleFormUpdate"
 						/>
 						<div class="debug-info">
 							<div>HST Data: {{ JSON.stringify(hstFormData) }}</div>
@@ -116,38 +115,18 @@ describe('HST Real Component Integration', () => {
 					</div>
 				`,
 				setup() {
-					const { formData, handleHSTChange, provideHSTPath, hstStore } = useStonecrop({
+					const { formData, hstStore } = useStonecrop({
 						doctype,
 						recordId: 'test-task',
 					})
 
-					// Create form schema that uses HST paths
-					const formSchema = ref(
-						doctype.schema?.toArray().map(field => ({
-							...field,
-							value: formData.value[field.fieldname] || getDefaultValue(field.fieldtype),
-						}))
-					)
-
-					const handleFormUpdate = (updatedSchema: SchemaTypes[]) => {
-						// Handle form updates by propagating to HST
-						updatedSchema.forEach(field => {
-							if (field.value !== undefined) {
-								const hstPath = provideHSTPath(field.fieldname)
-								handleHSTChange({
-									path: hstPath,
-									value: field.value,
-									fieldname: field.fieldname,
-								})
-							}
-						})
-					}
+					// Schema is purely structural — no value fields
+					const formSchema = ref(doctype.schema?.toArray().map(field => ({ ...field })))
 
 					return {
 						formSchema,
 						formData,
 						hstFormData: formData,
-						handleFormUpdate,
 						hstStore,
 					}
 				},
@@ -588,30 +567,3 @@ describe('HST Real Component Integration', () => {
 		})
 	})
 })
-
-/**
- * Helper function to get default values for different field types
- */
-function getDefaultValue(fieldtype?: string): any {
-	switch (fieldtype) {
-		case 'Data':
-		case 'Text':
-			return ''
-		case 'Int':
-		case 'Float':
-			return 0
-		case 'Check':
-			return false
-		case 'Date':
-		case 'Datetime':
-			return null
-		case 'Select':
-			return ''
-		case 'JSON':
-			return {}
-		case 'Table':
-			return []
-		default:
-			return null
-	}
-}

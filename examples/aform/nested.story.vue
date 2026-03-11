@@ -285,9 +285,6 @@ const HSTDemo = defineComponent({
 						h('div', { class: 'path-indicator' }, `HST Path: ${this.customerPath}`),
 						h(AForm, {
 							schema: this.resolvedSchema,
-							'onUpdate:schema': (val: any) => {
-								this.resolvedSchema = val
-							},
 							data: this.customerFormData,
 							'onUpdate:data': (val: any) => {
 								this.customerFormData = val
@@ -393,9 +390,6 @@ const AddressListDemo = defineComponent({
 			),
 			h(AForm, {
 				schema: this.resolvedSchema,
-				'onUpdate:schema': (val: any) => {
-					this.resolvedSchema = val
-				},
 				data: this.customerData,
 				'onUpdate:data': (val: any) => {
 					this.customerData = val
