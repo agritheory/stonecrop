@@ -4,7 +4,7 @@
 		<ActionSet :elements="actionElements" @action-click="handleActionClick" />
 
 		<!-- Main content using AForm -->
-		<AForm v-if="currentViewSchema.length > 0" :schema="currentViewSchema" v-model:data="currentViewData" />
+		<AForm v-if="currentViewSchema.length > 0" v-model:data="currentViewData" :schema="currentViewSchema" />
 		<div v-else-if="!stonecrop" class="loading"><p>Initializing Stonecrop...</p></div>
 		<div v-else class="loading">
 			<p>Loading {{ currentView }} data...</p>
@@ -412,7 +412,7 @@ const loadDoctypeMetadata = (doctype: string) => {
 	// The router should have already loaded the metadata, but this ensures the HST structure exists
 	try {
 		stonecrop.value.records(doctype)
-	} catch (error) {
+	} catch {
 		// Silent error handling - structure will be created if needed
 	}
 }
@@ -430,15 +430,6 @@ const getDoctypesSchema = (): SchemaTypes[] => {
 	}))
 
 	return [
-		{
-			fieldname: 'header',
-			component: 'div',
-			value: `
-				<div class="view-header">
-					<h1>Available Doctypes</h1>
-				</div>
-			`,
-		},
 		{
 			fieldname: 'doctypes_table',
 			component: 'ATable',
@@ -492,33 +483,9 @@ const getRecordsSchema = (): SchemaTypes[] => {
 	const records = getRecords()
 	const columns = getColumns()
 
-	// If no columns are available, show a loading or empty state
+	// If no columns are available, let the template fallback handle the loading state
 	if (columns.length === 0) {
-		return [
-			{
-				fieldname: 'header',
-				component: 'div',
-				value: `
-					<div class="view-header">
-						<nav class="breadcrumbs">
-							<a href="/">Home</a>
-							<span class="separator">/</span>
-							<span class="current">${formatDoctypeName(routeDoctype.value || currentDoctype.value)}</span>
-						</nav>
-						<h1>${formatDoctypeName(routeDoctype.value || currentDoctype.value)} Records</h1>
-					</div>
-				`,
-			},
-			{
-				fieldname: 'loading',
-				component: 'div',
-				value: `
-					<div class="loading-state">
-						<p>Loading ${formatDoctypeName(routeDoctype.value || currentDoctype.value)} schema...</p>
-					</div>
-				`,
-			},
-		]
+		return []
 	}
 
 	const rows = records.map((record: any) => ({
@@ -530,74 +497,32 @@ const getRecordsSchema = (): SchemaTypes[] => {
 
 	return [
 		{
-			fieldname: 'header',
-			component: 'div',
-			value: `
-				<div class="view-header">
-					<nav class="breadcrumbs">
-						<a href="/">Home</a>
-						<span class="separator">/</span>
-						<span class="current">${formatDoctypeName(routeDoctype.value || currentDoctype.value)}</span>
-					</nav>
-					<h1>${formatDoctypeName(routeDoctype.value || currentDoctype.value)} Records</h1>
-				</div>
-			`,
+			fieldname: 'records_table',
+			component: 'ATable',
+			columns: [
+				...columns.map(col => ({
+					label: col.label,
+					name: col.fieldname,
+					fieldtype: col.fieldtype,
+					align: 'left',
+					edit: false,
+					width: '20ch',
+				})),
+				{
+					label: 'Actions',
+					name: 'actions',
+					fieldtype: 'Data',
+					align: 'center',
+					edit: false,
+					width: '20ch',
+				},
+			] as TableColumn[],
+			config: {
+				view: 'list',
+				fullWidth: true,
+			} as TableConfig,
+			rows,
 		},
-		{
-			fieldname: 'actions',
-			component: 'div',
-			value: `
-				<div class="view-actions">
-					<button class="btn-primary" data-action="create">
-						New ${formatDoctypeName(routeDoctype.value || currentDoctype.value)}
-					</button>
-				</div>
-			`,
-		},
-		...(records.length === 0
-			? [
-					{
-						fieldname: 'empty_state',
-						component: 'div',
-						value: `
-							<div class="empty-state">
-								<p>No ${routeDoctype.value || currentDoctype.value} records found.</p>
-								<button class="btn-primary" data-action="create">
-									Create First Record
-								</button>
-							</div>
-						`,
-					},
-			  ]
-			: [
-					{
-						fieldname: 'records_table',
-						component: 'ATable',
-						columns: [
-							...columns.map(col => ({
-								label: col.label,
-								name: col.fieldname,
-								fieldtype: col.fieldtype,
-								align: 'left',
-								edit: false,
-								width: '20ch',
-							})),
-							{
-								label: 'Actions',
-								name: 'actions',
-								fieldtype: 'Data',
-								align: 'center',
-								edit: false,
-								width: '20ch',
-							},
-						] as TableColumn[],
-						config: {
-							view: 'list',
-							fullWidth: true,
-						} as TableConfig,
-						rows,
-					},
-			  ]),
 	]
 }
 
@@ -610,101 +535,14 @@ const getRecordFormSchema = (): SchemaTypes[] => {
 		const meta = registry?.registry[currentDoctype.value]
 
 		if (!meta?.schema) {
-			// Return loading state if schema isn't available yet
-			return [
-				{
-					fieldname: 'header',
-					component: 'div',
-					value: `
-						<div class="view-header">
-							<nav class="breadcrumbs">
-								<a href="/">Home</a>
-								<span class="separator">/</span>
-								<a href="/${routeDoctype.value || currentDoctype.value}">${formatDoctypeName(
-						routeDoctype.value || currentDoctype.value
-					)}</a>
-								<span class="separator">/</span>
-								<span class="current">${isNewRecord.value ? 'New Record' : currentRecordId.value}</span>
-							</nav>
-							<h1>${
-								isNewRecord.value
-									? `New ${formatDoctypeName(routeDoctype.value || currentDoctype.value)}`
-									: `Edit ${formatDoctypeName(routeDoctype.value || currentDoctype.value)}`
-							}</h1>
-						</div>
-					`,
-				},
-				{
-					fieldname: 'loading',
-					component: 'div',
-					value: `
-						<div class="loading-state">
-							<p>Loading ${formatDoctypeName(routeDoctype.value || currentDoctype.value)} form...</p>
-						</div>
-					`,
-				},
-			]
+			// Let the template fallback handle the loading state
+			return []
 		}
 
-		const schemaArray = 'toArray' in meta.schema ? meta.schema.toArray() : meta.schema
-		const currentRecord = getCurrentRecord()
-
-		return [
-			{
-				fieldname: 'header',
-				component: 'div',
-				value: `
-					<div class="view-header">
-						<nav class="breadcrumbs">
-							<a href="/">Home</a>
-							<span class="separator">/</span>
-							<a href="/${routeDoctype.value || currentDoctype.value}">${formatDoctypeName(
-					routeDoctype.value || currentDoctype.value
-				)}</a>
-							<span class="separator">/</span>
-							<span class="current">${isNewRecord.value ? 'New Record' : currentRecordId.value}</span>
-						</nav>
-						<h1>
-							${
-								isNewRecord.value
-									? `New ${formatDoctypeName(routeDoctype.value || currentDoctype.value)}`
-									: `Edit ${formatDoctypeName(routeDoctype.value || currentDoctype.value)}`
-							}
-						</h1>
-					</div>
-				`,
-			},
-			{
-				fieldname: 'actions',
-				component: 'div',
-				value: `
-					<div class="view-actions">
-						<button class="btn-primary" data-action="save" ${saving.value ? 'disabled' : ''}>
-							${saving.value ? 'Saving...' : 'Save'}
-						</button>
-						<button class="btn-secondary" data-action="cancel">Cancel</button>
-						${!isNewRecord.value ? '<button class="btn-danger" data-action="delete">Delete</button>' : ''}
-					</div>
-				`,
-			},
-			...schemaArray.map(field => ({
-				...field,
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-				value: currentRecord[field.fieldname] || '',
-			})),
-		]
-	} catch (error) {
-		return [
-			{
-				fieldname: 'error',
-				component: 'div',
-				value: `
-					<div class="error-state">
-						<p>Unable to load form schema for ${formatDoctypeName(routeDoctype.value || currentDoctype.value)}</p>
-					</div>
-				`,
-			},
-		]
+		// Data is provided via v-model:data="currentViewData" — no need to spread values into schema
+		return 'toArray' in meta.schema ? meta.schema.toArray() : meta.schema
+	} catch {
+		return []
 	}
 }
 
@@ -739,18 +577,11 @@ const getColumns = () => {
 				fieldtype: ('fieldtype' in field && field.fieldtype) || 'Data',
 			}))
 		}
-	} catch (error) {
+	} catch {
 		// Error getting schema - return empty array
 	}
 
 	return []
-}
-
-const getCurrentRecord = () => {
-	if (!stonecrop.value || !currentDoctype.value || isNewRecord.value) return {}
-
-	const record = stonecrop.value.getRecordById(currentDoctype.value, currentRecordId.value)
-	return record?.get('') || {}
 }
 
 // Schema for different views - defined here after all helper functions are available
@@ -769,7 +600,6 @@ const currentViewSchema = computed<SchemaTypes[]>(() => {
 
 // Action handlers (will be triggered by button clicks in the UI)
 const handleSave = async () => {
-	// eslint-disable-next-line no-console
 	if (!stonecrop.value) return
 
 	saving.value = true
@@ -808,7 +638,7 @@ const handleSave = async () => {
 				})
 			}
 		}
-	} catch (error) {
+	} catch {
 		// Silently handle error
 	} finally {
 		saving.value = false
@@ -836,8 +666,7 @@ const handleCancel = async () => {
 	}
 }
 
-const handleActionClick = (label: string, action: (() => void | Promise<void>) | undefined) => {
-	// eslint-disable-next-line no-console
+const handleActionClick = (_label: string, action: (() => void | Promise<void>) | undefined) => {
 	if (action) {
 		void action()
 	}
