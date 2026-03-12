@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/schema",
+      "comment": "update masking documentation",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/schema"
+}
