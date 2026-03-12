@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/code-editor",
+      "comment": "remove side effects from code editor",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/code-editor"
+}
