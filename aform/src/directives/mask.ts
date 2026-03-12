@@ -1,19 +1,5 @@
 import type { DirectiveBinding } from 'vue'
 
-import type { FormSchema } from '../types'
-
-/**
- * Named masks for common input types
- */
-const NAMED_MASKS = {
-	date: '##/##/####',
-	datetime: '####/##/## ##:##',
-	time: '##:##',
-	fulltime: '##:##:##',
-	phone: '(###) ### - ####',
-	card: '#### #### #### ####',
-}
-
 /**
  * Extracts a mask function from a stringified function
  * @param mask - Mask string
@@ -36,23 +22,15 @@ function extractMaskFn(mask: string): ((args: any) => string) | void {
  * @returns Mask string
  */
 function getMask(binding: DirectiveBinding<string>) {
-	let mask = binding.value
+	const mask = binding.value
+	if (!mask) return undefined
 
-	if (mask) {
-		const maskFn = extractMaskFn(mask)
-		if (maskFn) {
-			// TODO: (state) replace with state management;
-			// pass the entire form/table data to the function
-			const locale = binding.instance?.['locale']
-			mask = maskFn(locale)
-		}
-	} else {
-		// TODO: (state) handle using state management
-		const schema = binding.instance?.['schema'] as FormSchema
-		const fieldType: string | undefined = schema?.fieldtype?.toLowerCase()
-		if (fieldType && NAMED_MASKS[fieldType]) {
-			mask = NAMED_MASKS[fieldType]
-		}
+	const maskFn = extractMaskFn(mask)
+	if (maskFn) {
+		// TODO: (state) replace with state management;
+		// pass the entire form/table data to the function
+		const locale = binding.instance?.['locale']
+		return maskFn(locale) as string
 	}
 
 	return mask
