@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/aform",
+      "comment": "remove auto-masking from components",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/aform"
+}

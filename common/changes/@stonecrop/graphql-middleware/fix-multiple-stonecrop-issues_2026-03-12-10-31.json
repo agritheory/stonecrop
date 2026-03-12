@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/graphql-middleware",
+      "comment": "remove sideEffects to avoid tree-shaking",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/graphql-middleware"
+}
