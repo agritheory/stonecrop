@@ -1133,6 +1133,25 @@ new DoctypeMeta(doctype: string, schema: ImmutableDoctype['schema'], workflow: I
 | slug | `string` | Converts the registered doctype string to a slug (kebab-case). The following conversions are made: - It replaces camelCase and PascalCase with kebab-case strings - It replaces spaces and underscores with hyphens - It converts the string to lowercase |
 | workflow | `ImmutableDoctype['workflow']` | The doctype workflow |
 
+**Methods:**
+
+#### getAvailableTransitions
+
+Returns the transitions available from a given workflow state, derived from the doctype's XState workflow configuration.
+
+```typescript
+getAvailableTransitions(currentState: string): Array<{
+        name: string;
+        targetState: string;
+    }>
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| currentState | `string` | The state name to read transitions from |
+
 ### FieldTriggerEngine
 
 Field trigger execution engine integrated with Registry Singleton pattern following Registry implementation
@@ -1332,6 +1351,20 @@ addDoctype(doctype: DoctypeMeta): void
 |-----------|------|-------------|
 | doctype | `DoctypeMeta` | The doctype to fetch metadata for |
 
+#### getDoctype
+
+Get a registered doctype by slug
+
+```typescript
+getDoctype(slug: string): DoctypeMeta | undefined
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| slug | `string` | The doctype slug to look up |
+
 #### initializeRecord
 
 Initialize a new record with default values based on a schema.
@@ -1522,6 +1555,23 @@ getRecords(doctype: DoctypeMeta): Promise<void>
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | doctype | `DoctypeMeta` | The doctype |
+
+#### getRecordState
+
+Determine the current workflow state for a record.
+
+Reads the record's `status` field from the HST store. If the field is absent or empty the doctype's declared `workflow.initial` state is used as the fallback, giving callers a reliable state name without having to duplicate that logic.
+
+```typescript
+getRecordState(doctype: string | DoctypeMeta, recordId: string): string
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `string \| DoctypeMeta` | The doctype slug or DoctypeMeta instance |
+| recordId | `string` | The record identifier |
 
 #### getStore
 

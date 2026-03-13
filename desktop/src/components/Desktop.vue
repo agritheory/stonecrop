@@ -33,20 +33,58 @@
 <script setup lang="ts">
 import { useStonecrop } from '@stonecrop/stonecrop'
 import { AForm, type SchemaTypes, type TableColumn, type TableConfig } from '@stonecrop/aform'
-import { computed, nextTick, onMounted, provide, ref, unref, watch } from 'vue'
+import { computed, onMounted, provide, ref, unref, watch } from 'vue'
 
 import ActionSet from './ActionSet.vue'
 import SheetNav from './SheetNav.vue'
 import CommandPalette from './CommandPalette.vue'
-import type { ActionElements } from '../types'
+import type {
+	ActionElements,
+	RouteAdapter,
+	NavigationTarget,
+	ActionEventPayload,
+	RecordOpenEventPayload,
+} from '../types'
 
-const { availableDoctypes = [] } = defineProps<{ availableDoctypes?: string[] }>()
+const props = defineProps<{
+	availableDoctypes?: string[]
+	/**
+	 * Pluggable router adapter. When provided, Desktop uses these functions for all
+	 * routing instead of reaching into the registry's internal Vue Router instance.
+	 * Nuxt hosts (or any host with custom route conventions) should supply this.
+	 */
+	routeAdapter?: RouteAdapter
+	/**
+	 * Replacement for the native `confirm()` dialog. Desktop calls this before
+	 * performing a destructive action. Return `true` to proceed.
+	 * Defaults to the native `window.confirm` if omitted.
+	 */
+	confirmFn?: (message: string) => boolean | Promise<boolean>
+}>()
+
+const emit = defineEmits<{
+	/**
+	 * Fired when the user triggers an FSM transition (action button click).
+	 * The host app is responsible for calling the server, persisting state, etc.
+	 */
+	action: [payload: ActionEventPayload]
+	/**
+	 * Fired when Desktop wants to navigate to a different view.
+	 * Also calls routeAdapter.navigate() if an adapter is provided.
+	 */
+	navigate: [target: NavigationTarget]
+	/**
+	 * Fired when the user opens a specific record.
+	 */
+	'record:open': [payload: RecordOpenEventPayload]
+}>()
+
+const { availableDoctypes = [] } = props
 
 const { stonecrop } = useStonecrop()
 
 // State
 const loading = ref(false)
-const saving = ref(false)
 const commandPaletteOpen = ref(false)
 
 // HST-based form data management - field triggers are handled automatically by HST
@@ -90,12 +128,12 @@ const currentViewData = computed<Record<string, any>>({
 	},
 })
 
-// HST-based form data management - field triggers are handled automatically by HST
-
-// Computed properties for current route context
-const route = computed(() => unref(stonecrop.value?.registry.router?.currentRoute))
-const router = computed(() => stonecrop.value?.registry.router)
+// Computed properties for current route context.
+// When a routeAdapter is provided it takes full precedence over the registry's internal router.
+const route = computed(() => (props.routeAdapter ? null : unref(stonecrop.value?.registry.router?.currentRoute)))
+const router = computed(() => (props.routeAdapter ? null : stonecrop.value?.registry.router))
 const currentDoctype = computed(() => {
+	if (props.routeAdapter) return props.routeAdapter.getCurrentDoctype()
 	if (!route.value) return ''
 
 	// First check if we have actualDoctype in meta (from registered routes)
@@ -119,6 +157,7 @@ const currentDoctype = computed(() => {
 
 // The route doctype for display and navigation (e.g., 'todo')
 const routeDoctype = computed(() => {
+	if (props.routeAdapter) return props.routeAdapter.getCurrentDoctype()
 	if (!route.value) return ''
 
 	// Check route meta first
@@ -141,6 +180,7 @@ const routeDoctype = computed(() => {
 })
 
 const currentRecordId = computed(() => {
+	if (props.routeAdapter) return props.routeAdapter.getCurrentRecordId()
 	if (!route.value) return ''
 
 	// For named routes, use params.recordId
@@ -160,6 +200,7 @@ const isNewRecord = computed(() => currentRecordId.value?.startsWith('new-'))
 
 // Determine current view based on route
 const currentView = computed(() => {
+	if (props.routeAdapter) return props.routeAdapter.getCurrentView()
 	if (!route.value) {
 		return 'doctypes'
 	}
@@ -190,58 +231,39 @@ const currentView = computed(() => {
 })
 
 // Computed properties (now that all helper functions are defined)
-// Helper function to get available transitions for current record
+// Helper function to get available transitions for current record.
+// Reads the actual FSM state from the record's `status` field (or falls back to the
+// workflow initial state) so the available action buttons always reflect reality.
 const getAvailableTransitions = () => {
 	if (!stonecrop.value || !currentDoctype.value || !currentRecordId.value) {
 		return []
 	}
 
 	try {
-		const registry = stonecrop.value.registry
-		const meta = registry.registry[currentDoctype.value]
+		const meta = stonecrop.value.registry.getDoctype(currentDoctype.value)
+		if (!meta?.workflow) return []
 
-		if (!meta?.workflow?.states) {
-			return []
-		}
+		// Delegate state resolution to Stonecrop — reads record 'status', falls back to workflow.initial
+		const currentState = stonecrop.value.getRecordState(currentDoctype.value, currentRecordId.value)
 
-		// Get current FSM state (for now, use workflow initial state or 'editing')
-		// In a full implementation, this would track actual FSM state
-		const currentState = isNewRecord.value ? 'creating' : 'editing'
-		const stateConfig = meta.workflow.states[currentState]
+		// Delegate transition lookup to DoctypeMeta — no more manual workflow introspection
+		const transitions = meta.getAvailableTransitions(currentState)
 
-		if (!stateConfig?.on) {
-			return []
-		}
+		const recordData = currentViewData.value || {}
 
-		// Get available transitions from current state
-		const transitions = Object.keys(stateConfig.on)
-
-		// Create action elements for each transition
-		const actionElements = transitions.map(transition => {
-			const targetState = stateConfig.on?.[transition]
-			const targetStateName = typeof targetState === 'string' ? targetState : 'unknown'
-
-			const actionFn = async () => {
-				const node = stonecrop.value?.getRecordById(currentDoctype.value, currentRecordId.value)
-				if (node) {
-					const recordData = currentViewData.value || {}
-					await node.triggerTransition(transition, {
-						currentState,
-						targetState: targetStateName,
-						fsmContext: recordData,
-					})
-				}
-			}
-
-			const element = {
-				label: `${transition} (→ ${targetStateName})`,
-				action: actionFn,
-			}
-
-			return element
-		})
-
-		return actionElements
+		// Each transition emits an 'action' event. The host app decides what to do
+		// (call the server, trigger an FSM actor, update HST, etc.).
+		return transitions.map(({ name, targetState }) => ({
+			label: `${name} (→ ${targetState})`,
+			action: () => {
+				emit('action', {
+					name,
+					doctype: currentDoctype.value,
+					recordId: currentRecordId.value,
+					data: recordData,
+				})
+			},
+		}))
 	} catch (error) {
 		// eslint-disable-next-line no-console
 		console.warn('Error getting available transitions:', error)
@@ -249,40 +271,20 @@ const getAvailableTransitions = () => {
 	}
 }
 
-// New component reactive properties// New component reactive properties
 const actionElements = computed<ActionElements[]>(() => {
 	const elements: ActionElements[] = []
 
 	switch (currentView.value) {
-		case 'doctypes':
+		case 'records':
 			elements.push({
 				type: 'button',
-				label: 'Refresh',
-				action: () => {
-					// Refresh doctypes
-					window.location.reload()
-				},
+				label: 'New Record',
+				action: () => void createNewRecord(),
 			})
 			break
-		case 'records':
-			elements.push(
-				{
-					type: 'button',
-					label: 'New Record',
-					action: () => void createNewRecord(),
-				},
-				{
-					type: 'button',
-					label: 'Refresh',
-					action: () => {
-						// Refresh records
-						window.location.reload()
-					},
-				}
-			)
-			break
 		case 'record': {
-			// Add XState Transitions dropdown for record view
+			// Populate the Actions dropdown with every FSM transition available in the
+			// record's current state.  Clicking a transition emits 'action'.
 			const transitionActions = getAvailableTransitions()
 			if (transitionActions.length > 0) {
 				elements.push({
@@ -307,10 +309,13 @@ const navigationBreadcrumbs = computed(() => {
 			{ title: formatDoctypeName(routeDoctype.value), to: `/${routeDoctype.value}` }
 		)
 	} else if (currentView.value === 'record' && routeDoctype.value) {
+		const recordPath = currentRecordId.value
+			? `/${routeDoctype.value}/${currentRecordId.value}`
+			: route.value?.fullPath ?? ''
 		breadcrumbs.push(
 			{ title: 'Home', to: '/' },
 			{ title: formatDoctypeName(routeDoctype.value), to: `/${routeDoctype.value}` },
-			{ title: isNewRecord.value ? 'New Record' : 'Edit Record', to: route.value?.fullPath || '' }
+			{ title: isNewRecord.value ? 'New Record' : 'Edit Record', to: recordPath }
 		)
 	}
 
@@ -329,7 +334,7 @@ const searchCommands = (query: string): Command[] => {
 		{
 			title: 'Go Home',
 			description: 'Navigate to the home page',
-			action: () => void router.value?.push('/'),
+			action: () => void doNavigate({ view: 'doctypes' }),
 		},
 		{
 			title: 'Toggle Command Palette',
@@ -343,7 +348,7 @@ const searchCommands = (query: string): Command[] => {
 		commands.push({
 			title: `View ${formatDoctypeName(routeDoctype.value)} Records`,
 			description: `Navigate to ${routeDoctype.value} list`,
-			action: () => void router.value?.push(`/${routeDoctype.value}`),
+			action: () => void doNavigate({ view: 'records', doctype: routeDoctype.value }),
 		})
 
 		commands.push({
@@ -358,7 +363,7 @@ const searchCommands = (query: string): Command[] => {
 		commands.push({
 			title: `View ${formatDoctypeName(doctype)}`,
 			description: `Navigate to ${doctype} list`,
-			action: () => void router.value?.push(`/${doctype}`),
+			action: () => void doNavigate({ view: 'records', doctype }),
 		})
 	})
 
@@ -391,30 +396,36 @@ const getRecordCount = (doctype: string): number => {
 	return recordIds.length
 }
 
+// Internal navigation helper: emits 'navigate', then calls the adapter (if any)
+// or falls back to the registry's Vue Router instance.
+const doNavigate = async (target: NavigationTarget) => {
+	emit('navigate', target)
+	if (props.routeAdapter) {
+		await props.routeAdapter.navigate(target)
+	} else {
+		if (target.view === 'doctypes') {
+			await router.value?.push('/')
+		} else if (target.view === 'records' && target.doctype) {
+			await router.value?.push(`/${target.doctype}`)
+		} else if (target.view === 'record' && target.doctype && target.recordId) {
+			await router.value?.push(`/${target.doctype}/${target.recordId}`)
+		}
+	}
+}
+
 const navigateToDoctype = async (doctype: string) => {
-	await router.value?.push(`/${doctype}`)
+	await doNavigate({ view: 'records', doctype })
 }
 
 const openRecord = async (recordId: string) => {
-	await router.value?.push(`/${routeDoctype.value}/${recordId}`)
+	const doctype = routeDoctype.value
+	emit('record:open', { doctype, recordId })
+	await doNavigate({ view: 'record', doctype, recordId })
 }
 
 const createNewRecord = async () => {
 	const newId = `new-${Date.now()}`
-	await router.value?.push(`/${routeDoctype.value}/${newId}`)
-}
-
-// Doctype metadata loader - simplified since router handles most of this
-const loadDoctypeMetadata = (doctype: string) => {
-	if (!stonecrop.value) return
-
-	// Ensure the doctype structure exists in HST
-	// The router should have already loaded the metadata, but this ensures the HST structure exists
-	try {
-		stonecrop.value.records(doctype)
-	} catch {
-		// Silent error handling - structure will be created if needed
-	}
+	await doNavigate({ view: 'record', doctype: routeDoctype.value, recordId: newId })
 }
 
 // Schema generator functions - moved here to be available to computed properties
@@ -598,101 +609,30 @@ const currentViewSchema = computed<SchemaTypes[]>(() => {
 	}
 })
 
-// Action handlers (will be triggered by button clicks in the UI)
-const handleSave = async () => {
-	if (!stonecrop.value) return
-
-	saving.value = true
-
-	try {
-		const formData = currentViewData.value || {}
-
-		if (isNewRecord.value) {
-			const newId = `record-${Date.now()}`
-			const recordData = { id: newId, ...formData }
-
-			stonecrop.value.addRecord(currentDoctype.value, newId, recordData)
-
-			// Trigger SAVE transition for new record
-			const node = stonecrop.value.getRecordById(currentDoctype.value, newId)
-			if (node) {
-				await node.triggerTransition('SAVE', {
-					currentState: 'creating',
-					targetState: 'saved',
-					fsmContext: recordData,
-				})
-			}
-
-			await router.value?.replace(`/${routeDoctype.value}/${newId}`)
-		} else {
-			const recordData = { id: currentRecordId.value, ...formData }
-			stonecrop.value.addRecord(currentDoctype.value, currentRecordId.value, recordData)
-
-			// Trigger SAVE transition for existing record
-			const node = stonecrop.value.getRecordById(currentDoctype.value, currentRecordId.value)
-			if (node) {
-				await node.triggerTransition('SAVE', {
-					currentState: 'editing',
-					targetState: 'saved',
-					fsmContext: recordData,
-				})
-			}
-		}
-	} catch {
-		// Silently handle error
-	} finally {
-		saving.value = false
-	}
-}
-
-const handleCancel = async () => {
-	if (isNewRecord.value) {
-		// For new records, we don't have a specific record node yet
-		// Just navigate back without triggering transition
-		await router.value?.push(`/${routeDoctype.value}`)
-	} else {
-		// Trigger CANCEL transition for existing record
-		if (stonecrop.value) {
-			const node = stonecrop.value.getRecordById(currentDoctype.value, currentRecordId.value)
-			if (node) {
-				await node.triggerTransition('CANCEL', {
-					currentState: 'editing',
-					targetState: 'cancelled',
-				})
-			}
-		}
-		// Reload current record data
-		loadRecordData()
-	}
-}
-
 const handleActionClick = (_label: string, action: (() => void | Promise<void>) | undefined) => {
 	if (action) {
 		void action()
 	}
 }
 
+// Desktop does NOT own the delete lifecycle — it asks for confirmation, then emits
+// an 'action' event.  The host app is responsible for removing the record from HST
+// and calling the server.
 const handleDelete = async (recordId?: string) => {
-	if (!stonecrop.value) return
-
 	const targetRecordId = recordId || currentRecordId.value
 	if (!targetRecordId) return
 
-	if (confirm('Are you sure you want to delete this record?')) {
-		// Trigger DELETE transition before removing
-		const node = stonecrop.value.getRecordById(currentDoctype.value, targetRecordId)
-		if (node) {
-			await node.triggerTransition('DELETE', {
-				currentState: 'editing',
-				targetState: 'deleted',
-			})
-		}
+	const confirmed = props.confirmFn
+		? await props.confirmFn('Are you sure you want to delete this record?')
+		: confirm('Are you sure you want to delete this record?')
 
-		stonecrop.value.removeRecord(currentDoctype.value, targetRecordId)
-
-		if (currentView.value === 'record') {
-			await router.value?.push(`/${routeDoctype.value}`)
-		}
+	if (confirmed) {
+		emit('action', {
+			name: 'DELETE',
+			doctype: currentDoctype.value,
+			recordId: targetRecordId,
+			data: currentViewData.value || {},
+		})
 	}
 }
 
@@ -701,21 +641,8 @@ const handleClick = async (event: Event) => {
 	const target = event.target as HTMLElement
 	const action = target.getAttribute('data-action')
 
-	if (action) {
-		switch (action) {
-			case 'create':
-				await createNewRecord()
-				break
-			case 'save':
-				await handleSave()
-				break
-			case 'cancel':
-				await handleCancel()
-				break
-			case 'delete':
-				await handleDelete()
-				break
-		}
+	if (action === 'create') {
+		await createNewRecord()
 	}
 
 	// Handle table cell clicks for actions
@@ -758,6 +685,26 @@ const handleClick = async (event: Event) => {
 	}
 }
 
+const loadRecordData = () => {
+	if (!stonecrop.value || !currentDoctype.value) return
+
+	loading.value = true
+
+	try {
+		if (!isNewRecord.value) {
+			// For existing records, ensure the record exists in HST.
+			// The computed currentViewData will automatically read from HST.
+			stonecrop.value.getRecordById(currentDoctype.value, currentRecordId.value)
+		}
+		// For new records, currentViewData computed property will return {} automatically.
+	} catch (error) {
+		// eslint-disable-next-line no-console
+		console.warn('Error loading record data:', error)
+	} finally {
+		loading.value = false
+	}
+}
+
 // Watch for route changes to load appropriate data
 watch(
 	[currentView, currentDoctype, currentRecordId],
@@ -769,73 +716,32 @@ watch(
 	{ immediate: true }
 )
 
-// Watch for Stonecrop instance to become available
-watch(
-	stonecrop,
-	newStonecrop => {
-		if (newStonecrop) {
-			// Force a re-evaluation of the current view schema when Stonecrop becomes available
-			// This is handled automatically by the reactive computed properties
-		}
-	},
-	{ immediate: true }
-)
+// Stonecrop reactive computed properties update automatically when the instance
+// becomes available — no manual watcher needed.
 
-// Watch for when we need to load data for records view
-watch(
-	[currentView, currentDoctype, stonecrop],
-	([view, doctype, stonecropInstance]) => {
-		if (view === 'records' && doctype && stonecropInstance) {
-			// Ensure doctype metadata is loaded
-			loadDoctypeMetadata(doctype)
-		}
-	},
-	{ immediate: true }
-)
-
-const loadRecordData = () => {
-	if (!stonecrop.value || !currentDoctype.value) return
-
-	loading.value = true
-
-	try {
-		if (!isNewRecord.value) {
-			// For existing records, ensure the record exists in HST
-			// The computed currentViewData will automatically read from HST
-			stonecrop.value.getRecordById(currentDoctype.value, currentRecordId.value)
-		}
-		// For new records, currentViewData computed property will return {} automatically
-	} catch (error) {
-		// eslint-disable-next-line no-console
-		console.warn('Error loading record data:', error)
-	} finally {
-		loading.value = false
-	}
-}
-
-// Provide methods for action components
+// Provide navigation helpers and an emitAction convenience function to child components.
 const desktopMethods = {
 	navigateToDoctype,
 	openRecord,
 	createNewRecord,
-	handleSave,
-	handleCancel,
 	handleDelete,
+	/**
+	 * Convenience wrapper so child components (e.g. slot content) can emit
+	 * an action event without needing a direct reference to the emit function.
+	 */
+	emitAction: (name: string, data?: Record<string, any>) => {
+		emit('action', {
+			name,
+			doctype: currentDoctype.value,
+			recordId: currentRecordId.value,
+			data: data ?? currentViewData.value ?? {},
+		})
+	},
 }
 
 provide('desktopMethods', desktopMethods)
 
-// Register action components in Vue app
 onMounted(() => {
-	// Wait a tick for stonecrop to be ready, then load initial data
-	void nextTick(() => {
-		if (currentView.value === 'records' && currentDoctype.value && stonecrop.value) {
-			loadDoctypeMetadata(currentDoctype.value)
-		}
-	})
-
-	// Components will be automatically registered via the global component system
-
 	// Add keyboard shortcuts
 	const handleKeydown = (event: KeyboardEvent) => {
 		// Ctrl+K or Cmd+K to open command palette

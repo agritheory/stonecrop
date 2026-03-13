@@ -73,6 +73,10 @@ export class DoctypeMeta {
     readonly actions: ImmutableDoctype['actions'];
     readonly component?: Component;
     readonly doctype: string;
+    getAvailableTransitions(currentState: string): Array<{
+        name: string;
+        targetState: string;
+    }>;
     readonly schema: ImmutableDoctype['schema'];
     get slug(): string;
     readonly workflow: ImmutableDoctype['workflow'];
@@ -335,6 +339,7 @@ export function registerTransitionAction(name: string, fn: TransitionActionFunct
 export class Registry {
     constructor(router?: Router, getMeta?: (routeContext: RouteContext) => DoctypeMeta | Promise<DoctypeMeta>);
     addDoctype(doctype: DoctypeMeta): void;
+    getDoctype(slug: string): DoctypeMeta | undefined;
     getMeta?: (routeContext: RouteContext) => DoctypeMeta | Promise<DoctypeMeta>;
     initializeRecord(schema: SchemaTypes[]): Record<string, any>;
     readonly name: string;
@@ -635,6 +640,7 @@ export class Stonecrop {
     getRecordById(doctype: string | DoctypeMeta, recordId: string): HSTNode | undefined;
     getRecordIds(doctype: string | DoctypeMeta): string[];
     getRecords(doctype: DoctypeMeta): Promise<void>;
+    getRecordState(doctype: string | DoctypeMeta, recordId: string): string;
     getStore(): HSTNode;
     records(doctype: string | DoctypeMeta): HSTNode;
     readonly registry: Registry;

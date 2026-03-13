@@ -65,6 +65,32 @@ export default class DoctypeMeta {
 	}
 
 	/**
+	 * Returns the transitions available from a given workflow state, derived from the
+	 * doctype's XState workflow configuration.
+	 *
+	 * @param currentState - The state name to read transitions from
+	 * @returns Array of transition descriptors with `name` and `targetState`
+	 *
+	 * @example
+	 * ```ts
+	 * const transitions = doctype.getAvailableTransitions('draft')
+	 * // [{ name: 'SUBMIT', targetState: 'submitted' }]
+	 * ```
+	 *
+	 * @public
+	 */
+	getAvailableTransitions(currentState: string): Array<{ name: string; targetState: string }> {
+		const states = this.workflow?.states
+		if (!states) return []
+		const stateConfig = states[currentState]
+		if (!stateConfig?.on) return []
+		return Object.entries(stateConfig.on).map(([name, target]) => ({
+			name,
+			targetState: typeof target === 'string' ? target : 'unknown',
+		}))
+	}
+
+	/**
 	 * Converts the registered doctype string to a slug (kebab-case). The following conversions are made:
 	 * - It replaces camelCase and PascalCase with kebab-case strings
 	 * - It replaces spaces and underscores with hyphens
