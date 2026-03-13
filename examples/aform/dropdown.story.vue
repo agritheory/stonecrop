@@ -4,13 +4,13 @@
 			<!-- normal dropdown story -->
 			<ADropdown
 				data-theme="purple"
-				:items="dropdown_data.items"
+				:options="dropdown_data.items"
 				v-model="dropdown_data.value"
 				:label="dropdown_data.label" />
 
 			<!-- dropdown with API request simulation -->
 			<ADropdown
-				:items="async_dropdown_data.items"
+				:options="async_dropdown_data.items"
 				v-model="async_dropdown_data.value"
 				:label="async_dropdown_data.label"
 				:isAsync="true"
@@ -18,7 +18,7 @@
 
 			<!-- dropdown with custom filtering logic -->
 			<ADropdown
-				:items="custom_filter_dropdown_data.items"
+				:options="custom_filter_dropdown_data.items"
 				v-model="custom_filter_dropdown_data.value"
 				:label="custom_filter_dropdown_data.label"
 				:isAsync="false"

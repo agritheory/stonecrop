@@ -68,7 +68,7 @@ export const TYPE_MAP: Record<StonecropFieldType, FieldTemplate> = {
 	Check: { component: 'ACheckbox', fieldtype: 'Check' },
 
 	// Date/Time
-	Date: { component: 'ADatePicker', fieldtype: 'Date' },
+	Date: { component: 'ADate', fieldtype: 'Date' },
 	Time: { component: 'ATimeInput', fieldtype: 'Time' },
 	Datetime: { component: 'ADatetimePicker', fieldtype: 'Datetime' },
 	Duration: { component: 'ADurationInput', fieldtype: 'Duration' },

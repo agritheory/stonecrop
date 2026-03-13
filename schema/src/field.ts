@@ -109,7 +109,14 @@ export const FieldMeta = z.object({
 	 */
 	options: FieldOptions.optional(),
 
-	/** Input mask pattern (e.g., "##/##/####" for dates) */
+	/**
+	 * Input mask pattern. Accepts either a plain mask string or a stringified
+	 * arrow function that receives `locale` and returns a mask string.
+	 *
+	 * Plain pattern: `"##/##/####"`
+	 *
+	 * Function pattern: `"(locale) => locale === 'en-US' ? '(###) ###-####' : '####-######'"`
+	 */
 	mask: z.string().optional(),
 
 	// === VALIDATION ===
