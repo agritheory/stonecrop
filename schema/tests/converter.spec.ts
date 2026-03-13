@@ -118,7 +118,7 @@ describe('WELL_KNOWN_SCALARS', () => {
 		expect(WELL_KNOWN_SCALARS.UUID).toEqual({ component: 'ATextInput', fieldtype: 'Data' })
 		expect(WELL_KNOWN_SCALARS.DateTime).toEqual({ component: 'ADatetimePicker', fieldtype: 'Datetime' })
 		expect(WELL_KNOWN_SCALARS.Datetime).toEqual({ component: 'ADatetimePicker', fieldtype: 'Datetime' })
-		expect(WELL_KNOWN_SCALARS.Date).toEqual({ component: 'ADatePicker', fieldtype: 'Date' })
+		expect(WELL_KNOWN_SCALARS.Date).toEqual({ component: 'ADate', fieldtype: 'Date' })
 		expect(WELL_KNOWN_SCALARS.Time).toEqual({ component: 'ATimeInput', fieldtype: 'Time' })
 		expect(WELL_KNOWN_SCALARS.JSON).toEqual({ component: 'ACodeEditor', fieldtype: 'JSON' })
 		expect(WELL_KNOWN_SCALARS.BigInt).toEqual({ component: 'ANumericInput', fieldtype: 'Int' })
