@@ -13,7 +13,7 @@ vi.mock('nuxt/app', () => ({
 }))
 
 import { useNuxtApp } from 'nuxt/app'
-import { useStonecropRegistry } from '../src/runtime/composables/useStonecropRegistry'
+import { useStonecropRegistry } from '../src/runtime/app/composables/useStonecropRegistry'
 
 // ---------------------------------------------------------------------------
 // Helpers

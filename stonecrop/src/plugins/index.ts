@@ -88,6 +88,7 @@ const plugin: Plugin = {
 			}
 		} catch (error) {
 			// Pinia not available - operation log won't work, but app should still function
+			// eslint-disable-next-line no-console
 			console.warn('Pinia not available - operation log features will be disabled:', error)
 		}
 

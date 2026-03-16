@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs'
 import { readFile, readdir } from 'node:fs/promises'
 import { extname } from 'node:path'
 import {
-	addImports,
+	addImportsDir,
 	addLayout,
 	addPlugin,
 	addServerHandler,
@@ -119,8 +119,7 @@ export default defineNuxtModule<ModuleOptions>({
 		}
 
 		// add the base Stonecrop layout from the module
-		const layoutsDir = resolve('runtime/layouts')
-		const homepage = resolve(layoutsDir, 'StonecropHome.vue')
+		const homepage = resolve('runtime/app/layouts/StonecropHome.vue')
 		addLayout(homepage, 'home')
 
 		// find doctype schemas in the nuxt application and add them as pages
@@ -236,9 +235,8 @@ export default defineNuxtModule<ModuleOptions>({
 		if (options.docbuilder) {
 			logger.log('DocBuilder enabled, adding routes and handlers')
 
-			const pagesDir = resolve('runtime/pages')
-			const docBuilderIndex = resolve(pagesDir, 'DocBuilderIndex.vue')
-			const docBuilderDetail = resolve(pagesDir, 'DocBuilderDetail.vue')
+			const docBuilderIndex = resolve('runtime/app/pages/DocBuilderIndex.vue')
+			const docBuilderDetail = resolve('runtime/app/pages/DocBuilderDetail.vue')
 
 			extendPages(pages => {
 				// Add docbuilder index page
@@ -258,28 +256,29 @@ export default defineNuxtModule<ModuleOptions>({
 				logger.log('Added DocBuilder pages at /docbuilder')
 			})
 
-			// Add server handlers for docbuilder API
+			// Server routes are prefixed with /api/_stonecrop/ to avoid collisions with
+			// application routes per the Nuxt module best-practices convention.
 			const handlersDir = resolve('runtime/server/api/docbuilder')
 			addServerHandler({
-				route: '/api/docbuilder/doctypes',
+				route: '/api/_stonecrop/docbuilder/doctypes',
 				handler: resolve(handlersDir, 'doctypes.get'),
 			})
 			addServerHandler({
-				route: '/api/docbuilder/:doctype',
+				route: '/api/_stonecrop/docbuilder/:doctype',
 				handler: resolve(handlersDir, '[doctype].get'),
 			})
 			addServerHandler({
-				route: '/api/docbuilder/validate',
+				route: '/api/_stonecrop/docbuilder/validate',
 				method: 'post',
 				handler: resolve(handlersDir, 'validate.post'),
 			})
 			addServerHandler({
-				route: '/api/docbuilder/save',
+				route: '/api/_stonecrop/docbuilder/save',
 				method: 'post',
 				handler: resolve(handlersDir, 'save.post'),
 			})
 
-			logger.log('Added DocBuilder API handlers')
+			logger.log('Added DocBuilder API handlers at /api/_stonecrop/docbuilder/')
 		}
 
 		// Do not add the extension since the `.ts` will be transpiled to `.mjs` after `npm run prepack`
@@ -291,13 +290,9 @@ export default defineNuxtModule<ModuleOptions>({
 			throw new Error(`[@stonecrop/nuxt] Failed to add plugin at ${pluginPath}`)
 		}
 
-		// Register the useStonecropRegistry composable for auto-import.
-		// Apps can call this in their own plugins to configure getMeta, fetchRecord,
-		// and fetchRecords without reaching into globalProperties directly.
-		addImports({
-			name: 'useStonecropRegistry',
-			as: 'useStonecropRegistry',
-			from: resolve('./runtime/composables/useStonecropRegistry'),
-		})
+		// Register all composables in runtime/app/composables/ for auto-import.
+		// addImportsDir picks up every file in the directory, so new composables
+		// are available automatically without updating module.ts.
+		addImportsDir(resolve('runtime/app/composables'))
 	},
 })
