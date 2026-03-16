@@ -7,7 +7,7 @@ description: How to wire up @stonecrop/desktop in a Nuxt or custom Vue app
 
 `@stonecrop/desktop` is a three-view UI shell (doctype list → records list → record form). It reads state from the Stonecrop Registry and HST, then **emits typed events** for every significant user interaction. The host application handles those events — calling the server, persisting state, and updating HST. Desktop owns no data lifecycle.
 
-This guide covers the wiring needed to integrate Desktop in a Nuxt app (the FAB pattern), but applies equally to any Vue 3 host.
+This guide covers the wiring needed to integrate Desktop in a Nuxt app, but applies equally to any Vue 3 host.
 
 ---
 

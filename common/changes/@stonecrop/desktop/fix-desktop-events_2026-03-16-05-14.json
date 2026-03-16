@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/desktop",
+      "comment": "add emits and handlers to Desktop component",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/desktop"
+}

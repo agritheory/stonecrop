@@ -125,7 +125,7 @@ function useFabRouteAdapter(): RouteAdapter {
 <Desktop :route-adapter="useFabRouteAdapter()" @action="handleAction" />
 ```
 
-## Handling `action` Events (FAB pattern)
+## Handling `action` Events
 
 The complete host-side pattern for handling an action in a Nuxt/fab context:
 
