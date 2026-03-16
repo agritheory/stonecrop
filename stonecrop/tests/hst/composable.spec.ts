@@ -1,6 +1,6 @@
 import { mount } from '@vue/test-utils'
 import { List, Map } from 'immutable'
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { nextTick, defineComponent } from 'vue'
 import type { UnknownMachineConfig } from 'xstate'
 
@@ -8,12 +8,15 @@ import type { SchemaTypes } from '@stonecrop/aform'
 import { useStonecrop } from '../../src/composable'
 import DoctypeMeta from '../../src/doctype'
 import Registry from '../../src/registry'
+import { Stonecrop } from '../../src/stonecrop'
 
 describe('HST Composable Functionality', () => {
 	let registry: Registry
+	let stonecrop: Stonecrop
 	let doctype: DoctypeMeta
 
 	beforeEach(() => {
+		Registry._root = undefined as any
 		registry = new Registry()
 
 		const mockSchema = List([
@@ -38,6 +41,7 @@ describe('HST Composable Functionality', () => {
 
 		doctype = new DoctypeMeta('Task', mockSchema, mockWorkflow, mockActions)
 		registry.addDoctype(doctype)
+		stonecrop = new Stonecrop(registry)
 	})
 
 	describe('useStonecrop HST Composable', () => {
@@ -67,6 +71,7 @@ describe('HST Composable Functionality', () => {
 				global: {
 					provide: {
 						$registry: registry,
+						$stonecrop: stonecrop,
 					},
 				},
 			})
@@ -100,6 +105,7 @@ describe('HST Composable Functionality', () => {
 				global: {
 					provide: {
 						$registry: registry,
+						$stonecrop: stonecrop,
 					},
 				},
 			})
@@ -126,6 +132,7 @@ describe('HST Composable Functionality', () => {
 				global: {
 					provide: {
 						$registry: registry,
+						$stonecrop: stonecrop,
 					},
 				},
 			})
@@ -166,6 +173,7 @@ describe('HST Composable Functionality', () => {
 				global: {
 					provide: {
 						$registry: registry,
+						$stonecrop: stonecrop,
 					},
 				},
 			})
@@ -192,6 +200,7 @@ describe('HST Composable Functionality', () => {
 				global: {
 					provide: {
 						$registry: registry,
+						$stonecrop: stonecrop,
 					},
 				},
 			})
@@ -230,6 +239,7 @@ describe('HST Composable Functionality', () => {
 				global: {
 					provide: {
 						$registry: registry,
+						$stonecrop: stonecrop,
 					},
 				},
 			})
@@ -251,8 +261,12 @@ describe('HST Composable Functionality', () => {
 				},
 			})
 
-			// Mount without providing registry
+			// Mounting without providing $registry or $stonecrop is intentional here —
+			// it exercises the "no registry" error path. Vue will warn about the missing
+			// injections, which is expected; suppress so it doesn't pollute test output.
+			const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
 			const wrapper = mount(TestComponent)
+			warnSpy.mockRestore()
 
 			await nextTick()
 
@@ -272,6 +286,7 @@ describe('HST Composable Functionality', () => {
 				global: {
 					provide: {
 						$registry: registry,
+						$stonecrop: stonecrop,
 					},
 				},
 			})

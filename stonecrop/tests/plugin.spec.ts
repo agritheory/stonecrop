@@ -139,10 +139,15 @@ describe('Stonecrop Vue Plugin with HST', () => {
 	})
 
 	it('handles plugin installation multiple times gracefully', () => {
+		// Vue emits a warning when a plugin is installed twice — that is expected
+		// behaviour and exactly what this test exercises. Suppress the warning so it
+		// doesn't appear in test output.
+		const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
 		expect(() => {
 			app.use(Stonecrop)
 			app.use(Stonecrop) // Second installation should not break
 		}).not.toThrow()
+		warnSpy.mockRestore()
 
 		const registry = app._context.provides.$registry
 		expect(registry).toBeDefined()
