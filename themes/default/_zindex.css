@@ -1,0 +1,13 @@
+/* Z-index heirarchy for element */
+:root {
+	/* for forms and tables within the app */
+	--z-index-form: 10;
+	/* sticky columns within tables */
+	--z-index-form-sticky: 20;
+	/* modals within forms or tables */
+	--z-index-form-modals: 50;
+	/* application/desktop level */
+	--z-index-desktop: 100;
+	/* application modals and errors */
+	--z-index-app-modal: 200;
+}
