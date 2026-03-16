@@ -2,6 +2,7 @@ import { existsSync } from 'node:fs'
 import { readFile, readdir } from 'node:fs/promises'
 import { extname } from 'node:path'
 import {
+	addImports,
 	addLayout,
 	addPlugin,
 	addServerHandler,
@@ -289,5 +290,14 @@ export default defineNuxtModule<ModuleOptions>({
 			logger.error('Error adding plugin:', pluginError)
 			throw new Error(`[@stonecrop/nuxt] Failed to add plugin at ${pluginPath}`)
 		}
+
+		// Register the useStonecropRegistry composable for auto-import.
+		// Apps can call this in their own plugins to configure getMeta, fetchRecord,
+		// and fetchRecords without reaching into globalProperties directly.
+		addImports({
+			name: 'useStonecropRegistry',
+			as: 'useStonecropRegistry',
+			from: resolve('./runtime/composables/useStonecropRegistry'),
+		})
 	},
 })

@@ -6,6 +6,7 @@ import { createRouter, createMemoryHistory } from 'vue-router'
 import DoctypeMeta from '../src/doctype'
 import Registry from '../src/registry'
 import { Stonecrop } from '../src/stonecrop'
+import type { StonecropOptions } from '../src/stonecrop'
 import { ImmutableDoctype } from '../src/types'
 
 // Mock fetch globally
@@ -231,6 +232,100 @@ describe('Stonecrop class with HST integration', () => {
 			const record = stonecrop.getRecordById('task', '123')
 			expect(record!.get('title')).toBe('Test Task')
 			expect(record!.get('id')).toBe('123')
+		})
+	})
+
+	describe('Injectable fetch implementations (Issue 4)', () => {
+		let mockDoctype: DoctypeMeta
+
+		beforeEach(() => {
+			// Reset registry for each test
+			Registry._root = undefined as any
+			const localRouter = createRouter({ history: createMemoryHistory(), routes: [] })
+			registry = new Registry(localRouter)
+			mockDoctype = createMockDoctype('Task')
+			registry.addDoctype(mockDoctype)
+		})
+
+		it('getRecord delegates to fetchRecord when provided', async () => {
+			const mockRecord = { id: 'abc', title: 'Injected Task' }
+			const fetchRecordFn = vi.fn().mockResolvedValue(mockRecord)
+
+			const options: StonecropOptions = { fetchRecord: fetchRecordFn }
+			const localStonecrop = new Stonecrop(registry, undefined, options)
+
+			await localStonecrop.getRecord(mockDoctype, 'abc')
+
+			// Injectable should be called, not fetch()
+			expect(fetchRecordFn).toHaveBeenCalledOnce()
+			expect(fetchRecordFn).toHaveBeenCalledWith(mockDoctype, 'abc')
+			expect(fetch).not.toHaveBeenCalled()
+
+			// Record should be in HST
+			const stored = localStonecrop.getRecordById('task', 'abc')
+			expect(stored!.get('title')).toBe('Injected Task')
+		})
+
+		it('getRecords delegates to fetchRecords when provided', async () => {
+			const mockRecords = [
+				{ id: '1', title: 'Record A' },
+				{ id: '2', title: 'Record B' },
+			]
+			const fetchRecordsFn = vi.fn().mockResolvedValue(mockRecords)
+
+			const options: StonecropOptions = { fetchRecords: fetchRecordsFn }
+			const localStonecrop = new Stonecrop(registry, undefined, options)
+
+			await localStonecrop.getRecords(mockDoctype)
+
+			expect(fetchRecordsFn).toHaveBeenCalledOnce()
+			expect(fetchRecordsFn).toHaveBeenCalledWith(mockDoctype)
+			expect(fetch).not.toHaveBeenCalled()
+
+			const ids = localStonecrop.getRecordIds('task')
+			expect(ids).toEqual(['1', '2'])
+		})
+
+		it('getRecord falls back to REST fetch when no fetchRecord provided', async () => {
+			const mockRecord = { id: '42', title: 'REST Task' }
+			const mockResponse = { json: vi.fn().mockResolvedValue(mockRecord) }
+			vi.mocked(fetch).mockResolvedValue(mockResponse as any)
+
+			// No fetchRecord option — should use default REST fetch
+			const localStonecrop = new Stonecrop(registry)
+
+			await localStonecrop.getRecord(mockDoctype, '42')
+
+			expect(fetch).toHaveBeenCalledWith('/task/42')
+			const stored = localStonecrop.getRecordById('task', '42')
+			expect(stored!.get('title')).toBe('REST Task')
+		})
+
+		it('getRecord does not add record to HST when fetchRecord returns null', async () => {
+			const fetchRecordFn = vi.fn().mockResolvedValue(null)
+			const options: StonecropOptions = { fetchRecord: fetchRecordFn }
+			const localStonecrop = new Stonecrop(registry, undefined, options)
+
+			await localStonecrop.getRecord(mockDoctype, 'missing-id')
+
+			// HST should not have an entry for a null response
+			const stored = localStonecrop.getRecordById('task', 'missing-id')
+			expect(stored).toBeUndefined()
+		})
+
+		it('both fetchRecord and fetchRecords can be set independently', async () => {
+			const fetchRecordFn = vi.fn().mockResolvedValue({ id: '1', title: 'Single' })
+			const fetchRecordsFn = vi.fn().mockResolvedValue([{ id: '1', title: 'List' }])
+
+			const options: StonecropOptions = { fetchRecord: fetchRecordFn, fetchRecords: fetchRecordsFn }
+			const localStonecrop = new Stonecrop(registry, undefined, options)
+
+			await localStonecrop.getRecord(mockDoctype, '1')
+			await localStonecrop.getRecords(mockDoctype)
+
+			expect(fetchRecordFn).toHaveBeenCalledOnce()
+			expect(fetchRecordsFn).toHaveBeenCalledOnce()
+			expect(fetch).not.toHaveBeenCalled()
 		})
 	})
 

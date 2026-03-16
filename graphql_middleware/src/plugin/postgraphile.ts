@@ -87,9 +87,21 @@ export const createStonecropPlugin = (options: StonecropPluginOptions): Graphile
 				type StonecropFieldMeta {
 					fieldname: String!
 					fieldtype: String!
+					component: String
 					label: String
+					width: String
+					align: String
 					required: Boolean
+					readOnly: Boolean
+					edit: Boolean
+					hidden: Boolean
+					default: JSON
 					options: JSON
+					mask: String
+					precision: Int
+					scale: Int
+					mode: String
+					validation: JSON
 				}
 
 				type StonecropActionDefinition {
@@ -108,9 +120,11 @@ export const createStonecropPlugin = (options: StonecropPluginOptions): Graphile
 
 				type StonecropDoctypeMeta {
 					name: String!
+					slug: String
 					tableName: String
 					fields: [StonecropFieldMeta!]!
 					workflow: StonecropWorkflowMeta
+					inherits: String
 					listDoctype: String
 					parentDoctype: String
 				}

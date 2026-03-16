@@ -83,11 +83,19 @@ export class StonecropClient {
 						fieldtype
 						component
 						label
+						width
+						align
 						required
 						readOnly
+						edit
+						hidden
+						default
 						options
+						mask
 						precision
 						scale
+						mode
+						validation
 					}
 					workflow {
 						states
@@ -125,11 +133,19 @@ export class StonecropClient {
 						fieldtype
 						component
 						label
+						width
+						align
 						required
 						readOnly
+						edit
+						hidden
+						default
 						options
+						mask
 						precision
 						scale
+						mode
+						validation
 					}
 					workflow {
 						states

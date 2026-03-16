@@ -5,7 +5,7 @@ import { nextTick, defineComponent, ref } from 'vue'
 import type { UnknownMachineConfig } from 'xstate'
 
 import type { SchemaTypes } from '@stonecrop/aform'
-import { useStonecrop } from '../../src/composable'
+import { useStonecrop } from '../../src/composables/stonecrop'
 import DoctypeMeta from '../../src/doctype'
 import Registry from '../../src/registry'
 import { Stonecrop } from '../../src/stonecrop'

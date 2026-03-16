@@ -7,6 +7,24 @@ import type { OperationLogConfig } from './types/operation-log'
 import type { RouteContext } from './types/registry'
 
 /**
+ * Options for constructing a Stonecrop instance directly.
+ * When using the Vue plugin, pass these via `InstallOptions` instead.
+ * @public
+ */
+export interface StonecropOptions {
+	/**
+	 * Injectable implementation for fetching a single record.
+	 * When provided, replaces the default REST fetch() call in `getRecord()`.
+	 */
+	fetchRecord?: (doctype: DoctypeMeta, id: string) => Promise<Record<string, unknown> | null>
+	/**
+	 * Injectable implementation for fetching a list of records.
+	 * When provided, replaces the default REST fetch() call in `getRecords()`.
+	 */
+	fetchRecords?: (doctype: DoctypeMeta) => Promise<Record<string, unknown>[]>
+}
+
+/**
  * Main Stonecrop class with HST integration and built-in Operation Log
  * @public
  */
@@ -14,6 +32,8 @@ export class Stonecrop {
 	private hstStore: HSTNode
 	private _operationLogStore?: ReturnType<typeof useOperationLogStore>
 	private _operationLogConfig?: Partial<OperationLogConfig>
+	private _fetchRecord?: (doctype: DoctypeMeta, id: string) => Promise<Record<string, unknown> | null>
+	private _fetchRecords?: (doctype: DoctypeMeta) => Promise<Record<string, unknown>[]>
 
 	/** The registry instance containing all doctype definitions */
 	readonly registry: Registry
@@ -22,12 +42,17 @@ export class Stonecrop {
 	 * Creates a new Stonecrop instance with HST integration
 	 * @param registry - The Registry instance containing doctype definitions
 	 * @param operationLogConfig - Optional configuration for the operation log
+	 * @param options - Optional injectable fetch implementations
 	 */
-	constructor(registry: Registry, operationLogConfig?: Partial<OperationLogConfig>) {
+	constructor(registry: Registry, operationLogConfig?: Partial<OperationLogConfig>, options?: StonecropOptions) {
 		this.registry = registry
 
 		// Store config for lazy initialization
 		this._operationLogConfig = operationLogConfig
+
+		// Store injectable fetch implementations
+		this._fetchRecord = options?.fetchRecord
+		this._fetchRecords = options?.fetchRecords
 
 		// Initialize HST store with auto-sync to Registry
 		this.initializeHSTStore()
@@ -233,12 +258,26 @@ export class Stonecrop {
 	}
 
 	/**
-	 * Get records from server (maintains compatibility)
+	 * Get records from server.
+	 *
+	 * When a `fetchRecords` implementation was provided at plugin install time (via
+	 * `InstallOptions.fetchRecords`), it is called instead of the default REST stub.
+	 * This allows GraphQL-backed apps (using `StonecropClient`) to wire in their own
+	 * data fetching without coupling the core package to any specific transport.
+	 *
 	 * @param doctype - The doctype
 	 */
 	async getRecords(doctype: DoctypeMeta): Promise<void> {
-		const response = await fetch(`/${doctype.slug}`)
-		const records = (await response.json()) as { id: string }[]
+		let records: { id: string }[]
+
+		if (this._fetchRecords) {
+			records = (await this._fetchRecords(doctype)) as { id: string }[]
+		} else {
+			// Default: legacy REST stub. Apps should provide fetchRecords via InstallOptions
+			// to override this for non-REST backends (e.g., GraphQL).
+			const response = await fetch(`/${doctype.slug}`)
+			records = (await response.json()) as { id: string }[]
+		}
 
 		// Store each record in HST
 		records.forEach(record => {
@@ -249,16 +288,31 @@ export class Stonecrop {
 	}
 
 	/**
-	 * Get single record from server (maintains compatibility)
+	 * Get single record from server.
+	 *
+	 * When a `fetchRecord` implementation was provided at plugin install time (via
+	 * `InstallOptions.fetchRecord`), it is called instead of the default REST stub.
+	 * This allows GraphQL-backed apps (using `StonecropClient`) to wire in their own
+	 * data fetching without coupling the core package to any specific transport.
+	 *
 	 * @param doctype - The doctype
 	 * @param recordId - The record ID
 	 */
 	async getRecord(doctype: DoctypeMeta, recordId: string): Promise<void> {
-		const response = await fetch(`/${doctype.slug}/${recordId}`)
-		const record = await response.json()
+		let record: Record<string, unknown> | null
 
-		// Store record
-		this.addRecord(doctype, recordId, record)
+		if (this._fetchRecord) {
+			record = await this._fetchRecord(doctype, recordId)
+		} else {
+			// Default: legacy REST stub. Apps should provide fetchRecord via InstallOptions
+			// to override this for non-REST backends (e.g., GraphQL).
+			const response = await fetch(`/${doctype.slug}/${recordId}`)
+			record = (await response.json()) as Record<string, unknown>
+		}
+
+		if (record) {
+			this.addRecord(doctype, recordId, record)
+		}
 	}
 
 	/**

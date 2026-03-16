@@ -16,19 +16,46 @@ _This package is under active development / design._
 ```typescript
 import { createApp } from 'vue'
 import Stonecrop from '@stonecrop/stonecrop'
+import router from './router'
 
 const app = createApp(App)
 
-// Build your Registry before installing the plugin
-const registry = new Registry(router, async ({ path, segments }) => {
-  return await fetchDoctypeMeta(segments[0])
-})
-
 // Install the Stonecrop plugin
-app.use(Stonecrop, { registry })
+app.use(Stonecrop, {
+  router,
+
+  // Lazy-load doctype metadata from your API given the current route context.
+  // routeContext = { path, segments } — adapt segments to your doctype naming.
+  getMeta: async ({ segments }) => {
+    return await fetchDoctypeMeta(segments[0])
+  },
+
+  // Optional: replace the default REST fetch() stub with your own transport.
+  // When provided, Stonecrop.getRecord() calls this instead of fetch(`/${slug}/${id}`).
+  fetchRecord: async (doctype, id) => {
+    return await myApiClient.getRecord(doctype, id)
+  },
+
+  // Optional: replace the default REST fetch() stub for lists.
+  fetchRecords: async (doctype) => {
+    return await myApiClient.getRecords(doctype)
+  },
+})
 
 app.mount('#app')
 ```
+
+### Plugin Options
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `router` | `Router` | Vue Router instance. Required for route-based doctype resolution. |
+| `getMeta` | `(ctx: RouteContext) => DoctypeMeta \| Promise<DoctypeMeta>` | Lazy-loads doctype metadata for the current route. `ctx` has `path` and `segments`. |
+| `fetchRecord` | `(doctype, id) => Promise<Record \| null>` | Injectable replacement for `Stonecrop.getRecord()`'s default REST fetch. Use this to plug in GraphQL or any other transport. |
+| `fetchRecords` | `(doctype) => Promise<Record[]>` | Injectable replacement for `Stonecrop.getRecords()`'s default REST fetch. |
+| `components` | `Record<string, Component>` | Additional Vue components to register globally. |
+| `autoInitializeRouter` | `boolean` | Call `onRouterInitialized` automatically after mount. Default: `false`. |
+| `onRouterInitialized` | `(registry, stonecrop) => void` | Callback invoked after plugin install + mount. Receives the Registry and Stonecrop instances. |
 
 ### Available Imports
 
@@ -54,16 +81,22 @@ import { useStonecrop } from '@stonecrop/stonecrop'
 
 export default {
   setup() {
-    const { stonecrop } = useStonecrop()
+    // Base mode — operation log only, no HST record loading
+    const { stonecrop, operationLog } = useStonecrop()
+
+    // HST mode — pass doctype and optional recordId for full integration
+    const { stonecrop, formData, provideHSTPath, handleHSTChange } = useStonecrop({
+      doctype: myDoctype,
+      recordId: 'record-123', // omit or pass undefined for new records
+    })
 
     // Access HST store
     const store = stonecrop.value?.getStore()
 
-    // Work with records
-    const records = stonecrop.value?.records('doctype')
+    // Work with records directly
     const record = stonecrop.value?.getRecordById('doctype', recordId)
 
-    return { stonecrop, records, record }
+    return { stonecrop, formData }
   }
 }
 ```

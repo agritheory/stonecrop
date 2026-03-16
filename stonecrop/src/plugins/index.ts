@@ -67,7 +67,10 @@ const plugin: Plugin = {
 		app.config.globalProperties.$registry = registry
 
 		// Create and provide a global Stonecrop instance
-		const stonecrop = new Stonecrop(registry)
+		const stonecrop = new Stonecrop(registry, undefined, {
+			fetchRecord: options?.fetchRecord,
+			fetchRecords: options?.fetchRecords,
+		})
 		app.provide('$stonecrop', stonecrop)
 		app.config.globalProperties.$stonecrop = stonecrop
 

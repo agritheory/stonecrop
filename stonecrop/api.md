@@ -692,6 +692,26 @@ export interface RouteContext {
 | path | `string` | The full route path (e.g., "/todo/1" or "/todo") |
 | segments | `string[]` | Path segments split by "/" (e.g., ["todo", "1"] or ["todo"]) |
 
+### StonecropOptions
+
+Options for constructing a Stonecrop instance directly. When using the Vue plugin, pass these via `InstallOptions` instead.
+
+**Definition:**
+
+```typescript
+export interface StonecropOptions {
+  fetchRecord?: (doctype: DoctypeMeta, id: string) => Promise<Record<string, unknown> | null>;
+  fetchRecords?: (doctype: DoctypeMeta) => Promise<Record<string, unknown>[]>;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| fetchRecord? | `(doctype: DoctypeMeta, id: string) => Promise<Record<string, unknown> \| null>` | Injectable implementation for fetching a single record. When provided, replaces the default REST fetch() call in `getRecord()`. |
+| fetchRecords? | `(doctype: DoctypeMeta) => Promise<Record<string, unknown>[]>` | Injectable implementation for fetching a list of records. When provided, replaces the default REST fetch() call in `getRecords()`. |
+
 ### TransitionChangeContext
 
 Context provided to XState transition action functions Extends FieldChangeContext with FSM-specific data
@@ -997,6 +1017,8 @@ export type InstallOptions = {
     router?: Router;
     components?: Record<string, Component>;
     getMeta?: (routeContext: RouteContext) => DoctypeMeta | Promise<DoctypeMeta>;
+    fetchRecord?: (doctype: DoctypeMeta, id: string) => Promise<Record<string, unknown> | null>;
+    fetchRecords?: (doctype: DoctypeMeta) => Promise<Record<string, unknown>[]>;
     autoInitializeRouter?: boolean;
     onRouterInitialized?: (registry: Registry, stonecrop: Stonecrop) => void | Promise<void>;
 };
@@ -1431,7 +1453,7 @@ Main Stonecrop class with HST integration and built-in Operation Log
 **Constructor:**
 
 ```typescript
-new Stonecrop(registry: Registry, operationLogConfig: Partial<OperationLogConfig>)
+new Stonecrop(registry: Registry, operationLogConfig: Partial<OperationLogConfig>, options: StonecropOptions)
 ```
 
 **Parameters:**
@@ -1440,6 +1462,7 @@ new Stonecrop(registry: Registry, operationLogConfig: Partial<OperationLogConfig
 |-----------|------|-------------|
 | registry | `Registry` | The Registry instance containing doctype definitions |
 | operationLogConfig | `Partial<OperationLogConfig>` | Optional configuration for the operation log |
+| options | `StonecropOptions` | Optional injectable fetch implementations |
 
 **Properties:**
 
@@ -1495,7 +1518,9 @@ getMeta(context: RouteContext): Promise<any>
 
 #### getRecord
 
-Get single record from server (maintains compatibility)
+Get single record from server.
+
+When a `fetchRecord` implementation was provided at plugin install time (via `InstallOptions.fetchRecord`), it is called instead of the default REST stub. This allows GraphQL-backed apps (using `StonecropClient`) to wire in their own data fetching without coupling the core package to any specific transport.
 
 ```typescript
 getRecord(doctype: DoctypeMeta, recordId: string): Promise<void>
@@ -1539,7 +1564,9 @@ getRecordIds(doctype: string | DoctypeMeta): string[]
 
 #### getRecords
 
-Get records from server (maintains compatibility)
+Get records from server.
+
+When a `fetchRecords` implementation was provided at plugin install time (via `InstallOptions.fetchRecords`), it is called instead of the default REST stub. This allows GraphQL-backed apps (using `StonecropClient`) to wire in their own data fetching without coupling the core package to any specific transport.
 
 ```typescript
 getRecords(doctype: DoctypeMeta): Promise<void>
@@ -1740,7 +1767,7 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
     getSnapshot: () => OperationLogSnapshot;
     markIrreversible: (operationId: string, reason: string) => void;
     logAction: (doctype: string, actionName: string, recordIds?: string[], result?: "success" | "failure" | "pending", error?: string) => string;
-}, "operations" | "clientId" | "currentIndex" | "config">, Pick<{
+}, "operations" | "currentIndex" | "config" | "clientId">, Pick<{
     operations: import("vue").Ref<{
         id: string;
         type: import("..").HSTOperationType;

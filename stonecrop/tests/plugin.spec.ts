@@ -274,6 +274,53 @@ describe('Stonecrop Vue Plugin with HST', () => {
 		expect(app.config.globalProperties.$stonecrop).toBeDefined()
 	})
 
+	it('passes fetchRecord option through to Stonecrop instance', () => {
+		const fetchRecordFn = vi.fn().mockResolvedValue(null)
+
+		app.use(Stonecrop, {
+			router: mockRouter,
+			fetchRecord: fetchRecordFn,
+		})
+
+		// The Stonecrop instance should have _fetchRecord set (private, accessed via any)
+		const stonecropInstance = app.config.globalProperties.$stonecrop as any
+		expect(stonecropInstance).toBeDefined()
+		expect(stonecropInstance._fetchRecord).toBe(fetchRecordFn)
+	})
+
+	it('passes fetchRecords option through to Stonecrop instance', () => {
+		const fetchRecordsFn = vi.fn().mockResolvedValue([])
+
+		app.use(Stonecrop, {
+			router: mockRouter,
+			fetchRecords: fetchRecordsFn,
+		})
+
+		const stonecropInstance = app.config.globalProperties.$stonecrop as any
+		expect(stonecropInstance).toBeDefined()
+		expect(stonecropInstance._fetchRecords).toBe(fetchRecordsFn)
+	})
+
+	it('Stonecrop instance uses injected fetchRecord instead of fetch()', async () => {
+		const mockRecord = { id: '99', title: 'Plugin-injected record' }
+		const fetchRecordFn = vi.fn().mockResolvedValue(mockRecord)
+
+		app.use(Stonecrop, {
+			router: mockRouter,
+			fetchRecord: fetchRecordFn,
+		})
+
+		const { List } = await import('immutable')
+		const { default: DoctypeMeta } = await import('../src/doctype')
+		const mockDoctype = new DoctypeMeta('Widget', List([]), undefined as any, undefined as any)
+
+		const stonecropInstance = app.config.globalProperties.$stonecrop as any
+		await stonecropInstance.registry.addDoctype(mockDoctype)
+		await stonecropInstance.getRecord(mockDoctype, '99')
+
+		expect(fetchRecordFn).toHaveBeenCalledWith(mockDoctype, '99')
+	})
+
 	it('registers custom components when provided', () => {
 		const MockComponent = { template: '<div>Mock</div>' }
 		const spy = vi.spyOn(app, 'component')

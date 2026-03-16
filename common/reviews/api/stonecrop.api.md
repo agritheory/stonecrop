@@ -251,6 +251,8 @@ export type InstallOptions = {
     router?: Router;
     components?: Record<string, Component>;
     getMeta?: (routeContext: RouteContext) => DoctypeMeta | Promise<DoctypeMeta>;
+    fetchRecord?: (doctype: DoctypeMeta, id: string) => Promise<Record<string, unknown> | null>;
+    fetchRecords?: (doctype: DoctypeMeta) => Promise<Record<string, unknown>[]>;
     autoInitializeRouter?: boolean;
     onRouterInitialized?: (registry: Registry, stonecrop: Stonecrop) => void | Promise<void>;
 };
@@ -372,7 +374,7 @@ export function setFieldRollback(doctype: string, fieldname: string, enableRollb
 
 // @public
 export class Stonecrop {
-    constructor(registry: Registry, operationLogConfig?: Partial<OperationLogConfig>);
+    constructor(registry: Registry, operationLogConfig?: Partial<OperationLogConfig>, options?: StonecropOptions);
     addRecord(doctype: string | DoctypeMeta, recordId: string, recordData: any): void;
     clearRecords(doctype: string | DoctypeMeta): void;
     getMeta(context: RouteContext): Promise<any>;
@@ -463,7 +465,7 @@ export class Stonecrop {
     getSnapshot: () => OperationLogSnapshot;
     markIrreversible: (operationId: string, reason: string) => void;
     logAction: (doctype: string, actionName: string, recordIds?: string[], result?: "success" | "failure" | "pending", error?: string) => string;
-    }, "operations" | "clientId" | "currentIndex" | "config">, Pick<{
+    }, "operations" | "currentIndex" | "config" | "clientId">, Pick<{
     operations: Ref<    {
     id: string;
     type: HSTOperationType;
@@ -647,6 +649,12 @@ export class Stonecrop {
     removeRecord(doctype: string | DoctypeMeta, recordId: string): void;
     runAction(doctype: DoctypeMeta, action: string, args?: any[]): void;
     setup(doctype: DoctypeMeta): void;
+}
+
+// @public
+export interface StonecropOptions {
+    fetchRecord?: (doctype: DoctypeMeta, id: string) => Promise<Record<string, unknown> | null>;
+    fetchRecords?: (doctype: DoctypeMeta) => Promise<Record<string, unknown>[]>;
 }
 
 // @public
@@ -847,7 +855,7 @@ getOperationsFor: (doctype: string, recordId?: string) => HSTOperation[];
 getSnapshot: () => OperationLogSnapshot;
 markIrreversible: (operationId: string, reason: string) => void;
 logAction: (doctype: string, actionName: string, recordIds?: string[], result?: "success" | "failure" | "pending", error?: string) => string;
-}, "operations" | "clientId" | "currentIndex" | "config">, Pick<{
+}, "operations" | "currentIndex" | "config" | "clientId">, Pick<{
 operations: Ref<    {
 id: string;
 type: HSTOperationType;
