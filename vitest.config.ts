@@ -7,6 +7,7 @@ export default defineConfig({
 			'atable/*/vite.config.ts',
 			'beam/*/vite.config.ts',
 			'casl_middleware/*/vite.config.ts',
+			'desktop/vite.config.ts',
 			'nuxt/*',
 			'rockfoil/*/vite.config.ts',
 			'stonecrop/*/vite.config.ts',

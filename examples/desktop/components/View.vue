@@ -1,6 +1,11 @@
 <template>
 	<div class="view-wrapper">
-		<Desktop :available-doctypes="availableDoctypes" :show-debug="showDebug" />
+		<Desktop
+			:available-doctypes="availableDoctypes"
+			:show-debug="showDebug"
+			@action="handleDesktopAction"
+			@navigate="handleDesktopNavigate"
+			@record:open="handleRecordOpen" />
 
 		<!-- Operation Log Panel - pass operation log data as props -->
 		<OperationLogPanel
@@ -21,10 +26,12 @@
 
 <script setup lang="ts">
 import { Desktop } from '@stonecrop/desktop'
+import type { ActionEventPayload, NavigationTarget, RecordOpenEventPayload } from '@stonecrop/desktop'
 import { useStonecrop } from '@stonecrop/stonecrop'
 import { ref } from 'vue'
 
 import OperationLogPanel from './OperationLogPanel.vue'
+import { addNotification } from '../actions'
 
 interface Props {
 	availableDoctypes?: string[]
@@ -38,11 +45,74 @@ const showOperationLog = ref(false)
 
 // Single unified interface - everything from useStonecrop
 const {
+	stonecrop,
 	operationLog: { operations, currentIndex, canUndo, canRedo },
 } = useStonecrop()
 
 function toggleOperationLog() {
 	showOperationLog.value = !showOperationLog.value
+}
+
+/** Pretend this is `await $fetch(...)` or `StonecropClient.runAction(...)`. */
+function simulateServerCall(ms: number): Promise<void> {
+	return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+/**
+ * Handle FSM transition actions emitted by Desktop.
+ *
+ * Pattern:
+ *   1. Sync any changed field values into HST.
+ *   2. Fire the FSM transition (triggers registerTransitionAction side effects).
+ *   3. Make the simulated server call — in a real app, replace with $fetch /
+ *      StonecropClient.runAction and sync the response back via addRecord().
+ */
+async function handleDesktopAction(payload: ActionEventPayload) {
+	if (!stonecrop.value) return
+
+	// 1. Persist form field changes into HST before triggering the transition
+	const existing = stonecrop.value.getRecordById(payload.doctype, payload.recordId)
+	if (existing) {
+		const store = stonecrop.value.getStore()
+		for (const [fieldname, value] of Object.entries(payload.data)) {
+			const path = `${payload.doctype}.${payload.recordId}.${fieldname}`
+			if (store.has(path) && store.get(path) !== value) {
+				store.set(path, value)
+			}
+		}
+		// 2. Trigger the FSM transition — fires registerTransitionAction side effects
+		await existing.triggerTransition(payload.name, {
+			fsmContext: payload.data,
+		})
+	}
+
+	// 3. Simulated server call — owns persistence and response sync
+	switch (payload.name) {
+		case 'SAVE':
+			addNotification(`💾 Saving ${payload.doctype} record ${payload.recordId}...`, 'info')
+			await simulateServerCall(500)
+			addNotification(`✅ ${payload.doctype} record ${payload.recordId} saved successfully!`, 'success')
+			break
+		case 'DELETE':
+			addNotification(`🗑️ Deleting ${payload.doctype} record ${payload.recordId}...`, 'warning')
+			await simulateServerCall(500)
+			stonecrop.value.removeRecord(payload.doctype, payload.recordId)
+			addNotification(`🗑️ ${payload.doctype} record ${payload.recordId} deleted`, 'info')
+			break
+	}
+}
+
+function handleDesktopNavigate(target: NavigationTarget) {
+	// Example: log navigation intent — the routeAdapter (or the built-in router
+	// fallback) already performed the navigation.  This handler is for any
+	// additional host-side logic like analytics.
+	// eslint-disable-next-line no-console
+	console.debug('[example] Desktop navigate', target)
+}
+
+function handleRecordOpen(payload: RecordOpenEventPayload) {
+	// eslint-disable-next-line no-console
+	console.debug('[example] record:open', payload)
 }
 </script>
 

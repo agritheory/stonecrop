@@ -15,12 +15,15 @@ import type { SchemaTypes } from '../../../aform/src/types'
 import { useStonecrop } from '../../src/composable'
 import DoctypeMeta from '../../src/doctype'
 import Registry from '../../src/registry'
+import { Stonecrop } from '../../src/stonecrop'
 
 describe('HST Real Component Integration', () => {
 	let registry: Registry
+	let stonecrop: Stonecrop
 	let doctype: DoctypeMeta
 
 	beforeEach(() => {
+		Registry._root = undefined as any
 		registry = new Registry()
 
 		// Complete schema with all major field types
@@ -88,6 +91,7 @@ describe('HST Real Component Integration', () => {
 
 		doctype = new DoctypeMeta('Task', completeSchema, mockWorkflow, mockActions)
 		registry.addDoctype(doctype)
+		stonecrop = new Stonecrop(registry)
 	})
 
 	describe('Real AForm Integration with HST', () => {
@@ -136,6 +140,7 @@ describe('HST Real Component Integration', () => {
 				global: {
 					provide: {
 						$registry: registry,
+						$stonecrop: stonecrop,
 					},
 				},
 			})
@@ -207,6 +212,7 @@ describe('HST Real Component Integration', () => {
 				global: {
 					provide: {
 						$registry: registry,
+						$stonecrop: stonecrop,
 					},
 				},
 			})
@@ -291,6 +297,7 @@ describe('HST Real Component Integration', () => {
 				global: {
 					provide: {
 						$registry: registry,
+						$stonecrop: stonecrop,
 					},
 				},
 			})
@@ -374,6 +381,7 @@ describe('HST Real Component Integration', () => {
 				global: {
 					provide: {
 						$registry: registry,
+						$stonecrop: stonecrop,
 					},
 				},
 			})
@@ -449,6 +457,7 @@ describe('HST Real Component Integration', () => {
 				global: {
 					provide: {
 						$registry: registry,
+						$stonecrop: stonecrop,
 					},
 				},
 			})
@@ -537,6 +546,7 @@ describe('HST Real Component Integration', () => {
 				global: {
 					provide: {
 						$registry: registry,
+						$stonecrop: stonecrop,
 					},
 				},
 			})

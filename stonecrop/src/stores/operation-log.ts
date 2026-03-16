@@ -491,7 +491,6 @@ export const useOperationLogStore = defineStore('hst-operation-log', () => {
 		broadcastChannel = new BroadcastChannel('stonecrop-operation-log')
 
 		broadcastChannel.addEventListener('message', (event: MessageEvent) => {
-			// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 			const rawMessage = event.data
 
 			if (!rawMessage || typeof rawMessage !== 'object') return
@@ -572,9 +571,7 @@ export const useOperationLogStore = defineStore('hst-operation-log', () => {
 		serializer: {
 			read: (v: string) => {
 				try {
-					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 					const data = JSON.parse(v)
-					// eslint-disable-next-line @typescript-eslint/no-unsafe-return
 					return data
 				} catch {
 					return null

@@ -175,4 +175,39 @@ describe('Registry class', () => {
 		expect(addRouteSpy).not.toHaveBeenCalled()
 		expect(registry.registry['task']).toBe(mockDoctype)
 	})
+
+	describe('getDoctype', () => {
+		it('returns the DoctypeMeta for a registered slug', () => {
+			registry = new Registry()
+			const mockDoctype = createMockDoctype('Task')
+			registry.addDoctype(mockDoctype)
+
+			const result = registry.getDoctype('task')
+			expect(result).toBe(mockDoctype)
+		})
+
+		it('returns undefined for an unknown slug', () => {
+			registry = new Registry()
+
+			const result = registry.getDoctype('nonexistent')
+			expect(result).toBeUndefined()
+		})
+
+		it('returns undefined when the registry is empty', () => {
+			registry = new Registry()
+
+			expect(registry.getDoctype('task')).toBeUndefined()
+		})
+
+		it('returns the correct doctype among multiple registered doctypes', () => {
+			registry = new Registry()
+			const task = createMockDoctype('Task')
+			const note = createMockDoctype('Note')
+			registry.addDoctype(task)
+			registry.addDoctype(note)
+
+			expect(registry.getDoctype('task')).toBe(task)
+			expect(registry.getDoctype('note')).toBe(note)
+		})
+	})
 })

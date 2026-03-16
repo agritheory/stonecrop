@@ -272,6 +272,16 @@ export default class Registry {
 		return record
 	}
 
+	/**
+	 * Get a registered doctype by slug
+	 * @param slug - The doctype slug to look up
+	 * @returns The DoctypeMeta instance if found, or undefined
+	 * @public
+	 */
+	getDoctype(slug: string): DoctypeMeta | undefined {
+		return this.registry[slug]
+	}
+
 	// TODO: should we allow clearing the registry at all?
 	// clear() {
 	// 	this.registry = {}

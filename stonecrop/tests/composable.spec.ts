@@ -53,6 +53,7 @@ const createMockDoctype = (name: string) => {
 describe('useStonecrop composable', () => {
 	let mockRouter: any
 	let registry: Registry
+	let stonecrop: Stonecrop
 
 	beforeEach(() => {
 		setActivePinia(createPinia())
@@ -71,6 +72,7 @@ describe('useStonecrop composable', () => {
 		})
 
 		registry = new Registry(mockRouter)
+		stonecrop = new Stonecrop(registry)
 
 		// Reset fetch mock
 		vi.clearAllMocks()
@@ -88,6 +90,7 @@ describe('useStonecrop composable', () => {
 			global: {
 				provide: {
 					$registry: registry,
+					$stonecrop: stonecrop,
 				},
 			},
 		})
@@ -117,6 +120,7 @@ describe('useStonecrop composable', () => {
 			global: {
 				provide: {
 					$registry: registry,
+					$stonecrop: stonecrop,
 				},
 			},
 		})
@@ -139,7 +143,10 @@ describe('useStonecrop composable', () => {
 			template: '<div>test</div>',
 		})
 
-		// Mock console.error to prevent error output in tests and catch the error
+		// Mounting without providing $registry or $stonecrop is intentional — it
+		// exercises the "no registry" path. Vue warns about the missing injections;
+		// suppress both warn and error so they don't pollute test output.
+		const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
 		const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
 		// The mount should succeed, but the component should have undefined stonecrop
@@ -150,7 +157,8 @@ describe('useStonecrop composable', () => {
 		// The stonecrop ref should remain undefined due to error in onMounted
 		expect(vm.stonecrop).toBeUndefined()
 
-		// Restore console.error
+		// Restore mocks
+		warnSpy.mockRestore()
 		consoleSpy.mockRestore()
 	})
 
@@ -168,6 +176,7 @@ describe('useStonecrop composable', () => {
 			global: {
 				provide: {
 					$registry: registryWithoutRouter,
+					$stonecrop: new Stonecrop(registryWithoutRouter),
 				},
 			},
 		})
@@ -213,6 +222,7 @@ describe('useStonecrop composable', () => {
 			global: {
 				provide: {
 					$registry: registry,
+					$stonecrop: stonecrop,
 				},
 			},
 		})
@@ -263,6 +273,7 @@ describe('useStonecrop composable', () => {
 			global: {
 				provide: {
 					$registry: registry,
+					$stonecrop: stonecrop,
 				},
 			},
 		})
@@ -305,6 +316,7 @@ describe('useStonecrop composable', () => {
 			global: {
 				provide: {
 					$registry: registry,
+					$stonecrop: stonecrop,
 				},
 			},
 		})
@@ -330,6 +342,7 @@ describe('useStonecrop composable', () => {
 			global: {
 				provide: {
 					$registry: registry,
+					$stonecrop: stonecrop,
 				},
 			},
 		})
@@ -354,6 +367,7 @@ describe('useStonecrop composable', () => {
 describe('useStonecrop router-based HST integration', () => {
 	let mockRouter: any
 	let registry: Registry
+	let stonecrop: Stonecrop
 
 	beforeEach(() => {
 		setActivePinia(createPinia())
@@ -371,6 +385,7 @@ describe('useStonecrop router-based HST integration', () => {
 		})
 
 		registry = new Registry(mockRouter)
+		stonecrop = new Stonecrop(registry)
 
 		// Reset fetch mock
 		vi.clearAllMocks()
@@ -414,6 +429,7 @@ describe('useStonecrop router-based HST integration', () => {
 			global: {
 				provide: {
 					$registry: registry,
+					$stonecrop: stonecrop,
 				},
 			},
 		})
@@ -505,6 +521,7 @@ describe('useStonecrop router-based HST integration', () => {
 			global: {
 				provide: {
 					$registry: registry,
+					$stonecrop: stonecrop,
 				},
 			},
 		})

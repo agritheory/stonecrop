@@ -290,4 +290,33 @@ export class Stonecrop {
 	getStore(): HSTNode {
 		return this.hstStore
 	}
+
+	/**
+	 * Determine the current workflow state for a record.
+	 *
+	 * Reads the record's `status` field from the HST store. If the field is absent or
+	 * empty the doctype's declared `workflow.initial` state is used as the fallback,
+	 * giving callers a reliable state name without having to duplicate that logic.
+	 *
+	 * @param doctype - The doctype slug or DoctypeMeta instance
+	 * @param recordId - The record identifier
+	 * @returns The current state name, or an empty string if the doctype has no workflow
+	 *
+	 * @public
+	 */
+	getRecordState(doctype: string | DoctypeMeta, recordId: string): string {
+		const slug = typeof doctype === 'string' ? doctype : doctype.slug
+		const meta = this.registry.getDoctype(slug)
+		if (!meta?.workflow) return ''
+
+		const record = this.getRecordById(slug, recordId)
+		const status = record?.get('status') as string | undefined
+
+		const initialState =
+			typeof meta.workflow.initial === 'string'
+				? meta.workflow.initial
+				: Object.keys(meta.workflow.states ?? {})[0] ?? ''
+
+		return status || initialState
+	}
 }

@@ -10,12 +10,15 @@ import type { SchemaTypes } from '../../../aform/src/types'
 import { useStonecrop } from '../../src/composable'
 import DoctypeMeta from '../../src/doctype'
 import Registry from '../../src/registry'
+import { Stonecrop } from '../../src/stonecrop'
 
 describe('HST Edge Cases & Performance', () => {
 	let registry: Registry
+	let stonecrop: Stonecrop
 	let doctype: DoctypeMeta
 
 	beforeEach(() => {
+		Registry._root = undefined as any
 		registry = new Registry()
 
 		// Complex schema with nested fields and special cases
@@ -44,6 +47,7 @@ describe('HST Edge Cases & Performance', () => {
 
 		doctype = new DoctypeMeta('Complex', complexSchema, mockWorkflow, mockActions)
 		registry.addDoctype(doctype)
+		stonecrop = new Stonecrop(registry)
 	})
 
 	describe('Performance and Scalability', () => {
@@ -94,7 +98,7 @@ describe('HST Edge Cases & Performance', () => {
 			})
 
 			const wrapper = mount(LargeDataTest, {
-				global: { provide: { $registry: registry } },
+				global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 			})
 
 			await nextTick()
@@ -161,7 +165,7 @@ describe('HST Edge Cases & Performance', () => {
 			})
 
 			const wrapper = mount(RapidUpdateTest, {
-				global: { provide: { $registry: registry } },
+				global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 			})
 
 			await nextTick()
@@ -221,7 +225,7 @@ describe('HST Edge Cases & Performance', () => {
 			})
 
 			const wrapper = mount(ErrorHandlingTest, {
-				global: { provide: { $registry: registry } },
+				global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 			})
 
 			await nextTick()
@@ -279,7 +283,7 @@ describe('HST Edge Cases & Performance', () => {
 			})
 
 			const wrapper = mount(CorruptionRecoveryTest, {
-				global: { provide: { $registry: registry } },
+				global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 			})
 
 			await nextTick()
@@ -339,7 +343,7 @@ describe('HST Edge Cases & Performance', () => {
 			})
 
 			const wrapper = mount(DeepArrayTest, {
-				global: { provide: { $registry: registry } },
+				global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 			})
 
 			await nextTick()
@@ -412,7 +416,7 @@ describe('HST Edge Cases & Performance', () => {
 			})
 
 			const wrapper = mount(MixedTypeTest, {
-				global: { provide: { $registry: registry } },
+				global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 			})
 
 			await nextTick()
@@ -490,7 +494,7 @@ describe('HST Edge Cases & Performance', () => {
 			})
 
 			const wrapper = mount(MultiInstanceTest, {
-				global: { provide: { $registry: registry } },
+				global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 			})
 
 			await nextTick()

@@ -8,6 +8,7 @@ import type { SchemaTypes } from '@stonecrop/aform'
 import { useStonecrop } from '../../src/composable'
 import DoctypeMeta from '../../src/doctype'
 import Registry from '../../src/registry'
+import { Stonecrop } from '../../src/stonecrop'
 
 // Mock AForm-like components for testing
 const MockATextInput = defineComponent({
@@ -183,10 +184,12 @@ const MockDoctypeForm = defineComponent({
 
 describe('HST Vue Reactivity', () => {
 	let registry: Registry
+	let stonecrop: Stonecrop
 	let doctype: DoctypeMeta
 	let wrapper: VueWrapper
 
 	beforeEach(() => {
+		Registry._root = undefined as any
 		registry = new Registry()
 
 		const mockSchema = List([
@@ -211,6 +214,7 @@ describe('HST Vue Reactivity', () => {
 
 		doctype = new DoctypeMeta('Task', mockSchema, mockWorkflow, mockActions)
 		registry.addDoctype(doctype)
+		stonecrop = new Stonecrop(registry)
 	})
 
 	describe('HST Path Injection', () => {
@@ -230,6 +234,7 @@ describe('HST Vue Reactivity', () => {
 						},
 						provide: {
 							$registry: registry,
+							$stonecrop: stonecrop,
 						},
 					},
 				})
@@ -250,6 +255,7 @@ describe('HST Vue Reactivity', () => {
 					},
 					provide: {
 						$registry: registry,
+						$stonecrop: stonecrop,
 					},
 				},
 			})
@@ -284,6 +290,7 @@ describe('HST Vue Reactivity', () => {
 					},
 					provide: {
 						$registry: registry,
+						$stonecrop: stonecrop,
 					},
 				},
 			})
@@ -321,6 +328,7 @@ describe('HST Vue Reactivity', () => {
 					},
 					provide: {
 						$registry: registry,
+						$stonecrop: stonecrop,
 					},
 				},
 			})
@@ -348,6 +356,7 @@ describe('HST Vue Reactivity', () => {
 					},
 					provide: {
 						$registry: registry,
+						$stonecrop: stonecrop,
 					},
 				},
 			})
@@ -378,6 +387,7 @@ describe('HST Vue Reactivity', () => {
 					},
 					provide: {
 						$registry: registry,
+						$stonecrop: stonecrop,
 					},
 				},
 			})
@@ -405,6 +415,7 @@ describe('HST Vue Reactivity', () => {
 					},
 					provide: {
 						$registry: registry,
+						$stonecrop: stonecrop,
 					},
 				},
 			})
@@ -434,6 +445,7 @@ describe('HST Vue Reactivity', () => {
 					},
 					provide: {
 						$registry: registry,
+						$stonecrop: stonecrop,
 					},
 				},
 			})
@@ -463,6 +475,7 @@ describe('HST Vue Reactivity', () => {
 					},
 					provide: {
 						$registry: registry,
+						$stonecrop: stonecrop,
 					},
 				},
 			})
@@ -511,6 +524,7 @@ describe('HST Vue Reactivity', () => {
 					},
 					provide: {
 						$registry: registry,
+						$stonecrop: stonecrop,
 					},
 				},
 			})
@@ -537,6 +551,7 @@ describe('HST Vue Reactivity', () => {
 					},
 					provide: {
 						$registry: registry,
+						$stonecrop: stonecrop,
 					},
 				},
 			})
@@ -595,6 +610,7 @@ describe('HST Vue Reactivity', () => {
 				global: {
 					provide: {
 						$registry: registry,
+						$stonecrop: stonecrop,
 					},
 				},
 			})
@@ -620,6 +636,7 @@ describe('HST Vue Reactivity', () => {
 					},
 					provide: {
 						$registry: registry,
+						$stonecrop: stonecrop,
 					},
 				},
 			})

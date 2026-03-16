@@ -9,6 +9,7 @@ import { type MachineConfig } from 'xstate'
 import { useStonecrop } from '../src/composable'
 import DoctypeMeta from '../src/doctype'
 import Registry from '../src/registry'
+import { Stonecrop } from '../src/stonecrop'
 import { HST } from '../src/stores/hst'
 
 /**
@@ -58,12 +59,14 @@ const createDoctype = (name: string, fields?: SchemaTypes[]) => {
 
 describe('useStonecrop HST mode', () => {
 	let registry: Registry
+	let stonecrop: Stonecrop
 
 	beforeEach(() => {
 		setActivePinia(createPinia())
 		Registry._root = undefined as any
 		;(HST as any).instance = undefined
 		registry = new Registry()
+		stonecrop = new Stonecrop(registry)
 		vi.clearAllMocks()
 	})
 
@@ -80,7 +83,7 @@ describe('useStonecrop HST mode', () => {
 		})
 
 		const wrapper = mount(TestComponent, {
-			global: { provide: { $registry: registry } },
+			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
 		await wrapper.vm.$nextTick()
 		await new Promise(resolve => setTimeout(resolve, 50))
@@ -116,7 +119,7 @@ describe('useStonecrop HST mode', () => {
 		})
 
 		const wrapper = mount(TestComponent, {
-			global: { provide: { $registry: registry } },
+			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
 		await wrapper.vm.$nextTick()
 
@@ -141,7 +144,7 @@ describe('useStonecrop HST mode', () => {
 		})
 
 		const wrapper = mount(TestComponent, {
-			global: { provide: { $registry: registry } },
+			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
 		await wrapper.vm.$nextTick()
 
@@ -162,7 +165,7 @@ describe('useStonecrop HST mode', () => {
 		})
 
 		const wrapper = mount(TestComponent, {
-			global: { provide: { $registry: registry } },
+			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
 		await wrapper.vm.$nextTick()
 
@@ -180,7 +183,7 @@ describe('useStonecrop HST mode', () => {
 		})
 
 		const wrapper = mount(TestComponent, {
-			global: { provide: { $registry: registry } },
+			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
 		await wrapper.vm.$nextTick()
 
@@ -203,7 +206,7 @@ describe('useStonecrop HST mode', () => {
 		})
 
 		const wrapper = mount(TestComponent, {
-			global: { provide: { $registry: registry } },
+			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
 		await wrapper.vm.$nextTick()
 		await new Promise(resolve => setTimeout(resolve, 50))
@@ -230,7 +233,7 @@ describe('useStonecrop HST mode', () => {
 		})
 
 		const wrapper = mount(TestComponent, {
-			global: { provide: { $registry: registry } },
+			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
 		await wrapper.vm.$nextTick()
 		await new Promise(resolve => setTimeout(resolve, 50))
@@ -259,7 +262,7 @@ describe('useStonecrop HST mode', () => {
 		})
 
 		const wrapper = mount(TestComponent, {
-			global: { provide: { $registry: registry } },
+			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
 		await wrapper.vm.$nextTick()
 
@@ -286,7 +289,7 @@ describe('useStonecrop HST mode', () => {
 		})
 
 		const wrapper = mount(TestComponent, {
-			global: { provide: { $registry: registry } },
+			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
 		await wrapper.vm.$nextTick()
 		await new Promise(resolve => setTimeout(resolve, 50))
@@ -311,7 +314,7 @@ describe('useStonecrop HST mode', () => {
 		})
 
 		const wrapper = mount(TestComponent, {
-			global: { provide: { $registry: registry } },
+			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
 		await wrapper.vm.$nextTick()
 		await new Promise(resolve => setTimeout(resolve, 50))
@@ -337,7 +340,7 @@ describe('useStonecrop HST mode', () => {
 		})
 
 		const wrapper = mount(TestComponent, {
-			global: { provide: { $registry: registry } },
+			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
 		await wrapper.vm.$nextTick()
 		await new Promise(resolve => setTimeout(resolve, 50))
@@ -374,7 +377,7 @@ describe('useStonecrop HST mode', () => {
 		})
 
 		const wrapper = mount(TestComponent, {
-			global: { provide: { $registry: registry } },
+			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
 		await wrapper.vm.$nextTick()
 		await new Promise(resolve => setTimeout(resolve, 50))
@@ -402,7 +405,7 @@ describe('useStonecrop HST mode', () => {
 		})
 
 		const wrapper = mount(TestComponent, {
-			global: { provide: { $registry: registry } },
+			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
 		await wrapper.vm.$nextTick()
 		await new Promise(resolve => setTimeout(resolve, 50))
@@ -424,7 +427,7 @@ describe('useStonecrop HST mode', () => {
 		})
 
 		const wrapper = mount(TestComponent, {
-			global: { provide: { $registry: registry } },
+			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
 		await wrapper.vm.$nextTick()
 
@@ -457,7 +460,7 @@ describe('useStonecrop HST mode', () => {
 		})
 
 		const wrapper = mount(TestComponent, {
-			global: { provide: { $registry: registry } },
+			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
 		await wrapper.vm.$nextTick()
 		await new Promise(resolve => setTimeout(resolve, 50))
@@ -500,7 +503,7 @@ describe('useStonecrop HST mode', () => {
 		})
 
 		const wrapper = mount(TestComponent, {
-			global: { provide: { $registry: registry } },
+			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
 
 		const vm = wrapper.vm as any
@@ -515,12 +518,14 @@ describe('useStonecrop HST mode', () => {
 
 describe('useStonecrop base mode', () => {
 	let registry: Registry
+	let stonecrop: Stonecrop
 
 	beforeEach(() => {
 		setActivePinia(createPinia())
 		Registry._root = undefined as any
 		;(HST as any).instance = undefined
 		registry = new Registry()
+		stonecrop = new Stonecrop(registry)
 		vi.clearAllMocks()
 	})
 
@@ -533,7 +538,7 @@ describe('useStonecrop base mode', () => {
 		})
 
 		const wrapper = mount(TestComponent, {
-			global: { provide: { $registry: registry } },
+			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
 		await wrapper.vm.$nextTick()
 
@@ -568,7 +573,7 @@ describe('useStonecrop base mode', () => {
 		})
 
 		const wrapper = mount(TestComponent, {
-			global: { provide: { $registry: registry } },
+			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
 
 		const vm = wrapper.vm as any

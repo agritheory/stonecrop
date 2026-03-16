@@ -234,6 +234,62 @@ describe('Stonecrop class with HST integration', () => {
 		})
 	})
 
+	describe('getRecordState', () => {
+		let mockDoctype: DoctypeMeta
+
+		beforeEach(() => {
+			mockDoctype = createMockDoctype('Task')
+			registry.addDoctype(mockDoctype)
+		})
+
+		it('returns the status field value when the record has a status', () => {
+			stonecrop.addRecord('task', 'r-1', { id: 'r-1', status: 'pending' })
+
+			const state = stonecrop.getRecordState('task', 'r-1')
+			expect(state).toBe('pending')
+		})
+
+		it('falls back to the workflow initial state when the record has no status field', () => {
+			stonecrop.addRecord('task', 'r-2', { id: 'r-2', title: 'No status here' })
+
+			const state = stonecrop.getRecordState('task', 'r-2')
+			expect(state).toBe('draft')
+		})
+
+		it('falls back to the workflow initial state when status is an empty string', () => {
+			stonecrop.addRecord('task', 'r-3', { id: 'r-3', status: '' })
+
+			const state = stonecrop.getRecordState('task', 'r-3')
+			expect(state).toBe('draft')
+		})
+
+		it('returns empty string when the doctype has no workflow', () => {
+			const noWorkflowDoctype = new DoctypeMeta('Bare', List<SchemaTypes>([]), undefined as any, Map({}))
+			// Use a fresh registry to avoid singleton collision
+			Registry._root = undefined as any
+			const localRegistry = new Registry()
+			localRegistry.addDoctype(noWorkflowDoctype)
+			const localStonecrop = new Stonecrop(localRegistry)
+			localStonecrop.addRecord('bare', 'r-4', { id: 'r-4' })
+
+			const state = localStonecrop.getRecordState('bare', 'r-4')
+			expect(state).toBe('')
+		})
+
+		it('accepts a DoctypeMeta instance instead of a string slug', () => {
+			stonecrop.addRecord('task', 'r-5', { id: 'r-5', status: 'completed' })
+
+			const state = stonecrop.getRecordState(mockDoctype, 'r-5')
+			expect(state).toBe('completed')
+		})
+
+		it('falls back to initial state for a non-existent record', () => {
+			// record 'ghost' was never added
+			const state = stonecrop.getRecordState('task', 'ghost')
+			expect(state).toBe('draft')
+		})
+	})
+
 	describe('Advanced HST Usage', () => {
 		it('provides access to root HST store', () => {
 			const store = stonecrop.getStore()
