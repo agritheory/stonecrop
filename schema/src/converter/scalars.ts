@@ -49,7 +49,7 @@ export const WELL_KNOWN_SCALARS: Record<string, FieldTemplate> = {
 	// Date / Time
 	DateTime: { component: 'ADatetimePicker', fieldtype: 'Datetime' },
 	Datetime: { component: 'ADatetimePicker', fieldtype: 'Datetime' },
-	Date: { component: 'ADatePicker', fieldtype: 'Date' },
+	Date: { component: 'ADate', fieldtype: 'Date' },
 	Time: { component: 'ATimeInput', fieldtype: 'Time' },
 	Interval: { component: 'ADurationInput', fieldtype: 'Duration' },
 	Duration: { component: 'ADurationInput', fieldtype: 'Duration' },

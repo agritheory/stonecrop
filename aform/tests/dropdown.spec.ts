@@ -5,14 +5,14 @@ import ADropdown from '../src/components/form/ADropdown.vue'
 
 describe('dropdown input component', () => {
 	const dropdownData = {
-		items: ['Apple', 'Orange', 'Pear', 'Kiwi', 'Grape'],
+		options: ['Apple', 'Orange', 'Pear', 'Kiwi', 'Grape'],
 		value: 'Orange',
 		label: 'Fruit',
 	}
 
 	it('emits update event when dropdown is cleared', async () => {
 		const wrapper = mount(ADropdown, {
-			props: { modelValue: dropdownData.value, label: dropdownData.label, items: dropdownData.items },
+			props: { modelValue: dropdownData.value, label: dropdownData.label, options: dropdownData.options },
 		})
 
 		await wrapper.find('input').setValue('')
@@ -23,7 +23,7 @@ describe('dropdown input component', () => {
 
 	it('emits value update event when dropdown item is selected using mouse', async () => {
 		const wrapper = mount(ADropdown, {
-			props: { modelValue: dropdownData.value, label: dropdownData.label, items: dropdownData.items },
+			props: { modelValue: dropdownData.value, label: dropdownData.label, options: dropdownData.options },
 		})
 
 		const input = wrapper.find('input')
@@ -48,7 +48,7 @@ describe('dropdown input component', () => {
 
 	it('emits value update event when dropdown item is selected using keys', async () => {
 		const wrapper = mount(ADropdown, {
-			props: { modelValue: dropdownData.value, label: dropdownData.label, items: dropdownData.items },
+			props: { modelValue: dropdownData.value, label: dropdownData.label, options: dropdownData.options },
 		})
 
 		const input = wrapper.find('input')
@@ -96,7 +96,12 @@ describe('dropdown input component', () => {
 
 	it('emits filter change event when dropdown item is selected using mouse in sync', async () => {
 		const wrapper = mount(ADropdown, {
-			props: { modelValue: dropdownData.value, label: dropdownData.label, items: dropdownData.items, isAsync: false },
+			props: {
+				modelValue: dropdownData.value,
+				label: dropdownData.label,
+				options: dropdownData.options,
+				isAsync: false,
+			},
 		})
 
 		const input = wrapper.find('input')
@@ -131,7 +136,7 @@ describe('dropdown input component', () => {
 			props: {
 				modelValue: dropdownData.value,
 				label: dropdownData.label,
-				items: dropdownData.items,
+				options: dropdownData.options,
 				isAsync: true,
 				filterFunction: mockFilterFunction,
 			},
@@ -156,7 +161,7 @@ describe('dropdown input component', () => {
 			props: {
 				modelValue: 'Orange',
 				label: dropdownData.label,
-				items: dropdownData.items,
+				options: dropdownData.options,
 				isAsync: true,
 			},
 		})
@@ -173,7 +178,7 @@ describe('dropdown input component', () => {
 			props: {
 				modelValue: dropdownData.value,
 				label: dropdownData.label,
-				items: dropdownData.items,
+				options: dropdownData.options,
 			},
 		})
 
@@ -191,12 +196,37 @@ describe('dropdown input component', () => {
 		expect(updateEvents).toBeTruthy()
 	})
 
+	it('outside-click reverts to last committed value instead of clearing', async () => {
+		const wrapper = mount(ADropdown, {
+			props: {
+				modelValue: 'Orange',
+				label: dropdownData.label,
+				options: dropdownData.options,
+			},
+		})
+
+		const input = wrapper.find('input')
+		await input.trigger('focus')
+		// type something that is not a valid option
+		await input.setValue('Xyz')
+		await wrapper.vm.$nextTick()
+
+		// Escape is wired to onClickOutside → closeDropdown with no result
+		await input.trigger('keydown.esc')
+		await wrapper.vm.$nextTick()
+
+		// should revert to the last committed value ('Orange'), not clear to ''
+		const updateEvents = wrapper.emitted('update:modelValue')
+		const lastEvent = updateEvents![updateEvents!.length - 1]
+		expect(lastEvent).toEqual(['Orange'])
+	})
+
 	it('should handle selectPrevResult when at first item', async () => {
 		const wrapper = mount(ADropdown, {
 			props: {
 				modelValue: dropdownData.value,
 				label: dropdownData.label,
-				items: dropdownData.items,
+				options: dropdownData.options,
 			},
 		})
 
@@ -225,7 +255,7 @@ describe('dropdown input component', () => {
 			props: {
 				modelValue: '',
 				label: dropdownData.label,
-				items: dropdownData.items,
+				options: dropdownData.options,
 				isAsync: true,
 				filterFunction: mockFilterFunction,
 			},
@@ -244,7 +274,7 @@ describe('dropdown input component', () => {
 			props: {
 				modelValue: dropdownData.value,
 				label: dropdownData.label,
-				items: dropdownData.items,
+				options: dropdownData.options,
 			},
 		})
 
@@ -264,7 +294,7 @@ describe('dropdown input component', () => {
 			props: {
 				modelValue: dropdownData.value,
 				label: dropdownData.label,
-				items: dropdownData.items,
+				options: dropdownData.options,
 			},
 		})
 
@@ -281,7 +311,7 @@ describe('dropdown input component', () => {
 
 	it('pressing up with no selection jumps to last item', async () => {
 		const wrapper = mount(ADropdown, {
-			props: { modelValue: '', label: dropdownData.label, items: dropdownData.items },
+			props: { modelValue: '', label: dropdownData.label, options: dropdownData.options },
 		})
 
 		const input = wrapper.find('input')
@@ -304,7 +334,7 @@ describe('dropdown input component', () => {
 
 	it('renders in display mode as text without input', () => {
 		const wrapper = mount(ADropdown, {
-			props: { modelValue: 'Apple', label: dropdownData.label, items: dropdownData.items, mode: 'display' },
+			props: { modelValue: 'Apple', label: dropdownData.label, options: dropdownData.options, mode: 'display' },
 		})
 		expect(wrapper.find('input').exists()).toBe(false)
 		expect(wrapper.find('.aform_display-value').text()).toBe('Apple')

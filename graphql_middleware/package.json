@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/graphql-middleware",
-	"version": "0.10.0",
+	"version": "0.10.1",
 	"type": "module",
 	"types": "./dist/graphql-middleware.d.ts",
 	"exports": {
@@ -13,7 +13,6 @@
 		"dist"
 	],
 	"description": "GraphQL middleware for PostGraphile and Stonecrop schema",
-	"sideEffects": false,
 	"scripts": {
 		"_phase:build": "heft build && vite build && rushx docs",
 		"prepublishOnly": "heft build && vite build && rushx docs",

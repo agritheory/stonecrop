@@ -49,8 +49,8 @@ describe('useStringMask', () => {
 
 		it('returns early when no mask is resolved', () => {
 			const el = createMockInput('hello')
-			// binding.value is undefined and no schema with fieldtype
-			useStringMask(el, createBinding(undefined, {}))
+			// binding.value is undefined — no mask, no implicit schema sniffing
+			useStringMask(el, createBinding(undefined))
 
 			// Value unchanged (no mask applied)
 			expect(el.value).toBe('hello')
@@ -61,79 +61,6 @@ describe('useStringMask', () => {
 			useStringMask(el, createBinding('#### #### #### ####'))
 
 			expect(el.value).toBe('4242 4242 4242 4242')
-		})
-	})
-
-	describe('with named masks from schema fieldtype', () => {
-		it('applies mask from schema date fieldtype', () => {
-			const el = createMockInput('01012024')
-			const instance = {
-				schema: { fieldtype: 'Date', fieldname: 'date' },
-			}
-			useStringMask(el, createBinding(undefined, instance))
-
-			expect(el.value).toBe('01/01/2024')
-		})
-
-		it('applies mask from schema time fieldtype', () => {
-			const el = createMockInput('1230')
-			const instance = {
-				schema: { fieldtype: 'Time', fieldname: 'time' },
-			}
-			useStringMask(el, createBinding(undefined, instance))
-
-			expect(el.value).toBe('12:30')
-		})
-
-		it('applies mask from schema fulltime fieldtype', () => {
-			const el = createMockInput('123045')
-			const instance = {
-				schema: { fieldtype: 'Fulltime', fieldname: 'fulltime' },
-			}
-			useStringMask(el, createBinding(undefined, instance))
-
-			expect(el.value).toBe('12:30:45')
-		})
-
-		it('applies mask from schema phone fieldtype', () => {
-			const el = createMockInput('5551234567')
-			const instance = {
-				schema: { fieldtype: 'Phone', fieldname: 'phone' },
-			}
-			useStringMask(el, createBinding(undefined, instance))
-
-			expect(el.value).toBe('(555) 123 - 4567')
-		})
-
-		it('applies mask from schema datetime fieldtype', () => {
-			const el = createMockInput('202401011230')
-			const instance = {
-				schema: { fieldtype: 'Datetime', fieldname: 'datetime' },
-			}
-			useStringMask(el, createBinding(undefined, instance))
-
-			expect(el.value).toBe('2024/01/01 12:30')
-		})
-
-		it('applies card mask from schema', () => {
-			const el = createMockInput('4242424242424242')
-			const instance = {
-				schema: { fieldtype: 'Card', fieldname: 'card' },
-			}
-			useStringMask(el, createBinding(undefined, instance))
-
-			expect(el.value).toBe('4242 4242 4242 4242')
-		})
-
-		it('does not apply mask when fieldtype has no named mask', () => {
-			const el = createMockInput('hello')
-			const instance = {
-				schema: { fieldtype: 'Data', fieldname: 'name' },
-			}
-			useStringMask(el, createBinding(undefined, instance))
-
-			// No named mask for 'Data', value unchanged
-			expect(el.value).toBe('hello')
 		})
 	})
 

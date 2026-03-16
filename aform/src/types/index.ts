@@ -24,7 +24,10 @@ export type ComponentProps = {
 	label?: string
 
 	/**
-	 * The masking string to apply to inputs inside the component
+	 * The mask to apply to inputs inside the component. Accepts either a plain
+	 * mask string (e.g. `"(###) ###-####"`) or a stringified arrow function that
+	 * receives `locale` and returns a mask string
+	 * (e.g. `"(locale) => locale === 'en-US' ? '(###) ###-####' : '####-######'"`).
 	 * @public
 	 */
 	mask?: string
@@ -110,17 +113,6 @@ export type FormSchema = BaseSchema & {
 
 	/**
 	 * The field type for the schema field
-	 *
-	 * @remarks
-	 * This must be a string that represents the field type. A mask string will be automatically
-	 * applied for the following field types:
-	 * - Date ('##/##/####')
-	 * - Datetime ('####/##/## ##:##')
-	 * - Time ('##:##')
-	 * - Fulltime ('##:##:##')
-	 * - Phone ('(###) ### - ####')
-	 * - Card ('#### #### #### ####')
-	 *
 	 * @public
 	 */
 	fieldtype?: string
@@ -144,8 +136,11 @@ export type FormSchema = BaseSchema & {
 	width?: string
 
 	/**
-	 * The mask string for the field
-	 * @beta
+	 * The mask to apply to the field. Accepts either a plain mask string
+	 * (e.g. `"##/##/####"`) or a stringified arrow function that receives `locale`
+	 * and returns a mask string
+	 * (e.g. `"(locale) => locale === 'en-US' ? '(###) ###-####' : '####-######'"`).
+	 * @public
 	 */
 	mask?: string
 }
