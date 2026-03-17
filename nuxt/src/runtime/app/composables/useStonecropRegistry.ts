@@ -111,6 +111,8 @@ export function useStonecropRegistry() {
 		 *
 		 * @param client - DataClient implementation (e.g., StonecropClient from \@stonecrop/graphql-client)
 		 *
+		 * @throws Error if Stonecrop instance is not available
+		 *
 		 * @example
 		 * ```ts
 		 * const client = new StonecropClient({ endpoint: '/graphql' })
@@ -118,9 +120,13 @@ export function useStonecropRegistry() {
 		 * ```
 		 */
 		setClient(client: DataClient): void {
-			if (stonecrop) {
-				stonecrop.setClient(client)
+			if (!stonecrop) {
+				throw new Error(
+					'[useStonecropRegistry] Stonecrop instance is not available. ' +
+						'Ensure @stonecrop/nuxt is installed and the plugin has run.'
+				)
 			}
+			stonecrop.setClient(client)
 		},
 
 		/**
@@ -155,9 +161,11 @@ export function useStonecropRegistry() {
 			args?: unknown[]
 		): Promise<{ success: boolean; data: unknown; error: string | null }> {
 			if (!stonecrop) {
-				throw new Error(
-					'[useStonecropRegistry] Stonecrop instance is not available. ' +
-						'Ensure @stonecrop/nuxt is installed and the plugin has run.'
+				return Promise.reject(
+					new Error(
+						'[useStonecropRegistry] Stonecrop instance is not available. ' +
+							'Ensure @stonecrop/nuxt is installed and the plugin has run.'
+					)
 				)
 			}
 			return stonecrop.dispatchAction(doctype, action, args)

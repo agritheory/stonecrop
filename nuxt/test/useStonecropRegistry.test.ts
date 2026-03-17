@@ -1,4 +1,8 @@
+import type { DataClient } from '@stonecrop/schema'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+
+import { useNuxtApp, type NuxtApp } from 'nuxt/app'
+import { useStonecropRegistry } from '../src/runtime/app/composables/useStonecropRegistry'
 
 // ---------------------------------------------------------------------------
 // useStonecropRegistry composable — unit tests
@@ -7,13 +11,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 // that simulates what the @stonecrop/nuxt plugin provides after installation.
 // ---------------------------------------------------------------------------
 
-// Mock the nuxt/app module before importing the composable
 vi.mock('nuxt/app', () => ({
 	useNuxtApp: vi.fn(),
 }))
-
-import { useNuxtApp } from 'nuxt/app'
-import { useStonecropRegistry } from '../src/runtime/app/composables/useStonecropRegistry'
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -30,8 +30,9 @@ function makeRegistry(overrides: Record<string, unknown> = {}) {
 
 function makeStonecrop(overrides: Record<string, unknown> = {}) {
 	return {
-		_fetchRecord: undefined as unknown,
-		_fetchRecords: undefined as unknown,
+		setClient: vi.fn(),
+		getClient: vi.fn().mockReturnValue(undefined),
+		dispatchAction: vi.fn().mockResolvedValue({ success: true, data: null, error: null }),
 		...overrides,
 	}
 }
@@ -54,14 +55,14 @@ describe('useStonecropRegistry', () => {
 
 	it('returns the raw registry instance', () => {
 		const registry = makeRegistry()
-		vi.mocked(useNuxtApp).mockReturnValue(makeNuxtApp(registry, makeStonecrop()) as any)
+		vi.mocked(useNuxtApp).mockReturnValue(makeNuxtApp(registry, makeStonecrop()) as unknown as NuxtApp)
 
 		const result = useStonecropRegistry()
 		expect(result.registry).toBe(registry)
 	})
 
 	it('throws when registry is not available', () => {
-		vi.mocked(useNuxtApp).mockReturnValue(makeNuxtApp(undefined, undefined) as any)
+		vi.mocked(useNuxtApp).mockReturnValue(makeNuxtApp(undefined, undefined) as unknown as NuxtApp)
 
 		expect(() => useStonecropRegistry()).toThrow('[useStonecropRegistry]')
 	})
@@ -69,7 +70,7 @@ describe('useStonecropRegistry', () => {
 	describe('setMeta', () => {
 		it('sets getMeta on the registry', () => {
 			const registry = makeRegistry()
-			vi.mocked(useNuxtApp).mockReturnValue(makeNuxtApp(registry, makeStonecrop()) as any)
+			vi.mocked(useNuxtApp).mockReturnValue(makeNuxtApp(registry, makeStonecrop()) as unknown as NuxtApp)
 
 			const mockGetMeta = vi.fn()
 			useStonecropRegistry().setMeta(mockGetMeta)
@@ -80,7 +81,7 @@ describe('useStonecropRegistry', () => {
 		it('replaces an existing getMeta function', () => {
 			const originalGetMeta = vi.fn()
 			const registry = makeRegistry({ getMeta: originalGetMeta })
-			vi.mocked(useNuxtApp).mockReturnValue(makeNuxtApp(registry, makeStonecrop()) as any)
+			vi.mocked(useNuxtApp).mockReturnValue(makeNuxtApp(registry, makeStonecrop()) as unknown as NuxtApp)
 
 			const newGetMeta = vi.fn()
 			useStonecropRegistry().setMeta(newGetMeta)
@@ -90,64 +91,108 @@ describe('useStonecropRegistry', () => {
 		})
 	})
 
-	describe('setFetchRecord', () => {
-		it('sets _fetchRecord on the Stonecrop instance', () => {
+	describe('setClient', () => {
+		it('sets the data client on the Stonecrop instance', () => {
 			const registry = makeRegistry()
 			const stonecrop = makeStonecrop()
-			vi.mocked(useNuxtApp).mockReturnValue(makeNuxtApp(registry, stonecrop) as any)
+			vi.mocked(useNuxtApp).mockReturnValue(makeNuxtApp(registry, stonecrop) as unknown as NuxtApp)
 
-			const fetchFn = vi.fn()
-			useStonecropRegistry().setFetchRecord(fetchFn)
+			const mockClient: DataClient = {
+				getMeta: vi.fn(),
+				getRecord: vi.fn(),
+				getRecords: vi.fn(),
+				runAction: vi.fn(),
+			}
+			useStonecropRegistry().setClient(mockClient)
 
-			expect(stonecrop._fetchRecord).toBe(fetchFn)
+			expect(stonecrop.setClient).toHaveBeenCalledWith(mockClient)
 		})
 
-		it('does nothing when Stonecrop instance is not available', () => {
+		it('throws when Stonecrop instance is not available', () => {
 			const registry = makeRegistry()
-			vi.mocked(useNuxtApp).mockReturnValue(makeNuxtApp(registry, undefined) as any)
+			vi.mocked(useNuxtApp).mockReturnValue(makeNuxtApp(registry, undefined) as unknown as NuxtApp)
 
-			// Should not throw
-			expect(() => useStonecropRegistry().setFetchRecord(vi.fn())).not.toThrow()
+			const mockClient: DataClient = {
+				getMeta: vi.fn(),
+				getRecord: vi.fn(),
+				getRecords: vi.fn(),
+				runAction: vi.fn(),
+			}
+
+			expect(() => useStonecropRegistry().setClient(mockClient)).toThrow('Stonecrop instance is not available')
 		})
 	})
 
-	describe('setFetchRecords', () => {
-		it('sets _fetchRecords on the Stonecrop instance', () => {
+	describe('getClient', () => {
+		it('returns the current data client', () => {
 			const registry = makeRegistry()
-			const stonecrop = makeStonecrop()
-			vi.mocked(useNuxtApp).mockReturnValue(makeNuxtApp(registry, stonecrop) as any)
+			const mockClient: DataClient = {
+				getMeta: vi.fn(),
+				getRecord: vi.fn(),
+				getRecords: vi.fn(),
+				runAction: vi.fn(),
+			}
+			const stonecrop = makeStonecrop({ getClient: vi.fn().mockReturnValue(mockClient) })
+			vi.mocked(useNuxtApp).mockReturnValue(makeNuxtApp(registry, stonecrop) as unknown as NuxtApp)
 
-			const fetchFn = vi.fn()
-			useStonecropRegistry().setFetchRecords(fetchFn)
+			const result = useStonecropRegistry().getClient()
 
-			expect(stonecrop._fetchRecords).toBe(fetchFn)
+			expect(result).toBe(mockClient)
 		})
 
-		it('does nothing when Stonecrop instance is not available', () => {
+		it('returns undefined when no client is set', () => {
 			const registry = makeRegistry()
-			vi.mocked(useNuxtApp).mockReturnValue(makeNuxtApp(registry, undefined) as any)
+			const stonecrop = makeStonecrop({ getClient: vi.fn().mockReturnValue(undefined) })
+			vi.mocked(useNuxtApp).mockReturnValue(makeNuxtApp(registry, stonecrop) as unknown as NuxtApp)
 
-			expect(() => useStonecropRegistry().setFetchRecords(vi.fn())).not.toThrow()
+			const result = useStonecropRegistry().getClient()
+
+			expect(result).toBeUndefined()
 		})
 	})
 
-	it('all three setters can be chained on a single call', () => {
+	describe('dispatchAction', () => {
+		it('dispatches an action via the Stonecrop instance', async () => {
+			const registry = makeRegistry()
+			const mockResult = { success: true, data: { id: '1' }, error: null }
+			const stonecrop = makeStonecrop({ dispatchAction: vi.fn().mockResolvedValue(mockResult) })
+			vi.mocked(useNuxtApp).mockReturnValue(makeNuxtApp(registry, stonecrop) as unknown as NuxtApp)
+
+			const doctype = { name: 'Task', slug: 'task' }
+			const result = await useStonecropRegistry().dispatchAction(doctype, 'SUBMIT', ['1'])
+
+			expect(stonecrop.dispatchAction).toHaveBeenCalledWith(doctype, 'SUBMIT', ['1'])
+			expect(result).toEqual(mockResult)
+		})
+
+		it('throws when Stonecrop instance is not available', async () => {
+			const registry = makeRegistry()
+			vi.mocked(useNuxtApp).mockReturnValue(makeNuxtApp(registry, undefined) as unknown as NuxtApp)
+
+			const { dispatchAction } = useStonecropRegistry()
+			await expect(dispatchAction({ name: 'Task' }, 'SUBMIT')).rejects.toThrow('Stonecrop instance is not available')
+		})
+	})
+
+	it('setMeta and setClient can be used together', () => {
 		const registry = makeRegistry()
 		const stonecrop = makeStonecrop()
-		vi.mocked(useNuxtApp).mockReturnValue(makeNuxtApp(registry, stonecrop) as any)
+		vi.mocked(useNuxtApp).mockReturnValue(makeNuxtApp(registry, stonecrop) as unknown as NuxtApp)
 
-		const { setMeta, setFetchRecord, setFetchRecords } = useStonecropRegistry()
+		const { setMeta, setClient } = useStonecropRegistry()
 
 		const getMeta = vi.fn()
-		const fetchRecord = vi.fn()
-		const fetchRecords = vi.fn()
+		const mockClient: DataClient = {
+			getMeta: vi.fn(),
+			getRecord: vi.fn(),
+			getRecords: vi.fn(),
+			runAction: vi.fn(),
+		}
 
 		setMeta(getMeta)
-		setFetchRecord(fetchRecord)
-		setFetchRecords(fetchRecords)
+		setClient(mockClient)
 
 		expect(registry.getMeta).toBe(getMeta)
-		expect(stonecrop._fetchRecord).toBe(fetchRecord)
-		expect(stonecrop._fetchRecords).toBe(fetchRecords)
+		expect(stonecrop.setClient).toHaveBeenCalledWith(mockClient)
 	})
 })
