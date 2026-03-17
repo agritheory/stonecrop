@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/schema",
+      "comment": "add new DataClient interface for Stonecrop setup",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/schema"
+}

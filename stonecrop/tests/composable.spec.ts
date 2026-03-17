@@ -7,7 +7,7 @@ import { createRouter, createMemoryHistory } from 'vue-router'
 import { defineComponent, ref, computed } from 'vue'
 import { type MachineConfig } from 'xstate'
 
-import { useStonecrop } from '../src/composable'
+import { useStonecrop } from '../src/composables/stonecrop'
 import Registry from '../src/registry'
 import { Stonecrop } from '../src/stonecrop'
 import { HST } from '../src/stores/hst'
@@ -249,10 +249,14 @@ describe('useStonecrop composable', () => {
 		const mockGetMeta = vi.fn().mockResolvedValue(mockDoctype)
 		registry.getMeta = mockGetMeta
 
-		const mockFetch = vi.fn().mockResolvedValue({
-			json: () => Promise.resolve({ id: '123', title: 'Test Task' }),
-		})
-		vi.stubGlobal('fetch', mockFetch)
+		// Mock client for record fetching
+		const mockClient = {
+			getMeta: vi.fn(),
+			getRecord: vi.fn().mockResolvedValue({ id: '123', title: 'Test Task' }),
+			getRecords: vi.fn(),
+			runAction: vi.fn(),
+		}
+		stonecrop.setClient(mockClient)
 
 		// Mock router current route
 		vi.spyOn(mockRouter, 'currentRoute', 'get').mockReturnValue({

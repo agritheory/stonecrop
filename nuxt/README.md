@@ -7,10 +7,10 @@ The official Nuxt module for Stonecrop - a schema-driven UI framework with event
 
 ## What is Stonecrop?
 
-Stonecrop is a **schema-driven UI framework** that generates forms, tables, and workflows from JSON schemas. Instead of manually creating CRUD interfaces for every data model, you define your data structure once and Stonecrop handles the UI generation, state management, and validation automatically.
+Stonecrop is a **schema-driven UI framework** that generates forms, tables, and workflows from JSON schemas. You define your data structure once and Stonecrop handles UI generation, state management, and validation.
 
 **Key Benefits:**
-- **Schema-Driven**: Define data models in JSON, get full CRUD interfaces automatically
+- **Schema-Driven**: Define data models in JSON; form and table rendering follows automatically
 - **HST State Management**: Hierarchical State Tree for complex, nested application state
 - **FSM Workflows**: XState-powered finite state machines for predictable business logic
 - **Nuxt Native**: First-class integration with Nuxt 4's architecture
@@ -100,6 +100,27 @@ Create a JSON schema in `/doctypes/task.json`:
 
 The module picks up this file and, if `pageComponent` is configured, registers a route at the doctype's `slug` value (or `task` if no slug is set), passing the parsed schema into `route.meta`.
 
+### Wire Up Your Data Client
+
+After installing the module, add a client-side plugin to connect your data transport. The `useStonecropRegistry()` composable gives you a stable API for this — no need to reach into `globalProperties` directly:
+
+```typescript
+// app/plugins/stonecrop.client.ts
+import { StonecropClient } from '@stonecrop/graphql-client'
+
+export default defineNuxtPlugin(() => {
+  const client = new StonecropClient({ endpoint: '/graphql' })
+  const { setMeta, setFetchRecord, setFetchRecords } = useStonecropRegistry()
+
+  // Map the route path/segments to a doctype name, then delegate to your client
+  setMeta(({ segments }) => client.getMeta({ doctype: segments[0] }))
+  setFetchRecord((doctype, id) => client.getRecord(doctype, id))
+  setFetchRecords((doctype) => client.getRecords(doctype))
+})
+```
+
+This wires `useStonecrop()`'s automatic record loading to your GraphQL (or any other) backend. Without this step, `useStonecrop({ doctype, recordId })` falls back to a REST fetch stub that may not exist in your app.
+
 ### Use the Stonecrop Composable
 
 In your page or component:
@@ -108,19 +129,20 @@ In your page or component:
 <script setup lang="ts">
 import taskDoctype from '~/doctypes/task.json'
 
-// HST-reactive form setup
+// HST-reactive form setup — pass doctype + recordId for full integration
 const { stonecrop, provideHSTPath, handleHSTChange, formData } = useStonecrop({
   doctype: taskDoctype,
   recordId: 'task-123' // or undefined for new records
 })
 
-// Access the hierarchical state tree
-const taskTitle = stonecrop.getStore().get('task.task-123.title')
+// Access the hierarchical state tree directly
+const store = stonecrop.value?.getStore()
+const taskTitle = store?.get('task.task-123.title')
 </script>
 
 <template>
   <AForm
-    :schema="formData.schema"
+    :schema="taskDoctype.fields"
     :data="formData"
     @update="handleHSTChange"
   />
@@ -276,10 +298,10 @@ export default defineNuxtConfig({
 ### Plugin Registration
 
 The module auto-registers:
-- `useStonecrop()` - Main composable for HST integration
-- `useTableNavigation()` - Helper for table-to-detail navigation
+- `useStonecropRegistry()` - Composable for wiring data clients and `getMeta` after plugin install
+- `useStonecrop()` - Main composable for HST integration (from `@stonecrop/stonecrop`)
 - Pinia store configuration
-- Component auto-imports (AForm, ATable, etc.)
+- AForm and ATable component registration (from `@stonecrop/aform`)
 
 ## Why Schema-Driven?
 
@@ -298,6 +320,49 @@ The module auto-registers:
 - **Fewer Bugs**: Validation and state management are centralized
 - **Self-Documenting**: Schemas serve as data model documentation
 - **Easy Updates**: Change schema, UI updates automatically
+
+## `useStonecropRegistry()` — Configuring the Framework After Install
+
+The `@stonecrop/nuxt` runtime plugin installs `StonecropPlugin` with a router but no data transport, because data clients (GraphQL, tRPC, REST) are application-defined and cannot be serialised through `nuxt.config.ts` module options.
+
+`useStonecropRegistry()` is the documented extension point for wiring your data transport after plugin install. Call it in a client-side plugin:
+
+```typescript
+// app/plugins/stonecrop.client.ts
+export default defineNuxtPlugin(() => {
+  const { setMeta, setFetchRecord, setFetchRecords } = useStonecropRegistry()
+
+  // setMeta — resolves doctype metadata from the current route
+  // The context has { path, segments } from the router; adapt to your API.
+  setMeta(async ({ segments }) => {
+    // Example: segments[0] is the doctype slug, e.g. "task" from /task/123
+    const doctype = segments[0]
+    const meta = await $fetch(`/api/doctypes/${doctype}`)
+    return meta
+  })
+
+  // setFetchRecord — replaces the default REST stub in useStonecrop({ recordId })
+  setFetchRecord(async (doctype, id) => {
+    return await $fetch(`/api/${doctype.slug}/${id}`)
+  })
+
+  // setFetchRecords — replaces the default REST stub for list loading
+  setFetchRecords(async (doctype) => {
+    return await $fetch(`/api/${doctype.slug}`)
+  })
+})
+```
+
+**Why a composable and not module options?** Nuxt module options are serialised at build time — functions cannot be passed through `nuxt.config.ts`. `useStonecropRegistry()` is the composable equivalent of `usePinia()` or `useNuxtApp()`: a stable, typed API for configuring the framework singleton after it has been installed.
+
+### API
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `setMeta` | `(fn: (ctx) => DoctypeMeta \| Promise<DoctypeMeta>) => void` | Sets the `getMeta` function on the Registry. Called by `useStonecrop()` to lazy-load doctype metadata for the current route. `ctx` = `{ path, segments }`. |
+| `setFetchRecord` | `(fn: (doctype, id) => Promise<Record \| null>) => void` | Replaces the default REST fetch stub in `Stonecrop.getRecord()`. Enables GraphQL-backed or any other custom transport. |
+| `setFetchRecords` | `(fn: (doctype) => Promise<Record[]>) => void` | Replaces the default REST fetch stub in `Stonecrop.getRecords()`. |
+| `registry` | `Registry` | The raw Registry instance, for advanced use cases. |
 
 ## Advanced Features
 

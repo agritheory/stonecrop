@@ -33,14 +33,19 @@ async function setupAutoInitialization(
  * ```ts
  * import { createApp } from 'vue'
  * import Stonecrop from '@stonecrop/stonecrop'
+ * import { StonecropClient } from '@stonecrop/graphql-client'
  * import router from './router'
+ *
+ * const client = new StonecropClient({ endpoint: '/graphql' })
  *
  * const app = createApp(App)
  * app.use(Stonecrop, {
  *   router,
+ *   client,
  *   getMeta: async (routeContext) => {
  *     // routeContext contains: { path, segments }
- *     // fetch doctype meta from your API using the route context
+ *     // use the client to fetch doctype meta
+ *     return client.getMeta({ doctype: routeContext.segments[0] })
  *   },
  *   autoInitializeRouter: true,
  *   onRouterInitialized: async (registry, stonecrop) => {
@@ -67,7 +72,7 @@ const plugin: Plugin = {
 		app.config.globalProperties.$registry = registry
 
 		// Create and provide a global Stonecrop instance
-		const stonecrop = new Stonecrop(registry)
+		const stonecrop = new Stonecrop(registry, undefined, options?.client ? { client: options.client } : undefined)
 		app.provide('$stonecrop', stonecrop)
 		app.config.globalProperties.$stonecrop = stonecrop
 
@@ -85,6 +90,7 @@ const plugin: Plugin = {
 			}
 		} catch (error) {
 			// Pinia not available - operation log won't work, but app should still function
+			// eslint-disable-next-line no-console
 			console.warn('Pinia not available - operation log features will be disabled:', error)
 		}
 

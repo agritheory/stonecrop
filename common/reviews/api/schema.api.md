@@ -58,10 +58,34 @@ export interface ConvertedGraphQLDoctype extends Omit<DoctypeMeta, 'fields'> {
 export function convertGraphQLSchema(source: IntrospectionSource, options?: GraphQLConversionOptions): ConvertedGraphQLDoctype[];
 
 // @public
+export interface DataClient<T extends DoctypeRef = DoctypeRef, M = DoctypeMeta> {
+    getMeta(context: DoctypeContext): Promise<M | null>;
+    getRecord(doctype: T, recordId: string): Promise<Record<string, unknown> | null>;
+    getRecords(doctype: T, options?: {
+        filters?: Record<string, unknown>;
+        orderBy?: string;
+        limit?: number;
+        offset?: number;
+    }): Promise<Record<string, unknown>[]>;
+    runAction(doctype: T, action: string, args?: unknown[]): Promise<{
+        success: boolean;
+        data: unknown;
+        error: string | null;
+    }>;
+}
+
+// @public
 export function defaultIsEntityField(fieldName: string, _field: GraphQLField<unknown, unknown>, _parentType: GraphQLObjectType): boolean;
 
 // @public
 export function defaultIsEntityType(typeName: string, type: GraphQLObjectType): boolean;
+
+// @public
+export interface DoctypeContext {
+    [key: string]: unknown;
+    doctype: string;
+    recordId?: string;
+}
 
 // @public
 const DoctypeMeta: z.ZodObject<{
@@ -257,6 +281,12 @@ export { DoctypeMeta }
 export { DoctypeMeta as DoctypeMetaType }
 
 // @public
+export interface DoctypeRef {
+    name: string;
+    slug?: string;
+}
+
+// @public
 const FieldMeta: z.ZodObject<{
     fieldname: z.ZodString;
     fieldtype: z.ZodEnum<["Data", "Text", "Int", "Float", "Decimal", "Check", "Date", "Time", "Datetime", "Duration", "DateRange", "JSON", "Code", "Link", "Doctype", "Attach", "Currency", "Quantity", "Select"]>;
@@ -387,13 +417,6 @@ export function parseField(data: unknown): FieldMeta;
 
 // @public
 export function pascalToSnake(pascal: string): string;
-
-// @public
-export interface RouteContext {
-    [key: string]: unknown;
-    doctype: string;
-    recordId?: string;
-}
 
 // @public
 export function snakeToCamel(snakeCase: string): string;

@@ -1,13 +1,12 @@
-// src/composable.ts
 import { inject, onMounted, Ref, ref, watch, provide, computed, ComputedRef } from 'vue'
 
-import Registry from './registry'
-import { Stonecrop } from './stonecrop'
-import DoctypeMeta from './doctype'
-import type { HSTNode } from './stores/hst'
-import { RouteContext } from './types/registry'
+import Registry from '../registry'
+import { Stonecrop } from '../stonecrop'
+import DoctypeMeta from '../doctype'
+import type { HSTNode } from '../stores/hst'
+import { RouteContext } from '../types/registry'
 import { storeToRefs } from 'pinia'
-import type { HSTOperation, OperationLogConfig, OperationLogSnapshot } from './types/operation-log'
+import type { HSTOperation, OperationLogConfig, OperationLogSnapshot } from '../types/operation-log'
 import { SchemaTypes, DoctypeSchema } from '@stonecrop/aform'
 
 /**
@@ -449,9 +448,9 @@ export function useStonecrop(options?: {
 	 * Recursively save a record with all nested doctype fields
 	 * @param doctype - The doctype metadata
 	 * @param recordId - The record ID to save
-	 * @returns Promise resolving to the complete save payload
+	 * @returns The complete save payload
 	 */
-	const saveRecursive = async (doctype: DoctypeMeta, recordId: string): Promise<Record<string, any>> => {
+	const saveRecursive = (doctype: DoctypeMeta, recordId: string): Record<string, any> => {
 		if (!hstStore.value || !stonecrop.value) {
 			throw new Error('HST store not initialized')
 		}

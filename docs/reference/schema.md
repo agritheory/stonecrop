@@ -426,6 +426,70 @@ export interface ConvertedGraphQLDoctype {
 | _graphqlTypeName? | `string` | Original GraphQL type name (for debugging/reference) |
 | fields | `GraphQLConversionFieldMeta[]` | Field definitions with optional GraphQL conversion metadata |
 
+### DataClient
+
+Interface for data clients that fetch doctype metadata and records. Implemented by stonecrop/graphql-client's StonecropClient. Custom implementations can use any backend (REST, local storage, etc.).
+
+**Definition:**
+
+```typescript
+export interface DataClient {
+  getMeta(context: DoctypeContext): Promise<M | null>;
+  getRecord(doctype: T, recordId: string): Promise<Record<string, unknown> | null>;
+  getRecords(doctype: T, options: {
+        filters?: Record<string, unknown>;
+        orderBy?: string;
+        limit?: number;
+        offset?: number;
+    }): Promise<Record<string, unknown>[]>;
+  runAction(doctype: T, action: string, args: unknown[]): Promise<{
+        success: boolean;
+        data: unknown;
+        error: string | null;
+    }>;
+}
+```
+
+### DoctypeContext
+
+Context for identifying what doctype/record we're working with. Used by graphql-middleware and graphql-client to resolve schema metadata.
+
+**Definition:**
+
+```typescript
+export interface DoctypeContext {
+  doctype: string;
+  recordId?: string;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| doctype | `string` | Doctype name (e.g., 'Task', 'Customer') |
+| recordId? | `string` | Optional record ID for viewing/editing a specific record |
+
+### DoctypeRef
+
+Base interface for doctype metadata passed to DataClient methods. Only requires properties needed for record fetching.
+
+**Definition:**
+
+```typescript
+export interface DoctypeRef {
+  name: string;
+  slug?: string;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| name | `string` | Doctype name (e.g., 'Task', 'Customer') |
+| slug? | `string` | URL-friendly slug (e.g., 'task', 'customer') |
+
 ### FieldTemplate
 
 Field template for TYPE_MAP entries. Defines the default component and semantic field type for a field.
@@ -499,26 +563,6 @@ export interface GraphQLConversionOptions {
 | isEntityField? | `(fieldName: string, field: GraphQLField<unknown, unknown>, parentType: GraphQLObjectType) => boolean` | Custom function to filter which fields on an entity type are included. When provided, replaces the default field filter. The default filter excludes `nodeId`, `__typename`, and `clientMutationId`. |
 | isEntityType? | `(typeName: string, type: GraphQLObjectType) => boolean` | Custom function to determine if a GraphQL object type represents an entity (→ doctype). When provided, replaces the default heuristic entirely. The default heuristic excludes types matching synthetic patterns: `*Connection`, `*Edge`, `*Input`, `*Patch`, `*Payload`, `*Condition`, `*Filter`, `*OrderBy`, `*Aggregate`, `Query`, `Mutation`, `Subscription`, `__*`. |
 | typeOverrides? | `Record<string, Record<string, Partial<FieldMeta>>>` | Per-type, per-field overrides for the converted field definitions. Outer key is the GraphQL type name, inner key is the field name. |
-
-### RouteContext
-
-Route context for identifying what doctype/record we're working with. Used by graphql-middleware and graphql-client to resolve schema metadata.
-
-**Definition:**
-
-```typescript
-export interface RouteContext {
-  doctype: string;
-  recordId?: string;
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| doctype | `string` | Doctype name (e.g., 'Task', 'Customer') |
-| recordId? | `string` | Optional record ID for viewing/editing a specific record |
 
 ### ValidationError
 

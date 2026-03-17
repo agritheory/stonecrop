@@ -1,10 +1,28 @@
+import type { DataClient } from '@stonecrop/schema'
 import { reactive } from 'vue'
+
 import DoctypeMeta from './doctype'
 import Registry from './registry'
 import { createHST, type HSTNode } from './stores/hst'
 import { useOperationLogStore } from './stores/operation-log'
 import type { OperationLogConfig } from './types/operation-log'
 import type { RouteContext } from './types/registry'
+
+/**
+ * Options for constructing a Stonecrop instance directly.
+ * When using the Vue plugin, pass these via `InstallOptions` instead.
+ * @public
+ */
+export interface StonecropOptions {
+	/**
+	 * Data client for fetching doctype metadata and records.
+	 * Use \@stonecrop/graphql-client's StonecropClient for GraphQL backends,
+	 * or implement DataClient for custom data sources.
+	 *
+	 * Can be set later via `setClient()` for deferred configuration.
+	 */
+	client?: DataClient
+}
 
 /**
  * Main Stonecrop class with HST integration and built-in Operation Log
@@ -14,6 +32,7 @@ export class Stonecrop {
 	private hstStore: HSTNode
 	private _operationLogStore?: ReturnType<typeof useOperationLogStore>
 	private _operationLogConfig?: Partial<OperationLogConfig>
+	private _client?: DataClient
 
 	/** The registry instance containing all doctype definitions */
 	readonly registry: Registry
@@ -22,16 +41,45 @@ export class Stonecrop {
 	 * Creates a new Stonecrop instance with HST integration
 	 * @param registry - The Registry instance containing doctype definitions
 	 * @param operationLogConfig - Optional configuration for the operation log
+	 * @param options - Options including the data client (can be set later via setClient)
 	 */
-	constructor(registry: Registry, operationLogConfig?: Partial<OperationLogConfig>) {
+	constructor(registry: Registry, operationLogConfig?: Partial<OperationLogConfig>, options?: StonecropOptions) {
 		this.registry = registry
 
 		// Store config for lazy initialization
 		this._operationLogConfig = operationLogConfig
 
+		// Store data client (can be set later via setClient)
+		this._client = options?.client
+
 		// Initialize HST store with auto-sync to Registry
 		this.initializeHSTStore()
 		this.setupRegistrySync()
+	}
+
+	/**
+	 * Set the data client for fetching doctype metadata and records.
+	 * Use this for deferred configuration in Nuxt/Vue plugin setups.
+	 *
+	 * @param client - DataClient implementation (e.g., StonecropClient from \@stonecrop/graphql-client)
+	 *
+	 * @example
+	 * ```ts
+	 * const { setClient } = useStonecropRegistry()
+	 * const client = new StonecropClient({ endpoint: '/graphql' })
+	 * setClient(client)
+	 * ```
+	 */
+	setClient(client: DataClient): void {
+		this._client = client
+	}
+
+	/**
+	 * Get the current data client
+	 * @returns The DataClient instance or undefined if not set
+	 */
+	getClient(): DataClient | undefined {
+		return this._client
 	}
 
 	/**
@@ -233,32 +281,72 @@ export class Stonecrop {
 	}
 
 	/**
-	 * Get records from server (maintains compatibility)
+	 * Get records from server using the configured data client.
 	 * @param doctype - The doctype
+	 * @throws Error if no data client has been configured
 	 */
 	async getRecords(doctype: DoctypeMeta): Promise<void> {
-		const response = await fetch(`/${doctype.slug}`)
-		const records = (await response.json()) as { id: string }[]
+		if (!this._client) {
+			throw new Error(
+				'No data client configured. Call setClient() with a DataClient implementation ' +
+					'(e.g., StonecropClient from @stonecrop/graphql-client) before fetching records.'
+			)
+		}
+
+		const records = await this._client.getRecords(doctype)
 
 		// Store each record in HST
 		records.forEach(record => {
 			if (record.id) {
-				this.addRecord(doctype, record.id, record)
+				this.addRecord(doctype, record.id as string, record)
 			}
 		})
 	}
 
 	/**
-	 * Get single record from server (maintains compatibility)
+	 * Get single record from server using the configured data client.
 	 * @param doctype - The doctype
 	 * @param recordId - The record ID
+	 * @throws Error if no data client has been configured
 	 */
 	async getRecord(doctype: DoctypeMeta, recordId: string): Promise<void> {
-		const response = await fetch(`/${doctype.slug}/${recordId}`)
-		const record = await response.json()
+		if (!this._client) {
+			throw new Error(
+				'No data client configured. Call setClient() with a DataClient implementation ' +
+					'(e.g., StonecropClient from @stonecrop/graphql-client) before fetching records.'
+			)
+		}
 
-		// Store record
-		this.addRecord(doctype, recordId, record)
+		const record = await this._client.getRecord(doctype, recordId)
+
+		if (record) {
+			this.addRecord(doctype, recordId, record)
+		}
+	}
+
+	/**
+	 * Dispatch an action to the server via the configured data client.
+	 * All state changes flow through this single mutation endpoint.
+	 *
+	 * @param doctype - The doctype
+	 * @param action - Action name to execute (e.g., 'SUBMIT', 'APPROVE', 'save')
+	 * @param args - Action arguments (typically record ID and/or form data)
+	 * @returns Action result with success status, response data, and any error
+	 * @throws Error if no data client has been configured
+	 */
+	async dispatchAction(
+		doctype: DoctypeMeta,
+		action: string,
+		args?: unknown[]
+	): Promise<{ success: boolean; data: unknown; error: string | null }> {
+		if (!this._client) {
+			throw new Error(
+				'No data client configured. Call setClient() with a DataClient implementation ' +
+					'(e.g., StonecropClient from @stonecrop/graphql-client) before dispatching actions.'
+			)
+		}
+
+		return this._client.runAction(doctype, action, args)
 	}
 
 	/**

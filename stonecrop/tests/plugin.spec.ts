@@ -274,6 +274,49 @@ describe('Stonecrop Vue Plugin with HST', () => {
 		expect(app.config.globalProperties.$stonecrop).toBeDefined()
 	})
 
+	it('passes client option through to Stonecrop instance', () => {
+		const mockClient = {
+			getMeta: vi.fn(),
+			getRecord: vi.fn().mockResolvedValue(null),
+			getRecords: vi.fn().mockResolvedValue([]),
+			runAction: vi.fn(),
+		}
+
+		app.use(Stonecrop, {
+			router: mockRouter,
+			client: mockClient,
+		})
+
+		const stonecropInstance = app.config.globalProperties.$stonecrop as any
+		expect(stonecropInstance).toBeDefined()
+		expect(stonecropInstance.getClient()).toBe(mockClient)
+	})
+
+	it('Stonecrop instance uses injected client for record operations', async () => {
+		const mockRecord = { id: '99', title: 'Plugin-injected record' }
+		const mockClient = {
+			getMeta: vi.fn(),
+			getRecord: vi.fn().mockResolvedValue(mockRecord),
+			getRecords: vi.fn(),
+			runAction: vi.fn(),
+		}
+
+		app.use(Stonecrop, {
+			router: mockRouter,
+			client: mockClient,
+		})
+
+		const { List } = await import('immutable')
+		const { default: DoctypeMeta } = await import('../src/doctype')
+		const mockDoctype = new DoctypeMeta('Widget', List([]), undefined as any, undefined as any)
+
+		const stonecropInstance = app.config.globalProperties.$stonecrop as any
+		await stonecropInstance.registry.addDoctype(mockDoctype)
+		await stonecropInstance.getRecord(mockDoctype, '99')
+
+		expect(mockClient.getRecord).toHaveBeenCalledWith(mockDoctype, '99')
+	})
+
 	it('registers custom components when provided', () => {
 		const MockComponent = { template: '<div>Mock</div>' }
 		const spy = vi.spyOn(app, 'component')

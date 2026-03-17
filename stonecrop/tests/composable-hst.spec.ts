@@ -6,7 +6,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { defineComponent } from 'vue'
 import { type MachineConfig } from 'xstate'
 
-import { useStonecrop } from '../src/composable'
+import { useStonecrop } from '../src/composables/stonecrop'
 import DoctypeMeta from '../src/doctype'
 import Registry from '../src/registry'
 import { Stonecrop } from '../src/stonecrop'

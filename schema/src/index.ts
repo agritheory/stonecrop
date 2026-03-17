@@ -5,7 +5,14 @@ export { StonecropFieldType, TYPE_MAP, getDefaultComponent } from './fieldtype'
 export { FieldMeta, FieldOptions, FieldValidation } from './field'
 
 // Doctype schema
-export { DoctypeMeta, WorkflowMeta, ActionDefinition, type RouteContext } from './doctype'
+export {
+	DoctypeMeta,
+	WorkflowMeta,
+	ActionDefinition,
+	type DoctypeContext,
+	type DoctypeRef,
+	type DataClient,
+} from './doctype'
 
 // Validation helpers
 export {

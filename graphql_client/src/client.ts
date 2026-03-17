@@ -1,6 +1,6 @@
-import type { DoctypeMeta, RouteContext } from '@stonecrop/schema'
+import type { DataClient, DoctypeMeta, DoctypeContext } from '@stonecrop/schema'
 
-export type { RouteContext }
+export type { DoctypeContext }
 
 /**
  * Options for creating a Stonecrop client
@@ -17,7 +17,7 @@ export interface StonecropClientOptions {
  * Client for interacting with Stonecrop GraphQL API
  * @public
  */
-export class StonecropClient {
+export class StonecropClient implements DataClient {
 	private endpoint: string
 	private headers: Record<string, string>
 	private metaCache: Map<string, DoctypeMeta> = new Map()
@@ -65,9 +65,9 @@ export class StonecropClient {
 
 	/**
 	 * Get doctype metadata
-	 * @param context - Route context containing doctype name
+	 * @param context - Doctype context containing doctype name
 	 */
-	async getMeta(context: RouteContext): Promise<DoctypeMeta | null> {
+	async getMeta(context: DoctypeContext): Promise<DoctypeMeta | null> {
 		const cached = this.metaCache.get(context.doctype)
 		if (cached) return cached
 
@@ -83,11 +83,19 @@ export class StonecropClient {
 						fieldtype
 						component
 						label
+						width
+						align
 						required
 						readOnly
+						edit
+						hidden
+						default
 						options
+						mask
 						precision
 						scale
+						mode
+						validation
 					}
 					workflow {
 						states
@@ -125,11 +133,19 @@ export class StonecropClient {
 						fieldtype
 						component
 						label
+						width
+						align
 						required
 						readOnly
+						edit
+						hidden
+						default
 						options
+						mask
 						precision
 						scale
+						mode
+						validation
 					}
 					workflow {
 						states

@@ -41,6 +41,7 @@
 		"test:ui": "vitest --ui"
 	},
 	"dependencies": {
+		"@stonecrop/schema": "workspace:*",
 		"@vueuse/core": "^14.2.1",
 		"immutable": "^5.1.4",
 		"pinia-shared-state": "^1.0.1",
