@@ -64,6 +64,13 @@ export function defaultIsEntityField(fieldName: string, _field: GraphQLField<unk
 export function defaultIsEntityType(typeName: string, type: GraphQLObjectType): boolean;
 
 // @public
+export interface DoctypeContext {
+    [key: string]: unknown;
+    doctype: string;
+    recordId?: string;
+}
+
+// @public
 const DoctypeMeta: z.ZodObject<{
     name: z.ZodString;
     slug: z.ZodOptional<z.ZodString>;
@@ -387,13 +394,6 @@ export function parseField(data: unknown): FieldMeta;
 
 // @public
 export function pascalToSnake(pascal: string): string;
-
-// @public
-export interface RouteContext {
-    [key: string]: unknown;
-    doctype: string;
-    recordId?: string;
-}
 
 // @public
 export function snakeToCamel(snakeCase: string): string;

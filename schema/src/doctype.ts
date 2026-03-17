@@ -87,11 +87,11 @@ export const DoctypeMeta = z.object({
 export type DoctypeMeta = z.infer<typeof DoctypeMeta>
 
 /**
- * Route context for identifying what doctype/record we're working with.
+ * Context for identifying what doctype/record we're working with.
  * Used by graphql-middleware and graphql-client to resolve schema metadata.
  * @public
  */
-export interface RouteContext {
+export interface DoctypeContext {
 	/** Doctype name (e.g., 'Task', 'Customer') */
 	doctype: string
 	/** Optional record ID for viewing/editing a specific record */

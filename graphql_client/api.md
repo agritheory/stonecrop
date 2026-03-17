@@ -4,20 +4,20 @@
 
 ## Vue Components
 
+### DoctypeContext
+
+Vue component exported from @stonecrop/graphql_client.
+
+```typescript
+import { DoctypeContext } from '@stonecrop/graphql_client'
+```
+
 ### DoctypeMeta
 
 Vue component exported from @stonecrop/graphql_client.
 
 ```typescript
 import { DoctypeMeta } from '@stonecrop/graphql_client'
-```
-
-### RouteContext
-
-Vue component exported from @stonecrop/graphql_client.
-
-```typescript
-import { RouteContext } from '@stonecrop/graphql_client'
 ```
 
 ## Interfaces
@@ -134,14 +134,14 @@ getAllMeta(): Promise<DoctypeMeta[]>
 Get doctype metadata
 
 ```typescript
-getMeta(context: RouteContext): Promise<DoctypeMeta | null>
+getMeta(context: DoctypeContext): Promise<DoctypeMeta | null>
 ```
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| context | `RouteContext` | Route context containing doctype name |
+| context | `DoctypeContext` | Doctype context containing doctype name |
 
 #### getRecord
 

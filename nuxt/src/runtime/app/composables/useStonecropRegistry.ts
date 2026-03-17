@@ -1,53 +1,62 @@
+import type { DoctypeMeta } from '@stonecrop/schema'
+import type { RouteContext } from '@stonecrop/stonecrop'
+
 import { useNuxtApp } from 'nuxt/app'
-
-/**
- * Stonecrop's internal route context — the shape passed to `Registry.getMeta`.
- * Uses `path` + `segments` (resolved from the router at runtime), not the
- * schema-level `{ doctype }` context used by `StonecropClient`.
- *
- * Defined inline here to avoid importing from `@stonecrop/stonecrop`,
- * where `RouteContext` and `DoctypeMeta` are declared separately from
- * `@stonecrop/schema` and would cause TS2322 structural mismatches.
- */
-interface StonecropRouteContext {
-	/** The full route path, e.g. "/plan/abc-123" */
-	path: string
-	/** Path split by "/", e.g. ["plan", "abc-123"] */
-	segments: string[]
-}
-
-/**
- * Minimal structural shape of a resolved DoctypeMeta.
- * Expressed as an interface so any object satisfying this shape is accepted,
- * avoiding nominal type conflicts between the stonecrop dist and @stonecrop/schema.
- */
-interface ResolvedDoctypeMeta {
-	name: string
-	fields: Array<{ fieldname: string; fieldtype: string; [key: string]: unknown }>
-	[key: string]: unknown
-}
 
 /**
  * Provides a stable, documented API for accessing and configuring the Stonecrop
  * Registry instance after the `@stonecrop/nuxt` plugin has installed it.
  *
- * This is the idiomatic way to wire up `getMeta`, `fetchRecord`, and `fetchRecords`
- * in a Nuxt application — call this composable from your own plugin instead of
- * reaching into `globalProperties` directly.
+ * ## Why This Composable Exists
+ *
+ * Stonecrop's architecture separates concerns across packages:
+ * - **@stonecrop/schema**: Defines doctype schemas and `DoctypeContext` (doctype + recordId)
+ * - **@stonecrop/stonecrop**: Core framework with `RouteContext` (path + segments) for routing
+ * - **@stonecrop/nuxt**: Nuxt integration that bootstraps the Registry and Stonecrop instances
+ *
+ * This composable bridges Nuxt's plugin lifecycle with Stonecrop's registry, allowing
+ * applications to inject their data-fetching implementations after the framework is mounted.
+ * The nuxt module is client-agnostic — use any data source (GraphQL, REST, local storage, etc.).
+ *
+ * ## RouteContext vs DoctypeContext
+ *
+ * - **RouteContext** (`{ path, segments }`): Raw URL routing context. Used by the router
+ *   layer to identify "where we are" in the application (e.g., `/plan/123` → segments `['plan', '123']`).
+ *
+ * - **DoctypeContext** (`{ doctype, recordId? }`): Semantic doctype context. Used by the
+ *   data layer to identify "what we're working with" (e.g., `{ doctype: 'Plan', recordId: '123' }`).
+ *
+ * Your `setMeta` implementation bridges these: extract doctype/recordId from the route
+ * segments and pass `DoctypeContext` to your data client.
+ *
+ * ## Data Flow
+ *
+ * ```
+ * URL Route (/plan/123)
+ *     ↓
+ * RouteContext ({ path: '/plan/123', segments: ['plan', '123'] })
+ *     ↓
+ * getMeta (your implementation)
+ *     ↓
+ * DoctypeContext ({ doctype: 'Plan', recordId: '123' })
+ *     ↓
+ * Your Data Client → DoctypeMeta
+ * ```
  *
  * @example
  * ```ts
  * // app/plugins/stonecrop.client.ts
+ * // Example using @stonecrop/graphql-client, but any data source works
  * import { StonecropClient } from '@stonecrop/graphql-client'
  *
  * export default defineNuxtPlugin(() => {
  *   const client = new StonecropClient({ endpoint: '/graphql' })
  *   const { setMeta, setFetchRecord, setFetchRecords } = useStonecropRegistry()
  *
- *   // getMeta receives the router path/segments; adapt to what your client needs
+ *   // Bridge RouteContext → DoctypeContext for metadata fetching
  *   setMeta(({ segments }) => {
  *     const doctype = segments[0] // e.g. "plan" → doctype "Plan"
- *     return client.getMeta({ doctype })
+ *     return client.getMeta({ doctype }) // client expects DoctypeContext
  *   })
  *   setFetchRecord((doctype, id) => client.getRecord(doctype, id))
  *   setFetchRecords((doctype) => client.getRecords(doctype))
@@ -64,7 +73,7 @@ export function useStonecropRegistry() {
 	// `app.provide('$registry', registry)` in @stonecrop/stonecrop's plugin.
 	const registry = nuxtApp.$registry as
 		| {
-				getMeta?: (routeContext: StonecropRouteContext) => ResolvedDoctypeMeta | Promise<ResolvedDoctypeMeta>
+				getMeta?: (routeContext: RouteContext) => DoctypeMeta | Promise<DoctypeMeta>
 		  }
 		| undefined
 
@@ -78,8 +87,8 @@ export function useStonecropRegistry() {
 	// The Stonecrop instance carries the injectable fetch implementations.
 	const stonecrop = nuxtApp.$stonecrop as
 		| {
-				_fetchRecord?: (doctype: ResolvedDoctypeMeta, id: string) => Promise<Record<string, unknown> | null>
-				_fetchRecords?: (doctype: ResolvedDoctypeMeta) => Promise<Record<string, unknown>[]>
+				_fetchRecord?: (doctype: DoctypeMeta, id: string) => Promise<Record<string, unknown> | null>
+				_fetchRecords?: (doctype: DoctypeMeta) => Promise<Record<string, unknown>[]>
 		  }
 		| undefined
 
@@ -94,17 +103,23 @@ export function useStonecropRegistry() {
 		 * Set the `getMeta` function on the Registry.
 		 * Called by `useStonecrop()` to lazy-load doctype metadata for the current route.
 		 *
-		 * The context received is Stonecrop's router context `{ path, segments }`.
-		 * Your implementation must map from the route path to the appropriate doctype.
+		 * You must bridge `RouteContext` → `DoctypeContext`:
+		 * - Extract doctype name from `segments` (e.g., `segments[0]`)
+		 * - Extract record ID from `segments` if present (e.g., `segments[1]`)
+		 * - Pass `DoctypeContext` to your data client
 		 *
 		 * @example
 		 * ```ts
-		 * setMeta(({ segments }) => client.getMeta({ doctype: segments[0] }))
+		 * // Map route to doctype
+		 * setMeta(({ segments }) => {
+		 *   const doctype = segments[0] // /plan/123 → 'plan'
+		 *   return client.getMeta({ doctype }) // client expects DoctypeContext
+		 * })
 		 * ```
 		 *
-		 * @param fn - Function that receives a route context and returns DoctypeMeta.
+		 * @param fn - Function that receives RouteContext and returns DoctypeMeta.
 		 */
-		setMeta(fn: (routeContext: StonecropRouteContext) => ResolvedDoctypeMeta | Promise<ResolvedDoctypeMeta>): void {
+		setMeta(fn: (routeContext: RouteContext) => DoctypeMeta | Promise<DoctypeMeta>): void {
 			// Registry.getMeta is a mutable property (not readonly), so this assignment
 			// is supported — we're providing a cleaner API than direct globalProperties access.
 			registry.getMeta = fn
@@ -116,7 +131,7 @@ export function useStonecropRegistry() {
 		 *
 		 * @param fn - Async function that fetches a single record by doctype + ID.
 		 */
-		setFetchRecord(fn: (doctype: ResolvedDoctypeMeta, id: string) => Promise<Record<string, unknown> | null>): void {
+		setFetchRecord(fn: (doctype: DoctypeMeta, id: string) => Promise<Record<string, unknown> | null>): void {
 			if (stonecrop) {
 				stonecrop._fetchRecord = fn
 			}
@@ -128,7 +143,7 @@ export function useStonecropRegistry() {
 		 *
 		 * @param fn - Async function that fetches all records for a doctype.
 		 */
-		setFetchRecords(fn: (doctype: ResolvedDoctypeMeta) => Promise<Record<string, unknown>[]>): void {
+		setFetchRecords(fn: (doctype: DoctypeMeta) => Promise<Record<string, unknown>[]>): void {
 			if (stonecrop) {
 				stonecrop._fetchRecords = fn
 			}

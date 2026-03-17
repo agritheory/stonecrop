@@ -1,6 +1,6 @@
-import type { DoctypeMeta, RouteContext } from '@stonecrop/schema'
+import type { DoctypeMeta, DoctypeContext } from '@stonecrop/schema'
 
-export type { RouteContext }
+export type { DoctypeContext }
 
 /**
  * Options for creating a Stonecrop client
@@ -65,9 +65,9 @@ export class StonecropClient {
 
 	/**
 	 * Get doctype metadata
-	 * @param context - Route context containing doctype name
+	 * @param context - Doctype context containing doctype name
 	 */
-	async getMeta(context: RouteContext): Promise<DoctypeMeta | null> {
+	async getMeta(context: DoctypeContext): Promise<DoctypeMeta | null> {
 		const cached = this.metaCache.get(context.doctype)
 		if (cached) return cached
 

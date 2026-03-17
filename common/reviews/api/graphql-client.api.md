@@ -4,8 +4,10 @@
 
 ```ts
 
+import type { DoctypeContext } from '@stonecrop/schema';
 import { DoctypeMeta } from '@stonecrop/schema';
-import type { RouteContext } from '@stonecrop/schema';
+
+export { DoctypeContext }
 
 export { DoctypeMeta }
 
@@ -53,14 +55,12 @@ export const queries: {
     getMeta: string;
 };
 
-export { RouteContext }
-
 // @public
 export class StonecropClient {
     constructor(options: StonecropClientOptions);
     clearMetaCache(): void;
     getAllMeta(): Promise<DoctypeMeta[]>;
-    getMeta(context: RouteContext): Promise<DoctypeMeta | null>;
+    getMeta(context: DoctypeContext): Promise<DoctypeMeta | null>;
     getRecord(doctype: DoctypeMeta, recordId: string): Promise<Record<string, unknown> | null>;
     getRecords(doctype: DoctypeMeta, options?: {
         filters?: Record<string, unknown>;
