@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/graphql-client
 
-This log was last generated on Mon, 16 Mar 2026 06:07:45 GMT and should not be manually modified.
+This log was last generated on Tue, 17 Mar 2026 13:56:02 GMT and should not be manually modified.
+
+## 0.10.3
+Tue, 17 Mar 2026 13:56:02 GMT
+
+### Patches
+
+- add missing field properties in query response
 
 ## 0.10.2
 Mon, 16 Mar 2026 06:07:45 GMT

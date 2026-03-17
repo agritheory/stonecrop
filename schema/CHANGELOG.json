@@ -2,6 +2,18 @@
   "name": "@stonecrop/schema",
   "entries": [
     {
+      "version": "0.10.3",
+      "tag": "@stonecrop/schema_v0.10.3",
+      "date": "Tue, 17 Mar 2026 13:56:02 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "add new DataClient interface for Stonecrop setup"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.10.2",
       "tag": "@stonecrop/schema_v0.10.2",
       "date": "Mon, 16 Mar 2026 06:07:45 GMT",

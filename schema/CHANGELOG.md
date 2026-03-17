@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/schema
 
-This log was last generated on Mon, 16 Mar 2026 06:07:45 GMT and should not be manually modified.
+This log was last generated on Tue, 17 Mar 2026 13:56:02 GMT and should not be manually modified.
+
+## 0.10.3
+Tue, 17 Mar 2026 13:56:02 GMT
+
+### Patches
+
+- add new DataClient interface for Stonecrop setup
 
 ## 0.10.2
 Mon, 16 Mar 2026 06:07:45 GMT
