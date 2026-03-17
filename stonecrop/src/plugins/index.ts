@@ -33,14 +33,19 @@ async function setupAutoInitialization(
  * ```ts
  * import { createApp } from 'vue'
  * import Stonecrop from '@stonecrop/stonecrop'
+ * import { StonecropClient } from '@stonecrop/graphql-client'
  * import router from './router'
+ *
+ * const client = new StonecropClient({ endpoint: '/graphql' })
  *
  * const app = createApp(App)
  * app.use(Stonecrop, {
  *   router,
+ *   client,
  *   getMeta: async (routeContext) => {
  *     // routeContext contains: { path, segments }
- *     // fetch doctype meta from your API using the route context
+ *     // use the client to fetch doctype meta
+ *     return client.getMeta({ doctype: routeContext.segments[0] })
  *   },
  *   autoInitializeRouter: true,
  *   onRouterInitialized: async (registry, stonecrop) => {
@@ -67,10 +72,7 @@ const plugin: Plugin = {
 		app.config.globalProperties.$registry = registry
 
 		// Create and provide a global Stonecrop instance
-		const stonecrop = new Stonecrop(registry, undefined, {
-			fetchRecord: options?.fetchRecord,
-			fetchRecords: options?.fetchRecords,
-		})
+		const stonecrop = new Stonecrop(registry, undefined, options?.client ? { client: options.client } : undefined)
 		app.provide('$stonecrop', stonecrop)
 		app.config.globalProperties.$stonecrop = stonecrop
 

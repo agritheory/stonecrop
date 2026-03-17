@@ -7,6 +7,7 @@
 import type { AnyStateNodeConfig } from 'xstate';
 import { Component } from 'vue';
 import { ComputedRef } from 'vue';
+import type { DataClient } from '@stonecrop/schema';
 import { List } from 'immutable';
 import { Map as Map_2 } from 'immutable';
 import { Plugin as Plugin_2 } from 'vue';
@@ -77,6 +78,7 @@ export class DoctypeMeta {
         name: string;
         targetState: string;
     }>;
+    get name(): string;
     readonly schema: ImmutableDoctype['schema'];
     get slug(): string;
     readonly workflow: ImmutableDoctype['workflow'];
@@ -251,8 +253,7 @@ export type InstallOptions = {
     router?: Router;
     components?: Record<string, Component>;
     getMeta?: (routeContext: RouteContext) => DoctypeMeta | Promise<DoctypeMeta>;
-    fetchRecord?: (doctype: DoctypeMeta, id: string) => Promise<Record<string, unknown> | null>;
-    fetchRecords?: (doctype: DoctypeMeta) => Promise<Record<string, unknown>[]>;
+    client?: DataClient;
     autoInitializeRouter?: boolean;
     onRouterInitialized?: (registry: Registry, stonecrop: Stonecrop) => void | Promise<void>;
 };
@@ -377,6 +378,12 @@ export class Stonecrop {
     constructor(registry: Registry, operationLogConfig?: Partial<OperationLogConfig>, options?: StonecropOptions);
     addRecord(doctype: string | DoctypeMeta, recordId: string, recordData: any): void;
     clearRecords(doctype: string | DoctypeMeta): void;
+    dispatchAction(doctype: DoctypeMeta, action: string, args?: unknown[]): Promise<{
+        success: boolean;
+        data: unknown;
+        error: string | null;
+    }>;
+    getClient(): DataClient | undefined;
     getMeta(context: RouteContext): Promise<any>;
     // @internal
     getOperationLogStore(): Store<"hst-operation-log", Pick<{
@@ -648,13 +655,13 @@ export class Stonecrop {
     readonly registry: Registry;
     removeRecord(doctype: string | DoctypeMeta, recordId: string): void;
     runAction(doctype: DoctypeMeta, action: string, args?: any[]): void;
+    setClient(client: DataClient): void;
     setup(doctype: DoctypeMeta): void;
 }
 
 // @public
 export interface StonecropOptions {
-    fetchRecord?: (doctype: DoctypeMeta, id: string) => Promise<Record<string, unknown> | null>;
-    fetchRecords?: (doctype: DoctypeMeta) => Promise<Record<string, unknown>[]>;
+    client?: DataClient;
 }
 
 // @public

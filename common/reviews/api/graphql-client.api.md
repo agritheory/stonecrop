@@ -4,6 +4,7 @@
 
 ```ts
 
+import type { DataClient } from '@stonecrop/schema';
 import type { DoctypeContext } from '@stonecrop/schema';
 import { DoctypeMeta } from '@stonecrop/schema';
 
@@ -56,7 +57,7 @@ export const queries: {
 };
 
 // @public
-export class StonecropClient {
+export class StonecropClient implements DataClient {
     constructor(options: StonecropClientOptions);
     clearMetaCache(): void;
     getAllMeta(): Promise<DoctypeMeta[]>;

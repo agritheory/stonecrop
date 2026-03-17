@@ -700,8 +700,7 @@ Options for constructing a Stonecrop instance directly. When using the Vue plugi
 
 ```typescript
 export interface StonecropOptions {
-  fetchRecord?: (doctype: DoctypeMeta, id: string) => Promise<Record<string, unknown> | null>;
-  fetchRecords?: (doctype: DoctypeMeta) => Promise<Record<string, unknown>[]>;
+  client?: DataClient;
 }
 ```
 
@@ -709,8 +708,7 @@ export interface StonecropOptions {
 
 | Property | Type | Description |
 |----------|------|-------------|
-| fetchRecord? | `(doctype: DoctypeMeta, id: string) => Promise<Record<string, unknown> \| null>` | Injectable implementation for fetching a single record. When provided, replaces the default REST fetch() call in `getRecord()`. |
-| fetchRecords? | `(doctype: DoctypeMeta) => Promise<Record<string, unknown>[]>` | Injectable implementation for fetching a list of records. When provided, replaces the default REST fetch() call in `getRecords()`. |
+| client? | `DataClient` | Data client for fetching doctype metadata and records. Use stonecrop/graphql-client's StonecropClient for GraphQL backends, or implement DataClient for custom data sources. Can be set later via `setClient()` for deferred configuration. |
 
 ### TransitionChangeContext
 
@@ -1017,8 +1015,7 @@ export type InstallOptions = {
     router?: Router;
     components?: Record<string, Component>;
     getMeta?: (routeContext: RouteContext) => DoctypeMeta | Promise<DoctypeMeta>;
-    fetchRecord?: (doctype: DoctypeMeta, id: string) => Promise<Record<string, unknown> | null>;
-    fetchRecords?: (doctype: DoctypeMeta) => Promise<Record<string, unknown>[]>;
+    client?: DataClient;
     autoInitializeRouter?: boolean;
     onRouterInitialized?: (registry: Registry, stonecrop: Stonecrop) => void | Promise<void>;
 };
@@ -1146,6 +1143,7 @@ new DoctypeMeta(doctype: string, schema: ImmutableDoctype['schema'], workflow: I
 | actions | `ImmutableDoctype['actions']` | The doctype actions and field triggers |
 | component | `Component` | The doctype component |
 | doctype | `string` | The doctype name |
+| name | `string` | Alias for doctype (for DoctypeLike interface compatibility) |
 | schema | `ImmutableDoctype['schema']` | The doctype schema |
 | slug | `string` | Converts the registered doctype string to a slug (kebab-case). The following conversions are made: - It replaces camelCase and PascalCase with kebab-case strings - It replaces spaces and underscores with hyphens - It converts the string to lowercase |
 | workflow | `ImmutableDoctype['workflow']` | The doctype workflow |
@@ -1462,7 +1460,7 @@ new Stonecrop(registry: Registry, operationLogConfig: Partial<OperationLogConfig
 |-----------|------|-------------|
 | registry | `Registry` | The Registry instance containing doctype definitions |
 | operationLogConfig | `Partial<OperationLogConfig>` | Optional configuration for the operation log |
-| options | `StonecropOptions` | Optional injectable fetch implementations |
+| options | `StonecropOptions` | Options including the data client (can be set later via setClient) |
 
 **Properties:**
 
@@ -1502,6 +1500,34 @@ clearRecords(doctype: string | DoctypeMeta): void
 |-----------|------|-------------|
 | doctype | `string \| DoctypeMeta` | The doctype |
 
+#### dispatchAction
+
+Dispatch an action to the server via the configured data client. All state changes flow through this single mutation endpoint.
+
+```typescript
+dispatchAction(doctype: DoctypeMeta, action: string, args: unknown[]): Promise<{
+        success: boolean;
+        data: unknown;
+        error: string | null;
+    }>
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `DoctypeMeta` | The doctype |
+| action | `string` | Action name to execute (e.g., 'SUBMIT', 'APPROVE', 'save') |
+| args | `unknown[]` | Action arguments (typically record ID and/or form data) |
+
+#### getClient
+
+Get the current data client
+
+```typescript
+getClient(): DataClient | undefined
+```
+
 #### getMeta
 
 Get doctype metadata from the registry
@@ -1518,9 +1544,7 @@ getMeta(context: RouteContext): Promise<any>
 
 #### getRecord
 
-Get single record from server.
-
-When a `fetchRecord` implementation was provided at plugin install time (via `InstallOptions.fetchRecord`), it is called instead of the default REST stub. This allows GraphQL-backed apps (using `StonecropClient`) to wire in their own data fetching without coupling the core package to any specific transport.
+Get single record from server using the configured data client.
 
 ```typescript
 getRecord(doctype: DoctypeMeta, recordId: string): Promise<void>
@@ -1564,9 +1588,7 @@ getRecordIds(doctype: string | DoctypeMeta): string[]
 
 #### getRecords
 
-Get records from server.
-
-When a `fetchRecords` implementation was provided at plugin install time (via `InstallOptions.fetchRecords`), it is called instead of the default REST stub. This allows GraphQL-backed apps (using `StonecropClient`) to wire in their own data fetching without coupling the core package to any specific transport.
+Get records from server using the configured data client.
 
 ```typescript
 getRecords(doctype: DoctypeMeta): Promise<void>
@@ -1647,6 +1669,20 @@ runAction(doctype: DoctypeMeta, action: string, args: any[]): void
 | doctype | `DoctypeMeta` | The doctype |
 | action | `string` | The action to run |
 | args | `any[]` | Action arguments (typically record IDs) |
+
+#### setClient
+
+Set the data client for fetching doctype metadata and records. Use this for deferred configuration in Nuxt/Vue plugin setups.
+
+```typescript
+setClient(client: DataClient): void
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| client | `DataClient` | DataClient implementation (e.g., StonecropClient from stonecrop/graphql-client) |
 
 #### setup
 

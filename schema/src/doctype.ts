@@ -99,3 +99,72 @@ export interface DoctypeContext {
 	/** Additional context properties */
 	[key: string]: unknown
 }
+
+/**
+ * Base interface for doctype metadata passed to DataClient methods.
+ * Only requires properties needed for record fetching.
+ * @public
+ */
+export interface DoctypeRef {
+	/** Doctype name (e.g., 'Task', 'Customer') */
+	name: string
+	/** URL-friendly slug (e.g., 'task', 'customer') */
+	slug?: string
+}
+
+/**
+ * Interface for data clients that fetch doctype metadata and records.
+ * Implemented by \@stonecrop/graphql-client's StonecropClient.
+ * Custom implementations can use any backend (REST, local storage, etc.).
+ *
+ * @typeParam T - Doctype reference type for record operations (defaults to DoctypeRef)
+ * @typeParam M - Doctype metadata return type for getMeta (defaults to DoctypeMeta)
+ * @public
+ */
+export interface DataClient<T extends DoctypeRef = DoctypeRef, M = DoctypeMeta> {
+	/**
+	 * Fetch doctype metadata
+	 * @param context - Doctype context identifying the doctype
+	 * @returns Doctype metadata or null if not found
+	 */
+	getMeta(context: DoctypeContext): Promise<M | null>
+
+	/**
+	 * Fetch a single record by ID
+	 * @param doctype - Doctype reference (name and optional slug)
+	 * @param recordId - Record ID to fetch
+	 * @returns Record data or null if not found
+	 */
+	getRecord(doctype: T, recordId: string): Promise<Record<string, unknown> | null>
+
+	/**
+	 * Fetch multiple records
+	 * @param doctype - Doctype reference (name and optional slug)
+	 * @param options - Optional filters, pagination, sorting
+	 * @returns Array of record data
+	 */
+	getRecords(
+		doctype: T,
+		options?: {
+			filters?: Record<string, unknown>
+			orderBy?: string
+			limit?: number
+			offset?: number
+		}
+	): Promise<Record<string, unknown>[]>
+
+	/**
+	 * Execute a doctype action (e.g., SUBMIT, APPROVE, save).
+	 * All state changes flow through this single mutation endpoint.
+	 *
+	 * @param doctype - Doctype reference (name and optional slug)
+	 * @param action - Action name to execute (e.g., 'SUBMIT', 'APPROVE', 'save')
+	 * @param args - Action arguments (typically record ID and/or form data)
+	 * @returns Action result with success status, response data, and any error
+	 */
+	runAction(
+		doctype: T,
+		action: string,
+		args?: unknown[]
+	): Promise<{ success: boolean; data: unknown; error: string | null }>
+}

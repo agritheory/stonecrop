@@ -274,40 +274,36 @@ describe('Stonecrop Vue Plugin with HST', () => {
 		expect(app.config.globalProperties.$stonecrop).toBeDefined()
 	})
 
-	it('passes fetchRecord option through to Stonecrop instance', () => {
-		const fetchRecordFn = vi.fn().mockResolvedValue(null)
+	it('passes client option through to Stonecrop instance', () => {
+		const mockClient = {
+			getMeta: vi.fn(),
+			getRecord: vi.fn().mockResolvedValue(null),
+			getRecords: vi.fn().mockResolvedValue([]),
+			runAction: vi.fn(),
+		}
 
 		app.use(Stonecrop, {
 			router: mockRouter,
-			fetchRecord: fetchRecordFn,
-		})
-
-		// The Stonecrop instance should have _fetchRecord set (private, accessed via any)
-		const stonecropInstance = app.config.globalProperties.$stonecrop as any
-		expect(stonecropInstance).toBeDefined()
-		expect(stonecropInstance._fetchRecord).toBe(fetchRecordFn)
-	})
-
-	it('passes fetchRecords option through to Stonecrop instance', () => {
-		const fetchRecordsFn = vi.fn().mockResolvedValue([])
-
-		app.use(Stonecrop, {
-			router: mockRouter,
-			fetchRecords: fetchRecordsFn,
+			client: mockClient,
 		})
 
 		const stonecropInstance = app.config.globalProperties.$stonecrop as any
 		expect(stonecropInstance).toBeDefined()
-		expect(stonecropInstance._fetchRecords).toBe(fetchRecordsFn)
+		expect(stonecropInstance.getClient()).toBe(mockClient)
 	})
 
-	it('Stonecrop instance uses injected fetchRecord instead of fetch()', async () => {
+	it('Stonecrop instance uses injected client for record operations', async () => {
 		const mockRecord = { id: '99', title: 'Plugin-injected record' }
-		const fetchRecordFn = vi.fn().mockResolvedValue(mockRecord)
+		const mockClient = {
+			getMeta: vi.fn(),
+			getRecord: vi.fn().mockResolvedValue(mockRecord),
+			getRecords: vi.fn(),
+			runAction: vi.fn(),
+		}
 
 		app.use(Stonecrop, {
 			router: mockRouter,
-			fetchRecord: fetchRecordFn,
+			client: mockClient,
 		})
 
 		const { List } = await import('immutable')
@@ -318,7 +314,7 @@ describe('Stonecrop Vue Plugin with HST', () => {
 		await stonecropInstance.registry.addDoctype(mockDoctype)
 		await stonecropInstance.getRecord(mockDoctype, '99')
 
-		expect(fetchRecordFn).toHaveBeenCalledWith(mockDoctype, '99')
+		expect(mockClient.getRecord).toHaveBeenCalledWith(mockDoctype, '99')
 	})
 
 	it('registers custom components when provided', () => {

@@ -186,10 +186,20 @@ describe('Stonecrop class with HST integration', () => {
 
 	describe('Server Integration', () => {
 		let mockDoctype: DoctypeMeta
+		let mockClient: any
 
 		beforeEach(() => {
 			mockDoctype = createMockDoctype('Task')
 			registry.addDoctype(mockDoctype)
+
+			// Create a mock client for server integration tests
+			mockClient = {
+				getMeta: vi.fn(),
+				getRecord: vi.fn(),
+				getRecords: vi.fn(),
+				runAction: vi.fn(),
+			}
+			stonecrop.setClient(mockClient)
 		})
 
 		it('getRecords fetches and stores records in HST', async () => {
@@ -197,15 +207,11 @@ describe('Stonecrop class with HST integration', () => {
 				{ id: '1', title: 'Task 1' },
 				{ id: '2', title: 'Task 2' },
 			]
-
-			const mockResponse = {
-				json: vi.fn().mockResolvedValue(mockRecords),
-			}
-			vi.mocked(fetch).mockResolvedValue(mockResponse as any)
+			mockClient.getRecords.mockResolvedValue(mockRecords)
 
 			await stonecrop.getRecords(mockDoctype)
 
-			expect(fetch).toHaveBeenCalledWith('/task')
+			expect(mockClient.getRecords).toHaveBeenCalledWith(mockDoctype)
 
 			// Check that records are stored in HST with proper wrapping
 			const recordIds = stonecrop.getRecordIds('task')
@@ -218,15 +224,11 @@ describe('Stonecrop class with HST integration', () => {
 
 		it('getRecord fetches and stores single record', async () => {
 			const mockRecord = { id: '123', title: 'Test Task' }
-
-			const mockResponse = {
-				json: vi.fn().mockResolvedValue(mockRecord),
-			}
-			vi.mocked(fetch).mockResolvedValue(mockResponse as any)
+			mockClient.getRecord.mockResolvedValue(mockRecord)
 
 			await stonecrop.getRecord(mockDoctype, '123')
 
-			expect(fetch).toHaveBeenCalledWith('/task/123')
+			expect(mockClient.getRecord).toHaveBeenCalledWith(mockDoctype, '123')
 
 			// Check that record is stored
 			const record = stonecrop.getRecordById('task', '123')
@@ -235,7 +237,7 @@ describe('Stonecrop class with HST integration', () => {
 		})
 	})
 
-	describe('Injectable fetch implementations (Issue 4)', () => {
+	describe('DataClient integration', () => {
 		let mockDoctype: DoctypeMeta
 
 		beforeEach(() => {
@@ -247,85 +249,129 @@ describe('Stonecrop class with HST integration', () => {
 			registry.addDoctype(mockDoctype)
 		})
 
-		it('getRecord delegates to fetchRecord when provided', async () => {
-			const mockRecord = { id: 'abc', title: 'Injected Task' }
-			const fetchRecordFn = vi.fn().mockResolvedValue(mockRecord)
+		it('getRecord delegates to client.getRecord when client provided', async () => {
+			const mockRecord = { id: 'abc', title: 'Client Task' }
+			const mockClient = {
+				getMeta: vi.fn(),
+				getRecord: vi.fn().mockResolvedValue(mockRecord),
+				getRecords: vi.fn(),
+				runAction: vi.fn(),
+			}
 
-			const options: StonecropOptions = { fetchRecord: fetchRecordFn }
+			const options: StonecropOptions = { client: mockClient }
 			const localStonecrop = new Stonecrop(registry, undefined, options)
 
 			await localStonecrop.getRecord(mockDoctype, 'abc')
 
-			// Injectable should be called, not fetch()
-			expect(fetchRecordFn).toHaveBeenCalledOnce()
-			expect(fetchRecordFn).toHaveBeenCalledWith(mockDoctype, 'abc')
+			expect(mockClient.getRecord).toHaveBeenCalledOnce()
+			expect(mockClient.getRecord).toHaveBeenCalledWith(mockDoctype, 'abc')
 			expect(fetch).not.toHaveBeenCalled()
 
-			// Record should be in HST
 			const stored = localStonecrop.getRecordById('task', 'abc')
-			expect(stored!.get('title')).toBe('Injected Task')
+			expect(stored!.get('title')).toBe('Client Task')
 		})
 
-		it('getRecords delegates to fetchRecords when provided', async () => {
+		it('getRecords delegates to client.getRecords when client provided', async () => {
 			const mockRecords = [
 				{ id: '1', title: 'Record A' },
 				{ id: '2', title: 'Record B' },
 			]
-			const fetchRecordsFn = vi.fn().mockResolvedValue(mockRecords)
+			const mockClient = {
+				getMeta: vi.fn(),
+				getRecord: vi.fn(),
+				getRecords: vi.fn().mockResolvedValue(mockRecords),
+				runAction: vi.fn(),
+			}
 
-			const options: StonecropOptions = { fetchRecords: fetchRecordsFn }
+			const options: StonecropOptions = { client: mockClient }
 			const localStonecrop = new Stonecrop(registry, undefined, options)
 
 			await localStonecrop.getRecords(mockDoctype)
 
-			expect(fetchRecordsFn).toHaveBeenCalledOnce()
-			expect(fetchRecordsFn).toHaveBeenCalledWith(mockDoctype)
+			expect(mockClient.getRecords).toHaveBeenCalledOnce()
+			expect(mockClient.getRecords).toHaveBeenCalledWith(mockDoctype)
 			expect(fetch).not.toHaveBeenCalled()
 
 			const ids = localStonecrop.getRecordIds('task')
 			expect(ids).toEqual(['1', '2'])
 		})
 
-		it('getRecord falls back to REST fetch when no fetchRecord provided', async () => {
-			const mockRecord = { id: '42', title: 'REST Task' }
-			const mockResponse = { json: vi.fn().mockResolvedValue(mockRecord) }
-			vi.mocked(fetch).mockResolvedValue(mockResponse as any)
-
-			// No fetchRecord option — should use default REST fetch
+		it('getRecord throws error when no client configured', async () => {
 			const localStonecrop = new Stonecrop(registry)
 
-			await localStonecrop.getRecord(mockDoctype, '42')
-
-			expect(fetch).toHaveBeenCalledWith('/task/42')
-			const stored = localStonecrop.getRecordById('task', '42')
-			expect(stored!.get('title')).toBe('REST Task')
+			await expect(localStonecrop.getRecord(mockDoctype, '42')).rejects.toThrow('No data client configured')
 		})
 
-		it('getRecord does not add record to HST when fetchRecord returns null', async () => {
-			const fetchRecordFn = vi.fn().mockResolvedValue(null)
-			const options: StonecropOptions = { fetchRecord: fetchRecordFn }
+		it('getRecords throws error when no client configured', async () => {
+			const localStonecrop = new Stonecrop(registry)
+
+			await expect(localStonecrop.getRecords(mockDoctype)).rejects.toThrow('No data client configured')
+		})
+
+		it('getRecord does not add record to HST when client returns null', async () => {
+			const mockClient = {
+				getMeta: vi.fn(),
+				getRecord: vi.fn().mockResolvedValue(null),
+				getRecords: vi.fn(),
+				runAction: vi.fn(),
+			}
+			const options: StonecropOptions = { client: mockClient }
 			const localStonecrop = new Stonecrop(registry, undefined, options)
 
 			await localStonecrop.getRecord(mockDoctype, 'missing-id')
 
-			// HST should not have an entry for a null response
 			const stored = localStonecrop.getRecordById('task', 'missing-id')
 			expect(stored).toBeUndefined()
 		})
 
-		it('both fetchRecord and fetchRecords can be set independently', async () => {
-			const fetchRecordFn = vi.fn().mockResolvedValue({ id: '1', title: 'Single' })
-			const fetchRecordsFn = vi.fn().mockResolvedValue([{ id: '1', title: 'List' }])
+		it('setClient allows deferred client configuration', async () => {
+			const mockRecord = { id: 'deferred', title: 'Deferred Task' }
+			const mockClient = {
+				getMeta: vi.fn(),
+				getRecord: vi.fn().mockResolvedValue(mockRecord),
+				getRecords: vi.fn(),
+				runAction: vi.fn(),
+			}
 
-			const options: StonecropOptions = { fetchRecord: fetchRecordFn, fetchRecords: fetchRecordsFn }
+			const localStonecrop = new Stonecrop(registry)
+
+			// Client not set initially
+			expect(localStonecrop.getClient()).toBeUndefined()
+
+			// Set client after construction
+			localStonecrop.setClient(mockClient)
+			expect(localStonecrop.getClient()).toBe(mockClient)
+
+			// Now getRecord should work
+			await localStonecrop.getRecord(mockDoctype, 'deferred')
+			expect(mockClient.getRecord).toHaveBeenCalledOnce()
+		})
+
+		it('dispatchAction delegates to client.runAction', async () => {
+			const mockResult = { success: true, data: { id: '1', status: 'submitted' }, error: null }
+			const mockClient = {
+				getMeta: vi.fn(),
+				getRecord: vi.fn(),
+				getRecords: vi.fn(),
+				runAction: vi.fn().mockResolvedValue(mockResult),
+			}
+
+			const options: StonecropOptions = { client: mockClient }
 			const localStonecrop = new Stonecrop(registry, undefined, options)
 
-			await localStonecrop.getRecord(mockDoctype, '1')
-			await localStonecrop.getRecords(mockDoctype)
+			const result = await localStonecrop.dispatchAction(mockDoctype, 'SUBMIT', ['1'])
 
-			expect(fetchRecordFn).toHaveBeenCalledOnce()
-			expect(fetchRecordsFn).toHaveBeenCalledOnce()
-			expect(fetch).not.toHaveBeenCalled()
+			expect(mockClient.runAction).toHaveBeenCalledOnce()
+			expect(mockClient.runAction).toHaveBeenCalledWith(mockDoctype, 'SUBMIT', ['1'])
+			expect(result).toEqual(mockResult)
+		})
+
+		it('dispatchAction throws error when no client configured', async () => {
+			const localStonecrop = new Stonecrop(registry)
+
+			await expect(localStonecrop.dispatchAction(mockDoctype, 'SUBMIT', ['1'])).rejects.toThrow(
+				'No data client configured'
+			)
 		})
 	})
 

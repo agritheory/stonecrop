@@ -1,4 +1,4 @@
-import type { DoctypeMeta } from '@stonecrop/schema'
+import type { DataClient, DoctypeMeta } from '@stonecrop/schema'
 import type { RouteContext } from '@stonecrop/stonecrop'
 
 import { useNuxtApp } from 'nuxt/app'
@@ -10,13 +10,14 @@ import { useNuxtApp } from 'nuxt/app'
  * ## Why This Composable Exists
  *
  * Stonecrop's architecture separates concerns across packages:
- * - **@stonecrop/schema**: Defines doctype schemas and `DoctypeContext` (doctype + recordId)
+ * - **@stonecrop/schema**: Defines doctype schemas, `DoctypeContext`, and `DataClient` interface
  * - **@stonecrop/stonecrop**: Core framework with `RouteContext` (path + segments) for routing
+ * - **@stonecrop/graphql-client**: Reference `DataClient` implementation using GraphQL
  * - **@stonecrop/nuxt**: Nuxt integration that bootstraps the Registry and Stonecrop instances
  *
  * This composable bridges Nuxt's plugin lifecycle with Stonecrop's registry, allowing
- * applications to inject their data-fetching implementations after the framework is mounted.
- * The nuxt module is client-agnostic — use any data source (GraphQL, REST, local storage, etc.).
+ * applications to inject their data client and configure metadata fetching after the
+ * framework is mounted.
  *
  * ## RouteContext vs DoctypeContext
  *
@@ -40,26 +41,26 @@ import { useNuxtApp } from 'nuxt/app'
  *     ↓
  * DoctypeContext ({ doctype: 'Plan', recordId: '123' })
  *     ↓
- * Your Data Client → DoctypeMeta
+ * DataClient.getMeta() → DoctypeMeta
  * ```
  *
  * @example
  * ```ts
  * // app/plugins/stonecrop.client.ts
- * // Example using @stonecrop/graphql-client, but any data source works
  * import { StonecropClient } from '@stonecrop/graphql-client'
  *
  * export default defineNuxtPlugin(() => {
  *   const client = new StonecropClient({ endpoint: '/graphql' })
- *   const { setMeta, setFetchRecord, setFetchRecords } = useStonecropRegistry()
+ *   const { setClient, setMeta } = useStonecropRegistry()
+ *
+ *   // Set the data client for record fetching
+ *   setClient(client)
  *
  *   // Bridge RouteContext → DoctypeContext for metadata fetching
  *   setMeta(({ segments }) => {
  *     const doctype = segments[0] // e.g. "plan" → doctype "Plan"
  *     return client.getMeta({ doctype }) // client expects DoctypeContext
  *   })
- *   setFetchRecord((doctype, id) => client.getRecord(doctype, id))
- *   setFetchRecords((doctype) => client.getRecords(doctype))
  * })
  * ```
  *
@@ -84,11 +85,16 @@ export function useStonecropRegistry() {
 		)
 	}
 
-	// The Stonecrop instance carries the injectable fetch implementations.
+	// The Stonecrop instance carries the data client.
 	const stonecrop = nuxtApp.$stonecrop as
 		| {
-				_fetchRecord?: (doctype: DoctypeMeta, id: string) => Promise<Record<string, unknown> | null>
-				_fetchRecords?: (doctype: DoctypeMeta) => Promise<Record<string, unknown>[]>
+				setClient: (client: DataClient) => void
+				getClient: () => DataClient | undefined
+				dispatchAction: (
+					doctype: { name: string; slug?: string },
+					action: string,
+					args?: unknown[]
+				) => Promise<{ success: boolean; data: unknown; error: string | null }>
 		  }
 		| undefined
 
@@ -98,6 +104,64 @@ export function useStonecropRegistry() {
 		 * Prefer the typed setter methods below for normal configuration.
 		 */
 		registry,
+
+		/**
+		 * Set the data client on the Stonecrop instance.
+		 * Required before fetching records or dispatching actions.
+		 *
+		 * @param client - DataClient implementation (e.g., StonecropClient from \@stonecrop/graphql-client)
+		 *
+		 * @example
+		 * ```ts
+		 * const client = new StonecropClient({ endpoint: '/graphql' })
+		 * setClient(client)
+		 * ```
+		 */
+		setClient(client: DataClient): void {
+			if (stonecrop) {
+				stonecrop.setClient(client)
+			}
+		},
+
+		/**
+		 * Get the currently configured data client.
+		 * @returns The DataClient instance or undefined if not set
+		 */
+		getClient(): DataClient | undefined {
+			return stonecrop?.getClient()
+		},
+
+		/**
+		 * Dispatch an action to the server via the configured data client.
+		 * All state changes flow through this single mutation endpoint.
+		 *
+		 * @param doctype - Doctype reference (name and optional slug)
+		 * @param action - Action name to execute (e.g., 'SUBMIT', 'APPROVE', 'save')
+		 * @param args - Action arguments (typically record ID and/or form data)
+		 * @returns Action result with success status, response data, and any error
+		 *
+		 * @example
+		 * ```ts
+		 * // Save a record
+		 * const result = await dispatchAction(doctype, 'save', [{ id: recordId, data: formData }])
+		 *
+		 * // Submit for approval
+		 * const result = await dispatchAction(doctype, 'SUBMIT', [recordId])
+		 * ```
+		 */
+		dispatchAction(
+			doctype: { name: string; slug?: string },
+			action: string,
+			args?: unknown[]
+		): Promise<{ success: boolean; data: unknown; error: string | null }> {
+			if (!stonecrop) {
+				throw new Error(
+					'[useStonecropRegistry] Stonecrop instance is not available. ' +
+						'Ensure @stonecrop/nuxt is installed and the plugin has run.'
+				)
+			}
+			return stonecrop.dispatchAction(doctype, action, args)
+		},
 
 		/**
 		 * Set the `getMeta` function on the Registry.
@@ -123,30 +187,6 @@ export function useStonecropRegistry() {
 			// Registry.getMeta is a mutable property (not readonly), so this assignment
 			// is supported — we're providing a cleaner API than direct globalProperties access.
 			registry.getMeta = fn
-		},
-
-		/**
-		 * Set the `fetchRecord` implementation on the Stonecrop instance.
-		 * When set, replaces the default REST fetch() stub in `Stonecrop.getRecord()`.
-		 *
-		 * @param fn - Async function that fetches a single record by doctype + ID.
-		 */
-		setFetchRecord(fn: (doctype: DoctypeMeta, id: string) => Promise<Record<string, unknown> | null>): void {
-			if (stonecrop) {
-				stonecrop._fetchRecord = fn
-			}
-		},
-
-		/**
-		 * Set the `fetchRecords` implementation on the Stonecrop instance.
-		 * When set, replaces the default REST fetch() stub in `Stonecrop.getRecords()`.
-		 *
-		 * @param fn - Async function that fetches all records for a doctype.
-		 */
-		setFetchRecords(fn: (doctype: DoctypeMeta) => Promise<Record<string, unknown>[]>): void {
-			if (stonecrop) {
-				stonecrop._fetchRecords = fn
-			}
 		},
 	}
 }

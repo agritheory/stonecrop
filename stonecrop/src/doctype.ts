@@ -15,6 +15,15 @@ export default class DoctypeMeta {
 	readonly doctype: string
 
 	/**
+	 * Alias for doctype (for DoctypeLike interface compatibility)
+	 * @public
+	 * @readonly
+	 */
+	get name(): string {
+		return this.doctype
+	}
+
+	/**
 	 * The doctype schema
 	 * @public
 	 * @readonly

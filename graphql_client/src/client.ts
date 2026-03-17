@@ -1,4 +1,4 @@
-import type { DoctypeMeta, DoctypeContext } from '@stonecrop/schema'
+import type { DataClient, DoctypeMeta, DoctypeContext } from '@stonecrop/schema'
 
 export type { DoctypeContext }
 
@@ -17,7 +17,7 @@ export interface StonecropClientOptions {
  * Client for interacting with Stonecrop GraphQL API
  * @public
  */
-export class StonecropClient {
+export class StonecropClient implements DataClient {
 	private endpoint: string
 	private headers: Record<string, string>
 	private metaCache: Map<string, DoctypeMeta> = new Map()
