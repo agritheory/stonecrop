@@ -1,11 +1,19 @@
-import type { DataClient, DoctypeMeta } from '@stonecrop/schema'
-import type { RouteContext } from '@stonecrop/stonecrop'
+import type { DataClient } from '@stonecrop/schema'
+import type { DoctypeMeta, Registry, RouteContext, Stonecrop } from '@stonecrop/stonecrop'
 
 import { useNuxtApp } from 'nuxt/app'
 
 /**
- * Provides a stable, documented API for accessing and configuring the Stonecrop
- * Registry instance after the `@stonecrop/nuxt` plugin has installed it.
+ * Provides a stable, documented API for accessing the configured Stonecrop
+ * Registry instance in components and composables.
+ *
+ * ## When to Use This vs useStonecropSetup()
+ *
+ * - **`useStonecropRegistry()`** - Call in components or composables to use the configured
+ *   framework. Throws if Stonecrop isn't initialized (expected to be ready at this point).
+ *
+ * - **`useStonecropSetup()`** - Call in Nuxt plugins to configure clients, metadata functions,
+ *   and pre-load doctypes. Returns values that may be `undefined` if Stonecrop isn't ready yet.
  *
  * ## Why This Composable Exists
  *
@@ -15,9 +23,8 @@ import { useNuxtApp } from 'nuxt/app'
  * - **@stonecrop/graphql-client**: Reference `DataClient` implementation using GraphQL
  * - **@stonecrop/nuxt**: Nuxt integration that bootstraps the Registry and Stonecrop instances
  *
- * This composable bridges Nuxt's plugin lifecycle with Stonecrop's registry, allowing
- * applications to inject their data client and configure metadata fetching after the
- * framework is mounted.
+ * This composable bridges Nuxt's plugin lifecycle with Stonecrop's registry, providing
+ * a clean API for components to interact with the configured framework.
  *
  * ## RouteContext vs DoctypeContext
  *
@@ -27,8 +34,8 @@ import { useNuxtApp } from 'nuxt/app'
  * - **DoctypeContext** (`{ doctype, recordId? }`): Semantic doctype context. Used by the
  *   data layer to identify "what we're working with" (e.g., `{ doctype: 'Plan', recordId: '123' }`).
  *
- * Your `setMeta` implementation bridges these: extract doctype/recordId from the route
- * segments and pass `DoctypeContext` to your data client.
+ * Your `setMeta` implementation (configured via `useStonecropSetup()`) bridges these:
+ * extract doctype/recordId from the route segments and pass `DoctypeContext` to your data client.
  *
  * ## Data Flow
  *
@@ -37,7 +44,7 @@ import { useNuxtApp } from 'nuxt/app'
  *     ↓
  * RouteContext ({ path: '/plan/123', segments: ['plan', '123'] })
  *     ↓
- * getMeta (your implementation)
+ * getMeta (configured in plugin via useStonecropSetup)
  *     ↓
  * DoctypeContext ({ doctype: 'Plan', recordId: '123' })
  *     ↓
@@ -46,22 +53,14 @@ import { useNuxtApp } from 'nuxt/app'
  *
  * @example
  * ```ts
- * // app/plugins/stonecrop.client.ts
- * import { StonecropClient } from '@stonecrop/graphql-client'
+ * // In a component or composable
+ * const { registry, stonecrop, dispatchAction } = useStonecropRegistry()
  *
- * export default defineNuxtPlugin(() => {
- *   const client = new StonecropClient({ endpoint: '/graphql' })
- *   const { setClient, setMeta } = useStonecropRegistry()
+ * // Access the registry
+ * const planMeta = registry.getDoctype('plan')
  *
- *   // Set the data client for record fetching
- *   setClient(client)
- *
- *   // Bridge RouteContext → DoctypeContext for metadata fetching
- *   setMeta(({ segments }) => {
- *     const doctype = segments[0] // e.g. "plan" → doctype "Plan"
- *     return client.getMeta({ doctype }) // client expects DoctypeContext
- *   })
- * })
+ * // Dispatch an action
+ * await dispatchAction({ name: 'plan' }, 'SUBMIT', [recordId])
  * ```
  *
  * @public
@@ -72,45 +71,46 @@ export function useStonecropRegistry() {
 	// Access the Registry instance provided by the @stonecrop/nuxt plugin.
 	// Using the injection key '$registry' matches what StonecropPlugin provides via
 	// `app.provide('$registry', registry)` in @stonecrop/stonecrop's plugin.
-	const registry = nuxtApp.$registry as
-		| {
-				getMeta?: (routeContext: RouteContext) => DoctypeMeta | Promise<DoctypeMeta>
-		  }
-		| undefined
+	const registry = nuxtApp.$registry as Registry | undefined
 
 	if (!registry) {
 		throw new Error(
 			'[useStonecropRegistry] The Stonecrop Registry is not available. ' +
-				'Ensure @stonecrop/nuxt is installed and the plugin has run before calling this composable.'
+				'Ensure @stonecrop/nuxt is installed.\n\n' +
+				'If you are calling this from a Nuxt plugin, use useStonecropSetup() instead, ' +
+				'which is designed for the plugin initialization context.'
 		)
 	}
 
 	// The Stonecrop instance carries the data client.
-	const stonecrop = nuxtApp.$stonecrop as
-		| {
-				setClient: (client: DataClient) => void
-				getClient: () => DataClient | undefined
-				dispatchAction: (
-					doctype: { name: string; slug?: string },
-					action: string,
-					args?: unknown[]
-				) => Promise<{ success: boolean; data: unknown; error: string | null }>
-		  }
-		| undefined
+	const stonecrop = nuxtApp.$stonecrop as Stonecrop | undefined
 
 	return {
 		/**
-		 * The raw Registry instance, for advanced use cases.
-		 * Prefer the typed setter methods below for normal configuration.
+		 * The Registry instance for doctype management.
+		 * Use this to access doctype metadata, resolve schemas, etc.
 		 */
 		registry,
+
+		/**
+		 * The Stonecrop instance for HST and operation log access.
+		 */
+		get stonecrop(): Stonecrop {
+			if (!stonecrop) {
+				throw new Error(
+					'[useStonecropRegistry] Stonecrop instance is not available. ' +
+						'Ensure @stonecrop/nuxt is installed.\n\n' +
+						'If you are calling this from a Nuxt plugin, use useStonecropSetup() instead.'
+				)
+			}
+			return stonecrop
+		},
 
 		/**
 		 * Set the data client on the Stonecrop instance.
 		 * Required before fetching records or dispatching actions.
 		 *
 		 * @param client - DataClient implementation (e.g., StonecropClient from \@stonecrop/graphql-client)
-		 *
 		 * @throws Error if Stonecrop instance is not available
 		 *
 		 * @example
@@ -123,7 +123,8 @@ export function useStonecropRegistry() {
 			if (!stonecrop) {
 				throw new Error(
 					'[useStonecropRegistry] Stonecrop instance is not available. ' +
-						'Ensure @stonecrop/nuxt is installed and the plugin has run.'
+						'Ensure @stonecrop/nuxt is installed.\n\n' +
+						'If you are calling this from a Nuxt plugin, use useStonecropSetup() instead.'
 				)
 			}
 			stonecrop.setClient(client)
@@ -141,7 +142,9 @@ export function useStonecropRegistry() {
 		 * Dispatch an action to the server via the configured data client.
 		 * All state changes flow through this single mutation endpoint.
 		 *
-		 * @param doctype - Doctype reference (name and optional slug)
+		 * @param doctype - Doctype reference object with `name` and optional `slug` properties
+		 * @param doctype.name - Doctype name (e.g., 'plan')
+		 * @param doctype.slug - Optional doctype slug if it differs from the name (e.g., 'project-plan')
 		 * @param action - Action name to execute (e.g., 'SUBMIT', 'APPROVE', 'save')
 		 * @param args - Action arguments (typically record ID and/or form data)
 		 * @returns Action result with success status, response data, and any error
@@ -149,10 +152,10 @@ export function useStonecropRegistry() {
 		 * @example
 		 * ```ts
 		 * // Save a record
-		 * const result = await dispatchAction(doctype, 'save', [{ id: recordId, data: formData }])
+		 * const result = await dispatchAction({ name: 'plan' }, 'save', [{ id: recordId, data: formData }])
 		 *
 		 * // Submit for approval
-		 * const result = await dispatchAction(doctype, 'SUBMIT', [recordId])
+		 * const result = await dispatchAction({ name: 'plan' }, 'SUBMIT', [recordId])
 		 * ```
 		 */
 		dispatchAction(
@@ -164,11 +167,22 @@ export function useStonecropRegistry() {
 				return Promise.reject(
 					new Error(
 						'[useStonecropRegistry] Stonecrop instance is not available. ' +
-							'Ensure @stonecrop/nuxt is installed and the plugin has run.'
+							'Ensure @stonecrop/nuxt is installed.\n\n' +
+							'If you are calling this from a Nuxt plugin, use useStonecropSetup() instead.'
 					)
 				)
 			}
-			return stonecrop.dispatchAction(doctype, action, args)
+
+			const meta = registry.getDoctype(doctype.slug || doctype.name.toLowerCase())
+			if (!meta) {
+				return Promise.resolve({
+					success: false,
+					data: null,
+					error: `Doctype '${doctype.name}' not found in registry`,
+				})
+			}
+
+			return stonecrop.dispatchAction(meta, action, args)
 		},
 
 		/**
