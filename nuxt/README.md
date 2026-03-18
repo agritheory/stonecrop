@@ -356,7 +356,7 @@ export default defineNuxtPlugin(() => {
   })
   
   // Optionally pre-load doctypes into the Registry
-  const planMeta = DoctypeMeta.fromPlain({ name: 'plan', fields: [...] })
+  const planMeta = DoctypeMeta.fromObject({ name: 'plan', fields: [...] })
   registerDoctype(planMeta)
 })
 ```

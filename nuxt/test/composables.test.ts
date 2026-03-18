@@ -285,23 +285,6 @@ describe('useStonecropSetup', () => {
 		})
 	})
 
-	describe('getClient', () => {
-		it('returns undefined when stonecrop is not available', () => {
-			vi.mocked(useNuxtApp).mockReturnValue(makeNuxtApp(undefined, undefined) as unknown as NuxtApp)
-			const { getClient } = useStonecropSetup()
-			expect(getClient()).toBeUndefined()
-		})
-
-		it('returns the client from stonecrop', () => {
-			const mockStonecrop = makeStonecrop()
-			const mockClient = makeMockClient()
-			mockStonecrop.getClient = vi.fn(() => mockClient)
-			vi.mocked(useNuxtApp).mockReturnValue(makeNuxtApp(undefined, mockStonecrop) as unknown as NuxtApp)
-			const { getClient } = useStonecropSetup()
-			expect(getClient()).toBe(mockClient)
-		})
-	})
-
 	describe('registerMeta', () => {
 		it('throws error when registry is not available', () => {
 			vi.mocked(useNuxtApp).mockReturnValue(makeNuxtApp(undefined, undefined) as unknown as NuxtApp)
@@ -345,32 +328,6 @@ describe('useStonecropSetup', () => {
 			registerDoctype(mockDoctype)
 
 			expect(mockRegistry.addDoctype).toHaveBeenCalledWith(mockDoctype)
-		})
-	})
-
-	describe('dispatchAction', () => {
-		it('throws error when stonecrop is not available', async () => {
-			vi.mocked(useNuxtApp).mockReturnValue(makeNuxtApp(undefined, undefined) as unknown as NuxtApp)
-			const { dispatchAction } = useStonecropSetup()
-
-			await expect(dispatchAction({ name: 'plan' }, 'SUBMIT', [])).rejects.toThrow(
-				'[useStonecropSetup] Stonecrop instance not available. ' +
-					'Ensure the @stonecrop/nuxt module is installed and its plugin has run before calling this.'
-			)
-		})
-
-		it('returns error when doctype not found in registry', async () => {
-			const mockRegistry = makeRegistry({ getDoctype: vi.fn(() => undefined) })
-			const mockStonecrop = makeStonecrop()
-			vi.mocked(useNuxtApp).mockReturnValue(makeNuxtApp(mockRegistry, mockStonecrop) as unknown as NuxtApp)
-			const { dispatchAction } = useStonecropSetup()
-			const result = await dispatchAction({ name: 'plan' }, 'SUBMIT', [])
-
-			expect(result).toEqual({
-				success: false,
-				data: null,
-				error: "Doctype 'plan' not found in registry",
-			})
 		})
 	})
 })

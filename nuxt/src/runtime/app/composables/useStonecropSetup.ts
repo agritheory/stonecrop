@@ -36,7 +36,7 @@ import { useNuxtApp } from 'nuxt/app'
  *   })
  *
  *   // Optionally pre-load doctypes
- *   const planMeta = DoctypeMeta.fromPlain({ name: 'plan', fields: [...] })
+ *   const planMeta = DoctypeMeta.fromObject({ name: 'plan', fields: [...] })
  *   registerDoctype(planMeta)
  * })
  * ```
@@ -96,15 +96,6 @@ export function useStonecropSetup() {
 		},
 
 		/**
-		 * Get the currently configured data client.
-		 * Returns `undefined` if no client has been registered.
-		 */
-		getClient(): DataClient | undefined {
-			const stonecrop = nuxtApp.$stonecrop as Stonecrop | undefined
-			return stonecrop?.getClient()
-		},
-
-		/**
 		 * Set the `getMeta` function on the Registry.
 		 * Called by `useStonecrop()` to lazy-load doctype metadata for the current route.
 		 *
@@ -144,7 +135,7 @@ export function useStonecropSetup() {
 		 *
 		 * @example
 		 * ```ts
-		 * const planMeta = DoctypeMeta.fromPlain({ name: 'plan', fields: [...] })
+		 * const planMeta = DoctypeMeta.fromObject({ name: 'plan', fields: [...] })
 		 * registerDoctype(planMeta)
 		 * ```
 		 */
@@ -157,55 +148,6 @@ export function useStonecropSetup() {
 				)
 			}
 			registry.addDoctype(doctype)
-		},
-
-		/**
-		 * Dispatch an action to the server via the configured data client.
-		 * All state changes flow through this single mutation endpoint.
-		 *
-		 * @param doctype - Doctype reference object with `name` and optional `slug` properties
-		 * @param doctype.name - Doctype name (e.g., 'plan')
-		 * @param doctype.slug - Optional doctype slug if it differs from the name (e.g., 'project-plan')
-		 * @param action - Action name to execute (e.g., 'SUBMIT', 'APPROVE', 'save')
-		 * @param args - Action arguments (typically record ID and/or form data)
-		 * @returns Action result with success status, response data, and any error
-		 * @throws Error if the Stonecrop instance is not available
-		 *
-		 * @example
-		 * ```ts
-		 * // Save a record
-		 * const result = await dispatchAction(
-		 *   { name: 'plan' },
-		 *   'save',
-		 *   [{ id: recordId, data: formData }]
-		 * )
-		 * ```
-		 */
-		async dispatchAction(
-			doctype: { name: string; slug?: string },
-			action: string,
-			args?: unknown[]
-		): Promise<{ success: boolean; data: unknown; error: string | null }> {
-			const stonecrop = nuxtApp.$stonecrop as Stonecrop | undefined
-			if (!stonecrop) {
-				throw new Error(
-					'[useStonecropSetup] Stonecrop instance not available. ' +
-						'Ensure the @stonecrop/nuxt module is installed and its plugin has run before calling this.'
-				)
-			}
-
-			const registry = nuxtApp.$registry as Registry | undefined
-			const meta = registry?.getDoctype(doctype.slug || doctype.name.toLowerCase())
-
-			if (!meta) {
-				return {
-					success: false,
-					data: null,
-					error: `Doctype '${doctype.name}' not found in registry`,
-				}
-			}
-
-			return stonecrop.dispatchAction(meta, action, args)
 		},
 	}
 }
