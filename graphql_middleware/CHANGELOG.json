@@ -2,6 +2,18 @@
   "name": "@stonecrop/graphql-middleware",
   "entries": [
     {
+      "version": "0.10.4",
+      "tag": "@stonecrop/graphql-middleware_v0.10.4",
+      "date": "Wed, 18 Mar 2026 06:27:10 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "remove zod externalization"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.10.3",
       "tag": "@stonecrop/graphql-middleware_v0.10.3",
       "date": "Tue, 17 Mar 2026 13:56:02 GMT",

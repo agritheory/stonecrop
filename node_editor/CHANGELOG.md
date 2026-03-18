@@ -1,6 +1,11 @@
 # Change Log - @stonecrop/node-editor
 
-This log was last generated on Tue, 17 Mar 2026 13:56:02 GMT and should not be manually modified.
+This log was last generated on Wed, 18 Mar 2026 06:27:10 GMT and should not be manually modified.
+
+## 0.10.4
+Wed, 18 Mar 2026 06:27:10 GMT
+
+_Version update only_
 
 ## 0.10.3
 Tue, 17 Mar 2026 13:56:02 GMT

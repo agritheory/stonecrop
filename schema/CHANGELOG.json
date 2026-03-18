@@ -2,6 +2,18 @@
   "name": "@stonecrop/schema",
   "entries": [
     {
+      "version": "0.10.4",
+      "tag": "@stonecrop/schema_v0.10.4",
+      "date": "Wed, 18 Mar 2026 06:27:10 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "update zod to v4"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.10.3",
       "tag": "@stonecrop/schema_v0.10.3",
       "date": "Tue, 17 Mar 2026 13:56:02 GMT",
