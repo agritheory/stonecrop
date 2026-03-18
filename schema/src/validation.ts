@@ -7,7 +7,7 @@ import { DoctypeMeta } from './doctype'
  */
 export interface ValidationError {
 	/** Path to the invalid property */
-	path: (string | number)[]
+	path: PropertyKey[]
 
 	/** Error message */
 	message: string

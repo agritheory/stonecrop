@@ -29,12 +29,10 @@ export type FieldOptions = z.infer<typeof FieldOptions>
  * Validation configuration for form fields
  * @public
  */
-export const FieldValidation = z
-	.object({
-		/** Error message to display when validation fails */
-		errorMessage: z.string(),
-	})
-	.passthrough()
+export const FieldValidation = z.looseObject({
+	/** Error message to display when validation fails */
+	errorMessage: z.string(),
+})
 
 /**
  * Field validation type inferred from Zod schema

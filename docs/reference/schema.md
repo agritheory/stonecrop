@@ -573,7 +573,7 @@ Validation error with path information
 ```typescript
 export interface ValidationError {
   message: string;
-  path: (string | number)[];
+  path: PropertyKey[];
 }
 ```
 
@@ -582,7 +582,7 @@ export interface ValidationError {
 | Property | Type | Description |
 |----------|------|-------------|
 | message | `string` | Error message |
-| path | `(string \| number)[]` | Path to the invalid property |
+| path | `PropertyKey[]` | Path to the invalid property |
 
 ### ValidationResult
 
