@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/stonecrop",
+      "comment": "resolve async plugin loading issues",
+      "type": "none"
+    }
+  ],
+  "packageName": "@stonecrop/stonecrop"
+}
