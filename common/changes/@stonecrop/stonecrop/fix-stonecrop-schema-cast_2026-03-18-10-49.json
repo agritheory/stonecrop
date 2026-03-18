@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/stonecrop",
+      "comment": "add helper functions for casting doctype responses",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/stonecrop"
+}
