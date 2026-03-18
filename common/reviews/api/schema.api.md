@@ -13,25 +13,11 @@ import { z } from 'zod';
 export const ActionDefinition: z.ZodObject<{
     label: z.ZodString;
     handler: z.ZodString;
-    requiredFields: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
-    allowedStates: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
+    requiredFields: z.ZodOptional<z.ZodArray<z.ZodString>>;
+    allowedStates: z.ZodOptional<z.ZodArray<z.ZodString>>;
     confirm: z.ZodOptional<z.ZodBoolean>;
     args: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodUnknown>>;
-}, "strip", z.ZodTypeAny, {
-    label: string;
-    handler: string;
-    requiredFields?: string[] | undefined;
-    allowedStates?: string[] | undefined;
-    confirm?: boolean | undefined;
-    args?: Record<string, unknown> | undefined;
-}, {
-    label: string;
-    handler: string;
-    requiredFields?: string[] | undefined;
-    allowedStates?: string[] | undefined;
-    confirm?: boolean | undefined;
-    args?: Record<string, unknown> | undefined;
-}>;
+}, z.core.$strip>;
 
 // @public
 export type ActionDefinition = z.infer<typeof ActionDefinition>;
@@ -94,186 +80,64 @@ const DoctypeMeta: z.ZodObject<{
     tableName: z.ZodOptional<z.ZodString>;
     fields: z.ZodArray<z.ZodObject<{
         fieldname: z.ZodString;
-        fieldtype: z.ZodEnum<["Data", "Text", "Int", "Float", "Decimal", "Check", "Date", "Time", "Datetime", "Duration", "DateRange", "JSON", "Code", "Link", "Doctype", "Attach", "Currency", "Quantity", "Select"]>;
+        fieldtype: z.ZodEnum<{
+            Data: "Data";
+            Text: "Text";
+            Int: "Int";
+            Float: "Float";
+            Decimal: "Decimal";
+            Check: "Check";
+            Date: "Date";
+            Time: "Time";
+            Datetime: "Datetime";
+            Duration: "Duration";
+            DateRange: "DateRange";
+            JSON: "JSON";
+            Code: "Code";
+            Link: "Link";
+            Doctype: "Doctype";
+            Attach: "Attach";
+            Currency: "Currency";
+            Quantity: "Quantity";
+            Select: "Select";
+        }>;
         component: z.ZodOptional<z.ZodString>;
         label: z.ZodOptional<z.ZodString>;
         width: z.ZodOptional<z.ZodString>;
-        align: z.ZodOptional<z.ZodEnum<["left", "center", "right", "start", "end"]>>;
+        align: z.ZodOptional<z.ZodEnum<{
+            left: "left";
+            center: "center";
+            right: "right";
+            start: "start";
+            end: "end";
+        }>>;
         required: z.ZodOptional<z.ZodBoolean>;
         readOnly: z.ZodOptional<z.ZodBoolean>;
         edit: z.ZodOptional<z.ZodBoolean>;
         hidden: z.ZodOptional<z.ZodBoolean>;
         value: z.ZodOptional<z.ZodUnknown>;
         default: z.ZodOptional<z.ZodUnknown>;
-        options: z.ZodOptional<z.ZodUnion<[z.ZodString, z.ZodArray<z.ZodString, "many">, z.ZodRecord<z.ZodString, z.ZodUnknown>]>>;
+        options: z.ZodOptional<z.ZodUnion<readonly [z.ZodString, z.ZodArray<z.ZodString>, z.ZodRecord<z.ZodString, z.ZodUnknown>]>>;
         mask: z.ZodOptional<z.ZodString>;
         validation: z.ZodOptional<z.ZodObject<{
             errorMessage: z.ZodString;
-        }, "passthrough", z.ZodTypeAny, z.objectOutputType<{
-            errorMessage: z.ZodString;
-        }, z.ZodTypeAny, "passthrough">, z.objectInputType<{
-            errorMessage: z.ZodString;
-        }, z.ZodTypeAny, "passthrough">>>;
-    }, "strip", z.ZodTypeAny, {
-        fieldname: string;
-        fieldtype: "Data" | "Text" | "Int" | "Float" | "Decimal" | "Check" | "Date" | "Time" | "Datetime" | "Duration" | "DateRange" | "JSON" | "Code" | "Link" | "Doctype" | "Attach" | "Currency" | "Quantity" | "Select";
-        value?: unknown;
-        options?: string | string[] | Record<string, unknown> | undefined;
-        validation?: z.objectOutputType<{
-            errorMessage: z.ZodString;
-        }, z.ZodTypeAny, "passthrough"> | undefined;
-        component?: string | undefined;
-        label?: string | undefined;
-        width?: string | undefined;
-        align?: "left" | "center" | "right" | "start" | "end" | undefined;
-        required?: boolean | undefined;
-        readOnly?: boolean | undefined;
-        edit?: boolean | undefined;
-        hidden?: boolean | undefined;
-        default?: unknown;
-        mask?: string | undefined;
-    }, {
-        fieldname: string;
-        fieldtype: "Data" | "Text" | "Int" | "Float" | "Decimal" | "Check" | "Date" | "Time" | "Datetime" | "Duration" | "DateRange" | "JSON" | "Code" | "Link" | "Doctype" | "Attach" | "Currency" | "Quantity" | "Select";
-        value?: unknown;
-        options?: string | string[] | Record<string, unknown> | undefined;
-        validation?: z.objectInputType<{
-            errorMessage: z.ZodString;
-        }, z.ZodTypeAny, "passthrough"> | undefined;
-        component?: string | undefined;
-        label?: string | undefined;
-        width?: string | undefined;
-        align?: "left" | "center" | "right" | "start" | "end" | undefined;
-        required?: boolean | undefined;
-        readOnly?: boolean | undefined;
-        edit?: boolean | undefined;
-        hidden?: boolean | undefined;
-        default?: unknown;
-        mask?: string | undefined;
-    }>, "many">;
+        }, z.core.$loose>>;
+    }, z.core.$strip>>;
     workflow: z.ZodOptional<z.ZodObject<{
-        states: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
+        states: z.ZodOptional<z.ZodArray<z.ZodString>>;
         actions: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodObject<{
             label: z.ZodString;
             handler: z.ZodString;
-            requiredFields: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
-            allowedStates: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
+            requiredFields: z.ZodOptional<z.ZodArray<z.ZodString>>;
+            allowedStates: z.ZodOptional<z.ZodArray<z.ZodString>>;
             confirm: z.ZodOptional<z.ZodBoolean>;
             args: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodUnknown>>;
-        }, "strip", z.ZodTypeAny, {
-            label: string;
-            handler: string;
-            requiredFields?: string[] | undefined;
-            allowedStates?: string[] | undefined;
-            confirm?: boolean | undefined;
-            args?: Record<string, unknown> | undefined;
-        }, {
-            label: string;
-            handler: string;
-            requiredFields?: string[] | undefined;
-            allowedStates?: string[] | undefined;
-            confirm?: boolean | undefined;
-            args?: Record<string, unknown> | undefined;
-        }>>>;
-    }, "strip", z.ZodTypeAny, {
-        states?: string[] | undefined;
-        actions?: Record<string, {
-            label: string;
-            handler: string;
-            requiredFields?: string[] | undefined;
-            allowedStates?: string[] | undefined;
-            confirm?: boolean | undefined;
-            args?: Record<string, unknown> | undefined;
-        }> | undefined;
-    }, {
-        states?: string[] | undefined;
-        actions?: Record<string, {
-            label: string;
-            handler: string;
-            requiredFields?: string[] | undefined;
-            allowedStates?: string[] | undefined;
-            confirm?: boolean | undefined;
-            args?: Record<string, unknown> | undefined;
-        }> | undefined;
-    }>>;
+        }, z.core.$strip>>>;
+    }, z.core.$strip>>;
     inherits: z.ZodOptional<z.ZodString>;
     listDoctype: z.ZodOptional<z.ZodString>;
     parentDoctype: z.ZodOptional<z.ZodString>;
-}, "strip", z.ZodTypeAny, {
-    name: string;
-    fields: {
-        fieldname: string;
-        fieldtype: "Data" | "Text" | "Int" | "Float" | "Decimal" | "Check" | "Date" | "Time" | "Datetime" | "Duration" | "DateRange" | "JSON" | "Code" | "Link" | "Doctype" | "Attach" | "Currency" | "Quantity" | "Select";
-        value?: unknown;
-        options?: string | string[] | Record<string, unknown> | undefined;
-        validation?: z.objectOutputType<{
-            errorMessage: z.ZodString;
-        }, z.ZodTypeAny, "passthrough"> | undefined;
-        component?: string | undefined;
-        label?: string | undefined;
-        width?: string | undefined;
-        align?: "left" | "center" | "right" | "start" | "end" | undefined;
-        required?: boolean | undefined;
-        readOnly?: boolean | undefined;
-        edit?: boolean | undefined;
-        hidden?: boolean | undefined;
-        default?: unknown;
-        mask?: string | undefined;
-    }[];
-    slug?: string | undefined;
-    tableName?: string | undefined;
-    workflow?: {
-        states?: string[] | undefined;
-        actions?: Record<string, {
-            label: string;
-            handler: string;
-            requiredFields?: string[] | undefined;
-            allowedStates?: string[] | undefined;
-            confirm?: boolean | undefined;
-            args?: Record<string, unknown> | undefined;
-        }> | undefined;
-    } | undefined;
-    inherits?: string | undefined;
-    listDoctype?: string | undefined;
-    parentDoctype?: string | undefined;
-}, {
-    name: string;
-    fields: {
-        fieldname: string;
-        fieldtype: "Data" | "Text" | "Int" | "Float" | "Decimal" | "Check" | "Date" | "Time" | "Datetime" | "Duration" | "DateRange" | "JSON" | "Code" | "Link" | "Doctype" | "Attach" | "Currency" | "Quantity" | "Select";
-        value?: unknown;
-        options?: string | string[] | Record<string, unknown> | undefined;
-        validation?: z.objectInputType<{
-            errorMessage: z.ZodString;
-        }, z.ZodTypeAny, "passthrough"> | undefined;
-        component?: string | undefined;
-        label?: string | undefined;
-        width?: string | undefined;
-        align?: "left" | "center" | "right" | "start" | "end" | undefined;
-        required?: boolean | undefined;
-        readOnly?: boolean | undefined;
-        edit?: boolean | undefined;
-        hidden?: boolean | undefined;
-        default?: unknown;
-        mask?: string | undefined;
-    }[];
-    slug?: string | undefined;
-    tableName?: string | undefined;
-    workflow?: {
-        states?: string[] | undefined;
-        actions?: Record<string, {
-            label: string;
-            handler: string;
-            requiredFields?: string[] | undefined;
-            allowedStates?: string[] | undefined;
-            confirm?: boolean | undefined;
-            args?: Record<string, unknown> | undefined;
-        }> | undefined;
-    } | undefined;
-    inherits?: string | undefined;
-    listDoctype?: string | undefined;
-    parentDoctype?: string | undefined;
-}>;
+}, z.core.$strip>;
 
 // @public
 type DoctypeMeta = z.infer<typeof DoctypeMeta>;
@@ -289,63 +153,49 @@ export interface DoctypeRef {
 // @public
 const FieldMeta: z.ZodObject<{
     fieldname: z.ZodString;
-    fieldtype: z.ZodEnum<["Data", "Text", "Int", "Float", "Decimal", "Check", "Date", "Time", "Datetime", "Duration", "DateRange", "JSON", "Code", "Link", "Doctype", "Attach", "Currency", "Quantity", "Select"]>;
+    fieldtype: z.ZodEnum<{
+        Data: "Data";
+        Text: "Text";
+        Int: "Int";
+        Float: "Float";
+        Decimal: "Decimal";
+        Check: "Check";
+        Date: "Date";
+        Time: "Time";
+        Datetime: "Datetime";
+        Duration: "Duration";
+        DateRange: "DateRange";
+        JSON: "JSON";
+        Code: "Code";
+        Link: "Link";
+        Doctype: "Doctype";
+        Attach: "Attach";
+        Currency: "Currency";
+        Quantity: "Quantity";
+        Select: "Select";
+    }>;
     component: z.ZodOptional<z.ZodString>;
     label: z.ZodOptional<z.ZodString>;
     width: z.ZodOptional<z.ZodString>;
-    align: z.ZodOptional<z.ZodEnum<["left", "center", "right", "start", "end"]>>;
+    align: z.ZodOptional<z.ZodEnum<{
+        left: "left";
+        center: "center";
+        right: "right";
+        start: "start";
+        end: "end";
+    }>>;
     required: z.ZodOptional<z.ZodBoolean>;
     readOnly: z.ZodOptional<z.ZodBoolean>;
     edit: z.ZodOptional<z.ZodBoolean>;
     hidden: z.ZodOptional<z.ZodBoolean>;
     value: z.ZodOptional<z.ZodUnknown>;
     default: z.ZodOptional<z.ZodUnknown>;
-    options: z.ZodOptional<z.ZodUnion<[z.ZodString, z.ZodArray<z.ZodString, "many">, z.ZodRecord<z.ZodString, z.ZodUnknown>]>>;
+    options: z.ZodOptional<z.ZodUnion<readonly [z.ZodString, z.ZodArray<z.ZodString>, z.ZodRecord<z.ZodString, z.ZodUnknown>]>>;
     mask: z.ZodOptional<z.ZodString>;
     validation: z.ZodOptional<z.ZodObject<{
         errorMessage: z.ZodString;
-    }, "passthrough", z.ZodTypeAny, z.objectOutputType<{
-        errorMessage: z.ZodString;
-    }, z.ZodTypeAny, "passthrough">, z.objectInputType<{
-        errorMessage: z.ZodString;
-    }, z.ZodTypeAny, "passthrough">>>;
-}, "strip", z.ZodTypeAny, {
-    fieldname: string;
-    fieldtype: "Data" | "Text" | "Int" | "Float" | "Decimal" | "Check" | "Date" | "Time" | "Datetime" | "Duration" | "DateRange" | "JSON" | "Code" | "Link" | "Doctype" | "Attach" | "Currency" | "Quantity" | "Select";
-    value?: unknown;
-    options?: string | string[] | Record<string, unknown> | undefined;
-    validation?: z.objectOutputType<{
-        errorMessage: z.ZodString;
-    }, z.ZodTypeAny, "passthrough"> | undefined;
-    component?: string | undefined;
-    label?: string | undefined;
-    width?: string | undefined;
-    align?: "left" | "center" | "right" | "start" | "end" | undefined;
-    required?: boolean | undefined;
-    readOnly?: boolean | undefined;
-    edit?: boolean | undefined;
-    hidden?: boolean | undefined;
-    default?: unknown;
-    mask?: string | undefined;
-}, {
-    fieldname: string;
-    fieldtype: "Data" | "Text" | "Int" | "Float" | "Decimal" | "Check" | "Date" | "Time" | "Datetime" | "Duration" | "DateRange" | "JSON" | "Code" | "Link" | "Doctype" | "Attach" | "Currency" | "Quantity" | "Select";
-    value?: unknown;
-    options?: string | string[] | Record<string, unknown> | undefined;
-    validation?: z.objectInputType<{
-        errorMessage: z.ZodString;
-    }, z.ZodTypeAny, "passthrough"> | undefined;
-    component?: string | undefined;
-    label?: string | undefined;
-    width?: string | undefined;
-    align?: "left" | "center" | "right" | "start" | "end" | undefined;
-    required?: boolean | undefined;
-    readOnly?: boolean | undefined;
-    edit?: boolean | undefined;
-    hidden?: boolean | undefined;
-    default?: unknown;
-    mask?: string | undefined;
-}>;
+    }, z.core.$loose>>;
+}, z.core.$strip>;
 
 // @public
 type FieldMeta = z.infer<typeof FieldMeta>;
@@ -353,7 +203,7 @@ export { FieldMeta }
 export { FieldMeta as FieldMetaType }
 
 // @public
-const FieldOptions: z.ZodUnion<[z.ZodString, z.ZodArray<z.ZodString, "many">, z.ZodRecord<z.ZodString, z.ZodUnknown>]>;
+const FieldOptions: z.ZodUnion<readonly [z.ZodString, z.ZodArray<z.ZodString>, z.ZodRecord<z.ZodString, z.ZodUnknown>]>;
 
 // @public
 type FieldOptions = z.infer<typeof FieldOptions>;
@@ -369,11 +219,7 @@ export interface FieldTemplate {
 // @public
 export const FieldValidation: z.ZodObject<{
     errorMessage: z.ZodString;
-}, "passthrough", z.ZodTypeAny, z.objectOutputType<{
-    errorMessage: z.ZodString;
-}, z.ZodTypeAny, "passthrough">, z.objectInputType<{
-    errorMessage: z.ZodString;
-}, z.ZodTypeAny, "passthrough">>;
+}, z.core.$loose>;
 
 // @public
 export type FieldValidation = z.infer<typeof FieldValidation>;
@@ -425,7 +271,27 @@ export function snakeToCamel(snakeCase: string): string;
 export function snakeToLabel(snakeCase: string): string;
 
 // @public
-const StonecropFieldType: z.ZodEnum<["Data", "Text", "Int", "Float", "Decimal", "Check", "Date", "Time", "Datetime", "Duration", "DateRange", "JSON", "Code", "Link", "Doctype", "Attach", "Currency", "Quantity", "Select"]>;
+const StonecropFieldType: z.ZodEnum<{
+    Data: "Data";
+    Text: "Text";
+    Int: "Int";
+    Float: "Float";
+    Decimal: "Decimal";
+    Check: "Check";
+    Date: "Date";
+    Time: "Time";
+    Datetime: "Datetime";
+    Duration: "Duration";
+    DateRange: "DateRange";
+    JSON: "JSON";
+    Code: "Code";
+    Link: "Link";
+    Doctype: "Doctype";
+    Attach: "Attach";
+    Currency: "Currency";
+    Quantity: "Quantity";
+    Select: "Select";
+}>;
 
 // @public
 type StonecropFieldType = z.infer<typeof StonecropFieldType>;
@@ -450,7 +316,7 @@ export function validateField(data: unknown): ValidationResult;
 // @public
 export interface ValidationError {
     message: string;
-    path: (string | number)[];
+    path: PropertyKey[];
 }
 
 // @public
@@ -464,50 +330,16 @@ export const WELL_KNOWN_SCALARS: Record<string, FieldTemplate>;
 
 // @public
 const WorkflowMeta: z.ZodObject<{
-    states: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
+    states: z.ZodOptional<z.ZodArray<z.ZodString>>;
     actions: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodObject<{
         label: z.ZodString;
         handler: z.ZodString;
-        requiredFields: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
-        allowedStates: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
+        requiredFields: z.ZodOptional<z.ZodArray<z.ZodString>>;
+        allowedStates: z.ZodOptional<z.ZodArray<z.ZodString>>;
         confirm: z.ZodOptional<z.ZodBoolean>;
         args: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodUnknown>>;
-    }, "strip", z.ZodTypeAny, {
-        label: string;
-        handler: string;
-        requiredFields?: string[] | undefined;
-        allowedStates?: string[] | undefined;
-        confirm?: boolean | undefined;
-        args?: Record<string, unknown> | undefined;
-    }, {
-        label: string;
-        handler: string;
-        requiredFields?: string[] | undefined;
-        allowedStates?: string[] | undefined;
-        confirm?: boolean | undefined;
-        args?: Record<string, unknown> | undefined;
-    }>>>;
-}, "strip", z.ZodTypeAny, {
-    states?: string[] | undefined;
-    actions?: Record<string, {
-        label: string;
-        handler: string;
-        requiredFields?: string[] | undefined;
-        allowedStates?: string[] | undefined;
-        confirm?: boolean | undefined;
-        args?: Record<string, unknown> | undefined;
-    }> | undefined;
-}, {
-    states?: string[] | undefined;
-    actions?: Record<string, {
-        label: string;
-        handler: string;
-        requiredFields?: string[] | undefined;
-        allowedStates?: string[] | undefined;
-        confirm?: boolean | undefined;
-        args?: Record<string, unknown> | undefined;
-    }> | undefined;
-}>;
+    }, z.core.$strip>>>;
+}, z.core.$strip>;
 
 // @public
 type WorkflowMeta = z.infer<typeof WorkflowMeta>;

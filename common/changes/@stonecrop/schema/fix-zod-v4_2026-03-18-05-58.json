@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/schema",
+      "comment": "update zod to v4",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/schema"
+}

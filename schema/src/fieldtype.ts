@@ -5,27 +5,32 @@ import { z } from 'zod'
  * These are consistent across forms and tables.
  * @public
  */
-export const StonecropFieldType = z.enum([
-	'Data', // Short text, varchar
-	'Text', // Long text
-	'Int', // Integer
-	'Float', // Floating point (IEEE 754)
-	'Decimal', // Arbitrary precision decimal
-	'Check', // Boolean/checkbox
-	'Date', // Date only
-	'Time', // Time only
-	'Datetime', // Date and time
-	'Duration', // Time interval
-	'DateRange', // Date range
-	'JSON', // JSON data
-	'Code', // Code/source (with syntax highlighting)
-	'Link', // Reference to another doctype
-	'Doctype', // Child doctype (renders as table)
-	'Attach', // File attachment
-	'Currency', // Currency value
-	'Quantity', // Quantity with unit
-	'Select', // Dropdown selection
-])
+export const StonecropFieldType = z
+	.enum([
+		'Data', // Short text, varchar
+		'Text', // Long text
+		'Int', // Integer
+		'Float', // Floating point (IEEE 754)
+		'Decimal', // Arbitrary precision decimal
+		'Check', // Boolean/checkbox
+		'Date', // Date only
+		'Time', // Time only
+		'Datetime', // Date and time
+		'Duration', // Time interval
+		'DateRange', // Date range
+		'JSON', // JSON data
+		'Code', // Code/source (with syntax highlighting)
+		'Link', // Reference to another doctype
+		'Doctype', // Child doctype (renders as table)
+		'Attach', // File attachment
+		'Currency', // Currency value
+		'Quantity', // Quantity with unit
+		'Select', // Dropdown selection
+	])
+	.meta({
+		title: 'StonecropFieldType',
+		description: 'Semantic field types for Stonecrop doctypes, consistent across forms and tables',
+	})
 
 /**
  * Stonecrop field type enum inferred from Zod schema
