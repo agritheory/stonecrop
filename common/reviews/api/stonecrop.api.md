@@ -255,6 +255,9 @@ export type HSTStonecropReturn = BaseStonecropReturn & {
         provideHSTPath: (fieldname: string) => string;
         handleHSTChange: (changeData: HSTChangeData) => void;
     };
+    isLoading: Ref<boolean>;
+    error: Ref<Error | null>;
+    resolvedDoctype: Ref<Doctype | undefined>;
 };
 
 // @public
@@ -1058,7 +1061,7 @@ export function useStonecrop(): BaseStonecropReturn | HSTStonecropReturn;
 // @public
 export function useStonecrop(options: {
     registry?: Registry;
-    doctype: Doctype;
+    doctype: Doctype | string;
     recordId?: string;
 }): HSTStonecropReturn;
 

@@ -548,3 +548,269 @@ describe('useStonecrop router-based HST integration', () => {
 		}
 	})
 })
+
+describe('useStonecrop with string doctype lazy-loading', () => {
+	let mockRouter: any
+	let registry: Registry
+	let stonecrop: Stonecrop
+
+	beforeEach(() => {
+		setActivePinia(createPinia())
+
+		// Reset static instances
+		Registry._root = undefined as any
+		;(HST as any).instance = undefined
+
+		mockRouter = createRouter({
+			history: createMemoryHistory(),
+			routes: [
+				{ path: '/records/:records', name: 'list', component: {} },
+				{ path: '/records/:records/:record', name: 'form', component: {} },
+			],
+		})
+
+		registry = new Registry(mockRouter)
+		stonecrop = new Stonecrop(registry)
+
+		vi.clearAllMocks()
+	})
+
+	it('accepts string doctype and lazy-loads via getMeta', async () => {
+		const mockDoctype = createMockDoctype('Task')
+		const mockGetMeta = vi.fn().mockResolvedValue(mockDoctype)
+		registry.getMeta = mockGetMeta
+
+		const TestComponent = defineComponent({
+			setup() {
+				return useStonecrop({ doctype: 'task', recordId: '123' })
+			},
+			template: '<div>test</div>',
+		})
+
+		const wrapper = mount(TestComponent, {
+			global: {
+				provide: {
+					$registry: registry,
+					$stonecrop: stonecrop,
+				},
+			},
+		})
+
+		await wrapper.vm.$nextTick()
+		await new Promise(resolve => setTimeout(resolve, 10))
+
+		const vm = wrapper.vm as any
+
+		// getMeta should have been called
+		expect(mockGetMeta).toHaveBeenCalledWith({
+			path: '/task',
+			segments: ['task'],
+		})
+
+		// resolvedDoctype should be set
+		expect(vm.resolvedDoctype).toBeDefined()
+		expect(vm.resolvedDoctype?.name).toBe('Task')
+
+		// isLoading should be false after load
+		expect(vm.isLoading).toBe(false)
+
+		// error should be null
+		expect(vm.error).toBeNull()
+	})
+
+	it('returns doctype from registry if already loaded', async () => {
+		const mockDoctype = createMockDoctype('Task')
+		registry.addDoctype(mockDoctype)
+
+		const mockGetMeta = vi.fn()
+		registry.getMeta = mockGetMeta
+
+		const TestComponent = defineComponent({
+			setup() {
+				return useStonecrop({ doctype: 'task', recordId: '123' })
+			},
+			template: '<div>test</div>',
+		})
+
+		const wrapper = mount(TestComponent, {
+			global: {
+				provide: {
+					$registry: registry,
+					$stonecrop: stonecrop,
+				},
+			},
+		})
+
+		await wrapper.vm.$nextTick()
+		await new Promise(resolve => setTimeout(resolve, 10))
+
+		const vm = wrapper.vm as any
+
+		// getMeta should NOT have been called since doctype was in registry
+		expect(mockGetMeta).not.toHaveBeenCalled()
+
+		// resolvedDoctype should be set from registry
+		expect(vm.resolvedDoctype).toBeDefined()
+		expect(vm.resolvedDoctype?.name).toBe('Task')
+	})
+
+	it('sets error when doctype not found and no getMeta', async () => {
+		// No getMeta configured, doctype not in registry
+
+		const TestComponent = defineComponent({
+			setup() {
+				return useStonecrop({ doctype: 'nonexistent', recordId: '123' })
+			},
+			template: '<div>test</div>',
+		})
+
+		const wrapper = mount(TestComponent, {
+			global: {
+				provide: {
+					$registry: registry,
+					$stonecrop: stonecrop,
+				},
+			},
+		})
+
+		await wrapper.vm.$nextTick()
+		await new Promise(resolve => setTimeout(resolve, 10))
+
+		const vm = wrapper.vm as any
+
+		// isLoading should be false
+		expect(vm.isLoading).toBe(false)
+
+		// error should be set
+		expect(vm.error).toBeDefined()
+		expect(vm.error?.message).toContain('not found in registry')
+
+		// resolvedDoctype should be undefined
+		expect(vm.resolvedDoctype).toBeUndefined()
+	})
+
+	it('sets error when getMeta returns null', async () => {
+		const mockGetMeta = vi.fn().mockResolvedValue(null)
+		registry.getMeta = mockGetMeta
+
+		const TestComponent = defineComponent({
+			setup() {
+				return useStonecrop({ doctype: 'nonexistent', recordId: '123' })
+			},
+			template: '<div>test</div>',
+		})
+
+		const wrapper = mount(TestComponent, {
+			global: {
+				provide: {
+					$registry: registry,
+					$stonecrop: stonecrop,
+				},
+			},
+		})
+
+		await wrapper.vm.$nextTick()
+		await new Promise(resolve => setTimeout(resolve, 10))
+
+		const vm = wrapper.vm as any
+
+		expect(vm.isLoading).toBe(false)
+		expect(vm.error).toBeDefined()
+		expect(vm.error?.message).toContain('getMeta returned no result')
+	})
+
+	it('sets error when getMeta throws', async () => {
+		const mockGetMeta = vi.fn().mockRejectedValue(new Error('Network error'))
+		registry.getMeta = mockGetMeta
+
+		const TestComponent = defineComponent({
+			setup() {
+				return useStonecrop({ doctype: 'task', recordId: '123' })
+			},
+			template: '<div>test</div>',
+		})
+
+		const wrapper = mount(TestComponent, {
+			global: {
+				provide: {
+					$registry: registry,
+					$stonecrop: stonecrop,
+				},
+			},
+		})
+
+		await wrapper.vm.$nextTick()
+		await new Promise(resolve => setTimeout(resolve, 10))
+
+		const vm = wrapper.vm as any
+
+		expect(vm.isLoading).toBe(false)
+		expect(vm.error).toBeDefined()
+		expect(vm.error?.message).toBe('Network error')
+	})
+
+	it('sets resolvedDoctype immediately for Doctype instance', async () => {
+		const mockDoctype = createMockDoctype('Task')
+
+		const TestComponent = defineComponent({
+			setup() {
+				const result = useStonecrop({ doctype: mockDoctype, recordId: '123' })
+				// Check resolvedDoctype immediately (before onMounted)
+				return {
+					...result,
+					immediateResolvedDoctype: result.resolvedDoctype.value,
+				}
+			},
+			template: '<div>test</div>',
+		})
+
+		const wrapper = mount(TestComponent, {
+			global: {
+				provide: {
+					$registry: registry,
+					$stonecrop: stonecrop,
+				},
+			},
+		})
+
+		const vm = wrapper.vm as any
+
+		// resolvedDoctype should be set immediately for Doctype instance
+		expect(vm.immediateResolvedDoctype).toBeDefined()
+		expect(vm.immediateResolvedDoctype?.name).toBe('Task')
+	})
+
+	it('provides HST path with string doctype after lazy load', async () => {
+		const mockDoctype = createMockDoctype('Task')
+		const mockGetMeta = vi.fn().mockResolvedValue(mockDoctype)
+		registry.getMeta = mockGetMeta
+
+		const TestComponent = defineComponent({
+			setup() {
+				const result = useStonecrop({ doctype: 'task', recordId: 'test-123' })
+				return result
+			},
+			template: '<div>{{ hstPath }}</div>',
+			computed: {
+				hstPath() {
+					return (this as any).provideHSTPath('title')
+				},
+			},
+		})
+
+		const wrapper = mount(TestComponent, {
+			global: {
+				provide: {
+					$registry: registry,
+					$stonecrop: stonecrop,
+				},
+			},
+		})
+
+		await wrapper.vm.$nextTick()
+		await new Promise(resolve => setTimeout(resolve, 10))
+
+		// After lazy load, HST path should work
+		expect(wrapper.vm.hstPath).toBe('task.test-123.title')
+	})
+})
