@@ -110,12 +110,12 @@ import { StonecropClient } from '@stonecrop/graphql-client'
 
 export default defineNuxtPlugin(() => {
   const { registerClient, registerMeta } = useStonecropSetup()
-  
+
   const client = new StonecropClient({ endpoint: '/graphql' })
-  
+
   // Register the data client for record fetching
   registerClient(client)
-  
+
   // Configure metadata fetching for lazy-loaded doctypes
   // Called by useStonecrop() when it needs doctype metadata
   registerMeta(({ segments }) => {
@@ -337,7 +337,7 @@ import { StonecropClient } from '@stonecrop/graphql-client'
 
 export default defineNuxtPlugin(() => {
   const { isReady, registerClient, registerMeta, registerDoctype } = useStonecropSetup()
-  
+
   // Check if Stonecrop is ready (module plugins run before project plugins)
   if (!isReady) {
     console.warn('Stonecrop not ready - ensure @stonecrop/nuxt module is installed')
@@ -345,16 +345,16 @@ export default defineNuxtPlugin(() => {
   }
 
   const client = new StonecropClient({ endpoint: '/graphql' })
-  
+
   // Register the data client
   registerClient(client)
-  
+
   // Configure metadata fetching for lazy-loaded doctypes
   registerMeta(({ segments }) => {
     const doctype = segments[0]
     return client.getMeta({ doctype })
   })
-  
+
   // Optionally pre-load doctypes into the Registry
   const planMeta = DoctypeMeta.fromObject({ name: 'plan', fields: [...] })
   registerDoctype(planMeta)
