@@ -6,14 +6,14 @@ import type { UnknownMachineConfig } from 'xstate'
 
 import type { SchemaTypes } from '@stonecrop/aform'
 import { useStonecrop } from '../../src/composables/stonecrop'
-import DoctypeMeta from '../../src/doctype'
+import Doctype from '../../src/doctype'
 import Registry from '../../src/registry'
 import { Stonecrop } from '../../src/stonecrop'
 
 describe('HST Composable Functionality', () => {
 	let registry: Registry
 	let stonecrop: Stonecrop
-	let doctype: DoctypeMeta
+	let doctype: Doctype
 
 	beforeEach(() => {
 		Registry._root = undefined as any
@@ -39,7 +39,7 @@ describe('HST Composable Functionality', () => {
 			save: ['saveData'],
 		})
 
-		doctype = new DoctypeMeta('Task', mockSchema, mockWorkflow, mockActions)
+		doctype = new Doctype('Task', mockSchema, mockWorkflow, mockActions)
 		registry.addDoctype(doctype)
 		stonecrop = new Stonecrop(registry)
 	})

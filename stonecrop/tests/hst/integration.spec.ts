@@ -13,14 +13,14 @@ import AComboBox from '../../../aform/src/components/form/AComboBox.vue'
 import ADropdown from '../../../aform/src/components/form/ADropdown.vue'
 import type { SchemaTypes } from '../../../aform/src/types'
 import { useStonecrop } from '../../src/composables/stonecrop'
-import DoctypeMeta from '../../src/doctype'
+import Doctype from '../../src/doctype'
 import Registry from '../../src/registry'
 import { Stonecrop } from '../../src/stonecrop'
 
 describe('HST Real Component Integration', () => {
 	let registry: Registry
 	let stonecrop: Stonecrop
-	let doctype: DoctypeMeta
+	let doctype: Doctype
 
 	beforeEach(() => {
 		Registry._root = undefined as any
@@ -89,7 +89,7 @@ describe('HST Real Component Integration', () => {
 			cancel: ['cancelTask'],
 		})
 
-		doctype = new DoctypeMeta('Task', completeSchema, mockWorkflow, mockActions)
+		doctype = new Doctype('Task', completeSchema, mockWorkflow, mockActions)
 		registry.addDoctype(doctype)
 		stonecrop = new Stonecrop(registry)
 	})

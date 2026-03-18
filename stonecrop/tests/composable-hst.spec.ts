@@ -7,7 +7,7 @@ import { defineComponent } from 'vue'
 import { type MachineConfig } from 'xstate'
 
 import { useStonecrop } from '../src/composables/stonecrop'
-import DoctypeMeta from '../src/doctype'
+import Doctype from '../src/doctype'
 import Registry from '../src/registry'
 import { Stonecrop } from '../src/stonecrop'
 import { HST } from '../src/stores/hst'
@@ -54,7 +54,7 @@ const createDoctype = (name: string, fields?: SchemaTypes[]) => {
 		save: ['validateData', 'saveData'],
 	})
 
-	return new DoctypeMeta(name, schema as any, workflow, actions)
+	return new Doctype(name, schema as any, workflow, actions)
 }
 
 describe('useStonecrop HST mode', () => {

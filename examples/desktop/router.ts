@@ -1,5 +1,4 @@
-import { DoctypeMeta, Registry, Stonecrop } from '@stonecrop/stonecrop'
-import { List, Map } from 'immutable'
+import { Registry, Stonecrop } from '@stonecrop/stonecrop'
 import {
 	createRouter,
 	createWebHistory,

@@ -255,7 +255,7 @@ Unified Stonecrop composable with HST integration for a specific doctype and rec
 ```typescript
 export declare function useStonecrop(options: {
     registry?: Registry;
-    doctype: DoctypeMeta;
+    doctype: Doctype;
     recordId?: string;
 }): HSTStonecropReturn;
 ```
@@ -264,7 +264,7 @@ export declare function useStonecrop(options: {
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| options | `{ registry?: Registry; doctype: DoctypeMeta; recordId?: string; }` | Configuration with doctype and optional recordId |
+| options | `{ registry?: Registry; doctype: Doctype; recordId?: string; }` | Configuration with doctype and optional recordId |
 
 ### useUndoRedoShortcuts
 
@@ -896,6 +896,26 @@ Cross-tab message types
 export type CrossTabMessageType = 'operation' | 'undo' | 'redo' | 'sync-request' | 'sync-response';
 ```
 
+### DoctypeConfig
+
+Plain object representation of doctype configuration for serialization/API responses. Compatible with the DoctypeMeta type from stonecrop/schema.
+
+**Definition:**
+
+```typescript
+export type DoctypeConfig = {
+    name: string;
+    slug?: string;
+    tableName?: string;
+    fields?: SchemaTypes[];
+    workflow?: UnknownMachineConfig;
+    actions?: Record<string, string[]>;
+    inherits?: string;
+    listDoctype?: string;
+    parentDoctype?: string;
+};
+```
+
 ### FieldAction
 
 Supported action types for field triggers
@@ -986,9 +1006,9 @@ export type HSTStonecropReturn = BaseStonecropReturn & {
     hstStore: Ref<HSTNode | undefined>;
     formData: Ref<Record<string, any>>;
     resolvedSchema: Ref<SchemaTypes[]>;
-    loadNestedData: (parentPath: string, childDoctype: DoctypeMeta, recordId?: string) => Record<string, any>;
-    saveRecursive: (doctype: DoctypeMeta, recordId: string) => Promise<Record<string, any>>;
-    createNestedContext: (basePath: string, childDoctype: DoctypeMeta) => {
+    loadNestedData: (parentPath: string, childDoctype: Doctype, recordId?: string) => Record<string, any>;
+    saveRecursive: (doctype: Doctype, recordId: string) => Promise<Record<string, any>>;
+    createNestedContext: (basePath: string, childDoctype: Doctype) => {
         provideHSTPath: (fieldname: string) => string;
         handleHSTChange: (changeData: HSTChangeData) => void;
     };
@@ -1019,7 +1039,7 @@ Install options for Stonecrop Vue plugin
 export type InstallOptions = {
     router?: Router;
     components?: Record<string, Component>;
-    getMeta?: (routeContext: RouteContext) => DoctypeMeta | Promise<DoctypeMeta>;
+    getMeta?: (routeContext: RouteContext) => Doctype | Promise<Doctype>;
     client?: DataClient;
     autoInitializeRouter?: boolean;
     onRouterInitialized?: (registry: Registry, stonecrop: Stonecrop) => void | Promise<void>;
@@ -1121,14 +1141,14 @@ export type TransitionActionFunction = (context: TransitionChangeContext) => voi
 
 ## Classes
 
-### DoctypeMeta
+### Doctype
 
-Doctype Meta class
+Doctype runtime class with Immutable.js collections for HST change tracking.
 
 **Constructor:**
 
 ```typescript
-new DoctypeMeta(doctype: string, schema: ImmutableDoctype['schema'], workflow: ImmutableDoctype['workflow'], actions: ImmutableDoctype['actions'], component: Component)
+new Doctype(doctype: string, schema: ImmutableDoctype['schema'], workflow: ImmutableDoctype['workflow'], actions: ImmutableDoctype['actions'], component: Component)
 ```
 
 **Parameters:**
@@ -1155,6 +1175,30 @@ new DoctypeMeta(doctype: string, schema: ImmutableDoctype['schema'], workflow: I
 
 **Methods:**
 
+#### fromObject
+
+Creates a Doctype instance from a plain configuration object. Handles conversion of arrays to Immutable.js collections internally.
+
+This is the recommended way to create a Doctype from API responses or configuration files, as it encapsulates the Immutable.js construction that the framework uses internally.
+
+```typescript
+fromObject(config: DoctypeConfig): Doctype
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| config | `DoctypeConfig` | Plain object with doctype configuration (typically from API response) |
+
+#### getActionsObject
+
+Returns the actions as a plain object for use with components that expect plain JavaScript objects.
+
+```typescript
+getActionsObject(): Record<string, string[]>
+```
+
 #### getAvailableTransitions
 
 Returns the transitions available from a given workflow state, derived from the doctype's XState workflow configuration.
@@ -1171,6 +1215,14 @@ getAvailableTransitions(currentState: string): Array<{
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | currentState | `string` | The state name to read transitions from |
+
+#### getSchemaArray
+
+Returns the schema as a plain array for use with components that expect plain JavaScript arrays (e.g., AForm, ATable).
+
+```typescript
+getSchemaArray(): SchemaTypes[]
+```
 
 ### FieldTriggerEngine
 
@@ -1335,7 +1387,7 @@ Stonecrop Registry class
 **Constructor:**
 
 ```typescript
-new Registry(router: Router, getMeta: (routeContext: RouteContext) => DoctypeMeta | Promise<DoctypeMeta>)
+new Registry(router: Router, getMeta: (routeContext: RouteContext) => Doctype | Promise<Doctype>)
 ```
 
 **Parameters:**
@@ -1343,16 +1395,16 @@ new Registry(router: Router, getMeta: (routeContext: RouteContext) => DoctypeMet
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | router | `Router` | Optional Vue router instance for route management |
-| getMeta | `(routeContext: RouteContext) => DoctypeMeta \| Promise<DoctypeMeta>` | Optional function to fetch doctype metadata from an API |
+| getMeta | `(routeContext: RouteContext) => Doctype \| Promise<Doctype>` | Optional function to fetch doctype metadata from an API |
 
 **Properties:**
 
 | Property | Type | Description |
 |----------|------|-------------|
 | _root | `Registry` | The root Registry instance |
-| getMeta | `(routeContext: RouteContext) => DoctypeMeta \| Promise<DoctypeMeta>` | The getMeta function fetches doctype metadata from an API based on route context |
+| getMeta | `(routeContext: RouteContext) => Doctype \| Promise<Doctype>` | The getMeta function fetches doctype metadata from an API based on route context |
 | name | `string` | The name of the Registry instance |
-| registry | `Record<string, DoctypeMeta>` | The registry property contains a collection of doctypes |
+| registry | `Record<string, Doctype>` | The registry property contains a collection of doctypes |
 | router | `Router` | The Vue router instance |
 
 **Methods:**
@@ -1362,21 +1414,21 @@ new Registry(router: Router, getMeta: (routeContext: RouteContext) => DoctypeMet
 Get doctype metadata
 
 ```typescript
-addDoctype(doctype: DoctypeMeta): void
+addDoctype(doctype: Doctype): void
 ```
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| doctype | `DoctypeMeta` | The doctype to fetch metadata for |
+| doctype | `Doctype` | The doctype to fetch metadata for |
 
 #### getDoctype
 
 Get a registered doctype by slug
 
 ```typescript
-getDoctype(slug: string): DoctypeMeta | undefined
+getDoctype(slug: string): Doctype | undefined
 ```
 
 **Parameters:**
@@ -1480,14 +1532,14 @@ new Stonecrop(registry: Registry, operationLogConfig: Partial<OperationLogConfig
 Add a record to the store
 
 ```typescript
-addRecord(doctype: string | DoctypeMeta, recordId: string, recordData: any): void
+addRecord(doctype: string | Doctype, recordId: string, recordData: any): void
 ```
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| doctype | `string \| DoctypeMeta` | The doctype |
+| doctype | `string \| Doctype` | The doctype |
 | recordId | `string` | The record ID |
 | recordData | `any` | The record data |
 
@@ -1496,21 +1548,21 @@ addRecord(doctype: string | DoctypeMeta, recordId: string, recordData: any): voi
 Clear all records for a doctype
 
 ```typescript
-clearRecords(doctype: string | DoctypeMeta): void
+clearRecords(doctype: string | Doctype): void
 ```
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| doctype | `string \| DoctypeMeta` | The doctype |
+| doctype | `string \| Doctype` | The doctype |
 
 #### dispatchAction
 
 Dispatch an action to the server via the configured data client. All state changes flow through this single mutation endpoint.
 
 ```typescript
-dispatchAction(doctype: DoctypeMeta, action: string, args: unknown[]): Promise<{
+dispatchAction(doctype: Doctype, action: string, args: unknown[]): Promise<{
         success: boolean;
         data: unknown;
         error: string | null;
@@ -1521,7 +1573,7 @@ dispatchAction(doctype: DoctypeMeta, action: string, args: unknown[]): Promise<{
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| doctype | `DoctypeMeta` | The doctype |
+| doctype | `Doctype` | The doctype |
 | action | `string` | Action name to execute (e.g., 'SUBMIT', 'APPROVE', 'save') |
 | args | `unknown[]` | Action arguments (typically record ID and/or form data) |
 
@@ -1552,14 +1604,14 @@ getMeta(context: RouteContext): Promise<any>
 Get single record from server using the configured data client.
 
 ```typescript
-getRecord(doctype: DoctypeMeta, recordId: string): Promise<void>
+getRecord(doctype: Doctype, recordId: string): Promise<void>
 ```
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| doctype | `DoctypeMeta` | The doctype |
+| doctype | `Doctype` | The doctype |
 | recordId | `string` | The record ID |
 
 #### getRecordById
@@ -1567,14 +1619,14 @@ getRecord(doctype: DoctypeMeta, recordId: string): Promise<void>
 Get a specific record
 
 ```typescript
-getRecordById(doctype: string | DoctypeMeta, recordId: string): HSTNode | undefined
+getRecordById(doctype: string | Doctype, recordId: string): HSTNode | undefined
 ```
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| doctype | `string \| DoctypeMeta` | The doctype |
+| doctype | `string \| Doctype` | The doctype |
 | recordId | `string` | The record ID |
 
 #### getRecordIds
@@ -1582,28 +1634,28 @@ getRecordById(doctype: string | DoctypeMeta, recordId: string): HSTNode | undefi
 Get all record IDs for a doctype
 
 ```typescript
-getRecordIds(doctype: string | DoctypeMeta): string[]
+getRecordIds(doctype: string | Doctype): string[]
 ```
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| doctype | `string \| DoctypeMeta` | The doctype |
+| doctype | `string \| Doctype` | The doctype |
 
 #### getRecords
 
 Get records from server using the configured data client.
 
 ```typescript
-getRecords(doctype: DoctypeMeta): Promise<void>
+getRecords(doctype: Doctype): Promise<void>
 ```
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| doctype | `DoctypeMeta` | The doctype |
+| doctype | `Doctype` | The doctype |
 
 #### getRecordState
 
@@ -1612,14 +1664,14 @@ Determine the current workflow state for a record.
 Reads the record's `status` field from the HST store. If the field is absent or empty the doctype's declared `workflow.initial` state is used as the fallback, giving callers a reliable state name without having to duplicate that logic.
 
 ```typescript
-getRecordState(doctype: string | DoctypeMeta, recordId: string): string
+getRecordState(doctype: string | Doctype, recordId: string): string
 ```
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| doctype | `string \| DoctypeMeta` | The doctype slug or DoctypeMeta instance |
+| doctype | `string \| Doctype` | The doctype slug or Doctype instance |
 | recordId | `string` | The record identifier |
 
 #### getStore
@@ -1635,28 +1687,28 @@ getStore(): HSTNode
 Get records hash for a doctype
 
 ```typescript
-records(doctype: string | DoctypeMeta): HSTNode
+records(doctype: string | Doctype): HSTNode
 ```
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| doctype | `string \| DoctypeMeta` | The doctype to get records for |
+| doctype | `string \| Doctype` | The doctype to get records for |
 
 #### removeRecord
 
 Remove a record from the store
 
 ```typescript
-removeRecord(doctype: string | DoctypeMeta, recordId: string): void
+removeRecord(doctype: string | Doctype, recordId: string): void
 ```
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| doctype | `string \| DoctypeMeta` | The doctype |
+| doctype | `string \| Doctype` | The doctype |
 | recordId | `string` | The record ID |
 
 #### runAction
@@ -1664,14 +1716,14 @@ removeRecord(doctype: string | DoctypeMeta, recordId: string): void
 Run action on doctype Executes the action and logs it to the operation log for audit tracking
 
 ```typescript
-runAction(doctype: DoctypeMeta, action: string, args: any[]): void
+runAction(doctype: Doctype, action: string, args: any[]): void
 ```
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| doctype | `DoctypeMeta` | The doctype |
+| doctype | `Doctype` | The doctype |
 | action | `string` | The action to run |
 | args | `any[]` | Action arguments (typically record IDs) |
 
@@ -1694,14 +1746,14 @@ setClient(client: DataClient): void
 Setup method for doctype initialization
 
 ```typescript
-setup(doctype: DoctypeMeta): void
+setup(doctype: Doctype): void
 ```
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| doctype | `DoctypeMeta` | The doctype to setup |
+| doctype | `Doctype` | The doctype to setup |
 
 ## Variables
 

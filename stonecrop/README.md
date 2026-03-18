@@ -50,7 +50,7 @@ app.mount('#app')
 | Option | Type | Description |
 |--------|------|-------------|
 | `router` | `Router` | Vue Router instance. Required for route-based doctype resolution. |
-| `getMeta` | `(ctx: RouteContext) => DoctypeMeta \| Promise<DoctypeMeta>` | Lazy-loads doctype metadata for the current route. `ctx` has `path` and `segments`. |
+| `getMeta` | `(ctx: RouteContext) => Doctype \| Promise<Doctype>` | Lazy-loads doctype metadata for the current route. `ctx` has `path` and `segments`. |
 | `fetchRecord` | `(doctype, id) => Promise<Record \| null>` | Injectable replacement for `Stonecrop.getRecord()`'s default REST fetch. Use this to plug in GraphQL or any other transport. |
 | `fetchRecords` | `(doctype) => Promise<Record[]>` | Injectable replacement for `Stonecrop.getRecords()`'s default REST fetch. |
 | `components` | `Record<string, Component>` | Additional Vue components to register globally. |
@@ -67,7 +67,7 @@ import StonecropPlugin from '@stonecrop/stonecrop'
 import {
   Stonecrop,       // Core orchestration class
   Registry,        // Doctype registry (singleton)
-  DoctypeMeta,     // Doctype definition class
+  Doctype,         // Doctype definition class
   useStonecrop,    // Vue composable — primary integration point
   HST,             // HST store class
   createHST,       // HST factory function

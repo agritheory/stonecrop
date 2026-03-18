@@ -1,13 +1,13 @@
 import { List } from 'immutable'
 import { describe, it, expect, beforeEach } from 'vitest'
 
-import { Stonecrop, Registry, DoctypeMeta } from '../src'
+import { Stonecrop, Registry, Doctype } from '../src'
 
 describe('Nested Doctype Support', () => {
 	let registry: Registry
 	let stonecrop: Stonecrop
-	let customerDoctype: DoctypeMeta
-	let addressDoctype: DoctypeMeta
+	let customerDoctype: Doctype
+	let addressDoctype: Doctype
 
 	beforeEach(() => {
 		registry = new Registry()
@@ -19,7 +19,7 @@ describe('Nested Doctype Support', () => {
 			{ fieldname: 'state', fieldtype: 'Data', component: 'ATextInput' },
 			{ fieldname: 'zip_code', fieldtype: 'Data', component: 'ATextInput' },
 		])
-		addressDoctype = new DoctypeMeta('address', addressSchema as any, undefined, undefined)
+		addressDoctype = new Doctype('address', addressSchema as any, undefined, undefined)
 		registry.addDoctype(addressDoctype)
 
 		// Customer doctype with nested Address (1:1)
@@ -32,7 +32,7 @@ describe('Nested Doctype Support', () => {
 				options: 'address',
 			},
 		])
-		customerDoctype = new DoctypeMeta('customer', customerSchema as any, undefined, undefined)
+		customerDoctype = new Doctype('customer', customerSchema as any, undefined, undefined)
 		registry.addDoctype(customerDoctype)
 
 		stonecrop = new Stonecrop(registry)
@@ -69,7 +69,7 @@ describe('Nested Doctype Support', () => {
 				{ fieldname: 'company_name', fieldtype: 'Data', component: 'ATextInput' },
 				{ fieldname: 'primary_contact', fieldtype: 'Doctype', options: 'customer' },
 			])
-			const companyDoctype = new DoctypeMeta('company', companySchema as any, undefined, undefined)
+			const companyDoctype = new Doctype('company', companySchema as any, undefined, undefined)
 			registry.addDoctype(companyDoctype)
 
 			const resolved = registry.resolveSchema(Array.from(companyDoctype.schema || []))
@@ -89,7 +89,7 @@ describe('Nested Doctype Support', () => {
 				{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' },
 				{ fieldname: 'parent', fieldtype: 'Doctype', options: 'self-ref' },
 			])
-			const selfRefDoctype = new DoctypeMeta('self-ref', selfRefSchema as any, undefined, undefined)
+			const selfRefDoctype = new Doctype('self-ref', selfRefSchema as any, undefined, undefined)
 			registry.addDoctype(selfRefDoctype)
 
 			const resolved = registry.resolveSchema(Array.from(selfRefDoctype.schema || []))

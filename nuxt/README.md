@@ -356,8 +356,8 @@ export default defineNuxtPlugin(() => {
   })
 
   // Optionally pre-load doctypes into the Registry
-  const planMeta = DoctypeMeta.fromObject({ name: 'plan', fields: [...] })
-  registerDoctype(planMeta)
+  const planDoctype = Doctype.fromObject({ name: 'plan', fields: [...] })
+  registerDoctype(planDoctype)
 })
 ```
 
@@ -377,8 +377,8 @@ export default defineNuxtPlugin(() => {
 | `isReady` | `boolean` | `true` when both registry and stonecrop are available |
 | `registerClient(client)` | `(client: DataClient) => void` | Set the data client for record fetching. Throws if stonecrop not available. |
 | `getClient()` | `() => DataClient \| undefined` | Get the currently configured client. |
-| `registerMeta(fn)` | `(fn: (ctx) => DoctypeMeta) => void` | Set the `getMeta` function on the Registry. Throws if registry not available. |
-| `registerDoctype(doctype)` | `(doctype: DoctypeMeta) => void` | Pre-load a doctype into the Registry. Throws if registry not available. |
+| `registerMeta(fn)` | `(fn: (ctx) => Doctype) => void` | Set the `getMeta` function on the Registry. Throws if registry not available. |
+| `registerDoctype(doctype)` | `(doctype: Doctype) => void` | Pre-load a doctype into the Registry. Throws if registry not available. |
 | `dispatchAction(...)` | `Promise<{ success, data, error }>` | Dispatch an action via the configured client. |
 
 ## `useStonecropRegistry()` — Using the Framework in Components
@@ -390,7 +390,7 @@ export default defineNuxtPlugin(() => {
 const { registry, stonecrop, dispatchAction } = useStonecropRegistry()
 
 // Access doctype metadata
-const planMeta = registry.getDoctype('plan')
+const plan = registry.getDoctype('plan')
 
 // Dispatch actions
 await dispatchAction({ name: 'plan' }, 'SUBMIT', [recordId])
@@ -404,7 +404,7 @@ await dispatchAction({ name: 'plan' }, 'SUBMIT', [recordId])
 |-----------------|------|-------------|
 | `registry` | `Registry` | The Registry instance for doctype management. |
 | `stonecrop` | `Stonecrop` | The Stonecrop instance for HST and operation log access. Throws if not initialized. |
-| `setMeta(fn)` | `(fn: (ctx) => DoctypeMeta \| Promise<DoctypeMeta>) => void` | Sets the `getMeta` function on the Registry. Called by `useStonecrop()` to lazy-load doctype metadata for the current route. `ctx` = `{ path, segments }`. |
+| `setMeta(fn)` | `(fn: (ctx) => Doctype \| Promise<Doctype>) => void` | Sets the `getMeta` function on the Registry. Called by `useStonecrop()` to lazy-load doctype metadata for the current route. `ctx` = `{ path, segments }`. |
 | `setClient(client)` | `(client: DataClient) => void` | Set the data client for record fetching. Throws if stonecrop not available. |
 | `getClient()` | `() => DataClient \| undefined` | Get the currently configured client. |
 | `dispatchAction(doctype, action, args)` | `Promise<{ success, data, error }>` | Dispatch an action via the configured client. Returns error if doctype not found in registry. |

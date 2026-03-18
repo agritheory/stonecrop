@@ -1,5 +1,5 @@
 import type { DataClient } from '@stonecrop/schema'
-import type { DoctypeMeta, Registry, RouteContext, Stonecrop } from '@stonecrop/stonecrop'
+import type { Doctype, Registry, RouteContext, Stonecrop } from '@stonecrop/stonecrop'
 
 import { useNuxtApp } from 'nuxt/app'
 
@@ -36,8 +36,8 @@ import { useNuxtApp } from 'nuxt/app'
  *   })
  *
  *   // Optionally pre-load doctypes
- *   const planMeta = DoctypeMeta.fromObject({ name: 'plan', fields: [...] })
- *   registerDoctype(planMeta)
+ *   const plan = Doctype.fromObject({ name: 'plan', fields: [...] })
+ *   registerDoctype(plan)
  * })
  * ```
  *
@@ -104,7 +104,7 @@ export function useStonecropSetup() {
 		 * - Extract record ID from `segments` if present (e.g., `segments[1]`)
 		 * - Pass `DoctypeContext` to your data client
 		 *
-		 * @param fn - Function that receives RouteContext and returns DoctypeMeta
+		 * @param fn - Function that receives RouteContext and returns Doctype
 		 * @throws Error if the Registry is not available
 		 *
 		 * @example
@@ -115,7 +115,7 @@ export function useStonecropSetup() {
 		 * })
 		 * ```
 		 */
-		registerMeta(fn: (routeContext: RouteContext) => DoctypeMeta | Promise<DoctypeMeta>): void {
+		registerMeta(fn: (routeContext: RouteContext) => Doctype | Promise<Doctype>): void {
 			const registry = nuxtApp.$registry as Registry | undefined
 			if (!registry) {
 				throw new Error(
@@ -130,16 +130,16 @@ export function useStonecropSetup() {
 		 * Load a doctype into the Registry.
 		 * Convenience method that calls `registry.addDoctype()` if available.
 		 *
-		 * @param doctype - The DoctypeMeta instance to register
+		 * @param doctype - The Doctype instance to register
 		 * @throws Error if the Registry is not available
 		 *
 		 * @example
 		 * ```ts
-		 * const planMeta = DoctypeMeta.fromObject({ name: 'plan', fields: [...] })
-		 * registerDoctype(planMeta)
+		 * const plan = Doctype.fromObject({ name: 'plan', fields: [...] })
+		 * registerDoctype(plan)
 		 * ```
 		 */
-		registerDoctype(doctype: DoctypeMeta): void {
+		registerDoctype(doctype: Doctype): void {
 			const registry = nuxtApp.$registry as Registry | undefined
 			if (!registry) {
 				throw new Error(

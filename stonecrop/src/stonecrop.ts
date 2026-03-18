@@ -1,7 +1,7 @@
 import type { DataClient } from '@stonecrop/schema'
 import { reactive } from 'vue'
 
-import DoctypeMeta from './doctype'
+import Doctype from './doctype'
 import Registry from './registry'
 import { createHST, type HSTNode } from './stores/hst'
 import { useOperationLogStore } from './stores/operation-log'
@@ -119,7 +119,7 @@ export class Stonecrop {
 		// Extend Registry.addDoctype to auto-create HST store sections
 		const originalAddDoctype = this.registry.addDoctype.bind(this.registry)
 
-		this.registry.addDoctype = (doctype: DoctypeMeta) => {
+		this.registry.addDoctype = (doctype: Doctype) => {
 			// Call original method
 			// eslint-disable-next-line @typescript-eslint/no-unsafe-call
 			originalAddDoctype(doctype)
@@ -136,7 +136,7 @@ export class Stonecrop {
 	 * @param doctype - The doctype to get records for
 	 * @returns HST node containing records hash
 	 */
-	records(doctype: string | DoctypeMeta): HSTNode {
+	records(doctype: string | Doctype): HSTNode {
 		const slug = typeof doctype === 'string' ? doctype : doctype.slug
 		this.ensureDoctypeExists(slug)
 		return this.hstStore.getNode(slug)
@@ -148,7 +148,7 @@ export class Stonecrop {
 	 * @param recordId - The record ID
 	 * @param recordData - The record data
 	 */
-	addRecord(doctype: string | DoctypeMeta, recordId: string, recordData: any): void {
+	addRecord(doctype: string | Doctype, recordId: string, recordData: any): void {
 		const slug = typeof doctype === 'string' ? doctype : doctype.slug
 
 		this.ensureDoctypeExists(slug)
@@ -163,7 +163,7 @@ export class Stonecrop {
 	 * @param recordId - The record ID
 	 * @returns HST node for the record or undefined
 	 */
-	getRecordById(doctype: string | DoctypeMeta, recordId: string): HSTNode | undefined {
+	getRecordById(doctype: string | Doctype, recordId: string): HSTNode | undefined {
 		const slug = typeof doctype === 'string' ? doctype : doctype.slug
 		this.ensureDoctypeExists(slug)
 
@@ -188,7 +188,7 @@ export class Stonecrop {
 	 * @param doctype - The doctype
 	 * @param recordId - The record ID
 	 */
-	removeRecord(doctype: string | DoctypeMeta, recordId: string): void {
+	removeRecord(doctype: string | Doctype, recordId: string): void {
 		const slug = typeof doctype === 'string' ? doctype : doctype.slug
 		this.ensureDoctypeExists(slug)
 
@@ -203,7 +203,7 @@ export class Stonecrop {
 	 * @param doctype - The doctype
 	 * @returns Array of record IDs
 	 */
-	getRecordIds(doctype: string | DoctypeMeta): string[] {
+	getRecordIds(doctype: string | Doctype): string[] {
 		const slug = typeof doctype === 'string' ? doctype : doctype.slug
 		this.ensureDoctypeExists(slug)
 
@@ -219,7 +219,7 @@ export class Stonecrop {
 	 * Clear all records for a doctype
 	 * @param doctype - The doctype
 	 */
-	clearRecords(doctype: string | DoctypeMeta): void {
+	clearRecords(doctype: string | Doctype): void {
 		const slug = typeof doctype === 'string' ? doctype : doctype.slug
 		this.ensureDoctypeExists(slug)
 
@@ -234,7 +234,7 @@ export class Stonecrop {
 	 * Setup method for doctype initialization
 	 * @param doctype - The doctype to setup
 	 */
-	setup(doctype: DoctypeMeta): void {
+	setup(doctype: Doctype): void {
 		// Ensure doctype exists in store
 		this.ensureDoctypeExists(doctype.slug)
 	}
@@ -246,7 +246,7 @@ export class Stonecrop {
 	 * @param action - The action to run
 	 * @param args - Action arguments (typically record IDs)
 	 */
-	runAction(doctype: DoctypeMeta, action: string, args?: any[]): void {
+	runAction(doctype: Doctype, action: string, args?: any[]): void {
 		const registry = this.registry.registry[doctype.slug]
 		const actions = registry?.actions?.get(action)
 		const recordIds = Array.isArray(args) ? args.filter((arg): arg is string => typeof arg === 'string') : undefined
@@ -285,7 +285,7 @@ export class Stonecrop {
 	 * @param doctype - The doctype
 	 * @throws Error if no data client has been configured
 	 */
-	async getRecords(doctype: DoctypeMeta): Promise<void> {
+	async getRecords(doctype: Doctype): Promise<void> {
 		if (!this._client) {
 			throw new Error(
 				'No data client configured. Call setClient() with a DataClient implementation ' +
@@ -309,7 +309,7 @@ export class Stonecrop {
 	 * @param recordId - The record ID
 	 * @throws Error if no data client has been configured
 	 */
-	async getRecord(doctype: DoctypeMeta, recordId: string): Promise<void> {
+	async getRecord(doctype: Doctype, recordId: string): Promise<void> {
 		if (!this._client) {
 			throw new Error(
 				'No data client configured. Call setClient() with a DataClient implementation ' +
@@ -335,7 +335,7 @@ export class Stonecrop {
 	 * @throws Error if no data client has been configured
 	 */
 	async dispatchAction(
-		doctype: DoctypeMeta,
+		doctype: Doctype,
 		action: string,
 		args?: unknown[]
 	): Promise<{ success: boolean; data: unknown; error: string | null }> {
@@ -386,13 +386,13 @@ export class Stonecrop {
 	 * empty the doctype's declared `workflow.initial` state is used as the fallback,
 	 * giving callers a reliable state name without having to duplicate that logic.
 	 *
-	 * @param doctype - The doctype slug or DoctypeMeta instance
+	 * @param doctype - The doctype slug or Doctype instance
 	 * @param recordId - The record identifier
 	 * @returns The current state name, or an empty string if the doctype has no workflow
 	 *
 	 * @public
 	 */
-	getRecordState(doctype: string | DoctypeMeta, recordId: string): string {
+	getRecordState(doctype: string | Doctype, recordId: string): string {
 		const slug = typeof doctype === 'string' ? doctype : doctype.slug
 		const meta = this.registry.getDoctype(slug)
 		if (!meta?.workflow) return ''

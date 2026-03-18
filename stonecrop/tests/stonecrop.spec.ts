@@ -3,7 +3,7 @@ import { List, Map } from 'immutable'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { createRouter, createMemoryHistory } from 'vue-router'
 
-import DoctypeMeta from '../src/doctype'
+import Doctype from '../src/doctype'
 import Registry from '../src/registry'
 import { Stonecrop } from '../src/stonecrop'
 import type { StonecropOptions } from '../src/stonecrop'
@@ -63,7 +63,7 @@ describe('Stonecrop class with HST integration', () => {
 			save: ['validateData', 'saveData'],
 		})
 
-		return new DoctypeMeta(name, mockSchema, mockWorkflowConfig, mockActions)
+		return new Doctype(name, mockSchema, mockWorkflowConfig, mockActions)
 	}
 
 	describe('Initialization', () => {
@@ -99,7 +99,7 @@ describe('Stonecrop class with HST integration', () => {
 	})
 
 	describe('HST Record Management', () => {
-		let mockDoctype: DoctypeMeta
+		let mockDoctype: Doctype
 
 		beforeEach(() => {
 			mockDoctype = createMockDoctype('Task')
@@ -114,7 +114,7 @@ describe('Stonecrop class with HST integration', () => {
 			expect(records.getParent).toBeDefined()
 		})
 
-		it('returns records hash using DoctypeMeta object', () => {
+		it('returns records hash using Doctype object', () => {
 			const records = stonecrop.records(mockDoctype)
 
 			expect(records.getPath()).toBe('task')
@@ -135,7 +135,7 @@ describe('Stonecrop class with HST integration', () => {
 			expect(record!.getParent).toBeDefined()
 		})
 
-		it('adds record using DoctypeMeta object', () => {
+		it('adds record using Doctype object', () => {
 			const recordData = { id: '123', title: 'Test Task' }
 
 			stonecrop.addRecord(mockDoctype, '123', recordData)
@@ -185,7 +185,7 @@ describe('Stonecrop class with HST integration', () => {
 	})
 
 	describe('Server Integration', () => {
-		let mockDoctype: DoctypeMeta
+		let mockDoctype: Doctype
 		let mockClient: any
 
 		beforeEach(() => {
@@ -238,7 +238,7 @@ describe('Stonecrop class with HST integration', () => {
 	})
 
 	describe('DataClient integration', () => {
-		let mockDoctype: DoctypeMeta
+		let mockDoctype: Doctype
 
 		beforeEach(() => {
 			// Reset registry for each test
@@ -376,7 +376,7 @@ describe('Stonecrop class with HST integration', () => {
 	})
 
 	describe('getRecordState', () => {
-		let mockDoctype: DoctypeMeta
+		let mockDoctype: Doctype
 
 		beforeEach(() => {
 			mockDoctype = createMockDoctype('Task')
@@ -405,7 +405,7 @@ describe('Stonecrop class with HST integration', () => {
 		})
 
 		it('returns empty string when the doctype has no workflow', () => {
-			const noWorkflowDoctype = new DoctypeMeta('Bare', List<SchemaTypes>([]), undefined as any, Map({}))
+			const noWorkflowDoctype = new Doctype('Bare', List<SchemaTypes>([]), undefined as any, Map({}))
 			// Use a fresh registry to avoid singleton collision
 			Registry._root = undefined as any
 			const localRegistry = new Registry()
@@ -417,7 +417,7 @@ describe('Stonecrop class with HST integration', () => {
 			expect(state).toBe('')
 		})
 
-		it('accepts a DoctypeMeta instance instead of a string slug', () => {
+		it('accepts a Doctype instance instead of a string slug', () => {
 			stonecrop.addRecord('task', 'r-5', { id: 'r-5', status: 'completed' })
 
 			const state = stonecrop.getRecordState(mockDoctype, 'r-5')

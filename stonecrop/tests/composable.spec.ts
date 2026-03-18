@@ -11,7 +11,7 @@ import { useStonecrop } from '../src/composables/stonecrop'
 import Registry from '../src/registry'
 import { Stonecrop } from '../src/stonecrop'
 import { HST } from '../src/stores/hst'
-import DoctypeMeta from '../src/doctype'
+import Doctype from '../src/doctype'
 
 // Configure jsdom environment
 /**
@@ -47,7 +47,7 @@ const createMockDoctype = (name: string) => {
 		save: ['validateData', 'saveData'],
 	})
 
-	return new DoctypeMeta(name, mockSchema, mockWorkflow, mockActions)
+	return new Doctype(name, mockSchema, mockWorkflow, mockActions)
 }
 
 describe('useStonecrop composable', () => {

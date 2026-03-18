@@ -78,7 +78,7 @@ type ActionEventPayload = {
 }
 ```
 
-Desktop reads the available transitions for the current record directly from the doctype workflow (`DoctypeMeta.getAvailableTransitions`) using `Stonecrop.getRecordState` to resolve the current FSM state (reads the `status` field, falls back to `workflow.initial`). **Desktop never calls `triggerTransition` itself** — that is the host application's responsibility.
+Desktop reads the available transitions for the current record directly from the doctype workflow (`Doctype.getAvailableTransitions`) using `Stonecrop.getRecordState` to resolve the current FSM state (reads the `status` field, falls back to `workflow.initial`). **Desktop never calls `triggerTransition` itself** — that is the host application's responsibility.
 
 ### `navigate` payload
 

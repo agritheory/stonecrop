@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { FieldTriggerEngine, registerGlobalAction } from '../../src/field-triggers.js'
 import { Stonecrop } from '../../src/stonecrop.js'
 import Registry from '../../src/registry.js'
-import DoctypeMeta from '../../src/doctype.js'
+import Doctype from '../../src/doctype.js'
 import { Map } from 'immutable'
 import type { FieldChangeContext } from '../../src/types/field-triggers.js'
 
@@ -28,7 +28,7 @@ describe('Field Trigger Rollback', () => {
 			const actions = Map({
 				email: ['logEmail'],
 			})
-			const doctype = new DoctypeMeta('Contact', undefined, undefined, actions)
+			const doctype = new Doctype('Contact', undefined, undefined, actions)
 			registry.addDoctype(doctype)
 
 			// Add a record to the store
@@ -77,7 +77,7 @@ describe('Field Trigger Rollback', () => {
 			const actions = Map({
 				email: ['logEmail'],
 			})
-			const doctype = new DoctypeMeta('Contact', undefined, undefined, actions)
+			const doctype = new Doctype('Contact', undefined, undefined, actions)
 			registry.addDoctype(doctype)
 			noRollbackEngine.registerDoctypeActions('Contact', actions)
 
@@ -115,7 +115,7 @@ describe('Field Trigger Rollback', () => {
 			const actions = Map({
 				email: ['validateEmail', 'sendEmail'],
 			})
-			const doctype = new DoctypeMeta('Contact', undefined, undefined, actions)
+			const doctype = new Doctype('Contact', undefined, undefined, actions)
 			registry.addDoctype(doctype)
 
 			// Add a record
@@ -178,7 +178,7 @@ describe('Field Trigger Rollback', () => {
 			const actions = Map({
 				email: ['validateEmail', 'logEmail'],
 			})
-			const doctype = new DoctypeMeta('Contact', undefined, undefined, actions)
+			const doctype = new Doctype('Contact', undefined, undefined, actions)
 			registry.addDoctype(doctype)
 
 			stonecrop.addRecord('Contact', 'contact-1', {
@@ -216,7 +216,7 @@ describe('Field Trigger Rollback', () => {
 			const actions = Map({
 				'address.city': ['validateCity', 'failAction'],
 			})
-			const doctype = new DoctypeMeta('Contact', undefined, undefined, actions)
+			const doctype = new Doctype('Contact', undefined, undefined, actions)
 			registry.addDoctype(doctype)
 
 			stonecrop.addRecord('Contact', 'contact-1', {
@@ -274,7 +274,7 @@ describe('Field Trigger Rollback', () => {
 			const actions = Map({
 				global: ['failAction'],
 			})
-			const doctype = new DoctypeMeta('Settings', undefined, undefined, actions)
+			const doctype = new Doctype('Settings', undefined, undefined, actions)
 			registry.addDoctype(doctype)
 
 			const failAction = vi.fn(() => {
@@ -307,7 +307,7 @@ describe('Field Trigger Rollback', () => {
 			const actions = Map({
 				email: ['failAction'],
 			})
-			const doctype = new DoctypeMeta('Contact', undefined, undefined, actions)
+			const doctype = new Doctype('Contact', undefined, undefined, actions)
 			registry.addDoctype(doctype)
 
 			const failAction = vi.fn(() => {
@@ -341,7 +341,7 @@ describe('Field Trigger Rollback', () => {
 			const actions = Map({
 				email: ['failAction'],
 			})
-			const doctype = new DoctypeMeta('Contact', undefined, undefined, actions)
+			const doctype = new Doctype('Contact', undefined, undefined, actions)
 			registry.addDoctype(doctype)
 
 			stonecrop.addRecord('Contact', 'contact-1', {
@@ -393,7 +393,7 @@ describe('Field Trigger Rollback', () => {
 			const actions = Map({
 				email: ['modifyAndFail'],
 			})
-			const doctype = new DoctypeMeta('Contact', undefined, undefined, actions)
+			const doctype = new Doctype('Contact', undefined, undefined, actions)
 			registry.addDoctype(doctype)
 
 			// Add initial record
@@ -446,7 +446,7 @@ describe('Field Trigger Rollback', () => {
 				email: ['modifyAndFail'],
 				phone: ['modifyAndFail'],
 			})
-			const doctype = new DoctypeMeta('Contact', undefined, undefined, actions)
+			const doctype = new Doctype('Contact', undefined, undefined, actions)
 			registry.addDoctype(doctype)
 
 			stonecrop.addRecord('Contact', 'contact-1', {
@@ -516,7 +516,7 @@ describe('Field Trigger Rollback', () => {
 			const actions = Map({
 				email: ['modifyAndFail'],
 			})
-			const doctype = new DoctypeMeta('Contact', undefined, undefined, actions)
+			const doctype = new Doctype('Contact', undefined, undefined, actions)
 			registry.addDoctype(doctype)
 
 			stonecrop.addRecord('Contact', 'contact-1', {
@@ -580,7 +580,7 @@ describe('Field Trigger Rollback', () => {
 			const actions = Map({
 				email: ['modifyAndFail'],
 			})
-			const doctype = new DoctypeMeta('Contact', undefined, undefined, actions)
+			const doctype = new Doctype('Contact', undefined, undefined, actions)
 			registry.addDoctype(doctype)
 			testEngine.registerDoctypeActions('Contact', actions)
 

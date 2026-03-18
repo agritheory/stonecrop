@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createApp, defineComponent, nextTick } from 'vue'
 
 import type { SchemaTypes } from '@stonecrop/aform'
-import { DoctypeMeta, Registry, Stonecrop } from '@stonecrop/stonecrop'
+import { Doctype, Registry, Stonecrop } from '@stonecrop/stonecrop'
 
 import Desktop from '../src/components/Desktop.vue'
 import StonecropDesktop from '../src/plugins'
@@ -41,7 +41,7 @@ function buildDoctype(name: string, initialState: string, states: Record<string,
 		states,
 	}
 
-	return new DoctypeMeta(name, schema, workflow, Map({}))
+	return new Doctype(name, schema, workflow, Map({}))
 }
 
 // ---------------------------------------------------------------------------

@@ -69,20 +69,36 @@ export interface CrossTabMessage {
 export type CrossTabMessageType = 'operation' | 'undo' | 'redo' | 'sync-request' | 'sync-response';
 
 // @public
-export class DoctypeMeta {
+export class Doctype {
     constructor(doctype: string, schema: ImmutableDoctype['schema'], workflow: ImmutableDoctype['workflow'], actions: ImmutableDoctype['actions'], component?: Component);
     readonly actions: ImmutableDoctype['actions'];
     readonly component?: Component;
     readonly doctype: string;
+    static fromObject(config: DoctypeConfig): Doctype;
+    getActionsObject(): Record<string, string[]>;
     getAvailableTransitions(currentState: string): Array<{
         name: string;
         targetState: string;
     }>;
+    getSchemaArray(): SchemaTypes[];
     get name(): string;
     readonly schema: ImmutableDoctype['schema'];
     get slug(): string;
     readonly workflow: ImmutableDoctype['workflow'];
 }
+
+// @public
+export type DoctypeConfig = {
+    name: string;
+    slug?: string;
+    tableName?: string;
+    fields?: SchemaTypes[];
+    workflow?: UnknownMachineConfig;
+    actions?: Record<string, string[]>;
+    inherits?: string;
+    listDoctype?: string;
+    parentDoctype?: string;
+};
 
 // @public
 export type FieldAction = FieldActionFunction | FieldActionString;
@@ -233,9 +249,9 @@ export type HSTStonecropReturn = BaseStonecropReturn & {
     hstStore: Ref<HSTNode | undefined>;
     formData: Ref<Record<string, any>>;
     resolvedSchema: Ref<SchemaTypes[]>;
-    loadNestedData: (parentPath: string, childDoctype: DoctypeMeta, recordId?: string) => Record<string, any>;
-    saveRecursive: (doctype: DoctypeMeta, recordId: string) => Promise<Record<string, any>>;
-    createNestedContext: (basePath: string, childDoctype: DoctypeMeta) => {
+    loadNestedData: (parentPath: string, childDoctype: Doctype, recordId?: string) => Record<string, any>;
+    saveRecursive: (doctype: Doctype, recordId: string) => Promise<Record<string, any>>;
+    createNestedContext: (basePath: string, childDoctype: Doctype) => {
         provideHSTPath: (fieldname: string) => string;
         handleHSTChange: (changeData: HSTChangeData) => void;
     };
@@ -252,7 +268,7 @@ export type ImmutableDoctype = {
 export type InstallOptions = {
     router?: Router;
     components?: Record<string, Component>;
-    getMeta?: (routeContext: RouteContext) => DoctypeMeta | Promise<DoctypeMeta>;
+    getMeta?: (routeContext: RouteContext) => Doctype | Promise<Doctype>;
     client?: DataClient;
     autoInitializeRouter?: boolean;
     onRouterInitialized?: (registry: Registry, stonecrop: Stonecrop) => void | Promise<void>;
@@ -340,13 +356,13 @@ export function registerTransitionAction(name: string, fn: TransitionActionFunct
 
 // @public
 export class Registry {
-    constructor(router?: Router, getMeta?: (routeContext: RouteContext) => DoctypeMeta | Promise<DoctypeMeta>);
-    addDoctype(doctype: DoctypeMeta): void;
-    getDoctype(slug: string): DoctypeMeta | undefined;
-    getMeta?: (routeContext: RouteContext) => DoctypeMeta | Promise<DoctypeMeta>;
+    constructor(router?: Router, getMeta?: (routeContext: RouteContext) => Doctype | Promise<Doctype>);
+    addDoctype(doctype: Doctype): void;
+    getDoctype(slug: string): Doctype | undefined;
+    getMeta?: (routeContext: RouteContext) => Doctype | Promise<Doctype>;
     initializeRecord(schema: SchemaTypes[]): Record<string, any>;
     readonly name: string;
-    readonly registry: Record<string, DoctypeMeta>;
+    readonly registry: Record<string, Doctype>;
     resolveSchema(schema: SchemaTypes[], visited?: Set<string>): SchemaTypes[];
     static _root: Registry;
     readonly router?: Router;
@@ -376,9 +392,9 @@ export function setFieldRollback(doctype: string, fieldname: string, enableRollb
 // @public
 export class Stonecrop {
     constructor(registry: Registry, operationLogConfig?: Partial<OperationLogConfig>, options?: StonecropOptions);
-    addRecord(doctype: string | DoctypeMeta, recordId: string, recordData: any): void;
-    clearRecords(doctype: string | DoctypeMeta): void;
-    dispatchAction(doctype: DoctypeMeta, action: string, args?: unknown[]): Promise<{
+    addRecord(doctype: string | Doctype, recordId: string, recordData: any): void;
+    clearRecords(doctype: string | Doctype): void;
+    dispatchAction(doctype: Doctype, action: string, args?: unknown[]): Promise<{
         success: boolean;
         data: unknown;
         error: string | null;
@@ -645,18 +661,18 @@ export class Stonecrop {
     markIrreversible: (operationId: string, reason: string) => void;
     logAction: (doctype: string, actionName: string, recordIds?: string[], result?: "success" | "failure" | "pending", error?: string) => string;
     }, "undo" | "redo" | "configure" | "addOperation" | "startBatch" | "commitBatch" | "cancelBatch" | "clear" | "getOperationsFor" | "getSnapshot" | "markIrreversible" | "logAction">>;
-    getRecord(doctype: DoctypeMeta, recordId: string): Promise<void>;
-    getRecordById(doctype: string | DoctypeMeta, recordId: string): HSTNode | undefined;
-    getRecordIds(doctype: string | DoctypeMeta): string[];
-    getRecords(doctype: DoctypeMeta): Promise<void>;
-    getRecordState(doctype: string | DoctypeMeta, recordId: string): string;
+    getRecord(doctype: Doctype, recordId: string): Promise<void>;
+    getRecordById(doctype: string | Doctype, recordId: string): HSTNode | undefined;
+    getRecordIds(doctype: string | Doctype): string[];
+    getRecords(doctype: Doctype): Promise<void>;
+    getRecordState(doctype: string | Doctype, recordId: string): string;
     getStore(): HSTNode;
-    records(doctype: string | DoctypeMeta): HSTNode;
+    records(doctype: string | Doctype): HSTNode;
     readonly registry: Registry;
-    removeRecord(doctype: string | DoctypeMeta, recordId: string): void;
-    runAction(doctype: DoctypeMeta, action: string, args?: any[]): void;
+    removeRecord(doctype: string | Doctype, recordId: string): void;
+    runAction(doctype: Doctype, action: string, args?: any[]): void;
     setClient(client: DataClient): void;
-    setup(doctype: DoctypeMeta): void;
+    setup(doctype: Doctype): void;
 }
 
 // @public
@@ -1042,7 +1058,7 @@ export function useStonecrop(): BaseStonecropReturn | HSTStonecropReturn;
 // @public
 export function useStonecrop(options: {
     registry?: Registry;
-    doctype: DoctypeMeta;
+    doctype: Doctype;
     recordId?: string;
 }): HSTStonecropReturn;
 

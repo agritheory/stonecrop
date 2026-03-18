@@ -1,5 +1,5 @@
 import type { DataClient } from '@stonecrop/schema'
-import type { DoctypeMeta, Registry, RouteContext, Stonecrop } from '@stonecrop/stonecrop'
+import type { Doctype, Registry, RouteContext, Stonecrop } from '@stonecrop/stonecrop'
 
 import { useNuxtApp } from 'nuxt/app'
 
@@ -48,7 +48,7 @@ import { useNuxtApp } from 'nuxt/app'
  *     ↓
  * DoctypeContext ({ doctype: 'Plan', recordId: '123' })
  *     ↓
- * DataClient.getMeta() → DoctypeMeta
+ * DataClient.getMeta() → Doctype
  * ```
  *
  * @example
@@ -57,7 +57,7 @@ import { useNuxtApp } from 'nuxt/app'
  * const { registry, stonecrop, dispatchAction } = useStonecropRegistry()
  *
  * // Access the registry
- * const planMeta = registry.getDoctype('plan')
+ * const plan = registry.getDoctype('plan')
  *
  * // Dispatch an action
  * await dispatchAction({ name: 'plan' }, 'SUBMIT', [recordId])
@@ -203,9 +203,9 @@ export function useStonecropRegistry() {
 		 * })
 		 * ```
 		 *
-		 * @param fn - Function that receives RouteContext and returns DoctypeMeta.
+		 * @param fn - Function that receives RouteContext and returns Doctype.
 		 */
-		setMeta(fn: (routeContext: RouteContext) => DoctypeMeta | Promise<DoctypeMeta>): void {
+		setMeta(fn: (routeContext: RouteContext) => Doctype | Promise<Doctype>): void {
 			// Registry.getMeta is a mutable property (not readonly), so this assignment
 			// is supported — we're providing a cleaner API than direct globalProperties access.
 			registry.getMeta = fn

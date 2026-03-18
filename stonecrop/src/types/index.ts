@@ -5,7 +5,7 @@ import type { Component } from 'vue'
 import type { Router } from 'vue-router'
 import type { AnyStateNodeConfig, UnknownMachineConfig } from 'xstate'
 
-import type DoctypeMeta from '../doctype'
+import type Doctype from '../doctype'
 import Registry from '../registry'
 import { Stonecrop } from '../stonecrop'
 import type { RouteContext } from './registry'
@@ -47,7 +47,7 @@ export type Schema = {
 export type InstallOptions = {
 	router?: Router
 	components?: Record<string, Component>
-	getMeta?: (routeContext: RouteContext) => DoctypeMeta | Promise<DoctypeMeta>
+	getMeta?: (routeContext: RouteContext) => Doctype | Promise<Doctype>
 	/**
 	 * Data client for fetching doctype metadata and records.
 	 * Use \@stonecrop/graphql-client's StonecropClient for GraphQL backends,

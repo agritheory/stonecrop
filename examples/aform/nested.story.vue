@@ -33,7 +33,7 @@
 <script setup lang="ts">
 import { AForm } from '@stonecrop/aform'
 import type { SchemaTypes } from '@stonecrop/aform'
-import { Registry, DoctypeMeta, Stonecrop } from '@stonecrop/stonecrop'
+import { Doctype, Registry, Stonecrop } from '@stonecrop/stonecrop'
 import { List } from 'immutable'
 import { type App, defineComponent, ref, h, computed } from 'vue'
 
@@ -46,13 +46,13 @@ let registryInstance: Registry | undefined
 const setupApp = ({ app }: { app: App }) => {
 	registryInstance = new Registry()
 
-	const addressDoctype = new DoctypeMeta('Address', List(addressSchemaJson.fields), undefined, undefined)
+	const addressDoctype = new Doctype('Address', List(addressSchemaJson.fields), undefined, undefined)
 	registryInstance.addDoctype(addressDoctype)
 
-	const customerDoctype = new DoctypeMeta('Customer', List(customerSchemaJson.fields), undefined, undefined)
+	const customerDoctype = new Doctype('Customer', List(customerSchemaJson.fields), undefined, undefined)
 	registryInstance.addDoctype(customerDoctype)
 
-	const customerWithAddressesDoctype = new DoctypeMeta(
+	const customerWithAddressesDoctype = new Doctype(
 		'CustomerWithAddresses',
 		List(customerWithAddressesSchemaJson.fields),
 		undefined,
