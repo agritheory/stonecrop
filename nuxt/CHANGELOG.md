@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/nuxt
 
-This log was last generated on Wed, 18 Mar 2026 06:27:10 GMT and should not be manually modified.
+This log was last generated on Wed, 18 Mar 2026 12:05:59 GMT and should not be manually modified.
+
+## 0.10.5
+Wed, 18 Mar 2026 12:05:59 GMT
+
+### Patches
+
+- use separate Nuxt composable for Stonecrop setup
 
 ## 0.10.4
 Wed, 18 Mar 2026 06:27:10 GMT
