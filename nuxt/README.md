@@ -102,20 +102,26 @@ The module picks up this file and, if `pageComponent` is configured, registers a
 
 ### Wire Up Your Data Client
 
-After installing the module, add a client-side plugin to connect your data transport. The `useStonecropRegistry()` composable gives you a stable API for this — no need to reach into `globalProperties` directly:
+After installing the module, add a client-side plugin to connect your data transport. Use `useStonecropSetup()` in plugins — it's designed for the initialization context where Stonecrop may not be fully ready yet:
 
 ```typescript
 // app/plugins/stonecrop.client.ts
 import { StonecropClient } from '@stonecrop/graphql-client'
 
 export default defineNuxtPlugin(() => {
+  const { registerClient, registerMeta } = useStonecropSetup()
+  
   const client = new StonecropClient({ endpoint: '/graphql' })
-  const { setMeta, setFetchRecord, setFetchRecords } = useStonecropRegistry()
-
-  // Map the route path/segments to a doctype name, then delegate to your client
-  setMeta(({ segments }) => client.getMeta({ doctype: segments[0] }))
-  setFetchRecord((doctype, id) => client.getRecord(doctype, id))
-  setFetchRecords((doctype) => client.getRecords(doctype))
+  
+  // Register the data client for record fetching
+  registerClient(client)
+  
+  // Configure metadata fetching for lazy-loaded doctypes
+  // Called by useStonecrop() when it needs doctype metadata
+  registerMeta(({ segments }) => {
+    const doctype = segments[0] // e.g., "task" from /task/123
+    return client.getMeta({ doctype })
+  })
 })
 ```
 
@@ -321,48 +327,87 @@ The module auto-registers:
 - **Self-Documenting**: Schemas serve as data model documentation
 - **Easy Updates**: Change schema, UI updates automatically
 
-## `useStonecropRegistry()` — Configuring the Framework After Install
+## `useStonecropSetup()` — Configuring the Framework in Plugins
 
-The `@stonecrop/nuxt` runtime plugin installs `StonecropPlugin` with a router but no data transport, because data clients (GraphQL, tRPC, REST) are application-defined and cannot be serialised through `nuxt.config.ts` module options.
-
-`useStonecropRegistry()` is the documented extension point for wiring your data transport after plugin install. Call it in a client-side plugin:
+When you need to configure Stonecrop during Nuxt plugin initialization (before components mount), use `useStonecropSetup()`. This composable is designed specifically for the plugin context and returns values that may be `undefined` if Stonecrop hasn't finished initializing.
 
 ```typescript
 // app/plugins/stonecrop.client.ts
+import { StonecropClient } from '@stonecrop/graphql-client'
+
 export default defineNuxtPlugin(() => {
-  const { setMeta, setFetchRecord, setFetchRecords } = useStonecropRegistry()
+  const { isReady, registerClient, registerMeta, registerDoctype } = useStonecropSetup()
+  
+  // Check if Stonecrop is ready (module plugins run before project plugins)
+  if (!isReady) {
+    console.warn('Stonecrop not ready - ensure @stonecrop/nuxt module is installed')
+    return
+  }
 
-  // setMeta — resolves doctype metadata from the current route
-  // The context has { path, segments } from the router; adapt to your API.
-  setMeta(async ({ segments }) => {
-    // Example: segments[0] is the doctype slug, e.g. "task" from /task/123
+  const client = new StonecropClient({ endpoint: '/graphql' })
+  
+  // Register the data client
+  registerClient(client)
+  
+  // Configure metadata fetching for lazy-loaded doctypes
+  registerMeta(({ segments }) => {
     const doctype = segments[0]
-    const meta = await $fetch(`/api/doctypes/${doctype}`)
-    return meta
+    return client.getMeta({ doctype })
   })
-
-  // setFetchRecord — replaces the default REST stub in useStonecrop({ recordId })
-  setFetchRecord(async (doctype, id) => {
-    return await $fetch(`/api/${doctype.slug}/${id}`)
-  })
-
-  // setFetchRecords — replaces the default REST stub for list loading
-  setFetchRecords(async (doctype) => {
-    return await $fetch(`/api/${doctype.slug}`)
-  })
+  
+  // Optionally pre-load doctypes into the Registry
+  const planMeta = DoctypeMeta.fromPlain({ name: 'plan', fields: [...] })
+  registerDoctype(planMeta)
 })
 ```
 
-**Why a composable and not module options?** Nuxt module options are serialised at build time — functions cannot be passed through `nuxt.config.ts`. `useStonecropRegistry()` is the composable equivalent of `usePinia()` or `useNuxtApp()`: a stable, typed API for configuring the framework singleton after it has been installed.
+### `useStonecropSetup()` vs `useStonecropRegistry()`
 
-### API
+| Context | Use | Behavior |
+|---------|-----|----------|
+| **Plugin/initialization** | `useStonecropSetup()` | Returns values that may be `undefined`; provides `isReady` check |
+| **Component/runtime** | `useStonecropRegistry()` | Throws if Stonecrop isn't initialized (expected to be ready) |
 
-| Method | Signature | Description |
-|--------|-----------|-------------|
-| `setMeta` | `(fn: (ctx) => DoctypeMeta \| Promise<DoctypeMeta>) => void` | Sets the `getMeta` function on the Registry. Called by `useStonecrop()` to lazy-load doctype metadata for the current route. `ctx` = `{ path, segments }`. |
-| `setFetchRecord` | `(fn: (doctype, id) => Promise<Record \| null>) => void` | Replaces the default REST fetch stub in `Stonecrop.getRecord()`. Enables GraphQL-backed or any other custom transport. |
-| `setFetchRecords` | `(fn: (doctype) => Promise<Record[]>) => void` | Replaces the default REST fetch stub in `Stonecrop.getRecords()`. |
-| `registry` | `Registry` | The raw Registry instance, for advanced use cases. |
+### `useStonecropSetup()` API
+
+| Property/Method | Type | Description |
+|-----------------|------|-------------|
+| `registry` | `Registry \| undefined` | The Registry instance (undefined if not ready) |
+| `stonecrop` | `Stonecrop \| undefined` | The Stonecrop instance (undefined if not ready) |
+| `isReady` | `boolean` | `true` when both registry and stonecrop are available |
+| `registerClient(client)` | `(client: DataClient) => void` | Set the data client for record fetching. Throws if stonecrop not available. |
+| `getClient()` | `() => DataClient \| undefined` | Get the currently configured client. |
+| `registerMeta(fn)` | `(fn: (ctx) => DoctypeMeta) => void` | Set the `getMeta` function on the Registry. Throws if registry not available. |
+| `registerDoctype(doctype)` | `(doctype: DoctypeMeta) => void` | Pre-load a doctype into the Registry. Throws if registry not available. |
+| `dispatchAction(...)` | `Promise<{ success, data, error }>` | Dispatch an action via the configured client. |
+
+## `useStonecropRegistry()` — Using the Framework in Components
+
+`useStonecropRegistry()` is for component/runtime context where the framework is expected to be fully initialized. Use it in components to access the configured registry and stonecrop instances.
+
+```typescript
+// In a component or composable
+const { registry, stonecrop, dispatchAction } = useStonecropRegistry()
+
+// Access doctype metadata
+const planMeta = registry.getDoctype('plan')
+
+// Dispatch actions
+await dispatchAction({ name: 'plan' }, 'SUBMIT', [recordId])
+```
+
+**Note**: If called before Stonecrop is initialized (e.g., in a plugin), this throws with guidance to use `useStonecropSetup()` instead.
+
+### `useStonecropRegistry()` API
+
+| Property/Method | Type | Description |
+|-----------------|------|-------------|
+| `registry` | `Registry` | The Registry instance for doctype management. |
+| `stonecrop` | `Stonecrop` | The Stonecrop instance for HST and operation log access. Throws if not initialized. |
+| `setMeta(fn)` | `(fn: (ctx) => DoctypeMeta \| Promise<DoctypeMeta>) => void` | Sets the `getMeta` function on the Registry. Called by `useStonecrop()` to lazy-load doctype metadata for the current route. `ctx` = `{ path, segments }`. |
+| `setClient(client)` | `(client: DataClient) => void` | Set the data client for record fetching. Throws if stonecrop not available. |
+| `getClient()` | `() => DataClient \| undefined` | Get the currently configured client. |
+| `dispatchAction(doctype, action, args)` | `Promise<{ success, data, error }>` | Dispatch an action via the configured client. Returns error if doctype not found in registry. |
 
 ## Advanced Features
 
