@@ -148,14 +148,14 @@ getMeta(context: DoctypeContext): Promise<DoctypeMeta | null>
 Get a single record by ID
 
 ```typescript
-getRecord(doctype: DoctypeMeta, recordId: string): Promise<Record<string, unknown> | null>
+getRecord(doctype: DoctypeRef, recordId: string): Promise<Record<string, unknown> | null>
 ```
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| doctype | `DoctypeMeta` | Doctype metadata |
+| doctype | `DoctypeRef` | Doctype reference (name and optional slug) |
 | recordId | `string` | Record ID to fetch |
 
 #### getRecords
@@ -163,7 +163,7 @@ getRecord(doctype: DoctypeMeta, recordId: string): Promise<Record<string, unknow
 Get multiple records with optional filtering and pagination
 
 ```typescript
-getRecords(doctype: DoctypeMeta, options: {
+getRecords(doctype: DoctypeRef, options: {
         filters?: Record<string, unknown>;
         orderBy?: string;
         limit?: number;
@@ -175,7 +175,7 @@ getRecords(doctype: DoctypeMeta, options: {
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| doctype | `DoctypeMeta` | Doctype metadata |
+| doctype | `DoctypeRef` | Doctype reference (name and optional slug) |
 | options | `{ filters?: Record<string, unknown>; orderBy?: string; limit?: number; offset?: number; }` | Query options (filters, orderBy, limit, offset) |
 
 #### mutate
@@ -213,7 +213,7 @@ query(query: string, variables: Record<string, unknown>): Promise<T>
 Execute a doctype action
 
 ```typescript
-runAction(doctype: DoctypeMeta, action: string, args: unknown[]): Promise<{
+runAction(doctype: DoctypeRef, action: string, args: unknown[]): Promise<{
         success: boolean;
         data: unknown;
         error: string | null;
@@ -224,7 +224,7 @@ runAction(doctype: DoctypeMeta, action: string, args: unknown[]): Promise<{
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| doctype | `DoctypeMeta` | Doctype metadata |
+| doctype | `DoctypeRef` | Doctype reference (name and optional slug) |
 | action | `string` | Action name to execute |
 | args | `unknown[]` | Action arguments |
 

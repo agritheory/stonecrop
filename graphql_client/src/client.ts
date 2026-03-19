@@ -1,6 +1,6 @@
-import type { DataClient, DoctypeMeta, DoctypeContext } from '@stonecrop/schema'
+import type { DataClient, DoctypeMeta, DoctypeContext, DoctypeRef } from '@stonecrop/schema'
 
-export type { DoctypeContext }
+export type { DoctypeContext, DoctypeRef }
 
 /**
  * Options for creating a Stonecrop client
@@ -99,7 +99,14 @@ export class StonecropClient implements DataClient {
 					}
 					workflow {
 						states
-						actions
+						actions {
+							label
+							handler
+							requiredFields
+							allowedStates
+							confirm
+							args
+						}
 					}
 					inherits
 					listDoctype
@@ -149,7 +156,14 @@ export class StonecropClient implements DataClient {
 					}
 					workflow {
 						states
-						actions
+						actions {
+							label
+							handler
+							requiredFields
+							allowedStates
+							confirm
+							args
+						}
 					}
 					inherits
 					listDoctype
@@ -168,10 +182,10 @@ export class StonecropClient implements DataClient {
 
 	/**
 	 * Get a single record by ID
-	 * @param doctype - Doctype metadata
+	 * @param doctype - Doctype reference (name and optional slug)
 	 * @param recordId - Record ID to fetch
 	 */
-	async getRecord(doctype: DoctypeMeta, recordId: string): Promise<Record<string, unknown> | null> {
+	async getRecord(doctype: DoctypeRef, recordId: string): Promise<Record<string, unknown> | null> {
 		const result = await this.query<{
 			stonecropRecord: { data: Record<string, unknown> | null }
 		}>(
@@ -190,11 +204,11 @@ export class StonecropClient implements DataClient {
 
 	/**
 	 * Get multiple records with optional filtering and pagination
-	 * @param doctype - Doctype metadata
+	 * @param doctype - Doctype reference (name and optional slug)
 	 * @param options - Query options (filters, orderBy, limit, offset)
 	 */
 	async getRecords(
-		doctype: DoctypeMeta,
+		doctype: DoctypeRef,
 		options?: {
 			filters?: Record<string, unknown>
 			orderBy?: string
@@ -236,12 +250,12 @@ export class StonecropClient implements DataClient {
 
 	/**
 	 * Execute a doctype action
-	 * @param doctype - Doctype metadata
+	 * @param doctype - Doctype reference (name and optional slug)
 	 * @param action - Action name to execute
 	 * @param args - Action arguments
 	 */
 	async runAction(
-		doctype: DoctypeMeta,
+		doctype: DoctypeRef,
 		action: string,
 		args?: unknown[]
 	): Promise<{ success: boolean; data: unknown; error: string | null }> {
