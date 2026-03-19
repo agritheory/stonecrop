@@ -908,7 +908,7 @@ export type DoctypeConfig = {
     slug?: string;
     tableName?: string;
     fields?: SchemaTypes[];
-    workflow?: UnknownMachineConfig;
+    workflow?: UnknownMachineConfig | WorkflowMeta;
     actions?: Record<string, string[]>;
     inherits?: string;
     listDoctype?: string;
@@ -1027,7 +1027,7 @@ Immutable Doctype type for Stonecrop instances
 ```typescript
 export type ImmutableDoctype = {
     readonly schema?: List<SchemaTypes>;
-    readonly workflow?: UnknownMachineConfig | AnyStateNodeConfig;
+    readonly workflow?: UnknownMachineConfig | AnyStateNodeConfig | WorkflowMeta;
     readonly actions?: Map<string, string[]>;
 };
 ```
@@ -1059,7 +1059,7 @@ Mutable Doctype type for Stonecrop instances
 export type MutableDoctype = {
     doctype?: string;
     schema?: SchemaTypes[];
-    workflow?: UnknownMachineConfig | AnyStateNodeConfig;
+    workflow?: UnknownMachineConfig | AnyStateNodeConfig | WorkflowMeta;
     actions?: Record<string, string[]>;
 };
 ```
@@ -1194,6 +1194,27 @@ fromObject(config: DoctypeConfig): Doctype
 |-----------|------|-------------|
 | config | `DoctypeConfig` | Plain object with doctype configuration (typically from API response) |
 
+#### getActionMeta
+
+Returns metadata for a specific action, if available. Only works with WorkflowMeta format; returns undefined for XState format.
+
+```typescript
+getActionMeta(actionName: string): {
+        label: string;
+        handler: string;
+        requiredFields?: string[];
+        allowedStates?: string[];
+        confirm?: boolean;
+        args?: Record<string, unknown>;
+    } | undefined
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| actionName | `string` | The action name to get metadata for |
+
 #### getActionsObject
 
 Returns the actions as a plain object for use with components that expect plain JavaScript objects.
@@ -1204,7 +1225,7 @@ getActionsObject(): Record<string, string[]>
 
 #### getAvailableTransitions
 
-Returns the transitions available from a given workflow state, derived from the doctype's XState workflow configuration.
+Returns the transitions available from a given workflow state, derived from the doctype's workflow configuration. Supports both XState format and WorkflowMeta format.
 
 ```typescript
 getAvailableTransitions(currentState: string): Array<{

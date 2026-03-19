@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { List, Map } from 'immutable'
 import type { UnknownMachineConfig } from 'xstate'
+import type { WorkflowMeta } from '@stonecrop/schema'
 
 import Doctype from '../src/doctype'
 import type { SchemaTypes } from '@stonecrop/aform'
@@ -190,6 +191,79 @@ describe('Doctype class', () => {
 			expect(transitions[0].name).toBe('CLOSE')
 			expect(transitions[0].targetState).toBe('closed')
 		})
+
+		describe('WorkflowMeta format', () => {
+			const workflowMeta: WorkflowMeta = {
+				states: ['planning', 'review', 'approved', 'applied'],
+				actions: {
+					save: { label: 'Save', handler: 'plan:save', allowedStates: ['planning'] },
+					submit: { label: 'Submit', handler: 'plan:submit', allowedStates: ['planning'] },
+					approve: { label: 'Approve', handler: 'plan:approve', allowedStates: ['review'], confirm: true },
+					reject: { label: 'Reject', handler: 'plan:reject', allowedStates: ['review'] },
+					apply: { label: 'Apply', handler: 'plan:apply', allowedStates: ['planning', 'approved'] },
+					global: { label: 'Global', handler: 'plan:global' },
+				},
+			}
+
+			it('filters actions by allowedStates', () => {
+				const doctype = new Doctype('Plan', mockSchema, workflowMeta, mockActions)
+
+				const planningTransitions = doctype.getAvailableTransitions('planning')
+				expect(planningTransitions).toHaveLength(4)
+				const planningNames = planningTransitions.map(t => t.name).sort()
+				expect(planningNames).toEqual(['apply', 'global', 'save', 'submit'])
+
+				const reviewTransitions = doctype.getAvailableTransitions('review')
+				expect(reviewTransitions).toHaveLength(3)
+				const reviewNames = reviewTransitions.map(t => t.name).sort()
+				expect(reviewNames).toEqual(['approve', 'global', 'reject'])
+
+				const approvedTransitions = doctype.getAvailableTransitions('approved')
+				expect(approvedTransitions).toHaveLength(2)
+				const approvedNames = approvedTransitions.map(t => t.name).sort()
+				expect(approvedNames).toEqual(['apply', 'global'])
+			})
+
+			it('includes actions without allowedStates in all states', () => {
+				const doctype = new Doctype('Plan', mockSchema, workflowMeta, mockActions)
+
+				const planningTransitions = doctype.getAvailableTransitions('planning')
+				expect(planningTransitions.some(t => t.name === 'global')).toBe(true)
+
+				const reviewTransitions = doctype.getAvailableTransitions('review')
+				expect(reviewTransitions.some(t => t.name === 'global')).toBe(true)
+			})
+
+			it('returns current state as targetState (server-side transitions)', () => {
+				const doctype = new Doctype('Plan', mockSchema, workflowMeta, mockActions)
+
+				const transitions = doctype.getAvailableTransitions('planning')
+				transitions.forEach(t => {
+					expect(t.targetState).toBe('planning')
+				})
+			})
+
+			it('returns empty array for state not in states list', () => {
+				const doctype = new Doctype('Plan', mockSchema, workflowMeta, mockActions)
+
+				const transitions = doctype.getAvailableTransitions('unknown')
+				expect(transitions).toEqual([])
+			})
+
+			it('handles empty actions', () => {
+				const noActions: WorkflowMeta = { states: ['draft', 'submitted'] }
+				const doctype = new Doctype('Task', mockSchema, noActions, mockActions)
+
+				expect(doctype.getAvailableTransitions('draft')).toEqual([])
+			})
+
+			it('handles empty states', () => {
+				const noStates: WorkflowMeta = { actions: { save: { label: 'Save', handler: 'save' } } }
+				const doctype = new Doctype('Task', mockSchema, noStates, mockActions)
+
+				expect(doctype.getAvailableTransitions('draft')).toEqual([])
+			})
+		})
 	})
 
 	describe('fromObject', () => {
@@ -296,6 +370,53 @@ describe('Doctype class', () => {
 			// String-style target: 'SUBMIT: 'pending'' extracts targetState correctly
 			expect(doctype.getAvailableTransitions('draft')).toEqual([{ name: 'SUBMIT', targetState: 'pending' }])
 		})
+
+		it('accepts WorkflowMeta format for workflow', () => {
+			const obj = {
+				name: 'Plan',
+				workflow: {
+					states: ['draft', 'submitted', 'approved'],
+					actions: {
+						submit: { label: 'Submit', handler: 'plan:submit', allowedStates: ['draft'] },
+						approve: { label: 'Approve', handler: 'plan:approve', allowedStates: ['submitted'] },
+					},
+				} as WorkflowMeta,
+			}
+
+			const doctype = Doctype.fromObject(obj)
+
+			expect(doctype.workflow).toBeDefined()
+			expect(Array.isArray(doctype.workflow?.states)).toBe(true)
+
+			const draftTransitions = doctype.getAvailableTransitions('draft')
+			expect(draftTransitions).toHaveLength(1)
+			expect(draftTransitions[0].name).toBe('submit')
+
+			const submittedTransitions = doctype.getAvailableTransitions('submitted')
+			expect(submittedTransitions).toHaveLength(1)
+			expect(submittedTransitions[0].name).toBe('approve')
+		})
+
+		it('accepts XState UnknownMachineConfig format for workflow', () => {
+			const obj = {
+				name: 'Task',
+				workflow: {
+					id: 'task',
+					initial: 'todo',
+					states: {
+						todo: { on: { START: 'in_progress' } },
+						in_progress: { on: { COMPLETE: 'done' } },
+						done: { type: 'final' as const },
+					},
+				} as UnknownMachineConfig,
+			}
+
+			const doctype = Doctype.fromObject(obj)
+
+			expect(doctype.workflow).toBeDefined()
+			expect(typeof (doctype.workflow as UnknownMachineConfig).states).toBe('object')
+			expect(doctype.getAvailableTransitions('todo')).toEqual([{ name: 'START', targetState: 'in_progress' }])
+		})
 	})
 
 	describe('getSchemaArray', () => {
@@ -360,6 +481,64 @@ describe('Doctype class', () => {
 				save: ['validateData', 'saveData'],
 				delete: ['confirmDelete', 'deleteData'],
 			})
+		})
+	})
+
+	describe('getActionMeta', () => {
+		it('returns action metadata from WorkflowMeta format', () => {
+			const workflowMeta: WorkflowMeta = {
+				states: ['draft', 'submitted'],
+				actions: {
+					submit: {
+						label: 'Submit for Review',
+						handler: 'plan:submit',
+						requiredFields: ['title', 'description'],
+						allowedStates: ['draft'],
+						confirm: true,
+						args: { notify: true },
+					},
+				},
+			}
+			const doctype = new Doctype('Plan', mockSchema, workflowMeta, mockActions)
+
+			const meta = doctype.getActionMeta('submit')
+			expect(meta).toEqual({
+				label: 'Submit for Review',
+				handler: 'plan:submit',
+				requiredFields: ['title', 'description'],
+				allowedStates: ['draft'],
+				confirm: true,
+				args: { notify: true },
+			})
+		})
+
+		it('returns undefined for unknown action', () => {
+			const workflowMeta: WorkflowMeta = {
+				states: ['draft'],
+				actions: { submit: { label: 'Submit', handler: 'submit' } },
+			}
+			const doctype = new Doctype('Plan', mockSchema, workflowMeta, mockActions)
+
+			expect(doctype.getActionMeta('unknown')).toBeUndefined()
+		})
+
+		it('returns undefined for XState format workflow', () => {
+			const doctype = new Doctype('Task', mockSchema, mockWorkflow, mockActions)
+
+			expect(doctype.getActionMeta('load')).toBeUndefined()
+		})
+
+		it('returns undefined when workflow is undefined', () => {
+			const doctype = new Doctype('Task', mockSchema, undefined, mockActions)
+
+			expect(doctype.getActionMeta('submit')).toBeUndefined()
+		})
+
+		it('returns undefined when workflow has no actions', () => {
+			const workflowMeta: WorkflowMeta = { states: ['draft'] }
+			const doctype = new Doctype('Task', mockSchema, workflowMeta, mockActions)
+
+			expect(doctype.getActionMeta('submit')).toBeUndefined()
 		})
 	})
 })
