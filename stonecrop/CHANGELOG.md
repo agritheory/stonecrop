@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/stonecrop
 
-This log was last generated on Thu, 19 Mar 2026 06:12:08 GMT and should not be manually modified.
+This log was last generated on Thu, 19 Mar 2026 06:26:37 GMT and should not be manually modified.
+
+## 0.10.7
+Thu, 19 Mar 2026 06:26:37 GMT
+
+### Updates
+
+- resolve async plugin loading issues
 
 ## 0.10.6
 Thu, 19 Mar 2026 06:12:08 GMT
