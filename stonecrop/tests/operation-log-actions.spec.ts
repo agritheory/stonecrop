@@ -3,14 +3,14 @@ import { createPinia, setActivePinia } from 'pinia'
 
 import { Stonecrop } from '../src/stonecrop'
 import Registry from '../src/registry'
-import DoctypeMeta from '../src/doctype'
+import Doctype from '../src/doctype'
 import { Map, List } from 'immutable'
 import { useOperationLog } from '../src/composables/operation-log'
 
 describe('Operation Log - Action Tracking', () => {
 	let registry: Registry
 	let stonecrop: Stonecrop
-	let mockDoctype: DoctypeMeta
+	let mockDoctype: Doctype
 
 	beforeEach(() => {
 		// Setup Pinia
@@ -26,7 +26,7 @@ describe('Operation Log - Action Tracking', () => {
 			archive: ['console.log("Archiving record")'],
 		})
 
-		mockDoctype = new DoctypeMeta('Task', List([]), undefined, mockActions)
+		mockDoctype = new Doctype('Task', List([]), undefined, mockActions)
 
 		registry.addDoctype(mockDoctype)
 
@@ -134,7 +134,7 @@ describe('Operation Log - Action Tracking', () => {
 				failing: ['throw new Error("Action failed")'],
 			})
 
-			const failingDoctype = new DoctypeMeta('FailingTask', List([]), undefined, failingActions)
+			const failingDoctype = new Doctype('FailingTask', List([]), undefined, failingActions)
 
 			registry.addDoctype(failingDoctype)
 

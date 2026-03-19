@@ -307,8 +307,8 @@ describe('Stonecrop Vue Plugin with HST', () => {
 		})
 
 		const { List } = await import('immutable')
-		const { default: DoctypeMeta } = await import('../src/doctype')
-		const mockDoctype = new DoctypeMeta('Widget', List([]), undefined as any, undefined as any)
+		const { default: Doctype } = await import('../src/doctype')
+		const mockDoctype = new Doctype('Widget', List([]), undefined as any, undefined as any)
 
 		const stonecropInstance = app.config.globalProperties.$stonecrop as any
 		await stonecropInstance.registry.addDoctype(mockDoctype)

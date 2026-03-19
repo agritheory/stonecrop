@@ -2,7 +2,7 @@ import { inject, onMounted, Ref, ref, watch, provide, computed, ComputedRef } fr
 
 import Registry from '../registry'
 import { Stonecrop } from '../stonecrop'
-import DoctypeMeta from '../doctype'
+import Doctype from '../doctype'
 import type { HSTNode } from '../stores/hst'
 import { RouteContext } from '../types/registry'
 import { storeToRefs } from 'pinia'
@@ -65,11 +65,11 @@ export type HSTStonecropReturn = BaseStonecropReturn & {
 	hstStore: Ref<HSTNode | undefined>
 	formData: Ref<Record<string, any>>
 	resolvedSchema: Ref<SchemaTypes[]>
-	loadNestedData: (parentPath: string, childDoctype: DoctypeMeta, recordId?: string) => Record<string, any>
-	saveRecursive: (doctype: DoctypeMeta, recordId: string) => Promise<Record<string, any>>
+	loadNestedData: (parentPath: string, childDoctype: Doctype, recordId?: string) => Record<string, any>
+	saveRecursive: (doctype: Doctype, recordId: string) => Promise<Record<string, any>>
 	createNestedContext: (
 		basePath: string,
-		childDoctype: DoctypeMeta
+		childDoctype: Doctype
 	) => {
 		provideHSTPath: (fieldname: string) => string
 		handleHSTChange: (changeData: HSTChangeData) => void
@@ -102,17 +102,13 @@ export function useStonecrop(): BaseStonecropReturn | HSTStonecropReturn
  * @returns Stonecrop instance with full HST integration utilities
  * @public
  */
-export function useStonecrop(options: {
-	registry?: Registry
-	doctype: DoctypeMeta
-	recordId?: string
-}): HSTStonecropReturn
+export function useStonecrop(options: { registry?: Registry; doctype: Doctype; recordId?: string }): HSTStonecropReturn
 /**
  * @public
  */
 export function useStonecrop(options?: {
 	registry?: Registry
-	doctype?: DoctypeMeta
+	doctype?: Doctype
 	recordId?: string
 }): BaseStonecropReturn | HSTStonecropReturn {
 	if (!options) options = {}
@@ -124,7 +120,7 @@ export function useStonecrop(options?: {
 	const formData = ref<Record<string, any>>({})
 
 	// Use refs for router-loaded doctype to maintain reactivity
-	const routerDoctype = ref<DoctypeMeta | undefined>()
+	const routerDoctype = ref<Doctype | undefined>()
 	const routerRecordId = ref<string | undefined>()
 
 	// Resolved schema with nested Doctype fields expanded
@@ -418,7 +414,7 @@ export function useStonecrop(options?: {
 	 * @param recordId - Optional record ID to load
 	 * @returns Promise resolving to the loaded or initialized data
 	 */
-	const loadNestedData = (parentPath: string, childDoctype: DoctypeMeta, recordId?: string): Record<string, any> => {
+	const loadNestedData = (parentPath: string, childDoctype: Doctype, recordId?: string): Record<string, any> => {
 		if (!stonecrop.value) {
 			return initializeNewRecord(childDoctype)
 		}
@@ -450,7 +446,7 @@ export function useStonecrop(options?: {
 	 * @param recordId - The record ID to save
 	 * @returns The complete save payload
 	 */
-	const saveRecursive = (doctype: DoctypeMeta, recordId: string): Record<string, any> => {
+	const saveRecursive = (doctype: Doctype, recordId: string): Record<string, any> => {
 		if (!hstStore.value || !stonecrop.value) {
 			throw new Error('HST store not initialized')
 		}
@@ -487,7 +483,7 @@ export function useStonecrop(options?: {
 	 * @param _childDoctype - The child doctype metadata (unused but kept for API consistency)
 	 * @returns Object with scoped provideHSTPath and handleHSTChange
 	 */
-	const createNestedContext = (basePath: string, _childDoctype: DoctypeMeta) => {
+	const createNestedContext = (basePath: string, _childDoctype: Doctype) => {
 		const nestedProvideHSTPath = (fieldname: string): string => {
 			return `${basePath}.${fieldname}`
 		}
@@ -570,7 +566,7 @@ export function useStonecrop(options?: {
 /**
  * Initialize new record structure based on doctype schema
  */
-function initializeNewRecord(doctype: DoctypeMeta): Record<string, any> {
+function initializeNewRecord(doctype: Doctype): Record<string, any> {
 	const initialData: Record<string, any> = {}
 
 	if (!doctype.schema) {
@@ -610,7 +606,7 @@ function initializeNewRecord(doctype: DoctypeMeta): Record<string, any> {
  * Setup deep reactivity between form data and HST store
  */
 function setupDeepReactivity(
-	doctype: DoctypeMeta,
+	doctype: Doctype,
 	recordId: string,
 	formData: Ref<Record<string, any>>,
 	hstStore: HSTNode

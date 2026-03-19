@@ -10,7 +10,7 @@ graph TB
     subgraph "Stonecrop Core"
         SC[Stonecrop Class]
         REG[Registry]
-        DT[DoctypeMeta]
+        DT[Doctype]
     end
 
     subgraph "HST State Layer"

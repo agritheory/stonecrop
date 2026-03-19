@@ -3,7 +3,7 @@ export type * from '@stonecrop/atable/types'
 
 import { useStonecrop } from './composables/stonecrop'
 import { useOperationLog, useUndoRedoShortcuts, withBatch } from './composables/operation-log'
-import DoctypeMeta from './doctype'
+import Doctype, { type DoctypeConfig } from './doctype'
 import {
 	getGlobalTriggerEngine,
 	markOperationIrreversible,
@@ -36,7 +36,8 @@ export type { ValidationIssue, ValidationResult, ValidatorOptions } from './sche
 export { ValidationSeverity } from './schema-validator'
 
 export {
-	DoctypeMeta,
+	Doctype,
+	DoctypeConfig,
 	Registry,
 	Stonecrop,
 	StonecropOptions,

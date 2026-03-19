@@ -154,7 +154,7 @@ The `options` field must match the slug of a registered doctype in your registry
 ### 2. Register Doctypes
 
 ```typescript
-import { Registry, DoctypeMeta } from '@stonecrop/stonecrop'
+import { Registry, Doctype } from '@stonecrop/stonecrop'
 import { List } from 'immutable'
 import addressSchema from './address_schema.json'
 import customerSchema from './customer_schema.json'
@@ -162,11 +162,11 @@ import customerSchema from './customer_schema.json'
 const registry = new Registry()
 
 // Register the nested doctype first
-const addressDoctype = new DoctypeMeta('Address', List(addressSchema.fields), undefined, undefined)
+const addressDoctype = new Doctype('Address', List(addressSchema.fields), undefined, undefined)
 registry.addDoctype(addressDoctype)
 
 // Register the parent doctype
-const customerDoctype = new DoctypeMeta('Customer', List(customerSchema.fields), undefined, undefined)
+const customerDoctype = new Doctype('Customer', List(customerSchema.fields), undefined, undefined)
 registry.addDoctype(customerDoctype)
 ```
 

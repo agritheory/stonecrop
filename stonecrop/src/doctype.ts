@@ -1,12 +1,42 @@
+import { List, Map } from 'immutable'
 import { Component } from 'vue'
+
+import type { SchemaTypes } from '@stonecrop/aform'
+import type { UnknownMachineConfig } from 'xstate'
 
 import type { ImmutableDoctype } from './types'
 
 /**
- * Doctype Meta class
+ * Plain object representation of doctype configuration for serialization/API responses.
+ * Compatible with the DoctypeMeta type from \@stonecrop/schema.
  * @public
  */
-export default class DoctypeMeta {
+export type DoctypeConfig = {
+	/** Display name of the doctype */
+	name: string
+	/** URL-friendly slug (kebab-case) */
+	slug?: string
+	/** Database table name */
+	tableName?: string
+	/** Field definitions */
+	fields?: SchemaTypes[]
+	/** Workflow configuration */
+	workflow?: UnknownMachineConfig
+	/** Actions and their field triggers */
+	actions?: Record<string, string[]>
+	/** Parent doctype for inheritance */
+	inherits?: string
+	/** Doctype to use for list views */
+	listDoctype?: string
+	/** Parent doctype for child tables */
+	parentDoctype?: string
+}
+
+/**
+ * Doctype runtime class with Immutable.js collections for HST change tracking.
+ * @public
+ */
+export default class Doctype {
 	/**
 	 * The doctype name
 	 * @public
@@ -52,7 +82,7 @@ export default class DoctypeMeta {
 	readonly component?: Component
 
 	/**
-	 * Creates a new DoctypeMeta instance
+	 * Creates a new Doctype instance
 	 * @param doctype - The doctype name
 	 * @param schema - The doctype schema definition
 	 * @param workflow - The doctype workflow configuration (XState machine)
@@ -71,6 +101,84 @@ export default class DoctypeMeta {
 		this.workflow = workflow
 		this.actions = actions
 		this.component = component
+	}
+
+	/**
+	 * Creates a Doctype instance from a plain configuration object.
+	 * Handles conversion of arrays to Immutable.js collections internally.
+	 *
+	 * This is the recommended way to create a Doctype from API responses
+	 * or configuration files, as it encapsulates the Immutable.js construction
+	 * that the framework uses internally.
+	 *
+	 * @param config - Plain object with doctype configuration (typically from API response)
+	 * @returns A new Doctype instance with Immutable.js collections
+	 *
+	 * @example
+	 * ```ts
+	 * // From an API response
+	 * const response = await client.getMeta({ doctype: 'plan' })
+	 * const doctype = Doctype.fromObject(response)
+	 * registry.addDoctype(doctype)
+	 * ```
+	 *
+	 * @example
+	 * ```ts
+	 * // From a configuration object
+	 * const planDoctype = Doctype.fromObject({
+	 *   name: 'Plan',
+	 *   fields: [
+	 *     { fieldname: 'title', label: 'Title', fieldtype: 'Data' },
+	 *     { fieldname: 'status', label: 'Status', fieldtype: 'Data' },
+	 *   ],
+	 *   workflow: {
+	 *     id: 'plan',
+	 *     initial: 'draft',
+	 *     states: { draft: {}, submitted: {} }
+	 *   }
+	 * })
+	 * ```
+	 *
+	 * @public
+	 */
+	static fromObject(config: DoctypeConfig): Doctype {
+		const schema = config.fields ? List(config.fields) : List<SchemaTypes>()
+		const actions = config.actions ? Map(config.actions) : Map<string, string[]>()
+
+		return new Doctype(config.name, schema, config.workflow, actions)
+	}
+
+	/**
+	 * Returns the schema as a plain array for use with components that expect
+	 * plain JavaScript arrays (e.g., AForm, ATable).
+	 *
+	 * @returns Array of schema fields
+	 *
+	 * @example
+	 * ```ts
+	 * const schemaArray = doctype.getSchemaArray()
+	 * // Use with AForm
+	 * <AForm :schema="schemaArray" v-model:data="formData" />
+	 * ```
+	 *
+	 * @public
+	 */
+	getSchemaArray(): SchemaTypes[] {
+		if (!this.schema) return []
+		return this.schema.toArray()
+	}
+
+	/**
+	 * Returns the actions as a plain object for use with components that expect
+	 * plain JavaScript objects.
+	 *
+	 * @returns Object mapping action names to field trigger arrays
+	 *
+	 * @public
+	 */
+	getActionsObject(): Record<string, string[]> {
+		if (!this.actions) return {}
+		return this.actions.toObject()
 	}
 
 	/**
@@ -109,7 +217,7 @@ export default class DoctypeMeta {
 	 *
 	 * @example
 	 * ```ts
-	 * const doctype = new DoctypeMeta('TaskItem', schema, workflow, actions
+	 * const doctype = new Doctype('TaskItem', schema, workflow, actions)
 	 * console.log(doctype.slug) // 'task-item'
 	 * ```
 	 *

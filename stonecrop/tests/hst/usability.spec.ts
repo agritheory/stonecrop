@@ -8,14 +8,14 @@ import ATextInput from '../../../aform/src/components/form/ATextInput.vue'
 import ANumericInput from '../../../aform/src/components/form/ANumericInput.vue'
 import type { SchemaTypes } from '../../../aform/src/types'
 import { useStonecrop } from '../../src/composables/stonecrop'
-import DoctypeMeta from '../../src/doctype'
+import Doctype from '../../src/doctype'
 import Registry from '../../src/registry'
 import { Stonecrop } from '../../src/stonecrop'
 
 describe('HST Edge Cases & Performance', () => {
 	let registry: Registry
 	let stonecrop: Stonecrop
-	let doctype: DoctypeMeta
+	let doctype: Doctype
 
 	beforeEach(() => {
 		Registry._root = undefined as any
@@ -45,7 +45,7 @@ describe('HST Edge Cases & Performance', () => {
 			save: ['saveData'],
 		})
 
-		doctype = new DoctypeMeta('Complex', complexSchema, mockWorkflow, mockActions)
+		doctype = new Doctype('Complex', complexSchema, mockWorkflow, mockActions)
 		registry.addDoctype(doctype)
 		stonecrop = new Stonecrop(registry)
 	})

@@ -1,4 +1,5 @@
-import type { DataClient, DoctypeMeta } from '@stonecrop/schema'
+import type { DataClient } from '@stonecrop/schema'
+import type { Doctype } from '@stonecrop/stonecrop'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 import { useNuxtApp, type NuxtApp } from 'nuxt/app'
@@ -312,7 +313,7 @@ describe('useStonecropSetup', () => {
 		it('throws error when registry is not available', () => {
 			vi.mocked(useNuxtApp).mockReturnValue(makeNuxtApp(undefined, undefined) as unknown as NuxtApp)
 			const { registerDoctype } = useStonecropSetup()
-			const mockDoctype = {} as DoctypeMeta
+			const mockDoctype = {} as Doctype
 
 			expect(() => registerDoctype(mockDoctype)).toThrow(
 				'[useStonecropSetup] Registry not available. ' +
@@ -324,7 +325,7 @@ describe('useStonecropSetup', () => {
 			const mockRegistry = makeRegistry()
 			vi.mocked(useNuxtApp).mockReturnValue(makeNuxtApp(mockRegistry, undefined) as unknown as NuxtApp)
 			const { registerDoctype } = useStonecropSetup()
-			const mockDoctype = {} as DoctypeMeta
+			const mockDoctype = {} as Doctype
 			registerDoctype(mockDoctype)
 
 			expect(mockRegistry.addDoctype).toHaveBeenCalledWith(mockDoctype)

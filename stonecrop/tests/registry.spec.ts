@@ -4,7 +4,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import type { UnknownMachineConfig } from 'xstate'
 
 import Registry from '../src/registry'
-import DoctypeMeta from '../src/doctype'
+import Doctype from '../src/doctype'
 import type { SchemaTypes } from '@stonecrop/aform'
 
 describe('Registry class', () => {
@@ -50,7 +50,7 @@ describe('Registry class', () => {
 			save: ['validateData', 'saveData'],
 		})
 
-		return new DoctypeMeta(name, mockSchema, mockWorkflow, mockActions)
+		return new Doctype(name, mockSchema, mockWorkflow, mockActions)
 	}
 
 	it('creates a Registry instance with default properties', () => {
@@ -107,7 +107,7 @@ describe('Registry class', () => {
 	it('adds router route when doctype has component and router is available', () => {
 		registry = new Registry(mockRouter)
 		const mockComponent = { name: 'TaskComponent' }
-		const mockDoctype = new DoctypeMeta(
+		const mockDoctype = new Doctype(
 			'Task',
 			List([]),
 			{ id: 'task', initial: 'draft', states: { draft: { type: 'final' } } },
@@ -131,7 +131,7 @@ describe('Registry class', () => {
 	it('does not add router route if route already exists', () => {
 		registry = new Registry(mockRouter)
 		const mockComponent = { name: 'TaskComponent' }
-		const mockDoctype = new DoctypeMeta(
+		const mockDoctype = new Doctype(
 			'Task',
 			List([]),
 			{ id: 'task', initial: 'draft', states: { draft: { type: 'final' } } },
@@ -151,7 +151,7 @@ describe('Registry class', () => {
 	it('does not add router route if no router is available', () => {
 		registry = new Registry()
 		const mockComponent = { name: 'TaskComponent' }
-		const mockDoctype = new DoctypeMeta(
+		const mockDoctype = new Doctype(
 			'Task',
 			List([]),
 			{ id: 'task', initial: 'draft', states: { draft: { type: 'final' } } },
@@ -177,7 +177,7 @@ describe('Registry class', () => {
 	})
 
 	describe('getDoctype', () => {
-		it('returns the DoctypeMeta for a registered slug', () => {
+		it('returns the Doctype for a registered slug', () => {
 			registry = new Registry()
 			const mockDoctype = createMockDoctype('Task')
 			registry.addDoctype(mockDoctype)

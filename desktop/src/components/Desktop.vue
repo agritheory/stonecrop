@@ -240,14 +240,14 @@ const getAvailableTransitions = () => {
 	}
 
 	try {
-		const meta = stonecrop.value.registry.getDoctype(currentDoctype.value)
-		if (!meta?.workflow) return []
+		const doctype = stonecrop.value.registry.getDoctype(currentDoctype.value)
+		if (!doctype?.workflow) return []
 
 		// Delegate state resolution to Stonecrop — reads record 'status', falls back to workflow.initial
 		const currentState = stonecrop.value.getRecordState(currentDoctype.value, currentRecordId.value)
 
-		// Delegate transition lookup to DoctypeMeta — no more manual workflow introspection
-		const transitions = meta.getAvailableTransitions(currentState)
+		// Delegate transition lookup to Doctype — no more manual workflow introspection
+		const transitions = doctype.getAvailableTransitions(currentState)
 
 		const recordData = currentViewData.value || {}
 
@@ -543,15 +543,15 @@ const getRecordFormSchema = (): SchemaTypes[] => {
 
 	try {
 		const registry = stonecrop.value?.registry
-		const meta = registry?.registry[currentDoctype.value]
+		const doctype = registry?.registry[currentDoctype.value]
 
-		if (!meta?.schema) {
+		if (!doctype?.schema) {
 			// Let the template fallback handle the loading state
 			return []
 		}
 
 		// Data is provided via v-model:data="currentViewData" — no need to spread values into schema
-		return 'toArray' in meta.schema ? meta.schema.toArray() : meta.schema
+		return 'toArray' in doctype.schema ? doctype.schema.toArray() : doctype.schema
 	} catch {
 		return []
 	}
@@ -578,10 +578,10 @@ const getColumns = () => {
 
 	try {
 		const registry = stonecrop.value.registry
-		const meta = registry.registry[currentDoctype.value]
+		const doctype = registry.registry[currentDoctype.value]
 
-		if (meta?.schema) {
-			const schemaArray = 'toArray' in meta.schema ? meta.schema.toArray() : meta.schema
+		if (doctype?.schema) {
+			const schemaArray = 'toArray' in doctype.schema ? doctype.schema.toArray() : doctype.schema
 			return schemaArray.map(field => ({
 				fieldname: field.fieldname,
 				label: ('label' in field && field.label) || field.fieldname,

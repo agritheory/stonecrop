@@ -28,27 +28,27 @@ Stonecrop is a **schema-driven UI framework** and **event-driven application pla
 **Key Components**:
 - `Stonecrop` class: Main application controller with HST integration
 - `Registry` class: Manages doctype definitions with singleton pattern and lazy loading
-- `DoctypeMeta` class: Defines schema, workflow (FSM), and actions for data types
+- `Doctype` class: Defines schema, workflow (FSM), and actions for data types
 - `useStonecrop()` composable: Vue.js integration hook
 - **HST (Hierarchical State Tree)**: Advanced state management system with tree navigation and multi-store compatibility
 
 **Architecture Pattern**:
 ```
 Stonecrop Application
-├── Registry (singleton)               // immutable doctype definitions
-│   ├── DoctypeMeta.schema            // JSON schema definitions
-│   ├── DoctypeMeta.workflow          // XState finite state machines
-│   └── DoctypeMeta.actions           // event-driven action handlers
-└── HST Store (hierarchical)           // mutable reactive state with tree navigation
-    ├── Doctype sections             // per-doctype state containers
-    │   └── records                   // record data with direct access
-    └── Advanced navigation           // parent/child/sibling access
+├── Registry (singleton)       // immutable doctype definitions
+│   ├── Doctype.schema         // JSON schema definitions
+│   ├── Doctype.workflow       // XState finite state machines
+│   └── Doctype.actions        // event-driven action handlers
+└── HST Store (hierarchical)   // mutable reactive state with tree navigation
+    ├── Doctype sections       // per-doctype state containers
+    │   └── records            // record data with direct access
+    └── Advanced navigation    // parent/child/sibling access
 ```
 
 **Hierarchical Structure**:
 ```
 Registry
-├── DoctypeMeta
+├── Doctype
 │   ├── .schema (SchemaTypes[])
 │   ├── .workflow (XState machine config)
 │   ├── .actions (action handlers)

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { Map, List } from 'immutable'
 import type { UnknownMachineConfig } from 'xstate'
-import DoctypeMeta from '../../src/doctype'
+import Doctype from '../../src/doctype'
 import Registry from '../../src/registry'
 import { Stonecrop } from '../../src/stonecrop'
 import { registerGlobalAction } from '../../src/field-triggers'
@@ -38,7 +38,7 @@ describe('Field Trigger Integration', () => {
 			['saveTask', ['someRegularAction']], // regular action
 		])
 
-		const doctype = new DoctypeMeta('Task', schema, workflow, actions)
+		const doctype = new Doctype('Task', schema, workflow, actions)
 		registry.addDoctype(doctype)
 
 		// Initialize HST store with data
@@ -85,7 +85,7 @@ describe('Field Trigger Integration', () => {
 			['emailAddress', ['action1', 'action2']], // multiple actions for same field
 		])
 
-		const doctype = new DoctypeMeta('Task', schema, workflow, actions)
+		const doctype = new Doctype('Task', schema, workflow, actions)
 		registry.addDoctype(doctype)
 
 		const store = stonecrop.getStore()
@@ -115,7 +115,7 @@ describe('Field Trigger Integration', () => {
 		}
 		const actions = Map([['profile.name', ['validateName']]])
 
-		const doctype = new DoctypeMeta('User', schema, workflow, actions)
+		const doctype = new Doctype('User', schema, workflow, actions)
 		registry.addDoctype(doctype)
 
 		const store = stonecrop.getStore()
@@ -151,7 +151,7 @@ describe('Field Trigger Integration', () => {
 		}
 		const actions = Map([['title', ['errorAction']]])
 
-		const doctype = new DoctypeMeta('Task', schema, workflow, actions)
+		const doctype = new Doctype('Task', schema, workflow, actions)
 		registry.addDoctype(doctype)
 
 		const store = stonecrop.getStore()

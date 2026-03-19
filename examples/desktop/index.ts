@@ -6,7 +6,7 @@ import '@stonecrop/desktop/styles'
 import { install as AForm } from '@stonecrop/aform'
 import { StonecropDesktop } from '@stonecrop/desktop'
 import StonecropPlugin, {
-	DoctypeMeta,
+	Doctype,
 	Registry,
 	Stonecrop,
 	type ImmutableDoctype,
@@ -41,7 +41,7 @@ const getMeta = async (routeContext: RouteContext) => {
 		actions: Map(data.actions || {}),
 	}
 
-	return new DoctypeMeta(data.doctype!, config.schema, config.workflow, config.actions)
+	return new Doctype(data.doctype!, config.schema, config.workflow, config.actions)
 }
 
 // Install plugins in correct order following Vue.js best practices

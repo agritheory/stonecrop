@@ -1,7 +1,7 @@
 import type { SchemaTypes } from '@stonecrop/aform'
 import { Router } from 'vue-router'
 
-import DoctypeMeta from './doctype'
+import Doctype from './doctype'
 import { getGlobalTriggerEngine } from './field-triggers'
 import { RouteContext } from './types/registry'
 
@@ -24,9 +24,9 @@ export default class Registry {
 
 	/**
 	 * The registry property contains a collection of doctypes
-	 * @see {@link DoctypeMeta}
+	 * @see {@link Doctype}
 	 */
-	readonly registry: Record<string, DoctypeMeta>
+	readonly registry: Record<string, Doctype>
 
 	/**
 	 * The Vue router instance
@@ -39,7 +39,7 @@ export default class Registry {
 	 * @param router - Optional Vue router instance for route management
 	 * @param getMeta - Optional function to fetch doctype metadata from an API
 	 */
-	constructor(router?: Router, getMeta?: (routeContext: RouteContext) => DoctypeMeta | Promise<DoctypeMeta>) {
+	constructor(router?: Router, getMeta?: (routeContext: RouteContext) => Doctype | Promise<Doctype>) {
 		if (Registry._root) {
 			return Registry._root
 		}
@@ -52,17 +52,17 @@ export default class Registry {
 
 	/**
 	 * The getMeta function fetches doctype metadata from an API based on route context
-	 * @see {@link DoctypeMeta}
+	 * @see {@link Doctype}
 	 */
-	getMeta?: (routeContext: RouteContext) => DoctypeMeta | Promise<DoctypeMeta>
+	getMeta?: (routeContext: RouteContext) => Doctype | Promise<Doctype>
 
 	/**
 	 * Get doctype metadata
 	 * @param doctype - The doctype to fetch metadata for
 	 * @returns The doctype metadata
-	 * @see {@link DoctypeMeta}
+	 * @see {@link Doctype}
 	 */
-	addDoctype(doctype: DoctypeMeta) {
+	addDoctype(doctype: Doctype) {
 		if (!(doctype.slug in this.registry)) {
 			this.registry[doctype.slug] = doctype
 		}
@@ -153,7 +153,7 @@ export default class Registry {
 				'options' in field &&
 				typeof field.options === 'string'
 			) {
-				const doctypeSlug = field.options as string
+				const doctypeSlug = field.options
 
 				// Circular reference protection
 				if (seen.has(doctypeSlug)) {
@@ -275,10 +275,10 @@ export default class Registry {
 	/**
 	 * Get a registered doctype by slug
 	 * @param slug - The doctype slug to look up
-	 * @returns The DoctypeMeta instance if found, or undefined
+	 * @returns The Doctype instance if found, or undefined
 	 * @public
 	 */
-	getDoctype(slug: string): DoctypeMeta | undefined {
+	getDoctype(slug: string): Doctype | undefined {
 		return this.registry[slug]
 	}
 

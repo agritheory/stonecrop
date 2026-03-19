@@ -3,7 +3,7 @@ import { hst, pinia as stonecropPinia } from '../src/stores/index.js'
 import { HST, HSTProxy, createHST, type HSTNode } from '../src/stores/hst.js'
 import Registry from '../src/registry.js'
 import { Stonecrop } from '../src/stonecrop.js'
-import DoctypeMeta from '../src/doctype.js'
+import Doctype from '../src/doctype.js'
 import { Map } from 'immutable'
 
 describe('Stonecrop Stores', () => {
@@ -36,7 +36,7 @@ describe('Stonecrop Stores', () => {
 	})
 
 	describe('HST singleton', () => {
-		const mockDoctype = new DoctypeMeta('Task', undefined, undefined, Map())
+		const mockDoctype = new Doctype('Task', undefined, undefined, Map())
 
 		beforeEach(() => {
 			registry.addDoctype(mockDoctype)
