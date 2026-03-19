@@ -84,10 +84,17 @@ export default {
     // Base mode — operation log only, no HST record loading
     const { stonecrop, operationLog } = useStonecrop()
 
-    // HST mode — pass doctype and optional recordId for full integration
+    // HST mode — pass Doctype instance and optional recordId
     const { stonecrop, formData, provideHSTPath, handleHSTChange } = useStonecrop({
       doctype: myDoctype,
       recordId: 'record-123', // omit or pass undefined for new records
+    })
+
+    // HST mode with lazy-loading — pass string doctype slug
+    // Automatically loads doctype via registry.getMeta if not in registry
+    const { isLoading, error, resolvedDoctype, formData } = useStonecrop({
+      doctype: 'plan',
+      recordId: 'record-123',
     })
 
     // Access HST store
@@ -100,6 +107,28 @@ export default {
   }
 }
 ```
+
+### String Doctype Lazy-Loading
+
+When you pass a string doctype slug instead of a `Doctype` instance, `useStonecrop` will:
+
+1. Check if the doctype is already in the Registry
+2. If not, call `registry.getMeta` to lazy-load it
+3. Return `isLoading`, `error`, and `resolvedDoctype` refs for handling the async state
+
+```typescript
+const { isLoading, error, resolvedDoctype, formData } = useStonecrop({
+  doctype: 'plan',  // string slug - triggers lazy-loading
+  recordId: '123',
+})
+
+// In your template:
+// <div v-if="isLoading">Loading doctype...</div>
+// <div v-else-if="error">Error: {{ error.message }}</div>
+// <AForm v-else :schema="resolvedDoctype.schema" v-model:data="formData" />
+```
+
+This pattern eliminates the timing mismatch when loading doctypes asynchronously in Nuxt plugins.
 
 ## Design
 A Doctype defines schema, workflow, and actions.

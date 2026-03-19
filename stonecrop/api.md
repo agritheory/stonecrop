@@ -250,7 +250,7 @@ Unified Stonecrop composable with HST integration for a specific doctype and rec
 ```typescript
 export declare function useStonecrop(options: {
     registry?: Registry;
-    doctype: Doctype;
+    doctype: Doctype | string;
     recordId?: string;
 }): HSTStonecropReturn;
 ```
@@ -259,7 +259,7 @@ export declare function useStonecrop(options: {
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| options | `{ registry?: Registry; doctype: Doctype; recordId?: string; }` | Configuration with doctype and optional recordId |
+| options | `{ registry?: Registry; doctype: Doctype \| string; recordId?: string; }` | Configuration with doctype (string slug or Doctype instance) and optional recordId |
 
 ### useUndoRedoShortcuts
 
@@ -1007,6 +1007,9 @@ export type HSTStonecropReturn = BaseStonecropReturn & {
         provideHSTPath: (fieldname: string) => string;
         handleHSTChange: (changeData: HSTChangeData) => void;
     };
+    isLoading: Ref<boolean>;
+    error: Ref<Error | null>;
+    resolvedDoctype: Ref<Doctype | undefined>;
 };
 ```
 

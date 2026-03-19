@@ -74,6 +74,9 @@ export type HSTStonecropReturn = BaseStonecropReturn & {
 		provideHSTPath: (fieldname: string) => string
 		handleHSTChange: (changeData: HSTChangeData) => void
 	}
+	isLoading: Ref<boolean>
+	error: Ref<Error | null>
+	resolvedDoctype: Ref<Doctype | undefined>
 }
 
 /**
@@ -98,17 +101,21 @@ export function useStonecrop(): BaseStonecropReturn | HSTStonecropReturn
 /**
  * Unified Stonecrop composable with HST integration for a specific doctype and record
  *
- * @param options - Configuration with doctype and optional recordId
+ * @param options - Configuration with doctype (string slug or Doctype instance) and optional recordId
  * @returns Stonecrop instance with full HST integration utilities
  * @public
  */
-export function useStonecrop(options: { registry?: Registry; doctype: Doctype; recordId?: string }): HSTStonecropReturn
+export function useStonecrop(options: {
+	registry?: Registry
+	doctype: Doctype | string
+	recordId?: string
+}): HSTStonecropReturn
 /**
  * @public
  */
 export function useStonecrop(options?: {
 	registry?: Registry
-	doctype?: Doctype
+	doctype?: Doctype | string
 	recordId?: string
 }): BaseStonecropReturn | HSTStonecropReturn {
 	if (!options) options = {}
@@ -126,14 +133,14 @@ export function useStonecrop(options?: {
 	// Resolved schema with nested Doctype fields expanded
 	const resolvedSchema = ref<SchemaTypes[]>([])
 
-	// Auto-resolve schema when doctype is available
-	if (options.doctype && registry) {
-		const schemaArray = options.doctype.schema
-			? Array.isArray(options.doctype.schema)
-				? options.doctype.schema
-				: Array.from(options.doctype.schema)
-			: []
-		resolvedSchema.value = registry.resolveSchema(schemaArray as SchemaTypes[])
+	// Loading state for lazy-loaded doctypes
+	const isLoading = ref(false)
+	const error = ref<Error | null>(null)
+	const resolvedDoctype = ref<Doctype | undefined>()
+
+	// If doctype is a Doctype instance (not string), set resolved immediately
+	if (options?.doctype && typeof options.doctype !== 'string') {
+		resolvedDoctype.value = options.doctype
 	}
 
 	// Operation log state and methods - will be populated after stonecrop instance is created
@@ -280,7 +287,7 @@ export function useStonecrop(options?: {
 								? doctype.schema
 								: Array.from(doctype.schema)
 							: []
-						resolvedSchema.value = registry.resolveSchema(schemaArray as SchemaTypes[])
+						resolvedSchema.value = registry.resolveSchema(schemaArray)
 					}
 
 					if (recordId && recordId !== 'new') {
@@ -314,8 +321,61 @@ export function useStonecrop(options?: {
 		// Handle HST integration if doctype is provided explicitly
 		if (options.doctype) {
 			hstStore.value = stonecrop.value.getStore()
-			const doctype = options.doctype
 			const recordId = options.recordId
+
+			// Resolve doctype - handle string (lazy-load) or Doctype instance
+			let doctype: Doctype | undefined
+
+			if (typeof options.doctype === 'string') {
+				// String doctype - check registry first, then lazy-load
+				const doctypeSlug = options.doctype
+				isLoading.value = true
+				error.value = null
+
+				try {
+					// Check if already in registry
+					doctype = registry.getDoctype(doctypeSlug)
+
+					if (!doctype && registry.getMeta) {
+						// Lazy-load via getMeta
+						const routeContext: RouteContext = {
+							path: `/${doctypeSlug}`,
+							segments: [doctypeSlug],
+						}
+						doctype = await registry.getMeta(routeContext)
+						if (doctype) {
+							registry.addDoctype(doctype)
+						}
+					}
+
+					if (!doctype) {
+						error.value = new Error(`Doctype '${doctypeSlug}' not found in registry and getMeta returned no result`)
+					}
+				} catch (e) {
+					error.value = e instanceof Error ? e : new Error(String(e))
+				} finally {
+					isLoading.value = false
+				}
+			} else {
+				// Doctype instance provided directly
+				doctype = options.doctype
+			}
+
+			// Set resolved doctype for consumers
+			resolvedDoctype.value = doctype
+
+			if (!doctype) {
+				// Error already set above, just return
+				return
+			}
+
+			// Resolve schema for the doctype
+			const schemaArray = doctype.schema
+				? Array.isArray(doctype.schema)
+					? doctype.schema
+					: Array.from(doctype.schema)
+				: []
+			resolvedSchema.value = registry.resolveSchema(schemaArray)
 
 			if (recordId && recordId !== 'new') {
 				const existingRecord = stonecrop.value.getRecordById(doctype, recordId)
@@ -344,7 +404,7 @@ export function useStonecrop(options?: {
 
 	// HST integration functions - always created but only populated when HST is available
 	const provideHSTPath = (fieldname: string, customRecordId?: string): string => {
-		const doctype = options.doctype || routerDoctype.value
+		const doctype = resolvedDoctype.value || routerDoctype.value
 		if (!doctype) return ''
 
 		const actualRecordId = customRecordId || options.recordId || routerRecordId.value || 'new'
@@ -352,7 +412,7 @@ export function useStonecrop(options?: {
 	}
 
 	const handleHSTChange = (changeData: HSTChangeData): void => {
-		const doctype = options.doctype || routerDoctype.value
+		const doctype = resolvedDoctype.value || routerDoctype.value
 		if (!hstStore.value || !stonecrop.value || !doctype) {
 			return
 		}
@@ -458,9 +518,11 @@ export function useStonecrop(options?: {
 		const payload: Record<string, any> = { ...recordData }
 
 		// Use resolveSchema to get the full resolved tree, then walk Doctype fields
-		const schemaArray = (
-			doctype.schema ? (Array.isArray(doctype.schema) ? doctype.schema : Array.from(doctype.schema)) : []
-		) as SchemaTypes[]
+		const schemaArray = doctype.schema
+			? Array.isArray(doctype.schema)
+				? doctype.schema
+				: Array.from(doctype.schema)
+			: []
 		const resolved = registry ? registry.resolveSchema(schemaArray) : schemaArray
 		const doctypeFields = resolved.filter(
 			field => 'fieldtype' in field && field.fieldtype === 'Doctype' && 'schema' in field && Array.isArray(field.schema)
@@ -539,6 +601,9 @@ export function useStonecrop(options?: {
 			loadNestedData,
 			saveRecursive,
 			createNestedContext,
+			isLoading,
+			error,
+			resolvedDoctype,
 		} as HSTStonecropReturn
 	} else if (!options.doctype && registry?.router) {
 		// Router-based - return HST (will be populated after mount)
@@ -553,6 +618,9 @@ export function useStonecrop(options?: {
 			loadNestedData,
 			saveRecursive,
 			createNestedContext,
+			isLoading,
+			error,
+			resolvedDoctype,
 		} as HSTStonecropReturn
 	}
 
