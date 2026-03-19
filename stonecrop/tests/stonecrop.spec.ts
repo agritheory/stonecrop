@@ -429,6 +429,77 @@ describe('Stonecrop class with HST integration', () => {
 			const state = stonecrop.getRecordState('task', 'ghost')
 			expect(state).toBe('draft')
 		})
+
+		describe('WorkflowMeta format support', () => {
+			it('returns first state as initial for WorkflowMeta format', () => {
+				Registry._root = undefined as any
+				const localRegistry = new Registry()
+				const localStonecrop = new Stonecrop(localRegistry)
+
+				const workflowMeta = {
+					states: ['planning', 'review', 'approved'],
+					actions: {
+						submit: { label: 'Submit', handler: 'plan:submit', allowedStates: ['planning'] },
+					},
+				}
+				const planDoctype = new Doctype('Plan', List<SchemaTypes>([]), workflowMeta, Map({}))
+				localRegistry.addDoctype(planDoctype)
+				localStonecrop.addRecord('plan', 'p-1', { id: 'p-1' })
+
+				const state = localStonecrop.getRecordState('plan', 'p-1')
+				expect(state).toBe('planning')
+			})
+
+			it('returns status field when present, regardless of workflow format', () => {
+				Registry._root = undefined as any
+				const localRegistry = new Registry()
+				const localStonecrop = new Stonecrop(localRegistry)
+
+				const workflowMeta = {
+					states: ['planning', 'review', 'approved'],
+					actions: {},
+				}
+				const planDoctype = new Doctype('Plan', List<SchemaTypes>([]), workflowMeta, Map({}))
+				localRegistry.addDoctype(planDoctype)
+				localStonecrop.addRecord('plan', 'p-2', { id: 'p-2', status: 'review' })
+
+				const state = localStonecrop.getRecordState('plan', 'p-2')
+				expect(state).toBe('review')
+			})
+
+			it('handles WorkflowMeta with empty states array', () => {
+				Registry._root = undefined as any
+				const localRegistry = new Registry()
+				const localStonecrop = new Stonecrop(localRegistry)
+
+				const emptyStatesMeta = {
+					states: [],
+					actions: {},
+				}
+				const doctype = new Doctype('Empty', List<SchemaTypes>([]), emptyStatesMeta, Map({}))
+				localRegistry.addDoctype(doctype)
+				localStonecrop.addRecord('empty', 'e-1', { id: 'e-1' })
+
+				const state = localStonecrop.getRecordState('empty', 'e-1')
+				expect(state).toBe('')
+			})
+
+			it('handles WorkflowMeta without states property', () => {
+				Registry._root = undefined as any
+				const localRegistry = new Registry()
+				const localStonecrop = new Stonecrop(localRegistry)
+
+				const noStatesMeta = {
+					actions: { save: { label: 'Save', handler: 'save' } },
+				}
+				const doctype = new Doctype('NoStates', List<SchemaTypes>([]), noStatesMeta, Map({}))
+				localRegistry.addDoctype(doctype)
+				localStonecrop.addRecord('no-states', 'ns-1', { id: 'ns-1' })
+
+				const state = localStonecrop.getRecordState('no-states', 'ns-1')
+				expect(state).toBe('')
+			})
+		})
 	})
 
 	describe('Advanced HST Usage', () => {

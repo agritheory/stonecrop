@@ -17,6 +17,7 @@ import { SchemaTypes } from '@stonecrop/aform';
 import { Store } from 'pinia';
 import { StoreDefinition } from 'pinia';
 import type { UnknownMachineConfig } from 'xstate';
+import type { WorkflowMeta } from '@stonecrop/schema';
 
 // @public
 export interface ActionExecutionResult {
@@ -75,6 +76,14 @@ export class Doctype {
     readonly component?: Component;
     readonly doctype: string;
     static fromObject(config: DoctypeConfig): Doctype;
+    getActionMeta(actionName: string): {
+        label: string;
+        handler: string;
+        requiredFields?: string[];
+        allowedStates?: string[];
+        confirm?: boolean;
+        args?: Record<string, unknown>;
+    } | undefined;
     getActionsObject(): Record<string, string[]>;
     getAvailableTransitions(currentState: string): Array<{
         name: string;
@@ -93,7 +102,7 @@ export type DoctypeConfig = {
     slug?: string;
     tableName?: string;
     fields?: SchemaTypes[];
-    workflow?: UnknownMachineConfig;
+    workflow?: UnknownMachineConfig | WorkflowMeta;
     actions?: Record<string, string[]>;
     inherits?: string;
     listDoctype?: string;
@@ -263,7 +272,7 @@ export type HSTStonecropReturn = BaseStonecropReturn & {
 // @public
 export type ImmutableDoctype = {
     readonly schema?: List<SchemaTypes>;
-    readonly workflow?: UnknownMachineConfig | AnyStateNodeConfig;
+    readonly workflow?: UnknownMachineConfig | AnyStateNodeConfig | WorkflowMeta;
     readonly actions?: Map_2<string, string[]>;
 };
 
@@ -284,7 +293,7 @@ export function markOperationIrreversible(operationId: string | undefined, reaso
 export type MutableDoctype = {
     doctype?: string;
     schema?: SchemaTypes[];
-    workflow?: UnknownMachineConfig | AnyStateNodeConfig;
+    workflow?: UnknownMachineConfig | AnyStateNodeConfig | WorkflowMeta;
     actions?: Record<string, string[]>;
 };
 

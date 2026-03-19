@@ -1,4 +1,4 @@
-import type { DataClient } from '@stonecrop/schema'
+import type { DataClient, WorkflowMeta } from '@stonecrop/schema'
 import type { SchemaTypes } from '@stonecrop/aform'
 import { List, Map } from 'immutable'
 import type { Component } from 'vue'
@@ -16,7 +16,7 @@ import type { RouteContext } from './registry'
  */
 export type ImmutableDoctype = {
 	readonly schema?: List<SchemaTypes> // TODO: allow schema to be a function
-	readonly workflow?: UnknownMachineConfig | AnyStateNodeConfig
+	readonly workflow?: UnknownMachineConfig | AnyStateNodeConfig | WorkflowMeta
 	readonly actions?: Map<string, string[]>
 }
 
@@ -27,7 +27,7 @@ export type ImmutableDoctype = {
 export type MutableDoctype = {
 	doctype?: string
 	schema?: SchemaTypes[] // TODO: allow schema to be a function
-	workflow?: UnknownMachineConfig | AnyStateNodeConfig
+	workflow?: UnknownMachineConfig | AnyStateNodeConfig | WorkflowMeta
 	actions?: Record<string, string[]>
 }
 

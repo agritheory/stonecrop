@@ -1,7 +1,7 @@
+import type { SchemaTypes } from '@stonecrop/aform'
+import type { WorkflowMeta } from '@stonecrop/schema'
 import { List, Map } from 'immutable'
 import { Component } from 'vue'
-
-import type { SchemaTypes } from '@stonecrop/aform'
 import type { UnknownMachineConfig } from 'xstate'
 
 import type { ImmutableDoctype } from './types'
@@ -20,8 +20,8 @@ export type DoctypeConfig = {
 	tableName?: string
 	/** Field definitions */
 	fields?: SchemaTypes[]
-	/** Workflow configuration */
-	workflow?: UnknownMachineConfig
+	/** Workflow configuration (XState format or simple WorkflowMeta) */
+	workflow?: UnknownMachineConfig | WorkflowMeta
 	/** Actions and their field triggers */
 	actions?: Record<string, string[]>
 	/** Parent doctype for inheritance */
@@ -183,7 +183,7 @@ export default class Doctype {
 
 	/**
 	 * Returns the transitions available from a given workflow state, derived from the
-	 * doctype's XState workflow configuration.
+	 * doctype's workflow configuration. Supports both XState format and WorkflowMeta format.
 	 *
 	 * @param currentState - The state name to read transitions from
 	 * @returns Array of transition descriptors with `name` and `targetState`
@@ -197,7 +197,34 @@ export default class Doctype {
 	 * @public
 	 */
 	getAvailableTransitions(currentState: string): Array<{ name: string; targetState: string }> {
-		const states = this.workflow?.states
+		const workflow = this.workflow
+		if (!workflow) return []
+
+		// Check if this is WorkflowMeta format (states is an array) or XState format (states is an object)
+		if (Array.isArray(workflow.states)) {
+			// WorkflowMeta format: validate state exists and filter actions by allowedStates
+			const states = workflow.states
+			if (!states.includes(currentState)) return []
+
+			const actions = (workflow as WorkflowMeta).actions
+			if (!actions) return []
+
+			return Object.entries(actions)
+				.filter(([, actionDef]) => {
+					const allowedStates = actionDef.allowedStates
+					// If no allowedStates specified, action is available in all valid states
+					if (!allowedStates || allowedStates.length === 0) return true
+					return allowedStates.includes(currentState)
+				})
+				.map(([name]) => ({
+					name,
+					// WorkflowMeta doesn't define target states - transitions are handled server-side
+					targetState: currentState,
+				}))
+		}
+
+		// XState format: use the on property of the state
+		const states = workflow.states
 		if (!states) return []
 		const stateConfig = states[currentState]
 		if (!stateConfig?.on) return []
@@ -205,6 +232,40 @@ export default class Doctype {
 			name,
 			targetState: typeof target === 'string' ? target : 'unknown',
 		}))
+	}
+
+	/**
+	 * Returns metadata for a specific action, if available.
+	 * Only works with WorkflowMeta format; returns undefined for XState format.
+	 *
+	 * @param actionName - The action name to get metadata for
+	 * @returns Action metadata or undefined
+	 *
+	 * @example
+	 * ```ts
+	 * const actionMeta = doctype.getActionMeta('submit')
+	 * // { label: 'Submit', handler: 'plan:submit', allowedStates: ['draft'] }
+	 * ```
+	 *
+	 * @public
+	 */
+	getActionMeta(
+		actionName: string
+	):
+		| {
+				label: string
+				handler: string
+				requiredFields?: string[]
+				allowedStates?: string[]
+				confirm?: boolean
+				args?: Record<string, unknown>
+		  }
+		| undefined {
+		const workflow = this.workflow
+		if (!workflow || !Array.isArray(workflow.states)) return undefined
+
+		const actions = (workflow as WorkflowMeta).actions
+		return actions?.[actionName]
 	}
 
 	/**

@@ -1,4 +1,4 @@
-import type { DataClient } from '@stonecrop/schema'
+import type { DataClient, WorkflowMeta } from '@stonecrop/schema'
 import { reactive } from 'vue'
 
 import Doctype from './doctype'
@@ -400,10 +400,20 @@ export class Stonecrop {
 		const record = this.getRecordById(slug, recordId)
 		const status = record?.get('status') as string | undefined
 
-		const initialState =
-			typeof meta.workflow.initial === 'string'
-				? meta.workflow.initial
-				: Object.keys(meta.workflow.states ?? {})[0] ?? ''
+		// Handle both XState format and WorkflowMeta format
+		const workflow = meta.workflow
+		let initialState: string
+
+		if (Array.isArray(workflow.states)) {
+			// WorkflowMeta format: states is a string array
+			initialState = workflow.states[0] ?? ''
+		} else {
+			// XState format: states is an object, use initial or first key
+			initialState =
+				typeof (workflow as { initial?: unknown }).initial === 'string'
+					? (workflow as { initial: string }).initial
+					: Object.keys(workflow.states ?? {})[0] ?? ''
+		}
 
 		return status || initialState
 	}
