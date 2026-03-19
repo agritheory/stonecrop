@@ -7,6 +7,7 @@
 import type { DataClient } from '@stonecrop/schema';
 import type { DoctypeContext } from '@stonecrop/schema';
 import { DoctypeMeta } from '@stonecrop/schema';
+import type { DoctypeRef } from '@stonecrop/schema';
 
 export { DoctypeContext }
 
@@ -62,8 +63,8 @@ export class StonecropClient implements DataClient {
     clearMetaCache(): void;
     getAllMeta(): Promise<DoctypeMeta[]>;
     getMeta(context: DoctypeContext): Promise<DoctypeMeta | null>;
-    getRecord(doctype: DoctypeMeta, recordId: string): Promise<Record<string, unknown> | null>;
-    getRecords(doctype: DoctypeMeta, options?: {
+    getRecord(doctype: DoctypeRef, recordId: string): Promise<Record<string, unknown> | null>;
+    getRecords(doctype: DoctypeRef, options?: {
         filters?: Record<string, unknown>;
         orderBy?: string;
         limit?: number;
@@ -71,7 +72,7 @@ export class StonecropClient implements DataClient {
     }): Promise<Record<string, unknown>[]>;
     mutate<T = unknown>(mutation: string, variables?: Record<string, unknown>): Promise<T>;
     query<T = unknown>(query: string, variables?: Record<string, unknown>): Promise<T>;
-    runAction(doctype: DoctypeMeta, action: string, args?: unknown[]): Promise<{
+    runAction(doctype: DoctypeRef, action: string, args?: unknown[]): Promise<{
         success: boolean;
         data: unknown;
         error: string | null;

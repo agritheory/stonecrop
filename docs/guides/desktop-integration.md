@@ -235,36 +235,3 @@ stonecrop.value.addRecord(payload.doctype, payload.recordId, {
   // status: 'submitted' — Desktop will now show APPROVE / REJECT buttons
 })
 ```
-
----
-
-## New APIs Added in PR 3
-
-These methods were added to the stonecrop package to support Desktop's integration pattern. They can be used directly by host applications too:
-
-### `Registry.getDoctype(slug)`
-
-```typescript
-const meta = stonecrop.value.registry.getDoctype('plan')
-// Returns DoctypeMeta | undefined
-```
-
-Look up a registered doctype by slug. Prefer this over `registry.registry[slug]` (internal implementation detail).
-
-### `DoctypeMeta.getAvailableTransitions(currentState)`
-
-```typescript
-const transitions = meta.getAvailableTransitions('draft')
-// [{ name: 'SUBMIT', targetState: 'submitted' }, ...]
-```
-
-Returns the transitions available from a given workflow state directly from the XState config. Useful for rendering action menus without replicating workflow introspection logic.
-
-### `Stonecrop.getRecordState(doctype, recordId)`
-
-```typescript
-const state = stonecrop.value.getRecordState('plan', 'plan-123')
-// 'draft' — reads from HST status field, falls back to workflow.initial
-```
-
-Returns the current FSM state for a record. Centralises the convention that `status` holds the FSM state and ensures consistent fallback behaviour.
