@@ -44,6 +44,8 @@ import type {
 	NavigationTarget,
 	ActionEventPayload,
 	RecordOpenEventPayload,
+	LoadRecordsEventPayload,
+	LoadRecordEventPayload,
 } from '../types'
 
 const props = defineProps<{
@@ -60,6 +62,12 @@ const props = defineProps<{
 	 * Defaults to the native `window.confirm` if omitted.
 	 */
 	confirmFn?: (message: string) => boolean | Promise<boolean>
+	/**
+	 * The field name that holds the canonical record ID (e.g., 'rowId' for UUID).
+	 * Used for navigation and table row identification.
+	 * Defaults to 'id' if not specified.
+	 */
+	recordIdField?: string
 }>()
 
 const emit = defineEmits<{
@@ -77,6 +85,16 @@ const emit = defineEmits<{
 	 * Fired when the user opens a specific record.
 	 */
 	'record:open': [payload: RecordOpenEventPayload]
+	/**
+	 * Fired when Desktop needs records for a list view.
+	 * The host app should fetch and populate HST.
+	 */
+	'load-records': [payload: LoadRecordsEventPayload]
+	/**
+	 * Fired when Desktop needs a single record for a form view.
+	 * The host app should fetch and populate HST.
+	 */
+	'load-record': [payload: LoadRecordEventPayload]
 }>()
 
 const { availableDoctypes = [] } = props
@@ -493,16 +511,23 @@ const getRecordsSchema = (): SchemaTypes[] => {
 
 	const records = getRecords()
 	const columns = getColumns()
+	const idField = props.recordIdField || 'id'
 
 	// If no columns are available, let the template fallback handle the loading state
 	if (columns.length === 0) {
 		return []
 	}
 
+	// Ensure the ID column is first so click handler can reliably find it
+	const idColumn = columns.find(c => c.fieldname === idField)
+	const otherColumns = columns.filter(c => c.fieldname !== idField)
+	const orderedColumns = idColumn ? [idColumn, ...otherColumns] : columns
+
 	const rows = records.map((record: any) => ({
 		...record,
+		// Use the canonical ID field for navigation
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-		id: record.id || '',
+		id: record[idField] || record.id || '',
 		actions: 'Edit | Delete',
 	}))
 
@@ -511,7 +536,7 @@ const getRecordsSchema = (): SchemaTypes[] => {
 			fieldname: 'records_table',
 			component: 'ATable',
 			columns: [
-				...columns.map(col => ({
+				...orderedColumns.map(col => ({
 					label: col.label,
 					name: col.fieldname,
 					fieldtype: col.fieldtype,
@@ -709,7 +734,12 @@ const loadRecordData = () => {
 watch(
 	[currentView, currentDoctype, currentRecordId],
 	() => {
-		if (currentView.value === 'record') {
+		if (currentView.value === 'records' && currentDoctype.value) {
+			// Emit load-records event so host app can populate HST
+			emit('load-records', { doctype: currentDoctype.value })
+		} else if (currentView.value === 'record' && currentDoctype.value && currentRecordId.value) {
+			// Emit load-record event so host app can fetch and populate HST
+			emit('load-record', { doctype: currentDoctype.value, recordId: currentRecordId.value })
 			loadRecordData()
 		}
 	},
