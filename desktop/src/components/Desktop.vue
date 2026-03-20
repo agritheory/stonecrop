@@ -662,6 +662,25 @@ const handleDelete = async (recordId?: string) => {
 }
 
 // Event handlers
+const getRecordIdFromRow = (rowElement: HTMLTableRowElement): string | null => {
+	const cell = rowElement.querySelector('td[data-rowindex]')
+	if (!cell) return null
+
+	const rowIndexAttr = cell.getAttribute('data-rowindex')
+	if (rowIndexAttr === null) return null
+
+	const rowIndex = parseInt(rowIndexAttr, 10)
+	if (isNaN(rowIndex)) return null
+
+	const records = getRecords()
+	const record = records[rowIndex]
+	if (!record) return null
+
+	const idField = props.recordIdField || 'id'
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+	return record[idField] || record.id || null
+}
+
 const handleClick = async (event: Event) => {
 	const target = event.target as HTMLElement
 	const action = target.getAttribute('data-action')
@@ -670,7 +689,6 @@ const handleClick = async (event: Event) => {
 		await createNewRecord()
 	}
 
-	// Handle table cell clicks for actions
 	const cell = target.closest('td, th')
 	if (cell) {
 		const cellText = cell.textContent?.trim()
@@ -687,24 +705,14 @@ const handleClick = async (event: Event) => {
 				}
 			}
 		} else if (cellText?.includes('Edit') && row) {
-			// Get the record ID from the row
-			const cells = row.querySelectorAll('td')
-			if (cells.length > 0) {
-				const idCell = cells[0] // Assuming ID is in first column
-				const recordId = idCell.textContent?.trim()
-				if (recordId) {
-					await openRecord(recordId)
-				}
+			const recordId = getRecordIdFromRow(row)
+			if (recordId) {
+				await openRecord(recordId)
 			}
 		} else if (cellText?.includes('Delete') && row) {
-			// Get the record ID from the row
-			const cells = row.querySelectorAll('td')
-			if (cells.length > 0) {
-				const idCell = cells[0] // Assuming ID is in first column
-				const recordId = idCell.textContent?.trim()
-				if (recordId) {
-					await handleDelete(recordId)
-				}
+			const recordId = getRecordIdFromRow(row)
+			if (recordId) {
+				await handleDelete(recordId)
 			}
 		}
 	}

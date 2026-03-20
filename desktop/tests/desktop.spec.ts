@@ -1012,6 +1012,7 @@ describe('Desktop click handler', () => {
 		const row = table.insertRow()
 		const idCell = row.insertCell()
 		idCell.textContent = 'rec-1'
+		idCell.setAttribute('data-rowindex', '0')
 		const actionCell = row.insertCell()
 		actionCell.textContent = 'Edit | Delete'
 		div.element.appendChild(table)
@@ -1114,6 +1115,7 @@ describe('Desktop click handler', () => {
 		const row = table.insertRow()
 		const idCell = row.insertCell()
 		idCell.textContent = 'rec-1'
+		idCell.setAttribute('data-rowindex', '0')
 		const actionCell = row.insertCell()
 		actionCell.textContent = 'Delete'
 		div.element.appendChild(table)
@@ -1124,6 +1126,228 @@ describe('Desktop click handler', () => {
 
 		// confirmFn should have been called
 		expect(confirmFn).toHaveBeenCalled()
+	})
+})
+
+// ---------------------------------------------------------------------------
+// Desktop – getRecordIdFromRow helper
+// ---------------------------------------------------------------------------
+
+describe('getRecordIdFromRow helper', () => {
+	it('extracts record ID using data-rowindex attribute', async () => {
+		Registry._root = undefined as any
+		const registry = new Registry()
+		const stonecrop = new Stonecrop(registry)
+
+		const doctype = buildDoctype('task', 'draft', {
+			draft: { on: { SUBMIT: 'submitted' } },
+			submitted: { type: 'final' },
+		})
+		registry.addDoctype(doctype)
+		stonecrop.addRecord('task', 'rec-1', { id: 'rec-1', title: 'My Task' })
+		stonecrop.addRecord('task', 'rec-2', { id: 'rec-2', title: 'Another Task' })
+
+		const adapter: RouteAdapter = {
+			getCurrentDoctype: () => 'task',
+			getCurrentRecordId: () => '',
+			getCurrentView: () => 'records',
+			navigate: vi.fn(),
+		}
+
+		const wrapper = mount(Desktop, {
+			props: { routeAdapter: adapter },
+			global: {
+				plugins: [makeStonecropPlugin(registry, stonecrop)],
+				stubs: {
+					AForm: true,
+					ActionSet: true,
+					SheetNav: true,
+					CommandPalette: true,
+				},
+			},
+		})
+
+		await nextTick()
+
+		const div = wrapper.find('.desktop')
+		const table = document.createElement('table')
+		const row = table.insertRow()
+		const idCell = row.insertCell()
+		idCell.textContent = 'rec-2'
+		idCell.setAttribute('data-rowindex', '1')
+		const actionCell = row.insertCell()
+		actionCell.textContent = 'Edit'
+		div.element.appendChild(table)
+
+		const navigateFn = vi.fn()
+		await wrapper.setProps({ routeAdapter: { ...adapter, navigate: navigateFn } })
+		await nextTick()
+
+		const event = new MouseEvent('click', { bubbles: true })
+		actionCell.dispatchEvent(event)
+		await nextTick()
+
+		expect(navigateFn).toHaveBeenCalledWith(expect.objectContaining({ recordId: 'rec-2' }))
+	})
+
+	it('respects custom recordIdField prop', async () => {
+		Registry._root = undefined as any
+		const registry = new Registry()
+		const stonecrop = new Stonecrop(registry)
+
+		const doctype = buildDoctype(
+			'task',
+			'draft',
+			{
+				draft: { on: { SUBMIT: 'submitted' } },
+				submitted: { type: 'final' },
+			},
+			[{ fieldname: 'custom_id', fieldtype: 'Data', label: 'Custom ID', component: 'ATextInput' }]
+		)
+		registry.addDoctype(doctype)
+		stonecrop.addRecord('task', 'rec-1', { id: 'rec-1', custom_id: 'custom-123', title: 'My Task' })
+
+		const navigateFn = vi.fn()
+		const adapter: RouteAdapter = {
+			getCurrentDoctype: () => 'task',
+			getCurrentRecordId: () => '',
+			getCurrentView: () => 'records',
+			navigate: navigateFn,
+		}
+
+		const wrapper = mount(Desktop, {
+			props: { routeAdapter: adapter, recordIdField: 'custom_id' },
+			global: {
+				plugins: [makeStonecropPlugin(registry, stonecrop)],
+				stubs: {
+					AForm: true,
+					ActionSet: true,
+					SheetNav: true,
+					CommandPalette: true,
+				},
+			},
+		})
+
+		await nextTick()
+
+		const div = wrapper.find('.desktop')
+		const table = document.createElement('table')
+		const row = table.insertRow()
+		const idCell = row.insertCell()
+		idCell.textContent = 'custom-123'
+		idCell.setAttribute('data-rowindex', '0')
+		const actionCell = row.insertCell()
+		actionCell.textContent = 'Edit'
+		div.element.appendChild(table)
+
+		const event = new MouseEvent('click', { bubbles: true })
+		actionCell.dispatchEvent(event)
+		await nextTick()
+
+		expect(navigateFn).toHaveBeenCalledWith(expect.objectContaining({ recordId: 'custom-123' }))
+	})
+
+	it('returns null when data-rowindex is missing', async () => {
+		Registry._root = undefined as any
+		const registry = new Registry()
+		const stonecrop = new Stonecrop(registry)
+
+		const doctype = buildDoctype('task', 'draft', {
+			draft: { on: { SUBMIT: 'submitted' } },
+			submitted: { type: 'final' },
+		})
+		registry.addDoctype(doctype)
+		stonecrop.addRecord('task', 'rec-1', { id: 'rec-1', title: 'My Task' })
+
+		const navigateFn = vi.fn()
+		const adapter: RouteAdapter = {
+			getCurrentDoctype: () => 'task',
+			getCurrentRecordId: () => '',
+			getCurrentView: () => 'records',
+			navigate: navigateFn,
+		}
+
+		const wrapper = mount(Desktop, {
+			props: { routeAdapter: adapter },
+			global: {
+				plugins: [makeStonecropPlugin(registry, stonecrop)],
+				stubs: {
+					AForm: true,
+					ActionSet: true,
+					SheetNav: true,
+					CommandPalette: true,
+				},
+			},
+		})
+
+		await nextTick()
+
+		const div = wrapper.find('.desktop')
+		const table = document.createElement('table')
+		const row = table.insertRow()
+		const idCell = row.insertCell()
+		idCell.textContent = 'rec-1'
+		const actionCell = row.insertCell()
+		actionCell.textContent = 'Edit'
+		div.element.appendChild(table)
+
+		const event = new MouseEvent('click', { bubbles: true })
+		actionCell.dispatchEvent(event)
+		await nextTick()
+
+		expect(navigateFn).not.toHaveBeenCalled()
+	})
+
+	it('returns null when data-rowindex is invalid', async () => {
+		Registry._root = undefined as any
+		const registry = new Registry()
+		const stonecrop = new Stonecrop(registry)
+
+		const doctype = buildDoctype('task', 'draft', {
+			draft: { on: { SUBMIT: 'submitted' } },
+			submitted: { type: 'final' },
+		})
+		registry.addDoctype(doctype)
+		stonecrop.addRecord('task', 'rec-1', { id: 'rec-1', title: 'My Task' })
+
+		const navigateFn = vi.fn()
+		const adapter: RouteAdapter = {
+			getCurrentDoctype: () => 'task',
+			getCurrentRecordId: () => '',
+			getCurrentView: () => 'records',
+			navigate: navigateFn,
+		}
+
+		const wrapper = mount(Desktop, {
+			props: { routeAdapter: adapter },
+			global: {
+				plugins: [makeStonecropPlugin(registry, stonecrop)],
+				stubs: {
+					AForm: true,
+					ActionSet: true,
+					SheetNav: true,
+					CommandPalette: true,
+				},
+			},
+		})
+
+		await nextTick()
+
+		const div = wrapper.find('.desktop')
+		const table = document.createElement('table')
+		const row = table.insertRow()
+		const idCell = row.insertCell()
+		idCell.textContent = 'rec-1'
+		idCell.setAttribute('data-rowindex', 'invalid')
+		const actionCell = row.insertCell()
+		actionCell.textContent = 'Edit'
+		div.element.appendChild(table)
+
+		const event = new MouseEvent('click', { bubbles: true })
+		actionCell.dispatchEvent(event)
+		await nextTick()
+
+		expect(navigateFn).not.toHaveBeenCalled()
 	})
 })
 
