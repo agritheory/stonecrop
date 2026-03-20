@@ -2,6 +2,18 @@
   "name": "@stonecrop/desktop",
   "entries": [
     {
+      "version": "0.10.10",
+      "tag": "@stonecrop/desktop_v0.10.10",
+      "date": "Fri, 20 Mar 2026 08:28:51 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "desktop-stonecrop API issues"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.10.9",
       "tag": "@stonecrop/desktop_v0.10.9",
       "date": "Thu, 19 Mar 2026 11:25:47 GMT",

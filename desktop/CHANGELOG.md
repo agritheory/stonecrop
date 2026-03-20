@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/desktop
 
-This log was last generated on Thu, 19 Mar 2026 11:25:47 GMT and should not be manually modified.
+This log was last generated on Fri, 20 Mar 2026 08:28:51 GMT and should not be manually modified.
+
+## 0.10.10
+Fri, 20 Mar 2026 08:28:51 GMT
+
+### Patches
+
+- desktop-stonecrop API issues
 
 ## 0.10.9
 Thu, 19 Mar 2026 11:25:47 GMT
