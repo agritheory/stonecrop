@@ -89,3 +89,20 @@ export type RecordOpenEventPayload = {
 	doctype: string
 	recordId: string
 }
+
+/**
+ * Payload emitted with the 'load-records' event when Desktop needs records for a list view
+ * @public
+ */
+export type LoadRecordsEventPayload = {
+	doctype: string
+}
+
+/**
+ * Payload emitted with the 'load-record' event when Desktop needs a single record
+ * @public
+ */
+export type LoadRecordEventPayload = {
+	doctype: string
+	recordId: string
+}

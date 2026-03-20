@@ -3,9 +3,12 @@
 		<Desktop
 			:available-doctypes="availableDoctypes"
 			:show-debug="showDebug"
+			record-id-field="rowId"
 			@action="handleDesktopAction"
 			@navigate="handleDesktopNavigate"
-			@record:open="handleRecordOpen" />
+			@record:open="handleRecordOpen"
+			@load-records="handleLoadRecords"
+			@load-record="handleLoadRecord" />
 
 		<!-- Operation Log Panel - pass operation log data as props -->
 		<OperationLogPanel
@@ -26,7 +29,13 @@
 
 <script setup lang="ts">
 import { Desktop } from '@stonecrop/desktop'
-import type { ActionEventPayload, NavigationTarget, RecordOpenEventPayload } from '@stonecrop/desktop'
+import type {
+	ActionEventPayload,
+	NavigationTarget,
+	RecordOpenEventPayload,
+	LoadRecordsEventPayload,
+	LoadRecordEventPayload,
+} from '@stonecrop/desktop'
 import { useStonecrop } from '@stonecrop/stonecrop'
 import { ref } from 'vue'
 
@@ -113,6 +122,30 @@ function handleDesktopNavigate(target: NavigationTarget) {
 function handleRecordOpen(payload: RecordOpenEventPayload) {
 	// eslint-disable-next-line no-console
 	console.debug('[example] record:open', payload)
+}
+
+/**
+ * Handle load-records event - Desktop needs records for a list view.
+ * In a real app, this would fetch from StonecropClient or your API.
+ */
+function handleLoadRecords(payload: LoadRecordsEventPayload) {
+	// eslint-disable-next-line no-console
+	console.debug('[example] load-records', payload)
+	// Example: fetch and populate HST
+	// const records = await stonecropClient.getRecords(payload.doctype)
+	// stonecrop.value.addRecords(payload.doctype, records)
+}
+
+/**
+ * Handle load-record event - Desktop needs a single record for a form view.
+ * In a real app, this would fetch from StonecropClient or your API.
+ */
+function handleLoadRecord(payload: LoadRecordEventPayload) {
+	// eslint-disable-next-line no-console
+	console.debug('[example] load-record', payload)
+	// Example: fetch and populate HST
+	// const record = await stonecropClient.getRecord(payload.doctype, payload.recordId)
+	// stonecrop.value.addRecord(payload.doctype, payload.recordId, record)
 }
 </script>
 

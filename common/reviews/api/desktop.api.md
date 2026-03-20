@@ -52,6 +52,17 @@ export type ElementAction = BaseElement & {
 };
 
 // @public
+export type LoadRecordEventPayload = {
+    doctype: string;
+    recordId: string;
+};
+
+// @public
+export type LoadRecordsEventPayload = {
+    doctype: string;
+};
+
+// @public
 export type NavigationTarget = {
     view: 'doctypes' | 'records' | 'record';
     doctype?: string;

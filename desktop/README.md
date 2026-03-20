@@ -37,7 +37,6 @@ import { useStonecrop } from '@stonecrop/stonecrop'
 const { stonecrop } = useStonecrop()
 
 async function handleAction(payload: ActionEventPayload) {
-  // Call your server, trigger FSM transitions, update HST...
   const node = stonecrop.value?.getRecordById(payload.doctype, payload.recordId)
   await node?.triggerTransition(payload.name, { fsmContext: payload.data })
 }
@@ -58,39 +57,24 @@ async function handleAction(payload: ActionEventPayload) {
 | `availableDoctypes` | `string[]` | `[]` | Doctype slugs to display in the doctypes list |
 | `routeAdapter` | `RouteAdapter` | — | Custom routing layer (required for Nuxt/custom hosts) |
 | `confirmFn` | `(msg: string) => boolean \| Promise<boolean>` | `window.confirm` | Replacement for the native browser confirm dialog |
+| `recordIdField` | `string` | `'id'` | Field name for the canonical record ID in list views |
 
 ## Emitted Events
 
-| Event | Payload | When |
-|-------|---------|------|
-| `action` | `ActionEventPayload` | User triggers an FSM transition or DELETE |
-| `navigate` | `NavigationTarget` | Desktop wants to change views |
-| `record:open` | `RecordOpenEventPayload` | User opens a specific record |
+| Event | When |
+|-------|------|
+| `action` | User triggers an FSM transition or DELETE |
+| `navigate` | Desktop wants to change views |
+| `record:open` | User opens a specific record |
+| `load-records` | Desktop navigates to a records list and needs records loaded into HST |
+| `load-record` | Desktop navigates to a record form and needs a single record loaded into HST |
 
-### `action` payload
+See [api.md](./api.md) for payload type definitions.
 
-```typescript
-type ActionEventPayload = {
-  name: string                 // FSM transition name e.g. 'SUBMIT', 'APPROVE', 'DELETE'
-  doctype: string
-  recordId: string
-  data: Record<string, any>   // Form field snapshot at trigger time
-}
-```
+### Event Handling Notes
 
-Desktop reads the available transitions for the current record directly from the doctype workflow (`Doctype.getAvailableTransitions`) using `Stonecrop.getRecordState` to resolve the current FSM state (reads the `status` field, falls back to `workflow.initial`). **Desktop never calls `triggerTransition` itself** — that is the host application's responsibility.
-
-### `navigate` payload
-
-```typescript
-type NavigationTarget = {
-  view: 'doctypes' | 'records' | 'record'
-  doctype?: string
-  recordId?: string
-}
-```
-
-Fired on every internal navigation. If a `routeAdapter` is provided it is also called. If not, Desktop falls back to `registry.router` (Vue Router) with paths `'/'`, `'/:doctype'`, `'/:doctype/:recordId'`.
+- **action**: Desktop reads available transitions from `Doctype.getAvailableTransitions` using `Stonecrop.getRecordState`. **Desktop never calls `triggerTransition` itself** — that is the host application's responsibility.
+- **load-records / load-record**: Desktop reads from HST but doesn't fetch data. Host apps should listen for these events, fetch from their data source, and call `stonecrop.addRecords()` or `stonecrop.addRecord()` to populate HST.
 
 ## Router Adapter
 
@@ -100,7 +84,7 @@ For Nuxt apps (or any host with custom route conventions), supply a `routeAdapte
 import { useRoute, useRouter } from '#app'
 import type { RouteAdapter, NavigationTarget } from '@stonecrop/desktop'
 
-function useFabRouteAdapter(): RouteAdapter {
+function useCustomRouteAdapter(): RouteAdapter {
   const route = useRoute()
   const router = useRouter()
 
@@ -122,12 +106,12 @@ function useFabRouteAdapter(): RouteAdapter {
 ```
 
 ```vue
-<Desktop :route-adapter="useFabRouteAdapter()" @action="handleAction" />
+<Desktop :route-adapter="useCustomRouteAdapter()" @action="handleAction" />
 ```
 
 ## Handling `action` Events
 
-The complete host-side pattern for handling an action in a Nuxt/fab context:
+The complete host-side pattern for handling an action in a Nuxt context:
 
 ```typescript
 import type { ActionEventPayload } from '@stonecrop/desktop'
@@ -172,17 +156,3 @@ const { navigateToDoctype, openRecord, createNewRecord, handleDelete, emitAction
 ```
 
 `emitAction(name, data?)` is a convenience wrapper for emitting an `action` event from deeply nested slot content without passing refs down manually.
-
-## Components
-
-### ActionSet
-
-Renders a toolbar from an `ActionElements[]` array. Used internally by Desktop; can be used standalone.
-
-### CommandPalette
-
-Full-text search over registered doctypes and records. Activated with `Ctrl+K`.
-
-### SheetNav
-
-Tab strip for navigating between open records.

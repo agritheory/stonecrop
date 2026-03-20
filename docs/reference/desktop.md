@@ -128,6 +128,31 @@ export type ElementAction = BaseElement & {
 };
 ```
 
+### LoadRecordEventPayload
+
+Payload emitted with the 'load-record' event when Desktop needs a single record
+
+**Definition:**
+
+```typescript
+export type LoadRecordEventPayload = {
+    doctype: string;
+    recordId: string;
+};
+```
+
+### LoadRecordsEventPayload
+
+Payload emitted with the 'load-records' event when Desktop needs records for a list view
+
+**Definition:**
+
+```typescript
+export type LoadRecordsEventPayload = {
+    doctype: string;
+};
+```
+
 ### NavigationTarget
 
 Navigation target passed to RouteAdapter.navigate and emitted with the 'navigate' event
