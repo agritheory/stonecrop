@@ -8,7 +8,14 @@ import { Doctype, Registry, Stonecrop } from '@stonecrop/stonecrop'
 
 import Desktop from '../src/components/Desktop.vue'
 import StonecropDesktop from '../src/plugins'
-import type { ActionEventPayload, NavigationTarget, RecordOpenEventPayload, RouteAdapter } from '../src/types'
+import type {
+	ActionEventPayload,
+	LoadRecordEventPayload,
+	LoadRecordsEventPayload,
+	NavigationTarget,
+	RecordOpenEventPayload,
+	RouteAdapter,
+} from '../src/types'
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -29,11 +36,14 @@ function makeStonecropPlugin(registry: Registry, stonecrop: Stonecrop) {
 	}
 }
 
-function buildDoctype(name: string, initialState: string, states: Record<string, any>) {
-	const schema = List([
+function buildDoctype(name: string, initialState: string, states: Record<string, any>, extraFields?: SchemaTypes[]) {
+	const baseFields = [
+		{ fieldname: 'id', fieldtype: 'Data', label: 'ID', component: 'ATextInput' },
 		{ fieldname: 'title', fieldtype: 'Data', label: 'Title', component: 'ATextInput' },
 		{ fieldname: 'status', fieldtype: 'Data', label: 'Status', component: 'ATextInput' },
-	] as SchemaTypes[])
+	] as SchemaTypes[]
+
+	const schema = extraFields ? List([...baseFields, ...extraFields]) : List(baseFields)
 
 	const workflow = {
 		id: name,
@@ -78,6 +88,22 @@ describe('Desktop types', () => {
 			recordId: 'rec-1',
 		}
 		expect(payload.doctype).toBe('task')
+	})
+
+	it('LoadRecordsEventPayload type has the expected keys', () => {
+		const payload: LoadRecordsEventPayload = {
+			doctype: 'task',
+		}
+		expect(payload.doctype).toBe('task')
+	})
+
+	it('LoadRecordEventPayload type has the expected keys', () => {
+		const payload: LoadRecordEventPayload = {
+			doctype: 'task',
+			recordId: 'rec-1',
+		}
+		expect(payload.doctype).toBe('task')
+		expect(payload.recordId).toBe('rec-1')
 	})
 })
 
@@ -1203,5 +1229,263 @@ describe('Desktop command palette search', () => {
 
 		// The palette should close
 		expect(commandPalette.props('isOpen')).toBe(false)
+	})
+})
+
+// ---------------------------------------------------------------------------
+// Desktop – recordIdField prop
+// ---------------------------------------------------------------------------
+
+describe('Desktop recordIdField prop', () => {
+	it('uses custom recordIdField for table row ID', async () => {
+		Registry._root = undefined as any
+		const registry = new Registry()
+		const stonecrop = new Stonecrop(registry)
+
+		// Add uuid field to the doctype schema
+		const doctype = buildDoctype(
+			'task',
+			'draft',
+			{
+				draft: { on: { SUBMIT: 'submitted' } },
+				submitted: { type: 'final' },
+			},
+			[{ fieldname: 'uuid', fieldtype: 'Data', label: 'UUID', component: 'ATextInput' }]
+		)
+		registry.addDoctype(doctype)
+		// Record has both 'id' (integer) and 'uuid' (canonical ID)
+		stonecrop.addRecord('task', 'task-1', { id: 1, uuid: 'uuid-abc-123', title: 'My Task' })
+
+		const adapter: RouteAdapter = {
+			getCurrentDoctype: () => 'task',
+			getCurrentRecordId: () => '',
+			getCurrentView: () => 'records',
+			navigate: vi.fn(),
+		}
+
+		const wrapper = mount(Desktop, {
+			props: { routeAdapter: adapter, recordIdField: 'uuid' },
+			global: {
+				plugins: [makeStonecropPlugin(registry, stonecrop)],
+				stubs: {
+					AForm: true,
+					ActionSet: true,
+					SheetNav: true,
+					CommandPalette: true,
+				},
+			},
+		})
+
+		await nextTick()
+
+		// Check that the AForm received schema with uuid as the ID column
+		const aform = wrapper.findComponent({ name: 'AForm' })
+		const schema = aform.props('schema') as any[]
+		expect(schema).toBeTruthy()
+		expect(schema.length).toBeGreaterThan(0)
+
+		// The first column should be 'uuid' (the recordIdField)
+		const tableSchema = schema[0]
+		expect(tableSchema.component).toBe('ATable')
+		const columns = tableSchema.columns as any[]
+		expect(columns[0].name).toBe('uuid')
+
+		// The row ID should use the uuid field
+		const rows = tableSchema.rows as any[]
+		expect(rows[0].id).toBe('uuid-abc-123')
+	})
+
+	it('defaults recordIdField to "id" when not specified', async () => {
+		Registry._root = undefined as any
+		const registry = new Registry()
+		const stonecrop = new Stonecrop(registry)
+
+		const doctype = buildDoctype('task', 'draft', {
+			draft: { on: { SUBMIT: 'submitted' } },
+			submitted: { type: 'final' },
+		})
+		registry.addDoctype(doctype)
+		stonecrop.addRecord('task', 'task-1', { id: 'task-1', title: 'My Task' })
+
+		const adapter: RouteAdapter = {
+			getCurrentDoctype: () => 'task',
+			getCurrentRecordId: () => '',
+			getCurrentView: () => 'records',
+			navigate: vi.fn(),
+		}
+
+		const wrapper = mount(Desktop, {
+			props: { routeAdapter: adapter },
+			global: {
+				plugins: [makeStonecropPlugin(registry, stonecrop)],
+				stubs: {
+					AForm: true,
+					ActionSet: true,
+					SheetNav: true,
+					CommandPalette: true,
+				},
+			},
+		})
+
+		await nextTick()
+
+		// Check that the AForm received schema with 'id' as the first column (default)
+		const aform = wrapper.findComponent({ name: 'AForm' })
+		const schema = aform.props('schema') as any[]
+		expect(schema).toBeTruthy()
+
+		const tableSchema = schema[0]
+		const columns = tableSchema.columns as any[]
+		expect(columns[0].name).toBe('id')
+	})
+})
+
+// ---------------------------------------------------------------------------
+// Desktop – load-records and load-record events
+// ---------------------------------------------------------------------------
+
+describe('Desktop load events', () => {
+	let registry: Registry
+	let stonecrop: Stonecrop
+
+	beforeEach(() => {
+		Registry._root = undefined as any
+		registry = new Registry()
+		stonecrop = new Stonecrop(registry)
+
+		const doctype = buildDoctype('task', 'draft', {
+			draft: { on: { SUBMIT: 'submitted' } },
+			submitted: { type: 'final' },
+		})
+		registry.addDoctype(doctype)
+	})
+
+	it('emits "load-records" when navigating to records view', async () => {
+		const adapter: RouteAdapter = {
+			getCurrentDoctype: () => 'task',
+			getCurrentRecordId: () => '',
+			getCurrentView: () => 'records',
+			navigate: vi.fn(),
+		}
+
+		const wrapper = mount(Desktop, {
+			props: { routeAdapter: adapter },
+			global: {
+				plugins: [makeStonecropPlugin(registry, stonecrop)],
+				stubs: {
+					AForm: true,
+					ActionSet: true,
+					SheetNav: true,
+					CommandPalette: true,
+				},
+			},
+		})
+
+		await nextTick()
+
+		const emitted = wrapper.emitted('load-records')
+		expect(emitted).toBeTruthy()
+		expect(emitted![0][0]).toMatchObject({ doctype: 'task' })
+	})
+
+	it('emits "load-record" when navigating to record view', async () => {
+		stonecrop.addRecord('task', 'task-1', { id: 'task-1', title: 'My Task' })
+
+		const adapter: RouteAdapter = {
+			getCurrentDoctype: () => 'task',
+			getCurrentRecordId: () => 'task-1',
+			getCurrentView: () => 'record',
+			navigate: vi.fn(),
+		}
+
+		const wrapper = mount(Desktop, {
+			props: { routeAdapter: adapter },
+			global: {
+				plugins: [makeStonecropPlugin(registry, stonecrop)],
+				stubs: {
+					AForm: true,
+					ActionSet: true,
+					SheetNav: true,
+					CommandPalette: true,
+				},
+			},
+		})
+
+		await nextTick()
+
+		const emitted = wrapper.emitted('load-record')
+		expect(emitted).toBeTruthy()
+		expect(emitted![0][0]).toMatchObject({ doctype: 'task', recordId: 'task-1' })
+	})
+
+	it('emits load-record even for new records (host app decides whether to fetch)', async () => {
+		const adapter: RouteAdapter = {
+			getCurrentDoctype: () => 'task',
+			getCurrentRecordId: () => 'new-123',
+			getCurrentView: () => 'record',
+			navigate: vi.fn(),
+		}
+
+		const wrapper = mount(Desktop, {
+			props: { routeAdapter: adapter },
+			global: {
+				plugins: [makeStonecropPlugin(registry, stonecrop)],
+				stubs: {
+					AForm: true,
+					ActionSet: true,
+					SheetNav: true,
+					CommandPalette: true,
+				},
+			},
+		})
+
+		await nextTick()
+
+		// load-record is emitted for new records too - host app decides whether to fetch
+		const emitted = wrapper.emitted('load-record')
+		expect(emitted).toBeTruthy()
+		expect(emitted![0][0]).toMatchObject({ doctype: 'task', recordId: 'new-123' })
+	})
+
+	it('emits load-records when view changes from doctypes to records', async () => {
+		const adapter: RouteAdapter = {
+			getCurrentDoctype: () => '',
+			getCurrentRecordId: () => '',
+			getCurrentView: () => 'doctypes',
+			navigate: vi.fn(),
+		}
+
+		const wrapper = mount(Desktop, {
+			props: { routeAdapter: adapter },
+			global: {
+				plugins: [makeStonecropPlugin(registry, stonecrop)],
+				stubs: {
+					AForm: true,
+					ActionSet: true,
+					SheetNav: true,
+					CommandPalette: true,
+				},
+			},
+		})
+
+		await nextTick()
+
+		// No load-records emitted on doctypes view
+		expect(wrapper.emitted('load-records')).toBeFalsy()
+
+		// Simulate navigation to records view
+		const recordsAdapter: RouteAdapter = {
+			getCurrentDoctype: () => 'task',
+			getCurrentRecordId: () => '',
+			getCurrentView: () => 'records',
+			navigate: vi.fn(),
+		}
+
+		await wrapper.setProps({ routeAdapter: recordsAdapter })
+		await nextTick()
+
+		const emitted = wrapper.emitted('load-records')
+		expect(emitted).toBeTruthy()
+		expect(emitted![emitted!.length - 1][0]).toMatchObject({ doctype: 'task' })
 	})
 })
