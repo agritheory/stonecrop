@@ -94,7 +94,7 @@ describe('useStonecrop HST mode', () => {
 		expect(vm.formData).toBeDefined()
 		expect(vm.resolvedSchema).toBeDefined()
 		expect(vm.loadNestedData).toBeDefined()
-		expect(vm.saveRecursive).toBeDefined()
+		expect(vm.collectRecordPayload).toBeDefined()
 		expect(vm.createNestedContext).toBeDefined()
 	})
 
@@ -415,6 +415,44 @@ describe('useStonecrop HST mode', () => {
 		expect(nested).toBeDefined()
 	})
 
+	it('loadNestedData returns existing data when found in HST', async () => {
+		const addressDoctype = createDoctype('Address', [
+			{ fieldname: 'street', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+			{ fieldname: 'city', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+		])
+		registry.addDoctype(addressDoctype)
+
+		const customerDoctype = createDoctype('Customer', [
+			{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+			{ fieldname: 'address', fieldtype: 'Doctype', options: 'address' } as SchemaTypes,
+		])
+		registry.addDoctype(customerDoctype)
+
+		const TestComponent = defineComponent({
+			setup() {
+				return useStonecrop({ registry, doctype: customerDoctype, recordId: 'cust-99' })
+			},
+			template: '<div>test</div>',
+		})
+
+		const wrapper = mount(TestComponent, {
+			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
+		})
+		await wrapper.vm.$nextTick()
+		await new Promise(resolve => setTimeout(resolve, 50))
+
+		const vm = wrapper.vm as any
+		const existingAddress = { street: '456 Oak Ave', city: 'Boston' }
+		vm.handleHSTChange({
+			path: 'customer.cust-99.address',
+			value: existingAddress,
+			fieldname: 'address',
+		})
+
+		const nested = vm.loadNestedData('customer.cust-99.address', addressDoctype, 'addr-1')
+		expect(nested).toEqual(existingAddress)
+	})
+
 	it('operationLog API is available in HST mode', async () => {
 		const taskDoctype = createDoctype('Task')
 		registry.addDoctype(taskDoctype)
@@ -488,16 +526,27 @@ describe('useStonecrop HST mode', () => {
 		expect(() => opLog.clear()).not.toThrow()
 	})
 
-	it('saveRecursive throws when HST not initialized', async () => {
-		const taskDoctype = createDoctype('Task')
-		registry.addDoctype(taskDoctype)
+	it('collectRecordPayload collects array data for cardinality: many fields', async () => {
+		const itemDoctype = createDoctype('Item', [
+			{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+			{ fieldname: 'qty', fieldtype: 'Int', component: 'ANumericInput' } as SchemaTypes,
+		])
+		registry.addDoctype(itemDoctype)
 
-		// Before mount, hstStore won't be initialized
+		const orderDoctype = createDoctype('Order', [
+			{ fieldname: 'order_number', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+			{
+				fieldname: 'items',
+				fieldtype: 'Doctype',
+				cardinality: 'many',
+				options: 'item',
+			} as SchemaTypes,
+		])
+		registry.addDoctype(orderDoctype)
+
 		const TestComponent = defineComponent({
 			setup() {
-				const result = useStonecrop({ registry, doctype: taskDoctype })
-				// Call saveRecursive before mount completes
-				return { ...result, taskDoctype }
+				return useStonecrop({ registry, doctype: orderDoctype, recordId: 'order-1' })
 			},
 			template: '<div>test</div>',
 		})
@@ -505,14 +554,270 @@ describe('useStonecrop HST mode', () => {
 		const wrapper = mount(TestComponent, {
 			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
+		await wrapper.vm.$nextTick()
+		await new Promise(resolve => setTimeout(resolve, 50))
 
 		const vm = wrapper.vm as any
-		// saveRecursive should handle missing store gracefully
-		try {
-			await vm.saveRecursive(taskDoctype, 'task-1')
-		} catch (e: any) {
-			expect(e.message).toContain('HST store not initialized')
-		}
+
+		vm.handleHSTChange({
+			path: 'order.order-1.order_number',
+			value: 'ORD-001',
+			fieldname: 'order_number',
+		})
+
+		const itemsData = [
+			{ name: 'Item 1', qty: 5 },
+			{ name: 'Item 2', qty: 10 },
+		]
+		stonecrop.getStore().set('order.order-1.items', itemsData)
+
+		const payload = vm.collectRecordPayload(orderDoctype, 'order-1')
+
+		expect(payload.order_number).toBe('ORD-001')
+		expect(payload.items).toBeDefined()
+		expect(Array.isArray(payload.items)).toBe(true)
+		expect(payload.items).toHaveLength(2)
+		expect(payload.items[0].name).toBe('Item 1')
+		expect(payload.items[1].qty).toBe(10)
+	})
+
+	it('collectRecordPayload handles empty array for cardinality: many fields', async () => {
+		const itemDoctype = createDoctype('Item', [
+			{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+		])
+		registry.addDoctype(itemDoctype)
+
+		const orderDoctype = createDoctype('Order', [
+			{ fieldname: 'order_number', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+			{
+				fieldname: 'items',
+				fieldtype: 'Doctype',
+				cardinality: 'many',
+				options: 'item',
+			} as SchemaTypes,
+		])
+		registry.addDoctype(orderDoctype)
+
+		const TestComponent = defineComponent({
+			setup() {
+				return useStonecrop({ registry, doctype: orderDoctype, recordId: 'order-2' })
+			},
+			template: '<div>test</div>',
+		})
+
+		const wrapper = mount(TestComponent, {
+			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
+		})
+		await wrapper.vm.$nextTick()
+		await new Promise(resolve => setTimeout(resolve, 50))
+
+		const vm = wrapper.vm as any
+
+		vm.handleHSTChange({
+			path: 'order.order-2.order_number',
+			value: 'ORD-002',
+			fieldname: 'order_number',
+		})
+
+		const payload = vm.collectRecordPayload(orderDoctype, 'order-2')
+
+		expect(payload.order_number).toBe('ORD-002')
+		expect(payload.items).toBeDefined()
+		expect(Array.isArray(payload.items)).toBe(true)
+		expect(payload.items).toHaveLength(0)
+	})
+
+	it('collectRecordPayload collects nested 1:1 doctype fields', async () => {
+		const addressDoctype = createDoctype('Address', [
+			{ fieldname: 'street', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+			{ fieldname: 'city', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+		])
+		registry.addDoctype(addressDoctype)
+
+		const customerDoctype = createDoctype('Customer', [
+			{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+			{
+				fieldname: 'address',
+				fieldtype: 'Doctype',
+				options: 'address',
+			} as SchemaTypes,
+		])
+		registry.addDoctype(customerDoctype)
+
+		const TestComponent = defineComponent({
+			setup() {
+				return useStonecrop({ registry, doctype: customerDoctype, recordId: 'cust-1' })
+			},
+			template: '<div>test</div>',
+		})
+
+		const wrapper = mount(TestComponent, {
+			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
+		})
+		await wrapper.vm.$nextTick()
+		await new Promise(resolve => setTimeout(resolve, 50))
+
+		const vm = wrapper.vm as any
+
+		vm.handleHSTChange({
+			path: 'customer.cust-1.name',
+			value: 'John Doe',
+			fieldname: 'name',
+		})
+
+		stonecrop.getStore().set('customer.cust-1.address', {
+			street: '123 Oak St',
+			city: 'Portland',
+		})
+
+		const payload = vm.collectRecordPayload(customerDoctype, 'cust-1')
+
+		expect(payload.name).toBe('John Doe')
+		expect(payload.address).toBeDefined()
+		expect(payload.address.street).toBe('123 Oak St')
+		expect(payload.address.city).toBe('Portland')
+	})
+
+	it('collectRecordPayload recursively collects 1:many inside nested 1:1', async () => {
+		const phoneDoctype = createDoctype('Phone', [
+			{ fieldname: 'number', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+			{ fieldname: 'type', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+		])
+		registry.addDoctype(phoneDoctype)
+
+		const addressDoctype = createDoctype('Address', [
+			{ fieldname: 'street', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+			{ fieldname: 'city', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+			{
+				fieldname: 'phones',
+				fieldtype: 'Doctype',
+				cardinality: 'many',
+				options: 'phone',
+			} as SchemaTypes,
+		])
+		registry.addDoctype(addressDoctype)
+
+		const customerDoctype = createDoctype('Customer', [
+			{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+			{
+				fieldname: 'address',
+				fieldtype: 'Doctype',
+				options: 'address',
+			} as SchemaTypes,
+		])
+		registry.addDoctype(customerDoctype)
+
+		const TestComponent = defineComponent({
+			setup() {
+				return useStonecrop({ registry, doctype: customerDoctype, recordId: 'cust-2' })
+			},
+			template: '<div>test</div>',
+		})
+
+		const wrapper = mount(TestComponent, {
+			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
+		})
+		await wrapper.vm.$nextTick()
+		await new Promise(resolve => setTimeout(resolve, 50))
+
+		const vm = wrapper.vm as any
+
+		vm.handleHSTChange({
+			path: 'customer.cust-2.name',
+			value: 'Jane Doe',
+			fieldname: 'name',
+		})
+
+		stonecrop.getStore().set('customer.cust-2.address', {
+			street: '456 Pine St',
+			city: 'Portland',
+		})
+
+		stonecrop.getStore().set('customer.cust-2.address.phones', [
+			{ number: '555-1234', type: 'mobile' },
+			{ number: '555-5678', type: 'work' },
+		])
+
+		const payload = vm.collectRecordPayload(customerDoctype, 'cust-2')
+
+		expect(payload.name).toBe('Jane Doe')
+		expect(payload.address).toBeDefined()
+		expect(payload.address.street).toBe('456 Pine St')
+		expect(payload.address.city).toBe('Portland')
+		expect(payload.address.phones).toBeDefined()
+		expect(Array.isArray(payload.address.phones)).toBe(true)
+		expect(payload.address.phones).toHaveLength(2)
+		expect(payload.address.phones[0].number).toBe('555-1234')
+		expect(payload.address.phones[1].type).toBe('work')
+	})
+
+	it('collectRecordPayload collects deeply nested 1:1 inside 1:1', async () => {
+		const coordinatesDoctype = createDoctype('Coordinates', [
+			{ fieldname: 'lat', fieldtype: 'Float', component: 'ANumericInput' } as SchemaTypes,
+			{ fieldname: 'lng', fieldtype: 'Float', component: 'ANumericInput' } as SchemaTypes,
+		])
+		registry.addDoctype(coordinatesDoctype)
+
+		const addressDoctype = createDoctype('Address', [
+			{ fieldname: 'street', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+			{ fieldname: 'city', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+			{
+				fieldname: 'coordinates',
+				fieldtype: 'Doctype',
+				options: 'coordinates',
+			} as SchemaTypes,
+		])
+		registry.addDoctype(addressDoctype)
+
+		const customerDoctype = createDoctype('Customer', [
+			{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+			{
+				fieldname: 'address',
+				fieldtype: 'Doctype',
+				options: 'address',
+			} as SchemaTypes,
+		])
+		registry.addDoctype(customerDoctype)
+
+		const TestComponent = defineComponent({
+			setup() {
+				return useStonecrop({ registry, doctype: customerDoctype, recordId: 'cust-3' })
+			},
+			template: '<div>test</div>',
+		})
+
+		const wrapper = mount(TestComponent, {
+			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
+		})
+		await wrapper.vm.$nextTick()
+		await new Promise(resolve => setTimeout(resolve, 50))
+
+		const vm = wrapper.vm as any
+
+		vm.handleHSTChange({
+			path: 'customer.cust-3.name',
+			value: 'Bob Smith',
+			fieldname: 'name',
+		})
+
+		stonecrop.getStore().set('customer.cust-3.address', {
+			street: '789 Elm St',
+			city: 'Seattle',
+		})
+
+		stonecrop.getStore().set('customer.cust-3.address.coordinates', {
+			lat: 47.6062,
+			lng: -122.3321,
+		})
+
+		const payload = vm.collectRecordPayload(customerDoctype, 'cust-3')
+
+		expect(payload.name).toBe('Bob Smith')
+		expect(payload.address).toBeDefined()
+		expect(payload.address.street).toBe('789 Elm St')
+		expect(payload.address.coordinates).toBeDefined()
+		expect(payload.address.coordinates.lat).toBe(47.6062)
+		expect(payload.address.coordinates.lng).toBe(-122.3321)
 	})
 })
 

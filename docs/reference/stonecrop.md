@@ -1007,7 +1007,7 @@ export type HSTStonecropReturn = BaseStonecropReturn & {
     formData: Ref<Record<string, any>>;
     resolvedSchema: Ref<SchemaTypes[]>;
     loadNestedData: (parentPath: string, childDoctype: Doctype, recordId?: string) => Record<string, any>;
-    saveRecursive: (doctype: Doctype, recordId: string) => Promise<Record<string, any>>;
+    collectRecordPayload: (doctype: Doctype, recordId: string) => Record<string, any>;
     createNestedContext: (basePath: string, childDoctype: Doctype) => {
         provideHSTPath: (fieldname: string) => string;
         handleHSTChange: (changeData: HSTChangeData) => void;

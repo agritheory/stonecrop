@@ -2,7 +2,6 @@ import {
 	type DoctypeManySchema,
 	type DoctypeOneSchema,
 	type DoctypeSchema,
-	type FormSchema,
 	type SchemaTypes,
 	isDoctypeMany,
 } from '@stonecrop/aform'
@@ -73,7 +72,7 @@ export type HSTStonecropReturn = BaseStonecropReturn & {
 	formData: Ref<Record<string, any>>
 	resolvedSchema: Ref<SchemaTypes[]>
 	loadNestedData: (parentPath: string, childDoctype: Doctype, recordId?: string) => Record<string, any>
-	saveRecursive: (doctype: Doctype, recordId: string) => Promise<Record<string, any>>
+	collectRecordPayload: (doctype: Doctype, recordId: string) => Record<string, any>
 	createNestedContext: (
 		basePath: string,
 		childDoctype: Doctype
@@ -508,12 +507,12 @@ export function useStonecrop(options?: {
 	}
 
 	/**
-	 * Recursively save a record with all nested doctype fields
+	 * Collect a record payload with all nested doctype fields from HST
 	 * @param doctype - The doctype metadata
-	 * @param recordId - The record ID to save
-	 * @returns The complete save payload
+	 * @param recordId - The record ID to collect
+	 * @returns The complete record payload ready for API submission
 	 */
-	const saveRecursive = (doctype: Doctype, recordId: string): Record<string, any> => {
+	const collectRecordPayload = (doctype: Doctype, recordId: string): Record<string, any> => {
 		if (!hstStore.value || !stonecrop.value) {
 			throw new Error('HST store not initialized')
 		}
@@ -628,7 +627,7 @@ export function useStonecrop(options?: {
 			formData,
 			resolvedSchema,
 			loadNestedData,
-			saveRecursive,
+			collectRecordPayload,
 			createNestedContext,
 			isLoading,
 			error,
@@ -645,7 +644,7 @@ export function useStonecrop(options?: {
 			formData,
 			resolvedSchema,
 			loadNestedData,
-			saveRecursive,
+			collectRecordPayload,
 			createNestedContext,
 			isLoading,
 			error,
