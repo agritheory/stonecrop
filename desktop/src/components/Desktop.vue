@@ -575,8 +575,9 @@ const getRecordFormSchema = (): SchemaTypes[] => {
 			return []
 		}
 
-		// Data is provided via v-model:data="currentViewData" — no need to spread values into schema
-		return 'toArray' in doctype.schema ? doctype.schema.toArray() : doctype.schema
+		// Convert schema to array and resolve Doctype fields (both cardinality: 'one' and 'many')
+		const schemaArray = 'toArray' in doctype.schema ? doctype.schema.toArray() : doctype.schema
+		return registry.resolveSchema(schemaArray)
 	} catch {
 		return []
 	}

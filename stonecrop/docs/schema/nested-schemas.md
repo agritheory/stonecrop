@@ -415,12 +415,13 @@ This provides the best developer experience when using full Stonecrop integratio
 
 ## Nested Table Schemas
 
-For **1:many relationships** (collections of records), use ATable with a `Table` fieldtype instead:
+For **1:many relationships** (collections of records), use a `Doctype` fieldtype with `cardinality: 'many'`:
 
 ```json
 {
   "fieldname": "line_items",
-  "fieldtype": "Table",
+  "fieldtype": "Doctype",
+  "cardinality": "many",
   "options": "sales_order_item",
   "label": "Line Items"
 }

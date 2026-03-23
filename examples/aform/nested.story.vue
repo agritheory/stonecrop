@@ -356,9 +356,9 @@ const HSTDemo = defineComponent({
  * Variant 4 — 1:Many (Address List)
  *
  * A parent Customer form with scalar fields rendered normally, and a child
- * `addresses` array rendered as an ATable. The schema uses `fieldtype: 'Table'`
- * with `options: 'address'` — resolveSchema auto-derives columns from the
- * Address doctype's fields and sets the component to ATable.
+ * `addresses` array rendered as an ATable. The schema uses `fieldtype: 'Doctype'`
+ * with `cardinality: 'many'` and `options: 'address'` — resolveSchema auto-derives
+ * columns from the Address doctype's fields and sets the component to ATable.
  */
 const AddressListDemo = defineComponent({
 	name: 'AddressListDemo',
@@ -385,7 +385,7 @@ const AddressListDemo = defineComponent({
 			h(
 				'p',
 				{ class: 'info-text' },
-				"The \"addresses\" field uses fieldtype: 'Table' with options: 'address'. " +
+				"The \"addresses\" field uses fieldtype: 'Doctype' with cardinality: 'many' and options: 'address'. " +
 					'resolveSchema() auto-derives columns from the Address doctype and sets component to ATable.'
 			),
 			h(AForm, {
@@ -659,22 +659,22 @@ const AddressListDemo = defineComponent({
 <docs lang="md">
 # Nested Schema Support
 
-Demonstrates how `Registry.resolveSchema()` embeds child schemas on `Doctype` fields (1:1)
-and auto-derives table columns for `Table` fields (1:many). AForm renders both patterns
-without knowing anything about the Registry.
+Demonstrates how `Registry.resolveSchema()` embeds child schemas on `Doctype` fields.
+For 1:1 nested forms, it attaches `schema` arrays; for 1:many tables (`cardinality: 'many'`),
+it auto-derives table columns. AForm renders both patterns without knowing anything about the Registry.
 
 ## How It Works
 
-### 1:1 (Doctype fields)
+### 1:1 (Doctype fields, default cardinality)
 
 1. Register doctypes in the Registry
 2. Call `registry.resolveSchema(schema)` — attaches `schema` arrays to Doctype fields
 3. Pass the resolved schema to `<AForm>` — it checks `'schema' in field` and recurses
 
-### 1:Many (Table fields)
+### 1:Many (Doctype fields with cardinality: 'many')
 
 1. Register parent and child doctypes in the Registry
-2. Call `registry.resolveSchema(schema)` — for `fieldtype: 'Table'` fields, auto-derives
+2. Call `registry.resolveSchema(schema)` — for `fieldtype: 'Doctype', cardinality: 'many'` fields, auto-derives
    `columns` from the child doctype's schema, sets `component: 'ATable'` and `config: { view: 'list' }`
 3. Pass the resolved schema to `<AForm>` — the child array data at `data[fieldname]`
    flows into ATable's rows via the `componentProps` fallback
@@ -704,11 +704,11 @@ columns, config, or component by specifying them explicitly on the schema field.
 ## Usage
 
 ```typescript
-// 1:1 nesting
+// 1:1 nesting (default cardinality)
 const resolved = registry.resolveSchema(customerSchema)
 // resolved[3].schema === [street, city, state, zip_code]
 
-// 1:many table
+// 1:many table (cardinality: 'many')
 const resolved = registry.resolveSchema(customerWithAddressesSchema)
 // resolved[3].columns === [{ name: 'street', ... }, { name: 'city', ... }, ...]
 // resolved[3].component === 'ATable'
