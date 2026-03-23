@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/nuxt",
+      "comment": "update playground to show doctype cardinality",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/nuxt"
+}
