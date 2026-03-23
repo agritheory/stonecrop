@@ -118,6 +118,10 @@ const DoctypeMeta: z.ZodObject<{
         value: z.ZodOptional<z.ZodUnknown>;
         default: z.ZodOptional<z.ZodUnknown>;
         options: z.ZodOptional<z.ZodUnion<readonly [z.ZodString, z.ZodArray<z.ZodString>, z.ZodRecord<z.ZodString, z.ZodUnknown>]>>;
+        cardinality: z.ZodOptional<z.ZodEnum<{
+            one: "one";
+            many: "many";
+        }>>;
         mask: z.ZodOptional<z.ZodString>;
         validation: z.ZodOptional<z.ZodObject<{
             errorMessage: z.ZodString;
@@ -191,6 +195,10 @@ const FieldMeta: z.ZodObject<{
     value: z.ZodOptional<z.ZodUnknown>;
     default: z.ZodOptional<z.ZodUnknown>;
     options: z.ZodOptional<z.ZodUnion<readonly [z.ZodString, z.ZodArray<z.ZodString>, z.ZodRecord<z.ZodString, z.ZodUnknown>]>>;
+    cardinality: z.ZodOptional<z.ZodEnum<{
+        one: "one";
+        many: "many";
+    }>>;
     mask: z.ZodOptional<z.ZodString>;
     validation: z.ZodOptional<z.ZodObject<{
         errorMessage: z.ZodString;
