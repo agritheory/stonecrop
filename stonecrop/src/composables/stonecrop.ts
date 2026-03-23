@@ -1,4 +1,11 @@
-import { type SchemaTypes, type DoctypeSchema, type DoctypeOneSchema, isDoctypeMany } from '@stonecrop/aform'
+import {
+	type DoctypeManySchema,
+	type DoctypeOneSchema,
+	type DoctypeSchema,
+	type FormSchema,
+	type SchemaTypes,
+	isDoctypeMany,
+} from '@stonecrop/aform'
 import { storeToRefs } from 'pinia'
 import { inject, onMounted, Ref, ref, watch, provide, computed, type ComputedRef } from 'vue'
 
@@ -524,6 +531,8 @@ export function useStonecrop(options?: {
 				: Array.from(doctype.schema)
 			: []
 		const resolved = registry ? registry.resolveSchema(schemaArray) : schemaArray
+
+		// 1:1 nested Doctype fields (cardinality: 'one' or undefined)
 		const doctypeFields = resolved.filter(
 			field =>
 				'fieldtype' in field &&
@@ -539,6 +548,21 @@ export function useStonecrop(options?: {
 			const fieldPath = `${recordPath}.${doctypeField.fieldname}`
 			const nestedData = collectNestedData(doctypeField.schema!, fieldPath, hstStore.value)
 			payload[doctypeField.fieldname] = nestedData
+		}
+
+		// 1:many child tables (cardinality: 'many')
+		const doctypeManyFields = resolved.filter(
+			field => 'fieldtype' in field && field.fieldtype === 'Doctype' && isDoctypeMany(field as DoctypeSchema)
+		)
+
+		// Read array data from HST for cardinality: 'many' fields
+		for (const field of doctypeManyFields) {
+			const doctypeField = field as DoctypeManySchema
+			const fieldPath = `${recordPath}.${doctypeField.fieldname}`
+			const arrayData = hstStore.value.get(fieldPath)
+			if (Array.isArray(arrayData)) {
+				payload[doctypeField.fieldname] = arrayData
+			}
 		}
 
 		return payload
@@ -661,12 +685,21 @@ function initializeNewRecord(doctype: Doctype): Record<string, any> {
 			case 'Float':
 				initialData[field.fieldname] = 0
 				break
-			case 'Table':
-				initialData[field.fieldname] = []
-				break
 			case 'JSON':
 				initialData[field.fieldname] = {}
 				break
+			case 'Doctype': {
+				// Check cardinality to determine initial value
+				const cardinality = 'cardinality' in field ? field.cardinality : undefined
+				if (cardinality === 'many') {
+					// 1:many child table - initialize as empty array
+					initialData[field.fieldname] = []
+				} else {
+					// 1:1 nested form - initialize as empty object
+					initialData[field.fieldname] = {}
+				}
+				break
+			}
 			default:
 				initialData[field.fieldname] = null
 		}
@@ -749,6 +782,20 @@ function collectNestedData(resolvedSchema: SchemaTypes[], basePath: string, hstS
 		const fieldPath = `${basePath}.${doctypeField.fieldname}`
 		const nestedData = collectNestedData(doctypeField.schema!, fieldPath, hstStore)
 		payload[doctypeField.fieldname] = nestedData
+	}
+
+	// Also collect array data for cardinality: 'many' fields
+	const doctypeManyFields = resolvedSchema.filter(
+		field => 'fieldtype' in field && field.fieldtype === 'Doctype' && isDoctypeMany(field as DoctypeSchema)
+	)
+
+	for (const field of doctypeManyFields) {
+		const doctypeField = field as DoctypeManySchema
+		const fieldPath = `${basePath}.${doctypeField.fieldname}`
+		const arrayData = hstStore.get(fieldPath)
+		if (Array.isArray(arrayData)) {
+			payload[doctypeField.fieldname] = arrayData
+		}
 	}
 
 	return payload

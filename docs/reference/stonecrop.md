@@ -1477,7 +1477,7 @@ initializeRecord(schema: SchemaTypes[]): Record<string, any>
 
 #### resolveSchema
 
-Resolve nested Doctype and Table fields in a schema by embedding child schemas inline.
+Resolve nested Doctype fields in a schema by embedding child schemas inline.
 
 ```typescript
 resolveSchema(schema: SchemaTypes[], visited: Set<string>): SchemaTypes[]

@@ -24,7 +24,9 @@ describe('Field Trigger Integration', () => {
 		registerGlobalAction('validateEmailPrimary', validateEmailPrimary)
 
 		// Create a doctype with field triggers in actions map
-		const schema = List([{ fieldname: 'emailAddress', fieldtype: 'Table', label: 'Email Addresses' }])
+		const schema = List([
+			{ fieldname: 'emailAddress', fieldtype: 'Doctype', cardinality: 'many', label: 'Email Addresses' },
+		])
 		const workflow: UnknownMachineConfig = {
 			id: 'task',
 			initial: 'draft',

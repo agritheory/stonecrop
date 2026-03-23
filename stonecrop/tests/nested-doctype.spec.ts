@@ -128,20 +128,21 @@ describe('Nested Doctype Support', () => {
 			expect(resolved[1]).toEqual(expect.objectContaining({ fieldname: 'active', fieldtype: 'Check' }))
 		})
 
-		it('resolves a Table field by auto-deriving columns from child doctype', () => {
+		it('resolves a Doctype field with cardinality:many by auto-deriving columns from child doctype', () => {
 			const schema = [
 				{ fieldname: 'customer_name', fieldtype: 'Data', component: 'ATextInput' },
-				{ fieldname: 'addresses', fieldtype: 'Table', options: 'address' },
+				{ fieldname: 'addresses', fieldtype: 'Doctype', cardinality: 'many', options: 'address' },
 			]
 			const resolved = registry.resolveSchema(schema)
 
-			// Non-Table fields are unchanged
+			// Non-Doctype fields are unchanged
 			expect(resolved[0]).toEqual(expect.objectContaining({ fieldname: 'customer_name', fieldtype: 'Data' }))
 
-			// Table field has auto-derived columns, component, config, and rows
+			// Doctype field with cardinality:many has auto-derived columns, component, config, and rows
 			const tableField = resolved[1] as any
 			expect(tableField.fieldname).toBe('addresses')
-			expect(tableField.fieldtype).toBe('Table')
+			expect(tableField.fieldtype).toBe('Doctype')
+			expect(tableField.cardinality).toBe('many')
 			expect(tableField.component).toBe('ATable')
 			expect(tableField.config).toEqual({ view: 'list' })
 			expect(tableField.rows).toEqual([])
@@ -156,7 +157,7 @@ describe('Nested Doctype Support', () => {
 			expect(tableField.columns[3]).toEqual(expect.objectContaining({ name: 'zip_code' }))
 		})
 
-		it('preserves user-provided columns on Table fields', () => {
+		it('preserves user-provided columns on Doctype cardinality:many fields', () => {
 			const customColumns = [
 				{ name: 'street', label: 'Street Address', fieldtype: 'Data', align: 'left', edit: true, width: '30ch' },
 				{ name: 'city', label: 'City', fieldtype: 'Data', align: 'left', edit: false, width: '15ch' },
@@ -164,7 +165,8 @@ describe('Nested Doctype Support', () => {
 			const schema = [
 				{
 					fieldname: 'addresses',
-					fieldtype: 'Table',
+					fieldtype: 'Doctype',
+					cardinality: 'many',
 					options: 'address',
 					columns: customColumns,
 				},
@@ -177,11 +179,12 @@ describe('Nested Doctype Support', () => {
 			expect(tableField.columns).toHaveLength(2)
 		})
 
-		it('preserves user-provided config and component on Table fields', () => {
+		it('preserves user-provided config and component on Doctype cardinality:many fields', () => {
 			const schema = [
 				{
 					fieldname: 'addresses',
-					fieldtype: 'Table',
+					fieldtype: 'Doctype',
+					cardinality: 'many',
 					options: 'address',
 					component: 'MyCustomTable',
 					config: { view: 'tree' as const, defaultTreeExpansion: 'root' as const },
@@ -194,8 +197,8 @@ describe('Nested Doctype Support', () => {
 			expect(tableField.config).toEqual({ view: 'tree', defaultTreeExpansion: 'root' })
 		})
 
-		it('does not mutate original schema for Table fields', () => {
-			const schema = [{ fieldname: 'addresses', fieldtype: 'Table', options: 'address' }]
+		it('does not mutate original schema for Doctype cardinality:many fields', () => {
+			const schema = [{ fieldname: 'addresses', fieldtype: 'Doctype', cardinality: 'many', options: 'address' }]
 			const original = schema[0]
 			registry.resolveSchema(schema)
 
@@ -203,8 +206,8 @@ describe('Nested Doctype Support', () => {
 			expect('component' in original).toBe(false)
 		})
 
-		it('gracefully handles missing doctype for Table fields', () => {
-			const schema = [{ fieldname: 'items', fieldtype: 'Table', options: 'nonexistent' }]
+		it('gracefully handles missing doctype for Doctype cardinality:many fields', () => {
+			const schema = [{ fieldname: 'items', fieldtype: 'Doctype', cardinality: 'many', options: 'nonexistent' }]
 			const resolved = registry.resolveSchema(schema)
 
 			const tableField = resolved[0] as any
@@ -224,7 +227,7 @@ describe('Nested Doctype Support', () => {
 				{ fieldname: 'amount', fieldtype: 'Decimal', component: 'ANumericInput' },
 				{ fieldname: 'cost', fieldtype: 'Currency', component: 'ANumericInput' },
 				{ fieldname: 'qty', fieldtype: 'Quantity', component: 'ANumericInput' },
-				{ fieldname: 'items', fieldtype: 'Table', component: 'ATable' },
+				{ fieldname: 'items', fieldtype: 'Doctype', cardinality: 'many', component: 'ATable' },
 				{ fieldname: 'meta', fieldtype: 'JSON', component: 'ACodeEditor' },
 				{ fieldname: 'birthday', fieldtype: 'Date', component: 'ADatePicker' },
 			]
