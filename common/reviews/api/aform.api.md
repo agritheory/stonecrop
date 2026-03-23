@@ -62,12 +62,28 @@ export type ComponentProps = {
 };
 
 // @public
-export type DoctypeSchema = BaseSchema & {
+export type DoctypeManySchema = BaseSchema & {
     fieldtype: 'Doctype';
     options: string;
     label?: string;
+    cardinality: 'many';
+    columns?: TableColumn[];
+    config?: TableConfig;
+    rows?: TableRow[];
+    component?: string;
+};
+
+// @public
+export type DoctypeOneSchema = BaseSchema & {
+    fieldtype: 'Doctype';
+    options: string;
+    label?: string;
+    cardinality?: 'one';
     schema?: SchemaTypes[];
 };
+
+// @public
+export type DoctypeSchema = DoctypeOneSchema | DoctypeManySchema;
 
 // @public
 export type FieldsetSchema = BaseSchema & {
@@ -93,20 +109,13 @@ export type FormSchema = BaseSchema & {
 // @public
 export function install(app: App): void;
 
+// @public
+export function isDoctypeMany(field: DoctypeSchema): field is DoctypeManySchema;
+
 export { Login }
 
 // @public
-export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema | DoctypeSchema | TableDoctypeSchema;
-
-// @public
-export type TableDoctypeSchema = BaseSchema & {
-    fieldtype: 'Table';
-    options: string;
-    label?: string;
-    columns?: TableColumn[];
-    config?: TableConfig;
-    rows?: TableRow[];
-};
+export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema | DoctypeSchema;
 
 // @public
 export type TableSchema = BaseSchema & {

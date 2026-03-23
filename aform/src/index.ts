@@ -14,6 +14,7 @@ import ANumericInput from './components/form/ANumericInput.vue'
 import ATextInput from './components/form/ATextInput.vue'
 import Login from './components/utilities/Login.vue'
 export type * from './types'
+export { isDoctypeMany } from './utils/doctype'
 
 /**
  * Install all AForm components
@@ -22,8 +23,9 @@ export type * from './types'
  */
 function install(app: App /* options */) {
 	app.use(installATable) // Install ATable components for use within AForm
+
 	app.component('ACheckbox', ACheckbox)
-	app.component('ACombobox', AComboBox)
+	app.component('AComboBox', AComboBox)
 	app.component('ADate', ADate)
 	app.component('ADropdown', ADropdown)
 	app.component('ADatePicker', ADatePicker)

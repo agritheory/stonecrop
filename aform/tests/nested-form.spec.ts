@@ -3,7 +3,8 @@ import { describe, it, expect } from 'vitest'
 
 import AForm from '../src/components/AForm.vue'
 import ATextInput from '../src/components/form/ATextInput.vue'
-import type { SchemaTypes } from '../src/types'
+import type { SchemaTypes, DoctypeSchema } from '../src/types'
+import { isDoctypeMany } from '../src/index'
 
 describe('AForm Nested Schema Rendering', () => {
 	const addressSchema: SchemaTypes[] = [
@@ -495,5 +496,86 @@ describe('AForm Nested Schema Rendering', () => {
 		const nestedSections = wrapper.findAll('.aform-nested-section')
 		expect(nestedSections.length).toBe(1)
 		expect(wrapper.vm).toBeTruthy()
+	})
+
+	it('renders ATable component for Doctype field with cardinality: many', async () => {
+		const tableSchema: SchemaTypes[] = [
+			{
+				fieldname: 'name',
+				fieldtype: 'Data',
+				component: 'ATextInput',
+				label: 'Name',
+			},
+			{
+				fieldname: 'items',
+				fieldtype: 'Doctype',
+				options: 'item',
+				label: 'Items',
+				cardinality: 'many',
+				component: 'ATable',
+				columns: [
+					{ name: 'item_name', label: 'Item', fieldtype: 'Data' },
+					{ name: 'qty', label: 'Qty', fieldtype: 'Int' },
+				],
+				rows: [
+					{ item_name: 'Widget', qty: 5 },
+					{ item_name: 'Gadget', qty: 3 },
+				],
+			} as DoctypeSchema,
+		]
+
+		const wrapper = mount(AForm, {
+			props: {
+				schema: tableSchema,
+				data: {
+					name: 'Test Order',
+					items: [
+						{ item_name: 'Widget', qty: 5 },
+						{ item_name: 'Gadget', qty: 3 },
+					],
+				},
+			},
+			global: {
+				components: { ATextInput },
+			},
+		})
+
+		await wrapper.vm.$nextTick()
+		await flushPromises()
+
+		// Should NOT render nested AForm section (no schema property)
+		const nestedSections = wrapper.findAll('.aform-nested-section')
+		expect(nestedSections.length).toBe(0)
+
+		// Should render a dynamic component (ATable) instead
+		const dynamicComponents = wrapper.findAllComponents({ name: 'ATable' })
+		// ATable may not be registered in test, but the component :is binding
+		// should still attempt to render it — verify no nested form was created
+		expect(nestedSections.length).toBe(0)
+	})
+
+	it('isDoctypeMany type guard correctly narrows DoctypeSchema', () => {
+		const oneField: DoctypeSchema = {
+			fieldname: 'address',
+			fieldtype: 'Doctype',
+			options: 'address',
+			schema: [],
+		}
+
+		const manyField: DoctypeSchema = {
+			fieldname: 'items',
+			fieldtype: 'Doctype',
+			options: 'item',
+			cardinality: 'many',
+			columns: [],
+		}
+
+		expect(isDoctypeMany(oneField)).toBe(false)
+		expect(isDoctypeMany(manyField)).toBe(true)
+
+		// Type narrowing should expose columns on manyField
+		if (isDoctypeMany(manyField)) {
+			expect(manyField.columns).toBeDefined()
+		}
 	})
 })

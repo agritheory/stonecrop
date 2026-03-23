@@ -1,13 +1,13 @@
-import { inject, onMounted, Ref, ref, watch, provide, computed, ComputedRef } from 'vue'
+import { type SchemaTypes, type DoctypeSchema, type DoctypeOneSchema, isDoctypeMany } from '@stonecrop/aform'
+import { storeToRefs } from 'pinia'
+import { inject, onMounted, Ref, ref, watch, provide, computed, type ComputedRef } from 'vue'
 
 import Registry from '../registry'
 import { Stonecrop } from '../stonecrop'
 import Doctype from '../doctype'
 import type { HSTNode } from '../stores/hst'
-import { RouteContext } from '../types/registry'
-import { storeToRefs } from 'pinia'
+import type { RouteContext } from '../types/registry'
 import type { HSTOperation, OperationLogConfig, OperationLogSnapshot } from '../types/operation-log'
-import { SchemaTypes, DoctypeSchema } from '@stonecrop/aform'
 
 /**
  * Operation Log API - nested object containing all operation log functionality
@@ -525,12 +525,17 @@ export function useStonecrop(options?: {
 			: []
 		const resolved = registry ? registry.resolveSchema(schemaArray) : schemaArray
 		const doctypeFields = resolved.filter(
-			field => 'fieldtype' in field && field.fieldtype === 'Doctype' && 'schema' in field && Array.isArray(field.schema)
+			field =>
+				'fieldtype' in field &&
+				field.fieldtype === 'Doctype' &&
+				!isDoctypeMany(field as DoctypeSchema) &&
+				'schema' in field &&
+				Array.isArray(field.schema)
 		)
 
 		// Recursively collect nested data from HST using resolved schemas
 		for (const field of doctypeFields) {
-			const doctypeField = field as DoctypeSchema
+			const doctypeField = field as DoctypeOneSchema
 			const fieldPath = `${recordPath}.${doctypeField.fieldname}`
 			const nestedData = collectNestedData(doctypeField.schema!, fieldPath, hstStore.value)
 			payload[doctypeField.fieldname] = nestedData
@@ -728,14 +733,19 @@ function collectNestedData(resolvedSchema: SchemaTypes[], basePath: string, hstS
 	const data = hstStore.get(basePath) || {}
 	const payload: Record<string, any> = { ...data }
 
-	// Find Doctype fields that have resolved child schemas
+	// Find Doctype fields that have resolved child schemas (1:1 only, not cardinality: 'many')
 	const doctypeFields = resolvedSchema.filter(
-		field => 'fieldtype' in field && field.fieldtype === 'Doctype' && 'schema' in field && Array.isArray(field.schema)
+		field =>
+			'fieldtype' in field &&
+			field.fieldtype === 'Doctype' &&
+			!isDoctypeMany(field as DoctypeSchema) &&
+			'schema' in field &&
+			Array.isArray(field.schema)
 	)
 
 	// Recursively collect nested data
 	for (const field of doctypeFields) {
-		const doctypeField = field as DoctypeSchema
+		const doctypeField = field as DoctypeOneSchema
 		const fieldPath = `${basePath}.${doctypeField.fieldname}`
 		const nestedData = collectNestedData(doctypeField.schema!, fieldPath, hstStore)
 		payload[doctypeField.fieldname] = nestedData
