@@ -2,6 +2,18 @@
   "name": "@stonecrop/nuxt",
   "entries": [
     {
+      "version": "0.10.12",
+      "tag": "@stonecrop/nuxt_v0.10.12",
+      "date": "Tue, 24 Mar 2026 10:41:22 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "update playground to show doctype cardinality"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.10.11",
       "tag": "@stonecrop/nuxt_v0.10.11",
       "date": "Fri, 20 Mar 2026 09:13:21 GMT",

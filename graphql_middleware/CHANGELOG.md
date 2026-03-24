@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/graphql-middleware
 
-This log was last generated on Fri, 20 Mar 2026 09:13:21 GMT and should not be manually modified.
+This log was last generated on Tue, 24 Mar 2026 10:41:22 GMT and should not be manually modified.
+
+## 0.10.12
+Tue, 24 Mar 2026 10:41:22 GMT
+
+### Patches
+
+- add 1:1 and 1:many doctype schema support
 
 ## 0.10.11
 Fri, 20 Mar 2026 09:13:21 GMT
