@@ -1,4 +1,3 @@
-/* eslint-disable no-new-func, no-eval */
 import type { Map as ImmutableMap } from 'immutable'
 import { useOperationLogStore } from './stores/operation-log'
 import type {
@@ -101,11 +100,11 @@ export class FieldTriggerEngine {
 		const transitionMap = new Map<string, string[]>()
 
 		// Convert from different Map types to regular Map
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		if (typeof (actions as any).entrySeq === 'function') {
+		// Check for Immutable.js Map first (has entrySeq method)
+		const immutableActions = actions as ImmutableMap<string, string[]>
+		if (typeof immutableActions.entrySeq === 'function') {
 			// Immutable Map
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			;(actions as any).entrySeq().forEach(([key, value]: [string, string[]]) => {
+			immutableActions.entrySeq().forEach(([key, value]: [string, string[]]) => {
 				this.categorizeAction(key, value, actionMap, transitionMap)
 			})
 		} else if (actions instanceof Map) {
@@ -506,7 +505,7 @@ export class FieldTriggerEngine {
 				})
 				.catch(error => {
 					clearTimeout(timeoutId)
-					reject(error)
+					reject(error instanceof Error ? error : new Error(String(error)))
 				})
 		})
 	}

@@ -1,4 +1,4 @@
-import type { DoctypeMeta } from '@stonecrop/schema'
+import type { DoctypeMeta, FieldMeta } from '@stonecrop/schema'
 import type { ActionHandler, ActionContext } from '../types'
 
 const handlerRegistry: Map<string, ActionHandler> = new Map()
@@ -77,7 +77,7 @@ const validateFieldTypes: ActionHandler = async (args, context) => {
 		const value = record[field.fieldname]
 		if (value === undefined || value === null) continue
 
-		const error = validateFieldValue(field.fieldname, value, field.fieldtype)
+		const error = validateFieldValue(field, value)
 		if (error) errors.push(error)
 	}
 
@@ -91,7 +91,9 @@ const validateFieldTypes: ActionHandler = async (args, context) => {
 /**
  * Validate a single field value against its expected type
  */
-function validateFieldValue(fieldname: string, value: unknown, fieldtype: string): string | null {
+function validateFieldValue(field: FieldMeta, value: unknown): string | null {
+	const { fieldname, fieldtype, cardinality } = field
+
 	switch (fieldtype) {
 		case 'Int':
 			if (typeof value !== 'number' || !Number.isInteger(value)) {
@@ -137,9 +139,15 @@ function validateFieldValue(fieldname: string, value: unknown, fieldtype: string
 			}
 			break
 
-		case 'Table':
-			if (!Array.isArray(value)) {
-				return `${fieldname}: expected array, got ${typeof value}`
+		case 'Doctype':
+			if (cardinality === 'many') {
+				if (!Array.isArray(value)) {
+					return `${fieldname}: expected array, got ${typeof value}`
+				}
+			} else {
+				if (typeof value !== 'object' || Array.isArray(value)) {
+					return `${fieldname}: expected object, got ${typeof value}`
+				}
 			}
 			break
 	}

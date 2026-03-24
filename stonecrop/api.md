@@ -1002,7 +1002,7 @@ export type HSTStonecropReturn = BaseStonecropReturn & {
     formData: Ref<Record<string, any>>;
     resolvedSchema: Ref<SchemaTypes[]>;
     loadNestedData: (parentPath: string, childDoctype: Doctype, recordId?: string) => Record<string, any>;
-    saveRecursive: (doctype: Doctype, recordId: string) => Promise<Record<string, any>>;
+    collectRecordPayload: (doctype: Doctype, recordId: string) => Record<string, any>;
     createNestedContext: (basePath: string, childDoctype: Doctype) => {
         provideHSTPath: (fieldname: string) => string;
         handleHSTChange: (changeData: HSTChangeData) => void;
@@ -1472,7 +1472,7 @@ initializeRecord(schema: SchemaTypes[]): Record<string, any>
 
 #### resolveSchema
 
-Resolve nested Doctype and Table fields in a schema by embedding child schemas inline.
+Resolve nested Doctype fields in a schema by embedding child schemas inline.
 
 ```typescript
 resolveSchema(schema: SchemaTypes[], visited: Set<string>): SchemaTypes[]

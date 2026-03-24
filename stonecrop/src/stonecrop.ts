@@ -1,4 +1,4 @@
-import type { DataClient, WorkflowMeta } from '@stonecrop/schema'
+import type { DataClient } from '@stonecrop/schema'
 import { reactive } from 'vue'
 
 import Doctype from './doctype'

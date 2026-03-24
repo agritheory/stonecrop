@@ -1,13 +1,19 @@
-import { inject, onMounted, Ref, ref, watch, provide, computed, ComputedRef } from 'vue'
+import {
+	type DoctypeManySchema,
+	type DoctypeOneSchema,
+	type DoctypeSchema,
+	type SchemaTypes,
+	isDoctypeMany,
+} from '@stonecrop/aform'
+import { storeToRefs } from 'pinia'
+import { inject, onMounted, Ref, ref, watch, provide, computed, type ComputedRef } from 'vue'
 
 import Registry from '../registry'
 import { Stonecrop } from '../stonecrop'
 import Doctype from '../doctype'
 import type { HSTNode } from '../stores/hst'
-import { RouteContext } from '../types/registry'
-import { storeToRefs } from 'pinia'
+import type { RouteContext } from '../types/registry'
 import type { HSTOperation, OperationLogConfig, OperationLogSnapshot } from '../types/operation-log'
-import { SchemaTypes, DoctypeSchema } from '@stonecrop/aform'
 
 /**
  * Operation Log API - nested object containing all operation log functionality
@@ -66,7 +72,7 @@ export type HSTStonecropReturn = BaseStonecropReturn & {
 	formData: Ref<Record<string, any>>
 	resolvedSchema: Ref<SchemaTypes[]>
 	loadNestedData: (parentPath: string, childDoctype: Doctype, recordId?: string) => Record<string, any>
-	saveRecursive: (doctype: Doctype, recordId: string) => Promise<Record<string, any>>
+	collectRecordPayload: (doctype: Doctype, recordId: string) => Record<string, any>
 	createNestedContext: (
 		basePath: string,
 		childDoctype: Doctype
@@ -501,12 +507,12 @@ export function useStonecrop(options?: {
 	}
 
 	/**
-	 * Recursively save a record with all nested doctype fields
+	 * Collect a record payload with all nested doctype fields from HST
 	 * @param doctype - The doctype metadata
-	 * @param recordId - The record ID to save
-	 * @returns The complete save payload
+	 * @param recordId - The record ID to collect
+	 * @returns The complete record payload ready for API submission
 	 */
-	const saveRecursive = (doctype: Doctype, recordId: string): Record<string, any> => {
+	const collectRecordPayload = (doctype: Doctype, recordId: string): Record<string, any> => {
 		if (!hstStore.value || !stonecrop.value) {
 			throw new Error('HST store not initialized')
 		}
@@ -524,16 +530,38 @@ export function useStonecrop(options?: {
 				: Array.from(doctype.schema)
 			: []
 		const resolved = registry ? registry.resolveSchema(schemaArray) : schemaArray
+
+		// 1:1 nested Doctype fields (cardinality: 'one' or undefined)
 		const doctypeFields = resolved.filter(
-			field => 'fieldtype' in field && field.fieldtype === 'Doctype' && 'schema' in field && Array.isArray(field.schema)
+			field =>
+				'fieldtype' in field &&
+				field.fieldtype === 'Doctype' &&
+				!isDoctypeMany(field as DoctypeSchema) &&
+				'schema' in field &&
+				Array.isArray(field.schema)
 		)
 
 		// Recursively collect nested data from HST using resolved schemas
 		for (const field of doctypeFields) {
-			const doctypeField = field as DoctypeSchema
+			const doctypeField = field as DoctypeOneSchema
 			const fieldPath = `${recordPath}.${doctypeField.fieldname}`
 			const nestedData = collectNestedData(doctypeField.schema!, fieldPath, hstStore.value)
 			payload[doctypeField.fieldname] = nestedData
+		}
+
+		// 1:many child tables (cardinality: 'many')
+		const doctypeManyFields = resolved.filter(
+			field => 'fieldtype' in field && field.fieldtype === 'Doctype' && isDoctypeMany(field as DoctypeSchema)
+		)
+
+		// Read array data from HST for cardinality: 'many' fields
+		for (const field of doctypeManyFields) {
+			const doctypeField = field as DoctypeManySchema
+			const fieldPath = `${recordPath}.${doctypeField.fieldname}`
+			const arrayData = hstStore.value.get(fieldPath)
+			if (Array.isArray(arrayData)) {
+				payload[doctypeField.fieldname] = arrayData
+			}
 		}
 
 		return payload
@@ -599,7 +627,7 @@ export function useStonecrop(options?: {
 			formData,
 			resolvedSchema,
 			loadNestedData,
-			saveRecursive,
+			collectRecordPayload,
 			createNestedContext,
 			isLoading,
 			error,
@@ -616,7 +644,7 @@ export function useStonecrop(options?: {
 			formData,
 			resolvedSchema,
 			loadNestedData,
-			saveRecursive,
+			collectRecordPayload,
 			createNestedContext,
 			isLoading,
 			error,
@@ -656,12 +684,21 @@ function initializeNewRecord(doctype: Doctype): Record<string, any> {
 			case 'Float':
 				initialData[field.fieldname] = 0
 				break
-			case 'Table':
-				initialData[field.fieldname] = []
-				break
 			case 'JSON':
 				initialData[field.fieldname] = {}
 				break
+			case 'Doctype': {
+				// Check cardinality to determine initial value
+				const cardinality = 'cardinality' in field ? field.cardinality : undefined
+				if (cardinality === 'many') {
+					// 1:many child table - initialize as empty array
+					initialData[field.fieldname] = []
+				} else {
+					// 1:1 nested form - initialize as empty object
+					initialData[field.fieldname] = {}
+				}
+				break
+			}
 			default:
 				initialData[field.fieldname] = null
 		}
@@ -728,17 +765,36 @@ function collectNestedData(resolvedSchema: SchemaTypes[], basePath: string, hstS
 	const data = hstStore.get(basePath) || {}
 	const payload: Record<string, any> = { ...data }
 
-	// Find Doctype fields that have resolved child schemas
+	// Find Doctype fields that have resolved child schemas (1:1 only, not cardinality: 'many')
 	const doctypeFields = resolvedSchema.filter(
-		field => 'fieldtype' in field && field.fieldtype === 'Doctype' && 'schema' in field && Array.isArray(field.schema)
+		field =>
+			'fieldtype' in field &&
+			field.fieldtype === 'Doctype' &&
+			!isDoctypeMany(field as DoctypeSchema) &&
+			'schema' in field &&
+			Array.isArray(field.schema)
 	)
 
 	// Recursively collect nested data
 	for (const field of doctypeFields) {
-		const doctypeField = field as DoctypeSchema
+		const doctypeField = field as DoctypeOneSchema
 		const fieldPath = `${basePath}.${doctypeField.fieldname}`
 		const nestedData = collectNestedData(doctypeField.schema!, fieldPath, hstStore)
 		payload[doctypeField.fieldname] = nestedData
+	}
+
+	// Also collect array data for cardinality: 'many' fields
+	const doctypeManyFields = resolvedSchema.filter(
+		field => 'fieldtype' in field && field.fieldtype === 'Doctype' && isDoctypeMany(field as DoctypeSchema)
+	)
+
+	for (const field of doctypeManyFields) {
+		const doctypeField = field as DoctypeManySchema
+		const fieldPath = `${basePath}.${doctypeField.fieldname}`
+		const arrayData = hstStore.get(fieldPath)
+		if (Array.isArray(arrayData)) {
+			payload[doctypeField.fieldname] = arrayData
+		}
 	}
 
 	return payload

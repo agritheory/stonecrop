@@ -339,4 +339,27 @@ describe('dropdown input component', () => {
 		expect(wrapper.find('input').exists()).toBe(false)
 		expect(wrapper.find('.aform_display-value').text()).toBe('Apple')
 	})
+
+	it('selectPrevResult decrements index when currentIndex > 0', async () => {
+		const wrapper = mount(ADropdown, {
+			props: { modelValue: '', label: dropdownData.label, options: dropdownData.options },
+		})
+
+		const input = wrapper.find('input')
+		await input.trigger('focus')
+		await input.setValue('')
+		await flushPromises()
+		await wrapper.vm.$nextTick()
+
+		await input.trigger('keydown.down')
+		await input.trigger('keydown.down')
+		await input.trigger('keydown.up')
+		await input.trigger('keydown.enter')
+		await wrapper.vm.$nextTick()
+
+		const updateEvents = wrapper.emitted('update:modelValue')
+		expect(updateEvents).toBeTruthy()
+		const lastEvent = updateEvents![updateEvents!.length - 1]
+		expect(lastEvent).toEqual(['Apple'])
+	})
 })

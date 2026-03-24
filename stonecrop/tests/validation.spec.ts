@@ -183,7 +183,8 @@ describe('Schema Validator', () => {
 				{
 					fieldname: 'items',
 					label: 'Items',
-					fieldtype: 'Table',
+					fieldtype: 'Doctype',
+					cardinality: 'many',
 				},
 			])
 

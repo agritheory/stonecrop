@@ -110,6 +110,22 @@ declare function install(app: App): void;
 |-----------|------|-------------|
 | app | `App` | Vue app instance |
 
+### isDoctypeMany
+
+Type guard that checks whether a Doctype schema field has `cardinality: 'many'`
+
+**Signature:**
+
+```typescript
+export declare function isDoctypeMany(field: DoctypeSchema): field is DoctypeManySchema;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| field | `DoctypeSchema` | A DoctypeSchema field to check |
+
 ## Type Aliases
 
 ### BaseSchema
@@ -147,19 +163,49 @@ export type ComponentProps = {
 };
 ```
 
-### DoctypeSchema
+### DoctypeManySchema
 
-Schema structure for defining nested doctype fields inside AForm
+Schema structure for a 1:many child table field inside AForm
 
 **Definition:**
 
 ```typescript
-export type DoctypeSchema = BaseSchema & {
+export type DoctypeManySchema = BaseSchema & {
     fieldtype: 'Doctype';
     options: string;
     label?: string;
+    cardinality: 'many';
+    columns?: TableColumn[];
+    config?: TableConfig;
+    rows?: TableRow[];
+    component?: string;
+};
+```
+
+### DoctypeOneSchema
+
+Schema structure for a 1:1 nested doctype field inside AForm
+
+**Definition:**
+
+```typescript
+export type DoctypeOneSchema = BaseSchema & {
+    fieldtype: 'Doctype';
+    options: string;
+    label?: string;
+    cardinality?: 'one';
     schema?: SchemaTypes[];
 };
+```
+
+### DoctypeSchema
+
+Discriminated union for Doctype fields — either 1:1 nested form or 1:many child table
+
+**Definition:**
+
+```typescript
+export type DoctypeSchema = DoctypeOneSchema | DoctypeManySchema;
 ```
 
 ### FieldsetSchema
@@ -211,24 +257,7 @@ Superset of all schema types for AForm
 **Definition:**
 
 ```typescript
-export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema | DoctypeSchema | TableDoctypeSchema;
-```
-
-### TableDoctypeSchema
-
-Schema structure for defining 1:many child table fields inside AForm
-
-**Definition:**
-
-```typescript
-export type TableDoctypeSchema = BaseSchema & {
-    fieldtype: 'Table';
-    options: string;
-    label?: string;
-    columns?: TableColumn[];
-    config?: TableConfig;
-    rows?: TableRow[];
-};
+export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema | DoctypeSchema;
 ```
 
 ### TableSchema

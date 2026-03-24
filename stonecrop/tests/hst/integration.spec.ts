@@ -63,8 +63,8 @@ describe('HST Real Component Integration', () => {
 			// JSON field for complex data
 			{ fieldname: 'metadata', fieldtype: 'JSON', label: 'Metadata', component: 'ATextInput' },
 
-			// Table field for related items
-			{ fieldname: 'subtasks', fieldtype: 'Table', label: 'Subtasks', component: 'ATable' },
+			// Doctype field with cardinality:many for related items
+			{ fieldname: 'subtasks', fieldtype: 'Doctype', cardinality: 'many', label: 'Subtasks', component: 'ATable' },
 		] as SchemaTypes[])
 
 		const mockWorkflow: UnknownMachineConfig = {

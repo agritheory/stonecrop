@@ -280,6 +280,7 @@ export function classifyFieldType(
 			base.component = 'ATable'
 			base.fieldtype = 'Doctype'
 			base.options = toSlug(connectionNodeTypeName)
+			base.cardinality = 'many'
 			return base
 		}
 
@@ -288,6 +289,7 @@ export function classifyFieldType(
 			base.component = 'ATable'
 			base.fieldtype = 'Doctype'
 			base.options = toSlug(namedType.name)
+			base.cardinality = 'many'
 			return base
 		}
 

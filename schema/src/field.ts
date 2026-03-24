@@ -119,6 +119,13 @@ export const FieldMeta = z
 		options: FieldOptions.optional(),
 
 		/**
+		 * Cardinality for Doctype fields:
+		 * - 'one': 1:1 nested form (default)
+		 * - 'many': 1:many child table
+		 */
+		cardinality: z.enum(['one', 'many']).optional(),
+
+		/**
 		 * Input mask pattern. Accepts either a plain mask string or a stringified
 		 * arrow function that receives `locale` and returns a mask string.
 		 *
