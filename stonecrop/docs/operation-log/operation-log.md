@@ -45,7 +45,6 @@ const {
   stonecrop,
   hstStore,
   formData,
-  provideHSTPath,
   handleHSTChange,
   operationLog  // All operation log functionality nested here
 } = useStonecrop({ doctype, recordId })

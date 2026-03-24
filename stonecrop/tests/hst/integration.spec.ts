@@ -174,7 +174,7 @@ describe('HST Real Component Integration', () => {
 					/>
 				`,
 				setup() {
-					const { formData, handleHSTChange, provideHSTPath } = useStonecrop({ doctype, recordId: 'test-task' })
+					const { formData, handleHSTChange, stonecrop } = useStonecrop({ doctype, recordId: 'test-task' })
 
 					const fieldSchema = {
 						fieldname: 'name',
@@ -186,7 +186,7 @@ describe('HST Real Component Integration', () => {
 					const fieldValue = computed({
 						get: () => formData.value.name || '',
 						set: value => {
-							const hstPath = provideHSTPath('name')
+							const hstPath = stonecrop.value?.buildHSTPath('task', 'test-task', 'name') || ''
 							handleHSTChange({
 								path: hstPath,
 								value,
@@ -253,13 +253,13 @@ describe('HST Real Component Integration', () => {
 					</div>
 				`,
 				setup() {
-					const { formData, handleHSTChange, provideHSTPath } = useStonecrop({ doctype, recordId: 'test-task' })
+					const { formData, handleHSTChange, stonecrop } = useStonecrop({ doctype, recordId: 'test-task' })
 
 					const priorityValue = computed({
 						get: () => formData.value.priority || 1,
 						set: value => {
 							handleHSTChange({
-								path: provideHSTPath('priority'),
+								path: stonecrop.value?.buildHSTPath('task', 'test-task', 'priority') || '',
 								value: Number(value),
 								fieldname: 'priority',
 							})
@@ -270,7 +270,7 @@ describe('HST Real Component Integration', () => {
 						get: () => formData.value.progress || 0,
 						set: value => {
 							handleHSTChange({
-								path: provideHSTPath('progress'),
+								path: stonecrop.value?.buildHSTPath('task', 'test-task', 'progress') || '',
 								value: Number(value),
 								fieldname: 'progress',
 							})
@@ -337,13 +337,13 @@ describe('HST Real Component Integration', () => {
 					</div>
 				`,
 				setup() {
-					const { formData, handleHSTChange, provideHSTPath } = useStonecrop({ doctype, recordId: 'test-task' })
+					const { formData, handleHSTChange, stonecrop } = useStonecrop({ doctype, recordId: 'test-task' })
 
 					const activeValue = computed({
 						get: () => formData.value.active || false,
 						set: value => {
 							handleHSTChange({
-								path: provideHSTPath('active'),
+								path: stonecrop.value?.buildHSTPath('task', 'test-task', 'active') || '',
 								value: Boolean(value),
 								fieldname: 'active',
 							})
@@ -354,7 +354,7 @@ describe('HST Real Component Integration', () => {
 						get: () => formData.value.urgent || false,
 						set: value => {
 							handleHSTChange({
-								path: provideHSTPath('urgent'),
+								path: stonecrop.value?.buildHSTPath('task', 'test-task', 'urgent') || '',
 								value: Boolean(value),
 								fieldname: 'urgent',
 							})
@@ -416,7 +416,7 @@ describe('HST Real Component Integration', () => {
 					</div>
 				`,
 				setup() {
-					const { formData, handleHSTChange, provideHSTPath } = useStonecrop({ doctype, recordId: 'test-task' })
+					const { formData, handleHSTChange, stonecrop } = useStonecrop({ doctype, recordId: 'test-task' })
 
 					const metadataValue = computed({
 						get: () => {
@@ -427,14 +427,14 @@ describe('HST Real Component Integration', () => {
 							try {
 								const parsedValue = JSON.parse(value)
 								handleHSTChange({
-									path: provideHSTPath('metadata'),
+									path: stonecrop.value?.buildHSTPath('task', 'test-task', 'metadata') || '',
 									value: parsedValue,
 									fieldname: 'metadata',
 								})
 							} catch {
 								// Invalid JSON, store as string
 								handleHSTChange({
-									path: provideHSTPath('metadata'),
+									path: stonecrop.value?.buildHSTPath('task', 'test-task', 'metadata') || '',
 									value,
 									fieldname: 'metadata',
 								})
@@ -487,7 +487,7 @@ describe('HST Real Component Integration', () => {
 					</div>
 				`,
 				setup() {
-					const { formData, handleHSTChange, provideHSTPath, hstStore } = useStonecrop({
+					const { formData, handleHSTChange, stonecrop, hstStore } = useStonecrop({
 						doctype,
 						recordId: 'multi-test',
 					})
@@ -497,7 +497,7 @@ describe('HST Real Component Integration', () => {
 						get: () => formData.value.name || '',
 						set: value =>
 							handleHSTChange({
-								path: provideHSTPath('name'),
+								path: stonecrop.value?.buildHSTPath('task', 'multi-test', 'name') || '',
 								value,
 								fieldname: 'name',
 							}),
@@ -507,7 +507,7 @@ describe('HST Real Component Integration', () => {
 						get: () => formData.value.priority || 1,
 						set: value =>
 							handleHSTChange({
-								path: provideHSTPath('priority'),
+								path: stonecrop.value?.buildHSTPath('task', 'multi-test', 'priority') || '',
 								value: Number(value),
 								fieldname: 'priority',
 							}),
@@ -517,7 +517,7 @@ describe('HST Real Component Integration', () => {
 						get: () => formData.value.active || false,
 						set: value =>
 							handleHSTChange({
-								path: provideHSTPath('active'),
+								path: stonecrop.value?.buildHSTPath('task', 'multi-test', 'active') || '',
 								value: Boolean(value),
 								fieldname: 'active',
 							}),

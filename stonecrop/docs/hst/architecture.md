@@ -57,7 +57,7 @@ graph TB
     end
 
     subgraph "useStonecrop HST Composable"
-        PHST[provideHSTPath]
+        BHP[buildHSTPath]
         HHST[handleHSTChange]
         SDUP[setupDeepReactivity]
         INR[initializeNewRecord]
@@ -81,11 +81,11 @@ graph TB
         REC[Record Management]
     end
 
-    FC --> PHST
+    FC --> BHP
     IC --> HHST
     TC --> HHST
 
-    PHST --> PG
+    BHP --> PG
     HHST --> PS
     HHST --> NS
     HHST --> OR
@@ -249,7 +249,7 @@ graph TB
     end
 
     subgraph "HST Integration Bridge"
-        PHF[provideHSTPath Function]
+        BPF[buildHSTPath Function]
         HCF[handleHSTChange Function]
         UNF[updateNestedObject Function]
     end
@@ -270,8 +270,8 @@ graph TB
     FD --> WA
 
     WA --> HST
-    PR --> PHF
-    PHF --> HCF
+    PR --> BPF
+    BPF --> HCF
     HCF --> UNF
 
     UNF --> FD
@@ -285,6 +285,6 @@ graph TB
 
     style FD fill:#c8e6c9
     style HST fill:#f3e5f5
-    style PHF fill:#fff3e0
+    style BPF fill:#fff3e0
     style HCF fill:#ffcdd2
 ```

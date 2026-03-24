@@ -4,6 +4,26 @@
 
 ## Functions
 
+### collectNestedData
+
+Recursively collect nested data from HST using pre-resolved schemas.
+
+Walks through a resolved schema and collects all values from the HST store, including nested 1:1 Doctype fields and 1:many child arrays.
+
+**Signature:**
+
+```typescript
+export declare function collectNestedData(resolvedSchema: SchemaTypes[], basePath: string, hstStore: HSTNode): Record<string, unknown>;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| resolvedSchema | `SchemaTypes[]` | The already-resolved schema (with nested schemas embedded) |
+| basePath | `string` | The base path in HST (e.g., "customer.123.address") |
+| hstStore | `HSTNode` | The HST store instance |
+
 ### createHST
 
 Factory function for HST creation Creates a new HSTNode proxy for hierarchical state tree navigation.
@@ -996,20 +1016,16 @@ HST-enabled Stonecrop composable return type
 
 ```typescript
 export type HSTStonecropReturn = BaseStonecropReturn & {
-    provideHSTPath: (fieldname: string, recordId?: string) => string;
     handleHSTChange: (changeData: HSTChangeData) => void;
     hstStore: Ref<HSTNode | undefined>;
     formData: Ref<Record<string, any>>;
     resolvedSchema: Ref<SchemaTypes[]>;
-    loadNestedData: (parentPath: string, childDoctype: Doctype, recordId?: string) => Record<string, any>;
-    collectRecordPayload: (doctype: Doctype, recordId: string) => Record<string, any>;
     createNestedContext: (basePath: string, childDoctype: Doctype) => {
-        provideHSTPath: (fieldname: string) => string;
+        buildHSTPath: (fieldname: string) => string;
         handleHSTChange: (changeData: HSTChangeData) => void;
     };
     isLoading: Ref<boolean>;
     error: Ref<Error | null>;
-    resolvedDoctype: Ref<Doctype | undefined>;
 };
 ```
 
@@ -1562,6 +1578,22 @@ addRecord(doctype: string | Doctype, recordId: string, recordData: any): void
 | recordId | `string` | The record ID |
 | recordData | `any` | The record data |
 
+#### buildHSTPath
+
+Build an HST path string from components.
+
+```typescript
+buildHSTPath(doctype: string | Doctype, recordId: string, fieldname: string): string
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `string \| Doctype` | The doctype slug or Doctype instance |
+| recordId | `string` | The record ID |
+| fieldname | `string` | The field name (can include nested path, e.g., "address.street") |
+
 #### clearRecords
 
 Clear all records for a doctype
@@ -1575,6 +1607,23 @@ clearRecords(doctype: string | Doctype): void
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | doctype | `string \| Doctype` | The doctype |
+
+#### collectRecordPayload
+
+Collect a record payload with all nested doctype fields from HST.
+
+This method can be called from anywhere (including outside Vue's setup phase) to gather form data for API submission. It recursively collects: - Simple field values from the record - 1:1 nested Doctype fields (cardinality: 'one') - 1:many child arrays (cardinality: 'many')
+
+```typescript
+collectRecordPayload(doctype: Doctype, recordId: string): Record<string, unknown>
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `Doctype` | The doctype metadata |
+| recordId | `string` | The record ID to collect |
 
 #### dispatchAction
 
@@ -1617,6 +1666,22 @@ getMeta(context: RouteContext): Promise<any>
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | context | `RouteContext` | The route context |
+
+#### getNestedData
+
+Load nested doctype data from HST or initialize new structure.
+
+```typescript
+getNestedData(parentPath: string, childDoctype: Doctype, recordId: string): Record<string, unknown>
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| parentPath | `string` | The parent path (e.g., "customer.123.address") |
+| childDoctype | `Doctype` | The child doctype metadata |
+| recordId | `string` | Optional record ID to load |
 
 #### getRecord
 
@@ -1700,6 +1765,22 @@ Get the root HST store node for advanced usage
 ```typescript
 getStore(): HSTNode
 ```
+
+#### initializeRecord
+
+Initialize a new record with default values based on doctype schema.
+
+Creates an object with default values for each field in the schema: - Data/Text: empty string - Check: false - Int/Float: 0 - JSON: empty object - Doctype (cardinality: 'many'): empty array - Doctype (cardinality: 'one'): empty object - Other: null
+
+```typescript
+initializeRecord(doctype: Doctype): Record<string, unknown>
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `Doctype` | The doctype to initialize a record for |
 
 #### records
 

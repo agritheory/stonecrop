@@ -390,7 +390,7 @@ import { AForm } from '@stonecrop/aform'
 import { registry, customerDoctype } from './registry'
 
 // Schema is automatically resolved and available as resolvedSchema
-const { formData, resolvedSchema, handleHSTChange, provideHSTPath } = useStonecrop({
+const { stonecrop, formData, resolvedSchema, handleHSTChange } = useStonecrop({
   registry,
   doctype: customerDoctype,
   recordId: 'customer-123'
@@ -409,7 +409,7 @@ The composable:
 - Automatically calls `registry.resolveSchema()` on mount
 - Provides `resolvedSchema` ref with fully embedded schemas
 - Manages HST state synchronization for nested data
-- Handles `provideHSTPath` for proper nested field paths
+- Use `stonecrop.value.buildHSTPath('customer', 'customer-123', 'fieldname')` for HST paths
 
 This provides the best developer experience when using full Stonecrop integration.
 

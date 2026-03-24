@@ -256,13 +256,13 @@ const hydratedSchema = hydrateSchema(schema)
 
 ```typescript
 // Basic setup
-const { stonecrop, provideHSTPath, handleHSTChange, formData } = useStonecrop({
+const { stonecrop, handleHSTChange, formData } = useStonecrop({
   doctype: userDoctype,              // Schema definition
   recordId: userId.value,             // Which record to load
 })
 
-// provideHSTPath generates paths like "user.123.username"
-const fieldPath = provideHSTPath('username') // → "user.123.username"
+// stonecrop.buildHSTPath generates paths like "user.123.username"
+const fieldPath = stonecrop.value?.buildHSTPath('user', userId.value, 'username') // → "user.123.username"
 
 // handleHSTChange updates both local state and HST
 handleHSTChange({

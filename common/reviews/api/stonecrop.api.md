@@ -52,6 +52,9 @@ export interface BatchOperation {
 }
 
 // @public
+export function collectNestedData(resolvedSchema: SchemaTypes[], basePath: string, hstStore: HSTNode): Record<string, unknown>;
+
+// @public
 export function createHST(target: any, doctype: string, parentDoctype?: string): HSTNode;
 
 // @public
@@ -253,20 +256,16 @@ export type HSTOperationType = 'set' | 'delete' | 'batch' | 'transition' | 'acti
 
 // @public
 export type HSTStonecropReturn = BaseStonecropReturn & {
-    provideHSTPath: (fieldname: string, recordId?: string) => string;
     handleHSTChange: (changeData: HSTChangeData) => void;
     hstStore: Ref<HSTNode | undefined>;
     formData: Ref<Record<string, any>>;
     resolvedSchema: Ref<SchemaTypes[]>;
-    loadNestedData: (parentPath: string, childDoctype: Doctype, recordId?: string) => Record<string, any>;
-    collectRecordPayload: (doctype: Doctype, recordId: string) => Record<string, any>;
     createNestedContext: (basePath: string, childDoctype: Doctype) => {
-        provideHSTPath: (fieldname: string) => string;
+        buildHSTPath: (fieldname: string) => string;
         handleHSTChange: (changeData: HSTChangeData) => void;
     };
     isLoading: Ref<boolean>;
     error: Ref<Error | null>;
-    resolvedDoctype: Ref<Doctype | undefined>;
 };
 
 // @public
@@ -405,7 +404,9 @@ export function setFieldRollback(doctype: string, fieldname: string, enableRollb
 export class Stonecrop {
     constructor(registry: Registry, operationLogConfig?: Partial<OperationLogConfig>, options?: StonecropOptions);
     addRecord(doctype: string | Doctype, recordId: string, recordData: any): void;
+    buildHSTPath(doctype: string | Doctype, recordId: string, fieldname: string): string;
     clearRecords(doctype: string | Doctype): void;
+    collectRecordPayload(doctype: Doctype, recordId: string): Record<string, unknown>;
     dispatchAction(doctype: Doctype, action: string, args?: unknown[]): Promise<{
         success: boolean;
         data: unknown;
@@ -413,6 +414,7 @@ export class Stonecrop {
     }>;
     getClient(): DataClient | undefined;
     getMeta(context: RouteContext): Promise<any>;
+    getNestedData(parentPath: string, childDoctype: Doctype, recordId?: string): Record<string, unknown>;
     // @internal
     getOperationLogStore(): Store<"hst-operation-log", Pick<{
     operations: Ref<    {
@@ -679,6 +681,7 @@ export class Stonecrop {
     getRecords(doctype: Doctype): Promise<void>;
     getRecordState(doctype: string | Doctype, recordId: string): string;
     getStore(): HSTNode;
+    initializeRecord(doctype: Doctype): Record<string, unknown>;
     records(doctype: string | Doctype): HSTNode;
     readonly registry: Registry;
     removeRecord(doctype: string | Doctype, recordId: string): void;

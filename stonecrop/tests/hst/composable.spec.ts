@@ -1,7 +1,7 @@
 import { mount } from '@vue/test-utils'
 import { List, Map } from 'immutable'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { nextTick, defineComponent } from 'vue'
+import { nextTick, defineComponent, computed } from 'vue'
 import type { UnknownMachineConfig } from 'xstate'
 
 import type { SchemaTypes } from '@stonecrop/aform'
@@ -49,16 +49,18 @@ describe('HST Composable Functionality', () => {
 			const TestComponent = defineComponent({
 				template: '<div>{{ hstPath }}</div>',
 				setup() {
-					const { stonecrop, provideHSTPath, handleHSTChange, hstStore, formData } = useStonecrop({
+					const { stonecrop, handleHSTChange, hstStore, formData } = useStonecrop({
 						doctype,
 						recordId: 'test-123',
 					})
 
-					const hstPath = provideHSTPath('name')
+					const hstPath = computed(() => {
+						if (!stonecrop.value) return ''
+						return stonecrop.value.buildHSTPath('task', 'test-123', 'name')
+					})
 
 					return {
 						stonecrop,
-						provideHSTPath,
 						handleHSTChange,
 						hstStore,
 						formData,
@@ -81,7 +83,6 @@ describe('HST Composable Functionality', () => {
 			const vm = wrapper.vm as any
 
 			// Check that all required functions are provided
-			expect(typeof vm.provideHSTPath).toBe('function')
 			expect(typeof vm.handleHSTChange).toBe('function')
 
 			// Check HST path generation
@@ -165,7 +166,8 @@ describe('HST Composable Functionality', () => {
 			const TestComponent = defineComponent({
 				template: '<div></div>',
 				setup() {
-					return useStonecrop({ doctype, recordId: 'test-123' })
+					const { stonecrop } = useStonecrop({ doctype, recordId: 'test-123' })
+					return { stonecrop }
 				},
 			})
 
@@ -183,9 +185,9 @@ describe('HST Composable Functionality', () => {
 			const vm = wrapper.vm as any
 
 			// Test various path generations
-			expect(vm.provideHSTPath('name')).toBe('task.test-123.name')
-			expect(vm.provideHSTPath('active')).toBe('task.test-123.active')
-			expect(vm.provideHSTPath('items.0.name')).toBe('task.test-123.items.0.name')
+			expect(vm.stonecrop.buildHSTPath('task', 'test-123', 'name')).toBe('task.test-123.name')
+			expect(vm.stonecrop.buildHSTPath('task', 'test-123', 'active')).toBe('task.test-123.active')
+			expect(vm.stonecrop.buildHSTPath('task', 'test-123', 'items.0.name')).toBe('task.test-123.items.0.name')
 		})
 
 		it('should handle complex nested changes', async () => {

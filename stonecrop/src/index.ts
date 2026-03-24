@@ -17,6 +17,7 @@ import Registry from './registry'
 import { type StonecropOptions, Stonecrop } from './stonecrop'
 import { HST, createHST, type HSTNode } from './stores/hst'
 import { useOperationLogStore } from './stores/operation-log'
+import { collectNestedData } from './utils'
 // Export schema validator
 import { SchemaValidator, createValidator, validateSchema } from './schema-validator'
 export type * from './types'
@@ -62,6 +63,8 @@ export {
 	useOperationLogStore,
 	useUndoRedoShortcuts,
 	withBatch,
+	// Utility exports
+	collectNestedData,
 }
 
 // Default export is the Vue plugin

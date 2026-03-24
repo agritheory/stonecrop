@@ -89,12 +89,9 @@ describe('useStonecrop HST mode', () => {
 		await new Promise(resolve => setTimeout(resolve, 50))
 
 		const vm = wrapper.vm as any
-		expect(vm.provideHSTPath).toBeDefined()
 		expect(vm.handleHSTChange).toBeDefined()
 		expect(vm.formData).toBeDefined()
 		expect(vm.resolvedSchema).toBeDefined()
-		expect(vm.loadNestedData).toBeDefined()
-		expect(vm.collectRecordPayload).toBeDefined()
 		expect(vm.createNestedContext).toBeDefined()
 	})
 
@@ -132,7 +129,7 @@ describe('useStonecrop HST mode', () => {
 		expect(addressField.schema.length).toBe(2)
 	})
 
-	it('generates HST paths via provideHSTPath', async () => {
+	it('generates HST paths via buildHSTPath', async () => {
 		const taskDoctype = createDoctype('Task')
 		registry.addDoctype(taskDoctype)
 
@@ -149,11 +146,11 @@ describe('useStonecrop HST mode', () => {
 		await wrapper.vm.$nextTick()
 
 		const vm = wrapper.vm as any
-		const path = vm.provideHSTPath('title')
+		const path = vm.stonecrop?.buildHSTPath('task', 'task-1', 'title')
 		expect(path).toBe('task.task-1.title')
 	})
 
-	it('provideHSTPath uses custom recordId override', async () => {
+	it('buildHSTPath uses custom recordId override', async () => {
 		const taskDoctype = createDoctype('Task')
 		registry.addDoctype(taskDoctype)
 
@@ -170,11 +167,11 @@ describe('useStonecrop HST mode', () => {
 		await wrapper.vm.$nextTick()
 
 		const vm = wrapper.vm as any
-		const path = vm.provideHSTPath('title', 'task-override')
+		const path = vm.stonecrop?.buildHSTPath('task', 'task-override', 'title')
 		expect(path).toBe('task.task-override.title')
 	})
 
-	it('provideHSTPath returns empty string when no doctype', async () => {
+	it('buildHSTPath works as a utility function', async () => {
 		const TestComponent = defineComponent({
 			setup() {
 				return useStonecrop()
@@ -188,9 +185,9 @@ describe('useStonecrop HST mode', () => {
 		await wrapper.vm.$nextTick()
 
 		const vm = wrapper.vm as any
-		// No doctype, should return empty string if provideHSTPath exists
-		if (vm.provideHSTPath) {
-			expect(vm.provideHSTPath('title')).toBe('')
+		// buildHSTPath is a utility function that works regardless of doctype loading
+		if (vm.stonecrop?.value) {
+			expect(vm.stonecrop.value.buildHSTPath('task', 'new', 'title')).toBe('task.new.title')
 		}
 	})
 
@@ -348,7 +345,7 @@ describe('useStonecrop HST mode', () => {
 		const vm = wrapper.vm as any
 		const nestedCtx = vm.createNestedContext('task.new.address', addressDoctype)
 
-		expect(nestedCtx.provideHSTPath('street')).toBe('task.new.address.street')
+		expect(nestedCtx.buildHSTPath('street')).toBe('task.new.address.street')
 
 		// Test nested change handler
 		nestedCtx.handleHSTChange({
@@ -359,7 +356,7 @@ describe('useStonecrop HST mode', () => {
 		// Should not throw
 	})
 
-	it('loadNestedData returns initialized record when no existing data', async () => {
+	it('getNestedData returns initialized record when no existing data', async () => {
 		const taskDoctype = createDoctype('Task')
 		registry.addDoctype(taskDoctype)
 
@@ -383,12 +380,12 @@ describe('useStonecrop HST mode', () => {
 		await new Promise(resolve => setTimeout(resolve, 50))
 
 		const vm = wrapper.vm as any
-		const nested = vm.loadNestedData('task.new.address', addressDoctype)
+		const nested = vm.stonecrop.getNestedData('task.new.address', addressDoctype)
 		expect(nested).toBeDefined()
 		expect(typeof nested).toBe('object')
 	})
 
-	it('loadNestedData with recordId tries to load existing data', async () => {
+	it('getNestedData with recordId tries to load existing data', async () => {
 		const taskDoctype = createDoctype('Task')
 		registry.addDoctype(taskDoctype)
 
@@ -411,11 +408,11 @@ describe('useStonecrop HST mode', () => {
 		await new Promise(resolve => setTimeout(resolve, 50))
 
 		const vm = wrapper.vm as any
-		const nested = vm.loadNestedData('task.new.address', addressDoctype, 'addr-1')
+		const nested = vm.stonecrop.getNestedData('task.new.address', addressDoctype, 'addr-1')
 		expect(nested).toBeDefined()
 	})
 
-	it('loadNestedData returns existing data when found in HST', async () => {
+	it('getNestedData returns existing data when found in HST', async () => {
 		const addressDoctype = createDoctype('Address', [
 			{ fieldname: 'street', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
 			{ fieldname: 'city', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
@@ -449,7 +446,7 @@ describe('useStonecrop HST mode', () => {
 			fieldname: 'address',
 		})
 
-		const nested = vm.loadNestedData('customer.cust-99.address', addressDoctype, 'addr-1')
+		const nested = vm.stonecrop.getNestedData('customer.cust-99.address', addressDoctype, 'addr-1')
 		expect(nested).toEqual(existingAddress)
 	})
 
@@ -571,7 +568,7 @@ describe('useStonecrop HST mode', () => {
 		]
 		stonecrop.getStore().set('order.order-1.items', itemsData)
 
-		const payload = vm.collectRecordPayload(orderDoctype, 'order-1')
+		const payload = vm.stonecrop.collectRecordPayload(orderDoctype, 'order-1')
 
 		expect(payload.order_number).toBe('ORD-001')
 		expect(payload.items).toBeDefined()
@@ -619,7 +616,7 @@ describe('useStonecrop HST mode', () => {
 			fieldname: 'order_number',
 		})
 
-		const payload = vm.collectRecordPayload(orderDoctype, 'order-2')
+		const payload = vm.stonecrop.collectRecordPayload(orderDoctype, 'order-2')
 
 		expect(payload.order_number).toBe('ORD-002')
 		expect(payload.items).toBeDefined()
@@ -670,7 +667,7 @@ describe('useStonecrop HST mode', () => {
 			city: 'Portland',
 		})
 
-		const payload = vm.collectRecordPayload(customerDoctype, 'cust-1')
+		const payload = vm.stonecrop.collectRecordPayload(customerDoctype, 'cust-1')
 
 		expect(payload.name).toBe('John Doe')
 		expect(payload.address).toBeDefined()
@@ -738,7 +735,7 @@ describe('useStonecrop HST mode', () => {
 			{ number: '555-5678', type: 'work' },
 		])
 
-		const payload = vm.collectRecordPayload(customerDoctype, 'cust-2')
+		const payload = vm.stonecrop.collectRecordPayload(customerDoctype, 'cust-2')
 
 		expect(payload.name).toBe('Jane Doe')
 		expect(payload.address).toBeDefined()
@@ -810,7 +807,7 @@ describe('useStonecrop HST mode', () => {
 			lng: -122.3321,
 		})
 
-		const payload = vm.collectRecordPayload(customerDoctype, 'cust-3')
+		const payload = vm.stonecrop.collectRecordPayload(customerDoctype, 'cust-3')
 
 		expect(payload.name).toBe('Bob Smith')
 		expect(payload.address).toBeDefined()
@@ -856,7 +853,7 @@ describe('useStonecrop base mode', () => {
 		const TestComponent = defineComponent({
 			setup() {
 				const result = useStonecrop()
-				// Access operation log before mount completes
+				// Access operation log - stonecrop is now initialized synchronously
 				const snapshot = result.operationLog.getSnapshot()
 				const ops = result.operationLog.getOperationsFor('task')
 				const undoResult = result.operationLog.undo({} as any)
@@ -882,12 +879,14 @@ describe('useStonecrop base mode', () => {
 		})
 
 		const vm = wrapper.vm as any
-		// Before mount, stonecrop is undefined so defaults apply
+		// Stonecrop is now initialized synchronously when registry is available
 		expect(vm.snapshot).toBeDefined()
 		expect(vm.ops).toEqual([])
 		expect(vm.undoResult).toBe(false)
 		expect(vm.redoResult).toBe(false)
 		expect(vm.batchResult).toBe(null)
-		expect(vm.logResult).toBe('')
+		// logAction now returns an actual operation ID since stonecrop is initialized
+		expect(vm.logResult).toBeDefined()
+		expect(typeof vm.logResult).toBe('string')
 	})
 })

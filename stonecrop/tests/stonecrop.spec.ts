@@ -558,4 +558,186 @@ describe('Stonecrop class with HST integration', () => {
 			expect(assignee.getParent()!.getPath()).toContain('details')
 		})
 	})
+
+	describe('collectRecordPayload', () => {
+		beforeEach(() => {
+			Registry._root = undefined as any
+		})
+
+		it('collects simple field values from record', () => {
+			const doctype = Doctype.fromObject({
+				name: 'Task',
+				fields: [
+					{ fieldname: 'title', fieldtype: 'Data' } as SchemaTypes,
+					{ fieldname: 'status', fieldtype: 'Data' } as SchemaTypes,
+				],
+			})
+			registry.addDoctype(doctype)
+
+			stonecrop.addRecord('task', 'task-1', { title: 'Test Task', status: 'open' })
+
+			const payload = stonecrop.collectRecordPayload(doctype, 'task-1')
+
+			expect(payload.title).toBe('Test Task')
+			expect(payload.status).toBe('open')
+		})
+
+		it('collects array data for cardinality: many fields', () => {
+			const itemDoctype = Doctype.fromObject({
+				name: 'Item',
+				fields: [{ fieldname: 'name', fieldtype: 'Data' } as SchemaTypes],
+			})
+			registry.addDoctype(itemDoctype)
+
+			const orderDoctype = Doctype.fromObject({
+				name: 'Order',
+				fields: [
+					{ fieldname: 'order_number', fieldtype: 'Data' } as SchemaTypes,
+					{
+						fieldname: 'items',
+						fieldtype: 'Doctype',
+						cardinality: 'many',
+						options: 'item',
+					} as SchemaTypes,
+				],
+			})
+			registry.addDoctype(orderDoctype)
+
+			stonecrop.addRecord('order', 'order-1', { order_number: 'ORD-001' })
+			stonecrop.getStore().set('order.order-1.items', [{ name: 'Item 1' }, { name: 'Item 2' }])
+
+			const payload = stonecrop.collectRecordPayload(orderDoctype, 'order-1')
+
+			expect(payload.order_number).toBe('ORD-001')
+			expect(payload.items).toBeDefined()
+			expect(Array.isArray(payload.items)).toBe(true)
+			expect(payload.items).toHaveLength(2)
+		})
+
+		it('collects nested 1:1 doctype fields', () => {
+			const addressDoctype = Doctype.fromObject({
+				name: 'Address',
+				fields: [
+					{ fieldname: 'street', fieldtype: 'Data' } as SchemaTypes,
+					{ fieldname: 'city', fieldtype: 'Data' } as SchemaTypes,
+				],
+			})
+			registry.addDoctype(addressDoctype)
+
+			const customerDoctype = Doctype.fromObject({
+				name: 'Customer',
+				fields: [
+					{ fieldname: 'name', fieldtype: 'Data' } as SchemaTypes,
+					{ fieldname: 'address', fieldtype: 'Doctype', options: 'address' } as SchemaTypes,
+				],
+			})
+			registry.addDoctype(customerDoctype)
+
+			stonecrop.addRecord('customer', 'cust-1', { name: 'John Doe' })
+			stonecrop.getStore().set('customer.cust-1.address', { street: '123 Oak St', city: 'Portland' })
+
+			const payload = stonecrop.collectRecordPayload(customerDoctype, 'cust-1')
+
+			expect(payload.name).toBe('John Doe')
+			expect(payload.address).toBeDefined()
+			expect(payload.address.street).toBe('123 Oak St')
+			expect(payload.address.city).toBe('Portland')
+		})
+
+		it('recursively collects nested 1:many inside 1:1', () => {
+			const phoneDoctype = Doctype.fromObject({
+				name: 'Phone',
+				fields: [{ fieldname: 'number', fieldtype: 'Data' } as SchemaTypes],
+			})
+			registry.addDoctype(phoneDoctype)
+
+			const addressDoctype = Doctype.fromObject({
+				name: 'Address',
+				fields: [
+					{ fieldname: 'street', fieldtype: 'Data' } as SchemaTypes,
+					{
+						fieldname: 'phones',
+						fieldtype: 'Doctype',
+						cardinality: 'many',
+						options: 'phone',
+					} as SchemaTypes,
+				],
+			})
+			registry.addDoctype(addressDoctype)
+
+			const customerDoctype = Doctype.fromObject({
+				name: 'Customer',
+				fields: [
+					{ fieldname: 'name', fieldtype: 'Data' } as SchemaTypes,
+					{ fieldname: 'address', fieldtype: 'Doctype', options: 'address' } as SchemaTypes,
+				],
+			})
+			registry.addDoctype(customerDoctype)
+
+			stonecrop.addRecord('customer', 'cust-2', { name: 'Jane Doe' })
+			stonecrop.getStore().set('customer.cust-2.address', { street: '456 Pine St' })
+			stonecrop.getStore().set('customer.cust-2.address.phones', [{ number: '555-1234' }])
+
+			const payload = stonecrop.collectRecordPayload(customerDoctype, 'cust-2')
+
+			expect(payload.name).toBe('Jane Doe')
+			expect(payload.address.phones).toBeDefined()
+			expect(Array.isArray(payload.address.phones)).toBe(true)
+			expect(payload.address.phones[0].number).toBe('555-1234')
+		})
+
+		it('collects deeply nested 1:1 inside 1:1', () => {
+			const coordsDoctype = Doctype.fromObject({
+				name: 'Coordinates',
+				fields: [
+					{ fieldname: 'lat', fieldtype: 'Float' } as SchemaTypes,
+					{ fieldname: 'lng', fieldtype: 'Float' } as SchemaTypes,
+				],
+			})
+			registry.addDoctype(coordsDoctype)
+
+			const addressDoctype = Doctype.fromObject({
+				name: 'Address',
+				fields: [
+					{ fieldname: 'street', fieldtype: 'Data' } as SchemaTypes,
+					{ fieldname: 'coordinates', fieldtype: 'Doctype', options: 'coordinates' } as SchemaTypes,
+				],
+			})
+			registry.addDoctype(addressDoctype)
+
+			const customerDoctype = Doctype.fromObject({
+				name: 'Customer',
+				fields: [
+					{ fieldname: 'name', fieldtype: 'Data' } as SchemaTypes,
+					{ fieldname: 'address', fieldtype: 'Doctype', options: 'address' } as SchemaTypes,
+				],
+			})
+			registry.addDoctype(customerDoctype)
+
+			stonecrop.addRecord('customer', 'cust-3', { name: 'Bob Smith' })
+			stonecrop.getStore().set('customer.cust-3.address', { street: '789 Elm St' })
+			stonecrop.getStore().set('customer.cust-3.address.coordinates', { lat: 47.6062, lng: -122.3321 })
+
+			const payload = stonecrop.collectRecordPayload(customerDoctype, 'cust-3')
+
+			expect(payload.name).toBe('Bob Smith')
+			expect(payload.address.coordinates).toBeDefined()
+			expect(payload.address.coordinates.lat).toBe(47.6062)
+			expect(payload.address.coordinates.lng).toBe(-122.3321)
+		})
+
+		it('handles empty record data', () => {
+			const doctype = Doctype.fromObject({
+				name: 'Task',
+				fields: [{ fieldname: 'title', fieldtype: 'Data' } as SchemaTypes],
+			})
+			registry.addDoctype(doctype)
+
+			stonecrop.addRecord('task', 'task-empty', {})
+
+			const payload = stonecrop.collectRecordPayload(doctype, 'task-empty')
+
+			expect(payload).toBeDefined()
+		})
+	})
 })

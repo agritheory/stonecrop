@@ -136,7 +136,7 @@ In your page or component:
 import taskDoctype from '~/doctypes/task.json'
 
 // HST-reactive form setup — pass doctype + recordId for full integration
-const { stonecrop, provideHSTPath, handleHSTChange, formData } = useStonecrop({
+const { stonecrop, handleHSTChange, formData } = useStonecrop({
   doctype: taskDoctype,
   recordId: 'task-123' // or undefined for new records
 })

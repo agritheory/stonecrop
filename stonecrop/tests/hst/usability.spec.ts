@@ -56,7 +56,7 @@ describe('HST Edge Cases & Performance', () => {
 				components: { ATextInput },
 				template: `<ATextInput v-model="largeDataValue" @update:modelValue="handleChange" />`,
 				setup() {
-					const { formData, handleHSTChange, provideHSTPath } = useStonecrop({ doctype, recordId: 'large-test' })
+					const { formData, handleHSTChange, stonecrop } = useStonecrop({ doctype, recordId: 'large-test' })
 
 					// Create a large nested structure
 					const largeData = {
@@ -79,7 +79,7 @@ describe('HST Edge Cases & Performance', () => {
 							try {
 								const parsed = JSON.parse(value)
 								handleHSTChange({
-									path: provideHSTPath('nested_data'),
+									path: stonecrop.value?.buildHSTPath(doctype.slug, 'large-test', 'nested_data') || '',
 									value: parsed,
 									fieldname: 'nested_data',
 								})
@@ -128,13 +128,13 @@ describe('HST Edge Cases & Performance', () => {
 					</div>
 				`,
 				setup() {
-					const { formData, handleHSTChange, provideHSTPath } = useStonecrop({ doctype, recordId: 'rapid-test' })
+					const { formData, handleHSTChange, stonecrop } = useStonecrop({ doctype, recordId: 'rapid-test' })
 
 					const nameValue = computed({
 						get: () => formData.value.name || '',
 						set: value =>
 							handleHSTChange({
-								path: provideHSTPath('name'),
+								path: stonecrop.value?.buildHSTPath(doctype.slug, 'rapid-test', 'name') || '',
 								value,
 								fieldname: 'name',
 							}),
@@ -144,7 +144,7 @@ describe('HST Edge Cases & Performance', () => {
 						get: () => formData.value.counter || 0,
 						set: value =>
 							handleHSTChange({
-								path: provideHSTPath('counter'),
+								path: stonecrop.value?.buildHSTPath(doctype.slug, 'rapid-test', 'counter') || '',
 								value: Number(value),
 								fieldname: 'counter',
 							}),
@@ -241,7 +241,7 @@ describe('HST Edge Cases & Performance', () => {
 			const CorruptionRecoveryTest = defineComponent({
 				template: `<div>{{ recoveryStatus }}</div>`,
 				setup() {
-					const { formData, handleHSTChange, provideHSTPath, hstStore } = useStonecrop({
+					const { formData, handleHSTChange, stonecrop, hstStore } = useStonecrop({
 						doctype,
 						recordId: 'corruption-test',
 					})
@@ -252,7 +252,7 @@ describe('HST Edge Cases & Performance', () => {
 						try {
 							// First, set some valid data
 							handleHSTChange({
-								path: provideHSTPath('name'),
+								path: stonecrop.value?.buildHSTPath(doctype.slug, 'corruption-test', 'name') || '',
 								value: 'Test Name',
 								fieldname: 'name',
 							})
@@ -264,7 +264,7 @@ describe('HST Edge Cases & Performance', () => {
 
 								// Try to continue operations
 								handleHSTChange({
-									path: provideHSTPath('metadata'),
+									path: stonecrop.value?.buildHSTPath(doctype.slug, 'corruption-test', 'metadata') || '',
 									value: { test: true },
 									fieldname: 'metadata',
 								})
@@ -302,7 +302,7 @@ describe('HST Edge Cases & Performance', () => {
 				components: { ATextInput },
 				template: `<ATextInput v-model="arrayValue" @update:modelValue="handleChange" />`,
 				setup() {
-					const { formData, handleHSTChange, provideHSTPath } = useStonecrop({ doctype, recordId: 'array-test' })
+					const { formData, handleHSTChange, stonecrop } = useStonecrop({ doctype, recordId: 'array-test' })
 
 					const arrayValue = computed({
 						get: () => {
@@ -318,7 +318,8 @@ describe('HST Edge Cases & Performance', () => {
 										if (item && typeof item === 'object') {
 											Object.keys(item).forEach(key => {
 												handleHSTChange({
-													path: provideHSTPath(`items.${index}.${key}`),
+													path:
+														stonecrop.value?.buildHSTPath(doctype.slug, 'array-test', `items.${index}.${key}`) || '',
 													value: item[key],
 													fieldname: `items.${index}.${key}`,
 												})
@@ -370,7 +371,7 @@ describe('HST Edge Cases & Performance', () => {
 				components: { ATextInput },
 				template: `<ATextInput v-model="mixedValue" @update:modelValue="handleChange" />`,
 				setup() {
-					const { formData, handleHSTChange, provideHSTPath } = useStonecrop({ doctype, recordId: 'mixed-test' })
+					const { formData, handleHSTChange, stonecrop } = useStonecrop({ doctype, recordId: 'mixed-test' })
 
 					const mixedValue = computed({
 						get: () => JSON.stringify(formData.value.config || {}),
@@ -390,7 +391,7 @@ describe('HST Edge Cases & Performance', () => {
 										} else {
 											// Primitive or array
 											handleHSTChange({
-												path: provideHSTPath(`config.${currentPath}`),
+												path: stonecrop.value?.buildHSTPath(doctype.slug, 'mixed-test', `config.${currentPath}`) || '',
 												value: currentValue,
 												fieldname: `config.${currentPath}`,
 											})
@@ -462,7 +463,7 @@ describe('HST Edge Cases & Performance', () => {
 						get: () => instance1.formData.value.name || '',
 						set: value =>
 							instance1.handleHSTChange({
-								path: instance1.provideHSTPath('name'),
+								path: instance1.stonecrop.value?.buildHSTPath(doctype.slug, 'shared-test', 'name') || '',
 								value,
 								fieldname: 'name',
 							}),
@@ -472,7 +473,7 @@ describe('HST Edge Cases & Performance', () => {
 						get: () => instance2.formData.value.name || '',
 						set: value =>
 							instance2.handleHSTChange({
-								path: instance2.provideHSTPath('name'),
+								path: instance2.stonecrop.value?.buildHSTPath(doctype.slug, 'shared-test', 'name') || '',
 								value,
 								fieldname: 'name',
 							}),

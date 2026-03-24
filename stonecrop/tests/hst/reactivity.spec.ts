@@ -139,7 +139,7 @@ const MockDoctypeForm = defineComponent({
 	`,
 	setup(props) {
 		// This composable should provide HST integration
-		const { stonecrop, provideHSTPath, handleHSTChange } = useStonecrop({
+		const { stonecrop, handleHSTChange } = useStonecrop({
 			doctype: props.doctype,
 			recordId: props.recordId,
 		})
@@ -169,7 +169,8 @@ const MockDoctypeForm = defineComponent({
 		])
 
 		const getHSTPath = (fieldname: string) => {
-			return provideHSTPath(fieldname, props.recordId)
+			const slug = typeof props.doctype === 'string' ? props.doctype : props.doctype?.slug
+			return stonecrop.value?.buildHSTPath(slug, props.recordId || 'new', fieldname) || ''
 		}
 
 		return {

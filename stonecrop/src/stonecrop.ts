@@ -1,3 +1,10 @@
+import {
+	type DoctypeManySchema,
+	type DoctypeOneSchema,
+	type DoctypeSchema,
+	isDoctypeMany,
+	type SchemaTypes,
+} from '@stonecrop/aform'
 import type { DataClient } from '@stonecrop/schema'
 import { reactive } from 'vue'
 
@@ -7,6 +14,7 @@ import { createHST, type HSTNode } from './stores/hst'
 import { useOperationLogStore } from './stores/operation-log'
 import type { OperationLogConfig } from './types/operation-log'
 import type { RouteContext } from './types/registry'
+import { collectNestedData } from './utils'
 
 /**
  * Options for constructing a Stonecrop instance directly.
@@ -416,5 +424,188 @@ export class Stonecrop {
 		}
 
 		return status || initialState
+	}
+
+	/**
+	 * Collect a record payload with all nested doctype fields from HST.
+	 *
+	 * This method can be called from anywhere (including outside Vue's setup phase)
+	 * to gather form data for API submission. It recursively collects:
+	 * - Simple field values from the record
+	 * - 1:1 nested Doctype fields (cardinality: 'one')
+	 * - 1:many child arrays (cardinality: 'many')
+	 *
+	 * @param doctype - The doctype metadata
+	 * @param recordId - The record ID to collect
+	 * @returns The complete record payload ready for API submission
+	 *
+	 * @example
+	 * ```ts
+	 * // In an event handler (outside setup)
+	 * async function handleSave() {
+	 *   const payload = stonecrop.collectRecordPayload(doctype, recordId)
+	 *   await stonecrop.dispatchAction(doctype, 'save', [payload])
+	 * }
+	 * ```
+	 *
+	 * @public
+	 */
+	collectRecordPayload(doctype: Doctype, recordId: string): Record<string, unknown> {
+		const hstStore = this.getStore()
+		const recordPath = `${doctype.slug}.${recordId}`
+		const recordData = hstStore.get(recordPath) || {}
+		const payload: Record<string, unknown> = { ...recordData }
+
+		const schemaArray = doctype.schema
+			? Array.isArray(doctype.schema)
+				? doctype.schema
+				: Array.from(doctype.schema)
+			: []
+		const resolved = this.registry.resolveSchema(schemaArray)
+
+		const doctypeFields = resolved.filter(
+			field =>
+				'fieldtype' in field &&
+				field.fieldtype === 'Doctype' &&
+				!isDoctypeMany(field as DoctypeSchema) &&
+				'schema' in field &&
+				Array.isArray(field.schema)
+		)
+
+		for (const field of doctypeFields) {
+			const doctypeField = field as DoctypeOneSchema
+			const fieldPath = `${recordPath}.${doctypeField.fieldname}`
+			const nestedData = collectNestedData(doctypeField.schema!, fieldPath, hstStore)
+			payload[doctypeField.fieldname] = nestedData
+		}
+
+		const doctypeManyFields = resolved.filter(
+			field => 'fieldtype' in field && field.fieldtype === 'Doctype' && isDoctypeMany(field as DoctypeSchema)
+		)
+
+		for (const field of doctypeManyFields) {
+			const doctypeField = field as DoctypeManySchema
+			const fieldPath = `${recordPath}.${doctypeField.fieldname}`
+			const arrayData = hstStore.get(fieldPath)
+			if (Array.isArray(arrayData)) {
+				payload[doctypeField.fieldname] = arrayData
+			}
+		}
+
+		return payload
+	}
+
+	/**
+	 * Initialize a new record with default values based on doctype schema.
+	 *
+	 * Creates an object with default values for each field in the schema:
+	 * - Data/Text: empty string
+	 * - Check: false
+	 * - Int/Float: 0
+	 * - JSON: empty object
+	 * - Doctype (cardinality: 'many'): empty array
+	 * - Doctype (cardinality: 'one'): empty object
+	 * - Other: null
+	 *
+	 * @param doctype - The doctype to initialize a record for
+	 * @returns Object with default field values
+	 *
+	 * @example
+	 * ```ts
+	 * const newTask = stonecrop.initializeRecord(taskDoctype)
+	 * // { title: '', status: false, priority: 0, ... }
+	 * ```
+	 *
+	 * @public
+	 */
+	initializeRecord(doctype: Doctype): Record<string, unknown> {
+		const initialData: Record<string, unknown> = {}
+
+		if (!doctype.schema) {
+			return initialData
+		}
+
+		const schemaArray = (Array.isArray(doctype.schema) ? doctype.schema : Array.from(doctype.schema)) as SchemaTypes[]
+
+		for (const field of schemaArray) {
+			const fieldtype = 'fieldtype' in field ? field.fieldtype : 'Data'
+			const fieldname = field.fieldname
+
+			switch (fieldtype) {
+				case 'Data':
+				case 'Text':
+					initialData[fieldname] = ''
+					break
+				case 'Check':
+					initialData[fieldname] = false
+					break
+				case 'Int':
+				case 'Float':
+					initialData[fieldname] = 0
+					break
+				case 'JSON':
+					initialData[fieldname] = {}
+					break
+				case 'Doctype': {
+					const cardinality = 'cardinality' in field ? field.cardinality : undefined
+					initialData[fieldname] = cardinality === 'many' ? [] : {}
+					break
+				}
+				default:
+					initialData[fieldname] = null
+			}
+		}
+
+		return initialData
+	}
+
+	/**
+	 * Load nested doctype data from HST or initialize new structure.
+	 *
+	 * @param parentPath - The parent path (e.g., "customer.123.address")
+	 * @param childDoctype - The child doctype metadata
+	 * @param recordId - Optional record ID to load
+	 * @returns The existing data or a newly initialized record
+	 *
+	 * @example
+	 * ```ts
+	 * const addressData = stonecrop.getNestedData('customer.123.address', addressDoctype)
+	 * ```
+	 *
+	 * @public
+	 */
+	getNestedData(parentPath: string, childDoctype: Doctype, recordId?: string): Record<string, unknown> {
+		if (recordId) {
+			const existingData = this.hstStore.get(parentPath)
+			if (existingData && typeof existingData === 'object') {
+				return existingData as Record<string, unknown>
+			}
+		}
+
+		return this.initializeRecord(childDoctype)
+	}
+
+	/**
+	 * Build an HST path string from components.
+	 *
+	 * @param doctype - The doctype slug or Doctype instance
+	 * @param recordId - The record ID
+	 * @param fieldname - The field name (can include nested path, e.g., "address.street")
+	 * @returns The HST path string (e.g., "customer.123.address.street")
+	 *
+	 * @example
+	 * ```ts
+	 * const path = stonecrop.buildHSTPath('customer', '123', 'name')
+	 * // "customer.123.name"
+	 *
+	 * const nestedPath = stonecrop.buildHSTPath(customerDoctype, '123', 'address.city')
+	 * // "customer.123.address.city"
+	 * ```
+	 *
+	 * @public
+	 */
+	buildHSTPath(doctype: string | Doctype, recordId: string, fieldname: string): string {
+		const slug = typeof doctype === 'string' ? doctype : doctype.slug
+		return `${slug}.${recordId}.${fieldname}`
 	}
 }

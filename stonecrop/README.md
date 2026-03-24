@@ -85,14 +85,14 @@ export default {
     const { stonecrop, operationLog } = useStonecrop()
 
     // HST mode — pass Doctype instance and optional recordId
-    const { stonecrop, formData, provideHSTPath, handleHSTChange } = useStonecrop({
+    const { stonecrop, formData, handleHSTChange } = useStonecrop({
       doctype: myDoctype,
       recordId: 'record-123', // omit or pass undefined for new records
     })
 
     // HST mode with lazy-loading — pass string doctype slug
     // Automatically loads doctype via registry.getMeta if not in registry
-    const { isLoading, error, resolvedDoctype, formData } = useStonecrop({
+    const { isLoading, error, formData } = useStonecrop({
       doctype: 'plan',
       recordId: 'record-123',
     })
@@ -114,10 +114,10 @@ When you pass a string doctype slug instead of a `Doctype` instance, `useStonecr
 
 1. Check if the doctype is already in the Registry
 2. If not, call `registry.getMeta` to lazy-load it
-3. Return `isLoading`, `error`, and `resolvedDoctype` refs for handling the async state
+3. Return `isLoading` and `error` refs for handling the async state
 
 ```typescript
-const { isLoading, error, resolvedDoctype, formData } = useStonecrop({
+const { isLoading, error, formData } = useStonecrop({
   doctype: 'plan',  // string slug - triggers lazy-loading
   recordId: '123',
 })
@@ -125,7 +125,7 @@ const { isLoading, error, resolvedDoctype, formData } = useStonecrop({
 // In your template:
 // <div v-if="isLoading">Loading doctype...</div>
 // <div v-else-if="error">Error: {{ error.message }}</div>
-// <AForm v-else :schema="resolvedDoctype.schema" v-model:data="formData" />
+// <AForm v-else :schema="resolvedSchema" v-model:data="formData" />
 ```
 
 This pattern eliminates the timing mismatch when loading doctypes asynchronously in Nuxt plugins.
@@ -136,7 +136,7 @@ A Doctype defines schema, workflow, and actions.
   - **Workflow** is an XState machine config expressing the states and transitions a record can go through.
   - **Actions** are an ordered map of named functions, triggered by field changes (lowercase keys) or FSM transitions (UPPERCASE keys).
   - **Registry** is the singleton catalog — all doctypes live here. Optional Vue Router integration allows automatic route creation per doctype.
-  - **Stem/`useStonecrop()`** is the Vue composable that wires components to HST and provides `formData`, `provideHSTPath`, `handleHSTChange`, and the operation log API.
+  - **Stem/`useStonecrop()`** is the Vue composable that wires components to HST and provides `formData`, `handleHSTChange`, `resolvedSchema`, and the operation log API.
 
 The data model is **two operations**: get data and run actions. There is no CRUD. Records change state through FSM transitions; those transitions have side effects (persistence, notifications, etc.) defined in action handlers registered by the application. The framework provides the pipeline; applications define what actions exist and what they do.
 
