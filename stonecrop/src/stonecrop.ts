@@ -1,3 +1,10 @@
+import {
+	type DoctypeManySchema,
+	type DoctypeOneSchema,
+	type DoctypeSchema,
+	type SchemaTypes,
+	isDoctypeMany,
+} from '@stonecrop/aform'
 import type { DataClient } from '@stonecrop/schema'
 import { reactive } from 'vue'
 
@@ -430,4 +437,102 @@ export class Stonecrop {
 
 		return status || initialState
 	}
+
+	/**
+	 * Collect a record payload with all nested doctype fields from HST
+	 * @param doctype - The doctype metadata
+	 * @param recordId - The record ID to collect
+	 * @returns The complete record payload ready for API submission
+	 * @public
+	 */
+	collectRecordPayload(doctype: Doctype, recordId: string): Record<string, any> {
+		const recordPath = `${doctype.slug}.${recordId}`
+		const recordData = this.hstStore.get(recordPath) || {}
+
+		const payload: Record<string, any> = { ...recordData }
+
+		const schemaArray = doctype.schema
+			? Array.isArray(doctype.schema)
+				? doctype.schema
+				: Array.from(doctype.schema)
+			: []
+		const resolved = this.registry.resolveSchema(schemaArray)
+
+		const doctypeFields = resolved.filter(
+			field =>
+				'fieldtype' in field &&
+				field.fieldtype === 'Doctype' &&
+				!isDoctypeMany(field as DoctypeSchema) &&
+				'schema' in field &&
+				Array.isArray(field.schema)
+		)
+
+		for (const field of doctypeFields) {
+			const doctypeField = field as DoctypeOneSchema
+			const fieldPath = `${recordPath}.${doctypeField.fieldname}`
+			const nestedData = collectNestedData(doctypeField.schema!, fieldPath, this.hstStore)
+			payload[doctypeField.fieldname] = nestedData
+		}
+
+		const doctypeManyFields = resolved.filter(
+			field => 'fieldtype' in field && field.fieldtype === 'Doctype' && isDoctypeMany(field as DoctypeSchema)
+		)
+
+		for (const field of doctypeManyFields) {
+			const doctypeField = field as DoctypeManySchema
+			const fieldPath = `${recordPath}.${doctypeField.fieldname}`
+			const arrayData = this.hstStore.get(fieldPath)
+			if (Array.isArray(arrayData)) {
+				payload[doctypeField.fieldname] = arrayData
+			}
+		}
+
+		return payload
+	}
 }
+
+/**
+ * Recursively collect nested data from HST using pre-resolved schemas
+ * @param resolvedSchema - The already-resolved schema (with nested schemas embedded)
+ * @param basePath - The base path in HST (e.g., "customer.123.address")
+ * @param hstStore - The HST store instance
+ * @returns The collected data object
+ * @public
+ */
+function collectNestedData(resolvedSchema: SchemaTypes[], basePath: string, hstStore: HSTNode): Record<string, any> {
+	const data = hstStore.get(basePath) || {}
+	const payload: Record<string, any> = { ...data }
+
+	const doctypeFields = resolvedSchema.filter(
+		field =>
+			'fieldtype' in field &&
+			field.fieldtype === 'Doctype' &&
+			!isDoctypeMany(field as DoctypeSchema) &&
+			'schema' in field &&
+			Array.isArray(field.schema)
+	)
+
+	for (const field of doctypeFields) {
+		const doctypeField = field as DoctypeOneSchema
+		const fieldPath = `${basePath}.${doctypeField.fieldname}`
+		const nestedData = collectNestedData(doctypeField.schema!, fieldPath, hstStore)
+		payload[doctypeField.fieldname] = nestedData
+	}
+
+	const doctypeManyFields = resolvedSchema.filter(
+		field => 'fieldtype' in field && field.fieldtype === 'Doctype' && isDoctypeMany(field as DoctypeSchema)
+	)
+
+	for (const field of doctypeManyFields) {
+		const doctypeField = field as DoctypeManySchema
+		const fieldPath = `${basePath}.${doctypeField.fieldname}`
+		const arrayData = hstStore.get(fieldPath)
+		if (Array.isArray(arrayData)) {
+			payload[doctypeField.fieldname] = arrayData
+		}
+	}
+
+	return payload
+}
+
+export { collectNestedData }

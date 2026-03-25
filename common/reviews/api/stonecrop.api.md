@@ -52,6 +52,9 @@ export interface BatchOperation {
 }
 
 // @public
+export function collectNestedData(resolvedSchema: SchemaTypes[], basePath: string, hstStore: HSTNode): Record<string, any>;
+
+// @public
 export function createHST(target: any, doctype: string, parentDoctype?: string): HSTNode;
 
 // @public
@@ -406,6 +409,7 @@ export class Stonecrop {
     constructor(registry: Registry, operationLogConfig?: Partial<OperationLogConfig>, options?: StonecropOptions);
     addRecord(doctype: string | Doctype, recordId: string, recordData: any): void;
     clearRecords(doctype: string | Doctype): void;
+    collectRecordPayload(doctype: Doctype, recordId: string): Record<string, any>;
     dispatchAction(doctype: Doctype, action: string, args?: unknown[]): Promise<{
         success: boolean;
         data: unknown;

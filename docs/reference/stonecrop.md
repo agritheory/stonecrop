@@ -9,6 +9,24 @@ description: Core orchestration with Registry, HST, and composables
 
 ## Functions
 
+### collectNestedData
+
+Recursively collect nested data from HST using pre-resolved schemas
+
+**Signature:**
+
+```typescript
+declare function collectNestedData(resolvedSchema: SchemaTypes[], basePath: string, hstStore: HSTNode): Record<string, any>;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| resolvedSchema | `SchemaTypes[]` | The already-resolved schema (with nested schemas embedded) |
+| basePath | `string` | The base path in HST (e.g., "customer.123.address") |
+| hstStore | `HSTNode` | The HST store instance |
+
 ### createHST
 
 Factory function for HST creation Creates a new HSTNode proxy for hierarchical state tree navigation.
@@ -1580,6 +1598,21 @@ clearRecords(doctype: string | Doctype): void
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | doctype | `string \| Doctype` | The doctype |
+
+#### collectRecordPayload
+
+Collect a record payload with all nested doctype fields from HST
+
+```typescript
+collectRecordPayload(doctype: Doctype, recordId: string): Record<string, any>
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `Doctype` | The doctype metadata |
+| recordId | `string` | The record ID to collect |
 
 #### dispatchAction
 
