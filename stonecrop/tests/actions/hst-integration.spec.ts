@@ -14,6 +14,7 @@ describe('Field Trigger Integration', () => {
 	beforeEach(() => {
 		// Initialize clean instances
 		Registry._root = undefined as any
+		Stonecrop._root = undefined as any
 		registry = new Registry()
 		stonecrop = new Stonecrop(registry)
 	})

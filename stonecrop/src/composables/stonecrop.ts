@@ -1,100 +1,14 @@
-import {
-	type DoctypeManySchema,
-	type DoctypeOneSchema,
-	type DoctypeSchema,
-	type SchemaTypes,
-	isDoctypeMany,
-} from '@stonecrop/aform'
+import { type SchemaTypes } from '@stonecrop/aform'
 import { storeToRefs } from 'pinia'
-import { inject, onMounted, Ref, ref, watch, provide, computed, type ComputedRef } from 'vue'
+import { inject, onMounted, Ref, ref, watch, provide, computed } from 'vue'
 
+import Doctype from '../doctype'
 import Registry from '../registry'
 import { Stonecrop } from '../stonecrop'
-import Doctype from '../doctype'
 import type { HSTNode } from '../stores/hst'
+import type { BaseStonecropReturn, HSTStonecropReturn, HSTChangeData, OperationLogAPI } from '../types/composable'
+import type { HSTOperation, OperationLogConfig } from '../types/operation-log'
 import type { RouteContext } from '../types/registry'
-import type { HSTOperation, OperationLogConfig, OperationLogSnapshot } from '../types/operation-log'
-
-/**
- * Operation Log API - nested object containing all operation log functionality
- * @public
- */
-export type OperationLogAPI = {
-	operations: Ref<HSTOperation[]>
-	currentIndex: Ref<number>
-	undoRedoState: ComputedRef<{
-		canUndo: boolean
-		canRedo: boolean
-		undoCount: number
-		redoCount: number
-		currentIndex: number
-	}>
-	canUndo: ComputedRef<boolean>
-	canRedo: ComputedRef<boolean>
-	undoCount: ComputedRef<number>
-	redoCount: ComputedRef<number>
-	undo: (hstStore: HSTNode) => boolean
-	redo: (hstStore: HSTNode) => boolean
-	startBatch: () => void
-	commitBatch: (description?: string) => string | null
-	cancelBatch: () => void
-	clear: () => void
-	getOperationsFor: (doctype: string, recordId?: string) => HSTOperation[]
-	getSnapshot: () => OperationLogSnapshot
-	markIrreversible: (operationId: string, reason: string) => void
-	logAction: (
-		doctype: string,
-		actionName: string,
-		recordIds?: string[],
-		result?: 'success' | 'failure' | 'pending',
-		error?: string
-	) => string
-	configure: (options: Partial<OperationLogConfig>) => void
-}
-
-/**
- * Base Stonecrop composable return type - includes operation log functionality
- * @public
- */
-export type BaseStonecropReturn = {
-	stonecrop: Ref<Stonecrop | undefined>
-	operationLog: OperationLogAPI
-}
-
-/**
- * HST-enabled Stonecrop composable return type
- * @public
- */
-export type HSTStonecropReturn = BaseStonecropReturn & {
-	provideHSTPath: (fieldname: string, recordId?: string) => string
-	handleHSTChange: (changeData: HSTChangeData) => void
-	hstStore: Ref<HSTNode | undefined>
-	formData: Ref<Record<string, any>>
-	resolvedSchema: Ref<SchemaTypes[]>
-	loadNestedData: (parentPath: string, childDoctype: Doctype, recordId?: string) => Record<string, any>
-	collectRecordPayload: (doctype: Doctype, recordId: string) => Record<string, any>
-	createNestedContext: (
-		basePath: string,
-		childDoctype: Doctype
-	) => {
-		provideHSTPath: (fieldname: string) => string
-		handleHSTChange: (changeData: HSTChangeData) => void
-	}
-	isLoading: Ref<boolean>
-	error: Ref<Error | null>
-	resolvedDoctype: Ref<Doctype | undefined>
-}
-
-/**
- * HST Change data structure
- * @public
- */
-export type HSTChangeData = {
-	path: string
-	value: any
-	fieldname: string
-	recordId?: string
-}
 
 /**
  * Unified Stonecrop composable - handles both general operations and HST reactive integration
@@ -128,7 +42,7 @@ export function useStonecrop(options?: {
 
 	const registry = options.registry || inject<Registry>('$registry')
 	const providedStonecrop = inject<Stonecrop>('$stonecrop')
-	const stonecrop = ref<Stonecrop>()
+	const stonecrop = ref<Stonecrop | undefined>()
 	const hstStore = ref<HSTNode>()
 	const formData = ref<Record<string, any>>({})
 
@@ -143,6 +57,13 @@ export function useStonecrop(options?: {
 	const isLoading = ref(false)
 	const error = ref<Error | null>(null)
 	const resolvedDoctype = ref<Doctype | undefined>()
+
+	// Initialize stonecrop instance synchronously using singleton pattern
+	// Use injected instance if available, otherwise fall back to the singleton root
+	const stonecropInstance = providedStonecrop || Stonecrop._root
+	if (stonecropInstance) {
+		stonecrop.value = stonecropInstance
+	}
 
 	// If doctype is a Doctype instance (not string), set resolved immediately
 	if (options?.doctype && typeof options.doctype !== 'string') {
@@ -228,11 +149,9 @@ export function useStonecrop(options?: {
 
 	// Initialize Stonecrop instance
 	onMounted(async () => {
-		if (!registry) {
+		if (!registry || !stonecrop.value) {
 			return
 		}
-
-		stonecrop.value = providedStonecrop || new Stonecrop(registry)
 
 		// Set up reactive refs from operation log store - only if Pinia is available
 		try {
@@ -308,11 +227,11 @@ export function useStonecrop(options?: {
 									formData.value = loadedRecord.get('') || {}
 								}
 							} catch {
-								formData.value = initializeNewRecord(doctype)
+								formData.value = registry.initializeRecord(resolvedSchema.value)
 							}
 						}
 					} else {
-						formData.value = initializeNewRecord(doctype)
+						formData.value = registry.initializeRecord(resolvedSchema.value)
 					}
 
 					if (hstStore.value) {
@@ -395,11 +314,11 @@ export function useStonecrop(options?: {
 							formData.value = loadedRecord.get('') || {}
 						}
 					} catch {
-						formData.value = initializeNewRecord(doctype)
+						formData.value = registry.initializeRecord(resolvedSchema.value)
 					}
 				}
 			} else {
-				formData.value = initializeNewRecord(doctype)
+				formData.value = registry.initializeRecord(resolvedSchema.value)
 			}
 
 			if (hstStore.value) {
@@ -475,96 +394,31 @@ export function useStonecrop(options?: {
 
 	/**
 	 * Load nested doctype data from API or initialize empty structure
+	 * Delegates to Stonecrop.loadNestedData method
 	 * @param parentPath - The parent path (e.g., "customer.123.address")
 	 * @param childDoctype - The child doctype metadata
 	 * @param recordId - Optional record ID to load
-	 * @returns Promise resolving to the loaded or initialized data
+	 * @returns The loaded or initialized data
 	 */
 	const loadNestedData = (parentPath: string, childDoctype: Doctype, recordId?: string): Record<string, any> => {
 		if (!stonecrop.value) {
-			return initializeNewRecord(childDoctype)
+			throw new Error('Stonecrop instance not available')
 		}
-
-		// If recordId provided, try to load existing data
-		if (recordId) {
-			try {
-				// Check if data already exists in HST
-				const existingData = hstStore.value?.get(parentPath)
-				if (existingData && typeof existingData === 'object') {
-					return existingData as Record<string, any>
-				}
-
-				// TODO: Add API fetch logic here if needed
-				// For now, initialize new record
-				return initializeNewRecord(childDoctype)
-			} catch {
-				return initializeNewRecord(childDoctype)
-			}
-		}
-
-		// Initialize new record
-		return initializeNewRecord(childDoctype)
+		return stonecrop.value.loadNestedData(parentPath, childDoctype, recordId)
 	}
 
 	/**
 	 * Collect a record payload with all nested doctype fields from HST
+	 * Delegates to Stonecrop.collectRecordPayload method
 	 * @param doctype - The doctype metadata
 	 * @param recordId - The record ID to collect
 	 * @returns The complete record payload ready for API submission
 	 */
 	const collectRecordPayload = (doctype: Doctype, recordId: string): Record<string, any> => {
-		if (!hstStore.value || !stonecrop.value) {
-			throw new Error('HST store not initialized')
+		if (!stonecrop.value) {
+			throw new Error('Stonecrop instance not available')
 		}
-
-		const recordPath = `${doctype.slug}.${recordId}`
-		const recordData = hstStore.value.get(recordPath) || {}
-
-		// Build the save payload using resolved schema
-		const payload: Record<string, any> = { ...recordData }
-
-		// Use resolveSchema to get the full resolved tree, then walk Doctype fields
-		const schemaArray = doctype.schema
-			? Array.isArray(doctype.schema)
-				? doctype.schema
-				: Array.from(doctype.schema)
-			: []
-		const resolved = registry ? registry.resolveSchema(schemaArray) : schemaArray
-
-		// 1:1 nested Doctype fields (cardinality: 'one' or undefined)
-		const doctypeFields = resolved.filter(
-			field =>
-				'fieldtype' in field &&
-				field.fieldtype === 'Doctype' &&
-				!isDoctypeMany(field as DoctypeSchema) &&
-				'schema' in field &&
-				Array.isArray(field.schema)
-		)
-
-		// Recursively collect nested data from HST using resolved schemas
-		for (const field of doctypeFields) {
-			const doctypeField = field as DoctypeOneSchema
-			const fieldPath = `${recordPath}.${doctypeField.fieldname}`
-			const nestedData = collectNestedData(doctypeField.schema!, fieldPath, hstStore.value)
-			payload[doctypeField.fieldname] = nestedData
-		}
-
-		// 1:many child tables (cardinality: 'many')
-		const doctypeManyFields = resolved.filter(
-			field => 'fieldtype' in field && field.fieldtype === 'Doctype' && isDoctypeMany(field as DoctypeSchema)
-		)
-
-		// Read array data from HST for cardinality: 'many' fields
-		for (const field of doctypeManyFields) {
-			const doctypeField = field as DoctypeManySchema
-			const fieldPath = `${recordPath}.${doctypeField.fieldname}`
-			const arrayData = hstStore.value.get(fieldPath)
-			if (Array.isArray(arrayData)) {
-				payload[doctypeField.fieldname] = arrayData
-			}
-		}
-
-		return payload
+		return stonecrop.value.collectRecordPayload(doctype, recordId)
 	}
 
 	/**
@@ -660,54 +514,6 @@ export function useStonecrop(options?: {
 }
 
 /**
- * Initialize new record structure based on doctype schema
- */
-function initializeNewRecord(doctype: Doctype): Record<string, any> {
-	const initialData: Record<string, any> = {}
-
-	if (!doctype.schema) {
-		return initialData
-	}
-
-	doctype.schema.forEach(field => {
-		const fieldtype = 'fieldtype' in field ? field.fieldtype : 'Data'
-
-		switch (fieldtype) {
-			case 'Data':
-			case 'Text':
-				initialData[field.fieldname] = ''
-				break
-			case 'Check':
-				initialData[field.fieldname] = false
-				break
-			case 'Int':
-			case 'Float':
-				initialData[field.fieldname] = 0
-				break
-			case 'JSON':
-				initialData[field.fieldname] = {}
-				break
-			case 'Doctype': {
-				// Check cardinality to determine initial value
-				const cardinality = 'cardinality' in field ? field.cardinality : undefined
-				if (cardinality === 'many') {
-					// 1:many child table - initialize as empty array
-					initialData[field.fieldname] = []
-				} else {
-					// 1:1 nested form - initialize as empty object
-					initialData[field.fieldname] = {}
-				}
-				break
-			}
-			default:
-				initialData[field.fieldname] = null
-		}
-	})
-
-	return initialData
-}
-
-/**
  * Setup deep reactivity between form data and HST store
  */
 function setupDeepReactivity(
@@ -752,50 +558,4 @@ function updateNestedObject(obj: any, path: string[], value: any): void {
 
 	const finalKey = path[path.length - 1]
 	current[finalKey] = value
-}
-
-/**
- * Recursively collect nested data from HST using pre-resolved schemas
- * @param resolvedSchema - The already-resolved schema (with nested schemas embedded)
- * @param basePath - The base path in HST (e.g., "customer.123.address")
- * @param hstStore - The HST store instance
- * @returns The collected data object
- */
-function collectNestedData(resolvedSchema: SchemaTypes[], basePath: string, hstStore: HSTNode): Record<string, any> {
-	const data = hstStore.get(basePath) || {}
-	const payload: Record<string, any> = { ...data }
-
-	// Find Doctype fields that have resolved child schemas (1:1 only, not cardinality: 'many')
-	const doctypeFields = resolvedSchema.filter(
-		field =>
-			'fieldtype' in field &&
-			field.fieldtype === 'Doctype' &&
-			!isDoctypeMany(field as DoctypeSchema) &&
-			'schema' in field &&
-			Array.isArray(field.schema)
-	)
-
-	// Recursively collect nested data
-	for (const field of doctypeFields) {
-		const doctypeField = field as DoctypeOneSchema
-		const fieldPath = `${basePath}.${doctypeField.fieldname}`
-		const nestedData = collectNestedData(doctypeField.schema!, fieldPath, hstStore)
-		payload[doctypeField.fieldname] = nestedData
-	}
-
-	// Also collect array data for cardinality: 'many' fields
-	const doctypeManyFields = resolvedSchema.filter(
-		field => 'fieldtype' in field && field.fieldtype === 'Doctype' && isDoctypeMany(field as DoctypeSchema)
-	)
-
-	for (const field of doctypeManyFields) {
-		const doctypeField = field as DoctypeManySchema
-		const fieldPath = `${basePath}.${doctypeField.fieldname}`
-		const arrayData = hstStore.get(fieldPath)
-		if (Array.isArray(arrayData)) {
-			payload[doctypeField.fieldname] = arrayData
-		}
-	}
-
-	return payload
 }

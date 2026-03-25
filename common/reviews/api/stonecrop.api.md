@@ -52,6 +52,9 @@ export interface BatchOperation {
 }
 
 // @public
+export function collectNestedData(resolvedSchema: SchemaTypes[], basePath: string, hstStore: HSTNode): Record<string, any>;
+
+// @public
 export function createHST(target: any, doctype: string, parentDoctype?: string): HSTNode;
 
 // @public
@@ -406,6 +409,7 @@ export class Stonecrop {
     constructor(registry: Registry, operationLogConfig?: Partial<OperationLogConfig>, options?: StonecropOptions);
     addRecord(doctype: string | Doctype, recordId: string, recordData: any): void;
     clearRecords(doctype: string | Doctype): void;
+    collectRecordPayload(doctype: Doctype, recordId: string): Record<string, any>;
     dispatchAction(doctype: Doctype, action: string, args?: unknown[]): Promise<{
         success: boolean;
         data: unknown;
@@ -500,7 +504,7 @@ export class Stonecrop {
     getSnapshot: () => OperationLogSnapshot;
     markIrreversible: (operationId: string, reason: string) => void;
     logAction: (doctype: string, actionName: string, recordIds?: string[], result?: "success" | "failure" | "pending", error?: string) => string;
-    }, "operations" | "currentIndex" | "config" | "clientId">, Pick<{
+    }, "operations" | "clientId" | "currentIndex" | "config">, Pick<{
     operations: Ref<    {
     id: string;
     type: HSTOperationType;
@@ -679,9 +683,12 @@ export class Stonecrop {
     getRecords(doctype: Doctype): Promise<void>;
     getRecordState(doctype: string | Doctype, recordId: string): string;
     getStore(): HSTNode;
+    loadNestedData(parentPath: string, childDoctype: Doctype, _recordId?: string): Record<string, any>;
     records(doctype: string | Doctype): HSTNode;
     readonly registry: Registry;
     removeRecord(doctype: string | Doctype, recordId: string): void;
+    // @internal
+    static _root: Stonecrop;
     runAction(doctype: Doctype, action: string, args?: any[]): void;
     setClient(client: DataClient): void;
     setup(doctype: Doctype): void;
@@ -890,7 +897,7 @@ getOperationsFor: (doctype: string, recordId?: string) => HSTOperation[];
 getSnapshot: () => OperationLogSnapshot;
 markIrreversible: (operationId: string, reason: string) => void;
 logAction: (doctype: string, actionName: string, recordIds?: string[], result?: "success" | "failure" | "pending", error?: string) => string;
-}, "operations" | "currentIndex" | "config" | "clientId">, Pick<{
+}, "operations" | "clientId" | "currentIndex" | "config">, Pick<{
 operations: Ref<    {
 id: string;
 type: HSTOperationType;

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 
-import { NotImplementedError } from '../src/exceptions'
+import { NotImplementedError } from '../../src/exceptions'
 
 describe('NotImplementedError', () => {
 	it('creates an error with custom message', () => {

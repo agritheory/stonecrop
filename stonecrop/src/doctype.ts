@@ -5,32 +5,7 @@ import { Component } from 'vue'
 import type { UnknownMachineConfig } from 'xstate'
 
 import type { ImmutableDoctype } from './types'
-
-/**
- * Plain object representation of doctype configuration for serialization/API responses.
- * Compatible with the DoctypeMeta type from \@stonecrop/schema.
- * @public
- */
-export type DoctypeConfig = {
-	/** Display name of the doctype */
-	name: string
-	/** URL-friendly slug (kebab-case) */
-	slug?: string
-	/** Database table name */
-	tableName?: string
-	/** Field definitions */
-	fields?: SchemaTypes[]
-	/** Workflow configuration (XState format or simple WorkflowMeta) */
-	workflow?: UnknownMachineConfig | WorkflowMeta
-	/** Actions and their field triggers */
-	actions?: Record<string, string[]>
-	/** Parent doctype for inheritance */
-	inherits?: string
-	/** Doctype to use for list views */
-	listDoctype?: string
-	/** Parent doctype for child tables */
-	parentDoctype?: string
-}
+import type { DoctypeConfig } from './types/doctype'
 
 /**
  * Doctype runtime class with Immutable.js collections for HST change tracking.
@@ -249,9 +224,7 @@ export default class Doctype {
 	 *
 	 * @public
 	 */
-	getActionMeta(
-		actionName: string
-	):
+	getActionMeta(actionName: string):
 		| {
 				label: string
 				handler: string

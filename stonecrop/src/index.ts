@@ -3,8 +3,9 @@ export type * from '@stonecrop/atable/types'
 
 import { useStonecrop } from './composables/stonecrop'
 import { useOperationLog, useUndoRedoShortcuts, withBatch } from './composables/operation-log'
-import Doctype, { type DoctypeConfig } from './doctype'
+import Doctype from './doctype'
 import {
+	FieldTriggerEngine,
 	getGlobalTriggerEngine,
 	markOperationIrreversible,
 	registerGlobalAction,
@@ -14,39 +15,29 @@ import {
 } from './field-triggers'
 import plugin from './plugins'
 import Registry from './registry'
-import { type StonecropOptions, Stonecrop } from './stonecrop'
+import { Stonecrop, collectNestedData } from './stonecrop'
 import { HST, createHST, type HSTNode } from './stores/hst'
 import { useOperationLogStore } from './stores/operation-log'
-// Export schema validator
 import { SchemaValidator, createValidator, validateSchema } from './schema-validator'
+import { ValidationSeverity } from './types/schema-validator'
+
+// Export all types from ./types
 export type * from './types'
-export type { BaseStonecropReturn, HSTChangeData, HSTStonecropReturn, OperationLogAPI } from './composables/stonecrop'
-export type { FieldTriggerEngine } from './field-triggers'
-export type {
-	FieldChangeContext,
-	TransitionChangeContext,
-	FieldTriggerExecutionResult,
-	ActionExecutionResult,
-	TransitionExecutionResult,
-	FieldActionFunction,
-	TransitionActionFunction,
-} from './types/field-triggers'
-// Export schema validator types
-export type { ValidationIssue, ValidationResult, ValidatorOptions } from './schema-validator'
-export { ValidationSeverity } from './schema-validator'
+
+// Export enum as value (enums need runtime export, not just type)
+export { ValidationSeverity }
 
 export {
 	Doctype,
-	DoctypeConfig,
 	Registry,
 	Stonecrop,
-	StonecropOptions,
 	useStonecrop,
 	// HST exports for advanced usage
 	HST,
 	createHST,
 	HSTNode,
 	// Field trigger system exports
+	FieldTriggerEngine,
 	getGlobalTriggerEngine,
 	registerGlobalAction,
 	registerTransitionAction,
@@ -62,6 +53,8 @@ export {
 	useOperationLogStore,
 	useUndoRedoShortcuts,
 	withBatch,
+	// Utility functions
+	collectNestedData,
 }
 
 // Default export is the Vue plugin

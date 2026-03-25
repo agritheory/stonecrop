@@ -24,6 +24,7 @@ describe('HST Real Component Integration', () => {
 
 	beforeEach(() => {
 		Registry._root = undefined as any
+		Stonecrop._root = undefined as any
 		registry = new Registry()
 
 		// Complete schema with all major field types

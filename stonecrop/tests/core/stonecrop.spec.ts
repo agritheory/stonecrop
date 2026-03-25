@@ -3,11 +3,11 @@ import { List, Map } from 'immutable'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { createRouter, createMemoryHistory } from 'vue-router'
 
-import Doctype from '../src/doctype'
-import Registry from '../src/registry'
-import { Stonecrop } from '../src/stonecrop'
-import type { StonecropOptions } from '../src/stonecrop'
-import { ImmutableDoctype } from '../src/types'
+import Doctype from '../../src/doctype'
+import Registry from '../../src/registry'
+import { Stonecrop, collectNestedData } from '../../src/stonecrop'
+import type { StonecropOptions } from '../../src/stonecrop'
+import { ImmutableDoctype } from '../../src/types'
 
 // Mock fetch globally
 global.fetch = vi.fn()
@@ -20,6 +20,7 @@ describe('Stonecrop class with HST integration', () => {
 	beforeEach(() => {
 		// Reset static instances
 		Registry._root = undefined as any
+		Stonecrop._root = undefined as any
 
 		mockRouter = createRouter({
 			history: createMemoryHistory(),
@@ -96,6 +97,19 @@ describe('Stonecrop class with HST integration', () => {
 			// Should auto-create HST section
 			expect(store.has('task')).toBe(true)
 		})
+
+		it('configures operation log store with provided config', () => {
+			Registry._root = undefined as any
+			Stonecrop._root = undefined as any
+
+			const localRegistry = new Registry(mockRouter)
+			const configOptions = { maxOperations: 500, enableCrossTabSync: true }
+			const localStonecrop = new Stonecrop(localRegistry, configOptions)
+
+			// The operation log store is lazily initialized
+			// Config is stored and will be applied when getOperationLogStore is called
+			expect((localStonecrop as any)._operationLogConfig).toEqual(configOptions)
+		})
 	})
 
 	describe('HST Record Management', () => {
@@ -151,6 +165,22 @@ describe('Stonecrop class with HST integration', () => {
 
 			const recordIds = stonecrop.getRecordIds('task')
 			expect(recordIds).toEqual(['123', '456'])
+		})
+
+		it('returns empty array when doctype has no records', () => {
+			registry.addDoctype(createMockDoctype('EmptyTask'))
+
+			const recordIds = stonecrop.getRecordIds('emptytask')
+			expect(recordIds).toEqual([])
+		})
+
+		it('returns empty array when doctype node is not an object', () => {
+			// Manually set a non-object value in the store
+			stonecrop.getStore().set('baddoctype', 'not-an-object')
+			registry.addDoctype(createMockDoctype('BadDoctype'))
+
+			const recordIds = stonecrop.getRecordIds('baddoctype')
+			expect(recordIds).toEqual([])
 		})
 
 		it('removes record', () => {
@@ -243,6 +273,7 @@ describe('Stonecrop class with HST integration', () => {
 		beforeEach(() => {
 			// Reset registry for each test
 			Registry._root = undefined as any
+			Stonecrop._root = undefined as any
 			const localRouter = createRouter({ history: createMemoryHistory(), routes: [] })
 			registry = new Registry(localRouter)
 			mockDoctype = createMockDoctype('Task')
@@ -373,6 +404,19 @@ describe('Stonecrop class with HST integration', () => {
 				'No data client configured'
 			)
 		})
+
+		it('getMeta throws error when no getMeta function provided', async () => {
+			Registry._root = undefined as any
+			Stonecrop._root = undefined as any
+
+			// Create registry without getMeta function
+			const localRegistry = new Registry(mockRouter)
+			const localStonecrop = new Stonecrop(localRegistry)
+
+			await expect(localStonecrop.getMeta({ path: '/task/123', segments: ['task', '123'] })).rejects.toThrow(
+				'No getMeta function provided to Registry'
+			)
+		})
 	})
 
 	describe('getRecordState', () => {
@@ -408,6 +452,7 @@ describe('Stonecrop class with HST integration', () => {
 			const noWorkflowDoctype = new Doctype('Bare', List<SchemaTypes>([]), undefined as any, Map({}))
 			// Use a fresh registry to avoid singleton collision
 			Registry._root = undefined as any
+			Stonecrop._root = undefined as any
 			const localRegistry = new Registry()
 			localRegistry.addDoctype(noWorkflowDoctype)
 			const localStonecrop = new Stonecrop(localRegistry)
@@ -433,6 +478,7 @@ describe('Stonecrop class with HST integration', () => {
 		describe('WorkflowMeta format support', () => {
 			it('returns first state as initial for WorkflowMeta format', () => {
 				Registry._root = undefined as any
+				Stonecrop._root = undefined as any
 				const localRegistry = new Registry()
 				const localStonecrop = new Stonecrop(localRegistry)
 
@@ -452,6 +498,7 @@ describe('Stonecrop class with HST integration', () => {
 
 			it('returns status field when present, regardless of workflow format', () => {
 				Registry._root = undefined as any
+				Stonecrop._root = undefined as any
 				const localRegistry = new Registry()
 				const localStonecrop = new Stonecrop(localRegistry)
 
@@ -469,6 +516,7 @@ describe('Stonecrop class with HST integration', () => {
 
 			it('handles WorkflowMeta with empty states array', () => {
 				Registry._root = undefined as any
+				Stonecrop._root = undefined as any
 				const localRegistry = new Registry()
 				const localStonecrop = new Stonecrop(localRegistry)
 
@@ -486,6 +534,7 @@ describe('Stonecrop class with HST integration', () => {
 
 			it('handles WorkflowMeta without states property', () => {
 				Registry._root = undefined as any
+				Stonecrop._root = undefined as any
 				const localRegistry = new Registry()
 				const localStonecrop = new Stonecrop(localRegistry)
 
@@ -556,6 +605,265 @@ describe('Stonecrop class with HST integration', () => {
 
 			expect(assignee.get('name')).toBe('John Doe')
 			expect(assignee.getParent()!.getPath()).toContain('details')
+		})
+	})
+
+	describe('Singleton Pattern', () => {
+		it('returns the same instance on subsequent constructor calls', () => {
+			Registry._root = undefined as any
+			Stonecrop._root = undefined as any
+
+			const localRouter = createRouter({ history: createMemoryHistory(), routes: [] })
+			const localRegistry = new Registry(localRouter)
+
+			const first = new Stonecrop(localRegistry)
+			const second = new Stonecrop(localRegistry)
+
+			expect(second).toBe(first)
+			expect(Stonecrop._root).toBe(first)
+		})
+
+		it('Stonecrop._root is set after construction', () => {
+			Registry._root = undefined as any
+			Stonecrop._root = undefined as any
+
+			const localRouter = createRouter({ history: createMemoryHistory(), routes: [] })
+			const localRegistry = new Registry(localRouter)
+
+			expect(Stonecrop._root).toBeUndefined()
+
+			const instance = new Stonecrop(localRegistry)
+
+			expect(Stonecrop._root).toBe(instance)
+		})
+
+		it('singleton shares HST store - mutations visible via Stonecrop._root', () => {
+			Registry._root = undefined as any
+			Stonecrop._root = undefined as any
+
+			const localRouter = createRouter({ history: createMemoryHistory(), routes: [] })
+			const localRegistry = new Registry(localRouter)
+			const mockDoctype = createMockDoctype('Task')
+			localRegistry.addDoctype(mockDoctype)
+
+			const first = new Stonecrop(localRegistry)
+			first.addRecord('task', '123', { title: 'Test Task' })
+
+			const second = new Stonecrop(localRegistry)
+
+			const record = second.getRecordById('task', '123')
+			expect(record).toBeDefined()
+			expect(record!.get('title')).toBe('Test Task')
+		})
+	})
+
+	describe('collectRecordPayload', () => {
+		let localRegistry: Registry
+		let localStonecrop: Stonecrop
+
+		const createDoctype = (name: string, fields?: SchemaTypes[]) => {
+			const schema = List(
+				fields || [{ fieldname: 'title', component: 'ATextInput', label: 'Title', fieldtype: 'Data' }]
+			)
+			return new Doctype(name, schema as any, undefined, Map({}))
+		}
+
+		beforeEach(() => {
+			Registry._root = undefined as any
+			Stonecrop._root = undefined as any
+			localRegistry = new Registry()
+			localStonecrop = new Stonecrop(localRegistry)
+		})
+
+		it('collects flat record data from HST', () => {
+			const taskDoctype = createDoctype('Task', [
+				{ fieldname: 'title', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+				{ fieldname: 'status', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+			])
+			localRegistry.addDoctype(taskDoctype)
+
+			localStonecrop.addRecord('task', 'task-1', { title: 'My Task', status: 'open' })
+
+			const payload = localStonecrop.collectRecordPayload(taskDoctype, 'task-1')
+
+			expect(payload.title).toBe('My Task')
+			expect(payload.status).toBe('open')
+		})
+
+		it('collects array data for cardinality: many fields', () => {
+			const itemDoctype = createDoctype('Item', [
+				{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+				{ fieldname: 'qty', fieldtype: 'Int', component: 'ANumericInput' } as SchemaTypes,
+			])
+			localRegistry.addDoctype(itemDoctype)
+
+			const orderDoctype = createDoctype('Order', [
+				{ fieldname: 'order_number', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+				{ fieldname: 'items', fieldtype: 'Doctype', cardinality: 'many', options: 'item' } as SchemaTypes,
+			])
+			localRegistry.addDoctype(orderDoctype)
+
+			localStonecrop.addRecord('order', 'order-1', { order_number: 'ORD-001' })
+			localStonecrop.getStore().set('order.order-1.items', [
+				{ name: 'Item 1', qty: 5 },
+				{ name: 'Item 2', qty: 10 },
+			])
+
+			const payload = localStonecrop.collectRecordPayload(orderDoctype, 'order-1')
+
+			expect(payload.order_number).toBe('ORD-001')
+			expect(Array.isArray(payload.items)).toBe(true)
+			expect(payload.items).toHaveLength(2)
+			expect(payload.items[0].name).toBe('Item 1')
+			expect(payload.items[1].qty).toBe(10)
+		})
+
+		it('collects nested 1:1 doctype fields', () => {
+			const addressDoctype = createDoctype('Address', [
+				{ fieldname: 'street', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+				{ fieldname: 'city', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+			])
+			localRegistry.addDoctype(addressDoctype)
+
+			const customerDoctype = createDoctype('Customer', [
+				{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+				{ fieldname: 'address', fieldtype: 'Doctype', options: 'address' } as SchemaTypes,
+			])
+			localRegistry.addDoctype(customerDoctype)
+
+			localStonecrop.addRecord('customer', 'cust-1', { name: 'John Doe' })
+			localStonecrop.getStore().set('customer.cust-1.address', { street: '123 Oak St', city: 'Portland' })
+
+			const payload = localStonecrop.collectRecordPayload(customerDoctype, 'cust-1')
+
+			expect(payload.name).toBe('John Doe')
+			expect(payload.address).toBeDefined()
+			expect(payload.address.street).toBe('123 Oak St')
+			expect(payload.address.city).toBe('Portland')
+		})
+
+		it('recursively collects 1:many inside nested 1:1', () => {
+			const phoneDoctype = createDoctype('Phone', [
+				{ fieldname: 'number', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+			])
+			localRegistry.addDoctype(phoneDoctype)
+
+			const addressDoctype = createDoctype('Address', [
+				{ fieldname: 'street', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+				{ fieldname: 'phones', fieldtype: 'Doctype', cardinality: 'many', options: 'phone' } as SchemaTypes,
+			])
+			localRegistry.addDoctype(addressDoctype)
+
+			const customerDoctype = createDoctype('Customer', [
+				{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+				{ fieldname: 'address', fieldtype: 'Doctype', options: 'address' } as SchemaTypes,
+			])
+			localRegistry.addDoctype(customerDoctype)
+
+			localStonecrop.addRecord('customer', 'cust-2', { name: 'Jane Doe' })
+			localStonecrop.getStore().set('customer.cust-2.address', { street: '456 Pine St' })
+			localStonecrop.getStore().set('customer.cust-2.address.phones', [{ number: '555-1234' }, { number: '555-5678' }])
+
+			const payload = localStonecrop.collectRecordPayload(customerDoctype, 'cust-2')
+
+			expect(payload.name).toBe('Jane Doe')
+			expect(payload.address.phones).toBeDefined()
+			expect(Array.isArray(payload.address.phones)).toBe(true)
+			expect(payload.address.phones).toHaveLength(2)
+			expect(payload.address.phones[0].number).toBe('555-1234')
+		})
+
+		it('handles empty and missing records gracefully', () => {
+			const taskDoctype = createDoctype('Task')
+			localRegistry.addDoctype(taskDoctype)
+
+			const payload = localStonecrop.collectRecordPayload(taskDoctype, 'nonexistent')
+
+			expect(payload).toBeDefined()
+			expect(Object.keys(payload)).toHaveLength(0)
+		})
+	})
+
+	describe('collectNestedData', () => {
+		it('is exported as a standalone function', () => {
+			expect(typeof collectNestedData).toBe('function')
+		})
+
+		it('collects flat data with no nested doctypes', () => {
+			Registry._root = undefined as any
+			Stonecrop._root = undefined as any
+			const localRegistry = new Registry()
+			const localStonecrop = new Stonecrop(localRegistry)
+
+			const schema: SchemaTypes[] = [
+				{ fieldname: 'title', fieldtype: 'Data' },
+				{ fieldname: 'status', fieldtype: 'Data' },
+			]
+
+			localStonecrop.getStore().set('test', {})
+			localStonecrop.getStore().set('test.1', { title: 'Test', status: 'open' })
+
+			const result = collectNestedData(schema, 'test.1', localStonecrop.getStore())
+
+			expect(result.title).toBe('Test')
+			expect(result.status).toBe('open')
+		})
+
+		it('collects nested 1:1 doctype fields recursively', () => {
+			Registry._root = undefined as any
+			Stonecrop._root = undefined as any
+			const localRegistry = new Registry()
+			const localStonecrop = new Stonecrop(localRegistry)
+
+			const nestedSchema: SchemaTypes[] = [{ fieldname: 'city', fieldtype: 'Data' }]
+			const schema: SchemaTypes[] = [
+				{ fieldname: 'name', fieldtype: 'Data' },
+				{
+					fieldname: 'address',
+					fieldtype: 'Doctype',
+					schema: nestedSchema,
+				} as SchemaTypes,
+			]
+
+			localStonecrop.getStore().set('customer', {})
+			localStonecrop.getStore().set('customer.1', { name: 'John' })
+			localStonecrop.getStore().set('customer.1.address', { city: 'Portland' })
+
+			const result = collectNestedData(schema, 'customer.1', localStonecrop.getStore())
+
+			expect(result.name).toBe('John')
+			expect(result.address).toBeDefined()
+			expect(result.address.city).toBe('Portland')
+		})
+
+		it('collects 1:many arrays in nested context', () => {
+			Registry._root = undefined as any
+			Stonecrop._root = undefined as any
+			const localRegistry = new Registry()
+			const localStonecrop = new Stonecrop(localRegistry)
+
+			const schema: SchemaTypes[] = [
+				{ fieldname: 'name', fieldtype: 'Data' },
+				{
+					fieldname: 'items',
+					fieldtype: 'Doctype',
+					cardinality: 'many',
+				} as SchemaTypes,
+			]
+
+			localStonecrop.getStore().set('order', {})
+			localStonecrop.getStore().set('order.1', { name: 'Order 1' })
+			localStonecrop.getStore().set('order.1.items', [
+				{ name: 'Item A', qty: 5 },
+				{ name: 'Item B', qty: 10 },
+			])
+
+			const result = collectNestedData(schema, 'order.1', localStonecrop.getStore())
+
+			expect(result.name).toBe('Order 1')
+			expect(Array.isArray(result.items)).toBe(true)
+			expect(result.items).toHaveLength(2)
+			expect(result.items[0].name).toBe('Item A')
 		})
 	})
 })

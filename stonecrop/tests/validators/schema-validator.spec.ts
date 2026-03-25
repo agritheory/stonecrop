@@ -2,8 +2,8 @@ import type { SchemaTypes } from '@stonecrop/aform'
 import { List, Map as ImmutableMap } from 'immutable'
 import { describe, expect, it } from 'vitest'
 
-import type Registry from '../src/registry'
-import { SchemaValidator, createValidator, validateSchema } from '../src/schema-validator'
+import type Registry from '../../src/registry'
+import { SchemaValidator, createValidator, validateSchema } from '../../src/schema-validator'
 
 describe('SchemaValidator class', () => {
 	describe('constructor options', () => {
@@ -304,5 +304,32 @@ describe('validateSchema helper', () => {
 		const actions = ImmutableMap({ load: ['action1'] })
 		const result = validateSchema('Doc', [], registry, workflow, actions)
 		expect(result).toBeDefined()
+	})
+
+	it('handles nested table fields (Doctype with cardinality: many)', () => {
+		const validator = new SchemaValidator()
+		const schema = [
+			{
+				fieldname: 'items',
+				label: 'Items',
+				fieldtype: 'Doctype',
+				cardinality: 'many',
+			} as SchemaTypes,
+		]
+		const result = validator.validate('Doc', schema)
+		expect(result.valid).toBe(true)
+	})
+
+	it('validates Select fieldtype', () => {
+		const validator = new SchemaValidator()
+		const schema = [
+			{
+				fieldname: 'status',
+				label: 'Status',
+				fieldtype: 'Select',
+			} as SchemaTypes,
+		]
+		const result = validator.validate('Doc', schema)
+		expect(result.valid).toBe(true)
 	})
 })

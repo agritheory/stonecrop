@@ -72,7 +72,10 @@ const plugin: Plugin = {
 		app.config.globalProperties.$registry = registry
 
 		// Create and provide a global Stonecrop instance
-		const stonecrop = new Stonecrop(registry, undefined, options?.client ? { client: options.client } : undefined)
+		const stonecrop = new Stonecrop(registry)
+		if (options?.client) {
+			stonecrop.setClient(options.client)
+		}
 		app.provide('$stonecrop', stonecrop)
 		app.config.globalProperties.$stonecrop = stonecrop
 
