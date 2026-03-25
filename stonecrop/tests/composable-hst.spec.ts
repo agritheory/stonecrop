@@ -820,6 +820,78 @@ describe('useStonecrop HST mode', () => {
 		expect(payload.address.coordinates.lat).toBe(47.6062)
 		expect(payload.address.coordinates.lng).toBe(-122.3321)
 	})
+
+	it('collectRecordPayload is callable outside onMounted (validates Issue 1 fix)', async () => {
+		const customerDoctype = createDoctype('Customer', [
+			{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+		])
+		registry.addDoctype(customerDoctype)
+
+		let collectResult: Record<string, any> | undefined
+
+		const TestComponent = defineComponent({
+			setup() {
+				const result = useStonecrop({ registry, doctype: customerDoctype, recordId: 'cust-immediate' })
+
+				stonecrop.getStore().set('customer.cust-immediate', { name: 'Immediate Test' })
+
+				collectResult = result.collectRecordPayload(customerDoctype, 'cust-immediate')
+
+				return result
+			},
+			template: '<div>test</div>',
+		})
+
+		mount(TestComponent, {
+			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
+		})
+
+		expect(collectResult).toBeDefined()
+		expect(collectResult!.name).toBe('Immediate Test')
+	})
+
+	it('collectRecordPayload returns identical results to class method', async () => {
+		const addressDoctype = createDoctype('Address', [
+			{ fieldname: 'city', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+		])
+		registry.addDoctype(addressDoctype)
+
+		const customerDoctype = createDoctype('Customer', [
+			{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+			{ fieldname: 'address', fieldtype: 'Doctype', options: 'address' } as SchemaTypes,
+		])
+		registry.addDoctype(customerDoctype)
+
+		const TestComponent = defineComponent({
+			setup() {
+				return useStonecrop({ registry, doctype: customerDoctype, recordId: 'cust-compare' })
+			},
+			template: '<div>test</div>',
+		})
+
+		const wrapper = mount(TestComponent, {
+			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
+		})
+		await wrapper.vm.$nextTick()
+		await new Promise(resolve => setTimeout(resolve, 50))
+
+		const vm = wrapper.vm as any
+
+		vm.handleHSTChange({
+			path: 'customer.cust-compare.name',
+			value: 'Compare Test',
+			fieldname: 'name',
+		})
+
+		stonecrop.getStore().set('customer.cust-compare.address', { city: 'Seattle' })
+
+		const composableResult = vm.collectRecordPayload(customerDoctype, 'cust-compare')
+		const classMethodResult = stonecrop.collectRecordPayload(customerDoctype, 'cust-compare')
+
+		expect(composableResult).toEqual(classMethodResult)
+		expect(composableResult.name).toBe('Compare Test')
+		expect(composableResult.address.city).toBe('Seattle')
+	})
 })
 
 describe('useStonecrop base mode', () => {
