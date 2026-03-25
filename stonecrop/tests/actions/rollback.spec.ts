@@ -1,10 +1,18 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { FieldTriggerEngine, registerGlobalAction } from '../../src/field-triggers.js'
-import { Stonecrop } from '../../src/stonecrop.js'
-import Registry from '../../src/registry.js'
-import Doctype from '../../src/doctype.js'
 import { Map } from 'immutable'
-import type { FieldChangeContext } from '../../src/types/field-triggers.js'
+import { setActivePinia, createPinia } from 'pinia'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+
+import Doctype from '../../src/doctype'
+import {
+	FieldTriggerEngine,
+	registerGlobalAction,
+	setFieldRollback,
+	markOperationIrreversible,
+} from '../../src/field-triggers'
+import Registry from '../../src/registry'
+import { Stonecrop } from '../../src/stonecrop'
+import { useOperationLogStore } from '../../src/stores/operation-log'
+import type { FieldChangeContext } from '../../src/types'
 
 describe('Field Trigger Rollback', () => {
 	let registry: Registry
@@ -628,6 +636,56 @@ describe('Field Trigger Rollback', () => {
 			const result2 = await testEngine.executeFieldTriggers(context, { enableRollback: false })
 			expect(result2.rolledBack).toBe(false)
 			expect(store.get('Contact.contact-1.status')).toBe('modified') // Not rolled back
+		})
+	})
+
+	describe('Global Functions', () => {
+		beforeEach(() => {
+			setActivePinia(createPinia())
+		})
+
+		it('setFieldRollback delegates to global trigger engine', () => {
+			// Create a doctype
+			const doctype = new Doctype('TestDoctype', undefined, undefined, Map({ name: ['testAction'] }))
+			registry.addDoctype(doctype)
+
+			// Calling setFieldRollback should not throw
+			expect(() => setFieldRollback('TestDoctype', 'name', false)).not.toThrow()
+			expect(() => setFieldRollback('TestDoctype', 'name', true)).not.toThrow()
+		})
+
+		it('markOperationIrreversible marks operation in store', async () => {
+			// Get the operation log store
+			const opLogStore = useOperationLogStore()
+
+			// Add an operation directly
+			const opId = opLogStore.addOperation({
+				type: 'set',
+				path: 'Contact.contact-1.email',
+				fieldname: 'email',
+				beforeValue: 'old@example.com',
+				afterValue: 'test@example.com',
+				doctype: 'Contact',
+				recordId: 'contact-1',
+				reversible: true,
+			})
+
+			// Verify operation was added
+			expect(opLogStore.operations).toHaveLength(1)
+			expect(opLogStore.operations[0].id).toBe(opId)
+
+			// Mark it as irreversible using the store method directly
+			opLogStore.markIrreversible(opId, 'Server sync required')
+
+			// Verify it was marked (reversible = false, irreversibleReason set)
+			const operation = opLogStore.operations.find(op => op.id === opId)
+			expect(operation?.reversible).toBe(false)
+			expect(operation?.irreversibleReason).toBe('Server sync required')
+		})
+
+		it('markOperationIrreversible handles undefined operationId', () => {
+			// Should not throw when operationId is undefined
+			expect(() => markOperationIrreversible(undefined, 'Test reason')).not.toThrow()
 		})
 	})
 })

@@ -97,6 +97,19 @@ describe('Stonecrop class with HST integration', () => {
 			// Should auto-create HST section
 			expect(store.has('task')).toBe(true)
 		})
+
+		it('configures operation log store with provided config', () => {
+			Registry._root = undefined as any
+			Stonecrop._root = undefined as any
+
+			const localRegistry = new Registry(mockRouter)
+			const configOptions = { maxOperations: 500, enableCrossTabSync: true }
+			const localStonecrop = new Stonecrop(localRegistry, configOptions)
+
+			// The operation log store is lazily initialized
+			// Config is stored and will be applied when getOperationLogStore is called
+			expect((localStonecrop as any)._operationLogConfig).toEqual(configOptions)
+		})
 	})
 
 	describe('HST Record Management', () => {
@@ -152,6 +165,22 @@ describe('Stonecrop class with HST integration', () => {
 
 			const recordIds = stonecrop.getRecordIds('task')
 			expect(recordIds).toEqual(['123', '456'])
+		})
+
+		it('returns empty array when doctype has no records', () => {
+			registry.addDoctype(createMockDoctype('EmptyTask'))
+
+			const recordIds = stonecrop.getRecordIds('emptytask')
+			expect(recordIds).toEqual([])
+		})
+
+		it('returns empty array when doctype node is not an object', () => {
+			// Manually set a non-object value in the store
+			stonecrop.getStore().set('baddoctype', 'not-an-object')
+			registry.addDoctype(createMockDoctype('BadDoctype'))
+
+			const recordIds = stonecrop.getRecordIds('baddoctype')
+			expect(recordIds).toEqual([])
 		})
 
 		it('removes record', () => {
@@ -373,6 +402,19 @@ describe('Stonecrop class with HST integration', () => {
 
 			await expect(localStonecrop.dispatchAction(mockDoctype, 'SUBMIT', ['1'])).rejects.toThrow(
 				'No data client configured'
+			)
+		})
+
+		it('getMeta throws error when no getMeta function provided', async () => {
+			Registry._root = undefined as any
+			Stonecrop._root = undefined as any
+
+			// Create registry without getMeta function
+			const localRegistry = new Registry(mockRouter)
+			const localStonecrop = new Stonecrop(localRegistry)
+
+			await expect(localStonecrop.getMeta({ path: '/task/123', segments: ['task', '123'] })).rejects.toThrow(
+				'No getMeta function provided to Registry'
 			)
 		})
 	})
