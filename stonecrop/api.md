@@ -1734,6 +1734,22 @@ Get the root HST store node for advanced usage
 getStore(): HSTNode
 ```
 
+#### loadNestedData
+
+Load nested data from HST or initialize with defaults
+
+```typescript
+loadNestedData(parentPath: string, childDoctype: Doctype, recordId: string): Record<string, any>
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| parentPath | `string` | The HST path to check for existing data |
+| childDoctype | `Doctype` | The child doctype metadata |
+| recordId | `string` | Optional record ID to load |
+
 #### records
 
 Get records hash for a doctype

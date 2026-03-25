@@ -683,6 +683,7 @@ export class Stonecrop {
     getRecords(doctype: Doctype): Promise<void>;
     getRecordState(doctype: string | Doctype, recordId: string): string;
     getStore(): HSTNode;
+    loadNestedData(parentPath: string, childDoctype: Doctype, recordId?: string): Record<string, any>;
     records(doctype: string | Doctype): HSTNode;
     readonly registry: Registry;
     removeRecord(doctype: string | Doctype, recordId: string): void;

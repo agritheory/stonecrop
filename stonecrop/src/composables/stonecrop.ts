@@ -307,11 +307,11 @@ export function useStonecrop(options?: {
 									formData.value = loadedRecord.get('') || {}
 								}
 							} catch {
-								formData.value = initializeNewRecord(doctype)
+								formData.value = registry.initializeRecord(resolvedSchema.value)
 							}
 						}
 					} else {
-						formData.value = initializeNewRecord(doctype)
+						formData.value = registry.initializeRecord(resolvedSchema.value)
 					}
 
 					if (hstStore.value) {
@@ -394,11 +394,11 @@ export function useStonecrop(options?: {
 							formData.value = loadedRecord.get('') || {}
 						}
 					} catch {
-						formData.value = initializeNewRecord(doctype)
+						formData.value = registry.initializeRecord(resolvedSchema.value)
 					}
 				}
 			} else {
-				formData.value = initializeNewRecord(doctype)
+				formData.value = registry.initializeRecord(resolvedSchema.value)
 			}
 
 			if (hstStore.value) {
@@ -474,35 +474,17 @@ export function useStonecrop(options?: {
 
 	/**
 	 * Load nested doctype data from API or initialize empty structure
+	 * Delegates to Stonecrop.loadNestedData method
 	 * @param parentPath - The parent path (e.g., "customer.123.address")
 	 * @param childDoctype - The child doctype metadata
 	 * @param recordId - Optional record ID to load
-	 * @returns Promise resolving to the loaded or initialized data
+	 * @returns The loaded or initialized data
 	 */
 	const loadNestedData = (parentPath: string, childDoctype: Doctype, recordId?: string): Record<string, any> => {
 		if (!stonecrop.value) {
-			return initializeNewRecord(childDoctype)
+			throw new Error('Stonecrop instance not available')
 		}
-
-		// If recordId provided, try to load existing data
-		if (recordId) {
-			try {
-				// Check if data already exists in HST
-				const existingData = hstStore.value?.get(parentPath)
-				if (existingData && typeof existingData === 'object') {
-					return existingData as Record<string, any>
-				}
-
-				// TODO: Add API fetch logic here if needed
-				// For now, initialize new record
-				return initializeNewRecord(childDoctype)
-			} catch {
-				return initializeNewRecord(childDoctype)
-			}
-		}
-
-		// Initialize new record
-		return initializeNewRecord(childDoctype)
+		return stonecrop.value.loadNestedData(parentPath, childDoctype, recordId)
 	}
 
 	/**
@@ -609,54 +591,6 @@ export function useStonecrop(options?: {
 		stonecrop,
 		operationLog,
 	} as BaseStonecropReturn
-}
-
-/**
- * Initialize new record structure based on doctype schema
- */
-function initializeNewRecord(doctype: Doctype): Record<string, any> {
-	const initialData: Record<string, any> = {}
-
-	if (!doctype.schema) {
-		return initialData
-	}
-
-	doctype.schema.forEach(field => {
-		const fieldtype = 'fieldtype' in field ? field.fieldtype : 'Data'
-
-		switch (fieldtype) {
-			case 'Data':
-			case 'Text':
-				initialData[field.fieldname] = ''
-				break
-			case 'Check':
-				initialData[field.fieldname] = false
-				break
-			case 'Int':
-			case 'Float':
-				initialData[field.fieldname] = 0
-				break
-			case 'JSON':
-				initialData[field.fieldname] = {}
-				break
-			case 'Doctype': {
-				// Check cardinality to determine initial value
-				const cardinality = 'cardinality' in field ? field.cardinality : undefined
-				if (cardinality === 'many') {
-					// 1:many child table - initialize as empty array
-					initialData[field.fieldname] = []
-				} else {
-					// 1:1 nested form - initialize as empty object
-					initialData[field.fieldname] = {}
-				}
-				break
-			}
-			default:
-				initialData[field.fieldname] = null
-		}
-	})
-
-	return initialData
 }
 
 /**
