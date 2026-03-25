@@ -12,7 +12,9 @@ describe('Field Trigger Rollback', () => {
 	let engine: FieldTriggerEngine
 
 	beforeEach(() => {
-		// Reset the singleton
+		// Reset the singletons
+		;(Registry as any)._root = undefined
+		;(Stonecrop as any)._root = undefined
 		;(FieldTriggerEngine as any)._root = undefined
 
 		registry = new Registry()

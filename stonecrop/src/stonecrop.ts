@@ -494,16 +494,19 @@ export class Stonecrop {
 	 * Load nested data from HST or initialize with defaults
 	 * @param parentPath - The HST path to check for existing data
 	 * @param childDoctype - The child doctype metadata
-	 * @param recordId - Optional record ID to load
+	 * @param _recordId - Optional record ID to load
 	 * @returns The loaded or initialized data
 	 * @public
 	 */
-	loadNestedData(parentPath: string, childDoctype: Doctype, recordId?: string): Record<string, any> {
+	loadNestedData(parentPath: string, childDoctype: Doctype, _recordId?: string): Record<string, any> {
 		// Check if data already exists in HST
 		const existingData = this.hstStore.get(parentPath)
 		if (existingData && typeof existingData === 'object') {
 			return existingData as Record<string, any>
 		}
+
+		// TODO: If recordId provided and no HST data, fetch from API using this._client
+		// For now, always fall through to initialize new record
 
 		// Resolve schema and initialize with defaults
 		const schemaArray = childDoctype.schema

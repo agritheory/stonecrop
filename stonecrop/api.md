@@ -1739,7 +1739,7 @@ getStore(): HSTNode
 Load nested data from HST or initialize with defaults
 
 ```typescript
-loadNestedData(parentPath: string, childDoctype: Doctype, recordId: string): Record<string, any>
+loadNestedData(parentPath: string, childDoctype: Doctype, _recordId: string): Record<string, any>
 ```
 
 **Parameters:**
@@ -1748,7 +1748,7 @@ loadNestedData(parentPath: string, childDoctype: Doctype, recordId: string): Rec
 |-----------|------|-------------|
 | parentPath | `string` | The HST path to check for existing data |
 | childDoctype | `Doctype` | The child doctype metadata |
-| recordId | `string` | Optional record ID to load |
+| _recordId | `string` | Optional record ID to load |
 
 #### records
 

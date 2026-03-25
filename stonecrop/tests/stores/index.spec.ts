@@ -1,16 +1,21 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { hst, pinia as stonecropPinia } from '../../src/stores/index.js'
-import { HST, HSTProxy, createHST, type HSTNode } from '../../src/stores/hst.js'
+import { Map } from 'immutable'
+
+import Doctype from '../../src/doctype.js'
 import Registry from '../../src/registry.js'
 import { Stonecrop } from '../../src/stonecrop.js'
-import Doctype from '../../src/doctype.js'
-import { Map } from 'immutable'
+import { hst, pinia as stonecropPinia } from '../../src/stores/index.js'
+import { HST, HSTProxy, createHST } from '../../src/stores/hst.js'
 
 describe('Stonecrop Stores', () => {
 	let registry: Registry
 	let stonecrop: Stonecrop
 
 	beforeEach(() => {
+		// Reset the singletons
+		;(Registry as any)._root = undefined
+		;(Stonecrop as any)._root = undefined
+
 		registry = new Registry()
 		stonecrop = new Stonecrop(registry)
 	})
