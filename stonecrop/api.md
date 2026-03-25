@@ -1928,7 +1928,7 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
     getSnapshot: () => OperationLogSnapshot;
     markIrreversible: (operationId: string, reason: string) => void;
     logAction: (doctype: string, actionName: string, recordIds?: string[], result?: "success" | "failure" | "pending", error?: string) => string;
-}, "operations" | "currentIndex" | "config" | "clientId">, Pick<{
+}, "operations" | "clientId" | "currentIndex" | "config">, Pick<{
     operations: import("vue").Ref<{
         id: string;
         type: import("..").HSTOperationType;

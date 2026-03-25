@@ -1,94 +1,14 @@
 import { type SchemaTypes } from '@stonecrop/aform'
 import { storeToRefs } from 'pinia'
-import { inject, onMounted, Ref, ref, watch, provide, computed, type ComputedRef } from 'vue'
+import { inject, onMounted, Ref, ref, watch, provide, computed } from 'vue'
 
+import Doctype from '../doctype'
 import Registry from '../registry'
 import { Stonecrop } from '../stonecrop'
-import Doctype from '../doctype'
 import type { HSTNode } from '../stores/hst'
+import type { BaseStonecropReturn, HSTStonecropReturn, HSTChangeData, OperationLogAPI } from '../types/composable'
+import type { HSTOperation, OperationLogConfig } from '../types/operation-log'
 import type { RouteContext } from '../types/registry'
-import type { HSTOperation, OperationLogConfig, OperationLogSnapshot } from '../types/operation-log'
-
-/**
- * Operation Log API - nested object containing all operation log functionality
- * @public
- */
-export type OperationLogAPI = {
-	operations: Ref<HSTOperation[]>
-	currentIndex: Ref<number>
-	undoRedoState: ComputedRef<{
-		canUndo: boolean
-		canRedo: boolean
-		undoCount: number
-		redoCount: number
-		currentIndex: number
-	}>
-	canUndo: ComputedRef<boolean>
-	canRedo: ComputedRef<boolean>
-	undoCount: ComputedRef<number>
-	redoCount: ComputedRef<number>
-	undo: (hstStore: HSTNode) => boolean
-	redo: (hstStore: HSTNode) => boolean
-	startBatch: () => void
-	commitBatch: (description?: string) => string | null
-	cancelBatch: () => void
-	clear: () => void
-	getOperationsFor: (doctype: string, recordId?: string) => HSTOperation[]
-	getSnapshot: () => OperationLogSnapshot
-	markIrreversible: (operationId: string, reason: string) => void
-	logAction: (
-		doctype: string,
-		actionName: string,
-		recordIds?: string[],
-		result?: 'success' | 'failure' | 'pending',
-		error?: string
-	) => string
-	configure: (options: Partial<OperationLogConfig>) => void
-}
-
-/**
- * Base Stonecrop composable return type - includes operation log functionality
- * @public
- */
-export type BaseStonecropReturn = {
-	stonecrop: Ref<Stonecrop | undefined>
-	operationLog: OperationLogAPI
-}
-
-/**
- * HST-enabled Stonecrop composable return type
- * @public
- */
-export type HSTStonecropReturn = BaseStonecropReturn & {
-	provideHSTPath: (fieldname: string, recordId?: string) => string
-	handleHSTChange: (changeData: HSTChangeData) => void
-	hstStore: Ref<HSTNode | undefined>
-	formData: Ref<Record<string, any>>
-	resolvedSchema: Ref<SchemaTypes[]>
-	loadNestedData: (parentPath: string, childDoctype: Doctype, recordId?: string) => Record<string, any>
-	collectRecordPayload: (doctype: Doctype, recordId: string) => Record<string, any>
-	createNestedContext: (
-		basePath: string,
-		childDoctype: Doctype
-	) => {
-		provideHSTPath: (fieldname: string) => string
-		handleHSTChange: (changeData: HSTChangeData) => void
-	}
-	isLoading: Ref<boolean>
-	error: Ref<Error | null>
-	resolvedDoctype: Ref<Doctype | undefined>
-}
-
-/**
- * HST Change data structure
- * @public
- */
-export type HSTChangeData = {
-	path: string
-	value: any
-	fieldname: string
-	recordId?: string
-}
 
 /**
  * Unified Stonecrop composable - handles both general operations and HST reactive integration

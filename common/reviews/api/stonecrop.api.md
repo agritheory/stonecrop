@@ -504,7 +504,7 @@ export class Stonecrop {
     getSnapshot: () => OperationLogSnapshot;
     markIrreversible: (operationId: string, reason: string) => void;
     logAction: (doctype: string, actionName: string, recordIds?: string[], result?: "success" | "failure" | "pending", error?: string) => string;
-    }, "operations" | "currentIndex" | "config" | "clientId">, Pick<{
+    }, "operations" | "clientId" | "currentIndex" | "config">, Pick<{
     operations: Ref<    {
     id: string;
     type: HSTOperationType;
@@ -897,7 +897,7 @@ getOperationsFor: (doctype: string, recordId?: string) => HSTOperation[];
 getSnapshot: () => OperationLogSnapshot;
 markIrreversible: (operationId: string, reason: string) => void;
 logAction: (doctype: string, actionName: string, recordIds?: string[], result?: "success" | "failure" | "pending", error?: string) => string;
-}, "operations" | "currentIndex" | "config" | "clientId">, Pick<{
+}, "operations" | "clientId" | "currentIndex" | "config">, Pick<{
 operations: Ref<    {
 id: string;
 type: HSTOperationType;
