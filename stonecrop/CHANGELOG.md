@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/stonecrop
 
-This log was last generated on Tue, 24 Mar 2026 10:41:22 GMT and should not be manually modified.
+This log was last generated on Wed, 25 Mar 2026 14:29:05 GMT and should not be manually modified.
+
+## 0.10.13
+Wed, 25 Mar 2026 14:29:05 GMT
+
+### Patches
+
+- set singleton pattern for Stonecrop
 
 ## 0.10.12
 Tue, 24 Mar 2026 10:41:22 GMT
