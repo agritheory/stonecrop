@@ -16,6 +16,10 @@ describe('Operation Log - Action Tracking', () => {
 		// Setup Pinia
 		setActivePinia(createPinia())
 
+		// Reset static instances
+		Registry._root = undefined as any
+		Stonecrop._root = undefined as any
+
 		// Create registry
 		registry = new Registry()
 

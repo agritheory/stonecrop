@@ -73,6 +73,10 @@ const plugin: Plugin = {
 
 		// Create and provide a global Stonecrop instance
 		const stonecrop = new Stonecrop(registry, undefined, options?.client ? { client: options.client } : undefined)
+		// Always ensure client is set when provided (handles singleton case where options are ignored)
+		if (options?.client) {
+			stonecrop.setClient(options.client)
+		}
 		app.provide('$stonecrop', stonecrop)
 		app.config.globalProperties.$stonecrop = stonecrop
 

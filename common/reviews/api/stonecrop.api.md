@@ -682,6 +682,8 @@ export class Stonecrop {
     records(doctype: string | Doctype): HSTNode;
     readonly registry: Registry;
     removeRecord(doctype: string | Doctype, recordId: string): void;
+    // @internal
+    static _root: Stonecrop;
     runAction(doctype: Doctype, action: string, args?: any[]): void;
     setClient(client: DataClient): void;
     setup(doctype: Doctype): void;

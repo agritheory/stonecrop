@@ -20,6 +20,7 @@ describe('Stonecrop class with HST integration', () => {
 	beforeEach(() => {
 		// Reset static instances
 		Registry._root = undefined as any
+		Stonecrop._root = undefined as any
 
 		mockRouter = createRouter({
 			history: createMemoryHistory(),
@@ -243,6 +244,7 @@ describe('Stonecrop class with HST integration', () => {
 		beforeEach(() => {
 			// Reset registry for each test
 			Registry._root = undefined as any
+			Stonecrop._root = undefined as any
 			const localRouter = createRouter({ history: createMemoryHistory(), routes: [] })
 			registry = new Registry(localRouter)
 			mockDoctype = createMockDoctype('Task')
@@ -408,6 +410,7 @@ describe('Stonecrop class with HST integration', () => {
 			const noWorkflowDoctype = new Doctype('Bare', List<SchemaTypes>([]), undefined as any, Map({}))
 			// Use a fresh registry to avoid singleton collision
 			Registry._root = undefined as any
+			Stonecrop._root = undefined as any
 			const localRegistry = new Registry()
 			localRegistry.addDoctype(noWorkflowDoctype)
 			const localStonecrop = new Stonecrop(localRegistry)
@@ -433,6 +436,7 @@ describe('Stonecrop class with HST integration', () => {
 		describe('WorkflowMeta format support', () => {
 			it('returns first state as initial for WorkflowMeta format', () => {
 				Registry._root = undefined as any
+				Stonecrop._root = undefined as any
 				const localRegistry = new Registry()
 				const localStonecrop = new Stonecrop(localRegistry)
 
@@ -452,6 +456,7 @@ describe('Stonecrop class with HST integration', () => {
 
 			it('returns status field when present, regardless of workflow format', () => {
 				Registry._root = undefined as any
+				Stonecrop._root = undefined as any
 				const localRegistry = new Registry()
 				const localStonecrop = new Stonecrop(localRegistry)
 
@@ -469,6 +474,7 @@ describe('Stonecrop class with HST integration', () => {
 
 			it('handles WorkflowMeta with empty states array', () => {
 				Registry._root = undefined as any
+				Stonecrop._root = undefined as any
 				const localRegistry = new Registry()
 				const localStonecrop = new Stonecrop(localRegistry)
 
@@ -486,6 +492,7 @@ describe('Stonecrop class with HST integration', () => {
 
 			it('handles WorkflowMeta without states property', () => {
 				Registry._root = undefined as any
+				Stonecrop._root = undefined as any
 				const localRegistry = new Registry()
 				const localStonecrop = new Stonecrop(localRegistry)
 

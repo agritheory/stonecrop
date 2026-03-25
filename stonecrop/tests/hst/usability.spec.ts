@@ -19,6 +19,7 @@ describe('HST Edge Cases & Performance', () => {
 
 	beforeEach(() => {
 		Registry._root = undefined as any
+		Stonecrop._root = undefined as any
 		registry = new Registry()
 
 		// Complex schema with nested fields and special cases

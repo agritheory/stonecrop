@@ -64,6 +64,7 @@ describe('useStonecrop HST mode', () => {
 	beforeEach(() => {
 		setActivePinia(createPinia())
 		Registry._root = undefined as any
+		Stonecrop._root = undefined as any
 		;(HST as any).instance = undefined
 		registry = new Registry()
 		stonecrop = new Stonecrop(registry)
@@ -828,6 +829,7 @@ describe('useStonecrop base mode', () => {
 	beforeEach(() => {
 		setActivePinia(createPinia())
 		Registry._root = undefined as any
+		Stonecrop._root = undefined as any
 		;(HST as any).instance = undefined
 		registry = new Registry()
 		stonecrop = new Stonecrop(registry)
@@ -853,6 +855,9 @@ describe('useStonecrop base mode', () => {
 	})
 
 	it('operationLog methods return defaults when stonecrop not yet initialized', async () => {
+		// Reset singleton to test "no stonecrop available" scenario
+		Stonecrop._root = undefined as any
+
 		const TestComponent = defineComponent({
 			setup() {
 				const result = useStonecrop()
@@ -877,12 +882,13 @@ describe('useStonecrop base mode', () => {
 			template: '<div>test</div>',
 		})
 
+		// Don't provide $stonecrop to test "no stonecrop available" scenario
 		const wrapper = mount(TestComponent, {
-			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
+			global: { provide: { $registry: registry } },
 		})
 
 		const vm = wrapper.vm as any
-		// Before mount, stonecrop is undefined so defaults apply
+		// Without stonecrop, operation log methods return defaults
 		expect(vm.snapshot).toBeDefined()
 		expect(vm.ops).toEqual([])
 		expect(vm.undoResult).toBe(false)

@@ -60,6 +60,7 @@ describe('useStonecrop composable', () => {
 
 		// Reset static instances
 		Registry._root = undefined as any
+		Stonecrop._root = undefined as any
 		// Reset HST singleton too if it exists
 		;(HST as any).instance = undefined
 
@@ -136,6 +137,9 @@ describe('useStonecrop composable', () => {
 	})
 
 	it('sets undefined stonecrop instance when no registry is available', async () => {
+		// Reset singleton to test "no stonecrop available" scenario
+		Stonecrop._root = undefined as any
+
 		const TestComponent = defineComponent({
 			setup() {
 				return useStonecrop()
@@ -378,6 +382,7 @@ describe('useStonecrop router-based HST integration', () => {
 
 		// Reset static instances
 		Registry._root = undefined as any
+		Stonecrop._root = undefined as any
 		;(HST as any).instance = undefined
 
 		mockRouter = createRouter({
@@ -559,6 +564,7 @@ describe('useStonecrop with string doctype lazy-loading', () => {
 
 		// Reset static instances
 		Registry._root = undefined as any
+		Stonecrop._root = undefined as any
 		;(HST as any).instance = undefined
 
 		mockRouter = createRouter({

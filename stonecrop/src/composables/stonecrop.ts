@@ -128,7 +128,7 @@ export function useStonecrop(options?: {
 
 	const registry = options.registry || inject<Registry>('$registry')
 	const providedStonecrop = inject<Stonecrop>('$stonecrop')
-	const stonecrop = ref<Stonecrop>()
+	const stonecrop = ref<Stonecrop | undefined>()
 	const hstStore = ref<HSTNode>()
 	const formData = ref<Record<string, any>>({})
 
@@ -143,6 +143,13 @@ export function useStonecrop(options?: {
 	const isLoading = ref(false)
 	const error = ref<Error | null>(null)
 	const resolvedDoctype = ref<Doctype | undefined>()
+
+	// Initialize stonecrop instance synchronously using singleton pattern
+	// Use injected instance if available, otherwise fall back to the singleton root
+	const stonecropInstance = providedStonecrop || Stonecrop._root
+	if (stonecropInstance) {
+		stonecrop.value = stonecropInstance
+	}
 
 	// If doctype is a Doctype instance (not string), set resolved immediately
 	if (options?.doctype && typeof options.doctype !== 'string') {
@@ -228,11 +235,9 @@ export function useStonecrop(options?: {
 
 	// Initialize Stonecrop instance
 	onMounted(async () => {
-		if (!registry) {
+		if (!registry || !stonecrop.value) {
 			return
 		}
-
-		stonecrop.value = providedStonecrop || new Stonecrop(registry)
 
 		// Set up reactive refs from operation log store - only if Pinia is available
 		try {

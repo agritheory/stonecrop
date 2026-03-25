@@ -29,6 +29,14 @@ export interface StonecropOptions {
  * @public
  */
 export class Stonecrop {
+	/**
+	 * Singleton instance of Stonecrop. Only one Stonecrop instance can exist
+	 * per application, ensuring consistent HST state and registry access.
+	 * Subsequent constructor calls return this instance instead of creating new ones.
+	 * @internal
+	 */
+	static _root: Stonecrop
+
 	private hstStore: HSTNode
 	private _operationLogStore?: ReturnType<typeof useOperationLogStore>
 	private _operationLogConfig?: Partial<OperationLogConfig>
@@ -38,12 +46,17 @@ export class Stonecrop {
 	readonly registry: Registry
 
 	/**
-	 * Creates a new Stonecrop instance with HST integration
+	 * Creates a new Stonecrop instance with HST integration (singleton pattern)
 	 * @param registry - The Registry instance containing doctype definitions
 	 * @param operationLogConfig - Optional configuration for the operation log
 	 * @param options - Options including the data client (can be set later via setClient)
 	 */
 	constructor(registry: Registry, operationLogConfig?: Partial<OperationLogConfig>, options?: StonecropOptions) {
+		if (Stonecrop._root) {
+			return Stonecrop._root
+		}
+		Stonecrop._root = this
+
 		this.registry = registry
 
 		// Store config for lazy initialization

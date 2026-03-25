@@ -25,6 +25,7 @@ describe('Stonecrop Vue Plugin with HST', () => {
 
 		// Reset static instances
 		Registry._root = undefined as any
+		Stonecrop._root = undefined as any
 	})
 
 	it('installs plugin without options', () => {

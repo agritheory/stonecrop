@@ -190,6 +190,7 @@ describe('HST Vue Reactivity', () => {
 
 	beforeEach(() => {
 		Registry._root = undefined as any
+		Stonecrop._root = undefined as any
 		registry = new Registry()
 
 		const mockSchema = List([
