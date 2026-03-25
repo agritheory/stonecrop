@@ -6,11 +6,11 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { defineComponent } from 'vue'
 import { type MachineConfig } from 'xstate'
 
-import { useStonecrop } from '../src/composables/stonecrop'
-import Doctype from '../src/doctype'
-import Registry from '../src/registry'
-import { Stonecrop } from '../src/stonecrop'
-import { HST } from '../src/stores/hst'
+import { useStonecrop } from '../../src/composables/stonecrop'
+import Doctype from '../../src/doctype'
+import Registry from '../../src/registry'
+import { Stonecrop } from '../../src/stonecrop'
+import { HST } from '../../src/stores/hst'
 
 /**
  * @vitest-environment jsdom

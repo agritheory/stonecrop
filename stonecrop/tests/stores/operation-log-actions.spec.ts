@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 
-import { Stonecrop } from '../src/stonecrop'
-import Registry from '../src/registry'
-import Doctype from '../src/doctype'
+import { Stonecrop } from '../../src/stonecrop'
+import Registry from '../../src/registry'
+import Doctype from '../../src/doctype'
 import { Map, List } from 'immutable'
-import { useOperationLog } from '../src/composables/operation-log'
+import { useOperationLog } from '../../src/composables/operation-log'
 
 describe('Operation Log - Action Tracking', () => {
 	let registry: Registry

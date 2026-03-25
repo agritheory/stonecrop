@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
-import { useOperationLogStore } from '../src/stores/operation-log'
-import { createHST } from '../src/stores/hst'
-import type { HSTOperation } from '../src/types/operation-log'
+import { useOperationLogStore } from '../../src/stores/operation-log'
+import { createHST } from '../../src/stores/hst'
+import type { HSTOperation } from '../../src/types/operation-log'
 
 describe('Operation Log Store', () => {
 	beforeEach(() => {

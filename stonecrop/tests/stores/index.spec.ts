@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { hst, pinia as stonecropPinia } from '../src/stores/index.js'
-import { HST, HSTProxy, createHST, type HSTNode } from '../src/stores/hst.js'
-import Registry from '../src/registry.js'
-import { Stonecrop } from '../src/stonecrop.js'
-import Doctype from '../src/doctype.js'
+import { hst, pinia as stonecropPinia } from '../../src/stores/index.js'
+import { HST, HSTProxy, createHST, type HSTNode } from '../../src/stores/hst.js'
+import Registry from '../../src/registry.js'
+import { Stonecrop } from '../../src/stonecrop.js'
+import Doctype from '../../src/doctype.js'
 import { Map } from 'immutable'
 
 describe('Stonecrop Stores', () => {

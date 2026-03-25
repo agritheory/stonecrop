@@ -3,9 +3,9 @@ import { List, Map } from 'immutable'
 import { createRouter, createWebHistory } from 'vue-router'
 import type { UnknownMachineConfig } from 'xstate'
 
-import Registry from '../src/registry'
-import { Stonecrop } from '../src/stonecrop'
-import Doctype from '../src/doctype'
+import Registry from '../../src/registry'
+import { Stonecrop } from '../../src/stonecrop'
+import Doctype from '../../src/doctype'
 import type { SchemaTypes } from '@stonecrop/aform'
 
 describe('Registry class', () => {

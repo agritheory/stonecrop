@@ -3,7 +3,7 @@ import { List, Map } from 'immutable'
 import type { UnknownMachineConfig } from 'xstate'
 import type { WorkflowMeta } from '@stonecrop/schema'
 
-import Doctype from '../src/doctype'
+import Doctype from '../../src/doctype'
 import type { SchemaTypes } from '@stonecrop/aform'
 
 describe('Doctype class', () => {

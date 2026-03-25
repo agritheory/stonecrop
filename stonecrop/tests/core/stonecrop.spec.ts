@@ -3,11 +3,11 @@ import { List, Map } from 'immutable'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { createRouter, createMemoryHistory } from 'vue-router'
 
-import Doctype from '../src/doctype'
-import Registry from '../src/registry'
-import { Stonecrop, collectNestedData } from '../src/stonecrop'
-import type { StonecropOptions } from '../src/stonecrop'
-import { ImmutableDoctype } from '../src/types'
+import Doctype from '../../src/doctype'
+import Registry from '../../src/registry'
+import { Stonecrop, collectNestedData } from '../../src/stonecrop'
+import type { StonecropOptions } from '../../src/stonecrop'
+import { ImmutableDoctype } from '../../src/types'
 
 // Mock fetch globally
 global.fetch = vi.fn()

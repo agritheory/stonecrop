@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { nextTick } from 'vue'
-import { useOperationLog, useUndoRedoShortcuts, withBatch } from '../src/composables/operation-log'
-import { createHST } from '../src/stores/hst'
-import type { HSTNode } from '../src/stores/hst'
+import { useOperationLog, useUndoRedoShortcuts, withBatch } from '../../src/composables/operation-log'
+import { createHST } from '../../src/stores/hst'
+import type { HSTNode } from '../../src/stores/hst'
 
 describe('Operation Log Composable', () => {
 	let hstStore: HSTNode

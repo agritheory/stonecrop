@@ -7,11 +7,11 @@ import { createRouter, createMemoryHistory } from 'vue-router'
 import { defineComponent, ref, computed } from 'vue'
 import { type MachineConfig } from 'xstate'
 
-import { useStonecrop } from '../src/composables/stonecrop'
-import Registry from '../src/registry'
-import { Stonecrop } from '../src/stonecrop'
-import { HST } from '../src/stores/hst'
-import Doctype from '../src/doctype'
+import { useStonecrop } from '../../src/composables/stonecrop'
+import Registry from '../../src/registry'
+import { Stonecrop } from '../../src/stonecrop'
+import { HST } from '../../src/stores/hst'
+import Doctype from '../../src/doctype'
 
 // Configure jsdom environment
 /**

@@ -1,7 +1,7 @@
 import { List } from 'immutable'
 import { describe, it, expect, beforeEach } from 'vitest'
 
-import { Stonecrop, Registry, Doctype } from '../src'
+import { Stonecrop, Registry, Doctype } from '../../src'
 
 describe('Nested Doctype Support', () => {
 	let registry: Registry

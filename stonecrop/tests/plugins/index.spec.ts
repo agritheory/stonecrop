@@ -2,9 +2,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { createApp, App } from 'vue'
 import { createRouter, createMemoryHistory } from 'vue-router'
 
-import Stonecrop from '../src/plugins'
-import Registry from '../src/registry'
-import { HST } from '../src/stores/hst'
+import StonecropPlugin from '../../src/plugins'
+import Registry from '../../src/registry'
+import { Stonecrop } from '../../src/stonecrop'
+import { HST } from '../../src/stores/hst'
 
 describe('Stonecrop Vue Plugin with HST', () => {
 	let app: App
@@ -30,7 +31,7 @@ describe('Stonecrop Vue Plugin with HST', () => {
 
 	it('installs plugin without options', () => {
 		expect(() => {
-			app.use(Stonecrop)
+			app.use(StonecropPlugin)
 		}).not.toThrow()
 
 		const registry = app._context.provides.$registry
@@ -40,7 +41,7 @@ describe('Stonecrop Vue Plugin with HST', () => {
 	})
 
 	it('does not install Pinia (HST replaces it)', () => {
-		app.use(Stonecrop)
+		app.use(StonecropPlugin)
 
 		// Check that no Pinia symbol exists in provides
 		const keys = Reflect.ownKeys(app._context.provides)
@@ -49,7 +50,7 @@ describe('Stonecrop Vue Plugin with HST', () => {
 	})
 
 	it('provides access to HST singleton', () => {
-		app.use(Stonecrop)
+		app.use(StonecropPlugin)
 
 		// HST should be accessible as singleton
 		const hst1 = HST.getInstance()
@@ -59,7 +60,7 @@ describe('Stonecrop Vue Plugin with HST', () => {
 
 	it('installs plugin with router option', () => {
 		expect(() => {
-			app.use(Stonecrop, { router: mockRouter })
+			app.use(StonecropPlugin, { router: mockRouter })
 		}).not.toThrow()
 
 		const registry = app._context.provides.$registry
@@ -72,7 +73,7 @@ describe('Stonecrop Vue Plugin with HST', () => {
 		const mockGetMeta = vi.fn()
 
 		expect(() => {
-			app.use(Stonecrop, {
+			app.use(StonecropPlugin, {
 				router: mockRouter,
 				getMeta: mockGetMeta,
 			})
@@ -89,7 +90,7 @@ describe('Stonecrop Vue Plugin with HST', () => {
 		app.config.globalProperties.$router = mockRouter
 
 		expect(() => {
-			app.use(Stonecrop)
+			app.use(StonecropPlugin)
 		}).not.toThrow()
 
 		const registry = app._context.provides.$registry
@@ -105,7 +106,7 @@ describe('Stonecrop Vue Plugin with HST', () => {
 		}
 
 		expect(() => {
-			app.use(Stonecrop, {
+			app.use(StonecropPlugin, {
 				router: mockRouter,
 				components: mockComponents,
 			})
@@ -118,7 +119,7 @@ describe('Stonecrop Vue Plugin with HST', () => {
 	})
 
 	it('Registry and HST singletons work together', () => {
-		app.use(Stonecrop, { router: mockRouter })
+		app.use(StonecropPlugin, { router: mockRouter })
 
 		const registry = app._context.provides.$registry
 		const hst = HST.getInstance()
@@ -145,8 +146,8 @@ describe('Stonecrop Vue Plugin with HST', () => {
 		// doesn't appear in test output.
 		const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
 		expect(() => {
-			app.use(Stonecrop)
-			app.use(Stonecrop) // Second installation should not break
+			app.use(StonecropPlugin)
+			app.use(StonecropPlugin) // Second installation should not break
 		}).not.toThrow()
 		warnSpy.mockRestore()
 
@@ -156,7 +157,7 @@ describe('Stonecrop Vue Plugin with HST', () => {
 	})
 
 	it('provides Registry through injection for composables', () => {
-		app.use(Stonecrop, { router: mockRouter })
+		app.use(StonecropPlugin, { router: mockRouter })
 
 		// Simulate component that uses injection
 		const mockComponent = {
@@ -174,12 +175,12 @@ describe('Stonecrop Vue Plugin with HST', () => {
 
 	it('maintains Registry singleton behavior across plugin installs', () => {
 		// Install on first app
-		app.use(Stonecrop, { router: mockRouter })
+		app.use(StonecropPlugin, { router: mockRouter })
 		const registry1 = app._context.provides.$registry
 
 		// Install on second app
 		const app2 = createApp({})
-		app2.use(Stonecrop)
+		app2.use(StonecropPlugin)
 		const registry2 = app2._context.provides.$registry
 
 		// Should be the same singleton instance
@@ -190,7 +191,7 @@ describe('Stonecrop Vue Plugin with HST', () => {
 	it('handles auto-initialization with router callback', async () => {
 		const onRouterInitialized = vi.fn()
 
-		app.use(Stonecrop, {
+		app.use(StonecropPlugin, {
 			router: mockRouter,
 			autoInitializeRouter: true,
 			onRouterInitialized,
@@ -206,7 +207,7 @@ describe('Stonecrop Vue Plugin with HST', () => {
 	it('handles auto-initialization with async router callback', async () => {
 		const onRouterInitialized = vi.fn().mockResolvedValue(undefined)
 
-		app.use(Stonecrop, {
+		app.use(StonecropPlugin, {
 			router: mockRouter,
 			autoInitializeRouter: true,
 			onRouterInitialized,
@@ -219,7 +220,7 @@ describe('Stonecrop Vue Plugin with HST', () => {
 	})
 
 	it('handles auto-initialization without router callback', async () => {
-		app.use(Stonecrop, {
+		app.use(StonecropPlugin, {
 			router: mockRouter,
 			autoInitializeRouter: true,
 		})
@@ -234,7 +235,7 @@ describe('Stonecrop Vue Plugin with HST', () => {
 	it('handles auto-initialization callback', async () => {
 		const initCallback = vi.fn().mockResolvedValue(undefined)
 
-		app.use(Stonecrop, {
+		app.use(StonecropPlugin, {
 			router: mockRouter,
 			autoInitializeRouter: true,
 			onRouterInitialized: initCallback,
@@ -250,7 +251,7 @@ describe('Stonecrop Vue Plugin with HST', () => {
 
 		// Should not throw despite callback error
 		expect(() => {
-			app.use(Stonecrop, {
+			app.use(StonecropPlugin, {
 				router: mockRouter,
 				autoInitializeRouter: true,
 				onRouterInitialized: errorCallback,
@@ -263,7 +264,7 @@ describe('Stonecrop Vue Plugin with HST', () => {
 	})
 
 	it('skips auto-initialization when no callback provided', async () => {
-		app.use(Stonecrop, {
+		app.use(StonecropPlugin, {
 			router: mockRouter,
 			autoInitializeRouter: true,
 			// No onRouterInitialized callback
@@ -283,7 +284,7 @@ describe('Stonecrop Vue Plugin with HST', () => {
 			runAction: vi.fn(),
 		}
 
-		app.use(Stonecrop, {
+		app.use(StonecropPlugin, {
 			router: mockRouter,
 			client: mockClient,
 		})
@@ -302,13 +303,13 @@ describe('Stonecrop Vue Plugin with HST', () => {
 			runAction: vi.fn(),
 		}
 
-		app.use(Stonecrop, {
+		app.use(StonecropPlugin, {
 			router: mockRouter,
 			client: mockClient,
 		})
 
 		const { List } = await import('immutable')
-		const { default: Doctype } = await import('../src/doctype')
+		const { default: Doctype } = await import('../../src/doctype')
 		const mockDoctype = new Doctype('Widget', List([]), undefined as any, undefined as any)
 
 		const stonecropInstance = app.config.globalProperties.$stonecrop as any
@@ -322,7 +323,7 @@ describe('Stonecrop Vue Plugin with HST', () => {
 		const MockComponent = { template: '<div>Mock</div>' }
 		const spy = vi.spyOn(app, 'component')
 
-		app.use(Stonecrop, {
+		app.use(StonecropPlugin, {
 			components: {
 				'mock-component': MockComponent,
 			},
@@ -335,7 +336,7 @@ describe('Stonecrop Vue Plugin with HST', () => {
 		// Pre-install router
 		app.use(mockRouter)
 
-		app.use(Stonecrop, {
+		app.use(StonecropPlugin, {
 			router: createRouter({
 				history: createMemoryHistory(),
 				routes: [],
@@ -349,7 +350,7 @@ describe('Stonecrop Vue Plugin with HST', () => {
 	it('installs provided router when no existing router', () => {
 		const routerSpy = vi.spyOn(app, 'use')
 
-		app.use(Stonecrop, {
+		app.use(StonecropPlugin, {
 			router: mockRouter,
 		})
 
