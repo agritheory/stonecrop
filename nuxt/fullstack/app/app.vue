@@ -1,13 +1,12 @@
 <script setup lang="ts">
 // Fullstack playground demonstrating @stonecrop/nuxt + nuxt-grafserv
-import SheetNav from '../../desktop/src/components/SheetNav.vue'
-import ActionSet from '../../desktop/src/components/ActionSet.vue'
-import type { ActionElements } from '../../desktop/src/types'
+import SheetNav from '../../../desktop/src/components/SheetNav.vue'
+import ActionSet from '../../../desktop/src/components/ActionSet.vue'
+import type { ActionElements } from '../../../desktop/src/types'
 
 const route = useRoute()
 const router = useRouter()
 
-// Breadcrumbs based on current route
 const breadcrumbs = computed(() => {
 	const path = route.path
 	const parts = path.split('/').filter(Boolean)
@@ -31,11 +30,9 @@ const breadcrumbs = computed(() => {
 	return crumbs
 })
 
-// ActionSet elements - navigation actions
 const actionSetElements = computed<ActionElements[]>(() => {
 	const elements: ActionElements[] = []
 
-	// Navigation dropdown
 	const navActions = [
 		{ label: 'Users', action: () => router.push('/user') },
 		{ label: 'Orders', action: () => router.push('/order') },
@@ -53,7 +50,6 @@ const actionSetElements = computed<ActionElements[]>(() => {
 		actions: navActions,
 	})
 
-	// Back button when not on home or list pages
 	if (route.path !== '/' && route.path !== '/user' && route.path !== '/order' && route.path !== '/docbuilder') {
 		elements.push({
 			type: 'button',
@@ -78,7 +74,6 @@ const handleActionClick = async (label: string, action?: () => void | Promise<vo
 			<NuxtPage />
 		</main>
 
-		<!-- SheetNav Footer - desktop navigation -->
 		<ClientOnly>
 			<SheetNav :breadcrumbs="breadcrumbs" />
 			<template #fallback>
@@ -86,18 +81,11 @@ const handleActionClick = async (label: string, action?: () => void | Promise<vo
 			</template>
 		</ClientOnly>
 
-		<!-- ActionSet Floating Controls -->
 		<ActionSet v-if="actionSetElements.length > 0" :elements="actionSetElements" @action-click="handleActionClick" />
 	</div>
 </template>
 
 <style>
-/* Global styles following Stonecrop design principles:
- * - Gray-on-gray for reduced eye strain during extended use
- * - Minimal ornamentation (low/no border-radius)
- * - Sans-serif typography for clarity
- * - Color reserved for semantic meaning (errors, warnings, success)
- */
 * {
 	box-sizing: border-box;
 }
@@ -124,7 +112,6 @@ body {
 	background: var(--sc-form-background);
 }
 
-/* Placeholder for SheetNav during SSR */
 .sheetnav-placeholder {
 	position: fixed;
 	bottom: 0;

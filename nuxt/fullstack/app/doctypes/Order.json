@@ -1,96 +1,84 @@
 {
 	"name": "Order",
-	"slug": "order/:id",
+	"slug": "order",
 	"tableName": "orders",
 	"fields": [
 		{
 			"fieldname": "id",
-			"fieldtype": "Data",
 			"label": "ID",
-			"readOnly": true
+			"component": "ATextInput",
+			"fieldtype": "Data",
+			"mode": "display"
 		},
 		{
 			"fieldname": "orderNumber",
-			"fieldtype": "Data",
 			"label": "Order Number",
-			"readOnly": true,
-			"width": "15ch"
+			"component": "ATextInput",
+			"fieldtype": "Data",
+			"mode": "display"
 		},
 		{
 			"fieldname": "userId",
-			"fieldtype": "Link",
 			"label": "Customer",
+			"component": "ACombobox",
+			"fieldtype": "Link",
 			"options": "user",
 			"required": true
 		},
 		{
 			"fieldname": "status",
-			"fieldtype": "Select",
 			"label": "Status",
+			"component": "ADropdown",
+			"fieldtype": "Select",
 			"options": ["DRAFT", "PENDING", "PROCESSING", "SHIPPED", "COMPLETED", "CANCELLED"],
 			"default": "DRAFT"
 		},
 		{
 			"fieldname": "total",
-			"fieldtype": "Currency",
 			"label": "Total",
-			"readOnly": true
-		},
-		{
-			"fieldname": "items",
-			"fieldtype": "Doctype",
-			"label": "Order Items",
-			"options": "order-item"
+			"component": "ATextInput",
+			"fieldtype": "Currency",
+			"mode": "display"
 		},
 		{
 			"fieldname": "shippingAddress",
-			"fieldtype": "Text",
-			"label": "Shipping Address"
+			"label": "Shipping Address",
+			"component": "ATextarea",
+			"fieldtype": "Text"
 		},
 		{
 			"fieldname": "billingAddress",
-			"fieldtype": "Text",
-			"label": "Billing Address"
+			"label": "Billing Address",
+			"component": "ATextarea",
+			"fieldtype": "Text"
 		},
 		{
 			"fieldname": "createdAt",
-			"fieldtype": "Datetime",
 			"label": "Created At",
-			"readOnly": true
+			"component": "ATextInput",
+			"fieldtype": "Datetime",
+			"mode": "display"
 		},
 		{
 			"fieldname": "updatedAt",
-			"fieldtype": "Datetime",
 			"label": "Updated At",
-			"readOnly": true
-		},
-		{
-			"fieldname": "processedAt",
+			"component": "ATextInput",
 			"fieldtype": "Datetime",
-			"label": "Processed At",
-			"readOnly": true
-		},
-		{
-			"fieldname": "shippedAt",
-			"fieldtype": "Datetime",
-			"label": "Shipped At",
-			"readOnly": true
-		},
-		{
-			"fieldname": "completedAt",
-			"fieldtype": "Datetime",
-			"label": "Completed At",
-			"readOnly": true
+			"mode": "display"
 		}
 	],
 	"workflow": {
 		"states": ["DRAFT", "PENDING", "PROCESSING", "SHIPPED", "COMPLETED", "CANCELLED"],
 		"actions": {
+			"save": {
+				"label": "Save",
+				"handler": "order:save"
+			},
 			"submit": {
 				"label": "Submit Order",
 				"handler": "submit_order",
 				"allowedStates": ["DRAFT"],
-				"requiredFields": ["userId", "items", "shippingAddress"]
+				"requiredFields": ["userId", "shippingAddress"]
 			},
 			"process": {
 				"label": "Process Order",

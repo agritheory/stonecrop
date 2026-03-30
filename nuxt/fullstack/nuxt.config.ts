@@ -5,59 +5,55 @@ import NuxtGrafserv, { type ModuleOptions as GrafservOptions } from '@stonecrop/
 
 import NuxtStonecrop from '../src/module'
 
-// Theme path
-const themePath = resolve(__dirname, '../../themes/default/default.css')
+const desktopStyles = resolve(__dirname, '../../desktop/dist/desktop.css')
 
 export default defineNuxtConfig({
 	compatibilityDate: '2026-01-01',
 
-	// Load both Stonecrop modules
 	modules: [NuxtStonecrop, NuxtGrafserv],
 
-	// Stonecrop frontend configuration
 	stonecrop: {
-		docbuilder: true,
+		docbuilder: false,
+		routeStrategy: () => [
+			{
+				name: 'catch-all',
+				path: '/:pathMatch(.*)*',
+				file: resolve(__dirname, './app/pages/index.vue'),
+			},
+		],
 	},
 
-	// Grafserv GraphQL server configuration
 	grafserv: {
-		// Configuration type - 'schema' for file-based schemas
-		type: 'schema',
-
-		// GraphQL schema and resolvers
+		type: 'schema' as const,
 		schema: './server/schema.graphql',
 		resolvers: './server/resolvers.ts',
-
-		// GraphQL endpoint
 		url: '/graphql/',
-
-		// Enable GraphiQL in development
 		graphiql: true,
 	} as GrafservOptions,
 
-	// CSS theme
-	css: [themePath, '~/assets/styles/common.css'],
+	css: [desktopStyles],
 
-	// Development tools
+	vite: {
+		optimizeDeps: {
+			include: ['@stonecrop/desktop', '@stonecrop/graphql-client', '@stonecrop/schema'],
+		},
+	},
+
 	devtools: { enabled: true },
 
-	// Nitro server configuration
 	nitro: {
 		storage: {
 			cache: {
 				driver: 'memory',
 			},
 		},
-		// Don't bundle grafast - let Node.js handle it natively
-		// This fixes ESM/CJS interop issues with the debug package
 		externals: {
 			external: ['grafast', 'grafserv', 'grafserv/h3/v1', 'graphile-config', 'debug'],
 		},
 	},
 
-	// Dev server
 	devServer: {
-		port: 3001, // Different port from regular playground
+		port: 3001,
 		host: 'localhost',
 	},
 })

@@ -190,10 +190,14 @@ export class MockGraphQLExecutor implements GraphQLExecutor {
 	 * - allOrders -> connection with nodes
 	 */
 	async query<T = unknown>(query: string, variables?: Record<string, unknown>): Promise<T> {
-		const queryName = extractQueryName(query)
-
-		if (!queryName) {
-			throw new Error('Could not parse query name from GraphQL query')
+		// Accept either a query name (e.g., "allUsers") or a full GraphQL query
+		let queryName = query.trim()
+		if (queryName.includes('{')) {
+			const extracted = extractQueryName(query)
+			if (!extracted) {
+				throw new Error('Could not parse query name from GraphQL query')
+			}
+			queryName = extracted
 		}
 
 		// Handle User queries
@@ -243,6 +247,18 @@ export class MockGraphQLExecutor implements GraphQLExecutor {
 		}
 
 		// Handle OrderItem queries (nested)
+		if (queryName === 'orderItemById') {
+			const id = variables?.id as string
+			// Find the order item by ID across all orders
+			for (const order of orders.values()) {
+				const item = order.items.find(i => i.id === id)
+				if (item) {
+					return { orderItemById: item } as T
+				}
+			}
+			return { orderItemById: null } as T
+		}
+
 		if (queryName === 'allOrderItems') {
 			const orderId = variables?.orderId as string | undefined
 			let items: OrderItem[] = []
@@ -277,10 +293,14 @@ export class MockGraphQLExecutor implements GraphQLExecutor {
 	 * - deleteUserById(id: "1") -> delete user
 	 */
 	async mutate<T = unknown>(mutation: string, variables?: Record<string, unknown>): Promise<T> {
-		const mutationName = extractQueryName(mutation)
-
-		if (!mutationName) {
-			throw new Error('Could not parse mutation name from GraphQL mutation')
+		// Accept either a mutation name (e.g., "createUser") or a full GraphQL mutation
+		let mutationName = mutation.trim()
+		if (mutationName.includes('{')) {
+			const extracted = extractQueryName(mutation)
+			if (!extracted) {
+				throw new Error('Could not parse mutation name from GraphQL mutation')
+			}
+			mutationName = extracted
 		}
 
 		// Handle User mutations
