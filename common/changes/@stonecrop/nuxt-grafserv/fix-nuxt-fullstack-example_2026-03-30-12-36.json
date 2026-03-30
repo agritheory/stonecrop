@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/nuxt-grafserv",
+      "comment": "fix resolver structure requirement",
+      "type": "none"
+    }
+  ],
+  "packageName": "@stonecrop/nuxt-grafserv"
+}
