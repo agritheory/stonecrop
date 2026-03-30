@@ -233,7 +233,7 @@ const executeAction = (actionType: RowActionType) => {
 }
 
 .atable-row-actions.dropdown-active {
-	z-index: 500;
+	z-index: 101;
 }
 
 .row-actions-icons {
@@ -320,7 +320,7 @@ const executeAction = (actionType: RowActionType) => {
 
 .row-actions-menu {
 	position: fixed;
-	z-index: 9999;
+	z-index: 100;
 	min-width: 10rem;
 	padding: 0.25rem 0;
 	background: white;

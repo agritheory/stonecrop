@@ -1,13 +1,14 @@
-/* Z-index heirarchy for element */
-:root {
-	/* for forms and tables within the app */
-	--z-index-form: 10;
-	/* sticky columns within tables */
-	--z-index-form-sticky: 20;
-	/* modals within forms or tables */
-	--z-index-form-modals: 50;
-	/* application/desktop level */
-	--z-index-desktop: 100;
-	/* application modals and errors */
-	--z-index-app-modal: 200;
-}
+/* 
+Z-INDEX HEIRAARCHY REFERENCE 
+
+Each group has a hundred available Z-Indexes, so use these if you need to 
+
+[-100, -1]: Elements behind main content 
+[0 - 99]: App level components, e.g. forms, tables, fields
+[100 - 199]: Dropdowns and floating elements
+[200 - 299]: Modals 
+[300 - 399]: Application/Desktop-level components
+[400 - 499]: Application-level Modals and Errors
+
+
+

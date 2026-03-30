@@ -86,7 +86,7 @@ p {
 }
 
 label {
-	z-index: 2;
+	z-index: 0;
 	font-size: 80%;
 	position: absolute;
 	background: white;

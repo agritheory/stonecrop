@@ -365,7 +365,7 @@ defineExpose({
 .sticky-index {
 	position: sticky;
 	left: 0px;
-	z-index: 10;
+	z-index: 100;
 	order: 0;
 }
 
@@ -375,7 +375,7 @@ td.sticky-column,
 th.sticky-index,
 td.sticky-index {
 	position: sticky;
-	z-index: 10;
+	z-index: 100;
 	order: 0;
 	background: white;
 }

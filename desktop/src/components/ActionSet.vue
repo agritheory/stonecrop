@@ -265,7 +265,7 @@ button.button-default:disabled:hover {
 	border-radius: 10px;
 	background-color: #ffffff;
 	padding: 10px;
-	z-index: 1000;
+	z-index: 100;
 }
 
 button.dropdown-item {
