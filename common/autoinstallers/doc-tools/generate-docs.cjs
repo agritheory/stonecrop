@@ -6,13 +6,6 @@ const { ApiModel } = require('@microsoft/api-extractor-model')
 const { readFileSync, writeFileSync, existsSync, mkdirSync } = require('fs')
 const { join } = require('path')
 
-// Use createRequire to force CJS resolution of @microsoft/api-extractor-model.
-// The package's exports map routes ESM imports to lib-esm/, which has bare specifiers
-// without .js extensions that fail under Node.js strict ESM resolution.
-// The CJS build (lib-commonjs/) does not have this issue.
-const require = createRequire(import.meta.url)
-const { ApiModel } = require('@microsoft/api-extractor-model')
-
 // Load the raw JSON to access docComment fields (for future enhancement)
 let rawApiData = null
 
