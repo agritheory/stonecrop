@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/schema",
-	"version": "0.10.13",
+	"version": "0.10.14",
 	"type": "module",
 	"types": "./dist/schema.d.ts",
 	"exports": {
