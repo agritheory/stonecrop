@@ -41,7 +41,7 @@ export function validateField(data: unknown): ValidationResult {
 	return {
 		success: false,
 		errors: result.error.issues.map(issue => ({
-			path: issue.path,
+			path: issue.path as (string | number)[],
 			message: issue.message,
 		})),
 	}
@@ -63,7 +63,7 @@ export function validateDoctype(data: unknown): ValidationResult {
 	return {
 		success: false,
 		errors: result.error.issues.map(issue => ({
-			path: issue.path,
+			path: issue.path as (string | number)[],
 			message: issue.message,
 		})),
 	}

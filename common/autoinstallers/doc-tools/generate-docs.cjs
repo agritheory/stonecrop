@@ -1,12 +1,10 @@
 #!/usr/bin/env node
 
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs'
-import { join, dirname } from 'path'
-import { fileURLToPath } from 'url'
-import { createRequire } from 'module'
+'use strict'
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
+const { ApiModel } = require('@microsoft/api-extractor-model')
+const { readFileSync, writeFileSync, existsSync, mkdirSync } = require('fs')
+const { join } = require('path')
 
 // Use createRequire to force CJS resolution of @microsoft/api-extractor-model.
 // The package's exports map routes ESM imports to lib-esm/, which has bare specifiers

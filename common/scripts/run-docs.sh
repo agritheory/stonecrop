@@ -41,7 +41,7 @@ fi
 # Generate single package docs if specified
 if [ -n "$PACKAGE_NAME" ]; then
   cd "$DOC_TOOLS_DIR"
-  node generate-docs.mjs "$PACKAGE_NAME"
+  node generate-docs.cjs "$PACKAGE_NAME"
 fi
 
 # Aggregate all docs if requested
