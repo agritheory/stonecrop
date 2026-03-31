@@ -39,7 +39,7 @@ actions: {
 ### 1. Defining Transition Actions
 
 ```typescript
-import { DoctypeMeta, registerTransitionAction } from '@stonecrop/stonecrop'
+import { Doctype, registerTransitionAction } from '@stonecrop/stonecrop'
 import { Map, List } from 'immutable'
 
 // Register transition action functions
@@ -66,7 +66,7 @@ registerTransitionAction('saveDocument', async (context) => {
 })
 
 // Define doctype with transitions
-const todoDoctype = new DoctypeMeta(
+const todoDoctype = new Doctype(
   'Todo',
   List([
     { fieldname: 'title', fieldtype: 'Data', label: 'Title' },
@@ -201,7 +201,7 @@ registerTransitionAction('notifyUsers', async (context) => {
 })
 
 // Define doctype with sequential actions
-const formDoctype = new DoctypeMeta(
+const formDoctype = new Doctype(
   'ContactForm',
   List([...]),
   workflow,
@@ -232,7 +232,7 @@ registerGlobalAction('validateEmail', async (context) => {
   }
 })
 
-const doctype = new DoctypeMeta(
+const doctype = new Doctype(
   'User',
   List([...]),
   workflow,
@@ -301,7 +301,7 @@ registerTransitionAction('failingAction', async () => {
 })
 
 // Subsequent actions won't execute
-const doctype = new DoctypeMeta(
+const doctype = new Doctype(
   'Doc',
   List([]),
   workflow,

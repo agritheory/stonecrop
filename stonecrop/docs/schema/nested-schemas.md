@@ -97,7 +97,7 @@ AForm:
 │    <AForm                                                  │
 │      :schema="field.schema"                                │
 │      v-model:data="nestedData[field.fieldname]"            │
-│      :read-only="readOnly || field.readOnly"               │
+│      :mode="field.mode ?? mode"                            │
 │    />                                                      │
 │  </div>                                                    │
 │                                                            │
@@ -154,7 +154,7 @@ The `options` field must match the slug of a registered doctype in your registry
 ### 2. Register Doctypes
 
 ```typescript
-import { Registry, DoctypeMeta } from '@stonecrop/stonecrop'
+import { Registry, Doctype } from '@stonecrop/stonecrop'
 import { List } from 'immutable'
 import addressSchema from './address_schema.json'
 import customerSchema from './customer_schema.json'
@@ -162,11 +162,11 @@ import customerSchema from './customer_schema.json'
 const registry = new Registry()
 
 // Register the nested doctype first
-const addressDoctype = new DoctypeMeta('Address', List(addressSchema.fields), undefined, undefined)
+const addressDoctype = new Doctype('Address', List(addressSchema.fields), undefined, undefined)
 registry.addDoctype(addressDoctype)
 
 // Register the parent doctype
-const customerDoctype = new DoctypeMeta('Customer', List(customerSchema.fields), undefined, undefined)
+const customerDoctype = new Doctype('Customer', List(customerSchema.fields), undefined, undefined)
 registry.addDoctype(customerDoctype)
 ```
 
@@ -365,7 +365,7 @@ AForm detects nested schemas and renders recursively:
     <AForm
       v-model:data="nestedData[field.fieldname]"
       :schema="field.schema"
-      :read-only="readOnly || field.readOnly"
+      :mode="field.mode ?? mode"
     />
   </div>
 
@@ -415,12 +415,13 @@ This provides the best developer experience when using full Stonecrop integratio
 
 ## Nested Table Schemas
 
-For **1:many relationships** (collections of records), use ATable with a `Table` fieldtype instead:
+For **1:many relationships** (collections of records), use a `Doctype` fieldtype with `cardinality: 'many'`:
 
 ```json
 {
   "fieldname": "line_items",
-  "fieldtype": "Table",
+  "fieldtype": "Doctype",
+  "cardinality": "many",
   "options": "sales_order_item",
   "label": "Line Items"
 }

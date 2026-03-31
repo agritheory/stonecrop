@@ -14,7 +14,9 @@
 		"_phase:build": "",
 		"build": "",
 		"story": "histoire dev",
-		"build:stories": "histoire build"
+		"build:stories": "histoire build",
+		"desktop": "vite --config desktop/vite.config.ts desktop",
+		"docbuilder": "vite --config docbuilder/vite.config.ts docbuilder"
 	},
 	"dependencies": {
 		"@stonecrop/aform": "workspace:*",

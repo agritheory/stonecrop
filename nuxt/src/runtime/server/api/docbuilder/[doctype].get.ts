@@ -42,7 +42,7 @@ export default defineEventHandler(async event => {
 				.map(w => w.charAt(0).toUpperCase() + w.slice(1))
 				.join(' '),
 			slug: doctype,
-			schema: data.schema || [],
+			schema: data.schema ?? data.fields ?? [],
 		}
 	} catch (error: any) {
 		throw createError({

@@ -9,6 +9,24 @@ description: Core orchestration with Registry, HST, and composables
 
 ## Functions
 
+### collectNestedData
+
+Recursively collect nested data from HST using pre-resolved schemas
+
+**Signature:**
+
+```typescript
+declare function collectNestedData(resolvedSchema: SchemaTypes[], basePath: string, hstStore: HSTNode): Record<string, any>;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| resolvedSchema | `SchemaTypes[]` | The already-resolved schema (with nested schemas embedded) |
+| basePath | `string` | The base path in HST (e.g., "customer.123.address") |
+| hstStore | `HSTNode` | The HST store instance |
+
 ### createHST
 
 Factory function for HST creation Creates a new HSTNode proxy for hierarchical state tree navigation.
@@ -255,7 +273,7 @@ Unified Stonecrop composable with HST integration for a specific doctype and rec
 ```typescript
 export declare function useStonecrop(options: {
     registry?: Registry;
-    doctype: DoctypeMeta;
+    doctype: Doctype | string;
     recordId?: string;
 }): HSTStonecropReturn;
 ```
@@ -264,7 +282,7 @@ export declare function useStonecrop(options: {
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| options | `{ registry?: Registry; doctype: DoctypeMeta; recordId?: string; }` | Configuration with doctype and optional recordId |
+| options | `{ registry?: Registry; doctype: Doctype \| string; recordId?: string; }` | Configuration with doctype (string slug or Doctype instance) and optional recordId |
 
 ### useUndoRedoShortcuts
 
@@ -362,44 +380,6 @@ export interface ActionRegistry {
 }
 ```
 
-### BaseTableConfig
-
-Base table configuration properties shared across all view types.
-
-**Definition:**
-
-```typescript
-export interface BaseTableConfig {
-  fullWidth?: boolean;
-  rowActions?: RowActionsConfig;
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| fullWidth? | `boolean` | Control whether the table should be allowed to use the full width of its container. |
-| rowActions? | `RowActionsConfig` | Configuration for row-level actions (add, delete, duplicate, etc.). |
-
-### BasicTableConfig
-
-Table configuration for basic view types (uncounted, list, list-expansion).
-
-**Definition:**
-
-```typescript
-export interface BasicTableConfig {
-  view?: 'uncounted' | 'list' | 'list-expansion';
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| view? | `'uncounted' \| 'list' \| 'list-expansion'` | The type of view to display the table in. |
-
 ### BatchOperation
 
 Batch operation wrapper
@@ -425,98 +405,6 @@ export interface BatchOperation {
 | operations | `HSTOperation[]` | Operations included in this batch |
 | reversible | `boolean` | Whether the entire batch can be undone |
 | timestamp | `Date` | When the batch was created |
-
-### CellContext
-
-Table cell context definition.
-
-**Definition:**
-
-```typescript
-export interface CellContext {
-  column: TableColumn;
-  row: TableRow;
-  table: {
-        [key: string]: any;
-    };
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| column | `TableColumn` | The column object for the current cell. |
-| row | `TableRow` | The row object for the current cell. |
-| table | `{ [key: string]: any; }` | The table object for the current cell. |
-
-### ConnectionHandle
-
-Connection handle information for gantt bar connections.
-
-**Definition:**
-
-```typescript
-export interface ConnectionHandle {
-  barId: string;
-  colIndex: number;
-  id: string;
-  position: {
-        x: ShallowRef<number>;
-        y: ShallowRef<number>;
-    };
-  rowIndex: number;
-  side: 'left' | 'right';
-  visible: Ref<boolean>;
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| barId | `string` | Reference to the gantt bar this handle belongs to. |
-| colIndex | `number` | The column index of the gantt bar this handle belongs to. |
-| id | `string` | Unique identifier for the connection handle. |
-| position | `{ x: ShallowRef<number>; y: ShallowRef<number>; }` | The position of the connection handle. |
-| rowIndex | `number` | The row index of the gantt bar this handle belongs to. |
-| side | `'left' \| 'right'` | The side of the gantt bar where this handle is located. |
-| visible | `Ref<boolean>` | Whether the handle is currently visible (on hover). |
-
-### ConnectionPath
-
-Connection path between two gantt bars.
-
-**Definition:**
-
-```typescript
-export interface ConnectionPath {
-  from: {
-        barId: string;
-        side: 'left' | 'right';
-    };
-  id: string;
-  label?: string;
-  style?: {
-        color?: string;
-        width?: number;
-    };
-  to: {
-        barId: string;
-        side: 'left' | 'right';
-    };
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| from | `{ barId: string; side: 'left' \| 'right'; }` | The source connection handle. |
-| id | `string` | Unique identifier for the connection path. |
-| label? | `string` | Optional label for the connection. |
-| style? | `{ color?: string; width?: number; }` | Optional styling for the connection path. |
-| to | `{ barId: string; side: 'left' \| 'right'; }` | The target connection handle. |
 
 ### CrossTabMessage
 
@@ -659,85 +547,6 @@ export interface FieldTriggerOptions {
 | defaultTimeout? | `number` | Default timeout for action execution in milliseconds |
 | enableRollback? | `boolean` | Whether to enable automatic rollback on failure (default: true) |
 | errorHandler? | `(error: Error, context: FieldChangeContext, action: FieldAction) => void` | Custom error handler for action failures |
-
-### GanttBarInfo
-
-Gantt bar information for VueFlow integration.
-
-**Definition:**
-
-```typescript
-export interface GanttBarInfo {
-  colIndex: number;
-  color: Ref<string>;
-  endIndex: Ref<number>;
-  id: string;
-  label?: string;
-  position: {
-        x: ShallowRef<number>;
-        y: ShallowRef<number>;
-    };
-  rowIndex: number;
-  startIndex: Ref<number>;
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| colIndex | `number` | The primary column index of the gantt bar (typically the start index). |
-| color | `Ref<string>` | Color of the gantt bar. |
-| endIndex | `Ref<number>` | Ending column index of the gantt bar. |
-| id | `string` | Unique identifier for the gantt bar. |
-| label? | `string` | Display label for the gantt bar. |
-| position | `{ x: ShallowRef<number>; y: ShallowRef<number>; }` | The position of the gantt bar in the ATable component. |
-| rowIndex | `number` | The row index of the gantt bar. |
-| startIndex | `Ref<number>` | Starting column index of the gantt bar. |
-
-### GanttOptions
-
-Gantt chart options for table rows.
-
-**Definition:**
-
-```typescript
-export interface GanttOptions {
-  color?: string;
-  colspan?: number;
-  endIndex?: number;
-  startIndex?: number;
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| color? | `string` | The color to be applied to the row's gantt bar. |
-| colspan? | `number` | The length of the gantt bar in columns. Useful when only the start index is provided. If colspan and endIndex are not provided, the bar will stretch to the end of the table. |
-| endIndex? | `number` | The ending column index for the gantt bar. If endIndex and colspan are not provided, the bar will stretch to the end of the table. |
-| startIndex? | `number` | The starting column index for the gantt bar. |
-
-### GanttTableConfig
-
-Table configuration for gantt view types.
-
-**Definition:**
-
-```typescript
-export interface GanttTableConfig {
-  dependencyGraph?: boolean;
-  view: 'gantt';
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| dependencyGraph? | `boolean` | Control whether dependency graph connections should be enabled for Gantt views. When false, connection handles and dependency lines will be hidden. |
-| view | `'gantt'` | The type of view to display the table in. |
 
 ### HSTNode
 
@@ -906,18 +715,15 @@ export interface RouteContext {
 | path | `string` | The full route path (e.g., "/todo/1" or "/todo") |
 | segments | `string[]` | Path segments split by "/" (e.g., ["todo", "1"] or ["todo"]) |
 
-### RowActionOptions
+### StonecropOptions
 
-Options for configuring individual row actions.
+Options for constructing a Stonecrop instance directly. When using the Vue plugin, pass these via `InstallOptions` instead.
 
 **Definition:**
 
 ```typescript
-export interface RowActionOptions {
-  enabled?: boolean;
-  handler?: (rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean;
-  icon?: string;
-  label?: string;
+export interface StonecropOptions {
+  client?: DataClient;
 }
 ```
 
@@ -925,323 +731,7 @@ export interface RowActionOptions {
 
 | Property | Type | Description |
 |----------|------|-------------|
-| enabled? | `boolean` | Whether the action is enabled. |
-| handler? | `(rowIndex: number, store: ReturnType<typeof createTableStore>) => void \| boolean` | Custom handler for the action. Return false to prevent the default behavior. |
-| icon? | `string` | Custom icon override (raw SVG string). |
-| label? | `string` | Custom label for the action (used in dropdown mode). |
-
-### RowActionsConfig
-
-Configuration for row-level actions (add, delete, duplicate, etc.).
-
-**Definition:**
-
-```typescript
-export interface RowActionsConfig {
-  actions?: {
-        add?: boolean | RowActionOptions;
-        delete?: boolean | RowActionOptions;
-        duplicate?: boolean | RowActionOptions;
-        insertAbove?: boolean | RowActionOptions;
-        insertBelow?: boolean | RowActionOptions;
-        move?: boolean | RowActionOptions;
-    };
-  dropdownThreshold?: number;
-  enabled: boolean;
-  forceDropdown?: boolean;
-  position?: 'before-index' | 'after-index' | 'end';
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| actions? | `{ add?: boolean \| RowActionOptions; delete?: boolean \| RowActionOptions; duplicate?: boolean \| RowActionOptions; insertAbove?: boolean \| RowActionOptions; insertBelow?: boolean \| RowActionOptions; move?: boolean \| RowActionOptions; }` | Configuration for individual actions. Set to true to enable with defaults, false to disable, or provide RowActionOptions for custom configuration. |
-| dropdownThreshold? | `number` | Pixel width threshold at which to switch from icons to dropdown mode. Set to 0 to always use icons, or a large number to always use dropdown. |
-| enabled | `boolean` | Whether row actions are enabled. |
-| forceDropdown? | `boolean` | Force dropdown mode regardless of available width. |
-| position? | `'before-index' \| 'after-index' \| 'end'` | Position of the row actions column relative to the index column. |
-
-### RowAddEvent
-
-Event payload for row:add event.
-
-**Definition:**
-
-```typescript
-export interface RowAddEvent {
-  row: TableRow;
-  rowIndex: number;
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| row | `TableRow` |  |
-| rowIndex | `number` |  |
-
-### RowDeleteEvent
-
-Event payload for row:delete event.
-
-**Definition:**
-
-```typescript
-export interface RowDeleteEvent {
-  row: TableRow;
-  rowIndex: number;
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| row | `TableRow` |  |
-| rowIndex | `number` |  |
-
-### RowDuplicateEvent
-
-Event payload for row:duplicate event.
-
-**Definition:**
-
-```typescript
-export interface RowDuplicateEvent {
-  newIndex: number;
-  row: TableRow;
-  sourceIndex: number;
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| newIndex | `number` |  |
-| row | `TableRow` |  |
-| sourceIndex | `number` |  |
-
-### RowInsertEvent
-
-Event payload for row:insert-above and row:insert-below events.
-
-**Definition:**
-
-```typescript
-export interface RowInsertEvent {
-  newIndex: number;
-  row: TableRow;
-  targetIndex: number;
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| newIndex | `number` |  |
-| row | `TableRow` |  |
-| targetIndex | `number` |  |
-
-### RowMoveEvent
-
-Event payload for row:move event.
-
-**Definition:**
-
-```typescript
-export interface RowMoveEvent {
-  fromIndex: number;
-  toIndex: number;
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| fromIndex | `number` |  |
-| toIndex | `number` |  |
-
-### TableColumn
-
-Table column definition.
-
-**Definition:**
-
-```typescript
-export interface TableColumn {
-  align?: CanvasTextAlign;
-  cellComponent?: string;
-  cellComponentProps?: Record<string, any>;
-  colspan?: number;
-  edit?: boolean;
-  fieldtype?: string;
-  filterable?: boolean;
-  filterComponent?: string;
-  filterOptions?: any[];
-  filterType?: 'text' | 'select' | 'number' | 'date' | 'dateRange' | 'checkbox' | 'component';
-  format?: string | ((value: any, context: CellContext) => string);
-  ganttComponent?: string;
-  isGantt?: boolean;
-  label?: string;
-  mask?: (value: any) => any;
-  modalComponent?: string | ((context: CellContext) => string);
-  modalComponentExtraProps?: Record<string, any>;
-  name: string;
-  originalIndex?: number;
-  pinned?: boolean;
-  resizable?: boolean;
-  sortable?: boolean;
-  width?: string;
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| align? | `CanvasTextAlign` | `left` (left aligned), `center` (center aligned), `right` (right aligned), `start` (aligned to the start of the column), `end` (aligned to the end of the column) |
-| cellComponent? | `string` | The component to use to render the cell for the column. If not provided, the table will render the default `<td>` element. |
-| cellComponentProps? | `Record<string, any>` | Additional properties to pass to the table's cell component. Only applicable if the `cellComponent` property is set for the column. |
-| colspan? | `number` | The colspan of the Gantt bar for the column. This determines how many columns the Gantt bar should span across. Only applicable for Gantt tables. |
-| edit? | `boolean` | Control whether cells for the column is editable. |
-| fieldtype? | `string` | The semantic field type of the column. Uses the same StonecropFieldType enum as forms. Common values: 'Data', 'Text', 'Int', 'Float', 'Date', 'Select', 'Link', 'Check', etc. |
-| filterable? | `boolean` | Control whether the column should be filterable and define filter configuration. |
-| filterComponent? | `string` | Custom component for filtering. |
-| filterOptions? | `any[]` | Options for select-type filters. |
-| filterType? | `'text' \| 'select' \| 'number' \| 'date' \| 'dateRange' \| 'checkbox' \| 'component'` | The type of filter for the column. |
-| format? | `string \| ((value: any, context: CellContext) => string)` | The format function to use to format the value of the cell. This can either be a normal or stringified function that takes the value and the cell context and returns a string. |
-| ganttComponent? | `string` | The component to use to render the Gantt bar for the column. Only applicable for Gantt tables. |
-| isGantt? | `boolean` | Whether the column is a Gantt column. Only applicable for Gantt tables. |
-| label? | `string` | The label of the column. This is displayed in the table header. |
-| mask? | `(value: any) => any` | The masking function to use to apply an input mask to the cell. This will accept an input value and return the masked value. |
-| modalComponent? | `string \| ((context: CellContext) => string)` | `row` (the row object), `column` (the column object), `table` (the table object) The function should return the name of the component to use for the modal. `colIndex` (the column index of the current cell), `rowIndex` (the row index of the current cell), `store` (the table data store) |
-| modalComponentExtraProps? | `Record<string, any>` | Additional properties to pass to the modal component. Only applicable if the `modalComponent` property is set for the column. |
-| name | `string` | The key of the column. This is used to identify the column in the table. |
-| originalIndex? | `number` | The original column index for the Gantt bar, excluding any pinned columns. This is evaluated automatically while rendering the table. Only applicable for Gantt tables. |
-| pinned? | `boolean` | Control whether the column should be pinned to the table. |
-| resizable? | `boolean` | Control whether the column can be resized by the user. |
-| sortable? | `boolean` | Control whether the column should be sortable. |
-| width? | `string` | The width of the column. This can be a number (in pixels) or a string (in CSS units). |
-
-### TableDisplay
-
-Table display definition.
-
-**Definition:**
-
-```typescript
-export interface TableDisplay {
-  childrenOpen?: boolean;
-  expanded?: boolean;
-  indent?: number;
-  isParent?: boolean;
-  isRoot?: boolean;
-  open?: boolean;
-  parent?: number;
-  rowModified?: boolean;
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| childrenOpen? | `boolean` | Indicates whether a row node's child nodes are open or closed. Only applicable for tree views. |
-| expanded? | `boolean` | Indicates whether a row node is expanded or collapsed. Only applicable for list-expansion views. |
-| indent? | `number` | The indentation level of the row node. Only applicable for tree and gantt views. |
-| isParent? | `boolean` | Indicates whether a row node is a parent node. This is evaluated automatically while rendering the table. Only applicable for tree views. |
-| isRoot? | `boolean` | Indicates whether a row node is a root node. This is evaluated automatically while rendering the table. Only applicable for tree views. |
-| open? | `boolean` | Indicates whether a row node is visible. This is evaluated automatically while rendering the table. Only applicable for tree views. |
-| parent? | `number` | The HTML parent element for the row node. This is evaluated automatically while rendering the table. Only applicable for tree and gantt views. |
-| rowModified? | `boolean` | Indicates whether a row node has been modified. This is evaluated automatically when a cell is edited. |
-
-### TableModal
-
-Table modal definition.
-
-**Definition:**
-
-```typescript
-export interface TableModal {
-  bottom?: ReturnType<typeof useElementBounding>['bottom'];
-  cell?: HTMLTableCellElement | null;
-  colIndex?: number;
-  component?: string;
-  componentProps?: Record<string, any>;
-  height?: ReturnType<typeof useElementBounding>['height'];
-  left?: ReturnType<typeof useElementBounding>['left'];
-  parent?: HTMLElement;
-  rowIndex?: number;
-  visible?: boolean;
-  width?: ReturnType<typeof useElementBounding>['width'];
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| bottom? | `ReturnType<typeof useElementBounding>['bottom']` | Reactive bottom value for the modal's bounding box. The field is unset when the modal is not being displayed. |
-| cell? | `HTMLTableCellElement \| null` | The HTML cell element that the modal is currently being displayed for. The field is unset when the modal is not being displayed. |
-| colIndex? | `number` | The index of the column that the modal is currently being displayed for. The field is unset when the modal is not being displayed. |
-| component? | `string` | The component to use to render the modal. If not provided, the table will try to use the column's `modalComponent` property, if set. If that is not set, the table will not display a modal. |
-| componentProps? | `Record<string, any>` | Additional properties to pass to the table's modal component. |
-| height? | `ReturnType<typeof useElementBounding>['height']` | Reactive height value for the modal's bounding box. The field is unset when the modal is not being displayed. |
-| left? | `ReturnType<typeof useElementBounding>['left']` | Reactive left value for the modal's bounding box. The field is unset when the modal is not being displayed. |
-| parent? | `HTMLElement` | The HTML parent element that the modal is currently being displayed for. The field is unset when the modal is not being displayed. |
-| rowIndex? | `number` | The index of the row that the modal is currently being displayed for. The field is unset when the modal is not being displayed. |
-| visible? | `boolean` | Indicates whether the table modal is currently visible. |
-| width? | `ReturnType<typeof useElementBounding>['width']` | Reactive width value for the modal's bounding box. The field is unset when the modal is not being displayed. |
-
-### TableModalProps
-
-Table modal component props definition.
-
-**Definition:**
-
-```typescript
-export interface TableModalProps {
-  colIndex: number;
-  rowIndex: number;
-  store: ReturnType<typeof createTableStore>;
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| colIndex | `number` | The index of the column that the modal is currently being displayed for. |
-| rowIndex | `number` | The index of the row that the modal is currently being displayed for. |
-| store | `ReturnType<typeof createTableStore>` | The store for managing the current table's state. |
-
-### TableRow
-
-Table row definition.
-
-**Definition:**
-
-```typescript
-export interface TableRow {
-  gantt?: GanttOptions;
-  indent?: number;
-  parent?: number;
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| gantt? | `GanttOptions` | The options to use when rendering the row as a Gantt table. |
-| indent? | `number` | The indentation level of the row node. Only applicable for tree and gantt views. |
-| parent? | `number` | The HTML parent element for the row node. This is evaluated automatically while rendering the table. Only applicable for tree and gantt views. |
+| client? | `DataClient` | Data client for fetching doctype metadata and records. Use stonecrop/graphql-client's StonecropClient for GraphQL backends, or implement DataClient for custom data sources. Can be set later via `setClient()` for deferred configuration. |
 
 ### TransitionChangeContext
 
@@ -1292,48 +782,6 @@ export interface TransitionExecutionResult {
 | executionTime | `number` | Execution time in milliseconds |
 | success | `boolean` | Whether the action executed successfully |
 | transition | `string` | The transition name that was executed |
-
-### TreeGanttTableConfig
-
-Table configuration for tree-gantt view types.
-
-**Definition:**
-
-```typescript
-export interface TreeGanttTableConfig {
-  defaultTreeExpansion?: 'root' | 'branch' | 'leaf';
-  dependencyGraph?: boolean;
-  view: 'tree-gantt';
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| defaultTreeExpansion? | `'root' \| 'branch' \| 'leaf'` | `branch` (Shows minimal tree to display all gantt nodes. Expands only the necessary paths to gantt nodes, stops at gantt nodes with no gantt descendants), `leaf` (All nodes are visible (fully expanded)) |
-| dependencyGraph? | `boolean` | Control whether dependency graph connections should be enabled for Gantt views. When false, connection handles and dependency lines will be hidden. |
-| view | `'tree-gantt'` | The type of view to display the table in. |
-
-### TreeTableConfig
-
-Table configuration for tree view types.
-
-**Definition:**
-
-```typescript
-export interface TreeTableConfig {
-  defaultTreeExpansion?: 'root' | 'branch' | 'leaf';
-  view: 'tree';
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| defaultTreeExpansion? | `'root' \| 'branch' \| 'leaf'` | `branch` (Shows minimal tree to display all gantt nodes. Expands only the necessary paths to gantt nodes, stops at gantt nodes with no gantt descendants), `leaf` (All nodes are visible (fully expanded)) |
-| view | `'tree'` | The type of view to display the table in. |
 
 ### UndoRedoState
 
@@ -1443,20 +891,6 @@ export interface ValidatorOptions {
 
 ## Type Aliases
 
-### BaseSchema
-
-Basic field structure for AForm schemas
-
-**Definition:**
-
-```typescript
-export type BaseSchema = {
-    fieldname: string;
-    component?: string;
-    value?: any;
-};
-```
-
 ### BaseStonecropReturn
 
 Base Stonecrop composable return type - includes operation log functionality
@@ -1470,40 +904,6 @@ export type BaseStonecropReturn = {
 };
 ```
 
-### ComponentProps
-
-Defined props for AForm components
-
-**Definition:**
-
-```typescript
-export type ComponentProps = {
-    schema?: SchemaTypes;
-    label?: string;
-    mask?: string;
-    required?: boolean;
-    readOnly?: boolean;
-    uuid?: string;
-    validation?: {
-        errorMessage: string;
-        [key: string]: any;
-    };
-};
-```
-
-### ConnectionEvent
-
-Connection event for handling connection creation/deletion.
-
-**Definition:**
-
-```typescript
-export type ConnectionEvent = {
-    type: 'create' | 'delete';
-    connection: ConnectionPath;
-};
-```
-
 ### CrossTabMessageType
 
 Cross-tab message types
@@ -1514,19 +914,23 @@ Cross-tab message types
 export type CrossTabMessageType = 'operation' | 'undo' | 'redo' | 'sync-request' | 'sync-response';
 ```
 
-### DoctypeSchema
+### DoctypeConfig
 
-Schema structure for defining nested doctype fields inside AForm
+Plain object representation of doctype configuration for serialization/API responses. Compatible with the DoctypeMeta type from stonecrop/schema.
 
 **Definition:**
 
 ```typescript
-export type DoctypeSchema = BaseSchema & {
-    fieldtype: 'Doctype';
-    options: string;
-    label?: string;
-    schema?: SchemaTypes[];
-    readOnly?: boolean;
+export type DoctypeConfig = {
+    name: string;
+    slug?: string;
+    tableName?: string;
+    fields?: SchemaTypes[];
+    workflow?: UnknownMachineConfig | WorkflowMeta;
+    actions?: Record<string, string[]>;
+    inherits?: string;
+    listDoctype?: string;
+    parentDoctype?: string;
 };
 ```
 
@@ -1560,20 +964,6 @@ String reference to a globally registered action function or inline function
 export type FieldActionString = string;
 ```
 
-### FieldsetSchema
-
-Schema structure for defining fieldsets inside AForm
-
-**Definition:**
-
-```typescript
-export type FieldsetSchema = BaseSchema & {
-    label?: string;
-    schema?: (FormSchema | TableSchema)[];
-    collapsible?: boolean;
-};
-```
-
 ### FieldTriggerMap
 
 Map of field paths to trigger configurations Supports wildcard patterns like 'emailAddress.*.is_primary'
@@ -1582,61 +972,6 @@ Map of field paths to trigger configurations Supports wildcard patterns like 'em
 
 ```typescript
 export type FieldTriggerMap = Record<string, FieldTriggerConfig | FieldAction[]>;
-```
-
-### FormSchema
-
-Schema structure for defining forms inside AForm
-
-**Definition:**
-
-```typescript
-export type FormSchema = BaseSchema & {
-    align?: string;
-    edit?: boolean;
-    fieldtype?: string;
-    label?: string;
-    name?: string;
-    width?: string;
-    mask?: string;
-};
-```
-
-### GanttDragEvent
-
-Gantt table drag event definition.
-
-**Definition:**
-
-```typescript
-export type GanttDragEvent = {
-    rowIndex: number;
-    colIndex: number;
-    delta: number;
-} & ({
-    type: 'bar';
-    oldStart: number;
-    oldEnd: number;
-    newStart: number;
-    newEnd: number;
-    colspan: number;
-} | {
-    type: 'resize';
-    edge: 'start';
-    oldStart: number;
-    newStart: number;
-    end: number;
-    oldColspan: number;
-    newColspan: number;
-} | {
-    type: 'resize';
-    edge: 'end';
-    oldEnd: number;
-    newEnd: number;
-    start: number;
-    oldColspan: number;
-    newColspan: number;
-});
 ```
 
 ### HSTChangeData
@@ -1689,12 +1024,15 @@ export type HSTStonecropReturn = BaseStonecropReturn & {
     hstStore: Ref<HSTNode | undefined>;
     formData: Ref<Record<string, any>>;
     resolvedSchema: Ref<SchemaTypes[]>;
-    loadNestedData: (parentPath: string, childDoctype: DoctypeMeta, recordId?: string) => Record<string, any>;
-    saveRecursive: (doctype: DoctypeMeta, recordId: string) => Promise<Record<string, any>>;
-    createNestedContext: (basePath: string, childDoctype: DoctypeMeta) => {
+    loadNestedData: (parentPath: string, childDoctype: Doctype, recordId?: string) => Record<string, any>;
+    collectRecordPayload: (doctype: Doctype, recordId: string) => Record<string, any>;
+    createNestedContext: (basePath: string, childDoctype: Doctype) => {
         provideHSTPath: (fieldname: string) => string;
         handleHSTChange: (changeData: HSTChangeData) => void;
     };
+    isLoading: Ref<boolean>;
+    error: Ref<Error | null>;
+    resolvedDoctype: Ref<Doctype | undefined>;
 };
 ```
 
@@ -1707,7 +1045,7 @@ Immutable Doctype type for Stonecrop instances
 ```typescript
 export type ImmutableDoctype = {
     readonly schema?: List<SchemaTypes>;
-    readonly workflow?: UnknownMachineConfig | AnyStateNodeConfig;
+    readonly workflow?: UnknownMachineConfig | AnyStateNodeConfig | WorkflowMeta;
     readonly actions?: Map<string, string[]>;
 };
 ```
@@ -1722,7 +1060,8 @@ Install options for Stonecrop Vue plugin
 export type InstallOptions = {
     router?: Router;
     components?: Record<string, Component>;
-    getMeta?: (routeContext: RouteContext) => DoctypeMeta | Promise<DoctypeMeta>;
+    getMeta?: (routeContext: RouteContext) => Doctype | Promise<Doctype>;
+    client?: DataClient;
     autoInitializeRouter?: boolean;
     onRouterInitialized?: (registry: Registry, stonecrop: Stonecrop) => void | Promise<void>;
 };
@@ -1738,7 +1077,7 @@ Mutable Doctype type for Stonecrop instances
 export type MutableDoctype = {
     doctype?: string;
     schema?: SchemaTypes[];
-    workflow?: UnknownMachineConfig | AnyStateNodeConfig;
+    workflow?: UnknownMachineConfig | AnyStateNodeConfig | WorkflowMeta;
     actions?: Record<string, string[]>;
 };
 ```
@@ -1811,58 +1150,6 @@ export type Schema = {
 };
 ```
 
-### SchemaTypes
-
-Superset of all schema types for AForm
-
-**Definition:**
-
-```typescript
-export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema | DoctypeSchema | TableDoctypeSchema;
-```
-
-### TableConfig
-
-Table configuration definition using discriminated unions for type safety.
-
-**Definition:**
-
-```typescript
-export type TableConfig = BasicTableConfig | TreeTableConfig | GanttTableConfig | TreeGanttTableConfig;
-```
-
-### TableDoctypeSchema
-
-Schema structure for defining 1:many child table fields inside AForm
-
-**Definition:**
-
-```typescript
-export type TableDoctypeSchema = BaseSchema & {
-    fieldtype: 'Table';
-    options: string;
-    label?: string;
-    columns?: TableColumn[];
-    config?: TableConfig;
-    rows?: TableRow[];
-    readOnly?: boolean;
-};
-```
-
-### TableSchema
-
-Schema structure for defining tables inside AForm
-
-**Definition:**
-
-```typescript
-export type TableSchema = BaseSchema & {
-    columns?: TableColumn[];
-    config?: TableConfig;
-    rows?: TableRow[];
-};
-```
-
 ### TransitionAction
 
 Supported action types for XState transitions Can be either a transition-specific function or a string reference
@@ -1885,14 +1172,14 @@ export type TransitionActionFunction = (context: TransitionChangeContext) => voi
 
 ## Classes
 
-### DoctypeMeta
+### Doctype
 
-Doctype Meta class
+Doctype runtime class with Immutable.js collections for HST change tracking.
 
 **Constructor:**
 
 ```typescript
-new DoctypeMeta(doctype: string, schema: ImmutableDoctype['schema'], workflow: ImmutableDoctype['workflow'], actions: ImmutableDoctype['actions'], component: Component)
+new Doctype(doctype: string, schema: ImmutableDoctype['schema'], workflow: ImmutableDoctype['workflow'], actions: ImmutableDoctype['actions'], component: Component)
 ```
 
 **Parameters:**
@@ -1912,9 +1199,82 @@ new DoctypeMeta(doctype: string, schema: ImmutableDoctype['schema'], workflow: I
 | actions | `ImmutableDoctype['actions']` | The doctype actions and field triggers |
 | component | `Component` | The doctype component |
 | doctype | `string` | The doctype name |
+| name | `string` | Alias for doctype (for DoctypeLike interface compatibility) |
 | schema | `ImmutableDoctype['schema']` | The doctype schema |
 | slug | `string` | Converts the registered doctype string to a slug (kebab-case). The following conversions are made: - It replaces camelCase and PascalCase with kebab-case strings - It replaces spaces and underscores with hyphens - It converts the string to lowercase |
 | workflow | `ImmutableDoctype['workflow']` | The doctype workflow |
+
+**Methods:**
+
+#### fromObject
+
+Creates a Doctype instance from a plain configuration object. Handles conversion of arrays to Immutable.js collections internally.
+
+This is the recommended way to create a Doctype from API responses or configuration files, as it encapsulates the Immutable.js construction that the framework uses internally.
+
+```typescript
+fromObject(config: DoctypeConfig): Doctype
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| config | `DoctypeConfig` | Plain object with doctype configuration (typically from API response) |
+
+#### getActionMeta
+
+Returns metadata for a specific action, if available. Only works with WorkflowMeta format; returns undefined for XState format.
+
+```typescript
+getActionMeta(actionName: string): {
+        label: string;
+        handler: string;
+        requiredFields?: string[];
+        allowedStates?: string[];
+        confirm?: boolean;
+        args?: Record<string, unknown>;
+    } | undefined
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| actionName | `string` | The action name to get metadata for |
+
+#### getActionsObject
+
+Returns the actions as a plain object for use with components that expect plain JavaScript objects.
+
+```typescript
+getActionsObject(): Record<string, string[]>
+```
+
+#### getAvailableTransitions
+
+Returns the transitions available from a given workflow state, derived from the doctype's workflow configuration. Supports both XState format and WorkflowMeta format.
+
+```typescript
+getAvailableTransitions(currentState: string): Array<{
+        name: string;
+        targetState: string;
+    }>
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| currentState | `string` | The state name to read transitions from |
+
+#### getSchemaArray
+
+Returns the schema as a plain array for use with components that expect plain JavaScript arrays (e.g., AForm, ATable).
+
+```typescript
+getSchemaArray(): SchemaTypes[]
+```
 
 ### FieldTriggerEngine
 
@@ -2079,7 +1439,7 @@ Stonecrop Registry class
 **Constructor:**
 
 ```typescript
-new Registry(router: Router, getMeta: (routeContext: RouteContext) => DoctypeMeta | Promise<DoctypeMeta>)
+new Registry(router: Router, getMeta: (routeContext: RouteContext) => Doctype | Promise<Doctype>)
 ```
 
 **Parameters:**
@@ -2087,16 +1447,16 @@ new Registry(router: Router, getMeta: (routeContext: RouteContext) => DoctypeMet
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | router | `Router` | Optional Vue router instance for route management |
-| getMeta | `(routeContext: RouteContext) => DoctypeMeta \| Promise<DoctypeMeta>` | Optional function to fetch doctype metadata from an API |
+| getMeta | `(routeContext: RouteContext) => Doctype \| Promise<Doctype>` | Optional function to fetch doctype metadata from an API |
 
 **Properties:**
 
 | Property | Type | Description |
 |----------|------|-------------|
 | _root | `Registry` | The root Registry instance |
-| getMeta | `(routeContext: RouteContext) => DoctypeMeta \| Promise<DoctypeMeta>` | The getMeta function fetches doctype metadata from an API based on route context |
+| getMeta | `(routeContext: RouteContext) => Doctype \| Promise<Doctype>` | The getMeta function fetches doctype metadata from an API based on route context |
 | name | `string` | The name of the Registry instance |
-| registry | `Record<string, DoctypeMeta>` | The registry property contains a collection of doctypes |
+| registry | `Record<string, Doctype>` | The registry property contains a collection of doctypes |
 | router | `Router` | The Vue router instance |
 
 **Methods:**
@@ -2106,14 +1466,57 @@ new Registry(router: Router, getMeta: (routeContext: RouteContext) => DoctypeMet
 Get doctype metadata
 
 ```typescript
-addDoctype(doctype: DoctypeMeta): void
+addDoctype(doctype: Doctype): void
 ```
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| doctype | `DoctypeMeta` | The doctype to fetch metadata for |
+| doctype | `Doctype` | The doctype to fetch metadata for |
+
+#### getDoctype
+
+Get a registered doctype by slug
+
+```typescript
+getDoctype(slug: string): Doctype | undefined
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| slug | `string` | The doctype slug to look up |
+
+#### initializeRecord
+
+Initialize a new record with default values based on a schema.
+
+```typescript
+initializeRecord(schema: SchemaTypes[]): Record<string, any>
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| schema | `SchemaTypes[]` | The schema array to derive defaults from |
+
+#### resolveSchema
+
+Resolve nested Doctype fields in a schema by embedding child schemas inline.
+
+```typescript
+resolveSchema(schema: SchemaTypes[], visited: Set<string>): SchemaTypes[]
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| schema | `SchemaTypes[]` | The schema array to resolve |
+| visited | `Set<string>` |  |
 
 #### initializeRecord
 
@@ -2186,7 +1589,7 @@ Main Stonecrop class with HST integration and built-in Operation Log
 **Constructor:**
 
 ```typescript
-new Stonecrop(registry: Registry, operationLogConfig: Partial<OperationLogConfig>)
+new Stonecrop(registry: Registry, operationLogConfig: Partial<OperationLogConfig>, options: StonecropOptions)
 ```
 
 **Parameters:**
@@ -2195,6 +1598,7 @@ new Stonecrop(registry: Registry, operationLogConfig: Partial<OperationLogConfig
 |-----------|------|-------------|
 | registry | `Registry` | The Registry instance containing doctype definitions |
 | operationLogConfig | `Partial<OperationLogConfig>` | Optional configuration for the operation log |
+| options | `StonecropOptions` | Options including the data client (can be set later via setClient) |
 
 **Properties:**
 
@@ -2209,14 +1613,14 @@ new Stonecrop(registry: Registry, operationLogConfig: Partial<OperationLogConfig
 Add a record to the store
 
 ```typescript
-addRecord(doctype: string | DoctypeMeta, recordId: string, recordData: any): void
+addRecord(doctype: string | Doctype, recordId: string, recordData: any): void
 ```
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| doctype | `string \| DoctypeMeta` | The doctype |
+| doctype | `string \| Doctype` | The doctype |
 | recordId | `string` | The record ID |
 | recordData | `any` | The record data |
 
@@ -2225,14 +1629,57 @@ addRecord(doctype: string | DoctypeMeta, recordId: string, recordData: any): voi
 Clear all records for a doctype
 
 ```typescript
-clearRecords(doctype: string | DoctypeMeta): void
+clearRecords(doctype: string | Doctype): void
 ```
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| doctype | `string \| DoctypeMeta` | The doctype |
+| doctype | `string \| Doctype` | The doctype |
+
+#### collectRecordPayload
+
+Collect a record payload with all nested doctype fields from HST
+
+```typescript
+collectRecordPayload(doctype: Doctype, recordId: string): Record<string, any>
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `Doctype` | The doctype metadata |
+| recordId | `string` | The record ID to collect |
+
+#### dispatchAction
+
+Dispatch an action to the server via the configured data client. All state changes flow through this single mutation endpoint.
+
+```typescript
+dispatchAction(doctype: Doctype, action: string, args: unknown[]): Promise<{
+        success: boolean;
+        data: unknown;
+        error: string | null;
+    }>
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `Doctype` | The doctype |
+| action | `string` | Action name to execute (e.g., 'SUBMIT', 'APPROVE', 'save') |
+| args | `unknown[]` | Action arguments (typically record ID and/or form data) |
+
+#### getClient
+
+Get the current data client
+
+```typescript
+getClient(): DataClient | undefined
+```
 
 #### getMeta
 
@@ -2250,17 +1697,17 @@ getMeta(context: RouteContext): Promise<any>
 
 #### getRecord
 
-Get single record from server (maintains compatibility)
+Get single record from server using the configured data client.
 
 ```typescript
-getRecord(doctype: DoctypeMeta, recordId: string): Promise<void>
+getRecord(doctype: Doctype, recordId: string): Promise<void>
 ```
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| doctype | `DoctypeMeta` | The doctype |
+| doctype | `Doctype` | The doctype |
 | recordId | `string` | The record ID |
 
 #### getRecordById
@@ -2268,14 +1715,14 @@ getRecord(doctype: DoctypeMeta, recordId: string): Promise<void>
 Get a specific record
 
 ```typescript
-getRecordById(doctype: string | DoctypeMeta, recordId: string): HSTNode | undefined
+getRecordById(doctype: string | Doctype, recordId: string): HSTNode | undefined
 ```
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| doctype | `string \| DoctypeMeta` | The doctype |
+| doctype | `string \| Doctype` | The doctype |
 | recordId | `string` | The record ID |
 
 #### getRecordIds
@@ -2283,28 +1730,45 @@ getRecordById(doctype: string | DoctypeMeta, recordId: string): HSTNode | undefi
 Get all record IDs for a doctype
 
 ```typescript
-getRecordIds(doctype: string | DoctypeMeta): string[]
+getRecordIds(doctype: string | Doctype): string[]
 ```
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| doctype | `string \| DoctypeMeta` | The doctype |
+| doctype | `string \| Doctype` | The doctype |
 
 #### getRecords
 
-Get records from server (maintains compatibility)
+Get records from server using the configured data client.
 
 ```typescript
-getRecords(doctype: DoctypeMeta): Promise<void>
+getRecords(doctype: Doctype): Promise<void>
 ```
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| doctype | `DoctypeMeta` | The doctype |
+| doctype | `Doctype` | The doctype |
+
+#### getRecordState
+
+Determine the current workflow state for a record.
+
+Reads the record's `status` field from the HST store. If the field is absent or empty the doctype's declared `workflow.initial` state is used as the fallback, giving callers a reliable state name without having to duplicate that logic.
+
+```typescript
+getRecordState(doctype: string | Doctype, recordId: string): string
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `string \| Doctype` | The doctype slug or Doctype instance |
+| recordId | `string` | The record identifier |
 
 #### getStore
 
@@ -2314,33 +1778,49 @@ Get the root HST store node for advanced usage
 getStore(): HSTNode
 ```
 
-#### records
+#### loadNestedData
 
-Get records hash for a doctype
+Load nested data from HST or initialize with defaults
 
 ```typescript
-records(doctype: string | DoctypeMeta): HSTNode
+loadNestedData(parentPath: string, childDoctype: Doctype, _recordId: string): Record<string, any>
 ```
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| doctype | `string \| DoctypeMeta` | The doctype to get records for |
+| parentPath | `string` | The HST path to check for existing data |
+| childDoctype | `Doctype` | The child doctype metadata |
+| _recordId | `string` | Optional record ID to load |
+
+#### records
+
+Get records hash for a doctype
+
+```typescript
+records(doctype: string | Doctype): HSTNode
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `string \| Doctype` | The doctype to get records for |
 
 #### removeRecord
 
 Remove a record from the store
 
 ```typescript
-removeRecord(doctype: string | DoctypeMeta, recordId: string): void
+removeRecord(doctype: string | Doctype, recordId: string): void
 ```
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| doctype | `string \| DoctypeMeta` | The doctype |
+| doctype | `string \| Doctype` | The doctype |
 | recordId | `string` | The record ID |
 
 #### runAction
@@ -2348,30 +1828,44 @@ removeRecord(doctype: string | DoctypeMeta, recordId: string): void
 Run action on doctype Executes the action and logs it to the operation log for audit tracking
 
 ```typescript
-runAction(doctype: DoctypeMeta, action: string, args: any[]): void
+runAction(doctype: Doctype, action: string, args: any[]): void
 ```
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| doctype | `DoctypeMeta` | The doctype |
+| doctype | `Doctype` | The doctype |
 | action | `string` | The action to run |
 | args | `any[]` | Action arguments (typically record IDs) |
+
+#### setClient
+
+Set the data client for fetching doctype metadata and records. Use this for deferred configuration in Nuxt/Vue plugin setups.
+
+```typescript
+setClient(client: DataClient): void
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| client | `DataClient` | DataClient implementation (e.g., StonecropClient from stonecrop/graphql-client) |
 
 #### setup
 
 Setup method for doctype initialization
 
 ```typescript
-setup(doctype: DoctypeMeta): void
+setup(doctype: Doctype): void
 ```
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| doctype | `DoctypeMeta` | The doctype to setup |
+| doctype | `Doctype` | The doctype to setup |
 
 ## Variables
 

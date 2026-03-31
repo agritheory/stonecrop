@@ -4,5 +4,5 @@
 		"tsBuildInfoFile": "./dist/rockfoil.tsbuildinfo",
 		"types": ["vitest/globals", "vitest/jsdom"]
 	},
-	"include": ["src/**/*.ts", "tests/**/*.spec.ts", "tests/**/*.ts"]
+	"include": ["src/**/*.ts"]
 }

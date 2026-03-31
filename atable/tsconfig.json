@@ -4,5 +4,5 @@
 		"tsBuildInfoFile": "./dist/atable.tsbuildinfo",
 		"types": ["vitest/globals", "vitest/jsdom"]
 	},
-	"include": ["src/**/*.ts", "src/**/*.vue", "tests/**/*.ts", "tests/**/*.vue"]
+	"include": ["src/**/*.ts", "src/**/*.vue"]
 }

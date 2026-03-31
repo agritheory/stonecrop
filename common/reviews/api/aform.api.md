@@ -44,7 +44,7 @@ export { ATextInput }
 export type BaseSchema = {
     fieldname: string;
     component?: string;
-    value?: any;
+    mode?: FormMode;
 };
 
 // @public
@@ -53,7 +53,7 @@ export type ComponentProps = {
     label?: string;
     mask?: string;
     required?: boolean;
-    readOnly?: boolean;
+    mode?: FormMode;
     uuid?: string;
     validation?: {
         errorMessage: string;
@@ -62,13 +62,28 @@ export type ComponentProps = {
 };
 
 // @public
-export type DoctypeSchema = BaseSchema & {
+export type DoctypeManySchema = BaseSchema & {
     fieldtype: 'Doctype';
     options: string;
     label?: string;
-    schema?: SchemaTypes[];
-    readOnly?: boolean;
+    cardinality: 'many';
+    columns?: TableColumn[];
+    config?: TableConfig;
+    rows?: TableRow[];
+    component?: string;
 };
+
+// @public
+export type DoctypeOneSchema = BaseSchema & {
+    fieldtype: 'Doctype';
+    options: string;
+    label?: string;
+    cardinality?: 'one';
+    schema?: SchemaTypes[];
+};
+
+// @public
+export type DoctypeSchema = DoctypeOneSchema | DoctypeManySchema;
 
 // @public
 export type FieldsetSchema = BaseSchema & {
@@ -76,6 +91,9 @@ export type FieldsetSchema = BaseSchema & {
     schema?: (FormSchema | TableSchema)[];
     collapsible?: boolean;
 };
+
+// @public
+export type FormMode = 'edit' | 'read' | 'display';
 
 // @public
 export type FormSchema = BaseSchema & {
@@ -91,21 +109,13 @@ export type FormSchema = BaseSchema & {
 // @public
 export function install(app: App): void;
 
+// @public
+export function isDoctypeMany(field: DoctypeSchema): field is DoctypeManySchema;
+
 export { Login }
 
 // @public
-export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema | DoctypeSchema | TableDoctypeSchema;
-
-// @public
-export type TableDoctypeSchema = BaseSchema & {
-    fieldtype: 'Table';
-    options: string;
-    label?: string;
-    columns?: TableColumn[];
-    config?: TableConfig;
-    rows?: TableRow[];
-    readOnly?: boolean;
-};
+export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema | DoctypeSchema;
 
 // @public
 export type TableSchema = BaseSchema & {

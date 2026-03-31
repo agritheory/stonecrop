@@ -59,4 +59,21 @@ describe('text input component', () => {
 		expect(updateEvents).toHaveLength(1)
 		expect(updateEvents![0]).toEqual(['Jane'])
 	})
+
+	it('is disabled in read mode', () => {
+		const w = mount(ATextInput, { props: { label: 'Name', modelValue: 'John', mode: 'read' } })
+		expect(w.find('input').attributes()).toHaveProperty('disabled')
+	})
+
+	it('renders value in display mode without input', () => {
+		const w = mount(ATextInput, { props: { label: 'Name', modelValue: 'John', mode: 'display' } })
+		expect(w.find('input').exists()).toBe(false)
+		expect(w.find('.aform_display-value').text()).toBe('John')
+	})
+
+	it('renders empty string in display mode when no value', () => {
+		const w = mount(ATextInput, { props: { label: 'Name', mode: 'display' } })
+		expect(w.find('input').exists()).toBe(false)
+		expect(w.find('.aform_display-value').text()).toBe('')
+	})
 })

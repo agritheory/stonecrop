@@ -1,6 +1,6 @@
-import type { DoctypeMeta, RouteContext } from '@stonecrop/schema'
+import type { DataClient, DoctypeMeta, DoctypeContext, DoctypeRef } from '@stonecrop/schema'
 
-export type { RouteContext }
+export type { DoctypeContext, DoctypeRef }
 
 /**
  * Options for creating a Stonecrop client
@@ -17,7 +17,7 @@ export interface StonecropClientOptions {
  * Client for interacting with Stonecrop GraphQL API
  * @public
  */
-export class StonecropClient {
+export class StonecropClient implements DataClient {
 	private endpoint: string
 	private headers: Record<string, string>
 	private metaCache: Map<string, DoctypeMeta> = new Map()
@@ -65,9 +65,9 @@ export class StonecropClient {
 
 	/**
 	 * Get doctype metadata
-	 * @param context - Route context containing doctype name
+	 * @param context - Doctype context containing doctype name
 	 */
-	async getMeta(context: RouteContext): Promise<DoctypeMeta | null> {
+	async getMeta(context: DoctypeContext): Promise<DoctypeMeta | null> {
 		const cached = this.metaCache.get(context.doctype)
 		if (cached) return cached
 
@@ -83,15 +83,30 @@ export class StonecropClient {
 						fieldtype
 						component
 						label
+						width
+						align
 						required
 						readOnly
+						edit
+						hidden
+						default
 						options
+						mask
 						precision
 						scale
+						mode
+						validation
 					}
 					workflow {
 						states
-						actions
+						actions {
+							label
+							handler
+							requiredFields
+							allowedStates
+							confirm
+							args
+						}
 					}
 					inherits
 					listDoctype
@@ -125,15 +140,30 @@ export class StonecropClient {
 						fieldtype
 						component
 						label
+						width
+						align
 						required
 						readOnly
+						edit
+						hidden
+						default
 						options
+						mask
 						precision
 						scale
+						mode
+						validation
 					}
 					workflow {
 						states
-						actions
+						actions {
+							label
+							handler
+							requiredFields
+							allowedStates
+							confirm
+							args
+						}
 					}
 					inherits
 					listDoctype
@@ -152,10 +182,10 @@ export class StonecropClient {
 
 	/**
 	 * Get a single record by ID
-	 * @param doctype - Doctype metadata
+	 * @param doctype - Doctype reference (name and optional slug)
 	 * @param recordId - Record ID to fetch
 	 */
-	async getRecord(doctype: DoctypeMeta, recordId: string): Promise<Record<string, unknown> | null> {
+	async getRecord(doctype: DoctypeRef, recordId: string): Promise<Record<string, unknown> | null> {
 		const result = await this.query<{
 			stonecropRecord: { data: Record<string, unknown> | null }
 		}>(
@@ -174,11 +204,11 @@ export class StonecropClient {
 
 	/**
 	 * Get multiple records with optional filtering and pagination
-	 * @param doctype - Doctype metadata
+	 * @param doctype - Doctype reference (name and optional slug)
 	 * @param options - Query options (filters, orderBy, limit, offset)
 	 */
 	async getRecords(
-		doctype: DoctypeMeta,
+		doctype: DoctypeRef,
 		options?: {
 			filters?: Record<string, unknown>
 			orderBy?: string
@@ -220,12 +250,12 @@ export class StonecropClient {
 
 	/**
 	 * Execute a doctype action
-	 * @param doctype - Doctype metadata
+	 * @param doctype - Doctype reference (name and optional slug)
 	 * @param action - Action name to execute
 	 * @param args - Action arguments
 	 */
 	async runAction(
-		doctype: DoctypeMeta,
+		doctype: DoctypeRef,
 		action: string,
 		args?: unknown[]
 	): Promise<{ success: boolean; data: unknown; error: string | null }> {

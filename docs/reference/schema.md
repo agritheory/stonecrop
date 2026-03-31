@@ -81,16 +81,16 @@ export { FieldOptions }
 export { FieldValidation }
 ```
 
-### PG_TYPE_MAP
+### GQL_SCALAR_MAP
 
 ```typescript
-export { PG_TYPE_MAP }
+export { GQL_SCALAR_MAP }
 ```
 
-### PostgresType
+### INTERNAL_SCALARS
 
 ```typescript
-export { PostgresType }
+export { INTERNAL_SCALARS }
 ```
 
 ### StonecropFieldType
@@ -99,16 +99,16 @@ export { PostgresType }
 export { StonecropFieldType }
 ```
 
-### TYPE_ALIASES
-
-```typescript
-export { TYPE_ALIASES }
-```
-
 ### TYPE_MAP
 
 ```typescript
 export { TYPE_MAP }
+```
+
+### WELL_KNOWN_SCALARS
+
+```typescript
+export { WELL_KNOWN_SCALARS }
 ```
 
 ### WorkflowMeta
@@ -118,6 +118,22 @@ export { WorkflowMeta }
 ```
 
 ## Functions
+
+### buildScalarMap
+
+Build a merged scalar map from the built-in maps and user-provided custom scalars. Precedence (highest to lowest): customScalars → GQL_SCALAR_MAP → WELL_KNOWN_SCALARS
+
+**Signature:**
+
+```typescript
+export declare function buildScalarMap(customScalars?: Record<string, Partial<FieldTemplate>>): Record<string, FieldTemplate>;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| customScalars | `Record<string, Partial<FieldTemplate>>` | User-provided scalar overrides |
 
 ### camelToLabel
 
@@ -151,74 +167,82 @@ export declare function camelToSnake(camelCase: string): string;
 |-----------|------|-------------|
 | camelCase | `string` | Camel case string |
 
-### convertSchema
+### classifyFieldType
 
-Convert PostgreSQL DDL to Stonecrop doctype schemas
+Classify a single GraphQL field into a Stonecrop field definition.
+
+Classification rules (in order): 1. Scalar types → look up in merged scalar map 2. Enum types → `Select` with enum values as options 3. Object types that are entities → `Link` with slug as options 4. Object types that are Connections → `Doctype` with node type slug as options 5. List of entity type → `Doctype` with item type slug as options 6. Anything else → `Data` with `_unmapped: true`
 
 **Signature:**
 
 ```typescript
-export declare function convertSchema(sql: string, options?: ConversionOptions): ConvertedDoctype[];
+export declare function classifyFieldType(fieldName: string, field: GraphQLField<unknown, unknown>, entityTypes: Set<string>, options?: GraphQLConversionOptions): GraphQLConversionFieldMeta;
 ```
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| sql | `string` | PostgreSQL DDL statements to convert |
-| options | `ConversionOptions` | Conversion options for controlling output format |
+| fieldName | `string` | The GraphQL field name |
+| field | `GraphQLField<unknown, unknown>` | The GraphQL field definition |
+| entityTypes | `Set<string>` | Set of type names classified as entities |
+| options | `GraphQLConversionOptions` | Conversion options (for custom scalars, unmapped meta, etc.) |
 
-### convertSQLName
+### convertGraphQLSchema
 
-Converts SQL column name to Stonecrop field naming convention Handles special cases like ID suffixes
+Convert a GraphQL schema to Stonecrop doctype schemas.
+
+Accepts either an `IntrospectionQuery` result object or an SDL string. Entity types are identified using heuristics (or a custom `isEntityType` function) and converted to `DoctypeMeta`-compatible JSON objects.
 
 **Signature:**
 
 ```typescript
-export declare function convertSQLName(sqlName: string): NameConversion;
+export declare function convertGraphQLSchema(source: IntrospectionSource, options?: GraphQLConversionOptions): ConvertedGraphQLDoctype[];
 ```
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| sqlName | `string` | SQL column name (snake_case) |
+| source | `IntrospectionSource` | GraphQL introspection result or SDL string |
+| options | `GraphQLConversionOptions` | Conversion options for controlling output format and behavior |
 
-### convertSQLNames
+### defaultIsEntityField
 
-Batch converts multiple SQL column names
+Default heuristic to filter fields on entity types. Skips internal fields that don't represent meaningful data.
 
 **Signature:**
 
 ```typescript
-export declare function convertSQLNames(sqlNames: string[]): NameConversion[];
+export declare function defaultIsEntityField(fieldName: string, _field: GraphQLField<unknown, unknown>, _parentType: GraphQLObjectType): boolean;
 ```
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| sqlNames | `string[]` | Array of SQL column names |
+| fieldName | `string` | The GraphQL field name |
+| _field | `GraphQLField<unknown, unknown>` | The GraphQL field definition (unused in default implementation) |
+| _parentType | `GraphQLObjectType` | The parent entity type (unused in default implementation) |
 
-### createNameMapping
+### defaultIsEntityType
 
-Creates a bidirectional mapping between SQL and Stonecrop names
+Default heuristic to determine if a GraphQL object type represents an entity. An entity type becomes a Stonecrop doctype.
+
+This heuristic excludes: - Introspection types (`__*`) - Root operation types (`Query`, `Mutation`, `Subscription`) - Types with synthetic suffixes (e.g., `*Connection`, `*Edge`, `*Input`) - Types starting with `Node` interface marker (exact match only)
 
 **Signature:**
 
 ```typescript
-export declare function createNameMapping(sqlNames: string[]): {
-    sqlToFieldname: Map<string, string>;
-    fieldnameToSQL: Map<string, string>;
-    conversions: NameConversion[];
-};
+export declare function defaultIsEntityType(typeName: string, type: GraphQLObjectType): boolean;
 ```
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| sqlNames | `string[]` | Array of SQL column names |
+| typeName | `string` | The GraphQL type name |
+| type | `GraphQLObjectType` | The GraphQL object type definition |
 
 ### getDefaultComponent
 
@@ -235,56 +259,6 @@ export declare function getDefaultComponent(fieldtype: StonecropFieldType): stri
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | fieldtype | `StonecropFieldType` | The semantic field type |
-
-### mapColumnToField
-
-Map a parsed column to a Stonecrop field definition
-
-**Signature:**
-
-```typescript
-export declare function mapColumnToField(column: ParsedColumn, _tableRegistry: Map<string, ParsedTable>, options?: MapColumnOptions): ConversionFieldMeta;
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| column | `ParsedColumn` | Parsed PostgreSQL column information |
-| _tableRegistry | `Map<string, ParsedTable>` | Map of table names to parsed table definitions (for reference resolution) |
-| options | `MapColumnOptions` | Mapping options for field naming and metadata |
-
-### normalizeType
-
-Normalize raw PostgreSQL type string to canonical PostgresType
-
-**Signature:**
-
-```typescript
-export declare function normalizeType(rawType: string): PostgresType;
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| rawType | `string` | Raw PostgreSQL type string (e.g., 'character varying', 'int4') |
-
-### parseDDL
-
-Parse PostgreSQL DDL and extract table definitions
-
-**Signature:**
-
-```typescript
-export declare function parseDDL(sql: string): ParsedTable[];
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| sql | `string` | PostgreSQL DDL statements to parse |
 
 ### parseDoctype
 
@@ -317,6 +291,22 @@ export declare function parseField(data: unknown): FieldMeta;
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | data | `unknown` | Data to parse |
+
+### pascalToSnake
+
+Convert PascalCase to snake_case (e.g., for deriving table names from type names)
+
+**Signature:**
+
+```typescript
+export declare function pascalToSnake(pascal: string): string;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| pascal | `string` | PascalCase string |
 
 ### snakeToCamel
 
@@ -416,15 +406,119 @@ export declare function validateField(data: unknown): ValidationResult;
 
 ## Interfaces
 
-### ConversionFieldMeta
+### ConvertedGraphQLDoctype
 
-Extended field with conversion metadata (only used during schema-tools output)
+Output of GraphQL schema conversion — one per entity type.
 
 **Definition:**
 
 ```typescript
-export interface ConversionFieldMeta {
-  _pgType?: string;
+export interface ConvertedGraphQLDoctype {
+  _graphqlTypeName?: string;
+  fields: GraphQLConversionFieldMeta[];
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| _graphqlTypeName? | `string` | Original GraphQL type name (for debugging/reference) |
+| fields | `GraphQLConversionFieldMeta[]` | Field definitions with optional GraphQL conversion metadata |
+
+### DataClient
+
+Interface for data clients that fetch doctype metadata and records. Implemented by stonecrop/graphql-client's StonecropClient. Custom implementations can use any backend (REST, local storage, etc.).
+
+**Definition:**
+
+```typescript
+export interface DataClient {
+  getMeta(context: DoctypeContext): Promise<M | null>;
+  getRecord(doctype: T, recordId: string): Promise<Record<string, unknown> | null>;
+  getRecords(doctype: T, options: {
+        filters?: Record<string, unknown>;
+        orderBy?: string;
+        limit?: number;
+        offset?: number;
+    }): Promise<Record<string, unknown>[]>;
+  runAction(doctype: T, action: string, args: unknown[]): Promise<{
+        success: boolean;
+        data: unknown;
+        error: string | null;
+    }>;
+}
+```
+
+### DoctypeContext
+
+Context for identifying what doctype/record we're working with. Used by graphql-middleware and graphql-client to resolve schema metadata.
+
+**Definition:**
+
+```typescript
+export interface DoctypeContext {
+  doctype: string;
+  recordId?: string;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| doctype | `string` | Doctype name (e.g., 'Task', 'Customer') |
+| recordId? | `string` | Optional record ID for viewing/editing a specific record |
+
+### DoctypeRef
+
+Base interface for doctype metadata passed to DataClient methods. Only requires properties needed for record fetching.
+
+**Definition:**
+
+```typescript
+export interface DoctypeRef {
+  name: string;
+  slug?: string;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| name | `string` | Doctype name (e.g., 'Task', 'Customer') |
+| slug? | `string` | URL-friendly slug (e.g., 'task', 'customer') |
+
+### FieldTemplate
+
+Field template for TYPE_MAP entries. Defines the default component and semantic field type for a field.
+
+**Definition:**
+
+```typescript
+export interface FieldTemplate {
+  component: string;
+  fieldtype: StonecropFieldType;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| component | `string` | The Vue component name to render this field (e.g., 'ATextInput', 'ADropdown') |
+| fieldtype | `StonecropFieldType` | The semantic field type (e.g., 'Data', 'Int', 'Select') |
+
+### GraphQLConversionFieldMeta
+
+Extended field metadata with optional GraphQL conversion metadata. Only present when `includeUnmappedMeta` is enabled.
+
+**Definition:**
+
+```typescript
+export interface GraphQLConversionFieldMeta {
+  _graphqlType?: string;
   _unmapped?: boolean;
 }
 ```
@@ -433,23 +527,26 @@ export interface ConversionFieldMeta {
 
 | Property | Type | Description |
 |----------|------|-------------|
-| _pgType? | `string` | Original PostgreSQL type (for debugging/reference) |
+| _graphqlType? | `string` | Original GraphQL type name (for debugging/reference) |
 | _unmapped? | `boolean` | Marks fields that couldn't be automatically mapped |
 
-### ConversionOptions
+### GraphQLConversionOptions
 
-Options for DDL to doctype conversion
+Options for converting a GraphQL schema to Stonecrop doctype schemas. All hooks are optional — sensible defaults are provided for common GraphQL patterns.
 
 **Definition:**
 
 ```typescript
-export interface ConversionOptions {
+export interface GraphQLConversionOptions {
+  classifyField?: (fieldName: string, field: GraphQLField<unknown, unknown>, parentType: GraphQLObjectType) => Partial<FieldMeta> | null;
+  customScalars?: Record<string, Partial<FieldTemplate>>;
+  deriveTableName?: (typeName: string) => string | undefined;
   exclude?: string[];
+  include?: string[];
   includeUnmappedMeta?: boolean;
-  inheritanceMode: 'flatten' | 'reference';
-  schema?: string;
-  typeOverrides?: Record<string, Partial<FieldMeta>>;
-  useCamelCase?: boolean;
+  isEntityField?: (fieldName: string, field: GraphQLField<unknown, unknown>, parentType: GraphQLObjectType) => boolean;
+  isEntityType?: (typeName: string, type: GraphQLObjectType) => boolean;
+  typeOverrides?: Record<string, Record<string, Partial<FieldMeta>>>;
 }
 ```
 
@@ -457,143 +554,15 @@ export interface ConversionOptions {
 
 | Property | Type | Description |
 |----------|------|-------------|
-| exclude? | `string[]` | Tables to exclude |
-| includeUnmappedMeta? | `boolean` | Include unmapped type metadata in output |
-| inheritanceMode | `'flatten' \| 'reference'` | How to handle inherited fields |
-| schema? | `string` | Schema to filter tables by |
-| typeOverrides? | `Record<string, Partial<FieldMeta>>` | Override type mappings |
-| useCamelCase? | `boolean` | Use camelCase for field names (default: false, keeps snake_case) |
-
-### ConvertedDoctype
-
-Output of schema conversion - uses DoctypeMeta but with optional conversion metadata
-
-**Definition:**
-
-```typescript
-export interface ConvertedDoctype {
-  fields: ConversionFieldMeta[];
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| fields | `ConversionFieldMeta[]` | Field definitions with optional conversion metadata |
-
-### MapColumnOptions
-
-Options for column to field mapping
-
-**Definition:**
-
-```typescript
-export interface MapColumnOptions {
-  includeUnmappedMeta?: boolean;
-  useCamelCase?: boolean;
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| includeUnmappedMeta? | `boolean` | Include unmapped type metadata in output |
-| useCamelCase? | `boolean` | Use camelCase for field names (default: false, keeps snake_case) |
-
-### NameConversion
-
-Result of name conversion
-
-**Definition:**
-
-```typescript
-export interface NameConversion {
-  fieldname: string;
-  label: string;
-  originalName: string;
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| fieldname | `string` | Converted fieldname (camelCase) |
-| label | `string` | Human-readable label |
-| originalName | `string` | Original SQL name |
-
-### ParsedColumn
-
-Intermediate representation of a parsed column (from DDL)
-
-**Definition:**
-
-```typescript
-export interface ParsedColumn {
-  arrayDimensions: number;
-  dataType: string;
-  defaultValue?: string;
-  isGenerated: boolean;
-  length?: number;
-  name: string;
-  normalizedType: PostgresType;
-  nullable: boolean;
-  precision?: number;
-  reference?: {
-        schema?: string;
-        table: string;
-        column: string;
-        onDelete?: 'CASCADE' | 'SET NULL' | 'RESTRICT' | 'NO ACTION';
-    };
-  scale?: number;
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| arrayDimensions | `number` | Number of array dimensions (0 for non-array types) |
-| dataType | `string` | Raw PostgreSQL data type string |
-| defaultValue? | `string` | Default value expression (if specified) |
-| isGenerated | `boolean` | Whether the column is auto-generated (GENERATED ALWAYS) |
-| length? | `number` | Character/binary length constraint (for VARCHAR, CHAR, BIT types) |
-| name | `string` | Column name (from SQL definition) |
-| normalizedType | `PostgresType` | Normalized PostgreSQL type (mapped to standard types) |
-| nullable | `boolean` | Whether the column allows NULL values |
-| precision? | `number` | Numeric precision (for NUMERIC/DECIMAL types) |
-| reference? | `{ schema?: string; table: string; column: string; onDelete?: 'CASCADE' \| 'SET NULL' \| 'RESTRICT' \| 'NO ACTION'; }` | Foreign key reference information (if column references another table) |
-| scale? | `number` | Numeric scale (for NUMERIC/DECIMAL types) |
-
-### ParsedTable
-
-Intermediate representation of a parsed table (from DDL)
-
-**Definition:**
-
-```typescript
-export interface ParsedTable {
-  columns: ParsedColumn[];
-  comment?: string;
-  doctypeName?: string;
-  inherits?: string[];
-  name: string;
-  schema?: string;
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| columns | `ParsedColumn[]` | Column definitions parsed from the table |
-| comment? | `string` | Table comment from COMMENT ON TABLE statement |
-| doctypeName? | `string` | Doctype name extracted from comment (if using doctype convention) |
-| inherits? | `string[]` | Parent table names (for PostgreSQL table inheritance) |
-| name | `string` | Table name (from CREATE TABLE statement) |
-| schema? | `string` | Schema name (if specified, defaults to 'public') |
+| classifyField? | `(fieldName: string, field: GraphQLField<unknown, unknown>, parentType: GraphQLObjectType) => Partial<FieldMeta> \| null` | Escape hatch: fully override the classification of a specific field. When this returns a non-null value, it is used as the field definition (merged with the field name). Return `null` to fall through to default classification. |
+| customScalars? | `Record<string, Partial<FieldTemplate>>` | Map custom or non-standard GraphQL scalar types to Stonecrop field types. Merged with the built-in scalar maps (GQL_SCALAR_MAP + WELL_KNOWN_SCALARS). User-provided entries take highest precedence. |
+| deriveTableName? | `(typeName: string) => string \| undefined` | Custom function to derive the database table name from a GraphQL type name. The default converts PascalCase to snake_case (e.g., `SalesOrder` → `sales_order`). Return `undefined` to omit `tableName` from the output. |
+| exclude? | `string[]` | GraphQL type names to exclude from conversion. Applied after `isEntityType` filtering. |
+| include? | `string[]` | Whitelist of GraphQL type names to convert. When provided, only these types are considered (after `isEntityType` filtering). |
+| includeUnmappedMeta? | `boolean` | Include `_graphqlType` and `_unmapped` metadata on converted fields. Useful for debugging conversions. Defaults to `false`. |
+| isEntityField? | `(fieldName: string, field: GraphQLField<unknown, unknown>, parentType: GraphQLObjectType) => boolean` | Custom function to filter which fields on an entity type are included. When provided, replaces the default field filter. The default filter excludes `nodeId`, `__typename`, and `clientMutationId`. |
+| isEntityType? | `(typeName: string, type: GraphQLObjectType) => boolean` | Custom function to determine if a GraphQL object type represents an entity (→ doctype). When provided, replaces the default heuristic entirely. The default heuristic excludes types matching synthetic patterns: `*Connection`, `*Edge`, `*Input`, `*Patch`, `*Payload`, `*Condition`, `*Filter`, `*OrderBy`, `*Aggregate`, `Query`, `Mutation`, `Subscription`, `__*`. |
+| typeOverrides? | `Record<string, Record<string, Partial<FieldMeta>>>` | Per-type, per-field overrides for the converted field definitions. Outer key is the GraphQL type name, inner key is the field name. |
 
 ### ValidationError
 
@@ -604,7 +573,7 @@ Validation error with path information
 ```typescript
 export interface ValidationError {
   message: string;
-  path: (string | number)[];
+  path: PropertyKey[];
 }
 ```
 
@@ -613,7 +582,7 @@ export interface ValidationError {
 | Property | Type | Description |
 |----------|------|-------------|
 | message | `string` | Error message |
-| path | `(string \| number)[]` | Path to the invalid property |
+| path | `PropertyKey[]` | Path to the invalid property |
 
 ### ValidationResult
 
@@ -687,14 +656,18 @@ Field validation type inferred from Zod schema
 export type FieldValidation = z.infer<typeof FieldValidation>;
 ```
 
-### PostgresType
+### IntrospectionSource
 
-PostgreSQL type enum inferred from Zod schema
+Input source for the GraphQL schema converter. Accepts either a standard GraphQL introspection result or an SDL string.
+
+- `IntrospectionQuery`: The raw result of a GraphQL introspection query (from any server) - `string`: An SDL (Schema Definition Language) string
+
+Note: URL fetching is intentionally not supported in the library API. Use the CLI (`stonecrop-schema generate --endpoint <url>`) for endpoint fetching, or fetch the introspection result yourself and pass it in.
 
 **Definition:**
 
 ```typescript
-export type PostgresType = z.infer<typeof PostgresType>;
+export type IntrospectionSource = IntrospectionQuery | string;
 ```
 
 ### StonecropFieldType

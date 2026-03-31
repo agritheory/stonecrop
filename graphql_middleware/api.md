@@ -140,6 +140,38 @@ declare function defaultOrderByTypeName(tableName: string): string;
 |-----------|------|-------------|
 | tableName | `string` |  |
 
+### defaultRecordArgName
+
+Default PK argument name: 'id' (standard Relay Global ID pattern). Override via `StonecropInflectionConfig.recordArgName` when using row_id columns; PostGraphile Amber generates `rowId: UUID!` for those fields.
+
+**Signature:**
+
+```typescript
+declare function defaultRecordArgName(_tableName: string): string;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| _tableName | `string` |  |
+
+### defaultRecordArgType
+
+Default PK argument type: 'UUID!' (PostGraphile Amber default for UUID PKs). Override via `StonecropInflectionConfig.recordArgType` when using non-UUID PKs such as integer serials or Relay Global IDs ('ID!').
+
+**Signature:**
+
+```typescript
+declare function defaultRecordArgType(_tableName: string): string;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| _tableName | `string` |  |
+
 ### defaultRecordFieldName
 
 Amber default: sales_orders → salesOrderById Uses `pluralize` for proper singularization of irregular plurals. Override via `StonecropInflectionConfig.recordFieldName` for non-standard PK columns.

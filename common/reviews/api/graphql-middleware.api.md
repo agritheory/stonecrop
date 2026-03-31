@@ -47,6 +47,12 @@ export function defaultConnectionFieldName(tableName: string): string;
 export function defaultOrderByTypeName(tableName: string): string;
 
 // @public
+export function defaultRecordArgName(_tableName: string): string;
+
+// @public
+export function defaultRecordArgType(_tableName: string): string;
+
+// @public
 export function defaultRecordFieldName(tableName: string): string;
 
 export { DoctypeMeta }

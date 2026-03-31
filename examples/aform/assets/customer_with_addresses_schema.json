@@ -23,7 +23,8 @@
 		},
 		{
 			"fieldname": "addresses",
-			"fieldtype": "Table",
+			"fieldtype": "Doctype",
+			"cardinality": "many",
 			"options": "address",
 			"label": "Addresses"
 		}

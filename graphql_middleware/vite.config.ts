@@ -25,7 +25,6 @@ export default defineConfig({
 				'postgraphile/grafast',
 				'postgraphile/graphile-build',
 				'@stonecrop/schema',
-				'zod',
 			],
 		},
 	},

@@ -51,7 +51,7 @@ export function makeServer() {
 						initial: 'loaded',
 						states: {
 							loaded: { on: { CREATE: 'creating' } },
-							creating: { on: { SAVE: 'loaded', CANCEL: 'loaded' } },
+							creating: { on: { SAVE: 'loaded' } },
 						},
 					},
 					actions: {
@@ -124,19 +124,16 @@ export function makeServer() {
 							editing: {
 								on: {
 									SAVE: 'saved',
-									CANCEL: 'cancelled',
 									DELETE: 'deleted',
 								},
 							},
 							saved: { on: { EDIT: 'editing' } },
-							cancelled: {},
 							deleted: {},
 						},
 					},
 					actions: {
 						// XState transition actions (uppercase convention)
 						SAVE: ['SAVE'],
-						CANCEL: ['CANCEL'],
 						DELETE: ['DELETE'],
 						// Field triggers - automatically executed when fields change
 						first_name: ['validateName', 'updateFullName', 'logFieldChange'],
@@ -187,7 +184,7 @@ export function makeServer() {
 						initial: 'loaded',
 						states: {
 							loaded: { on: { CREATE: 'creating' } },
-							creating: { on: { SAVE: 'loaded', CANCEL: 'loaded' } },
+							creating: { on: { SAVE: 'loaded' } },
 						},
 					},
 					actions: {
@@ -260,19 +257,16 @@ export function makeServer() {
 							editing: {
 								on: {
 									SAVE: 'saved',
-									CANCEL: 'cancelled',
 									DELETE: 'deleted',
 								},
 							},
 							saved: { on: { EDIT: 'editing' } },
-							cancelled: {},
 							deleted: {},
 						},
 					},
 					actions: {
 						// XState transition actions (uppercase convention)
 						SAVE: ['SAVE'],
-						CANCEL: ['CANCEL'],
 						DELETE: ['DELETE'],
 						// Field triggers - automatically executed when fields change
 						subject: ['validateSubject', 'logFieldChange'],

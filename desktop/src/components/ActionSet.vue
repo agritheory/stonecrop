@@ -15,9 +15,7 @@
 					x="0px"
 					y="0px"
 					viewBox="0 0 100 100"
-					xml:space="preserve"
-					width="50"
-					height="50">
+					xml:space="preserve">
 					<polygon points="54.2,33.4 29.2,58.8 25,54.6 50,29.2 " />
 				</svg>
 
@@ -30,9 +28,7 @@
 					x="0px"
 					y="0px"
 					viewBox="0 0 100 100"
-					xml:space="preserve"
-					width="50"
-					height="50">
+					xml:space="preserve">
 					<polygon points="70.8,58.8 45.8,33.4 50,29.2 75,54.6 " />
 				</svg>
 			</div>
@@ -125,6 +121,11 @@ const handleClick = (action: (() => void | Promise<void>) | undefined, label: st
 #chevron {
 	position: relative;
 	transform: rotate(90deg);
+}
+
+#chevron svg {
+	width: 1.5em;
+	height: 1.5em;
 }
 
 .leftBar,

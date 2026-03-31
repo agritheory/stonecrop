@@ -196,7 +196,8 @@ describe('validateFieldTypes handler', () => {
 			{ fieldname: 'meeting_time', fieldtype: 'Time', label: 'Time' },
 			{ fieldname: 'created_at', fieldtype: 'Datetime', label: 'Datetime' },
 			{ fieldname: 'meta', fieldtype: 'JSON', label: 'Meta' },
-			{ fieldname: 'items', fieldtype: 'Table', label: 'Items' },
+			{ fieldname: 'items', fieldtype: 'Doctype', cardinality: 'many', label: 'Items', options: 'Item' },
+			{ fieldname: 'parent', fieldtype: 'Doctype', label: 'Parent', options: 'Parent' },
 		],
 	}
 
@@ -217,6 +218,7 @@ describe('validateFieldTypes handler', () => {
 			created_at: '2024-01-01T10:00:00Z',
 			meta: { key: 'value' },
 			items: [{ row: 1 }],
+			parent: { name: 'parent' },
 		}
 		const result = await builtinHandlers.validateFieldTypes([record], makeContext(typedDoctype))
 		expect(result).toEqual({ valid: true })
@@ -282,10 +284,22 @@ describe('validateFieldTypes handler', () => {
 		).rejects.toThrow('expected object')
 	})
 
-	it('throws for a non-array Table value', async () => {
+	it('throws for a non-array Doctype value with cardinality many', async () => {
 		await expect(
 			builtinHandlers.validateFieldTypes([{ items: 'not-an-array' }], makeContext(typedDoctype))
 		).rejects.toThrow('expected array')
+	})
+
+	it('throws for a non-object Doctype value with cardinality one (default)', async () => {
+		await expect(
+			builtinHandlers.validateFieldTypes([{ parent: 'not-an-object' }], makeContext(typedDoctype))
+		).rejects.toThrow('expected object')
+	})
+
+	it('throws for an array Doctype value with cardinality one (default)', async () => {
+		await expect(
+			builtinHandlers.validateFieldTypes([{ parent: [{ name: 'parent' }] }], makeContext(typedDoctype))
+		).rejects.toThrow('expected object')
 	})
 
 	it('accepts a Date instance for Date field', async () => {

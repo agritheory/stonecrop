@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/stonecrop",
-	"version": "0.9.0",
+	"version": "0.10.14",
 	"license": "MIT",
 	"type": "module",
 	"author": {
@@ -41,6 +41,7 @@
 		"test:ui": "vitest --ui"
 	},
 	"dependencies": {
+		"@stonecrop/schema": "workspace:*",
 		"@vueuse/core": "^14.2.1",
 		"immutable": "^5.1.4",
 		"pinia-shared-state": "^1.0.1",

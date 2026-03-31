@@ -1,15 +1,21 @@
 <template>
 	<div>
-		<input
-			:id="uuid"
-			ref="date"
-			v-model="inputDate"
-			type="date"
-			:disabled="readOnly"
-			:required="required"
-			@click="showPicker" />
-		<label :for="uuid">{{ label }}</label>
-		<p v-show="validation.errorMessage" v-html="validation.errorMessage"></p>
+		<template v-if="mode === 'display'">
+			<span class="aform_display-value">{{ inputDate ? new Date(inputDate).toLocaleDateString() : '' }}</span>
+			<label>{{ label }}</label>
+		</template>
+		<template v-else>
+			<input
+				:id="uuid"
+				ref="date"
+				v-model="inputDate"
+				type="date"
+				:disabled="mode === 'read'"
+				:required="required"
+				@click="showPicker" />
+			<label :for="uuid">{{ label }}</label>
+			<p v-show="validation.errorMessage" v-html="validation.errorMessage"></p>
+		</template>
 	</div>
 </template>
 
@@ -18,13 +24,7 @@ import { useTemplateRef } from 'vue'
 
 import { ComponentProps } from '../../types'
 
-const {
-	label = 'Date',
-	required,
-	readOnly,
-	uuid,
-	validation = { errorMessage: '&nbsp;' },
-} = defineProps<ComponentProps>()
+const { label = 'Date', required, mode, uuid, validation = { errorMessage: '&nbsp;' } } = defineProps<ComponentProps>()
 
 const inputDate = defineModel<string | number | Date>({
 	// format the date to be compatible with the native input datepicker

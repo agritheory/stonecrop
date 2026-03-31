@@ -33,6 +33,10 @@ Guides are being developed based on common questions and use cases. Planned topi
 - Nuxt integration
 :::
 
+## Available Guides
+
+- [Integrating Desktop in a Host Application](./desktop-integration) — Route adapters, action handling, and FSM transitions with `@stonecrop/desktop`
+
 ## Quick Links
 
 - [API Reference](/reference/) — Technical documentation for all packages

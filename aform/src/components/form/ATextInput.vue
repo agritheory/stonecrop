@@ -1,15 +1,21 @@
 <template>
 	<div class="aform_form-element">
-		<input
-			:id="uuid"
-			v-model="inputText"
-			v-mask="mask"
-			class="aform_input-field"
-			:disabled="readOnly"
-			:maxlength="mask ? (maskFilled ? mask.length : undefined) : undefined"
-			:required="required" />
-		<label class="aform_field-label" :for="uuid">{{ label }} </label>
-		<p v-show="validation.errorMessage" class="aform_error" v-html="validation.errorMessage"></p>
+		<template v-if="mode === 'display'">
+			<span class="aform_display-value">{{ inputText ?? '' }}</span>
+			<label class="aform_field-label">{{ label }}</label>
+		</template>
+		<template v-else>
+			<input
+				:id="uuid"
+				v-model="inputText"
+				v-mask="mask"
+				class="aform_input-field"
+				:disabled="mode === 'read'"
+				:maxlength="mask ? (maskFilled ? mask.length : undefined) : undefined"
+				:required="required" />
+			<label class="aform_field-label" :for="uuid">{{ label }} </label>
+			<p v-show="validation.errorMessage" class="aform_error" v-html="validation.errorMessage"></p>
+		</template>
 	</div>
 </template>
 
@@ -19,7 +25,7 @@ import { /* inject, */ ref } from 'vue'
 import { useStringMask as vMask } from '../../directives/mask'
 import { ComponentProps } from '../../types'
 
-const { label, mask, required, readOnly, uuid, validation = { errorMessage: '&nbsp;' } } = defineProps<ComponentProps>()
+const { label, mask, required, mode, uuid, validation = { errorMessage: '&nbsp;' } } = defineProps<ComponentProps>()
 
 // TODO: setup maskFilled as a computed property
 const maskFilled = ref(true)

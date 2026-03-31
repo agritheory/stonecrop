@@ -311,112 +311,24 @@ if (engine) {
 
 registerTransitionAction('SAVE', (context: TransitionChangeContext) => {
 	const { doctype, recordId, currentState, targetState, fsmContext } = context
-
-	console.log('💾 SAVE Transition:', {
-		doctype,
-		recordId,
-		from: currentState,
-		to: targetState,
-		fsmContext,
-	})
-
-	addNotification(`💾 Saving ${doctype} record ${recordId}...`, 'info')
-
-	// Simulate save operation
-	setTimeout(() => {
-		addNotification(`✅ ${doctype} record ${recordId} saved successfully!`, 'success')
-	}, 500)
-})
-
-registerTransitionAction('CANCEL', (context: TransitionChangeContext) => {
-	const { doctype, recordId, currentState, targetState } = context
-
-	console.log('❌ CANCEL Transition:', {
-		doctype,
-		recordId,
-		from: currentState,
-		to: targetState,
-	})
-
-	addNotification(`❌ Cancelled editing ${doctype} record ${recordId}`, 'warning')
+	// Audit trail — server call and notification are handled by the host (View.vue)
+	console.log('💾 SAVE Transition:', { doctype, recordId, from: currentState, to: targetState, fsmContext })
 })
 
 registerTransitionAction('DELETE', (context: TransitionChangeContext) => {
 	const { doctype, recordId, currentState, targetState } = context
-
-	console.log('🗑️ DELETE Transition:', {
-		doctype,
-		recordId,
-		from: currentState,
-		to: targetState,
-	})
-
-	addNotification(`🗑️ Deleting ${doctype} record ${recordId}...`, 'warning')
-
-	// Simulate delete operation
-	setTimeout(() => {
-		addNotification(`🗑️ ${doctype} record ${recordId} deleted successfully`, 'info')
-	}, 500)
+	// Audit trail — server call, HST removal, and notification are handled by the host (View.vue)
+	console.log('🗑️ DELETE Transition:', { doctype, recordId, from: currentState, to: targetState })
 })
 
 registerTransitionAction('CREATE', (context: TransitionChangeContext) => {
 	const { doctype, currentState, targetState } = context
-
-	console.log('➕ CREATE Transition:', {
-		doctype,
-		from: currentState,
-		to: targetState,
-	})
-
-	addNotification(`➕ Creating new ${doctype} record...`, 'info')
+	// Audit trail — notification is handled by the host (View.vue)
+	console.log('➕ CREATE Transition:', { doctype, from: currentState, to: targetState })
 })
 
 registerTransitionAction('EDIT', (context: TransitionChangeContext) => {
 	const { doctype, recordId, currentState, targetState } = context
-
-	console.log('✏️ EDIT Transition:', {
-		doctype,
-		recordId,
-		from: currentState,
-		to: targetState,
-	})
-
-	addNotification(`✏️ Editing ${doctype} record ${recordId}`, 'info')
-})
-
-registerTransitionAction('VALIDATE', (context: TransitionChangeContext) => {
-	const { doctype, recordId, fsmContext } = context
-
-	console.log('✓ VALIDATE Transition:', {
-		doctype,
-		recordId,
-		fsmContext,
-	})
-
-	// Example validation logic
-	const hasErrors = false // In real app, check validation state
-
-	if (hasErrors) {
-		addNotification(`⚠️ Validation failed for ${doctype} record ${recordId}`, 'error')
-	} else {
-		addNotification(`✓ Validation passed for ${doctype} record ${recordId}`, 'success')
-	}
-})
-
-registerTransitionAction('SUBMIT', (context: TransitionChangeContext) => {
-	const { doctype, recordId, currentState, targetState } = context
-
-	console.log('📤 SUBMIT Transition:', {
-		doctype,
-		recordId,
-		from: currentState,
-		to: targetState,
-	})
-
-	addNotification(`📤 Submitting ${doctype} record ${recordId}...`, 'info')
-
-	// Simulate submit operation
-	setTimeout(() => {
-		addNotification(`✅ ${doctype} record ${recordId} submitted successfully!`, 'success')
-	}, 700)
+	// Audit trail — notification is handled by the host (View.vue)
+	console.log('✏️ EDIT Transition:', { doctype, recordId, from: currentState, to: targetState })
 })

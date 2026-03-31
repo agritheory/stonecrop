@@ -1,13 +1,12 @@
-import { extendSchema, gql } from 'postgraphile/utils'
+import type { DoctypeMeta } from '@stonecrop/schema'
+import { snakeToCamel, toPascalCase } from '@stonecrop/schema'
 import { constant, lambda, object, loadOne } from 'postgraphile/grafast'
 import { GraphileConfig } from 'postgraphile/graphile-build'
-
+import { extendSchema, gql } from 'postgraphile/utils'
 import pluralize from 'pluralize'
 
-import { snakeToCamel, toPascalCase } from '@stonecrop/schema'
-import { getHandler } from '../registry/actions'
+import { getHandler, registerHandler } from '../registry/actions'
 import { getMeta, getAllMeta } from '../registry/doctypes'
-import type { DoctypeMeta } from '@stonecrop/schema'
 import type { ActionContext, GraphQLExecutor } from '../types'
 
 /**
@@ -88,9 +87,21 @@ export const createStonecropPlugin = (options: StonecropPluginOptions): Graphile
 				type StonecropFieldMeta {
 					fieldname: String!
 					fieldtype: String!
+					component: String
 					label: String
+					width: String
+					align: String
 					required: Boolean
+					readOnly: Boolean
+					edit: Boolean
+					hidden: Boolean
+					default: JSON
 					options: JSON
+					mask: String
+					precision: Int
+					scale: Int
+					mode: String
+					validation: JSON
 				}
 
 				type StonecropActionDefinition {
@@ -109,9 +120,11 @@ export const createStonecropPlugin = (options: StonecropPluginOptions): Graphile
 
 				type StonecropDoctypeMeta {
 					name: String!
+					slug: String
 					tableName: String
 					fields: [StonecropFieldMeta!]!
 					workflow: StonecropWorkflowMeta
+					inherits: String
 					listDoctype: String
 					parentDoctype: String
 				}
@@ -272,13 +285,13 @@ export const createStonecropPlugin = (options: StonecropPluginOptions): Graphile
 													error: `Unknown action: ${spec.action} on ${spec.doctype}`,
 												}
 											}
-
-											const handler = getHandler(actionDef.handler)
+											const handlerName = actionDef.handler
+											const handler = getHandler(handlerName)
 											if (!handler) {
 												return {
 													success: false,
 													data: null,
-													error: `Handler not registered: ${actionDef.handler}`,
+													error: `Handler not registered: ${handlerName}`,
 												}
 											}
 
@@ -351,7 +364,7 @@ function defaultOrderByTypeName(tableName: string): string {
  * Default PK argument name: 'id' (standard Relay Global ID pattern).
  * Override via `StonecropInflectionConfig.recordArgName` when using row_id columns;
  * PostGraphile Amber generates `rowId: UUID!` for those fields.
- * @internal
+ * @public
  */
 function defaultRecordArgName(_tableName: string): string {
 	return 'id'
@@ -361,7 +374,7 @@ function defaultRecordArgName(_tableName: string): string {
  * Default PK argument type: 'UUID!' (PostGraphile Amber default for UUID PKs).
  * Override via `StonecropInflectionConfig.recordArgType` when using non-UUID PKs
  * such as integer serials or Relay Global IDs ('ID!').
- * @internal
+ * @public
  */
 function defaultRecordArgType(_tableName: string): string {
 	return 'UUID!'

@@ -1,6 +1,105 @@
 # Change Log - @stonecrop/aform
 
-This log was last generated on Mon, 09 Mar 2026 13:28:09 GMT and should not be manually modified.
+This log was last generated on Tue, 31 Mar 2026 12:49:57 GMT and should not be manually modified.
+
+## 0.10.14
+Tue, 31 Mar 2026 12:49:57 GMT
+
+_Version update only_
+
+## 0.10.13
+Wed, 25 Mar 2026 14:29:05 GMT
+
+_Version update only_
+
+## 0.10.12
+Tue, 24 Mar 2026 10:41:22 GMT
+
+### Patches
+
+- add 1:1 and 1:many doctype schema support
+
+## 0.10.11
+Fri, 20 Mar 2026 09:13:21 GMT
+
+_Version update only_
+
+## 0.10.10
+Fri, 20 Mar 2026 08:28:51 GMT
+
+_Version update only_
+
+## 0.10.9
+Thu, 19 Mar 2026 11:25:47 GMT
+
+_Version update only_
+
+## 0.10.8
+Thu, 19 Mar 2026 10:18:16 GMT
+
+_Version update only_
+
+## 0.10.7
+Thu, 19 Mar 2026 06:26:37 GMT
+
+_Version update only_
+
+## 0.10.6
+Thu, 19 Mar 2026 06:12:08 GMT
+
+_Version update only_
+
+## 0.10.5
+Wed, 18 Mar 2026 12:05:59 GMT
+
+_Version update only_
+
+## 0.10.4
+Wed, 18 Mar 2026 06:27:10 GMT
+
+_Version update only_
+
+## 0.10.3
+Tue, 17 Mar 2026 13:56:02 GMT
+
+_Version update only_
+
+## 0.10.2
+Mon, 16 Mar 2026 06:07:45 GMT
+
+_Version update only_
+
+## 0.10.1
+Fri, 13 Mar 2026 12:42:27 GMT
+
+### Patches
+
+- remove auto-masking from components
+
+## 0.10.0
+Wed, 11 Mar 2026 12:07:57 GMT
+
+### Minor changes
+
+- separate data layer from the schema
+
+### Patches
+
+- update eslint config
+
+## 0.9.2
+Tue, 10 Mar 2026 11:23:09 GMT
+
+### Patches
+
+- handle infinite loop when setting up form component
+
+## 0.9.1
+Tue, 10 Mar 2026 10:44:46 GMT
+
+### Patches
+
+- update eslint and tsconfig
 
 ## 0.9.0
 Mon, 09 Mar 2026 13:28:09 GMT

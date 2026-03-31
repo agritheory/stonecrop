@@ -11,8 +11,7 @@ const fieldtypeToComponent: Record<string, string> = {
 	Datetime: 'ADate',
 	Select: 'ADropdown',
 	Link: 'AComboBox',
-	Table: 'ATable',
-	Doctype: 'ATable', // Doctype renders as a table of related records
+	Doctype: 'AForm', // Doctype renders as nested form (1:1) or table (1:many) based on cardinality
 	JSON: 'ATextInput', // Default to text input for JSON
 	// Add more mappings as needed
 }
@@ -28,26 +27,22 @@ export function hydrateSchema(schema: any[]): any[] {
 			component,
 		}
 
-		// Special handling for Table fieldtype
-		if (field.fieldtype === 'Table' && field.options && Array.isArray(field.options)) {
-			// Hydrate nested schema for table columns
-			hydratedField.columns = field.options.map((col: any) => ({
-				name: col.fieldname,
-				label: col.label,
-				fieldtype: col.fieldtype || 'Data',
-			}))
-			// Initialize empty rows array
-			hydratedField.rows = []
-		}
-
-		// Special handling for Doctype fieldtype (related records displayed as table)
+		// Special handling for Doctype fieldtype
 		if (field.fieldtype === 'Doctype') {
-			// Use columns if provided in the schema
-			if (field.columns && Array.isArray(field.columns)) {
-				hydratedField.columns = field.columns
+			// For cardinality: 'many', derive columns and use ATable
+			if (field.cardinality === 'many') {
+				// Use columns if provided in the schema
+				if (field.columns && Array.isArray(field.columns)) {
+					hydratedField.columns = field.columns
+				}
+				hydratedField.component = 'ATable'
+				// Will be populated from data via AForm's componentProps
+				hydratedField.rows = []
 			}
-			// Will be populated from data via AForm's componentProps
-			hydratedField.rows = []
+			// For cardinality: 'one' (default), embed schema for nested AForm
+			if (field.schema && Array.isArray(field.schema)) {
+				hydratedField.schema = field.schema
+			}
 		}
 
 		return hydratedField

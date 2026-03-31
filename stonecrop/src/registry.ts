@@ -1,7 +1,7 @@
 import type { SchemaTypes } from '@stonecrop/aform'
 import { Router } from 'vue-router'
 
-import DoctypeMeta from './doctype'
+import Doctype from './doctype'
 import { getGlobalTriggerEngine } from './field-triggers'
 import { RouteContext } from './types/registry'
 
@@ -24,9 +24,9 @@ export default class Registry {
 
 	/**
 	 * The registry property contains a collection of doctypes
-	 * @see {@link DoctypeMeta}
+	 * @see {@link Doctype}
 	 */
-	readonly registry: Record<string, DoctypeMeta>
+	readonly registry: Record<string, Doctype>
 
 	/**
 	 * The Vue router instance
@@ -39,7 +39,7 @@ export default class Registry {
 	 * @param router - Optional Vue router instance for route management
 	 * @param getMeta - Optional function to fetch doctype metadata from an API
 	 */
-	constructor(router?: Router, getMeta?: (routeContext: RouteContext) => DoctypeMeta | Promise<DoctypeMeta>) {
+	constructor(router?: Router, getMeta?: (routeContext: RouteContext) => Doctype | Promise<Doctype>) {
 		if (Registry._root) {
 			return Registry._root
 		}
@@ -52,18 +52,18 @@ export default class Registry {
 
 	/**
 	 * The getMeta function fetches doctype metadata from an API based on route context
-	 * @see {@link DoctypeMeta}
+	 * @see {@link Doctype}
 	 */
-	getMeta?: (routeContext: RouteContext) => DoctypeMeta | Promise<DoctypeMeta>
+	getMeta?: (routeContext: RouteContext) => Doctype | Promise<Doctype>
 
 	/**
 	 * Get doctype metadata
 	 * @param doctype - The doctype to fetch metadata for
 	 * @returns The doctype metadata
-	 * @see {@link DoctypeMeta}
+	 * @see {@link Doctype}
 	 */
-	addDoctype(doctype: DoctypeMeta) {
-		if (!(doctype.doctype in Object.keys(this.registry))) {
+	addDoctype(doctype: Doctype) {
+		if (!(doctype.slug in this.registry)) {
 			this.registry[doctype.slug] = doctype
 		}
 
@@ -85,17 +85,18 @@ export default class Registry {
 	}
 
 	/**
-	 * Resolve nested Doctype and Table fields in a schema by embedding child schemas inline.
+	 * Resolve nested Doctype fields in a schema by embedding child schemas inline.
 	 *
 	 * @remarks
 	 * Walks the schema array and for each field with `fieldtype: 'Doctype'` and a string
-	 * `options` value, looks up the referenced doctype in the registry and embeds its schema
-	 * as the field's `schema` property. Recurses for deeply nested doctypes.
+	 * `options` value, looks up the referenced doctype in the registry and:
 	 *
-	 * For fields with `fieldtype: 'Table'`, looks up the referenced child doctype and
-	 * auto-derives `columns` from its schema fields (unless columns are already provided).
-	 * Also sets sensible defaults for `component` (`'ATable'`) and `config` (`{ view: 'list' }`).
-	 * Row data is expected to come from the parent form's data model at `data[fieldname]`.
+	 * - If `cardinality: 'many'`: auto-derives `columns` from the child doctype's schema,
+	 *   sets `component: 'ATable'`, `config: { view: 'list' }`, and initializes `rows: []`.
+	 * - Otherwise (default/`cardinality: 'one'`): embeds the child schema as the field's
+	 *   `schema` property for 1:1 nested forms.
+	 *
+	 * Recurses for deeply nested doctypes. Circular references are protected against.
 	 *
 	 * Returns a new array — does not mutate the original schema.
 	 *
@@ -137,64 +138,52 @@ export default class Registry {
 					// Convert Immutable.List to plain array if needed
 					const childSchema: SchemaTypes[] = Array.isArray(doctype.schema) ? doctype.schema : Array.from(doctype.schema)
 
-					// Recurse into child schema to resolve deeply nested doctypes
-					seen.add(doctypeSlug)
-					const resolvedChild = this.resolveSchema(childSchema, seen)
-					seen.delete(doctypeSlug)
+					// Check cardinality to determine handling
+					const cardinality = 'cardinality' in field ? field.cardinality : undefined
 
-					return { ...field, schema: resolvedChild }
-				}
-			}
+					if (cardinality === 'many') {
+						// 1:many child table - derive columns, set component, config, rows
+						const resolved: Record<string, any> = { ...field }
 
-			// Resolve Table fieldtype — 1:many child doctype rendered as ATable
-			if (
-				'fieldtype' in field &&
-				field.fieldtype === 'Table' &&
-				'options' in field &&
-				typeof field.options === 'string'
-			) {
-				const doctypeSlug = field.options as string
+						// Auto-derive columns from child schema fields if not already provided
+						if (!('columns' in field) || !field.columns) {
+							resolved.columns = childSchema.map(childField => ({
+								name: childField.fieldname,
+								fieldname: childField.fieldname,
+								label: ('label' in childField && childField.label) || childField.fieldname,
+								fieldtype: 'fieldtype' in childField ? childField.fieldtype : 'Data',
+								align: ('align' in childField && childField.align) || 'left',
+								edit: 'edit' in childField ? childField.edit : true,
+								width: ('width' in childField && childField.width) || '20ch',
+							}))
+						}
 
-				// Circular reference protection
-				if (seen.has(doctypeSlug)) {
-					return { ...field }
-				}
+						// Set default component if not already specified
+						if (!resolved.component) {
+							resolved.component = 'ATable'
+						}
 
-				const doctype = this.registry[doctypeSlug]
-				if (doctype && doctype.schema) {
-					const childSchema: SchemaTypes[] = Array.isArray(doctype.schema) ? doctype.schema : Array.from(doctype.schema)
-					const resolved: Record<string, any> = { ...field }
+						// Set default config if not already specified
+						if (!('config' in field) || !field.config) {
+							resolved.config = { view: 'list' }
+						}
 
-					// Auto-derive columns from child schema fields if not already provided
-					if (!('columns' in field) || !field.columns) {
-						resolved.columns = childSchema.map(childField => ({
-							name: childField.fieldname,
-							fieldname: childField.fieldname,
-							label: ('label' in childField && childField.label) || childField.fieldname,
-							fieldtype: 'fieldtype' in childField ? childField.fieldtype : 'Data',
-							align: ('align' in childField && childField.align) || 'left',
-							edit: 'edit' in childField ? childField.edit : true,
-							width: ('width' in childField && childField.width) || '20ch',
-						}))
+						// Initialize rows to empty array so componentProps fallback
+						// routes data from the form's dataModel[fieldname]
+						if (!('rows' in field) || !field.rows) {
+							resolved.rows = []
+						}
+
+						return resolved as SchemaTypes
+					} else {
+						// 1:1 nested form (default cardinality: 'one')
+						// Recurse into child schema to resolve deeply nested doctypes
+						seen.add(doctypeSlug)
+						const resolvedChild = this.resolveSchema(childSchema, seen)
+						seen.delete(doctypeSlug)
+
+						return { ...field, schema: resolvedChild }
 					}
-
-					// Set default component if not already specified
-					if (!resolved.component) {
-						resolved.component = 'ATable'
-					}
-
-					// Set default config if not already specified
-					if (!('config' in field) || !field.config) {
-						resolved.config = { view: 'list' }
-					}
-
-					// Initialize rows to empty array so componentProps fallback
-					// routes data from the form's dataModel[fieldname]
-					if (!('rows' in field) || !field.rows) {
-						resolved.rows = []
-					}
-
-					return resolved as SchemaTypes
 				}
 			}
 
@@ -211,11 +200,13 @@ export default class Registry {
 	 * - Data, Text → `''`
 	 * - Check → `false`
 	 * - Int, Float, Decimal, Currency, Quantity → `0`
-	 * - Table → `[]`
-	 * - JSON, Doctype → `{}`
+	 * - JSON → `{}`
+	 * - Doctype with `cardinality: 'many'` → `[]`
+	 * - Doctype without `cardinality` or `cardinality: 'one'` → recursively initializes nested record
 	 * - All others → `null`
 	 *
-	 * For Doctype fields with a resolved `schema` array, recursively initializes the nested record.
+	 * For Doctype fields with a resolved `schema` array (cardinality: 'one'), recursively
+	 * initializes the nested record.
 	 *
 	 * @param schema - The schema array to derive defaults from
 	 * @returns A plain object with default values for each field
@@ -250,26 +241,40 @@ export default class Registry {
 				case 'Quantity':
 					record[field.fieldname] = 0
 					break
-				case 'Table':
-					record[field.fieldname] = []
-					break
 				case 'JSON':
 					record[field.fieldname] = {}
 					break
-				case 'Doctype':
-					// If nested schema is resolved, recursively initialize
-					if ('schema' in field && Array.isArray(field.schema)) {
+				case 'Doctype': {
+					// Check cardinality to determine initial value
+					const cardinality = 'cardinality' in field ? field.cardinality : undefined
+					if (cardinality === 'many') {
+						// 1:many child table - initialize as empty array
+						record[field.fieldname] = []
+					} else if ('schema' in field && Array.isArray(field.schema)) {
+						// 1:1 nested form with resolved schema - recursively initialize
 						record[field.fieldname] = this.initializeRecord(field.schema)
 					} else {
+						// 1:1 without resolved schema - empty object
 						record[field.fieldname] = {}
 					}
 					break
+				}
 				default:
 					record[field.fieldname] = null
 			}
 		})
 
 		return record
+	}
+
+	/**
+	 * Get a registered doctype by slug
+	 * @param slug - The doctype slug to look up
+	 * @returns The Doctype instance if found, or undefined
+	 * @public
+	 */
+	getDoctype(slug: string): Doctype | undefined {
+		return this.registry[slug]
 	}
 
 	// TODO: should we allow clearing the registry at all?

@@ -13,11 +13,16 @@ import { StonecropFieldType } from './fieldtype'
  *
  * @public
  */
-export const FieldOptions = z.union([
-	z.string(), // Link/Doctype target: "customer"
-	z.array(z.string()), // Select choices: ["A", "B", "C"]
-	z.record(z.string(), z.unknown()), // Config: \{ precision: 10, scale: 2 \}
-])
+export const FieldOptions = z
+	.union([
+		z.string(), // Link/Doctype target: "customer"
+		z.array(z.string()), // Select choices: ["A", "B", "C"]
+		z.record(z.string(), z.unknown()), // Config: \{ precision: 10, scale: 2 \}
+	])
+	.meta({
+		title: 'FieldOptions',
+		description: 'Field options - flexible bag for type-specific configuration',
+	})
 
 /**
  * Field options type inferred from Zod schema
@@ -30,11 +35,14 @@ export type FieldOptions = z.infer<typeof FieldOptions>
  * @public
  */
 export const FieldValidation = z
-	.object({
+	.looseObject({
 		/** Error message to display when validation fails */
 		errorMessage: z.string(),
 	})
-	.passthrough()
+	.meta({
+		title: 'FieldValidation',
+		description: 'Validation configuration for form fields',
+	})
 
 /**
  * Field validation type inferred from Zod schema
@@ -50,73 +58,93 @@ export type FieldValidation = z.infer<typeof FieldValidation>
  *
  * @public
  */
-export const FieldMeta = z.object({
-	// === CORE (required) ===
+export const FieldMeta = z
+	.object({
+		// === CORE (required) ===
 
-	/** Unique identifier for the field within its doctype */
-	fieldname: z.string().min(1),
+		/** Unique identifier for the field within its doctype */
+		fieldname: z.string().min(1),
 
-	/** Semantic field type - determines behavior and default component */
-	fieldtype: StonecropFieldType,
+		/** Semantic field type - determines behavior and default component */
+		fieldtype: StonecropFieldType,
 
-	// === COMPONENT (optional - derived from fieldtype when not specified) ===
+		// === COMPONENT (optional - derived from fieldtype when not specified) ===
 
-	/** Vue component to render this field. If not specified, derived from TYPE_MAP */
-	component: z.string().optional(),
+		/** Vue component to render this field. If not specified, derived from TYPE_MAP */
+		component: z.string().optional(),
 
-	// === DISPLAY ===
+		// === DISPLAY ===
 
-	/** Human-readable label for the field */
-	label: z.string().optional(),
+		/** Human-readable label for the field */
+		label: z.string().optional(),
 
-	/** Width of the field (CSS value, e.g., "40ch", "200px") */
-	width: z.string().optional(),
+		/** Width of the field (CSS value, e.g., "40ch", "200px") */
+		width: z.string().optional(),
 
-	/** Text alignment within the field */
-	align: z.enum(['left', 'center', 'right', 'start', 'end']).optional(),
+		/** Text alignment within the field */
+		align: z.enum(['left', 'center', 'right', 'start', 'end']).optional(),
 
-	// === BEHAVIOR ===
+		// === BEHAVIOR ===
 
-	/** Whether the field is required */
-	required: z.boolean().optional(),
+		/** Whether the field is required */
+		required: z.boolean().optional(),
 
-	/** Whether the field is read-only */
-	readOnly: z.boolean().optional(),
+		/** Whether the field is read-only */
+		readOnly: z.boolean().optional(),
 
-	/** Whether the field is editable (for table cells) */
-	edit: z.boolean().optional(),
+		/** Whether the field is editable (for table cells) */
+		edit: z.boolean().optional(),
 
-	/** Whether the field is hidden from the UI */
-	hidden: z.boolean().optional(),
+		/** Whether the field is hidden from the UI */
+		hidden: z.boolean().optional(),
 
-	// === VALUE ===
+		// === VALUE ===
 
-	/** Current value of the field */
-	value: z.unknown().optional(),
+		/** Current value of the field */
+		value: z.unknown().optional(),
 
-	/** Default value for new records */
-	default: z.unknown().optional(),
+		/** Default value for new records */
+		default: z.unknown().optional(),
 
-	// === TYPE-SPECIFIC ===
+		// === TYPE-SPECIFIC ===
 
-	/**
-	 * Type-specific options:
-	 * - Link: target doctype slug ("customer")
-	 * - Doctype: child doctype slug ("sales-order-item")
-	 * - Select: choices array (["Draft", "Submitted"])
-	 * - Decimal: \{ precision, scale \}
-	 * - Code: \{ language \}
-	 */
-	options: FieldOptions.optional(),
+		/**
+		 * Type-specific options:
+		 * - Link: target doctype slug ("customer")
+		 * - Doctype: child doctype slug ("sales-order-item")
+		 * - Select: choices array (["Draft", "Submitted"])
+		 * - Decimal: \{ precision, scale \}
+		 * - Code: \{ language \}
+		 */
+		options: FieldOptions.optional(),
 
-	/** Input mask pattern (e.g., "##/##/####" for dates) */
-	mask: z.string().optional(),
+		/**
+		 * Cardinality for Doctype fields:
+		 * - 'one': 1:1 nested form (default)
+		 * - 'many': 1:many child table
+		 */
+		cardinality: z.enum(['one', 'many']).optional(),
 
-	// === VALIDATION ===
+		/**
+		 * Input mask pattern. Accepts either a plain mask string or a stringified
+		 * arrow function that receives `locale` and returns a mask string.
+		 *
+		 * Plain pattern: `"##/##/####"`
+		 *
+		 * Function pattern: `"(locale) => locale === 'en-US' ? '(###) ###-####' : '####-######'"`
+		 */
+		mask: z.string().optional(),
 
-	/** Validation configuration */
-	validation: FieldValidation.optional(),
-})
+		// === VALIDATION ===
+
+		/** Validation configuration */
+		validation: FieldValidation.optional(),
+	})
+	.meta({
+		title: 'FieldMeta',
+		description:
+			'Unified field metadata - the single source of truth for field definitions, works for both forms (AForm) and tables (ATable)',
+	})
 
 /**
  * Field metadata type inferred from Zod schema

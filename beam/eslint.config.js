@@ -34,7 +34,9 @@ export default defineConfig(
 				...globals.node,
 			},
 			parserOptions: {
-				projectService: true,
+				projectService: {
+					allowDefaultProject: ['tests/*.ts', 'tests/components/*.ts', 'tests/composables/*.ts'],
+				},
 				tsconfigRootDir: import.meta.dirname,
 			},
 		},
