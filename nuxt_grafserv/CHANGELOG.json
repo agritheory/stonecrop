@@ -2,6 +2,12 @@
   "name": "@stonecrop/nuxt-grafserv",
   "entries": [
     {
+      "version": "0.10.15",
+      "tag": "@stonecrop/nuxt-grafserv_v0.10.15",
+      "date": "Tue, 31 Mar 2026 14:13:49 GMT",
+      "comments": {}
+    },
+    {
       "version": "0.10.14",
       "tag": "@stonecrop/nuxt-grafserv_v0.10.14",
       "date": "Tue, 31 Mar 2026 12:49:57 GMT",

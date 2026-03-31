@@ -2,6 +2,18 @@
   "name": "@stonecrop/aform",
   "entries": [
     {
+      "version": "0.10.15",
+      "tag": "@stonecrop/aform_v0.10.15",
+      "date": "Tue, 31 Mar 2026 14:13:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Updated z-index values to adhere to z-index hierarchy guidelines"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.10.14",
       "tag": "@stonecrop/aform_v0.10.14",
       "date": "Tue, 31 Mar 2026 12:49:57 GMT",

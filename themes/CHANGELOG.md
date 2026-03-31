@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/themes
 
-This log was last generated on Tue, 31 Mar 2026 12:49:57 GMT and should not be manually modified.
+This log was last generated on Tue, 31 Mar 2026 14:13:49 GMT and should not be manually modified.
+
+## 0.10.15
+Tue, 31 Mar 2026 14:13:49 GMT
+
+### Updates
+
+- Updated z-index values to adhere to z-index hierarchy guidelines
 
 ## 0.10.14
 Tue, 31 Mar 2026 12:49:57 GMT
