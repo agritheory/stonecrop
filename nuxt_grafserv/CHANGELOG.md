@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/nuxt-grafserv
 
-This log was last generated on Wed, 25 Mar 2026 14:29:05 GMT and should not be manually modified.
+This log was last generated on Tue, 31 Mar 2026 12:49:57 GMT and should not be manually modified.
+
+## 0.10.14
+Tue, 31 Mar 2026 12:49:57 GMT
+
+### Updates
+
+- fix resolver structure requirement
 
 ## 0.10.13
 Wed, 25 Mar 2026 14:29:05 GMT
