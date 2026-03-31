@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fix type cast for validation error paths",
+      "type": "none",
+      "packageName": "@stonecrop/schema"
+    }
+  ],
+  "packageName": "@stonecrop/schema",
+  "email": "tyler@agritheory.com"
+}

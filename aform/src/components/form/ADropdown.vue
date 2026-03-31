@@ -185,7 +185,7 @@ label {
 	margin: 0rem;
 	border: 1px solid transparent;
 	margin-bottom: 0.25rem;
-	z-index: 2;
+	z-index: 0;
 	font-size: 80%;
 	position: absolute;
 	background: white;
@@ -196,7 +196,7 @@ label {
 .autocomplete-results {
 	position: absolute;
 	width: calc(100% - 1ch + 1.5px);
-	z-index: 999;
+	z-index: 100;
 	padding: 0;
 	margin: 0;
 	color: var(--sc-input-active-border-color);

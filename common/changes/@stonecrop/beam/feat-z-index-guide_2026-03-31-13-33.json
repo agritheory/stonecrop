@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Updated z-index values to adhere to z-index hierarchy guidelines",
+      "type": "none",
+      "packageName": "@stonecrop/beam"
+    }
+  ],
+  "packageName": "@stonecrop/beam",
+  "email": "tyler@agritheory.com"
+}

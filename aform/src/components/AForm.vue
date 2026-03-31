@@ -175,7 +175,7 @@ const childModels = computed(() => childModelsCache.value)
 	position: absolute;
 	padding: 0 0.25rem;
 	margin: 0rem;
-	z-index: 2;
+	z-index: 1;
 	font-size: 0.7rem;
 	font-weight: 300;
 	letter-spacing: 0.05rem;

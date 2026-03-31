@@ -232,7 +232,7 @@ function handleLoadRecord(payload: LoadRecordEventPayload) {
 	cursor: pointer;
 	box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 	transition: all 0.2s ease;
-	z-index: 999;
+	z-index: 400;
 }
 
 .operation-log-toggle:hover {

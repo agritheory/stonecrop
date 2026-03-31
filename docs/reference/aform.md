@@ -265,6 +265,24 @@ Superset of all schema types for AForm
 export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema | DoctypeSchema;
 ```
 
+### TableDoctypeSchema
+
+Schema structure for defining 1:many child table fields inside AForm
+
+**Definition:**
+
+```typescript
+export type TableDoctypeSchema = BaseSchema & {
+    fieldtype: 'Table';
+    options: string;
+    label?: string;
+    columns?: TableColumn[];
+    config?: TableConfig;
+    rows?: TableRow[];
+    readOnly?: boolean;
+};
+```
+
 ### TableSchema
 
 Schema structure for defining tables inside AForm

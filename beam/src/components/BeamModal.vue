@@ -21,7 +21,7 @@ defineProps<{ showModal: boolean }>()
 	left: 0;
 	background-color: rgba(0, 0, 0, 0.5);
 	backdrop-filter: blur(2px);
-	z-index: 1000;
+	z-index: 200;
 	text-align: center;
 	padding: 1.25rem;
 }

@@ -49,6 +49,6 @@ const amodalStyles = computed((): StyleValue => {
 .amodal {
 	position: absolute;
 	background-color: var(--sc-row-color-zebra-dark);
-	z-index: 5;
+	z-index: 200;
 }
 </style>
