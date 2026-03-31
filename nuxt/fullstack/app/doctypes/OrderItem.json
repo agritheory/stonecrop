@@ -8,6 +8,7 @@
 			"fieldname": "id",
 			"fieldtype": "Data",
 			"label": "ID",
+			"component": "ATextInput",
 			"readOnly": true,
 			"hidden": true
 		},
@@ -15,6 +16,7 @@
 			"fieldname": "productId",
 			"fieldtype": "Data",
 			"label": "Product ID",
+			"component": "ATextInput",
 			"required": true,
 			"width": "12ch"
 		},
@@ -22,6 +24,7 @@
 			"fieldname": "productName",
 			"fieldtype": "Data",
 			"label": "Product",
+			"component": "ATextInput",
 			"required": true,
 			"width": "25ch"
 		},
@@ -29,6 +32,7 @@
 			"fieldname": "quantity",
 			"fieldtype": "Int",
 			"label": "Qty",
+			"component": "ATextInput",
 			"required": true,
 			"default": 1,
 			"width": "8ch",
@@ -38,6 +42,7 @@
 			"fieldname": "unitPrice",
 			"fieldtype": "Currency",
 			"label": "Unit Price",
+			"component": "ATextInput",
 			"required": true,
 			"width": "12ch",
 			"align": "right"
@@ -46,6 +51,7 @@
 			"fieldname": "total",
 			"fieldtype": "Currency",
 			"label": "Total",
+			"component": "ATextInput",
 			"readOnly": true,
 			"width": "12ch",
 			"align": "right"

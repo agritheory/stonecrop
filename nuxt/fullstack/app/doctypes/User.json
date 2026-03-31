@@ -1,86 +1,86 @@
 {
 	"name": "User",
-	"slug": "user/:id",
+	"slug": "user",
 	"tableName": "users",
 	"fields": [
 		{
 			"fieldname": "id",
-			"fieldtype": "Data",
 			"label": "ID",
-			"readOnly": true
+			"component": "ATextInput",
+			"fieldtype": "Data",
+			"mode": "display"
 		},
 		{
 			"fieldname": "email",
-			"fieldtype": "Data",
 			"label": "Email",
-			"required": true,
-			"validation": {
-				"errorMessage": "Valid email is required"
-			}
+			"component": "ATextInput",
+			"fieldtype": "Data",
+			"required": true
 		},
 		{
 			"fieldname": "name",
-			"fieldtype": "Data",
 			"label": "Name",
-			"required": true,
-			"width": "30ch"
+			"component": "ATextInput",
+			"fieldtype": "Data",
+			"required": true
 		},
 		{
 			"fieldname": "role",
-			"fieldtype": "Select",
 			"label": "Role",
+			"component": "ADropdown",
+			"fieldtype": "Select",
 			"options": ["ADMIN", "MANAGER", "USER", "GUEST"],
 			"default": "USER"
 		},
 		{
 			"fieldname": "status",
-			"fieldtype": "Select",
 			"label": "Status",
+			"component": "ADropdown",
+			"fieldtype": "Select",
 			"options": ["ACTIVE", "SUSPENDED", "PENDING", "DELETED"],
 			"default": "PENDING"
 		},
 		{
 			"fieldname": "createdAt",
-			"fieldtype": "Datetime",
 			"label": "Created At",
-			"readOnly": true
+			"component": "ATextInput",
+			"fieldtype": "Datetime",
+			"mode": "display"
 		},
 		{
 			"fieldname": "updatedAt",
-			"fieldtype": "Datetime",
 			"label": "Updated At",
-			"readOnly": true
+			"component": "ATextInput",
+			"fieldtype": "Datetime",
+			"mode": "display"
 		},
 		{
 			"fieldname": "lastLogin",
-			"fieldtype": "Datetime",
 			"label": "Last Login",
-			"readOnly": true
-		},
-		{
-			"fieldname": "avatar",
-			"fieldtype": "Attach",
-			"label": "Avatar"
+			"component": "ATextInput",
+			"fieldtype": "Datetime",
+			"mode": "display"
 		},
 		{
 			"fieldname": "bio",
-			"fieldtype": "Text",
-			"label": "Bio"
+			"label": "Bio",
+			"component": "ATextarea",
+			"fieldtype": "Text"
 		},
 		{
 			"fieldname": "phone",
-			"fieldtype": "Data",
-			"label": "Phone"
-		},
-		{
-			"fieldname": "address",
-			"fieldtype": "Text",
-			"label": "Address"
+			"label": "Phone",
+			"component": "ATextInput",
+			"fieldtype": "Data"
 		}
 	],
 	"workflow": {
 		"states": ["PENDING", "ACTIVE", "SUSPENDED", "DELETED"],
 		"actions": {
+			"save": {
+				"label": "Save",
+				"handler": "user:save"
+			},
 			"activate": {
 				"label": "Activate User",
 				"handler": "activate_user",

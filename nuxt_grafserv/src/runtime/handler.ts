@@ -55,19 +55,11 @@ async function getSchemaForSchemaMode(options: ModuleOptions & { type: 'schema' 
 				const resolvers = resolverModule.default || resolverModule
 				console.debug('[@stonecrop/nuxt-grafserv] Resolvers loaded:', Object.keys(resolvers))
 
-				// Transform resolvers to Grafast objects structure
+				// Resolvers should be in the format: { TypeName: { fieldName: resolver } }
+				// or { TypeName: { plans: { fieldName: planResolver } } } for plan resolvers
+				// Pass them through directly under 'objects' for makeGrafastSchema
 				for (const typeName of Object.keys(resolvers)) {
-					const typeResolvers = resolvers[typeName]
-
-					// Check if already in objects format with plans key
-					if (typeResolvers && typeof typeResolvers === 'object' && 'plans' in typeResolvers) {
-						// Already in new format: { TypeName: { plans: { fieldName: fn } } }
-						objects[typeName] = typeResolvers
-					} else {
-						// Old format: { TypeName: { fieldName: fn } }
-						// Auto-wrap for backward compatibility
-						objects[typeName] = { plans: typeResolvers }
-					}
+					objects[typeName] = resolvers[typeName]
 				}
 			} catch (e) {
 				console.error('[@stonecrop/nuxt-grafserv] Error loading resolvers:', e)
