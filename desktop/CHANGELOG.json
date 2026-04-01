@@ -2,6 +2,18 @@
   "name": "@stonecrop/desktop",
   "entries": [
     {
+      "version": "0.10.16",
+      "tag": "@stonecrop/desktop_v0.10.16",
+      "date": "Wed, 01 Apr 2026 14:54:57 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "fix failing desktop tests + reorganize tests"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.10.15",
       "tag": "@stonecrop/desktop_v0.10.15",
       "date": "Tue, 31 Mar 2026 14:13:49 GMT",

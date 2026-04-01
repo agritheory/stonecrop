@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/desktop
 
-This log was last generated on Tue, 31 Mar 2026 14:13:49 GMT and should not be manually modified.
+This log was last generated on Wed, 01 Apr 2026 14:54:57 GMT and should not be manually modified.
+
+## 0.10.16
+Wed, 01 Apr 2026 14:54:57 GMT
+
+### Patches
+
+- fix failing desktop tests + reorganize tests
 
 ## 0.10.15
 Tue, 31 Mar 2026 14:13:49 GMT
