@@ -1,6 +1,6 @@
 import { mount } from '@vue/test-utils'
 import { List, Map } from 'immutable'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createApp, defineComponent, nextTick } from 'vue'
 
 import type { SchemaTypes } from '@stonecrop/aform'
@@ -16,6 +16,11 @@ import type {
 	RecordOpenEventPayload,
 	RouteAdapter,
 } from '../src/types'
+
+afterEach(() => {
+	Registry._root = undefined as any
+	Stonecrop._root = undefined as any
+})
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -107,214 +112,460 @@ describe('Desktop types', () => {
 	})
 })
 
-describe('Desktop routeAdapter prop', () => {
-	let registry: Registry
-	let stonecrop: Stonecrop
+describe('Desktop props', () => {
+	describe('routeAdapter', () => {
+		let registry: Registry
+		let stonecrop: Stonecrop
 
-	beforeEach(() => {
-		Registry._root = undefined as any
-		registry = new Registry()
-		stonecrop = new Stonecrop(registry)
+		beforeEach(() => {
+			registry = new Registry()
+			stonecrop = new Stonecrop(registry)
 
-		const doctype = buildDoctype('task', 'draft', {
-			draft: { on: { SUBMIT: 'submitted' } },
-			submitted: { type: 'final' },
+			const doctype = buildDoctype('task', 'draft', {
+				draft: { on: { SUBMIT: 'submitted' } },
+				submitted: { type: 'final' },
+			})
+			registry.addDoctype(doctype)
+			stonecrop.addRecord('task', 'rec-1', { id: 'rec-1', title: 'My Task', status: 'draft' })
 		})
-		registry.addDoctype(doctype)
-		stonecrop.addRecord('task', 'rec-1', { id: 'rec-1', title: 'My Task', status: 'draft' })
+
+		it('uses the adapter to read doctype, recordId, and view', async () => {
+			const adapter: RouteAdapter = {
+				getCurrentDoctype: () => 'task',
+				getCurrentRecordId: () => 'rec-1',
+				getCurrentView: () => 'record',
+				navigate: vi.fn(),
+			}
+
+			const wrapper = mount(Desktop, {
+				props: { routeAdapter: adapter },
+				global: {
+					plugins: [makeStonecropPlugin(registry, stonecrop)],
+					stubs: {
+						AForm: true,
+						ActionSet: true,
+						SheetNav: true,
+						CommandPalette: true,
+					},
+				},
+			})
+
+			await nextTick()
+			// AForm should be rendered because currentViewSchema is non-empty for 'record' + valid doctype
+			// The stub renders, so just check it doesn't show the "Loading" fallback
+			expect(wrapper.text()).not.toContain('Initializing Stonecrop')
+		})
+
+		it('calls adapter.navigate when createNewRecord is triggered via data-action', async () => {
+			const navigateFn = vi.fn()
+			const adapter: RouteAdapter = {
+				getCurrentDoctype: () => 'task',
+				getCurrentRecordId: () => '',
+				getCurrentView: () => 'records',
+				navigate: navigateFn,
+			}
+
+			const wrapper = mount(Desktop, {
+				props: { routeAdapter: adapter },
+				global: {
+					plugins: [makeStonecropPlugin(registry, stonecrop)],
+					stubs: {
+						AForm: true,
+						ActionSet: true,
+						SheetNav: true,
+						CommandPalette: true,
+					},
+				},
+			})
+
+			await nextTick()
+
+			// Simulate a data-action="create" click
+			const div = wrapper.find('.desktop')
+			const btn = document.createElement('button')
+			btn.setAttribute('data-action', 'create')
+			;(div.element as HTMLElement).appendChild(btn)
+			btn.click()
+
+			await nextTick()
+
+			// navigate should have been called with a 'record' target
+			expect(navigateFn).toHaveBeenCalledWith(expect.objectContaining({ view: 'record' }))
+		})
 	})
 
-	it('uses the adapter to read doctype, recordId, and view', async () => {
-		const adapter: RouteAdapter = {
-			getCurrentDoctype: () => 'task',
-			getCurrentRecordId: () => 'rec-1',
-			getCurrentView: () => 'record',
-			navigate: vi.fn(),
-		}
+	describe('confirmFn', () => {
+		it('uses the provided confirmFn instead of native confirm()', async () => {
+			const registry = new Registry()
+			const stonecrop = new Stonecrop(registry)
+			const doctype = buildDoctype('task', 'draft', { draft: { on: { DELETE: 'deleted' } }, deleted: {} })
+			registry.addDoctype(doctype)
+			stonecrop.addRecord('task', 'rec-1', { id: 'rec-1', title: 'T' })
 
-		const wrapper = mount(Desktop, {
-			props: { routeAdapter: adapter },
-			global: {
-				plugins: [makeStonecropPlugin(registry, stonecrop)],
-				stubs: {
-					AForm: true,
-					ActionSet: true,
-					SheetNav: true,
-					CommandPalette: true,
+			const confirmFn = vi.fn().mockResolvedValue(false)
+			const adapter: RouteAdapter = {
+				getCurrentDoctype: () => 'task',
+				getCurrentRecordId: () => 'rec-1',
+				getCurrentView: () => 'record',
+				navigate: vi.fn(),
+			}
+
+			const wrapper = mount(Desktop, {
+				props: { routeAdapter: adapter, confirmFn },
+				global: {
+					plugins: [makeStonecropPlugin(registry, stonecrop)],
+					stubs: { AForm: true, ActionSet: true, SheetNav: true, CommandPalette: true },
 				},
-			},
-		})
+			})
 
-		await nextTick()
-		// AForm should be rendered because currentViewSchema is non-empty for 'record' + valid doctype
-		// The stub renders, so just check it doesn't show the "Loading" fallback
-		expect(wrapper.text()).not.toContain('Initializing Stonecrop')
+			await nextTick()
+
+			// Inject desktopMethods and call handleDelete
+			const provided = (wrapper.vm as any).$.provides
+			if (provided?.desktopMethods?.handleDelete) {
+				await provided.desktopMethods.handleDelete('rec-1')
+			} else {
+				await (wrapper.vm as any).handleDelete?.('rec-1')
+			}
+
+			await nextTick()
+
+			// confirmFn returned false → no 'action' event
+			expect(confirmFn).toHaveBeenCalledWith('Are you sure you want to delete this record?')
+			expect(wrapper.emitted('action')).toBeFalsy()
+		})
 	})
 
-	it('calls adapter.navigate when createNewRecord is triggered via data-action', async () => {
-		const navigateFn = vi.fn()
-		const adapter: RouteAdapter = {
-			getCurrentDoctype: () => 'task',
-			getCurrentRecordId: () => '',
-			getCurrentView: () => 'records',
-			navigate: navigateFn,
-		}
+	describe('recordIdField', () => {
+		it('uses custom recordIdField for table row ID', async () => {
+			const registry = new Registry()
+			const stonecrop = new Stonecrop(registry)
 
-		const wrapper = mount(Desktop, {
-			props: { routeAdapter: adapter },
-			global: {
-				plugins: [makeStonecropPlugin(registry, stonecrop)],
-				stubs: {
-					AForm: true,
-					ActionSet: true,
-					SheetNav: true,
-					CommandPalette: true,
+			const doctype = buildDoctype(
+				'task',
+				'draft',
+				{
+					draft: { on: { SUBMIT: 'submitted' } },
+					submitted: { type: 'final' },
 				},
-			},
+				[{ fieldname: 'uuid', fieldtype: 'Data', label: 'UUID', component: 'ATextInput' }]
+			)
+			registry.addDoctype(doctype)
+			stonecrop.addRecord('task', 'task-1', { id: 1, uuid: 'uuid-abc-123', title: 'My Task' })
+
+			const adapter: RouteAdapter = {
+				getCurrentDoctype: () => 'task',
+				getCurrentRecordId: () => '',
+				getCurrentView: () => 'records',
+				navigate: vi.fn(),
+			}
+
+			const wrapper = mount(Desktop, {
+				props: { routeAdapter: adapter, recordIdField: 'uuid' },
+				global: {
+					plugins: [makeStonecropPlugin(registry, stonecrop)],
+					stubs: {
+						AForm: true,
+						ActionSet: true,
+						SheetNav: true,
+						CommandPalette: true,
+					},
+				},
+			})
+
+			await nextTick()
+
+			const aform = wrapper.findComponent({ name: 'AForm' })
+			const schema = aform.props('schema') as any[]
+			expect(schema).toBeTruthy()
+			expect(schema.length).toBeGreaterThan(0)
+
+			const tableSchema = schema[0]
+			expect(tableSchema.component).toBe('ATable')
+			const columns = tableSchema.columns as any[]
+			expect(columns[0].name).toBe('uuid')
+
+			const rows = tableSchema.rows as any[]
+			expect(rows[0].id).toBe('uuid-abc-123')
 		})
 
-		await nextTick()
+		it('defaults recordIdField to "id" when not specified', async () => {
+			const registry = new Registry()
+			const stonecrop = new Stonecrop(registry)
 
-		// Simulate a data-action="create" click
-		const div = wrapper.find('.desktop')
-		const btn = document.createElement('button')
-		btn.setAttribute('data-action', 'create')
-		;(div.element as HTMLElement).appendChild(btn)
-		btn.click()
+			const doctype = buildDoctype('task', 'draft', {
+				draft: { on: { SUBMIT: 'submitted' } },
+				submitted: { type: 'final' },
+			})
+			registry.addDoctype(doctype)
+			stonecrop.addRecord('task', 'task-1', { id: 'task-1', title: 'My Task' })
 
-		await nextTick()
+			const adapter: RouteAdapter = {
+				getCurrentDoctype: () => 'task',
+				getCurrentRecordId: () => '',
+				getCurrentView: () => 'records',
+				navigate: vi.fn(),
+			}
 
-		// navigate should have been called with a 'record' target
-		expect(navigateFn).toHaveBeenCalledWith(expect.objectContaining({ view: 'record' }))
+			const wrapper = mount(Desktop, {
+				props: { routeAdapter: adapter },
+				global: {
+					plugins: [makeStonecropPlugin(registry, stonecrop)],
+					stubs: {
+						AForm: true,
+						ActionSet: true,
+						SheetNav: true,
+						CommandPalette: true,
+					},
+				},
+			})
+
+			await nextTick()
+
+			const aform = wrapper.findComponent({ name: 'AForm' })
+			const schema = aform.props('schema') as any[]
+			expect(schema).toBeTruthy()
+
+			const tableSchema = schema[0]
+			const columns = tableSchema.columns as any[]
+			expect(columns[0].name).toBe('id')
+		})
 	})
 })
 
-describe('Desktop emit events', () => {
-	let registry: Registry
-	let stonecrop: Stonecrop
+// ---------------------------------------------------------------------------
+// Plugin tests
+// ---------------------------------------------------------------------------
 
-	beforeEach(() => {
-		Registry._root = undefined as any
-		registry = new Registry()
-		stonecrop = new Stonecrop(registry)
+describe('StonecropDesktop plugin', () => {
+	it('registers all desktop components globally', () => {
+		const app = createApp({ template: '<div />' })
+		app.use(StonecropDesktop)
 
-		const doctype = buildDoctype('task', 'draft', {
-			draft: { on: { SUBMIT: 'submitted', DELETE: 'deleted' } },
-			submitted: { type: 'final' },
-			deleted: { type: 'final' },
-		})
-		registry.addDoctype(doctype)
-		stonecrop.addRecord('task', 'rec-1', { id: 'rec-1', title: 'My Task', status: 'draft' })
+		expect(app.component('ActionSet')).toBeDefined()
+		expect(app.component('CommandPalette')).toBeDefined()
+		expect(app.component('Desktop')).toBeDefined()
+		expect(app.component('SheetNav')).toBeDefined()
 	})
+})
 
-	it('emits "navigate" with the correct target when navigateToDoctype is injected and called', async () => {
-		const navigateFn = vi.fn()
-		const adapter: RouteAdapter = {
-			getCurrentDoctype: () => 'task',
-			getCurrentRecordId: () => 'rec-1',
-			getCurrentView: () => 'record',
-			navigate: navigateFn,
-		}
+// ---------------------------------------------------------------------------
+// Desktop – doctypes view
+// ---------------------------------------------------------------------------
 
-		// Use a wrapper component that injects desktopMethods and calls navigateToDoctype
-		const TestWrapper = defineComponent({
-			components: { Desktop },
-			template: `
-				<Desktop :routeAdapter="adapter" @navigate="onNavigate" />
-			`,
-			setup() {
-				return { adapter, onNavigate: navigateFn }
-			},
-		})
+describe('Desktop views', () => {
+	describe('doctypes view', () => {
+		it('renders a table of available doctypes when view is "doctypes"', async () => {
+			const registry = new Registry()
+			const stonecrop = new Stonecrop(registry)
 
-		const wrapper = mount(TestWrapper, {
-			global: {
-				plugins: [makeStonecropPlugin(registry, stonecrop)],
-				stubs: {
-					AForm: true,
-					ActionSet: true,
-					SheetNav: true,
-					CommandPalette: true,
+			const adapter: RouteAdapter = {
+				getCurrentDoctype: () => '',
+				getCurrentRecordId: () => '',
+				getCurrentView: () => 'doctypes',
+				navigate: vi.fn(),
+			}
+
+			const wrapper = mount(Desktop, {
+				props: {
+					routeAdapter: adapter,
+					availableDoctypes: ['task', 'note'],
 				},
-			},
-		})
-
-		// Access the inner Desktop instance via findComponent
-		const desktop = wrapper.findComponent(Desktop)
-		// Grab the desktopMethods injection from context
-		const methods = (desktop.vm as any).$.appContext.provides
-		// Trigger desktopMethods.navigateToDoctype through the provide/inject
-		await nextTick()
-
-		// Emit navigate directly on the Desktop component
-		await desktop.vm.$emit('navigate', { view: 'records', doctype: 'task' })
-		await nextTick()
-
-		// navigateFn should have been called because it's the adapter.navigate
-		// We verify the emit contract by checking emitted events on the Desktop wrapper
-		const emitted = desktop.emitted('navigate')
-		expect(emitted).toBeTruthy()
-		expect(emitted![0][0]).toMatchObject({ view: 'records', doctype: 'task' })
-	})
-
-	it('emits "action" with DELETE payload when handleDelete is confirmed', async () => {
-		// Use a confirmFn that always returns true
-		const adapter: RouteAdapter = {
-			getCurrentDoctype: () => 'task',
-			getCurrentRecordId: () => 'rec-1',
-			getCurrentView: () => 'record',
-			navigate: vi.fn(),
-		}
-
-		const wrapper = mount(Desktop, {
-			props: {
-				routeAdapter: adapter,
-				confirmFn: () => true,
-			},
-			global: {
-				plugins: [makeStonecropPlugin(registry, stonecrop)],
-				stubs: {
-					AForm: true,
-					ActionSet: true,
-					SheetNav: true,
-					CommandPalette: true,
+				global: {
+					plugins: [makeStonecropPlugin(registry, stonecrop)],
+					stubs: {
+						AForm: true,
+						ActionSet: true,
+						SheetNav: true,
+						CommandPalette: true,
+					},
 				},
-			},
-		})
-
-		await nextTick()
-
-		// Inject desktopMethods and call handleDelete
-		const injectedMethods =
-			(wrapper.vm as any).$.provides?.desktopMethods ?? (wrapper.vm as any).$.appContext.provides?.desktopMethods
-
-		if (injectedMethods?.handleDelete) {
-			await injectedMethods.handleDelete('rec-1')
-		} else {
-			// Directly trigger via internal method exposure (vm exposes nothing but we can test the emit path)
-			wrapper.vm.$emit('action', {
-				name: 'DELETE',
-				doctype: 'task',
-				recordId: 'rec-1',
-				data: {},
 			})
-		}
 
-		await nextTick()
+			await nextTick()
 
-		const emittedActions = wrapper.emitted('action')
-		expect(emittedActions).toBeTruthy()
-		expect(emittedActions![0][0]).toMatchObject({
-			name: 'DELETE',
-			doctype: 'task',
-			recordId: 'rec-1',
+			// AForm is stubbed — it renders when currentViewSchema is non-empty
+			// For the doctypes view with availableDoctypes provided there should be schema
+			expect(wrapper.text()).not.toContain('Loading doctypes data')
+		})
+	})
+
+	// ---------------------------------------------------------------------------
+	// Desktop – records view
+	// ---------------------------------------------------------------------------
+
+	describe('records view', () => {
+		it('renders "New Record" button in the action set when on records view', async () => {
+			const registry = new Registry()
+			const stonecrop = new Stonecrop(registry)
+
+			const doctype = buildDoctype('task', 'draft', {
+				draft: { on: { SUBMIT: 'submitted' } },
+				submitted: { type: 'final' },
+			})
+			registry.addDoctype(doctype)
+			stonecrop.addRecord('task', 'r-1', { id: 'r-1', title: 'T1' })
+
+			const adapter: RouteAdapter = {
+				getCurrentDoctype: () => 'task',
+				getCurrentRecordId: () => '',
+				getCurrentView: () => 'records',
+				navigate: vi.fn(),
+			}
+
+			const wrapper = mount(Desktop, {
+				props: { routeAdapter: adapter },
+				global: {
+					plugins: [makeStonecropPlugin(registry, stonecrop)],
+					stubs: {
+						AForm: true,
+						SheetNav: true,
+						CommandPalette: true,
+					},
+				},
+			})
+
+			await nextTick()
+
+			// ActionSet receives elements with a 'New Record' button
+			const actionSet = wrapper.findComponent({ name: 'ActionSet' })
+			const elements = actionSet.props('elements') as any[]
+			expect(elements?.some((e: any) => e.label === 'New Record')).toBe(true)
+		})
+
+		it('navigates when "New Record" action button is triggered', async () => {
+			const registry = new Registry()
+			const stonecrop = new Stonecrop(registry)
+			const navigateFn = vi.fn()
+
+			const doctype = buildDoctype('task', 'draft', {
+				draft: { on: { SUBMIT: 'submitted' } },
+				submitted: { type: 'final' },
+			})
+			registry.addDoctype(doctype)
+
+			const adapter: RouteAdapter = {
+				getCurrentDoctype: () => 'task',
+				getCurrentRecordId: () => '',
+				getCurrentView: () => 'records',
+				navigate: navigateFn,
+			}
+
+			const wrapper = mount(Desktop, {
+				props: { routeAdapter: adapter },
+				global: {
+					plugins: [makeStonecropPlugin(registry, stonecrop)],
+					stubs: {
+						AForm: true,
+						SheetNav: true,
+						CommandPalette: true,
+					},
+				},
+			})
+
+			await nextTick()
+
+			const actionSet = wrapper.findComponent({ name: 'ActionSet' })
+			const elements = actionSet.props('elements') as any[]
+			const newRecordBtn = elements?.find((e: any) => e.label === 'New Record')
+			expect(newRecordBtn).toBeDefined()
+
+			// Grab the action and call it
+			await newRecordBtn.action()
+			await nextTick()
+
+			expect(navigateFn).toHaveBeenCalledWith(expect.objectContaining({ view: 'record' }))
+		})
+	})
+
+	// ---------------------------------------------------------------------------
+	// Desktop – navigation breadcrumbs
+	// ---------------------------------------------------------------------------
+
+	describe('navigationBreadcrumbs', () => {
+		it('shows breadcrumbs for records view', async () => {
+			const registry = new Registry()
+			const stonecrop = new Stonecrop(registry)
+
+			const doctype = buildDoctype('task', 'draft', {
+				draft: { on: { SUBMIT: 'submitted' } },
+				submitted: { type: 'final' },
+			})
+			registry.addDoctype(doctype)
+
+			const adapter: RouteAdapter = {
+				getCurrentDoctype: () => 'task',
+				getCurrentRecordId: () => '',
+				getCurrentView: () => 'records',
+				navigate: vi.fn(),
+			}
+
+			const wrapper = mount(Desktop, {
+				props: { routeAdapter: adapter },
+				global: {
+					plugins: [makeStonecropPlugin(registry, stonecrop)],
+					stubs: {
+						AForm: true,
+						ActionSet: true,
+						SheetNav: true,
+						CommandPalette: true,
+					},
+				},
+			})
+
+			await nextTick()
+
+			// SheetNav receives breadcrumbs (stub still exposes props)
+			const sheetNav = wrapper.findComponent({ name: 'SheetNav' })
+			const breadcrumbs = sheetNav.props('breadcrumbs') as any[]
+			expect(breadcrumbs?.some((b: any) => b.title === 'Home')).toBe(true)
+			expect(breadcrumbs?.some((b: any) => b.title === 'Task')).toBe(true)
+		})
+
+		it('shows breadcrumbs for record view', async () => {
+			const registry = new Registry()
+			const stonecrop = new Stonecrop(registry)
+
+			const doctype = buildDoctype('task', 'draft', {
+				draft: { on: { SUBMIT: 'submitted' } },
+				submitted: { type: 'final' },
+			})
+			registry.addDoctype(doctype)
+			stonecrop.addRecord('task', 'rec-1', { id: 'rec-1', title: 'T' })
+
+			const adapter: RouteAdapter = {
+				getCurrentDoctype: () => 'task',
+				getCurrentRecordId: () => 'rec-1',
+				getCurrentView: () => 'record',
+				navigate: vi.fn(),
+			}
+
+			const wrapper = mount(Desktop, {
+				props: { routeAdapter: adapter },
+				global: {
+					plugins: [makeStonecropPlugin(registry, stonecrop)],
+					stubs: {
+						AForm: true,
+						ActionSet: true,
+						SheetNav: true,
+						CommandPalette: true,
+					},
+				},
+			})
+
+			await nextTick()
+
+			const sheetNav = wrapper.findComponent({ name: 'SheetNav' })
+			const breadcrumbs = sheetNav.props('breadcrumbs') as any[]
+			expect(breadcrumbs?.length).toBeGreaterThanOrEqual(3)
+			expect(breadcrumbs?.some((b: any) => b.title === 'Home')).toBe(true)
+			expect(breadcrumbs?.some((b: any) => b.title === 'Edit Record')).toBe(true)
 		})
 	})
 })
 
 describe('Desktop FSM state reading', () => {
 	it('reads transitions from the record status field rather than a hardcoded state', async () => {
-		Registry._root = undefined as any
 		const registry = new Registry()
 		const stonecrop = new Stonecrop(registry)
 
@@ -341,7 +592,6 @@ describe('Desktop FSM state reading', () => {
 			global: {
 				plugins: [makeStonecropPlugin(registry, stonecrop)],
 				stubs: {
-					// Don't stub ActionSet so we can inspect rendered action props
 					AForm: true,
 					SheetNav: true,
 					CommandPalette: true,
@@ -351,9 +601,8 @@ describe('Desktop FSM state reading', () => {
 
 		await nextTick()
 
-		// Grab the actionElements prop passed to ActionSet
-		const actionSet = wrapper.findComponent({ name: 'ActionSet' })
 		// ActionSet is not stubbed, check its elements prop
+		const actionSet = wrapper.findComponent({ name: 'ActionSet' })
 		const elements = actionSet.props('elements') as any[]
 		expect(elements).toBeTruthy()
 
@@ -368,7 +617,6 @@ describe('Desktop FSM state reading', () => {
 	})
 
 	it('falls back to the workflow initial state when the record has no status field', async () => {
-		Registry._root = undefined as any
 		const registry = new Registry()
 		const stonecrop = new Stonecrop(registry)
 
@@ -414,336 +662,316 @@ describe('Desktop FSM state reading', () => {
 	})
 })
 
-describe('Desktop confirmFn prop', () => {
-	it('uses the provided confirmFn instead of native confirm()', async () => {
-		Registry._root = undefined as any
-		const registry = new Registry()
-		const stonecrop = new Stonecrop(registry)
-		const doctype = buildDoctype('task', 'draft', { draft: { on: { DELETE: 'deleted' } }, deleted: {} })
-		registry.addDoctype(doctype)
-		stonecrop.addRecord('task', 'rec-1', { id: 'rec-1', title: 'T' })
+describe('Desktop events', () => {
+	describe('emit events', () => {
+		let registry: Registry
+		let stonecrop: Stonecrop
 
-		const confirmFn = vi.fn().mockResolvedValue(false)
-		const adapter: RouteAdapter = {
-			getCurrentDoctype: () => 'task',
-			getCurrentRecordId: () => 'rec-1',
-			getCurrentView: () => 'record',
-			navigate: vi.fn(),
-		}
+		beforeEach(() => {
+			registry = new Registry()
+			stonecrop = new Stonecrop(registry)
 
-		const wrapper = mount(Desktop, {
-			props: { routeAdapter: adapter, confirmFn },
-			global: {
-				plugins: [makeStonecropPlugin(registry, stonecrop)],
-				stubs: { AForm: true, ActionSet: true, SheetNav: true, CommandPalette: true },
-			},
+			const doctype = buildDoctype('task', 'draft', {
+				draft: { on: { SUBMIT: 'submitted', DELETE: 'deleted' } },
+				submitted: { type: 'final' },
+				deleted: { type: 'final' },
+			})
+			registry.addDoctype(doctype)
+			stonecrop.addRecord('task', 'rec-1', { id: 'rec-1', title: 'My Task', status: 'draft' })
 		})
 
-		await nextTick()
+		it('emits "navigate" with the correct target when navigateToDoctype is injected and called', async () => {
+			const navigateFn = vi.fn()
+			const adapter: RouteAdapter = {
+				getCurrentDoctype: () => 'task',
+				getCurrentRecordId: () => 'rec-1',
+				getCurrentView: () => 'record',
+				navigate: navigateFn,
+			}
 
-		// Emit delete action directly (confirmFn returns false → no 'action' emit)
-		// Access the injected desktopMethods via the provide system
-		const provided = (wrapper.vm as any).$.provides
-		if (provided?.desktopMethods?.handleDelete) {
-			await provided.desktopMethods.handleDelete('rec-1')
-		} else {
-			// fallback: trigger via the raw vm
-			// The test verifies confirmFn is called, not whether actions are emitted
-			await (wrapper.vm as any).handleDelete?.('rec-1')
-		}
-
-		await nextTick()
-
-		expect(confirmFn).toHaveBeenCalledWith('Are you sure you want to delete this record?')
-		// confirmFn returned false → no 'action' event
-		expect(wrapper.emitted('action')).toBeFalsy()
-	})
-})
-
-// ---------------------------------------------------------------------------
-// Plugin tests
-// ---------------------------------------------------------------------------
-
-describe('StonecropDesktop plugin', () => {
-	it('registers all desktop components globally', () => {
-		const app = createApp({ template: '<div />' })
-		app.use(StonecropDesktop)
-
-		// After install the components should be registered
-		expect(app.component('ActionSet')).toBeDefined()
-		expect(app.component('CommandPalette')).toBeDefined()
-		expect(app.component('Desktop')).toBeDefined()
-		expect(app.component('SheetNav')).toBeDefined()
-	})
-})
-
-// ---------------------------------------------------------------------------
-// Desktop – doctypes view
-// ---------------------------------------------------------------------------
-
-describe('Desktop doctypes view', () => {
-	it('renders a table of available doctypes when view is "doctypes"', async () => {
-		Registry._root = undefined as any
-		const registry = new Registry()
-		const stonecrop = new Stonecrop(registry)
-
-		const adapter: RouteAdapter = {
-			getCurrentDoctype: () => '',
-			getCurrentRecordId: () => '',
-			getCurrentView: () => 'doctypes',
-			navigate: vi.fn(),
-		}
-
-		const wrapper = mount(Desktop, {
-			props: {
-				routeAdapter: adapter,
-				availableDoctypes: ['task', 'note'],
-			},
-			global: {
-				plugins: [makeStonecropPlugin(registry, stonecrop)],
-				stubs: {
-					AForm: true,
-					ActionSet: true,
-					SheetNav: true,
-					CommandPalette: true,
+			// Use a wrapper component that injects desktopMethods and calls navigateToDoctype
+			const TestWrapper = defineComponent({
+				components: { Desktop },
+				template: `
+					<Desktop :routeAdapter="adapter" @navigate="onNavigate" />
+				`,
+				setup() {
+					return { adapter, onNavigate: navigateFn }
 				},
-			},
-		})
+			})
 
-		await nextTick()
-
-		// AForm is stubbed — it renders when currentViewSchema is non-empty
-		// For the doctypes view with availableDoctypes provided there should be schema
-		expect(wrapper.text()).not.toContain('Loading doctypes data')
-	})
-})
-
-// ---------------------------------------------------------------------------
-// Desktop – records view
-// ---------------------------------------------------------------------------
-
-describe('Desktop records view', () => {
-	it('renders "New Record" button in the action set when on records view', async () => {
-		Registry._root = undefined as any
-		const registry = new Registry()
-		const stonecrop = new Stonecrop(registry)
-
-		const doctype = buildDoctype('task', 'draft', {
-			draft: { on: { SUBMIT: 'submitted' } },
-			submitted: { type: 'final' },
-		})
-		registry.addDoctype(doctype)
-		stonecrop.addRecord('task', 'r-1', { id: 'r-1', title: 'T1' })
-
-		const adapter: RouteAdapter = {
-			getCurrentDoctype: () => 'task',
-			getCurrentRecordId: () => '',
-			getCurrentView: () => 'records',
-			navigate: vi.fn(),
-		}
-
-		const wrapper = mount(Desktop, {
-			props: { routeAdapter: adapter },
-			global: {
-				plugins: [makeStonecropPlugin(registry, stonecrop)],
-				stubs: {
-					AForm: true,
-					SheetNav: true,
-					CommandPalette: true,
+			const wrapper = mount(TestWrapper, {
+				global: {
+					plugins: [makeStonecropPlugin(registry, stonecrop)],
+					stubs: {
+						AForm: true,
+						ActionSet: true,
+						SheetNav: true,
+						CommandPalette: true,
+					},
 				},
-			},
-		})
+			})
 
-		await nextTick()
-
-		// ActionSet receives elements with a 'New Record' button
-		const actionSet = wrapper.findComponent({ name: 'ActionSet' })
-		const elements = actionSet.props('elements') as any[]
-		expect(elements?.some((e: any) => e.label === 'New Record')).toBe(true)
-	})
-
-	it('navigates when "New Record" action button is triggered', async () => {
-		Registry._root = undefined as any
-		const registry = new Registry()
-		const stonecrop = new Stonecrop(registry)
-		const navigateFn = vi.fn()
-
-		const doctype = buildDoctype('task', 'draft', {
-			draft: { on: { SUBMIT: 'submitted' } },
-			submitted: { type: 'final' },
-		})
-		registry.addDoctype(doctype)
-
-		const adapter: RouteAdapter = {
-			getCurrentDoctype: () => 'task',
-			getCurrentRecordId: () => '',
-			getCurrentView: () => 'records',
-			navigate: navigateFn,
-		}
-
-		const wrapper = mount(Desktop, {
-			props: { routeAdapter: adapter },
-			global: {
-				plugins: [makeStonecropPlugin(registry, stonecrop)],
-				stubs: {
-					AForm: true,
-					SheetNav: true,
-					CommandPalette: true,
-				},
-			},
-		})
-
-		await nextTick()
-
-		// Grab the action and call it
-		const actionSet = wrapper.findComponent({ name: 'ActionSet' })
-		const elements = actionSet.props('elements') as any[]
-		const newRecordBtn = elements?.find((e: any) => e.label === 'New Record')
-		expect(newRecordBtn).toBeDefined()
-
-		await newRecordBtn.action()
-		await nextTick()
-
-		expect(navigateFn).toHaveBeenCalledWith(expect.objectContaining({ view: 'record' }))
-	})
-})
-
-// ---------------------------------------------------------------------------
-// Desktop – action click forwarding
-// ---------------------------------------------------------------------------
-
-describe('Desktop action click forwarding', () => {
-	it('forwards ActionSet actionClick to the action handler', async () => {
-		Registry._root = undefined as any
-		const registry = new Registry()
-		const stonecrop = new Stonecrop(registry)
-
-		const doctype = buildDoctype('task', 'draft', {
-			draft: { on: { SUBMIT: 'submitted' } },
-			submitted: { type: 'final' },
-		})
-		registry.addDoctype(doctype)
-		stonecrop.addRecord('task', 'rec-1', { id: 'rec-1', title: 'T', status: 'draft' })
-
-		const adapter: RouteAdapter = {
-			getCurrentDoctype: () => 'task',
-			getCurrentRecordId: () => 'rec-1',
-			getCurrentView: () => 'record',
-			navigate: vi.fn(),
-		}
-
-		const wrapper = mount(Desktop, {
-			props: { routeAdapter: adapter },
-			global: {
-				plugins: [makeStonecropPlugin(registry, stonecrop)],
-				stubs: {
-					AForm: true,
-					SheetNav: true,
-					CommandPalette: true,
-				},
-			},
-		})
-
-		await nextTick()
-
-		// Trigger an FSM transition via the Actions dropdown
-		const actionSet = wrapper.findComponent({ name: 'ActionSet' })
-		const elements = actionSet.props('elements') as any[]
-		const actionsDropdown = elements?.find((e: any) => e.type === 'dropdown')
-
-		if (actionsDropdown?.actions?.length > 0) {
-			actionsDropdown.actions[0].action()
+			// Access the inner Desktop instance via findComponent
+			const desktop = wrapper.findComponent(Desktop)
 			await nextTick()
 
-			expect(wrapper.emitted('action')).toBeTruthy()
-		}
-	})
-})
+			// Emit navigate directly on the Desktop component
+			await desktop.vm.$emit('navigate', { view: 'records', doctype: 'task' })
+			await nextTick()
 
-// ---------------------------------------------------------------------------
-// Desktop – navigation breadcrumbs
-// ---------------------------------------------------------------------------
-
-describe('Desktop navigationBreadcrumbs', () => {
-	it('shows breadcrumbs for records view', async () => {
-		Registry._root = undefined as any
-		const registry = new Registry()
-		const stonecrop = new Stonecrop(registry)
-
-		const doctype = buildDoctype('task', 'draft', {
-			draft: { on: { SUBMIT: 'submitted' } },
-			submitted: { type: 'final' },
+			// We verify the emit contract by checking emitted events on the Desktop wrapper
+			const emitted = desktop.emitted('navigate')
+			expect(emitted).toBeTruthy()
+			expect(emitted![0][0]).toMatchObject({ view: 'records', doctype: 'task' })
 		})
-		registry.addDoctype(doctype)
 
-		const adapter: RouteAdapter = {
-			getCurrentDoctype: () => 'task',
-			getCurrentRecordId: () => '',
-			getCurrentView: () => 'records',
-			navigate: vi.fn(),
-		}
+		it('emits "action" with DELETE payload when handleDelete is confirmed', async () => {
+			const adapter: RouteAdapter = {
+				getCurrentDoctype: () => 'task',
+				getCurrentRecordId: () => 'rec-1',
+				getCurrentView: () => 'record',
+				navigate: vi.fn(),
+			}
 
-		const wrapper = mount(Desktop, {
-			props: { routeAdapter: adapter },
-			global: {
-				plugins: [makeStonecropPlugin(registry, stonecrop)],
-				stubs: {
-					AForm: true,
-					ActionSet: true,
-					SheetNav: true,
-					CommandPalette: true,
+			const wrapper = mount(Desktop, {
+				props: {
+					routeAdapter: adapter,
+					confirmFn: () => true,
 				},
-			},
+				global: {
+					plugins: [makeStonecropPlugin(registry, stonecrop)],
+					stubs: {
+						AForm: true,
+						ActionSet: true,
+						SheetNav: true,
+						CommandPalette: true,
+					},
+				},
+			})
+
+			await nextTick()
+
+			// Access the injected desktopMethods via the provide system
+			const injectedMethods =
+				(wrapper.vm as any).$.provides?.desktopMethods ?? (wrapper.vm as any).$.appContext.provides?.desktopMethods
+
+			if (injectedMethods?.handleDelete) {
+				await injectedMethods.handleDelete('rec-1')
+			} else {
+				// fallback: trigger via the raw vm
+				wrapper.vm.$emit('action', {
+					name: 'DELETE',
+					doctype: 'task',
+					recordId: 'rec-1',
+					data: {},
+				})
+			}
+
+			await nextTick()
+
+			const emittedActions = wrapper.emitted('action')
+			expect(emittedActions).toBeTruthy()
+			expect(emittedActions![0][0]).toMatchObject({
+				name: 'DELETE',
+				doctype: 'task',
+				recordId: 'rec-1',
+			})
 		})
-
-		await nextTick()
-
-		// SheetNav receives breadcrumbs (stub still exposes props)
-		const sheetNav = wrapper.findComponent({ name: 'SheetNav' })
-		const breadcrumbs = sheetNav.props('breadcrumbs') as any[]
-		expect(breadcrumbs?.some((b: any) => b.title === 'Home')).toBe(true)
-		expect(breadcrumbs?.some((b: any) => b.title === 'Task')).toBe(true)
 	})
 
-	it('shows breadcrumbs for record view', async () => {
-		Registry._root = undefined as any
-		const registry = new Registry()
-		const stonecrop = new Stonecrop(registry)
+	// ---------------------------------------------------------------------------
+	// Desktop – action click forwarding
+	// ---------------------------------------------------------------------------
 
-		const doctype = buildDoctype('task', 'draft', {
-			draft: { on: { SUBMIT: 'submitted' } },
-			submitted: { type: 'final' },
-		})
-		registry.addDoctype(doctype)
-		stonecrop.addRecord('task', 'rec-1', { id: 'rec-1', title: 'T' })
+	describe('action click forwarding', () => {
+		it('forwards ActionSet actionClick to the action handler', async () => {
+			const registry = new Registry()
+			const stonecrop = new Stonecrop(registry)
 
-		const adapter: RouteAdapter = {
-			getCurrentDoctype: () => 'task',
-			getCurrentRecordId: () => 'rec-1',
-			getCurrentView: () => 'record',
-			navigate: vi.fn(),
-		}
+			const doctype = buildDoctype('task', 'draft', {
+				draft: { on: { SUBMIT: 'submitted' } },
+				submitted: { type: 'final' },
+			})
+			registry.addDoctype(doctype)
+			stonecrop.addRecord('task', 'rec-1', { id: 'rec-1', title: 'T', status: 'draft' })
 
-		const wrapper = mount(Desktop, {
-			props: { routeAdapter: adapter },
-			global: {
-				plugins: [makeStonecropPlugin(registry, stonecrop)],
-				stubs: {
-					AForm: true,
-					ActionSet: true,
-					SheetNav: true,
-					CommandPalette: true,
+			const adapter: RouteAdapter = {
+				getCurrentDoctype: () => 'task',
+				getCurrentRecordId: () => 'rec-1',
+				getCurrentView: () => 'record',
+				navigate: vi.fn(),
+			}
+
+			// Don't stub ActionSet so we can inspect rendered action props
+			const wrapper = mount(Desktop, {
+				props: { routeAdapter: adapter },
+				global: {
+					plugins: [makeStonecropPlugin(registry, stonecrop)],
+					stubs: {
+						AForm: true,
+						SheetNav: true,
+						CommandPalette: true,
+					},
 				},
-			},
+			})
+
+			await nextTick()
+
+			// Trigger an FSM transition via the Actions dropdown
+			const actionSet = wrapper.findComponent({ name: 'ActionSet' })
+			const elements = actionSet.props('elements') as any[]
+			const actionsDropdown = elements?.find((e: any) => e.type === 'dropdown')
+
+			if (actionsDropdown?.actions?.length > 0) {
+				actionsDropdown.actions[0].action()
+				await nextTick()
+
+				expect(wrapper.emitted('action')).toBeTruthy()
+			}
+		})
+	})
+
+	describe('load events', () => {
+		let registry: Registry
+		let stonecrop: Stonecrop
+
+		beforeEach(() => {
+			registry = new Registry()
+			stonecrop = new Stonecrop(registry)
+
+			const doctype = buildDoctype('task', 'draft', {
+				draft: { on: { SUBMIT: 'submitted' } },
+				submitted: { type: 'final' },
+			})
+			registry.addDoctype(doctype)
 		})
 
-		await nextTick()
+		it('emits "load-records" when navigating to records view', async () => {
+			const adapter: RouteAdapter = {
+				getCurrentDoctype: () => 'task',
+				getCurrentRecordId: () => '',
+				getCurrentView: () => 'records',
+				navigate: vi.fn(),
+			}
 
-		const sheetNav = wrapper.findComponent({ name: 'SheetNav' })
-		const breadcrumbs = sheetNav.props('breadcrumbs') as any[]
-		expect(breadcrumbs?.length).toBeGreaterThanOrEqual(3)
-		expect(breadcrumbs?.some((b: any) => b.title === 'Home')).toBe(true)
-		expect(breadcrumbs?.some((b: any) => b.title === 'Edit Record')).toBe(true)
+			const wrapper = mount(Desktop, {
+				props: { routeAdapter: adapter },
+				global: {
+					plugins: [makeStonecropPlugin(registry, stonecrop)],
+					stubs: {
+						AForm: true,
+						ActionSet: true,
+						SheetNav: true,
+						CommandPalette: true,
+					},
+				},
+			})
+
+			await nextTick()
+
+			const emitted = wrapper.emitted('load-records')
+			expect(emitted).toBeTruthy()
+			expect(emitted![0][0]).toMatchObject({ doctype: 'task' })
+		})
+
+		it('emits "load-record" when navigating to record view', async () => {
+			stonecrop.addRecord('task', 'task-1', { id: 'task-1', title: 'My Task' })
+
+			const adapter: RouteAdapter = {
+				getCurrentDoctype: () => 'task',
+				getCurrentRecordId: () => 'task-1',
+				getCurrentView: () => 'record',
+				navigate: vi.fn(),
+			}
+
+			const wrapper = mount(Desktop, {
+				props: { routeAdapter: adapter },
+				global: {
+					plugins: [makeStonecropPlugin(registry, stonecrop)],
+					stubs: {
+						AForm: true,
+						ActionSet: true,
+						SheetNav: true,
+						CommandPalette: true,
+					},
+				},
+			})
+
+			await nextTick()
+
+			const emitted = wrapper.emitted('load-record')
+			expect(emitted).toBeTruthy()
+			expect(emitted![0][0]).toMatchObject({ doctype: 'task', recordId: 'task-1' })
+		})
+
+		it('emits load-record even for new records (host app decides whether to fetch)', async () => {
+			const adapter: RouteAdapter = {
+				getCurrentDoctype: () => 'task',
+				getCurrentRecordId: () => 'new-123',
+				getCurrentView: () => 'record',
+				navigate: vi.fn(),
+			}
+
+			const wrapper = mount(Desktop, {
+				props: { routeAdapter: adapter },
+				global: {
+					plugins: [makeStonecropPlugin(registry, stonecrop)],
+					stubs: {
+						AForm: true,
+						ActionSet: true,
+						SheetNav: true,
+						CommandPalette: true,
+					},
+				},
+			})
+
+			await nextTick()
+
+			const emitted = wrapper.emitted('load-record')
+			expect(emitted).toBeTruthy()
+			expect(emitted![0][0]).toMatchObject({ doctype: 'task', recordId: 'new-123' })
+		})
+
+		it('emits load-records when view changes from doctypes to records', async () => {
+			const adapter: RouteAdapter = {
+				getCurrentDoctype: () => '',
+				getCurrentRecordId: () => '',
+				getCurrentView: () => 'doctypes',
+				navigate: vi.fn(),
+			}
+
+			const wrapper = mount(Desktop, {
+				props: { routeAdapter: adapter },
+				global: {
+					plugins: [makeStonecropPlugin(registry, stonecrop)],
+					stubs: {
+						AForm: true,
+						ActionSet: true,
+						SheetNav: true,
+						CommandPalette: true,
+					},
+				},
+			})
+
+			await nextTick()
+
+			expect(wrapper.emitted('load-records')).toBeFalsy()
+
+			const recordsAdapter: RouteAdapter = {
+				getCurrentDoctype: () => 'task',
+				getCurrentRecordId: () => '',
+				getCurrentView: () => 'records',
+				navigate: vi.fn(),
+			}
+
+			await wrapper.setProps({ routeAdapter: recordsAdapter })
+			await nextTick()
+
+			const emitted = wrapper.emitted('load-records')
+			expect(emitted).toBeTruthy()
+			expect(emitted![emitted!.length - 1][0]).toMatchObject({ doctype: 'task' })
+		})
 	})
 })
 
@@ -756,7 +984,6 @@ describe('Desktop desktopMethods injection', () => {
 	let stonecrop: Stonecrop
 
 	beforeEach(() => {
-		Registry._root = undefined as any
 		registry = new Registry()
 		stonecrop = new Stonecrop(registry)
 
@@ -784,11 +1011,13 @@ describe('Desktop desktopMethods injection', () => {
 				return {}
 			},
 			mounted() {
+				// Grab the desktopMethods injection from context
 				injectedMethods = (this as any).desktopMethods
 			},
 			template: '<div />',
 		})
 
+		// Trigger desktopMethods.navigateToDoctype through the provide/inject
 		mount(
 			defineComponent({
 				components: { Desktop, ChildComponent },
@@ -812,8 +1041,6 @@ describe('Desktop desktopMethods injection', () => {
 
 		await nextTick()
 
-		// desktopMethods should have been injected (even if the child slot isn't rendered
-		// in this setup, verifying the provide('desktopMethods') call ran)
 		const wrapper = mount(Desktop, {
 			props: { routeAdapter: adapter },
 			global: {
@@ -829,8 +1056,8 @@ describe('Desktop desktopMethods injection', () => {
 
 		await nextTick()
 
-		const providedDesktopMethods = (wrapper.vm as any).$.appContext.provides?.desktopMethods
-		// The provide() sets it on the component's own provides, not appContext:
+		// desktopMethods should have been injected (even if the child slot isn't rendered
+		// in the test environment due to mounting quirks)
 		const vmProvides = (wrapper.vm as any).$.provides
 		const methods = vmProvides?.desktopMethods
 		if (methods) {
@@ -877,487 +1104,452 @@ describe('Desktop desktopMethods injection', () => {
 	})
 })
 
-// ---------------------------------------------------------------------------
-// Desktop – keyboard shortcuts
-// ---------------------------------------------------------------------------
+describe('Desktop user interactions', () => {
+	describe('keyboard shortcuts', () => {
+		it('opens command palette on Ctrl+K', async () => {
+			const registry = new Registry()
+			const stonecrop = new Stonecrop(registry)
 
-describe('Desktop keyboard shortcuts', () => {
-	it('opens command palette on Ctrl+K', async () => {
-		Registry._root = undefined as any
-		const registry = new Registry()
-		const stonecrop = new Stonecrop(registry)
+			const adapter: RouteAdapter = {
+				getCurrentDoctype: () => '',
+				getCurrentRecordId: () => '',
+				getCurrentView: () => 'doctypes',
+				navigate: vi.fn(),
+			}
 
-		const adapter: RouteAdapter = {
-			getCurrentDoctype: () => '',
-			getCurrentRecordId: () => '',
-			getCurrentView: () => 'doctypes',
-			navigate: vi.fn(),
-		}
-
-		const wrapper = mount(Desktop, {
-			props: { routeAdapter: adapter, availableDoctypes: [] },
-			global: {
-				plugins: [makeStonecropPlugin(registry, stonecrop)],
-				stubs: {
-					AForm: true,
-					ActionSet: true,
-					SheetNav: true,
-					CommandPalette: true,
+			const wrapper = mount(Desktop, {
+				props: { routeAdapter: adapter, availableDoctypes: [] },
+				global: {
+					plugins: [makeStonecropPlugin(registry, stonecrop)],
+					stubs: {
+						AForm: true,
+						ActionSet: true,
+						SheetNav: true,
+						CommandPalette: true,
+					},
 				},
-			},
-			attachTo: document.body,
+				attachTo: document.body,
+			})
+
+			await nextTick()
+
+			document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true }))
+			await nextTick()
+
+			const palette = wrapper.findComponent({ name: 'CommandPalette' })
+			expect(palette.props('isOpen')).toBe(true)
+
+			wrapper.unmount()
 		})
 
-		await nextTick()
+		it('closes command palette on Escape when open', async () => {
+			const registry = new Registry()
+			const stonecrop = new Stonecrop(registry)
 
-		// Fire Ctrl+K keydown on document
-		document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true }))
-		await nextTick()
+			const adapter: RouteAdapter = {
+				getCurrentDoctype: () => '',
+				getCurrentRecordId: () => '',
+				getCurrentView: () => 'doctypes',
+				navigate: vi.fn(),
+			}
 
-		// CommandPalette is stubbed, so we verify that the 'is-open' prop is set on it
-		const palette = wrapper.findComponent({ name: 'CommandPalette' })
-		expect(palette.props('isOpen')).toBe(true)
+			const wrapper = mount(Desktop, {
+				props: { routeAdapter: adapter, availableDoctypes: [] },
+				global: {
+					plugins: [makeStonecropPlugin(registry, stonecrop)],
+					stubs: {
+						AForm: true,
+						ActionSet: true,
+						SheetNav: true,
+						CommandPalette: true,
+					},
+				},
+				attachTo: document.body,
+			})
 
-		wrapper.unmount()
+			await nextTick()
+
+			document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true }))
+			await nextTick()
+
+			const palette = wrapper.findComponent({ name: 'CommandPalette' })
+			expect(palette.props('isOpen')).toBe(true)
+
+			document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+			await nextTick()
+
+			expect(palette.props('isOpen')).toBe(false)
+
+			wrapper.unmount()
+		})
 	})
 
-	it('closes command palette on Escape when open', async () => {
-		Registry._root = undefined as any
-		const registry = new Registry()
-		const stonecrop = new Stonecrop(registry)
+	describe('click handler', () => {
+		it('handles "Edit | Delete" cell click to open a record', async () => {
+			const registry = new Registry()
+			const stonecrop = new Stonecrop(registry)
+			const navigateFn = vi.fn()
 
-		const adapter: RouteAdapter = {
-			getCurrentDoctype: () => '',
-			getCurrentRecordId: () => '',
-			getCurrentView: () => 'doctypes',
-			navigate: vi.fn(),
-		}
-
-		const wrapper = mount(Desktop, {
-			props: { routeAdapter: adapter, availableDoctypes: [] },
-			global: {
-				plugins: [makeStonecropPlugin(registry, stonecrop)],
-				stubs: {
-					AForm: true,
-					ActionSet: true,
-					SheetNav: true,
-					CommandPalette: true,
-				},
-			},
-			attachTo: document.body,
-		})
-
-		await nextTick()
-
-		// Open palette first
-		document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true }))
-		await nextTick()
-
-		const palette = wrapper.findComponent({ name: 'CommandPalette' })
-		expect(palette.props('isOpen')).toBe(true)
-
-		// Close via Escape
-		document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
-		await nextTick()
-
-		expect(palette.props('isOpen')).toBe(false)
-
-		wrapper.unmount()
-	})
-})
-
-// ---------------------------------------------------------------------------
-// Desktop – click handler (table cell actions)
-// ---------------------------------------------------------------------------
-
-describe('Desktop click handler', () => {
-	it('handles "Edit | Delete" cell click to open a record', async () => {
-		Registry._root = undefined as any
-		const registry = new Registry()
-		const stonecrop = new Stonecrop(registry)
-		const navigateFn = vi.fn()
-
-		const doctype = buildDoctype('task', 'draft', {
-			draft: { on: { SUBMIT: 'submitted' } },
-			submitted: { type: 'final' },
-		})
-		registry.addDoctype(doctype)
-		stonecrop.addRecord('task', 'rec-1', { id: 'rec-1', title: 'My Task' })
-
-		const adapter: RouteAdapter = {
-			getCurrentDoctype: () => 'task',
-			getCurrentRecordId: () => '',
-			getCurrentView: () => 'records',
-			navigate: navigateFn,
-		}
-
-		const wrapper = mount(Desktop, {
-			props: { routeAdapter: adapter },
-			global: {
-				plugins: [makeStonecropPlugin(registry, stonecrop)],
-				stubs: {
-					AForm: true,
-					ActionSet: true,
-					SheetNav: true,
-					CommandPalette: true,
-				},
-			},
-		})
-
-		await nextTick()
-
-		// Manually simulate a table row click with Edit action
-		const div = wrapper.find('.desktop')
-		const table = document.createElement('table')
-		const row = table.insertRow()
-		const idCell = row.insertCell()
-		idCell.textContent = 'rec-1'
-		idCell.setAttribute('data-rowindex', '0')
-		const actionCell = row.insertCell()
-		actionCell.textContent = 'Edit | Delete'
-		div.element.appendChild(table)
-
-		// Click the action cell (which contains "Edit")
-		const event = new MouseEvent('click', { bubbles: true })
-		actionCell.dispatchEvent(event)
-		await nextTick()
-
-		// Should have navigated to the record
-		expect(navigateFn).toHaveBeenCalledWith(expect.objectContaining({ view: 'record' }))
-	})
-
-	it('handles "View Records" cell click to navigate to doctype', async () => {
-		Registry._root = undefined as any
-		const registry = new Registry()
-		const stonecrop = new Stonecrop(registry)
-		const navigateFn = vi.fn()
-
-		const adapter: RouteAdapter = {
-			getCurrentDoctype: () => '',
-			getCurrentRecordId: () => '',
-			getCurrentView: () => 'doctypes',
-			navigate: navigateFn,
-		}
-
-		const wrapper = mount(Desktop, {
-			props: { routeAdapter: adapter, availableDoctypes: ['task'] },
-			global: {
-				plugins: [makeStonecropPlugin(registry, stonecrop)],
-				stubs: {
-					AForm: true,
-					ActionSet: true,
-					SheetNav: true,
-					CommandPalette: true,
-				},
-			},
-		})
-
-		await nextTick()
-
-		// Simulate a table row click with "View Records" action
-		const div = wrapper.find('.desktop')
-		const table = document.createElement('table')
-		const row = table.insertRow()
-		const indexCell = row.insertCell()
-		indexCell.textContent = '0'
-		const doctypeCell = row.insertCell()
-		doctypeCell.textContent = 'task'
-		const actionCell = row.insertCell()
-		actionCell.textContent = 'View Records'
-		div.element.appendChild(table)
-
-		// Click the "View Records" cell
-		const event = new MouseEvent('click', { bubbles: true })
-		actionCell.dispatchEvent(event)
-		await nextTick()
-
-		expect(navigateFn).toHaveBeenCalledWith(expect.objectContaining({ view: 'records', doctype: 'task' }))
-	})
-
-	it('handles "Delete" cell click and calls handleDelete', async () => {
-		Registry._root = undefined as any
-		const registry = new Registry()
-		const stonecrop = new Stonecrop(registry)
-
-		const doctype = buildDoctype('task', 'draft', {
-			draft: { on: { DELETE: 'deleted' } },
-			deleted: { type: 'final' },
-		})
-		registry.addDoctype(doctype)
-		stonecrop.addRecord('task', 'rec-1', { id: 'rec-1', title: 'My Task' })
-
-		const confirmFn = vi.fn().mockResolvedValue(true)
-		const adapter: RouteAdapter = {
-			getCurrentDoctype: () => 'task',
-			getCurrentRecordId: () => '',
-			getCurrentView: () => 'records',
-			navigate: vi.fn(),
-		}
-
-		const wrapper = mount(Desktop, {
-			props: { routeAdapter: adapter, confirmFn },
-			global: {
-				plugins: [makeStonecropPlugin(registry, stonecrop)],
-				stubs: {
-					AForm: true,
-					ActionSet: true,
-					SheetNav: true,
-					CommandPalette: true,
-				},
-			},
-		})
-
-		await nextTick()
-
-		// Simulate clicking a "Delete" action cell in a table row
-		const div = wrapper.find('.desktop')
-		const table = document.createElement('table')
-		const row = table.insertRow()
-		const idCell = row.insertCell()
-		idCell.textContent = 'rec-1'
-		idCell.setAttribute('data-rowindex', '0')
-		const actionCell = row.insertCell()
-		actionCell.textContent = 'Delete'
-		div.element.appendChild(table)
-
-		const event = new MouseEvent('click', { bubbles: true })
-		actionCell.dispatchEvent(event)
-		await nextTick()
-
-		// confirmFn should have been called
-		expect(confirmFn).toHaveBeenCalled()
-	})
-})
-
-// ---------------------------------------------------------------------------
-// Desktop – getRecordIdFromRow helper
-// ---------------------------------------------------------------------------
-
-describe('getRecordIdFromRow helper', () => {
-	it('extracts record ID using data-rowindex attribute', async () => {
-		Registry._root = undefined as any
-		const registry = new Registry()
-		const stonecrop = new Stonecrop(registry)
-
-		const doctype = buildDoctype('task', 'draft', {
-			draft: { on: { SUBMIT: 'submitted' } },
-			submitted: { type: 'final' },
-		})
-		registry.addDoctype(doctype)
-		stonecrop.addRecord('task', 'rec-1', { id: 'rec-1', title: 'My Task' })
-		stonecrop.addRecord('task', 'rec-2', { id: 'rec-2', title: 'Another Task' })
-
-		const adapter: RouteAdapter = {
-			getCurrentDoctype: () => 'task',
-			getCurrentRecordId: () => '',
-			getCurrentView: () => 'records',
-			navigate: vi.fn(),
-		}
-
-		const wrapper = mount(Desktop, {
-			props: { routeAdapter: adapter },
-			global: {
-				plugins: [makeStonecropPlugin(registry, stonecrop)],
-				stubs: {
-					AForm: true,
-					ActionSet: true,
-					SheetNav: true,
-					CommandPalette: true,
-				},
-			},
-		})
-
-		await nextTick()
-
-		const div = wrapper.find('.desktop')
-		const table = document.createElement('table')
-		const row = table.insertRow()
-		const idCell = row.insertCell()
-		idCell.textContent = 'rec-2'
-		idCell.setAttribute('data-rowindex', '1')
-		const actionCell = row.insertCell()
-		actionCell.textContent = 'Edit'
-		div.element.appendChild(table)
-
-		const navigateFn = vi.fn()
-		await wrapper.setProps({ routeAdapter: { ...adapter, navigate: navigateFn } })
-		await nextTick()
-
-		const event = new MouseEvent('click', { bubbles: true })
-		actionCell.dispatchEvent(event)
-		await nextTick()
-
-		expect(navigateFn).toHaveBeenCalledWith(expect.objectContaining({ recordId: 'rec-2' }))
-	})
-
-	it('respects custom recordIdField prop', async () => {
-		Registry._root = undefined as any
-		const registry = new Registry()
-		const stonecrop = new Stonecrop(registry)
-
-		const doctype = buildDoctype(
-			'task',
-			'draft',
-			{
+			const doctype = buildDoctype('task', 'draft', {
 				draft: { on: { SUBMIT: 'submitted' } },
 				submitted: { type: 'final' },
-			},
-			[{ fieldname: 'custom_id', fieldtype: 'Data', label: 'Custom ID', component: 'ATextInput' }]
-		)
-		registry.addDoctype(doctype)
-		stonecrop.addRecord('task', 'rec-1', { id: 'rec-1', custom_id: 'custom-123', title: 'My Task' })
+			})
+			registry.addDoctype(doctype)
+			stonecrop.addRecord('task', 'rec-1', { id: 'rec-1', title: 'My Task' })
 
-		const navigateFn = vi.fn()
-		const adapter: RouteAdapter = {
-			getCurrentDoctype: () => 'task',
-			getCurrentRecordId: () => '',
-			getCurrentView: () => 'records',
-			navigate: navigateFn,
-		}
+			const adapter: RouteAdapter = {
+				getCurrentDoctype: () => 'task',
+				getCurrentRecordId: () => '',
+				getCurrentView: () => 'records',
+				navigate: navigateFn,
+			}
 
-		const wrapper = mount(Desktop, {
-			props: { routeAdapter: adapter, recordIdField: 'custom_id' },
-			global: {
-				plugins: [makeStonecropPlugin(registry, stonecrop)],
-				stubs: {
-					AForm: true,
-					ActionSet: true,
-					SheetNav: true,
-					CommandPalette: true,
+			const wrapper = mount(Desktop, {
+				props: { routeAdapter: adapter },
+				global: {
+					plugins: [makeStonecropPlugin(registry, stonecrop)],
+					stubs: {
+						AForm: true,
+						ActionSet: true,
+						SheetNav: true,
+						CommandPalette: true,
+					},
 				},
-			},
+			})
+
+			await nextTick()
+
+			const div = wrapper.find('.desktop')
+			const table = document.createElement('table')
+			const row = table.insertRow()
+			const idCell = row.insertCell()
+			idCell.textContent = 'rec-1'
+			idCell.setAttribute('data-rowindex', '0')
+			const actionCell = row.insertCell()
+			actionCell.textContent = 'Edit | Delete'
+			div.element.appendChild(table)
+
+			const event = new MouseEvent('click', { bubbles: true })
+			actionCell.dispatchEvent(event)
+			await nextTick()
+
+			expect(navigateFn).toHaveBeenCalledWith(expect.objectContaining({ view: 'record' }))
 		})
 
-		await nextTick()
+		it('handles "View Records" cell click to navigate to doctype', async () => {
+			const registry = new Registry()
+			const stonecrop = new Stonecrop(registry)
+			const navigateFn = vi.fn()
 
-		const div = wrapper.find('.desktop')
-		const table = document.createElement('table')
-		const row = table.insertRow()
-		const idCell = row.insertCell()
-		idCell.textContent = 'custom-123'
-		idCell.setAttribute('data-rowindex', '0')
-		const actionCell = row.insertCell()
-		actionCell.textContent = 'Edit'
-		div.element.appendChild(table)
+			const adapter: RouteAdapter = {
+				getCurrentDoctype: () => '',
+				getCurrentRecordId: () => '',
+				getCurrentView: () => 'doctypes',
+				navigate: navigateFn,
+			}
 
-		const event = new MouseEvent('click', { bubbles: true })
-		actionCell.dispatchEvent(event)
-		await nextTick()
+			const wrapper = mount(Desktop, {
+				props: { routeAdapter: adapter, availableDoctypes: ['task'] },
+				global: {
+					plugins: [makeStonecropPlugin(registry, stonecrop)],
+					stubs: {
+						AForm: true,
+						ActionSet: true,
+						SheetNav: true,
+						CommandPalette: true,
+					},
+				},
+			})
 
-		expect(navigateFn).toHaveBeenCalledWith(expect.objectContaining({ recordId: 'custom-123' }))
+			await nextTick()
+
+			const div = wrapper.find('.desktop')
+			const table = document.createElement('table')
+			const row = table.insertRow()
+			const indexCell = row.insertCell()
+			indexCell.textContent = '0'
+			const doctypeCell = row.insertCell()
+			doctypeCell.textContent = 'task'
+			const actionCell = row.insertCell()
+			actionCell.textContent = 'View Records'
+			div.element.appendChild(table)
+
+			const event = new MouseEvent('click', { bubbles: true })
+			actionCell.dispatchEvent(event)
+			await nextTick()
+
+			expect(navigateFn).toHaveBeenCalledWith(expect.objectContaining({ view: 'records', doctype: 'task' }))
+		})
+
+		it('handles "Delete" cell click and calls handleDelete', async () => {
+			const registry = new Registry()
+			const stonecrop = new Stonecrop(registry)
+
+			const doctype = buildDoctype('task', 'draft', {
+				draft: { on: { DELETE: 'deleted' } },
+				deleted: { type: 'final' },
+			})
+			registry.addDoctype(doctype)
+			stonecrop.addRecord('task', 'rec-1', { id: 'rec-1', title: 'My Task' })
+
+			const confirmFn = vi.fn().mockResolvedValue(true)
+			const adapter: RouteAdapter = {
+				getCurrentDoctype: () => 'task',
+				getCurrentRecordId: () => '',
+				getCurrentView: () => 'records',
+				navigate: vi.fn(),
+			}
+
+			const wrapper = mount(Desktop, {
+				props: { routeAdapter: adapter, confirmFn },
+				global: {
+					plugins: [makeStonecropPlugin(registry, stonecrop)],
+					stubs: {
+						AForm: true,
+						ActionSet: true,
+						SheetNav: true,
+						CommandPalette: true,
+					},
+				},
+			})
+
+			await nextTick()
+
+			const div = wrapper.find('.desktop')
+			const table = document.createElement('table')
+			const row = table.insertRow()
+			const idCell = row.insertCell()
+			idCell.textContent = 'rec-1'
+			idCell.setAttribute('data-rowindex', '0')
+			const actionCell = row.insertCell()
+			actionCell.textContent = 'Delete'
+			div.element.appendChild(table)
+
+			const event = new MouseEvent('click', { bubbles: true })
+			actionCell.dispatchEvent(event)
+			await nextTick()
+
+			expect(confirmFn).toHaveBeenCalled()
+		})
 	})
 
-	it('returns null when data-rowindex is missing', async () => {
-		Registry._root = undefined as any
-		const registry = new Registry()
-		const stonecrop = new Stonecrop(registry)
+	describe('getRecordIdFromRow helper', () => {
+		it('extracts record ID using data-rowindex attribute', async () => {
+			const registry = new Registry()
+			const stonecrop = new Stonecrop(registry)
 
-		const doctype = buildDoctype('task', 'draft', {
-			draft: { on: { SUBMIT: 'submitted' } },
-			submitted: { type: 'final' },
-		})
-		registry.addDoctype(doctype)
-		stonecrop.addRecord('task', 'rec-1', { id: 'rec-1', title: 'My Task' })
+			const doctype = buildDoctype('task', 'draft', {
+				draft: { on: { SUBMIT: 'submitted' } },
+				submitted: { type: 'final' },
+			})
+			registry.addDoctype(doctype)
+			stonecrop.addRecord('task', 'rec-1', { id: 'rec-1', title: 'My Task' })
+			stonecrop.addRecord('task', 'rec-2', { id: 'rec-2', title: 'Another Task' })
 
-		const navigateFn = vi.fn()
-		const adapter: RouteAdapter = {
-			getCurrentDoctype: () => 'task',
-			getCurrentRecordId: () => '',
-			getCurrentView: () => 'records',
-			navigate: navigateFn,
-		}
+			const adapter: RouteAdapter = {
+				getCurrentDoctype: () => 'task',
+				getCurrentRecordId: () => '',
+				getCurrentView: () => 'records',
+				navigate: vi.fn(),
+			}
 
-		const wrapper = mount(Desktop, {
-			props: { routeAdapter: adapter },
-			global: {
-				plugins: [makeStonecropPlugin(registry, stonecrop)],
-				stubs: {
-					AForm: true,
-					ActionSet: true,
-					SheetNav: true,
-					CommandPalette: true,
+			const wrapper = mount(Desktop, {
+				props: { routeAdapter: adapter },
+				global: {
+					plugins: [makeStonecropPlugin(registry, stonecrop)],
+					stubs: {
+						AForm: true,
+						ActionSet: true,
+						SheetNav: true,
+						CommandPalette: true,
+					},
 				},
-			},
+			})
+
+			await nextTick()
+
+			const div = wrapper.find('.desktop')
+			const table = document.createElement('table')
+			const row = table.insertRow()
+			const idCell = row.insertCell()
+			idCell.textContent = 'rec-2'
+			idCell.setAttribute('data-rowindex', '1')
+			const actionCell = row.insertCell()
+			actionCell.textContent = 'Edit'
+			div.element.appendChild(table)
+
+			const navigateFn = vi.fn()
+			await wrapper.setProps({ routeAdapter: { ...adapter, navigate: navigateFn } })
+			await nextTick()
+
+			const event = new MouseEvent('click', { bubbles: true })
+			actionCell.dispatchEvent(event)
+			await nextTick()
+
+			expect(navigateFn).toHaveBeenCalledWith(expect.objectContaining({ recordId: 'rec-2' }))
 		})
 
-		await nextTick()
+		it('respects custom recordIdField prop', async () => {
+			const registry = new Registry()
+			const stonecrop = new Stonecrop(registry)
 
-		const div = wrapper.find('.desktop')
-		const table = document.createElement('table')
-		const row = table.insertRow()
-		const idCell = row.insertCell()
-		idCell.textContent = 'rec-1'
-		const actionCell = row.insertCell()
-		actionCell.textContent = 'Edit'
-		div.element.appendChild(table)
-
-		const event = new MouseEvent('click', { bubbles: true })
-		actionCell.dispatchEvent(event)
-		await nextTick()
-
-		expect(navigateFn).not.toHaveBeenCalled()
-	})
-
-	it('returns null when data-rowindex is invalid', async () => {
-		Registry._root = undefined as any
-		const registry = new Registry()
-		const stonecrop = new Stonecrop(registry)
-
-		const doctype = buildDoctype('task', 'draft', {
-			draft: { on: { SUBMIT: 'submitted' } },
-			submitted: { type: 'final' },
-		})
-		registry.addDoctype(doctype)
-		stonecrop.addRecord('task', 'rec-1', { id: 'rec-1', title: 'My Task' })
-
-		const navigateFn = vi.fn()
-		const adapter: RouteAdapter = {
-			getCurrentDoctype: () => 'task',
-			getCurrentRecordId: () => '',
-			getCurrentView: () => 'records',
-			navigate: navigateFn,
-		}
-
-		const wrapper = mount(Desktop, {
-			props: { routeAdapter: adapter },
-			global: {
-				plugins: [makeStonecropPlugin(registry, stonecrop)],
-				stubs: {
-					AForm: true,
-					ActionSet: true,
-					SheetNav: true,
-					CommandPalette: true,
+			const doctype = buildDoctype(
+				'task',
+				'draft',
+				{
+					draft: { on: { SUBMIT: 'submitted' } },
+					submitted: { type: 'final' },
 				},
-			},
+				[{ fieldname: 'custom_id', fieldtype: 'Data', label: 'Custom ID', component: 'ATextInput' }]
+			)
+			registry.addDoctype(doctype)
+			stonecrop.addRecord('task', 'rec-1', { id: 'rec-1', custom_id: 'custom-123', title: 'My Task' })
+
+			const navigateFn = vi.fn()
+			const adapter: RouteAdapter = {
+				getCurrentDoctype: () => 'task',
+				getCurrentRecordId: () => '',
+				getCurrentView: () => 'records',
+				navigate: navigateFn,
+			}
+
+			const wrapper = mount(Desktop, {
+				props: { routeAdapter: adapter, recordIdField: 'custom_id' },
+				global: {
+					plugins: [makeStonecropPlugin(registry, stonecrop)],
+					stubs: {
+						AForm: true,
+						ActionSet: true,
+						SheetNav: true,
+						CommandPalette: true,
+					},
+				},
+			})
+
+			await nextTick()
+
+			const div = wrapper.find('.desktop')
+			const table = document.createElement('table')
+			const row = table.insertRow()
+			const idCell = row.insertCell()
+			idCell.textContent = 'custom-123'
+			idCell.setAttribute('data-rowindex', '0')
+			const actionCell = row.insertCell()
+			actionCell.textContent = 'Edit'
+			div.element.appendChild(table)
+
+			const event = new MouseEvent('click', { bubbles: true })
+			actionCell.dispatchEvent(event)
+			await nextTick()
+
+			expect(navigateFn).toHaveBeenCalledWith(expect.objectContaining({ recordId: 'custom-123' }))
 		})
 
-		await nextTick()
+		it('returns null when data-rowindex is missing', async () => {
+			const registry = new Registry()
+			const stonecrop = new Stonecrop(registry)
 
-		const div = wrapper.find('.desktop')
-		const table = document.createElement('table')
-		const row = table.insertRow()
-		const idCell = row.insertCell()
-		idCell.textContent = 'rec-1'
-		idCell.setAttribute('data-rowindex', 'invalid')
-		const actionCell = row.insertCell()
-		actionCell.textContent = 'Edit'
-		div.element.appendChild(table)
+			const doctype = buildDoctype('task', 'draft', {
+				draft: { on: { SUBMIT: 'submitted' } },
+				submitted: { type: 'final' },
+			})
+			registry.addDoctype(doctype)
+			stonecrop.addRecord('task', 'rec-1', { id: 'rec-1', title: 'My Task' })
 
-		const event = new MouseEvent('click', { bubbles: true })
-		actionCell.dispatchEvent(event)
-		await nextTick()
+			const navigateFn = vi.fn()
+			const adapter: RouteAdapter = {
+				getCurrentDoctype: () => 'task',
+				getCurrentRecordId: () => '',
+				getCurrentView: () => 'records',
+				navigate: navigateFn,
+			}
 
-		expect(navigateFn).not.toHaveBeenCalled()
+			const wrapper = mount(Desktop, {
+				props: { routeAdapter: adapter },
+				global: {
+					plugins: [makeStonecropPlugin(registry, stonecrop)],
+					stubs: {
+						AForm: true,
+						ActionSet: true,
+						SheetNav: true,
+						CommandPalette: true,
+					},
+				},
+			})
+
+			await nextTick()
+
+			const div = wrapper.find('.desktop')
+			const table = document.createElement('table')
+			const row = table.insertRow()
+			const idCell = row.insertCell()
+			idCell.textContent = 'rec-1'
+			const actionCell = row.insertCell()
+			actionCell.textContent = 'Edit'
+			div.element.appendChild(table)
+
+			const event = new MouseEvent('click', { bubbles: true })
+			actionCell.dispatchEvent(event)
+			await nextTick()
+
+			expect(navigateFn).not.toHaveBeenCalled()
+		})
+
+		it('returns null when data-rowindex is invalid', async () => {
+			const registry = new Registry()
+			const stonecrop = new Stonecrop(registry)
+
+			const doctype = buildDoctype('task', 'draft', {
+				draft: { on: { SUBMIT: 'submitted' } },
+				submitted: { type: 'final' },
+			})
+			registry.addDoctype(doctype)
+			stonecrop.addRecord('task', 'rec-1', { id: 'rec-1', title: 'My Task' })
+
+			const navigateFn = vi.fn()
+			const adapter: RouteAdapter = {
+				getCurrentDoctype: () => 'task',
+				getCurrentRecordId: () => '',
+				getCurrentView: () => 'records',
+				navigate: navigateFn,
+			}
+
+			const wrapper = mount(Desktop, {
+				props: { routeAdapter: adapter },
+				global: {
+					plugins: [makeStonecropPlugin(registry, stonecrop)],
+					stubs: {
+						AForm: true,
+						ActionSet: true,
+						SheetNav: true,
+						CommandPalette: true,
+					},
+				},
+			})
+
+			await nextTick()
+
+			const div = wrapper.find('.desktop')
+			const table = document.createElement('table')
+			const row = table.insertRow()
+			const idCell = row.insertCell()
+			idCell.textContent = 'rec-1'
+			idCell.setAttribute('data-rowindex', 'invalid')
+			const actionCell = row.insertCell()
+			actionCell.textContent = 'Edit'
+			div.element.appendChild(table)
+
+			const event = new MouseEvent('click', { bubbles: true })
+			actionCell.dispatchEvent(event)
+			await nextTick()
+
+			expect(navigateFn).not.toHaveBeenCalled()
+		})
 	})
 })
 
-// ---------------------------------------------------------------------------
-// Desktop – command palette search commands
-// ---------------------------------------------------------------------------
-
-describe('Desktop command palette search', () => {
+describe('Desktop command palette', () => {
 	it('provides search commands that can be queried', async () => {
-		Registry._root = undefined as any
 		const registry = new Registry()
 		const stonecrop = new Stonecrop(registry)
 
@@ -1383,27 +1575,22 @@ describe('Desktop command palette search', () => {
 
 		await nextTick()
 
-		// Get the CommandPalette stub and check its search prop
 		const commandPalette = wrapper.findComponent({ name: 'CommandPalette' })
 		const searchFn = commandPalette.props('search') as (query: string) => any[]
 
 		if (typeof searchFn === 'function') {
-			// Empty query returns all commands
 			const allCommands = searchFn('')
 			expect(allCommands.length).toBeGreaterThan(0)
 
-			// Filtered query
 			const homeCommands = searchFn('home')
 			expect(homeCommands.length).toBeGreaterThan(0)
 
-			// No match
 			const noMatch = searchFn('zzzzzyyyy')
 			expect(noMatch.length).toBe(0)
 		}
 	})
 
 	it('executes a command from the command palette', async () => {
-		Registry._root = undefined as any
 		const registry = new Registry()
 		const stonecrop = new Stonecrop(registry)
 		const navigateFn = vi.fn()
@@ -1430,11 +1617,9 @@ describe('Desktop command palette search', () => {
 
 		await nextTick()
 
-		// Trigger palette select event with a command
 		const commandPalette = wrapper.findComponent({ name: 'CommandPalette' })
 		const selectHandler = commandPalette.props('onSelect') as ((cmd: any) => void) | undefined
 		if (selectHandler) {
-			// Get a command from the search function
 			const searchFn = commandPalette.props('search') as (query: string) => any[]
 			const commands = searchFn('')
 			if (commands.length > 0) {
@@ -1443,7 +1628,6 @@ describe('Desktop command palette search', () => {
 			}
 		}
 
-		// Alternatively, emit the select event directly
 		await commandPalette.vm.$emit('select', {
 			title: 'Go Home',
 			description: 'Navigate to the home page',
@@ -1451,232 +1635,66 @@ describe('Desktop command palette search', () => {
 		})
 		await nextTick()
 
-		// The palette should close
 		expect(commandPalette.props('isOpen')).toBe(false)
 	})
-})
 
-// ---------------------------------------------------------------------------
-// Desktop – recordIdField prop
-// ---------------------------------------------------------------------------
-
-describe('Desktop recordIdField prop', () => {
-	it('uses custom recordIdField for table row ID', async () => {
-		Registry._root = undefined as any
+	it('executes "View Records" command and navigates to records view', async () => {
 		const registry = new Registry()
 		const stonecrop = new Stonecrop(registry)
+		const navigateFn = vi.fn()
 
-		// Add uuid field to the doctype schema
-		const doctype = buildDoctype(
-			'task',
-			'draft',
-			{
-				draft: { on: { SUBMIT: 'submitted' } },
-				submitted: { type: 'final' },
-			},
-			[{ fieldname: 'uuid', fieldtype: 'Data', label: 'UUID', component: 'ATextInput' }]
-		)
-		registry.addDoctype(doctype)
-		// Record has both 'id' (integer) and 'uuid' (canonical ID)
-		stonecrop.addRecord('task', 'task-1', { id: 1, uuid: 'uuid-abc-123', title: 'My Task' })
-
-		const adapter: RouteAdapter = {
-			getCurrentDoctype: () => 'task',
-			getCurrentRecordId: () => '',
-			getCurrentView: () => 'records',
-			navigate: vi.fn(),
-		}
-
-		const wrapper = mount(Desktop, {
-			props: { routeAdapter: adapter, recordIdField: 'uuid' },
-			global: {
-				plugins: [makeStonecropPlugin(registry, stonecrop)],
-				stubs: {
-					AForm: true,
-					ActionSet: true,
-					SheetNav: true,
-					CommandPalette: true,
-				},
-			},
-		})
-
-		await nextTick()
-
-		// Check that the AForm received schema with uuid as the ID column
-		const aform = wrapper.findComponent({ name: 'AForm' })
-		const schema = aform.props('schema') as any[]
-		expect(schema).toBeTruthy()
-		expect(schema.length).toBeGreaterThan(0)
-
-		// The first column should be 'uuid' (the recordIdField)
-		const tableSchema = schema[0]
-		expect(tableSchema.component).toBe('ATable')
-		const columns = tableSchema.columns as any[]
-		expect(columns[0].name).toBe('uuid')
-
-		// The row ID should use the uuid field
-		const rows = tableSchema.rows as any[]
-		expect(rows[0].id).toBe('uuid-abc-123')
-	})
-
-	it('defaults recordIdField to "id" when not specified', async () => {
-		Registry._root = undefined as any
-		const registry = new Registry()
-		const stonecrop = new Stonecrop(registry)
-
-		const doctype = buildDoctype('task', 'draft', {
-			draft: { on: { SUBMIT: 'submitted' } },
-			submitted: { type: 'final' },
-		})
-		registry.addDoctype(doctype)
-		stonecrop.addRecord('task', 'task-1', { id: 'task-1', title: 'My Task' })
-
-		const adapter: RouteAdapter = {
-			getCurrentDoctype: () => 'task',
-			getCurrentRecordId: () => '',
-			getCurrentView: () => 'records',
-			navigate: vi.fn(),
-		}
-
-		const wrapper = mount(Desktop, {
-			props: { routeAdapter: adapter },
-			global: {
-				plugins: [makeStonecropPlugin(registry, stonecrop)],
-				stubs: {
-					AForm: true,
-					ActionSet: true,
-					SheetNav: true,
-					CommandPalette: true,
-				},
-			},
-		})
-
-		await nextTick()
-
-		// Check that the AForm received schema with 'id' as the first column (default)
-		const aform = wrapper.findComponent({ name: 'AForm' })
-		const schema = aform.props('schema') as any[]
-		expect(schema).toBeTruthy()
-
-		const tableSchema = schema[0]
-		const columns = tableSchema.columns as any[]
-		expect(columns[0].name).toBe('id')
-	})
-})
-
-// ---------------------------------------------------------------------------
-// Desktop – load-records and load-record events
-// ---------------------------------------------------------------------------
-
-describe('Desktop load events', () => {
-	let registry: Registry
-	let stonecrop: Stonecrop
-
-	beforeEach(() => {
-		Registry._root = undefined as any
-		registry = new Registry()
-		stonecrop = new Stonecrop(registry)
-
-		const doctype = buildDoctype('task', 'draft', {
-			draft: { on: { SUBMIT: 'submitted' } },
-			submitted: { type: 'final' },
-		})
-		registry.addDoctype(doctype)
-	})
-
-	it('emits "load-records" when navigating to records view', async () => {
-		const adapter: RouteAdapter = {
-			getCurrentDoctype: () => 'task',
-			getCurrentRecordId: () => '',
-			getCurrentView: () => 'records',
-			navigate: vi.fn(),
-		}
-
-		const wrapper = mount(Desktop, {
-			props: { routeAdapter: adapter },
-			global: {
-				plugins: [makeStonecropPlugin(registry, stonecrop)],
-				stubs: {
-					AForm: true,
-					ActionSet: true,
-					SheetNav: true,
-					CommandPalette: true,
-				},
-			},
-		})
-
-		await nextTick()
-
-		const emitted = wrapper.emitted('load-records')
-		expect(emitted).toBeTruthy()
-		expect(emitted![0][0]).toMatchObject({ doctype: 'task' })
-	})
-
-	it('emits "load-record" when navigating to record view', async () => {
-		stonecrop.addRecord('task', 'task-1', { id: 'task-1', title: 'My Task' })
-
-		const adapter: RouteAdapter = {
-			getCurrentDoctype: () => 'task',
-			getCurrentRecordId: () => 'task-1',
-			getCurrentView: () => 'record',
-			navigate: vi.fn(),
-		}
-
-		const wrapper = mount(Desktop, {
-			props: { routeAdapter: adapter },
-			global: {
-				plugins: [makeStonecropPlugin(registry, stonecrop)],
-				stubs: {
-					AForm: true,
-					ActionSet: true,
-					SheetNav: true,
-					CommandPalette: true,
-				},
-			},
-		})
-
-		await nextTick()
-
-		const emitted = wrapper.emitted('load-record')
-		expect(emitted).toBeTruthy()
-		expect(emitted![0][0]).toMatchObject({ doctype: 'task', recordId: 'task-1' })
-	})
-
-	it('emits load-record even for new records (host app decides whether to fetch)', async () => {
-		const adapter: RouteAdapter = {
-			getCurrentDoctype: () => 'task',
-			getCurrentRecordId: () => 'new-123',
-			getCurrentView: () => 'record',
-			navigate: vi.fn(),
-		}
-
-		const wrapper = mount(Desktop, {
-			props: { routeAdapter: adapter },
-			global: {
-				plugins: [makeStonecropPlugin(registry, stonecrop)],
-				stubs: {
-					AForm: true,
-					ActionSet: true,
-					SheetNav: true,
-					CommandPalette: true,
-				},
-			},
-		})
-
-		await nextTick()
-
-		// load-record is emitted for new records too - host app decides whether to fetch
-		const emitted = wrapper.emitted('load-record')
-		expect(emitted).toBeTruthy()
-		expect(emitted![0][0]).toMatchObject({ doctype: 'task', recordId: 'new-123' })
-	})
-
-	it('emits load-records when view changes from doctypes to records', async () => {
 		const adapter: RouteAdapter = {
 			getCurrentDoctype: () => '',
 			getCurrentRecordId: () => '',
 			getCurrentView: () => 'doctypes',
-			navigate: vi.fn(),
+			navigate: navigateFn,
+		}
+
+		const wrapper = mount(Desktop, {
+			props: { routeAdapter: adapter, availableDoctypes: ['task'] },
+			global: {
+				plugins: [makeStonecropPlugin(registry, stonecrop)],
+				stubs: {
+					AForm: true,
+					ActionSet: true,
+					SheetNav: true,
+					CommandPalette: true,
+				},
+			},
+		})
+
+		await nextTick()
+
+		const commandPalette = wrapper.findComponent({ name: 'CommandPalette' })
+		const searchFn = commandPalette.props('search') as (query: string) => any[]
+		const commands = searchFn('View Task')
+
+		if (commands.length > 0) {
+			const selectHandler = commandPalette.props('onSelect') as ((cmd: any) => void) | undefined
+			if (selectHandler) {
+				selectHandler(commands[0])
+				await nextTick()
+				expect(navigateFn).toHaveBeenCalled()
+			}
+		}
+	})
+
+	it('executes "Create New" command', async () => {
+		const registry = new Registry()
+		const stonecrop = new Stonecrop(registry)
+		const navigateFn = vi.fn()
+
+		const doctype = buildDoctype('task', 'draft', {
+			draft: { on: { SUBMIT: 'submitted' } },
+			submitted: { type: 'final' },
+		})
+		registry.addDoctype(doctype)
+
+		const adapter: RouteAdapter = {
+			getCurrentDoctype: () => 'task',
+			getCurrentRecordId: () => '',
+			getCurrentView: () => 'records',
+			navigate: navigateFn,
 		}
 
 		const wrapper = mount(Desktop, {
@@ -1694,22 +1712,17 @@ describe('Desktop load events', () => {
 
 		await nextTick()
 
-		// No load-records emitted on doctypes view
-		expect(wrapper.emitted('load-records')).toBeFalsy()
+		const commandPalette = wrapper.findComponent({ name: 'CommandPalette' })
+		const searchFn = commandPalette.props('search') as (query: string) => any[]
+		const commands = searchFn('Create New Task')
 
-		// Simulate navigation to records view
-		const recordsAdapter: RouteAdapter = {
-			getCurrentDoctype: () => 'task',
-			getCurrentRecordId: () => '',
-			getCurrentView: () => 'records',
-			navigate: vi.fn(),
+		if (commands.length > 0) {
+			const selectHandler = commandPalette.props('onSelect') as ((cmd: any) => void) | undefined
+			if (selectHandler) {
+				selectHandler(commands[0])
+				await nextTick()
+				expect(navigateFn).toHaveBeenCalledWith(expect.objectContaining({ view: 'record' }))
+			}
 		}
-
-		await wrapper.setProps({ routeAdapter: recordsAdapter })
-		await nextTick()
-
-		const emitted = wrapper.emitted('load-records')
-		expect(emitted).toBeTruthy()
-		expect(emitted![emitted!.length - 1][0]).toMatchObject({ doctype: 'task' })
 	})
 })
