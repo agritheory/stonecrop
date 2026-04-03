@@ -65,6 +65,8 @@ const methods = {
 
 export { queries, typeDefs, methods }
 export { StonecropClient } from './client'
+export { buildRecordQuery, buildListQuery } from './query'
 export type { StonecropClientOptions, DoctypeContext } from './client'
+export type { BuildRecordQueryOptions, BuildListQueryOptions } from './query'
 export type { Meta, MetaParser, MetaResponse } from './types'
 export type { DoctypeMeta } from '@stonecrop/schema'

@@ -30,48 +30,6 @@ export { RELATION_FIELDTYPES }
 
 ## Functions
 
-### buildListQuery
-
-Build a GraphQL connection query to fetch a list of records. Only declares variables ($limit, $offset, $orderBy) that are actually used in the query, avoiding GraphQL spec §5.8.3 violations from unused variable declarations. Excludes Link and Doctype relation fields from the selection set.
-
-**Signature:**
-
-```typescript
-declare function buildListQuery(meta: DoctypeMeta, args: {
-    limit?: number;
-    offset?: number;
-    orderBy?: string;
-}, connectionFieldName: (t: string) => string, orderByTypeName: (t: string) => string): string;
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| meta | `DoctypeMeta` |  |
-| args | `{ limit?: number; offset?: number; orderBy?: string; }` |  |
-| connectionFieldName | `(t: string) => string` |  |
-| orderByTypeName | `(t: string) => string` |  |
-
-### buildRecordQuery
-
-Build a GraphQL query to fetch a single record by ID. Excludes Link and Doctype relation fields from the selection set. The PK argument name and type are configurable via `StonecropInflectionConfig.recordArgName` and `StonecropInflectionConfig.recordArgType` to match the target schema's conventions (e.g. `rowId: UUID!` for PostGraphile Amber with row_id columns).
-
-**Signature:**
-
-```typescript
-declare function buildRecordQuery(meta: DoctypeMeta, recordFieldName: (t: string) => string, recordArgName: (t: string) => string, recordArgType: (t: string) => string): string;
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| meta | `DoctypeMeta` |  |
-| recordFieldName | `(t: string) => string` |  |
-| recordArgName | `(t: string) => string` |  |
-| recordArgType | `(t: string) => string` |  |
-
 ### clearHandlers
 
 Clear all registered handlers

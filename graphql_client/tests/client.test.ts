@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
 import { StonecropClient } from '../src/client'
+import { buildRecordQuery, buildListQuery } from '../src/query'
 import type { DoctypeRef, DoctypeMeta } from '@stonecrop/schema'
 
 interface GraphQLRequestBody {
@@ -331,5 +332,284 @@ describe('StonecropClient.clearMetaCache', () => {
 		await client.getMeta({ doctype: 'Task' })
 
 		expect(mockFetch).toHaveBeenCalledTimes(2)
+	})
+})
+
+// ===========================================================================
+// buildRecordQuery
+// ===========================================================================
+
+const recipeMeta: DoctypeMeta = {
+	name: 'Recipe',
+	slug: 'recipe',
+	tableName: 'recipe',
+	fields: [
+		{ fieldname: 'id', fieldtype: 'Data', label: 'ID' },
+		{ fieldname: 'name', fieldtype: 'Data', label: 'Name' },
+		{ fieldname: 'status', fieldtype: 'Data', label: 'Status' },
+	],
+	links: {
+		tasks: { target: 'recipe-task', cardinality: 'noneOrMany', backlink: 'recipe' },
+		supersededBy: { target: 'recipe', cardinality: 'atMostOne', backlink: 'supersededBy' },
+	},
+}
+
+const recipeTaskMeta: DoctypeMeta = {
+	name: 'RecipeTask',
+	slug: 'recipe-task',
+	tableName: 'recipe_task',
+	fields: [
+		{ fieldname: 'id', fieldtype: 'Data', label: 'ID' },
+		{ fieldname: 'name', fieldtype: 'Data', label: 'Name' },
+		{ fieldname: 'description', fieldtype: 'Data', label: 'Description' },
+	],
+	links: {
+		recipe: { target: 'recipe', cardinality: 'one', backlink: 'tasks' },
+	},
+}
+
+const registry = new Map<string, DoctypeMeta>([
+	['recipe', recipeMeta],
+	['recipe-task', recipeTaskMeta],
+])
+
+const recordFieldName = (t: string) => `${t.charAt(0).toUpperCase() + t.slice(1)}ById`
+const recordArgName = () => 'id'
+const recordArgType = () => 'UUID!'
+
+describe('buildRecordQuery', () => {
+	it('returns scalar-only query when includeNested is falsy', () => {
+		const query = buildRecordQuery(recipeMeta, recordFieldName, recordArgName, recordArgType)
+		expect(query).toContain('name')
+		expect(query).toContain('status')
+		expect(query).not.toContain('tasks')
+		expect(query).not.toContain('supersededBy')
+	})
+
+	it('includes connection sub-selection for noneOrMany links', () => {
+		const query = buildRecordQuery(recipeMeta, recordFieldName, recordArgName, recordArgType, {
+			includeNested: true,
+			doctypeRegistry: registry,
+		})
+		expect(query).toContain('RecipeTasksByRecipeId')
+		expect(query).toContain('nodes')
+		expect(query).toContain('description')
+	})
+
+	it('includes direct object sub-selection for atMostOne links', () => {
+		const query = buildRecordQuery(recipeMeta, recordFieldName, recordArgName, recordArgType, {
+			includeNested: true,
+			doctypeRegistry: registry,
+		})
+		expect(query).toContain('supersededBy {')
+		expect(query).not.toContain('supersededBysBy')
+	})
+
+	it('respects seen Set to prevent infinite recursion on circular links', () => {
+		const query = buildRecordQuery(recipeMeta, recordFieldName, recordArgName, recordArgType, {
+			includeNested: true,
+			doctypeRegistry: registry,
+		})
+		// recipe → recipe-task → recipe (seen, skipped)
+		expect(query).toContain('RecipeTasksByRecipeId')
+		// Should not include nested recipe sub-selection (circular)
+		expect(query.match(/RecipeById/g) || []).toHaveLength(1) // only the outermost
+	})
+
+	it('respects maxDepth parameter', () => {
+		const query = buildRecordQuery(recipeMeta, recordFieldName, recordArgName, recordArgType, {
+			includeNested: true,
+			doctypeRegistry: registry,
+			maxDepth: 1,
+		})
+		expect(query).toContain('RecipeTasksByRecipeId')
+		// RecipeTask's links should not be included (depth 1 limit)
+		expect(query).not.toContain('recipe {')
+	})
+
+	it('filters to named fieldnames when includeNested is string[]', () => {
+		const query = buildRecordQuery(recipeMeta, recordFieldName, recordArgName, recordArgType, {
+			includeNested: ['supersededBy'],
+			doctypeRegistry: registry,
+		})
+		expect(query).toContain('supersededBy {')
+		expect(query).not.toContain('RecipeTasksByRecipeId')
+	})
+
+	it('returns scalar-only query when includeNested is truthy but doctypeRegistry is absent', () => {
+		const query = buildRecordQuery(recipeMeta, recordFieldName, recordArgName, recordArgType, {
+			includeNested: true,
+		})
+		expect(query).toContain('name')
+		expect(query).not.toContain('RecipeTasksByRecipeId')
+	})
+})
+
+// ===========================================================================
+// buildListQuery
+// ===========================================================================
+
+const connectionFieldName = (t: string) => `all${t.charAt(0).toUpperCase() + t.slice(1)}`
+const orderByTypeName = (t: string) => `${t.charAt(0).toUpperCase() + t.slice(1)}OrderBy`
+
+describe('buildListQuery', () => {
+	it('generates a query with no variables when no options', () => {
+		const query = buildListQuery(recipeMeta, connectionFieldName, orderByTypeName)
+		expect(query).toContain('allRecipe')
+		expect(query).toContain('id')
+		expect(query).toContain('name')
+		expect(query).toContain('status')
+		expect(query).not.toContain('$limit')
+		expect(query).not.toContain('$offset')
+		expect(query).not.toContain('$orderBy')
+	})
+
+	it('generates a query with limit', () => {
+		const query = buildListQuery(recipeMeta, connectionFieldName, orderByTypeName, { limit: 10 })
+		expect(query).toContain('$limit: Int')
+		expect(query).toContain('first: $limit')
+		expect(query).not.toContain('$offset')
+		expect(query).not.toContain('$orderBy')
+	})
+
+	it('generates a query with limit and offset', () => {
+		const query = buildListQuery(recipeMeta, connectionFieldName, orderByTypeName, { limit: 10, offset: 20 })
+		expect(query).toContain('$limit: Int')
+		expect(query).toContain('$offset: Int')
+		expect(query).toContain('first: $limit')
+		expect(query).toContain('offset: $offset')
+		expect(query).not.toContain('$orderBy')
+	})
+
+	it('generates a query with all variables', () => {
+		const query = buildListQuery(recipeMeta, connectionFieldName, orderByTypeName, {
+			limit: 10,
+			offset: 20,
+			orderBy: 'NAME_ASC',
+		})
+		expect(query).toContain('$limit: Int')
+		expect(query).toContain('$offset: Int')
+		expect(query).toContain('$orderBy: [RecipeOrderBy!]')
+		expect(query).toContain('orderBy: $orderBy')
+	})
+
+	it('excludes Link and Doctype fields from selection', () => {
+		const query = buildListQuery(recipeMeta, connectionFieldName, orderByTypeName)
+		expect(query).toContain('name')
+		expect(query).not.toContain('tasks')
+		expect(query).not.toContain('supersededBy')
+	})
+})
+
+// ===========================================================================
+// getRecordWithNested
+// ===========================================================================
+
+describe('StonecropClient.getRecordWithNested', () => {
+	it('returns null when meta is not found', async () => {
+		const client = new StonecropClient({ endpoint: ENDPOINT })
+		mockFetch.mockReturnValue(makeFetchResponse({ stonecropMeta: null }))
+
+		const result = await client.getRecordWithNested({ name: 'Unknown' }, '1')
+		expect(result).toBeNull()
+	})
+
+	it('fetches a record with nested data and merges connection results', async () => {
+		const client = new StonecropClient({ endpoint: ENDPOINT })
+
+		// First call: getMeta
+		// Second call: getRecordWithNested query
+		mockFetch.mockReturnValueOnce(makeFetchResponse({ stonecropMeta: recipeMeta })).mockReturnValueOnce(
+			makeFetchResponse({
+				recipeById: {
+					id: 'r1',
+					name: 'Test Recipe',
+					status: 'active',
+					RecipeTasksByRecipeId: {
+						nodes: [
+							{ id: 't1', name: 'Task 1', description: 'Desc 1' },
+							{ id: 't2', name: 'Task 2', description: 'Desc 2' },
+						],
+					},
+				},
+			})
+		)
+
+		const doctypeRegistry = new Map<string, DoctypeMeta>([
+			['recipe', recipeMeta],
+			['recipe-task', recipeTaskMeta],
+		])
+
+		const result = await client.getRecordWithNested({ name: 'Recipe' }, 'r1', {
+			includeNested: true,
+			doctypeRegistry,
+		})
+
+		expect(result).not.toBeNull()
+		expect(result!.name).toBe('Test Recipe')
+		expect(result!.tasks).toEqual([
+			{ id: 't1', name: 'Task 1', description: 'Desc 1' },
+			{ id: 't2', name: 'Task 2', description: 'Desc 2' },
+		])
+		// Connection field should be removed after merge
+		expect(result!.RecipeTasksByRecipeId).toBeUndefined()
+	})
+
+	it('returns empty array for noneOrMany link with no nodes', async () => {
+		const client = new StonecropClient({ endpoint: ENDPOINT })
+
+		mockFetch.mockReturnValueOnce(makeFetchResponse({ stonecropMeta: recipeMeta })).mockReturnValueOnce(
+			makeFetchResponse({
+				recipeById: {
+					id: 'r1',
+					name: 'Test Recipe',
+					status: 'active',
+					RecipeTasksByRecipeId: { nodes: [] },
+				},
+			})
+		)
+
+		const doctypeRegistry = new Map<string, DoctypeMeta>([
+			['recipe', recipeMeta],
+			['recipe-task', recipeTaskMeta],
+		])
+
+		const result = await client.getRecordWithNested({ name: 'Recipe' }, 'r1', {
+			includeNested: true,
+			doctypeRegistry,
+		})
+
+		expect(result!.tasks).toEqual([])
+	})
+
+	it('returns record without merge when no links or includeNested is false', async () => {
+		const client = new StonecropClient({ endpoint: ENDPOINT })
+
+		mockFetch.mockReturnValueOnce(makeFetchResponse({ stonecropMeta: taskMeta })).mockReturnValueOnce(
+			makeFetchResponse({
+				taskById: {
+					id: 't1',
+					title: 'My Task',
+				},
+			})
+		)
+
+		const result = await client.getRecordWithNested({ name: 'Task' }, 't1')
+
+		expect(result).not.toBeNull()
+		expect(result!.title).toBe('My Task')
+	})
+
+	it('returns null when record is not found in query result', async () => {
+		const client = new StonecropClient({ endpoint: ENDPOINT })
+
+		mockFetch.mockReturnValueOnce(makeFetchResponse({ stonecropMeta: taskMeta })).mockReturnValueOnce(
+			makeFetchResponse({
+				taskById: null,
+			})
+		)
+
+		const result = await client.getRecordWithNested({ name: 'Task' }, 't1')
+		expect(result).toBeNull()
 	})
 })

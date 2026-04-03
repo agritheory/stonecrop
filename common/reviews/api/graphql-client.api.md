@@ -9,6 +9,26 @@ import type { DoctypeContext } from '@stonecrop/schema';
 import { DoctypeMeta } from '@stonecrop/schema';
 import type { DoctypeRef } from '@stonecrop/schema';
 
+// @public
+export function buildListQuery(meta: DoctypeMeta, connectionFieldName: (t: string) => string, orderByTypeName: (t: string) => string, options?: BuildListQueryOptions): string;
+
+// @public
+export interface BuildListQueryOptions {
+    limit?: number;
+    offset?: number;
+    orderBy?: string;
+}
+
+// @public
+export function buildRecordQuery(meta: DoctypeMeta, recordFieldName: (t: string) => string, recordArgName: (t: string) => string, recordArgType: (t: string) => string, options?: BuildRecordQueryOptions): string;
+
+// @public
+export interface BuildRecordQueryOptions {
+    doctypeRegistry?: Map<string, DoctypeMeta>;
+    includeNested?: boolean | string[];
+    maxDepth?: number;
+}
+
 export { DoctypeContext }
 
 export { DoctypeMeta }
@@ -70,6 +90,7 @@ export class StonecropClient implements DataClient {
         limit?: number;
         offset?: number;
     }): Promise<Record<string, unknown>[]>;
+    getRecordWithNested(doctype: DoctypeRef, recordId: string, options?: BuildRecordQueryOptions): Promise<Record<string, unknown> | null>;
     mutate<T = unknown>(mutation: string, variables?: Record<string, unknown>): Promise<T>;
     query<T = unknown>(query: string, variables?: Record<string, unknown>): Promise<T>;
     runAction(doctype: DoctypeRef, action: string, args?: unknown[]): Promise<{

@@ -19,16 +19,6 @@ export interface ActionContext {
 export type ActionHandler = (args: unknown[], context: ActionContext) => Promise<unknown>;
 
 // @public
-export function buildListQuery(meta: DoctypeMeta, args: {
-    limit?: number;
-    offset?: number;
-    orderBy?: string;
-}, connectionFieldName: (t: string) => string, orderByTypeName: (t: string) => string): string;
-
-// @public
-export function buildRecordQuery(meta: DoctypeMeta, recordFieldName: (t: string) => string, recordArgName: (t: string) => string, recordArgType: (t: string) => string): string;
-
-// @public
 export const builtinHandlers: Record<string, ActionHandler>;
 
 // @public

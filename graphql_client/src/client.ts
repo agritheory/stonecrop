@@ -1,6 +1,23 @@
 import type { DataClient, DoctypeMeta, DoctypeContext, DoctypeRef } from '@stonecrop/schema'
+import { snakeToCamel, toPascalCase } from '@stonecrop/schema'
+import pluralize from 'pluralize'
+
+import { buildRecordQuery, type BuildRecordQueryOptions } from './query'
 
 export type { DoctypeContext, DoctypeRef }
+
+/**
+ * Default inflection functions for PostGraphile Amber preset conventions.
+ * These match the middleware's default inflection so the client builds
+ * queries the server can execute.
+ * @internal
+ */
+const defaultRecordFieldName = (tableName: string): string => {
+	const singularName = pluralize.singular(tableName)
+	return `${snakeToCamel(singularName)}ById`
+}
+const defaultRecordArgName = (_tableName: string): string => 'id'
+const defaultRecordArgType = (_tableName: string): string => 'UUID!'
 
 /**
  * Options for creating a Stonecrop client
@@ -203,6 +220,48 @@ export class StonecropClient implements DataClient {
 	}
 
 	/**
+	 * Get a single record with nested data from descendant links.
+	 *
+	 * Uses `buildRecordQuery()` to generate a GraphQL query that includes
+	 * sub-selections for descendant links declared in the doctype's `links`.
+	 *
+	 * @param doctype - Doctype reference (name and optional slug)
+	 * @param recordId - Record ID to fetch
+	 * @param options - Query options (includeNested, doctypeRegistry, maxDepth)
+	 * @returns Record with nested data merged under link fieldnames, or null
+	 *
+	 * @public
+	 */
+	async getRecordWithNested(
+		doctype: DoctypeRef,
+		recordId: string,
+		options?: BuildRecordQueryOptions
+	): Promise<Record<string, unknown> | null> {
+		// Look up doctype metadata for query building
+		const meta = await this.getMeta({ doctype: doctype.name })
+		if (!meta) return null
+
+		const query = buildRecordQuery(meta, defaultRecordFieldName, defaultRecordArgName, defaultRecordArgType, options)
+
+		const result = await this.query<Record<string, unknown>>(query, {
+			id: recordId,
+		})
+
+		// Extract the record from the query result
+		const queryName = defaultRecordFieldName(meta.tableName || doctype.name)
+		const record = result[queryName] as Record<string, unknown> | undefined
+
+		if (!record) return null
+
+		// Merge nested connection results into flat arrays for many-cardinality links
+		if (meta.links && options?.includeNested && options?.doctypeRegistry) {
+			return mergeNestedResults(record, meta, options.doctypeRegistry)
+		}
+
+		return record
+	}
+
+	/**
 	 * Get multiple records with optional filtering and pagination
 	 * @param doctype - Doctype reference (name and optional slug)
 	 * @param options - Query options (filters, orderBy, limit, offset)
@@ -287,4 +346,58 @@ export class StonecropClient implements DataClient {
 	clearMetaCache(): void {
 		this.metaCache.clear()
 	}
+}
+
+/**
+ * Merge nested connection results into flat arrays.
+ *
+ * For `noneOrMany`/`atLeastOne` links, the query returns `{ nodes: [...] }`.
+ * This flattens them to just `[]` for easier consumption.
+ *
+ * For `one`/`atMostOne` links, the result is already flat.
+ *
+ * @internal
+ */
+function mergeNestedResults(
+	record: Record<string, unknown>,
+	meta: DoctypeMeta,
+	registry: Map<string, DoctypeMeta>
+): Record<string, unknown> {
+	if (!meta.links) return record
+
+	const merged = { ...record }
+
+	for (const [fieldname, link] of Object.entries(meta.links)) {
+		const isMany = link.cardinality === 'noneOrMany' || link.cardinality === 'atLeastOne'
+
+		if (isMany) {
+			// Connection result: { nodes: [...] } → flatten to []
+			const targetMeta = registry.get(link.target)
+			if (!targetMeta) continue
+
+			const connectionField = getConnectionFieldFromTarget(targetMeta, meta.tableName || '')
+			const connectionResult = merged[connectionField] as { nodes?: unknown[] } | undefined
+			if (connectionResult?.nodes) {
+				merged[fieldname] = connectionResult.nodes
+				delete merged[connectionField]
+			} else {
+				merged[fieldname] = []
+				delete merged[connectionField]
+			}
+		}
+		// 'one'/'atMostOne' links are already at the right fieldname
+	}
+
+	return merged
+}
+
+/**
+ * Derive the connection field name matching the query builder's convention.
+ * @internal
+ */
+function getConnectionFieldFromTarget(targetMeta: DoctypeMeta, parentTableName: string): string {
+	const targetPlural = pluralize.plural(targetMeta.tableName || '')
+	const targetPascal = toPascalCase(targetPlural)
+	const fkPascal = toPascalCase(parentTableName) + 'Id'
+	return `${targetPascal}By${fkPascal}`
 }
