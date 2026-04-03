@@ -7,54 +7,18 @@ description: Doctype schema definitions and validation
 
 > This documentation is automatically generated from the TypeScript API.
 
-## Vue Components
-
-### DoctypeMeta
-
-Vue component exported from @stonecrop/schema.
-
-```typescript
-import { DoctypeMeta } from '@stonecrop/schema'
-```
-
-### FieldMeta
-
-Vue component exported from @stonecrop/schema.
-
-```typescript
-import { FieldMeta } from '@stonecrop/schema'
-```
-
-### FieldOptions
-
-Vue component exported from @stonecrop/schema.
-
-```typescript
-import { FieldOptions } from '@stonecrop/schema'
-```
-
-### StonecropFieldType
-
-Vue component exported from @stonecrop/schema.
-
-```typescript
-import { StonecropFieldType } from '@stonecrop/schema'
-```
-
-### WorkflowMeta
-
-Vue component exported from @stonecrop/schema.
-
-```typescript
-import { WorkflowMeta } from '@stonecrop/schema'
-```
-
 ## Other Components
 
 ### ActionDefinition
 
 ```typescript
 export { ActionDefinition }
+```
+
+### Cardinality
+
+```typescript
+export { Cardinality }
 ```
 
 ### DoctypeMeta
@@ -91,6 +55,12 @@ export { GQL_SCALAR_MAP }
 
 ```typescript
 export { INTERNAL_SCALARS }
+```
+
+### LinkDeclaration
+
+```typescript
+export { LinkDeclaration }
 ```
 
 ### StonecropFieldType
@@ -616,6 +586,16 @@ Action definition type inferred from Zod schema
 export type ActionDefinition = z.infer<typeof ActionDefinition>;
 ```
 
+### Cardinality
+
+Cardinality type inferred from Zod schema
+
+**Definition:**
+
+```typescript
+export type Cardinality = z.infer<typeof Cardinality>;
+```
+
 ### DoctypeMeta
 
 Doctype metadata type inferred from Zod schema
@@ -668,6 +648,16 @@ Note: URL fetching is intentionally not supported in the library API. Use the CL
 
 ```typescript
 export type IntrospectionSource = IntrospectionQuery | string;
+```
+
+### LinkDeclaration
+
+Link declaration type inferred from Zod schema
+
+**Definition:**
+
+```typescript
+export type LinkDeclaration = z.infer<typeof LinkDeclaration>;
 ```
 
 ### StonecropFieldType

@@ -120,10 +120,12 @@ export const FieldMeta = z
 
 		/**
 		 * Cardinality for Doctype fields:
-		 * - 'one': 1:1 nested form (default)
-		 * - 'many': 1:many child table
+		 * - 'one': exactly 1 (default)
+		 * - 'atMostOne': 0 or 1
+		 * - 'noneOrMany': 0 or more
+		 * - 'atLeastOne': 1 or more
 		 */
-		cardinality: z.enum(['one', 'many']).optional(),
+		cardinality: z.enum(['one', 'atMostOne', 'noneOrMany', 'atLeastOne']).optional(),
 
 		/**
 		 * Input mask pattern. Accepts either a plain mask string or a stringified

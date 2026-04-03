@@ -140,7 +140,7 @@ function validateFieldValue(field: FieldMeta, value: unknown): string | null {
 			break
 
 		case 'Doctype':
-			if (cardinality === 'many') {
+			if (cardinality === 'noneOrMany' || cardinality === 'atLeastOne') {
 				if (!Array.isArray(value)) {
 					return `${fieldname}: expected array, got ${typeof value}`
 				}

@@ -1127,16 +1127,6 @@ Operation source - where the change originated
 export type OperationSource = 'user' | 'system' | 'sync' | 'undo' | 'redo';
 ```
 
-### RowActionType
-
-Row action type identifiers.
-
-**Definition:**
-
-```typescript
-export type RowActionType = 'add' | 'delete' | 'duplicate' | 'insertAbove' | 'insertBelow' | 'move';
-```
-
 ### Schema
 
 Schema type for Stonecrop instances
@@ -1506,35 +1496,6 @@ initializeRecord(schema: SchemaTypes[]): Record<string, any>
 #### resolveSchema
 
 Resolve nested Doctype fields in a schema by embedding child schemas inline.
-
-```typescript
-resolveSchema(schema: SchemaTypes[], visited: Set<string>): SchemaTypes[]
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| schema | `SchemaTypes[]` | The schema array to resolve |
-| visited | `Set<string>` |  |
-
-#### initializeRecord
-
-Initialize a new record with default values based on a schema.
-
-```typescript
-initializeRecord(schema: SchemaTypes[]): Record<string, any>
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| schema | `SchemaTypes[]` | The schema array to derive defaults from |
-
-#### resolveSchema
-
-Resolve nested Doctype and Table fields in a schema by embedding child schemas inline.
 
 ```typescript
 resolveSchema(schema: SchemaTypes[], visited: Set<string>): SchemaTypes[]

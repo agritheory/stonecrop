@@ -3,6 +3,47 @@ import { z } from 'zod'
 import { FieldMeta } from './field'
 
 /**
+ * Cardinality for relationship links.
+ * @public
+ */
+export const Cardinality = z.enum(['atMostOne', 'one', 'noneOrMany', 'atLeastOne']).meta({
+	title: 'Cardinality',
+	description: 'Cardinality for relationship links between doctypes',
+})
+
+/**
+ * Cardinality type inferred from Zod schema
+ * @public
+ */
+export type Cardinality = z.infer<typeof Cardinality>
+
+/**
+ * Link declaration - describes a relationship from one doctype to another.
+ * @public
+ */
+export const LinkDeclaration = z
+	.object({
+		/** Target doctype slug */
+		target: z.string().min(1),
+
+		/** Cardinality of the relationship */
+		cardinality: Cardinality,
+
+		/** Backlink fieldname on the target doctype that points back to this link */
+		backlink: z.string().optional(),
+	})
+	.meta({
+		title: 'LinkDeclaration',
+		description: 'Declares a relationship from one doctype to another',
+	})
+
+/**
+ * Link declaration type inferred from Zod schema
+ * @public
+ */
+export type LinkDeclaration = z.infer<typeof LinkDeclaration>
+
+/**
  * Action definition within a workflow
  * @public
  */
@@ -77,6 +118,12 @@ export const DoctypeMeta = z
 
 		/** Field definitions */
 		fields: z.array(FieldMeta),
+
+		/** Relationship links to other doctypes */
+		links: z.record(z.string(), LinkDeclaration).optional(),
+
+		/** Render order — fieldnames and link fieldnames in display order */
+		layout: z.array(z.string()).optional(),
 
 		/** Workflow configuration */
 		workflow: WorkflowMeta.optional(),

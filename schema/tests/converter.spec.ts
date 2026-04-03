@@ -345,7 +345,7 @@ describe('classifyFieldType', () => {
 		expect(field.fieldtype).toBe('Doctype')
 		expect(field.component).toBe('ATable')
 		expect(field.options).toBe('comment')
-		expect(field.cardinality).toBe('many')
+		expect(field.cardinality).toBe('noneOrMany')
 	})
 
 	it('should include unmapped meta when requested', () => {
@@ -479,7 +479,7 @@ describe('convertGraphQLSchema', () => {
 			const commentsField = post.fields.find(f => f.fieldname === 'comments')!
 			expect(commentsField.fieldtype).toBe('Doctype')
 			expect(commentsField.options).toBe('comment')
-			expect(commentsField.cardinality).toBe('many')
+			expect(commentsField.cardinality).toBe('noneOrMany')
 		})
 	})
 
@@ -652,7 +652,7 @@ describe('convertGraphQLSchema', () => {
 			const itemsField = order.fields.find(f => f.fieldname === 'items')!
 			expect(itemsField.fieldtype).toBe('Doctype')
 			expect(itemsField.options).toBe('order-item')
-			expect(itemsField.cardinality).toBe('many')
+			expect(itemsField.cardinality).toBe('noneOrMany')
 		})
 	})
 

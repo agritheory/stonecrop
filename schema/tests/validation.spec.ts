@@ -249,6 +249,123 @@ describe('Doctype Validation', () => {
 			expect(result.success).toBe(true)
 			expect(result.errors).toEqual([])
 		})
+
+		it('should validate doctype with links', () => {
+			const doctype = {
+				name: 'Recipe',
+				fields: [
+					{ fieldname: 'name', fieldtype: 'Data' },
+					{ fieldname: 'status', fieldtype: 'Data' },
+				],
+				links: {
+					tasks: { target: 'recipe-task', cardinality: 'noneOrMany', backlink: 'recipe' },
+					supersededBy: { target: 'recipe', cardinality: 'atMostOne', backlink: 'supersededBy' },
+				},
+			}
+			const result = validateDoctype(doctype)
+
+			expect(result.success).toBe(true)
+			expect(result.errors).toEqual([])
+		})
+
+		it('should validate doctype with links without backlink', () => {
+			const doctype = {
+				name: 'Recipe',
+				fields: [{ fieldname: 'name', fieldtype: 'Data' }],
+				links: {
+					tasks: { target: 'recipe-task', cardinality: 'noneOrMany' },
+				},
+			}
+			const result = validateDoctype(doctype)
+
+			expect(result.success).toBe(true)
+			expect(result.errors).toEqual([])
+		})
+
+		it('should reject link with missing target', () => {
+			const doctype = {
+				name: 'Recipe',
+				fields: [{ fieldname: 'name', fieldtype: 'Data' }],
+				links: {
+					tasks: { cardinality: 'noneOrMany' },
+				},
+			}
+			const result = validateDoctype(doctype)
+
+			expect(result.success).toBe(false)
+			expect(result.errors.length).toBeGreaterThan(0)
+		})
+
+		it('should reject link with missing cardinality', () => {
+			const doctype = {
+				name: 'Recipe',
+				fields: [{ fieldname: 'name', fieldtype: 'Data' }],
+				links: {
+					tasks: { target: 'recipe-task' },
+				},
+			}
+			const result = validateDoctype(doctype)
+
+			expect(result.success).toBe(false)
+			expect(result.errors.length).toBeGreaterThan(0)
+		})
+
+		it('should reject link with invalid cardinality', () => {
+			const doctype = {
+				name: 'Recipe',
+				fields: [{ fieldname: 'name', fieldtype: 'Data' }],
+				links: {
+					tasks: { target: 'recipe-task', cardinality: 'many' },
+				},
+			}
+			const result = validateDoctype(doctype)
+
+			expect(result.success).toBe(false)
+			expect(result.errors.length).toBeGreaterThan(0)
+		})
+
+		it('should validate all cardinality values on FieldMeta', () => {
+			const cardinalities = ['one', 'atMostOne', 'noneOrMany', 'atLeastOne'] as const
+			for (const cardinality of cardinalities) {
+				const field = {
+					fieldname: 'child',
+					fieldtype: 'Doctype',
+					options: 'child-doctype',
+					cardinality,
+				}
+				const result = validateField(field)
+				expect(result.success).toBe(true)
+			}
+		})
+
+		it('should validate doctype with layout', () => {
+			const doctype = {
+				name: 'Recipe',
+				fields: [
+					{ fieldname: 'name', fieldtype: 'Data' },
+					{ fieldname: 'status', fieldtype: 'Data' },
+				],
+				links: {
+					tasks: { target: 'recipe-task', cardinality: 'noneOrMany' },
+				},
+				layout: ['name', 'status', 'tasks'],
+			}
+			const result = validateDoctype(doctype)
+
+			expect(result.success).toBe(true)
+			expect(result.errors).toEqual([])
+		})
+
+		it('should reject doctype with empty layout', () => {
+			const doctype = {
+				name: 'Recipe',
+				fields: [{ fieldname: 'name', fieldtype: 'Data' }],
+				layout: [],
+			}
+			// Empty array is valid — layout is optional and array accepts empty
+			const result = validateDoctype(doctype)
+			expect(result.success).toBe(true)
+		})
 	})
 
 	describe('parseDoctype', () => {
@@ -289,6 +406,28 @@ describe('Doctype Validation', () => {
 				],
 			}
 			expect(() => parseDoctype(doctype)).toThrow(ZodError)
+		})
+
+		it('should parse a doctype with links and layout', () => {
+			const doctype = {
+				name: 'Recipe',
+				fields: [
+					{ fieldname: 'name', fieldtype: 'Data' },
+					{ fieldname: 'status', fieldtype: 'Data' },
+				],
+				links: {
+					tasks: { target: 'recipe-task', cardinality: 'noneOrMany', backlink: 'recipe' },
+				},
+				layout: ['name', 'status', 'tasks'],
+			}
+			const parsed = parseDoctype(doctype)
+
+			expect(parsed.name).toBe('Recipe')
+			expect(parsed.links).toBeDefined()
+			expect(parsed.links!.tasks.target).toBe('recipe-task')
+			expect(parsed.links!.tasks.cardinality).toBe('noneOrMany')
+			expect(parsed.links!.tasks.backlink).toBe('recipe')
+			expect(parsed.layout).toEqual(['name', 'status', 'tasks'])
 		})
 	})
 })
