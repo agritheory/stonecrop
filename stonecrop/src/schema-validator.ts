@@ -272,9 +272,22 @@ export class SchemaValidator {
 			}
 		}
 
+		// Check field/link name collisions
+		const fieldnames = new Set(schema.map(f => f.fieldname))
+		for (const linkname of Object.keys(links)) {
+			if (fieldnames.has(linkname)) {
+				issues.push({
+					severity: ValidationSeverity.ERROR,
+					rule: 'link-name-collision',
+					message: `Link "${linkname}" conflicts with field of the same name`,
+					doctype,
+					fieldname: linkname,
+				})
+			}
+		}
+
 		// Check layout entries
 		if (layout) {
-			const fieldnames = new Set(schema.map(f => f.fieldname))
 			const linknames = new Set(Object.keys(links))
 
 			for (const entry of layout) {

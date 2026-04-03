@@ -448,4 +448,14 @@ describe('SchemaValidator — link declarations', () => {
 		})
 		expect(result.valid).toBe(true) // links not validated, so no error
 	})
+
+	it('reports error when field and link share a name', () => {
+		const validator = new SchemaValidator({ registry: mockRegistry })
+		const schemaWithConflict = [{ fieldname: 'tasks', fieldtype: 'Data' } as SchemaTypes]
+		const result = validator.validate('recipe', schemaWithConflict, undefined, undefined, {
+			tasks: { target: 'recipe-task', cardinality: 'noneOrMany' },
+		})
+		expect(result.valid).toBe(false)
+		expect(result.issues.some(i => i.rule === 'link-name-collision')).toBe(true)
+	})
 })
