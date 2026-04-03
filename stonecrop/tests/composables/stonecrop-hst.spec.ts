@@ -413,6 +413,73 @@ describe('useStonecrop HST mode', () => {
 		await expect(vm.fetchNestedData('task.t1', taskDoctype, 't1')).rejects.toThrow('No data client configured')
 	})
 
+	it('fetchNestedData stores record data in HST on success', async () => {
+		const taskDoctype = createDoctype('Task', [
+			{ fieldname: 'title', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+			{ fieldname: 'status', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+		])
+		registry.addDoctype(taskDoctype)
+
+		const mockClient = {
+			getMeta: vi.fn().mockResolvedValue(null),
+			getRecord: vi.fn().mockResolvedValue({ id: 't1', title: 'Test Task', status: 'active' }),
+			getRecords: vi.fn().mockResolvedValue([]),
+			runAction: vi.fn().mockResolvedValue({ success: true, data: null, error: null }),
+		}
+
+		const TestComponent = defineComponent({
+			setup() {
+				return useStonecrop({ registry, doctype: taskDoctype, recordId: 't1' })
+			},
+			template: '<div>test</div>',
+		})
+
+		const wrapper = mount(TestComponent, {
+			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
+		})
+		await wrapper.vm.$nextTick()
+		await new Promise(resolve => setTimeout(resolve, 50))
+
+		stonecrop.setClient(mockClient as any)
+
+		const vm = wrapper.vm as any
+		await vm.fetchNestedData('task.t1', taskDoctype, 't1')
+
+		// Verify data stored in HST at per-field paths
+		expect(stonecrop.hstStore.get('task.t1.title')).toBe('Test Task')
+		expect(stonecrop.hstStore.get('task.t1.status')).toBe('active')
+	})
+
+	it('fetchNestedData throws RECORD_NOT_FOUND when server returns null', async () => {
+		const taskDoctype = createDoctype('Task')
+		registry.addDoctype(taskDoctype)
+
+		const mockClient = {
+			getMeta: vi.fn().mockResolvedValue(null),
+			getRecord: vi.fn().mockResolvedValue(null),
+			getRecords: vi.fn().mockResolvedValue([]),
+			runAction: vi.fn().mockResolvedValue({ success: true, data: null, error: null }),
+		}
+
+		const TestComponent = defineComponent({
+			setup() {
+				return useStonecrop({ registry, doctype: taskDoctype, recordId: 't1' })
+			},
+			template: '<div>test</div>',
+		})
+
+		const wrapper = mount(TestComponent, {
+			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
+		})
+		await wrapper.vm.$nextTick()
+		await new Promise(resolve => setTimeout(resolve, 50))
+
+		stonecrop.setClient(mockClient as any)
+
+		const vm = wrapper.vm as any
+		await expect(vm.fetchNestedData('task.t1', taskDoctype, 't1')).rejects.toThrow('Record not found')
+	})
+
 	it('operationLog API is available in HST mode', async () => {
 		const taskDoctype = createDoctype('Task')
 		registry.addDoctype(taskDoctype)

@@ -552,6 +552,12 @@ export class Stonecrop {
 		const slug = doctype.slug
 		this.ensureDoctypeExists(slug)
 
+		// Ensure the parent path exists in HST before setting child fields
+		const existingData = this.hstStore.get(`${slug}.${recordId}`)
+		if (!existingData) {
+			this.hstStore.set(`${slug}.${recordId}`, {}, 'system')
+		}
+
 		for (const [key, value] of Object.entries(record)) {
 			this.hstStore.set(`${slug}.${recordId}.${key}`, value, 'system')
 		}
