@@ -51,31 +51,6 @@ const preset: GraphileConfig.Preset = {
 }
 ```
 
-### Client Usage
-
-```typescript
-import { StonecropClient } from '@stonecrop/graphql-middleware'
-
-const client = new StonecropClient({
-  endpoint: 'http://localhost:4000/graphql',
-})
-
-// Get doctype metadata
-const meta = await client.getMeta({ doctype: 'SalesOrder' })
-
-// Fetch records
-const orders = await client.getRecords(meta, {
-  limit: 10,
-  orderBy: 'createdAt',
-})
-
-// Fetch single record
-const order = await client.getRecord(meta, 'uuid-here')
-
-// Run an action
-const result = await client.runAction(meta, 'submit', [order.id])
-```
-
 ### Doctype Definition
 
 ```json
@@ -88,6 +63,13 @@ const result = await client.runAction(meta, 'submit', [order.id])
     { "fieldname": "status", "fieldtype": "Select" },
     { "fieldname": "total", "fieldtype": "Currency" }
   ],
+  "links": {
+    "items": {
+      "target": "sales-order-item",
+      "cardinality": "noneOrMany",
+      "backlink": "sales_order"
+    }
+  },
   "workflow": {
     "states": ["Draft", "Submitted", "Cancelled"],
     "actions": {
@@ -100,6 +82,41 @@ const result = await client.runAction(meta, 'submit', [order.id])
     }
   }
 }
+```
+
+### Client Setup
+
+The middleware provides the server; use `@stonecrop/graphql-client` for the client:
+
+```typescript
+import { StonecropClient } from '@stonecrop/graphql-client'
+
+const client = new StonecropClient({
+  endpoint: 'http://localhost:4000/graphql',
+})
+
+// Get doctype metadata
+const meta = await client.getMeta({ doctype: 'SalesOrder' })
+
+// Fetch records with optional filtering
+const orders = await client.getRecords(
+  { name: 'SalesOrder' },
+  {
+    limit: 10,
+    orderBy: 'createdAt',
+  }
+)
+
+// Fetch single record (flat)
+const order = await client.getRecord({ name: 'SalesOrder' }, 'uuid-here')
+
+// Fetch with nested descendant links
+const recipe = await client.getRecord({ name: 'Recipe' }, 'r1', {
+  includeNested: true,
+})
+
+// Run an action
+const result = await client.runAction({ name: 'SalesOrder' }, 'submit', ['uuid-here'])
 ```
 
 ## References

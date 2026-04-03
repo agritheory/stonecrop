@@ -1,10 +1,6 @@
 # @stonecrop/graphql-client
 
-Client-side TypeScript interface to the Stonecrop GraphQL API. `StonecropClient` wraps the `stonecrop*` operations added to a PostGraphile schema by `@stonecrop/graphql-middleware`, handling HTTP transport, response unwrapping, and metadata caching so application code works with plain TypeScript objects rather than raw GraphQL.
-
-The client is intentionally thin — it has no knowledge of doctype definitions itself and fetches metadata from the server on demand, caching it in memory for the lifetime of the instance.
-
-While designed to pair with `@stonecrop/graphql-middleware`, the client works against any GraphQL endpoint that implements the `stonecrop*` operation conventions (`stonecropMeta`, `stonecropRecord`, `stonecropRecords`, `stonecropAction`). You can use your own server implementation as long as it conforms to those operation names and the expected response shapes. The `query` and `mutate` methods are also available for interacting with any other operations your schema exposes.
+Client-side TypeScript implementation of the `DataClient` interface for Stonecrop's PostGraphile-based GraphQL API. `StonecropClient` handles HTTP transport, response unwrapping, query building, and metadata caching so application code works with plain TypeScript objects.
 
 ## Installation
 
@@ -21,6 +17,14 @@ const client = new StonecropClient({
   endpoint: 'http://localhost:4000/graphql',
   headers: { Authorization: `Bearer ${token}` }, // optional
 })
+
+// Optional: set the doctype registry for nested query support
+import { Registry } from '@stonecrop/stonecrop'
+const registry = new Registry()
+// ... register doctypes ...
+
+const doctypeMap = new Map(Object.entries(registry.registry))
+client.setRegistry(doctypeMap)
 ```
 
 ### Metadata
@@ -36,28 +40,47 @@ const allMeta = await client.getAllMeta()
 client.clearMetaCache()
 ```
 
-### Reading records
+### Reading Records
 
 ```typescript
-// Single record by ID
-const order = await client.getRecord(meta, 'uuid-here')
-// → Record<string, unknown> | null
+import { GetRecordOptions, GetRecordsOptions } from '@stonecrop/schema'
+
+// Single record by ID (flat — scalar fields only)
+const order = await client.getRecord({ name: 'SalesOrder' }, 'uuid-here')
+
+// Single record with all nested descendant links
+const recipe = await client.getRecord({ name: 'Recipe' }, 'r1', {
+  includeNested: true,
+})
+
+// Single record with specific nested links only
+const recipe = await client.getRecord({ name: 'Recipe' }, 'r1', {
+  includeNested: ['tasks'],
+})
+
+// Single record with limited nesting depth
+const recipe = await client.getRecord({ name: 'Recipe' }, 'r1', {
+  includeNested: true,
+  maxDepth: 2,
+})
 
 // List with optional filtering and pagination
-const orders = await client.getRecords(meta, {
-  filters: { status: 'Draft' },
-  orderBy: 'createdAt',
-  limit: 20,
-  offset: 0,
-})
-// → Record<string, unknown>[]
+const orders = await client.getRecords(
+  { name: 'SalesOrder' },
+  {
+    filters: { status: 'Draft' },
+    orderBy: 'createdAt',
+    limit: 20,
+    offset: 0,
+  }
+)
 ```
 
 ### Actions
 
 ```typescript
 // Dispatch any registered action
-const result = await client.runAction(meta, 'submit', ['uuid-here'])
+const result = await client.runAction({ name: 'SalesOrder' }, 'submit', ['uuid-here'])
 // → { success: boolean; data: unknown; error: string | null }
 ```
 
@@ -66,15 +89,49 @@ const result = await client.runAction(meta, 'submit', ['uuid-here'])
 For queries or mutations not covered by the helpers:
 
 ```typescript
-const data = await client.query<{ myTable: unknown[] }>(
-  `query { myTable { id name } }`
-)
+const data = await client.query<{ myTable: unknown[] }>(`query { myTable { id name } }`)
 
 const result = await client.mutate<{ createFoo: unknown }>(
   `mutation CreateFoo($input: CreateFooInput!) { createFoo(input: $input) { foo { id } } }`,
   { input: { foo: { name: 'bar' } } }
 )
 ```
+
+### How Nested Queries Work
+
+When `includeNested` is set on `getRecord`:
+
+1. The client fetches doctype metadata (including `links`)
+2. Builds a GraphQL query with sub-selections for descendant links
+3. Connection fields (`noneOrMany`/`atLeastOne`) emit `{ nodes { ... } }` sub-selections
+4. Direct fields (`one`/`atMostOne`) emit object sub-selections
+5. Results with connection fields are merged to flat arrays
+
+Example query generated for a Recipe with `tasks` (noneOrMany) and `supersededBy` (atMostOne):
+
+```graphql
+query GetRecord($id: UUID!) {
+  recipeById(id: $id) {
+    id
+    name
+    status
+    RecipeTasksByRecipeId {
+      nodes {
+        id
+        name
+        description
+      }
+    }
+    supersededBy {
+      id
+      name
+      status
+    }
+  }
+}
+```
+
+The response is merged so `result.tasks` is a flat array and `result.supersededBy` is a direct object.
 
 ## References
 
