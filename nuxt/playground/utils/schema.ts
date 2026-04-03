@@ -30,7 +30,7 @@ export function hydrateSchema(schema: any[]): any[] {
 		// Special handling for Doctype fieldtype
 		if (field.fieldtype === 'Doctype') {
 			// For cardinality: 'many', derive columns and use ATable
-			if (field.cardinality === 'many') {
+			if (field.cardinality === 'noneOrMany' || cardinality === 'atLeastOne') {
 				// Use columns if provided in the schema
 				if (field.columns && Array.isArray(field.columns)) {
 					hydratedField.columns = field.columns

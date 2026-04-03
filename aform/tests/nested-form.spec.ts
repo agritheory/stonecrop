@@ -498,7 +498,7 @@ describe('AForm Nested Schema Rendering', () => {
 		expect(wrapper.vm).toBeTruthy()
 	})
 
-	it('renders ATable component for Doctype field with cardinality: many', async () => {
+	it('renders ATable component for Doctype field with cardinality: noneOrMany', async () => {
 		const tableSchema: SchemaTypes[] = [
 			{
 				fieldname: 'name',
@@ -511,7 +511,7 @@ describe('AForm Nested Schema Rendering', () => {
 				fieldtype: 'Doctype',
 				options: 'item',
 				label: 'Items',
-				cardinality: 'many',
+				cardinality: 'noneOrMany',
 				component: 'ATable',
 				columns: [
 					{ name: 'item_name', label: 'Item', fieldtype: 'Data' },
@@ -566,7 +566,7 @@ describe('AForm Nested Schema Rendering', () => {
 			fieldname: 'items',
 			fieldtype: 'Doctype',
 			options: 'item',
-			cardinality: 'many',
+			cardinality: 'noneOrMany',
 			columns: [],
 		}
 
