@@ -12,19 +12,16 @@ pnpm add @stonecrop/graphql-client
 
 ```typescript
 import { StonecropClient } from '@stonecrop/graphql-client'
+import { Registry } from '@stonecrop/stonecrop'
+
+const registry = new Registry()
+// ... register doctypes ...
 
 const client = new StonecropClient({
   endpoint: 'http://localhost:4000/graphql',
   headers: { Authorization: `Bearer ${token}` }, // optional
+  registry: new Map(Object.entries(registry.registry)), // for nested query support
 })
-
-// Optional: set the doctype registry for nested query support
-import { Registry } from '@stonecrop/stonecrop'
-const registry = new Registry()
-// ... register doctypes ...
-
-const doctypeMap = new Map(Object.entries(registry.registry))
-client.setRegistry(doctypeMap)
 ```
 
 ### Metadata

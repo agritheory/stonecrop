@@ -511,10 +511,14 @@ describe('StonecropClient.getRecord with nested', () => {
 	})
 
 	it('fetches a record with nested data and merges connection results', async () => {
-		const client = new StonecropClient({ endpoint: ENDPOINT })
+		const doctypeRegistry = new Map<string, DoctypeMeta>([
+			['recipe', recipeMeta],
+			['recipe-task', recipeTaskMeta],
+		])
+		const client = new StonecropClient({ endpoint: ENDPOINT, registry: doctypeRegistry })
 
 		// First call: getMeta
-		// Second call: getRecordWithNested query
+		// Second call: getRecord query
 		mockFetch.mockReturnValueOnce(makeFetchResponse({ stonecropMeta: recipeMeta })).mockReturnValueOnce(
 			makeFetchResponse({
 				recipeById: {
@@ -529,13 +533,6 @@ describe('StonecropClient.getRecord with nested', () => {
 					},
 				},
 			})
-		)
-
-		client.setRegistry(
-			new Map<string, DoctypeMeta>([
-				['recipe', recipeMeta],
-				['recipe-task', recipeTaskMeta],
-			])
 		)
 
 		const result = await client.getRecord({ name: 'Recipe' }, 'r1', {
@@ -553,7 +550,11 @@ describe('StonecropClient.getRecord with nested', () => {
 	})
 
 	it('returns empty array for noneOrMany link with no nodes', async () => {
-		const client = new StonecropClient({ endpoint: ENDPOINT })
+		const doctypeRegistry = new Map<string, DoctypeMeta>([
+			['recipe', recipeMeta],
+			['recipe-task', recipeTaskMeta],
+		])
+		const client = new StonecropClient({ endpoint: ENDPOINT, registry: doctypeRegistry })
 
 		mockFetch.mockReturnValueOnce(makeFetchResponse({ stonecropMeta: recipeMeta })).mockReturnValueOnce(
 			makeFetchResponse({
@@ -564,13 +565,6 @@ describe('StonecropClient.getRecord with nested', () => {
 					RecipeTasksByRecipeId: { nodes: [] },
 				},
 			})
-		)
-
-		client.setRegistry(
-			new Map<string, DoctypeMeta>([
-				['recipe', recipeMeta],
-				['recipe-task', recipeTaskMeta],
-			])
 		)
 
 		const result = await client.getRecord({ name: 'Recipe' }, 'r1', {

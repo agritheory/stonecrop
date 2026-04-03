@@ -40,9 +40,8 @@ const stonecrop = StonecropClass.root
 const client = new StonecropClient({
   endpoint: 'http://localhost:4000/graphql',
   headers: { Authorization: `Bearer ${token}` },
+  registry: new Map(Object.entries(stonecrop.registry.registry)),
 })
-const doctypeMap = new Map(Object.entries(stonecrop.registry.registry))
-client.setRegistry(doctypeMap)
 stonecrop.setClient(client)
 ```
 

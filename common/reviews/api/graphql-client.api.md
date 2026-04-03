@@ -80,13 +80,13 @@ export class StonecropClient implements DataClient {
         data: unknown;
         error: string | null;
     }>;
-    setRegistry(registry: Map<string, DoctypeMeta>): void;
 }
 
 // @public
 export interface StonecropClientOptions {
     endpoint: string;
     headers?: Record<string, string>;
+    registry?: Map<string, DoctypeMeta>;
 }
 
 // @public

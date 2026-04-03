@@ -35,6 +35,8 @@ export interface StonecropClientOptions {
 	endpoint: string
 	/** Additional HTTP headers to include in requests */
 	headers?: Record<string, string>
+	/** Doctype registry for nested query building */
+	registry?: Map<string, DoctypeMeta>
 }
 
 /**
@@ -53,14 +55,7 @@ export class StonecropClient implements DataClient {
 			'Content-Type': 'application/json',
 			...options.headers,
 		}
-	}
-
-	/**
-	 * Set the doctype registry for nested query building.
-	 * @param registry - Map of doctype slug to doctype metadata
-	 */
-	setRegistry(registry: Map<string, DoctypeMeta>): void {
-		this.registry = registry
+		this.registry = options.registry
 	}
 
 	/**

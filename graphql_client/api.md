@@ -78,6 +78,7 @@ Options for creating a Stonecrop client
 export interface StonecropClientOptions {
   endpoint: string;
   headers?: Record<string, string>;
+  registry?: Map<string, DoctypeMeta>;
 }
 ```
 
@@ -87,6 +88,7 @@ export interface StonecropClientOptions {
 |----------|------|-------------|
 | endpoint | `string` | GraphQL endpoint URL |
 | headers? | `Record<string, string>` | Additional HTTP headers to include in requests |
+| registry? | `Map<string, DoctypeMeta>` | Doctype registry for nested query building |
 
 ## Type Aliases
 
@@ -271,20 +273,6 @@ runAction(doctype: DoctypeRef, action: string, args: unknown[]): Promise<{
 | doctype | `DoctypeRef` | Doctype reference (name and optional slug) |
 | action | `string` | Action name to execute |
 | args | `unknown[]` | Action arguments |
-
-#### setRegistry
-
-Set the doctype registry for nested query building.
-
-```typescript
-setRegistry(registry: Map<string, DoctypeMeta>): void
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| registry | `Map<string, DoctypeMeta>` | Map of doctype slug to doctype metadata |
 
 ## Variables
 
