@@ -196,7 +196,7 @@ describe('validateFieldTypes handler', () => {
 			{ fieldname: 'meeting_time', fieldtype: 'Time', label: 'Time' },
 			{ fieldname: 'created_at', fieldtype: 'Datetime', label: 'Datetime' },
 			{ fieldname: 'meta', fieldtype: 'JSON', label: 'Meta' },
-			{ fieldname: 'items', fieldtype: 'Doctype', cardinality: 'many', label: 'Items', options: 'Item' },
+			{ fieldname: 'items', fieldtype: 'Doctype', cardinality: 'noneOrMany', label: 'Items', options: 'Item' },
 			{ fieldname: 'parent', fieldtype: 'Doctype', label: 'Parent', options: 'Parent' },
 		],
 	}
@@ -284,7 +284,7 @@ describe('validateFieldTypes handler', () => {
 		).rejects.toThrow('expected object')
 	})
 
-	it('throws for a non-array Doctype value with cardinality many', async () => {
+	it('throws for a non-array Doctype value with cardinality noneOrMany', async () => {
 		await expect(
 			builtinHandlers.validateFieldTypes([{ items: 'not-an-array' }], makeContext(typedDoctype))
 		).rejects.toThrow('expected array')
