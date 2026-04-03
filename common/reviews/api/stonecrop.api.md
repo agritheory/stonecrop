@@ -266,7 +266,12 @@ export type HSTStonecropReturn = BaseStonecropReturn & {
     hstStore: Ref<HSTNode | undefined>;
     formData: Ref<Record<string, any>>;
     resolvedSchema: Ref<SchemaTypes[]>;
-    loadNestedData: (parentPath: string, childDoctype: Doctype, recordId?: string) => Record<string, any>;
+    initializeNestedData: (path: string, doctype: Doctype, options?: {
+        includeNested?: boolean | string[];
+    }) => void;
+    fetchNestedData: (path: string, doctype: Doctype, recordId: string, options?: {
+        includeNested?: boolean | string[];
+    }) => Promise<void>;
     collectRecordPayload: (doctype: Doctype, recordId: string) => Record<string, any>;
     createNestedContext: (basePath: string, childDoctype: Doctype) => {
         provideHSTPath: (fieldname: string) => string;
@@ -429,6 +434,9 @@ export class Stonecrop {
         data: unknown;
         error: string | null;
     }>;
+    fetchNestedData(path: string, doctype: Doctype, recordId: string, options?: {
+        includeNested?: boolean | string[];
+    }): Promise<void>;
     getClient(): DataClient | undefined;
     getMeta(context: RouteContext): Promise<any>;
     // @internal
@@ -697,7 +705,9 @@ export class Stonecrop {
     getRecords(doctype: Doctype): Promise<void>;
     getRecordState(doctype: string | Doctype, recordId: string): string;
     getStore(): HSTNode;
-    loadNestedData(parentPath: string, childDoctype: Doctype, _recordId?: string): Record<string, any>;
+    initializeNestedData(path: string, doctype: Doctype, _options?: {
+        includeNested?: boolean | string[];
+    }): void;
     records(doctype: string | Doctype): HSTNode;
     readonly registry: Registry;
     removeRecord(doctype: string | Doctype, recordId: string): void;

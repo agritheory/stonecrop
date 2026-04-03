@@ -1,4 +1,4 @@
-import type { DoctypeMeta, LinkDeclaration } from '@stonecrop/schema'
+import type { DoctypeMeta, GetRecordOptions, GetRecordsOptions, LinkDeclaration } from '@stonecrop/schema'
 import { toPascalCase } from '@stonecrop/schema'
 import pluralize from 'pluralize'
 
@@ -7,19 +7,6 @@ import pluralize from 'pluralize'
  * Link and Doctype fields are handled separately via the links object.
  */
 const RELATION_FIELDTYPES = new Set(['Link', 'Doctype'])
-
-/**
- * Options for building a list query
- * @public
- */
-export interface BuildListQueryOptions {
-	/** Maximum number of records to return */
-	limit?: number
-	/** Number of records to skip */
-	offset?: number
-	/** Order by expression (e.g. 'NAME_ASC', 'CREATED_AT_DESC') */
-	orderBy?: string
-}
 
 /**
  * Build a GraphQL connection query to fetch a list of records.
@@ -39,7 +26,7 @@ export function buildListQuery(
 	meta: DoctypeMeta,
 	connectionFieldName: (t: string) => string,
 	orderByTypeName: (t: string) => string,
-	options?: BuildListQueryOptions
+	options?: GetRecordsOptions
 ): string {
 	const fieldNames = queryableFieldNames(meta)
 	const connectionName = connectionFieldName(meta.tableName!)
@@ -75,32 +62,6 @@ export function buildListQuery(
 }
 
 /**
- * Options for building a record query
- * @public
- */
-export interface BuildRecordQueryOptions {
-	/**
-	 * Include nested link sub-selections.
-	 * - `true`: include all descendant links
-	 * - `string[]`: include only named links
-	 * - `false` / omitted: scalar fields only (default)
-	 */
-	includeNested?: boolean | string[]
-
-	/**
-	 * Registry of doctype metadata for resolving link targets.
-	 * Required when `includeNested` is truthy.
-	 */
-	doctypeRegistry?: Map<string, DoctypeMeta>
-
-	/**
-	 * Maximum depth for recursive sub-selections.
-	 * No default — unlimited when omitted.
-	 */
-	maxDepth?: number
-}
-
-/**
  * Build a GraphQL query string from doctype metadata.
  *
  * Generates scalar field selections. When `includeNested` is set,
@@ -111,7 +72,8 @@ export interface BuildRecordQueryOptions {
  * @param recordFieldName - Function to derive the query field name from a table name
  * @param recordArgName - Function to derive the argument name from a table name
  * @param recordArgType - Function to derive the argument type from a table name
- * @param options - Query options
+ * @param registry - Doctype registry for resolving link targets. Required when includeNested is set.
+ * @param options - Query options (includeNested, maxDepth)
  * @returns GraphQL query string
  *
  * @public
@@ -121,7 +83,8 @@ export function buildRecordQuery(
 	recordFieldName: (t: string) => string,
 	recordArgName: (t: string) => string,
 	recordArgType: (t: string) => string,
-	options?: BuildRecordQueryOptions
+	registry?: Map<string, DoctypeMeta>,
+	options?: GetRecordOptions
 ): string {
 	const queryName = recordFieldName(meta.tableName!)
 	const argName = recordArgName(meta.tableName!)
@@ -131,14 +94,14 @@ export function buildRecordQuery(
 
 	let selection = queryableFieldNames(meta)
 
-	if (options?.includeNested && meta.links && options.doctypeRegistry) {
+	if (options?.includeNested && meta.links && registry) {
 		const includeSet = Array.isArray(options.includeNested) ? new Set(options.includeNested) : null
 
 		const nestedSelections = buildNestedSelections(
 			meta.links,
 			meta.tableName!,
 			includeSet,
-			options.doctypeRegistry,
+			registry,
 			seen,
 			0,
 			options.maxDepth

@@ -1023,7 +1023,12 @@ export type HSTStonecropReturn = BaseStonecropReturn & {
     hstStore: Ref<HSTNode | undefined>;
     formData: Ref<Record<string, any>>;
     resolvedSchema: Ref<SchemaTypes[]>;
-    loadNestedData: (parentPath: string, childDoctype: Doctype, recordId?: string) => Record<string, any>;
+    initializeNestedData: (path: string, doctype: Doctype, options?: {
+        includeNested?: boolean | string[];
+    }) => void;
+    fetchNestedData: (path: string, doctype: Doctype, recordId: string, options?: {
+        includeNested?: boolean | string[];
+    }) => Promise<void>;
     collectRecordPayload: (doctype: Doctype, recordId: string) => Record<string, any>;
     createNestedContext: (basePath: string, childDoctype: Doctype) => {
         provideHSTPath: (fieldname: string) => string;
@@ -1674,6 +1679,27 @@ dispatchAction(doctype: Doctype, action: string, args: unknown[]): Promise<{
 | action | `string` | Action name to execute (e.g., 'SUBMIT', 'APPROVE', 'save') |
 | args | `unknown[]` | Action arguments (typically record ID and/or form data) |
 
+#### fetchNestedData
+
+Fetch a record and its nested data from the server.
+
+Calls `_client.getRecordWithNested()` and stores each scalar field at its own HST path (`slug.recordId.fieldname`), children at the link-level path (`slug.recordId.linkname`).
+
+```typescript
+fetchNestedData(path: string, doctype: Doctype, recordId: string, options: {
+        includeNested?: boolean | string[];
+    }): Promise<void>
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| path | `string` | HST path (e.g., "recipe.r1") |
+| doctype | `Doctype` | The doctype to fetch |
+| recordId | `string` | Record ID to fetch |
+| options | `{ includeNested?: boolean \| string[]; }` | Query options (includeNested to control which links are fetched) |
+
 #### getClient
 
 Get the current data client
@@ -1779,21 +1805,25 @@ Get the root HST store node for advanced usage
 getStore(): HSTNode
 ```
 
-#### loadNestedData
+#### initializeNestedData
 
-Load nested data from HST or initialize with defaults
+Scaffold empty child records from defaults for all descendant links.
+
+Used when opening a new form — no server data, just scaffolded empty rows. Does not require a data client.
 
 ```typescript
-loadNestedData(parentPath: string, childDoctype: Doctype, _recordId: string): Record<string, any>
+initializeNestedData(path: string, doctype: Doctype, _options: {
+        includeNested?: boolean | string[];
+    }): void
 ```
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| parentPath | `string` | The HST path to check for existing data |
-| childDoctype | `Doctype` | The child doctype metadata |
-| _recordId | `string` | Optional record ID to load |
+| path | `string` | HST path where the initialized data should be stored |
+| doctype | `Doctype` | The doctype to initialize |
+| _options | `{ includeNested?: boolean \| string[]; }` |  |
 
 #### records
 

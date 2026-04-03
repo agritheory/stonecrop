@@ -57,13 +57,8 @@ export function convertGraphQLSchema(source: IntrospectionSource, options?: Grap
 // @public
 export interface DataClient<T extends DoctypeRef = DoctypeRef, M = DoctypeMeta> {
     getMeta(context: DoctypeContext): Promise<M | null>;
-    getRecord(doctype: T, recordId: string): Promise<Record<string, unknown> | null>;
-    getRecords(doctype: T, options?: {
-        filters?: Record<string, unknown>;
-        orderBy?: string;
-        limit?: number;
-        offset?: number;
-    }): Promise<Record<string, unknown>[]>;
+    getRecord(doctype: T, recordId: string, options?: GetRecordOptions): Promise<Record<string, unknown> | null>;
+    getRecords(doctype: T, options?: GetRecordsOptions): Promise<Record<string, unknown>[]>;
     runAction(doctype: T, action: string, args?: unknown[]): Promise<{
         success: boolean;
         data: unknown;
@@ -254,6 +249,20 @@ export type FieldValidation = z.infer<typeof FieldValidation>;
 
 // @public
 export function getDefaultComponent(fieldtype: StonecropFieldType): string;
+
+// @public
+export interface GetRecordOptions {
+    includeNested?: boolean | string[];
+    maxDepth?: number;
+}
+
+// @public
+export interface GetRecordsOptions {
+    filters?: Record<string, unknown>;
+    limit?: number;
+    offset?: number;
+    orderBy?: string;
+}
 
 // @public
 export const GQL_SCALAR_MAP: Record<string, FieldTemplate>;

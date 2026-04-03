@@ -393,18 +393,41 @@ export function useStonecrop(options?: {
 	}
 
 	/**
-	 * Load nested doctype data from API or initialize empty structure
-	 * Delegates to Stonecrop.loadNestedData method
-	 * @param parentPath - The parent path (e.g., "customer.123.address")
-	 * @param childDoctype - The child doctype metadata
-	 * @param recordId - Optional record ID to load
-	 * @returns The loaded or initialized data
+	 * Scaffold empty child records from defaults for all descendant links.
+	 * Delegates to Stonecrop.initializeNestedData method.
+	 * @param path - The HST path where initialized data should be stored
+	 * @param doctype - The doctype to initialize
+	 * @param options - Options (includeNested to limit which links are scaffolded)
 	 */
-	const loadNestedData = (parentPath: string, childDoctype: Doctype, recordId?: string): Record<string, any> => {
+	const initializeNestedData = (
+		path: string,
+		doctype: Doctype,
+		options?: { includeNested?: boolean | string[] }
+	): void => {
 		if (!stonecrop.value) {
 			throw new Error('Stonecrop instance not available')
 		}
-		return stonecrop.value.loadNestedData(parentPath, childDoctype, recordId)
+		return stonecrop.value.initializeNestedData(path, doctype, options)
+	}
+
+	/**
+	 * Fetch a record and its nested data from the server.
+	 * Delegates to Stonecrop.fetchNestedData method.
+	 * @param path - The HST path (e.g., "recipe.r1")
+	 * @param doctype - The doctype to fetch
+	 * @param recordId - Record ID to fetch
+	 * @param options - Query options (includeNested to control which links are fetched)
+	 */
+	const fetchNestedData = async (
+		path: string,
+		doctype: Doctype,
+		recordId: string,
+		options?: { includeNested?: boolean | string[] }
+	): Promise<void> => {
+		if (!stonecrop.value) {
+			throw new Error('Stonecrop instance not available')
+		}
+		return stonecrop.value.fetchNestedData(path, doctype, recordId, options)
 	}
 
 	/**
@@ -480,13 +503,14 @@ export function useStonecrop(options?: {
 			hstStore,
 			formData,
 			resolvedSchema,
-			loadNestedData,
+			initializeNestedData,
+			fetchNestedData,
 			collectRecordPayload,
 			createNestedContext,
 			isLoading,
 			error,
 			resolvedDoctype,
-		} as HSTStonecropReturn
+		} satisfies HSTStonecropReturn
 	} else if (!options.doctype && registry?.router) {
 		// Router-based - return HST (will be populated after mount)
 		return {
@@ -497,13 +521,14 @@ export function useStonecrop(options?: {
 			hstStore,
 			formData,
 			resolvedSchema,
-			loadNestedData,
+			initializeNestedData,
+			fetchNestedData,
 			collectRecordPayload,
 			createNestedContext,
 			isLoading,
 			error,
 			resolvedDoctype,
-		} as HSTStonecropReturn
+		} satisfies HSTStonecropReturn
 	}
 
 	// No doctype and no router - basic mode

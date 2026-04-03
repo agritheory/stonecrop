@@ -1,8 +1,15 @@
-import type { DataClient, DoctypeMeta, DoctypeContext, DoctypeRef } from '@stonecrop/schema'
+import type {
+	DataClient,
+	DoctypeMeta,
+	DoctypeContext,
+	DoctypeRef,
+	GetRecordOptions,
+	GetRecordsOptions,
+} from '@stonecrop/schema'
 import { snakeToCamel, toPascalCase } from '@stonecrop/schema'
 import pluralize from 'pluralize'
 
-import { buildRecordQuery, type BuildRecordQueryOptions } from './query'
+import { buildRecordQuery } from './query'
 
 export type { DoctypeContext, DoctypeRef }
 
@@ -38,6 +45,7 @@ export class StonecropClient implements DataClient {
 	private endpoint: string
 	private headers: Record<string, string>
 	private metaCache: Map<string, DoctypeMeta> = new Map()
+	private registry?: Map<string, DoctypeMeta>
 
 	constructor(options: StonecropClientOptions) {
 		this.endpoint = options.endpoint
@@ -45,6 +53,14 @@ export class StonecropClient implements DataClient {
 			'Content-Type': 'application/json',
 			...options.headers,
 		}
+	}
+
+	/**
+	 * Set the doctype registry for nested query building.
+	 * @param registry - Map of doctype slug to doctype metadata
+	 */
+	setRegistry(registry: Map<string, DoctypeMeta>): void {
+		this.registry = registry
 	}
 
 	/**
@@ -198,11 +214,49 @@ export class StonecropClient implements DataClient {
 	}
 
 	/**
-	 * Get a single record by ID
+	 * Get a single record by ID.
+	 *
+	 * When `includeNested` is set, builds a query with sub-selections for descendant
+	 * links and returns parent + merged children. When omitted, returns flat scalar data.
+	 *
 	 * @param doctype - Doctype reference (name and optional slug)
 	 * @param recordId - Record ID to fetch
+	 * @param options - Query options (includeNested, maxDepth)
 	 */
-	async getRecord(doctype: DoctypeRef, recordId: string): Promise<Record<string, unknown> | null> {
+	async getRecord(
+		doctype: DoctypeRef,
+		recordId: string,
+		options?: GetRecordOptions
+	): Promise<Record<string, unknown> | null> {
+		// Nested path: build query with sub-selections
+		if (options?.includeNested) {
+			const meta = await this.getMeta({ doctype: doctype.name })
+			if (!meta) return null
+
+			const query = buildRecordQuery(
+				meta,
+				defaultRecordFieldName,
+				defaultRecordArgName,
+				defaultRecordArgType,
+				this.registry,
+				options
+			)
+
+			const result = await this.query<Record<string, unknown>>(query, { id: recordId })
+
+			const queryName = defaultRecordFieldName(meta.tableName || doctype.name)
+			const record = result[queryName] as Record<string, unknown> | undefined
+
+			if (!record) return null
+
+			if (meta.links && this.registry) {
+				return mergeNestedResults(record, meta, this.registry)
+			}
+
+			return record
+		}
+
+		// Flat path: original query
 		const result = await this.query<{
 			stonecropRecord: { data: Record<string, unknown> | null }
 		}>(
@@ -220,61 +274,11 @@ export class StonecropClient implements DataClient {
 	}
 
 	/**
-	 * Get a single record with nested data from descendant links.
-	 *
-	 * Uses `buildRecordQuery()` to generate a GraphQL query that includes
-	 * sub-selections for descendant links declared in the doctype's `links`.
-	 *
-	 * @param doctype - Doctype reference (name and optional slug)
-	 * @param recordId - Record ID to fetch
-	 * @param options - Query options (includeNested, doctypeRegistry, maxDepth)
-	 * @returns Record with nested data merged under link fieldnames, or null
-	 *
-	 * @public
-	 */
-	async getRecordWithNested(
-		doctype: DoctypeRef,
-		recordId: string,
-		options?: BuildRecordQueryOptions
-	): Promise<Record<string, unknown> | null> {
-		// Look up doctype metadata for query building
-		const meta = await this.getMeta({ doctype: doctype.name })
-		if (!meta) return null
-
-		const query = buildRecordQuery(meta, defaultRecordFieldName, defaultRecordArgName, defaultRecordArgType, options)
-
-		const result = await this.query<Record<string, unknown>>(query, {
-			id: recordId,
-		})
-
-		// Extract the record from the query result
-		const queryName = defaultRecordFieldName(meta.tableName || doctype.name)
-		const record = result[queryName] as Record<string, unknown> | undefined
-
-		if (!record) return null
-
-		// Merge nested connection results into flat arrays for many-cardinality links
-		if (meta.links && options?.includeNested && options?.doctypeRegistry) {
-			return mergeNestedResults(record, meta, options.doctypeRegistry)
-		}
-
-		return record
-	}
-
-	/**
 	 * Get multiple records with optional filtering and pagination
 	 * @param doctype - Doctype reference (name and optional slug)
 	 * @param options - Query options (filters, orderBy, limit, offset)
 	 */
-	async getRecords(
-		doctype: DoctypeRef,
-		options?: {
-			filters?: Record<string, unknown>
-			orderBy?: string
-			limit?: number
-			offset?: number
-		}
-	): Promise<Record<string, unknown>[]> {
+	async getRecords(doctype: DoctypeRef, options?: GetRecordsOptions): Promise<Record<string, unknown>[]> {
 		const result = await this.query<{
 			stonecropRecords: { data: Record<string, unknown>[] }
 		}>(

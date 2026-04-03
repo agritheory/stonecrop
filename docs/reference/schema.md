@@ -405,13 +405,8 @@ Interface for data clients that fetch doctype metadata and records. Implemented 
 ```typescript
 export interface DataClient {
   getMeta(context: DoctypeContext): Promise<M | null>;
-  getRecord(doctype: T, recordId: string): Promise<Record<string, unknown> | null>;
-  getRecords(doctype: T, options: {
-        filters?: Record<string, unknown>;
-        orderBy?: string;
-        limit?: number;
-        offset?: number;
-    }): Promise<Record<string, unknown>[]>;
+  getRecord(doctype: T, recordId: string, options: GetRecordOptions): Promise<Record<string, unknown> | null>;
+  getRecords(doctype: T, options: GetRecordsOptions): Promise<Record<string, unknown>[]>;
   runAction(doctype: T, action: string, args: unknown[]): Promise<{
         success: boolean;
         data: unknown;
@@ -479,6 +474,50 @@ export interface FieldTemplate {
 |----------|------|-------------|
 | component | `string` | The Vue component name to render this field (e.g., 'ATextInput', 'ADropdown') |
 | fieldtype | `StonecropFieldType` | The semantic field type (e.g., 'Data', 'Int', 'Select') |
+
+### GetRecordOptions
+
+Options for fetching a single record
+
+**Definition:**
+
+```typescript
+export interface GetRecordOptions {
+  includeNested?: boolean | string[];
+  maxDepth?: number;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| includeNested? | `boolean \| string[]` | Include nested link sub-selections. - `true`: include all descendant links - `string[]`: include only named links - `false` / omitted: scalar fields only (default) |
+| maxDepth? | `number` | Maximum depth for recursive sub-selections. No default — unlimited when omitted. |
+
+### GetRecordsOptions
+
+Options for fetching multiple records
+
+**Definition:**
+
+```typescript
+export interface GetRecordsOptions {
+  filters?: Record<string, unknown>;
+  limit?: number;
+  offset?: number;
+  orderBy?: string;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| filters? | `Record<string, unknown>` | Filter expression (field-value pairs) |
+| limit? | `number` | Maximum number of records to return |
+| offset? | `number` | Number of records to skip |
+| orderBy? | `string` | Order by expression (e.g. 'NAME_ASC') |
 
 ### GraphQLConversionFieldMeta
 

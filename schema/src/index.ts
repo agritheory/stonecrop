@@ -12,6 +12,8 @@ export type {
 	DoctypeContext,
 	DoctypeMeta,
 	DoctypeRef,
+	GetRecordOptions,
+	GetRecordsOptions,
 	LinkDeclaration,
 	WorkflowMeta,
 } from './doctype'

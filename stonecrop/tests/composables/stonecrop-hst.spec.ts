@@ -94,7 +94,8 @@ describe('useStonecrop HST mode', () => {
 		expect(vm.handleHSTChange).toBeDefined()
 		expect(vm.formData).toBeDefined()
 		expect(vm.resolvedSchema).toBeDefined()
-		expect(vm.loadNestedData).toBeDefined()
+		expect(vm.initializeNestedData).toBeDefined()
+		expect(vm.fetchNestedData).toBeDefined()
 		expect(vm.collectRecordPayload).toBeDefined()
 		expect(vm.createNestedContext).toBeDefined()
 	})
@@ -360,7 +361,7 @@ describe('useStonecrop HST mode', () => {
 		// Should not throw
 	})
 
-	it('loadNestedData returns initialized record when no existing data', async () => {
+	it('initializeNestedData scaffolds empty child records', async () => {
 		const taskDoctype = createDoctype('Task')
 		registry.addDoctype(taskDoctype)
 
@@ -384,23 +385,20 @@ describe('useStonecrop HST mode', () => {
 		await new Promise(resolve => setTimeout(resolve, 50))
 
 		const vm = wrapper.vm as any
-		const nested = vm.loadNestedData('task.new.address', addressDoctype)
-		expect(nested).toBeDefined()
-		expect(typeof nested).toBe('object')
+		vm.initializeNestedData('task.new', addressDoctype)
+
+		// Verify fields were scaffolded into HST
+		const street = vm.hstStore.get('task.new.street')
+		expect(street).toBeDefined()
 	})
 
-	it('loadNestedData with recordId tries to load existing data', async () => {
+	it('fetchNestedData throws CLIENT_REQUIRED when no client', async () => {
 		const taskDoctype = createDoctype('Task')
 		registry.addDoctype(taskDoctype)
 
-		const addressDoctype = createDoctype('Address', [
-			{ fieldname: 'street', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
-		])
-		registry.addDoctype(addressDoctype)
-
 		const TestComponent = defineComponent({
 			setup() {
-				return useStonecrop({ registry, doctype: taskDoctype, recordId: 'new' })
+				return useStonecrop({ registry, doctype: taskDoctype, recordId: 't1' })
 			},
 			template: '<div>test</div>',
 		})
@@ -412,46 +410,7 @@ describe('useStonecrop HST mode', () => {
 		await new Promise(resolve => setTimeout(resolve, 50))
 
 		const vm = wrapper.vm as any
-		const nested = vm.loadNestedData('task.new.address', addressDoctype, 'addr-1')
-		expect(nested).toBeDefined()
-	})
-
-	it('loadNestedData returns existing data when found in HST', async () => {
-		const addressDoctype = createDoctype('Address', [
-			{ fieldname: 'street', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
-			{ fieldname: 'city', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
-		])
-		registry.addDoctype(addressDoctype)
-
-		const customerDoctype = createDoctype('Customer', [
-			{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
-			{ fieldname: 'address', fieldtype: 'Doctype', options: 'address' } as SchemaTypes,
-		])
-		registry.addDoctype(customerDoctype)
-
-		const TestComponent = defineComponent({
-			setup() {
-				return useStonecrop({ registry, doctype: customerDoctype, recordId: 'cust-99' })
-			},
-			template: '<div>test</div>',
-		})
-
-		const wrapper = mount(TestComponent, {
-			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
-		})
-		await wrapper.vm.$nextTick()
-		await new Promise(resolve => setTimeout(resolve, 50))
-
-		const vm = wrapper.vm as any
-		const existingAddress = { street: '456 Oak Ave', city: 'Boston' }
-		vm.handleHSTChange({
-			path: 'customer.cust-99.address',
-			value: existingAddress,
-			fieldname: 'address',
-		})
-
-		const nested = vm.loadNestedData('customer.cust-99.address', addressDoctype, 'addr-1')
-		expect(nested).toEqual(existingAddress)
+		await expect(vm.fetchNestedData('task.t1', taskDoctype, 't1')).rejects.toThrow('No data client configured')
 	})
 
 	it('operationLog API is available in HST mode', async () => {

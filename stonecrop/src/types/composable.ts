@@ -1,4 +1,4 @@
-import { SchemaTypes } from '@stonecrop/aform'
+import type { SchemaTypes } from '@stonecrop/aform'
 import type { Ref, ComputedRef } from 'vue'
 
 import type Doctype from '../doctype'
@@ -179,14 +179,29 @@ export type HSTStonecropReturn = BaseStonecropReturn & {
 	 */
 	resolvedSchema: Ref<SchemaTypes[]>
 	/**
-	 * Loads or initializes nested doctype data.
-	 * Use this when rendering a nested form component. Checks HST first, then initializes defaults.
-	 * @param parentPath - The HST path to check for existing data
-	 * @param childDoctype - The nested doctype metadata
-	 * @param recordId - Optional record ID (reserved for future API fetch)
-	 * @returns The loaded or initialized data object
+	 * Scaffold empty child records from defaults for all descendant links.
+	 * @param path - The HST path where initialized data should be stored
+	 * @param doctype - The doctype to initialize
+	 * @param options - Options (includeNested to limit which links are scaffolded)
 	 */
-	loadNestedData: (parentPath: string, childDoctype: Doctype, recordId?: string) => Record<string, any>
+	initializeNestedData: (path: string, doctype: Doctype, options?: { includeNested?: boolean | string[] }) => void
+
+	/**
+	 * Fetch a record and its nested data from the server.
+	 * Stores each field at its own HST path per the field-level convention.
+	 * @param path - The HST path (e.g., "recipe.r1")
+	 * @param doctype - The doctype to fetch
+	 * @param recordId - Record ID to fetch
+	 * @param options - Query options (includeNested to control which links are fetched)
+	 * @throws Error with code "CLIENT_REQUIRED" if no data client is configured
+	 * @throws Error with code "RECORD_NOT_FOUND" if the server returns null
+	 */
+	fetchNestedData: (
+		path: string,
+		doctype: Doctype,
+		recordId: string,
+		options?: { includeNested?: boolean | string[] }
+	) => Promise<void>
 	/**
 	 * Collects a complete record payload with all nested data from HST.
 	 * Use this before submitting to an API. Recursively includes 1:1 and 1:many nested records.

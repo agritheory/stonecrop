@@ -29,13 +29,14 @@ export class Stonecrop {
 	 */
 	static _root: Stonecrop
 
-	private hstStore: HSTNode
+	/** The HST store instance for reactive state management */
+	private hstStore!: HSTNode
 	private _operationLogStore?: ReturnType<typeof useOperationLogStore>
 	private _operationLogConfig?: Partial<OperationLogConfig>
 	private _client?: DataClient
 
 	/** The registry instance containing all doctype definitions */
-	readonly registry: Registry
+	readonly registry!: Registry
 
 	/**
 	 * Creates a new Stonecrop instance with HST integration (singleton pattern)
@@ -476,31 +477,84 @@ export class Stonecrop {
 	}
 
 	/**
-	 * Load nested data from HST or initialize with defaults
-	 * @param parentPath - The HST path to check for existing data
-	 * @param childDoctype - The child doctype metadata
-	 * @param _recordId - Optional record ID to load
-	 * @returns The loaded or initialized data
+	 * Scaffold empty child records from defaults for all descendant links.
+	 *
+	 * Used when opening a new form — no server data, just scaffolded empty rows.
+	 * Does not require a data client.
+	 *
+	 * @param path - HST path where the initialized data should be stored
+	 * @param doctype - The doctype to initialize
+	 * @param options - Options (includeNested to limit which links are scaffolded)
 	 * @public
 	 */
-	loadNestedData(parentPath: string, childDoctype: Doctype, _recordId?: string): Record<string, any> {
-		// Check if data already exists in HST
-		const existingData = this.hstStore.get(parentPath)
-		if (existingData && typeof existingData === 'object') {
-			return existingData as Record<string, any>
-		}
-
-		// TODO: If recordId provided and no HST data, fetch from API using this._client
-		// For now, always fall through to initialize new record
+	initializeNestedData(path: string, doctype: Doctype, _options?: { includeNested?: boolean | string[] }): void {
+		const slug = doctype.slug
+		this.ensureDoctypeExists(slug)
 
 		// Resolve schema and initialize with defaults
-		const schemaArray = childDoctype.schema
-			? Array.isArray(childDoctype.schema)
-				? childDoctype.schema
-				: Array.from(childDoctype.schema)
+		const schemaArray = doctype.schema
+			? Array.isArray(doctype.schema)
+				? doctype.schema
+				: Array.from(doctype.schema)
 			: []
 		const resolvedSchema = this.registry.resolveSchema(schemaArray)
-		return this.registry.initializeRecord(resolvedSchema)
+		const record = this.registry.initializeRecord(resolvedSchema)
+
+		// Ensure the parent path exists in HST before setting child fields
+		const existingData = this.hstStore.get(path)
+		if (!existingData) {
+			this.hstStore.set(path, {}, 'system')
+		}
+
+		// Store each field at its own HST path
+		for (const [key, value] of Object.entries(record)) {
+			this.hstStore.set(`${path}.${key}`, value, 'system')
+		}
+	}
+
+	/**
+	 * Fetch a record and its nested data from the server.
+	 *
+	 * Calls `_client.getRecordWithNested()` and stores each scalar field at its own HST path
+	 * (`slug.recordId.fieldname`), children at the link-level path (`slug.recordId.linkname`).
+	 *
+	 * @param path - HST path (e.g., "recipe.r1")
+	 * @param doctype - The doctype to fetch
+	 * @param recordId - Record ID to fetch
+	 * @param options - Query options (includeNested to control which links are fetched)
+	 * @throws Error with code `"CLIENT_REQUIRED"` if no data client is configured
+	 * @throws Error with code `"RECORD_NOT_FOUND"` if the server returns null
+	 * @public
+	 */
+	async fetchNestedData(
+		path: string,
+		doctype: Doctype,
+		recordId: string,
+		options?: { includeNested?: boolean | string[] }
+	): Promise<void> {
+		if (!this._client) {
+			throw createCodedError(
+				'No data client configured. Call setClient() with a DataClient implementation ' +
+					'(e.g., StonecropClient from @stonecrop/graphql-client) before fetching records.',
+				'CLIENT_REQUIRED'
+			)
+		}
+
+		const record = await this._client.getRecord({ name: doctype.doctype }, recordId, {
+			includeNested: options?.includeNested ?? true,
+		})
+
+		if (!record) {
+			throw createCodedError(`Record not found: ${doctype.doctype} ${recordId}`, 'RECORD_NOT_FOUND')
+		}
+
+		// Store each scalar field at its own HST path, children at link-level path
+		const slug = doctype.slug
+		this.ensureDoctypeExists(slug)
+
+		for (const [key, value] of Object.entries(record)) {
+			this.hstStore.set(`${slug}.${recordId}.${key}`, value, 'system')
+		}
 	}
 }
 
@@ -549,3 +603,17 @@ function collectNestedData(resolvedSchema: SchemaTypes[], basePath: string, hstS
 }
 
 export { collectNestedData }
+
+/**
+ * Create an Error with a `code` property for programmatic error handling.
+ * @internal
+ */
+interface CodedError extends Error {
+	code: string
+}
+
+function createCodedError(message: string, code: string): CodedError {
+	const error = new Error(message) as CodedError
+	error.code = code
+	return error
+}

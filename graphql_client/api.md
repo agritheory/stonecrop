@@ -31,7 +31,7 @@ Only declares variables ($limit, $offset, $orderBy) that are actually used, avoi
 **Signature:**
 
 ```typescript
-export declare function buildListQuery(meta: DoctypeMeta, connectionFieldName: (t: string) => string, orderByTypeName: (t: string) => string, options?: BuildListQueryOptions): string;
+export declare function buildListQuery(meta: DoctypeMeta, connectionFieldName: (t: string) => string, orderByTypeName: (t: string) => string, options?: GetRecordsOptions): string;
 ```
 
 **Parameters:**
@@ -41,7 +41,7 @@ export declare function buildListQuery(meta: DoctypeMeta, connectionFieldName: (
 | meta | `DoctypeMeta` | Doctype metadata |
 | connectionFieldName | `(t: string) => string` | Function to derive the connection field name from a table name |
 | orderByTypeName | `(t: string) => string` | Function to derive the order-by type name from a table name |
-| options | `BuildListQueryOptions` | Query options (limit, offset, orderBy) |
+| options | `GetRecordsOptions` | Query options (limit, offset, orderBy) |
 
 ### buildRecordQuery
 
@@ -52,7 +52,7 @@ Generates scalar field selections. When `includeNested` is set, recursively incl
 **Signature:**
 
 ```typescript
-export declare function buildRecordQuery(meta: DoctypeMeta, recordFieldName: (t: string) => string, recordArgName: (t: string) => string, recordArgType: (t: string) => string, options?: BuildRecordQueryOptions): string;
+export declare function buildRecordQuery(meta: DoctypeMeta, recordFieldName: (t: string) => string, recordArgName: (t: string) => string, recordArgType: (t: string) => string, registry?: Map<string, DoctypeMeta>, options?: GetRecordOptions): string;
 ```
 
 **Parameters:**
@@ -63,53 +63,10 @@ export declare function buildRecordQuery(meta: DoctypeMeta, recordFieldName: (t:
 | recordFieldName | `(t: string) => string` | Function to derive the query field name from a table name |
 | recordArgName | `(t: string) => string` | Function to derive the argument name from a table name |
 | recordArgType | `(t: string) => string` | Function to derive the argument type from a table name |
-| options | `BuildRecordQueryOptions` | Query options |
+| registry | `Map<string, DoctypeMeta>` | Doctype registry for resolving link targets. Required when includeNested is set. |
+| options | `GetRecordOptions` | Query options (includeNested, maxDepth) |
 
 ## Interfaces
-
-### BuildListQueryOptions
-
-Options for building a list query
-
-**Definition:**
-
-```typescript
-export interface BuildListQueryOptions {
-  limit?: number;
-  offset?: number;
-  orderBy?: string;
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| limit? | `number` | Maximum number of records to return |
-| offset? | `number` | Number of records to skip |
-| orderBy? | `string` | Order by expression (e.g. 'NAME_ASC', 'CREATED_AT_DESC') |
-
-### BuildRecordQueryOptions
-
-Options for building a record query
-
-**Definition:**
-
-```typescript
-export interface BuildRecordQueryOptions {
-  doctypeRegistry?: Map<string, DoctypeMeta>;
-  includeNested?: boolean | string[];
-  maxDepth?: number;
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| doctypeRegistry? | `Map<string, DoctypeMeta>` | Registry of doctype metadata for resolving link targets. Required when `includeNested` is truthy. |
-| includeNested? | `boolean \| string[]` | Include nested link sub-selections. - `true`: include all descendant links - `string[]`: include only named links - `false` / omitted: scalar fields only (default) |
-| maxDepth? | `number` | Maximum depth for recursive sub-selections. No default — unlimited when omitted. |
 
 ### StonecropClientOptions
 
@@ -234,10 +191,12 @@ getMeta(context: DoctypeContext): Promise<DoctypeMeta | null>
 
 #### getRecord
 
-Get a single record by ID
+Get a single record by ID.
+
+When `includeNested` is set, builds a query with sub-selections for descendant links and returns parent + merged children. When omitted, returns flat scalar data.
 
 ```typescript
-getRecord(doctype: DoctypeRef, recordId: string): Promise<Record<string, unknown> | null>
+getRecord(doctype: DoctypeRef, recordId: string, options: GetRecordOptions): Promise<Record<string, unknown> | null>
 ```
 
 **Parameters:**
@@ -246,18 +205,14 @@ getRecord(doctype: DoctypeRef, recordId: string): Promise<Record<string, unknown
 |-----------|------|-------------|
 | doctype | `DoctypeRef` | Doctype reference (name and optional slug) |
 | recordId | `string` | Record ID to fetch |
+| options | `GetRecordOptions` | Query options (includeNested, maxDepth) |
 
 #### getRecords
 
 Get multiple records with optional filtering and pagination
 
 ```typescript
-getRecords(doctype: DoctypeRef, options: {
-        filters?: Record<string, unknown>;
-        orderBy?: string;
-        limit?: number;
-        offset?: number;
-    }): Promise<Record<string, unknown>[]>
+getRecords(doctype: DoctypeRef, options: GetRecordsOptions): Promise<Record<string, unknown>[]>
 ```
 
 **Parameters:**
@@ -265,25 +220,7 @@ getRecords(doctype: DoctypeRef, options: {
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | doctype | `DoctypeRef` | Doctype reference (name and optional slug) |
-| options | `{ filters?: Record<string, unknown>; orderBy?: string; limit?: number; offset?: number; }` | Query options (filters, orderBy, limit, offset) |
-
-#### getRecordWithNested
-
-Get a single record with nested data from descendant links.
-
-Uses `buildRecordQuery()` to generate a GraphQL query that includes sub-selections for descendant links declared in the doctype's `links`.
-
-```typescript
-getRecordWithNested(doctype: DoctypeRef, recordId: string, options: BuildRecordQueryOptions): Promise<Record<string, unknown> | null>
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| doctype | `DoctypeRef` | Doctype reference (name and optional slug) |
-| recordId | `string` | Record ID to fetch |
-| options | `BuildRecordQueryOptions` | Query options (includeNested, doctypeRegistry, maxDepth) |
+| options | `GetRecordsOptions` | Query options (filters, orderBy, limit, offset) |
 
 #### mutate
 
@@ -334,6 +271,20 @@ runAction(doctype: DoctypeRef, action: string, args: unknown[]): Promise<{
 | doctype | `DoctypeRef` | Doctype reference (name and optional slug) |
 | action | `string` | Action name to execute |
 | args | `unknown[]` | Action arguments |
+
+#### setRegistry
+
+Set the doctype registry for nested query building.
+
+```typescript
+setRegistry(registry: Map<string, DoctypeMeta>): void
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| registry | `Map<string, DoctypeMeta>` | Map of doctype slug to doctype metadata |
 
 ## Variables
 

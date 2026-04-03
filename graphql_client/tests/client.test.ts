@@ -387,9 +387,8 @@ describe('buildRecordQuery', () => {
 	})
 
 	it('includes connection sub-selection for noneOrMany links', () => {
-		const query = buildRecordQuery(recipeMeta, recordFieldName, recordArgName, recordArgType, {
+		const query = buildRecordQuery(recipeMeta, recordFieldName, recordArgName, recordArgType, registry, {
 			includeNested: true,
-			doctypeRegistry: registry,
 		})
 		expect(query).toContain('RecipeTasksByRecipeId')
 		expect(query).toContain('nodes')
@@ -397,18 +396,16 @@ describe('buildRecordQuery', () => {
 	})
 
 	it('includes direct object sub-selection for atMostOne links', () => {
-		const query = buildRecordQuery(recipeMeta, recordFieldName, recordArgName, recordArgType, {
+		const query = buildRecordQuery(recipeMeta, recordFieldName, recordArgName, recordArgType, registry, {
 			includeNested: true,
-			doctypeRegistry: registry,
 		})
 		expect(query).toContain('supersededBy {')
 		expect(query).not.toContain('supersededBysBy')
 	})
 
 	it('respects seen Set to prevent infinite recursion on circular links', () => {
-		const query = buildRecordQuery(recipeMeta, recordFieldName, recordArgName, recordArgType, {
+		const query = buildRecordQuery(recipeMeta, recordFieldName, recordArgName, recordArgType, registry, {
 			includeNested: true,
-			doctypeRegistry: registry,
 		})
 		// recipe → recipe-task → recipe (seen, skipped)
 		expect(query).toContain('RecipeTasksByRecipeId')
@@ -417,9 +414,8 @@ describe('buildRecordQuery', () => {
 	})
 
 	it('respects maxDepth parameter', () => {
-		const query = buildRecordQuery(recipeMeta, recordFieldName, recordArgName, recordArgType, {
+		const query = buildRecordQuery(recipeMeta, recordFieldName, recordArgName, recordArgType, registry, {
 			includeNested: true,
-			doctypeRegistry: registry,
 			maxDepth: 1,
 		})
 		expect(query).toContain('RecipeTasksByRecipeId')
@@ -428,16 +424,16 @@ describe('buildRecordQuery', () => {
 	})
 
 	it('filters to named fieldnames when includeNested is string[]', () => {
-		const query = buildRecordQuery(recipeMeta, recordFieldName, recordArgName, recordArgType, {
+		const query = buildRecordQuery(recipeMeta, recordFieldName, recordArgName, recordArgType, registry, {
 			includeNested: ['supersededBy'],
-			doctypeRegistry: registry,
 		})
 		expect(query).toContain('supersededBy {')
 		expect(query).not.toContain('RecipeTasksByRecipeId')
 	})
 
-	it('returns scalar-only query when includeNested is truthy but doctypeRegistry is absent', () => {
-		const query = buildRecordQuery(recipeMeta, recordFieldName, recordArgName, recordArgType, {
+	it('returns scalar-only query when includeNested is truthy but registry is absent', () => {
+		const query = buildRecordQuery(recipeMeta, recordFieldName, recordArgName, recordArgType, undefined, {
+			includeNested: true,
 			includeNested: true,
 		})
 		expect(query).toContain('name')
@@ -502,15 +498,15 @@ describe('buildListQuery', () => {
 })
 
 // ===========================================================================
-// getRecordWithNested
+// getRecord (nested)
 // ===========================================================================
 
-describe('StonecropClient.getRecordWithNested', () => {
-	it('returns null when meta is not found', async () => {
+describe('StonecropClient.getRecord with nested', () => {
+	it('returns null when meta is not found (nested)', async () => {
 		const client = new StonecropClient({ endpoint: ENDPOINT })
 		mockFetch.mockReturnValue(makeFetchResponse({ stonecropMeta: null }))
 
-		const result = await client.getRecordWithNested({ name: 'Unknown' }, '1')
+		const result = await client.getRecord({ name: 'Unknown' }, '1', { includeNested: true })
 		expect(result).toBeNull()
 	})
 
@@ -535,14 +531,15 @@ describe('StonecropClient.getRecordWithNested', () => {
 			})
 		)
 
-		const doctypeRegistry = new Map<string, DoctypeMeta>([
-			['recipe', recipeMeta],
-			['recipe-task', recipeTaskMeta],
-		])
+		client.setRegistry(
+			new Map<string, DoctypeMeta>([
+				['recipe', recipeMeta],
+				['recipe-task', recipeTaskMeta],
+			])
+		)
 
-		const result = await client.getRecordWithNested({ name: 'Recipe' }, 'r1', {
+		const result = await client.getRecord({ name: 'Recipe' }, 'r1', {
 			includeNested: true,
-			doctypeRegistry,
 		})
 
 		expect(result).not.toBeNull()
@@ -569,38 +566,41 @@ describe('StonecropClient.getRecordWithNested', () => {
 			})
 		)
 
-		const doctypeRegistry = new Map<string, DoctypeMeta>([
-			['recipe', recipeMeta],
-			['recipe-task', recipeTaskMeta],
-		])
+		client.setRegistry(
+			new Map<string, DoctypeMeta>([
+				['recipe', recipeMeta],
+				['recipe-task', recipeTaskMeta],
+			])
+		)
 
-		const result = await client.getRecordWithNested({ name: 'Recipe' }, 'r1', {
+		const result = await client.getRecord({ name: 'Recipe' }, 'r1', {
 			includeNested: true,
-			doctypeRegistry,
 		})
 
 		expect(result!.tasks).toEqual([])
 	})
 
-	it('returns record without merge when no links or includeNested is false', async () => {
+	it('returns record without merge when includeNested is not set', async () => {
 		const client = new StonecropClient({ endpoint: ENDPOINT })
 
-		mockFetch.mockReturnValueOnce(makeFetchResponse({ stonecropMeta: taskMeta })).mockReturnValueOnce(
-			makeFetchResponse({
-				taskById: {
-					id: 't1',
-					title: 'My Task',
-				},
-			})
-		)
+		mockFetch.mockReturnValueOnce(makeFetchResponse({ stonecropRecord: { data: { id: 't1', title: 'My Task' } } }))
 
-		const result = await client.getRecordWithNested({ name: 'Task' }, 't1')
+		const result = await client.getRecord({ name: 'Task' }, 't1')
 
 		expect(result).not.toBeNull()
 		expect(result!.title).toBe('My Task')
 	})
 
-	it('returns null when record is not found in query result', async () => {
+	it('returns null when record is not found in query result (flat)', async () => {
+		const client = new StonecropClient({ endpoint: ENDPOINT })
+
+		mockFetch.mockReturnValueOnce(makeFetchResponse({ stonecropRecord: { data: null } }))
+
+		const result = await client.getRecord({ name: 'Task' }, 't1')
+		expect(result).toBeNull()
+	})
+
+	it('returns null when record is not found in query result (nested)', async () => {
 		const client = new StonecropClient({ endpoint: ENDPOINT })
 
 		mockFetch.mockReturnValueOnce(makeFetchResponse({ stonecropMeta: taskMeta })).mockReturnValueOnce(
@@ -609,7 +609,7 @@ describe('StonecropClient.getRecordWithNested', () => {
 			})
 		)
 
-		const result = await client.getRecordWithNested({ name: 'Task' }, 't1')
+		const result = await client.getRecord({ name: 'Task' }, 't1', { includeNested: true })
 		expect(result).toBeNull()
 	})
 })

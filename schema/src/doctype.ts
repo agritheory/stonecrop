@@ -175,6 +175,41 @@ export interface DoctypeRef {
 }
 
 /**
+ * Options for fetching a single record
+ * @public
+ */
+export interface GetRecordOptions {
+	/**
+	 * Include nested link sub-selections.
+	 * - `true`: include all descendant links
+	 * - `string[]`: include only named links
+	 * - `false` / omitted: scalar fields only (default)
+	 */
+	includeNested?: boolean | string[]
+
+	/**
+	 * Maximum depth for recursive sub-selections.
+	 * No default — unlimited when omitted.
+	 */
+	maxDepth?: number
+}
+
+/**
+ * Options for fetching multiple records
+ * @public
+ */
+export interface GetRecordsOptions {
+	/** Filter expression (field-value pairs) */
+	filters?: Record<string, unknown>
+	/** Order by expression (e.g. 'NAME_ASC') */
+	orderBy?: string
+	/** Maximum number of records to return */
+	limit?: number
+	/** Number of records to skip */
+	offset?: number
+}
+
+/**
  * Interface for data clients that fetch doctype metadata and records.
  * Implemented by \@stonecrop/graphql-client's StonecropClient.
  * Custom implementations can use any backend (REST, local storage, etc.).
@@ -193,27 +228,24 @@ export interface DataClient<T extends DoctypeRef = DoctypeRef, M = DoctypeMeta> 
 
 	/**
 	 * Fetch a single record by ID
+	 *
+	 * When `includeNested` is set, builds a query with sub-selections for descendant
+	 * links and returns parent + merged children. When omitted, returns flat scalar data.
+	 *
 	 * @param doctype - Doctype reference (name and optional slug)
 	 * @param recordId - Record ID to fetch
+	 * @param options - Query options
 	 * @returns Record data or null if not found
 	 */
-	getRecord(doctype: T, recordId: string): Promise<Record<string, unknown> | null>
+	getRecord(doctype: T, recordId: string, options?: GetRecordOptions): Promise<Record<string, unknown> | null>
 
 	/**
 	 * Fetch multiple records
 	 * @param doctype - Doctype reference (name and optional slug)
-	 * @param options - Optional filters, pagination, sorting
+	 * @param options - Query options
 	 * @returns Array of record data
 	 */
-	getRecords(
-		doctype: T,
-		options?: {
-			filters?: Record<string, unknown>
-			orderBy?: string
-			limit?: number
-			offset?: number
-		}
-	): Promise<Record<string, unknown>[]>
+	getRecords(doctype: T, options?: GetRecordsOptions): Promise<Record<string, unknown>[]>
 
 	/**
 	 * Execute a doctype action (e.g., SUBMIT, APPROVE, save).
