@@ -58,6 +58,8 @@ export interface ValidatorOptions {
 	registry?: Registry
 	/** Whether to validate Link field targets */
 	validateLinkTargets?: boolean
+	/** Whether to validate links object (target resolution, backlink consistency, layout entries) */
+	validateLinks?: boolean
 	/** Whether to validate workflow reachability */
 	validateWorkflows?: boolean
 	/** Whether to validate action registration */

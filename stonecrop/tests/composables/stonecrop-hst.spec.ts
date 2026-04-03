@@ -539,7 +539,7 @@ describe('useStonecrop HST mode', () => {
 			{
 				fieldname: 'items',
 				fieldtype: 'Doctype',
-				cardinality: 'many',
+				cardinality: 'noneOrMany',
 				options: 'item',
 			} as SchemaTypes,
 		])
@@ -593,7 +593,7 @@ describe('useStonecrop HST mode', () => {
 			{
 				fieldname: 'items',
 				fieldtype: 'Doctype',
-				cardinality: 'many',
+				cardinality: 'noneOrMany',
 				options: 'item',
 			} as SchemaTypes,
 		])
@@ -692,7 +692,7 @@ describe('useStonecrop HST mode', () => {
 			{
 				fieldname: 'phones',
 				fieldtype: 'Doctype',
-				cardinality: 'many',
+				cardinality: 'noneOrMany',
 				options: 'phone',
 			} as SchemaTypes,
 		])

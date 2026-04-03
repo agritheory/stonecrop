@@ -66,7 +66,7 @@ export type DoctypeManySchema = BaseSchema & {
     fieldtype: 'Doctype';
     options: string;
     label?: string;
-    cardinality: 'many';
+    cardinality: 'noneOrMany' | 'atLeastOne';
     columns?: TableColumn[];
     config?: TableConfig;
     rows?: TableRow[];
@@ -78,7 +78,7 @@ export type DoctypeOneSchema = BaseSchema & {
     fieldtype: 'Doctype';
     options: string;
     label?: string;
-    cardinality?: 'one';
+    cardinality?: 'one' | 'atMostOne';
     schema?: SchemaTypes[];
 };
 

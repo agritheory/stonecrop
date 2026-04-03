@@ -5,6 +5,7 @@
  */
 
 import type { SchemaTypes } from '@stonecrop/aform'
+import type { LinkDeclaration } from '@stonecrop/schema'
 import type { List, Map as ImmutableMap } from 'immutable'
 import type { AnyStateNodeConfig } from 'xstate'
 
@@ -28,6 +29,7 @@ export class SchemaValidator {
 		this.options = {
 			registry: options.registry || null!,
 			validateLinkTargets: options.validateLinkTargets ?? true,
+			validateLinks: options.validateLinks ?? true,
 			validateActions: options.validateActions ?? true,
 			validateWorkflows: options.validateWorkflows ?? true,
 			validateRequiredProperties: options.validateRequiredProperties ?? true,
@@ -40,13 +42,17 @@ export class SchemaValidator {
 	 * @param schema - Schema fields (List or Array)
 	 * @param workflow - Optional workflow configuration
 	 * @param actions - Optional actions map
+	 * @param links - Optional links object
+	 * @param layout - Optional layout array
 	 * @returns Validation result
 	 */
 	validate(
 		doctype: string,
 		schema: List<SchemaTypes> | SchemaTypes[] | undefined,
 		workflow?: AnyStateNodeConfig,
-		actions?: ImmutableMap<string, string[]> | Map<string, string[]>
+		actions?: ImmutableMap<string, string[]> | Map<string, string[]>,
+		links?: Record<string, LinkDeclaration>,
+		layout?: string[]
 	): ValidationResult {
 		const issues: ValidationIssue[] = []
 
@@ -61,6 +67,11 @@ export class SchemaValidator {
 		// Validate Link field targets
 		if (this.options.validateLinkTargets && this.options.registry) {
 			issues.push(...this.validateLinkFields(doctype, schemaArray, this.options.registry))
+		}
+
+		// Validate links object
+		if (this.options.validateLinks && this.options.registry && links) {
+			issues.push(...this.validateLinkDeclarations(doctype, links, schemaArray, layout, this.options.registry))
 		}
 
 		// Validate workflow configuration
@@ -190,6 +201,92 @@ export class SchemaValidator {
 					Array.isArray(nestedSchema) ? nestedSchema : (nestedSchema as { toArray?: () => unknown[] }).toArray?.() || []
 				) as SchemaTypes[]
 				issues.push(...this.validateLinkFields(doctype, nestedArray, registry))
+			}
+		}
+
+		return issues
+	}
+
+	/**
+	 * Validates link declarations: target resolution, backlink consistency, layout entries
+	 * @internal
+	 */
+	private validateLinkDeclarations(
+		doctype: string,
+		links: Record<string, LinkDeclaration>,
+		schema: SchemaTypes[],
+		layout: string[] | undefined,
+		registry: Registry
+	): ValidationIssue[] {
+		const issues: ValidationIssue[] = []
+
+		for (const [fieldname, link] of Object.entries(links)) {
+			// Check target resolves in registry
+			const targetDoctype = registry.registry[link.target]
+			if (!targetDoctype) {
+				issues.push({
+					severity: ValidationSeverity.ERROR,
+					rule: 'link-invalid-target',
+					message: `Link "${fieldname}" references non-existent doctype: "${link.target}"`,
+					doctype,
+					fieldname,
+					context: { target: link.target },
+				})
+				continue
+			}
+
+			// Warn on self-referential target
+			if (link.target === doctype) {
+				issues.push({
+					severity: ValidationSeverity.WARNING,
+					rule: 'link-self-referential',
+					message: `Link "${fieldname}" is self-referential (target: "${link.target}")`,
+					doctype,
+					fieldname,
+					context: { target: link.target },
+				})
+			}
+
+			// Check backlink consistency
+			if (link.backlink && targetDoctype.links) {
+				const reciprocalLink = targetDoctype.links[link.backlink]
+				if (!reciprocalLink) {
+					issues.push({
+						severity: ValidationSeverity.ERROR,
+						rule: 'link-backlink-missing',
+						message: `Backlink "${link.backlink}" not found on target doctype "${link.target}"`,
+						doctype,
+						fieldname,
+						context: { backlink: link.backlink, target: link.target },
+					})
+				} else if (reciprocalLink.target !== doctype) {
+					issues.push({
+						severity: ValidationSeverity.WARNING,
+						rule: 'link-backlink-mismatch',
+						message: `Backlink "${link.backlink}" on "${link.target}" points to "${reciprocalLink.target}" instead of "${doctype}"`,
+						doctype,
+						fieldname,
+						context: { backlink: link.backlink, target: link.target, actualTarget: reciprocalLink.target },
+					})
+				}
+			}
+		}
+
+		// Check layout entries
+		if (layout) {
+			const fieldnames = new Set(schema.map(f => f.fieldname))
+			const linknames = new Set(Object.keys(links))
+
+			for (const entry of layout) {
+				if (!fieldnames.has(entry) && !linknames.has(entry)) {
+					issues.push({
+						severity: ValidationSeverity.ERROR,
+						rule: 'layout-invalid-entry',
+						message: `Layout entry "${entry}" not found in fields or links`,
+						doctype,
+						context: { entry },
+					})
+				}
 			}
 		}
 

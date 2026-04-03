@@ -117,7 +117,7 @@ declare function install(app: App): void;
 
 ### isDoctypeMany
 
-Type guard that checks whether a Doctype schema field has `cardinality: 'many'`
+Type guard that checks whether a Doctype schema field represents a 1:many child table
 
 **Signature:**
 
@@ -179,7 +179,7 @@ export type DoctypeManySchema = BaseSchema & {
     fieldtype: 'Doctype';
     options: string;
     label?: string;
-    cardinality: 'many';
+    cardinality: 'noneOrMany' | 'atLeastOne';
     columns?: TableColumn[];
     config?: TableConfig;
     rows?: TableRow[];
@@ -198,7 +198,7 @@ export type DoctypeOneSchema = BaseSchema & {
     fieldtype: 'Doctype';
     options: string;
     label?: string;
-    cardinality?: 'one';
+    cardinality?: 'one' | 'atMostOne';
     schema?: SchemaTypes[];
 };
 ```

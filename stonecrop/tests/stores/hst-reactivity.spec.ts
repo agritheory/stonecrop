@@ -196,7 +196,7 @@ describe('HST Vue Reactivity', () => {
 		const mockSchema = List([
 			{ fieldname: 'name', fieldtype: 'Data', label: 'Name', component: 'MockATextInput' },
 			{ fieldname: 'active', fieldtype: 'Check', label: 'Active', component: 'MockACheckbox' },
-			{ fieldname: 'items', fieldtype: 'Doctype', cardinality: 'many', label: 'Items', component: 'MockATable' },
+			{ fieldname: 'items', fieldtype: 'Doctype', cardinality: 'noneOrMany', label: 'Items', component: 'MockATable' },
 		] as SchemaTypes[])
 
 		const mockWorkflow: UnknownMachineConfig = {

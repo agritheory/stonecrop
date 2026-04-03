@@ -1,4 +1,5 @@
 import type { SchemaTypes } from '@stonecrop/aform'
+import type { LinkDeclaration } from '@stonecrop/schema'
 import { Router } from 'vue-router'
 
 import Doctype from './doctype'
@@ -20,13 +21,32 @@ export default class Registry {
 	 *
 	 * @defaultValue 'Registry'
 	 */
-	readonly name: string
+	readonly name: string = 'Registry'
 
 	/**
 	 * The registry property contains a collection of doctypes
+	 *
+	 * @defaultValue `{}`
 	 * @see {@link Doctype}
 	 */
-	readonly registry: Record<string, Doctype>
+	readonly registry: Record<string, Doctype> = {}
+
+	/**
+	 * Reverse index: backlink fieldname → \{ doctype slug, link fieldname \}.
+	 * Built at schema load time for O(1) ancestor lookups.
+	 *
+	 * @defaultValue `new Map()`
+	 * @internal
+	 */
+	private _ancestorIndex: Map<string, { slug: string; fieldname: string }> = new Map()
+
+	/**
+	 * Whether the ancestor index needs rebuilding
+	 *
+	 * @defaultValue `true`
+	 * @internal
+	 */
+	private _ancestorIndexDirty: boolean = true
 
 	/**
 	 * The Vue router instance
@@ -44,8 +64,6 @@ export default class Registry {
 			return Registry._root
 		}
 		Registry._root = this
-		this.name = 'Registry'
-		this.registry = {}
 		this.router = router
 		this.getMeta = getMeta
 	}
@@ -65,6 +83,7 @@ export default class Registry {
 	addDoctype(doctype: Doctype) {
 		if (!(doctype.slug in this.registry)) {
 			this.registry[doctype.slug] = doctype
+			this._ancestorIndexDirty = true
 		}
 
 		// Register actions (including field triggers) with the field trigger engine
@@ -91,7 +110,7 @@ export default class Registry {
 	 * Walks the schema array and for each field with `fieldtype: 'Doctype'` and a string
 	 * `options` value, looks up the referenced doctype in the registry and:
 	 *
-	 * - If `cardinality: 'many'`: auto-derives `columns` from the child doctype's schema,
+	 * - If `cardinality: 'noneOrMany'` or `'atLeastOne'`: auto-derives `columns` from the child doctype's schema,
 	 *   sets `component: 'ATable'`, `config: { view: 'list' }`, and initializes `rows: []`.
 	 * - Otherwise (default/`cardinality: 'one'`): embeds the child schema as the field's
 	 *   `schema` property for 1:1 nested forms.
@@ -139,9 +158,9 @@ export default class Registry {
 					const childSchema: SchemaTypes[] = Array.isArray(doctype.schema) ? doctype.schema : Array.from(doctype.schema)
 
 					// Check cardinality to determine handling
-					const cardinality = 'cardinality' in field ? field.cardinality : undefined
+					const cardinality = 'cardinality' in field ? (field.cardinality as string) : undefined
 
-					if (cardinality === 'many') {
+					if (cardinality === 'noneOrMany' || cardinality === 'atLeastOne') {
 						// 1:many child table - derive columns, set component, config, rows
 						const resolved: Record<string, any> = { ...field }
 
@@ -201,7 +220,7 @@ export default class Registry {
 	 * - Check → `false`
 	 * - Int, Float, Decimal, Currency, Quantity → `0`
 	 * - JSON → `{}`
-	 * - Doctype with `cardinality: 'many'` → `[]`
+	 * - Doctype with `cardinality: 'noneOrMany'` or `'atLeastOne'` → `[]`
 	 * - Doctype without `cardinality` or `cardinality: 'one'` → recursively initializes nested record
 	 * - All others → `null`
 	 *
@@ -246,8 +265,8 @@ export default class Registry {
 					break
 				case 'Doctype': {
 					// Check cardinality to determine initial value
-					const cardinality = 'cardinality' in field ? field.cardinality : undefined
-					if (cardinality === 'many') {
+					const cardinality = 'cardinality' in field ? (field.cardinality as string) : undefined
+					if (cardinality === 'noneOrMany' || cardinality === 'atLeastOne') {
 						// 1:many child table - initialize as empty array
 						record[field.fieldname] = []
 					} else if ('schema' in field && Array.isArray(field.schema)) {
@@ -275,6 +294,85 @@ export default class Registry {
 	 */
 	getDoctype(slug: string): Doctype | undefined {
 		return this.registry[slug]
+	}
+
+	/**
+	 * Get all links declared on a doctype.
+	 *
+	 * @param doctypeSlug - The doctype slug to get links for
+	 * @returns Array of link declarations with fieldname, or empty array if none
+	 *
+	 * @example
+	 * ```ts
+	 * const links = registry.getDescendantLinks('recipe')
+	 * // [{ fieldname: 'tasks', target: 'recipe-task', cardinality: 'noneOrMany', backlink: 'recipe' }]
+	 * ```
+	 *
+	 * @public
+	 */
+	getDescendantLinks(doctypeSlug: string): Array<LinkDeclaration & { fieldname: string }> {
+		const doctype = this.registry[doctypeSlug]
+		if (!doctype?.links) return []
+
+		return Object.entries(doctype.links).map(([fieldname, link]) => ({
+			...link,
+			fieldname,
+		}))
+	}
+
+	/**
+	 * Get links on other doctypes that target the given doctype.
+	 *
+	 * @param doctypeSlug - The doctype slug to find ancestor links for
+	 * @returns Array of link declarations with fieldname and declaring doctype slug, or empty array
+	 *
+	 * @example
+	 * ```ts
+	 * const ancestors = registry.getAncestorLinks('recipe-task')
+	 * // [{ fieldname: 'tasks', target: 'recipe-task', cardinality: 'noneOrMany', backlink: 'recipe', doctype: 'recipe' }]
+	 * ```
+	 *
+	 * @public
+	 */
+	getAncestorLinks(doctypeSlug: string): Array<LinkDeclaration & { fieldname: string; doctype: string }> {
+		this._ensureAncestorIndex()
+
+		const results: Array<LinkDeclaration & { fieldname: string; doctype: string }> = []
+
+		for (const [_backlink, { slug: declaringSlug, fieldname }] of this._ancestorIndex) {
+			const declaringDoctype = this.registry[declaringSlug]
+			if (!declaringDoctype?.links) continue
+
+			const link = declaringDoctype.links[fieldname]
+			if (link?.target === doctypeSlug) {
+				results.push({
+					...link,
+					fieldname,
+					doctype: declaringSlug,
+				})
+			}
+		}
+
+		return results
+	}
+
+	/**
+	 * Ensure the ancestor index is up to date
+	 * @internal
+	 */
+	private _ensureAncestorIndex(): void {
+		if (!this._ancestorIndexDirty) return
+		this._ancestorIndexDirty = false
+		this._ancestorIndex.clear()
+
+		for (const [slug, doctype] of Object.entries(this.registry)) {
+			if (!doctype.links) continue
+			for (const [fieldname, link] of Object.entries(doctype.links)) {
+				if (link.backlink) {
+					this._ancestorIndex.set(link.backlink, { slug, fieldname })
+				}
+			}
+		}
 	}
 
 	// TODO: should we allow clearing the registry at all?

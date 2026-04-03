@@ -131,7 +131,7 @@ describe('Nested Doctype Support', () => {
 		it('resolves a Doctype field with cardinality:many by auto-deriving columns from child doctype', () => {
 			const schema = [
 				{ fieldname: 'customer_name', fieldtype: 'Data', component: 'ATextInput' },
-				{ fieldname: 'addresses', fieldtype: 'Doctype', cardinality: 'many', options: 'address' },
+				{ fieldname: 'addresses', fieldtype: 'Doctype', cardinality: 'noneOrMany', options: 'address' },
 			]
 			const resolved = registry.resolveSchema(schema)
 
@@ -142,7 +142,7 @@ describe('Nested Doctype Support', () => {
 			const tableField = resolved[1] as any
 			expect(tableField.fieldname).toBe('addresses')
 			expect(tableField.fieldtype).toBe('Doctype')
-			expect(tableField.cardinality).toBe('many')
+			expect(tableField.cardinality).toBe('noneOrMany')
 			expect(tableField.component).toBe('ATable')
 			expect(tableField.config).toEqual({ view: 'list' })
 			expect(tableField.rows).toEqual([])
@@ -166,7 +166,7 @@ describe('Nested Doctype Support', () => {
 				{
 					fieldname: 'addresses',
 					fieldtype: 'Doctype',
-					cardinality: 'many',
+					cardinality: 'noneOrMany',
 					options: 'address',
 					columns: customColumns,
 				},
@@ -184,7 +184,7 @@ describe('Nested Doctype Support', () => {
 				{
 					fieldname: 'addresses',
 					fieldtype: 'Doctype',
-					cardinality: 'many',
+					cardinality: 'noneOrMany',
 					options: 'address',
 					component: 'MyCustomTable',
 					config: { view: 'tree' as const, defaultTreeExpansion: 'root' as const },
@@ -198,7 +198,7 @@ describe('Nested Doctype Support', () => {
 		})
 
 		it('does not mutate original schema for Doctype cardinality:many fields', () => {
-			const schema = [{ fieldname: 'addresses', fieldtype: 'Doctype', cardinality: 'many', options: 'address' }]
+			const schema = [{ fieldname: 'addresses', fieldtype: 'Doctype', cardinality: 'noneOrMany', options: 'address' }]
 			const original = schema[0]
 			registry.resolveSchema(schema)
 
@@ -207,7 +207,7 @@ describe('Nested Doctype Support', () => {
 		})
 
 		it('gracefully handles missing doctype for Doctype cardinality:many fields', () => {
-			const schema = [{ fieldname: 'items', fieldtype: 'Doctype', cardinality: 'many', options: 'nonexistent' }]
+			const schema = [{ fieldname: 'items', fieldtype: 'Doctype', cardinality: 'noneOrMany', options: 'nonexistent' }]
 			const resolved = registry.resolveSchema(schema)
 
 			const tableField = resolved[0] as any
@@ -227,7 +227,7 @@ describe('Nested Doctype Support', () => {
 				{ fieldname: 'amount', fieldtype: 'Decimal', component: 'ANumericInput' },
 				{ fieldname: 'cost', fieldtype: 'Currency', component: 'ANumericInput' },
 				{ fieldname: 'qty', fieldtype: 'Quantity', component: 'ANumericInput' },
-				{ fieldname: 'items', fieldtype: 'Doctype', cardinality: 'many', component: 'ATable' },
+				{ fieldname: 'items', fieldtype: 'Doctype', cardinality: 'noneOrMany', component: 'ATable' },
 				{ fieldname: 'meta', fieldtype: 'JSON', component: 'ACodeEditor' },
 				{ fieldname: 'birthday', fieldtype: 'Date', component: 'ADatePicker' },
 			]

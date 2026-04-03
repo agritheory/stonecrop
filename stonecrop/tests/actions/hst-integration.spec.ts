@@ -26,7 +26,7 @@ describe('Field Trigger Integration', () => {
 
 		// Create a doctype with field triggers in actions map
 		const schema = List([
-			{ fieldname: 'emailAddress', fieldtype: 'Doctype', cardinality: 'many', label: 'Email Addresses' },
+			{ fieldname: 'emailAddress', fieldtype: 'Doctype', cardinality: 'noneOrMany', label: 'Email Addresses' },
 		])
 		const workflow: UnknownMachineConfig = {
 			id: 'task',

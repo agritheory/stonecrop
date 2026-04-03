@@ -699,7 +699,7 @@ describe('Stonecrop class with HST integration', () => {
 
 			const orderDoctype = createDoctype('Order', [
 				{ fieldname: 'order_number', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
-				{ fieldname: 'items', fieldtype: 'Doctype', cardinality: 'many', options: 'item' } as SchemaTypes,
+				{ fieldname: 'items', fieldtype: 'Doctype', cardinality: 'noneOrMany', options: 'item' } as SchemaTypes,
 			])
 			localRegistry.addDoctype(orderDoctype)
 
@@ -750,7 +750,7 @@ describe('Stonecrop class with HST integration', () => {
 
 			const addressDoctype = createDoctype('Address', [
 				{ fieldname: 'street', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
-				{ fieldname: 'phones', fieldtype: 'Doctype', cardinality: 'many', options: 'phone' } as SchemaTypes,
+				{ fieldname: 'phones', fieldtype: 'Doctype', cardinality: 'noneOrMany', options: 'phone' } as SchemaTypes,
 			])
 			localRegistry.addDoctype(addressDoctype)
 
@@ -847,7 +847,7 @@ describe('Stonecrop class with HST integration', () => {
 				{
 					fieldname: 'items',
 					fieldtype: 'Doctype',
-					cardinality: 'many',
+					cardinality: 'noneOrMany',
 				} as SchemaTypes,
 			]
 

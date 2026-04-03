@@ -197,7 +197,7 @@ export type FieldsetSchema = BaseSchema & {
  * Schema structure for a 1:1 nested doctype field inside AForm
  *
  * @remarks
- * When a field has `fieldtype: 'Doctype'` without `cardinality: 'many'`, it represents
+ * When a field has `fieldtype: 'Doctype'` without `cardinality: 'noneOrMany'` or `'atLeastOne'`, it represents
  * a 1:1 nested form. The `options` property contains the slug of the referenced doctype.
  * The `schema` property is populated by the framework's `registry.resolveSchema()` method
  * with the resolved child schema fields.
@@ -229,10 +229,10 @@ export type DoctypeOneSchema = BaseSchema & {
 	label?: string
 
 	/**
-	 * The cardinality of the relationship — `'one'` or omitted means 1:1 nested form
+	 * The cardinality of the relationship — `'one'`, `'atMostOne'`, or omitted means 1:1 nested form
 	 * @public
 	 */
-	cardinality?: 'one'
+	cardinality?: 'one' | 'atMostOne'
 
 	/**
 	 * The resolved child schema fields, populated by `registry.resolveSchema()`
@@ -246,7 +246,7 @@ export type DoctypeOneSchema = BaseSchema & {
  * Schema structure for a 1:many child table field inside AForm
  *
  * @remarks
- * When a field has `fieldtype: 'Doctype'` with `cardinality: 'many'`, it represents
+ * When a field has `fieldtype: 'Doctype'` with `cardinality: 'noneOrMany'` or `'atLeastOne'`, it represents
  * a 1:many child table. The `options` property contains the slug of the child doctype
  * whose records appear as table rows.
  *
@@ -278,10 +278,10 @@ export type DoctypeManySchema = BaseSchema & {
 	label?: string
 
 	/**
-	 * The cardinality of the relationship — `'many'` means 1:many child table
+	 * The cardinality of the relationship — `'noneOrMany'` or `'atLeastOne'` means 1:many child table
 	 * @public
 	 */
-	cardinality: 'many'
+	cardinality: 'noneOrMany' | 'atLeastOne'
 
 	/**
 	 * Table columns — auto-derived from child doctype schema if not provided
@@ -313,7 +313,7 @@ export type DoctypeManySchema = BaseSchema & {
  *
  * @remarks
  * Use `isDoctypeMany()` type guard to narrow to `DoctypeManySchema`.
- * When `cardinality` is `'many'` or omitted, the field is a 1:1 nested form.
+ * When `cardinality` is `'noneOrMany'` or `'atLeastOne'`, it's a child table; otherwise 1:1 nested form.
  *
  * @public
  */

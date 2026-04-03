@@ -8,6 +8,7 @@ import type { AnyStateNodeConfig } from 'xstate';
 import { Component } from 'vue';
 import { ComputedRef } from 'vue';
 import type { DataClient } from '@stonecrop/schema';
+import type { LinkDeclaration } from '@stonecrop/schema';
 import { List } from 'immutable';
 import { Map as Map_2 } from 'immutable';
 import { Plugin as Plugin_2 } from 'vue';
@@ -74,7 +75,7 @@ export type CrossTabMessageType = 'operation' | 'undo' | 'redo' | 'sync-request'
 
 // @public
 export class Doctype {
-    constructor(doctype: string, schema: ImmutableDoctype['schema'], workflow: ImmutableDoctype['workflow'], actions: ImmutableDoctype['actions'], component?: Component);
+    constructor(doctype: string, schema: ImmutableDoctype['schema'], workflow: ImmutableDoctype['workflow'], actions: ImmutableDoctype['actions'], component?: Component, links?: Record<string, LinkDeclaration>, layout?: string[]);
     readonly actions: ImmutableDoctype['actions'];
     readonly component?: Component;
     readonly doctype: string;
@@ -93,6 +94,8 @@ export class Doctype {
         targetState: string;
     }>;
     getSchemaArray(): SchemaTypes[];
+    readonly layout?: string[];
+    readonly links?: Record<string, LinkDeclaration>;
     get name(): string;
     readonly schema: ImmutableDoctype['schema'];
     get slug(): string;
@@ -105,6 +108,8 @@ export type DoctypeConfig = {
     slug?: string;
     tableName?: string;
     fields?: SchemaTypes[];
+    links?: Record<string, LinkDeclaration>;
+    layout?: string[];
     workflow?: UnknownMachineConfig | WorkflowMeta;
     actions?: Record<string, string[]>;
     inherits?: string;
@@ -277,6 +282,8 @@ export type ImmutableDoctype = {
     readonly schema?: List<SchemaTypes>;
     readonly workflow?: UnknownMachineConfig | AnyStateNodeConfig | WorkflowMeta;
     readonly actions?: Map_2<string, string[]>;
+    readonly links?: Record<string, LinkDeclaration>;
+    readonly layout?: string[];
 };
 
 // @public
@@ -373,6 +380,13 @@ export function registerTransitionAction(name: string, fn: TransitionActionFunct
 export class Registry {
     constructor(router?: Router, getMeta?: (routeContext: RouteContext) => Doctype | Promise<Doctype>);
     addDoctype(doctype: Doctype): void;
+    getAncestorLinks(doctypeSlug: string): Array<LinkDeclaration & {
+        fieldname: string;
+        doctype: string;
+    }>;
+    getDescendantLinks(doctypeSlug: string): Array<LinkDeclaration & {
+        fieldname: string;
+    }>;
     getDoctype(slug: string): Doctype | undefined;
     getMeta?: (routeContext: RouteContext) => Doctype | Promise<Doctype>;
     initializeRecord(schema: SchemaTypes[]): Record<string, any>;
@@ -398,7 +412,7 @@ export type Schema = {
 // @public
 export class SchemaValidator {
     constructor(options?: ValidatorOptions);
-    validate(doctype: string, schema: List<SchemaTypes> | SchemaTypes[] | undefined, workflow?: AnyStateNodeConfig, actions?: Map_2<string, string[]> | Map<string, string[]>): ValidationResult;
+    validate(doctype: string, schema: List<SchemaTypes> | SchemaTypes[] | undefined, workflow?: AnyStateNodeConfig, actions?: Map_2<string, string[]> | Map<string, string[]>, links?: Record<string, LinkDeclaration>, layout?: string[]): ValidationResult;
 }
 
 // @public
@@ -1117,6 +1131,7 @@ export enum ValidationSeverity {
 export interface ValidatorOptions {
     registry?: Registry;
     validateActions?: boolean;
+    validateLinks?: boolean;
     validateLinkTargets?: boolean;
     validateRequiredProperties?: boolean;
     validateWorkflows?: boolean;

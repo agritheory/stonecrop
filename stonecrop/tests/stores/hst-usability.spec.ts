@@ -26,9 +26,9 @@ describe('HST Edge Cases & Performance', () => {
 		const complexSchema = List([
 			{ fieldname: 'name', fieldtype: 'Data', label: 'Name', component: 'ATextInput' },
 			{ fieldname: 'metadata', fieldtype: 'JSON', label: 'Metadata', component: 'ATextInput' },
-			{ fieldname: 'tags', fieldtype: 'Doctype', cardinality: 'many', label: 'Tags', component: 'ATable' },
+			{ fieldname: 'tags', fieldtype: 'Doctype', cardinality: 'noneOrMany', label: 'Tags', component: 'ATable' },
 			{ fieldname: 'config', fieldtype: 'JSON', label: 'Config', component: 'ATextInput' },
-			{ fieldname: 'items', fieldtype: 'Doctype', cardinality: 'many', label: 'Items', component: 'ATable' },
+			{ fieldname: 'items', fieldtype: 'Doctype', cardinality: 'noneOrMany', label: 'Items', component: 'ATable' },
 			{ fieldname: 'nested_data', fieldtype: 'JSON', label: 'Nested Data', component: 'ATextInput' },
 		] as SchemaTypes[])
 

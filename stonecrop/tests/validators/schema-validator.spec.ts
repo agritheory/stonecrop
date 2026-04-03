@@ -313,7 +313,7 @@ describe('validateSchema helper', () => {
 				fieldname: 'items',
 				label: 'Items',
 				fieldtype: 'Doctype',
-				cardinality: 'many',
+				cardinality: 'noneOrMany',
 			} as SchemaTypes,
 		]
 		const result = validator.validate('Doc', schema)
@@ -331,5 +331,121 @@ describe('validateSchema helper', () => {
 		]
 		const result = validator.validate('Doc', schema)
 		expect(result.valid).toBe(true)
+	})
+})
+
+describe('SchemaValidator — link declarations', () => {
+	// Mock registry with doctypes that have links
+	const mockRegistry = {
+		registry: {
+			recipe: {
+				links: {
+					tasks: { target: 'recipe-task', cardinality: 'noneOrMany', backlink: 'recipe' },
+					supersededBy: { target: 'recipe', cardinality: 'atMostOne', backlink: 'supersededBy' },
+				},
+			},
+			'recipe-task': {
+				links: {
+					recipe: { target: 'recipe', cardinality: 'one', backlink: 'tasks' },
+				},
+			},
+			location: {
+				links: {
+					parentLocation: { target: 'location', cardinality: 'atMostOne', backlink: 'childLocations' },
+					childLocations: { target: 'location', cardinality: 'noneOrMany', backlink: 'parentLocation' },
+				},
+			},
+		},
+	} as unknown as Registry
+
+	const schema = [{ fieldname: 'name', fieldtype: 'Data' } as SchemaTypes]
+
+	it('passes when all link targets resolve', () => {
+		const validator = new SchemaValidator({ registry: mockRegistry })
+		const result = validator.validate('recipe', schema, undefined, undefined, {
+			tasks: { target: 'recipe-task', cardinality: 'noneOrMany', backlink: 'recipe' },
+		})
+		expect(result.valid).toBe(true)
+		expect(result.errorCount).toBe(0)
+	})
+
+	it('reports error when link target does not exist in registry', () => {
+		const validator = new SchemaValidator({ registry: mockRegistry })
+		const result = validator.validate('recipe', schema, undefined, undefined, {
+			tasks: { target: 'nonexistent', cardinality: 'noneOrMany' },
+		})
+		expect(result.valid).toBe(false)
+		expect(result.issues.some(i => i.rule === 'link-invalid-target')).toBe(true)
+	})
+
+	it('reports warning on self-referential link', () => {
+		const validator = new SchemaValidator({ registry: mockRegistry })
+		const result = validator.validate('recipe', schema, undefined, undefined, {
+			supersededBy: { target: 'recipe', cardinality: 'atMostOne', backlink: 'supersededBy' },
+		})
+		expect(result.valid).toBe(true) // warnings don't block
+		expect(result.issues.some(i => i.rule === 'link-self-referential')).toBe(true)
+	})
+
+	it('reports error when backlink is missing on target', () => {
+		const validator = new SchemaValidator({ registry: mockRegistry })
+		const result = validator.validate('recipe', schema, undefined, undefined, {
+			tasks: { target: 'recipe-task', cardinality: 'noneOrMany', backlink: 'nonexistent' },
+		})
+		expect(result.valid).toBe(false)
+		expect(result.issues.some(i => i.rule === 'link-backlink-missing')).toBe(true)
+	})
+
+	it('reports warning when backlink points to wrong doctype', () => {
+		const validator = new SchemaValidator({ registry: mockRegistry })
+		const result = validator.validate('location', schema, undefined, undefined, {
+			badLink: { target: 'recipe-task', cardinality: 'one', backlink: 'recipe' },
+		})
+		expect(result.valid).toBe(true) // warnings don't block
+		expect(result.issues.some(i => i.rule === 'link-backlink-mismatch')).toBe(true)
+	})
+
+	it('reports error when layout entry not in fields or links', () => {
+		const validator = new SchemaValidator({ registry: mockRegistry })
+		const result = validator.validate(
+			'recipe',
+			schema,
+			undefined,
+			undefined,
+			{ tasks: { target: 'recipe-task', cardinality: 'noneOrMany' } },
+			['name', 'nonexistent']
+		)
+		expect(result.valid).toBe(false)
+		expect(result.issues.some(i => i.rule === 'layout-invalid-entry')).toBe(true)
+	})
+
+	it('passes when layout entry exists in fields', () => {
+		const validator = new SchemaValidator({ registry: mockRegistry })
+		const result = validator.validate('recipe', schema, undefined, undefined, undefined, ['name'])
+		expect(result.valid).toBe(true)
+	})
+
+	it('passes when layout entry exists in links', () => {
+		const validator = new SchemaValidator({ registry: mockRegistry })
+		const result = validator.validate(
+			'recipe',
+			schema,
+			undefined,
+			undefined,
+			{ tasks: { target: 'recipe-task', cardinality: 'noneOrMany' } },
+			['name', 'tasks']
+		)
+		expect(result.valid).toBe(true)
+	})
+
+	it('can disable link validation via options', () => {
+		const validator = new SchemaValidator({
+			registry: mockRegistry,
+			validateLinks: false,
+		})
+		const result = validator.validate('recipe', schema, undefined, undefined, {
+			bad: { target: 'nonexistent', cardinality: 'noneOrMany' },
+		})
+		expect(result.valid).toBe(true) // links not validated, so no error
 	})
 })

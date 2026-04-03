@@ -873,6 +873,7 @@ Schema validator options
 export interface ValidatorOptions {
   registry?: Registry;
   validateActions?: boolean;
+  validateLinks?: boolean;
   validateLinkTargets?: boolean;
   validateRequiredProperties?: boolean;
   validateWorkflows?: boolean;
@@ -885,6 +886,7 @@ export interface ValidatorOptions {
 |----------|------|-------------|
 | registry? | `Registry` | Registry instance for doctype lookups |
 | validateActions? | `boolean` | Whether to validate action registration |
+| validateLinks? | `boolean` | Whether to validate links object (target resolution, backlink consistency, layout entries) |
 | validateLinkTargets? | `boolean` | Whether to validate Link field targets |
 | validateRequiredProperties? | `boolean` | Whether to validate required schema properties |
 | validateWorkflows? | `boolean` | Whether to validate workflow reachability |
@@ -926,6 +928,8 @@ export type DoctypeConfig = {
     slug?: string;
     tableName?: string;
     fields?: SchemaTypes[];
+    links?: Record<string, LinkDeclaration>;
+    layout?: string[];
     workflow?: UnknownMachineConfig | WorkflowMeta;
     actions?: Record<string, string[]>;
     inherits?: string;
@@ -1047,6 +1051,8 @@ export type ImmutableDoctype = {
     readonly schema?: List<SchemaTypes>;
     readonly workflow?: UnknownMachineConfig | AnyStateNodeConfig | WorkflowMeta;
     readonly actions?: Map<string, string[]>;
+    readonly links?: Record<string, LinkDeclaration>;
+    readonly layout?: string[];
 };
 ```
 
@@ -1169,7 +1175,7 @@ Doctype runtime class with Immutable.js collections for HST change tracking.
 **Constructor:**
 
 ```typescript
-new Doctype(doctype: string, schema: ImmutableDoctype['schema'], workflow: ImmutableDoctype['workflow'], actions: ImmutableDoctype['actions'], component: Component)
+new Doctype(doctype: string, schema: ImmutableDoctype['schema'], workflow: ImmutableDoctype['workflow'], actions: ImmutableDoctype['actions'], component: Component, links: Record<string, LinkDeclaration>, layout: string[])
 ```
 
 **Parameters:**
@@ -1181,6 +1187,8 @@ new Doctype(doctype: string, schema: ImmutableDoctype['schema'], workflow: Immut
 | workflow | `ImmutableDoctype['workflow']` | The doctype workflow configuration (XState machine) |
 | actions | `ImmutableDoctype['actions']` | The doctype actions and field triggers |
 | component | `Component` | Optional Vue component for rendering the doctype |
+| links | `Record<string, LinkDeclaration>` | Optional relationship links to other doctypes |
+| layout | `string[]` | Optional render order |
 
 **Properties:**
 
@@ -1189,6 +1197,8 @@ new Doctype(doctype: string, schema: ImmutableDoctype['schema'], workflow: Immut
 | actions | `ImmutableDoctype['actions']` | The doctype actions and field triggers |
 | component | `Component` | The doctype component |
 | doctype | `string` | The doctype name |
+| layout | `string[]` | Render order — fieldnames and link fieldnames in display order |
+| links | `Record<string, LinkDeclaration>` | Relationship links to other doctypes |
 | name | `string` | Alias for doctype (for DoctypeLike interface compatibility) |
 | schema | `ImmutableDoctype['schema']` | The doctype schema |
 | slug | `string` | Converts the registered doctype string to a slug (kebab-case). The following conversions are made: - It replaces camelCase and PascalCase with kebab-case strings - It replaces spaces and underscores with hyphens - It converts the string to lowercase |
@@ -1465,6 +1475,39 @@ addDoctype(doctype: Doctype): void
 |-----------|------|-------------|
 | doctype | `Doctype` | The doctype to fetch metadata for |
 
+#### getAncestorLinks
+
+Get links on other doctypes that target the given doctype.
+
+```typescript
+getAncestorLinks(doctypeSlug: string): Array<LinkDeclaration & {
+        fieldname: string;
+        doctype: string;
+    }>
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctypeSlug | `string` | The doctype slug to find ancestor links for |
+
+#### getDescendantLinks
+
+Get all links declared on a doctype.
+
+```typescript
+getDescendantLinks(doctypeSlug: string): Array<LinkDeclaration & {
+        fieldname: string;
+    }>
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctypeSlug | `string` | The doctype slug to get links for |
+
 #### getDoctype
 
 Get a registered doctype by slug
@@ -1531,7 +1574,7 @@ new SchemaValidator(options: ValidatorOptions)
 Validates a complete doctype schema
 
 ```typescript
-validate(doctype: string, schema: List<SchemaTypes> | SchemaTypes[] | undefined, workflow: AnyStateNodeConfig, actions: ImmutableMap<string, string[]> | Map<string, string[]>): ValidationResult
+validate(doctype: string, schema: List<SchemaTypes> | SchemaTypes[] | undefined, workflow: AnyStateNodeConfig, actions: ImmutableMap<string, string[]> | Map<string, string[]>, links: Record<string, LinkDeclaration>, layout: string[]): ValidationResult
 ```
 
 **Parameters:**
@@ -1542,6 +1585,8 @@ validate(doctype: string, schema: List<SchemaTypes> | SchemaTypes[] | undefined,
 | schema | `List<SchemaTypes> \| SchemaTypes[] \| undefined` | Schema fields (List or Array) |
 | workflow | `AnyStateNodeConfig` | Optional workflow configuration |
 | actions | `ImmutableMap<string, string[]> \| Map<string, string[]>` | Optional actions map |
+| links | `Record<string, LinkDeclaration>` | Optional links object |
+| layout | `string[]` | Optional layout array |
 
 ### Stonecrop
 
