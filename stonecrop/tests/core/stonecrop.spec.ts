@@ -697,10 +697,11 @@ describe('Stonecrop class with HST integration', () => {
 			])
 			localRegistry.addDoctype(itemDoctype)
 
-			const orderDoctype = createDoctype('Order', [
-				{ fieldname: 'order_number', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
-			])
-			orderDoctype.links = { items: { target: 'item', cardinality: 'noneOrMany' } }
+			const orderDoctype = createDoctype(
+				'Order',
+				[{ fieldname: 'order_number', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes],
+				{ items: { target: 'item', cardinality: 'noneOrMany' } }
+			)
 			localRegistry.addDoctype(orderDoctype)
 
 			localStonecrop.addRecord('order', 'order-1', { order_number: 'ORD-001' })
