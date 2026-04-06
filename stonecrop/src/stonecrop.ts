@@ -2,9 +2,11 @@ import type { DataClient } from '@stonecrop/schema'
 import { reactive } from 'vue'
 
 import Doctype from './doctype'
+import { getGlobalTriggerEngine } from './field-triggers'
 import Registry from './registry'
 import { createHST, type HSTNode } from './stores/hst'
 import { useOperationLogStore } from './stores/operation-log'
+import type { FieldChangeContext } from './types/field-triggers'
 import type { OperationLogConfig } from './types/operation-log'
 import type { RouteContext } from './types/registry'
 import type { StonecropOptions } from './types/stonecrop'
@@ -245,7 +247,7 @@ export class Stonecrop {
 	 * @param action - The action to run
 	 * @param args - Action arguments (typically record IDs)
 	 */
-	runAction(doctype: Doctype, action: string, args?: any[]): void {
+	runAction(doctype: Doctype, action: string, args?: string[]): void {
 		const registry = this.registry.registry[doctype.slug]
 		const actions = registry?.actions?.get(action)
 		const recordIds = Array.isArray(args) ? args.filter((arg): arg is string => typeof arg === 'string') : undefined
@@ -258,12 +260,22 @@ export class Stonecrop {
 		try {
 			// Execute action functions
 			if (actions && actions.length > 0) {
+				const engine = getGlobalTriggerEngine()
 				actions.forEach(actionStr => {
 					try {
-						// eslint-disable-next-line @typescript-eslint/no-implied-eval
-						const actionFn = new Function('args', actionStr)
-						// eslint-disable-next-line @typescript-eslint/no-unsafe-call
-						actionFn(args)
+						const actionFn = engine.getAction(actionStr)
+						if (!actionFn) throw new Error(`Action "${actionStr}" is not registered in FieldTriggerEngine`)
+						const context = {
+							path: `${doctype.slug}.${recordIds?.[0] ?? ''}`,
+							fieldname: action,
+							beforeValue: undefined,
+							afterValue: args,
+							operation: 'set',
+							doctype: doctype.doctype,
+							recordId: recordIds?.[0],
+							timestamp: new Date(),
+						} as FieldChangeContext
+						void actionFn(context)
 					} catch (error) {
 						actionResult = 'failure'
 						actionError = error instanceof Error ? error.message : 'Unknown error'

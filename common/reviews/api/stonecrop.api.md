@@ -157,6 +157,7 @@ export class FieldTriggerEngine {
     executeTransitionActions(context: TransitionChangeContext, options?: {
         timeout?: number;
     }): Promise<TransitionExecutionResult[]>;
+    getAction(name: string): FieldActionFunction | undefined;
     registerAction(name: string, fn: FieldActionFunction): void;
     registerDoctypeActions(doctype: string, actions: Map_2<string, string[]> | Map<string, string[]> | Record<string, string[]> | undefined): void;
     registerTransitionAction(name: string, fn: TransitionActionFunction): void;
@@ -714,7 +715,7 @@ export class Stonecrop {
     removeRecord(doctype: string | Doctype, recordId: string): void;
     // @internal
     static _root: Stonecrop;
-    runAction(doctype: Doctype, action: string, args?: any[]): void;
+    runAction(doctype: Doctype, action: string, args?: string[]): void;
     setClient(client: DataClient): void;
     setup(doctype: Doctype): void;
 }

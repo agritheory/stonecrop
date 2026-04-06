@@ -1344,6 +1344,20 @@ executeTransitionActions(context: TransitionChangeContext, options: {
 | context | `TransitionChangeContext` | The transition change context |
 | options | `{ timeout?: number; }` | Execution options (timeout) |
 
+#### getAction
+
+Look up a registered action function by name. Returns `undefined` if the action has not been registered.
+
+```typescript
+getAction(name: string): FieldActionFunction | undefined
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| name | `string` | The action name |
+
 #### registerAction
 
 Register a global action function
@@ -1874,7 +1888,7 @@ removeRecord(doctype: string | Doctype, recordId: string): void
 Run action on doctype Executes the action and logs it to the operation log for audit tracking
 
 ```typescript
-runAction(doctype: Doctype, action: string, args: any[]): void
+runAction(doctype: Doctype, action: string, args: string[]): void
 ```
 
 **Parameters:**
@@ -1883,7 +1897,7 @@ runAction(doctype: Doctype, action: string, args: any[]): void
 |-----------|------|-------------|
 | doctype | `Doctype` | The doctype |
 | action | `string` | The action to run |
-| args | `any[]` | Action arguments (typically record IDs) |
+| args | `string[]` | Action arguments (typically record IDs) |
 
 #### setClient
 

@@ -434,7 +434,6 @@ describe('buildRecordQuery', () => {
 	it('returns scalar-only query when includeNested is truthy but registry is absent', () => {
 		const query = buildRecordQuery(recipeMeta, recordFieldName, recordArgName, recordArgType, undefined, {
 			includeNested: true,
-			includeNested: true,
 		})
 		expect(query).toContain('name')
 		expect(query).not.toContain('RecipeTasksByRecipeId')
