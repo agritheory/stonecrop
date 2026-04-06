@@ -1,5 +1,6 @@
 import type { SchemaTypes } from '@stonecrop/aform'
-import { mount } from '@vue/test-utils'
+import { LinkDeclaration } from '@stonecrop/schema'
+import { mount, flushPromises } from '@vue/test-utils'
 import { List, Map } from 'immutable'
 import { createPinia, setActivePinia } from 'pinia'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
@@ -16,11 +17,7 @@ import { HST } from '../../src/stores/hst'
  * @vitest-environment jsdom
  */
 
-const createDoctype = (
-	name: string,
-	fields?: SchemaTypes[],
-	links?: Record<string, { target: string; cardinality: string }>
-) => {
+const createDoctype = (name: string, fields?: SchemaTypes[], links?: Record<string, LinkDeclaration>) => {
 	const schema = List(
 		fields || [
 			{
@@ -90,8 +87,6 @@ describe('useStonecrop HST mode', () => {
 		const wrapper = mount(TestComponent, {
 			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
-		await wrapper.vm.$nextTick()
-		await new Promise(resolve => setTimeout(resolve, 50))
 
 		const vm = wrapper.vm as any
 		expect(vm.provideHSTPath).toBeDefined()
@@ -128,7 +123,6 @@ describe('useStonecrop HST mode', () => {
 		const wrapper = mount(TestComponent, {
 			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
-		await wrapper.vm.$nextTick()
 
 		const vm = wrapper.vm as any
 		// resolvedSchema should have the address field with embedded schema
@@ -153,7 +147,7 @@ describe('useStonecrop HST mode', () => {
 		const wrapper = mount(TestComponent, {
 			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
-		await wrapper.vm.$nextTick()
+		await flushPromises()
 
 		const vm = wrapper.vm as any
 		const path = vm.provideHSTPath('title')
@@ -174,7 +168,7 @@ describe('useStonecrop HST mode', () => {
 		const wrapper = mount(TestComponent, {
 			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
-		await wrapper.vm.$nextTick()
+		await flushPromises()
 
 		const vm = wrapper.vm as any
 		const path = vm.provideHSTPath('title', 'task-override')
@@ -192,7 +186,6 @@ describe('useStonecrop HST mode', () => {
 		const wrapper = mount(TestComponent, {
 			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
-		await wrapper.vm.$nextTick()
 
 		const vm = wrapper.vm as any
 		// No doctype, should return empty string if provideHSTPath exists
@@ -215,8 +208,6 @@ describe('useStonecrop HST mode', () => {
 		const wrapper = mount(TestComponent, {
 			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
-		await wrapper.vm.$nextTick()
-		await new Promise(resolve => setTimeout(resolve, 50))
 
 		const vm = wrapper.vm as any
 		vm.handleHSTChange({
@@ -242,8 +233,6 @@ describe('useStonecrop HST mode', () => {
 		const wrapper = mount(TestComponent, {
 			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
-		await wrapper.vm.$nextTick()
-		await new Promise(resolve => setTimeout(resolve, 50))
 
 		const vm = wrapper.vm as any
 		// A deep nested path: task.new.address.street
@@ -271,7 +260,6 @@ describe('useStonecrop HST mode', () => {
 		const wrapper = mount(TestComponent, {
 			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
-		await wrapper.vm.$nextTick()
 
 		const vm = wrapper.vm as any
 		// Should not throw
@@ -298,8 +286,6 @@ describe('useStonecrop HST mode', () => {
 		const wrapper = mount(TestComponent, {
 			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
-		await wrapper.vm.$nextTick()
-		await new Promise(resolve => setTimeout(resolve, 50))
 
 		const vm = wrapper.vm as any
 		// formData should be initialized with defaults from schema
@@ -323,8 +309,7 @@ describe('useStonecrop HST mode', () => {
 		const wrapper = mount(TestComponent, {
 			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
-		await wrapper.vm.$nextTick()
-		await new Promise(resolve => setTimeout(resolve, 50))
+		await flushPromises()
 
 		const vm = wrapper.vm as any
 		expect(vm.stonecrop).toBeDefined()
@@ -349,8 +334,6 @@ describe('useStonecrop HST mode', () => {
 		const wrapper = mount(TestComponent, {
 			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
-		await wrapper.vm.$nextTick()
-		await new Promise(resolve => setTimeout(resolve, 50))
 
 		const vm = wrapper.vm as any
 		const nestedCtx = vm.createNestedContext('task.new.address', addressDoctype)
@@ -386,8 +369,6 @@ describe('useStonecrop HST mode', () => {
 		const wrapper = mount(TestComponent, {
 			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
-		await wrapper.vm.$nextTick()
-		await new Promise(resolve => setTimeout(resolve, 50))
 
 		const vm = wrapper.vm as any
 		vm.initializeNestedData('task.new', addressDoctype)
@@ -411,8 +392,7 @@ describe('useStonecrop HST mode', () => {
 		const wrapper = mount(TestComponent, {
 			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
-		await wrapper.vm.$nextTick()
-		await new Promise(resolve => setTimeout(resolve, 50))
+		await flushPromises()
 
 		const vm = wrapper.vm as any
 		await expect(vm.fetchNestedData('task.t1', taskDoctype, 't1')).rejects.toThrow('No data client configured')
@@ -442,8 +422,7 @@ describe('useStonecrop HST mode', () => {
 		const wrapper = mount(TestComponent, {
 			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
-		await wrapper.vm.$nextTick()
-		await new Promise(resolve => setTimeout(resolve, 50))
+		await flushPromises()
 
 		stonecrop.setClient(mockClient as any)
 
@@ -476,8 +455,7 @@ describe('useStonecrop HST mode', () => {
 		const wrapper = mount(TestComponent, {
 			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
-		await wrapper.vm.$nextTick()
-		await new Promise(resolve => setTimeout(resolve, 50))
+		await flushPromises()
 
 		stonecrop.setClient(mockClient as any)
 
@@ -499,7 +477,6 @@ describe('useStonecrop HST mode', () => {
 		const wrapper = mount(TestComponent, {
 			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
-		await wrapper.vm.$nextTick()
 
 		const vm = wrapper.vm as any
 		expect(vm.operationLog).toBeDefined()
@@ -532,8 +509,6 @@ describe('useStonecrop HST mode', () => {
 		const wrapper = mount(TestComponent, {
 			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
-		await wrapper.vm.$nextTick()
-		await new Promise(resolve => setTimeout(resolve, 50))
 
 		const vm = wrapper.vm as any
 		const opLog = vm.operationLog
@@ -582,8 +557,7 @@ describe('useStonecrop HST mode', () => {
 		const wrapper = mount(TestComponent, {
 			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
-		await wrapper.vm.$nextTick()
-		await new Promise(resolve => setTimeout(resolve, 50))
+		await flushPromises()
 
 		const vm = wrapper.vm as any
 
@@ -632,8 +606,7 @@ describe('useStonecrop HST mode', () => {
 		const wrapper = mount(TestComponent, {
 			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
-		await wrapper.vm.$nextTick()
-		await new Promise(resolve => setTimeout(resolve, 50))
+		await flushPromises()
 
 		const vm = wrapper.vm as any
 
@@ -675,8 +648,7 @@ describe('useStonecrop HST mode', () => {
 		const wrapper = mount(TestComponent, {
 			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
-		await wrapper.vm.$nextTick()
-		await new Promise(resolve => setTimeout(resolve, 50))
+		await flushPromises()
 
 		const vm = wrapper.vm as any
 
@@ -733,8 +705,7 @@ describe('useStonecrop HST mode', () => {
 		const wrapper = mount(TestComponent, {
 			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
-		await wrapper.vm.$nextTick()
-		await new Promise(resolve => setTimeout(resolve, 50))
+		await flushPromises()
 
 		const vm = wrapper.vm as any
 
@@ -801,8 +772,7 @@ describe('useStonecrop HST mode', () => {
 		const wrapper = mount(TestComponent, {
 			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
-		await wrapper.vm.$nextTick()
-		await new Promise(resolve => setTimeout(resolve, 50))
+		await flushPromises()
 
 		const vm = wrapper.vm as any
 
@@ -861,6 +831,41 @@ describe('useStonecrop HST mode', () => {
 		expect(collectResult!.name).toBe('Immediate Test')
 	})
 
+	it('hstStore, resolvedSchema and formData are populated synchronously — no lifecycle hook wait required', () => {
+		// Ensures that sync setup() initialisation is complete before the first render.
+		// None of these reads should require any await, nextTick, or setTimeout.
+		const taskDoctype = createDoctype('Task')
+		registry.addDoctype(taskDoctype)
+
+		let capturedHasHstStore = false
+		let capturedSchemaLength = 0
+		let capturedHasFormData = false
+		let capturedHandleHSTChangeIsFunction = false
+
+		const TestComponent = defineComponent({
+			setup() {
+				const result = useStonecrop({ registry, doctype: taskDoctype, recordId: 'new' })
+				// Read reactive state during setup() — before onMounted fires
+				capturedHasHstStore = result.hstStore.value != null
+				capturedSchemaLength = result.resolvedSchema.value.length
+				capturedHasFormData = result.formData.value != null
+				capturedHandleHSTChangeIsFunction = typeof result.handleHSTChange === 'function'
+				return result
+			},
+			template: '<div>test</div>',
+		})
+
+		// mount() runs setup() synchronously — no awaits needed
+		mount(TestComponent, {
+			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
+		})
+
+		expect(capturedHasHstStore).toBe(true)
+		expect(capturedSchemaLength).toBeGreaterThan(0)
+		expect(capturedHasFormData).toBe(true)
+		expect(capturedHandleHSTChangeIsFunction).toBe(true)
+	})
+
 	it('collectRecordPayload returns identical results to class method', async () => {
 		const addressDoctype = createDoctype('Address', [
 			{ fieldname: 'city', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
@@ -884,8 +889,7 @@ describe('useStonecrop HST mode', () => {
 		const wrapper = mount(TestComponent, {
 			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
-		await wrapper.vm.$nextTick()
-		await new Promise(resolve => setTimeout(resolve, 50))
+		await flushPromises()
 
 		const vm = wrapper.vm as any
 
@@ -931,7 +935,6 @@ describe('useStonecrop base mode', () => {
 		const wrapper = mount(TestComponent, {
 			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
-		await wrapper.vm.$nextTick()
 
 		const vm = wrapper.vm as any
 		expect(vm.stonecrop).toBeDefined()

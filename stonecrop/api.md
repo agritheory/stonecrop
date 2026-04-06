@@ -254,7 +254,11 @@ export declare function useStonecrop(): BaseStonecropReturn | HSTStonecropReturn
 
 ### useStonecrop
 
-Unified Stonecrop composable with HST integration for a specific doctype and record
+Unified Stonecrop composable with HST integration for a specific doctype and record.
+
+When a `Doctype` instance is passed, all synchronous initialisation (`hstStore`, `resolvedSchema`, `formData`, `handleHSTChange`, operation-log wiring) is performed during `setup()` — before the first render and without awaiting any lifecycle hook. Callers can read `hstStore.value`, `resolvedSchema.value`, and `formData.value` immediately after calling this composable; no `nextTick`, `flushPromises`, or `setTimeout` is required.
+
+The only remaining async work in `onMounted` is fetching an existing record from the server when `recordId` is not `'new'`, and lazy-loading a doctype by slug string.
 
 **Signature:**
 

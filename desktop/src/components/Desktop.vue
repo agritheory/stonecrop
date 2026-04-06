@@ -575,9 +575,7 @@ const getRecordFormSchema = (): SchemaTypes[] => {
 			return []
 		}
 
-		// Convert schema to array and resolve Doctype fields (both cardinality: 'one' and 'many')
-		const schemaArray = 'toArray' in doctype.schema ? doctype.schema.toArray() : doctype.schema
-		return registry.resolveSchema(schemaArray)
+		return registry.resolveSchema(doctype)
 	} catch {
 		return []
 	}

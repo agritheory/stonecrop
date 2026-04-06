@@ -19,7 +19,17 @@ import type { RouteContext } from '../types/registry'
  */
 export function useStonecrop(): BaseStonecropReturn | HSTStonecropReturn
 /**
- * Unified Stonecrop composable with HST integration for a specific doctype and record
+ * Unified Stonecrop composable with HST integration for a specific doctype and record.
+ *
+ * When a `Doctype` instance is passed, all synchronous initialisation (`hstStore`,
+ * `resolvedSchema`, `formData`, `handleHSTChange`, operation-log wiring) is performed
+ * during `setup()` — before the first render and without awaiting any lifecycle hook.
+ * Callers can read `hstStore.value`, `resolvedSchema.value`, and `formData.value`
+ * immediately after calling this composable; no `nextTick`, `flushPromises`, or
+ * `setTimeout` is required.
+ *
+ * The only remaining async work in `onMounted` is fetching an existing record from the
+ * server when `recordId` is not `'new'`, and lazy-loading a doctype by slug string.
  *
  * @param options - Configuration with doctype (string slug or Doctype instance) and optional recordId
  * @returns Stonecrop instance with full HST integration utilities
@@ -70,7 +80,7 @@ export function useStonecrop(options?: {
 		resolvedDoctype.value = options.doctype
 	}
 
-	// Operation log state and methods - will be populated after stonecrop instance is created
+	// Operation log state and methods
 	const operations = ref<HSTOperation[]>([])
 	const currentIndex = ref(-1)
 	const canUndo = computed(() => stonecrop.value?.getOperationLogStore().canUndo ?? false)
@@ -147,13 +157,9 @@ export function useStonecrop(options?: {
 		stonecrop.value?.getOperationLogStore().configure(config)
 	}
 
-	// Initialize Stonecrop instance
-	onMounted(async () => {
-		if (!registry || !stonecrop.value) {
-			return
-		}
-
-		// Set up reactive refs from operation log store - only if Pinia is available
+	// Wire operation log reactive state synchronously — no lifecycle hook needed.
+	// storeToRefs and watch are both safe to call in setup() body.
+	if (registry && stonecrop.value) {
 		try {
 			const opLogStore = stonecrop.value.getOperationLogStore()
 			const opLogRefs = storeToRefs(opLogStore)
@@ -174,8 +180,31 @@ export function useStonecrop(options?: {
 				}
 			)
 		} catch {
-			// Pinia not available (e.g., in tests) - operation log features will not be available
-			// Silently fail - operation log is optional
+			// Pinia not available — operation log is optional, silently skip
+		}
+	}
+
+	// Synchronous HST initialisation for an explicit Doctype instance.
+	// When the caller passes a Doctype object (not a slug string), every piece of
+	// setup that doesn't require network I/O runs here during setup() so that
+	// hstStore, resolvedSchema, and formData are populated before the first render
+	// and are immediately available to callers without any await.
+	if (options.doctype && typeof options.doctype !== 'string' && registry && stonecrop.value) {
+		hstStore.value = stonecrop.value.getStore()
+		resolvedSchema.value = registry.resolveSchema(options.doctype)
+		if (!options.recordId || options.recordId === 'new') {
+			formData.value = registry.initializeRecord(resolvedSchema.value)
+		}
+		if (hstStore.value) {
+			setupDeepReactivity(options.doctype, options.recordId || 'new', formData, hstStore.value)
+		}
+	}
+
+	// onMounted handles only work that is genuinely async: lazy-loading a doctype
+	// by slug, fetching an existing record from the server, and router-based setup.
+	onMounted(async () => {
+		if (!registry || !stonecrop.value) {
+			return
 		}
 
 		// Handle router-based setup if no specific doctype provided
@@ -240,18 +269,16 @@ export function useStonecrop(options?: {
 
 		// Handle HST integration if doctype is provided explicitly
 		if (options.doctype) {
-			hstStore.value = stonecrop.value.getStore()
 			const recordId = options.recordId
 
-			// Resolve doctype - handle string (lazy-load) or Doctype instance
-			let doctype: Doctype | undefined
-
 			if (typeof options.doctype === 'string') {
-				// String doctype - check registry first, then lazy-load
+				// String doctype — resolve lazily, then do full sync-equivalent setup here.
 				const doctypeSlug = options.doctype
+				hstStore.value = stonecrop.value.getStore()
 				isLoading.value = true
 				error.value = null
 
+				let doctype: Doctype | undefined
 				try {
 					// Check if already in registry
 					doctype = registry.getDoctype(doctypeSlug)
@@ -276,43 +303,54 @@ export function useStonecrop(options?: {
 				} finally {
 					isLoading.value = false
 				}
-			} else {
-				// Doctype instance provided directly
-				doctype = options.doctype
-			}
 
-			// Set resolved doctype for consumers
-			resolvedDoctype.value = doctype
+				resolvedDoctype.value = doctype
+				if (!doctype) return
 
-			if (!doctype) {
-				// Error already set above, just return
-				return
-			}
+				resolvedSchema.value = registry.resolveSchema(doctype)
 
-			// Resolve schema for the doctype
-			resolvedSchema.value = registry.resolveSchema(doctype)
-
-			if (recordId && recordId !== 'new') {
-				const existingRecord = stonecrop.value.getRecordById(doctype, recordId)
-				if (existingRecord) {
-					formData.value = existingRecord.get('') || {}
-				} else {
-					try {
-						await stonecrop.value.getRecord(doctype, recordId)
-						const loadedRecord = stonecrop.value.getRecordById(doctype, recordId)
-						if (loadedRecord) {
-							formData.value = loadedRecord.get('') || {}
+				if (recordId && recordId !== 'new') {
+					const existingRecord = stonecrop.value.getRecordById(doctype, recordId)
+					if (existingRecord) {
+						formData.value = existingRecord.get('') || {}
+					} else {
+						try {
+							await stonecrop.value.getRecord(doctype, recordId)
+							const loadedRecord = stonecrop.value.getRecordById(doctype, recordId)
+							if (loadedRecord) {
+								formData.value = loadedRecord.get('') || {}
+							}
+						} catch {
+							formData.value = registry.initializeRecord(resolvedSchema.value)
 						}
-					} catch {
-						formData.value = registry.initializeRecord(resolvedSchema.value)
 					}
+				} else {
+					formData.value = registry.initializeRecord(resolvedSchema.value)
+				}
+
+				if (hstStore.value) {
+					setupDeepReactivity(doctype, recordId || 'new', formData, hstStore.value)
 				}
 			} else {
-				formData.value = registry.initializeRecord(resolvedSchema.value)
-			}
-
-			if (hstStore.value) {
-				setupDeepReactivity(doctype, recordId || 'new', formData, hstStore.value)
+				// Doctype instance — sync init was done during setup().
+				// Only handle the async path: fetching an existing record from the server.
+				if (recordId && recordId !== 'new') {
+					const doctype = options.doctype
+					const existingRecord = stonecrop.value.getRecordById(doctype, recordId)
+					if (existingRecord) {
+						formData.value = existingRecord.get('') || {}
+					} else {
+						try {
+							await stonecrop.value.getRecord(doctype, recordId)
+							const loadedRecord = stonecrop.value.getRecordById(doctype, recordId)
+							if (loadedRecord) {
+								formData.value = loadedRecord.get('') || {}
+							}
+						} catch {
+							formData.value = registry.initializeRecord(resolvedSchema.value)
+						}
+					}
+				}
 			}
 		}
 	})
