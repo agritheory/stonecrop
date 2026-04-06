@@ -485,6 +485,38 @@ describe('buildRecordQuery', () => {
 		expect(query).toContain('RecipeTasksByRecipeId')
 		expect(query).toContain('supersededBy {')
 	})
+
+	it('generates sub-selections 3 levels deep (Recipe → RecipeTask → RegisteredFunction)', () => {
+		const registeredFunctionMeta: DoctypeMeta = {
+			name: 'RegisteredFunction',
+			slug: 'registered-function',
+			tableName: 'registered_function',
+			fields: [
+				{ fieldname: 'id', fieldtype: 'Data', label: 'ID' },
+				{ fieldname: 'handler', fieldtype: 'Data', label: 'Handler' },
+			],
+		}
+		const recipeTaskWithFunctionMeta: DoctypeMeta = {
+			...recipeTaskMeta,
+			links: {
+				...recipeTaskMeta.links,
+				durationFunction: { target: 'registered-function', cardinality: 'one' },
+			},
+		}
+		const deepRegistry = new Map<string, DoctypeMeta>([
+			['recipe', recipeMeta],
+			['recipe-task', recipeTaskWithFunctionMeta],
+			['registered-function', registeredFunctionMeta],
+		])
+		const query = buildRecordQuery(recipeMeta, recordFieldName, recordArgName, recordArgType, deepRegistry, {
+			includeNested: true,
+		})
+		// Level 1 → 2: tasks connection
+		expect(query).toContain('RecipeTasksByRecipeId')
+		// Level 2 → 3: durationFunction direct object inside the task nodes
+		expect(query).toContain('durationFunction {')
+		expect(query).toContain('handler')
+	})
 })
 
 // ===========================================================================
