@@ -207,12 +207,7 @@ export function useStonecrop(options?: {
 
 					// Resolve schema for router-loaded doctype
 					if (registry) {
-						const schemaArray = doctype.schema
-							? Array.isArray(doctype.schema)
-								? doctype.schema
-								: Array.from(doctype.schema)
-							: []
-						resolvedSchema.value = registry.resolveSchema(schemaArray)
+						resolvedSchema.value = registry.resolveSchema(doctype)
 					}
 
 					if (recordId && recordId !== 'new') {
@@ -295,12 +290,7 @@ export function useStonecrop(options?: {
 			}
 
 			// Resolve schema for the doctype
-			const schemaArray = doctype.schema
-				? Array.isArray(doctype.schema)
-					? doctype.schema
-					: Array.from(doctype.schema)
-				: []
-			resolvedSchema.value = registry.resolveSchema(schemaArray)
+			resolvedSchema.value = registry.resolveSchema(doctype)
 
 			if (recordId && recordId !== 'new') {
 				const existingRecord = stonecrop.value.getRecordById(doctype, recordId)

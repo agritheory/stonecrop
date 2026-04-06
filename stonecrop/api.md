@@ -11,15 +11,15 @@ Recursively collect nested data from HST using pre-resolved schemas
 **Signature:**
 
 ```typescript
-declare function collectNestedData(resolvedSchema: SchemaTypes[], basePath: string, hstStore: HSTNode): Record<string, any>;
+declare function collectNestedData(basePath: string, doctype: Doctype, hstStore: HSTNode): Record<string, any>;
 ```
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| resolvedSchema | `SchemaTypes[]` | The already-resolved schema (with nested schemas embedded) |
 | basePath | `string` | The base path in HST (e.g., "customer.123.address") |
+| doctype | `Doctype` |  |
 | hstStore | `HSTNode` | The HST store instance |
 
 ### createHST
@@ -29,7 +29,7 @@ Factory function for HST creation Creates a new HSTNode proxy for hierarchical s
 **Signature:**
 
 ```typescript
-declare function createHST(target: any, doctype: string, parentDoctype?: string): HSTNode;
+declare function createHST(target: any, doctype: string): HSTNode;
 ```
 
 **Parameters:**
@@ -38,7 +38,6 @@ declare function createHST(target: any, doctype: string, parentDoctype?: string)
 |-----------|------|-------------|
 | target | `any` | The target object to wrap with HST functionality |
 | doctype | `string` | The document type identifier |
-| parentDoctype | `string` | Optional parent document type identifier |
 
 ### createValidator
 
@@ -928,8 +927,6 @@ export type DoctypeConfig = {
     workflow?: UnknownMachineConfig | WorkflowMeta;
     actions?: Record<string, string[]>;
     inherits?: string;
-    listDoctype?: string;
-    parentDoctype?: string;
 };
 ```
 
@@ -1540,16 +1537,22 @@ initializeRecord(schema: SchemaTypes[]): Record<string, any>
 
 Resolve nested Doctype fields in a schema by embedding child schemas inline.
 
+Accepts a Doctype and extracts `fields`, `links`, and `layout` internally. For each link:
+
+- `cardinality: 'noneOrMany'` or `'atLeastOne'`: auto-derives `columns` from the target's schema, sets `component` to `link.component ?? 'ATable'`, `config: { view: 'list' }`, `rows: []`. - `cardinality: 'one'` or `'atMostOne'`: embeds the target schema as the entry's `schema` property, sets `component` to `link.component ?? 'AForm'`.
+
+If `layout` is provided, reorders the resolved output to match. Recurses for deeply nested doctypes. Circular references are protected against. Returns a new array — does not mutate the original.
+
 ```typescript
-resolveSchema(schema: SchemaTypes[], visited: Set<string>): SchemaTypes[]
+resolveSchema(doctype: Doctype, visited: Set<string>): SchemaTypes[]
 ```
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| schema | `SchemaTypes[]` | The schema array to resolve |
-| visited | `Set<string>` |  |
+| doctype | `Doctype` | The doctype to resolve |
+| visited | `Set<string>` | Internal — set of already-visited doctype slugs for cycle detection |
 
 ### SchemaValidator
 

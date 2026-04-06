@@ -137,8 +137,6 @@ export class StonecropClient implements DataClient {
 						}
 					}
 					inherits
-					listDoctype
-					parentDoctype
 				}
 			}
 			`,
@@ -194,8 +192,6 @@ export class StonecropClient implements DataClient {
 						}
 					}
 					inherits
-					listDoctype
-					parentDoctype
 				}
 			}
 			`

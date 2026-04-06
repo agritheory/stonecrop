@@ -218,15 +218,13 @@ class HSTProxy implements HSTNode {
 	private parentPath: string
 	private rootNode: HSTNode | null
 	private doctype: string
-	private parentDoctype?: string
 	private hst: HST
 
-	constructor(target: any, doctype: string, parentPath = '', rootNode: HSTNode | null = null, parentDoctype?: string) {
+	constructor(target: any, doctype: string, parentPath = '', rootNode: HSTNode | null = null) {
 		this.target = target
 		this.parentPath = parentPath
 		this.rootNode = rootNode || this
 		this.doctype = doctype
-		this.parentDoctype = parentDoctype
 		this.hst = HST.getInstance()
 
 		return new Proxy(this, {
@@ -267,11 +265,11 @@ class HSTProxy implements HSTNode {
 
 		// Always wrap in HSTProxy for tree navigation
 		if (typeof value === 'object' && value !== null && !this.isPrimitive(value)) {
-			return new HSTProxy(value, nodeDoctype, fullPath, this.rootNode, this.parentDoctype)
+			return new HSTProxy(value, nodeDoctype, fullPath, this.rootNode)
 		}
 
 		// For primitives, return a minimal wrapper that throws on tree operations
-		return new HSTProxy(value, nodeDoctype, fullPath, this.rootNode, this.parentDoctype)
+		return new HSTProxy(value, nodeDoctype, fullPath, this.rootNode)
 	}
 
 	set(path: string, value: any, source: 'user' | 'system' | 'sync' | 'undo' | 'redo' = 'user'): void {
@@ -705,13 +703,12 @@ class HSTProxy implements HSTNode {
  *
  * @param target - The target object to wrap with HST functionality
  * @param doctype - The document type identifier
- * @param parentDoctype - Optional parent document type identifier
  * @returns A new HSTNode proxy instance
  *
  * @public
  */
-function createHST(target: any, doctype: string, parentDoctype?: string): HSTNode {
-	return new HSTProxy(target, doctype, '', null, parentDoctype)
+function createHST(target: any, doctype: string): HSTNode {
+	return new HSTProxy(target, doctype, '', null)
 }
 
 // Export everything

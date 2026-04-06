@@ -59,8 +59,4 @@ export type DoctypeConfig = {
 	actions?: Record<string, string[]>
 	/** Parent doctype for inheritance */
 	inherits?: string
-	/** Doctype to use for list views */
-	listDoctype?: string
-	/** Parent doctype for child tables */
-	parentDoctype?: string
 }

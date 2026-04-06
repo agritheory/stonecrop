@@ -39,15 +39,12 @@ const mixedFieldsMeta: DoctypeMeta = {
 		{ fieldname: 'created_at', fieldtype: 'Datetime', label: 'Created' },
 		// FK object reference — requires sub-selection, should be skipped
 		{ fieldname: 'userByCreatedBy', fieldtype: 'Link', label: 'Creator', options: 'user' },
-		// Reverse relation connection — requires sub-selection, should be skipped
-		{
-			fieldname: 'recipeIngredientsByRecipeId',
-			fieldtype: 'Doctype',
-			label: 'Ingredients',
-			options: 'recipe-ingredient',
-		},
 		{ fieldname: 'rating', fieldtype: 'Float', label: 'Rating' },
 	],
+	links: {
+		// Reverse relation connection — routes to links, not fields
+		recipeIngredientsByRecipeId: { target: 'recipe-ingredient', cardinality: 'noneOrMany' },
+	},
 }
 
 // ===========================================================================
@@ -55,9 +52,9 @@ const mixedFieldsMeta: DoctypeMeta = {
 // ===========================================================================
 
 describe('RELATION_FIELDTYPES', () => {
-	it('contains Link and Doctype', () => {
+	it('contains Link', () => {
 		expect(RELATION_FIELDTYPES.has('Link')).toBe(true)
-		expect(RELATION_FIELDTYPES.has('Doctype')).toBe(true)
+		expect(RELATION_FIELDTYPES.has('Doctype')).toBe(false)
 	})
 
 	it('does not contain scalar types', () => {
@@ -75,7 +72,7 @@ describe('queryableFieldNames', () => {
 		expect(names).toContain('is_active')
 	})
 
-	it('excludes Link and Doctype fields', () => {
+	it('excludes Link fields', () => {
 		const names = queryableFieldNames(mixedFieldsMeta)
 		expect(names).toContain('id')
 		expect(names).toContain('title')

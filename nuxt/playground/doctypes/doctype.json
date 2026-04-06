@@ -29,16 +29,17 @@
 			"default": false
 		},
 		{
-			"fieldname": "fields",
-			"label": "Fields",
-			"fieldtype": "Doctype",
-			"options": "DocTypeField"
-		},
-		{
 			"fieldname": "workflow_id",
 			"label": "Workflow",
 			"fieldtype": "Link",
 			"options": "Workflow"
 		}
-	]
+	],
+	"links": {
+		"fields": {
+			"target": "DocTypeField",
+			"cardinality": "one",
+			"backlink": "doctype"
+		}
+	}
 }

@@ -68,6 +68,5 @@
 				"confirm": true
 			}
 		}
-	},
-	"parentDoctype": "User"
+	}
 }

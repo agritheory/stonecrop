@@ -166,22 +166,6 @@ export function validateReferences(): ValidationError[] {
 			})
 		}
 
-		// Check listDoctype reference
-		if (doctype.listDoctype && !doctypeRegistry.has(doctype.listDoctype)) {
-			errors.push({
-				path: [doctype.name, 'listDoctype'],
-				message: `References unknown doctype: ${doctype.listDoctype}`,
-			})
-		}
-
-		// Check parentDoctype reference
-		if (doctype.parentDoctype && !doctypeRegistry.has(doctype.parentDoctype)) {
-			errors.push({
-				path: [doctype.name, 'parentDoctype'],
-				message: `References unknown doctype: ${doctype.parentDoctype}`,
-			})
-		}
-
 		// Check Link field targets
 		for (const field of doctype.fields) {
 			if (field.fieldtype === 'Link' && typeof field.options === 'string') {

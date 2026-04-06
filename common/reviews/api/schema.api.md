@@ -101,7 +101,6 @@ export const DoctypeMeta: z.ZodObject<{
             JSON: "JSON";
             Code: "Code";
             Link: "Link";
-            Doctype: "Doctype";
             Attach: "Attach";
             Currency: "Currency";
             Quantity: "Quantity";
@@ -144,6 +143,7 @@ export const DoctypeMeta: z.ZodObject<{
             atLeastOne: "atLeastOne";
         }>;
         backlink: z.ZodOptional<z.ZodString>;
+        component: z.ZodOptional<z.ZodString>;
     }, z.core.$strip>>>;
     layout: z.ZodOptional<z.ZodArray<z.ZodString>>;
     workflow: z.ZodOptional<z.ZodObject<{
@@ -158,8 +158,6 @@ export const DoctypeMeta: z.ZodObject<{
         }, z.core.$strip>>>;
     }, z.core.$strip>>;
     inherits: z.ZodOptional<z.ZodString>;
-    listDoctype: z.ZodOptional<z.ZodString>;
-    parentDoctype: z.ZodOptional<z.ZodString>;
 }, z.core.$strip>;
 
 // @public
@@ -189,7 +187,6 @@ export const FieldMeta: z.ZodObject<{
         JSON: "JSON";
         Code: "Code";
         Link: "Link";
-        Doctype: "Doctype";
         Attach: "Attach";
         Currency: "Currency";
         Quantity: "Quantity";
@@ -270,6 +267,7 @@ export const GQL_SCALAR_MAP: Record<string, FieldTemplate>;
 // @public
 export interface GraphQLConversionFieldMeta extends FieldMeta {
     _graphqlType?: string;
+    _isLink?: boolean;
     _unmapped?: boolean;
 }
 
@@ -302,6 +300,7 @@ export const LinkDeclaration: z.ZodObject<{
         atLeastOne: "atLeastOne";
     }>;
     backlink: z.ZodOptional<z.ZodString>;
+    component: z.ZodOptional<z.ZodString>;
 }, z.core.$strip>;
 
 // @public
@@ -338,7 +337,6 @@ export const StonecropFieldType: z.ZodEnum<{
     JSON: "JSON";
     Code: "Code";
     Link: "Link";
-    Doctype: "Doctype";
     Attach: "Attach";
     Currency: "Currency";
     Quantity: "Quantity";

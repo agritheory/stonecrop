@@ -41,7 +41,6 @@ const customerDoctype = new Doctype(
   'Customer',
   List([
     { fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' },
-    { fieldname: 'address', fieldtype: 'Doctype', options: 'address' },
   ]),
   {
     id: 'customer',
@@ -57,7 +56,11 @@ const customerDoctype = new Doctype(
   },
   Map({
     submit: ['validateData', 'saveRecord'],
-  })
+  }),
+  undefined,
+  {
+    address: { target: 'address', cardinality: 'one' },
+  }
 )
 
 // In your action handler:
@@ -80,14 +83,19 @@ async function saveRecord(context) {
 
 ## How It Works
 
-Given a schema with nested Doctype fields:
+Given a doctype with scalar fields and a `links` object declaring relationships:
 
 ```typescript
+// fields (scalars only):
 [
   { fieldname: 'name', fieldtype: 'Data' },
-  { fieldname: 'address', fieldtype: 'Doctype', options: 'address' },  // 1:1
-  { fieldname: 'orders', fieldtype: 'Doctype', options: 'order', cardinality: 'many' },  // 1:many
 ]
+
+// links object:
+{
+  address: { target: 'address', cardinality: 'one' },        // 1:1
+  orders:  { target: 'order',   cardinality: 'noneOrMany' }, // 1:many
+}
 ```
 
 With HST containing:

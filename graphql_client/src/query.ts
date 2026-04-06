@@ -4,9 +4,9 @@ import pluralize from 'pluralize'
 
 /**
  * Field types that are not scalar queryable fields.
- * Link and Doctype fields are handled separately via the links object.
+ * Link fields are handled separately via sub-selections; relationship fields live in `links`.
  */
-const RELATION_FIELDTYPES = new Set(['Link', 'Doctype'])
+const RELATION_FIELDTYPES = new Set(['Link'])
 
 /**
  * Build a GraphQL connection query to fetch a list of records.

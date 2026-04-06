@@ -31,6 +31,9 @@ export const LinkDeclaration = z
 
 		/** Backlink fieldname on the target doctype that points back to this link */
 		backlink: z.string().optional(),
+
+		/** Override default rendering component (AForm for 1:1, ATable for 1:many) */
+		component: z.string().optional(),
 	})
 	.meta({
 		title: 'LinkDeclaration',
@@ -130,12 +133,6 @@ export const DoctypeMeta = z
 
 		/** Parent doctype for inheritance */
 		inherits: z.string().optional(),
-
-		/** Doctype to use for list views */
-		listDoctype: z.string().optional(),
-
-		/** Parent doctype for child tables */
-		parentDoctype: z.string().optional(),
 	})
 	.meta({
 		title: 'DoctypeMeta',

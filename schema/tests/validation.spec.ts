@@ -241,8 +241,6 @@ describe('Doctype Validation', () => {
 				name: 'Employee',
 				fields: [{ fieldname: 'employeeId', fieldtype: 'Data' }],
 				inherits: 'Person',
-				parentDoctype: 'Company',
-				listDoctype: 'EmployeeList',
 			}
 			const result = validateDoctype(doctype)
 
@@ -329,8 +327,7 @@ describe('Doctype Validation', () => {
 			for (const cardinality of cardinalities) {
 				const field = {
 					fieldname: 'child',
-					fieldtype: 'Doctype',
-					options: 'child-doctype',
+					fieldtype: 'Data',
 					cardinality,
 				}
 				const result = validateField(field)

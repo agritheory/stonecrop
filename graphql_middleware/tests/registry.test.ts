@@ -196,9 +196,11 @@ describe('validateFieldTypes handler', () => {
 			{ fieldname: 'meeting_time', fieldtype: 'Time', label: 'Time' },
 			{ fieldname: 'created_at', fieldtype: 'Datetime', label: 'Datetime' },
 			{ fieldname: 'meta', fieldtype: 'JSON', label: 'Meta' },
-			{ fieldname: 'items', fieldtype: 'Doctype', cardinality: 'noneOrMany', label: 'Items', options: 'Item' },
-			{ fieldname: 'parent', fieldtype: 'Doctype', label: 'Parent', options: 'Parent' },
 		],
+		links: {
+			items: { target: 'item', cardinality: 'noneOrMany' },
+			parent: { target: 'parent', cardinality: 'one' },
+		},
 	}
 
 	it('passes with all correctly-typed values', async () => {
@@ -284,19 +286,19 @@ describe('validateFieldTypes handler', () => {
 		).rejects.toThrow('expected object')
 	})
 
-	it('throws for a non-array Doctype value with cardinality noneOrMany', async () => {
+	it('throws for a non-array link value with cardinality noneOrMany', async () => {
 		await expect(
 			builtinHandlers.validateFieldTypes([{ items: 'not-an-array' }], makeContext(typedDoctype))
 		).rejects.toThrow('expected array')
 	})
 
-	it('throws for a non-object Doctype value with cardinality one (default)', async () => {
+	it('throws for a non-object link value with cardinality one (default)', async () => {
 		await expect(
 			builtinHandlers.validateFieldTypes([{ parent: 'not-an-object' }], makeContext(typedDoctype))
 		).rejects.toThrow('expected object')
 	})
 
-	it('throws for an array Doctype value with cardinality one (default)', async () => {
+	it('throws for an array link value with cardinality one (default)', async () => {
 		await expect(
 			builtinHandlers.validateFieldTypes([{ parent: [{ name: 'parent' }] }], makeContext(typedDoctype))
 		).rejects.toThrow('expected object')
@@ -454,18 +456,6 @@ describe('validateReferences', () => {
 		expect(errors.some(e => e.message.includes('BaseTask'))).toBe(true)
 	})
 
-	it('reports error for unknown listDoctype reference', () => {
-		loadDoctypesFromObject({ Task: { fields: [], listDoctype: 'TaskList' } })
-		const errors = validateReferences()
-		expect(errors.some(e => e.message.includes('TaskList'))).toBe(true)
-	})
-
-	it('reports error for unknown parentDoctype reference', () => {
-		loadDoctypesFromObject({ Task: { fields: [], parentDoctype: 'Project' } })
-		const errors = validateReferences()
-		expect(errors.some(e => e.message.includes('Project'))).toBe(true)
-	})
-
 	it('reports error for Link field targeting unknown doctype', () => {
 		loadDoctypesFromObject({
 			Task: { fields: [{ fieldname: 'owner', fieldtype: 'Link', label: 'Owner', options: 'User' }] },
@@ -496,12 +486,10 @@ describe('validateReferences', () => {
 			Task: {
 				fields: [],
 				inherits: 'BaseTask',
-				listDoctype: 'TaskList',
-				parentDoctype: 'Project',
 			},
 		})
 		const errors = validateReferences()
-		expect(errors.length).toBeGreaterThanOrEqual(3)
+		expect(errors.length).toBeGreaterThanOrEqual(1)
 	})
 })
 

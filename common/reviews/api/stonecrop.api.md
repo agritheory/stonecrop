@@ -14,7 +14,7 @@ import { Map as Map_2 } from 'immutable';
 import { Plugin as Plugin_2 } from 'vue';
 import { Ref } from 'vue';
 import { Router } from 'vue-router';
-import { SchemaTypes } from '@stonecrop/aform';
+import type { SchemaTypes } from '@stonecrop/aform';
 import { Store } from 'pinia';
 import { StoreDefinition } from 'pinia';
 import type { UnknownMachineConfig } from 'xstate';
@@ -53,10 +53,10 @@ export interface BatchOperation {
 }
 
 // @public
-export function collectNestedData(resolvedSchema: SchemaTypes[], basePath: string, hstStore: HSTNode): Record<string, any>;
+export function collectNestedData(basePath: string, doctype: Doctype, hstStore: HSTNode): Record<string, any>;
 
 // @public
-export function createHST(target: any, doctype: string, parentDoctype?: string): HSTNode;
+export function createHST(target: any, doctype: string): HSTNode;
 
 // @public
 export function createValidator(registry: Registry, options?: Partial<ValidatorOptions>): SchemaValidator;
@@ -113,8 +113,6 @@ export type DoctypeConfig = {
     workflow?: UnknownMachineConfig | WorkflowMeta;
     actions?: Record<string, string[]>;
     inherits?: string;
-    listDoctype?: string;
-    parentDoctype?: string;
 };
 
 // @public
@@ -397,7 +395,7 @@ export class Registry {
     initializeRecord(schema: SchemaTypes[]): Record<string, any>;
     readonly name: string;
     readonly registry: Record<string, Doctype>;
-    resolveSchema(schema: SchemaTypes[], visited?: Set<string>): SchemaTypes[];
+    resolveSchema(doctype: Doctype, visited?: Set<string>): SchemaTypes[];
     static _root: Registry;
     readonly router?: Router;
 }

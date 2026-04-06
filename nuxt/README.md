@@ -280,7 +280,6 @@ import { resolve } from 'path'
 
 const myStrategy: RouteStrategyFn = (doctypes) =>
   doctypes
-    .filter(({ data }) => !data.parentDoctype) // skip child tables
     .flatMap(({ fileName, data, fields }) => [
       {
         name: `${fileName}-list`,

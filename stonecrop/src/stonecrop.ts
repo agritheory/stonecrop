@@ -1,10 +1,3 @@
-import {
-	type DoctypeManySchema,
-	type DoctypeOneSchema,
-	type DoctypeSchema,
-	type SchemaTypes,
-	isDoctypeMany,
-} from '@stonecrop/aform'
 import type { DataClient } from '@stonecrop/schema'
 import { reactive } from 'vue'
 
@@ -437,39 +430,25 @@ export class Stonecrop {
 
 		const payload: Record<string, any> = { ...recordData }
 
-		const schemaArray = doctype.schema
-			? Array.isArray(doctype.schema)
-				? doctype.schema
-				: Array.from(doctype.schema)
-			: []
-		const resolved = this.registry.resolveSchema(schemaArray)
+		// Collect nested data from links
+		if (doctype.links) {
+			for (const [fieldname, link] of Object.entries(doctype.links)) {
+				const fieldPath = `${recordPath}.${fieldname}`
+				const isMany = link.cardinality === 'noneOrMany' || link.cardinality === 'atLeastOne'
 
-		const doctypeFields = resolved.filter(
-			field =>
-				'fieldtype' in field &&
-				field.fieldtype === 'Doctype' &&
-				!isDoctypeMany(field as DoctypeSchema) &&
-				'schema' in field &&
-				Array.isArray(field.schema)
-		)
-
-		for (const field of doctypeFields) {
-			const doctypeField = field as DoctypeOneSchema
-			const fieldPath = `${recordPath}.${doctypeField.fieldname}`
-			const nestedData = collectNestedData(doctypeField.schema!, fieldPath, this.hstStore)
-			payload[doctypeField.fieldname] = nestedData
-		}
-
-		const doctypeManyFields = resolved.filter(
-			field => 'fieldtype' in field && field.fieldtype === 'Doctype' && isDoctypeMany(field as DoctypeSchema)
-		)
-
-		for (const field of doctypeManyFields) {
-			const doctypeField = field as DoctypeManySchema
-			const fieldPath = `${recordPath}.${doctypeField.fieldname}`
-			const arrayData = this.hstStore.get(fieldPath)
-			if (Array.isArray(arrayData)) {
-				payload[doctypeField.fieldname] = arrayData
+				if (isMany) {
+					const arrayData = this.hstStore.get(fieldPath)
+					if (Array.isArray(arrayData)) {
+						payload[fieldname] = arrayData
+					}
+				} else {
+					const targetDoctype = this.registry.getDoctype(link.target)
+					if (targetDoctype?.links) {
+						payload[fieldname] = collectNestedData(fieldPath, targetDoctype, this.hstStore)
+					} else {
+						payload[fieldname] = this.hstStore.get(fieldPath) || {}
+					}
+				}
 			}
 		}
 
@@ -492,12 +471,7 @@ export class Stonecrop {
 		this.ensureDoctypeExists(slug)
 
 		// Resolve schema and initialize with defaults
-		const schemaArray = doctype.schema
-			? Array.isArray(doctype.schema)
-				? doctype.schema
-				: Array.from(doctype.schema)
-			: []
-		const resolvedSchema = this.registry.resolveSchema(schemaArray)
+		const resolvedSchema = this.registry.resolveSchema(doctype)
 		const record = this.registry.initializeRecord(resolvedSchema)
 
 		// Ensure the parent path exists in HST before setting child fields
@@ -572,36 +546,28 @@ export class Stonecrop {
  * @returns The collected data object
  * @public
  */
-function collectNestedData(resolvedSchema: SchemaTypes[], basePath: string, hstStore: HSTNode): Record<string, any> {
+function collectNestedData(basePath: string, doctype: Doctype, hstStore: HSTNode): Record<string, any> {
 	const data = hstStore.get(basePath) || {}
 	const payload: Record<string, any> = { ...data }
 
-	const doctypeFields = resolvedSchema.filter(
-		field =>
-			'fieldtype' in field &&
-			field.fieldtype === 'Doctype' &&
-			!isDoctypeMany(field as DoctypeSchema) &&
-			'schema' in field &&
-			Array.isArray(field.schema)
-	)
+	if (!doctype.links) return payload
 
-	for (const field of doctypeFields) {
-		const doctypeField = field as DoctypeOneSchema
-		const fieldPath = `${basePath}.${doctypeField.fieldname}`
-		const nestedData = collectNestedData(doctypeField.schema!, fieldPath, hstStore)
-		payload[doctypeField.fieldname] = nestedData
-	}
+	for (const [fieldname, link] of Object.entries(doctype.links)) {
+		const fieldPath = `${basePath}.${fieldname}`
+		const isMany = link.cardinality === 'noneOrMany' || link.cardinality === 'atLeastOne'
 
-	const doctypeManyFields = resolvedSchema.filter(
-		field => 'fieldtype' in field && field.fieldtype === 'Doctype' && isDoctypeMany(field as DoctypeSchema)
-	)
-
-	for (const field of doctypeManyFields) {
-		const doctypeField = field as DoctypeManySchema
-		const fieldPath = `${basePath}.${doctypeField.fieldname}`
-		const arrayData = hstStore.get(fieldPath)
-		if (Array.isArray(arrayData)) {
-			payload[doctypeField.fieldname] = arrayData
+		if (isMany) {
+			const arrayData = hstStore.get(fieldPath)
+			if (Array.isArray(arrayData)) {
+				payload[fieldname] = arrayData
+			}
+		} else {
+			const targetDoctype = Registry._root?.getDoctype(link.target)
+			if (targetDoctype?.links) {
+				payload[fieldname] = collectNestedData(fieldPath, targetDoctype, hstStore)
+			} else {
+				payload[fieldname] = hstStore.get(fieldPath) || {}
+			}
 		}
 	}
 

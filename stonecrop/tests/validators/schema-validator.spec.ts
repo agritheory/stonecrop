@@ -77,7 +77,8 @@ describe('SchemaValidator class', () => {
 			const schema = [
 				{
 					fieldname: 'address',
-					fieldtype: 'Doctype',
+					component: 'AForm',
+					options: 'address',
 					schema: [
 						{ fieldtype: 'Data' }, // Missing fieldname
 					],
@@ -127,7 +128,8 @@ describe('SchemaValidator class', () => {
 			const schema = [
 				{
 					fieldname: 'details',
-					fieldtype: 'Doctype',
+					component: 'AForm',
+					options: 'details',
 					schema: [{ fieldname: 'linked', fieldtype: 'Link', options: 'missing' }],
 				} as any,
 			]
@@ -306,13 +308,14 @@ describe('validateSchema helper', () => {
 		expect(result).toBeDefined()
 	})
 
-	it('handles nested table fields (Doctype with cardinality: many)', () => {
+	it('handles nested table fields (resolved Doctype with cardinality: many)', () => {
 		const validator = new SchemaValidator()
 		const schema = [
 			{
 				fieldname: 'items',
 				label: 'Items',
-				fieldtype: 'Doctype',
+				component: 'ATable',
+				options: 'item',
 				cardinality: 'noneOrMany',
 			} as SchemaTypes,
 		]

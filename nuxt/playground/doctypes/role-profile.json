@@ -12,16 +12,17 @@
 			"fieldtype": "Text"
 		},
 		{
-			"fieldname": "roles",
-			"label": "Roles",
-			"fieldtype": "Doctype",
-			"options": "RoleProfileRole"
-		},
-		{
 			"fieldname": "active",
 			"label": "Active",
 			"fieldtype": "Check",
 			"default": true
 		}
-	]
+	],
+	"links": {
+		"roles": {
+			"target": "RoleProfileRole",
+			"cardinality": "noneOrMany",
+			"backlink": "role_profile"
+		}
+	}
 }

@@ -141,7 +141,6 @@ describe('WELL_KNOWN_SCALARS', () => {
 			'JSON',
 			'Code',
 			'Link',
-			'Doctype',
 			'Attach',
 			'Currency',
 			'Quantity',
@@ -340,9 +339,10 @@ describe('classifyFieldType', () => {
 		expect(field.required).toBe(true) // User!
 	})
 
-	it('should classify Connection field as Doctype', () => {
+	it('should classify Connection field as a link (_isLink marker)', () => {
 		const field = classifyFieldType('comments', postFields.comments, entityTypes)
-		expect(field.fieldtype).toBe('Doctype')
+		expect((field as any)._isLink).toBe(true)
+		expect(field.fieldtype).toBeUndefined()
 		expect(field.component).toBe('ATable')
 		expect(field.options).toBe('comment')
 		expect(field.cardinality).toBe('noneOrMany')
@@ -476,10 +476,11 @@ describe('convertGraphQLSchema', () => {
 			expect(statusField.fieldtype).toBe('Select')
 			expect(statusField.options).toEqual(['DRAFT', 'PUBLISHED', 'ARCHIVED'])
 
-			const commentsField = post.fields.find(f => f.fieldname === 'comments')!
-			expect(commentsField.fieldtype).toBe('Doctype')
-			expect(commentsField.options).toBe('comment')
-			expect(commentsField.cardinality).toBe('noneOrMany')
+			// Connection fields are placed in doctype.links, not doctype.fields
+			expect(post.fields.find(f => f.fieldname === 'comments')).toBeUndefined()
+			expect(post.links?.comments).toBeDefined()
+			expect(post.links?.comments?.target).toBe('comment')
+			expect(post.links?.comments?.cardinality).toBe('noneOrMany')
 		})
 	})
 
@@ -649,10 +650,11 @@ describe('convertGraphQLSchema', () => {
 			`
 			const doctypes = convertGraphQLSchema(sdl)
 			const order = doctypes.find(d => d.name === 'Order')!
-			const itemsField = order.fields.find(f => f.fieldname === 'items')!
-			expect(itemsField.fieldtype).toBe('Doctype')
-			expect(itemsField.options).toBe('order-item')
-			expect(itemsField.cardinality).toBe('noneOrMany')
+			// List-of-entity fields are placed in doctype.links, not doctype.fields
+			expect(order.fields.find(f => f.fieldname === 'items')).toBeUndefined()
+			expect(order.links?.items).toBeDefined()
+			expect(order.links?.items?.target).toBe('order-item')
+			expect(order.links?.items?.cardinality).toBe('noneOrMany')
 		})
 	})
 

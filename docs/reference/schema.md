@@ -528,6 +528,7 @@ Extended field metadata with optional GraphQL conversion metadata. Only present 
 ```typescript
 export interface GraphQLConversionFieldMeta {
   _graphqlType?: string;
+  _isLink?: boolean;
   _unmapped?: boolean;
 }
 ```
@@ -537,6 +538,7 @@ export interface GraphQLConversionFieldMeta {
 | Property | Type | Description |
 |----------|------|-------------|
 | _graphqlType? | `string` | Original GraphQL type name (for debugging/reference) |
+| _isLink? | `boolean` | Marks relationship fields that belong in `links`, not `fields` |
 | _unmapped? | `boolean` | Marks fields that couldn't be automatically mapped |
 
 ### GraphQLConversionOptions

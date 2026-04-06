@@ -106,18 +106,18 @@ const ancestors = registry.getAncestorLinks('address')
 
 ### Phase 3: Schema Resolution (for 1:1 nested forms)
 
-The Registry resolves `fieldtype: 'Doctype'` fields (1:1 cardinality) by embedding child schemas:
+The Registry resolves `links` entries (1:1 cardinality) by embedding child schemas:
 
 ```typescript
-const schemaArray = Array.from(customerDoctype.schema)
-const resolvedSchema = registry.resolveSchema(schemaArray)
+const resolvedSchema = registry.resolveSchema(customerDoctype)
 
-// resolvedSchema now has the address field with embedded schema:
+// resolvedSchema now has the address link resolved as an embedded schema entry:
 // {
 //   fieldname: 'address',
-//   fieldtype: 'Doctype',
+//   label: 'address',
 //   options: 'address',
-//   label: 'Address',
+//   cardinality: 'one',
+//   component: 'AForm',
 //   schema: [ /* address fields here */ ]
 // }
 ```
@@ -199,7 +199,8 @@ const customerSchema: SchemaTypes[] = [
   { fieldname: 'customer_name', fieldtype: 'Data', label: 'Customer Name', component: 'ATextInput' },
   {
     fieldname: 'address',
-    fieldtype: 'Doctype',
+    component: 'AForm',
+    options: 'address',
     label: 'Address',
     schema: addressSchema, // ← Manually embed the schema
   },

@@ -63,15 +63,6 @@ describe('HST Real Component Integration', () => {
 
 			// JSON field for complex data
 			{ fieldname: 'metadata', fieldtype: 'JSON', label: 'Metadata', component: 'ATextInput' },
-
-			// Doctype field with cardinality:many for related items
-			{
-				fieldname: 'subtasks',
-				fieldtype: 'Doctype',
-				cardinality: 'noneOrMany',
-				label: 'Subtasks',
-				component: 'ATable',
-			},
 		] as SchemaTypes[])
 
 		const mockWorkflow: UnknownMachineConfig = {
@@ -96,7 +87,9 @@ describe('HST Real Component Integration', () => {
 			cancel: ['cancelTask'],
 		})
 
-		doctype = new Doctype('Task', completeSchema, mockWorkflow, mockActions)
+		doctype = new Doctype('Task', completeSchema, mockWorkflow, mockActions, undefined, {
+			subtasks: { target: 'subtask', cardinality: 'noneOrMany' },
+		})
 		registry.addDoctype(doctype)
 		stonecrop = new Stonecrop(registry)
 	})

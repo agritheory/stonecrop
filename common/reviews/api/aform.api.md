@@ -62,33 +62,9 @@ export type ComponentProps = {
 };
 
 // @public
-export type DoctypeManySchema = BaseSchema & {
-    fieldtype: 'Doctype';
-    options: string;
-    label?: string;
-    cardinality: 'noneOrMany' | 'atLeastOne';
-    columns?: TableColumn[];
-    config?: TableConfig;
-    rows?: TableRow[];
-    component?: string;
-};
-
-// @public
-export type DoctypeOneSchema = BaseSchema & {
-    fieldtype: 'Doctype';
-    options: string;
-    label?: string;
-    cardinality?: 'one' | 'atMostOne';
-    schema?: SchemaTypes[];
-};
-
-// @public
-export type DoctypeSchema = DoctypeOneSchema | DoctypeManySchema;
-
-// @public
 export type FieldsetSchema = BaseSchema & {
     label?: string;
-    schema?: (FormSchema | TableSchema)[];
+    schema?: SchemaTypes[];
     collapsible?: boolean;
 };
 
@@ -97,7 +73,7 @@ export type FormMode = 'edit' | 'read' | 'display';
 
 // @public
 export type FormSchema = BaseSchema & {
-    align?: string;
+    align?: CanvasTextAlign;
     edit?: boolean;
     fieldtype?: string;
     label?: string;
@@ -109,13 +85,10 @@ export type FormSchema = BaseSchema & {
 // @public
 export function install(app: App): void;
 
-// @public
-export function isDoctypeMany(field: DoctypeSchema): field is DoctypeManySchema;
-
 export { Login }
 
 // @public
-export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema | DoctypeSchema;
+export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema;
 
 // @public
 export type TableSchema = BaseSchema & {

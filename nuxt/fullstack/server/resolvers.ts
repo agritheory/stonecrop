@@ -59,8 +59,6 @@ function formatDoctypeMeta(meta: DoctypeMeta) {
 			  }
 			: null,
 		inherits: meta.inherits ?? null,
-		listDoctype: meta.listDoctype ?? null,
-		parentDoctype: meta.parentDoctype ?? null,
 	}
 }
 

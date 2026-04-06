@@ -16,7 +16,11 @@ import { HST } from '../../src/stores/hst'
  * @vitest-environment jsdom
  */
 
-const createDoctype = (name: string, fields?: SchemaTypes[]) => {
+const createDoctype = (
+	name: string,
+	fields?: SchemaTypes[],
+	links?: Record<string, { target: string; cardinality: string }>
+) => {
 	const schema = List(
 		fields || [
 			{
@@ -54,7 +58,7 @@ const createDoctype = (name: string, fields?: SchemaTypes[]) => {
 		save: ['validateData', 'saveData'],
 	})
 
-	return new Doctype(name, schema as any, workflow, actions)
+	return new Doctype(name, schema as any, workflow, actions, undefined, links)
 }
 
 describe('useStonecrop HST mode', () => {
@@ -107,10 +111,11 @@ describe('useStonecrop HST mode', () => {
 		])
 		registry.addDoctype(addressDoctype)
 
-		const customerDoctype = createDoctype('Customer', [
-			{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
-			{ fieldname: 'address', fieldtype: 'Doctype', options: 'address' } as SchemaTypes,
-		])
+		const customerDoctype = createDoctype(
+			'Customer',
+			[{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes],
+			{ address: { target: 'address', cardinality: 'one' } }
+		)
 		registry.addDoctype(customerDoctype)
 
 		const TestComponent = defineComponent({
@@ -560,15 +565,11 @@ describe('useStonecrop HST mode', () => {
 		])
 		registry.addDoctype(itemDoctype)
 
-		const orderDoctype = createDoctype('Order', [
-			{ fieldname: 'order_number', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
-			{
-				fieldname: 'items',
-				fieldtype: 'Doctype',
-				cardinality: 'noneOrMany',
-				options: 'item',
-			} as SchemaTypes,
-		])
+		const orderDoctype = createDoctype(
+			'Order',
+			[{ fieldname: 'order_number', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes],
+			{ items: { target: 'item', cardinality: 'noneOrMany' } }
+		)
 		registry.addDoctype(orderDoctype)
 
 		const TestComponent = defineComponent({
@@ -614,15 +615,11 @@ describe('useStonecrop HST mode', () => {
 		])
 		registry.addDoctype(itemDoctype)
 
-		const orderDoctype = createDoctype('Order', [
-			{ fieldname: 'order_number', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
-			{
-				fieldname: 'items',
-				fieldtype: 'Doctype',
-				cardinality: 'noneOrMany',
-				options: 'item',
-			} as SchemaTypes,
-		])
+		const orderDoctype = createDoctype(
+			'Order',
+			[{ fieldname: 'order_number', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes],
+			{ items: { target: 'item', cardinality: 'noneOrMany' } }
+		)
 		registry.addDoctype(orderDoctype)
 
 		const TestComponent = defineComponent({
@@ -661,14 +658,11 @@ describe('useStonecrop HST mode', () => {
 		])
 		registry.addDoctype(addressDoctype)
 
-		const customerDoctype = createDoctype('Customer', [
-			{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
-			{
-				fieldname: 'address',
-				fieldtype: 'Doctype',
-				options: 'address',
-			} as SchemaTypes,
-		])
+		const customerDoctype = createDoctype(
+			'Customer',
+			[{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes],
+			{ address: { target: 'address', cardinality: 'one' } }
+		)
 		registry.addDoctype(customerDoctype)
 
 		const TestComponent = defineComponent({
@@ -712,26 +706,21 @@ describe('useStonecrop HST mode', () => {
 		])
 		registry.addDoctype(phoneDoctype)
 
-		const addressDoctype = createDoctype('Address', [
-			{ fieldname: 'street', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
-			{ fieldname: 'city', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
-			{
-				fieldname: 'phones',
-				fieldtype: 'Doctype',
-				cardinality: 'noneOrMany',
-				options: 'phone',
-			} as SchemaTypes,
-		])
+		const addressDoctype = createDoctype(
+			'Address',
+			[
+				{ fieldname: 'street', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+				{ fieldname: 'city', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+			],
+			{ phones: { target: 'phone', cardinality: 'noneOrMany' } }
+		)
 		registry.addDoctype(addressDoctype)
 
-		const customerDoctype = createDoctype('Customer', [
-			{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
-			{
-				fieldname: 'address',
-				fieldtype: 'Doctype',
-				options: 'address',
-			} as SchemaTypes,
-		])
+		const customerDoctype = createDoctype(
+			'Customer',
+			[{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes],
+			{ address: { target: 'address', cardinality: 'one' } }
+		)
 		registry.addDoctype(customerDoctype)
 
 		const TestComponent = defineComponent({
@@ -785,25 +774,21 @@ describe('useStonecrop HST mode', () => {
 		])
 		registry.addDoctype(coordinatesDoctype)
 
-		const addressDoctype = createDoctype('Address', [
-			{ fieldname: 'street', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
-			{ fieldname: 'city', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
-			{
-				fieldname: 'coordinates',
-				fieldtype: 'Doctype',
-				options: 'coordinates',
-			} as SchemaTypes,
-		])
+		const addressDoctype = createDoctype(
+			'Address',
+			[
+				{ fieldname: 'street', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+				{ fieldname: 'city', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+			],
+			{ coordinates: { target: 'coordinates', cardinality: 'one' } }
+		)
 		registry.addDoctype(addressDoctype)
 
-		const customerDoctype = createDoctype('Customer', [
-			{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
-			{
-				fieldname: 'address',
-				fieldtype: 'Doctype',
-				options: 'address',
-			} as SchemaTypes,
-		])
+		const customerDoctype = createDoctype(
+			'Customer',
+			[{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes],
+			{ address: { target: 'address', cardinality: 'one' } }
+		)
 		registry.addDoctype(customerDoctype)
 
 		const TestComponent = defineComponent({
@@ -882,10 +867,11 @@ describe('useStonecrop HST mode', () => {
 		])
 		registry.addDoctype(addressDoctype)
 
-		const customerDoctype = createDoctype('Customer', [
-			{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
-			{ fieldname: 'address', fieldtype: 'Doctype', options: 'address' } as SchemaTypes,
-		])
+		const customerDoctype = createDoctype(
+			'Customer',
+			[{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes],
+			{ address: { target: 'address', cardinality: 'one' } }
+		)
 		registry.addDoctype(customerDoctype)
 
 		const TestComponent = defineComponent({

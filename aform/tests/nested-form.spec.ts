@@ -3,8 +3,7 @@ import { describe, it, expect } from 'vitest'
 
 import AForm from '../src/components/AForm.vue'
 import ATextInput from '../src/components/form/ATextInput.vue'
-import type { SchemaTypes, DoctypeSchema } from '../src/types'
-import { isDoctypeMany } from '../src/index'
+import type { SchemaTypes } from '../src/types'
 
 describe('AForm Nested Schema Rendering', () => {
 	const addressSchema: SchemaTypes[] = [
@@ -21,7 +20,6 @@ describe('AForm Nested Schema Rendering', () => {
 		},
 		{
 			fieldname: 'address',
-			fieldtype: 'Doctype',
 			options: 'address',
 			label: 'Address',
 			schema: addressSchema,
@@ -65,7 +63,6 @@ describe('AForm Nested Schema Rendering', () => {
 			},
 			{
 				fieldname: 'address',
-				fieldtype: 'Doctype',
 				options: 'address',
 				// no label
 				schema: addressSchema,
@@ -215,7 +212,6 @@ describe('AForm Nested Schema Rendering', () => {
 			},
 			{
 				fieldname: 'address',
-				fieldtype: 'Doctype',
 				options: 'address',
 				label: 'Address',
 				schema: [], // empty schema
@@ -249,7 +245,6 @@ describe('AForm Nested Schema Rendering', () => {
 			},
 			{
 				fieldname: 'address',
-				fieldtype: 'Doctype',
 				options: 'address',
 				label: 'Address',
 				// no schema property at all
@@ -307,7 +302,6 @@ describe('AForm Nested Schema Rendering', () => {
 			},
 			{
 				fieldname: 'address',
-				fieldtype: 'Doctype',
 				options: 'address',
 				label: 'Address',
 				mode: 'read',
@@ -352,14 +346,12 @@ describe('AForm Nested Schema Rendering', () => {
 			},
 			{
 				fieldname: 'address',
-				fieldtype: 'Doctype',
 				options: 'address',
 				label: 'Address',
 				schema: addressSchema,
 			},
 			{
 				fieldname: 'billing',
-				fieldtype: 'Doctype',
 				options: 'billing',
 				label: 'Billing',
 				schema: billingSchema,
@@ -508,10 +500,7 @@ describe('AForm Nested Schema Rendering', () => {
 			},
 			{
 				fieldname: 'items',
-				fieldtype: 'Doctype',
-				options: 'item',
 				label: 'Items',
-				cardinality: 'noneOrMany',
 				component: 'ATable',
 				columns: [
 					{ name: 'item_name', label: 'Item', fieldtype: 'Data' },
@@ -521,7 +510,7 @@ describe('AForm Nested Schema Rendering', () => {
 					{ item_name: 'Widget', qty: 5 },
 					{ item_name: 'Gadget', qty: 3 },
 				],
-			} as DoctypeSchema,
+			},
 		]
 
 		const wrapper = mount(AForm, {
@@ -552,30 +541,5 @@ describe('AForm Nested Schema Rendering', () => {
 		// ATable may not be registered in test, but the component :is binding
 		// should still attempt to render it — verify no nested form was created
 		expect(nestedSections.length).toBe(0)
-	})
-
-	it('isDoctypeMany type guard correctly narrows DoctypeSchema', () => {
-		const oneField: DoctypeSchema = {
-			fieldname: 'address',
-			fieldtype: 'Doctype',
-			options: 'address',
-			schema: [],
-		}
-
-		const manyField: DoctypeSchema = {
-			fieldname: 'items',
-			fieldtype: 'Doctype',
-			options: 'item',
-			cardinality: 'noneOrMany',
-			columns: [],
-		}
-
-		expect(isDoctypeMany(oneField)).toBe(false)
-		expect(isDoctypeMany(manyField)).toBe(true)
-
-		// Type narrowing should expose columns on manyField
-		if (isDoctypeMany(manyField)) {
-			expect(manyField.columns).toBeDefined()
-		}
 	})
 })

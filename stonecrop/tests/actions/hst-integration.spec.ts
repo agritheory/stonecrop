@@ -25,9 +25,7 @@ describe('Field Trigger Integration', () => {
 		registerGlobalAction('validateEmailPrimary', validateEmailPrimary)
 
 		// Create a doctype with field triggers in actions map
-		const schema = List([
-			{ fieldname: 'emailAddress', fieldtype: 'Doctype', cardinality: 'noneOrMany', label: 'Email Addresses' },
-		])
+		const schema = List([] as any[])
 		const workflow: UnknownMachineConfig = {
 			id: 'task',
 			initial: 'draft',
@@ -41,7 +39,9 @@ describe('Field Trigger Integration', () => {
 			['saveTask', ['someRegularAction']], // regular action
 		])
 
-		const doctype = new Doctype('Task', schema, workflow, actions)
+		const doctype = new Doctype('Task', schema, workflow, actions, undefined, {
+			emailAddress: { target: 'email-address', cardinality: 'noneOrMany' },
+		})
 		registry.addDoctype(doctype)
 
 		// Initialize HST store with data

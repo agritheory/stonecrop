@@ -40,7 +40,6 @@ describe('AForm Component', () => {
 				schema: [
 					{
 						fieldname: 'items',
-						fieldtype: 'Doctype',
 						component: 'ATable',
 						label: 'Items',
 						rows: [],
@@ -64,7 +63,6 @@ describe('AForm Component', () => {
 				schema: [
 					{
 						fieldname: 'items',
-						fieldtype: 'Doctype',
 						component: 'ATable',
 						label: 'Items',
 						rows: [{ id: 1, name: 'Existing' }],
