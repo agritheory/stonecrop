@@ -32,13 +32,14 @@ export default class Registry {
 	readonly registry: Record<string, Doctype> = {}
 
 	/**
-	 * Reverse index: backlink fieldname → \{ doctype slug, link fieldname \}.
-	 * Built at schema load time for O(1) ancestor lookups.
+	 * Reverse index: backlink fieldname → list of \{ doctype slug, link fieldname \}.
+	 * Multiple doctypes can declare a link with the same backlink name, so each key
+	 * maps to an array. Built at schema load time for O(1) ancestor lookups.
 	 *
 	 * @defaultValue `new Map()`
 	 * @internal
 	 */
-	private _ancestorIndex: Map<string, { slug: string; fieldname: string }> = new Map()
+	private _ancestorIndex: Map<string, Array<{ slug: string; fieldname: string }>> = new Map()
 
 	/**
 	 * Whether the ancestor index needs rebuilding
@@ -170,6 +171,8 @@ export default class Registry {
 		// 3. Combine and apply layout ordering
 		const allEntries = [...resolvedFields, ...linkEntries]
 
+		seen.delete(slug)
+
 		if (doctype.layout) {
 			const byFieldname = new Map<string, SchemaTypes>()
 			for (const entry of allEntries) {
@@ -182,7 +185,6 @@ export default class Registry {
 				.filter((entry): entry is SchemaTypes => entry !== undefined)
 		}
 
-		seen.delete(slug)
 		return allEntries
 	}
 
@@ -200,14 +202,16 @@ export default class Registry {
 		}
 
 		if (!resolved.columns) {
-			resolved.columns = childSchema.map(childField => ({
-				name: childField.fieldname,
-				label: ('label' in childField && childField.label) || childField.fieldname,
-				fieldtype: 'fieldtype' in childField ? childField.fieldtype : 'Data',
-				align: 'align' in childField ? childField.align : 'left',
-				edit: 'edit' in childField ? childField.edit : true,
-				width: ('width' in childField && childField.width) || '20ch',
-			}))
+			resolved.columns = childSchema
+				.filter(childField => 'fieldtype' in childField)
+				.map(childField => ({
+					name: childField.fieldname,
+					label: ('label' in childField && childField.label) || childField.fieldname,
+					fieldtype: 'fieldtype' in childField ? childField.fieldtype : 'Data',
+					align: 'align' in childField ? childField.align : 'left',
+					edit: 'edit' in childField ? childField.edit : true,
+					width: ('width' in childField && childField.width) || '20ch',
+				}))
 		}
 
 		if (!resolved.config) {
@@ -354,17 +358,19 @@ export default class Registry {
 
 		const results: Array<LinkDeclaration & { fieldname: string; doctype: string }> = []
 
-		for (const [_backlink, { slug: declaringSlug, fieldname }] of this._ancestorIndex) {
-			const declaringDoctype = this.registry[declaringSlug]
-			if (!declaringDoctype?.links) continue
+		for (const [_backlink, entries] of this._ancestorIndex) {
+			for (const { slug: declaringSlug, fieldname } of entries) {
+				const declaringDoctype = this.registry[declaringSlug]
+				if (!declaringDoctype?.links) continue
 
-			const link = declaringDoctype.links[fieldname]
-			if (link?.target === doctypeSlug) {
-				results.push({
-					...link,
-					fieldname,
-					doctype: declaringSlug,
-				})
+				const link = declaringDoctype.links[fieldname]
+				if (link?.target === doctypeSlug) {
+					results.push({
+						...link,
+						fieldname,
+						doctype: declaringSlug,
+					})
+				}
 			}
 		}
 
@@ -384,7 +390,12 @@ export default class Registry {
 			if (!doctype.links) continue
 			for (const [fieldname, link] of Object.entries(doctype.links)) {
 				if (link.backlink) {
-					this._ancestorIndex.set(link.backlink, { slug, fieldname })
+					const existing = this._ancestorIndex.get(link.backlink)
+					if (existing) {
+						existing.push({ slug, fieldname })
+					} else {
+						this._ancestorIndex.set(link.backlink, [{ slug, fieldname }])
+					}
 				}
 			}
 		}

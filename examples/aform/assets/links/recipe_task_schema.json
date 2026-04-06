@@ -1,0 +1,27 @@
+{
+	"name": "RecipeTask",
+	"slug": "recipe-task",
+	"tableName": "recipe_task",
+	"fields": [
+		{
+			"fieldname": "name",
+			"fieldtype": "Data",
+			"component": "ATextInput",
+			"label": "Task Name",
+			"required": true
+		},
+		{
+			"fieldname": "description",
+			"fieldtype": "Data",
+			"component": "ATextInput",
+			"label": "Description"
+		}
+	],
+	"links": {
+		"recipe": {
+			"target": "recipe",
+			"cardinality": "one",
+			"backlink": "tasks"
+		}
+	}
+}

@@ -1,0 +1,40 @@
+{
+	"name": "RecipeNoLayout",
+	"slug": "recipe-nolayout",
+	"tableName": "recipe",
+	"fields": [
+		{
+			"fieldname": "name",
+			"fieldtype": "Data",
+			"component": "ATextInput",
+			"label": "Recipe Name",
+			"required": true
+		},
+		{
+			"fieldname": "description",
+			"fieldtype": "Data",
+			"component": "ATextInput",
+			"label": "Description"
+		},
+		{
+			"fieldname": "status",
+			"fieldtype": "Data",
+			"component": "ATextInput",
+			"label": "Status",
+			"required": true,
+			"mode": "read"
+		}
+	],
+	"links": {
+		"tasks": {
+			"target": "recipe-task",
+			"cardinality": "noneOrMany",
+			"backlink": "recipe"
+		},
+		"supersededBy": {
+			"target": "recipe",
+			"cardinality": "atMostOne",
+			"backlink": "supersededBy"
+		}
+	}
+}
