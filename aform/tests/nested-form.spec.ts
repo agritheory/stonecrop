@@ -103,7 +103,7 @@ describe('AForm Nested Schema Rendering', () => {
 				},
 			},
 			global: {
-				components: { ATextInput },
+				components: { ATextInput, AForm },
 			},
 		})
 
@@ -176,7 +176,7 @@ describe('AForm Nested Schema Rendering', () => {
 				},
 			},
 			global: {
-				components: { ATextInput },
+				components: { ATextInput, AForm },
 			},
 		})
 
