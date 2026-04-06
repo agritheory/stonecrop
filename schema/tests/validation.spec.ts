@@ -467,3 +467,45 @@ describe('Error Path Information', () => {
 		}
 	})
 })
+
+describe('LinkDeclaration Validation', () => {
+	it('should accept all four valid cardinality values on a link', () => {
+		const cardinalities = ['one', 'atMostOne', 'noneOrMany', 'atLeastOne'] as const
+		for (const cardinality of cardinalities) {
+			const doctype = {
+				name: 'Recipe',
+				fields: [{ fieldname: 'name', fieldtype: 'Data' }],
+				links: {
+					items: { target: 'recipe-task', cardinality },
+				},
+			}
+			const result = validateDoctype(doctype)
+			expect(result.success).toBe(true)
+		}
+	})
+
+	it('should accept component on a link declaration', () => {
+		const doctype = {
+			name: 'Recipe',
+			fields: [{ fieldname: 'name', fieldtype: 'Data' }],
+			links: {
+				tasks: { target: 'recipe-task', cardinality: 'noneOrMany', component: 'MyCustomTable' },
+			},
+		}
+		const result = validateDoctype(doctype)
+		expect(result.success).toBe(true)
+	})
+
+	it('should reject link with empty string target', () => {
+		const doctype = {
+			name: 'Recipe',
+			fields: [{ fieldname: 'name', fieldtype: 'Data' }],
+			links: {
+				tasks: { target: '', cardinality: 'noneOrMany' },
+			},
+		}
+		const result = validateDoctype(doctype)
+		expect(result.success).toBe(false)
+		expect(result.errors.length).toBeGreaterThan(0)
+	})
+})

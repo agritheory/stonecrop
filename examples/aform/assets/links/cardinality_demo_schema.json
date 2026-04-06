@@ -1,0 +1,18 @@
+{
+	"name": "cardinality-demo",
+	"slug": "cardinality-demo",
+	"fields": [
+		{
+			"fieldname": "name",
+			"fieldtype": "Data",
+			"component": "ATextInput",
+			"label": "Name"
+		}
+	],
+	"links": {
+		"required_task": { "target": "recipe-task", "cardinality": "one" },
+		"optional_task": { "target": "recipe-task", "cardinality": "atMostOne" },
+		"optional_tasks": { "target": "recipe-task", "cardinality": "noneOrMany" },
+		"required_tasks": { "target": "recipe-task", "cardinality": "atLeastOne" }
+	}
+}

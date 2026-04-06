@@ -320,5 +320,55 @@ describe('Registry class', () => {
 			expect(ancestor).toHaveLength(2)
 			expect(ancestor.map(l => l.fieldname).sort()).toEqual(['childLocations', 'parentLocation'])
 		})
+
+		it('returns entries from multiple doctypes when both target the same doctype', () => {
+			registry = new Registry()
+			const recipe = createDoctypeWithLinks('Recipe', {
+				tasks: { target: 'recipe-task', cardinality: 'noneOrMany', backlink: 'recipe' },
+			})
+			const recipeVariant = createDoctypeWithLinks('RecipeVariant', {
+				baseTasks: { target: 'recipe-task', cardinality: 'noneOrMany', backlink: 'recipeVariant' },
+			})
+			const recipeTask = createDoctypeWithLinks('RecipeTask', {
+				recipe: { target: 'recipe', cardinality: 'one', backlink: 'tasks' },
+				recipeVariant: { target: 'recipe-variant', cardinality: 'atMostOne', backlink: 'baseTasks' },
+			})
+			registry.addDoctype(recipe)
+			registry.addDoctype(recipeVariant)
+			registry.addDoctype(recipeTask)
+
+			const ancestors = registry.getAncestorLinks('recipe-task')
+			expect(ancestors).toHaveLength(2)
+
+			const slugs = ancestors.map(a => a.doctype).sort()
+			expect(slugs).toEqual(['recipe', 'recipe-variant'])
+		})
+
+		it('rebuilds ancestor index after a new doctype is added', () => {
+			registry = new Registry()
+			const recipe = createDoctypeWithLinks('Recipe', {
+				tasks: { target: 'recipe-task', cardinality: 'noneOrMany', backlink: 'recipe' },
+			})
+			const recipeTask = createDoctypeWithLinks('RecipeTask', {
+				recipe: { target: 'recipe', cardinality: 'one', backlink: 'tasks' },
+			})
+			registry.addDoctype(recipe)
+			registry.addDoctype(recipeTask)
+
+			// First call builds the index
+			const before = registry.getAncestorLinks('recipe-task')
+			expect(before).toHaveLength(1)
+
+			// Add a new doctype that also links to recipe-task
+			const recipeVariant = createDoctypeWithLinks('RecipeVariant', {
+				baseTasks: { target: 'recipe-task', cardinality: 'noneOrMany', backlink: 'recipeVariant' },
+			})
+			registry.addDoctype(recipeVariant)
+
+			// Dirty flag is set — next call should rebuild and include the new entry
+			const after = registry.getAncestorLinks('recipe-task')
+			expect(after).toHaveLength(2)
+			expect(after.map(a => a.doctype).sort()).toEqual(['recipe', 'recipe-variant'])
+		})
 	})
 })

@@ -439,6 +439,52 @@ describe('buildRecordQuery', () => {
 		expect(query).toContain('name')
 		expect(query).not.toContain('RecipeTasksByRecipeId')
 	})
+
+	it('includes connection sub-selection for atLeastOne links (same style as noneOrMany)', () => {
+		const atLeastOneMeta: DoctypeMeta = {
+			name: 'Playlist',
+			slug: 'playlist',
+			tableName: 'playlist',
+			fields: [
+				{ fieldname: 'id', fieldtype: 'Data', label: 'ID' },
+				{ fieldname: 'name', fieldtype: 'Data', label: 'Name' },
+			],
+			links: {
+				tracks: { target: 'track', cardinality: 'atLeastOne', backlink: 'playlist' },
+			},
+		}
+		const trackMeta: DoctypeMeta = {
+			name: 'Track',
+			slug: 'track',
+			tableName: 'track',
+			fields: [
+				{ fieldname: 'id', fieldtype: 'Data', label: 'ID' },
+				{ fieldname: 'title', fieldtype: 'Data', label: 'Title' },
+			],
+		}
+		const localRegistry = new Map<string, DoctypeMeta>([
+			['playlist', atLeastOneMeta],
+			['track', trackMeta],
+		])
+		const query = buildRecordQuery(atLeastOneMeta, recordFieldName, recordArgName, recordArgType, localRegistry, {
+			includeNested: true,
+		})
+
+		// atLeastOne should produce the same connection-style selection as noneOrMany
+		expect(query).toContain('TracksByPlaylistId')
+		expect(query).toContain('nodes')
+		expect(query).toContain('title')
+		expect(query).not.toContain('tracks {')
+	})
+
+	it('includes both noneOrMany and atMostOne links in the same generated query', () => {
+		const query = buildRecordQuery(recipeMeta, recordFieldName, recordArgName, recordArgType, registry, {
+			includeNested: true,
+		})
+		// Both link types are present in one pass
+		expect(query).toContain('RecipeTasksByRecipeId')
+		expect(query).toContain('supersededBy {')
+	})
 })
 
 // ===========================================================================
@@ -605,5 +651,36 @@ describe('StonecropClient.getRecord with nested', () => {
 
 		const result = await client.getRecord({ name: 'Task' }, 't1', { includeNested: true })
 		expect(result).toBeNull()
+	})
+
+	it('merges both noneOrMany and atMostOne links in a single record', async () => {
+		const doctypeRegistry = new Map<string, DoctypeMeta>([
+			['recipe', recipeMeta],
+			['recipe-task', recipeTaskMeta],
+		])
+		const client = new StonecropClient({ endpoint: ENDPOINT, registry: doctypeRegistry })
+
+		mockFetch.mockReturnValueOnce(makeFetchResponse({ stonecropMeta: recipeMeta })).mockReturnValueOnce(
+			makeFetchResponse({
+				recipeById: {
+					id: 'r1',
+					name: 'Sourdough',
+					status: 'active',
+					RecipeTasksByRecipeId: {
+						nodes: [{ id: 't1', name: 'Mix', description: 'Mix the dough' }],
+					},
+					supersededBy: { id: 'r2', name: 'Sourdough v2', status: 'active' },
+				},
+			})
+		)
+
+		const result = await client.getRecord({ name: 'Recipe' }, 'r1', { includeNested: true })
+
+		expect(result).not.toBeNull()
+		// noneOrMany link merged from connection nodes
+		expect(result!.tasks).toEqual([{ id: 't1', name: 'Mix', description: 'Mix the dough' }])
+		expect(result!.RecipeTasksByRecipeId).toBeUndefined()
+		// atMostOne link left in place as-is
+		expect(result!.supersededBy).toEqual({ id: 'r2', name: 'Sourdough v2', status: 'active' })
 	})
 })

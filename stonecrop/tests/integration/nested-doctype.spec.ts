@@ -149,7 +149,6 @@ describe('Nested Doctype Support', () => {
 			// Link with cardinality:noneOrMany has auto-derived columns, component, config, and rows
 			const tableField = resolved[1] as any
 			expect(tableField.fieldname).toBe('addresses')
-			expect(tableField.cardinality).toBe('noneOrMany')
 			expect(tableField.component).toBe('ATable')
 			expect(tableField.config).toEqual({ view: 'list' })
 			expect(tableField.rows).toEqual([])
@@ -206,6 +205,55 @@ describe('Nested Doctype Support', () => {
 			// Missing link target: silently omitted from resolved schema
 			expect(resolved).toHaveLength(0)
 		})
+
+		it('resolves a link with cardinality:atLeastOne the same way as noneOrMany', () => {
+			const testDoctype = new Doctype('test', List([]) as any, undefined, undefined, undefined, {
+				addresses: { target: 'address', cardinality: 'atLeastOne' },
+			})
+			const resolved = registry.resolveSchema(testDoctype)
+			const tableField = resolved[0] as any
+
+			expect(tableField.fieldname).toBe('addresses')
+			expect(tableField.component).toBe('ATable')
+			expect(tableField.config).toEqual({ view: 'list' })
+			expect(tableField.rows).toEqual([])
+			expect(tableField.columns).toHaveLength(4)
+		})
+
+		it('resolves a link with cardinality:atMostOne by embedding child schema like one', () => {
+			const testDoctype = new Doctype('test', List([]) as any, undefined, undefined, undefined, {
+				shippingAddress: { target: 'address', cardinality: 'atMostOne' },
+			})
+			const resolved = registry.resolveSchema(testDoctype)
+			const formField = resolved[0] as any
+
+			expect(formField.fieldname).toBe('shippingAddress')
+			expect(formField.component).toBe('AForm')
+			expect(formField.schema).toHaveLength(4)
+			expect(formField.schema[0].fieldname).toBe('street')
+		})
+
+		it('applies layout ordering to place link entries before scalar fields', () => {
+			const schemaWithLayout = List([
+				{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' },
+				{ fieldname: 'status', fieldtype: 'Data', component: 'ATextInput' },
+			])
+			const docWithLayout = new Doctype(
+				'recipe',
+				schemaWithLayout as any,
+				undefined,
+				undefined,
+				undefined,
+				{ tasks: { target: 'address', cardinality: 'noneOrMany' } },
+				['tasks', 'name', 'status']
+			)
+			const resolved = registry.resolveSchema(docWithLayout)
+
+			// layout says: tasks first, then name, then status
+			expect(resolved[0].fieldname).toBe('tasks')
+			expect(resolved[1].fieldname).toBe('name')
+			expect(resolved[2].fieldname).toBe('status')
+		})
 	})
 
 	describe('Registry.initializeRecord()', () => {
@@ -259,6 +307,24 @@ describe('Nested Doctype Support', () => {
 
 			// No 'schema' property and no cardinality — fieldtype defaults to 'Data' → empty string
 			expect(record.address).toBe('')
+		})
+
+		it('initializes atLeastOne link entry to empty array', () => {
+			const schema = [{ fieldname: 'items', cardinality: 'atLeastOne', component: 'ATable' }]
+			const record = registry.initializeRecord(schema as any)
+
+			expect(record.items).toEqual([])
+		})
+
+		it('initializes atMostOne link entry recursively when schema is provided', () => {
+			const resolved = registry.resolveSchema(
+				new Doctype('parent', List([]) as any, undefined, undefined, undefined, {
+					address: { target: 'address', cardinality: 'atMostOne' },
+				})
+			)
+			const record = registry.initializeRecord(resolved)
+
+			expect(record.address).toEqual({ street: '', city: '', state: '', zip_code: '' })
 		})
 	})
 

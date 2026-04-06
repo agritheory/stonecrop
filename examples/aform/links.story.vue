@@ -76,6 +76,63 @@
 				}}</pre>
 			</div>
 		</Variant>
+
+		<Variant title="cardinality types">
+			<div>
+				<h3>All Four Cardinality Types</h3>
+				<p>
+					The four cardinality values control how <code>resolveSchema</code> renders a link. The two
+					<em>many</em> values produce an ATable entry; the two <em>singular</em> values embed an AForm. The difference
+					between <code>one</code>/<code>noneOrMany</code> and <code>atMostOne</code>/<code>atLeastOne</code> is
+					semantic — it signals to the application whether the relationship is required or optional — the rendered
+					components are identical.
+				</p>
+				<table style="border-collapse: collapse; width: 100%; margin-bottom: 1rem">
+					<thead>
+						<tr style="text-align: left; border-bottom: 1px solid #ccc">
+							<th style="padding: 0.5rem 1rem">Cardinality</th>
+							<th style="padding: 0.5rem 1rem">Meaning</th>
+							<th style="padding: 0.5rem 1rem">Resolves to</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td style="padding: 0.5rem 1rem"><code>one</code></td>
+							<td style="padding: 0.5rem 1rem">Exactly 1 — required</td>
+							<td style="padding: 0.5rem 1rem">AForm with embedded schema</td>
+						</tr>
+						<tr>
+							<td style="padding: 0.5rem 1rem"><code>atMostOne</code></td>
+							<td style="padding: 0.5rem 1rem">0 or 1 — optional</td>
+							<td style="padding: 0.5rem 1rem">AForm with embedded schema</td>
+						</tr>
+						<tr>
+							<td style="padding: 0.5rem 1rem"><code>noneOrMany</code></td>
+							<td style="padding: 0.5rem 1rem">0 or more — optional list</td>
+							<td style="padding: 0.5rem 1rem">ATable with auto-derived columns</td>
+						</tr>
+						<tr>
+							<td style="padding: 0.5rem 1rem"><code>atLeastOne</code></td>
+							<td style="padding: 0.5rem 1rem">1 or more — required list</td>
+							<td style="padding: 0.5rem 1rem">ATable with auto-derived columns</td>
+						</tr>
+					</tbody>
+				</table>
+				<h4>Resolved schema entries for a doctype with all four cardinalities</h4>
+				<pre>{{
+					JSON.stringify(
+						allCardinalitiesResolved.map(f => ({
+							fieldname: f.fieldname,
+							component: f.component,
+							...('schema' in f ? { schema: `[${(f as any).schema.length} fields]` } : {}),
+							...('columns' in f ? { columns: `[${(f as any).columns?.length ?? 0} columns]` } : {}),
+						})),
+						null,
+						2
+					)
+				}}</pre>
+			</div>
+		</Variant>
 	</Story>
 </template>
 
@@ -86,15 +143,18 @@ import { ref } from 'vue'
 import recipeSchemaJson from './assets/links/recipe_schema.json'
 import recipeNolayoutSchemaJson from './assets/links/recipe_nolayout_schema.json'
 import recipeTaskSchemaJson from './assets/links/recipe_task_schema.json'
+import cardinalityDemoSchemaJson from './assets/links/cardinality_demo_schema.json'
 
 const recipeDoctype = Doctype.fromObject(recipeSchemaJson as DoctypeConfig)
 const recipeNolayoutDoctype = Doctype.fromObject(recipeNolayoutSchemaJson as DoctypeConfig)
 const recipeTaskDoctype = Doctype.fromObject(recipeTaskSchemaJson as DoctypeConfig)
+const allCardinalitiesDoctype = Doctype.fromObject(cardinalityDemoSchemaJson as DoctypeConfig)
 
 const registry = new Registry()
 registry.addDoctype(recipeDoctype)
 registry.addDoctype(recipeNolayoutDoctype)
 registry.addDoctype(recipeTaskDoctype)
+registry.addDoctype(allCardinalitiesDoctype)
 
 // Query the registry for relationships
 const recipeDescendants = registry.getDescendantLinks('recipe')
@@ -104,6 +164,7 @@ const taskAncestors = registry.getAncestorLinks('recipe-task')
 const resolvedSchema = ref(registry.resolveSchema(recipeDoctype))
 const withLayout = ref(registry.resolveSchema(recipeDoctype))
 const withoutLayout = ref(registry.resolveSchema(recipeNolayoutDoctype))
+const allCardinalitiesResolved = ref(registry.resolveSchema(allCardinalitiesDoctype))
 
 const recipeData = ref({
 	name: 'Sourdough Bread',
@@ -168,4 +229,17 @@ layout: ['name', 'tasks', 'status', 'description', 'supersededBy']
 - **1:many links** (`noneOrMany`, `atLeastOne`) — `columns` derived from child fields; AForm renders a table
 
 The resulting array respects `layout` ordering. AForm has no knowledge of the registry — it only checks `'schema' in field` to decide whether to recurse.
+
+## Cardinality types
+
+All four cardinality values are valid on `LinkDeclaration`:
+
+| Value        | Meaning                   | Renders as |
+| ------------ | ------------------------- | ---------- |
+| `one`        | Exactly 1 — required      | AForm      |
+| `atMostOne`  | 0 or 1 — optional         | AForm      |
+| `noneOrMany` | 0 or more — optional list | ATable     |
+| `atLeastOne` | 1 or more — required list | ATable     |
+
+The cardinality value is semantic: the registry uses it to determine the default rendering component but does not enforce the constraint at the UI level. Application-level validation is the caller's responsibility.
 </docs>
