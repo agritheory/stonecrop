@@ -5,7 +5,7 @@ import { createRouter, createMemoryHistory } from 'vue-router'
 
 import Doctype from '../../src/doctype'
 import Registry from '../../src/registry'
-import { Stonecrop, collectNestedData } from '../../src/stonecrop'
+import { Stonecrop } from '../../src/stonecrop'
 import type { StonecropOptions } from '../../src/stonecrop'
 import { ImmutableDoctype } from '../../src/types'
 
@@ -784,106 +784,6 @@ describe('Stonecrop class with HST integration', () => {
 
 			expect(payload).toBeDefined()
 			expect(Object.keys(payload)).toHaveLength(0)
-		})
-	})
-
-	describe('collectNestedData', () => {
-		it('is exported as a standalone function', () => {
-			expect(typeof collectNestedData).toBe('function')
-		})
-
-		it('collects flat data with no nested doctypes', () => {
-			Registry._root = undefined as any
-			Stonecrop._root = undefined as any
-			const localRegistry = new Registry()
-			const localStonecrop = new Stonecrop(localRegistry)
-
-			const testDoctype = new Doctype(
-				'test',
-				List([
-					{ fieldname: 'title', fieldtype: 'Data' },
-					{ fieldname: 'status', fieldtype: 'Data' },
-				]) as any,
-				undefined,
-				undefined
-			)
-
-			localStonecrop.getStore().set('test', {})
-			localStonecrop.getStore().set('test.1', { title: 'Test', status: 'open' })
-
-			const result = collectNestedData('test.1', testDoctype, localStonecrop.getStore())
-
-			expect(result.title).toBe('Test')
-			expect(result.status).toBe('open')
-		})
-
-		it('collects nested 1:1 doctype fields recursively', () => {
-			Registry._root = undefined as any
-			Stonecrop._root = undefined as any
-			const localRegistry = new Registry()
-			const localStonecrop = new Stonecrop(localRegistry)
-
-			const addressDoctype = new Doctype(
-				'address',
-				List([{ fieldname: 'city', fieldtype: 'Data' }]) as any,
-				undefined,
-				undefined
-			)
-			localRegistry.addDoctype(addressDoctype)
-
-			const customerDoctype = new Doctype(
-				'customer',
-				List([{ fieldname: 'name', fieldtype: 'Data' }]) as any,
-				undefined,
-				undefined,
-				undefined,
-				{
-					address: { target: 'address', cardinality: 'one' },
-				}
-			)
-			localRegistry.addDoctype(customerDoctype)
-
-			localStonecrop.getStore().set('customer', {})
-			localStonecrop.getStore().set('customer.1', { name: 'John' })
-			localStonecrop.getStore().set('customer.1.address', { city: 'Portland' })
-
-			const result = collectNestedData('customer.1', customerDoctype, localStonecrop.getStore())
-
-			expect(result.name).toBe('John')
-			expect(result.address).toBeDefined()
-			expect(result.address.city).toBe('Portland')
-		})
-
-		it('collects 1:many arrays in nested context', () => {
-			Registry._root = undefined as any
-			Stonecrop._root = undefined as any
-			const localRegistry = new Registry()
-			const localStonecrop = new Stonecrop(localRegistry)
-
-			const orderDoctype = new Doctype(
-				'order',
-				List([{ fieldname: 'name', fieldtype: 'Data' }]) as any,
-				undefined,
-				undefined,
-				undefined,
-				{
-					items: { target: 'item', cardinality: 'noneOrMany' },
-				}
-			)
-
-			localStonecrop.getStore().set('order', {})
-			localStonecrop.getStore().set('order.1', { name: 'Order 1' })
-			localStonecrop.getStore().set('order.1.items', [
-				{ name: 'Item A', qty: 5 },
-				{ name: 'Item B', qty: 10 },
-			])
-
-			const result = collectNestedData('order.1', orderDoctype, localStonecrop.getStore())
-
-			expect(result.name).toBe('Order 1')
-			expect(Array.isArray(result.items)).toBe(true)
-			expect(result.items).toHaveLength(2)
-			expect(result.items[0].name).toBe('Item A')
 		})
 	})
 })

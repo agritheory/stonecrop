@@ -53,9 +53,6 @@ export interface BatchOperation {
 }
 
 // @public
-export function collectNestedData(basePath: string, doctype: Doctype, hstStore: HSTNode): Record<string, any>;
-
-// @public
 export function createHST(target: any, doctype: string): HSTNode;
 
 // @public

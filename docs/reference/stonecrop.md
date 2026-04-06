@@ -9,24 +9,6 @@ description: Core orchestration with Registry, HST, and composables
 
 ## Functions
 
-### collectNestedData
-
-Recursively collect nested data from HST using pre-resolved schemas
-
-**Signature:**
-
-```typescript
-declare function collectNestedData(basePath: string, doctype: Doctype, hstStore: HSTNode): Record<string, any>;
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| basePath | `string` | The base path in HST (e.g., "customer.123.address") |
-| doctype | `Doctype` |  |
-| hstStore | `HSTNode` | The HST store instance |
-
 ### createHST
 
 Factory function for HST creation Creates a new HSTNode proxy for hierarchical state tree navigation.

@@ -456,7 +456,7 @@ export class Stonecrop {
 				} else {
 					const targetDoctype = this.registry.getDoctype(link.target)
 					if (targetDoctype?.links) {
-						payload[fieldname] = collectNestedData(fieldPath, targetDoctype, this.hstStore)
+						payload[fieldname] = this.collectNestedData(fieldPath, targetDoctype)
 					} else {
 						payload[fieldname] = this.hstStore.get(fieldPath) || {}
 					}
@@ -548,45 +548,41 @@ export class Stonecrop {
 			this.hstStore.set(`${slug}.${recordId}.${key}`, value, 'system')
 		}
 	}
-}
 
-/**
- * Recursively collect nested data from HST using pre-resolved schemas
- * @param resolvedSchema - The already-resolved schema (with nested schemas embedded)
- * @param basePath - The base path in HST (e.g., "customer.123.address")
- * @param hstStore - The HST store instance
- * @returns The collected data object
- * @public
- */
-function collectNestedData(basePath: string, doctype: Doctype, hstStore: HSTNode): Record<string, any> {
-	const data = hstStore.get(basePath) || {}
-	const payload: Record<string, any> = { ...data }
+	/**
+	 * Recursively collect nested data from HST
+	 * @param basePath - The base path in HST (e.g., "customer.123.address")
+	 * @param doctype - The doctype whose links drive the recursive traversal
+	 * @returns The collected data object
+	 */
+	private collectNestedData(basePath: string, doctype: Doctype): Record<string, any> {
+		const data = this.hstStore.get(basePath) || {}
+		const payload: Record<string, any> = { ...data }
 
-	if (!doctype.links) return payload
+		if (!doctype.links) return payload
 
-	for (const [fieldname, link] of Object.entries(doctype.links)) {
-		const fieldPath = `${basePath}.${fieldname}`
-		const isMany = link.cardinality === 'noneOrMany' || link.cardinality === 'atLeastOne'
+		for (const [fieldname, link] of Object.entries(doctype.links)) {
+			const fieldPath = `${basePath}.${fieldname}`
+			const isMany = link.cardinality === 'noneOrMany' || link.cardinality === 'atLeastOne'
 
-		if (isMany) {
-			const arrayData = hstStore.get(fieldPath)
-			if (Array.isArray(arrayData)) {
-				payload[fieldname] = arrayData
-			}
-		} else {
-			const targetDoctype = Registry._root?.getDoctype(link.target)
-			if (targetDoctype?.links) {
-				payload[fieldname] = collectNestedData(fieldPath, targetDoctype, hstStore)
+			if (isMany) {
+				const arrayData = this.hstStore.get(fieldPath)
+				if (Array.isArray(arrayData)) {
+					payload[fieldname] = arrayData
+				}
 			} else {
-				payload[fieldname] = hstStore.get(fieldPath) || {}
+				const targetDoctype = this.registry.getDoctype(link.target)
+				if (targetDoctype?.links) {
+					payload[fieldname] = this.collectNestedData(fieldPath, targetDoctype)
+				} else {
+					payload[fieldname] = this.hstStore.get(fieldPath) || {}
+				}
 			}
 		}
+
+		return payload
 	}
-
-	return payload
 }
-
-export { collectNestedData }
 
 /**
  * Returns the global Stonecrop singleton instance, or `undefined` if no
