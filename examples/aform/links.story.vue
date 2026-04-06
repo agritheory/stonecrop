@@ -166,7 +166,11 @@ const withLayout = ref(registry.resolveSchema(recipeDoctype))
 const withoutLayout = ref(registry.resolveSchema(recipeNolayoutDoctype))
 const allCardinalitiesResolved = ref(registry.resolveSchema(allCardinalitiesDoctype))
 
+// Scaffold the record shape from the schema, then seed realistic display values.
+// initializeRecord derives the correct shape (empty strings, [], nested {}) from the
+// resolved schema — users should rely on this rather than manually constructing the shape.
 const recipeData = ref({
+	...registry.initializeRecord(resolvedSchema.value),
 	name: 'Sourdough Bread',
 	description: 'Classic long-fermentation sourdough',
 	status: 'draft',
@@ -175,7 +179,6 @@ const recipeData = ref({
 		{ name: 'Bulk ferment', description: 'Rest at room temperature for 4–6 hours' },
 		{ name: 'Shape and proof', description: 'Shape loaf and cold-proof overnight' },
 	],
-	supersededBy: null,
 })
 </script>
 
@@ -220,6 +223,21 @@ The optional `layout` array controls the order in which scalar fields and links 
 layout: ['name', 'tasks', 'status', 'description', 'supersededBy']
 // tasks renders between scalar fields, not appended at the end
 ```
+
+## Scaffolding record data
+
+Use `registry.initializeRecord(registry.resolveSchema(doctype))` to derive an empty record whose shape matches the schema, then patch in display values:
+
+```typescript
+const recipeData = ref({
+	...registry.initializeRecord(registry.resolveSchema(recipeDoctype)),
+	name: 'Sourdough Bread',
+	status: 'draft',
+	tasks: [{ name: 'Mix dough', description: '...' }],
+})
+```
+
+`initializeRecord` produces correct defaults per field type: `''` for Data fields, `[]` for `noneOrMany`/`atLeastOne` links, and a nested initialized object for `one`/`atMostOne` links. Hard-coding the shape directly bypasses this and will silently break if the linked doctype's fields change.
 
 ## Resolved schema
 
