@@ -115,7 +115,6 @@ const resolvedSchema = registry.resolveSchema(customerDoctype)
 // {
 //   fieldname: 'address',
 //   label: 'address',
-//   options: 'address',
 //   cardinality: 'one',
 //   component: 'AForm',
 //   schema: [ /* address fields here */ ]
@@ -156,7 +155,7 @@ AForm:
 3. Renders nested AForms recursively with proper styling
 4. Manages two-way data binding for all nested fields
 
-For 1:many relationships (`cardinality: 'noneOrMany'`), ATable renders instead of AForm.
+For 1:many relationships (`cardinality: 'noneOrMany'` or `'atLeastOne'`), the resolved schema entry has `component: 'ATable'`. AForm detects this and renders an ATable component inline, with columns derived from the target doctype's schema and an empty `rows` array.
 
 ## Data Structure
 
@@ -200,7 +199,6 @@ const customerSchema: SchemaTypes[] = [
   {
     fieldname: 'address',
     component: 'AForm',
-    options: 'address',
     label: 'Address',
     schema: addressSchema, // ← Manually embed the schema
   },
@@ -227,7 +225,8 @@ const { formData, resolvedSchema, initializeNestedData } = useStonecrop({
 })
 
 // Scaffold nested data for new records
-if (!resolvedSchema.value) {
+// initializeNestedData uses resolveSchema internally, so it works even before resolvedSchema is populated
+if (formData.value && !formData.value.address) {
   initializeNestedData('customer.new', customerDoctype, { includeNested: true })
 }
 </script>

@@ -126,7 +126,7 @@ export default class Registry {
 	 * @public
 	 */
 	resolveSchema(doctype: Doctype, visited?: Set<string>): SchemaTypes[] {
-		const seen = visited || new Set<string>()
+		const seen = visited ?? new Set<string>()
 		const slug = doctype.slug
 
 		// Prevent circular resolution

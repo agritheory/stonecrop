@@ -489,7 +489,7 @@ export class Stonecrop {
 	/**
 	 * Fetch a record and its nested data from the server.
 	 *
-	 * Calls `_client.getRecordWithNested()` and stores each scalar field at its own HST path
+	 * Calls `_client.getRecord()` with nested sub-selections and stores each scalar field at its own HST path
 	 * (`slug.recordId.fieldname`), children at the link-level path (`slug.recordId.linkname`).
 	 *
 	 * @param path - HST path (e.g., "recipe.r1")
@@ -575,6 +575,20 @@ function collectNestedData(basePath: string, doctype: Doctype, hstStore: HSTNode
 }
 
 export { collectNestedData }
+
+/**
+ * Returns the global Stonecrop singleton instance, or `undefined` if no
+ * instance has been created yet.
+ *
+ * Use this when you need the Stonecrop instance outside a Vue component
+ * context (e.g., in workflow action handlers, plugin setup code, or
+ * non-component utilities). Inside a component, prefer `useStonecrop()`.
+ *
+ * @public
+ */
+export function getStonecrop(): Stonecrop | undefined {
+	return Stonecrop._root
+}
 
 /**
  * Create an Error with a `code` property for programmatic error handling.

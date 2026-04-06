@@ -72,6 +72,18 @@ export declare function getGlobalTriggerEngine(options?: FieldTriggerOptions): F
 |-----------|------|-------------|
 | options | `FieldTriggerOptions` | Optional configuration for the field trigger engine |
 
+### getStonecrop
+
+Returns the global Stonecrop singleton instance, or `undefined` if no instance has been created yet.
+
+Use this when you need the Stonecrop instance outside a Vue component context (e.g., in workflow action handlers, plugin setup code, or non-component utilities). Inside a component, prefer `useStonecrop()`.
+
+**Signature:**
+
+```typescript
+export declare function getStonecrop(): Stonecrop | undefined;
+```
+
 ### markOperationIrreversible
 
 Mark a specific operation as irreversible. Used to prevent undo of critical operations like publishing or deletion.
@@ -1686,7 +1698,7 @@ dispatchAction(doctype: Doctype, action: string, args: unknown[]): Promise<{
 
 Fetch a record and its nested data from the server.
 
-Calls `_client.getRecordWithNested()` and stores each scalar field at its own HST path (`slug.recordId.fieldname`), children at the link-level path (`slug.recordId.linkname`).
+Calls `_client.getRecord()` with nested sub-selections and stores each scalar field at its own HST path (`slug.recordId.fieldname`), children at the link-level path (`slug.recordId.linkname`).
 
 ```typescript
 fetchNestedData(path: string, doctype: Doctype, recordId: string, options: {

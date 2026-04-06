@@ -31,18 +31,57 @@ app.use(Stonecrop, {
   getMeta: async ({ segments }) => {
     return await fetchDoctypeMeta(segments[0])
   },
-})
 
-app.mount('#app')
-
-// After mount, wire up the client
-const stonecrop = StonecropClass.root
-const client = new StonecropClient({
-  endpoint: 'http://localhost:4000/graphql',
-  headers: { Authorization: `Bearer ${token}` },
-  registry: new Map(Object.entries(stonecrop.registry.registry)),
+  // Wire up the client after plugin initialization.
+  // The callback receives registry and stonecrop instances directly.
+  onRouterInitialized: (registry, stonecrop) => {
+    const client = new StonecropClient({
+      endpoint: 'http://localhost:4000/graphql',
+      headers: { Authorization: `Bearer ${token}` },
+      registry: buildMetaMap(registry),
+    })
+    stonecrop.setClient(client)
+  },
 })
-stonecrop.setClient(client)
+```
+
+### Accessing Stonecrop Outside Vue Components
+
+Inside a component, use `useStonecrop()`. Outside a component (e.g., workflow action handlers, utilities), use `getStonecrop()`:
+
+```typescript
+import { getStonecrop } from '@stonecrop/stonecrop'
+
+// In a workflow action handler or non-component utility:
+const stonecrop = getStonecrop()
+if (stonecrop) {
+  const payload = stonecrop.collectRecordPayload(doctype, recordId)
+  // ...
+}
+```
+
+### Building the DoctypeMeta Map
+
+`StonecropClient` expects a `Map<string, DoctypeMeta>`, but the Registry stores `Doctype` instances. Convert between them:
+
+```typescript
+import type { DoctypeMeta } from '@stonecrop/schema'
+import type { Registry, Doctype } from '@stonecrop/stonecrop'
+
+function buildMetaMap(registry: Registry): Map<string, DoctypeMeta> {
+  const metaMap = new Map<string, DoctypeMeta>()
+  for (const [slug, doctype] of Object.entries(registry.registry)) {
+    metaMap.set(slug, {
+      name: doctype.doctype,
+      slug,
+      tableName: slug.replace(/-/g, '_'),
+      fields: doctype.getSchemaArray(),
+      links: doctype.links || {},
+      layout: doctype.layout,
+    })
+  }
+  return metaMap
+}
 ```
 
 ### Plugin Options
@@ -67,6 +106,7 @@ import {
   Registry,        // Doctype registry (singleton)
   Doctype,         // Doctype definition class
   useStonecrop,    // Vue composable — primary integration point
+  getStonecrop,    // Access singleton outside Vue components
   HST,             // HST store class
   createHST,       // HST factory function
 } from '@stonecrop/stonecrop'

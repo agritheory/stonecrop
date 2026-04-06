@@ -190,6 +190,9 @@ export interface FieldTriggerOptions {
 export function getGlobalTriggerEngine(options?: FieldTriggerOptions): FieldTriggerEngine;
 
 // @public
+export function getStonecrop(): Stonecrop | undefined;
+
+// @public
 export class HST {
     getDoctypeMeta(doctype: string): any;
     static getInstance(): HST;

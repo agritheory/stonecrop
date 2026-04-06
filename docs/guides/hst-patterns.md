@@ -33,7 +33,7 @@ Call `collectRecordPayload` in your doctype's **save action** defined in the wor
 ### Example: Save Action in Workflow
 
 ```typescript
-import { Doctype, useStonecrop } from '@stonecrop/stonecrop'
+import { Doctype, getStonecrop } from '@stonecrop/stonecrop'
 import { List, Map } from 'immutable'
 import { apiClient } from './api-client'
 
@@ -63,16 +63,14 @@ const customerDoctype = new Doctype(
   }
 )
 
-// In your action handler:
-async function saveRecord(context) {
-  const { collectRecordPayload } = useStonecrop({
-    registry,
-    doctype: customerDoctype,
-    recordId: context.recordId
-  })
+// Register the action handler — runs outside Vue, so use getStonecrop()
+async function saveRecord(args: unknown[]) {
+  const stonecrop = getStonecrop()
+  const recordId = args?.[0] as string
+  if (!recordId || !stonecrop) return
 
   // Collect all nested data into a single payload
-  const payload = collectRecordPayload(customerDoctype, context.recordId)
+  const payload = stonecrop.collectRecordPayload(customerDoctype, recordId)
 
   // Send to your API
   await apiClient.save('/customers', payload)
