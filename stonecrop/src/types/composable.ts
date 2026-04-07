@@ -2,7 +2,7 @@ import type { SchemaTypes } from '@stonecrop/aform'
 import type { Ref, ComputedRef } from 'vue'
 
 import type Doctype from '../doctype'
-import type { HSTNode } from '../stores/hst'
+import type { HSTNode } from './hst'
 import type { HSTOperation, OperationLogConfig, OperationLogSnapshot } from './operation-log'
 
 /**

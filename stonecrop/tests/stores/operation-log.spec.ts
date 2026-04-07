@@ -882,5 +882,440 @@ describe('Operation Log Store', () => {
 				})
 			}).not.toThrow()
 		})
+
+		it('should broadcast undo to other tabs', () => {
+			const store = useOperationLogStore()
+
+			store.configure({
+				enableCrossTabSync: true,
+			})
+
+			// Add and then undo an operation
+			store.addOperation({
+				type: 'set',
+				path: 'task.123.title',
+				fieldname: 'title',
+				beforeValue: 'Old',
+				afterValue: 'New',
+				doctype: 'task',
+				reversible: true,
+			})
+
+			const hstStore = createHST({ task: { '123': { title: 'New' } } }, 'StonecropStore')
+			store.undo(hstStore)
+
+			// Find the undo broadcast
+			const calls = mockBroadcastChannel.postMessage.mock.calls
+			const undoCall = calls.find((call: any) => call[0].type === 'undo')
+			expect(undoCall).toBeDefined()
+			expect(undoCall[0].type).toBe('undo')
+			expect(undoCall[0].operation).toBeDefined()
+		})
+
+		it('should broadcast redo to other tabs', () => {
+			const store = useOperationLogStore()
+
+			store.configure({
+				enableCrossTabSync: true,
+			})
+
+			// Add, undo, then redo an operation
+			store.addOperation({
+				type: 'set',
+				path: 'task.123.title',
+				fieldname: 'title',
+				beforeValue: 'Old',
+				afterValue: 'New',
+				doctype: 'task',
+				reversible: true,
+			})
+
+			const hstStore = createHST({ task: { '123': { title: 'New' } } }, 'StonecropStore')
+			store.undo(hstStore)
+			store.redo(hstStore)
+
+			// Find the redo broadcast
+			const calls = mockBroadcastChannel.postMessage.mock.calls
+			const redoCall = calls.find((call: any) => call[0].type === 'redo')
+			expect(redoCall).toBeDefined()
+			expect(redoCall[0].type).toBe('redo')
+			expect(redoCall[0].operation).toBeDefined()
+		})
+	})
+
+	describe('Batch Operation Edge Cases', () => {
+		it('should cancel a batch without committing', () => {
+			const store = useOperationLogStore()
+
+			store.startBatch()
+
+			store.addOperation({
+				type: 'set',
+				path: 'task.123.title',
+				fieldname: 'title',
+				beforeValue: 'Old',
+				afterValue: 'New',
+				doctype: 'task',
+				reversible: true,
+			})
+
+			store.cancelBatch()
+
+			// No operations should be added
+			expect(store.operations).toHaveLength(0)
+			expect(store.currentIndex).toBe(-1)
+		})
+
+		it('should handle empty batch commit', () => {
+			const store = useOperationLogStore()
+
+			store.startBatch()
+			const batchId = store.commitBatch()
+
+			// Should return null for empty batch
+			expect(batchId).toBeNull()
+			expect(store.operations).toHaveLength(0)
+		})
+
+		it('should create irreversible batch when any child is irreversible', () => {
+			const store = useOperationLogStore()
+
+			store.startBatch()
+
+			store.addOperation({
+				type: 'set',
+				path: 'task.123.title',
+				fieldname: 'title',
+				beforeValue: 'Old',
+				afterValue: 'New',
+				doctype: 'task',
+				reversible: true,
+			})
+
+			store.addOperation({
+				type: 'set',
+				path: 'task.123.status',
+				fieldname: 'status',
+				beforeValue: 'draft',
+				afterValue: 'submitted',
+				doctype: 'task',
+				reversible: false, // Irreversible
+			})
+
+			const batchId = store.commitBatch('Mixed batch')
+
+			const batchOp = store.operations.find(op => op.type === 'batch')
+			expect(batchOp?.reversible).toBe(false)
+			expect(batchOp?.irreversibleReason).toBe('Contains irreversible operations')
+		})
+
+		it('should undo batch with mixed reversible children', () => {
+			const store = useOperationLogStore()
+			const data = { title: 'Old', status: 'draft' }
+			const hstStore = createHST({ task: { '123': data } }, 'StonecropStore')
+
+			store.startBatch()
+
+			// Add mixed reversible/irreversible operations
+			hstStore.set('task.123.title', 'New Title') // reversible by default
+			hstStore.set('task.123.status', 'submitted') // would be irreversible in real scenario
+
+			// Manually add another operation to the batch
+			store.addOperation({
+				type: 'set',
+				path: 'task.123.description',
+				fieldname: 'description',
+				beforeValue: '',
+				afterValue: 'Test description',
+				doctype: 'task',
+				reversible: true,
+			})
+
+			store.commitBatch()
+
+			// Should be able to undo - batch itself is reversible
+			expect(store.canUndo).toBe(true)
+			expect(store.operations.length).toBe(4) // 3 ops + 1 batch
+
+			// Verify HST values before undo
+			expect(hstStore.get('task.123.title')).toBe('New Title')
+			expect(hstStore.get('task.123.status')).toBe('submitted')
+
+			store.undo(hstStore)
+
+			// Batch should be undone (currentIndex points to last child)
+			expect(store.currentIndex).toBe(2)
+			// After undoing batch, canRedo should be true (we can redo the batch)
+			expect(store.canRedo).toBe(true)
+		})
+	})
+
+	describe('Undo/Redo Edge Cases', () => {
+		it('should not redo when nothing to redo', () => {
+			const store = useOperationLogStore()
+			const data = { title: 'Test' }
+			const hstStore = createHST({ task: { '123': data } }, 'StonecropStore')
+
+			// Add an operation
+			store.addOperation({
+				type: 'set',
+				path: 'task.123.title',
+				fieldname: 'title',
+				beforeValue: 'Old',
+				afterValue: 'New',
+				doctype: 'task',
+				reversible: true,
+			})
+
+			expect(store.canRedo).toBe(false)
+
+			const result = store.redo(hstStore)
+			expect(result).toBe(false)
+		})
+
+		it('should not undo when nothing to undo', () => {
+			const store = useOperationLogStore()
+
+			expect(store.canUndo).toBe(false)
+
+			const hstStore = createHST({ task: { '123': {} } }, 'StonecropStore')
+			const result = store.undo(hstStore)
+			expect(result).toBe(false)
+		})
+
+		it('should handle undo failure gracefully', () => {
+			const store = useOperationLogStore()
+			const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+			store.addOperation({
+				type: 'set',
+				path: 'task.123.title',
+				fieldname: 'title',
+				beforeValue: 'Old',
+				afterValue: 'New',
+				doctype: 'task',
+				reversible: true,
+			})
+
+			// Create an HST store without proper set method to trigger error path
+			const brokenStore = {
+				get: () => 'value',
+				set: vi.fn(() => {
+					throw new Error('Undo failed')
+				}),
+			} as any
+
+			const result = store.undo(brokenStore)
+			expect(result).toBe(false)
+			consoleSpy.mockRestore()
+		})
+
+		it('should handle redo failure gracefully', () => {
+			const store = useOperationLogStore()
+			const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+			store.addOperation({
+				type: 'set',
+				path: 'task.123.title',
+				fieldname: 'title',
+				beforeValue: 'Old',
+				afterValue: 'New',
+				doctype: 'task',
+				reversible: true,
+			})
+
+			store.undo(createHST({ task: { '123': { title: 'Old' } } }, 'StonecropStore'))
+
+			// Create a broken store to trigger error
+			const brokenStore = {
+				get: () => 'value',
+				set: vi.fn(() => {
+					throw new Error('Redo failed')
+				}),
+			} as any
+
+			const result = store.redo(brokenStore)
+			expect(result).toBe(false)
+			consoleSpy.mockRestore()
+		})
+
+		it('should track consecutive undo/redo operations', () => {
+			const store = useOperationLogStore()
+			const data = { title: 'Title 1' }
+			const hstStore = createHST({ task: { '123': data } }, 'StonecropStore')
+
+			// Add multiple operations
+			store.addOperation({
+				type: 'set',
+				path: 'task.123.title',
+				fieldname: 'title',
+				beforeValue: 'Title 1',
+				afterValue: 'Title 2',
+				doctype: 'task',
+				reversible: true,
+			})
+
+			store.addOperation({
+				type: 'set',
+				path: 'task.123.title',
+				fieldname: 'title',
+				beforeValue: 'Title 2',
+				afterValue: 'Title 3',
+				doctype: 'task',
+				reversible: true,
+			})
+
+			expect(store.undoRedoState.undoCount).toBe(2)
+
+			// Undo twice
+			store.undo(hstStore)
+			expect(hstStore.get('task.123.title')).toBe('Title 2')
+
+			store.undo(hstStore)
+			expect(hstStore.get('task.123.title')).toBe('Title 1')
+
+			expect(store.undoRedoState.redoCount).toBe(2)
+
+			// Redo twice
+			store.redo(hstStore)
+			expect(hstStore.get('task.123.title')).toBe('Title 2')
+
+			store.redo(hstStore)
+			expect(hstStore.get('task.123.title')).toBe('Title 3')
+		})
+	})
+
+	describe('logAction', () => {
+		it('should log action with multiple record IDs', () => {
+			const store = useOperationLogStore()
+
+			const opId = store.logAction('task', 'submit', ['task-1', 'task-2', 'task-3'], 'success')
+
+			expect(opId).toBeDefined()
+			expect(store.operations).toHaveLength(1)
+
+			const op = store.operations[0]
+			expect(op.type).toBe('action')
+			expect(op.doctype).toBe('task')
+			expect(op.actionName).toBe('submit')
+			expect(op.actionRecordIds).toEqual(['task-1', 'task-2', 'task-3'])
+			expect(op.actionResult).toBe('success')
+			expect(op.reversible).toBe(false)
+		})
+
+		it('should log action without record ID', () => {
+			const store = useOperationLogStore()
+
+			const opId = store.logAction('task', 'print', undefined, 'success')
+
+			expect(opId).toBeDefined()
+			const op = store.operations[0]
+			expect(op.path).toBe('task')
+			expect(op.recordId).toBeUndefined()
+		})
+
+		it('should log failed action with error', () => {
+			const store = useOperationLogStore()
+
+			store.logAction('task', 'submit', ['task-1'], 'failure', 'Network error')
+
+			const op = store.operations[0]
+			expect(op.actionResult).toBe('failure')
+			expect(op.actionError).toBe('Network error')
+		})
+
+		it('should log pending action', () => {
+			const store = useOperationLogStore()
+
+			store.logAction('task', 'submit', ['task-1'], 'pending')
+
+			const op = store.operations[0]
+			expect(op.actionResult).toBe('pending')
+		})
+	})
+
+	describe('Clear and Reset', () => {
+		it('should clear all operations', () => {
+			const store = useOperationLogStore()
+
+			store.addOperation({
+				type: 'set',
+				path: 'task.123.title',
+				fieldname: 'title',
+				beforeValue: 'Old',
+				afterValue: 'New',
+				doctype: 'task',
+				reversible: true,
+			})
+
+			store.addOperation({
+				type: 'set',
+				path: 'task.456.title',
+				fieldname: 'title',
+				beforeValue: 'Old',
+				afterValue: 'New',
+				doctype: 'task',
+				reversible: true,
+			})
+
+			expect(store.operations).toHaveLength(2)
+
+			store.clear()
+
+			expect(store.operations).toHaveLength(0)
+			expect(store.currentIndex).toBe(-1)
+			expect(store.canUndo).toBe(false)
+			expect(store.canRedo).toBe(false)
+		})
+	})
+
+	describe('New operations after undo', () => {
+		it('should remove redo operations when adding new operation', () => {
+			const store = useOperationLogStore()
+
+			// Add first operation
+			store.addOperation({
+				type: 'set',
+				path: 'task.123.title',
+				fieldname: 'title',
+				beforeValue: 'Title 1',
+				afterValue: 'Title 2',
+				doctype: 'task',
+				reversible: true,
+			})
+
+			// Add second operation
+			store.addOperation({
+				type: 'set',
+				path: 'task.123.title',
+				fieldname: 'title',
+				beforeValue: 'Title 2',
+				afterValue: 'Title 3',
+				doctype: 'task',
+				reversible: true,
+			})
+
+			// Undo the second operation
+			const hstStore = createHST({ task: { '123': { title: 'Title 3' } } }, 'StonecropStore')
+			store.undo(hstStore)
+
+			expect(store.canRedo).toBe(true)
+			expect(store.undoRedoState.redoCount).toBe(1)
+
+			// Add a new operation - this should invalidate the redo
+			store.addOperation({
+				type: 'set',
+				path: 'task.123.title',
+				fieldname: 'title',
+				beforeValue: 'Title 2',
+				afterValue: 'Title 4',
+				doctype: 'task',
+				reversible: true,
+			})
+
+			// Redo should now be cleared
+			expect(store.canRedo).toBe(false)
+			expect(store.undoRedoState.redoCount).toBe(0)
+		})
 	})
 })
