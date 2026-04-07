@@ -144,8 +144,8 @@ export const DoctypeMeta: z.ZodObject<{
         }>;
         backlink: z.ZodOptional<z.ZodString>;
         component: z.ZodOptional<z.ZodString>;
+        fieldname: z.ZodOptional<z.ZodString>;
     }, z.core.$strip>>>;
-    layout: z.ZodOptional<z.ZodArray<z.ZodString>>;
     workflow: z.ZodOptional<z.ZodObject<{
         states: z.ZodOptional<z.ZodArray<z.ZodString>>;
         actions: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodObject<{
@@ -301,6 +301,7 @@ export const LinkDeclaration: z.ZodObject<{
     }>;
     backlink: z.ZodOptional<z.ZodString>;
     component: z.ZodOptional<z.ZodString>;
+    fieldname: z.ZodOptional<z.ZodString>;
 }, z.core.$strip>;
 
 // @public

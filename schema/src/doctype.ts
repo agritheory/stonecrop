@@ -34,6 +34,9 @@ export const LinkDeclaration = z
 
 		/** Override default rendering component (AForm for 1:1, ATable for 1:many) */
 		component: z.string().optional(),
+
+		/** Fieldname of the corresponding Link field in the fields array */
+		fieldname: z.string().min(1).optional(),
 	})
 	.meta({
 		title: 'LinkDeclaration',
@@ -119,14 +122,11 @@ export const DoctypeMeta = z
 		/** Database table name */
 		tableName: z.string().optional(),
 
-		/** Field definitions */
+		/** Field definitions (including link fields with fieldtype: 'Link') */
 		fields: z.array(FieldMeta),
 
 		/** Relationship links to other doctypes */
 		links: z.record(z.string(), LinkDeclaration).optional(),
-
-		/** Render order — fieldnames and link fieldnames in display order */
-		layout: z.array(z.string()).optional(),
 
 		/** Workflow configuration */
 		workflow: WorkflowMeta.optional(),

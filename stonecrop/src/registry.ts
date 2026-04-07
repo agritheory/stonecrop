@@ -107,15 +107,17 @@ export default class Registry {
 	/**
 	 * Resolve nested Doctype fields in a schema by embedding child schemas inline.
 	 *
-	 * Accepts a Doctype and extracts `fields`, `links`, and `layout` internally.
-	 * For each link:
+	 * Accepts a Doctype and extracts `fields` and `links` internally.
+	 * Fields array contains both scalar fields and link fields (with fieldtype: 'Link').
+	 * Render order is determined by the order of fields in the fields array.
 	 *
+	 * For each link field:
+	 * - Looks up the corresponding link declaration in `links` by fieldname
 	 * - `cardinality: 'noneOrMany'` or `'atLeastOne'`: auto-derives `columns` from the target's schema,
 	 *   sets `component` to `link.component ?? 'ATable'`, `config: { view: 'list' }`, `rows: []`.
 	 * - `cardinality: 'one'` or `'atMostOne'`: embeds the target schema as the entry's
 	 *   `schema` property, sets `component` to `link.component ?? 'AForm'`.
 	 *
-	 * If `layout` is provided, reorders the resolved output to match.
 	 * Recurses for deeply nested doctypes. Circular references are protected against.
 	 * Returns a new array — does not mutate the original.
 	 *
@@ -135,57 +137,71 @@ export default class Registry {
 		}
 		seen.add(slug)
 
-		// Convert schema to array (scalar/renderable fields only — no link fields)
+		// Convert schema to array
 		const schemaArray: SchemaTypes[] = doctype.schema
 			? Array.isArray(doctype.schema)
 				? doctype.schema
 				: Array.from(doctype.schema)
 			: []
 
-		// 1. Copy scalar fields as-is
-		const resolvedFields = schemaArray.map(field => ({ ...field }))
-
-		// 2. Process links — add resolved schema entries for each link
-		const linkEntries: SchemaTypes[] = []
+		// Build a map of link declarations by fieldname for quick lookup
+		// Use the link's fieldname property if set, otherwise use the key
+		const linksByFieldname = new Map<string, LinkDeclaration>()
 		if (doctype.links) {
-			for (const [fieldname, link] of Object.entries(doctype.links)) {
+			for (const [key, link] of Object.entries(doctype.links)) {
+				const linkFieldname = link.fieldname ?? key
+				linksByFieldname.set(linkFieldname, link)
+			}
+		}
+
+		// Process fields in order: scalar fields copied as-is, link fields resolved
+		const resolvedFields: SchemaTypes[] = []
+		for (const field of schemaArray) {
+			// Check if this field is a link field (fieldtype: 'Link')
+			if ('fieldtype' in field && field.fieldtype === 'Link') {
+				const link = linksByFieldname.get(field.fieldname)
+				if (!link) {
+					// Link field without corresponding link declaration - copy as-is
+					resolvedFields.push({ ...field })
+					continue
+				}
+
 				const targetDoctype = this.registry[link.target]
-				if (!targetDoctype) continue
+				if (!targetDoctype) {
+					// Target not found - copy as-is
+					resolvedFields.push({ ...field })
+					continue
+				}
 
 				const childSchema = this.resolveSchema(targetDoctype, seen)
 
 				if (link.cardinality === 'noneOrMany' || link.cardinality === 'atLeastOne') {
-					const entry = this.buildTableConfig({ fieldname, label: fieldname }, childSchema, link.component)
-					linkEntries.push(entry)
+					// Many relationship — build table config
+					resolvedFields.push(
+						this.buildTableConfig(
+							{ fieldname: field.fieldname, label: field.label || field.fieldname },
+							childSchema,
+							link.component
+						)
+					)
 				} else {
-					linkEntries.push({
-						fieldname,
-						label: fieldname,
+					// One relationship — embed form schema
+					resolvedFields.push({
+						fieldname: field.fieldname,
+						label: field.label || field.fieldname,
 						component: link.component || 'AForm',
 						schema: childSchema,
 					})
 				}
+			} else {
+				// Scalar field — copy as-is
+				resolvedFields.push({ ...field })
 			}
 		}
-
-		// 3. Combine and apply layout ordering
-		const allEntries = [...resolvedFields, ...linkEntries]
 
 		seen.delete(slug)
 
-		if (doctype.layout) {
-			const byFieldname = new Map<string, SchemaTypes>()
-			for (const entry of allEntries) {
-				if ('fieldname' in entry) {
-					byFieldname.set(entry.fieldname, entry)
-				}
-			}
-			return doctype.layout
-				.map(name => byFieldname.get(name))
-				.filter((entry): entry is SchemaTypes => entry !== undefined)
-		}
-
-		return allEntries
+		return resolvedFields
 	}
 
 	/**

@@ -15,13 +15,22 @@
 			"fieldtype": "Data",
 			"component": "ATextInput",
 			"label": "Description"
+		},
+		{
+			"fieldname": "recipe",
+			"fieldtype": "Link",
+			"component": "AForm",
+			"label": "Recipe",
+			"options": "recipe",
+			"readOnly": true
 		}
 	],
 	"links": {
 		"recipe": {
 			"target": "recipe",
 			"cardinality": "one",
-			"backlink": "tasks"
+			"backlink": "tasks",
+			"fieldname": "recipe"
 		}
 	}
 }

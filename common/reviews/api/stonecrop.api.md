@@ -72,7 +72,7 @@ export type CrossTabMessageType = 'operation' | 'undo' | 'redo' | 'sync-request'
 
 // @public
 export class Doctype {
-    constructor(doctype: string, schema: ImmutableDoctype['schema'], workflow: ImmutableDoctype['workflow'], actions: ImmutableDoctype['actions'], component?: Component, links?: Record<string, LinkDeclaration>, layout?: string[]);
+    constructor(doctype: string, schema: ImmutableDoctype['schema'], workflow: ImmutableDoctype['workflow'], actions: ImmutableDoctype['actions'], component?: Component, links?: Record<string, LinkDeclaration>);
     readonly actions: ImmutableDoctype['actions'];
     readonly component?: Component;
     readonly doctype: string;
@@ -91,7 +91,6 @@ export class Doctype {
         targetState: string;
     }>;
     getSchemaArray(): SchemaTypes[];
-    readonly layout?: string[];
     readonly links?: Record<string, LinkDeclaration>;
     get name(): string;
     readonly schema: ImmutableDoctype['schema'];
@@ -106,7 +105,6 @@ export type DoctypeConfig = {
     tableName?: string;
     fields?: SchemaTypes[];
     links?: Record<string, LinkDeclaration>;
-    layout?: string[];
     workflow?: UnknownMachineConfig | WorkflowMeta;
     actions?: Record<string, string[]>;
     inherits?: string;
@@ -287,7 +285,6 @@ export type ImmutableDoctype = {
     readonly workflow?: UnknownMachineConfig | AnyStateNodeConfig | WorkflowMeta;
     readonly actions?: Map_2<string, string[]>;
     readonly links?: Record<string, LinkDeclaration>;
-    readonly layout?: string[];
 };
 
 // @public
@@ -416,7 +413,7 @@ export type Schema = {
 // @public
 export class SchemaValidator {
     constructor(options?: ValidatorOptions);
-    validate(doctype: string, schema: List<SchemaTypes> | SchemaTypes[] | undefined, workflow?: AnyStateNodeConfig, actions?: Map_2<string, string[]> | Map<string, string[]>, links?: Record<string, LinkDeclaration>, layout?: string[]): ValidationResult;
+    validate(doctype: string, schema: List<SchemaTypes> | SchemaTypes[] | undefined, workflow?: AnyStateNodeConfig, actions?: Map_2<string, string[]> | Map<string, string[]>, links?: Record<string, LinkDeclaration>): ValidationResult;
 }
 
 // @public

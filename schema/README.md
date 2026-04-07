@@ -103,15 +103,21 @@ const doctype: DoctypeMeta = {
       options: 'customer',
       required: true,
     },
+    {
+      fieldname: 'items',
+      fieldtype: 'Link',
+      label: 'Items',
+      options: 'sales-order-item',
+    },
   ],
   links: {
     items: {
       target: 'sales-order-item',
       cardinality: 'noneOrMany',
       backlink: 'sales_order',
+      fieldname: 'items',
     },
   },
-  layout: ['customer', 'items'],
   workflow: {
     states: ['Draft', 'Submitted', 'Cancelled'],
     actions: {

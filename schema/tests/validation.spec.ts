@@ -335,17 +335,17 @@ describe('Doctype Validation', () => {
 			}
 		})
 
-		it('should validate doctype with layout', () => {
+		it('should validate doctype with Link fields', () => {
 			const doctype = {
 				name: 'Recipe',
 				fields: [
 					{ fieldname: 'name', fieldtype: 'Data' },
+					{ fieldname: 'tasks', fieldtype: 'Link', options: 'recipe-task' },
 					{ fieldname: 'status', fieldtype: 'Data' },
 				],
 				links: {
-					tasks: { target: 'recipe-task', cardinality: 'noneOrMany' },
+					tasks: { target: 'recipe-task', cardinality: 'noneOrMany', fieldname: 'tasks' },
 				},
-				layout: ['name', 'status', 'tasks'],
 			}
 			const result = validateDoctype(doctype)
 
@@ -353,13 +353,17 @@ describe('Doctype Validation', () => {
 			expect(result.errors).toEqual([])
 		})
 
-		it('should reject doctype with empty layout', () => {
+		it('should validate Link field and link declaration correspondence', () => {
 			const doctype = {
 				name: 'Recipe',
-				fields: [{ fieldname: 'name', fieldtype: 'Data' }],
-				layout: [],
+				fields: [
+					{ fieldname: 'name', fieldtype: 'Data' },
+					{ fieldname: 'tasks', fieldtype: 'Link', options: 'recipe-task' },
+				],
+				links: {
+					tasks: { target: 'recipe-task', cardinality: 'noneOrMany', fieldname: 'tasks' },
+				},
 			}
-			// Empty array is valid — layout is optional and array accepts empty
 			const result = validateDoctype(doctype)
 			expect(result.success).toBe(true)
 		})
@@ -405,17 +409,17 @@ describe('Doctype Validation', () => {
 			expect(() => parseDoctype(doctype)).toThrow(ZodError)
 		})
 
-		it('should parse a doctype with links and layout', () => {
+		it('should parse a doctype with links and Link fields', () => {
 			const doctype = {
 				name: 'Recipe',
 				fields: [
 					{ fieldname: 'name', fieldtype: 'Data' },
 					{ fieldname: 'status', fieldtype: 'Data' },
+					{ fieldname: 'tasks', fieldtype: 'Link', options: 'recipe-task' },
 				],
 				links: {
-					tasks: { target: 'recipe-task', cardinality: 'noneOrMany', backlink: 'recipe' },
+					tasks: { target: 'recipe-task', cardinality: 'noneOrMany', backlink: 'recipe', fieldname: 'tasks' },
 				},
-				layout: ['name', 'status', 'tasks'],
 			}
 			const parsed = parseDoctype(doctype)
 
@@ -424,7 +428,7 @@ describe('Doctype Validation', () => {
 			expect(parsed.links!.tasks.target).toBe('recipe-task')
 			expect(parsed.links!.tasks.cardinality).toBe('noneOrMany')
 			expect(parsed.links!.tasks.backlink).toBe('recipe')
-			expect(parsed.layout).toEqual(['name', 'status', 'tasks'])
+			expect(parsed.links!.tasks.fieldname).toBe('tasks')
 		})
 	})
 })

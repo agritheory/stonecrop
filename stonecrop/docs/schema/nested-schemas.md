@@ -25,7 +25,7 @@ Stonecrop uses **ancestor/descendant** terminology for relationships:
 
 ### Phase 1: Schema Definition
 
-Relationships are declared in the `links` object on `DoctypeMeta`. Render order is controlled by an optional `layout` array.
+Relationships are declared in the `links` object on `DoctypeMeta`. Link fields (`fieldtype: 'Link'`) are placed in the `fields` array at the position where they should render.
 
 **customer_schema.json:**
 
@@ -36,21 +36,24 @@ Relationships are declared in the `links` object on `DoctypeMeta`. Render order 
   "tableName": "customer",
   "fields": [
     { "fieldname": "customer_name", "fieldtype": "Data", "label": "Customer Name", "component": "ATextInput" },
-    { "fieldname": "email", "fieldtype": "Data", "label": "Email", "component": "ATextInput" }
+    { "fieldname": "email", "fieldtype": "Data", "label": "Email", "component": "ATextInput" },
+    { "fieldname": "address", "fieldtype": "Link", "label": "Address", "options": "address", "component": "AForm" },
+    { "fieldname": "orders", "fieldtype": "Link", "label": "Orders", "options": "sales-order", "component": "ATable" }
   ],
   "links": {
     "address": {
       "target": "address",
       "cardinality": "one",
-      "backlink": "customer"
+      "backlink": "customer",
+      "fieldname": "address"
     },
     "orders": {
       "target": "sales-order",
       "cardinality": "noneOrMany",
-      "backlink": "customer"
+      "backlink": "customer",
+      "fieldname": "orders"
     }
-  },
-  "layout": ["customer_name", "email", "address", "orders"]
+  }
 }
 ```
 
@@ -65,13 +68,15 @@ Relationships are declared in the `links` object on `DoctypeMeta`. Render order 
     { "fieldname": "street", "fieldtype": "Data", "label": "Street", "component": "ATextInput" },
     { "fieldname": "city", "fieldtype": "Data", "label": "City", "component": "ATextInput" },
     { "fieldname": "state", "fieldtype": "Data", "label": "State", "component": "ATextInput" },
-    { "fieldname": "zip_code", "fieldtype": "Data", "label": "Zip Code", "component": "ATextInput" }
+    { "fieldname": "zip_code", "fieldtype": "Data", "label": "Zip Code", "component": "ATextInput" },
+    { "fieldname": "customer", "fieldtype": "Link", "label": "Customer", "options": "customer", "component": "AForm", "readOnly": true }
   ],
   "links": {
     "customer": {
       "target": "customer",
       "cardinality": "one",
-      "backlink": "address"
+      "backlink": "address",
+      "fieldname": "customer"
     }
   }
 }

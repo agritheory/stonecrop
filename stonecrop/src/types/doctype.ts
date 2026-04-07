@@ -12,7 +12,6 @@ export type ImmutableDoctype = {
 	readonly workflow?: UnknownMachineConfig | AnyStateNodeConfig | WorkflowMeta
 	readonly actions?: Map<string, string[]>
 	readonly links?: Record<string, LinkDeclaration>
-	readonly layout?: string[]
 }
 
 /**
@@ -47,12 +46,10 @@ export type DoctypeConfig = {
 	slug?: string
 	/** Database table name */
 	tableName?: string
-	/** Field definitions */
+	/** Field definitions (including link fields with fieldtype: 'Link') */
 	fields?: SchemaTypes[]
 	/** Relationship links to other doctypes */
 	links?: Record<string, LinkDeclaration>
-	/** Render order — fieldnames and link fieldnames in display order */
-	layout?: string[]
 	/** Workflow configuration (XState format or simple WorkflowMeta) */
 	workflow?: UnknownMachineConfig | WorkflowMeta
 	/** Actions and their field triggers */

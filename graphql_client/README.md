@@ -27,7 +27,6 @@ for (const [slug, doctype] of Object.entries(registry.registry)) {
     tableName: slug.replace(/-/g, '_'),
     fields: doctype.getSchemaArray(),
     links: doctype.links || {},
-    layout: doctype.layout,
   })
 }
 

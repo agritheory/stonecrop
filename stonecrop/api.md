@@ -878,7 +878,7 @@ export interface ValidatorOptions {
 |----------|------|-------------|
 | registry? | `Registry` | Registry instance for doctype lookups |
 | validateActions? | `boolean` | Whether to validate action registration |
-| validateLinks? | `boolean` | Whether to validate links object (target resolution, backlink consistency, layout entries) |
+| validateLinks? | `boolean` | Whether to validate links object (target resolution, backlink consistency, Link field correspondence) |
 | validateLinkTargets? | `boolean` | Whether to validate Link field targets |
 | validateRequiredProperties? | `boolean` | Whether to validate required schema properties |
 | validateWorkflows? | `boolean` | Whether to validate workflow reachability |
@@ -921,7 +921,6 @@ export type DoctypeConfig = {
     tableName?: string;
     fields?: SchemaTypes[];
     links?: Record<string, LinkDeclaration>;
-    layout?: string[];
     workflow?: UnknownMachineConfig | WorkflowMeta;
     actions?: Record<string, string[]>;
     inherits?: string;
@@ -1047,7 +1046,6 @@ export type ImmutableDoctype = {
     readonly workflow?: UnknownMachineConfig | AnyStateNodeConfig | WorkflowMeta;
     readonly actions?: Map<string, string[]>;
     readonly links?: Record<string, LinkDeclaration>;
-    readonly layout?: string[];
 };
 ```
 
@@ -1170,7 +1168,7 @@ Doctype runtime class with Immutable.js collections for HST change tracking.
 **Constructor:**
 
 ```typescript
-new Doctype(doctype: string, schema: ImmutableDoctype['schema'], workflow: ImmutableDoctype['workflow'], actions: ImmutableDoctype['actions'], component: Component, links: Record<string, LinkDeclaration>, layout: string[])
+new Doctype(doctype: string, schema: ImmutableDoctype['schema'], workflow: ImmutableDoctype['workflow'], actions: ImmutableDoctype['actions'], component: Component, links: Record<string, LinkDeclaration>)
 ```
 
 **Parameters:**
@@ -1183,7 +1181,6 @@ new Doctype(doctype: string, schema: ImmutableDoctype['schema'], workflow: Immut
 | actions | `ImmutableDoctype['actions']` | The doctype actions and field triggers |
 | component | `Component` | Optional Vue component for rendering the doctype |
 | links | `Record<string, LinkDeclaration>` | Optional relationship links to other doctypes |
-| layout | `string[]` | Optional render order |
 
 **Properties:**
 
@@ -1192,7 +1189,6 @@ new Doctype(doctype: string, schema: ImmutableDoctype['schema'], workflow: Immut
 | actions | `ImmutableDoctype['actions']` | The doctype actions and field triggers |
 | component | `Component` | The doctype component |
 | doctype | `string` | The doctype name |
-| layout | `string[]` | Render order — fieldnames and link fieldnames in display order |
 | links | `Record<string, LinkDeclaration>` | Relationship links to other doctypes |
 | name | `string` | Alias for doctype (for DoctypeLike interface compatibility) |
 | schema | `ImmutableDoctype['schema']` | The doctype schema |
@@ -1549,11 +1545,11 @@ initializeRecord(schema: SchemaTypes[]): Record<string, any>
 
 Resolve nested Doctype fields in a schema by embedding child schemas inline.
 
-Accepts a Doctype and extracts `fields`, `links`, and `layout` internally. For each link:
+Accepts a Doctype and extracts `fields` and `links` internally. Fields array contains both scalar fields and link fields (with fieldtype: 'Link'). Render order is determined by the order of fields in the fields array.
 
-- `cardinality: 'noneOrMany'` or `'atLeastOne'`: auto-derives `columns` from the target's schema, sets `component` to `link.component ?? 'ATable'`, `config: { view: 'list' }`, `rows: []`. - `cardinality: 'one'` or `'atMostOne'`: embeds the target schema as the entry's `schema` property, sets `component` to `link.component ?? 'AForm'`.
+For each link field: - Looks up the corresponding link declaration in `links` by fieldname - `cardinality: 'noneOrMany'` or `'atLeastOne'`: auto-derives `columns` from the target's schema, sets `component` to `link.component ?? 'ATable'`, `config: { view: 'list' }`, `rows: []`. - `cardinality: 'one'` or `'atMostOne'`: embeds the target schema as the entry's `schema` property, sets `component` to `link.component ?? 'AForm'`.
 
-If `layout` is provided, reorders the resolved output to match. Recurses for deeply nested doctypes. Circular references are protected against. Returns a new array — does not mutate the original.
+Recurses for deeply nested doctypes. Circular references are protected against. Returns a new array — does not mutate the original.
 
 ```typescript
 resolveSchema(doctype: Doctype, visited: Set<string>): SchemaTypes[]
@@ -1589,7 +1585,7 @@ new SchemaValidator(options: ValidatorOptions)
 Validates a complete doctype schema
 
 ```typescript
-validate(doctype: string, schema: List<SchemaTypes> | SchemaTypes[] | undefined, workflow: AnyStateNodeConfig, actions: ImmutableMap<string, string[]> | Map<string, string[]>, links: Record<string, LinkDeclaration>, layout: string[]): ValidationResult
+validate(doctype: string, schema: List<SchemaTypes> | SchemaTypes[] | undefined, workflow: AnyStateNodeConfig, actions: ImmutableMap<string, string[]> | Map<string, string[]>, links: Record<string, LinkDeclaration>): ValidationResult
 ```
 
 **Parameters:**
@@ -1601,7 +1597,6 @@ validate(doctype: string, schema: List<SchemaTypes> | SchemaTypes[] | undefined,
 | workflow | `AnyStateNodeConfig` | Optional workflow configuration |
 | actions | `ImmutableMap<string, string[]> \| Map<string, string[]>` | Optional actions map |
 | links | `Record<string, LinkDeclaration>` | Optional links object |
-| layout | `string[]` | Optional layout array |
 
 ### Stonecrop
 

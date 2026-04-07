@@ -63,13 +63,6 @@ export default class Doctype {
 	readonly links?: Record<string, LinkDeclaration>
 
 	/**
-	 * Render order — fieldnames and link fieldnames in display order
-	 * @public
-	 * @readonly
-	 */
-	readonly layout?: string[]
-
-	/**
 	 * Creates a new Doctype instance
 	 * @param doctype - The doctype name
 	 * @param schema - The doctype schema definition
@@ -77,7 +70,6 @@ export default class Doctype {
 	 * @param actions - The doctype actions and field triggers
 	 * @param component - Optional Vue component for rendering the doctype
 	 * @param links - Optional relationship links to other doctypes
-	 * @param layout - Optional render order
 	 */
 	constructor(
 		doctype: string,
@@ -85,8 +77,7 @@ export default class Doctype {
 		workflow: ImmutableDoctype['workflow'],
 		actions: ImmutableDoctype['actions'],
 		component?: Component,
-		links?: Record<string, LinkDeclaration>,
-		layout?: string[]
+		links?: Record<string, LinkDeclaration>
 	) {
 		this.doctype = doctype
 		this.schema = schema
@@ -94,7 +85,6 @@ export default class Doctype {
 		this.actions = actions
 		this.component = component
 		this.links = links
-		this.layout = layout
 	}
 
 	/**
@@ -139,7 +129,7 @@ export default class Doctype {
 		const schema = config.fields ? List(config.fields) : List<SchemaTypes>()
 		const actions = config.actions ? Map(config.actions) : Map<string, string[]>()
 
-		return new Doctype(config.name, schema, config.workflow, actions, undefined, config.links, config.layout)
+		return new Doctype(config.name, schema, config.workflow, actions, undefined, config.links)
 	}
 
 	/**

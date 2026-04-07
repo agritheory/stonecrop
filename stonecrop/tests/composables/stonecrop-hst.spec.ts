@@ -108,8 +108,11 @@ describe('useStonecrop HST mode', () => {
 
 		const customerDoctype = createDoctype(
 			'Customer',
-			[{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes],
-			{ address: { target: 'address', cardinality: 'one' } }
+			[
+				{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+				{ fieldname: 'address', fieldtype: 'Link', component: 'AForm', options: 'address' } as SchemaTypes,
+			],
+			{ address: { target: 'address', cardinality: 'one', fieldname: 'address' } }
 		)
 		registry.addDoctype(customerDoctype)
 
@@ -591,8 +594,11 @@ describe('useStonecrop HST mode', () => {
 
 		const orderDoctype = createDoctype(
 			'Order',
-			[{ fieldname: 'order_number', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes],
-			{ items: { target: 'item', cardinality: 'noneOrMany' } }
+			[
+				{ fieldname: 'order_number', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+				{ fieldname: 'items', fieldtype: 'Link', component: 'ATable', options: 'item' } as SchemaTypes,
+			],
+			{ items: { target: 'item', cardinality: 'noneOrMany', fieldname: 'items' } }
 		)
 		registry.addDoctype(orderDoctype)
 

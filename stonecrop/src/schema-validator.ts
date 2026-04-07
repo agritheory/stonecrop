@@ -43,7 +43,6 @@ export class SchemaValidator {
 	 * @param workflow - Optional workflow configuration
 	 * @param actions - Optional actions map
 	 * @param links - Optional links object
-	 * @param layout - Optional layout array
 	 * @returns Validation result
 	 */
 	validate(
@@ -51,8 +50,7 @@ export class SchemaValidator {
 		schema: List<SchemaTypes> | SchemaTypes[] | undefined,
 		workflow?: AnyStateNodeConfig,
 		actions?: ImmutableMap<string, string[]> | Map<string, string[]>,
-		links?: Record<string, LinkDeclaration>,
-		layout?: string[]
+		links?: Record<string, LinkDeclaration>
 	): ValidationResult {
 		const issues: ValidationIssue[] = []
 
@@ -71,7 +69,7 @@ export class SchemaValidator {
 
 		// Validate links object
 		if (this.options.validateLinks && this.options.registry && links) {
-			issues.push(...this.validateLinkDeclarations(doctype, links, schemaArray, layout, this.options.registry))
+			issues.push(...this.validateLinkDeclarations(doctype, links, schemaArray, this.options.registry))
 		}
 
 		// Validate workflow configuration
@@ -208,17 +206,24 @@ export class SchemaValidator {
 	}
 
 	/**
-	 * Validates link declarations: target resolution, backlink consistency, layout entries
+	 * Validates link declarations: target resolution, backlink consistency, Link field correspondence
 	 * @internal
 	 */
 	private validateLinkDeclarations(
 		doctype: string,
 		links: Record<string, LinkDeclaration>,
 		schema: SchemaTypes[],
-		layout: string[] | undefined,
 		registry: Registry
 	): ValidationIssue[] {
 		const issues: ValidationIssue[] = []
+
+		// Build a map of Link fields by fieldname for quick lookup
+		const linkFieldsByFieldname = new Map<string, SchemaTypes>()
+		for (const field of schema) {
+			if ('fieldtype' in field && field.fieldtype === 'Link') {
+				linkFieldsByFieldname.set(field.fieldname, field)
+			}
+		}
 
 		for (const [fieldname, link] of Object.entries(links)) {
 			// Check target resolves in registry
@@ -270,36 +275,40 @@ export class SchemaValidator {
 					})
 				}
 			}
-		}
 
-		// Check field/link name collisions
-		const fieldnames = new Set(schema.map(f => f.fieldname))
-		for (const linkname of Object.keys(links)) {
-			if (fieldnames.has(linkname)) {
-				issues.push({
-					severity: ValidationSeverity.ERROR,
-					rule: 'link-name-collision',
-					message: `Link "${linkname}" conflicts with field of the same name`,
-					doctype,
-					fieldname: linkname,
-				})
+			// If Link field exists with same fieldname, verify it has matching target
+			// Only check if link has fieldname set (otherwise it's a standalone link without a field)
+			if (link.fieldname) {
+				const linkField = linkFieldsByFieldname.get(link.fieldname)
+				if (linkField) {
+					const linkFieldOptions = 'options' in linkField ? (linkField as { options: unknown }).options : undefined
+					const linkFieldTarget = typeof linkFieldOptions === 'string' ? linkFieldOptions : undefined
+					if (linkFieldTarget && linkFieldTarget !== link.target) {
+						issues.push({
+							severity: ValidationSeverity.ERROR,
+							rule: 'link-field-target-mismatch',
+							message: `Link field "${link.fieldname}" targets "${linkFieldTarget}" but link declaration targets "${link.target}"`,
+							doctype,
+							fieldname: link.fieldname,
+							context: { linkFieldTarget, linkTarget: link.target },
+						})
+					}
+				}
 			}
 		}
 
-		// Check layout entries
-		if (layout) {
-			const linknames = new Set(Object.keys(links))
-
-			for (const entry of layout) {
-				if (!fieldnames.has(entry) && !linknames.has(entry)) {
-					issues.push({
-						severity: ValidationSeverity.ERROR,
-						rule: 'layout-invalid-entry',
-						message: `Layout entry "${entry}" not found in fields or links`,
-						doctype,
-						context: { entry },
-					})
-				}
+		// Check that every Link field has a corresponding link declaration
+		// A Link field corresponds to a link if the link's fieldname property matches the field's fieldname
+		for (const [fieldname, _field] of linkFieldsByFieldname) {
+			const hasCorrespondingLink = Object.values(links).some(link => link.fieldname === fieldname)
+			if (!hasCorrespondingLink) {
+				issues.push({
+					severity: ValidationSeverity.ERROR,
+					rule: 'link-field-without-declaration',
+					message: `Link field "${fieldname}" has no corresponding link declaration`,
+					doctype,
+					fieldname,
+				})
 			}
 		}
 

@@ -77,7 +77,6 @@ function buildMetaMap(registry: Registry): Map<string, DoctypeMeta> {
       tableName: slug.replace(/-/g, '_'),
       fields: doctype.getSchemaArray(),
       links: doctype.links || {},
-      layout: doctype.layout,
     })
   }
   return metaMap

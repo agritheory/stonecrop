@@ -26,9 +26,10 @@ describe('Nested Doctype Support', () => {
 		const customerSchema = List([
 			{ fieldname: 'customer_name', fieldtype: 'Data', component: 'ATextInput' },
 			{ fieldname: 'email', fieldtype: 'Data', component: 'ATextInput' },
+			{ fieldname: 'address', fieldtype: 'Link', component: 'AForm', options: 'address' },
 		])
 		customerDoctype = new Doctype('customer', customerSchema as any, undefined, undefined, undefined, {
-			address: { target: 'address', cardinality: 'one' },
+			address: { target: 'address', cardinality: 'one', fieldname: 'address' },
 		})
 		registry.addDoctype(customerDoctype)
 
@@ -64,9 +65,12 @@ describe('Nested Doctype Support', () => {
 
 		it('handles deeply nested doctypes', () => {
 			// Create a "company" doctype that nests "customer" which nests "address"
-			const companySchema = List([{ fieldname: 'company_name', fieldtype: 'Data', component: 'ATextInput' }])
+			const companySchema = List([
+				{ fieldname: 'company_name', fieldtype: 'Data', component: 'ATextInput' },
+				{ fieldname: 'primary_contact', fieldtype: 'Link', component: 'AForm', options: 'customer' },
+			])
 			const companyDoctype = new Doctype('company', companySchema as any, undefined, undefined, undefined, {
-				primary_contact: { target: 'customer', cardinality: 'one' },
+				primary_contact: { target: 'customer', cardinality: 'one', fieldname: 'primary_contact' },
 			})
 			registry.addDoctype(companyDoctype)
 
@@ -84,35 +88,47 @@ describe('Nested Doctype Support', () => {
 
 		it('prevents circular references', () => {
 			// Create a self-referencing doctype via links
-			const selfRefSchema = List([{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' }])
+			// The parent field points to the same doctype - when resolved, it should
+			// return the circular-blocked schema (without further parent resolution)
+			const selfRefSchema = List([
+				{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' },
+				{ fieldname: 'parent', fieldtype: 'Link', component: 'AForm', options: 'self-ref' },
+			])
 			const selfRefDoctype = new Doctype('self-ref', selfRefSchema as any, undefined, undefined, undefined, {
-				parent: { target: 'self-ref', cardinality: 'one' },
+				parent: { target: 'self-ref', cardinality: 'one', fieldname: 'parent' },
 			})
 			registry.addDoctype(selfRefDoctype)
 
 			const resolved = registry.resolveSchema(selfRefDoctype)
 			const parentField = resolved[1] as any
 
-			// First level resolves — gets the circular-blocked schema (1 field: name)
-			expect(parentField.schema).toHaveLength(1)
-			// Child entry is the raw circular-blocked schema (just name, no further parent link)
+			// First level resolves parent link — gets the circular-blocked schema
+			// The circular schema is the original schema which now has 2 fields (name + parent)
+			// but parent Link field is copied as-is when circular blocks resolution
+			expect(parentField.schema).toHaveLength(2)
+			// Both fields present in circular-blocked schema
 			expect(parentField.schema[0].fieldname).toBe('name')
+			expect(parentField.schema[1].fieldname).toBe('parent')
 		})
 
 		it('gracefully handles missing doctype references', () => {
 			const testDoctype = new Doctype(
 				'test',
-				List([{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' }]) as any,
+				List([
+					{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' },
+					{ fieldname: 'missing', fieldtype: 'Link', component: 'AForm', options: 'nonexistent' },
+				]) as any,
 				undefined,
 				undefined,
 				undefined,
-				{ missing: { target: 'nonexistent', cardinality: 'one' } }
+				{ missing: { target: 'nonexistent', cardinality: 'one', fieldname: 'missing' } }
 			)
 			const resolved = registry.resolveSchema(testDoctype)
 
-			// Missing link target: the link entry is silently omitted from resolved schema
-			expect(resolved).toHaveLength(1)
+			// Missing link target: the link field is copied as-is (target not found)
+			expect(resolved).toHaveLength(2)
 			expect(resolved[0].fieldname).toBe('name')
+			expect(resolved[1].fieldname).toBe('missing')
 		})
 
 		it('returns fields as-is when not Doctype type', () => {
@@ -135,11 +151,14 @@ describe('Nested Doctype Support', () => {
 		it('resolves a link with cardinality:noneOrMany by auto-deriving columns from child doctype', () => {
 			const testDoctype = new Doctype(
 				'test',
-				List([{ fieldname: 'customer_name', fieldtype: 'Data', component: 'ATextInput' }]) as any,
+				List([
+					{ fieldname: 'customer_name', fieldtype: 'Data', component: 'ATextInput' },
+					{ fieldname: 'addresses', fieldtype: 'Link', component: 'ATable', options: 'address' },
+				]) as any,
 				undefined,
 				undefined,
 				undefined,
-				{ addresses: { target: 'address', cardinality: 'noneOrMany' } }
+				{ addresses: { target: 'address', cardinality: 'noneOrMany', fieldname: 'addresses' } }
 			)
 			const resolved = registry.resolveSchema(testDoctype)
 
@@ -164,9 +183,14 @@ describe('Nested Doctype Support', () => {
 		})
 
 		it('auto-derives columns from child doctype schema for noneOrMany links', () => {
-			const testDoctype = new Doctype('test', List([]) as any, undefined, undefined, undefined, {
-				addresses: { target: 'address', cardinality: 'noneOrMany' },
-			})
+			const testDoctype = new Doctype(
+				'test',
+				List([{ fieldname: 'addresses', fieldtype: 'Link', component: 'ATable', options: 'address' }]) as any,
+				undefined,
+				undefined,
+				undefined,
+				{ addresses: { target: 'address', cardinality: 'noneOrMany', fieldname: 'addresses' } }
+			)
 			const resolved = registry.resolveSchema(testDoctype)
 			const tableField = resolved[0] as any
 
@@ -175,9 +199,21 @@ describe('Nested Doctype Support', () => {
 		})
 
 		it('uses custom component from link declaration', () => {
-			const testDoctype = new Doctype('test', List([]) as any, undefined, undefined, undefined, {
-				addresses: { target: 'address', cardinality: 'noneOrMany', component: 'MyCustomTable' },
-			})
+			const testDoctype = new Doctype(
+				'test',
+				List([{ fieldname: 'addresses', fieldtype: 'Link', component: 'ATable', options: 'address' }]) as any,
+				undefined,
+				undefined,
+				undefined,
+				{
+					addresses: {
+						target: 'address',
+						cardinality: 'noneOrMany',
+						component: 'MyCustomTable',
+						fieldname: 'addresses',
+					},
+				}
+			)
 			const resolved = registry.resolveSchema(testDoctype)
 			const tableField = resolved[0] as any
 
@@ -185,9 +221,14 @@ describe('Nested Doctype Support', () => {
 		})
 
 		it('does not mutate addressDoctype schema when resolving noneOrMany link', () => {
-			const testDoctype = new Doctype('test', List([]) as any, undefined, undefined, undefined, {
-				addresses: { target: 'address', cardinality: 'noneOrMany' },
-			})
+			const testDoctype = new Doctype(
+				'test',
+				List([{ fieldname: 'addresses', fieldtype: 'Link', component: 'ATable', options: 'address' }]) as any,
+				undefined,
+				undefined,
+				undefined,
+				{ addresses: { target: 'address', cardinality: 'noneOrMany', fieldname: 'addresses' } }
+			)
 			const originalFields = Array.from(addressDoctype.schema || [])
 			registry.resolveSchema(testDoctype)
 
@@ -197,19 +238,30 @@ describe('Nested Doctype Support', () => {
 		})
 
 		it('gracefully handles missing doctype for noneOrMany link', () => {
-			const testDoctype = new Doctype('test', List([]) as any, undefined, undefined, undefined, {
-				items: { target: 'nonexistent', cardinality: 'noneOrMany' },
-			})
+			const testDoctype = new Doctype(
+				'test',
+				List([{ fieldname: 'items', fieldtype: 'Link', component: 'ATable', options: 'nonexistent' }]) as any,
+				undefined,
+				undefined,
+				undefined,
+				{ items: { target: 'nonexistent', cardinality: 'noneOrMany', fieldname: 'items' } }
+			)
 			const resolved = registry.resolveSchema(testDoctype)
 
-			// Missing link target: silently omitted from resolved schema
-			expect(resolved).toHaveLength(0)
+			// Missing link target: link field copied as-is
+			expect(resolved).toHaveLength(1)
+			expect(resolved[0].fieldname).toBe('items')
 		})
 
 		it('resolves a link with cardinality:atLeastOne the same way as noneOrMany', () => {
-			const testDoctype = new Doctype('test', List([]) as any, undefined, undefined, undefined, {
-				addresses: { target: 'address', cardinality: 'atLeastOne' },
-			})
+			const testDoctype = new Doctype(
+				'test',
+				List([{ fieldname: 'addresses', fieldtype: 'Link', component: 'ATable', options: 'address' }]) as any,
+				undefined,
+				undefined,
+				undefined,
+				{ addresses: { target: 'address', cardinality: 'atLeastOne', fieldname: 'addresses' } }
+			)
 			const resolved = registry.resolveSchema(testDoctype)
 			const tableField = resolved[0] as any
 
@@ -221,9 +273,14 @@ describe('Nested Doctype Support', () => {
 		})
 
 		it('resolves a link with cardinality:atMostOne by embedding child schema like one', () => {
-			const testDoctype = new Doctype('test', List([]) as any, undefined, undefined, undefined, {
-				shippingAddress: { target: 'address', cardinality: 'atMostOne' },
-			})
+			const testDoctype = new Doctype(
+				'test',
+				List([{ fieldname: 'shippingAddress', fieldtype: 'Link', component: 'AForm', options: 'address' }]) as any,
+				undefined,
+				undefined,
+				undefined,
+				{ shippingAddress: { target: 'address', cardinality: 'atMostOne', fieldname: 'shippingAddress' } }
+			)
 			const resolved = registry.resolveSchema(testDoctype)
 			const formField = resolved[0] as any
 
@@ -233,25 +290,21 @@ describe('Nested Doctype Support', () => {
 			expect(formField.schema[0].fieldname).toBe('street')
 		})
 
-		it('applies layout ordering to place link entries before scalar fields', () => {
-			const schemaWithLayout = List([
+		it('renders link fields in the order they appear in the fields array', () => {
+			// Link field is in the middle of scalar fields - order is determined by fields array
+			const orderedSchema = List([
 				{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' },
+				{ fieldname: 'tasks', fieldtype: 'Link', component: 'ATable', options: 'address' },
 				{ fieldname: 'status', fieldtype: 'Data', component: 'ATextInput' },
 			])
-			const docWithLayout = new Doctype(
-				'recipe',
-				schemaWithLayout as any,
-				undefined,
-				undefined,
-				undefined,
-				{ tasks: { target: 'address', cardinality: 'noneOrMany' } },
-				['tasks', 'name', 'status']
-			)
-			const resolved = registry.resolveSchema(docWithLayout)
+			const docWithOrderedLinks = new Doctype('recipe', orderedSchema as any, undefined, undefined, undefined, {
+				tasks: { target: 'address', cardinality: 'noneOrMany', fieldname: 'tasks' },
+			})
+			const resolved = registry.resolveSchema(docWithOrderedLinks)
 
-			// layout says: tasks first, then name, then status
-			expect(resolved[0].fieldname).toBe('tasks')
-			expect(resolved[1].fieldname).toBe('name')
+			// Fields are in schema order: name, tasks, status
+			expect(resolved[0].fieldname).toBe('name')
+			expect(resolved[1].fieldname).toBe('tasks')
 			expect(resolved[2].fieldname).toBe('status')
 		})
 	})
@@ -318,9 +371,14 @@ describe('Nested Doctype Support', () => {
 
 		it('initializes atMostOne link entry recursively when schema is provided', () => {
 			const resolved = registry.resolveSchema(
-				new Doctype('parent', List([]) as any, undefined, undefined, undefined, {
-					address: { target: 'address', cardinality: 'atMostOne' },
-				})
+				new Doctype(
+					'parent',
+					List([{ fieldname: 'address', fieldtype: 'Link', component: 'AForm', options: 'address' }]) as any,
+					undefined,
+					undefined,
+					undefined,
+					{ address: { target: 'address', cardinality: 'atMostOne', fieldname: 'address' } }
+				)
 			)
 			const record = registry.initializeRecord(resolved)
 

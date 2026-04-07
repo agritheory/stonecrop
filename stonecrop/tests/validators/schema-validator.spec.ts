@@ -408,39 +408,6 @@ describe('SchemaValidator — link declarations', () => {
 		expect(result.issues.some(i => i.rule === 'link-backlink-mismatch')).toBe(true)
 	})
 
-	it('reports error when layout entry not in fields or links', () => {
-		const validator = new SchemaValidator({ registry: mockRegistry })
-		const result = validator.validate(
-			'recipe',
-			schema,
-			undefined,
-			undefined,
-			{ tasks: { target: 'recipe-task', cardinality: 'noneOrMany' } },
-			['name', 'nonexistent']
-		)
-		expect(result.valid).toBe(false)
-		expect(result.issues.some(i => i.rule === 'layout-invalid-entry')).toBe(true)
-	})
-
-	it('passes when layout entry exists in fields', () => {
-		const validator = new SchemaValidator({ registry: mockRegistry })
-		const result = validator.validate('recipe', schema, undefined, undefined, undefined, ['name'])
-		expect(result.valid).toBe(true)
-	})
-
-	it('passes when layout entry exists in links', () => {
-		const validator = new SchemaValidator({ registry: mockRegistry })
-		const result = validator.validate(
-			'recipe',
-			schema,
-			undefined,
-			undefined,
-			{ tasks: { target: 'recipe-task', cardinality: 'noneOrMany' } },
-			['name', 'tasks']
-		)
-		expect(result.valid).toBe(true)
-	})
-
 	it('can disable link validation via options', () => {
 		const validator = new SchemaValidator({
 			registry: mockRegistry,
@@ -452,13 +419,49 @@ describe('SchemaValidator — link declarations', () => {
 		expect(result.valid).toBe(true) // links not validated, so no error
 	})
 
-	it('reports error when field and link share a name', () => {
+	it('reports error when Link field has no corresponding link declaration', () => {
 		const validator = new SchemaValidator({ registry: mockRegistry })
-		const schemaWithConflict = [{ fieldname: 'tasks', fieldtype: 'Data' } as SchemaTypes]
-		const result = validator.validate('recipe', schemaWithConflict, undefined, undefined, {
-			tasks: { target: 'recipe-task', cardinality: 'noneOrMany' },
+		const schemaWithLinkField = [
+			{ fieldname: 'name', fieldtype: 'Data' } as SchemaTypes,
+			{ fieldname: 'tasks', fieldtype: 'Link', options: 'recipe-task' } as SchemaTypes,
+		]
+		const result = validator.validate('recipe', schemaWithLinkField, undefined, undefined, {})
+		expect(result.valid).toBe(false)
+		expect(result.issues.some(i => i.rule === 'link-field-without-declaration')).toBe(true)
+	})
+
+	it('reports error when Link field target does not match link declaration target', () => {
+		const validator = new SchemaValidator({ registry: mockRegistry })
+		const schemaWithLinkField = [
+			{ fieldname: 'name', fieldtype: 'Data' } as SchemaTypes,
+			{ fieldname: 'tasks', fieldtype: 'Link', options: 'different-target' } as SchemaTypes,
+		]
+		const result = validator.validate('recipe', schemaWithLinkField, undefined, undefined, {
+			tasks: { target: 'recipe-task', cardinality: 'noneOrMany', fieldname: 'tasks' },
 		})
 		expect(result.valid).toBe(false)
-		expect(result.issues.some(i => i.rule === 'link-name-collision')).toBe(true)
+		expect(result.issues.some(i => i.rule === 'link-field-target-mismatch')).toBe(true)
+	})
+
+	it('passes when Link field has corresponding link declaration with matching target', () => {
+		const validator = new SchemaValidator({ registry: mockRegistry })
+		const schemaWithLinkField = [
+			{ fieldname: 'name', fieldtype: 'Data' } as SchemaTypes,
+			{ fieldname: 'tasks', fieldtype: 'Link', options: 'recipe-task' } as SchemaTypes,
+		]
+		const result = validator.validate('recipe', schemaWithLinkField, undefined, undefined, {
+			tasks: { target: 'recipe-task', cardinality: 'noneOrMany', fieldname: 'tasks' },
+		})
+		expect(result.valid).toBe(true)
+		expect(result.errorCount).toBe(0)
+	})
+
+	it('allows link declaration without corresponding Link field (link without field is ok)', () => {
+		const validator = new SchemaValidator({ registry: mockRegistry })
+		const schemaWithLinkField = [{ fieldname: 'name', fieldtype: 'Data' } as SchemaTypes]
+		const result = validator.validate('recipe', schemaWithLinkField, undefined, undefined, {
+			tasks: { target: 'recipe-task', cardinality: 'noneOrMany' },
+		})
+		expect(result.valid).toBe(true)
 	})
 })
