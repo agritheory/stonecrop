@@ -146,7 +146,7 @@ import { LinkDeclaration, Cardinality } from '@stonecrop/schema'
 // 'atLeastOne'  — 1 or more (required collection)
 
 const links: Record<string, LinkDeclaration> = {
-  // 1:many — parent has tasks
+  // 1:many — ancestor has descendants
   tasks: {
     target: 'recipe-task',
     cardinality: 'noneOrMany',
