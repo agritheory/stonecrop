@@ -442,17 +442,12 @@ export function useStonecrop(options?: {
 	 * Delegates to Stonecrop.initializeNestedData method.
 	 * @param path - The HST path where initialized data should be stored
 	 * @param doctype - The doctype to initialize
-	 * @param options - Options (includeNested to limit which links are scaffolded)
 	 */
-	const initializeNestedData = (
-		path: string,
-		doctype: Doctype,
-		options?: { includeNested?: boolean | string[] }
-	): void => {
+	const initializeNestedData = (path: string, doctype: Doctype): void => {
 		if (!stonecrop.value) {
 			throw new Error('Stonecrop instance not available')
 		}
-		return stonecrop.value.initializeNestedData(path, doctype, options)
+		return stonecrop.value.initializeNestedData(path, doctype)
 	}
 
 	/**

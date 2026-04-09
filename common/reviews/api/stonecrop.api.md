@@ -8,6 +8,7 @@ import type { AnyStateNodeConfig } from 'xstate';
 import { Component } from 'vue';
 import { ComputedRef } from 'vue';
 import type { DataClient } from '@stonecrop/schema';
+import type { DoctypeMeta } from '@stonecrop/schema';
 import type { LinkDeclaration } from '@stonecrop/schema';
 import { List } from 'immutable';
 import { Map as Map_2 } from 'immutable';
@@ -263,9 +264,7 @@ export type HSTStonecropReturn = BaseStonecropReturn & {
     hstStore: Ref<HSTNode | undefined>;
     formData: Ref<Record<string, any>>;
     resolvedSchema: Ref<SchemaTypes[]>;
-    initializeNestedData: (path: string, doctype: Doctype, options?: {
-        includeNested?: boolean | string[];
-    }) => void;
+    initializeNestedData: (path: string, doctype: Doctype) => void;
     fetchNestedData: (path: string, doctype: Doctype, recordId: string, options?: {
         includeNested?: boolean | string[];
     }) => Promise<void>;
@@ -407,6 +406,7 @@ export class Registry {
     resolveSchema(doctype: Doctype, visited?: Set<string>): SchemaTypes[];
     static _root: Registry;
     readonly router?: Router;
+    toMetaMap(): Map<string, DoctypeMeta>;
 }
 
 // @public
@@ -712,9 +712,7 @@ export class Stonecrop {
     getRecords(doctype: Doctype): Promise<void>;
     getRecordState(doctype: string | Doctype, recordId: string): string;
     getStore(): HSTNode;
-    initializeNestedData(path: string, doctype: Doctype, _options?: {
-        includeNested?: boolean | string[];
-    }): void;
+    initializeNestedData(path: string, doctype: Doctype): void;
     isWorkflowReady(doctype: Doctype, recordId: string): {
         ready: boolean;
         blockedLinks?: string[];

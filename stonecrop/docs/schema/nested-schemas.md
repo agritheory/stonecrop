@@ -131,9 +131,7 @@ const resolvedSchema = registry.resolveSchema(customerDoctype)
 For new records, scaffold empty nested data:
 
 ```typescript
-stonecrop.initializeNestedData('customer.new', customerDoctype, {
-  includeNested: true,
-})
+stonecrop.initializeNestedData('customer.new', customerDoctype)
 // Sets each field at its own HST path: customer.new.customer_name, customer.new.email, etc.
 ```
 
@@ -327,7 +325,7 @@ const { formData, resolvedSchema, initializeNestedData } = useStonecrop({
 // Scaffold nested data for new records
 // initializeNestedData uses resolveSchema internally, so it works even before resolvedSchema is populated
 if (formData.value && !formData.value.address) {
-  initializeNestedData('customer.new', customerDoctype, { includeNested: true })
+  initializeNestedData('customer.new', customerDoctype)
 }
 </script>
 

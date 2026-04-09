@@ -1044,9 +1044,7 @@ export type HSTStonecropReturn = BaseStonecropReturn & {
     hstStore: Ref<HSTNode | undefined>;
     formData: Ref<Record<string, any>>;
     resolvedSchema: Ref<SchemaTypes[]>;
-    initializeNestedData: (path: string, doctype: Doctype, options?: {
-        includeNested?: boolean | string[];
-    }) => void;
+    initializeNestedData: (path: string, doctype: Doctype) => void;
     fetchNestedData: (path: string, doctype: Doctype, recordId: string, options?: {
         includeNested?: boolean | string[];
     }) => Promise<void>;
@@ -1607,6 +1605,16 @@ resolveSchema(doctype: Doctype, visited: Set<string>): SchemaTypes[]
 | doctype | `Doctype` | The doctype to resolve |
 | visited | `Set<string>` | Internal — set of already-visited doctype slugs for cycle detection |
 
+#### toMetaMap
+
+Convert the registry to a Map of DoctypeMeta objects for use with StonecropClient.
+
+This allows passing a Registry instance to StonecropClient by deriving the Mapstring, DoctypeMeta that StonecropClient needs for building nested GraphQL queries.
+
+```typescript
+toMetaMap(): Map<string, DoctypeMeta>
+```
+
 ### SchemaValidator
 
 Schema validator class
@@ -1864,21 +1872,18 @@ getStore(): HSTNode
 
 Scaffold empty descendant records from defaults for all descendant links.
 
-Used when opening a new form — no server data, just scaffolded empty rows. Does not require a data client.
+Initializes all scalar and link fields at their HST paths with default values. For new records, call this after setting up the doctype to ensure all paths exist.
 
 ```typescript
-initializeNestedData(path: string, doctype: Doctype, _options: {
-        includeNested?: boolean | string[];
-    }): void
+initializeNestedData(path: string, doctype: Doctype): void
 ```
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| path | `string` | HST path where the initialized data should be stored |
+| path | `string` | HST path (e.g., "customer.new") |
 | doctype | `Doctype` | The doctype to initialize |
-| _options | `{ includeNested?: boolean \| string[]; }` |  |
 
 #### isWorkflowReady
 

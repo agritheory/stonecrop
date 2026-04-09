@@ -533,15 +533,14 @@ export class Stonecrop {
 	/**
 	 * Scaffold empty descendant records from defaults for all descendant links.
 	 *
-	 * Used when opening a new form — no server data, just scaffolded empty rows.
-	 * Does not require a data client.
+	 * Initializes all scalar and link fields at their HST paths with default values.
+	 * For new records, call this after setting up the doctype to ensure all paths exist.
 	 *
-	 * @param path - HST path where the initialized data should be stored
+	 * @param path - HST path (e.g., "customer.new")
 	 * @param doctype - The doctype to initialize
-	 * @param options - Options (includeNested to limit which links are scaffolded)
 	 * @public
 	 */
-	initializeNestedData(path: string, doctype: Doctype, _options?: { includeNested?: boolean | string[] }): void {
+	initializeNestedData(path: string, doctype: Doctype): void {
 		const slug = doctype.slug
 		this.ensureDoctypeExists(slug)
 

@@ -182,9 +182,8 @@ export type HSTStonecropReturn = BaseStonecropReturn & {
 	 * Scaffold empty descendant records from defaults for all descendant links.
 	 * @param path - The HST path where initialized data should be stored
 	 * @param doctype - The doctype to initialize
-	 * @param options - Options (includeNested to limit which links are scaffolded)
 	 */
-	initializeNestedData: (path: string, doctype: Doctype, options?: { includeNested?: boolean | string[] }) => void
+	initializeNestedData: (path: string, doctype: Doctype) => void
 
 	/**
 	 * Fetch a record and its nested data from the server.
