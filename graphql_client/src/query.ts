@@ -1,6 +1,18 @@
-import type { DoctypeMeta, GetRecordOptions, GetRecordsOptions, LinkDeclaration } from '@stonecrop/schema'
+import type {
+	DoctypeMeta,
+	GetRecordOptions,
+	GetRecordsOptions,
+	LazyFetch,
+	LinkDeclaration,
+	SyncFetch,
+} from '@stonecrop/schema'
 import { toPascalCase } from '@stonecrop/schema'
 import pluralize from 'pluralize'
+
+/**
+ * Default sync limit for many-cardinality links
+ */
+const DEFAULT_SYNC_LIMIT = 50
 
 /**
  * Field types that are not scalar queryable fields.
@@ -139,8 +151,31 @@ function buildNestedSelections(
 	const selections: string[] = []
 
 	for (const [fieldname, link] of Object.entries(links)) {
-		if (includeSet && !includeSet.has(fieldname)) continue
 		if (maxDepth !== undefined && depth >= maxDepth) break
+
+		// Check blockWorkflows first - if true, it overrides the includeSet filter
+		const effectiveBlockWorkflows = getEffectiveBlockWorkflows(link)
+		const linkBlockWorkflowsExplicitTrue = link.blockWorkflows === true
+
+		// Check includeSet filter - but blockWorkflows: true bypasses this filter
+		if (includeSet && !includeSet.has(fieldname) && !linkBlockWorkflowsExplicitTrue) {
+			continue
+		}
+
+		// Check fetch strategy - skip if not sync (unless blockWorkflows overrides)
+		const effectiveFetch = getEffectiveFetchStrategy(link)
+		const shouldSkip =
+			effectiveBlockWorkflows === false || (effectiveFetch.method !== 'sync' && !linkBlockWorkflowsExplicitTrue)
+		if (shouldSkip) {
+			continue
+		}
+
+		// TODO: When blockWorkflows is true with custom fetch, this currently forces the link into
+		// GraphQL queries, bypassing the custom handler. This is a workaround — custom handlers
+		// should be able to satisfy blockWorkflows on their own schedule. Future enhancement:
+		// - Option: Add SchemaValidator error for custom + blockWorkflows (blocking is impossible)
+		// - Option: Track pending custom fetches and only unblock when all custom handlers complete
+		// See: relationships.md Phase 6 "Open Question: blockWorkflows + custom fetch"
 
 		const targetMeta = registry.get(link.target)
 		if (!targetMeta) continue
@@ -174,8 +209,14 @@ function buildNestedSelections(
 
 		if (isManyCardinality(link.cardinality)) {
 			const connectionField = getConnectionFieldName(targetMeta, parentTableName)
+			const limitArg =
+				effectiveFetch.method === 'sync' && effectiveFetch.limit !== undefined
+					? `first: ${effectiveFetch.limit}`
+					: effectiveFetch.method === 'sync'
+					? `first: ${DEFAULT_SYNC_LIMIT}`
+					: ''
 			selections.push(`
-			${connectionField} {
+			${connectionField}${limitArg ? `(${limitArg})` : ''} {
 				nodes {
 					${fullSelection}
 				}
@@ -189,6 +230,42 @@ function buildNestedSelections(
 	}
 
 	return selections.join('')
+}
+
+/**
+ * Get the effective fetch strategy for a link, applying cardinality-based defaults.
+ *
+ * - `fetch` explicitly set → use it
+ * - `fetch` absent → apply defaults:
+ *   - `noneOrMany`/`atLeastOne` → `{ method: 'sync', limit: 50 }`
+ *   - `one`/`atMostOne` → `{ method: 'lazy' }`
+ *
+ * @internal
+ */
+function getEffectiveFetchStrategy(link: LinkDeclaration): SyncFetch | LazyFetch {
+	if (link.fetch !== undefined) {
+		return link.fetch as SyncFetch | LazyFetch
+	}
+
+	// Apply cardinality-based defaults
+	if (isManyCardinality(link.cardinality)) {
+		return { method: 'sync', limit: DEFAULT_SYNC_LIMIT }
+	} else {
+		return { method: 'lazy' }
+	}
+}
+
+/**
+ * Get the effective blockWorkflows value for a link.
+ * Returns true if blockWorkflows is explicitly true, or if it's absent and fetch method is 'sync'.
+ * @internal
+ */
+function getEffectiveBlockWorkflows(link: LinkDeclaration): boolean {
+	if (link.blockWorkflows !== undefined) {
+		return link.blockWorkflows
+	}
+	const effectiveFetch = getEffectiveFetchStrategy(link)
+	return effectiveFetch.method === 'sync'
 }
 
 /**

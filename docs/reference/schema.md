@@ -21,10 +21,22 @@ export { ActionDefinition }
 export { Cardinality }
 ```
 
+### CustomFetch
+
+```typescript
+export { CustomFetch }
+```
+
 ### DoctypeMeta
 
 ```typescript
 export { DoctypeMeta }
+```
+
+### FetchStrategy
+
+```typescript
+export { FetchStrategy }
 ```
 
 ### FieldMeta
@@ -57,6 +69,12 @@ export { GQL_SCALAR_MAP }
 export { INTERNAL_SCALARS }
 ```
 
+### LazyFetch
+
+```typescript
+export { LazyFetch }
+```
+
 ### LinkDeclaration
 
 ```typescript
@@ -67,6 +85,12 @@ export { LinkDeclaration }
 
 ```typescript
 export { StonecropFieldType }
+```
+
+### SyncFetch
+
+```typescript
+export { SyncFetch }
 ```
 
 ### TYPE_MAP
@@ -637,6 +661,16 @@ Cardinality type inferred from Zod schema
 export type Cardinality = z.infer<typeof Cardinality>;
 ```
 
+### CustomFetch
+
+Custom fetch strategy type
+
+**Definition:**
+
+```typescript
+export type CustomFetch = z.infer<typeof CustomFetch>;
+```
+
 ### DoctypeMeta
 
 Doctype metadata type inferred from Zod schema
@@ -645,6 +679,16 @@ Doctype metadata type inferred from Zod schema
 
 ```typescript
 export type DoctypeMeta = z.infer<typeof DoctypeMeta>;
+```
+
+### FetchStrategy
+
+Fetch strategy type
+
+**Definition:**
+
+```typescript
+export type FetchStrategy = z.infer<typeof FetchStrategy>;
 ```
 
 ### FieldMeta
@@ -691,6 +735,16 @@ Note: URL fetching is intentionally not supported in the library API. Use the CL
 export type IntrospectionSource = IntrospectionQuery | string;
 ```
 
+### LazyFetch
+
+Lazy fetch strategy type
+
+**Definition:**
+
+```typescript
+export type LazyFetch = z.infer<typeof LazyFetch>;
+```
+
 ### LinkDeclaration
 
 Link declaration type inferred from Zod schema
@@ -701,6 +755,16 @@ Link declaration type inferred from Zod schema
 export type LinkDeclaration = z.infer<typeof LinkDeclaration>;
 ```
 
+### SerializedFunction
+
+Serialized function type - a function serialized to a string. Used for custom fetch handlers.
+
+**Definition:**
+
+```typescript
+export type SerializedFunction = string;
+```
+
 ### StonecropFieldType
 
 Stonecrop field type enum inferred from Zod schema
@@ -709,6 +773,16 @@ Stonecrop field type enum inferred from Zod schema
 
 ```typescript
 export type StonecropFieldType = z.infer<typeof StonecropFieldType>;
+```
+
+### SyncFetch
+
+Sync fetch strategy type
+
+**Definition:**
+
+```typescript
+export type SyncFetch = z.infer<typeof SyncFetch>;
 ```
 
 ### WorkflowMeta

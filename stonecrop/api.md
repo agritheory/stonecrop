@@ -159,6 +159,28 @@ export declare function triggerTransition(doctype: string, transition: string, o
 | transition | `string` | The XState transition name to trigger |
 | options | `{ recordId?: string; currentState?: string; targetState?: string; fsmContext?: Record<string, any>; path?: string; }` | Optional configuration for the transition |
 
+### useLazyLink
+
+Get the lazy link state for a specific link field on a doctype record.
+
+This composable provides reactive state for lazy-loaded links: - `loading`: true while fetching - `loaded`: true after successful fetch (permanent until reload) - `error`: error state if any - `reload()`: explicitly trigger a fetch - `data`: computed from HST, or undefined if not loaded
+
+The reload() function respects the link's fetch strategy: - `sync`: fetches via GraphQL query through fetchNestedData - `lazy`: fetches via GraphQL query through fetchNestedData - `custom`: invokes the serialized handler function directly
+
+**Signature:**
+
+```typescript
+export declare function useLazyLink(doctype: Doctype, recordId: string, linkFieldname: string): LazyLink;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `Doctype` | The doctype instance |
+| recordId | `string` | The record ID |
+| linkFieldname | `string` | The link fieldname to load |
+
 ### useOperationLog
 
 Composable for operation log management Provides easy access to undo/redo functionality and operation history
@@ -189,8 +211,8 @@ export declare function useOperationLog(config?: Partial<OperationLogConfig>): {
         actionError?: string | undefined;
         userId?: string | undefined;
         metadata?: Record<string, any> | undefined;
-        parentOperationId?: string | undefined;
-        childOperationIds?: string[] | undefined;
+        ancestorOperationId?: string | undefined;
+        descendantOperationIds?: string[] | undefined;
     }[], import("..").HSTOperation[] | {
         id: string;
         type: import("..").HSTOperationType;
@@ -213,8 +235,8 @@ export declare function useOperationLog(config?: Partial<OperationLogConfig>): {
         actionError?: string | undefined;
         userId?: string | undefined;
         metadata?: Record<string, any> | undefined;
-        parentOperationId?: string | undefined;
-        childOperationIds?: string[] | undefined;
+        ancestorOperationId?: string | undefined;
+        descendantOperationIds?: string[] | undefined;
     }[]>;
     currentIndex: import("vue").Ref<number, number>;
     undoRedoState: import("vue").ComputedRef<import("..").UndoRedoState>;
@@ -549,10 +571,10 @@ Core HST Interface - enhanced with tree navigation Provides a hierarchical state
 ```typescript
 export interface HSTNode {
   get(path: string): any;
+  getAncestor(): HSTNode | null;
   getBreadcrumbs(): string[];
   getDepth(): number;
   getNode(path: string): HSTNode;
-  getParent(): HSTNode | null;
   getPath(): string;
   getRoot(): HSTNode;
   has(path: string): boolean;
@@ -578,15 +600,15 @@ export interface HSTOperation {
   actionRecordIds?: string[];
   actionResult?: 'success' | 'failure' | 'pending';
   afterValue: any;
+  ancestorOperationId?: string;
   beforeValue: any;
-  childOperationIds?: string[];
   currentState?: string;
+  descendantOperationIds?: string[];
   doctype: string;
   fieldname: string;
   id: string;
   irreversibleReason?: string;
   metadata?: Record<string, any>;
-  parentOperationId?: string;
   path: string;
   recordId?: string;
   reversible: boolean;
@@ -608,15 +630,15 @@ export interface HSTOperation {
 | actionRecordIds? | `string[]` | Record IDs that the action was executed on |
 | actionResult? | `'success' \| 'failure' \| 'pending'` | Result or status of the action execution |
 | afterValue | `any` | Value after the operation |
+| ancestorOperationId? | `string` | Ancestor operation ID for batch operations |
 | beforeValue | `any` | Value before the operation |
-| childOperationIds? | `string[]` | Child operation IDs for batch operations |
 | currentState? | `string` | XState current state before transition |
+| descendantOperationIds? | `string[]` | Descendant operation IDs for batch operations |
 | doctype | `string` | Doctype this operation affects |
 | fieldname | `string` | Field name extracted from path |
 | id | `string` | Unique operation identifier |
 | irreversibleReason? | `string` | Reason if operation is irreversible |
 | metadata? | `Record<string, any>` | Additional metadata for custom use cases |
-| parentOperationId? | `string` | Parent operation ID for batch operations |
 | path | `string` | Full HST path affected (e.g., "task.123.title") |
 | recordId? | `string` | Record ID if applicable |
 | reversible | `boolean` | Whether this operation can be undone |
@@ -1024,13 +1046,15 @@ export type HSTStonecropReturn = BaseStonecropReturn & {
         includeNested?: boolean | string[];
     }) => Promise<void>;
     collectRecordPayload: (doctype: Doctype, recordId: string) => Record<string, any>;
-    createNestedContext: (basePath: string, childDoctype: Doctype) => {
+    createNestedContext: (basePath: string, descendantDoctype: Doctype) => {
         provideHSTPath: (fieldname: string) => string;
         handleHSTChange: (changeData: HSTChangeData) => void;
     };
     isLoading: Ref<boolean>;
     error: Ref<Error | null>;
     resolvedDoctype: Ref<Doctype | undefined>;
+    isWorkflowReady: ComputedRef<boolean>;
+    blockedLinks: ComputedRef<string[]>;
 };
 ```
 
@@ -1063,6 +1087,22 @@ export type InstallOptions = {
     client?: DataClient;
     autoInitializeRouter?: boolean;
     onRouterInitialized?: (registry: Registry, stonecrop: Stonecrop) => void | Promise<void>;
+};
+```
+
+### LazyLink
+
+Lazy link state for a single link field. Provides reactive state and reload capability for lazy-loaded links.
+
+**Definition:**
+
+```typescript
+export type LazyLink = {
+    loading: Ref<boolean>;
+    loaded: Ref<boolean>;
+    error: Ref<Error | null>;
+    reload: () => Promise<void>;
+    data: ComputedRef<any>;
 };
 ```
 
@@ -1693,7 +1733,7 @@ dispatchAction(doctype: Doctype, action: string, args: unknown[]): Promise<{
 
 Fetch a record and its nested data from the server.
 
-Calls `_client.getRecord()` with nested sub-selections and stores each scalar field at its own HST path (`slug.recordId.fieldname`), children at the link-level path (`slug.recordId.linkname`).
+Calls `_client.getRecord()` with nested sub-selections and stores each scalar field at its own HST path (`slug.recordId.fieldname`), descendants at the link-level path (`slug.recordId.linkname`).
 
 ```typescript
 fetchNestedData(path: string, doctype: Doctype, recordId: string, options: {
@@ -1817,7 +1857,7 @@ getStore(): HSTNode
 
 #### initializeNestedData
 
-Scaffold empty child records from defaults for all descendant links.
+Scaffold empty descendant records from defaults for all descendant links.
 
 Used when opening a new form — no server data, just scaffolded empty rows. Does not require a data client.
 
@@ -1834,6 +1874,24 @@ initializeNestedData(path: string, doctype: Doctype, _options: {
 | path | `string` | HST path where the initialized data should be stored |
 | doctype | `Doctype` | The doctype to initialize |
 | _options | `{ includeNested?: boolean \| string[]; }` |  |
+
+#### isWorkflowReady
+
+Check if workflow actions are ready to run (all required link data is loaded). A link's data is considered loaded if it exists in HST at `slug.recordId.linkname`.
+
+```typescript
+isWorkflowReady(doctype: Doctype, recordId: string): {
+        ready: boolean;
+        blockedLinks?: string[];
+    }
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `Doctype` | The doctype to check |
+| recordId | `string` | The record ID |
 
 #### records
 
@@ -1950,8 +2008,8 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
         actionError?: string | undefined;
         userId?: string | undefined;
         metadata?: Record<string, any> | undefined;
-        parentOperationId?: string | undefined;
-        childOperationIds?: string[] | undefined;
+        ancestorOperationId?: string | undefined;
+        descendantOperationIds?: string[] | undefined;
     }[], HSTOperation[] | {
         id: string;
         type: import("..").HSTOperationType;
@@ -1974,8 +2032,8 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
         actionError?: string | undefined;
         userId?: string | undefined;
         metadata?: Record<string, any> | undefined;
-        parentOperationId?: string | undefined;
-        childOperationIds?: string[] | undefined;
+        ancestorOperationId?: string | undefined;
+        descendantOperationIds?: string[] | undefined;
     }[]>;
     currentIndex: import("vue").Ref<number, number>;
     config: import("vue").Ref<{
@@ -2036,8 +2094,8 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
         actionError?: string | undefined;
         userId?: string | undefined;
         metadata?: Record<string, any> | undefined;
-        parentOperationId?: string | undefined;
-        childOperationIds?: string[] | undefined;
+        ancestorOperationId?: string | undefined;
+        descendantOperationIds?: string[] | undefined;
     }[], HSTOperation[] | {
         id: string;
         type: import("..").HSTOperationType;
@@ -2060,8 +2118,8 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
         actionError?: string | undefined;
         userId?: string | undefined;
         metadata?: Record<string, any> | undefined;
-        parentOperationId?: string | undefined;
-        childOperationIds?: string[] | undefined;
+        ancestorOperationId?: string | undefined;
+        descendantOperationIds?: string[] | undefined;
     }[]>;
     currentIndex: import("vue").Ref<number, number>;
     config: import("vue").Ref<{
@@ -2122,8 +2180,8 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
         actionError?: string | undefined;
         userId?: string | undefined;
         metadata?: Record<string, any> | undefined;
-        parentOperationId?: string | undefined;
-        childOperationIds?: string[] | undefined;
+        ancestorOperationId?: string | undefined;
+        descendantOperationIds?: string[] | undefined;
     }[], HSTOperation[] | {
         id: string;
         type: import("..").HSTOperationType;
@@ -2146,8 +2204,8 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
         actionError?: string | undefined;
         userId?: string | undefined;
         metadata?: Record<string, any> | undefined;
-        parentOperationId?: string | undefined;
-        childOperationIds?: string[] | undefined;
+        ancestorOperationId?: string | undefined;
+        descendantOperationIds?: string[] | undefined;
     }[]>;
     currentIndex: import("vue").Ref<number, number>;
     config: import("vue").Ref<{

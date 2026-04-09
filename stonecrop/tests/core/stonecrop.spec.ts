@@ -125,7 +125,7 @@ describe('Stonecrop class with HST integration', () => {
 
 			expect(records.getPath).toBeDefined()
 			expect(records.getPath()).toBe('task')
-			expect(records.getParent).toBeDefined()
+			expect(records.getAncestor).toBeDefined()
 		})
 
 		it('returns records hash using Doctype object', () => {
@@ -146,7 +146,7 @@ describe('Stonecrop class with HST integration', () => {
 
 			// Should have tree navigation capabilities
 			expect(record!.getPath).toBeDefined()
-			expect(record!.getParent).toBeDefined()
+			expect(record!.getAncestor).toBeDefined()
 		})
 
 		it('adds record using Doctype object', () => {
@@ -572,8 +572,8 @@ describe('Stonecrop class with HST integration', () => {
 			const record = stonecrop.getRecordById('task', '123')
 
 			if (record) {
-				const doctypeSection = record.getParent()
-				const rootStore = doctypeSection?.getParent()
+				const doctypeSection = record.getAncestor()
+				const rootStore = doctypeSection?.getAncestor()
 
 				expect(doctypeSection?.getPath()).toBe('task')
 				expect(rootStore?.getPath()).toBe('')
@@ -604,7 +604,7 @@ describe('Stonecrop class with HST integration', () => {
 			const assignee = record.getNode('details.assignee')
 
 			expect(assignee.get('name')).toBe('John Doe')
-			expect(assignee.getParent()!.getPath()).toContain('details')
+			expect(assignee.getAncestor()!.getPath()).toContain('details')
 		})
 	})
 

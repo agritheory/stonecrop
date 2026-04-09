@@ -55,6 +55,15 @@ export interface ConvertedGraphQLDoctype extends Omit<DoctypeMeta, 'fields'> {
 export function convertGraphQLSchema(source: IntrospectionSource, options?: GraphQLConversionOptions): ConvertedGraphQLDoctype[];
 
 // @public
+export const CustomFetch: z.ZodObject<{
+    method: z.ZodLiteral<"custom">;
+    handler: z.ZodString;
+}, z.core.$strip>;
+
+// @public
+export type CustomFetch = z.infer<typeof CustomFetch>;
+
+// @public
 export interface DataClient<T extends DoctypeRef = DoctypeRef, M = DoctypeMeta> {
     getMeta(context: DoctypeContext): Promise<M | null>;
     getRecord(doctype: T, recordId: string, options?: GetRecordOptions): Promise<Record<string, unknown> | null>;
@@ -145,6 +154,16 @@ export const DoctypeMeta: z.ZodObject<{
         backlink: z.ZodOptional<z.ZodString>;
         component: z.ZodOptional<z.ZodString>;
         fieldname: z.ZodOptional<z.ZodString>;
+        fetch: z.ZodOptional<z.ZodDiscriminatedUnion<[z.ZodObject<{
+            method: z.ZodLiteral<"sync">;
+            limit: z.ZodOptional<z.ZodNumber>;
+        }, z.core.$strip>, z.ZodObject<{
+            method: z.ZodLiteral<"lazy">;
+        }, z.core.$strip>, z.ZodObject<{
+            method: z.ZodLiteral<"custom">;
+            handler: z.ZodString;
+        }, z.core.$strip>], "method">>;
+        blockWorkflows: z.ZodOptional<z.ZodBoolean>;
     }, z.core.$strip>>>;
     workflow: z.ZodOptional<z.ZodObject<{
         states: z.ZodOptional<z.ZodArray<z.ZodString>>;
@@ -168,6 +187,20 @@ export interface DoctypeRef {
     name: string;
     slug?: string;
 }
+
+// @public
+export const FetchStrategy: z.ZodDiscriminatedUnion<[z.ZodObject<{
+    method: z.ZodLiteral<"sync">;
+    limit: z.ZodOptional<z.ZodNumber>;
+}, z.core.$strip>, z.ZodObject<{
+    method: z.ZodLiteral<"lazy">;
+}, z.core.$strip>, z.ZodObject<{
+    method: z.ZodLiteral<"custom">;
+    handler: z.ZodString;
+}, z.core.$strip>], "method">;
+
+// @public
+export type FetchStrategy = z.infer<typeof FetchStrategy>;
 
 // @public
 export const FieldMeta: z.ZodObject<{
@@ -291,6 +324,14 @@ export const INTERNAL_SCALARS: Set<string>;
 export type IntrospectionSource = IntrospectionQuery | string;
 
 // @public
+export const LazyFetch: z.ZodObject<{
+    method: z.ZodLiteral<"lazy">;
+}, z.core.$strip>;
+
+// @public
+export type LazyFetch = z.infer<typeof LazyFetch>;
+
+// @public
 export const LinkDeclaration: z.ZodObject<{
     target: z.ZodString;
     cardinality: z.ZodEnum<{
@@ -302,6 +343,16 @@ export const LinkDeclaration: z.ZodObject<{
     backlink: z.ZodOptional<z.ZodString>;
     component: z.ZodOptional<z.ZodString>;
     fieldname: z.ZodOptional<z.ZodString>;
+    fetch: z.ZodOptional<z.ZodDiscriminatedUnion<[z.ZodObject<{
+        method: z.ZodLiteral<"sync">;
+        limit: z.ZodOptional<z.ZodNumber>;
+    }, z.core.$strip>, z.ZodObject<{
+        method: z.ZodLiteral<"lazy">;
+    }, z.core.$strip>, z.ZodObject<{
+        method: z.ZodLiteral<"custom">;
+        handler: z.ZodString;
+    }, z.core.$strip>], "method">>;
+    blockWorkflows: z.ZodOptional<z.ZodBoolean>;
 }, z.core.$strip>;
 
 // @public
@@ -315,6 +366,9 @@ export function parseField(data: unknown): FieldMeta;
 
 // @public
 export function pascalToSnake(pascal: string): string;
+
+// @public
+export type SerializedFunction = string;
 
 // @public
 export function snakeToCamel(snakeCase: string): string;
@@ -346,6 +400,15 @@ export const StonecropFieldType: z.ZodEnum<{
 
 // @public
 export type StonecropFieldType = z.infer<typeof StonecropFieldType>;
+
+// @public
+export const SyncFetch: z.ZodObject<{
+    method: z.ZodLiteral<"sync">;
+    limit: z.ZodOptional<z.ZodNumber>;
+}, z.core.$strip>;
+
+// @public
+export type SyncFetch = z.infer<typeof SyncFetch>;
 
 // @public
 export function toPascalCase(tableName: string): string;

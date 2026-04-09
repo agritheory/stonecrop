@@ -206,10 +206,10 @@ export type HSTChangeData = {
 // @public
 export interface HSTNode {
     get(path: string): any;
+    getAncestor(): HSTNode | null;
     getBreadcrumbs(): string[];
     getDepth(): number;
     getNode(path: string): HSTNode;
-    getParent(): HSTNode | null;
     getPath(): string;
     getRoot(): HSTNode;
     has(path: string): boolean;
@@ -228,15 +228,15 @@ export interface HSTOperation {
     actionRecordIds?: string[];
     actionResult?: 'success' | 'failure' | 'pending';
     afterValue: any;
+    ancestorOperationId?: string;
     beforeValue: any;
-    childOperationIds?: string[];
     currentState?: string;
+    descendantOperationIds?: string[];
     doctype: string;
     fieldname: string;
     id: string;
     irreversibleReason?: string;
     metadata?: Record<string, any>;
-    parentOperationId?: string;
     path: string;
     recordId?: string;
     reversible: boolean;
@@ -270,13 +270,15 @@ export type HSTStonecropReturn = BaseStonecropReturn & {
         includeNested?: boolean | string[];
     }) => Promise<void>;
     collectRecordPayload: (doctype: Doctype, recordId: string) => Record<string, any>;
-    createNestedContext: (basePath: string, childDoctype: Doctype) => {
+    createNestedContext: (basePath: string, descendantDoctype: Doctype) => {
         provideHSTPath: (fieldname: string) => string;
         handleHSTChange: (changeData: HSTChangeData) => void;
     };
     isLoading: Ref<boolean>;
     error: Ref<Error | null>;
     resolvedDoctype: Ref<Doctype | undefined>;
+    isWorkflowReady: ComputedRef<boolean>;
+    blockedLinks: ComputedRef<string[]>;
 };
 
 // @public
@@ -295,6 +297,15 @@ export type InstallOptions = {
     client?: DataClient;
     autoInitializeRouter?: boolean;
     onRouterInitialized?: (registry: Registry, stonecrop: Stonecrop) => void | Promise<void>;
+};
+
+// @public
+export type LazyLink = {
+    loading: Ref<boolean>;
+    loaded: Ref<boolean>;
+    error: Ref<Error | null>;
+    reload: () => Promise<void>;
+    data: ComputedRef<any>;
 };
 
 // @public
@@ -459,8 +470,8 @@ export class Stonecrop {
     actionError?: string | undefined;
     userId?: string | undefined;
     metadata?: Record<string, any> | undefined;
-    parentOperationId?: string | undefined;
-    childOperationIds?: string[] | undefined;
+    ancestorOperationId?: string | undefined;
+    descendantOperationIds?: string[] | undefined;
     }[], HSTOperation[] | {
     id: string;
     type: HSTOperationType;
@@ -483,8 +494,8 @@ export class Stonecrop {
     actionError?: string | undefined;
     userId?: string | undefined;
     metadata?: Record<string, any> | undefined;
-    parentOperationId?: string | undefined;
-    childOperationIds?: string[] | undefined;
+    ancestorOperationId?: string | undefined;
+    descendantOperationIds?: string[] | undefined;
     }[]>;
     currentIndex: Ref<number, number>;
     config: Ref<    {
@@ -545,8 +556,8 @@ export class Stonecrop {
     actionError?: string | undefined;
     userId?: string | undefined;
     metadata?: Record<string, any> | undefined;
-    parentOperationId?: string | undefined;
-    childOperationIds?: string[] | undefined;
+    ancestorOperationId?: string | undefined;
+    descendantOperationIds?: string[] | undefined;
     }[], HSTOperation[] | {
     id: string;
     type: HSTOperationType;
@@ -569,8 +580,8 @@ export class Stonecrop {
     actionError?: string | undefined;
     userId?: string | undefined;
     metadata?: Record<string, any> | undefined;
-    parentOperationId?: string | undefined;
-    childOperationIds?: string[] | undefined;
+    ancestorOperationId?: string | undefined;
+    descendantOperationIds?: string[] | undefined;
     }[]>;
     currentIndex: Ref<number, number>;
     config: Ref<    {
@@ -631,8 +642,8 @@ export class Stonecrop {
     actionError?: string | undefined;
     userId?: string | undefined;
     metadata?: Record<string, any> | undefined;
-    parentOperationId?: string | undefined;
-    childOperationIds?: string[] | undefined;
+    ancestorOperationId?: string | undefined;
+    descendantOperationIds?: string[] | undefined;
     }[], HSTOperation[] | {
     id: string;
     type: HSTOperationType;
@@ -655,8 +666,8 @@ export class Stonecrop {
     actionError?: string | undefined;
     userId?: string | undefined;
     metadata?: Record<string, any> | undefined;
-    parentOperationId?: string | undefined;
-    childOperationIds?: string[] | undefined;
+    ancestorOperationId?: string | undefined;
+    descendantOperationIds?: string[] | undefined;
     }[]>;
     currentIndex: Ref<number, number>;
     config: Ref<    {
@@ -704,6 +715,10 @@ export class Stonecrop {
     initializeNestedData(path: string, doctype: Doctype, _options?: {
         includeNested?: boolean | string[];
     }): void;
+    isWorkflowReady(doctype: Doctype, recordId: string): {
+        ready: boolean;
+        blockedLinks?: string[];
+    };
     records(doctype: string | Doctype): HSTNode;
     readonly registry: Registry;
     removeRecord(doctype: string | Doctype, recordId: string): void;
@@ -761,6 +776,9 @@ export interface UndoRedoState {
 }
 
 // @public
+export function useLazyLink(doctype: Doctype, recordId: string, linkFieldname: string): LazyLink;
+
+// @public
 export function useOperationLog(config?: Partial<OperationLogConfig>): {
     operations: Ref<    {
     id: string;
@@ -784,8 +802,8 @@ export function useOperationLog(config?: Partial<OperationLogConfig>): {
     actionError?: string | undefined;
     userId?: string | undefined;
     metadata?: Record<string, any> | undefined;
-    parentOperationId?: string | undefined;
-    childOperationIds?: string[] | undefined;
+    ancestorOperationId?: string | undefined;
+    descendantOperationIds?: string[] | undefined;
     }[], HSTOperation[] | {
     id: string;
     type: HSTOperationType;
@@ -808,8 +826,8 @@ export function useOperationLog(config?: Partial<OperationLogConfig>): {
     actionError?: string | undefined;
     userId?: string | undefined;
     metadata?: Record<string, any> | undefined;
-    parentOperationId?: string | undefined;
-    childOperationIds?: string[] | undefined;
+    ancestorOperationId?: string | undefined;
+    descendantOperationIds?: string[] | undefined;
     }[]>;
     currentIndex: Ref<number, number>;
     undoRedoState: ComputedRef<UndoRedoState>;
@@ -854,8 +872,8 @@ actionResult?: "success" | "failure" | "pending" | undefined;
 actionError?: string | undefined;
 userId?: string | undefined;
 metadata?: Record<string, any> | undefined;
-parentOperationId?: string | undefined;
-childOperationIds?: string[] | undefined;
+ancestorOperationId?: string | undefined;
+descendantOperationIds?: string[] | undefined;
 }[], HSTOperation[] | {
 id: string;
 type: HSTOperationType;
@@ -878,8 +896,8 @@ actionResult?: "success" | "failure" | "pending" | undefined;
 actionError?: string | undefined;
 userId?: string | undefined;
 metadata?: Record<string, any> | undefined;
-parentOperationId?: string | undefined;
-childOperationIds?: string[] | undefined;
+ancestorOperationId?: string | undefined;
+descendantOperationIds?: string[] | undefined;
 }[]>;
 currentIndex: Ref<number, number>;
 config: Ref<    {
@@ -940,8 +958,8 @@ actionResult?: "success" | "failure" | "pending" | undefined;
 actionError?: string | undefined;
 userId?: string | undefined;
 metadata?: Record<string, any> | undefined;
-parentOperationId?: string | undefined;
-childOperationIds?: string[] | undefined;
+ancestorOperationId?: string | undefined;
+descendantOperationIds?: string[] | undefined;
 }[], HSTOperation[] | {
 id: string;
 type: HSTOperationType;
@@ -964,8 +982,8 @@ actionResult?: "success" | "failure" | "pending" | undefined;
 actionError?: string | undefined;
 userId?: string | undefined;
 metadata?: Record<string, any> | undefined;
-parentOperationId?: string | undefined;
-childOperationIds?: string[] | undefined;
+ancestorOperationId?: string | undefined;
+descendantOperationIds?: string[] | undefined;
 }[]>;
 currentIndex: Ref<number, number>;
 config: Ref<    {
@@ -1026,8 +1044,8 @@ actionResult?: "success" | "failure" | "pending" | undefined;
 actionError?: string | undefined;
 userId?: string | undefined;
 metadata?: Record<string, any> | undefined;
-parentOperationId?: string | undefined;
-childOperationIds?: string[] | undefined;
+ancestorOperationId?: string | undefined;
+descendantOperationIds?: string[] | undefined;
 }[], HSTOperation[] | {
 id: string;
 type: HSTOperationType;
@@ -1050,8 +1068,8 @@ actionResult?: "success" | "failure" | "pending" | undefined;
 actionError?: string | undefined;
 userId?: string | undefined;
 metadata?: Record<string, any> | undefined;
-parentOperationId?: string | undefined;
-childOperationIds?: string[] | undefined;
+ancestorOperationId?: string | undefined;
+descendantOperationIds?: string[] | undefined;
 }[]>;
 currentIndex: Ref<number, number>;
 config: Ref<    {

@@ -180,7 +180,7 @@ export class Stonecrop {
 			return undefined
 		}
 
-		// Use getNode to get the properly wrapped HST node with correct parent relationships
+		// Use getNode to get the properly wrapped HST node with correct ancestor relationships
 		return this.hstStore.getNode(`${slug}.${recordId}`)
 	}
 
@@ -251,6 +251,21 @@ export class Stonecrop {
 		const registry = this.registry.registry[doctype.slug]
 		const actions = registry?.actions?.get(action)
 		const recordIds = Array.isArray(args) ? args.filter((arg): arg is string => typeof arg === 'string') : undefined
+		const recordId = recordIds?.[0]
+
+		// Check if workflow is ready (all blocked links have data)
+		const workflowStatus = recordId ? this.isWorkflowReady(doctype, recordId) : { ready: true }
+		if (!workflowStatus.ready) {
+			const opLogStore = this.getOperationLogStore()
+			opLogStore.logAction(
+				doctype.doctype,
+				action,
+				recordIds,
+				'failure',
+				`BLOCKED: missing data for links: ${workflowStatus.blockedLinks?.join(', ')}`
+			)
+			throw new Error(`Workflow blocked: missing data for links: ${workflowStatus.blockedLinks?.join(', ')}`)
+		}
 
 		// Log action execution start
 		const opLogStore = this.getOperationLogStore()
@@ -272,7 +287,7 @@ export class Stonecrop {
 							afterValue: args,
 							operation: 'set',
 							doctype: doctype.doctype,
-							recordId: recordIds?.[0],
+							recordId: recordId,
 							timestamp: new Date(),
 						} as FieldChangeContext
 						void actionFn(context)
@@ -289,6 +304,54 @@ export class Stonecrop {
 			// Log the action execution to operation log
 			opLogStore.logAction(doctype.doctype, action, recordIds, actionResult, actionError)
 		}
+	}
+
+	/**
+	 * Get the effective blockWorkflows value for a link.
+	 * Returns true if blockWorkflows is explicitly true, or if it's absent and fetch method is 'sync'.
+	 * @param link - The link declaration
+	 * @returns Whether workflows should be blocked until this link is loaded
+	 */
+	private getEffectiveBlockWorkflows(link: { blockWorkflows?: boolean; fetch?: { method?: string } }): boolean {
+		if (link.blockWorkflows !== undefined) {
+			return link.blockWorkflows
+		}
+		// TODO: For custom fetch handlers, this returns false (not blocking), but the custom handler
+		// may still be invoked by useLazyLink. Future: custom handlers should be able to declare they
+		// satisfy blockWorkflows, or validation should reject custom + blockWorkflows: true.
+		// See: relationships.md Phase 6 "Open Question: blockWorkflows + custom fetch"
+		return link.fetch?.method === 'sync'
+	}
+
+	/**
+	 * Check if workflow actions are ready to run (all required link data is loaded).
+	 * A link's data is considered loaded if it exists in HST at `slug.recordId.linkname`.
+	 * @param doctype - The doctype to check
+	 * @param recordId - The record ID
+	 * @returns Object with `ready: true` if all blocked links are loaded, or `ready: false` with `blockedLinks` array
+	 */
+	isWorkflowReady(doctype: Doctype, recordId: string): { ready: boolean; blockedLinks?: string[] } {
+		// New records don't block workflows - they haven't been saved yet
+		if (recordId === 'new') {
+			return { ready: true }
+		}
+
+		const links = this.registry.getDescendantLinks(doctype.slug)
+		const blockedLinks: string[] = []
+
+		for (const link of links) {
+			if (this.getEffectiveBlockWorkflows(link)) {
+				const linkPath = `${doctype.slug}.${recordId}.${link.fieldname}`
+				if (!this.hstStore.has(linkPath)) {
+					blockedLinks.push(link.fieldname)
+				}
+			}
+		}
+
+		if (blockedLinks.length > 0) {
+			return { ready: false, blockedLinks }
+		}
+		return { ready: true }
 	}
 
 	/**
@@ -468,7 +531,7 @@ export class Stonecrop {
 	}
 
 	/**
-	 * Scaffold empty child records from defaults for all descendant links.
+	 * Scaffold empty descendant records from defaults for all descendant links.
 	 *
 	 * Used when opening a new form — no server data, just scaffolded empty rows.
 	 * Does not require a data client.
@@ -486,7 +549,7 @@ export class Stonecrop {
 		const resolvedSchema = this.registry.resolveSchema(doctype)
 		const record = this.registry.initializeRecord(resolvedSchema)
 
-		// Ensure the parent path exists in HST before setting child fields
+		// Ensure the ancestor path exists in HST before setting descendant fields
 		const existingData = this.hstStore.get(path)
 		if (!existingData) {
 			this.hstStore.set(path, {}, 'system')
@@ -502,7 +565,7 @@ export class Stonecrop {
 	 * Fetch a record and its nested data from the server.
 	 *
 	 * Calls `_client.getRecord()` with nested sub-selections and stores each scalar field at its own HST path
-	 * (`slug.recordId.fieldname`), children at the link-level path (`slug.recordId.linkname`).
+	 * (`slug.recordId.fieldname`), descendants at the link-level path (`slug.recordId.linkname`).
 	 *
 	 * @param path - HST path (e.g., "recipe.r1")
 	 * @param doctype - The doctype to fetch
@@ -534,11 +597,11 @@ export class Stonecrop {
 			throw createCodedError(`Record not found: ${doctype.doctype} ${recordId}`, 'RECORD_NOT_FOUND')
 		}
 
-		// Store each scalar field at its own HST path, children at link-level path
+		// Store each scalar field at its own HST path, descendants at link-level path
 		const slug = doctype.slug
 		this.ensureDoctypeExists(slug)
 
-		// Ensure the parent path exists in HST before setting child fields
+		// Ensure the ancestor path exists in HST before setting descendant fields
 		const existingData = this.hstStore.get(`${slug}.${recordId}`)
 		if (!existingData) {
 			this.hstStore.set(`${slug}.${recordId}`, {}, 'system')

@@ -54,6 +54,6 @@ export type DoctypeConfig = {
 	workflow?: UnknownMachineConfig | WorkflowMeta
 	/** Actions and their field triggers */
 	actions?: Record<string, string[]>
-	/** Parent doctype for inheritance */
+	/** Ancestor doctype for inheritance */
 	inherits?: string
 }

@@ -28,10 +28,10 @@ export interface HSTNode {
 	has(path: string): boolean
 
 	/**
-	 * Gets the parent node in the tree hierarchy
-	 * @returns The parent HSTNode or null if this is the root
+	 * Gets the ancestor node in the tree hierarchy (immediate predecessor)
+	 * @returns The ancestor HSTNode or null if this is the root
 	 */
-	getParent(): HSTNode | null
+	getAncestor(): HSTNode | null
 
 	/**
 	 * Gets the root node of the tree

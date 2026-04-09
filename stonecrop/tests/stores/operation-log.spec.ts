@@ -273,7 +273,7 @@ describe('Operation Log Store', () => {
 
 			const batchOp = store.operations[2]
 			expect(batchOp.type).toBe('batch')
-			expect(batchOp.childOperationIds).toHaveLength(2)
+			expect(batchOp.descendantOperationIds).toHaveLength(2)
 		})
 
 		it('should undo a batch as a single unit', () => {
@@ -804,7 +804,7 @@ describe('Operation Log Store', () => {
 						id: 'batch-1',
 						type: 'batch',
 						label: 'Batch update',
-						childOperationIds: ['op-2', 'op-3'],
+						descendantOperationIds: ['op-2', 'op-3'],
 						doctype: 'task',
 						reversible: true,
 						timestamp: new Date().toISOString(),

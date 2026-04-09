@@ -513,3 +513,162 @@ describe('LinkDeclaration Validation', () => {
 		expect(result.errors.length).toBeGreaterThan(0)
 	})
 })
+
+describe('FetchStrategy Validation', () => {
+	it('should validate sync fetch strategy', () => {
+		const doctype = {
+			name: 'Recipe',
+			fields: [{ fieldname: 'name', fieldtype: 'Data' }],
+			links: {
+				tasks: { target: 'recipe-task', cardinality: 'noneOrMany', fetch: { method: 'sync' } },
+			},
+		}
+		const result = validateDoctype(doctype)
+		expect(result.success).toBe(true)
+		expect(result.errors).toEqual([])
+	})
+
+	it('should validate sync fetch strategy with limit', () => {
+		const doctype = {
+			name: 'Recipe',
+			fields: [{ fieldname: 'name', fieldtype: 'Data' }],
+			links: {
+				tasks: { target: 'recipe-task', cardinality: 'noneOrMany', fetch: { method: 'sync', limit: 25 } },
+			},
+		}
+		const result = validateDoctype(doctype)
+		expect(result.success).toBe(true)
+		expect(result.errors).toEqual([])
+	})
+
+	it('should validate lazy fetch strategy', () => {
+		const doctype = {
+			name: 'Recipe',
+			fields: [{ fieldname: 'name', fieldtype: 'Data' }],
+			links: {
+				address: { target: 'address', cardinality: 'one', fetch: { method: 'lazy' } },
+			},
+		}
+		const result = validateDoctype(doctype)
+		expect(result.success).toBe(true)
+		expect(result.errors).toEqual([])
+	})
+
+	it('should validate custom fetch strategy', () => {
+		const doctype = {
+			name: 'Recipe',
+			fields: [{ fieldname: 'name', fieldtype: 'Data' }],
+			links: {
+				tasks: {
+					target: 'recipe-task',
+					cardinality: 'noneOrMany',
+					fetch: { method: 'custom', handler: 'function myHandler() { return true; }' },
+				},
+			},
+		}
+		const result = validateDoctype(doctype)
+		expect(result.success).toBe(true)
+		expect(result.errors).toEqual([])
+	})
+
+	it('should reject invalid fetch method', () => {
+		const doctype = {
+			name: 'Recipe',
+			fields: [{ fieldname: 'name', fieldtype: 'Data' }],
+			links: {
+				tasks: { target: 'recipe-task', cardinality: 'noneOrMany', fetch: { method: 'invalid' } },
+			},
+		}
+		const result = validateDoctype(doctype)
+		expect(result.success).toBe(false)
+		expect(result.errors.length).toBeGreaterThan(0)
+	})
+
+	it('should reject sync fetch with negative limit', () => {
+		const doctype = {
+			name: 'Recipe',
+			fields: [{ fieldname: 'name', fieldtype: 'Data' }],
+			links: {
+				tasks: { target: 'recipe-task', cardinality: 'noneOrMany', fetch: { method: 'sync', limit: -1 } },
+			},
+		}
+		const result = validateDoctype(doctype)
+		expect(result.success).toBe(false)
+		expect(result.errors.length).toBeGreaterThan(0)
+	})
+
+	it('should reject sync fetch with zero limit', () => {
+		const doctype = {
+			name: 'Recipe',
+			fields: [{ fieldname: 'name', fieldtype: 'Data' }],
+			links: {
+				tasks: { target: 'recipe-task', cardinality: 'noneOrMany', fetch: { method: 'sync', limit: 0 } },
+			},
+		}
+		const result = validateDoctype(doctype)
+		expect(result.success).toBe(false)
+		expect(result.errors.length).toBeGreaterThan(0)
+	})
+
+	it('should reject sync fetch with non-integer limit', () => {
+		const doctype = {
+			name: 'Recipe',
+			fields: [{ fieldname: 'name', fieldtype: 'Data' }],
+			links: {
+				tasks: { target: 'recipe-task', cardinality: 'noneOrMany', fetch: { method: 'sync', limit: 5.5 } },
+			},
+		}
+		const result = validateDoctype(doctype)
+		expect(result.success).toBe(false)
+		expect(result.errors.length).toBeGreaterThan(0)
+	})
+
+	it('should reject custom fetch without handler', () => {
+		const doctype = {
+			name: 'Recipe',
+			fields: [{ fieldname: 'name', fieldtype: 'Data' }],
+			links: {
+				tasks: { target: 'recipe-task', cardinality: 'noneOrMany', fetch: { method: 'custom' } },
+			},
+		}
+		const result = validateDoctype(doctype)
+		expect(result.success).toBe(false)
+		expect(result.errors.length).toBeGreaterThan(0)
+	})
+
+	it('should accept link without fetch strategy', () => {
+		const doctype = {
+			name: 'Recipe',
+			fields: [{ fieldname: 'name', fieldtype: 'Data' }],
+			links: {
+				tasks: { target: 'recipe-task', cardinality: 'noneOrMany' },
+			},
+		}
+		const result = validateDoctype(doctype)
+		expect(result.success).toBe(true)
+	})
+
+	it('should accept all combinations of fetch strategy with all cardinalities', () => {
+		const cardinalities = ['one', 'atMostOne', 'noneOrMany', 'atLeastOne'] as const
+		const fetchMethods = [
+			{ method: 'sync' },
+			{ method: 'sync', limit: 50 },
+			{ method: 'lazy' },
+			{ method: 'custom', handler: 'function() {}' },
+		] as const
+
+		for (const cardinality of cardinalities) {
+			for (const fetch of fetchMethods) {
+				const doctype = {
+					name: 'Recipe',
+					fields: [{ fieldname: 'name', fieldtype: 'Data' }],
+					links: {
+						items: { target: 'recipe-item', cardinality, fetch },
+					},
+				}
+				const result = validateDoctype(doctype)
+				expect(result.success).toBe(true)
+			}
+		}
+	})
+})

@@ -8,13 +8,18 @@ export type { FieldMeta, FieldOptions, FieldValidation } from './field'
 export type {
 	ActionDefinition,
 	Cardinality,
+	CustomFetch,
 	DataClient,
 	DoctypeContext,
 	DoctypeMeta,
 	DoctypeRef,
+	FetchStrategy,
 	GetRecordOptions,
 	GetRecordsOptions,
+	LazyFetch,
 	LinkDeclaration,
+	SerializedFunction,
+	SyncFetch,
 	WorkflowMeta,
 } from './doctype'
 

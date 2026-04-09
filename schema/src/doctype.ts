@@ -18,6 +18,95 @@ export const Cardinality = z.enum(['atMostOne', 'one', 'noneOrMany', 'atLeastOne
 export type Cardinality = z.infer<typeof Cardinality>
 
 /**
+ * Serialized function type - a function serialized to a string.
+ * Used for custom fetch handlers.
+ * @public
+ */
+export type SerializedFunction = string
+
+/**
+ * Sync fetch strategy - data is fetched in the initial query.
+ * @public
+ */
+export const SyncFetch = z
+	.object({
+		/** Fetch method type */
+		method: z.literal('sync'),
+		/** Optional limit on number of records to fetch */
+		limit: z.number().int().positive().optional(),
+	})
+	.meta({
+		title: 'SyncFetch',
+		description: 'Sync fetch strategy - data is fetched in the initial query',
+	})
+
+/**
+ * Sync fetch strategy type
+ * @public
+ */
+export type SyncFetch = z.infer<typeof SyncFetch>
+
+/**
+ * Lazy fetch strategy - data is fetched on demand in a separate query.
+ * @public
+ */
+export const LazyFetch = z
+	.object({
+		/** Fetch method type */
+		method: z.literal('lazy'),
+	})
+	.meta({
+		title: 'LazyFetch',
+		description: 'Lazy fetch strategy - data is fetched on demand in a separate query',
+	})
+
+/**
+ * Lazy fetch strategy type
+ * @public
+ */
+export type LazyFetch = z.infer<typeof LazyFetch>
+
+/**
+ * Custom fetch strategy - uses a custom handler function.
+ * @public
+ */
+export const CustomFetch = z
+	.object({
+		/** Fetch method type */
+		method: z.literal('custom'),
+		/** Serialized handler function to invoke */
+		handler: z.string(),
+	})
+	.meta({
+		title: 'CustomFetch',
+		description: 'Custom fetch strategy - uses a custom handler function',
+	})
+
+/**
+ * Custom fetch strategy type
+ * @public
+ */
+export type CustomFetch = z.infer<typeof CustomFetch>
+
+/**
+ * Fetch strategy for link data loading.
+ * - sync: fetched in the initial query
+ * - lazy: fetched on demand in a separate query
+ * - custom: uses a custom handler function
+ * @public
+ */
+export const FetchStrategy = z.discriminatedUnion('method', [SyncFetch, LazyFetch, CustomFetch]).meta({
+	title: 'FetchStrategy',
+	description: 'Fetch strategy for link data loading',
+})
+
+/**
+ * Fetch strategy type
+ * @public
+ */
+export type FetchStrategy = z.infer<typeof FetchStrategy>
+
+/**
  * Link declaration - describes a relationship from one doctype to another.
  * @public
  */
@@ -37,6 +126,12 @@ export const LinkDeclaration = z
 
 		/** Fieldname of the corresponding Link field in the fields array */
 		fieldname: z.string().min(1).optional(),
+
+		/** Fetch strategy for loading nested data */
+		fetch: FetchStrategy.optional(),
+
+		/** Whether to block workflow actions until nested data is loaded (default: true) */
+		blockWorkflows: z.boolean().optional(),
 	})
 	.meta({
 		title: 'LinkDeclaration',
@@ -227,7 +322,7 @@ export interface DataClient<T extends DoctypeRef = DoctypeRef, M = DoctypeMeta> 
 	 * Fetch a single record by ID
 	 *
 	 * When `includeNested` is set, builds a query with sub-selections for descendant
-	 * links and returns parent + merged children. When omitted, returns flat scalar data.
+	 * links and returns ancestor + merged descendants. When omitted, returns flat scalar data.
 	 *
 	 * @param doctype - Doctype reference (name and optional slug)
 	 * @param recordId - Record ID to fetch

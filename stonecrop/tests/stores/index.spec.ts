@@ -146,9 +146,9 @@ describe('Stonecrop Stores', () => {
 			expect(level2Node).toBeDefined()
 			expect(level2Node?.get('level3')).toBe('value')
 
-			const parent = level2Node?.getParent()
-			expect(parent).toBeDefined()
-			expect(parent?.getPath()).toBe('level1')
+			const ancestor = level2Node?.getAncestor()
+			expect(ancestor).toBeDefined()
+			expect(ancestor?.getPath()).toBe('level1')
 		})
 
 		it('provides tree structure information', () => {

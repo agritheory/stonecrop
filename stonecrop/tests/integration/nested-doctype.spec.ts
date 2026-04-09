@@ -477,12 +477,12 @@ describe('Nested Doctype Support', () => {
 			})
 
 			const streetNode = store.getNode('customer.c5.address.street')
-			const addressNode = streetNode.getParent()
+			const addressNode = streetNode.getAncestor()
 
 			expect(addressNode).toBeDefined()
 			expect(addressNode?.getPath()).toBe('customer.c5.address')
 
-			const customerNode = addressNode?.getParent()
+			const customerNode = addressNode?.getAncestor()
 			expect(customerNode?.getPath()).toBe('customer.c5')
 		})
 	})

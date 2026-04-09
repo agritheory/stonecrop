@@ -195,7 +195,7 @@ getMeta(context: DoctypeContext): Promise<DoctypeMeta | null>
 
 Get a single record by ID.
 
-When `includeNested` is set, builds a query with sub-selections for descendant links and returns parent + merged children. When omitted, returns flat scalar data.
+When `includeNested` is set, builds a query with sub-selections for descendant links and returns ancestor + merged descendants. When omitted, returns flat scalar data.
 
 ```typescript
 getRecord(doctype: DoctypeRef, recordId: string, options: GetRecordOptions): Promise<Record<string, unknown> | null>

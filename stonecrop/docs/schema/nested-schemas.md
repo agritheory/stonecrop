@@ -162,6 +162,101 @@ AForm:
 
 For 1:many relationships (`cardinality: 'noneOrMany'` or `'atLeastOne'`), the resolved schema entry has `component: 'ATable'`. AForm detects this and renders an ATable component inline, with columns derived from the target doctype's schema and an empty `rows` array.
 
+## Fetch Strategies
+
+The `fetch` property on a `LinkDeclaration` controls when and how linked data is loaded.
+
+### Sync Fetch
+
+Data is fetched in the initial query along with the parent record. Use for data that is:
+- Small and always needed
+- Required for workflow actions
+- Cheap to include in every query
+
+```typescript
+links: {
+  tasks: {
+    target: 'task',
+    cardinality: 'noneOrMany',
+    fetch: { method: 'sync' },  // Included in initial query
+  },
+}
+```
+
+### Lazy Fetch
+
+Data is fetched on demand in a separate query. Use for data that is:
+- Large or expensive to load
+- Rarely needed
+- User-initiated
+
+```typescript
+links: {
+  tasks: {
+    target: 'task',
+    cardinality: 'noneOrMany',
+    fetch: { method: 'lazy' },  // Loaded on demand
+  },
+}
+```
+
+### Cardinality Defaults
+
+When `fetch` is not specified, defaults are applied based on cardinality:
+
+| Cardinality   | Default Fetch | Notes                          |
+|--------------|---------------|--------------------------------|
+| `noneOrMany` | `sync`        | Lists typically needed immediately |
+| `atLeastOne` | `sync`        | Required lists                 |
+| `one`        | `lazy`        | Typically loaded on navigation |
+| `atMostOne`  | `lazy`        | Optional single records        |
+
+## blockWorkflows
+
+The `blockWorkflows` property controls whether workflow actions (submit, approve, etc.) are blocked until the linked data is loaded into HST.
+
+### Default Behavior
+
+- **Sync links**: `blockWorkflows` defaults to `true` — workflow actions are blocked until data is loaded
+- **Lazy links**: `blockWorkflows` defaults to `false` — workflow actions proceed without waiting
+
+### Overriding the Default
+
+```typescript
+links: {
+  // Explicitly don't block — sync but workflow proceeds anyway
+  optionalData: {
+    target: 'task',
+    cardinality: 'noneOrMany',
+    fetch: { method: 'sync' },
+    blockWorkflows: false,
+  },
+  // Force blocking even for lazy data
+  criticalData: {
+    target: 'task',
+    cardinality: 'noneOrMany',
+    fetch: { method: 'lazy' },
+    blockWorkflows: true,
+  },
+}
+```
+
+### How It Works
+
+`stonecrop.isWorkflowReady(doctype, recordId)` checks if all links with `blockWorkflows: true` have their data loaded in HST at the path `slug.recordId.linkname`. If any blocking link's data is missing, workflow actions are prevented.
+
+Use with `useStonecrop().isWorkflowReady` to automatically disable action buttons:
+
+```vue
+<button :disabled="!isWorkflowReady" @click="submit">
+  Submit
+</button>
+```
+
+### Custom Fetch Handlers
+
+The `custom` fetch strategy invokes a serialized handler function for complete control over data loading. Custom handlers receive `(stonecrop, path, hst)` and can load data from any source. Note that `blockWorkflows: true` with custom fetch will still include the link in the GraphQL query (bypassing the custom handler) — see [useLazyLink](/reference/stonecrop#uselazylink) for details.
+
 ## Data Structure
 
 Your data should have nested objects matching the schema structure:

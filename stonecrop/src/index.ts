@@ -1,6 +1,7 @@
 export type * from '@stonecrop/aform/types'
 export type * from '@stonecrop/atable/types'
 
+import { useLazyLink } from './composables/lazy-link'
 import { useStonecrop } from './composables/stonecrop'
 import { useOperationLog, useUndoRedoShortcuts, withBatch } from './composables/operation-log'
 import Doctype from './doctype'
@@ -31,6 +32,7 @@ export {
 	Doctype,
 	Registry,
 	Stonecrop,
+	useLazyLink,
 	useStonecrop,
 	// HST exports for advanced usage
 	HST,

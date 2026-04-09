@@ -68,6 +68,23 @@ export function useStonecrop(options?: {
 	const error = ref<Error | null>(null)
 	const resolvedDoctype = ref<Doctype | undefined>()
 
+	// Workflow readiness computed properties
+	const isWorkflowReady = computed(() => {
+		if (!stonecrop.value || !resolvedDoctype.value || !options.recordId || options.recordId === 'new') {
+			return true
+		}
+		const status = stonecrop.value.isWorkflowReady(resolvedDoctype.value, options.recordId)
+		return status.ready
+	})
+
+	const blockedLinks = computed(() => {
+		if (!stonecrop.value || !resolvedDoctype.value || !options.recordId || options.recordId === 'new') {
+			return []
+		}
+		const status = stonecrop.value.isWorkflowReady(resolvedDoctype.value, options.recordId)
+		return status.blockedLinks ?? []
+	})
+
 	// Initialize stonecrop instance synchronously using singleton pattern
 	// Use injected instance if available, otherwise fall back to the singleton root
 	const stonecropInstance = providedStonecrop || Stonecrop._root
@@ -421,7 +438,7 @@ export function useStonecrop(options?: {
 	}
 
 	/**
-	 * Scaffold empty child records from defaults for all descendant links.
+	 * Scaffold empty descendant records from defaults for all descendant links.
 	 * Delegates to Stonecrop.initializeNestedData method.
 	 * @param path - The HST path where initialized data should be stored
 	 * @param doctype - The doctype to initialize
@@ -473,12 +490,12 @@ export function useStonecrop(options?: {
 	}
 
 	/**
-	 * Create a nested context for child forms
+	 * Create a nested context for descendant forms
 	 * @param basePath - The base path for the nested context (e.g., "customer.123.address")
-	 * @param _childDoctype - The child doctype metadata (unused but kept for API consistency)
+	 * @param _descendantDoctype - The descendant doctype metadata (unused but kept for API consistency)
 	 * @returns Object with scoped provideHSTPath and handleHSTChange
 	 */
-	const createNestedContext = (basePath: string, _childDoctype: Doctype) => {
+	const createNestedContext = (basePath: string, _descendantDoctype: Doctype) => {
 		const nestedProvideHSTPath = (fieldname: string): string => {
 			return `${basePath}.${fieldname}`
 		}
@@ -538,6 +555,8 @@ export function useStonecrop(options?: {
 			isLoading,
 			error,
 			resolvedDoctype,
+			isWorkflowReady,
+			blockedLinks,
 		} satisfies HSTStonecropReturn
 	} else if (!options.doctype && registry?.router) {
 		// Router-based - return HST (will be populated after mount)
@@ -556,6 +575,8 @@ export function useStonecrop(options?: {
 			isLoading,
 			error,
 			resolvedDoctype,
+			isWorkflowReady,
+			blockedLinks,
 		} satisfies HSTStonecropReturn
 	}
 

@@ -246,7 +246,7 @@ export const useOperationLogStore = defineStore('hst-operation-log', () => {
 		const batchId = currentBatchData.id
 		const allReversible = batchOperations.every(op => op.reversible)
 
-		// Create parent batch operation
+		// Create ancestor batch operation
 		const batchOperation: HSTOperation = {
 			id: batchId,
 			type: 'batch',
@@ -259,18 +259,18 @@ export const useOperationLogStore = defineStore('hst-operation-log', () => {
 			source: 'user',
 			reversible: allReversible,
 			irreversibleReason: allReversible ? undefined : 'Contains irreversible operations',
-			childOperationIds: batchOperations.map(op => op.id),
+			descendantOperationIds: batchOperations.map(op => op.id),
 			metadata: { description },
 		}
 
-		// Add parent operation ID to all children
+		// Add ancestor operation ID to all descendants
 		batchOperations.forEach(op => {
-			op.parentOperationId = batchId
+			op.ancestorOperationId = batchId
 		})
 
-		// If we're inside a parent batch, add this batch as a child of the parent
+		// If we're inside a ancestor batch, add this batch as a descendant of the ancestor
 		if (batchStack.value.length > 0) {
-			// Nested batch - add the batch operation to the parent batch
+			// Nested batch - add the batch operation to the ancestor batch
 			batchStack.value[batchStack.value.length - 1].operations.push(batchOperation)
 		} else {
 			// Top-level batch - add to the operations log
@@ -318,13 +318,13 @@ export const useOperationLogStore = defineStore('hst-operation-log', () => {
 
 		try {
 			// Handle batch operations
-			if (operation.type === 'batch' && operation.childOperationIds) {
-				// Undo all child operations in reverse order
-				for (let i = operation.childOperationIds.length - 1; i >= 0; i--) {
-					const childId = operation.childOperationIds[i]
-					const childOp = operations.value.find(op => op.id === childId)
-					if (childOp) {
-						revertOperation(childOp, store)
+			if (operation.type === 'batch' && operation.descendantOperationIds) {
+				// Undo all descendant operations in reverse order
+				for (let i = operation.descendantOperationIds.length - 1; i >= 0; i--) {
+					const descendantId = operation.descendantOperationIds[i]
+					const descendantOp = operations.value.find(op => op.id === descendantId)
+					if (descendantOp) {
+						revertOperation(descendantOp, store)
 					}
 				}
 			} else {
@@ -360,12 +360,12 @@ export const useOperationLogStore = defineStore('hst-operation-log', () => {
 
 		try {
 			// Handle batch operations
-			if (operation.type === 'batch' && operation.childOperationIds) {
-				// Redo all child operations in order
-				for (const childId of operation.childOperationIds) {
-					const childOp = operations.value.find(op => op.id === childId)
-					if (childOp) {
-						applyOperation(childOp, store)
+			if (operation.type === 'batch' && operation.descendantOperationIds) {
+				// Redo all descendant operations in order
+				for (const descendantId of operation.descendantOperationIds) {
+					const descendantOp = operations.value.find(op => op.id === descendantId)
+					if (descendantOp) {
+						applyOperation(descendantOp, store)
 					}
 				}
 			} else {
@@ -539,12 +539,12 @@ export const useOperationLogStore = defineStore('hst-operation-log', () => {
 		broadcastChannel.postMessage(serializeForBroadcast(message))
 	}
 
-	function broadcastBatch(childOps: HSTOperation[], batchOp: HSTOperation) {
+	function broadcastBatch(descendantOps: HSTOperation[], batchOp: HSTOperation) {
 		if (!broadcastChannel) return
 
 		const message: CrossTabMessage = {
 			type: 'operation',
-			operations: [...childOps, batchOp],
+			operations: [...descendantOps, batchOp],
 			clientId: clientId.value,
 			timestamp: new Date(),
 		}

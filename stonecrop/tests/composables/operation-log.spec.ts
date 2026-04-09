@@ -109,7 +109,7 @@ describe('Operation Log Composable', () => {
 			// Find the batch operation
 			const batchOp = operations.value.find(op => op.type === 'batch')
 			expect(batchOp).toBeDefined()
-			expect(batchOp?.childOperationIds?.length).toBe(2)
+			expect(batchOp?.descendantOperationIds?.length).toBe(2)
 		})
 
 		it('should cancel a batch', () => {
@@ -317,7 +317,7 @@ describe('Operation Log Composable', () => {
 
 			const batchOp = operations.value.find(op => op.type === 'batch')
 			expect(batchOp).toBeDefined()
-			expect(batchOp?.childOperationIds?.length).toBe(3)
+			expect(batchOp?.descendantOperationIds?.length).toBe(3)
 			expect(batchOp?.metadata?.description).toBe('Update all fields')
 		})
 
@@ -398,7 +398,7 @@ describe('Operation Log Composable', () => {
 			expect(batchId).toBeDefined()
 			// Should have all operations in a single batch
 			const batchOp = operations.value.find(op => op.type === 'batch')
-			expect(batchOp?.childOperationIds?.length).toBe(3)
+			expect(batchOp?.descendantOperationIds?.length).toBe(3)
 		})
 	})
 

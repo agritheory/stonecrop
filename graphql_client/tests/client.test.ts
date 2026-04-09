@@ -350,7 +350,7 @@ const recipeMeta: DoctypeMeta = {
 	],
 	links: {
 		tasks: { target: 'recipe-task', cardinality: 'noneOrMany', backlink: 'recipe' },
-		supersededBy: { target: 'recipe', cardinality: 'atMostOne', backlink: 'supersededBy' },
+		supersededBy: { target: 'recipe', cardinality: 'atMostOne', backlink: 'supersededBy', fetch: { method: 'sync' } },
 	},
 }
 
@@ -364,7 +364,7 @@ const recipeTaskMeta: DoctypeMeta = {
 		{ fieldname: 'description', fieldtype: 'Data', label: 'Description' },
 	],
 	links: {
-		recipe: { target: 'recipe', cardinality: 'one', backlink: 'tasks' },
+		recipe: { target: 'recipe', cardinality: 'one', backlink: 'tasks', fetch: { method: 'sync' } },
 	},
 }
 
@@ -499,7 +499,7 @@ describe('buildRecordQuery', () => {
 			...recipeTaskMeta,
 			links: {
 				...recipeTaskMeta.links,
-				durationFunction: { target: 'registered-function', cardinality: 'one' },
+				durationFunction: { target: 'registered-function', cardinality: 'one', fetch: { method: 'sync' } },
 			},
 		}
 		const deepRegistry = new Map<string, DoctypeMeta>([
@@ -515,6 +515,371 @@ describe('buildRecordQuery', () => {
 		// Level 2 → 3: durationFunction direct object inside the task nodes
 		expect(query).toContain('durationFunction {')
 		expect(query).toContain('handler')
+	})
+})
+
+// ===========================================================================
+// Fetch Strategy
+// ===========================================================================
+
+describe('Fetch Strategy', () => {
+	it('skips lazy links from query', () => {
+		const lazyLinkMeta: DoctypeMeta = {
+			...recipeMeta,
+			links: {
+				tasks: { target: 'recipe-task', cardinality: 'noneOrMany', fetch: { method: 'lazy' } },
+			},
+		}
+		const lazyRegistry = new Map<string, DoctypeMeta>([
+			['recipe', lazyLinkMeta],
+			['recipe-task', recipeTaskMeta],
+		])
+		const query = buildRecordQuery(lazyLinkMeta, recordFieldName, recordArgName, recordArgType, lazyRegistry, {
+			includeNested: true,
+		})
+		expect(query).not.toContain('RecipeTasksByRecipeId')
+		expect(query).toContain('name')
+		expect(query).toContain('status')
+	})
+
+	it('includes sync links in query', () => {
+		const syncLinkMeta: DoctypeMeta = {
+			...recipeMeta,
+			links: {
+				supersededBy: { target: 'recipe', cardinality: 'atMostOne', fetch: { method: 'sync' } },
+			},
+		}
+		const query = buildRecordQuery(syncLinkMeta, recordFieldName, recordArgName, recordArgType, registry, {
+			includeNested: true,
+		})
+		expect(query).toContain('supersededBy {')
+	})
+
+	it('applies cardinality-based defaults: noneOrMany defaults to sync with limit 50', () => {
+		const defaultMeta: DoctypeMeta = {
+			...recipeMeta,
+			links: {
+				tasks: { target: 'recipe-task', cardinality: 'noneOrMany' },
+			},
+		}
+		const defaultRegistry = new Map<string, DoctypeMeta>([
+			['recipe', defaultMeta],
+			['recipe-task', recipeTaskMeta],
+		])
+		const query = buildRecordQuery(defaultMeta, recordFieldName, recordArgName, recordArgType, defaultRegistry, {
+			includeNested: true,
+		})
+		expect(query).toContain('RecipeTasksByRecipeId(first: 50)')
+	})
+
+	it('applies cardinality-based defaults: atLeastOne defaults to sync with limit 50', () => {
+		const atLeastOneMeta: DoctypeMeta = {
+			...recipeMeta,
+			links: {
+				items: { target: 'recipe-task', cardinality: 'atLeastOne' },
+			},
+		}
+		const atLeastOneRegistry = new Map<string, DoctypeMeta>([
+			['recipe', atLeastOneMeta],
+			['recipe-task', recipeTaskMeta],
+		])
+		const query = buildRecordQuery(atLeastOneMeta, recordFieldName, recordArgName, recordArgType, atLeastOneRegistry, {
+			includeNested: true,
+		})
+		expect(query).toContain('RecipeTasksByRecipeId(first: 50)')
+	})
+
+	it('applies cardinality-based defaults: one defaults to lazy', () => {
+		const oneMeta: DoctypeMeta = {
+			...recipeMeta,
+			links: {
+				mainTask: { target: 'recipe-task', cardinality: 'one' },
+			},
+		}
+		const oneRegistry = new Map<string, DoctypeMeta>([
+			['recipe', oneMeta],
+			['recipe-task', recipeTaskMeta],
+		])
+		const query = buildRecordQuery(oneMeta, recordFieldName, recordArgName, recordArgType, oneRegistry, {
+			includeNested: true,
+		})
+		expect(query).not.toContain('mainTask')
+		expect(query).toContain('name')
+		expect(query).toContain('status')
+	})
+
+	it('applies cardinality-based defaults: atMostOne defaults to lazy', () => {
+		const atMostOneMeta: DoctypeMeta = {
+			...recipeMeta,
+			links: {
+				supersededBy: { target: 'recipe', cardinality: 'atMostOne' },
+			},
+		}
+		const query = buildRecordQuery(atMostOneMeta, recordFieldName, recordArgName, recordArgType, registry, {
+			includeNested: true,
+		})
+		expect(query).not.toContain('supersededBy')
+		expect(query).toContain('name')
+		expect(query).toContain('status')
+	})
+
+	it('uses custom limit on sync fetch', () => {
+		const customLimitMeta: DoctypeMeta = {
+			...recipeMeta,
+			links: {
+				tasks: { target: 'recipe-task', cardinality: 'noneOrMany', fetch: { method: 'sync', limit: 25 } },
+			},
+		}
+		const customLimitRegistry = new Map<string, DoctypeMeta>([
+			['recipe', customLimitMeta],
+			['recipe-task', recipeTaskMeta],
+		])
+		const query = buildRecordQuery(
+			customLimitMeta,
+			recordFieldName,
+			recordArgName,
+			recordArgType,
+			customLimitRegistry,
+			{
+				includeNested: true,
+			}
+		)
+		expect(query).toContain('RecipeTasksByRecipeId(first: 25)')
+	})
+
+	it('does not apply limit to one/atMostOne sync links (direct object)', () => {
+		const syncAtMostOneMeta: DoctypeMeta = {
+			...recipeMeta,
+			links: {
+				supersededBy: { target: 'recipe', cardinality: 'atMostOne', fetch: { method: 'sync' } },
+			},
+		}
+		const query = buildRecordQuery(syncAtMostOneMeta, recordFieldName, recordArgName, recordArgType, registry, {
+			includeNested: true,
+		})
+		expect(query).toContain('supersededBy {')
+		expect(query).not.toContain('supersededBy(first')
+	})
+
+	it('explicit sync fetch overrides cardinality default', () => {
+		const syncOneMeta: DoctypeMeta = {
+			...recipeMeta,
+			links: {
+				mainTask: { target: 'recipe-task', cardinality: 'one', fetch: { method: 'sync' } },
+			},
+		}
+		const syncOneRegistry = new Map<string, DoctypeMeta>([
+			['recipe', syncOneMeta],
+			['recipe-task', recipeTaskMeta],
+		])
+		const query = buildRecordQuery(syncOneMeta, recordFieldName, recordArgName, recordArgType, syncOneRegistry, {
+			includeNested: true,
+		})
+		expect(query).toContain('mainTask {')
+	})
+
+	it('explicit lazy fetch overrides cardinality default', () => {
+		const lazyNoneOrManyMeta: DoctypeMeta = {
+			...recipeMeta,
+			links: {
+				tasks: { target: 'recipe-task', cardinality: 'noneOrMany', fetch: { method: 'lazy' } },
+			},
+		}
+		const lazyNoneOrManyRegistry = new Map<string, DoctypeMeta>([
+			['recipe', lazyNoneOrManyMeta],
+			['recipe-task', recipeTaskMeta],
+		])
+		const query = buildRecordQuery(
+			lazyNoneOrManyMeta,
+			recordFieldName,
+			recordArgName,
+			recordArgType,
+			lazyNoneOrManyRegistry,
+			{
+				includeNested: true,
+			}
+		)
+		expect(query).not.toContain('RecipeTasksByRecipeId')
+	})
+
+	it('filters apply to sync links with includeNested string array', () => {
+		const mixedMeta: DoctypeMeta = {
+			...recipeMeta,
+			links: {
+				tasks: { target: 'recipe-task', cardinality: 'noneOrMany' },
+				supersededBy: { target: 'recipe', cardinality: 'atMostOne', fetch: { method: 'sync' } },
+			},
+		}
+		const mixedRegistry = new Map<string, DoctypeMeta>([
+			['recipe', mixedMeta],
+			['recipe-task', recipeTaskMeta],
+		])
+		const query = buildRecordQuery(mixedMeta, recordFieldName, recordArgName, recordArgType, mixedRegistry, {
+			includeNested: ['supersededBy'],
+		})
+		expect(query).toContain('supersededBy {')
+		expect(query).not.toContain('RecipeTasksByRecipeId')
+	})
+
+	it('custom fetch method is skipped (not supported in query builder)', () => {
+		const customFetchMeta: DoctypeMeta = {
+			...recipeMeta,
+			links: {
+				tasks: { target: 'recipe-task', cardinality: 'noneOrMany', fetch: { method: 'custom', handler: 'myHandler' } },
+			},
+		}
+		const customFetchRegistry = new Map<string, DoctypeMeta>([
+			['recipe', customFetchMeta],
+			['recipe-task', recipeTaskMeta],
+		])
+		const query = buildRecordQuery(
+			customFetchMeta,
+			recordFieldName,
+			recordArgName,
+			recordArgType,
+			customFetchRegistry,
+			{
+				includeNested: true,
+			}
+		)
+		// Custom fetch is not a sync/lazy - it should be skipped in the query builder
+		// The handler would be invoked separately by the application
+		expect(query).not.toContain('RecipeTasksByRecipeId')
+	})
+
+	it('blockWorkflows true forces lazy link into query', () => {
+		const lazyWithBlockMeta: DoctypeMeta = {
+			...recipeMeta,
+			links: {
+				tasks: { target: 'recipe-task', cardinality: 'noneOrMany', fetch: { method: 'lazy' }, blockWorkflows: true },
+			},
+		}
+		const lazyWithBlockRegistry = new Map<string, DoctypeMeta>([
+			['recipe', lazyWithBlockMeta],
+			['recipe-task', recipeTaskMeta],
+		])
+		const query = buildRecordQuery(
+			lazyWithBlockMeta,
+			recordFieldName,
+			recordArgName,
+			recordArgType,
+			lazyWithBlockRegistry,
+			{
+				includeNested: true,
+			}
+		)
+		// blockWorkflows: true forces inclusion even for lazy fetch
+		expect(query).toContain('RecipeTasksByRecipeId')
+	})
+
+	it('blockWorkflows true forces custom fetch into query', () => {
+		const customWithBlockMeta: DoctypeMeta = {
+			...recipeMeta,
+			links: {
+				tasks: {
+					target: 'recipe-task',
+					cardinality: 'noneOrMany',
+					fetch: { method: 'custom', handler: 'myHandler' },
+					blockWorkflows: true,
+				},
+			},
+		}
+		const customWithBlockRegistry = new Map<string, DoctypeMeta>([
+			['recipe', customWithBlockMeta],
+			['recipe-task', recipeTaskMeta],
+		])
+		const query = buildRecordQuery(
+			customWithBlockMeta,
+			recordFieldName,
+			recordArgName,
+			recordArgType,
+			customWithBlockRegistry,
+			{
+				includeNested: true,
+			}
+		)
+		// blockWorkflows: true forces inclusion even for custom fetch
+		// This bypasses the custom handler - see TODO in query.ts
+		expect(query).toContain('RecipeTasksByRecipeId')
+	})
+
+	it('blockWorkflows false on sync link excludes from query', () => {
+		const syncWithBlockFalseMeta: DoctypeMeta = {
+			...recipeMeta,
+			links: {
+				tasks: { target: 'recipe-task', cardinality: 'noneOrMany', fetch: { method: 'sync' }, blockWorkflows: false },
+			},
+		}
+		const syncWithBlockFalseRegistry = new Map<string, DoctypeMeta>([
+			['recipe', syncWithBlockFalseMeta],
+			['recipe-task', recipeTaskMeta],
+		])
+		const query = buildRecordQuery(
+			syncWithBlockFalseMeta,
+			recordFieldName,
+			recordArgName,
+			recordArgType,
+			syncWithBlockFalseRegistry,
+			{
+				includeNested: true,
+			}
+		)
+		// Explicit blockWorkflows: false overrides sync default
+		expect(query).not.toContain('RecipeTasksByRecipeId')
+	})
+
+	it('blockWorkflows true on lazy link overrides includeNested filter', () => {
+		const lazyWithBlockMeta: DoctypeMeta = {
+			...recipeMeta,
+			links: {
+				tasks: { target: 'recipe-task', cardinality: 'noneOrMany', fetch: { method: 'lazy' }, blockWorkflows: true },
+				supersededBy: { target: 'recipe', cardinality: 'atMostOne', fetch: { method: 'sync' }, blockWorkflows: true },
+			},
+		}
+		const lazyWithBlockRegistry = new Map<string, DoctypeMeta>([
+			['recipe', lazyWithBlockMeta],
+			['recipe-task', recipeTaskMeta],
+		])
+		// Even with includeNested filtering to only 'supersededBy',
+		// tasks with blockWorkflows: true should still be included
+		const query = buildRecordQuery(
+			lazyWithBlockMeta,
+			recordFieldName,
+			recordArgName,
+			recordArgType,
+			lazyWithBlockRegistry,
+			{
+				includeNested: ['supersededBy'],
+			}
+		)
+		expect(query).toContain('supersededBy {')
+		expect(query).toContain('RecipeTasksByRecipeId') // Forced by blockWorkflows
+	})
+
+	it('blockWorkflows defaults to true implicitly for sync links', () => {
+		// When blockWorkflows is absent and fetch is sync, it should behave as if blockWorkflows: true
+		const implicitBlockMeta: DoctypeMeta = {
+			...recipeMeta,
+			links: {
+				tasks: { target: 'recipe-task', cardinality: 'noneOrMany', fetch: { method: 'sync' } },
+			},
+		}
+		const implicitBlockRegistry = new Map<string, DoctypeMeta>([
+			['recipe', implicitBlockMeta],
+			['recipe-task', recipeTaskMeta],
+		])
+		// This should be included (sync default)
+		const query = buildRecordQuery(
+			implicitBlockMeta,
+			recordFieldName,
+			recordArgName,
+			recordArgType,
+			implicitBlockRegistry,
+			{
+				includeNested: true,
+			}
+		)
+		expect(query).toContain('RecipeTasksByRecipeId')
 	})
 })
 

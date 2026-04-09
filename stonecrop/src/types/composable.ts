@@ -179,7 +179,7 @@ export type HSTStonecropReturn = BaseStonecropReturn & {
 	 */
 	resolvedSchema: Ref<SchemaTypes[]>
 	/**
-	 * Scaffold empty child records from defaults for all descendant links.
+	 * Scaffold empty descendant records from defaults for all descendant links.
 	 * @param path - The HST path where initialized data should be stored
 	 * @param doctype - The doctype to initialize
 	 * @param options - Options (includeNested to limit which links are scaffolded)
@@ -211,15 +211,15 @@ export type HSTStonecropReturn = BaseStonecropReturn & {
 	 */
 	collectRecordPayload: (doctype: Doctype, recordId: string) => Record<string, any>
 	/**
-	 * Creates a nested context for a child doctype component.
+	 * Creates a nested context for a descendant doctype component.
 	 * Use this in parent components to pass scoped handlers to child components.
 	 * @param basePath - The parent HST path prefix
-	 * @param childDoctype - The child doctype metadata
+	 * @param descendantDoctype - The descendant doctype metadata
 	 * @returns Scoped provideHSTPath and handleHSTChange functions
 	 */
 	createNestedContext: (
 		basePath: string,
-		childDoctype: Doctype
+		descendantDoctype: Doctype
 	) => {
 		provideHSTPath: (fieldname: string) => string
 		handleHSTChange: (changeData: HSTChangeData) => void
@@ -239,6 +239,17 @@ export type HSTStonecropReturn = BaseStonecropReturn & {
 	 * Available immediately if Doctype instance passed, after async resolution if slug string passed.
 	 */
 	resolvedDoctype: Ref<Doctype | undefined>
+	/**
+	 * Computed ref indicating whether workflow actions are ready to run.
+	 * True when all links with blockWorkflows are loaded in HST.
+	 * Use with v-bind:disabled="!isWorkflowReady" on action buttons.
+	 */
+	isWorkflowReady: ComputedRef<boolean>
+	/**
+	 * List of link fieldnames that are blocking workflow execution.
+	 * Empty array when isWorkflowReady is true.
+	 */
+	blockedLinks: ComputedRef<string[]>
 }
 
 // Import Stonecrop class for the BaseStonecropReturn type (circular reference handled via import)
@@ -257,4 +268,22 @@ export type HSTChangeData = {
 	fieldname: string
 	/** Optional record ID */
 	recordId?: string
+}
+
+/**
+ * Lazy link state for a single link field.
+ * Provides reactive state and reload capability for lazy-loaded links.
+ * @public
+ */
+export type LazyLink = {
+	/** True while fetching data */
+	loading: Ref<boolean>
+	/** True after successful fetch (permanent until reload) */
+	loaded: Ref<boolean>
+	/** Error state, if any */
+	error: Ref<Error | null>
+	/** Explicitly trigger a fetch for this link */
+	reload: () => Promise<void>
+	/** The loaded data from HST, or undefined if not loaded */
+	data: ComputedRef<any>
 }

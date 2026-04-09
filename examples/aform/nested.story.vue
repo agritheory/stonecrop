@@ -225,7 +225,7 @@ const HSTDemo = defineComponent({
 			customerNode: {
 				path: customerPath,
 				exists: store.has(customerPath),
-				parent: store.getNode(customerPath)?.getParent()?.getPath() || 'root',
+				parent: store.getNode(customerPath)?.getAncestor()?.getPath() || 'root',
 				breadcrumbs: store
 					.getNode(customerPath)
 					?.getBreadcrumbs()
@@ -235,7 +235,7 @@ const HSTDemo = defineComponent({
 			addressNode: {
 				path: `${customerPath}.address`,
 				exists: store.has(`${customerPath}.address`),
-				parent: store.getNode(`${customerPath}.address`)?.getParent()?.getPath() || 'root',
+				parent: store.getNode(`${customerPath}.address`)?.getAncestor()?.getPath() || 'root',
 				breadcrumbs: store
 					.getNode(`${customerPath}.address`)
 					?.getBreadcrumbs()

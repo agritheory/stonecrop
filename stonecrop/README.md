@@ -204,7 +204,7 @@ doctype.recordId.nested.field     // deep nesting supported
 
 ### 3. Hierarchical Navigation
 
-- **Parent/Child Relationships**: Maintain bidirectional parent-child references
+- **Ancestor/Descendant Relationships**: Maintain bidirectional ancestor-descendant references
 - **Sibling Access**: Efficient navigation between sibling nodes
 - **Root Access**: Always accessible reference to tree root from any node
 - **Depth Tracking**: Know the depth level of any node in the hierarchy

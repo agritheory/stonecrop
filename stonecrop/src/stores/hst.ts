@@ -138,14 +138,14 @@ class HST {
 // Enhanced HST Proxy with tree navigation
 class HSTProxy implements HSTNode {
 	private target: any
-	private parentPath: string
+	private ancestorPath: string
 	private rootNode: HSTNode | null
 	private doctype: string
 	private hst: HST
 
-	constructor(target: any, doctype: string, parentPath = '', rootNode: HSTNode | null = null) {
+	constructor(target: any, doctype: string, ancestorPath = '', rootNode: HSTNode | null = null) {
 		this.target = target
-		this.parentPath = parentPath
+		this.ancestorPath = ancestorPath
 		this.rootNode = rootNode || this
 		this.doctype = doctype
 		this.hst = HST.getInstance()
@@ -198,6 +198,11 @@ class HSTProxy implements HSTNode {
 	set(path: string, value: any, source: 'user' | 'system' | 'sync' | 'undo' | 'redo' = 'user'): void {
 		// Get current value for change context
 		const fullPath = this.resolvePath(path)
+		if (fullPath === undefined) {
+			// eslint-disable-next-line no-console
+			console.warn('HST.set: resolved path is undefined, skipping operation')
+			return
+		}
 		const beforeValue = this.has(path) ? this.get(path) : undefined
 
 		// Log operation if not from undo/redo and store is available
@@ -276,18 +281,18 @@ class HSTProxy implements HSTNode {
 	}
 
 	// Tree navigation methods
-	getParent(): HSTNode | null {
-		if (!this.parentPath) return null
+	getAncestor(): HSTNode | null {
+		if (!this.ancestorPath) return null
 
-		const parentSegments = this.parentPath.split('.').slice(0, -1)
-		const parentPath = parentSegments.join('.')
+		const ancestorSegments = this.ancestorPath.split('.').slice(0, -1)
+		const ancestorPath = ancestorSegments.join('.')
 
-		if (parentPath === '') {
+		if (ancestorPath === '') {
 			return this.rootNode
 		}
 
 		// Return a wrapped node, not raw data
-		return this.rootNode!.getNode(parentPath)
+		return this.rootNode!.getNode(ancestorPath)
 	}
 
 	getRoot(): HSTNode {
@@ -295,15 +300,15 @@ class HSTProxy implements HSTNode {
 	}
 
 	getPath(): string {
-		return this.parentPath
+		return this.ancestorPath
 	}
 
 	getDepth(): number {
-		return this.parentPath ? this.parentPath.split('.').length : 0
+		return this.ancestorPath ? this.ancestorPath.split('.').length : 0
 	}
 
 	getBreadcrumbs(): string[] {
-		return this.parentPath ? this.parentPath.split('.') : []
+		return this.ancestorPath ? this.ancestorPath.split('.') : []
 	}
 
 	/**
@@ -316,7 +321,7 @@ class HSTProxy implements HSTNode {
 		const triggerEngine = getGlobalTriggerEngine()
 
 		// Determine doctype and recordId from the current path
-		const pathSegments = this.parentPath.split('.')
+		const pathSegments = this.ancestorPath.split('.')
 		let doctype = this.doctype
 		let recordId: string | undefined
 
@@ -332,7 +337,7 @@ class HSTProxy implements HSTNode {
 
 		// Build transition context
 		const transitionContext: TransitionChangeContext = {
-			path: this.parentPath,
+			path: this.ancestorPath,
 			fieldname: '', // No specific field for transitions
 			beforeValue: undefined,
 			afterValue: undefined,
@@ -353,7 +358,7 @@ class HSTProxy implements HSTNode {
 			logStore.addOperation(
 				{
 					type: 'transition' as const,
-					path: this.parentPath,
+					path: this.ancestorPath,
 					fieldname: transition,
 					beforeValue: context?.currentState,
 					afterValue: context?.targetState,
@@ -377,8 +382,8 @@ class HSTProxy implements HSTNode {
 
 	// Private helper methods
 	private resolvePath(path: string): string {
-		if (path === '') return this.parentPath
-		return this.parentPath ? `${this.parentPath}.${path}` : path
+		if (path === '') return this.ancestorPath ?? ''
+		return this.ancestorPath ? `${this.ancestorPath}.${path}` : path
 	}
 
 	private resolveValue(path: string): any {
@@ -411,7 +416,7 @@ class HSTProxy implements HSTNode {
 		const lastSegment = segments.pop()!
 		let current = this.target
 
-		// Navigate to parent object
+		// Navigate to ancestor object
 		for (const segment of segments) {
 			current = this.getProperty(current, segment)
 			if (current === null || current === undefined) {
