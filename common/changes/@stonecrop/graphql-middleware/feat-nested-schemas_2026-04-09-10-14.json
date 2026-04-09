@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/graphql-middleware",
+      "comment": "remove list and record queries",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@stonecrop/graphql-middleware"
+}

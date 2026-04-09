@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/stonecrop",
+      "comment": "process linked schemas",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@stonecrop/stonecrop"
+}
