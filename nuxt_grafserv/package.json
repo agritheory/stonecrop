@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/nuxt-grafserv",
-	"version": "0.10.16",
+	"version": "0.11.0",
 	"description": "Pluggable Grafserv GraphQL server as Nuxt Module",
 	"license": "MIT",
 	"type": "module",
