@@ -40,8 +40,6 @@ type DoctypeMeta {
 	fields: [FieldMeta!]!
 	workflow: WorkflowMeta
 	inherits: String
-	listDoctype: String
-	parentDoctype: String
 }
 
 # ============================================

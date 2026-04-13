@@ -39,8 +39,6 @@ export {
 	defaultOrderByTypeName,
 	defaultRecordArgName,
 	defaultRecordArgType,
-	buildRecordQuery,
-	buildListQuery,
 	queryableFieldNames,
 	RELATION_FIELDTYPES,
 } from './plugin/postgraphile'

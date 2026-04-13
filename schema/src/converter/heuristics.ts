@@ -274,22 +274,24 @@ export function classifyFieldType(
 			return base
 		}
 
-		// 4. Connection type → Doctype (child table)
+		// 4. Connection type → link (child table)
 		const connectionNodeTypeName = getConnectionNodeType(namedType)
 		if (connectionNodeTypeName && entityTypes.has(connectionNodeTypeName)) {
 			base.component = 'ATable'
-			base.fieldtype = 'Doctype'
+			base._isLink = true
 			base.options = toSlug(connectionNodeTypeName)
-			base.cardinality = 'many'
+			base.cardinality = 'noneOrMany'
+			delete (base as any).fieldtype
 			return base
 		}
 
-		// 5. List of entity type → Doctype
+		// 5. List of entity type → link
 		if (isList && entityTypes.has(namedType.name)) {
 			base.component = 'ATable'
-			base.fieldtype = 'Doctype'
+			base._isLink = true
 			base.options = toSlug(namedType.name)
-			base.cardinality = 'many'
+			base.cardinality = 'noneOrMany'
+			delete (base as any).fieldtype
 			return base
 		}
 

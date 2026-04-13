@@ -25,6 +25,52 @@ Vue component exported from @stonecrop/graphql_client.
 import { DoctypeMeta } from '@stonecrop/graphql_client'
 ```
 
+## Functions
+
+### buildListQuery
+
+Build a GraphQL connection query to fetch a list of records.
+
+Only declares variables ($limit, $offset, $orderBy) that are actually used, avoiding GraphQL spec violations from unused variable declarations.
+
+**Signature:**
+
+```typescript
+export declare function buildListQuery(meta: DoctypeMeta, connectionFieldName: (t: string) => string, orderByTypeName: (t: string) => string, options?: GetRecordsOptions): string;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| meta | `DoctypeMeta` | Doctype metadata |
+| connectionFieldName | `(t: string) => string` | Function to derive the connection field name from a table name |
+| orderByTypeName | `(t: string) => string` | Function to derive the order-by type name from a table name |
+| options | `GetRecordsOptions` | Query options (limit, offset, orderBy) |
+
+### buildRecordQuery
+
+Build a GraphQL query string from doctype metadata.
+
+Generates scalar field selections. When `includeNested` is set, recursively includes descendant link sub-selections derived from the doctype's `links` object.
+
+**Signature:**
+
+```typescript
+export declare function buildRecordQuery(meta: DoctypeMeta, recordFieldName: (t: string) => string, recordArgName: (t: string) => string, recordArgType: (t: string) => string, registry?: Map<string, DoctypeMeta>, options?: GetRecordOptions): string;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| meta | `DoctypeMeta` | Doctype metadata to build the query from |
+| recordFieldName | `(t: string) => string` | Function to derive the query field name from a table name |
+| recordArgName | `(t: string) => string` | Function to derive the argument name from a table name |
+| recordArgType | `(t: string) => string` | Function to derive the argument type from a table name |
+| registry | `Map<string, DoctypeMeta>` | Doctype registry for resolving link targets. Required when includeNested is set. |
+| options | `GetRecordOptions` | Query options (includeNested, maxDepth) |
+
 ## Interfaces
 
 ### StonecropClientOptions
@@ -37,6 +83,7 @@ Options for creating a Stonecrop client
 export interface StonecropClientOptions {
   endpoint: string;
   headers?: Record<string, string>;
+  registry?: Map<string, DoctypeMeta>;
 }
 ```
 
@@ -46,6 +93,7 @@ export interface StonecropClientOptions {
 |----------|------|-------------|
 | endpoint | `string` | GraphQL endpoint URL |
 | headers? | `Record<string, string>` | Additional HTTP headers to include in requests |
+| registry? | `Map<string, DoctypeMeta>` | Doctype registry for nested query building |
 
 ## Type Aliases
 
@@ -150,10 +198,12 @@ getMeta(context: DoctypeContext): Promise<DoctypeMeta | null>
 
 #### getRecord
 
-Get a single record by ID
+Get a single record by ID.
+
+When `includeNested` is set, builds a query with sub-selections for descendant links and returns ancestor + merged descendants. When omitted, returns flat scalar data.
 
 ```typescript
-getRecord(doctype: DoctypeRef, recordId: string): Promise<Record<string, unknown> | null>
+getRecord(doctype: DoctypeRef, recordId: string, options: GetRecordOptions): Promise<Record<string, unknown> | null>
 ```
 
 **Parameters:**
@@ -162,18 +212,14 @@ getRecord(doctype: DoctypeRef, recordId: string): Promise<Record<string, unknown
 |-----------|------|-------------|
 | doctype | `DoctypeRef` | Doctype reference (name and optional slug) |
 | recordId | `string` | Record ID to fetch |
+| options | `GetRecordOptions` | Query options (includeNested, maxDepth) |
 
 #### getRecords
 
 Get multiple records with optional filtering and pagination
 
 ```typescript
-getRecords(doctype: DoctypeRef, options: {
-        filters?: Record<string, unknown>;
-        orderBy?: string;
-        limit?: number;
-        offset?: number;
-    }): Promise<Record<string, unknown>[]>
+getRecords(doctype: DoctypeRef, options: GetRecordsOptions): Promise<Record<string, unknown>[]>
 ```
 
 **Parameters:**
@@ -181,7 +227,7 @@ getRecords(doctype: DoctypeRef, options: {
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | doctype | `DoctypeRef` | Doctype reference (name and optional slug) |
-| options | `{ filters?: Record<string, unknown>; orderBy?: string; limit?: number; offset?: number; }` | Query options (filters, orderBy, limit, offset) |
+| options | `GetRecordsOptions` | Query options (filters, orderBy, limit, offset) |
 
 #### mutate
 

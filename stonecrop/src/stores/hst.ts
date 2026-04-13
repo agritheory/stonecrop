@@ -1,6 +1,7 @@
 import { getGlobalTriggerEngine } from '../field-triggers'
-import type { FieldChangeContext, TransitionChangeContext } from '../types/field-triggers'
 import { useOperationLogStore } from './operation-log'
+import type { FieldChangeContext, TransitionChangeContext } from '../types/field-triggers'
+import type { HSTNode } from '../types/hst'
 
 /**
  * Get the operation log store if available
@@ -12,84 +13,6 @@ function getOperationLogStore() {
 		// Operation log is optional
 		return null
 	}
-}
-
-/**
- * Core HST Interface - enhanced with tree navigation
- * Provides a hierarchical state tree interface for navigating and manipulating nested data structures.
- *
- * @public
- */
-interface HSTNode {
-	/**
-	 * Gets a value at the specified path
-	 * @param path - The dot-separated path to the value
-	 * @returns The value at the specified path
-	 */
-	get(path: string): any
-
-	/**
-	 * Sets a value at the specified path
-	 * @param path - The dot-separated path where to set the value
-	 * @param value - The value to set
-	 * @param source - Optional source of the operation (user, system, sync, undo, redo)
-	 */
-	set(path: string, value: any, source?: 'user' | 'system' | 'sync' | 'undo' | 'redo'): void
-
-	/**
-	 * Checks if a value exists at the specified path
-	 * @param path - The dot-separated path to check
-	 * @returns True if the path exists, false otherwise
-	 */
-	has(path: string): boolean
-
-	/**
-	 * Gets the parent node in the tree hierarchy
-	 * @returns The parent HSTNode or null if this is the root
-	 */
-	getParent(): HSTNode | null
-
-	/**
-	 * Gets the root node of the tree
-	 * @returns The root HSTNode
-	 */
-	getRoot(): HSTNode
-
-	/**
-	 * Gets the full path from root to this node
-	 * @returns The dot-separated path string
-	 */
-	getPath(): string
-
-	/**
-	 * Gets the depth level of this node in the tree
-	 * @returns The depth as a number (0 for root)
-	 */
-	getDepth(): number
-
-	/**
-	 * Gets an array of path segments from root to this node
-	 * @returns Array of path segments representing breadcrumbs
-	 */
-	getBreadcrumbs(): string[]
-
-	/**
-	 * Gets a child node at the specified relative path
-	 * @param path - The relative path to the child node
-	 * @returns The child HSTNode
-	 */
-	getNode(path: string): HSTNode
-
-	/**
-	 * Trigger an XState transition with optional context data
-	 * @param transition - The transition name (should be uppercase per convention)
-	 * @param context - Optional additional FSM context data
-	 * @returns Promise resolving to the transition execution results
-	 */
-	triggerTransition(
-		transition: string,
-		context?: { currentState?: string; targetState?: string; fsmContext?: Record<string, any> }
-	): Promise<any>
 }
 
 // Type definitions for global Registry
@@ -215,18 +138,16 @@ class HST {
 // Enhanced HST Proxy with tree navigation
 class HSTProxy implements HSTNode {
 	private target: any
-	private parentPath: string
+	private ancestorPath: string
 	private rootNode: HSTNode | null
 	private doctype: string
-	private parentDoctype?: string
 	private hst: HST
 
-	constructor(target: any, doctype: string, parentPath = '', rootNode: HSTNode | null = null, parentDoctype?: string) {
+	constructor(target: any, doctype: string, ancestorPath = '', rootNode: HSTNode | null = null) {
 		this.target = target
-		this.parentPath = parentPath
+		this.ancestorPath = ancestorPath
 		this.rootNode = rootNode || this
 		this.doctype = doctype
-		this.parentDoctype = parentDoctype
 		this.hst = HST.getInstance()
 
 		return new Proxy(this, {
@@ -267,16 +188,21 @@ class HSTProxy implements HSTNode {
 
 		// Always wrap in HSTProxy for tree navigation
 		if (typeof value === 'object' && value !== null && !this.isPrimitive(value)) {
-			return new HSTProxy(value, nodeDoctype, fullPath, this.rootNode, this.parentDoctype)
+			return new HSTProxy(value, nodeDoctype, fullPath, this.rootNode)
 		}
 
 		// For primitives, return a minimal wrapper that throws on tree operations
-		return new HSTProxy(value, nodeDoctype, fullPath, this.rootNode, this.parentDoctype)
+		return new HSTProxy(value, nodeDoctype, fullPath, this.rootNode)
 	}
 
 	set(path: string, value: any, source: 'user' | 'system' | 'sync' | 'undo' | 'redo' = 'user'): void {
 		// Get current value for change context
 		const fullPath = this.resolvePath(path)
+		if (fullPath === undefined) {
+			// eslint-disable-next-line no-console
+			console.warn('HST.set: resolved path is undefined, skipping operation')
+			return
+		}
 		const beforeValue = this.has(path) ? this.get(path) : undefined
 
 		// Log operation if not from undo/redo and store is available
@@ -355,18 +281,18 @@ class HSTProxy implements HSTNode {
 	}
 
 	// Tree navigation methods
-	getParent(): HSTNode | null {
-		if (!this.parentPath) return null
+	getAncestor(): HSTNode | null {
+		if (!this.ancestorPath) return null
 
-		const parentSegments = this.parentPath.split('.').slice(0, -1)
-		const parentPath = parentSegments.join('.')
+		const ancestorSegments = this.ancestorPath.split('.').slice(0, -1)
+		const ancestorPath = ancestorSegments.join('.')
 
-		if (parentPath === '') {
+		if (ancestorPath === '') {
 			return this.rootNode
 		}
 
 		// Return a wrapped node, not raw data
-		return this.rootNode!.getNode(parentPath)
+		return this.rootNode!.getNode(ancestorPath)
 	}
 
 	getRoot(): HSTNode {
@@ -374,15 +300,15 @@ class HSTProxy implements HSTNode {
 	}
 
 	getPath(): string {
-		return this.parentPath
+		return this.ancestorPath
 	}
 
 	getDepth(): number {
-		return this.parentPath ? this.parentPath.split('.').length : 0
+		return this.ancestorPath ? this.ancestorPath.split('.').length : 0
 	}
 
 	getBreadcrumbs(): string[] {
-		return this.parentPath ? this.parentPath.split('.') : []
+		return this.ancestorPath ? this.ancestorPath.split('.') : []
 	}
 
 	/**
@@ -395,7 +321,7 @@ class HSTProxy implements HSTNode {
 		const triggerEngine = getGlobalTriggerEngine()
 
 		// Determine doctype and recordId from the current path
-		const pathSegments = this.parentPath.split('.')
+		const pathSegments = this.ancestorPath.split('.')
 		let doctype = this.doctype
 		let recordId: string | undefined
 
@@ -411,7 +337,7 @@ class HSTProxy implements HSTNode {
 
 		// Build transition context
 		const transitionContext: TransitionChangeContext = {
-			path: this.parentPath,
+			path: this.ancestorPath,
 			fieldname: '', // No specific field for transitions
 			beforeValue: undefined,
 			afterValue: undefined,
@@ -432,7 +358,7 @@ class HSTProxy implements HSTNode {
 			logStore.addOperation(
 				{
 					type: 'transition' as const,
-					path: this.parentPath,
+					path: this.ancestorPath,
 					fieldname: transition,
 					beforeValue: context?.currentState,
 					afterValue: context?.targetState,
@@ -456,8 +382,8 @@ class HSTProxy implements HSTNode {
 
 	// Private helper methods
 	private resolvePath(path: string): string {
-		if (path === '') return this.parentPath
-		return this.parentPath ? `${this.parentPath}.${path}` : path
+		if (path === '') return this.ancestorPath ?? ''
+		return this.ancestorPath ? `${this.ancestorPath}.${path}` : path
 	}
 
 	private resolveValue(path: string): any {
@@ -490,7 +416,7 @@ class HSTProxy implements HSTNode {
 		const lastSegment = segments.pop()!
 		let current = this.target
 
-		// Navigate to parent object
+		// Navigate to ancestor object
 		for (const segment of segments) {
 			current = this.getProperty(current, segment)
 			if (current === null || current === undefined) {
@@ -705,13 +631,12 @@ class HSTProxy implements HSTNode {
  *
  * @param target - The target object to wrap with HST functionality
  * @param doctype - The document type identifier
- * @param parentDoctype - Optional parent document type identifier
  * @returns A new HSTNode proxy instance
  *
  * @public
  */
-function createHST(target: any, doctype: string, parentDoctype?: string): HSTNode {
-	return new HSTProxy(target, doctype, '', null, parentDoctype)
+function createHST(target: any, doctype: string): HSTNode {
+	return new HSTProxy(target, doctype, '', null)
 }
 
 // Export everything

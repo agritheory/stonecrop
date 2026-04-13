@@ -1,5 +1,5 @@
 import type { SchemaTypes } from '@stonecrop/aform'
-import type { WorkflowMeta } from '@stonecrop/schema'
+import type { LinkDeclaration, WorkflowMeta } from '@stonecrop/schema'
 import { List, Map } from 'immutable'
 import type { AnyStateNodeConfig, UnknownMachineConfig } from 'xstate'
 
@@ -11,6 +11,7 @@ export type ImmutableDoctype = {
 	readonly schema?: List<SchemaTypes>
 	readonly workflow?: UnknownMachineConfig | AnyStateNodeConfig | WorkflowMeta
 	readonly actions?: Map<string, string[]>
+	readonly links?: Record<string, LinkDeclaration>
 }
 
 /**
@@ -45,16 +46,14 @@ export type DoctypeConfig = {
 	slug?: string
 	/** Database table name */
 	tableName?: string
-	/** Field definitions */
+	/** Field definitions (including link fields with fieldtype: 'Link') */
 	fields?: SchemaTypes[]
+	/** Relationship links to other doctypes */
+	links?: Record<string, LinkDeclaration>
 	/** Workflow configuration (XState format or simple WorkflowMeta) */
 	workflow?: UnknownMachineConfig | WorkflowMeta
 	/** Actions and their field triggers */
 	actions?: Record<string, string[]>
-	/** Parent doctype for inheritance */
+	/** Ancestor doctype for inheritance */
 	inherits?: string
-	/** Doctype to use for list views */
-	listDoctype?: string
-	/** Parent doctype for child tables */
-	parentDoctype?: string
 }

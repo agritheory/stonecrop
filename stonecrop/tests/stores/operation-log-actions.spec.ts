@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 
 import { Stonecrop } from '../../src/stonecrop'
@@ -6,6 +6,7 @@ import Registry from '../../src/registry'
 import Doctype from '../../src/doctype'
 import { Map, List } from 'immutable'
 import { useOperationLog } from '../../src/composables/operation-log'
+import { FieldTriggerEngine, getGlobalTriggerEngine } from '../../src/field-triggers'
 
 describe('Operation Log - Action Tracking', () => {
 	let registry: Registry
@@ -19,15 +20,25 @@ describe('Operation Log - Action Tracking', () => {
 		// Reset static instances
 		Registry._root = undefined as any
 		Stonecrop._root = undefined as any
+		FieldTriggerEngine._root = undefined as any
+
+		// Register mock action handlers
+		const engine = getGlobalTriggerEngine()
+		engine.registerAction('printDocument', () => {})
+		engine.registerAction('sendEmail', () => {})
+		engine.registerAction('archiveRecord', () => {})
+		engine.registerAction('failingAction', () => {
+			throw new Error('Action failed')
+		})
 
 		// Create registry
 		registry = new Registry()
 
 		// Create mock doctype with actions
 		const mockActions = Map({
-			print: ['console.log("Printing document")'],
-			email: ['console.log("Sending email")'],
-			archive: ['console.log("Archiving record")'],
+			print: ['printDocument'],
+			email: ['sendEmail'],
+			archive: ['archiveRecord'],
 		})
 
 		mockDoctype = new Doctype('Task', List([]), undefined, mockActions)
@@ -135,7 +146,7 @@ describe('Operation Log - Action Tracking', () => {
 
 			// Create doctype with failing action
 			const failingActions = Map({
-				failing: ['throw new Error("Action failed")'],
+				failing: ['failingAction'],
 			})
 
 			const failingDoctype = new Doctype('FailingTask', List([]), undefined, failingActions)
@@ -169,6 +180,57 @@ describe('Operation Log - Action Tracking', () => {
 			const operation = operations.value[operations.value.length - 1]
 			// Should only include string arguments
 			expect(operation.actionRecordIds).toEqual(['TASK-001', 'TASK-002'])
+		})
+	})
+
+	describe('runAction FieldChangeContext construction', () => {
+		it('should call the registered handler with a FieldChangeContext', () => {
+			const handler = vi.fn()
+			const engine = getGlobalTriggerEngine()
+			engine.registerAction('contextCheck', handler)
+
+			const contextCheckDoctype = new Doctype('ContextTask', List([]), undefined, Map({ check: ['contextCheck'] }))
+			registry.addDoctype(contextCheckDoctype)
+
+			stonecrop.runAction(contextCheckDoctype, 'check', ['REC-001'])
+
+			expect(handler).toHaveBeenCalledOnce()
+			const ctx = handler.mock.calls[0][0]
+			expect(ctx.path).toBe('context-task.REC-001')
+			expect(ctx.fieldname).toBe('check')
+			expect(ctx.doctype).toBe('ContextTask')
+			expect(ctx.recordId).toBe('REC-001')
+			expect(ctx.afterValue).toEqual(['REC-001'])
+			expect(ctx.operation).toBe('set')
+			expect(ctx.timestamp).toBeInstanceOf(Date)
+		})
+
+		it('should pass undefined recordId when no args supplied', () => {
+			const handler = vi.fn()
+			const engine = getGlobalTriggerEngine()
+			engine.registerAction('noArgCheck', handler)
+
+			const noArgDoctype = new Doctype('NoArgTask', List([]), undefined, Map({ run: ['noArgCheck'] }))
+			registry.addDoctype(noArgDoctype)
+
+			stonecrop.runAction(noArgDoctype, 'run')
+
+			const ctx = handler.mock.calls[0][0]
+			expect(ctx.recordId).toBeUndefined()
+			expect(ctx.afterValue).toBeUndefined()
+		})
+
+		it('should log failure when action name is not registered in FieldTriggerEngine', () => {
+			const { operations } = useOperationLog()
+
+			const ghostDoctype = new Doctype('GhostTask', List([]), undefined, Map({ run: ['nonExistentAction'] }))
+			registry.addDoctype(ghostDoctype)
+
+			stonecrop.runAction(ghostDoctype, 'run', ['REC-001'])
+
+			const operation = operations.value[operations.value.length - 1]
+			expect(operation.actionResult).toBe('failure')
+			expect(operation.actionError).toContain('nonExistentAction')
 		})
 	})
 

@@ -86,7 +86,7 @@ const decimalField: FieldMeta = {
 
 ### Doctype Metadata
 
-`DoctypeMeta` defines a complete doctype with fields, workflow, and inheritance:
+`DoctypeMeta` defines a complete doctype with fields, links, workflow, and inheritance:
 
 ```typescript
 import { DoctypeMeta } from '@stonecrop/schema'
@@ -105,11 +105,19 @@ const doctype: DoctypeMeta = {
     },
     {
       fieldname: 'items',
-      fieldtype: 'Doctype',
-      label: 'Order Items',
-      options: 'sales-order-item', // Child doctype
+      fieldtype: 'Link',
+      label: 'Items',
+      options: 'sales-order-item',
     },
   ],
+  links: {
+    items: {
+      target: 'sales-order-item',
+      cardinality: 'noneOrMany',
+      backlink: 'sales_order',
+      fieldname: 'items',
+    },
+  },
   workflow: {
     states: ['Draft', 'Submitted', 'Cancelled'],
     actions: {
@@ -120,6 +128,35 @@ const doctype: DoctypeMeta = {
         allowedStates: ['Draft'],
       },
     },
+  },
+}
+```
+
+### Link Declarations
+
+`links` on `DoctypeMeta` declares relationships to other doctypes. Each link has a `target`, `cardinality`, and optional `backlink`:
+
+```typescript
+import { LinkDeclaration, Cardinality } from '@stonecrop/schema'
+
+// Cardinality values:
+// 'one'         — exactly 1 (required pointer)
+// 'atMostOne'   — 0 or 1 (optional pointer)
+// 'noneOrMany'  — 0 or more (optional collection)
+// 'atLeastOne'  — 1 or more (required collection)
+
+const links: Record<string, LinkDeclaration> = {
+  // 1:many — ancestor has descendants
+  tasks: {
+    target: 'recipe-task',
+    cardinality: 'noneOrMany',
+    backlink: 'recipe', // fieldname on recipe-task that points back
+  },
+  // Self-referential — version lineage
+  supersededBy: {
+    target: 'recipe',
+    cardinality: 'atMostOne',
+    backlink: 'supersededBy',
   },
 }
 ```
@@ -149,6 +186,36 @@ const workflow: WorkflowMeta = {
     },
   },
 }
+```
+
+## Client Interfaces
+
+`DataClient` is the interface that any data transport must implement. `GetRecordOptions` and `GetRecordsOptions` are the option types:
+
+```typescript
+import type { DataClient, GetRecordOptions, GetRecordsOptions } from '@stonecrop/schema'
+
+// Fetch a record — with optional nested link sub-selections
+const record = await client.getRecord({ name: 'Recipe' }, 'r1', {
+  includeNested: true, // fetch all descendant links
+  maxDepth: 2, // limit recursion depth
+})
+
+// Fetch only specific links
+const record = await client.getRecord({ name: 'Recipe' }, 'r1', {
+  includeNested: ['tasks'], // fetch only the tasks link
+})
+
+// Fetch multiple records
+const records = await client.getRecords(
+  { name: 'Recipe' },
+  {
+    filters: { status: 'Active' },
+    orderBy: 'name',
+    limit: 20,
+    offset: 0,
+  }
+)
 ```
 
 ## Validation
@@ -237,18 +304,18 @@ then `--exclude` removes any remaining unwanted names.
 
 ### All options
 
-| Flag | Short | Description |
-|------|-------|-------------|
-| `--endpoint <url>` | `-e` | Fetch introspection from a live GraphQL endpoint |
-| `--introspection <file>` | `-i` | Read from a saved introspection JSON file |
-| `--sdl <file>` | `-s` | Read from a GraphQL SDL (`.graphql`) file |
-| `--output <dir>` | `-o` | Directory to write doctype JSON files (required) |
-| `--include <types>` | | Comma-separated allowlist of type names to generate |
-| `--exclude <types>` | | Comma-separated list of type names to skip |
-| `--overrides <file>` | | JSON file with per-type, per-field overrides |
-| `--custom-scalars <file>` | | JSON file mapping custom scalar names to field templates |
-| `--include-unmapped` | | Retain `_graphqlType` metadata on fields with no mapping |
-| `--help` | `-h` | Show help |
+| Flag                      | Short | Description                                              |
+| ------------------------- | ----- | -------------------------------------------------------- |
+| `--endpoint <url>`        | `-e`  | Fetch introspection from a live GraphQL endpoint         |
+| `--introspection <file>`  | `-i`  | Read from a saved introspection JSON file                |
+| `--sdl <file>`            | `-s`  | Read from a GraphQL SDL (`.graphql`) file                |
+| `--output <dir>`          | `-o`  | Directory to write doctype JSON files (required)         |
+| `--include <types>`       |       | Comma-separated allowlist of type names to generate      |
+| `--exclude <types>`       |       | Comma-separated list of type names to skip               |
+| `--overrides <file>`      |       | JSON file with per-type, per-field overrides             |
+| `--custom-scalars <file>` |       | JSON file mapping custom scalar names to field templates |
+| `--include-unmapped`      |       | Retain `_graphqlType` metadata on fields with no mapping |
+| `--help`                  | `-h`  | Show help                                                |
 
 ### Custom scalars
 
@@ -258,7 +325,7 @@ a JSON mapping file:
 ```json
 {
   "BigFloat": { "component": "ADecimalInput", "fieldtype": "Decimal" },
-  "Datetime":  { "component": "ADatetimeInput", "fieldtype": "Datetime" }
+  "Datetime": { "component": "ADatetimeInput", "fieldtype": "Datetime" }
 }
 ```
 
@@ -332,14 +399,7 @@ doctypes.forEach(doctype => {
 Convert between different naming conventions:
 
 ```typescript
-import {
-  snakeToCamel,
-  camelToSnake,
-  snakeToLabel,
-  camelToLabel,
-  toPascalCase,
-  toSlug,
-} from '@stonecrop/schema'
+import { snakeToCamel, camelToSnake, snakeToLabel, camelToLabel, toPascalCase, toSlug } from '@stonecrop/schema'
 
 snakeToCamel('customer_name') // 'customerName'
 camelToSnake('customerName') // 'customer_name'
@@ -367,7 +427,8 @@ console.log(TYPE_MAP['Link']) // { component: 'ALink', fieldtype: 'Link' }
 
 This package provides the type system used throughout Stonecrop:
 
-- **`@stonecrop/stonecrop`** - Registry uses `DoctypeMeta` for schema storage
+- **`@stonecrop/stonecrop`** - Registry uses `DoctypeMeta` for schema storage; `getDescendantLinks()` / `getAncestorLinks()` for relationship traversal
+- **`@stonecrop/graphql-client`** - `StonecropClient` implements `DataClient`; uses `GetRecordOptions` / `GetRecordsOptions` for fetch parameters
 - **`@stonecrop/aform`** - Renders fields based on `FieldMeta` definitions
 - **`@stonecrop/atable`** - Uses `FieldMeta` for column configuration
 - **Backend APIs** - Validates and stores doctypes using these schemas

@@ -11,7 +11,6 @@ const fieldtypeToComponent: Record<string, string> = {
 	Datetime: 'ADate',
 	Select: 'ADropdown',
 	Link: 'AComboBox',
-	Doctype: 'AForm', // Doctype renders as nested form (1:1) or table (1:many) based on cardinality
 	JSON: 'ATextInput', // Default to text input for JSON
 	// Add more mappings as needed
 }
@@ -27,22 +26,18 @@ export function hydrateSchema(schema: any[]): any[] {
 			component,
 		}
 
-		// Special handling for Doctype fieldtype
-		if (field.fieldtype === 'Doctype') {
-			// For cardinality: 'many', derive columns and use ATable
-			if (field.cardinality === 'many') {
-				// Use columns if provided in the schema
-				if (field.columns && Array.isArray(field.columns)) {
-					hydratedField.columns = field.columns
-				}
-				hydratedField.component = 'ATable'
-				// Will be populated from data via AForm's componentProps
-				hydratedField.rows = []
+		// Handle resolved 1:many link entries (have cardinality + columns/rows)
+		if (field.cardinality === 'noneOrMany' || field.cardinality === 'atLeastOne') {
+			if (field.columns && Array.isArray(field.columns)) {
+				hydratedField.columns = field.columns
 			}
-			// For cardinality: 'one' (default), embed schema for nested AForm
-			if (field.schema && Array.isArray(field.schema)) {
-				hydratedField.schema = field.schema
-			}
+			hydratedField.component = 'ATable'
+			hydratedField.rows = []
+		}
+
+		// Handle resolved 1:1 link entries (have schema + options)
+		if (field.schema && Array.isArray(field.schema) && field.options) {
+			hydratedField.schema = field.schema
 		}
 
 		return hydratedField

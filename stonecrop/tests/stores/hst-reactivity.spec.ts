@@ -196,7 +196,6 @@ describe('HST Vue Reactivity', () => {
 		const mockSchema = List([
 			{ fieldname: 'name', fieldtype: 'Data', label: 'Name', component: 'MockATextInput' },
 			{ fieldname: 'active', fieldtype: 'Check', label: 'Active', component: 'MockACheckbox' },
-			{ fieldname: 'items', fieldtype: 'Doctype', cardinality: 'many', label: 'Items', component: 'MockATable' },
 		] as SchemaTypes[])
 
 		const mockWorkflow: UnknownMachineConfig = {
@@ -213,7 +212,9 @@ describe('HST Vue Reactivity', () => {
 			save: ['saveData'],
 		})
 
-		doctype = new Doctype('Task', mockSchema, mockWorkflow, mockActions)
+		doctype = new Doctype('Task', mockSchema, mockWorkflow, mockActions, undefined, {
+			items: { target: 'item', cardinality: 'noneOrMany' },
+		})
 		registry.addDoctype(doctype)
 		stonecrop = new Stonecrop(registry)
 	})

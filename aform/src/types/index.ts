@@ -103,7 +103,7 @@ export type FormSchema = BaseSchema & {
 	 * Align the field in the form
 	 * @beta
 	 */
-	align?: string
+	align?: CanvasTextAlign
 
 	/**
 	 * Indicate whether the field is editable
@@ -184,7 +184,7 @@ export type FieldsetSchema = BaseSchema & {
 	 * The schemas to be rendered inside the fieldset
 	 * @public
 	 */
-	schema?: (FormSchema | TableSchema)[]
+	schema?: SchemaTypes[]
 
 	/**
 	 * Indicate whether the fieldset is collapsible
@@ -194,133 +194,7 @@ export type FieldsetSchema = BaseSchema & {
 }
 
 /**
- * Schema structure for a 1:1 nested doctype field inside AForm
- *
- * @remarks
- * When a field has `fieldtype: 'Doctype'` without `cardinality: 'many'`, it represents
- * a 1:1 nested form. The `options` property contains the slug of the referenced doctype.
- * The `schema` property is populated by the framework's `registry.resolveSchema()` method
- * with the resolved child schema fields.
- *
- * Before resolution: `{ fieldname: 'address', fieldtype: 'Doctype', options: 'address' }`
- * After resolution: `{ fieldname: 'address', fieldtype: 'Doctype', options: 'address', schema: [...resolved fields...] }`
- *
- * Users can also manually provide the `schema` property without using the framework registry.
- *
- * @public
- */
-export type DoctypeOneSchema = BaseSchema & {
-	/**
-	 * The field type - must be 'Doctype' for nested doctype fields
-	 * @public
-	 */
-	fieldtype: 'Doctype'
-
-	/**
-	 * The slug of the referenced doctype in the registry
-	 * @public
-	 */
-	options: string
-
-	/**
-	 * The label to display above the nested form section
-	 * @public
-	 */
-	label?: string
-
-	/**
-	 * The cardinality of the relationship — `'one'` or omitted means 1:1 nested form
-	 * @public
-	 */
-	cardinality?: 'one'
-
-	/**
-	 * The resolved child schema fields, populated by `registry.resolveSchema()`
-	 * or provided manually for standalone usage
-	 * @public
-	 */
-	schema?: SchemaTypes[]
-}
-
-/**
- * Schema structure for a 1:many child table field inside AForm
- *
- * @remarks
- * When a field has `fieldtype: 'Doctype'` with `cardinality: 'many'`, it represents
- * a 1:many child table. The `options` property contains the slug of the child doctype
- * whose records appear as table rows.
- *
- * `Registry.resolveSchema()` auto-derives `columns` from the child doctype's schema
- * fields and sets sensible defaults for `component` (`'ATable'`) and `config` (`{ view: 'list' }`).
- *
- * Users can override any auto-derived property by specifying it explicitly on the schema field.
- * Row data comes from the parent form's data model at `data[fieldname]` (an array).
- *
- * @public
- */
-export type DoctypeManySchema = BaseSchema & {
-	/**
-	 * The field type - must be 'Doctype' for nested doctype fields
-	 * @public
-	 */
-	fieldtype: 'Doctype'
-
-	/**
-	 * The slug of the child doctype in the registry
-	 * @public
-	 */
-	options: string
-
-	/**
-	 * The label to display above the table section
-	 * @public
-	 */
-	label?: string
-
-	/**
-	 * The cardinality of the relationship — `'many'` means 1:many child table
-	 * @public
-	 */
-	cardinality: 'many'
-
-	/**
-	 * Table columns — auto-derived from child doctype schema if not provided
-	 * @public
-	 */
-	columns?: TableColumn[]
-
-	/**
-	 * Table configuration — defaults to `{ view: 'list' }` if not provided
-	 * @public
-	 */
-	config?: TableConfig
-
-	/**
-	 * Table rows — populated from the parent form's data model at `data[fieldname]`
-	 * @public
-	 */
-	rows?: TableRow[]
-
-	/**
-	 * The component to render — defaults to `'ATable'` when resolved
-	 * @public
-	 */
-	component?: string
-}
-
-/**
- * Discriminated union for Doctype fields — either 1:1 nested form or 1:many child table
- *
- * @remarks
- * Use `isDoctypeMany()` type guard to narrow to `DoctypeManySchema`.
- * When `cardinality` is `'many'` or omitted, the field is a 1:1 nested form.
- *
- * @public
- */
-export type DoctypeSchema = DoctypeOneSchema | DoctypeManySchema
-
-/**
  * Superset of all schema types for AForm
  * @public
  */
-export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema | DoctypeSchema
+export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema

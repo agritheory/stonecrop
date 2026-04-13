@@ -2,6 +2,7 @@
 export * from './composable'
 export * from './doctype'
 export * from './field-triggers'
+export * from './hst'
 export * from './operation-log'
 export * from './plugin'
 export * from './registry'

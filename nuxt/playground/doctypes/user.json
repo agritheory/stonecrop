@@ -11,23 +11,13 @@
 			"fieldname": "disabled",
 			"fieldtype": "Check",
 			"default": false
-		},
-		{
-			"label": "Roles",
-			"fieldname": "has_roles",
-			"fieldtype": "Doctype",
-			"columns": [
-				{
-					"name": "role_name",
-					"label": "Role",
-					"fieldtype": "Data"
-				},
-				{
-					"name": "active",
-					"label": "Active",
-					"fieldtype": "Check"
-				}
-			]
 		}
-	]
+	],
+	"links": {
+		"has_roles": {
+			"target": "UserRole",
+			"cardinality": "noneOrMany",
+			"backlink": "user"
+		}
+	}
 }

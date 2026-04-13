@@ -8,6 +8,14 @@ import type { DataClient } from '@stonecrop/schema';
 import type { DoctypeContext } from '@stonecrop/schema';
 import { DoctypeMeta } from '@stonecrop/schema';
 import type { DoctypeRef } from '@stonecrop/schema';
+import type { GetRecordOptions } from '@stonecrop/schema';
+import type { GetRecordsOptions } from '@stonecrop/schema';
+
+// @public
+export function buildListQuery(meta: DoctypeMeta, connectionFieldName: (t: string) => string, orderByTypeName: (t: string) => string, options?: GetRecordsOptions): string;
+
+// @public
+export function buildRecordQuery(meta: DoctypeMeta, recordFieldName: (t: string) => string, recordArgName: (t: string) => string, recordArgType: (t: string) => string, registry?: Map<string, DoctypeMeta>, options?: GetRecordOptions): string;
 
 export { DoctypeContext }
 
@@ -63,13 +71,8 @@ export class StonecropClient implements DataClient {
     clearMetaCache(): void;
     getAllMeta(): Promise<DoctypeMeta[]>;
     getMeta(context: DoctypeContext): Promise<DoctypeMeta | null>;
-    getRecord(doctype: DoctypeRef, recordId: string): Promise<Record<string, unknown> | null>;
-    getRecords(doctype: DoctypeRef, options?: {
-        filters?: Record<string, unknown>;
-        orderBy?: string;
-        limit?: number;
-        offset?: number;
-    }): Promise<Record<string, unknown>[]>;
+    getRecord(doctype: DoctypeRef, recordId: string, options?: GetRecordOptions): Promise<Record<string, unknown> | null>;
+    getRecords(doctype: DoctypeRef, options?: GetRecordsOptions): Promise<Record<string, unknown>[]>;
     mutate<T = unknown>(mutation: string, variables?: Record<string, unknown>): Promise<T>;
     query<T = unknown>(query: string, variables?: Record<string, unknown>): Promise<T>;
     runAction(doctype: DoctypeRef, action: string, args?: unknown[]): Promise<{
@@ -83,6 +86,7 @@ export class StonecropClient implements DataClient {
 export interface StonecropClientOptions {
     endpoint: string;
     headers?: Record<string, string>;
+    registry?: Map<string, DoctypeMeta>;
 }
 
 // @public

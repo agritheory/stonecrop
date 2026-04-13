@@ -125,8 +125,6 @@ export const createStonecropPlugin = (options: StonecropPluginOptions): Graphile
 					fields: [StonecropFieldMeta!]!
 					workflow: StonecropWorkflowMeta
 					inherits: String
-					listDoctype: String
-					parentDoctype: String
 				}
 
 				type StonecropRecordResult {
@@ -389,7 +387,7 @@ function defaultRecordArgType(_tableName: string): string {
  * These fields are excluded from generated query field selections.
  * @public
  */
-const RELATION_FIELDTYPES = new Set(['Link', 'Doctype'])
+const RELATION_FIELDTYPES = new Set(['Link'])
 
 /**
  * Filter fields to only those directly queryable as scalars, excluding Link and Doctype

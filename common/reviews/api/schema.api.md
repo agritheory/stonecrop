@@ -32,6 +32,17 @@ export function camelToLabel(camelCase: string): string;
 export function camelToSnake(camelCase: string): string;
 
 // @public
+export const Cardinality: z.ZodEnum<{
+    one: "one";
+    atMostOne: "atMostOne";
+    noneOrMany: "noneOrMany";
+    atLeastOne: "atLeastOne";
+}>;
+
+// @public
+export type Cardinality = z.infer<typeof Cardinality>;
+
+// @public
 export function classifyFieldType(fieldName: string, field: GraphQLField<unknown, unknown>, entityTypes: Set<string>, options?: GraphQLConversionOptions): GraphQLConversionFieldMeta;
 
 // @public
@@ -44,15 +55,19 @@ export interface ConvertedGraphQLDoctype extends Omit<DoctypeMeta, 'fields'> {
 export function convertGraphQLSchema(source: IntrospectionSource, options?: GraphQLConversionOptions): ConvertedGraphQLDoctype[];
 
 // @public
+export const CustomFetch: z.ZodObject<{
+    method: z.ZodLiteral<"custom">;
+    handler: z.ZodString;
+}, z.core.$strip>;
+
+// @public
+export type CustomFetch = z.infer<typeof CustomFetch>;
+
+// @public
 export interface DataClient<T extends DoctypeRef = DoctypeRef, M = DoctypeMeta> {
     getMeta(context: DoctypeContext): Promise<M | null>;
-    getRecord(doctype: T, recordId: string): Promise<Record<string, unknown> | null>;
-    getRecords(doctype: T, options?: {
-        filters?: Record<string, unknown>;
-        orderBy?: string;
-        limit?: number;
-        offset?: number;
-    }): Promise<Record<string, unknown>[]>;
+    getRecord(doctype: T, recordId: string, options?: GetRecordOptions): Promise<Record<string, unknown> | null>;
+    getRecords(doctype: T, options?: GetRecordsOptions): Promise<Record<string, unknown>[]>;
     runAction(doctype: T, action: string, args?: unknown[]): Promise<{
         success: boolean;
         data: unknown;
@@ -74,7 +89,7 @@ export interface DoctypeContext {
 }
 
 // @public
-const DoctypeMeta: z.ZodObject<{
+export const DoctypeMeta: z.ZodObject<{
     name: z.ZodString;
     slug: z.ZodOptional<z.ZodString>;
     tableName: z.ZodOptional<z.ZodString>;
@@ -95,7 +110,6 @@ const DoctypeMeta: z.ZodObject<{
             JSON: "JSON";
             Code: "Code";
             Link: "Link";
-            Doctype: "Doctype";
             Attach: "Attach";
             Currency: "Currency";
             Quantity: "Quantity";
@@ -120,13 +134,37 @@ const DoctypeMeta: z.ZodObject<{
         options: z.ZodOptional<z.ZodUnion<readonly [z.ZodString, z.ZodArray<z.ZodString>, z.ZodRecord<z.ZodString, z.ZodUnknown>]>>;
         cardinality: z.ZodOptional<z.ZodEnum<{
             one: "one";
-            many: "many";
+            atMostOne: "atMostOne";
+            noneOrMany: "noneOrMany";
+            atLeastOne: "atLeastOne";
         }>>;
         mask: z.ZodOptional<z.ZodString>;
         validation: z.ZodOptional<z.ZodObject<{
             errorMessage: z.ZodString;
         }, z.core.$loose>>;
     }, z.core.$strip>>;
+    links: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodObject<{
+        target: z.ZodString;
+        cardinality: z.ZodEnum<{
+            one: "one";
+            atMostOne: "atMostOne";
+            noneOrMany: "noneOrMany";
+            atLeastOne: "atLeastOne";
+        }>;
+        backlink: z.ZodOptional<z.ZodString>;
+        component: z.ZodOptional<z.ZodString>;
+        fieldname: z.ZodOptional<z.ZodString>;
+        fetch: z.ZodOptional<z.ZodDiscriminatedUnion<[z.ZodObject<{
+            method: z.ZodLiteral<"sync">;
+            limit: z.ZodOptional<z.ZodNumber>;
+        }, z.core.$strip>, z.ZodObject<{
+            method: z.ZodLiteral<"lazy">;
+        }, z.core.$strip>, z.ZodObject<{
+            method: z.ZodLiteral<"custom">;
+            handler: z.ZodString;
+        }, z.core.$strip>], "method">>;
+        blockWorkflows: z.ZodOptional<z.ZodBoolean>;
+    }, z.core.$strip>>>;
     workflow: z.ZodOptional<z.ZodObject<{
         states: z.ZodOptional<z.ZodArray<z.ZodString>>;
         actions: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodObject<{
@@ -139,14 +177,10 @@ const DoctypeMeta: z.ZodObject<{
         }, z.core.$strip>>>;
     }, z.core.$strip>>;
     inherits: z.ZodOptional<z.ZodString>;
-    listDoctype: z.ZodOptional<z.ZodString>;
-    parentDoctype: z.ZodOptional<z.ZodString>;
 }, z.core.$strip>;
 
 // @public
-type DoctypeMeta = z.infer<typeof DoctypeMeta>;
-export { DoctypeMeta }
-export { DoctypeMeta as DoctypeMetaType }
+export type DoctypeMeta = z.infer<typeof DoctypeMeta>;
 
 // @public
 export interface DoctypeRef {
@@ -155,7 +189,21 @@ export interface DoctypeRef {
 }
 
 // @public
-const FieldMeta: z.ZodObject<{
+export const FetchStrategy: z.ZodDiscriminatedUnion<[z.ZodObject<{
+    method: z.ZodLiteral<"sync">;
+    limit: z.ZodOptional<z.ZodNumber>;
+}, z.core.$strip>, z.ZodObject<{
+    method: z.ZodLiteral<"lazy">;
+}, z.core.$strip>, z.ZodObject<{
+    method: z.ZodLiteral<"custom">;
+    handler: z.ZodString;
+}, z.core.$strip>], "method">;
+
+// @public
+export type FetchStrategy = z.infer<typeof FetchStrategy>;
+
+// @public
+export const FieldMeta: z.ZodObject<{
     fieldname: z.ZodString;
     fieldtype: z.ZodEnum<{
         Data: "Data";
@@ -172,7 +220,6 @@ const FieldMeta: z.ZodObject<{
         JSON: "JSON";
         Code: "Code";
         Link: "Link";
-        Doctype: "Doctype";
         Attach: "Attach";
         Currency: "Currency";
         Quantity: "Quantity";
@@ -197,7 +244,9 @@ const FieldMeta: z.ZodObject<{
     options: z.ZodOptional<z.ZodUnion<readonly [z.ZodString, z.ZodArray<z.ZodString>, z.ZodRecord<z.ZodString, z.ZodUnknown>]>>;
     cardinality: z.ZodOptional<z.ZodEnum<{
         one: "one";
-        many: "many";
+        atMostOne: "atMostOne";
+        noneOrMany: "noneOrMany";
+        atLeastOne: "atLeastOne";
     }>>;
     mask: z.ZodOptional<z.ZodString>;
     validation: z.ZodOptional<z.ZodObject<{
@@ -206,17 +255,13 @@ const FieldMeta: z.ZodObject<{
 }, z.core.$strip>;
 
 // @public
-type FieldMeta = z.infer<typeof FieldMeta>;
-export { FieldMeta }
-export { FieldMeta as FieldMetaType }
+export type FieldMeta = z.infer<typeof FieldMeta>;
 
 // @public
-const FieldOptions: z.ZodUnion<readonly [z.ZodString, z.ZodArray<z.ZodString>, z.ZodRecord<z.ZodString, z.ZodUnknown>]>;
+export const FieldOptions: z.ZodUnion<readonly [z.ZodString, z.ZodArray<z.ZodString>, z.ZodRecord<z.ZodString, z.ZodUnknown>]>;
 
 // @public
-type FieldOptions = z.infer<typeof FieldOptions>;
-export { FieldOptions }
-export { FieldOptions as FieldOptionsType }
+export type FieldOptions = z.infer<typeof FieldOptions>;
 
 // @public
 export interface FieldTemplate {
@@ -236,11 +281,26 @@ export type FieldValidation = z.infer<typeof FieldValidation>;
 export function getDefaultComponent(fieldtype: StonecropFieldType): string;
 
 // @public
+export interface GetRecordOptions {
+    includeNested?: boolean | string[];
+    maxDepth?: number;
+}
+
+// @public
+export interface GetRecordsOptions {
+    filters?: Record<string, unknown>;
+    limit?: number;
+    offset?: number;
+    orderBy?: string;
+}
+
+// @public
 export const GQL_SCALAR_MAP: Record<string, FieldTemplate>;
 
 // @public
 export interface GraphQLConversionFieldMeta extends FieldMeta {
     _graphqlType?: string;
+    _isLink?: boolean;
     _unmapped?: boolean;
 }
 
@@ -264,6 +324,41 @@ export const INTERNAL_SCALARS: Set<string>;
 export type IntrospectionSource = IntrospectionQuery | string;
 
 // @public
+export const LazyFetch: z.ZodObject<{
+    method: z.ZodLiteral<"lazy">;
+}, z.core.$strip>;
+
+// @public
+export type LazyFetch = z.infer<typeof LazyFetch>;
+
+// @public
+export const LinkDeclaration: z.ZodObject<{
+    target: z.ZodString;
+    cardinality: z.ZodEnum<{
+        one: "one";
+        atMostOne: "atMostOne";
+        noneOrMany: "noneOrMany";
+        atLeastOne: "atLeastOne";
+    }>;
+    backlink: z.ZodOptional<z.ZodString>;
+    component: z.ZodOptional<z.ZodString>;
+    fieldname: z.ZodOptional<z.ZodString>;
+    fetch: z.ZodOptional<z.ZodDiscriminatedUnion<[z.ZodObject<{
+        method: z.ZodLiteral<"sync">;
+        limit: z.ZodOptional<z.ZodNumber>;
+    }, z.core.$strip>, z.ZodObject<{
+        method: z.ZodLiteral<"lazy">;
+    }, z.core.$strip>, z.ZodObject<{
+        method: z.ZodLiteral<"custom">;
+        handler: z.ZodString;
+    }, z.core.$strip>], "method">>;
+    blockWorkflows: z.ZodOptional<z.ZodBoolean>;
+}, z.core.$strip>;
+
+// @public
+export type LinkDeclaration = z.infer<typeof LinkDeclaration>;
+
+// @public
 export function parseDoctype(data: unknown): DoctypeMeta;
 
 // @public
@@ -273,13 +368,16 @@ export function parseField(data: unknown): FieldMeta;
 export function pascalToSnake(pascal: string): string;
 
 // @public
+export type SerializedFunction = string;
+
+// @public
 export function snakeToCamel(snakeCase: string): string;
 
 // @public
 export function snakeToLabel(snakeCase: string): string;
 
 // @public
-const StonecropFieldType: z.ZodEnum<{
+export const StonecropFieldType: z.ZodEnum<{
     Data: "Data";
     Text: "Text";
     Int: "Int";
@@ -294,7 +392,6 @@ const StonecropFieldType: z.ZodEnum<{
     JSON: "JSON";
     Code: "Code";
     Link: "Link";
-    Doctype: "Doctype";
     Attach: "Attach";
     Currency: "Currency";
     Quantity: "Quantity";
@@ -302,9 +399,16 @@ const StonecropFieldType: z.ZodEnum<{
 }>;
 
 // @public
-type StonecropFieldType = z.infer<typeof StonecropFieldType>;
-export { StonecropFieldType }
-export { StonecropFieldType as StonecropFieldTypeValue }
+export type StonecropFieldType = z.infer<typeof StonecropFieldType>;
+
+// @public
+export const SyncFetch: z.ZodObject<{
+    method: z.ZodLiteral<"sync">;
+    limit: z.ZodOptional<z.ZodNumber>;
+}, z.core.$strip>;
+
+// @public
+export type SyncFetch = z.infer<typeof SyncFetch>;
 
 // @public
 export function toPascalCase(tableName: string): string;
@@ -337,7 +441,7 @@ export interface ValidationResult {
 export const WELL_KNOWN_SCALARS: Record<string, FieldTemplate>;
 
 // @public
-const WorkflowMeta: z.ZodObject<{
+export const WorkflowMeta: z.ZodObject<{
     states: z.ZodOptional<z.ZodArray<z.ZodString>>;
     actions: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodObject<{
         label: z.ZodString;
@@ -350,9 +454,7 @@ const WorkflowMeta: z.ZodObject<{
 }, z.core.$strip>;
 
 // @public
-type WorkflowMeta = z.infer<typeof WorkflowMeta>;
-export { WorkflowMeta }
-export { WorkflowMeta as WorkflowMetaType }
+export type WorkflowMeta = z.infer<typeof WorkflowMeta>;
 
 // (No @packageDocumentation comment for this package)
 

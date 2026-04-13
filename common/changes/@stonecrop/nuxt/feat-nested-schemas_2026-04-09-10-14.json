@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/nuxt",
+      "comment": "use nested doctypes in playground",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@stonecrop/nuxt"
+}

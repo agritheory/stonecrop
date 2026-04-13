@@ -146,6 +146,8 @@ export interface GraphQLConversionFieldMeta extends FieldMeta {
 	_graphqlType?: string
 	/** Marks fields that couldn't be automatically mapped */
 	_unmapped?: boolean
+	/** Marks relationship fields that belong in `links`, not `fields` */
+	_isLink?: boolean
 }
 
 /**

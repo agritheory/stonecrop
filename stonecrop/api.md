@@ -4,24 +4,6 @@
 
 ## Functions
 
-### collectNestedData
-
-Recursively collect nested data from HST using pre-resolved schemas
-
-**Signature:**
-
-```typescript
-declare function collectNestedData(resolvedSchema: SchemaTypes[], basePath: string, hstStore: HSTNode): Record<string, any>;
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| resolvedSchema | `SchemaTypes[]` | The already-resolved schema (with nested schemas embedded) |
-| basePath | `string` | The base path in HST (e.g., "customer.123.address") |
-| hstStore | `HSTNode` | The HST store instance |
-
 ### createHST
 
 Factory function for HST creation Creates a new HSTNode proxy for hierarchical state tree navigation.
@@ -29,7 +11,7 @@ Factory function for HST creation Creates a new HSTNode proxy for hierarchical s
 **Signature:**
 
 ```typescript
-declare function createHST(target: any, doctype: string, parentDoctype?: string): HSTNode;
+declare function createHST(target: any, doctype: string): HSTNode;
 ```
 
 **Parameters:**
@@ -38,7 +20,6 @@ declare function createHST(target: any, doctype: string, parentDoctype?: string)
 |-----------|------|-------------|
 | target | `any` | The target object to wrap with HST functionality |
 | doctype | `string` | The document type identifier |
-| parentDoctype | `string` | Optional parent document type identifier |
 
 ### createValidator
 
@@ -72,6 +53,18 @@ export declare function getGlobalTriggerEngine(options?: FieldTriggerOptions): F
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | options | `FieldTriggerOptions` | Optional configuration for the field trigger engine |
+
+### getStonecrop
+
+Returns the global Stonecrop singleton instance, or `undefined` if no instance has been created yet.
+
+Use this when you need the Stonecrop instance outside a Vue component context (e.g., in workflow action handlers, plugin setup code, or non-component utilities). Inside a component, prefer `useStonecrop()`.
+
+**Signature:**
+
+```typescript
+export declare function getStonecrop(): Stonecrop | undefined;
+```
 
 ### markOperationIrreversible
 
@@ -166,6 +159,28 @@ export declare function triggerTransition(doctype: string, transition: string, o
 | transition | `string` | The XState transition name to trigger |
 | options | `{ recordId?: string; currentState?: string; targetState?: string; fsmContext?: Record<string, any>; path?: string; }` | Optional configuration for the transition |
 
+### useLazyLink
+
+Get the lazy link state for a specific link field on a doctype record.
+
+This composable provides reactive state for lazy-loaded links: - `loading`: true while fetching - `loaded`: true after successful fetch (permanent until reload) - `error`: error state if any - `reload()`: explicitly trigger a fetch - `data`: computed from HST, or undefined if not loaded
+
+The reload() function respects the link's fetch strategy: - `sync`: fetches via GraphQL query through fetchNestedData - `lazy`: fetches via GraphQL query through fetchNestedData - `custom`: invokes the serialized handler function directly
+
+**Signature:**
+
+```typescript
+export declare function useLazyLink(doctype: Doctype, recordId: string, linkFieldname: string): LazyLink;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `Doctype` | The doctype instance |
+| recordId | `string` | The record ID |
+| linkFieldname | `string` | The link fieldname to load |
+
 ### useOperationLog
 
 Composable for operation log management Provides easy access to undo/redo functionality and operation history
@@ -196,8 +211,8 @@ export declare function useOperationLog(config?: Partial<OperationLogConfig>): {
         actionError?: string | undefined;
         userId?: string | undefined;
         metadata?: Record<string, any> | undefined;
-        parentOperationId?: string | undefined;
-        childOperationIds?: string[] | undefined;
+        ancestorOperationId?: string | undefined;
+        descendantOperationIds?: string[] | undefined;
     }[], import("..").HSTOperation[] | {
         id: string;
         type: import("..").HSTOperationType;
@@ -220,8 +235,8 @@ export declare function useOperationLog(config?: Partial<OperationLogConfig>): {
         actionError?: string | undefined;
         userId?: string | undefined;
         metadata?: Record<string, any> | undefined;
-        parentOperationId?: string | undefined;
-        childOperationIds?: string[] | undefined;
+        ancestorOperationId?: string | undefined;
+        descendantOperationIds?: string[] | undefined;
     }[]>;
     currentIndex: import("vue").Ref<number, number>;
     undoRedoState: import("vue").ComputedRef<import("..").UndoRedoState>;
@@ -261,7 +276,11 @@ export declare function useStonecrop(): BaseStonecropReturn | HSTStonecropReturn
 
 ### useStonecrop
 
-Unified Stonecrop composable with HST integration for a specific doctype and record
+Unified Stonecrop composable with HST integration for a specific doctype and record.
+
+When a `Doctype` instance is passed, all synchronous initialisation (`hstStore`, `resolvedSchema`, `formData`, `handleHSTChange`, operation-log wiring) is performed during `setup()` — before the first render and without awaiting any lifecycle hook. Callers can read `hstStore.value`, `resolvedSchema.value`, and `formData.value` immediately after calling this composable; no `nextTick`, `flushPromises`, or `setTimeout` is required.
+
+The only remaining async work in `onMounted` is fetching an existing record from the server when `recordId` is not `'new'`, and lazy-loading a doctype by slug string.
 
 **Signature:**
 
@@ -552,10 +571,10 @@ Core HST Interface - enhanced with tree navigation Provides a hierarchical state
 ```typescript
 export interface HSTNode {
   get(path: string): any;
+  getAncestor(): HSTNode | null;
   getBreadcrumbs(): string[];
   getDepth(): number;
   getNode(path: string): HSTNode;
-  getParent(): HSTNode | null;
   getPath(): string;
   getRoot(): HSTNode;
   has(path: string): boolean;
@@ -581,15 +600,15 @@ export interface HSTOperation {
   actionRecordIds?: string[];
   actionResult?: 'success' | 'failure' | 'pending';
   afterValue: any;
+  ancestorOperationId?: string;
   beforeValue: any;
-  childOperationIds?: string[];
   currentState?: string;
+  descendantOperationIds?: string[];
   doctype: string;
   fieldname: string;
   id: string;
   irreversibleReason?: string;
   metadata?: Record<string, any>;
-  parentOperationId?: string;
   path: string;
   recordId?: string;
   reversible: boolean;
@@ -611,15 +630,15 @@ export interface HSTOperation {
 | actionRecordIds? | `string[]` | Record IDs that the action was executed on |
 | actionResult? | `'success' \| 'failure' \| 'pending'` | Result or status of the action execution |
 | afterValue | `any` | Value after the operation |
+| ancestorOperationId? | `string` | Ancestor operation ID for batch operations |
 | beforeValue | `any` | Value before the operation |
-| childOperationIds? | `string[]` | Child operation IDs for batch operations |
 | currentState? | `string` | XState current state before transition |
+| descendantOperationIds? | `string[]` | Descendant operation IDs for batch operations |
 | doctype | `string` | Doctype this operation affects |
 | fieldname | `string` | Field name extracted from path |
 | id | `string` | Unique operation identifier |
 | irreversibleReason? | `string` | Reason if operation is irreversible |
 | metadata? | `Record<string, any>` | Additional metadata for custom use cases |
-| parentOperationId? | `string` | Parent operation ID for batch operations |
 | path | `string` | Full HST path affected (e.g., "task.123.title") |
 | recordId? | `string` | Record ID if applicable |
 | reversible | `boolean` | Whether this operation can be undone |
@@ -868,6 +887,7 @@ Schema validator options
 export interface ValidatorOptions {
   registry?: Registry;
   validateActions?: boolean;
+  validateLinks?: boolean;
   validateLinkTargets?: boolean;
   validateRequiredProperties?: boolean;
   validateWorkflows?: boolean;
@@ -880,6 +900,7 @@ export interface ValidatorOptions {
 |----------|------|-------------|
 | registry? | `Registry` | Registry instance for doctype lookups |
 | validateActions? | `boolean` | Whether to validate action registration |
+| validateLinks? | `boolean` | Whether to validate links object (target resolution, backlink consistency, Link field correspondence) |
 | validateLinkTargets? | `boolean` | Whether to validate Link field targets |
 | validateRequiredProperties? | `boolean` | Whether to validate required schema properties |
 | validateWorkflows? | `boolean` | Whether to validate workflow reachability |
@@ -921,11 +942,10 @@ export type DoctypeConfig = {
     slug?: string;
     tableName?: string;
     fields?: SchemaTypes[];
+    links?: Record<string, LinkDeclaration>;
     workflow?: UnknownMachineConfig | WorkflowMeta;
     actions?: Record<string, string[]>;
     inherits?: string;
-    listDoctype?: string;
-    parentDoctype?: string;
 };
 ```
 
@@ -1019,15 +1039,20 @@ export type HSTStonecropReturn = BaseStonecropReturn & {
     hstStore: Ref<HSTNode | undefined>;
     formData: Ref<Record<string, any>>;
     resolvedSchema: Ref<SchemaTypes[]>;
-    loadNestedData: (parentPath: string, childDoctype: Doctype, recordId?: string) => Record<string, any>;
+    initializeNestedData: (path: string, doctype: Doctype) => void;
+    fetchNestedData: (path: string, doctype: Doctype, recordId: string, options?: {
+        includeNested?: boolean | string[];
+    }) => Promise<void>;
     collectRecordPayload: (doctype: Doctype, recordId: string) => Record<string, any>;
-    createNestedContext: (basePath: string, childDoctype: Doctype) => {
+    createNestedContext: (basePath: string, descendantDoctype: Doctype) => {
         provideHSTPath: (fieldname: string) => string;
         handleHSTChange: (changeData: HSTChangeData) => void;
     };
     isLoading: Ref<boolean>;
     error: Ref<Error | null>;
     resolvedDoctype: Ref<Doctype | undefined>;
+    isWorkflowReady: ComputedRef<boolean>;
+    blockedLinks: ComputedRef<string[]>;
 };
 ```
 
@@ -1042,6 +1067,7 @@ export type ImmutableDoctype = {
     readonly schema?: List<SchemaTypes>;
     readonly workflow?: UnknownMachineConfig | AnyStateNodeConfig | WorkflowMeta;
     readonly actions?: Map<string, string[]>;
+    readonly links?: Record<string, LinkDeclaration>;
 };
 ```
 
@@ -1059,6 +1085,22 @@ export type InstallOptions = {
     client?: DataClient;
     autoInitializeRouter?: boolean;
     onRouterInitialized?: (registry: Registry, stonecrop: Stonecrop) => void | Promise<void>;
+};
+```
+
+### LazyLink
+
+Lazy link state for a single link field. Provides reactive state and reload capability for lazy-loaded links.
+
+**Definition:**
+
+```typescript
+export type LazyLink = {
+    loading: Ref<boolean>;
+    loaded: Ref<boolean>;
+    error: Ref<Error | null>;
+    reload: () => Promise<void>;
+    data: ComputedRef<any>;
 };
 ```
 
@@ -1164,7 +1206,7 @@ Doctype runtime class with Immutable.js collections for HST change tracking.
 **Constructor:**
 
 ```typescript
-new Doctype(doctype: string, schema: ImmutableDoctype['schema'], workflow: ImmutableDoctype['workflow'], actions: ImmutableDoctype['actions'], component: Component)
+new Doctype(doctype: string, schema: ImmutableDoctype['schema'], workflow: ImmutableDoctype['workflow'], actions: ImmutableDoctype['actions'], component: Component, links: Record<string, LinkDeclaration>)
 ```
 
 **Parameters:**
@@ -1176,6 +1218,7 @@ new Doctype(doctype: string, schema: ImmutableDoctype['schema'], workflow: Immut
 | workflow | `ImmutableDoctype['workflow']` | The doctype workflow configuration (XState machine) |
 | actions | `ImmutableDoctype['actions']` | The doctype actions and field triggers |
 | component | `Component` | Optional Vue component for rendering the doctype |
+| links | `Record<string, LinkDeclaration>` | Optional relationship links to other doctypes |
 
 **Properties:**
 
@@ -1184,6 +1227,7 @@ new Doctype(doctype: string, schema: ImmutableDoctype['schema'], workflow: Immut
 | actions | `ImmutableDoctype['actions']` | The doctype actions and field triggers |
 | component | `Component` | The doctype component |
 | doctype | `string` | The doctype name |
+| links | `Record<string, LinkDeclaration>` | Relationship links to other doctypes |
 | name | `string` | Alias for doctype (for DoctypeLike interface compatibility) |
 | schema | `ImmutableDoctype['schema']` | The doctype schema |
 | slug | `string` | Converts the registered doctype string to a slug (kebab-case). The following conversions are made: - It replaces camelCase and PascalCase with kebab-case strings - It replaces spaces and underscores with hyphens - It converts the string to lowercase |
@@ -1319,6 +1363,20 @@ executeTransitionActions(context: TransitionChangeContext, options: {
 |-----------|------|-------------|
 | context | `TransitionChangeContext` | The transition change context |
 | options | `{ timeout?: number; }` | Execution options (timeout) |
+
+#### getAction
+
+Look up a registered action function by name. Returns `undefined` if the action has not been registered.
+
+```typescript
+getAction(name: string): FieldActionFunction | undefined
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| name | `string` | The action name |
 
 #### registerAction
 
@@ -1460,6 +1518,39 @@ addDoctype(doctype: Doctype): void
 |-----------|------|-------------|
 | doctype | `Doctype` | The doctype to fetch metadata for |
 
+#### getAncestorLinks
+
+Get links on other doctypes that target the given doctype.
+
+```typescript
+getAncestorLinks(doctypeSlug: string): Array<LinkDeclaration & {
+        fieldname: string;
+        doctype: string;
+    }>
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctypeSlug | `string` | The doctype slug to find ancestor links for |
+
+#### getDescendantLinks
+
+Get all links declared on a doctype.
+
+```typescript
+getDescendantLinks(doctypeSlug: string): Array<LinkDeclaration & {
+        fieldname: string;
+    }>
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctypeSlug | `string` | The doctype slug to get links for |
+
 #### getDoctype
 
 Get a registered doctype by slug
@@ -1492,16 +1583,32 @@ initializeRecord(schema: SchemaTypes[]): Record<string, any>
 
 Resolve nested Doctype fields in a schema by embedding child schemas inline.
 
+Accepts a Doctype and extracts `fields` and `links` internally. Fields array contains both scalar fields and link fields (with fieldtype: 'Link'). Render order is determined by the order of fields in the fields array.
+
+For each link field: - Looks up the corresponding link declaration in `links` by fieldname - `cardinality: 'noneOrMany'` or `'atLeastOne'`: auto-derives `columns` from the target's schema, sets `component` to `link.component ?? 'ATable'`, `config: { view: 'list' }`, `rows: []`. - `cardinality: 'one'` or `'atMostOne'`: embeds the target schema as the entry's `schema` property, sets `component` to `link.component ?? 'AForm'`.
+
+Recurses for deeply nested doctypes. Circular references are protected against. Returns a new array — does not mutate the original.
+
 ```typescript
-resolveSchema(schema: SchemaTypes[], visited: Set<string>): SchemaTypes[]
+resolveSchema(doctype: Doctype, visited: Set<string>): SchemaTypes[]
 ```
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| schema | `SchemaTypes[]` | The schema array to resolve |
-| visited | `Set<string>` |  |
+| doctype | `Doctype` | The doctype to resolve |
+| visited | `Set<string>` | Internal — set of already-visited doctype slugs for cycle detection |
+
+#### toMetaMap
+
+Convert the registry to a Map of DoctypeMeta objects for use with StonecropClient.
+
+This allows passing a Registry instance to StonecropClient by deriving the Mapstring, DoctypeMeta that StonecropClient needs for building nested GraphQL queries.
+
+```typescript
+toMetaMap(): Map<string, DoctypeMeta>
+```
 
 ### SchemaValidator
 
@@ -1526,7 +1633,7 @@ new SchemaValidator(options: ValidatorOptions)
 Validates a complete doctype schema
 
 ```typescript
-validate(doctype: string, schema: List<SchemaTypes> | SchemaTypes[] | undefined, workflow: AnyStateNodeConfig, actions: ImmutableMap<string, string[]> | Map<string, string[]>): ValidationResult
+validate(doctype: string, schema: List<SchemaTypes> | SchemaTypes[] | undefined, workflow: AnyStateNodeConfig, actions: ImmutableMap<string, string[]> | Map<string, string[]>, links: Record<string, LinkDeclaration>): ValidationResult
 ```
 
 **Parameters:**
@@ -1537,6 +1644,7 @@ validate(doctype: string, schema: List<SchemaTypes> | SchemaTypes[] | undefined,
 | schema | `List<SchemaTypes> \| SchemaTypes[] \| undefined` | Schema fields (List or Array) |
 | workflow | `AnyStateNodeConfig` | Optional workflow configuration |
 | actions | `ImmutableMap<string, string[]> \| Map<string, string[]>` | Optional actions map |
+| links | `Record<string, LinkDeclaration>` | Optional links object |
 
 ### Stonecrop
 
@@ -1628,6 +1736,27 @@ dispatchAction(doctype: Doctype, action: string, args: unknown[]): Promise<{
 | doctype | `Doctype` | The doctype |
 | action | `string` | Action name to execute (e.g., 'SUBMIT', 'APPROVE', 'save') |
 | args | `unknown[]` | Action arguments (typically record ID and/or form data) |
+
+#### fetchNestedData
+
+Fetch a record and its nested data from the server.
+
+Calls `_client.getRecord()` with nested sub-selections and stores each scalar field at its own HST path (`slug.recordId.fieldname`), descendants at the link-level path (`slug.recordId.linkname`).
+
+```typescript
+fetchNestedData(path: string, doctype: Doctype, recordId: string, options: {
+        includeNested?: boolean | string[];
+    }): Promise<void>
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| path | `string` | HST path (e.g., "recipe.r1") |
+| doctype | `Doctype` | The doctype to fetch |
+| recordId | `string` | Record ID to fetch |
+| options | `{ includeNested?: boolean \| string[]; }` | Query options (includeNested to control which links are fetched) |
 
 #### getClient
 
@@ -1734,21 +1863,40 @@ Get the root HST store node for advanced usage
 getStore(): HSTNode
 ```
 
-#### loadNestedData
+#### initializeNestedData
 
-Load nested data from HST or initialize with defaults
+Scaffold empty descendant records from defaults for all descendant links.
+
+Initializes all scalar and link fields at their HST paths with default values. For new records, call this after setting up the doctype to ensure all paths exist.
 
 ```typescript
-loadNestedData(parentPath: string, childDoctype: Doctype, _recordId: string): Record<string, any>
+initializeNestedData(path: string, doctype: Doctype): void
 ```
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| parentPath | `string` | The HST path to check for existing data |
-| childDoctype | `Doctype` | The child doctype metadata |
-| _recordId | `string` | Optional record ID to load |
+| path | `string` | HST path (e.g., "customer.new") |
+| doctype | `Doctype` | The doctype to initialize |
+
+#### isWorkflowReady
+
+Check if workflow actions are ready to run (all required link data is loaded). A link's data is considered loaded if it exists in HST at `slug.recordId.linkname`.
+
+```typescript
+isWorkflowReady(doctype: Doctype, recordId: string): {
+        ready: boolean;
+        blockedLinks?: string[];
+    }
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `Doctype` | The doctype to check |
+| recordId | `string` | The record ID |
 
 #### records
 
@@ -1784,7 +1932,7 @@ removeRecord(doctype: string | Doctype, recordId: string): void
 Run action on doctype Executes the action and logs it to the operation log for audit tracking
 
 ```typescript
-runAction(doctype: Doctype, action: string, args: any[]): void
+runAction(doctype: Doctype, action: string, args: string[]): void
 ```
 
 **Parameters:**
@@ -1793,7 +1941,7 @@ runAction(doctype: Doctype, action: string, args: any[]): void
 |-----------|------|-------------|
 | doctype | `Doctype` | The doctype |
 | action | `string` | The action to run |
-| args | `any[]` | Action arguments (typically record IDs) |
+| args | `string[]` | Action arguments (typically record IDs) |
 
 #### setClient
 
@@ -1865,8 +2013,8 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
         actionError?: string | undefined;
         userId?: string | undefined;
         metadata?: Record<string, any> | undefined;
-        parentOperationId?: string | undefined;
-        childOperationIds?: string[] | undefined;
+        ancestorOperationId?: string | undefined;
+        descendantOperationIds?: string[] | undefined;
     }[], HSTOperation[] | {
         id: string;
         type: import("..").HSTOperationType;
@@ -1889,8 +2037,8 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
         actionError?: string | undefined;
         userId?: string | undefined;
         metadata?: Record<string, any> | undefined;
-        parentOperationId?: string | undefined;
-        childOperationIds?: string[] | undefined;
+        ancestorOperationId?: string | undefined;
+        descendantOperationIds?: string[] | undefined;
     }[]>;
     currentIndex: import("vue").Ref<number, number>;
     config: import("vue").Ref<{
@@ -1928,7 +2076,7 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
     getSnapshot: () => OperationLogSnapshot;
     markIrreversible: (operationId: string, reason: string) => void;
     logAction: (doctype: string, actionName: string, recordIds?: string[], result?: "success" | "failure" | "pending", error?: string) => string;
-}, "operations" | "clientId" | "currentIndex" | "config">, Pick<{
+}, "operations" | "currentIndex" | "config" | "clientId">, Pick<{
     operations: import("vue").Ref<{
         id: string;
         type: import("..").HSTOperationType;
@@ -1951,8 +2099,8 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
         actionError?: string | undefined;
         userId?: string | undefined;
         metadata?: Record<string, any> | undefined;
-        parentOperationId?: string | undefined;
-        childOperationIds?: string[] | undefined;
+        ancestorOperationId?: string | undefined;
+        descendantOperationIds?: string[] | undefined;
     }[], HSTOperation[] | {
         id: string;
         type: import("..").HSTOperationType;
@@ -1975,8 +2123,8 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
         actionError?: string | undefined;
         userId?: string | undefined;
         metadata?: Record<string, any> | undefined;
-        parentOperationId?: string | undefined;
-        childOperationIds?: string[] | undefined;
+        ancestorOperationId?: string | undefined;
+        descendantOperationIds?: string[] | undefined;
     }[]>;
     currentIndex: import("vue").Ref<number, number>;
     config: import("vue").Ref<{
@@ -2037,8 +2185,8 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
         actionError?: string | undefined;
         userId?: string | undefined;
         metadata?: Record<string, any> | undefined;
-        parentOperationId?: string | undefined;
-        childOperationIds?: string[] | undefined;
+        ancestorOperationId?: string | undefined;
+        descendantOperationIds?: string[] | undefined;
     }[], HSTOperation[] | {
         id: string;
         type: import("..").HSTOperationType;
@@ -2061,8 +2209,8 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
         actionError?: string | undefined;
         userId?: string | undefined;
         metadata?: Record<string, any> | undefined;
-        parentOperationId?: string | undefined;
-        childOperationIds?: string[] | undefined;
+        ancestorOperationId?: string | undefined;
+        descendantOperationIds?: string[] | undefined;
     }[]>;
     currentIndex: import("vue").Ref<number, number>;
     config: import("vue").Ref<{

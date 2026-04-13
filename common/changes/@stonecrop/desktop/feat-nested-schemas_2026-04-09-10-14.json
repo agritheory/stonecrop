@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/desktop",
+      "comment": "correctly resolve schema from registry",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@stonecrop/desktop"
+}

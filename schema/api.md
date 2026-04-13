@@ -2,48 +2,6 @@
 
 > This documentation is automatically generated from the TypeScript API.
 
-## Vue Components
-
-### DoctypeMeta
-
-Vue component exported from @stonecrop/schema.
-
-```typescript
-import { DoctypeMeta } from '@stonecrop/schema'
-```
-
-### FieldMeta
-
-Vue component exported from @stonecrop/schema.
-
-```typescript
-import { FieldMeta } from '@stonecrop/schema'
-```
-
-### FieldOptions
-
-Vue component exported from @stonecrop/schema.
-
-```typescript
-import { FieldOptions } from '@stonecrop/schema'
-```
-
-### StonecropFieldType
-
-Vue component exported from @stonecrop/schema.
-
-```typescript
-import { StonecropFieldType } from '@stonecrop/schema'
-```
-
-### WorkflowMeta
-
-Vue component exported from @stonecrop/schema.
-
-```typescript
-import { WorkflowMeta } from '@stonecrop/schema'
-```
-
 ## Other Components
 
 ### ActionDefinition
@@ -52,10 +10,28 @@ import { WorkflowMeta } from '@stonecrop/schema'
 export { ActionDefinition }
 ```
 
+### Cardinality
+
+```typescript
+export { Cardinality }
+```
+
+### CustomFetch
+
+```typescript
+export { CustomFetch }
+```
+
 ### DoctypeMeta
 
 ```typescript
 export { DoctypeMeta }
+```
+
+### FetchStrategy
+
+```typescript
+export { FetchStrategy }
 ```
 
 ### FieldMeta
@@ -88,10 +64,28 @@ export { GQL_SCALAR_MAP }
 export { INTERNAL_SCALARS }
 ```
 
+### LazyFetch
+
+```typescript
+export { LazyFetch }
+```
+
+### LinkDeclaration
+
+```typescript
+export { LinkDeclaration }
+```
+
 ### StonecropFieldType
 
 ```typescript
 export { StonecropFieldType }
+```
+
+### SyncFetch
+
+```typescript
+export { SyncFetch }
 ```
 
 ### TYPE_MAP
@@ -430,13 +424,8 @@ Interface for data clients that fetch doctype metadata and records. Implemented 
 ```typescript
 export interface DataClient {
   getMeta(context: DoctypeContext): Promise<M | null>;
-  getRecord(doctype: T, recordId: string): Promise<Record<string, unknown> | null>;
-  getRecords(doctype: T, options: {
-        filters?: Record<string, unknown>;
-        orderBy?: string;
-        limit?: number;
-        offset?: number;
-    }): Promise<Record<string, unknown>[]>;
+  getRecord(doctype: T, recordId: string, options: GetRecordOptions): Promise<Record<string, unknown> | null>;
+  getRecords(doctype: T, options: GetRecordsOptions): Promise<Record<string, unknown>[]>;
   runAction(doctype: T, action: string, args: unknown[]): Promise<{
         success: boolean;
         data: unknown;
@@ -505,6 +494,50 @@ export interface FieldTemplate {
 | component | `string` | The Vue component name to render this field (e.g., 'ATextInput', 'ADropdown') |
 | fieldtype | `StonecropFieldType` | The semantic field type (e.g., 'Data', 'Int', 'Select') |
 
+### GetRecordOptions
+
+Options for fetching a single record
+
+**Definition:**
+
+```typescript
+export interface GetRecordOptions {
+  includeNested?: boolean | string[];
+  maxDepth?: number;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| includeNested? | `boolean \| string[]` | Include nested link sub-selections. - `true`: include all descendant links - `string[]`: include only named links - `false` / omitted: scalar fields only (default) |
+| maxDepth? | `number` | Maximum depth for recursive sub-selections. No default — unlimited when omitted. |
+
+### GetRecordsOptions
+
+Options for fetching multiple records
+
+**Definition:**
+
+```typescript
+export interface GetRecordsOptions {
+  filters?: Record<string, unknown>;
+  limit?: number;
+  offset?: number;
+  orderBy?: string;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| filters? | `Record<string, unknown>` | Filter expression (field-value pairs) |
+| limit? | `number` | Maximum number of records to return |
+| offset? | `number` | Number of records to skip |
+| orderBy? | `string` | Order by expression (e.g. 'NAME_ASC') |
+
 ### GraphQLConversionFieldMeta
 
 Extended field metadata with optional GraphQL conversion metadata. Only present when `includeUnmappedMeta` is enabled.
@@ -514,6 +547,7 @@ Extended field metadata with optional GraphQL conversion metadata. Only present 
 ```typescript
 export interface GraphQLConversionFieldMeta {
   _graphqlType?: string;
+  _isLink?: boolean;
   _unmapped?: boolean;
 }
 ```
@@ -523,6 +557,7 @@ export interface GraphQLConversionFieldMeta {
 | Property | Type | Description |
 |----------|------|-------------|
 | _graphqlType? | `string` | Original GraphQL type name (for debugging/reference) |
+| _isLink? | `boolean` | Marks relationship fields that belong in `links`, not `fields` |
 | _unmapped? | `boolean` | Marks fields that couldn't be automatically mapped |
 
 ### GraphQLConversionOptions
@@ -611,6 +646,26 @@ Action definition type inferred from Zod schema
 export type ActionDefinition = z.infer<typeof ActionDefinition>;
 ```
 
+### Cardinality
+
+Cardinality type inferred from Zod schema
+
+**Definition:**
+
+```typescript
+export type Cardinality = z.infer<typeof Cardinality>;
+```
+
+### CustomFetch
+
+Custom fetch strategy type
+
+**Definition:**
+
+```typescript
+export type CustomFetch = z.infer<typeof CustomFetch>;
+```
+
 ### DoctypeMeta
 
 Doctype metadata type inferred from Zod schema
@@ -619,6 +674,16 @@ Doctype metadata type inferred from Zod schema
 
 ```typescript
 export type DoctypeMeta = z.infer<typeof DoctypeMeta>;
+```
+
+### FetchStrategy
+
+Fetch strategy type
+
+**Definition:**
+
+```typescript
+export type FetchStrategy = z.infer<typeof FetchStrategy>;
 ```
 
 ### FieldMeta
@@ -665,6 +730,36 @@ Note: URL fetching is intentionally not supported in the library API. Use the CL
 export type IntrospectionSource = IntrospectionQuery | string;
 ```
 
+### LazyFetch
+
+Lazy fetch strategy type
+
+**Definition:**
+
+```typescript
+export type LazyFetch = z.infer<typeof LazyFetch>;
+```
+
+### LinkDeclaration
+
+Link declaration type inferred from Zod schema
+
+**Definition:**
+
+```typescript
+export type LinkDeclaration = z.infer<typeof LinkDeclaration>;
+```
+
+### SerializedFunction
+
+Serialized function type - a function serialized to a string. Used for custom fetch handlers.
+
+**Definition:**
+
+```typescript
+export type SerializedFunction = string;
+```
+
 ### StonecropFieldType
 
 Stonecrop field type enum inferred from Zod schema
@@ -673,6 +768,16 @@ Stonecrop field type enum inferred from Zod schema
 
 ```typescript
 export type StonecropFieldType = z.infer<typeof StonecropFieldType>;
+```
+
+### SyncFetch
+
+Sync fetch strategy type
+
+**Definition:**
+
+```typescript
+export type SyncFetch = z.infer<typeof SyncFetch>;
 ```
 
 ### WorkflowMeta

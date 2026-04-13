@@ -21,7 +21,6 @@ export const StonecropFieldType = z
 		'JSON', // JSON data
 		'Code', // Code/source (with syntax highlighting)
 		'Link', // Reference to another doctype
-		'Doctype', // Child doctype (1:1 nested form or 1:many table via cardinality)
 		'Attach', // File attachment
 		'Currency', // Currency value
 		'Quantity', // Quantity with unit
@@ -85,7 +84,6 @@ export const TYPE_MAP: Record<StonecropFieldType, FieldTemplate> = {
 
 	// Relational
 	Link: { component: 'ALink', fieldtype: 'Link' },
-	Doctype: { component: 'AForm', fieldtype: 'Doctype' },
 
 	// Files
 	Attach: { component: 'AFileAttach', fieldtype: 'Attach' },

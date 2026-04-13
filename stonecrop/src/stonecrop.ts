@@ -1,17 +1,12 @@
-import {
-	type DoctypeManySchema,
-	type DoctypeOneSchema,
-	type DoctypeSchema,
-	type SchemaTypes,
-	isDoctypeMany,
-} from '@stonecrop/aform'
 import type { DataClient } from '@stonecrop/schema'
 import { reactive } from 'vue'
 
 import Doctype from './doctype'
+import { getGlobalTriggerEngine } from './field-triggers'
 import Registry from './registry'
 import { createHST, type HSTNode } from './stores/hst'
 import { useOperationLogStore } from './stores/operation-log'
+import type { FieldChangeContext } from './types/field-triggers'
 import type { OperationLogConfig } from './types/operation-log'
 import type { RouteContext } from './types/registry'
 import type { StonecropOptions } from './types/stonecrop'
@@ -29,13 +24,14 @@ export class Stonecrop {
 	 */
 	static _root: Stonecrop
 
-	private hstStore: HSTNode
+	/** The HST store instance for reactive state management */
+	private hstStore!: HSTNode
 	private _operationLogStore?: ReturnType<typeof useOperationLogStore>
 	private _operationLogConfig?: Partial<OperationLogConfig>
 	private _client?: DataClient
 
 	/** The registry instance containing all doctype definitions */
-	readonly registry: Registry
+	readonly registry!: Registry
 
 	/**
 	 * Creates a new Stonecrop instance with HST integration (singleton pattern)
@@ -184,7 +180,7 @@ export class Stonecrop {
 			return undefined
 		}
 
-		// Use getNode to get the properly wrapped HST node with correct parent relationships
+		// Use getNode to get the properly wrapped HST node with correct ancestor relationships
 		return this.hstStore.getNode(`${slug}.${recordId}`)
 	}
 
@@ -251,10 +247,25 @@ export class Stonecrop {
 	 * @param action - The action to run
 	 * @param args - Action arguments (typically record IDs)
 	 */
-	runAction(doctype: Doctype, action: string, args?: any[]): void {
+	runAction(doctype: Doctype, action: string, args?: string[]): void {
 		const registry = this.registry.registry[doctype.slug]
 		const actions = registry?.actions?.get(action)
 		const recordIds = Array.isArray(args) ? args.filter((arg): arg is string => typeof arg === 'string') : undefined
+		const recordId = recordIds?.[0]
+
+		// Check if workflow is ready (all blocked links have data)
+		const workflowStatus = recordId ? this.isWorkflowReady(doctype, recordId) : { ready: true }
+		if (!workflowStatus.ready) {
+			const opLogStore = this.getOperationLogStore()
+			opLogStore.logAction(
+				doctype.doctype,
+				action,
+				recordIds,
+				'failure',
+				`BLOCKED: missing data for links: ${workflowStatus.blockedLinks?.join(', ')}`
+			)
+			throw new Error(`Workflow blocked: missing data for links: ${workflowStatus.blockedLinks?.join(', ')}`)
+		}
 
 		// Log action execution start
 		const opLogStore = this.getOperationLogStore()
@@ -264,12 +275,22 @@ export class Stonecrop {
 		try {
 			// Execute action functions
 			if (actions && actions.length > 0) {
+				const engine = getGlobalTriggerEngine()
 				actions.forEach(actionStr => {
 					try {
-						// eslint-disable-next-line @typescript-eslint/no-implied-eval
-						const actionFn = new Function('args', actionStr)
-						// eslint-disable-next-line @typescript-eslint/no-unsafe-call
-						actionFn(args)
+						const actionFn = engine.getAction(actionStr)
+						if (!actionFn) throw new Error(`Action "${actionStr}" is not registered in FieldTriggerEngine`)
+						const context = {
+							path: `${doctype.slug}.${recordIds?.[0] ?? ''}`,
+							fieldname: action,
+							beforeValue: undefined,
+							afterValue: args,
+							operation: 'set',
+							doctype: doctype.doctype,
+							recordId: recordId,
+							timestamp: new Date(),
+						} as FieldChangeContext
+						void actionFn(context)
 					} catch (error) {
 						actionResult = 'failure'
 						actionError = error instanceof Error ? error.message : 'Unknown error'
@@ -283,6 +304,54 @@ export class Stonecrop {
 			// Log the action execution to operation log
 			opLogStore.logAction(doctype.doctype, action, recordIds, actionResult, actionError)
 		}
+	}
+
+	/**
+	 * Get the effective blockWorkflows value for a link.
+	 * Returns true if blockWorkflows is explicitly true, or if it's absent and fetch method is 'sync'.
+	 * @param link - The link declaration
+	 * @returns Whether workflows should be blocked until this link is loaded
+	 */
+	private getEffectiveBlockWorkflows(link: { blockWorkflows?: boolean; fetch?: { method?: string } }): boolean {
+		if (link.blockWorkflows !== undefined) {
+			return link.blockWorkflows
+		}
+		// TODO: For custom fetch handlers, this returns false (not blocking), but the custom handler
+		// may still be invoked by useLazyLink. Future: custom handlers should be able to declare they
+		// satisfy blockWorkflows, or validation should reject custom + blockWorkflows: true.
+		// See: relationships.md Phase 6 "Open Question: blockWorkflows + custom fetch"
+		return link.fetch?.method === 'sync'
+	}
+
+	/**
+	 * Check if workflow actions are ready to run (all required link data is loaded).
+	 * A link's data is considered loaded if it exists in HST at `slug.recordId.linkname`.
+	 * @param doctype - The doctype to check
+	 * @param recordId - The record ID
+	 * @returns Object with `ready: true` if all blocked links are loaded, or `ready: false` with `blockedLinks` array
+	 */
+	isWorkflowReady(doctype: Doctype, recordId: string): { ready: boolean; blockedLinks?: string[] } {
+		// New records don't block workflows - they haven't been saved yet
+		if (recordId === 'new') {
+			return { ready: true }
+		}
+
+		const links = this.registry.getDescendantLinks(doctype.slug)
+		const blockedLinks: string[] = []
+
+		for (const link of links) {
+			if (this.getEffectiveBlockWorkflows(link)) {
+				const linkPath = `${doctype.slug}.${recordId}.${link.fieldname}`
+				if (!this.hstStore.has(linkPath)) {
+					blockedLinks.push(link.fieldname)
+				}
+			}
+		}
+
+		if (blockedLinks.length > 0) {
+			return { ready: false, blockedLinks }
+		}
+		return { ready: true }
 	}
 
 	/**
@@ -436,39 +505,25 @@ export class Stonecrop {
 
 		const payload: Record<string, any> = { ...recordData }
 
-		const schemaArray = doctype.schema
-			? Array.isArray(doctype.schema)
-				? doctype.schema
-				: Array.from(doctype.schema)
-			: []
-		const resolved = this.registry.resolveSchema(schemaArray)
+		// Collect nested data from links
+		if (doctype.links) {
+			for (const [fieldname, link] of Object.entries(doctype.links)) {
+				const fieldPath = `${recordPath}.${fieldname}`
+				const isMany = link.cardinality === 'noneOrMany' || link.cardinality === 'atLeastOne'
 
-		const doctypeFields = resolved.filter(
-			field =>
-				'fieldtype' in field &&
-				field.fieldtype === 'Doctype' &&
-				!isDoctypeMany(field as DoctypeSchema) &&
-				'schema' in field &&
-				Array.isArray(field.schema)
-		)
-
-		for (const field of doctypeFields) {
-			const doctypeField = field as DoctypeOneSchema
-			const fieldPath = `${recordPath}.${doctypeField.fieldname}`
-			const nestedData = collectNestedData(doctypeField.schema!, fieldPath, this.hstStore)
-			payload[doctypeField.fieldname] = nestedData
-		}
-
-		const doctypeManyFields = resolved.filter(
-			field => 'fieldtype' in field && field.fieldtype === 'Doctype' && isDoctypeMany(field as DoctypeSchema)
-		)
-
-		for (const field of doctypeManyFields) {
-			const doctypeField = field as DoctypeManySchema
-			const fieldPath = `${recordPath}.${doctypeField.fieldname}`
-			const arrayData = this.hstStore.get(fieldPath)
-			if (Array.isArray(arrayData)) {
-				payload[doctypeField.fieldname] = arrayData
+				if (isMany) {
+					const arrayData = this.hstStore.get(fieldPath)
+					if (Array.isArray(arrayData)) {
+						payload[fieldname] = arrayData
+					}
+				} else {
+					const targetDoctype = this.registry.getDoctype(link.target)
+					if (targetDoctype?.links) {
+						payload[fieldname] = this.collectNestedData(fieldPath, targetDoctype)
+					} else {
+						payload[fieldname] = this.hstStore.get(fieldPath) || {}
+					}
+				}
 			}
 		}
 
@@ -476,76 +531,145 @@ export class Stonecrop {
 	}
 
 	/**
-	 * Load nested data from HST or initialize with defaults
-	 * @param parentPath - The HST path to check for existing data
-	 * @param childDoctype - The child doctype metadata
-	 * @param _recordId - Optional record ID to load
-	 * @returns The loaded or initialized data
+	 * Scaffold empty descendant records from defaults for all descendant links.
+	 *
+	 * Initializes all scalar and link fields at their HST paths with default values.
+	 * For new records, call this after setting up the doctype to ensure all paths exist.
+	 *
+	 * @param path - HST path (e.g., "customer.new")
+	 * @param doctype - The doctype to initialize
 	 * @public
 	 */
-	loadNestedData(parentPath: string, childDoctype: Doctype, _recordId?: string): Record<string, any> {
-		// Check if data already exists in HST
-		const existingData = this.hstStore.get(parentPath)
-		if (existingData && typeof existingData === 'object') {
-			return existingData as Record<string, any>
-		}
-
-		// TODO: If recordId provided and no HST data, fetch from API using this._client
-		// For now, always fall through to initialize new record
+	initializeNestedData(path: string, doctype: Doctype): void {
+		const slug = doctype.slug
+		this.ensureDoctypeExists(slug)
 
 		// Resolve schema and initialize with defaults
-		const schemaArray = childDoctype.schema
-			? Array.isArray(childDoctype.schema)
-				? childDoctype.schema
-				: Array.from(childDoctype.schema)
-			: []
-		const resolvedSchema = this.registry.resolveSchema(schemaArray)
-		return this.registry.initializeRecord(resolvedSchema)
+		const resolvedSchema = this.registry.resolveSchema(doctype)
+		const record = this.registry.initializeRecord(resolvedSchema)
+
+		// Ensure the ancestor path exists in HST before setting descendant fields
+		const existingData = this.hstStore.get(path)
+		if (!existingData) {
+			this.hstStore.set(path, {}, 'system')
+		}
+
+		// Store each field at its own HST path
+		for (const [key, value] of Object.entries(record)) {
+			this.hstStore.set(`${path}.${key}`, value, 'system')
+		}
+	}
+
+	/**
+	 * Fetch a record and its nested data from the server.
+	 *
+	 * Calls `_client.getRecord()` with nested sub-selections and stores each scalar field at its own HST path
+	 * (`slug.recordId.fieldname`), descendants at the link-level path (`slug.recordId.linkname`).
+	 *
+	 * @param path - HST path (e.g., "recipe.r1")
+	 * @param doctype - The doctype to fetch
+	 * @param recordId - Record ID to fetch
+	 * @param options - Query options (includeNested to control which links are fetched)
+	 * @throws Error with code `"CLIENT_REQUIRED"` if no data client is configured
+	 * @throws Error with code `"RECORD_NOT_FOUND"` if the server returns null
+	 * @public
+	 */
+	async fetchNestedData(
+		path: string,
+		doctype: Doctype,
+		recordId: string,
+		options?: { includeNested?: boolean | string[] }
+	): Promise<void> {
+		if (!this._client) {
+			throw createCodedError(
+				'No data client configured. Call setClient() with a DataClient implementation ' +
+					'(e.g., StonecropClient from @stonecrop/graphql-client) before fetching records.',
+				'CLIENT_REQUIRED'
+			)
+		}
+
+		const record = await this._client.getRecord({ name: doctype.doctype }, recordId, {
+			includeNested: options?.includeNested ?? true,
+		})
+
+		if (!record) {
+			throw createCodedError(`Record not found: ${doctype.doctype} ${recordId}`, 'RECORD_NOT_FOUND')
+		}
+
+		// Store each scalar field at its own HST path, descendants at link-level path
+		const slug = doctype.slug
+		this.ensureDoctypeExists(slug)
+
+		// Ensure the ancestor path exists in HST before setting descendant fields
+		const existingData = this.hstStore.get(`${slug}.${recordId}`)
+		if (!existingData) {
+			this.hstStore.set(`${slug}.${recordId}`, {}, 'system')
+		}
+
+		for (const [key, value] of Object.entries(record)) {
+			this.hstStore.set(`${slug}.${recordId}.${key}`, value, 'system')
+		}
+	}
+
+	/**
+	 * Recursively collect nested data from HST
+	 * @param basePath - The base path in HST (e.g., "customer.123.address")
+	 * @param doctype - The doctype whose links drive the recursive traversal
+	 * @returns The collected data object
+	 */
+	private collectNestedData(basePath: string, doctype: Doctype): Record<string, any> {
+		const data = this.hstStore.get(basePath) || {}
+		const payload: Record<string, any> = { ...data }
+
+		if (!doctype.links) return payload
+
+		for (const [fieldname, link] of Object.entries(doctype.links)) {
+			const fieldPath = `${basePath}.${fieldname}`
+			const isMany = link.cardinality === 'noneOrMany' || link.cardinality === 'atLeastOne'
+
+			if (isMany) {
+				const arrayData = this.hstStore.get(fieldPath)
+				if (Array.isArray(arrayData)) {
+					payload[fieldname] = arrayData
+				}
+			} else {
+				const targetDoctype = this.registry.getDoctype(link.target)
+				if (targetDoctype?.links) {
+					payload[fieldname] = this.collectNestedData(fieldPath, targetDoctype)
+				} else {
+					payload[fieldname] = this.hstStore.get(fieldPath) || {}
+				}
+			}
+		}
+
+		return payload
 	}
 }
 
 /**
- * Recursively collect nested data from HST using pre-resolved schemas
- * @param resolvedSchema - The already-resolved schema (with nested schemas embedded)
- * @param basePath - The base path in HST (e.g., "customer.123.address")
- * @param hstStore - The HST store instance
- * @returns The collected data object
+ * Returns the global Stonecrop singleton instance, or `undefined` if no
+ * instance has been created yet.
+ *
+ * Use this when you need the Stonecrop instance outside a Vue component
+ * context (e.g., in workflow action handlers, plugin setup code, or
+ * non-component utilities). Inside a component, prefer `useStonecrop()`.
+ *
  * @public
  */
-function collectNestedData(resolvedSchema: SchemaTypes[], basePath: string, hstStore: HSTNode): Record<string, any> {
-	const data = hstStore.get(basePath) || {}
-	const payload: Record<string, any> = { ...data }
-
-	const doctypeFields = resolvedSchema.filter(
-		field =>
-			'fieldtype' in field &&
-			field.fieldtype === 'Doctype' &&
-			!isDoctypeMany(field as DoctypeSchema) &&
-			'schema' in field &&
-			Array.isArray(field.schema)
-	)
-
-	for (const field of doctypeFields) {
-		const doctypeField = field as DoctypeOneSchema
-		const fieldPath = `${basePath}.${doctypeField.fieldname}`
-		const nestedData = collectNestedData(doctypeField.schema!, fieldPath, hstStore)
-		payload[doctypeField.fieldname] = nestedData
-	}
-
-	const doctypeManyFields = resolvedSchema.filter(
-		field => 'fieldtype' in field && field.fieldtype === 'Doctype' && isDoctypeMany(field as DoctypeSchema)
-	)
-
-	for (const field of doctypeManyFields) {
-		const doctypeField = field as DoctypeManySchema
-		const fieldPath = `${basePath}.${doctypeField.fieldname}`
-		const arrayData = hstStore.get(fieldPath)
-		if (Array.isArray(arrayData)) {
-			payload[doctypeField.fieldname] = arrayData
-		}
-	}
-
-	return payload
+export function getStonecrop(): Stonecrop | undefined {
+	return Stonecrop._root
 }
 
-export { collectNestedData }
+/**
+ * Create an Error with a `code` property for programmatic error handling.
+ * @internal
+ */
+interface CodedError extends Error {
+	code: string
+}
+
+function createCodedError(message: string, code: string): CodedError {
+	const error = new Error(message) as CodedError
+	error.code = code
+	return error
+}

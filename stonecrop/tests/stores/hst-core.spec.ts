@@ -51,22 +51,22 @@ describe('HST Core Functionality', () => {
 		it('should return tree nodes with getNode() method', () => {
 			const userNode = hst.getNode('user')
 			expect(userNode.getPath()).toBe('user')
-			expect(typeof userNode.getParent).toBe('function')
+			expect(typeof userNode.getAncestor).toBe('function')
 		})
 
-		it('should return correct parent nodes', () => {
+		it('should return correct ancestor nodes', () => {
 			const settingsNode = hst.getNode('user.profile.settings')
-			const profileNode = settingsNode.getParent()
-			const userNode = profileNode?.getParent()
-			const rootNode = userNode?.getParent()
+			const profileNode = settingsNode.getAncestor()
+			const userNode = profileNode?.getAncestor()
+			const rootNode = userNode?.getAncestor()
 
 			expect(profileNode?.getPath()).toBe('user.profile')
 			expect(userNode?.getPath()).toBe('user')
 			expect(rootNode?.getPath()).toBe('')
 		})
 
-		it('should return null parent for root node', () => {
-			expect(hst.getParent()).toBeNull()
+		it('should return null ancestor for root node', () => {
+			expect(hst.getAncestor()).toBeNull()
 		})
 
 		it('should always return the same root node', () => {
@@ -405,7 +405,7 @@ describe('HST Core Functionality', () => {
 		})
 
 		it('should provide tree navigation methods', () => {
-			expect(typeof proxy.getParent).toBe('function')
+			expect(typeof proxy.getAncestor).toBe('function')
 			expect(typeof proxy.getRoot).toBe('function')
 			expect(typeof proxy.getPath).toBe('function')
 		})

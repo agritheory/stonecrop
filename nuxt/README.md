@@ -280,7 +280,6 @@ import { resolve } from 'path'
 
 const myStrategy: RouteStrategyFn = (doctypes) =>
   doctypes
-    .filter(({ data }) => !data.parentDoctype) // skip child tables
     .flatMap(({ fileName, data, fields }) => [
       {
         name: `${fileName}-list`,
@@ -426,7 +425,7 @@ const completed = store.get('project.proj-1.tasks.task-1.completed')
 
 // Navigate the tree hierarchy
 const taskNode = store.getNode('project.proj-1.tasks.task-1')
-const parent = taskNode.getParent() // Returns project node
+const ancestor = taskNode.getAncestor() // Returns project node
 const breadcrumbs = taskNode.getBreadcrumbs()
 ```
 

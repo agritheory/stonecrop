@@ -43,7 +43,6 @@ describe('fieldtype', () => {
 				'JSON',
 				'Code',
 				'Link',
-				'Doctype',
 				'Attach',
 				'Currency',
 				'Quantity',

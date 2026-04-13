@@ -1,6 +1,30 @@
-import type { DataClient, DoctypeMeta, DoctypeContext, DoctypeRef } from '@stonecrop/schema'
+import type {
+	DataClient,
+	DoctypeMeta,
+	DoctypeContext,
+	DoctypeRef,
+	GetRecordOptions,
+	GetRecordsOptions,
+} from '@stonecrop/schema'
+import { snakeToCamel, toPascalCase } from '@stonecrop/schema'
+import pluralize from 'pluralize'
+
+import { buildRecordQuery } from './query'
 
 export type { DoctypeContext, DoctypeRef }
+
+/**
+ * Default inflection functions for PostGraphile Amber preset conventions.
+ * These match the middleware's default inflection so the client builds
+ * queries the server can execute.
+ * @internal
+ */
+const defaultRecordFieldName = (tableName: string): string => {
+	const singularName = pluralize.singular(tableName)
+	return `${snakeToCamel(singularName)}ById`
+}
+const defaultRecordArgName = (_tableName: string): string => 'id'
+const defaultRecordArgType = (_tableName: string): string => 'UUID!'
 
 /**
  * Options for creating a Stonecrop client
@@ -11,6 +35,8 @@ export interface StonecropClientOptions {
 	endpoint: string
 	/** Additional HTTP headers to include in requests */
 	headers?: Record<string, string>
+	/** Doctype registry for nested query building */
+	registry?: Map<string, DoctypeMeta>
 }
 
 /**
@@ -21,6 +47,7 @@ export class StonecropClient implements DataClient {
 	private endpoint: string
 	private headers: Record<string, string>
 	private metaCache: Map<string, DoctypeMeta> = new Map()
+	private registry?: Map<string, DoctypeMeta>
 
 	constructor(options: StonecropClientOptions) {
 		this.endpoint = options.endpoint
@@ -28,6 +55,7 @@ export class StonecropClient implements DataClient {
 			'Content-Type': 'application/json',
 			...options.headers,
 		}
+		this.registry = options.registry
 	}
 
 	/**
@@ -109,8 +137,6 @@ export class StonecropClient implements DataClient {
 						}
 					}
 					inherits
-					listDoctype
-					parentDoctype
 				}
 			}
 			`,
@@ -166,8 +192,6 @@ export class StonecropClient implements DataClient {
 						}
 					}
 					inherits
-					listDoctype
-					parentDoctype
 				}
 			}
 			`
@@ -181,11 +205,49 @@ export class StonecropClient implements DataClient {
 	}
 
 	/**
-	 * Get a single record by ID
+	 * Get a single record by ID.
+	 *
+	 * When `includeNested` is set, builds a query with sub-selections for descendant
+	 * links and returns ancestor + merged descendants. When omitted, returns flat scalar data.
+	 *
 	 * @param doctype - Doctype reference (name and optional slug)
 	 * @param recordId - Record ID to fetch
+	 * @param options - Query options (includeNested, maxDepth)
 	 */
-	async getRecord(doctype: DoctypeRef, recordId: string): Promise<Record<string, unknown> | null> {
+	async getRecord(
+		doctype: DoctypeRef,
+		recordId: string,
+		options?: GetRecordOptions
+	): Promise<Record<string, unknown> | null> {
+		// Nested path: build query with sub-selections
+		if (options?.includeNested) {
+			const meta = await this.getMeta({ doctype: doctype.name })
+			if (!meta) return null
+
+			const query = buildRecordQuery(
+				meta,
+				defaultRecordFieldName,
+				defaultRecordArgName,
+				defaultRecordArgType,
+				this.registry,
+				options
+			)
+
+			const result = await this.query<Record<string, unknown>>(query, { id: recordId })
+
+			const queryName = defaultRecordFieldName(meta.tableName || doctype.name)
+			const record = result[queryName] as Record<string, unknown> | undefined
+
+			if (!record) return null
+
+			if (meta.links && this.registry) {
+				return mergeNestedResults(record, meta, this.registry)
+			}
+
+			return record
+		}
+
+		// Flat path: original query
 		const result = await this.query<{
 			stonecropRecord: { data: Record<string, unknown> | null }
 		}>(
@@ -207,15 +269,7 @@ export class StonecropClient implements DataClient {
 	 * @param doctype - Doctype reference (name and optional slug)
 	 * @param options - Query options (filters, orderBy, limit, offset)
 	 */
-	async getRecords(
-		doctype: DoctypeRef,
-		options?: {
-			filters?: Record<string, unknown>
-			orderBy?: string
-			limit?: number
-			offset?: number
-		}
-	): Promise<Record<string, unknown>[]> {
+	async getRecords(doctype: DoctypeRef, options?: GetRecordsOptions): Promise<Record<string, unknown>[]> {
 		const result = await this.query<{
 			stonecropRecords: { data: Record<string, unknown>[] }
 		}>(
@@ -287,4 +341,58 @@ export class StonecropClient implements DataClient {
 	clearMetaCache(): void {
 		this.metaCache.clear()
 	}
+}
+
+/**
+ * Merge nested connection results into flat arrays.
+ *
+ * For `noneOrMany`/`atLeastOne` links, the query returns `{ nodes: [...] }`.
+ * This flattens them to just `[]` for easier consumption.
+ *
+ * For `one`/`atMostOne` links, the result is already flat.
+ *
+ * @internal
+ */
+function mergeNestedResults(
+	record: Record<string, unknown>,
+	meta: DoctypeMeta,
+	registry: Map<string, DoctypeMeta>
+): Record<string, unknown> {
+	if (!meta.links) return record
+
+	const merged = { ...record }
+
+	for (const [fieldname, link] of Object.entries(meta.links)) {
+		const isMany = link.cardinality === 'noneOrMany' || link.cardinality === 'atLeastOne'
+
+		if (isMany) {
+			// Connection result: { nodes: [...] } → flatten to []
+			const targetMeta = registry.get(link.target)
+			if (!targetMeta) continue
+
+			const connectionField = getConnectionFieldFromTarget(targetMeta, meta.tableName || '')
+			const connectionResult = merged[connectionField] as { nodes?: unknown[] } | undefined
+			if (connectionResult?.nodes) {
+				merged[fieldname] = connectionResult.nodes
+				delete merged[connectionField]
+			} else {
+				merged[fieldname] = []
+				delete merged[connectionField]
+			}
+		}
+		// 'one'/'atMostOne' links are already at the right fieldname
+	}
+
+	return merged
+}
+
+/**
+ * Derive the connection field name matching the query builder's convention.
+ * @internal
+ */
+function getConnectionFieldFromTarget(targetMeta: DoctypeMeta, parentTableName: string): string {
+	const targetPlural = pluralize.plural(targetMeta.tableName || '')
+	const targetPascal = toPascalCase(targetPlural)
+	const fkPascal = toPascalCase(parentTableName) + 'Id'
+	return `${targetPascal}By${fkPascal}`
 }

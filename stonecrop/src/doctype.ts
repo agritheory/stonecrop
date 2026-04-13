@@ -1,8 +1,7 @@
 import type { SchemaTypes } from '@stonecrop/aform'
-import type { WorkflowMeta } from '@stonecrop/schema'
+import type { LinkDeclaration, WorkflowMeta } from '@stonecrop/schema'
 import { List, Map } from 'immutable'
 import { Component } from 'vue'
-import type { UnknownMachineConfig } from 'xstate'
 
 import type { ImmutableDoctype } from './types'
 import type { DoctypeConfig } from './types/doctype'
@@ -57,25 +56,35 @@ export default class Doctype {
 	readonly component?: Component
 
 	/**
+	 * Relationship links to other doctypes
+	 * @public
+	 * @readonly
+	 */
+	readonly links?: Record<string, LinkDeclaration>
+
+	/**
 	 * Creates a new Doctype instance
 	 * @param doctype - The doctype name
 	 * @param schema - The doctype schema definition
 	 * @param workflow - The doctype workflow configuration (XState machine)
 	 * @param actions - The doctype actions and field triggers
 	 * @param component - Optional Vue component for rendering the doctype
+	 * @param links - Optional relationship links to other doctypes
 	 */
 	constructor(
 		doctype: string,
 		schema: ImmutableDoctype['schema'],
 		workflow: ImmutableDoctype['workflow'],
 		actions: ImmutableDoctype['actions'],
-		component?: Component
+		component?: Component,
+		links?: Record<string, LinkDeclaration>
 	) {
 		this.doctype = doctype
 		this.schema = schema
 		this.workflow = workflow
 		this.actions = actions
 		this.component = component
+		this.links = links
 	}
 
 	/**
@@ -120,7 +129,7 @@ export default class Doctype {
 		const schema = config.fields ? List(config.fields) : List<SchemaTypes>()
 		const actions = config.actions ? Map(config.actions) : Map<string, string[]>()
 
-		return new Doctype(config.name, schema, config.workflow, actions)
+		return new Doctype(config.name, schema, config.workflow, actions, undefined, config.links)
 	}
 
 	/**

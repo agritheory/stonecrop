@@ -1,6 +1,7 @@
 export type * from '@stonecrop/aform/types'
 export type * from '@stonecrop/atable/types'
 
+import { useLazyLink } from './composables/lazy-link'
 import { useStonecrop } from './composables/stonecrop'
 import { useOperationLog, useUndoRedoShortcuts, withBatch } from './composables/operation-log'
 import Doctype from './doctype'
@@ -15,7 +16,7 @@ import {
 } from './field-triggers'
 import plugin from './plugins'
 import Registry from './registry'
-import { Stonecrop, collectNestedData } from './stonecrop'
+import { Stonecrop, getStonecrop } from './stonecrop'
 import { HST, createHST, type HSTNode } from './stores/hst'
 import { useOperationLogStore } from './stores/operation-log'
 import { SchemaValidator, createValidator, validateSchema } from './schema-validator'
@@ -31,6 +32,7 @@ export {
 	Doctype,
 	Registry,
 	Stonecrop,
+	useLazyLink,
 	useStonecrop,
 	// HST exports for advanced usage
 	HST,
@@ -54,7 +56,7 @@ export {
 	useUndoRedoShortcuts,
 	withBatch,
 	// Utility functions
-	collectNestedData,
+	getStonecrop,
 }
 
 // Default export is the Vue plugin

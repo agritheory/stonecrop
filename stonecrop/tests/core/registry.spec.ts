@@ -8,6 +8,19 @@ import { Stonecrop } from '../../src/stonecrop'
 import Doctype from '../../src/doctype'
 import type { SchemaTypes } from '@stonecrop/aform'
 
+// Helper: creates a Doctype with links
+const createDoctypeWithLinks = (name: string, links?: Record<string, any>) => {
+	const mockSchema = List([{ fieldname: 'title', component: 'ATextInput', label: 'Title' }] as SchemaTypes[])
+
+	const mockWorkflow: UnknownMachineConfig = {
+		id: name.toLowerCase(),
+		initial: 'draft',
+		states: { draft: {} },
+	}
+
+	return new Doctype(name, mockSchema, mockWorkflow, Map(), undefined, links)
+}
+
 describe('Registry class', () => {
 	let registry: Registry
 	let mockRouter: any
@@ -210,6 +223,152 @@ describe('Registry class', () => {
 
 			expect(registry.getDoctype('task')).toBe(task)
 			expect(registry.getDoctype('note')).toBe(note)
+		})
+	})
+
+	describe('getDescendantLinks', () => {
+		it('returns links array for a doctype with links', () => {
+			registry = new Registry()
+			const recipe = createDoctypeWithLinks('Recipe', {
+				tasks: { target: 'recipe-task', cardinality: 'noneOrMany', backlink: 'recipe' },
+				supersededBy: { target: 'recipe', cardinality: 'atMostOne', backlink: 'supersededBy' },
+			})
+			registry.addDoctype(recipe)
+
+			const links = registry.getDescendantLinks('recipe')
+			expect(links).toHaveLength(2)
+			expect(links[0].fieldname).toBe('tasks')
+			expect(links[0].target).toBe('recipe-task')
+			expect(links[0].cardinality).toBe('noneOrMany')
+			expect(links[1].fieldname).toBe('supersededBy')
+			expect(links[1].target).toBe('recipe')
+		})
+
+		it('returns empty array for a doctype without links', () => {
+			registry = new Registry()
+			const task = createMockDoctype('Task')
+			registry.addDoctype(task)
+
+			expect(registry.getDescendantLinks('task')).toEqual([])
+		})
+
+		it('returns empty array for non-existent doctype', () => {
+			registry = new Registry()
+			expect(registry.getDescendantLinks('nonexistent')).toEqual([])
+		})
+
+		it('includes fieldname on each entry', () => {
+			registry = new Registry()
+			const recipe = createDoctypeWithLinks('Recipe', {
+				tasks: { target: 'recipe-task', cardinality: 'noneOrMany' },
+			})
+			registry.addDoctype(recipe)
+
+			const links = registry.getDescendantLinks('recipe')
+			expect(links[0]).toHaveProperty('fieldname', 'tasks')
+			expect(links[0]).toHaveProperty('target', 'recipe-task')
+		})
+	})
+
+	describe('getAncestorLinks', () => {
+		it('returns links on other doctypes targeting this one', () => {
+			registry = new Registry()
+			const recipe = createDoctypeWithLinks('Recipe', {
+				tasks: { target: 'recipe-task', cardinality: 'noneOrMany', backlink: 'recipe' },
+			})
+			const recipeTask = createDoctypeWithLinks('RecipeTask', {
+				recipe: { target: 'recipe', cardinality: 'one', backlink: 'tasks' },
+			})
+			registry.addDoctype(recipe)
+			registry.addDoctype(recipeTask)
+
+			const ancestors = registry.getAncestorLinks('recipe-task')
+			expect(ancestors).toHaveLength(1)
+			expect(ancestors[0].fieldname).toBe('tasks')
+			expect(ancestors[0].target).toBe('recipe-task')
+			expect(ancestors[0].doctype).toBe('recipe')
+		})
+
+		it('returns empty array when nothing targets the given doctype', () => {
+			registry = new Registry()
+			const recipe = createDoctypeWithLinks('Recipe', {
+				tasks: { target: 'recipe-task', cardinality: 'noneOrMany' },
+			})
+			registry.addDoctype(recipe)
+
+			expect(registry.getAncestorLinks('recipe-task')).toEqual([])
+		})
+
+		it('returns empty array for non-existent doctype', () => {
+			registry = new Registry()
+			expect(registry.getAncestorLinks('nonexistent')).toEqual([])
+		})
+
+		it('handles self-referential links — both getDescendantLinks and getAncestorLinks return reciprocal', () => {
+			registry = new Registry()
+			const location = createDoctypeWithLinks('Location', {
+				parentLocation: { target: 'location', cardinality: 'atMostOne', backlink: 'childLocations' },
+				childLocations: { target: 'location', cardinality: 'noneOrMany', backlink: 'parentLocation' },
+			})
+			registry.addDoctype(location)
+
+			const descendant = registry.getDescendantLinks('location')
+			expect(descendant).toHaveLength(2)
+			expect(descendant.map(l => l.fieldname).sort()).toEqual(['childLocations', 'parentLocation'])
+
+			const ancestor = registry.getAncestorLinks('location')
+			expect(ancestor).toHaveLength(2)
+			expect(ancestor.map(l => l.fieldname).sort()).toEqual(['childLocations', 'parentLocation'])
+		})
+
+		it('returns entries from multiple doctypes when both target the same doctype', () => {
+			registry = new Registry()
+			const recipe = createDoctypeWithLinks('Recipe', {
+				tasks: { target: 'recipe-task', cardinality: 'noneOrMany', backlink: 'recipe' },
+			})
+			const recipeVariant = createDoctypeWithLinks('RecipeVariant', {
+				baseTasks: { target: 'recipe-task', cardinality: 'noneOrMany', backlink: 'recipeVariant' },
+			})
+			const recipeTask = createDoctypeWithLinks('RecipeTask', {
+				recipe: { target: 'recipe', cardinality: 'one', backlink: 'tasks' },
+				recipeVariant: { target: 'recipe-variant', cardinality: 'atMostOne', backlink: 'baseTasks' },
+			})
+			registry.addDoctype(recipe)
+			registry.addDoctype(recipeVariant)
+			registry.addDoctype(recipeTask)
+
+			const ancestors = registry.getAncestorLinks('recipe-task')
+			expect(ancestors).toHaveLength(2)
+
+			const slugs = ancestors.map(a => a.doctype).sort()
+			expect(slugs).toEqual(['recipe', 'recipe-variant'])
+		})
+
+		it('rebuilds ancestor index after a new doctype is added', () => {
+			registry = new Registry()
+			const recipe = createDoctypeWithLinks('Recipe', {
+				tasks: { target: 'recipe-task', cardinality: 'noneOrMany', backlink: 'recipe' },
+			})
+			const recipeTask = createDoctypeWithLinks('RecipeTask', {
+				recipe: { target: 'recipe', cardinality: 'one', backlink: 'tasks' },
+			})
+			registry.addDoctype(recipe)
+			registry.addDoctype(recipeTask)
+
+			// First call builds the index
+			const before = registry.getAncestorLinks('recipe-task')
+			expect(before).toHaveLength(1)
+
+			// Add a new doctype that also links to recipe-task
+			const recipeVariant = createDoctypeWithLinks('RecipeVariant', {
+				baseTasks: { target: 'recipe-task', cardinality: 'noneOrMany', backlink: 'recipeVariant' },
+			})
+			registry.addDoctype(recipeVariant)
+
+			// Dirty flag is set — next call should rebuild and include the new entry
+			const after = registry.getAncestorLinks('recipe-task')
+			expect(after).toHaveLength(2)
+			expect(after.map(a => a.doctype).sort()).toEqual(['recipe', 'recipe-variant'])
 		})
 	})
 })

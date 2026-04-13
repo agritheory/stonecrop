@@ -81,6 +81,25 @@ const validateFieldTypes: ActionHandler = async (args, context) => {
 		if (error) errors.push(error)
 	}
 
+	// Validate link fields
+	if (doctype.links) {
+		for (const [fieldname, link] of Object.entries(doctype.links)) {
+			const value = record[fieldname]
+			if (value === undefined || value === null) continue
+
+			const isMany = link.cardinality === 'noneOrMany' || link.cardinality === 'atLeastOne'
+			if (isMany) {
+				if (!Array.isArray(value)) {
+					errors.push(`${fieldname}: expected array, got ${typeof value}`)
+				}
+			} else {
+				if (typeof value !== 'object' || Array.isArray(value)) {
+					errors.push(`${fieldname}: expected object, got ${typeof value}`)
+				}
+			}
+		}
+	}
+
 	if (errors.length > 0) {
 		throw new Error(`Field type validation failed:\n${errors.join('\n')}`)
 	}
@@ -136,18 +155,6 @@ function validateFieldValue(field: FieldMeta, value: unknown): string | null {
 		case 'JSON':
 			if (typeof value !== 'object') {
 				return `${fieldname}: expected object, got ${typeof value}`
-			}
-			break
-
-		case 'Doctype':
-			if (cardinality === 'many') {
-				if (!Array.isArray(value)) {
-					return `${fieldname}: expected array, got ${typeof value}`
-				}
-			} else {
-				if (typeof value !== 'object' || Array.isArray(value)) {
-					return `${fieldname}: expected object, got ${typeof value}`
-				}
 			}
 			break
 	}

@@ -2,7 +2,7 @@ import { useMagicKeys, whenever } from '@vueuse/core'
 import { storeToRefs } from 'pinia'
 import { getCurrentInstance, inject } from 'vue'
 
-import type { HSTNode } from '../stores/hst'
+import type { HSTNode } from '../types/hst'
 import { useOperationLogStore } from '../stores/operation-log'
 import type { OperationLogConfig } from '../types/operation-log'
 

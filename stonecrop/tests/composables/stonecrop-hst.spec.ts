@@ -1,5 +1,6 @@
 import type { SchemaTypes } from '@stonecrop/aform'
-import { mount } from '@vue/test-utils'
+import { LinkDeclaration } from '@stonecrop/schema'
+import { mount, flushPromises } from '@vue/test-utils'
 import { List, Map } from 'immutable'
 import { createPinia, setActivePinia } from 'pinia'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
@@ -16,7 +17,7 @@ import { HST } from '../../src/stores/hst'
  * @vitest-environment jsdom
  */
 
-const createDoctype = (name: string, fields?: SchemaTypes[]) => {
+const createDoctype = (name: string, fields?: SchemaTypes[], links?: Record<string, LinkDeclaration>) => {
 	const schema = List(
 		fields || [
 			{
@@ -54,7 +55,7 @@ const createDoctype = (name: string, fields?: SchemaTypes[]) => {
 		save: ['validateData', 'saveData'],
 	})
 
-	return new Doctype(name, schema as any, workflow, actions)
+	return new Doctype(name, schema as any, workflow, actions, undefined, links)
 }
 
 describe('useStonecrop HST mode', () => {
@@ -86,15 +87,14 @@ describe('useStonecrop HST mode', () => {
 		const wrapper = mount(TestComponent, {
 			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
-		await wrapper.vm.$nextTick()
-		await new Promise(resolve => setTimeout(resolve, 50))
 
 		const vm = wrapper.vm as any
 		expect(vm.provideHSTPath).toBeDefined()
 		expect(vm.handleHSTChange).toBeDefined()
 		expect(vm.formData).toBeDefined()
 		expect(vm.resolvedSchema).toBeDefined()
-		expect(vm.loadNestedData).toBeDefined()
+		expect(vm.initializeNestedData).toBeDefined()
+		expect(vm.fetchNestedData).toBeDefined()
 		expect(vm.collectRecordPayload).toBeDefined()
 		expect(vm.createNestedContext).toBeDefined()
 	})
@@ -106,10 +106,14 @@ describe('useStonecrop HST mode', () => {
 		])
 		registry.addDoctype(addressDoctype)
 
-		const customerDoctype = createDoctype('Customer', [
-			{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
-			{ fieldname: 'address', fieldtype: 'Doctype', options: 'address' } as SchemaTypes,
-		])
+		const customerDoctype = createDoctype(
+			'Customer',
+			[
+				{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+				{ fieldname: 'address', fieldtype: 'Link', component: 'AForm', options: 'address' } as SchemaTypes,
+			],
+			{ address: { target: 'address', cardinality: 'one', fieldname: 'address' } }
+		)
 		registry.addDoctype(customerDoctype)
 
 		const TestComponent = defineComponent({
@@ -122,7 +126,6 @@ describe('useStonecrop HST mode', () => {
 		const wrapper = mount(TestComponent, {
 			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
-		await wrapper.vm.$nextTick()
 
 		const vm = wrapper.vm as any
 		// resolvedSchema should have the address field with embedded schema
@@ -147,7 +150,7 @@ describe('useStonecrop HST mode', () => {
 		const wrapper = mount(TestComponent, {
 			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
-		await wrapper.vm.$nextTick()
+		await flushPromises()
 
 		const vm = wrapper.vm as any
 		const path = vm.provideHSTPath('title')
@@ -168,7 +171,7 @@ describe('useStonecrop HST mode', () => {
 		const wrapper = mount(TestComponent, {
 			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
-		await wrapper.vm.$nextTick()
+		await flushPromises()
 
 		const vm = wrapper.vm as any
 		const path = vm.provideHSTPath('title', 'task-override')
@@ -186,7 +189,6 @@ describe('useStonecrop HST mode', () => {
 		const wrapper = mount(TestComponent, {
 			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
-		await wrapper.vm.$nextTick()
 
 		const vm = wrapper.vm as any
 		// No doctype, should return empty string if provideHSTPath exists
@@ -209,8 +211,6 @@ describe('useStonecrop HST mode', () => {
 		const wrapper = mount(TestComponent, {
 			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
-		await wrapper.vm.$nextTick()
-		await new Promise(resolve => setTimeout(resolve, 50))
 
 		const vm = wrapper.vm as any
 		vm.handleHSTChange({
@@ -236,8 +236,6 @@ describe('useStonecrop HST mode', () => {
 		const wrapper = mount(TestComponent, {
 			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
-		await wrapper.vm.$nextTick()
-		await new Promise(resolve => setTimeout(resolve, 50))
 
 		const vm = wrapper.vm as any
 		// A deep nested path: task.new.address.street
@@ -265,7 +263,6 @@ describe('useStonecrop HST mode', () => {
 		const wrapper = mount(TestComponent, {
 			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
-		await wrapper.vm.$nextTick()
 
 		const vm = wrapper.vm as any
 		// Should not throw
@@ -292,8 +289,6 @@ describe('useStonecrop HST mode', () => {
 		const wrapper = mount(TestComponent, {
 			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
-		await wrapper.vm.$nextTick()
-		await new Promise(resolve => setTimeout(resolve, 50))
 
 		const vm = wrapper.vm as any
 		// formData should be initialized with defaults from schema
@@ -317,8 +312,7 @@ describe('useStonecrop HST mode', () => {
 		const wrapper = mount(TestComponent, {
 			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
-		await wrapper.vm.$nextTick()
-		await new Promise(resolve => setTimeout(resolve, 50))
+		await flushPromises()
 
 		const vm = wrapper.vm as any
 		expect(vm.stonecrop).toBeDefined()
@@ -343,8 +337,6 @@ describe('useStonecrop HST mode', () => {
 		const wrapper = mount(TestComponent, {
 			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
-		await wrapper.vm.$nextTick()
-		await new Promise(resolve => setTimeout(resolve, 50))
 
 		const vm = wrapper.vm as any
 		const nestedCtx = vm.createNestedContext('task.new.address', addressDoctype)
@@ -360,7 +352,7 @@ describe('useStonecrop HST mode', () => {
 		// Should not throw
 	})
 
-	it('loadNestedData returns initialized record when no existing data', async () => {
+	it('initializeNestedData scaffolds empty child records', async () => {
 		const taskDoctype = createDoctype('Task')
 		registry.addDoctype(taskDoctype)
 
@@ -380,27 +372,22 @@ describe('useStonecrop HST mode', () => {
 		const wrapper = mount(TestComponent, {
 			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
-		await wrapper.vm.$nextTick()
-		await new Promise(resolve => setTimeout(resolve, 50))
 
 		const vm = wrapper.vm as any
-		const nested = vm.loadNestedData('task.new.address', addressDoctype)
-		expect(nested).toBeDefined()
-		expect(typeof nested).toBe('object')
+		vm.initializeNestedData('task.new', addressDoctype)
+
+		// Verify fields were scaffolded into HST
+		const street = vm.hstStore.get('task.new.street')
+		expect(street).toBeDefined()
 	})
 
-	it('loadNestedData with recordId tries to load existing data', async () => {
+	it('fetchNestedData throws CLIENT_REQUIRED when no client', async () => {
 		const taskDoctype = createDoctype('Task')
 		registry.addDoctype(taskDoctype)
 
-		const addressDoctype = createDoctype('Address', [
-			{ fieldname: 'street', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
-		])
-		registry.addDoctype(addressDoctype)
-
 		const TestComponent = defineComponent({
 			setup() {
-				return useStonecrop({ registry, doctype: taskDoctype, recordId: 'new' })
+				return useStonecrop({ registry, doctype: taskDoctype, recordId: 't1' })
 			},
 			template: '<div>test</div>',
 		})
@@ -408,30 +395,29 @@ describe('useStonecrop HST mode', () => {
 		const wrapper = mount(TestComponent, {
 			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
-		await wrapper.vm.$nextTick()
-		await new Promise(resolve => setTimeout(resolve, 50))
+		await flushPromises()
 
 		const vm = wrapper.vm as any
-		const nested = vm.loadNestedData('task.new.address', addressDoctype, 'addr-1')
-		expect(nested).toBeDefined()
+		await expect(vm.fetchNestedData('task.t1', taskDoctype, 't1')).rejects.toThrow('No data client configured')
 	})
 
-	it('loadNestedData returns existing data when found in HST', async () => {
-		const addressDoctype = createDoctype('Address', [
-			{ fieldname: 'street', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
-			{ fieldname: 'city', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+	it('fetchNestedData stores record data in HST on success', async () => {
+		const taskDoctype = createDoctype('Task', [
+			{ fieldname: 'title', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+			{ fieldname: 'status', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
 		])
-		registry.addDoctype(addressDoctype)
+		registry.addDoctype(taskDoctype)
 
-		const customerDoctype = createDoctype('Customer', [
-			{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
-			{ fieldname: 'address', fieldtype: 'Doctype', options: 'address' } as SchemaTypes,
-		])
-		registry.addDoctype(customerDoctype)
+		const mockClient = {
+			getMeta: vi.fn().mockResolvedValue(null),
+			getRecord: vi.fn().mockResolvedValue({ id: 't1', title: 'Test Task', status: 'active' }),
+			getRecords: vi.fn().mockResolvedValue([]),
+			runAction: vi.fn().mockResolvedValue({ success: true, data: null, error: null }),
+		}
 
 		const TestComponent = defineComponent({
 			setup() {
-				return useStonecrop({ registry, doctype: customerDoctype, recordId: 'cust-99' })
+				return useStonecrop({ registry, doctype: taskDoctype, recordId: 't1' })
 			},
 			template: '<div>test</div>',
 		})
@@ -439,19 +425,45 @@ describe('useStonecrop HST mode', () => {
 		const wrapper = mount(TestComponent, {
 			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
-		await wrapper.vm.$nextTick()
-		await new Promise(resolve => setTimeout(resolve, 50))
+		await flushPromises()
+
+		stonecrop.setClient(mockClient as any)
 
 		const vm = wrapper.vm as any
-		const existingAddress = { street: '456 Oak Ave', city: 'Boston' }
-		vm.handleHSTChange({
-			path: 'customer.cust-99.address',
-			value: existingAddress,
-			fieldname: 'address',
+		await vm.fetchNestedData('task.t1', taskDoctype, 't1')
+
+		// Verify data stored in HST at per-field paths
+		expect(stonecrop.hstStore.get('task.t1.title')).toBe('Test Task')
+		expect(stonecrop.hstStore.get('task.t1.status')).toBe('active')
+	})
+
+	it('fetchNestedData throws RECORD_NOT_FOUND when server returns null', async () => {
+		const taskDoctype = createDoctype('Task')
+		registry.addDoctype(taskDoctype)
+
+		const mockClient = {
+			getMeta: vi.fn().mockResolvedValue(null),
+			getRecord: vi.fn().mockResolvedValue(null),
+			getRecords: vi.fn().mockResolvedValue([]),
+			runAction: vi.fn().mockResolvedValue({ success: true, data: null, error: null }),
+		}
+
+		const TestComponent = defineComponent({
+			setup() {
+				return useStonecrop({ registry, doctype: taskDoctype, recordId: 't1' })
+			},
+			template: '<div>test</div>',
 		})
 
-		const nested = vm.loadNestedData('customer.cust-99.address', addressDoctype, 'addr-1')
-		expect(nested).toEqual(existingAddress)
+		const wrapper = mount(TestComponent, {
+			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
+		})
+		await flushPromises()
+
+		stonecrop.setClient(mockClient as any)
+
+		const vm = wrapper.vm as any
+		await expect(vm.fetchNestedData('task.t1', taskDoctype, 't1')).rejects.toThrow('Record not found')
 	})
 
 	it('operationLog API is available in HST mode', async () => {
@@ -468,7 +480,6 @@ describe('useStonecrop HST mode', () => {
 		const wrapper = mount(TestComponent, {
 			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
-		await wrapper.vm.$nextTick()
 
 		const vm = wrapper.vm as any
 		expect(vm.operationLog).toBeDefined()
@@ -501,8 +512,6 @@ describe('useStonecrop HST mode', () => {
 		const wrapper = mount(TestComponent, {
 			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
-		await wrapper.vm.$nextTick()
-		await new Promise(resolve => setTimeout(resolve, 50))
 
 		const vm = wrapper.vm as any
 		const opLog = vm.operationLog
@@ -534,15 +543,11 @@ describe('useStonecrop HST mode', () => {
 		])
 		registry.addDoctype(itemDoctype)
 
-		const orderDoctype = createDoctype('Order', [
-			{ fieldname: 'order_number', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
-			{
-				fieldname: 'items',
-				fieldtype: 'Doctype',
-				cardinality: 'many',
-				options: 'item',
-			} as SchemaTypes,
-		])
+		const orderDoctype = createDoctype(
+			'Order',
+			[{ fieldname: 'order_number', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes],
+			{ items: { target: 'item', cardinality: 'noneOrMany' } }
+		)
 		registry.addDoctype(orderDoctype)
 
 		const TestComponent = defineComponent({
@@ -555,8 +560,7 @@ describe('useStonecrop HST mode', () => {
 		const wrapper = mount(TestComponent, {
 			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
-		await wrapper.vm.$nextTick()
-		await new Promise(resolve => setTimeout(resolve, 50))
+		await flushPromises()
 
 		const vm = wrapper.vm as any
 
@@ -588,15 +592,14 @@ describe('useStonecrop HST mode', () => {
 		])
 		registry.addDoctype(itemDoctype)
 
-		const orderDoctype = createDoctype('Order', [
-			{ fieldname: 'order_number', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
-			{
-				fieldname: 'items',
-				fieldtype: 'Doctype',
-				cardinality: 'many',
-				options: 'item',
-			} as SchemaTypes,
-		])
+		const orderDoctype = createDoctype(
+			'Order',
+			[
+				{ fieldname: 'order_number', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+				{ fieldname: 'items', fieldtype: 'Link', component: 'ATable', options: 'item' } as SchemaTypes,
+			],
+			{ items: { target: 'item', cardinality: 'noneOrMany', fieldname: 'items' } }
+		)
 		registry.addDoctype(orderDoctype)
 
 		const TestComponent = defineComponent({
@@ -609,8 +612,7 @@ describe('useStonecrop HST mode', () => {
 		const wrapper = mount(TestComponent, {
 			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
-		await wrapper.vm.$nextTick()
-		await new Promise(resolve => setTimeout(resolve, 50))
+		await flushPromises()
 
 		const vm = wrapper.vm as any
 
@@ -635,14 +637,11 @@ describe('useStonecrop HST mode', () => {
 		])
 		registry.addDoctype(addressDoctype)
 
-		const customerDoctype = createDoctype('Customer', [
-			{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
-			{
-				fieldname: 'address',
-				fieldtype: 'Doctype',
-				options: 'address',
-			} as SchemaTypes,
-		])
+		const customerDoctype = createDoctype(
+			'Customer',
+			[{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes],
+			{ address: { target: 'address', cardinality: 'one' } }
+		)
 		registry.addDoctype(customerDoctype)
 
 		const TestComponent = defineComponent({
@@ -655,8 +654,7 @@ describe('useStonecrop HST mode', () => {
 		const wrapper = mount(TestComponent, {
 			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
-		await wrapper.vm.$nextTick()
-		await new Promise(resolve => setTimeout(resolve, 50))
+		await flushPromises()
 
 		const vm = wrapper.vm as any
 
@@ -686,26 +684,21 @@ describe('useStonecrop HST mode', () => {
 		])
 		registry.addDoctype(phoneDoctype)
 
-		const addressDoctype = createDoctype('Address', [
-			{ fieldname: 'street', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
-			{ fieldname: 'city', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
-			{
-				fieldname: 'phones',
-				fieldtype: 'Doctype',
-				cardinality: 'many',
-				options: 'phone',
-			} as SchemaTypes,
-		])
+		const addressDoctype = createDoctype(
+			'Address',
+			[
+				{ fieldname: 'street', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+				{ fieldname: 'city', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+			],
+			{ phones: { target: 'phone', cardinality: 'noneOrMany' } }
+		)
 		registry.addDoctype(addressDoctype)
 
-		const customerDoctype = createDoctype('Customer', [
-			{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
-			{
-				fieldname: 'address',
-				fieldtype: 'Doctype',
-				options: 'address',
-			} as SchemaTypes,
-		])
+		const customerDoctype = createDoctype(
+			'Customer',
+			[{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes],
+			{ address: { target: 'address', cardinality: 'one' } }
+		)
 		registry.addDoctype(customerDoctype)
 
 		const TestComponent = defineComponent({
@@ -718,8 +711,7 @@ describe('useStonecrop HST mode', () => {
 		const wrapper = mount(TestComponent, {
 			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
-		await wrapper.vm.$nextTick()
-		await new Promise(resolve => setTimeout(resolve, 50))
+		await flushPromises()
 
 		const vm = wrapper.vm as any
 
@@ -759,25 +751,21 @@ describe('useStonecrop HST mode', () => {
 		])
 		registry.addDoctype(coordinatesDoctype)
 
-		const addressDoctype = createDoctype('Address', [
-			{ fieldname: 'street', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
-			{ fieldname: 'city', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
-			{
-				fieldname: 'coordinates',
-				fieldtype: 'Doctype',
-				options: 'coordinates',
-			} as SchemaTypes,
-		])
+		const addressDoctype = createDoctype(
+			'Address',
+			[
+				{ fieldname: 'street', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+				{ fieldname: 'city', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+			],
+			{ coordinates: { target: 'coordinates', cardinality: 'one' } }
+		)
 		registry.addDoctype(addressDoctype)
 
-		const customerDoctype = createDoctype('Customer', [
-			{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
-			{
-				fieldname: 'address',
-				fieldtype: 'Doctype',
-				options: 'address',
-			} as SchemaTypes,
-		])
+		const customerDoctype = createDoctype(
+			'Customer',
+			[{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes],
+			{ address: { target: 'address', cardinality: 'one' } }
+		)
 		registry.addDoctype(customerDoctype)
 
 		const TestComponent = defineComponent({
@@ -790,8 +778,7 @@ describe('useStonecrop HST mode', () => {
 		const wrapper = mount(TestComponent, {
 			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
-		await wrapper.vm.$nextTick()
-		await new Promise(resolve => setTimeout(resolve, 50))
+		await flushPromises()
 
 		const vm = wrapper.vm as any
 
@@ -850,16 +837,52 @@ describe('useStonecrop HST mode', () => {
 		expect(collectResult!.name).toBe('Immediate Test')
 	})
 
+	it('hstStore, resolvedSchema and formData are populated synchronously — no lifecycle hook wait required', () => {
+		// Ensures that sync setup() initialisation is complete before the first render.
+		// None of these reads should require any await, nextTick, or setTimeout.
+		const taskDoctype = createDoctype('Task')
+		registry.addDoctype(taskDoctype)
+
+		let capturedHasHstStore = false
+		let capturedSchemaLength = 0
+		let capturedHasFormData = false
+		let capturedHandleHSTChangeIsFunction = false
+
+		const TestComponent = defineComponent({
+			setup() {
+				const result = useStonecrop({ registry, doctype: taskDoctype, recordId: 'new' })
+				// Read reactive state during setup() — before onMounted fires
+				capturedHasHstStore = result.hstStore.value != null
+				capturedSchemaLength = result.resolvedSchema.value.length
+				capturedHasFormData = result.formData.value != null
+				capturedHandleHSTChangeIsFunction = typeof result.handleHSTChange === 'function'
+				return result
+			},
+			template: '<div>test</div>',
+		})
+
+		// mount() runs setup() synchronously — no awaits needed
+		mount(TestComponent, {
+			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
+		})
+
+		expect(capturedHasHstStore).toBe(true)
+		expect(capturedSchemaLength).toBeGreaterThan(0)
+		expect(capturedHasFormData).toBe(true)
+		expect(capturedHandleHSTChangeIsFunction).toBe(true)
+	})
+
 	it('collectRecordPayload returns identical results to class method', async () => {
 		const addressDoctype = createDoctype('Address', [
 			{ fieldname: 'city', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
 		])
 		registry.addDoctype(addressDoctype)
 
-		const customerDoctype = createDoctype('Customer', [
-			{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
-			{ fieldname: 'address', fieldtype: 'Doctype', options: 'address' } as SchemaTypes,
-		])
+		const customerDoctype = createDoctype(
+			'Customer',
+			[{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes],
+			{ address: { target: 'address', cardinality: 'one' } }
+		)
 		registry.addDoctype(customerDoctype)
 
 		const TestComponent = defineComponent({
@@ -872,8 +895,7 @@ describe('useStonecrop HST mode', () => {
 		const wrapper = mount(TestComponent, {
 			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
-		await wrapper.vm.$nextTick()
-		await new Promise(resolve => setTimeout(resolve, 50))
+		await flushPromises()
 
 		const vm = wrapper.vm as any
 
@@ -919,7 +941,6 @@ describe('useStonecrop base mode', () => {
 		const wrapper = mount(TestComponent, {
 			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
-		await wrapper.vm.$nextTick()
 
 		const vm = wrapper.vm as any
 		expect(vm.stonecrop).toBeDefined()

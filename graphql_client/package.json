@@ -46,13 +46,16 @@
 		"@stonecrop/stonecrop": "workspace:*",
 		"decimal.js": "^10.6.0",
 		"graphql": "^16.12.0",
-		"graphql-request": "^7.4.0"
+		"graphql-request": "^7.4.0",
+		"pluralize": "^8.0.0"
 	},
 	"devDependencies": {
 		"@eslint/js": "^9.39.2",
 		"@microsoft/api-documenter": "^7.28.2",
 		"@miragejs/graphql": "^0.1.13",
 		"@rushstack/heft": "^1.2.0",
+		"@types/node": "^22.19.5",
+		"@types/pluralize": "^0.0.33",
 		"@vitejs/plugin-vue": "^6.0.3",
 		"@vitest/coverage-istanbul": "^4.0.18",
 		"eslint": "^9.39.2",

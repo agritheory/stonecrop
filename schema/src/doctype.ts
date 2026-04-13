@@ -3,6 +3,148 @@ import { z } from 'zod'
 import { FieldMeta } from './field'
 
 /**
+ * Cardinality for relationship links.
+ * @public
+ */
+export const Cardinality = z.enum(['atMostOne', 'one', 'noneOrMany', 'atLeastOne']).meta({
+	title: 'Cardinality',
+	description: 'Cardinality for relationship links between doctypes',
+})
+
+/**
+ * Cardinality type inferred from Zod schema
+ * @public
+ */
+export type Cardinality = z.infer<typeof Cardinality>
+
+/**
+ * Serialized function type - a function serialized to a string.
+ * Used for custom fetch handlers.
+ * @public
+ */
+export type SerializedFunction = string
+
+/**
+ * Sync fetch strategy - data is fetched in the initial query.
+ * @public
+ */
+export const SyncFetch = z
+	.object({
+		/** Fetch method type */
+		method: z.literal('sync'),
+		/** Optional limit on number of records to fetch */
+		limit: z.number().int().positive().optional(),
+	})
+	.meta({
+		title: 'SyncFetch',
+		description: 'Sync fetch strategy - data is fetched in the initial query',
+	})
+
+/**
+ * Sync fetch strategy type
+ * @public
+ */
+export type SyncFetch = z.infer<typeof SyncFetch>
+
+/**
+ * Lazy fetch strategy - data is fetched on demand in a separate query.
+ * @public
+ */
+export const LazyFetch = z
+	.object({
+		/** Fetch method type */
+		method: z.literal('lazy'),
+	})
+	.meta({
+		title: 'LazyFetch',
+		description: 'Lazy fetch strategy - data is fetched on demand in a separate query',
+	})
+
+/**
+ * Lazy fetch strategy type
+ * @public
+ */
+export type LazyFetch = z.infer<typeof LazyFetch>
+
+/**
+ * Custom fetch strategy - uses a custom handler function.
+ * @public
+ */
+export const CustomFetch = z
+	.object({
+		/** Fetch method type */
+		method: z.literal('custom'),
+		/** Serialized handler function to invoke */
+		handler: z.string(),
+	})
+	.meta({
+		title: 'CustomFetch',
+		description: 'Custom fetch strategy - uses a custom handler function',
+	})
+
+/**
+ * Custom fetch strategy type
+ * @public
+ */
+export type CustomFetch = z.infer<typeof CustomFetch>
+
+/**
+ * Fetch strategy for link data loading.
+ * - sync: fetched in the initial query
+ * - lazy: fetched on demand in a separate query
+ * - custom: uses a custom handler function
+ * @public
+ */
+export const FetchStrategy = z.discriminatedUnion('method', [SyncFetch, LazyFetch, CustomFetch]).meta({
+	title: 'FetchStrategy',
+	description: 'Fetch strategy for link data loading',
+})
+
+/**
+ * Fetch strategy type
+ * @public
+ */
+export type FetchStrategy = z.infer<typeof FetchStrategy>
+
+/**
+ * Link declaration - describes a relationship from one doctype to another.
+ * @public
+ */
+export const LinkDeclaration = z
+	.object({
+		/** Target doctype slug */
+		target: z.string().min(1),
+
+		/** Cardinality of the relationship */
+		cardinality: Cardinality,
+
+		/** Backlink fieldname on the target doctype that points back to this link */
+		backlink: z.string().optional(),
+
+		/** Override default rendering component (AForm for 1:1, ATable for 1:many) */
+		component: z.string().optional(),
+
+		/** Fieldname of the corresponding Link field in the fields array */
+		fieldname: z.string().min(1).optional(),
+
+		/** Fetch strategy for loading nested data */
+		fetch: FetchStrategy.optional(),
+
+		/** Whether to block workflow actions until nested data is loaded (default: true) */
+		blockWorkflows: z.boolean().optional(),
+	})
+	.meta({
+		title: 'LinkDeclaration',
+		description: 'Declares a relationship from one doctype to another',
+	})
+
+/**
+ * Link declaration type inferred from Zod schema
+ * @public
+ */
+export type LinkDeclaration = z.infer<typeof LinkDeclaration>
+
+/**
  * Action definition within a workflow
  * @public
  */
@@ -75,20 +217,17 @@ export const DoctypeMeta = z
 		/** Database table name */
 		tableName: z.string().optional(),
 
-		/** Field definitions */
+		/** Field definitions (including link fields with fieldtype: 'Link') */
 		fields: z.array(FieldMeta),
+
+		/** Relationship links to other doctypes */
+		links: z.record(z.string(), LinkDeclaration).optional(),
 
 		/** Workflow configuration */
 		workflow: WorkflowMeta.optional(),
 
 		/** Parent doctype for inheritance */
 		inherits: z.string().optional(),
-
-		/** Doctype to use for list views */
-		listDoctype: z.string().optional(),
-
-		/** Parent doctype for child tables */
-		parentDoctype: z.string().optional(),
 	})
 	.meta({
 		title: 'DoctypeMeta',
@@ -128,6 +267,41 @@ export interface DoctypeRef {
 }
 
 /**
+ * Options for fetching a single record
+ * @public
+ */
+export interface GetRecordOptions {
+	/**
+	 * Include nested link sub-selections.
+	 * - `true`: include all descendant links
+	 * - `string[]`: include only named links
+	 * - `false` / omitted: scalar fields only (default)
+	 */
+	includeNested?: boolean | string[]
+
+	/**
+	 * Maximum depth for recursive sub-selections.
+	 * No default — unlimited when omitted.
+	 */
+	maxDepth?: number
+}
+
+/**
+ * Options for fetching multiple records
+ * @public
+ */
+export interface GetRecordsOptions {
+	/** Filter expression (field-value pairs) */
+	filters?: Record<string, unknown>
+	/** Order by expression (e.g. 'NAME_ASC') */
+	orderBy?: string
+	/** Maximum number of records to return */
+	limit?: number
+	/** Number of records to skip */
+	offset?: number
+}
+
+/**
  * Interface for data clients that fetch doctype metadata and records.
  * Implemented by \@stonecrop/graphql-client's StonecropClient.
  * Custom implementations can use any backend (REST, local storage, etc.).
@@ -146,27 +320,24 @@ export interface DataClient<T extends DoctypeRef = DoctypeRef, M = DoctypeMeta> 
 
 	/**
 	 * Fetch a single record by ID
+	 *
+	 * When `includeNested` is set, builds a query with sub-selections for descendant
+	 * links and returns ancestor + merged descendants. When omitted, returns flat scalar data.
+	 *
 	 * @param doctype - Doctype reference (name and optional slug)
 	 * @param recordId - Record ID to fetch
+	 * @param options - Query options
 	 * @returns Record data or null if not found
 	 */
-	getRecord(doctype: T, recordId: string): Promise<Record<string, unknown> | null>
+	getRecord(doctype: T, recordId: string, options?: GetRecordOptions): Promise<Record<string, unknown> | null>
 
 	/**
 	 * Fetch multiple records
 	 * @param doctype - Doctype reference (name and optional slug)
-	 * @param options - Optional filters, pagination, sorting
+	 * @param options - Query options
 	 * @returns Array of record data
 	 */
-	getRecords(
-		doctype: T,
-		options?: {
-			filters?: Record<string, unknown>
-			orderBy?: string
-			limit?: number
-			offset?: number
-		}
-	): Promise<Record<string, unknown>[]>
+	getRecords(doctype: T, options?: GetRecordsOptions): Promise<Record<string, unknown>[]>
 
 	/**
 	 * Execute a doctype action (e.g., SUBMIT, APPROVE, save).

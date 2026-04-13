@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/aform",
+      "comment": "remove doctype-specific schemas",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@stonecrop/aform"
+}

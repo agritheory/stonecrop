@@ -9,6 +9,7 @@
 
 import { buildClientSchema, buildSchema, isObjectType, type GraphQLSchema } from 'graphql'
 
+import type { LinkDeclaration } from '../doctype'
 import { toSlug, pascalToSnake } from '../naming'
 import type { IntrospectionSource, GraphQLConversionOptions, ConvertedGraphQLDoctype } from './types'
 import { defaultIsEntityType, defaultIsEntityField, classifyFieldType } from './heuristics'
@@ -102,7 +103,7 @@ export function convertGraphQLSchema(
 		const fields = type.getFields()
 		const typeOverrides = options.typeOverrides?.[typeName]
 
-		const convertedFields = Object.entries(fields)
+		const allClassifiedFields = Object.entries(fields)
 			.filter(([fieldName, field]) => isEntityField(fieldName, field, type))
 			.map(([fieldName, field]) => {
 				// Check for full custom classification first
@@ -129,19 +130,38 @@ export function convertGraphQLSchema(
 
 				return classified
 			})
+
+		// Separate scalar fields from link fields
+		const links: Record<string, LinkDeclaration> = {}
+		const convertedFields = allClassifiedFields
+			.filter(field => {
+				if (field._isLink && typeof field.options === 'string' && field.cardinality) {
+					links[field.fieldname] = {
+						target: field.options,
+						cardinality: field.cardinality as LinkDeclaration['cardinality'],
+					}
+					return false
+				}
+				return true
+			})
 			// Clean up internal metadata unless requested
 			.map(field => {
 				if (!options.includeUnmappedMeta) {
-					const { _graphqlType, _unmapped, ...clean } = field
+					const { _graphqlType, _unmapped, _isLink, ...clean } = field
 					return clean
 				}
-				return field
+				const { _isLink, ...rest } = field
+				return rest
 			})
 
 		const doctype: ConvertedGraphQLDoctype = {
 			name: typeName,
 			slug: toSlug(typeName),
 			fields: convertedFields,
+		}
+
+		if (Object.keys(links).length > 0) {
+			doctype.links = links
 		}
 
 		const tableName = deriveTableName(typeName)

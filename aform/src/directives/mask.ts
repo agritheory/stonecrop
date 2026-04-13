@@ -30,7 +30,7 @@ function getMask(binding: DirectiveBinding<string>) {
 		// TODO: (state) replace with state management;
 		// pass the entire form/table data to the function
 		const locale = binding.instance?.['locale']
-		return maskFn(locale) as string
+		return maskFn(locale)
 	}
 
 	return mask

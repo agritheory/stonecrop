@@ -33,7 +33,7 @@ Call `collectRecordPayload` in your doctype's **save action** defined in the wor
 ### Example: Save Action in Workflow
 
 ```typescript
-import { Doctype, useStonecrop } from '@stonecrop/stonecrop'
+import { Doctype, getStonecrop } from '@stonecrop/stonecrop'
 import { List, Map } from 'immutable'
 import { apiClient } from './api-client'
 
@@ -41,7 +41,6 @@ const customerDoctype = new Doctype(
   'Customer',
   List([
     { fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' },
-    { fieldname: 'address', fieldtype: 'Doctype', options: 'address' },
   ]),
   {
     id: 'customer',
@@ -57,19 +56,21 @@ const customerDoctype = new Doctype(
   },
   Map({
     submit: ['validateData', 'saveRecord'],
-  })
+  }),
+  undefined,
+  {
+    address: { target: 'address', cardinality: 'one' },
+  }
 )
 
-// In your action handler:
-async function saveRecord(context) {
-  const { collectRecordPayload } = useStonecrop({
-    registry,
-    doctype: customerDoctype,
-    recordId: context.recordId
-  })
+// Register the action handler — runs outside Vue, so use getStonecrop()
+async function saveRecord(args: unknown[]) {
+  const stonecrop = getStonecrop()
+  const recordId = args?.[0] as string
+  if (!recordId || !stonecrop) return
 
   // Collect all nested data into a single payload
-  const payload = collectRecordPayload(customerDoctype, context.recordId)
+  const payload = stonecrop.collectRecordPayload(customerDoctype, recordId)
 
   // Send to your API
   await apiClient.save('/customers', payload)
@@ -80,14 +81,19 @@ async function saveRecord(context) {
 
 ## How It Works
 
-Given a schema with nested Doctype fields:
+Given a doctype with scalar fields and a `links` object declaring relationships:
 
 ```typescript
+// fields (scalars only):
 [
   { fieldname: 'name', fieldtype: 'Data' },
-  { fieldname: 'address', fieldtype: 'Doctype', options: 'address' },  // 1:1
-  { fieldname: 'orders', fieldtype: 'Doctype', options: 'order', cardinality: 'many' },  // 1:many
 ]
+
+// links object:
+{
+  address: { target: 'address', cardinality: 'one' },        // 1:1
+  orders:  { target: 'order',   cardinality: 'noneOrMany' }, // 1:many
+}
 ```
 
 With HST containing:

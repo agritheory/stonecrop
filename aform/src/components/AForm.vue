@@ -5,14 +5,15 @@
 			<div
 				v-if="'schema' in componentObj && Array.isArray(componentObj.schema) && componentObj.schema.length > 0"
 				class="aform-nested-section">
-				<h4 v-if="(componentObj as any).label" class="aform-nested-label">
-					{{ (componentObj as any).label }}
+				<h4 v-if="componentObj.label" class="aform-nested-label">
+					{{ componentObj.label }}
 				</h4>
-				<AForm
+				<component
+					:is="componentObj.component ?? 'AForm'"
 					:data="nestedData[componentObj.fieldname]"
 					:mode="resolvedMode(componentObj)"
 					:schema="componentObj.schema"
-					@update:data="val => updateNestedData(componentObj.fieldname, val)" />
+					@update:data="(val: any) => updateNestedData(componentObj.fieldname, val)" />
 			</div>
 
 			<!-- Regular field -->

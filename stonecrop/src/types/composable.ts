@@ -1,8 +1,8 @@
-import { SchemaTypes } from '@stonecrop/aform'
+import type { SchemaTypes } from '@stonecrop/aform'
 import type { Ref, ComputedRef } from 'vue'
 
 import type Doctype from '../doctype'
-import type { HSTNode } from '../stores/hst'
+import type { HSTNode } from './hst'
 import type { HSTOperation, OperationLogConfig, OperationLogSnapshot } from './operation-log'
 
 /**
@@ -179,14 +179,28 @@ export type HSTStonecropReturn = BaseStonecropReturn & {
 	 */
 	resolvedSchema: Ref<SchemaTypes[]>
 	/**
-	 * Loads or initializes nested doctype data.
-	 * Use this when rendering a nested form component. Checks HST first, then initializes defaults.
-	 * @param parentPath - The HST path to check for existing data
-	 * @param childDoctype - The nested doctype metadata
-	 * @param recordId - Optional record ID (reserved for future API fetch)
-	 * @returns The loaded or initialized data object
+	 * Scaffold empty descendant records from defaults for all descendant links.
+	 * @param path - The HST path where initialized data should be stored
+	 * @param doctype - The doctype to initialize
 	 */
-	loadNestedData: (parentPath: string, childDoctype: Doctype, recordId?: string) => Record<string, any>
+	initializeNestedData: (path: string, doctype: Doctype) => void
+
+	/**
+	 * Fetch a record and its nested data from the server.
+	 * Stores each field at its own HST path per the field-level convention.
+	 * @param path - The HST path (e.g., "recipe.r1")
+	 * @param doctype - The doctype to fetch
+	 * @param recordId - Record ID to fetch
+	 * @param options - Query options (includeNested to control which links are fetched)
+	 * @throws Error with code "CLIENT_REQUIRED" if no data client is configured
+	 * @throws Error with code "RECORD_NOT_FOUND" if the server returns null
+	 */
+	fetchNestedData: (
+		path: string,
+		doctype: Doctype,
+		recordId: string,
+		options?: { includeNested?: boolean | string[] }
+	) => Promise<void>
 	/**
 	 * Collects a complete record payload with all nested data from HST.
 	 * Use this before submitting to an API. Recursively includes 1:1 and 1:many nested records.
@@ -196,15 +210,15 @@ export type HSTStonecropReturn = BaseStonecropReturn & {
 	 */
 	collectRecordPayload: (doctype: Doctype, recordId: string) => Record<string, any>
 	/**
-	 * Creates a nested context for a child doctype component.
+	 * Creates a nested context for a descendant doctype component.
 	 * Use this in parent components to pass scoped handlers to child components.
 	 * @param basePath - The parent HST path prefix
-	 * @param childDoctype - The child doctype metadata
+	 * @param descendantDoctype - The descendant doctype metadata
 	 * @returns Scoped provideHSTPath and handleHSTChange functions
 	 */
 	createNestedContext: (
 		basePath: string,
-		childDoctype: Doctype
+		descendantDoctype: Doctype
 	) => {
 		provideHSTPath: (fieldname: string) => string
 		handleHSTChange: (changeData: HSTChangeData) => void
@@ -224,6 +238,17 @@ export type HSTStonecropReturn = BaseStonecropReturn & {
 	 * Available immediately if Doctype instance passed, after async resolution if slug string passed.
 	 */
 	resolvedDoctype: Ref<Doctype | undefined>
+	/**
+	 * Computed ref indicating whether workflow actions are ready to run.
+	 * True when all links with blockWorkflows are loaded in HST.
+	 * Use with v-bind:disabled="!isWorkflowReady" on action buttons.
+	 */
+	isWorkflowReady: ComputedRef<boolean>
+	/**
+	 * List of link fieldnames that are blocking workflow execution.
+	 * Empty array when isWorkflowReady is true.
+	 */
+	blockedLinks: ComputedRef<string[]>
 }
 
 // Import Stonecrop class for the BaseStonecropReturn type (circular reference handled via import)
@@ -242,4 +267,22 @@ export type HSTChangeData = {
 	fieldname: string
 	/** Optional record ID */
 	recordId?: string
+}
+
+/**
+ * Lazy link state for a single link field.
+ * Provides reactive state and reload capability for lazy-loaded links.
+ * @public
+ */
+export type LazyLink = {
+	/** True while fetching data */
+	loading: Ref<boolean>
+	/** True after successful fetch (permanent until reload) */
+	loaded: Ref<boolean>
+	/** Error state, if any */
+	error: Ref<Error | null>
+	/** Explicitly trigger a fetch for this link */
+	reload: () => Promise<void>
+	/** The loaded data from HST, or undefined if not loaded */
+	data: ComputedRef<any>
 }

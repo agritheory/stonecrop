@@ -5,7 +5,7 @@ import { createRouter, createMemoryHistory } from 'vue-router'
 
 import Doctype from '../../src/doctype'
 import Registry from '../../src/registry'
-import { Stonecrop, collectNestedData } from '../../src/stonecrop'
+import { Stonecrop } from '../../src/stonecrop'
 import type { StonecropOptions } from '../../src/stonecrop'
 import { ImmutableDoctype } from '../../src/types'
 
@@ -125,7 +125,7 @@ describe('Stonecrop class with HST integration', () => {
 
 			expect(records.getPath).toBeDefined()
 			expect(records.getPath()).toBe('task')
-			expect(records.getParent).toBeDefined()
+			expect(records.getAncestor).toBeDefined()
 		})
 
 		it('returns records hash using Doctype object', () => {
@@ -146,7 +146,7 @@ describe('Stonecrop class with HST integration', () => {
 
 			// Should have tree navigation capabilities
 			expect(record!.getPath).toBeDefined()
-			expect(record!.getParent).toBeDefined()
+			expect(record!.getAncestor).toBeDefined()
 		})
 
 		it('adds record using Doctype object', () => {
@@ -572,8 +572,8 @@ describe('Stonecrop class with HST integration', () => {
 			const record = stonecrop.getRecordById('task', '123')
 
 			if (record) {
-				const doctypeSection = record.getParent()
-				const rootStore = doctypeSection?.getParent()
+				const doctypeSection = record.getAncestor()
+				const rootStore = doctypeSection?.getAncestor()
 
 				expect(doctypeSection?.getPath()).toBe('task')
 				expect(rootStore?.getPath()).toBe('')
@@ -604,7 +604,7 @@ describe('Stonecrop class with HST integration', () => {
 			const assignee = record.getNode('details.assignee')
 
 			expect(assignee.get('name')).toBe('John Doe')
-			expect(assignee.getParent()!.getPath()).toContain('details')
+			expect(assignee.getAncestor()!.getPath()).toContain('details')
 		})
 	})
 
@@ -661,11 +661,11 @@ describe('Stonecrop class with HST integration', () => {
 		let localRegistry: Registry
 		let localStonecrop: Stonecrop
 
-		const createDoctype = (name: string, fields?: SchemaTypes[]) => {
+		const createDoctype = (name: string, fields?: SchemaTypes[], links?: Record<string, any>) => {
 			const schema = List(
 				fields || [{ fieldname: 'title', component: 'ATextInput', label: 'Title', fieldtype: 'Data' }]
 			)
-			return new Doctype(name, schema as any, undefined, Map({}))
+			return new Doctype(name, schema as any, undefined, Map({}), undefined, links)
 		}
 
 		beforeEach(() => {
@@ -697,10 +697,11 @@ describe('Stonecrop class with HST integration', () => {
 			])
 			localRegistry.addDoctype(itemDoctype)
 
-			const orderDoctype = createDoctype('Order', [
-				{ fieldname: 'order_number', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
-				{ fieldname: 'items', fieldtype: 'Doctype', cardinality: 'many', options: 'item' } as SchemaTypes,
-			])
+			const orderDoctype = createDoctype(
+				'Order',
+				[{ fieldname: 'order_number', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes],
+				{ items: { target: 'item', cardinality: 'noneOrMany' } }
+			)
 			localRegistry.addDoctype(orderDoctype)
 
 			localStonecrop.addRecord('order', 'order-1', { order_number: 'ORD-001' })
@@ -725,10 +726,11 @@ describe('Stonecrop class with HST integration', () => {
 			])
 			localRegistry.addDoctype(addressDoctype)
 
-			const customerDoctype = createDoctype('Customer', [
-				{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
-				{ fieldname: 'address', fieldtype: 'Doctype', options: 'address' } as SchemaTypes,
-			])
+			const customerDoctype = createDoctype(
+				'Customer',
+				[{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes],
+				{ address: { target: 'address', cardinality: 'one' } }
+			)
 			localRegistry.addDoctype(customerDoctype)
 
 			localStonecrop.addRecord('customer', 'cust-1', { name: 'John Doe' })
@@ -748,16 +750,18 @@ describe('Stonecrop class with HST integration', () => {
 			])
 			localRegistry.addDoctype(phoneDoctype)
 
-			const addressDoctype = createDoctype('Address', [
-				{ fieldname: 'street', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
-				{ fieldname: 'phones', fieldtype: 'Doctype', cardinality: 'many', options: 'phone' } as SchemaTypes,
-			])
+			const addressDoctype = createDoctype(
+				'Address',
+				[{ fieldname: 'street', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes],
+				{ phones: { target: 'phone', cardinality: 'noneOrMany' } }
+			)
 			localRegistry.addDoctype(addressDoctype)
 
-			const customerDoctype = createDoctype('Customer', [
-				{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
-				{ fieldname: 'address', fieldtype: 'Doctype', options: 'address' } as SchemaTypes,
-			])
+			const customerDoctype = createDoctype(
+				'Customer',
+				[{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes],
+				{ address: { target: 'address', cardinality: 'one' } }
+			)
 			localRegistry.addDoctype(customerDoctype)
 
 			localStonecrop.addRecord('customer', 'cust-2', { name: 'Jane Doe' })
@@ -781,89 +785,6 @@ describe('Stonecrop class with HST integration', () => {
 
 			expect(payload).toBeDefined()
 			expect(Object.keys(payload)).toHaveLength(0)
-		})
-	})
-
-	describe('collectNestedData', () => {
-		it('is exported as a standalone function', () => {
-			expect(typeof collectNestedData).toBe('function')
-		})
-
-		it('collects flat data with no nested doctypes', () => {
-			Registry._root = undefined as any
-			Stonecrop._root = undefined as any
-			const localRegistry = new Registry()
-			const localStonecrop = new Stonecrop(localRegistry)
-
-			const schema: SchemaTypes[] = [
-				{ fieldname: 'title', fieldtype: 'Data' },
-				{ fieldname: 'status', fieldtype: 'Data' },
-			]
-
-			localStonecrop.getStore().set('test', {})
-			localStonecrop.getStore().set('test.1', { title: 'Test', status: 'open' })
-
-			const result = collectNestedData(schema, 'test.1', localStonecrop.getStore())
-
-			expect(result.title).toBe('Test')
-			expect(result.status).toBe('open')
-		})
-
-		it('collects nested 1:1 doctype fields recursively', () => {
-			Registry._root = undefined as any
-			Stonecrop._root = undefined as any
-			const localRegistry = new Registry()
-			const localStonecrop = new Stonecrop(localRegistry)
-
-			const nestedSchema: SchemaTypes[] = [{ fieldname: 'city', fieldtype: 'Data' }]
-			const schema: SchemaTypes[] = [
-				{ fieldname: 'name', fieldtype: 'Data' },
-				{
-					fieldname: 'address',
-					fieldtype: 'Doctype',
-					schema: nestedSchema,
-				} as SchemaTypes,
-			]
-
-			localStonecrop.getStore().set('customer', {})
-			localStonecrop.getStore().set('customer.1', { name: 'John' })
-			localStonecrop.getStore().set('customer.1.address', { city: 'Portland' })
-
-			const result = collectNestedData(schema, 'customer.1', localStonecrop.getStore())
-
-			expect(result.name).toBe('John')
-			expect(result.address).toBeDefined()
-			expect(result.address.city).toBe('Portland')
-		})
-
-		it('collects 1:many arrays in nested context', () => {
-			Registry._root = undefined as any
-			Stonecrop._root = undefined as any
-			const localRegistry = new Registry()
-			const localStonecrop = new Stonecrop(localRegistry)
-
-			const schema: SchemaTypes[] = [
-				{ fieldname: 'name', fieldtype: 'Data' },
-				{
-					fieldname: 'items',
-					fieldtype: 'Doctype',
-					cardinality: 'many',
-				} as SchemaTypes,
-			]
-
-			localStonecrop.getStore().set('order', {})
-			localStonecrop.getStore().set('order.1', { name: 'Order 1' })
-			localStonecrop.getStore().set('order.1.items', [
-				{ name: 'Item A', qty: 5 },
-				{ name: 'Item B', qty: 10 },
-			])
-
-			const result = collectNestedData(schema, 'order.1', localStonecrop.getStore())
-
-			expect(result.name).toBe('Order 1')
-			expect(Array.isArray(result.items)).toBe(true)
-			expect(result.items).toHaveLength(2)
-			expect(result.items[0].name).toBe('Item A')
 		})
 	})
 })

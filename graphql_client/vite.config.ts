@@ -12,6 +12,9 @@ export default defineConfig({
 			name: '@stonecrop/graphql-client',
 			formats: ['es'],
 		},
+		rollupOptions: {
+			external: ['pluralize'],
+		},
 	},
 	test: {
 		globals: true,

@@ -1,6 +1,7 @@
 import type { Map as ImmutableMap } from 'immutable'
 import { useOperationLogStore } from './stores/operation-log'
 import type {
+	FieldAction,
 	FieldActionFunction,
 	FieldChangeContext,
 	FieldTriggerExecutionResult,
@@ -22,7 +23,7 @@ export class FieldTriggerEngine {
 	 */
 	static _root: FieldTriggerEngine
 
-	private options: FieldTriggerOptions & { defaultTimeout: number; debug: boolean; enableRollback: boolean }
+	private options!: FieldTriggerOptions & { defaultTimeout: number; debug: boolean; enableRollback: boolean }
 	private doctypeActions = new Map<string, Map<string, string[]>>() // doctype -> action/field -> functions
 	private doctypeTransitions = new Map<string, Map<string, string[]>>() // doctype -> transition -> functions
 	private fieldRollbackConfig = new Map<string, Map<string, boolean>>() // doctype -> field -> rollback enabled
@@ -53,6 +54,15 @@ export class FieldTriggerEngine {
 	 */
 	registerAction(name: string, fn: FieldActionFunction): void {
 		this.globalActions.set(name, fn)
+	}
+
+	/**
+	 * Look up a registered action function by name.
+	 * Returns `undefined` if the action has not been registered.
+	 * @param name - The action name
+	 */
+	getAction(name: string): FieldActionFunction | undefined {
+		return this.globalActions.get(name)
 	}
 
 	/**
@@ -227,11 +237,13 @@ export class FieldTriggerEngine {
 		const totalExecutionTime = performance.now() - startTime
 
 		// Call global error handler if configured and errors occurred
-		const failedResults = actionResults.filter(r => !r.success)
+		const failedResults = actionResults.filter(r => !r.success && r.error != null)
 		if (failedResults.length > 0 && this.options.errorHandler) {
 			for (const failedResult of failedResults) {
 				try {
-					this.options.errorHandler(failedResult.error!, context, failedResult.action)
+					if (failedResult.error) {
+						this.options.errorHandler(failedResult.error, context, failedResult.action)
+					}
 				} catch (handlerError) {
 					// eslint-disable-next-line no-console
 					console.error('[FieldTriggers] Error in global error handler:', handlerError)
@@ -301,7 +313,9 @@ export class FieldTriggerEngine {
 			for (const failedResult of failedResults) {
 				try {
 					// Call with FieldChangeContext (base context type)
-					this.options.errorHandler(failedResult.error!, context, failedResult.action)
+					if (failedResult.error) {
+						this.options.errorHandler(failedResult.error, context, failedResult.action as unknown as FieldAction)
+					}
 				} catch (handlerError) {
 					// eslint-disable-next-line no-console
 					console.error('[FieldTriggers] Error in global error handler:', handlerError)

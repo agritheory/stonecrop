@@ -1,16 +1,17 @@
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
 import { useLocalStorage } from '@vueuse/core'
+
+import type { HSTNode } from './hst'
 import type {
+	CrossTabMessage,
 	HSTOperation,
 	HSTOperationInput,
 	OperationLogConfig,
-	UndoRedoState,
 	OperationLogSnapshot,
-	CrossTabMessage,
 	OperationSource,
+	UndoRedoState,
 } from '../types/operation-log'
-import type { HSTNode } from './hst'
 
 /**
  * Generate a UUID using crypto API or fallback
@@ -107,8 +108,7 @@ export const useOperationLogStore = defineStore('hst-operation-log', () => {
 	const currentIndex = ref(-1) // Points to the last applied operation
 	const clientId = ref(generateId())
 	const batchMode = ref(false)
-	const currentBatch = ref<HSTOperation[]>([])
-	const currentBatchId = ref<string | null>(null)
+	const batchStack = ref<{ id: string; operations: HSTOperation[] }[]>([])
 
 	// Computed
 	const canUndo = computed(() => {
@@ -183,9 +183,9 @@ export const useOperationLogStore = defineStore('hst-operation-log', () => {
 			return fullOperation.id
 		}
 
-		// If in batch mode, collect operations
-		if (batchMode.value) {
-			currentBatch.value.push(fullOperation)
+		// If in batch mode, collect operations in current batch
+		if (batchMode.value && batchStack.value.length > 0) {
+			batchStack.value[batchStack.value.length - 1].operations.push(fullOperation)
 			return fullOperation.id
 		}
 
@@ -218,25 +218,35 @@ export const useOperationLogStore = defineStore('hst-operation-log', () => {
 	 */
 	function startBatch() {
 		batchMode.value = true
-		currentBatch.value = []
-		currentBatchId.value = generateId()
+		batchStack.value.push({
+			id: generateId(),
+			operations: [],
+		})
 	}
 
 	/**
 	 * Commit batch - create a single batch operation
 	 */
 	function commitBatch(description?: string): string | null {
-		if (!batchMode.value || currentBatch.value.length === 0) {
-			batchMode.value = false
-			currentBatch.value = []
-			currentBatchId.value = null
+		if (!batchMode.value || batchStack.value.length === 0) {
 			return null
 		}
 
-		const batchId = currentBatchId.value!
-		const allReversible = currentBatch.value.every(op => op.reversible)
+		const currentBatchData = batchStack.value.pop()!
+		const batchOperations = currentBatchData.operations
 
-		// Create parent batch operation
+		if (batchOperations.length === 0) {
+			// Empty batch - just pop and continue if there are outer batches
+			if (batchStack.value.length === 0) {
+				batchMode.value = false
+			}
+			return null
+		}
+
+		const batchId = currentBatchData.id
+		const allReversible = batchOperations.every(op => op.reversible)
+
+		// Create ancestor batch operation
 		const batchOperation: HSTOperation = {
 			id: batchId,
 			type: 'batch',
@@ -244,45 +254,49 @@ export const useOperationLogStore = defineStore('hst-operation-log', () => {
 			fieldname: '',
 			beforeValue: null,
 			afterValue: null,
-			doctype: currentBatch.value[0]?.doctype || '',
+			doctype: batchOperations[0]?.doctype || '',
 			timestamp: new Date(),
 			source: 'user',
 			reversible: allReversible,
 			irreversibleReason: allReversible ? undefined : 'Contains irreversible operations',
-			childOperationIds: currentBatch.value.map(op => op.id),
+			descendantOperationIds: batchOperations.map(op => op.id),
 			metadata: { description },
 		}
 
-		// Add parent operation ID to all children
-		currentBatch.value.forEach(op => {
-			op.parentOperationId = batchId
+		// Add ancestor operation ID to all descendants
+		batchOperations.forEach(op => {
+			op.ancestorOperationId = batchId
 		})
 
-		// Add all operations to the log
-		operations.value.push(...currentBatch.value, batchOperation)
-		currentIndex.value = operations.value.length - 1
+		// If we're inside a ancestor batch, add this batch as a descendant of the ancestor
+		if (batchStack.value.length > 0) {
+			// Nested batch - add the batch operation to the ancestor batch
+			batchStack.value[batchStack.value.length - 1].operations.push(batchOperation)
+		} else {
+			// Top-level batch - add to the operations log
+			operations.value.push(...batchOperations, batchOperation)
+			currentIndex.value = operations.value.length - 1
+		}
 
 		// Broadcast batch
 		if (config.value.enableCrossTabSync) {
-			broadcastBatch(currentBatch.value, batchOperation)
+			broadcastBatch(batchOperations, batchOperation)
 		}
 
-		// Reset batch state
-		const result = batchId
-		batchMode.value = false
-		currentBatch.value = []
-		currentBatchId.value = null
+		// If no more batches on stack, exit batch mode
+		if (batchStack.value.length === 0) {
+			batchMode.value = false
+		}
 
-		return result
+		return batchId
 	}
 
 	/**
 	 * Cancel batch mode without committing
 	 */
 	function cancelBatch() {
+		batchStack.value = []
 		batchMode.value = false
-		currentBatch.value = []
-		currentBatchId.value = null
 	}
 
 	/**
@@ -304,13 +318,13 @@ export const useOperationLogStore = defineStore('hst-operation-log', () => {
 
 		try {
 			// Handle batch operations
-			if (operation.type === 'batch' && operation.childOperationIds) {
-				// Undo all child operations in reverse order
-				for (let i = operation.childOperationIds.length - 1; i >= 0; i--) {
-					const childId = operation.childOperationIds[i]
-					const childOp = operations.value.find(op => op.id === childId)
-					if (childOp) {
-						revertOperation(childOp, store)
+			if (operation.type === 'batch' && operation.descendantOperationIds) {
+				// Undo all descendant operations in reverse order
+				for (let i = operation.descendantOperationIds.length - 1; i >= 0; i--) {
+					const descendantId = operation.descendantOperationIds[i]
+					const descendantOp = operations.value.find(op => op.id === descendantId)
+					if (descendantOp) {
+						revertOperation(descendantOp, store)
 					}
 				}
 			} else {
@@ -346,12 +360,12 @@ export const useOperationLogStore = defineStore('hst-operation-log', () => {
 
 		try {
 			// Handle batch operations
-			if (operation.type === 'batch' && operation.childOperationIds) {
-				// Redo all child operations in order
-				for (const childId of operation.childOperationIds) {
-					const childOp = operations.value.find(op => op.id === childId)
-					if (childOp) {
-						applyOperation(childOp, store)
+			if (operation.type === 'batch' && operation.descendantOperationIds) {
+				// Redo all descendant operations in order
+				for (const descendantId of operation.descendantOperationIds) {
+					const descendantOp = operations.value.find(op => op.id === descendantId)
+					if (descendantOp) {
+						applyOperation(descendantOp, store)
 					}
 				}
 			} else {
@@ -525,12 +539,12 @@ export const useOperationLogStore = defineStore('hst-operation-log', () => {
 		broadcastChannel.postMessage(serializeForBroadcast(message))
 	}
 
-	function broadcastBatch(childOps: HSTOperation[], batchOp: HSTOperation) {
+	function broadcastBatch(descendantOps: HSTOperation[], batchOp: HSTOperation) {
 		if (!broadcastChannel) return
 
 		const message: CrossTabMessage = {
 			type: 'operation',
-			operations: [...childOps, batchOp],
+			operations: [...descendantOps, batchOp],
 			clientId: clientId.value,
 			timestamp: new Date(),
 		}
@@ -567,7 +581,7 @@ export const useOperationLogStore = defineStore('hst-operation-log', () => {
 		currentIndex: number
 	}
 
-	const persistedData = useLocalStorage<PersistedData | null>('stonecrop-ops-operations', null, {
+	const persistedData = useLocalStorage<PersistedData | null>('stonecrop-operations', null, {
 		serializer: {
 			read: (v: string) => {
 				try {

@@ -1,0 +1,19 @@
+{
+	"name": "Task",
+	"slug": "task",
+	"tableName": "task",
+	"fields": [
+		{
+			"fieldname": "name",
+			"fieldtype": "Data",
+			"component": "ATextInput",
+			"label": "Task Name"
+		},
+		{
+			"fieldname": "status",
+			"fieldtype": "Data",
+			"component": "ATextInput",
+			"label": "Status"
+		}
+	]
+}
