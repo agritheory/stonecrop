@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/stonecrop
 
-This log was last generated on Wed, 01 Apr 2026 14:54:57 GMT and should not be manually modified.
+This log was last generated on Mon, 13 Apr 2026 13:16:48 GMT and should not be manually modified.
+
+## 0.11.0
+Mon, 13 Apr 2026 13:16:48 GMT
+
+### Minor changes
+
+- process linked schemas
 
 ## 0.10.16
 Wed, 01 Apr 2026 14:54:57 GMT

@@ -2,6 +2,18 @@
   "name": "@stonecrop/nuxt-grafserv",
   "entries": [
     {
+      "version": "0.11.0",
+      "tag": "@stonecrop/nuxt-grafserv_v0.11.0",
+      "date": "Mon, 13 Apr 2026 13:16:48 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "remove unused schema property"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.10.16",
       "tag": "@stonecrop/nuxt-grafserv_v0.10.16",
       "date": "Wed, 01 Apr 2026 14:54:57 GMT",
