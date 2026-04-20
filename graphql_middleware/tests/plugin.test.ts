@@ -55,7 +55,7 @@ describe('StonecropWorkflowMeta schema', () => {
 	}
 
 	function parseTypeDefs(typeDefs: string): DocumentNode {
-		return parse(typeDefs, { assumeValid: true })
+		return parse(typeDefs)
 	}
 
 	function findTypeDefinition(doc: DocumentNode, typeName: string) {
