@@ -1,3 +1,5 @@
+import { readFileSync } from 'fs'
+import { join } from 'path'
 import { describe, it, expect, vi } from 'vitest'
 
 import { createStonecropPlugin } from '../src/plugin/postgraphile'
@@ -37,5 +39,28 @@ describe('createStonecropPlugin', () => {
 			},
 		})
 		expect(plugin).toBeDefined()
+	})
+})
+
+// ===========================================================================
+// GraphQL Schema Structure Validation
+// ===========================================================================
+
+describe('StonecropWorkflowMeta schema', () => {
+	const sourceFile = readFileSync(join(__dirname, '../src/plugin/postgraphile.ts'), 'utf-8')
+
+	it('defines StonecropWorkflowAction type with required subfields', () => {
+		expect(sourceFile).toContain('type StonecropWorkflowAction {')
+		expect(sourceFile).toContain('label: String!')
+		expect(sourceFile).toContain('handler: String!')
+		expect(sourceFile).toContain('requiredFields: [String!]')
+		expect(sourceFile).toContain('allowedStates: [String!]')
+		expect(sourceFile).toContain('confirm: Boolean')
+		expect(sourceFile).toContain('args: JSON')
+	})
+
+	it('defines StonecropWorkflowMeta.actions as array of StonecropWorkflowAction, not JSON scalar', () => {
+		expect(sourceFile).toContain('actions: [StonecropWorkflowAction!]')
+		expect(sourceFile).not.toContain('actions: JSON')
 	})
 })
