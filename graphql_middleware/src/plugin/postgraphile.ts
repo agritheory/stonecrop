@@ -104,7 +104,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions): Graphile
 					validation: JSON
 				}
 
-				type StonecropActionDefinition {
+				type StonecropWorkflowAction {
 					label: String!
 					handler: String!
 					requiredFields: [String!]
@@ -115,7 +115,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions): Graphile
 
 				type StonecropWorkflowMeta {
 					states: [String!]
-					actions: JSON
+					actions: [StonecropWorkflowAction!]
 				}
 
 				type StonecropDoctypeMeta {
