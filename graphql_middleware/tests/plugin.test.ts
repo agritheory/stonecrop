@@ -1,4 +1,5 @@
 import { readFileSync } from 'fs'
+import { parse, type DocumentNode } from 'graphql'
 import { join } from 'path'
 import { describe, it, expect, vi } from 'vitest'
 
@@ -47,20 +48,55 @@ describe('createStonecropPlugin', () => {
 // ===========================================================================
 
 describe('StonecropWorkflowMeta schema', () => {
+	function extractTypeDefs(source: string): string {
+		const match = source.match(/typeDefs: gql`([\s\S]*?)`/)
+		if (!match) throw new Error('Could not find typeDefs in source')
+		return match[1]
+	}
+
+	function parseTypeDefs(typeDefs: string): DocumentNode {
+		return parse(typeDefs, { assumeValid: true })
+	}
+
+	function findTypeDefinition(doc: DocumentNode, typeName: string) {
+		return doc.definitions.find(d => d.kind === 'ObjectTypeDefinition' && d.name.value === typeName)
+	}
+
+	function findFieldDefinition(typeDef: any, fieldName: string) {
+		return typeDef?.fields?.find((f: any) => f.name.value === fieldName)
+	}
+
 	const sourceFile = readFileSync(join(__dirname, '../src/plugin/postgraphile.ts'), 'utf-8')
 
-	it('defines StonecropWorkflowAction type with required subfields', () => {
-		expect(sourceFile).toContain('type StonecropWorkflowAction {')
-		expect(sourceFile).toContain('label: String!')
-		expect(sourceFile).toContain('handler: String!')
-		expect(sourceFile).toContain('requiredFields: [String!]')
-		expect(sourceFile).toContain('allowedStates: [String!]')
-		expect(sourceFile).toContain('confirm: Boolean')
-		expect(sourceFile).toContain('args: JSON')
+	it('defines StonecropWorkflowAction type with label, handler, requiredFields, allowedStates, confirm, and args fields', () => {
+		const typeDefs = extractTypeDefs(sourceFile)
+		const doc = parseTypeDefs(typeDefs)
+
+		const workflowActionType = findTypeDefinition(doc, 'StonecropWorkflowAction')
+		expect(workflowActionType).toBeDefined()
+
+		expect(findFieldDefinition(workflowActionType, 'label')).toBeDefined()
+		expect(findFieldDefinition(workflowActionType, 'handler')).toBeDefined()
+		expect(findFieldDefinition(workflowActionType, 'requiredFields')).toBeDefined()
+		expect(findFieldDefinition(workflowActionType, 'allowedStates')).toBeDefined()
+		expect(findFieldDefinition(workflowActionType, 'confirm')).toBeDefined()
+		expect(findFieldDefinition(workflowActionType, 'args')).toBeDefined()
 	})
 
-	it('defines StonecropWorkflowMeta.actions as array of StonecropWorkflowAction, not JSON scalar', () => {
-		expect(sourceFile).toContain('actions: [StonecropWorkflowAction!]')
-		expect(sourceFile).not.toContain('actions: JSON')
+	it('defines StonecropWorkflowMeta.actions as list of non-null StonecropWorkflowAction, not JSON', () => {
+		const typeDefs = extractTypeDefs(sourceFile)
+		const doc = parseTypeDefs(typeDefs)
+
+		const workflowMetaType = findTypeDefinition(doc, 'StonecropWorkflowMeta')
+		expect(workflowMetaType).toBeDefined()
+
+		const actionsField = findFieldDefinition(workflowMetaType, 'actions')
+		expect(actionsField).toBeDefined()
+
+		const actionsType = actionsField.type
+		expect(actionsType.kind).toBe('ListType')
+		expect(actionsType.type.kind).toBe('NonNullType')
+		expect(actionsType.type.type.kind).toBe('NamedType')
+		expect(actionsType.type.type.name.value).toBe('StonecropWorkflowAction')
 	})
 })
