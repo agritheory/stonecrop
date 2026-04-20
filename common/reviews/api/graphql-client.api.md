@@ -86,7 +86,16 @@ export class StonecropClient implements DataClient {
 export interface StonecropClientOptions {
     endpoint: string;
     headers?: Record<string, string>;
+    // @deprecated
+    inflection?: StonecropInflectionConfig;
     registry?: Map<string, DoctypeMeta>;
+}
+
+// @public @deprecated
+export interface StonecropInflectionConfig {
+    recordArgName?: (tableName: string) => string;
+    recordArgType?: (tableName: string) => string;
+    recordFieldName?: (tableName: string) => string;
 }
 
 // @public

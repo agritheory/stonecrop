@@ -1080,3 +1080,101 @@ describe('StonecropClient.getRecord with nested', () => {
 		expect(result!.supersededBy).toEqual({ id: 'r2', name: 'Sourdough v2', status: 'active' })
 	})
 })
+
+// ===========================================================================
+// Custom Inflection (Phase A bridge)
+// ===========================================================================
+
+describe('StonecropClient custom inflection', () => {
+	it('uses custom recordFieldName when provided', async () => {
+		const client = new StonecropClient({
+			endpoint: ENDPOINT,
+			inflection: {
+				recordFieldName: tableName => `${tableName}ByRowId`,
+			},
+		})
+
+		// getMeta call + nested query call
+		mockFetch.mockReturnValueOnce(makeFetchResponse({ stonecropMeta: taskMeta })).mockReturnValueOnce(
+			makeFetchResponse({
+				tasksByRowId: { id: '1', title: 'Test Task' },
+			})
+		)
+
+		await client.getRecord(taskRef, 'row-1', { includeNested: true })
+
+		// Check the query uses the custom field name
+		const calls = mockFetch.mock.calls
+		const queryBody = JSON.parse((calls[1][1] as RequestInit).body as string) as GraphQLRequestBody
+		expect(queryBody.query).toContain('tasksByRowId')
+		expect(queryBody.query).not.toContain('taskById')
+	})
+
+	it('uses custom recordArgName and recordArgType when provided', async () => {
+		const client = new StonecropClient({
+			endpoint: ENDPOINT,
+			inflection: {
+				recordFieldName: t => `${t}ByRowId`,
+				recordArgName: () => 'rowId',
+				recordArgType: () => 'String!',
+			},
+		})
+
+		mockFetch.mockReturnValueOnce(makeFetchResponse({ stonecropMeta: taskMeta })).mockReturnValueOnce(
+			makeFetchResponse({
+				tasksByRowId: { id: '1', title: 'Test Task' },
+			})
+		)
+
+		await client.getRecord(taskRef, 'row-1', { includeNested: true })
+
+		// Check the query uses the custom arg name and type
+		const calls = mockFetch.mock.calls
+		const queryBody = JSON.parse((calls[1][1] as RequestInit).body as string) as GraphQLRequestBody
+		expect(queryBody.query).toContain('$rowId: String!')
+		expect(queryBody.query).toContain('tasksByRowId(rowId: $rowId)')
+		expect(queryBody.variables).toEqual({ rowId: 'row-1' })
+	})
+
+	it('falls back to defaults when inflection options are partial', async () => {
+		const client = new StonecropClient({
+			endpoint: ENDPOINT,
+			inflection: {
+				// Only override recordFieldName, leave others undefined
+				recordFieldName: tableName => `${tableName}ByRowId`,
+			},
+		})
+
+		mockFetch.mockReturnValueOnce(makeFetchResponse({ stonecropMeta: taskMeta })).mockReturnValueOnce(
+			makeFetchResponse({
+				tasksByRowId: { id: '1', title: 'Test Task' },
+			})
+		)
+
+		await client.getRecord(taskRef, 'row-1', { includeNested: true })
+
+		// recordArgName and recordArgType should fall back to defaults
+		const calls = mockFetch.mock.calls
+		const queryBody = JSON.parse((calls[1][1] as RequestInit).body as string) as GraphQLRequestBody
+		expect(queryBody.query).toContain('$id: UUID!') // default arg type
+		expect(queryBody.variables).toEqual({ id: 'row-1' }) // default arg name
+	})
+
+	it('uses default inflection when no inflection option provided', async () => {
+		const client = new StonecropClient({ endpoint: ENDPOINT })
+
+		mockFetch.mockReturnValueOnce(makeFetchResponse({ stonecropMeta: taskMeta })).mockReturnValueOnce(
+			makeFetchResponse({
+				taskById: { id: '1', title: 'Test Task' },
+			})
+		)
+
+		await client.getRecord(taskRef, '1', { includeNested: true })
+
+		// Default Amber inflection
+		const calls = mockFetch.mock.calls
+		const queryBody = JSON.parse((calls[1][1] as RequestInit).body as string) as GraphQLRequestBody
+		expect(queryBody.query).toContain('taskById')
+		expect(queryBody.query).toContain('$id: UUID!')
+	})
+})

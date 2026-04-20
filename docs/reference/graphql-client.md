@@ -83,6 +83,7 @@ Options for creating a Stonecrop client
 export interface StonecropClientOptions {
   endpoint: string;
   headers?: Record<string, string>;
+  inflection?: StonecropInflectionConfig;
   registry?: Map<string, DoctypeMeta>;
 }
 ```
@@ -93,7 +94,30 @@ export interface StonecropClientOptions {
 |----------|------|-------------|
 | endpoint | `string` | GraphQL endpoint URL |
 | headers? | `Record<string, string>` | Additional HTTP headers to include in requests |
+| inflection? | `StonecropInflectionConfig` | Override inflection conventions for PostGraphile query naming. |
 | registry? | `Map<string, DoctypeMeta>` | Doctype registry for nested query building |
+
+### StonecropInflectionConfig
+
+Inflection configuration for PostGraphile query naming conventions.
+
+**Definition:**
+
+```typescript
+export interface StonecropInflectionConfig {
+  recordArgName?: (tableName: string) => string;
+  recordArgType?: (tableName: string) => string;
+  recordFieldName?: (tableName: string) => string;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| recordArgName? | `(tableName: string) => string` | Override the GraphQL argument name for the PK lookup |
+| recordArgType? | `(tableName: string) => string` | Override the GraphQL variable type for the PK argument |
+| recordFieldName? | `(tableName: string) => string` | Override the GraphQL field name for fetching a single record by PK |
 
 ## Type Aliases
 

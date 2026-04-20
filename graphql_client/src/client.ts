@@ -27,6 +27,20 @@ const defaultRecordArgName = (_tableName: string): string => 'id'
 const defaultRecordArgType = (_tableName: string): string => 'UUID!'
 
 /**
+ * Inflection configuration for PostGraphile query naming conventions.
+ * @deprecated — Temporary. Will be removed when stonecropRecord handles nesting.
+ * @public
+ */
+export interface StonecropInflectionConfig {
+	/** Override the GraphQL field name for fetching a single record by PK */
+	recordFieldName?: (tableName: string) => string
+	/** Override the GraphQL argument name for the PK lookup */
+	recordArgName?: (tableName: string) => string
+	/** Override the GraphQL variable type for the PK argument */
+	recordArgType?: (tableName: string) => string
+}
+
+/**
  * Options for creating a Stonecrop client
  * @public
  */
@@ -37,6 +51,11 @@ export interface StonecropClientOptions {
 	headers?: Record<string, string>
 	/** Doctype registry for nested query building */
 	registry?: Map<string, DoctypeMeta>
+	/**
+	 * Override inflection conventions for PostGraphile query naming.
+	 * @deprecated — Temporary. Will be removed when stonecropRecord handles nesting.
+	 */
+	inflection?: StonecropInflectionConfig
 }
 
 /**
@@ -48,6 +67,7 @@ export class StonecropClient implements DataClient {
 	private headers: Record<string, string>
 	private metaCache: Map<string, DoctypeMeta> = new Map()
 	private registry?: Map<string, DoctypeMeta>
+	private inflection: StonecropInflectionConfig
 
 	constructor(options: StonecropClientOptions) {
 		this.endpoint = options.endpoint
@@ -56,6 +76,7 @@ export class StonecropClient implements DataClient {
 			...options.headers,
 		}
 		this.registry = options.registry
+		this.inflection = options.inflection ?? {}
 	}
 
 	/**
@@ -219,23 +240,22 @@ export class StonecropClient implements DataClient {
 		recordId: string,
 		options?: GetRecordOptions
 	): Promise<Record<string, unknown> | null> {
+		const recordFieldName = this.inflection.recordFieldName ?? defaultRecordFieldName
+		const recordArgName = this.inflection.recordArgName ?? defaultRecordArgName
+		const recordArgType = this.inflection.recordArgType ?? defaultRecordArgType
+
 		// Nested path: build query with sub-selections
 		if (options?.includeNested) {
 			const meta = await this.getMeta({ doctype: doctype.name })
 			if (!meta) return null
 
-			const query = buildRecordQuery(
-				meta,
-				defaultRecordFieldName,
-				defaultRecordArgName,
-				defaultRecordArgType,
-				this.registry,
-				options
-			)
+			const query = buildRecordQuery(meta, recordFieldName, recordArgName, recordArgType, this.registry, options)
 
-			const result = await this.query<Record<string, unknown>>(query, { id: recordId })
+			const result = await this.query<Record<string, unknown>>(query, {
+				[recordArgName(meta.tableName || doctype.name)]: recordId,
+			})
 
-			const queryName = defaultRecordFieldName(meta.tableName || doctype.name)
+			const queryName = recordFieldName(meta.tableName || doctype.name)
 			const record = result[queryName] as Record<string, unknown> | undefined
 
 			if (!record) return null
