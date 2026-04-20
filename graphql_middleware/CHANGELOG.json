@@ -2,6 +2,18 @@
   "name": "@stonecrop/graphql-middleware",
   "entries": [
     {
+      "version": "0.11.1",
+      "tag": "@stonecrop/graphql-middleware_v0.11.1",
+      "date": "Mon, 20 Apr 2026 09:04:08 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "match server and client schema resolution for actions"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.11.0",
       "tag": "@stonecrop/graphql-middleware_v0.11.0",
       "date": "Mon, 13 Apr 2026 13:16:48 GMT",
