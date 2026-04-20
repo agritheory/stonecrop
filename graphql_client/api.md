@@ -43,30 +43,25 @@ export declare function buildListQuery(meta: DoctypeMeta, connectionFieldName: (
 | orderByTypeName | `(t: string) => string` | Function to derive the order-by type name from a table name |
 | options | `GetRecordsOptions` | Query options (limit, offset, orderBy) |
 
-### buildRecordQuery
+## Interfaces
 
-Build a GraphQL query string from doctype metadata.
+### GetRecordResult
 
-Generates scalar field selections. When `includeNested` is set, recursively includes descendant link sub-selections derived from the doctype's `links` object.
+Result from getRecord - includes the record data and any unknown links requested
 
-**Signature:**
+**Definition:**
 
 ```typescript
-export declare function buildRecordQuery(meta: DoctypeMeta, recordFieldName: (t: string) => string, recordArgName: (t: string) => string, recordArgType: (t: string) => string, registry?: Map<string, DoctypeMeta>, options?: GetRecordOptions): string;
+export interface GetRecordResult {
+  unknownLinks?: string[];
+}
 ```
 
-**Parameters:**
+**Properties:**
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| meta | `DoctypeMeta` | Doctype metadata to build the query from |
-| recordFieldName | `(t: string) => string` | Function to derive the query field name from a table name |
-| recordArgName | `(t: string) => string` | Function to derive the argument name from a table name |
-| recordArgType | `(t: string) => string` | Function to derive the argument type from a table name |
-| registry | `Map<string, DoctypeMeta>` | Doctype registry for resolving link targets. Required when includeNested is set. |
-| options | `GetRecordOptions` | Query options (includeNested, maxDepth) |
-
-## Interfaces
+| Property | Type | Description |
+|----------|------|-------------|
+| unknownLinks? | `string[]` | Link names that were requested but don't exist in the doctype schema |
 
 ### StonecropClientOptions
 
@@ -78,7 +73,6 @@ Options for creating a Stonecrop client
 export interface StonecropClientOptions {
   endpoint: string;
   headers?: Record<string, string>;
-  inflection?: StonecropInflectionConfig;
   registry?: Map<string, DoctypeMeta>;
 }
 ```
@@ -89,30 +83,7 @@ export interface StonecropClientOptions {
 |----------|------|-------------|
 | endpoint | `string` | GraphQL endpoint URL |
 | headers? | `Record<string, string>` | Additional HTTP headers to include in requests |
-| inflection? | `StonecropInflectionConfig` | Override inflection conventions for PostGraphile query naming. |
 | registry? | `Map<string, DoctypeMeta>` | Doctype registry for nested query building |
-
-### StonecropInflectionConfig
-
-Inflection configuration for PostGraphile query naming conventions.
-
-**Definition:**
-
-```typescript
-export interface StonecropInflectionConfig {
-  recordArgName?: (tableName: string) => string;
-  recordArgType?: (tableName: string) => string;
-  recordFieldName?: (tableName: string) => string;
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| recordArgName? | `(tableName: string) => string` | Override the GraphQL argument name for the PK lookup |
-| recordArgType? | `(tableName: string) => string` | Override the GraphQL variable type for the PK argument |
-| recordFieldName? | `(tableName: string) => string` | Override the GraphQL field name for fetching a single record by PK |
 
 ## Type Aliases
 
@@ -219,10 +190,10 @@ getMeta(context: DoctypeContext): Promise<DoctypeMeta | null>
 
 Get a single record by ID.
 
-When `includeNested` is set, builds a query with sub-selections for descendant links and returns ancestor + merged descendants. When omitted, returns flat scalar data.
+Routes through the stonecropRecord resolver which handles nested data fetching based on the includeNested option.
 
 ```typescript
-getRecord(doctype: DoctypeRef, recordId: string, options: GetRecordOptions): Promise<Record<string, unknown> | null>
+getRecord(doctype: DoctypeRef, recordId: string, options: GetRecordOptions): Promise<GetRecordResult>
 ```
 
 **Parameters:**
@@ -260,7 +231,7 @@ mutate(mutation: string, variables: Record<string, unknown>): Promise<T>
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| mutation | `string` | GraphQL mutation string |
+| mutation | `string` | GraphQL query string |
 | variables | `Record<string, unknown>` | Mutation variables |
 
 #### query

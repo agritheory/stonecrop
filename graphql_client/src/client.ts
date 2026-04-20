@@ -6,39 +6,10 @@ import type {
 	GetRecordOptions,
 	GetRecordsOptions,
 } from '@stonecrop/schema'
-import { snakeToCamel, toPascalCase } from '@stonecrop/schema'
-import pluralize from 'pluralize'
-
-import { buildRecordQuery } from './query'
+import type { GetRecordResult } from './types'
 
 export type { DoctypeContext, DoctypeRef }
-
-/**
- * Default inflection functions for PostGraphile Amber preset conventions.
- * These match the middleware's default inflection so the client builds
- * queries the server can execute.
- * @internal
- */
-const defaultRecordFieldName = (tableName: string): string => {
-	const singularName = pluralize.singular(tableName)
-	return `${snakeToCamel(singularName)}ById`
-}
-const defaultRecordArgName = (_tableName: string): string => 'id'
-const defaultRecordArgType = (_tableName: string): string => 'UUID!'
-
-/**
- * Inflection configuration for PostGraphile query naming conventions.
- * @deprecated — Temporary. Will be removed when stonecropRecord handles nesting.
- * @public
- */
-export interface StonecropInflectionConfig {
-	/** Override the GraphQL field name for fetching a single record by PK */
-	recordFieldName?: (tableName: string) => string
-	/** Override the GraphQL argument name for the PK lookup */
-	recordArgName?: (tableName: string) => string
-	/** Override the GraphQL variable type for the PK argument */
-	recordArgType?: (tableName: string) => string
-}
+export type { GetRecordResult }
 
 /**
  * Options for creating a Stonecrop client
@@ -51,11 +22,6 @@ export interface StonecropClientOptions {
 	headers?: Record<string, string>
 	/** Doctype registry for nested query building */
 	registry?: Map<string, DoctypeMeta>
-	/**
-	 * Override inflection conventions for PostGraphile query naming.
-	 * @deprecated — Temporary. Will be removed when stonecropRecord handles nesting.
-	 */
-	inflection?: StonecropInflectionConfig
 }
 
 /**
@@ -67,7 +33,6 @@ export class StonecropClient implements DataClient {
 	private headers: Record<string, string>
 	private metaCache: Map<string, DoctypeMeta> = new Map()
 	private registry?: Map<string, DoctypeMeta>
-	private inflection: StonecropInflectionConfig
 
 	constructor(options: StonecropClientOptions) {
 		this.endpoint = options.endpoint
@@ -76,7 +41,6 @@ export class StonecropClient implements DataClient {
 			...options.headers,
 		}
 		this.registry = options.registry
-		this.inflection = options.inflection ?? {}
 	}
 
 	/**
@@ -105,7 +69,7 @@ export class StonecropClient implements DataClient {
 
 	/**
 	 * Execute a GraphQL mutation
-	 * @param mutation - GraphQL mutation string
+	 * @param mutation - GraphQL query string
 	 * @param variables - Mutation variables
 	 */
 	async mutate<T = unknown>(mutation: string, variables?: Record<string, unknown>): Promise<T> {
@@ -228,60 +192,39 @@ export class StonecropClient implements DataClient {
 	/**
 	 * Get a single record by ID.
 	 *
-	 * When `includeNested` is set, builds a query with sub-selections for descendant
-	 * links and returns ancestor + merged descendants. When omitted, returns flat scalar data.
+	 * Routes through the stonecropRecord resolver which handles nested data
+	 * fetching based on the includeNested option.
 	 *
 	 * @param doctype - Doctype reference (name and optional slug)
 	 * @param recordId - Record ID to fetch
 	 * @param options - Query options (includeNested, maxDepth)
 	 */
-	async getRecord(
-		doctype: DoctypeRef,
-		recordId: string,
-		options?: GetRecordOptions
-	): Promise<Record<string, unknown> | null> {
-		const recordFieldName = this.inflection.recordFieldName ?? defaultRecordFieldName
-		const recordArgName = this.inflection.recordArgName ?? defaultRecordArgName
-		const recordArgType = this.inflection.recordArgType ?? defaultRecordArgType
-
-		// Nested path: build query with sub-selections
-		if (options?.includeNested) {
-			const meta = await this.getMeta({ doctype: doctype.name })
-			if (!meta) return null
-
-			const query = buildRecordQuery(meta, recordFieldName, recordArgName, recordArgType, this.registry, options)
-
-			const result = await this.query<Record<string, unknown>>(query, {
-				[recordArgName(meta.tableName || doctype.name)]: recordId,
-			})
-
-			const queryName = recordFieldName(meta.tableName || doctype.name)
-			const record = result[queryName] as Record<string, unknown> | undefined
-
-			if (!record) return null
-
-			if (meta.links && this.registry) {
-				return mergeNestedResults(record, meta, this.registry)
-			}
-
-			return record
-		}
-
-		// Flat path: original query
+	async getRecord(doctype: DoctypeRef, recordId: string, options?: GetRecordOptions): Promise<GetRecordResult> {
 		const result = await this.query<{
-			stonecropRecord: { data: Record<string, unknown> | null }
+			stonecropRecord: { data: Record<string, unknown> | null; unknownLinks?: string[] }
 		}>(
-			`
-			query GetRecord($doctype: String!, $id: String!) {
-				stonecropRecord(doctype: $doctype, id: $id) {
+			`query GetRecord($doctype: String!, $id: String!, $options: JSON) {
+				stonecropRecord(doctype: $doctype, id: $id, options: $options) {
 					data
+					unknownLinks
 				}
+			}`,
+			{
+				doctype: doctype.name,
+				id: recordId,
+				options: options?.includeNested
+					? {
+							includeNested: options.includeNested,
+							maxDepth: options.maxDepth,
+					  }
+					: undefined,
 			}
-			`,
-			{ doctype: doctype.name, id: recordId }
 		)
 
-		return result.stonecropRecord.data
+		return {
+			record: result.stonecropRecord?.data ?? null,
+			unknownLinks: result.stonecropRecord?.unknownLinks,
+		}
 	}
 
 	/**
@@ -361,58 +304,4 @@ export class StonecropClient implements DataClient {
 	clearMetaCache(): void {
 		this.metaCache.clear()
 	}
-}
-
-/**
- * Merge nested connection results into flat arrays.
- *
- * For `noneOrMany`/`atLeastOne` links, the query returns `{ nodes: [...] }`.
- * This flattens them to just `[]` for easier consumption.
- *
- * For `one`/`atMostOne` links, the result is already flat.
- *
- * @internal
- */
-function mergeNestedResults(
-	record: Record<string, unknown>,
-	meta: DoctypeMeta,
-	registry: Map<string, DoctypeMeta>
-): Record<string, unknown> {
-	if (!meta.links) return record
-
-	const merged = { ...record }
-
-	for (const [fieldname, link] of Object.entries(meta.links)) {
-		const isMany = link.cardinality === 'noneOrMany' || link.cardinality === 'atLeastOne'
-
-		if (isMany) {
-			// Connection result: { nodes: [...] } → flatten to []
-			const targetMeta = registry.get(link.target)
-			if (!targetMeta) continue
-
-			const connectionField = getConnectionFieldFromTarget(targetMeta, meta.tableName || '')
-			const connectionResult = merged[connectionField] as { nodes?: unknown[] } | undefined
-			if (connectionResult?.nodes) {
-				merged[fieldname] = connectionResult.nodes
-				delete merged[connectionField]
-			} else {
-				merged[fieldname] = []
-				delete merged[connectionField]
-			}
-		}
-		// 'one'/'atMostOne' links are already at the right fieldname
-	}
-
-	return merged
-}
-
-/**
- * Derive the connection field name matching the query builder's convention.
- * @internal
- */
-function getConnectionFieldFromTarget(targetMeta: DoctypeMeta, parentTableName: string): string {
-	const targetPlural = pluralize.plural(targetMeta.tableName || '')
-	const targetPascal = toPascalCase(targetPlural)
-	const fkPascal = toPascalCase(parentTableName) + 'Id'
-	return `${targetPascal}By${fkPascal}`
 }

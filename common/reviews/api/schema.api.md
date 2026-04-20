@@ -66,7 +66,7 @@ export type CustomFetch = z.infer<typeof CustomFetch>;
 // @public
 export interface DataClient<T extends DoctypeRef = DoctypeRef, M = DoctypeMeta> {
     getMeta(context: DoctypeContext): Promise<M | null>;
-    getRecord(doctype: T, recordId: string, options?: GetRecordOptions): Promise<Record<string, unknown> | null>;
+    getRecord(doctype: T, recordId: string, options?: GetRecordOptions): Promise<GetRecordResult>;
     getRecords(doctype: T, options?: GetRecordsOptions): Promise<Record<string, unknown>[]>;
     runAction(doctype: T, action: string, args?: unknown[]): Promise<{
         success: boolean;
@@ -284,6 +284,11 @@ export function getDefaultComponent(fieldtype: StonecropFieldType): string;
 export interface GetRecordOptions {
     includeNested?: boolean | string[];
     maxDepth?: number;
+}
+
+// @public
+export interface GetRecordResult {
+    record: Record<string, unknown> | null;
 }
 
 // @public

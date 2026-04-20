@@ -19,6 +19,25 @@ export interface ActionContext {
 export type ActionHandler = (args: unknown[], context: ActionContext) => Promise<unknown>;
 
 // @public
+export function buildListQuery(meta: DoctypeMeta, args: BuildListQueryArgs, connectionFieldName: (t: string) => string, orderByTypeName: (t: string) => string): string;
+
+// @public
+export interface BuildListQueryArgs {
+    limit?: number;
+    offset?: number;
+    orderBy?: string;
+}
+
+// @public
+export function buildRecordQuery(meta: DoctypeMeta, recordFieldName: (t: string) => string, recordArgName: (t: string) => string, recordArgType: (t: string) => string, getMeta: (slug: string) => DoctypeMeta | undefined, options?: BuildRecordQueryOptions, reverseConnectionNameFn?: (params: ReverseConnectionParams) => string): string;
+
+// @public
+export interface BuildRecordQueryOptions {
+    includeNested?: boolean | string[];
+    maxDepth?: number;
+}
+
+// @public
 export const builtinHandlers: Record<string, ActionHandler>;
 
 // @public
@@ -45,6 +64,14 @@ export function defaultRecordArgType(_tableName: string): string;
 // @public
 export function defaultRecordFieldName(tableName: string): string;
 
+// @public
+export function defaultReverseConnectionName(params: {
+    doctype: string;
+    linkName: string;
+    backlink?: string;
+    target: string;
+}): string;
+
 export { DoctypeMeta }
 
 // @public
@@ -54,6 +81,26 @@ export class DoctypeValidationError extends Error {
     errors: ValidationError[]);
     readonly errors: ValidationError[];
     readonly file: string;
+}
+
+// @public
+export function extractListResult(params: ExtractListResultParams): unknown[];
+
+// @public
+export interface ExtractListResultParams {
+    connectionFieldName: (tableName: string) => string;
+    meta: DoctypeMeta;
+    result: unknown;
+}
+
+// @public
+export function extractSingleResult(params: ExtractSingleResultParams): unknown;
+
+// @public
+export interface ExtractSingleResultParams {
+    meta: DoctypeMeta;
+    recordFieldName: (tableName: string) => string;
+    result: unknown;
 }
 
 // @public
@@ -90,6 +137,16 @@ export interface LoadDoctypesOptions {
 }
 
 // @public
+export function mergeNestedResults(params: MergeNestedResultsParams): Record<string, unknown>;
+
+// @public
+export interface MergeNestedResultsParams {
+    getMeta: (slug: string) => DoctypeMeta | undefined;
+    meta: DoctypeMeta;
+    record: Record<string, unknown>;
+}
+
+// @public
 export function queryableFieldNames(meta: DoctypeMeta): string;
 
 // @public
@@ -102,18 +159,38 @@ export function registerHandler(name: string, handler: ActionHandler): void;
 export const RELATION_FIELDTYPES: Set<string>;
 
 // @public
+export interface ReverseConnectionParams {
+    backlink?: string;
+    doctype: string;
+    linkName: string;
+    target: string;
+}
+
+// @public
 export interface StonecropInflectionConfig {
     connectionFieldName?: (tableName: string) => string;
     orderByTypeName?: (tableName: string) => string;
     recordArgName?: (tableName: string) => string;
     recordArgType?: (tableName: string) => string;
     recordFieldName?: (tableName: string) => string;
+    reverseConnectionName?: (params: {
+        doctype: string;
+        linkName: string;
+        backlink?: string;
+        target: string;
+    }) => string;
 }
 
 // @public
 export interface StonecropPluginOptions {
     executor: GraphQLExecutor;
     inflection?: StonecropInflectionConfig;
+}
+
+// @public
+export interface StonecropRecordOptions {
+    includeNested?: boolean | string[];
+    maxDepth?: number;
 }
 
 // @public

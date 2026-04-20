@@ -9,17 +9,20 @@ import type { DoctypeContext } from '@stonecrop/schema';
 import { DoctypeMeta } from '@stonecrop/schema';
 import type { DoctypeRef } from '@stonecrop/schema';
 import type { GetRecordOptions } from '@stonecrop/schema';
+import type { GetRecordResult as GetRecordResult_2 } from '@stonecrop/schema';
 import type { GetRecordsOptions } from '@stonecrop/schema';
 
 // @public
 export function buildListQuery(meta: DoctypeMeta, connectionFieldName: (t: string) => string, orderByTypeName: (t: string) => string, options?: GetRecordsOptions): string;
 
-// @public
-export function buildRecordQuery(meta: DoctypeMeta, recordFieldName: (t: string) => string, recordArgName: (t: string) => string, recordArgType: (t: string) => string, registry?: Map<string, DoctypeMeta>, options?: GetRecordOptions): string;
-
 export { DoctypeContext }
 
 export { DoctypeMeta }
+
+// @public
+export interface GetRecordResult extends GetRecordResult_2 {
+    unknownLinks?: string[];
+}
 
 // @public
 export type Meta = {
@@ -71,7 +74,7 @@ export class StonecropClient implements DataClient {
     clearMetaCache(): void;
     getAllMeta(): Promise<DoctypeMeta[]>;
     getMeta(context: DoctypeContext): Promise<DoctypeMeta | null>;
-    getRecord(doctype: DoctypeRef, recordId: string, options?: GetRecordOptions): Promise<Record<string, unknown> | null>;
+    getRecord(doctype: DoctypeRef, recordId: string, options?: GetRecordOptions): Promise<GetRecordResult>;
     getRecords(doctype: DoctypeRef, options?: GetRecordsOptions): Promise<Record<string, unknown>[]>;
     mutate<T = unknown>(mutation: string, variables?: Record<string, unknown>): Promise<T>;
     query<T = unknown>(query: string, variables?: Record<string, unknown>): Promise<T>;
@@ -86,16 +89,7 @@ export class StonecropClient implements DataClient {
 export interface StonecropClientOptions {
     endpoint: string;
     headers?: Record<string, string>;
-    // @deprecated
-    inflection?: StonecropInflectionConfig;
     registry?: Map<string, DoctypeMeta>;
-}
-
-// @public @deprecated
-export interface StonecropInflectionConfig {
-    recordArgName?: (tableName: string) => string;
-    recordArgType?: (tableName: string) => string;
-    recordFieldName?: (tableName: string) => string;
 }
 
 // @public

@@ -424,7 +424,7 @@ Interface for data clients that fetch doctype metadata and records. Implemented 
 ```typescript
 export interface DataClient {
   getMeta(context: DoctypeContext): Promise<M | null>;
-  getRecord(doctype: T, recordId: string, options: GetRecordOptions): Promise<Record<string, unknown> | null>;
+  getRecord(doctype: T, recordId: string, options: GetRecordOptions): Promise<GetRecordResult>;
   getRecords(doctype: T, options: GetRecordsOptions): Promise<Record<string, unknown>[]>;
   runAction(doctype: T, action: string, args: unknown[]): Promise<{
         success: boolean;
@@ -513,6 +513,24 @@ export interface GetRecordOptions {
 |----------|------|-------------|
 | includeNested? | `boolean \| string[]` | Include nested link sub-selections. - `true`: include all descendant links - `string[]`: include only named links - `false` / omitted: scalar fields only (default) |
 | maxDepth? | `number` | Maximum depth for recursive sub-selections. No default — unlimited when omitted. |
+
+### GetRecordResult
+
+Result from getRecord - includes the record data and any unknown links requested
+
+**Definition:**
+
+```typescript
+export interface GetRecordResult {
+  record: Record<string, unknown> | null;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| record | `Record<string, unknown> \| null` | The record data, or null if not found |
 
 ### GetRecordsOptions
 

@@ -15,6 +15,7 @@ export type {
 	DoctypeRef,
 	FetchStrategy,
 	GetRecordOptions,
+	GetRecordResult,
 	GetRecordsOptions,
 	LazyFetch,
 	LinkDeclaration,
