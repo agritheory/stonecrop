@@ -12,9 +12,6 @@ import type { GetRecordOptions } from '@stonecrop/schema';
 import type { GetRecordResult as GetRecordResult_2 } from '@stonecrop/schema';
 import type { GetRecordsOptions } from '@stonecrop/schema';
 
-// @public
-export function buildListQuery(meta: DoctypeMeta, connectionFieldName: (t: string) => string, orderByTypeName: (t: string) => string, options?: GetRecordsOptions): string;
-
 export { DoctypeContext }
 
 export { DoctypeMeta }

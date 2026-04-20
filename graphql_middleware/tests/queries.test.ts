@@ -128,7 +128,13 @@ describe('queryableFieldNames', () => {
 
 describe('buildRecordQuery', () => {
 	it('generates valid query with default arg name/type', () => {
-		const query = buildRecordQuery(scalarOnlyMeta, defaultRecordFieldName, defaultRecordArgName, defaultRecordArgType)
+		const query = buildRecordQuery(
+			scalarOnlyMeta,
+			defaultRecordFieldName,
+			defaultRecordArgName,
+			defaultRecordArgType,
+			getMeta
+		)
 		expect(query).toContain('query GetRecord($id: UUID!)')
 		expect(query).toContain('resourceById(id: $id)')
 		expect(query).toContain('id')
@@ -137,7 +143,13 @@ describe('buildRecordQuery', () => {
 	})
 
 	it('excludes relation fields from selection', () => {
-		const query = buildRecordQuery(mixedFieldsMeta, defaultRecordFieldName, defaultRecordArgName, defaultRecordArgType)
+		const query = buildRecordQuery(
+			mixedFieldsMeta,
+			defaultRecordFieldName,
+			defaultRecordArgName,
+			defaultRecordArgType,
+			getMeta
+		)
 		expect(query).toContain('title')
 		expect(query).toContain('rating')
 		expect(query).not.toContain('userByCreatedBy')
@@ -147,7 +159,7 @@ describe('buildRecordQuery', () => {
 	it('uses custom recordFieldName inflection', () => {
 		const customFieldName = (_t: string) => 'resourceByRowId'
 		const customArgName = (_t: string) => 'rowId'
-		const query = buildRecordQuery(scalarOnlyMeta, customFieldName, customArgName, defaultRecordArgType)
+		const query = buildRecordQuery(scalarOnlyMeta, customFieldName, customArgName, defaultRecordArgType, getMeta)
 		expect(query).toContain('query GetRecord($rowId: UUID!)')
 		expect(query).toContain('resourceByRowId(rowId: $rowId)')
 	})
@@ -156,7 +168,7 @@ describe('buildRecordQuery', () => {
 		const customFieldName = (_t: string) => 'resourceById'
 		const customArgName = (_t: string) => 'nodeId'
 		const customArgType = (_t: string) => 'ID!'
-		const query = buildRecordQuery(scalarOnlyMeta, customFieldName, customArgName, customArgType)
+		const query = buildRecordQuery(scalarOnlyMeta, customFieldName, customArgName, customArgType, getMeta)
 		expect(query).toContain('query GetRecord($nodeId: ID!)')
 		expect(query).toContain('resourceById(nodeId: $nodeId)')
 	})
@@ -164,7 +176,7 @@ describe('buildRecordQuery', () => {
 	it('row_id pattern: rowId arg with UUID! type', () => {
 		const rowIdFieldName = (t: string) => `${defaultRecordFieldName(t).replace(/ById$/, 'ByRowId')}`
 		const rowIdArgName = (_t: string) => 'rowId'
-		const query = buildRecordQuery(scalarOnlyMeta, rowIdFieldName, rowIdArgName, defaultRecordArgType)
+		const query = buildRecordQuery(scalarOnlyMeta, rowIdFieldName, rowIdArgName, defaultRecordArgType, getMeta)
 		expect(query).toContain('query GetRecord($rowId: UUID!)')
 		expect(query).toContain('resourceByRowId(rowId: $rowId)')
 	})

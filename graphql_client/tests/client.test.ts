@@ -1,8 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
 import { StonecropClient } from '../src/client'
-import { buildListQuery } from '../src/query'
-import type { DoctypeRef, DoctypeMeta } from '@stonecrop/schema'
+import type { DoctypeRef } from '@stonecrop/schema'
 
 interface GraphQLRequestBody {
 	query: string
@@ -367,72 +366,5 @@ describe('StonecropClient.clearMetaCache', () => {
 		await client.getMeta({ doctype: 'Task' })
 
 		expect(mockFetch).toHaveBeenCalledTimes(2)
-	})
-})
-
-// ===========================================================================
-// buildListQuery
-// ===========================================================================
-
-const recipeMeta: DoctypeMeta = {
-	name: 'Recipe',
-	slug: 'recipe',
-	tableName: 'recipe',
-	fields: [
-		{ fieldname: 'id', fieldtype: 'Data', label: 'ID' },
-		{ fieldname: 'name', fieldtype: 'Data', label: 'Name' },
-		{ fieldname: 'status', fieldtype: 'Data', label: 'Status' },
-	],
-}
-
-const connectionFieldName = (t: string) => `all${t.charAt(0).toUpperCase() + t.slice(1)}`
-const orderByTypeName = (t: string) => `${t.charAt(0).toUpperCase() + t.slice(1)}OrderBy`
-
-describe('buildListQuery', () => {
-	it('generates a query with no variables when no options', () => {
-		const query = buildListQuery(recipeMeta, connectionFieldName, orderByTypeName)
-		expect(query).toContain('allRecipe')
-		expect(query).toContain('id')
-		expect(query).toContain('name')
-		expect(query).toContain('status')
-		expect(query).not.toContain('$limit')
-		expect(query).not.toContain('$offset')
-		expect(query).not.toContain('$orderBy')
-	})
-
-	it('generates a query with limit', () => {
-		const query = buildListQuery(recipeMeta, connectionFieldName, orderByTypeName, { limit: 10 })
-		expect(query).toContain('$limit: Int')
-		expect(query).toContain('first: $limit')
-		expect(query).not.toContain('$offset')
-		expect(query).not.toContain('$orderBy')
-	})
-
-	it('generates a query with limit and offset', () => {
-		const query = buildListQuery(recipeMeta, connectionFieldName, orderByTypeName, { limit: 10, offset: 20 })
-		expect(query).toContain('$limit: Int')
-		expect(query).toContain('$offset: Int')
-		expect(query).toContain('first: $limit')
-		expect(query).toContain('offset: $offset')
-		expect(query).not.toContain('$orderBy')
-	})
-
-	it('generates a query with all variables', () => {
-		const query = buildListQuery(recipeMeta, connectionFieldName, orderByTypeName, {
-			limit: 10,
-			offset: 20,
-			orderBy: 'NAME_ASC',
-		})
-		expect(query).toContain('$limit: Int')
-		expect(query).toContain('$offset: Int')
-		expect(query).toContain('$orderBy: [RecipeOrderBy!]')
-		expect(query).toContain('orderBy: $orderBy')
-	})
-
-	it('excludes Link and Doctype fields from selection', () => {
-		const query = buildListQuery(recipeMeta, connectionFieldName, orderByTypeName)
-		expect(query).toContain('name')
-		expect(query).not.toContain('tasks')
-		expect(query).not.toContain('supersededBy')
 	})
 })

@@ -25,29 +25,6 @@ Vue component exported from @stonecrop/graphql_client.
 import { DoctypeMeta } from '@stonecrop/graphql_client'
 ```
 
-## Functions
-
-### buildListQuery
-
-Build a GraphQL connection query to fetch a list of records.
-
-Only declares variables ($limit, $offset, $orderBy) that are actually used, avoiding GraphQL spec violations from unused variable declarations.
-
-**Signature:**
-
-```typescript
-export declare function buildListQuery(meta: DoctypeMeta, connectionFieldName: (t: string) => string, orderByTypeName: (t: string) => string, options?: GetRecordsOptions): string;
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| meta | `DoctypeMeta` | Doctype metadata |
-| connectionFieldName | `(t: string) => string` | Function to derive the connection field name from a table name |
-| orderByTypeName | `(t: string) => string` | Function to derive the order-by type name from a table name |
-| options | `GetRecordsOptions` | Query options (limit, offset, orderBy) |
-
 ## Interfaces
 
 ### GetRecordResult
