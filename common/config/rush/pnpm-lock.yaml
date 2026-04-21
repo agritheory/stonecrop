@@ -492,6 +492,9 @@ importers:
       '@stonecrop/graphql-client':
         specifier: workspace:*
         version: link:../graphql_client
+      '@stonecrop/graphql-middleware':
+        specifier: workspace:*
+        version: link:../graphql_middleware
       '@stonecrop/node-editor':
         specifier: workspace:*
         version: link:../node_editor

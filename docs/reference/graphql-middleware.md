@@ -727,3 +727,13 @@ Built-in handlers available for registration
 export const builtinHandlers: Record<string, ActionHandler>
 ```
 
+### typeDefs
+
+GraphQL type definitions for Stonecrop's middleware API. Includes stonecropMeta, stonecropRecord, stonecropRecords, stonecropAction, and related types.
+
+**Type:**
+
+```typescript
+export const typeDefs: import("graphql").DocumentNode
+```
+

@@ -57,3 +57,5 @@ export type {
 	ExtractSingleResultParams,
 	ExtractListResultParams,
 } from './types'
+
+export { typeDefs } from './typeDefs'

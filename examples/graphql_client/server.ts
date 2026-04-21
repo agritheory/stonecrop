@@ -1,5 +1,5 @@
 import { createGraphQLHandler, mirageGraphQLFieldResolver } from '@miragejs/graphql'
-import { typeDefs } from '@stonecrop/graphql-client'
+import { typeDefs } from '@stonecrop/graphql-middleware'
 import { createServer, Model } from 'miragejs'
 
 export function makeServer() {
@@ -10,27 +10,29 @@ export function makeServer() {
 			schema: Model,
 		},
 
-		fixtures: {
-			schemas: { schema: typeDefs },
-		},
-
 		routes() {
-			// mock REST schema endpoint
-			this.get('/schema', schema => {
-				return schema.first('schema')?.attrs
-			})
-
 			// mock graphQL endpoint
 			const graphQLHandler = createGraphQLHandler(typeDefs, this.schema, {
-				// adding null parameters to avoid TS errors
 				context: null,
 				root: null,
 
 				resolvers: {
 					Query: {
-						getMeta(obj, args, context, info) {
-							args.name = args.doctype
-							delete args.doctype
+						stonecropMeta(obj, args, context, info) {
+							return mirageGraphQLFieldResolver(obj, args, context, info)
+						},
+						stonecropRecord(obj, args, context, info) {
+							return mirageGraphQLFieldResolver(obj, args, context, info)
+						},
+						stonecropRecords(obj, args, context, info) {
+							return mirageGraphQLFieldResolver(obj, args, context, info)
+						},
+						stonecropAllMeta(obj, args, context, info) {
+							return mirageGraphQLFieldResolver(obj, args, context, info)
+						},
+					},
+					Mutation: {
+						stonecropAction(obj, args, context, info) {
 							return mirageGraphQLFieldResolver(obj, args, context, info)
 						},
 					},

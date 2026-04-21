@@ -25,6 +25,7 @@
 		"@stonecrop/code-editor": "workspace:*",
 		"@stonecrop/desktop": "workspace:*",
 		"@stonecrop/graphql-client": "workspace:*",
+		"@stonecrop/graphql-middleware": "workspace:*",
 		"@stonecrop/node-editor": "workspace:*",
 		"@stonecrop/stonecrop": "workspace:*",
 		"@stonecrop/themes": "workspace:*",

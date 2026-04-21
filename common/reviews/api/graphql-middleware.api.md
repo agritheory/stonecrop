@@ -5,6 +5,7 @@
 ```ts
 
 import { DoctypeMeta } from '@stonecrop/schema';
+import { DocumentNode } from 'graphql';
 import { GraphileConfig as GraphileConfig_2 } from 'postgraphile/graphile-build';
 import { ValidationError } from '@stonecrop/schema';
 
@@ -192,6 +193,9 @@ export interface StonecropRecordOptions {
     includeNested?: boolean | string[];
     maxDepth?: number;
 }
+
+// @public
+export const typeDefs: DocumentNode;
 
 // @public
 export function validateReferences(): ValidationError[];
