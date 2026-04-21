@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/graphql-middleware",
+      "comment": "use correct amber preset inflection for doctypes",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/graphql-middleware"
+}
