@@ -1,4 +1,4 @@
-import type { DoctypeMeta } from '@stonecrop/schema'
+import { snakeToCamel, type DoctypeMeta } from '@stonecrop/schema'
 import { describe, it, expect } from 'vitest'
 
 import {
@@ -592,5 +592,44 @@ describe('mergeNestedResults', () => {
 	it('returns original record when no links', () => {
 		const result = mergeNestedResults({ record: { id: '1', name: 'Test' }, meta: scalarOnlyMeta, getMeta })
 		expect(result).toEqual({ id: '1', name: 'Test' })
+	})
+
+	it('uses reverseConnectionNameFn when provided', () => {
+		const record = {
+			id: 'r1',
+			name: 'Test Recipe',
+			TasksByRecipeId: {
+				nodes: [{ id: 't1', name: 'Task 1' }],
+			},
+		}
+		// Custom function that omits the target prefix — differs from default
+		const customReverseConnection: typeof defaultReverseConnectionName = ({ backlink }) => {
+			const backlinkPascal = backlink!.charAt(0).toUpperCase() + snakeToCamel(backlink!).slice(1)
+			return `TasksBy${backlinkPascal}Id`
+		}
+
+		const result = mergeNestedResults({
+			record,
+			meta: recipeMeta,
+			getMeta,
+			reverseConnectionNameFn: customReverseConnection,
+		})
+
+		expect(result.tasks).toEqual([{ id: 't1', name: 'Task 1' }])
+		expect(result.TasksByRecipeId).toBeUndefined()
+	})
+
+	it('falls back to default when reverseConnectionNameFn not provided', () => {
+		const record = {
+			id: 'r1',
+			name: 'Test Recipe',
+			RecipeTasksByRecipeId: {
+				nodes: [{ id: 't1', name: 'Task 1' }],
+			},
+		}
+
+		const result = mergeNestedResults({ record, meta: recipeMeta, getMeta })
+
+		expect(result.tasks).toEqual([{ id: 't1', name: 'Task 1' }])
 	})
 })

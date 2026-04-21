@@ -49,6 +49,7 @@ export default defineConfig({
 				...coverageConfigDefaults.exclude,
 				'src/index.ts', // ignore the entry file
 				'src/types/**', // ignore types
+				'src/typeDefs.ts', // ignore gql type definitions
 			],
 		},
 	},

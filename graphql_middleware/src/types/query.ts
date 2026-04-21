@@ -113,6 +113,8 @@ export interface MergeNestedResultsParams {
 	meta: DoctypeMeta
 	/** Lookup function to get doctype metadata by slug */
 	getMeta: (slug: string) => DoctypeMeta | undefined
+	/** Function to derive the reverse connection field name from link params */
+	reverseConnectionNameFn?: (params: ReverseConnectionParams) => string
 }
 
 /**
