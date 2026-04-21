@@ -50,7 +50,6 @@ Options for creating a Stonecrop client
 export interface StonecropClientOptions {
   endpoint: string;
   headers?: Record<string, string>;
-  registry?: Map<string, DoctypeMeta>;
 }
 ```
 
@@ -60,7 +59,6 @@ export interface StonecropClientOptions {
 |----------|------|-------------|
 | endpoint | `string` | GraphQL endpoint URL |
 | headers? | `Record<string, string>` | Additional HTTP headers to include in requests |
-| registry? | `Map<string, DoctypeMeta>` | Doctype registry for nested query building |
 
 ## Type Aliases
 

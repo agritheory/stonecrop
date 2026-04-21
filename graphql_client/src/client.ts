@@ -20,8 +20,6 @@ export interface StonecropClientOptions {
 	endpoint: string
 	/** Additional HTTP headers to include in requests */
 	headers?: Record<string, string>
-	/** Doctype registry for nested query building */
-	registry?: Map<string, DoctypeMeta>
 }
 
 /**
@@ -32,7 +30,6 @@ export class StonecropClient implements DataClient {
 	private endpoint: string
 	private headers: Record<string, string>
 	private metaCache: Map<string, DoctypeMeta> = new Map()
-	private registry?: Map<string, DoctypeMeta>
 
 	constructor(options: StonecropClientOptions) {
 		this.endpoint = options.endpoint
@@ -40,7 +37,6 @@ export class StonecropClient implements DataClient {
 			'Content-Type': 'application/json',
 			...options.headers,
 		}
-		this.registry = options.registry
 	}
 
 	/**

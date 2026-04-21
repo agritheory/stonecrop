@@ -86,7 +86,6 @@ export class StonecropClient implements DataClient {
 export interface StonecropClientOptions {
     endpoint: string;
     headers?: Record<string, string>;
-    registry?: Map<string, DoctypeMeta>;
 }
 
 // @public
