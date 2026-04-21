@@ -121,7 +121,13 @@ export function loadDoctypesFromObject(doctypes: Record<string, unknown>, option
  * @public
  */
 export function getMeta(name: string): DoctypeMeta | undefined {
-	return doctypeRegistry.get(name)
+	const direct = doctypeRegistry.get(name)
+	if (direct) return direct
+	// Fallback: find by slug (links reference doctypes by slug, not name)
+	for (const doctype of doctypeRegistry.values()) {
+		if (doctype.slug === name) return doctype
+	}
+	return undefined
 }
 
 /**

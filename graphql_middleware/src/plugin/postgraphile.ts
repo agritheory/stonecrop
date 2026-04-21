@@ -468,12 +468,13 @@ function defaultReverseConnectionName(params: {
 	target: string
 }): string {
 	const targetPlural = pluralize.plural(params.target.replace(/-/g, '_'))
-	const targetPascal = toPascalCase(targetPlural)
+	// Use camelCase for target (matches PostGraphile Amber convention: recipeTasksByRecipeId)
+	const targetCamel = snakeToCamel(targetPlural)
 	// Use backlink if provided, otherwise derive from parent table name
 	const fkSource = params.backlink || params.doctype
 	// FK column name: uppercase first char, preserve rest of camelCase
-	const fkPascal = fkSource.charAt(0).toUpperCase() + fkSource.slice(1)
-	return `${targetPascal}By${fkPascal}Id`
+	const fkPascal = fkSource.charAt(0).toUpperCase() + snakeToCamel(fkSource).slice(1)
+	return `${targetCamel}By${fkPascal}Id`
 }
 
 /**
