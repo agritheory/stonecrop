@@ -2,6 +2,18 @@
   "name": "@stonecrop/stonecrop",
   "entries": [
     {
+      "version": "0.11.2",
+      "tag": "@stonecrop/stonecrop_v0.11.2",
+      "date": "Tue, 21 Apr 2026 09:18:00 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "remove toMetaMap function"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.11.1",
       "tag": "@stonecrop/stonecrop_v0.11.1",
       "date": "Mon, 20 Apr 2026 09:04:08 GMT",
