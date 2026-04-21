@@ -1605,16 +1605,6 @@ resolveSchema(doctype: Doctype, visited: Set<string>): SchemaTypes[]
 | doctype | `Doctype` | The doctype to resolve |
 | visited | `Set<string>` | Internal — set of already-visited doctype slugs for cycle detection |
 
-#### toMetaMap
-
-Convert the registry to a Map of DoctypeMeta objects for use with StonecropClient.
-
-This allows passing a Registry instance to StonecropClient by deriving the Mapstring, DoctypeMeta that StonecropClient needs for building nested GraphQL queries.
-
-```typescript
-toMetaMap(): Map<string, DoctypeMeta>
-```
-
 ### SchemaValidator
 
 Schema validator class

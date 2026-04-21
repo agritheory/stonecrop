@@ -121,7 +121,9 @@ export type MetaResponse = {
 
 ### StonecropClient
 
-Client for interacting with Stonecrop GraphQL API
+Client for interacting with Stonecrop GraphQL API.
+
+Acts as a transport layer — it passes requests to the middleware and returns merged results. Does not construct queries itself.
 
 **Constructor:**
 
@@ -133,7 +135,9 @@ new StonecropClient(options: StonecropClientOptions)
 
 #### clearMetaCache
 
-Clear the cached doctype metadata
+Clear the cached doctype metadata.
+
+Call this if the server-side doctype schema has changed and you need to fetch fresh metadata (e.g., after adding a new field).
 
 ```typescript
 clearMetaCache(): void
@@ -181,7 +185,9 @@ getRecord(doctype: DoctypeRef, recordId: string, options: GetRecordOptions): Pro
 
 #### getRecords
 
-Get multiple records with optional filtering and pagination
+Get multiple records with optional filtering and pagination.
+
+Returns flat arrays — the middleware merges connection format ( nodes: [...] ) into plain arrays before returning.
 
 ```typescript
 getRecords(doctype: DoctypeRef, options: GetRecordsOptions): Promise<Record<string, unknown>[]>
@@ -196,7 +202,7 @@ getRecords(doctype: DoctypeRef, options: GetRecordsOptions): Promise<Record<stri
 
 #### mutate
 
-Execute a GraphQL mutation
+Execute a GraphQL mutation. Delegates to query() since both use POST.
 
 ```typescript
 mutate(mutation: string, variables: Record<string, unknown>): Promise<T>
@@ -206,12 +212,12 @@ mutate(mutation: string, variables: Record<string, unknown>): Promise<T>
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| mutation | `string` | GraphQL query string |
+| mutation | `string` | GraphQL mutation string |
 | variables | `Record<string, unknown>` | Mutation variables |
 
 #### query
 
-Execute a GraphQL query
+Execute a GraphQL query against the configured endpoint.
 
 ```typescript
 query(query: string, variables: Record<string, unknown>): Promise<T>
