@@ -471,9 +471,6 @@ importers:
 
   ../../examples:
     dependencies:
-      '@miragejs/graphql':
-        specifier: ^0.1.13
-        version: 0.1.13
       '@stonecrop/aform':
         specifier: workspace:*
         version: link:../aform
@@ -489,12 +486,6 @@ importers:
       '@stonecrop/desktop':
         specifier: workspace:*
         version: link:../desktop
-      '@stonecrop/graphql-client':
-        specifier: workspace:*
-        version: link:../graphql_client
-      '@stonecrop/graphql-middleware':
-        specifier: workspace:*
-        version: link:../graphql_middleware
       '@stonecrop/node-editor':
         specifier: workspace:*
         version: link:../node_editor
@@ -583,15 +574,9 @@ importers:
       '@stonecrop/stonecrop':
         specifier: workspace:*
         version: link:../stonecrop
-      decimal.js:
-        specifier: ^10.6.0
-        version: 10.6.0
       graphql:
         specifier: ^16.12.0
         version: 16.12.0
-      graphql-request:
-        specifier: ^7.4.0
-        version: 7.4.0(graphql@16.12.0)
       pluralize:
         specifier: ^8.0.0
         version: 8.0.0
@@ -6279,11 +6264,6 @@ packages:
     resolution: {integrity: sha512-azawK7ApUYtcuPGRGBR9vDZu795pRuaFhO5fgomdJppdfKRt7jwncuh0b7+D3i574/4B+16CNWgVpnGVlg3ZCg==}
     peerDependencies:
       graphql: ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0
-
-  graphql-request@7.4.0:
-    resolution: {integrity: sha512-xfr+zFb/QYbs4l4ty0dltqiXIp07U6sl+tOKAb0t50/EnQek6CVVBLjETXi+FghElytvgaAWtIOt3EV7zLzIAQ==}
-    peerDependencies:
-      graphql: 14 - 16
 
   graphql-tag@2.12.6:
     resolution: {integrity: sha512-FdSNcu2QQcWnM2VNvSCCDCVS5PpPqpzgFT8+GXzqJuoDd0CBncxCY278u4mhRO7tMgo2JjgJA5aZ+nWSQ/Z+xg==}
@@ -15221,11 +15201,6 @@ snapshots:
     dependencies:
       '@graphql-tools/delegate': 8.8.1(graphql@16.12.0)
       '@graphql-tools/schema': 8.5.1(graphql@16.12.0)
-      graphql: 16.12.0
-
-  graphql-request@7.4.0(graphql@16.12.0):
-    dependencies:
-      '@graphql-typed-document-node/core': 3.2.0(graphql@16.12.0)
       graphql: 16.12.0
 
   graphql-tag@2.12.6(graphql@16.12.0):

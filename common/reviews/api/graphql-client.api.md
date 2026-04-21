@@ -22,50 +22,6 @@ export interface GetRecordResult extends GetRecordResult_2 {
 }
 
 // @public
-export type Meta = {
-    variables: {
-        doctype: string;
-    };
-    response: {
-        getMeta: MetaResponse;
-    };
-};
-
-// @public
-export type MetaParser = {
-    data: Meta['response'];
-};
-
-// @public
-export type MetaResponse = {
-    id: string;
-    name: string;
-    workflow: {
-        id: string;
-        name: string;
-        machineId?: string;
-    };
-    schema: {
-        id: string;
-        label: string;
-    }[];
-    actions: {
-        id: string;
-        eventName: string;
-    }[];
-};
-
-// @public
-export const methods: {
-    getMeta: (doctype: string, url?: string) => Promise<MetaResponse>;
-};
-
-// @public
-export const queries: {
-    getMeta: string;
-};
-
-// @public
 export class StonecropClient implements DataClient {
     constructor(options: StonecropClientOptions);
     clearMetaCache(): void;
@@ -87,9 +43,6 @@ export interface StonecropClientOptions {
     endpoint: string;
     headers?: Record<string, string>;
 }
-
-// @public
-export const typeDefs: string;
 
 // (No @packageDocumentation comment for this package)
 

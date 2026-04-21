@@ -23,7 +23,6 @@ export async function installGraphqlClient(options: GraphqlClientInstallerOption
 		await addDependencies(cwd, {
 			'@stonecrop/graphql-client': 'latest',
 			graphql: '^16.11.0',
-			'graphql-request': '~6.0.0',
 		})
 
 		consola.success('@stonecrop/graphql-client installed successfully')
