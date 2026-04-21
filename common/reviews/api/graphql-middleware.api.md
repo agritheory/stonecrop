@@ -145,6 +145,7 @@ export interface MergeNestedResultsParams {
     getMeta: (slug: string) => DoctypeMeta | undefined;
     meta: DoctypeMeta;
     record: Record<string, unknown>;
+    reverseConnectionNameFn?: (params: ReverseConnectionParams) => string;
 }
 
 // @public

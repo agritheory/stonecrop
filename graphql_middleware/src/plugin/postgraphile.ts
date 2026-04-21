@@ -255,7 +255,12 @@ export const createStonecropPlugin = (options: StonecropPluginOptions): Graphile
 											let data = extractSingleResult({ result, meta, recordFieldName })
 
 											if (recordOptions.includeNested && data && meta.links) {
-												data = mergeNestedResults({ record: data as Record<string, unknown>, meta, getMeta })
+												data = mergeNestedResults({
+													record: data as Record<string, unknown>,
+													meta,
+													getMeta,
+													reverseConnectionNameFn: reverseConnectionName,
+												})
 											}
 
 											const unknownLinks =
@@ -722,7 +727,7 @@ function buildListQuery(
  * @public
  */
 function mergeNestedResults(params: MergeNestedResultsParams): Record<string, unknown> {
-	const { record, meta, getMeta } = params
+	const { record, meta, getMeta, reverseConnectionNameFn } = params
 	if (!meta.links) return record
 
 	const merged = { ...record }
@@ -740,7 +745,9 @@ function mergeNestedResults(params: MergeNestedResultsParams): Record<string, un
 				backlink: link.backlink || fieldname,
 				target: link.target,
 			}
-			const connectionField = defaultReverseConnectionName(reverseParams)
+			const connectionField = reverseConnectionNameFn
+				? reverseConnectionNameFn(reverseParams)
+				: defaultReverseConnectionName(reverseParams)
 			const connectionResult = merged[connectionField] as { nodes?: unknown[] } | undefined
 			if (connectionResult?.nodes) {
 				merged[fieldname] = connectionResult.nodes

@@ -574,6 +574,7 @@ export interface MergeNestedResultsParams {
   getMeta: (slug: string) => DoctypeMeta | undefined;
   meta: DoctypeMeta;
   record: Record<string, unknown>;
+  reverseConnectionNameFn?: (params: ReverseConnectionParams) => string;
 }
 ```
 
@@ -584,6 +585,7 @@ export interface MergeNestedResultsParams {
 | getMeta | `(slug: string) => DoctypeMeta \| undefined` | Lookup function to get doctype metadata by slug |
 | meta | `DoctypeMeta` | Doctype metadata |
 | record | `Record<string, unknown>` | The record object with nested connection data |
+| reverseConnectionNameFn? | `(params: ReverseConnectionParams) => string` | Function to derive the reverse connection field name from link params |
 
 ### ReverseConnectionParams
 
