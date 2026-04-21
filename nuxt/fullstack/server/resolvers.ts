@@ -87,8 +87,8 @@ export default {
 				return constant(getAllMeta().map(formatDoctypeMeta))
 			},
 
-			stonecropRecord(_: unknown, { $doctype, $id }: any) {
-				return loadOne(object({ doctype: $doctype, id: $id }), async (specs: readonly any[]) => {
+			stonecropRecord(_: unknown, { $doctype, $id, $options }: any) {
+				return loadOne(object({ doctype: $doctype, id: $id, options: $options }), async (specs: readonly any[]) => {
 					return Promise.all(
 						specs.map(async spec => {
 							const meta = getMeta(spec.doctype)
@@ -102,12 +102,14 @@ export default {
 								return {
 									data: result[queryName] ?? null,
 									doctype: spec.doctype,
+									unknownLinks: undefined,
 								}
 							} catch (error) {
 								console.error(`[stonecropRecord] Error:`, error)
 								return {
 									data: null,
 									doctype: spec.doctype,
+									unknownLinks: undefined,
 								}
 							}
 						})

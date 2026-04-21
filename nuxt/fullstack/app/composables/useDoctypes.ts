@@ -51,7 +51,8 @@ export async function fetchDoctypeRecord(
 	recordId: string
 ): Promise<Record<string, unknown> | null> {
 	const { $stonecropClient } = useNuxtApp()
-	return $stonecropClient.getRecord(doctype, recordId)
+	const result = await $stonecropClient.getRecord(doctype, recordId)
+	return result.record
 }
 
 export interface ActionResult {

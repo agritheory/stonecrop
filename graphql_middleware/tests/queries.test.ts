@@ -343,6 +343,36 @@ describe('defaultReverseConnectionName', () => {
 	})
 })
 
+describe('reverseConnectionName override', () => {
+	it('uses custom reverseConnectionName when provided', () => {
+		const customReverseConnection = ({ target }: { target: string }) => `Custom_${target}`
+		const query = buildRecordQuery(
+			recipeMeta,
+			defaultRecordFieldName,
+			defaultRecordArgName,
+			defaultRecordArgType,
+			getMeta,
+			{ includeNested: true },
+			customReverseConnection
+		)
+		// With custom reverseConnectionName, the query should use the custom format
+		expect(query).toContain('Custom_recipe-task')
+	})
+
+	it('uses default reverseConnectionName when no custom provided', () => {
+		const query = buildRecordQuery(
+			recipeMeta,
+			defaultRecordFieldName,
+			defaultRecordArgName,
+			defaultRecordArgType,
+			getMeta,
+			{ includeNested: true }
+		)
+		// Default uses PostGraphile Amber convention
+		expect(query).toContain('RecipeTasksByRecipeId')
+	})
+})
+
 // ===========================================================================
 // buildRecordQuery with nested
 // ===========================================================================
