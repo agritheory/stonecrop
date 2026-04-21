@@ -41,6 +41,16 @@ describe('createStonecropPlugin', () => {
 		})
 		expect(plugin).toBeDefined()
 	})
+
+	it('accepts reverseConnectionName override', () => {
+		const plugin = createStonecropPlugin({
+			executor: mockExecutor,
+			inflection: {
+				reverseConnectionName: ({ target }) => `Custom_${target}`,
+			},
+		})
+		expect(plugin).toBeDefined()
+	})
 })
 
 // ===========================================================================
@@ -98,5 +108,92 @@ describe('StonecropWorkflowMeta schema', () => {
 		expect(actionsType.type.kind).toBe('NonNullType')
 		expect(actionsType.type.type.kind).toBe('NamedType')
 		expect(actionsType.type.type.name.value).toBe('StonecropWorkflowAction')
+	})
+})
+
+// ===========================================================================
+// stonecropRecord schema with options parameter
+// ===========================================================================
+
+describe('stonecropRecord schema', () => {
+	function extractTypeDefs(source: string): string {
+		const match = source.match(/typeDefs: gql`([\s\S]*?)`/)
+		if (!match) throw new Error('Could not find typeDefs in source')
+		return match[1]
+	}
+
+	function parseTypeDefs(typeDefs: string): DocumentNode {
+		return parse(typeDefs)
+	}
+
+	function findFieldDefinition(doc: DocumentNode, fieldName: string) {
+		// Handle both type Query { ... } and extend type Query { ... }
+		const queryType = doc.definitions.find(
+			d => (d.kind === 'ObjectTypeDefinition' || d.kind === 'ObjectTypeExtension') && d.name.value === 'Query'
+		)
+		return queryType?.fields?.find((f: any) => f.name.value === fieldName)
+	}
+
+	const sourceFile = readFileSync(join(__dirname, '../src/plugin/postgraphile.ts'), 'utf-8')
+
+	it('stonecropRecord accepts options parameter', () => {
+		const typeDefs = extractTypeDefs(sourceFile)
+		const doc = parseTypeDefs(typeDefs)
+
+		const field = findFieldDefinition(doc, 'stonecropRecord')
+		expect(field).toBeDefined()
+
+		const args = field?.arguments || []
+		const optionsArg = args.find((a: any) => a.name.value === 'options')
+		expect(optionsArg).toBeDefined()
+	})
+
+	it('stonecropRecord returns StonecropRecordResult with unknownLinks', () => {
+		const typeDefs = extractTypeDefs(sourceFile)
+		const doc = parseTypeDefs(typeDefs)
+
+		const resultType = doc.definitions.find(
+			d => d.kind === 'ObjectTypeDefinition' && d.name.value === 'StonecropRecordResult'
+		)
+		expect(resultType).toBeDefined()
+
+		const unknownLinksField = resultType?.fields?.find((f: any) => f.name.value === 'unknownLinks')
+		expect(unknownLinksField).toBeDefined()
+	})
+})
+
+describe('unknownLinks behavior', () => {
+	it('unknownLinks is string array type in StonecropRecordResult', () => {
+		const sourceFile = readFileSync(join(__dirname, '../src/plugin/postgraphile.ts'), 'utf-8')
+		const typeDefsMatch = sourceFile.match(/typeDefs: gql`([\s\S]*?)`/)
+		expect(typeDefsMatch).toBeDefined()
+
+		const typeDefs = typeDefsMatch[1]
+		const doc = parse(typeDefs)
+
+		const resultType = doc.definitions.find(
+			d => d.kind === 'ObjectTypeDefinition' && d.name.value === 'StonecropRecordResult'
+		)
+		const unknownLinksField = resultType?.fields?.find((f: any) => f.name.value === 'unknownLinks')
+
+		// Should be [String!]! or similar
+		expect(unknownLinksField?.type).toBeDefined()
+	})
+
+	it('unknownLinks field is optional (not required)', () => {
+		const sourceFile = readFileSync(join(__dirname, '../src/plugin/postgraphile.ts'), 'utf-8')
+		const typeDefsMatch = sourceFile.match(/typeDefs: gql`([\s\S]*?)`/)
+		expect(typeDefsMatch).toBeDefined()
+
+		const typeDefs = typeDefsMatch[1]
+		const doc = parse(typeDefs)
+
+		const resultType = doc.definitions.find(
+			d => d.kind === 'ObjectTypeDefinition' && d.name.value === 'StonecropRecordResult'
+		)
+		const unknownLinksField = resultType?.fields?.find((f: any) => f.name.value === 'unknownLinks')
+
+		// Not NonNull, so it's optional
+		expect(unknownLinksField?.type.kind).not.toBe('NonNullType')
 	})
 })

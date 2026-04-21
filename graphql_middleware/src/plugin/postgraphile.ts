@@ -1,4 +1,4 @@
-import type { DoctypeMeta } from '@stonecrop/schema'
+import type { DoctypeMeta, LinkDeclaration, LazyFetch, SyncFetch } from '@stonecrop/schema'
 import { snakeToCamel, toPascalCase } from '@stonecrop/schema'
 import { constant, lambda, object, loadOne } from 'postgraphile/grafast'
 import { GraphileConfig } from 'postgraphile/graphile-build'
@@ -7,7 +7,17 @@ import pluralize from 'pluralize'
 
 import { getHandler, registerHandler } from '../registry/actions'
 import { getMeta, getAllMeta } from '../registry/doctypes'
-import type { ActionContext, GraphQLExecutor } from '../types'
+import type {
+	ActionContext,
+	GraphQLExecutor,
+	ReverseConnectionParams,
+	BuildRecordQueryOptions,
+	BuildNestedSelectionsParams,
+	BuildListQueryArgs,
+	MergeNestedResultsParams,
+	ExtractSingleResultParams,
+	ExtractListResultParams,
+} from '../types'
 
 /**
  * Inflection callbacks for mapping table names to GraphQL query field names.
@@ -50,6 +60,35 @@ export interface StonecropInflectionConfig {
 	 * @example Integer PK: "sales_orders" → "Int!"
 	 */
 	recordArgType?: (tableName: string) => string
+
+	/**
+	 * Derive the GraphQL connection field name for a reverse-FK link.
+	 * PostGraphile convention: `{targetPlural}By{FkColumnPascal}Id`
+	 * - When backlink is provided: FK column is derived from the backlink field
+	 * - When backlink is absent: FK column is derived from the parent doctype
+	 * @example Recipe → RecipeTasksByRecipeId
+	 */
+	reverseConnectionName?: (params: {
+		/** Parent doctype slug */
+		doctype: string
+		/** Link key on the parent */
+		linkName: string
+		/** Link field on the target that points back to the parent (optional) */
+		backlink?: string
+		/** Target doctype slug */
+		target: string
+	}) => string
+}
+
+/**
+ * Options for stonecropRecord queries
+ * @public
+ */
+export interface StonecropRecordOptions {
+	/** Include nested/related records */
+	includeNested?: boolean | string[]
+	/** Maximum nesting depth */
+	maxDepth?: number
 }
 
 /**
@@ -80,6 +119,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions): Graphile
 	const orderByTypeName = options.inflection?.orderByTypeName ?? defaultOrderByTypeName
 	const recordArgName = options.inflection?.recordArgName ?? defaultRecordArgName
 	const recordArgType = options.inflection?.recordArgType ?? defaultRecordArgType
+	const reverseConnectionName = options.inflection?.reverseConnectionName ?? defaultReverseConnectionName
 
 	return extendSchema(() => {
 		return {
@@ -130,6 +170,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions): Graphile
 				type StonecropRecordResult {
 					data: JSON
 					doctype: String!
+					unknownLinks: [String!]
 				}
 
 				type StonecropRecordsResult {
@@ -147,7 +188,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions): Graphile
 				extend type Query {
 					stonecropMeta(doctype: String!): StonecropDoctypeMeta
 					stonecropAllMeta: [StonecropDoctypeMeta!]!
-					stonecropRecord(doctype: String!, id: String!): StonecropRecordResult
+					stonecropRecord(doctype: String!, id: String!, options: JSON): StonecropRecordResult
 					stonecropRecords(
 						doctype: String!
 						filters: JSON
@@ -176,31 +217,61 @@ export const createStonecropPlugin = (options: StonecropPluginOptions): Graphile
 							return constant(getAllMeta())
 						},
 
-						stonecropRecord(_: any, { $doctype, $id }: any) {
-							return loadOne(object({ doctype: $doctype, id: $id }), async (specs: readonly any[]) => {
-								return await Promise.all(
-									specs.map(async spec => {
-										const meta = getMeta(spec.doctype)
-										if (!meta) {
-											throw new Error(`Unknown doctype: ${spec.doctype}`)
-										}
+						stonecropRecord(_: any, { $doctype, $id, $options }: any) {
+							return loadOne(
+								object({ doctype: $doctype, id: $id, options: $options }),
+								async (specs: readonly any[]) => {
+									return await Promise.all(
+										specs.map(async spec => {
+											const meta = getMeta(spec.doctype)
+											if (!meta) {
+												throw new Error(`Unknown doctype: ${spec.doctype}`)
+											}
 
-										if (!meta.tableName) {
-											throw new Error(`Doctype ${spec.doctype} has no table mapping`)
-										}
+											if (!meta.tableName) {
+												throw new Error(`Doctype ${spec.doctype} has no table mapping`)
+											}
 
-										const query = buildRecordQuery(meta, recordFieldName, recordArgName, recordArgType)
-										const result = await options.executor.query(query, {
-											[recordArgName(meta.tableName!)]: spec.id,
+											const recordOptions = spec.options ?? {}
+
+											const query = buildRecordQuery(
+												meta,
+												recordFieldName,
+												recordArgName,
+												recordArgType,
+												getMeta,
+												recordOptions.includeNested
+													? {
+															includeNested: recordOptions.includeNested,
+															maxDepth: recordOptions.maxDepth,
+													  }
+													: undefined,
+												reverseConnectionName
+											)
+											const result = await options.executor.query(query, {
+												[recordArgName(meta.tableName!)]: spec.id,
+											})
+
+											let data = extractSingleResult({ result, meta, recordFieldName })
+
+											if (recordOptions.includeNested && data && meta.links) {
+												data = mergeNestedResults({ record: data as Record<string, unknown>, meta, getMeta })
+											}
+
+											const unknownLinks =
+												Array.isArray(recordOptions.includeNested) && meta.links
+													? recordOptions.includeNested.filter((name: string) => !(name in meta.links!))
+													: undefined
+
+											return {
+												data,
+												doctype: spec.doctype,
+												...(unknownLinks ? { unknownLinks } : {}),
+											}
 										})
-
-										return {
-											data: extractSingleResult(result, meta, recordFieldName),
-											doctype: spec.doctype,
-										}
-									})
-								)
-							})
+									)
+								}
+							)
 						},
 
 						stonecropRecords(_: any, { $doctype, $filters, $orderBy, $limit, $offset }: any) {
@@ -239,7 +310,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions): Graphile
 												offset: spec.offset,
 												orderBy: spec.orderBy,
 											})
-											const data = extractListResult(result, meta, connectionFieldName)
+											const data = extractListResult({ result, meta, connectionFieldName })
 
 											return {
 												data,
@@ -378,9 +449,40 @@ function defaultRecordArgType(_tableName: string): string {
 	return 'UUID!'
 }
 
+/**
+ * Default reverse connection name: derives PostGraphile's connection field convention.
+ * PostGraphile convention: `{targetPlural}By{FkColumnPascal}Id`
+ * - When backlink is defined: FK column is derived from the backlink field name
+ * - When backlink is absent: FK column is derived from the parent doctype's table name
+ * @public
+ */
+function defaultReverseConnectionName(params: {
+	doctype: string
+	linkName: string
+	backlink?: string
+	target: string
+}): string {
+	const targetPlural = pluralize.plural(params.target.replace(/-/g, '_'))
+	const targetPascal = toPascalCase(targetPlural)
+	// Use backlink if provided, otherwise derive from parent table name
+	const fkSource = params.backlink || params.doctype
+	// FK column name: uppercase first char, preserve rest of camelCase
+	const fkPascal = fkSource.charAt(0).toUpperCase() + fkSource.slice(1)
+	return `${targetPascal}By${fkPascal}Id`
+}
+
+/**
+ * Check if a cardinality represents a "many" relationship
+ */
+function isManyCardinality(cardinality: string): boolean {
+	return cardinality === 'noneOrMany' || cardinality === 'atLeastOne'
+}
+
 // =============================================================================
 // Query builders — generate GraphQL queries to send to the underlying schema
 // =============================================================================
+
+const DEFAULT_SYNC_LIMIT = 50
 
 /**
  * Fieldtypes that map to GraphQL object/connection types and require sub-selections.
@@ -402,28 +504,166 @@ function queryableFieldNames(meta: DoctypeMeta): string {
 }
 
 /**
+ * Get the effective fetch strategy for a link, applying cardinality-based defaults.
+ */
+function getEffectiveFetchStrategy(link: LinkDeclaration): SyncFetch | LazyFetch {
+	if (link.fetch !== undefined) {
+		return link.fetch as SyncFetch | LazyFetch
+	}
+
+	if (isManyCardinality(link.cardinality)) {
+		return { method: 'sync', limit: DEFAULT_SYNC_LIMIT }
+	} else {
+		return { method: 'lazy' }
+	}
+}
+
+/**
+ * Get the effective blockWorkflows value for a link.
+ */
+function getEffectiveBlockWorkflows(link: LinkDeclaration): boolean {
+	if (link.blockWorkflows !== undefined) {
+		return link.blockWorkflows
+	}
+	const effectiveFetch = getEffectiveFetchStrategy(link)
+	return effectiveFetch.method === 'sync'
+}
+
+/**
+ * Build nested sub-selections for descendant links
+ */
+function buildNestedSelections(params: BuildNestedSelectionsParams): string {
+	const { links, meta, includeSet, getMeta, seen, depth, maxDepth, reverseConnectionNameFn } = params
+
+	if (maxDepth !== undefined && depth >= maxDepth) return ''
+
+	const selections: string[] = []
+
+	for (const [fieldname, link] of Object.entries(links)) {
+		if (maxDepth !== undefined && depth >= maxDepth) break
+
+		const effectiveBlockWorkflows = getEffectiveBlockWorkflows(link)
+		const linkBlockWorkflowsExplicitTrue = link.blockWorkflows === true
+
+		if (includeSet && !includeSet.has(fieldname) && !linkBlockWorkflowsExplicitTrue) {
+			continue
+		}
+
+		const effectiveFetch = getEffectiveFetchStrategy(link)
+		const shouldSkip =
+			effectiveBlockWorkflows === false || (effectiveFetch.method !== 'sync' && !linkBlockWorkflowsExplicitTrue)
+		if (shouldSkip) {
+			continue
+		}
+
+		const targetMeta = getMeta(link.target)
+		if (!targetMeta) continue
+
+		const alreadySeen = seen.has(link.target)
+		if (alreadySeen) {
+		} else {
+			seen.add(link.target)
+		}
+		const scalarFields = queryableFieldNames(targetMeta)
+
+		let nestedLinks = ''
+		if (!alreadySeen && targetMeta.links && targetMeta.tableName && (maxDepth === undefined || depth + 1 < maxDepth)) {
+			const innerSelections = buildNestedSelections({
+				links: targetMeta.links,
+				meta: targetMeta,
+				includeSet: null,
+				getMeta,
+				seen,
+				depth: depth + 1,
+				maxDepth,
+				reverseConnectionNameFn,
+			})
+			if (innerSelections) {
+				nestedLinks = '\n          ' + innerSelections
+			}
+			seen.delete(link.target)
+		}
+
+		const fullSelection = scalarFields + nestedLinks
+
+		if (isManyCardinality(link.cardinality)) {
+			const reverseParams: ReverseConnectionParams = {
+				doctype: meta.slug || meta.name,
+				linkName: fieldname,
+				backlink: link.backlink,
+				target: link.target,
+			}
+			const connectionField = reverseConnectionNameFn
+				? reverseConnectionNameFn(reverseParams)
+				: defaultReverseConnectionName(reverseParams)
+			const limitArg =
+				effectiveFetch.method === 'sync' && effectiveFetch.limit !== undefined
+					? `first: ${effectiveFetch.limit}`
+					: effectiveFetch.method === 'sync'
+					? `first: ${DEFAULT_SYNC_LIMIT}`
+					: ''
+			selections.push(`
+			${connectionField}${limitArg ? `(${limitArg})` : ''} {
+				nodes {
+					${fullSelection}
+				}
+			}`)
+		} else {
+			selections.push(`
+			${fieldname} {
+				${fullSelection}
+			}`)
+		}
+	}
+
+	return selections.join('')
+}
+
+/**
  * Build a GraphQL query to fetch a single record by ID.
- * Excludes Link and Doctype relation fields from the selection set.
- * The PK argument name and type are configurable via `StonecropInflectionConfig.recordArgName`
- * and `StonecropInflectionConfig.recordArgType` to match the target schema's conventions
- * (e.g. `rowId: UUID!` for PostGraphile Amber with row_id columns).
+ * When includeNested is set, recursively includes descendant link sub-selections.
  * @public
  */
 function buildRecordQuery(
 	meta: DoctypeMeta,
 	recordFieldName: (t: string) => string,
 	recordArgName: (t: string) => string,
-	recordArgType: (t: string) => string
+	recordArgType: (t: string) => string,
+	getMeta: (slug: string) => DoctypeMeta | undefined,
+	options?: BuildRecordQueryOptions,
+	reverseConnectionNameFn?: (params: ReverseConnectionParams) => string
 ): string {
-	const fieldNames = queryableFieldNames(meta)
 	const queryName = recordFieldName(meta.tableName!)
 	const argName = recordArgName(meta.tableName!)
 	const argType = recordArgType(meta.tableName!)
 
+	const seen = new Set<string>([meta.slug || meta.name])
+
+	let selection = queryableFieldNames(meta)
+
+	if (options?.includeNested && meta.links) {
+		const includeSet = Array.isArray(options.includeNested) ? new Set(options.includeNested) : null
+
+		const nestedSelections = buildNestedSelections({
+			links: meta.links,
+			meta,
+			includeSet,
+			getMeta,
+			seen,
+			depth: 0,
+			maxDepth: options.maxDepth,
+			reverseConnectionNameFn,
+		})
+
+		if (nestedSelections) {
+			selection += '\n      ' + nestedSelections
+		}
+	}
+
 	return `
 		query GetRecord($${argName}: ${argType}) {
 			${queryName}(${argName}: $${argName}) {
-				${fieldNames}
+				${selection}
 			}
 		}
 	`
@@ -438,7 +678,7 @@ function buildRecordQuery(
  */
 function buildListQuery(
 	meta: DoctypeMeta,
-	args: { limit?: number; offset?: number; orderBy?: string },
+	args: BuildListQueryArgs,
 	connectionFieldName: (t: string) => string,
 	orderByTypeName: (t: string) => string
 ): string {
@@ -476,10 +716,51 @@ function buildListQuery(
 }
 
 /**
- * Extract a single record from a PostGraphile query result using the record field name.
- * @internal
+ * Merge nested connection results into flat arrays.
+ * For `noneOrMany`/`atLeastOne` links, the query returns `{ nodes: [...] }`.
+ * This flattens them to just `[]` for easier consumption.
+ * @public
  */
-function extractSingleResult(result: unknown, meta: DoctypeMeta, recordFieldName: (t: string) => string): unknown {
+function mergeNestedResults(params: MergeNestedResultsParams): Record<string, unknown> {
+	const { record, meta, getMeta } = params
+	if (!meta.links) return record
+
+	const merged = { ...record }
+
+	for (const [fieldname, link] of Object.entries(meta.links)) {
+		const isMany = isManyCardinality(link.cardinality)
+
+		if (isMany) {
+			const targetMeta = getMeta(link.target)
+			if (!targetMeta) continue
+
+			const reverseParams: ReverseConnectionParams = {
+				doctype: meta.slug || meta.name,
+				linkName: fieldname,
+				backlink: link.backlink || fieldname,
+				target: link.target,
+			}
+			const connectionField = defaultReverseConnectionName(reverseParams)
+			const connectionResult = merged[connectionField] as { nodes?: unknown[] } | undefined
+			if (connectionResult?.nodes) {
+				merged[fieldname] = connectionResult.nodes
+				delete merged[connectionField]
+			} else {
+				merged[fieldname] = []
+				delete merged[connectionField]
+			}
+		}
+	}
+
+	return merged
+}
+
+/**
+ * Extract a single record from a PostGraphile query result using the record field name.
+ * @public
+ */
+function extractSingleResult(params: ExtractSingleResultParams): unknown {
+	const { result, meta, recordFieldName } = params
 	const queryName = recordFieldName(meta.tableName!)
 	return (result as Record<string, unknown>)[queryName]
 }
@@ -487,9 +768,10 @@ function extractSingleResult(result: unknown, meta: DoctypeMeta, recordFieldName
 /**
  * Extract the list of nodes from a PostGraphile connection query result.
  * Returns an empty array if the connection field is absent.
- * @internal
+ * @public
  */
-function extractListResult(result: unknown, meta: DoctypeMeta, connectionFieldName: (t: string) => string): unknown[] {
+function extractListResult(params: ExtractListResultParams): unknown[] {
+	const { result, meta, connectionFieldName } = params
 	const connectionName = connectionFieldName(meta.tableName!)
 	const connection = (result as Record<string, unknown>)[connectionName] as {
 		nodes: unknown[]
@@ -507,10 +789,12 @@ export {
 	defaultOrderByTypeName,
 	defaultRecordArgName,
 	defaultRecordArgType,
+	defaultReverseConnectionName,
 	buildRecordQuery,
 	buildListQuery,
 	queryableFieldNames,
 	RELATION_FIELDTYPES,
 	extractSingleResult,
 	extractListResult,
+	mergeNestedResults,
 }

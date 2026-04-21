@@ -9,61 +9,17 @@ import type { DoctypeContext } from '@stonecrop/schema';
 import { DoctypeMeta } from '@stonecrop/schema';
 import type { DoctypeRef } from '@stonecrop/schema';
 import type { GetRecordOptions } from '@stonecrop/schema';
+import type { GetRecordResult as GetRecordResult_2 } from '@stonecrop/schema';
 import type { GetRecordsOptions } from '@stonecrop/schema';
-
-// @public
-export function buildListQuery(meta: DoctypeMeta, connectionFieldName: (t: string) => string, orderByTypeName: (t: string) => string, options?: GetRecordsOptions): string;
-
-// @public
-export function buildRecordQuery(meta: DoctypeMeta, recordFieldName: (t: string) => string, recordArgName: (t: string) => string, recordArgType: (t: string) => string, registry?: Map<string, DoctypeMeta>, options?: GetRecordOptions): string;
 
 export { DoctypeContext }
 
 export { DoctypeMeta }
 
 // @public
-export type Meta = {
-    variables: {
-        doctype: string;
-    };
-    response: {
-        getMeta: MetaResponse;
-    };
-};
-
-// @public
-export type MetaParser = {
-    data: Meta['response'];
-};
-
-// @public
-export type MetaResponse = {
-    id: string;
-    name: string;
-    workflow: {
-        id: string;
-        name: string;
-        machineId?: string;
-    };
-    schema: {
-        id: string;
-        label: string;
-    }[];
-    actions: {
-        id: string;
-        eventName: string;
-    }[];
-};
-
-// @public
-export const methods: {
-    getMeta: (doctype: string, url?: string) => Promise<MetaResponse>;
-};
-
-// @public
-export const queries: {
-    getMeta: string;
-};
+export interface GetRecordResult extends GetRecordResult_2 {
+    unknownLinks?: string[];
+}
 
 // @public
 export class StonecropClient implements DataClient {
@@ -71,7 +27,7 @@ export class StonecropClient implements DataClient {
     clearMetaCache(): void;
     getAllMeta(): Promise<DoctypeMeta[]>;
     getMeta(context: DoctypeContext): Promise<DoctypeMeta | null>;
-    getRecord(doctype: DoctypeRef, recordId: string, options?: GetRecordOptions): Promise<Record<string, unknown> | null>;
+    getRecord(doctype: DoctypeRef, recordId: string, options?: GetRecordOptions): Promise<GetRecordResult>;
     getRecords(doctype: DoctypeRef, options?: GetRecordsOptions): Promise<Record<string, unknown>[]>;
     mutate<T = unknown>(mutation: string, variables?: Record<string, unknown>): Promise<T>;
     query<T = unknown>(query: string, variables?: Record<string, unknown>): Promise<T>;
@@ -86,11 +42,7 @@ export class StonecropClient implements DataClient {
 export interface StonecropClientOptions {
     endpoint: string;
     headers?: Record<string, string>;
-    registry?: Map<string, DoctypeMeta>;
 }
-
-// @public
-export const typeDefs: string;
 
 // (No @packageDocumentation comment for this package)
 

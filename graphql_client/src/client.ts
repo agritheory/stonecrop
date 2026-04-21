@@ -6,25 +6,10 @@ import type {
 	GetRecordOptions,
 	GetRecordsOptions,
 } from '@stonecrop/schema'
-import { snakeToCamel, toPascalCase } from '@stonecrop/schema'
-import pluralize from 'pluralize'
-
-import { buildRecordQuery } from './query'
+import type { GetRecordResult } from './types'
 
 export type { DoctypeContext, DoctypeRef }
-
-/**
- * Default inflection functions for PostGraphile Amber preset conventions.
- * These match the middleware's default inflection so the client builds
- * queries the server can execute.
- * @internal
- */
-const defaultRecordFieldName = (tableName: string): string => {
-	const singularName = pluralize.singular(tableName)
-	return `${snakeToCamel(singularName)}ById`
-}
-const defaultRecordArgName = (_tableName: string): string => 'id'
-const defaultRecordArgType = (_tableName: string): string => 'UUID!'
+export type { GetRecordResult }
 
 /**
  * Options for creating a Stonecrop client
@@ -35,19 +20,20 @@ export interface StonecropClientOptions {
 	endpoint: string
 	/** Additional HTTP headers to include in requests */
 	headers?: Record<string, string>
-	/** Doctype registry for nested query building */
-	registry?: Map<string, DoctypeMeta>
 }
 
 /**
- * Client for interacting with Stonecrop GraphQL API
+ * Client for interacting with Stonecrop GraphQL API.
+ *
+ * Acts as a transport layer — it passes requests to the middleware and returns
+ * merged results. Does not construct queries itself.
+ *
  * @public
  */
 export class StonecropClient implements DataClient {
 	private endpoint: string
 	private headers: Record<string, string>
 	private metaCache: Map<string, DoctypeMeta> = new Map()
-	private registry?: Map<string, DoctypeMeta>
 
 	constructor(options: StonecropClientOptions) {
 		this.endpoint = options.endpoint
@@ -55,13 +41,14 @@ export class StonecropClient implements DataClient {
 			'Content-Type': 'application/json',
 			...options.headers,
 		}
-		this.registry = options.registry
 	}
 
 	/**
-	 * Execute a GraphQL query
+	 * Execute a GraphQL query against the configured endpoint.
+	 *
 	 * @param query - GraphQL query string
 	 * @param variables - Query variables
+	 * @throws Error if the GraphQL response contains errors
 	 */
 	async query<T = unknown>(query: string, variables?: Record<string, unknown>): Promise<T> {
 		const response = await fetch(this.endpoint, {
@@ -83,7 +70,8 @@ export class StonecropClient implements DataClient {
 	}
 
 	/**
-	 * Execute a GraphQL mutation
+	 * Execute a GraphQL mutation. Delegates to query() since both use POST.
+	 *
 	 * @param mutation - GraphQL mutation string
 	 * @param variables - Mutation variables
 	 */
@@ -207,65 +195,47 @@ export class StonecropClient implements DataClient {
 	/**
 	 * Get a single record by ID.
 	 *
-	 * When `includeNested` is set, builds a query with sub-selections for descendant
-	 * links and returns ancestor + merged descendants. When omitted, returns flat scalar data.
+	 * Routes through the stonecropRecord resolver which handles nested data
+	 * fetching based on the includeNested option.
 	 *
 	 * @param doctype - Doctype reference (name and optional slug)
 	 * @param recordId - Record ID to fetch
 	 * @param options - Query options (includeNested, maxDepth)
 	 */
-	async getRecord(
-		doctype: DoctypeRef,
-		recordId: string,
-		options?: GetRecordOptions
-	): Promise<Record<string, unknown> | null> {
-		// Nested path: build query with sub-selections
-		if (options?.includeNested) {
-			const meta = await this.getMeta({ doctype: doctype.name })
-			if (!meta) return null
-
-			const query = buildRecordQuery(
-				meta,
-				defaultRecordFieldName,
-				defaultRecordArgName,
-				defaultRecordArgType,
-				this.registry,
-				options
-			)
-
-			const result = await this.query<Record<string, unknown>>(query, { id: recordId })
-
-			const queryName = defaultRecordFieldName(meta.tableName || doctype.name)
-			const record = result[queryName] as Record<string, unknown> | undefined
-
-			if (!record) return null
-
-			if (meta.links && this.registry) {
-				return mergeNestedResults(record, meta, this.registry)
-			}
-
-			return record
-		}
-
-		// Flat path: original query
+	async getRecord(doctype: DoctypeRef, recordId: string, options?: GetRecordOptions): Promise<GetRecordResult> {
 		const result = await this.query<{
-			stonecropRecord: { data: Record<string, unknown> | null }
+			stonecropRecord: { data: Record<string, unknown> | null; unknownLinks?: string[] }
 		}>(
-			`
-			query GetRecord($doctype: String!, $id: String!) {
-				stonecropRecord(doctype: $doctype, id: $id) {
+			`query GetRecord($doctype: String!, $id: String!, $options: JSON) {
+				stonecropRecord(doctype: $doctype, id: $id, options: $options) {
 					data
+					unknownLinks
 				}
+			}`,
+			{
+				doctype: doctype.name,
+				id: recordId,
+				options: options?.includeNested
+					? {
+							includeNested: options.includeNested,
+							maxDepth: options.maxDepth,
+					  }
+					: undefined,
 			}
-			`,
-			{ doctype: doctype.name, id: recordId }
 		)
 
-		return result.stonecropRecord.data
+		return {
+			record: result.stonecropRecord?.data ?? null,
+			unknownLinks: result.stonecropRecord?.unknownLinks,
+		}
 	}
 
 	/**
-	 * Get multiple records with optional filtering and pagination
+	 * Get multiple records with optional filtering and pagination.
+	 *
+	 * Returns flat arrays — the middleware merges connection format (\{ nodes: [...] \})
+	 * into plain arrays before returning.
+	 *
 	 * @param doctype - Doctype reference (name and optional slug)
 	 * @param options - Query options (filters, orderBy, limit, offset)
 	 */
@@ -336,63 +306,12 @@ export class StonecropClient implements DataClient {
 	}
 
 	/**
-	 * Clear the cached doctype metadata
+	 * Clear the cached doctype metadata.
+	 *
+	 * Call this if the server-side doctype schema has changed and you need
+	 * to fetch fresh metadata (e.g., after adding a new field).
 	 */
 	clearMetaCache(): void {
 		this.metaCache.clear()
 	}
-}
-
-/**
- * Merge nested connection results into flat arrays.
- *
- * For `noneOrMany`/`atLeastOne` links, the query returns `{ nodes: [...] }`.
- * This flattens them to just `[]` for easier consumption.
- *
- * For `one`/`atMostOne` links, the result is already flat.
- *
- * @internal
- */
-function mergeNestedResults(
-	record: Record<string, unknown>,
-	meta: DoctypeMeta,
-	registry: Map<string, DoctypeMeta>
-): Record<string, unknown> {
-	if (!meta.links) return record
-
-	const merged = { ...record }
-
-	for (const [fieldname, link] of Object.entries(meta.links)) {
-		const isMany = link.cardinality === 'noneOrMany' || link.cardinality === 'atLeastOne'
-
-		if (isMany) {
-			// Connection result: { nodes: [...] } → flatten to []
-			const targetMeta = registry.get(link.target)
-			if (!targetMeta) continue
-
-			const connectionField = getConnectionFieldFromTarget(targetMeta, meta.tableName || '')
-			const connectionResult = merged[connectionField] as { nodes?: unknown[] } | undefined
-			if (connectionResult?.nodes) {
-				merged[fieldname] = connectionResult.nodes
-				delete merged[connectionField]
-			} else {
-				merged[fieldname] = []
-				delete merged[connectionField]
-			}
-		}
-		// 'one'/'atMostOne' links are already at the right fieldname
-	}
-
-	return merged
-}
-
-/**
- * Derive the connection field name matching the query builder's convention.
- * @internal
- */
-function getConnectionFieldFromTarget(targetMeta: DoctypeMeta, parentTableName: string): string {
-	const targetPlural = pluralize.plural(targetMeta.tableName || '')
-	const targetPascal = toPascalCase(targetPlural)
-	const fkPascal = toPascalCase(parentTableName) + 'Id'
-	return `${targetPascal}By${fkPascal}`
 }

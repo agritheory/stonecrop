@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/schema",
+      "comment": "update get record return type",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/schema"
+}

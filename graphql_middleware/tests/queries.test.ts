@@ -7,12 +7,14 @@ import {
 	defaultOrderByTypeName,
 	defaultRecordArgName,
 	defaultRecordArgType,
+	defaultReverseConnectionName,
 	buildRecordQuery,
 	buildListQuery,
 	queryableFieldNames,
 	RELATION_FIELDTYPES,
 	extractSingleResult,
 	extractListResult,
+	mergeNestedResults,
 } from '../src/plugin/postgraphile'
 
 // ---------------------------------------------------------------------------
@@ -46,6 +48,43 @@ const mixedFieldsMeta: DoctypeMeta = {
 		recipeIngredientsByRecipeId: { target: 'recipe-ingredient', cardinality: 'noneOrMany' },
 	},
 }
+
+// Nested doctype fixtures
+const recipeMeta: DoctypeMeta = {
+	name: 'Recipe',
+	slug: 'recipe',
+	tableName: 'recipe',
+	fields: [
+		{ fieldname: 'id', fieldtype: 'Data', label: 'ID' },
+		{ fieldname: 'name', fieldtype: 'Data', label: 'Name' },
+		{ fieldname: 'status', fieldtype: 'Data', label: 'Status' },
+	],
+	links: {
+		tasks: { target: 'recipe-task', cardinality: 'noneOrMany', backlink: 'recipe' },
+		supersededBy: { target: 'recipe', cardinality: 'atMostOne', backlink: 'supersededBy', fetch: { method: 'sync' } },
+	},
+}
+
+const recipeTaskMeta: DoctypeMeta = {
+	name: 'RecipeTask',
+	slug: 'recipe-task',
+	tableName: 'recipe_task',
+	fields: [
+		{ fieldname: 'id', fieldtype: 'Data', label: 'ID' },
+		{ fieldname: 'name', fieldtype: 'Data', label: 'Name' },
+		{ fieldname: 'description', fieldtype: 'Data', label: 'Description' },
+	],
+	links: {
+		recipe: { target: 'recipe', cardinality: 'one', backlink: 'tasks', fetch: { method: 'sync' } },
+	},
+}
+
+const registry = new Map<string, DoctypeMeta>([
+	['recipe', recipeMeta],
+	['recipe-task', recipeTaskMeta],
+])
+
+const getMeta = (slug: string) => registry.get(slug)
 
 // ===========================================================================
 // Field filtering
@@ -89,7 +128,13 @@ describe('queryableFieldNames', () => {
 
 describe('buildRecordQuery', () => {
 	it('generates valid query with default arg name/type', () => {
-		const query = buildRecordQuery(scalarOnlyMeta, defaultRecordFieldName, defaultRecordArgName, defaultRecordArgType)
+		const query = buildRecordQuery(
+			scalarOnlyMeta,
+			defaultRecordFieldName,
+			defaultRecordArgName,
+			defaultRecordArgType,
+			getMeta
+		)
 		expect(query).toContain('query GetRecord($id: UUID!)')
 		expect(query).toContain('resourceById(id: $id)')
 		expect(query).toContain('id')
@@ -98,7 +143,13 @@ describe('buildRecordQuery', () => {
 	})
 
 	it('excludes relation fields from selection', () => {
-		const query = buildRecordQuery(mixedFieldsMeta, defaultRecordFieldName, defaultRecordArgName, defaultRecordArgType)
+		const query = buildRecordQuery(
+			mixedFieldsMeta,
+			defaultRecordFieldName,
+			defaultRecordArgName,
+			defaultRecordArgType,
+			getMeta
+		)
 		expect(query).toContain('title')
 		expect(query).toContain('rating')
 		expect(query).not.toContain('userByCreatedBy')
@@ -108,7 +159,7 @@ describe('buildRecordQuery', () => {
 	it('uses custom recordFieldName inflection', () => {
 		const customFieldName = (_t: string) => 'resourceByRowId'
 		const customArgName = (_t: string) => 'rowId'
-		const query = buildRecordQuery(scalarOnlyMeta, customFieldName, customArgName, defaultRecordArgType)
+		const query = buildRecordQuery(scalarOnlyMeta, customFieldName, customArgName, defaultRecordArgType, getMeta)
 		expect(query).toContain('query GetRecord($rowId: UUID!)')
 		expect(query).toContain('resourceByRowId(rowId: $rowId)')
 	})
@@ -117,7 +168,7 @@ describe('buildRecordQuery', () => {
 		const customFieldName = (_t: string) => 'resourceById'
 		const customArgName = (_t: string) => 'nodeId'
 		const customArgType = (_t: string) => 'ID!'
-		const query = buildRecordQuery(scalarOnlyMeta, customFieldName, customArgName, customArgType)
+		const query = buildRecordQuery(scalarOnlyMeta, customFieldName, customArgName, customArgType, getMeta)
 		expect(query).toContain('query GetRecord($nodeId: ID!)')
 		expect(query).toContain('resourceById(nodeId: $nodeId)')
 	})
@@ -125,7 +176,7 @@ describe('buildRecordQuery', () => {
 	it('row_id pattern: rowId arg with UUID! type', () => {
 		const rowIdFieldName = (t: string) => `${defaultRecordFieldName(t).replace(/ById$/, 'ByRowId')}`
 		const rowIdArgName = (_t: string) => 'rowId'
-		const query = buildRecordQuery(scalarOnlyMeta, rowIdFieldName, rowIdArgName, defaultRecordArgType)
+		const query = buildRecordQuery(scalarOnlyMeta, rowIdFieldName, rowIdArgName, defaultRecordArgType, getMeta)
 		expect(query).toContain('query GetRecord($rowId: UUID!)')
 		expect(query).toContain('resourceByRowId(rowId: $rowId)')
 	})
@@ -201,20 +252,20 @@ describe('extractSingleResult', () => {
 	it('extracts the record from the result using the field name', () => {
 		const record = { id: '1', name: 'Test' }
 		const result = { resourceById: record }
-		const extracted = extractSingleResult(result, scalarOnlyMeta, defaultRecordFieldName)
+		const extracted = extractSingleResult({ result, meta: scalarOnlyMeta, recordFieldName: defaultRecordFieldName })
 		expect(extracted).toBe(record)
 	})
 
 	it('returns undefined when field is absent', () => {
 		const result = {}
-		const extracted = extractSingleResult(result, scalarOnlyMeta, defaultRecordFieldName)
+		const extracted = extractSingleResult({ result, meta: scalarOnlyMeta, recordFieldName: defaultRecordFieldName })
 		expect(extracted).toBeUndefined()
 	})
 
 	it('uses custom recordFieldName inflection', () => {
 		const record = { id: '1' }
 		const result = { resourceByRowId: record }
-		const extracted = extractSingleResult(result, scalarOnlyMeta, () => 'resourceByRowId')
+		const extracted = extractSingleResult({ result, meta: scalarOnlyMeta, recordFieldName: () => 'resourceByRowId' })
 		expect(extracted).toBe(record)
 	})
 })
@@ -227,19 +278,319 @@ describe('extractListResult', () => {
 	it('extracts the nodes array from the connection', () => {
 		const nodes = [{ id: '1' }, { id: '2' }]
 		const result = { allResources: { nodes } }
-		const extracted = extractListResult(result, scalarOnlyMeta, defaultConnectionFieldName)
+		const extracted = extractListResult({
+			result,
+			meta: scalarOnlyMeta,
+			connectionFieldName: defaultConnectionFieldName,
+		})
 		expect(extracted).toEqual(nodes)
 	})
 
 	it('returns empty array when connection field is absent', () => {
 		const result = {}
-		const extracted = extractListResult(result, scalarOnlyMeta, defaultConnectionFieldName)
+		const extracted = extractListResult({
+			result,
+			meta: scalarOnlyMeta,
+			connectionFieldName: defaultConnectionFieldName,
+		})
 		expect(extracted).toEqual([])
 	})
 
 	it('returns empty array when nodes is absent', () => {
 		const result = { allResources: {} }
-		const extracted = extractListResult(result, scalarOnlyMeta, defaultConnectionFieldName)
+		const extracted = extractListResult({
+			result,
+			meta: scalarOnlyMeta,
+			connectionFieldName: defaultConnectionFieldName,
+		})
 		expect(extracted).toEqual([])
+	})
+})
+
+// ===========================================================================
+// defaultReverseConnectionName
+// ===========================================================================
+
+describe('defaultReverseConnectionName', () => {
+	it('derives correct PostGraphile connection name', () => {
+		const result = defaultReverseConnectionName({
+			doctype: 'recipe',
+			linkName: 'tasks',
+			backlink: 'recipe',
+			target: 'recipe-task',
+		})
+		expect(result).toBe('RecipeTasksByRecipeId')
+	})
+
+	it('handles self-referential links', () => {
+		const result = defaultReverseConnectionName({
+			doctype: 'recipe',
+			linkName: 'supersededBy',
+			backlink: 'supersededBy',
+			target: 'recipe',
+		})
+		expect(result).toBe('RecipesBySupersededById')
+	})
+
+	it('handles underscored table names', () => {
+		const result = defaultReverseConnectionName({
+			doctype: 'bom',
+			linkName: 'items',
+			backlink: 'bom',
+			target: 'bom-item',
+		})
+		expect(result).toBe('BomItemsByBomId')
+	})
+})
+
+describe('reverseConnectionName override', () => {
+	it('uses custom reverseConnectionName when provided', () => {
+		const customReverseConnection = ({ target }: { target: string }) => `Custom_${target}`
+		const query = buildRecordQuery(
+			recipeMeta,
+			defaultRecordFieldName,
+			defaultRecordArgName,
+			defaultRecordArgType,
+			getMeta,
+			{ includeNested: true },
+			customReverseConnection
+		)
+		// With custom reverseConnectionName, the query should use the custom format
+		expect(query).toContain('Custom_recipe-task')
+	})
+
+	it('uses default reverseConnectionName when no custom provided', () => {
+		const query = buildRecordQuery(
+			recipeMeta,
+			defaultRecordFieldName,
+			defaultRecordArgName,
+			defaultRecordArgType,
+			getMeta,
+			{ includeNested: true }
+		)
+		// Default uses PostGraphile Amber convention
+		expect(query).toContain('RecipeTasksByRecipeId')
+	})
+})
+
+// ===========================================================================
+// buildRecordQuery with nested
+// ===========================================================================
+
+describe('buildRecordQuery with includeNested', () => {
+	it('generates nested query for noneOrMany links', () => {
+		const query = buildRecordQuery(
+			recipeMeta,
+			defaultRecordFieldName,
+			defaultRecordArgName,
+			defaultRecordArgType,
+			getMeta,
+			{ includeNested: true }
+		)
+		expect(query).toContain('RecipeTasksByRecipeId')
+		expect(query).toContain('nodes')
+		expect(query).toContain('description')
+	})
+
+	it('generates direct sub-selection for atMostOne links', () => {
+		const query = buildRecordQuery(
+			recipeMeta,
+			defaultRecordFieldName,
+			defaultRecordArgName,
+			defaultRecordArgType,
+			getMeta,
+			{ includeNested: true }
+		)
+		expect(query).toContain('supersededBy {')
+		expect(query).not.toContain('supersededBysBy')
+	})
+
+	it('respects seen Set to prevent infinite recursion on circular links', () => {
+		const query = buildRecordQuery(
+			recipeMeta,
+			defaultRecordFieldName,
+			defaultRecordArgName,
+			defaultRecordArgType,
+			getMeta,
+			{ includeNested: true }
+		)
+		// recipe → recipe-task → recipe (seen, skipped)
+		expect(query).toContain('RecipeTasksByRecipeId')
+		// Should not include nested recipe sub-selection (circular)
+		expect((query.match(/recipeById/g) || []).length).toBe(1) // only the outermost
+	})
+
+	it('respects maxDepth parameter', () => {
+		const query = buildRecordQuery(
+			recipeMeta,
+			defaultRecordFieldName,
+			defaultRecordArgName,
+			defaultRecordArgType,
+			getMeta,
+			{ includeNested: true, maxDepth: 1 }
+		)
+		expect(query).toContain('RecipeTasksByRecipeId')
+		// RecipeTask's links should not be included (depth 1 limit)
+		expect(query).not.toContain('recipe {')
+	})
+
+	it('filters to named fieldnames when includeNested is string[]', () => {
+		const query = buildRecordQuery(
+			recipeMeta,
+			defaultRecordFieldName,
+			defaultRecordArgName,
+			defaultRecordArgType,
+			getMeta,
+			{ includeNested: ['supersededBy'] }
+		)
+		expect(query).toContain('supersededBy {')
+		expect(query).not.toContain('RecipeTasksByRecipeId')
+	})
+
+	it('skips lazy links', () => {
+		const lazyMeta: DoctypeMeta = {
+			...recipeMeta,
+			links: {
+				tasks: { target: 'recipe-task', cardinality: 'noneOrMany', fetch: { method: 'lazy' } },
+			},
+		}
+		const lazyRegistry = new Map<string, DoctypeMeta>([
+			['recipe', lazyMeta],
+			['recipe-task', recipeTaskMeta],
+		])
+		const query = buildRecordQuery(
+			lazyMeta,
+			defaultRecordFieldName,
+			defaultRecordArgName,
+			defaultRecordArgType,
+			(slug: string) => lazyRegistry.get(slug),
+			{ includeNested: true }
+		)
+		expect(query).not.toContain('RecipeTasksByRecipeId')
+		expect(query).toContain('name')
+		expect(query).toContain('status')
+	})
+
+	it('includes sync links', () => {
+		const query = buildRecordQuery(
+			recipeMeta,
+			defaultRecordFieldName,
+			defaultRecordArgName,
+			defaultRecordArgType,
+			getMeta,
+			{ includeNested: true }
+		)
+		expect(query).toContain('supersededBy {')
+	})
+
+	it('applies cardinality-based defaults: noneOrMany defaults to sync with limit 50', () => {
+		const defaultMeta: DoctypeMeta = {
+			...recipeMeta,
+			links: {
+				tasks: { target: 'recipe-task', cardinality: 'noneOrMany' },
+			},
+		}
+		const defaultRegistry = new Map<string, DoctypeMeta>([
+			['recipe', defaultMeta],
+			['recipe-task', recipeTaskMeta],
+		])
+		const query = buildRecordQuery(
+			defaultMeta,
+			defaultRecordFieldName,
+			defaultRecordArgName,
+			defaultRecordArgType,
+			(slug: string) => defaultRegistry.get(slug),
+			{ includeNested: true }
+		)
+		expect(query).toContain('RecipeTasksByRecipeId(first: 50)')
+	})
+
+	it('blockWorkflows true forces lazy link into query', () => {
+		const lazyWithBlockMeta: DoctypeMeta = {
+			...recipeMeta,
+			links: {
+				tasks: { target: 'recipe-task', cardinality: 'noneOrMany', fetch: { method: 'lazy' }, blockWorkflows: true },
+			},
+		}
+		const lazyWithBlockRegistry = new Map<string, DoctypeMeta>([
+			['recipe', lazyWithBlockMeta],
+			['recipe-task', recipeTaskMeta],
+		])
+		const query = buildRecordQuery(
+			lazyWithBlockMeta,
+			defaultRecordFieldName,
+			defaultRecordArgName,
+			defaultRecordArgType,
+			(slug: string) => lazyWithBlockRegistry.get(slug),
+			{ includeNested: true }
+		)
+		expect(query).toContain('RecipeTasksByRecipeId')
+	})
+})
+
+// ===========================================================================
+// mergeNestedResults
+// ===========================================================================
+
+describe('mergeNestedResults', () => {
+	it('flattens noneOrMany connection results', () => {
+		const record = {
+			id: 'r1',
+			name: 'Test Recipe',
+			RecipeTasksByRecipeId: {
+				nodes: [
+					{ id: 't1', name: 'Task 1' },
+					{ id: 't2', name: 'Task 2' },
+				],
+			},
+		}
+
+		const result = mergeNestedResults({ record, meta: recipeMeta, getMeta })
+
+		expect(result.tasks).toEqual([
+			{ id: 't1', name: 'Task 1' },
+			{ id: 't2', name: 'Task 2' },
+		])
+		expect(result.RecipeTasksByRecipeId).toBeUndefined()
+	})
+
+	it('leaves atMostOne links in place', () => {
+		const record = {
+			id: 'r1',
+			name: 'Sourdough',
+			supersededBy: { id: 'r2', name: 'Sourdough v2' },
+		}
+
+		const result = mergeNestedResults({ record, meta: recipeMeta, getMeta })
+
+		expect(result.supersededBy).toEqual({ id: 'r2', name: 'Sourdough v2' })
+	})
+
+	it('returns empty array for noneOrMany link with no nodes', () => {
+		const record = {
+			id: 'r1',
+			name: 'Test Recipe',
+			RecipeTasksByRecipeId: { nodes: [] },
+		}
+
+		const result = mergeNestedResults({ record, meta: recipeMeta, getMeta })
+
+		expect(result.tasks).toEqual([])
+	})
+
+	it('handles missing connection field', () => {
+		const record = {
+			id: 'r1',
+			name: 'Test Recipe',
+		}
+
+		const result = mergeNestedResults({ record, meta: recipeMeta, getMeta })
+
+		expect(result.tasks).toEqual([])
+	})
+
+	it('returns original record when no links', () => {
+		const result = mergeNestedResults({ record: { id: '1', name: 'Test' }, meta: scalarOnlyMeta, getMeta })
+		expect(result).toEqual({ id: '1', name: 'Test' })
 	})
 })

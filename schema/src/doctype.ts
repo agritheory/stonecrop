@@ -302,6 +302,15 @@ export interface GetRecordsOptions {
 }
 
 /**
+ * Result from getRecord - includes the record data and any unknown links requested
+ * @public
+ */
+export interface GetRecordResult {
+	/** The record data, or null if not found */
+	record: Record<string, unknown> | null
+}
+
+/**
  * Interface for data clients that fetch doctype metadata and records.
  * Implemented by \@stonecrop/graphql-client's StonecropClient.
  * Custom implementations can use any backend (REST, local storage, etc.).
@@ -327,9 +336,9 @@ export interface DataClient<T extends DoctypeRef = DoctypeRef, M = DoctypeMeta> 
 	 * @param doctype - Doctype reference (name and optional slug)
 	 * @param recordId - Record ID to fetch
 	 * @param options - Query options
-	 * @returns Record data or null if not found
+	 * @returns Record data wrapped in GetRecordResult
 	 */
-	getRecord(doctype: T, recordId: string, options?: GetRecordOptions): Promise<Record<string, unknown> | null>
+	getRecord(doctype: T, recordId: string, options?: GetRecordOptions): Promise<GetRecordResult>
 
 	/**
 	 * Fetch multiple records

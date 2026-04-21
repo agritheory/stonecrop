@@ -235,10 +235,6 @@
       "allowedCategories": [ "prototype" ]
     },
     {
-      "name": "decimal.js",
-      "allowedCategories": [ "utilities" ]
-    },
-    {
       "name": "eslint",
       "allowedCategories": [ "production", "prototype", "utilities" ]
     },
@@ -281,10 +277,6 @@
     {
       "name": "graphql-middleware",
       "allowedCategories": [ "production", "prototype" ]
-    },
-    {
-      "name": "graphql-request",
-      "allowedCategories": [ "utilities" ]
     },
     {
       "name": "graphql-tag",

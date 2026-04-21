@@ -25,53 +25,25 @@ Vue component exported from @stonecrop/graphql_client.
 import { DoctypeMeta } from '@stonecrop/graphql_client'
 ```
 
-## Functions
-
-### buildListQuery
-
-Build a GraphQL connection query to fetch a list of records.
-
-Only declares variables ($limit, $offset, $orderBy) that are actually used, avoiding GraphQL spec violations from unused variable declarations.
-
-**Signature:**
-
-```typescript
-export declare function buildListQuery(meta: DoctypeMeta, connectionFieldName: (t: string) => string, orderByTypeName: (t: string) => string, options?: GetRecordsOptions): string;
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| meta | `DoctypeMeta` | Doctype metadata |
-| connectionFieldName | `(t: string) => string` | Function to derive the connection field name from a table name |
-| orderByTypeName | `(t: string) => string` | Function to derive the order-by type name from a table name |
-| options | `GetRecordsOptions` | Query options (limit, offset, orderBy) |
-
-### buildRecordQuery
-
-Build a GraphQL query string from doctype metadata.
-
-Generates scalar field selections. When `includeNested` is set, recursively includes descendant link sub-selections derived from the doctype's `links` object.
-
-**Signature:**
-
-```typescript
-export declare function buildRecordQuery(meta: DoctypeMeta, recordFieldName: (t: string) => string, recordArgName: (t: string) => string, recordArgType: (t: string) => string, registry?: Map<string, DoctypeMeta>, options?: GetRecordOptions): string;
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| meta | `DoctypeMeta` | Doctype metadata to build the query from |
-| recordFieldName | `(t: string) => string` | Function to derive the query field name from a table name |
-| recordArgName | `(t: string) => string` | Function to derive the argument name from a table name |
-| recordArgType | `(t: string) => string` | Function to derive the argument type from a table name |
-| registry | `Map<string, DoctypeMeta>` | Doctype registry for resolving link targets. Required when includeNested is set. |
-| options | `GetRecordOptions` | Query options (includeNested, maxDepth) |
-
 ## Interfaces
+
+### GetRecordResult
+
+Result from getRecord - includes the record data and any unknown links requested
+
+**Definition:**
+
+```typescript
+export interface GetRecordResult {
+  unknownLinks?: string[];
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| unknownLinks? | `string[]` | Link names that were requested but don't exist in the doctype schema |
 
 ### StonecropClientOptions
 
@@ -83,7 +55,6 @@ Options for creating a Stonecrop client
 export interface StonecropClientOptions {
   endpoint: string;
   headers?: Record<string, string>;
-  registry?: Map<string, DoctypeMeta>;
 }
 ```
 
@@ -93,70 +64,14 @@ export interface StonecropClientOptions {
 |----------|------|-------------|
 | endpoint | `string` | GraphQL endpoint URL |
 | headers? | `Record<string, string>` | Additional HTTP headers to include in requests |
-| registry? | `Map<string, DoctypeMeta>` | Doctype registry for nested query building |
-
-## Type Aliases
-
-### Meta
-
-The type of the response from the `getMeta` query.
-
-**Definition:**
-
-```typescript
-export type Meta = {
-    variables: {
-        doctype: string;
-    };
-    response: {
-        getMeta: MetaResponse;
-    };
-};
-```
-
-### MetaParser
-
-The type of the response from the `getMeta` query.
-
-**Definition:**
-
-```typescript
-export type MetaParser = {
-    data: Meta['response'];
-};
-```
-
-### MetaResponse
-
-The type of the response from the `getRecords` query.
-
-**Definition:**
-
-```typescript
-export type MetaResponse = {
-    id: string;
-    name: string;
-    workflow: {
-        id: string;
-        name: string;
-        machineId?: string;
-    };
-    schema: {
-        id: string;
-        label: string;
-    }[];
-    actions: {
-        id: string;
-        eventName: string;
-    }[];
-};
-```
 
 ## Classes
 
 ### StonecropClient
 
-Client for interacting with Stonecrop GraphQL API
+Client for interacting with Stonecrop GraphQL API.
+
+Acts as a transport layer — it passes requests to the middleware and returns merged results. Does not construct queries itself.
 
 **Constructor:**
 
@@ -168,7 +83,9 @@ new StonecropClient(options: StonecropClientOptions)
 
 #### clearMetaCache
 
-Clear the cached doctype metadata
+Clear the cached doctype metadata.
+
+Call this if the server-side doctype schema has changed and you need to fetch fresh metadata (e.g., after adding a new field).
 
 ```typescript
 clearMetaCache(): void
@@ -200,10 +117,10 @@ getMeta(context: DoctypeContext): Promise<DoctypeMeta | null>
 
 Get a single record by ID.
 
-When `includeNested` is set, builds a query with sub-selections for descendant links and returns ancestor + merged descendants. When omitted, returns flat scalar data.
+Routes through the stonecropRecord resolver which handles nested data fetching based on the includeNested option.
 
 ```typescript
-getRecord(doctype: DoctypeRef, recordId: string, options: GetRecordOptions): Promise<Record<string, unknown> | null>
+getRecord(doctype: DoctypeRef, recordId: string, options: GetRecordOptions): Promise<GetRecordResult>
 ```
 
 **Parameters:**
@@ -216,7 +133,9 @@ getRecord(doctype: DoctypeRef, recordId: string, options: GetRecordOptions): Pro
 
 #### getRecords
 
-Get multiple records with optional filtering and pagination
+Get multiple records with optional filtering and pagination.
+
+Returns flat arrays — the middleware merges connection format ( nodes: [...] ) into plain arrays before returning.
 
 ```typescript
 getRecords(doctype: DoctypeRef, options: GetRecordsOptions): Promise<Record<string, unknown>[]>
@@ -231,7 +150,7 @@ getRecords(doctype: DoctypeRef, options: GetRecordsOptions): Promise<Record<stri
 
 #### mutate
 
-Execute a GraphQL mutation
+Execute a GraphQL mutation. Delegates to query() since both use POST.
 
 ```typescript
 mutate(mutation: string, variables: Record<string, unknown>): Promise<T>
@@ -246,7 +165,7 @@ mutate(mutation: string, variables: Record<string, unknown>): Promise<T>
 
 #### query
 
-Execute a GraphQL query
+Execute a GraphQL query against the configured endpoint.
 
 ```typescript
 query(query: string, variables: Record<string, unknown>): Promise<T>
@@ -278,40 +197,4 @@ runAction(doctype: DoctypeRef, action: string, args: unknown[]): Promise<{
 | doctype | `DoctypeRef` | Doctype reference (name and optional slug) |
 | action | `string` | Action name to execute |
 | args | `unknown[]` | Action arguments |
-
-## Variables
-
-### methods
-
-Get meta information for a doctype
-
-**Type:**
-
-```typescript
-export const methods: {
-    getMeta: (doctype: string, url?: string) => Promise<MetaResponse>;
-}
-```
-
-### queries
-
-Queries for the GraphQL API.
-
-**Type:**
-
-```typescript
-export const queries: {
-    getMeta: string;
-}
-```
-
-### typeDefs
-
-This is the schema for the GraphQL API.
-
-**Type:**
-
-```typescript
-export const typeDefs: string
-```
 

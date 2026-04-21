@@ -1,154 +1,59 @@
 # @stonecrop/graphql-client
 
-Client-side TypeScript implementation of the `DataClient` interface for Stonecrop's PostGraphile-based GraphQL API. `StonecropClient` handles HTTP transport, response unwrapping, query building, and metadata caching so application code works with plain TypeScript objects.
+Transport layer for Stonecrop GraphQL APIs. Handles HTTP communication, response parsing, and metadata caching.
 
-## Installation
+## Responsibilities
 
-```bash
-pnpm add @stonecrop/graphql-client
-```
+**Transport** — The client sends requests and parses responses. It doesn't construct queries.
+
+**Caching** — Metadata is cached in memory after first fetch.
+
+**Contract** — The client expects the server to expose these operations:
+
+| Operation | Arguments | Returns |
+|-----------|-----------|---------|
+| `stonecropRecord` | `doctype`, `id`, `options?` | `{ record, unknownLinks? }` |
+| `stonecropRecords` | `doctype`, `filters?`, `orderBy?`, `limit?`, `offset?` | `{ data[], count }` |
+| `stonecropMeta` | `doctype` | `DoctypeMeta` |
+| `stonecropAllMeta` | — | `DoctypeMeta[]` |
+| `stonecropAction` | `doctype`, `action`, `args?` | `{ success, data, error }` |
+
+The client has no opinions about how the server implements these — naming conventions, query construction, nested data merging are all the server's concern.
+
+## Assumptions
+
+- All record operations accept a `doctype` string argument
+- `stonecropRecord` accepts `options: { includeNested?, maxDepth? }`
+- The server handles query building and field naming
 
 ## Usage
 
 ```typescript
 import { StonecropClient } from '@stonecrop/graphql-client'
-import { Registry, getStonecrop } from '@stonecrop/stonecrop'
-import type { DoctypeMeta } from '@stonecrop/schema'
-
-const registry = new Registry()
-// ... register doctypes ...
-
-// Build a DoctypeMeta map — StonecropClient expects DoctypeMeta, not Doctype instances
-const metaMap = new Map<string, DoctypeMeta>()
-for (const [slug, doctype] of Object.entries(registry.registry)) {
-  metaMap.set(slug, {
-    name: doctype.doctype,
-    slug,
-    tableName: slug.replace(/-/g, '_'),
-    fields: doctype.getSchemaArray(),
-    links: doctype.links || {},
-  })
-}
 
 const client = new StonecropClient({
   endpoint: 'http://localhost:4000/graphql',
   headers: { Authorization: `Bearer ${token}` }, // optional
-  registry: metaMap, // for nested query support
 })
 
-// Wire up the client to the Stonecrop instance
-const stonecrop = getStonecrop()
-if (stonecrop) {
-  stonecrop.setClient(client)
-}
-```
+// Fetch a record
+const result = await client.getRecord({ name: 'Recipe' }, 'r1')
+result.record  // plain object with the record fields
+result.unknownLinks  // links requested but not found in schema
 
-### Metadata
-
-```typescript
-// Fetch DoctypeMeta for a single doctype (cached after first call)
-const meta = await client.getMeta({ doctype: 'SalesOrder' })
-
-// Fetch all registered doctypes
-const allMeta = await client.getAllMeta()
-
-// Bust the in-memory cache
-client.clearMetaCache()
-```
-
-### Reading Records
-
-```typescript
-import { GetRecordOptions, GetRecordsOptions } from '@stonecrop/schema'
-
-// Single record by ID (flat — scalar fields only)
-const order = await client.getRecord({ name: 'SalesOrder' }, 'uuid-here')
-
-// Single record with all nested descendant links
-const recipe = await client.getRecord({ name: 'Recipe' }, 'r1', {
+// Fetch with nested links
+const withNested = await client.getRecord({ name: 'Recipe' }, 'r1', {
   includeNested: true,
 })
 
-// Single record with specific nested links only
-const recipe = await client.getRecord({ name: 'Recipe' }, 'r1', {
-  includeNested: ['tasks'],
-})
-
-// Single record with limited nesting depth
-const recipe = await client.getRecord({ name: 'Recipe' }, 'r1', {
-  includeNested: true,
-  maxDepth: 2,
-})
-
-// List with optional filtering and pagination
-const orders = await client.getRecords(
-  { name: 'SalesOrder' },
-  {
-    filters: { status: 'Draft' },
-    orderBy: 'createdAt',
-    limit: 20,
-    offset: 0,
-  }
-)
+// Custom queries
+const custom = await client.query<{ myData: unknown[] }>(`query { myData { id } }`)
 ```
 
-### Actions
+## Data Shapes
 
-```typescript
-// Dispatch any registered action
-const result = await client.runAction({ name: 'SalesOrder' }, 'submit', ['uuid-here'])
-// → { success: boolean; data: unknown; error: string | null }
-```
+- `getRecord` returns `{ record: Record<string, unknown> | null, unknownLinks?: string[] }`. The `record` field contains the record's fields. Nested links are merged into the same object when `includeNested` is used.
+- `getRecords` returns `Record<string, unknown>[]` — an array of flat objects. Pagination metadata (`count`) is available in the server response but not currently exposed by the client.
+- `unknownLinks` will contain link names you requested that don't exist in the doctype schema — useful for catching typos.
 
-### Raw GraphQL
-
-For queries or mutations not covered by the helpers:
-
-```typescript
-const data = await client.query<{ myTable: unknown[] }>(`query { myTable { id name } }`)
-
-const result = await client.mutate<{ createFoo: unknown }>(
-  `mutation CreateFoo($input: CreateFooInput!) { createFoo(input: $input) { foo { id } } }`,
-  { input: { foo: { name: 'bar' } } }
-)
-```
-
-### How Nested Queries Work
-
-When `includeNested` is set on `getRecord`:
-
-1. The client fetches doctype metadata (including `links`)
-2. Builds a GraphQL query with sub-selections for descendant links
-3. Connection fields (`noneOrMany`/`atLeastOne`) emit `{ nodes { ... } }` sub-selections
-4. Direct fields (`one`/`atMostOne`) emit object sub-selections
-5. Results with connection fields are merged to flat arrays
-
-Example query generated for a Recipe with `tasks` (noneOrMany) and `supersededBy` (atMostOne):
-
-```graphql
-query GetRecord($id: UUID!) {
-  recipeById(id: $id) {
-    id
-    name
-    status
-    RecipeTasksByRecipeId {
-      nodes {
-        id
-        name
-        description
-      }
-    }
-    supersededBy {
-      id
-      name
-      status
-    }
-  }
-}
-```
-
-The response is merged so `result.tasks` is a flat array and `result.supersededBy` is a direct object.
-
-## References
-
-For full method signatures and parameter details, see [API Reference](./api.md).
+See [API Reference](./api.md) for full method signatures.

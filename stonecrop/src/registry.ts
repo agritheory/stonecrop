@@ -1,5 +1,5 @@
 import type { SchemaTypes, TableSchema } from '@stonecrop/aform'
-import type { DoctypeMeta, LinkDeclaration } from '@stonecrop/schema'
+import type { LinkDeclaration } from '@stonecrop/schema'
 import { Router } from 'vue-router'
 
 import Doctype from './doctype'
@@ -415,44 +415,6 @@ export default class Registry {
 				}
 			}
 		}
-	}
-
-	/**
-	 * Convert the registry to a Map of DoctypeMeta objects for use with StonecropClient.
-	 *
-	 * This allows passing a Registry instance to StonecropClient by deriving the
-	 * Map\<string, DoctypeMeta\> that StonecropClient needs for building nested GraphQL queries.
-	 *
-	 * @returns Map of doctype metadata keyed by doctype name
-	 *
-	 * @example
-	 * ```typescript
-	 * const registry = new Registry()
-	 * registry.addDoctype(Doctype.fromObject(customerSchema))
-	 * registry.addDoctype(Doctype.fromObject(orderSchema))
-	 *
-	 * const client = new StonecropClient({
-	 *   endpoint: '/graphql',
-	 *   registry: registry.toMetaMap(),  // Convert once, use with client
-	 * })
-	 * ```
-	 *
-	 * @public
-	 */
-	toMetaMap(): Map<string, DoctypeMeta> {
-		const map = new Map<string, DoctypeMeta>()
-		for (const [slug, doctype] of Object.entries(this.registry)) {
-			const fields = doctype.schema ? doctype.schema.toArray() : []
-			const meta: DoctypeMeta = {
-				name: doctype.name,
-				slug: slug,
-				fields: fields as DoctypeMeta['fields'],
-				links: doctype.links,
-				workflow: doctype.workflow as DoctypeMeta['workflow'],
-			}
-			map.set(doctype.name, meta)
-		}
-		return map
 	}
 
 	// TODO: should we allow clearing the registry at all?
