@@ -195,6 +195,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions): Graphile
 						orderBy: String
 						limit: Int
 						offset: Int
+						options: JSON
 					): StonecropRecordsResult
 				}
 
@@ -279,7 +280,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions): Graphile
 							)
 						},
 
-						stonecropRecords(_: any, { $doctype, $filters, $orderBy, $limit, $offset }: any) {
+						stonecropRecords(_: any, { $doctype, $filters, $orderBy, $limit, $offset, $options }: any) {
 							return loadOne(
 								object({
 									doctype: $doctype,
@@ -287,6 +288,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions): Graphile
 									orderBy: $orderBy,
 									limit: $limit,
 									offset: $offset,
+									options: $options,
 								}),
 								async (specs: readonly any[]) => {
 									return await Promise.all(
@@ -306,6 +308,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions): Graphile
 													limit: spec.limit,
 													offset: spec.offset,
 													orderBy: spec.orderBy,
+													options: spec.options,
 												},
 												connectionFieldName,
 												orderByTypeName

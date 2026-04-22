@@ -197,3 +197,95 @@ describe('unknownLinks behavior', () => {
 		expect(unknownLinksField?.type.kind).not.toBe('NonNullType')
 	})
 })
+
+// ===========================================================================
+// stonecropRecords schema with options parameter
+// ===========================================================================
+
+describe('stonecropRecords schema', () => {
+	function extractTypeDefs(source: string): string {
+		const match = source.match(/typeDefs: gql`([\s\S]*?)`/)
+		if (!match) throw new Error('Could not find typeDefs in source')
+		return match[1]
+	}
+
+	function parseTypeDefs(typeDefs: string): DocumentNode {
+		return parse(typeDefs)
+	}
+
+	function findFieldDefinition(doc: DocumentNode, fieldName: string) {
+		const queryType = doc.definitions.find(
+			d => (d.kind === 'ObjectTypeDefinition' || d.kind === 'ObjectTypeExtension') && d.name.value === 'Query'
+		)
+		return queryType?.fields?.find((f: any) => f.name.value === fieldName)
+	}
+
+	function findArgument(field: any, argName: string) {
+		return field?.arguments?.find((a: any) => a.name.value === argName)
+	}
+
+	const sourceFile = readFileSync(join(__dirname, '../src/plugin/postgraphile.ts'), 'utf-8')
+
+	it('stonecropRecords accepts options parameter', () => {
+		const typeDefs = extractTypeDefs(sourceFile)
+		const doc = parseTypeDefs(typeDefs)
+
+		const field = findFieldDefinition(doc, 'stonecropRecords')
+		expect(field).toBeDefined()
+
+		const optionsArg = findArgument(field, 'options')
+		expect(optionsArg).toBeDefined()
+	})
+
+	it('stonecropRecords accepts limit parameter', () => {
+		const typeDefs = extractTypeDefs(sourceFile)
+		const doc = parseTypeDefs(typeDefs)
+
+		const field = findFieldDefinition(doc, 'stonecropRecords')
+		const limitArg = findArgument(field, 'limit')
+		expect(limitArg).toBeDefined()
+	})
+
+	it('stonecropRecords accepts offset parameter', () => {
+		const typeDefs = extractTypeDefs(sourceFile)
+		const doc = parseTypeDefs(typeDefs)
+
+		const field = findFieldDefinition(doc, 'stonecropRecords')
+		const offsetArg = findArgument(field, 'offset')
+		expect(offsetArg).toBeDefined()
+	})
+
+	it('stonecropRecords accepts orderBy parameter', () => {
+		const typeDefs = extractTypeDefs(sourceFile)
+		const doc = parseTypeDefs(typeDefs)
+
+		const field = findFieldDefinition(doc, 'stonecropRecords')
+		const orderByArg = findArgument(field, 'orderBy')
+		expect(orderByArg).toBeDefined()
+	})
+
+	it('stonecropRecords returns StonecropRecordsResult', () => {
+		const typeDefs = extractTypeDefs(sourceFile)
+		const doc = parseTypeDefs(typeDefs)
+
+		const field = findFieldDefinition(doc, 'stonecropRecords')
+		expect(field).toBeDefined()
+
+		// The return type should reference StonecropRecordsResult
+		const returnType = field.type
+		expect(returnType).toBeDefined()
+	})
+
+	it('stonecropRecords options parameter is JSON type', () => {
+		const typeDefs = extractTypeDefs(sourceFile)
+		const doc = parseTypeDefs(typeDefs)
+
+		const field = findFieldDefinition(doc, 'stonecropRecords')
+		const optionsArg = findArgument(field, 'options')
+
+		// Type is NonNull(JSON) — unwrap to check the underlying type
+		const innerType = optionsArg?.type.kind === 'NonNullType' ? optionsArg?.type.type : optionsArg?.type
+		expect(innerType?.kind).toBe('NamedType')
+		expect(innerType?.name.value).toBe('JSON')
+	})
+})

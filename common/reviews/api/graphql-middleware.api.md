@@ -26,6 +26,7 @@ export function buildListQuery(meta: DoctypeMeta, args: BuildListQueryArgs, conn
 export interface BuildListQueryArgs {
     limit?: number;
     offset?: number;
+    options?: Record<string, unknown>;
     orderBy?: string;
 }
 

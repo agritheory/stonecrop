@@ -85,6 +85,8 @@ export interface BuildListQueryArgs {
 	offset?: number
 	/** OrderBy specification */
 	orderBy?: string
+	/** Query options (e.g., includeNested) */
+	options?: Record<string, unknown>
 }
 
 /**

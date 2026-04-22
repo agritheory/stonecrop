@@ -71,7 +71,14 @@ export const typeDefs = gql`
 		stonecropMeta(doctype: String!): StonecropDoctypeMeta
 		stonecropAllMeta: [StonecropDoctypeMeta!]!
 		stonecropRecord(doctype: String!, id: String!, options: JSON): StonecropRecordResult
-		stonecropRecords(doctype: String!, filters: JSON, orderBy: String, limit: Int, offset: Int): StonecropRecordsResult
+		stonecropRecords(
+			doctype: String!
+			filters: JSON
+			orderBy: String
+			limit: Int
+			offset: Int
+			options: JSON
+		): StonecropRecordsResult
 	}
 
 	extend type Mutation {

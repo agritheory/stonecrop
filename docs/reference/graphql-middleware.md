@@ -454,6 +454,7 @@ Arguments for buildListQuery
 export interface BuildListQueryArgs {
   limit?: number;
   offset?: number;
+  options?: Record<string, unknown>;
   orderBy?: string;
 }
 ```
@@ -464,6 +465,7 @@ export interface BuildListQueryArgs {
 |----------|------|-------------|
 | limit? | `number` | Maximum number of records to return |
 | offset? | `number` | Number of records to skip |
+| options? | `Record<string, unknown>` | Query options (e.g., includeNested) |
 | orderBy? | `string` | OrderBy specification |
 
 ### BuildRecordQueryOptions
