@@ -14,13 +14,14 @@ import { ValidationError } from '@stonecrop/schema';
 export interface ActionContext {
     [key: string]: unknown;
     doctype: DoctypeMeta;
-    executor: GraphQLExecutor;
 }
 
 // @public
 export type ActionHandler = (args: unknown[], context: ActionContext) => Promise<unknown>;
 
-// @public
+// Warning: (ae-internal-missing-underscore) The name "buildListQuery" should be prefixed with an underscore because the declaration is marked as @internal
+//
+// @internal
 export function buildListQuery(meta: DoctypeMeta, args: BuildListQueryArgs, connectionFieldName: (t: string) => string, orderByTypeName: (t: string) => string): string;
 
 // @public
@@ -31,7 +32,9 @@ export interface BuildListQueryArgs {
     orderBy?: string;
 }
 
-// @public
+// Warning: (ae-internal-missing-underscore) The name "buildRecordQuery" should be prefixed with an underscore because the declaration is marked as @internal
+//
+// @internal
 export function buildRecordQuery(meta: DoctypeMeta, recordFieldName: (t: string) => string, recordArgName: (t: string) => string, recordArgType: (t: string) => string, getMeta: (slug: string) => DoctypeMeta | undefined, options?: BuildRecordQueryOptions, reverseConnectionNameFn?: (params: ReverseConnectionParams) => string): string;
 
 // @public
@@ -50,27 +53,39 @@ export function clearHandlers(): void;
 export function clearRegistry(): void;
 
 // @public
-export const createStonecropPlugin: (options: StonecropPluginOptions) => GraphileConfig_2.Plugin;
+export const createStonecropPlugin: (options?: StonecropPluginOptions) => GraphileConfig_2.Plugin;
 
 // @public
 export const createStonecropPreset: (options?: StonecropPresetOptions) => GraphileConfig_2.Preset;
 
-// @public
+// Warning: (ae-internal-missing-underscore) The name "defaultConnectionFieldName" should be prefixed with an underscore because the declaration is marked as @internal
+//
+// @internal (undocumented)
 export function defaultConnectionFieldName(tableName: string): string;
 
-// @public
+// Warning: (ae-internal-missing-underscore) The name "defaultOrderByTypeName" should be prefixed with an underscore because the declaration is marked as @internal
+//
+// @internal (undocumented)
 export function defaultOrderByTypeName(tableName: string): string;
 
-// @public
+// Warning: (ae-internal-missing-underscore) The name "defaultRecordArgName" should be prefixed with an underscore because the declaration is marked as @internal
+//
+// @internal (undocumented)
 export function defaultRecordArgName(_tableName: string): string;
 
-// @public
+// Warning: (ae-internal-missing-underscore) The name "defaultRecordArgType" should be prefixed with an underscore because the declaration is marked as @internal
+//
+// @internal (undocumented)
 export function defaultRecordArgType(_tableName: string): string;
 
-// @public
+// Warning: (ae-internal-missing-underscore) The name "defaultRecordFieldName" should be prefixed with an underscore because the declaration is marked as @internal
+//
+// @internal (undocumented)
 export function defaultRecordFieldName(tableName: string): string;
 
-// @public
+// Warning: (ae-internal-missing-underscore) The name "defaultReverseConnectionName" should be prefixed with an underscore because the declaration is marked as @internal
+//
+// @internal (undocumented)
 export function defaultReverseConnectionName(params: {
     doctype: string;
     linkName: string;
@@ -89,7 +104,9 @@ export class DoctypeValidationError extends Error {
     readonly file: string;
 }
 
-// @public
+// Warning: (ae-internal-missing-underscore) The name "extractListResult" should be prefixed with an underscore because the declaration is marked as @internal
+//
+// @internal
 export function extractListResult(params: ExtractListResultParams): unknown[];
 
 // @public
@@ -99,7 +116,9 @@ export interface ExtractListResultParams {
     result: unknown;
 }
 
-// @public
+// Warning: (ae-internal-missing-underscore) The name "extractSingleResult" should be prefixed with an underscore because the declaration is marked as @internal
+//
+// @internal
 export function extractSingleResult(params: ExtractSingleResultParams): unknown;
 
 // @public
@@ -122,12 +141,6 @@ export function getHandler(name: string): ActionHandler | undefined;
 export function getMeta(name: string): DoctypeMeta | undefined;
 
 // @public
-export interface GraphQLExecutor {
-    mutate<T = unknown>(mutation: string, variables?: Record<string, unknown>): Promise<T>;
-    query<T = unknown>(query: string, variables?: Record<string, unknown>): Promise<T>;
-}
-
-// @public
 export function hasHandler(name: string): boolean;
 
 // @public
@@ -147,7 +160,9 @@ export interface LoadDoctypesOptions {
 
 export { makePgService }
 
-// @public
+// Warning: (ae-internal-missing-underscore) The name "mergeNestedResults" should be prefixed with an underscore because the declaration is marked as @internal
+//
+// @internal
 export function mergeNestedResults(params: MergeNestedResultsParams): Record<string, unknown>;
 
 // @public
@@ -158,7 +173,9 @@ export interface MergeNestedResultsParams {
     reverseConnectionNameFn?: (params: ReverseConnectionParams) => string;
 }
 
-// @public
+// Warning: (ae-internal-missing-underscore) The name "queryableFieldNames" should be prefixed with an underscore because the declaration is marked as @internal
+//
+// @internal
 export function queryableFieldNames(meta: DoctypeMeta): string;
 
 // @public
@@ -195,7 +212,6 @@ export interface StonecropInflectionConfig {
 
 // @public
 export interface StonecropPluginOptions {
-    executor: GraphQLExecutor;
     inflection?: StonecropInflectionConfig;
 }
 

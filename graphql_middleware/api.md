@@ -36,47 +36,6 @@ export { StonecropPreset }
 
 ## Functions
 
-### buildListQuery
-
-Build a GraphQL connection query to fetch a list of records. Only declares variables ($limit, $offset, $orderBy) that are actually used in the query, avoiding GraphQL spec §5.8.3 violations from unused variable declarations. Excludes Link and Doctype relation fields from the selection set.
-
-**Signature:**
-
-```typescript
-declare function buildListQuery(meta: DoctypeMeta, args: BuildListQueryArgs, connectionFieldName: (t: string) => string, orderByTypeName: (t: string) => string): string;
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| meta | `DoctypeMeta` |  |
-| args | `BuildListQueryArgs` |  |
-| connectionFieldName | `(t: string) => string` |  |
-| orderByTypeName | `(t: string) => string` |  |
-
-### buildRecordQuery
-
-Build a GraphQL query to fetch a single record by ID. When includeNested is set, recursively includes descendant link sub-selections.
-
-**Signature:**
-
-```typescript
-declare function buildRecordQuery(meta: DoctypeMeta, recordFieldName: (t: string) => string, recordArgName: (t: string) => string, recordArgType: (t: string) => string, getMeta: (slug: string) => DoctypeMeta | undefined, options?: BuildRecordQueryOptions, reverseConnectionNameFn?: (params: ReverseConnectionParams) => string): string;
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| meta | `DoctypeMeta` |  |
-| recordFieldName | `(t: string) => string` |  |
-| recordArgName | `(t: string) => string` |  |
-| recordArgType | `(t: string) => string` |  |
-| getMeta | `(slug: string) => DoctypeMeta \| undefined` |  |
-| options | `BuildRecordQueryOptions` |  |
-| reverseConnectionNameFn | `(params: ReverseConnectionParams) => string` |  |
-
 ### clearHandlers
 
 Clear all registered handlers
@@ -99,19 +58,19 @@ export declare function clearRegistry(): void;
 
 ### createStonecropPlugin
 
-Create a PostGraphile plugin that extends the GraphQL schema with Stonecrop functionality
+Create a PostGraphile plugin that extends the GraphQL schema with Stonecrop functionality. No arguments required — plan step wiring is entirely internal using pgResources from build.
 
 **Signature:**
 
 ```typescript
-createStonecropPlugin: (options: StonecropPluginOptions) => GraphileConfig.Plugin
+createStonecropPlugin: (options?: StonecropPluginOptions) => GraphileConfig.Plugin
 ```
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| options | `StonecropPluginOptions` | Plugin configuration options |
+| options | `StonecropPluginOptions` |  |
 
 ### createStonecropPreset
 
@@ -130,139 +89,6 @@ createStonecropPreset: (options?: StonecropPresetOptions) => GraphileConfig.Pres
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | options | `StonecropPresetOptions` | Optional configuration for field casing |
-
-### defaultConnectionFieldName
-
-Amber default: sales_orders → allSalesOrders
-
-**Signature:**
-
-```typescript
-declare function defaultConnectionFieldName(tableName: string): string;
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| tableName | `string` |  |
-
-### defaultOrderByTypeName
-
-Amber default: sales_orders → SalesOrdersOrderBy
-
-**Signature:**
-
-```typescript
-declare function defaultOrderByTypeName(tableName: string): string;
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| tableName | `string` |  |
-
-### defaultRecordArgName
-
-Default PK argument name: 'id' (standard Relay Global ID pattern). Override via `StonecropInflectionConfig.recordArgName` when using row_id columns; PostGraphile Amber generates `rowId: UUID!` for those fields.
-
-**Signature:**
-
-```typescript
-declare function defaultRecordArgName(_tableName: string): string;
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| _tableName | `string` |  |
-
-### defaultRecordArgType
-
-Default PK argument type: 'UUID!' (PostGraphile Amber default for UUID PKs). Override via `StonecropInflectionConfig.recordArgType` when using non-UUID PKs such as integer serials or Relay Global IDs ('ID!').
-
-**Signature:**
-
-```typescript
-declare function defaultRecordArgType(_tableName: string): string;
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| _tableName | `string` |  |
-
-### defaultRecordFieldName
-
-Amber default: sales_orders → salesOrderById Uses `pluralize` for proper singularization of irregular plurals. Override via `StonecropInflectionConfig.recordFieldName` for non-standard PK columns.
-
-**Signature:**
-
-```typescript
-declare function defaultRecordFieldName(tableName: string): string;
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| tableName | `string` |  |
-
-### defaultReverseConnectionName
-
-Default reverse connection name: derives PostGraphile's connection field convention. PostGraphile convention: `{targetPlural}By{FkColumnPascal}Id` - When backlink is defined: FK column is derived from the backlink field name - When backlink is absent: FK column is derived from the parent doctype's table name
-
-**Signature:**
-
-```typescript
-declare function defaultReverseConnectionName(params: {
-    doctype: string;
-    linkName: string;
-    backlink?: string;
-    target: string;
-}): string;
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| params | `{ doctype: string; linkName: string; backlink?: string; target: string; }` |  |
-
-### extractListResult
-
-Extract the list of nodes from a PostGraphile connection query result. Returns an empty array if the connection field is absent.
-
-**Signature:**
-
-```typescript
-declare function extractListResult(params: ExtractListResultParams): unknown[];
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| params | `ExtractListResultParams` |  |
-
-### extractSingleResult
-
-Extract a single record from a PostGraphile query result using the record field name.
-
-**Signature:**
-
-```typescript
-declare function extractSingleResult(params: ExtractSingleResultParams): unknown;
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| params | `ExtractSingleResultParams` |  |
 
 ### getAllMeta
 
@@ -372,38 +198,6 @@ export declare function loadDoctypesFromObject(doctypes: Record<string, unknown>
 | doctypes | `Record<string, unknown>` | Object mapping doctype names to doctype definitions |
 | options | `LoadDoctypesOptions` | Options for loading doctypes (continueOnError, onError callback) |
 
-### mergeNestedResults
-
-Merge nested connection results into flat arrays. For `noneOrMany`/`atLeastOne` links, the query returns `{ nodes: [...] }`. This flattens them to just `[]` for easier consumption.
-
-**Signature:**
-
-```typescript
-declare function mergeNestedResults(params: MergeNestedResultsParams): Record<string, unknown>;
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| params | `MergeNestedResultsParams` |  |
-
-### queryableFieldNames
-
-Filter fields to only those directly queryable as scalars, excluding Link and Doctype relation fields that require GraphQL sub-selections.
-
-**Signature:**
-
-```typescript
-declare function queryableFieldNames(meta: DoctypeMeta): string;
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| meta | `DoctypeMeta` |  |
-
 ### registerBuiltinHandlers
 
 Register all built-in handlers
@@ -452,7 +246,6 @@ Context passed to action handlers
 ```typescript
 export interface ActionContext {
   doctype: DoctypeMeta;
-  executor: GraphQLExecutor;
 }
 ```
 
@@ -461,7 +254,6 @@ export interface ActionContext {
 | Property | Type | Description |
 |----------|------|-------------|
 | doctype | `DoctypeMeta` | Doctype metadata for the action being executed |
-| executor | `GraphQLExecutor` | GraphQL executor for running queries/mutations within the action |
 
 ### BuildListQueryArgs
 
@@ -550,19 +342,6 @@ export interface ExtractSingleResultParams {
 | meta | `DoctypeMeta` | Doctype metadata |
 | recordFieldName | `(tableName: string) => string` | Function to derive the record field name from a table name |
 | result | `unknown` | The raw query result |
-
-### GraphQLExecutor
-
-GraphQL executor interface for running queries/mutations
-
-**Definition:**
-
-```typescript
-export interface GraphQLExecutor {
-  mutate(mutation: string, variables: Record<string, unknown>): Promise<T>;
-  query(query: string, variables: Record<string, unknown>): Promise<T>;
-}
-```
 
 ### LoadDoctypesOptions
 
@@ -675,7 +454,6 @@ Options for creating a Stonecrop PostGraphile plugin
 
 ```typescript
 export interface StonecropPluginOptions {
-  executor: GraphQLExecutor;
   inflection?: StonecropInflectionConfig;
 }
 ```
@@ -684,7 +462,6 @@ export interface StonecropPluginOptions {
 
 | Property | Type | Description |
 |----------|------|-------------|
-| executor | `GraphQLExecutor` | GraphQL executor for running queries/mutations |
 | inflection? | `StonecropInflectionConfig` | Override inflection conventions for mapping table names to GraphQL field names. Defaults to PostGraphile Amber preset conventions. |
 
 ### StonecropPresetOptions

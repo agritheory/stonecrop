@@ -2,7 +2,7 @@
 // Barrel file - re-export all types
 // =============================================================================
 
-export type { GraphQLExecutor, ActionContext, ActionHandler } from './context'
+export type { ActionContext, ActionHandler } from './context'
 export type {
 	ReverseConnectionParams,
 	BuildRecordQueryOptions,

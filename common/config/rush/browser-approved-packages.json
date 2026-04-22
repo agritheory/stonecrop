@@ -379,6 +379,10 @@
       "allowedCategories": [ "prototype" ]
     },
     {
+      "name": "pg",
+      "allowedCategories": [ "utilities" ]
+    },
+    {
       "name": "pinia",
       "allowedCategories": [ "prototype" ]
     },

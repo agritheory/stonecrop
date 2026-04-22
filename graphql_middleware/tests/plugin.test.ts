@@ -10,16 +10,13 @@ import { createStonecropPlugin } from '../src/plugin/postgraphile'
 // ===========================================================================
 
 describe('createStonecropPlugin', () => {
-	const mockExecutor = { query: vi.fn(), mutate: vi.fn() }
-
 	it('creates a plugin with default inflection', () => {
-		const plugin = createStonecropPlugin({ executor: mockExecutor })
+		const plugin = createStonecropPlugin()
 		expect(plugin).toBeDefined()
 	})
 
 	it('accepts partial inflection overrides', () => {
 		const plugin = createStonecropPlugin({
-			executor: mockExecutor,
 			inflection: {
 				recordFieldName: t => `${t}ByRowId`,
 				recordArgName: () => 'rowId',
@@ -30,7 +27,6 @@ describe('createStonecropPlugin', () => {
 
 	it('accepts full inflection overrides', () => {
 		const plugin = createStonecropPlugin({
-			executor: mockExecutor,
 			inflection: {
 				recordFieldName: t => `custom_${t}`,
 				connectionFieldName: t => `list_${t}`,
@@ -44,7 +40,6 @@ describe('createStonecropPlugin', () => {
 
 	it('accepts reverseConnectionName override', () => {
 		const plugin = createStonecropPlugin({
-			executor: mockExecutor,
 			inflection: {
 				reverseConnectionName: ({ target }) => `Custom_${target}`,
 			},
