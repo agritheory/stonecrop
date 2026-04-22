@@ -328,7 +328,8 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
 				const isSchemaFile = path.endsWith('.graphql')
 				const isResolverFile =
 					options.type === 'schema' && options.resolvers && path.includes(options.resolvers.replace('./', ''))
-				const isPresetFile = options.type === 'postgraphile' && path.includes(options.preset.replace('./', ''))
+				const isPresetFile =
+					options.type === 'postgraphile' && options.preset && path.includes(options.preset.replace('./', ''))
 
 				if (isSchemaFile || isResolverFile || isPresetFile) {
 					if (!cacheClearing) {

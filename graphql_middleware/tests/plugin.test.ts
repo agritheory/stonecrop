@@ -1,49 +1,22 @@
 import { readFileSync } from 'fs'
 import { parse, type DocumentNode } from 'graphql'
 import { join } from 'path'
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect } from 'vitest'
 
 import { createStonecropPlugin } from '../src/plugin/postgraphile'
 
 // ===========================================================================
-// createStonecropPlugin — inflection resolution coverage
+// createStonecropPlugin
 // ===========================================================================
 
 describe('createStonecropPlugin', () => {
-	it('creates a plugin with default inflection', () => {
+	it('creates a plugin with no arguments', () => {
 		const plugin = createStonecropPlugin()
 		expect(plugin).toBeDefined()
 	})
 
-	it('accepts partial inflection overrides', () => {
-		const plugin = createStonecropPlugin({
-			inflection: {
-				recordFieldName: t => `${t}ByRowId`,
-				recordArgName: () => 'rowId',
-			},
-		})
-		expect(plugin).toBeDefined()
-	})
-
-	it('accepts full inflection overrides', () => {
-		const plugin = createStonecropPlugin({
-			inflection: {
-				recordFieldName: t => `custom_${t}`,
-				connectionFieldName: t => `list_${t}`,
-				orderByTypeName: t => `${t}Sort`,
-				recordArgName: () => 'nodeId',
-				recordArgType: () => 'ID!',
-			},
-		})
-		expect(plugin).toBeDefined()
-	})
-
-	it('accepts reverseConnectionName override', () => {
-		const plugin = createStonecropPlugin({
-			inflection: {
-				reverseConnectionName: ({ target }) => `Custom_${target}`,
-			},
-		})
+	it('creates a plugin with empty options', () => {
+		const plugin = createStonecropPlugin({})
 		expect(plugin).toBeDefined()
 	})
 })
@@ -107,7 +80,7 @@ describe('StonecropWorkflowMeta schema', () => {
 })
 
 // ===========================================================================
-// stonecropRecord schema with options parameter
+// stonecropRecord schema
 // ===========================================================================
 
 describe('stonecropRecord schema', () => {
@@ -152,44 +125,11 @@ describe('stonecropRecord schema', () => {
 		)
 		expect(resultType).toBeDefined()
 
-		const unknownLinksField = resultType?.fields?.find((f: any) => f.name.value === 'unknownLinks')
-		expect(unknownLinksField).toBeDefined()
-	})
-})
+		const dataField = resultType?.fields?.find((f: any) => f.name.value === 'data')
+		expect(dataField).toBeDefined()
 
-describe('unknownLinks behavior', () => {
-	it('unknownLinks is string array type in StonecropRecordResult', () => {
-		const sourceFile = readFileSync(join(__dirname, '../src/plugin/postgraphile.ts'), 'utf-8')
-		const typeDefsMatch = sourceFile.match(/typeDefs: gql`([\s\S]*?)`/)
-		expect(typeDefsMatch).toBeDefined()
-
-		const typeDefs = typeDefsMatch[1]
-		const doc = parse(typeDefs)
-
-		const resultType = doc.definitions.find(
-			d => d.kind === 'ObjectTypeDefinition' && d.name.value === 'StonecropRecordResult'
-		)
-		const unknownLinksField = resultType?.fields?.find((f: any) => f.name.value === 'unknownLinks')
-
-		// Should be [String!]! or similar
-		expect(unknownLinksField?.type).toBeDefined()
-	})
-
-	it('unknownLinks field is optional (not required)', () => {
-		const sourceFile = readFileSync(join(__dirname, '../src/plugin/postgraphile.ts'), 'utf-8')
-		const typeDefsMatch = sourceFile.match(/typeDefs: gql`([\s\S]*?)`/)
-		expect(typeDefsMatch).toBeDefined()
-
-		const typeDefs = typeDefsMatch[1]
-		const doc = parse(typeDefs)
-
-		const resultType = doc.definitions.find(
-			d => d.kind === 'ObjectTypeDefinition' && d.name.value === 'StonecropRecordResult'
-		)
-		const unknownLinksField = resultType?.fields?.find((f: any) => f.name.value === 'unknownLinks')
-
-		// Not NonNull, so it's optional
-		expect(unknownLinksField?.type.kind).not.toBe('NonNullType')
+		const doctypeField = resultType?.fields?.find((f: any) => f.name.value === 'doctype')
+		expect(doctypeField).toBeDefined()
 	})
 })
 

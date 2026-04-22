@@ -75,7 +75,6 @@ Result of a single record query
 type RecordResult {
 	data: JSON
 	doctype: String!
-	unknownLinks: [String!]
 }
 
 """

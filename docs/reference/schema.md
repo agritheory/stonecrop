@@ -521,7 +521,7 @@ export interface GetRecordOptions {
 
 ### GetRecordResult
 
-Result from getRecord - includes the record data and any unknown links requested
+Result from getRecord
 
 **Definition:**
 

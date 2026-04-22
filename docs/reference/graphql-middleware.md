@@ -27,12 +27,6 @@ import { ValidationError } from '@stonecrop/graphql_middleware'
 
 ## Other Components
 
-### RELATION_FIELDTYPES
-
-```typescript
-export { RELATION_FIELDTYPES }
-```
-
 ### StonecropPreset
 
 ```typescript
@@ -68,14 +62,8 @@ Create a PostGraphile plugin that extends the GraphQL schema with Stonecrop func
 **Signature:**
 
 ```typescript
-createStonecropPlugin: (options?: StonecropPluginOptions) => GraphileConfig.Plugin
+createStonecropPlugin: () => GraphileConfig.Plugin
 ```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| options | `StonecropPluginOptions` |  |
 
 ### createStonecropPreset
 
@@ -262,94 +250,6 @@ export interface ActionContext {
 | doctype | `DoctypeMeta` | Doctype metadata for the action being executed |
 | withPgClient? | `WithPgClient` | Database access function; available when handler is called from a GraphQL mutation |
 
-### BuildListQueryArgs
-
-Arguments for buildListQuery
-
-**Definition:**
-
-```typescript
-export interface BuildListQueryArgs {
-  limit?: number;
-  offset?: number;
-  options?: Record<string, unknown>;
-  orderBy?: string;
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| limit? | `number` | Maximum number of records to return |
-| offset? | `number` | Number of records to skip |
-| options? | `Record<string, unknown>` | Query options (e.g., includeNested) |
-| orderBy? | `string` | OrderBy specification |
-
-### BuildRecordQueryOptions
-
-Options for buildRecordQuery nested selection building
-
-**Definition:**
-
-```typescript
-export interface BuildRecordQueryOptions {
-  includeNested?: boolean | string[];
-  maxDepth?: number;
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| includeNested? | `boolean \| string[]` | Include nested/related records |
-| maxDepth? | `number` | Maximum nesting depth |
-
-### ExtractListResultParams
-
-Parameters for extractListResult
-
-**Definition:**
-
-```typescript
-export interface ExtractListResultParams {
-  connectionFieldName: (tableName: string) => string;
-  meta: DoctypeMeta;
-  result: unknown;
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| connectionFieldName | `(tableName: string) => string` | Function to derive the connection field name from a table name |
-| meta | `DoctypeMeta` | Doctype metadata |
-| result | `unknown` | The raw query result |
-
-### ExtractSingleResultParams
-
-Parameters for extractSingleResult
-
-**Definition:**
-
-```typescript
-export interface ExtractSingleResultParams {
-  meta: DoctypeMeta;
-  recordFieldName: (tableName: string) => string;
-  result: unknown;
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| meta | `DoctypeMeta` | Doctype metadata |
-| recordFieldName | `(tableName: string) => string` | Function to derive the record field name from a table name |
-| result | `unknown` | The raw query result |
-
 ### LoadDoctypesOptions
 
 Options for loading doctype definitions
@@ -370,107 +270,6 @@ export interface LoadDoctypesOptions {
 | continueOnError? | `boolean` | Continue loading other files if one fails validation |
 | onError? | `(file: string, errors: ValidationError[]) => void` | Callback for validation errors when continueOnError is true |
 
-### MergeNestedResultsParams
-
-Parameters for mergeNestedResults
-
-**Definition:**
-
-```typescript
-export interface MergeNestedResultsParams {
-  getMeta: (slug: string) => DoctypeMeta | undefined;
-  meta: DoctypeMeta;
-  record: Record<string, unknown>;
-  reverseConnectionNameFn?: (params: ReverseConnectionParams) => string;
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| getMeta | `(slug: string) => DoctypeMeta \| undefined` | Lookup function to get doctype metadata by slug |
-| meta | `DoctypeMeta` | Doctype metadata |
-| record | `Record<string, unknown>` | The record object with nested connection data |
-| reverseConnectionNameFn? | `(params: ReverseConnectionParams) => string` | Function to derive the reverse connection field name from link params |
-
-### ReverseConnectionParams
-
-Parameters for reverse connection name inflection
-
-**Definition:**
-
-```typescript
-export interface ReverseConnectionParams {
-  backlink?: string;
-  doctype: string;
-  linkName: string;
-  target: string;
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| backlink? | `string` | Link field on the target that points back to the parent (optional) |
-| doctype | `string` | Parent doctype slug |
-| linkName | `string` | Link key on the parent |
-| target | `string` | Target doctype slug |
-
-### StonecropInflectionConfig
-
-Inflection callbacks for mapping table names to GraphQL query field names. Override these when using a non-Amber inflection preset (e.g., V4, SimplifyInflection).
-
-Defaults match the PostGraphile Amber preset conventions.
-
-**Definition:**
-
-```typescript
-export interface StonecropInflectionConfig {
-  connectionFieldName?: (tableName: string) => string;
-  orderByTypeName?: (tableName: string) => string;
-  recordArgName?: (tableName: string) => string;
-  recordArgType?: (tableName: string) => string;
-  recordFieldName?: (tableName: string) => string;
-  reverseConnectionName?: (params: {
-        doctype: string;
-        linkName: string;
-        backlink?: string;
-        target: string;
-    }) => string;
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| connectionFieldName? | `(tableName: string) => string` | Given a table name, return the GraphQL field name for fetching a list/connection. |
-| orderByTypeName? | `(tableName: string) => string` | Given a table name, return the GraphQL OrderBy enum type name. |
-| recordArgName? | `(tableName: string) => string` | Given a table name, return the GraphQL argument name used to look up a record by PK. |
-| recordArgType? | `(tableName: string) => string` | Given a table name, return the GraphQL variable type for the PK argument. |
-| recordFieldName? | `(tableName: string) => string` | Given a table name, return the GraphQL field name for fetching a single record by ID. |
-| reverseConnectionName? | `(params: { doctype: string; linkName: string; backlink?: string; target: string; }) => string` | Derive the GraphQL connection field name for a reverse-FK link. PostGraphile convention: `{targetPlural}By{FkColumnPascal}Id` - When backlink is provided: FK column is derived from the backlink field - When backlink is absent: FK column is derived from the parent doctype |
-
-### StonecropPluginOptions
-
-Options for creating a Stonecrop PostGraphile plugin
-
-**Definition:**
-
-```typescript
-export interface StonecropPluginOptions {
-  inflection?: StonecropInflectionConfig;
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| inflection? | `StonecropInflectionConfig` | Override inflection conventions for mapping table names to GraphQL field names. Defaults to PostGraphile Amber preset conventions. |
-
 ### StonecropPresetOptions
 
 Options for configuring a StonecropPreset.
@@ -488,26 +287,6 @@ export interface StonecropPresetOptions {
 | Property | Type | Description |
 |----------|------|-------------|
 | fieldCasing? | `FieldCasing` | Field name casing convention for generated GraphQL field names. `'camel'` (default) produces names like `createdAt`, `taskTitle`. `'pascal'` produces names like `CreatedAt`, `TaskTitle`. |
-
-### StonecropRecordOptions
-
-Options for stonecropRecord queries
-
-**Definition:**
-
-```typescript
-export interface StonecropRecordOptions {
-  includeNested?: boolean | string[];
-  maxDepth?: number;
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| includeNested? | `boolean \| string[]` | Include nested/related records |
-| maxDepth? | `number` | Maximum nesting depth |
 
 ## Type Aliases
 

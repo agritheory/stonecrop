@@ -1,58 +1,37 @@
 # @stonecrop/graphql-middleware
 
-GraphQL backend for the Stonecrop framework. Reads doctype schemas and exposes them as GraphQL resolvers that handle query construction, response parsing, and action dispatch.
-
-Currently integrated with PostGraphile (to be extracted into a swappable adapter in the future).
+GraphQL backend for the Stonecrop framework. Reads doctype schemas and exposes them as Grafast plan resolvers backed by PostGraphile's pgResources.
 
 ## What it does
 
-- **Query construction** — Builds GraphQL queries from doctype metadata, respecting fetch strategies and nesting depth
-- **Response merging** — Flattens connection format (`{ nodes: [...] }`) into plain arrays
+- **Plan execution** — Uses PostGraphile's pgResources to build and execute SQL queries natively via Grafast plan steps
 - **Action dispatch** — Routes doctype actions to registered handlers
 
 ## How it works
 
 Doctype schemas declare fields, relationships, and workflow. The middleware uses that schema to:
 
-1. Accept a `doctype` and optional `options` from the client
-2. Build a query with field selections and (if `includeNested` is set) nested sub-selections for related records
-3. Execute against the GraphQL engine and merge the response
-4. Return flat data to the client
+1. Accept a `doctype` and `id` from the client
+2. Resolve the record using the pgResource's native get plan step
+3. Return flat data to the client
 
-The client never constructs queries — it passes `includeNested` through and receives pre-merged results.
+The client never constructs queries.
 
 ## Setup
 
-The middleware is a PostGraphile plugin. It needs an executor to bridge between the middleware's query strings and your GraphQL engine:
+The middleware is a PostGraphile plugin:
 
 ```typescript
 import { createServer } from 'postgraphile/grafserv/h3/v1'
 import { createStonecropPreset, makePgService, createStonecropPlugin, loadDoctypes, registerBuiltinHandlers } from '@stonecrop/graphql-middleware'
-import { graphql } from 'graphql'
 
-// Scan doctype JSON files and register them with the middleware
 loadDoctypes('./doctypes')
-
-// Register built-in action handlers (submit, approve, etc.)
 registerBuiltinHandlers()
 
-// Executor bridges the middleware's query strings and your GraphQL engine
-const executor = {
-  async query(query: string, variables?: Record<string, unknown>) {
-    return graphql({ schema, source: query, variableValues: variables })
-  },
-  async mutate(mutation: string, variables?: Record<string, unknown>) {
-    return graphql({ schema, source: mutation, variableValues: variables })
-  },
-}
-
-// PostGraphile configuration
 const preset = createStonecropPreset()
-preset.plugins = [createStonecropPlugin({ executor })]
+preset.plugins = [createStonecropPlugin()]
 preset.pgServices = [makePgService({ connectionString: process.env.DATABASE_URL })]
 ```
-
-The middleware builds PostGraphile-formatted query strings (e.g., `SalesOrderById`, `SalesOrderItemsBySalesOrderId`). The executor runs them — it doesn't control what queries are constructed.
 
 ## Doctype Schemas
 
@@ -82,8 +61,6 @@ The middleware loads doctype definitions from JSON files. Each file defines a do
 }
 ```
 
-The `links` object declares relationships used when `includeNested` is requested. The `workflow` object enables action dispatch.
-
 ## Actions
 
 Actions are custom logic triggered by the client. Register handlers with `registerHandler`:
@@ -95,7 +72,7 @@ registerHandler('submitOrder', async (args, ctx) => {
 })
 ```
 
-The `args` are passed from the client, and `ctx` provides the doctype metadata and GraphQL executor.
+The `args` are passed from the client, and `ctx` provides the doctype metadata.
 
 ## API
 
@@ -103,7 +80,7 @@ The middleware exposes these GraphQL operations:
 
 | Operation | Description |
 |-----------|-------------|
-| `stonecropRecord(doctype, id, options?)` | Fetch a single record, optionally with nested links |
+| `stonecropRecord(doctype, id)` | Fetch a single record |
 | `stonecropRecords(doctype, filters?, orderBy?, limit?, offset?)` | Fetch multiple records |
 | `stonecropMeta(doctype)` | Fetch doctype metadata |
 | `stonecropAllMeta` | Fetch all doctype metadata |

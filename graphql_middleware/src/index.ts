@@ -1,7 +1,7 @@
 export type { DoctypeMeta, ValidationError } from '@stonecrop/schema'
 
-// Runtime context types (unique to graphql_middleware)
-export type { ActionContext, ActionHandler } from './types'
+// PostGraphile adaptor re-exports
+export { makePgService } from 'postgraphile/adaptors/pg'
 
 // Doctype registry
 export {
@@ -13,9 +13,8 @@ export {
 	clearRegistry,
 	validateReferences,
 	DoctypeValidationError,
+	type LoadDoctypesOptions,
 } from './registry/doctypes'
-
-export type { LoadDoctypesOptions } from './registry/doctypes'
 
 // Action handlers
 export {
@@ -30,39 +29,11 @@ export {
 // PostGraphile plugin
 export { createStonecropPlugin } from './plugin/postgraphile'
 
-export type { StonecropPluginOptions, StonecropInflectionConfig, StonecropRecordOptions } from './plugin/postgraphile'
-
 // Stonecrop preset
 export { createStonecropPreset, StonecropPreset } from './preset'
 export type { FieldCasing, StonecropPresetOptions } from './types'
 
-// PostGraphile adaptor re-exports
-export { makePgService } from 'postgraphile/adaptors/pg'
-
-// Query builders and inflection helpers (exported for testing and advanced usage)
-export {
-	defaultRecordFieldName,
-	defaultConnectionFieldName,
-	defaultOrderByTypeName,
-	defaultRecordArgName,
-	defaultRecordArgType,
-	defaultReverseConnectionName,
-	buildRecordQuery,
-	buildListQuery,
-	queryableFieldNames,
-	RELATION_FIELDTYPES,
-	extractSingleResult,
-	extractListResult,
-	mergeNestedResults,
-} from './plugin/postgraphile'
-
-export type {
-	ReverseConnectionParams,
-	BuildRecordQueryOptions,
-	BuildListQueryArgs,
-	MergeNestedResultsParams,
-	ExtractSingleResultParams,
-	ExtractListResultParams,
-} from './types'
+// Runtime context types (unique to graphql_middleware)
+export type { ActionContext, ActionHandler } from './types'
 
 export { typeDefs } from './typeDefs'

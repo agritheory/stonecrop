@@ -86,11 +86,9 @@ describe('overriding a registered handler', () => {
 		const override: ActionHandler = vi.fn().mockResolvedValue({ success: true, data: { id: '99' }, error: null })
 		registerHandler('submit', override)
 		const handler = getHandler('submit')!
-		const mockExecutor = { query: vi.fn(), mutate: vi.fn() }
-		const result = await handler([{ name: 'Override Test' }], { doctype: scalarOnlyMeta, executor: mockExecutor })
+		const result = await handler([{ name: 'Override Test' }], { doctype: scalarOnlyMeta })
 		expect(override).toHaveBeenCalledWith([{ name: 'Override Test' }], {
 			doctype: scalarOnlyMeta,
-			executor: mockExecutor,
 		})
 		expect(result).toMatchObject({ success: true, data: { id: '99' } })
 	})
@@ -106,7 +104,6 @@ describe('wrapping a registered handler', () => {
 		registerHandler('approve', original)
 		const capturedOriginal = getHandler('approve')!
 		const calls: string[] = []
-		const mockExecutor = { query: vi.fn(), mutate: vi.fn() }
 
 		const wrapper: ActionHandler = vi.fn().mockImplementation(async (args, context) => {
 			calls.push('before')
@@ -116,7 +113,7 @@ describe('wrapping a registered handler', () => {
 		})
 
 		registerHandler('approve', wrapper)
-		await getHandler('approve')!(['arg1'], { doctype: scalarOnlyMeta, executor: mockExecutor })
+		await getHandler('approve')!(['arg1'], { doctype: scalarOnlyMeta })
 
 		expect(calls).toContain('before')
 	})
@@ -129,10 +126,9 @@ describe('wrapping a registered handler', () => {
 		registerHandler('process', spy)
 
 		const handler = getHandler('process')!
-		const mockExecutor = { query: vi.fn(), mutate: vi.fn() }
-		await handler(['rec-42'], { doctype: scalarOnlyMeta, executor: mockExecutor })
+		await handler(['rec-42'], { doctype: scalarOnlyMeta })
 
-		expect(spy).toHaveBeenCalledWith(['rec-42'], { doctype: scalarOnlyMeta, executor: mockExecutor })
+		expect(spy).toHaveBeenCalledWith(['rec-42'], { doctype: scalarOnlyMeta })
 	})
 })
 
@@ -155,9 +151,8 @@ describe('workflow action definition routes to a named custom handler', () => {
 		registerHandler('submit', submitHandler)
 
 		const handler = getHandler('submit')!
-		const mockExecutor = { query: vi.fn(), mutate: vi.fn() }
-		const result = await handler(['doc-1'], { doctype: scalarOnlyMeta, executor: mockExecutor })
-		expect(submitHandler).toHaveBeenCalledWith(['doc-1'], { doctype: scalarOnlyMeta, executor: mockExecutor })
+		const result = await handler(['doc-1'], { doctype: scalarOnlyMeta })
+		expect(submitHandler).toHaveBeenCalledWith(['doc-1'], { doctype: scalarOnlyMeta })
 		expect(result).toMatchObject({ success: true, data: { status: 'submitted' } })
 	})
 
