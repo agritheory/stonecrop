@@ -251,6 +251,7 @@ Context passed to action handlers
 ```typescript
 export interface ActionContext {
   doctype: DoctypeMeta;
+  withPgClient?: WithPgClient;
 }
 ```
 
@@ -259,6 +260,7 @@ export interface ActionContext {
 | Property | Type | Description |
 |----------|------|-------------|
 | doctype | `DoctypeMeta` | Doctype metadata for the action being executed |
+| withPgClient? | `WithPgClient` | Database access function; available when handler is called from a GraphQL mutation |
 
 ### BuildListQueryArgs
 

@@ -6,14 +6,16 @@
 
 import { DoctypeMeta } from '@stonecrop/schema';
 import { DocumentNode } from 'graphql';
-import { GraphileConfig as GraphileConfig_2 } from 'postgraphile/graphile-build';
+import type { GraphileConfig as GraphileConfig_2 } from 'postgraphile/graphile-build';
 import { makePgService } from 'postgraphile/adaptors/pg';
 import { ValidationError } from '@stonecrop/schema';
+import type { WithPgClient } from 'postgraphile/@dataplan/pg';
 
 // @public
 export interface ActionContext {
     [key: string]: unknown;
     doctype: DoctypeMeta;
+    withPgClient?: WithPgClient;
 }
 
 // @public

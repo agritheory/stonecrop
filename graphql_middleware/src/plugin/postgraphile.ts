@@ -1,7 +1,9 @@
 import type { DoctypeMeta, LinkDeclaration, LazyFetch, SyncFetch } from '@stonecrop/schema'
 import { snakeToCamel, toPascalCase } from '@stonecrop/schema'
-import { loadOne } from 'postgraphile/grafast'
-import { GraphileConfig } from 'postgraphile/graphile-build'
+import type { PgResource, WithPgClient } from 'postgraphile/@dataplan/pg'
+import { context } from 'postgraphile/grafast'
+import type { ExecutableStep, FieldArgs } from 'postgraphile/grafast'
+import type { GraphileConfig } from 'postgraphile/graphile-build'
 import { extendSchema, gql } from 'postgraphile/utils'
 import pluralize from 'pluralize'
 
@@ -102,6 +104,28 @@ export interface StonecropPluginOptions {
 	inflection?: StonecropInflectionConfig
 }
 
+type StonecropRecordSpec = {
+	doctype: string
+	id: string
+	options: Record<string, unknown> | null
+}
+
+type StonecropRecordsSpec = {
+	doctype: string
+	filters: unknown
+	orderBy: string | null
+	limit: number | null
+	offset: number | null
+	options: unknown
+}
+
+type StonecropActionSpec = {
+	doctype: string
+	action: string
+	actionArgs: unknown[] | null
+	ctx: Grafast.Context & { withPgClient?: WithPgClient }
+}
+
 /**
  * Create a PostGraphile plugin that extends the GraphQL schema with Stonecrop functionality.
  * No arguments required — plan step wiring is entirely internal using pgResources from build.
@@ -117,7 +141,7 @@ export const createStonecropPlugin = (options?: StonecropPluginOptions): Graphil
 
 	return extendSchema(build => {
 		const { pgResources, grafast } = build
-		const { constant, lambda, object } = grafast
+		const { constant, lambda, object, sideEffect } = grafast
 
 		return {
 			typeDefs: gql`
@@ -204,9 +228,9 @@ export const createStonecropPlugin = (options?: StonecropPluginOptions): Graphil
 			objects: {
 				Query: {
 					plans: {
-						stonecropMeta(_: any, { $doctype }: any) {
-							return lambda($doctype, (doctype: unknown) => {
-								const meta = getMeta(doctype as string)
+						stonecropMeta(_: ExecutableStep, { $doctype }: FieldArgs) {
+							return lambda($doctype, (doctype: string) => {
+								const meta = getMeta(doctype)
 								return meta ?? null
 							})
 						},
@@ -215,8 +239,8 @@ export const createStonecropPlugin = (options?: StonecropPluginOptions): Graphil
 							return constant(getAllMeta())
 						},
 
-						stonecropRecord(_: any, { $doctype, $id, $options }: any) {
-							return lambda(object({ doctype: $doctype, id: $id, options: $options }), (spec: any) => {
+						stonecropRecord(_: ExecutableStep, { $doctype, $id, $options }: FieldArgs) {
+							return lambda(object({ doctype: $doctype, id: $id, options: $options }), (spec: StonecropRecordSpec) => {
 								const meta = getMeta(spec.doctype)
 								if (!meta) {
 									throw new Error(`Unknown doctype: ${spec.doctype}`)
@@ -225,15 +249,16 @@ export const createStonecropPlugin = (options?: StonecropPluginOptions): Graphil
 									throw new Error(`Doctype ${spec.doctype} has no table mapping`)
 								}
 
-								const resource = (pgResources as any)[meta.tableName]
+								const resource = (pgResources as Record<string, PgResource<string, any, any, any, any>>)[meta.tableName]
 								if (!resource) {
 									throw new Error(`No pgResource found for table: ${meta.tableName}`)
 								}
 
-								const recordOptions: any = spec.options ?? {}
-								const pkField = recordArgName(meta.tableName!)
+								const recordOptions = (spec.options ?? {}) as StonecropRecordOptions
+								const pkField = recordArgName(meta.tableName)
 
-								const $record = resource.get({ [pkField]: spec.id })
+								// eslint-disable-next-line @typescript-eslint/no-explicit-any
+								const $record = resource.get({ [pkField]: spec.id } as any)
 								const data = $record.record()
 
 								const unknownLinks =
@@ -249,7 +274,10 @@ export const createStonecropPlugin = (options?: StonecropPluginOptions): Graphil
 							})
 						},
 
-						stonecropRecords(_: any, { $doctype, $filters, $orderBy, $limit, $offset, $options }: any) {
+						stonecropRecords(
+							_: ExecutableStep,
+							{ $doctype, $filters, $orderBy, $limit, $offset, $options }: FieldArgs
+						) {
 							return lambda(
 								object({
 									doctype: $doctype,
@@ -259,7 +287,7 @@ export const createStonecropPlugin = (options?: StonecropPluginOptions): Graphil
 									offset: $offset,
 									options: $options,
 								}),
-								(spec: any) => {
+								(spec: StonecropRecordsSpec) => {
 									const meta = getMeta(spec.doctype)
 									if (!meta) {
 										throw new Error(`Unknown doctype: ${spec.doctype}`)
@@ -268,7 +296,9 @@ export const createStonecropPlugin = (options?: StonecropPluginOptions): Graphil
 										throw new Error(`Doctype ${spec.doctype} has no table mapping`)
 									}
 
-									const resource = (pgResources as any)[meta.tableName]
+									const resource = (pgResources as Record<string, PgResource<string, any, any, any, any>>)[
+										meta.tableName
+									]
 									if (!resource) {
 										throw new Error(`No pgResource found for table: ${meta.tableName}`)
 									}
@@ -276,10 +306,12 @@ export const createStonecropPlugin = (options?: StonecropPluginOptions): Graphil
 									const $select = resource.find()
 
 									if (spec.limit) {
-										$select.setFirst(spec.limit)
+										// eslint-disable-next-line @typescript-eslint/no-explicit-any
+										$select.setFirst(spec.limit as any)
 									}
 									if (spec.offset) {
-										$select.setOffset(spec.offset)
+										// eslint-disable-next-line @typescript-eslint/no-explicit-any
+										$select.setOffset(spec.offset as any)
 									}
 
 									return {
@@ -295,63 +327,61 @@ export const createStonecropPlugin = (options?: StonecropPluginOptions): Graphil
 
 				Mutation: {
 					plans: {
-						stonecropAction(_: any, { $doctype, $action, $args: $actionArgs }: any) {
-							return loadOne(
+						stonecropAction(_: ExecutableStep, { $doctype, $action, $args: $actionArgs }: FieldArgs) {
+							return sideEffect(
 								object({
 									doctype: $doctype,
 									action: $action,
 									actionArgs: $actionArgs,
+									ctx: context(),
 								}),
-								async (specs: readonly any[]) => {
-									return await Promise.all(
-										specs.map(async spec => {
-											const meta = getMeta(spec.doctype)
-											if (!meta) {
-												return {
-													success: false,
-													data: null,
-													error: `Unknown doctype: ${spec.doctype}`,
-												}
-											}
+								async (spec: StonecropActionSpec) => {
+									const meta = getMeta(spec.doctype)
+									if (!meta) {
+										return {
+											success: false,
+											data: null,
+											error: `Unknown doctype: ${spec.doctype}`,
+										}
+									}
 
-											const actionDef = meta.workflow?.actions?.[spec.action]
-											if (!actionDef) {
-												return {
-													success: false,
-													data: null,
-													error: `Unknown action: ${spec.action} on ${spec.doctype}`,
-												}
-											}
-											const handlerName = actionDef.handler
-											const handler = getHandler(handlerName)
-											if (!handler) {
-												return {
-													success: false,
-													data: null,
-													error: `Handler not registered: ${handlerName}`,
-												}
-											}
+									const actionDef = meta.workflow?.actions?.[spec.action]
+									if (!actionDef) {
+										return {
+											success: false,
+											data: null,
+											error: `Unknown action: ${spec.action} on ${spec.doctype}`,
+										}
+									}
 
-											const actionContext: ActionContext = {
-												doctype: meta,
-											}
+									const handler = getHandler(actionDef.handler)
+									if (!handler) {
+										return {
+											success: false,
+											data: null,
+											error: `Handler not registered: ${actionDef.handler}`,
+										}
+									}
 
-											try {
-												const result = await handler(spec.actionArgs ?? [], actionContext)
-												return {
-													success: true,
-													data: result,
-													error: null,
-												}
-											} catch (err) {
-												return {
-													success: false,
-													data: null,
-													error: err instanceof Error ? err.message : String(err),
-												}
-											}
-										})
-									)
+									const actionContext: ActionContext = {
+										doctype: meta,
+										withPgClient: spec.ctx.withPgClient,
+									}
+
+									try {
+										const result = await handler(spec.actionArgs ?? [], actionContext)
+										return {
+											success: true,
+											data: result,
+											error: null,
+										}
+									} catch (err) {
+										return {
+											success: false,
+											data: null,
+											error: err instanceof Error ? err.message : String(err),
+										}
+									}
 								}
 							)
 						},
