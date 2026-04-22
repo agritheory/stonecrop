@@ -27,14 +27,8 @@ The middleware is a PostGraphile plugin. It needs an executor to bridge between 
 
 ```typescript
 import { createServer } from 'postgraphile/grafserv/h3/v1'
-import { PostGraphileAmberPreset } from 'postgraphile/presets/amber'
-import { makePgService } from 'postgraphile/adaptors/pg'
+import { createStonecropPreset, makePgService, createStonecropPlugin, loadDoctypes, registerBuiltinHandlers } from '@stonecrop/graphql-middleware'
 import { graphql } from 'graphql'
-import {
-  createStonecropPlugin,
-  loadDoctypes,
-  registerBuiltinHandlers,
-} from '@stonecrop/graphql-middleware'
 
 // Scan doctype JSON files and register them with the middleware
 loadDoctypes('./doctypes')
@@ -53,11 +47,9 @@ const executor = {
 }
 
 // PostGraphile configuration
-const preset: GraphileConfig.Preset = {
-  extends: [PostGraphileAmberPreset], // Base preset with PostgreSQL integration
-  plugins: [createStonecropPlugin({ executor })], // Stonecrop GraphQL resolvers
-  pgServices: [makePgService({ connectionString: process.env.DATABASE_URL })], // Database connection
-}
+const preset = createStonecropPreset()
+preset.plugins = [createStonecropPlugin({ executor })]
+preset.pgServices = [makePgService({ connectionString: process.env.DATABASE_URL })]
 ```
 
 The middleware builds PostGraphile-formatted query strings (e.g., `SalesOrderById`, `SalesOrderItemsBySalesOrderId`). The executor runs them — it doesn't control what queries are constructed.

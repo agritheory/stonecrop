@@ -15,17 +15,7 @@ export default defineConfig({
 			fileName: () => 'index.js',
 		},
 		rollupOptions: {
-			external: [
-				'node:fs',
-				'node:path',
-				'graphql',
-				'pluralize',
-				'postgraphile',
-				'postgraphile/utils',
-				'postgraphile/grafast',
-				'postgraphile/graphile-build',
-				'@stonecrop/schema',
-			],
+			external: [/^node:/, 'graphql', 'pluralize', 'postgraphile', /^postgraphile\//, '@stonecrop/schema'],
 		},
 	},
 	test: {

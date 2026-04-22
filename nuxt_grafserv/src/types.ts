@@ -1,3 +1,4 @@
+import type { FieldCasing } from '@stonecrop/graphql-middleware'
 import type { GraphQLSchema } from 'graphql'
 
 /**
@@ -17,18 +18,17 @@ export type SchemaProvider = () => GraphQLSchema | Promise<GraphQLSchema>
  * @example
  * ```typescript
  * // 1. Create server/graphile.preset.ts
- * import { PostGraphileAmberPreset } from 'postgraphile/presets/amber'
- * import { makePgService } from 'postgraphile/adaptors/pg'
+ * import { createStonecropPreset, makePgService, createStonecropPlugin } from '@stonecrop/graphql-middleware'
  *
  * export default {
- *   extends: [PostGraphileAmberPreset],
+ *   extends: [createStonecropPreset()],
  *   pgServices: [
  *     makePgService({
  *       connectionString: process.env.DATABASE_URL,
  *       schemas: ['public'],
  *     }),
  *   ],
- *   plugins: [MyCustomPlugin],
+ *   plugins: [createStonecropPlugin()],
  * }
  *
  * // 2. Reference the preset file in nuxt.config.ts
@@ -55,10 +55,39 @@ export interface PostGraphileConfig {
 	 *
 	 * A PostGraphile instance will be created from this preset at build time.
 	 *
+	 * If omitted, a default preset is synthesized using `DATABASE_URL` and
+	 * `fieldCasing` / `explain` options. Omitting the preset file is valid for
+	 * standard setups that use environment variables and Stonecrop defaults.
+	 *
 	 * @example './server/graphile.preset.ts'
 	 * @example './server/graphile.preset.js'
 	 */
-	preset: string
+	preset?: string
+
+	/**
+	 * Field name casing convention (default: 'camel')
+	 *
+	 * - `'camel'`: field names like `createdAt`, `taskTitle` (PostGraphile Amber default)
+	 * - `'pascal'`: field names like `CreatedAt`, `TaskTitle`
+	 *
+	 * Only used when `preset` is omitted (synthesized preset mode).
+	 * Has no effect when using an explicit preset file — casing is controlled
+	 * by the preset's own inflection configuration.
+	 */
+	fieldCasing?: FieldCasing
+
+	/**
+	 * Enable Grafast explain in Ruru UI (default: false)
+	 *
+	 * When true, Ruru's "Explain" tab shows the full Grafast operation plan
+	 * including which steps ran and what SQL each step generated.
+	 *
+	 * **Never enable in production** — it exposes query internals to any client
+	 * that can access Ruru.
+	 *
+	 * Only used when `preset` is omitted (synthesized preset mode).
+	 */
+	explain?: boolean
 
 	/** GraphQL endpoint URL (default: '/graphql/') */
 	url?: string

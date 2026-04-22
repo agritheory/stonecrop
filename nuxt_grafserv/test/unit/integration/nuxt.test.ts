@@ -1,5 +1,5 @@
+import { StonecropPreset } from '@stonecrop/graphql-middleware'
 import { makeSchema } from 'postgraphile'
-import { PostGraphileAmberPreset } from 'postgraphile/presets/amber'
 import { describe, it, expect } from 'vitest'
 
 /**
@@ -18,7 +18,7 @@ describe('Nuxt Integration - PostGraphile makeSchema', () => {
 	describe('PostGraphile Schema Creation', () => {
 		it('should create schema with makeSchema for Nuxt usage', async () => {
 			const preset = {
-				extends: [PostGraphileAmberPreset],
+				extends: [StonecropPreset],
 				schema: {},
 			}
 
@@ -36,7 +36,7 @@ describe('Nuxt Integration - PostGraphile makeSchema', () => {
 
 		it('should create schema that can be used as PostGraphileInstance', async () => {
 			const { schema, resolvedPreset } = await makeSchema({
-				extends: [PostGraphileAmberPreset],
+				extends: [StonecropPreset],
 			})
 
 			// Create instance interface
@@ -58,7 +58,7 @@ describe('Nuxt Integration - PostGraphile makeSchema', () => {
 	describe('Module Type Compatibility', () => {
 		it('should accept PostGraphileInstance as schema option', async () => {
 			const { schema, resolvedPreset } = await makeSchema({
-				extends: [PostGraphileAmberPreset],
+				extends: [StonecropPreset],
 			})
 
 			// This demonstrates the type compatibility with ModuleOptions

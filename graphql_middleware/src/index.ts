@@ -32,6 +32,13 @@ export { createStonecropPlugin } from './plugin/postgraphile'
 
 export type { StonecropPluginOptions, StonecropInflectionConfig, StonecropRecordOptions } from './plugin/postgraphile'
 
+// Stonecrop preset
+export { createStonecropPreset, StonecropPreset } from './preset'
+export type { FieldCasing, StonecropPresetOptions } from './types'
+
+// PostGraphile adaptor re-exports
+export { makePgService } from 'postgraphile/adaptors/pg'
+
 // Query builders and inflection helpers (exported for testing and advanced usage)
 export {
 	defaultRecordFieldName,

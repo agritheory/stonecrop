@@ -333,4 +333,163 @@ describe('Grafserv Module', () => {
 			expect(devtoolsHookCalls.length).toBe(0)
 		})
 	})
+
+	describe('PostGraphile Preset Synthesis', () => {
+		let nitroConfig: MockNitroConfig
+		let warnMessages: string[]
+
+		beforeEach(() => {
+			nitroConfig = {
+				alias: {},
+				runtimeConfig: {},
+				virtual: {},
+				externals: {},
+				handlers: [],
+			}
+			warnMessages = []
+
+			mockNuxt.hook = vi.fn((hookName: string, callback: (config: MockNitroConfig) => void) => {
+				if (hookName === 'nitro:config') {
+					callback(nitroConfig)
+				}
+				return () => {}
+			})
+		})
+
+		it('should synthesize default preset when type is postgraphile and no preset provided', async () => {
+			const originalEnv = process.env.DATABASE_URL
+			process.env.DATABASE_URL = 'postgresql://localhost/testdb'
+
+			const warnMock = vi.fn((msg: string) => warnMessages.push(msg))
+			vi.doMock('@nuxt/kit', () => ({
+				createResolver: vi.fn(() => ({
+					resolve: vi.fn((path: string) => `resolved:${path}`),
+				})),
+				defineNuxtModule: vi.fn(config => config),
+				useLogger: vi.fn(() => ({
+					info: vi.fn(),
+					success: vi.fn(),
+					error: vi.fn(),
+					warn: warnMock,
+				})),
+			}))
+
+			vi.resetModules()
+
+			const { default: module } = await import('../../src/module')
+
+			const options = {
+				type: 'postgraphile' as const,
+			}
+
+			module.setup(options, mockNuxt)
+
+			const virtualModule = nitroConfig.virtual['#internal/grafserv/pgl']
+			expect(virtualModule).toBeDefined()
+			expect(virtualModule).toContain('createStonecropPreset')
+
+			process.env.DATABASE_URL = originalEnv
+		})
+
+		it('should synthesize preset with fieldCasing pascal when specified', async () => {
+			const originalEnv = process.env.DATABASE_URL
+			process.env.DATABASE_URL = 'postgresql://localhost/testdb'
+
+			vi.doMock('@nuxt/kit', () => ({
+				createResolver: vi.fn(() => ({
+					resolve: vi.fn((path: string) => `resolved:${path}`),
+				})),
+				defineNuxtModule: vi.fn(config => config),
+				useLogger: vi.fn(() => ({
+					info: vi.fn(),
+					success: vi.fn(),
+					error: vi.fn(),
+					warn: vi.fn(),
+				})),
+			}))
+
+			vi.resetModules()
+
+			const { default: module } = await import('../../src/module')
+
+			const options = {
+				type: 'postgraphile' as const,
+				fieldCasing: 'pascal' as const,
+			}
+
+			module.setup(options, mockNuxt)
+
+			const virtualModule = nitroConfig.virtual['#internal/grafserv/pgl']
+			expect(virtualModule).toContain("fieldCasing: 'pascal'")
+
+			process.env.DATABASE_URL = originalEnv
+		})
+
+		it('should synthesize preset with explain true when specified', async () => {
+			const originalEnv = process.env.DATABASE_URL
+			process.env.DATABASE_URL = 'postgresql://localhost/testdb'
+
+			vi.doMock('@nuxt/kit', () => ({
+				createResolver: vi.fn(() => ({
+					resolve: vi.fn((path: string) => `resolved:${path}`),
+				})),
+				defineNuxtModule: vi.fn(config => config),
+				useLogger: vi.fn(() => ({
+					info: vi.fn(),
+					success: vi.fn(),
+					error: vi.fn(),
+					warn: vi.fn(),
+				})),
+			}))
+
+			vi.resetModules()
+
+			const { default: module } = await import('../../src/module')
+
+			const options = {
+				type: 'postgraphile' as const,
+				explain: true,
+			}
+
+			module.setup(options, mockNuxt)
+
+			const virtualModule = nitroConfig.virtual['#internal/grafserv/pgl']
+			expect(virtualModule).toContain('explain: true')
+
+			process.env.DATABASE_URL = originalEnv
+		})
+
+		it('should synthesize preset with explain false by default', async () => {
+			const originalEnv = process.env.DATABASE_URL
+			process.env.DATABASE_URL = 'postgresql://localhost/testdb'
+
+			vi.doMock('@nuxt/kit', () => ({
+				createResolver: vi.fn(() => ({
+					resolve: vi.fn((path: string) => `resolved:${path}`),
+				})),
+				defineNuxtModule: vi.fn(config => config),
+				useLogger: vi.fn(() => ({
+					info: vi.fn(),
+					success: vi.fn(),
+					error: vi.fn(),
+					warn: vi.fn(),
+				})),
+			}))
+
+			vi.resetModules()
+
+			const { default: module } = await import('../../src/module')
+
+			const options = {
+				type: 'postgraphile' as const,
+			}
+
+			module.setup(options, mockNuxt)
+
+			const virtualModule = nitroConfig.virtual['#internal/grafserv/pgl']
+			expect(virtualModule).toContain('explain: false')
+
+			process.env.DATABASE_URL = originalEnv
+		})
+	})
 })

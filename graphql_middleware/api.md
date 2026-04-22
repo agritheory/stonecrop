@@ -28,6 +28,12 @@ import { ValidationError } from '@stonecrop/graphql_middleware'
 export { RELATION_FIELDTYPES }
 ```
 
+### StonecropPreset
+
+```typescript
+export { StonecropPreset }
+```
+
 ## Functions
 
 ### buildListQuery
@@ -106,6 +112,24 @@ createStonecropPlugin: (options: StonecropPluginOptions) => GraphileConfig.Plugi
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | options | `StonecropPluginOptions` | Plugin configuration options |
+
+### createStonecropPreset
+
+Create a PostGraphile preset configured for Stonecrop.
+
+The returned preset extends PostGraphile Amber, which provides PostgreSQL integration, Relay-style connections, and the standard PostGraphile schema structure. Stonecrop's `createStonecropPlugin` should be added to the `plugins` array to enable Stonecrop's `stonecropRecord`, `stonecropRecords`, `stonecropMeta`, and `stonecropAction` resolvers.
+
+**Signature:**
+
+```typescript
+createStonecropPreset: (options?: StonecropPresetOptions) => GraphileConfig.Preset
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| options | `StonecropPresetOptions` | Optional configuration for field casing |
 
 ### defaultConnectionFieldName
 
@@ -663,6 +687,24 @@ export interface StonecropPluginOptions {
 | executor | `GraphQLExecutor` | GraphQL executor for running queries/mutations |
 | inflection? | `StonecropInflectionConfig` | Override inflection conventions for mapping table names to GraphQL field names. Defaults to PostGraphile Amber preset conventions. |
 
+### StonecropPresetOptions
+
+Options for configuring a StonecropPreset.
+
+**Definition:**
+
+```typescript
+export interface StonecropPresetOptions {
+  fieldCasing?: FieldCasing;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| fieldCasing? | `FieldCasing` | Field name casing convention for generated GraphQL field names. `'camel'` (default) produces names like `createdAt`, `taskTitle`. `'pascal'` produces names like `CreatedAt`, `TaskTitle`. |
+
 ### StonecropRecordOptions
 
 Options for stonecropRecord queries
@@ -693,6 +735,16 @@ Action handler function signature
 
 ```typescript
 export type ActionHandler = (args: unknown[], context: ActionContext) => Promise<unknown>;
+```
+
+### FieldCasing
+
+Field name casing convention for generated GraphQL field names.
+
+**Definition:**
+
+```typescript
+export type FieldCasing = 'camel' | 'pascal';
 ```
 
 ## Classes

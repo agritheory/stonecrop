@@ -51,18 +51,18 @@ npm install @stonecrop/nuxt-grafserv postgraphile
 2. Create your preset file `server/graphile.preset.ts`:
 
 ```ts
-import { PostGraphileAmberPreset } from 'postgraphile/presets/amber'
-import { makePgService } from 'postgraphile/adaptors/pg'
+import { createStonecropPreset, makePgService, createStonecropPlugin } from '@stonecrop/graphql-middleware'
 
-const preset = {
-  extends: [PostGraphileAmberPreset],
-  pgServices: [
-    makePgService({
-      connectionString: process.env.DATABASE_URL || 'postgresql://localhost/mydb',
-      schemas: ['public'],
-    }),
-  ],
-}
+const preset = createStonecropPreset({
+  fieldCasing: 'camel', // 'camel' (default) or 'pascal'
+})
+preset.pgServices = [
+  makePgService({
+    connectionString: process.env.DATABASE_URL || 'postgresql://localhost/mydb',
+    schemas: ['public'],
+  }),
+]
+preset.plugins = [createStonecropPlugin()]
 
 export default preset
 ```
@@ -80,6 +80,24 @@ export default defineNuxtConfig({
   }
 })
 ```
+
+### Minimal Configuration (No Preset File)
+
+For standard setups, you can omit the `preset` file entirely. The module synthesizes a default preset using `DATABASE_URL`:
+
+```ts
+export default defineNuxtConfig({
+  modules: ['@stonecrop/nuxt-grafserv'],
+  grafserv: {
+    type: 'postgraphile',
+    url: '/graphql',
+    // fieldCasing: 'camel',  // Optional — 'camel' (default) or 'pascal'
+    // explain: true,        // Optional — enables Ruru Explain tab; never enable in production
+  }
+})
+```
+
+The synthesized preset uses `createStonecropPreset()` with your `DATABASE_URL`. Provide a `preset` file to customise beyond these options.
 
 ### Custom Schema Configuration
 
@@ -139,19 +157,16 @@ export default defineNuxtConfig({
 
 ```ts
 // server/graphile.preset.ts
-import { PostGraphileAmberPreset } from 'postgraphile/presets/amber'
-import { makePgService } from 'postgraphile/adaptors/pg'
+import { createStonecropPreset, makePgService, createStonecropPlugin } from '@stonecrop/graphql-middleware'
 
-const preset = {
-  extends: [PostGraphileAmberPreset],
-  pgServices: [
-    makePgService({
-      connectionString: process.env.DATABASE_URL,
-      schemas: ['public'],
-    }),
-  ],
-  plugins: [MyCustomPlugin],
-}
+const preset = createStonecropPreset()
+preset.pgServices = [
+  makePgService({
+    connectionString: process.env.DATABASE_URL,
+    schemas: ['public'],
+  }),
+]
+preset.plugins = [createStonecropPlugin()]
 
 export default preset
 ```
@@ -270,18 +285,16 @@ For database-backed GraphQL APIs:
 1. Create your preset file `server/graphile.preset.ts`:
 
 ```ts
-import { PostGraphileAmberPreset } from 'postgraphile/presets/amber'
-import { makePgService } from 'postgraphile/adaptors/pg'
+import { createStonecropPreset, makePgService, createStonecropPlugin } from '@stonecrop/graphql-middleware'
 
-const preset = {
-  extends: [PostGraphileAmberPreset],
-  pgServices: [
-    makePgService({
-      connectionString: process.env.DATABASE_URL,
-      schemas: ['public'],
-    }),
-  ],
-}
+const preset = createStonecropPreset()
+preset.pgServices = [
+  makePgService({
+    connectionString: process.env.DATABASE_URL,
+    schemas: ['public'],
+  }),
+]
+preset.plugins = [createStonecropPlugin()]
 
 export default preset
 ```
@@ -347,15 +360,12 @@ Import the plugins in your preset:
 
 ```ts
 // server/graphile/graphile.preset.ts
-import { PostGraphileAmberPreset } from 'postgraphile/presets/amber'
-import { makePgService } from 'postgraphile/adaptors/pg'
+import { createStonecropPreset, makePgService, createStonecropPlugin } from '@stonecrop/graphql-middleware'
 import plugins from './plugins'
 
-const preset = {
-  extends: [PostGraphileAmberPreset],
-  pgServices: [makePgService({ /* ... */ })],
-  plugins
-}
+const preset = createStonecropPreset()
+preset.pgServices = [makePgService({ /* ... */ })]
+preset.plugins = [createStonecropPlugin(), ...plugins]
 
 export default preset
 ```
@@ -374,25 +384,22 @@ PostGraphile v5+ automatically generates your GraphQL schema from PostgreSQL.
 ### With Community Plugins
 
 ```typescript
-import { PostGraphileAmberPreset } from 'postgraphile/presets/amber'
-import { makePgService } from 'postgraphile/adaptors/pg'
+import { createStonecropPreset, makePgService, createStonecropPlugin } from '@stonecrop/graphql-middleware'
 import PgSimplifyInflectorPlugin from '@graphile-contrib/pg-simplify-inflector'
 
-const preset = {
-  extends: [PostGraphileAmberPreset],
-  plugins: [PgSimplifyInflectorPlugin],
-  pgServices: [
-    makePgService({
-      connectionString: process.env.DATABASE_URL,
-      schemas: ['public'],
-    }),
-  ],
-  schema: {
-    defaultBehavior: 'connection', // Enable Relay-style connections
-  },
-  grafast: {
-    explain: process.env.NODE_ENV === 'development', // Plan diagrams in dev
-  },
+const preset = createStonecropPreset()
+preset.plugins = [createStonecropPlugin(), PgSimplifyInflectorPlugin]
+preset.pgServices = [
+  makePgService({
+    connectionString: process.env.DATABASE_URL,
+    schemas: ['public'],
+  }),
+]
+preset.schema = {
+  defaultBehavior: 'connection', // Enable Relay-style connections
+}
+preset.grafast = {
+  explain: process.env.NODE_ENV === 'development', // Plan diagrams in dev
 }
 
 export default preset
@@ -401,35 +408,33 @@ export default preset
 ### Advanced Configuration
 
 ```typescript
-import { PostGraphileAmberPreset } from 'postgraphile/presets/amber'
-import { makePgService } from 'postgraphile/adaptors/pg'
+import { createStonecropPreset, makePgService, createStonecropPlugin } from '@stonecrop/graphql-middleware'
 
-const preset = {
-  extends: [PostGraphileAmberPreset],
-  pgServices: [
-    makePgService({
-      connectionString: process.env.DATABASE_URL,
-      schemas: ['public', 'app_private'],
-      superuserConnectionString: process.env.SUPERUSER_DATABASE_URL, // For watch mode
-      pubsub: true, // Enable LISTEN/NOTIFY for subscriptions
-    }),
-  ],
-  gather: {
-    // Smart tags for schema customization
-    pgJwtTypes: 'app_public.jwt_token',
-  },
-  schema: {
-    // Behavior overrides
-    defaultBehavior: '-insert -update -delete', // Read-only by default
-    pgJwtSecret: process.env.JWT_SECRET,
-  },
-  grafast: {
-    explain: true,
-    context: (requestContext) => ({
-      // Custom context for all resolvers
-      userId: requestContext.user?.id,
-    }),
-  },
+const preset = createStonecropPreset()
+preset.pgServices = [
+  makePgService({
+    connectionString: process.env.DATABASE_URL,
+    schemas: ['public', 'app_private'],
+    superuserConnectionString: process.env.SUPERUSER_DATABASE_URL, // For watch mode
+    pubsub: true, // Enable LISTEN/NOTIFY for subscriptions
+  }),
+]
+preset.plugins = [createStonecropPlugin()]
+preset.gather = {
+  // Smart tags for schema customization
+  pgJwtTypes: 'app_public.jwt_token',
+}
+preset.schema = {
+  // Behavior overrides
+  defaultBehavior: '-insert -update -delete', // Read-only by default
+  pgJwtSecret: process.env.JWT_SECRET,
+}
+preset.grafast = {
+  explain: true,
+  context: (requestContext) => ({
+    // Custom context for all resolvers
+    userId: requestContext.user?.id,
+  }),
 }
 
 export default preset
@@ -450,13 +455,10 @@ This approach avoids GraphQL module duplication, follows PostGraphile's recommen
 **Your preset file needs a default export:**
 
 ```typescript
-import { PostGraphileAmberPreset } from 'postgraphile/presets/amber'
+import { createStonecropPreset } from '@stonecrop/graphql-middleware'
 
-const preset = {
-  extends: [PostGraphileAmberPreset],
-  // ...
-}
-
+const preset = createStonecropPreset()
+// Add pgServices, plugins, etc.
 export default preset
 ```
 
@@ -466,16 +468,13 @@ Relative imports in preset files work with file extensions:
 
 ```typescript
 // server/graphile/graphile.preset.ts
-import { PostGraphileAmberPreset } from 'postgraphile/presets/amber'
-import { makePgService } from 'postgraphile/adaptors/pg'
+import { createStonecropPreset, makePgService, createStonecropPlugin } from '@stonecrop/graphql-middleware'
 import { MyPlugin } from './plugins/my-plugin'
 import { AnotherPlugin } from './plugins/another'
 
-const preset = {
-  extends: [PostGraphileAmberPreset],
-  pgServices: [makePgService({/*...*/})],
-  plugins: [MyPlugin, AnotherPlugin],
-}
+const preset = createStonecropPreset()
+preset.pgServices = [makePgService({/*...*/})]
+preset.plugins = [createStonecropPlugin(), MyPlugin, AnotherPlugin]
 
 export default preset
 ```

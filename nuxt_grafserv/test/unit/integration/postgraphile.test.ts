@@ -1,7 +1,7 @@
 import { makeGrafastSchema, grafast, constant } from 'grafast'
 import { type GraphQLSchema, parse } from 'graphql'
 import { makeSchema } from 'postgraphile'
-import { PostGraphileAmberPreset } from 'postgraphile/presets/amber'
+import { StonecropPreset } from '@stonecrop/graphql-middleware'
 import { describe, it, expect, beforeAll } from 'vitest'
 
 import type { PostGraphileInstance } from '../../../src/types'
@@ -30,7 +30,7 @@ describe('PostGraphile makeSchema Integration', () => {
 		 * For testing, we use a minimal preset that generates a basic schema structure.
 		 */
 		const pgPreset = {
-			extends: [PostGraphileAmberPreset],
+			extends: [StonecropPreset],
 			schema: {
 				// Create a minimal schema without database connection for testing
 				// In real use, PostGraphile would introspect your database
@@ -225,7 +225,7 @@ describe('PostGraphile makeSchema Integration', () => {
 
 			// This is what your real config might look like
 			const realWorldPreset = {
-				extends: [PostGraphileAmberPreset],
+				extends: [StonecropPreset],
 				// In production: Add database connection
 				// pgServices: [makePgService({ connectionString: process.env.DATABASE_URL })],
 				schema: {
