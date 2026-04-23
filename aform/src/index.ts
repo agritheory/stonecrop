@@ -45,6 +45,7 @@ export {
 	ADate,
 	ADropdown,
 	ADatePicker,
+	ADateSelection,
 	ADateTime,
 	AFieldset,
 	AFileAttach,

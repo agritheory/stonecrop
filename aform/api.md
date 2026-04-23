@@ -36,6 +36,14 @@ Vue component exported from @stonecrop/aform.
 import { ADatePicker } from '@stonecrop/aform'
 ```
 
+### ADateSelection
+
+Vue component exported from @stonecrop/aform.
+
+```typescript
+import { ADateSelection } from '@stonecrop/aform'
+```
+
 ### ADateTime
 
 Vue component exported from @stonecrop/aform.
