@@ -2,8 +2,9 @@
 	<div class="adate_time">
 		<div class="adate_time_fields">
 			<input
-				v-model.number="time_data.hours"
-				type="number"
+				v-model="time_data.hours"
+				type="text"
+				inputmode="numeric"
 				@paste="pasteInput($event, true)"
 				@focus="focusInput"
 				@blur="confirmTime"
@@ -12,8 +13,9 @@
 				@keydown.down.prevent="tick('hours', -1)" />
 			<span class="colon">:</span>
 			<input
-				v-model.number="time_data.minutes"
-				type="number"
+				v-model="time_data.minutes"
+				type="text"
+				inputmode="numeric"
 				@paste="pasteInput"
 				@focus="focusInput"
 				@blur="confirmTime"
@@ -23,8 +25,9 @@
 			<span v-if="useSeconds" class="colon">:</span>
 			<input
 				v-if="useSeconds"
-				v-model.number="time_data.seconds"
-				type="number"
+				v-model="time_data.seconds"
+				type="text"
+				inputmode="numeric"
 				@paste="pasteInput"
 				@focus="focusInput"
 				@blur="confirmTime"
@@ -66,37 +69,44 @@ const {
 
 /* Emits */
 const emit = defineEmits<{
-	'get-time': [{ hours: number; minutes: number; seconds: number; meridiem: string }]
+	'get-time': [{ hours: number; minutes: number; seconds: number; meridiem: string; militaryTime: number }]
 }>()
 
 /* Template Refs */
 const meridiemSelector = useTemplateRef<HTMLSelectElement>('meridiem-selector')
 
-/* Actual time values held for each time unit */
+/* Display values held as formatted strings */
 const time_data = reactive({
-	hours: defaultHours,
-	minutes: defaultMinutes,
-	seconds: defaultSeconds,
+	hours: String(defaultHours).padStart(2, '0'),
+	minutes: String(defaultMinutes).padStart(2, '0'),
+	seconds: String(defaultSeconds).padStart(2, '0'),
 })
 
 const meridiem = ref(defaultMeridiem == 'AM' ? 'AM' : 'PM')
 
 onMounted(() => {
-	// emit default values on mount
 	emitTime()
 })
 
-/* Sets the time_data to match the input fields, called on blur or Enter, can set sendEmit to false to prevent emiting the time data */
-const confirmTime = (sendEmit = true) => {
+/* Called on blur, Enter, or change — validates, re-pads display strings, and emits */
+const confirmTime = () => {
 	const maxHours = allowMilitaryTime ? 23 : 12
-	if (time_data.hours > maxHours || time_data.hours === '') time_data.hours = maxHours
-	if (time_data.minutes > 59 || time_data.minutes === '') time_data.minutes = 59
-	if (time_data.seconds > 59 || time_data.seconds === '') time_data.seconds = 59
-	padString()
-	if (sendEmit) emitTime()
+	let hours = Number(time_data.hours)
+	let minutes = Number(time_data.minutes)
+	let seconds = Number(time_data.seconds)
+
+	if (isNaN(hours) || time_data.hours === '' || hours > maxHours) hours = maxHours
+	if (isNaN(minutes) || time_data.minutes === '' || minutes > 59) minutes = 59
+	if (isNaN(seconds) || time_data.seconds === '' || seconds > 59) seconds = 59
+
+	time_data.hours = String(hours).padStart(2, '0')
+	time_data.minutes = String(minutes).padStart(2, '0')
+	time_data.seconds = String(seconds).padStart(2, '0')
+
+	emitTime()
 }
 
-/* on emit, format the time_data to a generic object */
+/* Emit numeric time data */
 const emitTime = () => {
 	const hours = Number(time_data.hours)
 	const minutes = Number(time_data.minutes)
@@ -108,13 +118,6 @@ const emitTime = () => {
 		meridiem: meridiem.value,
 		militaryTime: meridiem.value == 'PM' && hours < 12 ? hours + 12 : hours,
 	})
-}
-
-/* pad the time strings with leading 0's if they are less than 10 */
-const padString = () => {
-	for (const str of ['hours', 'minutes', 'seconds'] as const) {
-		time_data[str] = String(time_data[str]).padStart(2, '0')
-	}
 }
 
 const focusInput = (event: FocusEvent) => {
@@ -130,40 +133,44 @@ const tick = (target: 'hours' | 'minutes' | 'seconds', amount = 1) => {
 
 	if (target == 'hours') {
 		const oldHours = Number(time_data.hours)
-		time_data.hours = oldHours + amount
-		if ((oldHours == 11 && time_data.hours == 12) || (oldHours == 12 && time_data.hours == 11)) changeMeridiem()
-	} else if (target == 'minutes') time_data.minutes = Number(time_data.minutes) + amount
-	else if (target == 'seconds') time_data.seconds = Number(time_data.seconds) + amount
+		time_data.hours = String(oldHours + amount)
+		if ((oldHours == 11 && Number(time_data.hours) == 12) || (oldHours == 12 && Number(time_data.hours) == 11)) {
+			changeMeridiem()
+		}
+	} else if (target == 'minutes') {
+		time_data.minutes = String(Number(time_data.minutes) + amount)
+	} else if (target == 'seconds') {
+		time_data.seconds = String(Number(time_data.seconds) + amount)
+	}
 
-	if (time_data.seconds < 0) time_data.minutes--
-	else if (time_data.seconds > 59) time_data.minutes++
-	if (time_data.minutes < 0) time_data.hours--
-	else if (time_data.minutes > 59) time_data.hours++
+	if (Number(time_data.seconds) < 0) time_data.minutes = String(Number(time_data.minutes) - 1)
+	else if (Number(time_data.seconds) > 59) time_data.minutes = String(Number(time_data.minutes) + 1)
 
-	time_data.hours = formatTime(Number(time_data.hours), minHours, maxHours)
-	time_data.minutes = formatTime(Number(time_data.minutes), 0, 59)
-	time_data.seconds = formatTime(Number(time_data.seconds), 0, 59)
+	if (Number(time_data.minutes) < 0) time_data.hours = String(Number(time_data.hours) - 1)
+	else if (Number(time_data.minutes) > 59) time_data.hours = String(Number(time_data.hours) + 1)
 
-	padString()
+	time_data.hours = String(formatTime(Number(time_data.hours), minHours, maxHours)).padStart(2, '0')
+	time_data.minutes = String(formatTime(Number(time_data.minutes), 0, 59)).padStart(2, '0')
+	time_data.seconds = String(formatTime(Number(time_data.seconds), 0, 59)).padStart(2, '0')
 }
 
-/* Watchers */
+/* Watchers — prevent more than two digits while typing */
 watch(
 	() => time_data.hours,
 	(newVal, oldVal) => {
-		time_data.hours = newVal > 99 ? oldVal : newVal
+		time_data.hours = Number(newVal) > 99 ? oldVal : newVal
 	}
 )
 watch(
 	() => time_data.minutes,
 	(newVal, oldVal) => {
-		time_data.minutes = newVal > 99 ? oldVal : newVal
+		time_data.minutes = Number(newVal) > 99 ? oldVal : newVal
 	}
 )
 watch(
 	() => time_data.seconds,
 	(newVal, oldVal) => {
-		time_data.seconds = newVal > 99 ? oldVal : newVal
+		time_data.seconds = Number(newVal) > 99 ? oldVal : newVal
 	}
 )
 
@@ -179,8 +186,6 @@ const changeMeridiem = () => {
 }
 
 const pasteInput = (event: ClipboardEvent, pasteAllFields = false) => {
-	//pasteAllFields will apply the paste effect to all input fields, should only be used on the first field/hour
-
 	event.stopPropagation()
 	event.preventDefault()
 
@@ -199,9 +204,9 @@ const pasteInput = (event: ClipboardEvent, pasteAllFields = false) => {
 		const time_units = pastedData.match(/(..?)/g)
 		if (!time_units) return
 
-		time_data.seconds = Number(time_units[2])
-		time_data.minutes = Number(time_units[1])
-		time_data.hours = Number(time_units[0])
+		time_data.seconds = time_units[2]
+		time_data.minutes = time_units[1]
+		time_data.hours = time_units[0]
 		confirmTime()
 		if (!allowMilitaryTime) meridiemSelector.value?.focus()
 	} else {
@@ -209,7 +214,6 @@ const pasteInput = (event: ClipboardEvent, pasteAllFields = false) => {
 		const target = event.target
 		if (target instanceof HTMLInputElement) {
 			target.value = pastedData
-			//manually call the input event to force v-model update
 			target.dispatchEvent(new Event('input'))
 		}
 	}
@@ -224,14 +228,12 @@ const pasteInput = (event: ClipboardEvent, pasteAllFields = false) => {
 	font-size: 1rem;
 	background: var(--sc-gray-10);
 }
-
 .adate_time_fields {
 	display: flex;
 	align-items: stretch;
 	gap: 5px;
 	justify-content: flex-start;
 }
-
 .adate_time_fields > input {
 	min-width: 30px;
 	padding: 2px;
@@ -239,7 +241,6 @@ const pasteInput = (event: ClipboardEvent, pasteAllFields = false) => {
 	display: inline-block;
 	flex-basis: 0;
 }
-
 .meridiem-selector {
 	cursor: pointer;
 	display: inline-block;
@@ -247,27 +248,22 @@ const pasteInput = (event: ClipboardEvent, pasteAllFields = false) => {
 	padding: 5px;
 	user-select: none;
 }
-
 .meridiem-selector:focus {
 	outline: 2px solid black;
 	outline-offset: -2px;
 }
-
 .adate_time_segment {
 	display: flex;
 	flex-direction: column;
 	width: 40px;
 }
-
 .colon {
 	display: flex;
 	align-items: normal;
 }
-
 .aform_form-btn {
 	cursor: pointer;
 }
-
 .aform-select {
 	border-radius: 0px;
 	border: 1px solid rgb(118, 118, 118);
@@ -280,19 +276,7 @@ const pasteInput = (event: ClipboardEvent, pasteAllFields = false) => {
 	position: relative;
 	color: var(--sc-cell-text-color);
 }
-
 .meridiem-selector {
 	margin-left: 6px;
-}
-
-input[type='number']::-webkit-outer-spin-button,
-input[type='number']::-webkit-inner-spin-button {
-	-webkit-appearance: none;
-	margin: 0;
-}
-
-input[type='number'] {
-	-moz-appearance: textfield;
-	appearance: textfield;
 }
 </style>
