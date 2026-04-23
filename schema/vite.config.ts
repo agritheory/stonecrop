@@ -1,23 +1,45 @@
 import { resolve } from 'node:path'
-import { defineConfig } from 'vite'
-import dts from 'vite-plugin-dts'
+import { coverageConfigDefaults, defineConfig } from 'vitest/config'
 
 export default defineConfig({
-	plugins: [
-		dts({
-			include: ['src/**/*'],
-			rollupTypes: true,
-		}),
-	],
+	plugins: [],
 	build: {
+		emptyOutDir: false,
+		sourcemap: true,
 		lib: {
-			entry: resolve(__dirname, 'src/index.ts'),
-			name: 'StonecropSchema',
-			formats: ['es', 'cjs'],
-			fileName: format => `index.${format === 'es' ? 'js' : 'cjs'}`,
+			entry: {
+				index: resolve(__dirname, 'src/index.ts'),
+				cli: resolve(__dirname, 'src/cli.ts'),
+			},
+			name: '@stonecrop/schema',
+			formats: ['es'],
+			fileName: (_format, entryName) => `${entryName}.js`,
 		},
 		rollupOptions: {
-			external: ['zod'],
+			external: ['zod', 'graphql', 'node:util', 'node:fs', 'node:path'],
+		},
+	},
+	test: {
+		globals: true,
+		environment: 'jsdom',
+		coverage: {
+			enabled: true,
+			provider: 'istanbul',
+			reporter: ['text', 'json-summary', 'json'], // required for Github Actions CI
+			reportOnFailure: true,
+			skipFull: true,
+			thresholds: {
+				lines: 70,
+				branches: 70,
+				functions: 70,
+				statements: 70,
+			},
+			include: ['src/**/*.{ts,vue}'],
+			exclude: [
+				...coverageConfigDefaults.exclude,
+				'src/index.ts', // ignore the entry file
+				'src/cli.ts', // ignore the CLI entry point
+			],
 		},
 	},
 })

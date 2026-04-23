@@ -13,6 +13,14 @@ import SheetNav from './components/SheetNav.vue';
 // @public
 export type ActionElements = ButtonElement | DropdownElement;
 
+// @public
+export type ActionEventPayload = {
+    name: string;
+    doctype: string;
+    recordId: string;
+    data: Record<string, any>;
+};
+
 export { ActionSet }
 
 // @public
@@ -41,6 +49,38 @@ export type DropdownElement = BaseElement & {
 export type ElementAction = BaseElement & {
     link?: string;
     action?: () => void;
+};
+
+// @public
+export type LoadRecordEventPayload = {
+    doctype: string;
+    recordId: string;
+};
+
+// @public
+export type LoadRecordsEventPayload = {
+    doctype: string;
+};
+
+// @public
+export type NavigationTarget = {
+    view: 'doctypes' | 'records' | 'record';
+    doctype?: string;
+    recordId?: string;
+};
+
+// @public
+export type RecordOpenEventPayload = {
+    doctype: string;
+    recordId: string;
+};
+
+// @public
+export type RouteAdapter = {
+    getCurrentDoctype: () => string;
+    getCurrentRecordId: () => string;
+    getCurrentView: () => 'doctypes' | 'records' | 'record';
+    navigate: (target: NavigationTarget) => void | Promise<void>;
 };
 
 export { SheetNav }

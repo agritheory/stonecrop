@@ -4,12 +4,10 @@ import {
 	camelToSnake,
 	snakeToLabel,
 	camelToLabel,
-	convertSQLName,
-	convertSQLNames,
-	createNameMapping,
 	toPascalCase,
 	toSlug,
-} from '../src/converter/naming'
+	pascalToSnake,
+} from '../src/naming'
 
 describe('Naming Conventions', () => {
 	describe('snakeToCamel', () => {
@@ -104,64 +102,22 @@ describe('Naming Conventions', () => {
 		})
 	})
 
-	describe('convertSQLName', () => {
-		it('should convert SQL column name to field name and label', () => {
-			const result = convertSQLName('user_email')
-			expect(result.fieldname).toBe('userEmail')
-			expect(result.label).toBe('User Email')
-			expect(result.originalName).toBe('user_email')
+	describe('pascalToSnake', () => {
+		it('should convert PascalCase to snake_case', () => {
+			expect(pascalToSnake('SalesOrder')).toBe('sales_order')
+			expect(pascalToSnake('SalesOrderItem')).toBe('sales_order_item')
 		})
 
-		it('should handle ID suffix', () => {
-			const result = convertSQLName('user_id')
-			expect(result.fieldname).toBe('userId')
-			expect(result.label).toBe('User')
+		it('should handle single word', () => {
+			expect(pascalToSnake('User')).toBe('user')
 		})
 
-		it('should handle created_at timestamp', () => {
-			const result = convertSQLName('created_at')
-			expect(result.fieldname).toBe('createdAt')
-			expect(result.label).toBe('Created At')
-			expect(result.originalName).toBe('created_at')
-		})
-	})
-
-	describe('convertSQLNames', () => {
-		it('should convert multiple SQL names', () => {
-			const names = ['user_id', 'first_name', 'email_address']
-			const results = convertSQLNames(names)
-
-			expect(results).toHaveLength(3)
-			expect(results[0].fieldname).toBe('userId')
-			expect(results[1].fieldname).toBe('firstName')
-			expect(results[2].fieldname).toBe('emailAddress')
+		it('should handle already lowercase', () => {
+			expect(pascalToSnake('user')).toBe('user')
 		})
 
-		it('should handle empty array', () => {
-			const results = convertSQLNames([])
-			expect(results).toEqual([])
-		})
-	})
-
-	describe('createNameMapping', () => {
-		it('should create mapping from SQL names to camelCase', () => {
-			const names = ['user_id', 'first_name', 'email_address']
-			const mapping = createNameMapping(names)
-
-			expect(mapping.sqlToFieldname.get('user_id')).toBe('userId')
-			expect(mapping.sqlToFieldname.get('first_name')).toBe('firstName')
-			expect(mapping.sqlToFieldname.get('email_address')).toBe('emailAddress')
-
-			expect(mapping.fieldnameToSQL.get('userId')).toBe('user_id')
-			expect(mapping.fieldnameToSQL.get('firstName')).toBe('first_name')
-			expect(mapping.fieldnameToSQL.get('emailAddress')).toBe('email_address')
-		})
-
-		it('should handle empty array', () => {
-			const mapping = createNameMapping([])
-			expect(mapping.sqlToFieldname.size).toBe(0)
-			expect(mapping.fieldnameToSQL.size).toBe(0)
-			expect(mapping.conversions).toHaveLength(0)
+		it('should handle empty string', () => {
+			expect(pascalToSnake('')).toBe('')
 		})
 	})
 

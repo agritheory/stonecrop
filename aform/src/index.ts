@@ -24,8 +24,9 @@ export type * from './types'
  */
 function install(app: App /* options */) {
 	app.use(installATable) // Install ATable components for use within AForm
+
 	app.component('ACheckbox', ACheckbox)
-	app.component('ACombobox', AComboBox)
+	app.component('AComboBox', AComboBox)
 	app.component('ADate', ADate)
 	app.component('ADropdown', ADropdown)
 	app.component('ADatePicker', ADatePicker)

@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/atable",
-	"version": "0.8.4",
+	"version": "0.11.4",
 	"license": "MIT",
 	"type": "module",
 	"author": {
@@ -15,21 +15,16 @@
 	"bugs": {
 		"url": "https://github.com/agritheory/stonecrop/issues"
 	},
+	"description": "Advanced data table component for Stonecrop",
+	"types": "./dist/atable.d.ts",
 	"exports": {
 		".": {
-			"import": {
-				"types": "./dist/src/index.d.ts",
-				"default": "./dist/atable.js"
-			},
-			"require": "./dist/atable.umd.cjs"
+			"types": "./dist/atable.d.ts",
+			"import": "./dist/atable.js"
 		},
-		"./types": {
-			"import": "./dist/src/types/index.d.ts",
-			"require": "./dist/src/types/index.d.ts"
-		},
-		"./styles": "./dist/assets/index.css"
+		"./styles": "./dist/assets/index.css",
+		"./types": "./dist/src/types/index.d.ts"
 	},
-	"typings": "./dist/src/index.d.ts",
 	"files": [
 		"dist/*",
 		"src/*"
@@ -39,7 +34,7 @@
 	],
 	"scripts": {
 		"_phase:build": "heft build && vite build && rushx docs",
-		"prepublish": "heft build && vite build && rushx docs",
+		"prepublishOnly": "heft build && vite build && rushx docs",
 		"build": "heft build && vite build && rushx docs",
 		"dev": "vite",
 		"docs": "bash ../common/scripts/run-docs.sh atable",
@@ -54,14 +49,16 @@
 		"@stonecrop/themes": "workspace:*",
 		"@stonecrop/utilities": "workspace:*",
 		"@vueuse/components": "^14.2.1",
-		"@vueuse/core": "^14.2.1",
+		"@vueuse/core": "^14.2.1"
+	},
+	"peerDependencies": {
 		"pinia": "^3.0.4",
 		"vue": "^3.5.28"
 	},
 	"devDependencies": {
 		"@eslint/js": "^9.39.2",
 		"@microsoft/api-documenter": "^7.28.2",
-		"@rushstack/heft": "^1.1.7",
+		"@rushstack/heft": "^1.2.0",
 		"@vitejs/plugin-vue": "^6.0.3",
 		"@vitest/coverage-istanbul": "^4.0.18",
 		"@vitest/ui": "^4.0.18",
@@ -76,6 +73,8 @@
 		"typescript-eslint": "^8.53.0",
 		"vite-plugin-lib-inject-css": "^2.2.2",
 		"vite": "^7.3.1",
+		"pinia": "^3.0.4",
+		"vue": "^3.5.28",
 		"vitest": "^4.0.18",
 		"vue-router": "^5.0.2"
 	},

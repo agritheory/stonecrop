@@ -74,7 +74,7 @@ registerGlobalAction('updateTimestamp', async (context) => {
 Add both regular actions and field triggers to your doctype's actions Map:
 
 ```typescript
-import { DoctypeMeta } from '@stonecrop/stonecrop'
+import { Doctype } from '@stonecrop/stonecrop'
 import { Map } from 'immutable'
 
 const actions = Map({
@@ -89,7 +89,7 @@ const actions = Map({
   'title': ['(context) => console.log("Title changed:", context.afterValue)'], // Inline function
 })
 
-const doctype = new DoctypeMeta(
+const doctype = new Doctype(
   'Contact',
   schema,
   workflow,
@@ -894,7 +894,7 @@ import type {
 Field triggers are automatically registered when you add a doctype to the Registry:
 
 ```typescript
-import { Registry, DoctypeMeta } from '@stonecrop/stonecrop'
+import { Registry, Doctype } from '@stonecrop/stonecrop'
 import { Map } from 'immutable'
 
 const registry = new Registry()
@@ -903,6 +903,6 @@ const actions = Map({
   'email': ['validateEmail']  // This field trigger is automatically registered
 })
 
-const doctype = new DoctypeMeta('Contact', schema, workflow, actions, component)
+const doctype = new Doctype('Contact', schema, workflow, actions, component)
 registry.addDoctype(doctype)  // Field triggers are registered here
 ```

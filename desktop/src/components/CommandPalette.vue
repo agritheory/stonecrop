@@ -149,7 +149,7 @@ const selectResult = (result: T) => {
 	display: flex;
 	align-items: flex-start;
 	justify-content: center;
-	z-index: 9999;
+	z-index: 300;
 	padding-top: 100px;
 }
 

@@ -5,18 +5,18 @@
 		<ADatePicker v-if="showDate" :select-range="selectRange" @get-date="handleDate" />
 		<ADateTime
 			v-if="showTime"
-			@get-time="handleTime"
-			:allowMilitaryTime="allowMilitaryTime"
-			:defaultHours="defaultHours"
-			:defaultMinutes="defaultMinutes"
-			:defaultSeconds="defaultSeconds"
-			:defaultMeridiem="defaultMeridiem"
-			:useSeconds="useSeconds" />
+			:allow-military-time="allowMilitaryTime"
+			:default-hours="defaultHours"
+			:default-minutes="defaultMinutes"
+			:default-seconds="defaultSeconds"
+			:default-meridiem="defaultMeridiem"
+			:use-seconds="useSeconds"
+			@get-time="handleTime" />
 		<p v-if="!showTime && !showDate" class="empty">empty</p>
 	</div>
 </template>
 <script setup lang="ts">
-import { provide, defineProps, defineEmits, ref } from 'vue'
+import { provide } from 'vue'
 
 defineProps({
 	showDate: {
@@ -57,16 +57,19 @@ defineProps({
 	},
 })
 
-const emit = defineEmits(['get-date', 'get-time'])
+const emit = defineEmits<{
+	'get-date': [{ selected: Date }]
+	'get-time': [{ hours: number; minutes: number; seconds: number; meridiem: string }]
+}>()
 
 //provides prop to datepicker child
 provide('select-range', true)
 
-const handleDate = data => {
+const handleDate = (data: { selected: Date }) => {
 	emit('get-date', data)
 }
 
-const handleTime = data => {
+const handleTime = (data: { hours: number; minutes: number; seconds: number; meridiem: string }) => {
 	emit('get-time', data)
 }
 </script>

@@ -5,76 +5,14 @@
  */
 
 import type { SchemaTypes } from '@stonecrop/aform'
+import type { LinkDeclaration } from '@stonecrop/schema'
 import type { List, Map as ImmutableMap } from 'immutable'
 import type { AnyStateNodeConfig } from 'xstate'
+
 import { getGlobalTriggerEngine } from './field-triggers'
 import type Registry from './registry'
-
-/**
- * Validation severity levels
- * @public
- */
-export enum ValidationSeverity {
-	/** Blocking error that prevents save */
-	ERROR = 'error',
-	/** Advisory warning that allows save */
-	WARNING = 'warning',
-	/** Informational message */
-	INFO = 'info',
-}
-
-/**
- * Validation issue
- * @public
- */
-export interface ValidationIssue {
-	/** Severity level */
-	severity: ValidationSeverity
-	/** Validation rule that failed */
-	rule: string
-	/** Human-readable message */
-	message: string
-	/** Doctype name */
-	doctype?: string
-	/** Field name if applicable */
-	fieldname?: string
-	/** Additional context */
-	context?: Record<string, unknown>
-}
-
-/**
- * Validation result
- * @public
- */
-export interface ValidationResult {
-	/** Whether validation passed (no blocking errors) */
-	valid: boolean
-	/** List of validation issues */
-	issues: ValidationIssue[]
-	/** Count of errors */
-	errorCount: number
-	/** Count of warnings */
-	warningCount: number
-	/** Count of info messages */
-	infoCount: number
-}
-
-/**
- * Schema validator options
- * @public
- */
-export interface ValidatorOptions {
-	/** Registry instance for doctype lookups */
-	registry?: Registry
-	/** Whether to validate Link field targets */
-	validateLinkTargets?: boolean
-	/** Whether to validate workflow reachability */
-	validateWorkflows?: boolean
-	/** Whether to validate action registration */
-	validateActions?: boolean
-	/** Whether to validate required schema properties */
-	validateRequiredProperties?: boolean
-}
+import { ValidationSeverity } from './types/schema-validator'
+import type { ValidationIssue, ValidationResult, ValidatorOptions } from './types/schema-validator'
 
 /**
  * Schema validator class
@@ -91,6 +29,7 @@ export class SchemaValidator {
 		this.options = {
 			registry: options.registry || null!,
 			validateLinkTargets: options.validateLinkTargets ?? true,
+			validateLinks: options.validateLinks ?? true,
 			validateActions: options.validateActions ?? true,
 			validateWorkflows: options.validateWorkflows ?? true,
 			validateRequiredProperties: options.validateRequiredProperties ?? true,
@@ -103,13 +42,15 @@ export class SchemaValidator {
 	 * @param schema - Schema fields (List or Array)
 	 * @param workflow - Optional workflow configuration
 	 * @param actions - Optional actions map
+	 * @param links - Optional links object
 	 * @returns Validation result
 	 */
 	validate(
 		doctype: string,
 		schema: List<SchemaTypes> | SchemaTypes[] | undefined,
 		workflow?: AnyStateNodeConfig,
-		actions?: ImmutableMap<string, string[]> | Map<string, string[]>
+		actions?: ImmutableMap<string, string[]> | Map<string, string[]>,
+		links?: Record<string, LinkDeclaration>
 	): ValidationResult {
 		const issues: ValidationIssue[] = []
 
@@ -124,6 +65,11 @@ export class SchemaValidator {
 		// Validate Link field targets
 		if (this.options.validateLinkTargets && this.options.registry) {
 			issues.push(...this.validateLinkFields(doctype, schemaArray, this.options.registry))
+		}
+
+		// Validate links object
+		if (this.options.validateLinks && this.options.registry && links) {
+			issues.push(...this.validateLinkDeclarations(doctype, links, schemaArray, this.options.registry))
 		}
 
 		// Validate workflow configuration
@@ -253,6 +199,116 @@ export class SchemaValidator {
 					Array.isArray(nestedSchema) ? nestedSchema : (nestedSchema as { toArray?: () => unknown[] }).toArray?.() || []
 				) as SchemaTypes[]
 				issues.push(...this.validateLinkFields(doctype, nestedArray, registry))
+			}
+		}
+
+		return issues
+	}
+
+	/**
+	 * Validates link declarations: target resolution, backlink consistency, Link field correspondence
+	 * @internal
+	 */
+	private validateLinkDeclarations(
+		doctype: string,
+		links: Record<string, LinkDeclaration>,
+		schema: SchemaTypes[],
+		registry: Registry
+	): ValidationIssue[] {
+		const issues: ValidationIssue[] = []
+
+		// Build a map of Link fields by fieldname for quick lookup
+		const linkFieldsByFieldname = new Map<string, SchemaTypes>()
+		for (const field of schema) {
+			if ('fieldtype' in field && field.fieldtype === 'Link') {
+				linkFieldsByFieldname.set(field.fieldname, field)
+			}
+		}
+
+		for (const [fieldname, link] of Object.entries(links)) {
+			// Check target resolves in registry
+			const targetDoctype = registry.registry[link.target]
+			if (!targetDoctype) {
+				issues.push({
+					severity: ValidationSeverity.ERROR,
+					rule: 'link-invalid-target',
+					message: `Link "${fieldname}" references non-existent doctype: "${link.target}"`,
+					doctype,
+					fieldname,
+					context: { target: link.target },
+				})
+				continue
+			}
+
+			// Warn on self-referential target
+			if (link.target === doctype) {
+				issues.push({
+					severity: ValidationSeverity.WARNING,
+					rule: 'link-self-referential',
+					message: `Link "${fieldname}" is self-referential (target: "${link.target}")`,
+					doctype,
+					fieldname,
+					context: { target: link.target },
+				})
+			}
+
+			// Check backlink consistency
+			if (link.backlink && targetDoctype.links) {
+				const reciprocalLink = targetDoctype.links[link.backlink]
+				if (!reciprocalLink) {
+					issues.push({
+						severity: ValidationSeverity.ERROR,
+						rule: 'link-backlink-missing',
+						message: `Backlink "${link.backlink}" not found on target doctype "${link.target}"`,
+						doctype,
+						fieldname,
+						context: { backlink: link.backlink, target: link.target },
+					})
+				} else if (reciprocalLink.target !== doctype) {
+					issues.push({
+						severity: ValidationSeverity.WARNING,
+						rule: 'link-backlink-mismatch',
+						message: `Backlink "${link.backlink}" on "${link.target}" points to "${reciprocalLink.target}" instead of "${doctype}"`,
+						doctype,
+						fieldname,
+						context: { backlink: link.backlink, target: link.target, actualTarget: reciprocalLink.target },
+					})
+				}
+			}
+
+			// If Link field exists with same fieldname, verify it has matching target
+			// Only check if link has fieldname set (otherwise it's a standalone link without a field)
+			if (link.fieldname) {
+				const linkField = linkFieldsByFieldname.get(link.fieldname)
+				if (linkField) {
+					const linkFieldOptions = 'options' in linkField ? (linkField as { options: unknown }).options : undefined
+					const linkFieldTarget = typeof linkFieldOptions === 'string' ? linkFieldOptions : undefined
+					if (linkFieldTarget && linkFieldTarget !== link.target) {
+						issues.push({
+							severity: ValidationSeverity.ERROR,
+							rule: 'link-field-target-mismatch',
+							message: `Link field "${link.fieldname}" targets "${linkFieldTarget}" but link declaration targets "${link.target}"`,
+							doctype,
+							fieldname: link.fieldname,
+							context: { linkFieldTarget, linkTarget: link.target },
+						})
+					}
+				}
+			}
+		}
+
+		// Check that every Link field has a corresponding link declaration
+		// A Link field corresponds to a link if the link's fieldname property matches the field's fieldname
+		for (const [fieldname, _field] of linkFieldsByFieldname) {
+			const hasCorrespondingLink = Object.values(links).some(link => link.fieldname === fieldname)
+			if (!hasCorrespondingLink) {
+				issues.push({
+					severity: ValidationSeverity.ERROR,
+					rule: 'link-field-without-declaration',
+					message: `Link field "${fieldname}" has no corresponding link declaration`,
+					doctype,
+					fieldname,
+				})
 			}
 		}
 

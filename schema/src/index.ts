@@ -1,51 +1,54 @@
 // Field types
-export { StonecropFieldType, TYPE_MAP, getDefaultComponent } from './fieldtype'
+export { StonecropFieldType, TYPE_MAP, getDefaultComponent, type FieldTemplate } from './fieldtype'
 
 // Field schema
-export { FieldMeta, FieldOptions, FieldValidation } from './field'
+export type { FieldMeta, FieldOptions, FieldValidation } from './field'
 
 // Doctype schema
-export { DoctypeMeta, WorkflowMeta, ActionDefinition } from './doctype'
+export type {
+	ActionDefinition,
+	Cardinality,
+	CustomFetch,
+	DataClient,
+	DoctypeContext,
+	DoctypeMeta,
+	DoctypeRef,
+	FetchStrategy,
+	GetRecordOptions,
+	GetRecordResult,
+	GetRecordsOptions,
+	LazyFetch,
+	LinkDeclaration,
+	SerializedFunction,
+	SyncFetch,
+	WorkflowMeta,
+} from './doctype'
 
 // Validation helpers
 export {
-	validateField,
-	validateDoctype,
-	parseField,
 	parseDoctype,
-	type ValidationResult,
+	parseField,
+	validateDoctype,
+	validateField,
 	type ValidationError,
+	type ValidationResult,
 } from './validation'
 
-// DDL to Doctype conversion
+// GraphQL to Doctype conversion
 export {
-	convertSchema,
-	parseDDL,
-	normalizeType,
-	mapColumnToField,
-	PG_TYPE_MAP,
-	TYPE_ALIASES,
-	type ConvertedDoctype,
-	type ConversionFieldMeta,
-	type ParsedColumn,
-	type ParsedTable,
-	type ConversionOptions,
-	type PostgresType,
-	type MapColumnOptions,
-	// Naming utilities
-	snakeToCamel,
-	camelToSnake,
-	snakeToLabel,
-	camelToLabel,
-	convertSQLName,
-	convertSQLNames,
-	createNameMapping,
-	toPascalCase,
-	toSlug,
-	type NameConversion,
+	buildScalarMap,
+	classifyFieldType,
+	convertGraphQLSchema,
+	defaultIsEntityField,
+	defaultIsEntityType,
+	GQL_SCALAR_MAP,
+	INTERNAL_SCALARS,
+	WELL_KNOWN_SCALARS,
+	type ConvertedGraphQLDoctype,
+	type GraphQLConversionFieldMeta,
+	type GraphQLConversionOptions,
+	type IntrospectionSource,
 } from './converter'
 
-// Type-only exports for consumers who just need types
-export type { StonecropFieldType as StonecropFieldTypeValue } from './fieldtype'
-export type { FieldMeta as FieldMetaType, FieldOptions as FieldOptionsType } from './field'
-export type { DoctypeMeta as DoctypeMetaType, WorkflowMeta as WorkflowMetaType } from './doctype'
+// Naming utilities
+export { toSlug, toPascalCase, pascalToSnake, snakeToCamel, camelToSnake, snakeToLabel, camelToLabel } from './naming'

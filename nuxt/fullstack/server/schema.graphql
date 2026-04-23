@@ -62,8 +62,6 @@ type DoctypeMeta {
 	fields: [FieldMeta!]!
 	workflow: WorkflowMeta
 	inherits: String
-	listDoctype: String
-	parentDoctype: String
 }
 
 # ============================================
@@ -77,6 +75,7 @@ Result of a single record query
 type RecordResult {
 	data: JSON
 	doctype: String!
+	unknownLinks: [String!]
 }
 
 """
@@ -147,7 +146,7 @@ type Query {
 	"""
 	Get a single record by doctype and ID
 	"""
-	stonecropRecord(doctype: String!, id: String!): RecordResult
+	stonecropRecord(doctype: String!, id: String!, options: JSON): RecordResult
 
 	"""
 	Get multiple records with optional filtering

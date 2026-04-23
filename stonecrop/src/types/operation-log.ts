@@ -79,11 +79,11 @@ export interface HSTOperation {
 	/** Additional metadata for custom use cases */
 	metadata?: Record<string, any>
 
-	/** Parent operation ID for batch operations */
-	parentOperationId?: string
+	/** Ancestor operation ID for batch operations */
+	ancestorOperationId?: string
 
-	/** Child operation IDs for batch operations */
-	childOperationIds?: string[]
+	/** Descendant operation IDs for batch operations */
+	descendantOperationIds?: string[]
 }
 
 /**

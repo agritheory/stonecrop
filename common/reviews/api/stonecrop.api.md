@@ -7,18 +7,18 @@
 import type { AnyStateNodeConfig } from 'xstate';
 import { Component } from 'vue';
 import { ComputedRef } from 'vue';
-import { CSSProperties } from 'vue';
+import type { DataClient } from '@stonecrop/schema';
+import type { LinkDeclaration } from '@stonecrop/schema';
 import { List } from 'immutable';
 import { Map as Map_2 } from 'immutable';
 import { Plugin as Plugin_2 } from 'vue';
 import { Ref } from 'vue';
 import { Router } from 'vue-router';
-import type { ShallowRef } from 'vue';
+import type { SchemaTypes } from '@stonecrop/aform';
 import { Store } from 'pinia';
 import { StoreDefinition } from 'pinia';
 import type { UnknownMachineConfig } from 'xstate';
-import { useElementBounding } from '@vueuse/core';
-import { WritableComputedRef } from 'vue';
+import type { WorkflowMeta } from '@stonecrop/schema';
 
 // @public
 export interface ActionExecutionResult {
@@ -38,28 +38,10 @@ export interface ActionRegistry {
 }
 
 // @public
-export type BaseSchema = {
-    fieldname: string;
-    component?: string;
-    value?: any;
-};
-
-// @public
 export type BaseStonecropReturn = {
     stonecrop: Ref<Stonecrop | undefined>;
     operationLog: OperationLogAPI;
 };
-
-// @public
-export interface BaseTableConfig {
-    fullWidth?: boolean;
-    rowActions?: RowActionsConfig;
-}
-
-// @public
-export interface BasicTableConfig extends BaseTableConfig {
-    view?: 'uncounted' | 'list' | 'list-expansion';
-}
 
 // @public
 export interface BatchOperation {
@@ -71,68 +53,7 @@ export interface BatchOperation {
 }
 
 // @public
-export interface CellContext {
-    column: TableColumn;
-    row: TableRow;
-    table: {
-        [key: string]: any;
-    };
-}
-
-// @public
-export type ComponentProps = {
-    schema?: SchemaTypes;
-    label?: string;
-    mask?: string;
-    required?: boolean;
-    readOnly?: boolean;
-    uuid?: string;
-    validation?: {
-        errorMessage: string;
-        [key: string]: any;
-    };
-};
-
-// @public
-export type ConnectionEvent = {
-    type: 'create' | 'delete';
-    connection: ConnectionPath;
-};
-
-// @public
-export interface ConnectionHandle {
-    barId: string;
-    colIndex: number;
-    id: string;
-    position: {
-        x: ShallowRef<number>;
-        y: ShallowRef<number>;
-    };
-    rowIndex: number;
-    side: 'left' | 'right';
-    visible: Ref<boolean>;
-}
-
-// @public
-export interface ConnectionPath {
-    from: {
-        barId: string;
-        side: 'left' | 'right';
-    };
-    id: string;
-    label?: string;
-    style?: {
-        color?: string;
-        width?: number;
-    };
-    to: {
-        barId: string;
-        side: 'left' | 'right';
-    };
-}
-
-// @public
-export function createHST(target: any, doctype: string, parentDoctype?: string): HSTNode;
+export function createHST(target: any, doctype: string): HSTNode;
 
 // @public
 export function createValidator(registry: Registry, options?: Partial<ValidatorOptions>): SchemaValidator;
@@ -150,23 +71,43 @@ export interface CrossTabMessage {
 export type CrossTabMessageType = 'operation' | 'undo' | 'redo' | 'sync-request' | 'sync-response';
 
 // @public
-export class DoctypeMeta {
-    constructor(doctype: string, schema: ImmutableDoctype['schema'], workflow: ImmutableDoctype['workflow'], actions: ImmutableDoctype['actions'], component?: Component);
+export class Doctype {
+    constructor(doctype: string, schema: ImmutableDoctype['schema'], workflow: ImmutableDoctype['workflow'], actions: ImmutableDoctype['actions'], component?: Component, links?: Record<string, LinkDeclaration>);
     readonly actions: ImmutableDoctype['actions'];
     readonly component?: Component;
     readonly doctype: string;
+    static fromObject(config: DoctypeConfig): Doctype;
+    getActionMeta(actionName: string): {
+        label: string;
+        handler: string;
+        requiredFields?: string[];
+        allowedStates?: string[];
+        confirm?: boolean;
+        args?: Record<string, unknown>;
+    } | undefined;
+    getActionsObject(): Record<string, string[]>;
+    getAvailableTransitions(currentState: string): Array<{
+        name: string;
+        targetState: string;
+    }>;
+    getSchemaArray(): SchemaTypes[];
+    readonly links?: Record<string, LinkDeclaration>;
+    get name(): string;
     readonly schema: ImmutableDoctype['schema'];
     get slug(): string;
     readonly workflow: ImmutableDoctype['workflow'];
 }
 
 // @public
-export type DoctypeSchema = BaseSchema & {
-    fieldtype: 'Doctype';
-    options: string;
-    label?: string;
-    schema?: SchemaTypes[];
-    readOnly?: boolean;
+export type DoctypeConfig = {
+    name: string;
+    slug?: string;
+    tableName?: string;
+    fields?: SchemaTypes[];
+    links?: Record<string, LinkDeclaration>;
+    workflow?: UnknownMachineConfig | WorkflowMeta;
+    actions?: Record<string, string[]>;
+    inherits?: string;
 };
 
 // @public
@@ -192,13 +133,6 @@ export interface FieldChangeContext {
 }
 
 // @public
-export type FieldsetSchema = BaseSchema & {
-    label?: string;
-    schema?: (FormSchema | TableSchema)[];
-    collapsible?: boolean;
-};
-
-// @public
 export interface FieldTriggerConfig {
     actions: FieldAction[];
     condition?: (context: FieldChangeContext) => boolean | Promise<boolean>;
@@ -218,6 +152,7 @@ export class FieldTriggerEngine {
     executeTransitionActions(context: TransitionChangeContext, options?: {
         timeout?: number;
     }): Promise<TransitionExecutionResult[]>;
+    getAction(name: string): FieldActionFunction | undefined;
     registerAction(name: string, fn: FieldActionFunction): void;
     registerDoctypeActions(doctype: string, actions: Map_2<string, string[]> | Map<string, string[]> | Record<string, string[]> | undefined): void;
     registerTransitionAction(name: string, fn: TransitionActionFunction): void;
@@ -248,77 +183,10 @@ export interface FieldTriggerOptions {
 }
 
 // @public
-export type FormSchema = BaseSchema & {
-    align?: string;
-    edit?: boolean;
-    fieldtype?: string;
-    label?: string;
-    name?: string;
-    width?: string;
-    mask?: string;
-};
-
-// @public
-export interface GanttBarInfo {
-    colIndex: number;
-    color: Ref<string>;
-    endIndex: Ref<number>;
-    id: string;
-    label?: string;
-    position: {
-        x: ShallowRef<number>;
-        y: ShallowRef<number>;
-    };
-    rowIndex: number;
-    startIndex: Ref<number>;
-}
-
-// @public
-export type GanttDragEvent = {
-    rowIndex: number;
-    colIndex: number;
-    delta: number;
-} & ({
-    type: 'bar';
-    oldStart: number;
-    oldEnd: number;
-    newStart: number;
-    newEnd: number;
-    colspan: number;
-} | {
-    type: 'resize';
-    edge: 'start';
-    oldStart: number;
-    newStart: number;
-    end: number;
-    oldColspan: number;
-    newColspan: number;
-} | {
-    type: 'resize';
-    edge: 'end';
-    oldEnd: number;
-    newEnd: number;
-    start: number;
-    oldColspan: number;
-    newColspan: number;
-});
-
-// @public
-export interface GanttOptions {
-    color?: string;
-    colspan?: number;
-    endIndex?: number;
-    startIndex?: number;
-}
-
-// @public
-export interface GanttTableConfig extends BaseTableConfig {
-    dependencyGraph?: boolean;
-    view: 'gantt';
-}
-
-// @public
 export function getGlobalTriggerEngine(options?: FieldTriggerOptions): FieldTriggerEngine;
+
+// @public
+export function getStonecrop(): Stonecrop | undefined;
 
 // @public
 export class HST {
@@ -338,10 +206,10 @@ export type HSTChangeData = {
 // @public
 export interface HSTNode {
     get(path: string): any;
+    getAncestor(): HSTNode | null;
     getBreadcrumbs(): string[];
     getDepth(): number;
     getNode(path: string): HSTNode;
-    getParent(): HSTNode | null;
     getPath(): string;
     getRoot(): HSTNode;
     has(path: string): boolean;
@@ -360,15 +228,15 @@ export interface HSTOperation {
     actionRecordIds?: string[];
     actionResult?: 'success' | 'failure' | 'pending';
     afterValue: any;
+    ancestorOperationId?: string;
     beforeValue: any;
-    childOperationIds?: string[];
     currentState?: string;
+    descendantOperationIds?: string[];
     doctype: string;
     fieldname: string;
     id: string;
     irreversibleReason?: string;
     metadata?: Record<string, any>;
-    parentOperationId?: string;
     path: string;
     recordId?: string;
     reversible: boolean;
@@ -395,28 +263,47 @@ export type HSTStonecropReturn = BaseStonecropReturn & {
     hstStore: Ref<HSTNode | undefined>;
     formData: Ref<Record<string, any>>;
     resolvedSchema: Ref<SchemaTypes[]>;
-    loadNestedData: (parentPath: string, childDoctype: DoctypeMeta, recordId?: string) => Record<string, any>;
-    saveRecursive: (doctype: DoctypeMeta, recordId: string) => Promise<Record<string, any>>;
-    createNestedContext: (basePath: string, childDoctype: DoctypeMeta) => {
+    initializeNestedData: (path: string, doctype: Doctype) => void;
+    fetchNestedData: (path: string, doctype: Doctype, recordId: string, options?: {
+        includeNested?: boolean | string[];
+    }) => Promise<void>;
+    collectRecordPayload: (doctype: Doctype, recordId: string) => Record<string, any>;
+    createNestedContext: (basePath: string, descendantDoctype: Doctype) => {
         provideHSTPath: (fieldname: string) => string;
         handleHSTChange: (changeData: HSTChangeData) => void;
     };
+    isLoading: Ref<boolean>;
+    error: Ref<Error | null>;
+    resolvedDoctype: Ref<Doctype | undefined>;
+    isWorkflowReady: ComputedRef<boolean>;
+    blockedLinks: ComputedRef<string[]>;
 };
 
 // @public
 export type ImmutableDoctype = {
     readonly schema?: List<SchemaTypes>;
-    readonly workflow?: UnknownMachineConfig | AnyStateNodeConfig;
+    readonly workflow?: UnknownMachineConfig | AnyStateNodeConfig | WorkflowMeta;
     readonly actions?: Map_2<string, string[]>;
+    readonly links?: Record<string, LinkDeclaration>;
 };
 
 // @public
 export type InstallOptions = {
     router?: Router;
     components?: Record<string, Component>;
-    getMeta?: (routeContext: RouteContext) => DoctypeMeta | Promise<DoctypeMeta>;
+    getMeta?: (routeContext: RouteContext) => Doctype | Promise<Doctype>;
+    client?: DataClient;
     autoInitializeRouter?: boolean;
     onRouterInitialized?: (registry: Registry, stonecrop: Stonecrop) => void | Promise<void>;
+};
+
+// @public
+export type LazyLink = {
+    loading: Ref<boolean>;
+    loaded: Ref<boolean>;
+    error: Ref<Error | null>;
+    reload: () => Promise<void>;
+    data: ComputedRef<any>;
 };
 
 // @public
@@ -426,7 +313,7 @@ export function markOperationIrreversible(operationId: string | undefined, reaso
 export type MutableDoctype = {
     doctype?: string;
     schema?: SchemaTypes[];
-    workflow?: UnknownMachineConfig | AnyStateNodeConfig;
+    workflow?: UnknownMachineConfig | AnyStateNodeConfig | WorkflowMeta;
     actions?: Record<string, string[]>;
 };
 
@@ -501,13 +388,21 @@ export function registerTransitionAction(name: string, fn: TransitionActionFunct
 
 // @public
 export class Registry {
-    constructor(router?: Router, getMeta?: (routeContext: RouteContext) => DoctypeMeta | Promise<DoctypeMeta>);
-    addDoctype(doctype: DoctypeMeta): void;
-    getMeta?: (routeContext: RouteContext) => DoctypeMeta | Promise<DoctypeMeta>;
+    constructor(router?: Router, getMeta?: (routeContext: RouteContext) => Doctype | Promise<Doctype>);
+    addDoctype(doctype: Doctype): void;
+    getAncestorLinks(doctypeSlug: string): Array<LinkDeclaration & {
+        fieldname: string;
+        doctype: string;
+    }>;
+    getDescendantLinks(doctypeSlug: string): Array<LinkDeclaration & {
+        fieldname: string;
+    }>;
+    getDoctype(slug: string): Doctype | undefined;
+    getMeta?: (routeContext: RouteContext) => Doctype | Promise<Doctype>;
     initializeRecord(schema: SchemaTypes[]): Record<string, any>;
     readonly name: string;
-    readonly registry: Record<string, DoctypeMeta>;
-    resolveSchema(schema: SchemaTypes[], visited?: Set<string>): SchemaTypes[];
+    readonly registry: Record<string, Doctype>;
+    resolveSchema(doctype: Doctype, visited?: Set<string>): SchemaTypes[];
     static _root: Registry;
     readonly router?: Router;
 }
@@ -519,90 +414,15 @@ export interface RouteContext {
 }
 
 // @public
-export interface RowActionOptions {
-    enabled?: boolean;
-    // Warning: (ae-forgotten-export) The symbol "createTableStore" needs to be exported by the entry point index.d.ts
-    handler?: (rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean;
-    icon?: string;
-    label?: string;
-}
-
-// @public
-export interface RowActionsConfig {
-    actions?: {
-        add?: boolean | RowActionOptions;
-        delete?: boolean | RowActionOptions;
-        duplicate?: boolean | RowActionOptions;
-        insertAbove?: boolean | RowActionOptions;
-        insertBelow?: boolean | RowActionOptions;
-        move?: boolean | RowActionOptions;
-    };
-    dropdownThreshold?: number;
-    enabled: boolean;
-    forceDropdown?: boolean;
-    position?: 'before-index' | 'after-index' | 'end';
-}
-
-// @public
-export type RowActionType = 'add' | 'delete' | 'duplicate' | 'insertAbove' | 'insertBelow' | 'move';
-
-// @public
-export interface RowAddEvent {
-    // (undocumented)
-    row: TableRow;
-    // (undocumented)
-    rowIndex: number;
-}
-
-// @public
-export interface RowDeleteEvent {
-    // (undocumented)
-    row: TableRow;
-    // (undocumented)
-    rowIndex: number;
-}
-
-// @public
-export interface RowDuplicateEvent {
-    // (undocumented)
-    newIndex: number;
-    // (undocumented)
-    row: TableRow;
-    // (undocumented)
-    sourceIndex: number;
-}
-
-// @public
-export interface RowInsertEvent {
-    // (undocumented)
-    newIndex: number;
-    // (undocumented)
-    row: TableRow;
-    // (undocumented)
-    targetIndex: number;
-}
-
-// @public
-export interface RowMoveEvent {
-    // (undocumented)
-    fromIndex: number;
-    // (undocumented)
-    toIndex: number;
-}
-
-// @public
 export type Schema = {
     doctype: string;
     schema: List<SchemaTypes>;
 };
 
 // @public
-export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema | DoctypeSchema | TableDoctypeSchema;
-
-// @public
 export class SchemaValidator {
     constructor(options?: ValidatorOptions);
-    validate(doctype: string, schema: List<SchemaTypes> | SchemaTypes[] | undefined, workflow?: AnyStateNodeConfig, actions?: Map_2<string, string[]> | Map<string, string[]>): ValidationResult;
+    validate(doctype: string, schema: List<SchemaTypes> | SchemaTypes[] | undefined, workflow?: AnyStateNodeConfig, actions?: Map_2<string, string[]> | Map<string, string[]>, links?: Record<string, LinkDeclaration>): ValidationResult;
 }
 
 // @public
@@ -610,9 +430,19 @@ export function setFieldRollback(doctype: string, fieldname: string, enableRollb
 
 // @public
 export class Stonecrop {
-    constructor(registry: Registry, operationLogConfig?: Partial<OperationLogConfig>);
-    addRecord(doctype: string | DoctypeMeta, recordId: string, recordData: any): void;
-    clearRecords(doctype: string | DoctypeMeta): void;
+    constructor(registry: Registry, operationLogConfig?: Partial<OperationLogConfig>, options?: StonecropOptions);
+    addRecord(doctype: string | Doctype, recordId: string, recordData: any): void;
+    clearRecords(doctype: string | Doctype): void;
+    collectRecordPayload(doctype: Doctype, recordId: string): Record<string, any>;
+    dispatchAction(doctype: Doctype, action: string, args?: unknown[]): Promise<{
+        success: boolean;
+        data: unknown;
+        error: string | null;
+    }>;
+    fetchNestedData(path: string, doctype: Doctype, recordId: string, options?: {
+        includeNested?: boolean | string[];
+    }): Promise<void>;
+    getClient(): DataClient | undefined;
     getMeta(context: RouteContext): Promise<any>;
     // @internal
     getOperationLogStore(): Store<"hst-operation-log", Pick<{
@@ -638,8 +468,8 @@ export class Stonecrop {
     actionError?: string | undefined;
     userId?: string | undefined;
     metadata?: Record<string, any> | undefined;
-    parentOperationId?: string | undefined;
-    childOperationIds?: string[] | undefined;
+    ancestorOperationId?: string | undefined;
+    descendantOperationIds?: string[] | undefined;
     }[], HSTOperation[] | {
     id: string;
     type: HSTOperationType;
@@ -662,8 +492,8 @@ export class Stonecrop {
     actionError?: string | undefined;
     userId?: string | undefined;
     metadata?: Record<string, any> | undefined;
-    parentOperationId?: string | undefined;
-    childOperationIds?: string[] | undefined;
+    ancestorOperationId?: string | undefined;
+    descendantOperationIds?: string[] | undefined;
     }[]>;
     currentIndex: Ref<number, number>;
     config: Ref<    {
@@ -701,7 +531,7 @@ export class Stonecrop {
     getSnapshot: () => OperationLogSnapshot;
     markIrreversible: (operationId: string, reason: string) => void;
     logAction: (doctype: string, actionName: string, recordIds?: string[], result?: "success" | "failure" | "pending", error?: string) => string;
-    }, "operations" | "clientId" | "currentIndex" | "config">, Pick<{
+    }, "operations" | "currentIndex" | "config" | "clientId">, Pick<{
     operations: Ref<    {
     id: string;
     type: HSTOperationType;
@@ -724,8 +554,8 @@ export class Stonecrop {
     actionError?: string | undefined;
     userId?: string | undefined;
     metadata?: Record<string, any> | undefined;
-    parentOperationId?: string | undefined;
-    childOperationIds?: string[] | undefined;
+    ancestorOperationId?: string | undefined;
+    descendantOperationIds?: string[] | undefined;
     }[], HSTOperation[] | {
     id: string;
     type: HSTOperationType;
@@ -748,8 +578,8 @@ export class Stonecrop {
     actionError?: string | undefined;
     userId?: string | undefined;
     metadata?: Record<string, any> | undefined;
-    parentOperationId?: string | undefined;
-    childOperationIds?: string[] | undefined;
+    ancestorOperationId?: string | undefined;
+    descendantOperationIds?: string[] | undefined;
     }[]>;
     currentIndex: Ref<number, number>;
     config: Ref<    {
@@ -810,8 +640,8 @@ export class Stonecrop {
     actionError?: string | undefined;
     userId?: string | undefined;
     metadata?: Record<string, any> | undefined;
-    parentOperationId?: string | undefined;
-    childOperationIds?: string[] | undefined;
+    ancestorOperationId?: string | undefined;
+    descendantOperationIds?: string[] | undefined;
     }[], HSTOperation[] | {
     id: string;
     type: HSTOperationType;
@@ -834,8 +664,8 @@ export class Stonecrop {
     actionError?: string | undefined;
     userId?: string | undefined;
     metadata?: Record<string, any> | undefined;
-    parentOperationId?: string | undefined;
-    childOperationIds?: string[] | undefined;
+    ancestorOperationId?: string | undefined;
+    descendantOperationIds?: string[] | undefined;
     }[]>;
     currentIndex: Ref<number, number>;
     config: Ref<    {
@@ -874,108 +704,31 @@ export class Stonecrop {
     markIrreversible: (operationId: string, reason: string) => void;
     logAction: (doctype: string, actionName: string, recordIds?: string[], result?: "success" | "failure" | "pending", error?: string) => string;
     }, "undo" | "redo" | "configure" | "addOperation" | "startBatch" | "commitBatch" | "cancelBatch" | "clear" | "getOperationsFor" | "getSnapshot" | "markIrreversible" | "logAction">>;
-    getRecord(doctype: DoctypeMeta, recordId: string): Promise<void>;
-    getRecordById(doctype: string | DoctypeMeta, recordId: string): HSTNode | undefined;
-    getRecordIds(doctype: string | DoctypeMeta): string[];
-    getRecords(doctype: DoctypeMeta): Promise<void>;
+    getRecord(doctype: Doctype, recordId: string): Promise<void>;
+    getRecordById(doctype: string | Doctype, recordId: string): HSTNode | undefined;
+    getRecordIds(doctype: string | Doctype): string[];
+    getRecords(doctype: Doctype): Promise<void>;
+    getRecordState(doctype: string | Doctype, recordId: string): string;
     getStore(): HSTNode;
-    records(doctype: string | DoctypeMeta): HSTNode;
+    initializeNestedData(path: string, doctype: Doctype): void;
+    isWorkflowReady(doctype: Doctype, recordId: string): {
+        ready: boolean;
+        blockedLinks?: string[];
+    };
+    records(doctype: string | Doctype): HSTNode;
     readonly registry: Registry;
-    removeRecord(doctype: string | DoctypeMeta, recordId: string): void;
-    runAction(doctype: DoctypeMeta, action: string, args?: any[]): void;
-    setup(doctype: DoctypeMeta): void;
+    removeRecord(doctype: string | Doctype, recordId: string): void;
+    // @internal
+    static _root: Stonecrop;
+    runAction(doctype: Doctype, action: string, args?: string[]): void;
+    setClient(client: DataClient): void;
+    setup(doctype: Doctype): void;
 }
 
 // @public
-export interface TableColumn {
-    align?: CanvasTextAlign;
-    cellComponent?: string;
-    cellComponentProps?: Record<string, any>;
-    colspan?: number;
-    edit?: boolean;
-    fieldtype?: string;
-    filterable?: boolean;
-    filterComponent?: string;
-    filterOptions?: any[];
-    filterType?: 'text' | 'select' | 'number' | 'date' | 'dateRange' | 'checkbox' | 'component';
-    format?: string | ((value: any, context: CellContext) => string);
-    ganttComponent?: string;
-    isGantt?: boolean;
-    label?: string;
-    mask?: (value: any) => any;
-    modalComponent?: string | ((context: CellContext) => string);
-    modalComponentExtraProps?: Record<string, any>;
-    name: string;
-    originalIndex?: number;
-    pinned?: boolean;
-    resizable?: boolean;
-    sortable?: boolean;
-    width?: string;
+export interface StonecropOptions {
+    client?: DataClient;
 }
-
-// @public
-export type TableConfig = BasicTableConfig | TreeTableConfig | GanttTableConfig | TreeGanttTableConfig;
-
-// @public
-export interface TableDisplay {
-    childrenOpen?: boolean;
-    expanded?: boolean;
-    indent?: number;
-    isParent?: boolean;
-    isRoot?: boolean;
-    open?: boolean;
-    parent?: number;
-    rowModified?: boolean;
-}
-
-// @public
-export type TableDoctypeSchema = BaseSchema & {
-    fieldtype: 'Table';
-    options: string;
-    label?: string;
-    columns?: TableColumn[];
-    config?: TableConfig;
-    rows?: TableRow[];
-    readOnly?: boolean;
-};
-
-// @public
-export interface TableModal {
-    bottom?: ReturnType<typeof useElementBounding>['bottom'];
-    cell?: HTMLTableCellElement | null;
-    colIndex?: number;
-    component?: string;
-    componentProps?: Record<string, any>;
-    height?: ReturnType<typeof useElementBounding>['height'];
-    left?: ReturnType<typeof useElementBounding>['left'];
-    parent?: HTMLElement;
-    rowIndex?: number;
-    visible?: boolean;
-    width?: ReturnType<typeof useElementBounding>['width'];
-}
-
-// @public
-export interface TableModalProps {
-    [key: string]: any;
-    colIndex: number;
-    rowIndex: number;
-    store: ReturnType<typeof createTableStore>;
-}
-
-// @public
-export interface TableRow {
-    [key: string]: any;
-    gantt?: GanttOptions;
-    indent?: number;
-    parent?: number;
-}
-
-// @public
-export type TableSchema = BaseSchema & {
-    columns?: TableColumn[];
-    config?: TableConfig;
-    rows?: TableRow[];
-};
 
 // @public
 export type TransitionAction = TransitionActionFunction | FieldActionString;
@@ -1001,19 +754,6 @@ export interface TransitionExecutionResult {
 }
 
 // @public
-export interface TreeGanttTableConfig extends BaseTableConfig {
-    defaultTreeExpansion?: 'root' | 'branch' | 'leaf';
-    dependencyGraph?: boolean;
-    view: 'tree-gantt';
-}
-
-// @public
-export interface TreeTableConfig extends BaseTableConfig {
-    defaultTreeExpansion?: 'root' | 'branch' | 'leaf';
-    view: 'tree';
-}
-
-// @public
 export function triggerTransition(doctype: string, transition: string, options?: {
     recordId?: string;
     currentState?: string;
@@ -1030,6 +770,9 @@ export interface UndoRedoState {
     redoCount: number;
     undoCount: number;
 }
+
+// @public
+export function useLazyLink(doctype: Doctype, recordId: string, linkFieldname: string): LazyLink;
 
 // @public
 export function useOperationLog(config?: Partial<OperationLogConfig>): {
@@ -1055,8 +798,8 @@ export function useOperationLog(config?: Partial<OperationLogConfig>): {
     actionError?: string | undefined;
     userId?: string | undefined;
     metadata?: Record<string, any> | undefined;
-    parentOperationId?: string | undefined;
-    childOperationIds?: string[] | undefined;
+    ancestorOperationId?: string | undefined;
+    descendantOperationIds?: string[] | undefined;
     }[], HSTOperation[] | {
     id: string;
     type: HSTOperationType;
@@ -1079,8 +822,8 @@ export function useOperationLog(config?: Partial<OperationLogConfig>): {
     actionError?: string | undefined;
     userId?: string | undefined;
     metadata?: Record<string, any> | undefined;
-    parentOperationId?: string | undefined;
-    childOperationIds?: string[] | undefined;
+    ancestorOperationId?: string | undefined;
+    descendantOperationIds?: string[] | undefined;
     }[]>;
     currentIndex: Ref<number, number>;
     undoRedoState: ComputedRef<UndoRedoState>;
@@ -1125,8 +868,8 @@ actionResult?: "success" | "failure" | "pending" | undefined;
 actionError?: string | undefined;
 userId?: string | undefined;
 metadata?: Record<string, any> | undefined;
-parentOperationId?: string | undefined;
-childOperationIds?: string[] | undefined;
+ancestorOperationId?: string | undefined;
+descendantOperationIds?: string[] | undefined;
 }[], HSTOperation[] | {
 id: string;
 type: HSTOperationType;
@@ -1149,8 +892,8 @@ actionResult?: "success" | "failure" | "pending" | undefined;
 actionError?: string | undefined;
 userId?: string | undefined;
 metadata?: Record<string, any> | undefined;
-parentOperationId?: string | undefined;
-childOperationIds?: string[] | undefined;
+ancestorOperationId?: string | undefined;
+descendantOperationIds?: string[] | undefined;
 }[]>;
 currentIndex: Ref<number, number>;
 config: Ref<    {
@@ -1188,7 +931,7 @@ getOperationsFor: (doctype: string, recordId?: string) => HSTOperation[];
 getSnapshot: () => OperationLogSnapshot;
 markIrreversible: (operationId: string, reason: string) => void;
 logAction: (doctype: string, actionName: string, recordIds?: string[], result?: "success" | "failure" | "pending", error?: string) => string;
-}, "operations" | "clientId" | "currentIndex" | "config">, Pick<{
+}, "operations" | "currentIndex" | "config" | "clientId">, Pick<{
 operations: Ref<    {
 id: string;
 type: HSTOperationType;
@@ -1211,8 +954,8 @@ actionResult?: "success" | "failure" | "pending" | undefined;
 actionError?: string | undefined;
 userId?: string | undefined;
 metadata?: Record<string, any> | undefined;
-parentOperationId?: string | undefined;
-childOperationIds?: string[] | undefined;
+ancestorOperationId?: string | undefined;
+descendantOperationIds?: string[] | undefined;
 }[], HSTOperation[] | {
 id: string;
 type: HSTOperationType;
@@ -1235,8 +978,8 @@ actionResult?: "success" | "failure" | "pending" | undefined;
 actionError?: string | undefined;
 userId?: string | undefined;
 metadata?: Record<string, any> | undefined;
-parentOperationId?: string | undefined;
-childOperationIds?: string[] | undefined;
+ancestorOperationId?: string | undefined;
+descendantOperationIds?: string[] | undefined;
 }[]>;
 currentIndex: Ref<number, number>;
 config: Ref<    {
@@ -1297,8 +1040,8 @@ actionResult?: "success" | "failure" | "pending" | undefined;
 actionError?: string | undefined;
 userId?: string | undefined;
 metadata?: Record<string, any> | undefined;
-parentOperationId?: string | undefined;
-childOperationIds?: string[] | undefined;
+ancestorOperationId?: string | undefined;
+descendantOperationIds?: string[] | undefined;
 }[], HSTOperation[] | {
 id: string;
 type: HSTOperationType;
@@ -1321,8 +1064,8 @@ actionResult?: "success" | "failure" | "pending" | undefined;
 actionError?: string | undefined;
 userId?: string | undefined;
 metadata?: Record<string, any> | undefined;
-parentOperationId?: string | undefined;
-childOperationIds?: string[] | undefined;
+ancestorOperationId?: string | undefined;
+descendantOperationIds?: string[] | undefined;
 }[]>;
 currentIndex: Ref<number, number>;
 config: Ref<    {
@@ -1368,7 +1111,7 @@ export function useStonecrop(): BaseStonecropReturn | HSTStonecropReturn;
 // @public
 export function useStonecrop(options: {
     registry?: Registry;
-    doctype: DoctypeMeta;
+    doctype: Doctype | string;
     recordId?: string;
 }): HSTStonecropReturn;
 
@@ -1408,6 +1151,7 @@ export enum ValidationSeverity {
 export interface ValidatorOptions {
     registry?: Registry;
     validateActions?: boolean;
+    validateLinks?: boolean;
     validateLinkTargets?: boolean;
     validateRequiredProperties?: boolean;
     validateWorkflows?: boolean;
@@ -1415,6 +1159,10 @@ export interface ValidatorOptions {
 
 // @public
 export function withBatch<T>(fn: () => T | Promise<T>, description?: string): Promise<string | null>;
+
+
+export * from "@stonecrop/aform/types";
+export * from "@stonecrop/atable/types";
 
 // (No @packageDocumentation comment for this package)
 

@@ -20,12 +20,13 @@
 			"fieldtype": "Data",
 			"component": "ATextInput",
 			"label": "Phone"
-		},
-		{
-			"fieldname": "address",
-			"fieldtype": "Doctype",
-			"options": "address",
-			"label": "Address"
 		}
-	]
+	],
+	"links": {
+		"address": {
+			"target": "address",
+			"cardinality": "one",
+			"backlink": "customer"
+		}
+	}
 }

@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/nuxt-grafserv",
-	"version": "0.8.4",
+	"version": "0.11.4",
 	"description": "Pluggable Grafserv GraphQL server as Nuxt Module",
 	"license": "MIT",
 	"type": "module",
@@ -47,7 +47,7 @@
 		"lint": "eslint .",
 		"test": "vitest run",
 		"test:ci": "vitest run --run",
-		"test:coverage": "vitest run --coverage",
+		"test:coverage": "vitest run --coverage.enabled --coverage.provider=istanbul",
 		"test:e2e": "vitest run test/e2e",
 		"test:watch": "vitest watch",
 		"test:types": "vue-tsc --noEmit && cd playground && vue-tsc --noEmit"
@@ -58,9 +58,10 @@
 		"@graphql-tools/stitch": "^10.1.8",
 		"@graphql-tools/wrap": "^11.1.4",
 		"@stonecrop/graphql-middleware": "workspace:*",
-		"grafast": "^1.0.0-rc.7",
+		"grafast": "^1.0.0-rc.9",
 		"grafserv": "^1.0.0-rc.6",
-		"graphql": "^16.12.0"
+		"graphql": "^16.12.0",
+		"postgraphile": "^5.0.0-rc.7"
 	},
 	"devDependencies": {
 		"@eslint/js": "^9.39.2",
@@ -89,7 +90,6 @@
 	"peerDependencies": {
 		"@stonecrop/casl-middleware": "*",
 		"@stonecrop/rockfoil": "*",
-		"postgraphile": "^5.0.0-rc.7",
 		"graphile-config": "^1.0.0-rc.5"
 	},
 	"peerDependenciesMeta": {
@@ -97,9 +97,6 @@
 			"optional": true
 		},
 		"@stonecrop/rockfoil": {
-			"optional": true
-		},
-		"postgraphile": {
 			"optional": true
 		},
 		"graphile-config": {

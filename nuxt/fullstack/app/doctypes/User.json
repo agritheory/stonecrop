@@ -1,0 +1,104 @@
+{
+	"name": "User",
+	"slug": "user",
+	"tableName": "users",
+	"fields": [
+		{
+			"fieldname": "id",
+			"label": "ID",
+			"component": "ATextInput",
+			"fieldtype": "Data",
+			"mode": "display"
+		},
+		{
+			"fieldname": "email",
+			"label": "Email",
+			"component": "ATextInput",
+			"fieldtype": "Data",
+			"required": true
+		},
+		{
+			"fieldname": "name",
+			"label": "Name",
+			"component": "ATextInput",
+			"fieldtype": "Data",
+			"required": true
+		},
+		{
+			"fieldname": "role",
+			"label": "Role",
+			"component": "ADropdown",
+			"fieldtype": "Select",
+			"options": ["ADMIN", "MANAGER", "USER", "GUEST"],
+			"default": "USER"
+		},
+		{
+			"fieldname": "status",
+			"label": "Status",
+			"component": "ADropdown",
+			"fieldtype": "Select",
+			"options": ["ACTIVE", "SUSPENDED", "PENDING", "DELETED"],
+			"default": "PENDING"
+		},
+		{
+			"fieldname": "createdAt",
+			"label": "Created At",
+			"component": "ATextInput",
+			"fieldtype": "Datetime",
+			"mode": "display"
+		},
+		{
+			"fieldname": "updatedAt",
+			"label": "Updated At",
+			"component": "ATextInput",
+			"fieldtype": "Datetime",
+			"mode": "display"
+		},
+		{
+			"fieldname": "lastLogin",
+			"label": "Last Login",
+			"component": "ATextInput",
+			"fieldtype": "Datetime",
+			"mode": "display"
+		},
+		{
+			"fieldname": "bio",
+			"label": "Bio",
+			"component": "ATextarea",
+			"fieldtype": "Text"
+		},
+		{
+			"fieldname": "phone",
+			"label": "Phone",
+			"component": "ATextInput",
+			"fieldtype": "Data"
+		}
+	],
+	"workflow": {
+		"states": ["PENDING", "ACTIVE", "SUSPENDED", "DELETED"],
+		"actions": {
+			"save": {
+				"label": "Save",
+				"handler": "user:save"
+			},
+			"activate": {
+				"label": "Activate User",
+				"handler": "activate_user",
+				"allowedStates": ["PENDING", "SUSPENDED"],
+				"confirm": true
+			},
+			"suspend": {
+				"label": "Suspend User",
+				"handler": "suspend_user",
+				"allowedStates": ["ACTIVE"],
+				"confirm": true
+			},
+			"delete": {
+				"label": "Delete User",
+				"handler": "delete_user",
+				"allowedStates": ["ACTIVE", "SUSPENDED", "PENDING"],
+				"confirm": true
+			}
+		}
+	}
+}

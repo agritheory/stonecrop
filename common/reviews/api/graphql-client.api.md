@@ -4,52 +4,45 @@
 
 ```ts
 
-// @public
-export type Meta = {
-    variables: {
-        doctype: string;
-    };
-    response: {
-        getMeta: MetaResponse;
-    };
-};
+import type { DataClient } from '@stonecrop/schema';
+import type { DoctypeContext } from '@stonecrop/schema';
+import { DoctypeMeta } from '@stonecrop/schema';
+import type { DoctypeRef } from '@stonecrop/schema';
+import type { GetRecordOptions } from '@stonecrop/schema';
+import type { GetRecordResult as GetRecordResult_2 } from '@stonecrop/schema';
+import type { GetRecordsOptions } from '@stonecrop/schema';
+
+export { DoctypeContext }
+
+export { DoctypeMeta }
 
 // @public
-export type MetaParser = {
-    data: Meta['response'];
-};
+export interface GetRecordResult extends GetRecordResult_2 {
+    unknownLinks?: string[];
+}
 
 // @public
-export type MetaResponse = {
-    id: string;
-    name: string;
-    workflow: {
-        id: string;
-        name: string;
-        machineId?: string;
-    };
-    schema: {
-        id: string;
-        label: string;
-    }[];
-    actions: {
-        id: string;
-        eventName: string;
-    }[];
-};
+export class StonecropClient implements DataClient {
+    constructor(options: StonecropClientOptions);
+    clearMetaCache(): void;
+    getAllMeta(): Promise<DoctypeMeta[]>;
+    getMeta(context: DoctypeContext): Promise<DoctypeMeta | null>;
+    getRecord(doctype: DoctypeRef, recordId: string, options?: GetRecordOptions): Promise<GetRecordResult>;
+    getRecords(doctype: DoctypeRef, options?: GetRecordsOptions): Promise<Record<string, unknown>[]>;
+    mutate<T = unknown>(mutation: string, variables?: Record<string, unknown>): Promise<T>;
+    query<T = unknown>(query: string, variables?: Record<string, unknown>): Promise<T>;
+    runAction(doctype: DoctypeRef, action: string, args?: unknown[]): Promise<{
+        success: boolean;
+        data: unknown;
+        error: string | null;
+    }>;
+}
 
 // @public
-export const methods: {
-    getMeta: (doctype: string, url?: string) => Promise<MetaResponse>;
-};
-
-// @public
-export const queries: {
-    getMeta: string;
-};
-
-// @public
-export const typeDefs: string;
+export interface StonecropClientOptions {
+    endpoint: string;
+    headers?: Record<string, string>;
+}
 
 // (No @packageDocumentation comment for this package)
 

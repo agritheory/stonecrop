@@ -1,5 +1,9 @@
 <template>
-	<div ref="datepicker" class="adatepicker" tabindex="0">
+	<template v-if="mode === 'display' || mode === 'read'">
+		<span class="aform_display-value">{{ date ? new Date(date).toLocaleDateString() : '' }}</span>
+		<label v-if="label">{{ label }}</label>
+	</template>
+	<div v-else ref="datepicker" class="adatepicker" tabindex="0">
 		<table>
 			<tbody>
 				<tr>
@@ -11,8 +15,8 @@
 					<td colspan="7">
 						<div class="date-input">
 							<input
-								:value="getStartDate"
 								ref="start-date-input"
+								:value="getStartDate"
 								class="date-input-start aform_input-field"
 								type="text"
 								placeholder="start date"
@@ -20,8 +24,8 @@
 								@keydown="enterDate" />
 							<div>-</div>
 							<input
-								:value="getEndDate"
 								ref="end-date-input"
+								:value="getEndDate"
 								class="date-input-end aform_input-field"
 								type="text"
 								placeholder="end date"
@@ -73,12 +77,13 @@
 // import { defaultKeypressHandlers, useKeyboardNav } from '@stonecrop/utilities'
 import { computed, nextTick, onMounted, ref, useTemplateRef, watch } from 'vue'
 
-/*******************
-Const
-*******************/
+import type { ComponentProps } from '../../types'
 
 const numberOfRows = 6
 const numberOfColumns = 7
+
+const { mode, label, selectRange = false } = defineProps<ComponentProps>()
+
 const date = defineModel<number | Date>({ default: new Date() })
 const selectedDate = ref(new Date(date.value))
 const currentMonth = ref<number>(selectedDate.value.getMonth())
@@ -87,27 +92,18 @@ const currentDates = ref<number[]>([])
 /* needed for keyboard navigation. uncomment if implementing */
 //const datepickerRef = useTemplateRef<HTMLDivElement>('datepicker')
 const hoveredDate = ref(new Date(date.value))
-const start_date = ref(new Date())
-const end_date = ref(new Date())
+const start_date = ref<Date | '' | null>(new Date())
+const end_date = ref<Date | '' | null>(new Date())
 const startDateInput = useTemplateRef('start-date-input')
 const endDateInput = useTemplateRef('end-date-input')
-
-/*******************
-Props
-*******************/
-
-const props = defineProps({
-	selectRange: {
-		type: Boolean,
-		default: false,
-	},
-})
 
 /*******************
 Emits
 *******************/
 
-const emit = defineEmits(['get-date'])
+const emit = defineEmits<{
+	'get-date': (data: { start: Date | null; end: Date | null; selected: Date }) => void
+}>()
 
 /*******************
 Computed
@@ -119,12 +115,12 @@ const monthAndYear = computed(() => {
 		month: 'long',
 	})
 })
-const getStartDate = computed(()=>{
-	return (start_date.value!=''&& start_date.value!=null)?parseDateToString(start_date.value):''
+const getStartDate = computed(() => {
+	return start_date.value != '' && start_date.value != null ? parseDateToString(start_date.value) : ''
 })
 
-const getEndDate = computed(()=>{
-	return parseDateToString(end_date.value)
+const getEndDate = computed(() => {
+	return end_date.value != '' && end_date.value != null ? parseDateToString(end_date.value) : ''
 })
 
 /*******************
@@ -132,9 +128,9 @@ Functions
 *******************/
 
 const parseDateToString = (date: Date) => {
-	if(date!=null){
+	if (date != null) {
 		let date_string = ''
-		if (!validateDate(date))return ''
+		if (!validateDate(date)) return ''
 		date_string += date.getMonth() + 1 + '/' + date.getDate() + '/' + date.getFullYear()
 		return date_string
 	}
@@ -151,12 +147,12 @@ const isSelectedDate = (day: string | number | Date) => {
 }
 
 const isStartDate = (day: string | number | Date) => {
-	if(!validateDate(start_date.value))return false
+	if (!validateDate(start_date.value)) return false
 	return new Date(day).toDateString() === start_date.value.toDateString()
 }
 
 const isEndDate = (day: string | number | Date) => {
-	if(!validateDate(end_date.value))return false
+	if (!validateDate(end_date.value)) return false
 	return new Date(day).toDateString() === end_date.value.toDateString()
 }
 
@@ -165,7 +161,7 @@ const getCurrentCell = (rowNo: number, colNo: number) => {
 }
 
 const isInDateRange = (day: string | number | Date) => {
-	if(!validateDate(start_date.value))return false
+	if (!validateDate(start_date.value)) return false
 	const this_date = new Date(day)
 
 	//the end is either the selected end date or wherever the user is hovering
@@ -239,10 +235,9 @@ const enterDate = event => {
 // ])
 
 const selectDate = (currentIndex: number) => {
-
 	date.value = selectedDate.value = new Date(currentDates.value[currentIndex])
 
-	if (props.selectRange) {
+	if (selectRange) {
 		if (start_date.value == null || end_date.value != null) {
 			start_date.value = date.value
 			end_date.value = null
@@ -258,41 +253,45 @@ const selectDate = (currentIndex: number) => {
 	emitData()
 }
 
-const testDateOrder = ()=>{
-	if(end_date.value.getTime()<start_date.value.getTime())[start_date.value, end_date.value] = [end_date.value, start_date.value]
+const testDateOrder = () => {
+	if (end_date.value.getTime() < start_date.value.getTime())
+		[start_date.value, end_date.value] = [end_date.value, start_date.value]
 }
 
-const validateDate = date=>{
+const validateDate = date => {
 	return date instanceof Date && !isNaN(date.getTime())
 }
 
 const enterInputDate = () => {
-	if(startDateInput.value.value==''){
+	if (startDateInput.value.value == '') {
 		start_date.value = null
-	}else{
+	} else {
 		const start = new Date(startDateInput.value.value)
-		start_date.value = validateDate(start)?start:null
+		start_date.value = validateDate(start) ? start : null
 	}
 
-	if(endDateInput.value.value==''){
+	if (endDateInput.value.value == '') {
 		end_date.value = null
-	}else{
+	} else {
 		const end = new Date(endDateInput.value.value)
-		end_date.value = validateDate(end)?end:null
+		end_date.value = validateDate(end) ? end : null
 	}
 
-	if(validateDate(start_date.value)){
-		if(validateDate(end_date.value))testDateOrder()
+	if (validateDate(start_date.value)) {
+		if (validateDate(end_date.value)) testDateOrder()
 		selectedDate.value = start_date.value
 	}
 
 	emitData()
 }
 
-const emitData = ()=>{
-	emit('get-date', {start:props.selectRange?start_date.value:null, end:props.selectRange?end_date.value:null, selected:selectedDate.value})
+const emitData = () => {
+	emit('get-date', {
+		start: selectRange ? start_date.value : null,
+		end: selectRange ? end_date.value : null,
+		selected: selectedDate.value,
+	})
 }
-
 
 /*******************
 Hooks
@@ -345,7 +344,6 @@ Expose
 *******************/
 
 defineExpose({ currentMonth, currentYear, selectedDate })
-
 </script>
 
 <style scoped>

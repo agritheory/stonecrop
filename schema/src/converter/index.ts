@@ -1,143 +1,221 @@
-import { parseDDL } from './parser'
-import { mapColumnToField } from './type-map'
-import { toPascalCase, toSlug } from './naming'
-import type { DoctypeMeta } from '../doctype'
-import type { ParsedTable, ConversionOptions, ConversionFieldMeta } from './postgres-types'
+/**
+ * GraphQL Introspection to Stonecrop Schema Converter
+ *
+ * Converts a standard GraphQL introspection result (or SDL string) into
+ * Stonecrop doctype schemas. Source-agnostic — works with any GraphQL server.
+ *
+ * @packageDocumentation
+ */
+
+import { buildClientSchema, buildSchema, isObjectType, type GraphQLSchema } from 'graphql'
+
+import type { LinkDeclaration } from '../doctype'
+import { toSlug, pascalToSnake } from '../naming'
+import type { IntrospectionSource, GraphQLConversionOptions, ConvertedGraphQLDoctype } from './types'
+import { defaultIsEntityType, defaultIsEntityField, classifyFieldType } from './heuristics'
 
 /**
- * Output of schema conversion - uses DoctypeMeta but with optional conversion metadata
+ * Convert a GraphQL schema to Stonecrop doctype schemas.
+ *
+ * Accepts either an `IntrospectionQuery` result object or an SDL string.
+ * Entity types are identified using heuristics (or a custom `isEntityType` function)
+ * and converted to `DoctypeMeta`-compatible JSON objects.
+ *
+ * @param source - GraphQL introspection result or SDL string
+ * @param options - Conversion options for controlling output format and behavior
+ * @returns Array of converted Stonecrop doctype definitions
+ *
+ * @example
+ * ```typescript
+ * // From introspection result (fetched from any GraphQL server)
+ * const introspection = await fetchIntrospection('http://localhost:5000/graphql')
+ * const doctypes = convertGraphQLSchema(introspection)
+ *
+ * // From SDL string
+ * const sdl = fs.readFileSync('schema.graphql', 'utf-8')
+ * const doctypes = convertGraphQLSchema(sdl)
+ *
+ * // With PostGraphile custom scalars
+ * const doctypes = convertGraphQLSchema(introspection, {
+ *   customScalars: {
+ *     BigFloat: { component: 'ADecimalInput', fieldtype: 'Decimal' }
+ *   }
+ * })
+ * ```
+ *
  * @public
  */
-export interface ConvertedDoctype extends Omit<DoctypeMeta, 'fields'> {
-	/** Field definitions with optional conversion metadata */
-	fields: ConversionFieldMeta[]
-}
+export function convertGraphQLSchema(
+	source: IntrospectionSource,
+	options: GraphQLConversionOptions = {}
+): ConvertedGraphQLDoctype[] {
+	const schema = buildGraphQLSchema(source)
+	const typeMap = schema.getTypeMap()
 
-/**
- * Convert PostgreSQL DDL to Stonecrop doctype schemas
- * @param sql - PostgreSQL DDL statements to convert
- * @param options - Conversion options for controlling output format
- * @public
- */
-export function convertSchema(
-	sql: string,
-	options: ConversionOptions = { inheritanceMode: 'flatten' }
-): ConvertedDoctype[] {
-	const tables = parseDDL(sql)
-	const tableMap = new Map(tables.map(t => [t.name, t]))
+	// Determine the root operation type names to exclude
+	const rootTypeNames = new Set<string>()
+	const queryType = schema.getQueryType()
+	const mutationType = schema.getMutationType()
+	const subscriptionType = schema.getSubscriptionType()
+	if (queryType) rootTypeNames.add(queryType.name)
+	if (mutationType) rootTypeNames.add(mutationType.name)
+	if (subscriptionType) rootTypeNames.add(subscriptionType.name)
 
-	let result = tables
+	// Use custom or default entity type detector
+	const isEntityType = options.isEntityType ?? defaultIsEntityType
 
-	// Filter by schema
-	if (options.schema) {
-		result = result.filter(t => t.schema === options.schema)
-	}
+	// Phase 1: Identify all entity types
+	const entityTypes = new Set<string>()
+	for (const [typeName, type] of Object.entries(typeMap)) {
+		if (!isObjectType(type)) continue
 
-	// Exclude tables
-	if (options.exclude) {
-		result = result.filter(t => !options.exclude!.includes(t.name))
-	}
+		// Always skip root operation types (even if custom isEntityType doesn't)
+		if (rootTypeNames.has(typeName)) continue
 
-	return result.map(table => buildDoctype(table, tableMap, options))
-}
-
-/**
- * Build a DoctypeMeta from a ParsedTable
- */
-function buildDoctype(
-	table: ParsedTable,
-	tableMap: Map<string, ParsedTable>,
-	options: ConversionOptions
-): ConvertedDoctype {
-	const fieldMap = new Map<string, ConversionFieldMeta>()
-
-	// Flatten inherited fields first
-	if (options.inheritanceMode === 'flatten' && table.inherits) {
-		for (const parentName of table.inherits) {
-			const parent = tableMap.get(parentName)
-			if (parent) {
-				for (const col of parent.columns) {
-					const field = mapColumnToField(col, tableMap, {
-						includeUnmappedMeta: options.includeUnmappedMeta,
-						useCamelCase: options.useCamelCase,
-					})
-					fieldMap.set(field.fieldname, field)
-				}
-			}
+		if (isEntityType(typeName, type)) {
+			entityTypes.add(typeName)
 		}
 	}
 
-	// Add own columns (overriding inherited fields with same name)
-	for (const col of table.columns) {
-		const field = mapColumnToField(col, tableMap, {
-			includeUnmappedMeta: options.includeUnmappedMeta,
-			useCamelCase: options.useCamelCase,
-		})
-		fieldMap.set(field.fieldname, field)
+	// Phase 2: Apply include/exclude filters
+	let filteredEntityTypes = entityTypes
+
+	if (options.include) {
+		const includeSet = new Set(options.include)
+		filteredEntityTypes = new Set([...entityTypes].filter(t => includeSet.has(t)))
 	}
 
-	let fields = Array.from(fieldMap.values())
-
-	// Apply overrides
-	if (options.typeOverrides) {
-		fields = fields.map(field => {
-			const override = options.typeOverrides![field.fieldname]
-			return override ? { ...field, ...override } : field
-		})
+	if (options.exclude) {
+		const excludeSet = new Set(options.exclude)
+		filteredEntityTypes = new Set([...filteredEntityTypes].filter(t => !excludeSet.has(t)))
 	}
 
-	// Clean up undefined optional fields
-	fields = fields.map(cleanField)
+	// Phase 3: Convert each entity type to a doctype
+	const isEntityField = options.isEntityField ?? defaultIsEntityField
+	const deriveTableName = options.deriveTableName ?? ((typeName: string) => pascalToSnake(typeName))
 
-	// Use @doctype name from comment if available, otherwise derive from table name
-	const doctypeName = table.doctypeName ?? toPascalCase(table.name)
+	const doctypes: ConvertedGraphQLDoctype[] = []
 
-	return {
-		name: doctypeName,
-		slug: toSlug(table.name),
-		tableName: table.name,
-		fields,
-		inherits: table.inherits?.[0],
+	for (const typeName of filteredEntityTypes) {
+		const type = typeMap[typeName]
+		if (!isObjectType(type)) continue
+
+		const fields = type.getFields()
+		const typeOverrides = options.typeOverrides?.[typeName]
+
+		const allClassifiedFields = Object.entries(fields)
+			.filter(([fieldName, field]) => isEntityField(fieldName, field, type))
+			.map(([fieldName, field]) => {
+				// Check for full custom classification first
+				if (options.classifyField) {
+					const custom = options.classifyField(fieldName, field, type)
+					if (custom !== null && custom !== undefined) {
+						return {
+							fieldname: fieldName,
+							label: custom.label ?? fieldName,
+							component: custom.component ?? 'ATextInput',
+							fieldtype: custom.fieldtype ?? 'Data',
+							...custom,
+						}
+					}
+				}
+
+				// Default classification
+				const classified = classifyFieldType(fieldName, field, entityTypes, options)
+
+				// Apply per-field overrides
+				if (typeOverrides?.[fieldName]) {
+					return { ...classified, ...typeOverrides[fieldName] }
+				}
+
+				return classified
+			})
+
+		// Separate scalar fields from link fields
+		const links: Record<string, LinkDeclaration> = {}
+		const convertedFields = allClassifiedFields
+			.filter(field => {
+				if (field._isLink && typeof field.options === 'string' && field.cardinality) {
+					links[field.fieldname] = {
+						target: field.options,
+						cardinality: field.cardinality as LinkDeclaration['cardinality'],
+					}
+					return false
+				}
+				return true
+			})
+			// Clean up internal metadata unless requested
+			.map(field => {
+				if (!options.includeUnmappedMeta) {
+					const { _graphqlType, _unmapped, _isLink, ...clean } = field
+					return clean
+				}
+				const { _isLink, ...rest } = field
+				return rest
+			})
+
+		const doctype: ConvertedGraphQLDoctype = {
+			name: typeName,
+			slug: toSlug(typeName),
+			fields: convertedFields,
+		}
+
+		if (Object.keys(links).length > 0) {
+			doctype.links = links
+		}
+
+		const tableName = deriveTableName(typeName)
+		if (tableName) {
+			doctype.tableName = tableName
+		}
+
+		if (options.includeUnmappedMeta) {
+			doctype._graphqlTypeName = typeName
+		}
+
+		doctypes.push(doctype)
 	}
+
+	return doctypes
 }
 
 /**
- * Remove undefined optional properties from a field
+ * Build a GraphQLSchema from either an introspection result or SDL string.
+ *
+ * @param source - IntrospectionQuery object or SDL string
+ * @returns A complete GraphQLSchema
+ * @internal
  */
-function cleanField(field: ConversionFieldMeta): ConversionFieldMeta {
-	const cleaned: ConversionFieldMeta = {
-		fieldname: field.fieldname,
-		component: field.component,
-		fieldtype: field.fieldtype,
+function buildGraphQLSchema(source: IntrospectionSource): GraphQLSchema {
+	if (typeof source === 'string') {
+		// SDL string
+		return buildSchema(source)
 	}
 
-	if (field.label !== undefined) cleaned.label = field.label
-	if (field.required === true) cleaned.required = true
-	if (field.default !== undefined) cleaned.default = field.default
-	if (field.readOnly === true) cleaned.readOnly = true
-	if (field.options !== undefined) cleaned.options = field.options
-	if (field._pgType !== undefined) cleaned._pgType = field._pgType
-	if (field._unmapped === true) cleaned._unmapped = true
-
-	return cleaned
+	// IntrospectionQuery result
+	return buildClientSchema(source)
 }
 
+// ═══════════════════════════════════════════════════════════════
 // Re-exports
-export { parseDDL } from './parser'
-export { normalizeType, mapColumnToField, PG_TYPE_MAP, TYPE_ALIASES } from './type-map'
-export type { MapColumnOptions } from './type-map'
-export type { ConversionFieldMeta, ParsedColumn, ParsedTable, ConversionOptions, PostgresType } from './postgres-types'
+// ═══════════════════════════════════════════════════════════════
+
+// Main converter (this file)
+export { convertGraphQLSchema as default }
+
+// Types
+export type {
+	IntrospectionSource,
+	GraphQLConversionOptions,
+	GraphQLConversionFieldMeta,
+	ConvertedGraphQLDoctype,
+} from './types'
+
+// Scalar maps
+export { GQL_SCALAR_MAP, WELL_KNOWN_SCALARS, INTERNAL_SCALARS, buildScalarMap } from './scalars'
+
+// Heuristics
+export { defaultIsEntityType, defaultIsEntityField, classifyFieldType } from './heuristics'
 
 // Naming utilities
-export {
-	snakeToCamel,
-	camelToSnake,
-	snakeToLabel,
-	camelToLabel,
-	convertSQLName,
-	convertSQLNames,
-	createNameMapping,
-	toPascalCase,
-	toSlug,
-} from './naming'
-export type { NameConversion } from './naming'
+export { toSlug, toPascalCase, pascalToSnake, snakeToCamel, camelToSnake, snakeToLabel, camelToLabel } from '../naming'

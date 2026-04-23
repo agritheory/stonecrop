@@ -1,22 +1,23 @@
 {
 	"schema": [
 		{
-			"fieldname": "username",
 			"label": "Username",
+			"fieldname": "username",
 			"fieldtype": "Data",
 			"required": true
 		},
 		{
-			"fieldname": "disabled",
 			"label": "Disabled",
+			"fieldname": "disabled",
 			"fieldtype": "Check",
 			"default": false
-		},
-		{
-			"fieldname": "has_roles",
-			"label": "Roles",
-			"fieldtype": "Doctype",
-			"options": "UserRole"
 		}
-	]
+	],
+	"links": {
+		"has_roles": {
+			"target": "UserRole",
+			"cardinality": "noneOrMany",
+			"backlink": "user"
+		}
+	}
 }

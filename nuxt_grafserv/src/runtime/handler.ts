@@ -24,100 +24,62 @@ async function loadTypeDefsFromFiles(schemaPath: string | string[]): Promise<Doc
 }
 
 /**
- * Get the GraphQL schema based on configuration type
+ * Get the GraphQL schema for 'schema' mode only.
+ * PostGraphile mode uses pgl.createServ() which handles schema internally.
  */
-async function getSchema(options: ModuleOptions): Promise<GraphQLSchema> {
+async function getSchemaForSchemaMode(options: ModuleOptions & { type: 'schema' }): Promise<GraphQLSchema> {
 	if (cachedSchema) {
 		return cachedSchema
 	}
 
 	let schema: GraphQLSchema
 
-	if (options.type === 'postgraphile') {
-		// PostGraphile instance configuration
-		console.debug('[@stonecrop/nuxt-grafserv] Getting schema from PostGraphile instance')
-		try {
-			// Import the PostGraphile instance created at build time
-			// This instance was created with the preset, avoiding runtime preset imports
-			// @ts-expect-error - virtual module
-			const { pgl } = await import('#internal/grafserv/pgl')
+	if (typeof options.schema === 'function') {
+		// Schema provider function
+		console.debug('[@stonecrop/nuxt-grafserv] Using schema provider function')
+		schema = await options.schema()
+	} else {
+		// Load from file path(s)
+		console.debug('[@stonecrop/nuxt-grafserv] Loading schema from file(s)')
+		const typeDefDocs = await loadTypeDefsFromFiles(options.schema)
 
-			// Get the schema from the instance
-			// This supports watch mode and always returns the latest schema
-			console.debug('[@stonecrop/nuxt-grafserv] Calling pgl.getSchema()')
-			schema = await pgl.getSchema()
-			console.debug('[@stonecrop/nuxt-grafserv] PostGraphile schema retrieved successfully')
-		} catch (error) {
-			if (error instanceof Error && 'code' in error && error.code === 'MODULE_NOT_FOUND') {
-				throw new Error(
-					'[@stonecrop/nuxt-grafserv] PostGraphile preset provided but "postgraphile" package not found. ' +
-						'Install it with: npm install postgraphile'
-				)
+		// Load resolvers if provided
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		const objects: Record<string, any> = {}
+		// @ts-expect-error - resolversPath exists on SchemaConfig runtime config
+		if (options.resolversPath) {
+			try {
+				// Import resolvers through virtual module so Nitro's alias applies
+				// @ts-expect-error - virtual module
+				const resolverModule = await import('#internal/grafserv/resolvers')
+				const resolvers = resolverModule.default || resolverModule
+				console.debug('[@stonecrop/nuxt-grafserv] Resolvers loaded:', Object.keys(resolvers))
+
+				// Resolvers should be in the format: { TypeName: { fieldName: resolver } }
+				// or { TypeName: { plans: { fieldName: planResolver } } } for plan resolvers
+				// Pass them through directly under 'objects' for makeGrafastSchema
+				for (const typeName of Object.keys(resolvers)) {
+					objects[typeName] = resolvers[typeName]
+				}
+			} catch (e) {
+				console.error('[@stonecrop/nuxt-grafserv] Error loading resolvers:', e)
+				throw e
 			}
-			console.error('[@stonecrop/nuxt-grafserv] Error getting PostGraphile schema:', error)
+		} else {
+			console.debug('[@stonecrop/nuxt-grafserv] No resolvers specified')
+		}
+
+		// Create schema with Grafast
+		try {
+			schema = makeGrafastSchema({
+				typeDefs: typeDefDocs,
+				objects,
+			})
+			console.debug('[@stonecrop/nuxt-grafserv] Grafast schema created successfully')
+		} catch (error) {
+			console.error('[@stonecrop/nuxt-grafserv] Error creating Grafast schema:', error)
 			throw error
 		}
-	} else if (options.type === 'schema') {
-		// Schema configuration
-		if (typeof options.schema === 'function') {
-			// Schema provider function
-			console.debug('[@stonecrop/nuxt-grafserv] Using schema provider function')
-			schema = await options.schema()
-		} else {
-			// Load from file path(s)
-			console.debug('[@stonecrop/nuxt-grafserv] Loading schema from file(s)')
-			const typeDefDocs = await loadTypeDefsFromFiles(options.schema)
-
-			// Load resolvers if provided
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			const objects: Record<string, any> = {}
-			// @ts-expect-error - resolversPath exists on SchemaConfig runtime config
-			if (options.resolversPath) {
-				try {
-					// Import resolvers through virtual module so Nitro's alias applies
-					// @ts-expect-error - virtual module
-					const resolverModule = await import('#internal/grafserv/resolvers')
-					const resolvers = resolverModule.default || resolverModule
-					console.debug('[@stonecrop/nuxt-grafserv] Resolvers loaded:', Object.keys(resolvers))
-
-					// Transform resolvers to Grafast objects structure
-					for (const typeName of Object.keys(resolvers)) {
-						const typeResolvers = resolvers[typeName]
-
-						// Check if already in objects format with plans key
-						if (typeResolvers && typeof typeResolvers === 'object' && 'plans' in typeResolvers) {
-							// Already in new format: { TypeName: { plans: { fieldName: fn } } }
-							objects[typeName] = typeResolvers
-						} else {
-							// Old format: { TypeName: { fieldName: fn } }
-							// Auto-wrap for backward compatibility
-							objects[typeName] = { plans: typeResolvers }
-						}
-					}
-				} catch (e) {
-					console.error('[@stonecrop/nuxt-grafserv] Error loading resolvers:', e)
-					throw e
-				}
-			} else {
-				console.debug('[@stonecrop/nuxt-grafserv] No resolvers specified')
-			}
-
-			// Create schema with Grafast
-			try {
-				schema = makeGrafastSchema({
-					typeDefs: typeDefDocs,
-					objects,
-				})
-				console.debug('[@stonecrop/nuxt-grafserv] Grafast schema created successfully')
-			} catch (error) {
-				console.error('[@stonecrop/nuxt-grafserv] Error creating Grafast schema:', error)
-				throw error
-			}
-		}
-	} else {
-		throw new Error(
-			`[@stonecrop/nuxt-grafserv] Invalid configuration type: ${(options as Partial<ModuleOptions>).type}`
-		)
 	}
 
 	cachedSchema = schema
@@ -127,6 +89,10 @@ async function getSchema(options: ModuleOptions): Promise<GraphQLSchema> {
 /**
  * Get or create the grafserv instance
  * Exported for use by separate handler files
+ *
+ * For PostGraphile mode: uses pgl.createServ(grafserv) to preserve the full
+ * execution context (withPgClient, pgSettings, plugin middleware, etc.).
+ * For schema mode: builds a schema from files/function and wraps with grafserv.
  */
 export async function getGrafservInstance(options: ModuleOptions): Promise<ReturnType<typeof grafserv>> {
 	if (grafservInstance) {
@@ -134,17 +100,44 @@ export async function getGrafservInstance(options: ModuleOptions): Promise<Retur
 		return grafservInstance
 	}
 
-	const schema = await getSchema(options)
+	if (options.type === 'postgraphile') {
+		// Use pgl.createServ(grafserv) — the canonical PostGraphile v5 pattern.
+		// This preserves the full execution context including withPgClient,
+		// pgSettings, plugin middleware, lifecycle management, and watch mode.
+		console.debug('[@stonecrop/nuxt-grafserv] Creating grafserv via pgl.createServ()')
+		try {
+			// @ts-expect-error - virtual module
+			const { pgl } = await import('#internal/grafserv/pgl')
+			grafservInstance = pgl.createServ(grafserv)
+			console.log('[@stonecrop/nuxt-grafserv] PostGraphile grafserv instance created via pgl.createServ()')
+		} catch (error) {
+			if (error instanceof Error && 'code' in error && error.code === 'MODULE_NOT_FOUND') {
+				throw new Error(
+					'[@stonecrop/nuxt-grafserv] PostGraphile preset provided but "postgraphile" package not found. ' +
+						'Install it with: npm install postgraphile'
+				)
+			}
+			console.error('[@stonecrop/nuxt-grafserv] Error creating PostGraphile grafserv instance:', error)
+			throw error
+		}
+	} else if (options.type === 'schema') {
+		const schema = await getSchemaForSchemaMode(options)
+		grafservInstance = grafserv({ schema })
+		console.log('[@stonecrop/nuxt-grafserv] Schema-mode grafserv instance created')
+	} else {
+		throw new Error(
+			`[@stonecrop/nuxt-grafserv] Invalid configuration type: ${(options as Partial<ModuleOptions>).type}`
+		)
+	}
 
-	// Only pass schema to grafserv - preset was already used for schema generation
-	grafservInstance = grafserv({ schema })
-
-	console.log('[@stonecrop/nuxt-grafserv] Grafserv instance created')
-	return grafservInstance
+	return grafservInstance!
 }
 
 /**
  * Clear the cached instances (useful for development hot reload)
+ *
+ * For PostGraphile mode, only the grafserv reference is cleared — PostGraphile's
+ * pgl instance manages its own schema lifecycle and watch mode.
  */
 export async function clearGrafservCache(): Promise<void> {
 	grafservInstance = null

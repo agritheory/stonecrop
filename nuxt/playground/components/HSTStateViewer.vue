@@ -26,24 +26,21 @@
 </template>
 
 <script setup lang="ts">
+import type { HSTNode } from '@stonecrop/stonecrop'
 import { computed } from 'vue'
 
-interface Props {
-	store: any
-}
-
-const props = defineProps<Props>()
+const { store } = defineProps<{ store: HSTNode }>()
 
 const allExpanded = ref(false)
 
 const treeData = computed(() => {
-	if (!props.store) return {}
+	if (!store) return {}
 	// Access the underlying data safely by getting it through get method
 	// rather than direct property access which can cause recursion
 	try {
 		const data: Record<string, any> = {}
 		// Get all top-level keys from the store
-		const storeData = (props.store as any).target || {}
+		const storeData = (store as any).target || {}
 		for (const key in storeData) {
 			if (Object.prototype.hasOwnProperty.call(storeData, key)) {
 				data[key] = storeData[key]

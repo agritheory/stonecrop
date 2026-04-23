@@ -128,7 +128,7 @@ const readonly_columns: TableColumn[] = [
 		edit: false,
 		width: '25ch',
 		modalComponent: 'ADateSelection',
-		modalComponentExtraProps: { readonly: true },
+		modalComponentExtraProps: { mode: 'read' },
 		format: (value: number) => new Date(value).toLocaleDateString('en-US'),
 	},
 ]

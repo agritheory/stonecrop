@@ -1,8 +1,6 @@
 name: Tests
 
-on:
-  # only run when changes are made to specific packages
-  pull_request:
+on: [pull_request]
 
 jobs:
   changes:
@@ -24,12 +22,15 @@ jobs:
           atable: atable/**
           beam: beam/**
           casl_middleware: casl_middleware/**
+          desktop: desktop/**
+          graphql_client: graphql_client/**
           graphql_middleware: graphql_middleware/**
           rockfoil: rockfoil/**
           schema: schema/**
           stonecrop: stonecrop/**
 
   test:
+    if: ${{ needs.changes.outputs.packages != '[]' }}
     name: ${{ matrix.package }}
     needs: changes
     runs-on: ubuntu-latest

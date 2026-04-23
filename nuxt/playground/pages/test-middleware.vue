@@ -1,9 +1,8 @@
 <script setup lang="ts">
 const actions = [
-	{ key: 'convert', label: 'Convert DDL', description: 'PostgreSQL DDL to Stonecrop Doctypes' },
-	{ key: 'load', label: 'Load Registry', description: 'Load doctypes into memory' },
+	{ key: 'load', label: 'Load Registry', description: 'Load sample doctypes into memory' },
 	{ key: 'validate-refs', label: 'Validate References', description: 'Check Link field targets' },
-	{ key: 'validate-schema', label: 'Validate Schema', description: 'Test Zod validation' },
+	{ key: 'validate-schema', label: 'Validate Schema', description: 'Test @stonecrop/schema validation' },
 ]
 
 const selectedAction = ref<string | null>(null)
@@ -50,7 +49,7 @@ onMounted(async () => {
 <template>
 	<div style="max-width: 1200px; margin: 0 auto; padding: 2rem">
 		<h1>GraphQL Middleware Test</h1>
-		<p>Test DDL conversion, schema validation, and doctype registry</p>
+		<p>Test schema validation, doctype registry, and cross-reference validation</p>
 
 		<div style="display: flex; gap: 1rem; flex-wrap: wrap; margin: 2rem 0">
 			<button

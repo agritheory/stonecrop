@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/code-editor",
-	"version": "0.8.4",
+	"version": "0.11.4",
 	"license": "MIT",
 	"type": "module",
 	"author": {
@@ -15,23 +15,25 @@
 	"bugs": {
 		"url": "https://github.com/agritheory/stonecrop/issues"
 	},
+	"description": "Monaco-based code editor component for Stonecrop",
+	"types": "./dist/code-editor.d.ts",
 	"exports": {
 		".": {
-			"import": {
-				"types": "./dist/src/index.d.ts",
-				"default": "./dist/code-editor.js"
-			},
-			"require": "./dist/code-editor.umd.cjs"
+			"types": "./dist/code-editor.d.ts",
+			"import": "./dist/code-editor.js"
 		}
 	},
-	"typings": "./dist/src/index.d.ts",
 	"files": [
 		"dist/*",
 		"src/*"
 	],
+	"sideEffects": [
+		"**/*.vue",
+		"**/*.css"
+	],
 	"scripts": {
 		"_phase:build": "heft build && vite build && rushx docs",
-		"prepublish": "heft build && vite build && rushx docs",
+		"prepublishOnly": "heft build && vite build && rushx docs",
 		"build": "heft build && vite build && rushx docs",
 		"dev": "vite",
 		"docs": "bash ../common/scripts/run-docs.sh code_editor",
@@ -42,13 +44,15 @@
 		"@stonecrop/themes": "workspace:*",
 		"@stonecrop/utilities": "workspace:*",
 		"@monaco-editor/loader": "^1.7.0",
-		"monaco-editor": "^0.55.1",
+		"monaco-editor": "^0.55.1"
+	},
+	"peerDependencies": {
 		"vue": "^3.5.28"
 	},
 	"devDependencies": {
 		"@eslint/js": "^9.39.2",
 		"@microsoft/api-documenter": "^7.28.2",
-		"@rushstack/heft": "^1.1.7",
+		"@rushstack/heft": "^1.2.0",
 		"@stonecrop/atable": "workspace:*",
 		"@vitejs/plugin-vue": "^6.0.3",
 		"eslint": "^9.39.2",
@@ -58,6 +62,7 @@
 		"stonecrop-rig": "workspace:*",
 		"typescript": "^5.9.3",
 		"typescript-eslint": "^8.53.0",
+		"vue": "^3.5.28",
 		"vite": "^7.3.1",
 		"vue-router": "^5.0.2"
 	},

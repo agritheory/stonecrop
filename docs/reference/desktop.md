@@ -61,6 +61,21 @@ Superset of all element types in the Action Set
 export type ActionElements = ButtonElement | DropdownElement;
 ```
 
+### ActionEventPayload
+
+Payload emitted with the 'action' event when the user triggers an FSM transition
+
+**Definition:**
+
+```typescript
+export type ActionEventPayload = {
+    name: string;
+    doctype: string;
+    recordId: string;
+    data: Record<string, any>;
+};
+```
+
 ### BaseElement
 
 Base type for elements in the Action Set
@@ -110,6 +125,73 @@ Element actions
 export type ElementAction = BaseElement & {
     link?: string;
     action?: () => void;
+};
+```
+
+### LoadRecordEventPayload
+
+Payload emitted with the 'load-record' event when Desktop needs a single record
+
+**Definition:**
+
+```typescript
+export type LoadRecordEventPayload = {
+    doctype: string;
+    recordId: string;
+};
+```
+
+### LoadRecordsEventPayload
+
+Payload emitted with the 'load-records' event when Desktop needs records for a list view
+
+**Definition:**
+
+```typescript
+export type LoadRecordsEventPayload = {
+    doctype: string;
+};
+```
+
+### NavigationTarget
+
+Navigation target passed to RouteAdapter.navigate and emitted with the 'navigate' event
+
+**Definition:**
+
+```typescript
+export type NavigationTarget = {
+    view: 'doctypes' | 'records' | 'record';
+    doctype?: string;
+    recordId?: string;
+};
+```
+
+### RecordOpenEventPayload
+
+Payload emitted with the 'record:open' event
+
+**Definition:**
+
+```typescript
+export type RecordOpenEventPayload = {
+    doctype: string;
+    recordId: string;
+};
+```
+
+### RouteAdapter
+
+Adapter that lets host applications (Nuxt, etc.) supply their own routing layer. When provided as a prop, Desktop uses these functions instead of reaching into the Vue Router instance baked into the Stonecrop registry.
+
+**Definition:**
+
+```typescript
+export type RouteAdapter = {
+    getCurrentDoctype: () => string;
+    getCurrentRecordId: () => string;
+    getCurrentView: () => 'doctypes' | 'records' | 'record';
+    navigate: (target: NavigationTarget) => void | Promise<void>;
 };
 ```
 

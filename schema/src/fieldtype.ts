@@ -5,27 +5,31 @@ import { z } from 'zod'
  * These are consistent across forms and tables.
  * @public
  */
-export const StonecropFieldType = z.enum([
-	'Data', // Short text, varchar
-	'Text', // Long text
-	'Int', // Integer
-	'Float', // Floating point (IEEE 754)
-	'Decimal', // Arbitrary precision decimal
-	'Check', // Boolean/checkbox
-	'Date', // Date only
-	'Time', // Time only
-	'Datetime', // Date and time
-	'Duration', // Time interval
-	'DateRange', // Date range
-	'JSON', // JSON data
-	'Code', // Code/source (with syntax highlighting)
-	'Link', // Reference to another doctype
-	'Doctype', // Child doctype (renders as table)
-	'Attach', // File attachment
-	'Currency', // Currency value
-	'Quantity', // Quantity with unit
-	'Select', // Dropdown selection
-])
+export const StonecropFieldType = z
+	.enum([
+		'Data', // Short text, varchar
+		'Text', // Long text
+		'Int', // Integer
+		'Float', // Floating point (IEEE 754)
+		'Decimal', // Arbitrary precision decimal
+		'Check', // Boolean/checkbox
+		'Date', // Date only
+		'Time', // Time only
+		'Datetime', // Date and time
+		'Duration', // Time interval
+		'DateRange', // Date range
+		'JSON', // JSON data
+		'Code', // Code/source (with syntax highlighting)
+		'Link', // Reference to another doctype
+		'Attach', // File attachment
+		'Currency', // Currency value
+		'Quantity', // Quantity with unit
+		'Select', // Dropdown selection
+	])
+	.meta({
+		title: 'StonecropFieldType',
+		description: 'Semantic field types for Stonecrop doctypes, consistent across forms and tables',
+	})
 
 /**
  * Stonecrop field type enum inferred from Zod schema
@@ -34,11 +38,18 @@ export const StonecropFieldType = z.enum([
 export type StonecropFieldType = z.infer<typeof StonecropFieldType>
 
 /**
- * Field template for TYPE_MAP entries
+ * Field template for TYPE_MAP entries.
+ * Defines the default component and semantic field type for a field.
  * @public
  */
 export interface FieldTemplate {
+	/**
+	 * The Vue component name to render this field (e.g., 'ATextInput', 'ADropdown')
+	 */
 	component: string
+	/**
+	 * The semantic field type (e.g., 'Data', 'Int', 'Select')
+	 */
 	fieldtype: StonecropFieldType
 }
 
@@ -61,7 +72,7 @@ export const TYPE_MAP: Record<StonecropFieldType, FieldTemplate> = {
 	Check: { component: 'ACheckbox', fieldtype: 'Check' },
 
 	// Date/Time
-	Date: { component: 'ADatePicker', fieldtype: 'Date' },
+	Date: { component: 'ADate', fieldtype: 'Date' },
 	Time: { component: 'ATimeInput', fieldtype: 'Time' },
 	Datetime: { component: 'ADatetimePicker', fieldtype: 'Datetime' },
 	Duration: { component: 'ADurationInput', fieldtype: 'Duration' },
@@ -73,7 +84,6 @@ export const TYPE_MAP: Record<StonecropFieldType, FieldTemplate> = {
 
 	// Relational
 	Link: { component: 'ALink', fieldtype: 'Link' },
-	Doctype: { component: 'ATable', fieldtype: 'Doctype' },
 
 	// Files
 	Attach: { component: 'AFileAttach', fieldtype: 'Attach' },

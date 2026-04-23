@@ -158,6 +158,11 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
 					`export const pgl = postgraphile(preset)`,
 				].join('\n')
 
+				// Register a no-op stub so the bundler can always resolve this virtual.
+				// handler.ts references #internal/grafserv/resolvers behind a runtime guard,
+				// but static analysis still attempts to resolve it regardless of mode.
+				config.virtual['#internal/grafserv/resolvers'] = 'export default null'
+
 				// Store minimal runtime config
 				config.runtimeConfig = config.runtimeConfig || {}
 				config.runtimeConfig.grafserv = {
@@ -207,6 +212,10 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
 				config.virtual = config.virtual || {}
 				if (resolverPath) {
 					config.virtual['#internal/grafserv/resolvers'] = `export { default } from '${resolverPath}'`
+				} else {
+					// No resolvers configured; register a no-op stub so the bundler can always
+					// resolve the virtual that handler.ts statically references.
+					config.virtual['#internal/grafserv/resolvers'] = 'export default null'
 				}
 			}
 

@@ -8,7 +8,7 @@ import { install as ATablePlugin } from '@stonecrop/aform'
 import { install as AFormPlugin } from '@stonecrop/atable'
 import { ActionSet, SheetNav } from '@stonecrop/desktop'
 import { install as NodeEditorPlugin } from '@stonecrop/node-editor'
-import Stonecrop, { DoctypeMeta, type RouteContext } from '@stonecrop/stonecrop'
+import Stonecrop, { Doctype, type RouteContext } from '@stonecrop/stonecrop'
 
 import App from './App.vue'
 import router from './router'
@@ -35,14 +35,7 @@ app.use(Stonecrop, {
 		const stateResponse = await fetch(`/api/load_state_machine?${doctypeParam}`)
 		const stateResponseData: Record<string, any> = await stateResponse.json()
 
-		return new DoctypeMeta(
-			doctype,
-			List(schemaData as any),
-			stateResponseData.machine,
-			Map({
-				default: actionsData || [],
-			})
-		)
+		return new Doctype(doctype, List(schemaData as any), stateResponseData.machine, Map({ default: actionsData || [] }))
 	},
 })
 

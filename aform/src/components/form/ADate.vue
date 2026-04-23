@@ -1,28 +1,34 @@
 <template>
-	<div class="adate">
-		<input
-			:id="uuid"
-			ref="date"
-			v-model="inputDate"
-			class="adate-input"
-			:value="inputDate"
-			type="date"
-			:disabled="readOnly"
-			:required="required"
-			@click.prevent="
-				() => {
-					showPicker = !showPicker
-				}
-			" />
-		<label :for="uuid">{{ label }}</label>
-		<p v-show="validation.errorMessage" v-html="validation.errorMessage"></p>
-		<ADateSelection
-			v-if="showPicker"
-			ref="picker"
-			class="picker"
-			:selectRange="false"
-			:showTime="false"
-			@get-date="handleDate" />
+	<div>
+		<template v-if="mode === 'display'">
+			<span class="aform_display-value">{{ inputDate ? new Date(inputDate).toLocaleDateString() : '' }}</span>
+			<label>{{ label }}</label>
+		</template>
+		<template v-else>
+			<input
+				:id="uuid"
+				ref="date"
+				v-model="inputDate"
+				class="adate-input"
+				:value="inputDate"
+				type="date"
+				:disabled="mode === 'read'"
+				:required="required"
+				@click.prevent="
+					() => {
+						showPicker = !showPicker
+					}
+				" />
+			<label :for="uuid">{{ label }}</label>
+			<p v-show="validation.errorMessage" v-html="validation.errorMessage"></p>
+			<ADateSelection
+				v-if="showPicker"
+				ref="picker"
+				class="picker"
+				:select-range="false"
+				:show-time="false"
+				@get-date="handleDate" />
+		</template>
 	</div>
 </template>
 
@@ -32,46 +38,19 @@ import { onClickOutside } from '@vueuse/core'
 import { ComponentProps } from '../../types'
 import ADateSelection from './ADateSelection.vue'
 
-const {
-	schema, // don't remove to allow masking to work
-	label = 'Date',
-	required,
-	readonly,
-	uuid,
-	validation = { errorMessage: '&nbsp;' },
-} = defineProps<ComponentProps>()
+const { label = 'Date', required, mode, uuid, validation = { errorMessage: '&nbsp;' } } = defineProps<ComponentProps>()
 
-// const inputDate = defineModel<string | number | Date>({
-// 	// format the date to be compatible with the native input datepicker
-// 	// set: value => new Date(value).toISOString().split('T')[0],
-// 	set: (value) => {
-// 		value.valueAsDate = value
-// 		return value
-// 		// return `${value.getFullYear()}/${value.getMonth()+1}/${value.getDate()}`
-// 	}
-// })
 const currentDate = ref(new Date())
 const inputDate = computed(() => {
 	return currentDate.value.toISOString().split('T')[0]
 })
 
-const dateRef = useTemplateRef<HTMLInputElement>('date')
 const pickerRef = useTemplateRef('picker')
 const showPicker = ref(false)
 
 onClickOutside(pickerRef, () => (showPicker.value = false))
-// const showPicker = () => {
-// 	if (dateRef.value) {
-// 		if ('showPicker' in HTMLInputElement.prototype) {
-// 			// https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement/showPicker
-// 			// TODO: re-check browser support and compatibility; figure out alternative ways
-// 			// to spawn the native datepicker and eventually replace with ADatepicker
-// 			dateRef.value.showPicker()
-// 		}
-// 	}
-// }
 
-const handleDate = data => {
+const handleDate = (data: { selected: string }) => {
 	currentDate.value = new Date(data.selected)
 }
 </script>
@@ -121,7 +100,7 @@ p {
 }
 
 label {
-	z-index: 2;
+	z-index: 0;
 	font-size: 80%;
 	position: absolute;
 	background: white;

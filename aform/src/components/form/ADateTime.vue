@@ -3,40 +3,40 @@
 		<div class="adate_time_fields">
 			<input
 				v-model.number="time_data.hours"
+				type="number"
 				@paste="pasteInput($event, true)"
 				@focus="focusInput"
 				@blur="confirmTime"
 				@keydown.enter.prevent="confirmTime"
 				@keydown.up.prevent="tick('hours')"
-				@keydown.down.prevent="tick('hours', -1)"
-				type="number" />
+				@keydown.down.prevent="tick('hours', -1)" />
 			<span class="colon">:</span>
 			<input
 				v-model.number="time_data.minutes"
+				type="number"
 				@paste="pasteInput"
 				@focus="focusInput"
 				@blur="confirmTime"
 				@keydown.enter.prevent="confirmTime"
 				@keydown.up.prevent="tick('minutes')"
-				@keydown.down.prevent="tick('minutes', -1)"
-				type="number" />
+				@keydown.down.prevent="tick('minutes', -1)" />
 			<span v-if="props.useSeconds" class="colon">:</span>
 			<input
 				v-if="props.useSeconds"
 				v-model.number="time_data.seconds"
+				type="number"
 				@paste="pasteInput"
 				@focus="focusInput"
 				@blur="confirmTime"
 				@keydown.enter.prevent="confirmTime"
 				@keydown.up.prevent="tick('seconds')"
-				@keydown.down.prevent="tick('seconds', -1)"
-				type="number" />
+				@keydown.down.prevent="tick('seconds', -1)" />
 			<select
 				v-if="!props.allowMilitaryTime"
 				ref="meridiem-selector"
+				v-model="meridiem"
 				class="aform-select meridiem-selector"
-				@change="confirmTime"
-				v-model="meridiem">
+				@change="confirmTime">
 				<option value="AM">AM</option>
 				<option value="PM">PM</option>
 			</select>
@@ -45,7 +45,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, useTemplateRef, defineProps, watch, defineModel, defineEmits, onMounted } from 'vue'
+import { ref, reactive, useTemplateRef, watch, onMounted } from 'vue'
 
 /* Props */
 const props = defineProps({
@@ -76,7 +76,9 @@ const props = defineProps({
 })
 
 /* Emits */
-const emit = defineEmits(['get-time'])
+const emit = defineEmits<{
+	'get-time': [{ hours: number; minutes: number; seconds: number; meridiem: string }]
+}>()
 
 /* Template Refs */
 const meridiemSelector = useTemplateRef('meridiem-selector')

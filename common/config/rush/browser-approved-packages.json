@@ -235,10 +235,6 @@
       "allowedCategories": [ "prototype" ]
     },
     {
-      "name": "decimal.js",
-      "allowedCategories": [ "utilities" ]
-    },
-    {
       "name": "eslint",
       "allowedCategories": [ "production", "prototype", "utilities" ]
     },
@@ -283,10 +279,6 @@
       "allowedCategories": [ "production", "prototype" ]
     },
     {
-      "name": "graphql-request",
-      "allowedCategories": [ "utilities" ]
-    },
-    {
       "name": "graphql-tag",
       "allowedCategories": [ "production", "prototype" ]
     },
@@ -316,7 +308,7 @@
     },
     {
       "name": "jsdom",
-      "allowedCategories": [ "production", "prototype" ]
+      "allowedCategories": [ "production", "prototype", "utilities" ]
     },
     {
       "name": "jsonwebtoken",
@@ -387,10 +379,6 @@
       "allowedCategories": [ "prototype" ]
     },
     {
-      "name": "pgsql-ast-parser",
-      "allowedCategories": [ "utilities" ]
-    },
-    {
       "name": "pinia",
       "allowedCategories": [ "prototype" ]
     },
@@ -401,6 +389,10 @@
     {
       "name": "pinia-xstate",
       "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "pluralize",
+      "allowedCategories": [ "utilities" ]
     },
     {
       "name": "portal-vue",
@@ -469,10 +461,6 @@
     {
       "name": "vite",
       "allowedCategories": [ "production", "prototype", "utilities" ]
-    },
-    {
-      "name": "vite-plugin-dts",
-      "allowedCategories": [ "prototype", "utilities" ]
     },
     {
       "name": "vite-plugin-lib-inject-css",

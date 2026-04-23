@@ -15,6 +15,7 @@ export default defineConfig({
 		lib: {
 			entry: resolve(projectRootDir, 'src/index.ts'),
 			name: '@stonecrop/aform',
+			formats: ['es'],
 		},
 		rollupOptions: {
 			external: ['vue', 'pinia'],

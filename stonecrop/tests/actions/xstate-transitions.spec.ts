@@ -7,7 +7,7 @@ import {
 	triggerTransition,
 } from '../../src/field-triggers'
 import type { TransitionChangeContext, FieldChangeContext } from '../../src/types/field-triggers'
-import DoctypeMeta from '../../src/doctype'
+import Doctype from '../../src/doctype'
 import Registry from '../../src/registry'
 import { createHST } from '../../src/stores/hst'
 
@@ -38,7 +38,7 @@ describe('XState Transition Integration', () => {
 				first_name: ['nameFn'],
 			})
 
-			const doctype = new DoctypeMeta('TestDoc', List(), {}, actions)
+			const doctype = new Doctype('TestDoc', List(), {}, actions)
 
 			registry.addDoctype(doctype)
 
@@ -63,7 +63,7 @@ describe('XState Transition Integration', () => {
 		})
 
 		it('should handle mixed case and underscores correctly', () => {
-			const doctype = new DoctypeMeta(
+			const doctype = new Doctype(
 				'TestDoc',
 				List(),
 				{},
@@ -103,7 +103,7 @@ describe('XState Transition Integration', () => {
 				transitionResults.push(context)
 			})
 
-			const doctype = new DoctypeMeta(
+			const doctype = new Doctype(
 				'Todo',
 				Map(),
 				{},
@@ -150,7 +150,7 @@ describe('XState Transition Integration', () => {
 				executionOrder.push('action3')
 			})
 
-			const doctype = new DoctypeMeta(
+			const doctype = new Doctype(
 				'Todo',
 				Map(),
 				{},
@@ -182,7 +182,7 @@ describe('XState Transition Integration', () => {
 				executionOrder.push('afterFail')
 			})
 
-			const doctype = new DoctypeMeta(
+			const doctype = new Doctype(
 				'Todo',
 				Map(),
 				{},
@@ -210,7 +210,7 @@ describe('XState Transition Integration', () => {
 				sharedActionCalls.push(`called-${context.doctype}`)
 			})
 
-			const doctype = new DoctypeMeta(
+			const doctype = new Doctype(
 				'Todo',
 				Map(),
 				{},
@@ -236,7 +236,7 @@ describe('XState Transition Integration', () => {
 				transitionCalls.push(`${context.transition}-${context.doctype}-${context.recordId}`)
 			})
 
-			const doctype = new DoctypeMeta(
+			const doctype = new Doctype(
 				'Task',
 				Map(),
 				{},
@@ -276,7 +276,7 @@ describe('XState Transition Integration', () => {
 				capturedContext = context
 			})
 
-			const doctype = new DoctypeMeta(
+			const doctype = new Doctype(
 				'Todo',
 				Map(),
 				{},
@@ -314,7 +314,7 @@ describe('XState Transition Integration', () => {
 
 	describe('Error Handling', () => {
 		it('should handle missing transition actions gracefully', async () => {
-			const doctype = new DoctypeMeta('Todo', List(), {}, Map({}))
+			const doctype = new Doctype('Todo', List(), {}, Map({}))
 			registry.addDoctype(doctype)
 
 			// Try to trigger non-existent transition
@@ -324,7 +324,7 @@ describe('XState Transition Integration', () => {
 		})
 
 		it('should handle unregistered transition action functions', async () => {
-			const doctype = new DoctypeMeta(
+			const doctype = new Doctype(
 				'Todo',
 				Map(),
 				{},
@@ -356,7 +356,7 @@ describe('XState Transition Integration', () => {
 				throw new Error('Intentional failure')
 			})
 
-			const doctype = new DoctypeMeta(
+			const doctype = new Doctype(
 				'Todo',
 				List(),
 				{},
@@ -399,7 +399,7 @@ describe('XState Transition Integration', () => {
 				workflowLog.push(`cancel:${ctx.currentState}->${ctx.targetState}`)
 			})
 
-			const doctype = new DoctypeMeta(
+			const doctype = new Doctype(
 				'Document',
 				Map(),
 				{},

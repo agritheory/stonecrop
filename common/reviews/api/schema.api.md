@@ -4,34 +4,26 @@
 
 ```ts
 
+import { GraphQLField } from 'graphql';
+import { GraphQLObjectType } from 'graphql';
+import type { IntrospectionQuery } from 'graphql';
 import { z } from 'zod';
 
 // @public
 export const ActionDefinition: z.ZodObject<{
     label: z.ZodString;
     handler: z.ZodString;
-    requiredFields: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
-    allowedStates: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
+    requiredFields: z.ZodOptional<z.ZodArray<z.ZodString>>;
+    allowedStates: z.ZodOptional<z.ZodArray<z.ZodString>>;
     confirm: z.ZodOptional<z.ZodBoolean>;
     args: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodUnknown>>;
-}, "strip", z.ZodTypeAny, {
-    label: string;
-    handler: string;
-    requiredFields?: string[] | undefined;
-    allowedStates?: string[] | undefined;
-    confirm?: boolean | undefined;
-    args?: Record<string, unknown> | undefined;
-}, {
-    label: string;
-    handler: string;
-    requiredFields?: string[] | undefined;
-    allowedStates?: string[] | undefined;
-    confirm?: boolean | undefined;
-    args?: Record<string, unknown> | undefined;
-}>;
+}, z.core.$strip>;
 
 // @public
 export type ActionDefinition = z.infer<typeof ActionDefinition>;
+
+// @public
+export function buildScalarMap(customScalars?: Record<string, Partial<FieldTemplate>>): Record<string, FieldTemplate>;
 
 // @public
 export function camelToLabel(camelCase: string): string;
@@ -40,317 +32,247 @@ export function camelToLabel(camelCase: string): string;
 export function camelToSnake(camelCase: string): string;
 
 // @public
-export interface ConversionFieldMeta extends FieldMeta {
-    _pgType?: string;
-    _unmapped?: boolean;
+export const Cardinality: z.ZodEnum<{
+    one: "one";
+    atMostOne: "atMostOne";
+    noneOrMany: "noneOrMany";
+    atLeastOne: "atLeastOne";
+}>;
+
+// @public
+export type Cardinality = z.infer<typeof Cardinality>;
+
+// @public
+export function classifyFieldType(fieldName: string, field: GraphQLField<unknown, unknown>, entityTypes: Set<string>, options?: GraphQLConversionOptions): GraphQLConversionFieldMeta;
+
+// @public
+export interface ConvertedGraphQLDoctype extends Omit<DoctypeMeta, 'fields'> {
+    fields: GraphQLConversionFieldMeta[];
+    _graphqlTypeName?: string;
 }
 
 // @public
-export interface ConversionOptions {
-    exclude?: string[];
-    includeUnmappedMeta?: boolean;
-    inheritanceMode: 'flatten' | 'reference';
-    schema?: string;
-    typeOverrides?: Record<string, Partial<FieldMeta>>;
-    useCamelCase?: boolean;
+export function convertGraphQLSchema(source: IntrospectionSource, options?: GraphQLConversionOptions): ConvertedGraphQLDoctype[];
+
+// @public
+export const CustomFetch: z.ZodObject<{
+    method: z.ZodLiteral<"custom">;
+    handler: z.ZodString;
+}, z.core.$strip>;
+
+// @public
+export type CustomFetch = z.infer<typeof CustomFetch>;
+
+// @public
+export interface DataClient<T extends DoctypeRef = DoctypeRef, M = DoctypeMeta> {
+    getMeta(context: DoctypeContext): Promise<M | null>;
+    getRecord(doctype: T, recordId: string, options?: GetRecordOptions): Promise<GetRecordResult>;
+    getRecords(doctype: T, options?: GetRecordsOptions): Promise<Record<string, unknown>[]>;
+    runAction(doctype: T, action: string, args?: unknown[]): Promise<{
+        success: boolean;
+        data: unknown;
+        error: string | null;
+    }>;
 }
 
 // @public
-export interface ConvertedDoctype extends Omit<DoctypeMeta, 'fields'> {
-    fields: ConversionFieldMeta[];
+export function defaultIsEntityField(fieldName: string, _field: GraphQLField<unknown, unknown>, _parentType: GraphQLObjectType): boolean;
+
+// @public
+export function defaultIsEntityType(typeName: string, type: GraphQLObjectType): boolean;
+
+// @public
+export interface DoctypeContext {
+    [key: string]: unknown;
+    doctype: string;
+    recordId?: string;
 }
 
 // @public
-export function convertSchema(sql: string, options?: ConversionOptions): ConvertedDoctype[];
-
-// @public
-export function convertSQLName(sqlName: string): NameConversion;
-
-// @public
-export function convertSQLNames(sqlNames: string[]): NameConversion[];
-
-// @public
-export function createNameMapping(sqlNames: string[]): {
-    sqlToFieldname: Map<string, string>;
-    fieldnameToSQL: Map<string, string>;
-    conversions: NameConversion[];
-};
-
-// @public
-const DoctypeMeta: z.ZodObject<{
+export const DoctypeMeta: z.ZodObject<{
     name: z.ZodString;
     slug: z.ZodOptional<z.ZodString>;
     tableName: z.ZodOptional<z.ZodString>;
     fields: z.ZodArray<z.ZodObject<{
         fieldname: z.ZodString;
-        fieldtype: z.ZodEnum<["Data", "Text", "Int", "Float", "Decimal", "Check", "Date", "Time", "Datetime", "Duration", "DateRange", "JSON", "Code", "Link", "Doctype", "Attach", "Currency", "Quantity", "Select"]>;
+        fieldtype: z.ZodEnum<{
+            Data: "Data";
+            Text: "Text";
+            Int: "Int";
+            Float: "Float";
+            Decimal: "Decimal";
+            Check: "Check";
+            Date: "Date";
+            Time: "Time";
+            Datetime: "Datetime";
+            Duration: "Duration";
+            DateRange: "DateRange";
+            JSON: "JSON";
+            Code: "Code";
+            Link: "Link";
+            Attach: "Attach";
+            Currency: "Currency";
+            Quantity: "Quantity";
+            Select: "Select";
+        }>;
         component: z.ZodOptional<z.ZodString>;
         label: z.ZodOptional<z.ZodString>;
         width: z.ZodOptional<z.ZodString>;
-        align: z.ZodOptional<z.ZodEnum<["left", "center", "right", "start", "end"]>>;
+        align: z.ZodOptional<z.ZodEnum<{
+            left: "left";
+            center: "center";
+            right: "right";
+            start: "start";
+            end: "end";
+        }>>;
         required: z.ZodOptional<z.ZodBoolean>;
         readOnly: z.ZodOptional<z.ZodBoolean>;
         edit: z.ZodOptional<z.ZodBoolean>;
         hidden: z.ZodOptional<z.ZodBoolean>;
         value: z.ZodOptional<z.ZodUnknown>;
         default: z.ZodOptional<z.ZodUnknown>;
-        options: z.ZodOptional<z.ZodUnion<[z.ZodString, z.ZodArray<z.ZodString, "many">, z.ZodRecord<z.ZodString, z.ZodUnknown>]>>;
+        options: z.ZodOptional<z.ZodUnion<readonly [z.ZodString, z.ZodArray<z.ZodString>, z.ZodRecord<z.ZodString, z.ZodUnknown>]>>;
+        cardinality: z.ZodOptional<z.ZodEnum<{
+            one: "one";
+            atMostOne: "atMostOne";
+            noneOrMany: "noneOrMany";
+            atLeastOne: "atLeastOne";
+        }>>;
         mask: z.ZodOptional<z.ZodString>;
         validation: z.ZodOptional<z.ZodObject<{
             errorMessage: z.ZodString;
-        }, "passthrough", z.ZodTypeAny, z.objectOutputType<{
-            errorMessage: z.ZodString;
-        }, z.ZodTypeAny, "passthrough">, z.objectInputType<{
-            errorMessage: z.ZodString;
-        }, z.ZodTypeAny, "passthrough">>>;
-    }, "strip", z.ZodTypeAny, {
-        fieldname: string;
-        fieldtype: "Data" | "Text" | "Int" | "Float" | "Decimal" | "Check" | "Date" | "Time" | "Datetime" | "Duration" | "DateRange" | "JSON" | "Code" | "Link" | "Doctype" | "Attach" | "Currency" | "Quantity" | "Select";
-        value?: unknown;
-        options?: string | string[] | Record<string, unknown> | undefined;
-        validation?: z.objectOutputType<{
-            errorMessage: z.ZodString;
-        }, z.ZodTypeAny, "passthrough"> | undefined;
-        component?: string | undefined;
-        label?: string | undefined;
-        width?: string | undefined;
-        align?: "left" | "center" | "right" | "start" | "end" | undefined;
-        required?: boolean | undefined;
-        readOnly?: boolean | undefined;
-        edit?: boolean | undefined;
-        hidden?: boolean | undefined;
-        default?: unknown;
-        mask?: string | undefined;
-    }, {
-        fieldname: string;
-        fieldtype: "Data" | "Text" | "Int" | "Float" | "Decimal" | "Check" | "Date" | "Time" | "Datetime" | "Duration" | "DateRange" | "JSON" | "Code" | "Link" | "Doctype" | "Attach" | "Currency" | "Quantity" | "Select";
-        value?: unknown;
-        options?: string | string[] | Record<string, unknown> | undefined;
-        validation?: z.objectInputType<{
-            errorMessage: z.ZodString;
-        }, z.ZodTypeAny, "passthrough"> | undefined;
-        component?: string | undefined;
-        label?: string | undefined;
-        width?: string | undefined;
-        align?: "left" | "center" | "right" | "start" | "end" | undefined;
-        required?: boolean | undefined;
-        readOnly?: boolean | undefined;
-        edit?: boolean | undefined;
-        hidden?: boolean | undefined;
-        default?: unknown;
-        mask?: string | undefined;
-    }>, "many">;
+        }, z.core.$loose>>;
+    }, z.core.$strip>>;
+    links: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodObject<{
+        target: z.ZodString;
+        cardinality: z.ZodEnum<{
+            one: "one";
+            atMostOne: "atMostOne";
+            noneOrMany: "noneOrMany";
+            atLeastOne: "atLeastOne";
+        }>;
+        backlink: z.ZodOptional<z.ZodString>;
+        component: z.ZodOptional<z.ZodString>;
+        fieldname: z.ZodOptional<z.ZodString>;
+        fetch: z.ZodOptional<z.ZodDiscriminatedUnion<[z.ZodObject<{
+            method: z.ZodLiteral<"sync">;
+            limit: z.ZodOptional<z.ZodNumber>;
+        }, z.core.$strip>, z.ZodObject<{
+            method: z.ZodLiteral<"lazy">;
+        }, z.core.$strip>, z.ZodObject<{
+            method: z.ZodLiteral<"custom">;
+            handler: z.ZodString;
+        }, z.core.$strip>], "method">>;
+        blockWorkflows: z.ZodOptional<z.ZodBoolean>;
+    }, z.core.$strip>>>;
     workflow: z.ZodOptional<z.ZodObject<{
-        states: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
+        states: z.ZodOptional<z.ZodArray<z.ZodString>>;
         actions: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodObject<{
             label: z.ZodString;
             handler: z.ZodString;
-            requiredFields: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
-            allowedStates: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
+            requiredFields: z.ZodOptional<z.ZodArray<z.ZodString>>;
+            allowedStates: z.ZodOptional<z.ZodArray<z.ZodString>>;
             confirm: z.ZodOptional<z.ZodBoolean>;
             args: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodUnknown>>;
-        }, "strip", z.ZodTypeAny, {
-            label: string;
-            handler: string;
-            requiredFields?: string[] | undefined;
-            allowedStates?: string[] | undefined;
-            confirm?: boolean | undefined;
-            args?: Record<string, unknown> | undefined;
-        }, {
-            label: string;
-            handler: string;
-            requiredFields?: string[] | undefined;
-            allowedStates?: string[] | undefined;
-            confirm?: boolean | undefined;
-            args?: Record<string, unknown> | undefined;
-        }>>>;
-    }, "strip", z.ZodTypeAny, {
-        states?: string[] | undefined;
-        actions?: Record<string, {
-            label: string;
-            handler: string;
-            requiredFields?: string[] | undefined;
-            allowedStates?: string[] | undefined;
-            confirm?: boolean | undefined;
-            args?: Record<string, unknown> | undefined;
-        }> | undefined;
-    }, {
-        states?: string[] | undefined;
-        actions?: Record<string, {
-            label: string;
-            handler: string;
-            requiredFields?: string[] | undefined;
-            allowedStates?: string[] | undefined;
-            confirm?: boolean | undefined;
-            args?: Record<string, unknown> | undefined;
-        }> | undefined;
-    }>>;
+        }, z.core.$strip>>>;
+    }, z.core.$strip>>;
     inherits: z.ZodOptional<z.ZodString>;
-    listDoctype: z.ZodOptional<z.ZodString>;
-    parentDoctype: z.ZodOptional<z.ZodString>;
-}, "strip", z.ZodTypeAny, {
-    name: string;
-    fields: {
-        fieldname: string;
-        fieldtype: "Data" | "Text" | "Int" | "Float" | "Decimal" | "Check" | "Date" | "Time" | "Datetime" | "Duration" | "DateRange" | "JSON" | "Code" | "Link" | "Doctype" | "Attach" | "Currency" | "Quantity" | "Select";
-        value?: unknown;
-        options?: string | string[] | Record<string, unknown> | undefined;
-        validation?: z.objectOutputType<{
-            errorMessage: z.ZodString;
-        }, z.ZodTypeAny, "passthrough"> | undefined;
-        component?: string | undefined;
-        label?: string | undefined;
-        width?: string | undefined;
-        align?: "left" | "center" | "right" | "start" | "end" | undefined;
-        required?: boolean | undefined;
-        readOnly?: boolean | undefined;
-        edit?: boolean | undefined;
-        hidden?: boolean | undefined;
-        default?: unknown;
-        mask?: string | undefined;
-    }[];
-    slug?: string | undefined;
-    tableName?: string | undefined;
-    workflow?: {
-        states?: string[] | undefined;
-        actions?: Record<string, {
-            label: string;
-            handler: string;
-            requiredFields?: string[] | undefined;
-            allowedStates?: string[] | undefined;
-            confirm?: boolean | undefined;
-            args?: Record<string, unknown> | undefined;
-        }> | undefined;
-    } | undefined;
-    inherits?: string | undefined;
-    listDoctype?: string | undefined;
-    parentDoctype?: string | undefined;
-}, {
-    name: string;
-    fields: {
-        fieldname: string;
-        fieldtype: "Data" | "Text" | "Int" | "Float" | "Decimal" | "Check" | "Date" | "Time" | "Datetime" | "Duration" | "DateRange" | "JSON" | "Code" | "Link" | "Doctype" | "Attach" | "Currency" | "Quantity" | "Select";
-        value?: unknown;
-        options?: string | string[] | Record<string, unknown> | undefined;
-        validation?: z.objectInputType<{
-            errorMessage: z.ZodString;
-        }, z.ZodTypeAny, "passthrough"> | undefined;
-        component?: string | undefined;
-        label?: string | undefined;
-        width?: string | undefined;
-        align?: "left" | "center" | "right" | "start" | "end" | undefined;
-        required?: boolean | undefined;
-        readOnly?: boolean | undefined;
-        edit?: boolean | undefined;
-        hidden?: boolean | undefined;
-        default?: unknown;
-        mask?: string | undefined;
-    }[];
-    slug?: string | undefined;
-    tableName?: string | undefined;
-    workflow?: {
-        states?: string[] | undefined;
-        actions?: Record<string, {
-            label: string;
-            handler: string;
-            requiredFields?: string[] | undefined;
-            allowedStates?: string[] | undefined;
-            confirm?: boolean | undefined;
-            args?: Record<string, unknown> | undefined;
-        }> | undefined;
-    } | undefined;
-    inherits?: string | undefined;
-    listDoctype?: string | undefined;
-    parentDoctype?: string | undefined;
-}>;
+}, z.core.$strip>;
 
 // @public
-type DoctypeMeta = z.infer<typeof DoctypeMeta>;
-export { DoctypeMeta }
-export { DoctypeMeta as DoctypeMetaType }
+export type DoctypeMeta = z.infer<typeof DoctypeMeta>;
 
 // @public
-const FieldMeta: z.ZodObject<{
+export interface DoctypeRef {
+    name: string;
+    slug?: string;
+}
+
+// @public
+export const FetchStrategy: z.ZodDiscriminatedUnion<[z.ZodObject<{
+    method: z.ZodLiteral<"sync">;
+    limit: z.ZodOptional<z.ZodNumber>;
+}, z.core.$strip>, z.ZodObject<{
+    method: z.ZodLiteral<"lazy">;
+}, z.core.$strip>, z.ZodObject<{
+    method: z.ZodLiteral<"custom">;
+    handler: z.ZodString;
+}, z.core.$strip>], "method">;
+
+// @public
+export type FetchStrategy = z.infer<typeof FetchStrategy>;
+
+// @public
+export const FieldMeta: z.ZodObject<{
     fieldname: z.ZodString;
-    fieldtype: z.ZodEnum<["Data", "Text", "Int", "Float", "Decimal", "Check", "Date", "Time", "Datetime", "Duration", "DateRange", "JSON", "Code", "Link", "Doctype", "Attach", "Currency", "Quantity", "Select"]>;
+    fieldtype: z.ZodEnum<{
+        Data: "Data";
+        Text: "Text";
+        Int: "Int";
+        Float: "Float";
+        Decimal: "Decimal";
+        Check: "Check";
+        Date: "Date";
+        Time: "Time";
+        Datetime: "Datetime";
+        Duration: "Duration";
+        DateRange: "DateRange";
+        JSON: "JSON";
+        Code: "Code";
+        Link: "Link";
+        Attach: "Attach";
+        Currency: "Currency";
+        Quantity: "Quantity";
+        Select: "Select";
+    }>;
     component: z.ZodOptional<z.ZodString>;
     label: z.ZodOptional<z.ZodString>;
     width: z.ZodOptional<z.ZodString>;
-    align: z.ZodOptional<z.ZodEnum<["left", "center", "right", "start", "end"]>>;
+    align: z.ZodOptional<z.ZodEnum<{
+        left: "left";
+        center: "center";
+        right: "right";
+        start: "start";
+        end: "end";
+    }>>;
     required: z.ZodOptional<z.ZodBoolean>;
     readOnly: z.ZodOptional<z.ZodBoolean>;
     edit: z.ZodOptional<z.ZodBoolean>;
     hidden: z.ZodOptional<z.ZodBoolean>;
     value: z.ZodOptional<z.ZodUnknown>;
     default: z.ZodOptional<z.ZodUnknown>;
-    options: z.ZodOptional<z.ZodUnion<[z.ZodString, z.ZodArray<z.ZodString, "many">, z.ZodRecord<z.ZodString, z.ZodUnknown>]>>;
+    options: z.ZodOptional<z.ZodUnion<readonly [z.ZodString, z.ZodArray<z.ZodString>, z.ZodRecord<z.ZodString, z.ZodUnknown>]>>;
+    cardinality: z.ZodOptional<z.ZodEnum<{
+        one: "one";
+        atMostOne: "atMostOne";
+        noneOrMany: "noneOrMany";
+        atLeastOne: "atLeastOne";
+    }>>;
     mask: z.ZodOptional<z.ZodString>;
     validation: z.ZodOptional<z.ZodObject<{
         errorMessage: z.ZodString;
-    }, "passthrough", z.ZodTypeAny, z.objectOutputType<{
-        errorMessage: z.ZodString;
-    }, z.ZodTypeAny, "passthrough">, z.objectInputType<{
-        errorMessage: z.ZodString;
-    }, z.ZodTypeAny, "passthrough">>>;
-}, "strip", z.ZodTypeAny, {
-    fieldname: string;
-    fieldtype: "Data" | "Text" | "Int" | "Float" | "Decimal" | "Check" | "Date" | "Time" | "Datetime" | "Duration" | "DateRange" | "JSON" | "Code" | "Link" | "Doctype" | "Attach" | "Currency" | "Quantity" | "Select";
-    value?: unknown;
-    options?: string | string[] | Record<string, unknown> | undefined;
-    validation?: z.objectOutputType<{
-        errorMessage: z.ZodString;
-    }, z.ZodTypeAny, "passthrough"> | undefined;
-    component?: string | undefined;
-    label?: string | undefined;
-    width?: string | undefined;
-    align?: "left" | "center" | "right" | "start" | "end" | undefined;
-    required?: boolean | undefined;
-    readOnly?: boolean | undefined;
-    edit?: boolean | undefined;
-    hidden?: boolean | undefined;
-    default?: unknown;
-    mask?: string | undefined;
-}, {
-    fieldname: string;
-    fieldtype: "Data" | "Text" | "Int" | "Float" | "Decimal" | "Check" | "Date" | "Time" | "Datetime" | "Duration" | "DateRange" | "JSON" | "Code" | "Link" | "Doctype" | "Attach" | "Currency" | "Quantity" | "Select";
-    value?: unknown;
-    options?: string | string[] | Record<string, unknown> | undefined;
-    validation?: z.objectInputType<{
-        errorMessage: z.ZodString;
-    }, z.ZodTypeAny, "passthrough"> | undefined;
-    component?: string | undefined;
-    label?: string | undefined;
-    width?: string | undefined;
-    align?: "left" | "center" | "right" | "start" | "end" | undefined;
-    required?: boolean | undefined;
-    readOnly?: boolean | undefined;
-    edit?: boolean | undefined;
-    hidden?: boolean | undefined;
-    default?: unknown;
-    mask?: string | undefined;
-}>;
+    }, z.core.$loose>>;
+}, z.core.$strip>;
 
 // @public
-type FieldMeta = z.infer<typeof FieldMeta>;
-export { FieldMeta }
-export { FieldMeta as FieldMetaType }
+export type FieldMeta = z.infer<typeof FieldMeta>;
 
 // @public
-const FieldOptions: z.ZodUnion<[z.ZodString, z.ZodArray<z.ZodString, "many">, z.ZodRecord<z.ZodString, z.ZodUnknown>]>;
+export const FieldOptions: z.ZodUnion<readonly [z.ZodString, z.ZodArray<z.ZodString>, z.ZodRecord<z.ZodString, z.ZodUnknown>]>;
 
 // @public
-type FieldOptions = z.infer<typeof FieldOptions>;
-export { FieldOptions }
-export { FieldOptions as FieldOptionsType }
+export type FieldOptions = z.infer<typeof FieldOptions>;
+
+// @public
+export interface FieldTemplate {
+    component: string;
+    fieldtype: StonecropFieldType;
+}
 
 // @public
 export const FieldValidation: z.ZodObject<{
     errorMessage: z.ZodString;
-}, "passthrough", z.ZodTypeAny, z.objectOutputType<{
-    errorMessage: z.ZodString;
-}, z.ZodTypeAny, "passthrough">, z.objectInputType<{
-    errorMessage: z.ZodString;
-}, z.ZodTypeAny, "passthrough">>;
+}, z.core.$loose>;
 
 // @public
 export type FieldValidation = z.infer<typeof FieldValidation>;
@@ -359,73 +281,99 @@ export type FieldValidation = z.infer<typeof FieldValidation>;
 export function getDefaultComponent(fieldtype: StonecropFieldType): string;
 
 // @public
-export interface MapColumnOptions {
+export interface GetRecordOptions {
+    includeNested?: boolean | string[];
+    maxDepth?: number;
+}
+
+// @public
+export interface GetRecordResult {
+    record: Record<string, unknown> | null;
+}
+
+// @public
+export interface GetRecordsOptions {
+    filters?: Record<string, unknown>;
+    limit?: number;
+    offset?: number;
+    orderBy?: string;
+}
+
+// @public
+export const GQL_SCALAR_MAP: Record<string, FieldTemplate>;
+
+// @public
+export interface GraphQLConversionFieldMeta extends FieldMeta {
+    _graphqlType?: string;
+    _isLink?: boolean;
+    _unmapped?: boolean;
+}
+
+// @public
+export interface GraphQLConversionOptions {
+    classifyField?: (fieldName: string, field: GraphQLField<unknown, unknown>, parentType: GraphQLObjectType) => Partial<FieldMeta> | null;
+    customScalars?: Record<string, Partial<FieldTemplate>>;
+    deriveTableName?: (typeName: string) => string | undefined;
+    exclude?: string[];
+    include?: string[];
     includeUnmappedMeta?: boolean;
-    useCamelCase?: boolean;
+    isEntityField?: (fieldName: string, field: GraphQLField<unknown, unknown>, parentType: GraphQLObjectType) => boolean;
+    isEntityType?: (typeName: string, type: GraphQLObjectType) => boolean;
+    typeOverrides?: Record<string, Record<string, Partial<FieldMeta>>>;
 }
 
 // @public
-export function mapColumnToField(column: ParsedColumn, _tableRegistry: Map<string, ParsedTable>, options?: MapColumnOptions): ConversionFieldMeta;
+export const INTERNAL_SCALARS: Set<string>;
 
 // @public
-export interface NameConversion {
-    fieldname: string;
-    label: string;
-    originalName: string;
-}
+export type IntrospectionSource = IntrospectionQuery | string;
 
 // @public
-export function normalizeType(rawType: string): PostgresType;
+export const LazyFetch: z.ZodObject<{
+    method: z.ZodLiteral<"lazy">;
+}, z.core.$strip>;
 
 // @public
-export interface ParsedColumn {
-    arrayDimensions: number;
-    dataType: string;
-    defaultValue?: string;
-    isGenerated: boolean;
-    length?: number;
-    name: string;
-    normalizedType: PostgresType;
-    nullable: boolean;
-    precision?: number;
-    reference?: {
-        schema?: string;
-        table: string;
-        column: string;
-        onDelete?: 'CASCADE' | 'SET NULL' | 'RESTRICT' | 'NO ACTION';
-    };
-    scale?: number;
-}
+export type LazyFetch = z.infer<typeof LazyFetch>;
 
 // @public
-export function parseDDL(sql: string): ParsedTable[];
+export const LinkDeclaration: z.ZodObject<{
+    target: z.ZodString;
+    cardinality: z.ZodEnum<{
+        one: "one";
+        atMostOne: "atMostOne";
+        noneOrMany: "noneOrMany";
+        atLeastOne: "atLeastOne";
+    }>;
+    backlink: z.ZodOptional<z.ZodString>;
+    component: z.ZodOptional<z.ZodString>;
+    fieldname: z.ZodOptional<z.ZodString>;
+    fetch: z.ZodOptional<z.ZodDiscriminatedUnion<[z.ZodObject<{
+        method: z.ZodLiteral<"sync">;
+        limit: z.ZodOptional<z.ZodNumber>;
+    }, z.core.$strip>, z.ZodObject<{
+        method: z.ZodLiteral<"lazy">;
+    }, z.core.$strip>, z.ZodObject<{
+        method: z.ZodLiteral<"custom">;
+        handler: z.ZodString;
+    }, z.core.$strip>], "method">>;
+    blockWorkflows: z.ZodOptional<z.ZodBoolean>;
+}, z.core.$strip>;
+
+// @public
+export type LinkDeclaration = z.infer<typeof LinkDeclaration>;
 
 // @public
 export function parseDoctype(data: unknown): DoctypeMeta;
 
 // @public
-export interface ParsedTable {
-    columns: ParsedColumn[];
-    comment?: string;
-    doctypeName?: string;
-    inherits?: string[];
-    name: string;
-    schema?: string;
-}
-
-// @public
 export function parseField(data: unknown): FieldMeta;
 
-// Warning: (ae-forgotten-export) The symbol "FieldTemplate_2" needs to be exported by the entry point index.d.ts
-//
 // @public
-export const PG_TYPE_MAP: Record<PostgresType, FieldTemplate_2>;
+export function pascalToSnake(pascal: string): string;
 
 // @public
-export const PostgresType: z.ZodEnum<["text", "varchar", "char", "citext", "smallint", "integer", "bigint", "serial", "bigserial", "smallserial", "numeric", "decimal", "real", "double precision", "money", "boolean", "date", "time", "timetz", "timestamp", "timestamptz", "interval", "int4range", "int8range", "numrange", "daterange", "tsrange", "tstzrange", "bytea", "uuid", "json", "jsonb", "bit", "varbit", "xml", "unit", "cube", "unknown"]>;
-
-// @public
-export type PostgresType = z.infer<typeof PostgresType>;
+export type SerializedFunction = string;
 
 // @public
 export function snakeToCamel(snakeCase: string): string;
@@ -434,12 +382,38 @@ export function snakeToCamel(snakeCase: string): string;
 export function snakeToLabel(snakeCase: string): string;
 
 // @public
-const StonecropFieldType: z.ZodEnum<["Data", "Text", "Int", "Float", "Decimal", "Check", "Date", "Time", "Datetime", "Duration", "DateRange", "JSON", "Code", "Link", "Doctype", "Attach", "Currency", "Quantity", "Select"]>;
+export const StonecropFieldType: z.ZodEnum<{
+    Data: "Data";
+    Text: "Text";
+    Int: "Int";
+    Float: "Float";
+    Decimal: "Decimal";
+    Check: "Check";
+    Date: "Date";
+    Time: "Time";
+    Datetime: "Datetime";
+    Duration: "Duration";
+    DateRange: "DateRange";
+    JSON: "JSON";
+    Code: "Code";
+    Link: "Link";
+    Attach: "Attach";
+    Currency: "Currency";
+    Quantity: "Quantity";
+    Select: "Select";
+}>;
 
 // @public
-type StonecropFieldType = z.infer<typeof StonecropFieldType>;
-export { StonecropFieldType }
-export { StonecropFieldType as StonecropFieldTypeValue }
+export type StonecropFieldType = z.infer<typeof StonecropFieldType>;
+
+// @public
+export const SyncFetch: z.ZodObject<{
+    method: z.ZodLiteral<"sync">;
+    limit: z.ZodOptional<z.ZodNumber>;
+}, z.core.$strip>;
+
+// @public
+export type SyncFetch = z.infer<typeof SyncFetch>;
 
 // @public
 export function toPascalCase(tableName: string): string;
@@ -447,11 +421,6 @@ export function toPascalCase(tableName: string): string;
 // @public
 export function toSlug(name: string): string;
 
-// @public
-export const TYPE_ALIASES: Record<string, PostgresType>;
-
-// Warning: (ae-forgotten-export) The symbol "FieldTemplate" needs to be exported by the entry point index.d.ts
-//
 // @public
 export const TYPE_MAP: Record<StonecropFieldType, FieldTemplate>;
 
@@ -464,7 +433,7 @@ export function validateField(data: unknown): ValidationResult;
 // @public
 export interface ValidationError {
     message: string;
-    path: (string | number)[];
+    path: PropertyKey[];
 }
 
 // @public
@@ -474,56 +443,23 @@ export interface ValidationResult {
 }
 
 // @public
-const WorkflowMeta: z.ZodObject<{
-    states: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
+export const WELL_KNOWN_SCALARS: Record<string, FieldTemplate>;
+
+// @public
+export const WorkflowMeta: z.ZodObject<{
+    states: z.ZodOptional<z.ZodArray<z.ZodString>>;
     actions: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodObject<{
         label: z.ZodString;
         handler: z.ZodString;
-        requiredFields: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
-        allowedStates: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
+        requiredFields: z.ZodOptional<z.ZodArray<z.ZodString>>;
+        allowedStates: z.ZodOptional<z.ZodArray<z.ZodString>>;
         confirm: z.ZodOptional<z.ZodBoolean>;
         args: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodUnknown>>;
-    }, "strip", z.ZodTypeAny, {
-        label: string;
-        handler: string;
-        requiredFields?: string[] | undefined;
-        allowedStates?: string[] | undefined;
-        confirm?: boolean | undefined;
-        args?: Record<string, unknown> | undefined;
-    }, {
-        label: string;
-        handler: string;
-        requiredFields?: string[] | undefined;
-        allowedStates?: string[] | undefined;
-        confirm?: boolean | undefined;
-        args?: Record<string, unknown> | undefined;
-    }>>>;
-}, "strip", z.ZodTypeAny, {
-    states?: string[] | undefined;
-    actions?: Record<string, {
-        label: string;
-        handler: string;
-        requiredFields?: string[] | undefined;
-        allowedStates?: string[] | undefined;
-        confirm?: boolean | undefined;
-        args?: Record<string, unknown> | undefined;
-    }> | undefined;
-}, {
-    states?: string[] | undefined;
-    actions?: Record<string, {
-        label: string;
-        handler: string;
-        requiredFields?: string[] | undefined;
-        allowedStates?: string[] | undefined;
-        confirm?: boolean | undefined;
-        args?: Record<string, unknown> | undefined;
-    }> | undefined;
-}>;
+    }, z.core.$strip>>>;
+}, z.core.$strip>;
 
 // @public
-type WorkflowMeta = z.infer<typeof WorkflowMeta>;
-export { WorkflowMeta }
-export { WorkflowMeta as WorkflowMetaType }
+export type WorkflowMeta = z.infer<typeof WorkflowMeta>;
 
 // (No @packageDocumentation comment for this package)
 

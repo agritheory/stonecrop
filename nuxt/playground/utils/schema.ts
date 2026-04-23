@@ -11,7 +11,6 @@ const fieldtypeToComponent: Record<string, string> = {
 	Datetime: 'ADate',
 	Select: 'ADropdown',
 	Link: 'AComboBox',
-	Table: 'ATable',
 	JSON: 'ATextInput', // Default to text input for JSON
 	// Add more mappings as needed
 }
@@ -27,16 +26,18 @@ export function hydrateSchema(schema: any[]): any[] {
 			component,
 		}
 
-		// Special handling for Table fieldtype
-		if (field.fieldtype === 'Table' && field.options && Array.isArray(field.options)) {
-			// Hydrate nested schema for table columns
-			hydratedField.columns = field.options.map((col: any) => ({
-				name: col.fieldname,
-				label: col.label,
-				fieldtype: col.fieldtype || 'Data',
-			}))
-			// Initialize empty rows array
+		// Handle resolved 1:many link entries (have cardinality + columns/rows)
+		if (field.cardinality === 'noneOrMany' || field.cardinality === 'atLeastOne') {
+			if (field.columns && Array.isArray(field.columns)) {
+				hydratedField.columns = field.columns
+			}
+			hydratedField.component = 'ATable'
 			hydratedField.rows = []
+		}
+
+		// Handle resolved 1:1 link entries (have schema + options)
+		if (field.schema && Array.isArray(field.schema) && field.options) {
+			hydratedField.schema = field.schema
 		}
 
 		return hydratedField

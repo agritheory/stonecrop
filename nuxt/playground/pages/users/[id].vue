@@ -100,7 +100,7 @@ onUnmounted(() => {
 		<div class="main-content">
 			<div class="form-container">
 				<ClientOnly>
-					<AForm v-model="(userDoctype as any).schema" :data="userData" />
+					<AForm v-model:data="userData" :schema="userDoctype.schema" />
 				</ClientOnly>
 			</div>
 

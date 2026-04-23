@@ -100,7 +100,7 @@ const formatValue = (value: any): string => {
 	border-radius: 0.25rem;
 	border: 1px solid var(--sc-form-border);
 	overflow: hidden;
-	z-index: 1000;
+	z-index: 400;
 }
 
 .panel-header {

@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import type { ComputedRef } from 'vue'
-import type { HSTOperation } from '@stonecrop/stonecrop'
+import type { HSTNode, HSTOperation } from '@stonecrop/stonecrop'
 
 interface Props {
-	hstStore: ComputedRef<any> | null | undefined
+	hstStore: HSTNode | null | undefined
 	operations: HSTOperation[]
 	currentIndex: number
 	canUndo: boolean

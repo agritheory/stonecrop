@@ -1,6 +1,12 @@
 import type { TableColumn, TableConfig, TableRow } from '@stonecrop/atable'
 
 /**
+ * The rendering mode for AForm components
+ * @public
+ */
+export type FormMode = 'edit' | 'read' | 'display'
+
+/**
  * Defined props for AForm components
  * @public
  */
@@ -17,8 +23,14 @@ export type ComponentProps = {
 	 */
 	label?: string
 
+	// TODO: add docstring
+	selectRange?: boolean
+
 	/**
-	 * The masking string to apply to inputs inside the component
+	 * The mask to apply to inputs inside the component. Accepts either a plain
+	 * mask string (e.g. `"(###) ###-####"`) or a stringified arrow function that
+	 * receives `locale` and returns a mask string
+	 * (e.g. `"(locale) => locale === 'en-US' ? '(###) ###-####' : '####-######'"`).
 	 * @public
 	 */
 	mask?: string
@@ -30,10 +42,10 @@ export type ComponentProps = {
 	required?: boolean
 
 	/**
-	 * Indicate whether elements inside the component are read-only
+	 * The rendering mode for the component
 	 * @public
 	 */
-	readOnly?: boolean
+	mode?: FormMode
 
 	/**
 	 * Set a unique identifier for elements inside the component
@@ -79,10 +91,10 @@ export type BaseSchema = {
 	component?: string
 
 	/**
-	 * A placeholder value for the field
-	 * @beta
+	 * Per-field rendering mode override; takes precedence over the AForm-level `mode` prop
+	 * @public
 	 */
-	value?: any
+	mode?: FormMode
 }
 
 /**
@@ -94,7 +106,7 @@ export type FormSchema = BaseSchema & {
 	 * Align the field in the form
 	 * @beta
 	 */
-	align?: string
+	align?: CanvasTextAlign
 
 	/**
 	 * Indicate whether the field is editable
@@ -104,17 +116,6 @@ export type FormSchema = BaseSchema & {
 
 	/**
 	 * The field type for the schema field
-	 *
-	 * @remarks
-	 * This must be a string that represents the field type. A mask string will be automatically
-	 * applied for the following field types:
-	 * - Date ('##/##/####')
-	 * - Datetime ('####/##/## ##:##')
-	 * - Time ('##:##')
-	 * - Fulltime ('##:##:##')
-	 * - Phone ('(###) ### - ####')
-	 * - Card ('#### #### #### ####')
-	 *
 	 * @public
 	 */
 	fieldtype?: string
@@ -138,8 +139,11 @@ export type FormSchema = BaseSchema & {
 	width?: string
 
 	/**
-	 * The mask string for the field
-	 * @beta
+	 * The mask to apply to the field. Accepts either a plain mask string
+	 * (e.g. `"##/##/####"`) or a stringified arrow function that receives `locale`
+	 * and returns a mask string
+	 * (e.g. `"(locale) => locale === 'en-US' ? '(###) ###-####' : '####-######'"`).
+	 * @public
 	 */
 	mask?: string
 }
@@ -183,7 +187,7 @@ export type FieldsetSchema = BaseSchema & {
 	 * The schemas to be rendered inside the fieldset
 	 * @public
 	 */
-	schema?: (FormSchema | TableSchema)[]
+	schema?: SchemaTypes[]
 
 	/**
 	 * Indicate whether the fieldset is collapsible
@@ -193,114 +197,7 @@ export type FieldsetSchema = BaseSchema & {
 }
 
 /**
- * Schema structure for defining nested doctype fields inside AForm
- *
- * @remarks
- * When a field has `fieldtype: 'Doctype'`, the `options` property contains the slug
- * of the referenced doctype. The `schema` property is populated by the framework's
- * `registry.resolveSchema()` method with the resolved child schema fields.
- *
- * Before resolution: `{ fieldname: 'address', fieldtype: 'Doctype', options: 'address' }`
- * After resolution: `{ fieldname: 'address', fieldtype: 'Doctype', options: 'address', schema: [...resolved fields...] }`
- *
- * Users can also manually provide the `schema` property without using the framework registry.
- *
- * @public
- */
-export type DoctypeSchema = BaseSchema & {
-	/**
-	 * The field type - must be 'Doctype' for nested doctype fields
-	 * @public
-	 */
-	fieldtype: 'Doctype'
-
-	/**
-	 * The slug of the referenced doctype in the registry
-	 * @public
-	 */
-	options: string
-
-	/**
-	 * The label to display above the nested form section
-	 * @public
-	 */
-	label?: string
-
-	/**
-	 * The resolved child schema fields, populated by `registry.resolveSchema()`
-	 * or provided manually for standalone usage
-	 * @public
-	 */
-	schema?: SchemaTypes[]
-
-	/**
-	 * Indicate whether the nested form is read-only
-	 * @public
-	 */
-	readOnly?: boolean
-}
-
-/**
- * Schema structure for defining 1:many child table fields inside AForm
- *
- * @remarks
- * When a field has `fieldtype: 'Table'`, the `options` property contains the slug
- * of the child doctype whose records appear as table rows.
- *
- * `Registry.resolveSchema()` auto-derives `columns` from the child doctype's schema
- * fields and sets sensible defaults for `component` (`'ATable'`) and `config` (`{ view: 'list' }`).
- *
- * Users can override any auto-derived property by specifying it explicitly on the schema field.
- * Row data comes from the parent form's data model at `data[fieldname]` (an array).
- *
- * @public
- */
-export type TableDoctypeSchema = BaseSchema & {
-	/**
-	 * The field type — must be 'Table' for 1:many child table fields
-	 * @public
-	 */
-	fieldtype: 'Table'
-
-	/**
-	 * The slug of the child doctype in the registry
-	 * @public
-	 */
-	options: string
-
-	/**
-	 * The label to display above the table section
-	 * @public
-	 */
-	label?: string
-
-	/**
-	 * Table columns — auto-derived from child doctype schema if not provided
-	 * @public
-	 */
-	columns?: TableColumn[]
-
-	/**
-	 * Table configuration — defaults to `{ view: 'list' }` if not provided
-	 * @public
-	 */
-	config?: TableConfig
-
-	/**
-	 * Table rows — populated from the parent form's data model at `data[fieldname]`
-	 * @public
-	 */
-	rows?: TableRow[]
-
-	/**
-	 * Indicate whether the table is read-only
-	 * @public
-	 */
-	readOnly?: boolean
-}
-
-/**
  * Superset of all schema types for AForm
  * @public
  */
-export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema | DoctypeSchema | TableDoctypeSchema
+export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema

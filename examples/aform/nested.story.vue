@@ -33,8 +33,7 @@
 <script setup lang="ts">
 import { AForm } from '@stonecrop/aform'
 import type { SchemaTypes } from '@stonecrop/aform'
-import { Registry, DoctypeMeta, Stonecrop } from '@stonecrop/stonecrop'
-import { List } from 'immutable'
+import { Doctype, type DoctypeConfig, Registry, Stonecrop } from '@stonecrop/stonecrop'
 import { type App, defineComponent, ref, h, computed } from 'vue'
 
 import addressSchemaJson from './assets/address_schema.json'
@@ -46,19 +45,9 @@ let registryInstance: Registry | undefined
 const setupApp = ({ app }: { app: App }) => {
 	registryInstance = new Registry()
 
-	const addressDoctype = new DoctypeMeta('Address', List(addressSchemaJson.fields), undefined, undefined)
-	registryInstance.addDoctype(addressDoctype)
-
-	const customerDoctype = new DoctypeMeta('Customer', List(customerSchemaJson.fields), undefined, undefined)
-	registryInstance.addDoctype(customerDoctype)
-
-	const customerWithAddressesDoctype = new DoctypeMeta(
-		'CustomerWithAddresses',
-		List(customerWithAddressesSchemaJson.fields),
-		undefined,
-		undefined
-	)
-	registryInstance.addDoctype(customerWithAddressesDoctype)
+	registryInstance.addDoctype(Doctype.fromObject(addressSchemaJson as DoctypeConfig))
+	registryInstance.addDoctype(Doctype.fromObject(customerSchemaJson as DoctypeConfig))
+	registryInstance.addDoctype(Doctype.fromObject(customerWithAddressesSchemaJson as DoctypeConfig))
 
 	app.provide('$registry', registryInstance)
 }
@@ -66,8 +55,8 @@ const setupApp = ({ app }: { app: App }) => {
 /**
  * Variant 1 — resolveSchema()
  *
- * The Registry walks the schema, finds Doctype fields, looks up the child doctype,
- * and embeds a `schema` array on each one. AForm just checks `'schema' in field`
+ * The Registry walks the doctype's `links` declarations, resolves each target doctype,
+ * and embeds a `schema` array on each entry. AForm just checks `'schema' in field`
  * and recurses — zero knowledge of the Registry.
  */
 const ResolvedSchemaDemo = defineComponent({
@@ -85,8 +74,8 @@ const ResolvedSchemaDemo = defineComponent({
 			},
 		})
 
-		// One call resolves the full tree — nested Doctype fields get `schema` embedded
-		const resolvedSchema = ref<SchemaTypes[]>(registryInstance!.resolveSchema(customerSchemaJson.fields))
+		// One call resolves the full tree — link entries get `schema` embedded
+		const resolvedSchema = ref<SchemaTypes[]>(registryInstance!.resolveSchema(registryInstance!.registry['customer']))
 
 		return { resolvedSchema, customerData }
 	},
@@ -96,7 +85,7 @@ const ResolvedSchemaDemo = defineComponent({
 			h(
 				'p',
 				{ class: 'info-text' },
-				'registry.resolveSchema() embeds the Address schema inside the Doctype field. AForm renders it automatically.'
+				'registry.resolveSchema() embeds the Address schema inside the resolved link entry. AForm renders it automatically.'
 			),
 			h(AForm, {
 				schema: this.resolvedSchema,
@@ -154,7 +143,6 @@ const StandaloneDemo = defineComponent({
 			} as SchemaTypes,
 			{
 				fieldname: 'billing',
-				fieldtype: 'Doctype',
 				options: 'address',
 				label: 'Billing Address',
 				// Manually embedded child schema — AForm checks `'schema' in field`
@@ -214,9 +202,7 @@ const HSTDemo = defineComponent({
 		stonecrop.addRecord('customer', customerId, initialData)
 
 		// Resolve the entire schema tree once
-		const resolvedSchema = ref<SchemaTypes[]>(
-			registryInstance!.resolveSchema(Array.from(registryInstance!.registry['customer'].schema || []))
-		)
+		const resolvedSchema = ref<SchemaTypes[]>(registryInstance!.resolveSchema(registryInstance!.registry['customer']))
 
 		const customerPath = `customer.${customerId}`
 
@@ -239,7 +225,7 @@ const HSTDemo = defineComponent({
 			customerNode: {
 				path: customerPath,
 				exists: store.has(customerPath),
-				parent: store.getNode(customerPath)?.getParent()?.getPath() || 'root',
+				parent: store.getNode(customerPath)?.getAncestor()?.getPath() || 'root',
 				breadcrumbs: store
 					.getNode(customerPath)
 					?.getBreadcrumbs()
@@ -249,7 +235,7 @@ const HSTDemo = defineComponent({
 			addressNode: {
 				path: `${customerPath}.address`,
 				exists: store.has(`${customerPath}.address`),
-				parent: store.getNode(`${customerPath}.address`)?.getParent()?.getPath() || 'root',
+				parent: store.getNode(`${customerPath}.address`)?.getAncestor()?.getPath() || 'root',
 				breadcrumbs: store
 					.getNode(`${customerPath}.address`)
 					?.getBreadcrumbs()
@@ -285,9 +271,6 @@ const HSTDemo = defineComponent({
 						h('div', { class: 'path-indicator' }, `HST Path: ${this.customerPath}`),
 						h(AForm, {
 							schema: this.resolvedSchema,
-							'onUpdate:schema': (val: any) => {
-								this.resolvedSchema = val
-							},
 							data: this.customerFormData,
 							'onUpdate:data': (val: any) => {
 								this.customerFormData = val
@@ -359,9 +342,9 @@ const HSTDemo = defineComponent({
  * Variant 4 — 1:Many (Address List)
  *
  * A parent Customer form with scalar fields rendered normally, and a child
- * `addresses` array rendered as an ATable. The schema uses `fieldtype: 'Table'`
- * with `options: 'address'` — resolveSchema auto-derives columns from the
- * Address doctype's fields and sets the component to ATable.
+ * `addresses` array rendered as an ATable. The schema uses a `links` declaration
+ * with `cardinality: 'noneOrMany'` and `target: 'address'` — resolveSchema auto-derives
+ * columns from the Address doctype's fields and sets the component to ATable.
  */
 const AddressListDemo = defineComponent({
 	name: 'AddressListDemo',
@@ -378,7 +361,9 @@ const AddressListDemo = defineComponent({
 		})
 
 		// resolveSchema handles both Doctype (1:1) and Table (1:many) fields
-		const resolvedSchema = ref<SchemaTypes[]>(registryInstance!.resolveSchema(customerWithAddressesSchemaJson.fields))
+		const resolvedSchema = ref<SchemaTypes[]>(
+			registryInstance!.resolveSchema(registryInstance!.registry['customer-with-addresses'])
+		)
 
 		return { resolvedSchema, customerData }
 	},
@@ -388,14 +373,11 @@ const AddressListDemo = defineComponent({
 			h(
 				'p',
 				{ class: 'info-text' },
-				"The \"addresses\" field uses fieldtype: 'Table' with options: 'address'. " +
+				"The \"addresses\" field is declared via a `links` entry with cardinality: 'noneOrMany' and target: 'address'. " +
 					'resolveSchema() auto-derives columns from the Address doctype and sets component to ATable.'
 			),
 			h(AForm, {
 				schema: this.resolvedSchema,
-				'onUpdate:schema': (val: any) => {
-					this.resolvedSchema = val
-				},
 				data: this.customerData,
 				'onUpdate:data': (val: any) => {
 					this.customerData = val
@@ -665,22 +647,22 @@ const AddressListDemo = defineComponent({
 <docs lang="md">
 # Nested Schema Support
 
-Demonstrates how `Registry.resolveSchema()` embeds child schemas on `Doctype` fields (1:1)
-and auto-derives table columns for `Table` fields (1:many). AForm renders both patterns
-without knowing anything about the Registry.
+Demonstrates how `Registry.resolveSchema()` embeds child schemas on `Doctype` fields.
+For 1:1 nested forms, it attaches `schema` arrays; for 1:many tables (`cardinality: 'noneOrMany'`),
+it auto-derives table columns. AForm renders both patterns without knowing anything about the Registry.
 
 ## How It Works
 
-### 1:1 (Doctype fields)
+### 1:1 (Doctype fields, default cardinality)
 
 1. Register doctypes in the Registry
 2. Call `registry.resolveSchema(schema)` — attaches `schema` arrays to Doctype fields
 3. Pass the resolved schema to `<AForm>` — it checks `'schema' in field` and recurses
 
-### 1:Many (Table fields)
+### 1:Many (Doctype fields with cardinality: 'noneOrMany')
 
 1. Register parent and child doctypes in the Registry
-2. Call `registry.resolveSchema(schema)` — for `fieldtype: 'Table'` fields, auto-derives
+2. Call `registry.resolveSchema(schema)` — for `links` with `cardinality: 'noneOrMany'`, auto-derives
    `columns` from the child doctype's schema, sets `component: 'ATable'` and `config: { view: 'list' }`
 3. Pass the resolved schema to `<AForm>` — the child array data at `data[fieldname]`
    flows into ATable's rows via the `componentProps` fallback
@@ -710,11 +692,11 @@ columns, config, or component by specifying them explicitly on the schema field.
 ## Usage
 
 ```typescript
-// 1:1 nesting
+// 1:1 nesting (default cardinality)
 const resolved = registry.resolveSchema(customerSchema)
 // resolved[3].schema === [street, city, state, zip_code]
 
-// 1:many table
+// 1:many table (cardinality: 'noneOrMany')
 const resolved = registry.resolveSchema(customerWithAddressesSchema)
 // resolved[3].columns === [{ name: 'street', ... }, { name: 'city', ... }, ...]
 // resolved[3].component === 'ATable'

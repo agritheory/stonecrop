@@ -20,7 +20,7 @@
 			</template>
 		</Variant>
 		<Variant title="Form (Read-Only)">
-			<AForm class="aform-main" :schema="basic_form_schema" v-model:data="data" :readOnly="true" />
+			<AForm class="aform-main" :schema="basic_form_schema" v-model:data="data" :mode="'read'" />
 		</Variant>
 		<Variant title="Table">
 			<AForm class="aform-main" :schema="table_schema" v-model:data="data" />

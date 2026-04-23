@@ -33,7 +33,9 @@ export default defineConfig(
 			},
 			parser: tseslint.parser,
 			parserOptions: {
-				projectService: true,
+				projectService: {
+					allowDefaultProject: ['tests/*.ts', 'tests/actions/*.ts', 'tests/hst/*.ts'],
+				},
 				tsconfigRootDir: import.meta.dirname,
 				extraFileExtensions: ['.vue'],
 			},

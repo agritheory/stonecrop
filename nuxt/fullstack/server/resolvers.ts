@@ -1,46 +1,37 @@
 /**
  * @stonecrop/nuxt fullstack playground resolvers
  *
- * Implements Stonecrop RPC-style operations:
- * - getMeta/stonecropMeta: Read doctype schemas from registry
- * - stonecropRecord/stonecropRecords: Proxy to MockGraphQLExecutor
- * - stonecropAction: Execute registered action handlers
- * - stonecropCreate/stonecropUpdate/stonecropDelete: CRUD via executor
+ * Uses grafast plan resolvers (synchronous functions that return Steps).
+ * Structure matches the pattern in graphql_middleware/src/plugin/postgraphile.ts
  */
 
-import { getMeta, getAllMeta, getHandler, type DoctypeMeta, type ActionContext } from '@stonecrop/graphql-middleware'
+import { constant, lambda, loadOne, object } from 'grafast'
+import { getMeta, getAllMeta, getHandler, type ActionContext } from '@stonecrop/graphql-middleware'
+import type { DoctypeMeta } from '@stonecrop/schema'
+
 import { mockExecutor } from './mock-executor'
 
 // ============================================
 // Type Helpers
 // ============================================
 
-/**
- * Convert doctype name to PostGraphile-style query names
- */
 function toQueryName(doctypeName: string, singular: boolean = true): string {
-	// User -> userById / allUsers
-	// Order -> orderById / allOrders
-	const name = doctypeName.charAt(0).toLowerCase() + doctypeName.slice(1)
-	return singular ? `${name}ById` : `all${doctypeName}s`
+	// Remove spaces and convert to PascalCase
+	const pascalName = doctypeName.replace(/\s+/g, '')
+	const name = pascalName.charAt(0).toLowerCase() + pascalName.slice(1)
+	return singular ? `${name}ById` : `all${pascalName}s`
 }
 
-/**
- * Convert doctype name to PostGraphile-style mutation names
- */
 function toMutationName(doctypeName: string, operation: 'create' | 'update' | 'delete'): string {
-	// User -> createUser / updateUserById / deleteUserById
-	const name = doctypeName.charAt(0).toLowerCase() + doctypeName.slice(1)
+	// Remove spaces and convert to PascalCase
+	const pascalName = doctypeName.replace(/\s+/g, '')
+	const name = pascalName.charAt(0).toLowerCase() + pascalName.slice(1)
 	if (operation === 'create') {
-		return `create${doctypeName}`
+		return `create${pascalName}`
 	}
-	return `${operation}${doctypeName}ById`
+	return `${operation}${pascalName}ById`
 }
 
-/**
- * Format FieldMeta for GraphQL response
- * The registry stores fields with various properties, normalize for the schema
- */
 function formatFieldMeta(field: { fieldname: string; fieldtype: string; [key: string]: unknown }) {
 	return {
 		fieldname: field.fieldname,
@@ -55,9 +46,6 @@ function formatFieldMeta(field: { fieldname: string; fieldtype: string; [key: st
 	}
 }
 
-/**
- * Format DoctypeMeta for GraphQL response
- */
 function formatDoctypeMeta(meta: DoctypeMeta) {
 	return {
 		name: meta.name,
@@ -71,335 +59,288 @@ function formatDoctypeMeta(meta: DoctypeMeta) {
 			  }
 			: null,
 		inherits: meta.inherits ?? null,
-		listDoctype: meta.listDoctype ?? null,
-		parentDoctype: meta.parentDoctype ?? null,
 	}
 }
 
 // ============================================
-// Resolvers
+// Resolvers (grafast plan format)
 // ============================================
 
-export const resolvers = {
+export default {
 	Query: {
-		// -------------------------------------------
-		// Stonecrop Meta Queries
-		// -------------------------------------------
-
-		/**
-		 * Get doctype metadata by name
-		 * Used by @stonecrop/graphql-client's getMeta() method
-		 */
-		getMeta: (_: unknown, { doctype }: { doctype: string }) => {
-			const meta = getMeta(doctype)
-			return meta ? formatDoctypeMeta(meta) : null
-		},
-
-		/**
-		 * Alias for getMeta - matches Stonecrop plugin naming
-		 */
-		stonecropMeta: (_: unknown, { doctype }: { doctype: string }) => {
-			const meta = getMeta(doctype)
-			return meta ? formatDoctypeMeta(meta) : null
-		},
-
-		/**
-		 * Get all registered doctype metadata
-		 */
-		stonecropAllMeta: () => {
-			return getAllMeta().map(formatDoctypeMeta)
-		},
-
-		// -------------------------------------------
-		// Stonecrop Record Queries
-		// -------------------------------------------
-
-		/**
-		 * Get a single record by doctype and ID
-		 * Proxies to MockGraphQLExecutor
-		 */
-		stonecropRecord: async (_: unknown, { doctype, id }: { doctype: string; id: string }) => {
-			const meta = getMeta(doctype)
-			if (!meta) {
-				throw new Error(`Unknown doctype: ${doctype}`)
-			}
-
-			const queryName = toQueryName(meta.name)
-			const query = `{ ${queryName}(id: $id) }`
-
-			try {
-				const result = await mockExecutor.query<Record<string, unknown>>(query, { id })
-				const data = result[queryName]
-
-				return {
-					data,
-					doctype,
-				}
-			} catch (error) {
-				console.error(`[stonecropRecord] Error fetching ${doctype}/${id}:`, error)
-				return {
-					data: null,
-					doctype,
-				}
-			}
-		},
-
-		/**
-		 * Get multiple records with optional filtering
-		 * Proxies to MockGraphQLExecutor
-		 */
-		stonecropRecords: async (
-			_: unknown,
-			{
-				doctype,
-				filters,
-				orderBy,
-				limit,
-				offset,
-			}: {
-				doctype: string
-				filters?: Record<string, unknown>
-				orderBy?: string
-				limit?: number
-				offset?: number
-			}
-		) => {
-			const meta = getMeta(doctype)
-			if (!meta) {
-				throw new Error(`Unknown doctype: ${doctype}`)
-			}
-
-			const queryName = toQueryName(meta.name, false)
-			const query = `{ ${queryName} }`
-
-			try {
-				const result = await mockExecutor.query<Record<string, { nodes: unknown[]; totalCount?: number }>>(query, {
-					first: limit,
-					offset,
-					orderBy,
-					...filters,
+		plans: {
+			getMeta(_: unknown, { $doctype }: any) {
+				return lambda($doctype, (doctype: unknown) => {
+					const meta = getMeta(doctype as string)
+					return meta ? formatDoctypeMeta(meta) : null
 				})
+			},
 
-				const connection = result[queryName]
-				const data = connection?.nodes ?? []
+			stonecropMeta(_: unknown, { $doctype }: any) {
+				return lambda($doctype, (doctype: unknown) => {
+					const meta = getMeta(doctype as string)
+					return meta ? formatDoctypeMeta(meta) : null
+				})
+			},
 
-				return {
-					data,
-					doctype,
-					count: connection?.totalCount ?? data.length,
-				}
-			} catch (error) {
-				console.error(`[stonecropRecords] Error fetching ${doctype}:`, error)
-				return {
-					data: [],
-					doctype,
-					count: 0,
-				}
-			}
+			stonecropAllMeta() {
+				return constant(getAllMeta().map(formatDoctypeMeta))
+			},
+
+			stonecropRecord(_: unknown, { $doctype, $id, $options }: any) {
+				return loadOne(object({ doctype: $doctype, id: $id, options: $options }), async (specs: readonly any[]) => {
+					return Promise.all(
+						specs.map(async spec => {
+							const meta = getMeta(spec.doctype)
+							if (!meta) {
+								throw new Error(`Unknown doctype: ${spec.doctype}`)
+							}
+
+							const queryName = toQueryName(meta.name)
+							try {
+								const result = await mockExecutor.query(queryName, { id: spec.id })
+								return {
+									data: result[queryName] ?? null,
+									doctype: spec.doctype,
+									unknownLinks: undefined,
+								}
+							} catch (error) {
+								console.error(`[stonecropRecord] Error:`, error)
+								return {
+									data: null,
+									doctype: spec.doctype,
+									unknownLinks: undefined,
+								}
+							}
+						})
+					)
+				})
+			},
+
+			stonecropRecords(_: unknown, { $doctype, $filters, $orderBy, $limit, $offset }: any) {
+				return loadOne(
+					object({
+						doctype: $doctype,
+						filters: $filters,
+						orderBy: $orderBy,
+						limit: $limit,
+						offset: $offset,
+					}),
+					async (specs: readonly any[]) => {
+						return Promise.all(
+							specs.map(async spec => {
+								const meta = getMeta(spec.doctype)
+								if (!meta) {
+									throw new Error(`Unknown doctype: ${spec.doctype}`)
+								}
+
+								const queryName = toQueryName(meta.name, false)
+								try {
+									const result = await mockExecutor.query(queryName, {
+										first: spec.limit,
+										offset: spec.offset,
+										orderBy: spec.orderBy,
+										...spec.filters,
+									})
+									const connection = result[queryName]
+									const data = connection?.nodes ?? []
+									return {
+										data,
+										doctype: spec.doctype,
+										count: connection?.totalCount ?? data.length,
+									}
+								} catch (error) {
+									console.error(`[stonecropRecords] Error:`, error)
+									return {
+										data: [],
+										doctype: spec.doctype,
+										count: 0,
+									}
+								}
+							})
+						)
+					}
+				)
+			},
+
+			healthCheck() {
+				return constant({
+					status: 'healthy',
+					timestamp: new Date().toISOString(),
+					version: '1.0.0',
+				})
+			},
+
+			serverInfo() {
+				return constant({
+					name: 'Stonecrop Fullstack Playground',
+					version: '1.0.0',
+					environment: process.env.NODE_ENV || 'development',
+					features: ['nuxt-grafserv', 'graphql-middleware', 'stonecrop-nuxt', 'mock-executor'],
+				})
+			},
 		},
-
-		// -------------------------------------------
-		// System Queries
-		// -------------------------------------------
-
-		/**
-		 * Health check
-		 */
-		healthCheck: () => ({
-			status: 'healthy',
-			timestamp: new Date().toISOString(),
-			version: '1.0.0',
-		}),
-
-		/**
-		 * Server info with enabled features
-		 */
-		serverInfo: () => ({
-			name: 'Stonecrop Fullstack Playground',
-			version: '1.0.0',
-			environment: process.env.NODE_ENV || 'development',
-			features: ['nuxt-grafserv', 'graphql-middleware', 'casl-middleware', 'stonecrop-nuxt', 'mock-executor'],
-		}),
 	},
 
 	Mutation: {
-		// -------------------------------------------
-		// Stonecrop Action Mutation
-		// -------------------------------------------
+		plans: {
+			stonecropAction(_: unknown, { $doctype, $action, $args: $actionArgs }: any) {
+				return loadOne(
+					object({
+						doctype: $doctype,
+						action: $action,
+						actionArgs: $actionArgs,
+					}),
+					async (specs: readonly any[]) => {
+						return Promise.all(
+							specs.map(async spec => {
+								const meta = getMeta(spec.doctype)
+								if (!meta) {
+									return {
+										success: false,
+										data: null,
+										error: `Unknown doctype: ${spec.doctype}`,
+									}
+								}
 
-		/**
-		 * Execute a doctype action
-		 * Looks up action handler from registry and executes it
-		 */
-		stonecropAction: async (
-			_: unknown,
-			{ doctype, action, args }: { doctype: string; action: string; args?: unknown[] }
-		) => {
-			const meta = getMeta(doctype)
-			if (!meta) {
-				return {
-					success: false,
-					data: null,
-					error: `Unknown doctype: ${doctype}`,
-				}
-			}
+								const actionDef = meta.workflow?.actions?.[spec.action]
+								if (!actionDef) {
+									return {
+										success: false,
+										data: null,
+										error: `Unknown action: ${spec.action} on ${spec.doctype}`,
+									}
+								}
 
-			// Look up action definition in doctype workflow
-			const actionDef = meta.workflow?.actions?.[action]
-			if (!actionDef) {
-				return {
-					success: false,
-					data: null,
-					error: `Unknown action: ${action} on ${doctype}`,
-				}
-			}
+								const handler = getHandler(actionDef.handler)
+								if (!handler) {
+									return {
+										success: false,
+										data: null,
+										error: `Handler not registered: ${actionDef.handler}`,
+									}
+								}
 
-			// Get registered handler
-			const handler = getHandler(actionDef.handler)
-			if (!handler) {
-				return {
-					success: false,
-					data: null,
-					error: `Handler not registered: ${actionDef.handler}`,
-				}
-			}
+								const actionContext: ActionContext = {
+									doctype: meta,
+									executor: mockExecutor,
+								}
 
-			// Build action context
-			const actionContext: ActionContext = {
-				doctype: meta,
-				executor: mockExecutor,
-			}
-
-			try {
-				const result = await handler(args ?? [], actionContext)
-				return {
-					success: true,
-					data: result,
-					error: null,
-				}
-			} catch (err) {
-				return {
-					success: false,
-					data: null,
-					error: err instanceof Error ? err.message : String(err),
-				}
-			}
-		},
-
-		// -------------------------------------------
-		// Stonecrop CRUD Mutations
-		// -------------------------------------------
-
-		/**
-		 * Create a new record
-		 */
-		stonecropCreate: async (_: unknown, { doctype, input }: { doctype: string; input: Record<string, unknown> }) => {
-			const meta = getMeta(doctype)
-			if (!meta) {
-				throw new Error(`Unknown doctype: ${doctype}`)
-			}
-
-			const mutationName = toMutationName(meta.name, 'create')
-			const mutation = `mutation { ${mutationName}(input: $input) }`
-
-			try {
-				const result = await mockExecutor.mutate<Record<string, { [key: string]: unknown }>>(mutation, {
-					input,
-				})
-
-				// Extract the nested record from result (e.g., createUser.user)
-				const mutationResult = result[mutationName]
-				const recordKey = meta.name.charAt(0).toLowerCase() + meta.name.slice(1)
-				const data = mutationResult?.[recordKey] ?? mutationResult
-
-				return {
-					data,
-					doctype,
-				}
-			} catch (error) {
-				console.error(`[stonecropCreate] Error creating ${doctype}:`, error)
-				throw error
-			}
-		},
-
-		/**
-		 * Update an existing record
-		 */
-		stonecropUpdate: async (
-			_: unknown,
-			{ doctype, id, patch }: { doctype: string; id: string; patch: Record<string, unknown> }
-		) => {
-			const meta = getMeta(doctype)
-			if (!meta) {
-				throw new Error(`Unknown doctype: ${doctype}`)
-			}
-
-			const mutationName = toMutationName(meta.name, 'update')
-			const mutation = `mutation { ${mutationName}(id: $id, patch: $patch) }`
-
-			try {
-				const result = await mockExecutor.mutate<Record<string, { [key: string]: unknown } | null>>(mutation, {
-					id,
-					patch,
-				})
-
-				const mutationResult = result[mutationName]
-				if (!mutationResult) {
-					return null
-				}
-
-				const recordKey = meta.name.charAt(0).toLowerCase() + meta.name.slice(1)
-				const data = mutationResult?.[recordKey] ?? mutationResult
-
-				return {
-					data,
-					doctype,
-				}
-			} catch (error) {
-				console.error(`[stonecropUpdate] Error updating ${doctype}/${id}:`, error)
-				throw error
-			}
-		},
-
-		/**
-		 * Delete a record
-		 */
-		stonecropDelete: async (_: unknown, { doctype, id }: { doctype: string; id: string }) => {
-			const meta = getMeta(doctype)
-			if (!meta) {
-				return {
-					success: false,
-					data: null,
-					error: `Unknown doctype: ${doctype}`,
-				}
-			}
-
-			const mutationName = toMutationName(meta.name, 'delete')
-			const mutation = `mutation { ${mutationName}(id: $id) }`
-
-			try {
-				const result = await mockExecutor.mutate<Record<string, { deletedUserId?: string; deletedOrderId?: string }>>(
-					mutation,
-					{ id }
+								try {
+									const result = await handler(spec.actionArgs ?? [], actionContext)
+									return {
+										success: true,
+										data: result,
+										error: null,
+									}
+								} catch (err) {
+									return {
+										success: false,
+										data: null,
+										error: err instanceof Error ? err.message : String(err),
+									}
+								}
+							})
+						)
+					}
 				)
+			},
 
-				const mutationResult = result[mutationName]
-				const deleted = mutationResult?.deletedUserId || mutationResult?.deletedOrderId
+			stonecropCreate(_: unknown, { $doctype, $input }: any) {
+				return loadOne(object({ doctype: $doctype, input: $input }), async (specs: readonly any[]) => {
+					return Promise.all(
+						specs.map(async spec => {
+							const meta = getMeta(spec.doctype)
+							if (!meta) {
+								throw new Error(`Unknown doctype: ${spec.doctype}`)
+							}
 
-				return {
-					success: !!deleted,
-					data: { id: deleted },
-					error: deleted ? null : 'Record not found',
-				}
-			} catch (error) {
-				return {
-					success: false,
-					data: null,
-					error: error instanceof Error ? error.message : String(error),
-				}
-			}
+							const mutationName = toMutationName(meta.name, 'create')
+							try {
+								const result = await mockExecutor.mutate(mutationName, { input: spec.input })
+								const mutationResult = result[mutationName]
+								const recordKey = meta.name.charAt(0).toLowerCase() + meta.name.slice(1)
+								return {
+									data: mutationResult?.[recordKey] ?? mutationResult,
+									doctype: spec.doctype,
+								}
+							} catch (error) {
+								console.error(`[stonecropCreate] Error:`, error)
+								throw error
+							}
+						})
+					)
+				})
+			},
+
+			stonecropUpdate(_: unknown, { $doctype, $id, $patch }: any) {
+				return loadOne(object({ doctype: $doctype, id: $id, patch: $patch }), async (specs: readonly any[]) => {
+					return Promise.all(
+						specs.map(async spec => {
+							const meta = getMeta(spec.doctype)
+							if (!meta) {
+								throw new Error(`Unknown doctype: ${spec.doctype}`)
+							}
+
+							const mutationName = toMutationName(meta.name, 'update')
+							try {
+								const result = await mockExecutor.mutate(mutationName, {
+									id: spec.id,
+									patch: spec.patch,
+								})
+								const mutationResult = result[mutationName]
+								if (!mutationResult) {
+									return null
+								}
+								const recordKey = meta.name.charAt(0).toLowerCase() + meta.name.slice(1)
+								return {
+									data: mutationResult?.[recordKey] ?? mutationResult,
+									doctype: spec.doctype,
+								}
+							} catch (error) {
+								console.error(`[stonecropUpdate] Error:`, error)
+								throw error
+							}
+						})
+					)
+				})
+			},
+
+			stonecropDelete(_: unknown, { $doctype, $id }: any) {
+				return loadOne(object({ doctype: $doctype, id: $id }), async (specs: readonly any[]) => {
+					return Promise.all(
+						specs.map(async spec => {
+							const meta = getMeta(spec.doctype)
+							if (!meta) {
+								return {
+									success: false,
+									data: null,
+									error: `Unknown doctype: ${spec.doctype}`,
+								}
+							}
+
+							const mutationName = toMutationName(meta.name, 'delete')
+							try {
+								const result = await mockExecutor.mutate(mutationName, { id: spec.id })
+								const mutationResult = result[mutationName]
+								const deleted = mutationResult?.deletedUserId || mutationResult?.deletedOrderId
+
+								return {
+									success: !!deleted,
+									data: { id: deleted },
+									error: deleted ? null : 'Record not found',
+								}
+							} catch (error) {
+								return {
+									success: false,
+									data: null,
+									error: error instanceof Error ? error.message : String(error),
+								}
+							}
+						})
+					)
+				})
+			},
 		},
 	},
 }
-
-export default resolvers

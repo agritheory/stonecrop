@@ -1,8 +1,8 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 
-import { parseDoctype, validateDoctype } from '../types'
-import type { DoctypeMeta, ValidationError } from '../types'
+import { parseDoctype, validateDoctype } from '@stonecrop/schema'
+import type { DoctypeMeta, ValidationError } from '@stonecrop/schema'
 
 const doctypeRegistry: Map<string, DoctypeMeta> = new Map()
 
@@ -121,7 +121,13 @@ export function loadDoctypesFromObject(doctypes: Record<string, unknown>, option
  * @public
  */
 export function getMeta(name: string): DoctypeMeta | undefined {
-	return doctypeRegistry.get(name)
+	const direct = doctypeRegistry.get(name)
+	if (direct) return direct
+	// Fallback: find by slug (links reference doctypes by slug, not name)
+	for (const doctype of doctypeRegistry.values()) {
+		if (doctype.slug === name) return doctype
+	}
+	return undefined
 }
 
 /**
@@ -163,22 +169,6 @@ export function validateReferences(): ValidationError[] {
 			errors.push({
 				path: [doctype.name, 'inherits'],
 				message: `References unknown doctype: ${doctype.inherits}`,
-			})
-		}
-
-		// Check listDoctype reference
-		if (doctype.listDoctype && !doctypeRegistry.has(doctype.listDoctype)) {
-			errors.push({
-				path: [doctype.name, 'listDoctype'],
-				message: `References unknown doctype: ${doctype.listDoctype}`,
-			})
-		}
-
-		// Check parentDoctype reference
-		if (doctype.parentDoctype && !doctypeRegistry.has(doctype.parentDoctype)) {
-			errors.push({
-				path: [doctype.name, 'parentDoctype'],
-				message: `References unknown doctype: ${doctype.parentDoctype}`,
 			})
 		}
 

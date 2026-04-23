@@ -8,7 +8,6 @@
 		"schema": [
 			{
 				"fieldname": "http_logs",
-				"fieldtype": "Doctype",
 				"component": "ATable",
 				"columns": [
 					{

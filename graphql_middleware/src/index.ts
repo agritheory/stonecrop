@@ -1,48 +1,7 @@
-// Re-export all schema types from @stonecrop/schema
-export {
-	// Field types
-	StonecropFieldType,
-	TYPE_MAP,
-	getDefaultComponent,
-
-	// Field schema
-	FieldMeta,
-	FieldOptions,
-	FieldValidation,
-
-	// Doctype schema
-	DoctypeMeta,
-	WorkflowMeta,
-	ActionDefinition,
-
-	// Validation helpers
-	validateField,
-	validateDoctype,
-	parseField,
-	parseDoctype,
-
-	// DDL to Doctype conversion
-	convertSchema,
-	parseDDL,
-	normalizeType,
-	mapColumnToField,
-	PG_TYPE_MAP,
-	TYPE_ALIASES,
-} from '@stonecrop/schema'
-
-export type {
-	ValidationResult,
-	ValidationError,
-	ConvertedDoctype,
-	ConversionFieldMeta,
-	ParsedColumn,
-	ParsedTable,
-	ConversionOptions,
-	PostgresType,
-} from '@stonecrop/schema'
+export type { DoctypeMeta, ValidationError } from '@stonecrop/schema'
 
 // Runtime context types (unique to graphql_middleware)
-export type { RouteContext, ActionContext, ActionHandler, GraphQLExecutor } from './types'
+export type { ActionContext, ActionHandler, GraphQLExecutor } from './types'
 
 // Doctype registry
 export {
@@ -71,9 +30,32 @@ export {
 // PostGraphile plugin
 export { createStonecropPlugin } from './plugin/postgraphile'
 
-export type { StonecropPluginOptions } from './plugin/postgraphile'
+export type { StonecropPluginOptions, StonecropInflectionConfig, StonecropRecordOptions } from './plugin/postgraphile'
 
-// Client
-export { StonecropClient } from './client'
+// Query builders and inflection helpers (exported for testing and advanced usage)
+export {
+	defaultRecordFieldName,
+	defaultConnectionFieldName,
+	defaultOrderByTypeName,
+	defaultRecordArgName,
+	defaultRecordArgType,
+	defaultReverseConnectionName,
+	buildRecordQuery,
+	buildListQuery,
+	queryableFieldNames,
+	RELATION_FIELDTYPES,
+	extractSingleResult,
+	extractListResult,
+	mergeNestedResults,
+} from './plugin/postgraphile'
 
-export type { StonecropClientOptions } from './client'
+export type {
+	ReverseConnectionParams,
+	BuildRecordQueryOptions,
+	BuildListQueryArgs,
+	MergeNestedResultsParams,
+	ExtractSingleResultParams,
+	ExtractListResultParams,
+} from './types'
+
+export { typeDefs } from './typeDefs'

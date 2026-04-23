@@ -3,7 +3,7 @@
  * @public
  */
 
-import { HSTNode } from '../stores/hst'
+import type { HSTNode } from './hst'
 
 /**
  * Context provided to action functions when field changes occur

@@ -1,13 +1,14 @@
 # Stonecrop
+
 _This package is under active development / design._
 
 ## Features
 
+- **Schema-Driven Relationships**: `links` on doctype schemas declare relationships with cardinality and direction
 - **Hierarchical State Tree (HST)**: Advanced state management with tree navigation
 - **Operation Log**: Global undo/redo with time-travel debugging, automatic FSM transition tracking, and action execution tracking
 - **Action Tracking**: Audit trail for stateless action executions (print, email, archive, etc.)
 - **Field Triggers**: Event-driven field actions integrated with XState
-- **VueUse Integration**: Leverages battle-tested VueUse composables for keyboard shortcuts and persistence
 
 ## Installation & Usage
 
@@ -15,136 +16,195 @@ _This package is under active development / design._
 
 ```typescript
 import { createApp } from 'vue'
-import Stonecrop from '@stonecrop/stonecrop'
+import Stonecrop, { Stonecrop as StonecropClass } from '@stonecrop/stonecrop'
+import { StonecropClient } from '@stonecrop/graphql-client'
+import router from './router'
 
 const app = createApp(App)
 
 // Install the Stonecrop plugin
 app.use(Stonecrop, {
   router,
-  components: {
-    // Register custom components
-  },
-  getMeta: async (doctype: string) => {
-    // Fetch doctype metadata from your API
-    return await fetchDoctypeMeta(doctype)
-  }
-})
 
-app.mount('#app')
+  // Lazy-load doctype metadata from your API given the current route context.
+  // routeContext = { path, segments } — adapt segments to your doctype naming.
+  getMeta: async ({ segments }) => {
+    return await fetchDoctypeMeta(segments[0])
+  },
+
+  // Wire up the client after plugin initialization.
+  // The callback receives registry and stonecrop instances directly.
+  onRouterInitialized: (registry, stonecrop) => {
+    const client = new StonecropClient({
+      endpoint: 'http://localhost:4000/graphql',
+      headers: { Authorization: `Bearer ${token}` },
+      registry: buildMetaMap(registry),
+    })
+    stonecrop.setClient(client)
+  },
+})
 ```
+
+### Accessing Stonecrop Outside Vue Components
+
+Inside a component, use `useStonecrop()`. Outside a component (e.g., workflow action handlers, utilities), use `getStonecrop()`:
+
+```typescript
+import { getStonecrop } from '@stonecrop/stonecrop'
+
+// In a workflow action handler or non-component utility:
+const stonecrop = getStonecrop()
+if (stonecrop) {
+  const payload = stonecrop.collectRecordPayload(doctype, recordId)
+  // ...
+}
+```
+
+### Building the DoctypeMeta Map
+
+`StonecropClient` expects a `Map<string, DoctypeMeta>`, but the Registry stores `Doctype` instances. Convert between them:
+
+```typescript
+import type { DoctypeMeta } from '@stonecrop/schema'
+import type { Registry, Doctype } from '@stonecrop/stonecrop'
+
+function buildMetaMap(registry: Registry): Map<string, DoctypeMeta> {
+  const metaMap = new Map<string, DoctypeMeta>()
+  for (const [slug, doctype] of Object.entries(registry.registry)) {
+    metaMap.set(slug, {
+      name: doctype.doctype,
+      slug,
+      tableName: slug.replace(/-/g, '_'),
+      fields: doctype.getSchemaArray(),
+      links: doctype.links || {},
+    })
+  }
+  return metaMap
+}
+```
+
+### Plugin Options
+
+| Option                 | Type                                                 | Description                                                                                   |
+| ---------------------- | ---------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `router`               | `Router`                                             | Vue Router instance. Required for route-based doctype resolution.                             |
+| `getMeta`              | `(ctx: RouteContext) => Doctype \| Promise<Doctype>` | Lazy-loads doctype metadata for the current route. `ctx` has `path` and `segments`.           |
+| `components`           | `Record<string, Component>`                          | Additional Vue components to register globally.                                               |
+| `autoInitializeRouter` | `boolean`                                            | Call `onRouterInitialized` automatically after mount. Default: `false`.                       |
+| `onRouterInitialized`  | `(registry, stonecrop) => void`                      | Callback invoked after plugin install + mount. Receives the Registry and Stonecrop instances. |
 
 ### Available Imports
 
 ```typescript
-// Default export - Vue plugin
-import Stonecrop from '@stonecrop/stonecrop'
+// Default export - Vue plugin (install with app.use)
+import StonecropPlugin from '@stonecrop/stonecrop'
 
 // Named exports - utilities and classes
 import {
-  Stonecrop as StonecropClass, // Core class
-  Registry,                    // Doctype registry
-  useStonecrop,                // Vue composable
-  HST,                         // Hierarchical State Tree
-  createHST,                   // HST factory
-  DoctypeMeta                  // Doctype metadata class
+  Stonecrop,       // Core orchestration class
+  Registry,        // Doctype registry (singleton)
+  Doctype,         // Doctype definition class
+  useStonecrop,    // Vue composable — primary integration point
+  getStonecrop,    // Access singleton outside Vue components
+  HST,             // HST store class
+  createHST,       // HST factory function
 } from '@stonecrop/stonecrop'
-```### Using the Composable
+```
+
+### Using the Composable
 
 ```typescript
 import { useStonecrop } from '@stonecrop/stonecrop'
 
 export default {
   setup() {
-    const { stonecrop } = useStonecrop()
+    // Base mode — operation log only, no HST record loading
+    const { stonecrop, operationLog } = useStonecrop()
+
+    // HST mode — pass Doctype instance and optional recordId
+    const { stonecrop, formData, provideHSTPath, handleHSTChange } = useStonecrop({
+      doctype: myDoctype,
+      recordId: 'record-123', // omit or pass undefined for new records
+    })
+
+    // HST mode with lazy-loading — pass string doctype slug
+    // Automatically loads doctype via registry.getMeta if not in registry
+    const { isLoading, error, resolvedDoctype, formData } = useStonecrop({
+      doctype: 'plan',
+      recordId: 'record-123',
+    })
 
     // Access HST store
     const store = stonecrop.value?.getStore()
 
-    // Work with records
-    const records = stonecrop.value?.records('doctype')
+    // Work with records directly
     const record = stonecrop.value?.getRecordById('doctype', recordId)
 
-    return { stonecrop, records, record }
+    return { stonecrop, formData }
   }
 }
 ```
 
+### String Doctype Lazy-Loading
+
+When you pass a string doctype slug instead of a `Doctype` instance, `useStonecrop` will:
+
+1. Check if the doctype is already in the Registry
+2. If not, call `registry.getMeta` to lazy-load it
+3. Return `isLoading`, `error`, and `resolvedDoctype` refs for handling the async state
+
+```typescript
+const { isLoading, error, resolvedDoctype, formData } = useStonecrop({
+  doctype: 'plan', // string slug - triggers lazy-loading
+  recordId: '123',
+})
+
+// In your template:
+// <div v-if="isLoading">Loading doctype...</div>
+// <div v-else-if="error">Error: {{ error.message }}</div>
+// <AForm v-else :schema="resolvedDoctype.schema" v-model:data="formData" />
+```
+
+This pattern eliminates the timing mismatch when loading doctypes asynchronously in Nuxt plugins.
+
 ## Design
-A context will define schema, workflow and actions.
-  - Schema describes the data model and layout of the document.
-  - Workflows are the events that are registered on it and will specific to the context. An application might have 'login', 'onAppLoad', 'beforeRouteChange' and 'logout' events.  A form/document context might define CRUD events. A table component, nested inside the form component might define its own events. I think we want Events to be FSM
-  - Actions are an ordered set of functions, called by Workflow
-  - [Router integration](https://pinia.vuejs.org/core-concepts/plugins.html#adding-new-external-properties). Stonecrop setup should expect a router or provide a default implementation
 
-The context will be tree-shaped with a single root. Adding more nodes at the root level isn't a problem, but multiple roots would be disallowed.
+A Doctype defines schema, links, workflow, and actions.
 
-Example APIs and paths
+- **Schema** describes the data model and field layout — used by AForm for rendering.
+- **Links** declare relationships to other doctypes with cardinality and direction (`noneOrMany`, `atMostOne`, etc.).
+- **Workflow** is an XState machine config expressing the states and transitions a record can go through.
+- **Actions** are an ordered map of named functions, triggered by field changes (lowercase keys) or FSM transitions (UPPERCASE keys).
+- **Registry** is the singleton catalog — all doctypes live here. Optional Vue Router integration allows automatic route creation per doctype.
+- **`useStonecrop()`** is the Vue composable that wires components to HST and provides `formData`, `provideHSTPath`, `handleHSTChange`, and the operation log API.
+
+The data model is **two operations**: get data and run actions. There is no CRUD. Records change state through FSM transitions; those transitions have side effects (persistence, notifications, etc.) defined in action handlers registered by the application. The framework provides the pipeline; applications define what actions exist and what they do.
+
+HST path structure:
 
 ```
-app.schema <Record> // immutable
-app.workflow <FSM> // immutable
-app.actions <OrderedSet> // immutable
-app.value <Store> // mutable
-app.user // "tyler@agritheory.com"
-app.name // "My First Application"
-app.doctype.schema <Record> // `app.doctype` lazy loaded by Event in router?
-app.doctype.workflow <FSM>
-app.doctype.actions <OrderedSet>
-app.doctype.actions.value <Store>
-app.doctype.schema.field.workflow <FSM>
-app.doctype.schema.field.actions <OrderedSet>
-app.doctype.schema.field.value <Store>
-app.doctype.schema.field.value.field.value <Store> // a "sub-form"
-app.doctype.schema.field.value.field['a:1'].value <Store> // also a "sub-form", representing a table
+doctype.recordId.fieldname        // e.g. plan.abc-123.title
+doctype.recordId.nested.field     // deep nesting supported
 ```
-
-## Base Classes
-The Doctype aligns with a row, record or object in a database. It is required to specify its schema, a Finite State Machine that informs its workflow and a set of functions that are triggered by that FSM's state transitions.
-
-Registry is a map of all Doctypes, lazy loaded and is responsible for routing within the application
-
-Stem is a composable singleton that wraps Registry and provides application level state management
-
-
-## Story / Network diagram
-#### **Doctype | Record Story**
-
-- User is redirected after successful login
-- Base URL is configured at app level to serve a navigation page
-- User navigates to list view of `doctype`
-- Table component loads existing records of `doctype` from schema; record-level schema is added to registry with web worker
-- User navigates to specific record of `doctype`: schema is loaded from registry, data is loaded from server
-- User mutates data, changes are persisted to server / DB per FSM
-
-#### **App Level**
-- User is redirected after successful login
-- Base URL is configured at app level to serve a navigation page
-- User opens command palette from lower-right-docked tab interface
-- User can search for `doctype` by name or other server-enabled capabilities
-
-#### **Low Code**
-- User can define `doctype` and schema from UI
-- Fields are shown as rows in a table
-- FSM is shown as an editable diagram that validates itself
-
-___
 
 # Hierarchical State Tree (HST) Interface Requirements
 
 ## Core Requirements
 
 ### 1. Data Structure Compatibility
+
 - **Vue Reactive Objects**: Must work seamlessly with `reactive()`, `ref()`, and `computed()` primitives
 - **Pinia Store Integration**: Compatible with both Options API and Composition API Pinia stores
 - **Immutable Objects**: Support for frozen/immutable configuration objects without breaking reactivity
 
 ### 2. Path-Based Addressing System
+
 - **Dot Notation**: Full support for dot-notation paths (e.g., `"users.123.profile.settings"`)
 - **Dynamic Paths**: Support for programmatically generated path strings (particularly component to HST)
 
 ### 3. Hierarchical Navigation
-- **Parent/Child Relationships**: Maintain bidirectional parent-child references
+
+- **Ancestor/Descendant Relationships**: Maintain bidirectional ancestor-descendant references
 - **Sibling Access**: Efficient navigation between sibling nodes
 - **Root Access**: Always accessible reference to tree root from any node
 - **Depth Tracking**: Know the depth level of any node in the hierarchy

@@ -22,10 +22,15 @@ jobs:
           atable: atable/**
           beam: beam/**
           casl_middleware: casl_middleware/**
+          desktop: desktop/**
+          graphql_client: graphql_client/**
+          graphql_middleware: graphql_middleware/**
           rockfoil: rockfoil/**
+          schema: schema/**
           stonecrop: stonecrop/**
 
   coverage:
+    if: ${{ needs.changes.outputs.packages != '[]' }}
     name: ${{ matrix.package }} (${{ matrix.branch }})
     needs: changes
     runs-on: ubuntu-latest
