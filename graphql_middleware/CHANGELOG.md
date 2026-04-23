@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/graphql-middleware
 
-This log was last generated on Tue, 21 Apr 2026 11:58:44 GMT and should not be manually modified.
+This log was last generated on Thu, 23 Apr 2026 05:13:40 GMT and should not be manually modified.
+
+## 0.11.4
+Thu, 23 Apr 2026 05:13:40 GMT
+
+### Patches
+
+- use correct amber preset inflection for doctypes
 
 ## 0.11.3
 Tue, 21 Apr 2026 11:58:44 GMT
