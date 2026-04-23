@@ -416,6 +416,16 @@ describe('getMeta / getAllMeta / hasMeta / clearRegistry', () => {
 		expect(meta?.name).toBe('Task')
 	})
 
+	it('getMeta finds doctype by slug when name lookup fails', () => {
+		loadDoctypesFromObject({
+			RecipeTask: { name: 'RecipeTask', slug: 'recipe-task', fields: [] },
+		})
+		expect(getMeta('RecipeTask')).toBeDefined()
+		expect(getMeta('recipe-task')).toBeDefined()
+		expect(getMeta('recipe-task')?.name).toBe('RecipeTask')
+		expect(getMeta('unknown-slug')).toBeUndefined()
+	})
+
 	it('hasMeta returns false before loading', () => {
 		expect(hasMeta('Task')).toBe(false)
 	})

@@ -319,7 +319,7 @@ describe('defaultReverseConnectionName', () => {
 			backlink: 'recipe',
 			target: 'recipe-task',
 		})
-		expect(result).toBe('RecipeTasksByRecipeId')
+		expect(result).toBe('recipeTasksByRecipeId')
 	})
 
 	it('handles self-referential links', () => {
@@ -329,7 +329,7 @@ describe('defaultReverseConnectionName', () => {
 			backlink: 'supersededBy',
 			target: 'recipe',
 		})
-		expect(result).toBe('RecipesBySupersededById')
+		expect(result).toBe('recipesBySupersededById')
 	})
 
 	it('handles underscored table names', () => {
@@ -339,7 +339,7 @@ describe('defaultReverseConnectionName', () => {
 			backlink: 'bom',
 			target: 'bom-item',
 		})
-		expect(result).toBe('BomItemsByBomId')
+		expect(result).toBe('bomItemsByBomId')
 	})
 })
 
@@ -369,7 +369,7 @@ describe('reverseConnectionName override', () => {
 			{ includeNested: true }
 		)
 		// Default uses PostGraphile Amber convention
-		expect(query).toContain('RecipeTasksByRecipeId')
+		expect(query).toContain('recipeTasksByRecipeId')
 	})
 })
 
@@ -387,7 +387,7 @@ describe('buildRecordQuery with includeNested', () => {
 			getMeta,
 			{ includeNested: true }
 		)
-		expect(query).toContain('RecipeTasksByRecipeId')
+		expect(query).toContain('recipeTasksByRecipeId')
 		expect(query).toContain('nodes')
 		expect(query).toContain('description')
 	})
@@ -415,7 +415,7 @@ describe('buildRecordQuery with includeNested', () => {
 			{ includeNested: true }
 		)
 		// recipe → recipe-task → recipe (seen, skipped)
-		expect(query).toContain('RecipeTasksByRecipeId')
+		expect(query).toContain('recipeTasksByRecipeId')
 		// Should not include nested recipe sub-selection (circular)
 		expect((query.match(/recipeById/g) || []).length).toBe(1) // only the outermost
 	})
@@ -429,7 +429,7 @@ describe('buildRecordQuery with includeNested', () => {
 			getMeta,
 			{ includeNested: true, maxDepth: 1 }
 		)
-		expect(query).toContain('RecipeTasksByRecipeId')
+		expect(query).toContain('recipeTasksByRecipeId')
 		// RecipeTask's links should not be included (depth 1 limit)
 		expect(query).not.toContain('recipe {')
 	})
@@ -444,7 +444,7 @@ describe('buildRecordQuery with includeNested', () => {
 			{ includeNested: ['supersededBy'] }
 		)
 		expect(query).toContain('supersededBy {')
-		expect(query).not.toContain('RecipeTasksByRecipeId')
+		expect(query).not.toContain('recipeTasksByRecipeId')
 	})
 
 	it('skips lazy links', () => {
@@ -466,7 +466,7 @@ describe('buildRecordQuery with includeNested', () => {
 			(slug: string) => lazyRegistry.get(slug),
 			{ includeNested: true }
 		)
-		expect(query).not.toContain('RecipeTasksByRecipeId')
+		expect(query).not.toContain('recipeTasksByRecipeId')
 		expect(query).toContain('name')
 		expect(query).toContain('status')
 	})
@@ -502,7 +502,7 @@ describe('buildRecordQuery with includeNested', () => {
 			(slug: string) => defaultRegistry.get(slug),
 			{ includeNested: true }
 		)
-		expect(query).toContain('RecipeTasksByRecipeId(first: 50)')
+		expect(query).toContain('recipeTasksByRecipeId(first: 50)')
 	})
 
 	it('blockWorkflows true forces lazy link into query', () => {
@@ -524,7 +524,7 @@ describe('buildRecordQuery with includeNested', () => {
 			(slug: string) => lazyWithBlockRegistry.get(slug),
 			{ includeNested: true }
 		)
-		expect(query).toContain('RecipeTasksByRecipeId')
+		expect(query).toContain('recipeTasksByRecipeId')
 	})
 })
 
@@ -537,7 +537,7 @@ describe('mergeNestedResults', () => {
 		const record = {
 			id: 'r1',
 			name: 'Test Recipe',
-			RecipeTasksByRecipeId: {
+			recipeTasksByRecipeId: {
 				nodes: [
 					{ id: 't1', name: 'Task 1' },
 					{ id: 't2', name: 'Task 2' },
@@ -551,7 +551,7 @@ describe('mergeNestedResults', () => {
 			{ id: 't1', name: 'Task 1' },
 			{ id: 't2', name: 'Task 2' },
 		])
-		expect(result.RecipeTasksByRecipeId).toBeUndefined()
+		expect(result.recipeTasksByRecipeId).toBeUndefined()
 	})
 
 	it('leaves atMostOne links in place', () => {
@@ -570,7 +570,7 @@ describe('mergeNestedResults', () => {
 		const record = {
 			id: 'r1',
 			name: 'Test Recipe',
-			RecipeTasksByRecipeId: { nodes: [] },
+			recipeTasksByRecipeId: { nodes: [] },
 		}
 
 		const result = mergeNestedResults({ record, meta: recipeMeta, getMeta })
@@ -623,7 +623,7 @@ describe('mergeNestedResults', () => {
 		const record = {
 			id: 'r1',
 			name: 'Test Recipe',
-			RecipeTasksByRecipeId: {
+			recipeTasksByRecipeId: {
 				nodes: [{ id: 't1', name: 'Task 1' }],
 			},
 		}
