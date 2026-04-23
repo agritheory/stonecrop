@@ -18,44 +18,27 @@
 <script setup lang="ts">
 import { provide } from 'vue'
 
-defineProps({
-	showDate: {
-		type: Boolean,
-		default: true,
-	},
-	showTime: {
-		type: Boolean,
-		default: true,
-	},
-	selectRange: {
-		type: Boolean,
-		default: true,
-	},
-	allowMilitaryTime: {
-		type: Boolean,
-		default: false,
-	},
-	defaultHours: {
-		type: Number,
-		default: 12,
-	},
-	defaultMinutes: {
-		type: Number,
-		default: 0,
-	},
-	defaultSeconds: {
-		type: Number,
-		default: 0,
-	},
-	defaultMeridiem: {
-		type: String,
-		default: 'AM',
-	},
-	useSeconds: {
-		type: Boolean,
-		default: true,
-	},
-})
+const {
+	showDate = true,
+	showTime = true,
+	selectRange = true,
+	allowMilitaryTime = false,
+	defaultHours = 12,
+	defaultMinutes = 0,
+	defaultSeconds = 0,
+	defaultMeridiem = 'AM',
+	useSeconds = true,
+} = defineProps<{
+	showDate?: boolean
+	showTime?: boolean
+	selectRange?: boolean
+	allowMilitaryTime?: boolean
+	defaultHours?: number
+	defaultMinutes?: number
+	defaultSeconds?: number
+	defaultMeridiem?: string
+	useSeconds?: boolean
+}>()
 
 const emit = defineEmits<{
 	'get-date': [{ selected: Date }]

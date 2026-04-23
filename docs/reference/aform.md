@@ -149,6 +149,7 @@ Defined props for AForm components
 export type ComponentProps = {
     schema?: SchemaTypes;
     label?: string;
+    selectRange?: boolean;
     mask?: string;
     required?: boolean;
     mode?: FormMode;

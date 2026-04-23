@@ -94,8 +94,8 @@ const currentDates = ref<number[]>([])
 const hoveredDate = ref(new Date(date.value))
 const start_date = ref<Date | '' | null>(new Date())
 const end_date = ref<Date | '' | null>(new Date())
-const startDateInput = useTemplateRef('start-date-input')
-const endDateInput = useTemplateRef('end-date-input')
+const startDateInput = useTemplateRef<HTMLInputElement>('start-date-input')
+const endDateInput = useTemplateRef<HTMLInputElement>('end-date-input')
 
 /*******************
 Emits
@@ -127,13 +127,9 @@ const getEndDate = computed(() => {
 Functions
 *******************/
 
-const parseDateToString = (date: Date) => {
-	if (date != null) {
-		let date_string = ''
-		if (!validateDate(date)) return ''
-		date_string += date.getMonth() + 1 + '/' + date.getDate() + '/' + date.getFullYear()
-		return date_string
-	}
+const parseDateToString = (date: Date | '' | null) => {
+	if (!validateDate(date)) return ''
+	return date.getMonth() + 1 + '/' + date.getDate() + '/' + date.getFullYear()
 }
 
 const isTodaysDate = (day: string | number | Date) => {
@@ -147,13 +143,15 @@ const isSelectedDate = (day: string | number | Date) => {
 }
 
 const isStartDate = (day: string | number | Date) => {
-	if (!validateDate(start_date.value)) return false
-	return new Date(day).toDateString() === start_date.value.toDateString()
+	const start = start_date.value
+	if (!validateDate(start)) return false
+	return new Date(day).toDateString() === start.toDateString()
 }
 
 const isEndDate = (day: string | number | Date) => {
-	if (!validateDate(end_date.value)) return false
-	return new Date(day).toDateString() === end_date.value.toDateString()
+	const end = end_date.value
+	if (!validateDate(end)) return false
+	return new Date(day).toDateString() === end.toDateString()
 }
 
 const getCurrentCell = (rowNo: number, colNo: number) => {
@@ -161,13 +159,15 @@ const getCurrentCell = (rowNo: number, colNo: number) => {
 }
 
 const isInDateRange = (day: string | number | Date) => {
-	if (!validateDate(start_date.value)) return false
+	const start = start_date.value
+	if (!validateDate(start)) return false
 	const this_date = new Date(day)
 
 	//the end is either the selected end date or wherever the user is hovering
-	let temp_end_date = end_date.value != null ? end_date.value : new Date(hoveredDate.value)
+	const end = end_date.value
+	const temp_end_date = validateDate(end) ? end : new Date(hoveredDate.value)
 
-	return this_date.getTime() > start_date.value.getTime() && this_date.getTime() < temp_end_date.getTime()
+	return this_date.getTime() > start.getTime() && this_date.getTime() < temp_end_date.getTime()
 }
 
 const getCurrentDate = (rowNo: number, colNo: number) => {
@@ -210,7 +210,7 @@ const nextMonth = () => {
 	}
 }
 
-const enterDate = event => {
+const enterDate = (event: KeyboardEvent) => {
 	if (event.key === 'Enter') enterInputDate()
 }
 
@@ -238,41 +238,44 @@ const selectDate = (currentIndex: number) => {
 	date.value = selectedDate.value = new Date(currentDates.value[currentIndex])
 
 	if (selectRange) {
-		if (start_date.value == null || end_date.value != null) {
+		const start = start_date.value
+		if (start == null || end_date.value != null) {
 			start_date.value = date.value
 			end_date.value = null
-		} else if (selectedDate.value.getTime() < start_date.value.getTime()) {
+		} else if (validateDate(start) && selectedDate.value.getTime() < start.getTime()) {
 			end_date.value = null
 			start_date.value = date.value
 		} else {
 			end_date.value = date.value
 		}
-		startDateInput.value.value = parseDateToString(start_date.value)
-		endDateInput.value.value = parseDateToString(end_date.value)
+		if (startDateInput.value) startDateInput.value.value = parseDateToString(start_date.value) ?? ''
+		if (endDateInput.value) endDateInput.value.value = parseDateToString(end_date.value) ?? ''
 	}
 	emitData()
 }
 
 const testDateOrder = () => {
-	if (end_date.value.getTime() < start_date.value.getTime())
-		[start_date.value, end_date.value] = [end_date.value, start_date.value]
+	const start = start_date.value
+	const end = end_date.value
+	if (validateDate(end) && validateDate(start) && end.getTime() < start.getTime())
+		[start_date.value, end_date.value] = [end, start]
 }
 
-const validateDate = date => {
+const validateDate = (date: unknown): date is Date => {
 	return date instanceof Date && !isNaN(date.getTime())
 }
 
 const enterInputDate = () => {
-	if (startDateInput.value.value == '') {
+	if (startDateInput.value?.value == '') {
 		start_date.value = null
-	} else {
+	} else if (startDateInput.value) {
 		const start = new Date(startDateInput.value.value)
 		start_date.value = validateDate(start) ? start : null
 	}
 
-	if (endDateInput.value.value == '') {
+	if (endDateInput.value?.value == '') {
 		end_date.value = null
-	} else {
+	} else if (endDateInput.value) {
 		const end = new Date(endDateInput.value.value)
 		end_date.value = validateDate(end) ? end : null
 	}

@@ -1,7 +1,7 @@
 <template>
 	<div>
 		<template v-if="mode === 'display'">
-			<span class="aform_display-value">{{ inputDate ? new Date(inputDate).toLocaleDateString() : '' }}</span>
+			<span class="aform_display-value">{{ modelValue ? new Date(inputDate).toLocaleDateString() : '' }}</span>
 			<label>{{ label }}</label>
 		</template>
 		<template v-else>
@@ -33,16 +33,23 @@
 </template>
 
 <script setup lang="ts">
-import { useTemplateRef, ref, computed } from 'vue'
+import { useTemplateRef, ref, computed, watch } from 'vue'
 import { onClickOutside } from '@vueuse/core'
-import { ComponentProps } from '../../types'
+
 import ADateSelection from './ADateSelection.vue'
+import type { ComponentProps } from '../../types'
 
 const { label = 'Date', required, mode, uuid, validation = { errorMessage: '&nbsp;' } } = defineProps<ComponentProps>()
 
-const currentDate = ref(new Date())
-const inputDate = computed(() => {
-	return currentDate.value.toISOString().split('T')[0]
+const modelValue = defineModel<string | Date>()
+
+const currentDate = ref(modelValue.value ? new Date(modelValue.value) : new Date())
+const inputDate = computed({
+	get: () => currentDate.value.toISOString().split('T')[0],
+	set: (value: string) => {
+		currentDate.value = new Date(value)
+		modelValue.value = value
+	},
 })
 
 const pickerRef = useTemplateRef('picker')
@@ -50,8 +57,18 @@ const showPicker = ref(false)
 
 onClickOutside(pickerRef, () => (showPicker.value = false))
 
-const handleDate = (data: { selected: string }) => {
-	currentDate.value = new Date(data.selected)
+watch(
+	() => modelValue.value,
+	newValue => {
+		if (newValue) {
+			currentDate.value = new Date(newValue)
+		}
+	}
+)
+
+const handleDate = (data: { selected: Date }) => {
+	currentDate.value = data.selected
+	modelValue.value = inputDate.value
 }
 </script>
 
