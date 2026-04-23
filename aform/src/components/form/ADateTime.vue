@@ -224,12 +224,14 @@ const pasteInput = (event: ClipboardEvent, pasteAllFields = false) => {
 	font-size: 1rem;
 	background: var(--sc-gray-10);
 }
+
 .adate_time_fields {
 	display: flex;
 	align-items: stretch;
 	gap: 5px;
 	justify-content: flex-start;
 }
+
 .adate_time_fields > input {
 	min-width: 30px;
 	padding: 2px;
@@ -237,6 +239,7 @@ const pasteInput = (event: ClipboardEvent, pasteAllFields = false) => {
 	display: inline-block;
 	flex-basis: 0;
 }
+
 .meridiem-selector {
 	cursor: pointer;
 	display: inline-block;
@@ -244,22 +247,27 @@ const pasteInput = (event: ClipboardEvent, pasteAllFields = false) => {
 	padding: 5px;
 	user-select: none;
 }
+
 .meridiem-selector:focus {
 	outline: 2px solid black;
 	outline-offset: -2px;
 }
+
 .adate_time_segment {
 	display: flex;
 	flex-direction: column;
 	width: 40px;
 }
+
 .colon {
 	display: flex;
 	align-items: normal;
 }
+
 .aform_form-btn {
 	cursor: pointer;
 }
+
 .aform-select {
 	border-radius: 0px;
 	border: 1px solid rgb(118, 118, 118);
@@ -272,15 +280,19 @@ const pasteInput = (event: ClipboardEvent, pasteAllFields = false) => {
 	position: relative;
 	color: var(--sc-cell-text-color);
 }
+
 .meridiem-selector {
 	margin-left: 6px;
 }
+
 input[type='number']::-webkit-outer-spin-button,
 input[type='number']::-webkit-inner-spin-button {
 	-webkit-appearance: none;
 	margin: 0;
 }
+
 input[type='number'] {
 	-moz-appearance: textfield;
+	appearance: textfield;
 }
 </style>

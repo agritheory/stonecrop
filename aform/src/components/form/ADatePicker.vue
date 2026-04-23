@@ -89,11 +89,13 @@ const selectedDate = ref(new Date(date.value))
 const currentMonth = ref<number>(selectedDate.value.getMonth())
 const currentYear = ref<number>(selectedDate.value.getFullYear())
 const currentDates = ref<number[]>([])
+
 /* needed for keyboard navigation. uncomment if implementing */
-//const datepickerRef = useTemplateRef<HTMLDivElement>('datepicker')
+// const datepickerRef = useTemplateRef<HTMLDivElement>('datepicker')
+
 const hoveredDate = ref(new Date(date.value))
-const start_date = ref<Date | '' | null>(new Date())
-const end_date = ref<Date | '' | null>(new Date())
+const start_date = ref<Date | null>(new Date())
+const end_date = ref<Date | null>(new Date())
 const startDateInput = useTemplateRef<HTMLInputElement>('start-date-input')
 const endDateInput = useTemplateRef<HTMLInputElement>('end-date-input')
 
@@ -102,7 +104,7 @@ Emits
 *******************/
 
 const emit = defineEmits<{
-	'get-date': (data: { start: Date | null; end: Date | null; selected: Date }) => void
+	'get-date': [{ start: Date | null; end: Date | null; selected: Date }]
 }>()
 
 /*******************
@@ -115,26 +117,27 @@ const monthAndYear = computed(() => {
 		month: 'long',
 	})
 })
+
 const getStartDate = computed(() => {
-	return start_date.value != '' && start_date.value != null ? parseDateToString(start_date.value) : ''
+	return start_date.value != null ? parseDateToString(start_date.value) : ''
 })
 
 const getEndDate = computed(() => {
-	return end_date.value != '' && end_date.value != null ? parseDateToString(end_date.value) : ''
+	return end_date.value != null ? parseDateToString(end_date.value) : ''
 })
 
 /*******************
 Functions
 *******************/
 
-const parseDateToString = (date: Date | '' | null) => {
+const parseDateToString = (date: Date | null) => {
 	if (!validateDate(date)) return ''
 	return date.getMonth() + 1 + '/' + date.getDate() + '/' + date.getFullYear()
 }
 
-const isTodaysDate = (day: string | number | Date) => {
+const isTodaysDate = (day: string | number | Date): boolean => {
 	const todaysDate = new Date()
-	if (currentMonth.value !== todaysDate.getMonth()) return
+	if (currentMonth.value !== todaysDate.getMonth()) return false
 	return todaysDate.toDateString() === new Date(day).toDateString()
 }
 
