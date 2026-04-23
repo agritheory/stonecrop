@@ -1,49 +1,26 @@
 <template>
-	<div
-		:class="{ 'open-set': isOpen, 'hovered-and-closed': closeClicked }"
-		class="action-set collapse"
-		@mouseover="onHover"
-		@mouseleave="onHoverLeave">
+	<div :class="{ collapsed: !isOpen }" class="action-set">
 		<div class="action-menu-icon">
-			<div id="chevron" @click="closeClicked = !closeClicked">
-				<svg
-					id="Layer_1"
-					class="leftBar"
-					version="1.1"
-					xmlns="http://www.w3.org/2000/svg"
-					xmlns:xlink="http://www.w3.org/1999/xlink"
-					x="0px"
-					y="0px"
-					viewBox="0 0 100 100"
-					xml:space="preserve">
-					<polygon points="54.2,33.4 29.2,58.8 25,54.6 50,29.2 " />
-				</svg>
-
-				<svg
-					id="Layer_1"
-					class="rightBar"
-					version="1.1"
-					xmlns="http://www.w3.org/2000/svg"
-					xmlns:xlink="http://www.w3.org/1999/xlink"
-					x="0px"
-					y="0px"
-					viewBox="0 0 100 100"
-					xml:space="preserve">
-					<polygon points="70.8,58.8 45.8,33.4 50,29.2 75,54.6 " />
-				</svg>
-			</div>
+			<div id="cross" @click="onClick" :class="{ rotated: isOpen }">×</div>
 		</div>
 		<div style="margin-right: 30px"></div>
 		<div v-for="(el, index) in elements" :key="el.label" class="action-element">
-			<button
-				v-if="el.type == 'button'"
-				:disabled="el.disabled"
-				class="button-default"
-				@click="handleClick(el.action, el.label)">
-				{{ el.label }}
-			</button>
+			<div class="action-element-header">
+				<button
+					v-if="el.type == 'button'"
+					:disabled="el.disabled"
+					class="button-default"
+					@click="handleClick(el.action, el.label)">
+					{{ el.label }}
+				</button>
+			</div>
 			<div v-if="el.type == 'dropdown'">
-				<button class="button-default" @click="toggleDropdown(index)">{{ el.label }}</button>
+				<div class="dropdown-header">
+					<div @click="toggleDropdown(index)" class="cross" :class="{ rotated: dropdownOpen[index] }">×</div>
+					<button class="button-default dropdown-title" @click="toggleDropdown(index)">
+						{{ el.label }}
+					</button>
+				</div>
 				<div v-show="dropdownStates[index]" class="dropdown-container">
 					<div class="dropdown">
 						<div v-for="(item, itemIndex) in el.actions" :key="item.label">
@@ -74,10 +51,11 @@ const emit = defineEmits<{
 // Track dropdown open state separately (index -> boolean)
 const dropdownStates = ref<Record<number, boolean>>({})
 
-const isOpen = ref(false)
+const isOpen = ref(true)
 const timeoutId = ref<number>(-1)
 const hover = ref(false)
 const closeClicked = ref(false)
+const dropdownOpen = ref([])
 
 onMounted(() => {
 	closeDropdowns()
@@ -87,24 +65,14 @@ const closeDropdowns = () => {
 	dropdownStates.value = {}
 }
 
-const onHover = () => {
-	hover.value = true
-	timeoutId.value = setTimeout(() => {
-		if (hover.value) {
-			isOpen.value = true
-		}
-	}, 500)
-}
-
-const onHoverLeave = () => {
-	hover.value = false
-	closeClicked.value = false
-	clearTimeout(timeoutId.value)
-	isOpen.value = false
+const onClick = () => {
+	isOpen.value = !isOpen.value
 }
 
 const toggleDropdown = (index: number) => {
 	const showDropdown = !dropdownStates.value[index]
+	dropdownOpen.value[index] = showDropdown
+	console.log(dropdownOpen.value)
 	closeDropdowns()
 	if (showDropdown) {
 		dropdownStates.value[index] = true
@@ -118,165 +86,126 @@ const handleClick = (action: (() => void | Promise<void>) | undefined, label: st
 </script>
 
 <style scoped>
-#chevron {
+#cross {
 	position: relative;
-	transform: rotate(90deg);
+	transform: rotate(45deg);
+	cursor: pointer;
+	transition: all 0.2s ease-in-out;
+	user-select: none;
+	line-height: 1rem;
 }
-
-#chevron svg {
+#cross.rotated,
+.cross.rotated {
+	transform: rotate(0deg);
+}
+#cross svg {
 	width: 1.5em;
 	height: 1.5em;
 }
 
-.leftBar,
-.rightBar {
-	transition-duration: 0.225s;
-	transition-property: transform;
-}
-
-.leftBar,
-.action-set.collapse.hovered-and-closed:hover .leftBar {
-	transform-origin: 33.4% 50%;
-	transform: rotate(90deg);
-}
-
-.rightBar,
-.action-set.collapse.hovered-and-closed:hover .rightBar {
-	transform-origin: 67% 50%;
-	transform: rotate(-90deg);
-}
-
-.rightBar {
-	position: absolute;
-	top: 0;
-	left: 0;
-}
-
-.action-set.collapse:hover .leftBar {
-	transform: rotate(0);
-}
-
-.action-set.collapse:hover .rightBar {
-	transform: rotate(0);
-}
-
 .action-set {
 	position: fixed;
-	top: 10px;
+	top: 300px;
 	right: 10px;
-	padding: 20px;
-	box-shadow: 0px 1px 2px rgba(25, 39, 52, 0.05), 0px 0px 4px rgba(25, 39, 52, 0.1);
-	border-radius: 10px;
+	padding: 10px;
 	display: flex;
-	flex-direction: row-reverse;
-	background-color: white;
+	flex-direction: column;
+	align-items: flex-end;
+	background: var(--sc-form-background);
+	border: 1px solid var(--sc-gray-20);
+	border-left: 4px solid var(--sc-gray-20);
+	border-radius: 0;
 	overflow: hidden;
 	z-index: 1001; /* Above SheetNav (100) and operation log button (999) */
+	-webkit-transition: all 0.5s ease-in-out;
+	-moz-transition: all 0.5s ease-in-out;
+	-o-transition: all 0.5s ease-in-out;
+	transition: all 0.5s ease-in-out;
 }
-
 .action-menu-icon {
-	position: absolute;
-	top: 6px;
-	right: 4px;
+	position: relative;
+	font-size: 2rem;
+	display: inline-block;
+	color: var(--sc-gray-60, #666);
+	transition: all 0.2s ease-in-out;
 }
-
-.action-menu-icon svg {
-	fill: #333333;
-}
-
-.action-set.collapse,
-.action-set.collapse.hovered-and-closed:hover {
-	max-width: 25px;
+.action-set.collapsed {
+	max-width: 46px;
+	max-height: 40px;
 	overflow: hidden;
-
-	-webkit-transition: max-width 0.5s ease-in-out;
-	-moz-transition: max-width 0.5s ease-in-out;
-	-o-transition: max-width 0.5s ease-in-out;
-	transition: max-width 0.5s ease-in-out;
 }
-
-.action-set.collapse .action-element,
-.action-set.collapse.hovered-and-closed:hover .action-element {
+.action-set.collapsed .action-element {
 	opacity: 0;
 	-webkit-transition: opacity 0.25s ease-in-out;
 	-moz-transition: opacity 0.25s ease-in-out;
 	-o-transition: opacity 0.25s ease-in-out;
 	transition: opacity 0.25s ease-in-out;
-	transition-delay: 0s;
-}
-
-.action-set.collapse:hover {
-	max-width: 500px;
-}
-
-.action-set.collapse.open-set:hover {
-	overflow: visible !important;
-}
-
-.action-set.collapse.hovered-and-closed:hover .action-element {
-	opacity: 0 !important;
-	/* transition-delay: 0.5s; */
-}
-
-.action-set.collapse:hover .action-element {
-	opacity: 100 !important;
-	/* transition-delay: 0.5s; */
 }
 
 .action-element {
-	margin-left: 5px;
-	margin-right: 5px;
+	width: 100%;
+	text-align: right;
+	border: 1px solid var(--sc-gray-20);
+	background: none;
+	font-size: 1.5rem;
+	font-family: var(--sc-font-family);
+	font-weight: 600;
+	margin-top: 10px;
 	position: relative; /* Make this the positioning context for absolute children */
 }
+.action-element-header {
+	display: flex;
+	justify-content: end;
+}
 button.button-default {
-	background-color: #ffffff;
+	background-color: transparent;
 	padding: 5px 12px;
-	border-radius: 3px;
-	box-shadow: rgba(0, 0, 0, 0.05) 0px 0.5px 0px 0px, rgba(0, 0, 0, 0.08) 0px 0px 0px 1px,
-		rgba(0, 0, 0, 0.05) 0px 2px 4px 0px;
+	border-radius: 0px;
+	box-shadow: none;
 	border: none;
 	cursor: pointer;
 	white-space: nowrap;
+	font-weight: bold;
+	font-size: 1rem;
+	text-align: right;
+	color: var(--sc-gray-80);
+	padding-left: 50px;
+	font-family: var(--sc-font-family);
 }
-
-button.button-default:hover {
+.dropdown-header:hover button.button-default,
+.dropdown-header:hover,
+.action-element-header:hover {
 	background-color: #f2f2f2;
 }
 
-button.button-default:disabled {
-	opacity: 0.5;
-	cursor: not-allowed;
-	background-color: #f5f5f5;
-	color: #999;
-}
-
-button.button-default:disabled:hover {
-	background-color: #f5f5f5;
-}
-
-.dropdown-container {
+.dropdown-title {
 	position: relative;
 }
-
-.dropdown {
-	position: absolute;
-	right: 0;
-	min-width: 200px;
-	box-shadow: 0 0.5rem 1rem rgb(0 0 0 / 18%);
-	border-radius: 10px;
-	background-color: #ffffff;
-	padding: 10px;
-	z-index: 100;
+.dropdown-header {
+	display: flex;
+	align-items: center;
+}
+.cross {
+	pointer-events: all;
+	margin-left: 5px;
+	font-family: var(--sc-font-family);
+	color: var(--sc-gray-60, #666);
+	cursor: pointer;
+	transform: rotate(45deg);
+	user-select: none;
+	transition: all 0.2s ease-in-out;
+	line-height: 1rem;
 }
 
 button.dropdown-item {
 	width: 100%;
-	padding: 8px 5px;
-	text-align: left;
+	padding: 5px 12px;
+	text-align: right;
 	border: none;
 	background-color: #ffffff;
 	cursor: pointer;
 	border-radius: 5px;
+	font-size: 1rem;
 }
 
 button.dropdown-item:hover {
