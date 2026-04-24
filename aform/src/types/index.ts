@@ -198,3 +198,24 @@ export type FieldsetSchema = BaseSchema & {
  * @public
  */
 export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema
+
+/**
+ * The value shape for AFormLink — a linked document reference with optional display text
+ * @public
+ */
+export interface AFormLinkValue {
+	/** The FK/linked document ID. `id: 0` is a valid ID. */
+	id: string | number
+	/** Display text shown in the input. Falls back to `String(id)` if omitted. */
+	displayText?: string
+	[extra: string]: any
+}
+
+/**
+ * Navigation contract for AFormLink. Provide via `provide('aformLinkNavigator', ...)` in the app plugin.
+ * @public
+ */
+export interface AFormLinkNavigator {
+	/** Navigate to the linked document. Implementation is app-defined. */
+	navigate(doctype: string, id: string | number): void
+}

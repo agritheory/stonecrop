@@ -10,6 +10,7 @@ import ADatePicker from './components/form/ADatePicker.vue'
 import AFieldset from './components/form/AFieldset.vue'
 import AFileAttach from './components/form/AFileAttach.vue'
 import AForm from './components/AForm.vue'
+import AFormLink from './components/form/AFormLink.vue'
 import ANumericInput from './components/form/ANumericInput.vue'
 import ATextInput from './components/form/ATextInput.vue'
 import Login from './components/utilities/Login.vue'
@@ -31,6 +32,7 @@ function install(app: App /* options */) {
 	app.component('AFieldset', AFieldset)
 	app.component('AFileAttach', AFileAttach)
 	app.component('AForm', AForm)
+	app.component('AFormLink', AFormLink)
 	app.component('ANumericInput', ANumericInput)
 	app.component('ATextInput', ATextInput)
 }
@@ -44,6 +46,7 @@ export {
 	AFieldset,
 	AFileAttach,
 	AForm,
+	AFormLink,
 	ANumericInput,
 	ATextInput,
 	Login,

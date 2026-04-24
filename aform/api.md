@@ -68,6 +68,14 @@ Vue component exported from @stonecrop/aform.
 import { AForm } from '@stonecrop/aform'
 ```
 
+### AFormLink
+
+Vue component exported from @stonecrop/aform.
+
+```typescript
+import { AFormLink } from '@stonecrop/aform'
+```
+
 ### ANumericInput
 
 Vue component exported from @stonecrop/aform.
@@ -109,6 +117,40 @@ declare function install(app: App): void;
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | app | `App` | Vue app instance |
+
+## Interfaces
+
+### AFormLinkNavigator
+
+Navigation contract for AFormLink. Provide via `provide('aformLinkNavigator', ...)` in the app plugin.
+
+**Definition:**
+
+```typescript
+export interface AFormLinkNavigator {
+  navigate(doctype: string, id: string | number): void;
+}
+```
+
+### AFormLinkValue
+
+The value shape for AFormLink — a linked document reference with optional display text
+
+**Definition:**
+
+```typescript
+export interface AFormLinkValue {
+  displayText?: string;
+  id: string | number;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| displayText? | `string` | Display text shown in the input. Falls back to `String(id)` if omitted. |
+| id | `string \| number` | The FK/linked document ID. `id: 0` is a valid ID. |
 
 ## Type Aliases
 
