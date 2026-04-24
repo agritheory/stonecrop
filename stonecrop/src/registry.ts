@@ -1,5 +1,5 @@
 import type { SchemaTypes, TableSchema } from '@stonecrop/aform'
-import type { LinkDeclaration } from '@stonecrop/schema'
+import type { FieldMeta, LinkDeclaration } from '@stonecrop/schema'
 import { Router } from 'vue-router'
 
 import Doctype from './doctype'
@@ -161,8 +161,13 @@ export default class Registry {
 			if ('fieldtype' in field && field.fieldtype === 'Link') {
 				const link = linksByFieldname.get(field.fieldname)
 				if (!link) {
-					// Link field without corresponding link declaration - copy as-is
-					resolvedFields.push({ ...field })
+					const doctype =
+						typeof (field as FieldMeta).options === 'string' ? ((field as FieldMeta).options as string) : undefined
+					resolvedFields.push({
+						...field,
+						component: 'AFormLink',
+						...(doctype !== undefined ? { doctype } : {}),
+					})
 					continue
 				}
 

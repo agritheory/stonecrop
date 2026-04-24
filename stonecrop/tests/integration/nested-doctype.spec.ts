@@ -307,6 +307,71 @@ describe('Nested Doctype Support', () => {
 			expect(resolved[1].fieldname).toBe('tasks')
 			expect(resolved[2].fieldname).toBe('status')
 		})
+
+		it('undeclared Link field gets component AFormLink', () => {
+			const testDoctype = new Doctype(
+				'test',
+				List([
+					{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' },
+					{ fieldname: 'territory', fieldtype: 'Link', options: 'territory' },
+				]) as any,
+				undefined,
+				undefined
+			)
+			const resolved = registry.resolveSchema(testDoctype)
+
+			expect(resolved[1].fieldname).toBe('territory')
+			expect((resolved[1] as any).component).toBe('AFormLink')
+		})
+
+		it('undeclared Link field with string options gets doctype from options', () => {
+			const testDoctype = new Doctype(
+				'test',
+				List([{ fieldname: 'territory', fieldtype: 'Link', options: 'territory' }]) as any,
+				undefined,
+				undefined
+			)
+			const resolved = registry.resolveSchema(testDoctype)
+
+			expect((resolved[0] as any).doctype).toBe('territory')
+		})
+
+		it('undeclared Link field without options gets no doctype prop', () => {
+			const testDoctype = new Doctype(
+				'test',
+				List([{ fieldname: 'territory', fieldtype: 'Link' }]) as any,
+				undefined,
+				undefined
+			)
+			const resolved = registry.resolveSchema(testDoctype)
+
+			expect((resolved[0] as any).component).toBe('AFormLink')
+			expect('doctype' in resolved[0]).toBe(false)
+		})
+
+		it('undeclared Link field preserves other field properties', () => {
+			const testDoctype = new Doctype(
+				'test',
+				List([{ fieldname: 'territory', fieldtype: 'Link', label: 'Sales Territory', options: 'territory' }]) as any,
+				undefined,
+				undefined
+			)
+			const resolved = registry.resolveSchema(testDoctype)
+
+			expect(resolved[0].fieldname).toBe('territory')
+			expect((resolved[0] as any).fieldtype).toBe('Link')
+			expect((resolved[0] as any).label).toBe('Sales Territory')
+		})
+
+		it('declared Link fields are unaffected by undeclared-Link logic', () => {
+			const resolved = registry.resolveSchema(customerDoctype)
+
+			// The address field is a declared Link — it should be resolved as an embedded AForm schema
+			const addressField = resolved[2] as any
+			expect(addressField.fieldname).toBe('address')
+			expect('schema' in addressField).toBe(true)
+			expect(addressField.component).not.toBe('AFormLink')
+		})
 	})
 
 	describe('Registry.initializeRecord()', () => {
