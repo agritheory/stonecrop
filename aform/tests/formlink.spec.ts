@@ -22,11 +22,11 @@ describe('AFormLink component', () => {
 		expect(wrapper.find('input').element.value).toBe('CUST-001')
 	})
 
-	it('shows "—" placeholder when id is falsy', () => {
+	it('shows empty input when id is falsy', () => {
 		const wrapper = mount(AFormLink, {
 			props: { modelValue: { id: '' } },
 		})
-		expect(wrapper.find('input').element.value).toBe('—')
+		expect(wrapper.find('input').element.value).toBe('')
 	})
 
 	it('defineModel emits update:modelValue on option selection', async () => {

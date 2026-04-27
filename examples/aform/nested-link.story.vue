@@ -1,5 +1,5 @@
 <template>
-	<Story title="links" group="aform">
+	<Story title="nested link" group="aform">
 		<Variant title="schema with links">
 			<div>
 				<h3>Schema-Driven Relationships</h3>

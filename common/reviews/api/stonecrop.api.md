@@ -8,6 +8,7 @@ import type { AnyStateNodeConfig } from 'xstate';
 import { Component } from 'vue';
 import { ComputedRef } from 'vue';
 import type { DataClient } from '@stonecrop/schema';
+import type { FieldMeta } from '@stonecrop/schema';
 import type { LinkDeclaration } from '@stonecrop/schema';
 import { List } from 'immutable';
 import { Map as Map_2 } from 'immutable';
@@ -103,7 +104,7 @@ export type DoctypeConfig = {
     name: string;
     slug?: string;
     tableName?: string;
-    fields?: SchemaTypes[];
+    fields?: (SchemaTypes | FieldMeta)[];
     links?: Record<string, LinkDeclaration>;
     workflow?: UnknownMachineConfig | WorkflowMeta;
     actions?: Record<string, string[]>;

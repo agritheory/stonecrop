@@ -3,7 +3,6 @@
 		<span v-if="mode === 'display'" class="aform_display-value">{{ displayedText }}</span>
 		<template v-else>
 			<div v-on-click-outside="onClickOutside" class="aform_form-link-wrapper">
-				<label v-if="label" class="aform_field-label">{{ label }}</label>
 				<div class="input-group">
 					<input
 						v-model="searchText"
@@ -39,6 +38,7 @@
 					</li>
 				</ul>
 			</div>
+			<label v-if="label" class="aform_field-label">{{ label }}</label>
 		</template>
 	</div>
 </template>
@@ -82,7 +82,7 @@ const displayedText = computed(() => {
 	return modelValue.value.displayText ?? String(modelValue.value.id)
 })
 
-const searchText = ref(displayedText.value)
+const searchText = ref(hasValidId.value ? displayedText.value : '')
 const dropdownOpen = ref(false)
 const loading = ref(false)
 const dropdownResults = ref<AFormLinkValue[]>([])
@@ -113,7 +113,7 @@ const openDropdown = async (text: string) => {
 const closeDropdown = () => {
 	dropdownOpen.value = false
 	activeIndex.value = null
-	searchText.value = displayedText.value
+	searchText.value = hasValidId.value ? displayedText.value : ''
 }
 
 const onClickOutside = () => {
@@ -155,10 +155,6 @@ const selectCurrent = () => {
 </script>
 
 <style scoped>
-.aform_form-element {
-	position: relative;
-}
-
 .aform_form-link-wrapper {
 	position: relative;
 }
@@ -168,46 +164,28 @@ const selectCurrent = () => {
 	align-items: stretch;
 }
 
-.aform_field-label {
-	position: absolute;
-	top: calc(1.15rem / 2);
-	left: 1ch;
-	transform: translateY(-50%);
-	background: white;
-	padding: 0 0.25ch;
-	font-size: 80%;
-	color: var(--sc-input-label-color);
-	z-index: 1;
-}
-
 .aform_input-field {
 	flex: 1;
-	border: 1px solid var(--sc-input-border-color);
-	padding: 1ch 0.5ch 0.5ch 1ch;
-	margin-top: calc(1.15rem / 2);
-	min-height: 1.15rem;
-	border-radius: 0.25rem;
-	background: var(--sc-input-field-background, white);
+	min-width: 0;
 }
 
-.aform_input-field:focus {
-	border-color: var(--sc-input-active-border-color);
-	outline: none;
-}
-
-.aform_input-field:disabled {
-	opacity: 0.5;
-	cursor: not-allowed;
-}
-
+/* Give the button the same outline as the input, then slide it 2px left so the outlines
+   overlap exactly at the join: input right outline sits at (input_right - 1px),
+   button left outline also sits at (button_left + 1px) = (input_right - 2px + 1px) = same pixel. */
 .aform_form-btn {
-	border: 1px solid var(--sc-input-border-color);
-	border-left: none;
-	background: white;
-	padding: 0 0.75ch;
+	appearance: none;
+	border: none;
+	outline: 1px solid var(--sc-input-border-color);
+	outline-offset: -1px;
+	margin-left: -2px;
+	background: var(--sc-input-field-background, white);
+	padding: 0 0.75rem;
 	cursor: pointer;
-	border-radius: 0 0.25rem 0.25rem 0;
-	margin-top: calc(1.15rem / 2);
+}
+
+.aform_form-btn:focus,
+.input-group:focus-within .aform_form-btn {
+	outline-color: var(--sc-input-active-border-color);
 }
 
 .autocomplete-results {

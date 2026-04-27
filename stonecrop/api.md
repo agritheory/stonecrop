@@ -941,7 +941,7 @@ export type DoctypeConfig = {
     name: string;
     slug?: string;
     tableName?: string;
-    fields?: SchemaTypes[];
+    fields?: (SchemaTypes | FieldMeta)[];
     links?: Record<string, LinkDeclaration>;
     workflow?: UnknownMachineConfig | WorkflowMeta;
     actions?: Record<string, string[]>;
