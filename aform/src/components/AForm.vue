@@ -5,7 +5,9 @@
 			<div
 				v-if="'schema' in componentObj && Array.isArray(componentObj.schema) && componentObj.schema.length > 0"
 				class="aform-nested-section">
-				<h4 v-if="componentObj.label" class="aform-nested-label">
+				<!-- Suppress h4 when collapsible is present — fieldset components render their own legend -->
+				<!-- TODO: replace 'collapsible' presence check with a type discriminant on SchemaTypes once one exists -->
+				<h4 v-if="componentObj.label && !('collapsible' in componentObj)" class="aform-nested-label">
 					{{ componentObj.label }}
 				</h4>
 				<component
@@ -13,6 +15,8 @@
 					:data="nestedData[componentObj.fieldname]"
 					:mode="resolvedMode(componentObj)"
 					:schema="componentObj.schema"
+					:label="componentObj.label"
+					:collapsible="componentObj.collapsible"
 					@update:data="(val: any) => updateNestedData(componentObj.fieldname, val)" />
 			</div>
 
@@ -77,15 +81,19 @@ const componentProps = (componentObj: SchemaTypes) => {
 		if (!['component', 'fieldtype', 'mode'].includes(key)) {
 			propsToPass[key] = value
 		}
+	}
 
-		// handle ATable data formats in case the table is nested under an AForm;
-		// when resolveSchema sets rows: [], this fallback routes data from dataModel[fieldname]
-		if (key === 'rows') {
-			if (!value || (Array.isArray(value) && value.length === 0)) {
-				propsToPass['rows'] = dataModel.value[componentObj.fieldname] || []
-			}
+	// Structural detection: any component with 'columns' is tabular and needs rows from formData
+	// when no explicit rows were provided in the schema. Preserves non-empty rows that were
+	// set directly on the schema entry (e.g. Desktop records view).
+	// TODO: replace 'columns' presence check with a type discriminant on SchemaTypes once one exists
+	if ('columns' in componentObj) {
+		const existingRows = componentObj.rows
+		if (!existingRows || (Array.isArray(existingRows) && existingRows.length === 0)) {
+			propsToPass['rows'] = dataModel.value[componentObj.fieldname] || []
 		}
 	}
+
 	return propsToPass
 }
 

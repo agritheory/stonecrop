@@ -51,10 +51,21 @@ describe('Field Validation', () => {
 			expect(result.errors[0].path).toContain('fieldtype')
 		})
 
-		it('should reject invalid fieldtype', () => {
+		it('should accept custom fieldtypes not in the builtin list', () => {
+			// StonecropFieldType is now an open string — any non-empty string is valid
 			const field = {
 				fieldname: 'test',
-				fieldtype: 'InvalidType',
+				fieldtype: 'Phone',
+			}
+			const result = validateField(field)
+
+			expect(result.success).toBe(true)
+		})
+
+		it('should reject empty string fieldtype', () => {
+			const field = {
+				fieldname: 'test',
+				fieldtype: '',
 			}
 			const result = validateField(field)
 
@@ -119,10 +130,10 @@ describe('Field Validation', () => {
 			expect(() => parseField(field)).toThrow(ZodError)
 		})
 
-		it('should throw ZodError for invalid fieldtype', () => {
+		it('should throw ZodError for empty fieldtype', () => {
 			const field = {
 				fieldname: 'test',
-				fieldtype: 'NotAValidType',
+				fieldtype: '',
 			}
 			expect(() => parseField(field)).toThrow(ZodError)
 		})
