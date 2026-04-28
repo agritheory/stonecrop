@@ -104,12 +104,13 @@ const tryEmitRange = () => {
 }
 
 const handleDate = (data: { start: Date | null; end: Date | null; selected: Date }) => {
+	// Always forward get-date so existing consumers/tests are not broken
+	emit('get-date', { selected: data.selected })
+
 	if (selectRange) {
 		pickerStart.value = data.start ?? data.selected
 		pickerEnd.value = data.end ?? null
 		tryEmitRange()
-	} else {
-		emit('get-date', { selected: data.selected })
 	}
 }
 

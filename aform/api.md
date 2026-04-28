@@ -60,6 +60,14 @@ Vue component exported from @stonecrop/aform.
 import { ADropdown } from '@stonecrop/aform'
 ```
 
+### ADuration
+
+Vue component exported from @stonecrop/aform.
+
+```typescript
+import { ADuration } from '@stonecrop/aform'
+```
+
 ### AFieldset
 
 Vue component exported from @stonecrop/aform.

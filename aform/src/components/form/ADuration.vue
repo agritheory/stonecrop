@@ -67,11 +67,12 @@ watch(duration, newMs => {
 	modelValue.value = newMs
 })
 
-// Called by ADateSelection when both date + time are confirmed on both sides
 const handleRange = (data: { start: Date; end: Date }) => {
 	startDatetime.value = data.start
 	endDatetime.value = data.end
-	// duration computed re-evaluates automatically; watcher fires the emit
+	// Explicitly assign here to cover the case where duration stays 0
+	// (end <= start), because the watcher only fires on change
+	modelValue.value = duration.value
 }
 
 // Human-readable breakdown: "2d 4h 30m 15s"
