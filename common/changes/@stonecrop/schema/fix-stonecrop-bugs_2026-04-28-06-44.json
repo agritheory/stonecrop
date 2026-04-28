@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/schema",
+      "comment": "allow extending in-built field types",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/schema"
+}

@@ -1,6 +1,6 @@
 <template>
 	<fieldset>
-		<legend @click="toggleCollapse" @submit="toggleCollapse">
+		<legend v-if="label || collapsible" @click="toggleCollapse" @submit="toggleCollapse">
 			{{ label }}
 			<CollapseButton v-if="collapsible" :collapsed="collapsed" />
 		</legend>
@@ -19,13 +19,13 @@ import type { SchemaTypes, FormMode } from '../../types'
 
 const {
 	schema,
-	label,
+	label = undefined,
 	collapsible,
 	data = {},
 	mode = 'edit',
 } = defineProps<{
 	schema: SchemaTypes[]
-	label: string
+	label?: string
 	collapsible?: boolean
 	data?: Record<string, any>
 	/** Rendering mode forwarded to the inner AForm */

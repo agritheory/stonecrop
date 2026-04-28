@@ -114,7 +114,7 @@ export default class Registry {
 	 * For each link field:
 	 * - Looks up the corresponding link declaration in `links` by fieldname
 	 * - `cardinality: 'noneOrMany'` or `'atLeastOne'`: auto-derives `columns` from the target's schema,
-	 *   sets `component` to `link.component ?? 'ATable'`, `config: { view: 'list' }`, `rows: []`.
+	 *   sets `component` to `link.component ?? 'ATable'`, `config: { view: 'list' }`.
 	 * - `cardinality: 'one'` or `'atMostOne'`: embeds the target schema as the entry's
 	 *   `schema` property, sets `component` to `link.component ?? 'AForm'`.
 	 *
@@ -175,24 +175,39 @@ export default class Registry {
 
 				const childSchema = this.resolveSchema(targetDoctype, seen)
 
+				// Extract properties consumed by resolution; preserve everything else
+				// TODO: options and cardinality are untyped runtime properties on link fields; add them to
+				// FormSchema (or a dedicated link field type) to remove this cast
+				const {
+					fieldtype: _ft,
+					options: _opt,
+					cardinality: _card,
+					...fieldRest
+				} = field as typeof field & { options?: unknown; cardinality?: unknown }
+
 				if (link.cardinality === 'noneOrMany' || link.cardinality === 'atLeastOne') {
 					// Many relationship — build table config
 					resolvedFields.push(
 						this.buildTableConfig(
-							{ fieldname: field.fieldname, label: field.label || field.fieldname },
+							{ ...fieldRest, label: fieldRest.label || field.fieldname },
 							childSchema,
 							link.component
 						)
 					)
 				} else {
 					// One relationship — embed form schema
+					// TODO: remove assertion once resolved link output has a dedicated type separate from input schema
 					resolvedFields.push({
-						fieldname: field.fieldname,
-						label: field.label || field.fieldname,
-						component: link.component || 'AForm',
+						...fieldRest,
+						label: fieldRest.label || field.fieldname,
+						component: link.component || fieldRest.component || 'AForm',
 						schema: childSchema,
-					})
+					} as SchemaTypes)
 				}
+			} else if ('schema' in field && Array.isArray(field.schema)) {
+				// Fieldset — recursively resolve nested fields
+				const resolvedChildren = this.resolveFields(field.schema, linksByFieldname, seen)
+				resolvedFields.push({ ...field, schema: resolvedChildren })
 			} else {
 				// Scalar field — copy as-is
 				resolvedFields.push({ ...field })
@@ -205,16 +220,73 @@ export default class Registry {
 	}
 
 	/**
-	 * Build an ATable configuration from a field and child schema
+	 * Recursively resolve a flat fields array using the provided link context.
+	 * Used by resolveSchema to handle fieldset children.
+	 * @internal
+	 */
+	private resolveFields(
+		fields: SchemaTypes[],
+		links: Map<string, LinkDeclaration>,
+		visited: Set<string>
+	): SchemaTypes[] {
+		const resolved: SchemaTypes[] = []
+		for (const field of fields) {
+			if ('fieldtype' in field && field.fieldtype === 'Link') {
+				const link = links.get(field.fieldname)
+				if (!link) {
+					resolved.push({ ...field })
+					continue
+				}
+				const targetDoctype = this.registry[link.target]
+				if (!targetDoctype) {
+					resolved.push({ ...field })
+					continue
+				}
+				const childSchema = this.resolveSchema(targetDoctype, new Set(visited))
+				const {
+					fieldtype: _ft,
+					options: _opt,
+					cardinality: _card,
+					...fieldRest
+				} = field as typeof field & { options?: unknown; cardinality?: unknown }
+				if (link.cardinality === 'noneOrMany' || link.cardinality === 'atLeastOne') {
+					resolved.push(
+						this.buildTableConfig(
+							{ ...fieldRest, label: fieldRest.label || field.fieldname },
+							childSchema,
+							link.component
+						)
+					)
+				} else {
+					// TODO: remove assertion once resolved link output has a dedicated type separate from input schema
+					resolved.push({
+						...fieldRest,
+						label: fieldRest.label || field.fieldname,
+						component: link.component || fieldRest.component || 'AForm',
+						schema: childSchema,
+					} as SchemaTypes)
+				}
+			} else if ('schema' in field && Array.isArray(field.schema)) {
+				resolved.push({ ...field, schema: this.resolveFields(field.schema, links, visited) })
+			} else {
+				resolved.push({ ...field })
+			}
+		}
+		return resolved
+	}
+
+	/**
+	 * Build an ATable configuration from a field and child schema.
+	 * Data-model properties from the source field are preserved via the spread `field` argument.
 	 * @internal
 	 */
 	private buildTableConfig(field: Record<string, any>, childSchema: SchemaTypes[], component?: string): TableSchema {
 		const resolved: TableSchema = {
+			...field,
 			fieldname: field.fieldname,
 			component: component || field.component || 'ATable',
 			columns: field.columns,
 			config: field.config,
-			rows: field.rows,
 		}
 
 		if (!resolved.columns) {
@@ -232,10 +304,6 @@ export default class Registry {
 
 		if (!resolved.config) {
 			resolved.config = { view: 'list' }
-		}
-
-		if (!resolved.rows) {
-			resolved.rows = []
 		}
 
 		return resolved
@@ -282,8 +350,9 @@ export default class Registry {
 				return
 			}
 
-			// Resolved 1:many table entry — has rows property
-			if ('rows' in field) {
+			// Resolved 1:many table entry — structural detection via columns
+			// TODO: replace 'columns' presence check with a type discriminant on SchemaTypes once one exists
+			if ('columns' in field) {
 				record[field.fieldname] = []
 				return
 			}

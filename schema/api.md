@@ -2,110 +2,6 @@
 
 > This documentation is automatically generated from the TypeScript API.
 
-## Other Components
-
-### ActionDefinition
-
-```typescript
-export { ActionDefinition }
-```
-
-### Cardinality
-
-```typescript
-export { Cardinality }
-```
-
-### CustomFetch
-
-```typescript
-export { CustomFetch }
-```
-
-### DoctypeMeta
-
-```typescript
-export { DoctypeMeta }
-```
-
-### FetchStrategy
-
-```typescript
-export { FetchStrategy }
-```
-
-### FieldMeta
-
-```typescript
-export { FieldMeta }
-```
-
-### FieldOptions
-
-```typescript
-export { FieldOptions }
-```
-
-### FieldValidation
-
-```typescript
-export { FieldValidation }
-```
-
-### GQL_SCALAR_MAP
-
-```typescript
-export { GQL_SCALAR_MAP }
-```
-
-### INTERNAL_SCALARS
-
-```typescript
-export { INTERNAL_SCALARS }
-```
-
-### LazyFetch
-
-```typescript
-export { LazyFetch }
-```
-
-### LinkDeclaration
-
-```typescript
-export { LinkDeclaration }
-```
-
-### StonecropFieldType
-
-```typescript
-export { StonecropFieldType }
-```
-
-### SyncFetch
-
-```typescript
-export { SyncFetch }
-```
-
-### TYPE_MAP
-
-```typescript
-export { TYPE_MAP }
-```
-
-### WELL_KNOWN_SCALARS
-
-```typescript
-export { WELL_KNOWN_SCALARS }
-```
-
-### WorkflowMeta
-
-```typescript
-export { WorkflowMeta }
-```
-
 ## Functions
 
 ### buildScalarMap
@@ -235,19 +131,35 @@ export declare function defaultIsEntityType(typeName: string, type: GraphQLObjec
 
 ### getDefaultComponent
 
-Get the default component for a field type
+Get the default component for a builtin field type. For an open-string fieldtype that may be custom, use `resolveComponent` instead.
 
 **Signature:**
 
 ```typescript
-export declare function getDefaultComponent(fieldtype: StonecropFieldType): string;
+export declare function getDefaultComponent(fieldtype: BuiltinFieldType): string;
 ```
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| fieldtype | `StonecropFieldType` | The semantic field type |
+| fieldtype | `BuiltinFieldType` | A builtin field type |
+
+### isBuiltinFieldType
+
+Returns `true` when `fieldtype` is one of the builtin types Stonecrop ships with.
+
+**Signature:**
+
+```typescript
+export declare function isBuiltinFieldType(fieldtype: string): fieldtype is BuiltinFieldType;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| fieldtype | `string` |  |
 
 ### parseDoctype
 
@@ -296,6 +208,22 @@ export declare function pascalToSnake(pascal: string): string;
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | pascal | `string` | PascalCase string |
+
+### resolveComponent
+
+Resolve the component name for any fieldtype string, falling back to `'ATextInput'` for unknown custom types.
+
+**Signature:**
+
+```typescript
+export declare function resolveComponent(fieldtype: string): string;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| fieldtype | `string` | Any fieldtype string (builtin or custom) |
 
 ### snakeToCamel
 
@@ -483,7 +411,7 @@ Field template for TYPE_MAP entries. Defines the default component and semantic 
 ```typescript
 export interface FieldTemplate {
   component: string;
-  fieldtype: StonecropFieldType;
+  fieldtype: BuiltinFieldType;
 }
 ```
 
@@ -492,7 +420,7 @@ export interface FieldTemplate {
 | Property | Type | Description |
 |----------|------|-------------|
 | component | `string` | The Vue component name to render this field (e.g., 'ATextInput', 'ADropdown') |
-| fieldtype | `StonecropFieldType` | The semantic field type (e.g., 'Data', 'Int', 'Select') |
+| fieldtype | `BuiltinFieldType` | The semantic field type (e.g., 'Data', 'Int', 'Select') |
 
 ### GetRecordOptions
 
@@ -664,6 +592,16 @@ Action definition type inferred from Zod schema
 export type ActionDefinition = z.infer<typeof ActionDefinition>;
 ```
 
+### BuiltinFieldType
+
+Union of all builtin fieldtype string literals.
+
+**Definition:**
+
+```typescript
+export type BuiltinFieldType = (typeof BUILTIN_FIELD_TYPES)[number];
+```
+
 ### Cardinality
 
 Cardinality type inferred from Zod schema
@@ -778,16 +716,6 @@ Serialized function type - a function serialized to a string. Used for custom fe
 export type SerializedFunction = string;
 ```
 
-### StonecropFieldType
-
-Stonecrop field type enum inferred from Zod schema
-
-**Definition:**
-
-```typescript
-export type StonecropFieldType = z.infer<typeof StonecropFieldType>;
-```
-
 ### SyncFetch
 
 Sync fetch strategy type
@@ -806,5 +734,353 @@ Workflow metadata type inferred from Zod schema
 
 ```typescript
 export type WorkflowMeta = z.infer<typeof WorkflowMeta>;
+```
+
+## Variables
+
+### ActionDefinition
+
+Action definition within a workflow
+
+**Type:**
+
+```typescript
+export const ActionDefinition: z.ZodObject<{
+    label: z.ZodString;
+    handler: z.ZodString;
+    requiredFields: z.ZodOptional<z.ZodArray<z.ZodString>>;
+    allowedStates: z.ZodOptional<z.ZodArray<z.ZodString>>;
+    confirm: z.ZodOptional<z.ZodBoolean>;
+    args: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodUnknown>>;
+}, z.core.$strip>
+```
+
+### BUILTIN_FIELD_TYPES
+
+The complete list of field types built into Stonecrop. User apps can use any string as a fieldtype; this const is the exhaustive set of types that Stonecrop provides default components for.
+
+**Type:**
+
+```typescript
+export const BUILTIN_FIELD_TYPES: readonly ["Data", "Text", "Int", "Float", "Decimal", "Check", "Date", "Time", "Datetime", "Duration", "DateRange", "JSON", "Code", "Link", "Attach", "Currency", "Quantity", "Select"]
+```
+
+### Cardinality
+
+Cardinality for relationship links.
+
+**Type:**
+
+```typescript
+export const Cardinality: z.ZodEnum<{
+    one: "one";
+    atMostOne: "atMostOne";
+    noneOrMany: "noneOrMany";
+    atLeastOne: "atLeastOne";
+}>
+```
+
+### CustomFetch
+
+Custom fetch strategy - uses a custom handler function.
+
+**Type:**
+
+```typescript
+export const CustomFetch: z.ZodObject<{
+    method: z.ZodLiteral<"custom">;
+    handler: z.ZodString;
+}, z.core.$strip>
+```
+
+### DoctypeMeta
+
+Doctype metadata - complete definition of a doctype
+
+**Type:**
+
+```typescript
+export const DoctypeMeta: z.ZodObject<{
+    name: z.ZodString;
+    slug: z.ZodOptional<z.ZodString>;
+    tableName: z.ZodOptional<z.ZodString>;
+    fields: z.ZodArray<z.ZodObject<{
+        fieldname: z.ZodString;
+        fieldtype: z.ZodString;
+        component: z.ZodOptional<z.ZodString>;
+        label: z.ZodOptional<z.ZodString>;
+        width: z.ZodOptional<z.ZodString>;
+        align: z.ZodOptional<z.ZodEnum<{
+            left: "left";
+            center: "center";
+            right: "right";
+            start: "start";
+            end: "end";
+        }>>;
+        required: z.ZodOptional<z.ZodBoolean>;
+        readOnly: z.ZodOptional<z.ZodBoolean>;
+        edit: z.ZodOptional<z.ZodBoolean>;
+        hidden: z.ZodOptional<z.ZodBoolean>;
+        value: z.ZodOptional<z.ZodUnknown>;
+        default: z.ZodOptional<z.ZodUnknown>;
+        options: z.ZodOptional<z.ZodUnion<readonly [z.ZodString, z.ZodArray<z.ZodString>, z.ZodRecord<z.ZodString, z.ZodUnknown>]>>;
+        cardinality: z.ZodOptional<z.ZodEnum<{
+            one: "one";
+            atMostOne: "atMostOne";
+            noneOrMany: "noneOrMany";
+            atLeastOne: "atLeastOne";
+        }>>;
+        mask: z.ZodOptional<z.ZodString>;
+        validation: z.ZodOptional<z.ZodObject<{
+            errorMessage: z.ZodString;
+        }, z.core.$loose>>;
+    }, z.core.$strip>>;
+    links: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodObject<{
+        target: z.ZodString;
+        cardinality: z.ZodEnum<{
+            one: "one";
+            atMostOne: "atMostOne";
+            noneOrMany: "noneOrMany";
+            atLeastOne: "atLeastOne";
+        }>;
+        backlink: z.ZodOptional<z.ZodString>;
+        component: z.ZodOptional<z.ZodString>;
+        fieldname: z.ZodOptional<z.ZodString>;
+        fetch: z.ZodOptional<z.ZodDiscriminatedUnion<[z.ZodObject<{
+            method: z.ZodLiteral<"sync">;
+            limit: z.ZodOptional<z.ZodNumber>;
+        }, z.core.$strip>, z.ZodObject<{
+            method: z.ZodLiteral<"lazy">;
+        }, z.core.$strip>, z.ZodObject<{
+            method: z.ZodLiteral<"custom">;
+            handler: z.ZodString;
+        }, z.core.$strip>], "method">>;
+        blockWorkflows: z.ZodOptional<z.ZodBoolean>;
+    }, z.core.$strip>>>;
+    workflow: z.ZodOptional<z.ZodObject<{
+        states: z.ZodOptional<z.ZodArray<z.ZodString>>;
+        actions: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodObject<{
+            label: z.ZodString;
+            handler: z.ZodString;
+            requiredFields: z.ZodOptional<z.ZodArray<z.ZodString>>;
+            allowedStates: z.ZodOptional<z.ZodArray<z.ZodString>>;
+            confirm: z.ZodOptional<z.ZodBoolean>;
+            args: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodUnknown>>;
+        }, z.core.$strip>>>;
+    }, z.core.$strip>>;
+    inherits: z.ZodOptional<z.ZodString>;
+}, z.core.$strip>
+```
+
+### FetchStrategy
+
+Fetch strategy for link data loading. - sync: fetched in the initial query - lazy: fetched on demand in a separate query - custom: uses a custom handler function
+
+**Type:**
+
+```typescript
+export const FetchStrategy: z.ZodDiscriminatedUnion<[z.ZodObject<{
+    method: z.ZodLiteral<"sync">;
+    limit: z.ZodOptional<z.ZodNumber>;
+}, z.core.$strip>, z.ZodObject<{
+    method: z.ZodLiteral<"lazy">;
+}, z.core.$strip>, z.ZodObject<{
+    method: z.ZodLiteral<"custom">;
+    handler: z.ZodString;
+}, z.core.$strip>], "method">
+```
+
+### FieldMeta
+
+Unified field metadata - the single source of truth for field definitions. Works for both forms (AForm) and tables (ATable).
+
+Core principle: "Text" is "Text" regardless of rendering context.
+
+**Type:**
+
+```typescript
+export const FieldMeta: z.ZodObject<{
+    fieldname: z.ZodString;
+    fieldtype: z.ZodString;
+    component: z.ZodOptional<z.ZodString>;
+    label: z.ZodOptional<z.ZodString>;
+    width: z.ZodOptional<z.ZodString>;
+    align: z.ZodOptional<z.ZodEnum<{
+        left: "left";
+        center: "center";
+        right: "right";
+        start: "start";
+        end: "end";
+    }>>;
+    required: z.ZodOptional<z.ZodBoolean>;
+    readOnly: z.ZodOptional<z.ZodBoolean>;
+    edit: z.ZodOptional<z.ZodBoolean>;
+    hidden: z.ZodOptional<z.ZodBoolean>;
+    value: z.ZodOptional<z.ZodUnknown>;
+    default: z.ZodOptional<z.ZodUnknown>;
+    options: z.ZodOptional<z.ZodUnion<readonly [z.ZodString, z.ZodArray<z.ZodString>, z.ZodRecord<z.ZodString, z.ZodUnknown>]>>;
+    cardinality: z.ZodOptional<z.ZodEnum<{
+        one: "one";
+        atMostOne: "atMostOne";
+        noneOrMany: "noneOrMany";
+        atLeastOne: "atLeastOne";
+    }>>;
+    mask: z.ZodOptional<z.ZodString>;
+    validation: z.ZodOptional<z.ZodObject<{
+        errorMessage: z.ZodString;
+    }, z.core.$loose>>;
+}, z.core.$strip>
+```
+
+### FieldOptions
+
+Field options - flexible bag for type-specific configuration.
+
+Usage by fieldtype: - Link/Doctype: target doctype slug as string ("customer", "sales-order-item") - Select: array of choices (["Draft", "Submitted", "Cancelled"]) - Decimal: config object ( precision: 10, scale: 2 ) - Code: config object ( language: "python" )
+
+**Type:**
+
+```typescript
+export const FieldOptions: z.ZodUnion<readonly [z.ZodString, z.ZodArray<z.ZodString>, z.ZodRecord<z.ZodString, z.ZodUnknown>]>
+```
+
+### FieldValidation
+
+Validation configuration for form fields
+
+**Type:**
+
+```typescript
+export const FieldValidation: z.ZodObject<{
+    errorMessage: z.ZodString;
+}, z.core.$loose>
+```
+
+### GQL_SCALAR_MAP
+
+Mapping from standard GraphQL scalar types to Stonecrop field types. These are defined by the GraphQL specification and are always available.
+
+**Type:**
+
+```typescript
+export const GQL_SCALAR_MAP: Record<string, FieldTemplate>
+```
+
+### INTERNAL_SCALARS
+
+Set of scalar type names that are internal to GraphQL servers and should be skipped during field conversion (they don't represent meaningful data fields).
+
+**Type:**
+
+```typescript
+export const INTERNAL_SCALARS: Set<string>
+```
+
+### LazyFetch
+
+Lazy fetch strategy - data is fetched on demand in a separate query.
+
+**Type:**
+
+```typescript
+export const LazyFetch: z.ZodObject<{
+    method: z.ZodLiteral<"lazy">;
+}, z.core.$strip>
+```
+
+### LinkDeclaration
+
+Link declaration - describes a relationship from one doctype to another.
+
+**Type:**
+
+```typescript
+export const LinkDeclaration: z.ZodObject<{
+    target: z.ZodString;
+    cardinality: z.ZodEnum<{
+        one: "one";
+        atMostOne: "atMostOne";
+        noneOrMany: "noneOrMany";
+        atLeastOne: "atLeastOne";
+    }>;
+    backlink: z.ZodOptional<z.ZodString>;
+    component: z.ZodOptional<z.ZodString>;
+    fieldname: z.ZodOptional<z.ZodString>;
+    fetch: z.ZodOptional<z.ZodDiscriminatedUnion<[z.ZodObject<{
+        method: z.ZodLiteral<"sync">;
+        limit: z.ZodOptional<z.ZodNumber>;
+    }, z.core.$strip>, z.ZodObject<{
+        method: z.ZodLiteral<"lazy">;
+    }, z.core.$strip>, z.ZodObject<{
+        method: z.ZodLiteral<"custom">;
+        handler: z.ZodString;
+    }, z.core.$strip>], "method">>;
+    blockWorkflows: z.ZodOptional<z.ZodBoolean>;
+}, z.core.$strip>
+```
+
+### StonecropFieldType
+
+Stonecrop field type — any non-empty string is valid; Stonecrop provides default components for the builtin types listed in `BUILTIN_FIELD_TYPES`. Custom fieldtypes are supported by supplying an explicit `component` on the field definition.
+
+**Type:**
+
+```typescript
+export const StonecropFieldType: z.ZodString
+```
+
+### SyncFetch
+
+Sync fetch strategy - data is fetched in the initial query.
+
+**Type:**
+
+```typescript
+export const SyncFetch: z.ZodObject<{
+    method: z.ZodLiteral<"sync">;
+    limit: z.ZodOptional<z.ZodNumber>;
+}, z.core.$strip>
+```
+
+### TYPE_MAP
+
+Mapping from builtin fieldtypes to their default Vue component. Components can be overridden in the field definition.
+
+**Type:**
+
+```typescript
+export const TYPE_MAP: Record<BuiltinFieldType, FieldTemplate>
+```
+
+### WELL_KNOWN_SCALARS
+
+Mapping from well-known custom GraphQL scalars to Stonecrop field types. These cover scalars commonly used across GraphQL servers (PostGraphile, Hasura, etc.) without baking in knowledge of any specific server.
+
+Entries here have lower precedence than `customScalars` from options, but higher precedence than unknown/unmapped scalars.
+
+**Type:**
+
+```typescript
+export const WELL_KNOWN_SCALARS: Record<string, FieldTemplate>
+```
+
+### WorkflowMeta
+
+Workflow metadata - states and actions for a doctype
+
+**Type:**
+
+```typescript
+export const WorkflowMeta: z.ZodObject<{
+    states: z.ZodOptional<z.ZodArray<z.ZodString>>;
+    actions: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodObject<{
+        label: z.ZodString;
+        handler: z.ZodString;
+        requiredFields: z.ZodOptional<z.ZodArray<z.ZodString>>;
+        allowedStates: z.ZodOptional<z.ZodArray<z.ZodString>>;
+        confirm: z.ZodOptional<z.ZodBoolean>;
+        args: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodUnknown>>;
+    }, z.core.$strip>>>;
+}, z.core.$strip>
 ```
 

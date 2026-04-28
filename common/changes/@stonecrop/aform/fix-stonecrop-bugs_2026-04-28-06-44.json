@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/aform",
+      "comment": "pass label prop to AFieldset + improve rows passthrough",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/aform"
+}

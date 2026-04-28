@@ -1,5 +1,14 @@
 // Field types
-export { StonecropFieldType, TYPE_MAP, getDefaultComponent, type FieldTemplate } from './fieldtype'
+export {
+	StonecropFieldType,
+	BUILTIN_FIELD_TYPES,
+	TYPE_MAP,
+	getDefaultComponent,
+	resolveComponent,
+	isBuiltinFieldType,
+	type BuiltinFieldType,
+	type FieldTemplate,
+} from './fieldtype'
 
 // Field schema
 export type { FieldMeta, FieldOptions, FieldValidation } from './field'
