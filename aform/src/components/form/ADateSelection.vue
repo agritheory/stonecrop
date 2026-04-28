@@ -62,7 +62,7 @@ const {
 }>()
 
 const emit = defineEmits<{
-	'get-date': [{ selected: Date }]
+	'get-date': [{ selected: Date; start?: Date | null; end?: Date | null }]
 	'get-time': [{ hours: number; minutes: number; seconds: number; meridiem: string }]
 	'get-range': [{ start: Date; end: Date }]
 }>()
@@ -104,9 +104,7 @@ const tryEmitRange = () => {
 }
 
 const handleDate = (data: { start: Date | null; end: Date | null; selected: Date }) => {
-	// Forward the full payload unchanged — matches original contract
-	emit('get-date', { selected: data.selected })
-
+	emit('get-date', data) // pass full object
 	if (selectRange) {
 		pickerStart.value = data.start ?? data.selected
 		pickerEnd.value = data.end ?? null
