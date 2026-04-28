@@ -104,7 +104,7 @@ const tryEmitRange = () => {
 }
 
 const handleDate = (data: { start: Date | null; end: Date | null; selected: Date }) => {
-	// Always forward get-date so existing consumers/tests are not broken
+	// Forward the full payload unchanged — matches original contract
 	emit('get-date', { selected: data.selected })
 
 	if (selectRange) {
