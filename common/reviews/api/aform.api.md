@@ -11,6 +11,7 @@ import ADatePicker from './components/form/ADatePicker.vue';
 import ADateSelection from './components/form/ADateSelection.vue';
 import ADateTime from './components/form/ADateTime.vue';
 import ADropdown from './components/form/ADropdown.vue';
+import ADuration from './components/form/ADuration.vue';
 import AFieldset from './components/form/AFieldset.vue';
 import AFileAttach from './components/form/AFileAttach.vue';
 import AForm from './components/AForm.vue';
@@ -35,6 +36,8 @@ export { ADateSelection }
 export { ADateTime }
 
 export { ADropdown }
+
+export { ADuration }
 
 export { AFieldset }
 
