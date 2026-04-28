@@ -45,12 +45,6 @@ export const StonecropFieldType = z.string().min(1).meta({
 })
 
 /**
- * Stonecrop field type — any non-empty string.
- * @public
- */
-export type StonecropFieldType = string
-
-/**
  * Returns `true` when `fieldtype` is one of the builtin types Stonecrop ships with.
  * @public
  */

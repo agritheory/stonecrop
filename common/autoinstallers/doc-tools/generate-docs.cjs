@@ -23,6 +23,12 @@ function extractTextFromTSDocNode(node) {
 			const codeContent = node.code || ''
 			return `\`${codeContent}\``
 
+		case 'DocLinkTag': {
+			const displayText =
+				node.linkText || node.codeDestination?.memberReferences?.slice(-1)?.[0]?.memberIdentifier?.identifier || ''
+			return displayText ? `\`${displayText}\`` : ''
+		}
+
 		case 'DocSoftBreak':
 			return ' ' // Convert soft breaks to spaces in inline contexts
 
@@ -87,6 +93,12 @@ function extractInlineTSDocContent(node) {
 			// Use the code getter method to get the content
 			const codeContent = node.code || ''
 			return `\`${codeContent}\``
+
+		case 'DocLinkTag': {
+			const displayText =
+				node.linkText || node.codeDestination?.memberReferences?.slice(-1)?.[0]?.memberIdentifier?.identifier || ''
+			return displayText ? `\`${displayText}\`` : ''
+		}
 
 		case 'DocSoftBreak':
 			return ' ' // Convert line breaks to spaces for inline mode
@@ -196,6 +208,12 @@ function extractFormattedTSDocContent(node) {
 			// Use the code getter method to get the content
 			const codeContent = node.code || ''
 			return `\`${codeContent}\``
+
+		case 'DocLinkTag': {
+			const displayText =
+				node.linkText || node.codeDestination?.memberReferences?.slice(-1)?.[0]?.memberIdentifier?.identifier || ''
+			return displayText ? `\`${displayText}\`` : ''
+		}
 
 		case 'DocSoftBreak':
 			return '\n' // Preserve line breaks for formatting
@@ -390,8 +408,9 @@ try {
 				types.push(member)
 				break
 			case 'Variable':
-				// Check if this is likely a Vue component (exported with capital letter)
-				if (member.displayName.match(/^[A-Z]/)) {
+				// Vue plugins and component wrappers (PascalCase, type is Plugin or Component)
+				// are rendered under "Other Components"; everything else is a plain variable.
+				if (member.displayName.match(/^[A-Z]/) && member.variableTypeExcerpt?.text?.match(/\bPlugin\b|\bComponent\b/)) {
 					components.push(member)
 				} else {
 					variables.push(member)

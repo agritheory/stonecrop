@@ -359,9 +359,6 @@ export function snakeToLabel(snakeCase: string): string;
 export const StonecropFieldType: z.ZodString;
 
 // @public
-export type StonecropFieldType = string;
-
-// @public
 export const SyncFetch: z.ZodObject<{
     method: z.ZodLiteral<"sync">;
     limit: z.ZodOptional<z.ZodNumber>;

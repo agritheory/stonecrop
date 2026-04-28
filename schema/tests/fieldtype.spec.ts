@@ -6,6 +6,7 @@ import {
 	BUILTIN_FIELD_TYPES,
 	isBuiltinFieldType,
 	resolveComponent,
+	type BuiltinFieldType,
 } from '../src/fieldtype'
 
 describe('fieldtype', () => {
@@ -57,9 +58,9 @@ describe('fieldtype', () => {
 			]
 
 			for (const type of expectedTypes) {
-				expect(TYPE_MAP[type as StonecropFieldType]).toBeDefined()
-				expect(TYPE_MAP[type as StonecropFieldType].component).toBeTruthy()
-				expect(TYPE_MAP[type as StonecropFieldType].fieldtype).toBe(type)
+				expect(TYPE_MAP[type as BuiltinFieldType]).toBeDefined()
+				expect(TYPE_MAP[type as BuiltinFieldType].component).toBeTruthy()
+				expect(TYPE_MAP[type as BuiltinFieldType].fieldtype).toBe(type)
 			}
 		})
 
