@@ -165,12 +165,12 @@ describe('Nested Doctype Support', () => {
 			// Scalar fields are unchanged
 			expect(resolved[0]).toEqual(expect.objectContaining({ fieldname: 'customer_name', fieldtype: 'Data' }))
 
-			// Link with cardinality:noneOrMany has auto-derived columns, component, config, and rows
+			// Link with cardinality:noneOrMany has auto-derived columns, component, and config
 			const tableField = resolved[1] as any
 			expect(tableField.fieldname).toBe('addresses')
 			expect(tableField.component).toBe('ATable')
 			expect(tableField.config).toEqual({ view: 'list' })
-			expect(tableField.rows).toEqual([])
+			// rows are NOT in the resolved schema — they come from formData at render time
 
 			// Columns derived from address schema
 			expect(tableField.columns).toHaveLength(4)
@@ -268,7 +268,7 @@ describe('Nested Doctype Support', () => {
 			expect(tableField.fieldname).toBe('addresses')
 			expect(tableField.component).toBe('ATable')
 			expect(tableField.config).toEqual({ view: 'list' })
-			expect(tableField.rows).toEqual([])
+			// rows are NOT in the resolved schema — they come from formData at render time
 			expect(tableField.columns).toHaveLength(4)
 		})
 
@@ -288,6 +288,71 @@ describe('Nested Doctype Support', () => {
 			expect(formField.component).toBe('AForm')
 			expect(formField.schema).toHaveLength(4)
 			expect(formField.schema[0].fieldname).toBe('street')
+		})
+
+		it('preserves required and readOnly on resolved one-to-one link fields', () => {
+			const testDoctype = new Doctype(
+				'link-with-meta',
+				List([{ fieldname: 'address', fieldtype: 'Link', options: 'address', required: true, readOnly: false }]) as any,
+				undefined,
+				undefined,
+				undefined,
+				{ address: { target: 'address', cardinality: 'one', fieldname: 'address' } }
+			)
+
+			const resolved = registry.resolveSchema(testDoctype)
+			const addressField = resolved[0] as any
+
+			expect(addressField.fieldname).toBe('address')
+			expect(addressField.required).toBe(true)
+			expect(addressField.readOnly).toBe(false)
+		})
+
+		it('preserves required on resolved noneOrMany table fields', () => {
+			const testDoctype = new Doctype(
+				'table-with-meta',
+				List([{ fieldname: 'addresses', fieldtype: 'Link', options: 'address', required: true }]) as any,
+				undefined,
+				undefined,
+				undefined,
+				{ addresses: { target: 'address', cardinality: 'noneOrMany', fieldname: 'addresses' } }
+			)
+
+			const resolved = registry.resolveSchema(testDoctype)
+			const tableField = resolved[0] as any
+
+			expect(tableField.fieldname).toBe('addresses')
+			expect(tableField.required).toBe(true)
+		})
+
+		it('recursively resolves Link fields nested inside a fieldset', () => {
+			const testDoctype = new Doctype(
+				'fieldset-links',
+				List([
+					{
+						fieldname: 'address_section',
+						component: 'AFieldset',
+						schema: [{ fieldname: 'address', fieldtype: 'Link', options: 'address' }],
+					},
+				]) as any,
+				undefined,
+				undefined,
+				undefined,
+				{ address: { target: 'address', cardinality: 'one', fieldname: 'address' } }
+			)
+
+			const resolved = registry.resolveSchema(testDoctype)
+			expect(resolved).toHaveLength(1)
+
+			const fieldsetField = resolved[0] as any
+			expect(fieldsetField.fieldname).toBe('address_section')
+			expect('schema' in fieldsetField).toBe(true)
+
+			// The link inside the fieldset must be resolved — not copied as a raw Link field
+			const nestedLink = fieldsetField.schema[0] as any
+			expect(nestedLink.fieldname).toBe('address')
+			expect('schema' in nestedLink).toBe(true)
+			expect(nestedLink.schema).toHaveLength(4)
 		})
 
 		it('renders link fields in the order they appear in the fields array', () => {

@@ -10,6 +10,12 @@
 export { ActionDefinition }
 ```
 
+### BUILTIN_FIELD_TYPES
+
+```typescript
+export { BUILTIN_FIELD_TYPES }
+```
+
 ### Cardinality
 
 ```typescript
@@ -235,19 +241,35 @@ export declare function defaultIsEntityType(typeName: string, type: GraphQLObjec
 
 ### getDefaultComponent
 
-Get the default component for a field type
+Get the default component for a builtin field type. For an open-string fieldtype that may be custom, use  instead.
 
 **Signature:**
 
 ```typescript
-export declare function getDefaultComponent(fieldtype: StonecropFieldType): string;
+export declare function getDefaultComponent(fieldtype: BuiltinFieldType): string;
 ```
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| fieldtype | `StonecropFieldType` | The semantic field type |
+| fieldtype | `BuiltinFieldType` | A builtin field type |
+
+### isBuiltinFieldType
+
+Returns `true` when `fieldtype` is one of the builtin types Stonecrop ships with.
+
+**Signature:**
+
+```typescript
+export declare function isBuiltinFieldType(fieldtype: string): fieldtype is BuiltinFieldType;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| fieldtype | `string` |  |
 
 ### parseDoctype
 
@@ -296,6 +318,22 @@ export declare function pascalToSnake(pascal: string): string;
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | pascal | `string` | PascalCase string |
+
+### resolveComponent
+
+Resolve the component name for any fieldtype string, falling back to `'ATextInput'` for unknown custom types.
+
+**Signature:**
+
+```typescript
+export declare function resolveComponent(fieldtype: string): string;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| fieldtype | `string` | Any fieldtype string (builtin or custom) |
 
 ### snakeToCamel
 
@@ -483,7 +521,7 @@ Field template for TYPE_MAP entries. Defines the default component and semantic 
 ```typescript
 export interface FieldTemplate {
   component: string;
-  fieldtype: StonecropFieldType;
+  fieldtype: BuiltinFieldType;
 }
 ```
 
@@ -492,7 +530,7 @@ export interface FieldTemplate {
 | Property | Type | Description |
 |----------|------|-------------|
 | component | `string` | The Vue component name to render this field (e.g., 'ATextInput', 'ADropdown') |
-| fieldtype | `StonecropFieldType` | The semantic field type (e.g., 'Data', 'Int', 'Select') |
+| fieldtype | `BuiltinFieldType` | The semantic field type (e.g., 'Data', 'Int', 'Select') |
 
 ### GetRecordOptions
 
@@ -664,6 +702,16 @@ Action definition type inferred from Zod schema
 export type ActionDefinition = z.infer<typeof ActionDefinition>;
 ```
 
+### BuiltinFieldType
+
+Union of all builtin fieldtype string literals.
+
+**Definition:**
+
+```typescript
+export type BuiltinFieldType = (typeof BUILTIN_FIELD_TYPES)[number];
+```
+
 ### Cardinality
 
 Cardinality type inferred from Zod schema
@@ -780,12 +828,12 @@ export type SerializedFunction = string;
 
 ### StonecropFieldType
 
-Stonecrop field type enum inferred from Zod schema
+Stonecrop field type — any non-empty string.
 
 **Definition:**
 
 ```typescript
-export type StonecropFieldType = z.infer<typeof StonecropFieldType>;
+export type StonecropFieldType = string;
 ```
 
 ### SyncFetch

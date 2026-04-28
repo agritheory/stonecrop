@@ -1585,7 +1585,7 @@ Resolve nested Doctype fields in a schema by embedding child schemas inline.
 
 Accepts a Doctype and extracts `fields` and `links` internally. Fields array contains both scalar fields and link fields (with fieldtype: 'Link'). Render order is determined by the order of fields in the fields array.
 
-For each link field: - Looks up the corresponding link declaration in `links` by fieldname - `cardinality: 'noneOrMany'` or `'atLeastOne'`: auto-derives `columns` from the target's schema, sets `component` to `link.component ?? 'ATable'`, `config: { view: 'list' }`, `rows: []`. - `cardinality: 'one'` or `'atMostOne'`: embeds the target schema as the entry's `schema` property, sets `component` to `link.component ?? 'AForm'`.
+For each link field: - Looks up the corresponding link declaration in `links` by fieldname - `cardinality: 'noneOrMany'` or `'atLeastOne'`: auto-derives `columns` from the target's schema, sets `component` to `link.component ?? 'ATable'`, `config: { view: 'list' }`. - `cardinality: 'one'` or `'atMostOne'`: embeds the target schema as the entry's `schema` property, sets `component` to `link.component ?? 'AForm'`.
 
 Recurses for deeply nested doctypes. Circular references are protected against. Returns a new array — does not mutate the original.
 
