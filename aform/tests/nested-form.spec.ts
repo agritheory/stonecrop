@@ -2,6 +2,7 @@ import { mount, flushPromises } from '@vue/test-utils'
 import { describe, it, expect } from 'vitest'
 
 import AForm from '../src/components/AForm.vue'
+import AFieldset from '../src/components/form/AFieldset.vue'
 import ATextInput from '../src/components/form/ATextInput.vue'
 import type { SchemaTypes } from '../src/types'
 
@@ -541,5 +542,80 @@ describe('AForm Nested Schema Rendering', () => {
 		// ATable may not be registered in test, but the component :is binding
 		// should still attempt to render it — verify no nested form was created
 		expect(nestedSections.length).toBe(0)
+	})
+
+	describe('AFieldset inside AForm', () => {
+		const fieldsetSchema = [
+			{ fieldname: 'first_name', fieldtype: 'Data', component: 'ATextInput', label: 'First Name' },
+		] as SchemaTypes[]
+
+		it('renders the fieldset legend text when component is AFieldset', async () => {
+			const wrapper = mount(AForm, {
+				props: {
+					schema: [
+						{
+							fieldname: 'details',
+							component: 'AFieldset',
+							label: 'Details',
+							schema: fieldsetSchema,
+						},
+					] as any,
+					data: { details: {} },
+				},
+				global: { components: { AFieldset, ATextInput } },
+			})
+
+			await wrapper.vm.$nextTick()
+
+			const legend = wrapper.find('legend')
+			expect(legend.exists()).toBe(true)
+			expect(legend.text()).toContain('Details')
+		})
+
+		it('does not render h4 aform-nested-label when the nested component is AFieldset', async () => {
+			const wrapper = mount(AForm, {
+				props: {
+					schema: [
+						{
+							fieldname: 'details',
+							component: 'AFieldset',
+							label: 'Details',
+							collapsible: false,
+							schema: fieldsetSchema,
+						},
+					] as any,
+					data: { details: {} },
+				},
+				global: { components: { AFieldset, ATextInput } },
+			})
+
+			await wrapper.vm.$nextTick()
+
+			expect(wrapper.find('.aform-nested-label').exists()).toBe(false)
+		})
+
+		it('passes collapsible prop to nested AFieldset', async () => {
+			const wrapper = mount(AForm, {
+				props: {
+					schema: [
+						{
+							fieldname: 'details',
+							component: 'AFieldset',
+							label: 'Details',
+							collapsible: true,
+							schema: fieldsetSchema,
+						},
+					] as any,
+					data: { details: {} },
+				},
+				global: { components: { AFieldset, ATextInput } },
+			})
+
+			await wrapper.vm.$nextTick()
+
+			const fieldset = wrapper.findComponent(AFieldset)
+			expect(fieldset.exists()).toBe(true)
+			expect(fieldset.props('collapsible')).toBe(true)
+		})
 	})
 })

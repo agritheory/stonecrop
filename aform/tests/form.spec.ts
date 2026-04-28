@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest'
+import { defineComponent } from 'vue'
 import { mount } from '@vue/test-utils'
 
 import AForm from '../src/components/AForm.vue'
@@ -32,6 +33,36 @@ describe('AForm Component', () => {
 		const updateDataEvents = wrapper.emitted('update:data')
 		expect(updateDataEvents).toBeTruthy()
 		expect((updateDataEvents![updateDataEvents!.length - 1][0] as Record<string, any>).first_name).toBe('Steve')
+	})
+
+	it('passes rows from dataModel to a component that has columns but no rows in schema', async () => {
+		const MockTable = defineComponent({
+			name: 'MockTable',
+			props: ['columns', 'rows', 'label', 'fieldname', 'schema', 'data', 'mode'],
+			template: '<div class="mock-table"></div>',
+		})
+
+		const wrapper = mount(AForm, {
+			props: {
+				schema: [
+					{
+						fieldname: 'items',
+						component: 'MockTable',
+						label: 'Items',
+						columns: [{ name: 'id', label: 'ID', fieldtype: 'Int' }],
+						// intentionally no 'rows' key — rows should come from dataModel
+					},
+				] as SchemaTypes[],
+				data: { items: [{ id: 1 }, { id: 2 }] },
+			},
+			global: { components: { MockTable } },
+		})
+
+		await wrapper.vm.$nextTick()
+
+		const mockTable = wrapper.findComponent(MockTable)
+		expect(mockTable.exists()).toBe(true)
+		expect(mockTable.props('rows')).toEqual([{ id: 1 }, { id: 2 }])
 	})
 
 	it('should handle componentProps with rows data for nested tables', () => {

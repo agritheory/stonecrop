@@ -20,14 +20,6 @@ Vue component exported from @stonecrop/graphql_middleware.
 import { ValidationError } from '@stonecrop/graphql_middleware'
 ```
 
-## Other Components
-
-### RELATION_FIELDTYPES
-
-```typescript
-export { RELATION_FIELDTYPES }
-```
-
 ## Functions
 
 ### buildListQuery
@@ -722,6 +714,16 @@ Built-in handlers available for registration
 
 ```typescript
 export const builtinHandlers: Record<string, ActionHandler>
+```
+
+### RELATION_FIELDTYPES
+
+Fieldtypes that map to GraphQL object/connection types and require sub-selections. These fields are excluded from generated query field selections.
+
+**Type:**
+
+```typescript
+export const RELATION_FIELDTYPES: Set<string>
 ```
 
 ### typeDefs
