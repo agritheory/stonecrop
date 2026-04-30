@@ -27,7 +27,7 @@ export default defineConfig(
 			},
 			parserOptions: {
 				projectService: {
-					allowDefaultProject: ['tests/*.ts'],
+					allowDefaultProject: ['tests/*.ts', 'tests/desktop/*.ts'],
 				},
 				tsconfigRootDir: import.meta.dirname,
 			},
