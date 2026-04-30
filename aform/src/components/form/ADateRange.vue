@@ -8,48 +8,25 @@
 
 		<!-- edit / read mode -->
 		<template v-else>
-			<div class="adaterange__inputs">
-				<!-- Start date input -->
-				<div class="adaterange__field">
-					<input
-						:id="`${uuid}-start`"
-						class="adate-input aform_input-field"
-						type="text"
-						placeholder="mm/dd/yyyy"
-						:value="startInputDisplay"
-						:disabled="mode === 'read'"
-						@blur="handleStartInput"
-						@keydown.enter="handleStartInput"
-						@click="openStartPicker" />
-					<label :for="`${uuid}-start`">Start Date</label>
-				</div>
-
-				<span class="adaterange__separator">—</span>
-
-				<!-- End date input -->
-				<div class="adaterange__field">
-					<input
-						:id="`${uuid}-end`"
-						class="adate-input aform_input-field"
-						type="text"
-						placeholder="mm/dd/yyyy"
-						:value="endInputDisplay"
-						:disabled="mode === 'read'"
-						@blur="handleEndInput"
-						@keydown.enter="handleEndInput"
-						@click="openEndPicker" />
-					<label :for="`${uuid}-end`">End Date</label>
-				</div>
-			</div>
+			<input
+				:id="uuid"
+				class="adate-input aform_input-field"
+				type="text"
+				:value="rangeDisplay"
+				placeholder="Select date range"
+				:disabled="mode === 'read'"
+				readonly
+				@click="openPicker" />
+			<label :for="uuid">{{ label }}</label>
 
 			<p v-show="validation.errorMessage" v-html="validation.errorMessage"></p>
 
-			<!-- Calendar popup — range mode -->
+			<!-- Calendar popup — ADatePicker internally shows start/end inputs
+           and range highlight when selectRange=true -->
 			<ADateSelection
 				v-if="showPicker"
 				ref="pickerRef"
 				class="picker"
-				:class="activeField === 'end' ? 'picker--end' : 'picker--start'"
 				:select-range="true"
 				:show-time="false"
 				@get-date="handlePickerDate" />
@@ -86,32 +63,40 @@ const modelValue = defineModel<DateRangeValue>({
 const startDate = ref<Date | null>(modelValue.value.start_date ? new Date(modelValue.value.start_date) : null)
 const endDate = ref<Date | null>(modelValue.value.end_date ? new Date(modelValue.value.end_date) : null)
 
-// Tracks which field (start or end) triggered the picker open
-const activeField = ref<'start' | 'end'>('start')
-
 /* ── picker pop-up ───────────────────────────────────────────────────── */
 const showPicker = ref(false)
 const pickerRef = ref(null)
 onClickOutside(pickerRef, () => (showPicker.value = false))
 
-const openStartPicker = () => {
-	activeField.value = 'start'
-	showPicker.value = true
+const openPicker = () => {
+	if (mode !== 'read') showPicker.value = true
 }
 
-const openEndPicker = () => {
-	activeField.value = 'end'
-	showPicker.value = true
-}
-
-/* ── display strings for text inputs ────────────────────────────────── */
+/* ── display helpers ─────────────────────────────────────────────────── */
 const formatDate = (d: Date | null): string => {
 	if (!d) return ''
 	return `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`
 }
 
-const startInputDisplay = computed(() => formatDate(startDate.value))
-const endInputDisplay = computed(() => formatDate(endDate.value))
+// Text shown in the trigger input field
+const rangeDisplay = computed(() => {
+	const s = formatDate(startDate.value)
+	const e = formatDate(endDate.value)
+	if (s && e) return `${s} — ${e}`
+	if (s) return `${s} — ...`
+	return ''
+})
+
+// Text shown in display / read mode
+const displayValue = computed(() => {
+	const s = modelValue.value.start_date
+	const e = modelValue.value.end_date
+	if (!s && !e) return ''
+	const fmt = (d: string) => new Date(d).toLocaleDateString()
+	if (s && e) return `${fmt(s)} — ${fmt(e)}`
+	if (s) return `From ${fmt(s)}`
+	return `Until ${fmt(e!)}`
+})
 
 /* ── auto-swap ───────────────────────────────────────────────────────── */
 const ensureOrder = () => {
@@ -132,58 +117,20 @@ const emitModel = () => {
 	}
 }
 
-/* ── typed / pasted input handlers ──────────────────────────────────── */
-const handleStartInput = (e: Event) => {
-	const val = (e.target as HTMLInputElement).value
-	const parsed = val ? new Date(val) : null
-	if (parsed && !isNaN(parsed.getTime())) {
-		startDate.value = parsed
-		ensureOrder()
-		emitModel()
-	}
-}
-
-const handleEndInput = (e: Event) => {
-	const val = (e.target as HTMLInputElement).value
-	const parsed = val ? new Date(val) : null
-	if (parsed && !isNaN(parsed.getTime())) {
-		endDate.value = parsed
-		ensureOrder()
-		emitModel()
-	}
-}
-
 /* ── calendar picker handler ─────────────────────────────────────────── */
+// ADatePicker with selectRange=true:
+//   first click  → emits { start: Date, end: null,  selected: Date }
+//   second click → emits { start: Date, end: Date,  selected: Date }
+// We close the picker only once end is set (second click).
 const handlePickerDate = (data: { selected: Date; start?: Date | null; end?: Date | null }) => {
-	if (activeField.value === 'start') {
-		startDate.value = data.selected
-		// if existing end date is now before the new start, clear it
-		if (endDate.value && endDate.value < data.selected) {
-			endDate.value = null
-		}
-	} else {
-		endDate.value = data.selected
+	if (data.start) startDate.value = data.start
+	if (data.end) {
+		endDate.value = data.end
 		ensureOrder()
+		showPicker.value = false // range complete — close calendar
 	}
-
-	// close picker once both dates are confirmed
-	if (startDate.value && endDate.value) {
-		showPicker.value = false
-	}
-
 	emitModel()
 }
-
-/* ── display mode value ──────────────────────────────────────────────── */
-const displayValue = computed(() => {
-	const s = modelValue.value.start_date
-	const e = modelValue.value.end_date
-	if (!s && !e) return ''
-	const fmt = (d: string) => new Date(d).toLocaleDateString()
-	if (s && e) return `${fmt(s)} — ${fmt(e)}`
-	if (s) return `From ${fmt(s)}`
-	return `Until ${fmt(e!)}`
-})
 
 /* ── keep in sync when parent updates modelValue externally ─────────── */
 watch(
@@ -201,33 +148,16 @@ watch(
 	min-width: 40ch;
 	width: 100%;
 	box-sizing: border-box;
-	position: relative;
+	border: 1px solid transparent;
 	padding: 0;
 	margin: 0;
-	border: 1px solid transparent;
+	margin-right: 1ch;
+	position: relative;
 	overflow: visible;
 }
 
-.adaterange__inputs {
-	display: flex;
-	align-items: flex-end;
-	gap: 0.5rem;
-	width: 100%;
-}
-
-.adaterange__field {
-	position: relative;
-	flex: 1;
-}
-
-.adaterange__separator {
-	padding-bottom: 0.6rem;
-	color: var(--sc-input-label-color);
-	flex-shrink: 0;
-}
-
 .adate-input {
-	width: 100%;
+	width: calc(100% - 1ch);
 	box-sizing: border-box;
 	outline: 1px solid transparent;
 	border: 1px solid var(--sc-input-border-color);
@@ -235,6 +165,8 @@ watch(
 	margin: calc(1.15rem / 2) 0 0 0;
 	min-height: 1.15rem;
 	border-radius: 0.25rem;
+	cursor: pointer;
+	background: white;
 	font-size: 1rem;
 }
 
@@ -246,17 +178,15 @@ watch(
 	color: var(--sc-input-active-label-color);
 }
 
+p,
 label {
 	color: var(--sc-input-label-color);
 	display: block;
-	font-size: 80%;
-	position: absolute;
-	background: white;
-	margin: calc(-1.5rem - calc(2.15rem / 2)) 0 0 1ch;
-	padding: 0 0.25ch;
-	z-index: 0;
 	min-height: 1.15rem;
+	padding: 0;
+	margin: 0;
 	border: 1px solid transparent;
+	margin-bottom: 0.25rem;
 	box-sizing: border-box;
 }
 
@@ -264,26 +194,22 @@ p {
 	width: 100%;
 	color: red;
 	font-size: 85%;
+}
+
+label {
+	z-index: 0;
+	font-size: 80%;
+	position: absolute;
+	background: white;
+	margin: calc(-1.5rem - calc(2.15rem / 2)) 0 0 1ch;
+	padding: 0 0.25ch 0 0.25ch;
 	box-sizing: border-box;
-	display: block;
-	min-height: 1.15rem;
-	padding: 0;
-	margin: 0;
-	border: 1px solid transparent;
-	margin-bottom: 0.25rem;
 }
 
 .picker {
 	position: absolute;
-	top: 60px;
-	z-index: 1000;
-}
-
-.picker--start {
+	top: 50px;
 	left: 0;
-}
-
-.picker--end {
-	right: 0;
+	z-index: 1000;
 }
 </style>
