@@ -143,14 +143,14 @@ describe('ActionSet', () => {
 		expect(wrapper.find('.action-set').classes()).not.toContain('open-set')
 	})
 
-	it('toggles closeClicked on chevron click', async () => {
+	it('toggles collapsed on cross click', async () => {
 		const wrapper = mount(ActionSet)
-		const chevron = wrapper.find('#chevron')
+		const cross = wrapper.find('#cross')
 
-		await chevron.trigger('click')
-		expect(wrapper.find('.action-set').classes()).toContain('hovered-and-closed')
+		await cross.trigger('click')
+		expect(wrapper.find('.action-set').classes()).toContain('collapsed')
 
-		await chevron.trigger('click')
-		expect(wrapper.find('.action-set').classes()).not.toContain('hovered-and-closed')
+		await cross.trigger('click')
+		expect(wrapper.find('.action-set').classes()).not.toContain('collapsed')
 	})
 })

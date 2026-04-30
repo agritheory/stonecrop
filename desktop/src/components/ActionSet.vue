@@ -72,7 +72,6 @@ const onClick = () => {
 const toggleDropdown = (index: number) => {
 	const showDropdown = !dropdownStates.value[index]
 	dropdownOpen.value[index] = showDropdown
-	console.log(dropdownOpen.value)
 	closeDropdowns()
 	if (showDropdown) {
 		dropdownStates.value[index] = true
