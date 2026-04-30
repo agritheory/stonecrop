@@ -41,8 +41,9 @@ const {
 }>()
 
 const emit = defineEmits<{
-	'get-date': [{ selected: Date }]
+	'get-date': [{ selected: Date; start?: Date | null; end?: Date | null }]
 	'get-time': [{ hours: number; minutes: number; seconds: number; meridiem: string }]
+	'get-range': [{ start: Date; end: Date }]
 }>()
 
 //provides prop to datepicker child
