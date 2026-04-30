@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/desktop",
+      "comment": "improve desktop test coverage",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/desktop"
+}
