@@ -63,6 +63,7 @@ onMounted(() => {
 
 const closeDropdowns = () => {
 	dropdownStates.value = {}
+	dropdownOpen.value = []
 }
 
 const onClick = () => {
@@ -71,10 +72,10 @@ const onClick = () => {
 
 const toggleDropdown = (index: number) => {
 	const showDropdown = !dropdownStates.value[index]
-	dropdownOpen.value[index] = showDropdown
 	closeDropdowns()
 	if (showDropdown) {
 		dropdownStates.value[index] = true
+		dropdownOpen.value[index] = true
 	}
 }
 
