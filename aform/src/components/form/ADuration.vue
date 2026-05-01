@@ -1,27 +1,36 @@
-<template v-else>
-	<ADateSelection
-		ref="selectionRef"
-		:select-range="true"
-		:show-time="true"
-		:show-end-time="true"
-		:allow-military-time="allowMilitaryTime"
-		:use-seconds="useSeconds"
-		@get-range="handleRange" />
+<template>
+	<div class="aduration">
+		<!-- display / read mode -->
+		<template v-if="mode === 'display' || mode === 'read'">
+			<span class="aform_display-value">{{ displayValue }}</span>
+			<label>{{ label }}</label>
+		</template>
 
-	<div class="aduration__footer">
-		<label>{{ label }}</label>
-		<div v-if="startDatetime && endDatetime" class="aduration__summary">
-			<span class="aduration__label">Duration:</span>
-			<span class="aduration__value">{{ humanDuration }}</span>
-			<span class="aduration__ms">({{ modelValue ?? 0 }} ms)</span>
-		</div>
+		<!-- edit mode -->
+		<template v-else>
+			<ADateSelection
+				ref="selectionRef"
+				:select-range="true"
+				:show-time="true"
+				:show-end-time="true"
+				:allow-military-time="allowMilitaryTime"
+				:use-seconds="useSeconds"
+				@get-range="handleRange" />
+			<div class="aduration__footer">
+				<label>{{ label }}</label>
+				<div v-if="startDatetime && endDatetime" class="aduration__summary">
+					<span class="aduration__label">Duration:</span>
+					<span class="aduration__value">{{ humanDuration }}</span>
+					<span class="aduration__ms">({{ modelValue ?? 0 }} ms)</span>
+				</div>
+			</div>
+		</template>
 	</div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import ADateSelection from './ADateSelection.vue'
-import type { ComponentProps } from '../../types'
 
 const {
 	label = 'Duration',

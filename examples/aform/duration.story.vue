@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import ADuration from '../../aform/src/components/form/ADuration.vue'
+import { ADuration } from '@stonecrop/aform'
 
 const durationMs = ref<number>(0)
 </script>
