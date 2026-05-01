@@ -1,14 +1,21 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
-import { nextTick } from 'vue'
+import { nextTick, defineComponent } from 'vue'
 import ADuration from '../src/components/form/ADuration.vue'
 
 // Stub ADateSelection so tests don't depend on calendar internals
-const ADateSelectionStub = {
+const ADateSelectionStub = defineComponent({
 	name: 'ADateSelection',
-	template: '<div class="stub-date-selection" />',
+	props: {
+		selectRange: Boolean,
+		showTime: Boolean,
+		showEndTime: Boolean,
+		allowMilitaryTime: Boolean,
+		useSeconds: Boolean,
+	},
 	emits: ['get-range'],
-}
+	template: '<div class="stub-date-selection" />',
+})
 
 const global = { components: { ADateSelection: ADateSelectionStub } }
 
@@ -203,7 +210,7 @@ describe('ADuration', () => {
 				global,
 			})
 			const sel = wrapper.findComponent({ name: 'ADateSelection' })
-			expect(sel.attributes('allow-military-time')).toBe('true')
+			expect(sel.props('allowMilitaryTime')).toBe(true)
 		})
 
 		it('passes useSeconds to ADateSelection', () => {
@@ -212,25 +219,25 @@ describe('ADuration', () => {
 				global,
 			})
 			const sel = wrapper.findComponent({ name: 'ADateSelection' })
-			expect(sel.attributes('use-seconds')).toBe('true')
+			expect(sel.props('useSeconds')).toBe(true)
 		})
 
 		it('passes select-range=true to ADateSelection always', () => {
 			const wrapper = mount(ADuration, { global })
 			const sel = wrapper.findComponent({ name: 'ADateSelection' })
-			expect(sel.attributes('select-range')).toBe('true')
+			expect(sel.props('selectRange')).toBe(true)
 		})
 
 		it('passes show-time=true to ADateSelection always', () => {
 			const wrapper = mount(ADuration, { global })
 			const sel = wrapper.findComponent({ name: 'ADateSelection' })
-			expect(sel.attributes('show-time')).toBe('true')
+			expect(sel.props('showTime')).toBe(true)
 		})
 
 		it('passes show-end-time=true to ADateSelection always', () => {
 			const wrapper = mount(ADuration, { global })
 			const sel = wrapper.findComponent({ name: 'ADateSelection' })
-			expect(sel.attributes('show-end-time')).toBe('true')
+			expect(sel.props('showEndTime')).toBe(true)
 		})
 	})
 
