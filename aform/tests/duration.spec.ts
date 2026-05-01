@@ -1,268 +1,147 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { nextTick } from 'vue'
+import ADuration from '../src/components/form/ADuration.vue'
 
-import ADateRange from '../src/components/form/ADateRange.vue'
-import ADateSelection from '../src/components/form/ADateSelection.vue'
-import ADatePicker from '../src/components/form/ADatePicker.vue'
-import ADateTime from '../src/components/form/ADateTime.vue'
-
-const globalComponents = {
-	global: {
-		components: {
-			ADateSelection,
-			ADatePicker,
-			ADateTime,
-		},
-	},
+const ADateSelectionStub = {
+	name: 'ADateSelection',
+	template: '<div class="stub-date-selection" />',
+	emits: ['get-range'],
 }
 
-describe('date range component', () => {
-	it('renders a single trigger input in edit mode', () => {
-		const wrapper = mount(ADateRange, globalComponents)
-		const $input = wrapper.find('input')
-		expect($input.exists()).toBe(true)
-		expect($input.attributes('type')).toBe('text')
+const global = { components: { ADateSelection: ADateSelectionStub } }
+
+// Helper: mount ADuration and emit get-range, returning emitted values and wrapper
+const mountAndEmitRange = async (start: Date, end: Date) => {
+	const emitted: (number | undefined)[] = []
+	const wrapper = mount(ADuration, {
+		props: { 'onUpdate:modelValue': (v: number | undefined) => emitted.push(v) },
+		global,
+	})
+	await wrapper.findComponent({ name: 'ADateSelection' }).vm.$emit('get-range', { start, end })
+	await nextTick()
+	return { emitted, wrapper }
+}
+
+describe('ADuration', () => {
+	it('renders in edit mode by default', () => {
+		const wrapper = mount(ADuration, { global })
+		expect(wrapper.find('.aduration').exists()).toBe(true)
+		expect(wrapper.findComponent({ name: 'ADateSelection' }).exists()).toBe(true)
 	})
 
-	it('renders with default label', () => {
-		const wrapper = mount(ADateRange, globalComponents)
-		expect(wrapper.find('label').text()).toBe('Date Range')
+	it('defaults label to "Duration"', () => {
+		const wrapper = mount(ADuration, { global })
+		expect(wrapper.find('label').text()).toBe('Duration')
 	})
 
-	it('renders with a custom label', () => {
-		const wrapper = mount(ADateRange, {
-			...globalComponents,
-			props: { label: 'Booking Period' },
+	it('renders a custom label', () => {
+		const wrapper = mount(ADuration, {
+			props: { label: 'Task Duration' },
+			global,
 		})
-		expect(wrapper.find('label').text()).toBe('Booking Period')
+		expect(wrapper.find('label').text()).toBe('Task Duration')
 	})
 
-	it('trigger input is disabled in read mode', () => {
-		const wrapper = mount(ADateRange, {
-			...globalComponents,
-			props: { mode: 'read' },
-		})
-		expect(wrapper.find('input').attributes()).toHaveProperty('disabled')
-	})
-
-	it('trigger input is readonly', () => {
-		const wrapper = mount(ADateRange, globalComponents)
-		expect(wrapper.find('input').attributes()).toHaveProperty('readonly')
-	})
-
-	it('shows placeholder when no value is set', () => {
-		const wrapper = mount(ADateRange, globalComponents)
-		expect(wrapper.find('input').attributes('placeholder')).toBe('Select date range')
-	})
-
-	it('renders in display mode without an input', () => {
-		const wrapper = mount(ADateRange, {
-			...globalComponents,
-			props: {
-				mode: 'display',
-				modelValue: { start_date: '2026-01-01', end_date: '2026-01-31' },
-			},
-		})
-		expect(wrapper.find('input').exists()).toBe(false)
-		expect(wrapper.find('.aform_display-value').exists()).toBe(true)
-	})
-
-	it('renders display mode with formatted date range', () => {
-		const wrapper = mount(ADateRange, {
-			...globalComponents,
-			props: {
-				mode: 'display',
-				modelValue: { start_date: '2026-01-01', end_date: '2026-01-31' },
-			},
-		})
-		const text = wrapper.find('.aform_display-value').text()
-		expect(text).toContain('2026')
-		expect(text).toContain('—')
-	})
-
-	it('renders display mode with empty span when no value', () => {
-		const wrapper = mount(ADateRange, {
-			...globalComponents,
-			props: { mode: 'display' },
-		})
-		expect(wrapper.find('input').exists()).toBe(false)
-		expect(wrapper.find('.aform_display-value').text()).toBe('')
-	})
-
-	it('shows the calendar picker when trigger input is clicked', async () => {
-		const wrapper = mount(ADateRange, globalComponents)
-		expect(wrapper.findComponent(ADateSelection).exists()).toBe(false)
-		await wrapper.find('input').trigger('click')
-		await nextTick()
-		expect(wrapper.findComponent(ADateSelection).exists()).toBe(true)
-	})
-
-	it('does not open the picker in read mode', async () => {
-		const wrapper = mount(ADateRange, {
-			...globalComponents,
-			props: { mode: 'read' },
-		})
-		await wrapper.find('input').trigger('click')
-		await nextTick()
-		expect(wrapper.findComponent(ADateSelection).exists()).toBe(false)
-	})
-
-	it('passes selectRange=true to ADateSelection', async () => {
-		const wrapper = mount(ADateRange, globalComponents)
-		await wrapper.find('input').trigger('click')
-		await nextTick()
-		const selection = wrapper.findComponent(ADateSelection)
-		expect(selection.props('selectRange')).toBe(true)
-	})
-
-	it('passes showTime=false to ADateSelection', async () => {
-		const wrapper = mount(ADateRange, globalComponents)
-		await wrapper.find('input').trigger('click')
-		await nextTick()
-		const selection = wrapper.findComponent(ADateSelection)
-		expect(selection.props('showTime')).toBe(false)
-	})
-
-	it('updates start_date when picker emits a start date', async () => {
-		const emitted: object[] = []
-		const wrapper = mount(ADateRange, {
-			...globalComponents,
-			props: { 'onUpdate:modelValue': (v: object) => emitted.push(v) },
+	describe('duration computed', () => {
+		it('calculates the correct duration in milliseconds', async () => {
+			const start = new Date('2026-01-01T08:00:00')
+			const end = new Date('2026-01-01T10:30:00') // 2.5h = 9_000_000 ms
+			const { emitted } = await mountAndEmitRange(start, end)
+			expect(emitted[emitted.length - 1]).toBe(9_000_000)
 		})
 
-		await wrapper.find('input').trigger('click')
-		await nextTick()
-
-		const start = new Date('2026-03-01')
-		await wrapper.findComponent(ADateSelection).vm.$emit('get-date', {
-			selected: start,
-			start,
-			end: null,
+		it('emits 0 when end is before start (no negative durations)', async () => {
+			const start = new Date('2026-01-02T10:00:00')
+			const end = new Date('2026-01-01T08:00:00') // earlier than start
+			const { emitted } = await mountAndEmitRange(start, end)
+			expect(emitted[emitted.length - 1]).toBe(0)
 		})
-		await nextTick()
 
-		expect(emitted.length).toBeGreaterThan(0)
-		expect((emitted[emitted.length - 1] as any).start_date).toBe('2026-03-01')
-		expect((emitted[emitted.length - 1] as any).end_date).toBeNull()
+		it('handles multi-day spans correctly', async () => {
+			const start = new Date('2026-01-01T00:00:00')
+			const end = new Date('2026-01-03T00:00:00') // exactly 2 days
+			const { emitted } = await mountAndEmitRange(start, end)
+			expect(emitted[emitted.length - 1]).toBe(2 * 24 * 60 * 60 * 1000)
+		})
 	})
 
-	it('updates both dates and closes picker when full range is selected', async () => {
-		const emitted: object[] = []
-		const wrapper = mount(ADateRange, {
-			...globalComponents,
-			props: { 'onUpdate:modelValue': (v: object) => emitted.push(v) },
+	describe('human-readable display', () => {
+		it('shows the duration summary strip after range is selected', async () => {
+			const start = new Date('2026-01-01T09:00:00')
+			const end = new Date('2026-01-01T11:30:45')
+			const emitted: (number | undefined)[] = []
+			const wrapper = mount(ADuration, {
+				props: { 'onUpdate:modelValue': (v: number | undefined) => emitted.push(v) },
+				global,
+			})
+
+			await wrapper.findComponent({ name: 'ADateSelection' }).vm.$emit('get-range', { start, end })
+			await nextTick()
+
+			const summary = wrapper.find('.aduration__summary')
+			expect(summary.exists()).toBe(true)
+			expect(summary.find('.aduration__value').text()).toBe('2h 30m 45s')
 		})
-
-		await wrapper.find('input').trigger('click')
-		await nextTick()
-
-		const start = new Date('2026-03-01')
-		const end = new Date('2026-03-15')
-
-		await wrapper.findComponent(ADateSelection).vm.$emit('get-date', {
-			selected: end,
-			start,
-			end,
-		})
-		await nextTick()
-
-		const last = emitted[emitted.length - 1] as any
-		expect(last.start_date).toBe('2026-03-01')
-		expect(last.end_date).toBe('2026-03-15')
-
-		// picker should close after full range is set
-		expect(wrapper.findComponent(ADateSelection).exists()).toBe(false)
 	})
 
-	it('auto-swaps start and end when end is before start', async () => {
-		const emitted: object[] = []
-		const wrapper = mount(ADateRange, {
-			...globalComponents,
-			props: { 'onUpdate:modelValue': (v: object) => emitted.push(v) },
+	describe('display / read mode', () => {
+		it('renders the display value from modelValue in display mode', () => {
+			const oneHour = 3_600_000
+			const wrapper = mount(ADuration, {
+				props: { mode: 'display', modelValue: oneHour },
+				global,
+			})
+			const el = wrapper.find('.aform_display-value')
+			expect(el.exists()).toBe(true)
+			expect(el.text()).toBe('1h')
 		})
 
-		await wrapper.find('input').trigger('click')
-		await nextTick()
-
-		const start = new Date('2026-03-15') // later date passed as start
-		const end = new Date('2026-03-01') // earlier date passed as end
-
-		await wrapper.findComponent(ADateSelection).vm.$emit('get-date', {
-			selected: end,
-			start,
-			end,
+		it('renders "—" when modelValue is 0 in display mode', () => {
+			const wrapper = mount(ADuration, {
+				props: { mode: 'display', modelValue: 0 },
+				global,
+			})
+			expect(wrapper.find('.aform_display-value').text()).toBe('—')
 		})
-		await nextTick()
 
-		const last = emitted[emitted.length - 1] as any
-		// should be swapped: earlier date becomes start_date
-		expect(last.start_date).toBe('2026-03-01')
-		expect(last.end_date).toBe('2026-03-15')
+		it('does not render ADateSelection in display mode', () => {
+			const wrapper = mount(ADuration, {
+				props: { mode: 'display', modelValue: 3_600_000 },
+				global,
+			})
+			expect(wrapper.findComponent({ name: 'ADateSelection' }).exists()).toBe(false)
+		})
 	})
 
-	it('displays formatted range in trigger input after selection', async () => {
-		const wrapper = mount(ADateRange, {
-			...globalComponents,
-			props: {
-				modelValue: { start_date: '2026-03-01', end_date: '2026-03-15' },
-			},
+	describe('v-model emit', () => {
+		it('emits update:modelValue whenever the range changes', async () => {
+			const emitted: (number | undefined)[] = []
+
+			// Use let + assignment to avoid TDZ error when wrapper is referenced in callback
+			let wrapper: ReturnType<typeof mount>
+			wrapper = mount(ADuration, {
+				props: { 'onUpdate:modelValue': (v: number | undefined) => emitted.push(v) },
+				global,
+			})
+
+			const sel = wrapper.findComponent({ name: 'ADateSelection' })
+
+			await sel.vm.$emit('get-range', {
+				start: new Date('2026-03-01T08:00:00'),
+				end: new Date('2026-03-01T09:00:00'), // 1h
+			})
+			await nextTick()
+
+			await sel.vm.$emit('get-range', {
+				start: new Date('2026-03-01T08:00:00'),
+				end: new Date('2026-03-01T10:00:00'), // 2h
+			})
+			await nextTick()
+
+			// Use last two emitted values — ignore any init emit of 0
+			const last2 = emitted.slice(-2)
+			expect(last2).toEqual([3_600_000, 7_200_000])
 		})
-		const inputValue = wrapper.find('input').element.value
-		expect(inputValue).toContain('3/1/2026')
-		expect(inputValue).toContain('3/15/2026')
-		expect(inputValue).toContain('—')
-	})
-
-	it('shows partial range in trigger input when only start is set', async () => {
-		const wrapper = mount(ADateRange, {
-			...globalComponents,
-			props: {
-				modelValue: { start_date: '2026-03-01', end_date: null },
-			},
-		})
-		const inputValue = wrapper.find('input').element.value
-		expect(inputValue).toContain('3/1/2026')
-		expect(inputValue).toContain('...')
-	})
-
-	it('v-model shape has start_date and end_date keys', async () => {
-		const emitted: object[] = []
-		const wrapper = mount(ADateRange, {
-			...globalComponents,
-			props: { 'onUpdate:modelValue': (v: object) => emitted.push(v) },
-		})
-
-		await wrapper.find('input').trigger('click')
-		await nextTick()
-
-		await wrapper.findComponent(ADateSelection).vm.$emit('get-date', {
-			selected: new Date('2026-04-01'),
-			start: new Date('2026-04-01'),
-			end: new Date('2026-04-30'),
-		})
-		await nextTick()
-
-		const last = emitted[emitted.length - 1] as any
-		expect(last).toHaveProperty('start_date')
-		expect(last).toHaveProperty('end_date')
-	})
-
-	it('syncs internal state when modelValue changes externally', async () => {
-		const wrapper = mount(ADateRange, {
-			...globalComponents,
-			props: {
-				modelValue: { start_date: '2026-01-01', end_date: '2026-01-31' },
-			},
-		})
-
-		await wrapper.setProps({
-			modelValue: { start_date: '2026-06-01', end_date: '2026-06-30' },
-		})
-		await nextTick()
-
-		const inputValue = wrapper.find('input').element.value
-		expect(inputValue).toContain('6/1/2026')
-		expect(inputValue).toContain('6/30/2026')
 	})
 })
