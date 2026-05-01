@@ -6,7 +6,7 @@ const durationMs = ref<number>(0)
 </script>
 
 <template>
-	<Story title="aform/ADuration">
+	<Story title="ADuration">
 		<Variant title="Default (edit mode)">
 			<ADuration v-model="durationMs" label="Task Duration" />
 			<p style="margin-top: 1rem; font-size: 0.9em">

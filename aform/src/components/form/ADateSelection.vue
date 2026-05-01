@@ -70,8 +70,9 @@ const emit = defineEmits<{
 provide('select-range', selectRange)
 
 // Internal state: calendar dates and time offsets (ms since midnight)
-const pickerStart = ref<Date | null>(null)
-const pickerEnd = ref<Date | null>(null)
+const today = new Date()
+const pickerStart = ref<Date>(today)
+const pickerEnd = ref<Date>(today)
 const startTimeMs = ref<number>(0)
 const endTimeMs = ref<number>(0)
 
@@ -96,7 +97,6 @@ const timePayloadToMs = (payload: {
 
 const tryEmitRange = () => {
 	if (!selectRange || !showTime || !showEndTime) return
-	if (!pickerStart.value || !pickerEnd.value) return
 	emit('get-range', {
 		start: mergeDateTime(pickerStart.value, startTimeMs.value),
 		end: mergeDateTime(pickerEnd.value, endTimeMs.value),
@@ -104,10 +104,10 @@ const tryEmitRange = () => {
 }
 
 const handleDate = (data: { start: Date | null; end: Date | null; selected: Date }) => {
-	emit('get-date', data) // pass full object
+	emit('get-date', data)
 	if (selectRange) {
 		pickerStart.value = data.start ?? data.selected
-		pickerEnd.value = data.end ?? null
+		pickerEnd.value = data.end ?? data.selected
 		tryEmitRange()
 	}
 }
@@ -121,7 +121,7 @@ const handleStartTime = (data: {
 }) => {
 	startTimeMs.value = timePayloadToMs(data)
 	if (showEndTime) {
-		tryEmitRange()
+		tryEmitRange() // ← this must be reached
 	} else {
 		emit('get-time', data)
 	}
