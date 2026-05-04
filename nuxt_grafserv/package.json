@@ -64,7 +64,7 @@
 		"postgraphile": "^5.0.1"
 	},
 	"devDependencies": {
-		"@eslint/js": "^9.39.4",
+		"@eslint/js": "^10.0.1",
 		"@nuxt/devtools": "^3.2.4",
 		"@nuxt/eslint-config": "^1.15.2",
 		"@nuxt/kit": "^4.4.4",
@@ -76,7 +76,7 @@
 		"h3": "^1.15.5",
 		"nitropack": "^2.13.1",
 		"changelogen": "^0.6.2",
-		"eslint": "^9.39.4",
+		"eslint": "^10.3.0",
 		"jsdom": "^29.1.1",
 		"nuxt": "^4.4.4",
 		"postgraphile": "^5.0.1",

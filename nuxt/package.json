@@ -73,7 +73,7 @@
 		"prompts": "^2.4.2"
 	},
 	"devDependencies": {
-		"@eslint/js": "^9.39.4",
+		"@eslint/js": "^10.0.1",
 		"@nuxt/devtools": "^3.2.4",
 		"@nuxt/eslint-config": "^1.15.2",
 		"@nuxt/eslint": "1.15.2",
@@ -86,7 +86,7 @@
 		"browserslist": "latest",
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-vue": "^10.9.0",
-		"eslint": "^9.39.4",
+		"eslint": "^10.3.0",
 		"globals": "^17.6.0",
 		"nuxt": "^4.4.4",
 		"postgraphile": "^5.0.1",

@@ -37,13 +37,13 @@
 		"xstate": "^5.25.0"
 	},
 	"devDependencies": {
-		"@eslint/js": "^9.39.4",
+		"@eslint/js": "^10.0.1",
 		"@histoire/plugin-vue": "^1.0.0-beta.1",
 		"@monaco-editor/loader": "^1.7.0",
 		"@vitejs/plugin-vue": "^6.0.6",
 		"@vue-flow/core": "^1.48.1",
 		"concurrently": "^9.2.1",
-		"eslint": "^9.39.4",
+		"eslint": "^10.3.0",
 		"eslint-plugin-vue": "^10.9.0",
 		"globals": "^17.6.0",
 		"histoire": "^1.0.0-beta.1",
