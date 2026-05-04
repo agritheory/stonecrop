@@ -1,12 +1,10 @@
 <template>
 	<div class="adaterange">
-		<!-- display mode -->
 		<template v-if="mode === 'display'">
 			<span class="aform_display-value">{{ displayValue }}</span>
 			<label>{{ label }}</label>
 		</template>
 
-		<!-- edit / read mode -->
 		<template v-else>
 			<input
 				:id="uuid"
@@ -21,8 +19,6 @@
 
 			<p v-show="validation.errorMessage" v-html="validation.errorMessage"></p>
 
-			<!-- Calendar popup — ADatePicker internally shows start/end inputs
-           and range highlight when selectRange=true -->
 			<ADateSelection
 				v-if="showPicker"
 				ref="pickerRef"
@@ -40,7 +36,6 @@ import { onClickOutside } from '@vueuse/core'
 import ADateSelection from './ADateSelection.vue'
 import type { ComponentProps } from '../../types'
 
-/* ── props ──────────────────────────────────────────────────────────── */
 const {
 	label = 'Date Range',
 	required,
@@ -49,7 +44,6 @@ const {
 	validation = { errorMessage: '&nbsp;' },
 } = defineProps<ComponentProps>()
 
-/* ── v-model: { start_date, end_date } ──────────────────────────────── */
 export interface DateRangeValue {
 	start_date: string | null
 	end_date: string | null
@@ -59,11 +53,9 @@ const modelValue = defineModel<DateRangeValue>({
 	default: () => ({ start_date: null, end_date: null }),
 })
 
-/* ── internal state ─────────────────────────────────────────────────── */
 const startDate = ref<Date | null>(modelValue.value.start_date ? new Date(modelValue.value.start_date) : null)
 const endDate = ref<Date | null>(modelValue.value.end_date ? new Date(modelValue.value.end_date) : null)
 
-/* ── picker pop-up ───────────────────────────────────────────────────── */
 const showPicker = ref(false)
 const pickerRef = ref(null)
 onClickOutside(pickerRef, () => (showPicker.value = false))
@@ -72,13 +64,11 @@ const openPicker = () => {
 	if (mode !== 'read') showPicker.value = true
 }
 
-/* ── display helpers ─────────────────────────────────────────────────── */
 const formatDate = (d: Date | null): string => {
 	if (!d) return ''
 	return `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`
 }
 
-// Text shown in the trigger input field
 const rangeDisplay = computed(() => {
 	const s = formatDate(startDate.value)
 	const e = formatDate(endDate.value)
@@ -87,7 +77,6 @@ const rangeDisplay = computed(() => {
 	return ''
 })
 
-// Text shown in display / read mode
 const displayValue = computed(() => {
 	const s = modelValue.value.start_date
 	const e = modelValue.value.end_date
@@ -98,7 +87,6 @@ const displayValue = computed(() => {
 	return `Until ${fmt(e!)}`
 })
 
-/* ── auto-swap ───────────────────────────────────────────────────────── */
 const ensureOrder = () => {
 	const s = startDate.value
 	const e = endDate.value
@@ -107,7 +95,6 @@ const ensureOrder = () => {
 	}
 }
 
-/* ── emit v-model ────────────────────────────────────────────────────── */
 const toISODate = (d: Date | null): string | null => (d ? d.toISOString().split('T')[0] : null)
 
 const emitModel = () => {
@@ -117,22 +104,16 @@ const emitModel = () => {
 	}
 }
 
-/* ── calendar picker handler ─────────────────────────────────────────── */
-// ADatePicker with selectRange=true:
-//   first click  → emits { start: Date, end: null,  selected: Date }
-//   second click → emits { start: Date, end: Date,  selected: Date }
-// We close the picker only once end is set (second click).
 const handlePickerDate = (data: { selected: Date; start?: Date | null; end?: Date | null }) => {
 	if (data.start) startDate.value = data.start
 	if (data.end) {
 		endDate.value = data.end
 		ensureOrder()
-		showPicker.value = false // range complete — close calendar
+		showPicker.value = false
 	}
 	emitModel()
 }
 
-/* ── keep in sync when parent updates modelValue externally ─────────── */
 watch(
 	() => modelValue.value,
 	newVal => {
