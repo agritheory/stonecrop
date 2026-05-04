@@ -59,7 +59,7 @@
 		"graphql-middleware": "^6.1.35",
 		"graphql-yoga": "^5.18.0",
 		"jsdom": "^28.1.0",
-		"postgraphile": "^5.0.0-rc.7",
+		"postgraphile": "^5.0.1",
 		"stonecrop-rig": "workspace:*",
 		"typescript": "^5.9.3",
 		"vite": "^7.3.1",
@@ -68,7 +68,7 @@
 	},
 	"peerDependencies": {
 		"graphql-yoga": "^5.18.0",
-		"postgraphile": "^5.0.0-rc.7"
+		"postgraphile": "^5.0.1"
 	},
 	"description": "CASL authorization middleware for GraphQL servers",
 	"keywords": [

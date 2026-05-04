@@ -25,7 +25,7 @@ export async function installRockfoil(options: RockfoilInstallerOptions): Promis
 		// Add dependencies - use latest published version
 		await addDependencies(cwd, {
 			'@stonecrop/rockfoil': 'latest',
-			postgraphile: '^5.0.0-rc.7',
+			postgraphile: '^5.0.1',
 		})
 
 		// Add import to nuxt.config.ts
