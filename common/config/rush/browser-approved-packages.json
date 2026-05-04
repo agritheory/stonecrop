@@ -491,10 +491,6 @@
       "allowedCategories": [ "prototype" ]
     },
     {
-      "name": "vue-toast-notification",
-      "allowedCategories": [ "prototype" ]
-    },
-    {
       "name": "vue-tsc",
       "allowedCategories": [ "production", "prototype" ]
     },
