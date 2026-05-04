@@ -4,7 +4,6 @@
 	<div class="adate-selection">
 		<ADatePicker v-if="showDate" :select-range="selectRange" @get-date="handleDate" />
 
-		<!-- Start time -->
 		<ADateTime
 			v-if="showTime"
 			:allow-military-time="allowMilitaryTime"
@@ -15,7 +14,6 @@
 			:use-seconds="useSeconds"
 			@get-time="handleStartTime" />
 
-		<!-- End time: only when range + time + showEndTime are all true -->
 		<template v-if="selectRange && showTime && showEndTime">
 			<div class="adate-selection__end-label">End time</div>
 			<ADateTime
@@ -69,21 +67,18 @@ const emit = defineEmits<{
 
 provide('select-range', selectRange)
 
-// Internal state: calendar dates and time offsets (ms since midnight)
 const today = new Date()
 const pickerStart = ref<Date>(today)
 const pickerEnd = ref<Date>(today)
 const startTimeMs = ref<number>(0)
 const endTimeMs = ref<number>(0)
 
-// Merge a calendar date with a millisecond time offset
 const mergeDateTime = (date: Date, timeMs: number): Date => {
 	const d = new Date(date)
 	d.setHours(0, 0, 0, 0)
 	return new Date(d.getTime() + timeMs)
 }
 
-// Convert ADateTime emit payload → ms since midnight
 const timePayloadToMs = (payload: {
 	hours: number
 	minutes: number
@@ -91,8 +86,14 @@ const timePayloadToMs = (payload: {
 	meridiem: string
 	militaryTime?: number
 }): number => {
-	const h = payload.militaryTime ?? payload.hours
-	return (h * 3600 + payload.minutes * 60 + payload.seconds) * 1000
+	let h: number
+	if (payload.militaryTime !== undefined) {
+		h = payload.militaryTime
+	} else {
+		const hrs = payload.hours % 12
+		h = payload.meridiem === 'PM' ? hrs + 12 : hrs
+	}
+	return (h * 3600 + payload.minutes * 60 + (payload.seconds ?? 0)) * 1000
 }
 
 const tryEmitRange = () => {
@@ -121,7 +122,7 @@ const handleStartTime = (data: {
 }) => {
 	startTimeMs.value = timePayloadToMs(data)
 	if (showEndTime) {
-		tryEmitRange() // ← this must be reached
+		tryEmitRange()
 	} else {
 		emit('get-time', data)
 	}

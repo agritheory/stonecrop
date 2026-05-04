@@ -50,7 +50,6 @@
 <script setup lang="ts">
 import { ref, reactive, useTemplateRef, watch, onMounted } from 'vue'
 
-/* Props */
 const {
 	allowMilitaryTime = false,
 	defaultHours = 12,
@@ -67,15 +66,12 @@ const {
 	useSeconds?: boolean
 }>()
 
-/* Emits */
 const emit = defineEmits<{
 	'get-time': [{ hours: number; minutes: number; seconds: number; meridiem: string; militaryTime: number }]
 }>()
 
-/* Template Refs */
 const meridiemSelector = useTemplateRef<HTMLSelectElement>('meridiem-selector')
 
-/* Display values held as formatted strings */
 const time_data = reactive({
 	hours: String(defaultHours).padStart(2, '0'),
 	minutes: String(defaultMinutes).padStart(2, '0'),
@@ -88,7 +84,6 @@ onMounted(() => {
 	emitTime()
 })
 
-/* Called on blur, Enter, or change — validates, re-pads display strings, and emits */
 const confirmTime = () => {
 	const maxHours = allowMilitaryTime ? 23 : 12
 	let hours = Number(time_data.hours)
@@ -106,7 +101,6 @@ const confirmTime = () => {
 	emitTime()
 }
 
-/* Emit numeric time data */
 const emitTime = () => {
 	const hours = Number(time_data.hours)
 	const minutes = Number(time_data.minutes)
@@ -116,7 +110,7 @@ const emitTime = () => {
 		minutes,
 		seconds,
 		meridiem: meridiem.value,
-		militaryTime: meridiem.value == 'PM' && hours < 12 ? hours + 12 : hours,
+		militaryTime: meridiem.value === 'PM' ? (hours === 12 ? 12 : hours + 12) : hours % 12,
 	})
 }
 
@@ -154,7 +148,6 @@ const tick = (target: 'hours' | 'minutes' | 'seconds', amount = 1) => {
 	time_data.seconds = String(formatTime(Number(time_data.seconds), 0, 59)).padStart(2, '0')
 }
 
-/* Watchers — prevent more than two digits while typing */
 watch(
 	() => time_data.hours,
 	(newVal, oldVal) => {
@@ -196,7 +189,6 @@ const pasteInput = (event: ClipboardEvent, pasteAllFields = false) => {
 	pastedData = pastedData.replace(/[^0-9]/g, '')
 
 	if (pasteAllFields) {
-		//Pad the pasted data with 0's depending on string length, to resemble format 00:00:00, hours, minutes, seconds
 		if (pastedData.length % 2 != 0) pastedData = '0' + pastedData
 		if (pastedData.length < 3) pastedData += '00'
 		if (pastedData.length < 5) pastedData += '00'

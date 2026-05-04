@@ -1,12 +1,10 @@
 <template>
 	<div class="aduration">
-		<!-- display / read mode -->
 		<template v-if="mode === 'display' || mode === 'read'">
 			<span class="aform_display-value">{{ displayValue }}</span>
 			<label>{{ label }}</label>
 		</template>
 
-		<!-- edit mode -->
 		<template v-else>
 			<ADateSelection
 				ref="selectionRef"
@@ -48,35 +46,28 @@ const {
 	useSeconds?: boolean
 }>()
 
-// v-model is the duration in milliseconds
 const modelValue = defineModel<number>()
 
-// Internal reactive state
 const startDatetime = ref<Date | null>(null)
 const endDatetime = ref<Date | null>(null)
 
-// Core computed: derives duration from the two datetimes.
-// This is the reactive state that drives everything else.
 const duration = computed<number>(() => {
 	if (!startDatetime.value || !endDatetime.value) return 0
 	const ms = endDatetime.value.getTime() - startDatetime.value.getTime()
 	return ms > 0 ? ms : 0
 })
 
-// Whenever duration changes, push it through v-model
 watch(duration, newMs => {
 	modelValue.value = newMs
 })
 
 const handleRange = (data: { start: Date; end: Date }) => {
+	console.log('handleRange', data.start, data.end, data.end.getTime() - data.start.getTime())
 	startDatetime.value = data.start
 	endDatetime.value = data.end
-	// Explicitly assign here to cover the case where duration stays 0
-	// (end <= start), because the watcher only fires on change
 	modelValue.value = duration.value
 }
 
-// Human-readable breakdown: "2d 4h 30m 15s"
 const humanDuration = computed(() => {
 	const ms = duration.value
 	if (ms === 0) return '0s'
@@ -87,7 +78,6 @@ const humanDuration = computed(() => {
 	return [d && `${d}d`, h && `${h}h`, m && `${m}m`, s && `${s}s`].filter(Boolean).join(' ')
 })
 
-// For display/read mode when a saved ms value is passed in as modelValue
 const displayValue = computed(() => {
 	const ms = modelValue.value
 	if (!ms) return '—'

@@ -3,7 +3,6 @@ import { mount } from '@vue/test-utils'
 import { nextTick, defineComponent } from 'vue'
 import ADuration from '../src/components/form/ADuration.vue'
 
-// Stub ADateSelection so tests don't depend on calendar internals
 const ADateSelectionStub = defineComponent({
 	name: 'ADateSelection',
 	props: {
@@ -19,7 +18,6 @@ const ADateSelectionStub = defineComponent({
 
 const global = { components: { ADateSelection: ADateSelectionStub } }
 
-// Helper: mount ADuration, emit get-range, return emitted values and wrapper
 const mountAndEmitRange = async (start: Date, end: Date) => {
 	const emitted: (number | undefined)[] = []
 	const wrapper = mount(ADuration, {
@@ -32,8 +30,6 @@ const mountAndEmitRange = async (start: Date, end: Date) => {
 }
 
 describe('ADuration', () => {
-	// ── Rendering ────────────────────────────────────────────────────────
-
 	describe('rendering', () => {
 		it('renders root .aduration div in edit mode', () => {
 			const wrapper = mount(ADuration, { global })
@@ -68,8 +64,6 @@ describe('ADuration', () => {
 			expect(wrapper.find('.aduration__summary').exists()).toBe(true)
 		})
 	})
-
-	// ── Display / Read mode ───────────────────────────────────────────────
 
 	describe('display mode', () => {
 		it('renders .aform_display-value in display mode', () => {
@@ -131,8 +125,6 @@ describe('ADuration', () => {
 		})
 	})
 
-	// ── Duration computed ─────────────────────────────────────────────────
-
 	describe('duration computed', () => {
 		it('calculates the correct duration in milliseconds', async () => {
 			const start = new Date('2026-01-01T08:00:00')
@@ -169,8 +161,6 @@ describe('ADuration', () => {
 		})
 	})
 
-	// ── Human-readable display ────────────────────────────────────────────
-
 	describe('human-readable duration', () => {
 		it('shows correct human duration in summary strip', async () => {
 			const start = new Date('2026-01-01T09:00:00')
@@ -188,20 +178,18 @@ describe('ADuration', () => {
 
 		it('shows days in human duration for multi-day range', async () => {
 			const start = new Date('2026-01-01T00:00:00')
-			const end = new Date('2026-01-02T12:00:00') // 1d 12h
+			const end = new Date('2026-01-02T12:00:00')
 			const { wrapper } = await mountAndEmitRange(start, end)
 			expect(wrapper.find('.aduration__value').text()).toBe('1d 12h')
 		})
 
 		it('shows ms value in summary strip', async () => {
 			const start = new Date('2026-01-01T08:00:00')
-			const end = new Date('2026-01-01T09:00:00') // 1h = 3_600_000 ms
+			const end = new Date('2026-01-01T09:00:00')
 			const { wrapper } = await mountAndEmitRange(start, end)
 			expect(wrapper.find('.aduration__ms').text()).toContain('3600000')
 		})
 	})
-
-	// ── Props passthrough ─────────────────────────────────────────────────
 
 	describe('props', () => {
 		it('passes allowMilitaryTime to ADateSelection', () => {
@@ -241,8 +229,6 @@ describe('ADuration', () => {
 		})
 	})
 
-	// ── v-model emit ──────────────────────────────────────────────────────
-
 	describe('v-model', () => {
 		it('emits update:modelValue on range change', async () => {
 			const emitted: (number | undefined)[] = []
@@ -271,17 +257,16 @@ describe('ADuration', () => {
 
 			await sel.vm.$emit('get-range', {
 				start: new Date('2026-03-01T08:00:00'),
-				end: new Date('2026-03-01T09:00:00'), // 1h
+				end: new Date('2026-03-01T09:00:00'),
 			})
 			await nextTick()
 
 			await sel.vm.$emit('get-range', {
 				start: new Date('2026-03-01T08:00:00'),
-				end: new Date('2026-03-01T10:00:00'), // 2h
+				end: new Date('2026-03-01T10:00:00'),
 			})
 			await nextTick()
 
-			// Use last two emitted values — ignore any init emit of 0
 			const last2 = emitted.slice(-2)
 			expect(last2).toEqual([3_600_000, 7_200_000])
 		})
@@ -293,23 +278,60 @@ describe('ADuration', () => {
 				global,
 			})
 
-			// Simulate ADateSelection emitting get-range with today as both dates
-			// but different times — this is what happens when user only changes end time
-			// (ADateSelection defaults both dates to today)
 			const today = new Date()
 			today.setSeconds(0, 0)
 
 			const start = new Date(today)
-			start.setHours(0, 0, 0, 0) // midnight
+			start.setHours(0, 0, 0, 0)
 
 			const end = new Date(today)
-			end.setHours(13, 0, 0, 0) // 1 PM
+			end.setHours(13, 0, 0, 0)
 
 			await wrapper.findComponent({ name: 'ADateSelection' }).vm.$emit('get-range', { start, end })
 			await nextTick()
 
-			// Should be 13 hours in ms
 			expect(emitted[emitted.length - 1]).toBe(13 * 60 * 60 * 1000)
+		})
+
+		it('calculates duration when start is 12 AM and end is 2 PM', async () => {
+			const emitted: (number | undefined)[] = []
+			const wrapper = mount(ADuration, {
+				props: { 'onUpdate:modelValue': (v: number | undefined) => emitted.push(v) },
+				global,
+			})
+
+			const today = new Date()
+			const start = new Date(today)
+			start.setHours(0, 0, 0, 0)
+
+			const end = new Date(today)
+			end.setHours(14, 0, 0, 0)
+
+			await wrapper.findComponent({ name: 'ADateSelection' }).vm.$emit('get-range', { start, end })
+			await nextTick()
+
+			expect(emitted[emitted.length - 1]).toBe(14 * 60 * 60 * 1000)
+		})
+
+		it('calculates duration when only hours change without AM/PM change', async () => {
+			const emitted: (number | undefined)[] = []
+			const wrapper = mount(ADuration, {
+				props: { 'onUpdate:modelValue': (v: number | undefined) => emitted.push(v) },
+				global,
+			})
+
+			const today = new Date()
+
+			const start = new Date(today)
+			start.setHours(9, 0, 0, 0)
+
+			const end = new Date(today)
+			end.setHours(11, 0, 0, 0)
+
+			await wrapper.findComponent({ name: 'ADateSelection' }).vm.$emit('get-range', { start, end })
+			await nextTick()
+
+			expect(emitted[emitted.length - 1]).toBe(2 * 60 * 60 * 1000)
 		})
 	})
 })
