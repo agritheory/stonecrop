@@ -23,7 +23,7 @@
 				</div>
 				<div v-show="dropdownStates[index]" class="dropdown-container">
 					<div class="dropdown">
-						<div v-for="(item, itemIndex) in el.actions" :key="item.label">
+						<div v-for="item in el.actions" :key="item.label">
 							<button v-if="item.action != null" class="dropdown-item" @click="handleClick(item.action, item.label)">
 								{{ item.label }}
 							</button>
@@ -52,9 +52,6 @@ const emit = defineEmits<{
 const dropdownStates = ref<Record<number, boolean>>({})
 
 const isOpen = ref(true)
-const timeoutId = ref<number>(-1)
-const hover = ref(false)
-const closeClicked = ref(false)
 const dropdownOpen = ref([])
 
 onMounted(() => {

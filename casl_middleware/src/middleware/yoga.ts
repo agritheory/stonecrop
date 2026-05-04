@@ -10,7 +10,7 @@ const getLoggedInUser = () => {
 }
 
 export const yogaCaslPlugin: Plugin<Context> = {
-	onContextBuilding: async ({ context, extendContext }) => {
+	onContextBuilding: async ({ extendContext }) => {
 		// Make this async
 		const user = getLoggedInUser()
 		const ability = await createAbility(user) // Await here
@@ -27,10 +27,10 @@ export const yogaCaslPlugin: Plugin<Context> = {
  * @public
  */
 export const createYogaPlugin = (options: MiddlewareOptions = {}) => {
-	const middleware = createCaslMiddleware(options)
+	const _middleware = createCaslMiddleware(options)
 
 	return {
-		onExecute: async ({ args }: any) => {
+		onExecute: async (_: any) => {
 			// TODO: Implement Yoga plugin
 			// This would integrate with GraphQL Yoga's plugin system
 			console.log('Yoga plugin not yet implemented')

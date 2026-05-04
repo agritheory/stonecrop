@@ -4,6 +4,7 @@
 
 <script setup lang="ts">
 import loader from '@monaco-editor/loader'
+import type * as Monaco from 'monaco-editor'
 import { editor } from 'monaco-editor'
 import { onMounted, useTemplateRef } from 'vue'
 
@@ -21,7 +22,7 @@ const editorOptions = {
 }
 
 onMounted(async () => {
-	const monacoInstance = await loader.init()
+	const monacoInstance: typeof Monaco = await loader.init()
 	const editorInstance = monacoInstance.editor
 
 	editorInstance.defineTheme('agritheory', theme)

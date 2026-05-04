@@ -579,7 +579,7 @@ export function useStonecrop(options?: {
 	return {
 		stonecrop,
 		operationLog,
-	} as BaseStonecropReturn
+	}
 }
 
 /**

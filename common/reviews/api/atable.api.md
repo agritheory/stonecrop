@@ -691,19 +691,11 @@ direction: "asc" | "desc" | null;
 column: number | null;
 direction: "asc" | "desc" | null;
 }>;
-table: ComputedRef<    {}>;
+table: ComputedRef<Record<string, any>>;
 updates: Ref<Record<string, string>, Record<string, string>>;
-filteredRows: ComputedRef<    {
+filteredRows: ComputedRef<(TableRow & {
 originalIndex: number;
-indent?: number | undefined;
-parent?: number | undefined;
-gantt?: {
-color?: string | undefined;
-startIndex?: number | undefined;
-endIndex?: number | undefined;
-colspan?: number | undefined;
-} | undefined;
-}[]>;
+})[]>;
 hasPinnedColumns: ComputedRef<boolean>;
 isGanttView: ComputedRef<boolean>;
 isTreeView: ComputedRef<boolean>;
@@ -1343,19 +1335,11 @@ direction: "asc" | "desc" | null;
 column: number | null;
 direction: "asc" | "desc" | null;
 }>;
-table: ComputedRef<    {}>;
+table: ComputedRef<Record<string, any>>;
 updates: Ref<Record<string, string>, Record<string, string>>;
-filteredRows: ComputedRef<    {
+filteredRows: ComputedRef<(TableRow & {
 originalIndex: number;
-indent?: number | undefined;
-parent?: number | undefined;
-gantt?: {
-color?: string | undefined;
-startIndex?: number | undefined;
-endIndex?: number | undefined;
-colspan?: number | undefined;
-} | undefined;
-}[]>;
+})[]>;
 hasPinnedColumns: ComputedRef<boolean>;
 isGanttView: ComputedRef<boolean>;
 isTreeView: ComputedRef<boolean>;
@@ -1995,19 +1979,11 @@ direction: "asc" | "desc" | null;
 column: number | null;
 direction: "asc" | "desc" | null;
 }>;
-table: ComputedRef<    {}>;
+table: ComputedRef<Record<string, any>>;
 updates: Ref<Record<string, string>, Record<string, string>>;
-filteredRows: ComputedRef<    {
+filteredRows: ComputedRef<(TableRow & {
 originalIndex: number;
-indent?: number | undefined;
-parent?: number | undefined;
-gantt?: {
-color?: string | undefined;
-startIndex?: number | undefined;
-endIndex?: number | undefined;
-colspan?: number | undefined;
-} | undefined;
-}[]>;
+})[]>;
 hasPinnedColumns: ComputedRef<boolean>;
 isGanttView: ComputedRef<boolean>;
 isTreeView: ComputedRef<boolean>;

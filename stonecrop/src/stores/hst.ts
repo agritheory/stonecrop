@@ -153,7 +153,7 @@ class HSTProxy implements HSTNode {
 		return new Proxy(this, {
 			get(hst, prop) {
 				// Return HST methods directly
-				if (prop in hst) return hst[prop]
+				if (prop in hst) return Reflect.get(hst, prop)
 
 				// Handle property access - return tree nodes for navigation
 				const path = String(prop)

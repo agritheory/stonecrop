@@ -81,7 +81,7 @@ const isRowVisible = computed(() => store.isRowVisible(rowIndex))
 const rowExpandSymbol = computed(() => store.getRowExpandSymbol(rowIndex))
 
 // Row actions configuration
-const rowActionsConfig = computed<RowActionsConfig>(() => {
+const rowActionsConfig = computed((): RowActionsConfig => {
 	return store.config.rowActions || { enabled: false }
 })
 

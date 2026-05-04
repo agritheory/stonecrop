@@ -52,15 +52,15 @@
 		</div>
 
 		<component
-			v-else-if="column.filterType === 'component' && column.filterComponent"
 			:is="column.filterComponent"
+			v-else-if="column.filterType === 'component' && column.filterComponent"
 			:value="filterValue"
 			:column="column"
-			:colIndex="colIndex"
+			:col-index="colIndex"
 			:store="store"
 			@update:value="updateFilter($event)" />
 
-		<button v-if="hasActiveFilter" @click="clearFilter" class="clear-btn" title="Clear">×</button>
+		<button v-if="hasActiveFilter" class="clear-btn" title="Clear" @click="clearFilter">×</button>
 	</div>
 </template>
 
@@ -77,8 +77,8 @@ const { column, colIndex, store } = defineProps<{
 
 const filterValue = ref<any>('')
 const dateFilter = reactive({
-	startValue: '' as string,
-	endValue: '' as string,
+	startValue: '',
+	endValue: '',
 })
 
 const getSelectOptions = (column: TableColumn): any[] => {

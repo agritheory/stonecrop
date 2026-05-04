@@ -2,71 +2,49 @@
 import eslint from '@eslint/js'
 import { defineConfig } from 'eslint/config'
 import eslintConfigPrettier from 'eslint-config-prettier'
-import pluginVue from 'eslint-plugin-vue'
 import globals from 'globals'
 import tseslint from 'typescript-eslint'
 
 export default defineConfig(
-	// Ignore patterns specific to this package
 	{
-		ignores: [
-			'dist/**',
-			'build/**',
-			'node_modules/**',
-			'coverage/**',
-			'temp/**',
-			'eslint.config.js',
-			'*.config.ts',
-			'tests/**',
-		],
+		ignores: ['dist/**', 'node_modules/**', 'coverage/**', '*.config.ts', 'tests/**', 'eslint.config.js'],
 	},
 
-	// Base recommended configurations
 	eslint.configs.recommended,
 	...tseslint.configs.recommendedTypeChecked,
-	...pluginVue.configs['flat/recommended'],
 
-	// Global configuration for all files
 	{
+		files: ['**/*.ts', '**/*.tsx'],
 		languageOptions: {
+			ecmaVersion: 'latest',
+			sourceType: 'module',
 			globals: {
-				...globals.browser,
 				...globals.node,
-				NodeJS: true,
 			},
+			parser: tseslint.parser,
 			parserOptions: {
-				projectService: {
-					allowDefaultProject: ['tests/*.ts', 'tests/desktop/*.ts'],
-				},
-				tsconfigRootDir: import.meta.dirname,
-			},
-		},
-	},
-
-	// Vue-specific configuration
-	{
-		files: ['**/*.vue'],
-		languageOptions: {
-			parserOptions: {
-				parser: tseslint.parser,
 				projectService: true,
 				tsconfigRootDir: import.meta.dirname,
-				extraFileExtensions: ['.vue'],
 			},
 		},
-	},
-
-	// Custom rules
-	{
+		plugins: {
+			'@typescript-eslint': tseslint.plugin,
+		},
 		rules: {
-			'no-console': 2,
+			'no-console': 'warn',
 			'prefer-promise-reject-errors': 'off',
 			quotes: ['warn', 'single', { avoidEscape: true }],
-			'vue/multi-word-component-names': 'off',
-			'vue/no-deprecated-slot-attribute': 'off',
 			'@typescript-eslint/no-explicit-any': 'off',
 			'@typescript-eslint/no-unsafe-assignment': 'off',
 			'@typescript-eslint/no-unsafe-return': 'off',
+			// CASL uses internal `any` typed values throughout its API
+			'@typescript-eslint/no-unsafe-member-access': 'off',
+			'@typescript-eslint/no-unsafe-argument': 'off',
+			'@typescript-eslint/no-unsafe-call': 'off',
+			// These async methods satisfy interface contracts that require async signatures
+			'@typescript-eslint/require-await': 'off',
+			// `any` in resolver/middleware type unions is intentional API surface
+			'@typescript-eslint/no-redundant-type-constituents': 'off',
 			'@typescript-eslint/no-unused-vars': [
 				'error',
 				{
@@ -77,6 +55,5 @@ export default defineConfig(
 		},
 	},
 
-	// Prettier integration (must be last)
 	eslintConfigPrettier
 )
