@@ -235,10 +235,6 @@
       "allowedCategories": [ "prototype" ]
     },
     {
-      "name": "crossws",
-      "allowedCategories": [ "prototype" ]
-    },
-    {
       "name": "eslint",
       "allowedCategories": [ "production", "prototype", "utilities" ]
     },

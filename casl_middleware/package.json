@@ -55,7 +55,7 @@
 		"@rushstack/heft": "^1.2.0",
 		"@types/node": "^22.19.5",
 		"@vitest/coverage-istanbul": "^4.0.18",
-		"eslint": "^9.39.2",
+		"eslint": "^9.39.4",
 		"graphql-middleware": "^6.1.35",
 		"graphql-yoga": "^5.18.0",
 		"jsdom": "^28.1.0",
