@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/themes",
+      "comment": "update major dependencies",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/themes"
+}
