@@ -48,31 +48,31 @@
 		"@stonecrop/themes": "workspace:*"
 	},
 	"peerDependencies": {
-		"vue": "^3.5.28"
+		"vue": "^3.5.33"
 	},
 	"devDependencies": {
-		"@eslint/js": "^9.39.2",
+		"@eslint/js": "^9.39.4",
 		"@microsoft/api-documenter": "^7.28.2",
 		"@miragejs/graphql": "^0.1.13",
 		"@rushstack/heft": "^1.2.0",
-		"@vitejs/plugin-vue": "^6.0.3",
-		"@vitest/coverage-istanbul": "^4.0.18",
-		"@vue/test-utils": "^2.4.6",
+		"@vitejs/plugin-vue": "^6.0.6",
+		"@vitest/coverage-istanbul": "^4.1.5",
+		"@vue/test-utils": "^2.4.10",
 		"eslint": "^9.39.4",
 		"eslint-config-prettier": "^10.1.8",
-		"eslint-plugin-vue": "^10.6.2",
-		"globals": "^17.0.0",
+		"eslint-plugin-vue": "^10.9.0",
+		"globals": "^17.6.0",
 		"immutable": "^5.1.4",
-		"jsdom": "^28.1.0",
+		"jsdom": "^29.1.1",
 		"miragejs": "^0.1.48",
 		"stonecrop-rig": "workspace:*",
 		"pinia": "^3.0.4",
 		"typescript": "^5.9.3",
 		"typescript-eslint": "^8.59.1",
-		"vue": "^3.5.28",
-		"vite": "^7.3.1",
-		"vitest": "^4.0.18",
-		"vue-router": "^5.0.2"
+		"vue": "^3.5.33",
+		"vite": "^7.3.2",
+		"vitest": "^4.1.5",
+		"vue-router": "^5.0.6"
 	},
 	"description": "Desktop-specific components for Stonecrop UI",
 	"publishConfig": {
