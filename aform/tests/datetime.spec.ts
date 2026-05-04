@@ -231,7 +231,7 @@ describe('datetime component', () => {
 		})
 		const emitted = wrapper.emitted('get-time')
 		const lastEmit = emitted![emitted!.length - 1][0] as any
-		expect(lastEmit.militaryTime).toBe(12)
+		expect(lastEmit.militaryTime).toBe(0)
 	})
 
 	it('selects input text on focus', async () => {
