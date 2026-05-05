@@ -16,6 +16,7 @@ import ADuration from './components/form/ADuration.vue';
 import AFieldset from './components/form/AFieldset.vue';
 import AFileAttach from './components/form/AFileAttach.vue';
 import AForm from './components/AForm.vue';
+import AFormLink from './components/form/AFormLink.vue';
 import ANumericInput from './components/form/ANumericInput.vue';
 import type { App } from 'vue';
 import ATextInput from './components/form/ATextInput.vue';
@@ -47,6 +48,21 @@ export { AFieldset }
 export { AFileAttach }
 
 export { AForm }
+
+export { AFormLink }
+
+// @public
+export interface AFormLinkNavigator {
+    navigate(doctype: string, id: string | number): void;
+}
+
+// @public
+export interface AFormLinkValue {
+    // (undocumented)
+    [extra: string]: any;
+    displayText?: string;
+    id: string | number;
+}
 
 export { ANumericInput }
 

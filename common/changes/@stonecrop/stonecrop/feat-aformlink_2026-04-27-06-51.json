@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/stonecrop",
+      "comment": "resolve non-nested Link fields to AFormLink",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/stonecrop"
+}

@@ -1,5 +1,5 @@
 import type { SchemaTypes } from '@stonecrop/aform'
-import type { LinkDeclaration, WorkflowMeta } from '@stonecrop/schema'
+import type { FieldMeta, LinkDeclaration, WorkflowMeta } from '@stonecrop/schema'
 import { List, Map } from 'immutable'
 import type { AnyStateNodeConfig, UnknownMachineConfig } from 'xstate'
 
@@ -47,7 +47,7 @@ export type DoctypeConfig = {
 	/** Database table name */
 	tableName?: string
 	/** Field definitions (including link fields with fieldtype: 'Link') */
-	fields?: SchemaTypes[]
+	fields?: (SchemaTypes | FieldMeta)[]
 	/** Relationship links to other doctypes */
 	links?: Record<string, LinkDeclaration>
 	/** Workflow configuration (XState format or simple WorkflowMeta) */
