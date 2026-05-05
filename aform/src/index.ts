@@ -10,6 +10,7 @@ import ADatePicker from './components/form/ADatePicker.vue'
 import ADateTime from './components/form/ADateTime.vue'
 import ADateSelection from './components/form/ADateSelection.vue'
 import ADuration from './components/form/ADuration.vue'
+import ADateRange from './components/form/ADateRange.vue'
 import AFieldset from './components/form/AFieldset.vue'
 import AFileAttach from './components/form/AFileAttach.vue'
 import AForm from './components/AForm.vue'
@@ -32,6 +33,7 @@ function install(app: App /* options */) {
 	app.component('ADropdown', ADropdown)
 	app.component('ADatePicker', ADatePicker)
 	app.component('ADateTime', ADateTime)
+	app.component('ADateRange', ADateRange)
 	app.component('ADateSelection', ADateSelection)
 	app.component('AFieldset', AFieldset)
 	app.component('AFileAttach', AFileAttach)
@@ -47,6 +49,7 @@ export {
 	ADate,
 	ADropdown,
 	ADatePicker,
+	ADateRange,
 	ADateSelection,
 	ADuration,
 	ADateTime,

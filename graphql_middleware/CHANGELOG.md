@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/graphql-middleware
 
-This log was last generated on Thu, 23 Apr 2026 05:13:40 GMT and should not be manually modified.
+This log was last generated on Tue, 28 Apr 2026 12:21:29 GMT and should not be manually modified.
+
+## 0.11.5
+Tue, 28 Apr 2026 12:21:29 GMT
+
+### Patches
+
+- update API reference
 
 ## 0.11.4
 Thu, 23 Apr 2026 05:13:40 GMT

@@ -8,6 +8,7 @@ import ACheckbox from './components/form/ACheckbox.vue';
 import AComboBox from './components/form/AComboBox.vue';
 import ADate from './components/form/ADate.vue';
 import ADatePicker from './components/form/ADatePicker.vue';
+import ADateRange from './components/form/ADateRange.vue';
 import ADateSelection from './components/form/ADateSelection.vue';
 import ADateTime from './components/form/ADateTime.vue';
 import ADropdown from './components/form/ADropdown.vue';
@@ -30,6 +31,8 @@ export { AComboBox }
 export { ADate }
 
 export { ADatePicker }
+
+export { ADateRange }
 
 export { ADateSelection }
 

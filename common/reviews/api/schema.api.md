@@ -26,6 +26,12 @@ export type ActionDefinition = z.infer<typeof ActionDefinition>;
 export function buildScalarMap(customScalars?: Record<string, Partial<FieldTemplate>>): Record<string, FieldTemplate>;
 
 // @public
+export const BUILTIN_FIELD_TYPES: readonly ["Data", "Text", "Int", "Float", "Decimal", "Check", "Date", "Time", "Datetime", "Duration", "DateRange", "JSON", "Code", "Link", "Attach", "Currency", "Quantity", "Select"];
+
+// @public
+export type BuiltinFieldType = (typeof BUILTIN_FIELD_TYPES)[number];
+
+// @public
 export function camelToLabel(camelCase: string): string;
 
 // @public
@@ -95,26 +101,7 @@ export const DoctypeMeta: z.ZodObject<{
     tableName: z.ZodOptional<z.ZodString>;
     fields: z.ZodArray<z.ZodObject<{
         fieldname: z.ZodString;
-        fieldtype: z.ZodEnum<{
-            Data: "Data";
-            Text: "Text";
-            Int: "Int";
-            Float: "Float";
-            Decimal: "Decimal";
-            Check: "Check";
-            Date: "Date";
-            Time: "Time";
-            Datetime: "Datetime";
-            Duration: "Duration";
-            DateRange: "DateRange";
-            JSON: "JSON";
-            Code: "Code";
-            Link: "Link";
-            Attach: "Attach";
-            Currency: "Currency";
-            Quantity: "Quantity";
-            Select: "Select";
-        }>;
+        fieldtype: z.ZodString;
         component: z.ZodOptional<z.ZodString>;
         label: z.ZodOptional<z.ZodString>;
         width: z.ZodOptional<z.ZodString>;
@@ -205,26 +192,7 @@ export type FetchStrategy = z.infer<typeof FetchStrategy>;
 // @public
 export const FieldMeta: z.ZodObject<{
     fieldname: z.ZodString;
-    fieldtype: z.ZodEnum<{
-        Data: "Data";
-        Text: "Text";
-        Int: "Int";
-        Float: "Float";
-        Decimal: "Decimal";
-        Check: "Check";
-        Date: "Date";
-        Time: "Time";
-        Datetime: "Datetime";
-        Duration: "Duration";
-        DateRange: "DateRange";
-        JSON: "JSON";
-        Code: "Code";
-        Link: "Link";
-        Attach: "Attach";
-        Currency: "Currency";
-        Quantity: "Quantity";
-        Select: "Select";
-    }>;
+    fieldtype: z.ZodString;
     component: z.ZodOptional<z.ZodString>;
     label: z.ZodOptional<z.ZodString>;
     width: z.ZodOptional<z.ZodString>;
@@ -266,7 +234,7 @@ export type FieldOptions = z.infer<typeof FieldOptions>;
 // @public
 export interface FieldTemplate {
     component: string;
-    fieldtype: StonecropFieldType;
+    fieldtype: BuiltinFieldType;
 }
 
 // @public
@@ -278,7 +246,7 @@ export const FieldValidation: z.ZodObject<{
 export type FieldValidation = z.infer<typeof FieldValidation>;
 
 // @public
-export function getDefaultComponent(fieldtype: StonecropFieldType): string;
+export function getDefaultComponent(fieldtype: BuiltinFieldType): string;
 
 // @public
 export interface GetRecordOptions {
@@ -329,6 +297,9 @@ export const INTERNAL_SCALARS: Set<string>;
 export type IntrospectionSource = IntrospectionQuery | string;
 
 // @public
+export function isBuiltinFieldType(fieldtype: string): fieldtype is BuiltinFieldType;
+
+// @public
 export const LazyFetch: z.ZodObject<{
     method: z.ZodLiteral<"lazy">;
 }, z.core.$strip>;
@@ -373,6 +344,9 @@ export function parseField(data: unknown): FieldMeta;
 export function pascalToSnake(pascal: string): string;
 
 // @public
+export function resolveComponent(fieldtype: string): string;
+
+// @public
 export type SerializedFunction = string;
 
 // @public
@@ -382,29 +356,7 @@ export function snakeToCamel(snakeCase: string): string;
 export function snakeToLabel(snakeCase: string): string;
 
 // @public
-export const StonecropFieldType: z.ZodEnum<{
-    Data: "Data";
-    Text: "Text";
-    Int: "Int";
-    Float: "Float";
-    Decimal: "Decimal";
-    Check: "Check";
-    Date: "Date";
-    Time: "Time";
-    Datetime: "Datetime";
-    Duration: "Duration";
-    DateRange: "DateRange";
-    JSON: "JSON";
-    Code: "Code";
-    Link: "Link";
-    Attach: "Attach";
-    Currency: "Currency";
-    Quantity: "Quantity";
-    Select: "Select";
-}>;
-
-// @public
-export type StonecropFieldType = z.infer<typeof StonecropFieldType>;
+export const StonecropFieldType: z.ZodString;
 
 // @public
 export const SyncFetch: z.ZodObject<{
@@ -422,7 +374,7 @@ export function toPascalCase(tableName: string): string;
 export function toSlug(name: string): string;
 
 // @public
-export const TYPE_MAP: Record<StonecropFieldType, FieldTemplate>;
+export const TYPE_MAP: Record<BuiltinFieldType, FieldTemplate>;
 
 // @public
 export function validateDoctype(data: unknown): ValidationResult;

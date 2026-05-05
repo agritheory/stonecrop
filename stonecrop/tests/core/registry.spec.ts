@@ -344,6 +344,57 @@ describe('Registry class', () => {
 			expect(slugs).toEqual(['recipe', 'recipe-variant'])
 		})
 
+		it('returns the same result on a second call without adding doctypes (cached index)', () => {
+			registry = new Registry()
+			const recipe = createDoctypeWithLinks('Recipe', {
+				tasks: { target: 'recipe-task', cardinality: 'noneOrMany', backlink: 'recipe' },
+			})
+			const recipeTask = createDoctypeWithLinks('RecipeTask', {
+				recipe: { target: 'recipe', cardinality: 'one', backlink: 'tasks' },
+			})
+			registry.addDoctype(recipe)
+			registry.addDoctype(recipeTask)
+
+			const first = registry.getAncestorLinks('recipe-task')
+			// Second call with no addDoctype in between — index is not dirty, early-return path
+			const second = registry.getAncestorLinks('recipe-task')
+
+			expect(second).toHaveLength(first.length)
+			expect(second[0].doctype).toBe(first[0].doctype)
+		})
+
+		it('skips doctypes that have no links when building the ancestor index', () => {
+			registry = new Registry()
+			// plain doctype with no links — must be skipped during index build without throwing
+			const task = createMockDoctype('Task')
+			const recipe = createDoctypeWithLinks('Recipe', {
+				tasks: { target: 'task', cardinality: 'noneOrMany', backlink: 'recipe' },
+			})
+			registry.addDoctype(task)
+			registry.addDoctype(recipe)
+
+			const ancestors = registry.getAncestorLinks('task')
+			expect(ancestors).toHaveLength(1)
+			expect(ancestors[0].doctype).toBe('recipe')
+		})
+
+		it('groups multiple doctypes that share the same backlink name', () => {
+			registry = new Registry()
+			// Both recipe and recipe-variant use 'recipe' as the backlink name
+			const recipe = createDoctypeWithLinks('Recipe', {
+				tasks: { target: 'recipe-task', cardinality: 'noneOrMany', backlink: 'recipe' },
+			})
+			const recipeVariant = createDoctypeWithLinks('RecipeVariant', {
+				tasks: { target: 'recipe-task', cardinality: 'noneOrMany', backlink: 'recipe' },
+			})
+			registry.addDoctype(recipe)
+			registry.addDoctype(recipeVariant)
+
+			const ancestors = registry.getAncestorLinks('recipe-task')
+			expect(ancestors).toHaveLength(2)
+			expect(ancestors.map(a => a.doctype).sort()).toEqual(['recipe', 'recipe-variant'])
+		})
+
 		it('rebuilds ancestor index after a new doctype is added', () => {
 			registry = new Registry()
 			const recipe = createDoctypeWithLinks('Recipe', {
