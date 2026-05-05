@@ -17,7 +17,7 @@
 						v-for="(row, filteredIndex) in store.filteredRows"
 						:key="`${row.originalIndex}-${filteredIndex}`"
 						:row="row"
-						:rowIndex="row.originalIndex"
+						:row-index="row.originalIndex"
 						:store="store"
 						@row:action="handleRowAction">
 						<template v-for="(column, colIndex) in getProcessedColumnsForRow(row)" :key="column.name">
@@ -31,8 +31,8 @@
 								:end="row.gantt?.endIndex"
 								:colspan="column.colspan"
 								:pinned="column.pinned"
-								:rowIndex="row.originalIndex"
-								:colIndex="column.originalIndex ?? colIndex"
+								:row-index="row.originalIndex"
+								:col-index="column.originalIndex ?? colIndex"
 								:style="{
 									textAlign: column?.align || 'center',
 									minWidth: column?.width || '40ch',
@@ -44,8 +44,8 @@
 								v-else
 								:store="store"
 								:pinned="column.pinned"
-								:rowIndex="row.originalIndex"
-								:colIndex="colIndex"
+								:row-index="row.originalIndex"
+								:col-index="colIndex"
 								:style="{
 									textAlign: column?.align || 'center',
 									width: store.config.fullWidth ? 'auto' : null,

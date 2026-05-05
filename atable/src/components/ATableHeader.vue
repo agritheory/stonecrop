@@ -1,5 +1,5 @@
 <template>
-	<thead v-if="props.columns.length">
+	<thead v-if="columns.length">
 		<!-- Header row -->
 		<tr class="atable-header-row" tabindex="-1">
 			<!-- Row actions header cell (before-index position) -->
@@ -8,23 +8,23 @@
 				class="row-actions-header"
 				:class="{ 'sticky-column': rowActionsPosition === 'before-index' }" />
 			<th
-				v-if="props.store.zeroColumn"
+				v-if="store.zeroColumn"
 				id="header-index"
 				:class="[
-					props.store.hasPinnedColumns ? 'sticky-index' : '',
-					props.store.isTreeView ? 'tree-index' : '',
-					props.store.config.view === 'list-expansion' ? 'list-expansion-index' : '',
+					store.hasPinnedColumns ? 'sticky-index' : '',
+					store.isTreeView ? 'tree-index' : '',
+					store.config.view === 'list-expansion' ? 'list-expansion-index' : '',
 				]"
 				class="list-index" />
 			<!-- Row actions header cell (after-index position) -->
 			<th v-if="showRowActionsHeader && rowActionsPosition === 'after-index'" class="row-actions-header" />
 			<th
-				v-for="(column, colKey) in props.columns"
+				v-for="(column, colKey) in columns"
 				:key="column.name"
 				v-resize-observer="onResize"
 				:data-colindex="colKey"
 				tabindex="-1"
-				:style="props.store.getHeaderCellStyle(column)"
+				:style="store.getHeaderCellStyle(column)"
 				:class="`${column.pinned ? 'sticky-column' : ''} ${column.sortable === false ? '' : 'cursor-pointer'}`"
 				@click="column.sortable !== false ? handleSort(colKey) : undefined">
 				<slot>{{ column.label || String.fromCharCode(colKey + 97).toUpperCase() }}</slot>
@@ -40,21 +40,21 @@
 				class="row-actions-header"
 				:class="{ 'sticky-column': rowActionsPosition === 'before-index' }" />
 			<th
-				v-if="props.store.zeroColumn"
+				v-if="store.zeroColumn"
 				:class="[
-					props.store.hasPinnedColumns ? 'sticky-index' : '',
-					props.store.isTreeView ? 'tree-index' : '',
-					props.store.config.view === 'list-expansion' ? 'list-expansion-index' : '',
+					store.hasPinnedColumns ? 'sticky-index' : '',
+					store.isTreeView ? 'tree-index' : '',
+					store.config.view === 'list-expansion' ? 'list-expansion-index' : '',
 				]"
 				class="list-index" />
 			<!-- Row actions filter cell (after-index position) -->
 			<th v-if="showRowActionsHeader && rowActionsPosition === 'after-index'" class="row-actions-header" />
 			<th
-				v-for="(column, colKey) in props.columns"
+				v-for="(column, colKey) in columns"
 				:key="`filter-${column.name}`"
 				:class="`${column.pinned ? 'sticky-column' : ''}`"
-				:style="props.store.getHeaderCellStyle(column)">
-				<ATableColumnFilter v-if="column.filterable" :column="column" :col-index="colKey" :store="props.store" />
+				:style="store.getHeaderCellStyle(column)">
+				<ATableColumnFilter v-if="column.filterable" :column="column" :col-index="colKey" :store="store" />
 			</th>
 			<!-- Row actions filter cell (end position) -->
 			<th v-if="showRowActionsHeader && rowActionsPosition === 'end'" class="row-actions-header" />
@@ -69,18 +69,18 @@ import ATableColumnFilter from './ATableColumnFilter.vue'
 import { createTableStore } from '../stores/table'
 import type { TableColumn } from '../types'
 
-const props = defineProps<{
+const { columns, store } = defineProps<{
 	columns: TableColumn[]
 	store: ReturnType<typeof createTableStore>
 }>()
 
-const filterableColumns = computed(() => props.columns.filter(column => column.filterable))
+const filterableColumns = computed(() => columns.filter(column => column.filterable))
 
-// Row actions header support
-const showRowActionsHeader = computed(() => props.store.config.value?.rowActions?.enabled ?? false)
-const rowActionsPosition = computed(() => props.store.config.value?.rowActions?.position ?? 'before-index')
+// Row actions header support — explicit return type resolves Pinia's inference chain
+const showRowActionsHeader = computed(() => store.config.rowActions?.enabled ?? false)
+const rowActionsPosition = computed(() => store.config.rowActions?.position ?? 'before-index')
 
-const handleSort = (colIndex: number) => props.store.sortByColumn(colIndex)
+const handleSort = (colIndex: number) => store.sortByColumn(colIndex)
 
 const onResize = (entries: ReadonlyArray<ResizeObserverEntry>) => {
 	for (const entry of entries) {
@@ -88,10 +88,10 @@ const onResize = (entries: ReadonlyArray<ResizeObserverEntry>) => {
 		const observedCell = entry.borderBoxSize[0]
 		const observedWidth = observedCell.inlineSize
 		const colIndex = Number((entry.target as HTMLElement).dataset.colindex)
-		const currentWidth = props.store.columns[colIndex]?.width
+		const currentWidth = store.columns[colIndex]?.width
 
 		if (typeof currentWidth === 'number' && currentWidth !== observedWidth) {
-			props.store.resizeColumn(colIndex, observedWidth)
+			store.resizeColumn(colIndex, observedWidth)
 		}
 	}
 }

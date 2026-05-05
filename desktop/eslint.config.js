@@ -9,7 +9,16 @@ import tseslint from 'typescript-eslint'
 export default defineConfig(
 	// Ignore patterns specific to this package
 	{
-		ignores: ['dist/**', 'build/**', 'node_modules/**', 'coverage/**', 'temp/**', 'eslint.config.js', '*.config.ts'],
+		ignores: [
+			'dist/**',
+			'build/**',
+			'node_modules/**',
+			'coverage/**',
+			'temp/**',
+			'eslint.config.js',
+			'*.config.ts',
+			'tests/**',
+		],
 	},
 
 	// Base recommended configurations

@@ -3,7 +3,7 @@ import { readFile, readdir } from 'node:fs/promises'
 import { extname, resolve } from 'node:path'
 import { defineEventHandler, useRuntimeConfig } from '#imports'
 
-export default defineEventHandler(async event => {
+export default defineEventHandler(async _event => {
 	// Get doctypes directory from runtime config or default to 'doctypes'
 	const config = useRuntimeConfig()
 	const doctypesDir = config.stonecrop?.doctypesDir || resolve(process.cwd(), 'doctypes')

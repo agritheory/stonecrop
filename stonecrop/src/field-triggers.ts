@@ -357,7 +357,7 @@ export class FieldTriggerEngine {
 				const regularActionFn = this.globalActions.get(actionName)
 				if (regularActionFn) {
 					// Wrap regular action to accept TransitionChangeContext
-					actionFn = regularActionFn as unknown as TransitionActionFunction
+					actionFn = regularActionFn
 				}
 			}
 

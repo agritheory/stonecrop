@@ -287,7 +287,7 @@ export default defineNuxtModule<ModuleOptions>({
 			addPlugin(pluginPath)
 		} catch (pluginError) {
 			logger.error('Error adding plugin:', pluginError)
-			throw new Error(`[@stonecrop/nuxt] Failed to add plugin at ${pluginPath}`)
+			throw new Error(`[@stonecrop/nuxt] Failed to add plugin at ${pluginPath}`, { cause: pluginError })
 		}
 
 		// Register all composables in runtime/app/composables/ for auto-import.

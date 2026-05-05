@@ -69,7 +69,7 @@ const Ability = PureAbility as AbilityClass<AppAbility>
 /**
  * Default ability builder - only provides minimal public access
  */
-export const defaultAbilityBuilder = (user?: Context['user']): AppAbility => {
+export const defaultAbilityBuilder = (_user?: Context['user']): AppAbility => {
 	const { can, build } = new AbilityBuilder<AppAbility>(Ability)
 
 	can('read', 'Query')

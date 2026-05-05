@@ -42,7 +42,7 @@ export async function installGrafserv(options: GrafservInstallerOptions): Promis
 			'@stonecrop/nuxt-grafserv': 'latest',
 			'@stonecrop/graphql-middleware': 'latest',
 			graphql: '^16.11.0',
-			grafast: '^1.0.0-rc.7',
+			grafast: '^1.0.1',
 		})
 
 		// Update nuxt.config.ts

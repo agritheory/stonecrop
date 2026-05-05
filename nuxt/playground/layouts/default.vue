@@ -58,7 +58,7 @@ const breadcrumbs = computed(() => {
 })
 
 // ActionSet elements - enhanced with navigation links and form actions
-const actionSetElements = computed<ActionElements[]>(() => {
+const actionSetElements = computed(() => {
 	const elements: ActionElements[] = []
 
 	// Add form actions first (Undo, Redo, Cancel, Save)

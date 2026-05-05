@@ -138,13 +138,15 @@ export const useOperationLogStore = defineStore('hst-operation-log', () => {
 		return operations.value.length - 1 - currentIndex.value
 	})
 
-	const undoRedoState = computed<UndoRedoState>(() => ({
-		canUndo: canUndo.value,
-		canRedo: canRedo.value,
-		undoCount: undoCount.value,
-		redoCount: redoCount.value,
-		currentIndex: currentIndex.value,
-	}))
+	const undoRedoState = computed(
+		(): UndoRedoState => ({
+			canUndo: canUndo.value,
+			canRedo: canRedo.value,
+			undoCount: undoCount.value,
+			redoCount: redoCount.value,
+			currentIndex: currentIndex.value,
+		})
+	)
 
 	// Core Methods
 
@@ -517,11 +519,11 @@ export const useOperationLogStore = defineStore('hst-operation-log', () => {
 
 			if (message.type === 'operation' && message.operation) {
 				// Add operation from another tab
-				operations.value.push({ ...message.operation, source: 'sync' as OperationSource })
+				operations.value.push({ ...message.operation, source: 'sync' })
 				currentIndex.value = operations.value.length - 1
 			} else if (message.type === 'operation' && message.operations) {
 				// Add batch operations from another tab
-				operations.value.push(...message.operations.map(op => ({ ...op, source: 'sync' as OperationSource })))
+				operations.value.push(...message.operations.map((op): HSTOperation => ({ ...op, source: 'sync' })))
 				currentIndex.value = operations.value.length - 1
 			}
 		})
