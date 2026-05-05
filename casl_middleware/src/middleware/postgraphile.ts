@@ -67,7 +67,7 @@ export const pglCaslPlugin: GraphileConfig.Plugin = extendSchema(build => {
 
 						return sideEffect(
 							[$userId as ExecutableStep, $roles as ExecutableStep],
-							async ([userId, roles]: [string, string[]]) => {
+							async ([userId, roles]: readonly [string, string[]]) => {
 								// Make this async
 								try {
 									const ability = await createAbility({ id: userId, roles }) // Await here

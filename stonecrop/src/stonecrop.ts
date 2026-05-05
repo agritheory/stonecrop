@@ -122,7 +122,6 @@ export class Stonecrop {
 
 		this.registry.addDoctype = (doctype: Doctype) => {
 			// Call original method
-			// eslint-disable-next-line @typescript-eslint/no-unsafe-call
 			originalAddDoctype(doctype)
 
 			// Auto-create HST store section for new doctype

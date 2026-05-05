@@ -289,7 +289,7 @@ const getAvailableTransitions = () => {
 	}
 }
 
-const actionElements = computed<ActionElements[]>(() => {
+const actionElements = computed(() => {
 	const elements: ActionElements[] = []
 
 	switch (currentView.value) {
@@ -620,7 +620,7 @@ const getColumns = () => {
 }
 
 // Schema for different views - defined here after all helper functions are available
-const currentViewSchema = computed<SchemaTypes[]>(() => {
+const currentViewSchema = computed(() => {
 	switch (currentView.value) {
 		case 'doctypes':
 			return getDoctypesSchema()

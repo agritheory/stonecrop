@@ -201,13 +201,12 @@ export default class Registry {
 					)
 				} else {
 					// One relationship — embed form schema
-					// TODO: remove assertion once resolved link output has a dedicated type separate from input schema
 					resolvedFields.push({
 						...fieldRest,
 						label: fieldRest.label || field.fieldname,
 						component: link.component || fieldRest.component || 'AForm',
 						schema: childSchema,
-					} as SchemaTypes)
+					})
 				}
 			} else if ('schema' in field && Array.isArray(field.schema)) {
 				// Fieldset — recursively resolve nested fields
@@ -263,13 +262,12 @@ export default class Registry {
 						)
 					)
 				} else {
-					// TODO: remove assertion once resolved link output has a dedicated type separate from input schema
 					resolved.push({
 						...fieldRest,
 						label: fieldRest.label || field.fieldname,
 						component: link.component || fieldRest.component || 'AForm',
 						schema: childSchema,
-					} as SchemaTypes)
+					})
 				}
 			} else if ('schema' in field && Array.isArray(field.schema)) {
 				resolved.push({ ...field, schema: this.resolveFields(field.schema, links, visited) })

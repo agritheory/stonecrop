@@ -194,7 +194,7 @@ const getLastCell = (event: KeyboardEvent) => {
 
 const modifierKeys = ['alt', 'control', 'shift', 'meta']
 
-const eventKeyMap = {
+const eventKeyMap: Record<string, string> = {
 	ArrowUp: 'up',
 	ArrowDown: 'down',
 	ArrowLeft: 'left',
@@ -404,7 +404,7 @@ export function useKeyboardNav(options: KeyboardNavigationOptions[]) {
 
 	const getEventListener = (option: KeyboardNavigationOptions) => {
 		return (event: KeyboardEvent) => {
-			const activeKey = (eventKeyMap[event.key] as string) || event.key.toLowerCase()
+			const activeKey = eventKeyMap[event.key] || event.key.toLowerCase()
 			if (modifierKeys.includes(activeKey)) return // ignore modifier key presses
 
 			const handlers = option.handlers || defaultKeypressHandlers

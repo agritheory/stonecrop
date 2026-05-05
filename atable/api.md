@@ -719,19 +719,11 @@ createTableStore: (initData: {
         column: number | null;
         direction: "asc" | "desc" | null;
     }>;
-    table: import("vue").ComputedRef<{}>;
+    table: import("vue").ComputedRef<Record<string, any>>;
     updates: import("vue").Ref<Record<string, string>, Record<string, string>>;
-    filteredRows: import("vue").ComputedRef<{
+    filteredRows: import("vue").ComputedRef<(TableRow & {
         originalIndex: number;
-        indent?: number | undefined;
-        parent?: number | undefined;
-        gantt?: {
-            color?: string | undefined;
-            startIndex?: number | undefined;
-            endIndex?: number | undefined;
-            colspan?: number | undefined;
-        } | undefined;
-    }[]>;
+    })[]>;
     hasPinnedColumns: import("vue").ComputedRef<boolean>;
     isGanttView: import("vue").ComputedRef<boolean>;
     isTreeView: import("vue").ComputedRef<boolean>;
@@ -1371,19 +1363,11 @@ createTableStore: (initData: {
         column: number | null;
         direction: "asc" | "desc" | null;
     }>;
-    table: import("vue").ComputedRef<{}>;
+    table: import("vue").ComputedRef<Record<string, any>>;
     updates: import("vue").Ref<Record<string, string>, Record<string, string>>;
-    filteredRows: import("vue").ComputedRef<{
+    filteredRows: import("vue").ComputedRef<(TableRow & {
         originalIndex: number;
-        indent?: number | undefined;
-        parent?: number | undefined;
-        gantt?: {
-            color?: string | undefined;
-            startIndex?: number | undefined;
-            endIndex?: number | undefined;
-            colspan?: number | undefined;
-        } | undefined;
-    }[]>;
+    })[]>;
     hasPinnedColumns: import("vue").ComputedRef<boolean>;
     isGanttView: import("vue").ComputedRef<boolean>;
     isTreeView: import("vue").ComputedRef<boolean>;
@@ -2023,19 +2007,11 @@ createTableStore: (initData: {
         column: number | null;
         direction: "asc" | "desc" | null;
     }>;
-    table: import("vue").ComputedRef<{}>;
+    table: import("vue").ComputedRef<Record<string, any>>;
     updates: import("vue").Ref<Record<string, string>, Record<string, string>>;
-    filteredRows: import("vue").ComputedRef<{
+    filteredRows: import("vue").ComputedRef<(TableRow & {
         originalIndex: number;
-        indent?: number | undefined;
-        parent?: number | undefined;
-        gantt?: {
-            color?: string | undefined;
-            startIndex?: number | undefined;
-            endIndex?: number | undefined;
-            colspan?: number | undefined;
-        } | undefined;
-    }[]>;
+    })[]>;
     hasPinnedColumns: import("vue").ComputedRef<boolean>;
     isGanttView: import("vue").ComputedRef<boolean>;
     isTreeView: import("vue").ComputedRef<boolean>;

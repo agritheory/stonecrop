@@ -240,7 +240,7 @@
     },
     {
       "name": "eslint-config-prettier",
-      "allowedCategories": [ "prototype", "utilities" ]
+      "allowedCategories": [ "production", "prototype", "utilities" ]
     },
     {
       "name": "eslint-plugin-vue",
@@ -248,7 +248,7 @@
     },
     {
       "name": "globals",
-      "allowedCategories": [ "prototype", "utilities" ]
+      "allowedCategories": [ "production", "prototype", "utilities" ]
     },
     {
       "name": "globby",
@@ -452,7 +452,7 @@
     },
     {
       "name": "typescript-eslint",
-      "allowedCategories": [ "prototype", "utilities" ]
+      "allowedCategories": [ "production", "prototype", "utilities" ]
     },
     {
       "name": "unstorage",
@@ -488,10 +488,6 @@
     },
     {
       "name": "vue-template-compiler",
-      "allowedCategories": [ "prototype" ]
-    },
-    {
-      "name": "vue-toast-notification",
       "allowedCategories": [ "prototype" ]
     },
     {

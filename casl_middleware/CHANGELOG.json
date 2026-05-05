@@ -2,6 +2,30 @@
   "name": "@stonecrop/casl-middleware",
   "entries": [
     {
+      "version": "0.11.8",
+      "tag": "@stonecrop/casl-middleware_v0.11.8",
+      "date": "Tue, 05 May 2026 09:51:14 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "update major dependencies"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.11.7",
+      "tag": "@stonecrop/casl-middleware_v0.11.7",
+      "date": "Thu, 30 Apr 2026 07:14:26 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.11.6",
+      "tag": "@stonecrop/casl-middleware_v0.11.6",
+      "date": "Thu, 30 Apr 2026 06:41:02 GMT",
+      "comments": {}
+    },
+    {
       "version": "0.11.5",
       "tag": "@stonecrop/casl-middleware_v0.11.5",
       "date": "Tue, 28 Apr 2026 12:21:29 GMT",

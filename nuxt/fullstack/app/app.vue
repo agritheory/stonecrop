@@ -30,7 +30,7 @@ const breadcrumbs = computed(() => {
 	return crumbs
 })
 
-const actionSetElements = computed<ActionElements[]>(() => {
+const actionSetElements = computed(() => {
 	const elements: ActionElements[] = []
 
 	const navActions = [

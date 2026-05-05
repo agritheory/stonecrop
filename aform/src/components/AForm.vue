@@ -97,7 +97,7 @@ const componentProps = (componentObj: SchemaTypes) => {
 	return propsToPass
 }
 
-const effectiveFormMode = computed<FormMode>(() => mode ?? 'edit')
+const effectiveFormMode = computed(() => mode ?? 'edit')
 
 // Resolve the effective mode for a schema field, allowing per-field overrides
 function resolvedMode(componentObj: SchemaTypes): FormMode {

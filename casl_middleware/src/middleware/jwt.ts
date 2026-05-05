@@ -147,11 +147,11 @@ export const createJWTMiddleware = (config: JWTConfig = {}) => {
 
 			// Re-throw with more specific error messages
 			if (error.name === 'TokenExpiredError') {
-				throw new Error('Token has expired')
+				throw new Error('Token has expired', { cause: error })
 			} else if (error.name === 'JsonWebTokenError') {
-				throw new Error('Invalid token')
+				throw new Error('Invalid token', { cause: error })
 			} else if (error.name === 'NotBeforeError') {
-				throw new Error('Token not active yet')
+				throw new Error('Token not active yet', { cause: error })
 			}
 
 			throw error
@@ -193,7 +193,7 @@ export const createJWT = (
 /**
  * Integration with CASL ability builder
  */
-export const createJWTAbilityBuilder = (config: JWTConfig = {}) => {
+export const createJWTAbilityBuilder = (_config: JWTConfig = {}) => {
 	return async (user?: User) => {
 		// If user has direct permissions in JWT, use those
 		const jwtPermissions = (user as any)?.permissions
@@ -229,7 +229,7 @@ export const createPostgraphileJWTPlugin = (config: JWTConfig) => {
 		// Hook into Postgraphile's context building
 		grafast: {
 			hooks: {
-				async context(ctx: any, build: any) {
+				async context(ctx: any, _build: any) {
 					const middleware = createJWTMiddleware(config)
 
 					// Create a simple context object that the middleware can work with
@@ -386,7 +386,7 @@ export const refreshTokenUtils = {
 			return { accessToken, user }
 		} catch (error: any) {
 			if (error.name === 'TokenExpiredError') {
-				throw new Error('Refresh token expired')
+				throw new Error('Refresh token expired', { cause: error })
 			}
 			throw error
 		}
