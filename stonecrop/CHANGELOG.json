@@ -2,6 +2,18 @@
   "name": "@stonecrop/stonecrop",
   "entries": [
     {
+      "version": "0.11.9",
+      "tag": "@stonecrop/stonecrop_v0.11.9",
+      "date": "Tue, 05 May 2026 12:04:47 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "resolve non-nested Link fields to AFormLink"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.11.8",
       "tag": "@stonecrop/stonecrop_v0.11.8",
       "date": "Tue, 05 May 2026 09:51:14 GMT",

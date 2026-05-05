@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/stonecrop
 
-This log was last generated on Tue, 05 May 2026 09:51:14 GMT and should not be manually modified.
+This log was last generated on Tue, 05 May 2026 12:04:47 GMT and should not be manually modified.
+
+## 0.11.9
+Tue, 05 May 2026 12:04:47 GMT
+
+### Patches
+
+- resolve non-nested Link fields to AFormLink
 
 ## 0.11.8
 Tue, 05 May 2026 09:51:14 GMT
