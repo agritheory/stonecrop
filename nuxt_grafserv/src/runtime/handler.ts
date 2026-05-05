@@ -114,7 +114,8 @@ export async function getGrafservInstance(options: ModuleOptions): Promise<Retur
 			if (error instanceof Error && 'code' in error && error.code === 'MODULE_NOT_FOUND') {
 				throw new Error(
 					'[@stonecrop/nuxt-grafserv] PostGraphile preset provided but "postgraphile" package not found. ' +
-						'Install it with: npm install postgraphile'
+						'Install it with: npm install postgraphile',
+					{ cause: error }
 				)
 			}
 			console.error('[@stonecrop/nuxt-grafserv] Error creating PostGraphile grafserv instance:', error)

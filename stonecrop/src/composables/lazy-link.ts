@@ -74,7 +74,7 @@ export function useLazyLink(doctype: Doctype, recordId: string, linkFieldname: s
 			// eslint-disable-next-line @typescript-eslint/no-unsafe-call
 			return await fn(stonecropInstance, getLinkPath(), hstStore)
 		} catch (err) {
-			throw new Error(`Custom handler failed: ${err instanceof Error ? err.message : String(err)}`)
+			throw new Error(`Custom handler failed: ${err instanceof Error ? err.message : String(err)}`, { cause: err })
 		}
 	}
 

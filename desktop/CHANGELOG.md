@@ -1,6 +1,27 @@
 # Change Log - @stonecrop/desktop
 
-This log was last generated on Tue, 28 Apr 2026 12:21:29 GMT and should not be manually modified.
+This log was last generated on Tue, 05 May 2026 09:51:14 GMT and should not be manually modified.
+
+## 0.11.8
+Tue, 05 May 2026 09:51:14 GMT
+
+### Patches
+
+- update major dependencies
+
+## 0.11.7
+Thu, 30 Apr 2026 07:14:26 GMT
+
+### Patches
+
+- improve desktop test coverage
+
+## 0.11.6
+Thu, 30 Apr 2026 06:41:02 GMT
+
+### Patches
+
+- update action set styling
 
 ## 0.11.5
 Tue, 28 Apr 2026 12:21:29 GMT

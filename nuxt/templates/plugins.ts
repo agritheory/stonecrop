@@ -36,7 +36,7 @@ const loggingPlugin: GraphileConfig.Plugin = {
 /**
  * Example: Authentication plugin
  */
-const authPlugin: GraphileConfig.Plugin = {
+const _authPlugin: GraphileConfig.Plugin = {
 	name: 'authentication',
 	version: '1.0.0',
 	grafserv: {

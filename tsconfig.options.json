@@ -3,7 +3,7 @@
 		"target": "esnext",
 		"module": "preserve",
 		"moduleResolution": "bundler",
-		"lib": ["dom", "dom.iterable", "esnext"],
+		"lib": ["dom", "esnext"],
 		"outDir": "${configDir}/dist",
 		"allowImportingTsExtensions": true,
 		"composite": true,
@@ -14,6 +14,7 @@
 		"isolatedModules": true,
 		"resolveJsonModule": true,
 		"skipLibCheck": true,
+		"strict": true,
 		"strictNullChecks": true
 	},
 	"exclude": ["node_modules", "**/*.spec.ts"]

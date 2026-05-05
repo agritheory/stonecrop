@@ -29,7 +29,7 @@ function getMask(binding: DirectiveBinding<string>) {
 	if (maskFn) {
 		// TODO: (state) replace with state management;
 		// pass the entire form/table data to the function
-		const locale = binding.instance?.['locale']
+		const locale = (binding.instance as Record<string, unknown> | null)?.['locale']
 		return maskFn(locale)
 	}
 
@@ -105,8 +105,9 @@ export function useStringMask(el: HTMLInputElement, binding: DirectiveBinding<st
 		// most likely fixed with state management;
 		// a better way could be to emit back to instance;
 
-		if (binding.instance?.['maskFilled']) {
-			binding.instance['maskFilled'] = !replacement.includes(maskToken)
+		const instance = binding.instance as Record<string, unknown> | null
+		if (instance?.['maskFilled']) {
+			instance['maskFilled'] = !replacement.includes(maskToken)
 		}
 
 		el.value = replacement

@@ -4,5 +4,7 @@ import { createConfigForNuxt } from '@nuxt/eslint-config/flat'
 
 export default createConfigForNuxt({
 	features: { tooling: true },
-	dirs: { src: ['./playground'] },
-}).prepend(eslint.configs.recommended)
+	dirs: { src: [] },
+})
+	.prepend({ ignores: ['playground/**', 'test/**'] })
+	.prepend(eslint.configs.recommended)

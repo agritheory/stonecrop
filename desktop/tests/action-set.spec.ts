@@ -143,14 +143,44 @@ describe('ActionSet', () => {
 		expect(wrapper.find('.action-set').classes()).not.toContain('open-set')
 	})
 
-	it('toggles closeClicked on chevron click', async () => {
+	it('resets cross indicator when another dropdown is opened', async () => {
+		const wrapper = mount(ActionSet, {
+			props: {
+				elements: [
+					{
+						type: 'dropdown',
+						label: 'Menu A',
+						actions: [{ label: 'Option A', action: () => {} }],
+					},
+					{
+						type: 'dropdown',
+						label: 'Menu B',
+						actions: [{ label: 'Option B', action: () => {} }],
+					},
+				],
+			},
+		})
+
+		const headers = wrapper.findAll('.dropdown-header')
+
+		// Open first dropdown
+		await headers[0].find('button.button-default').trigger('click')
+		expect(headers[0].find('.cross').classes()).toContain('rotated')
+
+		// Open second dropdown — first should close (container hidden, cross reset)
+		await headers[1].find('button.button-default').trigger('click')
+		expect(headers[0].find('.cross').classes()).not.toContain('rotated')
+		expect(headers[1].find('.cross').classes()).toContain('rotated')
+	})
+
+	it('toggles collapsed on cross click', async () => {
 		const wrapper = mount(ActionSet)
-		const chevron = wrapper.find('#chevron')
+		const cross = wrapper.find('#cross')
 
-		await chevron.trigger('click')
-		expect(wrapper.find('.action-set').classes()).toContain('hovered-and-closed')
+		await cross.trigger('click')
+		expect(wrapper.find('.action-set').classes()).toContain('collapsed')
 
-		await chevron.trigger('click')
-		expect(wrapper.find('.action-set').classes()).not.toContain('hovered-and-closed')
+		await cross.trigger('click')
+		expect(wrapper.find('.action-set').classes()).not.toContain('collapsed')
 	})
 })
