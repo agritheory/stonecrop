@@ -23,7 +23,7 @@
 			<!-- Regular field -->
 			<component
 				:is="componentObj.component"
-				v-else
+				v-else-if="!componentObj.hidden"
 				v-model="childModels[key].value"
 				:schema="componentObj"
 				:data="dataModel[componentObj.fieldname]"
@@ -78,7 +78,7 @@ const componentProps = (componentObj: SchemaTypes) => {
 	for (const [key, value] of Object.entries(componentObj)) {
 		// 'mode' is excluded here because it is handled by resolvedMode()
 		// and passed explicitly via :mode to avoid conflicting with the form-level defaults.
-		if (!['component', 'fieldtype', 'mode'].includes(key)) {
+		if (!['component', 'fieldtype', 'hidden', 'mode'].includes(key)) {
 			propsToPass[key] = value
 		}
 	}

@@ -48,6 +48,7 @@ import { vOnClickOutside } from '@vueuse/components'
 import { computed, inject, ref } from 'vue'
 
 import type { AFormLinkNavigator, AFormLinkValue, ComponentProps } from '../../types'
+import { deserializeFunction } from '../../utils/deserialize'
 
 const {
 	label,
@@ -64,7 +65,7 @@ const {
 		formatter?: (value: AFormLinkValue) => string
 		icon?: 'arrow-right' | 'chevron-right'
 		disabled?: boolean
-		filterFunction?: (search: string) => AFormLinkValue[] | Promise<AFormLinkValue[]>
+		filterFunction?: string | ((search: string) => AFormLinkValue[] | Promise<AFormLinkValue[]>)
 		isAsync?: boolean
 	}
 >()
@@ -102,7 +103,10 @@ const openDropdown = async (text: string) => {
 	dropdownOpen.value = true
 	if (isAsync) loading.value = true
 	try {
-		dropdownResults.value = (await filterFunction(text)) ?? []
+		type FilterFn = (search: string) => AFormLinkValue[] | Promise<AFormLinkValue[]>
+		const fn: FilterFn =
+			typeof filterFunction === 'string' ? deserializeFunction<FilterFn>(filterFunction) : filterFunction
+		dropdownResults.value = (await fn(text)) ?? []
 	} catch {
 		dropdownResults.value = []
 	} finally {

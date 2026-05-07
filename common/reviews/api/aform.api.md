@@ -61,6 +61,7 @@ export type BaseSchema = {
     fieldname: string;
     component?: string;
     mode?: FormMode;
+    hidden?: boolean;
 };
 
 // @public
@@ -76,6 +77,9 @@ export type ComponentProps = {
         [key: string]: any;
     };
 };
+
+// @public
+export function deserializeFunction<T extends (...args: any[]) => any>(source: string): T;
 
 // @public
 export type FieldsetSchema = BaseSchema & {
