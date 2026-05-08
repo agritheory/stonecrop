@@ -61,3 +61,6 @@ export {
 
 // Naming utilities
 export { toSlug, toPascalCase, pascalToSnake, snakeToCamel, camelToSnake, snakeToLabel, camelToLabel } from './naming'
+
+// Schema-to-column field shape
+export type { ColumnSchema } from './column-schema'

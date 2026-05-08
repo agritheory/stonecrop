@@ -323,6 +323,68 @@ export declare function validateField(data: unknown): ValidationResult;
 
 ## Interfaces
 
+### ColumnSchema
+
+Minimal field shape representing the intersection of form field properties (fieldname, hidden, etc.) and table column properties (cellComponent, pinned, format, etc.) so that a doctype's fields array can be passed directly to table components without requiring callers to pre-build TableColumn objects.
+
+Notes on specific properties: - `align` uses an explicit string union rather than CanvasTextAlign — this package is used server-side by the CLI where browser DOM types are absent. - `format` is a serialized function string; the table store's getFormattedValue already handles typeof format === 'string' via Function(...). - `mask` is intentionally omitted — ACell has mask commented out as a TODO and TableColumn.mask is function-typed only; including it here would create an incompatible type. - `modalComponent` is string-only (no function variant) — functions cannot appear in schema JSON.
+
+**Definition:**
+
+```typescript
+export interface ColumnSchema {
+  align?: 'left' | 'right' | 'center' | 'start' | 'end';
+  cellComponent?: string;
+  cellComponentProps?: Record<string, any>;
+  colspan?: number;
+  edit?: boolean;
+  fieldname: string;
+  fieldtype?: string;
+  filterable?: boolean;
+  filterComponent?: string;
+  filterOptions?: any[];
+  filterType?: 'text' | 'select' | 'number' | 'date' | 'dateRange' | 'checkbox' | 'component';
+  format?: string;
+  ganttComponent?: string;
+  hidden?: boolean;
+  isGantt?: boolean;
+  label?: string;
+  modalComponent?: string;
+  modalComponentExtraProps?: Record<string, any>;
+  pinned?: boolean;
+  resizable?: boolean;
+  sortable?: boolean;
+  width?: string;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| align? | `'left' \| 'right' \| 'center' \| 'start' \| 'end'` | Horizontal text alignment for the column cell and header. |
+| cellComponent? | `string` | Registered component name rendered inside the table cell instead of the default display. |
+| cellComponentProps? | `Record<string, any>` | Props passed to `cellComponent`. |
+| colspan? | `number` | Number of columns this cell spans in the table layout. |
+| edit? | `boolean` | Whether the column cell is editable in the table. |
+| fieldname | `string` | Unique identifier for the field within its doctype. Maps to `name` on `TableColumn`. |
+| fieldtype? | `string` | Semantic field type (e.g. `'Data'`, `'Int'`, `'Date'`, `'Check'`). Fields without a `fieldtype` are treated as non-scalar (nested table/fieldset) and excluded by `schemaToColumns`. |
+| filterable? | `boolean` | When `true`, a filter control is rendered in the column header. |
+| filterComponent? | `string` | Registered component name used when `filterType` is `'component'`. |
+| filterOptions? | `any[]` | Static option list for `filterType: 'select'`. When absent, options are derived from unique row values. |
+| filterType? | `'text' \| 'select' \| 'number' \| 'date' \| 'dateRange' \| 'checkbox' \| 'component'` | The type of filter control to render. Defaults are derived from `fieldtype` when absent. |
+| format? | `string` | Serialized function string used to format the cell value for display. Deserialized at render time by the table store's `getFormattedValue`. |
+| ganttComponent? | `string` | Registered component name used to render Gantt bars in this column. |
+| hidden? | `boolean` | When `true`, the field is excluded from the derived columns by `schemaToColumns`. |
+| isGantt? | `boolean` | When `true`, this column is treated as a Gantt bar column. |
+| label? | `string` | Human-readable column header. |
+| modalComponent? | `string` | Registered component name rendered in the cell's modal editor. String-only — functions cannot appear in schema JSON. |
+| modalComponentExtraProps? | `Record<string, any>` | Extra props passed to `modalComponent` in addition to the standard cell props. |
+| pinned? | `boolean` | When `true`, the column is pinned to the left side of the table. |
+| resizable? | `boolean` | When `true`, the column can be resized by dragging the header edge. |
+| sortable? | `boolean` | When `true`, clicking the column header sorts the table by this column. |
+| width? | `string` | CSS width of the column (e.g. `'20ch'`, `'200px'`). |
+
 ### ConvertedGraphQLDoctype
 
 Output of GraphQL schema conversion — one per entity type.
