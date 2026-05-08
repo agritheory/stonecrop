@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/desktop",
+      "comment": "remove table-specific responsibility",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@stonecrop/desktop"
+}

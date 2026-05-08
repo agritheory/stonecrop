@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/stonecrop",
+      "comment": "relegate building columns to component",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@stonecrop/stonecrop"
+}
