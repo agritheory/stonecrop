@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/aform
 
-This log was last generated on Tue, 05 May 2026 12:04:46 GMT and should not be manually modified.
+This log was last generated on Fri, 08 May 2026 06:36:28 GMT and should not be manually modified.
+
+## 0.11.10
+Fri, 08 May 2026 06:36:28 GMT
+
+### Patches
+
+- allow hiding fields via the schema
 
 ## 0.11.9
 Tue, 05 May 2026 12:04:46 GMT

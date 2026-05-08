@@ -2,6 +2,18 @@
   "name": "@stonecrop/aform",
   "entries": [
     {
+      "version": "0.11.10",
+      "tag": "@stonecrop/aform_v0.11.10",
+      "date": "Fri, 08 May 2026 06:36:28 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "allow hiding fields via the schema"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.11.9",
       "tag": "@stonecrop/aform_v0.11.9",
       "date": "Tue, 05 May 2026 12:04:46 GMT",
