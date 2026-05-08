@@ -407,6 +407,9 @@ importers:
       '@stonecrop/atable':
         specifier: workspace:*
         version: link:../atable
+      '@stonecrop/schema':
+        specifier: workspace:*
+        version: link:../schema
       '@stonecrop/stonecrop':
         specifier: workspace:*
         version: link:../stonecrop

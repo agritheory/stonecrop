@@ -197,8 +197,9 @@ describe('Desktop props', () => {
 
 			const tableSchema = schema[0]
 			expect(tableSchema.component).toBe('ATable')
-			const columns = tableSchema.columns as any[]
-			expect(columns[0].name).toBe('uuid')
+			expect(tableSchema.kind).toBe('table')
+			const schemaFields = tableSchema.schema as any[]
+			expect(schemaFields.some((f: any) => f.fieldname === 'uuid')).toBe(true)
 
 			const rows = tableSchema.rows as any[]
 			expect(rows[0].id).toBe('uuid-abc-123')
@@ -242,8 +243,9 @@ describe('Desktop props', () => {
 			expect(schema).toBeTruthy()
 
 			const tableSchema = schema[0]
-			const columns = tableSchema.columns as any[]
-			expect(columns[0].name).toBe('id')
+			expect(tableSchema.kind).toBe('table')
+			const schemaFields = tableSchema.schema as any[]
+			expect(schemaFields.some((f: any) => f.fieldname === 'id')).toBe(true)
 		})
 	})
 })

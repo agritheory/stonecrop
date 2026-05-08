@@ -41,7 +41,7 @@ export function makeServer() {
 				'todo-listMeta': {
 					doctype: 'todo-list',
 					schema: [
-						{ fieldname: 'id', label: 'ID', fieldtype: 'Data' },
+						{ fieldname: 'id', label: 'ID', hidden: true, fieldtype: 'Data' },
 						{ fieldname: 'first_name', label: 'First Name', fieldtype: 'Data' },
 						{ fieldname: 'last_name', label: 'Last Name', fieldtype: 'Data' },
 						{ fieldname: 'phone', label: 'Phone', fieldtype: 'Phone' },
@@ -174,7 +174,7 @@ export function makeServer() {
 				'issue-listMeta': {
 					doctype: 'issue-list',
 					schema: [
-						{ fieldname: 'id', label: 'ID', fieldtype: 'Data' },
+						{ fieldname: 'id', label: 'ID', hidden: true, fieldtype: 'Data' },
 						{ fieldname: 'subject', label: 'Subject', fieldtype: 'Data' },
 						{ fieldname: 'date', label: 'Date', fieldtype: 'Date' },
 						{ fieldname: 'status', label: 'Status', fieldtype: 'Select' },

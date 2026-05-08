@@ -2,6 +2,7 @@ import { List } from 'immutable'
 import { describe, it, expect, beforeEach } from 'vitest'
 
 import { Stonecrop, Registry, Doctype } from '../../src'
+import { schemaToColumns } from '@stonecrop/atable'
 
 describe('Nested Doctype Support', () => {
 	let registry: Registry
@@ -780,5 +781,74 @@ describe('Nested Doctype Support', () => {
 			const customerNode = addressNode?.getAncestor()
 			expect(customerNode?.getPath()).toBe('customer.c5')
 		})
+	})
+})
+
+describe('resolveSchema → schemaToColumns pipeline', () => {
+	let registry: Registry
+
+	beforeEach(() => {
+		registry = new Registry()
+
+		const taskSchema = List([
+			{ fieldname: 'title', fieldtype: 'Data', label: 'Title', component: 'ATextInput' },
+			{ fieldname: 'status', fieldtype: 'Select', label: 'Status', component: 'ATextInput' },
+			{ fieldname: 'assignee', fieldtype: 'Link', options: 'user', component: 'AForm' },
+		])
+		const userSchema = List([
+			{ fieldname: 'name', fieldtype: 'Data', label: 'Name', component: 'ATextInput' },
+			{ fieldname: 'email', fieldtype: 'Data', label: 'Email', component: 'ATextInput' },
+		])
+		const userDoctype = new Doctype('user', userSchema as any)
+		const taskDoctype = new Doctype('task', taskSchema as any, undefined, undefined, undefined, {
+			assignee: { target: 'user', cardinality: 'noneOrMany', fieldname: 'assignee' },
+		})
+		registry.addDoctype(userDoctype)
+		registry.addDoctype(taskDoctype)
+	})
+
+	it('scalar fields become table columns', () => {
+		const resolved = registry.resolveSchema(registry.getDoctype('task')!)
+		const columns = schemaToColumns(resolved as any)
+
+		const names = columns.map(c => c.name)
+		expect(names).toContain('title')
+		expect(names).toContain('status')
+	})
+
+	it('TableSchema entry (no fieldtype) is filtered out', () => {
+		const resolved = registry.resolveSchema(registry.getDoctype('task')!)
+		const tableEntry = resolved.find((f: any) => f.kind === 'table')
+		expect(tableEntry).toBeDefined()
+		expect((tableEntry as any).fieldtype).toBeUndefined()
+
+		const columns = schemaToColumns(resolved as any)
+		const names = columns.map(c => c.name)
+		expect(names).not.toContain('assignee')
+	})
+
+	it('column objects do not carry kind, schema, config, component, or mode', () => {
+		const resolved = registry.resolveSchema(registry.getDoctype('task')!)
+		const columns = schemaToColumns(resolved as any)
+
+		for (const col of columns) {
+			expect((col as any).kind).toBeUndefined()
+			expect((col as any).schema).toBeUndefined()
+			expect((col as any).config).toBeUndefined()
+			expect((col as any).component).toBeUndefined()
+			expect((col as any).mode).toBeUndefined()
+		}
+	})
+
+	it('label and fieldtype are preserved on scalar columns', () => {
+		const resolved = registry.resolveSchema(registry.getDoctype('task')!)
+		const columns = schemaToColumns(resolved as any)
+
+		const titleCol = columns.find(c => c.name === 'title')
+		expect(titleCol?.label).toBe('Title')
+		expect(titleCol?.fieldtype).toBe('Data')
+
+		const statusCol = columns.find(c => c.name === 'status')
+		expect(statusCol?.fieldtype).toBe('Select')
 	})
 })
