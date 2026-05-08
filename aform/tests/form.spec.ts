@@ -133,6 +133,56 @@ describe('AForm Component', () => {
 		expect(modeWrapper.vm).toBeTruthy()
 	})
 
+	describe('hidden field behavior', () => {
+		it('does not render a field with hidden: true', async () => {
+			const wrapper = mount(AForm, {
+				props: {
+					schema: [
+						{
+							fieldname: 'visible_field',
+							fieldtype: 'Data',
+							component: 'ATextInput',
+							label: 'Visible',
+						},
+						{
+							fieldname: 'hidden_field',
+							fieldtype: 'Data',
+							component: 'ATextInput',
+							label: 'Hidden',
+							hidden: true,
+						},
+					] as SchemaTypes[],
+					data: {},
+				},
+				components: { ATextInput },
+			})
+
+			await wrapper.vm.$nextTick()
+			expect(wrapper.findAllComponents(ATextInput)).toHaveLength(1)
+		})
+
+		it('renders a field with hidden: false', async () => {
+			const wrapper = mount(AForm, {
+				props: {
+					schema: [
+						{
+							fieldname: 'visible_field',
+							fieldtype: 'Data',
+							component: 'ATextInput',
+							label: 'Visible',
+							hidden: false,
+						},
+					] as SchemaTypes[],
+					data: {},
+				},
+				components: { ATextInput },
+			})
+
+			await wrapper.vm.$nextTick()
+			expect(wrapper.findComponent(ATextInput).exists()).toBe(true)
+		})
+	})
+
 	describe('schema-driven mask', () => {
 		it('passes mask from schema field to ATextInput', async () => {
 			const schema: SchemaTypes[] = [

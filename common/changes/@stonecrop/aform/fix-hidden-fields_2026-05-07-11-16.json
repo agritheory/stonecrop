@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/aform",
+      "comment": "allow hiding fields via the schema",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/aform"
+}

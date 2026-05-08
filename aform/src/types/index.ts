@@ -92,6 +92,13 @@ export type BaseSchema = {
 	 * @public
 	 */
 	mode?: FormMode
+
+	/**
+	 * Hide the field from the form UI while keeping it in the data model.
+	 * Consumed by AForm — not passed down to field components.
+	 * @public
+	 */
+	hidden?: boolean
 }
 
 /**

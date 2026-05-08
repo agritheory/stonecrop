@@ -402,4 +402,47 @@ describe('AFormLink component', () => {
 
 		expect(navigate).not.toHaveBeenCalled()
 	})
+
+	describe('serialized string filterFunction', () => {
+		it('deserializes a string filterFunction and populates the dropdown', async () => {
+			const serialized = `(search) => [{ id: 'R1', displayText: 'Result One' }]`
+			const wrapper = mount(AFormLink, {
+				props: { modelValue: { id: '' }, filterFunction: serialized },
+			})
+
+			await wrapper.find('input').trigger('focus')
+			await flushPromises()
+			await wrapper.vm.$nextTick()
+
+			expect(wrapper.find('.autocomplete-results').exists()).toBe(true)
+			expect(wrapper.find('li').text()).toBe('Result One')
+		})
+
+		it('deserializes an async string filterFunction and populates the dropdown', async () => {
+			const serialized = `async (search) => [{ id: 'A1', displayText: 'Async Result' }]`
+			const wrapper = mount(AFormLink, {
+				props: { modelValue: { id: '' }, filterFunction: serialized },
+			})
+
+			await wrapper.find('input').trigger('focus')
+			await flushPromises()
+			await wrapper.vm.$nextTick()
+
+			expect(wrapper.find('li').text()).toBe('Async Result')
+		})
+
+		it('does not crash when string filterFunction is invalid and shows empty dropdown', async () => {
+			const serialized = `THIS IS NOT VALID JS %%%`
+			const wrapper = mount(AFormLink, {
+				props: { modelValue: { id: '' }, filterFunction: serialized },
+			})
+
+			await wrapper.find('input').trigger('focus')
+			await flushPromises()
+			await wrapper.vm.$nextTick()
+
+			expect(wrapper.find('.loading').exists()).toBe(false)
+			expect(wrapper.findAll('li')).toHaveLength(0)
+		})
+	})
 })

@@ -1,4 +1,5 @@
 export type * from '@stonecrop/atable/types'
+export { deserializeFunction } from './utils/deserialize'
 import { install as installATable } from '@stonecrop/atable'
 import type { App } from 'vue'
 
