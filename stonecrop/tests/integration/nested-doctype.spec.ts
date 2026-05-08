@@ -165,21 +165,22 @@ describe('Nested Doctype Support', () => {
 			// Scalar fields are unchanged
 			expect(resolved[0]).toEqual(expect.objectContaining({ fieldname: 'customer_name', fieldtype: 'Data' }))
 
-			// Link with cardinality:noneOrMany has auto-derived columns, component, and config
+			// Link with cardinality:noneOrMany has kind discriminant, delegated schema, and config
 			const tableField = resolved[1] as any
 			expect(tableField.fieldname).toBe('addresses')
 			expect(tableField.component).toBe('ATable')
+			expect(tableField.kind).toBe('table')
 			expect(tableField.config).toEqual({ view: 'list' })
 			// rows are NOT in the resolved schema — they come from formData at render time
 
-			// Columns derived from address schema
-			expect(tableField.columns).toHaveLength(4)
-			expect(tableField.columns[0]).toEqual(
-				expect.objectContaining({ name: 'street', label: 'street', fieldtype: 'Data', edit: true })
-			)
-			expect(tableField.columns[1]).toEqual(expect.objectContaining({ name: 'city' }))
-			expect(tableField.columns[2]).toEqual(expect.objectContaining({ name: 'state' }))
-			expect(tableField.columns[3]).toEqual(expect.objectContaining({ name: 'zip_code' }))
+			// Schema delegated to ATable — child fields are preserved, columns are not pre-built
+			expect(Array.isArray(tableField.schema)).toBe(true)
+			expect(tableField.schema).toHaveLength(4)
+			expect(tableField.schema[0]).toEqual(expect.objectContaining({ fieldname: 'street', fieldtype: 'Data' }))
+			expect(tableField.schema[1]).toEqual(expect.objectContaining({ fieldname: 'city' }))
+			expect(tableField.schema[2]).toEqual(expect.objectContaining({ fieldname: 'state' }))
+			expect(tableField.schema[3]).toEqual(expect.objectContaining({ fieldname: 'zip_code' }))
+			expect('columns' in tableField).toBe(false)
 		})
 
 		it('auto-derives columns from child doctype schema for noneOrMany links', () => {
@@ -194,8 +195,11 @@ describe('Nested Doctype Support', () => {
 			const resolved = registry.resolveSchema(testDoctype)
 			const tableField = resolved[0] as any
 
-			// Columns are auto-derived from address schema (street, city, state, zip_code)
-			expect(tableField.columns).toHaveLength(4)
+			// Schema delegated to ATable (street, city, state, zip_code)
+			expect(tableField.kind).toBe('table')
+			expect(Array.isArray(tableField.schema)).toBe(true)
+			expect(tableField.schema).toHaveLength(4)
+			expect('columns' in tableField).toBe(false)
 		})
 
 		it('uses custom component from link declaration', () => {
@@ -267,9 +271,12 @@ describe('Nested Doctype Support', () => {
 
 			expect(tableField.fieldname).toBe('addresses')
 			expect(tableField.component).toBe('ATable')
+			expect(tableField.kind).toBe('table')
 			expect(tableField.config).toEqual({ view: 'list' })
 			// rows are NOT in the resolved schema — they come from formData at render time
-			expect(tableField.columns).toHaveLength(4)
+			expect(Array.isArray(tableField.schema)).toBe(true)
+			expect(tableField.schema).toHaveLength(4)
+			expect('columns' in tableField).toBe(false)
 		})
 
 		it('resolves a link with cardinality:atMostOne by embedding child schema like one', () => {
@@ -474,7 +481,10 @@ describe('Nested Doctype Support', () => {
 			const tableField = fieldset.schema[1] as any
 			expect(tableField.fieldname).toBe('addresses')
 			expect(tableField.component).toBe('ATable')
-			expect(tableField.columns).toHaveLength(4)
+			expect(tableField.kind).toBe('table')
+			expect(Array.isArray(tableField.schema)).toBe(true)
+			expect(tableField.schema).toHaveLength(4)
+			expect('columns' in tableField).toBe(false)
 		})
 
 		it('recursively resolves a fieldset nested inside another fieldset', () => {

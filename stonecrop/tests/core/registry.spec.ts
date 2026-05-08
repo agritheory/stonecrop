@@ -422,4 +422,110 @@ describe('Registry class', () => {
 			expect(after.map(a => a.doctype).sort()).toEqual(['recipe', 'recipe-variant'])
 		})
 	})
+
+	describe('resolveSchema schema delegation', () => {
+		it('produces kind: "table" and schema array (not columns) for a 1:many link', () => {
+			registry = new Registry()
+			const taskSchema = List([
+				{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput', label: 'Name' },
+				{ fieldname: 'qty', fieldtype: 'Int', component: 'ATextInput', label: 'Qty' },
+			] as SchemaTypes[])
+			const taskWorkflow = { id: 'task', initial: 'draft', states: { draft: {} } }
+			const task = new Doctype('Task', taskSchema, taskWorkflow as any, Map())
+
+			const parentSchema = List([
+				{ fieldname: 'title', fieldtype: 'Data', component: 'ATextInput', label: 'Title' },
+				{
+					fieldname: 'tasks',
+					fieldtype: 'Link',
+					component: 'ATable',
+					label: 'Tasks',
+					options: 'task',
+					cardinality: 'noneOrMany',
+				},
+			] as SchemaTypes[])
+			const parentWorkflow = { id: 'parent', initial: 'draft', states: { draft: {} } }
+			const parent = new Doctype('Parent', parentSchema, parentWorkflow as any, Map(), undefined, {
+				tasks: { target: 'task', cardinality: 'noneOrMany', backlink: 'parent' },
+			})
+
+			registry.addDoctype(task)
+			registry.addDoctype(parent)
+
+			const resolved = registry.resolveSchema(parent)
+			const tasksField = resolved.find(f => f.fieldname === 'tasks') as any
+
+			expect(tasksField).toBeDefined()
+			expect(tasksField.kind).toBe('table')
+			expect(Array.isArray(tasksField.schema)).toBe(true)
+			expect('columns' in tasksField).toBe(false)
+		})
+
+		it('leaves a 1:1 link unchanged (no kind, has schema)', () => {
+			registry = new Registry()
+			const addressSchema = List([
+				{ fieldname: 'street', fieldtype: 'Data', component: 'ATextInput', label: 'Street' },
+			] as SchemaTypes[])
+			const addressWorkflow = { id: 'address', initial: 'draft', states: { draft: {} } }
+			const address = new Doctype('Address', addressSchema, addressWorkflow as any, Map())
+
+			const personSchema = List([
+				{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput', label: 'Name' },
+				{
+					fieldname: 'address',
+					fieldtype: 'Link',
+					label: 'Address',
+					options: 'address',
+					cardinality: 'one',
+				},
+			] as SchemaTypes[])
+			const personWorkflow = { id: 'person', initial: 'draft', states: { draft: {} } }
+			const person = new Doctype('Person', personSchema, personWorkflow as any, Map(), undefined, {
+				address: { target: 'address', cardinality: 'one', backlink: 'person' },
+			})
+
+			registry.addDoctype(address)
+			registry.addDoctype(person)
+
+			const resolved = registry.resolveSchema(person)
+			const addressField = resolved.find(f => f.fieldname === 'address') as any
+
+			expect(addressField).toBeDefined()
+			expect('kind' in addressField).toBe(false)
+			expect(Array.isArray(addressField.schema)).toBe(true)
+		})
+	})
+
+	describe('initializeRecord kind detection', () => {
+		it('initializes a field with kind: "table" and no columns to []', () => {
+			registry = new Registry()
+			const schema: SchemaTypes[] = [
+				{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput', label: 'Name' },
+				{
+					fieldname: 'items',
+					component: 'ATable',
+					label: 'Items',
+					kind: 'table',
+					schema: [{ fieldname: 'qty', fieldtype: 'Int', label: 'Qty' }],
+				} as any,
+			]
+			const record = registry.initializeRecord(schema)
+			expect(record.items).toEqual([])
+		})
+
+		it('initializes a field with kind: "table" and explicit columns also to []', () => {
+			registry = new Registry()
+			const schema: SchemaTypes[] = [
+				{
+					fieldname: 'items',
+					component: 'ATable',
+					label: 'Items',
+					kind: 'table',
+					columns: [{ name: 'qty', label: 'Qty' }],
+				} as any,
+			]
+			const record = registry.initializeRecord(schema)
+			expect(record.items).toEqual([])
+		})
+	})
 })

@@ -47,6 +47,7 @@
 	},
 	"dependencies": {
 		"@stonecrop/atable": "workspace:*",
+		"@stonecrop/schema": "workspace:*",
 		"@stonecrop/themes": "workspace:*",
 		"@stonecrop/utilities": "workspace:*",
 		"@vueuse/core": "^14.2.1",
