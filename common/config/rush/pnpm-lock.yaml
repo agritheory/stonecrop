@@ -97,6 +97,9 @@ importers:
 
   ../../atable:
     dependencies:
+      '@stonecrop/schema':
+        specifier: workspace:*
+        version: link:../schema
       '@stonecrop/themes':
         specifier: workspace:*
         version: link:../themes

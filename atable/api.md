@@ -2104,6 +2104,26 @@ declare function install(app: App): void;
 |-----------|------|-------------|
 | app | `App` | Vue app instance |
 
+### schemaToColumns
+
+Convert an array of doctype field descriptors into ATable column definitions.
+
+Fields are excluded when: - `hidden: true` — field should not be visible in any view - no `fieldtype` — non-scalar entry (nested table or fieldset), has no column equivalent
+
+Form-only properties (`hidden`, `component`, `mode`) are stripped from the output. All other properties spread through automatically, so new `ColumnSchema` properties flow to columns without changes here.
+
+**Signature:**
+
+```typescript
+export declare function schemaToColumns(schema: ColumnSchema[]): TableColumn[];
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| schema | `ColumnSchema[]` |  |
+
 ## Interfaces
 
 ### BaseTableConfig

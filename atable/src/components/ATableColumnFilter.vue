@@ -1,26 +1,26 @@
 <template>
 	<div class="column-filter">
 		<input
-			v-if="(column.filterType || 'text') === 'text'"
+			v-if="resolvedFilterType === 'text'"
 			v-model="filterValue"
 			type="text"
 			class="filter-input"
 			@input="updateFilter(filterValue)" />
 
 		<input
-			v-else-if="column.filterType === 'number'"
+			v-else-if="resolvedFilterType === 'number'"
 			v-model="filterValue"
 			type="number"
 			class="filter-input"
 			@input="updateFilter(filterValue)" />
 
-		<label v-else-if="column.filterType === 'checkbox'" class="checkbox-filter">
+		<label v-else-if="resolvedFilterType === 'checkbox'" class="checkbox-filter">
 			<input v-model="filterValue" type="checkbox" class="filter-checkbox" @change="updateFilter(filterValue)" />
 			<span>{{ column.label }}</span>
 		</label>
 
 		<select
-			v-else-if="column.filterType === 'select'"
+			v-else-if="resolvedFilterType === 'select'"
 			v-model="filterValue"
 			class="filter-select"
 			@change="updateFilter(filterValue)">
@@ -31,13 +31,13 @@
 		</select>
 
 		<input
-			v-else-if="column.filterType === 'date'"
+			v-else-if="resolvedFilterType === 'date'"
 			v-model="filterValue"
 			type="date"
 			class="filter-input"
 			@change="updateFilter(filterValue)" />
 
-		<div v-else-if="column.filterType === 'dateRange'" class="date-range-filter">
+		<div v-else-if="resolvedFilterType === 'dateRange'" class="date-range-filter">
 			<input
 				v-model="dateFilter.startValue"
 				type="date"
@@ -53,7 +53,7 @@
 
 		<component
 			:is="column.filterComponent"
-			v-else-if="column.filterType === 'component' && column.filterComponent"
+			v-else-if="resolvedFilterType === 'component' && column.filterComponent"
 			:value="filterValue"
 			:column="column"
 			:col-index="colIndex"
@@ -81,6 +81,28 @@ const dateFilter = reactive({
 	endValue: '',
 })
 
+const resolvedFilterType = computed(() => {
+	if (column.filterType) return column.filterType
+	switch (column.fieldtype) {
+		case 'Check':
+			return 'checkbox'
+		case 'Date':
+			return 'date'
+		case 'Datetime':
+			return 'dateRange'
+		case 'Select':
+			return 'select'
+		case 'Int':
+		case 'Float':
+		case 'Currency':
+		case 'Decimal':
+		case 'Quantity':
+			return 'number'
+		default:
+			return 'text'
+	}
+})
+
 const getSelectOptions = (column: TableColumn): any[] => {
 	if (column.filterOptions) return column.filterOptions
 
@@ -105,7 +127,7 @@ const hasActiveFilter = computed(() => {
 
 // Filter actions
 const updateFilter = (value: any) => {
-	if (!value && column.filterType !== 'checkbox') {
+	if (!value && resolvedFilterType.value !== 'checkbox') {
 		store.clearFilter(colIndex)
 		filterValue.value = ''
 	} else {
