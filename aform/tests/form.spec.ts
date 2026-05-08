@@ -111,6 +111,38 @@ describe('AForm Component', () => {
 		expect(wrapperWithData.vm).toBeTruthy()
 	})
 
+	describe('kind: table row injection', () => {
+		it('passes rows from dataModel to a component with kind: "table" and no columns', async () => {
+			const MockTable = defineComponent({
+				name: 'MockTable',
+				props: ['rows', 'schema', 'label', 'fieldname', 'data', 'mode', 'kind'],
+				template: '<div class="mock-table"></div>',
+			})
+
+			const wrapper = mount(AForm, {
+				props: {
+					schema: [
+						{
+							fieldname: 'items',
+							component: 'MockTable',
+							label: 'Items',
+							kind: 'table',
+							schema: [{ fieldname: 'qty', fieldtype: 'Int', label: 'Qty' }],
+						},
+					] as any[],
+					data: { items: [{ qty: 1 }, { qty: 2 }] },
+				},
+				global: { components: { MockTable } },
+			})
+
+			await wrapper.vm.$nextTick()
+
+			const mockTable = wrapper.findComponent(MockTable)
+			expect(mockTable.exists()).toBe(true)
+			expect(mockTable.props('rows')).toEqual([{ qty: 1 }, { qty: 2 }])
+		})
+	})
+
 	it('should handle mode prop', () => {
 		const modeWrapper = mount(AForm, {
 			props: {

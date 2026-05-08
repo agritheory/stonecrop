@@ -158,6 +158,13 @@ export type FormSchema = BaseSchema & {
  */
 export type TableSchema = BaseSchema & {
 	/**
+	 * Discriminant that marks this entry as an ATable, preventing AForm's nested-section
+	 * detection from treating a `schema`-bearing ATable entry as a fieldset/nested form.
+	 * @public
+	 */
+	kind?: 'table'
+
+	/**
 	 * The columns to display in the table
 	 * @public
 	 */

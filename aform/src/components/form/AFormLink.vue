@@ -55,7 +55,7 @@ const {
 	mode,
 	doctype = undefined,
 	formatter = undefined,
-	icon = 'arrow-right' as 'arrow-right' | 'chevron-right',
+	icon = 'arrow-right',
 	disabled = false,
 	filterFunction = undefined,
 	isAsync = false,

@@ -268,6 +268,7 @@ Schema structure for defining tables inside AForm
 
 ```typescript
 export type TableSchema = BaseSchema & {
+    kind?: 'table';
     columns?: TableColumn[];
     config?: TableConfig;
     rows?: TableRow[];

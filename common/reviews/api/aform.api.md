@@ -112,6 +112,7 @@ export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema;
 
 // @public
 export type TableSchema = BaseSchema & {
+    kind?: 'table';
     columns?: TableColumn[];
     config?: TableConfig;
     rows?: TableRow[];

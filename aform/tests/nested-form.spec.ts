@@ -380,6 +380,40 @@ describe('AForm Nested Schema Rendering', () => {
 		expect(nestedSections.length).toBe(2)
 	})
 
+	it('does NOT render as nested section when schema AND kind: "table" are both set', async () => {
+		const tableSchema: SchemaTypes[] = [
+			{
+				fieldname: 'name',
+				fieldtype: 'Data',
+				component: 'ATextInput',
+				label: 'Name',
+			},
+			{
+				fieldname: 'items',
+				label: 'Items',
+				component: 'ATable',
+				kind: 'table',
+				schema: [
+					{ fieldname: 'qty', fieldtype: 'Int', label: 'Qty' },
+					{ fieldname: 'price', fieldtype: 'Currency', label: 'Price' },
+				],
+			} as any,
+		] as SchemaTypes[]
+
+		const wrapper = mount(AForm, {
+			props: {
+				schema: tableSchema,
+				data: { name: 'Test', items: [] },
+			},
+			global: { components: { ATextInput } },
+		})
+
+		await wrapper.vm.$nextTick()
+
+		const nestedSections = wrapper.findAll('.aform-nested-section')
+		expect(nestedSections.length).toBe(0)
+	})
+
 	it('emits update:data when childModels change via v-model', async () => {
 		const simpleSchema: SchemaTypes[] = [
 			{
