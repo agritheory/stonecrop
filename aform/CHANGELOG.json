@@ -2,6 +2,18 @@
   "name": "@stonecrop/aform",
   "entries": [
     {
+      "version": "0.12.0",
+      "tag": "@stonecrop/aform_v0.12.0",
+      "date": "Mon, 11 May 2026 06:46:46 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "add kind discriminant to table schema types"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.11.10",
       "tag": "@stonecrop/aform_v0.11.10",
       "date": "Fri, 08 May 2026 06:36:28 GMT",

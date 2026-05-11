@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/aform
 
-This log was last generated on Fri, 08 May 2026 06:36:28 GMT and should not be manually modified.
+This log was last generated on Mon, 11 May 2026 06:46:46 GMT and should not be manually modified.
+
+## 0.12.0
+Mon, 11 May 2026 06:46:46 GMT
+
+### Minor changes
+
+- add kind discriminant to table schema types
 
 ## 0.11.10
 Fri, 08 May 2026 06:36:28 GMT
