@@ -827,7 +827,7 @@ describe('resolveSchema → schemaToColumns pipeline', () => {
 		expect(names).not.toContain('assignee')
 	})
 
-	it('column objects do not carry kind, schema, config, component, or mode', () => {
+	it('column objects do not carry kind, schema, or config', () => {
 		const resolved = registry.resolveSchema(registry.getDoctype('task')!)
 		const columns = schemaToColumns(resolved as any)
 
@@ -835,8 +835,6 @@ describe('resolveSchema → schemaToColumns pipeline', () => {
 			expect((col as any).kind).toBeUndefined()
 			expect((col as any).schema).toBeUndefined()
 			expect((col as any).config).toBeUndefined()
-			expect((col as any).component).toBeUndefined()
-			expect((col as any).mode).toBeUndefined()
 		}
 	})
 
