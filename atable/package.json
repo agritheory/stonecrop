@@ -46,6 +46,7 @@
 		"test:ui": "vitest --ui"
 	},
 	"dependencies": {
+		"@stonecrop/schema": "workspace:*",
 		"@stonecrop/themes": "workspace:*",
 		"@stonecrop/utilities": "workspace:*",
 		"@vueuse/components": "^14.2.1",

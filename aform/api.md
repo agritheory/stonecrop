@@ -262,15 +262,24 @@ export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema;
 
 ### TableSchema
 
-Schema structure for defining tables inside AForm
+Schema structure for defining tables inside AForm.
+
+Two mutually exclusive forms: - **Columns-based** (no `kind`): caller provides `columns` directly - **Schema-delegated** (`kind: 'table'`): caller provides `schema`; ATable runs `schemaToColumns` to derive columns at render time
 
 **Definition:**
 
 ```typescript
 export type TableSchema = BaseSchema & {
-    columns?: TableColumn[];
     config?: TableConfig;
     rows?: TableRow[];
-};
+} & ({
+    columns?: TableColumn[];
+    kind?: never;
+    schema?: never;
+} | {
+    kind: 'table';
+    schema: ColumnSchema[];
+    columns?: never;
+});
 ```
 

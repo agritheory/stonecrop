@@ -2,6 +2,7 @@ import { config, mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { nextTick } from 'vue'
+import type { ColumnSchema } from '@stonecrop/schema'
 
 // Mock VueUse functions
 vi.mock('@vueuse/core', () => ({
@@ -1084,5 +1085,67 @@ describe('Sorting and Filtering', () => {
 			expect(store.filteredRows[0].name).toBe('Alice') // Still sorted
 			expect(store.filteredRows[1].name).toBe('Charlie')
 		})
+	})
+})
+
+describe('Schema-driven columns', () => {
+	beforeEach(() => {
+		setActivePinia(createPinia())
+	})
+
+	it('renders columns derived from schema when no columns prop is provided', () => {
+		const schema: ColumnSchema[] = [
+			{ fieldname: 'name', fieldtype: 'Data', label: 'Name', width: '200px' },
+			{ fieldname: 'status', fieldtype: 'Data', label: 'Status', width: '150px' },
+		]
+		const wrapper = mount(ATable, {
+			props: {
+				rows: [{ name: 'Alice', status: 'active' }],
+				schema,
+				config: { view: 'list' },
+			},
+		})
+		// schema has 2 fields → 2 data columns + 1 row-index column (list view)
+		const headerCells = wrapper.findAll('th')
+		expect(headerCells.length).toBe(schema.length + 1)
+		expect(wrapper.vm.store.columns).toHaveLength(schema.length)
+		expect(wrapper.vm.store.columns[0].name).toBe('name')
+		expect(wrapper.vm.store.columns[1].name).toBe('status')
+	})
+
+	it('excludes hidden fields from derived columns', () => {
+		const schema: ColumnSchema[] = [
+			{ fieldname: 'name', fieldtype: 'Data', label: 'Name' },
+			{ fieldname: 'secret', fieldtype: 'Data', label: 'Secret', hidden: true },
+		]
+		const wrapper = mount(ATable, {
+			props: {
+				rows: [{ name: 'Alice', secret: 'hidden' }],
+				schema,
+				config: { view: 'list' },
+			},
+		})
+		// only 1 visible column + 1 row-index column (list view)
+		const headerCells = wrapper.findAll('th')
+		expect(headerCells.length).toBe(2)
+		expect(wrapper.vm.store.columns).toHaveLength(1)
+		expect(wrapper.vm.store.columns[0].name).toBe('name')
+	})
+
+	it('explicit columns prop takes precedence over schema when both are provided', () => {
+		const schema: ColumnSchema[] = [{ fieldname: 'name', fieldtype: 'Data', label: 'Name from Schema' }]
+		const explicitColumns: TableColumn[] = [
+			{ name: 'id', label: 'ID', width: '100px' },
+			{ name: 'name', label: 'Name from Columns', width: '200px' },
+		]
+		const wrapper = mount(ATable, {
+			props: {
+				rows: [{ id: 1, name: 'Alice' }],
+				columns: explicitColumns,
+				schema,
+			},
+		})
+		expect(wrapper.vm.store.columns).toEqual(explicitColumns)
+		expect(wrapper.vm.store.columns).toHaveLength(2)
 	})
 })

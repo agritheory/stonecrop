@@ -52,6 +52,32 @@ export type Cardinality = z.infer<typeof Cardinality>;
 export function classifyFieldType(fieldName: string, field: GraphQLField<unknown, unknown>, entityTypes: Set<string>, options?: GraphQLConversionOptions): GraphQLConversionFieldMeta;
 
 // @public
+export interface ColumnSchema {
+    align?: 'left' | 'right' | 'center' | 'start' | 'end';
+    cellComponent?: string;
+    cellComponentProps?: Record<string, any>;
+    colspan?: number;
+    edit?: boolean;
+    fieldname: string;
+    fieldtype?: string;
+    filterable?: boolean;
+    filterComponent?: string;
+    filterOptions?: any[];
+    filterType?: 'text' | 'select' | 'number' | 'date' | 'dateRange' | 'checkbox' | 'component';
+    format?: string;
+    ganttComponent?: string;
+    hidden?: boolean;
+    isGantt?: boolean;
+    label?: string;
+    modalComponent?: string;
+    modalComponentExtraProps?: Record<string, any>;
+    pinned?: boolean;
+    resizable?: boolean;
+    sortable?: boolean;
+    width?: string;
+}
+
+// @public
 export interface ConvertedGraphQLDoctype extends Omit<DoctypeMeta, 'fields'> {
     fields: GraphQLConversionFieldMeta[];
     _graphqlTypeName?: string;

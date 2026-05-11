@@ -288,21 +288,9 @@ export default class Registry {
 			...field,
 			fieldname: field.fieldname,
 			component: component || field.component || 'ATable',
-			columns: field.columns,
+			kind: 'table',
+			schema: childSchema,
 			config: field.config,
-		}
-
-		if (!resolved.columns) {
-			resolved.columns = childSchema
-				.filter(childField => 'fieldtype' in childField)
-				.map(childField => ({
-					name: childField.fieldname,
-					label: ('label' in childField && childField.label) || childField.fieldname,
-					fieldtype: 'fieldtype' in childField ? childField.fieldtype : 'Data',
-					align: 'align' in childField ? childField.align : 'left',
-					edit: 'edit' in childField ? childField.edit : true,
-					width: ('width' in childField && childField.width) || '20ch',
-				}))
 		}
 
 		if (!resolved.config) {
@@ -353,9 +341,8 @@ export default class Registry {
 				return
 			}
 
-			// Resolved 1:many table entry — structural detection via columns
-			// TODO: replace 'columns' presence check with a type discriminant on SchemaTypes once one exists
-			if ('columns' in field) {
+			// Resolved 1:many table entry — kind discriminant set by buildTableConfig
+			if ('kind' in field && field.kind === 'table') {
 				record[field.fieldname] = []
 				return
 			}

@@ -425,7 +425,16 @@ export const createTableStore = (initData: {
 			const format = column.format
 
 			if (!format) {
-				return value
+				switch (column.fieldtype) {
+					case 'Check':
+						return value ? '✓' : '✗'
+					case 'Date':
+						return value != null ? new Date(value as string).toLocaleDateString() : value
+					case 'Datetime':
+						return value != null ? new Date(value as string).toLocaleString() : value
+					default:
+						return value
+				}
 			}
 
 			if (typeof format === 'function') {

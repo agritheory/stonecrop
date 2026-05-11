@@ -109,21 +109,40 @@ const ancestors = registry.getAncestorLinks('address')
 // [{ fieldname: 'customer', target: 'address', cardinality: 'one', backlink: 'address', doctype: 'customer' }]
 ```
 
-### Phase 3: Schema Resolution (for 1:1 nested forms)
+### Phase 3: Schema Resolution
 
-The Registry resolves `links` entries (1:1 cardinality) by embedding child schemas:
+`registry.resolveSchema()` walks each `links` entry and embeds the target doctype's fields directly on the resolved field object. The shape depends on cardinality:
+
+**1:1 links** (`one`, `atMostOne`) — embed child schema for an inline nested form:
 
 ```typescript
 const resolvedSchema = registry.resolveSchema(customerDoctype)
 
-// resolvedSchema now has the address link resolved as an embedded schema entry:
+// address link resolves to:
 // {
 //   fieldname: 'address',
 //   label: 'address',
 //   cardinality: 'one',
 //   component: 'AForm',
-//   schema: [ /* address fields here */ ]
+//   schema: [ /* address fields */ ]
 // }
+// AForm detects `'schema' in field` (without kind: 'table') and renders a nested AForm.
+```
+
+**1:many links** (`noneOrMany`, `atLeastOne`) — embed child schema for an inline table:
+
+```typescript
+// orders link resolves to:
+// {
+//   fieldname: 'orders',
+//   label: 'orders',
+//   cardinality: 'noneOrMany',
+//   component: 'ATable',
+//   kind: 'table',
+//   schema: [ /* sales-order fields as ColumnSchema[] */ ]
+// }
+// AForm detects `kind === 'table'` and renders an ATable with :schema bound to the embedded
+// schema array. ATable calls schemaToColumns() internally — no TableColumn objects needed.
 ```
 
 ### Phase 4: Nested Data Loading
@@ -158,7 +177,7 @@ AForm:
 3. Renders nested AForms recursively with proper styling
 4. Manages two-way data binding for all nested fields
 
-For 1:many relationships (`cardinality: 'noneOrMany'` or `'atLeastOne'`), the resolved schema entry has `component: 'ATable'`. AForm detects this and renders an ATable component inline, with columns derived from the target doctype's schema and an empty `rows` array.
+For 1:many relationships (`cardinality: 'noneOrMany'` or `'atLeastOne'`), the resolved schema entry has `component: 'ATable'` and `kind: 'table'`. AForm detects `kind === 'table'` and renders an ATable with `:schema` bound to the embedded `ColumnSchema[]` array. ATable derives its own columns via `schemaToColumns()` — no `TableColumn` objects are required.
 
 ## Fetch Strategies
 

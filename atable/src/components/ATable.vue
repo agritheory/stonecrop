@@ -92,6 +92,9 @@ import ARow from './ARow.vue'
 import ATableHeader from './ATableHeader.vue'
 import ATableModal from './ATableModal.vue'
 import { createTableStore } from '../stores/table'
+import type { ColumnSchema } from '@stonecrop/schema'
+
+import { schemaToColumns } from '../schemaToColumns'
 import type {
 	ConnectionEvent,
 	ConnectionPath,
@@ -108,11 +111,17 @@ import type {
 } from '../types'
 
 const rows = defineModel<TableRow[]>('rows', { required: true })
-const columns = defineModel<TableColumn[]>('columns', { required: true })
+// TODO: convert columns from defineModel to a regular prop
+const columns = defineModel<TableColumn[]>('columns')
 
-const { id = '', config = new Object() } = defineProps<{
+const {
+	id = '',
+	config = new Object(),
+	schema = [],
+} = defineProps<{
 	id?: string
 	config?: TableConfig
+	schema?: ColumnSchema[]
 }>()
 
 const emit = defineEmits<{
@@ -129,7 +138,8 @@ const emit = defineEmits<{
 }>()
 
 const tableRef = useTemplateRef<HTMLTableElement>('table')
-const store = createTableStore({ columns: columns.value, rows: rows.value, id, config })
+const resolvedColumns = columns.value?.length ? columns.value : schemaToColumns(schema ?? [])
+const store = createTableStore({ columns: resolvedColumns, rows: rows.value, id, config })
 
 store.$onAction(({ name, store, args, after }) => {
 	if (name === 'setCellData' || name === 'setCellText') {
@@ -189,7 +199,7 @@ watch(
 )
 
 onMounted(() => {
-	if (columns.value.some(column => column.pinned)) {
+	if (columns.value?.some(column => column.pinned)) {
 		assignStickyCellWidths()
 
 		// in tree views, also add a mutation observer to capture and adjust expanded rows

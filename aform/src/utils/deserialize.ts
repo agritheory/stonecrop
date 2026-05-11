@@ -12,7 +12,7 @@
  * ```
  * @public
  */
-// eslint-disable-next-line @typescript-eslint/no-implied-eval, @typescript-eslint/no-unsafe-call
 export function deserializeFunction<T extends (...args: any[]) => any>(source: string): T {
+	// eslint-disable-next-line @typescript-eslint/no-implied-eval, @typescript-eslint/no-unsafe-call
 	return Function(`"use strict"; return (${source})`)() as T
 }

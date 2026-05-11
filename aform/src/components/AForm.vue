@@ -2,9 +2,7 @@
 	<form class="aform">
 		<template v-for="(componentObj, key) in schema" :key="key">
 			<!-- Nested schema field (Doctype or any field with resolved schema) -->
-			<div
-				v-if="'schema' in componentObj && Array.isArray(componentObj.schema) && componentObj.schema.length > 0"
-				class="aform-nested-section">
+			<div v-if="isNestedSection(componentObj)" class="aform-nested-section">
 				<!-- Suppress h4 when collapsible is present — fieldset components render their own legend -->
 				<!-- TODO: replace 'collapsible' presence check with a type discriminant on SchemaTypes once one exists -->
 				<h4 v-if="componentObj.label && !('collapsible' in componentObj)" class="aform-nested-label">
@@ -37,11 +35,17 @@
 <script setup lang="ts">
 import { computed, watchEffect, watch, ref } from 'vue'
 
-import type { SchemaTypes, FormMode } from '../types'
+import type { SchemaTypes, FieldsetSchema, FormMode } from '../types'
 
 const emit = defineEmits(['update:schema', 'update:data'])
 const dataModel = defineModel<Record<string, any>>('data', { required: true })
 const { schema, mode = 'edit' } = defineProps<{ schema: SchemaTypes[]; mode?: FormMode }>()
+
+const isNestedSection = (componentObj: SchemaTypes): componentObj is FieldsetSchema =>
+	'schema' in componentObj &&
+	Array.isArray(componentObj.schema) &&
+	componentObj.schema.length > 0 &&
+	(!('kind' in componentObj) || componentObj.kind !== 'table')
 
 // Reactive nested data refs for two-way binding with nested AForm instances
 const nestedData = ref<Record<string, any>>({})
@@ -54,7 +58,7 @@ watch(
 	newData => {
 		if (!schema || !newData) return
 		schema.forEach(field => {
-			if ('schema' in field && Array.isArray(field.schema) && field.schema.length > 0) {
+			if (isNestedSection(field)) {
 				nestedData.value[field.fieldname] = newData[field.fieldname] ?? {}
 			}
 		})
@@ -83,11 +87,10 @@ const componentProps = (componentObj: SchemaTypes) => {
 		}
 	}
 
-	// Structural detection: any component with 'columns' is tabular and needs rows from formData
+	// Tabular components (those with 'columns' or kind: 'table') need rows from formData
 	// when no explicit rows were provided in the schema. Preserves non-empty rows that were
 	// set directly on the schema entry (e.g. Desktop records view).
-	// TODO: replace 'columns' presence check with a type discriminant on SchemaTypes once one exists
-	if ('columns' in componentObj) {
+	if ('columns' in componentObj || ('kind' in componentObj && componentObj.kind === 'table')) {
 		const existingRows = componentObj.rows
 		if (!existingRows || (Array.isArray(existingRows) && existingRows.length === 0)) {
 			propsToPass['rows'] = dataModel.value[componentObj.fieldname] || []

@@ -214,6 +214,52 @@ describe('table store', () => {
 			expect(formatted).toBe('String: test')
 		})
 
+		describe('fieldtype-based formatting defaults', () => {
+			it('formats Check true as ✓', () => {
+				store.columns[0] = { name: 'id', fieldtype: 'Check' }
+				expect(store.getFormattedValue(0, 0, true)).toBe('✓')
+			})
+
+			it('formats Check false as ✗', () => {
+				store.columns[0] = { name: 'id', fieldtype: 'Check' }
+				expect(store.getFormattedValue(0, 0, false)).toBe('✗')
+			})
+
+			it('formats Date string as locale date', () => {
+				store.columns[0] = { name: 'id', fieldtype: 'Date' }
+				const input = '2024-06-15'
+				const result = store.getFormattedValue(0, 0, input)
+				expect(result).toBe(new Date(input).toLocaleDateString())
+			})
+
+			it('returns null for Date when value is null', () => {
+				store.columns[0] = { name: 'id', fieldtype: 'Date' }
+				expect(store.getFormattedValue(0, 0, null)).toBeNull()
+			})
+
+			it('formats Datetime string as locale datetime', () => {
+				store.columns[0] = { name: 'id', fieldtype: 'Datetime' }
+				const input = '2024-06-15T14:30:00Z'
+				const result = store.getFormattedValue(0, 0, input)
+				expect(result).toBe(new Date(input).toLocaleString())
+			})
+
+			it('returns null for Datetime when value is null', () => {
+				store.columns[0] = { name: 'id', fieldtype: 'Datetime' }
+				expect(store.getFormattedValue(0, 0, null)).toBeNull()
+			})
+
+			it('passes value through for unknown fieldtype', () => {
+				store.columns[0] = { name: 'id', fieldtype: 'Data' }
+				expect(store.getFormattedValue(0, 0, 'hello')).toBe('hello')
+			})
+
+			it('explicit format function takes precedence over fieldtype default', () => {
+				store.columns[0] = { name: 'id', fieldtype: 'Check', format: (value: any) => (value ? 'yes' : 'no') }
+				expect(store.getFormattedValue(0, 0, true)).toBe('yes')
+			})
+		})
+
 		it('should get cell display value', () => {
 			// Get the actual current value from the cell
 			const actualCellData = store.getCellData(1, 0)

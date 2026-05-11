@@ -1,7 +1,7 @@
 <template>
 	<div :class="{ collapsed: !isOpen }" class="action-set">
 		<div class="action-menu-icon">
-			<div id="cross" @click="onClick" :class="{ rotated: isOpen }">×</div>
+			<div id="cross" :class="{ rotated: isOpen }" @click="onClick">×</div>
 		</div>
 		<div style="margin-right: 30px"></div>
 		<div v-for="(el, index) in elements" :key="el.label" class="action-element">
@@ -16,7 +16,7 @@
 			</div>
 			<div v-if="el.type == 'dropdown'">
 				<div class="dropdown-header">
-					<div @click="toggleDropdown(index)" class="cross" :class="{ rotated: dropdownOpen[index] }">×</div>
+					<div class="cross" :class="{ rotated: dropdownOpen[index] }" @click="toggleDropdown(index)">×</div>
 					<button class="button-default dropdown-title" @click="toggleDropdown(index)">
 						{{ el.label }}
 					</button>

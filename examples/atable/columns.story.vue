@@ -20,11 +20,33 @@
 				<pre>{{ JSON.stringify(tableColumns, null, 2) }}</pre>
 			</div>
 		</Variant>
+
+		<Variant title="Schema-driven columns">
+			<div style="margin-bottom: 20px">
+				<h3>Schema-driven columns</h3>
+				<p>
+					Pass a <code>:schema</code> prop instead of <code>v-model:columns</code>. ATable calls
+					<code>schemaToColumns()</code> internally — <code>fieldname</code> becomes <code>name</code>,
+					<code>hidden: true</code> fields are excluded, and form-only properties are stripped.
+				</p>
+			</div>
+
+			<ATable v-model:rows="schemaRows" :schema="schemaFields" :config="schemaConfig" />
+
+			<div style="margin-top: 20px">
+				<h4>Schema (source of truth):</h4>
+				<pre>{{ JSON.stringify(schemaFields, null, 2) }}</pre>
+				<p style="font-style: italic; color: #666; margin-top: 8px">
+					<code>internal_notes</code> has <code>hidden: true</code> and does not appear as a column.
+				</p>
+			</div>
+		</Variant>
 	</Story>
 </template>
 
 <script lang="ts" setup>
 import type { TableColumn, TableConfig, TableRow } from '@stonecrop/atable'
+import type { ColumnSchema } from '@stonecrop/schema'
 import { ref } from 'vue'
 
 const sampleData: TableRow[] = [
@@ -87,6 +109,23 @@ const resizeFirstColumn = () => {
 		}
 	}
 }
+
+// Schema-driven variant
+const schemaFields: ColumnSchema[] = [
+	{ fieldname: 'id', fieldtype: 'Int', label: 'ID', width: '80px' },
+	{ fieldname: 'name', fieldtype: 'Data', label: 'Name', width: '150px' },
+	{ fieldname: 'department', fieldtype: 'Data', label: 'Department', width: '150px' },
+	{ fieldname: 'age', fieldtype: 'Int', label: 'Age', width: '80px', align: 'right' },
+	{ fieldname: 'internal_notes', fieldtype: 'Data', label: 'Internal Notes', hidden: true },
+]
+
+const schemaRows = ref<TableRow[]>([
+	{ id: 1, name: 'Alice', department: 'Engineering', age: 30, internal_notes: 'confidential' },
+	{ id: 2, name: 'Bob', department: 'Design', age: 25, internal_notes: 'confidential' },
+	{ id: 3, name: 'Carol', department: 'Product', age: 35, internal_notes: 'confidential' },
+])
+
+const schemaConfig: TableConfig = { view: 'list', fullWidth: true }
 </script>
 
 <style scoped>

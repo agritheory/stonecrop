@@ -21,8 +21,8 @@
 				<h3>Resolved Schema (resolveSchema)</h3>
 				<p>
 					<code>registry.resolveSchema()</code> walks the doctype's <code>links</code> declarations, resolves each
-					target doctype, and embeds a <code>schema</code> array on 1:1 entries or a <code>columns</code> array on
-					1:many entries. AForm checks <code>'schema' in field</code>
+					target doctype, and embeds a <code>schema</code> array on 1:1 entries or a <code>schema</code> array with
+					<code>kind: 'table'</code> on 1:many entries. AForm checks <code>'schema' in field</code>
 					and recurses automatically — no knowledge of the registry is required at render time.
 				</p>
 				<p>See <strong>nested schema → resolved schema</strong> for the rendered result.</p>
@@ -33,7 +33,9 @@
 							fieldname: f.fieldname,
 							component: f.component,
 							...('schema' in f ? { schema: `[${(f as any).schema.length} fields]` } : {}),
-							...('columns' in f ? { columns: `[${(f as any).columns?.length ?? 0} columns]` } : {}),
+							...((f as any).kind === 'table'
+								? { kind: 'table', schema: `[${(f as any).schema?.length ?? 0} fields]` }
+								: {}),
 						})),
 						null,
 						2
@@ -90,7 +92,9 @@
 							fieldname: f.fieldname,
 							component: f.component,
 							...('schema' in f ? { schema: `[${(f as any).schema.length} fields]` } : {}),
-							...('columns' in f ? { columns: `[${(f as any).columns?.length ?? 0} columns]` } : {}),
+							...((f as any).kind === 'table'
+								? { kind: 'table', schema: `[${(f as any).schema?.length ?? 0} fields]` }
+								: {}),
 						})),
 						null,
 						2
@@ -193,9 +197,9 @@ const recipeData = ref({
 `registry.resolveSchema()` produces a flat `SchemaTypes[]` ready for `AForm`. For each link entry it embeds the child schema directly on the field object:
 
 - **1:1 links** (`atMostOne`, `one`) — `schema: SchemaTypes[]` attached; AForm renders a nested form
-- **1:many links** (`noneOrMany`, `atLeastOne`) — `columns` derived from child fields; AForm renders a table
+- **1:many links** (`noneOrMany`, `atLeastOne`) — `schema` array + `kind: 'table'`; ATable derives its own columns
 
-AForm has no knowledge of the registry — it only checks `'schema' in field` to decide whether to recurse.
+AForm has no knowledge of the registry — it checks `'schema' in field && kind !== 'table'` to decide whether to recurse into a nested form.
 
 ## Cardinality types
 
