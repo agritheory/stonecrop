@@ -430,7 +430,7 @@ This package provides the type system used throughout Stonecrop:
 - **`@stonecrop/stonecrop`** - Registry uses `DoctypeMeta` for schema storage; `getDescendantLinks()` / `getAncestorLinks()` for relationship traversal
 - **`@stonecrop/graphql-client`** - `StonecropClient` implements `DataClient`; uses `GetRecordOptions` / `GetRecordsOptions` for fetch parameters
 - **`@stonecrop/aform`** - Renders fields based on `FieldMeta` definitions
-- **`@stonecrop/atable`** - Uses `FieldMeta` for column configuration
+- **`@stonecrop/atable`** - Uses `ColumnSchema` for schema-driven column derivation; `TableColumn` (ATable's runtime column type) extends `ColumnSchema`, widening `format`/`modalComponent` to accept live functions and adding `mask`/`originalIndex`
 - **Backend APIs** - Validates and stores doctypes using these schemas
 
 ## Development

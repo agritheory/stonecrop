@@ -123,10 +123,14 @@ export const createTableStore: (initData: {
 }) => Store<`table-${string}`, Pick<{
 columns: Ref<    {
 name: string;
-align?: CanvasTextAlign | undefined;
-edit?: boolean | undefined;
-label?: string | undefined;
+format?: string | ((value: any, context: CellContext) => string) | undefined;
+modalComponent?: string | ((context: CellContext) => string) | undefined;
+mask?: ((value: any) => any) | undefined;
+readonly originalIndex?: number | undefined;
 fieldtype?: string | undefined;
+label?: string | undefined;
+align?: "left" | "right" | "center" | "start" | "end" | undefined;
+edit?: boolean | undefined;
 width?: string | undefined;
 pinned?: boolean | undefined;
 resizable?: boolean | undefined;
@@ -137,20 +141,20 @@ filterOptions?: any[] | undefined;
 filterComponent?: string | undefined;
 cellComponent?: string | undefined;
 cellComponentProps?: Record<string, any> | undefined;
-modalComponent?: string | ((context: CellContext) => string) | undefined;
 modalComponentExtraProps?: Record<string, any> | undefined;
-format?: string | ((value: any, context: CellContext) => string) | undefined;
-mask?: ((value: any) => any) | undefined;
 isGantt?: boolean | undefined;
 ganttComponent?: string | undefined;
 colspan?: number | undefined;
-originalIndex?: number | undefined;
 }[], TableColumn[] | {
 name: string;
-align?: CanvasTextAlign | undefined;
-edit?: boolean | undefined;
-label?: string | undefined;
+format?: string | ((value: any, context: CellContext) => string) | undefined;
+modalComponent?: string | ((context: CellContext) => string) | undefined;
+mask?: ((value: any) => any) | undefined;
+readonly originalIndex?: number | undefined;
 fieldtype?: string | undefined;
+label?: string | undefined;
+align?: "left" | "right" | "center" | "start" | "end" | undefined;
+edit?: boolean | undefined;
 width?: string | undefined;
 pinned?: boolean | undefined;
 resizable?: boolean | undefined;
@@ -161,14 +165,10 @@ filterOptions?: any[] | undefined;
 filterComponent?: string | undefined;
 cellComponent?: string | undefined;
 cellComponentProps?: Record<string, any> | undefined;
-modalComponent?: string | ((context: CellContext) => string) | undefined;
 modalComponentExtraProps?: Record<string, any> | undefined;
-format?: string | ((value: any, context: CellContext) => string) | undefined;
-mask?: ((value: any) => any) | undefined;
 isGantt?: boolean | undefined;
 ganttComponent?: string | undefined;
 colspan?: number | undefined;
-originalIndex?: number | undefined;
 }[]>;
 config: Ref<    {
 view?: "uncounted" | "list" | "list-expansion" | undefined;
@@ -767,10 +767,14 @@ updateRows: (newRows: TableRow[]) => void;
 }, "columns" | "config" | "connectionHandles" | "connectionPaths" | "filterState" | "ganttBars" | "modal" | "rows" | "sortState" | "updates">, Pick<{
 columns: Ref<    {
 name: string;
-align?: CanvasTextAlign | undefined;
-edit?: boolean | undefined;
-label?: string | undefined;
+format?: string | ((value: any, context: CellContext) => string) | undefined;
+modalComponent?: string | ((context: CellContext) => string) | undefined;
+mask?: ((value: any) => any) | undefined;
+readonly originalIndex?: number | undefined;
 fieldtype?: string | undefined;
+label?: string | undefined;
+align?: "left" | "right" | "center" | "start" | "end" | undefined;
+edit?: boolean | undefined;
 width?: string | undefined;
 pinned?: boolean | undefined;
 resizable?: boolean | undefined;
@@ -781,20 +785,20 @@ filterOptions?: any[] | undefined;
 filterComponent?: string | undefined;
 cellComponent?: string | undefined;
 cellComponentProps?: Record<string, any> | undefined;
-modalComponent?: string | ((context: CellContext) => string) | undefined;
 modalComponentExtraProps?: Record<string, any> | undefined;
-format?: string | ((value: any, context: CellContext) => string) | undefined;
-mask?: ((value: any) => any) | undefined;
 isGantt?: boolean | undefined;
 ganttComponent?: string | undefined;
 colspan?: number | undefined;
-originalIndex?: number | undefined;
 }[], TableColumn[] | {
 name: string;
-align?: CanvasTextAlign | undefined;
-edit?: boolean | undefined;
-label?: string | undefined;
+format?: string | ((value: any, context: CellContext) => string) | undefined;
+modalComponent?: string | ((context: CellContext) => string) | undefined;
+mask?: ((value: any) => any) | undefined;
+readonly originalIndex?: number | undefined;
 fieldtype?: string | undefined;
+label?: string | undefined;
+align?: "left" | "right" | "center" | "start" | "end" | undefined;
+edit?: boolean | undefined;
 width?: string | undefined;
 pinned?: boolean | undefined;
 resizable?: boolean | undefined;
@@ -805,14 +809,10 @@ filterOptions?: any[] | undefined;
 filterComponent?: string | undefined;
 cellComponent?: string | undefined;
 cellComponentProps?: Record<string, any> | undefined;
-modalComponent?: string | ((context: CellContext) => string) | undefined;
 modalComponentExtraProps?: Record<string, any> | undefined;
-format?: string | ((value: any, context: CellContext) => string) | undefined;
-mask?: ((value: any) => any) | undefined;
 isGantt?: boolean | undefined;
 ganttComponent?: string | undefined;
 colspan?: number | undefined;
-originalIndex?: number | undefined;
 }[]>;
 config: Ref<    {
 view?: "uncounted" | "list" | "list-expansion" | undefined;
@@ -1411,10 +1411,14 @@ updateRows: (newRows: TableRow[]) => void;
 }, "display" | "table" | "filteredRows" | "hasPinnedColumns" | "isGanttView" | "isTreeView" | "isDependencyGraphEnabled" | "numberedRowWidth" | "zeroColumn">, Pick<{
 columns: Ref<    {
 name: string;
-align?: CanvasTextAlign | undefined;
-edit?: boolean | undefined;
-label?: string | undefined;
+format?: string | ((value: any, context: CellContext) => string) | undefined;
+modalComponent?: string | ((context: CellContext) => string) | undefined;
+mask?: ((value: any) => any) | undefined;
+readonly originalIndex?: number | undefined;
 fieldtype?: string | undefined;
+label?: string | undefined;
+align?: "left" | "right" | "center" | "start" | "end" | undefined;
+edit?: boolean | undefined;
 width?: string | undefined;
 pinned?: boolean | undefined;
 resizable?: boolean | undefined;
@@ -1425,20 +1429,20 @@ filterOptions?: any[] | undefined;
 filterComponent?: string | undefined;
 cellComponent?: string | undefined;
 cellComponentProps?: Record<string, any> | undefined;
-modalComponent?: string | ((context: CellContext) => string) | undefined;
 modalComponentExtraProps?: Record<string, any> | undefined;
-format?: string | ((value: any, context: CellContext) => string) | undefined;
-mask?: ((value: any) => any) | undefined;
 isGantt?: boolean | undefined;
 ganttComponent?: string | undefined;
 colspan?: number | undefined;
-originalIndex?: number | undefined;
 }[], TableColumn[] | {
 name: string;
-align?: CanvasTextAlign | undefined;
-edit?: boolean | undefined;
-label?: string | undefined;
+format?: string | ((value: any, context: CellContext) => string) | undefined;
+modalComponent?: string | ((context: CellContext) => string) | undefined;
+mask?: ((value: any) => any) | undefined;
+readonly originalIndex?: number | undefined;
 fieldtype?: string | undefined;
+label?: string | undefined;
+align?: "left" | "right" | "center" | "start" | "end" | undefined;
+edit?: boolean | undefined;
 width?: string | undefined;
 pinned?: boolean | undefined;
 resizable?: boolean | undefined;
@@ -1449,14 +1453,10 @@ filterOptions?: any[] | undefined;
 filterComponent?: string | undefined;
 cellComponent?: string | undefined;
 cellComponentProps?: Record<string, any> | undefined;
-modalComponent?: string | ((context: CellContext) => string) | undefined;
 modalComponentExtraProps?: Record<string, any> | undefined;
-format?: string | ((value: any, context: CellContext) => string) | undefined;
-mask?: ((value: any) => any) | undefined;
 isGantt?: boolean | undefined;
 ganttComponent?: string | undefined;
 colspan?: number | undefined;
-originalIndex?: number | undefined;
 }[]>;
 config: Ref<    {
 view?: "uncounted" | "list" | "list-expansion" | undefined;
@@ -2211,30 +2211,12 @@ export interface RowMoveEvent {
 export function schemaToColumns(schema: ColumnSchema[]): TableColumn[];
 
 // @public
-export interface TableColumn {
-    align?: CanvasTextAlign;
-    cellComponent?: string;
-    cellComponentProps?: Record<string, any>;
-    colspan?: number;
-    edit?: boolean;
-    fieldtype?: string;
-    filterable?: boolean;
-    filterComponent?: string;
-    filterOptions?: any[];
-    filterType?: 'text' | 'select' | 'number' | 'date' | 'dateRange' | 'checkbox' | 'component';
+export interface TableColumn extends Omit<ColumnSchema, 'fieldname' | 'hidden' | 'format' | 'modalComponent'> {
     format?: string | ((value: any, context: CellContext) => string);
-    ganttComponent?: string;
-    isGantt?: boolean;
-    label?: string;
     mask?: (value: any) => any;
     modalComponent?: string | ((context: CellContext) => string);
-    modalComponentExtraProps?: Record<string, any>;
     name: string;
-    originalIndex?: number;
-    pinned?: boolean;
-    resizable?: boolean;
-    sortable?: boolean;
-    width?: string;
+    readonly originalIndex?: number;
 }
 
 // @public

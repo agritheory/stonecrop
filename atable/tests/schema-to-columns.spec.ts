@@ -42,14 +42,10 @@ describe('schemaToColumns', () => {
 		expect(columns[0].name).toBe('title')
 	})
 
-	it('excludes form-only properties (hidden, component, mode) from output', () => {
-		const schema = [
-			{ fieldname: 'title', fieldtype: 'Data', label: 'Title', hidden: false, component: 'ATextInput', mode: 'edit' },
-		] as any[]
+	it('strips hidden from output', () => {
+		const schema: ColumnSchema[] = [{ fieldname: 'title', fieldtype: 'Data', label: 'Title', hidden: false }]
 		const columns = schemaToColumns(schema)
 		expect((columns[0] as any).hidden).toBeUndefined()
-		expect((columns[0] as any).component).toBeUndefined()
-		expect((columns[0] as any).mode).toBeUndefined()
 	})
 
 	it('passes through extra properties (cellComponent, cellComponentProps, pinned, format)', () => {
