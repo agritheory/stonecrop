@@ -485,7 +485,7 @@ export class Stonecrop {
 			initialState =
 				typeof (workflow as { initial?: unknown }).initial === 'string'
 					? (workflow as { initial: string }).initial
-					: Object.keys(workflow.states ?? {})[0] ?? ''
+					: (Object.keys(workflow.states ?? {})[0] ?? '')
 		}
 
 		return status || initialState

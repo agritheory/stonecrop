@@ -48,7 +48,7 @@ const { data: ruleData } =
 					inverted: false,
 					active: true,
 				}),
-		  }
+			}
 		: await useFetch(`/api/ability-rules/${ruleId.value}`, {
 				default: () => ({
 					role_id: '',
@@ -59,7 +59,7 @@ const { data: ruleData } =
 					inverted: false,
 					active: true,
 				}),
-		  })
+			})
 
 // Add ability rule data to HST store when available
 watch(

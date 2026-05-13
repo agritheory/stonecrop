@@ -330,7 +330,7 @@ const navigationBreadcrumbs = computed(() => {
 	} else if (currentView.value === 'record' && routeDoctype.value) {
 		const recordPath = currentRecordId.value
 			? `/${routeDoctype.value}/${currentRecordId.value}`
-			: route.value?.fullPath ?? ''
+			: (route.value?.fullPath ?? '')
 		breadcrumbs.push(
 			{ title: 'Home', to: '/' },
 			{ title: formatDoctypeName(routeDoctype.value), to: `/${routeDoctype.value}` },
