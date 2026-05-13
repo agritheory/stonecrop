@@ -41,6 +41,14 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
+      - name: Restore Rush Build Cache
+        id: cache-restore
+        uses: actions/cache/restore@v5
+        with:
+          path: common/temp/build-cache
+          key: rush-build-cache-docs-${{ hashFiles('common/config/rush/pnpm-lock.yaml') }}
+          restore-keys: rush-build-cache-
+
       - name: Rush Install
         run: node common/scripts/install-run-rush.js install
 
@@ -48,10 +56,9 @@ jobs:
         run: |
           node common/scripts/install-run-rush.js update-autoinstaller --name doc-tools
           node common/scripts/install-run-rush.js update-autoinstaller --name rush-plugins
-          node common/scripts/install-run-rush.js update-autoinstaller --name rush-prettier
 
       - name: Rush Build
-        run: node common/scripts/install-run-rush.js rebuild --verbose
+        run: node common/scripts/install-run-rush.js build
 
       - name: Build Histoire Stories + Vitepress
         working-directory: ./docs
@@ -61,6 +68,13 @@ jobs:
         uses: actions/upload-pages-artifact@v4
         with:
           path: docs/.vitepress/dist
+
+      - name: Save Rush Build Cache
+        if: always() && steps.cache-restore.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v5
+        with:
+          path: common/temp/build-cache
+          key: ${{ steps.cache-restore.outputs.cache-primary-key }}
 
   deploy:
     needs: build

@@ -8,6 +8,10 @@ on:
   pull_request:
     paths: [nuxt/**]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
     name: nuxt
@@ -27,17 +31,22 @@ jobs:
           cache-dependency-path: '**/config/rush/pnpm-lock.yaml'
           registry-url: https://registry.npmjs.org/
 
+      - name: Restore Rush Build Cache
+        id: cache-restore
+        uses: actions/cache/restore@v5
+        with:
+          path: common/temp/build-cache
+          key: rush-build-cache-nuxt-${{ hashFiles('common/config/rush/pnpm-lock.yaml') }}
+          restore-keys: rush-build-cache-
+
       - name: Rush Install
         run: node common/scripts/install-run-rush.js install
 
       - name: Update Autoinstallers
-        run: |
-          node common/scripts/install-run-rush.js update-autoinstaller --name doc-tools
-          node common/scripts/install-run-rush.js update-autoinstaller --name rush-plugins
-          node common/scripts/install-run-rush.js update-autoinstaller --name rush-prettier
+        run: node common/scripts/install-run-rush.js update-autoinstaller --name rush-plugins
 
       - name: Rush Build
-        run: node common/scripts/install-run-rush.js rebuild --verbose
+        run: node common/scripts/install-run-rush.js build --to @stonecrop/nuxt
 
       - name: Prepare Playground
         working-directory: nuxt/
@@ -46,3 +55,10 @@ jobs:
       - name: Run Tests
         working-directory: nuxt/
         run: node ../common/scripts/install-run-rushx.js test
+
+      - name: Save Rush Build Cache
+        if: always() && steps.cache-restore.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v5
+        with:
+          path: common/temp/build-cache
+          key: ${{ steps.cache-restore.outputs.cache-primary-key }}
