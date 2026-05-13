@@ -72,14 +72,6 @@ jobs:
           cache-dependency-path: '**/config/rush/pnpm-lock.yaml'
           registry-url: https://registry.npmjs.org/
 
-      - name: Restore Rush Build Cache
-        id: cache-restore
-        uses: actions/cache/restore@v5
-        with:
-          path: common/temp/build-cache
-          key: rush-build-cache-pr-checks-${{ hashFiles('common/config/rush/pnpm-lock.yaml') }}
-          restore-keys: rush-build-cache-
-
       - name: Rush Install
         run: node common/scripts/install-run-rush.js install
 
@@ -93,16 +85,9 @@ jobs:
       - name: Verify Change Files
         run: node common/scripts/install-run-rush.js change --verify
 
-      - name: Save Rush Build Cache
-        if: always() && steps.cache-restore.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v5
-        with:
-          path: common/temp/build-cache
-          key: ${{ steps.cache-restore.outputs.cache-primary-key }}
-
   test-and-coverage:
     name: ${{ matrix.package }}
-    needs: [changes, pr-checks]
+    needs: [changes]
     if: ${{ needs.changes.outputs.packages != '[]' }}
     runs-on: ubuntu-latest
 
@@ -164,7 +149,7 @@ jobs:
     name: Coverage Report
     needs: [changes, test-and-coverage]
     runs-on: ubuntu-latest
-    if: always() && needs.changes.outputs.packages != '[]'
+    if: needs.changes.outputs.packages != '[]'
 
     steps:
       # Download PR coverage artifacts produced in this run (no run-id needed).
