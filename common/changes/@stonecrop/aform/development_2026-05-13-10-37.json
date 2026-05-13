@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/aform",
+      "comment": "correctly apply field width input from doctype schema",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/aform"
+}

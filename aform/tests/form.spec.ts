@@ -279,4 +279,63 @@ describe('AForm Component', () => {
 			expect(input.attributes('maxlength')).toBeUndefined()
 		})
 	})
+
+	describe('width schema property', () => {
+		it('applies flex-basis and width style when width is set in schema', async () => {
+			const MockField = defineComponent({
+				name: 'MockField',
+				props: ['label', 'mode', 'schema', 'data'],
+				template: '<div class="aform_form-element mock-field"></div>',
+			})
+
+			const wrapper = mount(AForm, {
+				props: {
+					schema: [
+						{
+							fieldname: 'canvas',
+							component: 'MockField',
+							label: 'Canvas',
+							fieldtype: 'Display',
+							width: '100%',
+						},
+					] as SchemaTypes[],
+					data: {},
+				},
+				global: { components: { MockField } },
+			})
+
+			await wrapper.vm.$nextTick()
+			const field = wrapper.findComponent(MockField)
+			expect(field.element.style.flexBasis).toBe('100%')
+			expect(field.element.style.width).toBe('100%')
+		})
+
+		it('does not apply width style when width is absent in schema', async () => {
+			const MockField = defineComponent({
+				name: 'MockField',
+				props: ['label', 'mode', 'schema', 'data'],
+				template: '<div class="aform_form-element mock-field"></div>',
+			})
+
+			const wrapper = mount(AForm, {
+				props: {
+					schema: [
+						{
+							fieldname: 'name',
+							component: 'MockField',
+							label: 'Name',
+							fieldtype: 'Data',
+						},
+					] as SchemaTypes[],
+					data: {},
+				},
+				global: { components: { MockField } },
+			})
+
+			await wrapper.vm.$nextTick()
+			const field = wrapper.findComponent(MockField)
+			expect(field.element.style.flexBasis).toBe('')
+			expect(field.element.style.width).toBe('')
+		})
+	})
 })

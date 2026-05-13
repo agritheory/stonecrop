@@ -30,6 +30,26 @@ This registers all components globally. They can also be imported individually.
 
 ---
 
+## AForm
+
+### Field width
+
+Set `width` on any schema field to control its share of the form row. The value is any valid CSS size and is applied as `flex-basis` + `width` directly on the field's flex item:
+
+```json
+{ "fieldname": "notes", "fieldtype": "Text", "component": "ATextInput", "label": "Notes", "width": "100%" }
+```
+
+| Value | Effect |
+|---|---|
+| `"100%"` | Field spans the full form row (forces a line-break before and after) |
+| `"50%"` | Field takes half the row; neighbouring fields fill the rest |
+| `"40ch"` | Field starts at 40 characters wide and grows with available space |
+
+Fields without `width` continue to share space equally (`flex-grow: 1; min-width: 20ch`).
+
+---
+
 ## AFormLink
 
 A form input for selecting and navigating to linked documents (`fieldtype: 'Link'`). Combines a searchable text input, an optional dropdown of results, and a navigation arrow button.

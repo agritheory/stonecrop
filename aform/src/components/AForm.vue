@@ -23,6 +23,7 @@
 				:is="componentObj.component"
 				v-else-if="!componentObj.hidden"
 				v-model="childModels[key].value"
+				:style="fieldStyle(componentObj)"
 				:schema="componentObj"
 				:data="dataModel[componentObj.fieldname]"
 				:mode="resolvedMode(componentObj)"
@@ -82,7 +83,7 @@ const componentProps = (componentObj: SchemaTypes) => {
 	for (const [key, value] of Object.entries(componentObj)) {
 		// 'mode' is excluded here because it is handled by resolvedMode()
 		// and passed explicitly via :mode to avoid conflicting with the form-level defaults.
-		if (!['component', 'fieldtype', 'hidden', 'mode'].includes(key)) {
+		if (!['component', 'fieldtype', 'hidden', 'mode', 'width'].includes(key)) {
 			propsToPass[key] = value
 		}
 	}
@@ -98,6 +99,12 @@ const componentProps = (componentObj: SchemaTypes) => {
 	}
 
 	return propsToPass
+}
+
+const fieldStyle = (componentObj: SchemaTypes): Record<string, string> => {
+	const width = (componentObj as { width?: string }).width
+	if (!width) return {}
+	return { flexBasis: width, width }
 }
 
 const effectiveFormMode = computed(() => mode ?? 'edit')
@@ -150,6 +157,10 @@ const childModels = computed(() => childModelsCache.value)
 	flex-grow: 1;
 	min-width: 20ch;
 	margin-bottom: 1rem;
+}
+.aform__grid--full {
+	flex-basis: 100%;
+	width: 100%;
 }
 .aform_input-field {
 	outline: 1px solid var(--sc-input-border-color);

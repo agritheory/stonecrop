@@ -138,8 +138,9 @@ export type FormSchema = BaseSchema & {
 	name?: string
 
 	/**
-	 * The width of the field element.
-	 * @beta
+	 * CSS width for the field's flex item in the AForm grid.
+	 * Applied as `flex-basis` and `width` on the rendered component element.
+	 * Use `"100%"` to make the field span the full form row.
 	 */
 	width?: string
 
