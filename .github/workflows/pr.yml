@@ -165,14 +165,22 @@ jobs:
           github-token: ${{ github.token }}
           path: coverage-baseline
 
-      - name: Post Coverage Report
-        if: always()
+      - name: Post Coverage Report (with baseline)
+        if: always() && hashFiles('coverage-baseline/coverage-summary.json') != ''
         uses: davelosert/vitest-coverage-report-action@v2
         with:
           name: ${{ matrix.package }}
           json-summary-path: ./${{ matrix.package }}/coverage/coverage-summary.json
           json-final-path: ./${{ matrix.package }}/coverage/coverage-final.json
           json-summary-compare-path: coverage-baseline/coverage-summary.json
+
+      - name: Post Coverage Report (no baseline)
+        if: always() && hashFiles('coverage-baseline/coverage-summary.json') == ''
+        uses: davelosert/vitest-coverage-report-action@v2
+        with:
+          name: ${{ matrix.package }}
+          json-summary-path: ./${{ matrix.package }}/coverage/coverage-summary.json
+          json-final-path: ./${{ matrix.package }}/coverage/coverage-final.json
 
       - name: Save Rush Build Cache
         if: always() && steps.cache-restore.outputs.cache-hit != 'true'
