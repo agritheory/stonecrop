@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/themes",
+      "comment": "update node to v24",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/themes"
+}

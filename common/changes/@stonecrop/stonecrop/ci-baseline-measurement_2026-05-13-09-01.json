@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/stonecrop",
+      "comment": "fix lint errors",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/stonecrop"
+}

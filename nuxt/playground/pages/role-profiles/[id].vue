@@ -41,7 +41,7 @@ const { data: profileData } =
 		? { data: ref({ profile_name: '', description: '', roles: [], active: true }) }
 		: await useFetch(`/api/role-profiles/${profileId.value}`, {
 				default: () => ({ profile_name: '', description: '', roles: [], active: true }),
-		  })
+			})
 
 // Add role profile data to HST store when available
 watch(

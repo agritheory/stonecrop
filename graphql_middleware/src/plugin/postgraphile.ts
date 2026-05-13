@@ -244,7 +244,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions): Graphile
 													? {
 															includeNested: recordOptions.includeNested,
 															maxDepth: recordOptions.maxDepth,
-													  }
+														}
 													: undefined,
 												reverseConnectionName
 											)
@@ -606,8 +606,8 @@ function buildNestedSelections(params: BuildNestedSelectionsParams): string {
 				effectiveFetch.method === 'sync' && effectiveFetch.limit !== undefined
 					? `first: ${effectiveFetch.limit}`
 					: effectiveFetch.method === 'sync'
-					? `first: ${DEFAULT_SYNC_LIMIT}`
-					: ''
+						? `first: ${DEFAULT_SYNC_LIMIT}`
+						: ''
 			selections.push(`
 			${connectionField}${limitArg ? `(${limitArg})` : ''} {
 				nodes {

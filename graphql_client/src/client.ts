@@ -219,7 +219,7 @@ export class StonecropClient implements DataClient {
 					? {
 							includeNested: options.includeNested,
 							maxDepth: options.maxDepth,
-					  }
+						}
 					: undefined,
 			}
 		)

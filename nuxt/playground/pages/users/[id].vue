@@ -41,7 +41,7 @@ const { data: userData } =
 		? { data: ref({ username: '', disabled: false, has_roles: [] }) }
 		: await useFetch(`/api/users/${userId.value}`, {
 				default: () => ({ username: '', disabled: false, has_roles: [] }),
-		  })
+			})
 
 // Add user data to HST store when available
 watch(

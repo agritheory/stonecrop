@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/graphql-middleware",
+      "comment": "update node to v24",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/graphql-middleware"
+}

@@ -29,7 +29,7 @@ export default withMermaid(
 		title: 'Stonecrop',
 		description: 'Schema-driven UI framework for business applications',
 		head: [['link', { rel: 'icon', type: 'image/svg+xml', href: '/images/logo.svg' }]],
-		
+
 		themeConfig: {
 			logo: './assets/stonecrop-logo-solid.svg',
 			nav: [

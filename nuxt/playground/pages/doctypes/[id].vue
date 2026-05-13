@@ -33,7 +33,7 @@ const { data: doctypeData } =
 					fields: [],
 					state_machine_id: null,
 				}),
-		  }
+			}
 		: await useFetch(`/api/doctypes/${doctypeId.value}`, {
 				default: () => ({
 					name: '',
@@ -44,7 +44,7 @@ const { data: doctypeData } =
 					fields: [],
 					state_machine_id: null,
 				}),
-		  })
+			})
 
 async function handleSave() {
 	console.log('Saving doctype:', doctypeData.value)

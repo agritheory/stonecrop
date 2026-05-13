@@ -404,39 +404,38 @@ export interface GanttOptions {
  * Gantt table drag event definition.
  * @public
  */
-export type GanttDragEvent =
+export type GanttDragEvent = {
+	rowIndex: number
+	colIndex: number
+	delta: number
+} & (
 	| {
-			rowIndex: number
-			colIndex: number
-			delta: number
-	  } & (
-			| {
-					type: 'bar'
-					oldStart: number
-					oldEnd: number
-					newStart: number
-					newEnd: number
-					colspan: number
-			  }
-			| {
-					type: 'resize'
-					edge: 'start'
-					oldStart: number
-					newStart: number
-					end: number
-					oldColspan: number
-					newColspan: number
-			  }
-			| {
-					type: 'resize'
-					edge: 'end'
-					oldEnd: number
-					newEnd: number
-					start: number
-					oldColspan: number
-					newColspan: number
-			  }
-	  )
+			type: 'bar'
+			oldStart: number
+			oldEnd: number
+			newStart: number
+			newEnd: number
+			colspan: number
+	  }
+	| {
+			type: 'resize'
+			edge: 'start'
+			oldStart: number
+			newStart: number
+			end: number
+			oldColspan: number
+			newColspan: number
+	  }
+	| {
+			type: 'resize'
+			edge: 'end'
+			oldEnd: number
+			newEnd: number
+			start: number
+			oldColspan: number
+			newColspan: number
+	  }
+)
 
 /**
  * Table modal definition.

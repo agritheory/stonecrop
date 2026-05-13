@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/atable",
+      "comment": "fix lint errors",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/atable"
+}

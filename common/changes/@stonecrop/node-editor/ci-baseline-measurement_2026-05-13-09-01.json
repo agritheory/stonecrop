@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/node-editor",
+      "comment": "fix lint errors",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/node-editor"
+}

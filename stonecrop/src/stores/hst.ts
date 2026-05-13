@@ -590,7 +590,7 @@ class HSTProxy implements HSTNode {
 
 		return Boolean(
 			(hasGetMethod && hasSetMethod && hasHasMethod && hasImmutableMarkers) ||
-				(hasGetMethod && hasSetMethod && isImmutableConstructor)
+			(hasGetMethod && hasSetMethod && isImmutableConstructor)
 		)
 	}
 

@@ -159,7 +159,7 @@ export const TreeNode: Component = defineComponent({
 										initialExpanded: props.initialExpanded,
 									})
 								)
-						  )
+							)
 						: null,
 				]
 			)

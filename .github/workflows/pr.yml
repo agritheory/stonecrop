@@ -1,0 +1,212 @@
+name: PR Checks
+
+on:
+  pull_request:
+
+# Cancel superseded runs on the same PR branch.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+  actions: read
+
+jobs:
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+
+    permissions:
+      pull-requests: read
+
+    outputs:
+      packages: ${{ steps.filter.outputs.changes }}
+
+    steps:
+      - uses: dorny/paths-filter@v4
+        id: filter
+        with:
+          filters: |
+            aform: aform/**
+            atable: atable/**
+            beam: beam/**
+            casl_middleware: casl_middleware/**
+            desktop: desktop/**
+            graphql_client: graphql_client/**
+            graphql_middleware: graphql_middleware/**
+            rockfoil: rockfoil/**
+            schema: schema/**
+            stonecrop: stonecrop/**
+
+  pr-checks:
+    name: Lint & Change Verify
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Install Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache-dependency-path: '**/config/rush/pnpm-lock.yaml'
+          registry-url: https://registry.npmjs.org/
+
+      # The rush-prettier autoinstaller provides the pinned prettier binary.
+      # prettier --check exits 1 and prints the offending files if any are unformatted.
+      # Note: .bin/prettier is a pnpm shell-script shim — do NOT prefix with `node`.
+      - name: Prettier Check
+        run: |
+          node common/scripts/install-run-rush.js update-autoinstaller --name rush-prettier
+          common/autoinstallers/rush-prettier/node_modules/.bin/prettier --check .
+
+      # actions/setup-node's `cache: 'pnpm'` calls `pnpm store path` during
+      # setup — before Rush has installed its own managed pnpm binary at ~/.rush/.
+      # We cache ~/.rush (the binary) and ~/.local/share/pnpm/store (the package
+      # store) explicitly so that rush install can skip downloading all packages.
+      - name: Cache Rush pnpm Store
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.rush
+            ~/.local/share/pnpm/store
+          key: rush-pnpm-${{ runner.os }}-${{ hashFiles('common/config/rush/pnpm-lock.yaml') }}
+          restore-keys: rush-pnpm-${{ runner.os }}-
+
+      - name: Rush Install
+        run: node common/scripts/install-run-rush.js install
+
+      # rush-plugins is required for the rush-sort-package-json plugin to load.
+      - name: Update Autoinstallers
+        run: node common/scripts/install-run-rush.js update-autoinstaller --name rush-plugins
+
+      - name: Sort package.json
+        run: node common/scripts/install-run-rush.js sort-package-json
+
+      - name: Verify Change Files
+        run: node common/scripts/install-run-rush.js change --verify
+
+  test-and-coverage:
+    name: ${{ matrix.package }}
+    needs: [changes]
+    if: ${{ needs.changes.outputs.packages != '[]' }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        package: ${{ fromJSON(needs.changes.outputs.packages) }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache-dependency-path: '**/config/rush/pnpm-lock.yaml'
+          registry-url: https://registry.npmjs.org/
+
+      # Package-specific cache key so parallel matrix jobs don't overwrite each other.
+      - name: Restore Rush Build Cache
+        id: cache-restore
+        uses: actions/cache/restore@v5
+        with:
+          path: common/temp/build-cache
+          key: rush-build-cache-${{ matrix.package }}-${{ hashFiles('common/config/rush/pnpm-lock.yaml') }}-${{ github.run_id }}
+          restore-keys: |
+            rush-build-cache-${{ matrix.package }}-${{ hashFiles('common/config/rush/pnpm-lock.yaml') }}-
+            rush-build-cache-${{ matrix.package }}-
+            rush-build-cache-
+
+      # actions/setup-node's `cache: 'pnpm'` calls `pnpm store path` during
+      # setup — before Rush has installed its own managed pnpm binary at ~/.rush/.
+      # We cache ~/.rush (the binary) and ~/.local/share/pnpm/store (the package
+      # store) explicitly so that rush install can skip downloading all packages.
+      - name: Cache Rush pnpm Store
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.rush
+            ~/.local/share/pnpm/store
+          key: rush-pnpm-${{ runner.os }}-${{ hashFiles('common/config/rush/pnpm-lock.yaml') }}
+          restore-keys: rush-pnpm-${{ runner.os }}-
+
+      - name: Rush Install
+        run: node common/scripts/install-run-rush.js install
+
+      - name: Update Autoinstallers
+        run: |
+          node common/scripts/install-run-rush.js update-autoinstaller --name rush-plugins
+          node common/scripts/install-run-rush.js update-autoinstaller --name doc-tools
+
+      # Build only the dependency closure for this package, not the whole repo.
+      # Matrix uses folder names; Rush --to requires the npm package name.
+      - name: Resolve Package Name
+        id: pkg
+        run: |
+          NAME=$(node -e "const r=require('./rush.json');console.log(r.projects.find(p=>p.projectFolder==='${{ matrix.package }}').packageName)")
+          echo "name=${NAME}" >> $GITHUB_OUTPUT
+
+      - name: Rush Build
+        run: node common/scripts/install-run-rush.js build --to ${{ steps.pkg.outputs.name }}
+
+      - name: Run Tests
+        working-directory: ./${{ matrix.package }}
+        run: node ../common/scripts/install-run-rushx.js test:coverage
+
+      - name: Resolve Baseline Run ID
+        id: baseline-run
+        if: always()
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          RUN_ID=$(gh run list \
+            --repo "${{ github.repository }}" \
+            --branch development \
+            --workflow coverage-baseline.yml \
+            --status success \
+            --limit 1 \
+            --json databaseId \
+            --jq '.[0].databaseId // empty')
+          echo "run-id=${RUN_ID}" >> $GITHUB_OUTPUT
+
+      - name: Download Baseline Coverage
+        if: always() && steps.baseline-run.outputs.run-id != ''
+        uses: actions/download-artifact@v8
+        with:
+          name: coverage-${{ matrix.package }}-development
+          run-id: ${{ steps.baseline-run.outputs.run-id }}
+          github-token: ${{ github.token }}
+          path: coverage-baseline
+
+      - name: Post Coverage Report (with baseline)
+        if: always() && hashFiles('coverage-baseline/coverage-summary.json') != ''
+        uses: davelosert/vitest-coverage-report-action@v2
+        with:
+          name: ${{ matrix.package }}
+          json-summary-path: ./${{ matrix.package }}/coverage/coverage-summary.json
+          json-final-path: ./${{ matrix.package }}/coverage/coverage-final.json
+          json-summary-compare-path: coverage-baseline/coverage-summary.json
+
+      - name: Post Coverage Report (no baseline)
+        if: always() && hashFiles('coverage-baseline/coverage-summary.json') == ''
+        uses: davelosert/vitest-coverage-report-action@v2
+        with:
+          name: ${{ matrix.package }}
+          json-summary-path: ./${{ matrix.package }}/coverage/coverage-summary.json
+          json-final-path: ./${{ matrix.package }}/coverage/coverage-final.json
+
+      - name: Save Rush Build Cache
+        if: always()
+        uses: actions/cache/save@v5
+        with:
+          path: common/temp/build-cache
+          key: ${{ steps.cache-restore.outputs.cache-primary-key }}
