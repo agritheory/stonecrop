@@ -59,10 +59,11 @@ jobs:
 
       # The rush-prettier autoinstaller provides the pinned prettier binary.
       # prettier --check exits 1 and prints the offending files if any are unformatted.
+      # Note: .bin/prettier is a pnpm shell-script shim — do NOT prefix with `node`.
       - name: Prettier Check
         run: |
           node common/scripts/install-run-rush.js update-autoinstaller --name rush-prettier
-          node common/autoinstallers/rush-prettier/node_modules/.bin/prettier --check .
+          common/autoinstallers/rush-prettier/node_modules/.bin/prettier --check .
 
       # actions/setup-node's `cache: 'pnpm'` calls `pnpm store path` during
       # setup — before Rush has installed its own managed pnpm binary at ~/.rush/.
