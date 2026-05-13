@@ -705,7 +705,7 @@ export class Stonecrop {
     markIrreversible: (operationId: string, reason: string) => void;
     logAction: (doctype: string, actionName: string, recordIds?: string[], result?: "success" | "failure" | "pending", error?: string) => string;
     }, "undo" | "redo" | "configure" | "addOperation" | "startBatch" | "commitBatch" | "cancelBatch" | "clear" | "getOperationsFor" | "getSnapshot" | "markIrreversible" | "logAction">>;
-    getRecord(doctype: Doctype, recordId: string): Promise<void>;
+    getRecord(doctype: string | Doctype, recordId: string): Promise<void>;
     getRecordById(doctype: string | Doctype, recordId: string): HSTNode | undefined;
     getRecordIds(doctype: string | Doctype): string[];
     getRecords(doctype: Doctype): Promise<void>;

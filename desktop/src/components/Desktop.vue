@@ -678,23 +678,24 @@ const handleClick = async (event: Event) => {
 	}
 }
 
-const loadRecordData = () => {
-	if (!stonecrop.value || !currentDoctype.value) return
+const loadRecordData = async () => {
+	if (!stonecrop.value || !currentDoctype.value || isNewRecord.value) return
 
-	loading.value = true
+	// Record already in HST — nothing to fetch.
+	if (stonecrop.value.getRecordById(currentDoctype.value, currentRecordId.value)) return
 
-	try {
-		if (!isNewRecord.value) {
-			// For existing records, ensure the record exists in HST.
-			// The computed currentViewData will automatically read from HST.
-			stonecrop.value.getRecordById(currentDoctype.value, currentRecordId.value)
+	// Record absent and a client is configured — fetch directly so the form
+	// populates even when the list view was never visited (direct URL navigation).
+	if (stonecrop.value.getClient()) {
+		loading.value = true
+		try {
+			await stonecrop.value.getRecord(currentDoctype.value, currentRecordId.value)
+		} catch (error) {
+			// eslint-disable-next-line no-console
+			console.warn('Error fetching record:', error)
+		} finally {
+			loading.value = false
 		}
-		// For new records, currentViewData computed property will return {} automatically.
-	} catch (error) {
-		// eslint-disable-next-line no-console
-		console.warn('Error loading record data:', error)
-	} finally {
-		loading.value = false
 	}
 }
 
@@ -708,7 +709,7 @@ watch(
 		} else if (currentView.value === 'record' && currentDoctype.value && currentRecordId.value) {
 			// Emit load-record event so host app can fetch and populate HST
 			emit('load-record', { doctype: currentDoctype.value, recordId: currentRecordId.value })
-			loadRecordData()
+			void loadRecordData()
 		}
 	},
 	{ immediate: true }
