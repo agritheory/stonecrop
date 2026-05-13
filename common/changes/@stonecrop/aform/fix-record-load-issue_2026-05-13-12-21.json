@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/aform",
+      "comment": "handle model updates for links from database fetch",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/aform"
+}
