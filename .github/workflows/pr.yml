@@ -25,7 +25,7 @@ jobs:
       packages: ${{ steps.filter.outputs.changes }}
 
     steps:
-      - uses: dorny/paths-filter@v3
+      - uses: dorny/paths-filter@v4
         id: filter
         with:
           filters: |
@@ -47,6 +47,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       # Prettier does not need Rush; runs directly via the CLI action.
       - name: Prettier Check
@@ -176,6 +178,7 @@ jobs:
       # the baseline (cross-run downloads require a token + run-id).
       - name: Resolve Baseline Run ID
         id: baseline-run
+        continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
