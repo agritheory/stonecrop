@@ -5,7 +5,7 @@ import { GraphileConfig } from 'postgraphile/graphile-build'
 import { extendSchema, gql } from 'postgraphile/utils'
 import pluralize from 'pluralize'
 
-import { getHandler, registerHandler } from '../registry/actions'
+import { getHandler } from '../registry/actions'
 import { getMeta, getAllMeta } from '../registry/doctypes'
 import type {
 	ActionContext,
@@ -249,7 +249,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions): Graphile
 												reverseConnectionName
 											)
 											const result = await options.executor.query(query, {
-												[recordArgName(meta.tableName!)]: spec.id,
+												[recordArgName(meta.tableName)]: spec.id,
 											})
 
 											let data = extractSingleResult({ result, meta, recordFieldName })
@@ -491,15 +491,16 @@ function isManyCardinality(cardinality: string): boolean {
 const DEFAULT_SYNC_LIMIT = 50
 
 /**
- * Fieldtypes that map to GraphQL object/connection types and require sub-selections.
- * These fields are excluded from generated query field selections.
+ * Fieldtypes excluded from the generated scalar query selection set.
+ * - `'Link'`: maps to a GraphQL object/connection type — requires a sub-selection
+ * - `'Display'`: display-only composite component with no backing DB column
  * @public
  */
-const RELATION_FIELDTYPES = new Set(['Link'])
+const RELATION_FIELDTYPES = new Set(['Link', 'Display'])
 
 /**
- * Filter fields to only those directly queryable as scalars, excluding Link and Doctype
- * relation fields that require GraphQL sub-selections.
+ * Filter fields to only those directly queryable as scalars, excluding Link relation
+ * fields and Display fields that have no backing DB column.
  * @public
  */
 function queryableFieldNames(meta: DoctypeMeta): string {
@@ -566,8 +567,7 @@ function buildNestedSelections(params: BuildNestedSelectionsParams): string {
 		if (!targetMeta) continue
 
 		const alreadySeen = seen.has(link.target)
-		if (alreadySeen) {
-		} else {
+		if (!alreadySeen) {
 			seen.add(link.target)
 		}
 		const scalarFields = queryableFieldNames(targetMeta)
@@ -679,7 +679,7 @@ function buildRecordQuery(
  * Build a GraphQL connection query to fetch a list of records.
  * Only declares variables ($limit, $offset, $orderBy) that are actually used in the query,
  * avoiding GraphQL spec §5.8.3 violations from unused variable declarations.
- * Excludes Link and Doctype relation fields from the selection set.
+ * Excludes Link relation fields and Display fields from the selection set.
  * @public
  */
 function buildListQuery(

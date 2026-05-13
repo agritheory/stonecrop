@@ -92,6 +92,16 @@ The middleware loads doctype definitions from JSON files. Each file defines a do
 
 The `links` object declares relationships used when `includeNested` is requested. The `workflow` object enables action dispatch.
 
+### Display-only fields
+
+Fields with `fieldtype: "Display"` are excluded from the auto-generated scalar query. Use this for composite UI components (e.g. a canvas visualisation) that have no backing database column:
+
+```json
+{ "fieldname": "planner", "fieldtype": "Display", "component": "Planner", "label": "Resource Planner" }
+```
+
+All other non-`Link` fieldtypes are assumed to map to a scalar DB column and are included in the query.
+
 ## Actions
 
 Actions are custom logic triggered by the client. Register handlers with `registerHandler`:

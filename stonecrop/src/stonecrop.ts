@@ -378,11 +378,12 @@ export class Stonecrop {
 
 	/**
 	 * Get single record from server using the configured data client.
-	 * @param doctype - The doctype
+	 * @param doctype - The doctype slug string or Doctype object
 	 * @param recordId - The record ID
 	 * @throws Error if no data client has been configured
+	 * @throws Error if a slug string is given and no matching doctype is found in the registry
 	 */
-	async getRecord(doctype: Doctype, recordId: string): Promise<void> {
+	async getRecord(doctype: string | Doctype, recordId: string): Promise<void> {
 		if (!this._client) {
 			throw new Error(
 				'No data client configured. Call setClient() with a DataClient implementation ' +
@@ -390,10 +391,15 @@ export class Stonecrop {
 			)
 		}
 
-		const record = await this._client.getRecord(doctype, recordId)
+		const resolved = typeof doctype === 'string' ? this.registry.getDoctype(doctype) : doctype
+		if (!resolved) {
+			throw new Error(`Doctype not found: ${typeof doctype === 'string' ? doctype : doctype.slug}`)
+		}
+
+		const record = await this._client.getRecord(resolved, recordId)
 
 		if (record) {
-			this.addRecord(doctype, recordId, record)
+			this.addRecord(resolved, recordId, record)
 		}
 	}
 

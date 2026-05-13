@@ -45,7 +45,7 @@
 
 <script setup lang="ts">
 import { vOnClickOutside } from '@vueuse/components'
-import { computed, inject, ref } from 'vue'
+import { computed, inject, ref, watch } from 'vue'
 
 import type { AFormLinkNavigator, AFormLinkValue, ComponentProps } from '../../types'
 import { deserializeFunction } from '../../utils/deserialize'
@@ -91,6 +91,28 @@ const activeIndex = ref<number | null>(null)
 
 const navigator = inject<AFormLinkNavigator | null>('aformLinkNavigator', null)
 
+type FilterFn = (search: string) => AFormLinkValue[] | Promise<AFormLinkValue[]>
+
+watch(
+	() => modelValue.value?.id,
+	async id => {
+		if (!id || modelValue.value.displayText || !filterFunction) return
+		try {
+			const fn: FilterFn =
+				typeof filterFunction === 'string' ? deserializeFunction<FilterFn>(filterFunction) : filterFunction
+			const results = await fn(String(id))
+			const match = results.find(r => String(r.id) === String(id))
+			if (match?.displayText) {
+				searchText.value = match.displayText
+				modelValue.value = { ...modelValue.value, displayText: match.displayText }
+			}
+		} catch {
+			// silent — fall back to showing the raw id
+		}
+	},
+	{ immediate: true }
+)
+
 const handleNavigate = () => {
 	if (navigator && doctype) {
 		navigator.navigate(doctype, modelValue.value.id)
@@ -103,7 +125,6 @@ const openDropdown = async (text: string) => {
 	dropdownOpen.value = true
 	if (isAsync) loading.value = true
 	try {
-		type FilterFn = (search: string) => AFormLinkValue[] | Promise<AFormLinkValue[]>
 		const fn: FilterFn =
 			typeof filterFunction === 'string' ? deserializeFunction<FilterFn>(filterFunction) : filterFunction
 		dropdownResults.value = (await fn(text)) ?? []

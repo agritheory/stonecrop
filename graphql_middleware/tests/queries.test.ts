@@ -96,6 +96,10 @@ describe('RELATION_FIELDTYPES', () => {
 		expect(RELATION_FIELDTYPES.has('Doctype')).toBe(false)
 	})
 
+	it('contains Display', () => {
+		expect(RELATION_FIELDTYPES.has('Display')).toBe(true)
+	})
+
 	it('does not contain scalar types', () => {
 		expect(RELATION_FIELDTYPES.has('Data')).toBe(false)
 		expect(RELATION_FIELDTYPES.has('Int')).toBe(false)
@@ -119,6 +123,22 @@ describe('queryableFieldNames', () => {
 		expect(names).toContain('rating')
 		expect(names).not.toContain('userByCreatedBy')
 		expect(names).not.toContain('recipeIngredientsByRecipeId')
+	})
+
+	it('excludes Display fields from scalar selection', () => {
+		const meta: DoctypeMeta = {
+			name: 'Plan',
+			tableName: 'plan',
+			fields: [
+				{ fieldname: 'id', fieldtype: 'Data', label: 'ID' },
+				{ fieldname: 'name', fieldtype: 'Data', label: 'Name' },
+				{ fieldname: 'planner', fieldtype: 'Display', component: 'Planner', label: 'Resource Planner' },
+			],
+		}
+		const names = queryableFieldNames(meta)
+		expect(names).toContain('id')
+		expect(names).toContain('name')
+		expect(names).not.toContain('planner')
 	})
 })
 

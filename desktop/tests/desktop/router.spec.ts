@@ -156,6 +156,46 @@ describe('Desktop – internal router (no routeAdapter)', () => {
 		expect(wrapper.find('.desktop').exists()).toBe(true)
 	})
 
+	it('fetches record directly when navigating to record URL without prior list visit', async () => {
+		const mockGetRecord = vi.fn().mockResolvedValue({ id: 'rec-1', title: 'Fetched', status: 'draft' })
+		const mockClient = {
+			getRecord: mockGetRecord,
+			getRecords: vi.fn().mockResolvedValue([]),
+			dispatchAction: vi.fn(),
+		}
+
+		const testRouter = createRouter({ history: createMemoryHistory(), routes: routerTestRoutes })
+		const registry = new Registry(testRouter)
+		const stonecrop = new Stonecrop(registry, undefined, { client: mockClient as any })
+
+		const doctype = buildDoctype('task', 'draft', {
+			draft: { on: { SUBMIT: 'submitted' } },
+			submitted: { type: 'final' },
+		})
+		registry.addDoctype(doctype)
+		// Deliberately NO stonecrop.addRecord() — simulates direct URL navigation without prior list visit
+
+		await testRouter.push('/task/rec-1')
+		await testRouter.isReady()
+
+		mount(Desktop, {
+			global: {
+				plugins: [makeStonecropPlugin(registry, stonecrop), testRouter],
+				stubs: { AForm: true, ActionSet: true, SheetNav: true, CommandPalette: true },
+			},
+		})
+
+		await nextTick()
+		await nextTick() // allow async loadRecordData to settle
+
+		// Desktop must have attempted a direct fetch for the missing record
+		expect(mockGetRecord).toHaveBeenCalled()
+		// Record should now be in HST
+		const record = stonecrop.getRecordById('task', 'rec-1')
+		expect(record).toBeDefined()
+		expect(record?.get('title')).toBe('Fetched')
+	})
+
 	it('reads doctype and recordId from catch-all pathMatch params', async () => {
 		const testRouter = createRouter({ history: createMemoryHistory(), routes: routerTestRoutes })
 		const registry = new Registry(testRouter)

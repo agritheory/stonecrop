@@ -30,6 +30,26 @@ This registers all components globally. They can also be imported individually.
 
 ---
 
+## AForm
+
+### Field width
+
+Set `width` on any schema field to control its share of the form row. The value is any valid CSS size and is applied as `flex-basis` + `width` directly on the field's flex item:
+
+```json
+{ "fieldname": "notes", "fieldtype": "Text", "component": "ATextInput", "label": "Notes", "width": "100%" }
+```
+
+| Value | Effect |
+|---|---|
+| `"100%"` | Field spans the full form row (forces a line-break before and after) |
+| `"50%"` | Field takes half the row; neighbouring fields fill the rest |
+| `"40ch"` | Field starts at 40 characters wide and grows with available space |
+
+Fields without `width` continue to share space equally (`flex-grow: 1; min-width: 20ch`).
+
+---
+
 ## AFormLink
 
 A form input for selecting and navigating to linked documents (`fieldtype: 'Link'`). Combines a searchable text input, an optional dropdown of results, and a navigation arrow button.
@@ -72,18 +92,28 @@ When `id` is falsy, the component shows a `—` placeholder and hides the naviga
 
 ### Filter function
 
-Provide `filterFunction` to enable the search dropdown. The function receives the current input text and must return `AFormLinkValue[]` or a `Promise<AFormLinkValue[]>`.
+Provide `filterFunction` to enable the search dropdown. The function receives a search string and must return `AFormLinkValue[]` or a `Promise<AFormLinkValue[]>`.
+
+The function is called in two distinct situations:
+
+1. **On user interaction** — when the user focuses or types into the field, the current input text is passed as the search string.
+2. **On mount (and on id change)** — when the field has an `id` but no `displayText`, the function is called automatically with the existing `id` string so the display name can be resolved without user interaction. The first result whose `id` matches is used.
+
+Because of case 2, implementations should handle both name-based searches (partial strings typed by the user) and exact id lookups (full id strings passed on mount). A common pattern is to attempt both:
 
 ```typescript
 // Sync
 const filterFunction = (search: string): AFormLinkValue[] =>
   records
-    .filter(r => r.name.toLowerCase().includes(search.toLowerCase()))
+    .filter(r =>
+      r.id === search ||                                  // exact id match (mount-time resolution)
+      r.name.toLowerCase().includes(search.toLowerCase()) // name search (user typing)
+    )
     .map(r => ({ id: r.id, displayText: r.name }))
 
 // Async — set isAsync: true for loading indicator
 const filterFunction = async (search: string): Promise<AFormLinkValue[]> => {
-  const results = await api.search(search)
+  const results = await api.search(search)  // API should handle both id and name queries
   return results.map(r => ({ id: r.id, displayText: r.name }))
 }
 ```

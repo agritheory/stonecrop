@@ -684,6 +684,9 @@ importers:
         specifier: ^5.0.1
         version: 5.0.1(@envelop/core@5.5.1)(crossws@0.3.5)(graphql@16.13.2)(h3@1.15.11)(use-sync-external-store@1.6.0)
     devDependencies:
+      '@eslint/js':
+        specifier: ^10.0.1
+        version: 10.0.1(eslint@10.3.0(jiti@2.6.1))
       '@rushstack/heft':
         specifier: ^1.2.17
         version: 1.2.17(@types/node@24.12.4)
@@ -699,12 +702,24 @@ importers:
       '@vitest/ui':
         specifier: ^4.1.5
         version: 4.1.5(vitest@4.1.5)
+      eslint:
+        specifier: ^10.3.0
+        version: 10.3.0(jiti@2.6.1)
+      eslint-config-prettier:
+        specifier: ^10.1.8
+        version: 10.1.8(eslint@10.3.0(jiti@2.6.1))
+      globals:
+        specifier: ^17.6.0
+        version: 17.6.0
       stonecrop-rig:
         specifier: workspace:*
         version: link:../rigs/stonecrop-rig
       typescript:
         specifier: ^6.0.3
         version: 6.0.3
+      typescript-eslint:
+        specifier: ^8.59.1
+        version: 8.59.1(eslint@10.3.0(jiti@2.6.1))(typescript@6.0.3)
       vite:
         specifier: ^7.3.2
         version: 7.3.2(@types/node@24.12.4)(jiti@2.6.1)(sass@1.97.2)(terser@5.46.2)(yaml@2.8.4)
