@@ -24,7 +24,7 @@ import { ValidationError } from '@stonecrop/graphql_middleware'
 
 ### buildListQuery
 
-Build a GraphQL connection query to fetch a list of records. Only declares variables ($limit, $offset, $orderBy) that are actually used in the query, avoiding GraphQL spec §5.8.3 violations from unused variable declarations. Excludes Link and Doctype relation fields from the selection set.
+Build a GraphQL connection query to fetch a list of records. Only declares variables ($limit, $offset, $orderBy) that are actually used in the query, avoiding GraphQL spec §5.8.3 violations from unused variable declarations. Excludes Link relation fields and Display fields from the selection set.
 
 **Signature:**
 
@@ -358,7 +358,7 @@ declare function mergeNestedResults(params: MergeNestedResultsParams): Record<st
 
 ### queryableFieldNames
 
-Filter fields to only those directly queryable as scalars, excluding Link and Doctype relation fields that require GraphQL sub-selections.
+Filter fields to only those directly queryable as scalars, excluding Link relation fields and Display fields that have no backing DB column.
 
 **Signature:**
 
@@ -718,7 +718,7 @@ export const builtinHandlers: Record<string, ActionHandler>
 
 ### RELATION_FIELDTYPES
 
-Fieldtypes that map to GraphQL object/connection types and require sub-selections. These fields are excluded from generated query field selections.
+Fieldtypes excluded from the generated scalar query selection set. - `'Link'`: maps to a GraphQL object/connection type — requires a sub-selection - `'Display'`: display-only composite component with no backing DB column
 
 **Type:**
 

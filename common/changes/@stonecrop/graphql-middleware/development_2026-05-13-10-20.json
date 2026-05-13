@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/graphql-middleware",
+      "comment": "allow Display fieldtype for fields without db backing",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/graphql-middleware"
+}

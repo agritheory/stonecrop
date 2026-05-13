@@ -1,5 +1,5 @@
-import type { DoctypeMeta, FieldMeta } from '@stonecrop/schema'
-import type { ActionHandler, ActionContext } from '../types'
+import type { FieldMeta } from '@stonecrop/schema'
+import type { ActionHandler } from '../types'
 
 const handlerRegistry: Map<string, ActionHandler> = new Map()
 
@@ -111,7 +111,7 @@ const validateFieldTypes: ActionHandler = async (args, context) => {
  * Validate a single field value against its expected type
  */
 function validateFieldValue(field: FieldMeta, value: unknown): string | null {
-	const { fieldname, fieldtype, cardinality } = field
+	const { fieldname, fieldtype } = field
 
 	switch (fieldtype) {
 		case 'Int':
