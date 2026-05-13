@@ -66,8 +66,15 @@ jobs:
           node common/scripts/install-run-rush.js update-autoinstaller --name rush-plugins
           node common/scripts/install-run-rush.js update-autoinstaller --name doc-tools
 
+      # Matrix uses folder names; Rush --to requires the npm package name.
+      - name: Resolve Package Name
+        id: pkg
+        run: |
+          NAME=$(node -e "const r=require('./rush.json');console.log(r.projects.find(p=>p.projectFolder==='${{ matrix.package }}').packageName)")
+          echo "name=${NAME}" >> $GITHUB_OUTPUT
+
       - name: Rush Build
-        run: node common/scripts/install-run-rush.js build --to ${{ matrix.package }}
+        run: node common/scripts/install-run-rush.js build --to ${{ steps.pkg.outputs.name }}
 
       - name: Run Tests
         working-directory: ./${{ matrix.package }}
