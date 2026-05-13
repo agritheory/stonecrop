@@ -42,6 +42,19 @@ jobs:
             rush-build-cache-nuxt-
             rush-build-cache-
 
+      # actions/setup-node's `cache: 'pnpm'` calls `pnpm store path` during
+      # setup — before Rush has installed its own managed pnpm binary at ~/.rush/.
+      # We cache ~/.rush (the binary) and ~/.local/share/pnpm/store (the package
+      # store) explicitly so that rush install can skip downloading all packages.
+      - name: Cache Rush pnpm Store
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.rush
+            ~/.local/share/pnpm/store
+          key: rush-pnpm-${{ runner.os }}-${{ hashFiles('common/config/rush/pnpm-lock.yaml') }}
+          restore-keys: rush-pnpm-${{ runner.os }}-
+
       - name: Rush Install
         run: node common/scripts/install-run-rush.js install
 
