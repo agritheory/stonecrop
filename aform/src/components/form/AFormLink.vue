@@ -93,6 +93,18 @@ const navigator = inject<AFormLinkNavigator | null>('aformLinkNavigator', null)
 
 type FilterFn = (search: string) => AFormLinkValue[] | Promise<AFormLinkValue[]>
 
+// Records loaded from the DB arrive as scalar UUID strings; normalize to AFormLinkValue
+// so the resolution watch below can pick up the id correctly.
+watch(
+	() => modelValue.value,
+	value => {
+		if (value !== null && value !== undefined && (typeof value === 'string' || typeof value === 'number')) {
+			modelValue.value = { id: value }
+		}
+	},
+	{ immediate: true }
+)
+
 watch(
 	() => modelValue.value?.id,
 	async id => {

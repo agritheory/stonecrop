@@ -410,7 +410,9 @@ describe('useStonecrop HST mode', () => {
 
 		const mockClient = {
 			getMeta: vi.fn().mockResolvedValue(null),
-			getRecord: vi.fn().mockResolvedValue({ id: 't1', title: 'Test Task', status: 'active' }),
+			getRecord: vi
+				.fn()
+				.mockResolvedValue({ record: { id: 't1', title: 'Test Task', status: 'active' }, unknownLinks: [] }),
 			getRecords: vi.fn().mockResolvedValue([]),
 			runAction: vi.fn().mockResolvedValue({ success: true, data: null, error: null }),
 		}

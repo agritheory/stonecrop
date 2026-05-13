@@ -491,21 +491,37 @@ function isManyCardinality(cardinality: string): boolean {
 const DEFAULT_SYNC_LIMIT = 50
 
 /**
- * Fieldtypes excluded from the generated scalar query selection set.
- * - `'Link'`: maps to a GraphQL object/connection type — requires a sub-selection
+ * Fieldtypes unconditionally excluded from the generated scalar query selection set.
  * - `'Display'`: display-only composite component with no backing DB column
+ *
+ * Note: `'Link'` fields are NOT blanket-excluded here. Scalar FK UUID columns use
+ * `fieldtype: 'Link'` and ARE queryable. Only Link fields that also appear in the
+ * doctype's `links` declaration (i.e. those that resolve to a sub-object or connection)
+ * are excluded — that logic lives in `queryableFieldNames`.
  * @public
  */
-const RELATION_FIELDTYPES = new Set(['Link', 'Display'])
+const RELATION_FIELDTYPES = new Set(['Display'])
 
 /**
- * Filter fields to only those directly queryable as scalars, excluding Link relation
- * fields and Display fields that have no backing DB column.
+ * Filter fields to only those directly queryable as scalars.
+ * Excludes Display fields (no backing DB column) and Link fields that have an
+ * explicit `links` declaration (those require sub-selection, not scalar reads).
+ * Link fields without a `links` declaration are scalar FK UUID columns and ARE included.
  * @public
  */
 function queryableFieldNames(meta: DoctypeMeta): string {
+	const linkedFieldnames = new Set<string>()
+	if (meta.links) {
+		for (const [key, link] of Object.entries(meta.links)) {
+			linkedFieldnames.add((link as any).fieldname ?? key)
+		}
+	}
 	return meta.fields
-		.filter(f => !RELATION_FIELDTYPES.has(f.fieldtype))
+		.filter(f => {
+			if (RELATION_FIELDTYPES.has(f.fieldtype)) return false
+			if (f.fieldtype === 'Link' && linkedFieldnames.has(f.fieldname)) return false
+			return true
+		})
 		.map(f => f.fieldname)
 		.join('\n      ')
 }

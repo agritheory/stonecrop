@@ -56,9 +56,8 @@ describe('useLazyLink', () => {
 
 		const mockClient = {
 			getRecord: vi.fn().mockResolvedValue({
-				id: '123',
-				title: 'Test Recipe',
-				tasks: [{ id: 't1', name: 'Task 1' }],
+				record: { id: '123', title: 'Test Recipe', tasks: [{ id: 't1', name: 'Task 1' }] },
+				unknownLinks: [],
 			}),
 		}
 		stonecrop.setClient(mockClient as any)
@@ -119,7 +118,7 @@ describe('useLazyLink', () => {
 		const secondReload = state.reload()
 		expect(state.loading.value).toBe(true)
 
-		resolvePromise!({ id: '123', title: 'Test' })
+		resolvePromise!({ record: { id: '123', title: 'Test' }, unknownLinks: [] })
 		await firstReload
 
 		expect(state.loaded.value).toBe(true)
@@ -184,9 +183,8 @@ describe('useLazyLink', () => {
 			getRecord: vi.fn().mockImplementation(() => {
 				callCount++
 				return {
-					id: '123',
-					title: 'Test Recipe',
-					tasks: [{ id: `task-${callCount}`, name: `Task ${callCount}` }],
+					record: { id: '123', title: 'Test Recipe', tasks: [{ id: `task-${callCount}`, name: `Task ${callCount}` }] },
+					unknownLinks: [],
 				}
 			}),
 		}
@@ -214,9 +212,8 @@ describe('useLazyLink', () => {
 
 		const mockClient = {
 			getRecord: vi.fn().mockResolvedValue({
-				id: '123',
-				title: 'Test Recipe',
-				tasks: [{ id: 't1', name: 'Sync Task' }],
+				record: { id: '123', title: 'Test Recipe', tasks: [{ id: 't1', name: 'Sync Task' }] },
+				unknownLinks: [],
 			}),
 		}
 		stonecrop.setClient(mockClient as any)
@@ -242,9 +239,8 @@ describe('useLazyLink', () => {
 
 		const mockClient = {
 			getRecord: vi.fn().mockResolvedValue({
-				id: '123',
-				title: 'Test Recipe',
-				tasks: [{ id: 't1', name: 'Lazy Task' }],
+				record: { id: '123', title: 'Test Recipe', tasks: [{ id: 't1', name: 'Lazy Task' }] },
+				unknownLinks: [],
 			}),
 		}
 		stonecrop.setClient(mockClient as any)

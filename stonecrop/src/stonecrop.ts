@@ -396,10 +396,10 @@ export class Stonecrop {
 			throw new Error(`Doctype not found: ${typeof doctype === 'string' ? doctype : doctype.slug}`)
 		}
 
-		const record = await this._client.getRecord(resolved, recordId)
+		const result = await this._client.getRecord(resolved, recordId)
 
-		if (record) {
-			this.addRecord(resolved, recordId, record)
+		if (result?.record) {
+			this.addRecord(resolved, recordId, result.record)
 		}
 	}
 
@@ -593,11 +593,11 @@ export class Stonecrop {
 			)
 		}
 
-		const record = await this._client.getRecord({ name: doctype.doctype }, recordId, {
+		const result = await this._client.getRecord({ name: doctype.doctype }, recordId, {
 			includeNested: options?.includeNested ?? true,
 		})
 
-		if (!record) {
+		if (!result?.record) {
 			throw createCodedError(`Record not found: ${doctype.doctype} ${recordId}`, 'RECORD_NOT_FOUND')
 		}
 
@@ -611,7 +611,7 @@ export class Stonecrop {
 			this.hstStore.set(`${slug}.${recordId}`, {}, 'system')
 		}
 
-		for (const [key, value] of Object.entries(record)) {
+		for (const [key, value] of Object.entries(result.record)) {
 			this.hstStore.set(`${slug}.${recordId}.${key}`, value, 'system')
 		}
 	}
