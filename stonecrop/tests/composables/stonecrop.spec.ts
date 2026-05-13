@@ -256,7 +256,7 @@ describe('useStonecrop composable', () => {
 		// Mock client for record fetching
 		const mockClient = {
 			getMeta: vi.fn(),
-			getRecord: vi.fn().mockResolvedValue({ id: '123', title: 'Test Task' }),
+			getRecord: vi.fn().mockResolvedValue({ record: { id: '123', title: 'Test Task' }, unknownLinks: [] }),
 			getRecords: vi.fn(),
 			runAction: vi.fn(),
 		}

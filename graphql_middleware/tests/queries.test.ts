@@ -39,11 +39,13 @@ const mixedFieldsMeta: DoctypeMeta = {
 		{ fieldname: 'id', fieldtype: 'Data', label: 'ID' },
 		{ fieldname: 'title', fieldtype: 'Data', label: 'Title' },
 		{ fieldname: 'created_at', fieldtype: 'Datetime', label: 'Created' },
-		// FK object reference — requires sub-selection, should be skipped
-		{ fieldname: 'userByCreatedBy', fieldtype: 'Link', label: 'Creator', options: 'user' },
+		// FK scalar column with a links declaration — excluded from scalar selection
+		{ fieldname: 'createdBy', fieldtype: 'Link', label: 'Creator', options: 'user' },
 		{ fieldname: 'rating', fieldtype: 'Float', label: 'Rating' },
 	],
 	links: {
+		// FK field with links declaration — excluded because it resolves to a sub-object
+		createdBy: { target: 'user', cardinality: 'atMostOne' },
 		// Reverse relation connection — routes to links, not fields
 		recipeIngredientsByRecipeId: { target: 'recipe-ingredient', cardinality: 'noneOrMany' },
 	},
@@ -91,8 +93,8 @@ const getMeta = (slug: string) => registry.get(slug)
 // ===========================================================================
 
 describe('RELATION_FIELDTYPES', () => {
-	it('contains Link', () => {
-		expect(RELATION_FIELDTYPES.has('Link')).toBe(true)
+	it('does not contain Link (Link fields excluded by queryableFieldNames when they have a links declaration)', () => {
+		expect(RELATION_FIELDTYPES.has('Link')).toBe(false)
 		expect(RELATION_FIELDTYPES.has('Doctype')).toBe(false)
 	})
 
@@ -115,13 +117,13 @@ describe('queryableFieldNames', () => {
 		expect(names).toContain('is_active')
 	})
 
-	it('excludes Link fields', () => {
+	it('excludes Link fields with a links declaration', () => {
 		const names = queryableFieldNames(mixedFieldsMeta)
 		expect(names).toContain('id')
 		expect(names).toContain('title')
 		expect(names).toContain('created_at')
 		expect(names).toContain('rating')
-		expect(names).not.toContain('userByCreatedBy')
+		expect(names).not.toContain('createdBy')
 		expect(names).not.toContain('recipeIngredientsByRecipeId')
 	})
 
@@ -172,7 +174,7 @@ describe('buildRecordQuery', () => {
 		)
 		expect(query).toContain('title')
 		expect(query).toContain('rating')
-		expect(query).not.toContain('userByCreatedBy')
+		expect(query).not.toContain('createdBy')
 		expect(query).not.toContain('recipeIngredientsByRecipeId')
 	})
 
@@ -259,7 +261,7 @@ describe('buildListQuery', () => {
 		const query = buildListQuery(mixedFieldsMeta, {}, defaultConnectionFieldName, defaultOrderByTypeName)
 		expect(query).toContain('title')
 		expect(query).toContain('rating')
-		expect(query).not.toContain('userByCreatedBy')
+		expect(query).not.toContain('createdBy')
 		expect(query).not.toContain('recipeIngredientsByRecipeId')
 	})
 })

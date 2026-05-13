@@ -302,7 +302,7 @@ export interface GetRecordsOptions {
 }
 
 /**
- * Result from getRecord - includes the record data and any unknown links requested
+ * Result from getRecord - includes the record data
  * @public
  */
 export interface GetRecordResult {

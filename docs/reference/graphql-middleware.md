@@ -363,7 +363,7 @@ declare function mergeNestedResults(params: MergeNestedResultsParams): Record<st
 
 ### queryableFieldNames
 
-Filter fields to only those directly queryable as scalars, excluding Link relation fields and Display fields that have no backing DB column.
+Filter fields to only those directly queryable as scalars. Excludes Display fields (no backing DB column) and Link fields that have an explicit `links` declaration (those require sub-selection, not scalar reads). Link fields without a `links` declaration are scalar FK UUID columns and ARE included.
 
 **Signature:**
 
@@ -723,7 +723,9 @@ export const builtinHandlers: Record<string, ActionHandler>
 
 ### RELATION_FIELDTYPES
 
-Fieldtypes excluded from the generated scalar query selection set. - `'Link'`: maps to a GraphQL object/connection type — requires a sub-selection - `'Display'`: display-only composite component with no backing DB column
+Fieldtypes unconditionally excluded from the generated scalar query selection set. - `'Display'`: display-only composite component with no backing DB column
+
+Note: `'Link'` fields are NOT blanket-excluded here. Scalar FK UUID columns use `fieldtype: 'Link'` and ARE queryable. Only Link fields that also appear in the doctype's `links` declaration (i.e. those that resolve to a sub-object or connection) are excluded — that logic lives in `queryableFieldNames`.
 
 **Type:**
 
