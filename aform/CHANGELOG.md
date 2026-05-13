@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/aform
 
-This log was last generated on Wed, 13 May 2026 10:58:06 GMT and should not be manually modified.
+This log was last generated on Wed, 13 May 2026 12:28:05 GMT and should not be manually modified.
+
+## 0.12.3
+Wed, 13 May 2026 12:28:05 GMT
+
+### Patches
+
+- handle model updates for links from database fetch
 
 ## 0.12.2
 Wed, 13 May 2026 10:58:06 GMT
