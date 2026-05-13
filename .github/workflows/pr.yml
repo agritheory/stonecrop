@@ -139,39 +139,9 @@ jobs:
         working-directory: ./${{ matrix.package }}
         run: node ../common/scripts/install-run-rushx.js test:coverage
 
-      - name: Upload Coverage
-        if: always()
-        uses: actions/upload-artifact@v6
-        with:
-          name: coverage-${{ matrix.package }}-pull-request
-          path: ./${{ matrix.package }}/coverage
-          retention-days: 1
-
-      - name: Save Rush Build Cache
-        if: always() && steps.cache-restore.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v5
-        with:
-          path: common/temp/build-cache
-          key: ${{ steps.cache-restore.outputs.cache-primary-key }}
-
-  coverage-report:
-    name: Coverage Report
-    needs: [changes, test-and-coverage]
-    runs-on: ubuntu-latest
-    if: needs.changes.outputs.packages != '[]'
-
-    steps:
-      # Download PR coverage artifacts produced in this run (no run-id needed).
-      - name: Download PR Coverage Artifacts
-        uses: actions/download-artifact@v7
-        with:
-          pattern: coverage-*-pull-request
-
-      # Resolve the run ID of the latest successful coverage-baseline run on development,
-      # then use the official download-artifact action with an explicit run-id to fetch
-      # the baseline (cross-run downloads require a token + run-id).
       - name: Resolve Baseline Run ID
         id: baseline-run
+        if: always()
         continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
@@ -186,78 +156,27 @@ jobs:
             --jq '.[0].databaseId // empty')
           echo "run-id=${RUN_ID}" >> $GITHUB_OUTPUT
 
-      - name: Download Baseline Coverage Artifacts
-        if: steps.baseline-run.outputs.run-id != ''
+      - name: Download Baseline Coverage
+        if: always() && steps.baseline-run.outputs.run-id != ''
         uses: actions/download-artifact@v7
         with:
-          pattern: coverage-*-development
+          name: coverage-${{ matrix.package }}-development
           run-id: ${{ steps.baseline-run.outputs.run-id }}
           github-token: ${{ github.token }}
+          path: coverage-baseline
 
       - name: Post Coverage Report
-        uses: actions/github-script@v7
-        env:
-          PACKAGES: ${{ needs.changes.outputs.packages }}
+        if: always()
+        uses: davelosert/vitest-coverage-report-action@v2
         with:
-          script: |
-            const fs = require('fs');
-            const packages = JSON.parse(process.env.PACKAGES);
-            const metrics = ['lines', 'branches', 'functions', 'statements'];
+          name: ${{ matrix.package }}
+          json-summary-path: ./${{ matrix.package }}/coverage/coverage-summary.json
+          json-detail-path: ./${{ matrix.package }}/coverage/coverage-final.json
+          json-summary-compare-path: ${{ steps.baseline-run.outputs.run-id != '' && 'coverage-baseline/coverage-summary.json' || '' }}
 
-            function readSummary(filePath) {
-              if (!fs.existsSync(filePath)) return null;
-              return JSON.parse(fs.readFileSync(filePath, 'utf8')).total;
-            }
-
-            let body = '## Coverage Report\n\n';
-
-            for (const pkg of packages) {
-              const prData  = readSummary(`coverage-${pkg}-pull-request/coverage-summary.json`);
-              const baseData = readSummary(`coverage-${pkg}-development/coverage-summary.json`);
-
-              body += `<details>\n<summary><strong>${pkg}</strong></summary>\n\n`;
-
-              if (!prData) {
-                body += `_No coverage data available._\n\n`;
-              } else {
-                body += `| Metric | PR | Base | Delta |\n|---|---|---|---|\n`;
-                for (const metric of metrics) {
-                  const prPct   = prData[metric].pct;
-                  const basePct = baseData ? baseData[metric].pct : null;
-                  const delta   = basePct !== null ? (prPct - basePct).toFixed(2) : null;
-                  const sign    = delta > 0 ? '+' : '';
-                  body += `| ${metric.charAt(0).toUpperCase() + metric.slice(1)} | ${prPct}% | ${basePct ?? 'N/A'}% | ${delta !== null ? sign + delta + '%' : 'N/A'} |\n`;
-                }
-                body += '\n';
-              }
-
-              body += `</details>\n\n`;
-            }
-
-            // Find and update an existing report comment, or create a new one.
-            const marker = '<!-- stonecrop-coverage-report -->';
-            const fullBody = `${marker}\n${body}`;
-
-            const { data: comments } = await github.rest.issues.listComments({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-            });
-
-            const existing = comments.find(c => c.body.includes(marker));
-
-            if (existing) {
-              await github.rest.issues.updateComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                comment_id: existing.id,
-                body: fullBody,
-              });
-            } else {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                body: fullBody,
-              });
-            }
+      - name: Save Rush Build Cache
+        if: always() && steps.cache-restore.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v5
+        with:
+          path: common/temp/build-cache
+          key: ${{ steps.cache-restore.outputs.cache-primary-key }}
