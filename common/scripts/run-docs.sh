@@ -14,11 +14,14 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 REPO_ROOT="$( cd "$SCRIPT_DIR/../.." && pwd )"
 DOC_TOOLS_DIR="$REPO_ROOT/common/autoinstallers/doc-tools"
 
+# Use Rush's managed pnpm binary (available after `rush install`).
+PNPM_BIN="$REPO_ROOT/common/temp/pnpm-local/node_modules/.bin/pnpm"
+
 # Ensure doc-tools is installed
 if [ ! -d "$DOC_TOOLS_DIR/node_modules" ]; then
   echo "📦 Installing doc-tools..."
   cd "$DOC_TOOLS_DIR"
-  pnpm install --silent
+  "$PNPM_BIN" install --silent
 fi
 
 # Parse arguments
