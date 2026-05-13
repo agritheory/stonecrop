@@ -2,6 +2,21 @@
   "name": "@stonecrop/aform",
   "entries": [
     {
+      "version": "0.12.2",
+      "tag": "@stonecrop/aform_v0.12.2",
+      "date": "Wed, 13 May 2026 10:58:06 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "run filter function on mount of AFormLink"
+          },
+          {
+            "comment": "correctly apply field width input from doctype schema"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.12.1",
       "tag": "@stonecrop/aform_v0.12.1",
       "date": "Wed, 13 May 2026 09:25:06 GMT",

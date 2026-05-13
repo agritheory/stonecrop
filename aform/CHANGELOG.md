@@ -1,6 +1,14 @@
 # Change Log - @stonecrop/aform
 
-This log was last generated on Wed, 13 May 2026 09:25:06 GMT and should not be manually modified.
+This log was last generated on Wed, 13 May 2026 10:58:06 GMT and should not be manually modified.
+
+## 0.12.2
+Wed, 13 May 2026 10:58:06 GMT
+
+### Patches
+
+- run filter function on mount of AFormLink
+- correctly apply field width input from doctype schema
 
 ## 0.12.1
 Wed, 13 May 2026 09:25:06 GMT
