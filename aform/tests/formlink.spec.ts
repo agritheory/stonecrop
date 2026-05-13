@@ -15,11 +15,50 @@ describe('AFormLink component', () => {
 		expect(wrapper.find('input').element.value).toBe('Acme Corp')
 	})
 
-	it('falls back to id when displayText is omitted', () => {
+	it('falls back to id when displayText is omitted and no filterFunction is provided', () => {
 		const wrapper = mount(AFormLink, {
 			props: { modelValue: { id: 'CUST-001' } },
 		})
 		expect(wrapper.find('input').element.value).toBe('CUST-001')
+	})
+
+	it('resolves display text on mount when id is set but displayText is absent', async () => {
+		const filterFunction = vi.fn(async (_: string) => [{ id: 'PP-001', displayText: 'Q1 2026' }])
+		const wrapper = mount(AFormLink, {
+			props: { modelValue: { id: 'PP-001' }, filterFunction },
+		})
+
+		await flushPromises()
+
+		expect(filterFunction).toHaveBeenCalledWith('PP-001')
+		expect(wrapper.find('input').element.value).toBe('Q1 2026')
+	})
+
+	it('does not call filterFunction on mount when displayText is already present', async () => {
+		const filterFunction = vi.fn(async (_: string) => [{ id: 'CUST-001', displayText: 'Acme Corp' }])
+		mount(AFormLink, {
+			props: { modelValue: { id: 'CUST-001', displayText: 'Acme Corp' }, filterFunction },
+		})
+
+		await flushPromises()
+
+		expect(filterFunction).not.toHaveBeenCalled()
+	})
+
+	it('resolves display text when modelValue id changes after mount', async () => {
+		const filterFunction = vi.fn(async (id: string) => [{ id, displayText: `Name for ${id}` }])
+		const wrapper = mount(AFormLink, {
+			props: { modelValue: { id: '' }, filterFunction },
+		})
+
+		await flushPromises()
+		expect(filterFunction).not.toHaveBeenCalled()
+
+		await wrapper.setProps({ modelValue: { id: 'NEW-001' } })
+		await flushPromises()
+
+		expect(filterFunction).toHaveBeenCalledWith('NEW-001')
+		expect(wrapper.find('input').element.value).toBe('Name for NEW-001')
 	})
 
 	it('shows empty input when id is falsy', () => {
