@@ -36,8 +36,11 @@ jobs:
         uses: actions/cache/restore@v5
         with:
           path: common/temp/build-cache
-          key: rush-build-cache-nuxt-${{ hashFiles('common/config/rush/pnpm-lock.yaml') }}
-          restore-keys: rush-build-cache-
+          key: rush-build-cache-nuxt-${{ hashFiles('common/config/rush/pnpm-lock.yaml') }}-${{ github.run_id }}
+          restore-keys: |
+            rush-build-cache-nuxt-${{ hashFiles('common/config/rush/pnpm-lock.yaml') }}-
+            rush-build-cache-nuxt-
+            rush-build-cache-
 
       - name: Rush Install
         run: node common/scripts/install-run-rush.js install
@@ -57,7 +60,7 @@ jobs:
         run: node ../common/scripts/install-run-rushx.js test
 
       - name: Save Rush Build Cache
-        if: always() && steps.cache-restore.outputs.cache-hit != 'true'
+        if: always()
         uses: actions/cache/save@v5
         with:
           path: common/temp/build-cache
