@@ -171,8 +171,8 @@ jobs:
         with:
           name: ${{ matrix.package }}
           json-summary-path: ./${{ matrix.package }}/coverage/coverage-summary.json
-          json-detail-path: ./${{ matrix.package }}/coverage/coverage-final.json
-          json-summary-compare-path: ${{ steps.baseline-run.outputs.run-id != '' && 'coverage-baseline/coverage-summary.json' || '' }}
+          json-final-path: ./${{ matrix.package }}/coverage/coverage-final.json
+          json-summary-compare-path: coverage-baseline/coverage-summary.json
 
       - name: Save Rush Build Cache
         if: always() && steps.cache-restore.outputs.cache-hit != 'true'
