@@ -58,3 +58,5 @@ export default defineConfig({
 		},
 	},
 })
+
+// ci: baseline measurement
