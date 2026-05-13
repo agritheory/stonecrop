@@ -2,6 +2,21 @@
   "name": "@stonecrop/atable",
   "entries": [
     {
+      "version": "0.12.1",
+      "tag": "@stonecrop/atable_v0.12.1",
+      "date": "Wed, 13 May 2026 09:25:06 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "fix lint errors"
+          },
+          {
+            "comment": "update node to v24"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.12.0",
       "tag": "@stonecrop/atable_v0.12.0",
       "date": "Mon, 11 May 2026 06:46:46 GMT",

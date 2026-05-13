@@ -1,6 +1,14 @@
 # Change Log - @stonecrop/desktop
 
-This log was last generated on Mon, 11 May 2026 06:46:46 GMT and should not be manually modified.
+This log was last generated on Wed, 13 May 2026 09:25:06 GMT and should not be manually modified.
+
+## 0.12.1
+Wed, 13 May 2026 09:25:06 GMT
+
+### Patches
+
+- fix lint errors
+- update node to v24
 
 ## 0.12.0
 Mon, 11 May 2026 06:46:46 GMT
