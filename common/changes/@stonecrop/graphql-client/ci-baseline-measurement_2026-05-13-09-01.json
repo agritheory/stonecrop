@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/graphql-client",
+      "comment": "fix lint errors",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/graphql-client"
+}
