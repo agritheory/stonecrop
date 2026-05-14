@@ -45,16 +45,17 @@
 
 <script setup lang="ts">
 import { vOnClickOutside } from '@vueuse/components'
-import { computed, inject, ref } from 'vue'
+import { computed, inject, ref, watch } from 'vue'
 
 import type { AFormLinkNavigator, AFormLinkValue, ComponentProps } from '../../types'
+import { deserializeFunction } from '../../utils/deserialize'
 
 const {
 	label,
 	mode,
 	doctype = undefined,
 	formatter = undefined,
-	icon = 'arrow-right' as 'arrow-right' | 'chevron-right',
+	icon = 'arrow-right',
 	disabled = false,
 	filterFunction = undefined,
 	isAsync = false,
@@ -64,7 +65,7 @@ const {
 		formatter?: (value: AFormLinkValue) => string
 		icon?: 'arrow-right' | 'chevron-right'
 		disabled?: boolean
-		filterFunction?: (search: string) => AFormLinkValue[] | Promise<AFormLinkValue[]>
+		filterFunction?: string | ((search: string) => AFormLinkValue[] | Promise<AFormLinkValue[]>)
 		isAsync?: boolean
 	}
 >()
@@ -90,9 +91,66 @@ const activeIndex = ref<number | null>(null)
 
 const navigator = inject<AFormLinkNavigator | null>('aformLinkNavigator', null)
 
+type FilterFn = (search: string) => AFormLinkValue[] | Promise<AFormLinkValue[]>
+type ResolverFn = (doctype: string, id: string) => string | undefined | Promise<string | undefined>
+const resolver = inject<ResolverFn | null>('aformLinkResolver', null)
+
+// Records loaded from the DB arrive as scalar UUID strings; normalize to AFormLinkValue
+// so the resolution watch below can pick up the id correctly.
+watch(
+	() => modelValue.value,
+	value => {
+		if (value !== null && value !== undefined && (typeof value === 'string' || typeof value === 'number')) {
+			modelValue.value = { id: value }
+		}
+	},
+	{ immediate: true }
+)
+
+// When the id changes (including on first render), resolve its display text.
+// Tries filterFunction first (returns a list of candidates to search); falls back to the
+// injected resolver (a direct doctype+id lookup). Skips if displayText is already set.
+watch(
+	() => modelValue.value?.id,
+	async id => {
+		if (!id || modelValue.value.displayText) return
+		try {
+			let displayText: string | undefined
+			if (filterFunction) {
+				const fn: FilterFn =
+					typeof filterFunction === 'string' ? deserializeFunction<FilterFn>(filterFunction) : filterFunction
+				const results = await fn(String(id))
+				displayText = results.find(r => String(r.id) === String(id))?.displayText
+				if (displayText === undefined) {
+					// eslint-disable-next-line no-console
+					console.warn(
+						`[AFormLink] filterFunction returned no matching result for id "${id}". ` +
+							`The function must return an item whose \`id\` exactly matches the search string.`
+					)
+				}
+			} else if (resolver && doctype) {
+				displayText = (await resolver(doctype, id.toString())) ?? undefined
+			}
+			if (displayText) {
+				searchText.value = displayText
+				modelValue.value = { ...modelValue.value, displayText }
+			}
+		} catch {
+			// silent — fall back to showing the raw id
+		}
+	},
+	{ immediate: true }
+)
+
 const handleNavigate = () => {
 	if (navigator && doctype) {
 		navigator.navigate(doctype, modelValue.value.id)
+	} else if (navigator && !doctype) {
+		// eslint-disable-next-line no-console
+		console.warn(
+			`[AFormLink] Navigation requested but \`doctype\` prop is missing. ` +
+				`Add \`options\` (or \`doctype\`) to the Link field definition to enable navigation.`
+		)
 	}
 }
 
@@ -102,7 +160,9 @@ const openDropdown = async (text: string) => {
 	dropdownOpen.value = true
 	if (isAsync) loading.value = true
 	try {
-		dropdownResults.value = (await filterFunction(text)) ?? []
+		const fn: FilterFn =
+			typeof filterFunction === 'string' ? deserializeFunction<FilterFn>(filterFunction) : filterFunction
+		dropdownResults.value = (await fn(text)) ?? []
 	} catch {
 		dropdownResults.value = []
 	} finally {

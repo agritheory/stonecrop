@@ -1,4 +1,5 @@
 import type { TableColumn, TableConfig, TableRow } from '@stonecrop/atable'
+import type { ColumnSchema } from '@stonecrop/schema'
 
 /**
  * The rendering mode for AForm components
@@ -95,6 +96,13 @@ export type BaseSchema = {
 	 * @public
 	 */
 	mode?: FormMode
+
+	/**
+	 * Hide the field from the form UI while keeping it in the data model.
+	 * Consumed by AForm — not passed down to field components.
+	 * @public
+	 */
+	hidden?: boolean
 }
 
 /**
@@ -133,8 +141,9 @@ export type FormSchema = BaseSchema & {
 	name?: string
 
 	/**
-	 * The width of the field element.
-	 * @beta
+	 * CSS width for the field's flex item in the AForm grid.
+	 * Applied as `flex-basis` and `width` on the rendered component element.
+	 * Use `"100%"` to make the field span the full form row.
 	 */
 	width?: string
 
@@ -149,16 +158,16 @@ export type FormSchema = BaseSchema & {
 }
 
 /**
- * Schema structure for defining tables inside AForm
+ * Schema structure for defining tables inside AForm.
+ *
+ * Two mutually exclusive forms:
+ * - **Columns-based** (no `kind`): caller provides `columns` directly
+ * - **Schema-delegated** (`kind: 'table'`): caller provides `schema`; ATable runs
+ *   `schemaToColumns` to derive columns at render time
+ *
  * @public
  */
 export type TableSchema = BaseSchema & {
-	/**
-	 * The columns to display in the table
-	 * @public
-	 */
-	columns?: TableColumn[]
-
 	/**
 	 * The configuration for the table
 	 * @public
@@ -170,7 +179,21 @@ export type TableSchema = BaseSchema & {
 	 * @public
 	 */
 	rows?: TableRow[]
-}
+} & (
+		| {
+				/** Explicit column definitions; `schema` and `kind` must not be set */
+				columns?: TableColumn[]
+				kind?: never
+				schema?: never
+		  }
+		| {
+				/** Marks this entry as schema-delegated; ATable derives columns from `schema` */
+				kind: 'table'
+				/** Child schema passed to ATable's `schema` prop */
+				schema: ColumnSchema[]
+				columns?: never
+		  }
+	)
 
 /**
  * Schema structure for defining fieldsets inside AForm

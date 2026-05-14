@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/graphql-client",
-	"version": "0.11.9",
+	"version": "0.12.5",
 	"license": "MIT",
 	"type": "module",
 	"author": {
@@ -52,7 +52,7 @@
 		"@microsoft/api-documenter": "^7.30.5",
 		"@miragejs/graphql": "^0.1.13",
 		"@rushstack/heft": "^1.2.17",
-		"@types/node": "^22.19.17",
+		"@types/node": "^24.12.4",
 		"@types/pluralize": "^0.0.33",
 		"@vitejs/plugin-vue": "^6.0.6",
 		"@vitest/coverage-istanbul": "^4.1.5",
@@ -73,6 +73,6 @@
 		"access": "public"
 	},
 	"engines": {
-		"node": ">=22.5.0"
+		"node": ">=24.0.0"
 	}
 }

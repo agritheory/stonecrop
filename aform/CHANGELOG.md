@@ -1,6 +1,56 @@
 # Change Log - @stonecrop/aform
 
-This log was last generated on Tue, 05 May 2026 12:04:46 GMT and should not be manually modified.
+This log was last generated on Thu, 14 May 2026 10:29:38 GMT and should not be manually modified.
+
+## 0.12.5
+Thu, 14 May 2026 10:29:38 GMT
+
+### Patches
+
+- add warning for bad filter function response
+
+## 0.12.4
+Thu, 14 May 2026 07:19:11 GMT
+
+### Patches
+
+- correctly display text for link field
+
+## 0.12.3
+Wed, 13 May 2026 12:28:05 GMT
+
+### Patches
+
+- handle model updates for links from database fetch
+
+## 0.12.2
+Wed, 13 May 2026 10:58:06 GMT
+
+### Patches
+
+- run filter function on mount of AFormLink
+- correctly apply field width input from doctype schema
+
+## 0.12.1
+Wed, 13 May 2026 09:25:06 GMT
+
+### Patches
+
+- update node to v24
+
+## 0.12.0
+Mon, 11 May 2026 06:46:46 GMT
+
+### Minor changes
+
+- add kind discriminant to table schema types
+
+## 0.11.10
+Fri, 08 May 2026 06:36:28 GMT
+
+### Patches
+
+- allow hiding fields via the schema
 
 ## 0.11.9
 Tue, 05 May 2026 12:04:46 GMT

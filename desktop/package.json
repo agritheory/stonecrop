@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/desktop",
-	"version": "0.11.9",
+	"version": "0.12.5",
 	"license": "MIT",
 	"type": "module",
 	"author": {
@@ -44,6 +44,7 @@
 	"dependencies": {
 		"@stonecrop/aform": "workspace:*",
 		"@stonecrop/atable": "workspace:*",
+		"@stonecrop/schema": "workspace:*",
 		"@stonecrop/stonecrop": "workspace:*",
 		"@stonecrop/themes": "workspace:*"
 	},
@@ -79,6 +80,6 @@
 		"access": "public"
 	},
 	"engines": {
-		"node": ">=22.5.0"
+		"node": ">=24.0.0"
 	}
 }

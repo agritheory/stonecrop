@@ -41,7 +41,7 @@ const { data: roleData } =
 		? { data: ref({ role_name: '', description: '', parent_role: null, active: true }) }
 		: await useFetch(`/api/roles/${roleId.value}`, {
 				default: () => ({ role_name: '', description: '', parent_role: null, active: true }),
-		  })
+			})
 
 // Add role data to HST store when available
 watch(

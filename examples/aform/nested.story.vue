@@ -399,7 +399,7 @@ const AddressListDemo = defineComponent({
 											label: c.label,
 											fieldtype: c.fieldtype,
 										})),
-								  }
+									}
 								: {}),
 							...(f.config ? { config: f.config } : {}),
 						})),

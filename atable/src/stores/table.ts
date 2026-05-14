@@ -46,8 +46,10 @@ export const createTableStore = (initData: {
 	id?: string
 	config?: TableConfig
 	modal?: TableModal
+	linkResolver?: ((doctype: string, id: string) => Promise<string | undefined>) | null
 }) => {
 	const id = initData.id || generateHash()
+	const linkResolver = initData.linkResolver ?? null
 	const createStore = defineStore(`table-${id}`, () => {
 		const createDisplayObject = () => {
 			const defaultDisplay: TableDisplay[] = [Object.assign({}, { rowModified: false })]
@@ -425,7 +427,16 @@ export const createTableStore = (initData: {
 			const format = column.format
 
 			if (!format) {
-				return value
+				switch (column.fieldtype) {
+					case 'Check':
+						return value ? '✓' : '✗'
+					case 'Date':
+						return value != null ? new Date(value as string).toLocaleDateString() : value
+					case 'Datetime':
+						return value != null ? new Date(value as string).toLocaleString() : value
+					default:
+						return value
+				}
 			}
 
 			if (typeof format === 'function') {
@@ -893,6 +904,9 @@ export const createTableStore = (initData: {
 			isDependencyGraphEnabled,
 			numberedRowWidth,
 			zeroColumn,
+
+			// resolver
+			linkResolver,
 
 			// actions
 			addRow,

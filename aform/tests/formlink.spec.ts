@@ -15,11 +15,50 @@ describe('AFormLink component', () => {
 		expect(wrapper.find('input').element.value).toBe('Acme Corp')
 	})
 
-	it('falls back to id when displayText is omitted', () => {
+	it('falls back to id when displayText is omitted and no filterFunction is provided', () => {
 		const wrapper = mount(AFormLink, {
 			props: { modelValue: { id: 'CUST-001' } },
 		})
 		expect(wrapper.find('input').element.value).toBe('CUST-001')
+	})
+
+	it('resolves display text on mount when id is set but displayText is absent', async () => {
+		const filterFunction = vi.fn(async (_: string) => [{ id: 'PP-001', displayText: 'Q1 2026' }])
+		const wrapper = mount(AFormLink, {
+			props: { modelValue: { id: 'PP-001' }, filterFunction },
+		})
+
+		await flushPromises()
+
+		expect(filterFunction).toHaveBeenCalledWith('PP-001')
+		expect(wrapper.find('input').element.value).toBe('Q1 2026')
+	})
+
+	it('does not call filterFunction on mount when displayText is already present', async () => {
+		const filterFunction = vi.fn(async (_: string) => [{ id: 'CUST-001', displayText: 'Acme Corp' }])
+		mount(AFormLink, {
+			props: { modelValue: { id: 'CUST-001', displayText: 'Acme Corp' }, filterFunction },
+		})
+
+		await flushPromises()
+
+		expect(filterFunction).not.toHaveBeenCalled()
+	})
+
+	it('resolves display text when modelValue id changes after mount', async () => {
+		const filterFunction = vi.fn(async (id: string) => [{ id, displayText: `Name for ${id}` }])
+		const wrapper = mount(AFormLink, {
+			props: { modelValue: { id: '' }, filterFunction },
+		})
+
+		await flushPromises()
+		expect(filterFunction).not.toHaveBeenCalled()
+
+		await wrapper.setProps({ modelValue: { id: 'NEW-001' } })
+		await flushPromises()
+
+		expect(filterFunction).toHaveBeenCalledWith('NEW-001')
+		expect(wrapper.find('input').element.value).toBe('Name for NEW-001')
 	})
 
 	it('shows empty input when id is falsy', () => {
@@ -391,8 +430,63 @@ describe('AFormLink component', () => {
 		expect(wrapper.findAll('.is-active')).toHaveLength(0)
 	})
 
+	describe('aformLinkResolver injection', () => {
+		it('resolves display text via injected aformLinkResolver when filterFunction is absent', async () => {
+			const resolver = vi.fn(async (_doctype: string, id: string) => `Resolved: ${id}`)
+			const wrapper = mount(AFormLink, {
+				props: { modelValue: { id: 'PP-001' }, doctype: 'planning-period' },
+				global: { provide: { aformLinkResolver: resolver } },
+			})
+
+			await flushPromises()
+
+			expect(resolver).toHaveBeenCalledWith('planning-period', 'PP-001')
+			expect(wrapper.find('input').element.value).toBe('Resolved: PP-001')
+		})
+
+		it('does not call aformLinkResolver when filterFunction is already provided', async () => {
+			const filterFunction = vi.fn(async (id: string) => [{ id, displayText: 'From FF' }])
+			const resolver = vi.fn()
+			const wrapper = mount(AFormLink, {
+				props: { modelValue: { id: 'PP-001' }, doctype: 'planning-period', filterFunction },
+				global: { provide: { aformLinkResolver: resolver } },
+			})
+
+			await flushPromises()
+
+			expect(resolver).not.toHaveBeenCalled()
+			expect(wrapper.find('input').element.value).toBe('From FF')
+		})
+
+		it('falls back gracefully when resolver returns undefined', async () => {
+			const resolver = vi.fn(async () => undefined)
+			const wrapper = mount(AFormLink, {
+				props: { modelValue: { id: 'PP-001' }, doctype: 'planning-period' },
+				global: { provide: { aformLinkResolver: resolver } },
+			})
+
+			await flushPromises()
+
+			expect(resolver).toHaveBeenCalled()
+			expect(wrapper.find('input').element.value).toBe('PP-001')
+		})
+
+		it('does not call resolver when doctype is not set', async () => {
+			const resolver = vi.fn()
+			mount(AFormLink, {
+				props: { modelValue: { id: 'PP-001' } },
+				global: { provide: { aformLinkResolver: resolver } },
+			})
+
+			await flushPromises()
+
+			expect(resolver).not.toHaveBeenCalled()
+		})
+	})
+
 	it('navigation is silent when no doctype is configured', async () => {
 		const navigate = vi.fn()
+		const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
 		const wrapper = mount(AFormLink, {
 			props: { modelValue: validValue },
 			global: { provide: { aformLinkNavigator: { navigate } } },
@@ -401,5 +495,64 @@ describe('AFormLink component', () => {
 		await wrapper.find('button').trigger('click')
 
 		expect(navigate).not.toHaveBeenCalled()
+		expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('doctype'))
+		warnSpy.mockRestore()
+	})
+
+	it('logs a console warning when filterFunction resolves no matching displayText', async () => {
+		const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+		const filterFunction = vi.fn(async () => [{ id: 'OTHER-001', displayText: 'Other Item' }])
+
+		mount(AFormLink, {
+			props: { modelValue: { id: 'MISSING-001' }, filterFunction },
+		})
+
+		await flushPromises()
+
+		expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('MISSING-001'))
+		warnSpy.mockRestore()
+	})
+
+	describe('serialized string filterFunction', () => {
+		it('deserializes a string filterFunction and populates the dropdown', async () => {
+			const serialized = `(search) => [{ id: 'R1', displayText: 'Result One' }]`
+			const wrapper = mount(AFormLink, {
+				props: { modelValue: { id: '' }, filterFunction: serialized },
+			})
+
+			await wrapper.find('input').trigger('focus')
+			await flushPromises()
+			await wrapper.vm.$nextTick()
+
+			expect(wrapper.find('.autocomplete-results').exists()).toBe(true)
+			expect(wrapper.find('li').text()).toBe('Result One')
+		})
+
+		it('deserializes an async string filterFunction and populates the dropdown', async () => {
+			const serialized = `async (search) => [{ id: 'A1', displayText: 'Async Result' }]`
+			const wrapper = mount(AFormLink, {
+				props: { modelValue: { id: '' }, filterFunction: serialized },
+			})
+
+			await wrapper.find('input').trigger('focus')
+			await flushPromises()
+			await wrapper.vm.$nextTick()
+
+			expect(wrapper.find('li').text()).toBe('Async Result')
+		})
+
+		it('does not crash when string filterFunction is invalid and shows empty dropdown', async () => {
+			const serialized = `THIS IS NOT VALID JS %%%`
+			const wrapper = mount(AFormLink, {
+				props: { modelValue: { id: '' }, filterFunction: serialized },
+			})
+
+			await wrapper.find('input').trigger('focus')
+			await flushPromises()
+			await wrapper.vm.$nextTick()
+
+			expect(wrapper.find('.loading').exists()).toBe(false)
+			expect(wrapper.findAll('li')).toHaveLength(0)
+		})
 	})
 })

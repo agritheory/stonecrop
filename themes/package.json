@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/themes",
-	"version": "0.11.9",
+	"version": "0.12.5",
 	"type": "module",
 	"author": {
 		"name": "Tyler Matteson",
@@ -37,6 +37,6 @@
 		"access": "public"
 	},
 	"engines": {
-		"node": ">=22.5.0"
+		"node": ">=24.0.0"
 	}
 }

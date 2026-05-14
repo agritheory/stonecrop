@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { markRaw } from 'vue'
 import { mount } from '@vue/test-utils'
 import ATableColumnFilter from '../src/components/ATableColumnFilter.vue'
 import type { TableColumn } from '../src/types'
@@ -128,11 +129,11 @@ describe('Column Filter Component', () => {
 		})
 
 		it('renders custom component when filterType is "component"', () => {
-			const CustomComponent = {
+			const CustomComponent = markRaw({
 				name: 'CustomFilter',
 				template: '<div class="custom-filter">Custom</div>',
 				props: ['value', 'column', 'colIndex', 'store'],
-			}
+			})
 
 			const wrapper = mount(ATableColumnFilter, {
 				props: {
@@ -509,6 +510,100 @@ describe('Column Filter Component', () => {
 			await checkbox.trigger('change')
 
 			expect(mockStore.setFilter).toHaveBeenCalledWith(0, { value: true })
+		})
+	})
+
+	describe('fieldtype-based filterType derivation', () => {
+		it('renders checkbox when fieldtype is Check and filterType is absent', () => {
+			const wrapper = mount(ATableColumnFilter, {
+				props: {
+					column: { name: 'active', label: 'Active', fieldtype: 'Check' },
+					colIndex: 0,
+					store: mockStore,
+				},
+			})
+			expect(wrapper.find('input[type="checkbox"]').exists()).toBe(true)
+		})
+
+		it('renders date input when fieldtype is Date and filterType is absent', () => {
+			const wrapper = mount(ATableColumnFilter, {
+				props: {
+					column: { name: 'created', label: 'Created', fieldtype: 'Date' },
+					colIndex: 0,
+					store: mockStore,
+				},
+			})
+			expect(wrapper.find('input[type="date"]').exists()).toBe(true)
+		})
+
+		it('renders two date inputs (dateRange) when fieldtype is Datetime and filterType is absent', () => {
+			const wrapper = mount(ATableColumnFilter, {
+				props: {
+					column: { name: 'created_at', label: 'Created At', fieldtype: 'Datetime' },
+					colIndex: 0,
+					store: mockStore,
+				},
+			})
+			expect(wrapper.findAll('input[type="date"]')).toHaveLength(2)
+		})
+
+		it('renders number input when fieldtype is Int and filterType is absent', () => {
+			const wrapper = mount(ATableColumnFilter, {
+				props: {
+					column: { name: 'qty', label: 'Qty', fieldtype: 'Int' },
+					colIndex: 0,
+					store: mockStore,
+				},
+			})
+			expect(wrapper.find('input[type="number"]').exists()).toBe(true)
+		})
+
+		it('renders number input when fieldtype is Float, Currency, Decimal, or Quantity and filterType is absent', () => {
+			for (const fieldtype of ['Float', 'Currency', 'Decimal', 'Quantity']) {
+				const wrapper = mount(ATableColumnFilter, {
+					props: {
+						column: { name: 'amount', label: 'Amount', fieldtype },
+						colIndex: 0,
+						store: mockStore,
+					},
+				})
+				expect(wrapper.find('input[type="number"]').exists()).toBe(true)
+			}
+		})
+
+		it('renders select when fieldtype is Select and filterType is absent', () => {
+			const wrapper = mount(ATableColumnFilter, {
+				props: {
+					column: { name: 'status', label: 'Status', fieldtype: 'Select' },
+					colIndex: 0,
+					store: mockStore,
+				},
+			})
+			expect(wrapper.find('select').exists()).toBe(true)
+		})
+
+		it('explicit filterType takes precedence over fieldtype', () => {
+			// fieldtype says Check (→ checkbox) but explicit filterType overrides to text
+			const wrapper = mount(ATableColumnFilter, {
+				props: {
+					column: { name: 'active', label: 'Active', fieldtype: 'Check', filterType: 'text' },
+					colIndex: 0,
+					store: mockStore,
+				},
+			})
+			expect(wrapper.find('input[type="text"]').exists()).toBe(true)
+			expect(wrapper.find('input[type="checkbox"]').exists()).toBe(false)
+		})
+
+		it('falls back to text for unknown fieldtype', () => {
+			const wrapper = mount(ATableColumnFilter, {
+				props: {
+					column: { name: 'misc', label: 'Misc', fieldtype: 'UnknownType' },
+					colIndex: 0,
+					store: mockStore,
+				},
+			})
+			expect(wrapper.find('input[type="text"]').exists()).toBe(true)
 		})
 	})
 })

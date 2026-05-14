@@ -1775,14 +1775,14 @@ getMeta(context: RouteContext): Promise<any>
 Get single record from server using the configured data client.
 
 ```typescript
-getRecord(doctype: Doctype, recordId: string): Promise<void>
+getRecord(doctype: string | Doctype, recordId: string): Promise<void>
 ```
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| doctype | `Doctype` | The doctype |
+| doctype | `string \| Doctype` | The doctype slug string or Doctype object |
 | recordId | `string` | The record ID |
 
 #### getRecordById

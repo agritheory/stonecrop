@@ -13,6 +13,7 @@ import ATableModal from './components/ATableModal.vue'
 export { createTableStore } from './stores/table'
 export type { FilterState, FilterStateRecord } from './stores/table'
 export type * from './types'
+export { schemaToColumns } from './schemaToColumns'
 
 // Icon exports
 export { AddIcon, DeleteIcon, DuplicateIcon, InsertAboveIcon, InsertBelowIcon, MoveIcon, actionIcons } from './icons'

@@ -295,7 +295,7 @@ describe('Stonecrop Vue Plugin with HST', () => {
 	})
 
 	it('Stonecrop instance uses injected client for record operations', async () => {
-		const mockRecord = { id: '99', title: 'Plugin-injected record' }
+		const mockRecord = { record: { id: '99', title: 'Plugin-injected record' }, unknownLinks: [] }
 		const mockClient = {
 			getMeta: vi.fn(),
 			getRecord: vi.fn().mockResolvedValue(mockRecord),

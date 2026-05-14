@@ -378,11 +378,12 @@ export class Stonecrop {
 
 	/**
 	 * Get single record from server using the configured data client.
-	 * @param doctype - The doctype
+	 * @param doctype - The doctype slug string or Doctype object
 	 * @param recordId - The record ID
 	 * @throws Error if no data client has been configured
+	 * @throws Error if a slug string is given and no matching doctype is found in the registry
 	 */
-	async getRecord(doctype: Doctype, recordId: string): Promise<void> {
+	async getRecord(doctype: string | Doctype, recordId: string): Promise<void> {
 		if (!this._client) {
 			throw new Error(
 				'No data client configured. Call setClient() with a DataClient implementation ' +
@@ -390,10 +391,15 @@ export class Stonecrop {
 			)
 		}
 
-		const record = await this._client.getRecord(doctype, recordId)
+		const resolved = typeof doctype === 'string' ? this.registry.getDoctype(doctype) : doctype
+		if (!resolved) {
+			throw new Error(`Doctype not found: ${typeof doctype === 'string' ? doctype : doctype.slug}`)
+		}
 
-		if (record) {
-			this.addRecord(doctype, recordId, record)
+		const result = await this._client.getRecord(resolved, recordId)
+
+		if (result?.record) {
+			this.addRecord(resolved, recordId, result.record)
 		}
 	}
 
@@ -485,7 +491,7 @@ export class Stonecrop {
 			initialState =
 				typeof (workflow as { initial?: unknown }).initial === 'string'
 					? (workflow as { initial: string }).initial
-					: Object.keys(workflow.states ?? {})[0] ?? ''
+					: (Object.keys(workflow.states ?? {})[0] ?? '')
 		}
 
 		return status || initialState
@@ -587,11 +593,11 @@ export class Stonecrop {
 			)
 		}
 
-		const record = await this._client.getRecord({ name: doctype.doctype }, recordId, {
+		const result = await this._client.getRecord({ name: doctype.doctype }, recordId, {
 			includeNested: options?.includeNested ?? true,
 		})
 
-		if (!record) {
+		if (!result?.record) {
 			throw createCodedError(`Record not found: ${doctype.doctype} ${recordId}`, 'RECORD_NOT_FOUND')
 		}
 
@@ -605,7 +611,7 @@ export class Stonecrop {
 			this.hstStore.set(`${slug}.${recordId}`, {}, 'system')
 		}
 
-		for (const [key, value] of Object.entries(record)) {
+		for (const [key, value] of Object.entries(result.record)) {
 			this.hstStore.set(`${slug}.${recordId}.${key}`, value, 'system')
 		}
 	}

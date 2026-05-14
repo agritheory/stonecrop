@@ -3,6 +3,6 @@
 	"version": "1.0.0",
 	"private": true,
 	"dependencies": {
-		"rush-sort-package-json": "^0.0.4"
+		"rush-sort-package-json": "^0.1.1"
 	}
 }

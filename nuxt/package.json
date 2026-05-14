@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/nuxt",
-	"version": "0.11.9",
+	"version": "0.12.5",
 	"description": "Nuxt module for Stonecrop",
 	"license": "MIT",
 	"type": "module",
@@ -99,6 +99,6 @@
 		"vue": "^3.5.33"
 	},
 	"engines": {
-		"node": ">=22.5.0"
+		"node": ">=24.0.0"
 	}
 }

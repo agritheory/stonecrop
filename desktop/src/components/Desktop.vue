@@ -32,7 +32,8 @@
 
 <script setup lang="ts">
 import { useStonecrop } from '@stonecrop/stonecrop'
-import { AForm, type SchemaTypes, type TableColumn, type TableConfig } from '@stonecrop/aform'
+import { AForm, type AFormLinkNavigator, type SchemaTypes } from '@stonecrop/aform'
+import type { ColumnSchema } from '@stonecrop/schema'
 import { computed, onMounted, provide, ref, unref, watch } from 'vue'
 
 import ActionSet from './ActionSet.vue'
@@ -161,7 +162,7 @@ const currentDoctype = computed(() => {
 
 	// For named routes, use params.doctype
 	if (route.value.params.doctype) {
-		return route.value.params.doctype as string
+		return route.value.params.doctype.toString()
 	}
 
 	// For catch-all routes that haven't been registered yet, extract from path
@@ -185,7 +186,7 @@ const routeDoctype = computed(() => {
 
 	// For named routes, use params.doctype
 	if (route.value.params.doctype) {
-		return route.value.params.doctype as string
+		return route.value.params.doctype.toString()
 	}
 
 	// For catch-all routes, extract from path
@@ -203,7 +204,7 @@ const currentRecordId = computed(() => {
 
 	// For named routes, use params.recordId
 	if (route.value.params.recordId) {
-		return route.value.params.recordId as string
+		return route.value.params.recordId.toString()
 	}
 
 	// For catch-all routes that haven't been registered yet, extract from path
@@ -329,7 +330,7 @@ const navigationBreadcrumbs = computed(() => {
 	} else if (currentView.value === 'record' && routeDoctype.value) {
 		const recordPath = currentRecordId.value
 			? `/${routeDoctype.value}/${currentRecordId.value}`
-			: route.value?.fullPath ?? ''
+			: (route.value?.fullPath ?? '')
 		breadcrumbs.push(
 			{ title: 'Home', to: '/' },
 			{ title: formatDoctypeName(routeDoctype.value), to: `/${routeDoctype.value}` },
@@ -495,11 +496,11 @@ const getDoctypesSchema = (): SchemaTypes[] => {
 					edit: false,
 					width: '20ch',
 				},
-			] as TableColumn[],
+			],
 			config: {
 				view: 'list',
 				fullWidth: true,
-			} as TableConfig,
+			},
 			rows,
 		},
 	]
@@ -509,23 +510,21 @@ const getRecordsSchema = (): SchemaTypes[] => {
 	if (!currentDoctype.value) return []
 	if (!stonecrop.value) return []
 
+	const registry = stonecrop.value.registry
+	const doctype = registry.registry[currentDoctype.value]
+
+	if (!doctype) return []
+
+	const schema = registry.resolveSchema(doctype)
+
+	// If no schema is available, let the template fallback handle the loading state
+	if (schema.length === 0) return []
+
 	const records = getRecords()
-	const columns = getColumns()
 	const idField = props.recordIdField || 'id'
 
-	// If no columns are available, let the template fallback handle the loading state
-	if (columns.length === 0) {
-		return []
-	}
-
-	// Ensure the ID column is first so click handler can reliably find it
-	const idColumn = columns.find(c => c.fieldname === idField)
-	const otherColumns = columns.filter(c => c.fieldname !== idField)
-	const orderedColumns = idColumn ? [idColumn, ...otherColumns] : columns
-
-	const rows = records.map((record: any) => ({
+	const rows = records.map(record => ({
 		...record,
-		// Use the canonical ID field for navigation
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 		id: record[idField] || record.id || '',
 		actions: 'Edit | Delete',
@@ -535,28 +534,12 @@ const getRecordsSchema = (): SchemaTypes[] => {
 		{
 			fieldname: 'records_table',
 			component: 'ATable',
-			columns: [
-				...orderedColumns.map(col => ({
-					label: col.label,
-					name: col.fieldname,
-					fieldtype: col.fieldtype,
-					align: 'left',
-					edit: false,
-					width: '20ch',
-				})),
-				{
-					label: 'Actions',
-					name: 'actions',
-					fieldtype: 'Data',
-					align: 'center',
-					edit: false,
-					width: '20ch',
-				},
-			] as TableColumn[],
+			kind: 'table',
+			schema: [...(schema as ColumnSchema[]), { fieldname: 'actions', label: 'Actions', fieldtype: 'Data' }],
 			config: {
 				view: 'list',
 				fullWidth: true,
-			} as TableConfig,
+			},
 			rows,
 		},
 	]
@@ -592,28 +575,6 @@ const getRecords = () => {
 
 	if (recordsData && typeof recordsData === 'object' && !Array.isArray(recordsData)) {
 		return Object.values(recordsData as Record<string, any>)
-	}
-
-	return []
-}
-
-const getColumns = () => {
-	if (!stonecrop.value || !currentDoctype.value) return []
-
-	try {
-		const registry = stonecrop.value.registry
-		const doctype = registry.registry[currentDoctype.value]
-
-		if (doctype?.schema) {
-			const schemaArray = 'toArray' in doctype.schema ? doctype.schema.toArray() : doctype.schema
-			return schemaArray.map(field => ({
-				fieldname: field.fieldname,
-				label: ('label' in field && field.label) || field.fieldname,
-				fieldtype: ('fieldtype' in field && field.fieldtype) || 'Data',
-			}))
-		}
-	} catch {
-		// Error getting schema - return empty array
 	}
 
 	return []
@@ -717,23 +678,24 @@ const handleClick = async (event: Event) => {
 	}
 }
 
-const loadRecordData = () => {
-	if (!stonecrop.value || !currentDoctype.value) return
+const loadRecordData = async () => {
+	if (!stonecrop.value || !currentDoctype.value || isNewRecord.value) return
 
-	loading.value = true
+	// Record already in HST — nothing to fetch.
+	if (stonecrop.value.getRecordById(currentDoctype.value, currentRecordId.value)) return
 
-	try {
-		if (!isNewRecord.value) {
-			// For existing records, ensure the record exists in HST.
-			// The computed currentViewData will automatically read from HST.
-			stonecrop.value.getRecordById(currentDoctype.value, currentRecordId.value)
+	// Record absent and a client is configured — fetch directly so the form
+	// populates even when the list view was never visited (direct URL navigation).
+	if (stonecrop.value.getClient()) {
+		loading.value = true
+		try {
+			await stonecrop.value.getRecord(currentDoctype.value, currentRecordId.value)
+		} catch (error) {
+			// eslint-disable-next-line no-console
+			console.warn('Error fetching record:', error)
+		} finally {
+			loading.value = false
 		}
-		// For new records, currentViewData computed property will return {} automatically.
-	} catch (error) {
-		// eslint-disable-next-line no-console
-		console.warn('Error loading record data:', error)
-	} finally {
-		loading.value = false
 	}
 }
 
@@ -747,7 +709,7 @@ watch(
 		} else if (currentView.value === 'record' && currentDoctype.value && currentRecordId.value) {
 			// Emit load-record event so host app can fetch and populate HST
 			emit('load-record', { doctype: currentDoctype.value, recordId: currentRecordId.value })
-			loadRecordData()
+			void loadRecordData()
 		}
 	},
 	{ immediate: true }
@@ -777,6 +739,34 @@ const desktopMethods = {
 }
 
 provide('desktopMethods', desktopMethods)
+
+// Provide a navigator for AFormLink so the arrow button navigates to the linked record.
+provide('aformLinkNavigator', {
+	navigate: (doctype: string, id: string | number) => {
+		void doNavigate({ view: 'record', doctype, recordId: String(id) })
+	},
+} satisfies AFormLinkNavigator)
+
+// Provide a resolver for AFormLink to look up display text by doctype + id.
+// Checks HST first (sync); falls back to an async client fetch if not cached.
+provide('aformLinkResolver', async (doctypeSlug: string, id: string): Promise<string | undefined> => {
+	if (!stonecrop.value) return undefined
+	try {
+		const toDisplayString = (rec: Record<string, unknown> | undefined): string | undefined => {
+			if (!rec) return undefined
+			const val = rec.name ?? rec.title ?? rec.displayText
+			return typeof val === 'string' || typeof val === 'number' ? String(val) : undefined
+		}
+		const cached = stonecrop.value.getRecordById(doctypeSlug, id)?.get('') as Record<string, unknown> | undefined
+		const cachedDisplay = toDisplayString(cached)
+		if (cachedDisplay != null) return cachedDisplay
+		await stonecrop.value.getRecord(doctypeSlug, id)
+		const fetched = stonecrop.value.getRecordById(doctypeSlug, id)?.get('') as Record<string, unknown> | undefined
+		return toDisplayString(fetched)
+	} catch {
+		return undefined
+	}
+})
 
 onMounted(() => {
 	// Add keyboard shortcuts

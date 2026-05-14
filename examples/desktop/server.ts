@@ -6,6 +6,8 @@ import DbCollection from 'miragejs/db-collection'
 export function makeServer() {
 	const server = createServer({
 		models: {
+			'category-listMeta': Model,
+			'category-formMeta': Model,
 			'issue-form': Model,
 			'issue-formMeta': Model,
 			'issue-list': Model,
@@ -37,14 +39,53 @@ export function makeServer() {
 					},
 				],
 
+				// Category lookup doctype — used by todo category_id Link field
+				'category-listMeta': {
+					doctype: 'category',
+					schema: [
+						{ fieldname: 'id', label: 'ID', hidden: true, fieldtype: 'Data' },
+						{ fieldname: 'name', label: 'Name', fieldtype: 'Data', component: 'ATextInput' },
+					] as MutableDoctype['schema'],
+					workflow: { id: 'category', initial: 'active', states: { active: {} } },
+					actions: {},
+				},
+				'category-formMeta': {
+					doctype: 'category-form',
+					schema: [
+						{ fieldname: 'id', label: 'ID', hidden: true, fieldtype: 'Data' },
+						{
+							fieldname: 'name',
+							fieldtype: 'Data',
+							component: 'ATextInput',
+							label: 'Name',
+							required: true,
+						},
+					] as MutableDoctype['schema'],
+					workflow: {
+						id: 'categoryForm',
+						initial: 'editing',
+						states: {
+							editing: { on: { SAVE: 'saved' } },
+							saved: { on: { EDIT: 'editing' } },
+						},
+					},
+					actions: { SAVE: ['SAVE'] },
+				},
+				categories: [
+					{ id: '1', name: 'Personal' },
+					{ id: '2', name: 'Work' },
+					{ id: '3', name: 'Urgent' },
+				],
+
 				// Todo List doctype
 				'todo-listMeta': {
 					doctype: 'todo-list',
 					schema: [
-						{ fieldname: 'id', label: 'ID', fieldtype: 'Data' },
+						{ fieldname: 'id', label: 'ID', hidden: true, fieldtype: 'Data' },
 						{ fieldname: 'first_name', label: 'First Name', fieldtype: 'Data' },
 						{ fieldname: 'last_name', label: 'Last Name', fieldtype: 'Data' },
 						{ fieldname: 'phone', label: 'Phone', fieldtype: 'Phone' },
+						{ fieldname: 'category_id', label: 'Category', fieldtype: 'Link', doctype: 'category' },
 					] as MutableDoctype['schema'],
 					workflow: {
 						id: 'todoList',
@@ -64,9 +105,9 @@ export function makeServer() {
 					},
 				},
 				'todo-lists': [
-					{ id: '1', first_name: 'Luke', last_name: 'Skywalker', phone: '+1 123 456 7890' },
-					{ id: '2', first_name: 'Leia', last_name: 'Skywalker', phone: '+1 123 456 7890' },
-					{ id: '3', first_name: 'Anakin', last_name: 'Skywalker', phone: '+1 123 456 7890' },
+					{ id: '1', first_name: 'Luke', last_name: 'Skywalker', phone: '+1 123 456 7890', category_id: '1' },
+					{ id: '2', first_name: 'Leia', last_name: 'Skywalker', phone: '+1 123 456 7890', category_id: '2' },
+					{ id: '3', first_name: 'Anakin', last_name: 'Skywalker', phone: '+1 123 456 7890', category_id: '3' },
 				],
 
 				// Todo Form doctype
@@ -116,6 +157,13 @@ export function makeServer() {
 							label: 'Notes',
 							placeholder: 'Additional notes about this todo...',
 						},
+						{
+							fieldname: 'category_id',
+							fieldtype: 'Link',
+							component: 'AFormLink',
+							label: 'Category',
+							doctype: 'category',
+						},
 					] as MutableDoctype['schema'],
 					workflow: {
 						id: 'todoForm',
@@ -151,6 +199,7 @@ export function makeServer() {
 						phone: '+1 123 456 7890',
 						email: 'luke@jedi.org',
 						notes: 'A young farm boy from Tatooine',
+						category_id: '1',
 					},
 					{
 						id: '2',
@@ -159,6 +208,7 @@ export function makeServer() {
 						phone: '+1 123 456 7890',
 						email: 'leia@rebellion.org',
 						notes: 'Princess and leader of the Rebellion',
+						category_id: '2',
 					},
 					{
 						id: '3',
@@ -167,6 +217,7 @@ export function makeServer() {
 						phone: '+1 123 456 7890',
 						email: 'anakin@empire.gov',
 						notes: 'Former Jedi Knight',
+						category_id: '3',
 					},
 				],
 
@@ -174,7 +225,7 @@ export function makeServer() {
 				'issue-listMeta': {
 					doctype: 'issue-list',
 					schema: [
-						{ fieldname: 'id', label: 'ID', fieldtype: 'Data' },
+						{ fieldname: 'id', label: 'ID', hidden: true, fieldtype: 'Data' },
 						{ fieldname: 'subject', label: 'Subject', fieldtype: 'Data' },
 						{ fieldname: 'date', label: 'Date', fieldtype: 'Date' },
 						{ fieldname: 'status', label: 'Status', fieldtype: 'Select' },
@@ -344,6 +395,19 @@ export function makeServer() {
 				}
 
 				return meta || { error: 'Metadata not found' }
+			})
+
+			// Category lookup endpoint (explicit route needed — 'categories' != 'categorys')
+			this.get('/api/category', schema => {
+				return (schema.db['categories'] as any[]) || []
+			})
+
+			// Category record endpoint (explicit route needed — 'categories' != 'categorys')
+			this.get('/api/category/:id', (schema, request) => {
+				const id = request.params.id
+				// @ts-expect-error mismatch between mirage types
+				const records = schema.db['categories'] as DbCollection
+				return records ? records.find(id) || {} : {}
 			})
 
 			// Data endpoints

@@ -2,6 +2,69 @@
   "name": "@stonecrop/graphql-middleware",
   "entries": [
     {
+      "version": "0.12.5",
+      "tag": "@stonecrop/graphql-middleware_v0.12.5",
+      "date": "Thu, 14 May 2026 10:29:38 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.12.4",
+      "tag": "@stonecrop/graphql-middleware_v0.12.4",
+      "date": "Thu, 14 May 2026 07:19:11 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.12.3",
+      "tag": "@stonecrop/graphql-middleware_v0.12.3",
+      "date": "Wed, 13 May 2026 12:28:05 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "remove blanket ignore for doctype links"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.12.2",
+      "tag": "@stonecrop/graphql-middleware_v0.12.2",
+      "date": "Wed, 13 May 2026 10:58:06 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "allow Display fieldtype for fields without db backing"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.12.1",
+      "tag": "@stonecrop/graphql-middleware_v0.12.1",
+      "date": "Wed, 13 May 2026 09:25:06 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "fix lint errors"
+          },
+          {
+            "comment": "update node to v24"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.12.0",
+      "tag": "@stonecrop/graphql-middleware_v0.12.0",
+      "date": "Mon, 11 May 2026 06:46:46 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.11.10",
+      "tag": "@stonecrop/graphql-middleware_v0.11.10",
+      "date": "Fri, 08 May 2026 06:36:28 GMT",
+      "comments": {}
+    },
+    {
       "version": "0.11.9",
       "tag": "@stonecrop/graphql-middleware_v0.11.9",
       "date": "Tue, 05 May 2026 12:04:46 GMT",

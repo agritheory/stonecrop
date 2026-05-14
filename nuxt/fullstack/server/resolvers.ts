@@ -56,7 +56,7 @@ function formatDoctypeMeta(meta: DoctypeMeta) {
 			? {
 					states: meta.workflow.states ?? null,
 					actions: meta.workflow.actions ?? null,
-			  }
+				}
 			: null,
 		inherits: meta.inherits ?? null,
 	}

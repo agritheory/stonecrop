@@ -20,6 +20,7 @@ import AFormLink from './components/form/AFormLink.vue';
 import ANumericInput from './components/form/ANumericInput.vue';
 import type { App } from 'vue';
 import ATextInput from './components/form/ATextInput.vue';
+import type { ColumnSchema } from '@stonecrop/schema';
 import Login from './components/utilities/Login.vue';
 import type { TableColumn } from '@stonecrop/atable';
 import type { TableConfig } from '@stonecrop/atable';
@@ -73,6 +74,7 @@ export type BaseSchema = {
     fieldname: string;
     component?: string;
     mode?: FormMode;
+    hidden?: boolean;
 };
 
 // @public
@@ -89,6 +91,9 @@ export type ComponentProps = {
         [key: string]: any;
     };
 };
+
+// @public
+export function deserializeFunction<T extends (...args: any[]) => any>(source: string): T;
 
 // @public
 export type FieldsetSchema = BaseSchema & {
@@ -121,10 +126,17 @@ export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema;
 
 // @public
 export type TableSchema = BaseSchema & {
-    columns?: TableColumn[];
     config?: TableConfig;
     rows?: TableRow[];
-};
+} & ({
+    columns?: TableColumn[];
+    kind?: never;
+    schema?: never;
+} | {
+    kind: 'table';
+    schema: ColumnSchema[];
+    columns?: never;
+});
 
 
 export * from "@stonecrop/atable/types";

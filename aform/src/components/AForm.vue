@@ -2,9 +2,7 @@
 	<form class="aform">
 		<template v-for="(componentObj, key) in schema" :key="key">
 			<!-- Nested schema field (Doctype or any field with resolved schema) -->
-			<div
-				v-if="'schema' in componentObj && Array.isArray(componentObj.schema) && componentObj.schema.length > 0"
-				class="aform-nested-section">
+			<div v-if="isNestedSection(componentObj)" class="aform-nested-section">
 				<!-- Suppress h4 when collapsible is present — fieldset components render their own legend -->
 				<!-- TODO: replace 'collapsible' presence check with a type discriminant on SchemaTypes once one exists -->
 				<h4 v-if="componentObj.label && !('collapsible' in componentObj)" class="aform-nested-label">
@@ -23,8 +21,9 @@
 			<!-- Regular field -->
 			<component
 				:is="componentObj.component"
-				v-else
+				v-else-if="!componentObj.hidden"
 				v-model="childModels[key].value"
+				:style="fieldStyle(componentObj)"
 				:schema="componentObj"
 				:data="dataModel[componentObj.fieldname]"
 				:mode="resolvedMode(componentObj)"
@@ -37,11 +36,17 @@
 <script setup lang="ts">
 import { computed, watchEffect, watch, ref } from 'vue'
 
-import type { SchemaTypes, FormMode } from '../types'
+import type { SchemaTypes, FieldsetSchema, FormMode } from '../types'
 
 const emit = defineEmits(['update:schema', 'update:data'])
 const dataModel = defineModel<Record<string, any>>('data', { required: true })
 const { schema, mode = 'edit' } = defineProps<{ schema: SchemaTypes[]; mode?: FormMode }>()
+
+const isNestedSection = (componentObj: SchemaTypes): componentObj is FieldsetSchema =>
+	'schema' in componentObj &&
+	Array.isArray(componentObj.schema) &&
+	componentObj.schema.length > 0 &&
+	(!('kind' in componentObj) || componentObj.kind !== 'table')
 
 // Reactive nested data refs for two-way binding with nested AForm instances
 const nestedData = ref<Record<string, any>>({})
@@ -54,7 +59,7 @@ watch(
 	newData => {
 		if (!schema || !newData) return
 		schema.forEach(field => {
-			if ('schema' in field && Array.isArray(field.schema) && field.schema.length > 0) {
+			if (isNestedSection(field)) {
 				nestedData.value[field.fieldname] = newData[field.fieldname] ?? {}
 			}
 		})
@@ -78,16 +83,15 @@ const componentProps = (componentObj: SchemaTypes) => {
 	for (const [key, value] of Object.entries(componentObj)) {
 		// 'mode' is excluded here because it is handled by resolvedMode()
 		// and passed explicitly via :mode to avoid conflicting with the form-level defaults.
-		if (!['component', 'fieldtype', 'mode'].includes(key)) {
+		if (!['component', 'fieldtype', 'hidden', 'mode', 'width'].includes(key)) {
 			propsToPass[key] = value
 		}
 	}
 
-	// Structural detection: any component with 'columns' is tabular and needs rows from formData
+	// Tabular components (those with 'columns' or kind: 'table') need rows from formData
 	// when no explicit rows were provided in the schema. Preserves non-empty rows that were
 	// set directly on the schema entry (e.g. Desktop records view).
-	// TODO: replace 'columns' presence check with a type discriminant on SchemaTypes once one exists
-	if ('columns' in componentObj) {
+	if ('columns' in componentObj || ('kind' in componentObj && componentObj.kind === 'table')) {
 		const existingRows = componentObj.rows
 		if (!existingRows || (Array.isArray(existingRows) && existingRows.length === 0)) {
 			propsToPass['rows'] = dataModel.value[componentObj.fieldname] || []
@@ -95,6 +99,12 @@ const componentProps = (componentObj: SchemaTypes) => {
 	}
 
 	return propsToPass
+}
+
+const fieldStyle = (componentObj: SchemaTypes): Record<string, string> => {
+	const width = (componentObj as { width?: string }).width
+	if (!width) return {}
+	return { flexBasis: width, width }
 }
 
 const effectiveFormMode = computed(() => mode ?? 'edit')
@@ -147,6 +157,10 @@ const childModels = computed(() => childModelsCache.value)
 	flex-grow: 1;
 	min-width: 20ch;
 	margin-bottom: 1rem;
+}
+.aform__grid--full {
+	flex-basis: 100%;
+	width: 100%;
 }
 .aform_input-field {
 	outline: 1px solid var(--sc-input-border-color);

@@ -147,13 +147,19 @@ createTableStore: (initData: {
     id?: string;
     config?: TableConfig;
     modal?: TableModal;
+    linkResolver?: ((doctype: string, id: string) => Promise<string | undefined>) | null;
 }) => import("pinia").Store<`table-${string}`, Pick<{
     columns: import("vue").Ref<{
         name: string;
-        align?: CanvasTextAlign | undefined;
-        edit?: boolean | undefined;
-        label?: string | undefined;
+        format?: string | ((value: any, context: CellContext) => string) | undefined;
+        modalComponent?: string | ((context: CellContext) => string) | undefined;
+        mask?: ((value: any) => any) | undefined;
+        linkDoctype?: string | undefined;
+        readonly originalIndex?: number | undefined;
         fieldtype?: string | undefined;
+        label?: string | undefined;
+        align?: "left" | "right" | "center" | "start" | "end" | undefined;
+        edit?: boolean | undefined;
         width?: string | undefined;
         pinned?: boolean | undefined;
         resizable?: boolean | undefined;
@@ -164,20 +170,21 @@ createTableStore: (initData: {
         filterComponent?: string | undefined;
         cellComponent?: string | undefined;
         cellComponentProps?: Record<string, any> | undefined;
-        modalComponent?: string | ((context: CellContext) => string) | undefined;
         modalComponentExtraProps?: Record<string, any> | undefined;
-        format?: string | ((value: any, context: CellContext) => string) | undefined;
-        mask?: ((value: any) => any) | undefined;
         isGantt?: boolean | undefined;
         ganttComponent?: string | undefined;
         colspan?: number | undefined;
-        originalIndex?: number | undefined;
     }[], TableColumn[] | {
         name: string;
-        align?: CanvasTextAlign | undefined;
-        edit?: boolean | undefined;
-        label?: string | undefined;
+        format?: string | ((value: any, context: CellContext) => string) | undefined;
+        modalComponent?: string | ((context: CellContext) => string) | undefined;
+        mask?: ((value: any) => any) | undefined;
+        linkDoctype?: string | undefined;
+        readonly originalIndex?: number | undefined;
         fieldtype?: string | undefined;
+        label?: string | undefined;
+        align?: "left" | "right" | "center" | "start" | "end" | undefined;
+        edit?: boolean | undefined;
         width?: string | undefined;
         pinned?: boolean | undefined;
         resizable?: boolean | undefined;
@@ -188,14 +195,10 @@ createTableStore: (initData: {
         filterComponent?: string | undefined;
         cellComponent?: string | undefined;
         cellComponentProps?: Record<string, any> | undefined;
-        modalComponent?: string | ((context: CellContext) => string) | undefined;
         modalComponentExtraProps?: Record<string, any> | undefined;
-        format?: string | ((value: any, context: CellContext) => string) | undefined;
-        mask?: ((value: any) => any) | undefined;
         isGantt?: boolean | undefined;
         ganttComponent?: string | undefined;
         colspan?: number | undefined;
-        originalIndex?: number | undefined;
     }[]>;
     config: import("vue").Ref<{
         view?: "uncounted" | "list" | "list-expansion" | undefined;
@@ -730,6 +733,7 @@ createTableStore: (initData: {
     isDependencyGraphEnabled: import("vue").ComputedRef<boolean>;
     numberedRowWidth: import("vue").ComputedRef<string>;
     zeroColumn: import("vue").ComputedRef<boolean>;
+    linkResolver: ((doctype: string, id: string) => Promise<string | undefined>) | null;
     addRow: (rowData?: Partial<TableRow>, position?: "start" | "end" | number) => number;
     clearFilter: (colIndex: number) => void;
     closeModal: (event: MouseEvent) => void;
@@ -791,13 +795,18 @@ createTableStore: (initData: {
     unregisterGanttBar: (barId: string) => void;
     updateGanttBar: (event: GanttDragEvent) => void;
     updateRows: (newRows: TableRow[]) => void;
-}, "columns" | "config" | "connectionHandles" | "connectionPaths" | "filterState" | "ganttBars" | "modal" | "rows" | "sortState" | "updates">, Pick<{
+}, "columns" | "config" | "connectionHandles" | "connectionPaths" | "filterState" | "ganttBars" | "modal" | "rows" | "sortState" | "updates" | "linkResolver">, Pick<{
     columns: import("vue").Ref<{
         name: string;
-        align?: CanvasTextAlign | undefined;
-        edit?: boolean | undefined;
-        label?: string | undefined;
+        format?: string | ((value: any, context: CellContext) => string) | undefined;
+        modalComponent?: string | ((context: CellContext) => string) | undefined;
+        mask?: ((value: any) => any) | undefined;
+        linkDoctype?: string | undefined;
+        readonly originalIndex?: number | undefined;
         fieldtype?: string | undefined;
+        label?: string | undefined;
+        align?: "left" | "right" | "center" | "start" | "end" | undefined;
+        edit?: boolean | undefined;
         width?: string | undefined;
         pinned?: boolean | undefined;
         resizable?: boolean | undefined;
@@ -808,20 +817,21 @@ createTableStore: (initData: {
         filterComponent?: string | undefined;
         cellComponent?: string | undefined;
         cellComponentProps?: Record<string, any> | undefined;
-        modalComponent?: string | ((context: CellContext) => string) | undefined;
         modalComponentExtraProps?: Record<string, any> | undefined;
-        format?: string | ((value: any, context: CellContext) => string) | undefined;
-        mask?: ((value: any) => any) | undefined;
         isGantt?: boolean | undefined;
         ganttComponent?: string | undefined;
         colspan?: number | undefined;
-        originalIndex?: number | undefined;
     }[], TableColumn[] | {
         name: string;
-        align?: CanvasTextAlign | undefined;
-        edit?: boolean | undefined;
-        label?: string | undefined;
+        format?: string | ((value: any, context: CellContext) => string) | undefined;
+        modalComponent?: string | ((context: CellContext) => string) | undefined;
+        mask?: ((value: any) => any) | undefined;
+        linkDoctype?: string | undefined;
+        readonly originalIndex?: number | undefined;
         fieldtype?: string | undefined;
+        label?: string | undefined;
+        align?: "left" | "right" | "center" | "start" | "end" | undefined;
+        edit?: boolean | undefined;
         width?: string | undefined;
         pinned?: boolean | undefined;
         resizable?: boolean | undefined;
@@ -832,14 +842,10 @@ createTableStore: (initData: {
         filterComponent?: string | undefined;
         cellComponent?: string | undefined;
         cellComponentProps?: Record<string, any> | undefined;
-        modalComponent?: string | ((context: CellContext) => string) | undefined;
         modalComponentExtraProps?: Record<string, any> | undefined;
-        format?: string | ((value: any, context: CellContext) => string) | undefined;
-        mask?: ((value: any) => any) | undefined;
         isGantt?: boolean | undefined;
         ganttComponent?: string | undefined;
         colspan?: number | undefined;
-        originalIndex?: number | undefined;
     }[]>;
     config: import("vue").Ref<{
         view?: "uncounted" | "list" | "list-expansion" | undefined;
@@ -1374,6 +1380,7 @@ createTableStore: (initData: {
     isDependencyGraphEnabled: import("vue").ComputedRef<boolean>;
     numberedRowWidth: import("vue").ComputedRef<string>;
     zeroColumn: import("vue").ComputedRef<boolean>;
+    linkResolver: ((doctype: string, id: string) => Promise<string | undefined>) | null;
     addRow: (rowData?: Partial<TableRow>, position?: "start" | "end" | number) => number;
     clearFilter: (colIndex: number) => void;
     closeModal: (event: MouseEvent) => void;
@@ -1438,10 +1445,15 @@ createTableStore: (initData: {
 }, "display" | "table" | "filteredRows" | "hasPinnedColumns" | "isGanttView" | "isTreeView" | "isDependencyGraphEnabled" | "numberedRowWidth" | "zeroColumn">, Pick<{
     columns: import("vue").Ref<{
         name: string;
-        align?: CanvasTextAlign | undefined;
-        edit?: boolean | undefined;
-        label?: string | undefined;
+        format?: string | ((value: any, context: CellContext) => string) | undefined;
+        modalComponent?: string | ((context: CellContext) => string) | undefined;
+        mask?: ((value: any) => any) | undefined;
+        linkDoctype?: string | undefined;
+        readonly originalIndex?: number | undefined;
         fieldtype?: string | undefined;
+        label?: string | undefined;
+        align?: "left" | "right" | "center" | "start" | "end" | undefined;
+        edit?: boolean | undefined;
         width?: string | undefined;
         pinned?: boolean | undefined;
         resizable?: boolean | undefined;
@@ -1452,20 +1464,21 @@ createTableStore: (initData: {
         filterComponent?: string | undefined;
         cellComponent?: string | undefined;
         cellComponentProps?: Record<string, any> | undefined;
-        modalComponent?: string | ((context: CellContext) => string) | undefined;
         modalComponentExtraProps?: Record<string, any> | undefined;
-        format?: string | ((value: any, context: CellContext) => string) | undefined;
-        mask?: ((value: any) => any) | undefined;
         isGantt?: boolean | undefined;
         ganttComponent?: string | undefined;
         colspan?: number | undefined;
-        originalIndex?: number | undefined;
     }[], TableColumn[] | {
         name: string;
-        align?: CanvasTextAlign | undefined;
-        edit?: boolean | undefined;
-        label?: string | undefined;
+        format?: string | ((value: any, context: CellContext) => string) | undefined;
+        modalComponent?: string | ((context: CellContext) => string) | undefined;
+        mask?: ((value: any) => any) | undefined;
+        linkDoctype?: string | undefined;
+        readonly originalIndex?: number | undefined;
         fieldtype?: string | undefined;
+        label?: string | undefined;
+        align?: "left" | "right" | "center" | "start" | "end" | undefined;
+        edit?: boolean | undefined;
         width?: string | undefined;
         pinned?: boolean | undefined;
         resizable?: boolean | undefined;
@@ -1476,14 +1489,10 @@ createTableStore: (initData: {
         filterComponent?: string | undefined;
         cellComponent?: string | undefined;
         cellComponentProps?: Record<string, any> | undefined;
-        modalComponent?: string | ((context: CellContext) => string) | undefined;
         modalComponentExtraProps?: Record<string, any> | undefined;
-        format?: string | ((value: any, context: CellContext) => string) | undefined;
-        mask?: ((value: any) => any) | undefined;
         isGantt?: boolean | undefined;
         ganttComponent?: string | undefined;
         colspan?: number | undefined;
-        originalIndex?: number | undefined;
     }[]>;
     config: import("vue").Ref<{
         view?: "uncounted" | "list" | "list-expansion" | undefined;
@@ -2018,6 +2027,7 @@ createTableStore: (initData: {
     isDependencyGraphEnabled: import("vue").ComputedRef<boolean>;
     numberedRowWidth: import("vue").ComputedRef<string>;
     zeroColumn: import("vue").ComputedRef<boolean>;
+    linkResolver: ((doctype: string, id: string) => Promise<string | undefined>) | null;
     addRow: (rowData?: Partial<TableRow>, position?: "start" | "end" | number) => number;
     clearFilter: (colIndex: number) => void;
     closeModal: (event: MouseEvent) => void;
@@ -2086,7 +2096,7 @@ createTableStore: (initData: {
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| initData | `{ columns: TableColumn[]; rows: TableRow[]; id?: string; config?: TableConfig; modal?: TableModal; }` | Initial data for the table store |
+| initData | `{ columns: TableColumn[]; rows: TableRow[]; id?: string; config?: TableConfig; modal?: TableModal; linkResolver?: ((doctype: string, id: string) => Promise<string \| undefined>) \| null; }` | Initial data for the table store |
 
 ### install
 
@@ -2103,6 +2113,28 @@ declare function install(app: App): void;
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | app | `App` | Vue app instance |
+
+### schemaToColumns
+
+Convert an array of doctype field descriptors into ATable column definitions.
+
+Fields are excluded when: - `hidden: true` — field should not be visible in any view - no `fieldtype` — non-scalar entry (nested table or fieldset), has no column equivalent
+
+`fieldname` is renamed to `name`; `hidden` is stripped. All other `ColumnSchema` properties spread through automatically.
+
+For `fieldtype: 'Link'` fields without an explicit `cellComponent`: - `linkDoctype` is set from the field's `doctype` property (used by ACell's async resolver). - A synchronous `format` function is added (unless the field already has one) that handles both bare ID strings and pre-resolved `{ id, displayText }` objects.
+
+**Signature:**
+
+```typescript
+export declare function schemaToColumns(schema: ColumnSchema[]): TableColumn[];
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| schema | `ColumnSchema[]` |  |
 
 ## Interfaces
 
@@ -2500,35 +2532,22 @@ export interface RowMoveEvent {
 
 ### TableColumn
 
-Table column definition.
+Runtime column definition for ATable.
+
+Extends `ColumnSchema` from `@stonecrop/schema` — all authoring properties (`label`, `fieldtype`, `width`, `pinned`, filter config, cell/modal component names, etc.) are inherited. The overrides below widen three properties for runtime use (live functions, broader alignment values) and add two runtime-only additions (`mask`, `originalIndex`).
+
+Schema-based callers should author columns as `ColumnSchema[]` (using `fieldname`) and pass them via ATable's `:schema` prop — `TableColumn` is the internal runtime type and callers working from a doctype schema never need to construct it directly.
 
 **Definition:**
 
 ```typescript
 export interface TableColumn {
-  align?: CanvasTextAlign;
-  cellComponent?: string;
-  cellComponentProps?: Record<string, any>;
-  colspan?: number;
-  edit?: boolean;
-  fieldtype?: string;
-  filterable?: boolean;
-  filterComponent?: string;
-  filterOptions?: any[];
-  filterType?: 'text' | 'select' | 'number' | 'date' | 'dateRange' | 'checkbox' | 'component';
   format?: string | ((value: any, context: CellContext) => string);
-  ganttComponent?: string;
-  isGantt?: boolean;
-  label?: string;
+  linkDoctype?: string;
   mask?: (value: any) => any;
   modalComponent?: string | ((context: CellContext) => string);
-  modalComponentExtraProps?: Record<string, any>;
   name: string;
   originalIndex?: number;
-  pinned?: boolean;
-  resizable?: boolean;
-  sortable?: boolean;
-  width?: string;
 }
 ```
 
@@ -2536,29 +2555,12 @@ export interface TableColumn {
 
 | Property | Type | Description |
 |----------|------|-------------|
-| align? | `CanvasTextAlign` | `left` (left aligned), `center` (center aligned), `right` (right aligned), `start` (aligned to the start of the column), `end` (aligned to the end of the column) |
-| cellComponent? | `string` | The component to use to render the cell for the column. If not provided, the table will render the default `<td>` element. |
-| cellComponentProps? | `Record<string, any>` | Additional properties to pass to the table's cell component. Only applicable if the `cellComponent` property is set for the column. |
-| colspan? | `number` | The colspan of the Gantt bar for the column. This determines how many columns the Gantt bar should span across. Only applicable for Gantt tables. |
-| edit? | `boolean` | Control whether cells for the column is editable. |
-| fieldtype? | `string` | The semantic field type of the column. Uses the same StonecropFieldType enum as forms. Common values: 'Data', 'Text', 'Int', 'Float', 'Date', 'Select', 'Link', 'Check', etc. |
-| filterable? | `boolean` | Control whether the column should be filterable and define filter configuration. |
-| filterComponent? | `string` | Custom component for filtering. |
-| filterOptions? | `any[]` | Options for select-type filters. |
-| filterType? | `'text' \| 'select' \| 'number' \| 'date' \| 'dateRange' \| 'checkbox' \| 'component'` | The type of filter for the column. |
-| format? | `string \| ((value: any, context: CellContext) => string)` | The format function to use to format the value of the cell. This can either be a normal or stringified function that takes the value and the cell context and returns a string. |
-| ganttComponent? | `string` | The component to use to render the Gantt bar for the column. Only applicable for Gantt tables. |
-| isGantt? | `boolean` | Whether the column is a Gantt column. Only applicable for Gantt tables. |
-| label? | `string` | The label of the column. This is displayed in the table header. |
-| mask? | `(value: any) => any` | The masking function to use to apply an input mask to the cell. This will accept an input value and return the masked value. |
-| modalComponent? | `string \| ((context: CellContext) => string)` | `row` (the row object), `column` (the column object), `table` (the table object) The function should return the name of the component to use for the modal. `colIndex` (the column index of the current cell), `rowIndex` (the row index of the current cell), `store` (the table data store) |
-| modalComponentExtraProps? | `Record<string, any>` | Additional properties to pass to the modal component. Only applicable if the `modalComponent` property is set for the column. |
-| name | `string` | The key of the column. This is used to identify the column in the table. |
-| originalIndex? | `number` | The original column index for the Gantt bar, excluding any pinned columns. This is evaluated automatically while rendering the table. Only applicable for Gantt tables. |
-| pinned? | `boolean` | Control whether the column should be pinned to the table. |
-| resizable? | `boolean` | Control whether the column can be resized by the user. |
-| sortable? | `boolean` | Control whether the column should be sortable. |
-| width? | `string` | The width of the column. This can be a number (in pixels) or a string (in CSS units). |
+| format? | `string \| ((value: any, context: CellContext) => string)` | Widens `ColumnSchema.format` (string-only) to also accept a live function at runtime. Serialized string functions are deserialized by the table store's `getFormattedValue`. |
+| linkDoctype? | `string` | For `fieldtype: 'Link'` columns: the target doctype slug used by the `linkResolver` to look up display text for bare ID values. Set automatically by `schemaToColumns` from the field's `doctype` property. |
+| mask? | `(value: any) => any` | Input mask applied to the cell value before display. Accepts a live function only — masks cannot be serialized to JSON so they are absent from `ColumnSchema`. |
+| modalComponent? | `string \| ((context: CellContext) => string)` | Widens `ColumnSchema.modalComponent` (string-only) to also accept a factory function. When a function is provided it receives the cell context and returns the component name. The cell context exposes: - `row` — the row object for the current cell - `column` — the column object for the current cell - `table` — the table object |
+| name | `string` | Runtime column key. Corresponds to `fieldname` in `ColumnSchema`; populated by `schemaToColumns`. |
+| originalIndex? | `number` | Runtime Gantt column index (excluding pinned columns). Set automatically during Gantt table rendering. |
 
 ### TableDisplay
 

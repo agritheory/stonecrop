@@ -24,7 +24,7 @@ import { ValidationError } from '@stonecrop/graphql_middleware'
 
 ### buildListQuery
 
-Build a GraphQL connection query to fetch a list of records. Only declares variables ($limit, $offset, $orderBy) that are actually used in the query, avoiding GraphQL spec §5.8.3 violations from unused variable declarations. Excludes Link and Doctype relation fields from the selection set.
+Build a GraphQL connection query to fetch a list of records. Only declares variables ($limit, $offset, $orderBy) that are actually used in the query, avoiding GraphQL spec §5.8.3 violations from unused variable declarations. Excludes Link relation fields and Display fields from the selection set.
 
 **Signature:**
 
@@ -358,7 +358,7 @@ declare function mergeNestedResults(params: MergeNestedResultsParams): Record<st
 
 ### queryableFieldNames
 
-Filter fields to only those directly queryable as scalars, excluding Link and Doctype relation fields that require GraphQL sub-selections.
+Filter fields to only those directly queryable as scalars. Excludes Display fields (no backing DB column) and Link fields that have an explicit `links` declaration (those require sub-selection, not scalar reads). Link fields without a `links` declaration are scalar FK UUID columns and ARE included.
 
 **Signature:**
 
@@ -718,7 +718,9 @@ export const builtinHandlers: Record<string, ActionHandler>
 
 ### RELATION_FIELDTYPES
 
-Fieldtypes that map to GraphQL object/connection types and require sub-selections. These fields are excluded from generated query field selections.
+Fieldtypes unconditionally excluded from the generated scalar query selection set. - `'Display'`: display-only composite component with no backing DB column
+
+Note: `'Link'` fields are NOT blanket-excluded here. Scalar FK UUID columns use `fieldtype: 'Link'` and ARE queryable. Only Link fields that also appear in the doctype's `links` declaration (i.e. those that resolve to a sub-object or connection) are excluded — that logic lives in `queryableFieldNames`.
 
 **Type:**
 

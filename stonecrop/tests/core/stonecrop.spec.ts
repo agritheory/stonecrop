@@ -253,14 +253,14 @@ describe('Stonecrop class with HST integration', () => {
 		})
 
 		it('getRecord fetches and stores single record', async () => {
-			const mockRecord = { id: '123', title: 'Test Task' }
+			const mockRecord = { record: { id: '123', title: 'Test Task' }, unknownLinks: [] }
 			mockClient.getRecord.mockResolvedValue(mockRecord)
 
 			await stonecrop.getRecord(mockDoctype, '123')
 
 			expect(mockClient.getRecord).toHaveBeenCalledWith(mockDoctype, '123')
 
-			// Check that record is stored
+			// Check that record.record (not the wrapper) is stored
 			const record = stonecrop.getRecordById('task', '123')
 			expect(record!.get('title')).toBe('Test Task')
 			expect(record!.get('id')).toBe('123')
@@ -281,7 +281,7 @@ describe('Stonecrop class with HST integration', () => {
 		})
 
 		it('getRecord delegates to client.getRecord when client provided', async () => {
-			const mockRecord = { id: 'abc', title: 'Client Task' }
+			const mockRecord = { record: { id: 'abc', title: 'Client Task' }, unknownLinks: [] }
 			const mockClient = {
 				getMeta: vi.fn(),
 				getRecord: vi.fn().mockResolvedValue(mockRecord),

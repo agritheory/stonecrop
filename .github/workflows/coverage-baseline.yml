@@ -1,0 +1,112 @@
+name: Coverage Baseline
+
+on:
+  push:
+    branches:
+      - development
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+      - 'examples/**'
+      - '.vscode/**'
+      - '**/CHANGELOG*'
+
+# Only one baseline at a time; cancel any in-progress run when a new push arrives.
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  coverage:
+    name: ${{ matrix.package }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          - aform
+          - atable
+          - beam
+          - casl_middleware
+          - desktop
+          - graphql_client
+          - graphql_middleware
+          - rockfoil
+          - schema
+          - stonecrop
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache-dependency-path: '**/config/rush/pnpm-lock.yaml'
+          registry-url: https://registry.npmjs.org/
+
+      - name: Restore Rush Build Cache
+        id: cache-restore
+        uses: actions/cache/restore@v5
+        with:
+          path: common/temp/build-cache
+          key: rush-build-cache-${{ matrix.package }}-${{ hashFiles('common/config/rush/pnpm-lock.yaml') }}-${{ github.run_id }}
+          restore-keys: |
+            rush-build-cache-${{ matrix.package }}-${{ hashFiles('common/config/rush/pnpm-lock.yaml') }}-
+            rush-build-cache-${{ matrix.package }}-
+            rush-build-cache-
+
+      # actions/setup-node's `cache: 'pnpm'` calls `pnpm store path` during
+      # setup — before Rush has installed its own managed pnpm binary at ~/.rush/.
+      # We cache ~/.rush (the binary) and ~/.local/share/pnpm/store (the package
+      # store) explicitly so that rush install can skip downloading all packages.
+      - name: Cache Rush pnpm Store
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.rush
+            ~/.local/share/pnpm/store
+          key: rush-pnpm-${{ runner.os }}-${{ hashFiles('common/config/rush/pnpm-lock.yaml') }}
+          restore-keys: rush-pnpm-${{ runner.os }}-
+
+      - name: Rush Install
+        run: node common/scripts/install-run-rush.js install
+
+      - name: Update Autoinstallers
+        run: |
+          node common/scripts/install-run-rush.js update-autoinstaller --name rush-plugins
+          node common/scripts/install-run-rush.js update-autoinstaller --name doc-tools
+
+      # Matrix uses folder names; Rush --to requires the npm package name.
+      - name: Resolve Package Name
+        id: pkg
+        run: |
+          NAME=$(node -e "const r=require('./rush.json');console.log(r.projects.find(p=>p.projectFolder==='${{ matrix.package }}').packageName)")
+          echo "name=${NAME}" >> $GITHUB_OUTPUT
+
+      - name: Rush Build
+        run: node common/scripts/install-run-rush.js build --to ${{ steps.pkg.outputs.name }}
+
+      - name: Run Tests
+        working-directory: ./${{ matrix.package }}
+        run: node ../common/scripts/install-run-rushx.js test:coverage
+
+      - name: Upload Coverage
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-${{ matrix.package }}-development
+          path: ./${{ matrix.package }}/coverage
+          retention-days: 30
+
+      - name: Save Rush Build Cache
+        if: always()
+        uses: actions/cache/save@v5
+        with:
+          path: common/temp/build-cache
+          key: ${{ steps.cache-restore.outputs.cache-primary-key }}

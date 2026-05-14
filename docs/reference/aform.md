@@ -41,6 +41,14 @@ Vue component exported from @stonecrop/aform.
 import { ADatePicker } from '@stonecrop/aform'
 ```
 
+### ADateRange
+
+Vue component exported from @stonecrop/aform.
+
+```typescript
+import { ADateRange } from '@stonecrop/aform'
+```
+
 ### ADateSelection
 
 Vue component exported from @stonecrop/aform.
@@ -63,6 +71,14 @@ Vue component exported from @stonecrop/aform.
 
 ```typescript
 import { ADropdown } from '@stonecrop/aform'
+```
+
+### ADuration
+
+Vue component exported from @stonecrop/aform.
+
+```typescript
+import { ADuration } from '@stonecrop/aform'
 ```
 
 ### AFieldset
@@ -122,6 +138,24 @@ import { Login } from '@stonecrop/aform'
 ```
 
 ## Functions
+
+### deserializeFunction
+
+Deserializes a stringified function expression into a typed callable.
+
+Throws if the string cannot be parsed as a function (SyntaxError) or if the resulting expression is not callable (TypeError), or if the expression references an undefined variable (ReferenceError). Callers are responsible for try/catch.
+
+**Signature:**
+
+```typescript
+export declare function deserializeFunction<T extends (...args: any[]) => any>(source: string): T;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| source | `string` |  |
 
 ### install
 
@@ -186,6 +220,7 @@ export type BaseSchema = {
     fieldname: string;
     component?: string;
     mode?: FormMode;
+    hidden?: boolean;
 };
 ```
 
@@ -265,15 +300,24 @@ export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema;
 
 ### TableSchema
 
-Schema structure for defining tables inside AForm
+Schema structure for defining tables inside AForm.
+
+Two mutually exclusive forms: - **Columns-based** (no `kind`): caller provides `columns` directly - **Schema-delegated** (`kind: 'table'`): caller provides `schema`; ATable runs `schemaToColumns` to derive columns at render time
 
 **Definition:**
 
 ```typescript
 export type TableSchema = BaseSchema & {
-    columns?: TableColumn[];
     config?: TableConfig;
     rows?: TableRow[];
-};
+} & ({
+    columns?: TableColumn[];
+    kind?: never;
+    schema?: never;
+} | {
+    kind: 'table';
+    schema: ColumnSchema[];
+    columns?: never;
+});
 ```
 

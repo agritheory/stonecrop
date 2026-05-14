@@ -1,18 +1,17 @@
 import type { DirectiveBinding } from 'vue'
 
+import { deserializeFunction } from '../utils/deserialize'
+
 /**
  * Extracts a mask function from a stringified function
  * @param mask - Mask string
- * @returns Mask function
+ * @returns Mask function, or undefined if the string is not a valid function expression
  */
-function extractMaskFn(mask: string): ((args: any) => string) | void {
+function extractMaskFn(mask: string): ((locale: any) => string) | undefined {
 	try {
-		// eslint-disable-next-line @typescript-eslint/no-implied-eval, @typescript-eslint/no-unsafe-call
-		return Function(`"use strict";return (${mask})`)()
-	} catch (error) {
-		if (error instanceof ReferenceError) {
-			// assume mask is a string
-		}
+		return deserializeFunction<(locale: any) => string>(mask)
+	} catch {
+		return undefined
 	}
 }
 

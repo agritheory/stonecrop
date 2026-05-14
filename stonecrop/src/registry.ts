@@ -163,11 +163,28 @@ export default class Registry {
 				if (!link) {
 					const doctype =
 						typeof (field as FieldMeta).options === 'string' ? ((field as FieldMeta).options as string) : undefined
+
+					if (doctype === undefined) {
+						// eslint-disable-next-line no-console
+						console.warn(
+							`[Stonecrop] Link field "${field.fieldname}" has no \`options\` or corresponding \`links\` declaration. ` +
+								`AFormLink will be created without a \`doctype\` prop, so navigation will not work. ` +
+								`Add \`"options": "<doctype-slug>"\` to the field definition.`
+						)
+					}
+
+					// Strip any raw `doctype` from the JSON; only `options` is the authoritative source.
+					const { doctype: _rawDoctype, ...fieldRest } = field as typeof field & {
+						doctype?: unknown
+						component?: string
+					}
+
 					resolvedFields.push({
-						...field,
-						component: 'AFormLink',
+						...fieldRest,
+						component: fieldRest.component || 'AFormLink',
 						...(doctype !== undefined ? { doctype } : {}),
 					})
+
 					continue
 				}
 
@@ -288,21 +305,9 @@ export default class Registry {
 			...field,
 			fieldname: field.fieldname,
 			component: component || field.component || 'ATable',
-			columns: field.columns,
+			kind: 'table',
+			schema: childSchema,
 			config: field.config,
-		}
-
-		if (!resolved.columns) {
-			resolved.columns = childSchema
-				.filter(childField => 'fieldtype' in childField)
-				.map(childField => ({
-					name: childField.fieldname,
-					label: ('label' in childField && childField.label) || childField.fieldname,
-					fieldtype: 'fieldtype' in childField ? childField.fieldtype : 'Data',
-					align: 'align' in childField ? childField.align : 'left',
-					edit: 'edit' in childField ? childField.edit : true,
-					width: ('width' in childField && childField.width) || '20ch',
-				}))
 		}
 
 		if (!resolved.config) {
@@ -353,9 +358,8 @@ export default class Registry {
 				return
 			}
 
-			// Resolved 1:many table entry — structural detection via columns
-			// TODO: replace 'columns' presence check with a type discriminant on SchemaTypes once one exists
-			if ('columns' in field) {
+			// Resolved 1:many table entry — kind discriminant set by buildTableConfig
+			if ('kind' in field && field.kind === 'table') {
 				record[field.fieldname] = []
 				return
 			}
