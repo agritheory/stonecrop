@@ -85,7 +85,7 @@
 <script setup lang="ts">
 import { vOnClickOutside } from '@vueuse/components'
 import { useMutationObserver } from '@vueuse/core'
-import { computed, nextTick, onMounted, useTemplateRef, watch } from 'vue'
+import { computed, inject, nextTick, onMounted, useTemplateRef, watch } from 'vue'
 
 import AGanttConnection from './AGanttConnection.vue'
 import ARow from './ARow.vue'
@@ -114,14 +114,18 @@ const rows = defineModel<TableRow[]>('rows', { required: true })
 // TODO: convert columns from defineModel to a regular prop
 const columns = defineModel<TableColumn[]>('columns')
 
+type LinkResolverFn = (doctype: string, id: string) => Promise<string | undefined>
+
 const {
 	id = '',
 	config = new Object(),
 	schema = [],
+	linkResolver = undefined,
 } = defineProps<{
 	id?: string
 	config?: TableConfig
 	schema?: ColumnSchema[]
+	linkResolver?: LinkResolverFn
 }>()
 
 const emit = defineEmits<{
@@ -139,7 +143,14 @@ const emit = defineEmits<{
 
 const tableRef = useTemplateRef<HTMLTableElement>('table')
 const resolvedColumns = columns.value?.length ? columns.value : schemaToColumns(schema ?? [])
-const store = createTableStore({ columns: resolvedColumns, rows: rows.value, id, config })
+const injectedLinkResolver = inject<LinkResolverFn | null>('aformLinkResolver', null)
+const store = createTableStore({
+	columns: resolvedColumns,
+	rows: rows.value,
+	id,
+	config,
+	linkResolver: linkResolver ?? injectedLinkResolver,
+})
 
 store.$onAction(({ name, store, args, after }) => {
 	if (name === 'setCellData' || name === 'setCellText') {

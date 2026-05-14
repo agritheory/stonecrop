@@ -1,11 +1,5 @@
 import { Registry, Stonecrop } from '@stonecrop/stonecrop'
-import {
-	createRouter,
-	createWebHistory,
-	type NavigationGuardNext,
-	type RouteLocationNormalized,
-	type RouteRecordRaw,
-} from 'vue-router'
+import { createRouter, createWebHistory, type RouteLocationNormalized, type RouteRecordRaw } from 'vue-router'
 
 import Home from './components/Home.vue'
 import View from './components/View.vue'
@@ -121,6 +115,42 @@ async function setupRecordData(doctype: string, recordId: string, actualDoctype?
 }
 
 /**
+ * Fetch meta and records for a linked (referenced) doctype so the resolver can find them.
+ * Safe to call repeatedly — skips if the doctype is already registered.
+ */
+async function setupLinkedData(doctypeSlug: string): Promise<void> {
+	if (!scopedRegistry || !scopedStonecrop) return
+
+	// Resolve meta doctype name from the registry after fetch
+	const routeContext = { path: `/${doctypeSlug}`, segments: [doctypeSlug] }
+
+	try {
+		let doctypeName = doctypeSlug
+		if (!Object.values(scopedRegistry.registry).some((d: any) => d?.doctype === doctypeSlug)) {
+			const meta = await scopedRegistry.getMeta?.(routeContext)
+			if (meta) {
+				scopedRegistry.addDoctype(meta)
+				doctypeName = (meta as any).doctype ?? doctypeSlug
+			}
+		}
+
+		const response = await fetch(`/api/${doctypeSlug}`)
+		if (response.ok) {
+			const records = await response.json()
+			if (Array.isArray(records)) {
+				records.forEach((record: any) => {
+					if (record.id && !scopedStonecrop.getRecordById(doctypeName, record.id)) {
+						scopedStonecrop.addRecord(doctypeName, record.id, record)
+					}
+				})
+			}
+		}
+	} catch (error) {
+		console.error(`Failed to setup linked data for ${doctypeSlug}:`, error)
+	}
+}
+
+/**
  * Detect doctype from URL path pattern
  */
 function detectDoctypeFromPath(path: string): string | null {
@@ -155,15 +185,17 @@ async function registerDoctypeRoutes(doctype: string): Promise<boolean> {
 				doctype: doctype,
 				actualDoctype: `${doctype}-list`,
 			},
-			beforeEnter: async (to: RouteLocationNormalized, _from: RouteLocationNormalized, next: NavigationGuardNext) => {
+			beforeEnter: async (to: RouteLocationNormalized) => {
 				try {
 					const routeDoctype = to.meta.doctype as string
 					const actualDoctype = to.meta.actualDoctype as string
 					await setupDoctypeData(routeDoctype, actualDoctype, to.path)
-					next()
+					if (routeDoctype === 'todo') {
+						await setupLinkedData('category')
+					}
 				} catch (error) {
 					console.error(`[Router] Failed to setup list data for ${doctype}:`, error)
-					next(error)
+					return false
 				}
 			},
 		}
@@ -179,16 +211,18 @@ async function registerDoctypeRoutes(doctype: string): Promise<boolean> {
 				doctype: doctype,
 				actualDoctype: `${doctype}-form`,
 			},
-			beforeEnter: async (to: RouteLocationNormalized, _from: RouteLocationNormalized, next: NavigationGuardNext) => {
+			beforeEnter: async (to: RouteLocationNormalized) => {
 				try {
 					const routeDoctype = to.meta.doctype as string
 					const actualDoctype = to.meta.actualDoctype as string
 					const recordId = to.params.recordId as string
 					await setupRecordData(routeDoctype, recordId, actualDoctype)
-					next()
+					if (routeDoctype === 'todo') {
+						await setupLinkedData('category')
+					}
 				} catch (error) {
 					console.error(`[Router] Failed to setup form data for ${doctype}:`, error)
-					next(error)
+					return false
 				}
 			},
 		}
@@ -216,31 +250,19 @@ const routes: RouteRecordRaw[] = [
 		path: '/:pathMatch(.*)*',
 		name: 'catch-all',
 		component: View,
-		beforeEnter: async (to: RouteLocationNormalized, _from: RouteLocationNormalized, next: NavigationGuardNext) => {
+		beforeEnter: async (to: RouteLocationNormalized) => {
 			const path = to.path
 
 			try {
-				// Detect doctype from path pattern
 				const doctype = detectDoctypeFromPath(path)
-				if (!doctype) {
-					// Path doesn't match expected patterns, continue to catch-all view
-					next()
-					return
-				}
+				if (!doctype) return
 
-				// Try to register routes for this doctype
 				const registered = await registerDoctypeRoutes(doctype)
 				if (registered) {
-					// Route should now be registered, try to navigate to it again
-					next({ path, replace: true })
-				} else {
-					// Registration failed, continue to catch-all view
-					next()
+					return { path, replace: true }
 				}
 			} catch (error) {
 				console.error(`[Router] Error in catch-all route handler for ${path}:`, error)
-				// Continue to catch-all view on error
-				next()
 			}
 		},
 	},

@@ -157,7 +157,9 @@ describe('Desktop – internal router (no routeAdapter)', () => {
 	})
 
 	it('fetches record directly when navigating to record URL without prior list visit', async () => {
-		const mockGetRecord = vi.fn().mockResolvedValue({ id: 'rec-1', title: 'Fetched', status: 'draft' })
+		const mockGetRecord = vi
+			.fn()
+			.mockResolvedValue({ record: { id: 'rec-1', title: 'Fetched', status: 'draft' }, unknownLinks: [] })
 		const mockClient = {
 			getRecord: mockGetRecord,
 			getRecords: vi.fn().mockResolvedValue([]),

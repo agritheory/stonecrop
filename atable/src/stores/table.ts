@@ -46,8 +46,10 @@ export const createTableStore = (initData: {
 	id?: string
 	config?: TableConfig
 	modal?: TableModal
+	linkResolver?: ((doctype: string, id: string) => Promise<string | undefined>) | null
 }) => {
 	const id = initData.id || generateHash()
+	const linkResolver = initData.linkResolver ?? null
 	const createStore = defineStore(`table-${id}`, () => {
 		const createDisplayObject = () => {
 			const defaultDisplay: TableDisplay[] = [Object.assign({}, { rowModified: false })]
@@ -902,6 +904,9 @@ export const createTableStore = (initData: {
 			isDependencyGraphEnabled,
 			numberedRowWidth,
 			zeroColumn,
+
+			// resolver
+			linkResolver,
 
 			// actions
 			addRow,
