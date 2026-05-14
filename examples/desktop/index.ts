@@ -15,6 +15,7 @@ import StonecropPlugin, {
 } from '@stonecrop/stonecrop'
 
 import App from './App.vue'
+import { RestDataClient } from './client'
 import router, { setupRouterContext } from './router'
 import { makeServer } from './server'
 
@@ -53,6 +54,7 @@ app.use(pinia)
 app.use(StonecropPlugin, {
 	router,
 	getMeta,
+	client: new RestDataClient(),
 	autoInitializeRouter: true,
 	onRouterInitialized: async (registry: Registry, stonecrop: Stonecrop) => {
 		// Setup router context with the provided instances
