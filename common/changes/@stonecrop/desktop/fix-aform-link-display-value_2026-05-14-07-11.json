@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/desktop",
+      "comment": "provide link navigator and resolver functions",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/desktop"
+}

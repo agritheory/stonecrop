@@ -147,12 +147,14 @@ createTableStore: (initData: {
     id?: string;
     config?: TableConfig;
     modal?: TableModal;
+    linkResolver?: ((doctype: string, id: string) => Promise<string | undefined>) | null;
 }) => import("pinia").Store<`table-${string}`, Pick<{
     columns: import("vue").Ref<{
         name: string;
         format?: string | ((value: any, context: CellContext) => string) | undefined;
         modalComponent?: string | ((context: CellContext) => string) | undefined;
         mask?: ((value: any) => any) | undefined;
+        linkDoctype?: string | undefined;
         readonly originalIndex?: number | undefined;
         fieldtype?: string | undefined;
         label?: string | undefined;
@@ -177,6 +179,7 @@ createTableStore: (initData: {
         format?: string | ((value: any, context: CellContext) => string) | undefined;
         modalComponent?: string | ((context: CellContext) => string) | undefined;
         mask?: ((value: any) => any) | undefined;
+        linkDoctype?: string | undefined;
         readonly originalIndex?: number | undefined;
         fieldtype?: string | undefined;
         label?: string | undefined;
@@ -730,6 +733,7 @@ createTableStore: (initData: {
     isDependencyGraphEnabled: import("vue").ComputedRef<boolean>;
     numberedRowWidth: import("vue").ComputedRef<string>;
     zeroColumn: import("vue").ComputedRef<boolean>;
+    linkResolver: ((doctype: string, id: string) => Promise<string | undefined>) | null;
     addRow: (rowData?: Partial<TableRow>, position?: "start" | "end" | number) => number;
     clearFilter: (colIndex: number) => void;
     closeModal: (event: MouseEvent) => void;
@@ -791,12 +795,13 @@ createTableStore: (initData: {
     unregisterGanttBar: (barId: string) => void;
     updateGanttBar: (event: GanttDragEvent) => void;
     updateRows: (newRows: TableRow[]) => void;
-}, "columns" | "config" | "connectionHandles" | "connectionPaths" | "filterState" | "ganttBars" | "modal" | "rows" | "sortState" | "updates">, Pick<{
+}, "columns" | "config" | "connectionHandles" | "connectionPaths" | "filterState" | "ganttBars" | "modal" | "rows" | "sortState" | "updates" | "linkResolver">, Pick<{
     columns: import("vue").Ref<{
         name: string;
         format?: string | ((value: any, context: CellContext) => string) | undefined;
         modalComponent?: string | ((context: CellContext) => string) | undefined;
         mask?: ((value: any) => any) | undefined;
+        linkDoctype?: string | undefined;
         readonly originalIndex?: number | undefined;
         fieldtype?: string | undefined;
         label?: string | undefined;
@@ -821,6 +826,7 @@ createTableStore: (initData: {
         format?: string | ((value: any, context: CellContext) => string) | undefined;
         modalComponent?: string | ((context: CellContext) => string) | undefined;
         mask?: ((value: any) => any) | undefined;
+        linkDoctype?: string | undefined;
         readonly originalIndex?: number | undefined;
         fieldtype?: string | undefined;
         label?: string | undefined;
@@ -1374,6 +1380,7 @@ createTableStore: (initData: {
     isDependencyGraphEnabled: import("vue").ComputedRef<boolean>;
     numberedRowWidth: import("vue").ComputedRef<string>;
     zeroColumn: import("vue").ComputedRef<boolean>;
+    linkResolver: ((doctype: string, id: string) => Promise<string | undefined>) | null;
     addRow: (rowData?: Partial<TableRow>, position?: "start" | "end" | number) => number;
     clearFilter: (colIndex: number) => void;
     closeModal: (event: MouseEvent) => void;
@@ -1441,6 +1448,7 @@ createTableStore: (initData: {
         format?: string | ((value: any, context: CellContext) => string) | undefined;
         modalComponent?: string | ((context: CellContext) => string) | undefined;
         mask?: ((value: any) => any) | undefined;
+        linkDoctype?: string | undefined;
         readonly originalIndex?: number | undefined;
         fieldtype?: string | undefined;
         label?: string | undefined;
@@ -1465,6 +1473,7 @@ createTableStore: (initData: {
         format?: string | ((value: any, context: CellContext) => string) | undefined;
         modalComponent?: string | ((context: CellContext) => string) | undefined;
         mask?: ((value: any) => any) | undefined;
+        linkDoctype?: string | undefined;
         readonly originalIndex?: number | undefined;
         fieldtype?: string | undefined;
         label?: string | undefined;
@@ -2018,6 +2027,7 @@ createTableStore: (initData: {
     isDependencyGraphEnabled: import("vue").ComputedRef<boolean>;
     numberedRowWidth: import("vue").ComputedRef<string>;
     zeroColumn: import("vue").ComputedRef<boolean>;
+    linkResolver: ((doctype: string, id: string) => Promise<string | undefined>) | null;
     addRow: (rowData?: Partial<TableRow>, position?: "start" | "end" | number) => number;
     clearFilter: (colIndex: number) => void;
     closeModal: (event: MouseEvent) => void;
@@ -2086,7 +2096,7 @@ createTableStore: (initData: {
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| initData | `{ columns: TableColumn[]; rows: TableRow[]; id?: string; config?: TableConfig; modal?: TableModal; }` | Initial data for the table store |
+| initData | `{ columns: TableColumn[]; rows: TableRow[]; id?: string; config?: TableConfig; modal?: TableModal; linkResolver?: ((doctype: string, id: string) => Promise<string \| undefined>) \| null; }` | Initial data for the table store |
 
 ### install
 
@@ -2111,6 +2121,8 @@ Convert an array of doctype field descriptors into ATable column definitions.
 Fields are excluded when: - `hidden: true` — field should not be visible in any view - no `fieldtype` — non-scalar entry (nested table or fieldset), has no column equivalent
 
 `fieldname` is renamed to `name`; `hidden` is stripped. All other `ColumnSchema` properties spread through automatically.
+
+For `fieldtype: 'Link'` fields without an explicit `cellComponent`: - `linkDoctype` is set from the field's `doctype` property (used by ACell's async resolver). - A synchronous `format` function is added (unless the field already has one) that handles both bare ID strings and pre-resolved `{ id, displayText }` objects.
 
 **Signature:**
 
@@ -2531,6 +2543,7 @@ Schema-based callers should author columns as `ColumnSchema[]` (using `fieldname
 ```typescript
 export interface TableColumn {
   format?: string | ((value: any, context: CellContext) => string);
+  linkDoctype?: string;
   mask?: (value: any) => any;
   modalComponent?: string | ((context: CellContext) => string);
   name: string;
@@ -2543,6 +2556,7 @@ export interface TableColumn {
 | Property | Type | Description |
 |----------|------|-------------|
 | format? | `string \| ((value: any, context: CellContext) => string)` | Widens `ColumnSchema.format` (string-only) to also accept a live function at runtime. Serialized string functions are deserialized by the table store's `getFormattedValue`. |
+| linkDoctype? | `string` | For `fieldtype: 'Link'` columns: the target doctype slug used by the `linkResolver` to look up display text for bare ID values. Set automatically by `schemaToColumns` from the field's `doctype` property. |
 | mask? | `(value: any) => any` | Input mask applied to the cell value before display. Accepts a live function only — masks cannot be serialized to JSON so they are absent from `ColumnSchema`. |
 | modalComponent? | `string \| ((context: CellContext) => string)` | Widens `ColumnSchema.modalComponent` (string-only) to also accept a factory function. When a function is provided it receives the cell context and returns the component name. The cell context exposes: - `row` — the row object for the current cell - `column` — the column object for the current cell - `table` — the table object |
 | name | `string` | Runtime column key. Corresponds to `fieldname` in `ColumnSchema`; populated by `schemaToColumns`. |

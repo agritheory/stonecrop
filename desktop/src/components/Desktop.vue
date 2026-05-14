@@ -32,7 +32,7 @@
 
 <script setup lang="ts">
 import { useStonecrop } from '@stonecrop/stonecrop'
-import { AForm, type SchemaTypes } from '@stonecrop/aform'
+import { AForm, type AFormLinkNavigator, type SchemaTypes } from '@stonecrop/aform'
 import type { ColumnSchema } from '@stonecrop/schema'
 import { computed, onMounted, provide, ref, unref, watch } from 'vue'
 
@@ -739,6 +739,34 @@ const desktopMethods = {
 }
 
 provide('desktopMethods', desktopMethods)
+
+// Provide a navigator for AFormLink so the arrow button navigates to the linked record.
+provide('aformLinkNavigator', {
+	navigate: (doctype: string, id: string | number) => {
+		void doNavigate({ view: 'record', doctype, recordId: String(id) })
+	},
+} satisfies AFormLinkNavigator)
+
+// Provide a resolver for AFormLink to look up display text by doctype + id.
+// Checks HST first (sync); falls back to an async client fetch if not cached.
+provide('aformLinkResolver', async (doctypeSlug: string, id: string): Promise<string | undefined> => {
+	if (!stonecrop.value) return undefined
+	try {
+		const toDisplayString = (rec: Record<string, unknown> | undefined): string | undefined => {
+			if (!rec) return undefined
+			const val = rec.name ?? rec.title ?? rec.displayText
+			return typeof val === 'string' || typeof val === 'number' ? String(val) : undefined
+		}
+		const cached = stonecrop.value.getRecordById(doctypeSlug, id)?.get('') as Record<string, unknown> | undefined
+		const cachedDisplay = toDisplayString(cached)
+		if (cachedDisplay != null) return cachedDisplay
+		await stonecrop.value.getRecord(doctypeSlug, id)
+		const fetched = stonecrop.value.getRecordById(doctypeSlug, id)?.get('') as Record<string, unknown> | undefined
+		return toDisplayString(fetched)
+	} catch {
+		return undefined
+	}
+})
 
 onMounted(() => {
 	// Add keyboard shortcuts

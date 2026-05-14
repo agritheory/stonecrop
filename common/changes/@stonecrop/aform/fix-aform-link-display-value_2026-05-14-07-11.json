@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/aform",
+      "comment": "correctly display text for link field",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/aform"
+}

@@ -92,6 +92,8 @@ const activeIndex = ref<number | null>(null)
 const navigator = inject<AFormLinkNavigator | null>('aformLinkNavigator', null)
 
 type FilterFn = (search: string) => AFormLinkValue[] | Promise<AFormLinkValue[]>
+type ResolverFn = (doctype: string, id: string) => string | undefined | Promise<string | undefined>
+const resolver = inject<ResolverFn | null>('aformLinkResolver', null)
 
 // Records loaded from the DB arrive as scalar UUID strings; normalize to AFormLinkValue
 // so the resolution watch below can pick up the id correctly.
@@ -105,18 +107,26 @@ watch(
 	{ immediate: true }
 )
 
+// When the id changes (including on first render), resolve its display text.
+// Tries filterFunction first (returns a list of candidates to search); falls back to the
+// injected resolver (a direct doctype+id lookup). Skips if displayText is already set.
 watch(
 	() => modelValue.value?.id,
 	async id => {
-		if (!id || modelValue.value.displayText || !filterFunction) return
+		if (!id || modelValue.value.displayText) return
 		try {
-			const fn: FilterFn =
-				typeof filterFunction === 'string' ? deserializeFunction<FilterFn>(filterFunction) : filterFunction
-			const results = await fn(String(id))
-			const match = results.find(r => String(r.id) === String(id))
-			if (match?.displayText) {
-				searchText.value = match.displayText
-				modelValue.value = { ...modelValue.value, displayText: match.displayText }
+			let displayText: string | undefined
+			if (filterFunction) {
+				const fn: FilterFn =
+					typeof filterFunction === 'string' ? deserializeFunction<FilterFn>(filterFunction) : filterFunction
+				const results = await fn(String(id))
+				displayText = results.find(r => String(r.id) === String(id))?.displayText
+			} else if (resolver && doctype) {
+				displayText = (await resolver(doctype, id.toString())) ?? undefined
+			}
+			if (displayText) {
+				searchText.value = displayText
+				modelValue.value = { ...modelValue.value, displayText }
 			}
 		} catch {
 			// silent — fall back to showing the raw id

@@ -430,6 +430,60 @@ describe('AFormLink component', () => {
 		expect(wrapper.findAll('.is-active')).toHaveLength(0)
 	})
 
+	describe('aformLinkResolver injection', () => {
+		it('resolves display text via injected aformLinkResolver when filterFunction is absent', async () => {
+			const resolver = vi.fn(async (_doctype: string, id: string) => `Resolved: ${id}`)
+			const wrapper = mount(AFormLink, {
+				props: { modelValue: { id: 'PP-001' }, doctype: 'planning-period' },
+				global: { provide: { aformLinkResolver: resolver } },
+			})
+
+			await flushPromises()
+
+			expect(resolver).toHaveBeenCalledWith('planning-period', 'PP-001')
+			expect(wrapper.find('input').element.value).toBe('Resolved: PP-001')
+		})
+
+		it('does not call aformLinkResolver when filterFunction is already provided', async () => {
+			const filterFunction = vi.fn(async (id: string) => [{ id, displayText: 'From FF' }])
+			const resolver = vi.fn()
+			const wrapper = mount(AFormLink, {
+				props: { modelValue: { id: 'PP-001' }, doctype: 'planning-period', filterFunction },
+				global: { provide: { aformLinkResolver: resolver } },
+			})
+
+			await flushPromises()
+
+			expect(resolver).not.toHaveBeenCalled()
+			expect(wrapper.find('input').element.value).toBe('From FF')
+		})
+
+		it('falls back gracefully when resolver returns undefined', async () => {
+			const resolver = vi.fn(async () => undefined)
+			const wrapper = mount(AFormLink, {
+				props: { modelValue: { id: 'PP-001' }, doctype: 'planning-period' },
+				global: { provide: { aformLinkResolver: resolver } },
+			})
+
+			await flushPromises()
+
+			expect(resolver).toHaveBeenCalled()
+			expect(wrapper.find('input').element.value).toBe('PP-001')
+		})
+
+		it('does not call resolver when doctype is not set', async () => {
+			const resolver = vi.fn()
+			mount(AFormLink, {
+				props: { modelValue: { id: 'PP-001' } },
+				global: { provide: { aformLinkResolver: resolver } },
+			})
+
+			await flushPromises()
+
+			expect(resolver).not.toHaveBeenCalled()
+		})
+	})
+
 	it('navigation is silent when no doctype is configured', async () => {
 		const navigate = vi.fn()
 		const wrapper = mount(AFormLink, {

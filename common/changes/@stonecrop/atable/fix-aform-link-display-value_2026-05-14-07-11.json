@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/atable",
+      "comment": "add link resolver to table components",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/atable"
+}

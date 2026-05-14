@@ -79,6 +79,65 @@ describe('schemaToColumns', () => {
 		expect(schemaToColumns(schema)).toEqual([])
 	})
 
+	describe('Link field handling', () => {
+		it('adds a display format function for Link fields without explicit format or cellComponent', () => {
+			const schema: ColumnSchema[] = [
+				{ fieldname: 'category_id', fieldtype: 'Link', label: 'Category', component: 'AFormLink' } as any,
+			]
+			const columns = schemaToColumns(schema)
+			expect(typeof columns[0].format).toBe('function')
+			expect((columns[0].format as Function)('cat-1')).toBe('cat-1')
+			expect((columns[0].format as Function)({ id: 'cat-1', displayText: 'Personal' })).toBe('Personal')
+			expect((columns[0].format as Function)({ id: 'cat-1' })).toBe('cat-1')
+			expect((columns[0].format as Function)(null)).toBe('')
+			expect((columns[0].format as Function)(undefined)).toBe('')
+		})
+
+		it('sets linkDoctype from the field doctype property', () => {
+			const schema = [
+				{ fieldname: 'category_id', fieldtype: 'Link', label: 'Category', doctype: 'category' },
+			] as ColumnSchema[]
+			const columns = schemaToColumns(schema)
+			expect(columns[0].linkDoctype).toBe('category')
+		})
+
+		it('leaves linkDoctype undefined when field has no doctype property', () => {
+			const schema: ColumnSchema[] = [{ fieldname: 'ref_id', fieldtype: 'Link', label: 'Ref' }]
+			const columns = schemaToColumns(schema)
+			expect(columns[0].linkDoctype).toBeUndefined()
+		})
+
+		it('does not override an explicit format on a Link field', () => {
+			const schema: ColumnSchema[] = [
+				{ fieldname: 'customer_id', fieldtype: 'Link', label: 'Customer', format: '(v) => v.toUpperCase()' },
+			]
+			const columns = schemaToColumns(schema)
+			expect(columns[0].format).toBe('(v) => v.toUpperCase()')
+		})
+
+		it('does not set linkDoctype or format when cellComponent is already set', () => {
+			const schema = [
+				{
+					fieldname: 'customer_id',
+					fieldtype: 'Link',
+					label: 'Customer',
+					cellComponent: 'MyLinkCell',
+					doctype: 'customer',
+				},
+			] as ColumnSchema[]
+			const columns = schemaToColumns(schema)
+			expect(columns[0].format).toBeUndefined()
+			expect(columns[0].linkDoctype).toBeUndefined()
+		})
+
+		it('does not add format for non-Link fields', () => {
+			const schema: ColumnSchema[] = [{ fieldname: 'title', fieldtype: 'Data', label: 'Title' }]
+			const columns = schemaToColumns(schema)
+			expect(columns[0].format).toBeUndefined()
+			expect(columns[0].linkDoctype).toBeUndefined()
+		})
+	})
+
 	it('preserves field order', () => {
 		const schema: ColumnSchema[] = [
 			{ fieldname: 'z', fieldtype: 'Data', label: 'Z' },

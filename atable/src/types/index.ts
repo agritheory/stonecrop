@@ -45,6 +45,13 @@ export interface TableColumn extends Omit<ColumnSchema, 'fieldname' | 'hidden' |
 	mask?: (value: any) => any
 
 	/**
+	 * For `fieldtype: 'Link'` columns: the target doctype slug used by the `linkResolver`
+	 * to look up display text for bare ID values. Set automatically by `schemaToColumns`
+	 * from the field's `doctype` property.
+	 */
+	linkDoctype?: string
+
+	/**
 	 * Runtime Gantt column index (excluding pinned columns). Set automatically during
 	 * Gantt table rendering.
 	 */
