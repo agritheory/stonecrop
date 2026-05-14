@@ -121,6 +121,13 @@ watch(
 					typeof filterFunction === 'string' ? deserializeFunction<FilterFn>(filterFunction) : filterFunction
 				const results = await fn(String(id))
 				displayText = results.find(r => String(r.id) === String(id))?.displayText
+				if (displayText === undefined) {
+					// eslint-disable-next-line no-console
+					console.warn(
+						`[AFormLink] filterFunction returned no matching result for id "${id}". ` +
+							`The function must return an item whose \`id\` exactly matches the search string.`
+					)
+				}
 			} else if (resolver && doctype) {
 				displayText = (await resolver(doctype, id.toString())) ?? undefined
 			}
@@ -138,6 +145,12 @@ watch(
 const handleNavigate = () => {
 	if (navigator && doctype) {
 		navigator.navigate(doctype, modelValue.value.id)
+	} else if (navigator && !doctype) {
+		// eslint-disable-next-line no-console
+		console.warn(
+			`[AFormLink] Navigation requested but \`doctype\` prop is missing. ` +
+				`Add \`options\` (or \`doctype\`) to the Link field definition to enable navigation.`
+		)
 	}
 }
 
