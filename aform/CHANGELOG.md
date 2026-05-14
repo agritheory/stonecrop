@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/aform
 
-This log was last generated on Thu, 14 May 2026 07:19:11 GMT and should not be manually modified.
+This log was last generated on Thu, 14 May 2026 10:29:38 GMT and should not be manually modified.
+
+## 0.12.5
+Thu, 14 May 2026 10:29:38 GMT
+
+### Patches
+
+- add warning for bad filter function response
 
 ## 0.12.4
 Thu, 14 May 2026 07:19:11 GMT

@@ -2,6 +2,18 @@
   "name": "@stonecrop/aform",
   "entries": [
     {
+      "version": "0.12.5",
+      "tag": "@stonecrop/aform_v0.12.5",
+      "date": "Thu, 14 May 2026 10:29:38 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "add warning for bad filter function response"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.12.4",
       "tag": "@stonecrop/aform_v0.12.4",
       "date": "Thu, 14 May 2026 07:19:11 GMT",
