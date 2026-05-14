@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/aform",
+      "comment": "add warning for bad filter function response",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/aform"
+}

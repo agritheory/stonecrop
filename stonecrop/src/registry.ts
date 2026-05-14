@@ -163,11 +163,28 @@ export default class Registry {
 				if (!link) {
 					const doctype =
 						typeof (field as FieldMeta).options === 'string' ? ((field as FieldMeta).options as string) : undefined
+
+					if (doctype === undefined) {
+						// eslint-disable-next-line no-console
+						console.warn(
+							`[Stonecrop] Link field "${field.fieldname}" has no \`options\` or corresponding \`links\` declaration. ` +
+								`AFormLink will be created without a \`doctype\` prop, so navigation will not work. ` +
+								`Add \`"options": "<doctype-slug>"\` to the field definition.`
+						)
+					}
+
+					// Strip any raw `doctype` from the JSON; only `options` is the authoritative source.
+					const { doctype: _rawDoctype, ...fieldRest } = field as typeof field & {
+						doctype?: unknown
+						component?: string
+					}
+
 					resolvedFields.push({
-						...field,
-						component: 'AFormLink',
+						...fieldRest,
+						component: fieldRest.component || 'AFormLink',
 						...(doctype !== undefined ? { doctype } : {}),
 					})
+
 					continue
 				}
 

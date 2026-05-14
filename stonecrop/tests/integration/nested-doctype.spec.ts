@@ -1,5 +1,5 @@
 import { List } from 'immutable'
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 
 import { Stonecrop, Registry, Doctype } from '../../src'
 import { schemaToColumns } from '@stonecrop/atable'
@@ -555,6 +555,41 @@ describe('Nested Doctype Support', () => {
 			expect((resolved[1] as any).component).toBe('AFormLink')
 		})
 
+		it('undeclared Link field with custom component preserves that component', () => {
+			const testDoctype = new Doctype(
+				'test',
+				List([
+					{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' },
+					{ fieldname: 'territory', fieldtype: 'Link', options: 'territory', component: 'MyCustomLink' },
+				]) as any,
+				undefined,
+				undefined
+			)
+			const resolved = registry.resolveSchema(testDoctype)
+
+			expect(resolved[1].fieldname).toBe('territory')
+			expect((resolved[1] as any).component).toBe('MyCustomLink')
+		})
+
+		it('ignores raw doctype in JSON and derives from options only', () => {
+			const testDoctype = new Doctype(
+				'test',
+				List([
+					{
+						fieldname: 'territory',
+						fieldtype: 'Link',
+						options: 'territory',
+						doctype: 'ignored-value',
+					},
+				]) as any,
+				undefined,
+				undefined
+			)
+			const resolved = registry.resolveSchema(testDoctype)
+
+			expect((resolved[0] as any).doctype).toBe('territory')
+		})
+
 		it('undeclared Link field with string options gets doctype from options', () => {
 			const testDoctype = new Doctype(
 				'test',
@@ -567,7 +602,8 @@ describe('Nested Doctype Support', () => {
 			expect((resolved[0] as any).doctype).toBe('territory')
 		})
 
-		it('undeclared Link field without options gets no doctype prop', () => {
+		it('undeclared Link field without options gets no doctype prop and emits a console warning', () => {
+			const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
 			const testDoctype = new Doctype(
 				'test',
 				List([{ fieldname: 'territory', fieldtype: 'Link' }]) as any,
@@ -578,6 +614,8 @@ describe('Nested Doctype Support', () => {
 
 			expect((resolved[0] as any).component).toBe('AFormLink')
 			expect('doctype' in resolved[0]).toBe(false)
+			expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('territory'))
+			warnSpy.mockRestore()
 		})
 
 		it('undeclared Link field preserves other field properties', () => {
@@ -799,7 +837,7 @@ describe('resolveSchema → schemaToColumns pipeline', () => {
 			{ fieldname: 'name', fieldtype: 'Data', label: 'Name', component: 'ATextInput' },
 			{ fieldname: 'email', fieldtype: 'Data', label: 'Email', component: 'ATextInput' },
 		])
-		const userDoctype = new Doctype('user', userSchema as any)
+		const userDoctype = new Doctype('user', userSchema as any, undefined, undefined)
 		const taskDoctype = new Doctype('task', taskSchema as any, undefined, undefined, undefined, {
 			assignee: { target: 'user', cardinality: 'noneOrMany', fieldname: 'assignee' },
 		})

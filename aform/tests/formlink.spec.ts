@@ -486,6 +486,7 @@ describe('AFormLink component', () => {
 
 	it('navigation is silent when no doctype is configured', async () => {
 		const navigate = vi.fn()
+		const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
 		const wrapper = mount(AFormLink, {
 			props: { modelValue: validValue },
 			global: { provide: { aformLinkNavigator: { navigate } } },
@@ -494,6 +495,22 @@ describe('AFormLink component', () => {
 		await wrapper.find('button').trigger('click')
 
 		expect(navigate).not.toHaveBeenCalled()
+		expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('doctype'))
+		warnSpy.mockRestore()
+	})
+
+	it('logs a console warning when filterFunction resolves no matching displayText', async () => {
+		const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+		const filterFunction = vi.fn(async () => [{ id: 'OTHER-001', displayText: 'Other Item' }])
+
+		mount(AFormLink, {
+			props: { modelValue: { id: 'MISSING-001' }, filterFunction },
+		})
+
+		await flushPromises()
+
+		expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('MISSING-001'))
+		warnSpy.mockRestore()
 	})
 
 	describe('serialized string filterFunction', () => {
