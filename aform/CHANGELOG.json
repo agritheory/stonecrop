@@ -2,6 +2,18 @@
   "name": "@stonecrop/aform",
   "entries": [
     {
+      "version": "0.12.4",
+      "tag": "@stonecrop/aform_v0.12.4",
+      "date": "Thu, 14 May 2026 07:19:11 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "correctly display text for link field"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.12.3",
       "tag": "@stonecrop/aform_v0.12.3",
       "date": "Wed, 13 May 2026 12:28:05 GMT",

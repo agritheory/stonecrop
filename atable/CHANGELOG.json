@@ -2,6 +2,18 @@
   "name": "@stonecrop/atable",
   "entries": [
     {
+      "version": "0.12.4",
+      "tag": "@stonecrop/atable_v0.12.4",
+      "date": "Thu, 14 May 2026 07:19:11 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "add link resolver to table components"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.12.3",
       "tag": "@stonecrop/atable_v0.12.3",
       "date": "Wed, 13 May 2026 12:28:05 GMT",
