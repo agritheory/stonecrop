@@ -3,6 +3,7 @@
 		<Desktop
 			:available-doctypes="availableDoctypes"
 			:show-debug="showDebug"
+			:confirm-fn="confirmFn"
 			record-id-field="rowId"
 			@action="handleDesktopAction"
 			@navigate="handleDesktopNavigate"
@@ -62,9 +63,8 @@ function toggleOperationLog() {
 	showOperationLog.value = !showOperationLog.value
 }
 
-/** Pretend this is `await $fetch(...)` or `StonecropClient.runAction(...)`. */
-function simulateServerCall(ms: number): Promise<void> {
-	return new Promise(resolve => setTimeout(resolve, ms))
+function confirmFn(message: string): boolean {
+	return window.confirm(message)
 }
 
 /**
@@ -73,8 +73,8 @@ function simulateServerCall(ms: number): Promise<void> {
  * Pattern:
  *   1. Sync any changed field values into HST.
  *   2. Fire the FSM transition (triggers registerTransitionAction side effects).
- *   3. Make the simulated server call — in a real app, replace with $fetch /
- *      StonecropClient.runAction and sync the response back via addRecord().
+ *   3. Dispatch through DataClient (real REST call via RestDataClient.runAction).
+ *   4. Sync the result back into HST.
  */
 async function handleDesktopAction(payload: ActionEventPayload) {
 	if (!stonecrop.value) return
@@ -90,23 +90,31 @@ async function handleDesktopAction(payload: ActionEventPayload) {
 			}
 		}
 		// 2. Trigger the FSM transition — fires registerTransitionAction side effects
-		await existing.triggerTransition(payload.name, {
-			fsmContext: payload.data,
-		})
+		await existing.triggerTransition(payload.name, { fsmContext: payload.data })
 	}
 
-	// 3. Simulated server call — owns persistence and response sync
+	// 3. Dispatch through DataClient
+	const doctype = stonecrop.value.registry.getDoctype(payload.doctype)
+	if (!doctype) return
+
+	const result = await stonecrop.value.dispatchAction(doctype, payload.name, [payload.recordId, payload.data])
+
+	if (!result.success) {
+		addNotification(`${payload.name} failed: ${result.error ?? 'unknown error'}`, 'error')
+		return
+	}
+
+	// 4. Sync response back into HST
 	switch (payload.name) {
-		case 'SAVE':
-			addNotification(`💾 Saving ${payload.doctype} record ${payload.recordId}...`, 'info')
-			await simulateServerCall(500)
-			addNotification(`✅ ${payload.doctype} record ${payload.recordId} saved successfully!`, 'success')
+		case 'SAVE': {
+			const saved = result.data as Record<string, unknown> | null
+			if (saved) stonecrop.value.addRecord(payload.doctype, payload.recordId, saved)
+			addNotification(`${payload.doctype} record ${payload.recordId} saved`, 'success')
 			break
+		}
 		case 'DELETE':
-			addNotification(`🗑️ Deleting ${payload.doctype} record ${payload.recordId}...`, 'warning')
-			await simulateServerCall(500)
 			stonecrop.value.removeRecord(payload.doctype, payload.recordId)
-			addNotification(`🗑️ ${payload.doctype} record ${payload.recordId} deleted`, 'info')
+			addNotification(`${payload.doctype} record ${payload.recordId} deleted`, 'info')
 			break
 	}
 }
@@ -126,26 +134,27 @@ function handleRecordOpen(payload: RecordOpenEventPayload) {
 
 /**
  * Handle load-records event - Desktop needs records for a list view.
- * In a real app, this would fetch from StonecropClient or your API.
+ * Desktop has no self-fetch for list views, so the host must populate HST here.
  */
-function handleLoadRecords(payload: LoadRecordsEventPayload) {
-	// eslint-disable-next-line no-console
-	console.debug('[example] load-records', payload)
-	// Example: fetch and populate HST
-	// const records = await stonecropClient.getRecords(payload.doctype)
-	// stonecrop.value.addRecords(payload.doctype, records)
+async function handleLoadRecords(payload: LoadRecordsEventPayload) {
+	if (!stonecrop.value) return
+	try {
+		const doctype = stonecrop.value.registry.getDoctype(payload.doctype)
+		if (doctype) await stonecrop.value.getRecords(doctype)
+	} catch (error) {
+		addNotification(`Failed to load ${payload.doctype} records`, 'error')
+		// eslint-disable-next-line no-console
+		console.error('[example] load-records failed', error)
+	}
 }
 
 /**
- * Handle load-record event - Desktop needs a single record for a form view.
- * In a real app, this would fetch from StonecropClient or your API.
+ * Handle load-record event - Desktop already self-fetches missing records when a
+ * client is configured (see Desktop.vue loadRecordData). This handler is reserved
+ * for host-side side effects (analytics, breadcrumb prefetch, etc.).
  */
-function handleLoadRecord(payload: LoadRecordEventPayload) {
-	// eslint-disable-next-line no-console
-	console.debug('[example] load-record', payload)
-	// Example: fetch and populate HST
-	// const record = await stonecropClient.getRecord(payload.doctype, payload.recordId)
-	// stonecrop.value.addRecord(payload.doctype, payload.recordId, record)
+function handleLoadRecord(_payload: LoadRecordEventPayload) {
+	// no-op — Desktop handles the fetch via its internal loadRecordData()
 }
 </script>
 

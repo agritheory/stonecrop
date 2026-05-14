@@ -21,6 +21,7 @@
 	"dependencies": {
 		"@stonecrop/aform": "workspace:*",
 		"@stonecrop/atable": "workspace:*",
+		"@stonecrop/schema": "workspace:*",
 		"@stonecrop/beam": "workspace:*",
 		"@stonecrop/code-editor": "workspace:*",
 		"@stonecrop/desktop": "workspace:*",

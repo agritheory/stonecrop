@@ -24,93 +24,24 @@ export async function setupRouterContext(registry: Registry, stonecrop: Stonecro
 }
 
 /**
- * Setup doctype metadata and load all records for the doctype
+ * Setup doctype metadata only. Data hydration is handled by Desktop's load-records / load-record events.
  */
-async function setupDoctypeData(doctype: string, actualDoctype?: string, routePath?: string): Promise<void> {
-	if (!scopedRegistry || !scopedStonecrop) {
-		// Scoped Stonecrop references not available during route setup
-		return
-	}
+async function setupDoctypeMeta(actualDoctype: string, routePath: string): Promise<void> {
+	if (!scopedRegistry) return
 
 	try {
-		const targetDoctype = actualDoctype || doctype
-
-		// Get doctype metadata if not already loaded
-		if (!scopedRegistry.registry[targetDoctype]) {
-			// Create RouteContext for getMeta call
-			const defaultPath = routePath || `/${doctype}`
+		if (!scopedRegistry.registry[actualDoctype]) {
 			const routeContext = {
-				path: defaultPath,
-				segments: defaultPath.split('/').filter(s => s.length > 0),
+				path: routePath,
+				segments: routePath.split('/').filter((s: string) => s.length > 0),
 			}
-
 			const doctypeMeta = await scopedRegistry.getMeta?.(routeContext)
 			if (doctypeMeta) {
 				scopedRegistry.addDoctype(doctypeMeta)
 			}
 		}
-
-		// Load all records for this doctype into HST
-		const response = await fetch(`/api/${doctype}`)
-		if (response.ok) {
-			const records = await response.json()
-
-			// Clear existing records and add new ones using actual doctype
-			scopedStonecrop.clearRecords(targetDoctype)
-
-			if (Array.isArray(records)) {
-				records.forEach((record: any) => {
-					if (record.id) {
-						scopedStonecrop.addRecord(targetDoctype, record.id, record)
-					}
-				})
-			}
-		}
 	} catch (error) {
-		console.error(`Failed to setup doctype data for ${doctype}:`, error)
-	}
-}
-
-/**
- * Setup specific record data and set as current
- */
-async function setupRecordData(doctype: string, recordId: string, actualDoctype?: string): Promise<void> {
-	if (!scopedRegistry || !scopedStonecrop) {
-		// Scoped Stonecrop references not available during route setup
-		return
-	}
-
-	try {
-		const targetDoctype = actualDoctype || doctype
-
-		// Get form doctype metadata if not already loaded
-		if (!scopedRegistry.registry[targetDoctype]) {
-			// Create RouteContext for getMeta call
-			const route = `/${doctype}/${recordId}`
-			const routeContext = {
-				path: route,
-				segments: route.split('/').filter(s => s.length > 0),
-			}
-
-			const doctypeMeta = await scopedRegistry.getMeta?.(routeContext)
-			if (doctypeMeta) {
-				scopedRegistry.addDoctype(doctypeMeta)
-			}
-		}
-
-		// Check if record already exists in HST
-		const existingRecord = scopedStonecrop.getRecordById(targetDoctype, recordId)
-
-		if (!existingRecord && !recordId.startsWith('new-')) {
-			// Fetch individual record if not in store and not a new record
-			const response = await fetch(`/api/${doctype}/${recordId}`)
-			if (response.ok) {
-				const record = await response.json()
-				scopedStonecrop.addRecord(targetDoctype, recordId, record)
-			}
-		}
-	} catch (error) {
-		console.error(`Failed to setup record data for ${doctype}/${recordId}:`, error)
+		console.error(`Failed to setup doctype meta for ${actualDoctype}:`, error)
 	}
 }
 
@@ -189,7 +120,7 @@ async function registerDoctypeRoutes(doctype: string): Promise<boolean> {
 				try {
 					const routeDoctype = to.meta.doctype as string
 					const actualDoctype = to.meta.actualDoctype as string
-					await setupDoctypeData(routeDoctype, actualDoctype, to.path)
+					await setupDoctypeMeta(actualDoctype, to.path)
 					if (routeDoctype === 'todo') {
 						await setupLinkedData('category')
 					}
@@ -215,8 +146,7 @@ async function registerDoctypeRoutes(doctype: string): Promise<boolean> {
 				try {
 					const routeDoctype = to.meta.doctype as string
 					const actualDoctype = to.meta.actualDoctype as string
-					const recordId = to.params.recordId as string
-					await setupRecordData(routeDoctype, recordId, actualDoctype)
+					await setupDoctypeMeta(actualDoctype, to.path)
 					if (routeDoctype === 'todo') {
 						await setupLinkedData('category')
 					}

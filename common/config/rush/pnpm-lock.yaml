@@ -519,6 +519,9 @@ importers:
       '@stonecrop/node-editor':
         specifier: workspace:*
         version: link:../node_editor
+      '@stonecrop/schema':
+        specifier: workspace:*
+        version: link:../schema
       '@stonecrop/stonecrop':
         specifier: workspace:*
         version: link:../stonecrop
