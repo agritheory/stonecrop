@@ -2,6 +2,12 @@
 
 Transport layer for Stonecrop GraphQL APIs. Handles HTTP communication, response parsing, and metadata caching.
 
+## Why transport-only?
+
+This client intentionally never constructs GraphQL queries. All query generation — including PostGraphile-specific field naming (inflection), nested link sub-selections, and fetch strategy dispatch — lives in the server-side middleware (`@stonecrop/graphql-middleware`).
+
+This boundary exists because PostGraphile's schema naming is configurable. An application might use `ById` for UUID primary keys, `ByRowId` for `row_id` columns, or entirely custom conventions. If the client hardcoded any of these conventions, it would silently produce wrong queries for non-default setups. The middleware owns the single `StonecropInflectionConfig` — the client only knows how to pass `options.includeNested` through to the `stonecropRecord` resolver and receive pre-merged flat data.
+
 ## Responsibilities
 
 **Transport** — The client sends requests and parses responses. It doesn't construct queries.
@@ -13,7 +19,7 @@ Transport layer for Stonecrop GraphQL APIs. Handles HTTP communication, response
 | Operation | Arguments | Returns |
 |-----------|-----------|---------|
 | `stonecropRecord` | `doctype`, `id`, `options?` | `{ record, unknownLinks? }` |
-| `stonecropRecords` | `doctype`, `filters?`, `orderBy?`, `limit?`, `offset?` | `{ data[], count }` |
+| `stonecropRecords` | `doctype`, `filters?`, `orderBy?`, `limit?`, `offset?`, `options?` | `{ data[], count }` |
 | `stonecropMeta` | `doctype` | `DoctypeMeta` |
 | `stonecropAllMeta` | — | `DoctypeMeta[]` |
 | `stonecropAction` | `doctype`, `action`, `args?` | `{ success, data, error }` |

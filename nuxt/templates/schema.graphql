@@ -97,7 +97,14 @@ type Query {
 	"""
 	Get multiple records with optional filtering
 	"""
-	stonecropRecords(doctype: String!, filters: JSON, orderBy: String, limit: Int, offset: Int): RecordsResult
+	stonecropRecords(
+		doctype: String!
+		filters: JSON
+		orderBy: String
+		limit: Int
+		offset: Int
+		options: JSON
+	): RecordsResult
 }
 
 # ============================================

@@ -47,8 +47,8 @@
 		"test:ui": "vitest --ui"
 	},
 	"dependencies": {
-		"graphql": "^16.13.2",
-		"postgraphile": "^5.0.1"
+		"graphql": "^16.14.0",
+		"postgraphile": "^5.0.3"
 	},
 	"devDependencies": {
 		"@eslint/js": "^10.0.1",

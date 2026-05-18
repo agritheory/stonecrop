@@ -102,6 +102,14 @@ Fields with `fieldtype: "Display"` are excluded from the auto-generated scalar q
 
 All other non-`Link` fieldtypes are assumed to map to a scalar DB column and are included in the query.
 
+## Architecture
+
+### Why the middleware builds queries
+
+The client (`@stonecrop/graphql-client`) is intentionally transport-only — it sends requests and receives flat data. It never constructs GraphQL queries. All query generation lives in the middleware, which is the only layer aware of PostGraphile naming conventions (inflection).
+
+This boundary exists because PostGraphile's schema naming is configurable. A single application might use `ById` for UUID primary keys, `ByRowId` for `row_id` columns, or entirely custom conventions. If the client hardcoded any of these conventions, it would silently generate wrong queries for any non-default setup. By keeping query construction server-side, the middleware's `StonecropInflectionConfig` becomes the single source of truth.
+
 ## Actions
 
 Actions are custom logic triggered by the client. Register handlers with `registerHandler`:
@@ -122,7 +130,7 @@ The middleware exposes these GraphQL operations:
 | Operation | Description |
 |-----------|-------------|
 | `stonecropRecord(doctype, id, options?)` | Fetch a single record, optionally with nested links |
-| `stonecropRecords(doctype, filters?, orderBy?, limit?, offset?)` | Fetch multiple records |
+| `stonecropRecords(doctype, filters?, orderBy?, limit?, offset?, options?)` | Fetch multiple records |
 | `stonecropMeta(doctype)` | Fetch doctype metadata |
 | `stonecropAllMeta` | Fetch all doctype metadata |
 | `stonecropAction(doctype, action, args?)` | Execute a doctype action |

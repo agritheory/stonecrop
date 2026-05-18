@@ -2,11 +2,12 @@ import type { DoctypeMeta, LinkDeclaration, LazyFetch, SyncFetch } from '@stonec
 import { snakeToCamel, toPascalCase } from '@stonecrop/schema'
 import { constant, lambda, object, loadOne } from 'postgraphile/grafast'
 import { GraphileConfig } from 'postgraphile/graphile-build'
-import { extendSchema, gql } from 'postgraphile/utils'
+import { extendSchema } from 'postgraphile/utils'
 import pluralize from 'pluralize'
 
 import { getHandler } from '../registry/actions'
 import { getMeta, getAllMeta } from '../registry/doctypes'
+import { typeDefs } from '../typeDefs'
 import type {
 	ActionContext,
 	GraphQLExecutor,
@@ -123,85 +124,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions): Graphile
 
 	return extendSchema(() => {
 		return {
-			typeDefs: gql`
-				type StonecropFieldMeta {
-					fieldname: String!
-					fieldtype: String!
-					component: String
-					label: String
-					width: String
-					align: String
-					required: Boolean
-					readOnly: Boolean
-					edit: Boolean
-					hidden: Boolean
-					default: JSON
-					options: JSON
-					mask: String
-					precision: Int
-					scale: Int
-					mode: String
-					validation: JSON
-				}
-
-				type StonecropWorkflowAction {
-					label: String!
-					handler: String!
-					requiredFields: [String!]
-					allowedStates: [String!]
-					confirm: Boolean
-					args: JSON
-				}
-
-				type StonecropWorkflowMeta {
-					states: [String!]
-					actions: [StonecropWorkflowAction!]
-				}
-
-				type StonecropDoctypeMeta {
-					name: String!
-					slug: String
-					tableName: String
-					fields: [StonecropFieldMeta!]!
-					workflow: StonecropWorkflowMeta
-					inherits: String
-				}
-
-				type StonecropRecordResult {
-					data: JSON
-					doctype: String!
-					unknownLinks: [String!]
-				}
-
-				type StonecropRecordsResult {
-					data: [JSON!]!
-					doctype: String!
-					count: Int!
-				}
-
-				type StonecropActionResult {
-					success: Boolean!
-					data: JSON
-					error: String
-				}
-
-				extend type Query {
-					stonecropMeta(doctype: String!): StonecropDoctypeMeta
-					stonecropAllMeta: [StonecropDoctypeMeta!]!
-					stonecropRecord(doctype: String!, id: String!, options: JSON): StonecropRecordResult
-					stonecropRecords(
-						doctype: String!
-						filters: JSON
-						orderBy: String
-						limit: Int
-						offset: Int
-					): StonecropRecordsResult
-				}
-
-				extend type Mutation {
-					stonecropAction(doctype: String!, action: String!, args: JSON): StonecropActionResult!
-				}
-			`,
+			typeDefs,
 
 			objects: {
 				Query: {
@@ -279,7 +202,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions): Graphile
 							)
 						},
 
-						stonecropRecords(_: any, { $doctype, $filters, $orderBy, $limit, $offset }: any) {
+						stonecropRecords(_: any, { $doctype, $filters, $orderBy, $limit, $offset, $options }: any) {
 							return loadOne(
 								object({
 									doctype: $doctype,
@@ -287,6 +210,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions): Graphile
 									orderBy: $orderBy,
 									limit: $limit,
 									offset: $offset,
+									options: $options,
 								}),
 								async (specs: readonly any[]) => {
 									return await Promise.all(

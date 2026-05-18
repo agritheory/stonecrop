@@ -117,7 +117,7 @@ export default {
 				})
 			},
 
-			stonecropRecords(_: unknown, { $doctype, $filters, $orderBy, $limit, $offset }: any) {
+			stonecropRecords(_: unknown, { $doctype, $filters, $orderBy, $limit, $offset, $options }: any) {
 				return loadOne(
 					object({
 						doctype: $doctype,
@@ -125,6 +125,7 @@ export default {
 						orderBy: $orderBy,
 						limit: $limit,
 						offset: $offset,
+						options: $options,
 					}),
 					async (specs: readonly any[]) => {
 						return Promise.all(
