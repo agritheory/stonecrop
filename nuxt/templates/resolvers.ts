@@ -113,7 +113,7 @@ export const resolvers = {
 			/**
 			 * Get multiple records with filtering
 			 */
-			stonecropRecords(_$parent, { $doctype, $filters, $orderBy, $limit, $offset }) {
+			stonecropRecords(_$parent, { $doctype, $filters, $orderBy, $limit, $offset, $options }) {
 				// Arguments come pre-destructured as steps with $ prefix
 
 				// TODO: Implement records fetching from your database
@@ -128,9 +128,9 @@ export const resolvers = {
 				// })
 
 				return lambda(
-					list([$doctype, $filters, $orderBy, $limit, $offset]),
-					([doctype, filters, orderBy, limit, offset]) => {
-						console.log('stonecropRecords called:', { doctype, filters, orderBy, limit, offset })
+					list([$doctype, $filters, $orderBy, $limit, $offset, $options]),
+					([doctype, filters, orderBy, limit, offset, options]) => {
+						console.log('stonecropRecords called:', { doctype, filters, orderBy, limit, offset, options })
 						return {
 							data: [],
 							doctype,
