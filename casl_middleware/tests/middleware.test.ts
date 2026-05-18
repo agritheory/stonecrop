@@ -49,7 +49,7 @@ const createTestAbility = (rules: any[]): AppAbility => {
 	})
 }
 
-describe('CASL GraphQL Middleware', () => {
+describe('CASL GraphQL Middleware', { tags: ['unit', 'graphql'] }, () => {
 	let mockResolve: any
 	let mockContext: Context
 	let mockInfo: any

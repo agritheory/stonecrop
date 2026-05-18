@@ -28,7 +28,7 @@ const routerTestRoutes = [
 	{ path: '/:pathMatch(.*)*', name: 'catch-all', component: { template: '<div/>' } },
 ]
 
-describe('Desktop – internal router (no routeAdapter)', () => {
+describe('Desktop – internal router (no routeAdapter)', { tags: ['component'] }, () => {
 	it('falls back gracefully with no router and no routeAdapter', async () => {
 		const registry = new Registry()
 		const stonecrop = new Stonecrop(registry)
@@ -221,7 +221,7 @@ describe('Desktop – internal router (no routeAdapter)', () => {
 	})
 })
 
-describe('Desktop – currentViewData setter', () => {
+describe('Desktop – currentViewData setter', { tags: ['component'] }, () => {
 	it('updates HST store when AForm emits update:data', async () => {
 		const registry = new Registry()
 		const stonecrop = new Stonecrop(registry)

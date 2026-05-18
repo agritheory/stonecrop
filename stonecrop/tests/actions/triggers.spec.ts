@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { FieldTriggerEngine, getGlobalTriggerEngine, registerGlobalAction } from '../../src/field-triggers'
 import type { FieldChangeContext } from '../../src/types/field-triggers'
 
-describe('Field Trigger System', () => {
+describe('Field Trigger System', { tags: ['unit'] }, () => {
 	let triggerEngine: FieldTriggerEngine
 
 	beforeEach(() => {

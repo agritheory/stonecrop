@@ -12,7 +12,7 @@ import { describe, expect, it } from 'vitest'
 // without interop helpers; vite-node resolves it via the ESM condition and returns
 // a namespace object instead of the constructor. Fixed in Vue 3.6.0+. This is a
 // test-tooling issue only — the GraphQL server works correctly in normal Nuxt builds.
-describe.skip('Basic Resolvers E2E', async () => {
+describe.skip('Basic Resolvers E2E', { tags: ['e2e', 'nuxt', 'graphql'] }, async () => {
 	// Setup Nuxt with the basic fixture
 	await setup({
 		rootDir: fileURLToPath(new URL('../fixtures/basic', import.meta.url)),

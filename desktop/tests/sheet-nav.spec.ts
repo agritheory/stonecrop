@@ -11,7 +11,7 @@ const RouterLinkStub = {
 	template: '<a :href="to"><slot /></a>',
 }
 
-describe('SheetNav', () => {
+describe('SheetNav', { tags: ['component'] }, () => {
 	const globalConfig = {
 		components: { RouterLink: RouterLinkStub },
 	}

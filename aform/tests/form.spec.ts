@@ -6,7 +6,7 @@ import AForm from '../src/components/AForm.vue'
 import ATextInput from '../src/components/form/ATextInput.vue'
 import type { SchemaTypes, FormSchema } from '../src/types'
 
-describe('AForm Component', () => {
+describe('AForm Component', { tags: ['component'] }, () => {
 	const wrapper = mount(AForm, {
 		props: {
 			schema: [

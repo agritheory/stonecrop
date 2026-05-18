@@ -4,7 +4,7 @@ import { mount } from '@vue/test-utils'
 import Confirm from '../../src/components/Confirm.vue'
 import BeamBtn from '../../src/components/BeamBtn.vue'
 
-describe('Confirm', () => {
+describe('Confirm', { tags: ['component'] }, () => {
 	it('renders confirmation message', () => {
 		const wrapper = mount(Confirm, {
 			global: {

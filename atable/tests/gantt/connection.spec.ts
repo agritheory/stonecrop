@@ -7,7 +7,7 @@ import AGanttConnection from '../../src/components/AGanttConnection.vue'
 import { createTableStore } from '../../src/stores/table'
 import type { ConnectionPath, GanttBarInfo, ConnectionHandle } from '../../src/types'
 
-describe('AGanttConnection', () => {
+describe('AGanttConnection', { tags: ['component'] }, () => {
 	let store: ReturnType<typeof createTableStore>
 
 	beforeEach(() => {

@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest'
 import { pglCaslPlugin } from '../src'
 import { createConfigBasedAbilityBuilder } from '../src/middleware/ability'
 
-describe('PostGraphile CASL Plugins', () => {
+describe('PostGraphile CASL Plugins', { tags: ['unit', 'graphql'] }, () => {
 	describe('pglCaslPlugin (extendSchema)', () => {
 		it('should be a valid extendSchema plugin object', () => {
 			expect(pglCaslPlugin).toBeDefined()

@@ -4,7 +4,7 @@ import { mount } from '@vue/test-utils'
 import ActionFooter from '../../src/components/ActionFooter.vue'
 import BeamBtn from '../../src/components/BeamBtn.vue'
 
-describe('ActionFooter', () => {
+describe('ActionFooter', { tags: ['component'] }, () => {
 	it('renders footer element', () => {
 		const wrapper = mount(ActionFooter, {
 			slots: {

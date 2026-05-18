@@ -48,7 +48,7 @@ vi.mock('node:path', () => ({
 	join: vi.fn((...paths: string[]) => paths.join('/')),
 }))
 
-describe('Grafserv Module', () => {
+describe('Grafserv Module', { tags: ['unit', 'nuxt', 'graphql'] }, () => {
 	let module: TestModule
 	let mockNuxt: MockNuxt
 

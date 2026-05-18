@@ -6,7 +6,7 @@ import { describe, it, expect } from 'vitest'
 // without interop helpers; vite-node resolves it via the ESM condition and returns
 // a namespace object instead of the constructor. Fixed in Vue 3.6.0+. This is a
 // test-tooling issue only — the module works correctly in normal Nuxt builds.
-describe.skip('ssr', async () => {
+describe.skip('ssr', { tags: ['e2e', 'nuxt'] }, async () => {
 	await setup({
 		rootDir: resolve(__dirname, 'fixtures/basic'),
 	})

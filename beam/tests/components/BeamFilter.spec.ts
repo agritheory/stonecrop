@@ -5,7 +5,7 @@ import BeamFilter from '../../src/components/BeamFilter.vue'
 import BeamHeading from '../../src/components/BeamHeading.vue'
 import ToggleArrow from '../../src/components/ToggleArrow.vue'
 
-describe('BeamFilter', () => {
+describe('BeamFilter', { tags: ['component'] }, () => {
 	it('renders filter heading', () => {
 		const wrapper = mount(BeamFilter, {
 			global: {

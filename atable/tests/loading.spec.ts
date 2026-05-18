@@ -4,7 +4,7 @@ import { mount } from '@vue/test-utils'
 import ATableLoading from '../src/components/ATableLoading.vue'
 import ATableLoadingBar from '../src/components/ATableLoadingBar.vue'
 
-describe('ATableLoading component', () => {
+describe('ATableLoading component', { tags: ['component'] }, () => {
 	it('should render correctly', () => {
 		const wrapper = mount(ATableLoading)
 
@@ -44,7 +44,7 @@ describe('ATableLoading component', () => {
 	})
 })
 
-describe('ATableLoadingBar component', () => {
+describe('ATableLoadingBar component', { tags: ['component'] }, () => {
 	it('should render correctly', () => {
 		const wrapper = mount(ATableLoadingBar)
 

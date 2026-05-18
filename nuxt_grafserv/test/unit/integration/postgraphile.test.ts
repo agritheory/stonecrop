@@ -13,7 +13,7 @@ import type { PostGraphileInstance } from '../../../src/types'
  * 2. Custom resolvers are added for additional functionality
  * 3. Both PostGraphile queries and custom resolvers work together
  */
-describe('PostGraphile makeSchema Integration', () => {
+describe('PostGraphile makeSchema Integration', { tags: ['e2e', 'nuxt', 'graphql'] }, () => {
 	let postgraphileInstance: PostGraphileInstance
 	let combinedSchema: GraphQLSchema
 

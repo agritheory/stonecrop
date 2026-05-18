@@ -15,7 +15,7 @@ vi.mock('consola', () => ({
 	},
 }))
 
-describe('config utilities', () => {
+describe('config utilities', { tags: ['unit', 'nuxt'] }, () => {
 	beforeEach(() => {
 		vi.clearAllMocks()
 	})

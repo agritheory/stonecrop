@@ -3,7 +3,7 @@ import { mount } from '@vue/test-utils'
 
 import ToggleArrow from '../../src/components/ToggleArrow.vue'
 
-describe('ToggleArrow', () => {
+describe('ToggleArrow', { tags: ['component'] }, () => {
 	it('renders arrow icon', () => {
 		const wrapper = mount(ToggleArrow, {
 			props: {

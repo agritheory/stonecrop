@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 
 import { NotImplementedError } from '../../src/exceptions'
 
-describe('NotImplementedError', () => {
+describe('NotImplementedError', { tags: ['unit'] }, () => {
 	it('creates an error with custom message', () => {
 		const message = 'Test method not implemented'
 		const error = new (NotImplementedError as any)(message)

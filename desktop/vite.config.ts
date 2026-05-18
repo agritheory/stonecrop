@@ -1,5 +1,3 @@
-/// <reference types="vitest" />
-
 import vue from '@vitejs/plugin-vue'
 import { resolve } from 'path'
 import { coverageConfigDefaults, defineConfig } from 'vitest/config'

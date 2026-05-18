@@ -3,7 +3,7 @@ import { mount } from '@vue/test-utils'
 
 import ADate from '../src/components/form/ADate.vue'
 
-describe('date component', () => {
+describe('date component', { tags: ['component'] }, () => {
 	it('date input is rendered', async () => {
 		const wrapper = mount(ADate)
 		const $input = wrapper.find('input')

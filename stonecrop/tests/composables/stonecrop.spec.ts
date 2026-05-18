@@ -50,7 +50,7 @@ const createMockDoctype = (name: string) => {
 	return new Doctype(name, mockSchema, mockWorkflow, mockActions)
 }
 
-describe('useStonecrop composable', () => {
+describe('useStonecrop composable', { tags: ['unit'] }, () => {
 	let mockRouter: any
 	let registry: Registry
 	let stonecrop: Stonecrop
@@ -372,7 +372,7 @@ describe('useStonecrop composable', () => {
 	})
 })
 
-describe('useStonecrop router-based HST integration', () => {
+describe('useStonecrop router-based HST integration', { tags: ['unit'] }, () => {
 	let mockRouter: any
 	let registry: Registry
 	let stonecrop: Stonecrop
@@ -554,7 +554,7 @@ describe('useStonecrop router-based HST integration', () => {
 	})
 })
 
-describe('useStonecrop with string doctype lazy-loading', () => {
+describe('useStonecrop with string doctype lazy-loading', { tags: ['unit'] }, () => {
 	let mockRouter: any
 	let registry: Registry
 	let stonecrop: Stonecrop

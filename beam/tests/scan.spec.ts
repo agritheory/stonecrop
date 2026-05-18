@@ -3,7 +3,7 @@ import { mount } from '@vue/test-utils'
 
 import ScanInput from '../src/components/ScanInput.vue'
 
-describe('scan input component', () => {
+describe('scan input component', { tags: ['component'] }, () => {
 	it('call scan handler prop function when barcode scanner is used', async () => {
 		const wrapper = mount(ScanInput, {
 			props: {

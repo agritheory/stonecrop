@@ -17,7 +17,7 @@ vi.mock('#internal/grafserv/middleware', () => ({
 	default: [],
 }))
 
-describe('Handler Functions', () => {
+describe('Handler Functions', { tags: ['unit', 'nuxt', 'graphql'] }, () => {
 	// Mock grafserv
 	vi.mock('grafserv/h3/v1', () => ({
 		grafserv: vi.fn(() => ({

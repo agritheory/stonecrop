@@ -14,7 +14,7 @@ afterEach(() => {
 	Stonecrop._root = undefined as any
 })
 
-describe('Desktop user interactions', () => {
+describe('Desktop user interactions', { tags: ['component'] }, () => {
 	describe('keyboard shortcuts', () => {
 		it('opens command palette on Ctrl+K', async () => {
 			const registry = new Registry()
@@ -458,7 +458,7 @@ describe('Desktop user interactions', () => {
 	})
 })
 
-describe('Desktop – handleDelete edge cases', () => {
+describe('Desktop – handleDelete edge cases', { tags: ['component'] }, () => {
 	it('returns early when no recordId is available', async () => {
 		const registry = new Registry()
 		const stonecrop = new Stonecrop(registry)

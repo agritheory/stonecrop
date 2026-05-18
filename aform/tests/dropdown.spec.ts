@@ -3,7 +3,7 @@ import { describe, it, expect, vi } from 'vitest'
 
 import ADropdown from '../src/components/form/ADropdown.vue'
 
-describe('dropdown input component', () => {
+describe('dropdown input component', { tags: ['component'] }, () => {
 	const dropdownData = {
 		options: ['Apple', 'Orange', 'Pear', 'Kiwi', 'Grape'],
 		value: 'Orange',

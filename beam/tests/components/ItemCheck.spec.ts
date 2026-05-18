@@ -3,7 +3,7 @@ import { mount } from '@vue/test-utils'
 
 import ItemCheck from '../../src/components/ItemCheck.vue'
 
-describe('ItemCheck', () => {
+describe('ItemCheck', { tags: ['component'] }, () => {
 	it('renders checkbox input', () => {
 		const wrapper = mount(ItemCheck)
 		expect(wrapper.find('input[type="checkbox"]').exists()).toBe(true)

@@ -14,7 +14,7 @@ afterEach(() => {
 	Stonecrop._root = undefined as any
 })
 
-describe('Desktop events', () => {
+describe('Desktop events', { tags: ['component'] }, () => {
 	describe('emit events', () => {
 		let registry: Registry
 		let stonecrop: Stonecrop
@@ -323,7 +323,7 @@ describe('Desktop events', () => {
 	})
 })
 
-describe('Desktop desktopMethods injection', () => {
+describe('Desktop desktopMethods injection', { tags: ['component'] }, () => {
 	let registry: Registry
 	let stonecrop: Stonecrop
 
@@ -448,7 +448,7 @@ describe('Desktop desktopMethods injection', () => {
 	})
 })
 
-describe('Desktop – doNavigate without routeAdapter', () => {
+describe('Desktop – doNavigate without routeAdapter', { tags: ['component'] }, () => {
 	it('emits navigate for all target views when no routeAdapter is provided', async () => {
 		const registry = new Registry()
 		const stonecrop = new Stonecrop(registry)
@@ -480,7 +480,7 @@ describe('Desktop – doNavigate without routeAdapter', () => {
 	})
 })
 
-describe('Desktop – handleActionClick branches', () => {
+describe('Desktop – handleActionClick branches', { tags: ['component'] }, () => {
 	it('does nothing when actionClick is emitted with an undefined action', async () => {
 		const registry = new Registry()
 		const stonecrop = new Stonecrop(registry)

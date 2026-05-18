@@ -3,7 +3,7 @@ import { mount } from '@vue/test-utils'
 
 import BeamHeading from '../../src/components/BeamHeading.vue'
 
-describe('BeamHeading', () => {
+describe('BeamHeading', { tags: ['component'] }, () => {
 	it('renders h1 element', () => {
 		const wrapper = mount(BeamHeading, {
 			slots: {

@@ -21,7 +21,7 @@ const createDoctypeWithLinks = (name: string, links?: Record<string, any>) => {
 	return new Doctype(name, mockSchema, mockWorkflow, Map(), undefined, links)
 }
 
-describe('Registry class', () => {
+describe('Registry class', { tags: ['unit'] }, () => {
 	let registry: Registry
 	let mockRouter: any
 

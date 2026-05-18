@@ -7,7 +7,7 @@ import { Stonecrop } from '../../src/stonecrop'
 import { registerGlobalAction } from '../../src/field-triggers'
 import type { FieldActionFunction } from '../../src/types/field-triggers'
 
-describe('Field Trigger Integration', () => {
+describe('Field Trigger Integration', { tags: ['unit'] }, () => {
 	let registry: Registry
 	let stonecrop: Stonecrop
 

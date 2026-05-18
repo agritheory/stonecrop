@@ -58,7 +58,7 @@ const createDoctype = (name: string, fields?: SchemaTypes[], links?: Record<stri
 	return new Doctype(name, schema as any, workflow, actions, undefined, links)
 }
 
-describe('useStonecrop HST mode', () => {
+describe('useStonecrop HST mode', { tags: ['unit'] }, () => {
 	let registry: Registry
 	let stonecrop: Stonecrop
 
@@ -918,7 +918,7 @@ describe('useStonecrop HST mode', () => {
 	})
 })
 
-describe('useStonecrop base mode', () => {
+describe('useStonecrop base mode', { tags: ['unit'] }, () => {
 	let registry: Registry
 	let stonecrop: Stonecrop
 

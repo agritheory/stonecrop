@@ -18,7 +18,7 @@ function doctype(overrides: Partial<ParsedDoctype> & Pick<ParsedDoctype, 'fileNa
 // RouteStrategyFn — type contract & common usage patterns
 // ---------------------------------------------------------------------------
 
-describe('RouteStrategyFn', () => {
+describe('RouteStrategyFn', { tags: ['unit', 'nuxt'] }, () => {
 	it('accepts a function that maps doctypes to pages', () => {
 		const strategy: RouteStrategyFn = doctypes =>
 			doctypes.map(({ fileName, data, fields }) => ({
@@ -135,7 +135,7 @@ describe('RouteStrategyFn', () => {
 // ParsedDoctype — shape validation
 // ---------------------------------------------------------------------------
 
-describe('ParsedDoctype', () => {
+describe('ParsedDoctype', { tags: ['unit', 'nuxt'] }, () => {
 	it('requires fileName, data, and fields', () => {
 		const dt: ParsedDoctype = {
 			fileName: 'User',

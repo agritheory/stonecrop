@@ -3,7 +3,7 @@ import { mount } from '@vue/test-utils'
 
 import BeamMetadata from '../../src/components/BeamMetadata.vue'
 
-describe('BeamMetadata', () => {
+describe('BeamMetadata', { tags: ['component'] }, () => {
 	const mockOrder = {
 		orderNumber: '123',
 		product: 'Test Product',

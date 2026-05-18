@@ -22,7 +22,7 @@ import ARow from '../src/components/ARow.vue'
 import ATable from '../src/components/ATable.vue'
 import type { TableColumn, TableConfig } from '../src/types'
 
-describe('ATable linkResolver', () => {
+describe('ATable linkResolver', { tags: ['component'] }, () => {
 	config.global.components = { ACell, ARow }
 
 	const cfg: TableConfig = { view: 'list' }
