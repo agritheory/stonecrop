@@ -1,11 +1,12 @@
 import { z } from 'zod'
 
 /**
- * Stonecrop field types - the semantic type of the field.
- * These are consistent across forms and tables.
+ * The complete list of field types built into Stonecrop.
+ * User apps can use any string as a fieldtype; this const is the exhaustive set of types
+ * that Stonecrop provides default components for.
  * @public
  */
-export const StonecropFieldType = z.enum([
+export const BUILTIN_FIELD_TYPES = [
 	'Data', // Short text, varchar
 	'Text', // Long text
 	'Int', // Integer
@@ -20,18 +21,36 @@ export const StonecropFieldType = z.enum([
 	'JSON', // JSON data
 	'Code', // Code/source (with syntax highlighting)
 	'Link', // Reference to another doctype
-	'Doctype', // Child doctype (renders as table)
 	'Attach', // File attachment
 	'Currency', // Currency value
 	'Quantity', // Quantity with unit
 	'Select', // Dropdown selection
-])
+] as const
 
 /**
- * Stonecrop field type enum inferred from Zod schema
+ * Union of all builtin fieldtype string literals.
  * @public
  */
-export type StonecropFieldType = z.infer<typeof StonecropFieldType>
+export type BuiltinFieldType = (typeof BUILTIN_FIELD_TYPES)[number]
+
+/**
+ * Stonecrop field type — any non-empty string is valid; Stonecrop provides default components
+ * for the builtin types listed in {@link BUILTIN_FIELD_TYPES}. Custom fieldtypes are supported
+ * by supplying an explicit `component` on the field definition.
+ * @public
+ */
+export const StonecropFieldType = z.string().min(1).meta({
+	title: 'StonecropFieldType',
+	description: 'Semantic field types for Stonecrop doctypes, consistent across forms and tables',
+})
+
+/**
+ * Returns `true` when `fieldtype` is one of the builtin types Stonecrop ships with.
+ * @public
+ */
+export function isBuiltinFieldType(fieldtype: string): fieldtype is BuiltinFieldType {
+	return (BUILTIN_FIELD_TYPES as readonly string[]).includes(fieldtype)
+}
 
 /**
  * Field template for TYPE_MAP entries.
@@ -46,15 +65,15 @@ export interface FieldTemplate {
 	/**
 	 * The semantic field type (e.g., 'Data', 'Int', 'Select')
 	 */
-	fieldtype: StonecropFieldType
+	fieldtype: BuiltinFieldType
 }
 
 /**
- * Mapping from StonecropFieldType to default Vue component.
+ * Mapping from builtin fieldtypes to their default Vue component.
  * Components can be overridden in the field definition.
  * @public
  */
-export const TYPE_MAP: Record<StonecropFieldType, FieldTemplate> = {
+export const TYPE_MAP: Record<BuiltinFieldType, FieldTemplate> = {
 	// Text
 	Data: { component: 'ATextInput', fieldtype: 'Data' },
 	Text: { component: 'ATextInput', fieldtype: 'Text' },
@@ -68,7 +87,7 @@ export const TYPE_MAP: Record<StonecropFieldType, FieldTemplate> = {
 	Check: { component: 'ACheckbox', fieldtype: 'Check' },
 
 	// Date/Time
-	Date: { component: 'ADatePicker', fieldtype: 'Date' },
+	Date: { component: 'ADate', fieldtype: 'Date' },
 	Time: { component: 'ATimeInput', fieldtype: 'Time' },
 	Datetime: { component: 'ADatetimePicker', fieldtype: 'Datetime' },
 	Duration: { component: 'ADurationInput', fieldtype: 'Duration' },
@@ -80,7 +99,6 @@ export const TYPE_MAP: Record<StonecropFieldType, FieldTemplate> = {
 
 	// Relational
 	Link: { component: 'ALink', fieldtype: 'Link' },
-	Doctype: { component: 'ATable', fieldtype: 'Doctype' },
 
 	// Files
 	Attach: { component: 'AFileAttach', fieldtype: 'Attach' },
@@ -92,11 +110,23 @@ export const TYPE_MAP: Record<StonecropFieldType, FieldTemplate> = {
 }
 
 /**
- * Get the default component for a field type
- * @param fieldtype - The semantic field type
+ * Get the default component for a builtin field type.
+ * For an open-string fieldtype that may be custom, use {@link resolveComponent} instead.
+ * @param fieldtype - A builtin field type
  * @returns The default component name
  * @public
  */
-export function getDefaultComponent(fieldtype: StonecropFieldType): string {
+export function getDefaultComponent(fieldtype: BuiltinFieldType): string {
 	return TYPE_MAP[fieldtype]?.component ?? 'ATextInput'
+}
+
+/**
+ * Resolve the component name for any fieldtype string, falling back to `'ATextInput'`
+ * for unknown custom types.
+ * @param fieldtype - Any fieldtype string (builtin or custom)
+ * @returns The component name to use for rendering
+ * @public
+ */
+export function resolveComponent(fieldtype: string): string {
+	return isBuiltinFieldType(fieldtype) ? getDefaultComponent(fieldtype) : 'ATextInput'
 }

@@ -2,7 +2,6 @@
 	"name": "Example",
 	"slug": "example",
 	"tableName": "examples",
-	"listDoctype": "Example",
 	"schema": [
 		{
 			"component": "ATable",

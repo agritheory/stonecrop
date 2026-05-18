@@ -73,6 +73,14 @@ Vue component exported from @stonecrop/aform.
 import { AForm } from '@stonecrop/aform'
 ```
 
+### AFormLink
+
+Vue component exported from @stonecrop/aform.
+
+```typescript
+import { AFormLink } from '@stonecrop/aform'
+```
+
 ### ANumericInput
 
 Vue component exported from @stonecrop/aform.
@@ -99,6 +107,24 @@ import { Login } from '@stonecrop/aform'
 
 ## Functions
 
+### deserializeFunction
+
+Deserializes a stringified function expression into a typed callable.
+
+Throws if the string cannot be parsed as a function (SyntaxError) or if the resulting expression is not callable (TypeError), or if the expression references an undefined variable (ReferenceError). Callers are responsible for try/catch.
+
+**Signature:**
+
+```typescript
+export declare function deserializeFunction<T extends (...args: any[]) => any>(source: string): T;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| source | `string` |  |
+
 ### install
 
 Install all AForm components
@@ -115,6 +141,40 @@ declare function install(app: App): void;
 |-----------|------|-------------|
 | app | `App` | Vue app instance |
 
+## Interfaces
+
+### AFormLinkNavigator
+
+Navigation contract for AFormLink. Provide via `provide('aformLinkNavigator', ...)` in the app plugin.
+
+**Definition:**
+
+```typescript
+export interface AFormLinkNavigator {
+  navigate(doctype: string, id: string | number): void;
+}
+```
+
+### AFormLinkValue
+
+The value shape for AFormLink — a linked document reference with optional display text
+
+**Definition:**
+
+```typescript
+export interface AFormLinkValue {
+  displayText?: string;
+  id: string | number;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| displayText? | `string` | Display text shown in the input. Falls back to `String(id)` if omitted. |
+| id | `string \| number` | The FK/linked document ID. `id: 0` is a valid ID. |
+
 ## Type Aliases
 
 ### BaseSchema
@@ -127,7 +187,8 @@ Basic field structure for AForm schemas
 export type BaseSchema = {
     fieldname: string;
     component?: string;
-    value?: any;
+    mode?: FormMode;
+    hidden?: boolean;
 };
 ```
 
@@ -143,28 +204,12 @@ export type ComponentProps = {
     label?: string;
     mask?: string;
     required?: boolean;
-    readOnly?: boolean;
+    mode?: FormMode;
     uuid?: string;
     validation?: {
         errorMessage: string;
         [key: string]: any;
     };
-};
-```
-
-### DoctypeSchema
-
-Schema structure for defining nested doctype fields inside AForm
-
-**Definition:**
-
-```typescript
-export type DoctypeSchema = BaseSchema & {
-    fieldtype: 'Doctype';
-    options: string;
-    label?: string;
-    schema?: SchemaTypes[];
-    readOnly?: boolean;
 };
 ```
 
@@ -177,9 +222,19 @@ Schema structure for defining fieldsets inside AForm
 ```typescript
 export type FieldsetSchema = BaseSchema & {
     label?: string;
-    schema?: (FormSchema | TableSchema)[];
+    schema?: SchemaTypes[];
     collapsible?: boolean;
 };
+```
+
+### FormMode
+
+The rendering mode for AForm components
+
+**Definition:**
+
+```typescript
+export type FormMode = 'edit' | 'read' | 'display';
 ```
 
 ### FormSchema
@@ -190,7 +245,7 @@ Schema structure for defining forms inside AForm
 
 ```typescript
 export type FormSchema = BaseSchema & {
-    align?: string;
+    align?: CanvasTextAlign;
     edit?: boolean;
     fieldtype?: string;
     label?: string;
@@ -207,38 +262,29 @@ Superset of all schema types for AForm
 **Definition:**
 
 ```typescript
-export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema | DoctypeSchema | TableDoctypeSchema;
-```
-
-### TableDoctypeSchema
-
-Schema structure for defining 1:many child table fields inside AForm
-
-**Definition:**
-
-```typescript
-export type TableDoctypeSchema = BaseSchema & {
-    fieldtype: 'Table';
-    options: string;
-    label?: string;
-    columns?: TableColumn[];
-    config?: TableConfig;
-    rows?: TableRow[];
-    readOnly?: boolean;
-};
+export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema;
 ```
 
 ### TableSchema
 
-Schema structure for defining tables inside AForm
+Schema structure for defining tables inside AForm.
+
+Two mutually exclusive forms: - **Columns-based** (no `kind`): caller provides `columns` directly - **Schema-delegated** (`kind: 'table'`): caller provides `schema`; ATable runs `schemaToColumns` to derive columns at render time
 
 **Definition:**
 
 ```typescript
 export type TableSchema = BaseSchema & {
-    columns?: TableColumn[];
     config?: TableConfig;
     rows?: TableRow[];
-};
+} & ({
+    columns?: TableColumn[];
+    kind?: never;
+    schema?: never;
+} | {
+    kind: 'table';
+    schema: ColumnSchema[];
+    columns?: never;
+});
 ```
 

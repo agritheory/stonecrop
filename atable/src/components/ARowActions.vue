@@ -234,7 +234,7 @@ const executeAction = (actionType: RowActionType, event?: MouseEvent) => {
 }
 
 .atable-row-actions.dropdown-active {
-	z-index: 500;
+	z-index: 101;
 }
 
 .row-actions-icons {
@@ -321,7 +321,7 @@ const executeAction = (actionType: RowActionType, event?: MouseEvent) => {
 
 .row-actions-menu {
 	position: fixed;
-	z-index: 9999;
+	z-index: 100;
 	min-width: 10rem;
 	padding: 0.25rem 0;
 	background: white;
@@ -331,7 +331,9 @@ const executeAction = (actionType: RowActionType, event?: MouseEvent) => {
 }
 
 .row-actions-menu.menu-flipped {
-	box-shadow: 0 -4px 6px -1px rgb(0 0 0 / 0.1), 0 -2px 4px -2px rgb(0 0 0 / 0.1);
+	box-shadow:
+		0 -4px 6px -1px rgb(0 0 0 / 0.1),
+		0 -2px 4px -2px rgb(0 0 0 / 0.1);
 }
 
 .row-action-menu-item {

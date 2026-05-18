@@ -65,51 +65,69 @@ const config = {
 
 ## Column API
 
-The primary API for ATable is the column object.
+ATable supports two ways to define columns.
 
-- `label`: String; optional (the display label for the column header)
-- `name`: String; required (a reference to the column that must follow rules for valid JS variable naming)
-- `fieldtype`: String; optional (a valid field type, full list [below](#column-data-types))
-- `align`: String; optional (one of `left`, `right` or `center`; defaults to `center`)
-- `edit`: Boolean; optional (indicates if the field is editable; defaults to `false`)
-- `width`: String; optional (used to indicate the width of the cell; defaults to `40ch`)
-- `mask`: Function; optional (a custom mask for the field, several are provided with types by default)
-- `options`: Function; optional (used with `Select`, `Currency`, and `Quantity` fields)
+### Schema-driven columns (recommended)
+
+Pass a `ColumnSchema[]` array via the `:schema` prop. ATable calls `schemaToColumns()` internally —
+`fieldname` becomes `name`, `hidden: true` fields are excluded, and form-only properties are stripped.
+This is the preferred approach when working from doctype definitions.
+
+```vue
+<template>
+  <ATable v-model:rows="rows" :schema="fields" :config="config" />
+</template>
+
+<script setup lang="ts">
+import type { ColumnSchema } from '@stonecrop/schema'
+
+const fields: ColumnSchema[] = [
+  { fieldname: 'name', fieldtype: 'Data', label: 'Name', width: '150px' },
+  { fieldname: 'species', fieldtype: 'Select', label: 'Species', align: 'left', edit: true },
+  { fieldname: 'set_date', fieldtype: 'Date', label: 'Date', width: '30ch', edit: true },
+  { fieldname: 'internal_notes', fieldtype: 'Data', label: 'Notes', hidden: true },
+]
+</script>
+```
+
+`internal_notes` has `hidden: true` and will not appear as a column.
+
+### Runtime columns
+
+Pass `TableColumn[]` via `v-model:columns` when you need reactively updateable columns at runtime
+(e.g. dynamically adding/removing columns, programmatic resizing). `TableColumn` extends `ColumnSchema`
+— the key difference is that `name` is used instead of `fieldname`, and `format`/`modalComponent`
+accept live functions in addition to serialized strings.
+
+- `name`: String; required (column key — corresponds to `fieldname` in ColumnSchema)
+- `label`: String; optional (display label for the column header)
+- `fieldtype`: String; optional (semantic field type — see [Column Data Types](#column-data-types))
+- `align`: String; optional (one of `left`, `right`, `center`, `start`, `end`; defaults to `center`)
+- `edit`: Boolean; optional (whether the cell is editable; defaults to `false`)
+- `width`: String; optional (CSS column width; defaults to `40ch`)
+- `mask`: Function; optional (a custom input mask for the cell)
 
 ```js
-{
-  label: 'Batch Name',
-  name: 'name',
-  fieldtype: 'Data',
-  align: 'right',
-  edit: false,
-},
-{
-  label: 'Species',
-  name: 'species',
-  fieldtype: 'Select',
-  align: 'left',
-  edit: true,
-  width: '30ch',
-  required: true,
-  options: () => ['Rainbow Trout', 'Steelhead', 'Golden Trout', 'Pacific Salmon']
-},
-{
-  label: 'Date',
-  name: 'set_date',
-  fieldtype: 'Date',
-  align: 'center',
-  edit: true,
-  width: '30ch',
-  mask: value => `${value}+/-`,
-}
+const tableColumns = ref([
+  { name: 'batch_name', label: 'Batch Name', fieldtype: 'Data', align: 'right' },
+  { name: 'set_date', label: 'Date', fieldtype: 'Date', align: 'center', edit: true, width: '30ch',
+    mask: value => `${value}+/-` },
+])
 ```
 
 ## v-model:rows and v-model:columns
 
-ATable now requires both rows and columns to be passed as model values using `v-model:rows` and `v-model:columns`. This allows you to dynamically modify both the table data and structure at runtime.
+`v-model:rows` is always required. `v-model:columns` is optional — use it when you need reactive column
+management at runtime. When neither `:schema` nor `v-model:columns` is provided, ATable renders with
+no columns.
 
-### Basic Usage
+### Schema-driven (no v-model:columns needed)
+
+```vue
+<ATable v-model:rows="tableData" :schema="fields" />
+```
+
+### Reactive columns
 
 ```vue
 <template>
@@ -137,21 +155,9 @@ const onColumnsChange = (columns) => {
 ### Features
 
 - **Reactive rows and columns**: Both data and structure can be modified at runtime
-- **Column resizing**: When users resize columns, the model is automatically updated
-- **Event emission**: The `columns:update` event is emitted whenever columns change
-- **Required models**: Both `v-model:rows` and `v-model:columns` are required
-
-### Migration
-
-**Breaking Change**: The `:columns` prop has been removed. Update your existing code:
-
-```vue
-<!-- OLD: This no longer works -->
-<ATable v-model="data" :columns="columns" />
-
-<!-- NEW: Required syntax -->
-<ATable v-model:rows="data" v-model:columns="columns" />
-```## Column Data Types
+- **Schema-driven columns**: Pass `:schema` to let ATable derive columns automatically
+- **Column resizing**: When users resize columns, the `v-model:columns` model is automatically updated
+- **Event emission**: The `columns:update` event is emitted whenever columns change## Column Data Types
 
 `v0.1`
 

@@ -1,0 +1,51 @@
+{
+	"name": "RecipeBlock",
+	"slug": "recipe-block",
+	"tableName": "recipe",
+	"fields": [
+		{
+			"fieldname": "name",
+			"fieldtype": "Data",
+			"component": "ATextInput",
+			"label": "Recipe Name"
+		},
+		{
+			"fieldname": "description",
+			"fieldtype": "Data",
+			"component": "ATextInput",
+			"label": "Description"
+		},
+		{
+			"fieldname": "tasks",
+			"fieldtype": "Link",
+			"component": "ATable",
+			"label": "Tasks (sync + blockWorkflows)",
+			"options": "task"
+		},
+		{
+			"fieldname": "notes",
+			"fieldtype": "Link",
+			"component": "ATable",
+			"label": "Notes (sync + no block)",
+			"options": "task"
+		}
+	],
+	"links": {
+		"tasks": {
+			"target": "task",
+			"cardinality": "noneOrMany",
+			"backlink": "recipe",
+			"fieldname": "tasks",
+			"fetch": { "method": "sync" },
+			"blockWorkflows": true
+		},
+		"notes": {
+			"target": "task",
+			"cardinality": "noneOrMany",
+			"backlink": "recipe",
+			"fieldname": "notes",
+			"fetch": { "method": "sync" },
+			"blockWorkflows": false
+		}
+	}
+}

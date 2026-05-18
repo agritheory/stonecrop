@@ -16,6 +16,7 @@ import ATableHeader from './components/ATableHeader.vue';
 import ATableLoading from './components/ATableLoading.vue';
 import ATableLoadingBar from './components/ATableLoadingBar.vue';
 import ATableModal from './components/ATableModal.vue';
+import type { ColumnSchema } from '@stonecrop/schema';
 import { ComputedRef } from 'vue';
 import { CSSProperties } from 'vue';
 import DeleteIcon from './stonecrop-ui-icon-delete.svg?raw';
@@ -121,13 +122,19 @@ export const createTableStore: (initData: {
     id?: string;
     config?: TableConfig;
     modal?: TableModal;
+    linkResolver?: ((doctype: string, id: string) => Promise<string | undefined>) | null;
 }) => Store<`table-${string}`, Pick<{
 columns: Ref<    {
 name: string;
-align?: CanvasTextAlign | undefined;
-edit?: boolean | undefined;
-label?: string | undefined;
+format?: string | ((value: any, context: CellContext) => string) | undefined;
+modalComponent?: string | ((context: CellContext) => string) | undefined;
+mask?: ((value: any) => any) | undefined;
+linkDoctype?: string | undefined;
+readonly originalIndex?: number | undefined;
 fieldtype?: string | undefined;
+label?: string | undefined;
+align?: "left" | "right" | "center" | "start" | "end" | undefined;
+edit?: boolean | undefined;
 width?: string | undefined;
 pinned?: boolean | undefined;
 resizable?: boolean | undefined;
@@ -138,20 +145,21 @@ filterOptions?: any[] | undefined;
 filterComponent?: string | undefined;
 cellComponent?: string | undefined;
 cellComponentProps?: Record<string, any> | undefined;
-modalComponent?: string | ((context: CellContext) => string) | undefined;
 modalComponentExtraProps?: Record<string, any> | undefined;
-format?: string | ((value: any, context: CellContext) => string) | undefined;
-mask?: ((value: any) => any) | undefined;
 isGantt?: boolean | undefined;
 ganttComponent?: string | undefined;
 colspan?: number | undefined;
-originalIndex?: number | undefined;
 }[], TableColumn[] | {
 name: string;
-align?: CanvasTextAlign | undefined;
-edit?: boolean | undefined;
-label?: string | undefined;
+format?: string | ((value: any, context: CellContext) => string) | undefined;
+modalComponent?: string | ((context: CellContext) => string) | undefined;
+mask?: ((value: any) => any) | undefined;
+linkDoctype?: string | undefined;
+readonly originalIndex?: number | undefined;
 fieldtype?: string | undefined;
+label?: string | undefined;
+align?: "left" | "right" | "center" | "start" | "end" | undefined;
+edit?: boolean | undefined;
 width?: string | undefined;
 pinned?: boolean | undefined;
 resizable?: boolean | undefined;
@@ -162,14 +170,10 @@ filterOptions?: any[] | undefined;
 filterComponent?: string | undefined;
 cellComponent?: string | undefined;
 cellComponentProps?: Record<string, any> | undefined;
-modalComponent?: string | ((context: CellContext) => string) | undefined;
 modalComponentExtraProps?: Record<string, any> | undefined;
-format?: string | ((value: any, context: CellContext) => string) | undefined;
-mask?: ((value: any) => any) | undefined;
 isGantt?: boolean | undefined;
 ganttComponent?: string | undefined;
 colspan?: number | undefined;
-originalIndex?: number | undefined;
 }[]>;
 config: Ref<    {
 view?: "uncounted" | "list" | "list-expansion" | undefined;
@@ -749,25 +753,18 @@ direction: "asc" | "desc" | null;
 column: number | null;
 direction: "asc" | "desc" | null;
 }>;
-table: ComputedRef<    {}>;
+table: ComputedRef<Record<string, any>>;
 updates: Ref<Record<string, string>, Record<string, string>>;
-filteredRows: ComputedRef<    {
+filteredRows: ComputedRef<(TableRow & {
 originalIndex: number;
-indent?: number | undefined;
-parent?: number | undefined;
-gantt?: {
-color?: string | undefined;
-startIndex?: number | undefined;
-endIndex?: number | undefined;
-colspan?: number | undefined;
-} | undefined;
-}[]>;
+})[]>;
 hasPinnedColumns: ComputedRef<boolean>;
 isGanttView: ComputedRef<boolean>;
 isTreeView: ComputedRef<boolean>;
 isDependencyGraphEnabled: ComputedRef<boolean>;
 numberedRowWidth: ComputedRef<string>;
 zeroColumn: ComputedRef<boolean>;
+linkResolver: ((doctype: string, id: string) => Promise<string | undefined>) | null;
 addRow: (rowData?: Partial<TableRow>, position?: "start" | "end" | number) => number;
 clearFilter: (colIndex: number) => void;
 closeModal: (event: MouseEvent) => void;
@@ -829,13 +826,18 @@ unregisterConnectionHandle: (handleId: string) => void;
 unregisterGanttBar: (barId: string) => void;
 updateGanttBar: (event: GanttDragEvent) => void;
 updateRows: (newRows: TableRow[]) => void;
-}, "columns" | "config" | "connectionHandles" | "connectionPaths" | "filterState" | "ganttBars" | "modal" | "rows" | "sortState" | "updates">, Pick<{
+}, "columns" | "config" | "connectionHandles" | "connectionPaths" | "filterState" | "ganttBars" | "modal" | "rows" | "sortState" | "updates" | "linkResolver">, Pick<{
 columns: Ref<    {
 name: string;
-align?: CanvasTextAlign | undefined;
-edit?: boolean | undefined;
-label?: string | undefined;
+format?: string | ((value: any, context: CellContext) => string) | undefined;
+modalComponent?: string | ((context: CellContext) => string) | undefined;
+mask?: ((value: any) => any) | undefined;
+linkDoctype?: string | undefined;
+readonly originalIndex?: number | undefined;
 fieldtype?: string | undefined;
+label?: string | undefined;
+align?: "left" | "right" | "center" | "start" | "end" | undefined;
+edit?: boolean | undefined;
 width?: string | undefined;
 pinned?: boolean | undefined;
 resizable?: boolean | undefined;
@@ -846,20 +848,21 @@ filterOptions?: any[] | undefined;
 filterComponent?: string | undefined;
 cellComponent?: string | undefined;
 cellComponentProps?: Record<string, any> | undefined;
-modalComponent?: string | ((context: CellContext) => string) | undefined;
 modalComponentExtraProps?: Record<string, any> | undefined;
-format?: string | ((value: any, context: CellContext) => string) | undefined;
-mask?: ((value: any) => any) | undefined;
 isGantt?: boolean | undefined;
 ganttComponent?: string | undefined;
 colspan?: number | undefined;
-originalIndex?: number | undefined;
 }[], TableColumn[] | {
 name: string;
-align?: CanvasTextAlign | undefined;
-edit?: boolean | undefined;
-label?: string | undefined;
+format?: string | ((value: any, context: CellContext) => string) | undefined;
+modalComponent?: string | ((context: CellContext) => string) | undefined;
+mask?: ((value: any) => any) | undefined;
+linkDoctype?: string | undefined;
+readonly originalIndex?: number | undefined;
 fieldtype?: string | undefined;
+label?: string | undefined;
+align?: "left" | "right" | "center" | "start" | "end" | undefined;
+edit?: boolean | undefined;
 width?: string | undefined;
 pinned?: boolean | undefined;
 resizable?: boolean | undefined;
@@ -870,14 +873,10 @@ filterOptions?: any[] | undefined;
 filterComponent?: string | undefined;
 cellComponent?: string | undefined;
 cellComponentProps?: Record<string, any> | undefined;
-modalComponent?: string | ((context: CellContext) => string) | undefined;
 modalComponentExtraProps?: Record<string, any> | undefined;
-format?: string | ((value: any, context: CellContext) => string) | undefined;
-mask?: ((value: any) => any) | undefined;
 isGantt?: boolean | undefined;
 ganttComponent?: string | undefined;
 colspan?: number | undefined;
-originalIndex?: number | undefined;
 }[]>;
 config: Ref<    {
 view?: "uncounted" | "list" | "list-expansion" | undefined;
@@ -1457,25 +1456,18 @@ direction: "asc" | "desc" | null;
 column: number | null;
 direction: "asc" | "desc" | null;
 }>;
-table: ComputedRef<    {}>;
+table: ComputedRef<Record<string, any>>;
 updates: Ref<Record<string, string>, Record<string, string>>;
-filteredRows: ComputedRef<    {
+filteredRows: ComputedRef<(TableRow & {
 originalIndex: number;
-indent?: number | undefined;
-parent?: number | undefined;
-gantt?: {
-color?: string | undefined;
-startIndex?: number | undefined;
-endIndex?: number | undefined;
-colspan?: number | undefined;
-} | undefined;
-}[]>;
+})[]>;
 hasPinnedColumns: ComputedRef<boolean>;
 isGanttView: ComputedRef<boolean>;
 isTreeView: ComputedRef<boolean>;
 isDependencyGraphEnabled: ComputedRef<boolean>;
 numberedRowWidth: ComputedRef<string>;
 zeroColumn: ComputedRef<boolean>;
+linkResolver: ((doctype: string, id: string) => Promise<string | undefined>) | null;
 addRow: (rowData?: Partial<TableRow>, position?: "start" | "end" | number) => number;
 clearFilter: (colIndex: number) => void;
 closeModal: (event: MouseEvent) => void;
@@ -1540,10 +1532,15 @@ updateRows: (newRows: TableRow[]) => void;
 }, "display" | "table" | "filteredRows" | "hasPinnedColumns" | "isGanttView" | "isTreeView" | "isDependencyGraphEnabled" | "numberedRowWidth" | "zeroColumn">, Pick<{
 columns: Ref<    {
 name: string;
-align?: CanvasTextAlign | undefined;
-edit?: boolean | undefined;
-label?: string | undefined;
+format?: string | ((value: any, context: CellContext) => string) | undefined;
+modalComponent?: string | ((context: CellContext) => string) | undefined;
+mask?: ((value: any) => any) | undefined;
+linkDoctype?: string | undefined;
+readonly originalIndex?: number | undefined;
 fieldtype?: string | undefined;
+label?: string | undefined;
+align?: "left" | "right" | "center" | "start" | "end" | undefined;
+edit?: boolean | undefined;
 width?: string | undefined;
 pinned?: boolean | undefined;
 resizable?: boolean | undefined;
@@ -1554,20 +1551,21 @@ filterOptions?: any[] | undefined;
 filterComponent?: string | undefined;
 cellComponent?: string | undefined;
 cellComponentProps?: Record<string, any> | undefined;
-modalComponent?: string | ((context: CellContext) => string) | undefined;
 modalComponentExtraProps?: Record<string, any> | undefined;
-format?: string | ((value: any, context: CellContext) => string) | undefined;
-mask?: ((value: any) => any) | undefined;
 isGantt?: boolean | undefined;
 ganttComponent?: string | undefined;
 colspan?: number | undefined;
-originalIndex?: number | undefined;
 }[], TableColumn[] | {
 name: string;
-align?: CanvasTextAlign | undefined;
-edit?: boolean | undefined;
-label?: string | undefined;
+format?: string | ((value: any, context: CellContext) => string) | undefined;
+modalComponent?: string | ((context: CellContext) => string) | undefined;
+mask?: ((value: any) => any) | undefined;
+linkDoctype?: string | undefined;
+readonly originalIndex?: number | undefined;
 fieldtype?: string | undefined;
+label?: string | undefined;
+align?: "left" | "right" | "center" | "start" | "end" | undefined;
+edit?: boolean | undefined;
 width?: string | undefined;
 pinned?: boolean | undefined;
 resizable?: boolean | undefined;
@@ -1578,14 +1576,10 @@ filterOptions?: any[] | undefined;
 filterComponent?: string | undefined;
 cellComponent?: string | undefined;
 cellComponentProps?: Record<string, any> | undefined;
-modalComponent?: string | ((context: CellContext) => string) | undefined;
 modalComponentExtraProps?: Record<string, any> | undefined;
-format?: string | ((value: any, context: CellContext) => string) | undefined;
-mask?: ((value: any) => any) | undefined;
 isGantt?: boolean | undefined;
 ganttComponent?: string | undefined;
 colspan?: number | undefined;
-originalIndex?: number | undefined;
 }[]>;
 config: Ref<    {
 view?: "uncounted" | "list" | "list-expansion" | undefined;
@@ -2165,25 +2159,18 @@ direction: "asc" | "desc" | null;
 column: number | null;
 direction: "asc" | "desc" | null;
 }>;
-table: ComputedRef<    {}>;
+table: ComputedRef<Record<string, any>>;
 updates: Ref<Record<string, string>, Record<string, string>>;
-filteredRows: ComputedRef<    {
+filteredRows: ComputedRef<(TableRow & {
 originalIndex: number;
-indent?: number | undefined;
-parent?: number | undefined;
-gantt?: {
-color?: string | undefined;
-startIndex?: number | undefined;
-endIndex?: number | undefined;
-colspan?: number | undefined;
-} | undefined;
-}[]>;
+})[]>;
 hasPinnedColumns: ComputedRef<boolean>;
 isGanttView: ComputedRef<boolean>;
 isTreeView: ComputedRef<boolean>;
 isDependencyGraphEnabled: ComputedRef<boolean>;
 numberedRowWidth: ComputedRef<string>;
 zeroColumn: ComputedRef<boolean>;
+linkResolver: ((doctype: string, id: string) => Promise<string | undefined>) | null;
 addRow: (rowData?: Partial<TableRow>, position?: "start" | "end" | number) => number;
 clearFilter: (colIndex: number) => void;
 closeModal: (event: MouseEvent) => void;
@@ -2399,30 +2386,16 @@ export interface RowMoveEvent {
 }
 
 // @public
-export interface TableColumn {
-    align?: CanvasTextAlign;
-    cellComponent?: string;
-    cellComponentProps?: Record<string, any>;
-    colspan?: number;
-    edit?: boolean;
-    fieldtype?: string;
-    filterable?: boolean;
-    filterComponent?: string;
-    filterOptions?: any[];
-    filterType?: 'text' | 'select' | 'number' | 'date' | 'dateRange' | 'checkbox' | 'component';
+export function schemaToColumns(schema: ColumnSchema[]): TableColumn[];
+
+// @public
+export interface TableColumn extends Omit<ColumnSchema, 'fieldname' | 'hidden' | 'format' | 'modalComponent'> {
     format?: string | ((value: any, context: CellContext) => string);
-    ganttComponent?: string;
-    isGantt?: boolean;
-    label?: string;
+    linkDoctype?: string;
     mask?: (value: any) => any;
     modalComponent?: string | ((context: CellContext) => string);
-    modalComponentExtraProps?: Record<string, any>;
     name: string;
-    originalIndex?: number;
-    pinned?: boolean;
-    resizable?: boolean;
-    sortable?: boolean;
-    width?: string;
+    readonly originalIndex?: number;
 }
 
 // @public

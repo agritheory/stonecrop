@@ -164,7 +164,6 @@ export async function runInstaller(options: InstallerOptions): Promise<void> {
 		consola.info(`   - doctypes/Example.json`)
 		consola.info(`   - doctypes/example-table.json`)
 		console.log()
-		stepNum++
 	}
 
 	consola.info(`Start development server:`)

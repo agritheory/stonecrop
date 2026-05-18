@@ -14,11 +14,12 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 REPO_ROOT="$( cd "$SCRIPT_DIR/../.." && pwd )"
 DOC_TOOLS_DIR="$REPO_ROOT/common/autoinstallers/doc-tools"
 
-# Ensure doc-tools is installed
+# Ensure doc-tools is installed.
+# In CI this is pre-installed by the workflow before rush build starts.
+# In local dev (node_modules absent), call update-autoinstaller outside any rush build context.
 if [ ! -d "$DOC_TOOLS_DIR/node_modules" ]; then
   echo "📦 Installing doc-tools..."
-  cd "$DOC_TOOLS_DIR"
-  pnpm install --silent
+  node "$REPO_ROOT/common/scripts/install-run-rush.js" update-autoinstaller --name doc-tools
 fi
 
 # Parse arguments
@@ -41,7 +42,7 @@ fi
 # Generate single package docs if specified
 if [ -n "$PACKAGE_NAME" ]; then
   cd "$DOC_TOOLS_DIR"
-  node generate-docs.mjs "$PACKAGE_NAME"
+  node generate-docs.cjs "$PACKAGE_NAME"
 fi
 
 # Aggregate all docs if requested

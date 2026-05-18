@@ -29,7 +29,7 @@ export default defineConfig(
 			},
 			parserOptions: {
 				projectService: {
-					allowDefaultProject: ['tests/**/*.ts', 'tests/**/*.spec.ts'],
+					allowDefaultProject: ['tests/*.ts'],
 				},
 				tsconfigRootDir: import.meta.dirname,
 				extraFileExtensions: ['.vue'],

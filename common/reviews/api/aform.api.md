@@ -12,9 +12,11 @@ import ADropdown from './components/form/ADropdown.vue';
 import AFieldset from './components/form/AFieldset.vue';
 import AFileAttach from './components/form/AFileAttach.vue';
 import AForm from './components/AForm.vue';
+import AFormLink from './components/form/AFormLink.vue';
 import ANumericInput from './components/form/ANumericInput.vue';
 import type { App } from 'vue';
 import ATextInput from './components/form/ATextInput.vue';
+import type { ColumnSchema } from '@stonecrop/schema';
 import Login from './components/utilities/Login.vue';
 import type { TableColumn } from '@stonecrop/atable';
 import type { TableConfig } from '@stonecrop/atable';
@@ -36,6 +38,21 @@ export { AFileAttach }
 
 export { AForm }
 
+export { AFormLink }
+
+// @public
+export interface AFormLinkNavigator {
+    navigate(doctype: string, id: string | number): void;
+}
+
+// @public
+export interface AFormLinkValue {
+    // (undocumented)
+    [extra: string]: any;
+    displayText?: string;
+    id: string | number;
+}
+
 export { ANumericInput }
 
 export { ATextInput }
@@ -44,7 +61,8 @@ export { ATextInput }
 export type BaseSchema = {
     fieldname: string;
     component?: string;
-    value?: any;
+    mode?: FormMode;
+    hidden?: boolean;
 };
 
 // @public
@@ -53,7 +71,7 @@ export type ComponentProps = {
     label?: string;
     mask?: string;
     required?: boolean;
-    readOnly?: boolean;
+    mode?: FormMode;
     uuid?: string;
     validation?: {
         errorMessage: string;
@@ -62,24 +80,21 @@ export type ComponentProps = {
 };
 
 // @public
-export type DoctypeSchema = BaseSchema & {
-    fieldtype: 'Doctype';
-    options: string;
-    label?: string;
-    schema?: SchemaTypes[];
-    readOnly?: boolean;
-};
+export function deserializeFunction<T extends (...args: any[]) => any>(source: string): T;
 
 // @public
 export type FieldsetSchema = BaseSchema & {
     label?: string;
-    schema?: (FormSchema | TableSchema)[];
+    schema?: SchemaTypes[];
     collapsible?: boolean;
 };
 
 // @public
+export type FormMode = 'edit' | 'read' | 'display';
+
+// @public
 export type FormSchema = BaseSchema & {
-    align?: string;
+    align?: CanvasTextAlign;
     edit?: boolean;
     fieldtype?: string;
     label?: string;
@@ -94,25 +109,21 @@ export function install(app: App): void;
 export { Login }
 
 // @public
-export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema | DoctypeSchema | TableDoctypeSchema;
-
-// @public
-export type TableDoctypeSchema = BaseSchema & {
-    fieldtype: 'Table';
-    options: string;
-    label?: string;
-    columns?: TableColumn[];
-    config?: TableConfig;
-    rows?: TableRow[];
-    readOnly?: boolean;
-};
+export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema;
 
 // @public
 export type TableSchema = BaseSchema & {
-    columns?: TableColumn[];
     config?: TableConfig;
     rows?: TableRow[];
-};
+} & ({
+    columns?: TableColumn[];
+    kind?: never;
+    schema?: never;
+} | {
+    kind: 'table';
+    schema: ColumnSchema[];
+    columns?: never;
+});
 
 
 export * from "@stonecrop/atable/types";

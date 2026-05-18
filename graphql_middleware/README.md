@@ -1,82 +1,70 @@
 # @stonecrop/graphql-middleware
 
-GraphQL backend for the Stonecrop framework. Provides a generic, ORM-like interface over PostGraphile.
+GraphQL backend for the Stonecrop framework. Reads doctype schemas and exposes them as GraphQL resolvers that handle query construction, response parsing, and action dispatch.
 
-## Usage
+Currently integrated with PostGraphile (to be extracted into a swappable adapter in the future).
 
-### Server Setup
+## What it does
+
+- **Query construction** — Builds GraphQL queries from doctype metadata, respecting fetch strategies and nesting depth
+- **Response merging** — Flattens connection format (`{ nodes: [...] }`) into plain arrays
+- **Action dispatch** — Routes doctype actions to registered handlers
+
+## How it works
+
+Doctype schemas declare fields, relationships, and workflow. The middleware uses that schema to:
+
+1. Accept a `doctype` and optional `options` from the client
+2. Build a query with field selections and (if `includeNested` is set) nested sub-selections for related records
+3. Execute against the GraphQL engine and merge the response
+4. Return flat data to the client
+
+The client never constructs queries — it passes `includeNested` through and receives pre-merged results.
+
+## Setup
+
+The middleware is a PostGraphile plugin. It needs an executor to bridge between the middleware's query strings and your GraphQL engine:
 
 ```typescript
 import { createServer } from 'postgraphile/grafserv/h3/v1'
-import { grafserv } from 'postgraphile/grafserv'
 import { PostGraphileAmberPreset } from 'postgraphile/presets/amber'
 import { makePgService } from 'postgraphile/adaptors/pg'
+import { graphql } from 'graphql'
 import {
   createStonecropPlugin,
   loadDoctypes,
   registerBuiltinHandlers,
-  registerHandler,
 } from '@stonecrop/graphql-middleware'
 
-// Load doctype definitions from JSON files
+// Scan doctype JSON files and register them with the middleware
 loadDoctypes('./doctypes')
 
-// Register action handlers
+// Register built-in action handlers (submit, approve, etc.)
 registerBuiltinHandlers()
-registerHandler('submitOrder', async (args, ctx) => {
-  const [orderId] = args as [string]
-  // Custom business logic
-  return { submitted: true }
-})
 
-// Create executor for the plugin to use
+// Executor bridges the middleware's query strings and your GraphQL engine
 const executor = {
   async query(query: string, variables?: Record<string, unknown>) {
-    // Execute against PostGraphile's internal schema
-    return graphqlExecute(schema, query, variables)
+    return graphql({ schema, source: query, variableValues: variables })
   },
   async mutate(mutation: string, variables?: Record<string, unknown>) {
-    return this.query(mutation, variables)
+    return graphql({ schema, source: mutation, variableValues: variables })
   },
 }
 
+// PostGraphile configuration
 const preset: GraphileConfig.Preset = {
-  extends: [PostGraphileAmberPreset],
-  plugins: [createStonecropPlugin({ executor })],
-  pgServices: [
-    makePgService({
-      connectionString: process.env.DATABASE_URL,
-    }),
-  ],
+  extends: [PostGraphileAmberPreset], // Base preset with PostgreSQL integration
+  plugins: [createStonecropPlugin({ executor })], // Stonecrop GraphQL resolvers
+  pgServices: [makePgService({ connectionString: process.env.DATABASE_URL })], // Database connection
 }
 ```
 
-### Client Usage
+The middleware builds PostGraphile-formatted query strings (e.g., `SalesOrderById`, `SalesOrderItemsBySalesOrderId`). The executor runs them — it doesn't control what queries are constructed.
 
-```typescript
-import { StonecropClient } from '@stonecrop/graphql-middleware'
+## Doctype Schemas
 
-const client = new StonecropClient({
-  endpoint: 'http://localhost:4000/graphql',
-})
-
-// Get doctype metadata
-const meta = await client.getMeta({ doctype: 'SalesOrder' })
-
-// Fetch records
-const orders = await client.getRecords(meta, {
-  limit: 10,
-  orderBy: 'createdAt',
-})
-
-// Fetch single record
-const order = await client.getRecord(meta, 'uuid-here')
-
-// Run an action
-const result = await client.runAction(meta, 'submit', [order.id])
-```
-
-### Doctype Definition
+The middleware loads doctype definitions from JSON files. Each file defines a doctype's structure:
 
 ```json
 {
@@ -84,24 +72,67 @@ const result = await client.runAction(meta, 'submit', [order.id])
   "tableName": "sales_orders",
   "fields": [
     { "fieldname": "id", "fieldtype": "UUID" },
-    { "fieldname": "customer", "fieldtype": "Link", "required": true },
-    { "fieldname": "status", "fieldtype": "Select" },
-    { "fieldname": "total", "fieldtype": "Currency" }
+    { "fieldname": "status", "fieldtype": "Select" }
   ],
+  "links": {
+    "items": {
+      "target": "sales-order-item",
+      "cardinality": "noneOrMany",
+      "backlink": "sales_order"
+    }
+  },
   "workflow": {
-    "states": ["Draft", "Submitted", "Cancelled"],
+    "states": ["Draft", "Submitted"],
     "actions": {
-      "submit": {
-        "label": "Submit",
-        "handler": "submitOrder",
-        "requiredFields": ["customer"],
-        "allowedStates": ["Draft"]
-      }
+      "submit": { "label": "Submit", "handler": "submitOrder" }
     }
   }
 }
 ```
 
-## References
+The `links` object declares relationships used when `includeNested` is requested. The `workflow` object enables action dispatch.
 
-For full method signatures and parameter details, see [API Reference](./api.md).
+### Display-only fields
+
+Fields with `fieldtype: "Display"` are excluded from the auto-generated scalar query. Use this for composite UI components (e.g. a canvas visualisation) that have no backing database column:
+
+```json
+{ "fieldname": "planner", "fieldtype": "Display", "component": "Planner", "label": "Resource Planner" }
+```
+
+All other non-`Link` fieldtypes are assumed to map to a scalar DB column and are included in the query.
+
+## Architecture
+
+### Why the middleware builds queries
+
+The client (`@stonecrop/graphql-client`) is intentionally transport-only — it sends requests and receives flat data. It never constructs GraphQL queries. All query generation lives in the middleware, which is the only layer aware of PostGraphile naming conventions (inflection).
+
+This boundary exists because PostGraphile's schema naming is configurable. A single application might use `ById` for UUID primary keys, `ByRowId` for `row_id` columns, or entirely custom conventions. If the client hardcoded any of these conventions, it would silently generate wrong queries for any non-default setup. By keeping query construction server-side, the middleware's `StonecropInflectionConfig` becomes the single source of truth.
+
+## Actions
+
+Actions are custom logic triggered by the client. Register handlers with `registerHandler`:
+
+```typescript
+registerHandler('submitOrder', async (args, ctx) => {
+  const [orderId] = args as [string]
+  return { submitted: true }
+})
+```
+
+The `args` are passed from the client, and `ctx` provides the doctype metadata and GraphQL executor.
+
+## API
+
+The middleware exposes these GraphQL operations:
+
+| Operation | Description |
+|-----------|-------------|
+| `stonecropRecord(doctype, id, options?)` | Fetch a single record, optionally with nested links |
+| `stonecropRecords(doctype, filters?, orderBy?, limit?, offset?, options?)` | Fetch multiple records |
+| `stonecropMeta(doctype)` | Fetch doctype metadata |
+| `stonecropAllMeta` | Fetch all doctype metadata |
+| `stonecropAction(doctype, action, args?)` | Execute a doctype action |
+
+For type signatures and detailed parameters, see [API Reference](./api.md).

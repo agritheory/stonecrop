@@ -38,4 +38,14 @@ describe('createStonecropPlugin', () => {
 		})
 		expect(plugin).toBeDefined()
 	})
+
+	it('accepts reverseConnectionName override', () => {
+		const plugin = createStonecropPlugin({
+			executor: mockExecutor,
+			inflection: {
+				reverseConnectionName: ({ target }) => `Custom_${target}`,
+			},
+		})
+		expect(plugin).toBeDefined()
+	})
 })

@@ -17,4 +17,21 @@ describe('numeric input component', () => {
 		expect(updateEvents).toHaveLength(1)
 		expect(updateEvents![0]).toEqual([26])
 	})
+
+	it('is disabled in read mode', () => {
+		const w = mount(ANumericInput, { props: { modelValue: 42, label: 'Amount', mode: 'read' } })
+		expect(w.find('input').attributes()).toHaveProperty('disabled')
+	})
+
+	it('renders value in display mode without input', () => {
+		const w = mount(ANumericInput, { props: { modelValue: 42, label: 'Amount', mode: 'display' } })
+		expect(w.find('input').exists()).toBe(false)
+		expect(w.find('.aform_display-value').text()).toBe('42')
+	})
+
+	it('renders empty string in display mode when no value', () => {
+		const w = mount(ANumericInput, { props: { label: 'Amount', mode: 'display' } })
+		expect(w.find('input').exists()).toBe(false)
+		expect(w.find('.aform_display-value').text()).toBe('')
+	})
 })

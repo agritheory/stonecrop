@@ -246,7 +246,10 @@ a:focus {
 	overflow: hidden;
 	/* Animation for smooth expand/collapse */
 	max-width: 2.4rem;
-	transition: max-width 0.35s ease-in-out, padding 0.35s ease-in-out, background 0.2s ease;
+	transition:
+		max-width 0.35s ease-in-out,
+		padding 0.35s ease-in-out,
+		background 0.2s ease;
 }
 
 .searchtab .search-icon {

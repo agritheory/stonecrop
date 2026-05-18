@@ -1,32 +1,17 @@
 import type { DirectiveBinding } from 'vue'
 
-import type { FormSchema } from '../types'
-
-/**
- * Named masks for common input types
- */
-const NAMED_MASKS = {
-	date: '##/##/####',
-	datetime: '####/##/## ##:##',
-	time: '##:##',
-	fulltime: '##:##:##',
-	phone: '(###) ### - ####',
-	card: '#### #### #### ####',
-}
+import { deserializeFunction } from '../utils/deserialize'
 
 /**
  * Extracts a mask function from a stringified function
  * @param mask - Mask string
- * @returns Mask function
+ * @returns Mask function, or undefined if the string is not a valid function expression
  */
-function extractMaskFn(mask: string): ((args: any) => string) | void {
+function extractMaskFn(mask: string): ((locale: any) => string) | undefined {
 	try {
-		// eslint-disable-next-line @typescript-eslint/no-implied-eval, @typescript-eslint/no-unsafe-call
-		return Function(`"use strict";return (${mask})`)()
-	} catch (error) {
-		if (error instanceof ReferenceError) {
-			// assume mask is a string
-		}
+		return deserializeFunction<(locale: any) => string>(mask)
+	} catch {
+		return undefined
 	}
 }
 
@@ -36,23 +21,15 @@ function extractMaskFn(mask: string): ((args: any) => string) | void {
  * @returns Mask string
  */
 function getMask(binding: DirectiveBinding<string>) {
-	let mask = binding.value
+	const mask = binding.value
+	if (!mask) return undefined
 
-	if (mask) {
-		const maskFn = extractMaskFn(mask)
-		if (maskFn) {
-			// TODO: (state) replace with state management;
-			// pass the entire form/table data to the function
-			const locale = binding.instance?.['locale']
-			mask = maskFn(locale)
-		}
-	} else {
-		// TODO: (state) handle using state management
-		const schema = binding.instance?.['schema'] as FormSchema
-		const fieldType: string | undefined = schema?.fieldtype?.toLowerCase()
-		if (fieldType && NAMED_MASKS[fieldType]) {
-			mask = NAMED_MASKS[fieldType]
-		}
+	const maskFn = extractMaskFn(mask)
+	if (maskFn) {
+		// TODO: (state) replace with state management;
+		// pass the entire form/table data to the function
+		const locale = (binding.instance as Record<string, unknown> | null)?.['locale']
+		return maskFn(locale)
 	}
 
 	return mask
@@ -127,8 +104,9 @@ export function useStringMask(el: HTMLInputElement, binding: DirectiveBinding<st
 		// most likely fixed with state management;
 		// a better way could be to emit back to instance;
 
-		if (binding.instance?.['maskFilled']) {
-			binding.instance['maskFilled'] = !replacement.includes(maskToken)
+		const instance = binding.instance as Record<string, unknown> | null
+		if (instance?.['maskFilled']) {
+			instance['maskFilled'] = !replacement.includes(maskToken)
 		}
 
 		el.value = replacement

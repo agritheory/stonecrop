@@ -20,28 +20,16 @@ Vue component exported from @stonecrop/graphql_middleware.
 import { ValidationError } from '@stonecrop/graphql_middleware'
 ```
 
-## Other Components
-
-### RELATION_FIELDTYPES
-
-```typescript
-export { RELATION_FIELDTYPES }
-```
-
 ## Functions
 
 ### buildListQuery
 
-Build a GraphQL connection query to fetch a list of records. Only declares variables ($limit, $offset, $orderBy) that are actually used in the query, avoiding GraphQL spec §5.8.3 violations from unused variable declarations. Excludes Link and Doctype relation fields from the selection set.
+Build a GraphQL connection query to fetch a list of records. Only declares variables ($limit, $offset, $orderBy) that are actually used in the query, avoiding GraphQL spec §5.8.3 violations from unused variable declarations. Excludes Link relation fields and Display fields from the selection set.
 
 **Signature:**
 
 ```typescript
-declare function buildListQuery(meta: DoctypeMeta, args: {
-    limit?: number;
-    offset?: number;
-    orderBy?: string;
-}, connectionFieldName: (t: string) => string, orderByTypeName: (t: string) => string): string;
+declare function buildListQuery(meta: DoctypeMeta, args: BuildListQueryArgs, connectionFieldName: (t: string) => string, orderByTypeName: (t: string) => string): string;
 ```
 
 **Parameters:**
@@ -49,18 +37,18 @@ declare function buildListQuery(meta: DoctypeMeta, args: {
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | meta | `DoctypeMeta` |  |
-| args | `{ limit?: number; offset?: number; orderBy?: string; }` |  |
+| args | `BuildListQueryArgs` |  |
 | connectionFieldName | `(t: string) => string` |  |
 | orderByTypeName | `(t: string) => string` |  |
 
 ### buildRecordQuery
 
-Build a GraphQL query to fetch a single record by ID. Excludes Link and Doctype relation fields from the selection set. The PK argument name and type are configurable via `StonecropInflectionConfig.recordArgName` and `StonecropInflectionConfig.recordArgType` to match the target schema's conventions (e.g. `rowId: UUID!` for PostGraphile Amber with row_id columns).
+Build a GraphQL query to fetch a single record by ID. When includeNested is set, recursively includes descendant link sub-selections.
 
 **Signature:**
 
 ```typescript
-declare function buildRecordQuery(meta: DoctypeMeta, recordFieldName: (t: string) => string, recordArgName: (t: string) => string, recordArgType: (t: string) => string): string;
+declare function buildRecordQuery(meta: DoctypeMeta, recordFieldName: (t: string) => string, recordArgName: (t: string) => string, recordArgType: (t: string) => string, getMeta: (slug: string) => DoctypeMeta | undefined, options?: BuildRecordQueryOptions, reverseConnectionNameFn?: (params: ReverseConnectionParams) => string): string;
 ```
 
 **Parameters:**
@@ -71,6 +59,9 @@ declare function buildRecordQuery(meta: DoctypeMeta, recordFieldName: (t: string
 | recordFieldName | `(t: string) => string` |  |
 | recordArgName | `(t: string) => string` |  |
 | recordArgType | `(t: string) => string` |  |
+| getMeta | `(slug: string) => DoctypeMeta \| undefined` |  |
+| options | `BuildRecordQueryOptions` |  |
+| reverseConnectionNameFn | `(params: ReverseConnectionParams) => string` |  |
 
 ### clearHandlers
 
@@ -188,6 +179,59 @@ declare function defaultRecordFieldName(tableName: string): string;
 |-----------|------|-------------|
 | tableName | `string` |  |
 
+### defaultReverseConnectionName
+
+Default reverse connection name: derives PostGraphile's connection field convention. PostGraphile convention: `{targetPlural}By{FkColumnPascal}Id` - When backlink is defined: FK column is derived from the backlink field name - When backlink is absent: FK column is derived from the parent doctype's table name
+
+**Signature:**
+
+```typescript
+declare function defaultReverseConnectionName(params: {
+    doctype: string;
+    linkName: string;
+    backlink?: string;
+    target: string;
+}): string;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| params | `{ doctype: string; linkName: string; backlink?: string; target: string; }` |  |
+
+### extractListResult
+
+Extract the list of nodes from a PostGraphile connection query result. Returns an empty array if the connection field is absent.
+
+**Signature:**
+
+```typescript
+declare function extractListResult(params: ExtractListResultParams): unknown[];
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| params | `ExtractListResultParams` |  |
+
+### extractSingleResult
+
+Extract a single record from a PostGraphile query result using the record field name.
+
+**Signature:**
+
+```typescript
+declare function extractSingleResult(params: ExtractSingleResultParams): unknown;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| params | `ExtractSingleResultParams` |  |
+
 ### getAllMeta
 
 Get all loaded doctypes
@@ -296,9 +340,25 @@ export declare function loadDoctypesFromObject(doctypes: Record<string, unknown>
 | doctypes | `Record<string, unknown>` | Object mapping doctype names to doctype definitions |
 | options | `LoadDoctypesOptions` | Options for loading doctypes (continueOnError, onError callback) |
 
+### mergeNestedResults
+
+Merge nested connection results into flat arrays. For `noneOrMany`/`atLeastOne` links, the query returns `{ nodes: [...] }`. This flattens them to just `[]` for easier consumption.
+
+**Signature:**
+
+```typescript
+declare function mergeNestedResults(params: MergeNestedResultsParams): Record<string, unknown>;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| params | `MergeNestedResultsParams` |  |
+
 ### queryableFieldNames
 
-Filter fields to only those directly queryable as scalars, excluding Link and Doctype relation fields that require GraphQL sub-selections.
+Filter fields to only those directly queryable as scalars. Excludes Display fields (no backing DB column) and Link fields that have an explicit `links` declaration (those require sub-selection, not scalar reads). Link fields without a `links` declaration are scalar FK UUID columns and ARE included.
 
 **Signature:**
 
@@ -371,6 +431,92 @@ export interface ActionContext {
 | doctype | `DoctypeMeta` | Doctype metadata for the action being executed |
 | executor | `GraphQLExecutor` | GraphQL executor for running queries/mutations within the action |
 
+### BuildListQueryArgs
+
+Arguments for buildListQuery
+
+**Definition:**
+
+```typescript
+export interface BuildListQueryArgs {
+  limit?: number;
+  offset?: number;
+  orderBy?: string;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| limit? | `number` | Maximum number of records to return |
+| offset? | `number` | Number of records to skip |
+| orderBy? | `string` | OrderBy specification |
+
+### BuildRecordQueryOptions
+
+Options for buildRecordQuery nested selection building
+
+**Definition:**
+
+```typescript
+export interface BuildRecordQueryOptions {
+  includeNested?: boolean | string[];
+  maxDepth?: number;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| includeNested? | `boolean \| string[]` | Include nested/related records |
+| maxDepth? | `number` | Maximum nesting depth |
+
+### ExtractListResultParams
+
+Parameters for extractListResult
+
+**Definition:**
+
+```typescript
+export interface ExtractListResultParams {
+  connectionFieldName: (tableName: string) => string;
+  meta: DoctypeMeta;
+  result: unknown;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| connectionFieldName | `(tableName: string) => string` | Function to derive the connection field name from a table name |
+| meta | `DoctypeMeta` | Doctype metadata |
+| result | `unknown` | The raw query result |
+
+### ExtractSingleResultParams
+
+Parameters for extractSingleResult
+
+**Definition:**
+
+```typescript
+export interface ExtractSingleResultParams {
+  meta: DoctypeMeta;
+  recordFieldName: (tableName: string) => string;
+  result: unknown;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| meta | `DoctypeMeta` | Doctype metadata |
+| recordFieldName | `(tableName: string) => string` | Function to derive the record field name from a table name |
+| result | `unknown` | The raw query result |
+
 ### GraphQLExecutor
 
 GraphQL executor interface for running queries/mutations
@@ -404,6 +550,54 @@ export interface LoadDoctypesOptions {
 | continueOnError? | `boolean` | Continue loading other files if one fails validation |
 | onError? | `(file: string, errors: ValidationError[]) => void` | Callback for validation errors when continueOnError is true |
 
+### MergeNestedResultsParams
+
+Parameters for mergeNestedResults
+
+**Definition:**
+
+```typescript
+export interface MergeNestedResultsParams {
+  getMeta: (slug: string) => DoctypeMeta | undefined;
+  meta: DoctypeMeta;
+  record: Record<string, unknown>;
+  reverseConnectionNameFn?: (params: ReverseConnectionParams) => string;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| getMeta | `(slug: string) => DoctypeMeta \| undefined` | Lookup function to get doctype metadata by slug |
+| meta | `DoctypeMeta` | Doctype metadata |
+| record | `Record<string, unknown>` | The record object with nested connection data |
+| reverseConnectionNameFn? | `(params: ReverseConnectionParams) => string` | Function to derive the reverse connection field name from link params |
+
+### ReverseConnectionParams
+
+Parameters for reverse connection name inflection
+
+**Definition:**
+
+```typescript
+export interface ReverseConnectionParams {
+  backlink?: string;
+  doctype: string;
+  linkName: string;
+  target: string;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| backlink? | `string` | Link field on the target that points back to the parent (optional) |
+| doctype | `string` | Parent doctype slug |
+| linkName | `string` | Link key on the parent |
+| target | `string` | Target doctype slug |
+
 ### StonecropInflectionConfig
 
 Inflection callbacks for mapping table names to GraphQL query field names. Override these when using a non-Amber inflection preset (e.g., V4, SimplifyInflection).
@@ -419,6 +613,12 @@ export interface StonecropInflectionConfig {
   recordArgName?: (tableName: string) => string;
   recordArgType?: (tableName: string) => string;
   recordFieldName?: (tableName: string) => string;
+  reverseConnectionName?: (params: {
+        doctype: string;
+        linkName: string;
+        backlink?: string;
+        target: string;
+    }) => string;
 }
 ```
 
@@ -431,6 +631,7 @@ export interface StonecropInflectionConfig {
 | recordArgName? | `(tableName: string) => string` | Given a table name, return the GraphQL argument name used to look up a record by PK. |
 | recordArgType? | `(tableName: string) => string` | Given a table name, return the GraphQL variable type for the PK argument. |
 | recordFieldName? | `(tableName: string) => string` | Given a table name, return the GraphQL field name for fetching a single record by ID. |
+| reverseConnectionName? | `(params: { doctype: string; linkName: string; backlink?: string; target: string; }) => string` | Derive the GraphQL connection field name for a reverse-FK link. PostGraphile convention: `{targetPlural}By{FkColumnPascal}Id` - When backlink is provided: FK column is derived from the backlink field - When backlink is absent: FK column is derived from the parent doctype |
 
 ### StonecropPluginOptions
 
@@ -451,6 +652,26 @@ export interface StonecropPluginOptions {
 |----------|------|-------------|
 | executor | `GraphQLExecutor` | GraphQL executor for running queries/mutations |
 | inflection? | `StonecropInflectionConfig` | Override inflection conventions for mapping table names to GraphQL field names. Defaults to PostGraphile Amber preset conventions. |
+
+### StonecropRecordOptions
+
+Options for stonecropRecord queries
+
+**Definition:**
+
+```typescript
+export interface StonecropRecordOptions {
+  includeNested?: boolean | string[];
+  maxDepth?: number;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| includeNested? | `boolean \| string[]` | Include nested/related records |
+| maxDepth? | `number` | Maximum nesting depth |
 
 ## Type Aliases
 
@@ -493,5 +714,27 @@ Built-in handlers available for registration
 
 ```typescript
 export const builtinHandlers: Record<string, ActionHandler>
+```
+
+### RELATION_FIELDTYPES
+
+Fieldtypes unconditionally excluded from the generated scalar query selection set. - `'Display'`: display-only composite component with no backing DB column
+
+Note: `'Link'` fields are NOT blanket-excluded here. Scalar FK UUID columns use `fieldtype: 'Link'` and ARE queryable. Only Link fields that also appear in the doctype's `links` declaration (i.e. those that resolve to a sub-object or connection) are excluded — that logic lives in `queryableFieldNames`.
+
+**Type:**
+
+```typescript
+export const RELATION_FIELDTYPES: Set<string>
+```
+
+### typeDefs
+
+GraphQL type definitions for Stonecrop's middleware API. Includes stonecropMeta, stonecropRecord, stonecropRecords, stonecropAction, and related types.
+
+**Type:**
+
+```typescript
+export const typeDefs: import("graphql").DocumentNode
 ```
 

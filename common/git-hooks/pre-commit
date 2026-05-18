@@ -3,13 +3,23 @@
 # exit with non-zero status after issuing an appropriate message if
 # it wants to stop the commit.
 
-# Invoke the "rush prettier" custom command to reformat files whenever they
-# are committed. The command is defined in common/config/rush/command-line.json
-# and uses the "rush-prettier" autoinstaller.
-node common/scripts/install-run-rush.js prettier || exit $?
+# Format all files (not just staged ones) so the tree never drifts from CI.
+# Using --cache means only files whose content changed since the last run are
+# re-checked, keeping this fast after the first invocation.
+# Note: .bin/prettier is a pnpm shell-script shim — do NOT prefix with `node`.
+node common/scripts/install-run-rush.js update-autoinstaller --name rush-prettier || exit $?
+common/autoinstallers/rush-prettier/node_modules/.bin/prettier --write . --cache --log-level warn || exit $?
+git add -u
 
 # Ensure package versions are consistent across the projects
 node common/scripts/install-run-rush.js check || exit $?
 
 # Invoke the "rush build" custom command to build the project before every commit
 node common/scripts/install-run-rush.js build || exit $?
+
+# Aggregate API docs into docs/reference/ and stage any updated files.
+# Each package's build script already runs "rushx docs" to generate its own
+# api.md, so by this point all individual docs are current. This step collects
+# them into the VitePress docs site so the aggregated output is never stale.
+bash common/scripts/run-docs.sh --aggregate || exit $?
+git add docs/reference/

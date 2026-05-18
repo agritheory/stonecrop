@@ -9,7 +9,16 @@ import tseslint from 'typescript-eslint'
 export default defineConfig(
 	// Ignore patterns specific to this package
 	{
-		ignores: ['dist/**', 'build/**', 'node_modules/**', 'coverage/**', 'temp/**', 'eslint.config.js', '*.config.ts'],
+		ignores: [
+			'dist/**',
+			'build/**',
+			'node_modules/**',
+			'coverage/**',
+			'temp/**',
+			'eslint.config.js',
+			'*.config.ts',
+			'tests/**',
+		],
 	},
 
 	// Base recommended configurations
@@ -26,7 +35,9 @@ export default defineConfig(
 				NodeJS: true,
 			},
 			parserOptions: {
-				projectService: true,
+				projectService: {
+					allowDefaultProject: ['tests/*.ts', 'tests/desktop/*.ts'],
+				},
 				tsconfigRootDir: import.meta.dirname,
 			},
 		},

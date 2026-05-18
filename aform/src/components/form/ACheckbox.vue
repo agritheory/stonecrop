@@ -1,16 +1,22 @@
 <template>
 	<div class="aform_form-element">
-		<label class="aform_field-label" :for="uuid">{{ label }}</label>
-		<span class="aform_checkbox-container aform_input-field">
-			<input
-				:id="uuid"
-				v-model="checkbox"
-				type="checkbox"
-				class="aform_checkbox"
-				:readonly="readOnly"
-				:required="required" />
-		</span>
-		<p v-show="validation.errorMessage" class="aform_error" v-html="validation.errorMessage"></p>
+		<template v-if="mode === 'display'">
+			<label class="aform_field-label">{{ label }}</label>
+			<span class="aform_display-value">{{ checkbox ? '✓' : '✗' }}</span>
+		</template>
+		<template v-else>
+			<label class="aform_field-label" :for="uuid">{{ label }}</label>
+			<span class="aform_checkbox-container aform_input-field">
+				<input
+					:id="uuid"
+					v-model="checkbox"
+					type="checkbox"
+					class="aform_checkbox"
+					:disabled="mode === 'read'"
+					:required="required" />
+			</span>
+			<p v-show="validation.errorMessage" class="aform_error" v-html="validation.errorMessage"></p>
+		</template>
 	</div>
 </template>
 
@@ -19,7 +25,7 @@ import { InputHTMLAttributes } from 'vue'
 
 import { ComponentProps } from '../../types'
 
-const { label, required, readOnly, uuid, validation = { errorMessage: '&nbsp;' } } = defineProps<ComponentProps>()
+const { label, required, mode, uuid, validation = { errorMessage: '&nbsp;' } } = defineProps<ComponentProps>()
 const checkbox = defineModel<InputHTMLAttributes['checked']>()
 </script>
 

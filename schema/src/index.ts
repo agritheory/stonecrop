@@ -1,43 +1,66 @@
 // Field types
-export { StonecropFieldType, TYPE_MAP, getDefaultComponent } from './fieldtype'
+export {
+	StonecropFieldType,
+	BUILTIN_FIELD_TYPES,
+	TYPE_MAP,
+	getDefaultComponent,
+	resolveComponent,
+	isBuiltinFieldType,
+	type BuiltinFieldType,
+	type FieldTemplate,
+} from './fieldtype'
 
 // Field schema
-export { FieldMeta, FieldOptions, FieldValidation } from './field'
+export type { FieldMeta, FieldOptions, FieldValidation } from './field'
 
 // Doctype schema
-export { DoctypeMeta, WorkflowMeta, ActionDefinition, type RouteContext } from './doctype'
+export type {
+	ActionDefinition,
+	Cardinality,
+	CustomFetch,
+	DataClient,
+	DoctypeContext,
+	DoctypeMeta,
+	DoctypeRef,
+	FetchStrategy,
+	GetRecordOptions,
+	GetRecordResult,
+	GetRecordsOptions,
+	LazyFetch,
+	LinkDeclaration,
+	SerializedFunction,
+	SyncFetch,
+	WorkflowMeta,
+} from './doctype'
 
 // Validation helpers
 export {
-	validateField,
-	validateDoctype,
-	parseField,
 	parseDoctype,
-	type ValidationResult,
+	parseField,
+	validateDoctype,
+	validateField,
 	type ValidationError,
+	type ValidationResult,
 } from './validation'
 
 // GraphQL to Doctype conversion
 export {
-	convertGraphQLSchema,
-	GQL_SCALAR_MAP,
-	WELL_KNOWN_SCALARS,
-	INTERNAL_SCALARS,
 	buildScalarMap,
-	defaultIsEntityType,
-	defaultIsEntityField,
 	classifyFieldType,
-	type IntrospectionSource,
-	type GraphQLConversionOptions,
-	type GraphQLConversionFieldMeta,
+	convertGraphQLSchema,
+	defaultIsEntityField,
+	defaultIsEntityType,
+	GQL_SCALAR_MAP,
+	INTERNAL_SCALARS,
+	WELL_KNOWN_SCALARS,
 	type ConvertedGraphQLDoctype,
+	type GraphQLConversionFieldMeta,
+	type GraphQLConversionOptions,
+	type IntrospectionSource,
 } from './converter'
 
 // Naming utilities
 export { toSlug, toPascalCase, pascalToSnake, snakeToCamel, camelToSnake, snakeToLabel, camelToLabel } from './naming'
 
-// Type-only exports for consumers who just need types
-export type { StonecropFieldType as StonecropFieldTypeValue } from './fieldtype'
-export type { FieldMeta as FieldMetaType, FieldOptions as FieldOptionsType } from './field'
-export type { FieldTemplate } from './fieldtype'
-export type { DoctypeMeta as DoctypeMetaType, WorkflowMeta as WorkflowMetaType } from './doctype'
+// Schema-to-column field shape
+export type { ColumnSchema } from './column-schema'

@@ -1,6 +1,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
 import { StonecropClient } from '../src/client'
+import type { DoctypeRef } from '@stonecrop/schema'
+
+interface GraphQLRequestBody {
+	query: string
+	variables?: Record<string, unknown>
+}
 
 // ---------------------------------------------------------------------------
 // Fetch mock helpers
@@ -29,7 +35,9 @@ afterEach(() => {
 
 const ENDPOINT = 'http://localhost/graphql'
 
-const taskMeta = {
+const taskRef: DoctypeRef = { name: 'Task' }
+
+const taskMeta: DoctypeMeta = {
 	name: 'Task',
 	tableName: 'tasks',
 	fields: [
@@ -56,7 +64,7 @@ describe('StonecropClient constructor', () => {
 		mockFetch.mockReturnValue(makeFetchResponse({ stonecropMeta: null }))
 		await client.getMeta({ doctype: 'Task' })
 
-		const [, options] = mockFetch.mock.calls[0]
+		const [, options] = mockFetch.mock.calls[0] as [string, RequestInit]
 		const headers = options.headers as Record<string, string>
 		expect(headers['Authorization']).toBe('Bearer token123')
 		expect(headers['Content-Type']).toBe('application/json')
@@ -75,10 +83,10 @@ describe('StonecropClient.query', () => {
 		const result = await client.query('query { foo }', { bar: 1 })
 
 		expect(mockFetch).toHaveBeenCalledOnce()
-		const [url, options] = mockFetch.mock.calls[0]
+		const [url, options] = mockFetch.mock.calls[0] as [string, RequestInit]
 		expect(url).toBe(ENDPOINT)
 		expect(options.method).toBe('POST')
-		const body = JSON.parse(options.body as string)
+		const body = JSON.parse(options.body as string) as GraphQLRequestBody
 		expect(body.query).toBe('query { foo }')
 		expect(body.variables).toEqual({ bar: 1 })
 		expect(result).toEqual({ result: 42 })
@@ -89,8 +97,8 @@ describe('StonecropClient.query', () => {
 		mockFetch.mockReturnValue(makeFetchResponse({ x: 1 }))
 		await client.query('query { x }')
 
-		const [, options] = mockFetch.mock.calls[0]
-		const body = JSON.parse(options.body as string)
+		const [, options] = mockFetch.mock.calls[0] as [string, RequestInit]
+		const body = JSON.parse(options.body as string) as GraphQLRequestBody
 		expect(body.variables).toBeUndefined()
 	})
 
@@ -156,9 +164,9 @@ describe('StonecropClient.getMeta', () => {
 		mockFetch.mockReturnValue(makeFetchResponse({ stonecropMeta: taskMeta }))
 		await client.getMeta({ doctype: 'Task' })
 
-		const [, options] = mockFetch.mock.calls[0]
-		const body = JSON.parse(options.body as string)
-		expect(body.variables.doctype).toBe('Task')
+		const [, options] = mockFetch.mock.calls[0] as [string, RequestInit]
+		const body = JSON.parse(options.body as string) as GraphQLRequestBody
+		expect(body.variables!.doctype).toBe('Task')
 	})
 })
 
@@ -194,31 +202,66 @@ describe('StonecropClient.getAllMeta', () => {
 // ===========================================================================
 
 describe('StonecropClient.getRecord', () => {
-	it('returns the record data', async () => {
+	it('returns the record data via stonecropRecord', async () => {
 		const client = new StonecropClient({ endpoint: ENDPOINT })
 		const record = { id: '42', title: 'Write tests' }
 		mockFetch.mockReturnValue(makeFetchResponse({ stonecropRecord: { data: record } }))
 
-		const result = await client.getRecord(taskMeta as any, '42')
-		expect(result).toEqual(record)
+		const result = await client.getRecord(taskRef, '42')
+		expect(result.record).toEqual(record)
+		expect(result.unknownLinks).toBeUndefined()
 	})
 
-	it('returns null when record is null', async () => {
+	it('returns null record when data is null', async () => {
 		const client = new StonecropClient({ endpoint: ENDPOINT })
 		mockFetch.mockReturnValue(makeFetchResponse({ stonecropRecord: { data: null } }))
-		const result = await client.getRecord(taskMeta as any, '999')
-		expect(result).toBeNull()
+		const result = await client.getRecord(taskRef, '999')
+		expect(result.record).toBeNull()
 	})
 
 	it('sends correct variables to the server', async () => {
 		const client = new StonecropClient({ endpoint: ENDPOINT })
 		mockFetch.mockReturnValue(makeFetchResponse({ stonecropRecord: { data: null } }))
-		await client.getRecord(taskMeta as any, 'record-id-1')
+		await client.getRecord(taskRef, 'record-id-1')
 
-		const [, options] = mockFetch.mock.calls[0]
-		const body = JSON.parse(options.body as string)
-		expect(body.variables.doctype).toBe('Task')
-		expect(body.variables.id).toBe('record-id-1')
+		const [, options] = mockFetch.mock.calls[0] as [string, RequestInit]
+		const body = JSON.parse(options.body as string) as GraphQLRequestBody
+		expect(body.variables!.doctype).toBe('Task')
+		expect(body.variables!.id).toBe('record-id-1')
+		expect(body.variables!.options).toBeUndefined()
+	})
+
+	it('sends includeNested options to stonecropRecord', async () => {
+		const client = new StonecropClient({ endpoint: ENDPOINT })
+		mockFetch.mockReturnValue(makeFetchResponse({ stonecropRecord: { data: { id: '42' }, unknownLinks: [] } }))
+		await client.getRecord(taskRef, '42', { includeNested: true })
+
+		const [, options] = mockFetch.mock.calls[0] as [string, RequestInit]
+		const body = JSON.parse(options.body as string) as GraphQLRequestBody
+		expect(body.variables!.options).toEqual({ includeNested: true })
+	})
+
+	it('returns unknownLinks when includeNested is string array', async () => {
+		const client = new StonecropClient({ endpoint: ENDPOINT })
+		mockFetch.mockReturnValue(
+			makeFetchResponse({
+				stonecropRecord: { data: { id: '42' }, unknownLinks: ['typo-link', 'fake-link'] },
+			})
+		)
+
+		const result = await client.getRecord(taskRef, '42', { includeNested: ['typo-link', 'fake-link'] })
+
+		expect(result.unknownLinks).toEqual(['typo-link', 'fake-link'])
+		expect(result.record).toEqual({ id: '42' })
+	})
+
+	it('returns empty unknownLinks when all links are valid', async () => {
+		const client = new StonecropClient({ endpoint: ENDPOINT })
+		mockFetch.mockReturnValue(makeFetchResponse({ stonecropRecord: { data: { id: '42' }, unknownLinks: [] } }))
+
+		const result = await client.getRecord(taskRef, '42', { includeNested: ['some-link'] })
+
+		expect(result.unknownLinks).toEqual([])
 	})
 })
 
@@ -232,7 +275,7 @@ describe('StonecropClient.getRecords', () => {
 		const records = [{ id: '1' }, { id: '2' }]
 		mockFetch.mockReturnValue(makeFetchResponse({ stonecropRecords: { data: records, count: 2 } }))
 
-		const result = await client.getRecords(taskMeta as any)
+		const result = await client.getRecords(taskRef)
 		expect(result).toHaveLength(2)
 	})
 
@@ -240,25 +283,25 @@ describe('StonecropClient.getRecords', () => {
 		const client = new StonecropClient({ endpoint: ENDPOINT })
 		mockFetch.mockReturnValue(makeFetchResponse({ stonecropRecords: { data: [], count: 0 } }))
 
-		await client.getRecords(taskMeta as any, {
+		await client.getRecords(taskRef, {
 			limit: 10,
 			offset: 5,
 			orderBy: 'title_ASC',
 			filters: { status: 'open' },
 		})
 
-		const [, options] = mockFetch.mock.calls[0]
-		const body = JSON.parse(options.body as string)
-		expect(body.variables.limit).toBe(10)
-		expect(body.variables.offset).toBe(5)
-		expect(body.variables.orderBy).toBe('title_ASC')
-		expect(body.variables.filters).toEqual({ status: 'open' })
+		const [, options] = mockFetch.mock.calls[0] as [string, RequestInit]
+		const body = JSON.parse(options.body as string) as GraphQLRequestBody
+		expect(body.variables!.limit).toBe(10)
+		expect(body.variables!.offset).toBe(5)
+		expect(body.variables!.orderBy).toBe('title_ASC')
+		expect(body.variables!.filters).toEqual({ status: 'open' })
 	})
 
 	it('works with no options (defaults)', async () => {
 		const client = new StonecropClient({ endpoint: ENDPOINT })
 		mockFetch.mockReturnValue(makeFetchResponse({ stonecropRecords: { data: [], count: 0 } }))
-		const result = await client.getRecords(taskMeta as any)
+		const result = await client.getRecords(taskRef)
 		expect(result).toEqual([])
 	})
 })
@@ -276,7 +319,7 @@ describe('StonecropClient.runAction', () => {
 			})
 		)
 
-		const result = await client.runAction(taskMeta as any, 'submit', [{ id: '1' }])
+		const result = await client.runAction(taskRef, 'submit', [{ id: '1' }])
 		expect(result.success).toBe(true)
 		expect(result.data).toEqual({ updated: true })
 		expect(result.error).toBeNull()
@@ -290,7 +333,7 @@ describe('StonecropClient.runAction', () => {
 			})
 		)
 
-		const result = await client.runAction(taskMeta as any, 'submit')
+		const result = await client.runAction(taskRef, 'submit')
 		expect(result.success).toBe(false)
 		expect(result.error).toBe('Action failed')
 	})
@@ -299,13 +342,13 @@ describe('StonecropClient.runAction', () => {
 		const client = new StonecropClient({ endpoint: ENDPOINT })
 		mockFetch.mockReturnValue(makeFetchResponse({ stonecropAction: { success: true, data: null, error: null } }))
 
-		await client.runAction(taskMeta as any, 'cancel', ['arg1', 'arg2'])
+		await client.runAction(taskRef, 'cancel', ['arg1', 'arg2'])
 
-		const [, options] = mockFetch.mock.calls[0]
-		const body = JSON.parse(options.body as string)
-		expect(body.variables.doctype).toBe('Task')
-		expect(body.variables.action).toBe('cancel')
-		expect(body.variables.args).toEqual(['arg1', 'arg2'])
+		const [, options] = mockFetch.mock.calls[0] as [string, RequestInit]
+		const body = JSON.parse(options.body as string) as GraphQLRequestBody
+		expect(body.variables!.doctype).toBe('Task')
+		expect(body.variables!.action).toBe('cancel')
+		expect(body.variables!.args).toEqual(['arg1', 'arg2'])
 	})
 })
 

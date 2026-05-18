@@ -6,6 +6,8 @@ import DbCollection from 'miragejs/db-collection'
 export function makeServer() {
 	const server = createServer({
 		models: {
+			'category-listMeta': Model,
+			'category-formMeta': Model,
 			'issue-form': Model,
 			'issue-formMeta': Model,
 			'issue-list': Model,
@@ -37,21 +39,60 @@ export function makeServer() {
 					},
 				],
 
+				// Category lookup doctype — used by todo category_id Link field
+				'category-listMeta': {
+					doctype: 'category',
+					schema: [
+						{ fieldname: 'id', label: 'ID', hidden: true, fieldtype: 'Data' },
+						{ fieldname: 'name', label: 'Name', fieldtype: 'Data', component: 'ATextInput' },
+					] as MutableDoctype['schema'],
+					workflow: { id: 'category', initial: 'active', states: { active: {} } },
+					actions: {},
+				},
+				'category-formMeta': {
+					doctype: 'category-form',
+					schema: [
+						{ fieldname: 'id', label: 'ID', hidden: true, fieldtype: 'Data' },
+						{
+							fieldname: 'name',
+							fieldtype: 'Data',
+							component: 'ATextInput',
+							label: 'Name',
+							required: true,
+						},
+					] as MutableDoctype['schema'],
+					workflow: {
+						id: 'categoryForm',
+						initial: 'editing',
+						states: {
+							editing: { on: { SAVE: 'saved' } },
+							saved: { on: { EDIT: 'editing' } },
+						},
+					},
+					actions: { SAVE: ['SAVE'] },
+				},
+				categories: [
+					{ id: '1', name: 'Personal' },
+					{ id: '2', name: 'Work' },
+					{ id: '3', name: 'Urgent' },
+				],
+
 				// Todo List doctype
 				'todo-listMeta': {
 					doctype: 'todo-list',
 					schema: [
-						{ fieldname: 'id', label: 'ID', fieldtype: 'Data' },
+						{ fieldname: 'id', label: 'ID', hidden: true, fieldtype: 'Data' },
 						{ fieldname: 'first_name', label: 'First Name', fieldtype: 'Data' },
 						{ fieldname: 'last_name', label: 'Last Name', fieldtype: 'Data' },
 						{ fieldname: 'phone', label: 'Phone', fieldtype: 'Phone' },
+						{ fieldname: 'category_id', label: 'Category', fieldtype: 'Link', options: 'category' },
 					] as MutableDoctype['schema'],
 					workflow: {
 						id: 'todoList',
 						initial: 'loaded',
 						states: {
 							loaded: { on: { CREATE: 'creating' } },
-							creating: { on: { SAVE: 'loaded', CANCEL: 'loaded' } },
+							creating: { on: { SAVE: 'loaded' } },
 						},
 					},
 					actions: {
@@ -64,9 +105,9 @@ export function makeServer() {
 					},
 				},
 				'todo-lists': [
-					{ id: '1', first_name: 'Luke', last_name: 'Skywalker', phone: '+1 123 456 7890' },
-					{ id: '2', first_name: 'Leia', last_name: 'Skywalker', phone: '+1 123 456 7890' },
-					{ id: '3', first_name: 'Anakin', last_name: 'Skywalker', phone: '+1 123 456 7890' },
+					{ id: '1', first_name: 'Luke', last_name: 'Skywalker', phone: '+1 123 456 7890', category_id: '1' },
+					{ id: '2', first_name: 'Leia', last_name: 'Skywalker', phone: '+1 123 456 7890', category_id: '2' },
+					{ id: '3', first_name: 'Anakin', last_name: 'Skywalker', phone: '+1 123 456 7890', category_id: '3' },
 				],
 
 				// Todo Form doctype
@@ -116,6 +157,13 @@ export function makeServer() {
 							label: 'Notes',
 							placeholder: 'Additional notes about this todo...',
 						},
+						{
+							fieldname: 'category_id',
+							fieldtype: 'Link',
+							component: 'AFormLink',
+							label: 'Category',
+							options: 'category',
+						},
 					] as MutableDoctype['schema'],
 					workflow: {
 						id: 'todoForm',
@@ -124,19 +172,16 @@ export function makeServer() {
 							editing: {
 								on: {
 									SAVE: 'saved',
-									CANCEL: 'cancelled',
 									DELETE: 'deleted',
 								},
 							},
 							saved: { on: { EDIT: 'editing' } },
-							cancelled: {},
 							deleted: {},
 						},
 					},
 					actions: {
 						// XState transition actions (uppercase convention)
 						SAVE: ['SAVE'],
-						CANCEL: ['CANCEL'],
 						DELETE: ['DELETE'],
 						// Field triggers - automatically executed when fields change
 						first_name: ['validateName', 'updateFullName', 'logFieldChange'],
@@ -154,6 +199,7 @@ export function makeServer() {
 						phone: '+1 123 456 7890',
 						email: 'luke@jedi.org',
 						notes: 'A young farm boy from Tatooine',
+						category_id: '1',
 					},
 					{
 						id: '2',
@@ -162,6 +208,7 @@ export function makeServer() {
 						phone: '+1 123 456 7890',
 						email: 'leia@rebellion.org',
 						notes: 'Princess and leader of the Rebellion',
+						category_id: '2',
 					},
 					{
 						id: '3',
@@ -170,6 +217,7 @@ export function makeServer() {
 						phone: '+1 123 456 7890',
 						email: 'anakin@empire.gov',
 						notes: 'Former Jedi Knight',
+						category_id: '3',
 					},
 				],
 
@@ -177,7 +225,7 @@ export function makeServer() {
 				'issue-listMeta': {
 					doctype: 'issue-list',
 					schema: [
-						{ fieldname: 'id', label: 'ID', fieldtype: 'Data' },
+						{ fieldname: 'id', label: 'ID', hidden: true, fieldtype: 'Data' },
 						{ fieldname: 'subject', label: 'Subject', fieldtype: 'Data' },
 						{ fieldname: 'date', label: 'Date', fieldtype: 'Date' },
 						{ fieldname: 'status', label: 'Status', fieldtype: 'Select' },
@@ -187,7 +235,7 @@ export function makeServer() {
 						initial: 'loaded',
 						states: {
 							loaded: { on: { CREATE: 'creating' } },
-							creating: { on: { SAVE: 'loaded', CANCEL: 'loaded' } },
+							creating: { on: { SAVE: 'loaded' } },
 						},
 					},
 					actions: {
@@ -260,19 +308,16 @@ export function makeServer() {
 							editing: {
 								on: {
 									SAVE: 'saved',
-									CANCEL: 'cancelled',
 									DELETE: 'deleted',
 								},
 							},
 							saved: { on: { EDIT: 'editing' } },
-							cancelled: {},
 							deleted: {},
 						},
 					},
 					actions: {
 						// XState transition actions (uppercase convention)
 						SAVE: ['SAVE'],
-						CANCEL: ['CANCEL'],
 						DELETE: ['DELETE'],
 						// Field triggers - automatically executed when fields change
 						subject: ['validateSubject', 'logFieldChange'],
@@ -352,6 +397,27 @@ export function makeServer() {
 				return meta || { error: 'Metadata not found' }
 			})
 
+			// Category lookup endpoint (explicit route needed — 'categories' != 'categorys')
+			this.get('/api/category', schema => {
+				return (schema.db['categories'] as any[]) || []
+			})
+
+			// Category record endpoint (explicit route needed — 'categories' != 'categorys')
+			this.get('/api/category/:id', (schema, request) => {
+				const id = request.params.id
+				// @ts-expect-error mismatch between mirage types
+				const records = schema.db['categories'] as DbCollection
+				return records ? records.find(id) || {} : {}
+			})
+
+			// category-form slug also reads from the categories collection
+			this.get('/api/category-form/:id', (schema, request) => {
+				const id = request.params.id
+				// @ts-expect-error mismatch between mirage types
+				const records = schema.db['categories'] as DbCollection
+				return records ? records.find(id) || {} : {}
+			})
+
 			// Data endpoints
 			this.get('/api/:doctype', (schema, request) => {
 				const doctype = request.params.doctype
@@ -393,6 +459,38 @@ export function makeServer() {
 				}
 
 				return {}
+			})
+
+			// Action endpoints (SAVE / DELETE)
+			this.post('/api/:doctype/:id', (schema, request) => {
+				const doctype = request.params.doctype
+				const id = request.params.id
+				const body = JSON.parse(request.requestBody) as Record<string, unknown>
+				const action = body.action as string
+
+				let actualDoctype = doctype
+				if (doctype === 'todo') actualDoctype = 'todo-form'
+				else if (doctype === 'issue') actualDoctype = 'issue-form'
+
+				// category and category-form both write to the categories collection
+				const dataKey =
+					actualDoctype === 'category' || actualDoctype === 'category-form' ? 'categories' : `${actualDoctype}s`
+				// @ts-expect-error mismatch between mirage types
+				const records = schema.db[dataKey] as DbCollection
+				if (!records) return { success: false, data: null, error: 'Collection not found' }
+
+				if (action === 'DELETE') {
+					records.remove(id)
+					return { success: true, data: null, error: null }
+				}
+
+				if (action === 'SAVE') {
+					const { action: _action, ...attrs } = body
+					records.update(id, attrs)
+					return { success: true, data: records.find(id) || null, error: null }
+				}
+
+				return { success: false, data: null, error: `Unknown action: ${action}` }
 			})
 
 			// allow other same-domain and external requests to passthrough normally

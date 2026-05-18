@@ -1,191 +1,61 @@
 import { useElementBounding } from '@vueuse/core'
 import type { Ref, ShallowRef } from 'vue'
 
+import type { ColumnSchema } from '@stonecrop/schema'
+
 import { createTableStore } from '../stores/table'
 
 /**
- * Table column definition.
+ * Runtime column definition for ATable.
+ *
+ * Extends `ColumnSchema` from `@stonecrop/schema` — all authoring properties (`label`, `fieldtype`, `width`,
+ * `pinned`, filter config, cell/modal component names, etc.) are inherited. The overrides
+ * below widen three properties for runtime use (live functions, broader alignment values)
+ * and add two runtime-only additions (`mask`, `originalIndex`).
+ *
+ * Schema-based callers should author columns as `ColumnSchema[]` (using `fieldname`) and
+ * pass them via ATable's `:schema` prop — `TableColumn` is the internal runtime type and
+ * callers working from a doctype schema never need to construct it directly.
  * @public
  */
-export interface TableColumn {
-	/**
-	 * The key of the column. This is used to identify the column in the table.
-	 */
+export interface TableColumn extends Omit<ColumnSchema, 'fieldname' | 'hidden' | 'format' | 'modalComponent'> {
+	/** Runtime column key. Corresponds to `fieldname` in `ColumnSchema`; populated by `schemaToColumns`. */
 	name: string
 
 	/**
-	 * The alignment of the column. Possible values:
-	 * - `left` - left aligned
-	 * - `center` - center aligned
-	 * - `right` - right aligned
-	 * - `start` - aligned to the start of the column
-	 * - `end` - aligned to the end of the column
-	 *
-	 * @defaultValue 'center'
-	 */
-	align?: CanvasTextAlign
-
-	/**
-	 * Control whether cells for the column is editable.
-	 *
-	 * @defaultValue false
-	 */
-	edit?: boolean
-
-	/**
-	 * The label of the column. This is displayed in the table header.
-	 *
-	 * @defaultValue If no label is provided, a character will be assigned alphabetically,
-	 * starting from 'A' for the first column, 'B' for the second column, and so on.
-	 */
-	label?: string
-
-	/**
-	 * The semantic field type of the column. Uses the same StonecropFieldType enum as forms.
-	 * Common values: 'Data', 'Text', 'Int', 'Float', 'Date', 'Select', 'Link', 'Check', etc.
-	 *
-	 * @public
-	 */
-	fieldtype?: string
-
-	/**
-	 * The width of the column. This can be a number (in pixels) or a string (in CSS units).
-	 *
-	 * @defaultValue '40ch'
-	 */
-	width?: string
-
-	/**
-	 * Control whether the column should be pinned to the table.
-	 *
-	 * @defaultValue false
-	 */
-	pinned?: boolean
-
-	/**
-	 * Control whether the column can be resized by the user.
-	 *
-	 * @defaultValue false
-	 */
-	resizable?: boolean
-
-	/**
-	 * Control whether the column should be sortable.
-	 *
-	 * @defaultValue true
-	 */
-	sortable?: boolean
-
-	/**
-	 * Control whether the column should be filterable and define filter configuration.
-	 *
-	 * @defaultValue true
-	 */
-	filterable?: boolean
-
-	/**
-	 * The type of filter for the column.
-	 *
-	 * @defaultValue 'text'
-	 */
-	filterType?: 'text' | 'select' | 'number' | 'date' | 'dateRange' | 'checkbox' | 'component'
-
-	/**
-	 * Options for select-type filters.
-	 */
-	filterOptions?: any[]
-
-	/**
-	 * Custom component for filtering.
-	 */
-	filterComponent?: string
-
-	/**
-	 * The component to use to render the cell for the column. If not provided, the table will
-	 * render the default `<td>` element.
-	 */
-	cellComponent?: string
-
-	/**
-	 * Additional properties to pass to the table's cell component.
-	 *
-	 * Only applicable if the `cellComponent` property is set for the column.
-	 */
-	cellComponentProps?: Record<string, any>
-
-	/**
-	 * The component to use for the modal. If a function is provided, it will be called with the cell context.
-	 * The following properties are available on the cell context:
-	 * - `row` - the row object
-	 * - `column` - the column object
-	 * - `table` - the table object
-	 *
-	 * The function should return the name of the component to use for the modal.
-	 *
-	 * Additionally, the following properties will be automatically passed to the modal component:
-	 * - `colIndex` - the column index of the current cell
-	 * - `rowIndex` - the row index of the current cell
-	 * - `store` - the table data store
-	 */
-
-	modalComponent?: string | ((context: CellContext) => string)
-
-	/**
-	 * Additional properties to pass to the modal component.
-	 *
-	 * Only applicable if the `modalComponent` property is set for the column.
-	 */
-	modalComponentExtraProps?: Record<string, any>
-
-	/**
-	 * The format function to use to format the value of the cell. This can either be a normal or stringified
-	 * function that takes the value and the cell context and returns a string.
+	 * Widens `ColumnSchema.format` (string-only) to also accept a live function at runtime.
+	 * Serialized string functions are deserialized by the table store's `getFormattedValue`.
 	 */
 	format?: string | ((value: any, context: CellContext) => string)
 
 	/**
-	 * The masking function to use to apply an input mask to the cell. This will accept an input value and
-	 * return the masked value.
+	 * Widens `ColumnSchema.modalComponent` (string-only) to also accept a factory function.
+	 * When a function is provided it receives the cell context and returns the component name.
+	 * The cell context exposes:
+	 * - `row` — the row object for the current cell
+	 * - `column` — the column object for the current cell
+	 * - `table` — the table object
+	 */
+	modalComponent?: string | ((context: CellContext) => string)
+
+	/**
+	 * Input mask applied to the cell value before display. Accepts a live function only —
+	 * masks cannot be serialized to JSON so they are absent from `ColumnSchema`.
 	 */
 	mask?: (value: any) => any
 
 	/**
-	 * Whether the column is a Gantt column.
-	 *
-	 * Only applicable for Gantt tables.
-	 *
-	 * @defaultValue false
+	 * For `fieldtype: 'Link'` columns: the target doctype slug used by the `linkResolver`
+	 * to look up display text for bare ID values. Set automatically by `schemaToColumns`
+	 * from the field's `doctype` property.
 	 */
-	isGantt?: boolean
+	linkDoctype?: string
 
 	/**
-	 * The component to use to render the Gantt bar for the column.
-	 *
-	 * Only applicable for Gantt tables.
-	 *
-	 * @defaultValue 'AGanttCell'
+	 * Runtime Gantt column index (excluding pinned columns). Set automatically during
+	 * Gantt table rendering.
 	 */
-	ganttComponent?: string
-
-	/**
-	 * The colspan of the Gantt bar for the column. This determines how many columns
-	 * the Gantt bar should span across.
-	 *
-	 * Only applicable for Gantt tables.
-	 *
-	 * @defaultValue The number of columns in the table, excluding any pinned columns.
-	 */
-	colspan?: number
-
-	/**
-	 * The original column index for the Gantt bar, excluding any pinned columns.
-	 * This is evaluated automatically while rendering the table.
-	 *
-	 * Only applicable for Gantt tables.
-	 *
-	 * @defaultValue 0
-	 */
-	originalIndex?: number
+	readonly originalIndex?: number
 }
 
 /**
@@ -550,39 +420,38 @@ export interface GanttOptions {
  * Gantt table drag event definition.
  * @public
  */
-export type GanttDragEvent =
+export type GanttDragEvent = {
+	rowIndex: number
+	colIndex: number
+	delta: number
+} & (
 	| {
-			rowIndex: number
-			colIndex: number
-			delta: number
-	  } & (
-			| {
-					type: 'bar'
-					oldStart: number
-					oldEnd: number
-					newStart: number
-					newEnd: number
-					colspan: number
-			  }
-			| {
-					type: 'resize'
-					edge: 'start'
-					oldStart: number
-					newStart: number
-					end: number
-					oldColspan: number
-					newColspan: number
-			  }
-			| {
-					type: 'resize'
-					edge: 'end'
-					oldEnd: number
-					newEnd: number
-					start: number
-					oldColspan: number
-					newColspan: number
-			  }
-	  )
+			type: 'bar'
+			oldStart: number
+			oldEnd: number
+			newStart: number
+			newEnd: number
+			colspan: number
+	  }
+	| {
+			type: 'resize'
+			edge: 'start'
+			oldStart: number
+			newStart: number
+			end: number
+			oldColspan: number
+			newColspan: number
+	  }
+	| {
+			type: 'resize'
+			edge: 'end'
+			oldEnd: number
+			newEnd: number
+			start: number
+			oldColspan: number
+			newColspan: number
+	  }
+)
 
 /**
  * Table modal definition.

@@ -4,10 +4,9 @@ import { createApp } from 'vue'
 
 import '@stonecrop/desktop/styles'
 import { install as AForm } from '@stonecrop/aform'
-import { install as ATable } from '@stonecrop/atable'
 import { StonecropDesktop } from '@stonecrop/desktop'
 import StonecropPlugin, {
-	DoctypeMeta,
+	Doctype,
 	Registry,
 	Stonecrop,
 	type ImmutableDoctype,
@@ -16,6 +15,7 @@ import StonecropPlugin, {
 } from '@stonecrop/stonecrop'
 
 import App from './App.vue'
+import { RestDataClient } from './client'
 import router, { setupRouterContext } from './router'
 import { makeServer } from './server'
 
@@ -42,7 +42,7 @@ const getMeta = async (routeContext: RouteContext) => {
 		actions: Map(data.actions || {}),
 	}
 
-	return new DoctypeMeta(data.doctype!, config.schema, config.workflow, config.actions)
+	return new Doctype(data.doctype!, config.schema, config.workflow, config.actions)
 }
 
 // Install plugins in correct order following Vue.js best practices
@@ -54,6 +54,7 @@ app.use(pinia)
 app.use(StonecropPlugin, {
 	router,
 	getMeta,
+	client: new RestDataClient(),
 	autoInitializeRouter: true,
 	onRouterInitialized: async (registry: Registry, stonecrop: Stonecrop) => {
 		// Setup router context with the provided instances
@@ -62,8 +63,8 @@ app.use(StonecropPlugin, {
 })
 
 // 3. Component plugins
+// Note: AForm internally installs ATable, so ATable must not be installed separately
 app.use(AForm)
-app.use(ATable)
 app.use(StonecropDesktop)
 
 // Mount the app - router initialization will happen automatically

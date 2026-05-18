@@ -328,8 +328,8 @@ button.button-default:hover {
 
 .vue-flow {
 	background-size: 40px 40px;
-	background-image: linear-gradient(to right, #ccc 1px, transparent 1px),
-		linear-gradient(to bottom, #ccc 1px, transparent 1px);
+	background-image:
+		linear-gradient(to right, #ccc 1px, transparent 1px), linear-gradient(to bottom, #ccc 1px, transparent 1px);
 }
 
 input.label-editor {

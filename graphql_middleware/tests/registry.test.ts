@@ -196,8 +196,11 @@ describe('validateFieldTypes handler', () => {
 			{ fieldname: 'meeting_time', fieldtype: 'Time', label: 'Time' },
 			{ fieldname: 'created_at', fieldtype: 'Datetime', label: 'Datetime' },
 			{ fieldname: 'meta', fieldtype: 'JSON', label: 'Meta' },
-			{ fieldname: 'items', fieldtype: 'Table', label: 'Items' },
 		],
+		links: {
+			items: { target: 'item', cardinality: 'noneOrMany' },
+			parent: { target: 'parent', cardinality: 'one' },
+		},
 	}
 
 	it('passes with all correctly-typed values', async () => {
@@ -217,6 +220,7 @@ describe('validateFieldTypes handler', () => {
 			created_at: '2024-01-01T10:00:00Z',
 			meta: { key: 'value' },
 			items: [{ row: 1 }],
+			parent: { name: 'parent' },
 		}
 		const result = await builtinHandlers.validateFieldTypes([record], makeContext(typedDoctype))
 		expect(result).toEqual({ valid: true })
@@ -282,10 +286,22 @@ describe('validateFieldTypes handler', () => {
 		).rejects.toThrow('expected object')
 	})
 
-	it('throws for a non-array Table value', async () => {
+	it('throws for a non-array link value with cardinality noneOrMany', async () => {
 		await expect(
 			builtinHandlers.validateFieldTypes([{ items: 'not-an-array' }], makeContext(typedDoctype))
 		).rejects.toThrow('expected array')
+	})
+
+	it('throws for a non-object link value with cardinality one (default)', async () => {
+		await expect(
+			builtinHandlers.validateFieldTypes([{ parent: 'not-an-object' }], makeContext(typedDoctype))
+		).rejects.toThrow('expected object')
+	})
+
+	it('throws for an array link value with cardinality one (default)', async () => {
+		await expect(
+			builtinHandlers.validateFieldTypes([{ parent: [{ name: 'parent' }] }], makeContext(typedDoctype))
+		).rejects.toThrow('expected object')
 	})
 
 	it('accepts a Date instance for Date field', async () => {
@@ -400,6 +416,16 @@ describe('getMeta / getAllMeta / hasMeta / clearRegistry', () => {
 		expect(meta?.name).toBe('Task')
 	})
 
+	it('getMeta finds doctype by slug when name lookup fails', () => {
+		loadDoctypesFromObject({
+			RecipeTask: { name: 'RecipeTask', slug: 'recipe-task', fields: [] },
+		})
+		expect(getMeta('RecipeTask')).toBeDefined()
+		expect(getMeta('recipe-task')).toBeDefined()
+		expect(getMeta('recipe-task')?.name).toBe('RecipeTask')
+		expect(getMeta('unknown-slug')).toBeUndefined()
+	})
+
 	it('hasMeta returns false before loading', () => {
 		expect(hasMeta('Task')).toBe(false)
 	})
@@ -440,18 +466,6 @@ describe('validateReferences', () => {
 		expect(errors.some(e => e.message.includes('BaseTask'))).toBe(true)
 	})
 
-	it('reports error for unknown listDoctype reference', () => {
-		loadDoctypesFromObject({ Task: { fields: [], listDoctype: 'TaskList' } })
-		const errors = validateReferences()
-		expect(errors.some(e => e.message.includes('TaskList'))).toBe(true)
-	})
-
-	it('reports error for unknown parentDoctype reference', () => {
-		loadDoctypesFromObject({ Task: { fields: [], parentDoctype: 'Project' } })
-		const errors = validateReferences()
-		expect(errors.some(e => e.message.includes('Project'))).toBe(true)
-	})
-
 	it('reports error for Link field targeting unknown doctype', () => {
 		loadDoctypesFromObject({
 			Task: { fields: [{ fieldname: 'owner', fieldtype: 'Link', label: 'Owner', options: 'User' }] },
@@ -482,12 +496,10 @@ describe('validateReferences', () => {
 			Task: {
 				fields: [],
 				inherits: 'BaseTask',
-				listDoctype: 'TaskList',
-				parentDoctype: 'Project',
 			},
 		})
 		const errors = validateReferences()
-		expect(errors.length).toBeGreaterThanOrEqual(3)
+		expect(errors.length).toBeGreaterThanOrEqual(1)
 	})
 })
 

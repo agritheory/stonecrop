@@ -1,16 +1,36 @@
 # @stonecrop/graphql-client
 
-Client-side TypeScript interface to the Stonecrop GraphQL API. `StonecropClient` wraps the `stonecrop*` operations added to a PostGraphile schema by `@stonecrop/graphql-middleware`, handling HTTP transport, response unwrapping, and metadata caching so application code works with plain TypeScript objects rather than raw GraphQL.
+Transport layer for Stonecrop GraphQL APIs. Handles HTTP communication, response parsing, and metadata caching.
 
-The client is intentionally thin — it has no knowledge of doctype definitions itself and fetches metadata from the server on demand, caching it in memory for the lifetime of the instance.
+## Why transport-only?
 
-While designed to pair with `@stonecrop/graphql-middleware`, the client works against any GraphQL endpoint that implements the `stonecrop*` operation conventions (`stonecropMeta`, `stonecropRecord`, `stonecropRecords`, `stonecropAction`). You can use your own server implementation as long as it conforms to those operation names and the expected response shapes. The `query` and `mutate` methods are also available for interacting with any other operations your schema exposes.
+This client intentionally never constructs GraphQL queries. All query generation — including PostGraphile-specific field naming (inflection), nested link sub-selections, and fetch strategy dispatch — lives in the server-side middleware (`@stonecrop/graphql-middleware`).
 
-## Installation
+This boundary exists because PostGraphile's schema naming is configurable. An application might use `ById` for UUID primary keys, `ByRowId` for `row_id` columns, or entirely custom conventions. If the client hardcoded any of these conventions, it would silently produce wrong queries for non-default setups. The middleware owns the single `StonecropInflectionConfig` — the client only knows how to pass `options.includeNested` through to the `stonecropRecord` resolver and receive pre-merged flat data.
 
-```bash
-pnpm add @stonecrop/graphql-client
-```
+## Responsibilities
+
+**Transport** — The client sends requests and parses responses. It doesn't construct queries.
+
+**Caching** — Metadata is cached in memory after first fetch.
+
+**Contract** — The client expects the server to expose these operations:
+
+| Operation | Arguments | Returns |
+|-----------|-----------|---------|
+| `stonecropRecord` | `doctype`, `id`, `options?` | `{ record, unknownLinks? }` |
+| `stonecropRecords` | `doctype`, `filters?`, `orderBy?`, `limit?`, `offset?`, `options?` | `{ data[], count }` |
+| `stonecropMeta` | `doctype` | `DoctypeMeta` |
+| `stonecropAllMeta` | — | `DoctypeMeta[]` |
+| `stonecropAction` | `doctype`, `action`, `args?` | `{ success, data, error }` |
+
+The client has no opinions about how the server implements these — naming conventions, query construction, nested data merging are all the server's concern.
+
+## Assumptions
+
+- All record operations accept a `doctype` string argument
+- `stonecropRecord` accepts `options: { includeNested?, maxDepth? }`
+- The server handles query building and field naming
 
 ## Usage
 
@@ -21,61 +41,25 @@ const client = new StonecropClient({
   endpoint: 'http://localhost:4000/graphql',
   headers: { Authorization: `Bearer ${token}` }, // optional
 })
-```
 
-### Metadata
+// Fetch a record
+const result = await client.getRecord({ name: 'Recipe' }, 'r1')
+result.record  // plain object with the record fields
+result.unknownLinks  // links requested but not found in schema
 
-```typescript
-// Fetch DoctypeMeta for a single doctype (cached after first call)
-const meta = await client.getMeta({ doctype: 'SalesOrder' })
-
-// Fetch all registered doctypes
-const allMeta = await client.getAllMeta()
-
-// Bust the in-memory cache
-client.clearMetaCache()
-```
-
-### Reading records
-
-```typescript
-// Single record by ID
-const order = await client.getRecord(meta, 'uuid-here')
-// → Record<string, unknown> | null
-
-// List with optional filtering and pagination
-const orders = await client.getRecords(meta, {
-  filters: { status: 'Draft' },
-  orderBy: 'createdAt',
-  limit: 20,
-  offset: 0,
+// Fetch with nested links
+const withNested = await client.getRecord({ name: 'Recipe' }, 'r1', {
+  includeNested: true,
 })
-// → Record<string, unknown>[]
+
+// Custom queries
+const custom = await client.query<{ myData: unknown[] }>(`query { myData { id } }`)
 ```
 
-### Actions
+## Data Shapes
 
-```typescript
-// Dispatch any registered action
-const result = await client.runAction(meta, 'submit', ['uuid-here'])
-// → { success: boolean; data: unknown; error: string | null }
-```
+- `getRecord` returns `{ record: Record<string, unknown> | null, unknownLinks?: string[] }`. The `record` field contains the record's fields. Nested links are merged into the same object when `includeNested` is used.
+- `getRecords` returns `Record<string, unknown>[]` — an array of flat objects. Pagination metadata (`count`) is available in the server response but not currently exposed by the client.
+- `unknownLinks` will contain link names you requested that don't exist in the doctype schema — useful for catching typos.
 
-### Raw GraphQL
-
-For queries or mutations not covered by the helpers:
-
-```typescript
-const data = await client.query<{ myTable: unknown[] }>(
-  `query { myTable { id name } }`
-)
-
-const result = await client.mutate<{ createFoo: unknown }>(
-  `mutation CreateFoo($input: CreateFooInput!) { createFoo(input: $input) { foo { id } } }`,
-  { input: { foo: { name: 'bar' } } }
-)
-```
-
-## References
-
-For full method signatures and parameter details, see [API Reference](./api.md).
+See [API Reference](./api.md) for full method signatures.

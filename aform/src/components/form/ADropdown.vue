@@ -1,9 +1,14 @@
 <template>
-	<div v-on-click-outside="onClickOutside" class="autocomplete" :class="{ isOpen: dropdown.open }">
+	<div v-if="mode === 'display'" class="input-wrapper">
+		<span class="aform_display-value">{{ search ?? '' }}</span>
+		<label>{{ label }}</label>
+	</div>
+	<div v-else v-on-click-outside="onClickOutside" class="autocomplete" :class="{ isOpen: dropdown.open }">
 		<div class="input-wrapper">
 			<input
 				v-model="search"
 				type="text"
+				:disabled="mode === 'read'"
 				@input="filter"
 				@focus="openDropdown"
 				@keydown.down="selectNextResult"
@@ -31,26 +36,33 @@
 
 <script setup lang="ts">
 import { vOnClickOutside } from '@vueuse/components'
-import { reactive } from 'vue'
+import { reactive, ref } from 'vue'
+
+import type { ComponentProps } from '../../types'
 
 const {
 	label,
-	items = [],
+	options = [],
 	isAsync = false,
 	filterFunction = undefined,
-} = defineProps<{
-	label: string
-	items?: string[]
-	isAsync?: boolean
-	filterFunction?: (search: string) => string[] | Promise<string[]>
-}>()
+	mode,
+} = defineProps<
+	ComponentProps & {
+		options?: string[]
+		isAsync?: boolean
+		filterFunction?: (search: string) => string[] | Promise<string[]>
+	}
+>()
 const search = defineModel<string>()
+
+// tracks the last explicitly-committed value so outside-click reverts instead of clears
+const committedValue = ref(search.value ?? '')
 
 const dropdown = reactive({
 	activeItemIndex: null as number | null,
 	open: false,
 	loading: false,
-	results: items,
+	results: options,
 })
 
 const onClickOutside = () => closeDropdown()
@@ -75,29 +87,31 @@ const filter = async () => {
 
 const setResult = (result: string) => {
 	search.value = result
+	committedValue.value = result
 	closeDropdown(result)
 }
 
 const openDropdown = () => {
-	dropdown.activeItemIndex = isAsync ? null : search.value ? items?.indexOf(search.value) || null : null
+	const idx = options?.indexOf(search.value ?? '') ?? -1
+	dropdown.activeItemIndex = isAsync ? null : idx >= 0 ? idx : null
 	dropdown.open = true
 	// TODO: this should probably call the async function if it's async
-	dropdown.results = isAsync ? [] : items
+	dropdown.results = isAsync ? [] : options
 }
 
 const closeDropdown = (result?: string) => {
 	dropdown.activeItemIndex = null
 	dropdown.open = false
-	if (!items?.includes(result || search.value || '')) {
-		search.value = ''
+	if (!options?.includes(result || search.value || '')) {
+		search.value = committedValue.value
 	}
 }
 
 const filterResults = () => {
 	if (!search.value) {
-		dropdown.results = items
+		dropdown.results = options
 	} else {
-		dropdown.results = items?.filter(item => item.toLowerCase().includes((search.value ?? '').toLowerCase()))
+		dropdown.results = options?.filter(item => item.toLowerCase().includes((search.value ?? '').toLowerCase()))
 	}
 }
 
@@ -171,7 +185,7 @@ label {
 	margin: 0rem;
 	border: 1px solid transparent;
 	margin-bottom: 0.25rem;
-	z-index: 2;
+	z-index: 0;
 	font-size: 80%;
 	position: absolute;
 	background: white;
@@ -182,7 +196,7 @@ label {
 .autocomplete-results {
 	position: absolute;
 	width: calc(100% - 1ch + 1.5px);
-	z-index: 999;
+	z-index: 100;
 	padding: 0;
 	margin: 0;
 	color: var(--sc-input-active-border-color);

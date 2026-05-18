@@ -488,10 +488,12 @@ defineExpose({
 	cursor: grab;
 	box-sizing: border-box;
 	border: 1px solid rgba(0, 0, 0, 0.5);
-	transition: left 0.1s ease-out, width 0.1s ease-out;
+	transition:
+		left 0.1s ease-out,
+		width 0.1s ease-out;
 	height: 80%;
 	top: 50%;
-	z-index: 2;
+	z-index: 0;
 	transform: translateY(-50%);
 }
 
@@ -594,7 +596,7 @@ defineExpose({
 	opacity: 0;
 	transition: opacity 0.2s ease;
 	cursor: crosshair;
-	z-index: 15;
+	z-index: 2;
 	display: flex;
 	align-items: center;
 	justify-content: center;

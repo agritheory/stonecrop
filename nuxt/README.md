@@ -7,10 +7,10 @@ The official Nuxt module for Stonecrop - a schema-driven UI framework with event
 
 ## What is Stonecrop?
 
-Stonecrop is a **schema-driven UI framework** that generates forms, tables, and workflows from JSON schemas. Instead of manually creating CRUD interfaces for every data model, you define your data structure once and Stonecrop handles the UI generation, state management, and validation automatically.
+Stonecrop is a **schema-driven UI framework** that generates forms, tables, and workflows from JSON schemas. You define your data structure once and Stonecrop handles UI generation, state management, and validation.
 
 **Key Benefits:**
-- **Schema-Driven**: Define data models in JSON, get full CRUD interfaces automatically
+- **Schema-Driven**: Define data models in JSON; form and table rendering follows automatically
 - **HST State Management**: Hierarchical State Tree for complex, nested application state
 - **FSM Workflows**: XState-powered finite state machines for predictable business logic
 - **Nuxt Native**: First-class integration with Nuxt 4's architecture
@@ -100,6 +100,33 @@ Create a JSON schema in `/doctypes/task.json`:
 
 The module picks up this file and, if `pageComponent` is configured, registers a route at the doctype's `slug` value (or `task` if no slug is set), passing the parsed schema into `route.meta`.
 
+### Wire Up Your Data Client
+
+After installing the module, add a client-side plugin to connect your data transport. Use `useStonecropSetup()` in plugins — it's designed for the initialization context where Stonecrop may not be fully ready yet:
+
+```typescript
+// app/plugins/stonecrop.client.ts
+import { StonecropClient } from '@stonecrop/graphql-client'
+
+export default defineNuxtPlugin(() => {
+  const { registerClient, registerMeta } = useStonecropSetup()
+
+  const client = new StonecropClient({ endpoint: '/graphql' })
+
+  // Register the data client for record fetching
+  registerClient(client)
+
+  // Configure metadata fetching for lazy-loaded doctypes
+  // Called by useStonecrop() when it needs doctype metadata
+  registerMeta(({ segments }) => {
+    const doctype = segments[0] // e.g., "task" from /task/123
+    return client.getMeta({ doctype })
+  })
+})
+```
+
+This wires `useStonecrop()`'s automatic record loading to your GraphQL (or any other) backend. Without this step, `useStonecrop({ doctype, recordId })` falls back to a REST fetch stub that may not exist in your app.
+
 ### Use the Stonecrop Composable
 
 In your page or component:
@@ -108,19 +135,20 @@ In your page or component:
 <script setup lang="ts">
 import taskDoctype from '~/doctypes/task.json'
 
-// HST-reactive form setup
+// HST-reactive form setup — pass doctype + recordId for full integration
 const { stonecrop, provideHSTPath, handleHSTChange, formData } = useStonecrop({
   doctype: taskDoctype,
   recordId: 'task-123' // or undefined for new records
 })
 
-// Access the hierarchical state tree
-const taskTitle = stonecrop.getStore().get('task.task-123.title')
+// Access the hierarchical state tree directly
+const store = stonecrop.value?.getStore()
+const taskTitle = store?.get('task.task-123.title')
 </script>
 
 <template>
   <AForm
-    :schema="formData.schema"
+    :schema="taskDoctype.fields"
     :data="formData"
     @update="handleHSTChange"
   />
@@ -252,7 +280,6 @@ import { resolve } from 'path'
 
 const myStrategy: RouteStrategyFn = (doctypes) =>
   doctypes
-    .filter(({ data }) => !data.parentDoctype) // skip child tables
     .flatMap(({ fileName, data, fields }) => [
       {
         name: `${fileName}-list`,
@@ -276,10 +303,10 @@ export default defineNuxtConfig({
 ### Plugin Registration
 
 The module auto-registers:
-- `useStonecrop()` - Main composable for HST integration
-- `useTableNavigation()` - Helper for table-to-detail navigation
+- `useStonecropRegistry()` - Composable for wiring data clients and `getMeta` after plugin install
+- `useStonecrop()` - Main composable for HST integration (from `@stonecrop/stonecrop`)
 - Pinia store configuration
-- Component auto-imports (AForm, ATable, etc.)
+- AForm and ATable component registration (from `@stonecrop/aform`)
 
 ## Why Schema-Driven?
 
@@ -299,6 +326,88 @@ The module auto-registers:
 - **Self-Documenting**: Schemas serve as data model documentation
 - **Easy Updates**: Change schema, UI updates automatically
 
+## `useStonecropSetup()` — Configuring the Framework in Plugins
+
+When you need to configure Stonecrop during Nuxt plugin initialization (before components mount), use `useStonecropSetup()`. This composable is designed specifically for the plugin context and returns values that may be `undefined` if Stonecrop hasn't finished initializing.
+
+```typescript
+// app/plugins/stonecrop.client.ts
+import { StonecropClient } from '@stonecrop/graphql-client'
+
+export default defineNuxtPlugin(() => {
+  const { isReady, registerClient, registerMeta, registerDoctype } = useStonecropSetup()
+
+  // Check if Stonecrop is ready (module plugins run before project plugins)
+  if (!isReady) {
+    console.warn('Stonecrop not ready - ensure @stonecrop/nuxt module is installed')
+    return
+  }
+
+  const client = new StonecropClient({ endpoint: '/graphql' })
+
+  // Register the data client
+  registerClient(client)
+
+  // Configure metadata fetching for lazy-loaded doctypes
+  registerMeta(({ segments }) => {
+    const doctype = segments[0]
+    return client.getMeta({ doctype })
+  })
+
+  // Optionally pre-load doctypes into the Registry
+  const planDoctype = Doctype.fromObject({ name: 'plan', fields: [...] })
+  registerDoctype(planDoctype)
+})
+```
+
+### `useStonecropSetup()` vs `useStonecropRegistry()`
+
+| Context | Use | Behavior |
+|---------|-----|----------|
+| **Plugin/initialization** | `useStonecropSetup()` | Returns values that may be `undefined`; provides `isReady` check |
+| **Component/runtime** | `useStonecropRegistry()` | Throws if Stonecrop isn't initialized (expected to be ready) |
+
+### `useStonecropSetup()` API
+
+| Property/Method | Type | Description |
+|-----------------|------|-------------|
+| `registry` | `Registry \| undefined` | The Registry instance (undefined if not ready) |
+| `stonecrop` | `Stonecrop \| undefined` | The Stonecrop instance (undefined if not ready) |
+| `isReady` | `boolean` | `true` when both registry and stonecrop are available |
+| `registerClient(client)` | `(client: DataClient) => void` | Set the data client for record fetching. Throws if stonecrop not available. |
+| `getClient()` | `() => DataClient \| undefined` | Get the currently configured client. |
+| `registerMeta(fn)` | `(fn: (ctx) => Doctype) => void` | Set the `getMeta` function on the Registry. Throws if registry not available. |
+| `registerDoctype(doctype)` | `(doctype: Doctype) => void` | Pre-load a doctype into the Registry. Throws if registry not available. |
+| `dispatchAction(...)` | `Promise<{ success, data, error }>` | Dispatch an action via the configured client. |
+
+## `useStonecropRegistry()` — Using the Framework in Components
+
+`useStonecropRegistry()` is for component/runtime context where the framework is expected to be fully initialized. Use it in components to access the configured registry and stonecrop instances.
+
+```typescript
+// In a component or composable
+const { registry, stonecrop, dispatchAction } = useStonecropRegistry()
+
+// Access doctype metadata
+const plan = registry.getDoctype('plan')
+
+// Dispatch actions
+await dispatchAction({ name: 'plan' }, 'SUBMIT', [recordId])
+```
+
+**Note**: If called before Stonecrop is initialized (e.g., in a plugin), this throws with guidance to use `useStonecropSetup()` instead.
+
+### `useStonecropRegistry()` API
+
+| Property/Method | Type | Description |
+|-----------------|------|-------------|
+| `registry` | `Registry` | The Registry instance for doctype management. |
+| `stonecrop` | `Stonecrop` | The Stonecrop instance for HST and operation log access. Throws if not initialized. |
+| `setMeta(fn)` | `(fn: (ctx) => Doctype \| Promise<Doctype>) => void` | Sets the `getMeta` function on the Registry. Called by `useStonecrop()` to lazy-load doctype metadata for the current route. `ctx` = `{ path, segments }`. |
+| `setClient(client)` | `(client: DataClient) => void` | Set the data client for record fetching. Throws if stonecrop not available. |
+| `getClient()` | `() => DataClient \| undefined` | Get the currently configured client. |
+| `dispatchAction(doctype, action, args)` | `Promise<{ success, data, error }>` | Dispatch an action via the configured client. Returns error if doctype not found in registry. |
+
 ## Advanced Features
 
 ### Hierarchical State Tree (HST)
@@ -316,7 +425,7 @@ const completed = store.get('project.proj-1.tasks.task-1.completed')
 
 // Navigate the tree hierarchy
 const taskNode = store.getNode('project.proj-1.tasks.task-1')
-const parent = taskNode.getParent() // Returns project node
+const ancestor = taskNode.getAncestor() // Returns project node
 const breadcrumbs = taskNode.getBreadcrumbs()
 ```
 

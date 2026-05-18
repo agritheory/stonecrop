@@ -172,7 +172,7 @@ describe('Grafserv Module', () => {
 		})
 
 		it('should handle function schema providers', () => {
-			const schemaFn = () => ({ _type: 'MockSchema' } as unknown as import('graphql').GraphQLSchema)
+			const schemaFn = () => ({ _type: 'MockSchema' }) as unknown as import('graphql').GraphQLSchema
 			const options: ModuleOptions = {
 				type: 'schema',
 				schema: schemaFn,

@@ -1,6 +1,185 @@
 # Change Log - @stonecrop/utilities
 
-This log was last generated on Tue, 10 Mar 2026 11:23:09 GMT and should not be manually modified.
+This log was last generated on Thu, 14 May 2026 11:55:38 GMT and should not be manually modified.
+
+## 0.12.6
+Thu, 14 May 2026 11:55:38 GMT
+
+_Version update only_
+
+## 0.12.5
+Thu, 14 May 2026 10:29:38 GMT
+
+_Version update only_
+
+## 0.12.4
+Thu, 14 May 2026 07:19:11 GMT
+
+_Version update only_
+
+## 0.12.3
+Wed, 13 May 2026 12:28:05 GMT
+
+_Version update only_
+
+## 0.12.2
+Wed, 13 May 2026 10:58:06 GMT
+
+_Version update only_
+
+## 0.12.1
+Wed, 13 May 2026 09:25:06 GMT
+
+### Patches
+
+- update node to v24
+
+## 0.12.0
+Mon, 11 May 2026 06:46:46 GMT
+
+_Version update only_
+
+## 0.11.10
+Fri, 08 May 2026 06:36:28 GMT
+
+_Version update only_
+
+## 0.11.9
+Tue, 05 May 2026 12:04:47 GMT
+
+_Version update only_
+
+## 0.11.8
+Tue, 05 May 2026 09:51:14 GMT
+
+### Patches
+
+- update major dependencies
+
+## 0.11.7
+Thu, 30 Apr 2026 07:14:26 GMT
+
+_Version update only_
+
+## 0.11.6
+Thu, 30 Apr 2026 06:41:02 GMT
+
+_Version update only_
+
+## 0.11.5
+Tue, 28 Apr 2026 12:21:29 GMT
+
+_Version update only_
+
+## 0.11.4
+Thu, 23 Apr 2026 05:13:40 GMT
+
+_Version update only_
+
+## 0.11.3
+Tue, 21 Apr 2026 11:58:44 GMT
+
+_Version update only_
+
+## 0.11.2
+Tue, 21 Apr 2026 09:18:00 GMT
+
+_Version update only_
+
+## 0.11.1
+Mon, 20 Apr 2026 09:04:08 GMT
+
+_Version update only_
+
+## 0.11.0
+Mon, 13 Apr 2026 13:16:48 GMT
+
+_Version update only_
+
+## 0.10.16
+Wed, 01 Apr 2026 14:54:57 GMT
+
+_Version update only_
+
+## 0.10.15
+Tue, 31 Mar 2026 14:13:49 GMT
+
+_Version update only_
+
+## 0.10.14
+Tue, 31 Mar 2026 12:49:57 GMT
+
+_Version update only_
+
+## 0.10.13
+Wed, 25 Mar 2026 14:29:05 GMT
+
+_Version update only_
+
+## 0.10.12
+Tue, 24 Mar 2026 10:41:22 GMT
+
+_Version update only_
+
+## 0.10.11
+Fri, 20 Mar 2026 09:13:21 GMT
+
+_Version update only_
+
+## 0.10.10
+Fri, 20 Mar 2026 08:28:51 GMT
+
+_Version update only_
+
+## 0.10.9
+Thu, 19 Mar 2026 11:25:47 GMT
+
+_Version update only_
+
+## 0.10.8
+Thu, 19 Mar 2026 10:18:16 GMT
+
+_Version update only_
+
+## 0.10.7
+Thu, 19 Mar 2026 06:26:37 GMT
+
+_Version update only_
+
+## 0.10.6
+Thu, 19 Mar 2026 06:12:08 GMT
+
+_Version update only_
+
+## 0.10.5
+Wed, 18 Mar 2026 12:05:59 GMT
+
+_Version update only_
+
+## 0.10.4
+Wed, 18 Mar 2026 06:27:10 GMT
+
+_Version update only_
+
+## 0.10.3
+Tue, 17 Mar 2026 13:56:02 GMT
+
+_Version update only_
+
+## 0.10.2
+Mon, 16 Mar 2026 06:07:45 GMT
+
+_Version update only_
+
+## 0.10.1
+Fri, 13 Mar 2026 12:42:27 GMT
+
+_Version update only_
+
+## 0.10.0
+Wed, 11 Mar 2026 12:07:57 GMT
+
+_Version update only_
 
 ## 0.9.2
 Tue, 10 Mar 2026 11:23:09 GMT

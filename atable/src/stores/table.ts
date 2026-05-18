@@ -46,8 +46,10 @@ export const createTableStore = (initData: {
 	id?: string
 	config?: TableConfig
 	modal?: TableModal
+	linkResolver?: ((doctype: string, id: string) => Promise<string | undefined>) | null
 }) => {
 	const id = initData.id || generateHash()
+	const linkResolver = initData.linkResolver ?? null
 	const createStore = defineStore(`table-${id}`, () => {
 		const createDisplayObject = () => {
 			const defaultDisplay: TableDisplay[] = [Object.assign({}, { rowModified: false })]
@@ -124,14 +126,14 @@ export const createTableStore = (initData: {
 		// state
 		const columns = ref(initData.columns)
 		const rows = ref(initData.rows)
-		const config = ref(initData.config || {})
+		const config = ref<TableConfig>(initData.config || {})
 
 		// Track row modifications and expand states separately from the computed display
 		const rowModifications = ref<Record<number, boolean>>({})
 		const rowExpandStates = ref<Record<number, { childrenOpen?: boolean; expanded?: boolean }>>({})
 
 		const table = computed(() => {
-			const table = {}
+			const table: Record<string, any> = {}
 			for (const [colIndex, column] of columns.value.entries()) {
 				for (const [rowIndex, row] of rows.value.entries()) {
 					table[`${colIndex}:${rowIndex}`] = row[column.name]
@@ -232,7 +234,7 @@ export const createTableStore = (initData: {
 		)
 
 		const filteredRows = computed(() => {
-			let filtered = rows.value.map((row, originalIndex) => ({
+			let filtered: Array<TableRow & { originalIndex: number }> = rows.value.map((row, originalIndex) => ({
 				...row,
 				originalIndex,
 			}))
@@ -425,7 +427,16 @@ export const createTableStore = (initData: {
 			const format = column.format
 
 			if (!format) {
-				return value
+				switch (column.fieldtype) {
+					case 'Check':
+						return value ? '✓' : '✗'
+					case 'Date':
+						return value != null ? new Date(value as string).toLocaleDateString() : value
+					case 'Datetime':
+						return value != null ? new Date(value as string).toLocaleString() : value
+					default:
+						return value
+				}
 			}
 
 			if (typeof format === 'function') {
@@ -595,14 +606,10 @@ export const createTableStore = (initData: {
 
 			switch (filterType) {
 				case 'text': {
-					// Handle objects with nested properties
-					let searchableText = ''
-					if (typeof cellValue === 'object' && cellValue !== null) {
-						// If it's an object, search in all string values
-						searchableText = Object.values(cellValue as Record<string, unknown>).join(' ')
-					} else {
-						searchableText = String(cellValue || '')
-					}
+					const searchableText =
+						typeof cellValue === 'object' && cellValue !== null
+							? Object.values(cellValue as Record<string, unknown>).join(' ')
+							: String(cellValue || '')
 					return searchableText.toLowerCase().includes(String(value).toLowerCase())
 				}
 
@@ -897,6 +904,9 @@ export const createTableStore = (initData: {
 			isDependencyGraphEnabled,
 			numberedRowWidth,
 			zeroColumn,
+
+			// resolver
+			linkResolver,
 
 			// actions
 			addRow,

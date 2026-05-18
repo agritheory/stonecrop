@@ -7,15 +7,19 @@
 import type { AnyStateNodeConfig } from 'xstate';
 import { Component } from 'vue';
 import { ComputedRef } from 'vue';
+import type { DataClient } from '@stonecrop/schema';
+import type { FieldMeta } from '@stonecrop/schema';
+import type { LinkDeclaration } from '@stonecrop/schema';
 import { List } from 'immutable';
 import { Map as Map_2 } from 'immutable';
 import { Plugin as Plugin_2 } from 'vue';
 import { Ref } from 'vue';
 import { Router } from 'vue-router';
-import { SchemaTypes } from '@stonecrop/aform';
+import type { SchemaTypes } from '@stonecrop/aform';
 import { Store } from 'pinia';
 import { StoreDefinition } from 'pinia';
 import type { UnknownMachineConfig } from 'xstate';
+import type { WorkflowMeta } from '@stonecrop/schema';
 
 // @public
 export interface ActionExecutionResult {
@@ -50,7 +54,7 @@ export interface BatchOperation {
 }
 
 // @public
-export function createHST(target: any, doctype: string, parentDoctype?: string): HSTNode;
+export function createHST(target: any, doctype: string): HSTNode;
 
 // @public
 export function createValidator(registry: Registry, options?: Partial<ValidatorOptions>): SchemaValidator;
@@ -68,15 +72,44 @@ export interface CrossTabMessage {
 export type CrossTabMessageType = 'operation' | 'undo' | 'redo' | 'sync-request' | 'sync-response';
 
 // @public
-export class DoctypeMeta {
-    constructor(doctype: string, schema: ImmutableDoctype['schema'], workflow: ImmutableDoctype['workflow'], actions: ImmutableDoctype['actions'], component?: Component);
+export class Doctype {
+    constructor(doctype: string, schema: ImmutableDoctype['schema'], workflow: ImmutableDoctype['workflow'], actions: ImmutableDoctype['actions'], component?: Component, links?: Record<string, LinkDeclaration>);
     readonly actions: ImmutableDoctype['actions'];
     readonly component?: Component;
     readonly doctype: string;
+    static fromObject(config: DoctypeConfig): Doctype;
+    getActionMeta(actionName: string): {
+        label: string;
+        handler: string;
+        requiredFields?: string[];
+        allowedStates?: string[];
+        confirm?: boolean;
+        args?: Record<string, unknown>;
+    } | undefined;
+    getActionsObject(): Record<string, string[]>;
+    getAvailableTransitions(currentState: string): Array<{
+        name: string;
+        targetState: string;
+    }>;
+    getSchemaArray(): SchemaTypes[];
+    readonly links?: Record<string, LinkDeclaration>;
+    get name(): string;
     readonly schema: ImmutableDoctype['schema'];
     get slug(): string;
     readonly workflow: ImmutableDoctype['workflow'];
 }
+
+// @public
+export type DoctypeConfig = {
+    name: string;
+    slug?: string;
+    tableName?: string;
+    fields?: (SchemaTypes | FieldMeta)[];
+    links?: Record<string, LinkDeclaration>;
+    workflow?: UnknownMachineConfig | WorkflowMeta;
+    actions?: Record<string, string[]>;
+    inherits?: string;
+};
 
 // @public
 export type FieldAction = FieldActionFunction | FieldActionString;
@@ -120,6 +153,7 @@ export class FieldTriggerEngine {
     executeTransitionActions(context: TransitionChangeContext, options?: {
         timeout?: number;
     }): Promise<TransitionExecutionResult[]>;
+    getAction(name: string): FieldActionFunction | undefined;
     registerAction(name: string, fn: FieldActionFunction): void;
     registerDoctypeActions(doctype: string, actions: Map_2<string, string[]> | Map<string, string[]> | Record<string, string[]> | undefined): void;
     registerTransitionAction(name: string, fn: TransitionActionFunction): void;
@@ -153,6 +187,9 @@ export interface FieldTriggerOptions {
 export function getGlobalTriggerEngine(options?: FieldTriggerOptions): FieldTriggerEngine;
 
 // @public
+export function getStonecrop(): Stonecrop | undefined;
+
+// @public
 export class HST {
     getDoctypeMeta(doctype: string): any;
     static getInstance(): HST;
@@ -170,10 +207,10 @@ export type HSTChangeData = {
 // @public
 export interface HSTNode {
     get(path: string): any;
+    getAncestor(): HSTNode | null;
     getBreadcrumbs(): string[];
     getDepth(): number;
     getNode(path: string): HSTNode;
-    getParent(): HSTNode | null;
     getPath(): string;
     getRoot(): HSTNode;
     has(path: string): boolean;
@@ -192,15 +229,15 @@ export interface HSTOperation {
     actionRecordIds?: string[];
     actionResult?: 'success' | 'failure' | 'pending';
     afterValue: any;
+    ancestorOperationId?: string;
     beforeValue: any;
-    childOperationIds?: string[];
     currentState?: string;
+    descendantOperationIds?: string[];
     doctype: string;
     fieldname: string;
     id: string;
     irreversibleReason?: string;
     metadata?: Record<string, any>;
-    parentOperationId?: string;
     path: string;
     recordId?: string;
     reversible: boolean;
@@ -227,28 +264,47 @@ export type HSTStonecropReturn = BaseStonecropReturn & {
     hstStore: Ref<HSTNode | undefined>;
     formData: Ref<Record<string, any>>;
     resolvedSchema: Ref<SchemaTypes[]>;
-    loadNestedData: (parentPath: string, childDoctype: DoctypeMeta, recordId?: string) => Record<string, any>;
-    saveRecursive: (doctype: DoctypeMeta, recordId: string) => Promise<Record<string, any>>;
-    createNestedContext: (basePath: string, childDoctype: DoctypeMeta) => {
+    initializeNestedData: (path: string, doctype: Doctype) => void;
+    fetchNestedData: (path: string, doctype: Doctype, recordId: string, options?: {
+        includeNested?: boolean | string[];
+    }) => Promise<void>;
+    collectRecordPayload: (doctype: Doctype, recordId: string) => Record<string, any>;
+    createNestedContext: (basePath: string, descendantDoctype: Doctype) => {
         provideHSTPath: (fieldname: string) => string;
         handleHSTChange: (changeData: HSTChangeData) => void;
     };
+    isLoading: Ref<boolean>;
+    error: Ref<Error | null>;
+    resolvedDoctype: Ref<Doctype | undefined>;
+    isWorkflowReady: ComputedRef<boolean>;
+    blockedLinks: ComputedRef<string[]>;
 };
 
 // @public
 export type ImmutableDoctype = {
     readonly schema?: List<SchemaTypes>;
-    readonly workflow?: UnknownMachineConfig | AnyStateNodeConfig;
+    readonly workflow?: UnknownMachineConfig | AnyStateNodeConfig | WorkflowMeta;
     readonly actions?: Map_2<string, string[]>;
+    readonly links?: Record<string, LinkDeclaration>;
 };
 
 // @public
 export type InstallOptions = {
     router?: Router;
     components?: Record<string, Component>;
-    getMeta?: (routeContext: RouteContext) => DoctypeMeta | Promise<DoctypeMeta>;
+    getMeta?: (routeContext: RouteContext) => Doctype | Promise<Doctype>;
+    client?: DataClient;
     autoInitializeRouter?: boolean;
     onRouterInitialized?: (registry: Registry, stonecrop: Stonecrop) => void | Promise<void>;
+};
+
+// @public
+export type LazyLink = {
+    loading: Ref<boolean>;
+    loaded: Ref<boolean>;
+    error: Ref<Error | null>;
+    reload: () => Promise<void>;
+    data: ComputedRef<any>;
 };
 
 // @public
@@ -258,7 +314,7 @@ export function markOperationIrreversible(operationId: string | undefined, reaso
 export type MutableDoctype = {
     doctype?: string;
     schema?: SchemaTypes[];
-    workflow?: UnknownMachineConfig | AnyStateNodeConfig;
+    workflow?: UnknownMachineConfig | AnyStateNodeConfig | WorkflowMeta;
     actions?: Record<string, string[]>;
 };
 
@@ -333,13 +389,21 @@ export function registerTransitionAction(name: string, fn: TransitionActionFunct
 
 // @public
 export class Registry {
-    constructor(router?: Router, getMeta?: (routeContext: RouteContext) => DoctypeMeta | Promise<DoctypeMeta>);
-    addDoctype(doctype: DoctypeMeta): void;
-    getMeta?: (routeContext: RouteContext) => DoctypeMeta | Promise<DoctypeMeta>;
+    constructor(router?: Router, getMeta?: (routeContext: RouteContext) => Doctype | Promise<Doctype>);
+    addDoctype(doctype: Doctype): void;
+    getAncestorLinks(doctypeSlug: string): Array<LinkDeclaration & {
+        fieldname: string;
+        doctype: string;
+    }>;
+    getDescendantLinks(doctypeSlug: string): Array<LinkDeclaration & {
+        fieldname: string;
+    }>;
+    getDoctype(slug: string): Doctype | undefined;
+    getMeta?: (routeContext: RouteContext) => Doctype | Promise<Doctype>;
     initializeRecord(schema: SchemaTypes[]): Record<string, any>;
     readonly name: string;
-    readonly registry: Record<string, DoctypeMeta>;
-    resolveSchema(schema: SchemaTypes[], visited?: Set<string>): SchemaTypes[];
+    readonly registry: Record<string, Doctype>;
+    resolveSchema(doctype: Doctype, visited?: Set<string>): SchemaTypes[];
     static _root: Registry;
     readonly router?: Router;
 }
@@ -359,7 +423,7 @@ export type Schema = {
 // @public
 export class SchemaValidator {
     constructor(options?: ValidatorOptions);
-    validate(doctype: string, schema: List<SchemaTypes> | SchemaTypes[] | undefined, workflow?: AnyStateNodeConfig, actions?: Map_2<string, string[]> | Map<string, string[]>): ValidationResult;
+    validate(doctype: string, schema: List<SchemaTypes> | SchemaTypes[] | undefined, workflow?: AnyStateNodeConfig, actions?: Map_2<string, string[]> | Map<string, string[]>, links?: Record<string, LinkDeclaration>): ValidationResult;
 }
 
 // @public
@@ -367,9 +431,19 @@ export function setFieldRollback(doctype: string, fieldname: string, enableRollb
 
 // @public
 export class Stonecrop {
-    constructor(registry: Registry, operationLogConfig?: Partial<OperationLogConfig>);
-    addRecord(doctype: string | DoctypeMeta, recordId: string, recordData: any): void;
-    clearRecords(doctype: string | DoctypeMeta): void;
+    constructor(registry: Registry, operationLogConfig?: Partial<OperationLogConfig>, options?: StonecropOptions);
+    addRecord(doctype: string | Doctype, recordId: string, recordData: any): void;
+    clearRecords(doctype: string | Doctype): void;
+    collectRecordPayload(doctype: Doctype, recordId: string): Record<string, any>;
+    dispatchAction(doctype: Doctype, action: string, args?: unknown[]): Promise<{
+        success: boolean;
+        data: unknown;
+        error: string | null;
+    }>;
+    fetchNestedData(path: string, doctype: Doctype, recordId: string, options?: {
+        includeNested?: boolean | string[];
+    }): Promise<void>;
+    getClient(): DataClient | undefined;
     getMeta(context: RouteContext): Promise<any>;
     // @internal
     getOperationLogStore(): Store<"hst-operation-log", Pick<{
@@ -395,8 +469,8 @@ export class Stonecrop {
     actionError?: string | undefined;
     userId?: string | undefined;
     metadata?: Record<string, any> | undefined;
-    parentOperationId?: string | undefined;
-    childOperationIds?: string[] | undefined;
+    ancestorOperationId?: string | undefined;
+    descendantOperationIds?: string[] | undefined;
     }[], HSTOperation[] | {
     id: string;
     type: HSTOperationType;
@@ -419,8 +493,8 @@ export class Stonecrop {
     actionError?: string | undefined;
     userId?: string | undefined;
     metadata?: Record<string, any> | undefined;
-    parentOperationId?: string | undefined;
-    childOperationIds?: string[] | undefined;
+    ancestorOperationId?: string | undefined;
+    descendantOperationIds?: string[] | undefined;
     }[]>;
     currentIndex: Ref<number, number>;
     config: Ref<    {
@@ -458,7 +532,7 @@ export class Stonecrop {
     getSnapshot: () => OperationLogSnapshot;
     markIrreversible: (operationId: string, reason: string) => void;
     logAction: (doctype: string, actionName: string, recordIds?: string[], result?: "success" | "failure" | "pending", error?: string) => string;
-    }, "operations" | "clientId" | "currentIndex" | "config">, Pick<{
+    }, "operations" | "currentIndex" | "config" | "clientId">, Pick<{
     operations: Ref<    {
     id: string;
     type: HSTOperationType;
@@ -481,8 +555,8 @@ export class Stonecrop {
     actionError?: string | undefined;
     userId?: string | undefined;
     metadata?: Record<string, any> | undefined;
-    parentOperationId?: string | undefined;
-    childOperationIds?: string[] | undefined;
+    ancestorOperationId?: string | undefined;
+    descendantOperationIds?: string[] | undefined;
     }[], HSTOperation[] | {
     id: string;
     type: HSTOperationType;
@@ -505,8 +579,8 @@ export class Stonecrop {
     actionError?: string | undefined;
     userId?: string | undefined;
     metadata?: Record<string, any> | undefined;
-    parentOperationId?: string | undefined;
-    childOperationIds?: string[] | undefined;
+    ancestorOperationId?: string | undefined;
+    descendantOperationIds?: string[] | undefined;
     }[]>;
     currentIndex: Ref<number, number>;
     config: Ref<    {
@@ -567,8 +641,8 @@ export class Stonecrop {
     actionError?: string | undefined;
     userId?: string | undefined;
     metadata?: Record<string, any> | undefined;
-    parentOperationId?: string | undefined;
-    childOperationIds?: string[] | undefined;
+    ancestorOperationId?: string | undefined;
+    descendantOperationIds?: string[] | undefined;
     }[], HSTOperation[] | {
     id: string;
     type: HSTOperationType;
@@ -591,8 +665,8 @@ export class Stonecrop {
     actionError?: string | undefined;
     userId?: string | undefined;
     metadata?: Record<string, any> | undefined;
-    parentOperationId?: string | undefined;
-    childOperationIds?: string[] | undefined;
+    ancestorOperationId?: string | undefined;
+    descendantOperationIds?: string[] | undefined;
     }[]>;
     currentIndex: Ref<number, number>;
     config: Ref<    {
@@ -631,16 +705,30 @@ export class Stonecrop {
     markIrreversible: (operationId: string, reason: string) => void;
     logAction: (doctype: string, actionName: string, recordIds?: string[], result?: "success" | "failure" | "pending", error?: string) => string;
     }, "undo" | "redo" | "configure" | "addOperation" | "startBatch" | "commitBatch" | "cancelBatch" | "clear" | "getOperationsFor" | "getSnapshot" | "markIrreversible" | "logAction">>;
-    getRecord(doctype: DoctypeMeta, recordId: string): Promise<void>;
-    getRecordById(doctype: string | DoctypeMeta, recordId: string): HSTNode | undefined;
-    getRecordIds(doctype: string | DoctypeMeta): string[];
-    getRecords(doctype: DoctypeMeta): Promise<void>;
+    getRecord(doctype: string | Doctype, recordId: string): Promise<void>;
+    getRecordById(doctype: string | Doctype, recordId: string): HSTNode | undefined;
+    getRecordIds(doctype: string | Doctype): string[];
+    getRecords(doctype: Doctype): Promise<void>;
+    getRecordState(doctype: string | Doctype, recordId: string): string;
     getStore(): HSTNode;
-    records(doctype: string | DoctypeMeta): HSTNode;
+    initializeNestedData(path: string, doctype: Doctype): void;
+    isWorkflowReady(doctype: Doctype, recordId: string): {
+        ready: boolean;
+        blockedLinks?: string[];
+    };
+    records(doctype: string | Doctype): HSTNode;
     readonly registry: Registry;
-    removeRecord(doctype: string | DoctypeMeta, recordId: string): void;
-    runAction(doctype: DoctypeMeta, action: string, args?: any[]): void;
-    setup(doctype: DoctypeMeta): void;
+    removeRecord(doctype: string | Doctype, recordId: string): void;
+    // @internal
+    static _root: Stonecrop;
+    runAction(doctype: Doctype, action: string, args?: string[]): void;
+    setClient(client: DataClient): void;
+    setup(doctype: Doctype): void;
+}
+
+// @public
+export interface StonecropOptions {
+    client?: DataClient;
 }
 
 // @public
@@ -685,6 +773,9 @@ export interface UndoRedoState {
 }
 
 // @public
+export function useLazyLink(doctype: Doctype, recordId: string, linkFieldname: string): LazyLink;
+
+// @public
 export function useOperationLog(config?: Partial<OperationLogConfig>): {
     operations: Ref<    {
     id: string;
@@ -708,8 +799,8 @@ export function useOperationLog(config?: Partial<OperationLogConfig>): {
     actionError?: string | undefined;
     userId?: string | undefined;
     metadata?: Record<string, any> | undefined;
-    parentOperationId?: string | undefined;
-    childOperationIds?: string[] | undefined;
+    ancestorOperationId?: string | undefined;
+    descendantOperationIds?: string[] | undefined;
     }[], HSTOperation[] | {
     id: string;
     type: HSTOperationType;
@@ -732,8 +823,8 @@ export function useOperationLog(config?: Partial<OperationLogConfig>): {
     actionError?: string | undefined;
     userId?: string | undefined;
     metadata?: Record<string, any> | undefined;
-    parentOperationId?: string | undefined;
-    childOperationIds?: string[] | undefined;
+    ancestorOperationId?: string | undefined;
+    descendantOperationIds?: string[] | undefined;
     }[]>;
     currentIndex: Ref<number, number>;
     undoRedoState: ComputedRef<UndoRedoState>;
@@ -778,8 +869,8 @@ actionResult?: "success" | "failure" | "pending" | undefined;
 actionError?: string | undefined;
 userId?: string | undefined;
 metadata?: Record<string, any> | undefined;
-parentOperationId?: string | undefined;
-childOperationIds?: string[] | undefined;
+ancestorOperationId?: string | undefined;
+descendantOperationIds?: string[] | undefined;
 }[], HSTOperation[] | {
 id: string;
 type: HSTOperationType;
@@ -802,8 +893,8 @@ actionResult?: "success" | "failure" | "pending" | undefined;
 actionError?: string | undefined;
 userId?: string | undefined;
 metadata?: Record<string, any> | undefined;
-parentOperationId?: string | undefined;
-childOperationIds?: string[] | undefined;
+ancestorOperationId?: string | undefined;
+descendantOperationIds?: string[] | undefined;
 }[]>;
 currentIndex: Ref<number, number>;
 config: Ref<    {
@@ -841,7 +932,7 @@ getOperationsFor: (doctype: string, recordId?: string) => HSTOperation[];
 getSnapshot: () => OperationLogSnapshot;
 markIrreversible: (operationId: string, reason: string) => void;
 logAction: (doctype: string, actionName: string, recordIds?: string[], result?: "success" | "failure" | "pending", error?: string) => string;
-}, "operations" | "clientId" | "currentIndex" | "config">, Pick<{
+}, "operations" | "currentIndex" | "config" | "clientId">, Pick<{
 operations: Ref<    {
 id: string;
 type: HSTOperationType;
@@ -864,8 +955,8 @@ actionResult?: "success" | "failure" | "pending" | undefined;
 actionError?: string | undefined;
 userId?: string | undefined;
 metadata?: Record<string, any> | undefined;
-parentOperationId?: string | undefined;
-childOperationIds?: string[] | undefined;
+ancestorOperationId?: string | undefined;
+descendantOperationIds?: string[] | undefined;
 }[], HSTOperation[] | {
 id: string;
 type: HSTOperationType;
@@ -888,8 +979,8 @@ actionResult?: "success" | "failure" | "pending" | undefined;
 actionError?: string | undefined;
 userId?: string | undefined;
 metadata?: Record<string, any> | undefined;
-parentOperationId?: string | undefined;
-childOperationIds?: string[] | undefined;
+ancestorOperationId?: string | undefined;
+descendantOperationIds?: string[] | undefined;
 }[]>;
 currentIndex: Ref<number, number>;
 config: Ref<    {
@@ -950,8 +1041,8 @@ actionResult?: "success" | "failure" | "pending" | undefined;
 actionError?: string | undefined;
 userId?: string | undefined;
 metadata?: Record<string, any> | undefined;
-parentOperationId?: string | undefined;
-childOperationIds?: string[] | undefined;
+ancestorOperationId?: string | undefined;
+descendantOperationIds?: string[] | undefined;
 }[], HSTOperation[] | {
 id: string;
 type: HSTOperationType;
@@ -974,8 +1065,8 @@ actionResult?: "success" | "failure" | "pending" | undefined;
 actionError?: string | undefined;
 userId?: string | undefined;
 metadata?: Record<string, any> | undefined;
-parentOperationId?: string | undefined;
-childOperationIds?: string[] | undefined;
+ancestorOperationId?: string | undefined;
+descendantOperationIds?: string[] | undefined;
 }[]>;
 currentIndex: Ref<number, number>;
 config: Ref<    {
@@ -1021,7 +1112,7 @@ export function useStonecrop(): BaseStonecropReturn | HSTStonecropReturn;
 // @public
 export function useStonecrop(options: {
     registry?: Registry;
-    doctype: DoctypeMeta;
+    doctype: Doctype | string;
     recordId?: string;
 }): HSTStonecropReturn;
 
@@ -1061,6 +1152,7 @@ export enum ValidationSeverity {
 export interface ValidatorOptions {
     registry?: Registry;
     validateActions?: boolean;
+    validateLinks?: boolean;
     validateLinkTargets?: boolean;
     validateRequiredProperties?: boolean;
     validateWorkflows?: boolean;

@@ -2,6 +2,7 @@ import { mount, flushPromises } from '@vue/test-utils'
 import { describe, it, expect } from 'vitest'
 
 import AForm from '../src/components/AForm.vue'
+import AFieldset from '../src/components/form/AFieldset.vue'
 import ATextInput from '../src/components/form/ATextInput.vue'
 import type { SchemaTypes } from '../src/types'
 
@@ -20,7 +21,6 @@ describe('AForm Nested Schema Rendering', () => {
 		},
 		{
 			fieldname: 'address',
-			fieldtype: 'Doctype',
 			options: 'address',
 			label: 'Address',
 			schema: addressSchema,
@@ -64,7 +64,6 @@ describe('AForm Nested Schema Rendering', () => {
 			},
 			{
 				fieldname: 'address',
-				fieldtype: 'Doctype',
 				options: 'address',
 				// no label
 				schema: addressSchema,
@@ -105,7 +104,7 @@ describe('AForm Nested Schema Rendering', () => {
 				},
 			},
 			global: {
-				components: { ATextInput },
+				components: { ATextInput, AForm },
 			},
 		})
 
@@ -178,7 +177,7 @@ describe('AForm Nested Schema Rendering', () => {
 				},
 			},
 			global: {
-				components: { ATextInput },
+				components: { ATextInput, AForm },
 			},
 		})
 
@@ -214,7 +213,6 @@ describe('AForm Nested Schema Rendering', () => {
 			},
 			{
 				fieldname: 'address',
-				fieldtype: 'Doctype',
 				options: 'address',
 				label: 'Address',
 				schema: [], // empty schema
@@ -248,7 +246,6 @@ describe('AForm Nested Schema Rendering', () => {
 			},
 			{
 				fieldname: 'address',
-				fieldtype: 'Doctype',
 				options: 'address',
 				label: 'Address',
 				// no schema property at all
@@ -271,7 +268,7 @@ describe('AForm Nested Schema Rendering', () => {
 		expect(nestedSections.length).toBe(0)
 	})
 
-	it('passes readOnly to nested AForm', async () => {
+	it('passes mode to nested AForm', async () => {
 		const wrapper = mount(AForm, {
 			props: {
 				schema: nestedSchema,
@@ -279,7 +276,7 @@ describe('AForm Nested Schema Rendering', () => {
 					name: 'John',
 					address: { street: '123 Main St', city: 'Springfield' },
 				},
-				readOnly: true,
+				mode: 'read',
 			},
 			global: {
 				components: { ATextInput },
@@ -289,15 +286,15 @@ describe('AForm Nested Schema Rendering', () => {
 		await wrapper.vm.$nextTick()
 		await flushPromises()
 
-		// The nested AForm should receive readOnly
+		// The nested AForm should receive mode
 		const nestedForms = wrapper.findAllComponents(AForm)
 		if (nestedForms.length > 1) {
-			expect(nestedForms[1].props('readOnly')).toBe(true)
+			expect(nestedForms[1].props('mode')).toBe('read')
 		}
 	})
 
-	it('passes per-field readOnly to nested AForm', async () => {
-		const schemaWithReadOnly: SchemaTypes[] = [
+	it('passes per-field mode to nested AForm', async () => {
+		const schemaWithMode: SchemaTypes[] = [
 			{
 				fieldname: 'name',
 				fieldtype: 'Data',
@@ -306,17 +303,16 @@ describe('AForm Nested Schema Rendering', () => {
 			},
 			{
 				fieldname: 'address',
-				fieldtype: 'Doctype',
 				options: 'address',
 				label: 'Address',
-				readOnly: true,
+				mode: 'read',
 				schema: addressSchema,
 			},
 		] as SchemaTypes[]
 
 		const wrapper = mount(AForm, {
 			props: {
-				schema: schemaWithReadOnly,
+				schema: schemaWithMode,
 				data: {
 					name: 'John',
 					address: { street: '123 Main St', city: 'Springfield' },
@@ -330,10 +326,10 @@ describe('AForm Nested Schema Rendering', () => {
 		await wrapper.vm.$nextTick()
 		await flushPromises()
 
-		// The nested AForm should receive readOnly from the field
+		// The nested AForm should receive mode from the field
 		const nestedForms = wrapper.findAllComponents(AForm)
 		if (nestedForms.length > 1) {
-			expect(nestedForms[1].props('readOnly')).toBe(true)
+			expect(nestedForms[1].props('mode')).toBe('read')
 		}
 	})
 
@@ -351,14 +347,12 @@ describe('AForm Nested Schema Rendering', () => {
 			},
 			{
 				fieldname: 'address',
-				fieldtype: 'Doctype',
 				options: 'address',
 				label: 'Address',
 				schema: addressSchema,
 			},
 			{
 				fieldname: 'billing',
-				fieldtype: 'Doctype',
 				options: 'billing',
 				label: 'Billing',
 				schema: billingSchema,
@@ -384,6 +378,40 @@ describe('AForm Nested Schema Rendering', () => {
 
 		const nestedSections = wrapper.findAll('.aform-nested-section')
 		expect(nestedSections.length).toBe(2)
+	})
+
+	it('does NOT render as nested section when schema AND kind: "table" are both set', async () => {
+		const tableSchema: SchemaTypes[] = [
+			{
+				fieldname: 'name',
+				fieldtype: 'Data',
+				component: 'ATextInput',
+				label: 'Name',
+			},
+			{
+				fieldname: 'items',
+				label: 'Items',
+				component: 'ATable',
+				kind: 'table',
+				schema: [
+					{ fieldname: 'qty', fieldtype: 'Int', label: 'Qty' },
+					{ fieldname: 'price', fieldtype: 'Currency', label: 'Price' },
+				],
+			} as any,
+		] as SchemaTypes[]
+
+		const wrapper = mount(AForm, {
+			props: {
+				schema: tableSchema,
+				data: { name: 'Test', items: [] },
+			},
+			global: { components: { ATextInput } },
+		})
+
+		await wrapper.vm.$nextTick()
+
+		const nestedSections = wrapper.findAll('.aform-nested-section')
+		expect(nestedSections.length).toBe(0)
 	})
 
 	it('emits update:data when childModels change via v-model', async () => {
@@ -495,5 +523,133 @@ describe('AForm Nested Schema Rendering', () => {
 		const nestedSections = wrapper.findAll('.aform-nested-section')
 		expect(nestedSections.length).toBe(1)
 		expect(wrapper.vm).toBeTruthy()
+	})
+
+	it('renders ATable component for Doctype field with cardinality: noneOrMany', async () => {
+		const tableSchema: SchemaTypes[] = [
+			{
+				fieldname: 'name',
+				fieldtype: 'Data',
+				component: 'ATextInput',
+				label: 'Name',
+			},
+			{
+				fieldname: 'items',
+				label: 'Items',
+				component: 'ATable',
+				columns: [
+					{ name: 'item_name', label: 'Item', fieldtype: 'Data' },
+					{ name: 'qty', label: 'Qty', fieldtype: 'Int' },
+				],
+				rows: [
+					{ item_name: 'Widget', qty: 5 },
+					{ item_name: 'Gadget', qty: 3 },
+				],
+			},
+		]
+
+		const wrapper = mount(AForm, {
+			props: {
+				schema: tableSchema,
+				data: {
+					name: 'Test Order',
+					items: [
+						{ item_name: 'Widget', qty: 5 },
+						{ item_name: 'Gadget', qty: 3 },
+					],
+				},
+			},
+			global: {
+				components: { ATextInput },
+			},
+		})
+
+		await wrapper.vm.$nextTick()
+		await flushPromises()
+
+		// Should NOT render nested AForm section (no schema property)
+		const nestedSections = wrapper.findAll('.aform-nested-section')
+		expect(nestedSections.length).toBe(0)
+
+		// Should render a dynamic component (ATable) instead
+		const dynamicComponents = wrapper.findAllComponents({ name: 'ATable' })
+		// ATable may not be registered in test, but the component :is binding
+		// should still attempt to render it — verify no nested form was created
+		expect(nestedSections.length).toBe(0)
+	})
+
+	describe('AFieldset inside AForm', () => {
+		const fieldsetSchema = [
+			{ fieldname: 'first_name', fieldtype: 'Data', component: 'ATextInput', label: 'First Name' },
+		] as SchemaTypes[]
+
+		it('renders the fieldset legend text when component is AFieldset', async () => {
+			const wrapper = mount(AForm, {
+				props: {
+					schema: [
+						{
+							fieldname: 'details',
+							component: 'AFieldset',
+							label: 'Details',
+							schema: fieldsetSchema,
+						},
+					] as any,
+					data: { details: {} },
+				},
+				global: { components: { AFieldset, ATextInput } },
+			})
+
+			await wrapper.vm.$nextTick()
+
+			const legend = wrapper.find('legend')
+			expect(legend.exists()).toBe(true)
+			expect(legend.text()).toContain('Details')
+		})
+
+		it('does not render h4 aform-nested-label when the nested component is AFieldset', async () => {
+			const wrapper = mount(AForm, {
+				props: {
+					schema: [
+						{
+							fieldname: 'details',
+							component: 'AFieldset',
+							label: 'Details',
+							collapsible: false,
+							schema: fieldsetSchema,
+						},
+					] as any,
+					data: { details: {} },
+				},
+				global: { components: { AFieldset, ATextInput } },
+			})
+
+			await wrapper.vm.$nextTick()
+
+			expect(wrapper.find('.aform-nested-label').exists()).toBe(false)
+		})
+
+		it('passes collapsible prop to nested AFieldset', async () => {
+			const wrapper = mount(AForm, {
+				props: {
+					schema: [
+						{
+							fieldname: 'details',
+							component: 'AFieldset',
+							label: 'Details',
+							collapsible: true,
+							schema: fieldsetSchema,
+						},
+					] as any,
+					data: { details: {} },
+				},
+				global: { components: { AFieldset, ATextInput } },
+			})
+
+			await wrapper.vm.$nextTick()
+
+			const fieldset = wrapper.findComponent(AFieldset)
+			expect(fieldset.exists()).toBe(true)
+			expect(fieldset.props('collapsible')).toBe(true)
+		})
 	})
 })

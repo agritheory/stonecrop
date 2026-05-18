@@ -30,7 +30,7 @@ export {
 // PostGraphile plugin
 export { createStonecropPlugin } from './plugin/postgraphile'
 
-export type { StonecropPluginOptions, StonecropInflectionConfig } from './plugin/postgraphile'
+export type { StonecropPluginOptions, StonecropInflectionConfig, StonecropRecordOptions } from './plugin/postgraphile'
 
 // Query builders and inflection helpers (exported for testing and advanced usage)
 export {
@@ -39,8 +39,23 @@ export {
 	defaultOrderByTypeName,
 	defaultRecordArgName,
 	defaultRecordArgType,
+	defaultReverseConnectionName,
 	buildRecordQuery,
 	buildListQuery,
 	queryableFieldNames,
 	RELATION_FIELDTYPES,
+	extractSingleResult,
+	extractListResult,
+	mergeNestedResults,
 } from './plugin/postgraphile'
+
+export type {
+	ReverseConnectionParams,
+	BuildRecordQueryOptions,
+	BuildListQueryArgs,
+	MergeNestedResultsParams,
+	ExtractSingleResultParams,
+	ExtractListResultParams,
+} from './types'
+
+export { typeDefs } from './typeDefs'

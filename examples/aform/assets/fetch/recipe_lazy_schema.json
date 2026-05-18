@@ -1,0 +1,35 @@
+{
+	"name": "RecipeLazy",
+	"slug": "recipe-lazy",
+	"tableName": "recipe",
+	"fields": [
+		{
+			"fieldname": "name",
+			"fieldtype": "Data",
+			"component": "ATextInput",
+			"label": "Recipe Name"
+		},
+		{
+			"fieldname": "description",
+			"fieldtype": "Data",
+			"component": "ATextInput",
+			"label": "Description"
+		},
+		{
+			"fieldname": "tasks",
+			"fieldtype": "Link",
+			"component": "ATable",
+			"label": "Tasks",
+			"options": "task"
+		}
+	],
+	"links": {
+		"tasks": {
+			"target": "task",
+			"cardinality": "noneOrMany",
+			"backlink": "recipe",
+			"fieldname": "tasks",
+			"fetch": { "method": "lazy" }
+		}
+	}
+}

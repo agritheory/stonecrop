@@ -1,4 +1,11 @@
 import type { TableColumn, TableConfig, TableRow } from '@stonecrop/atable'
+import type { ColumnSchema } from '@stonecrop/schema'
+
+/**
+ * The rendering mode for AForm components
+ * @public
+ */
+export type FormMode = 'edit' | 'read' | 'display'
 
 /**
  * Defined props for AForm components
@@ -18,7 +25,10 @@ export type ComponentProps = {
 	label?: string
 
 	/**
-	 * The masking string to apply to inputs inside the component
+	 * The mask to apply to inputs inside the component. Accepts either a plain
+	 * mask string (e.g. `"(###) ###-####"`) or a stringified arrow function that
+	 * receives `locale` and returns a mask string
+	 * (e.g. `"(locale) => locale === 'en-US' ? '(###) ###-####' : '####-######'"`).
 	 * @public
 	 */
 	mask?: string
@@ -30,10 +40,10 @@ export type ComponentProps = {
 	required?: boolean
 
 	/**
-	 * Indicate whether elements inside the component are read-only
+	 * The rendering mode for the component
 	 * @public
 	 */
-	readOnly?: boolean
+	mode?: FormMode
 
 	/**
 	 * Set a unique identifier for elements inside the component
@@ -79,10 +89,17 @@ export type BaseSchema = {
 	component?: string
 
 	/**
-	 * A placeholder value for the field
-	 * @beta
+	 * Per-field rendering mode override; takes precedence over the AForm-level `mode` prop
+	 * @public
 	 */
-	value?: any
+	mode?: FormMode
+
+	/**
+	 * Hide the field from the form UI while keeping it in the data model.
+	 * Consumed by AForm — not passed down to field components.
+	 * @public
+	 */
+	hidden?: boolean
 }
 
 /**
@@ -94,7 +111,7 @@ export type FormSchema = BaseSchema & {
 	 * Align the field in the form
 	 * @beta
 	 */
-	align?: string
+	align?: CanvasTextAlign
 
 	/**
 	 * Indicate whether the field is editable
@@ -104,17 +121,6 @@ export type FormSchema = BaseSchema & {
 
 	/**
 	 * The field type for the schema field
-	 *
-	 * @remarks
-	 * This must be a string that represents the field type. A mask string will be automatically
-	 * applied for the following field types:
-	 * - Date ('##/##/####')
-	 * - Datetime ('####/##/## ##:##')
-	 * - Time ('##:##')
-	 * - Fulltime ('##:##:##')
-	 * - Phone ('(###) ### - ####')
-	 * - Card ('#### #### #### ####')
-	 *
 	 * @public
 	 */
 	fieldtype?: string
@@ -132,29 +138,33 @@ export type FormSchema = BaseSchema & {
 	name?: string
 
 	/**
-	 * The width of the field element.
-	 * @beta
+	 * CSS width for the field's flex item in the AForm grid.
+	 * Applied as `flex-basis` and `width` on the rendered component element.
+	 * Use `"100%"` to make the field span the full form row.
 	 */
 	width?: string
 
 	/**
-	 * The mask string for the field
-	 * @beta
+	 * The mask to apply to the field. Accepts either a plain mask string
+	 * (e.g. `"##/##/####"`) or a stringified arrow function that receives `locale`
+	 * and returns a mask string
+	 * (e.g. `"(locale) => locale === 'en-US' ? '(###) ###-####' : '####-######'"`).
+	 * @public
 	 */
 	mask?: string
 }
 
 /**
- * Schema structure for defining tables inside AForm
+ * Schema structure for defining tables inside AForm.
+ *
+ * Two mutually exclusive forms:
+ * - **Columns-based** (no `kind`): caller provides `columns` directly
+ * - **Schema-delegated** (`kind: 'table'`): caller provides `schema`; ATable runs
+ *   `schemaToColumns` to derive columns at render time
+ *
  * @public
  */
 export type TableSchema = BaseSchema & {
-	/**
-	 * The columns to display in the table
-	 * @public
-	 */
-	columns?: TableColumn[]
-
 	/**
 	 * The configuration for the table
 	 * @public
@@ -166,7 +176,21 @@ export type TableSchema = BaseSchema & {
 	 * @public
 	 */
 	rows?: TableRow[]
-}
+} & (
+		| {
+				/** Explicit column definitions; `schema` and `kind` must not be set */
+				columns?: TableColumn[]
+				kind?: never
+				schema?: never
+		  }
+		| {
+				/** Marks this entry as schema-delegated; ATable derives columns from `schema` */
+				kind: 'table'
+				/** Child schema passed to ATable's `schema` prop */
+				schema: ColumnSchema[]
+				columns?: never
+		  }
+	)
 
 /**
  * Schema structure for defining fieldsets inside AForm
@@ -183,7 +207,7 @@ export type FieldsetSchema = BaseSchema & {
 	 * The schemas to be rendered inside the fieldset
 	 * @public
 	 */
-	schema?: (FormSchema | TableSchema)[]
+	schema?: SchemaTypes[]
 
 	/**
 	 * Indicate whether the fieldset is collapsible
@@ -193,114 +217,28 @@ export type FieldsetSchema = BaseSchema & {
 }
 
 /**
- * Schema structure for defining nested doctype fields inside AForm
- *
- * @remarks
- * When a field has `fieldtype: 'Doctype'`, the `options` property contains the slug
- * of the referenced doctype. The `schema` property is populated by the framework's
- * `registry.resolveSchema()` method with the resolved child schema fields.
- *
- * Before resolution: `{ fieldname: 'address', fieldtype: 'Doctype', options: 'address' }`
- * After resolution: `{ fieldname: 'address', fieldtype: 'Doctype', options: 'address', schema: [...resolved fields...] }`
- *
- * Users can also manually provide the `schema` property without using the framework registry.
- *
- * @public
- */
-export type DoctypeSchema = BaseSchema & {
-	/**
-	 * The field type - must be 'Doctype' for nested doctype fields
-	 * @public
-	 */
-	fieldtype: 'Doctype'
-
-	/**
-	 * The slug of the referenced doctype in the registry
-	 * @public
-	 */
-	options: string
-
-	/**
-	 * The label to display above the nested form section
-	 * @public
-	 */
-	label?: string
-
-	/**
-	 * The resolved child schema fields, populated by `registry.resolveSchema()`
-	 * or provided manually for standalone usage
-	 * @public
-	 */
-	schema?: SchemaTypes[]
-
-	/**
-	 * Indicate whether the nested form is read-only
-	 * @public
-	 */
-	readOnly?: boolean
-}
-
-/**
- * Schema structure for defining 1:many child table fields inside AForm
- *
- * @remarks
- * When a field has `fieldtype: 'Table'`, the `options` property contains the slug
- * of the child doctype whose records appear as table rows.
- *
- * `Registry.resolveSchema()` auto-derives `columns` from the child doctype's schema
- * fields and sets sensible defaults for `component` (`'ATable'`) and `config` (`{ view: 'list' }`).
- *
- * Users can override any auto-derived property by specifying it explicitly on the schema field.
- * Row data comes from the parent form's data model at `data[fieldname]` (an array).
- *
- * @public
- */
-export type TableDoctypeSchema = BaseSchema & {
-	/**
-	 * The field type — must be 'Table' for 1:many child table fields
-	 * @public
-	 */
-	fieldtype: 'Table'
-
-	/**
-	 * The slug of the child doctype in the registry
-	 * @public
-	 */
-	options: string
-
-	/**
-	 * The label to display above the table section
-	 * @public
-	 */
-	label?: string
-
-	/**
-	 * Table columns — auto-derived from child doctype schema if not provided
-	 * @public
-	 */
-	columns?: TableColumn[]
-
-	/**
-	 * Table configuration — defaults to `{ view: 'list' }` if not provided
-	 * @public
-	 */
-	config?: TableConfig
-
-	/**
-	 * Table rows — populated from the parent form's data model at `data[fieldname]`
-	 * @public
-	 */
-	rows?: TableRow[]
-
-	/**
-	 * Indicate whether the table is read-only
-	 * @public
-	 */
-	readOnly?: boolean
-}
-
-/**
  * Superset of all schema types for AForm
  * @public
  */
-export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema | DoctypeSchema | TableDoctypeSchema
+export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema
+
+/**
+ * The value shape for AFormLink — a linked document reference with optional display text
+ * @public
+ */
+export interface AFormLinkValue {
+	/** The FK/linked document ID. `id: 0` is a valid ID. */
+	id: string | number
+	/** Display text shown in the input. Falls back to `String(id)` if omitted. */
+	displayText?: string
+	[extra: string]: any
+}
+
+/**
+ * Navigation contract for AFormLink. Provide via `provide('aformLinkNavigator', ...)` in the app plugin.
+ * @public
+ */
+export interface AFormLinkNavigator {
+	/** Navigate to the linked document. Implementation is app-defined. */
+	navigate(doctype: string, id: string | number): void
+}

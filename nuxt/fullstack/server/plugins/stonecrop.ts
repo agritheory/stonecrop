@@ -7,6 +7,7 @@
  * 3. Configure the MockGraphQLExecutor instance
  */
 
+import { existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { loadDoctypes, registerBuiltinHandlers, registerHandler, clearRegistry } from '@stonecrop/graphql-middleware'
 import { mockExecutor } from '../mock-executor'
@@ -137,7 +138,15 @@ export default defineNitroPlugin(async () => {
 		clearRegistry()
 
 		// Load doctype definitions from the doctypes directory
-		const doctypesDir = resolve(process.cwd(), 'fullstack/doctypes')
+		// The plugin is at server/plugins/stonecrop.ts, doctypes are at ../../app/doctypes
+		const pluginDir = resolve(new URL(import.meta.url).pathname, '..')
+		const doctypesDir = resolve(pluginDir, '../../app/doctypes')
+
+		if (!existsSync(doctypesDir)) {
+			console.warn(`[Stonecrop] Could not find doctypes directory at ${doctypesDir}, skipping doctype loading`)
+			return
+		}
+
 		console.log(`[Stonecrop] Loading doctypes from: ${doctypesDir}`)
 
 		loadDoctypes(doctypesDir, {

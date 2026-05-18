@@ -17,17 +17,17 @@
 		<component
 			:is="column.cellComponent"
 			v-if="column.cellComponent"
-			:value="displayValue"
+			:value="renderedValue"
 			v-bind="column.cellComponentProps" />
-		<span v-else-if="isHtmlValue" v-html="displayValue" />
-		<span v-else>{{ displayValue }}</span>
+		<span v-else-if="isHtmlValue" v-html="renderedValue" />
+		<span v-else>{{ renderedValue }}</span>
 	</td>
 </template>
 
 <script setup lang="ts">
 import { KeypressHandlers, defaultKeypressHandlers, useKeyboardNav } from '@stonecrop/utilities'
 import { useDebounceFn, useElementBounding } from '@vueuse/core'
-import { computed, type CSSProperties, ref, useTemplateRef, nextTick } from 'vue'
+import { computed, type CSSProperties, onMounted, ref, useTemplateRef, nextTick } from 'vue'
 
 import { createTableStore } from '../stores/table'
 import { isHtmlString } from '../utils'
@@ -64,9 +64,38 @@ const textAlign = column.align || 'center'
 const cellWidth = column.width || '40ch'
 
 const displayValue = computed(() => store.getCellDisplayValue(colIndex, rowIndex))
+
+// Resolved display text for Link columns with bare string IDs.
+// null = not yet resolved or not applicable; non-null overrides displayValue.
+const resolvedText = ref<string | null>(null)
+
+onMounted(() => {
+	if (!column.linkDoctype) return
+	const raw = store.getCellData(colIndex, rowIndex)
+
+	// Pre-resolved AFormLinkValue object — extract display text directly.
+	if (raw !== null && raw !== undefined && typeof raw === 'object') {
+		const obj = raw as Record<string, unknown>
+		const display = obj.displayText ?? obj.id
+		if (typeof display === 'string' || typeof display === 'number') {
+			resolvedText.value = String(display)
+		}
+		return
+	}
+
+	// Bare string ID — call the resolver if available.
+	const resolver = store.linkResolver
+	if (!resolver || typeof raw !== 'string' || raw === '') return
+	void resolver(column.linkDoctype, raw).then(text => {
+		if (text != null) resolvedText.value = text
+	})
+})
+
+const renderedValue = computed(() => resolvedText.value ?? displayValue.value)
+
 const isHtmlValue = computed(() => {
 	// TODO: check if display value is a native DOM element
-	return typeof displayValue.value === 'string' ? isHtmlString(displayValue.value) : false
+	return typeof renderedValue.value === 'string' ? isHtmlString(renderedValue.value) : false
 })
 
 const cellStyle = computed((): CSSProperties => {

@@ -25,7 +25,6 @@ export default defineConfig({
 				'postgraphile/grafast',
 				'postgraphile/graphile-build',
 				'@stonecrop/schema',
-				'zod',
 			],
 		},
 	},
@@ -50,6 +49,7 @@ export default defineConfig({
 				...coverageConfigDefaults.exclude,
 				'src/index.ts', // ignore the entry file
 				'src/types/**', // ignore types
+				'src/typeDefs.ts', // ignore gql type definitions
 			],
 		},
 	},

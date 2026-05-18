@@ -69,10 +69,10 @@ describe('RouteStrategyFn', () => {
 		expect(pages[1]!.meta).toMatchObject({ viewMode: 'detail' })
 	})
 
-	it('can filter doctypes (e.g., skip child tables)', () => {
+	it('can filter doctypes (e.g., skip certain types)', () => {
 		const strategy: RouteStrategyFn = doctypes =>
 			doctypes
-				.filter(({ data }) => !data.parentDoctype)
+				.filter(({ data }) => data.tableName !== 'order_items')
 				.map(({ fileName, data, fields }) => ({
 					name: `stonecrop-${fileName}`,
 					path: `/${(data.slug as string) || fileName.toLowerCase()}`,
@@ -82,7 +82,7 @@ describe('RouteStrategyFn', () => {
 
 		const pages = strategy([
 			doctype({ fileName: 'Order', data: { name: 'Order', slug: 'order' } }),
-			doctype({ fileName: 'OrderItem', data: { name: 'Order Item', parentDoctype: 'order' } }),
+			doctype({ fileName: 'OrderItem', data: { name: 'Order Item', tableName: 'order_items' } }),
 		])
 
 		expect(pages).toHaveLength(1)
@@ -151,11 +151,10 @@ describe('ParsedDoctype', () => {
 	it('supports arbitrary data properties', () => {
 		const dt: ParsedDoctype = {
 			fileName: 'Task',
-			data: { name: 'Task', slug: 'task', parentDoctype: 'project', tableName: 'tabTask' },
+			data: { name: 'Task', slug: 'task', tableName: 'tabTask' },
 			fields: [],
 		}
 
-		expect(dt.data.parentDoctype).toBe('project')
 		expect(dt.data.tableName).toBe('tabTask')
 	})
 })

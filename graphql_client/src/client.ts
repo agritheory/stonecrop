@@ -1,6 +1,15 @@
-import type { DoctypeMeta, RouteContext } from '@stonecrop/schema'
+import type {
+	DataClient,
+	DoctypeMeta,
+	DoctypeContext,
+	DoctypeRef,
+	GetRecordOptions,
+	GetRecordsOptions,
+} from '@stonecrop/schema'
+import type { GetRecordResult } from './types'
 
-export type { RouteContext }
+export type { DoctypeContext, DoctypeRef }
+export type { GetRecordResult }
 
 /**
  * Options for creating a Stonecrop client
@@ -14,10 +23,14 @@ export interface StonecropClientOptions {
 }
 
 /**
- * Client for interacting with Stonecrop GraphQL API
+ * Client for interacting with Stonecrop GraphQL API.
+ *
+ * Acts as a transport layer — it passes requests to the middleware and returns
+ * merged results. Does not construct queries itself.
+ *
  * @public
  */
-export class StonecropClient {
+export class StonecropClient implements DataClient {
 	private endpoint: string
 	private headers: Record<string, string>
 	private metaCache: Map<string, DoctypeMeta> = new Map()
@@ -31,9 +44,11 @@ export class StonecropClient {
 	}
 
 	/**
-	 * Execute a GraphQL query
+	 * Execute a GraphQL query against the configured endpoint.
+	 *
 	 * @param query - GraphQL query string
 	 * @param variables - Query variables
+	 * @throws Error if the GraphQL response contains errors
 	 */
 	async query<T = unknown>(query: string, variables?: Record<string, unknown>): Promise<T> {
 		const response = await fetch(this.endpoint, {
@@ -55,7 +70,8 @@ export class StonecropClient {
 	}
 
 	/**
-	 * Execute a GraphQL mutation
+	 * Execute a GraphQL mutation. Delegates to query() since both use POST.
+	 *
 	 * @param mutation - GraphQL mutation string
 	 * @param variables - Mutation variables
 	 */
@@ -65,9 +81,9 @@ export class StonecropClient {
 
 	/**
 	 * Get doctype metadata
-	 * @param context - Route context containing doctype name
+	 * @param context - Doctype context containing doctype name
 	 */
-	async getMeta(context: RouteContext): Promise<DoctypeMeta | null> {
+	async getMeta(context: DoctypeContext): Promise<DoctypeMeta | null> {
 		const cached = this.metaCache.get(context.doctype)
 		if (cached) return cached
 
@@ -83,19 +99,32 @@ export class StonecropClient {
 						fieldtype
 						component
 						label
+						width
+						align
 						required
 						readOnly
+						edit
+						hidden
+						default
 						options
+						mask
 						precision
 						scale
+						mode
+						validation
 					}
 					workflow {
 						states
-						actions
+						actions {
+							label
+							handler
+							requiredFields
+							allowedStates
+							confirm
+							args
+						}
 					}
 					inherits
-					listDoctype
-					parentDoctype
 				}
 			}
 			`,
@@ -125,19 +154,32 @@ export class StonecropClient {
 						fieldtype
 						component
 						label
+						width
+						align
 						required
 						readOnly
+						edit
+						hidden
+						default
 						options
+						mask
 						precision
 						scale
+						mode
+						validation
 					}
 					workflow {
 						states
-						actions
+						actions {
+							label
+							handler
+							requiredFields
+							allowedStates
+							confirm
+							args
+						}
 					}
 					inherits
-					listDoctype
-					parentDoctype
 				}
 			}
 			`
@@ -151,41 +193,53 @@ export class StonecropClient {
 	}
 
 	/**
-	 * Get a single record by ID
-	 * @param doctype - Doctype metadata
+	 * Get a single record by ID.
+	 *
+	 * Routes through the stonecropRecord resolver which handles nested data
+	 * fetching based on the includeNested option.
+	 *
+	 * @param doctype - Doctype reference (name and optional slug)
 	 * @param recordId - Record ID to fetch
+	 * @param options - Query options (includeNested, maxDepth)
 	 */
-	async getRecord(doctype: DoctypeMeta, recordId: string): Promise<Record<string, unknown> | null> {
+	async getRecord(doctype: DoctypeRef, recordId: string, options?: GetRecordOptions): Promise<GetRecordResult> {
 		const result = await this.query<{
-			stonecropRecord: { data: Record<string, unknown> | null }
+			stonecropRecord: { data: Record<string, unknown> | null; unknownLinks?: string[] }
 		}>(
-			`
-			query GetRecord($doctype: String!, $id: String!) {
-				stonecropRecord(doctype: $doctype, id: $id) {
+			`query GetRecord($doctype: String!, $id: String!, $options: JSON) {
+				stonecropRecord(doctype: $doctype, id: $id, options: $options) {
 					data
+					unknownLinks
 				}
+			}`,
+			{
+				doctype: doctype.name,
+				id: recordId,
+				options: options?.includeNested
+					? {
+							includeNested: options.includeNested,
+							maxDepth: options.maxDepth,
+						}
+					: undefined,
 			}
-			`,
-			{ doctype: doctype.name, id: recordId }
 		)
 
-		return result.stonecropRecord.data
+		return {
+			record: result.stonecropRecord?.data ?? null,
+			unknownLinks: result.stonecropRecord?.unknownLinks,
+		}
 	}
 
 	/**
-	 * Get multiple records with optional filtering and pagination
-	 * @param doctype - Doctype metadata
+	 * Get multiple records with optional filtering and pagination.
+	 *
+	 * Returns flat arrays — the middleware merges connection format (\{ nodes: [...] \})
+	 * into plain arrays before returning.
+	 *
+	 * @param doctype - Doctype reference (name and optional slug)
 	 * @param options - Query options (filters, orderBy, limit, offset)
 	 */
-	async getRecords(
-		doctype: DoctypeMeta,
-		options?: {
-			filters?: Record<string, unknown>
-			orderBy?: string
-			limit?: number
-			offset?: number
-		}
-	): Promise<Record<string, unknown>[]> {
+	async getRecords(doctype: DoctypeRef, options?: GetRecordsOptions): Promise<Record<string, unknown>[]> {
 		const result = await this.query<{
 			stonecropRecords: { data: Record<string, unknown>[] }
 		}>(
@@ -220,12 +274,12 @@ export class StonecropClient {
 
 	/**
 	 * Execute a doctype action
-	 * @param doctype - Doctype metadata
+	 * @param doctype - Doctype reference (name and optional slug)
 	 * @param action - Action name to execute
 	 * @param args - Action arguments
 	 */
 	async runAction(
-		doctype: DoctypeMeta,
+		doctype: DoctypeRef,
 		action: string,
 		args?: unknown[]
 	): Promise<{ success: boolean; data: unknown; error: string | null }> {
@@ -252,7 +306,10 @@ export class StonecropClient {
 	}
 
 	/**
-	 * Clear the cached doctype metadata
+	 * Clear the cached doctype metadata.
+	 *
+	 * Call this if the server-side doctype schema has changed and you need
+	 * to fetch fresh metadata (e.g., after adding a new field).
 	 */
 	clearMetaCache(): void {
 		this.metaCache.clear()

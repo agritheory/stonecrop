@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/schema",
+      "comment": "update graphql packages",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/schema"
+}

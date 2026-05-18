@@ -1,0 +1,56 @@
+{
+	"name": "Recipe",
+	"slug": "recipe",
+	"tableName": "recipe",
+	"fields": [
+		{
+			"fieldname": "name",
+			"fieldtype": "Data",
+			"component": "ATextInput",
+			"label": "Recipe Name",
+			"required": true
+		},
+		{
+			"fieldname": "tasks",
+			"fieldtype": "Link",
+			"component": "ATable",
+			"label": "Tasks",
+			"options": "recipe-task"
+		},
+		{
+			"fieldname": "status",
+			"fieldtype": "Data",
+			"component": "ATextInput",
+			"label": "Status",
+			"required": true,
+			"mode": "read"
+		},
+		{
+			"fieldname": "description",
+			"fieldtype": "Data",
+			"component": "ATextInput",
+			"label": "Description"
+		},
+		{
+			"fieldname": "supersededBy",
+			"fieldtype": "Link",
+			"component": "AForm",
+			"label": "Superseded By",
+			"options": "recipe"
+		}
+	],
+	"links": {
+		"tasks": {
+			"target": "recipe-task",
+			"cardinality": "noneOrMany",
+			"backlink": "recipe",
+			"fieldname": "tasks"
+		},
+		"supersededBy": {
+			"target": "recipe",
+			"cardinality": "atMostOne",
+			"backlink": "supersededBy",
+			"fieldname": "supersededBy"
+		}
+	}
+}

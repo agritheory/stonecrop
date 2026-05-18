@@ -1,6 +1,15 @@
 <template>
 	<div class="view-wrapper">
-		<Desktop :available-doctypes="availableDoctypes" :show-debug="showDebug" />
+		<Desktop
+			:available-doctypes="availableDoctypes"
+			:show-debug="showDebug"
+			:confirm-fn="confirmFn"
+			record-id-field="rowId"
+			@action="handleDesktopAction"
+			@navigate="handleDesktopNavigate"
+			@record:open="handleRecordOpen"
+			@load-records="handleLoadRecords"
+			@load-record="handleLoadRecord" />
 
 		<!-- Operation Log Panel - pass operation log data as props -->
 		<OperationLogPanel
@@ -21,10 +30,18 @@
 
 <script setup lang="ts">
 import { Desktop } from '@stonecrop/desktop'
+import type {
+	ActionEventPayload,
+	NavigationTarget,
+	RecordOpenEventPayload,
+	LoadRecordsEventPayload,
+	LoadRecordEventPayload,
+} from '@stonecrop/desktop'
 import { useStonecrop } from '@stonecrop/stonecrop'
 import { ref } from 'vue'
 
 import OperationLogPanel from './OperationLogPanel.vue'
+import { addNotification } from '../actions'
 
 interface Props {
 	availableDoctypes?: string[]
@@ -38,11 +55,106 @@ const showOperationLog = ref(false)
 
 // Single unified interface - everything from useStonecrop
 const {
+	stonecrop,
 	operationLog: { operations, currentIndex, canUndo, canRedo },
 } = useStonecrop()
 
 function toggleOperationLog() {
 	showOperationLog.value = !showOperationLog.value
+}
+
+function confirmFn(message: string): boolean {
+	return window.confirm(message)
+}
+
+/**
+ * Handle FSM transition actions emitted by Desktop.
+ *
+ * Pattern:
+ *   1. Sync any changed field values into HST.
+ *   2. Fire the FSM transition (triggers registerTransitionAction side effects).
+ *   3. Dispatch through DataClient (real REST call via RestDataClient.runAction).
+ *   4. Sync the result back into HST.
+ */
+async function handleDesktopAction(payload: ActionEventPayload) {
+	if (!stonecrop.value) return
+
+	// 1. Persist form field changes into HST before triggering the transition
+	const existing = stonecrop.value.getRecordById(payload.doctype, payload.recordId)
+	if (existing) {
+		const store = stonecrop.value.getStore()
+		for (const [fieldname, value] of Object.entries(payload.data)) {
+			const path = `${payload.doctype}.${payload.recordId}.${fieldname}`
+			if (store.has(path) && store.get(path) !== value) {
+				store.set(path, value)
+			}
+		}
+		// 2. Trigger the FSM transition — fires registerTransitionAction side effects
+		await existing.triggerTransition(payload.name, { fsmContext: payload.data })
+	}
+
+	// 3. Dispatch through DataClient
+	const doctype = stonecrop.value.registry.getDoctype(payload.doctype)
+	if (!doctype) return
+
+	const result = await stonecrop.value.dispatchAction(doctype, payload.name, [payload.recordId, payload.data])
+
+	if (!result.success) {
+		addNotification(`${payload.name} failed: ${result.error ?? 'unknown error'}`, 'error')
+		return
+	}
+
+	// 4. Sync response back into HST
+	switch (payload.name) {
+		case 'SAVE': {
+			const saved = result.data as Record<string, unknown> | null
+			if (saved) stonecrop.value.addRecord(payload.doctype, payload.recordId, saved)
+			addNotification(`${payload.doctype} record ${payload.recordId} saved`, 'success')
+			break
+		}
+		case 'DELETE':
+			stonecrop.value.removeRecord(payload.doctype, payload.recordId)
+			addNotification(`${payload.doctype} record ${payload.recordId} deleted`, 'info')
+			break
+	}
+}
+
+function handleDesktopNavigate(target: NavigationTarget) {
+	// Example: log navigation intent — the routeAdapter (or the built-in router
+	// fallback) already performed the navigation.  This handler is for any
+	// additional host-side logic like analytics.
+	// eslint-disable-next-line no-console
+	console.debug('[example] Desktop navigate', target)
+}
+
+function handleRecordOpen(payload: RecordOpenEventPayload) {
+	// eslint-disable-next-line no-console
+	console.debug('[example] record:open', payload)
+}
+
+/**
+ * Handle load-records event - Desktop needs records for a list view.
+ * Desktop has no self-fetch for list views, so the host must populate HST here.
+ */
+async function handleLoadRecords(payload: LoadRecordsEventPayload) {
+	if (!stonecrop.value) return
+	try {
+		const doctype = stonecrop.value.registry.getDoctype(payload.doctype)
+		if (doctype) await stonecrop.value.getRecords(doctype)
+	} catch (error) {
+		addNotification(`Failed to load ${payload.doctype} records`, 'error')
+		// eslint-disable-next-line no-console
+		console.error('[example] load-records failed', error)
+	}
+}
+
+/**
+ * Handle load-record event - Desktop already self-fetches missing records when a
+ * client is configured (see Desktop.vue loadRecordData). This handler is reserved
+ * for host-side side effects (analytics, breadcrumb prefetch, etc.).
+ */
+function handleLoadRecord(_payload: LoadRecordEventPayload) {
+	// no-op — Desktop handles the fetch via its internal loadRecordData()
 }
 </script>
 
@@ -129,7 +241,7 @@ function toggleOperationLog() {
 	cursor: pointer;
 	box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 	transition: all 0.2s ease;
-	z-index: 999;
+	z-index: 400;
 }
 
 .operation-log-toggle:hover {

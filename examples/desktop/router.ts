@@ -1,12 +1,5 @@
-import { DoctypeMeta, Registry, Stonecrop } from '@stonecrop/stonecrop'
-import { List, Map } from 'immutable'
-import {
-	createRouter,
-	createWebHistory,
-	type NavigationGuardNext,
-	type RouteLocationNormalized,
-	type RouteRecordRaw,
-} from 'vue-router'
+import { Registry, Stonecrop } from '@stonecrop/stonecrop'
+import { createRouter, createWebHistory, type RouteLocationNormalized, type RouteRecordRaw } from 'vue-router'
 
 import Home from './components/Home.vue'
 import View from './components/View.vue'
@@ -31,93 +24,60 @@ export async function setupRouterContext(registry: Registry, stonecrop: Stonecro
 }
 
 /**
- * Setup doctype metadata and load all records for the doctype
+ * Setup doctype metadata only. Data hydration is handled by Desktop's load-records / load-record events.
  */
-async function setupDoctypeData(doctype: string, actualDoctype?: string, routePath?: string): Promise<void> {
-	if (!scopedRegistry || !scopedStonecrop) {
-		// Scoped Stonecrop references not available during route setup
-		return
-	}
+async function setupDoctypeMeta(actualDoctype: string, routePath: string): Promise<void> {
+	if (!scopedRegistry) return
 
 	try {
-		const targetDoctype = actualDoctype || doctype
-
-		// Get doctype metadata if not already loaded
-		if (!scopedRegistry.registry[targetDoctype]) {
-			// Create RouteContext for getMeta call
-			const defaultPath = routePath || `/${doctype}`
+		if (!scopedRegistry.registry[actualDoctype]) {
 			const routeContext = {
-				path: defaultPath,
-				segments: defaultPath.split('/').filter(s => s.length > 0),
+				path: routePath,
+				segments: routePath.split('/').filter((s: string) => s.length > 0),
 			}
-
 			const doctypeMeta = await scopedRegistry.getMeta?.(routeContext)
 			if (doctypeMeta) {
 				scopedRegistry.addDoctype(doctypeMeta)
 			}
 		}
+	} catch (error) {
+		console.error(`Failed to setup doctype meta for ${actualDoctype}:`, error)
+	}
+}
 
-		// Load all records for this doctype into HST
-		const response = await fetch(`/api/${doctype}`)
+/**
+ * Fetch meta and records for a linked (referenced) doctype so the resolver can find them.
+ * Safe to call repeatedly — skips if the doctype is already registered.
+ */
+async function setupLinkedData(doctypeSlug: string): Promise<void> {
+	if (!scopedRegistry || !scopedStonecrop) return
+
+	// Resolve meta doctype name from the registry after fetch
+	const routeContext = { path: `/${doctypeSlug}`, segments: [doctypeSlug] }
+
+	try {
+		let doctypeName = doctypeSlug
+		if (!Object.values(scopedRegistry.registry).some((d: any) => d?.doctype === doctypeSlug)) {
+			const meta = await scopedRegistry.getMeta?.(routeContext)
+			if (meta) {
+				scopedRegistry.addDoctype(meta)
+				doctypeName = (meta as any).doctype ?? doctypeSlug
+			}
+		}
+
+		const response = await fetch(`/api/${doctypeSlug}`)
 		if (response.ok) {
 			const records = await response.json()
-
-			// Clear existing records and add new ones using actual doctype
-			scopedStonecrop.clearRecords(targetDoctype)
-
 			if (Array.isArray(records)) {
 				records.forEach((record: any) => {
-					if (record.id) {
-						scopedStonecrop.addRecord(targetDoctype, record.id, record)
+					if (record.id && !scopedStonecrop.getRecordById(doctypeName, record.id)) {
+						scopedStonecrop.addRecord(doctypeName, record.id, record)
 					}
 				})
 			}
 		}
 	} catch (error) {
-		console.error(`Failed to setup doctype data for ${doctype}:`, error)
-	}
-}
-
-/**
- * Setup specific record data and set as current
- */
-async function setupRecordData(doctype: string, recordId: string, actualDoctype?: string): Promise<void> {
-	if (!scopedRegistry || !scopedStonecrop) {
-		// Scoped Stonecrop references not available during route setup
-		return
-	}
-
-	try {
-		const targetDoctype = actualDoctype || doctype
-
-		// Get form doctype metadata if not already loaded
-		if (!scopedRegistry.registry[targetDoctype]) {
-			// Create RouteContext for getMeta call
-			const route = `/${doctype}/${recordId}`
-			const routeContext = {
-				path: route,
-				segments: route.split('/').filter(s => s.length > 0),
-			}
-
-			const doctypeMeta = await scopedRegistry.getMeta?.(routeContext)
-			if (doctypeMeta) {
-				scopedRegistry.addDoctype(doctypeMeta)
-			}
-		}
-
-		// Check if record already exists in HST
-		const existingRecord = scopedStonecrop.getRecordById(targetDoctype, recordId)
-
-		if (!existingRecord && !recordId.startsWith('new-')) {
-			// Fetch individual record if not in store and not a new record
-			const response = await fetch(`/api/${doctype}/${recordId}`)
-			if (response.ok) {
-				const record = await response.json()
-				scopedStonecrop.addRecord(targetDoctype, recordId, record)
-			}
-		}
-	} catch (error) {
-		console.error(`Failed to setup record data for ${doctype}/${recordId}:`, error)
+		console.error(`Failed to setup linked data for ${doctypeSlug}:`, error)
 	}
 }
 
@@ -156,15 +116,17 @@ async function registerDoctypeRoutes(doctype: string): Promise<boolean> {
 				doctype: doctype,
 				actualDoctype: `${doctype}-list`,
 			},
-			beforeEnter: async (to: RouteLocationNormalized, _from: RouteLocationNormalized, next: NavigationGuardNext) => {
+			beforeEnter: async (to: RouteLocationNormalized) => {
 				try {
 					const routeDoctype = to.meta.doctype as string
 					const actualDoctype = to.meta.actualDoctype as string
-					await setupDoctypeData(routeDoctype, actualDoctype, to.path)
-					next()
+					await setupDoctypeMeta(actualDoctype, to.path)
+					if (routeDoctype === 'todo') {
+						await setupLinkedData('category')
+					}
 				} catch (error) {
 					console.error(`[Router] Failed to setup list data for ${doctype}:`, error)
-					next(error)
+					return false
 				}
 			},
 		}
@@ -180,16 +142,17 @@ async function registerDoctypeRoutes(doctype: string): Promise<boolean> {
 				doctype: doctype,
 				actualDoctype: `${doctype}-form`,
 			},
-			beforeEnter: async (to: RouteLocationNormalized, _from: RouteLocationNormalized, next: NavigationGuardNext) => {
+			beforeEnter: async (to: RouteLocationNormalized) => {
 				try {
 					const routeDoctype = to.meta.doctype as string
 					const actualDoctype = to.meta.actualDoctype as string
-					const recordId = to.params.recordId as string
-					await setupRecordData(routeDoctype, recordId, actualDoctype)
-					next()
+					await setupDoctypeMeta(actualDoctype, to.path)
+					if (routeDoctype === 'todo') {
+						await setupLinkedData('category')
+					}
 				} catch (error) {
 					console.error(`[Router] Failed to setup form data for ${doctype}:`, error)
-					next(error)
+					return false
 				}
 			},
 		}
@@ -217,31 +180,19 @@ const routes: RouteRecordRaw[] = [
 		path: '/:pathMatch(.*)*',
 		name: 'catch-all',
 		component: View,
-		beforeEnter: async (to: RouteLocationNormalized, _from: RouteLocationNormalized, next: NavigationGuardNext) => {
+		beforeEnter: async (to: RouteLocationNormalized) => {
 			const path = to.path
 
 			try {
-				// Detect doctype from path pattern
 				const doctype = detectDoctypeFromPath(path)
-				if (!doctype) {
-					// Path doesn't match expected patterns, continue to catch-all view
-					next()
-					return
-				}
+				if (!doctype) return
 
-				// Try to register routes for this doctype
 				const registered = await registerDoctypeRoutes(doctype)
 				if (registered) {
-					// Route should now be registered, try to navigate to it again
-					next({ path, replace: true })
-				} else {
-					// Registration failed, continue to catch-all view
-					next()
+					return { path, replace: true }
 				}
 			} catch (error) {
 				console.error(`[Router] Error in catch-all route handler for ${path}:`, error)
-				// Continue to catch-all view on error
-				next()
 			}
 		},
 	},
