@@ -4,7 +4,7 @@ import { mount, flushPromises } from '@vue/test-utils'
 import AFormLink from '../src/components/form/AFormLink.vue'
 import type { AFormLinkValue } from '../src/types'
 
-describe('AFormLink component', () => {
+describe('AFormLink component', { tags: ['component'] }, () => {
 	const validValue: AFormLinkValue = { id: 'CUST-001', displayText: 'Acme Corp' }
 
 	it('renders label and display text', () => {

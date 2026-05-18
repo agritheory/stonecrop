@@ -5,7 +5,7 @@ import ListItem from '../../src/components/ListItem.vue'
 import ItemCheck from '../../src/components/ItemCheck.vue'
 import ItemCount from '../../src/components/ItemCount.vue'
 
-describe('ListItem', () => {
+describe('ListItem', { tags: ['component'] }, () => {
 	it('renders label', () => {
 		const wrapper = mount(ListItem, {
 			props: {

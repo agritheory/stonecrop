@@ -40,7 +40,7 @@ const minimalDoctype: DoctypeMetaType = { name: 'Task', tableName: 'tasks', fiel
 // registry/actions.ts — handler registry
 // ===========================================================================
 
-describe('handler registry', () => {
+describe('handler registry', { tags: ['unit', 'graphql'] }, () => {
 	beforeEach(() => clearHandlers())
 
 	it('registers and retrieves a handler', () => {
@@ -79,7 +79,7 @@ describe('handler registry', () => {
 	})
 })
 
-describe('registerBuiltinHandlers', () => {
+describe('registerBuiltinHandlers', { tags: ['unit', 'graphql'] }, () => {
 	beforeEach(() => {
 		clearHandlers()
 		registerBuiltinHandlers()
@@ -108,7 +108,7 @@ describe('registerBuiltinHandlers', () => {
 // noop handler
 // ===========================================================================
 
-describe('noop handler', () => {
+describe('noop handler', { tags: ['unit', 'graphql'] }, () => {
 	it('returns { ok: true }', async () => {
 		const result = await builtinHandlers.noop([], makeContext(minimalDoctype))
 		expect(result).toEqual({ ok: true })
@@ -119,7 +119,7 @@ describe('noop handler', () => {
 // validateRequiredFields handler
 // ===========================================================================
 
-describe('validateRequiredFields handler', () => {
+describe('validateRequiredFields handler', { tags: ['unit', 'graphql'] }, () => {
 	const doctypeWithRequired: DoctypeMetaType = {
 		name: 'StrictTask',
 		tableName: 'strict_tasks',
@@ -177,7 +177,7 @@ describe('validateRequiredFields handler', () => {
 // validateFieldTypes handler
 // ===========================================================================
 
-describe('validateFieldTypes handler', () => {
+describe('validateFieldTypes handler', { tags: ['unit', 'graphql'] }, () => {
 	const typedDoctype: DoctypeMetaType = {
 		name: 'Typed',
 		tableName: 'typed',
@@ -333,7 +333,7 @@ describe('validateFieldTypes handler', () => {
 // registry/doctypes.ts — DoctypeValidationError
 // ===========================================================================
 
-describe('DoctypeValidationError', () => {
+describe('DoctypeValidationError', { tags: ['unit', 'graphql'] }, () => {
 	it('formats a multi-error message', () => {
 		const err = new DoctypeValidationError('my-file.json', [
 			{ path: ['name'], message: 'Required' },
@@ -356,7 +356,7 @@ describe('DoctypeValidationError', () => {
 // registry/doctypes.ts — loadDoctypesFromObject
 // ===========================================================================
 
-describe('loadDoctypesFromObject', () => {
+describe('loadDoctypesFromObject', { tags: ['unit', 'graphql'] }, () => {
 	beforeEach(() => clearRegistry())
 
 	it('loads a single valid doctype by key name', () => {
@@ -398,7 +398,7 @@ describe('loadDoctypesFromObject', () => {
 // registry/doctypes.ts — getMeta / getAllMeta / hasMeta / clearRegistry
 // ===========================================================================
 
-describe('getMeta / getAllMeta / hasMeta / clearRegistry', () => {
+describe('getMeta / getAllMeta / hasMeta / clearRegistry', { tags: ['unit', 'graphql'] }, () => {
 	beforeEach(() => clearRegistry())
 
 	it('getMeta returns undefined for unknown doctype', () => {
@@ -447,7 +447,7 @@ describe('getMeta / getAllMeta / hasMeta / clearRegistry', () => {
 // registry/doctypes.ts — validateReferences
 // ===========================================================================
 
-describe('validateReferences', () => {
+describe('validateReferences', { tags: ['unit', 'graphql'] }, () => {
 	beforeEach(() => clearRegistry())
 
 	it('returns empty array when all references are valid', () => {
@@ -507,7 +507,7 @@ describe('validateReferences', () => {
 // registry/doctypes.ts — loadDoctypes (filesystem)
 // ===========================================================================
 
-describe('loadDoctypes', () => {
+describe('loadDoctypes', { tags: ['unit', 'graphql'] }, () => {
 	let tmpDir: string
 
 	beforeEach(() => {

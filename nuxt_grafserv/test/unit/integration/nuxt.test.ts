@@ -14,7 +14,7 @@ import { describe, it, expect } from 'vitest'
 /**
  * Unit-style tests for Nuxt integration
  */
-describe('Nuxt Integration - PostGraphile makeSchema', () => {
+describe('Nuxt Integration - PostGraphile makeSchema', { tags: ['e2e', 'nuxt', 'graphql'] }, () => {
 	describe('PostGraphile Schema Creation', () => {
 		it('should create schema with makeSchema for Nuxt usage', async () => {
 			const preset = {

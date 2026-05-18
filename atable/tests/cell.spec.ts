@@ -8,7 +8,7 @@ import ARow from '../src/components/ARow.vue'
 import ATable from '../src/components/ATable.vue'
 import type { TableColumn, TableConfig } from '../src/types'
 
-describe('table cell component', () => {
+describe('table cell component', { tags: ['component'] }, () => {
 	config.global.components = { ACell, ARow }
 
 	const columns: TableColumn[] = [

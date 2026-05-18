@@ -3,7 +3,7 @@ import { mount } from '@vue/test-utils'
 
 import Login from '../src/components/utilities/Login.vue'
 
-describe('login component', () => {
+describe('login component', { tags: ['component'] }, () => {
 	it('mount the login component', async () => {
 		const wrapper = mount(Login)
 		await wrapper.vm.$nextTick()

@@ -4,7 +4,7 @@ import { mount } from '@vue/test-utils'
 import ATableColumnFilter from '../src/components/ATableColumnFilter.vue'
 import type { TableColumn } from '../src/types'
 
-describe('Column Filter Component', () => {
+describe('Column Filter Component', { tags: ['component'] }, () => {
 	let mockStore: any
 	let baseColumn: TableColumn
 

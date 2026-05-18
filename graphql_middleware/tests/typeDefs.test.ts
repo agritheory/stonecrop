@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest'
 
 import { typeDefs } from '../src/typeDefs'
 
-describe('typeDefs', () => {
+describe('typeDefs', { tags: ['unit', 'graphql'] }, () => {
 	const doc = parse(typeDefs.loc?.source.body || typeDefs)
 
 	function findTypeDefinition(doc: DocumentNode, typeName: string) {

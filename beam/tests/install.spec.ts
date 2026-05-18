@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { createApp } from 'vue'
 import * as BeamModule from '../src/index'
 
-describe('Beam module', () => {
+describe('Beam module', { tags: ['component'] }, () => {
 	it('exports install function', () => {
 		expect(BeamModule).toHaveProperty('install')
 		expect(typeof BeamModule.install).toBe('function')

@@ -3,7 +3,7 @@ import { mount } from '@vue/test-utils'
 
 import ADatePicker from '../src/components/form/ADatePicker.vue'
 
-describe('datepicker component', () => {
+describe('datepicker component', { tags: ['component'] }, () => {
 	it('emits update event when date is changed', async () => {
 		const wrapper = mount(ADatePicker)
 		await wrapper.vm.$nextTick()

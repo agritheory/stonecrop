@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest'
 import type Registry from '../../src/registry'
 import { SchemaValidator, createValidator, validateSchema } from '../../src/schema-validator'
 
-describe('SchemaValidator class', () => {
+describe('SchemaValidator class', { tags: ['unit'] }, () => {
 	describe('constructor options', () => {
 		it('defaults all validation flags to true', () => {
 			const validator = new SchemaValidator()
@@ -277,7 +277,7 @@ describe('SchemaValidator class', () => {
 	})
 })
 
-describe('createValidator helper', () => {
+describe('createValidator helper', { tags: ['unit'] }, () => {
 	it('creates a validator with registry', () => {
 		const registry = { registry: {} } as unknown as Registry
 		const validator = createValidator(registry)
@@ -293,7 +293,7 @@ describe('createValidator helper', () => {
 	})
 })
 
-describe('validateSchema helper', () => {
+describe('validateSchema helper', { tags: ['unit'] }, () => {
 	it('delegates to SchemaValidator.validate', () => {
 		const registry = { registry: {} } as unknown as Registry
 		const result = validateSchema('Doc', [], registry)
@@ -337,7 +337,7 @@ describe('validateSchema helper', () => {
 	})
 })
 
-describe('SchemaValidator — link declarations', () => {
+describe('SchemaValidator — link declarations', { tags: ['unit'] }, () => {
 	// Mock registry with doctypes that have links
 	const mockRegistry = {
 		registry: {

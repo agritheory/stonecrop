@@ -4,7 +4,7 @@ import { mount } from '@vue/test-utils'
 import BeamModal from '../../src/components/BeamModal.vue'
 import BeamBtn from '../../src/components/BeamBtn.vue'
 
-describe('BeamModal', () => {
+describe('BeamModal', { tags: ['component'] }, () => {
 	it('renders when showModal is true', () => {
 		const wrapper = mount(BeamModal, {
 			props: {

@@ -3,7 +3,7 @@ import { setActivePinia, createPinia } from 'pinia'
 import { createTableStore } from '../src/stores/table'
 import type { TableColumn, TableRow, TableConfig } from '../src/types'
 
-describe('Tree Expansion Configuration', () => {
+describe('Tree Expansion Configuration', { tags: ['component'] }, () => {
 	const mockColumns: TableColumn[] = [
 		{ name: 'id', label: 'ID' },
 		{ name: 'name', label: 'Name' },

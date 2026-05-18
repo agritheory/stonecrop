@@ -14,7 +14,7 @@ afterEach(() => {
 	Stonecrop._root = undefined as any
 })
 
-describe('Desktop views', () => {
+describe('Desktop views', { tags: ['component'] }, () => {
 	describe('doctypes view', () => {
 		it('renders a table of available doctypes when view is "doctypes"', async () => {
 			const registry = new Registry()
@@ -217,7 +217,7 @@ describe('Desktop views', () => {
 	})
 })
 
-describe('Desktop FSM state reading', () => {
+describe('Desktop FSM state reading', { tags: ['component'] }, () => {
 	it('reads transitions from the record status field rather than a hardcoded state', async () => {
 		const registry = new Registry()
 		const stonecrop = new Stonecrop(registry)
@@ -315,7 +315,7 @@ describe('Desktop FSM state reading', () => {
 	})
 })
 
-describe('Desktop – breadcrumb edge cases', () => {
+describe('Desktop – breadcrumb edge cases', { tags: ['component'] }, () => {
 	it('shows "New Record" breadcrumb for a new record', async () => {
 		const registry = new Registry()
 		const stonecrop = new Stonecrop(registry)

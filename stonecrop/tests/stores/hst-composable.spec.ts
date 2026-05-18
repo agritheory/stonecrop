@@ -10,7 +10,7 @@ import Doctype from '../../src/doctype'
 import Registry from '../../src/registry'
 import { Stonecrop } from '../../src/stonecrop'
 
-describe('HST Composable Functionality', () => {
+describe('HST Composable Functionality', { tags: ['unit'] }, () => {
 	let registry: Registry
 	let stonecrop: Stonecrop
 	let doctype: Doctype

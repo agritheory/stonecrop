@@ -3,7 +3,7 @@ import { mount } from '@vue/test-utils'
 
 import SplitColumn from '../../src/components/SplitColumn.vue'
 
-describe('SplitColumn', () => {
+describe('SplitColumn', { tags: ['component'] }, () => {
 	it('renders with default props', () => {
 		const wrapper = mount(SplitColumn, {
 			slots: {

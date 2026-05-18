@@ -6,7 +6,7 @@ import { createStonecropPlugin } from '../src/plugin/postgraphile'
 // createStonecropPlugin — inflection resolution coverage
 // ===========================================================================
 
-describe('createStonecropPlugin', () => {
+describe('createStonecropPlugin', { tags: ['unit', 'graphql'] }, () => {
 	const mockExecutor = { query: vi.fn(), mutate: vi.fn() }
 
 	it('creates a plugin with default inflection', () => {

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/nuxt-grafserv",
+      "comment": "add test tags",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/nuxt-grafserv"
+}

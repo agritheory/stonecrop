@@ -6,7 +6,7 @@ import type { WorkflowMeta } from '@stonecrop/schema'
 import Doctype from '../../src/doctype'
 import type { SchemaTypes } from '@stonecrop/aform'
 
-describe('Doctype class', () => {
+describe('Doctype class', { tags: ['unit'] }, () => {
 	const mockSchema = List([
 		{
 			fieldname: 'title',

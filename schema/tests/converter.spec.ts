@@ -102,7 +102,7 @@ type CreateUserPayload {
 // Scalar Maps
 // ═══════════════════════════════════════════════════════════════
 
-describe('GQL_SCALAR_MAP', () => {
+describe('GQL_SCALAR_MAP', { tags: ['unit'] }, () => {
 	it('should map all standard GraphQL scalars', () => {
 		expect(GQL_SCALAR_MAP.String).toEqual({ component: 'ATextInput', fieldtype: 'Data' })
 		expect(GQL_SCALAR_MAP.Int).toEqual({ component: 'ANumericInput', fieldtype: 'Int' })
@@ -112,7 +112,7 @@ describe('GQL_SCALAR_MAP', () => {
 	})
 })
 
-describe('WELL_KNOWN_SCALARS', () => {
+describe('WELL_KNOWN_SCALARS', { tags: ['unit'] }, () => {
 	it('should map common custom scalars', () => {
 		expect(WELL_KNOWN_SCALARS.BigFloat).toEqual({ component: 'ADecimalInput', fieldtype: 'Decimal' })
 		expect(WELL_KNOWN_SCALARS.UUID).toEqual({ component: 'ATextInput', fieldtype: 'Data' })
@@ -153,13 +153,13 @@ describe('WELL_KNOWN_SCALARS', () => {
 	})
 })
 
-describe('INTERNAL_SCALARS', () => {
+describe('INTERNAL_SCALARS', { tags: ['unit'] }, () => {
 	it('should include Cursor', () => {
 		expect(INTERNAL_SCALARS.has('Cursor')).toBe(true)
 	})
 })
 
-describe('buildScalarMap', () => {
+describe('buildScalarMap', { tags: ['unit'] }, () => {
 	it('should merge standard and well-known scalars', () => {
 		const map = buildScalarMap()
 		expect(map.String).toEqual(GQL_SCALAR_MAP.String)
@@ -193,7 +193,7 @@ describe('buildScalarMap', () => {
 // Entity Type Detection
 // ═══════════════════════════════════════════════════════════════
 
-describe('defaultIsEntityType', () => {
+describe('defaultIsEntityType', { tags: ['unit'] }, () => {
 	const schema = buildSchema(basicSdl)
 	const typeMap = schema.getTypeMap()
 
@@ -248,7 +248,7 @@ describe('defaultIsEntityType', () => {
 // Entity Field Detection
 // ═══════════════════════════════════════════════════════════════
 
-describe('defaultIsEntityField', () => {
+describe('defaultIsEntityField', { tags: ['unit'] }, () => {
 	const schema = buildSchema(basicSdl)
 	const userType = schema.getType('User') as any
 	const userFields = userType.getFields()
@@ -276,7 +276,7 @@ describe('defaultIsEntityField', () => {
 // Field Classification
 // ═══════════════════════════════════════════════════════════════
 
-describe('classifyFieldType', () => {
+describe('classifyFieldType', { tags: ['unit'] }, () => {
 	const schema = buildSchema(basicSdl)
 	const entityTypes = new Set(['User', 'Post', 'Comment'])
 	const postType = schema.getType('Post') as any
@@ -395,7 +395,7 @@ describe('classifyFieldType', () => {
 // End-to-End Conversion
 // ═══════════════════════════════════════════════════════════════
 
-describe('convertGraphQLSchema', () => {
+describe('convertGraphQLSchema', { tags: ['unit'] }, () => {
 	describe('from SDL', () => {
 		it('should convert entity types to doctypes', () => {
 			const doctypes = convertGraphQLSchema(basicSdl)

@@ -92,7 +92,7 @@ const getMeta = (slug: string) => registry.get(slug)
 // Field filtering
 // ===========================================================================
 
-describe('RELATION_FIELDTYPES', () => {
+describe('RELATION_FIELDTYPES', { tags: ['unit', 'graphql'] }, () => {
 	it('does not contain Link (Link fields excluded by queryableFieldNames when they have a links declaration)', () => {
 		expect(RELATION_FIELDTYPES.has('Link')).toBe(false)
 		expect(RELATION_FIELDTYPES.has('Doctype')).toBe(false)
@@ -108,7 +108,7 @@ describe('RELATION_FIELDTYPES', () => {
 	})
 })
 
-describe('queryableFieldNames', () => {
+describe('queryableFieldNames', { tags: ['unit', 'graphql'] }, () => {
 	it('returns all fields when none are relational', () => {
 		const names = queryableFieldNames(scalarOnlyMeta)
 		expect(names).toContain('id')
@@ -148,7 +148,7 @@ describe('queryableFieldNames', () => {
 // buildRecordQuery
 // ===========================================================================
 
-describe('buildRecordQuery', () => {
+describe('buildRecordQuery', { tags: ['unit', 'graphql'] }, () => {
 	it('generates valid query with default arg name/type', () => {
 		const query = buildRecordQuery(
 			scalarOnlyMeta,
@@ -208,7 +208,7 @@ describe('buildRecordQuery', () => {
 // buildListQuery
 // ===========================================================================
 
-describe('buildListQuery', () => {
+describe('buildListQuery', { tags: ['unit', 'graphql'] }, () => {
 	it('declares no variables when no args are provided', () => {
 		const query = buildListQuery(scalarOnlyMeta, {}, defaultConnectionFieldName, defaultOrderByTypeName)
 		expect(query).toMatch(/query GetRecords\s*\{/)
@@ -270,7 +270,7 @@ describe('buildListQuery', () => {
 // extractSingleResult
 // ===========================================================================
 
-describe('extractSingleResult', () => {
+describe('extractSingleResult', { tags: ['unit', 'graphql'] }, () => {
 	it('extracts the record from the result using the field name', () => {
 		const record = { id: '1', name: 'Test' }
 		const result = { resourceById: record }
@@ -296,7 +296,7 @@ describe('extractSingleResult', () => {
 // extractListResult
 // ===========================================================================
 
-describe('extractListResult', () => {
+describe('extractListResult', { tags: ['unit', 'graphql'] }, () => {
 	it('extracts the nodes array from the connection', () => {
 		const nodes = [{ id: '1' }, { id: '2' }]
 		const result = { allResources: { nodes } }
@@ -333,7 +333,7 @@ describe('extractListResult', () => {
 // defaultReverseConnectionName
 // ===========================================================================
 
-describe('defaultReverseConnectionName', () => {
+describe('defaultReverseConnectionName', { tags: ['unit', 'graphql'] }, () => {
 	it('derives correct PostGraphile connection name', () => {
 		const result = defaultReverseConnectionName({
 			doctype: 'recipe',
@@ -365,7 +365,7 @@ describe('defaultReverseConnectionName', () => {
 	})
 })
 
-describe('reverseConnectionName override', () => {
+describe('reverseConnectionName override', { tags: ['unit', 'graphql'] }, () => {
 	it('uses custom reverseConnectionName when provided', () => {
 		const customReverseConnection = ({ target }: { target: string }) => `Custom_${target}`
 		const query = buildRecordQuery(
@@ -399,7 +399,7 @@ describe('reverseConnectionName override', () => {
 // buildRecordQuery with nested
 // ===========================================================================
 
-describe('buildRecordQuery with includeNested', () => {
+describe('buildRecordQuery with includeNested', { tags: ['unit', 'graphql'] }, () => {
 	it('generates nested query for noneOrMany links', () => {
 		const query = buildRecordQuery(
 			recipeMeta,
@@ -554,7 +554,7 @@ describe('buildRecordQuery with includeNested', () => {
 // mergeNestedResults
 // ===========================================================================
 
-describe('mergeNestedResults', () => {
+describe('mergeNestedResults', { tags: ['unit', 'graphql'] }, () => {
 	it('flattens noneOrMany connection results', () => {
 		const record = {
 			id: 'r1',

@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest'
 
 import { yogaCaslPlugin, createYogaPlugin } from '../src/middleware/yoga'
 
-describe('Yoga CASL Plugin', () => {
+describe('Yoga CASL Plugin', { tags: ['unit', 'graphql'] }, () => {
 	it('should be a valid Yoga plugin', () => {
 		expect(yogaCaslPlugin).toBeDefined()
 		expect(typeof yogaCaslPlugin).toBe('object')

@@ -21,7 +21,7 @@ vi.mock('nuxt/app', () => ({
 // Helpers
 // ---------------------------------------------------------------------------
 
-function makeRegistry(overrides: Record<string, unknown> = {}) {
+const makeRegistry = vi.defineHelper((overrides: Record<string, unknown> = {}) => {
 	return {
 		getMeta: undefined as unknown,
 		getDoctype: vi.fn().mockReturnValue({ doctype: 'Task', slug: 'task' }),
@@ -29,29 +29,29 @@ function makeRegistry(overrides: Record<string, unknown> = {}) {
 		addDoctype: vi.fn(),
 		...overrides,
 	}
-}
+})
 
-function makeStonecrop(overrides: Record<string, unknown> = {}) {
+const makeStonecrop = vi.defineHelper((overrides: Record<string, unknown> = {}) => {
 	return {
 		setClient: vi.fn(),
 		getClient: vi.fn().mockReturnValue(undefined),
 		dispatchAction: vi.fn().mockResolvedValue({ success: true, data: null, error: null }),
 		...overrides,
 	}
-}
+})
 
-function makeNuxtApp(registry: unknown, stonecrop: unknown) {
+const makeNuxtApp = vi.defineHelper((registry: unknown, stonecrop: unknown) => {
 	return {
 		$registry: registry,
 		$stonecrop: stonecrop,
 	}
-}
+})
 
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
 
-describe('useStonecropRegistry', () => {
+describe('useStonecropRegistry', { tags: ['unit', 'nuxt'] }, () => {
 	beforeEach(() => {
 		vi.clearAllMocks()
 	})
@@ -204,7 +204,7 @@ describe('useStonecropRegistry', () => {
 // useStonecropSetup Tests
 // ---------------------------------------------------------------------------
 
-describe('useStonecropSetup', () => {
+describe('useStonecropSetup', { tags: ['unit', 'nuxt'] }, () => {
 	beforeEach(() => {
 		vi.clearAllMocks()
 	})
@@ -337,7 +337,7 @@ describe('useStonecropSetup', () => {
 // Context Separation Tests
 // ---------------------------------------------------------------------------
 
-describe('useStonecropSetup vs useStonecropRegistry context separation', () => {
+describe('useStonecropSetup vs useStonecropRegistry context separation', { tags: ['unit', 'nuxt'] }, () => {
 	beforeEach(() => {
 		vi.clearAllMocks()
 	})
@@ -380,11 +380,11 @@ describe('useStonecropSetup vs useStonecropRegistry context separation', () => {
 // Helper for mock client
 // ---------------------------------------------------------------------------
 
-function makeMockClient(): DataClient {
+const makeMockClient = vi.defineHelper((): DataClient => {
 	return {
 		getMeta: vi.fn(),
 		getRecord: vi.fn(),
 		getRecords: vi.fn(),
 		runAction: vi.fn(),
 	}
-}
+})

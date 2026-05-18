@@ -11,7 +11,7 @@ vi.mock('postgraphile/utils', () => ({
 
 import { createPglRockfoilPlugin } from '../src/middleware/postgraphile'
 
-describe('Rockfoil PostGraphile Plugin', () => {
+describe('Rockfoil PostGraphile Plugin', { tags: ['unit', 'graphql'] }, () => {
 	describe('createPglRockfoilPlugin', () => {
 		it('should create a valid plugin with empty hook map', () => {
 			const plugin = createPglRockfoilPlugin({})

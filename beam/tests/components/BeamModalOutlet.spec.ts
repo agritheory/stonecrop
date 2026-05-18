@@ -3,7 +3,7 @@ import { mount } from '@vue/test-utils'
 
 import BeamModalOutlet from '../../src/components/BeamModalOutlet.vue'
 
-describe('BeamModalOutlet', () => {
+describe('BeamModalOutlet', { tags: ['component'] }, () => {
 	it('renders portal target', () => {
 		const wrapper = mount(BeamModalOutlet, {
 			global: {

@@ -3,7 +3,7 @@ import { mount } from '@vue/test-utils'
 
 import ANumericInput from '../src/components/form/ANumericInput.vue'
 
-describe('numeric input component', () => {
+describe('numeric input component', { tags: ['component'] }, () => {
 	const numericInputModel = 25
 	const wrapper = mount(ANumericInput, {
 		props: { modelValue: numericInputModel, label: 'Age' },

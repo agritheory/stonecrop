@@ -4,7 +4,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { Stonecrop, Registry, Doctype } from '../../src'
 import { schemaToColumns } from '@stonecrop/atable'
 
-describe('Nested Doctype Support', () => {
+describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 	let registry: Registry
 	let stonecrop: Stonecrop
 	let customerDoctype: Doctype
@@ -822,7 +822,7 @@ describe('Nested Doctype Support', () => {
 	})
 })
 
-describe('resolveSchema → schemaToColumns pipeline', () => {
+describe('resolveSchema → schemaToColumns pipeline', { tags: ['unit'] }, () => {
 	let registry: Registry
 
 	beforeEach(() => {

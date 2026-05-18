@@ -28,7 +28,7 @@ function createFileList(files: File[]): FileList {
 	} as FileList
 }
 
-describe('file attach component', () => {
+describe('file attach component', { tags: ['component'] }, () => {
 	beforeEach(() => {
 		mockFiles.value = null
 	})

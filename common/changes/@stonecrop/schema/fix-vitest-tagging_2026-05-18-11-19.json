@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/schema",
+      "comment": "add test tags",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/schema"
+}

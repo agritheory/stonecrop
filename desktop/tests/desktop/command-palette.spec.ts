@@ -14,7 +14,7 @@ afterEach(() => {
 	Stonecrop._root = undefined as any
 })
 
-describe('Desktop command palette', () => {
+describe('Desktop command palette', { tags: ['component'] }, () => {
 	it('provides search commands that can be queried', async () => {
 		const registry = new Registry()
 		const stonecrop = new Stonecrop(registry)
@@ -193,7 +193,7 @@ describe('Desktop command palette', () => {
 	})
 })
 
-describe('Desktop – command palette action closures', () => {
+describe('Desktop – command palette action closures', { tags: ['component'] }, () => {
 	it('all searchCommands action closures are callable without error', async () => {
 		const registry = new Registry()
 		const stonecrop = new Stonecrop(registry)
@@ -239,7 +239,7 @@ describe('Desktop – command palette action closures', () => {
 	})
 })
 
-describe('Desktop – CommandPalette slot rendering', () => {
+describe('Desktop – CommandPalette slot rendering', { tags: ['component'] }, () => {
 	it('renders title and content slots with result data', async () => {
 		const registry = new Registry()
 		const stonecrop = new Stonecrop(registry)

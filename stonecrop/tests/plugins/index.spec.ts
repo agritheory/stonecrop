@@ -7,7 +7,7 @@ import Registry from '../../src/registry'
 import { Stonecrop } from '../../src/stonecrop'
 import { HST } from '../../src/stores/hst'
 
-describe('Stonecrop Vue Plugin with HST', () => {
+describe('Stonecrop Vue Plugin with HST', { tags: ['unit'] }, () => {
 	let app: App
 	let mockRouter: any
 

@@ -3,7 +3,7 @@ import { mount } from '@vue/test-utils'
 
 import FixedTop from '../../src/components/FixedTop.vue'
 
-describe('FixedTop', () => {
+describe('FixedTop', { tags: ['component'] }, () => {
 	it('renders div element', () => {
 		const wrapper = mount(FixedTop, {
 			slots: {

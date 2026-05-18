@@ -12,7 +12,7 @@ import {
 // Read inflection helpers
 // ===========================================================================
 
-describe('defaultRecordFieldName', () => {
+describe('defaultRecordFieldName', { tags: ['unit', 'graphql'] }, () => {
 	it('singularizes regular plurals and appends ById', () => {
 		expect(defaultRecordFieldName('resources')).toBe('resourceById')
 	})
@@ -38,7 +38,7 @@ describe('defaultRecordFieldName', () => {
 	})
 })
 
-describe('defaultConnectionFieldName', () => {
+describe('defaultConnectionFieldName', { tags: ['unit', 'graphql'] }, () => {
 	it('prefixes with "all" and PascalCases', () => {
 		expect(defaultConnectionFieldName('resources')).toBe('allResources')
 	})
@@ -48,7 +48,7 @@ describe('defaultConnectionFieldName', () => {
 	})
 })
 
-describe('defaultOrderByTypeName', () => {
+describe('defaultOrderByTypeName', { tags: ['unit', 'graphql'] }, () => {
 	it('PascalCases and appends OrderBy', () => {
 		expect(defaultOrderByTypeName('resources')).toBe('ResourcesOrderBy')
 	})
@@ -58,14 +58,14 @@ describe('defaultOrderByTypeName', () => {
 	})
 })
 
-describe('defaultRecordArgName', () => {
+describe('defaultRecordArgName', { tags: ['unit', 'graphql'] }, () => {
 	it('returns "id" for all table names (standard Relay Global ID)', () => {
 		expect(defaultRecordArgName('resources')).toBe('id')
 		expect(defaultRecordArgName('sales_orders')).toBe('id')
 	})
 })
 
-describe('defaultRecordArgType', () => {
+describe('defaultRecordArgType', { tags: ['unit', 'graphql'] }, () => {
 	it('returns "UUID!" for all table names (Amber default)', () => {
 		expect(defaultRecordArgType('resources')).toBe('UUID!')
 		expect(defaultRecordArgType('sales_orders')).toBe('UUID!')

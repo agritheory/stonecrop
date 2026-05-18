@@ -8,7 +8,7 @@ import { Map, List } from 'immutable'
 import { useOperationLog } from '../../src/composables/operation-log'
 import { FieldTriggerEngine, getGlobalTriggerEngine } from '../../src/field-triggers'
 
-describe('Operation Log - Action Tracking', () => {
+describe('Operation Log - Action Tracking', { tags: ['unit'] }, () => {
 	let registry: Registry
 	let stonecrop: Stonecrop
 	let mockDoctype: Doctype

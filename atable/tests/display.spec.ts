@@ -3,7 +3,7 @@ import { setActivePinia, createPinia } from 'pinia'
 import { createTableStore } from '../src/stores/table'
 import type { TableColumn, TableRow } from '../src/types'
 
-describe('Display reactivity fix', () => {
+describe('Display reactivity fix', { tags: ['component'] }, () => {
 	const mockColumns: TableColumn[] = [
 		{ name: 'id', label: 'ID' },
 		{ name: 'name', label: 'Name' },

@@ -12,7 +12,7 @@ import Doctype from '../../src/doctype'
 import Registry from '../../src/registry'
 import { Stonecrop } from '../../src/stonecrop'
 
-describe('HST Edge Cases & Performance', () => {
+describe('HST Edge Cases & Performance', { tags: ['unit'] }, () => {
 	let registry: Registry
 	let stonecrop: Stonecrop
 	let doctype: Doctype
