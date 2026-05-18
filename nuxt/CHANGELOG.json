@@ -2,6 +2,18 @@
   "name": "@stonecrop/nuxt",
   "entries": [
     {
+      "version": "0.12.7",
+      "tag": "@stonecrop/nuxt_v0.12.7",
+      "date": "Mon, 18 May 2026 10:41:42 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "apply missing options for graphql records API"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.12.6",
       "tag": "@stonecrop/nuxt_v0.12.6",
       "date": "Thu, 14 May 2026 11:55:38 GMT",
