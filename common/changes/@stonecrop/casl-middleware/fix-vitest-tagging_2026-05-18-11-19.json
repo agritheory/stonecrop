@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/casl-middleware",
+      "comment": "add test tags",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/casl-middleware"
+}
