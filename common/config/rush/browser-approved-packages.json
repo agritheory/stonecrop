@@ -7,6 +7,10 @@
       "allowedCategories": [ "production", "prototype" ]
     },
     {
+      "name": "@dataplan/pg",
+      "allowedCategories": [ "utilities" ]
+    },
+    {
       "name": "@eslint/js",
       "allowedCategories": [ "production", "prototype", "utilities" ]
     },

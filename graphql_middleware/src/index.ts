@@ -1,7 +1,7 @@
 export type { DoctypeMeta, ValidationError } from '@stonecrop/schema'
 
 // Runtime context types (unique to graphql_middleware)
-export type { ActionContext, ActionHandler, GraphQLExecutor } from './types'
+export type { ActionContext, ActionHandler } from './types'
 
 // Doctype registry
 export {

@@ -37,6 +37,11 @@ export default defineConfig({
 				description: 'Involves the Nuxt module, plugin, composables, or @nuxt/test-utils.',
 			},
 			{ name: 'graphql', description: 'Involves GraphQL schema, queries, resolvers, or PostGraphile.' },
+			{
+				name: 'integration',
+				timeout: 60_000,
+				description: 'Requires a live PostgreSQL database. Skipped in CI environments without a database.',
+			},
 		],
 		environment: 'jsdom',
 		include: ['tests/**/*.{test,spec}.{ts,js}'],

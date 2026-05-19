@@ -25,6 +25,7 @@
 		"test:ui": "vitest --ui"
 	},
 	"dependencies": {
+		"@dataplan/pg": "^1.0.3",
 		"@stonecrop/schema": "workspace:*",
 		"graphql": "^16.14.0",
 		"pluralize": "^8.0.0",

@@ -90,19 +90,15 @@ export declare function clearRegistry(): void;
 
 ### createStonecropPlugin
 
-Create a PostGraphile plugin that extends the GraphQL schema with Stonecrop functionality
+Create a PostGraphile plugin that extends the GraphQL schema with Stonecrop functionality.
+
+`createStonecropPlugin()` takes no arguments. The `PgExecutor` is obtained automatically from the first entry in `build.input.pgRegistry.pgResources` during schema construction, so it does not need to be supplied by the caller.
 
 **Signature:**
 
 ```typescript
-createStonecropPlugin: (options: StonecropPluginOptions) => GraphileConfig.Plugin
+createStonecropPlugin: () => GraphileConfig.Plugin
 ```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| options | `StonecropPluginOptions` | Plugin configuration options |
 
 ### createStonecropPreset
 
@@ -438,14 +434,13 @@ export declare function validateReferences(): ValidationError[];
 
 ### ActionContext
 
-Context passed to action handlers
+Context passed to action handlers.
 
 **Definition:**
 
 ```typescript
 export interface ActionContext {
   doctype: DoctypeMeta;
-  executor: GraphQLExecutor;
 }
 ```
 
@@ -454,7 +449,6 @@ export interface ActionContext {
 | Property | Type | Description |
 |----------|------|-------------|
 | doctype | `DoctypeMeta` | Doctype metadata for the action being executed |
-| executor | `GraphQLExecutor` | GraphQL executor for running queries/mutations within the action |
 
 ### BuildListQueryArgs
 
@@ -541,19 +535,6 @@ export interface ExtractSingleResultParams {
 | meta | `DoctypeMeta` | Doctype metadata |
 | recordFieldName | `(tableName: string) => string` | Function to derive the record field name from a table name |
 | result | `unknown` | The raw query result |
-
-### GraphQLExecutor
-
-GraphQL executor interface for running queries/mutations
-
-**Definition:**
-
-```typescript
-export interface GraphQLExecutor {
-  mutate(mutation: string, variables: Record<string, unknown>): Promise<T>;
-  query(query: string, variables: Record<string, unknown>): Promise<T>;
-}
-```
 
 ### LoadDoctypesOptions
 
@@ -660,23 +641,14 @@ export interface StonecropInflectionConfig {
 
 ### StonecropPluginOptions
 
-Options for creating a Stonecrop PostGraphile plugin
+Options for creating a Stonecrop PostGraphile plugin.
 
 **Definition:**
 
 ```typescript
 export interface StonecropPluginOptions {
-  executor: GraphQLExecutor;
-  inflection?: StonecropInflectionConfig;
 }
 ```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| executor | `GraphQLExecutor` | GraphQL executor for running queries/mutations |
-| inflection? | `StonecropInflectionConfig` | Override inflection conventions for mapping table names to GraphQL field names. Defaults to PostGraphile Amber preset conventions. |
 
 ### StonecropRecordOptions
 

@@ -285,11 +285,10 @@ For database-backed GraphQL APIs:
 1. Create your preset file `server/graphile.preset.ts`:
 
 ```ts
-import { PostGraphileAmberPreset } from 'postgraphile/presets/amber'
-import { makePgService } from 'postgraphile/adaptors/pg'
+import { createStonecropPreset, makePgService } from '@stonecrop/graphql-middleware'
 
 const preset = {
-  extends: [PostGraphileAmberPreset],
+  extends: [createStonecropPreset()],
   pgServices: [
     makePgService({
       connectionString: process.env.DATABASE_URL,
@@ -362,12 +361,11 @@ Import the plugins in your preset:
 
 ```ts
 // server/graphile/graphile.preset.ts
-import { PostGraphileAmberPreset } from 'postgraphile/presets/amber'
-import { makePgService } from 'postgraphile/adaptors/pg'
+import { createStonecropPreset, makePgService } from '@stonecrop/graphql-middleware'
 import plugins from './plugins'
 
 const preset = {
-  extends: [PostGraphileAmberPreset],
+  extends: [createStonecropPreset()],
   pgServices: [makePgService({ /* ... */ })],
   plugins
 }
@@ -389,12 +387,11 @@ PostGraphile v5+ automatically generates your GraphQL schema from PostgreSQL.
 ### With Community Plugins
 
 ```typescript
-import { PostGraphileAmberPreset } from 'postgraphile/presets/amber'
-import { makePgService } from 'postgraphile/adaptors/pg'
+import { createStonecropPreset, makePgService } from '@stonecrop/graphql-middleware'
 import PgSimplifyInflectorPlugin from '@graphile-contrib/pg-simplify-inflector'
 
 const preset = {
-  extends: [PostGraphileAmberPreset],
+  extends: [createStonecropPreset()],
   plugins: [PgSimplifyInflectorPlugin],
   pgServices: [
     makePgService({
@@ -416,11 +413,10 @@ export default preset
 ### Advanced Configuration
 
 ```typescript
-import { PostGraphileAmberPreset } from 'postgraphile/presets/amber'
-import { makePgService } from 'postgraphile/adaptors/pg'
+import { createStonecropPreset, makePgService } from '@stonecrop/graphql-middleware'
 
 const preset = {
-  extends: [PostGraphileAmberPreset],
+  extends: [createStonecropPreset()],
   pgServices: [
     makePgService({
       connectionString: process.env.DATABASE_URL,
@@ -465,10 +461,10 @@ This approach avoids GraphQL module duplication, follows PostGraphile's recommen
 **Your preset file needs a default export:**
 
 ```typescript
-import { PostGraphileAmberPreset } from 'postgraphile/presets/amber'
+import { createStonecropPreset } from '@stonecrop/graphql-middleware'
 
 const preset = {
-  extends: [PostGraphileAmberPreset],
+  extends: [createStonecropPreset()],
   // ...
 }
 
@@ -481,13 +477,12 @@ Relative imports in preset files work with file extensions:
 
 ```typescript
 // server/graphile/graphile.preset.ts
-import { PostGraphileAmberPreset } from 'postgraphile/presets/amber'
-import { makePgService } from 'postgraphile/adaptors/pg'
+import { createStonecropPreset, makePgService } from '@stonecrop/graphql-middleware'
 import { MyPlugin } from './plugins/my-plugin'
 import { AnotherPlugin } from './plugins/another'
 
 const preset = {
-  extends: [PostGraphileAmberPreset],
+  extends: [createStonecropPreset()],
   pgServices: [makePgService({/*...*/})],
   plugins: [MyPlugin, AnotherPlugin],
 }

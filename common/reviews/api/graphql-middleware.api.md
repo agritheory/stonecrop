@@ -14,7 +14,6 @@ import { ValidationError } from '@stonecrop/schema';
 export interface ActionContext {
     [key: string]: unknown;
     doctype: DoctypeMeta;
-    executor: GraphQLExecutor;
 }
 
 // @public
@@ -49,7 +48,7 @@ export function clearHandlers(): void;
 export function clearRegistry(): void;
 
 // @public
-export const createStonecropPlugin: (options: StonecropPluginOptions) => GraphileConfig_2.Plugin;
+export const createStonecropPlugin: () => GraphileConfig_2.Plugin;
 
 // @public
 export const createStonecropPreset: (options?: {
@@ -123,12 +122,6 @@ export function getHandler(name: string): ActionHandler | undefined;
 export function getMeta(name: string): DoctypeMeta | undefined;
 
 // @public
-export interface GraphQLExecutor {
-    mutate<T = unknown>(mutation: string, variables?: Record<string, unknown>): Promise<T>;
-    query<T = unknown>(query: string, variables?: Record<string, unknown>): Promise<T>;
-}
-
-// @public
 export function hasHandler(name: string): boolean;
 
 // @public
@@ -179,7 +172,7 @@ export interface ReverseConnectionParams {
     target: string;
 }
 
-// @public
+// @public @deprecated
 export interface StonecropInflectionConfig {
     connectionFieldName?: (tableName: string) => string;
     orderByTypeName?: (tableName: string) => string;
@@ -196,8 +189,6 @@ export interface StonecropInflectionConfig {
 
 // @public
 export interface StonecropPluginOptions {
-    executor: GraphQLExecutor;
-    inflection?: StonecropInflectionConfig;
 }
 
 // @public
