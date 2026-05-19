@@ -20,16 +20,3 @@ export interface ActionContext {
  * @public
  */
 export type ActionHandler = (args: unknown[], context: ActionContext) => Promise<unknown>
-
-// Query builder types
-export type {
-	ReverseConnectionParams,
-	BuildRecordQueryOptions,
-	BuildRecordQueryParams,
-	BuildNestedSelectionsParams,
-	BuildListQueryArgs,
-	BuildListQueryParams,
-	MergeNestedResultsParams,
-	ExtractSingleResultParams,
-	ExtractListResultParams,
-} from './query'
