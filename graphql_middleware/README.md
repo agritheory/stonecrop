@@ -1,29 +1,15 @@
 # @stonecrop/graphql-middleware
 
-GraphQL backend for the Stonecrop framework. Reads doctype schemas and exposes them as GraphQL resolvers that handle query construction, response parsing, and action dispatch.
-
-Currently integrated with PostGraphile (to be extracted into a swappable adapter in the future).
+GraphQL backend for the Stonecrop framework. Reads doctype schemas and exposes them as PostGraphile plan-step resolvers that handle record fetching, fetch-strategy dispatch, and action execution.
 
 ## What it does
 
-- **Query construction** — Builds GraphQL queries from doctype metadata, respecting fetch strategies and nesting depth
-- **Response merging** — Flattens connection format (`{ nodes: [...] }`) into plain arrays
-- **Action dispatch** — Routes doctype actions to registered handlers
-
-## How it works
-
-Doctype schemas declare fields, relationships, and workflow. The middleware uses that schema to:
-
-1. Accept a `doctype` and optional `options` from the client
-2. Build a query with field selections and (if `includeNested` is set) nested sub-selections for related records
-3. Execute against the GraphQL engine and merge the response
-4. Return flat data to the client
-
-The client never constructs queries — it passes `includeNested` through and receives pre-merged results.
+- **Record fetching** — Resolves `stonecropRecord` and `stonecropRecords` via direct parameterised SQL, batched via `loadOneWithPgClient` from `@dataplan/pg`
+- **Fetch-strategy dispatch** — For `stonecropRecord`, iterates `meta.links` and applies `sync` / `lazy` / `custom` strategies; sync links issue additional SQL and merge results into the record; lazy links are absent from the response
+- **Action dispatch** — Routes doctype actions to registered handlers via `sideEffectWithPgClient`
+- **Preset** — `createStonecropPreset()` wraps `PostGraphileAmberPreset` so user apps never import from PostGraphile directly
 
 ## Setup
-
-The middleware is a PostGraphile plugin. It needs an executor to bridge between the middleware's query strings and your GraphQL engine:
 
 ```typescript
 import {
@@ -34,39 +20,40 @@ import {
   registerBuiltinHandlers,
 } from '@stonecrop/graphql-middleware'
 
-// Scan doctype JSON files and register them with the middleware
 loadDoctypes('./doctypes')
-
-// Register built-in action handlers (submit, approve, etc.)
 registerBuiltinHandlers()
 
-// PostGraphile configuration
 const preset: GraphileConfig.Preset = {
-  extends: [createStonecropPreset()], // Stonecrop preset (wraps PostGraphile Amber)
-  plugins: [createStonecropPlugin()], // Stonecrop GraphQL resolvers
-  pgServices: [makePgService({ connectionString: process.env.DATABASE_URL })], // Database connection
+  extends: [createStonecropPreset()],
+  plugins: [createStonecropPlugin()],
+  pgServices: [makePgService({ connectionString: process.env.DATABASE_URL })],
 }
 ```
 
-The middleware builds PostGraphile-formatted query strings (e.g., `SalesOrderById`, `SalesOrderItemsBySalesOrderId`). The executor runs them — it doesn't control what queries are constructed.
+`createStonecropPlugin()` discovers the `PgExecutor` automatically from `pgServices` — no executor argument is needed. An optional `StonecropPluginOptions` object accepts:
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `pkField` | `'id'` | Primary key column name for record lookups |
 
 ## Doctype Schemas
 
-The middleware loads doctype definitions from JSON files. Each file defines a doctype's structure:
+Each doctype JSON file defines structure, relationships, and workflow:
 
 ```json
 {
   "name": "SalesOrder",
   "tableName": "sales_orders",
   "fields": [
-    { "fieldname": "id", "fieldtype": "UUID" },
+    { "fieldname": "id", "fieldtype": "Data" },
     { "fieldname": "status", "fieldtype": "Select" }
   ],
   "links": {
     "items": {
       "target": "sales-order-item",
       "cardinality": "noneOrMany",
-      "backlink": "sales_order"
+      "backlink": "sales_order_id",
+      "fetch": { "method": "sync", "limit": 100 }
     }
   },
   "workflow": {
@@ -78,49 +65,64 @@ The middleware loads doctype definitions from JSON files. Each file defines a do
 }
 ```
 
-The `links` object declares relationships used when `includeNested` is requested. The `workflow` object enables action dispatch.
+### Fetch strategies
+
+Each entry in `links` can declare a `fetch` strategy:
+
+| Strategy | Behaviour |
+|----------|-----------|
+| `{ "method": "sync", "limit": N }` | Linked records are fetched in the same resolver call and merged into `data` |
+| `{ "method": "lazy" }` | Link is absent from the response; client retrieves it via `stonecropRecords` with `filters` |
+| `{ "method": "custom", "handler": "myHandler" }` | Calls a registered fetch handler (see below) |
+
+When `fetch` is omitted, `noneOrMany`/`atLeastOne` links default to `sync` (limit 50) and `atMostOne`/`one` links default to `lazy`.
 
 ### Display-only fields
 
-Fields with `fieldtype: "Display"` are excluded from the auto-generated scalar query. Use this for composite UI components (e.g. a canvas visualisation) that have no backing database column:
+Fields with `fieldtype: "Display"` have no backing database column and are excluded from all SQL queries:
 
 ```json
 { "fieldname": "planner", "fieldtype": "Display", "component": "Planner", "label": "Resource Planner" }
 ```
 
-All other non-`Link` fieldtypes are assumed to map to a scalar DB column and are included in the query.
-
-## Architecture
-
-### Why the middleware builds queries
-
-The client (`@stonecrop/graphql-client`) is intentionally transport-only — it sends requests and receives flat data. It never constructs GraphQL queries. All query generation lives in the middleware, which is the only layer aware of PostGraphile naming conventions (inflection).
-
-This boundary exists because PostGraphile's schema naming is configurable. A single application might use `ById` for UUID primary keys, `ByRowId` for `row_id` columns, or entirely custom conventions. If the client hardcoded any of these conventions, it would silently generate wrong queries for any non-default setup. By keeping query construction server-side, the middleware's `StonecropInflectionConfig` becomes the single source of truth.
-
 ## Actions
 
-Actions are custom logic triggered by the client. Register handlers with `registerHandler`:
+Register action handlers with `registerHandler`. Handlers receive the action arguments and an `ActionContext` that includes the active `PgClient`:
 
 ```typescript
+import { registerHandler } from '@stonecrop/graphql-middleware'
+
 registerHandler('submitOrder', async (args, ctx) => {
   const [orderId] = args as [string]
+  // ctx.pgClient is available for additional database work
   return { submitted: true }
 })
 ```
 
-The `args` are passed from the client, and `ctx` provides the doctype metadata and GraphQL executor.
+## Custom fetch handlers
+
+Register custom fetch handlers for links that use `{ "method": "custom" }`:
+
+```typescript
+import { registerFetchHandler } from '@stonecrop/graphql-middleware'
+
+registerFetchHandler('loadLineItems', async (pgClient, parentRecord, link) => {
+  // Returns a single record or an array depending on link.cardinality
+  const { rows } = await pgClient.query(...)
+  return rows
+})
+```
 
 ## API
 
-The middleware exposes these GraphQL operations:
-
 | Operation | Description |
 |-----------|-------------|
-| `stonecropRecord(doctype, id, options?)` | Fetch a single record, optionally with nested links |
-| `stonecropRecords(doctype, filters?, orderBy?, limit?, offset?, options?)` | Fetch multiple records |
+| `stonecropRecord(doctype, id, options?)` | Fetch a single record; `options.includeNested` controls which links are resolved |
+| `stonecropRecords(doctype, filters?, orderBy?, limit?, offset?)` | Fetch a list with optional filtering and ordering |
 | `stonecropMeta(doctype)` | Fetch doctype metadata |
-| `stonecropAllMeta` | Fetch all doctype metadata |
+| `stonecropAllMeta` | Fetch all registered doctype metadata |
 | `stonecropAction(doctype, action, args?)` | Execute a doctype action |
 
-For type signatures and detailed parameters, see [API Reference](./api.md).
+`stonecropRecords` accepts `orderBy` as `FIELD_ASC` or `FIELD_DESC` (e.g. `"status_ASC"`). The field name is validated against the doctype's known fields before interpolation.
+
+For full type signatures see [API Reference](./api.md).

@@ -7,13 +7,16 @@
 import { DoctypeMeta } from '@stonecrop/schema';
 import { DocumentNode } from 'graphql';
 import { GraphileConfig as GraphileConfig_2 } from 'postgraphile/graphile-build';
+import type { LinkDeclaration } from '@stonecrop/schema';
 import { makePgService } from 'postgraphile/adaptors/pg';
+import type { PgClient } from '@dataplan/pg';
 import { ValidationError } from '@stonecrop/schema';
 
 // @public
 export interface ActionContext {
     [key: string]: unknown;
     doctype: DoctypeMeta;
+    pgClient?: PgClient;
 }
 
 // @public
@@ -23,13 +26,16 @@ export type ActionHandler = (args: unknown[], context: ActionContext) => Promise
 export const builtinHandlers: Record<string, ActionHandler>;
 
 // @public
+export function clearFetchHandlers(): void;
+
+// @public
 export function clearHandlers(): void;
 
 // @public
 export function clearRegistry(): void;
 
 // @public
-export const createStonecropPlugin: () => GraphileConfig_2.Plugin;
+export const createStonecropPlugin: (options?: StonecropPluginOptions) => GraphileConfig_2.Plugin;
 
 // @public
 export const createStonecropPreset: (options?: {
@@ -48,10 +54,16 @@ export class DoctypeValidationError extends Error {
 }
 
 // @public
+export type FetchHandler = (pgClient: PgClient, parentRecord: Record<string, unknown>, link: LinkDeclaration) => Promise<Record<string, unknown> | Record<string, unknown>[]>;
+
+// @public
 export type FieldCasing = 'camel' | 'pascal';
 
 // @public
 export function getAllMeta(): DoctypeMeta[];
+
+// @public
+export function getFetchHandler(name: string): FetchHandler | undefined;
 
 // @public
 export function getHandler(name: string): ActionHandler | undefined;
@@ -83,7 +95,15 @@ export { makePgService }
 export function registerBuiltinHandlers(): void;
 
 // @public
+export function registerFetchHandler(name: string, handler: FetchHandler): void;
+
+// @public
 export function registerHandler(name: string, handler: ActionHandler): void;
+
+// @public
+export interface StonecropPluginOptions {
+    pkField?: string;
+}
 
 // @public
 export const StonecropPreset: GraphileConfig.Preset;

@@ -1,26 +1,41 @@
-import type { DoctypeMeta } from '@stonecrop/schema'
-import { loadOneWithPgClient } from '@dataplan/pg'
+import type { DoctypeMeta, GetRecordOptions } from '@stonecrop/schema'
+import { loadOneWithPgClient, sideEffectWithPgClient } from '@dataplan/pg'
 import type { PgClient, PgExecutor } from '@dataplan/pg'
-import { constant, lambda, object, loadOne } from 'postgraphile/grafast'
+import { constant, lambda, object } from 'postgraphile/grafast'
 import { GraphileConfig } from 'postgraphile/graphile-build'
 import { extendSchema } from 'postgraphile/utils'
 
 import { getHandler } from '../registry/actions'
+import { getFetchHandler } from '../registry/fetchHandlers'
 import { getMeta, getAllMeta } from '../registry/doctypes'
 import { typeDefs } from '../typeDefs'
 import type { ActionContext } from '../types'
 
 /**
+ * Options for creating a Stonecrop PostGraphile plugin.
+ * @public
+ */
+export interface StonecropPluginOptions {
+	/**
+	 * Primary key column name used in all `stonecropRecord` lookups and linked-record fetches.
+	 * Defaults to `'id'`.
+	 */
+	pkField?: string
+}
+
+/**
  * Create a PostGraphile plugin that extends the GraphQL schema with Stonecrop functionality.
  *
- * `createStonecropPlugin()` takes no arguments. The `PgExecutor` is obtained automatically
- * from the first entry in `build.input.pgRegistry.pgResources` during schema construction,
- * so it does not need to be supplied by the caller.
+ * The `PgExecutor` is obtained automatically from `build.input.pgRegistry.pgExecutors`
+ * during schema construction — it does not need to be supplied by the caller.
  *
+ * @param options - Optional plugin configuration
  * @returns A PostGraphile plugin
  * @public
  */
-export const createStonecropPlugin = (): GraphileConfig.Plugin => {
+export const createStonecropPlugin = (options: StonecropPluginOptions = {}): GraphileConfig.Plugin => {
+	const pkField = options.pkField ?? 'id'
+
 	return extendSchema(build => {
 		// Obtain the PgExecutor from pgExecutors — one entry exists per configured pgService.
 		const pgExecutors = (build as any).input?.pgRegistry?.pgExecutors as Record<string, PgExecutor> | undefined
@@ -51,7 +66,7 @@ export const createStonecropPlugin = (): GraphileConfig.Plugin => {
 								executor,
 								object({ doctype: $doctype, id: $id, options: $options }),
 								async (pgClient: PgClient, specs) => {
-									// Group specs by doctype to batch SQL per table
+									// Group specs by doctype to batch the main SELECT per table
 									const byDoctype = new Map<string, number[]>()
 									for (let i = 0; i < specs.length; i++) {
 										const d = specs[i].doctype as string
@@ -62,30 +77,108 @@ export const createStonecropPlugin = (): GraphileConfig.Plugin => {
 									const results: Array<{
 										data: Record<string, unknown> | null
 										doctype: string
+										unknownLinks?: string[]
 									}> = new Array(specs.length)
 
 									for (const [doctype, indices] of byDoctype) {
 										const meta = getMeta(doctype)
 										if (!meta?.tableName) {
-											for (const i of indices) {
-												results[i] = { data: null, doctype }
-											}
+											for (const i of indices) results[i] = { data: null, doctype }
 											continue
 										}
 
-										const columns = getSqlColumns(meta)
+										const columns = getSqlColumns(meta, pkField)
 										const ids = indices.map(i => specs[i].id as string)
 
 										const { rows } = await pgClient.query<Record<string, unknown>>({
-											text: `SELECT ${columns} FROM "${meta.tableName}" WHERE id = ANY($1::text[])`,
+											text: `SELECT ${columns} FROM "${meta.tableName}" WHERE "${pkField}" = ANY($1::text[])`,
 											values: [ids],
 										})
 
-										const rowById = new Map(rows.map(r => [r['id'] as string, r]))
+										const rowByPk = new Map(rows.map(r => [r[pkField] as string, r]))
+
 										for (const i of indices) {
+											const specId = specs[i].id as string
+											const row = rowByPk.get(specId)
+
+											if (!row) {
+												results[i] = { data: null, doctype }
+												continue
+											}
+
+											const rowData: Record<string, unknown> = { ...row }
+											const recordOptions = (specs[i].options ?? {}) as GetRecordOptions
+											const includeAll = recordOptions.includeNested === true
+											const includeSet = Array.isArray(recordOptions.includeNested)
+												? new Set(recordOptions.includeNested)
+												: null
+
+											// FetchStrategy dispatch over link declarations
+											if (meta.links) {
+												for (const [linkName, link] of Object.entries(meta.links)) {
+													const fetch = link.fetch
+													const isMany = link.cardinality === 'noneOrMany' || link.cardinality === 'atLeastOne'
+													const effectiveMethod = fetch?.method ?? (isMany ? 'sync' : 'lazy')
+													const effectiveLimit = fetch?.method === 'sync' ? fetch.limit : isMany ? 50 : undefined
+
+													const shouldInclude =
+														includeAll || (includeSet ? includeSet.has(linkName) : effectiveMethod === 'sync')
+
+													if (!shouldInclude) continue
+
+													if (effectiveMethod === 'custom') {
+														const handlerName = (fetch as { method: 'custom'; handler: string }).handler
+														const handler = getFetchHandler(handlerName)
+														if (handler) {
+															rowData[linkName] = await handler(pgClient, rowData, link)
+														}
+														continue
+													}
+
+													if (effectiveMethod !== 'sync') continue
+
+													const targetMeta = getMeta(link.target)
+													if (!targetMeta?.tableName) continue
+
+													const targetColumns = getSqlColumns(targetMeta, pkField)
+
+													if (isMany) {
+														if (!link.backlink) continue
+														let sql = `SELECT ${targetColumns} FROM "${targetMeta.tableName}" WHERE "${link.backlink}" = $1`
+														const linkValues: unknown[] = [specId]
+														if (effectiveLimit != null) {
+															sql += ` LIMIT $2`
+															linkValues.push(effectiveLimit)
+														}
+														const { rows: linked } = await pgClient.query<Record<string, unknown>>({
+															text: sql,
+															values: linkValues,
+														})
+														rowData[linkName] = linked
+													} else {
+														if (!link.fieldname) continue
+														const fkValue = rowData[link.fieldname]
+														if (fkValue == null) {
+															rowData[linkName] = null
+															continue
+														}
+														const { rows: linked } = await pgClient.query<Record<string, unknown>>({
+															text: `SELECT ${targetColumns} FROM "${targetMeta.tableName}" WHERE "${pkField}" = $1`,
+															values: [fkValue],
+														})
+														rowData[linkName] = linked[0] ?? null
+													}
+												}
+											}
+
+											// Names in includeNested that don't correspond to any link
+											const unknownLinks =
+												includeSet && meta.links ? [...includeSet].filter(name => !(name in meta.links!)) : undefined
+
 											results[i] = {
-												data: rowById.get(specs[i].id as string) ?? null,
+												data: rowData,
 												doctype,
+												unknownLinks: unknownLinks?.length ? unknownLinks : undefined,
 											}
 										}
 									}
@@ -95,10 +188,16 @@ export const createStonecropPlugin = (): GraphileConfig.Plugin => {
 							)
 						},
 
-						stonecropRecords(_: any, { $doctype, $limit, $offset }: any) {
+						stonecropRecords(_: any, { $doctype, $filters, $orderBy, $limit, $offset }: any) {
 							return loadOneWithPgClient(
 								executor,
-								object({ doctype: $doctype, limit: $limit, offset: $offset }),
+								object({
+									doctype: $doctype,
+									filters: $filters,
+									orderBy: $orderBy,
+									limit: $limit,
+									offset: $offset,
+								}),
 								async (pgClient: PgClient, specs) => {
 									return await Promise.all(
 										specs.map(async spec => {
@@ -107,25 +206,79 @@ export const createStonecropPlugin = (): GraphileConfig.Plugin => {
 												return { data: [], doctype: spec.doctype as string, count: 0 }
 											}
 
-											const columns = getSqlColumns(meta)
-											const parts: string[] = [`SELECT ${columns} FROM "${meta.tableName}"`]
+											const knownFields = new Set(meta.fields.map(f => f.fieldname))
+											const columns = getSqlColumns(meta, pkField)
 											const values: unknown[] = []
 
+											// WHERE from filters (parameterised — safe against SQL injection)
+											const whereClauses: string[] = []
+											if (spec.filters != null) {
+												for (const [field, value] of Object.entries(spec.filters as Record<string, unknown>)) {
+													if (!knownFields.has(field)) {
+														throw new Error(`Unknown filter field: ${field} for doctype ${meta.name}`)
+													}
+													values.push(value)
+													whereClauses.push(`"${field}" = $${values.length}`)
+												}
+											}
+											const whereClause = whereClauses.length > 0 ? ` WHERE ${whereClauses.join(' AND ')}` : ''
+
+											// ORDER BY (field name whitelisted — column names cannot be parameterised)
+											let orderByClause = ''
+											if (spec.orderBy != null) {
+												const orderByStr = spec.orderBy as string
+												const lastUnder = orderByStr.lastIndexOf('_')
+												if (lastUnder <= 0) {
+													throw new Error(`Invalid orderBy format: "${orderByStr}". Expected FIELD_ASC or FIELD_DESC`)
+												}
+												const dir = orderByStr.slice(lastUnder + 1).toUpperCase()
+												if (dir !== 'ASC' && dir !== 'DESC') {
+													throw new Error(`Invalid orderBy direction: "${dir}". Must be ASC or DESC`)
+												}
+												const fieldName = orderByStr.slice(0, lastUnder)
+												if (!knownFields.has(fieldName)) {
+													throw new Error(`Unknown orderBy field: "${fieldName}" for doctype ${meta.name}`)
+												}
+												orderByClause = ` ORDER BY "${fieldName}" ${dir}`
+											}
+
+											// LIMIT / OFFSET
+											let pagingClause = ''
 											if (spec.limit != null) {
 												values.push(spec.limit)
-												parts.push(`LIMIT $${values.length}`)
+												pagingClause += ` LIMIT $${values.length}`
 											}
 											if (spec.offset != null) {
 												values.push(spec.offset)
-												parts.push(`OFFSET $${values.length}`)
+												pagingClause += ` OFFSET $${values.length}`
 											}
 
 											const { rows } = await pgClient.query<Record<string, unknown>>({
-												text: parts.join(' '),
+												text: `SELECT ${columns}${whereClause}${orderByClause}${pagingClause}`,
 												values,
 											})
 
-											return { data: rows, doctype: spec.doctype as string, count: rows.length }
+											// Total count matching filters (independent of LIMIT/OFFSET)
+											let count = rows.length
+											if (spec.limit != null || spec.offset != null) {
+												const countValues: unknown[] = []
+												const countWhere: string[] = []
+												if (spec.filters != null) {
+													for (const [field, value] of Object.entries(spec.filters as Record<string, unknown>)) {
+														if (!knownFields.has(field)) continue
+														countValues.push(value)
+														countWhere.push(`"${field}" = $${countValues.length}`)
+													}
+												}
+												const countWhereClause = countWhere.length > 0 ? ` WHERE ${countWhere.join(' AND ')}` : ''
+												const { rows: countRows } = await pgClient.query<{ __count: string }>({
+													text: `SELECT COUNT(*) AS __count FROM "${meta.tableName}"${countWhereClause}`,
+													values: countValues,
+												})
+												count = parseInt(countRows[0]?.__count ?? '0', 10)
+											}
+
+											return { data: rows, doctype: spec.doctype as string, count }
 										})
 									)
 								}
@@ -137,62 +290,49 @@ export const createStonecropPlugin = (): GraphileConfig.Plugin => {
 				Mutation: {
 					plans: {
 						stonecropAction(_: any, { $doctype, $action, $args: $actionArgs }: any) {
-							return loadOne(
-								object({
-									doctype: $doctype,
-									action: $action,
-									actionArgs: $actionArgs,
-								}),
-								async (specs: readonly any[]) => {
-									return await Promise.all(
-										specs.map(async spec => {
-											const meta = getMeta(spec.doctype)
-											if (!meta) {
-												return {
-													success: false,
-													data: null,
-													error: `Unknown doctype: ${spec.doctype}`,
-												}
-											}
+							return sideEffectWithPgClient(
+								executor,
+								object({ doctype: $doctype, action: $action, actionArgs: $actionArgs }),
+								async (pgClient: PgClient, spec: any) => {
+									const meta = getMeta(spec.doctype as string)
+									if (!meta) {
+										return {
+											success: false,
+											data: null,
+											error: `Unknown doctype: ${spec.doctype}`,
+										}
+									}
 
-											const actionDef = meta.workflow?.actions?.[spec.action]
-											if (!actionDef) {
-												return {
-													success: false,
-													data: null,
-													error: `Unknown action: ${spec.action} on ${spec.doctype}`,
-												}
-											}
-											const handlerName = actionDef.handler
-											const handler = getHandler(handlerName)
-											if (!handler) {
-												return {
-													success: false,
-													data: null,
-													error: `Handler not registered: ${handlerName}`,
-												}
-											}
+									const actionDef = meta.workflow?.actions?.[spec.action]
+									if (!actionDef) {
+										return {
+											success: false,
+											data: null,
+											error: `Unknown action: ${spec.action} on ${spec.doctype}`,
+										}
+									}
 
-											const actionContext: ActionContext = {
-												doctype: meta,
-											}
+									const handler = getHandler(actionDef.handler)
+									if (!handler) {
+										return {
+											success: false,
+											data: null,
+											error: `Handler not registered: ${actionDef.handler}`,
+										}
+									}
 
-											try {
-												const result = await handler(spec.actionArgs ?? [], actionContext)
-												return {
-													success: true,
-													data: result,
-													error: null,
-												}
-											} catch (err) {
-												return {
-													success: false,
-													data: null,
-													error: err instanceof Error ? err.message : String(err),
-												}
-											}
-										})
-									)
+									const actionContext: ActionContext = { doctype: meta, pgClient }
+
+									try {
+										const result = await handler(spec.actionArgs ?? [], actionContext)
+										return { success: true, data: result, error: null }
+									} catch (err) {
+										return {
+											success: false,
+											data: null,
+											error: err instanceof Error ? err.message : String(err),
+										}
+									}
 								}
 							)
 						},
@@ -211,9 +351,9 @@ export const createStonecropPlugin = (): GraphileConfig.Plugin => {
  * Derive a quoted SQL column list from doctype field definitions.
  * Excludes Display fields (no backing DB column) and Link fields that have an
  * explicit `links` declaration (those are FK references, not scalar columns).
- * Always includes `"id"` as the first column for PK lookup and result mapping.
+ * Always prepends the PK column when it is not already listed in `meta.fields`.
  */
-function getSqlColumns(meta: DoctypeMeta): string {
+function getSqlColumns(meta: DoctypeMeta, pkField: string): string {
 	const linkedFieldnames = new Set<string>()
 	if (meta.links) {
 		for (const [key, link] of Object.entries(meta.links)) {
@@ -222,9 +362,9 @@ function getSqlColumns(meta: DoctypeMeta): string {
 	}
 
 	const columns: string[] = []
-	const hasId = meta.fields.some(f => f.fieldname === 'id')
-	if (!hasId) {
-		columns.push('"id"')
+	const hasPk = meta.fields.some(f => f.fieldname === pkField)
+	if (!hasPk) {
+		columns.push(`"${pkField}"`)
 	}
 
 	for (const f of meta.fields) {

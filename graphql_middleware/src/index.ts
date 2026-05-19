@@ -27,8 +27,13 @@ export {
 	builtinHandlers,
 } from './registry/actions'
 
+// Fetch handlers
+export { registerFetchHandler, getFetchHandler, clearFetchHandlers } from './registry/fetchHandlers'
+export type { FetchHandler } from './registry/fetchHandlers'
+
 // PostGraphile plugin
 export { createStonecropPlugin } from './plugin/postgraphile'
+export type { StonecropPluginOptions } from './plugin/postgraphile'
 
 export { typeDefs } from './typeDefs'
 

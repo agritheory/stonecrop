@@ -27,6 +27,16 @@ import { ValidationError } from '@stonecrop/graphql_middleware'
 
 ## Functions
 
+### clearFetchHandlers
+
+Remove all registered fetch handlers. Primarily for test isolation.
+
+**Signature:**
+
+```typescript
+export declare function clearFetchHandlers(): void;
+```
+
 ### clearHandlers
 
 Clear all registered handlers
@@ -51,13 +61,19 @@ export declare function clearRegistry(): void;
 
 Create a PostGraphile plugin that extends the GraphQL schema with Stonecrop functionality.
 
-`createStonecropPlugin()` takes no arguments. The `PgExecutor` is obtained automatically from the first entry in `build.input.pgRegistry.pgResources` during schema construction, so it does not need to be supplied by the caller.
+The `PgExecutor` is obtained automatically from `build.input.pgRegistry.pgExecutors` during schema construction — it does not need to be supplied by the caller.
 
 **Signature:**
 
 ```typescript
-createStonecropPlugin: () => GraphileConfig.Plugin
+createStonecropPlugin: (options?: StonecropPluginOptions) => GraphileConfig.Plugin
 ```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| options | `StonecropPluginOptions` | Optional plugin configuration |
 
 ### createStonecropPreset
 
@@ -88,6 +104,22 @@ Get all loaded doctypes
 ```typescript
 export declare function getAllMeta(): DoctypeMeta[];
 ```
+
+### getFetchHandler
+
+Retrieve a registered fetch handler by name. Returns `undefined` if no handler has been registered under that name.
+
+**Signature:**
+
+```typescript
+export declare function getFetchHandler(name: string): FetchHandler | undefined;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| name | `string` |  |
 
 ### getHandler
 
@@ -197,6 +229,23 @@ Register all built-in handlers
 export declare function registerBuiltinHandlers(): void;
 ```
 
+### registerFetchHandler
+
+Register a custom fetch handler by name. The name must match the `handler` field on a `CustomFetch` strategy declaration.
+
+**Signature:**
+
+```typescript
+export declare function registerFetchHandler(name: string, handler: FetchHandler): void;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| name | `string` |  |
+| handler | `FetchHandler` |  |
+
 ### registerHandler
 
 Register an action handler
@@ -235,6 +284,7 @@ Context passed to action handlers.
 ```typescript
 export interface ActionContext {
   doctype: DoctypeMeta;
+  pgClient?: PgClient;
 }
 ```
 
@@ -243,6 +293,7 @@ export interface ActionContext {
 | Property | Type | Description |
 |----------|------|-------------|
 | doctype | `DoctypeMeta` | Doctype metadata for the action being executed |
+| pgClient? | `PgClient` | Active database client — available when the action is dispatched via stonecropAction |
 
 ### LoadDoctypesOptions
 
@@ -264,6 +315,24 @@ export interface LoadDoctypesOptions {
 | continueOnError? | `boolean` | Continue loading other files if one fails validation |
 | onError? | `(file: string, errors: ValidationError[]) => void` | Callback for validation errors when continueOnError is true |
 
+### StonecropPluginOptions
+
+Options for creating a Stonecrop PostGraphile plugin.
+
+**Definition:**
+
+```typescript
+export interface StonecropPluginOptions {
+  pkField?: string;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| pkField? | `string` | Primary key column name used in all `stonecropRecord` lookups and linked-record fetches. Defaults to `'id'`. |
+
 ## Type Aliases
 
 ### ActionHandler
@@ -274,6 +343,16 @@ Action handler function signature
 
 ```typescript
 export type ActionHandler = (args: unknown[], context: ActionContext) => Promise<unknown>;
+```
+
+### FetchHandler
+
+Handler for a custom fetch strategy on a link declaration. Called during `stonecropRecord` resolution when `link.fetch.method === 'custom'`.
+
+**Definition:**
+
+```typescript
+export type FetchHandler = (pgClient: PgClient, parentRecord: Record<string, unknown>, link: LinkDeclaration) => Promise<Record<string, unknown> | Record<string, unknown>[]>;
 ```
 
 ### FieldCasing
