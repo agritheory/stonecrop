@@ -15,17 +15,10 @@ export default defineConfig({
 			fileName: () => 'index.js',
 		},
 		rollupOptions: {
-			external: [
-				'node:fs',
-				'node:path',
-				'graphql',
-				'pluralize',
-				'postgraphile',
-				'postgraphile/utils',
-				'postgraphile/grafast',
-				'postgraphile/graphile-build',
-				'@stonecrop/schema',
-			],
+			// Externalize every package import — this is a server-only library and all
+			// runtime dependencies (direct and transitive) are resolved by the host app.
+			// Relative imports (local source files) are always kept in the bundle.
+			external: (id: string) => !id.startsWith('.') && !id.startsWith('/'),
 		},
 	},
 	test: {

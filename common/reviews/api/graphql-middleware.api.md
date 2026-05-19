@@ -7,6 +7,7 @@
 import { DoctypeMeta } from '@stonecrop/schema';
 import { DocumentNode } from 'graphql';
 import { GraphileConfig as GraphileConfig_2 } from 'postgraphile/graphile-build';
+import { makePgService } from 'postgraphile/adaptors/pg';
 import { ValidationError } from '@stonecrop/schema';
 
 // @public
@@ -49,6 +50,11 @@ export function clearRegistry(): void;
 
 // @public
 export const createStonecropPlugin: (options: StonecropPluginOptions) => GraphileConfig_2.Plugin;
+
+// @public
+export const createStonecropPreset: (options?: {
+    fieldCasing?: FieldCasing;
+}) => GraphileConfig.Preset;
 
 // @public
 export function defaultConnectionFieldName(tableName: string): string;
@@ -105,6 +111,9 @@ export interface ExtractSingleResultParams {
 }
 
 // @public
+export type FieldCasing = 'camel' | 'pascal';
+
+// @public
 export function getAllMeta(): DoctypeMeta[];
 
 // @public
@@ -136,6 +145,8 @@ export interface LoadDoctypesOptions {
     continueOnError?: boolean;
     onError?: (file: string, errors: ValidationError[]) => void;
 }
+
+export { makePgService }
 
 // @public
 export function mergeNestedResults(params: MergeNestedResultsParams): Record<string, unknown>;
@@ -188,6 +199,9 @@ export interface StonecropPluginOptions {
     executor: GraphQLExecutor;
     inflection?: StonecropInflectionConfig;
 }
+
+// @public
+export const StonecropPreset: GraphileConfig.Preset;
 
 // @public
 export interface StonecropRecordOptions {

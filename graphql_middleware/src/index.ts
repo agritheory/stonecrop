@@ -59,3 +59,8 @@ export type {
 } from './types'
 
 export { typeDefs } from './typeDefs'
+
+// Preset
+export { createStonecropPreset, StonecropPreset } from './preset'
+export type { FieldCasing } from './preset'
+export { makePgService } from 'postgraphile/adaptors/pg'

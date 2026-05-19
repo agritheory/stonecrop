@@ -99,6 +99,26 @@ createStonecropPlugin: (options: StonecropPluginOptions) => GraphileConfig.Plugi
 |-----------|------|-------------|
 | options | `StonecropPluginOptions` | Plugin configuration options |
 
+### createStonecropPreset
+
+Creates a Stonecrop-flavoured PostGraphile preset.
+
+The returned preset extends `PostGraphileAmberPreset` and applies Stonecrop's recommended defaults. Pass it to `extends` in your PostGraphile configuration:
+
+**Signature:**
+
+```typescript
+createStonecropPreset: (options?: {
+    fieldCasing?: FieldCasing;
+}) => GraphileConfig.Preset
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| options | `{ fieldCasing?: FieldCasing; }` | Optional configuration. Pass `{ fieldCasing: 'pascal' }` to enable `MyColumn`-style field names instead of the default `myColumn` (camelCase). |
+
 ### defaultConnectionFieldName
 
 Amber default: sales_orders → allSalesOrders
@@ -685,6 +705,20 @@ Action handler function signature
 export type ActionHandler = (args: unknown[], context: ActionContext) => Promise<unknown>;
 ```
 
+### FieldCasing
+
+Controls how PostgreSQL column names are mapped to GraphQL field names in the synthesized preset.
+
+- `'camel'` (default): `my_column` → `myColumn`. This matches PostGraphile Amber's built-in behaviour. - `'pascal'`: `my_column` → `MyColumn`. Opt in via `createStonecropPreset({ fieldCasing: 'pascal' })` or `grafserv.fieldCasing: 'pascal'` in `nuxt.config.ts`.
+
+Smart tag overrides (`@name` on column comments) are respected regardless of this setting.
+
+**Definition:**
+
+```typescript
+export type FieldCasing = 'camel' | 'pascal';
+```
+
 ## Classes
 
 ### DoctypeValidationError
@@ -726,6 +760,18 @@ Note: `'Link'` fields are NOT blanket-excluded here. Scalar FK UUID columns use 
 
 ```typescript
 export const RELATION_FIELDTYPES: Set<string>
+```
+
+### StonecropPreset
+
+The default Stonecrop PostGraphile preset with camelCase field names.
+
+Equivalent to `createStonecropPreset()` with no options. Use this when you do not need to customise field casing:
+
+**Type:**
+
+```typescript
+export const StonecropPreset: GraphileConfig.Preset
 ```
 
 ### typeDefs

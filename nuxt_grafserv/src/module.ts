@@ -22,12 +22,6 @@ function validateConfig(options: Partial<ModuleOptions>): asserts options is Mod
 
 	if (options.type === 'postgraphile') {
 		const config = options as Partial<PostGraphileConfig>
-		if (!config.preset) {
-			throw new Error(
-				`[@stonecrop/nuxt-grafserv] PostGraphile configuration error: 'preset' field is required when type is 'postgraphile'. ` +
-					`\nExample: { type: 'postgraphile', preset: { extends: [PostGraphileAmberPreset], ... } }`
-			)
-		}
 		// Warn if schema/resolvers are provided with postgraphile type
 		if ('schema' in config || 'resolvers' in config) {
 			logger.warn(
@@ -109,54 +103,84 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
 			if (options.type === 'postgraphile') {
 				logger.info('Using PostGraphile preset configuration')
 
-				// Resolve preset file path and try common extensions if needed
-				let presetPath = resolveForVirtualModule(options.preset)
+				config.virtual = config.virtual || {}
 
-				// If file doesn't exist, try common extensions
-				if (!existsSync(presetPath)) {
-					const extensions = ['.ts', '.js', '.mjs']
-					let found = false
+				if (!options.preset) {
+					// Synthesize a default preset from DATABASE_URL + nuxt.config.ts options
+					if (!process.env.DATABASE_URL) {
+						logger.warn(
+							'[@stonecrop/nuxt-grafserv] DATABASE_URL is not set. ' +
+								'The synthesized PostGraphile preset will fail to connect at runtime. ' +
+								'Set DATABASE_URL or provide an explicit preset file.'
+						)
+					}
+					const fieldCasing = options.fieldCasing || 'camel'
+					const schemas = JSON.stringify(options.schemas || ['public'])
+					const explain = options.explain ?? false
 
-					for (const ext of extensions) {
-						const pathWithExt = presetPath + ext
-						if (existsSync(pathWithExt)) {
-							presetPath = pathWithExt
-							found = true
-							break
+					logger.info('Synthesizing PostGraphile preset from DATABASE_URL')
+
+					config.virtual['#internal/grafserv/pgl'] = [
+						`import { postgraphile } from 'postgraphile'`,
+						`import { createStonecropPreset, makePgService, createStonecropPlugin } from '@stonecrop/graphql-middleware'`,
+						``,
+						`const synthesizedPreset = {`,
+						`  extends: [createStonecropPreset({ fieldCasing: '${fieldCasing}' })],`,
+						`  pgServices: [makePgService({ connectionString: process.env.DATABASE_URL, schemas: ${schemas} })],`,
+						`  plugins: [createStonecropPlugin()],`,
+						`  grafast: { explain: ${explain} },`,
+						`}`,
+						``,
+						`export const pgl = postgraphile(synthesizedPreset)`,
+					].join('\n')
+				} else {
+					// Resolve preset file path and try common extensions if needed
+					let presetPath = resolveForVirtualModule(options.preset)
+
+					// If file doesn't exist, try common extensions
+					if (!existsSync(presetPath)) {
+						const extensions = ['.ts', '.js', '.mjs']
+						let found = false
+
+						for (const ext of extensions) {
+							const pathWithExt = presetPath + ext
+							if (existsSync(pathWithExt)) {
+								presetPath = pathWithExt
+								found = true
+								break
+							}
+						}
+
+						if (!found) {
+							throw new Error(
+								`[@stonecrop/nuxt-grafserv] Preset file not found: ${presetPath}\n` +
+									`Tried extensions: ${extensions.join(', ')}\n\n` +
+									`Create the preset file with your PostGraphile configuration:\n\n` +
+									`// ${options.preset}.ts (or .js, .mjs)\n` +
+									`import { createStonecropPreset, makePgService, createStonecropPlugin } from '@stonecrop/graphql-middleware'\n\n` +
+									`export default {\n` +
+									`  extends: [createStonecropPreset()],\n` +
+									`  pgServices: [makePgService({ connectionString: process.env.DATABASE_URL, schemas: ['public'] })],\n` +
+									`  plugins: [createStonecropPlugin()],\n` +
+									`}\n`
+							)
 						}
 					}
 
-					if (!found) {
-						throw new Error(
-							`[@stonecrop/nuxt-grafserv] Preset file not found: ${presetPath}\n` +
-								`Tried extensions: ${extensions.join(', ')}\n\n` +
-								`Create the preset file with your PostGraphile configuration:\n\n` +
-								`// ${options.preset}.ts (or .js, .mjs)\n` +
-								`import { PostGraphileAmberPreset } from 'postgraphile/presets/amber'\n` +
-								`import { makePgService } from 'postgraphile/adaptors/pg'\n\n` +
-								`export default {\n` +
-								`  extends: [PostGraphileAmberPreset],\n` +
-								`  pgServices: [makePgService({ connectionString: process.env.DATABASE_URL, schemas: ['public'] })],\n` +
-								`  plugins: [],\n` +
-								`}\n`
-						)
-					}
+					logger.info(`Resolved preset path: ${presetPath}`)
+
+					// Create virtual module that imports preset and creates PostGraphile instance
+					// This approach follows PostGraphile's library mode pattern and avoids
+					// runtime preset imports which cause GraphQL module duplication
+					config.virtual['#internal/grafserv/pgl'] = [
+						`import { postgraphile } from 'postgraphile'`,
+						`import preset from '${presetPath}'`,
+						``,
+						`// Create PostGraphile instance with the preset`,
+						`// This handles schema building, watch mode, and lifecycle`,
+						`export const pgl = postgraphile(preset)`,
+					].join('\n')
 				}
-
-				logger.info(`Resolved preset path: ${presetPath}`)
-
-				// Create virtual module that imports preset and creates PostGraphile instance
-				// This approach follows PostGraphile's library mode pattern and avoids
-				// runtime preset imports which cause GraphQL module duplication
-				config.virtual = config.virtual || {}
-				config.virtual['#internal/grafserv/pgl'] = [
-					`import { postgraphile } from 'postgraphile'`,
-					`import preset from '${presetPath}'`,
-					``,
-					`// Create PostGraphile instance with the preset`,
-					`// This handles schema building, watch mode, and lifecycle`,
-					`export const pgl = postgraphile(preset)`,
-				].join('\n')
 
 				// Register a no-op stub so the bundler can always resolve this virtual.
 				// handler.ts references #internal/grafserv/resolvers behind a runtime guard,
@@ -296,7 +320,8 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
 				const isSchemaFile = path.endsWith('.graphql')
 				const isResolverFile =
 					options.type === 'schema' && options.resolvers && path.includes(options.resolvers.replace('./', ''))
-				const isPresetFile = options.type === 'postgraphile' && path.includes(options.preset.replace('./', ''))
+				const isPresetFile =
+					options.type === 'postgraphile' && !!options.preset && path.includes(options.preset.replace('./', ''))
 
 				if (isSchemaFile || isResolverFile || isPresetFile) {
 					if (!cacheClearing) {

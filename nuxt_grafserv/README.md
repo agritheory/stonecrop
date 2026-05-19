@@ -39,32 +39,19 @@ For PostGraphile users, this is the recommended configuration approach:
 
 ```bash
 # Using pnpm
-pnpm add @stonecrop/nuxt-grafserv postgraphile
+pnpm add @stonecrop/nuxt-grafserv
 
 # Using yarn
-yarn add @stonecrop/nuxt-grafserv postgraphile
+yarn add @stonecrop/nuxt-grafserv
 
 # Using npm
-npm install @stonecrop/nuxt-grafserv postgraphile
+npm install @stonecrop/nuxt-grafserv
 ```
 
-2. Create your preset file `server/graphile.preset.ts`:
+2. Set `DATABASE_URL` in your environment (`.env` or shell):
 
-```ts
-import { PostGraphileAmberPreset } from 'postgraphile/presets/amber'
-import { makePgService } from 'postgraphile/adaptors/pg'
-
-const preset = {
-  extends: [PostGraphileAmberPreset],
-  pgServices: [
-    makePgService({
-      connectionString: process.env.DATABASE_URL || 'postgresql://localhost/mydb',
-      schemas: ['public'],
-    }),
-  ],
-}
-
-export default preset
+```
+DATABASE_URL=postgresql://localhost/mydb
 ```
 
 3. Configure in `nuxt.config.ts`:
@@ -74,11 +61,40 @@ export default defineNuxtConfig({
   modules: ['@stonecrop/nuxt-grafserv'],
   grafserv: {
     type: 'postgraphile', // Required: specify configuration type
-    preset: './server/graphile.preset.ts', // Path to preset file
     url: '/graphql',
     graphiql: true,
+    // fieldCasing: 'pascal',        // optional — defaults to 'camel'
+    // schemas: ['public', 'auth'],  // optional — defaults to ['public']
+    // explain: true,                // optional — enables Ruru Explain tab (dev only)
   }
 })
+```
+
+For custom plugins, a non-standard connection, or advanced configuration, create a preset file:
+
+```ts
+// server/graphile.preset.ts
+import { createStonecropPreset, makePgService, createStonecropPlugin } from '@stonecrop/graphql-middleware'
+
+export default {
+  extends: [createStonecropPreset()],
+  pgServices: [
+    makePgService({
+      connectionString: process.env.DATABASE_URL,
+      schemas: ['public'],
+    }),
+  ],
+  plugins: [createStonecropPlugin(), MyCustomPlugin],
+}
+```
+
+Then reference it in `nuxt.config.ts`:
+
+```ts
+grafserv: {
+  type: 'postgraphile',
+  preset: './server/graphile.preset.ts',
+}
 ```
 
 ### Custom Schema Configuration
@@ -117,43 +133,42 @@ Use `type: 'postgraphile'` for PostGraphile-based GraphQL APIs:
 | Option | Type | Required | Description |
 |--------|------|----------|-------------|
 | `type` | `'postgraphile'` | ✅ | Configuration type discriminator |
-| `preset` | `string` | ✅ | Path to PostGraphile preset file (e.g., './server/graphile.preset.ts') |
-| `url` | `string` | ❌ | GraphQL endpoint URL (default: '/graphql/') |
+| `preset` | `string` | ❌ | Path to preset file. When omitted, a default preset is synthesized from `DATABASE_URL`. |
+| `fieldCasing` | `'camel' \| 'pascal'` | ❌ | Column → field name casing (default: `'camel'`). Ignored when `preset` is set. |
+| `schemas` | `string[]` | ❌ | PostgreSQL schemas to expose (default: `['public']`). Ignored when `preset` is set. |
+| `explain` | `boolean` | ❌ | Enable Ruru Explain tab. **Never use in production.** Ignored when `preset` is set. |
+| `url` | `string` | ❌ | GraphQL endpoint URL (default: `/graphql/`) |
 | `graphiql` | `boolean` | ❌ | Enable GraphiQL IDE (default: true in dev, false in prod) |
 
-> **Important:** The preset must be a file path, not an inline object. See "Why File-Based Presets?" section below.
-
-**Example:**
+**Minimal example (no preset file):**
 
 ```ts
-// nuxt.config.ts
+// nuxt.config.ts — DATABASE_URL is read from process.env automatically
 export default defineNuxtConfig({
   grafserv: {
     type: 'postgraphile',
-    preset: './server/graphile.preset.ts',
     url: '/graphql',
     graphiql: true,
   }
 })
 ```
 
+**Explicit preset file (for custom plugins and advanced configuration):**
+
 ```ts
 // server/graphile.preset.ts
-import { PostGraphileAmberPreset } from 'postgraphile/presets/amber'
-import { makePgService } from 'postgraphile/adaptors/pg'
+import { createStonecropPreset, makePgService, createStonecropPlugin } from '@stonecrop/graphql-middleware'
 
-const preset = {
-  extends: [PostGraphileAmberPreset],
+export default {
+  extends: [createStonecropPreset()],
   pgServices: [
     makePgService({
       connectionString: process.env.DATABASE_URL,
       schemas: ['public'],
     }),
   ],
-  plugins: [MyCustomPlugin],
+  plugins: [createStonecropPlugin(), MyCustomPlugin],
 }
-
-export default preset
 ```
 
 ### Schema Configuration

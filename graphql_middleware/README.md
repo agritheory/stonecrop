@@ -26,12 +26,10 @@ The client never constructs queries — it passes `includeNested` through and re
 The middleware is a PostGraphile plugin. It needs an executor to bridge between the middleware's query strings and your GraphQL engine:
 
 ```typescript
-import { createServer } from 'postgraphile/grafserv/h3/v1'
-import { PostGraphileAmberPreset } from 'postgraphile/presets/amber'
-import { makePgService } from 'postgraphile/adaptors/pg'
-import { graphql } from 'graphql'
 import {
+  createStonecropPreset,
   createStonecropPlugin,
+  makePgService,
   loadDoctypes,
   registerBuiltinHandlers,
 } from '@stonecrop/graphql-middleware'
@@ -42,20 +40,10 @@ loadDoctypes('./doctypes')
 // Register built-in action handlers (submit, approve, etc.)
 registerBuiltinHandlers()
 
-// Executor bridges the middleware's query strings and your GraphQL engine
-const executor = {
-  async query(query: string, variables?: Record<string, unknown>) {
-    return graphql({ schema, source: query, variableValues: variables })
-  },
-  async mutate(mutation: string, variables?: Record<string, unknown>) {
-    return graphql({ schema, source: mutation, variableValues: variables })
-  },
-}
-
 // PostGraphile configuration
 const preset: GraphileConfig.Preset = {
-  extends: [PostGraphileAmberPreset], // Base preset with PostgreSQL integration
-  plugins: [createStonecropPlugin({ executor })], // Stonecrop GraphQL resolvers
+  extends: [createStonecropPreset()], // Stonecrop preset (wraps PostGraphile Amber)
+  plugins: [createStonecropPlugin()], // Stonecrop GraphQL resolvers
   pgServices: [makePgService({ connectionString: process.env.DATABASE_URL })], // Database connection
 }
 ```

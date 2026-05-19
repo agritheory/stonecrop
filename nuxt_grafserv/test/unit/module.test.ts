@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
 import type { ModuleOptions } from '../../src/types'
 
@@ -31,16 +31,24 @@ interface TestModule {
 }
 
 // Mock @nuxt/kit
+const mockLogger = {
+	info: vi.fn(),
+	success: vi.fn(),
+	error: vi.fn(),
+	warn: vi.fn(),
+}
+
 vi.mock('@nuxt/kit', () => ({
 	createResolver: vi.fn(() => ({
 		resolve: vi.fn((path: string) => `resolved:${path}`),
 	})),
 	defineNuxtModule: vi.fn(config => config),
-	useLogger: vi.fn(() => ({
-		info: vi.fn(),
-		success: vi.fn(),
-		error: vi.fn(),
-	})),
+	useLogger: vi.fn(() => mockLogger),
+}))
+
+// Mock node:fs so preset file checks are controllable in tests
+vi.mock('node:fs', () => ({
+	existsSync: vi.fn(() => true),
 }))
 
 // Mock node:path
@@ -331,6 +339,105 @@ describe('Grafserv Module', { tags: ['unit', 'nuxt', 'graphql'] }, () => {
 
 			const devtoolsHookCalls = mockNuxt.hook.mock.calls.filter((call: unknown[]) => call[0] === 'devtools:customTabs')
 			expect(devtoolsHookCalls.length).toBe(0)
+		})
+	})
+
+	describe('Synthesized PostGraphile Preset', () => {
+		let nitroConfig: MockNitroConfig
+		const originalDatabaseUrl = process.env.DATABASE_URL
+
+		beforeEach(() => {
+			nitroConfig = {
+				alias: {},
+				runtimeConfig: {},
+				virtual: {},
+				externals: {},
+				handlers: [],
+			}
+
+			mockNuxt.hook = vi.fn((hookName: string, callback: (config: MockNitroConfig) => void) => {
+				if (hookName === 'nitro:config') {
+					callback(nitroConfig)
+				}
+				return () => {}
+			})
+
+			process.env.DATABASE_URL = 'postgresql://localhost/test'
+			mockLogger.warn.mockClear()
+		})
+
+		afterEach(() => {
+			if (originalDatabaseUrl === undefined) {
+				delete process.env.DATABASE_URL
+			} else {
+				process.env.DATABASE_URL = originalDatabaseUrl
+			}
+		})
+
+		it('type postgraphile with no preset synthesizes a virtual module', () => {
+			const options: ModuleOptions = { type: 'postgraphile' }
+			module.setup(options, mockNuxt)
+			expect(nitroConfig.virtual['#internal/grafserv/pgl']).toContain('createStonecropPreset')
+			expect(nitroConfig.virtual['#internal/grafserv/pgl']).toContain('makePgService')
+			expect(nitroConfig.virtual['#internal/grafserv/pgl']).toContain('createStonecropPlugin')
+		})
+
+		it("fieldCasing: 'pascal' passes pascal to synthesized preset", () => {
+			const options: ModuleOptions = { type: 'postgraphile', fieldCasing: 'pascal' }
+			module.setup(options, mockNuxt)
+			expect(nitroConfig.virtual['#internal/grafserv/pgl']).toContain("fieldCasing: 'pascal'")
+		})
+
+		it("fieldCasing omitted defaults to 'camel' in synthesized preset", () => {
+			const options: ModuleOptions = { type: 'postgraphile' }
+			module.setup(options, mockNuxt)
+			expect(nitroConfig.virtual['#internal/grafserv/pgl']).toContain("fieldCasing: 'camel'")
+		})
+
+		it('schemas array is included in synthesized makePgService call', () => {
+			const options: ModuleOptions = { type: 'postgraphile', schemas: ['public', 'auth'] }
+			module.setup(options, mockNuxt)
+			expect(nitroConfig.virtual['#internal/grafserv/pgl']).toContain('"public"')
+			expect(nitroConfig.virtual['#internal/grafserv/pgl']).toContain('"auth"')
+		})
+
+		it("schemas omitted defaults to ['public'] in synthesized makePgService call", () => {
+			const options: ModuleOptions = { type: 'postgraphile' }
+			module.setup(options, mockNuxt)
+			expect(nitroConfig.virtual['#internal/grafserv/pgl']).toContain('["public"]')
+		})
+
+		it('explain: true is passed to synthesized preset', () => {
+			const options: ModuleOptions = { type: 'postgraphile', explain: true }
+			module.setup(options, mockNuxt)
+			expect(nitroConfig.virtual['#internal/grafserv/pgl']).toContain('explain: true')
+		})
+
+		it('explain omitted defaults to false in synthesized preset', () => {
+			const options: ModuleOptions = { type: 'postgraphile' }
+			module.setup(options, mockNuxt)
+			expect(nitroConfig.virtual['#internal/grafserv/pgl']).toContain('explain: false')
+		})
+
+		it('warns when DATABASE_URL is not set', () => {
+			delete process.env.DATABASE_URL
+			const options: ModuleOptions = { type: 'postgraphile' }
+			module.setup(options, mockNuxt)
+			expect(mockLogger.warn).toHaveBeenCalledWith(expect.stringContaining('DATABASE_URL'))
+		})
+
+		it('does not throw when DATABASE_URL is unset — warns only', () => {
+			delete process.env.DATABASE_URL
+			const options: ModuleOptions = { type: 'postgraphile' }
+			expect(() => module.setup(options, mockNuxt)).not.toThrow()
+		})
+
+		it('explicit preset uses file path and does not synthesize', () => {
+			const options: ModuleOptions = { type: 'postgraphile', preset: './server/graphile.preset.ts' }
+			module.setup(options, mockNuxt)
+			const virtual = nitroConfig.virtual['#internal/grafserv/pgl']
+			expect(virtual).toContain("import preset from '")
+			expect(virtual).not.toContain('createStonecropPreset')
 		})
 	})
 })
