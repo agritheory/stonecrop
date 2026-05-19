@@ -254,7 +254,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 											}
 
 											const { rows } = await pgClient.query<Record<string, unknown>>({
-												text: `SELECT ${columns}${whereClause}${orderByClause}${pagingClause}`,
+												text: `SELECT ${columns} FROM "${meta.tableName}"${whereClause}${orderByClause}${pagingClause}`,
 												values,
 											})
 

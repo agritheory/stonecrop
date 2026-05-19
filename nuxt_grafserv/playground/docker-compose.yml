@@ -1,0 +1,19 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: stonecrop
+      POSTGRES_PASSWORD: stonecrop
+      POSTGRES_DB: stonecrop_playground
+    ports:
+      - '5435:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U stonecrop -d stonecrop_playground']
+      interval: 2s
+      timeout: 5s
+      retries: 15
+
+volumes:
+  postgres_data:
