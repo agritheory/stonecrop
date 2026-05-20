@@ -1,6 +1,17 @@
 # Change Log - @stonecrop/nuxt-grafserv
 
-This log was last generated on Mon, 18 May 2026 11:24:35 GMT and should not be manually modified.
+This log was last generated on Wed, 20 May 2026 11:08:30 GMT and should not be manually modified.
+
+## 0.13.0
+Wed, 20 May 2026 11:08:30 GMT
+
+### Minor changes
+
+- update playground to use new middleware changes
+
+### Patches
+
+- fix missing database URL in CI workflows
 
 ## 0.12.8
 Mon, 18 May 2026 11:24:35 GMT

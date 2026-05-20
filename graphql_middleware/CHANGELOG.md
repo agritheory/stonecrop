@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/graphql-middleware
 
-This log was last generated on Mon, 18 May 2026 11:24:35 GMT and should not be manually modified.
+This log was last generated on Wed, 20 May 2026 11:08:30 GMT and should not be manually modified.
+
+## 0.13.0
+Wed, 20 May 2026 11:08:30 GMT
+
+### Minor changes
+
+- use plan-step resolvers instead of HTTP queries
 
 ## 0.12.8
 Mon, 18 May 2026 11:24:35 GMT
