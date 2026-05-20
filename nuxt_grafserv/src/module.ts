@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { join } from 'node:path'
-import { addServerHandler, createResolver, defineNuxtModule, useLogger } from '@nuxt/kit'
+import { addServerHandler, addServerPlugin, createResolver, defineNuxtModule, useLogger } from '@nuxt/kit'
 import type { NuxtModule } from '@nuxt/schema'
 
 import type { ModuleOptions, PostGraphileConfig, SchemaConfig } from './types'
@@ -106,14 +106,9 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
 				config.virtual = config.virtual || {}
 
 				if (!options.preset) {
-					// Synthesize a default preset from DATABASE_URL + nuxt.config.ts options
-					if (!process.env.DATABASE_URL) {
-						logger.warn(
-							'[@stonecrop/nuxt-grafserv] DATABASE_URL is not set. ' +
-								'The synthesized PostGraphile preset will fail to connect at runtime. ' +
-								'Set DATABASE_URL or provide an explicit preset file.'
-						)
-					}
+					// Synthesize a default preset from DATABASE_URL + nuxt.config.ts options.
+					// The DATABASE_URL check runs at server startup (startup-check plugin), not here,
+					// so build steps and nuxt prepare don't require the env var.
 					logger.info('Synthesizing PostGraphile preset from DATABASE_URL')
 
 					const explain = options.debug ? true : (options.explain ?? false)
@@ -321,6 +316,11 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
 			config.typescript.tsConfig.compilerOptions.allowImportingTsExtensions = true
 			config.typescript.tsConfig.compilerOptions.moduleResolution = 'bundler'
 		})
+
+		// Warn at server startup (not build time) when DATABASE_URL is absent and no preset was given
+		if (options.type === 'postgraphile' && !options.preset) {
+			addServerPlugin(resolve('./runtime/startup-check'))
+		}
 
 		// Set up Grafast handlers
 		addServerHandler({ route: options.url || '/graphql/', handler: resolve('./runtime/handler') })
