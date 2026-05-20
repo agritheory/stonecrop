@@ -3,11 +3,12 @@
 	"name": "@stonecrop/nuxt-grafserv-playground",
 	"type": "module",
 	"scripts": {
-		"dev": "nuxi dev --host",
-		"build": "nuxi build",
-		"generate": "nuxi generate"
+		"bootstrap": "node scripts/bootstrap.mjs",
+		"db:up": "docker compose up -d --wait",
+		"db:down": "docker compose down"
 	},
 	"dependencies": {
+		"@stonecrop/graphql-middleware": "workspace:*",
 		"nuxt": "^4.4.4"
 	}
 }

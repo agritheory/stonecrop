@@ -15,21 +15,15 @@ export default defineConfig({
 			fileName: () => 'index.js',
 		},
 		rollupOptions: {
-			external: [
-				'node:fs',
-				'node:path',
-				'graphql',
-				'pluralize',
-				'postgraphile',
-				'postgraphile/utils',
-				'postgraphile/grafast',
-				'postgraphile/graphile-build',
-				'@stonecrop/schema',
-			],
+			// Externalize every package import — this is a server-only library and all
+			// runtime dependencies (direct and transitive) are resolved by the host app.
+			// Relative imports (local source files) are always kept in the bundle.
+			external: (id: string) => !id.startsWith('.') && !id.startsWith('/'),
 		},
 	},
 	test: {
 		globals: true,
+		globalSetup: ['./tests/integration/globalSetup.ts'],
 		tags: [
 			{ name: 'unit', description: 'Pure logic test — no DOM, network, or framework runtime.' },
 			{ name: 'component', description: 'Vue component test using jsdom + @vue/test-utils.' },
@@ -44,6 +38,11 @@ export default defineConfig({
 				description: 'Involves the Nuxt module, plugin, composables, or @nuxt/test-utils.',
 			},
 			{ name: 'graphql', description: 'Involves GraphQL schema, queries, resolvers, or PostGraphile.' },
+			{
+				name: 'integration',
+				timeout: 60_000,
+				description: 'Requires a live PostgreSQL database. Skipped in CI environments without a database.',
+			},
 		],
 		environment: 'jsdom',
 		include: ['tests/**/*.{test,spec}.{ts,js}'],

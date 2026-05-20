@@ -36,6 +36,8 @@ Guides are being developed based on common questions and use cases. Planned topi
 ## Available Guides
 
 - [Integrating Desktop in a Host Application](./desktop-integration) — Route adapters, action handling, and FSM transitions with `@stonecrop/desktop`
+- [Setting Up the GraphQL Middleware](./graphql-middleware-setup) — Configuring `createStonecropPreset`, `createStonecropPlugin`, and `loadDoctypes` in a Nuxt/Node application
+- [Custom Fetch Handlers](./custom-fetch-handlers) — Implementing and registering `FetchHandler` callbacks for the `custom` fetch strategy
 
 ## Quick Links
 

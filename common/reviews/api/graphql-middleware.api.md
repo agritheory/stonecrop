@@ -7,39 +7,26 @@
 import { DoctypeMeta } from '@stonecrop/schema';
 import { DocumentNode } from 'graphql';
 import { GraphileConfig as GraphileConfig_2 } from 'postgraphile/graphile-build';
+import type { LinkDeclaration } from '@stonecrop/schema';
+import { makePgService } from 'postgraphile/adaptors/pg';
+import type { PgClient } from '@dataplan/pg';
 import { ValidationError } from '@stonecrop/schema';
 
 // @public
 export interface ActionContext {
     [key: string]: unknown;
     doctype: DoctypeMeta;
-    executor: GraphQLExecutor;
+    pgClient?: PgClient;
 }
 
 // @public
 export type ActionHandler = (args: unknown[], context: ActionContext) => Promise<unknown>;
 
 // @public
-export function buildListQuery(meta: DoctypeMeta, args: BuildListQueryArgs, connectionFieldName: (t: string) => string, orderByTypeName: (t: string) => string): string;
-
-// @public
-export interface BuildListQueryArgs {
-    limit?: number;
-    offset?: number;
-    orderBy?: string;
-}
-
-// @public
-export function buildRecordQuery(meta: DoctypeMeta, recordFieldName: (t: string) => string, recordArgName: (t: string) => string, recordArgType: (t: string) => string, getMeta: (slug: string) => DoctypeMeta | undefined, options?: BuildRecordQueryOptions, reverseConnectionNameFn?: (params: ReverseConnectionParams) => string): string;
-
-// @public
-export interface BuildRecordQueryOptions {
-    includeNested?: boolean | string[];
-    maxDepth?: number;
-}
-
-// @public
 export const builtinHandlers: Record<string, ActionHandler>;
+
+// @public
+export function clearFetchHandlers(): void;
 
 // @public
 export function clearHandlers(): void;
@@ -48,30 +35,21 @@ export function clearHandlers(): void;
 export function clearRegistry(): void;
 
 // @public
-export const createStonecropPlugin: (options: StonecropPluginOptions) => GraphileConfig_2.Plugin;
+export const createDebugPlugin: (options?: DebugPluginOptions) => GraphileConfig.Plugin;
 
 // @public
-export function defaultConnectionFieldName(tableName: string): string;
+export const createStonecropPlugin: (options?: StonecropPluginOptions) => GraphileConfig_2.Plugin;
 
 // @public
-export function defaultOrderByTypeName(tableName: string): string;
+export const createStonecropPreset: (options?: {
+    fieldCasing?: FieldCasing;
+}) => GraphileConfig.Preset;
 
 // @public
-export function defaultRecordArgName(_tableName: string): string;
-
-// @public
-export function defaultRecordArgType(_tableName: string): string;
-
-// @public
-export function defaultRecordFieldName(tableName: string): string;
-
-// @public
-export function defaultReverseConnectionName(params: {
-    doctype: string;
-    linkName: string;
-    backlink?: string;
-    target: string;
-}): string;
+export interface DebugPluginOptions {
+    logPlans?: boolean;
+    logTiming?: boolean;
+}
 
 export { DoctypeMeta }
 
@@ -85,39 +63,22 @@ export class DoctypeValidationError extends Error {
 }
 
 // @public
-export function extractListResult(params: ExtractListResultParams): unknown[];
+export type FetchHandler = (pgClient: PgClient, parentRecord: Record<string, unknown>, link: LinkDeclaration) => Promise<Record<string, unknown> | Record<string, unknown>[]>;
 
 // @public
-export interface ExtractListResultParams {
-    connectionFieldName: (tableName: string) => string;
-    meta: DoctypeMeta;
-    result: unknown;
-}
-
-// @public
-export function extractSingleResult(params: ExtractSingleResultParams): unknown;
-
-// @public
-export interface ExtractSingleResultParams {
-    meta: DoctypeMeta;
-    recordFieldName: (tableName: string) => string;
-    result: unknown;
-}
+export type FieldCasing = 'camel' | 'pascal';
 
 // @public
 export function getAllMeta(): DoctypeMeta[];
+
+// @public
+export function getFetchHandler(name: string): FetchHandler | undefined;
 
 // @public
 export function getHandler(name: string): ActionHandler | undefined;
 
 // @public
 export function getMeta(name: string): DoctypeMeta | undefined;
-
-// @public
-export interface GraphQLExecutor {
-    mutate<T = unknown>(mutation: string, variables?: Record<string, unknown>): Promise<T>;
-    query<T = unknown>(query: string, variables?: Record<string, unknown>): Promise<T>;
-}
 
 // @public
 export function hasHandler(name: string): boolean;
@@ -137,63 +98,25 @@ export interface LoadDoctypesOptions {
     onError?: (file: string, errors: ValidationError[]) => void;
 }
 
-// @public
-export function mergeNestedResults(params: MergeNestedResultsParams): Record<string, unknown>;
-
-// @public
-export interface MergeNestedResultsParams {
-    getMeta: (slug: string) => DoctypeMeta | undefined;
-    meta: DoctypeMeta;
-    record: Record<string, unknown>;
-    reverseConnectionNameFn?: (params: ReverseConnectionParams) => string;
-}
-
-// @public
-export function queryableFieldNames(meta: DoctypeMeta): string;
+export { makePgService }
 
 // @public
 export function registerBuiltinHandlers(): void;
 
 // @public
+export function registerFetchHandler(name: string, handler: FetchHandler): void;
+
+// @public
 export function registerHandler(name: string, handler: ActionHandler): void;
 
 // @public
-export const RELATION_FIELDTYPES: Set<string>;
-
-// @public
-export interface ReverseConnectionParams {
-    backlink?: string;
-    doctype: string;
-    linkName: string;
-    target: string;
-}
-
-// @public
-export interface StonecropInflectionConfig {
-    connectionFieldName?: (tableName: string) => string;
-    orderByTypeName?: (tableName: string) => string;
-    recordArgName?: (tableName: string) => string;
-    recordArgType?: (tableName: string) => string;
-    recordFieldName?: (tableName: string) => string;
-    reverseConnectionName?: (params: {
-        doctype: string;
-        linkName: string;
-        backlink?: string;
-        target: string;
-    }) => string;
-}
-
-// @public
 export interface StonecropPluginOptions {
-    executor: GraphQLExecutor;
-    inflection?: StonecropInflectionConfig;
+    debug?: boolean;
+    pkField?: string;
 }
 
 // @public
-export interface StonecropRecordOptions {
-    includeNested?: boolean | string[];
-    maxDepth?: number;
-}
+export const StonecropPreset: GraphileConfig.Preset;
 
 // @public
 export const typeDefs: DocumentNode;

@@ -58,7 +58,7 @@
 		"@graphql-tools/stitch": "^10.1.18",
 		"@graphql-tools/wrap": "^11.1.14",
 		"@stonecrop/graphql-middleware": "workspace:*",
-		"grafast": "^1.0.1",
+		"grafast": "^1.0.2",
 		"grafserv": "^1.0.0",
 		"graphql": "^16.14.0",
 		"postgraphile": "^5.0.3"
