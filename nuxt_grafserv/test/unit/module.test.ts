@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { addServerHandler } from '@nuxt/kit'
+import { addServerHandler, addServerPlugin } from '@nuxt/kit'
 
 import type { ModuleOptions } from '../../src/types'
 
@@ -41,6 +41,7 @@ const mockLogger = {
 
 vi.mock('@nuxt/kit', () => ({
 	addServerHandler: vi.fn(),
+	addServerPlugin: vi.fn(),
 	createResolver: vi.fn(() => ({
 		resolve: vi.fn((path: string) => `resolved:${path}`),
 	})),
@@ -468,11 +469,10 @@ describe('Grafserv Module', { tags: ['unit', 'nuxt', 'graphql'] }, () => {
 			expect(virtual).not.toContain('maskError')
 		})
 
-		it('warns when DATABASE_URL is not set', () => {
-			delete process.env.DATABASE_URL
+		it('registers startup-check plugin when no preset is given', () => {
 			const options: ModuleOptions = { type: 'postgraphile' }
 			module.setup(options, mockNuxt)
-			expect(mockLogger.warn).toHaveBeenCalledWith(expect.stringContaining('DATABASE_URL'))
+			expect(vi.mocked(addServerPlugin)).toHaveBeenCalledWith(expect.stringContaining('startup-check'))
 		})
 
 		it('does not throw when DATABASE_URL is unset — warns only', () => {
