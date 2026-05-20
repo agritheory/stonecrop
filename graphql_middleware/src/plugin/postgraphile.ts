@@ -91,11 +91,12 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 										const ids = indices.map(i => specs[i].id as string)
 
 										const { rows } = await pgClient.query<Record<string, unknown>>({
-											text: `SELECT ${columns} FROM "${meta.tableName}" WHERE "${pkField}" = ANY($1::text[])`,
+											text: `SELECT ${columns} FROM "${meta.tableName}" WHERE "${pkField}"::text = ANY($1::text[])`,
 											values: [ids],
 										})
 
-										const rowByPk = new Map(rows.map(r => [r[pkField] as string, r]))
+										// Use String() so integer PKs (e.g. serial) match the string ids from GraphQL
+										const rowByPk = new Map(rows.map(r => [String(r[pkField]), r]))
 
 										for (const i of indices) {
 											const specId = specs[i].id as string
@@ -144,7 +145,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 
 													if (isMany) {
 														if (!link.backlink) continue
-														let sql = `SELECT ${targetColumns} FROM "${targetMeta.tableName}" WHERE "${link.backlink}" = $1`
+														let sql = `SELECT ${targetColumns} FROM "${targetMeta.tableName}" WHERE "${link.backlink}"::text = $1`
 														const linkValues: unknown[] = [specId]
 														if (effectiveLimit != null) {
 															sql += ` LIMIT $2`

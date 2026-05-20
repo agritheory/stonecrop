@@ -55,21 +55,20 @@ loadDoctypes('/app/config/doctypes') // absolute path
 
 ### From objects
 
-Useful in tests or when definitions come from an API rather than files on disk:
+Useful in tests or when definitions come from an API rather than files on disk. Keys become the doctype `name`, overriding any `name` field in the value:
 
 ```typescript
 import { loadDoctypesFromObject } from '@stonecrop/graphql-middleware'
 
-loadDoctypesFromObject([
-  {
-    name: 'Customer',
+loadDoctypesFromObject({
+  Customer: {
     tableName: 'customers',
     fields: [
       { fieldname: 'id', fieldtype: 'Data' },
       { fieldname: 'name', fieldtype: 'Data' },
     ],
   },
-])
+})
 ```
 
 ---
@@ -119,6 +118,20 @@ createStonecropPlugin({ pkField: 'uuid' }) // uses "uuid"
 
 Override `pkField` only if all your tables use a different primary key column name. This is a global setting; per-table overrides are not supported.
 
+The plugin compares primary keys using text equality (`pkColumn::text = $1`), so the GraphQL `id: String!` argument works with any underlying column type — `integer`, `uuid`, `text`, or `bigint`.
+
+### orderBy format
+
+The `stonecropRecords` field accepts an `orderBy: String` argument. The format is `FIELD_DIRECTION` (underscore-separated), where direction must be `ASC` or `DESC`:
+
+```graphql
+# Correct
+stonecropRecords(doctype: "Invoice", orderBy: "status_ASC")
+
+# For columns with underscores in their name, the LAST underscore separates field and direction
+stonecropRecords(doctype: "Invoice", orderBy: "created_at_DESC")
+```
+
 ---
 
 ## Configuring the database connection
@@ -165,3 +178,40 @@ export default {
   ],
 }
 ```
+
+---
+
+## Using with Nuxt
+
+When using `@stonecrop/nuxt-grafserv`, the zero-config path (`type: 'postgraphile'` with no `preset` option) synthesises the PostGraphile preset automatically from `DATABASE_URL`. You do not need a separate preset file.
+
+Doctype registration and handler setup must still happen before any GraphQL request executes. The right place in a Nuxt app is a Nitro server plugin, which runs at server startup:
+
+```typescript
+// server/plugins/stonecrop.ts
+import { loadDoctypesFromObject, registerBuiltinHandlers } from '@stonecrop/graphql-middleware'
+import userDoctype from '../doctypes/user.json'
+import orderDoctype from '../doctypes/order.json'
+
+export default defineNitroPlugin(() => {
+  loadDoctypesFromObject({ User: userDoctype, Order: orderDoctype })
+  registerBuiltinHandlers()
+})
+```
+
+With `nuxt.config.ts`:
+
+```typescript
+export default defineNuxtConfig({
+  modules: ['@stonecrop/nuxt-grafserv'],
+  grafserv: {
+    type: 'postgraphile',
+    url: '/graphql/',
+    graphiql: true,
+  },
+})
+```
+
+Nuxt picks up any file in `server/plugins/` automatically — no registration step needed. The plugin runs once when the Nitro server initialises, before the first request reaches the GraphQL endpoint.
+
+If you need a custom preset (additional PostGraphile plugins, non-standard connection settings), create `server/graphile.preset.ts` and reference it with the `preset` option. In that case `loadDoctypes` can be called at the top of the preset file instead of in a Nitro plugin, since the preset is imported at schema-build time.

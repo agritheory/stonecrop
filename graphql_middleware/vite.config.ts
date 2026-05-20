@@ -23,6 +23,8 @@ export default defineConfig({
 	},
 	test: {
 		globals: true,
+		forceExit: true,
+		globalSetup: ['./tests/integration/globalSetup.ts'],
 		tags: [
 			{ name: 'unit', description: 'Pure logic test — no DOM, network, or framework runtime.' },
 			{ name: 'component', description: 'Vue component test using jsdom + @vue/test-utils.' },

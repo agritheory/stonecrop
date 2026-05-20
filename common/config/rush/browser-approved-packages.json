@@ -11,6 +11,10 @@
       "allowedCategories": [ "utilities" ]
     },
     {
+      "name": "@electric-sql/pglite",
+      "allowedCategories": [ "utilities" ]
+    },
+    {
       "name": "@eslint/js",
       "allowedCategories": [ "production", "prototype", "utilities" ]
     },
@@ -381,6 +385,14 @@
     {
       "name": "pathe",
       "allowedCategories": [ "prototype" ]
+    },
+    {
+      "name": "pg",
+      "allowedCategories": [ "utilities" ]
+    },
+    {
+      "name": "pglite-server",
+      "allowedCategories": [ "utilities" ]
     },
     {
       "name": "pinia",

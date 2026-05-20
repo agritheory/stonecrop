@@ -138,7 +138,7 @@ Use `type: 'postgraphile'` for PostGraphile-based GraphQL APIs:
 | `schemas` | `string[]` | ❌ | PostgreSQL schemas to expose (default: `['public']`). Ignored when `preset` is set. |
 | `explain` | `boolean` | ❌ | Enable Ruru Explain tab. **Never use in production.** Ignored when `preset` is set. |
 | `url` | `string` | ❌ | GraphQL endpoint URL (default: `/graphql/`) |
-| `graphiql` | `boolean` | ❌ | Enable GraphiQL IDE (default: true in dev, false in prod) |
+| `graphiql` | `boolean` | ❌ | Enable GraphiQL IDE (default: `true`) |
 
 **Minimal example (no preset file):**
 
@@ -147,7 +147,7 @@ Use `type: 'postgraphile'` for PostGraphile-based GraphQL APIs:
 export default defineNuxtConfig({
   grafserv: {
     type: 'postgraphile',
-    url: '/graphql',
+    url: '/graphql/',
     graphiql: true,
   }
 })
@@ -180,8 +180,8 @@ Use `type: 'schema'` for custom GraphQL schemas with Grafast resolvers:
 | `type` | `'schema'` | ✅ | Configuration type discriminator |
 | `schema` | `string \| string[] \| SchemaProvider` | ✅ | Path(s) to .graphql files or schema provider function |
 | `resolvers` | `string` | ❌ | Path to resolvers file (required for .graphql files) |
-| `url` | `string` | ❌ | GraphQL endpoint URL (default: '/graphql/') |
-| `graphiql` | `boolean` | ❌ | Enable GraphiQL IDE (default: true in dev, false in prod) |
+| `url` | `string` | ❌ | GraphQL endpoint URL (default: `/graphql/`) |
+| `graphiql` | `boolean` | ❌ | Enable GraphiQL IDE (default: `true`) |
 
 **Example with files:**
 
@@ -191,7 +191,7 @@ export default defineNuxtConfig({
     type: 'schema',
     schema: 'server/**/*.graphql',
     resolvers: 'server/resolvers.ts',
-    url: '/graphql',
+    url: '/graphql/',
   }
 })
 ```
@@ -375,76 +375,34 @@ export default preset
 
 #### Available Middleware Hooks
 
-- `processRequest` - Process all incoming requests
-- `processGraphQLRequestBody` - Process GraphQL request bodies
-- `ruruHTML` - Customize Ruru IDE HTML generation
-- `onSubscribe` - Handle GraphQL subscriptions
+These are hooks provided by the `grafserv` package itself via the Graphile preset system — they are not specific to `@stonecrop/nuxt-grafserv`. The hook used in the example above (`processGraphQLRequestBody`) is the most common entry point. For the full list of available hooks, refer to the [Grafserv documentation](https://grafast.org/grafserv/).
 
 ## PostGraphile Integration
 
-PostGraphile v5+ automatically generates your GraphQL schema from PostgreSQL.
+PostGraphile v5+ automatically generates your GraphQL schema from PostgreSQL. When using a custom preset file (`preset` option), you have access to all PostGraphile preset keys — these are PostGraphile features, not Stonecrop-specific ones.
 
 ### With Community Plugins
 
+Third-party PostGraphile plugins can be added via the `plugins` array in a custom preset file:
+
 ```typescript
-import { createStonecropPreset, makePgService } from '@stonecrop/graphql-middleware'
+// server/graphile.preset.ts
+import { createStonecropPreset, makePgService, createStonecropPlugin } from '@stonecrop/graphql-middleware'
 import PgSimplifyInflectorPlugin from '@graphile-contrib/pg-simplify-inflector'
 
-const preset = {
+export default {
   extends: [createStonecropPreset()],
-  plugins: [PgSimplifyInflectorPlugin],
+  plugins: [createStonecropPlugin(), PgSimplifyInflectorPlugin],
   pgServices: [
     makePgService({
       connectionString: process.env.DATABASE_URL,
       schemas: ['public'],
     }),
   ],
-  schema: {
-    defaultBehavior: 'connection', // Enable Relay-style connections
-  },
-  grafast: {
-    explain: process.env.NODE_ENV === 'development', // Plan diagrams in dev
-  },
 }
-
-export default preset
 ```
 
-### Advanced Configuration
-
-```typescript
-import { createStonecropPreset, makePgService } from '@stonecrop/graphql-middleware'
-
-const preset = {
-  extends: [createStonecropPreset()],
-  pgServices: [
-    makePgService({
-      connectionString: process.env.DATABASE_URL,
-      schemas: ['public', 'app_private'],
-      superuserConnectionString: process.env.SUPERUSER_DATABASE_URL, // For watch mode
-      pubsub: true, // Enable LISTEN/NOTIFY for subscriptions
-    }),
-  ],
-  gather: {
-    // Smart tags for schema customization
-    pgJwtTypes: 'app_public.jwt_token',
-  },
-  schema: {
-    // Behavior overrides
-    defaultBehavior: '-insert -update -delete', // Read-only by default
-    pgJwtSecret: process.env.JWT_SECRET,
-  },
-  grafast: {
-    explain: true,
-    context: (requestContext) => ({
-      // Custom context for all resolvers
-      userId: requestContext.user?.id,
-    }),
-  },
-}
-
-export default preset
-```
+For further PostGraphile preset configuration (behaviours, JWT, subscriptions, smart tags, etc.), refer to the [PostGraphile v5 documentation](https://postgraphile.org/postgraphile/5/).
 
 ### Why File-Based Presets?
 
@@ -587,26 +545,33 @@ See [Grafast Standard Steps](https://grafast.org/grafast/standard-steps) for the
 
 ## Development
 
+This package lives inside the Stonecrop Rush monorepo. Use `rushx` instead of `pnpm run` to invoke scripts.
+
 ```bash
-# Install dependencies
-pnpm install
+# Install all monorepo dependencies (run from the repo root)
+rush install
+
+# Bootstrap the playground database (first time only — requires Docker)
+cd playground && node scripts/bootstrap.mjs
 
 # Generate type stubs
-pnpm run dev:prepare
+rushx dev:prepare
 
-# Develop with the playground
-pnpm run dev
+# Develop with the playground (from nuxt_grafserv/)
+rushx dev
 
 # Build the module
-pnpm run build
+rushx build
 
 # Run ESLint
-pnpm run lint
+rushx lint
 
 # Run tests
-pnpm run test
-pnpm run test:watch
+rushx test
+rushx test:watch
 ```
+
+The playground runs against a PostgreSQL container managed by Docker Compose. The bootstrap script handles container startup, `.env` creation, and running the initial migration. On subsequent runs `rushx dev` is all that's needed (the container persists via a named volume).
 
 <!-- Badges -->
 [npm-version-src]: https://img.shields.io/npm/v/@stonecrop/nuxt-grafserv/latest.svg?style=flat&colorA=020420&colorB=00DC82

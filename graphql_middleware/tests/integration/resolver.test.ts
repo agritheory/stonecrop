@@ -1,0 +1,228 @@
+import { parse } from 'graphql'
+import type { GraphQLSchema } from 'graphql'
+import type { GraphileConfig } from 'postgraphile/graphile-build'
+import { Pool, type PoolClient } from 'pg'
+import { makeSchema } from 'postgraphile'
+import { PostGraphileAmberPreset } from 'postgraphile/presets/amber'
+import { execute, hookArgs } from 'postgraphile/grafast'
+import { makePgService, makeWithPgClientViaPgClientAlreadyInTransaction } from 'postgraphile/adaptors/pg'
+import { describe, it, expect, beforeAll, afterAll, inject } from 'vitest'
+
+import { createStonecropPlugin } from '../../src/plugin/postgraphile'
+import { loadDoctypesFromObject, clearRegistry } from '../../src/registry/doctypes'
+import { registerHandler, clearHandlers } from '../../src/registry/actions'
+
+// ---------------------------------------------------------------------------
+// Per-suite setup
+// ---------------------------------------------------------------------------
+
+let pool: Pool
+let schema: GraphQLSchema
+let resolvedPreset: GraphileConfig.ResolvedPreset
+let releasePgService: (() => void | PromiseLike<void>) | undefined
+
+beforeAll(async () => {
+	const databaseUrl = inject('testDatabaseUrl')
+
+	loadDoctypesFromObject({
+		ScItem: {
+			name: 'ScItem',
+			tableName: 'sc_item',
+			fields: [
+				{ fieldname: 'id', fieldtype: 'Data', label: 'ID' },
+				{ fieldname: 'name', fieldtype: 'Data', label: 'Name' },
+				{ fieldname: 'status', fieldtype: 'Data', label: 'Status' },
+			],
+			links: {
+				tags: {
+					target: 'ScTag',
+					cardinality: 'noneOrMany' as const,
+					backlink: 'item_id',
+					fetch: { method: 'sync' as const },
+				},
+			},
+			workflow: {
+				states: ['Draft', 'Active'],
+				actions: {
+					submit: { label: 'Submit', handler: 'submit', allowedStates: ['Draft'] },
+				},
+			},
+		},
+		ScTag: {
+			name: 'ScTag',
+			tableName: 'sc_tag',
+			fields: [
+				{ fieldname: 'id', fieldtype: 'Data', label: 'ID' },
+				{ fieldname: 'label', fieldtype: 'Data', label: 'Label' },
+				{ fieldname: 'item_id', fieldtype: 'Data', label: 'Item ID' },
+			],
+		},
+	})
+
+	pool = new Pool({ connectionString: databaseUrl })
+
+	const pgService = makePgService({ connectionString: databaseUrl })
+	releasePgService = pgService.release
+	const result = await makeSchema({
+		extends: [PostGraphileAmberPreset],
+		plugins: [createStonecropPlugin()],
+		pgServices: [pgService],
+	})
+	schema = result.schema
+	resolvedPreset = result.resolvedPreset
+}, 60_000)
+
+afterAll(async () => {
+	clearRegistry()
+	clearHandlers()
+	await pool?.end()
+	await releasePgService?.()
+})
+
+// ---------------------------------------------------------------------------
+// Helper: run a GraphQL query inside a rolled-back transaction
+// ---------------------------------------------------------------------------
+
+async function runQuery(query: string, variables?: Record<string, unknown>): Promise<Record<string, unknown>> {
+	const client: PoolClient = await pool.connect()
+	await client.query('BEGIN')
+	try {
+		const withPgClient = makeWithPgClientViaPgClientAlreadyInTransaction(client, true)
+		const args = await hookArgs({
+			schema,
+			document: parse(query),
+			variableValues: variables ?? {},
+			contextValue: Object.create(null) as Record<string, unknown>,
+			resolvedPreset,
+			requestContext: {},
+		})
+		// Override the pool-based withPgClient with our in-transaction version so all
+		// SQL runs inside one rollback-able transaction.
+		args.contextValue.withPgClient = withPgClient
+		return (await execute(args)) as Record<string, unknown>
+	} finally {
+		try {
+			await client.query('ROLLBACK')
+		} catch {
+			// If ROLLBACK itself fails the connection is in an unknown state; discard it.
+			client.release(new Error('rollback failed'))
+			return {} as Record<string, unknown>
+		}
+		client.release()
+	}
+}
+
+// ===========================================================================
+// stonecropRecord
+// ===========================================================================
+
+describe('stonecropRecord', { tags: ['integration', 'graphql'] }, () => {
+	it('fetches a record by id', async () => {
+		const result = await runQuery(`query { stonecropRecord(doctype: "ScItem", id: "1") { doctype data } }`)
+		const record = (result as any).data?.stonecropRecord
+		expect(record?.doctype).toBe('ScItem')
+		expect((record?.data as any)?.name).toBe('Alpha')
+	})
+
+	it('returns null data for a missing id', async () => {
+		const result = await runQuery(`query { stonecropRecord(doctype: "ScItem", id: "9999") { doctype data } }`)
+		const record = (result as any).data?.stonecropRecord
+		expect(record?.data).toBeNull()
+	})
+
+	it('includes sync-linked records when strategy is sync', async () => {
+		const result = await runQuery(`query { stonecropRecord(doctype: "ScItem", id: "1") { data } }`)
+		const data = (result as any).data?.stonecropRecord?.data
+		expect(Array.isArray(data?.tags)).toBe(true)
+		expect(data.tags.length).toBe(2)
+		expect(data.tags[0].label).toBe('urgent')
+	})
+
+	it('returns unknownLinks for requested links not in doctype', async () => {
+		const result = await runQuery(
+			`query { stonecropRecord(doctype: "ScItem", id: "1", options: { includeNested: ["missing"] }) { data unknownLinks } }`
+		)
+		const record = (result as any).data?.stonecropRecord
+		expect(record?.unknownLinks).toContain('missing')
+	})
+})
+
+// ===========================================================================
+// stonecropRecords
+// ===========================================================================
+
+describe('stonecropRecords', { tags: ['integration', 'graphql'] }, () => {
+	it('returns all records when no filters given', async () => {
+		const result = await runQuery(`query { stonecropRecords(doctype: "ScItem") { count data } }`)
+		const records = (result as any).data?.stonecropRecords
+		expect(records?.count).toBe(3)
+		expect(records?.data.length).toBe(3)
+	})
+
+	it('filters by a field value', async () => {
+		const result = await runQuery(
+			`query { stonecropRecords(doctype: "ScItem", filters: { status: "Active" }) { count data } }`
+		)
+		const records = (result as any).data?.stonecropRecords
+		expect(records?.count).toBe(1)
+		expect(records?.data[0].name).toBe('Beta')
+	})
+
+	it('respects limit and offset', async () => {
+		const result = await runQuery(`query { stonecropRecords(doctype: "ScItem", limit: 1, offset: 1) { count data } }`)
+		const records = (result as any).data?.stonecropRecords
+		expect(records?.data.length).toBe(1)
+		// count reflects the total, not the page size
+		expect(typeof records?.count).toBe('number')
+	})
+
+	it('orders results by a column', async () => {
+		const result = await runQuery(`query { stonecropRecords(doctype: "ScItem", orderBy: "name_DESC") { data } }`)
+		const data = (result as any).data?.stonecropRecords?.data
+		expect(data[0].name).toBe('Gamma')
+	})
+})
+
+// ===========================================================================
+// stonecropAction
+// ===========================================================================
+
+describe('stonecropAction', { tags: ['integration', 'graphql'] }, () => {
+	it('calls a registered handler and returns success', async () => {
+		registerHandler('submit', async _args => ({ submitted: true }))
+
+		const result = await runQuery(
+			`mutation { stonecropAction(doctype: "ScItem", action: "submit", args: { id: "1" }) { success data } }`
+		)
+		const action = (result as any).data?.stonecropAction
+		expect(action?.success).toBe(true)
+		expect((action?.data as any)?.submitted).toBe(true)
+	})
+
+	it('returns error for an unregistered handler', async () => {
+		const result = await runQuery(
+			`mutation { stonecropAction(doctype: "ScItem", action: "nonexistent") { success error } }`
+		)
+		const action = (result as any).data?.stonecropAction
+		expect(action?.success).toBe(false)
+		expect(typeof action?.error).toBe('string')
+	})
+})
+
+// ===========================================================================
+// stonecropMeta
+// ===========================================================================
+
+describe('stonecropMeta', { tags: ['integration', 'graphql'] }, () => {
+	it('returns doctype metadata', async () => {
+		const result = await runQuery(`query { stonecropMeta(doctype: "ScItem") { name tableName } }`)
+		const meta = (result as any).data?.stonecropMeta
+		expect(meta?.name).toBe('ScItem')
+		expect(meta?.tableName).toBe('sc_item')
+	})
+
+	it('returns null for unknown doctype', async () => {
+		const result = await runQuery(`query { stonecropMeta(doctype: "DoesNotExist") { name } }`)
+		expect((result as any).data?.stonecropMeta).toBeNull()
+	})
+})
