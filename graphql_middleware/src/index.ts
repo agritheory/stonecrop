@@ -35,6 +35,10 @@ export type { FetchHandler } from './registry/fetchHandlers'
 export { createStonecropPlugin } from './plugin/postgraphile'
 export type { StonecropPluginOptions } from './plugin/postgraphile'
 
+// Debug plugin
+export { createDebugPlugin } from './debug'
+export type { DebugPluginOptions } from './debug'
+
 export { typeDefs } from './typeDefs'
 
 // Preset

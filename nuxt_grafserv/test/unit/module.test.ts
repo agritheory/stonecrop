@@ -419,6 +419,33 @@ describe('Grafserv Module', { tags: ['unit', 'nuxt', 'graphql'] }, () => {
 			expect(nitroConfig.virtual['#internal/grafserv/pgl']).toContain('explain: false')
 		})
 
+		it('debug: true enables explain, injects debug plugin, passes debug to stonecrop plugin, and configures careful maskError', () => {
+			const options: ModuleOptions = { type: 'postgraphile', debug: true }
+			module.setup(options, mockNuxt)
+			const virtual = nitroConfig.virtual['#internal/grafserv/pgl']
+			expect(virtual).toContain('explain: true')
+			expect(virtual).toContain('createStonecropPlugin({ debug: true })')
+			expect(virtual).toContain('createDebugPlugin()')
+			expect(virtual).toContain('maskError(error)')
+			expect(virtual).toContain('isSafeError')
+			expect(virtual).toContain('createHash')
+		})
+
+		it('debug: true overrides explain: false', () => {
+			const options: ModuleOptions = { type: 'postgraphile', debug: true, explain: false }
+			module.setup(options, mockNuxt)
+			expect(nitroConfig.virtual['#internal/grafserv/pgl']).toContain('explain: true')
+		})
+
+		it('debug omitted sets debug: false on stonecrop plugin and excludes debug plugin', () => {
+			const options: ModuleOptions = { type: 'postgraphile' }
+			module.setup(options, mockNuxt)
+			const virtual = nitroConfig.virtual['#internal/grafserv/pgl']
+			expect(virtual).toContain('createStonecropPlugin({ debug: false })')
+			expect(virtual).not.toContain('createDebugPlugin')
+			expect(virtual).not.toContain('maskError')
+		})
+
 		it('warns when DATABASE_URL is not set', () => {
 			delete process.env.DATABASE_URL
 			const options: ModuleOptions = { type: 'postgraphile' }

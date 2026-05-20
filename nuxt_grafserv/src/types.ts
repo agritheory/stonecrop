@@ -98,6 +98,22 @@ export interface PostGraphileConfig {
 	 */
 	explain?: boolean
 
+	/**
+	 * Enable developer-friendly debug mode. When `true`, the synthesized preset
+	 * automatically sets `grafast.explain: true`, injects `createDebugPlugin()`,
+	 * and configures `grafserv.maskError` as a pass-through so full error details
+	 * are visible in the GraphQL response.
+	 *
+	 * This is a convenience switch for local development — it is the equivalent of
+	 * setting `explain: true` plus the debug plugin plus unmasked errors at once.
+	 * **Never enable in production**.
+	 *
+	 * Ignored when an explicit `preset` file is provided.
+	 *
+	 * @default false
+	 */
+	debug?: boolean
+
 	/** GraphQL endpoint URL (default: '/graphql/') */
 	url?: string
 

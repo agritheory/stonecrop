@@ -36,6 +36,56 @@ const preset: GraphileConfig.Preset = {
 |--------|---------|-------------|
 | `pkField` | `'id'` | Primary key column name for record lookups |
 
+## Debugging
+
+### Nuxt module shortcut
+
+When using `@stonecrop/nuxt-grafserv`, set `debug: true` in `nuxt.config.ts` to enable all development aids at once:
+
+```typescript
+export default defineNuxtConfig({
+  grafserv: {
+    type: 'postgraphile',
+    debug: true,
+  },
+})
+```
+
+`debug: true` automatically:
+- Enables the **Ruru Explain** tab (`grafast.explain`) to inspect Grafast plan steps and generated SQL
+- Injects `createDebugPlugin()` to log Stonecrop resolver plan construction
+- Configures `grafserv.maskError` using PostGraphile's recommended pattern: logs every error server-side, returns `GraphQLError` and safe errors directly, and masks unknown errors with a SHA-1 hash
+
+**Never enable `debug` in production** — it exposes query internals and detailed error messages to clients.
+
+### Custom preset
+
+If you manage your own preset file, import the debug plugin directly:
+
+```typescript
+import { createStonecropPlugin, createDebugPlugin } from '@stonecrop/graphql-middleware'
+
+export default {
+  plugins: [createStonecropPlugin(), createDebugPlugin()],
+  grafast: { explain: true },
+}
+```
+
+### Environment variables
+
+PostGraphile's native `DEBUG` variables still work alongside Stonecrop's debug plugin:
+
+| Variable | What it shows |
+|----------|---------------|
+| `DEBUG="@dataplan/pg:PgExecutor"` | SQL queries executed by plan steps |
+| `DEBUG="@dataplan/pg:PgExecutor:explain"` | SQL plus `EXPLAIN` output |
+| `DEBUG="graphile-build:warn"` | Warnings during schema construction |
+| `DEBUG="graphile-build:SchemaBuilder"` | Hook execution order during schema build |
+
+```bash
+DEBUG="@dataplan/pg:PgExecutor:explain,graphile-build:warn" node server.js
+```
+
 ## Doctype Schemas
 
 Each doctype JSON file defines structure, relationships, and workflow:

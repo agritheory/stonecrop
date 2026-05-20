@@ -116,23 +116,68 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
 					}
 					const fieldCasing = options.fieldCasing || 'camel'
 					const schemas = JSON.stringify(options.schemas || ['public'])
-					const explain = options.explain ?? false
+					const explain = options.debug ? true : (options.explain ?? false)
+					const debug = options.debug ?? false
 
 					logger.info('Synthesizing PostGraphile preset from DATABASE_URL')
 
-					config.virtual['#internal/grafserv/pgl'] = [
+					const pglLines = [
 						`import { postgraphile } from 'postgraphile'`,
-						`import { createStonecropPreset, makePgService, createStonecropPlugin } from '@stonecrop/graphql-middleware'`,
+						debug
+							? `import { createStonecropPreset, makePgService, createStonecropPlugin, createDebugPlugin } from '@stonecrop/graphql-middleware'`
+							: `import { createStonecropPreset, makePgService, createStonecropPlugin } from '@stonecrop/graphql-middleware'`,
 						``,
 						`const synthesizedPreset = {`,
 						`  extends: [createStonecropPreset({ fieldCasing: '${fieldCasing}' })],`,
 						`  pgServices: [makePgService({ connectionString: process.env.DATABASE_URL, schemas: ${schemas} })],`,
-						`  plugins: [createStonecropPlugin()],`,
+						`  plugins: [createStonecropPlugin({ debug: ${debug} })${debug ? ', createDebugPlugin()' : ''}],`,
 						`  grafast: { explain: ${explain} },`,
-						`}`,
-						``,
-						`export const pgl = postgraphile(synthesizedPreset)`,
-					].join('\n')
+					]
+
+					if (debug) {
+						pglLines.push(
+							`  grafserv: {`,
+							`    maskError(error) {`,
+							`      console.error('maskError was called with the following error:');`,
+							`      console.error(error);`,
+							`      console.error('which had an originalError of:');`,
+							`      console.error(error.originalError);`,
+							`      const { GraphQLError } = require('postgraphile/graphql');`,
+							`      const { isSafeError } = require('postgraphile/grafast');`,
+							`      if (error.originalError instanceof GraphQLError) {`,
+							`        return error;`,
+							`      } else if (error.originalError && isSafeError(error.originalError)) {`,
+							`        return new GraphQLError(`,
+							`          error.originalError.message,`,
+							`          error.nodes,`,
+							`          error.source,`,
+							`          error.positions,`,
+							`          error.path,`,
+							`          error.originalError,`,
+							`          error.originalError.extensions ?? null,`,
+							`        );`,
+							`      } else {`,
+							`        const { createHash } = require('node:crypto');`,
+							`        const hash = createHash('sha1').update(String(error)).digest('base64url');`,
+							`        console.error(\`Masked GraphQL error (hash: '\${hash}')\`, error);`,
+							`        return new GraphQLError(`,
+							`          \`An error occurred (logged with hash: '\${hash}')\`,`,
+							`          error.nodes,`,
+							`          error.source,`,
+							`          error.positions,`,
+							`          error.path,`,
+							`          error.originalError,`,
+							`          {},`,
+							`        );`,
+							`      }`,
+							`    },`,
+							`  },`
+						)
+					}
+
+					pglLines.push(`}`, ``, `export const pgl = postgraphile(synthesizedPreset)`)
+
+					config.virtual['#internal/grafserv/pgl'] = pglLines.join('\n')
 				} else {
 					// Resolve preset file path and try common extensions if needed
 					let presetPath = resolveForVirtualModule(options.preset)
@@ -253,6 +298,7 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
 				'postgraphile',
 				'graphile-config',
 				'graphile-build',
+				'@dataplan/pg',
 				'@graphql-tools/schema',
 				'@graphql-tools/load',
 				'@graphql-tools/graphql-file-loader'

@@ -52,6 +52,24 @@ Clear all registered doctypes
 export declare function clearRegistry(): void;
 ```
 
+### createDebugPlugin
+
+Creates a PostGraphile plugin that wraps Stonecrop resolver plans with debug logging. Use it in your preset file:
+
+Place `createDebugPlugin()` **after** `createStonecropPlugin()` in the plugins array so the wrapper sees the Stonecrop fields.
+
+**Signature:**
+
+```typescript
+createDebugPlugin: (options?: DebugPluginOptions) => GraphileConfig.Plugin
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| options | `DebugPluginOptions` | Optional logging configuration |
+
 ### createStonecropPlugin
 
 Create a PostGraphile plugin that extends the GraphQL schema with Stonecrop functionality.
@@ -290,6 +308,26 @@ export interface ActionContext {
 | doctype | `DoctypeMeta` | Doctype metadata for the action being executed |
 | pgClient? | `PgClient` | Active database client — available when the action is dispatched via stonecropAction |
 
+### DebugPluginOptions
+
+Options for the Stonecrop debug plugin.
+
+**Definition:**
+
+```typescript
+export interface DebugPluginOptions {
+  logPlans?: boolean;
+  logTiming?: boolean;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| logPlans? | `boolean` | Log a message when a plan is built for a Stonecrop field. Default: `true` |
+| logTiming? | `boolean` | Log timing for plan construction. Default: `false` |
+
 ### LoadDoctypesOptions
 
 Options for loading doctype definitions
@@ -318,6 +356,7 @@ Options for creating a Stonecrop PostGraphile plugin.
 
 ```typescript
 export interface StonecropPluginOptions {
+  debug?: boolean;
   pkField?: string;
 }
 ```
@@ -326,6 +365,7 @@ export interface StonecropPluginOptions {
 
 | Property | Type | Description |
 |----------|------|-------------|
+| debug? | `boolean` | When `true`, SQL queries executed inside `loadOneWithPgClient` callbacks are logged to `console.log` with `[StonecropSQL]` prefix. Defaults to `false`. |
 | pkField? | `string` | Primary key column name used in all `stonecropRecord` lookups and linked-record fetches. Defaults to `'id'`. |
 
 ## Type Aliases

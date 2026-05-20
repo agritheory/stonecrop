@@ -9,6 +9,6 @@ export default defineNuxtConfig({
 		type: 'postgraphile',
 		url: '/graphql/',
 		graphiql: true,
-		explain: true,
+		debug: true,
 	} as ModuleOptions,
 })

@@ -16,6 +16,11 @@ describe('createStonecropPlugin', { tags: ['unit', 'graphql'] }, () => {
 		expect(plugin).toBeDefined()
 	})
 
+	it('creates a plugin with debug enabled', () => {
+		const plugin = createStonecropPlugin({ debug: true })
+		expect(plugin).toBeDefined()
+	})
+
 	it('produces a GraphileConfig.Plugin with a name', () => {
 		const plugin = createStonecropPlugin()
 		expect(typeof plugin.name).toBe('string')

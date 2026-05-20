@@ -35,12 +35,21 @@ export function clearHandlers(): void;
 export function clearRegistry(): void;
 
 // @public
+export const createDebugPlugin: (options?: DebugPluginOptions) => GraphileConfig.Plugin;
+
+// @public
 export const createStonecropPlugin: (options?: StonecropPluginOptions) => GraphileConfig_2.Plugin;
 
 // @public
 export const createStonecropPreset: (options?: {
     fieldCasing?: FieldCasing;
 }) => GraphileConfig.Preset;
+
+// @public
+export interface DebugPluginOptions {
+    logPlans?: boolean;
+    logTiming?: boolean;
+}
 
 export { DoctypeMeta }
 
@@ -102,6 +111,7 @@ export function registerHandler(name: string, handler: ActionHandler): void;
 
 // @public
 export interface StonecropPluginOptions {
+    debug?: boolean;
     pkField?: string;
 }
 

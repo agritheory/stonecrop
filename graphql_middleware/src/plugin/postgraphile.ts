@@ -21,6 +21,11 @@ export interface StonecropPluginOptions {
 	 * Defaults to `'id'`.
 	 */
 	pkField?: string
+	/**
+	 * When `true`, SQL queries executed inside `loadOneWithPgClient` callbacks
+	 * are logged to `console.log` with `[StonecropSQL]` prefix. Defaults to `false`.
+	 */
+	debug?: boolean
 }
 
 /**
@@ -35,6 +40,19 @@ export interface StonecropPluginOptions {
  */
 export const createStonecropPlugin = (options: StonecropPluginOptions = {}): GraphileConfig.Plugin => {
 	const pkField = options.pkField ?? 'id'
+
+	/**
+	 * SQL debug helper — mirrors PostGraphile's `@dataplan/pg:PgExecutor` logging
+	 * for queries that run inside custom loadOneWithPgClient callbacks, which
+	 * bypass the executor's native instrumentation.
+	 */
+	const debugSql = options.debug
+		? <T>(pgClient: PgClient, query: { text: string; values?: unknown[] }) => {
+				// eslint-disable-next-line no-console
+				console.log(`[StonecropSQL] ${query.text}`, query.values ?? [])
+				return pgClient.query<T>(query)
+			}
+		: <T>(pgClient: PgClient, query: { text: string; values?: unknown[] }) => pgClient.query<T>(query)
 
 	return extendSchema(build => {
 		// Obtain the PgExecutor from pgExecutors — one entry exists per configured pgService.
@@ -90,7 +108,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 										const columns = getSqlColumns(meta, pkField)
 										const ids = indices.map(i => specs[i].id as string)
 
-										const { rows } = await pgClient.query<Record<string, unknown>>({
+										const { rows } = await debugSql<Record<string, unknown>>(pgClient, {
 											text: `SELECT ${columns} FROM "${meta.tableName}" WHERE "${pkField}"::text = ANY($1::text[])`,
 											values: [ids],
 										})
@@ -151,7 +169,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 															sql += ` LIMIT $2`
 															linkValues.push(effectiveLimit)
 														}
-														const { rows: linked } = await pgClient.query<Record<string, unknown>>({
+														const { rows: linked } = await debugSql<Record<string, unknown>>(pgClient, {
 															text: sql,
 															values: linkValues,
 														})
@@ -163,7 +181,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 															rowData[linkName] = null
 															continue
 														}
-														const { rows: linked } = await pgClient.query<Record<string, unknown>>({
+														const { rows: linked } = await debugSql<Record<string, unknown>>(pgClient, {
 															text: `SELECT ${targetColumns} FROM "${targetMeta.tableName}" WHERE "${pkField}" = $1`,
 															values: [fkValue],
 														})
@@ -254,7 +272,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 												pagingClause += ` OFFSET $${values.length}`
 											}
 
-											const { rows } = await pgClient.query<Record<string, unknown>>({
+											const { rows } = await debugSql<Record<string, unknown>>(pgClient, {
 												text: `SELECT ${columns} FROM "${meta.tableName}"${whereClause}${orderByClause}${pagingClause}`,
 												values,
 											})
@@ -272,7 +290,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 													}
 												}
 												const countWhereClause = countWhere.length > 0 ? ` WHERE ${countWhere.join(' AND ')}` : ''
-												const { rows: countRows } = await pgClient.query<{ __count: string }>({
+												const { rows: countRows } = await debugSql<{ __count: string }>(pgClient, {
 													text: `SELECT COUNT(*) AS __count FROM "${meta.tableName}"${countWhereClause}`,
 													values: countValues,
 												})
@@ -344,9 +362,9 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 	})
 }
 
-// =============================================================================
+// ===========================================================================
 // SQL column helper — produces a quoted comma-separated column list for SELECT
-// =============================================================================
+// ===========================================================================
 
 /**
  * Derive a quoted SQL column list from doctype field definitions.
