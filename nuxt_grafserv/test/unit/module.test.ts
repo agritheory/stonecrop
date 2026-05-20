@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { addServerHandler } from '@nuxt/kit'
 
 import type { ModuleOptions } from '../../src/types'
 
@@ -39,6 +40,7 @@ const mockLogger = {
 }
 
 vi.mock('@nuxt/kit', () => ({
+	addServerHandler: vi.fn(),
 	createResolver: vi.fn(() => ({
 		resolve: vi.fn((path: string) => `resolved:${path}`),
 	})),
@@ -233,12 +235,44 @@ describe('Grafserv Module', { tags: ['unit', 'nuxt', 'graphql'] }, () => {
 
 			module.setup(options, mockNuxt)
 
-			const graphqlHandler = nitroConfig.handlers.find(h => h.handler.includes('handler') && h.route === '/graphql/')
-			expect(graphqlHandler).toBeDefined()
-			expect(graphqlHandler?.route).toBe('/graphql/')
+			expect(vi.mocked(addServerHandler)).toHaveBeenCalledWith(
+				expect.objectContaining({ route: '/graphql/', handler: expect.stringContaining('handler') })
+			)
 		})
 
-		it('should register Ruru UI handler', () => {
+		it('should register Ruru static assets handler when graphiql is enabled', () => {
+			const options: ModuleOptions = {
+				type: 'schema',
+				schema: 'server/**/*.graphql',
+				resolvers: 'server/resolvers.ts',
+				url: '/graphql/',
+				graphiql: true,
+			}
+
+			module.setup(options, mockNuxt)
+
+			expect(vi.mocked(addServerHandler)).toHaveBeenCalledWith(
+				expect.objectContaining({ route: '/ruru-static/**', handler: expect.stringContaining('ruru') })
+			)
+		})
+
+		it('should not register Ruru static assets handler when graphiql is disabled', () => {
+			const options: ModuleOptions = {
+				type: 'schema',
+				schema: 'server/**/*.graphql',
+				resolvers: 'server/resolvers.ts',
+				url: '/graphql/',
+				graphiql: false,
+			}
+
+			module.setup(options, mockNuxt)
+
+			const calls = vi.mocked(addServerHandler).mock.calls
+			expect(calls.every(([h]) => h.route !== '/ruru-static/**')).toBe(true)
+		})
+
+		it('should register cache handler in dev mode only', () => {
+			mockNuxt.options.dev = true
 			const options: ModuleOptions = {
 				type: 'schema',
 				schema: 'server/**/*.graphql',
@@ -248,11 +282,13 @@ describe('Grafserv Module', { tags: ['unit', 'nuxt', 'graphql'] }, () => {
 
 			module.setup(options, mockNuxt)
 
-			const ruruHandler = nitroConfig.handlers.find(h => h.handler.includes('ruru'))
-			expect(ruruHandler).toBeDefined()
+			expect(vi.mocked(addServerHandler)).toHaveBeenCalledWith(
+				expect.objectContaining({ route: '/graphql/cache', handler: expect.stringContaining('cache') })
+			)
 		})
 
-		it('should register Ruru static assets handler', () => {
+		it('should not register cache handler in production', () => {
+			mockNuxt.options.dev = false
 			const options: ModuleOptions = {
 				type: 'schema',
 				schema: 'server/**/*.graphql',
@@ -262,22 +298,8 @@ describe('Grafserv Module', { tags: ['unit', 'nuxt', 'graphql'] }, () => {
 
 			module.setup(options, mockNuxt)
 
-			const staticHandler = nitroConfig.handlers.find(h => h.route === '/ruru-static/**')
-			expect(staticHandler).toBeDefined()
-		})
-
-		it('should register cache handler', () => {
-			const options: ModuleOptions = {
-				type: 'schema',
-				schema: 'server/**/*.graphql',
-				resolvers: 'server/resolvers.ts',
-				url: '/graphql/',
-			}
-
-			module.setup(options, mockNuxt)
-
-			const cacheHandler = nitroConfig.handlers.find(h => h.route === '/graphql/cache')
-			expect(cacheHandler).toBeDefined()
+			const calls = vi.mocked(addServerHandler).mock.calls
+			expect(calls.every(([h]) => h.route !== '/graphql/cache')).toBe(true)
 		})
 	})
 
