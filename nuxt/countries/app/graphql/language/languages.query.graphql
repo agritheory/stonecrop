@@ -1,0 +1,5 @@
+query Languages($filter: LanguageFilterInput) {
+  languages(filter: $filter) {
+    ...LanguageFields
+  }
+}

@@ -129,6 +129,11 @@
 			"projectFolder": "docs",
 			"reviewCategory": "documentation",
 			"shouldPublish": false
+		},
+		{
+			"packageName": "@stonecrop/nuxt-countries",
+			"projectFolder": "nuxt/countries",
+			"reviewCategory": "production"
 		}
 	]
 }

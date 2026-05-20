@@ -1,0 +1,32 @@
+{
+  "name": "Language",
+  "slug": "language",
+  "fields": [
+    {
+      "fieldname": "code",
+      "fieldtype": "Data",
+      "label": "Code",
+      "component": "ATextInput",
+      "readOnly": true
+    },
+    {
+      "fieldname": "name",
+      "fieldtype": "Data",
+      "label": "Name",
+      "component": "ATextInput",
+      "required": true
+    },
+    {
+      "fieldname": "native",
+      "fieldtype": "Data",
+      "label": "Native Name",
+      "component": "ATextInput"
+    },
+    {
+      "fieldname": "rtl",
+      "fieldtype": "Check",
+      "label": "Right-to-Left",
+      "component": "ATextInput"
+    }
+  ]
+}
