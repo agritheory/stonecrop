@@ -16,6 +16,8 @@ jobs:
   test:
     name: nuxt_grafserv
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://localhost:5432/dummy
 
     steps:
       - name: Checkout
