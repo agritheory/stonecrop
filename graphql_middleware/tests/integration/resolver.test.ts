@@ -40,6 +40,12 @@ beforeAll(async () => {
 					backlink: 'item_id',
 					fetch: { method: 'sync' as const },
 				},
+				notes: {
+					target: 'ScNote',
+					cardinality: 'noneOrMany' as const,
+					backlink: 'item_id',
+					fetch: { method: 'lazy' as const },
+				},
 			},
 			workflow: {
 				states: ['Draft', 'Active'],
@@ -54,6 +60,15 @@ beforeAll(async () => {
 			fields: [
 				{ fieldname: 'id', fieldtype: 'Data', label: 'ID' },
 				{ fieldname: 'label', fieldtype: 'Data', label: 'Label' },
+				{ fieldname: 'item_id', fieldtype: 'Data', label: 'Item ID' },
+			],
+		},
+		ScNote: {
+			name: 'ScNote',
+			tableName: 'sc_note',
+			fields: [
+				{ fieldname: 'id', fieldtype: 'Data', label: 'ID' },
+				{ fieldname: 'body', fieldtype: 'Data', label: 'Body' },
 				{ fieldname: 'item_id', fieldtype: 'Data', label: 'Item ID' },
 			],
 		},
@@ -180,6 +195,47 @@ describe('stonecropRecords', { tags: ['integration', 'graphql'] }, () => {
 		const result = await runQuery(`query { stonecropRecords(doctype: "ScItem", orderBy: "name_DESC") { data } }`)
 		const data = (result as any).data?.stonecropRecords?.data
 		expect(data[0].name).toBe('Gamma')
+	})
+})
+
+// ===========================================================================
+// Lazy link retrieval
+// ===========================================================================
+
+describe('lazy link retrieval via stonecropRecords', { tags: ['integration', 'graphql'] }, () => {
+	it('does not include lazy links in stonecropRecord by default', async () => {
+		const result = await runQuery(`query { stonecropRecord(doctype: "ScItem", id: "1") { data } }`)
+		const data = (result as any).data?.stonecropRecord?.data
+		// 'notes' is declared lazy; it should not be present in the default fetch
+		expect(data).not.toHaveProperty('notes')
+	})
+
+	it('retrieves lazy-linked records via stonecropRecords with backlink filter', async () => {
+		// Simulate a client-side lazy load: fetch notes for item 1 via backlink filter
+		const result = await runQuery(
+			`query { stonecropRecords(doctype: "ScNote", filters: { item_id: "1" }) { count data } }`
+		)
+		const records = (result as any).data?.stonecropRecords
+		expect(records?.count).toBe(2)
+		expect(records?.data.length).toBe(2)
+		expect(records?.data.map((n: any) => n.body).sort()).toEqual(['First note', 'Second note'])
+	})
+
+	it('lazy link data matches what sync-fetch would have merged', async () => {
+		// Fetch item 1 with explicit includeNested to force notes inclusion
+		const syncResult = await runQuery(
+			`query { stonecropRecord(doctype: "ScItem", id: "1", options: { includeNested: ["notes"] }) { data } }`
+		)
+		const syncData = (syncResult as any).data?.stonecropRecord?.data
+
+		// Fetch same data lazily
+		const lazyResult = await runQuery(
+			`query { stonecropRecords(doctype: "ScNote", filters: { item_id: "1" }) { data } }`
+		)
+		const lazyData = (lazyResult as any).data?.stonecropRecords?.data
+
+		// The data contents should match
+		expect(syncData?.notes?.map((n: any) => n.body).sort()).toEqual(lazyData?.map((n: any) => n.body).sort())
 	})
 })
 

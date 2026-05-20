@@ -77,10 +77,20 @@ describe('stonecrop field plans', { tags: ['unit', 'graphql'] }, () => {
 		expect(typeof planFn).toBe('function')
 	})
 
-	it('stonecropRecords has a Grafast plan function', () => {
+	it('stonecropRecord plan function exists and schema builds without executor option', () => {
+		const field = schema.getQueryType()!.getFields()!['stonecropRecord']
+		const planFn = (field.extensions as any)?.grafast?.plan
+		expect(typeof planFn).toBe('function')
+		// NOTE: Calling the plan function directly outside the Grafast planning
+		// lifecycle throws. The step type assertion is covered in integration tests
+		// that execute real queries against a built schema.
+	})
+
+	it('stonecropRecords plan function exists and schema builds without executor option', () => {
 		const field = schema.getQueryType()!.getFields()!['stonecropRecords']
 		const planFn = (field.extensions as any)?.grafast?.plan
 		expect(typeof planFn).toBe('function')
+		// NOTE: Same as above — step type is verified via integration tests.
 	})
 
 	it('executor is sourced from FakePgResourcesPlugin, not plugin options', () => {

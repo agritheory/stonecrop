@@ -136,7 +136,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 														continue
 													}
 
-													if (effectiveMethod !== 'sync') continue
+													if (effectiveMethod !== 'sync' && !includeSet?.has(linkName)) continue
 
 													const targetMeta = getMeta(link.target)
 													if (!targetMeta?.tableName) continue
