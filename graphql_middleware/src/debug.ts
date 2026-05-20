@@ -37,7 +37,7 @@ export const createDebugPlugin = (options: DebugPluginOptions = {}): GraphileCon
 		plan: (plan: () => any) => {
 			if (logPlans) {
 				// eslint-disable-next-line no-console
-				console.log(`[StonecropDebug] Building plan for ${typeName}.${fieldName}`)
+				console.log(`[@stonecrop/graphql-middleware] Building plan for ${typeName}.${fieldName}`)
 			}
 
 			const start = logTiming ? Date.now() : 0
@@ -45,7 +45,9 @@ export const createDebugPlugin = (options: DebugPluginOptions = {}): GraphileCon
 
 			if (logTiming) {
 				// eslint-disable-next-line no-console
-				console.log(`[StonecropDebug] Plan built for ${typeName}.${fieldName} in ${Date.now() - start}ms`)
+				console.log(
+					`[@stonecrop/graphql-middleware] Plan built for ${typeName}.${fieldName} in ${Date.now() - start}ms`
+				)
 			}
 
 			return $result

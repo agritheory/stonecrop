@@ -365,7 +365,7 @@ export interface StonecropPluginOptions {
 
 | Property | Type | Description |
 |----------|------|-------------|
-| debug? | `boolean` | When `true`, SQL queries executed inside `loadOneWithPgClient` callbacks are logged to `console.log` with `[StonecropSQL]` prefix. Defaults to `false`. |
+| debug? | `boolean` | When `true`, SQL queries executed inside `loadOneWithPgClient` callbacks are logged to `console.log` with `[@stonecrop/graphql-middleware]` prefix. Defaults to `false`. |
 | pkField? | `string` | Primary key column name used in all `stonecropRecord` lookups and linked-record fetches. Defaults to `'id'`. |
 
 ## Type Aliases

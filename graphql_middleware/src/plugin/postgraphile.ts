@@ -23,7 +23,7 @@ export interface StonecropPluginOptions {
 	pkField?: string
 	/**
 	 * When `true`, SQL queries executed inside `loadOneWithPgClient` callbacks
-	 * are logged to `console.log` with `[StonecropSQL]` prefix. Defaults to `false`.
+	 * are logged to `console.log` with `[@stonecrop/graphql-middleware]` prefix. Defaults to `false`.
 	 */
 	debug?: boolean
 }
@@ -49,7 +49,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 	const debugSql = options.debug
 		? <T>(pgClient: PgClient, query: { text: string; values?: unknown[] }) => {
 				// eslint-disable-next-line no-console
-				console.log(`[StonecropSQL] ${query.text}`, query.values ?? [])
+				console.log(`[@stonecrop/graphql-middleware] ${query.text}`, query.values ?? [])
 				return pgClient.query<T>(query)
 			}
 		: <T>(pgClient: PgClient, query: { text: string; values?: unknown[] }) => pgClient.query<T>(query)

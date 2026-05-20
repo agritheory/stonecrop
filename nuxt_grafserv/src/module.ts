@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { join } from 'node:path'
-import { createResolver, defineNuxtModule, useLogger } from '@nuxt/kit'
+import { addServerHandler, createResolver, defineNuxtModule, useLogger } from '@nuxt/kit'
 import type { NuxtModule } from '@nuxt/schema'
 
 import type { ModuleOptions, PostGraphileConfig, SchemaConfig } from './types'
@@ -114,70 +114,71 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
 								'Set DATABASE_URL or provide an explicit preset file.'
 						)
 					}
-					const fieldCasing = options.fieldCasing || 'camel'
-					const schemas = JSON.stringify(options.schemas || ['public'])
-					const explain = options.debug ? true : (options.explain ?? false)
-					const debug = options.debug ?? false
-
 					logger.info('Synthesizing PostGraphile preset from DATABASE_URL')
 
-					const pglLines = [
-						`import { postgraphile } from 'postgraphile'`,
-						debug
-							? `import { createStonecropPreset, makePgService, createStonecropPlugin, createDebugPlugin } from '@stonecrop/graphql-middleware'`
-							: `import { createStonecropPreset, makePgService, createStonecropPlugin } from '@stonecrop/graphql-middleware'`,
-						``,
-						`const synthesizedPreset = {`,
-						`  extends: [createStonecropPreset({ fieldCasing: '${fieldCasing}' })],`,
-						`  pgServices: [makePgService({ connectionString: process.env.DATABASE_URL, schemas: ${schemas} })],`,
-						`  plugins: [createStonecropPlugin({ debug: ${debug} })${debug ? ', createDebugPlugin()' : ''}],`,
-						`  grafast: { explain: ${explain} },`,
-					]
+					const explain = options.debug ? true : (options.explain ?? false)
+					const debug = options.debug ?? false
+					const fieldCasing = options.fieldCasing || 'camel'
+					const schemas = JSON.stringify(options.schemas || ['public'])
 
-					if (debug) {
-						pglLines.push(
-							`  grafserv: {`,
-							`    maskError(error) {`,
-							`      console.error('maskError was called with the following error:');`,
-							`      console.error(error);`,
-							`      console.error('which had an originalError of:');`,
-							`      console.error(error.originalError);`,
-							`      const { GraphQLError } = require('postgraphile/graphql');`,
-							`      const { isSafeError } = require('postgraphile/grafast');`,
-							`      if (error.originalError instanceof GraphQLError) {`,
-							`        return error;`,
-							`      } else if (error.originalError && isSafeError(error.originalError)) {`,
-							`        return new GraphQLError(`,
-							`          error.originalError.message,`,
-							`          error.nodes,`,
-							`          error.source,`,
-							`          error.positions,`,
-							`          error.path,`,
-							`          error.originalError,`,
-							`          error.originalError.extensions ?? null,`,
-							`        );`,
-							`      } else {`,
-							`        const { createHash } = require('node:crypto');`,
-							`        const hash = createHash('sha1').update(String(error)).digest('base64url');`,
-							`        console.error(\`Masked GraphQL error (hash: '\${hash}')\`, error);`,
-							`        return new GraphQLError(`,
-							`          \`An error occurred (logged with hash: '\${hash}')\`,`,
-							`          error.nodes,`,
-							`          error.source,`,
-							`          error.positions,`,
-							`          error.path,`,
-							`          error.originalError,`,
-							`          {},`,
-							`        );`,
-							`      }`,
-							`    },`,
-							`  },`
-						)
-					}
+					const extraImports = debug ? `, createDebugPlugin` : ``
+					const pluginsList = debug
+						? `createStonecropPlugin({ debug: true }), createDebugPlugin()`
+						: `createStonecropPlugin({ debug: false })`
+					const grafservBlock = !debug
+						? ``
+						: `
+							grafserv: {
+								maskError(error) {
+									console.error('maskError was called with the following error:');
+									console.error(error);
+									console.error('which had an originalError of:');
+									console.error(error.originalError);
+									const { GraphQLError } = require('postgraphile/graphql');
+									const { isSafeError } = require('postgraphile/grafast');
+									if (error.originalError instanceof GraphQLError) {
+										return error;
+									} else if (error.originalError && isSafeError(error.originalError)) {
+										return new GraphQLError(
+											error.originalError.message,
+											error.nodes,
+											error.source,
+											error.positions,
+											error.path,
+											error.originalError,
+											error.originalError.extensions ?? null,
+										);
+									} else {
+										const { createHash } = require('node:crypto');
+										const hash = createHash('sha1').update(String(error)).digest('base64url');
+										console.error(\`Masked GraphQL error (hash: '\${hash}')\`, error);
+										return new GraphQLError(
+											\`An error occurred (logged with hash: '\${hash}')\`,
+											error.nodes,
+											error.source,
+											error.positions,
+											error.path,
+											error.originalError,
+											{},
+										);
+									}
+								},
+							},
+						`
 
-					pglLines.push(`}`, ``, `export const pgl = postgraphile(synthesizedPreset)`)
+					config.virtual['#internal/grafserv/pgl'] = `
+						import { postgraphile } from 'postgraphile'
+						import { createStonecropPreset, makePgService, createStonecropPlugin${extraImports} } from '@stonecrop/graphql-middleware'
 
-					config.virtual['#internal/grafserv/pgl'] = pglLines.join('\n')
+						const synthesizedPreset = {
+							extends: [createStonecropPreset({ fieldCasing: '${fieldCasing}' })],
+							pgServices: [makePgService({ connectionString: process.env.DATABASE_URL, schemas: ${schemas} })],
+							plugins: [${pluginsList}],
+							grafast: { explain: ${explain} },${grafservBlock}
+						}
+
+						export const pgl = postgraphile(synthesizedPreset)
+					`
 				} else {
 					// Resolve preset file path and try common extensions if needed
 					let presetPath = resolveForVirtualModule(options.preset)
@@ -290,19 +291,21 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
 
 			// Externalize Grafast and GraphQL to prevent module instance mismatch
 			// CRITICAL: graphql must be externalized to prevent duplicate module errors
-			config.externals = config.externals || {}
-			config.externals.external = config.externals.external || []
-			config.externals.external.push(
-				'graphql',
-				'grafast',
-				'postgraphile',
-				'graphile-config',
-				'graphile-build',
-				'@dataplan/pg',
-				'@graphql-tools/schema',
-				'@graphql-tools/load',
-				'@graphql-tools/graphql-file-loader'
-			)
+			config.externals = {
+				...config.externals,
+				external: [
+					...(config.externals?.external ?? []),
+					'graphql',
+					'grafast',
+					'postgraphile',
+					'graphile-config',
+					'graphile-build',
+					'@dataplan/pg',
+					'@graphql-tools/schema',
+					'@graphql-tools/load',
+					'@graphql-tools/graphql-file-loader',
+				],
+			}
 
 			// CRITICAL: Alias grafast to ensure resolver and handler use the same instance
 			// This prevents "Now is not a valid time to call currentLayerPlan" errors
@@ -319,28 +322,14 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
 			config.typescript.tsConfig.compilerOptions.moduleResolution = 'bundler'
 		})
 
-		// Set up Grafast handler
-		nuxt.hook('nitro:config', config => {
-			config.handlers = config.handlers || []
-
-			// Unified GraphQL and Ruru UI handler
-			config.handlers.push({
-				route: options.url || '/graphql/',
-				handler: resolve('./runtime/handler'),
-			})
-
-			// Ruru static assets handler
-			config.handlers.push({
-				route: '/ruru-static/**',
-				handler: resolve('./runtime/ruru-static'),
-			})
-
-			// Cache API endpoint
-			config.handlers.push({
-				route: '/graphql/cache',
-				handler: resolve('./runtime/cache'),
-			})
-		})
+		// Set up Grafast handlers
+		addServerHandler({ route: options.url || '/graphql/', handler: resolve('./runtime/handler') })
+		if (options.graphiql) {
+			addServerHandler({ route: '/ruru-static/**', handler: resolve('./runtime/ruru-static') })
+		}
+		if (nuxt.options.dev) {
+			addServerHandler({ route: '/graphql/cache', handler: resolve('./runtime/cache') })
+		}
 
 		// Add custom devtools tab
 		if (options.url) {
