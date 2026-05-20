@@ -1,9 +1,10 @@
 import { readFileSync } from 'node:fs'
+import type { AddressInfo } from 'node:net'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import type { AddressInfo } from 'node:net'
 import { PGlite } from '@electric-sql/pglite'
 import { createServer, LogLevel } from 'pglite-server'
+import type { TestProject } from 'vitest/node'
 
 declare module 'vitest' {
 	interface ProvidedContext {
@@ -13,7 +14,7 @@ declare module 'vitest' {
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
-export async function setup({ provide }: { provide: <K extends string>(key: K, value: unknown) => void }) {
+export async function setup(project: TestProject) {
 	const db = new PGlite()
 	await db.waitReady
 
@@ -24,7 +25,7 @@ export async function setup({ provide }: { provide: <K extends string>(key: K, v
 	await new Promise<void>(resolve => server.listen(0, () => resolve()))
 	const port = (server.address() as AddressInfo).port
 
-	provide<string>('testDatabaseUrl', `postgresql://localhost:${port}/postgres`)
+	project.provide('testDatabaseUrl', `postgresql://localhost:${port}/postgres`)
 
 	return async () => {
 		server.unref()
