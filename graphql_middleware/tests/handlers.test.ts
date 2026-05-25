@@ -12,7 +12,7 @@ const scalarOnlyMeta: DoctypeMeta = {
 	name: 'Resource',
 	tableName: 'resources',
 	fields: [
-		{ fieldname: 'id', fieldtype: 'Data', label: 'ID' },
+		{ fieldname: 'id', fieldtype: 'PrimaryKey', label: 'ID' },
 		{ fieldname: 'name', fieldtype: 'Data', label: 'Name' },
 		{ fieldname: 'quantity', fieldtype: 'Int', label: 'Quantity' },
 		{ fieldname: 'is_active', fieldtype: 'Check', label: 'Active' },

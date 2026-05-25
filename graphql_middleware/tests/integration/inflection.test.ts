@@ -28,7 +28,7 @@ beforeAll(async () => {
 			name: 'ScItem',
 			tableName: 'sc_item',
 			fields: [
-				{ fieldname: 'id', fieldtype: 'Data', label: 'ID' },
+				{ fieldname: 'id', fieldtype: 'PrimaryKey', label: 'ID' },
 				{ fieldname: 'name', fieldtype: 'Data', label: 'Name' },
 				{ fieldname: 'status', fieldtype: 'Data', label: 'Status' },
 			],
@@ -45,14 +45,14 @@ beforeAll(async () => {
 			name: 'ScTag',
 			tableName: 'sc_tag',
 			fields: [
-				{ fieldname: 'id', fieldtype: 'Data', label: 'ID' },
+				{ fieldname: 'id', fieldtype: 'PrimaryKey', label: 'ID' },
 				{ fieldname: 'label', fieldtype: 'Data', label: 'Label' },
 				{ fieldname: 'item_id', fieldtype: 'Data', label: 'Item ID' },
 			],
 		},
 	})
 
-	pool = new Pool({ connectionString: databaseUrl })
+	pool = new Pool({ connectionString: databaseUrl, max: 1 })
 
 	const pgService = makePgService({ connectionString: databaseUrl })
 	releasePgService = pgService.release

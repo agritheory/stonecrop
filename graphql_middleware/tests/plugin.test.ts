@@ -40,7 +40,7 @@ describe('stonecrop field plans', { tags: ['unit', 'graphql'] }, () => {
 				name: 'Resource',
 				tableName: 'resources',
 				fields: [
-					{ fieldname: 'id', fieldtype: 'Data', label: 'ID' },
+					{ fieldname: 'id', fieldtype: 'PrimaryKey', label: 'ID' },
 					{ fieldname: 'name', fieldtype: 'Data', label: 'Name' },
 				],
 			},

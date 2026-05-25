@@ -1,4 +1,5 @@
-import type { DoctypeMeta, GetRecordOptions } from '@stonecrop/schema'
+import type { DoctypeMeta, FieldMeta, GetRecordOptions } from '@stonecrop/schema'
+import { camelToSnake } from '@stonecrop/schema'
 import { loadOneWithPgClient, sideEffectWithPgClient } from '@dataplan/pg'
 import type { PgClient, PgExecutor } from '@dataplan/pg'
 import { constant, lambda, object } from 'postgraphile/grafast'
@@ -17,11 +18,6 @@ import type { ActionContext } from '../types'
  */
 export interface StonecropPluginOptions {
 	/**
-	 * Primary key column name used in all `stonecropRecord` lookups and linked-record fetches.
-	 * Defaults to `'id'`.
-	 */
-	pkField?: string
-	/**
 	 * When `true`, SQL queries executed inside `loadOneWithPgClient` callbacks
 	 * are logged to `console.log` with `[@stonecrop/graphql-middleware]` prefix. Defaults to `false`.
 	 */
@@ -39,8 +35,6 @@ export interface StonecropPluginOptions {
  * @public
  */
 export const createStonecropPlugin = (options: StonecropPluginOptions = {}): GraphileConfig.Plugin => {
-	const pkField = options.pkField ?? 'id'
-
 	/**
 	 * SQL debug helper — mirrors PostGraphile's `@dataplan/pg:PgExecutor` logging
 	 * for queries that run inside custom loadOneWithPgClient callbacks, which
@@ -105,16 +99,22 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 											continue
 										}
 
-										const columns = getSqlColumns(meta, pkField)
+										const pkMeta = getPkMeta(meta)
+										if (!pkMeta) {
+											for (const i of indices) results[i] = { data: null, doctype }
+											continue
+										}
+										const pkColumn = camelToSnake(pkMeta.fieldname)
+										const columns = getSqlColumns(meta)
 										const ids = indices.map(i => specs[i].id as string)
 
 										const { rows } = await debugSql<Record<string, unknown>>(pgClient, {
-											text: `SELECT ${columns} FROM "${meta.tableName}" WHERE "${pkField}"::text = ANY($1::text[])`,
+											text: `SELECT ${columns} FROM "${meta.tableName}" WHERE "${pkColumn}"::text = ANY($1::text[])`,
 											values: [ids],
 										})
 
 										// Use String() so integer PKs (e.g. serial) match the string ids from GraphQL
-										const rowByPk = new Map(rows.map(r => [String(r[pkField]), r]))
+										const rowByPk = new Map(rows.map(r => [String(r[pkMeta.fieldname]), r]))
 
 										for (const i of indices) {
 											const specId = specs[i].id as string
@@ -159,11 +159,12 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 													const targetMeta = getMeta(link.target)
 													if (!targetMeta?.tableName) continue
 
-													const targetColumns = getSqlColumns(targetMeta, pkField)
+													const targetColumns = getSqlColumns(targetMeta)
 
 													if (isMany) {
 														if (!link.backlink) continue
-														let sql = `SELECT ${targetColumns} FROM "${targetMeta.tableName}" WHERE "${link.backlink}"::text = $1`
+														const backlinkCol = camelToSnake(link.backlink)
+														let sql = `SELECT ${targetColumns} FROM "${targetMeta.tableName}" WHERE "${backlinkCol}"::text = $1`
 														const linkValues: unknown[] = [specId]
 														if (effectiveLimit != null) {
 															sql += ` LIMIT $2`
@@ -181,8 +182,11 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 															rowData[linkName] = null
 															continue
 														}
+														const targetPkMeta = getPkMeta(targetMeta)
+														if (!targetPkMeta) continue
+														const targetPkColumn = camelToSnake(targetPkMeta.fieldname)
 														const { rows: linked } = await debugSql<Record<string, unknown>>(pgClient, {
-															text: `SELECT ${targetColumns} FROM "${targetMeta.tableName}" WHERE "${pkField}" = $1`,
+															text: `SELECT ${targetColumns} FROM "${targetMeta.tableName}" WHERE "${targetPkColumn}" = $1`,
 															values: [fkValue],
 														})
 														rowData[linkName] = linked[0] ?? null
@@ -226,7 +230,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 											}
 
 											const knownFields = new Set(meta.fields.map(f => f.fieldname))
-											const columns = getSqlColumns(meta, pkField)
+											const columns = getSqlColumns(meta)
 											const values: unknown[] = []
 
 											// WHERE from filters (parameterised — safe against SQL injection)
@@ -237,7 +241,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 														throw new Error(`Unknown filter field: ${field} for doctype ${meta.name}`)
 													}
 													values.push(value)
-													whereClauses.push(`"${field}" = $${values.length}`)
+													whereClauses.push(`"${camelToSnake(field)}" = $${values.length}`)
 												}
 											}
 											const whereClause = whereClauses.length > 0 ? ` WHERE ${whereClauses.join(' AND ')}` : ''
@@ -258,7 +262,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 												if (!knownFields.has(fieldName)) {
 													throw new Error(`Unknown orderBy field: "${fieldName}" for doctype ${meta.name}`)
 												}
-												orderByClause = ` ORDER BY "${fieldName}" ${dir}`
+												orderByClause = ` ORDER BY "${camelToSnake(fieldName)}" ${dir}`
 											}
 
 											// LIMIT / OFFSET
@@ -286,7 +290,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 													for (const [field, value] of Object.entries(spec.filters as Record<string, unknown>)) {
 														if (!knownFields.has(field)) continue
 														countValues.push(value)
-														countWhere.push(`"${field}" = $${countValues.length}`)
+														countWhere.push(`"${camelToSnake(field)}" = $${countValues.length}`)
 													}
 												}
 												const countWhereClause = countWhere.length > 0 ? ` WHERE ${countWhere.join(' AND ')}` : ''
@@ -363,16 +367,19 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 }
 
 // ===========================================================================
-// SQL column helper — produces a quoted comma-separated column list for SELECT
+// SQL column helpers
 // ===========================================================================
 
 /**
  * Derive a quoted SQL column list from doctype field definitions.
+ * Applies camelToSnake to each fieldname to get the DB column name, then
+ * aliases it back to the fieldname so result rows carry API-layer keys.
  * Excludes Display fields (no backing DB column) and Link fields that have an
  * explicit `links` declaration (those are FK references, not scalar columns).
- * Always prepends the PK column when it is not already listed in `meta.fields`.
+ *
+ * TODO(schema-types Phase 4): add f.kind === 'field' narrowing when DoctypeField union lands
  */
-function getSqlColumns(meta: DoctypeMeta, pkField: string): string {
+function getSqlColumns(meta: DoctypeMeta): string {
 	const linkedFieldnames = new Set<string>()
 	if (meta.links) {
 		for (const [key, link] of Object.entries(meta.links)) {
@@ -381,16 +388,22 @@ function getSqlColumns(meta: DoctypeMeta, pkField: string): string {
 	}
 
 	const columns: string[] = []
-	const hasPk = meta.fields.some(f => f.fieldname === pkField)
-	if (!hasPk) {
-		columns.push(`"${pkField}"`)
-	}
-
 	for (const f of meta.fields) {
 		if (f.fieldtype === 'Display') continue
 		if (f.fieldtype === 'Link' && linkedFieldnames.has(f.fieldname)) continue
-		columns.push(`"${f.fieldname}"`)
+		const col = camelToSnake(f.fieldname)
+		columns.push(col !== f.fieldname ? `"${col}" AS "${f.fieldname}"` : `"${f.fieldname}"`)
 	}
 
 	return columns.join(', ')
+}
+
+/**
+ * Find the field declared with fieldtype 'PrimaryKey' in the doctype.
+ * Returns undefined when no PrimaryKey field is declared (PK-less doctypes).
+ *
+ * TODO(schema-types Phase 4): add f.kind === 'field' narrowing when DoctypeField union lands
+ */
+function getPkMeta(meta: DoctypeMeta): FieldMeta | undefined {
+	return meta.fields.find(f => f.fieldtype === 'PrimaryKey')
 }
