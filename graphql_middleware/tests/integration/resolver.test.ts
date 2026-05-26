@@ -27,9 +27,8 @@ beforeAll(async () => {
 	loadDoctypesFromObject({
 		ScItem: {
 			name: 'ScItem',
-			tableName: 'sc_item',
 			fields: [
-				{ fieldname: 'id', fieldtype: 'Data', label: 'ID' },
+				{ fieldname: 'id', fieldtype: 'PrimaryKey', label: 'ID' },
 				{ fieldname: 'name', fieldtype: 'Data', label: 'Name' },
 				{ fieldname: 'status', fieldtype: 'Data', label: 'Status' },
 			],
@@ -56,25 +55,23 @@ beforeAll(async () => {
 		},
 		ScTag: {
 			name: 'ScTag',
-			tableName: 'sc_tag',
 			fields: [
-				{ fieldname: 'id', fieldtype: 'Data', label: 'ID' },
+				{ fieldname: 'id', fieldtype: 'PrimaryKey', label: 'ID' },
 				{ fieldname: 'label', fieldtype: 'Data', label: 'Label' },
 				{ fieldname: 'item_id', fieldtype: 'Data', label: 'Item ID' },
 			],
 		},
 		ScNote: {
 			name: 'ScNote',
-			tableName: 'sc_note',
 			fields: [
-				{ fieldname: 'id', fieldtype: 'Data', label: 'ID' },
+				{ fieldname: 'id', fieldtype: 'PrimaryKey', label: 'ID' },
 				{ fieldname: 'body', fieldtype: 'Data', label: 'Body' },
 				{ fieldname: 'item_id', fieldtype: 'Data', label: 'Item ID' },
 			],
 		},
 	})
 
-	pool = new Pool({ connectionString: databaseUrl })
+	pool = new Pool({ connectionString: databaseUrl, max: 1 })
 
 	const pgService = makePgService({ connectionString: databaseUrl })
 	releasePgService = pgService.release
@@ -101,6 +98,7 @@ afterAll(async () => {
 async function runQuery(query: string, variables?: Record<string, unknown>): Promise<Record<string, unknown>> {
 	const client: PoolClient = await pool.connect()
 	await client.query('BEGIN')
+	let queryResult: Record<string, unknown> = {}
 	try {
 		const withPgClient = makeWithPgClientViaPgClientAlreadyInTransaction(client, true)
 		const args = await hookArgs({
@@ -114,14 +112,16 @@ async function runQuery(query: string, variables?: Record<string, unknown>): Pro
 		// Override the pool-based withPgClient with our in-transaction version so all
 		// SQL runs inside one rollback-able transaction.
 		args.contextValue.withPgClient = withPgClient
-		return (await execute(args)) as Record<string, unknown>
+		queryResult = (await execute(args)) as Record<string, unknown>
+		return queryResult
 	} finally {
 		try {
 			await client.query('ROLLBACK')
 		} catch {
 			// If ROLLBACK itself fails the connection is in an unknown state; discard it.
+			// Return the already-fetched result rather than losing it.
 			client.release(new Error('rollback failed'))
-			return {} as Record<string, unknown>
+			return queryResult
 		}
 		client.release()
 	}
@@ -271,10 +271,9 @@ describe('stonecropAction', { tags: ['integration', 'graphql'] }, () => {
 
 describe('stonecropMeta', { tags: ['integration', 'graphql'] }, () => {
 	it('returns doctype metadata', async () => {
-		const result = await runQuery(`query { stonecropMeta(doctype: "ScItem") { name tableName } }`)
+		const result = await runQuery(`query { stonecropMeta(doctype: "ScItem") { name slug } }`)
 		const meta = (result as any).data?.stonecropMeta
 		expect(meta?.name).toBe('ScItem')
-		expect(meta?.tableName).toBe('sc_item')
 	})
 
 	it('returns null for unknown doctype', async () => {

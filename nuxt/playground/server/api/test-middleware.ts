@@ -3,7 +3,6 @@ const sampleDoctypes: Record<string, any> = {
 	Users: {
 		name: 'Users',
 		slug: 'users',
-		tableName: 'users',
 		fields: [
 			{ fieldname: 'id', fieldtype: 'Data', component: 'ATextInput', label: 'Id' },
 			{ fieldname: 'username', fieldtype: 'Data', component: 'ATextInput', label: 'Username', required: true },
@@ -15,7 +14,6 @@ const sampleDoctypes: Record<string, any> = {
 	Roles: {
 		name: 'Roles',
 		slug: 'roles',
-		tableName: 'roles',
 		fields: [
 			{ fieldname: 'id', fieldtype: 'Data', component: 'ATextInput', label: 'Id' },
 			{ fieldname: 'roleName', fieldtype: 'Data', component: 'ATextInput', label: 'Role Name', required: true },
@@ -26,7 +24,6 @@ const sampleDoctypes: Record<string, any> = {
 	Tasks: {
 		name: 'Tasks',
 		slug: 'tasks',
-		tableName: 'tasks',
 		fields: [
 			{ fieldname: 'id', fieldtype: 'Data', component: 'ATextInput', label: 'Id' },
 			{ fieldname: 'title', fieldtype: 'Data', component: 'ATextInput', label: 'Title', required: true },

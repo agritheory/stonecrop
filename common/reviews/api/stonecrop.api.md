@@ -103,7 +103,6 @@ export class Doctype {
 export type DoctypeConfig = {
     name: string;
     slug?: string;
-    tableName?: string;
     fields?: (SchemaTypes | FieldMeta)[];
     links?: Record<string, LinkDeclaration>;
     workflow?: UnknownMachineConfig | WorkflowMeta;

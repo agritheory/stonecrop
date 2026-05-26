@@ -72,7 +72,7 @@ describe('RouteStrategyFn', { tags: ['unit', 'nuxt'] }, () => {
 	it('can filter doctypes (e.g., skip certain types)', () => {
 		const strategy: RouteStrategyFn = doctypes =>
 			doctypes
-				.filter(({ data }) => data.tableName !== 'order_items')
+				.filter(({ data }) => data.name !== 'Order Item')
 				.map(({ fileName, data, fields }) => ({
 					name: `stonecrop-${fileName}`,
 					path: `/${(data.slug as string) || fileName.toLowerCase()}`,
@@ -82,7 +82,7 @@ describe('RouteStrategyFn', { tags: ['unit', 'nuxt'] }, () => {
 
 		const pages = strategy([
 			doctype({ fileName: 'Order', data: { name: 'Order', slug: 'order' } }),
-			doctype({ fileName: 'OrderItem', data: { name: 'Order Item', tableName: 'order_items' } }),
+			doctype({ fileName: 'OrderItem', data: { name: 'Order Item', slug: 'order-item' } }),
 		])
 
 		expect(pages).toHaveLength(1)
@@ -102,7 +102,7 @@ describe('RouteStrategyFn', { tags: ['unit', 'nuxt'] }, () => {
 
 	it('passes schema fields and doctype data in meta', () => {
 		const fields = [{ fieldname: 'email', fieldtype: 'Data' }]
-		const data = { name: 'User', slug: 'user', tableName: 'tabUser' }
+		const data = { name: 'User', slug: 'user' }
 
 		const strategy: RouteStrategyFn = doctypes =>
 			doctypes.map(({ fileName, data, fields }) => ({
@@ -151,10 +151,10 @@ describe('ParsedDoctype', { tags: ['unit', 'nuxt'] }, () => {
 	it('supports arbitrary data properties', () => {
 		const dt: ParsedDoctype = {
 			fileName: 'Task',
-			data: { name: 'Task', slug: 'task', tableName: 'tabTask' },
+			data: { name: 'Task', slug: 'task', customProperty: 'customValue' },
 			fields: [],
 		}
 
-		expect(dt.data.tableName).toBe('tabTask')
+		expect(dt.data.customProperty).toBe('customValue')
 	})
 })

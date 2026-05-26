@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/schema",
+      "comment": "add PrimaryKey fieldtype",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/schema"
+}

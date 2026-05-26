@@ -50,7 +50,6 @@ function formatDoctypeMeta(meta: DoctypeMeta) {
 	return {
 		name: meta.name,
 		slug: meta.slug ?? null,
-		tableName: meta.tableName ?? null,
 		fields: meta.fields.map(formatFieldMeta),
 		workflow: meta.workflow
 			? {

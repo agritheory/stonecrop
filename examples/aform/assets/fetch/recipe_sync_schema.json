@@ -1,7 +1,6 @@
 {
 	"name": "Recipe",
 	"slug": "recipe",
-	"tableName": "recipe",
 	"fields": [
 		{
 			"fieldname": "name",

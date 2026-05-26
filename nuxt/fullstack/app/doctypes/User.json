@@ -1,7 +1,6 @@
 {
 	"name": "User",
 	"slug": "user",
-	"tableName": "users",
 	"fields": [
 		{
 			"fieldname": "id",

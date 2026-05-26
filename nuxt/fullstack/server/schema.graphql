@@ -58,7 +58,6 @@ Complete doctype metadata
 type DoctypeMeta {
 	name: String!
 	slug: String
-	tableName: String
 	fields: [FieldMeta!]!
 	workflow: WorkflowMeta
 	inherits: String

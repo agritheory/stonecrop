@@ -30,3 +30,25 @@ INSERT INTO sc_note (body, item_id) VALUES
 	('First note', 1),
 	('Second note', 1),
 	('Third note', 2);
+
+-- camelCase fieldname fixtures (for column aliasing + backlink camelToSnake tests)
+CREATE TABLE sc_camel_item (
+	item_id serial PRIMARY KEY,
+	display_name text NOT NULL,
+	item_status text NOT NULL DEFAULT 'Draft'
+);
+
+CREATE TABLE sc_camel_tag (
+	tag_id serial PRIMARY KEY,
+	tag_label text NOT NULL,
+	camel_item_id integer REFERENCES sc_camel_item(item_id) ON DELETE CASCADE
+);
+
+INSERT INTO sc_camel_item (display_name, item_status) VALUES
+	('Alpha', 'Draft'),
+	('Beta', 'Active');
+
+INSERT INTO sc_camel_tag (tag_label, camel_item_id) VALUES
+	('urgent', 1),
+	('review', 1),
+	('approved', 2);
