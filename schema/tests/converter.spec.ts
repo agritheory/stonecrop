@@ -394,17 +394,17 @@ describe('classifyFieldType', { tags: ['unit'] }, () => {
 describe('classifyFieldType — foreign key (ID → Link)', { tags: ['unit'] }, () => {
 	it('should classify ID field as Link when a matching entity type exists', () => {
 		const sdl = `
-            type Query { task: RecipeTask }
-            type RecipeTask {
-                id: ID!
-                recipe: ID
-                name: String!
-            }
-            type Recipe {
-                id: ID!
-                title: String!
-            }
-        `
+			type Query { task: RecipeTask }
+			type RecipeTask {
+				id: ID!
+				recipe: ID
+				name: String!
+			}
+			type Recipe {
+				id: ID!
+				title: String!
+			}
+		`
 		const schema = buildSchema(sdl)
 		const recipeTaskType = schema.getType('RecipeTask') as any
 		const fields = recipeTaskType.getFields()
@@ -418,9 +418,9 @@ describe('classifyFieldType — foreign key (ID → Link)', { tags: ['unit'] }, 
 
 	it('should leave ID field as Data when no matching entity type exists', () => {
 		const schema = buildSchema(`
-            type Query { user: User }
-            type User { id: ID! name: String! }
-        `)
+			type Query { user: User }
+			type User { id: ID! name: String! }
+		`)
 		const userType = schema.getType('User') as any
 		const fields = userType.getFields()
 
@@ -430,17 +430,17 @@ describe('classifyFieldType — foreign key (ID → Link)', { tags: ['unit'] }, 
 
 	it('should work end-to-end via convertGraphQLSchema', () => {
 		const sdl = `
-            type Query { task: RecipeTask }
-            type RecipeTask {
-                id: ID!
-                recipe: ID
-                name: String!
-            }
-            type Recipe {
-                id: ID!
-                title: String!
-            }
-        `
+			type Query { task: RecipeTask }
+			type RecipeTask {
+				id: ID!
+				recipe: ID
+				name: String!
+			}
+			type Recipe {
+				id: ID!
+				title: String!
+			}
+		`
 		const doctypes = convertGraphQLSchema(sdl)
 		const recipeTask = doctypes.find(d => d.name === 'RecipeTask')!
 		const recipeField = recipeTask.fields.find(f => f.fieldname === 'recipe')!
