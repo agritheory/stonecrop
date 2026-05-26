@@ -93,7 +93,6 @@ export class StonecropClient implements DataClient {
 				stonecropMeta(doctype: $doctype) {
 					name
 					slug
-					tableName
 					fields {
 						fieldname
 						fieldtype
@@ -148,7 +147,6 @@ export class StonecropClient implements DataClient {
 				stonecropAllMeta {
 					name
 					slug
-					tableName
 					fields {
 						fieldname
 						fieldtype

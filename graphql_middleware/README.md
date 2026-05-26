@@ -93,7 +93,6 @@ Each doctype JSON file defines structure, relationships, and workflow:
 ```json
 {
   "name": "SalesOrder",
-  "tableName": "sales_orders",
   "fields": [
     { "fieldname": "id", "fieldtype": "Data" },
     { "fieldname": "status", "fieldtype": "Select" }

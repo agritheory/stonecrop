@@ -1,7 +1,6 @@
 {
 	"name": "RecipeTask",
 	"slug": "recipe-task",
-	"tableName": "recipe_task",
 	"fields": [
 		{
 			"fieldname": "name",

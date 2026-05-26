@@ -578,7 +578,6 @@ Options for converting a GraphQL schema to Stonecrop doctype schemas. All hooks 
 export interface GraphQLConversionOptions {
   classifyField?: (fieldName: string, field: GraphQLField<unknown, unknown>, parentType: GraphQLObjectType) => Partial<FieldMeta> | null;
   customScalars?: Record<string, Partial<FieldTemplate>>;
-  deriveTableName?: (typeName: string) => string | undefined;
   exclude?: string[];
   include?: string[];
   includeUnmappedMeta?: boolean;
@@ -594,7 +593,6 @@ export interface GraphQLConversionOptions {
 |----------|------|-------------|
 | classifyField? | `(fieldName: string, field: GraphQLField<unknown, unknown>, parentType: GraphQLObjectType) => Partial<FieldMeta> \| null` | Escape hatch: fully override the classification of a specific field. When this returns a non-null value, it is used as the field definition (merged with the field name). Return `null` to fall through to default classification. |
 | customScalars? | `Record<string, Partial<FieldTemplate>>` | Map custom or non-standard GraphQL scalar types to Stonecrop field types. Merged with the built-in scalar maps (GQL_SCALAR_MAP + WELL_KNOWN_SCALARS). User-provided entries take highest precedence. |
-| deriveTableName? | `(typeName: string) => string \| undefined` | Custom function to derive the database table name from a GraphQL type name. The default converts PascalCase to snake_case (e.g., `SalesOrder` → `sales_order`). Return `undefined` to omit `tableName` from the output. |
 | exclude? | `string[]` | GraphQL type names to exclude from conversion. Applied after `isEntityType` filtering. |
 | include? | `string[]` | Whitelist of GraphQL type names to convert. When provided, only these types are considered (after `isEntityType` filtering). |
 | includeUnmappedMeta? | `boolean` | Include `_graphqlType` and `_unmapped` metadata on converted fields. Useful for debugging conversions. Defaults to `false`. |
@@ -865,7 +863,6 @@ Doctype metadata - complete definition of a doctype
 export const DoctypeMeta: z.ZodObject<{
     name: z.ZodString;
     slug: z.ZodOptional<z.ZodString>;
-    tableName: z.ZodOptional<z.ZodString>;
     fields: z.ZodArray<z.ZodObject<{
         fieldname: z.ZodString;
         fieldtype: z.ZodString;

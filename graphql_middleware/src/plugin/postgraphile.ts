@@ -1,5 +1,5 @@
 import type { DoctypeMeta, FieldMeta, GetRecordOptions } from '@stonecrop/schema'
-import { camelToSnake } from '@stonecrop/schema'
+import { camelToSnake, pascalToSnake } from '@stonecrop/schema'
 import { loadOneWithPgClient, sideEffectWithPgClient } from '@dataplan/pg'
 import type { PgClient, PgExecutor } from '@dataplan/pg'
 import { constant, lambda, object } from 'postgraphile/grafast'
@@ -22,6 +22,13 @@ export interface StonecropPluginOptions {
 	 * are logged to `console.log` with `[@stonecrop/graphql-middleware]` prefix. Defaults to `false`.
 	 */
 	debug?: boolean
+	/**
+	 * Override the PostgreSQL FROM clause target for specific doctypes, keyed by doctype name.
+	 * Values may be a bare table name (`'plan'`) or a schema-qualified name (`'orpin.plan'`).
+	 * SQL fragments and subqueries are not supported.
+	 * When absent for a doctype, the table name is derived as `camelToSnake(doctype.name)`.
+	 */
+	tables?: Record<string, string>
 }
 
 /**
@@ -94,7 +101,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 
 									for (const [doctype, indices] of byDoctype) {
 										const meta = getMeta(doctype)
-										if (!meta?.tableName) {
+										if (!meta) {
 											for (const i of indices) results[i] = { data: null, doctype }
 											continue
 										}
@@ -109,7 +116,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 										const ids = indices.map(i => specs[i].id as string)
 
 										const { rows } = await debugSql<Record<string, unknown>>(pgClient, {
-											text: `SELECT ${columns} FROM "${meta.tableName}" WHERE "${pkColumn}"::text = ANY($1::text[])`,
+											text: `SELECT ${columns} FROM ${resolveTableName(meta.name, options.tables)} WHERE "${pkColumn}"::text = ANY($1::text[])`,
 											values: [ids],
 										})
 
@@ -157,14 +164,14 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 													if (effectiveMethod !== 'sync' && !includeSet?.has(linkName)) continue
 
 													const targetMeta = getMeta(link.target)
-													if (!targetMeta?.tableName) continue
+													if (!targetMeta) continue
 
 													const targetColumns = getSqlColumns(targetMeta)
 
 													if (isMany) {
 														if (!link.backlink) continue
 														const backlinkCol = camelToSnake(link.backlink)
-														let sql = `SELECT ${targetColumns} FROM "${targetMeta.tableName}" WHERE "${backlinkCol}"::text = $1`
+														let sql = `SELECT ${targetColumns} FROM ${resolveTableName(targetMeta.name, options.tables)} WHERE "${backlinkCol}"::text = $1`
 														const linkValues: unknown[] = [specId]
 														if (effectiveLimit != null) {
 															sql += ` LIMIT $2`
@@ -186,7 +193,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 														if (!targetPkMeta) continue
 														const targetPkColumn = camelToSnake(targetPkMeta.fieldname)
 														const { rows: linked } = await debugSql<Record<string, unknown>>(pgClient, {
-															text: `SELECT ${targetColumns} FROM "${targetMeta.tableName}" WHERE "${targetPkColumn}" = $1`,
+															text: `SELECT ${targetColumns} FROM ${resolveTableName(targetMeta.name, options.tables)} WHERE "${targetPkColumn}" = $1`,
 															values: [fkValue],
 														})
 														rowData[linkName] = linked[0] ?? null
@@ -225,7 +232,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 									return await Promise.all(
 										specs.map(async spec => {
 											const meta = getMeta(spec.doctype as string)
-											if (!meta?.tableName) {
+											if (!meta) {
 												return { data: [], doctype: spec.doctype as string, count: 0 }
 											}
 
@@ -277,7 +284,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 											}
 
 											const { rows } = await debugSql<Record<string, unknown>>(pgClient, {
-												text: `SELECT ${columns} FROM "${meta.tableName}"${whereClause}${orderByClause}${pagingClause}`,
+												text: `SELECT ${columns} FROM ${resolveTableName(meta.name, options.tables)}${whereClause}${orderByClause}${pagingClause}`,
 												values,
 											})
 
@@ -295,7 +302,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 												}
 												const countWhereClause = countWhere.length > 0 ? ` WHERE ${countWhere.join(' AND ')}` : ''
 												const { rows: countRows } = await debugSql<{ __count: string }>(pgClient, {
-													text: `SELECT COUNT(*) AS __count FROM "${meta.tableName}"${countWhereClause}`,
+													text: `SELECT COUNT(*) AS __count FROM ${resolveTableName(meta.name, options.tables)}${countWhereClause}`,
 													values: countValues,
 												})
 												count = parseInt(countRows[0]?.__count ?? '0', 10)
@@ -406,4 +413,19 @@ function getSqlColumns(meta: DoctypeMeta): string {
  */
 function getPkMeta(meta: DoctypeMeta): FieldMeta | undefined {
 	return meta.fields.find(f => f.fieldtype === 'PrimaryKey')
+}
+
+/**
+ * Resolve the PostgreSQL FROM clause target for a doctype.
+ * Uses the `tables` override map first; falls back to camelToSnake(name).
+ * Schema-qualified names (e.g. "orpin.plan") are emitted as "schema"."table".
+ * Values must be bare identifiers or schema.table pairs — not SQL fragments.
+ */
+function resolveTableName(name: string, tables?: Record<string, string>): string {
+	const target = tables?.[name] ?? pascalToSnake(name)
+	const dotIndex = target.indexOf('.')
+	if (dotIndex > 0) {
+		return `"${target.slice(0, dotIndex)}"."${target.slice(dotIndex + 1)}"`
+	}
+	return `"${target}"`
 }

@@ -17,12 +17,11 @@ let resolvedPreset: GraphileConfig.ResolvedPreset
 let releasePgService: (() => void | PromiseLike<void>) | undefined
 
 beforeAll(async () => {
-	const databaseUrl = inject('testDatabaseUrl')
+	const databaseUrl = inject('camelTestDatabaseUrl')
 
 	loadDoctypesFromObject({
 		ScCamelItem: {
 			name: 'ScCamelItem',
-			tableName: 'sc_camel_item',
 			fields: [
 				{ fieldname: 'itemId', fieldtype: 'PrimaryKey', label: 'Item ID' },
 				{ fieldname: 'displayName', fieldtype: 'Data', label: 'Display Name' },
@@ -39,7 +38,6 @@ beforeAll(async () => {
 		},
 		ScCamelTag: {
 			name: 'ScCamelTag',
-			tableName: 'sc_camel_tag',
 			fields: [
 				{ fieldname: 'tagId', fieldtype: 'PrimaryKey', label: 'Tag ID' },
 				{ fieldname: 'tagLabel', fieldtype: 'Data', label: 'Tag Label' },
@@ -49,7 +47,6 @@ beforeAll(async () => {
 		// Doctype with no PrimaryKey field declared — stonecropRecord must return null
 		ScNoPk: {
 			name: 'ScNoPk',
-			tableName: 'sc_note',
 			fields: [
 				{ fieldname: 'body', fieldtype: 'Data', label: 'Body' },
 				{ fieldname: 'item_id', fieldtype: 'Data', label: 'Item ID' },
@@ -62,7 +59,7 @@ beforeAll(async () => {
 	releasePgService = pgService.release
 	const result = await makeSchema({
 		extends: [PostGraphileAmberPreset],
-		plugins: [createStonecropPlugin()],
+		plugins: [createStonecropPlugin({ tables: { ScNoPk: 'sc_note' } })],
 		pgServices: [pgService],
 	})
 	schema = result.schema
@@ -78,6 +75,7 @@ afterAll(async () => {
 async function runQuery(query: string, variables?: Record<string, unknown>): Promise<Record<string, unknown>> {
 	const client: PoolClient = await pool.connect()
 	await client.query('BEGIN')
+	let queryResult: Record<string, unknown> = {}
 	try {
 		const withPgClient = makeWithPgClientViaPgClientAlreadyInTransaction(client, true)
 		const args = await hookArgs({
@@ -89,13 +87,14 @@ async function runQuery(query: string, variables?: Record<string, unknown>): Pro
 			requestContext: {},
 		})
 		args.contextValue.withPgClient = withPgClient
-		return (await execute(args)) as Record<string, unknown>
+		queryResult = (await execute(args)) as Record<string, unknown>
+		return queryResult
 	} finally {
 		try {
 			await client.query('ROLLBACK')
 		} catch {
 			client.release(new Error('rollback failed'))
-			return {} as Record<string, unknown>
+			return queryResult
 		}
 		client.release()
 	}

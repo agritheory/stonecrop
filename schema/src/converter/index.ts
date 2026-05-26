@@ -92,7 +92,6 @@ export function convertGraphQLSchema(
 
 	// Phase 3: Convert each entity type to a doctype
 	const isEntityField = options.isEntityField ?? defaultIsEntityField
-	const deriveTableName = options.deriveTableName ?? ((typeName: string) => pascalToSnake(typeName))
 
 	const doctypes: ConvertedGraphQLDoctype[] = []
 
@@ -162,11 +161,6 @@ export function convertGraphQLSchema(
 
 		if (Object.keys(links).length > 0) {
 			doctype.links = links
-		}
-
-		const tableName = deriveTableName(typeName)
-		if (tableName) {
-			doctype.tableName = tableName
 		}
 
 		if (options.includeUnmappedMeta) {

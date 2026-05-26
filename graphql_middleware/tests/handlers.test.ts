@@ -10,7 +10,6 @@ import type { ActionHandler } from '../src/types'
 
 const scalarOnlyMeta: DoctypeMeta = {
 	name: 'Resource',
-	tableName: 'resources',
 	fields: [
 		{ fieldname: 'id', fieldtype: 'PrimaryKey', label: 'ID' },
 		{ fieldname: 'name', fieldtype: 'Data', label: 'Name' },

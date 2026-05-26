@@ -124,7 +124,6 @@ export interface DoctypeContext {
 export const DoctypeMeta: z.ZodObject<{
     name: z.ZodString;
     slug: z.ZodOptional<z.ZodString>;
-    tableName: z.ZodOptional<z.ZodString>;
     fields: z.ZodArray<z.ZodObject<{
         fieldname: z.ZodString;
         fieldtype: z.ZodString;
@@ -307,7 +306,6 @@ export interface GraphQLConversionFieldMeta extends FieldMeta {
 export interface GraphQLConversionOptions {
     classifyField?: (fieldName: string, field: GraphQLField<unknown, unknown>, parentType: GraphQLObjectType) => Partial<FieldMeta> | null;
     customScalars?: Record<string, Partial<FieldTemplate>>;
-    deriveTableName?: (typeName: string) => string | undefined;
     exclude?: string[];
     include?: string[];
     includeUnmappedMeta?: boolean;

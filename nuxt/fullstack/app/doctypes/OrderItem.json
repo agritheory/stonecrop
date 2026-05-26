@@ -1,7 +1,6 @@
 {
 	"name": "Order Item",
 	"slug": "order-item",
-	"tableName": "order_items",
 	"fields": [
 		{
 			"fieldname": "id",

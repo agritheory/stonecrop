@@ -112,6 +112,7 @@ export function registerHandler(name: string, handler: ActionHandler): void;
 // @public
 export interface StonecropPluginOptions {
     debug?: boolean;
+    tables?: Record<string, string>;
 }
 
 // @public

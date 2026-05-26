@@ -30,12 +30,11 @@ export function useDoctypeConfig(slug: string): DoctypeConfig | undefined {
 	return config
 }
 
-export function useDoctypeList(): Array<{ slug: string; name: string; tableName: string }> {
+export function useDoctypeList(): Array<{ slug: string; name: string }> {
 	return Array.from(doctypeMap.entries())
 		.map(([slug, dt]) => ({
 			slug,
 			name: dt.name,
-			tableName: dt.tableName || '',
 		}))
 		.sort((a, b) => a.name.localeCompare(b.name))
 }

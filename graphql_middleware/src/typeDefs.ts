@@ -43,7 +43,6 @@ export const typeDefs = gql`
 	type StonecropDoctypeMeta {
 		name: String!
 		slug: String
-		tableName: String
 		fields: [StonecropFieldMeta!]!
 		workflow: StonecropWorkflowMeta
 		inherits: String

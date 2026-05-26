@@ -146,7 +146,6 @@ describe('Doctype Validation', { tags: ['unit'] }, () => {
 			const doctype = {
 				name: 'User',
 				slug: 'user',
-				tableName: 'users',
 				fields: [
 					{ fieldname: 'id', fieldtype: 'Data' },
 					{ fieldname: 'name', fieldtype: 'Data' },

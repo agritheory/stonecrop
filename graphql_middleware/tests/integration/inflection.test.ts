@@ -21,12 +21,11 @@ let resolvedPreset: GraphileConfig.ResolvedPreset
 let releasePgService: (() => void | PromiseLike<void>) | undefined
 
 beforeAll(async () => {
-	const databaseUrl = inject('testDatabaseUrl')
+	const databaseUrl = inject('inflectionTestDatabaseUrl')
 
 	loadDoctypesFromObject({
 		ScItem: {
 			name: 'ScItem',
-			tableName: 'sc_item',
 			fields: [
 				{ fieldname: 'id', fieldtype: 'PrimaryKey', label: 'ID' },
 				{ fieldname: 'name', fieldtype: 'Data', label: 'Name' },
@@ -43,7 +42,6 @@ beforeAll(async () => {
 		},
 		ScTag: {
 			name: 'ScTag',
-			tableName: 'sc_tag',
 			fields: [
 				{ fieldname: 'id', fieldtype: 'PrimaryKey', label: 'ID' },
 				{ fieldname: 'label', fieldtype: 'Data', label: 'Label' },
@@ -78,6 +76,7 @@ afterAll(async () => {
 async function runQuery(query: string, variables?: Record<string, unknown>): Promise<Record<string, unknown>> {
 	const client: PoolClient = await pool.connect()
 	await client.query('BEGIN')
+	let queryResult: Record<string, unknown> = {}
 	try {
 		const withPgClient = makeWithPgClientViaPgClientAlreadyInTransaction(client, true)
 		const args = await hookArgs({
@@ -89,13 +88,14 @@ async function runQuery(query: string, variables?: Record<string, unknown>): Pro
 			requestContext: {},
 		})
 		args.contextValue.withPgClient = withPgClient
-		return (await execute(args)) as Record<string, unknown>
+		queryResult = (await execute(args)) as Record<string, unknown>
+		return queryResult
 	} finally {
 		try {
 			await client.query('ROLLBACK')
 		} catch {
 			client.release(new Error('rollback failed'))
-			return {} as Record<string, unknown>
+			return queryResult
 		}
 		client.release()
 	}

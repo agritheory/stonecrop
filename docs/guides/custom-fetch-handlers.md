@@ -73,7 +73,6 @@ In your doctype JSON:
 ```json
 {
   "name": "Order",
-  "tableName": "orders",
   "fields": [
     { "fieldname": "id", "fieldtype": "Data" },
     { "fieldname": "status", "fieldtype": "Select" }
