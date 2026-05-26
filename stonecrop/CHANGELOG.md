@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/stonecrop
 
-This log was last generated on Wed, 20 May 2026 11:08:30 GMT and should not be manually modified.
+This log was last generated on Tue, 26 May 2026 14:15:00 GMT and should not be manually modified.
+
+## 0.13.1
+Tue, 26 May 2026 14:15:00 GMT
+
+### Patches
+
+- remove tableName from schemas
 
 ## 0.13.0
 Wed, 20 May 2026 11:08:30 GMT
