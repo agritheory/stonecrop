@@ -391,6 +391,65 @@ describe('classifyFieldType', { tags: ['unit'] }, () => {
 	})
 })
 
+describe('classifyFieldType — foreign key (ID → Link)', { tags: ['unit'] }, () => {
+	it('should classify ID field as Link when a matching entity type exists', () => {
+		const sdl = `
+            type Query { task: RecipeTask }
+            type RecipeTask {
+                id: ID!
+                recipe: ID
+                name: String!
+            }
+            type Recipe {
+                id: ID!
+                title: String!
+            }
+        `
+		const schema = buildSchema(sdl)
+		const recipeTaskType = schema.getType('RecipeTask') as any
+		const fields = recipeTaskType.getFields()
+		const entityTypesWithRecipe = new Set(['RecipeTask', 'Recipe'])
+
+		const recipeField = classifyFieldType('recipe', fields.recipe, entityTypesWithRecipe)
+		expect(recipeField.fieldtype).toBe('Link')
+		expect(recipeField.component).toBe('ALink')
+		expect(recipeField.options).toBe('recipe')
+	})
+
+	it('should leave ID field as Data when no matching entity type exists', () => {
+		const schema = buildSchema(`
+            type Query { user: User }
+            type User { id: ID! name: String! }
+        `)
+		const userType = schema.getType('User') as any
+		const fields = userType.getFields()
+
+		const idField = classifyFieldType('id', fields.id, new Set(['User']))
+		expect(idField.fieldtype).toBe('Data')
+	})
+
+	it('should work end-to-end via convertGraphQLSchema', () => {
+		const sdl = `
+            type Query { task: RecipeTask }
+            type RecipeTask {
+                id: ID!
+                recipe: ID
+                name: String!
+            }
+            type Recipe {
+                id: ID!
+                title: String!
+            }
+        `
+		const doctypes = convertGraphQLSchema(sdl)
+		const recipeTask = doctypes.find(d => d.name === 'RecipeTask')!
+		const recipeField = recipeTask.fields.find(f => f.fieldname === 'recipe')!
+
+		expect(recipeField.fieldtype).toBe('Link')
+		expect(recipeField.options).toBe('recipe')
+	})
+})
+
 // ═══════════════════════════════════════════════════════════════
 // End-to-End Conversion
 // ═══════════════════════════════════════════════════════════════
