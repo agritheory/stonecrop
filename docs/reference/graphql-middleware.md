@@ -362,7 +362,7 @@ Options for creating a Stonecrop PostGraphile plugin.
 ```typescript
 export interface StonecropPluginOptions {
   debug?: boolean;
-  pkField?: string;
+  tables?: Record<string, string>;
 }
 ```
 
@@ -371,7 +371,7 @@ export interface StonecropPluginOptions {
 | Property | Type | Description |
 |----------|------|-------------|
 | debug? | `boolean` | When `true`, SQL queries executed inside `loadOneWithPgClient` callbacks are logged to `console.log` with `[@stonecrop/graphql-middleware]` prefix. Defaults to `false`. |
-| pkField? | `string` | Primary key column name used in all `stonecropRecord` lookups and linked-record fetches. Defaults to `'id'`. |
+| tables? | `Record<string, string>` | Override the PostgreSQL FROM clause target for specific doctypes, keyed by doctype name. Values may be a bare table name (`'plan'`) or a schema-qualified name (`'orpin.plan'`). SQL fragments and subqueries are not supported. When absent for a doctype, the table name is derived as `camelToSnake(doctype.name)`. |
 
 ## Type Aliases
 

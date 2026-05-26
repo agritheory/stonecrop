@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/nuxt",
+      "comment": "remove tableName from schemas",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/nuxt"
+}

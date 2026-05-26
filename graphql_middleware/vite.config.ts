@@ -23,6 +23,7 @@ export default defineConfig({
 	},
 	test: {
 		globals: true,
+		fileParallelism: false,
 		globalSetup: ['./tests/integration/globalSetup.ts'],
 		tags: [
 			{ name: 'unit', description: 'Pure logic test — no DOM, network, or framework runtime.' },

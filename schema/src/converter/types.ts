@@ -118,17 +118,6 @@ export interface GraphQLConversionOptions {
 	) => Partial<FieldMeta> | null
 
 	/**
-	 * Custom function to derive the database table name from a GraphQL type name.
-	 * The default converts PascalCase to snake_case (e.g., `SalesOrder` → `sales_order`).
-	 *
-	 * Return `undefined` to omit `tableName` from the output.
-	 *
-	 * @param typeName - The GraphQL type name
-	 * @returns The derived table name, or `undefined`
-	 */
-	deriveTableName?: (typeName: string) => string | undefined
-
-	/**
 	 * Include `_graphqlType` and `_unmapped` metadata on converted fields.
 	 * Useful for debugging conversions. Defaults to `false`.
 	 */

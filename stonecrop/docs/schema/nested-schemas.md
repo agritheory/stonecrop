@@ -33,7 +33,6 @@ Relationships are declared in the `links` object on `DoctypeMeta`. Link fields (
 {
   "name": "Customer",
   "slug": "customer",
-  "tableName": "customer",
   "fields": [
     { "fieldname": "customer_name", "fieldtype": "Data", "label": "Customer Name", "component": "ATextInput" },
     { "fieldname": "email", "fieldtype": "Data", "label": "Email", "component": "ATextInput" },
@@ -63,7 +62,6 @@ Relationships are declared in the `links` object on `DoctypeMeta`. Link fields (
 {
   "name": "Address",
   "slug": "address",
-  "tableName": "address",
   "fields": [
     { "fieldname": "street", "fieldtype": "Data", "label": "Street", "component": "ATextInput" },
     { "fieldname": "city", "fieldtype": "Data", "label": "City", "component": "ATextInput" },

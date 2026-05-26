@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+/* eslint-disable no-console */
+
 /**
  * Stonecrop Schema CLI
  *

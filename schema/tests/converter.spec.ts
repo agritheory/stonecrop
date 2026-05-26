@@ -428,15 +428,6 @@ describe('convertGraphQLSchema', { tags: ['unit'] }, () => {
 			expect(post.slug).toBe('post')
 		})
 
-		it('should derive table names', () => {
-			const doctypes = convertGraphQLSchema(basicSdl)
-			const user = doctypes.find(d => d.name === 'User')!
-			const post = doctypes.find(d => d.name === 'Post')!
-
-			expect(user.tableName).toBe('user')
-			expect(post.tableName).toBe('post')
-		})
-
 		it('should correctly classify fields on User', () => {
 			const doctypes = convertGraphQLSchema(basicSdl)
 			const user = doctypes.find(d => d.name === 'User')!
@@ -565,22 +556,6 @@ describe('convertGraphQLSchema', { tags: ['unit'] }, () => {
 			expect(emailField.label).toBe('Email Address')
 		})
 
-		it('should use custom deriveTableName', () => {
-			const doctypes = convertGraphQLSchema(basicSdl, {
-				deriveTableName: typeName => `app_${typeName.toLowerCase()}s`,
-			})
-			const user = doctypes.find(d => d.name === 'User')!
-			expect(user.tableName).toBe('app_users')
-		})
-
-		it('should omit tableName when deriveTableName returns undefined', () => {
-			const doctypes = convertGraphQLSchema(basicSdl, {
-				deriveTableName: () => undefined,
-			})
-			const user = doctypes.find(d => d.name === 'User')!
-			expect(user.tableName).toBeUndefined()
-		})
-
 		it('should include unmapped meta when requested', () => {
 			const doctypes = convertGraphQLSchema(basicSdl, {
 				includeUnmappedMeta: true,
@@ -631,7 +606,6 @@ describe('convertGraphQLSchema', { tags: ['unit'] }, () => {
 			expect(doctypes.length).toBe(1)
 			expect(doctypes[0].name).toBe('SalesOrder')
 			expect(doctypes[0].slug).toBe('sales-order')
-			expect(doctypes[0].tableName).toBe('sales_order')
 		})
 	})
 

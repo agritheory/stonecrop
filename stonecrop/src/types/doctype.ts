@@ -44,8 +44,6 @@ export type DoctypeConfig = {
 	name: string
 	/** URL-friendly slug (kebab-case) */
 	slug?: string
-	/** Database table name */
-	tableName?: string
 	/** Field definitions (including link fields with fieldtype: 'Link') */
 	fields?: (SchemaTypes | FieldMeta)[]
 	/** Relationship links to other doctypes */

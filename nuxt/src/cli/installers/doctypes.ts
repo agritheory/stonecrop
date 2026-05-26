@@ -84,7 +84,6 @@ function getInlineTemplate(filename: string): string {
 			{
 				name: 'Example',
 				slug: 'example/:id',
-				tableName: 'examples',
 				fields: [
 					{
 						fieldname: 'id',
@@ -155,7 +154,6 @@ function getInlineTemplate(filename: string): string {
 			{
 				name: 'Example',
 				slug: 'example',
-				tableName: 'examples',
 				schema: [
 					{
 						component: 'ATable',

@@ -34,7 +34,7 @@ function makeContext(doctype: DoctypeMetaType): ActionContext {
 	return { doctype, executor: mockExecutor }
 }
 
-const minimalDoctype: DoctypeMetaType = { name: 'Task', tableName: 'tasks', fields: [] }
+const minimalDoctype: DoctypeMetaType = { name: 'Task', fields: [] }
 
 // ===========================================================================
 // registry/actions.ts — handler registry
@@ -122,7 +122,6 @@ describe('noop handler', { tags: ['unit', 'graphql'] }, () => {
 describe('validateRequiredFields handler', { tags: ['unit', 'graphql'] }, () => {
 	const doctypeWithRequired: DoctypeMetaType = {
 		name: 'StrictTask',
-		tableName: 'strict_tasks',
 		fields: [
 			{ fieldname: 'title', fieldtype: 'Data', label: 'Title', required: true },
 			{ fieldname: 'status', fieldtype: 'Data', label: 'Status', required: true },
@@ -166,7 +165,6 @@ describe('validateRequiredFields handler', { tags: ['unit', 'graphql'] }, () => 
 	it('uses fieldname when label is absent', async () => {
 		const doctype: DoctypeMetaType = {
 			name: 'X',
-			tableName: 'x',
 			fields: [{ fieldname: 'ref_id', fieldtype: 'Data', required: true }],
 		}
 		await expect(builtinHandlers.validateRequiredFields([{}], makeContext(doctype))).rejects.toThrow('ref_id')
@@ -180,7 +178,6 @@ describe('validateRequiredFields handler', { tags: ['unit', 'graphql'] }, () => 
 describe('validateFieldTypes handler', { tags: ['unit', 'graphql'] }, () => {
 	const typedDoctype: DoctypeMetaType = {
 		name: 'Typed',
-		tableName: 'typed',
 		fields: [
 			{ fieldname: 'count', fieldtype: 'Int', label: 'Count' },
 			{ fieldname: 'amount', fieldtype: 'Float', label: 'Amount' },
@@ -321,7 +318,6 @@ describe('validateFieldTypes handler', { tags: ['unit', 'graphql'] }, () => {
 	it('unknown fieldtype passes without error', async () => {
 		const doctype: DoctypeMetaType = {
 			name: 'Unknown',
-			tableName: 'unknown',
 			fields: [{ fieldname: 'x', fieldtype: 'CustomType' as 'Data', label: 'X' }],
 		}
 		const result = await builtinHandlers.validateFieldTypes([{ x: 'anything' }], makeContext(doctype))

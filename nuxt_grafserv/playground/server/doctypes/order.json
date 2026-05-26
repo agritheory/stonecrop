@@ -1,6 +1,5 @@
 {
 	"name": "Order",
-	"tableName": "orders",
 	"fields": [
 		{
 			"fieldname": "id",

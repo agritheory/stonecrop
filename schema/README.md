@@ -94,7 +94,6 @@ import { DoctypeMeta } from '@stonecrop/schema'
 const doctype: DoctypeMeta = {
   name: 'Sales Order',
   slug: 'sales-order',
-  tableName: 'sales_order',
   fields: [
     {
       fieldname: 'customer',
@@ -389,7 +388,6 @@ const doctypes = convertSchema(ddl, options)
 
 doctypes.forEach(doctype => {
   console.log(`Doctype: ${doctype.name}`)
-  console.log(`Table: ${doctype.tableName}`)
   console.log(`Fields: ${doctype.fields.length}`)
 })
 ```

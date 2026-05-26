@@ -1,7 +1,6 @@
 {
 	"name": "Example",
 	"slug": "example/:id",
-	"tableName": "examples",
 	"fields": [
 		{
 			"fieldname": "id",

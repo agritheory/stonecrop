@@ -1,7 +1,6 @@
 {
 	"name": "RecipeBlock",
 	"slug": "recipe-block",
-	"tableName": "recipe",
 	"fields": [
 		{
 			"fieldname": "name",

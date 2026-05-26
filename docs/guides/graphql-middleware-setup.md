@@ -62,7 +62,6 @@ import { loadDoctypesFromObject } from '@stonecrop/graphql-middleware'
 
 loadDoctypesFromObject({
   Customer: {
-    tableName: 'customers',
     fields: [
       { fieldname: 'id', fieldtype: 'Data' },
       { fieldname: 'name', fieldtype: 'Data' },
