@@ -1,4 +1,4 @@
-import { FieldMeta } from './field'
+import { DoctypeFieldSchema } from './field'
 import { DoctypeMeta } from './doctype'
 
 /**
@@ -26,13 +26,13 @@ export interface ValidationResult {
 }
 
 /**
- * Validate a field definition
+ * Validate a field definition against the DoctypeField discriminated union
  * @param data - Data to validate
  * @returns Validation result
  * @public
  */
 export function validateField(data: unknown): ValidationResult {
-	const result = FieldMeta.safeParse(data)
+	const result = DoctypeFieldSchema.safeParse(data)
 
 	if (result.success) {
 		return { success: true, errors: [] }
@@ -72,12 +72,12 @@ export function validateDoctype(data: unknown): ValidationResult {
 /**
  * Parse and validate a field, throwing on failure
  * @param data - Data to parse
- * @returns Validated FieldMeta
+ * @returns Validated DoctypeField
  * @throws ZodError if validation fails
  * @public
  */
-export function parseField(data: unknown): FieldMeta {
-	return FieldMeta.parse(data)
+export function parseField(data: unknown): import('./field').DoctypeField {
+	return DoctypeFieldSchema.parse(data)
 }
 
 /**
@@ -92,5 +92,5 @@ export function parseDoctype(data: unknown): DoctypeMeta {
 }
 
 // Re-export types for convenience
-export type { FieldMeta } from './field'
+export type { DoctypeField, ValueField, FieldsetField, TableField } from './field'
 export type { DoctypeMeta } from './doctype'

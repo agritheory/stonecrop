@@ -1,5 +1,5 @@
 import type { SchemaTypes, TableSchema } from '@stonecrop/aform'
-import type { FieldMeta, LinkDeclaration } from '@stonecrop/schema'
+import type { ValueField, LinkDeclaration } from '@stonecrop/schema'
 import { Router } from 'vue-router'
 
 import Doctype from './doctype'
@@ -162,7 +162,7 @@ export default class Registry {
 				const link = linksByFieldname.get(field.fieldname)
 				if (!link) {
 					const doctype =
-						typeof (field as FieldMeta).options === 'string' ? ((field as FieldMeta).options as string) : undefined
+						typeof (field as ValueField).options === 'string' ? ((field as ValueField).options as string) : undefined
 
 					if (doctype === undefined) {
 						// eslint-disable-next-line no-console

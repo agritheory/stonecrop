@@ -11,7 +11,12 @@ import { buildClientSchema, buildSchema, isObjectType, type GraphQLSchema } from
 
 import type { LinkDeclaration } from '../doctype'
 import { toSlug } from '../naming'
-import type { IntrospectionSource, GraphQLConversionOptions, ConvertedGraphQLDoctype } from './types'
+import type {
+	IntrospectionSource,
+	GraphQLConversionOptions,
+	ConvertedGraphQLDoctype,
+	GraphQLConversionFieldMeta,
+} from './types'
 import { defaultIsEntityType, defaultIsEntityField, classifyFieldType } from './heuristics'
 
 /**
@@ -110,6 +115,7 @@ export function convertGraphQLSchema(
 					const custom = options.classifyField(fieldName, field, type)
 					if (custom !== null && custom !== undefined) {
 						return {
+							kind: 'field' as const,
 							fieldname: fieldName,
 							label: custom.label ?? fieldName,
 							component: custom.component ?? 'ATextInput',

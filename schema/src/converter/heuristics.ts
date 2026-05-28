@@ -221,6 +221,7 @@ export function classifyFieldType(
 	const scalarMap = buildScalarMap(options.customScalars)
 
 	const base: GraphQLConversionFieldMeta = {
+		kind: 'field',
 		fieldname: fieldName,
 		label: camelToLabel(fieldName),
 		component: 'ATextInput',

@@ -1,4 +1,4 @@
-import type { DoctypeMeta, FieldMeta, GetRecordOptions } from '@stonecrop/schema'
+import type { DoctypeMeta, ValueField, GetRecordOptions } from '@stonecrop/schema'
 import { camelToSnake, pascalToSnake } from '@stonecrop/schema'
 import { loadOneWithPgClient, sideEffectWithPgClient } from '@dataplan/pg'
 import type { PgClient, PgExecutor } from '@dataplan/pg'
@@ -396,6 +396,7 @@ function getSqlColumns(meta: DoctypeMeta): string {
 
 	const columns: string[] = []
 	for (const f of meta.fields) {
+		if (f.kind !== 'field') continue
 		if (f.fieldtype === 'Display') continue
 		if (f.fieldtype === 'Link' && linkedFieldnames.has(f.fieldname)) continue
 		const col = camelToSnake(f.fieldname)
@@ -408,11 +409,9 @@ function getSqlColumns(meta: DoctypeMeta): string {
 /**
  * Find the field declared with fieldtype 'PrimaryKey' in the doctype.
  * Returns undefined when no PrimaryKey field is declared (PK-less doctypes).
- *
- * TODO(schema-types Phase 4): add f.kind === 'field' narrowing when DoctypeField union lands
  */
-function getPkMeta(meta: DoctypeMeta): FieldMeta | undefined {
-	return meta.fields.find(f => f.fieldtype === 'PrimaryKey')
+function getPkMeta(meta: DoctypeMeta): ValueField | undefined {
+	return meta.fields.find((f): f is ValueField => f.kind === 'field' && f.fieldtype === 'PrimaryKey')
 }
 
 /**

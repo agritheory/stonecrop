@@ -940,7 +940,7 @@ Plain object representation of doctype configuration for serialization/API respo
 export type DoctypeConfig = {
     name: string;
     slug?: string;
-    fields?: (SchemaTypes | FieldMeta)[];
+    fields?: DoctypeField[];
     links?: Record<string, LinkDeclaration>;
     workflow?: UnknownMachineConfig | WorkflowMeta;
     actions?: Record<string, string[]>;
