@@ -1,3 +1,6 @@
+// Interaction mode
+export type { InteractionMode } from './mode'
+
 // Field types
 export {
 	StonecropFieldType,

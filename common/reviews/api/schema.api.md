@@ -315,6 +315,9 @@ export interface GraphQLConversionOptions {
 }
 
 // @public
+export type InteractionMode = 'edit' | 'read' | 'display';
+
+// @public
 export const INTERNAL_SCALARS: Set<string>;
 
 // @public
