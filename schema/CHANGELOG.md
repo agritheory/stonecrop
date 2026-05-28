@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/schema
 
-This log was last generated on Tue, 26 May 2026 14:15:00 GMT and should not be manually modified.
+This log was last generated on Thu, 28 May 2026 06:18:59 GMT and should not be manually modified.
+
+## 0.13.2
+Thu, 28 May 2026 06:18:59 GMT
+
+### Patches
+
+- update conversion tool to treat foreign key as Link field
 
 ## 0.13.1
 Tue, 26 May 2026 14:15:00 GMT

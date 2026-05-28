@@ -2,6 +2,18 @@
   "name": "@stonecrop/schema",
   "entries": [
     {
+      "version": "0.13.2",
+      "tag": "@stonecrop/schema_v0.13.2",
+      "date": "Thu, 28 May 2026 06:18:59 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "update conversion tool to treat foreign key as Link field"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.13.1",
       "tag": "@stonecrop/schema_v0.13.1",
       "date": "Tue, 26 May 2026 14:15:00 GMT",
