@@ -131,7 +131,7 @@ export { ToggleArrow }
 // @beta
 export const useMqttStream: (options: IMqttStream) => Promise<{
     messages: Ref<Record<string, string[]>, Record<string, string[]>>;
-} | undefined>;
+}>;
 
 // (No @packageDocumentation comment for this package)
 

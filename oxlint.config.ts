@@ -56,6 +56,8 @@ const config: OxlintConfig = {
 		// Vue plugin only lints <script>; demoted during migration.
 		'vue/return-in-computed-property': 'warn',
 		'import/no-cycle': ['error', { maxDepth: 3 }],
+		// CSS/asset side-effect imports are legitimate.
+		'import/no-unassigned-import': ['error', { allow: ['**/*.css', '**/*.scss', '**/*.sass'] }],
 	},
 	overrides: [
 		{
