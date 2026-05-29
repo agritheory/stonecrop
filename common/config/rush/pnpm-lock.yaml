@@ -31,9 +31,6 @@ importers:
         specifier: ^14.2.1
         version: 14.2.1(vue@3.5.33(typescript@6.0.3))
     devDependencies:
-      '@eslint/js':
-        specifier: ^10.0.1
-        version: 10.0.1(eslint@10.3.0(jiti@2.6.1))
       '@microsoft/api-documenter':
         specifier: ^7.30.5
         version: 7.30.5(@types/node@24.12.4)
@@ -55,21 +52,15 @@ importers:
       '@vue/test-utils':
         specifier: ^2.4.10
         version: 2.4.10(@vue/compiler-dom@3.5.33)(@vue/server-renderer@3.5.33(vue@3.5.33(typescript@6.0.3)))(vue@3.5.33(typescript@6.0.3))
-      eslint:
-        specifier: ^10.3.0
-        version: 10.3.0(jiti@2.6.1)
-      eslint-config-prettier:
-        specifier: ^10.1.8
-        version: 10.1.8(eslint@10.3.0(jiti@2.6.1))
-      eslint-plugin-vue:
-        specifier: ^10.9.0
-        version: 10.9.0(@stylistic/eslint-plugin@5.10.0(eslint@10.3.0(jiti@2.6.1)))(@typescript-eslint/parser@8.59.1(eslint@10.3.0(jiti@2.6.1))(typescript@6.0.3))(eslint@10.3.0(jiti@2.6.1))(vue-eslint-parser@10.4.0(eslint@10.3.0(jiti@2.6.1)))
-      globals:
-        specifier: ^17.6.0
-        version: 17.6.0
       jsdom:
         specifier: ^29.1.1
         version: 29.1.1
+      oxlint:
+        specifier: 1.67.0
+        version: 1.67.0(oxlint-tsgolint@0.23.0)
+      oxlint-tsgolint:
+        specifier: 0.23.0
+        version: 0.23.0
       pinia:
         specifier: ^3.0.4
         version: 3.0.4(typescript@6.0.3)(vue@3.5.33(typescript@6.0.3))
@@ -79,9 +70,6 @@ importers:
       typescript:
         specifier: ^6.0.3
         version: 6.0.3
-      typescript-eslint:
-        specifier: ^8.59.1
-        version: 8.59.1(eslint@10.3.0(jiti@2.6.1))(typescript@6.0.3)
       vite:
         specifier: ^7.3.2
         version: 7.3.2(@types/node@24.12.4)(jiti@2.6.1)(sass@1.97.2)(terser@5.46.2)(yaml@2.8.4)
@@ -116,9 +104,6 @@ importers:
         specifier: ^14.2.1
         version: 14.2.1(vue@3.5.33(typescript@6.0.3))
     devDependencies:
-      '@eslint/js':
-        specifier: ^10.0.1
-        version: 10.0.1(eslint@10.3.0(jiti@2.6.1))
       '@microsoft/api-documenter':
         specifier: ^7.30.5
         version: 7.30.5(@types/node@24.12.4)
@@ -140,21 +125,15 @@ importers:
       '@vue/test-utils':
         specifier: ^2.4.10
         version: 2.4.10(@vue/compiler-dom@3.5.33)(@vue/server-renderer@3.5.33(vue@3.5.33(typescript@6.0.3)))(vue@3.5.33(typescript@6.0.3))
-      eslint:
-        specifier: ^10.3.0
-        version: 10.3.0(jiti@2.6.1)
-      eslint-config-prettier:
-        specifier: ^10.1.8
-        version: 10.1.8(eslint@10.3.0(jiti@2.6.1))
-      eslint-plugin-vue:
-        specifier: ^10.9.0
-        version: 10.9.0(@stylistic/eslint-plugin@5.10.0(eslint@10.3.0(jiti@2.6.1)))(@typescript-eslint/parser@8.59.1(eslint@10.3.0(jiti@2.6.1))(typescript@6.0.3))(eslint@10.3.0(jiti@2.6.1))(vue-eslint-parser@10.4.0(eslint@10.3.0(jiti@2.6.1)))
-      globals:
-        specifier: ^17.6.0
-        version: 17.6.0
       jsdom:
         specifier: ^29.1.1
         version: 29.1.1
+      oxlint:
+        specifier: 1.67.0
+        version: 1.67.0(oxlint-tsgolint@0.23.0)
+      oxlint-tsgolint:
+        specifier: 0.23.0
+        version: 0.23.0
       pinia:
         specifier: ^3.0.4
         version: 3.0.4(typescript@6.0.3)(vue@3.5.33(typescript@6.0.3))
@@ -164,9 +143,6 @@ importers:
       typescript:
         specifier: ^6.0.3
         version: 6.0.3
-      typescript-eslint:
-        specifier: ^8.59.1
-        version: 8.59.1(eslint@10.3.0(jiti@2.6.1))(typescript@6.0.3)
       vite:
         specifier: ^7.3.2
         version: 7.3.2(@types/node@24.12.4)(jiti@2.6.1)(sass@1.97.2)(terser@5.46.2)(yaml@2.8.4)
@@ -198,9 +174,6 @@ importers:
         specifier: ^1.5.2
         version: 1.5.2
     devDependencies:
-      '@eslint/js':
-        specifier: ^10.0.1
-        version: 10.0.1(eslint@10.3.0(jiti@2.6.1))
       '@microsoft/api-documenter':
         specifier: ^7.30.5
         version: 7.30.5(@types/node@24.12.4)
@@ -222,18 +195,12 @@ importers:
       '@vue/test-utils':
         specifier: ^2.4.10
         version: 2.4.10(@vue/compiler-dom@3.5.33)(@vue/server-renderer@3.5.33(vue@3.5.33(typescript@6.0.3)))(vue@3.5.33(typescript@6.0.3))
-      eslint:
-        specifier: ^10.3.0
-        version: 10.3.0(jiti@2.6.1)
-      eslint-config-prettier:
-        specifier: ^10.1.8
-        version: 10.1.8(eslint@10.3.0(jiti@2.6.1))
-      eslint-plugin-vue:
-        specifier: ^10.9.0
-        version: 10.9.0(@stylistic/eslint-plugin@5.10.0(eslint@10.3.0(jiti@2.6.1)))(@typescript-eslint/parser@8.59.1(eslint@10.3.0(jiti@2.6.1))(typescript@6.0.3))(eslint@10.3.0(jiti@2.6.1))(vue-eslint-parser@10.4.0(eslint@10.3.0(jiti@2.6.1)))
-      globals:
-        specifier: ^17.6.0
-        version: 17.6.0
+      oxlint:
+        specifier: 1.67.0
+        version: 1.67.0(oxlint-tsgolint@0.23.0)
+      oxlint-tsgolint:
+        specifier: 0.23.0
+        version: 0.23.0
       sass:
         specifier: ^1.97.2
         version: 1.97.2
@@ -243,9 +210,6 @@ importers:
       typescript:
         specifier: ^6.0.3
         version: 6.0.3
-      typescript-eslint:
-        specifier: ^8.59.1
-        version: 8.59.1(eslint@10.3.0(jiti@2.6.1))(typescript@6.0.3)
       vite:
         specifier: ^7.3.2
         version: 7.3.2(@types/node@24.12.4)(jiti@2.6.1)(sass@1.97.2)(terser@5.46.2)(yaml@2.8.4)
@@ -344,9 +308,6 @@ importers:
         specifier: ^0.55.1
         version: 0.55.1
     devDependencies:
-      '@eslint/js':
-        specifier: ^10.0.1
-        version: 10.0.1(eslint@10.3.0(jiti@2.6.1))
       '@microsoft/api-documenter':
         specifier: ^7.30.5
         version: 7.30.5(@types/node@24.12.4)
@@ -359,27 +320,18 @@ importers:
       '@vitejs/plugin-vue':
         specifier: ^6.0.6
         version: 6.0.6(vite@7.3.2(@types/node@24.12.4)(jiti@2.6.1)(sass@1.97.2)(terser@5.46.2)(yaml@2.8.4))(vue@3.5.33(typescript@6.0.3))
-      eslint:
-        specifier: ^10.3.0
-        version: 10.3.0(jiti@2.6.1)
-      eslint-config-prettier:
-        specifier: ^10.1.8
-        version: 10.1.8(eslint@10.3.0(jiti@2.6.1))
-      eslint-plugin-vue:
-        specifier: ^10.9.0
-        version: 10.9.0(@stylistic/eslint-plugin@5.10.0(eslint@10.3.0(jiti@2.6.1)))(@typescript-eslint/parser@8.59.1(eslint@10.3.0(jiti@2.6.1))(typescript@6.0.3))(eslint@10.3.0(jiti@2.6.1))(vue-eslint-parser@10.4.0(eslint@10.3.0(jiti@2.6.1)))
-      globals:
-        specifier: ^17.6.0
-        version: 17.6.0
+      oxlint:
+        specifier: 1.67.0
+        version: 1.67.0(oxlint-tsgolint@0.23.0)
+      oxlint-tsgolint:
+        specifier: 0.23.0
+        version: 0.23.0
       stonecrop-rig:
         specifier: workspace:*
         version: link:../rigs/stonecrop-rig
       typescript:
         specifier: ^6.0.3
         version: 6.0.3
-      typescript-eslint:
-        specifier: ^8.59.1
-        version: 8.59.1(eslint@10.3.0(jiti@2.6.1))(typescript@6.0.3)
       vite:
         specifier: ^7.3.2
         version: 7.3.2(@types/node@24.12.4)(jiti@2.6.1)(sass@1.97.2)(terser@5.46.2)(yaml@2.8.4)
@@ -408,9 +360,6 @@ importers:
         specifier: workspace:*
         version: link:../themes
     devDependencies:
-      '@eslint/js':
-        specifier: ^10.0.1
-        version: 10.0.1(eslint@10.3.0(jiti@2.6.1))
       '@microsoft/api-documenter':
         specifier: ^7.30.5
         version: 7.30.5(@types/node@24.12.4)
@@ -429,18 +378,6 @@ importers:
       '@vue/test-utils':
         specifier: ^2.4.10
         version: 2.4.10(@vue/compiler-dom@3.5.33)(@vue/server-renderer@3.5.33(vue@3.5.33(typescript@6.0.3)))(vue@3.5.33(typescript@6.0.3))
-      eslint:
-        specifier: ^10.3.0
-        version: 10.3.0(jiti@2.6.1)
-      eslint-config-prettier:
-        specifier: ^10.1.8
-        version: 10.1.8(eslint@10.3.0(jiti@2.6.1))
-      eslint-plugin-vue:
-        specifier: ^10.9.0
-        version: 10.9.0(@stylistic/eslint-plugin@5.10.0(eslint@10.3.0(jiti@2.6.1)))(@typescript-eslint/parser@8.59.1(eslint@10.3.0(jiti@2.6.1))(typescript@6.0.3))(eslint@10.3.0(jiti@2.6.1))(vue-eslint-parser@10.4.0(eslint@10.3.0(jiti@2.6.1)))
-      globals:
-        specifier: ^17.6.0
-        version: 17.6.0
       immutable:
         specifier: ^5.1.4
         version: 5.1.4
@@ -450,6 +387,12 @@ importers:
       miragejs:
         specifier: ^0.1.48
         version: 0.1.48
+      oxlint:
+        specifier: 1.67.0
+        version: 1.67.0(oxlint-tsgolint@0.23.0)
+      oxlint-tsgolint:
+        specifier: 0.23.0
+        version: 0.23.0
       pinia:
         specifier: ^3.0.4
         version: 3.0.4(typescript@6.0.3)(vue@3.5.33(typescript@6.0.3))
@@ -459,9 +402,6 @@ importers:
       typescript:
         specifier: ^6.0.3
         version: 6.0.3
-      typescript-eslint:
-        specifier: ^8.59.1
-        version: 8.59.1(eslint@10.3.0(jiti@2.6.1))(typescript@6.0.3)
       vite:
         specifier: ^7.3.2
         version: 7.3.2(@types/node@24.12.4)(jiti@2.6.1)(sass@1.97.2)(terser@5.46.2)(yaml@2.8.4)
@@ -602,9 +542,6 @@ importers:
         specifier: ^8.0.0
         version: 8.0.0
     devDependencies:
-      '@eslint/js':
-        specifier: ^10.0.1
-        version: 10.0.1(eslint@10.3.0(jiti@2.6.1))
       '@microsoft/api-documenter':
         specifier: ^7.30.5
         version: 7.30.5(@types/node@24.12.4)
@@ -626,30 +563,21 @@ importers:
       '@vitest/coverage-istanbul':
         specifier: ^4.1.5
         version: 4.1.5(vitest@4.1.5)
-      eslint:
-        specifier: ^10.3.0
-        version: 10.3.0(jiti@2.6.1)
-      eslint-config-prettier:
-        specifier: ^10.1.8
-        version: 10.1.8(eslint@10.3.0(jiti@2.6.1))
-      eslint-plugin-vue:
-        specifier: ^10.9.0
-        version: 10.9.0(@stylistic/eslint-plugin@5.10.0(eslint@10.3.0(jiti@2.6.1)))(@typescript-eslint/parser@8.59.1(eslint@10.3.0(jiti@2.6.1))(typescript@6.0.3))(eslint@10.3.0(jiti@2.6.1))(vue-eslint-parser@10.4.0(eslint@10.3.0(jiti@2.6.1)))
-      globals:
-        specifier: ^17.6.0
-        version: 17.6.0
       miragejs:
         specifier: ^0.1.48
         version: 0.1.48
+      oxlint:
+        specifier: 1.67.0
+        version: 1.67.0(oxlint-tsgolint@0.23.0)
+      oxlint-tsgolint:
+        specifier: 0.23.0
+        version: 0.23.0
       stonecrop-rig:
         specifier: workspace:*
         version: link:../rigs/stonecrop-rig
       typescript:
         specifier: ^6.0.3
         version: 6.0.3
-      typescript-eslint:
-        specifier: ^8.59.1
-        version: 8.59.1(eslint@10.3.0(jiti@2.6.1))(typescript@6.0.3)
       vite:
         specifier: ^7.3.2
         version: 7.3.2(@types/node@24.12.4)(jiti@2.6.1)(sass@1.97.2)(terser@5.46.2)(yaml@2.8.4)
@@ -684,9 +612,6 @@ importers:
       '@electric-sql/pglite':
         specifier: ^0.4.5
         version: 0.4.5
-      '@eslint/js':
-        specifier: ^10.0.1
-        version: 10.0.1(eslint@10.3.0(jiti@2.6.1))
       '@rushstack/heft':
         specifier: ^1.2.17
         version: 1.2.17(@types/node@24.12.4)
@@ -705,15 +630,12 @@ importers:
       '@vitest/ui':
         specifier: ^4.1.5
         version: 4.1.5(vitest@4.1.5)
-      eslint:
-        specifier: ^10.3.0
-        version: 10.3.0(jiti@2.6.1)
-      eslint-config-prettier:
-        specifier: ^10.1.8
-        version: 10.1.8(eslint@10.3.0(jiti@2.6.1))
-      globals:
-        specifier: ^17.6.0
-        version: 17.6.0
+      oxlint:
+        specifier: 1.67.0
+        version: 1.67.0(oxlint-tsgolint@0.23.0)
+      oxlint-tsgolint:
+        specifier: 0.23.0
+        version: 0.23.0
       pg:
         specifier: ^8.20.0
         version: 8.20.0
@@ -726,9 +648,6 @@ importers:
       typescript:
         specifier: ^6.0.3
         version: 6.0.3
-      typescript-eslint:
-        specifier: ^8.59.1
-        version: 8.59.1(eslint@10.3.0(jiti@2.6.1))(typescript@6.0.3)
       vite:
         specifier: ^7.3.2
         version: 7.3.2(@types/node@24.12.4)(jiti@2.6.1)(sass@1.97.2)(terser@5.46.2)(yaml@2.8.4)
@@ -745,9 +664,6 @@ importers:
         specifier: ^5.25.0
         version: 5.25.0
     devDependencies:
-      '@eslint/js':
-        specifier: ^10.0.1
-        version: 10.0.1(eslint@10.3.0(jiti@2.6.1))
       '@microsoft/api-documenter':
         specifier: ^7.30.5
         version: 7.30.5(@types/node@24.12.4)
@@ -757,27 +673,18 @@ importers:
       '@vitejs/plugin-vue':
         specifier: ^6.0.6
         version: 6.0.6(vite@7.3.2(@types/node@24.12.4)(jiti@2.6.1)(sass@1.97.2)(terser@5.46.2)(yaml@2.8.4))(vue@3.5.33(typescript@6.0.3))
-      eslint:
-        specifier: ^10.3.0
-        version: 10.3.0(jiti@2.6.1)
-      eslint-config-prettier:
-        specifier: ^10.1.8
-        version: 10.1.8(eslint@10.3.0(jiti@2.6.1))
-      eslint-plugin-vue:
-        specifier: ^10.9.0
-        version: 10.9.0(@stylistic/eslint-plugin@5.10.0(eslint@10.3.0(jiti@2.6.1)))(@typescript-eslint/parser@8.59.1(eslint@10.3.0(jiti@2.6.1))(typescript@6.0.3))(eslint@10.3.0(jiti@2.6.1))(vue-eslint-parser@10.4.0(eslint@10.3.0(jiti@2.6.1)))
-      globals:
-        specifier: ^17.6.0
-        version: 17.6.0
+      oxlint:
+        specifier: 1.67.0
+        version: 1.67.0(oxlint-tsgolint@0.23.0)
+      oxlint-tsgolint:
+        specifier: 0.23.0
+        version: 0.23.0
       stonecrop-rig:
         specifier: workspace:*
         version: link:../rigs/stonecrop-rig
       typescript:
         specifier: ^6.0.3
         version: 6.0.3
-      typescript-eslint:
-        specifier: ^8.59.1
-        version: 8.59.1(eslint@10.3.0(jiti@2.6.1))(typescript@6.0.3)
       vite:
         specifier: ^7.3.2
         version: 7.3.2(@types/node@24.12.4)(jiti@2.6.1)(sass@1.97.2)(terser@5.46.2)(yaml@2.8.4)
@@ -1030,9 +937,6 @@ importers:
         specifier: ^5.0.3
         version: 5.0.3(@envelop/core@5.5.1)(crossws@0.3.5)(graphql@16.14.0)(h3@1.15.11)(use-sync-external-store@1.6.0)
     devDependencies:
-      '@eslint/js':
-        specifier: ^10.0.1
-        version: 10.0.1(eslint@10.3.0(jiti@2.6.1))
       '@rushstack/heft':
         specifier: ^1.2.17
         version: 1.2.17(@types/node@24.12.4)
@@ -1045,15 +949,6 @@ importers:
       '@vitest/ui':
         specifier: ^4.1.5
         version: 4.1.5(vitest@4.1.5)
-      eslint:
-        specifier: ^10.3.0
-        version: 10.3.0(jiti@2.6.1)
-      eslint-config-prettier:
-        specifier: ^10.1.8
-        version: 10.1.8(eslint@10.3.0(jiti@2.6.1))
-      globals:
-        specifier: ^17.6.0
-        version: 17.6.0
       graphile-build:
         specifier: ^5.0.0
         version: 5.0.0(grafast@1.0.2(@envelop/core@5.5.1)(graphql@16.14.0))(graphql@16.14.0)
@@ -1063,15 +958,18 @@ importers:
       madr:
         specifier: ^4.0.0
         version: 4.0.0
+      oxlint:
+        specifier: 1.67.0
+        version: 1.67.0(oxlint-tsgolint@0.23.0)
+      oxlint-tsgolint:
+        specifier: 0.23.0
+        version: 0.23.0
       stonecrop-rig:
         specifier: workspace:*
         version: link:../rigs/stonecrop-rig
       typescript:
         specifier: ^6.0.3
         version: 6.0.3
-      typescript-eslint:
-        specifier: ^8.59.1
-        version: 8.59.1(eslint@10.3.0(jiti@2.6.1))(typescript@6.0.3)
       vite:
         specifier: ^7.3.2
         version: 7.3.2(@types/node@24.12.4)(jiti@2.6.1)(sass@1.97.2)(terser@5.46.2)(yaml@2.8.4)
@@ -1088,9 +986,6 @@ importers:
         specifier: ^4.3.6
         version: 4.3.6
     devDependencies:
-      '@eslint/js':
-        specifier: ^10.0.1
-        version: 10.0.1(eslint@10.3.0(jiti@2.6.1))
       '@microsoft/api-documenter':
         specifier: ^7.30.5
         version: 7.30.5(@types/node@24.12.4)
@@ -1103,27 +998,21 @@ importers:
       '@vitest/coverage-istanbul':
         specifier: ^4.1.5
         version: 4.1.5(vitest@4.1.5)
-      eslint:
-        specifier: ^10.3.0
-        version: 10.3.0(jiti@2.6.1)
-      eslint-config-prettier:
-        specifier: ^10.1.8
-        version: 10.1.8(eslint@10.3.0(jiti@2.6.1))
-      globals:
-        specifier: ^17.6.0
-        version: 17.6.0
       jsdom:
         specifier: ^29.1.1
         version: 29.1.1
+      oxlint:
+        specifier: 1.67.0
+        version: 1.67.0(oxlint-tsgolint@0.23.0)
+      oxlint-tsgolint:
+        specifier: 0.23.0
+        version: 0.23.0
       stonecrop-rig:
         specifier: workspace:*
         version: link:../rigs/stonecrop-rig
       typescript:
         specifier: ^6.0.3
         version: 6.0.3
-      typescript-eslint:
-        specifier: ^8.59.1
-        version: 8.59.1(eslint@10.3.0(jiti@2.6.1))(typescript@6.0.3)
       vite:
         specifier: ^7.3.2
         version: 7.3.2(@types/node@24.12.4)(jiti@2.6.1)(sass@1.97.2)(terser@5.46.2)(yaml@2.8.4)
@@ -1152,9 +1041,6 @@ importers:
         specifier: ^5.25.0
         version: 5.25.0
     devDependencies:
-      '@eslint/js':
-        specifier: ^10.0.1
-        version: 10.0.1(eslint@10.3.0(jiti@2.6.1))
       '@microsoft/api-documenter':
         specifier: ^7.30.5
         version: 7.30.5(@types/node@24.12.4)
@@ -1176,21 +1062,15 @@ importers:
       '@vue/test-utils':
         specifier: ^2.4.10
         version: 2.4.10(@vue/compiler-dom@3.5.33)(@vue/server-renderer@3.5.33(vue@3.5.33(typescript@6.0.3)))(vue@3.5.33(typescript@6.0.3))
-      eslint:
-        specifier: ^10.3.0
-        version: 10.3.0(jiti@2.6.1)
-      eslint-config-prettier:
-        specifier: ^10.1.8
-        version: 10.1.8(eslint@10.3.0(jiti@2.6.1))
-      eslint-plugin-vue:
-        specifier: ^10.9.0
-        version: 10.9.0(@stylistic/eslint-plugin@5.10.0(eslint@10.3.0(jiti@2.6.1)))(@typescript-eslint/parser@8.59.1(eslint@10.3.0(jiti@2.6.1))(typescript@6.0.3))(eslint@10.3.0(jiti@2.6.1))(vue-eslint-parser@10.4.0(eslint@10.3.0(jiti@2.6.1)))
-      globals:
-        specifier: ^17.6.0
-        version: 17.6.0
       jsdom:
         specifier: ^29.1.1
         version: 29.1.1
+      oxlint:
+        specifier: 1.67.0
+        version: 1.67.0(oxlint-tsgolint@0.23.0)
+      oxlint-tsgolint:
+        specifier: 0.23.0
+        version: 0.23.0
       pinia:
         specifier: ^3.0.4
         version: 3.0.4(typescript@6.0.3)(vue@3.5.33(typescript@6.0.3))
@@ -1200,9 +1080,6 @@ importers:
       typescript:
         specifier: ^6.0.3
         version: 6.0.3
-      typescript-eslint:
-        specifier: ^8.59.1
-        version: 8.59.1(eslint@10.3.0(jiti@2.6.1))(typescript@6.0.3)
       vite:
         specifier: ^7.3.2
         version: 7.3.2(@types/node@24.12.4)(jiti@2.6.1)(sass@1.97.2)(terser@5.46.2)(yaml@2.8.4)
@@ -1231,9 +1108,6 @@ importers:
         specifier: ^5.25.0
         version: 5.25.0
     devDependencies:
-      '@eslint/js':
-        specifier: ^10.0.1
-        version: 10.0.1(eslint@10.3.0(jiti@2.6.1))
       '@microsoft/api-documenter':
         specifier: ^7.30.5
         version: 7.30.5(@types/node@24.12.4)
@@ -1243,27 +1117,18 @@ importers:
       '@vitejs/plugin-vue':
         specifier: ^6.0.6
         version: 6.0.6(vite@7.3.2(@types/node@24.12.4)(jiti@2.6.1)(sass@1.97.2)(terser@5.46.2)(yaml@2.8.4))(vue@3.5.33(typescript@6.0.3))
-      eslint:
-        specifier: ^10.3.0
-        version: 10.3.0(jiti@2.6.1)
-      eslint-config-prettier:
-        specifier: ^10.1.8
-        version: 10.1.8(eslint@10.3.0(jiti@2.6.1))
-      eslint-plugin-vue:
-        specifier: ^10.9.0
-        version: 10.9.0(@stylistic/eslint-plugin@5.10.0(eslint@10.3.0(jiti@2.6.1)))(@typescript-eslint/parser@8.59.1(eslint@10.3.0(jiti@2.6.1))(typescript@6.0.3))(eslint@10.3.0(jiti@2.6.1))(vue-eslint-parser@10.4.0(eslint@10.3.0(jiti@2.6.1)))
-      globals:
-        specifier: ^17.6.0
-        version: 17.6.0
+      oxlint:
+        specifier: 1.67.0
+        version: 1.67.0(oxlint-tsgolint@0.23.0)
+      oxlint-tsgolint:
+        specifier: 0.23.0
+        version: 0.23.0
       stonecrop-rig:
         specifier: workspace:*
         version: link:../rigs/stonecrop-rig
       typescript:
         specifier: ^6.0.3
         version: 6.0.3
-      typescript-eslint:
-        specifier: ^8.59.1
-        version: 8.59.1(eslint@10.3.0(jiti@2.6.1))(typescript@6.0.3)
       vite:
         specifier: ^7.3.2
         version: 7.3.2(@types/node@24.12.4)(jiti@2.6.1)(sass@1.97.2)(terser@5.46.2)(yaml@2.8.4)
@@ -14695,10 +14560,6 @@ snapshots:
   eslint-config-prettier@10.1.8(eslint@10.3.0(jiti@2.4.2)):
     dependencies:
       eslint: 10.3.0(jiti@2.4.2)
-
-  eslint-config-prettier@10.1.8(eslint@10.3.0(jiti@2.6.1)):
-    dependencies:
-      eslint: 10.3.0(jiti@2.6.1)
 
   eslint-flat-config-utils@3.2.0:
     dependencies:

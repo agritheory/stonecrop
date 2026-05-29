@@ -40,6 +40,14 @@
 			"shellCommand": "pretty-quick --staged" // This will invoke common/autoinstallers/rush-prettier/node_modules/.bin/pretty-quick
 		},
 		{
+			"name": "lint",
+			"commandKind": "bulk",
+			"summary": "Runs Oxlint in every project using its 'lint' script.",
+			"enableParallelism": true,
+			"ignoreMissingScript": true,
+			"allowWarningsInSuccessfulBuild": true
+		},
+		{
 			"name": "docs",
 			"commandKind": "bulk",
 			"summary": "Generate API documentation for all projects",

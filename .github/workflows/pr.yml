@@ -81,6 +81,13 @@ jobs:
       - name: Rush Install
         run: node common/scripts/install-run-rush.js install
 
+      # `rush lint` is a bulk command that invokes each package's `lint` script
+      # (oxlint, defined in package.json). Oxlint uses the per-package
+      # oxlint.config.ts which extends the root config, and oxlint-tsgolint
+      # supplies the type-aware rules via each package's node_modules.
+      - name: Oxlint
+        run: node common/scripts/install-run-rush.js lint
+
       # rush-plugins is required for the rush-sort-package-json plugin to load.
       - name: Update Autoinstallers
         run: node common/scripts/install-run-rush.js update-autoinstaller --name rush-plugins
