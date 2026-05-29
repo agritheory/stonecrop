@@ -79,7 +79,7 @@ describe('ACodeEditor', { tag: 'component' }, () => {
 		const wrapper = mount(ACodeEditor, { props: { modelValue: '' } })
 		await flushPromises()
 		// The callback registered with onDidChangeModelContent is captured in mock.calls[0][0]
-		const [contentChangeCb] = mockEditorInstance.onDidChangeModelContent.mock.calls[0]
+		const contentChangeCb = mockEditorInstance.onDidChangeModelContent.mock.calls[0][0] as () => void
 		mockEditorInstance.getValue.mockReturnValue('new content')
 		contentChangeCb()
 		expect(wrapper.emitted('update:modelValue')?.[0]).toEqual(['new content'])
@@ -98,7 +98,7 @@ describe('ACodeEditor', { tag: 'component' }, () => {
 		await flushPromises()
 		// Clear the post-init sync call (getValue returns '' so setValue('initial') was already called once)
 		mockEditorInstance.setValue.mockClear()
-		const [contentChangeCb] = mockEditorInstance.onDidChangeModelContent.mock.calls[0]
+		const contentChangeCb = mockEditorInstance.onDidChangeModelContent.mock.calls[0][0] as () => void
 		// Simulate user typing — editor value is now 'user typed this'
 		mockEditorInstance.getValue.mockReturnValue('user typed this')
 		contentChangeCb()
