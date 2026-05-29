@@ -12,7 +12,9 @@
  * ```
  * @public
  */
+// T is intentionally a caller-supplied return type — this utility is unsafe by design (Function constructor).
+// oxlint-disable-next-line typescript/no-unnecessary-type-parameters
 export function deserializeFunction<T extends (...args: any[]) => any>(source: string): T {
-	// eslint-disable-next-line @typescript-eslint/no-implied-eval, @typescript-eslint/no-unsafe-call
+	// oxlint-disable-next-line typescript/no-unsafe-type-assertion, typescript/no-implied-eval
 	return Function(`"use strict"; return (${source})`)() as T
 }
