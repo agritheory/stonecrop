@@ -229,7 +229,7 @@ Middleware function that wraps a GraphQL resolver with authorization logic
 **Definition:**
 
 ```typescript
-export type MiddlewareFn = (resolve: ResolverFn, root: any, args: any, context: Context, info: GraphQLResolveInfo) => Promise<any> | any;
+export type MiddlewareFn = (resolve: ResolverFn, root: any, args: any, context: Context, info: GraphQLResolveInfo) => any;
 ```
 
 ### ResolverFn
@@ -239,7 +239,7 @@ GraphQL resolver function type
 **Definition:**
 
 ```typescript
-export type ResolverFn = (root: any, args: any, context: Context, info: GraphQLResolveInfo) => Promise<any> | any;
+export type ResolverFn = (root: any, args: any, context: Context, info: GraphQLResolveInfo) => any;
 ```
 
 ## Variables

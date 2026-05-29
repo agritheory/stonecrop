@@ -7,7 +7,7 @@ export default defineConfig({
 	plugins: ['typescript', 'unicorn', 'oxc', 'import', 'promise', 'vitest', 'vue'],
 	ignorePatterns: ['**/*.spec.ts'],
 	rules: {
-		'no-console': ['error', { allow: ['warn', 'error'] }],
+		'no-console': ['error', { allow: ['warn', 'error', 'debug', 'info'] }],
 		'no-underscore-dangle': ['error', { allow: ['__dirname', '__filename', '__v_isReactive', '__caslSubjectType__'] }],
 		'eslint/no-shadow': 'error',
 		'unicorn/no-useless-spread': 'error',

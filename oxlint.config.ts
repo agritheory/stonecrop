@@ -29,7 +29,7 @@ const config: OxlintConfig = {
 	],
 	rules: {
 		// Promoted to 'error' per-package as each one reaches zero warnings.
-		'no-console': ['warn', { allow: ['warn', 'error'] }],
+		'no-console': ['warn', { allow: ['warn', 'error', 'debug', 'info'] }],
 		'no-underscore-dangle': ['warn', { allow: ['__dirname', '__filename', '__v_isReactive', '__caslSubjectType__'] }],
 		'prefer-promise-reject-errors': 'off',
 		// eslint built-in fires before TS sees `_`-prefix patterns; use the TS-aware variant below.

@@ -5,11 +5,10 @@ import root from '../oxlint.config.ts'
 export default defineConfig({
 	extends: [root],
 	ignorePatterns: ['tests/**', 'eslint.config.js'],
+
 	rules: {
-		'typescript/no-unsafe-member-access': 'off',
-		'typescript/no-unsafe-argument': 'off',
-		'typescript/no-unsafe-call': 'off',
-		'typescript/require-await': 'off',
-		'typescript/no-redundant-type-constituents': 'off',
+		'no-console': ['error', { allow: ['warn', 'error', 'debug', 'info'] }],
+		'no-underscore-dangle': ['error', { allow: ['__dirname', '__filename', '__v_isReactive', '__caslSubjectType__'] }],
+		'typescript/no-unsafe-type-assertion': 'error',
 	},
 })

@@ -61,30 +61,26 @@ export const pglCaslPlugin: GraphileConfig.Plugin = extendSchema(build => {
 			Mutation: {
 				plans: {
 					async createAbility(_plan: any, fieldArgs: any) {
-						const $input = fieldArgs.getRaw().input
-						const $userId = $input.userId
-						const $roles = $input.roles
+						const $userId: ExecutableStep = fieldArgs.getRaw().input.userId
+						const $roles: ExecutableStep = fieldArgs.getRaw().input.roles
 
-						return sideEffect(
-							[$userId as ExecutableStep, $roles as ExecutableStep],
-							async ([userId, roles]: readonly [string, string[]]) => {
-								// Make this async
-								try {
-									const ability = await createAbility({ id: userId, roles }) // Await here
-									return {
-										success: true,
-										ability: ability.rules,
-										message: 'Ability created successfully',
-									}
-								} catch (error) {
-									return {
-										success: false,
-										ability: null,
-										message: error instanceof Error ? error.message : 'Unknown error occurred',
-									}
+						return sideEffect([$userId, $roles], async ([userId, roles]: readonly [string, string[]]) => {
+							// Make this async
+							try {
+								const ability = await createAbility({ id: userId, roles }) // Await here
+								return {
+									success: true,
+									ability: ability.rules,
+									message: 'Ability created successfully',
+								}
+							} catch (error) {
+								return {
+									success: false,
+									ability: null,
+									message: error instanceof Error ? error.message : 'Unknown error occurred',
 								}
 							}
-						)
+						})
 					},
 				},
 			},
