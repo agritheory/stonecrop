@@ -383,6 +383,14 @@
       "allowedCategories": [ "prototype" ]
     },
     {
+      "name": "oxlint",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "oxlint-tsgolint",
+      "allowedCategories": [ "production" ]
+    },
+    {
       "name": "pathe",
       "allowedCategories": [ "prototype" ]
     },
