@@ -50,11 +50,7 @@ describe('datepicker component', { tags: ['component'] }, () => {
 		await $prevMonthBtn.trigger('click')
 
 		const currentMonth = new Date().getMonth()
-		if (currentMonth === 0) {
-			expect(wrapper.vm.currentMonth).toBe(11)
-		} else {
-			expect(wrapper.vm.currentMonth).toBe(currentMonth - 1)
-		}
+		expect(wrapper.vm.currentMonth).toBe(currentMonth === 0 ? 11 : currentMonth - 1)
 	})
 
 	it('select previous year', async () => {

@@ -279,7 +279,7 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 				mode: 'read',
 			},
 			global: {
-				components: { ATextInput },
+				components: { ATextInput, AForm },
 			},
 		})
 
@@ -288,9 +288,8 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 
 		// The nested AForm should receive mode
 		const nestedForms = wrapper.findAllComponents(AForm)
-		if (nestedForms.length > 1) {
-			expect(nestedForms[1].props('mode')).toBe('read')
-		}
+		expect(nestedForms.length).toBeGreaterThanOrEqual(1)
+		expect(nestedForms[0].props('mode')).toBe('read')
 	})
 
 	it('passes per-field mode to nested AForm', async () => {
@@ -319,7 +318,7 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 				},
 			},
 			global: {
-				components: { ATextInput },
+				components: { ATextInput, AForm },
 			},
 		})
 
@@ -328,9 +327,8 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 
 		// The nested AForm should receive mode from the field
 		const nestedForms = wrapper.findAllComponents(AForm)
-		if (nestedForms.length > 1) {
-			expect(nestedForms[1].props('mode')).toBe('read')
-		}
+		expect(nestedForms.length).toBeGreaterThanOrEqual(1)
+		expect(nestedForms[0].props('mode')).toBe('read')
 	})
 
 	it('handles multiple nested Doctype fields', async () => {
@@ -437,15 +435,13 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 		await wrapper.vm.$nextTick()
 
 		const textInput = wrapper.findComponent(ATextInput)
-		if (textInput.exists()) {
-			await textInput.find('input').setValue('Alice')
-			await wrapper.vm.$nextTick()
+		expect(textInput.exists()).toBe(true)
+		await textInput.find('input').setValue('Alice')
+		await wrapper.vm.$nextTick()
 
-			const dataEvents = wrapper.emitted('update:data')
-			if (dataEvents) {
-				expect(dataEvents.length).toBeGreaterThanOrEqual(1)
-			}
-		}
+		const dataEvents = wrapper.emitted('update:data')
+		expect(dataEvents).toBeTruthy()
+		expect(dataEvents!.length).toBeGreaterThanOrEqual(1)
 	})
 
 	it('handles childModelsCache rebuild on schema length change', async () => {
