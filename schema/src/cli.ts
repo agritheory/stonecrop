@@ -46,10 +46,7 @@ async function fetchIntrospection(endpoint: string, headers?: Record<string, str
 		throw new Error(`Failed to fetch introspection: ${response.status} ${response.statusText}`)
 	}
 
-	const json = (await response.json()) as {
-		data?: IntrospectionQuery
-		errors?: Array<{ message: string }>
-	}
+	const json: { data?: IntrospectionQuery; errors?: Array<{ message: string }> } = await response.json()
 
 	if (json.errors?.length) {
 		throw new Error(`GraphQL errors: ${json.errors.map(e => e.message).join(', ')}`)
