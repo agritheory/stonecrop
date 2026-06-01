@@ -573,7 +573,7 @@ export class FieldTriggerEngine {
 			context.store.set(recordPath, snapshot)
 
 			if (this.options.debug) {
-				// eslint-disable-next-line no-console
+				// oxlint-disable-next-line no-console
 				console.log(`[FieldTriggers] Rolled back ${recordPath} to previous state`)
 			}
 		} catch (error) {

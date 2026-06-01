@@ -58,7 +58,7 @@ describe('ActionSet', { tags: ['component'] }, () => {
 		const emitted = wrapper.emitted('actionClick')
 		expect(emitted).toBeTruthy()
 		expect(emitted![0][0]).toBe('Save')
-		expect(emitted![0][1]).toBe(action)
+		expect(emitted![0][1]).toBe(noopAction)
 	})
 
 	it('opens dropdown on button click and closes others', async () => {

@@ -111,7 +111,7 @@ export function useStringMask(el: HTMLInputElement, binding: DirectiveBinding<st
 		// Vue directive reads/writes arbitrary fields on host component instance.
 		// oxlint-disable-next-line typescript/no-unsafe-type-assertion
 		const instance = binding.instance as Record<string, unknown> | null | undefined
-		if (instance?.['maskFilled'] !== undefined) {
+		if (instance?.['maskFilled']) {
 			instance['maskFilled'] = !replacement.includes(maskToken)
 		}
 

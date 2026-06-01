@@ -49,7 +49,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 	 */
 	const debugSql = options.debug
 		? <T>(pgClient: PgClient, query: { text: string; values?: unknown[] }) => {
-				// eslint-disable-next-line no-console
+				// oxlint-disable-next-line no-console
 				console.log(`[@stonecrop/graphql-middleware] ${query.text}`, query.values ?? [])
 				return pgClient.query<T>(query)
 			}

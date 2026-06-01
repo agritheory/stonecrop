@@ -162,9 +162,10 @@ export default class Registry {
 			if ('fieldtype' in field && field.fieldtype === 'Link') {
 				const link = linksByFieldname.get(field.fieldname)
 				if (!link) {
-					// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SchemaTypes union narrowed to FieldMeta by fieldtype === 'Link' check; options may not exist on all members
+					// oxlint-disable typescript/no-unsafe-type-assertion -- SchemaTypes union narrowed to FieldMeta by fieldtype === 'Link' check; options may not exist on all members
 					const linkDoctype =
 						typeof (field as FieldMeta).options === 'string' ? ((field as FieldMeta).options as string) : undefined
+					// oxlint-enable typescript/no-unsafe-type-assertion
 
 					if (linkDoctype === undefined) {
 						console.warn(

@@ -62,7 +62,7 @@ export function useLazyLink(doctype: Doctype, recordId: string, linkFieldname: s
 		try {
 			// Create function from serialized string and invoke it
 			// The function receives the stonecrop instance and path as parameters
-			// eslint-disable-next-line @typescript-eslint/no-implied-eval
+			// oxlint-disable-next-line @typescript-eslint/no-implied-eval
 			const fn = new Function(
 				'stonecrop',
 				'path',

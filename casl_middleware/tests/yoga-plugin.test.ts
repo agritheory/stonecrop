@@ -82,7 +82,7 @@ describe('Yoga CASL Plugin', { tags: ['unit', 'graphql'] }, () => {
 		})
 
 		it('should log message when onExecute is called', async () => {
-			const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+			const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
 			const plugin = createYogaPlugin()
 
 			const mockArgs = {
