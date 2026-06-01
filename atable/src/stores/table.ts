@@ -34,6 +34,107 @@ export interface FilterState {
  */
 export type FilterStateRecord = Record<number, FilterState>
 
+function isNodeOpen(rowIndex: number, treeDisplay: TableDisplay[]): boolean {
+	const row = treeDisplay[rowIndex]
+	if (row.isRoot) {
+		return true // Root nodes are always open
+	}
+
+	if (row.parent === null || row.parent === undefined) {
+		return true
+	}
+
+	const parentIndex = row.parent
+	if (parentIndex < 0 || parentIndex >= treeDisplay.length) {
+		return false
+	}
+
+	const parent = treeDisplay[parentIndex]
+	// Node is open if parent's children are open AND parent itself is open
+	return (parent.childrenOpen || false) && isNodeOpen(parentIndex, treeDisplay)
+}
+
+function applyFilter(cellValue: any, filter: FilterState, column: TableColumn): boolean {
+	const filterType = column.filterType || 'text'
+	const value = filter.value
+
+	if (!value && filterType !== 'dateRange' && filterType !== 'checkbox') return true
+
+	switch (filterType) {
+		case 'text': {
+			const searchableText =
+				typeof cellValue === 'object' && cellValue !== null
+					? Object.values(cellValue).join(' ')
+					: String(cellValue || '')
+			return searchableText.toLowerCase().includes(String(value).toLowerCase())
+		}
+
+		case 'number': {
+			const numValue = Number(cellValue)
+			const filterNum = Number(value)
+			return !isNaN(numValue) && !isNaN(filterNum) && numValue === filterNum
+		}
+
+		case 'select':
+			return cellValue === value
+
+		case 'checkbox':
+			// For checkbox filter, if checked (true), show only truthy values
+			// If unchecked (false/undefined), show all values
+			if (value === true) {
+				return !!cellValue
+			}
+			return true
+
+		case 'date': {
+			// Handle both timestamp numbers and date strings
+			let cellDate: Date
+			if (typeof cellValue === 'number') {
+				// Apply the same year transformation as in the format function
+				const originalDate = new Date(cellValue)
+				const currentYear = new Date().getFullYear()
+				cellDate = new Date(currentYear, originalDate.getMonth(), originalDate.getDate())
+			} else {
+				cellDate = new Date(String(cellValue))
+			}
+			const filterDate = new Date(String(value))
+			return cellDate.toDateString() === filterDate.toDateString()
+		}
+
+		case 'dateRange': {
+			const startValue = filter.startValue
+			const endValue = filter.endValue
+			if (!startValue && !endValue) return true
+
+			// Handle both timestamp numbers and date strings
+			let cellDateRange: Date
+			if (typeof cellValue === 'number') {
+				// Apply the same year transformation as in the format function
+				const originalDate = new Date(cellValue)
+				const currentYear = new Date().getFullYear()
+				cellDateRange = new Date(currentYear, originalDate.getMonth(), originalDate.getDate())
+			} else {
+				cellDateRange = new Date(String(cellValue))
+			}
+			if (startValue && cellDateRange < new Date(String(startValue))) return false
+			if (endValue && cellDateRange > new Date(String(endValue))) return false
+
+			return true
+		}
+
+		default:
+			return true
+	}
+}
+
+function getIndent(colIndex: number, indentLevel?: number): string {
+	if (indentLevel && colIndex === 0 && indentLevel > 0) {
+		return `${indentLevel}ch`
+	} else {
+		return 'inherit'
+	}
+}
+
 /**
  * Create a table store
  * @param initData - Initial data for the table store
@@ -133,13 +234,13 @@ export const createTableStore = (initData: {
 		const rowExpandStates = ref<Record<number, { childrenOpen?: boolean; expanded?: boolean }>>({})
 
 		const table = computed(() => {
-			const table: Record<string, any> = {}
+			const tableData: Record<string, any> = {}
 			for (const [colIndex, column] of columns.value.entries()) {
 				for (const [rowIndex, row] of rows.value.entries()) {
-					table[`${colIndex}:${rowIndex}`] = row[column.name]
+					tableData[`${colIndex}:${rowIndex}`] = row[column.name]
 				}
 			}
-			return table
+			return tableData
 		})
 
 		const display = computed({
@@ -164,25 +265,6 @@ export const createTableStore = (initData: {
 				// Calculate 'open' property for tree view based on parent's childrenOpen state
 				if (isTreeView.value) {
 					// Helper function to check if all ancestors are open
-					const isNodeOpen = (rowIndex: number, display: TableDisplay[]): boolean => {
-						const row = display[rowIndex]
-						if (row.isRoot) {
-							return true // Root nodes are always open
-						}
-
-						if (row.parent === null || row.parent === undefined) {
-							return true
-						}
-
-						const parentIndex = row.parent
-						if (parentIndex < 0 || parentIndex >= display.length) {
-							return false
-						}
-
-						const parent = display[parentIndex]
-						// Node is open if parent's children are open AND parent itself is open
-						return (parent.childrenOpen || false) && isNodeOpen(parentIndex, display)
-					}
 
 					for (let i = 0; i < baseDisplay.length; i++) {
 						const row = baseDisplay[i]
@@ -291,7 +373,7 @@ export const createTableStore = (initData: {
 		})
 
 		// actions
-		const getCellData = <T = any>(colIndex: number, rowIndex: number): T => table.value[`${colIndex}:${rowIndex}`]
+		const getCellData = (colIndex: number, rowIndex: number): any => table.value[`${colIndex}:${rowIndex}`]
 		const setCellData = (colIndex: number, rowIndex: number, value: any) => {
 			const index = `${colIndex}:${rowIndex}`
 			const col = columns.value[colIndex]
@@ -431,9 +513,9 @@ export const createTableStore = (initData: {
 					case 'Check':
 						return value ? '✓' : '✗'
 					case 'Date':
-						return value != null ? new Date(value as string).toLocaleDateString() : value
+						return value != null ? new Date(String(value)).toLocaleDateString() : value
 					case 'Datetime':
-						return value != null ? new Date(value as string).toLocaleString() : value
+						return value != null ? new Date(String(value)).toLocaleString() : value
 					default:
 						return value
 				}
@@ -443,7 +525,7 @@ export const createTableStore = (initData: {
 				return format(value, { table: table.value, row, column })
 			} else if (typeof format === 'string') {
 				// parse format function from string
-				// eslint-disable-next-line @typescript-eslint/no-implied-eval, @typescript-eslint/no-unsafe-call
+				// eslint-disable-next-line @typescript-eslint/no-implied-eval
 				const formatFn: (value: any, context?: CellContext) => string = Function(`"use strict";return (${format})`)()
 				return formatFn(value, { table: table.value, row, column })
 			}
@@ -458,14 +540,6 @@ export const createTableStore = (initData: {
 				if (modal.value.visible) modal.value.visible = false
 			} else if (!modal.value.parent?.contains(event.target)) {
 				if (modal.value.visible) modal.value.visible = false
-			}
-		}
-
-		const getIndent = (colIndex: number, indentLevel?: number) => {
-			if (indentLevel && colIndex === 0 && indentLevel > 0) {
-				return `${indentLevel}ch`
-			} else {
-				return 'inherit'
 			}
 		}
 
@@ -536,7 +610,6 @@ export const createTableStore = (initData: {
 			const toHandle = connectionHandles.value.find(h => h.id === toHandleId)
 
 			if (!fromHandle || !toHandle) {
-				// eslint-disable-next-line no-console
 				console.warn('Cannot create connection: handle not found')
 				return null
 			}
@@ -596,79 +669,6 @@ export const createTableStore = (initData: {
 
 			// Note: The actual sorting is now handled in the filteredRows computed property
 			// This ensures that sorting works on filtered data without modifying the original rows
-		}
-
-		const applyFilter = (cellValue: any, filter: FilterState, column: TableColumn): boolean => {
-			const filterType = column.filterType || 'text'
-			const value = filter.value
-
-			if (!value && filterType !== 'dateRange' && filterType !== 'checkbox') return true
-
-			switch (filterType) {
-				case 'text': {
-					const searchableText =
-						typeof cellValue === 'object' && cellValue !== null
-							? Object.values(cellValue as Record<string, unknown>).join(' ')
-							: String(cellValue || '')
-					return searchableText.toLowerCase().includes(String(value).toLowerCase())
-				}
-
-				case 'number': {
-					const numValue = Number(cellValue)
-					const filterNum = Number(value)
-					return !isNaN(numValue) && !isNaN(filterNum) && numValue === filterNum
-				}
-
-				case 'select':
-					return cellValue === value
-
-				case 'checkbox':
-					// For checkbox filter, if checked (true), show only truthy values
-					// If unchecked (false/undefined), show all values
-					if (value === true) {
-						return !!cellValue
-					}
-					return true
-
-				case 'date': {
-					// Handle both timestamp numbers and date strings
-					let cellDate: Date
-					if (typeof cellValue === 'number') {
-						// Apply the same year transformation as in the format function
-						const originalDate = new Date(cellValue)
-						const currentYear = new Date().getFullYear()
-						cellDate = new Date(currentYear, originalDate.getMonth(), originalDate.getDate())
-					} else {
-						cellDate = new Date(String(cellValue))
-					}
-					const filterDate = new Date(String(value))
-					return cellDate.toDateString() === filterDate.toDateString()
-				}
-
-				case 'dateRange': {
-					const startValue = filter.startValue
-					const endValue = filter.endValue
-					if (!startValue && !endValue) return true
-
-					// Handle both timestamp numbers and date strings
-					let cellDateRange: Date
-					if (typeof cellValue === 'number') {
-						// Apply the same year transformation as in the format function
-						const originalDate = new Date(cellValue)
-						const currentYear = new Date().getFullYear()
-						cellDateRange = new Date(currentYear, originalDate.getMonth(), originalDate.getDate())
-					} else {
-						cellDateRange = new Date(String(cellValue))
-					}
-					if (startValue && cellDateRange < new Date(String(startValue))) return false
-					if (endValue && cellDateRange > new Date(String(endValue))) return false
-
-					return true
-				}
-
-				default:
-					return true
-			}
 		}
 
 		const setFilter = (colIndex: number, filter: FilterState) => {

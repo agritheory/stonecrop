@@ -36,8 +36,7 @@ export function schemaToColumns(schema: ColumnSchema[]): TableColumn[] {
 					col.format = (v: any): string => {
 						if (v === null || v === undefined) return ''
 						if (typeof v === 'object') {
-							const rec = v as Record<string, unknown>
-							const display = rec.displayText ?? rec.id ?? ''
+							const display: unknown = v.displayText ?? v.id ?? ''
 							return typeof display === 'string' || typeof display === 'number' ? String(display) : ''
 						}
 						return String(v)

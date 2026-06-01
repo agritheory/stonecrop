@@ -749,7 +749,7 @@ createTableStore: (initData: {
     deleteConnection: (connectionId: string) => boolean;
     deleteRow: (rowIndex: number) => TableRow | null;
     duplicateRow: (rowIndex: number) => number;
-    getCellData: <T = any>(colIndex: number, rowIndex: number) => T;
+    getCellData: (colIndex: number, rowIndex: number) => any;
     getCellDisplayValue: (colIndex: number, rowIndex: number) => any;
     getConnectionsForBar: (barId: string) => {
         id: string;
@@ -781,7 +781,7 @@ createTableStore: (initData: {
         barId: string;
     }[];
     getHeaderCellStyle: (column: TableColumn) => CSSProperties;
-    getIndent: (colIndex: number, indentLevel?: number) => string;
+    getIndent: typeof getIndent;
     getRowExpandSymbol: (rowIndex: number) => "" | "▼" | "►";
     insertRowAbove: (rowIndex: number, rowData?: Partial<TableRow>) => number;
     insertRowBelow: (rowIndex: number, rowData?: Partial<TableRow>) => number;
@@ -1396,7 +1396,7 @@ createTableStore: (initData: {
     deleteConnection: (connectionId: string) => boolean;
     deleteRow: (rowIndex: number) => TableRow | null;
     duplicateRow: (rowIndex: number) => number;
-    getCellData: <T = any>(colIndex: number, rowIndex: number) => T;
+    getCellData: (colIndex: number, rowIndex: number) => any;
     getCellDisplayValue: (colIndex: number, rowIndex: number) => any;
     getConnectionsForBar: (barId: string) => {
         id: string;
@@ -1428,7 +1428,7 @@ createTableStore: (initData: {
         barId: string;
     }[];
     getHeaderCellStyle: (column: TableColumn) => CSSProperties;
-    getIndent: (colIndex: number, indentLevel?: number) => string;
+    getIndent: typeof getIndent;
     getRowExpandSymbol: (rowIndex: number) => "" | "▼" | "►";
     insertRowAbove: (rowIndex: number, rowData?: Partial<TableRow>) => number;
     insertRowBelow: (rowIndex: number, rowData?: Partial<TableRow>) => number;
@@ -2043,7 +2043,7 @@ createTableStore: (initData: {
     deleteConnection: (connectionId: string) => boolean;
     deleteRow: (rowIndex: number) => TableRow | null;
     duplicateRow: (rowIndex: number) => number;
-    getCellData: <T = any>(colIndex: number, rowIndex: number) => T;
+    getCellData: (colIndex: number, rowIndex: number) => any;
     getCellDisplayValue: (colIndex: number, rowIndex: number) => any;
     getConnectionsForBar: (barId: string) => {
         id: string;
@@ -2075,7 +2075,7 @@ createTableStore: (initData: {
         barId: string;
     }[];
     getHeaderCellStyle: (column: TableColumn) => CSSProperties;
-    getIndent: (colIndex: number, indentLevel?: number) => string;
+    getIndent: typeof getIndent;
     getRowExpandSymbol: (rowIndex: number) => "" | "▼" | "►";
     insertRowAbove: (rowIndex: number, rowData?: Partial<TableRow>) => number;
     insertRowBelow: (rowIndex: number, rowData?: Partial<TableRow>) => number;
