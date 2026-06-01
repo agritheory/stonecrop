@@ -28,10 +28,9 @@ const config: OxlintConfig = {
 		'nuxt_grafserv/**',
 	],
 	rules: {
-		// Promoted to 'error' per-package as each one reaches zero warnings.
-		'no-console': ['warn', { allow: ['warn', 'error', 'debug', 'info'] }],
+		'no-console': ['error', { allow: ['warn', 'error', 'debug', 'info'] }],
 		'no-underscore-dangle': [
-			'warn',
+			'error',
 			{ allow: ['__dirname', '__filename', '__v_isReactive', '__caslSubjectType__', '_root'] },
 		],
 		'prefer-promise-reject-errors': 'off',
@@ -40,7 +39,7 @@ const config: OxlintConfig = {
 		'typescript/no-explicit-any': 'off',
 		'typescript/no-unsafe-assignment': 'off',
 		'typescript/no-unsafe-return': 'off',
-		'typescript/no-unsafe-type-assertion': 'warn',
+		'typescript/no-unsafe-type-assertion': 'error',
 		'typescript/no-unused-vars': [
 			'error',
 			{
@@ -48,16 +47,13 @@ const config: OxlintConfig = {
 				varsIgnorePattern: '^_',
 			},
 		],
-		// Type-aware rules: enabled but warn-only during migration; promote to error in a follow-up.
-		'typescript/no-floating-promises': 'warn',
-		'typescript/unbound-method': 'warn',
-		'typescript/await-thenable': 'warn',
-		// Unicorn correctness rules demoted to warn during migration.
-		'unicorn/no-useless-spread': 'warn',
-		'unicorn/no-useless-fallback-in-spread': 'warn',
-		'unicorn/no-new-array': 'warn',
-		// Vue plugin only lints <script>; demoted during migration.
-		'vue/return-in-computed-property': 'warn',
+		'typescript/no-floating-promises': 'error',
+		'typescript/unbound-method': 'error',
+		'typescript/await-thenable': 'error',
+		'unicorn/no-useless-spread': 'error',
+		'unicorn/no-useless-fallback-in-spread': 'error',
+		'unicorn/no-new-array': 'error',
+		'vue/return-in-computed-property': 'error',
 		'import/no-cycle': ['error', { maxDepth: 3 }],
 		// CSS/asset side-effect imports are legitimate.
 		'import/no-unassigned-import': ['error', { allow: ['**/*.css', '**/*.scss', '**/*.sass'] }],

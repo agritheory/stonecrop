@@ -54,14 +54,8 @@ interface PiniaStore {
 	[key: string]: any
 }
 
-// Interface for objects with property access
-interface PropertyAccessible {
-	[key: string]: any
-}
-
 // Extend global interfaces
 declare global {
-	// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 	interface Window extends RegistryGlobal {}
 	const global: RegistryGlobal | undefined
 }
@@ -94,7 +88,8 @@ class HST {
 		// In test environment, try different ways to access Registry
 		// First, try the global Registry if it exists
 		if (typeof globalThis !== 'undefined') {
-			const globalRegistry = (globalThis as RegistryGlobal).Registry?._root
+			// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Window interface extended with RegistryGlobal in declare global above; no other way to access globalThis properties
+			const globalRegistry = (globalThis as unknown as RegistryGlobal).Registry?._root
 			if (globalRegistry) {
 				return globalRegistry
 			}
@@ -129,7 +124,7 @@ class HST {
 	getDoctypeMeta(doctype: string) {
 		const registry = this.getRegistry()
 		if (registry && typeof registry === 'object' && 'registry' in registry) {
-			return (registry as { registry: Record<string, any> }).registry[doctype]
+			return registry.registry[doctype]
 		}
 		return undefined
 	}
@@ -199,7 +194,6 @@ class HSTProxy implements HSTNode {
 		// Get current value for change context
 		const fullPath = this.resolvePath(path)
 		if (fullPath === undefined) {
-			// eslint-disable-next-line no-console
 			console.warn('HST.set: resolved path is undefined, skipping operation')
 			return
 		}
@@ -445,7 +439,7 @@ class HSTProxy implements HSTNode {
 		}
 
 		// Plain object
-		return (obj as PropertyAccessible)[key]
+		return obj[key]
 	}
 
 	private setProperty(obj: any, key: string, value: any): void {
@@ -459,13 +453,13 @@ class HSTProxy implements HSTNode {
 			if (obj.$patch) {
 				obj.$patch({ [key]: value })
 			} else {
-				;(obj as PropertyAccessible)[key] = value
+				obj[key] = value
 			}
 			return
 		}
 
 		// Vue reactive or plain object
-		;(obj as PropertyAccessible)[key] = value
+		obj[key] = value
 	}
 
 	private async triggerFieldActions(fullPath: string, beforeValue: any, afterValue: any): Promise<void> {
@@ -524,19 +518,13 @@ class HSTProxy implements HSTNode {
 			// Silently handle trigger errors to not break the main flow
 			// In production, you might want to log this error
 			if (error instanceof Error) {
-				// eslint-disable-next-line no-console
 				console.warn('Field trigger error:', error.message)
 				// Optional: emit an event or call error handler
 			}
 		}
 	}
 	private isVueReactive(obj: any): obj is VueReactive {
-		return (
-			obj &&
-			typeof obj === 'object' &&
-			'__v_isReactive' in obj &&
-			(obj as { __v_isReactive: boolean }).__v_isReactive === true
-		)
+		return obj && typeof obj === 'object' && '__v_isReactive' in obj && obj.__v_isReactive === true
 	}
 
 	private isPiniaStore(obj: any): obj is PiniaStore {
@@ -548,9 +536,9 @@ class HSTProxy implements HSTNode {
 			return false
 		}
 
-		const hasGetMethod = 'get' in obj && typeof (obj as Record<string, unknown>).get === 'function'
-		const hasSetMethod = 'set' in obj && typeof (obj as Record<string, unknown>).set === 'function'
-		const hasHasMethod = 'has' in obj && typeof (obj as Record<string, unknown>).has === 'function'
+		const hasGetMethod = 'get' in obj && typeof obj.get === 'function'
+		const hasSetMethod = 'set' in obj && typeof obj.set === 'function'
+		const hasHasMethod = 'has' in obj && typeof obj.has === 'function'
 
 		const hasImmutableMarkers =
 			'__ownerID' in obj ||
@@ -565,14 +553,9 @@ class HSTProxy implements HSTNode {
 
 		let constructorName: string | undefined
 		try {
-			const objWithConstructor = obj as Record<string, unknown>
-			if (
-				'constructor' in objWithConstructor &&
-				objWithConstructor.constructor &&
-				typeof objWithConstructor.constructor === 'object' &&
-				'name' in objWithConstructor.constructor
-			) {
-				const nameValue = (objWithConstructor.constructor as { name: unknown }).name
+			if ('constructor' in obj && obj.constructor && typeof obj.constructor === 'object' && 'name' in obj.constructor) {
+				// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- obj.constructor.name accessed after 'name' in check; obj is any throughout this method
+				const nameValue = (obj.constructor as { name: unknown }).name
 				constructorName = typeof nameValue === 'string' ? nameValue : undefined
 			}
 		} catch {

@@ -56,6 +56,7 @@ export class Stonecrop {
 		// Initialize HST store with auto-sync to Registry
 		this.initializeHSTStore()
 		this.setupRegistrySync()
+		return this
 	}
 
 	/**
@@ -207,7 +208,7 @@ export class Stonecrop {
 		const slug = typeof doctype === 'string' ? doctype : doctype.slug
 		this.ensureDoctypeExists(slug)
 
-		const doctypeNode = this.hstStore.get(slug) as Record<string, any>
+		const doctypeNode = this.hstStore.get(slug)
 		if (!doctypeNode || typeof doctypeNode !== 'object') {
 			return []
 		}
@@ -370,8 +371,10 @@ export class Stonecrop {
 
 		// Store each record in HST
 		records.forEach(record => {
-			if (record.id) {
-				this.addRecord(doctype, record.id as string, record)
+			if (typeof record.id === 'string' && record.id) {
+				this.addRecord(doctype, record.id, record)
+			} else if (typeof record.id === 'number') {
+				this.addRecord(doctype, String(record.id), record)
 			}
 		})
 	}
@@ -477,6 +480,7 @@ export class Stonecrop {
 		if (!meta?.workflow) return ''
 
 		const record = this.getRecordById(slug, recordId)
+		// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- HSTNode.get returns any; status is always string in workflow records
 		const status = record?.get('status') as string | undefined
 
 		// Handle both XState format and WorkflowMeta format
@@ -488,10 +492,12 @@ export class Stonecrop {
 			initialState = workflow.states[0] ?? ''
 		} else {
 			// XState format: states is an object, use initial or first key
+			// oxlint-disable typescript/no-unsafe-type-assertion -- XState MachineConfig has `initial` but type union doesn't expose it; runtime-guarded by typeof check
 			initialState =
 				typeof (workflow as { initial?: unknown }).initial === 'string'
 					? (workflow as { initial: string }).initial
 					: (Object.keys(workflow.states ?? {})[0] ?? '')
+			// oxlint-enable typescript/no-unsafe-type-assertion
 		}
 
 		return status || initialState
@@ -674,6 +680,7 @@ interface CodedError extends Error {
 }
 
 function createCodedError(message: string, code: string): CodedError {
+	// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- extending Error with code property; CodedError cast is the standard pattern for typed error objects
 	const error = new Error(message) as CodedError
 	error.code = code
 	return error
