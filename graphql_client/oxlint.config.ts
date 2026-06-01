@@ -4,7 +4,7 @@ import root from '../oxlint.config.ts'
 
 export default defineConfig({
 	extends: [root],
-	ignorePatterns: ['tests/**', 'eslint.config.js'],
+	ignorePatterns: ['tests/**'],
 	plugins: ['typescript', 'unicorn', 'oxc', 'import', 'promise', 'vitest', 'vue'],
 	rules: {
 		'no-console': 'error',
