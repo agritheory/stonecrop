@@ -571,15 +571,12 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 			const _store = stonecrop.getStore()
 			const record = stonecrop.getRecordById('task', '123')
 
-			if (record) {
-				const doctypeSection = record.getAncestor()
-				const rootStore = doctypeSection?.getAncestor()
+			expect(record).toBeDefined()
+			const doctypeSection = record!.getAncestor()
+			const rootStore = doctypeSection?.getAncestor()
 
-				expect(doctypeSection?.getPath()).toBe('task')
-				expect(rootStore?.getPath()).toBe('')
-			} else {
-				throw new Error('Record not found')
-			}
+			expect(doctypeSection?.getPath()).toBe('task')
+			expect(rootStore?.getPath()).toBe('')
 		})
 
 		it('supports nested record data with tree navigation', () => {

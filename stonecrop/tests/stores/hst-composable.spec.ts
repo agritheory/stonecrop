@@ -157,9 +157,8 @@ describe('HST Composable Functionality', { tags: ['unit'] }, () => {
 			expect(vm.formData.name).toBe('Test Task')
 
 			// Check that HST store is updated
-			if (vm.hstStore) {
-				expect(vm.hstStore.get('task.test-123.name')).toBe('Test Task')
-			}
+			expect(vm.hstStore).toBeDefined()
+			expect(vm.hstStore.get('task.test-123.name')).toBe('Test Task')
 		})
 
 		it('should generate correct HST paths for nested fields', async () => {

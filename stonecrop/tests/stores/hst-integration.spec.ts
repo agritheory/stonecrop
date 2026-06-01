@@ -569,11 +569,10 @@ describe('HST Real Component Integration', { tags: ['unit'] }, () => {
 			expect(vm.formData.active).toBe(true)
 
 			// Verify HST store has the data
-			if (vm.hstStore) {
-				expect(vm.hstStore.get('task.multi-test.name')).toBe('Task Name')
-				expect(vm.hstStore.get('task.multi-test.priority')).toBe(3)
-				expect(vm.hstStore.get('task.multi-test.active')).toBe(true)
-			}
+			expect(vm.hstStore).toBeDefined()
+			expect(vm.hstStore.get('task.multi-test.name')).toBe('Task Name')
+			expect(vm.hstStore.get('task.multi-test.priority')).toBe(3)
+			expect(vm.hstStore.get('task.multi-test.active')).toBe(true)
 		})
 	})
 })

@@ -178,7 +178,7 @@ describe('useStonecrop HST mode', { tags: ['unit'] }, () => {
 		expect(path).toBe('task.task-override.title')
 	})
 
-	it('provideHSTPath returns empty string when no doctype', async () => {
+	it('provideHSTPath is not available in basic mode (no doctype, no router)', async () => {
 		const TestComponent = defineComponent({
 			setup() {
 				return useStonecrop()
@@ -191,10 +191,8 @@ describe('useStonecrop HST mode', { tags: ['unit'] }, () => {
 		})
 
 		const vm = wrapper.vm as any
-		// No doctype, should return empty string if provideHSTPath exists
-		if (vm.provideHSTPath) {
-			expect(vm.provideHSTPath('title')).toBe('')
-		}
+		// No doctype and no router — basic mode does not expose provideHSTPath
+		expect(vm.provideHSTPath).toBeUndefined()
 	})
 
 	it('handleHSTChange updates form data for simple fields', async () => {

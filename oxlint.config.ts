@@ -67,7 +67,7 @@ const config: OxlintConfig = {
 				'typescript/no-unsafe-type-assertion': 'off',
 				'typescript/unbound-method': 'off',
 				'vitest/expect-expect': 'warn',
-				'vitest/no-conditional-expect': 'warn',
+				'vitest/no-conditional-expect': 'error',
 				'vitest/no-disabled-tests': 'warn',
 				'vitest/no-focused-tests': 'error',
 				'vitest/require-mock-type-parameters': 'off',

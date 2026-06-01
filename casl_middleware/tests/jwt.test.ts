@@ -707,7 +707,7 @@ describe('JWT Middleware - Advanced Tests', { tags: ['unit', 'graphql'] }, () =>
 			}
 
 			const next = vi.fn()
-			await expect(middleware(context, next)).rejects.toThrow('jwt issuer invalid')
+			await expect(middleware(context, next)).rejects.toThrow('Invalid token')
 		})
 
 		it('should verify token with audience', async () => {
@@ -862,7 +862,7 @@ describe('JWT Middleware - Advanced Tests', { tags: ['unit', 'graphql'] }, () =>
 			}
 
 			const next = vi.fn()
-			await expect(middleware(context, next)).rejects.toThrow('invalid token')
+			await expect(middleware(context, next)).rejects.toThrow('Invalid token')
 		})
 	})
 
