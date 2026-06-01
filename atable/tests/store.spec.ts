@@ -175,9 +175,6 @@ describe('table store', { tags: ['component'] }, () => {
 		})
 
 		it('should set cell text', () => {
-			// First, check what the actual cell value is
-			const initialValue = store.getCellData(1, 0)
-
 			// Set a different value to trigger the update
 			const newValue = 'Johnny'
 			store.setCellText(1, 0, newValue)

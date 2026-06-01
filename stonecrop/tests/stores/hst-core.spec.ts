@@ -1,5 +1,5 @@
 import { Map, List } from 'immutable'
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 
 import { createHST, HSTNode, HSTProxy } from '../../src/stores/hst'
 

@@ -4,7 +4,6 @@ import root from '../oxlint.config.ts'
 
 export default defineConfig({
 	extends: [root],
-	ignorePatterns: ['tests/**'],
 	rules: {
 		'no-console': ['error', { allow: ['warn', 'error', 'debug', 'info'] }],
 		'no-underscore-dangle': [
@@ -23,6 +22,5 @@ export default defineConfig({
 				],
 			},
 		],
-		'typescript/no-unsafe-type-assertion': 'error',
 	},
 })

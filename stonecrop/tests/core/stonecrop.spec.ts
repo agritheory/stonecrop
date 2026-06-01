@@ -568,7 +568,7 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 
 			stonecrop.addRecord('task', '123', { id: '123', title: 'Test Task' })
 
-			const store = stonecrop.getStore()
+			const _store = stonecrop.getStore()
 			const record = stonecrop.getRecordById('task', '123')
 
 			if (record) {

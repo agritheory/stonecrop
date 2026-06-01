@@ -215,7 +215,7 @@ describe('HST Edge Cases & Performance', { tags: ['unit'] }, () => {
 							})
 
 							testResult.value = 'success'
-						} catch (error) {
+						} catch {
 							testResult.value = 'error'
 						}
 					}
@@ -273,7 +273,7 @@ describe('HST Edge Cases & Performance', { tags: ['unit'] }, () => {
 							}
 
 							recoveryStatus.value = 'recovered'
-						} catch (error) {
+						} catch {
 							recoveryStatus.value = 'failed'
 						}
 					}

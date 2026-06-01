@@ -37,7 +37,7 @@ describe('Type Safety Tests', { tags: ['unit', 'graphql'] }, () => {
 		})
 
 		it('should type database ability builder correctly', () => {
-			const fetchRules = async (userId: string) => []
+			const fetchRules = async (_userId: string) => []
 			const builder = createDatabaseAbilityBuilder(fetchRules)
 
 			expectTypeOf(builder).parameter(0).toEqualTypeOf<User | undefined>()
@@ -158,7 +158,7 @@ describe('Type Safety Tests', { tags: ['unit', 'graphql'] }, () => {
 
 			// Type checking that these calls are valid
 			expectTypeOf(ability.can).parameter(0).toBeString()
-			expectTypeOf(ability.can).parameter(1).toEqualTypeOf<string | any>()
+			expectTypeOf(ability.can).parameter(1).toEqualTypeOf<string>()
 		})
 
 		it('should support subject type checking', () => {

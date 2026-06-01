@@ -146,7 +146,7 @@ describe('WELL_KNOWN_SCALARS', { tags: ['unit'] }, () => {
 			'Quantity',
 			'Select',
 		]
-		for (const [name, template] of Object.entries(WELL_KNOWN_SCALARS)) {
+		for (const [_name, template] of Object.entries(WELL_KNOWN_SCALARS)) {
 			expect(validTypes).toContain(template.fieldtype)
 			expect(template.component).toBeTruthy()
 		}

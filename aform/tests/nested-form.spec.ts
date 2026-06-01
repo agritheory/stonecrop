@@ -571,8 +571,6 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 		const nestedSections = wrapper.findAll('.aform-nested-section')
 		expect(nestedSections.length).toBe(0)
 
-		// Should render a dynamic component (ATable) instead
-		const dynamicComponents = wrapper.findAllComponents({ name: 'ATable' })
 		// ATable may not be registered in test, but the component :is binding
 		// should still attempt to render it — verify no nested form was created
 		expect(nestedSections.length).toBe(0)

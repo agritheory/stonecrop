@@ -5,7 +5,6 @@ import root from '../oxlint.config.ts'
 export default defineConfig({
 	extends: [root],
 	plugins: ['typescript', 'unicorn', 'oxc', 'import', 'promise', 'vitest', 'vue'],
-	ignorePatterns: ['tests/**'],
 	rules: {
 		'no-console': ['error', { allow: ['warn', 'error', 'debug', 'info'] }],
 		'no-underscore-dangle': [
@@ -23,9 +22,16 @@ export default defineConfig({
 					'_client',
 					'_operationLogConfig',
 					'_operationLogStore',
+					'_context',
+					'_stonecrop',
+					'_mockComponent',
+					'_secondReload',
+					'_hstStore',
+					'_batchId',
+					'_store',
+					'_redo',
 				],
 			},
 		],
-		'typescript/no-unsafe-type-assertion': 'error',
 	},
 })

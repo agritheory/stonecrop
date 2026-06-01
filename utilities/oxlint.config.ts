@@ -8,6 +8,5 @@ export default defineConfig({
 	rules: {
 		'no-console': 'error',
 		'no-underscore-dangle': 'error',
-		'typescript/no-unsafe-type-assertion': 'error',
 	},
 })

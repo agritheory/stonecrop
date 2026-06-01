@@ -4,13 +4,11 @@ import root from '../oxlint.config.ts'
 
 export default defineConfig({
 	extends: [root],
-	ignorePatterns: ['tests/**'],
 	rules: {
 		'no-console': 'error',
 		'no-underscore-dangle': [
 			'error',
-			{ allow: ['__dirname', '__filename', '__v_isReactive', '__caslSubjectType__', '_attributeName'] },
+			{ allow: ['__dirname', '__filename', '__v_isReactive', '__caslSubjectType__', '_attributeName', '__rules'] },
 		],
-		'typescript/no-unsafe-type-assertion': 'error',
 	},
 })

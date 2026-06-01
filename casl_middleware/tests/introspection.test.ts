@@ -134,7 +134,7 @@ describe('Introspection Middleware', { tags: ['unit', 'graphql'] }, () => {
 
 			mockContext.user = { id: 'user-123', roles: ['developer'] }
 
-			const result = await middleware(mockResolve, {}, {}, mockContext, mockInfo)
+			await middleware(mockResolve, {}, {}, mockContext, mockInfo)
 
 			expect(mockResolve).toHaveBeenCalled()
 		})
@@ -160,7 +160,7 @@ describe('Introspection Middleware', { tags: ['unit', 'graphql'] }, () => {
 
 			mockContext.user = { id: 'user-123', roles: ['user', 'developer'] }
 
-			const result = await middleware(mockResolve, {}, {}, mockContext, mockInfo)
+			await middleware(mockResolve, {}, {}, mockContext, mockInfo)
 
 			expect(mockResolve).toHaveBeenCalled()
 		})
@@ -172,7 +172,7 @@ describe('Introspection Middleware', { tags: ['unit', 'graphql'] }, () => {
 			})
 
 			// Empty allowed roles means no role-based restriction
-			const result = await middleware(mockResolve, {}, {}, mockContext, mockInfo)
+			await middleware(mockResolve, {}, {}, mockContext, mockInfo)
 
 			expect(mockResolve).toHaveBeenCalled()
 		})
@@ -190,7 +190,7 @@ describe('Introspection Middleware', { tags: ['unit', 'graphql'] }, () => {
 				enabled: true,
 			})
 
-			const result = await middleware(mockResolve, {}, {}, mockContext, mockInfo)
+			await middleware(mockResolve, {}, {}, mockContext, mockInfo)
 
 			expect(mockResolve).toHaveBeenCalled()
 		})

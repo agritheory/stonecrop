@@ -89,16 +89,15 @@ async function runQuery(query: string, variables?: Record<string, unknown>): Pro
 		})
 		args.contextValue.withPgClient = withPgClient
 		queryResult = (await execute(args)) as Record<string, unknown>
-		return queryResult
 	} finally {
 		try {
 			await client.query('ROLLBACK')
 		} catch {
 			client.release(new Error('rollback failed'))
-			return queryResult
 		}
 		client.release()
 	}
+	return queryResult
 }
 
 // ===========================================================================

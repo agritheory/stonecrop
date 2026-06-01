@@ -5,7 +5,6 @@ import {
 	createJWT,
 	createHTTPJWTMiddleware,
 	refreshTokenUtils,
-	type JWTConfig,
 	type JWTPayload,
 } from '../src/middleware/jwt'
 import type { Context, User } from '../src/types'
@@ -708,7 +707,7 @@ describe('JWT Middleware - Advanced Tests', { tags: ['unit', 'graphql'] }, () =>
 			}
 
 			const next = vi.fn()
-			await expect(middleware(context, next)).rejects.toThrow()
+			await expect(middleware(context, next)).rejects.toThrow('jwt issuer invalid')
 		})
 
 		it('should verify token with audience', async () => {
@@ -863,7 +862,7 @@ describe('JWT Middleware - Advanced Tests', { tags: ['unit', 'graphql'] }, () =>
 			}
 
 			const next = vi.fn()
-			await expect(middleware(context, next)).rejects.toThrow()
+			await expect(middleware(context, next)).rejects.toThrow('invalid token')
 		})
 	})
 

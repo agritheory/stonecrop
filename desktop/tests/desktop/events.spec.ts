@@ -347,16 +347,10 @@ describe('Desktop desktopMethods injection', { tags: ['component'] }, () => {
 			navigate: vi.fn(),
 		}
 
-		let injectedMethods: any = null
-
 		const ChildComponent = defineComponent({
 			inject: ['desktopMethods'],
 			setup() {
 				return {}
-			},
-			mounted() {
-				// Grab the desktopMethods injection from context
-				injectedMethods = (this as any).desktopMethods
 			},
 			template: '<div />',
 		})

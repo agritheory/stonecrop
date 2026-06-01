@@ -160,7 +160,7 @@ describe('Stonecrop Vue Plugin with HST', { tags: ['unit'] }, () => {
 		app.use(StonecropPlugin, { router: mockRouter })
 
 		// Simulate component that uses injection
-		const mockComponent = {
+		const _mockComponent = {
 			setup() {
 				// This would normally use inject('$registry')
 				return {}

@@ -113,7 +113,6 @@ async function runQuery(query: string, variables?: Record<string, unknown>): Pro
 		// SQL runs inside one rollback-able transaction.
 		args.contextValue.withPgClient = withPgClient
 		queryResult = (await execute(args)) as Record<string, unknown>
-		return queryResult
 	} finally {
 		try {
 			await client.query('ROLLBACK')
@@ -121,10 +120,10 @@ async function runQuery(query: string, variables?: Record<string, unknown>): Pro
 			// If ROLLBACK itself fails the connection is in an unknown state; discard it.
 			// Return the already-fetched result rather than losing it.
 			client.release(new Error('rollback failed'))
-			return queryResult
 		}
 		client.release()
 	}
+	return queryResult
 }
 
 // ===========================================================================
