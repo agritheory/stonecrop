@@ -4,7 +4,7 @@ import { useOperationLogStore } from '../../src/stores/operation-log'
 import { createHST } from '../../src/stores/hst'
 import type { HSTOperation } from '../../src/types/operation-log'
 
-describe('Operation Log Store', () => {
+describe('Operation Log Store', { tags: ['unit'] }, () => {
 	beforeEach(() => {
 		setActivePinia(createPinia())
 	})

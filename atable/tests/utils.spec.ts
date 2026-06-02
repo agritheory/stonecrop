@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { isHtmlString, generateHash } from '../src/utils'
 
-describe('utils', () => {
+describe('utils', { tags: ['component'] }, () => {
 	describe('isHtmlString', () => {
 		it('should return true for valid HTML strings', () => {
 			expect(isHtmlString('<div>Hello</div>')).toBe(true)

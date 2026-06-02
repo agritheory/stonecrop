@@ -7,7 +7,7 @@ import { Stonecrop } from '../../src/stonecrop.js'
 import { hst, pinia as stonecropPinia } from '../../src/stores/index.js'
 import { HST, HSTProxy, createHST } from '../../src/stores/hst.js'
 
-describe('Stonecrop Stores', () => {
+describe('Stonecrop Stores', { tags: ['unit'] }, () => {
 	let registry: Registry
 	let stonecrop: Stonecrop
 

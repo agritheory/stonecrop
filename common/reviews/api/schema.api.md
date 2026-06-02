@@ -26,7 +26,7 @@ export type ActionDefinition = z.infer<typeof ActionDefinition>;
 export function buildScalarMap(customScalars?: Record<string, Partial<FieldTemplate>>): Record<string, FieldTemplate>;
 
 // @public
-export const BUILTIN_FIELD_TYPES: readonly ["Data", "Text", "Int", "Float", "Decimal", "Check", "Date", "Time", "Datetime", "Duration", "DateRange", "JSON", "Code", "Link", "Attach", "Currency", "Quantity", "Select"];
+export const BUILTIN_FIELD_TYPES: readonly ["Data", "Text", "Int", "Float", "Decimal", "Check", "Date", "Time", "Datetime", "Duration", "DateRange", "JSON", "Code", "Link", "Attach", "Currency", "Quantity", "Select", "PrimaryKey"];
 
 // @public
 export type BuiltinFieldType = (typeof BUILTIN_FIELD_TYPES)[number];
@@ -124,7 +124,6 @@ export interface DoctypeContext {
 export const DoctypeMeta: z.ZodObject<{
     name: z.ZodString;
     slug: z.ZodOptional<z.ZodString>;
-    tableName: z.ZodOptional<z.ZodString>;
     fields: z.ZodArray<z.ZodObject<{
         fieldname: z.ZodString;
         fieldtype: z.ZodString;
@@ -307,7 +306,6 @@ export interface GraphQLConversionFieldMeta extends FieldMeta {
 export interface GraphQLConversionOptions {
     classifyField?: (fieldName: string, field: GraphQLField<unknown, unknown>, parentType: GraphQLObjectType) => Partial<FieldMeta> | null;
     customScalars?: Record<string, Partial<FieldTemplate>>;
-    deriveTableName?: (typeName: string) => string | undefined;
     exclude?: string[];
     include?: string[];
     includeUnmappedMeta?: boolean;

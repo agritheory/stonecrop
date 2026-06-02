@@ -50,7 +50,6 @@ function formatDoctypeMeta(meta: DoctypeMeta) {
 	return {
 		name: meta.name,
 		slug: meta.slug ?? null,
-		tableName: meta.tableName ?? null,
 		fields: meta.fields.map(formatFieldMeta),
 		workflow: meta.workflow
 			? {
@@ -117,7 +116,7 @@ export default {
 				})
 			},
 
-			stonecropRecords(_: unknown, { $doctype, $filters, $orderBy, $limit, $offset }: any) {
+			stonecropRecords(_: unknown, { $doctype, $filters, $orderBy, $limit, $offset, $options }: any) {
 				return loadOne(
 					object({
 						doctype: $doctype,
@@ -125,6 +124,7 @@ export default {
 						orderBy: $orderBy,
 						limit: $limit,
 						offset: $offset,
+						options: $options,
 					}),
 					async (specs: readonly any[]) => {
 						return Promise.all(

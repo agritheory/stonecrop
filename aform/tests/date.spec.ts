@@ -16,7 +16,7 @@ const globalComponents = {
 	},
 }
 
-describe('date component', () => {
+describe('date component', { tags: ['component'] }, () => {
 	it('date input is rendered', async () => {
 		const wrapper = mount(ADate, globalComponents)
 		const $input = wrapper.find('input')

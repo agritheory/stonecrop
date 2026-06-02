@@ -2,6 +2,48 @@
   "name": "@stonecrop/utilities",
   "entries": [
     {
+      "version": "0.13.3",
+      "tag": "@stonecrop/utilities_v0.13.3",
+      "date": "Tue, 02 Jun 2026 05:55:11 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.13.2",
+      "tag": "@stonecrop/utilities_v0.13.2",
+      "date": "Thu, 28 May 2026 06:18:59 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.13.1",
+      "tag": "@stonecrop/utilities_v0.13.1",
+      "date": "Tue, 26 May 2026 14:15:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.13.0",
+      "tag": "@stonecrop/utilities_v0.13.0",
+      "date": "Wed, 20 May 2026 11:08:30 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.12.8",
+      "tag": "@stonecrop/utilities_v0.12.8",
+      "date": "Mon, 18 May 2026 11:24:35 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.12.7",
+      "tag": "@stonecrop/utilities_v0.12.7",
+      "date": "Mon, 18 May 2026 10:41:42 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.12.6",
+      "tag": "@stonecrop/utilities_v0.12.6",
+      "date": "Thu, 14 May 2026 11:55:38 GMT",
+      "comments": {}
+    },
+    {
       "version": "0.12.5",
       "tag": "@stonecrop/utilities_v0.12.5",
       "date": "Thu, 14 May 2026 10:29:38 GMT",

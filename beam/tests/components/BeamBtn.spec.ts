@@ -3,7 +3,7 @@ import { mount } from '@vue/test-utils'
 
 import BeamBtn from '../../src/components/BeamBtn.vue'
 
-describe('BeamBtn', () => {
+describe('BeamBtn', { tags: ['component'] }, () => {
 	it('renders default slot content', () => {
 		const wrapper = mount(BeamBtn, {
 			slots: {

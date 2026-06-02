@@ -22,7 +22,7 @@ vi.mock('consola', () => ({
 	},
 }))
 
-describe('package utilities', () => {
+describe('package utilities', { tags: ['unit', 'nuxt'] }, () => {
 	beforeEach(() => {
 		vi.clearAllMocks()
 	})

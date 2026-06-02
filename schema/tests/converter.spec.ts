@@ -102,7 +102,7 @@ type CreateUserPayload {
 // Scalar Maps
 // ═══════════════════════════════════════════════════════════════
 
-describe('GQL_SCALAR_MAP', () => {
+describe('GQL_SCALAR_MAP', { tags: ['unit'] }, () => {
 	it('should map all standard GraphQL scalars', () => {
 		expect(GQL_SCALAR_MAP.String).toEqual({ component: 'ATextInput', fieldtype: 'Data' })
 		expect(GQL_SCALAR_MAP.Int).toEqual({ component: 'ANumericInput', fieldtype: 'Int' })
@@ -112,7 +112,7 @@ describe('GQL_SCALAR_MAP', () => {
 	})
 })
 
-describe('WELL_KNOWN_SCALARS', () => {
+describe('WELL_KNOWN_SCALARS', { tags: ['unit'] }, () => {
 	it('should map common custom scalars', () => {
 		expect(WELL_KNOWN_SCALARS.BigFloat).toEqual({ component: 'ADecimalInput', fieldtype: 'Decimal' })
 		expect(WELL_KNOWN_SCALARS.UUID).toEqual({ component: 'ATextInput', fieldtype: 'Data' })
@@ -153,13 +153,13 @@ describe('WELL_KNOWN_SCALARS', () => {
 	})
 })
 
-describe('INTERNAL_SCALARS', () => {
+describe('INTERNAL_SCALARS', { tags: ['unit'] }, () => {
 	it('should include Cursor', () => {
 		expect(INTERNAL_SCALARS.has('Cursor')).toBe(true)
 	})
 })
 
-describe('buildScalarMap', () => {
+describe('buildScalarMap', { tags: ['unit'] }, () => {
 	it('should merge standard and well-known scalars', () => {
 		const map = buildScalarMap()
 		expect(map.String).toEqual(GQL_SCALAR_MAP.String)
@@ -193,7 +193,7 @@ describe('buildScalarMap', () => {
 // Entity Type Detection
 // ═══════════════════════════════════════════════════════════════
 
-describe('defaultIsEntityType', () => {
+describe('defaultIsEntityType', { tags: ['unit'] }, () => {
 	const schema = buildSchema(basicSdl)
 	const typeMap = schema.getTypeMap()
 
@@ -248,7 +248,7 @@ describe('defaultIsEntityType', () => {
 // Entity Field Detection
 // ═══════════════════════════════════════════════════════════════
 
-describe('defaultIsEntityField', () => {
+describe('defaultIsEntityField', { tags: ['unit'] }, () => {
 	const schema = buildSchema(basicSdl)
 	const userType = schema.getType('User') as any
 	const userFields = userType.getFields()
@@ -276,7 +276,7 @@ describe('defaultIsEntityField', () => {
 // Field Classification
 // ═══════════════════════════════════════════════════════════════
 
-describe('classifyFieldType', () => {
+describe('classifyFieldType', { tags: ['unit'] }, () => {
 	const schema = buildSchema(basicSdl)
 	const entityTypes = new Set(['User', 'Post', 'Comment'])
 	const postType = schema.getType('Post') as any
@@ -391,11 +391,70 @@ describe('classifyFieldType', () => {
 	})
 })
 
+describe('classifyFieldType — foreign key (ID → Link)', { tags: ['unit'] }, () => {
+	it('should classify ID field as Link when a matching entity type exists', () => {
+		const sdl = `
+			type Query { task: RecipeTask }
+			type RecipeTask {
+				id: ID!
+				recipe: ID
+				name: String!
+			}
+			type Recipe {
+				id: ID!
+				title: String!
+			}
+		`
+		const schema = buildSchema(sdl)
+		const recipeTaskType = schema.getType('RecipeTask') as any
+		const fields = recipeTaskType.getFields()
+		const entityTypesWithRecipe = new Set(['RecipeTask', 'Recipe'])
+
+		const recipeField = classifyFieldType('recipe', fields.recipe, entityTypesWithRecipe)
+		expect(recipeField.fieldtype).toBe('Link')
+		expect(recipeField.component).toBe('ALink')
+		expect(recipeField.options).toBe('recipe')
+	})
+
+	it('should leave ID field as Data when no matching entity type exists', () => {
+		const schema = buildSchema(`
+			type Query { user: User }
+			type User { id: ID! name: String! }
+		`)
+		const userType = schema.getType('User') as any
+		const fields = userType.getFields()
+
+		const idField = classifyFieldType('id', fields.id, new Set(['User']))
+		expect(idField.fieldtype).toBe('Data')
+	})
+
+	it('should work end-to-end via convertGraphQLSchema', () => {
+		const sdl = `
+			type Query { task: RecipeTask }
+			type RecipeTask {
+				id: ID!
+				recipe: ID
+				name: String!
+			}
+			type Recipe {
+				id: ID!
+				title: String!
+			}
+		`
+		const doctypes = convertGraphQLSchema(sdl)
+		const recipeTask = doctypes.find(d => d.name === 'RecipeTask')!
+		const recipeField = recipeTask.fields.find(f => f.fieldname === 'recipe')!
+
+		expect(recipeField.fieldtype).toBe('Link')
+		expect(recipeField.options).toBe('recipe')
+	})
+})
+
 // ═══════════════════════════════════════════════════════════════
 // End-to-End Conversion
 // ═══════════════════════════════════════════════════════════════
 
-describe('convertGraphQLSchema', () => {
+describe('convertGraphQLSchema', { tags: ['unit'] }, () => {
 	describe('from SDL', () => {
 		it('should convert entity types to doctypes', () => {
 			const doctypes = convertGraphQLSchema(basicSdl)
@@ -426,15 +485,6 @@ describe('convertGraphQLSchema', () => {
 
 			expect(user.slug).toBe('user')
 			expect(post.slug).toBe('post')
-		})
-
-		it('should derive table names', () => {
-			const doctypes = convertGraphQLSchema(basicSdl)
-			const user = doctypes.find(d => d.name === 'User')!
-			const post = doctypes.find(d => d.name === 'Post')!
-
-			expect(user.tableName).toBe('user')
-			expect(post.tableName).toBe('post')
 		})
 
 		it('should correctly classify fields on User', () => {
@@ -565,22 +615,6 @@ describe('convertGraphQLSchema', () => {
 			expect(emailField.label).toBe('Email Address')
 		})
 
-		it('should use custom deriveTableName', () => {
-			const doctypes = convertGraphQLSchema(basicSdl, {
-				deriveTableName: typeName => `app_${typeName.toLowerCase()}s`,
-			})
-			const user = doctypes.find(d => d.name === 'User')!
-			expect(user.tableName).toBe('app_users')
-		})
-
-		it('should omit tableName when deriveTableName returns undefined', () => {
-			const doctypes = convertGraphQLSchema(basicSdl, {
-				deriveTableName: () => undefined,
-			})
-			const user = doctypes.find(d => d.name === 'User')!
-			expect(user.tableName).toBeUndefined()
-		})
-
 		it('should include unmapped meta when requested', () => {
 			const doctypes = convertGraphQLSchema(basicSdl, {
 				includeUnmappedMeta: true,
@@ -631,7 +665,6 @@ describe('convertGraphQLSchema', () => {
 			expect(doctypes.length).toBe(1)
 			expect(doctypes[0].name).toBe('SalesOrder')
 			expect(doctypes[0].slug).toBe('sales-order')
-			expect(doctypes[0].tableName).toBe('sales_order')
 		})
 	})
 

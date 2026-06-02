@@ -4,8 +4,6 @@ import { makeSchema } from 'postgraphile'
 import { PostGraphileAmberPreset } from 'postgraphile/presets/amber'
 import { describe, it, expect, beforeAll } from 'vitest'
 
-import type { PostGraphileInstance } from '../../../src/types'
-
 /**
  * Integration test for PostGraphile with custom resolvers
  * This tests a real-world scenario where:
@@ -13,8 +11,8 @@ import type { PostGraphileInstance } from '../../../src/types'
  * 2. Custom resolvers are added for additional functionality
  * 3. Both PostGraphile queries and custom resolvers work together
  */
-describe('PostGraphile makeSchema Integration', () => {
-	let postgraphileInstance: PostGraphileInstance
+describe('PostGraphile makeSchema Integration', { tags: ['e2e', 'nuxt', 'graphql'] }, () => {
+	let postgraphileInstance: any
 	let combinedSchema: GraphQLSchema
 
 	beforeAll(async () => {
@@ -40,7 +38,6 @@ describe('PostGraphile makeSchema Integration', () => {
 		// Use PostGraphile's makeSchema to build a schema from the preset
 		const { schema: pgSchema, resolvedPreset } = await makeSchema(pgPreset)
 
-		// Wrap in PostGraphileInstance interface for compatibility
 		postgraphileInstance = {
 			getSchema: async () => pgSchema,
 			getSchemaResult: async () => ({

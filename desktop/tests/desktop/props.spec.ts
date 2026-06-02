@@ -15,7 +15,7 @@ afterEach(() => {
 	Stonecrop._root = undefined as any
 })
 
-describe('StonecropDesktop plugin', () => {
+describe('StonecropDesktop plugin', { tags: ['component'] }, () => {
 	it('registers all desktop components globally', () => {
 		const app = createApp({ template: '<div />' })
 		app.use(StonecropDesktop)
@@ -27,7 +27,7 @@ describe('StonecropDesktop plugin', () => {
 	})
 })
 
-describe('Desktop props', () => {
+describe('Desktop props', { tags: ['component'] }, () => {
 	describe('routeAdapter', () => {
 		let registry: Registry
 		let stonecrop: Stonecrop

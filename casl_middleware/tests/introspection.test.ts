@@ -14,7 +14,7 @@ import type { AppAbility } from '../src/middleware/ability'
 
 const Ability = PureAbility as AbilityClass<AppAbility>
 
-describe('Introspection Middleware', () => {
+describe('Introspection Middleware', { tags: ['unit', 'graphql'] }, () => {
 	let mockResolve: ReturnType<typeof vi.fn>
 	let mockContext: Context
 	let mockInfo: any

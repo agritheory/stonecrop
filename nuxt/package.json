@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/nuxt",
-	"version": "0.12.5",
+	"version": "0.13.3",
 	"description": "Nuxt module for Stonecrop",
 	"license": "MIT",
 	"type": "module",
@@ -89,7 +89,7 @@
 		"eslint": "^10.3.0",
 		"globals": "^17.6.0",
 		"nuxt": "^4.4.4",
-		"postgraphile": "^5.0.1",
+		"postgraphile": "^5.0.3",
 		"typescript-eslint": "^8.59.1",
 		"typescript": "^6.0.3",
 		"vite": "^7.3.2",

@@ -5,7 +5,7 @@ import { useOperationLog, useUndoRedoShortcuts, withBatch } from '../../src/comp
 import { createHST } from '../../src/stores/hst'
 import type { HSTNode } from '../../src/stores/hst'
 
-describe('Operation Log Composable', () => {
+describe('Operation Log Composable', { tags: ['unit'] }, () => {
 	let hstStore: HSTNode
 
 	beforeEach(() => {

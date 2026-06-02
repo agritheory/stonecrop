@@ -4,7 +4,7 @@ import { mount } from '@vue/test-utils'
 import AFieldset from '../src/components/form/AFieldset.vue'
 import type { SchemaTypes } from '../src/types'
 
-describe('fieldset input component', () => {
+describe('fieldset input component', { tags: ['component'] }, () => {
 	it('no change in collapse status when fieldset is uncollapsible', async () => {
 		const wrapper = mount(AFieldset, {
 			props: {

@@ -3,7 +3,7 @@ import { mount } from '@vue/test-utils'
 
 import SegmentedDisplay from '../../src/components/SegmentedDisplay.vue'
 
-describe('SegmentedDisplay', () => {
+describe('SegmentedDisplay', { tags: ['component'] }, () => {
 	it('renders with default value', () => {
 		const wrapper = mount(SegmentedDisplay)
 		expect(wrapper.text()).toBe('120.26')

@@ -14,7 +14,7 @@ import { createJWTMiddleware, createJWT, type JWTConfig, type JWTPayload } from 
 import { createCaslMiddleware } from '../src/middleware/graphql'
 import type { Context, User, MiddlewareOptions } from '../src/types'
 
-describe('Type Safety Tests', () => {
+describe('Type Safety Tests', { tags: ['unit', 'graphql'] }, () => {
 	describe('Ability Types', () => {
 		it('should have correct AppAbility type structure', () => {
 			expectTypeOf<AppAbility>().toExtend<PureAbility>() // AppAbility extends PureAbility base type

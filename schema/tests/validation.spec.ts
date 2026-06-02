@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { validateField, validateDoctype, parseField, parseDoctype, type ValidationResult } from '../src/validation'
 import { ZodError } from 'zod'
 
-describe('Field Validation', () => {
+describe('Field Validation', { tags: ['unit'] }, () => {
 	describe('validateField', () => {
 		it('should validate a correct field', () => {
 			const field = {
@@ -140,13 +140,12 @@ describe('Field Validation', () => {
 	})
 })
 
-describe('Doctype Validation', () => {
+describe('Doctype Validation', { tags: ['unit'] }, () => {
 	describe('validateDoctype', () => {
 		it('should validate a correct doctype', () => {
 			const doctype = {
 				name: 'User',
 				slug: 'user',
-				tableName: 'users',
 				fields: [
 					{ fieldname: 'id', fieldtype: 'Data' },
 					{ fieldname: 'name', fieldtype: 'Data' },
@@ -444,7 +443,7 @@ describe('Doctype Validation', () => {
 	})
 })
 
-describe('Error Path Information', () => {
+describe('Error Path Information', { tags: ['unit'] }, () => {
 	it('should provide detailed path for nested errors', () => {
 		const doctype = {
 			name: 'User',
@@ -483,7 +482,7 @@ describe('Error Path Information', () => {
 	})
 })
 
-describe('LinkDeclaration Validation', () => {
+describe('LinkDeclaration Validation', { tags: ['unit'] }, () => {
 	it('should accept all four valid cardinality values on a link', () => {
 		const cardinalities = ['one', 'atMostOne', 'noneOrMany', 'atLeastOne'] as const
 		for (const cardinality of cardinalities) {
@@ -525,7 +524,7 @@ describe('LinkDeclaration Validation', () => {
 	})
 })
 
-describe('FetchStrategy Validation', () => {
+describe('FetchStrategy Validation', { tags: ['unit'] }, () => {
 	it('should validate sync fetch strategy', () => {
 		const doctype = {
 			name: 'Recipe',

@@ -12,7 +12,7 @@ import { ImmutableDoctype } from '../../src/types'
 // Mock fetch globally
 global.fetch = vi.fn()
 
-describe('Stonecrop class with HST integration', () => {
+describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 	let registry: Registry
 	let stonecrop: Stonecrop
 	let mockRouter: any

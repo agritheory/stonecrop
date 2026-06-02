@@ -1,6 +1,45 @@
 # Change Log - @stonecrop/rockfoil
 
-This log was last generated on Thu, 14 May 2026 10:29:38 GMT and should not be manually modified.
+This log was last generated on Tue, 02 Jun 2026 05:55:11 GMT and should not be manually modified.
+
+## 0.13.3
+Tue, 02 Jun 2026 05:55:11 GMT
+
+_Version update only_
+
+## 0.13.2
+Thu, 28 May 2026 06:18:59 GMT
+
+_Version update only_
+
+## 0.13.1
+Tue, 26 May 2026 14:15:00 GMT
+
+_Version update only_
+
+## 0.13.0
+Wed, 20 May 2026 11:08:30 GMT
+
+_Version update only_
+
+## 0.12.8
+Mon, 18 May 2026 11:24:35 GMT
+
+### Patches
+
+- add test tags
+
+## 0.12.7
+Mon, 18 May 2026 10:41:42 GMT
+
+### Patches
+
+- update graphql packages
+
+## 0.12.6
+Thu, 14 May 2026 11:55:38 GMT
+
+_Version update only_
 
 ## 0.12.5
 Thu, 14 May 2026 10:29:38 GMT

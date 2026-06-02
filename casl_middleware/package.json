@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/casl-middleware",
-	"version": "0.12.5",
+	"version": "0.13.3",
 	"license": "MIT",
 	"type": "module",
 	"author": {
@@ -44,7 +44,7 @@
 	},
 	"dependencies": {
 		"@casl/ability": "^6.8.0",
-		"graphql": "^16.13.2",
+		"graphql": "^16.14.0",
 		"graphql-tag": "^2.12.6",
 		"jsonwebtoken": "^9.0.3"
 	},
@@ -63,7 +63,7 @@
 		"graphql-middleware": "^6.1.35",
 		"graphql-yoga": "^5.18.0",
 		"jsdom": "^29.1.1",
-		"postgraphile": "^5.0.1",
+		"postgraphile": "^5.0.3",
 		"stonecrop-rig": "workspace:*",
 		"typescript": "^6.0.3",
 		"vite": "^7.3.2",
@@ -72,7 +72,7 @@
 	},
 	"peerDependencies": {
 		"graphql-yoga": "^5.18.0",
-		"postgraphile": "^5.0.1"
+		"postgraphile": "^5.0.3"
 	},
 	"description": "CASL authorization middleware for GraphQL servers",
 	"keywords": [

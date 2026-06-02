@@ -6,7 +6,7 @@ import AGanttCell from '../../src/components/AGanttCell.vue'
 import { createTableStore } from '../../src/stores/table'
 import type { TableColumn, TableRow } from '../../src/types'
 
-describe('AGanttCell component', () => {
+describe('AGanttCell component', { tags: ['component'] }, () => {
 	let store: ReturnType<typeof createTableStore>
 
 	const mockColumns: TableColumn[] = [

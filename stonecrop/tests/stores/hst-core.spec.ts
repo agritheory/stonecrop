@@ -3,7 +3,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 
 import { createHST, HSTNode, HSTProxy } from '../../src/stores/hst'
 
-describe('HST Core Functionality', () => {
+describe('HST Core Functionality', { tags: ['unit'] }, () => {
 	describe('Tree Navigation', () => {
 		let testData: Record<string, any>
 		let hst: HSTNode

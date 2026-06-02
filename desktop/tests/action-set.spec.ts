@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 
 import ActionSet from '../src/components/ActionSet.vue'
 
-describe('ActionSet', () => {
+describe('ActionSet', { tags: ['component'] }, () => {
 	it('renders without elements', () => {
 		const wrapper = mount(ActionSet)
 		expect(wrapper.find('.action-set').exists()).toBe(true)

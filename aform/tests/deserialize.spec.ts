@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 
 import { deserializeFunction } from '../src/utils/deserialize'
 
-describe('deserializeFunction', () => {
+describe('deserializeFunction', { tags: ['component'] }, () => {
 	it('deserializes a sync arrow function string', () => {
 		const fn = deserializeFunction<(x: number) => number>('(x) => x * 2')
 		expect(fn(5)).toBe(10)

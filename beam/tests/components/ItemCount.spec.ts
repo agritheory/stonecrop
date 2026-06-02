@@ -3,7 +3,7 @@ import { mount } from '@vue/test-utils'
 
 import ItemCount from '../../src/components/ItemCount.vue'
 
-describe('ItemCount', () => {
+describe('ItemCount', { tags: ['component'] }, () => {
 	beforeEach(() => {
 		vi.useFakeTimers()
 	})

@@ -9,7 +9,7 @@ import {
 	type BuiltinFieldType,
 } from '../src/fieldtype'
 
-describe('fieldtype', () => {
+describe('fieldtype', { tags: ['unit'] }, () => {
 	describe('getDefaultComponent', () => {
 		it('should return correct component for Data field', () => {
 			expect(getDefaultComponent('Data')).toBe('ATextInput')

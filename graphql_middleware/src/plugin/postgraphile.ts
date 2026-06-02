@@ -1,207 +1,70 @@
-import type { DoctypeMeta, LinkDeclaration, LazyFetch, SyncFetch } from '@stonecrop/schema'
-import { snakeToCamel, toPascalCase } from '@stonecrop/schema'
-import { constant, lambda, object, loadOne } from 'postgraphile/grafast'
+import type { DoctypeMeta, FieldMeta, GetRecordOptions } from '@stonecrop/schema'
+import { camelToSnake, pascalToSnake } from '@stonecrop/schema'
+import { loadOneWithPgClient, sideEffectWithPgClient } from '@dataplan/pg'
+import type { PgClient, PgExecutor } from '@dataplan/pg'
+import { constant, lambda, object } from 'postgraphile/grafast'
 import { GraphileConfig } from 'postgraphile/graphile-build'
-import { extendSchema, gql } from 'postgraphile/utils'
-import pluralize from 'pluralize'
+import { extendSchema } from 'postgraphile/utils'
 
 import { getHandler } from '../registry/actions'
+import { getFetchHandler } from '../registry/fetchHandlers'
 import { getMeta, getAllMeta } from '../registry/doctypes'
-import type {
-	ActionContext,
-	GraphQLExecutor,
-	ReverseConnectionParams,
-	BuildRecordQueryOptions,
-	BuildNestedSelectionsParams,
-	BuildListQueryArgs,
-	MergeNestedResultsParams,
-	ExtractSingleResultParams,
-	ExtractListResultParams,
-} from '../types'
+import { typeDefs } from '../typeDefs'
+import type { ActionContext } from '../types'
 
 /**
- * Inflection callbacks for mapping table names to GraphQL query field names.
- * Override these when using a non-Amber inflection preset (e.g., V4, SimplifyInflection).
- *
- * Defaults match the PostGraphile Amber preset conventions.
- * @public
- */
-export interface StonecropInflectionConfig {
-	/**
-	 * Given a table name, return the GraphQL field name for fetching a single record by ID.
-	 * @example Amber default: "sales_orders" → "salesOrderById"
-	 * @example V4 preset: "sales_orders" → "salesOrderByRowId"
-	 */
-	recordFieldName?: (tableName: string) => string
-
-	/**
-	 * Given a table name, return the GraphQL field name for fetching a list/connection.
-	 * @example Amber default: "sales_orders" → "allSalesOrders"
-	 * @example SimplifyInflection: "sales_orders" → "salesOrders"
-	 */
-	connectionFieldName?: (tableName: string) => string
-
-	/**
-	 * Given a table name, return the GraphQL OrderBy enum type name.
-	 * @example Amber default: "sales_orders" → "SalesOrdersOrderBy"
-	 */
-	orderByTypeName?: (tableName: string) => string
-
-	/**
-	 * Given a table name, return the GraphQL argument name used to look up a record by PK.
-	 * @example Amber default (Relay Global ID): "sales_orders" → "id"
-	 * @example row_id PK: "sales_orders" → "rowId"
-	 */
-	recordArgName?: (tableName: string) => string
-
-	/**
-	 * Given a table name, return the GraphQL variable type for the PK argument.
-	 * @example Default UUID PK: "sales_orders" → "UUID!"
-	 * @example Integer PK: "sales_orders" → "Int!"
-	 */
-	recordArgType?: (tableName: string) => string
-
-	/**
-	 * Derive the GraphQL connection field name for a reverse-FK link.
-	 * PostGraphile convention: `{targetPlural}By{FkColumnPascal}Id`
-	 * - When backlink is provided: FK column is derived from the backlink field
-	 * - When backlink is absent: FK column is derived from the parent doctype
-	 * @example Recipe → RecipeTasksByRecipeId
-	 */
-	reverseConnectionName?: (params: {
-		/** Parent doctype slug */
-		doctype: string
-		/** Link key on the parent */
-		linkName: string
-		/** Link field on the target that points back to the parent (optional) */
-		backlink?: string
-		/** Target doctype slug */
-		target: string
-	}) => string
-}
-
-/**
- * Options for stonecropRecord queries
- * @public
- */
-export interface StonecropRecordOptions {
-	/** Include nested/related records */
-	includeNested?: boolean | string[]
-	/** Maximum nesting depth */
-	maxDepth?: number
-}
-
-/**
- * Options for creating a Stonecrop PostGraphile plugin
+ * Options for creating a Stonecrop PostGraphile plugin.
  * @public
  */
 export interface StonecropPluginOptions {
-	/** GraphQL executor for running queries/mutations */
-	executor: GraphQLExecutor
-
 	/**
-	 * Override inflection conventions for mapping table names to GraphQL field names.
-	 * Defaults to PostGraphile Amber preset conventions.
+	 * When `true`, SQL queries executed inside `loadOneWithPgClient` callbacks
+	 * are logged to `console.log` with `[@stonecrop/graphql-middleware]` prefix. Defaults to `false`.
 	 */
-	inflection?: StonecropInflectionConfig
+	debug?: boolean
+	/**
+	 * Override the PostgreSQL FROM clause target for specific doctypes, keyed by doctype name.
+	 * Values may be a bare table name (`'plan'`) or a schema-qualified name (`'orpin.plan'`).
+	 * SQL fragments and subqueries are not supported.
+	 * When absent for a doctype, the table name is derived as `camelToSnake(doctype.name)`.
+	 */
+	tables?: Record<string, string>
 }
 
 /**
- * Create a PostGraphile plugin that extends the GraphQL schema with Stonecrop functionality
- * @param options - Plugin configuration options
+ * Create a PostGraphile plugin that extends the GraphQL schema with Stonecrop functionality.
+ *
+ * The `PgExecutor` is obtained automatically from `build.input.pgRegistry.pgExecutors`
+ * during schema construction — it does not need to be supplied by the caller.
+ *
+ * @param options - Optional plugin configuration
  * @returns A PostGraphile plugin
  * @public
  */
-export const createStonecropPlugin = (options: StonecropPluginOptions): GraphileConfig.Plugin => {
-	// Resolve inflection callbacks with Amber defaults
-	const recordFieldName = options.inflection?.recordFieldName ?? defaultRecordFieldName
-	const connectionFieldName = options.inflection?.connectionFieldName ?? defaultConnectionFieldName
-	const orderByTypeName = options.inflection?.orderByTypeName ?? defaultOrderByTypeName
-	const recordArgName = options.inflection?.recordArgName ?? defaultRecordArgName
-	const recordArgType = options.inflection?.recordArgType ?? defaultRecordArgType
-	const reverseConnectionName = options.inflection?.reverseConnectionName ?? defaultReverseConnectionName
+export const createStonecropPlugin = (options: StonecropPluginOptions = {}): GraphileConfig.Plugin => {
+	/**
+	 * SQL debug helper — mirrors PostGraphile's `@dataplan/pg:PgExecutor` logging
+	 * for queries that run inside custom loadOneWithPgClient callbacks, which
+	 * bypass the executor's native instrumentation.
+	 */
+	const debugSql = options.debug
+		? <T>(pgClient: PgClient, query: { text: string; values?: unknown[] }) => {
+				// eslint-disable-next-line no-console
+				console.log(`[@stonecrop/graphql-middleware] ${query.text}`, query.values ?? [])
+				return pgClient.query<T>(query)
+			}
+		: <T>(pgClient: PgClient, query: { text: string; values?: unknown[] }) => pgClient.query<T>(query)
 
-	return extendSchema(() => {
+	return extendSchema(build => {
+		// Obtain the PgExecutor from pgExecutors — one entry exists per configured pgService.
+		const pgExecutors = (build as any).input?.pgRegistry?.pgExecutors as Record<string, PgExecutor> | undefined
+		const executor = pgExecutors ? Object.values(pgExecutors)[0] : undefined
+		if (!executor) {
+			throw new Error('StonecropPlugin: no pgExecutors found — ensure pgServices is configured')
+		}
+
 		return {
-			typeDefs: gql`
-				type StonecropFieldMeta {
-					fieldname: String!
-					fieldtype: String!
-					component: String
-					label: String
-					width: String
-					align: String
-					required: Boolean
-					readOnly: Boolean
-					edit: Boolean
-					hidden: Boolean
-					default: JSON
-					options: JSON
-					mask: String
-					precision: Int
-					scale: Int
-					mode: String
-					validation: JSON
-				}
-
-				type StonecropWorkflowAction {
-					label: String!
-					handler: String!
-					requiredFields: [String!]
-					allowedStates: [String!]
-					confirm: Boolean
-					args: JSON
-				}
-
-				type StonecropWorkflowMeta {
-					states: [String!]
-					actions: [StonecropWorkflowAction!]
-				}
-
-				type StonecropDoctypeMeta {
-					name: String!
-					slug: String
-					tableName: String
-					fields: [StonecropFieldMeta!]!
-					workflow: StonecropWorkflowMeta
-					inherits: String
-				}
-
-				type StonecropRecordResult {
-					data: JSON
-					doctype: String!
-					unknownLinks: [String!]
-				}
-
-				type StonecropRecordsResult {
-					data: [JSON!]!
-					doctype: String!
-					count: Int!
-				}
-
-				type StonecropActionResult {
-					success: Boolean!
-					data: JSON
-					error: String
-				}
-
-				extend type Query {
-					stonecropMeta(doctype: String!): StonecropDoctypeMeta
-					stonecropAllMeta: [StonecropDoctypeMeta!]!
-					stonecropRecord(doctype: String!, id: String!, options: JSON): StonecropRecordResult
-					stonecropRecords(
-						doctype: String!
-						filters: JSON
-						orderBy: String
-						limit: Int
-						offset: Int
-					): StonecropRecordsResult
-				}
-
-				extend type Mutation {
-					stonecropAction(doctype: String!, action: String!, args: JSON): StonecropActionResult!
-				}
-			`,
+			typeDefs,
 
 			objects: {
 				Query: {
@@ -218,69 +81,146 @@ export const createStonecropPlugin = (options: StonecropPluginOptions): Graphile
 						},
 
 						stonecropRecord(_: any, { $doctype, $id, $options }: any) {
-							return loadOne(
+							return loadOneWithPgClient(
+								executor,
 								object({ doctype: $doctype, id: $id, options: $options }),
-								async (specs: readonly any[]) => {
-									return await Promise.all(
-										specs.map(async spec => {
-											const meta = getMeta(spec.doctype)
-											if (!meta) {
-												throw new Error(`Unknown doctype: ${spec.doctype}`)
-											}
+								async (pgClient: PgClient, specs) => {
+									// Group specs by doctype to batch the main SELECT per table
+									const byDoctype = new Map<string, number[]>()
+									for (let i = 0; i < specs.length; i++) {
+										const d = specs[i].doctype as string
+										if (!byDoctype.has(d)) byDoctype.set(d, [])
+										byDoctype.get(d)!.push(i)
+									}
 
-											if (!meta.tableName) {
-												throw new Error(`Doctype ${spec.doctype} has no table mapping`)
-											}
+									const results: Array<{
+										data: Record<string, unknown> | null
+										doctype: string
+										unknownLinks?: string[]
+									}> = new Array(specs.length)
 
-											const recordOptions = spec.options ?? {}
+									for (const [doctype, indices] of byDoctype) {
+										const meta = getMeta(doctype)
+										if (!meta) {
+											for (const i of indices) results[i] = { data: null, doctype }
+											continue
+										}
 
-											const query = buildRecordQuery(
-												meta,
-												recordFieldName,
-												recordArgName,
-												recordArgType,
-												getMeta,
-												recordOptions.includeNested
-													? {
-															includeNested: recordOptions.includeNested,
-															maxDepth: recordOptions.maxDepth,
-														}
-													: undefined,
-												reverseConnectionName
-											)
-											const result = await options.executor.query(query, {
-												[recordArgName(meta.tableName)]: spec.id,
-											})
+										const pkMeta = getPkMeta(meta)
+										if (!pkMeta) {
+											for (const i of indices) results[i] = { data: null, doctype }
+											continue
+										}
+										const pkColumn = camelToSnake(pkMeta.fieldname)
+										const columns = getSqlColumns(meta)
+										const ids = indices.map(i => specs[i].id as string)
 
-											let data = extractSingleResult({ result, meta, recordFieldName })
-
-											if (recordOptions.includeNested && data && meta.links) {
-												data = mergeNestedResults({
-													record: data as Record<string, unknown>,
-													meta,
-													getMeta,
-													reverseConnectionNameFn: reverseConnectionName,
-												})
-											}
-
-											const unknownLinks =
-												Array.isArray(recordOptions.includeNested) && meta.links
-													? recordOptions.includeNested.filter((name: string) => !(name in meta.links!))
-													: undefined
-
-											return {
-												data,
-												doctype: spec.doctype,
-												...(unknownLinks ? { unknownLinks } : {}),
-											}
+										const { rows } = await debugSql<Record<string, unknown>>(pgClient, {
+											text: `SELECT ${columns} FROM ${resolveTableName(meta.name, options.tables)} WHERE "${pkColumn}"::text = ANY($1::text[])`,
+											values: [ids],
 										})
-									)
+
+										// Use String() so integer PKs (e.g. serial) match the string ids from GraphQL
+										const rowByPk = new Map(rows.map(r => [String(r[pkMeta.fieldname]), r]))
+
+										for (const i of indices) {
+											const specId = specs[i].id as string
+											const row = rowByPk.get(specId)
+
+											if (!row) {
+												results[i] = { data: null, doctype }
+												continue
+											}
+
+											const rowData: Record<string, unknown> = { ...row }
+											const recordOptions = (specs[i].options ?? {}) as GetRecordOptions
+											const includeAll = recordOptions.includeNested === true
+											const includeSet = Array.isArray(recordOptions.includeNested)
+												? new Set(recordOptions.includeNested)
+												: null
+
+											// FetchStrategy dispatch over link declarations
+											if (meta.links) {
+												for (const [linkName, link] of Object.entries(meta.links)) {
+													const fetch = link.fetch
+													const isMany = link.cardinality === 'noneOrMany' || link.cardinality === 'atLeastOne'
+													const effectiveMethod = fetch?.method ?? (isMany ? 'sync' : 'lazy')
+													const effectiveLimit = fetch?.method === 'sync' ? fetch.limit : isMany ? 50 : undefined
+
+													const shouldInclude =
+														includeAll || (includeSet ? includeSet.has(linkName) : effectiveMethod === 'sync')
+
+													if (!shouldInclude) continue
+
+													if (effectiveMethod === 'custom') {
+														const handlerName = (fetch as { method: 'custom'; handler: string }).handler
+														const handler = getFetchHandler(handlerName)
+														if (handler) {
+															rowData[linkName] = await handler(pgClient, rowData, link)
+														}
+														continue
+													}
+
+													if (effectiveMethod !== 'sync' && !includeSet?.has(linkName)) continue
+
+													const targetMeta = getMeta(link.target)
+													if (!targetMeta) continue
+
+													const targetColumns = getSqlColumns(targetMeta)
+
+													if (isMany) {
+														if (!link.backlink) continue
+														const backlinkCol = camelToSnake(link.backlink)
+														let sql = `SELECT ${targetColumns} FROM ${resolveTableName(targetMeta.name, options.tables)} WHERE "${backlinkCol}"::text = $1`
+														const linkValues: unknown[] = [specId]
+														if (effectiveLimit != null) {
+															sql += ` LIMIT $2`
+															linkValues.push(effectiveLimit)
+														}
+														const { rows: linked } = await debugSql<Record<string, unknown>>(pgClient, {
+															text: sql,
+															values: linkValues,
+														})
+														rowData[linkName] = linked
+													} else {
+														if (!link.fieldname) continue
+														const fkValue = rowData[link.fieldname]
+														if (fkValue == null) {
+															rowData[linkName] = null
+															continue
+														}
+														const targetPkMeta = getPkMeta(targetMeta)
+														if (!targetPkMeta) continue
+														const targetPkColumn = camelToSnake(targetPkMeta.fieldname)
+														const { rows: linked } = await debugSql<Record<string, unknown>>(pgClient, {
+															text: `SELECT ${targetColumns} FROM ${resolveTableName(targetMeta.name, options.tables)} WHERE "${targetPkColumn}" = $1`,
+															values: [fkValue],
+														})
+														rowData[linkName] = linked[0] ?? null
+													}
+												}
+											}
+
+											// Names in includeNested that don't correspond to any link
+											const unknownLinks =
+												includeSet && meta.links ? [...includeSet].filter(name => !(name in meta.links!)) : undefined
+
+											results[i] = {
+												data: rowData,
+												doctype,
+												unknownLinks: unknownLinks?.length ? unknownLinks : undefined,
+											}
+										}
+									}
+
+									return results
 								}
 							)
 						},
 
 						stonecropRecords(_: any, { $doctype, $filters, $orderBy, $limit, $offset }: any) {
-							return loadOne(
+							return loadOneWithPgClient(
+								executor,
 								object({
 									doctype: $doctype,
 									filters: $filters,
@@ -288,40 +228,87 @@ export const createStonecropPlugin = (options: StonecropPluginOptions): Graphile
 									limit: $limit,
 									offset: $offset,
 								}),
-								async (specs: readonly any[]) => {
+								async (pgClient: PgClient, specs) => {
 									return await Promise.all(
 										specs.map(async spec => {
-											const meta = getMeta(spec.doctype)
+											const meta = getMeta(spec.doctype as string)
 											if (!meta) {
-												throw new Error(`Unknown doctype: ${spec.doctype}`)
+												return { data: [], doctype: spec.doctype as string, count: 0 }
 											}
 
-											if (!meta.tableName) {
-												throw new Error(`Doctype ${spec.doctype} has no table mapping`)
+											const knownFields = new Set(meta.fields.map(f => f.fieldname))
+											const columns = getSqlColumns(meta)
+											const values: unknown[] = []
+
+											// WHERE from filters (parameterised — safe against SQL injection)
+											const whereClauses: string[] = []
+											if (spec.filters != null) {
+												for (const [field, value] of Object.entries(spec.filters as Record<string, unknown>)) {
+													if (!knownFields.has(field)) {
+														throw new Error(`Unknown filter field: ${field} for doctype ${meta.name}`)
+													}
+													values.push(value)
+													whereClauses.push(`"${camelToSnake(field)}" = $${values.length}`)
+												}
+											}
+											const whereClause = whereClauses.length > 0 ? ` WHERE ${whereClauses.join(' AND ')}` : ''
+
+											// ORDER BY (field name whitelisted — column names cannot be parameterised)
+											let orderByClause = ''
+											if (spec.orderBy != null) {
+												const orderByStr = spec.orderBy as string
+												const lastUnder = orderByStr.lastIndexOf('_')
+												if (lastUnder <= 0) {
+													throw new Error(`Invalid orderBy format: "${orderByStr}". Expected FIELD_ASC or FIELD_DESC`)
+												}
+												const dir = orderByStr.slice(lastUnder + 1).toUpperCase()
+												if (dir !== 'ASC' && dir !== 'DESC') {
+													throw new Error(`Invalid orderBy direction: "${dir}". Must be ASC or DESC`)
+												}
+												const fieldName = orderByStr.slice(0, lastUnder)
+												if (!knownFields.has(fieldName)) {
+													throw new Error(`Unknown orderBy field: "${fieldName}" for doctype ${meta.name}`)
+												}
+												orderByClause = ` ORDER BY "${camelToSnake(fieldName)}" ${dir}`
 											}
 
-											const query = buildListQuery(
-												meta,
-												{
-													limit: spec.limit,
-													offset: spec.offset,
-													orderBy: spec.orderBy,
-												},
-												connectionFieldName,
-												orderByTypeName
-											)
-											const result = await options.executor.query(query, {
-												limit: spec.limit,
-												offset: spec.offset,
-												orderBy: spec.orderBy,
+											// LIMIT / OFFSET
+											let pagingClause = ''
+											if (spec.limit != null) {
+												values.push(spec.limit)
+												pagingClause += ` LIMIT $${values.length}`
+											}
+											if (spec.offset != null) {
+												values.push(spec.offset)
+												pagingClause += ` OFFSET $${values.length}`
+											}
+
+											const { rows } = await debugSql<Record<string, unknown>>(pgClient, {
+												text: `SELECT ${columns} FROM ${resolveTableName(meta.name, options.tables)}${whereClause}${orderByClause}${pagingClause}`,
+												values,
 											})
-											const data = extractListResult({ result, meta, connectionFieldName })
 
-											return {
-												data,
-												doctype: spec.doctype,
-												count: data.length,
+											// Total count matching filters (independent of LIMIT/OFFSET)
+											let count = rows.length
+											if (spec.limit != null || spec.offset != null) {
+												const countValues: unknown[] = []
+												const countWhere: string[] = []
+												if (spec.filters != null) {
+													for (const [field, value] of Object.entries(spec.filters as Record<string, unknown>)) {
+														if (!knownFields.has(field)) continue
+														countValues.push(value)
+														countWhere.push(`"${camelToSnake(field)}" = $${countValues.length}`)
+													}
+												}
+												const countWhereClause = countWhere.length > 0 ? ` WHERE ${countWhere.join(' AND ')}` : ''
+												const { rows: countRows } = await debugSql<{ __count: string }>(pgClient, {
+													text: `SELECT COUNT(*) AS __count FROM ${resolveTableName(meta.name, options.tables)}${countWhereClause}`,
+													values: countValues,
+												})
+												count = parseInt(countRows[0]?.__count ?? '0', 10)
 											}
+
+											return { data: rows, doctype: spec.doctype as string, count }
 										})
 									)
 								}
@@ -333,63 +320,49 @@ export const createStonecropPlugin = (options: StonecropPluginOptions): Graphile
 				Mutation: {
 					plans: {
 						stonecropAction(_: any, { $doctype, $action, $args: $actionArgs }: any) {
-							return loadOne(
-								object({
-									doctype: $doctype,
-									action: $action,
-									actionArgs: $actionArgs,
-								}),
-								async (specs: readonly any[]) => {
-									return await Promise.all(
-										specs.map(async spec => {
-											const meta = getMeta(spec.doctype)
-											if (!meta) {
-												return {
-													success: false,
-													data: null,
-													error: `Unknown doctype: ${spec.doctype}`,
-												}
-											}
+							return sideEffectWithPgClient(
+								executor,
+								object({ doctype: $doctype, action: $action, actionArgs: $actionArgs }),
+								async (pgClient: PgClient, spec: any) => {
+									const meta = getMeta(spec.doctype as string)
+									if (!meta) {
+										return {
+											success: false,
+											data: null,
+											error: `Unknown doctype: ${spec.doctype}`,
+										}
+									}
 
-											const actionDef = meta.workflow?.actions?.[spec.action]
-											if (!actionDef) {
-												return {
-													success: false,
-													data: null,
-													error: `Unknown action: ${spec.action} on ${spec.doctype}`,
-												}
-											}
-											const handlerName = actionDef.handler
-											const handler = getHandler(handlerName)
-											if (!handler) {
-												return {
-													success: false,
-													data: null,
-													error: `Handler not registered: ${handlerName}`,
-												}
-											}
+									const actionDef = meta.workflow?.actions?.[spec.action]
+									if (!actionDef) {
+										return {
+											success: false,
+											data: null,
+											error: `Unknown action: ${spec.action} on ${spec.doctype}`,
+										}
+									}
 
-											const actionContext: ActionContext = {
-												doctype: meta,
-												executor: options.executor,
-											}
+									const handler = getHandler(actionDef.handler)
+									if (!handler) {
+										return {
+											success: false,
+											data: null,
+											error: `Handler not registered: ${actionDef.handler}`,
+										}
+									}
 
-											try {
-												const result = await handler(spec.actionArgs ?? [], actionContext)
-												return {
-													success: true,
-													data: result,
-													error: null,
-												}
-											} catch (err) {
-												return {
-													success: false,
-													data: null,
-													error: err instanceof Error ? err.message : String(err),
-												}
-											}
-										})
-									)
+									const actionContext: ActionContext = { doctype: meta, pgClient }
+
+									try {
+										const result = await handler(spec.actionArgs ?? [], actionContext)
+										return { success: true, data: result, error: null }
+									} catch (err) {
+										return {
+											success: false,
+											data: null,
+											error: err instanceof Error ? err.message : String(err),
+										}
+									}
 								}
 							)
 						},
@@ -400,425 +373,59 @@ export const createStonecropPlugin = (options: StonecropPluginOptions): Graphile
 	})
 }
 
-// =============================================================================
-// Inflection helpers — default to PostGraphile Amber preset conventions
-// Uses `pluralize` for proper English singularization (handles irregular
-// plurals like statuses→status, categories→category, addresses→address).
-// snakeToCamel / toPascalCase are imported from @stonecrop/schema.
-// =============================================================================
+// ===========================================================================
+// SQL column helpers
+// ===========================================================================
 
 /**
- * Amber default: sales_orders → salesOrderById
- * Uses `pluralize` for proper singularization of irregular plurals.
- * Override via `StonecropInflectionConfig.recordFieldName` for non-standard PK columns.
- * @public
- */
-function defaultRecordFieldName(tableName: string): string {
-	const singular = pluralize.singular(tableName)
-	return `${snakeToCamel(singular)}ById`
-}
-
-/**
- * Amber default: sales_orders → allSalesOrders
- * @public
- */
-function defaultConnectionFieldName(tableName: string): string {
-	return `all${toPascalCase(tableName)}`
-}
-
-/**
- * Amber default: sales_orders → SalesOrdersOrderBy
- * @public
- */
-function defaultOrderByTypeName(tableName: string): string {
-	return `${toPascalCase(tableName)}OrderBy`
-}
-
-/**
- * Default PK argument name: 'id' (standard Relay Global ID pattern).
- * Override via `StonecropInflectionConfig.recordArgName` when using row_id columns;
- * PostGraphile Amber generates `rowId: UUID!` for those fields.
- * @public
- */
-function defaultRecordArgName(_tableName: string): string {
-	return 'id'
-}
-
-/**
- * Default PK argument type: 'UUID!' (PostGraphile Amber default for UUID PKs).
- * Override via `StonecropInflectionConfig.recordArgType` when using non-UUID PKs
- * such as integer serials or Relay Global IDs ('ID!').
- * @public
- */
-function defaultRecordArgType(_tableName: string): string {
-	return 'UUID!'
-}
-
-/**
- * Default reverse connection name: derives PostGraphile's connection field convention.
- * PostGraphile convention: `{targetPlural}By{FkColumnPascal}Id`
- * - When backlink is defined: FK column is derived from the backlink field name
- * - When backlink is absent: FK column is derived from the parent doctype's table name
- * @public
- */
-function defaultReverseConnectionName(params: {
-	doctype: string
-	linkName: string
-	backlink?: string
-	target: string
-}): string {
-	const targetPlural = pluralize.plural(params.target.replace(/-/g, '_'))
-	// Use camelCase for target (matches PostGraphile Amber convention: recipeTasksByRecipeId)
-	const targetCamel = snakeToCamel(targetPlural)
-	// Use backlink if provided, otherwise derive from parent table name
-	const fkSource = params.backlink || params.doctype
-	// FK column name: uppercase first char, preserve rest of camelCase
-	const fkPascal = fkSource.charAt(0).toUpperCase() + snakeToCamel(fkSource).slice(1)
-	return `${targetCamel}By${fkPascal}Id`
-}
-
-/**
- * Check if a cardinality represents a "many" relationship
- */
-function isManyCardinality(cardinality: string): boolean {
-	return cardinality === 'noneOrMany' || cardinality === 'atLeastOne'
-}
-
-// =============================================================================
-// Query builders — generate GraphQL queries to send to the underlying schema
-// =============================================================================
-
-const DEFAULT_SYNC_LIMIT = 50
-
-/**
- * Fieldtypes unconditionally excluded from the generated scalar query selection set.
- * - `'Display'`: display-only composite component with no backing DB column
- *
- * Note: `'Link'` fields are NOT blanket-excluded here. Scalar FK UUID columns use
- * `fieldtype: 'Link'` and ARE queryable. Only Link fields that also appear in the
- * doctype's `links` declaration (i.e. those that resolve to a sub-object or connection)
- * are excluded — that logic lives in `queryableFieldNames`.
- * @public
- */
-const RELATION_FIELDTYPES = new Set(['Display'])
-
-/**
- * Filter fields to only those directly queryable as scalars.
+ * Derive a quoted SQL column list from doctype field definitions.
+ * Applies camelToSnake to each fieldname to get the DB column name, then
+ * aliases it back to the fieldname so result rows carry API-layer keys.
  * Excludes Display fields (no backing DB column) and Link fields that have an
- * explicit `links` declaration (those require sub-selection, not scalar reads).
- * Link fields without a `links` declaration are scalar FK UUID columns and ARE included.
- * @public
+ * explicit `links` declaration (those are FK references, not scalar columns).
+ *
+ * TODO(schema-types Phase 4): add f.kind === 'field' narrowing when DoctypeField union lands
  */
-function queryableFieldNames(meta: DoctypeMeta): string {
+function getSqlColumns(meta: DoctypeMeta): string {
 	const linkedFieldnames = new Set<string>()
 	if (meta.links) {
 		for (const [key, link] of Object.entries(meta.links)) {
 			linkedFieldnames.add((link as any).fieldname ?? key)
 		}
 	}
-	return meta.fields
-		.filter(f => {
-			if (RELATION_FIELDTYPES.has(f.fieldtype)) return false
-			if (f.fieldtype === 'Link' && linkedFieldnames.has(f.fieldname)) return false
-			return true
-		})
-		.map(f => f.fieldname)
-		.join('\n      ')
+
+	const columns: string[] = []
+	for (const f of meta.fields) {
+		if (f.fieldtype === 'Display') continue
+		if (f.fieldtype === 'Link' && linkedFieldnames.has(f.fieldname)) continue
+		const col = camelToSnake(f.fieldname)
+		columns.push(col !== f.fieldname ? `"${col}" AS "${f.fieldname}"` : `"${f.fieldname}"`)
+	}
+
+	return columns.join(', ')
 }
 
 /**
- * Get the effective fetch strategy for a link, applying cardinality-based defaults.
+ * Find the field declared with fieldtype 'PrimaryKey' in the doctype.
+ * Returns undefined when no PrimaryKey field is declared (PK-less doctypes).
+ *
+ * TODO(schema-types Phase 4): add f.kind === 'field' narrowing when DoctypeField union lands
  */
-function getEffectiveFetchStrategy(link: LinkDeclaration): SyncFetch | LazyFetch {
-	if (link.fetch !== undefined) {
-		return link.fetch as SyncFetch | LazyFetch
-	}
-
-	if (isManyCardinality(link.cardinality)) {
-		return { method: 'sync', limit: DEFAULT_SYNC_LIMIT }
-	} else {
-		return { method: 'lazy' }
-	}
+function getPkMeta(meta: DoctypeMeta): FieldMeta | undefined {
+	return meta.fields.find(f => f.fieldtype === 'PrimaryKey')
 }
 
 /**
- * Get the effective blockWorkflows value for a link.
+ * Resolve the PostgreSQL FROM clause target for a doctype.
+ * Uses the `tables` override map first; falls back to camelToSnake(name).
+ * Schema-qualified names (e.g. "orpin.plan") are emitted as "schema"."table".
+ * Values must be bare identifiers or schema.table pairs — not SQL fragments.
  */
-function getEffectiveBlockWorkflows(link: LinkDeclaration): boolean {
-	if (link.blockWorkflows !== undefined) {
-		return link.blockWorkflows
+function resolveTableName(name: string, tables?: Record<string, string>): string {
+	const target = tables?.[name] ?? pascalToSnake(name)
+	const dotIndex = target.indexOf('.')
+	if (dotIndex > 0) {
+		return `"${target.slice(0, dotIndex)}"."${target.slice(dotIndex + 1)}"`
 	}
-	const effectiveFetch = getEffectiveFetchStrategy(link)
-	return effectiveFetch.method === 'sync'
-}
-
-/**
- * Build nested sub-selections for descendant links
- */
-function buildNestedSelections(params: BuildNestedSelectionsParams): string {
-	const { links, meta, includeSet, getMeta, seen, depth, maxDepth, reverseConnectionNameFn } = params
-
-	if (maxDepth !== undefined && depth >= maxDepth) return ''
-
-	const selections: string[] = []
-
-	for (const [fieldname, link] of Object.entries(links)) {
-		if (maxDepth !== undefined && depth >= maxDepth) break
-
-		const effectiveBlockWorkflows = getEffectiveBlockWorkflows(link)
-		const linkBlockWorkflowsExplicitTrue = link.blockWorkflows === true
-
-		if (includeSet && !includeSet.has(fieldname) && !linkBlockWorkflowsExplicitTrue) {
-			continue
-		}
-
-		const effectiveFetch = getEffectiveFetchStrategy(link)
-		const shouldSkip =
-			effectiveBlockWorkflows === false || (effectiveFetch.method !== 'sync' && !linkBlockWorkflowsExplicitTrue)
-		if (shouldSkip) {
-			continue
-		}
-
-		const targetMeta = getMeta(link.target)
-		if (!targetMeta) continue
-
-		const alreadySeen = seen.has(link.target)
-		if (!alreadySeen) {
-			seen.add(link.target)
-		}
-		const scalarFields = queryableFieldNames(targetMeta)
-
-		let nestedLinks = ''
-		if (!alreadySeen && targetMeta.links && targetMeta.tableName && (maxDepth === undefined || depth + 1 < maxDepth)) {
-			const innerSelections = buildNestedSelections({
-				links: targetMeta.links,
-				meta: targetMeta,
-				includeSet: null,
-				getMeta,
-				seen,
-				depth: depth + 1,
-				maxDepth,
-				reverseConnectionNameFn,
-			})
-			if (innerSelections) {
-				nestedLinks = '\n          ' + innerSelections
-			}
-			seen.delete(link.target)
-		}
-
-		const fullSelection = scalarFields + nestedLinks
-
-		if (isManyCardinality(link.cardinality)) {
-			const reverseParams: ReverseConnectionParams = {
-				doctype: meta.slug || meta.name,
-				linkName: fieldname,
-				backlink: link.backlink,
-				target: link.target,
-			}
-			const connectionField = reverseConnectionNameFn
-				? reverseConnectionNameFn(reverseParams)
-				: defaultReverseConnectionName(reverseParams)
-			const limitArg =
-				effectiveFetch.method === 'sync' && effectiveFetch.limit !== undefined
-					? `first: ${effectiveFetch.limit}`
-					: effectiveFetch.method === 'sync'
-						? `first: ${DEFAULT_SYNC_LIMIT}`
-						: ''
-			selections.push(`
-			${connectionField}${limitArg ? `(${limitArg})` : ''} {
-				nodes {
-					${fullSelection}
-				}
-			}`)
-		} else {
-			selections.push(`
-			${fieldname} {
-				${fullSelection}
-			}`)
-		}
-	}
-
-	return selections.join('')
-}
-
-/**
- * Build a GraphQL query to fetch a single record by ID.
- * When includeNested is set, recursively includes descendant link sub-selections.
- * @public
- */
-function buildRecordQuery(
-	meta: DoctypeMeta,
-	recordFieldName: (t: string) => string,
-	recordArgName: (t: string) => string,
-	recordArgType: (t: string) => string,
-	getMeta: (slug: string) => DoctypeMeta | undefined,
-	options?: BuildRecordQueryOptions,
-	reverseConnectionNameFn?: (params: ReverseConnectionParams) => string
-): string {
-	const queryName = recordFieldName(meta.tableName!)
-	const argName = recordArgName(meta.tableName!)
-	const argType = recordArgType(meta.tableName!)
-
-	const seen = new Set<string>([meta.slug || meta.name])
-
-	let selection = queryableFieldNames(meta)
-
-	if (options?.includeNested && meta.links) {
-		const includeSet = Array.isArray(options.includeNested) ? new Set(options.includeNested) : null
-
-		const nestedSelections = buildNestedSelections({
-			links: meta.links,
-			meta,
-			includeSet,
-			getMeta,
-			seen,
-			depth: 0,
-			maxDepth: options.maxDepth,
-			reverseConnectionNameFn,
-		})
-
-		if (nestedSelections) {
-			selection += '\n      ' + nestedSelections
-		}
-	}
-
-	return `
-		query GetRecord($${argName}: ${argType}) {
-			${queryName}(${argName}: $${argName}) {
-				${selection}
-			}
-		}
-	`
-}
-
-/**
- * Build a GraphQL connection query to fetch a list of records.
- * Only declares variables ($limit, $offset, $orderBy) that are actually used in the query,
- * avoiding GraphQL spec §5.8.3 violations from unused variable declarations.
- * Excludes Link relation fields and Display fields from the selection set.
- * @public
- */
-function buildListQuery(
-	meta: DoctypeMeta,
-	args: BuildListQueryArgs,
-	connectionFieldName: (t: string) => string,
-	orderByTypeName: (t: string) => string
-): string {
-	const fieldNames = queryableFieldNames(meta)
-	const connectionName = connectionFieldName(meta.tableName!)
-	const orderByType = orderByTypeName(meta.tableName!)
-
-	const varDecls: string[] = []
-	const queryArgs: string[] = []
-	if (args.limit) {
-		varDecls.push('$limit: Int')
-		queryArgs.push(`first: $limit`)
-	}
-	if (args.offset) {
-		varDecls.push('$offset: Int')
-		queryArgs.push(`offset: $offset`)
-	}
-	if (args.orderBy) {
-		varDecls.push(`$orderBy: [${orderByType}!]`)
-		queryArgs.push(`orderBy: $orderBy`)
-	}
-
-	const varStr = varDecls.length > 0 ? `(${varDecls.join(', ')})` : ''
-	const argsStr = queryArgs.length > 0 ? `(${queryArgs.join(', ')})` : ''
-
-	return `
-		query GetRecords${varStr} {
-			${connectionName}${argsStr} {
-				nodes {
-				${fieldNames}
-				}
-			}
-		}
-	`
-}
-
-/**
- * Merge nested connection results into flat arrays.
- * For `noneOrMany`/`atLeastOne` links, the query returns `{ nodes: [...] }`.
- * This flattens them to just `[]` for easier consumption.
- * @public
- */
-function mergeNestedResults(params: MergeNestedResultsParams): Record<string, unknown> {
-	const { record, meta, getMeta, reverseConnectionNameFn } = params
-	if (!meta.links) return record
-
-	const merged = { ...record }
-
-	for (const [fieldname, link] of Object.entries(meta.links)) {
-		const isMany = isManyCardinality(link.cardinality)
-
-		if (isMany) {
-			const targetMeta = getMeta(link.target)
-			if (!targetMeta) continue
-
-			const reverseParams: ReverseConnectionParams = {
-				doctype: meta.slug || meta.name,
-				linkName: fieldname,
-				backlink: link.backlink || fieldname,
-				target: link.target,
-			}
-			const connectionField = reverseConnectionNameFn
-				? reverseConnectionNameFn(reverseParams)
-				: defaultReverseConnectionName(reverseParams)
-			const connectionResult = merged[connectionField] as { nodes?: unknown[] } | undefined
-			if (connectionResult?.nodes) {
-				merged[fieldname] = connectionResult.nodes
-				delete merged[connectionField]
-			} else {
-				merged[fieldname] = []
-				delete merged[connectionField]
-			}
-		}
-	}
-
-	return merged
-}
-
-/**
- * Extract a single record from a PostGraphile query result using the record field name.
- * @public
- */
-function extractSingleResult(params: ExtractSingleResultParams): unknown {
-	const { result, meta, recordFieldName } = params
-	const queryName = recordFieldName(meta.tableName!)
-	return (result as Record<string, unknown>)[queryName]
-}
-
-/**
- * Extract the list of nodes from a PostGraphile connection query result.
- * Returns an empty array if the connection field is absent.
- * @public
- */
-function extractListResult(params: ExtractListResultParams): unknown[] {
-	const { result, meta, connectionFieldName } = params
-	const connectionName = connectionFieldName(meta.tableName!)
-	const connection = (result as Record<string, unknown>)[connectionName] as {
-		nodes: unknown[]
-	}
-	return connection?.nodes ?? []
-}
-
-// =============================================================================
-// Exported for testing and advanced usage
-// =============================================================================
-
-export {
-	defaultRecordFieldName,
-	defaultConnectionFieldName,
-	defaultOrderByTypeName,
-	defaultRecordArgName,
-	defaultRecordArgType,
-	defaultReverseConnectionName,
-	buildRecordQuery,
-	buildListQuery,
-	queryableFieldNames,
-	RELATION_FIELDTYPES,
-	extractSingleResult,
-	extractListResult,
-	mergeNestedResults,
+	return `"${target}"`
 }

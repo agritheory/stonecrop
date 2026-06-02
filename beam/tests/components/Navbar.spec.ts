@@ -5,7 +5,7 @@ import Navbar from '../../src/components/Navbar.vue'
 import BeamBtn from '../../src/components/BeamBtn.vue'
 import BeamHeading from '../../src/components/BeamHeading.vue'
 
-describe('Navbar', () => {
+describe('Navbar', { tags: ['component'] }, () => {
 	it('renders nav element', () => {
 		const wrapper = mount(Navbar, {
 			global: {

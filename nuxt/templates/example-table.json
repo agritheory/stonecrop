@@ -1,7 +1,6 @@
 {
 	"name": "Example",
 	"slug": "example",
-	"tableName": "examples",
 	"schema": [
 		{
 			"component": "ATable",

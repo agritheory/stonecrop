@@ -3,7 +3,7 @@ import { mount } from '@vue/test-utils'
 
 import ACheckbox from '../src/components/form/ACheckbox.vue'
 
-describe('checkbox component', () => {
+describe('checkbox component', { tags: ['component'] }, () => {
 	let wrapper = mount(ACheckbox, {
 		props: { value: false },
 	})

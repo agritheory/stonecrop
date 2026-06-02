@@ -62,7 +62,7 @@ vi.mock('@graphql-tools/graphql-file-loader', () => ({
 	GraphQLFileLoader: vi.fn(),
 }))
 
-describe('Nuxt Grafserv Integration', () => {
+describe('Nuxt Grafserv Integration', { tags: ['e2e', 'nuxt', 'graphql'] }, () => {
 	beforeEach(() => {
 		vi.clearAllMocks()
 		vi.resetModules() // Reset module cache to pick up fresh mocks

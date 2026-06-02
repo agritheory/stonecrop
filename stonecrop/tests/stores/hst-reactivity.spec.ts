@@ -182,7 +182,7 @@ const MockDoctypeForm = defineComponent({
 	},
 })
 
-describe('HST Vue Reactivity', () => {
+describe('HST Vue Reactivity', { tags: ['unit'] }, () => {
 	let registry: Registry
 	let stonecrop: Stonecrop
 	let doctype: Doctype

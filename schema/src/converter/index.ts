@@ -10,7 +10,7 @@
 import { buildClientSchema, buildSchema, isObjectType, type GraphQLSchema } from 'graphql'
 
 import type { LinkDeclaration } from '../doctype'
-import { toSlug, pascalToSnake } from '../naming'
+import { toSlug } from '../naming'
 import type { IntrospectionSource, GraphQLConversionOptions, ConvertedGraphQLDoctype } from './types'
 import { defaultIsEntityType, defaultIsEntityField, classifyFieldType } from './heuristics'
 
@@ -92,7 +92,6 @@ export function convertGraphQLSchema(
 
 	// Phase 3: Convert each entity type to a doctype
 	const isEntityField = options.isEntityField ?? defaultIsEntityField
-	const deriveTableName = options.deriveTableName ?? ((typeName: string) => pascalToSnake(typeName))
 
 	const doctypes: ConvertedGraphQLDoctype[] = []
 
@@ -138,7 +137,7 @@ export function convertGraphQLSchema(
 				if (field._isLink && typeof field.options === 'string' && field.cardinality) {
 					links[field.fieldname] = {
 						target: field.options,
-						cardinality: field.cardinality as LinkDeclaration['cardinality'],
+						cardinality: field.cardinality,
 					}
 					return false
 				}
@@ -162,11 +161,6 @@ export function convertGraphQLSchema(
 
 		if (Object.keys(links).length > 0) {
 			doctype.links = links
-		}
-
-		const tableName = deriveTableName(typeName)
-		if (tableName) {
-			doctype.tableName = tableName
 		}
 
 		if (options.includeUnmappedMeta) {

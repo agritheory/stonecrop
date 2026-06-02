@@ -85,7 +85,7 @@ export function makeServer() {
 						{ fieldname: 'first_name', label: 'First Name', fieldtype: 'Data' },
 						{ fieldname: 'last_name', label: 'Last Name', fieldtype: 'Data' },
 						{ fieldname: 'phone', label: 'Phone', fieldtype: 'Phone' },
-						{ fieldname: 'category_id', label: 'Category', fieldtype: 'Link', doctype: 'category' },
+						{ fieldname: 'category_id', label: 'Category', fieldtype: 'Link', options: 'category' },
 					] as MutableDoctype['schema'],
 					workflow: {
 						id: 'todoList',
@@ -162,7 +162,7 @@ export function makeServer() {
 							fieldtype: 'Link',
 							component: 'AFormLink',
 							label: 'Category',
-							doctype: 'category',
+							options: 'category',
 						},
 					] as MutableDoctype['schema'],
 					workflow: {
@@ -410,6 +410,14 @@ export function makeServer() {
 				return records ? records.find(id) || {} : {}
 			})
 
+			// category-form slug also reads from the categories collection
+			this.get('/api/category-form/:id', (schema, request) => {
+				const id = request.params.id
+				// @ts-expect-error mismatch between mirage types
+				const records = schema.db['categories'] as DbCollection
+				return records ? records.find(id) || {} : {}
+			})
+
 			// Data endpoints
 			this.get('/api/:doctype', (schema, request) => {
 				const doctype = request.params.doctype
@@ -451,6 +459,38 @@ export function makeServer() {
 				}
 
 				return {}
+			})
+
+			// Action endpoints (SAVE / DELETE)
+			this.post('/api/:doctype/:id', (schema, request) => {
+				const doctype = request.params.doctype
+				const id = request.params.id
+				const body = JSON.parse(request.requestBody) as Record<string, unknown>
+				const action = body.action as string
+
+				let actualDoctype = doctype
+				if (doctype === 'todo') actualDoctype = 'todo-form'
+				else if (doctype === 'issue') actualDoctype = 'issue-form'
+
+				// category and category-form both write to the categories collection
+				const dataKey =
+					actualDoctype === 'category' || actualDoctype === 'category-form' ? 'categories' : `${actualDoctype}s`
+				// @ts-expect-error mismatch between mirage types
+				const records = schema.db[dataKey] as DbCollection
+				if (!records) return { success: false, data: null, error: 'Collection not found' }
+
+				if (action === 'DELETE') {
+					records.remove(id)
+					return { success: true, data: null, error: null }
+				}
+
+				if (action === 'SAVE') {
+					const { action: _action, ...attrs } = body
+					records.update(id, attrs)
+					return { success: true, data: records.find(id) || null, error: null }
+				}
+
+				return { success: false, data: null, error: `Unknown action: ${action}` }
 			})
 
 			// allow other same-domain and external requests to passthrough normally

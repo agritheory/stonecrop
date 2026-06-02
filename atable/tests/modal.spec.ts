@@ -19,7 +19,7 @@ vi.mock('@vueuse/core', () => ({
 	useDebounceFn: vi.fn(fn => fn),
 }))
 
-describe('table modal component', () => {
+describe('table modal component', { tags: ['component'] }, () => {
 	config.global.components = { ACell, ARow }
 
 	const columns: TableColumn[] = [
@@ -117,7 +117,7 @@ describe('table modal component', () => {
 	})
 })
 
-describe('ATableModal', () => {
+describe('ATableModal', { tags: ['component'] }, () => {
 	let store: ReturnType<typeof createTableStore>
 
 	beforeEach(() => {

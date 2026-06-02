@@ -17,7 +17,7 @@ import Doctype from '../../src/doctype'
 import Registry from '../../src/registry'
 import { Stonecrop } from '../../src/stonecrop'
 
-describe('HST Real Component Integration', () => {
+describe('HST Real Component Integration', { tags: ['unit'] }, () => {
 	let registry: Registry
 	let stonecrop: Stonecrop
 	let doctype: Doctype

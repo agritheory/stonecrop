@@ -11,7 +11,7 @@ import Doctype from '../../src/doctype'
 import Registry from '../../src/registry'
 import { createHST } from '../../src/stores/hst'
 
-describe('XState Transition Integration', () => {
+describe('XState Transition Integration', { tags: ['unit'] }, () => {
 	let registry: Registry
 
 	beforeEach(() => {

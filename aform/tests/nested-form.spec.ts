@@ -6,7 +6,7 @@ import AFieldset from '../src/components/form/AFieldset.vue'
 import ATextInput from '../src/components/form/ATextInput.vue'
 import type { SchemaTypes } from '../src/types'
 
-describe('AForm Nested Schema Rendering', () => {
+describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 	const addressSchema: SchemaTypes[] = [
 		{ fieldname: 'street', fieldtype: 'Data', component: 'ATextInput', label: 'Street' },
 		{ fieldname: 'city', fieldtype: 'Data', component: 'ATextInput', label: 'City' },

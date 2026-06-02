@@ -25,7 +25,7 @@ import ARow from '../src/components/ARow.vue'
 import ATable from '../src/components/ATable.vue'
 import type { GanttOptions, TableColumn, TableConfig, TableRow } from '../src/types'
 
-describe('table component', () => {
+describe('table component', { tags: ['component'] }, () => {
 	config.global.components = { ACell, ARow }
 
 	const columns: TableColumn[] = [
@@ -608,7 +608,7 @@ describe('table component', () => {
 	})
 })
 
-describe('Gantt View', () => {
+describe('Gantt View', { tags: ['component'] }, () => {
 	it('should handle custom gantt data', () => {
 		const ganttColumns: TableColumn[] = [
 			{ name: 'id', label: 'ID', width: '100px', pinned: true },
@@ -640,7 +640,7 @@ describe('Gantt View', () => {
 	})
 })
 
-describe('Sorting and Filtering', () => {
+describe('Sorting and Filtering', { tags: ['component'] }, () => {
 	beforeEach(() => {
 		setActivePinia(createPinia())
 	})
@@ -1088,7 +1088,7 @@ describe('Sorting and Filtering', () => {
 	})
 })
 
-describe('Schema-driven columns', () => {
+describe('Schema-driven columns', { tags: ['component'] }, () => {
 	beforeEach(() => {
 		setActivePinia(createPinia())
 	})

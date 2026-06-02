@@ -3,7 +3,7 @@ import { mount } from '@vue/test-utils'
 
 import AComboBox from '../src/components/form/AComboBox.vue'
 
-describe('combobox component', () => {
+describe('combobox component', { tags: ['component'] }, () => {
 	it('renders with three input fields', () => {
 		const wrapper = mount(AComboBox, {
 			global: {

@@ -15,7 +15,7 @@ const createTestDoctype = (name: string, links?: Record<string, any>): Doctype =
 	return new Doctype(name, [] as any, undefined, undefined, undefined, links)
 }
 
-describe('useLazyLink', () => {
+describe('useLazyLink', { tags: ['unit'] }, () => {
 	let registry: Registry
 	let stonecrop: Stonecrop
 
@@ -254,7 +254,7 @@ describe('useLazyLink', () => {
 	})
 })
 
-describe('blockWorkflows', () => {
+describe('blockWorkflows', { tags: ['unit'] }, () => {
 	let registry: Registry
 	let stonecrop: Stonecrop
 

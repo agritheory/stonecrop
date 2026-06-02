@@ -4,7 +4,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { createTableStore } from '../src/stores/table'
 import type { TableColumn, TableRow, GanttBarInfo, ConnectionHandle } from '../src/types'
 
-describe('table store', () => {
+describe('table store', { tags: ['component'] }, () => {
 	let store: ReturnType<typeof createTableStore>
 
 	const mockColumns: TableColumn[] = [

@@ -10,7 +10,7 @@ vi.mock('node:fs')
 vi.mock('../../src/cli/utils/config')
 vi.mock('../../src/cli/utils/package')
 
-describe('detect utilities', () => {
+describe('detect utilities', { tags: ['unit', 'nuxt'] }, () => {
 	beforeEach(() => {
 		vi.clearAllMocks()
 	})

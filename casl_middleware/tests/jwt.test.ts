@@ -10,7 +10,7 @@ import {
 } from '../src/middleware/jwt'
 import type { Context, User } from '../src/types'
 
-describe('JWT Middleware', () => {
+describe('JWT Middleware', { tags: ['unit', 'graphql'] }, () => {
 	const TEST_SECRET = 'test-secret-key-for-testing'
 	const TEST_USER: User = {
 		id: 'user-123',
@@ -466,7 +466,7 @@ describe('JWT Middleware', () => {
 	})
 })
 
-describe('JWT Configuration Validation', () => {
+describe('JWT Configuration Validation', { tags: ['unit', 'graphql'] }, () => {
 	it('should throw error if neither secret nor publicKey is provided', () => {
 		expect(() => {
 			createJWTMiddleware({
@@ -486,7 +486,7 @@ describe('JWT Configuration Validation', () => {
 	})
 })
 
-describe('JWT Middleware - Advanced Tests', () => {
+describe('JWT Middleware - Advanced Tests', { tags: ['unit', 'graphql'] }, () => {
 	const SECRET = 'test-secret-key'
 
 	beforeEach(() => {

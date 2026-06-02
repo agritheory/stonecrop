@@ -14,7 +14,7 @@ import { describe, it, expect } from 'vitest'
 /**
  * Unit-style tests for Nuxt integration
  */
-describe('Nuxt Integration - PostGraphile makeSchema', () => {
+describe('Nuxt Integration - PostGraphile makeSchema', { tags: ['e2e', 'nuxt', 'graphql'] }, () => {
 	describe('PostGraphile Schema Creation', () => {
 		it('should create schema with makeSchema for Nuxt usage', async () => {
 			const preset = {
@@ -34,7 +34,7 @@ describe('Nuxt Integration - PostGraphile makeSchema', () => {
 			expect(resolvedPreset.plugins.length).toBeGreaterThan(0)
 		})
 
-		it('should create schema that can be used as PostGraphileInstance', async () => {
+		it('should create schema that can be used as postgraphile instance', async () => {
 			const { schema, resolvedPreset } = await makeSchema({
 				extends: [PostGraphileAmberPreset],
 			})
@@ -45,7 +45,7 @@ describe('Nuxt Integration - PostGraphile makeSchema', () => {
 				getSchemaResult: async () => ({ schema, resolvedPreset }),
 			}
 
-			// Verify it matches PostGraphileInstance interface
+			// Verify it matches postgraphile instance interface
 			const retrievedSchema = await instance.getSchema()
 			expect(retrievedSchema).toBe(schema)
 
@@ -56,7 +56,7 @@ describe('Nuxt Integration - PostGraphile makeSchema', () => {
 	})
 
 	describe('Module Type Compatibility', () => {
-		it('should accept PostGraphileInstance as schema option', async () => {
+		it('should accept postgraphile instance as schema option', async () => {
 			const { schema, resolvedPreset } = await makeSchema({
 				extends: [PostGraphileAmberPreset],
 			})
