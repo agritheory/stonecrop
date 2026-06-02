@@ -179,7 +179,7 @@ describe('stonecropRecords — camelCase fieldnames', { tags: ['integration', 'g
 		)
 		const records = (result as any).data?.stonecropRecords
 		expect(records?.count).toBe(1)
-		expect((records?.data[0] as any)?.displayName).toBe('Alpha')
+		expect(records?.data[0]?.displayName).toBe('Alpha')
 	})
 
 	it('orders by a camelCase fieldname ascending', async () => {

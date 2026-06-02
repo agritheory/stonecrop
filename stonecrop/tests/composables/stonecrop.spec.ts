@@ -444,7 +444,7 @@ describe('useStonecrop router-based HST integration', { tags: ['unit'] }, () => 
 
 		const vm = wrapper.vm as any
 
-		const result = vm as any
+		const result = vm
 		expect(result.formData).toBeDefined()
 		expect(result.handleHSTChange).toBeDefined()
 		expect(result.provideHSTPath).toBeDefined()

@@ -10,14 +10,16 @@ const config: OxlintConfig = {
 	},
 
 	options: {
-		typeAware: true,
 		reportUnusedDisableDirectives: 'warn',
+		typeAware: true,
 	},
 
 	env: {
 		browser: true,
+		builtin: true,
 		node: true,
-		es2022: true,
+		vitest: true,
+		vue: true,
 	},
 
 	ignorePatterns: [
@@ -44,7 +46,6 @@ const config: OxlintConfig = {
 			'error',
 			{ allow: ['__dirname', '__filename', '__v_isReactive', '__caslSubjectType__', '_root'] },
 		],
-		'prefer-promise-reject-errors': 'off',
 		'typescript/no-unsafe-type-assertion': 'error',
 		'typescript/no-unused-vars': [
 			'error',

@@ -112,7 +112,7 @@ describe('stonecropRecord with pascalCase field inflection', { tags: ['integrati
 		const record = (result as any).data?.stonecropRecord
 		expect(record?.doctype).toBe('ScItem')
 		// Raw DB column names are returned — not inflected GraphQL field names
-		expect((record?.data as any)?.name).toBe('Alpha')
+		expect(record?.data?.name).toBe('Alpha')
 	})
 
 	it('includes sync-linked records correctly even with non-default inflection', async () => {

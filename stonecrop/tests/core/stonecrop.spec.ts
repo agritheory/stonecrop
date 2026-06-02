@@ -12,6 +12,44 @@ import { ImmutableDoctype } from '../../src/types'
 // Mock fetch globally
 global.fetch = vi.fn()
 
+function createDoctype(name: string, fields?: SchemaTypes[], links?: Record<string, any>) {
+	const schema = List(fields || [{ fieldname: 'title', component: 'ATextInput', label: 'Title', fieldtype: 'Data' }])
+	return new Doctype(name, schema as any, undefined, Map({}), undefined, links)
+}
+
+function createMockDoctype(name: string) {
+	const mockSchema: ImmutableDoctype['schema'] = List<SchemaTypes>([
+		{ name: 'title', label: 'Title', fieldtype: 'Data' } as SchemaTypes,
+		{ name: 'status', label: 'Status', fieldtype: 'Select' } as SchemaTypes,
+	])
+
+	const mockWorkflowConfig: ImmutableDoctype['workflow'] = {
+		id: 'mockWorkflow',
+		initial: 'draft',
+		states: {
+			draft: {
+				on: {
+					submit: { target: 'pending' },
+				},
+			},
+			pending: {
+				on: {
+					approve: { target: 'completed' },
+					reject: { target: 'draft' },
+				},
+			},
+			completed: { type: 'final' },
+		},
+	}
+
+	const mockActions: ImmutableDoctype['actions'] = Map({
+		load: ['loadData'],
+		save: ['validateData', 'saveData'],
+	})
+
+	return new Doctype(name, mockSchema, mockWorkflowConfig, mockActions)
+}
+
 describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 	let registry: Registry
 	let stonecrop: Stonecrop
@@ -33,39 +71,6 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 		// Reset fetch mock
 		vi.clearAllMocks()
 	})
-
-	function createMockDoctype(name: string) {
-		const mockSchema: ImmutableDoctype['schema'] = List<SchemaTypes>([
-			{ name: 'title', label: 'Title', fieldtype: 'Data' } as SchemaTypes,
-			{ name: 'status', label: 'Status', fieldtype: 'Select' } as SchemaTypes,
-		])
-
-		const mockWorkflowConfig: ImmutableDoctype['workflow'] = {
-			id: 'mockWorkflow',
-			initial: 'draft',
-			states: {
-				draft: {
-					on: {
-						submit: { target: 'pending' },
-					},
-				},
-				pending: {
-					on: {
-						approve: { target: 'completed' },
-						reject: { target: 'draft' },
-					},
-				},
-				completed: { type: 'final' },
-			},
-		}
-
-		const mockActions: ImmutableDoctype['actions'] = Map({
-			load: ['loadData'],
-			save: ['validateData', 'saveData'],
-		})
-
-		return new Doctype(name, mockSchema, mockWorkflowConfig, mockActions)
-	}
 
 	describe('Initialization', () => {
 		it('creates Stonecrop instance with HST integration', () => {
@@ -657,13 +662,6 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 	describe('collectRecordPayload', () => {
 		let localRegistry: Registry
 		let localStonecrop: Stonecrop
-
-		const createDoctype = (name: string, fields?: SchemaTypes[], links?: Record<string, any>) => {
-			const schema = List(
-				fields || [{ fieldname: 'title', component: 'ATextInput', label: 'Title', fieldtype: 'Data' }]
-			)
-			return new Doctype(name, schema as any, undefined, Map({}), undefined, links)
-		}
 
 		beforeEach(() => {
 			Registry._root = undefined as any

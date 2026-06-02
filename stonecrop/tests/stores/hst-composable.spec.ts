@@ -50,7 +50,13 @@ describe('HST Composable Functionality', { tags: ['unit'] }, () => {
 			const TestComponent = defineComponent({
 				template: '<div>{{ hstPath }}</div>',
 				setup() {
-					const { stonecrop, provideHSTPath, handleHSTChange, hstStore, formData } = useStonecrop({
+					const {
+						stonecrop: stonecropComposable,
+						provideHSTPath,
+						handleHSTChange,
+						hstStore,
+						formData,
+					} = useStonecrop({
 						doctype,
 						recordId: 'test-123',
 					})
@@ -58,7 +64,7 @@ describe('HST Composable Functionality', { tags: ['unit'] }, () => {
 					const hstPath = provideHSTPath('name')
 
 					return {
-						stonecrop,
+						stonecrop: stonecropComposable,
 						provideHSTPath,
 						handleHSTChange,
 						hstStore,

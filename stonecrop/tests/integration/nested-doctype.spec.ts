@@ -357,7 +357,7 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 			expect('schema' in fieldsetField).toBe(true)
 
 			// The link inside the fieldset must be resolved — not copied as a raw Link field
-			const nestedLink = fieldsetField.schema[0] as any
+			const nestedLink = fieldsetField.schema[0]
 			expect(nestedLink.fieldname).toBe('address')
 			expect('schema' in nestedLink).toBe(true)
 			expect(nestedLink.schema).toHaveLength(4)
@@ -479,7 +479,7 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 			expect(fieldset.schema[0].fieldtype).toBe('Data')
 
 			// noneOrMany link inside fieldset is resolved to a table config
-			const tableField = fieldset.schema[1] as any
+			const tableField = fieldset.schema[1]
 			expect(tableField.fieldname).toBe('addresses')
 			expect(tableField.component).toBe('ATable')
 			expect(tableField.kind).toBe('table')
@@ -511,8 +511,8 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 			)
 			const resolved = registry.resolveSchema(testDoctype)
 			const outerFieldset = resolved[0] as any
-			const innerFieldset = outerFieldset.schema[0] as any
-			const addressField = innerFieldset.schema[0] as any
+			const innerFieldset = outerFieldset.schema[0]
+			const addressField = innerFieldset.schema[0]
 
 			expect(innerFieldset.fieldname).toBe('inner_section')
 			expect(addressField.fieldname).toBe('address')

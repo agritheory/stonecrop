@@ -281,7 +281,7 @@ describe('Stonecrop Vue Plugin with HST', { tags: ['unit'] }, () => {
 			client: mockClient,
 		})
 
-		const stonecropInstance = app.config.globalProperties.$stonecrop as any
+		const stonecropInstance = app.config.globalProperties.$stonecrop
 		expect(stonecropInstance).toBeDefined()
 		expect(stonecropInstance.getClient()).toBe(mockClient)
 	})
@@ -304,7 +304,7 @@ describe('Stonecrop Vue Plugin with HST', { tags: ['unit'] }, () => {
 		const { default: Doctype } = await import('../../src/doctype')
 		const mockDoctype = new Doctype('Widget', List([]), undefined as any, undefined as any)
 
-		const stonecropInstance = app.config.globalProperties.$stonecrop as any
+		const stonecropInstance = app.config.globalProperties.$stonecrop
 		await stonecropInstance.registry.addDoctype(mockDoctype)
 		await stonecropInstance.getRecord(mockDoctype, '99')
 
