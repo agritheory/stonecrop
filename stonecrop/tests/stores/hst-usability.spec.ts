@@ -220,7 +220,7 @@ describe('HST Edge Cases & Performance', { tags: ['unit'] }, () => {
 						}
 					}
 
-					testMalformedPaths()
+					void testMalformedPaths()
 
 					return { testResult, formData }
 				},
@@ -278,7 +278,7 @@ describe('HST Edge Cases & Performance', { tags: ['unit'] }, () => {
 						}
 					}
 
-					testRecovery()
+					void testRecovery()
 
 					return { recoveryStatus, formData }
 				},

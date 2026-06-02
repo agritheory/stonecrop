@@ -448,7 +448,7 @@ describe('Introspection Middleware', { tags: ['unit', 'graphql'] }, () => {
 		})
 
 		it('should apply introspection middleware when configured', async () => {
-			const mockResolve = vi.fn().mockResolvedValue({ data: 'test' })
+			const mockResolve2 = vi.fn().mockResolvedValue({ data: 'test' })
 
 			const middleware = createSecureGraphQLMiddleware({
 				introspection: {
@@ -458,17 +458,17 @@ describe('Introspection Middleware', { tags: ['unit', 'graphql'] }, () => {
 
 			mockInfo.fieldName = '__schema'
 
-			await expect(middleware(mockResolve, {}, {}, mockContext, mockInfo)).rejects.toThrow('Introspection is disabled')
+			await expect(middleware(mockResolve2, {}, {}, mockContext, mockInfo)).rejects.toThrow('Introspection is disabled')
 		})
 
 		it('should pass through when no introspection config', async () => {
-			const mockResolve = vi.fn().mockResolvedValue({ data: 'test' })
+			const mockResolve2 = vi.fn().mockResolvedValue({ data: 'test' })
 
 			const middleware = createSecureGraphQLMiddleware({})
 
-			const result = await middleware(mockResolve, {}, {}, mockContext, mockInfo)
+			const result = await middleware(mockResolve2, {}, {}, mockContext, mockInfo)
 
-			expect(mockResolve).toHaveBeenCalled()
+			expect(mockResolve2).toHaveBeenCalled()
 			expect(result).toEqual({ data: 'test' })
 		})
 	})

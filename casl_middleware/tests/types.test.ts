@@ -14,6 +14,15 @@ import { createJWTMiddleware, createJWT, type JWTConfig, type JWTPayload } from 
 import { createCaslMiddleware } from '../src/middleware/graphql'
 import type { Context, User, MiddlewareOptions } from '../src/types'
 
+const builderForAbilityTest: AbilityBuilderFunction = user => defaultAbilityBuilder(user)
+const fetchRulesForTest = async (_userId: string) => []
+const syncBuilder: AbilityBuilderFunction = () => defaultAbilityBuilder()
+const asyncBuilder: AbilityBuilderFunction = async () => defaultAbilityBuilder()
+const builderForParamTypes: AbilityBuilderFunction = user => {
+	expectTypeOf(user).toEqualTypeOf<User | undefined>()
+	return defaultAbilityBuilder(user)
+}
+
 describe('Type Safety Tests', { tags: ['unit', 'graphql'] }, () => {
 	describe('Ability Types', () => {
 		it('should have correct AppAbility type structure', () => {
@@ -26,9 +35,8 @@ describe('Type Safety Tests', { tags: ['unit', 'graphql'] }, () => {
 		})
 
 		it('should accept AbilityBuilderFunction as parameter', () => {
-			const builder: AbilityBuilderFunction = user => defaultAbilityBuilder(user)
-			expectTypeOf(builder).parameter(0).toEqualTypeOf<User | undefined>()
-			expectTypeOf(builder).returns.resolves.toEqualTypeOf<AppAbility>()
+			expectTypeOf(builderForAbilityTest).parameter(0).toEqualTypeOf<User | undefined>()
+			expectTypeOf(builderForAbilityTest).returns.resolves.toEqualTypeOf<AppAbility>()
 		})
 
 		it('should have correct detectSubjectType signature', () => {
@@ -37,8 +45,7 @@ describe('Type Safety Tests', { tags: ['unit', 'graphql'] }, () => {
 		})
 
 		it('should type database ability builder correctly', () => {
-			const fetchRules = async (_userId: string) => []
-			const builder = createDatabaseAbilityBuilder(fetchRules)
+			const builder = createDatabaseAbilityBuilder(fetchRulesForTest)
 
 			expectTypeOf(builder).parameter(0).toEqualTypeOf<User | undefined>()
 			expectTypeOf(builder).returns.resolves.toEqualTypeOf<AppAbility>()
@@ -173,9 +180,6 @@ describe('Type Safety Tests', { tags: ['unit', 'graphql'] }, () => {
 
 	describe('Builder Function Types', () => {
 		it('should accept sync and async builder functions', () => {
-			const syncBuilder: AbilityBuilderFunction = () => defaultAbilityBuilder()
-			const asyncBuilder: AbilityBuilderFunction = async () => defaultAbilityBuilder()
-
 			// Both should be valid builder functions
 			expectTypeOf(syncBuilder).toBeFunction()
 			expectTypeOf(asyncBuilder).toBeFunction()
@@ -183,13 +187,8 @@ describe('Type Safety Tests', { tags: ['unit', 'graphql'] }, () => {
 		})
 
 		it('should enforce correct parameter types for builders', () => {
-			const builder: AbilityBuilderFunction = user => {
-				expectTypeOf(user).toEqualTypeOf<User | undefined>()
-				return defaultAbilityBuilder(user)
-			}
-
-			expectTypeOf(builder).toBeCallableWith(undefined)
-			expectTypeOf(builder).toBeCallableWith({ id: '1', roles: [] })
+			expectTypeOf(builderForParamTypes).toBeCallableWith(undefined)
+			expectTypeOf(builderForParamTypes).toBeCallableWith({ id: '1', roles: [] })
 		})
 	})
 })

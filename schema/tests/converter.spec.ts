@@ -460,7 +460,7 @@ describe('convertGraphQLSchema', { tags: ['unit'] }, () => {
 			const doctypes = convertGraphQLSchema(basicSdl)
 
 			expect(doctypes.length).toBe(3) // User, Post, Comment
-			const names = doctypes.map(d => d.name).sort()
+			const names = doctypes.map(d => d.name).toSorted()
 			expect(names).toEqual(['Comment', 'Post', 'User'])
 		})
 
@@ -542,8 +542,8 @@ describe('convertGraphQLSchema', { tags: ['unit'] }, () => {
 
 			expect(fromIntrospection.length).toBe(fromSdl.length)
 
-			const sdlNames = fromSdl.map(d => d.name).sort()
-			const introspectionNames = fromIntrospection.map(d => d.name).sort()
+			const sdlNames = fromSdl.map(d => d.name).toSorted()
+			const introspectionNames = fromIntrospection.map(d => d.name).toSorted()
 			expect(introspectionNames).toEqual(sdlNames)
 		})
 	})
