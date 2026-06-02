@@ -343,12 +343,6 @@ importers:
       '@monaco-editor/loader':
         specifier: ^1.7.0
         version: 1.7.0
-      '@stonecrop/themes':
-        specifier: workspace:*
-        version: link:../themes
-      '@stonecrop/utilities':
-        specifier: workspace:*
-        version: link:../utilities
       monaco-editor:
         specifier: ^0.55.1
         version: 0.55.1
@@ -362,12 +356,12 @@ importers:
       '@rushstack/heft':
         specifier: ^1.2.17
         version: 1.2.17(@types/node@24.12.4)
-      '@stonecrop/atable':
-        specifier: workspace:*
-        version: link:../atable
       '@vitejs/plugin-vue':
         specifier: ^6.0.6
         version: 6.0.6(vite@7.3.2(@types/node@24.12.4)(jiti@2.6.1)(sass@1.97.2)(terser@5.46.2)(yaml@2.8.4))(vue@3.5.33(typescript@6.0.3))
+      '@vue/test-utils':
+        specifier: ^2.4.10
+        version: 2.4.10(@vue/compiler-dom@3.5.33)(@vue/server-renderer@3.5.33(vue@3.5.33(typescript@6.0.3)))(vue@3.5.33(typescript@6.0.3))
       eslint:
         specifier: ^10.3.0
         version: 10.3.0(jiti@2.6.1)
@@ -380,6 +374,9 @@ importers:
       globals:
         specifier: ^17.6.0
         version: 17.6.0
+      jsdom:
+        specifier: ^29.1.1
+        version: 29.1.1
       stonecrop-rig:
         specifier: workspace:*
         version: link:../rigs/stonecrop-rig
@@ -392,6 +389,9 @@ importers:
       vite:
         specifier: ^7.3.2
         version: 7.3.2(@types/node@24.12.4)(jiti@2.6.1)(sass@1.97.2)(terser@5.46.2)(yaml@2.8.4)
+      vitest:
+        specifier: ^4.1.5
+        version: 4.1.5(@types/node@24.12.4)(@vitest/coverage-istanbul@4.1.5)(@vitest/ui@4.1.5)(jsdom@29.1.1)(vite@7.3.2(@types/node@24.12.4)(jiti@2.6.1)(sass@1.97.2)(terser@5.46.2)(yaml@2.8.4))
       vue:
         specifier: ^3.5.33
         version: 3.5.33(typescript@6.0.3)
@@ -8504,11 +8504,11 @@ packages:
     resolution: {integrity: sha512-Bf+ILmBgretUrdJxzXM0SgXLZ3XfiaUuOj/IKQHuTXip+05Xn+uyEYdVg0kYDipTBcLrCVyUzAPz7QmArb0mmw==}
     engines: {node: '>=14.0.0'}
 
-  tldts-core@7.0.30:
-    resolution: {integrity: sha512-uiHN8PIB1VmWyS98eZYja4xzlYqeFZVjb4OuYlJQnZAuJhMw4PbKQOKgHKhBdJR3FE/t5mUQ1Kd80++B+qhD1Q==}
+  tldts-core@7.0.29:
+    resolution: {integrity: sha512-W99NuU7b1DcG3uJ3v9k9VztCH3WialNbBkBft5wCs8V8mexu0XQqaZEYb9l9RNNzK8+3EJ9PKWB0/RUtTQ/o+Q==}
 
-  tldts@7.0.30:
-    resolution: {integrity: sha512-ELrFxuqsDdHUwoh0XxDbxuLD3Wnz49Z57IFvTtvWy1hJdcMZjXLIuonjilCiWHlT2GbE4Wlv1wKVTzDFnXH1aw==}
+  tldts@7.0.29:
+    resolution: {integrity: sha512-JIXCerhudr/N6OWLwLF1HVsTTUo7ry6qHa5eWZEkiMuxsIiAACL55tGLfqfHfoH7QaMQUW8fngD7u7TxWexYQg==}
     hasBin: true
 
   to-regex-range@5.0.1:
@@ -18093,11 +18093,11 @@ snapshots:
 
   tinyrainbow@3.1.0: {}
 
-  tldts-core@7.0.30: {}
+  tldts-core@7.0.29: {}
 
-  tldts@7.0.30:
+  tldts@7.0.29:
     dependencies:
-      tldts-core: 7.0.30
+      tldts-core: 7.0.29
 
   to-regex-range@5.0.1:
     dependencies:
@@ -18114,7 +18114,7 @@ snapshots:
 
   tough-cookie@6.0.1:
     dependencies:
-      tldts: 7.0.30
+      tldts: 7.0.29
 
   tr46@0.0.3: {}
 

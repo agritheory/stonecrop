@@ -41,12 +41,44 @@ Vue component exported from @stonecrop/aform.
 import { ADatePicker } from '@stonecrop/aform'
 ```
 
+### ADateRange
+
+Vue component exported from @stonecrop/aform.
+
+```typescript
+import { ADateRange } from '@stonecrop/aform'
+```
+
+### ADateSelection
+
+Vue component exported from @stonecrop/aform.
+
+```typescript
+import { ADateSelection } from '@stonecrop/aform'
+```
+
+### ADateTime
+
+Vue component exported from @stonecrop/aform.
+
+```typescript
+import { ADateTime } from '@stonecrop/aform'
+```
+
 ### ADropdown
 
 Vue component exported from @stonecrop/aform.
 
 ```typescript
 import { ADropdown } from '@stonecrop/aform'
+```
+
+### ADuration
+
+Vue component exported from @stonecrop/aform.
+
+```typescript
+import { ADuration } from '@stonecrop/aform'
 ```
 
 ### AFieldset
@@ -210,6 +242,7 @@ Defined props for AForm components
 export type ComponentProps = {
     schema?: SchemaTypes;
     label?: string;
+    selectRange?: boolean;
     mask?: string;
     required?: boolean;
     mode?: FormMode;

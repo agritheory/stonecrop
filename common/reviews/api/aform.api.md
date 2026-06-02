@@ -8,7 +8,11 @@ import ACheckbox from './components/form/ACheckbox.vue';
 import AComboBox from './components/form/AComboBox.vue';
 import ADate from './components/form/ADate.vue';
 import ADatePicker from './components/form/ADatePicker.vue';
+import ADateRange from './components/form/ADateRange.vue';
+import ADateSelection from './components/form/ADateSelection.vue';
+import ADateTime from './components/form/ADateTime.vue';
 import ADropdown from './components/form/ADropdown.vue';
+import ADuration from './components/form/ADuration.vue';
 import AFieldset from './components/form/AFieldset.vue';
 import AFileAttach from './components/form/AFileAttach.vue';
 import AForm from './components/AForm.vue';
@@ -31,7 +35,15 @@ export { ADate }
 
 export { ADatePicker }
 
+export { ADateRange }
+
+export { ADateSelection }
+
+export { ADateTime }
+
 export { ADropdown }
+
+export { ADuration }
 
 export { AFieldset }
 
@@ -72,6 +84,7 @@ export type BaseSchema = {
 export type ComponentProps = {
     schema?: SchemaTypes;
     label?: string;
+    selectRange?: boolean;
     mask?: string;
     required?: boolean;
     mode?: FormMode;

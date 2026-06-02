@@ -24,6 +24,9 @@ export type ComponentProps = {
 	 */
 	label?: string
 
+	// TODO: add docstring
+	selectRange?: boolean
+
 	/**
 	 * The mask to apply to inputs inside the component. Accepts either a plain
 	 * mask string (e.g. `"(###) ###-####"`) or a stringified arrow function that
