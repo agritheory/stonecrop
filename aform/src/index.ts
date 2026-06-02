@@ -15,7 +15,6 @@ import AFormLink from './components/form/AFormLink.vue'
 import ANumericInput from './components/form/ANumericInput.vue'
 import ATextInput from './components/form/ATextInput.vue'
 import Login from './components/utilities/Login.vue'
-import ALongText from './components/form/ALongText.vue'
 export type * from './types'
 
 /**
@@ -35,7 +34,6 @@ function install(app: App /* options */) {
 	app.component('AFileAttach', AFileAttach)
 	app.component('AForm', AForm)
 	app.component('AFormLink', AFormLink)
-	app.component('ALongText', ALongText)
 	app.component('ANumericInput', ANumericInput)
 	app.component('ATextInput', ATextInput)
 }
@@ -54,5 +52,4 @@ export {
 	ATextInput,
 	Login,
 	install,
-	ALongText,
 }

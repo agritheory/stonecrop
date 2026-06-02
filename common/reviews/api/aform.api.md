@@ -13,7 +13,6 @@ import AFieldset from './components/form/AFieldset.vue';
 import AFileAttach from './components/form/AFileAttach.vue';
 import AForm from './components/AForm.vue';
 import AFormLink from './components/form/AFormLink.vue';
-import ALongText from './components/form/ALongText.vue';
 import ANumericInput from './components/form/ANumericInput.vue';
 import type { App } from 'vue';
 import ATextInput from './components/form/ATextInput.vue';
@@ -53,8 +52,6 @@ export interface AFormLinkValue {
     displayText?: string;
     id: string | number;
 }
-
-export { ALongText }
 
 export { ANumericInput }
 

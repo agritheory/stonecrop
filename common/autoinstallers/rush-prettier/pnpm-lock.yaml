@@ -17,8 +17,8 @@ importers:
 
 packages:
 
-  '@pkgr/core@0.2.10':
-    resolution: {integrity: sha512-x6fFWCeak8aCGfqZfe6CXYt5xVjxe9Os1cIPmVRcToInKLjhJkRVXvJ/L3/1KxFkjDQdbZV/YsuLKqa8t/xKpA==}
+  '@pkgr/core@0.2.9':
+    resolution: {integrity: sha512-QNqXyfVS2wm9hweSYD2O7F0G06uurj9kZ96TRQE5Y9hU7+tgdZwIkbAKc5Ocy1HxEY2kuDQa6cQ1WRs/O5LFKA==}
     engines: {node: ^12.20.0 || ^14.18.0 || >=16.0.0}
 
   ignore@7.0.5:
@@ -56,7 +56,7 @@ packages:
 
 snapshots:
 
-  '@pkgr/core@0.2.10': {}
+  '@pkgr/core@0.2.9': {}
 
   ignore@7.0.5: {}
 
@@ -70,7 +70,7 @@ snapshots:
 
   pretty-quick@4.2.2(prettier@3.8.3):
     dependencies:
-      '@pkgr/core': 0.2.10
+      '@pkgr/core': 0.2.9
       ignore: 7.0.5
       mri: 1.2.0
       picocolors: 1.1.1
