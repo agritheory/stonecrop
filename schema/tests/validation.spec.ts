@@ -693,3 +693,189 @@ describe('FetchStrategy Validation', { tags: ['unit'] }, () => {
 		}
 	})
 })
+
+// =============================================================================
+// DoctypeField discriminated union — FieldsetField and TableField variants
+// =============================================================================
+
+describe('DoctypeField — FieldsetField variant', { tags: ['unit'] }, () => {
+	it('should validate a valid FieldsetField', () => {
+		const field = {
+			kind: 'fieldset' as const,
+			fieldname: 'details',
+			label: 'Details',
+			collapsible: true,
+			schema: [
+				{ kind: 'field' as const, fieldname: 'email', fieldtype: 'Data' },
+				{ kind: 'field' as const, fieldname: 'phone', fieldtype: 'Data' },
+			],
+		}
+		const result = validateField(field)
+		expect(result.success).toBe(true)
+		expect(result.errors).toEqual([])
+	})
+
+	it('should validate a FieldsetField with empty schema', () => {
+		const field = {
+			kind: 'fieldset' as const,
+			fieldname: 'details',
+			schema: [],
+		}
+		const result = validateField(field)
+		expect(result.success).toBe(true)
+	})
+
+	it('should validate a recursive FieldsetField — fieldset nested inside fieldset', () => {
+		const field = {
+			kind: 'fieldset' as const,
+			fieldname: 'outer',
+			schema: [
+				{
+					kind: 'fieldset' as const,
+					fieldname: 'inner',
+					schema: [{ kind: 'field' as const, fieldname: 'name', fieldtype: 'Data' }],
+				},
+			],
+		}
+		const result = validateField(field)
+		expect(result.success).toBe(true)
+	})
+
+	it('should reject a FieldsetField missing fieldname', () => {
+		const field = {
+			kind: 'fieldset' as const,
+			schema: [{ kind: 'field' as const, fieldname: 'email', fieldtype: 'Data' }],
+		}
+		const result = validateField(field)
+		expect(result.success).toBe(false)
+		expect(result.errors.length).toBeGreaterThan(0)
+	})
+
+	it('should reject a FieldsetField with an invalid child field', () => {
+		const field = {
+			kind: 'fieldset' as const,
+			fieldname: 'details',
+			schema: [
+				{ kind: 'field' as const, fieldname: 'email' }, // missing fieldtype
+			],
+		}
+		const result = validateField(field)
+		expect(result.success).toBe(false)
+	})
+
+	it('should parse a FieldsetField and return the correct kind', () => {
+		const field = {
+			kind: 'fieldset' as const,
+			fieldname: 'details',
+			schema: [{ kind: 'field' as const, fieldname: 'email', fieldtype: 'Data' }],
+		}
+		const parsed = parseField(field)
+		expect(parsed.kind).toBe('fieldset')
+	})
+})
+
+describe('DoctypeField — TableField variant', { tags: ['unit'] }, () => {
+	it('should validate a valid TableField', () => {
+		const field = {
+			kind: 'table' as const,
+			fieldname: 'items',
+			label: 'Line Items',
+			columns: [
+				{ fieldname: 'qty', label: 'Qty', fieldtype: 'Int' },
+				{ fieldname: 'unit_price', label: 'Unit Price', fieldtype: 'Currency' },
+			],
+		}
+		const result = validateField(field)
+		expect(result.success).toBe(true)
+		expect(result.errors).toEqual([])
+	})
+
+	it('should validate a TableField with config', () => {
+		const field = {
+			kind: 'table' as const,
+			fieldname: 'items',
+			columns: [{ fieldname: 'qty', fieldtype: 'Int' }],
+			config: { view: 'list' as const },
+		}
+		const result = validateField(field)
+		expect(result.success).toBe(true)
+	})
+
+	it('should validate all TableViewConfig view types', () => {
+		const views = ['list', 'uncounted', 'list-expansion', 'tree', 'gantt', 'tree-gantt'] as const
+		for (const view of views) {
+			const field = {
+				kind: 'table' as const,
+				fieldname: 'items',
+				columns: [{ fieldname: 'id', fieldtype: 'Data' }],
+				config: { view },
+			}
+			const result = validateField(field)
+			expect(result.success).toBe(true)
+		}
+	})
+
+	it('should reject a TableField missing fieldname', () => {
+		const field = {
+			kind: 'table' as const,
+			columns: [{ fieldname: 'qty', fieldtype: 'Int' }],
+		}
+		const result = validateField(field)
+		expect(result.success).toBe(false)
+	})
+
+	it('should reject a TableField whose column is missing fieldname', () => {
+		const field = {
+			kind: 'table' as const,
+			fieldname: 'items',
+			columns: [{ label: 'Qty', fieldtype: 'Int' }],
+		}
+		const result = validateField(field)
+		expect(result.success).toBe(false)
+	})
+
+	it('should parse a TableField and return the correct kind', () => {
+		const field = {
+			kind: 'table' as const,
+			fieldname: 'items',
+			columns: [{ fieldname: 'qty', fieldtype: 'Int' }],
+		}
+		const parsed = parseField(field)
+		expect(parsed.kind).toBe('table')
+	})
+})
+
+describe('DoctypeField — discriminated union boundaries', { tags: ['unit'] }, () => {
+	it('should accept a doctype with all three field kinds', () => {
+		const doctype = {
+			name: 'Order',
+			fields: [
+				{ kind: 'field' as const, fieldname: 'status', fieldtype: 'Select', options: ['Draft', 'Submitted'] },
+				{
+					kind: 'fieldset' as const,
+					fieldname: 'billing',
+					schema: [{ kind: 'field' as const, fieldname: 'address', fieldtype: 'Data' }],
+				},
+				{
+					kind: 'table' as const,
+					fieldname: 'line_items',
+					columns: [{ fieldname: 'qty', fieldtype: 'Int' }],
+				},
+			],
+		}
+		const result = validateDoctype(doctype)
+		expect(result.success).toBe(true)
+	})
+
+	it('should reject a field with an unknown kind', () => {
+		const field = { kind: 'tab', fieldname: 'overview' }
+		const result = validateField(field)
+		expect(result.success).toBe(false)
+	})
+
+	it('should reject a field object with no kind', () => {
+		const field = { fieldname: 'email', fieldtype: 'Data' }
+		const result = validateField(field)
+		expect(result.success).toBe(false)
+	})
+})
