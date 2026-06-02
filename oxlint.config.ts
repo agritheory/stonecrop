@@ -7,6 +7,7 @@ const config: OxlintConfig = {
 	categories: {
 		correctness: 'error',
 		suspicious: 'warn',
+		perf: 'warn',
 	},
 
 	options: {

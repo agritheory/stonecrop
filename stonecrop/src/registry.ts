@@ -427,10 +427,11 @@ export default class Registry {
 		const doctype = this.registry[doctypeSlug]
 		if (!doctype?.links) return []
 
-		return Object.entries(doctype.links).map(([fieldname, link]) => ({
-			...link,
-			fieldname,
-		}))
+		return Object.entries(doctype.links).map(([fieldname, link]) =>
+			Object.assign({}, link, {
+				fieldname,
+			})
+		)
 	}
 
 	/**

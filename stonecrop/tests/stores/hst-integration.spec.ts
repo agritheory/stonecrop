@@ -125,7 +125,7 @@ describe('HST Real Component Integration', { tags: ['unit'] }, () => {
 					})
 
 					// Schema is purely structural — no value fields
-					const formSchema = ref(doctype.schema?.toArray().map(field => ({ ...field })))
+					const formSchema = ref(doctype.schema?.toArray().map(field => Object.assign({}, field)))
 
 					return {
 						formSchema,

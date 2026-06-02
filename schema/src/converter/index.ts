@@ -109,6 +109,7 @@ export function convertGraphQLSchema(
 				if (options.classifyField) {
 					const custom = options.classifyField(fieldName, field, type)
 					if (custom !== null && custom !== undefined) {
+						// oxlint-disable-next-line oxc/no-map-spread -- spread required: Object.assign loses _isLink/_graphqlType metadata from custom's inferred type
 						return {
 							fieldname: fieldName,
 							label: custom.label ?? fieldName,
@@ -124,6 +125,7 @@ export function convertGraphQLSchema(
 
 				// Apply per-field overrides
 				if (typeOverrides?.[fieldName]) {
+					// oxlint-disable-next-line oxc/no-map-spread -- spread required: Object.assign loses _isLink/_graphqlType metadata; TypeScript cannot narrow union members after the type is dropped
 					return { ...classified, ...typeOverrides[fieldName] }
 				}
 

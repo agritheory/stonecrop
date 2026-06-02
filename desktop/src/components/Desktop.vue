@@ -521,11 +521,12 @@ const getRecordsSchema = (): SchemaTypes[] => {
 	const records = getRecords()
 	const idField = props.recordIdField || 'id'
 
-	const rows = records.map(record => ({
-		...record,
-		id: record[idField] || record.id || '',
-		actions: 'Edit | Delete',
-	}))
+	const rows = records.map(record =>
+		Object.assign({}, record, {
+			id: record[idField] || record.id || '',
+			actions: 'Edit | Delete',
+		})
+	)
 
 	return [
 		{

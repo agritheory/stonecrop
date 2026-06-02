@@ -225,6 +225,7 @@ describe('Desktop – command palette action closures', { tags: ['component'] },
 		expect(commands.length).toBeGreaterThan(0)
 
 		for (const cmd of commands) {
+			// oxlint-disable-next-line eslint/no-await-in-loop -- sequential command execution; test asserts navigation after all commands run in order
 			await cmd.action()
 		}
 

@@ -62,6 +62,7 @@ describe('datepicker component', { tags: ['component'] }, () => {
 		const currentMonth = new Date().getMonth()
 
 		for (const _ of Array(currentMonth + 1).keys()) {
+			// oxlint-disable-next-line eslint/no-await-in-loop -- each click advances calendar state; sequential order required
 			await $prevMonthBtn.trigger('click')
 		}
 
@@ -85,6 +86,7 @@ describe('datepicker component', { tags: ['component'] }, () => {
 		const currentMonth = new Date().getMonth()
 
 		for (const _ of Array(12 - currentMonth).keys()) {
+			// oxlint-disable-next-line eslint/no-await-in-loop -- each click advances calendar state; sequential order required
 			await $prevMonthBtn.trigger('click')
 		}
 

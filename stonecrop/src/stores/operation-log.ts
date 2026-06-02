@@ -513,7 +513,9 @@ export const useOperationLogStore = defineStore('hst-operation-log', () => {
 				currentIndex.value = operations.value.length - 1
 			} else if (message.type === 'operation' && message.operations) {
 				// Add batch operations from another tab
-				operations.value.push(...message.operations.map((op): HSTOperation => ({ ...op, source: 'sync' })))
+				operations.value.push(
+					...message.operations.map((op): HSTOperation => Object.assign({}, op, { source: 'sync' as const }))
+				)
 				currentIndex.value = operations.value.length - 1
 			}
 		})

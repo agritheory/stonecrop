@@ -116,6 +116,9 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 										const columns = getSqlColumns(meta)
 										const ids = indices.map(i => String(specs[i].id))
 
+										// TODO(perf): queries per doctype group could be parallelized with Promise.all across doctype groups;
+										// requires refactoring the grouped-by-doctype loop to collect promises before resolving results
+										// oxlint-disable-next-line eslint/no-await-in-loop -- sequential per-doctype SQL; see TODO above
 										const { rows } = await debugSql<Record<string, unknown>>(pgClient, {
 											text: `SELECT ${columns} FROM ${resolveTableName(meta.name, options.tables)} WHERE "${pkColumn}"::text = ANY($1::text[])`,
 											values: [ids],
@@ -157,6 +160,8 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 														const handlerName = fetch.handler
 														const handler = getFetchHandler(handlerName)
 														if (handler) {
+															// TODO(perf): custom link handlers per-row could run in parallel; needs collecting all custom handlers before await
+															// oxlint-disable-next-line eslint/no-await-in-loop -- custom handler per link; see TODO above
 															rowData[linkName] = await handler(pgClient, rowData, link)
 														}
 														continue
@@ -178,6 +183,8 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 															sql += ` LIMIT $2`
 															linkValues.push(effectiveLimit)
 														}
+														// TODO(perf): many-side link queries per row could be parallelized; needs collecting across links before await
+														// oxlint-disable-next-line eslint/no-await-in-loop -- one SQL per backlink per row; see TODO above
 														const { rows: linked } = await debugSql<Record<string, unknown>>(pgClient, {
 															text: sql,
 															values: linkValues,
@@ -193,6 +200,8 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 														const targetPkMeta = getPkMeta(targetMeta)
 														if (!targetPkMeta) continue
 														const targetPkColumn = camelToSnake(targetPkMeta.fieldname)
+														// TODO(perf): one-side link FK lookups per row could be parallelized; needs collecting across links before await
+														// oxlint-disable-next-line eslint/no-await-in-loop -- one FK lookup per link per row; see TODO above
 														const { rows: linked } = await debugSql<Record<string, unknown>>(pgClient, {
 															text: `SELECT ${targetColumns} FROM ${resolveTableName(targetMeta.name, options.tables)} WHERE "${targetPkColumn}" = $1`,
 															values: [fkValue],
