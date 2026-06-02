@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "migrate linter from eslint to oxlint",
+      "type": "patch",
+      "packageName": "@stonecrop/desktop"
+    }
+  ],
+  "packageName": "@stonecrop/desktop",
+  "email": "rohanbansal33@gmail.com"
+}

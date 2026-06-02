@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "migrate linter from eslint to oxlint",
+      "type": "patch",
+      "packageName": "@stonecrop/nuxt-grafserv"
+    }
+  ],
+  "packageName": "@stonecrop/nuxt-grafserv",
+  "email": "rohanbansal33@gmail.com"
+}
