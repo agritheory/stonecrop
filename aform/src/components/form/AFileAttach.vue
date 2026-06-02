@@ -44,7 +44,7 @@ const fileLengthText = computed(() => {
 	return `${count} ${count === 1 ? 'file' : 'files'}`
 })
 
-onChange(files => files)
+onChange(changedFiles => changedFiles)
 </script>
 
 <style scoped>

@@ -35,7 +35,8 @@
 		"build": "heft build && vite build && rushx docs",
 		"dev": "vite",
 		"docs": "bash ../common/scripts/run-docs.sh utilities",
-		"lint": "eslint .",
+		"lint": "oxlint",
+		"lint:fix": "oxlint --fix",
 		"preview": "vite preview"
 	},
 	"dependencies": {
@@ -46,19 +47,15 @@
 		"vue": "^3.5.33"
 	},
 	"devDependencies": {
-		"@eslint/js": "^10.0.1",
 		"@microsoft/api-documenter": "^7.30.5",
 		"@rushstack/heft": "^1.2.17",
 		"@vitejs/plugin-vue": "^6.0.6",
-		"eslint": "^10.3.0",
-		"eslint-config-prettier": "^10.1.8",
-		"eslint-plugin-vue": "^10.9.0",
-		"globals": "^17.6.0",
+		"oxlint": "1.67.0",
+		"oxlint-tsgolint": "0.23.0",
 		"stonecrop-rig": "workspace:*",
 		"typescript": "^6.0.3",
-		"typescript-eslint": "^8.59.1",
-		"vue": "^3.5.33",
 		"vite": "^7.3.2",
+		"vue": "^3.5.33",
 		"vue-router": "^5.0.6"
 	},
 	"publishConfig": {

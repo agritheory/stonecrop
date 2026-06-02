@@ -34,7 +34,7 @@ describe('datepicker component', { tags: ['component'] }, () => {
 		await wrapper.vm.$nextTick()
 
 		const $randomDate = wrapper.find({ ref: 'celldate' })
-		$randomDate.trigger('click')
+		await $randomDate.trigger('click')
 
 		const updateEvents = wrapper.emitted('update:modelValue')
 		expect(updateEvents).toBeTruthy()
@@ -51,11 +51,7 @@ describe('datepicker component', { tags: ['component'] }, () => {
 		await $prevMonthBtn.trigger('click')
 
 		const currentMonth = new Date().getMonth()
-		if (currentMonth === 0) {
-			expect(wrapper.vm.currentMonth).toBe(11)
-		} else {
-			expect(wrapper.vm.currentMonth).toBe(currentMonth - 1)
-		}
+		expect(wrapper.vm.currentMonth).toBe(currentMonth === 0 ? 11 : currentMonth - 1)
 	})
 
 	it('select previous year', async () => {
@@ -66,6 +62,7 @@ describe('datepicker component', { tags: ['component'] }, () => {
 		const currentMonth = new Date().getMonth()
 
 		for (const _ of Array(currentMonth + 1).keys()) {
+			// oxlint-disable-next-line eslint/no-await-in-loop -- each click advances calendar state; sequential order required
 			await $prevMonthBtn.trigger('click')
 		}
 
@@ -89,6 +86,7 @@ describe('datepicker component', { tags: ['component'] }, () => {
 		const currentMonth = new Date().getMonth()
 
 		for (const _ of Array(12 - currentMonth).keys()) {
+			// oxlint-disable-next-line eslint/no-await-in-loop -- each click advances calendar state; sequential order required
 			await $prevMonthBtn.trigger('click')
 		}
 

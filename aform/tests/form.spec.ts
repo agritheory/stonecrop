@@ -42,7 +42,7 @@ describe('AForm Component', { tags: ['component'] }, () => {
 			template: '<div class="mock-table"></div>',
 		})
 
-		const wrapper = mount(AForm, {
+		const localWrapper = mount(AForm, {
 			props: {
 				schema: [
 					{
@@ -58,9 +58,9 @@ describe('AForm Component', { tags: ['component'] }, () => {
 			global: { components: { MockTable } },
 		})
 
-		await wrapper.vm.$nextTick()
+		await localWrapper.vm.$nextTick()
 
-		const mockTable = wrapper.findComponent(MockTable)
+		const mockTable = localWrapper.findComponent(MockTable)
 		expect(mockTable.exists()).toBe(true)
 		expect(mockTable.props('rows')).toEqual([{ id: 1 }, { id: 2 }])
 	})
@@ -119,7 +119,7 @@ describe('AForm Component', { tags: ['component'] }, () => {
 				template: '<div class="mock-table"></div>',
 			})
 
-			const wrapper = mount(AForm, {
+			const localWrapper = mount(AForm, {
 				props: {
 					schema: [
 						{
@@ -135,9 +135,9 @@ describe('AForm Component', { tags: ['component'] }, () => {
 				global: { components: { MockTable } },
 			})
 
-			await wrapper.vm.$nextTick()
+			await localWrapper.vm.$nextTick()
 
-			const mockTable = wrapper.findComponent(MockTable)
+			const mockTable = localWrapper.findComponent(MockTable)
 			expect(mockTable.exists()).toBe(true)
 			expect(mockTable.props('rows')).toEqual([{ qty: 1 }, { qty: 2 }])
 		})
@@ -167,7 +167,7 @@ describe('AForm Component', { tags: ['component'] }, () => {
 
 	describe('hidden field behavior', () => {
 		it('does not render a field with hidden: true', async () => {
-			const wrapper = mount(AForm, {
+			const localWrapper = mount(AForm, {
 				props: {
 					schema: [
 						{
@@ -189,12 +189,12 @@ describe('AForm Component', { tags: ['component'] }, () => {
 				components: { ATextInput },
 			})
 
-			await wrapper.vm.$nextTick()
-			expect(wrapper.findAllComponents(ATextInput)).toHaveLength(1)
+			await localWrapper.vm.$nextTick()
+			expect(localWrapper.findAllComponents(ATextInput)).toHaveLength(1)
 		})
 
 		it('renders a field with hidden: false', async () => {
-			const wrapper = mount(AForm, {
+			const localWrapper = mount(AForm, {
 				props: {
 					schema: [
 						{
@@ -210,8 +210,8 @@ describe('AForm Component', { tags: ['component'] }, () => {
 				components: { ATextInput },
 			})
 
-			await wrapper.vm.$nextTick()
-			expect(wrapper.findComponent(ATextInput).exists()).toBe(true)
+			await localWrapper.vm.$nextTick()
+			expect(localWrapper.findComponent(ATextInput).exists()).toBe(true)
 		})
 	})
 
@@ -227,13 +227,13 @@ describe('AForm Component', { tags: ['component'] }, () => {
 				} as FormSchema,
 			]
 
-			const wrapper = mount(AForm, {
+			const localWrapper = mount(AForm, {
 				props: { schema, data: {} },
 				components: { ATextInput },
 			})
 
-			await wrapper.vm.$nextTick()
-			const textInput = wrapper.findComponent(ATextInput)
+			await localWrapper.vm.$nextTick()
+			const textInput = localWrapper.findComponent(ATextInput)
 			expect(textInput.props('mask')).toBe('(###) ### - ####')
 		})
 
@@ -248,13 +248,13 @@ describe('AForm Component', { tags: ['component'] }, () => {
 				} as FormSchema,
 			]
 
-			const wrapper = mount(AForm, {
+			const localWrapper = mount(AForm, {
 				props: { schema, data: { phone: '5551234567' } },
 				components: { ATextInput },
 			})
 
-			await wrapper.vm.$nextTick()
-			const input = wrapper.find('input')
+			await localWrapper.vm.$nextTick()
+			const input = localWrapper.find('input')
 			// mask length is 12, and the value is fully masked so maxlength is set
 			expect(input.attributes('maxlength')).toBe('12')
 		})
@@ -269,13 +269,13 @@ describe('AForm Component', { tags: ['component'] }, () => {
 				} as FormSchema,
 			]
 
-			const wrapper = mount(AForm, {
+			const localWrapper = mount(AForm, {
 				props: { schema, data: {} },
 				components: { ATextInput },
 			})
 
-			await wrapper.vm.$nextTick()
-			const input = wrapper.find('input')
+			await localWrapper.vm.$nextTick()
+			const input = localWrapper.find('input')
 			expect(input.attributes('maxlength')).toBeUndefined()
 		})
 	})
@@ -288,7 +288,7 @@ describe('AForm Component', { tags: ['component'] }, () => {
 				template: '<div class="aform_form-element mock-field"></div>',
 			})
 
-			const wrapper = mount(AForm, {
+			const localWrapper = mount(AForm, {
 				props: {
 					schema: [
 						{
@@ -304,8 +304,8 @@ describe('AForm Component', { tags: ['component'] }, () => {
 				global: { components: { MockField } },
 			})
 
-			await wrapper.vm.$nextTick()
-			const field = wrapper.findComponent(MockField)
+			await localWrapper.vm.$nextTick()
+			const field = localWrapper.findComponent(MockField)
 			expect(field.element.style.flexBasis).toBe('100%')
 			expect(field.element.style.width).toBe('100%')
 		})
@@ -317,7 +317,7 @@ describe('AForm Component', { tags: ['component'] }, () => {
 				template: '<div class="aform_form-element mock-field"></div>',
 			})
 
-			const wrapper = mount(AForm, {
+			const localWrapper = mount(AForm, {
 				props: {
 					schema: [
 						{
@@ -332,8 +332,8 @@ describe('AForm Component', { tags: ['component'] }, () => {
 				global: { components: { MockField } },
 			})
 
-			await wrapper.vm.$nextTick()
-			const field = wrapper.findComponent(MockField)
+			await localWrapper.vm.$nextTick()
+			const field = localWrapper.findComponent(MockField)
 			expect(field.element.style.flexBasis).toBe('')
 			expect(field.element.style.width).toBe('')
 		})

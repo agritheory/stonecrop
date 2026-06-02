@@ -310,7 +310,7 @@ describe('ATableHeader component', { tags: ['component'] }, () => {
 
 	it('should not resize when width has not changed', () => {
 		// Create store with numeric width
-		const numericColumns = mockColumns.map(col => ({ ...col, width: 100 }))
+		const numericColumns = mockColumns.map(col => Object.assign({}, col, { width: 100 }))
 		const numericStore = createTableStore({
 			columns: numericColumns,
 			rows: mockRows,
@@ -352,7 +352,7 @@ describe('ATableHeader component', { tags: ['component'] }, () => {
 
 	it('should call resizeColumn when width has changed', () => {
 		// Create store with numeric width
-		const numericColumns = mockColumns.map(col => ({ ...col, width: 100 }))
+		const numericColumns = mockColumns.map(col => Object.assign({}, col, { width: 100 }))
 		const numericStore = createTableStore({
 			columns: numericColumns,
 			rows: mockRows,

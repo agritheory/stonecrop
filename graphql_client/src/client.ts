@@ -57,16 +57,17 @@ export class StonecropClient implements DataClient {
 			body: JSON.stringify({ query, variables }),
 		})
 
-		const json = (await response.json()) as {
-			data?: T
-			errors?: Array<{ message: string }>
-		}
+		const json: { data?: T; errors?: Array<{ message: string }> } = await response.json()
 
 		if (json.errors?.length) {
 			throw new Error(json.errors[0].message)
 		}
 
-		return json.data as T
+		if (json.data === undefined) {
+			throw new Error('GraphQL response missing data field')
+		}
+
+		return json.data
 	}
 
 	/**

@@ -115,7 +115,7 @@ describe('useLazyLink', { tags: ['unit'] }, () => {
 		const firstReload = state.reload()
 		expect(state.loading.value).toBe(true)
 
-		const secondReload = state.reload()
+		const _secondReload = state.reload()
 		expect(state.loading.value).toBe(true)
 
 		resolvePromise!({ record: { id: '123', title: 'Test' }, unknownLinks: [] })

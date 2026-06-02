@@ -242,10 +242,9 @@ describe('useStonecrop composable', { tags: ['unit'] }, () => {
 		})
 
 		// Check that HST store has the doctype section
-		if (vm.stonecrop) {
-			const store = vm.stonecrop.getStore()
-			expect(store.has('task')).toBe(true)
-		}
+		expect(vm.stonecrop).toBeDefined()
+		const store = vm.stonecrop.getStore()
+		expect(store.has('task')).toBe(true)
 	})
 
 	it('handles route with both doctype and record id', async () => {
@@ -297,9 +296,8 @@ describe('useStonecrop composable', { tags: ['unit'] }, () => {
 		})
 
 		// Check that stonecrop is working
-		if (vm.stonecrop) {
-			expect(vm.stonecrop.getRecordIds('task').length).toBeGreaterThan(0)
-		}
+		expect(vm.stonecrop).toBeDefined()
+		expect(vm.stonecrop.getRecordIds('task').length).toBeGreaterThan(0)
 	})
 
 	it('returns early when no doctype slug or record id', async () => {
@@ -359,16 +357,15 @@ describe('useStonecrop composable', { tags: ['unit'] }, () => {
 		await wrapper.vm.$nextTick()
 
 		const vm = wrapper.vm as any
-		if (vm.stonecrop) {
-			// Test HST-based methods exist
-			expect(typeof vm.stonecrop.records).toBe('function')
-			expect(typeof vm.stonecrop.addRecord).toBe('function')
+		expect(vm.stonecrop).toBeDefined()
+		// Test HST-based methods exist
+		expect(typeof vm.stonecrop.records).toBe('function')
+		expect(typeof vm.stonecrop.addRecord).toBe('function')
 
-			// Test that records returns HST node
-			const records = vm.stonecrop.records('task')
-			expect(records.getPath).toBeDefined()
-			expect(records.getPath()).toBe('task')
-		}
+		// Test that records returns HST node
+		const records = vm.stonecrop.records('task')
+		expect(records.getPath).toBeDefined()
+		expect(records.getPath()).toBe('task')
 	})
 })
 
@@ -447,19 +444,11 @@ describe('useStonecrop router-based HST integration', { tags: ['unit'] }, () => 
 
 		const vm = wrapper.vm as any
 
-		const result = vm as any
-		if ('formData' in result) {
-			expect(result.formData).toBeDefined()
-		}
-		if ('handleHSTChange' in result) {
-			expect(result.handleHSTChange).toBeDefined()
-		}
-		if ('provideHSTPath' in result) {
-			expect(result.provideHSTPath).toBeDefined()
-		}
-		if ('hstStore' in result) {
-			expect(result.hstStore).toBeDefined()
-		}
+		const result = vm
+		expect(result.formData).toBeDefined()
+		expect(result.handleHSTChange).toBeDefined()
+		expect(result.provideHSTPath).toBeDefined()
+		expect(result.hstStore).toBeDefined()
 	})
 
 	it('should handle field changes with router-loaded doctype', async () => {
@@ -548,9 +537,8 @@ describe('useStonecrop router-based HST integration', { tags: ['unit'] }, () => 
 		await input.setValue('New Todo Title')
 
 		const vm = wrapper.vm as any
-		if ('formData' in vm && vm.formData) {
-			expect(vm.formData.title).toBe('New Todo Title')
-		}
+		expect(vm.formData).toBeDefined()
+		expect(vm.formData.title).toBe('New Todo Title')
 	})
 })
 

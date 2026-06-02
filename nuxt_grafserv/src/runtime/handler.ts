@@ -44,7 +44,7 @@ async function getSchemaForSchemaMode(options: ModuleOptions & { type: 'schema' 
 		const typeDefDocs = await loadTypeDefsFromFiles(options.schema)
 
 		// Load resolvers if provided
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any -- resolver module is dynamically imported; shape is unknown at compile time
 		const objects: Record<string, any> = {}
 		// @ts-expect-error - resolversPath exists on SchemaConfig runtime config
 		if (options.resolversPath) {

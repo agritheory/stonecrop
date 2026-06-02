@@ -98,7 +98,7 @@ export const createCaslMiddleware = (options: MiddlewareOptions = {}) => {
 		const subjectName = subjectMap[subjectType] || subjectType
 
 		if (debug) {
-			console.log(`Checking permission: ${action} on ${subjectName} at ${fieldPath}`)
+			console.debug(`Checking permission: ${action} on ${subjectName} at ${fieldPath}`)
 		}
 
 		// Check field-level permissions if defined

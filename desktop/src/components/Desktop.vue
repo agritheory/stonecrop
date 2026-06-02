@@ -120,7 +120,7 @@ const currentViewData = computed<Record<string, any>>({
 			// Return a plain shallow copy so AForm mutations don't propagate directly into
 			// the HST reactive object, which would bypass field-trigger diffing and cause
 			// setupDeepReactivity to fire triggers for all fields on every keystroke.
-			return { ...(record?.get('') || {}) }
+			return { ...record?.get('') }
 		} catch {
 			return {}
 		}
@@ -141,7 +141,6 @@ const currentViewData = computed<Record<string, any>>({
 				}
 			}
 		} catch (error) {
-			// eslint-disable-next-line no-console
 			console.warn('HST update failed:', error)
 		}
 	},
@@ -284,7 +283,6 @@ const getAvailableTransitions = () => {
 			},
 		}))
 	} catch (error) {
-		// eslint-disable-next-line no-console
 		console.warn('Error getting available transitions:', error)
 		return []
 	}
@@ -523,12 +521,12 @@ const getRecordsSchema = (): SchemaTypes[] => {
 	const records = getRecords()
 	const idField = props.recordIdField || 'id'
 
-	const rows = records.map(record => ({
-		...record,
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-		id: record[idField] || record.id || '',
-		actions: 'Edit | Delete',
-	}))
+	const rows = records.map(record =>
+		Object.assign({}, record, {
+			id: record[idField] || record.id || '',
+			actions: 'Edit | Delete',
+		})
+	)
 
 	return [
 		{
@@ -637,7 +635,6 @@ const getRecordIdFromRow = (rowElement: HTMLTableRowElement): string | null => {
 	if (!record) return null
 
 	const idField = props.recordIdField || 'id'
-	// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 	return record[idField] || record.id || null
 }
 
@@ -691,7 +688,6 @@ const loadRecordData = async () => {
 		try {
 			await stonecrop.value.getRecord(currentDoctype.value, currentRecordId.value)
 		} catch (error) {
-			// eslint-disable-next-line no-console
 			console.warn('Error fetching record:', error)
 		} finally {
 			loading.value = false
@@ -747,16 +743,17 @@ provide('aformLinkNavigator', {
 	},
 } satisfies AFormLinkNavigator)
 
+function toDisplayString(rec: Record<string, unknown> | undefined): string | undefined {
+	if (!rec) return undefined
+	const val = rec.name ?? rec.title ?? rec.displayText
+	return typeof val === 'string' || typeof val === 'number' ? String(val) : undefined
+}
+
 // Provide a resolver for AFormLink to look up display text by doctype + id.
 // Checks HST first (sync); falls back to an async client fetch if not cached.
 provide('aformLinkResolver', async (doctypeSlug: string, id: string): Promise<string | undefined> => {
 	if (!stonecrop.value) return undefined
 	try {
-		const toDisplayString = (rec: Record<string, unknown> | undefined): string | undefined => {
-			if (!rec) return undefined
-			const val = rec.name ?? rec.title ?? rec.displayText
-			return typeof val === 'string' || typeof val === 'number' ? String(val) : undefined
-		}
 		const cached = stonecrop.value.getRecordById(doctypeSlug, id)?.get('') as Record<string, unknown> | undefined
 		const cachedDisplay = toDisplayString(cached)
 		if (cachedDisplay != null) return cachedDisplay

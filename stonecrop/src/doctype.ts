@@ -190,6 +190,7 @@ export default class Doctype {
 			const states = workflow.states
 			if (!states.includes(currentState)) return []
 
+			// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Array.isArray(workflow.states) confirms WorkflowMeta format above
 			const actions = (workflow as WorkflowMeta).actions
 			if (!actions) return []
 
@@ -246,6 +247,7 @@ export default class Doctype {
 		const workflow = this.workflow
 		if (!workflow || !Array.isArray(workflow.states)) return undefined
 
+		// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Array.isArray(workflow.states) confirms WorkflowMeta format above
 		const actions = (workflow as WorkflowMeta).actions
 		return actions?.[actionName]
 	}

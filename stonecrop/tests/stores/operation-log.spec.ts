@@ -178,7 +178,7 @@ describe('Operation Log Store', { tags: ['unit'] }, () => {
 		it('should not undo irreversible operations', () => {
 			const store = useOperationLogStore()
 			const data = { status: 'draft' }
-			const hstStore = createHST({ task: { '123': data } }, 'StonecropStore')
+			const _hstStore = createHST({ task: { '123': data } }, 'StonecropStore')
 
 			store.addOperation({
 				type: 'set',
@@ -1002,7 +1002,7 @@ describe('Operation Log Store', { tags: ['unit'] }, () => {
 				reversible: false, // Irreversible
 			})
 
-			const batchId = store.commitBatch('Mixed batch')
+			const _batchId = store.commitBatch('Mixed batch')
 
 			const batchOp = store.operations.find(op => op.type === 'batch')
 			expect(batchOp?.reversible).toBe(false)

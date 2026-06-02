@@ -171,12 +171,11 @@ describe('Desktop events', { tags: ['component'] }, () => {
 			const elements = actionSet.props('elements') as any[]
 			const actionsDropdown = elements?.find((e: any) => e.type === 'dropdown')
 
-			if (actionsDropdown?.actions?.length > 0) {
-				actionsDropdown.actions[0].action()
-				await nextTick()
+			expect(actionsDropdown?.actions?.length).toBeGreaterThan(0)
+			actionsDropdown.actions[0].action()
+			await nextTick()
 
-				expect(wrapper.emitted('action')).toBeTruthy()
-			}
+			expect(wrapper.emitted('action')).toBeTruthy()
 		})
 	})
 
@@ -347,16 +346,10 @@ describe('Desktop desktopMethods injection', { tags: ['component'] }, () => {
 			navigate: vi.fn(),
 		}
 
-		let injectedMethods: any = null
-
 		const ChildComponent = defineComponent({
 			inject: ['desktopMethods'],
 			setup() {
 				return {}
-			},
-			mounted() {
-				// Grab the desktopMethods injection from context
-				injectedMethods = (this as any).desktopMethods
 			},
 			template: '<div />',
 		})
@@ -404,13 +397,12 @@ describe('Desktop desktopMethods injection', { tags: ['component'] }, () => {
 		// in the test environment due to mounting quirks)
 		const vmProvides = (wrapper.vm as any).$.provides
 		const methods = vmProvides?.desktopMethods
-		if (methods) {
-			expect(typeof methods.navigateToDoctype).toBe('function')
-			expect(typeof methods.openRecord).toBe('function')
-			expect(typeof methods.createNewRecord).toBe('function')
-			expect(typeof methods.handleDelete).toBe('function')
-			expect(typeof methods.emitAction).toBe('function')
-		}
+		expect(methods).toBeDefined()
+		expect(typeof methods.navigateToDoctype).toBe('function')
+		expect(typeof methods.openRecord).toBe('function')
+		expect(typeof methods.createNewRecord).toBe('function')
+		expect(typeof methods.handleDelete).toBe('function')
+		expect(typeof methods.emitAction).toBe('function')
 	})
 
 	it('desktopMethods.emitAction emits an action event', async () => {
@@ -438,13 +430,12 @@ describe('Desktop desktopMethods injection', { tags: ['component'] }, () => {
 
 		const vmProvides = (wrapper.vm as any).$.provides
 		const methods = vmProvides?.desktopMethods
-		if (methods?.emitAction) {
-			methods.emitAction('APPROVE', { field: 'value' })
-			await nextTick()
-			const emitted = wrapper.emitted('action')
-			expect(emitted).toBeTruthy()
-			expect(emitted![0][0]).toMatchObject({ name: 'APPROVE', doctype: 'task', recordId: 'rec-1' })
-		}
+		expect(methods?.emitAction).toBeDefined()
+		methods.emitAction('APPROVE', { field: 'value' })
+		await nextTick()
+		const emitted = wrapper.emitted('action')
+		expect(emitted).toBeTruthy()
+		expect(emitted![0][0]).toMatchObject({ name: 'APPROVE', doctype: 'task', recordId: 'rec-1' })
 	})
 })
 
@@ -463,20 +454,20 @@ describe('Desktop – doNavigate without routeAdapter', { tags: ['component'] },
 		await nextTick()
 
 		const methods = (wrapper.vm as any).$.provides?.desktopMethods
-		if (methods) {
-			await methods.navigateToDoctype('task')
-			await nextTick()
-			expect(wrapper.emitted('navigate')).toBeTruthy()
+		expect(methods).toBeDefined()
 
-			await methods.createNewRecord()
-			await nextTick()
+		await methods.navigateToDoctype('task')
+		await nextTick()
+		expect(wrapper.emitted('navigate')).toBeTruthy()
 
-			await methods.openRecord('rec-1')
-			await nextTick()
+		await methods.createNewRecord()
+		await nextTick()
 
-			expect(wrapper.emitted('navigate')!.length).toBeGreaterThan(1)
-			expect(wrapper.emitted('record:open')).toBeTruthy()
-		}
+		await methods.openRecord('rec-1')
+		await nextTick()
+
+		expect(wrapper.emitted('navigate')!.length).toBeGreaterThan(1)
+		expect(wrapper.emitted('record:open')).toBeTruthy()
 	})
 })
 

@@ -146,7 +146,7 @@ describe('WELL_KNOWN_SCALARS', { tags: ['unit'] }, () => {
 			'Quantity',
 			'Select',
 		]
-		for (const [name, template] of Object.entries(WELL_KNOWN_SCALARS)) {
+		for (const [_name, template] of Object.entries(WELL_KNOWN_SCALARS)) {
 			expect(validTypes).toContain(template.fieldtype)
 			expect(template.component).toBeTruthy()
 		}
@@ -460,7 +460,7 @@ describe('convertGraphQLSchema', { tags: ['unit'] }, () => {
 			const doctypes = convertGraphQLSchema(basicSdl)
 
 			expect(doctypes.length).toBe(3) // User, Post, Comment
-			const names = doctypes.map(d => d.name).sort()
+			const names = doctypes.map(d => d.name).toSorted()
 			expect(names).toEqual(['Comment', 'Post', 'User'])
 		})
 
@@ -542,8 +542,8 @@ describe('convertGraphQLSchema', { tags: ['unit'] }, () => {
 
 			expect(fromIntrospection.length).toBe(fromSdl.length)
 
-			const sdlNames = fromSdl.map(d => d.name).sort()
-			const introspectionNames = fromIntrospection.map(d => d.name).sort()
+			const sdlNames = fromSdl.map(d => d.name).toSorted()
+			const introspectionNames = fromIntrospection.map(d => d.name).toSorted()
 			expect(introspectionNames).toEqual(sdlNames)
 		})
 	})

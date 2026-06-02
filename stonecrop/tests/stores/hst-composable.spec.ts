@@ -50,7 +50,13 @@ describe('HST Composable Functionality', { tags: ['unit'] }, () => {
 			const TestComponent = defineComponent({
 				template: '<div>{{ hstPath }}</div>',
 				setup() {
-					const { stonecrop, provideHSTPath, handleHSTChange, hstStore, formData } = useStonecrop({
+					const {
+						stonecrop: stonecropComposable,
+						provideHSTPath,
+						handleHSTChange,
+						hstStore,
+						formData,
+					} = useStonecrop({
 						doctype,
 						recordId: 'test-123',
 					})
@@ -58,7 +64,7 @@ describe('HST Composable Functionality', { tags: ['unit'] }, () => {
 					const hstPath = provideHSTPath('name')
 
 					return {
-						stonecrop,
+						stonecrop: stonecropComposable,
 						provideHSTPath,
 						handleHSTChange,
 						hstStore,
@@ -157,9 +163,8 @@ describe('HST Composable Functionality', { tags: ['unit'] }, () => {
 			expect(vm.formData.name).toBe('Test Task')
 
 			// Check that HST store is updated
-			if (vm.hstStore) {
-				expect(vm.hstStore.get('task.test-123.name')).toBe('Test Task')
-			}
+			expect(vm.hstStore).toBeDefined()
+			expect(vm.hstStore.get('task.test-123.name')).toBe('Test Task')
 		})
 
 		it('should generate correct HST paths for nested fields', async () => {
