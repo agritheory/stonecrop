@@ -15,7 +15,8 @@ import { ref } from 'vue'
 
 import CollapseButton from '../base/CollapseButton.vue'
 import AForm from '../AForm.vue'
-import type { SchemaTypes, FormMode } from '../../types'
+import type { ResolvedField } from '../../types'
+import type { InteractionMode } from '@stonecrop/schema'
 
 const {
 	schema,
@@ -24,12 +25,12 @@ const {
 	data = {},
 	mode = 'edit',
 } = defineProps<{
-	schema: SchemaTypes[]
+	schema: ResolvedField[]
 	label?: string
 	collapsible?: boolean
 	data?: Record<string, any>
 	/** Rendering mode forwarded to the inner AForm */
-	mode?: FormMode
+	mode?: InteractionMode
 }>()
 
 const collapsed = ref(false)

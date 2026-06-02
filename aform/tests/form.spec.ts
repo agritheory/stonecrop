@@ -4,7 +4,7 @@ import { mount } from '@vue/test-utils'
 
 import AForm from '../src/components/AForm.vue'
 import ATextInput from '../src/components/form/ATextInput.vue'
-import type { SchemaTypes, FormSchema } from '../src/types'
+import type { SchemaTypes, FormSchema, ResolvedField } from '../src/types'
 
 describe('AForm Component', { tags: ['component'] }, () => {
 	const wrapper = mount(AForm, {
@@ -292,13 +292,14 @@ describe('AForm Component', { tags: ['component'] }, () => {
 				props: {
 					schema: [
 						{
+							kind: 'field' as const,
 							fieldname: 'canvas',
 							component: 'MockField',
 							label: 'Canvas',
 							fieldtype: 'Display',
 							width: '100%',
 						},
-					] as SchemaTypes[],
+					] as ResolvedField[],
 					data: {},
 				},
 				global: { components: { MockField } },
@@ -337,5 +338,41 @@ describe('AForm Component', { tags: ['component'] }, () => {
 			expect(field.element.style.flexBasis).toBe('')
 			expect(field.element.style.width).toBe('')
 		})
+	})
+})
+
+describe('AForm mode forwarding', { tags: ['component'] }, () => {
+	it('passes mode prop to a component with kind: "table" in the schema', async () => {
+		const MockTable = defineComponent({
+			name: 'MockTable',
+			props: ['schema', 'rows', 'label', 'fieldname', 'data', 'mode'],
+			template: '<div class="mock-table"></div>',
+		})
+
+		const tableSchema: ResolvedField[] = [
+			{
+				kind: 'table' as const,
+				fieldname: 'line_items',
+				component: 'MockTable',
+				label: 'Line Items',
+				schema: [{ fieldname: 'qty', fieldtype: 'Int' }],
+				config: { view: 'list' as const },
+			},
+		]
+
+		const wrapper = mount(AForm, {
+			props: {
+				schema: tableSchema,
+				data: { line_items: [] },
+				mode: 'read',
+			},
+			global: { components: { MockTable } },
+		})
+
+		await wrapper.vm.$nextTick()
+
+		const table = wrapper.findComponent(MockTable)
+		expect(table.exists()).toBe(true)
+		expect(table.props('mode')).toBe('read')
 	})
 })

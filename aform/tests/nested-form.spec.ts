@@ -4,28 +4,30 @@ import { describe, it, expect } from 'vitest'
 import AForm from '../src/components/AForm.vue'
 import AFieldset from '../src/components/form/AFieldset.vue'
 import ATextInput from '../src/components/form/ATextInput.vue'
-import type { SchemaTypes } from '../src/types'
+import type { ResolvedField, SchemaTypes } from '../src/types'
 
 describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
-	const addressSchema: SchemaTypes[] = [
-		{ fieldname: 'street', fieldtype: 'Data', component: 'ATextInput', label: 'Street' },
-		{ fieldname: 'city', fieldtype: 'Data', component: 'ATextInput', label: 'City' },
-	] as SchemaTypes[]
+	const addressSchema: ResolvedField[] = [
+		{ kind: 'field' as const, fieldname: 'street', fieldtype: 'Data', component: 'ATextInput', label: 'Street' },
+		{ kind: 'field' as const, fieldname: 'city', fieldtype: 'Data', component: 'ATextInput', label: 'City' },
+	]
 
-	const nestedSchema: SchemaTypes[] = [
+	const nestedSchema: ResolvedField[] = [
 		{
+			kind: 'field' as const,
 			fieldname: 'name',
 			fieldtype: 'Data',
 			component: 'ATextInput',
 			label: 'Name',
 		},
 		{
+			kind: 'link' as const,
 			fieldname: 'address',
-			options: 'address',
+			component: 'AForm',
 			label: 'Address',
 			schema: addressSchema,
 		},
-	] as SchemaTypes[]
+	]
 
 	it('renders a nested AForm when field has schema property', async () => {
 		const wrapper = mount(AForm, {
@@ -55,20 +57,22 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 	})
 
 	it('renders nested AForm without label when label is not set', async () => {
-		const schemaWithoutLabel: SchemaTypes[] = [
+		const schemaWithoutLabel: ResolvedField[] = [
 			{
+				kind: 'field' as const,
 				fieldname: 'name',
 				fieldtype: 'Data',
 				component: 'ATextInput',
 				label: 'Name',
 			},
 			{
+				kind: 'link' as const,
 				fieldname: 'address',
-				options: 'address',
+				component: 'AForm',
 				// no label
 				schema: addressSchema,
 			},
-		] as SchemaTypes[]
+		]
 
 		const wrapper = mount(AForm, {
 			props: {
@@ -204,20 +208,22 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 	})
 
 	it('does not render nested AForm when schema array is empty', async () => {
-		const schemaWithEmptyNested: SchemaTypes[] = [
+		const schemaWithEmptyNested: ResolvedField[] = [
 			{
+				kind: 'field' as const,
 				fieldname: 'name',
 				fieldtype: 'Data',
 				component: 'ATextInput',
 				label: 'Name',
 			},
 			{
+				kind: 'link' as const,
 				fieldname: 'address',
-				options: 'address',
+				component: 'AForm',
 				label: 'Address',
-				schema: [], // empty schema
+				schema: [], // empty schema — should not render nested section
 			},
-		] as SchemaTypes[]
+		]
 
 		const wrapper = mount(AForm, {
 			props: {
@@ -237,20 +243,23 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 	})
 
 	it('does not render nested AForm when field has no schema property', async () => {
-		const plainSchema: SchemaTypes[] = [
+		const plainSchema: ResolvedField[] = [
 			{
+				kind: 'field' as const,
 				fieldname: 'name',
 				fieldtype: 'Data',
 				component: 'ATextInput',
 				label: 'Name',
 			},
 			{
+				kind: 'field' as const,
 				fieldname: 'address',
+				fieldtype: 'Link',
 				options: 'address',
 				label: 'Address',
-				// no schema property at all
+				// no schema property — renders as plain scalar
 			},
-		] as SchemaTypes[]
+		]
 
 		const wrapper = mount(AForm, {
 			props: {
@@ -293,21 +302,23 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 	})
 
 	it('passes per-field mode to nested AForm', async () => {
-		const schemaWithMode: SchemaTypes[] = [
+		const schemaWithMode: ResolvedField[] = [
 			{
+				kind: 'field' as const,
 				fieldname: 'name',
 				fieldtype: 'Data',
 				component: 'ATextInput',
 				label: 'Name',
 			},
 			{
+				kind: 'link' as const,
 				fieldname: 'address',
-				options: 'address',
+				component: 'AForm',
 				label: 'Address',
 				mode: 'read',
 				schema: addressSchema,
 			},
-		] as SchemaTypes[]
+		]
 
 		const wrapper = mount(AForm, {
 			props: {
@@ -332,30 +343,39 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 	})
 
 	it('handles multiple nested Doctype fields', async () => {
-		const billingSchema: SchemaTypes[] = [
-			{ fieldname: 'card_number', fieldtype: 'Data', component: 'ATextInput', label: 'Card Number' },
-		] as SchemaTypes[]
-
-		const multiNestedSchema: SchemaTypes[] = [
+		const billingSchema: ResolvedField[] = [
 			{
+				kind: 'field' as const,
+				fieldname: 'card_number',
+				fieldtype: 'Data',
+				component: 'ATextInput',
+				label: 'Card Number',
+			},
+		]
+
+		const multiNestedSchema: ResolvedField[] = [
+			{
+				kind: 'field' as const,
 				fieldname: 'name',
 				fieldtype: 'Data',
 				component: 'ATextInput',
 				label: 'Name',
 			},
 			{
+				kind: 'link' as const,
 				fieldname: 'address',
-				options: 'address',
+				component: 'AForm',
 				label: 'Address',
 				schema: addressSchema,
 			},
 			{
+				kind: 'link' as const,
 				fieldname: 'billing',
-				options: 'billing',
+				component: 'AForm',
 				label: 'Billing',
 				schema: billingSchema,
 			},
-		] as SchemaTypes[]
+		]
 
 		const wrapper = mount(AForm, {
 			props: {
@@ -644,6 +664,37 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 			const fieldset = wrapper.findComponent(AFieldset)
 			expect(fieldset.exists()).toBe(true)
 			expect(fieldset.props('collapsible')).toBe(true)
+		})
+
+		it('passes mode to a component with kind: "fieldset" in the schema', async () => {
+			const fieldsetInnerSchema: ResolvedField[] = [
+				{ kind: 'field' as const, fieldname: 'email', fieldtype: 'Data', component: 'ATextInput', label: 'Email' },
+			]
+
+			const schemaWithFieldset: ResolvedField[] = [
+				{
+					kind: 'fieldset' as const,
+					fieldname: 'details',
+					component: 'AFieldset',
+					label: 'Details',
+					schema: fieldsetInnerSchema,
+				},
+			]
+
+			const wrapper = mount(AForm, {
+				props: {
+					schema: schemaWithFieldset,
+					data: { details: {} },
+					mode: 'read',
+				},
+				global: { components: { AFieldset, ATextInput } },
+			})
+
+			await wrapper.vm.$nextTick()
+
+			const fieldset = wrapper.findComponent(AFieldset)
+			expect(fieldset.exists()).toBe(true)
+			expect(fieldset.props('mode')).toBe('read')
 		})
 	})
 })

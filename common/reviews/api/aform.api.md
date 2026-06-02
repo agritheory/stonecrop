@@ -21,10 +21,14 @@ import ANumericInput from './components/form/ANumericInput.vue';
 import type { App } from 'vue';
 import ATextInput from './components/form/ATextInput.vue';
 import type { ColumnSchema } from '@stonecrop/schema';
+import type { FieldValidation } from '@stonecrop/schema';
+import { InteractionMode } from '@stonecrop/schema';
 import Login from './components/utilities/Login.vue';
 import type { TableColumn } from '@stonecrop/atable';
 import type { TableConfig } from '@stonecrop/atable';
 import type { TableRow } from '@stonecrop/atable';
+import type { TableViewConfig } from '@stonecrop/schema';
+import type { ValueField } from '@stonecrop/schema';
 
 export { ACheckbox }
 
@@ -102,8 +106,8 @@ export type FieldsetSchema = BaseSchema & {
     collapsible?: boolean;
 };
 
-// @public
-export type FormMode = 'edit' | 'read' | 'display';
+// @public @deprecated
+export type FormMode = InteractionMode;
 
 // @public
 export type FormSchema = BaseSchema & {
@@ -119,7 +123,72 @@ export type FormSchema = BaseSchema & {
 // @public
 export function install(app: App): void;
 
+export { InteractionMode }
+
 export { Login }
+
+// Warning: (ae-incompatible-release-tags) The symbol "ResolvedField" is marked as @public, but its signature references "ResolvedScalar" which is marked as @internal
+// Warning: (ae-incompatible-release-tags) The symbol "ResolvedField" is marked as @public, but its signature references "ResolvedLink" which is marked as @internal
+// Warning: (ae-incompatible-release-tags) The symbol "ResolvedField" is marked as @public, but its signature references "ResolvedTable" which is marked as @internal
+// Warning: (ae-incompatible-release-tags) The symbol "ResolvedField" is marked as @public, but its signature references "ResolvedFieldset" which is marked as @internal
+//
+// @public
+export type ResolvedField = ResolvedScalar | ResolvedLink | ResolvedTable | ResolvedFieldset;
+
+// Warning: (ae-internal-missing-underscore) The name "ResolvedFieldset" should be prefixed with an underscore because the declaration is marked as @internal
+//
+// @internal
+export interface ResolvedFieldset {
+    collapsible?: boolean;
+    component?: string;
+    fieldname: string;
+    kind: 'fieldset';
+    label?: string;
+    mode?: InteractionMode;
+    schema: ResolvedField[];
+}
+
+// Warning: (ae-internal-missing-underscore) The name "ResolvedLink" should be prefixed with an underscore because the declaration is marked as @internal
+//
+// @internal
+export interface ResolvedLink {
+    component: string;
+    default?: unknown;
+    fieldname: string;
+    hidden?: boolean;
+    kind: 'link';
+    label?: string;
+    mode?: InteractionMode;
+    readOnly?: boolean;
+    required?: boolean;
+    schema: ResolvedField[];
+    validation?: FieldValidation;
+}
+
+// Warning: (ae-internal-missing-underscore) The name "ResolvedScalar" should be prefixed with an underscore because the declaration is marked as @internal
+//
+// @internal
+export type ResolvedScalar = Omit<ValueField, 'cardinality'> & {
+    doctype?: string;
+};
+
+// Warning: (ae-internal-missing-underscore) The name "ResolvedTable" should be prefixed with an underscore because the declaration is marked as @internal
+//
+// @internal
+export interface ResolvedTable {
+    component: string;
+    config: TableViewConfig;
+    default?: unknown;
+    fieldname: string;
+    hidden?: boolean;
+    kind: 'table';
+    label?: string;
+    mode?: InteractionMode;
+    readOnly?: boolean;
+    required?: boolean;
+    schema: ColumnSchema[];
+    validation?: FieldValidation;
+}
 
 // @public
 export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema;

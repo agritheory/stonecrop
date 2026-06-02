@@ -129,6 +129,14 @@ Vue component exported from @stonecrop/aform.
 import { ATextInput } from '@stonecrop/aform'
 ```
 
+### InteractionMode
+
+Vue component exported from @stonecrop/aform.
+
+```typescript
+import { InteractionMode } from '@stonecrop/aform'
+```
+
 ### Login
 
 Vue component exported from @stonecrop/aform.
@@ -262,12 +270,12 @@ export type FieldsetSchema = BaseSchema & {
 
 ### FormMode
 
-The rendering mode for AForm components
+Backwards-compat alias for InteractionMode.
 
 **Definition:**
 
 ```typescript
-export type FormMode = 'edit' | 'read' | 'display';
+export type FormMode = import('@stonecrop/schema').InteractionMode;
 ```
 
 ### FormSchema
@@ -286,6 +294,16 @@ export type FormSchema = BaseSchema & {
     width?: string;
     mask?: string;
 };
+```
+
+### ResolvedField
+
+The discriminated union of all resolved field types — what AForm consumes after `resolveSchema()` has transformed the authoring `DoctypeField[]`. Narrowed by `kind`: `'field'` | `'link'` | `'table'` | `'fieldset'`.
+
+**Definition:**
+
+```typescript
+export type ResolvedField = ResolvedScalar | ResolvedLink | ResolvedTable | ResolvedFieldset;
 ```
 
 ### SchemaTypes

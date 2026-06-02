@@ -1,11 +1,136 @@
 import type { TableColumn, TableConfig, TableRow } from '@stonecrop/atable'
-import type { ColumnSchema } from '@stonecrop/schema'
+import type { ColumnSchema, FieldValidation, TableViewConfig, ValueField } from '@stonecrop/schema'
+
+// ---------------------------------------------------------------------------
+// InteractionMode — imported from @stonecrop/schema (canonical home)
+// ---------------------------------------------------------------------------
 
 /**
- * The rendering mode for AForm components
+ * Controls the level of user interaction for a field, container, or table.
+ * `'edit'` — interactive; `'read'` — non-interactive with form chrome;
+ * `'display'` — non-interactive plain-text rendering.
  * @public
  */
-export type FormMode = 'edit' | 'read' | 'display'
+export type { InteractionMode } from '@stonecrop/schema'
+
+/**
+ * Backwards-compat alias for InteractionMode.
+ * @deprecated Import `InteractionMode` from `@stonecrop/schema` instead.
+ * This alias will be removed in Phase 3.
+ * @public
+ */
+export type FormMode = import('@stonecrop/schema').InteractionMode
+
+// ---------------------------------------------------------------------------
+// ResolvedField — the output-space type that AForm consumes
+// Produced by resolveSchema(); never authored directly.
+// ---------------------------------------------------------------------------
+
+/**
+ * A resolved scalar field. Derived from ValueField with `cardinality` omitted
+ * (consumed by resolveSchema) and an optional `doctype` added for unresolved Link fields.
+ * @internal
+ */
+export type ResolvedScalar = Omit<ValueField, 'cardinality'> & {
+	/** Doctype slug for unresolved Link fields — added by resolveSchema when AFormLink is available */
+	doctype?: string
+}
+
+/**
+ * A resolved Link field with cardinality `one` or `atMostOne` — embedded as a nested form.
+ * @internal
+ */
+export interface ResolvedLink {
+	/** Discriminator */
+	kind: 'link'
+	/** Field identifier */
+	fieldname: string
+	/** Component to render; defaults to `'AForm'` */
+	component: string
+	/** Human-readable label */
+	label?: string
+	/** Interaction mode */
+	mode?: import('@stonecrop/schema').InteractionMode
+	/** Resolved child fields */
+	schema: ResolvedField[]
+	/** Preserved from the original ValueField */
+	required?: boolean
+	/** Preserved from the original ValueField */
+	readOnly?: boolean
+	/** Preserved from the original ValueField */
+	hidden?: boolean
+	/** Preserved from the original ValueField */
+	default?: unknown
+	/** Preserved from the original ValueField */
+	validation?: FieldValidation
+}
+
+/**
+ * A resolved table — either from a Link with `noneOrMany`/`atLeastOne` cardinality,
+ * or from an inline TableField. ATable receives columns via `:schema` (ColumnSchema[])
+ * and row data via `:rows` from formData at render time.
+ * @internal
+ */
+export interface ResolvedTable {
+	/** Discriminator */
+	kind: 'table'
+	/** Field identifier */
+	fieldname: string
+	/** Component to render; defaults to `'ATable'` */
+	component: string
+	/** Human-readable label */
+	label?: string
+	/** Interaction mode for all cells */
+	mode?: import('@stonecrop/schema').InteractionMode
+	/** Column definitions — passed to ATable's `:schema` prop */
+	schema: ColumnSchema[]
+	/** View configuration — always present; defaults to `{ view: 'list' }` */
+	config: TableViewConfig
+	/** Preserved from the original ValueField or TableField */
+	required?: boolean
+	/** Preserved from the original ValueField or TableField */
+	readOnly?: boolean
+	/** Preserved from the original ValueField or TableField */
+	hidden?: boolean
+	/** Preserved from the original ValueField or TableField */
+	default?: unknown
+	/** Preserved from the original ValueField or TableField */
+	validation?: FieldValidation
+}
+
+/**
+ * A resolved fieldset — groups child fields inside an AFieldset component.
+ * @internal
+ */
+export interface ResolvedFieldset {
+	/** Discriminator */
+	kind: 'fieldset'
+	/** Field identifier */
+	fieldname: string
+	/** Component to render; defaults to `'AFieldset'` */
+	component?: string
+	/** Human-readable label for the legend */
+	label?: string
+	/** Whether the fieldset can be collapsed */
+	collapsible?: boolean
+	/** Interaction mode for all children */
+	mode?: import('@stonecrop/schema').InteractionMode
+	/** Resolved child fields */
+	schema: ResolvedField[]
+}
+
+/**
+ * The discriminated union of all resolved field types — what AForm consumes
+ * after `resolveSchema()` has transformed the authoring `DoctypeField[]`.
+ * Narrowed by `kind`: `'field'` | `'link'` | `'table'` | `'fieldset'`.
+ * @public
+ */
+export type ResolvedField = ResolvedScalar | ResolvedLink | ResolvedTable | ResolvedFieldset
+
+// ---------------------------------------------------------------------------
+// Legacy types — kept alongside ResolvedField for monorepo build stability.
+// Removed in Phase 3 once @stonecrop/stonecrop is updated.
+// ---------------------------------------------------------------------------
 
 /**
  * Defined props for AForm components
