@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/schema
 
-This log was last generated on Tue, 02 Jun 2026 07:09:16 GMT and should not be manually modified.
+This log was last generated on Tue, 02 Jun 2026 11:07:21 GMT and should not be manually modified.
+
+## 0.13.5
+Tue, 02 Jun 2026 11:07:21 GMT
+
+### Patches
+
+- migrate linter from eslint to oxlint
 
 ## 0.13.4
 Tue, 02 Jun 2026 07:09:16 GMT
