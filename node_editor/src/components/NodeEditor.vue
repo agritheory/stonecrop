@@ -81,35 +81,35 @@ const activeElementIndex = computed(() => {
 
 const elements = computed({
 	get: () => {
-		const _elements = modelValue
+		const items = modelValue
 
 		// Add data to each element
-		for (const _element of _elements) {
-			_element.data = {}
-			if (_element.type === 'input') {
-				_element.data.hasInput = false
-				_element.data.hasOutput = true
-			} else if (_element.type === 'output') {
-				_element.data.hasInput = true
-				_element.data.hasOutput = false
+		for (const element of items) {
+			element.data = {}
+			if (element.type === 'input') {
+				element.data.hasInput = false
+				element.data.hasOutput = true
+			} else if (element.type === 'output') {
+				element.data.hasInput = true
+				element.data.hasOutput = false
 			} else {
-				_element.data.hasInput = true
-				_element.data.hasOutput = true
+				element.data.hasInput = true
+				element.data.hasOutput = true
 			}
-			_element.class = 'vue-flow__node-default'
-			_element.type = 'editable'
+			element.class = 'vue-flow__node-default'
+			element.type = 'editable'
 		}
 
 		// Add click event to each element
-		for (const _element of _elements) {
-			_element.events = {
+		for (const element of items) {
+			element.events = {
 				click: () => {
-					activeElementKey.value = _element.id
+					activeElementKey.value = element.id
 				},
 			}
 		}
 
-		return _elements
+		return items
 	},
 	set: newValue => {
 		emit('update:modelValue', JSON.parse(JSON.stringify(newValue)))

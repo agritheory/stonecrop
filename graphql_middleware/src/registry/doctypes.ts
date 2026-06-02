@@ -99,7 +99,7 @@ function loadDoctypeFile(filePath: string, options: LoadDoctypesOptions): void {
  */
 export function loadDoctypesFromObject(doctypes: Record<string, unknown>, options: LoadDoctypesOptions = {}): void {
 	for (const [name, data] of Object.entries(doctypes)) {
-		const withName = { ...(data as object), name }
+		const withName = { ...(typeof data === 'object' && data !== null ? data : {}), name }
 		const result = validateDoctype(withName)
 
 		if (!result.success) {

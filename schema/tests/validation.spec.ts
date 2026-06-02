@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { validateField, validateDoctype, parseField, parseDoctype, type ValidationResult } from '../src/validation'
+import { validateField, validateDoctype, parseField, parseDoctype } from '../src/validation'
 import { ZodError } from 'zod'
 
 describe('Field Validation', { tags: ['unit'] }, () => {

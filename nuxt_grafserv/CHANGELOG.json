@@ -2,6 +2,30 @@
   "name": "@stonecrop/nuxt-grafserv",
   "entries": [
     {
+      "version": "0.13.5",
+      "tag": "@stonecrop/nuxt-grafserv_v0.13.5",
+      "date": "Tue, 02 Jun 2026 11:07:21 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "migrate linter from eslint to oxlint"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.13.4",
+      "tag": "@stonecrop/nuxt-grafserv_v0.13.4",
+      "date": "Tue, 02 Jun 2026 07:09:16 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.13.3",
+      "tag": "@stonecrop/nuxt-grafserv_v0.13.3",
+      "date": "Tue, 02 Jun 2026 05:55:11 GMT",
+      "comments": {}
+    },
+    {
       "version": "0.13.2",
       "tag": "@stonecrop/nuxt-grafserv_v0.13.2",
       "date": "Thu, 28 May 2026 06:18:59 GMT",

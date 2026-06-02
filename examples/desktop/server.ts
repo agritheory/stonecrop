@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+/* oxlint-disable no-console */
 import type { MutableDoctype } from '@stonecrop/stonecrop'
 import { createServer, Model } from 'miragejs'
 import DbCollection from 'miragejs/db-collection'

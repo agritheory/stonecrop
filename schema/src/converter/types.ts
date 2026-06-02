@@ -130,7 +130,9 @@ export interface GraphQLConversionOptions {
  *
  * @public
  */
-export interface GraphQLConversionFieldMeta extends ValueField {
+export interface GraphQLConversionFieldMeta extends Omit<ValueField, 'fieldtype'> {
+	/** Semantic field type - optional for link fields which don't have a fieldtype */
+	fieldtype?: string
 	/** Original GraphQL type name (for debugging/reference) */
 	_graphqlType?: string
 	/** Marks fields that couldn't be automatically mapped */

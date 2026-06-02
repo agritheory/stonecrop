@@ -262,7 +262,8 @@ export interface GetRecordsOptions {
 export const GQL_SCALAR_MAP: Record<string, FieldTemplate>;
 
 // @public
-export interface GraphQLConversionFieldMeta extends ValueField {
+export interface GraphQLConversionFieldMeta extends Omit<ValueField, 'fieldtype'> {
+    fieldtype?: string;
     _graphqlType?: string;
     _isLink?: boolean;
     _unmapped?: boolean;

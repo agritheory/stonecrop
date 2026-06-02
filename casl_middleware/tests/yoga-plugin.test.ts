@@ -2,6 +2,11 @@ import { describe, it, expect, vi } from 'vitest'
 
 import { yogaCaslPlugin, createYogaPlugin } from '../src/middleware/yoga'
 
+const customBuilder = async () => {
+	const { defaultAbilityBuilder } = await import('../src/middleware/ability')
+	return defaultAbilityBuilder()
+}
+
 describe('Yoga CASL Plugin', { tags: ['unit', 'graphql'] }, () => {
 	it('should be a valid Yoga plugin', () => {
 		expect(yogaCaslPlugin).toBeDefined()
@@ -68,11 +73,6 @@ describe('Yoga CASL Plugin', { tags: ['unit', 'graphql'] }, () => {
 		})
 
 		it('should create a plugin with custom options', () => {
-			const customBuilder = async () => {
-				const { defaultAbilityBuilder } = await import('../src/middleware/ability')
-				return defaultAbilityBuilder()
-			}
-
 			const plugin = createYogaPlugin({
 				abilityBuilder: customBuilder,
 			})
@@ -82,7 +82,7 @@ describe('Yoga CASL Plugin', { tags: ['unit', 'graphql'] }, () => {
 		})
 
 		it('should log message when onExecute is called', async () => {
-			const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+			const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
 			const plugin = createYogaPlugin()
 
 			const mockArgs = {

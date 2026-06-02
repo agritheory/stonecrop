@@ -88,6 +88,7 @@ onMounted(() => {
 	if (!resolver || typeof raw !== 'string' || raw === '') return
 	void resolver(column.linkDoctype, raw).then(text => {
 		if (text != null) resolvedText.value = text
+		return text
 	})
 })
 
@@ -156,13 +157,11 @@ const showModal = () => {
 if (addNavigation) {
 	let handlers = {
 		...defaultKeypressHandlers,
-		...{
-			'keydown.f2': showModal,
-			'keydown.alt.up': showModal,
-			'keydown.alt.down': showModal,
-			'keydown.alt.left': showModal,
-			'keydown.alt.right': showModal,
-		},
+		'keydown.f2': showModal,
+		'keydown.alt.up': showModal,
+		'keydown.alt.down': showModal,
+		'keydown.alt.left': showModal,
+		'keydown.alt.right': showModal,
 	}
 
 	if (typeof addNavigation === 'object') {
@@ -303,7 +302,7 @@ const updateCellData = (payload: Event) => {
 
 	// Use nextTick to restore cursor position after Vue's reactive updates but before browser repaint
 	void nextTick().then(() => {
-		restoreCursorPosition(cursorPosition)
+		return restoreCursorPosition(cursorPosition)
 	})
 }
 

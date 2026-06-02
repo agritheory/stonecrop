@@ -397,8 +397,8 @@ function startConnectionDrag(side: 'left' | 'right', event: MouseEvent) {
 		dragPreview.value.endY = moveEvent.clientY
 	}
 
-	const handleMouseUp = (event: MouseEvent) => {
-		handleConnectionDrop(event, side)
+	const handleMouseUp = (upEvent: MouseEvent) => {
+		handleConnectionDrop(upEvent, side)
 		cleanupConnectionDrag(handleMouseMove, handleMouseUp)
 	}
 

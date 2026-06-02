@@ -175,14 +175,14 @@ describe('ATableModal', { tags: ['component'] }, () => {
 		const clickEvent = new Event('click', { bubbles: true })
 		const stopPropagationSpy = vi.spyOn(clickEvent, 'stopPropagation')
 
-		await wrapper.find('.amodal').element.dispatchEvent(clickEvent)
+		wrapper.find('.amodal').element.dispatchEvent(clickEvent)
 		expect(stopPropagationSpy).toHaveBeenCalled()
 
 		// Test input event stopping
 		const inputEvent = new Event('input', { bubbles: true })
 		const inputStopSpy = vi.spyOn(inputEvent, 'stopPropagation')
 
-		await wrapper.find('.amodal').element.dispatchEvent(inputEvent)
+		wrapper.find('.amodal').element.dispatchEvent(inputEvent)
 		expect(inputStopSpy).toHaveBeenCalled()
 	})
 

@@ -28,7 +28,11 @@ function getMask(binding: DirectiveBinding<string>) {
 	if (maskFn) {
 		// TODO: (state) replace with state management;
 		// pass the entire form/table data to the function
-		const locale = (binding.instance as Record<string, unknown> | null)?.['locale']
+		// Vue directive reads arbitrary fields off host component instance; type is unknown at this layer.
+		// oxlint-disable-next-line typescript/no-unsafe-type-assertion
+		const instance = binding.instance as Record<string, unknown> | null | undefined
+		// oxlint-disable-next-line typescript/no-unsafe-type-assertion
+		const locale = instance?.['locale'] as string | undefined
 		return maskFn(locale)
 	}
 
@@ -104,7 +108,9 @@ export function useStringMask(el: HTMLInputElement, binding: DirectiveBinding<st
 		// most likely fixed with state management;
 		// a better way could be to emit back to instance;
 
-		const instance = binding.instance as Record<string, unknown> | null
+		// Vue directive reads/writes arbitrary fields on host component instance.
+		// oxlint-disable-next-line typescript/no-unsafe-type-assertion
+		const instance = binding.instance as Record<string, unknown> | null | undefined
 		if (instance?.['maskFilled']) {
 			instance['maskFilled'] = !replacement.includes(maskToken)
 		}

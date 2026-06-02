@@ -587,6 +587,7 @@ export interface GraphQLConversionFieldMeta {
   _graphqlType?: string;
   _isLink?: boolean;
   _unmapped?: boolean;
+  fieldtype?: string;
 }
 ```
 
@@ -597,6 +598,7 @@ export interface GraphQLConversionFieldMeta {
 | _graphqlType? | `string` | Original GraphQL type name (for debugging/reference) |
 | _isLink? | `boolean` | Marks relationship fields that belong in `links`, not `fields` |
 | _unmapped? | `boolean` | Marks fields that couldn't be automatically mapped |
+| fieldtype? | `string` | Semantic field type - optional for link fields which don't have a fieldtype |
 
 ### GraphQLConversionOptions
 

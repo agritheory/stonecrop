@@ -215,7 +215,7 @@ Use MQTT stream
 ```typescript
 useMqttStream: (options: IMqttStream) => Promise<{
     messages: import("vue").Ref<Record<string, string[]>, Record<string, string[]>>;
-} | undefined>
+}>
 ```
 
 **Parameters:**

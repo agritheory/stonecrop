@@ -210,17 +210,17 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 
 				const planningTransitions = doctype.getAvailableTransitions('planning')
 				expect(planningTransitions).toHaveLength(4)
-				const planningNames = planningTransitions.map(t => t.name).sort()
+				const planningNames = planningTransitions.map(t => t.name).toSorted()
 				expect(planningNames).toEqual(['apply', 'global', 'save', 'submit'])
 
 				const reviewTransitions = doctype.getAvailableTransitions('review')
 				expect(reviewTransitions).toHaveLength(3)
-				const reviewNames = reviewTransitions.map(t => t.name).sort()
+				const reviewNames = reviewTransitions.map(t => t.name).toSorted()
 				expect(reviewNames).toEqual(['approve', 'global', 'reject'])
 
 				const approvedTransitions = doctype.getAvailableTransitions('approved')
 				expect(approvedTransitions).toHaveLength(2)
-				const approvedNames = approvedTransitions.map(t => t.name).sort()
+				const approvedNames = approvedTransitions.map(t => t.name).toSorted()
 				expect(approvedNames).toEqual(['apply', 'global'])
 			})
 

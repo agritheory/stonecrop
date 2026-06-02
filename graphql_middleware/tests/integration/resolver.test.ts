@@ -113,7 +113,6 @@ async function runQuery(query: string, variables?: Record<string, unknown>): Pro
 		// SQL runs inside one rollback-able transaction.
 		args.contextValue.withPgClient = withPgClient
 		queryResult = (await execute(args)) as Record<string, unknown>
-		return queryResult
 	} finally {
 		try {
 			await client.query('ROLLBACK')
@@ -121,10 +120,10 @@ async function runQuery(query: string, variables?: Record<string, unknown>): Pro
 			// If ROLLBACK itself fails the connection is in an unknown state; discard it.
 			// Return the already-fetched result rather than losing it.
 			client.release(new Error('rollback failed'))
-			return queryResult
 		}
 		client.release()
 	}
+	return queryResult
 }
 
 // ===========================================================================
@@ -136,7 +135,7 @@ describe('stonecropRecord', { tags: ['integration', 'graphql'] }, () => {
 		const result = await runQuery(`query { stonecropRecord(doctype: "ScItem", id: "1") { doctype data } }`)
 		const record = (result as any).data?.stonecropRecord
 		expect(record?.doctype).toBe('ScItem')
-		expect((record?.data as any)?.name).toBe('Alpha')
+		expect(record?.data?.name).toBe('Alpha')
 	})
 
 	it('returns null data for a missing id', async () => {
@@ -218,7 +217,7 @@ describe('lazy link retrieval via stonecropRecords', { tags: ['integration', 'gr
 		const records = (result as any).data?.stonecropRecords
 		expect(records?.count).toBe(2)
 		expect(records?.data.length).toBe(2)
-		expect(records?.data.map((n: any) => n.body).sort()).toEqual(['First note', 'Second note'])
+		expect(records?.data.map((n: any) => n.body).toSorted()).toEqual(['First note', 'Second note'])
 	})
 
 	it('lazy link data matches what sync-fetch would have merged', async () => {
@@ -235,7 +234,7 @@ describe('lazy link retrieval via stonecropRecords', { tags: ['integration', 'gr
 		const lazyData = (lazyResult as any).data?.stonecropRecords?.data
 
 		// The data contents should match
-		expect(syncData?.notes?.map((n: any) => n.body).sort()).toEqual(lazyData?.map((n: any) => n.body).sort())
+		expect(syncData?.notes?.map((n: any) => n.body).toSorted()).toEqual(lazyData?.map((n: any) => n.body).toSorted())
 	})
 })
 
@@ -252,7 +251,7 @@ describe('stonecropAction', { tags: ['integration', 'graphql'] }, () => {
 		)
 		const action = (result as any).data?.stonecropAction
 		expect(action?.success).toBe(true)
-		expect((action?.data as any)?.submitted).toBe(true)
+		expect(action?.data?.submitted).toBe(true)
 	})
 
 	it('returns error for an unregistered handler', async () => {

@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest'
 
 import ActionSet from '../src/components/ActionSet.vue'
 
+const noopAction = () => {}
+
 describe('ActionSet', { tags: ['component'] }, () => {
 	it('renders without elements', () => {
 		const wrapper = mount(ActionSet)
@@ -47,17 +49,16 @@ describe('ActionSet', { tags: ['component'] }, () => {
 	})
 
 	it('emits actionClick with label and action when button is clicked', async () => {
-		const action = () => {}
 		const wrapper = mount(ActionSet, {
 			props: {
-				elements: [{ type: 'button', label: 'Save', action }],
+				elements: [{ type: 'button', label: 'Save', action: noopAction }],
 			},
 		})
 		await wrapper.find('button.button-default').trigger('click')
 		const emitted = wrapper.emitted('actionClick')
 		expect(emitted).toBeTruthy()
 		expect(emitted![0][0]).toBe('Save')
-		expect(emitted![0][1]).toBe(action)
+		expect(emitted![0][1]).toBe(noopAction)
 	})
 
 	it('opens dropdown on button click and closes others', async () => {
@@ -88,14 +89,13 @@ describe('ActionSet', { tags: ['component'] }, () => {
 	})
 
 	it('emits actionClick when a dropdown item is clicked', async () => {
-		const action = () => {}
 		const wrapper = mount(ActionSet, {
 			props: {
 				elements: [
 					{
 						type: 'dropdown',
 						label: 'Menu',
-						actions: [{ label: 'Option A', action }],
+						actions: [{ label: 'Option A', action: noopAction }],
 					},
 				],
 			},

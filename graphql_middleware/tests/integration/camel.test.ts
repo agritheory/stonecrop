@@ -88,16 +88,15 @@ async function runQuery(query: string, variables?: Record<string, unknown>): Pro
 		})
 		args.contextValue.withPgClient = withPgClient
 		queryResult = (await execute(args)) as Record<string, unknown>
-		return queryResult
 	} finally {
 		try {
 			await client.query('ROLLBACK')
 		} catch {
 			client.release(new Error('rollback failed'))
-			return queryResult
 		}
 		client.release()
 	}
+	return queryResult
 }
 
 // ===========================================================================
@@ -180,7 +179,7 @@ describe('stonecropRecords — camelCase fieldnames', { tags: ['integration', 'g
 		)
 		const records = (result as any).data?.stonecropRecords
 		expect(records?.count).toBe(1)
-		expect((records?.data[0] as any)?.displayName).toBe('Alpha')
+		expect(records?.data[0]?.displayName).toBe('Alpha')
 	})
 
 	it('orders by a camelCase fieldname ascending', async () => {

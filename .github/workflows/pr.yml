@@ -33,6 +33,7 @@ jobs:
             atable: atable/**
             beam: beam/**
             casl_middleware: casl_middleware/**
+            code_editor: code_editor/**
             desktop: desktop/**
             graphql_client: graphql_client/**
             graphql_middleware: graphql_middleware/**
@@ -80,6 +81,40 @@ jobs:
 
       - name: Rush Install
         run: node common/scripts/install-run-rush.js install
+
+      - name: Update Doc Tools Autoinstaller
+        run: node common/scripts/install-run-rush.js update-autoinstaller --name doc-tools
+
+      # Restore per-repo build cache so Rush skips unchanged packages.
+      # Type-aware oxlint (oxlint-tsgolint) requires compiled .d.ts files from
+      # dependency packages to exist before lint runs; without this build step,
+      # unresolvable imports appear as "error typed" and trigger false positives.
+      - name: Restore Rush Build Cache
+        id: build-cache-restore
+        uses: actions/cache/restore@v5
+        with:
+          path: common/temp/build-cache
+          key: rush-build-cache-all-${{ runner.os }}-${{ hashFiles('common/config/rush/pnpm-lock.yaml') }}-${{ github.run_id }}
+          restore-keys: |
+            rush-build-cache-all-${{ runner.os }}-${{ hashFiles('common/config/rush/pnpm-lock.yaml') }}-
+            rush-build-cache-all-${{ runner.os }}-
+
+      - name: Rush Build
+        run: node common/scripts/install-run-rush.js build
+
+      - name: Save Rush Build Cache
+        if: always()
+        uses: actions/cache/save@v5
+        with:
+          path: common/temp/build-cache
+          key: ${{ steps.build-cache-restore.outputs.cache-primary-key }}
+
+      # `rush lint` is a bulk command that invokes each package's `lint` script
+      # (oxlint, defined in package.json). Oxlint uses the per-package
+      # oxlint.config.ts which extends the root config, and oxlint-tsgolint
+      # supplies the type-aware rules via each package's node_modules.
+      - name: Oxlint
+        run: node common/scripts/install-run-rush.js lint
 
       # rush-plugins is required for the rush-sort-package-json plugin to load.
       - name: Update Autoinstallers

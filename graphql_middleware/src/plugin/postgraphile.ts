@@ -49,7 +49,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 	 */
 	const debugSql = options.debug
 		? <T>(pgClient: PgClient, query: { text: string; values?: unknown[] }) => {
-				// eslint-disable-next-line no-console
+				// oxlint-disable-next-line no-console
 				console.log(`[@stonecrop/graphql-middleware] ${query.text}`, query.values ?? [])
 				return pgClient.query<T>(query)
 			}
@@ -57,6 +57,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 
 	return extendSchema(build => {
 		// Obtain the PgExecutor from pgExecutors — one entry exists per configured pgService.
+		// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- build.input.pgRegistry is a PostGraphile internal not in the public Build type
 		const pgExecutors = (build as any).input?.pgRegistry?.pgExecutors as Record<string, PgExecutor> | undefined
 		const executor = pgExecutors ? Object.values(pgExecutors)[0] : undefined
 		if (!executor) {
@@ -71,7 +72,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 					plans: {
 						stonecropMeta(_: any, { $doctype }: any) {
 							return lambda($doctype, (doctype: unknown) => {
-								const meta = getMeta(doctype as string)
+								const meta = getMeta(String(doctype))
 								return meta ?? null
 							})
 						},
@@ -88,7 +89,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 									// Group specs by doctype to batch the main SELECT per table
 									const byDoctype = new Map<string, number[]>()
 									for (let i = 0; i < specs.length; i++) {
-										const d = specs[i].doctype as string
+										const d = String(specs[i].doctype)
 										if (!byDoctype.has(d)) byDoctype.set(d, [])
 										byDoctype.get(d)!.push(i)
 									}
@@ -97,7 +98,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 										data: Record<string, unknown> | null
 										doctype: string
 										unknownLinks?: string[]
-									}> = new Array(specs.length)
+									}> = Array.from({ length: specs.length })
 
 									for (const [doctype, indices] of byDoctype) {
 										const meta = getMeta(doctype)
@@ -113,8 +114,11 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 										}
 										const pkColumn = camelToSnake(pkMeta.fieldname)
 										const columns = getSqlColumns(meta)
-										const ids = indices.map(i => specs[i].id as string)
+										const ids = indices.map(i => String(specs[i].id))
 
+										// TODO(perf): queries per doctype group could be parallelized with Promise.all across doctype groups;
+										// requires refactoring the grouped-by-doctype loop to collect promises before resolving results
+										// oxlint-disable-next-line eslint/no-await-in-loop -- sequential per-doctype SQL; see TODO above
 										const { rows } = await debugSql<Record<string, unknown>>(pgClient, {
 											text: `SELECT ${columns} FROM ${resolveTableName(meta.name, options.tables)} WHERE "${pkColumn}"::text = ANY($1::text[])`,
 											values: [ids],
@@ -124,7 +128,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 										const rowByPk = new Map(rows.map(r => [String(r[pkMeta.fieldname]), r]))
 
 										for (const i of indices) {
-											const specId = specs[i].id as string
+											const specId = String(specs[i].id)
 											const row = rowByPk.get(specId)
 
 											if (!row) {
@@ -152,10 +156,12 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 
 													if (!shouldInclude) continue
 
-													if (effectiveMethod === 'custom') {
-														const handlerName = (fetch as { method: 'custom'; handler: string }).handler
+													if (effectiveMethod === 'custom' && fetch?.method === 'custom') {
+														const handlerName = fetch.handler
 														const handler = getFetchHandler(handlerName)
 														if (handler) {
+															// TODO(perf): custom link handlers per-row could run in parallel; needs collecting all custom handlers before await
+															// oxlint-disable-next-line eslint/no-await-in-loop -- custom handler per link; see TODO above
 															rowData[linkName] = await handler(pgClient, rowData, link)
 														}
 														continue
@@ -177,6 +183,8 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 															sql += ` LIMIT $2`
 															linkValues.push(effectiveLimit)
 														}
+														// TODO(perf): many-side link queries per row could be parallelized; needs collecting across links before await
+														// oxlint-disable-next-line eslint/no-await-in-loop -- one SQL per backlink per row; see TODO above
 														const { rows: linked } = await debugSql<Record<string, unknown>>(pgClient, {
 															text: sql,
 															values: linkValues,
@@ -192,6 +200,8 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 														const targetPkMeta = getPkMeta(targetMeta)
 														if (!targetPkMeta) continue
 														const targetPkColumn = camelToSnake(targetPkMeta.fieldname)
+														// TODO(perf): one-side link FK lookups per row could be parallelized; needs collecting across links before await
+														// oxlint-disable-next-line eslint/no-await-in-loop -- one FK lookup per link per row; see TODO above
 														const { rows: linked } = await debugSql<Record<string, unknown>>(pgClient, {
 															text: `SELECT ${targetColumns} FROM ${resolveTableName(targetMeta.name, options.tables)} WHERE "${targetPkColumn}" = $1`,
 															values: [fkValue],
@@ -231,9 +241,10 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 								async (pgClient: PgClient, specs) => {
 									return await Promise.all(
 										specs.map(async spec => {
-											const meta = getMeta(spec.doctype as string)
+											const doctype = String(spec.doctype)
+											const meta = getMeta(doctype)
 											if (!meta) {
-												return { data: [], doctype: spec.doctype as string, count: 0 }
+												return { data: [], doctype, count: 0 }
 											}
 
 											const knownFields = new Set(meta.fields.map(f => f.fieldname))
@@ -243,6 +254,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 											// WHERE from filters (parameterised — safe against SQL injection)
 											const whereClauses: string[] = []
 											if (spec.filters != null) {
+												// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- spec.filters is a Grafast runtime value; shape guaranteed by GraphQL schema
 												for (const [field, value] of Object.entries(spec.filters as Record<string, unknown>)) {
 													if (!knownFields.has(field)) {
 														throw new Error(`Unknown filter field: ${field} for doctype ${meta.name}`)
@@ -256,7 +268,9 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 											// ORDER BY (field name whitelisted — column names cannot be parameterised)
 											let orderByClause = ''
 											if (spec.orderBy != null) {
-												const orderByStr = spec.orderBy as string
+												if (typeof spec.orderBy !== 'string')
+													throw new Error(`Invalid orderBy: expected string, got ${typeof spec.orderBy}`)
+												const orderByStr = spec.orderBy
 												const lastUnder = orderByStr.lastIndexOf('_')
 												if (lastUnder <= 0) {
 													throw new Error(`Invalid orderBy format: "${orderByStr}". Expected FIELD_ASC or FIELD_DESC`)
@@ -294,6 +308,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 												const countValues: unknown[] = []
 												const countWhere: string[] = []
 												if (spec.filters != null) {
+													// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- spec.filters is a Grafast runtime value; shape guaranteed by GraphQL schema
 													for (const [field, value] of Object.entries(spec.filters as Record<string, unknown>)) {
 														if (!knownFields.has(field)) continue
 														countValues.push(value)
@@ -301,14 +316,14 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 													}
 												}
 												const countWhereClause = countWhere.length > 0 ? ` WHERE ${countWhere.join(' AND ')}` : ''
-												const { rows: countRows } = await debugSql<{ __count: string }>(pgClient, {
-													text: `SELECT COUNT(*) AS __count FROM ${resolveTableName(meta.name, options.tables)}${countWhereClause}`,
+												const { rows: countRows } = await debugSql<{ row_count: string }>(pgClient, {
+													text: `SELECT COUNT(*) AS row_count FROM ${resolveTableName(meta.name, options.tables)}${countWhereClause}`,
 													values: countValues,
 												})
-												count = parseInt(countRows[0]?.__count ?? '0', 10)
+												count = parseInt(countRows[0]?.row_count ?? '0', 10)
 											}
 
-											return { data: rows, doctype: spec.doctype as string, count }
+											return { data: rows, doctype, count }
 										})
 									)
 								}
@@ -324,7 +339,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 								executor,
 								object({ doctype: $doctype, action: $action, actionArgs: $actionArgs }),
 								async (pgClient: PgClient, spec: any) => {
-									const meta = getMeta(spec.doctype as string)
+									const meta = getMeta(String(spec.doctype))
 									if (!meta) {
 										return {
 											success: false,
@@ -390,7 +405,7 @@ function getSqlColumns(meta: DoctypeMeta): string {
 	const linkedFieldnames = new Set<string>()
 	if (meta.links) {
 		for (const [key, link] of Object.entries(meta.links)) {
-			linkedFieldnames.add((link as any).fieldname ?? key)
+			linkedFieldnames.add(link.fieldname ?? key)
 		}
 	}
 

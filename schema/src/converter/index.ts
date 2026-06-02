@@ -17,6 +17,7 @@ import type {
 	ConvertedGraphQLDoctype,
 	GraphQLConversionFieldMeta,
 } from './types'
+import type { ValueField } from '../field'
 import { defaultIsEntityType, defaultIsEntityField, classifyFieldType } from './heuristics'
 
 /**
@@ -114,6 +115,7 @@ export function convertGraphQLSchema(
 				if (options.classifyField) {
 					const custom = options.classifyField(fieldName, field, type)
 					if (custom !== null && custom !== undefined) {
+						// oxlint-disable-next-line oxc/no-map-spread -- spread required: Object.assign loses _isLink/_graphqlType metadata from custom's inferred type
 						return {
 							kind: 'field' as const,
 							fieldname: fieldName,
@@ -130,6 +132,7 @@ export function convertGraphQLSchema(
 
 				// Apply per-field overrides
 				if (typeOverrides?.[fieldName]) {
+					// oxlint-disable-next-line oxc/no-map-spread -- spread required: Object.assign loses _isLink/_graphqlType metadata; TypeScript cannot narrow union members after the type is dropped
 					return { ...classified, ...typeOverrides[fieldName] }
 				}
 
@@ -162,7 +165,10 @@ export function convertGraphQLSchema(
 		const doctype: ConvertedGraphQLDoctype = {
 			name: typeName,
 			slug: toSlug(typeName),
-			fields: convertedFields,
+			// Cast is safe: heuristics always set a fieldtype default ('Data'); the
+			// optional fieldtype on GraphQLConversionFieldMeta is for intermediate
+			// processing flexibility, not because output fields lack fieldtype.
+			fields: convertedFields as ValueField[],
 		}
 
 		if (Object.keys(links).length > 0) {

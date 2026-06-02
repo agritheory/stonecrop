@@ -1,6 +1,6 @@
 import { mount, VueWrapper } from '@vue/test-utils'
 import { List, Map } from 'immutable'
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 import { nextTick, defineComponent, ref } from 'vue'
 import type { UnknownMachineConfig } from 'xstate'
 

@@ -11,7 +11,7 @@ describe('ItemCheck', { tags: ['component'] }, () => {
 
 	it('defaults to unchecked when no model value provided', () => {
 		const wrapper = mount(ItemCheck)
-		const checkbox = wrapper.find('input[type="checkbox"]').element as HTMLInputElement
+		const checkbox = wrapper.find<HTMLInputElement>('input[type="checkbox"]').element
 		expect(checkbox.checked).toBe(false)
 	})
 
@@ -21,7 +21,7 @@ describe('ItemCheck', { tags: ['component'] }, () => {
 				modelValue: true,
 			},
 		})
-		const checkbox = wrapper.find('input[type="checkbox"]').element as HTMLInputElement
+		const checkbox = wrapper.find<HTMLInputElement>('input[type="checkbox"]').element
 		expect(checkbox.checked).toBe(true)
 	})
 

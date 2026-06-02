@@ -51,7 +51,7 @@ export interface FieldPermission {
 }
 
 // @public
-export type MiddlewareFn = (resolve: ResolverFn, root: any, args: any, context: Context, info: GraphQLResolveInfo) => Promise<any> | any;
+export type MiddlewareFn = (resolve: ResolverFn, root: any, args: any, context: Context, info: GraphQLResolveInfo) => any;
 
 // @public
 export interface MiddlewareOptions {
@@ -75,7 +75,7 @@ export interface PluginOptions extends MiddlewareOptions {
 }
 
 // @public
-export type ResolverFn = (root: any, args: any, context: Context, info: GraphQLResolveInfo) => Promise<any> | any;
+export type ResolverFn = (root: any, args: any, context: Context, info: GraphQLResolveInfo) => any;
 
 // @public
 export interface User {
