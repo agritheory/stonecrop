@@ -97,7 +97,7 @@ const columns: TableColumn[] = [
 		align: 'center',
 		edit: true,
 		width: '25ch',
-		modalComponent: 'DateInput',
+		modalComponent: 'ADateSelection',
 		format: (value: number) => new Date(value).toLocaleDateString('en-US'),
 	},
 ]
@@ -127,7 +127,7 @@ const readonly_columns: TableColumn[] = [
 		align: 'center',
 		edit: false,
 		width: '25ch',
-		modalComponent: 'DateInput',
+		modalComponent: 'ADateSelection',
 		modalComponentExtraProps: { mode: 'read' },
 		format: (value: number) => new Date(value).toLocaleDateString('en-US'),
 	},

@@ -210,7 +210,7 @@ const http_logs = ref({
 			align: 'center',
 			edit: true,
 			width: '25ch',
-			modalComponent: 'DateInput',
+			modalComponent: 'ADateSelection',
 			format: (value: number) => new Date(value).toLocaleDateString('en-US'),
 		},
 	] as TableColumn[],
@@ -272,7 +272,7 @@ const pinned_extra_logs = ref({
 			edit: true,
 			width: '25ch',
 			pinned: false,
-			modalComponent: 'DateInput',
+			modalComponent: 'ADateSelection',
 			format: (value: string | number) => new Date(value).toLocaleDateString('en-US'),
 		},
 		{
@@ -310,7 +310,7 @@ const pinned_extra_logs = ref({
 			edit: true,
 			width: '25ch',
 			pinned: false,
-			modalComponent: 'DateInput',
+			modalComponent: 'ADateSelection',
 			format: (value: string | number) => new Date(value).toLocaleDateString('en-US'),
 		},
 		{
