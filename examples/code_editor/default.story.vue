@@ -3,7 +3,6 @@
 		<Variant title="edit mode">
 			<div class="story-container">
 				<ACodeEditor v-model="code" language="typescript" :options="{ minimap: { enabled: false } }" />
-				<pre class="live-value">{{ code }}</pre>
 			</div>
 		</Variant>
 
