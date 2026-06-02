@@ -2,7 +2,7 @@
 	<div class="adate_time">
 		<div class="adate_time_fields">
 			<input
-				v-model="time_data.hours"
+				v-model="timeData.hours"
 				type="text"
 				inputmode="numeric"
 				@paste="pasteInput($event, true)"
@@ -13,7 +13,7 @@
 				@keydown.down.prevent="tick('hours', -1)" />
 			<span class="colon">:</span>
 			<input
-				v-model="time_data.minutes"
+				v-model="timeData.minutes"
 				type="text"
 				inputmode="numeric"
 				@paste="pasteInput"
@@ -25,7 +25,7 @@
 			<span v-if="useSeconds" class="colon">:</span>
 			<input
 				v-if="useSeconds"
-				v-model="time_data.seconds"
+				v-model="timeData.seconds"
 				type="text"
 				inputmode="numeric"
 				@paste="pasteInput"
@@ -72,7 +72,7 @@ const emit = defineEmits<{
 
 const meridiemSelector = useTemplateRef<HTMLSelectElement>('meridiem-selector')
 
-const time_data = reactive({
+const timeData = reactive({
 	hours: String(defaultHours).padStart(2, '0'),
 	minutes: String(defaultMinutes).padStart(2, '0'),
 	seconds: String(defaultSeconds).padStart(2, '0'),
@@ -87,32 +87,32 @@ onMounted(() => {
 const confirmTime = () => {
 	const maxHours = allowMilitaryTime ? 23 : 12
 	const minHours = allowMilitaryTime ? 0 : 1
-	let hours = Number(time_data.hours)
-	let minutes = Number(time_data.minutes)
-	let seconds = Number(time_data.seconds)
+	let hours = Number(timeData.hours)
+	let minutes = Number(timeData.minutes)
+	let seconds = Number(timeData.seconds)
 
-	if (isNaN(hours) || time_data.hours === '' || hours > maxHours) hours = maxHours
+	if (isNaN(hours) || timeData.hours === '' || hours > maxHours) hours = maxHours
 	if (!allowMilitaryTime && hours < minHours) hours = minHours
-	if (isNaN(minutes) || time_data.minutes === '' || minutes > 59) minutes = 59
-	if (isNaN(seconds) || time_data.seconds === '' || seconds > 59) seconds = 59
+	if (isNaN(minutes) || timeData.minutes === '' || minutes > 59) minutes = 59
+	if (isNaN(seconds) || timeData.seconds === '' || seconds > 59) seconds = 59
 
-	time_data.hours = String(hours).padStart(2, '0')
-	time_data.minutes = String(minutes).padStart(2, '0')
-	time_data.seconds = String(seconds).padStart(2, '0')
+	timeData.hours = String(hours).padStart(2, '0')
+	timeData.minutes = String(minutes).padStart(2, '0')
+	timeData.seconds = String(seconds).padStart(2, '0')
 
 	emitTime()
 }
 
 const emitTime = () => {
-	const hours = Number(time_data.hours)
-	const minutes = Number(time_data.minutes)
-	const seconds = Number(time_data.seconds)
+	const hours = Number(timeData.hours)
+	const minutes = Number(timeData.minutes)
+	const seconds = Number(timeData.seconds)
 	emit('get-time', {
 		hours,
 		minutes,
 		seconds,
 		meridiem: meridiem.value,
-		militaryTime: meridiem.value === 'PM' ? (hours === 12 ? 12 : hours + 12) : hours % 12,
+		militaryTime: allowMilitaryTime ? hours : meridiem.value === 'PM' ? (hours === 12 ? 12 : hours + 12) : hours % 12,
 	})
 }
 
@@ -128,54 +128,53 @@ const tick = (target: 'hours' | 'minutes' | 'seconds', amount = 1) => {
 	const minHours = allowMilitaryTime ? 0 : 1
 
 	if (target == 'hours') {
-		const oldHours = Number(time_data.hours)
-		time_data.hours = String(oldHours + amount)
-		if ((oldHours == 11 && Number(time_data.hours) == 12) || (oldHours == 12 && Number(time_data.hours) == 11)) {
+		const oldHours = Number(timeData.hours)
+		timeData.hours = String(oldHours + amount)
+		if ((oldHours == 11 && Number(timeData.hours) == 12) || (oldHours == 12 && Number(timeData.hours) == 11)) {
 			changeMeridiem()
 		}
 	} else if (target == 'minutes') {
-		time_data.minutes = String(Number(time_data.minutes) + amount)
+		timeData.minutes = String(Number(timeData.minutes) + amount)
 	} else if (target == 'seconds') {
-		time_data.seconds = String(Number(time_data.seconds) + amount)
+		timeData.seconds = String(Number(timeData.seconds) + amount)
 	}
 
-	const prevHours = Number(time_data.hours)
-	const oldMinute = Number(time_data.minutes)
+	const prevHours = Number(timeData.hours)
 
-	if (Number(time_data.seconds) < 0) time_data.minutes = String(Number(time_data.minutes) - 1)
-	else if (Number(time_data.seconds) > 59) time_data.minutes = String(Number(time_data.minutes) + 1)
+	if (Number(timeData.seconds) < 0) timeData.minutes = String(Number(timeData.minutes) - 1)
+	else if (Number(timeData.seconds) > 59) timeData.minutes = String(Number(timeData.minutes) + 1)
 
-	if (Number(time_data.minutes) < 0) time_data.hours = String(prevHours - 1)
-	else if (Number(time_data.minutes) > 59) time_data.hours = String(prevHours + 1)
+	if (Number(timeData.minutes) < 0) timeData.hours = String(prevHours - 1)
+	else if (Number(timeData.minutes) > 59) timeData.hours = String(prevHours + 1)
 
-	const newRawHours = Number(time_data.hours)
+	const newRawHours = Number(timeData.hours)
 	if (!allowMilitaryTime && newRawHours !== prevHours) {
 		if ((prevHours === 11 && newRawHours === 12) || (prevHours === 12 && newRawHours === 11)) {
 			changeMeridiem()
 		}
 	}
 
-	time_data.hours = String(formatTime(Number(time_data.hours), minHours, maxHours)).padStart(2, '0')
-	time_data.minutes = String(formatTime(Number(time_data.minutes), 0, 59)).padStart(2, '0')
-	time_data.seconds = String(formatTime(Number(time_data.seconds), 0, 59)).padStart(2, '0')
+	timeData.hours = String(formatTime(Number(timeData.hours), minHours, maxHours)).padStart(2, '0')
+	timeData.minutes = String(formatTime(Number(timeData.minutes), 0, 59)).padStart(2, '0')
+	timeData.seconds = String(formatTime(Number(timeData.seconds), 0, 59)).padStart(2, '0')
 }
 
 watch(
-	() => time_data.hours,
+	() => timeData.hours,
 	(newVal, oldVal) => {
-		time_data.hours = Number(newVal) > 99 ? oldVal : newVal
+		timeData.hours = Number(newVal) > 99 ? oldVal : newVal
 	}
 )
 watch(
-	() => time_data.minutes,
+	() => timeData.minutes,
 	(newVal, oldVal) => {
-		time_data.minutes = Number(newVal) > 99 ? oldVal : newVal
+		timeData.minutes = Number(newVal) > 99 ? oldVal : newVal
 	}
 )
 watch(
-	() => time_data.seconds,
+	() => timeData.seconds,
 	(newVal, oldVal) => {
-		time_data.seconds = Number(newVal) > 99 ? oldVal : newVal
+		timeData.seconds = Number(newVal) > 99 ? oldVal : newVal
 	}
 )
 
@@ -205,12 +204,12 @@ const pasteInput = (event: ClipboardEvent, pasteAllFields = false) => {
 		if (pastedData.length < 3) pastedData += '00'
 		if (pastedData.length < 5) pastedData += '00'
 
-		const time_units = pastedData.match(/(..?)/g)
-		if (!time_units) return
+		const timeUnits = pastedData.match(/(..?)/g)
+		if (!timeUnits || timeUnits.length < 3) return
 
-		time_data.seconds = time_units[2]
-		time_data.minutes = time_units[1]
-		time_data.hours = time_units[0]
+		timeData.seconds = timeUnits[2]
+		timeData.minutes = timeUnits[1]
+		timeData.hours = timeUnits[0]
 		confirmTime()
 		if (!allowMilitaryTime) meridiemSelector.value?.focus()
 	} else {

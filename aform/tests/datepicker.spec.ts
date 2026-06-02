@@ -295,5 +295,16 @@ describe('datepicker component', { tags: ['component'] }, () => {
 			const emitted = wrapper.emitted('get-date')
 			expect(emitted).toBeTruthy()
 		})
+
+		it('does not highlight any date as startDate or endDate on initial render', async () => {
+			const wrapper = mount(ADatePicker, {
+				props: { selectRange: true },
+				attachTo: document.body,
+			})
+			await wrapper.vm.$nextTick()
+			await wrapper.vm.$nextTick()
+			expect(wrapper.find('.startDate').exists()).toBe(false)
+			expect(wrapper.find('.endDate').exists()).toBe(false)
+		})
 	})
 })

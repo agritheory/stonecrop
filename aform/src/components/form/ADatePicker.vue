@@ -94,8 +94,8 @@ const currentDates = ref<number[]>([])
 // const datepickerRef = useTemplateRef<HTMLDivElement>('datepicker')
 
 const hoveredDate = ref(new Date(date.value))
-const start_date = ref<Date | null>(new Date())
-const end_date = ref<Date | null>(new Date())
+const start_date = ref<Date | null>(null)
+const end_date = ref<Date | null>(null)
 const startDateInput = useTemplateRef<HTMLInputElement>('start-date-input')
 const endDateInput = useTemplateRef<HTMLInputElement>('end-date-input')
 

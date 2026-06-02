@@ -275,6 +275,24 @@ describe('datetime component', () => {
 		expect(lastEmit.militaryTime).toBe(0)
 	})
 
+	it('emits militaryTime matching raw hours in military mode', () => {
+		const wrapper = mount(ADateTime, {
+			props: { allowMilitaryTime: true, defaultHours: 15 },
+		})
+		const emitted = wrapper.emitted('get-time')
+		const lastEmit = emitted![emitted!.length - 1][0] as any
+		expect(lastEmit.militaryTime).toBe(15)
+	})
+
+	it('emits militaryTime as 0 in military mode for midnight', () => {
+		const wrapper = mount(ADateTime, {
+			props: { allowMilitaryTime: true, defaultHours: 0 },
+		})
+		const emitted = wrapper.emitted('get-time')
+		const lastEmit = emitted![emitted!.length - 1][0] as any
+		expect(lastEmit.militaryTime).toBe(0)
+	})
+
 	it('selects input text on focus', async () => {
 		const wrapper = mount(ADateTime)
 		const hoursInput = wrapper.findAll('input[type="text"]')[0]
@@ -317,6 +335,21 @@ describe('datetime component', () => {
 		Object.defineProperty(event, 'clipboardData', { value: null })
 		await hoursInput.element.dispatchEvent(event)
 		await wrapper.vm.$nextTick()
+		expect(hoursInput.element.value).toBe('12')
+	})
+
+	it('handles paste of non-numeric input without corrupting seconds', async () => {
+		const wrapper = mount(ADateTime)
+		const hoursInput = wrapper.findAll('input[type="text"]')[0]
+		const clipboardData = { getData: vi.fn().mockReturnValue('a:b:c') }
+		const event = new Event('paste', { bubbles: true, cancelable: true })
+		Object.defineProperty(event, 'clipboardData', { value: clipboardData })
+		Object.defineProperty(event, 'target', { value: hoursInput.element })
+		await hoursInput.element.dispatchEvent(event)
+		await wrapper.vm.$nextTick()
+		const secondsInput = wrapper.findAll('input[type="text"]')[2]
+		expect(secondsInput.element.value).toBeDefined()
+		expect(secondsInput.element.value).toBe('00')
 		expect(hoursInput.element.value).toBe('12')
 	})
 

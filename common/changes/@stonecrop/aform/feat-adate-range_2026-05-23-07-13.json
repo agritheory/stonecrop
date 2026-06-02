@@ -2,8 +2,8 @@
   "changes": [
     {
       "packageName": "@stonecrop/aform",
-      "comment": "",
-      "type": "none"
+      "comment": "add date-based components",
+      "type": "patch"
     }
   ],
   "packageName": "@stonecrop/aform"
