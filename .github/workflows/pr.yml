@@ -82,6 +82,9 @@ jobs:
       - name: Rush Install
         run: node common/scripts/install-run-rush.js install
 
+      - name: Update Doc Tools Autoinstaller
+        run: node common/scripts/install-run-rush.js update-autoinstaller --name doc-tools
+
       # Restore per-repo build cache so Rush skips unchanged packages.
       # Type-aware oxlint (oxlint-tsgolint) requires compiled .d.ts files from
       # dependency packages to exist before lint runs; without this build step,
