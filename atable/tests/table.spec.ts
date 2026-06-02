@@ -568,9 +568,9 @@ describe('table component', { tags: ['component'] }, () => {
 			props: {
 				rows: getBasicRows(),
 				columns: initialColumns,
-				'onUpdate:columns': (newColumns: TableColumn[] | undefined) => {
+				'onUpdate:columns': async (newColumns: TableColumn[] | undefined) => {
 					if (newColumns) {
-						wrapper.setProps({ columns: newColumns })
+						await wrapper.setProps({ columns: newColumns })
 					}
 				},
 			},

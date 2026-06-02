@@ -34,7 +34,7 @@ describe('datepicker component', { tags: ['component'] }, () => {
 		await wrapper.vm.$nextTick()
 
 		const $randomDate = wrapper.find({ ref: 'celldate' })
-		$randomDate.trigger('click')
+		await $randomDate.trigger('click')
 
 		const updateEvents = wrapper.emitted('update:modelValue')
 		expect(updateEvents).toBeTruthy()

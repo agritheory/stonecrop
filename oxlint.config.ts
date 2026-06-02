@@ -60,7 +60,6 @@ const config: OxlintConfig = {
 			files: ['**/tests/**', '**/*.{test,spec}.{ts,tsx,js,mjs}'],
 			rules: {
 				'no-console': 'off',
-				'typescript/no-floating-promises': 'off',
 				'typescript/no-unsafe-assignment': 'off',
 				'typescript/no-unsafe-call': 'off',
 				'typescript/no-unsafe-member-access': 'off',
