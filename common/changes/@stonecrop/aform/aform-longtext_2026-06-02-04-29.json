@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/aform",
+      "comment": "long text /text box input type",
+      "type": "none"
+    }
+  ],
+  "packageName": "@stonecrop/aform"
+}

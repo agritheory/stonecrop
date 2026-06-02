@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/schema",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+  "packageName": "@stonecrop/schema"
+}
