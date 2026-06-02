@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { validateField, validateDoctype, parseField, parseDoctype } from '../src/validation'
+import type { ValueField } from '../src/field'
 import { ZodError } from 'zod'
 
 describe('Field Validation', { tags: ['unit'] }, () => {
@@ -127,9 +128,7 @@ describe('Field Validation', { tags: ['unit'] }, () => {
 
 			expect(parsed.fieldname).toBe('email')
 			expect(parsed.kind).toBe('field')
-			if (parsed.kind === 'field') {
-				expect(parsed.fieldtype).toBe('Data')
-			}
+			expect((parsed as ValueField).fieldtype).toBe('Data')
 		})
 
 		it('should throw ZodError for invalid field', () => {

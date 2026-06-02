@@ -11,12 +11,7 @@ import { buildClientSchema, buildSchema, isObjectType, type GraphQLSchema } from
 
 import type { LinkDeclaration } from '../doctype'
 import { toSlug } from '../naming'
-import type {
-	IntrospectionSource,
-	GraphQLConversionOptions,
-	ConvertedGraphQLDoctype,
-	GraphQLConversionFieldMeta,
-} from './types'
+import type { IntrospectionSource, GraphQLConversionOptions, ConvertedGraphQLDoctype } from './types'
 import type { ValueField } from '../field'
 import { defaultIsEntityType, defaultIsEntityField, classifyFieldType } from './heuristics'
 
@@ -108,36 +103,35 @@ export function convertGraphQLSchema(
 		const fields = type.getFields()
 		const typeOverrides = options.typeOverrides?.[typeName]
 
-		const allClassifiedFields = Object.entries(fields)
-			.filter(([fieldName, field]) => isEntityField(fieldName, field, type))
-			.map(([fieldName, field]) => {
-				// Check for full custom classification first
-				if (options.classifyField) {
-					const custom = options.classifyField(fieldName, field, type)
-					if (custom !== null && custom !== undefined) {
-						// oxlint-disable-next-line oxc/no-map-spread -- spread required: Object.assign loses _isLink/_graphqlType metadata from custom's inferred type
-						return {
-							kind: 'field' as const,
-							fieldname: fieldName,
-							label: custom.label ?? fieldName,
-							component: custom.component ?? 'ATextInput',
-							fieldtype: custom.fieldtype ?? 'Data',
-							...custom,
-						}
+		const entityFields = Object.entries(fields).filter(([fieldName, field]) => isEntityField(fieldName, field, type))
+
+		// oxlint-disable-next-line oxc/no-map-spread -- ...custom spread required; Object.assign cannot preserve the metadata-carrying inferred union type from classifyField
+		const allClassifiedFields = entityFields.map(([fieldName, field]) => {
+			// Check for full custom classification first
+			if (options.classifyField) {
+				const custom = options.classifyField(fieldName, field, type)
+				if (custom !== null && custom !== undefined) {
+					return {
+						kind: 'field' as const,
+						fieldname: fieldName,
+						label: custom.label ?? fieldName,
+						component: custom.component ?? 'ATextInput',
+						fieldtype: custom.fieldtype ?? 'Data',
+						...custom,
 					}
 				}
+			}
 
-				// Default classification
-				const classified = classifyFieldType(fieldName, field, entityTypes, options)
+			// Default classification
+			const classified = classifyFieldType(fieldName, field, entityTypes, options)
 
-				// Apply per-field overrides
-				if (typeOverrides?.[fieldName]) {
-					// oxlint-disable-next-line oxc/no-map-spread -- spread required: Object.assign loses _isLink/_graphqlType metadata; TypeScript cannot narrow union members after the type is dropped
-					return { ...classified, ...typeOverrides[fieldName] }
-				}
+			// Apply per-field overrides
+			if (typeOverrides?.[fieldName]) {
+				return Object.assign(classified, typeOverrides[fieldName])
+			}
 
-				return classified
-			})
+			return classified
+		})
 
 		// Separate scalar fields from link fields
 		const links: Record<string, LinkDeclaration> = {}
@@ -165,9 +159,7 @@ export function convertGraphQLSchema(
 		const doctype: ConvertedGraphQLDoctype = {
 			name: typeName,
 			slug: toSlug(typeName),
-			// Cast is safe: heuristics always set a fieldtype default ('Data'); the
-			// optional fieldtype on GraphQLConversionFieldMeta is for intermediate
-			// processing flexibility, not because output fields lack fieldtype.
+			// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- safe: heuristics always set a fieldtype default ('Data'); the optional fieldtype on GraphQLConversionFieldMeta is for intermediate processing, not because output fields lack fieldtype
 			fields: convertedFields as ValueField[],
 		}
 

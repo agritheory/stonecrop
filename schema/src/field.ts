@@ -193,6 +193,7 @@ function createDoctypeFieldSchemas() {
 	// callback can close over it. The placeholder is overwritten below; the callback
 	// only runs at parse time, after the real discriminated union is assigned.
 	// See: https://zod.dev/api?id=discriminated-unions#discriminated-unions
+	// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- required by Zod's recursive schema pattern; z.never() placeholder is overwritten before any parse call
 	let DoctypeFieldSchema: z.ZodType<DoctypeField> = z.never() as unknown as z.ZodType<DoctypeField>
 
 	// FieldsetFieldSchema stays as a plain ZodObject (not z.ZodType<T>) so that
@@ -214,30 +215,30 @@ function createDoctypeFieldSchemas() {
 	return { ValueFieldSchema, TableFieldSchema, FieldsetFieldSchema, DoctypeFieldSchema }
 }
 
-const _schemas = createDoctypeFieldSchemas()
+const schemas = createDoctypeFieldSchemas()
 
 /**
  * Zod runtime validation schema for ValueField.
  * @public
  */
-export const ValueFieldSchema = _schemas.ValueFieldSchema
+export const ValueFieldSchema = schemas.ValueFieldSchema
 
 /**
  * Zod runtime validation schema for FieldsetField.
  * Recursive — FieldsetField.schema is validated against DoctypeFieldSchema.
  * @public
  */
-export const FieldsetFieldSchema = _schemas.FieldsetFieldSchema
+export const FieldsetFieldSchema = schemas.FieldsetFieldSchema
 
 /**
  * Zod runtime validation schema for TableField.
  * @public
  */
-export const TableFieldSchema = _schemas.TableFieldSchema
+export const TableFieldSchema = schemas.TableFieldSchema
 
 /**
  * Zod runtime validation schema for the DoctypeField discriminated union.
  * Validates all three field variants: `'field'`, `'fieldset'`, `'table'`.
  * @public
  */
-export const DoctypeFieldSchema = _schemas.DoctypeFieldSchema
+export const DoctypeFieldSchema = schemas.DoctypeFieldSchema
