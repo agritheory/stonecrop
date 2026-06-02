@@ -27,6 +27,10 @@ describe('fieldtype', { tags: ['unit'] }, () => {
 			expect(getDefaultComponent('Link')).toBe('ALink')
 		})
 
+		it('should return correct component for LongText field', () => {
+			expect(getDefaultComponent('LongText')).toBe('ALongText')
+		})
+
 		it('should fallback to ATextInput for unknown builtin fieldtype', () => {
 			// getDefaultComponent accepts BuiltinFieldType; use resolveComponent for open strings
 			const unknown = 'NonExistentType' as any
@@ -55,6 +59,7 @@ describe('fieldtype', { tags: ['unit'] }, () => {
 				'Currency',
 				'Quantity',
 				'Select',
+				'LongText',
 			]
 
 			for (const type of expectedTypes) {
@@ -102,6 +107,7 @@ describe('fieldtype', { tags: ['unit'] }, () => {
 			expect(resolveComponent('Select')).toBe('ADropdown')
 			expect(resolveComponent('Phone')).toBe('ATextInput') // unknown → fallback
 			expect(resolveComponent('HTML')).toBe('ATextInput') // unknown → fallback
+			expect(resolveComponent('LongText')).toBe('ALongText') // known → specific component
 		})
 	})
 })
