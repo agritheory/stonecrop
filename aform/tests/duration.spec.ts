@@ -189,6 +189,13 @@ describe('ADuration', () => {
 			const { wrapper } = await mountAndEmitRange(start, end)
 			expect(wrapper.find('.aduration__ms').text()).toContain('3600000')
 		})
+
+		it('shows "0s" for sub-1000ms duration', async () => {
+			const start = new Date('2026-01-01T08:00:00.000')
+			const end = new Date('2026-01-01T08:00:00.500')
+			const { wrapper } = await mountAndEmitRange(start, end)
+			expect(wrapper.find('.aduration__value').text()).toBe('0s')
+		})
 	})
 
 	describe('props', () => {

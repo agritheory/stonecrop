@@ -82,4 +82,25 @@ describe('date component', { tags: ['component'] }, () => {
 		expect(wrapper.find('input').exists()).toBe(false)
 		expect(wrapper.find('.aform_display-value').text()).toBe('')
 	})
+
+	it('toggles custom date picker when input is clicked', async () => {
+		const wrapper = mount(ADate, globalComponents)
+		expect(wrapper.findComponent(ADateSelection).exists()).toBe(false)
+		await wrapper.find('input').trigger('click.prevent')
+		expect(wrapper.findComponent(ADateSelection).exists()).toBe(true)
+		await wrapper.find('input').trigger('click.prevent')
+		expect(wrapper.findComponent(ADateSelection).exists()).toBe(false)
+	})
+
+	it('handles date selection from picker', async () => {
+		const emitted: (string | Date)[] = []
+		const wrapper = mount(ADate, {
+			...globalComponents,
+			props: { 'onUpdate:modelValue': (v: string | Date) => emitted.push(v) },
+		})
+		await wrapper.find('input').trigger('click.prevent')
+		const picker = wrapper.findComponent(ADateSelection)
+		await picker.vm.$emit('get-date', { selected: new Date('2023-06-15') })
+		expect(emitted.length).toBeGreaterThan(0)
+	})
 })

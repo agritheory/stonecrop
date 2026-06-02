@@ -86,11 +86,13 @@ onMounted(() => {
 
 const confirmTime = () => {
 	const maxHours = allowMilitaryTime ? 23 : 12
+	const minHours = allowMilitaryTime ? 0 : 1
 	let hours = Number(time_data.hours)
 	let minutes = Number(time_data.minutes)
 	let seconds = Number(time_data.seconds)
 
 	if (isNaN(hours) || time_data.hours === '' || hours > maxHours) hours = maxHours
+	if (!allowMilitaryTime && hours < minHours) hours = minHours
 	if (isNaN(minutes) || time_data.minutes === '' || minutes > 59) minutes = 59
 	if (isNaN(seconds) || time_data.seconds === '' || seconds > 59) seconds = 59
 
@@ -137,11 +139,21 @@ const tick = (target: 'hours' | 'minutes' | 'seconds', amount = 1) => {
 		time_data.seconds = String(Number(time_data.seconds) + amount)
 	}
 
+	const prevHours = Number(time_data.hours)
+	const oldMinute = Number(time_data.minutes)
+
 	if (Number(time_data.seconds) < 0) time_data.minutes = String(Number(time_data.minutes) - 1)
 	else if (Number(time_data.seconds) > 59) time_data.minutes = String(Number(time_data.minutes) + 1)
 
-	if (Number(time_data.minutes) < 0) time_data.hours = String(Number(time_data.hours) - 1)
-	else if (Number(time_data.minutes) > 59) time_data.hours = String(Number(time_data.hours) + 1)
+	if (Number(time_data.minutes) < 0) time_data.hours = String(prevHours - 1)
+	else if (Number(time_data.minutes) > 59) time_data.hours = String(prevHours + 1)
+
+	const newRawHours = Number(time_data.hours)
+	if (!allowMilitaryTime && newRawHours !== prevHours) {
+		if ((prevHours === 11 && newRawHours === 12) || (prevHours === 12 && newRawHours === 11)) {
+			changeMeridiem()
+		}
+	}
 
 	time_data.hours = String(formatTime(Number(time_data.hours), minHours, maxHours)).padStart(2, '0')
 	time_data.minutes = String(formatTime(Number(time_data.minutes), 0, 59)).padStart(2, '0')

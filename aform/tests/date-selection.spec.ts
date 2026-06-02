@@ -98,4 +98,58 @@ describe('date-selection component', () => {
 		expect(dateTime.props('defaultMeridiem')).toBe('PM')
 		expect(dateTime.props('useSeconds')).toBe(false)
 	})
+
+	it('emits get-range when date and both times are set', async () => {
+		const wrapper = mount(ADateSelection, {
+			...globalComponents,
+			props: { selectRange: true, showTime: true, showEndTime: true },
+		})
+		const testDate = new Date(2023, 5, 15)
+		const datePicker = wrapper.findComponent(ADatePicker)
+		await datePicker.vm.$emit('get-date', { selected: testDate, start: testDate, end: testDate })
+		const emitted = wrapper.emitted('get-range')
+		expect(emitted).toBeTruthy()
+		expect(emitted![0][0]).toHaveProperty('start')
+		expect(emitted![0][0]).toHaveProperty('end')
+	})
+
+	it('emits get-time (not get-range) when showEndTime is false and time changes', async () => {
+		const wrapper = mount(ADateSelection, {
+			...globalComponents,
+			props: { selectRange: true, showTime: true, showEndTime: false },
+		})
+		await wrapper.vm.$nextTick()
+		const dateTime = wrapper.findComponent(ADateTime)
+		const timeData = { hours: 5, minutes: 15, seconds: 30, meridiem: 'PM', militaryTime: 17 }
+		await dateTime.vm.$emit('get-time', timeData)
+		const rangeEvents = wrapper.emitted('get-range')
+		expect(rangeEvents).toBeFalsy()
+		const timeEvents = wrapper.emitted('get-time')
+		expect(timeEvents).toBeTruthy()
+		expect(timeEvents![timeEvents!.length - 1][0]).toEqual(timeData)
+	})
+
+	it('emits get-range when end time is set with showEndTime', async () => {
+		const wrapper = mount(ADateSelection, {
+			...globalComponents,
+			props: { selectRange: true, showTime: true, showEndTime: true },
+		})
+		await wrapper.vm.$nextTick()
+		const dateTimes = wrapper.findAllComponents(ADateTime)
+		expect(dateTimes.length).toBe(2)
+		const endTime = dateTimes[1]
+		await endTime.vm.$emit('get-time', { hours: 5, minutes: 0, seconds: 0, meridiem: 'PM', militaryTime: 17 })
+		const rangeEvents = wrapper.emitted('get-range')
+		expect(rangeEvents).toBeTruthy()
+	})
+
+	it('renders end time picker when selectRange, showTime, and showEndTime are all true', () => {
+		const wrapper = mount(ADateSelection, {
+			...globalComponents,
+			props: { selectRange: true, showTime: true, showEndTime: true },
+		})
+		const dateTimes = wrapper.findAllComponents(ADateTime)
+		expect(dateTimes.length).toBe(2)
+		expect(wrapper.text()).toContain('End time')
+	})
 })

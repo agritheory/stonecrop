@@ -36,13 +36,7 @@ import { onClickOutside } from '@vueuse/core'
 import ADateSelection from './ADateSelection.vue'
 import type { ComponentProps } from '../../types'
 
-const {
-	label = 'Date Range',
-	required,
-	mode,
-	uuid,
-	validation = { errorMessage: '&nbsp;' },
-} = defineProps<ComponentProps>()
+const { label = 'Date Range', mode, uuid, validation = { errorMessage: '&nbsp;' } } = defineProps<ComponentProps>()
 
 export interface DateRangeValue {
 	start_date: string | null

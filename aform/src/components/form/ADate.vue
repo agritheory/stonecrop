@@ -52,7 +52,7 @@ const inputDate = computed({
 	},
 })
 
-const pickerRef = useTemplateRef('picker')
+const pickerRef = useTemplateRef<HTMLDivElement>('picker')
 const showPicker = ref(false)
 
 onClickOutside(pickerRef, () => (showPicker.value = false))

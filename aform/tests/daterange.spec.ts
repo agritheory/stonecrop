@@ -265,4 +265,33 @@ describe('date range component', () => {
 		expect(inputValue).toContain('6/1/2026')
 		expect(inputValue).toContain('6/30/2026')
 	})
+
+	it('shows placeholder when both dates are null', () => {
+		const wrapper = mount(ADateRange, globalComponents)
+		expect(wrapper.find('input').element.value).toBe('')
+	})
+
+	it('renders "From ..." in display mode when only start_date is set', () => {
+		const wrapper = mount(ADateRange, {
+			...globalComponents,
+			props: {
+				mode: 'display',
+				modelValue: { start_date: '2026-01-01', end_date: null },
+			},
+		})
+		const text = wrapper.find('.aform_display-value').text()
+		expect(text).toContain('From')
+	})
+
+	it('renders "Until ..." in display mode when only end_date is set', () => {
+		const wrapper = mount(ADateRange, {
+			...globalComponents,
+			props: {
+				mode: 'display',
+				modelValue: { start_date: null, end_date: '2026-01-31' },
+			},
+		})
+		const text = wrapper.find('.aform_display-value').text()
+		expect(text).toContain('Until')
+	})
 })

@@ -150,6 +150,14 @@ describe('datetime component', () => {
 		expect(hoursInput.element.value).toBe('23')
 	})
 
+	it('clamps hours to 1 (not 0) in non-military mode on blur', async () => {
+		const wrapper = mount(ADateTime)
+		const hoursInput = wrapper.findAll('input[type="text"]')[0]
+		await hoursInput.setValue(0)
+		await hoursInput.trigger('blur')
+		expect(hoursInput.element.value).toBe('01')
+	})
+
 	it('clamps hours to max on blur', async () => {
 		const wrapper = mount(ADateTime)
 		const hoursInput = wrapper.findAll('input[type="text"]')[0]
@@ -190,6 +198,39 @@ describe('datetime component', () => {
 		const hoursInput = wrapper.findAll('input[type="text"]')[0]
 		await hoursInput.setValue(12)
 		await hoursInput.trigger('keydown.down')
+		const select = wrapper.find('select')
+		expect(select.element.value).toBe('AM')
+	})
+
+	it('toggles meridiem when seconds roll over causing hours to cross 11-12 boundary', async () => {
+		const wrapper = mount(ADateTime, {
+			props: { defaultHours: 11, defaultMinutes: 59, defaultSeconds: 59, defaultMeridiem: 'AM' },
+		})
+		await wrapper.vm.$nextTick()
+		const secondsInput = wrapper.findAll('input[type="text"]')[2]
+		await secondsInput.trigger('keydown.up')
+		const select = wrapper.find('select')
+		expect(select.element.value).toBe('PM')
+	})
+
+	it('toggles meridiem when minutes roll over causing hours to cross 11-12 boundary', async () => {
+		const wrapper = mount(ADateTime, {
+			props: { defaultHours: 11, defaultMinutes: 59, defaultSeconds: 0, defaultMeridiem: 'AM' },
+		})
+		await wrapper.vm.$nextTick()
+		const minutesInput = wrapper.findAll('input[type="text"]')[1]
+		await minutesInput.trigger('keydown.up')
+		const select = wrapper.find('select')
+		expect(select.element.value).toBe('PM')
+	})
+
+	it('toggles meridiem when minutes roll under causing hours to cross 12-11 boundary', async () => {
+		const wrapper = mount(ADateTime, {
+			props: { defaultHours: 12, defaultMinutes: 0, defaultSeconds: 0, defaultMeridiem: 'PM' },
+		})
+		await wrapper.vm.$nextTick()
+		const minutesInput = wrapper.findAll('input[type="text"]')[1]
+		await minutesInput.trigger('keydown.down')
 		const select = wrapper.find('select')
 		expect(select.element.value).toBe('AM')
 	})
@@ -243,7 +284,7 @@ describe('datetime component', () => {
 		expect(selectMock).toHaveBeenCalled()
 	})
 
-	it('handles paste on hours field', async () => {
+	it('handles paste on hours field and distributes values', async () => {
 		const wrapper = mount(ADateTime)
 		const hoursInput = wrapper.findAll('input[type="text"]')[0]
 		const clipboardData = { getData: vi.fn().mockReturnValue('143045') }
@@ -252,12 +293,12 @@ describe('datetime component', () => {
 		Object.defineProperty(event, 'target', { value: hoursInput.element })
 		await hoursInput.element.dispatchEvent(event)
 		await wrapper.vm.$nextTick()
-		// After paste all fields, confirmTime should have run
-		const emitted = wrapper.emitted('get-time')
-		expect(emitted).toBeTruthy()
+		expect(hoursInput.element.value).toBe('12')
+		expect(wrapper.findAll('input[type="text"]')[1].element.value).toBe('30')
+		expect(wrapper.findAll('input[type="text"]')[2].element.value).toBe('45')
 	})
 
-	it('handles single field paste', async () => {
+	it('handles single field paste and sets value', async () => {
 		const wrapper = mount(ADateTime)
 		const minutesInput = wrapper.findAll('input[type="text"]')[1]
 		const clipboardData = { getData: vi.fn().mockReturnValue('55') }
@@ -266,6 +307,17 @@ describe('datetime component', () => {
 		Object.defineProperty(event, 'target', { value: minutesInput.element })
 		await minutesInput.element.dispatchEvent(event)
 		await wrapper.vm.$nextTick()
+		expect(minutesInput.element.value).toBe('55')
+	})
+
+	it('handles paste with null clipboardData gracefully', async () => {
+		const wrapper = mount(ADateTime)
+		const hoursInput = wrapper.findAll('input[type="text"]')[0]
+		const event = new Event('paste', { bubbles: true, cancelable: true })
+		Object.defineProperty(event, 'clipboardData', { value: null })
+		await hoursInput.element.dispatchEvent(event)
+		await wrapper.vm.$nextTick()
+		expect(hoursInput.element.value).toBe('12')
 	})
 
 	it('pads single digit values on confirm', async () => {

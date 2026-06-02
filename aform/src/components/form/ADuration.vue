@@ -32,16 +32,12 @@ import ADateSelection from './ADateSelection.vue'
 
 const {
 	label = 'Duration',
-	mode,
-	uuid,
-	validation = { errorMessage: '&nbsp;' },
+	mode = 'edit',
 	allowMilitaryTime = false,
 	useSeconds = false,
 } = defineProps<{
 	label?: string
 	mode?: string
-	uuid?: string
-	validation?: { errorMessage: string }
 	allowMilitaryTime?: boolean
 	useSeconds?: boolean
 }>()
@@ -62,7 +58,6 @@ watch(duration, newMs => {
 })
 
 const handleRange = (data: { start: Date; end: Date }) => {
-	console.log('handleRange', data.start, data.end, data.end.getTime() - data.start.getTime())
 	startDatetime.value = data.start
 	endDatetime.value = data.end
 	modelValue.value = duration.value
@@ -75,7 +70,7 @@ const humanDuration = computed(() => {
 	const m = Math.floor(ms / 60000) % 60
 	const h = Math.floor(ms / 3600000) % 24
 	const d = Math.floor(ms / 86400000)
-	return [d && `${d}d`, h && `${h}h`, m && `${m}m`, s && `${s}s`].filter(Boolean).join(' ')
+	return [d && `${d}d`, h && `${h}h`, m && `${m}m`, s && `${s}s`].filter(Boolean).join(' ') || '0s'
 })
 
 const displayValue = computed(() => {
