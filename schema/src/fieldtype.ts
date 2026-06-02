@@ -26,6 +26,7 @@ export const BUILTIN_FIELD_TYPES = [
 	'Quantity', // Quantity with unit
 	'Select', // Dropdown selection
 	'PrimaryKey', // Primary key field — used by the middleware to identify the record's PK column
+	'LongText', // Very long text, rendered with a textarea
 ] as const
 
 /**
@@ -111,6 +112,7 @@ export const TYPE_MAP: Record<BuiltinFieldType, FieldTemplate> = {
 
 	// Identity — PK fields are typically hidden; no interactive component is needed
 	PrimaryKey: { component: 'ATextInput', fieldtype: 'PrimaryKey' },
+	LongText: { component: 'ALongText', fieldtype: 'LongText' },
 }
 
 /**
