@@ -1,47 +1,3 @@
-cat > ~/StoneCrop/stonecrop/aform/src/components/form/ALongText.vue << 'EOF'
-<script setup lang="ts">
-import { computed } from 'vue'
-
-interface Props {
-	fieldname: string
-	label?: string
-	modelValue?: string | null
-	placeholder?: string
-	required?: boolean
-	readOnly?: boolean
-	disabled?: boolean
-	hidden?: boolean
-	rows?: number
-	maxlength?: number
-	mode?: 'display' | 'edit'
-}
-
-const props = withDefaults(defineProps<Props>(), {
-	label: '',
-	modelValue: null,
-	placeholder: '',
-	required: false,
-	readOnly: false,
-	disabled: false,
-	hidden: false,
-	rows: 4,
-	mode: 'edit',
-})
-
-const emit = defineEmits<{
-	(e: 'update:modelValue', value: string): void
-	(e: 'change', value: string): void
-}>()
-
-const isReadOnly = computed(() => props.readOnly || props.mode === 'display')
-
-function onInput(event: Event) {
-	const value = (event.target as HTMLTextAreaElement).value
-	emit('update:modelValue', value)
-	emit('change', value)
-}
-</script>
-
 <template>
 	<div v-if="!hidden" class="a-long-text" :class="{ 'is-read-only': isReadOnly }">
 		<label v-if="label" :for="fieldname" class="a-long-text__label">
@@ -62,6 +18,49 @@ function onInput(event: Event) {
 		<span v-else class="a-long-text__display">{{ modelValue }}</span>
 	</div>
 </template>
+
+<script setup lang="ts">
+import { computed } from 'vue'
+
+interface Props {
+	fieldname: string
+	label?: string
+	modelValue?: string | null
+	placeholder?: string
+	required?: boolean
+	readOnly?: boolean
+	disabled?: boolean
+	hidden?: boolean
+	rows?: number
+	maxlength?: number
+	mode?: 'display' | 'edit'
+}
+
+const {
+	label = '',
+	modelValue = null,
+	placeholder = '',
+	required = false,
+	readOnly = false,
+	disabled = false,
+	hidden = false,
+	rows = 4,
+	mode = 'edit',
+} = defineProps<Props>()
+
+const emit = defineEmits<{
+	(e: 'update:modelValue', value: string): void
+	(e: 'change', value: string): void
+}>()
+
+const isReadOnly = computed(() => readOnly || mode === 'display')
+
+function onInput(event: Event) {
+	const value = (event.target as HTMLTextAreaElement).value
+	emit('update:modelValue', value)
+	emit('change', value)
+}
+</script>
 
 <style scoped>
 .a-long-text {
@@ -106,4 +105,3 @@ function onInput(event: Event) {
 	color: var(--color-text-primary, #111);
 }
 </style>
-EOF
