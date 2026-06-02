@@ -33,6 +33,7 @@ jobs:
             atable: atable/**
             beam: beam/**
             casl_middleware: casl_middleware/**
+            code_editor: code_editor/**
             desktop: desktop/**
             graphql_client: graphql_client/**
             graphql_middleware: graphql_middleware/**
