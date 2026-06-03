@@ -10,14 +10,6 @@
 	},
 	{
 		"kind": "field",
-		"fieldname": "rowId",
-		"fieldtype": "Data",
-		"component": "ATextInput",
-		"label": "Row ID",
-		"hidden": true
-	},
-	{
-		"kind": "field",
 		"fieldname": "first_name",
 		"fieldtype": "Data",
 		"component": "ATextInput",
