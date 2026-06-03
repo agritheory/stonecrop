@@ -32,9 +32,9 @@
 
 <script setup lang="ts">
 import { useStonecrop } from '@stonecrop/stonecrop'
-import { AForm, type AFormLinkNavigator, type ResolvedField } from '@stonecrop/aform'
+import { AForm, type AFormLinkNavigator, type ResolvedField, type ResolvedTable } from '@stonecrop/aform'
 import type { ColumnSchema } from '@stonecrop/schema'
-import { computed, onMounted, provide, ref, unref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, provide, ref, unref, watch } from 'vue'
 
 import ActionSet from './ActionSet.vue'
 import SheetNav from './SheetNav.vue'
@@ -106,11 +106,39 @@ const { stonecrop } = useStonecrop()
 const loading = ref(false)
 const commandPaletteOpen = ref(false)
 
-// HST-based form data management - field triggers are handled automatically by HST
-
-// Computed property that reads from HST store for reactive form data
+// Form/list data management — each view produces a different data shape.
+// List views (doctypes, records) return table row data keyed by fieldname.
+// Record view returns HST record fields for two-way binding.
 const currentViewData = computed<Record<string, any>>({
 	get() {
+		// Doctypes list — rows come from availableDoctypes prop (reactive via props.availableDoctypes)
+		if (currentView.value === 'doctypes') {
+			return {
+				doctypes_table:
+					props.availableDoctypes?.map(doctype => ({
+						id: doctype,
+						doctype,
+						display_name: formatDoctypeName(doctype),
+						record_count: getRecordCount(doctype),
+						actions: 'View Records',
+					})) ?? [],
+			}
+		}
+
+		// Records list — rows come from HST store (reactive because HST is Vue reactive())
+		if (currentView.value === 'records') {
+			const idField = props.recordIdField || 'id'
+			return {
+				records_table: getRecords().map(record =>
+					Object.assign({}, record, {
+						id: record[idField] || record.id || '',
+						actions: 'Edit | Delete',
+					})
+				),
+			}
+		}
+
+		// Record form — read single record from HST
 		if (!stonecrop.value || !currentDoctype.value || !currentRecordId.value) {
 			return {}
 		}
@@ -126,6 +154,8 @@ const currentViewData = computed<Record<string, any>>({
 		}
 	},
 	set(newData: Record<string, any>) {
+		// List views are read-only from AForm's perspective — HST writes only apply to record form
+		if (currentView.value !== 'record') return
 		if (!stonecrop.value || !currentDoctype.value || !currentRecordId.value) {
 			return
 		}
@@ -447,63 +477,51 @@ const createNewRecord = async () => {
 
 // Schema generator functions - moved here to be available to computed properties
 const getDoctypesSchema = (): ResolvedField[] => {
-	if (!availableDoctypes.length) return []
+	if (!props.availableDoctypes?.length) return []
 
-	const rows = availableDoctypes.map(doctype => ({
-		id: doctype,
-		doctype,
-		display_name: formatDoctypeName(doctype),
-		record_count: getRecordCount(doctype),
-		actions: 'View Records',
-	}))
-
-	// TODO: convert to ResolvedTable format and move rows to formData so AForm reads them from dataModel
-	// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- inline table schema uses legacy columns format; rows must move to formData
 	return [
 		{
+			kind: 'table' as const,
 			fieldname: 'doctypes_table',
 			component: 'ATable',
-			columns: [
+			label: 'Doctypes',
+			schema: [
 				{
+					fieldname: 'doctype',
 					label: 'Doctype',
-					name: 'doctype',
 					fieldtype: 'Data',
-					align: 'left',
+					align: 'left' as const,
 					edit: false,
 					width: '20ch',
 				},
 				{
+					fieldname: 'display_name',
 					label: 'Name',
-					name: 'display_name',
 					fieldtype: 'Data',
-					align: 'left',
+					align: 'left' as const,
 					edit: false,
 					width: '30ch',
 				},
 				{
+					fieldname: 'record_count',
 					label: 'Records',
-					name: 'record_count',
 					fieldtype: 'Int',
-					align: 'center',
+					align: 'center' as const,
 					edit: false,
 					width: '15ch',
 				},
 				{
+					fieldname: 'actions',
 					label: 'Actions',
-					name: 'actions',
 					fieldtype: 'Data',
-					align: 'center',
+					align: 'center' as const,
 					edit: false,
 					width: '20ch',
 				},
 			],
-			config: {
-				view: 'list',
-				fullWidth: true,
-			},
-			rows,
-		},
-	] as unknown as ResolvedField[]
+			config: { view: 'list' as const, fullWidth: true },
+		} satisfies ResolvedTable,
+	]
 }
 
 const getRecordsSchema = (): ResolvedField[] => {
@@ -520,31 +538,15 @@ const getRecordsSchema = (): ResolvedField[] => {
 	// If no schema is available, let the template fallback handle the loading state
 	if (schema.length === 0) return []
 
-	const records = getRecords()
-	const idField = props.recordIdField || 'id'
-
-	const rows = records.map(record =>
-		Object.assign({}, record, {
-			id: record[idField] || record.id || '',
-			actions: 'Edit | Delete',
-		})
-	)
-
-	// TODO: move rows to formData so AForm reads them from dataModel; remove rows from schema object
-	// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- rows property on schema object is a known gap; rows must move to formData
 	return [
 		{
 			kind: 'table' as const,
 			fieldname: 'records_table',
 			component: 'ATable',
 			schema: [...(schema as ColumnSchema[]), { fieldname: 'actions', label: 'Actions', fieldtype: 'Data' }],
-			config: {
-				view: 'list',
-				fullWidth: true,
-			},
-			rows,
-		},
-	] as unknown as ResolvedField[]
+			config: { view: 'list' as const, fullWidth: true },
+		} satisfies ResolvedTable,
+	]
 }
 
 const getRecordFormSchema = (): ResolvedField[] => {
@@ -769,25 +771,21 @@ provide('aformLinkResolver', async (doctypeSlug: string, id: string): Promise<st
 	}
 })
 
+const handleKeydown = (event: KeyboardEvent) => {
+	if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
+		event.preventDefault()
+		commandPaletteOpen.value = true
+	}
+	if (event.key === 'Escape' && commandPaletteOpen.value) {
+		commandPaletteOpen.value = false
+	}
+}
+
 onMounted(() => {
-	// Add keyboard shortcuts
-	const handleKeydown = (event: KeyboardEvent) => {
-		// Ctrl+K or Cmd+K to open command palette
-		if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
-			event.preventDefault()
-			commandPaletteOpen.value = true
-		}
-		// Escape to close command palette
-		if (event.key === 'Escape' && commandPaletteOpen.value) {
-			commandPaletteOpen.value = false
-		}
-	}
-
 	document.addEventListener('keydown', handleKeydown)
+})
 
-	// Cleanup event listener on unmount
-	return () => {
-		document.removeEventListener('keydown', handleKeydown)
-	}
+onUnmounted(() => {
+	document.removeEventListener('keydown', handleKeydown)
 })
 </script>

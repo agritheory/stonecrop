@@ -348,3 +348,224 @@ describe('Desktop – breadcrumb edge cases', { tags: ['component'] }, () => {
 		expect(breadcrumbs?.some((b: any) => b.title === 'New Record')).toBe(true)
 	})
 })
+
+// =============================================================================
+// currentViewData — data prop correctness for each view
+// These tests verify that rows reach AForm through the `data` prop (formData),
+// not through the schema object (the regression introduced by Phase 3).
+// =============================================================================
+
+describe('currentViewData — doctypes view', { tags: ['component'] }, () => {
+	it('populates data.doctypes_table from availableDoctypes prop', async () => {
+		const registry = new Registry()
+		const stonecrop = new Stonecrop(registry)
+
+		const adapter: RouteAdapter = {
+			getCurrentDoctype: () => '',
+			getCurrentRecordId: () => '',
+			getCurrentView: () => 'doctypes',
+			navigate: vi.fn(),
+		}
+
+		const wrapper = mount(Desktop, {
+			props: {
+				routeAdapter: adapter,
+				availableDoctypes: ['task', 'note'],
+			},
+			global: {
+				plugins: [makeStonecropPlugin(registry, stonecrop)],
+				stubs: { AForm: true, ActionSet: true, SheetNav: true, CommandPalette: true },
+			},
+		})
+
+		await nextTick()
+
+		const aform = wrapper.findComponent({ name: 'AForm' })
+		const data = aform.props('data') as Record<string, any>
+		const rows = data['doctypes_table'] as any[]
+
+		expect(Array.isArray(rows)).toBe(true)
+		expect(rows.length).toBe(2)
+		expect(rows.some(r => r.doctype === 'task')).toBe(true)
+		expect(rows.some(r => r.doctype === 'note')).toBe(true)
+	})
+
+	it('schema uses kind: "table" with schema: ColumnSchema[] (not columns)', async () => {
+		const registry = new Registry()
+		const stonecrop = new Stonecrop(registry)
+
+		const adapter: RouteAdapter = {
+			getCurrentDoctype: () => '',
+			getCurrentRecordId: () => '',
+			getCurrentView: () => 'doctypes',
+			navigate: vi.fn(),
+		}
+
+		const wrapper = mount(Desktop, {
+			props: {
+				routeAdapter: adapter,
+				availableDoctypes: ['task'],
+			},
+			global: {
+				plugins: [makeStonecropPlugin(registry, stonecrop)],
+				stubs: { AForm: true, ActionSet: true, SheetNav: true, CommandPalette: true },
+			},
+		})
+
+		await nextTick()
+
+		const aform = wrapper.findComponent({ name: 'AForm' })
+		const schema = aform.props('schema') as any[]
+		const table = schema[0]
+
+		expect(table.kind).toBe('table')
+		expect(Array.isArray(table.schema)).toBe(true)
+		expect(table.schema[0]).toHaveProperty('fieldname')
+		expect(table).not.toHaveProperty('columns')
+		expect(table).not.toHaveProperty('rows')
+	})
+})
+
+describe('currentViewData — records view', { tags: ['component'] }, () => {
+	it('populates data.records_table from HST records', async () => {
+		const registry = new Registry()
+		const stonecrop = new Stonecrop(registry)
+
+		const doctype = buildDoctype('task', 'draft', {
+			draft: { on: { SUBMIT: 'submitted' } },
+			submitted: { type: 'final' },
+		})
+		registry.addDoctype(doctype)
+		stonecrop.addRecord('task', 'r-1', { id: 'r-1', title: 'Task One' })
+		stonecrop.addRecord('task', 'r-2', { id: 'r-2', title: 'Task Two' })
+
+		const adapter: RouteAdapter = {
+			getCurrentDoctype: () => 'task',
+			getCurrentRecordId: () => '',
+			getCurrentView: () => 'records',
+			navigate: vi.fn(),
+		}
+
+		const wrapper = mount(Desktop, {
+			props: { routeAdapter: adapter },
+			global: {
+				plugins: [makeStonecropPlugin(registry, stonecrop)],
+				stubs: { AForm: true, ActionSet: true, SheetNav: true, CommandPalette: true },
+			},
+		})
+
+		await nextTick()
+
+		const aform = wrapper.findComponent({ name: 'AForm' })
+		const data = aform.props('data') as Record<string, any>
+		const rows = data['records_table'] as any[]
+
+		expect(Array.isArray(rows)).toBe(true)
+		expect(rows.length).toBe(2)
+	})
+
+	it('updates data.records_table reactively when records are added to HST after mount', async () => {
+		const registry = new Registry()
+		const stonecrop = new Stonecrop(registry)
+
+		const doctype = buildDoctype('task', 'draft', {
+			draft: { on: { SUBMIT: 'submitted' } },
+			submitted: { type: 'final' },
+		})
+		registry.addDoctype(doctype)
+
+		const adapter: RouteAdapter = {
+			getCurrentDoctype: () => 'task',
+			getCurrentRecordId: () => '',
+			getCurrentView: () => 'records',
+			navigate: vi.fn(),
+		}
+
+		const wrapper = mount(Desktop, {
+			props: { routeAdapter: adapter },
+			global: {
+				plugins: [makeStonecropPlugin(registry, stonecrop)],
+				stubs: { AForm: true, ActionSet: true, SheetNav: true, CommandPalette: true },
+			},
+		})
+
+		await nextTick()
+
+		const aform = wrapper.findComponent({ name: 'AForm' })
+		const dataBefore = aform.props('data') as Record<string, any>
+		expect((dataBefore['records_table'] as any[]).length).toBe(0)
+
+		// Add a record after mount — currentViewData should update reactively via HST
+		stonecrop.addRecord('task', 'r-1', { id: 'r-1', title: 'New Task' })
+		await nextTick()
+
+		const dataAfter = aform.props('data') as Record<string, any>
+		expect((dataAfter['records_table'] as any[]).length).toBe(1)
+	})
+
+	it('schema does not include rows property', async () => {
+		const registry = new Registry()
+		const stonecrop = new Stonecrop(registry)
+
+		const doctype = buildDoctype('task', 'draft', {
+			draft: { on: { SUBMIT: 'submitted' } },
+			submitted: { type: 'final' },
+		})
+		registry.addDoctype(doctype)
+		stonecrop.addRecord('task', 'r-1', { id: 'r-1', title: 'Task One' })
+
+		const adapter: RouteAdapter = {
+			getCurrentDoctype: () => 'task',
+			getCurrentRecordId: () => '',
+			getCurrentView: () => 'records',
+			navigate: vi.fn(),
+		}
+
+		const wrapper = mount(Desktop, {
+			props: { routeAdapter: adapter },
+			global: {
+				plugins: [makeStonecropPlugin(registry, stonecrop)],
+				stubs: { AForm: true, ActionSet: true, SheetNav: true, CommandPalette: true },
+			},
+		})
+
+		await nextTick()
+
+		const aform = wrapper.findComponent({ name: 'AForm' })
+		const schema = aform.props('schema') as any[]
+		const table = schema[0]
+
+		expect(table.kind).toBe('table')
+		expect(table).not.toHaveProperty('rows')
+	})
+})
+
+describe('Desktop lifecycle — event listener cleanup', { tags: ['component'] }, () => {
+	it('removes keydown event listener on unmount', async () => {
+		const registry = new Registry()
+		const stonecrop = new Stonecrop(registry)
+
+		const removeListenerSpy = vi.spyOn(document, 'removeEventListener')
+
+		const adapter: RouteAdapter = {
+			getCurrentDoctype: () => '',
+			getCurrentRecordId: () => '',
+			getCurrentView: () => 'doctypes',
+			navigate: vi.fn(),
+		}
+
+		const wrapper = mount(Desktop, {
+			props: { routeAdapter: adapter, availableDoctypes: [] },
+			global: {
+				plugins: [makeStonecropPlugin(registry, stonecrop)],
+				stubs: { AForm: true, ActionSet: true, SheetNav: true, CommandPalette: true },
+			},
+		})
+
+		await nextTick()
+		wrapper.unmount()
+
+		expect(removeListenerSpy).toHaveBeenCalledWith('keydown', expect.any(Function))
+		removeListenerSpy.mockRestore()
+	})
+})
