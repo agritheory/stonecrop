@@ -3,12 +3,14 @@
 	"slug": "example/:id",
 	"fields": [
 		{
+			"kind": "field",
 			"fieldname": "id",
 			"fieldtype": "Data",
 			"label": "ID",
 			"readOnly": true
 		},
 		{
+			"kind": "field",
 			"fieldname": "title",
 			"fieldtype": "Data",
 			"label": "Title",
@@ -16,11 +18,13 @@
 			"width": "30ch"
 		},
 		{
+			"kind": "field",
 			"fieldname": "description",
 			"fieldtype": "Text",
 			"label": "Description"
 		},
 		{
+			"kind": "field",
 			"fieldname": "status",
 			"fieldtype": "Select",
 			"label": "Status",
@@ -28,6 +32,7 @@
 			"default": "Draft"
 		},
 		{
+			"kind": "field",
 			"fieldname": "priority",
 			"fieldtype": "Select",
 			"label": "Priority",
@@ -35,23 +40,27 @@
 			"default": "Medium"
 		},
 		{
+			"kind": "field",
 			"fieldname": "assignee",
 			"fieldtype": "Link",
 			"label": "Assignee",
 			"options": "User"
 		},
 		{
+			"kind": "field",
 			"fieldname": "dueDate",
 			"fieldtype": "Date",
 			"label": "Due Date"
 		},
 		{
+			"kind": "field",
 			"fieldname": "createdAt",
 			"fieldtype": "Datetime",
 			"label": "Created At",
 			"readOnly": true
 		},
 		{
+			"kind": "field",
 			"fieldname": "updatedAt",
 			"fieldtype": "Datetime",
 			"label": "Updated At",
