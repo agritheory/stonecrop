@@ -10,7 +10,9 @@ import type { DoctypeField } from '@stonecrop/schema'
 
 // Helper: creates a Doctype with links
 const createDoctypeWithLinks = (name: string, links?: Record<string, any>) => {
-	const mockSchema = List([{ fieldname: 'title', component: 'ATextInput', label: 'Title' }] as DoctypeField[])
+	const mockSchema = List([
+		{ kind: 'field' as const, fieldname: 'title', fieldtype: 'Data', component: 'ATextInput', label: 'Title' },
+	])
 
 	const mockWorkflow: UnknownMachineConfig = {
 		id: name.toLowerCase(),
@@ -18,17 +20,19 @@ const createDoctypeWithLinks = (name: string, links?: Record<string, any>) => {
 		states: { draft: {} },
 	}
 
-	return new Doctype(name, mockSchema, mockWorkflow, Map(), undefined, links)
+	return new Doctype(name, mockSchema as any, mockWorkflow, Map(), undefined, links)
 }
 
 function createMockDoctype(name: string) {
 	const mockSchema = List([
 		{
+			kind: 'field' as const,
 			fieldname: 'title',
+			fieldtype: 'Data',
 			component: 'ATextInput',
 			label: 'Title',
 		},
-	] as DoctypeField[])
+	])
 
 	const mockWorkflow: UnknownMachineConfig = {
 		id: name.toLowerCase(),

@@ -73,7 +73,9 @@ export type CrossTabMessageType = 'operation' | 'undo' | 'redo' | 'sync-request'
 
 // @public
 export class Doctype {
+    // Warning: (ae-incompatible-release-tags) The symbol "__constructor" is marked as @public, but its signature references "ImmutableDoctype" which is marked as @internal
     constructor(doctype: string, schema: ImmutableDoctype['schema'], workflow: ImmutableDoctype['workflow'], actions: ImmutableDoctype['actions'], component?: Component, links?: Record<string, LinkDeclaration>);
+    // Warning: (ae-incompatible-release-tags) The symbol "actions" is marked as @public, but its signature references "ImmutableDoctype" which is marked as @internal
     readonly actions: ImmutableDoctype['actions'];
     readonly component?: Component;
     readonly doctype: string;
@@ -94,8 +96,10 @@ export class Doctype {
     getSchemaArray(): DoctypeField[];
     readonly links?: Record<string, LinkDeclaration>;
     get name(): string;
+    // Warning: (ae-incompatible-release-tags) The symbol "schema" is marked as @public, but its signature references "ImmutableDoctype" which is marked as @internal
     readonly schema: ImmutableDoctype['schema'];
     get slug(): string;
+    // Warning: (ae-incompatible-release-tags) The symbol "workflow" is marked as @public, but its signature references "ImmutableDoctype" which is marked as @internal
     readonly workflow: ImmutableDoctype['workflow'];
 }
 
@@ -279,7 +283,9 @@ export type HSTStonecropReturn = BaseStonecropReturn & {
     blockedLinks: ComputedRef<string[]>;
 };
 
-// @public
+// Warning: (ae-internal-missing-underscore) The name "ImmutableDoctype" should be prefixed with an underscore because the declaration is marked as @internal
+//
+// @internal
 export type ImmutableDoctype = {
     readonly schema?: List<DoctypeField>;
     readonly workflow?: UnknownMachineConfig | AnyStateNodeConfig | WorkflowMeta;
