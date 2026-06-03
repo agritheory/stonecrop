@@ -60,7 +60,6 @@ export interface AFormLinkNavigator {
 
 // @public
 export interface AFormLinkValue {
-    // (undocumented)
     [extra: string]: any;
     displayText?: string;
     id: string | number;
@@ -95,17 +94,10 @@ export { InteractionMode }
 
 export { Login }
 
-// Warning: (ae-incompatible-release-tags) The symbol "ResolvedField" is marked as @public, but its signature references "ResolvedScalar" which is marked as @internal
-// Warning: (ae-incompatible-release-tags) The symbol "ResolvedField" is marked as @public, but its signature references "ResolvedLink" which is marked as @internal
-// Warning: (ae-incompatible-release-tags) The symbol "ResolvedField" is marked as @public, but its signature references "ResolvedTable" which is marked as @internal
-// Warning: (ae-incompatible-release-tags) The symbol "ResolvedField" is marked as @public, but its signature references "ResolvedFieldset" which is marked as @internal
-//
 // @public
 export type ResolvedField = ResolvedScalar | ResolvedLink | ResolvedTable | ResolvedFieldset;
 
-// Warning: (ae-internal-missing-underscore) The name "ResolvedFieldset" should be prefixed with an underscore because the declaration is marked as @internal
-//
-// @internal
+// @public
 export interface ResolvedFieldset {
     collapsible?: boolean;
     component?: string;
@@ -116,9 +108,7 @@ export interface ResolvedFieldset {
     schema: ResolvedField[];
 }
 
-// Warning: (ae-internal-missing-underscore) The name "ResolvedLink" should be prefixed with an underscore because the declaration is marked as @internal
-//
-// @internal
+// @public
 export interface ResolvedLink {
     component: string;
     default?: unknown;
@@ -133,16 +123,12 @@ export interface ResolvedLink {
     validation?: FieldValidation;
 }
 
-// Warning: (ae-internal-missing-underscore) The name "ResolvedScalar" should be prefixed with an underscore because the declaration is marked as @internal
-//
-// @internal
+// @public
 export type ResolvedScalar = Omit<ValueField, 'cardinality'> & {
     doctype?: string;
 };
 
-// Warning: (ae-internal-missing-underscore) The name "ResolvedTable" should be prefixed with an underscore because the declaration is marked as @internal
-//
-// @internal
+// @public
 export interface ResolvedTable {
     component: string;
     config: TableViewConfig;

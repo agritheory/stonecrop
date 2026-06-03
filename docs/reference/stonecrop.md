@@ -1060,6 +1060,20 @@ export type HSTStonecropReturn = BaseStonecropReturn & {
 };
 ```
 
+### ImmutableDoctype
+
+Immutable Doctype type for Stonecrop instances. Used by the Doctype constructor. App authors should use `Doctype.fromObject()` rather than constructing this shape manually.
+
+**Definition:**
+
+```typescript
+export type ImmutableDoctype = {
+    readonly schema?: List<DoctypeField>;
+    readonly workflow?: UnknownMachineConfig | AnyStateNodeConfig | WorkflowMeta;
+    readonly actions?: Map<string, string[]>;
+};
+```
+
 ### InstallOptions
 
 Install options for Stonecrop Vue plugin

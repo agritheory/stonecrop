@@ -11,12 +11,12 @@
 </template>
 
 <script setup lang="ts">
+import type { InteractionMode } from '@stonecrop/schema'
 import { ref } from 'vue'
 
-import CollapseButton from '../base/CollapseButton.vue'
 import AForm from '../AForm.vue'
+import CollapseButton from '../base/CollapseButton.vue'
 import type { ResolvedField } from '../../types'
-import type { InteractionMode } from '@stonecrop/schema'
 
 const {
 	schema,

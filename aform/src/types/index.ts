@@ -20,7 +20,7 @@ export type { InteractionMode } from '@stonecrop/schema'
 /**
  * A resolved scalar field. Derived from ValueField with `cardinality` omitted
  * (consumed by resolveSchema) and an optional `doctype` added for unresolved Link fields.
- * @internal
+ * @public
  */
 export type ResolvedScalar = Omit<ValueField, 'cardinality'> & {
 	/** Doctype slug for unresolved Link fields — added by resolveSchema when AFormLink is available */
@@ -29,7 +29,7 @@ export type ResolvedScalar = Omit<ValueField, 'cardinality'> & {
 
 /**
  * A resolved Link field with cardinality `one` or `atMostOne` — embedded as a nested form.
- * @internal
+ * @public
  */
 export interface ResolvedLink {
 	/** Discriminator */
@@ -60,7 +60,7 @@ export interface ResolvedLink {
  * A resolved table — either from a Link with `noneOrMany`/`atLeastOne` cardinality,
  * or from an inline TableField. ATable receives columns via `:schema` (ColumnSchema[])
  * and row data via `:rows` from formData at render time.
- * @internal
+ * @public
  */
 export interface ResolvedTable {
 	/** Discriminator */
@@ -91,7 +91,7 @@ export interface ResolvedTable {
 
 /**
  * A resolved fieldset — groups child fields inside an AFieldset component.
- * @internal
+ * @public
  */
 export interface ResolvedFieldset {
 	/** Discriminator */
@@ -193,6 +193,7 @@ export interface AFormLinkValue {
 	id: string | number
 	/** Display text shown in the input. Falls back to `String(id)` if omitted. */
 	displayText?: string
+	/** Additional properties passed through to the underlying input component */
 	[extra: string]: any
 }
 

@@ -4,8 +4,9 @@ import type { AnyStateNodeConfig, UnknownMachineConfig } from 'xstate'
 
 /**
  * Immutable Doctype type for Stonecrop instances.
- * Used internally by the Doctype constructor. App authors use `Doctype.fromObject()` instead.
- * @internal
+ * Used by the Doctype constructor. App authors should use `Doctype.fromObject()` rather than
+ * constructing this shape manually.
+ * @public
  */
 export type ImmutableDoctype = {
 	readonly schema?: List<DoctypeField>
