@@ -32,7 +32,7 @@
 
 <script setup lang="ts">
 import { AForm } from '@stonecrop/aform'
-import type { SchemaTypes } from '@stonecrop/aform'
+import type { ResolvedField } from '@stonecrop/aform'
 import { Doctype, type DoctypeConfig, Registry, Stonecrop } from '@stonecrop/stonecrop'
 import { type App, defineComponent, ref, h, computed } from 'vue'
 
@@ -75,7 +75,7 @@ const ResolvedSchemaDemo = defineComponent({
 		})
 
 		// One call resolves the full tree — link entries get `schema` embedded
-		const resolvedSchema = ref<SchemaTypes[]>(registryInstance!.resolveSchema(registryInstance!.registry['customer']))
+		const resolvedSchema = ref<ResolvedField[]>(registryInstance!.resolveSchema(registryInstance!.registry['customer']))
 
 		return { resolvedSchema, customerData }
 	},
@@ -134,13 +134,13 @@ const StandaloneDemo = defineComponent({
 		})
 
 		// Build schema by hand — no Registry required
-		const schema = ref<SchemaTypes[]>([
+		const schema = ref<ResolvedField[]>([
 			{
 				fieldname: 'invoice_number',
 				fieldtype: 'Data',
 				component: 'ATextInput',
 				label: 'Invoice Number',
-			} as SchemaTypes,
+			} as ResolvedField,
 			{
 				fieldname: 'billing',
 				options: 'address',
@@ -152,7 +152,7 @@ const StandaloneDemo = defineComponent({
 					{ fieldname: 'state', fieldtype: 'Data', component: 'ATextInput', label: 'State' },
 					{ fieldname: 'zip_code', fieldtype: 'Data', component: 'ATextInput', label: 'Zip Code' },
 				],
-			} as SchemaTypes,
+			} as ResolvedField,
 		])
 
 		return { schema, data }
@@ -202,7 +202,7 @@ const HSTDemo = defineComponent({
 		stonecrop.addRecord('customer', customerId, initialData)
 
 		// Resolve the entire schema tree once
-		const resolvedSchema = ref<SchemaTypes[]>(registryInstance!.resolveSchema(registryInstance!.registry['customer']))
+		const resolvedSchema = ref<ResolvedField[]>(registryInstance!.resolveSchema(registryInstance!.registry['customer']))
 
 		const customerPath = `customer.${customerId}`
 
@@ -361,7 +361,7 @@ const AddressListDemo = defineComponent({
 		})
 
 		// resolveSchema handles both Doctype (1:1) and Table (1:many) fields
-		const resolvedSchema = ref<SchemaTypes[]>(
+		const resolvedSchema = ref<ResolvedField[]>(
 			registryInstance!.resolveSchema(registryInstance!.registry['customer-with-addresses'])
 		)
 

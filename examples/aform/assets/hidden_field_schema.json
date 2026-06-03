@@ -1,5 +1,6 @@
 [
 	{
+		"kind": "field",
 		"fieldname": "id",
 		"fieldtype": "Data",
 		"component": "ATextInput",
@@ -8,6 +9,7 @@
 		"hidden": true
 	},
 	{
+		"kind": "field",
 		"fieldname": "rowId",
 		"fieldtype": "Data",
 		"component": "ATextInput",
@@ -15,18 +17,21 @@
 		"hidden": true
 	},
 	{
+		"kind": "field",
 		"fieldname": "first_name",
 		"fieldtype": "Data",
 		"component": "ATextInput",
 		"label": "First Name"
 	},
 	{
+		"kind": "field",
 		"fieldname": "last_name",
 		"fieldtype": "Data",
 		"component": "ATextInput",
 		"label": "Last Name"
 	},
 	{
+		"kind": "field",
 		"fieldname": "email",
 		"fieldtype": "Data",
 		"component": "ATextInput",

@@ -3,12 +3,14 @@
 	"slug": "cardinality-demo",
 	"fields": [
 		{
+			"kind": "field",
 			"fieldname": "name",
 			"fieldtype": "Data",
 			"component": "ATextInput",
 			"label": "Name"
 		},
 		{
+			"kind": "field",
 			"fieldname": "required_task",
 			"fieldtype": "Link",
 			"component": "AForm",
@@ -16,6 +18,7 @@
 			"options": "recipe-task"
 		},
 		{
+			"kind": "field",
 			"fieldname": "optional_task",
 			"fieldtype": "Link",
 			"component": "AForm",
@@ -23,6 +26,7 @@
 			"options": "recipe-task"
 		},
 		{
+			"kind": "field",
 			"fieldname": "optional_tasks",
 			"fieldtype": "Link",
 			"component": "ATable",
@@ -30,6 +34,7 @@
 			"options": "recipe-task"
 		},
 		{
+			"kind": "field",
 			"fieldname": "required_tasks",
 			"fieldtype": "Link",
 			"component": "ATable",
@@ -38,9 +43,24 @@
 		}
 	],
 	"links": {
-		"required_task": { "target": "recipe-task", "cardinality": "one", "fieldname": "required_task" },
-		"optional_task": { "target": "recipe-task", "cardinality": "atMostOne", "fieldname": "optional_task" },
-		"optional_tasks": { "target": "recipe-task", "cardinality": "noneOrMany", "fieldname": "optional_tasks" },
-		"required_tasks": { "target": "recipe-task", "cardinality": "atLeastOne", "fieldname": "required_tasks" }
+		"required_task": { "target": "recipe-task", "cardinality": "one", "kind": "field", "fieldname": "required_task" },
+		"optional_task": {
+			"target": "recipe-task",
+			"cardinality": "atMostOne",
+			"kind": "field",
+			"fieldname": "optional_task"
+		},
+		"optional_tasks": {
+			"target": "recipe-task",
+			"cardinality": "noneOrMany",
+			"kind": "field",
+			"fieldname": "optional_tasks"
+		},
+		"required_tasks": {
+			"target": "recipe-task",
+			"cardinality": "atLeastOne",
+			"kind": "field",
+			"fieldname": "required_tasks"
+		}
 	}
 }

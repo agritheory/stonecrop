@@ -3,10 +3,12 @@
 		"component": "AFieldset",
 		"collapsible": true,
 		"label": "Schema",
+		"kind": "fieldset",
 		"fieldname": "schema_fieldset",
 		"schema": [
 			{
 				"component": "ATable",
+				"kind": "table",
 				"fieldname": "schema",
 				"columns": [
 					{
@@ -67,10 +69,12 @@
 		"component": "AFieldset",
 		"collapsible": true,
 		"label": "Events",
+		"kind": "fieldset",
 		"fieldname": "actions_fieldset",
 		"schema": [
 			{
 				"component": "ATable",
+				"kind": "table",
 				"fieldname": "actions",
 				"columns": [
 					{

@@ -11,7 +11,7 @@ import ACheckbox from '../../../aform/src/components/form/ACheckbox.vue'
 import ADate from '../../../aform/src/components/form/ADate.vue'
 import AComboBox from '../../../aform/src/components/form/AComboBox.vue'
 import ADropdown from '../../../aform/src/components/form/ADropdown.vue'
-import type { SchemaTypes } from '../../../aform/src/types'
+import type { DoctypeField } from '@stonecrop/schema'
 import { useStonecrop } from '../../src/composables/stonecrop'
 import Doctype from '../../src/doctype'
 import Registry from '../../src/registry'
@@ -63,7 +63,7 @@ describe('HST Real Component Integration', { tags: ['unit'] }, () => {
 
 			// JSON field for complex data
 			{ fieldname: 'metadata', fieldtype: 'JSON', label: 'Metadata', component: 'ATextInput' },
-		] as SchemaTypes[])
+		] as DoctypeField[])
 
 		const mockWorkflow: UnknownMachineConfig = {
 			id: 'task',

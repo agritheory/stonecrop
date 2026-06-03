@@ -6,11 +6,11 @@ import type { UnknownMachineConfig } from 'xstate'
 import Registry from '../../src/registry'
 import { Stonecrop } from '../../src/stonecrop'
 import Doctype from '../../src/doctype'
-import type { SchemaTypes } from '@stonecrop/aform'
+import type { DoctypeField } from '@stonecrop/schema'
 
 // Helper: creates a Doctype with links
 const createDoctypeWithLinks = (name: string, links?: Record<string, any>) => {
-	const mockSchema = List([{ fieldname: 'title', component: 'ATextInput', label: 'Title' }] as SchemaTypes[])
+	const mockSchema = List([{ fieldname: 'title', component: 'ATextInput', label: 'Title' }] as DoctypeField[])
 
 	const mockWorkflow: UnknownMachineConfig = {
 		id: name.toLowerCase(),
@@ -28,7 +28,7 @@ function createMockDoctype(name: string) {
 			component: 'ATextInput',
 			label: 'Title',
 		},
-	] as SchemaTypes[])
+	] as DoctypeField[])
 
 	const mockWorkflow: UnknownMachineConfig = {
 		id: name.toLowerCase(),

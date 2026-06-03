@@ -1,5 +1,5 @@
 /* oxlint-disable no-console */
-import type { MutableDoctype } from '@stonecrop/stonecrop'
+import type { DoctypeField } from '@stonecrop/schema'
 import { createServer, Model } from 'miragejs'
 import DbCollection from 'miragejs/db-collection'
 
@@ -41,26 +41,27 @@ export function makeServer() {
 
 				// Category lookup doctype — used by todo category_id Link field
 				'category-listMeta': {
-					doctype: 'category',
+					name: 'category',
 					schema: [
-						{ fieldname: 'id', label: 'ID', hidden: true, fieldtype: 'Data' },
-						{ fieldname: 'name', label: 'Name', fieldtype: 'Data', component: 'ATextInput' },
-					] as MutableDoctype['schema'],
+						{ kind: 'field', fieldname: 'id', label: 'ID', hidden: true, fieldtype: 'Data' },
+						{ kind: 'field', fieldname: 'name', label: 'Name', fieldtype: 'Data', component: 'ATextInput' },
+					] as DoctypeField[],
 					workflow: { id: 'category', initial: 'active', states: { active: {} } },
 					actions: {},
 				},
 				'category-formMeta': {
-					doctype: 'category-form',
+					name: 'category-form',
 					schema: [
-						{ fieldname: 'id', label: 'ID', hidden: true, fieldtype: 'Data' },
+						{ kind: 'field', fieldname: 'id', label: 'ID', hidden: true, fieldtype: 'Data' },
 						{
+							kind: 'field',
 							fieldname: 'name',
 							fieldtype: 'Data',
 							component: 'ATextInput',
 							label: 'Name',
 							required: true,
 						},
-					] as MutableDoctype['schema'],
+					] as DoctypeField[],
 					workflow: {
 						id: 'categoryForm',
 						initial: 'editing',
@@ -79,14 +80,14 @@ export function makeServer() {
 
 				// Todo List doctype
 				'todo-listMeta': {
-					doctype: 'todo-list',
+					name: 'todo-list',
 					schema: [
-						{ fieldname: 'id', label: 'ID', hidden: true, fieldtype: 'Data' },
-						{ fieldname: 'first_name', label: 'First Name', fieldtype: 'Data' },
-						{ fieldname: 'last_name', label: 'Last Name', fieldtype: 'Data' },
-						{ fieldname: 'phone', label: 'Phone', fieldtype: 'Phone' },
-						{ fieldname: 'category_id', label: 'Category', fieldtype: 'Link', options: 'category' },
-					] as MutableDoctype['schema'],
+						{ kind: 'field', fieldname: 'id', label: 'ID', hidden: true, fieldtype: 'Data' },
+						{ kind: 'field', fieldname: 'first_name', label: 'First Name', fieldtype: 'Data' },
+						{ kind: 'field', fieldname: 'last_name', label: 'Last Name', fieldtype: 'Data' },
+						{ kind: 'field', fieldname: 'phone', label: 'Phone', fieldtype: 'Phone' },
+						{ kind: 'field', fieldname: 'category_id', label: 'Category', fieldtype: 'Link', options: 'category' },
+					] as DoctypeField[],
 					workflow: {
 						id: 'todoList',
 						initial: 'loaded',
@@ -112,9 +113,10 @@ export function makeServer() {
 
 				// Todo Form doctype
 				'todo-formMeta': {
-					doctype: 'todo-form',
+					name: 'todo-form',
 					schema: [
 						{
+							kind: 'field',
 							fieldname: 'header',
 							fieldtype: 'HTML',
 							component: 'div',
@@ -123,6 +125,7 @@ export function makeServer() {
 								'<h1>Todo Details</h1><p>Edit task information</p><div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; padding: 12px; margin: 16px 0;"><strong>🔄 Field Trigger Demo:</strong> As you edit fields below, watch for real-time notifications in the top-right corner!</div>',
 						},
 						{
+							kind: 'field',
 							fieldname: 'first_name',
 							fieldtype: 'Data',
 							component: 'ATextInput',
@@ -130,6 +133,7 @@ export function makeServer() {
 							required: true,
 						},
 						{
+							kind: 'field',
 							fieldname: 'last_name',
 							fieldtype: 'Data',
 							component: 'ATextInput',
@@ -137,6 +141,7 @@ export function makeServer() {
 							required: true,
 						},
 						{
+							kind: 'field',
 							fieldname: 'phone',
 							fieldtype: 'Phone',
 							component: 'ATextInput',
@@ -144,6 +149,7 @@ export function makeServer() {
 							mask: "(locale) => { if (locale === 'en-US') { return '(###) ###-####' } else if (locale === 'en-IN') { return '####-######'} }",
 						},
 						{
+							kind: 'field',
 							fieldname: 'email',
 							fieldtype: 'Data',
 							component: 'ATextInput',
@@ -151,6 +157,7 @@ export function makeServer() {
 							placeholder: 'user@example.com',
 						},
 						{
+							kind: 'field',
 							fieldname: 'notes',
 							fieldtype: 'Text',
 							component: 'ATextarea',
@@ -158,13 +165,14 @@ export function makeServer() {
 							placeholder: 'Additional notes about this todo...',
 						},
 						{
+							kind: 'field',
 							fieldname: 'category_id',
 							fieldtype: 'Link',
 							component: 'AFormLink',
 							label: 'Category',
 							options: 'category',
 						},
-					] as MutableDoctype['schema'],
+					] as DoctypeField[],
 					workflow: {
 						id: 'todoForm',
 						initial: 'editing',
@@ -223,13 +231,13 @@ export function makeServer() {
 
 				// Issue List doctype
 				'issue-listMeta': {
-					doctype: 'issue-list',
+					name: 'issue-list',
 					schema: [
-						{ fieldname: 'id', label: 'ID', hidden: true, fieldtype: 'Data' },
-						{ fieldname: 'subject', label: 'Subject', fieldtype: 'Data' },
-						{ fieldname: 'date', label: 'Date', fieldtype: 'Date' },
-						{ fieldname: 'status', label: 'Status', fieldtype: 'Select' },
-					] as MutableDoctype['schema'],
+						{ kind: 'field', fieldname: 'id', label: 'ID', hidden: true, fieldtype: 'Data' },
+						{ kind: 'field', fieldname: 'subject', label: 'Subject', fieldtype: 'Data' },
+						{ kind: 'field', fieldname: 'date', label: 'Date', fieldtype: 'Date' },
+						{ kind: 'field', fieldname: 'status', label: 'Status', fieldtype: 'Select' },
+					] as DoctypeField[],
 					workflow: {
 						id: 'issueList',
 						initial: 'loaded',
@@ -256,9 +264,10 @@ export function makeServer() {
 
 				// Issue Form doctype
 				'issue-formMeta': {
-					doctype: 'issue-form',
+					name: 'issue-form',
 					schema: [
 						{
+							kind: 'field',
 							fieldname: 'header',
 							fieldtype: 'HTML',
 							component: 'div',
@@ -267,6 +276,7 @@ export function makeServer() {
 								'<h1>Issue Details</h1><p>Edit issue information</p><div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; padding: 12px; margin: 16px 0;"><strong>🔄 Field Trigger Demo:</strong> Try changing the status to "Resolved" or priority to "Critical" to see special notifications!</div>',
 						},
 						{
+							kind: 'field',
 							fieldname: 'subject',
 							fieldtype: 'Data',
 							component: 'ATextInput',
@@ -274,6 +284,7 @@ export function makeServer() {
 							required: true,
 						},
 						{
+							kind: 'field',
 							fieldname: 'date',
 							fieldtype: 'Date',
 							component: 'ADate',
@@ -281,12 +292,14 @@ export function makeServer() {
 							required: true,
 						},
 						{
+							kind: 'field',
 							fieldname: 'description',
 							fieldtype: 'Text',
 							component: 'ATextarea',
 							label: 'Description',
 						},
 						{
+							kind: 'field',
 							fieldname: 'status',
 							fieldtype: 'Select',
 							component: 'ASelect',
@@ -294,13 +307,14 @@ export function makeServer() {
 							options: ['Open', 'In Progress', 'Resolved', 'Closed'],
 						},
 						{
+							kind: 'field',
 							fieldname: 'priority',
 							fieldtype: 'Select',
 							component: 'ASelect',
 							label: 'Priority',
 							options: ['Low', 'Medium', 'High', 'Critical'],
 						},
-					] as MutableDoctype['schema'],
+					] as DoctypeField[],
 					workflow: {
 						id: 'issueForm',
 						initial: 'editing',

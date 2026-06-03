@@ -1,6 +1,6 @@
 # @stonecrop/aform
 
-Schema-driven form components for the Stonecrop framework. Renders a `SchemaTypes[]` array into a form, wiring field values to a `data` object via `v-model:data`.
+Schema-driven form components for the Stonecrop framework. Renders a `ResolvedField[]` array (produced by `registry.resolveSchema()`) into a form, wiring field values to a `data` object via `v-model:data`.
 
 ## Components
 

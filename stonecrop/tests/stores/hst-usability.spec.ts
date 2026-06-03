@@ -6,7 +6,7 @@ import type { UnknownMachineConfig } from 'xstate'
 
 import ATextInput from '../../../aform/src/components/form/ATextInput.vue'
 import ANumericInput from '../../../aform/src/components/form/ANumericInput.vue'
-import type { SchemaTypes } from '../../../aform/src/types'
+import type { DoctypeField } from '@stonecrop/schema'
 import { useStonecrop } from '../../src/composables/stonecrop'
 import Doctype from '../../src/doctype'
 import Registry from '../../src/registry'
@@ -28,7 +28,7 @@ describe('HST Edge Cases & Performance', { tags: ['unit'] }, () => {
 			{ fieldname: 'metadata', fieldtype: 'JSON', label: 'Metadata', component: 'ATextInput' },
 			{ fieldname: 'config', fieldtype: 'JSON', label: 'Config', component: 'ATextInput' },
 			{ fieldname: 'nested_data', fieldtype: 'JSON', label: 'Nested Data', component: 'ATextInput' },
-		] as SchemaTypes[])
+		] as DoctypeField[])
 
 		const mockWorkflow: UnknownMachineConfig = {
 			id: 'complex',

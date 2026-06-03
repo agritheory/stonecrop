@@ -194,9 +194,9 @@ const recipeData = ref({
 
 ## Resolved schema
 
-`registry.resolveSchema()` produces a flat `SchemaTypes[]` ready for `AForm`. For each link entry it embeds the child schema directly on the field object:
+`registry.resolveSchema()` produces a flat `ResolvedField[]` ready for `AForm`. For each link entry it embeds the child schema directly on the field object:
 
-- **1:1 links** (`atMostOne`, `one`) — `schema: SchemaTypes[]` attached; AForm renders a nested form
+- **1:1 links** (`atMostOne`, `one`) — `schema: ResolvedField[]` attached; AForm renders a nested form
 - **1:many links** (`noneOrMany`, `atLeastOne`) — `schema` array + `kind: 'table'`; ATable derives its own columns
 
 AForm has no knowledge of the registry — it checks `'schema' in field && kind !== 'table'` to decide whether to recurse into a nested form.

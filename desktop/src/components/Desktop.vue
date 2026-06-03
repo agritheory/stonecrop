@@ -32,7 +32,7 @@
 
 <script setup lang="ts">
 import { useStonecrop } from '@stonecrop/stonecrop'
-import { AForm, type AFormLinkNavigator, type SchemaTypes } from '@stonecrop/aform'
+import { AForm, type AFormLinkNavigator, type ResolvedField } from '@stonecrop/aform'
 import type { ColumnSchema } from '@stonecrop/schema'
 import { computed, onMounted, provide, ref, unref, watch } from 'vue'
 
@@ -446,7 +446,7 @@ const createNewRecord = async () => {
 }
 
 // Schema generator functions - moved here to be available to computed properties
-const getDoctypesSchema = (): SchemaTypes[] => {
+const getDoctypesSchema = (): ResolvedField[] => {
 	if (!availableDoctypes.length) return []
 
 	const rows = availableDoctypes.map(doctype => ({
@@ -457,6 +457,8 @@ const getDoctypesSchema = (): SchemaTypes[] => {
 		actions: 'View Records',
 	}))
 
+	// TODO(Phase 5 follow-up): convert to ResolvedTable format; move rows to formData via HST
+	// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Path 2 table schema pending full ATable migration
 	return [
 		{
 			fieldname: 'doctypes_table',
@@ -501,10 +503,10 @@ const getDoctypesSchema = (): SchemaTypes[] => {
 			},
 			rows,
 		},
-	]
+	] as unknown as ResolvedField[]
 }
 
-const getRecordsSchema = (): SchemaTypes[] => {
+const getRecordsSchema = (): ResolvedField[] => {
 	if (!currentDoctype.value) return []
 	if (!stonecrop.value) return []
 
@@ -528,11 +530,13 @@ const getRecordsSchema = (): SchemaTypes[] => {
 		})
 	)
 
+	// TODO(Phase 5 follow-up): move rows to formData via HST; remove rows from schema object
+	// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- rows property pending HST migration
 	return [
 		{
+			kind: 'table' as const,
 			fieldname: 'records_table',
 			component: 'ATable',
-			kind: 'table',
 			schema: [...(schema as ColumnSchema[]), { fieldname: 'actions', label: 'Actions', fieldtype: 'Data' }],
 			config: {
 				view: 'list',
@@ -540,10 +544,10 @@ const getRecordsSchema = (): SchemaTypes[] => {
 			},
 			rows,
 		},
-	]
+	] as unknown as ResolvedField[]
 }
 
-const getRecordFormSchema = (): SchemaTypes[] => {
+const getRecordFormSchema = (): ResolvedField[] => {
 	if (!currentDoctype.value) return []
 	if (!stonecrop.value) return []
 

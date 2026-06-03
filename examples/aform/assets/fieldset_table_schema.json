@@ -1,5 +1,6 @@
 [
 	{
+		"kind": "fieldset",
 		"fieldname": "table_fieldset",
 		"fieldtype": "Data",
 		"component": "AFieldset",
@@ -7,12 +8,14 @@
 		"label": "Table/Fieldset",
 		"schema": [
 			{
+				"kind": "table",
 				"fieldname": "http_logs",
 				"component": "ATable",
 				"columns": [
 					{
 						"label": "Home Page",
 						"name": "home_page",
+						"kind": "field",
 						"fieldname": "home_page",
 						"fieldtype": "Data",
 						"align": "left",
@@ -23,6 +26,7 @@
 					{
 						"label": "HTTP Method",
 						"name": "http_method",
+						"kind": "field",
 						"fieldname": "http_method",
 						"fieldtype": "Data",
 						"align": "left",
@@ -32,6 +36,7 @@
 					{
 						"label": "IP Address",
 						"name": "ip_address",
+						"kind": "field",
 						"fieldname": "ip_address",
 						"fieldtype": "Data",
 						"align": "left",
@@ -41,6 +46,7 @@
 					{
 						"label": "Status",
 						"name": "status",
+						"kind": "field",
 						"fieldname": "status",
 						"fieldtype": "Data",
 						"align": "left",
@@ -50,6 +56,7 @@
 					{
 						"label": "Report Date",
 						"name": "report_date",
+						"kind": "field",
 						"fieldname": "report_date",
 						"fieldtype": "Date",
 						"modalComponent": "ADatePicker",

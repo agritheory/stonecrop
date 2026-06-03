@@ -4,7 +4,7 @@ import type { UnknownMachineConfig } from 'xstate'
 import type { WorkflowMeta } from '@stonecrop/schema'
 
 import Doctype from '../../src/doctype'
-import type { SchemaTypes } from '@stonecrop/aform'
+import type { DoctypeField } from '@stonecrop/schema'
 
 describe('Doctype class', { tags: ['unit'] }, () => {
 	const mockSchema = List([
@@ -18,7 +18,7 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 			component: 'ATextarea',
 			label: 'Description',
 		},
-	] as SchemaTypes[])
+	] as DoctypeField[])
 
 	const mockWorkflow: UnknownMachineConfig = {
 		id: 'task',
@@ -85,7 +85,7 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 
 	it('handles missing schema', () => {
 		// TODO: should these fail instead during init?
-		const emptySchema = List<SchemaTypes>()
+		const emptySchema = List<DoctypeField>()
 		const doctype = new Doctype('Task', emptySchema, mockWorkflow, mockActions)
 
 		expect(doctype.schema).toBe(emptySchema)
@@ -273,7 +273,7 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 				fields: [
 					{ fieldname: 'title', label: 'Title', fieldtype: 'Data' },
 					{ fieldname: 'status', label: 'Status', fieldtype: 'Data' },
-				] as SchemaTypes[],
+				] as DoctypeField[],
 				workflow: {
 					id: 'plan',
 					initial: 'draft',
@@ -426,7 +426,7 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 		})
 
 		it('returns empty array when schema is empty List', () => {
-			const emptySchema = List<SchemaTypes>()
+			const emptySchema = List<DoctypeField>()
 			const doctype = new Doctype('Task', emptySchema, mockWorkflow, mockActions)
 
 			expect(doctype.getSchemaArray()).toEqual([])
@@ -447,7 +447,7 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 				fields: [
 					{ fieldname: 'title', label: 'Title', fieldtype: 'Data' },
 					{ fieldname: 'status', label: 'Status', fieldtype: 'Data' },
-				] as SchemaTypes[],
+				] as DoctypeField[],
 			}
 
 			const doctype = Doctype.fromObject(obj)

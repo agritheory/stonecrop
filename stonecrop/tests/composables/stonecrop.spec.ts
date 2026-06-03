@@ -1,4 +1,4 @@
-import type { SchemaTypes } from '@stonecrop/aform'
+import type { DoctypeField } from '@stonecrop/schema'
 import { mount } from '@vue/test-utils'
 import { List, Map } from 'immutable'
 import { createPinia, setActivePinia } from 'pinia'
@@ -25,7 +25,7 @@ const createMockDoctype = (name: string) => {
 			component: 'ATextInput',
 			label: 'Title',
 		},
-	] as SchemaTypes[])
+	] as DoctypeField[])
 
 	const mockWorkflow: MachineConfig<any, any, any> = {
 		id: name.toLowerCase(),

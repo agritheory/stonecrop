@@ -1,4 +1,4 @@
-import type { SchemaTypes } from '@stonecrop/aform'
+import type { DoctypeField } from '@stonecrop/schema'
 import { List, Map } from 'immutable'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { createRouter, createMemoryHistory } from 'vue-router'
@@ -12,15 +12,15 @@ import { ImmutableDoctype } from '../../src/types'
 // Mock fetch globally
 global.fetch = vi.fn()
 
-function createDoctype(name: string, fields?: SchemaTypes[], links?: Record<string, any>) {
+function createDoctype(name: string, fields?: DoctypeField[], links?: Record<string, any>) {
 	const schema = List(fields || [{ fieldname: 'title', component: 'ATextInput', label: 'Title', fieldtype: 'Data' }])
 	return new Doctype(name, schema as any, undefined, Map({}), undefined, links)
 }
 
 function createMockDoctype(name: string) {
-	const mockSchema: ImmutableDoctype['schema'] = List<SchemaTypes>([
-		{ name: 'title', label: 'Title', fieldtype: 'Data' } as SchemaTypes,
-		{ name: 'status', label: 'Status', fieldtype: 'Select' } as SchemaTypes,
+	const mockSchema: ImmutableDoctype['schema'] = List<DoctypeField>([
+		{ name: 'title', label: 'Title', fieldtype: 'Data' } as DoctypeField,
+		{ name: 'status', label: 'Status', fieldtype: 'Select' } as DoctypeField,
 	])
 
 	const mockWorkflowConfig: ImmutableDoctype['workflow'] = {
@@ -454,7 +454,7 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 		})
 
 		it('returns empty string when the doctype has no workflow', () => {
-			const noWorkflowDoctype = new Doctype('Bare', List<SchemaTypes>([]), undefined as any, Map({}))
+			const noWorkflowDoctype = new Doctype('Bare', List<DoctypeField>([]), undefined as any, Map({}))
 			// Use a fresh registry to avoid singleton collision
 			Registry._root = undefined as any
 			Stonecrop._root = undefined as any
@@ -493,7 +493,7 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 						submit: { label: 'Submit', handler: 'plan:submit', allowedStates: ['planning'] },
 					},
 				}
-				const planDoctype = new Doctype('Plan', List<SchemaTypes>([]), workflowMeta, Map({}))
+				const planDoctype = new Doctype('Plan', List<DoctypeField>([]), workflowMeta, Map({}))
 				localRegistry.addDoctype(planDoctype)
 				localStonecrop.addRecord('plan', 'p-1', { id: 'p-1' })
 
@@ -511,7 +511,7 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 					states: ['planning', 'review', 'approved'],
 					actions: {},
 				}
-				const planDoctype = new Doctype('Plan', List<SchemaTypes>([]), workflowMeta, Map({}))
+				const planDoctype = new Doctype('Plan', List<DoctypeField>([]), workflowMeta, Map({}))
 				localRegistry.addDoctype(planDoctype)
 				localStonecrop.addRecord('plan', 'p-2', { id: 'p-2', status: 'review' })
 
@@ -529,7 +529,7 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 					states: [],
 					actions: {},
 				}
-				const doctype = new Doctype('Empty', List<SchemaTypes>([]), emptyStatesMeta, Map({}))
+				const doctype = new Doctype('Empty', List<DoctypeField>([]), emptyStatesMeta, Map({}))
 				localRegistry.addDoctype(doctype)
 				localStonecrop.addRecord('empty', 'e-1', { id: 'e-1' })
 
@@ -546,7 +546,7 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 				const noStatesMeta = {
 					actions: { save: { label: 'Save', handler: 'save' } },
 				}
-				const doctype = new Doctype('NoStates', List<SchemaTypes>([]), noStatesMeta, Map({}))
+				const doctype = new Doctype('NoStates', List<DoctypeField>([]), noStatesMeta, Map({}))
 				localRegistry.addDoctype(doctype)
 				localStonecrop.addRecord('no-states', 'ns-1', { id: 'ns-1' })
 
@@ -672,8 +672,8 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 
 		it('collects flat record data from HST', () => {
 			const taskDoctype = createDoctype('Task', [
-				{ fieldname: 'title', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
-				{ fieldname: 'status', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+				{ fieldname: 'title', fieldtype: 'Data', component: 'ATextInput' } as DoctypeField,
+				{ fieldname: 'status', fieldtype: 'Data', component: 'ATextInput' } as DoctypeField,
 			])
 			localRegistry.addDoctype(taskDoctype)
 
@@ -687,14 +687,14 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 
 		it('collects array data for cardinality: many fields', () => {
 			const itemDoctype = createDoctype('Item', [
-				{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
-				{ fieldname: 'qty', fieldtype: 'Int', component: 'ANumericInput' } as SchemaTypes,
+				{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' } as DoctypeField,
+				{ fieldname: 'qty', fieldtype: 'Int', component: 'ANumericInput' } as DoctypeField,
 			])
 			localRegistry.addDoctype(itemDoctype)
 
 			const orderDoctype = createDoctype(
 				'Order',
-				[{ fieldname: 'order_number', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes],
+				[{ fieldname: 'order_number', fieldtype: 'Data', component: 'ATextInput' } as DoctypeField],
 				{ items: { target: 'item', cardinality: 'noneOrMany' } }
 			)
 			localRegistry.addDoctype(orderDoctype)
@@ -716,14 +716,14 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 
 		it('collects nested 1:1 doctype fields', () => {
 			const addressDoctype = createDoctype('Address', [
-				{ fieldname: 'street', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
-				{ fieldname: 'city', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+				{ fieldname: 'street', fieldtype: 'Data', component: 'ATextInput' } as DoctypeField,
+				{ fieldname: 'city', fieldtype: 'Data', component: 'ATextInput' } as DoctypeField,
 			])
 			localRegistry.addDoctype(addressDoctype)
 
 			const customerDoctype = createDoctype(
 				'Customer',
-				[{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes],
+				[{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' } as DoctypeField],
 				{ address: { target: 'address', cardinality: 'one' } }
 			)
 			localRegistry.addDoctype(customerDoctype)
@@ -741,20 +741,20 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 
 		it('recursively collects 1:many inside nested 1:1', () => {
 			const phoneDoctype = createDoctype('Phone', [
-				{ fieldname: 'number', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+				{ fieldname: 'number', fieldtype: 'Data', component: 'ATextInput' } as DoctypeField,
 			])
 			localRegistry.addDoctype(phoneDoctype)
 
 			const addressDoctype = createDoctype(
 				'Address',
-				[{ fieldname: 'street', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes],
+				[{ fieldname: 'street', fieldtype: 'Data', component: 'ATextInput' } as DoctypeField],
 				{ phones: { target: 'phone', cardinality: 'noneOrMany' } }
 			)
 			localRegistry.addDoctype(addressDoctype)
 
 			const customerDoctype = createDoctype(
 				'Customer',
-				[{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes],
+				[{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' } as DoctypeField],
 				{ address: { target: 'address', cardinality: 'one' } }
 			)
 			localRegistry.addDoctype(customerDoctype)
