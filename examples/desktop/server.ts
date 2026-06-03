@@ -1,4 +1,3 @@
-/* oxlint-disable no-console */
 import type { DoctypeField } from '@stonecrop/schema'
 import { createServer, Model } from 'miragejs'
 import DbCollection from 'miragejs/db-collection'

@@ -2,8 +2,7 @@ import type { DoctypeField, LinkDeclaration, WorkflowMeta } from '@stonecrop/sch
 import { List, Map } from 'immutable'
 import { Component } from 'vue'
 
-import type { ImmutableDoctype } from './types'
-import type { DoctypeConfig } from './types/doctype'
+import type { DoctypeConfig, ImmutableDoctype } from './types/doctype'
 
 /**
  * Doctype runtime class with Immutable.js collections for HST change tracking.

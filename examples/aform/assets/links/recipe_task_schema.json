@@ -32,7 +32,6 @@
 			"target": "recipe",
 			"cardinality": "one",
 			"backlink": "tasks",
-			"kind": "field",
 			"fieldname": "recipe"
 		}
 	}

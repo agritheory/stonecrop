@@ -9,11 +9,13 @@ import type { DoctypeField } from '@stonecrop/schema'
 describe('Doctype class', { tags: ['unit'] }, () => {
 	const mockSchema = List([
 		{
+			kind: 'field',
 			fieldname: 'title',
 			component: 'ATextInput',
 			label: 'Title',
 		},
 		{
+			kind: 'field',
 			fieldname: 'description',
 			component: 'ATextarea',
 			label: 'Description',
@@ -271,8 +273,8 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 			const obj = {
 				name: 'Plan',
 				fields: [
-					{ fieldname: 'title', label: 'Title', fieldtype: 'Data' },
-					{ fieldname: 'status', label: 'Status', fieldtype: 'Data' },
+					{ kind: 'field', fieldname: 'title', label: 'Title', fieldtype: 'Data' },
+					{ kind: 'field', fieldname: 'status', label: 'Status', fieldtype: 'Data' },
 				] as DoctypeField[],
 				workflow: {
 					id: 'plan',
@@ -445,8 +447,8 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 			const obj = {
 				name: 'Plan',
 				fields: [
-					{ fieldname: 'title', label: 'Title', fieldtype: 'Data' },
-					{ fieldname: 'status', label: 'Status', fieldtype: 'Data' },
+					{ kind: 'field', fieldname: 'title', label: 'Title', fieldtype: 'Data' },
+					{ kind: 'field', fieldname: 'status', label: 'Status', fieldtype: 'Data' },
 				] as DoctypeField[],
 			}
 

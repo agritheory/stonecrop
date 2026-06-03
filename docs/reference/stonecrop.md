@@ -1062,7 +1062,7 @@ export type HSTStonecropReturn = BaseStonecropReturn & {
 
 ### ImmutableDoctype
 
-Immutable Doctype type for Stonecrop instances. Used by the Doctype constructor. App authors should use `Doctype.fromObject()` rather than constructing this shape manually.
+Immutable Doctype type for Stonecrop instances. App authors should use `Doctype.fromObject()` rather than constructing this shape manually.
 
 **Definition:**
 
@@ -2213,7 +2213,7 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
     getSnapshot: () => OperationLogSnapshot;
     markIrreversible: (operationId: string, reason: string) => void;
     logAction: (doctype: string, actionName: string, recordIds?: string[], result?: "success" | "failure" | "pending", error?: string) => string;
-}, "undo" | "redo" | "configure" | "addOperation" | "startBatch" | "commitBatch" | "cancelBatch" | "clear" | "getOperationsFor" | "getSnapshot" | "markIrreversible" | "logAction">>
+}, "clear" | "undo" | "redo" | "configure" | "addOperation" | "startBatch" | "commitBatch" | "cancelBatch" | "getOperationsFor" | "getSnapshot" | "markIrreversible" | "logAction">>
 ```
 
 ## Enums

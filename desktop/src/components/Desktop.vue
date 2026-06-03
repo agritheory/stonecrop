@@ -49,7 +49,12 @@ import type {
 	LoadRecordEventPayload,
 } from '../types'
 
-const props = defineProps<{
+const {
+	availableDoctypes = [],
+	routeAdapter,
+	confirmFn,
+	recordIdField,
+} = defineProps<{
 	availableDoctypes?: string[]
 	/**
 	 * Pluggable router adapter. When provided, Desktop uses these functions for all
@@ -98,8 +103,6 @@ const emit = defineEmits<{
 	'load-record': [payload: LoadRecordEventPayload]
 }>()
 
-const { availableDoctypes = [] } = props
-
 const { stonecrop } = useStonecrop()
 
 // State
@@ -111,11 +114,11 @@ const commandPaletteOpen = ref(false)
 // Record view returns HST record fields for two-way binding.
 const currentViewData = computed<Record<string, any>>({
 	get() {
-		// Doctypes list — rows come from availableDoctypes prop (reactive via props.availableDoctypes)
+		// Doctypes list — rows come from availableDoctypes prop (reactive via availableDoctypes)
 		if (currentView.value === 'doctypes') {
 			return {
 				doctypes_table:
-					props.availableDoctypes?.map(doctype => ({
+					availableDoctypes?.map(doctype => ({
 						id: doctype,
 						doctype,
 						display_name: formatDoctypeName(doctype),
@@ -127,7 +130,7 @@ const currentViewData = computed<Record<string, any>>({
 
 		// Records list — rows come from HST store (reactive because HST is Vue reactive())
 		if (currentView.value === 'records') {
-			const idField = props.recordIdField || 'id'
+			const idField = recordIdField || 'id'
 			return {
 				records_table: getRecords().map(record =>
 					Object.assign({}, record, {
@@ -178,10 +181,10 @@ const currentViewData = computed<Record<string, any>>({
 
 // Computed properties for current route context.
 // When a routeAdapter is provided it takes full precedence over the registry's internal router.
-const route = computed(() => (props.routeAdapter ? null : unref(stonecrop.value?.registry.router?.currentRoute)))
-const router = computed(() => (props.routeAdapter ? null : stonecrop.value?.registry.router))
+const route = computed(() => (routeAdapter ? null : unref(stonecrop.value?.registry.router?.currentRoute)))
+const router = computed(() => (routeAdapter ? null : stonecrop.value?.registry.router))
 const currentDoctype = computed(() => {
-	if (props.routeAdapter) return props.routeAdapter.getCurrentDoctype()
+	if (routeAdapter) return routeAdapter.getCurrentDoctype()
 	if (!route.value) return ''
 
 	// First check if we have actualDoctype in meta (from registered routes)
@@ -205,7 +208,7 @@ const currentDoctype = computed(() => {
 
 // The route doctype for display and navigation (e.g., 'todo')
 const routeDoctype = computed(() => {
-	if (props.routeAdapter) return props.routeAdapter.getCurrentDoctype()
+	if (routeAdapter) return routeAdapter.getCurrentDoctype()
 	if (!route.value) return ''
 
 	// Check route meta first
@@ -228,7 +231,7 @@ const routeDoctype = computed(() => {
 })
 
 const currentRecordId = computed(() => {
-	if (props.routeAdapter) return props.routeAdapter.getCurrentRecordId()
+	if (routeAdapter) return routeAdapter.getCurrentRecordId()
 	if (!route.value) return ''
 
 	// For named routes, use params.recordId
@@ -248,7 +251,7 @@ const isNewRecord = computed(() => currentRecordId.value?.startsWith('new-'))
 
 // Determine current view based on route
 const currentView = computed(() => {
-	if (props.routeAdapter) return props.routeAdapter.getCurrentView()
+	if (routeAdapter) return routeAdapter.getCurrentView()
 	if (!route.value) {
 		return 'doctypes'
 	}
@@ -447,8 +450,8 @@ const getRecordCount = (doctype: string): number => {
 // or falls back to the registry's Vue Router instance.
 const doNavigate = async (target: NavigationTarget) => {
 	emit('navigate', target)
-	if (props.routeAdapter) {
-		await props.routeAdapter.navigate(target)
+	if (routeAdapter) {
+		await routeAdapter.navigate(target)
 	} else {
 		if (target.view === 'doctypes') {
 			await router.value?.push('/')
@@ -477,7 +480,7 @@ const createNewRecord = async () => {
 
 // Schema generator functions - moved here to be available to computed properties
 const getDoctypesSchema = (): ResolvedField[] => {
-	if (!props.availableDoctypes?.length) return []
+	if (!availableDoctypes?.length) return []
 
 	return [
 		{
@@ -611,8 +614,8 @@ const handleDelete = async (recordId?: string) => {
 	const targetRecordId = recordId || currentRecordId.value
 	if (!targetRecordId) return
 
-	const confirmed = props.confirmFn
-		? await props.confirmFn('Are you sure you want to delete this record?')
+	const confirmed = confirmFn
+		? await confirmFn('Are you sure you want to delete this record?')
 		: confirm('Are you sure you want to delete this record?')
 
 	if (confirmed) {
@@ -640,7 +643,7 @@ const getRecordIdFromRow = (rowElement: HTMLTableRowElement): string | null => {
 	const record = records[rowIndex]
 	if (!record) return null
 
-	const idField = props.recordIdField || 'id'
+	const idField = recordIdField || 'id'
 	return record[idField] || record.id || null
 }
 

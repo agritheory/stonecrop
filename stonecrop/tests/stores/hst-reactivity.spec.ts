@@ -4,7 +4,6 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { nextTick, defineComponent, ref } from 'vue'
 import type { UnknownMachineConfig } from 'xstate'
 
-import type { DoctypeField } from '@stonecrop/schema'
 import { useStonecrop } from '../../src/composables/stonecrop'
 import Doctype from '../../src/doctype'
 import Registry from '../../src/registry'
@@ -194,9 +193,9 @@ describe('HST Vue Reactivity', { tags: ['unit'] }, () => {
 		registry = new Registry()
 
 		const mockSchema = List([
-			{ fieldname: 'name', fieldtype: 'Data', label: 'Name', component: 'MockATextInput' },
-			{ fieldname: 'active', fieldtype: 'Check', label: 'Active', component: 'MockACheckbox' },
-		] as DoctypeField[])
+			{ kind: 'field', fieldname: 'name', fieldtype: 'Data', label: 'Name', component: 'MockATextInput' },
+			{ kind: 'field', fieldname: 'active', fieldtype: 'Check', label: 'Active', component: 'MockACheckbox' },
+		])
 
 		const mockWorkflow: UnknownMachineConfig = {
 			id: 'task',

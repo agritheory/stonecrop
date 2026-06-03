@@ -4,15 +4,14 @@ import { describe, it, expect } from 'vitest'
 import AForm from '../src/components/AForm.vue'
 import AFieldset from '../src/components/form/AFieldset.vue'
 import ATextInput from '../src/components/form/ATextInput.vue'
-import type { ResolvedField } from '../src/types'
 
 describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
-	const addressSchema: ResolvedField[] = [
+	const addressSchema = [
 		{ kind: 'field' as const, fieldname: 'street', fieldtype: 'Data', component: 'ATextInput', label: 'Street' },
 		{ kind: 'field' as const, fieldname: 'city', fieldtype: 'Data', component: 'ATextInput', label: 'City' },
 	]
 
-	const nestedSchema: ResolvedField[] = [
+	const nestedSchema = [
 		{
 			kind: 'field' as const,
 			fieldname: 'name',
@@ -57,7 +56,7 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 	})
 
 	it('renders nested AForm without label when label is not set', async () => {
-		const schemaWithoutLabel: ResolvedField[] = [
+		const schemaWithoutLabel = [
 			{
 				kind: 'field' as const,
 				fieldname: 'name',
@@ -208,7 +207,7 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 	})
 
 	it('does not render nested AForm when schema array is empty', async () => {
-		const schemaWithEmptyNested: ResolvedField[] = [
+		const schemaWithEmptyNested = [
 			{
 				kind: 'field' as const,
 				fieldname: 'name',
@@ -243,7 +242,7 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 	})
 
 	it('does not render nested AForm when field has no schema property', async () => {
-		const plainSchema: ResolvedField[] = [
+		const plainSchema = [
 			{
 				kind: 'field' as const,
 				fieldname: 'name',
@@ -302,7 +301,7 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 	})
 
 	it('passes per-field mode to nested AForm', async () => {
-		const schemaWithMode: ResolvedField[] = [
+		const schemaWithMode = [
 			{
 				kind: 'field' as const,
 				fieldname: 'name',
@@ -315,7 +314,7 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 				fieldname: 'address',
 				component: 'AForm',
 				label: 'Address',
-				mode: 'read',
+				mode: 'read' as const,
 				schema: addressSchema,
 			},
 		]
@@ -343,7 +342,7 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 	})
 
 	it('handles multiple nested Doctype fields', async () => {
-		const billingSchema: ResolvedField[] = [
+		const billingSchema = [
 			{
 				kind: 'field' as const,
 				fieldname: 'card_number',
@@ -353,7 +352,7 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 			},
 		]
 
-		const multiNestedSchema: ResolvedField[] = [
+		const multiNestedSchema = [
 			{
 				kind: 'field' as const,
 				fieldname: 'name',
@@ -399,7 +398,7 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 	})
 
 	it('does NOT render as nested section when schema AND kind: "table" are both set', async () => {
-		const tableSchema: ResolvedField[] = [
+		const tableSchema = [
 			{
 				fieldname: 'name',
 				fieldtype: 'Data',
@@ -416,7 +415,7 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 					{ fieldname: 'price', fieldtype: 'Currency', label: 'Price' },
 				],
 			} as any,
-		] as ResolvedField[]
+		]
 
 		const wrapper = mount(AForm, {
 			props: {
@@ -433,14 +432,15 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 	})
 
 	it('emits update:data when childModels change via v-model', async () => {
-		const simpleSchema: ResolvedField[] = [
+		const simpleSchema = [
 			{
+				kind: 'field' as const,
 				fieldname: 'first_name',
 				fieldtype: 'Data',
 				component: 'ATextInput',
 				label: 'First Name',
 			},
-		] as ResolvedField[]
+		]
 
 		const wrapper = mount(AForm, {
 			props: {
@@ -465,14 +465,15 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 	})
 
 	it('handles childModelsCache rebuild on schema length change', async () => {
-		const schema1: ResolvedField[] = [
+		const schema1 = [
 			{
+				kind: 'field' as const,
 				fieldname: 'first_name',
 				fieldtype: 'Data',
 				component: 'ATextInput',
 				label: 'First Name',
 			},
-		] as ResolvedField[]
+		]
 
 		const wrapper = mount(AForm, {
 			props: {
@@ -487,20 +488,22 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 		await wrapper.vm.$nextTick()
 
 		// Now update schema with different length
-		const schema2: ResolvedField[] = [
+		const schema2 = [
 			{
+				kind: 'field' as const,
 				fieldname: 'first_name',
 				fieldtype: 'Data',
 				component: 'ATextInput',
 				label: 'First Name',
 			},
 			{
+				kind: 'field' as const,
 				fieldname: 'last_name',
 				fieldtype: 'Data',
 				component: 'ATextInput',
 				label: 'Last Name',
 			},
-		] as ResolvedField[]
+		]
 
 		await wrapper.setProps({ schema: schema2, data: { first_name: '', last_name: '' } })
 		await wrapper.vm.$nextTick()
@@ -542,25 +545,24 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 	})
 
 	it('renders ATable component for Doctype field with cardinality: noneOrMany', async () => {
-		const tableSchema: ResolvedField[] = [
+		const tableSchema = [
 			{
+				kind: 'field' as const,
 				fieldname: 'name',
 				fieldtype: 'Data',
 				component: 'ATextInput',
 				label: 'Name',
 			},
 			{
+				kind: 'table' as const,
 				fieldname: 'items',
 				label: 'Items',
 				component: 'ATable',
-				columns: [
-					{ name: 'item_name', label: 'Item', fieldtype: 'Data' },
-					{ name: 'qty', label: 'Qty', fieldtype: 'Int' },
+				schema: [
+					{ fieldname: 'item_name', label: 'Item', fieldtype: 'Data' },
+					{ fieldname: 'qty', label: 'Qty', fieldtype: 'Int' },
 				],
-				rows: [
-					{ item_name: 'Widget', qty: 5 },
-					{ item_name: 'Gadget', qty: 3 },
-				],
+				config: { view: 'list' as const },
 			},
 		]
 
@@ -595,7 +597,7 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 	describe('AFieldset inside AForm', () => {
 		const fieldsetSchema = [
 			{ fieldname: 'first_name', fieldtype: 'Data', component: 'ATextInput', label: 'First Name' },
-		] as ResolvedField[]
+		]
 
 		it('renders the fieldset legend text when component is AFieldset', async () => {
 			const wrapper = mount(AForm, {
@@ -667,11 +669,11 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 		})
 
 		it('passes mode to a component with kind: "fieldset" in the schema', async () => {
-			const fieldsetInnerSchema: ResolvedField[] = [
+			const fieldsetInnerSchema = [
 				{ kind: 'field' as const, fieldname: 'email', fieldtype: 'Data', component: 'ATextInput', label: 'Email' },
 			]
 
-			const schemaWithFieldset: ResolvedField[] = [
+			const schemaWithFieldset = [
 				{
 					kind: 'fieldset' as const,
 					fieldname: 'details',

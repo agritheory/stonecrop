@@ -84,7 +84,7 @@ const warningsDismissed = ref(false)
 const isLoading = ref(true)
 
 // Reactive data for the components
-const doctypeSchema = ref<ResolvedField[]>(doctypeSchemaJson as ResolvedField[])
+const doctypeSchema = ref<ResolvedField[]>(doctypeSchemaJson)
 const formData = ref<BuilderFormData>({})
 const layout = ref<Layout>({})
 const workflowConfig = ref<AnyStateNodeConfig | undefined>()
@@ -156,7 +156,7 @@ watch(
 
 		if (schemaData) {
 			// Convert to List if needed
-			const schemaList = Array.isArray(schemaData) ? List(schemaData as Record<string, unknown>[]) : schemaData
+			const schemaList = Array.isArray(schemaData) ? List(schemaData) : schemaData
 
 			// Type guard for actions - ensure it's Map or undefined
 			const actions = actionsData instanceof Map ? actionsData : undefined

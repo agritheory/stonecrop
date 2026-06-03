@@ -43,23 +43,24 @@
 		}
 	],
 	"links": {
-		"required_task": { "target": "recipe-task", "cardinality": "one", "kind": "field", "fieldname": "required_task" },
+		"required_task": {
+			"target": "recipe-task",
+			"cardinality": "one",
+			"fieldname": "required_task"
+		},
 		"optional_task": {
 			"target": "recipe-task",
 			"cardinality": "atMostOne",
-			"kind": "field",
 			"fieldname": "optional_task"
 		},
 		"optional_tasks": {
 			"target": "recipe-task",
 			"cardinality": "noneOrMany",
-			"kind": "field",
 			"fieldname": "optional_tasks"
 		},
 		"required_tasks": {
 			"target": "recipe-task",
 			"cardinality": "atLeastOne",
-			"kind": "field",
 			"fieldname": "required_tasks"
 		}
 	}

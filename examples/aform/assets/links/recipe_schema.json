@@ -48,14 +48,12 @@
 			"target": "recipe-task",
 			"cardinality": "noneOrMany",
 			"backlink": "recipe",
-			"kind": "field",
 			"fieldname": "tasks"
 		},
 		"supersededBy": {
 			"target": "recipe",
 			"cardinality": "atMostOne",
 			"backlink": "supersededBy",
-			"kind": "field",
 			"fieldname": "supersededBy"
 		}
 	}

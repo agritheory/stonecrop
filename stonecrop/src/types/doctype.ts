@@ -3,9 +3,8 @@ import { List, Map } from 'immutable'
 import type { AnyStateNodeConfig, UnknownMachineConfig } from 'xstate'
 
 /**
- * Immutable Doctype type for Stonecrop instances.
- * Used by the Doctype constructor. App authors should use `Doctype.fromObject()` rather than
- * constructing this shape manually.
+ * Immutable Doctype type for Stonecrop instances. App authors should use
+ * `Doctype.fromObject()` rather than constructing this shape manually.
  * @public
  */
 export type ImmutableDoctype = {

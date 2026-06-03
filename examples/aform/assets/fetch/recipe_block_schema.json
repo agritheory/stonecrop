@@ -38,18 +38,20 @@
 			"target": "task",
 			"cardinality": "noneOrMany",
 			"backlink": "recipe",
-			"kind": "field",
 			"fieldname": "tasks",
-			"fetch": { "method": "sync" },
+			"fetch": {
+				"method": "sync"
+			},
 			"blockWorkflows": true
 		},
 		"notes": {
 			"target": "task",
 			"cardinality": "noneOrMany",
 			"backlink": "recipe",
-			"kind": "field",
 			"fieldname": "notes",
-			"fetch": { "method": "sync" },
+			"fetch": {
+				"method": "sync"
+			},
 			"blockWorkflows": false
 		}
 	}

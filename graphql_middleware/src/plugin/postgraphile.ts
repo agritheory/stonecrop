@@ -398,7 +398,6 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
  * aliases it back to the fieldname so result rows carry API-layer keys.
  * Excludes Display fields (no backing DB column) and Link fields that have an
  * explicit `links` declaration (those are FK references, not scalar columns).
- *
  */
 function getSqlColumns(meta: DoctypeMeta): string {
 	const linkedFieldnames = new Set<string>()
