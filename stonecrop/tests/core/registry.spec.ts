@@ -6,8 +6,6 @@ import type { UnknownMachineConfig } from 'xstate'
 import Registry from '../../src/registry'
 import { Stonecrop } from '../../src/stonecrop'
 import Doctype from '../../src/doctype'
-import type { DoctypeField } from '@stonecrop/schema'
-
 // Helper: creates a Doctype with links
 const createDoctypeWithLinks = (name: string, links?: Record<string, any>) => {
 	const mockSchema = List([

@@ -65,7 +65,8 @@ import ImportWizard from './ImportWizard.vue'
 
 interface BuilderFormData {
 	schema_fieldset?: {
-		schema: ResolvedField[]
+		// User-authored field definitions, not AForm's resolved schema
+		schema: Record<string, unknown>[]
 	}
 	actions_fieldset?: {
 		actions: unknown
@@ -155,7 +156,7 @@ watch(
 
 		if (schemaData) {
 			// Convert to List if needed
-			const schemaList = Array.isArray(schemaData) ? List(schemaData as ResolvedField[]) : schemaData
+			const schemaList = Array.isArray(schemaData) ? List(schemaData as Record<string, unknown>[]) : schemaData
 
 			// Type guard for actions - ensure it's Map or undefined
 			const actions = actionsData instanceof Map ? actionsData : undefined

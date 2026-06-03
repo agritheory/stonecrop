@@ -133,26 +133,28 @@ const StandaloneDemo = defineComponent({
 			},
 		})
 
-		// Build schema by hand — no Registry required
+		// Build schema by hand — no Registry required.
+		// Use ResolvedField shapes directly: kind discriminates scalar ('field'), nested form ('link'), and table ('table').
 		const schema = ref<ResolvedField[]>([
 			{
+				kind: 'field',
 				fieldname: 'invoice_number',
 				fieldtype: 'Data',
 				component: 'ATextInput',
 				label: 'Invoice Number',
-			} as ResolvedField,
+			},
 			{
+				kind: 'link',
 				fieldname: 'billing',
-				options: 'address',
+				component: 'AForm',
 				label: 'Billing Address',
-				// Manually embedded child schema — AForm checks `'schema' in field`
 				schema: [
-					{ fieldname: 'street', fieldtype: 'Data', component: 'ATextInput', label: 'Street' },
-					{ fieldname: 'city', fieldtype: 'Data', component: 'ATextInput', label: 'City' },
-					{ fieldname: 'state', fieldtype: 'Data', component: 'ATextInput', label: 'State' },
-					{ fieldname: 'zip_code', fieldtype: 'Data', component: 'ATextInput', label: 'Zip Code' },
+					{ kind: 'field', fieldname: 'street', fieldtype: 'Data', component: 'ATextInput', label: 'Street' },
+					{ kind: 'field', fieldname: 'city', fieldtype: 'Data', component: 'ATextInput', label: 'City' },
+					{ kind: 'field', fieldname: 'state', fieldtype: 'Data', component: 'ATextInput', label: 'State' },
+					{ kind: 'field', fieldname: 'zip_code', fieldtype: 'Data', component: 'ATextInput', label: 'Zip Code' },
 				],
-			} as ResolvedField,
+			},
 		])
 
 		return { schema, data }
