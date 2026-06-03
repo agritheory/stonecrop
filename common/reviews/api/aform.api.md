@@ -24,9 +24,6 @@ import type { ColumnSchema } from '@stonecrop/schema';
 import type { FieldValidation } from '@stonecrop/schema';
 import { InteractionMode } from '@stonecrop/schema';
 import Login from './components/utilities/Login.vue';
-import type { TableColumn } from '@stonecrop/atable';
-import type { TableConfig } from '@stonecrop/atable';
-import type { TableRow } from '@stonecrop/atable';
 import type { TableViewConfig } from '@stonecrop/schema';
 import type { ValueField } from '@stonecrop/schema';
 
@@ -74,21 +71,13 @@ export { ANumericInput }
 export { ATextInput }
 
 // @public
-export type BaseSchema = {
-    fieldname: string;
-    component?: string;
-    mode?: FormMode;
-    hidden?: boolean;
-};
-
-// @public
 export type ComponentProps = {
-    schema?: SchemaTypes;
+    schema?: ResolvedField;
     label?: string;
     selectRange?: boolean;
     mask?: string;
     required?: boolean;
-    mode?: FormMode;
+    mode?: InteractionMode;
     uuid?: string;
     validation?: {
         errorMessage: string;
@@ -98,27 +87,6 @@ export type ComponentProps = {
 
 // @public
 export function deserializeFunction<T extends (...args: any[]) => any>(source: string): T;
-
-// @public
-export type FieldsetSchema = BaseSchema & {
-    label?: string;
-    schema?: SchemaTypes[];
-    collapsible?: boolean;
-};
-
-// @public @deprecated
-export type FormMode = InteractionMode;
-
-// @public
-export type FormSchema = BaseSchema & {
-    align?: CanvasTextAlign;
-    edit?: boolean;
-    fieldtype?: string;
-    label?: string;
-    name?: string;
-    width?: string;
-    mask?: string;
-};
 
 // @public
 export function install(app: App): void;
@@ -189,23 +157,6 @@ export interface ResolvedTable {
     schema: ColumnSchema[];
     validation?: FieldValidation;
 }
-
-// @public
-export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema;
-
-// @public
-export type TableSchema = BaseSchema & {
-    config?: TableConfig;
-    rows?: TableRow[];
-} & ({
-    columns?: TableColumn[];
-    kind?: never;
-    schema?: never;
-} | {
-    kind: 'table';
-    schema: ColumnSchema[];
-    columns?: never;
-});
 
 
 export * from "@stonecrop/atable/types";

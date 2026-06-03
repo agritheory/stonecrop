@@ -14,8 +14,8 @@ import { List } from 'immutable';
 import { Map as Map_2 } from 'immutable';
 import { Plugin as Plugin_2 } from 'vue';
 import { Ref } from 'vue';
+import type { ResolvedField } from '@stonecrop/aform';
 import { Router } from 'vue-router';
-import type { SchemaTypes } from '@stonecrop/aform';
 import { Store } from 'pinia';
 import { StoreDefinition } from 'pinia';
 import type { UnknownMachineConfig } from 'xstate';
@@ -91,7 +91,7 @@ export class Doctype {
         name: string;
         targetState: string;
     }>;
-    getSchemaArray(): SchemaTypes[];
+    getSchemaArray(): DoctypeField[];
     readonly links?: Record<string, LinkDeclaration>;
     get name(): string;
     readonly schema: ImmutableDoctype['schema'];
@@ -262,7 +262,7 @@ export type HSTStonecropReturn = BaseStonecropReturn & {
     handleHSTChange: (changeData: HSTChangeData) => void;
     hstStore: Ref<HSTNode | undefined>;
     formData: Ref<Record<string, any>>;
-    resolvedSchema: Ref<SchemaTypes[]>;
+    resolvedSchema: Ref<ResolvedField[]>;
     initializeNestedData: (path: string, doctype: Doctype) => void;
     fetchNestedData: (path: string, doctype: Doctype, recordId: string, options?: {
         includeNested?: boolean | string[];
@@ -281,10 +281,9 @@ export type HSTStonecropReturn = BaseStonecropReturn & {
 
 // @public
 export type ImmutableDoctype = {
-    readonly schema?: List<SchemaTypes>;
+    readonly schema?: List<DoctypeField>;
     readonly workflow?: UnknownMachineConfig | AnyStateNodeConfig | WorkflowMeta;
     readonly actions?: Map_2<string, string[]>;
-    readonly links?: Record<string, LinkDeclaration>;
 };
 
 // @public
@@ -308,14 +307,6 @@ export type LazyLink = {
 
 // @public
 export function markOperationIrreversible(operationId: string | undefined, reason: string): void;
-
-// @public
-export type MutableDoctype = {
-    doctype?: string;
-    schema?: SchemaTypes[];
-    workflow?: UnknownMachineConfig | AnyStateNodeConfig | WorkflowMeta;
-    actions?: Record<string, string[]>;
-};
 
 // @public
 export type OperationLogAPI = {
@@ -399,10 +390,10 @@ export class Registry {
     }>;
     getDoctype(slug: string): Doctype | undefined;
     getMeta?: (routeContext: RouteContext) => Doctype | Promise<Doctype>;
-    initializeRecord(schema: SchemaTypes[]): Record<string, any>;
+    initializeRecord(schema: ResolvedField[]): Record<string, any>;
     readonly name: string;
     readonly registry: Record<string, Doctype>;
-    resolveSchema(doctype: Doctype, visited?: Set<string>): SchemaTypes[];
+    resolveSchema(doctype: Doctype, visited?: Set<string>): ResolvedField[];
     static _root: Registry;
     readonly router?: Router;
 }
@@ -414,15 +405,9 @@ export interface RouteContext {
 }
 
 // @public
-export type Schema = {
-    doctype: string;
-    schema: List<SchemaTypes>;
-};
-
-// @public
 export class SchemaValidator {
     constructor(options?: ValidatorOptions);
-    validate(doctype: string, schema: List<SchemaTypes> | SchemaTypes[] | undefined, workflow?: AnyStateNodeConfig, actions?: Map_2<string, string[]> | Map<string, string[]>, links?: Record<string, LinkDeclaration>): ValidationResult;
+    validate(doctype: string, schema: List<DoctypeField> | DoctypeField[] | undefined, workflow?: AnyStateNodeConfig, actions?: Map_2<string, string[]> | Map<string, string[]>, links?: Record<string, LinkDeclaration>): ValidationResult;
 }
 
 // @public
@@ -1119,7 +1104,7 @@ export function useStonecrop(options: {
 export function useUndoRedoShortcuts(hstStore: HSTNode, enabled?: boolean): void;
 
 // @public
-export function validateSchema(doctype: string, schema: List<SchemaTypes> | SchemaTypes[] | undefined, registry: Registry, workflow?: AnyStateNodeConfig, actions?: Map_2<string, string[]> | Map<string, string[]>): ValidationResult;
+export function validateSchema(doctype: string, schema: List<DoctypeField> | DoctypeField[] | undefined, registry: Registry, workflow?: AnyStateNodeConfig, actions?: Map_2<string, string[]> | Map<string, string[]>): ValidationResult;
 
 // @public
 export interface ValidationIssue {

@@ -303,9 +303,9 @@ describe('HST Vue Reactivity', { tags: ['unit'] }, () => {
 			const textInput = wrapper.find('[data-testid="text-input"]')
 			const checkbox = wrapper.find('[data-testid="checkbox-input"]')
 			const table = wrapper.find('[data-testid="table"]')
-			expect(textInput.exists())
-			expect(checkbox.exists())
-			expect(table.exists())
+			expect(textInput.exists()).toBe(true)
+			expect(checkbox.exists()).toBe(true)
+			expect(table.exists()).toBe(true)
 
 			// Paths should follow pattern: doctype.recordId.fieldname
 			expect(wrapper.find('[data-testid="hst-path"]').text()).toContain('task.task-123.name')

@@ -217,21 +217,6 @@ export interface AFormLinkValue {
 
 ## Type Aliases
 
-### BaseSchema
-
-Basic field structure for AForm schemas
-
-**Definition:**
-
-```typescript
-export type BaseSchema = {
-    fieldname: string;
-    component?: string;
-    mode?: FormMode;
-    hidden?: boolean;
-};
-```
-
 ### ComponentProps
 
 Defined props for AForm components
@@ -240,59 +225,17 @@ Defined props for AForm components
 
 ```typescript
 export type ComponentProps = {
-    schema?: SchemaTypes;
+    schema?: ResolvedField;
     label?: string;
     selectRange?: boolean;
     mask?: string;
     required?: boolean;
-    mode?: FormMode;
+    mode?: import('@stonecrop/schema').InteractionMode;
     uuid?: string;
     validation?: {
         errorMessage: string;
         [key: string]: any;
     };
-};
-```
-
-### FieldsetSchema
-
-Schema structure for defining fieldsets inside AForm
-
-**Definition:**
-
-```typescript
-export type FieldsetSchema = BaseSchema & {
-    label?: string;
-    schema?: SchemaTypes[];
-    collapsible?: boolean;
-};
-```
-
-### FormMode
-
-Backwards-compat alias for InteractionMode.
-
-**Definition:**
-
-```typescript
-export type FormMode = import('@stonecrop/schema').InteractionMode;
-```
-
-### FormSchema
-
-Schema structure for defining forms inside AForm
-
-**Definition:**
-
-```typescript
-export type FormSchema = BaseSchema & {
-    align?: CanvasTextAlign;
-    edit?: boolean;
-    fieldtype?: string;
-    label?: string;
-    name?: string;
-    width?: string;
-    mask?: string;
 };
 ```
 
@@ -304,38 +247,5 @@ The discriminated union of all resolved field types — what AForm consumes afte
 
 ```typescript
 export type ResolvedField = ResolvedScalar | ResolvedLink | ResolvedTable | ResolvedFieldset;
-```
-
-### SchemaTypes
-
-Superset of all schema types for AForm
-
-**Definition:**
-
-```typescript
-export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema;
-```
-
-### TableSchema
-
-Schema structure for defining tables inside AForm.
-
-Two mutually exclusive forms: - **Columns-based** (no `kind`): caller provides `columns` directly - **Schema-delegated** (`kind: 'table'`): caller provides `schema`; ATable runs `schemaToColumns` to derive columns at render time
-
-**Definition:**
-
-```typescript
-export type TableSchema = BaseSchema & {
-    config?: TableConfig;
-    rows?: TableRow[];
-} & ({
-    columns?: TableColumn[];
-    kind?: never;
-    schema?: never;
-} | {
-    kind: 'table';
-    schema: ColumnSchema[];
-    columns?: never;
-});
 ```
 

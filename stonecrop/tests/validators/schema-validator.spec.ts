@@ -61,14 +61,14 @@ describe('SchemaValidator class', { tags: ['unit'] }, () => {
 
 		it('reports error when both component and fieldtype are missing', () => {
 			const validator = new SchemaValidator()
-			const result = validator.validate('Doc', [{ fieldname: 'x' } as SchemaTypes])
+			const result = validator.validate('Doc', [{ kind: 'field' as const, fieldname: 'x' } as any])
 			expect(result.errorCount).toBe(1)
 			expect(result.issues[0].rule).toBe('required-component-or-fieldtype')
 		})
 
 		it('passes when component is present without fieldtype', () => {
 			const validator = new SchemaValidator()
-			const result = validator.validate('Doc', [{ fieldname: 'x', component: 'Comp' } as SchemaTypes])
+			const result = validator.validate('Doc', [{ kind: 'field' as const, fieldname: 'x', component: 'Comp' } as any])
 			expect(result.valid).toBe(true)
 		})
 
@@ -76,9 +76,9 @@ describe('SchemaValidator class', { tags: ['unit'] }, () => {
 			const validator = new SchemaValidator()
 			const schema = [
 				{
+					kind: 'fieldset' as const,
 					fieldname: 'address',
 					component: 'AForm',
-					options: 'address',
 					schema: [
 						{ fieldtype: 'Data' }, // Missing fieldname
 					],
@@ -97,28 +97,28 @@ describe('SchemaValidator class', { tags: ['unit'] }, () => {
 
 		it('reports error when Link has no options', () => {
 			const validator = new SchemaValidator({ registry: registryWithUser })
-			const schema = [{ fieldname: 'ref', fieldtype: 'Link' } as any]
+			const schema = [{ kind: 'field' as const, fieldname: 'ref', fieldtype: 'Link' } as any]
 			const result = validator.validate('Doc', schema)
 			expect(result.issues.some(i => i.rule === 'link-missing-options')).toBe(true)
 		})
 
 		it('reports error when Link options is non-string', () => {
 			const validator = new SchemaValidator({ registry: registryWithUser })
-			const schema = [{ fieldname: 'ref', fieldtype: 'Link', options: 123 } as any]
+			const schema = [{ kind: 'field' as const, fieldname: 'ref', fieldtype: 'Link', options: 123 } as any]
 			const result = validator.validate('Doc', schema)
 			expect(result.issues.some(i => i.rule === 'link-invalid-options')).toBe(true)
 		})
 
 		it('reports error when Link target doctype does not exist in registry', () => {
 			const validator = new SchemaValidator({ registry: registryWithUser })
-			const schema = [{ fieldname: 'ref', fieldtype: 'Link', options: 'nonexistent' } as any]
+			const schema = [{ kind: 'field' as const, fieldname: 'ref', fieldtype: 'Link', options: 'nonexistent' } as any]
 			const result = validator.validate('Doc', schema)
 			expect(result.issues.some(i => i.rule === 'link-invalid-target')).toBe(true)
 		})
 
 		it('passes when Link target doctype exists in registry', () => {
 			const validator = new SchemaValidator({ registry: registryWithUser })
-			const schema = [{ fieldname: 'ref', fieldtype: 'Link', options: 'user' } as any]
+			const schema = [{ kind: 'field' as const, fieldname: 'ref', fieldtype: 'Link', options: 'user' } as any]
 			const result = validator.validate('Doc', schema)
 			expect(result.valid).toBe(true)
 		})
@@ -127,10 +127,10 @@ describe('SchemaValidator class', { tags: ['unit'] }, () => {
 			const validator = new SchemaValidator({ registry: registryWithUser })
 			const schema = [
 				{
+					kind: 'fieldset' as const,
 					fieldname: 'details',
 					component: 'AForm',
-					options: 'details',
-					schema: [{ fieldname: 'linked', fieldtype: 'Link', options: 'missing' }],
+					schema: [{ kind: 'field' as const, fieldname: 'linked', fieldtype: 'Link', options: 'missing' }],
 				} as any,
 			]
 			const result = validator.validate('Doc', schema)
@@ -422,8 +422,8 @@ describe('SchemaValidator — link declarations', { tags: ['unit'] }, () => {
 	it('reports error when Link field has no corresponding link declaration', () => {
 		const validator = new SchemaValidator({ registry: mockRegistry })
 		const schemaWithLinkField = [
-			{ fieldname: 'name', fieldtype: 'Data' } as SchemaTypes,
-			{ fieldname: 'tasks', fieldtype: 'Link', options: 'recipe-task' } as SchemaTypes,
+			{ kind: 'field' as const, fieldname: 'name', fieldtype: 'Data' } as any,
+			{ kind: 'field' as const, fieldname: 'tasks', fieldtype: 'Link', options: 'recipe-task' } as any,
 		]
 		const result = validator.validate('recipe', schemaWithLinkField, undefined, undefined, {})
 		expect(result.valid).toBe(false)
@@ -433,8 +433,8 @@ describe('SchemaValidator — link declarations', { tags: ['unit'] }, () => {
 	it('reports error when Link field target does not match link declaration target', () => {
 		const validator = new SchemaValidator({ registry: mockRegistry })
 		const schemaWithLinkField = [
-			{ fieldname: 'name', fieldtype: 'Data' } as SchemaTypes,
-			{ fieldname: 'tasks', fieldtype: 'Link', options: 'different-target' } as SchemaTypes,
+			{ kind: 'field' as const, fieldname: 'name', fieldtype: 'Data' } as any,
+			{ kind: 'field' as const, fieldname: 'tasks', fieldtype: 'Link', options: 'different-target' } as any,
 		]
 		const result = validator.validate('recipe', schemaWithLinkField, undefined, undefined, {
 			tasks: { target: 'recipe-task', cardinality: 'noneOrMany', fieldname: 'tasks' },

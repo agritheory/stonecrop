@@ -1,4 +1,3 @@
-import type { SchemaTypes } from '@stonecrop/aform'
 import type { DoctypeField, LinkDeclaration, WorkflowMeta } from '@stonecrop/schema'
 import { List, Map } from 'immutable'
 import type { AnyStateNodeConfig, UnknownMachineConfig } from 'xstate'
@@ -8,35 +7,14 @@ import type { AnyStateNodeConfig, UnknownMachineConfig } from 'xstate'
  * @public
  */
 export type ImmutableDoctype = {
-	readonly schema?: List<SchemaTypes>
+	readonly schema?: List<DoctypeField>
 	readonly workflow?: UnknownMachineConfig | AnyStateNodeConfig | WorkflowMeta
 	readonly actions?: Map<string, string[]>
-	readonly links?: Record<string, LinkDeclaration>
-}
-
-/**
- * Mutable Doctype type for Stonecrop instances
- * @public
- */
-export type MutableDoctype = {
-	doctype?: string
-	schema?: SchemaTypes[]
-	workflow?: UnknownMachineConfig | AnyStateNodeConfig | WorkflowMeta
-	actions?: Record<string, string[]>
-}
-
-/**
- * Schema type for Stonecrop instances
- * @public
- */
-export type Schema = {
-	doctype: string
-	schema: List<SchemaTypes>
 }
 
 /**
  * Plain object representation of doctype configuration for serialization/API responses.
- * Compatible with the DoctypeMeta type from \@stonecrop/schema.
+ * Extends DoctypeMeta with Stonecrop-specific properties: actions, slug, inherits.
  * @public
  */
 export type DoctypeConfig = {

@@ -1,5 +1,4 @@
-import type { SchemaTypes } from '@stonecrop/aform'
-import type { LinkDeclaration, WorkflowMeta } from '@stonecrop/schema'
+import type { DoctypeField, LinkDeclaration, WorkflowMeta } from '@stonecrop/schema'
 import { List, Map } from 'immutable'
 import { Component } from 'vue'
 
@@ -126,28 +125,28 @@ export default class Doctype {
 	 * @public
 	 */
 	static fromObject(config: DoctypeConfig): Doctype {
-		const schema = config.fields ? List(config.fields) : List<SchemaTypes>()
+		const schema = config.fields ? List(config.fields) : List<DoctypeField>()
 		const actions = config.actions ? Map(config.actions) : Map<string, string[]>()
 
 		return new Doctype(config.name, schema, config.workflow, actions, undefined, config.links)
 	}
 
 	/**
-	 * Returns the schema as a plain array for use with components that expect
-	 * plain JavaScript arrays (e.g., AForm, ATable).
+	 * Returns the raw authoring schema as a plain array.
+	 * For the resolved schema suitable for AForm, use `registry.resolveSchema(doctype)`.
 	 *
-	 * @returns Array of schema fields
+	 * @returns Array of raw DoctypeField authoring definitions
 	 *
 	 * @example
 	 * ```ts
-	 * const schemaArray = doctype.getSchemaArray()
-	 * // Use with AForm
-	 * <AForm :schema="schemaArray" v-model:data="formData" />
+	 * const fields = doctype.getSchemaArray()
+	 * // Pass to resolveSchema for AForm-ready output:
+	 * const resolved = registry.resolveSchema(doctype)
 	 * ```
 	 *
 	 * @public
 	 */
-	getSchemaArray(): SchemaTypes[] {
+	getSchemaArray(): DoctypeField[] {
 		if (!this.schema) return []
 		return this.schema.toArray()
 	}

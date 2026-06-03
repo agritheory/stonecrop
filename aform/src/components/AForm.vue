@@ -35,7 +35,7 @@
 <script setup lang="ts">
 import { computed, watchEffect, watch, ref } from 'vue'
 
-import type { ResolvedField, ResolvedLink, ResolvedFieldset, FormMode } from '../types'
+import type { ResolvedField, ResolvedLink, ResolvedFieldset } from '../types'
 import type { InteractionMode } from '@stonecrop/schema'
 
 const emit = defineEmits(['update:schema', 'update:data'])
