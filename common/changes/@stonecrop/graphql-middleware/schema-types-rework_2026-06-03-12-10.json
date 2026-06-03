@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/graphql-middleware",
+      "comment": "use new field discriminators for logic branching",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@stonecrop/graphql-middleware"
+}
