@@ -457,8 +457,8 @@ const getDoctypesSchema = (): ResolvedField[] => {
 		actions: 'View Records',
 	}))
 
-	// TODO(Phase 5 follow-up): convert to ResolvedTable format; move rows to formData via HST
-	// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Path 2 table schema pending full ATable migration
+	// TODO: convert to ResolvedTable format and move rows to formData so AForm reads them from dataModel
+	// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- inline table schema uses legacy columns format; rows must move to formData
 	return [
 		{
 			fieldname: 'doctypes_table',
@@ -530,8 +530,8 @@ const getRecordsSchema = (): ResolvedField[] => {
 		})
 	)
 
-	// TODO(Phase 5 follow-up): move rows to formData via HST; remove rows from schema object
-	// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- rows property pending HST migration
+	// TODO: move rows to formData so AForm reads them from dataModel; remove rows from schema object
+	// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- rows property on schema object is a known gap; rows must move to formData
 	return [
 		{
 			kind: 'table' as const,

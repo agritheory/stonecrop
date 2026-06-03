@@ -399,7 +399,6 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
  * Excludes Display fields (no backing DB column) and Link fields that have an
  * explicit `links` declaration (those are FK references, not scalar columns).
  *
- * TODO(schema-types Phase 4): add f.kind === 'field' narrowing when DoctypeField union lands
  */
 function getSqlColumns(meta: DoctypeMeta): string {
 	const linkedFieldnames = new Set<string>()

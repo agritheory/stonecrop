@@ -13,7 +13,7 @@
 					:mode="resolvedMode(componentObj)"
 					:schema="componentObj.schema"
 					:label="componentObj.label"
-					:collapsible="componentObj.collapsible"
+					:collapsible="componentObj.kind === 'fieldset' ? componentObj.collapsible : undefined"
 					@update:data="(val: any) => updateNestedData(componentObj.fieldname, val)" />
 			</div>
 
@@ -88,8 +88,8 @@ const componentProps = (componentObj: ResolvedField) => {
 		}
 	}
 
-	// kind: 'table' is the canonical check; 'columns' in componentObj is a fallback
-	// for Path 2 schemas (direct-to-AForm without registry) until Phase 5 eliminates Path 2.
+	// kind: 'table' is the canonical check; 'columns' in componentObj is a structural fallback
+	// for schemas passed directly to AForm without going through the registry.
 	if (componentObj.kind === 'table' || 'columns' in componentObj) {
 		propsToPass['rows'] = dataModel.value[componentObj.fieldname] || []
 	}

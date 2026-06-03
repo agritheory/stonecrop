@@ -95,8 +95,3 @@ When no such field is declared:
 key (product SKU, document number) is both the PK and required. A DB-generated surrogate key
 (`serial`, `uuid`) is the PK but not required from the application's perspective (the DB
 supplies it). The schema stays flexible for both patterns.
-
-When `2b_schema_types.md` Phase 4 lands (`DoctypeMeta.fields` → `DoctypeField[]`), the
-`getPkMeta` predicate and the `getSqlColumns` field iteration will need `f.kind === 'field'`
-narrowing added — `FieldsetField` and `TableField` have no `fieldtype` property. This is
-acknowledged rework; `TODO(schema-types Phase 4)` comments are left at those sites.
