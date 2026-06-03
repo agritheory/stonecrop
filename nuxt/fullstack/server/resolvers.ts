@@ -32,10 +32,11 @@ function toMutationName(doctypeName: string, operation: 'create' | 'update' | 'd
 	return `${operation}${pascalName}ById`
 }
 
-function formatFieldMeta(field: { fieldname: string; fieldtype: string; [key: string]: unknown }) {
+function formatFieldMeta(field: { kind: string; fieldname: string; fieldtype?: string; [key: string]: unknown }) {
 	return {
+		kind: field.kind,
 		fieldname: field.fieldname,
-		fieldtype: field.fieldtype,
+		fieldtype: field.fieldtype ?? null,
 		label: field.label ?? null,
 		required: field.required ?? false,
 		readOnly: field.readOnly ?? false,

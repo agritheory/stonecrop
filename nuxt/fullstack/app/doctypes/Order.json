@@ -3,6 +3,7 @@
 	"slug": "order",
 	"fields": [
 		{
+			"kind": "field",
 			"fieldname": "id",
 			"label": "ID",
 			"component": "ATextInput",
@@ -10,6 +11,7 @@
 			"mode": "display"
 		},
 		{
+			"kind": "field",
 			"fieldname": "orderNumber",
 			"label": "Order Number",
 			"component": "ATextInput",
@@ -17,6 +19,7 @@
 			"mode": "display"
 		},
 		{
+			"kind": "field",
 			"fieldname": "userId",
 			"label": "Customer",
 			"component": "ACombobox",
@@ -25,6 +28,7 @@
 			"required": true
 		},
 		{
+			"kind": "field",
 			"fieldname": "status",
 			"label": "Status",
 			"component": "ADropdown",
@@ -33,6 +37,7 @@
 			"default": "DRAFT"
 		},
 		{
+			"kind": "field",
 			"fieldname": "total",
 			"label": "Total",
 			"component": "ATextInput",
@@ -40,18 +45,21 @@
 			"mode": "display"
 		},
 		{
+			"kind": "field",
 			"fieldname": "shippingAddress",
 			"label": "Shipping Address",
 			"component": "ATextarea",
 			"fieldtype": "Text"
 		},
 		{
+			"kind": "field",
 			"fieldname": "billingAddress",
 			"label": "Billing Address",
 			"component": "ATextarea",
 			"fieldtype": "Text"
 		},
 		{
+			"kind": "field",
 			"fieldname": "createdAt",
 			"label": "Created At",
 			"component": "ATextInput",
@@ -59,6 +67,7 @@
 			"mode": "display"
 		},
 		{
+			"kind": "field",
 			"fieldname": "updatedAt",
 			"label": "Updated At",
 			"component": "ATextInput",

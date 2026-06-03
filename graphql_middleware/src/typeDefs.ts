@@ -7,6 +7,7 @@ import { gql } from 'postgraphile/utils'
  */
 export const typeDefs = gql`
 	type StonecropFieldMeta {
+		kind: String!
 		fieldname: String!
 		fieldtype: String!
 		component: String
