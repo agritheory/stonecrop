@@ -829,7 +829,7 @@ The complete list of field types built into Stonecrop. User apps can use any str
 **Type:**
 
 ```typescript
-export const BUILTIN_FIELD_TYPES: readonly ["Data", "Text", "Int", "Float", "Decimal", "Check", "Date", "Time", "Datetime", "Duration", "DateRange", "JSON", "Code", "Link", "Attach", "Currency", "Quantity", "Select", "PrimaryKey"]
+export const BUILTIN_FIELD_TYPES: readonly ["Data", "Text", "Int", "Float", "Decimal", "Check", "Date", "Time", "Datetime", "Duration", "DateRange", "JSON", "Code", "Link", "Attach", "Currency", "Quantity", "Select", "PrimaryKey", "Fieldset", "Display"]
 ```
 
 ### Cardinality
@@ -900,6 +900,7 @@ export const DoctypeMeta: z.ZodObject<{
         validation: z.ZodOptional<z.ZodObject<{
             errorMessage: z.ZodString;
         }, z.core.$loose>>;
+        schema: z.ZodOptional<z.ZodArray<z.ZodRecord<z.ZodString, z.ZodUnknown>>>;
     }, z.core.$strip>>;
     links: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodObject<{
         target: z.ZodString;
@@ -995,6 +996,7 @@ export const FieldMeta: z.ZodObject<{
     validation: z.ZodOptional<z.ZodObject<{
         errorMessage: z.ZodString;
     }, z.core.$loose>>;
+    schema: z.ZodOptional<z.ZodArray<z.ZodRecord<z.ZodString, z.ZodUnknown>>>;
 }, z.core.$strip>
 ```
 

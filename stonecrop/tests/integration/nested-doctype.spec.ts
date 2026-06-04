@@ -339,6 +339,7 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 				List([
 					{
 						fieldname: 'address_section',
+						fieldtype: 'Fieldset',
 						component: 'AFieldset',
 						schema: [{ fieldname: 'address', fieldtype: 'Link', options: 'address' }],
 					},
@@ -389,6 +390,7 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 				List([
 					{
 						fieldname: 'contact_section',
+						fieldtype: 'Fieldset',
 						component: 'AFieldset',
 						schema: [
 							{ fieldname: 'phone', fieldtype: 'Data', component: 'ATextInput' },
@@ -414,6 +416,7 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 				List([
 					{
 						fieldname: 'section',
+						fieldtype: 'Fieldset',
 						component: 'AFieldset',
 						schema: [{ fieldname: 'orphan', fieldtype: 'Link', component: 'ALink' }],
 					},
@@ -436,6 +439,7 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 				List([
 					{
 						fieldname: 'section',
+						fieldtype: 'Fieldset',
 						component: 'AFieldset',
 						schema: [{ fieldname: 'missing_link', fieldtype: 'Link', options: 'nonexistent' }],
 					},
@@ -459,6 +463,7 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 				List([
 					{
 						fieldname: 'address_section',
+						fieldtype: 'Fieldset',
 						component: 'AFieldset',
 						schema: [
 							{ fieldname: 'label', fieldtype: 'Data', component: 'ATextInput' },
@@ -494,10 +499,12 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 				List([
 					{
 						fieldname: 'outer_section',
+						fieldtype: 'Fieldset',
 						component: 'AFieldset',
 						schema: [
 							{
 								fieldname: 'inner_section',
+								fieldtype: 'Fieldset',
 								component: 'AFieldset',
 								schema: [{ fieldname: 'address', fieldtype: 'Link', options: 'address' }],
 							},

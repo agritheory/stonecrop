@@ -69,6 +69,52 @@ beforeAll(async () => {
 				{ fieldname: 'item_id', fieldtype: 'Data', label: 'Item ID' },
 			],
 		},
+		ScWidget: {
+			name: 'ScWidget',
+			fields: [
+				{ fieldname: 'id', fieldtype: 'PrimaryKey', label: 'ID' },
+				{
+					fieldname: 'basicInfo_fieldset',
+					fieldtype: 'Fieldset',
+					component: 'AFieldset',
+					schema: [
+						{ fieldname: 'itemName', fieldtype: 'Data', label: 'Name' },
+						{ fieldname: 'itemColor', fieldtype: 'Data', label: 'Color' },
+					],
+				},
+			],
+		},
+		ScPart: {
+			name: 'ScPart',
+			fields: [
+				{ fieldname: 'id', fieldtype: 'PrimaryKey', label: 'ID' },
+				{ fieldname: 'gadget_id', fieldtype: 'Data', label: 'Gadget ID' },
+				{ fieldname: 'partName', fieldtype: 'Data', label: 'Part Name' },
+			],
+		},
+		ScGadget: {
+			name: 'ScGadget',
+			fields: [
+				{ fieldname: 'id', fieldtype: 'PrimaryKey', label: 'ID' },
+				{
+					fieldname: 'info_fieldset',
+					fieldtype: 'Fieldset',
+					component: 'AFieldset',
+					schema: [
+						{ fieldname: 'gadgetName', fieldtype: 'Data', label: 'Name' },
+						{ fieldname: 'parts', fieldtype: 'Link', options: 'ScPart' },
+					],
+				},
+			],
+			links: {
+				parts: {
+					target: 'ScPart',
+					cardinality: 'noneOrMany' as const,
+					backlink: 'gadget_id',
+					fetch: { method: 'sync' as const },
+				},
+			},
+		},
 	})
 
 	pool = new Pool({ connectionString: databaseUrl, max: 1 })
@@ -278,5 +324,57 @@ describe('stonecropMeta', { tags: ['integration', 'graphql'] }, () => {
 	it('returns null for unknown doctype', async () => {
 		const result = await runQuery(`query { stonecropMeta(doctype: "DoesNotExist") { name } }`)
 		expect((result as any).data?.stonecropMeta).toBeNull()
+	})
+})
+
+// ===========================================================================
+// Fieldset container fields
+// ===========================================================================
+
+describe('Fieldset container fields', { tags: ['integration', 'graphql'] }, () => {
+	it('fetches records and returns fieldset child data', async () => {
+		const result = await runQuery(`query { stonecropRecords(doctype: "ScWidget") { data } }`)
+		const records = (result as any).data?.stonecropRecords
+		expect((result as any).errors).toBeUndefined()
+		expect(records?.data).toHaveLength(2)
+		expect(records?.data[0].itemName).toBe('Widget A')
+		expect(records?.data[0].itemColor).toBe('blue')
+	})
+
+	it('fetches a single record with fieldset children via stonecropRecord', async () => {
+		const result = await runQuery(`query { stonecropRecord(doctype: "ScWidget", id: "1") { data } }`)
+		expect((result as any).errors).toBeUndefined()
+		const data = (result as any).data?.stonecropRecord?.data
+		expect(data?.itemName).toBe('Widget A')
+		expect(data?.itemColor).toBe('blue')
+	})
+
+	it('filters records by a fieldset child field', async () => {
+		const result = await runQuery(
+			`query { stonecropRecords(doctype: "ScWidget", filters: { itemColor: "blue" }) { data } }`
+		)
+		expect((result as any).errors).toBeUndefined()
+		const records = (result as any).data?.stonecropRecords
+		expect(records?.data).toHaveLength(1)
+		expect(records?.data[0].itemName).toBe('Widget A')
+	})
+
+	it('orders records by a fieldset child field', async () => {
+		const result = await runQuery(`query { stonecropRecords(doctype: "ScWidget", orderBy: "itemName_DESC") { data } }`)
+		expect((result as any).errors).toBeUndefined()
+		const data = (result as any).data?.stonecropRecords?.data
+		expect(data[0].itemName).toBe('Widget B')
+		expect(data[1].itemName).toBe('Widget A')
+	})
+
+	it('excludes Link fields inside a fieldset from the SELECT column list', async () => {
+		// ScGadget has a `parts` Link field nested inside a Fieldset.
+		// If collectColumns incorrectly includes it, this query throws
+		// "column parts does not exist" — it should return cleanly instead.
+		const result = await runQuery(`query { stonecropRecords(doctype: "ScGadget") { data } }`)
+		expect((result as any).errors).toBeUndefined()
+		const records = (result as any).data?.stonecropRecords
+		expect(records?.data[0].gadgetName).toBe('Gadget One')
+		expect(records?.data[0].parts).toBeUndefined()
 	})
 })

@@ -247,7 +247,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 												return { data: [], doctype, count: 0 }
 											}
 
-											const knownFields = new Set(meta.fields.map(f => f.fieldname))
+											const knownFields = new Set(flattenFields(meta.fields).map(f => f.fieldname))
 											const columns = getSqlColumns(meta)
 											const values: unknown[] = []
 
@@ -393,13 +393,48 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 // ===========================================================================
 
 /**
+ * Recursively flatten Fieldset containers into a single-level FieldMeta array.
+ * Fieldset entries are replaced by their children; all other fields pass through.
+ * Used by both getSqlColumns (for SELECT) and knownFields (for filter/orderBy validation).
+ *
+ * TODO(schema-types Phase 4): add f.kind === 'field' narrowing when DoctypeField union lands
+ */
+function flattenFields(fields: FieldMeta[]): FieldMeta[] {
+	const result: FieldMeta[] = []
+	for (const f of fields) {
+		if (f.fieldtype === 'Fieldset') {
+			const validChildren = (f.schema ?? []).filter(
+				(c): c is FieldMeta => typeof c['fieldname'] === 'string' && typeof c['fieldtype'] === 'string'
+			)
+			result.push(...flattenFields(validChildren))
+		} else {
+			result.push(f)
+		}
+	}
+	return result
+}
+
+/**
+ * Derive a quoted SQL column entry for a single flat field.
+ * Applies camelToSnake and aliases back to the original fieldname.
+ */
+function collectColumns(fields: FieldMeta[], linkedFieldnames: Set<string>): string[] {
+	const columns: string[] = []
+	for (const f of flattenFields(fields)) {
+		if (f.fieldtype === 'Display') continue
+		if (f.fieldtype === 'Link' && linkedFieldnames.has(f.fieldname)) continue
+		const col = camelToSnake(f.fieldname)
+		columns.push(col !== f.fieldname ? `"${col}" AS "${f.fieldname}"` : `"${f.fieldname}"`)
+	}
+	return columns
+}
+
+/**
  * Derive a quoted SQL column list from doctype field definitions.
  * Applies camelToSnake to each fieldname to get the DB column name, then
  * aliases it back to the fieldname so result rows carry API-layer keys.
- * Excludes Display fields (no backing DB column) and Link fields that have an
- * explicit `links` declaration (those are FK references, not scalar columns).
- *
- * TODO(schema-types Phase 4): add f.kind === 'field' narrowing when DoctypeField union lands
+ * Excludes Display fields, Fieldset containers (recursing into their children instead),
+ * and Link fields that have an explicit `links` declaration (FK references, not scalar columns).
  */
 function getSqlColumns(meta: DoctypeMeta): string {
 	const linkedFieldnames = new Set<string>()
@@ -408,16 +443,7 @@ function getSqlColumns(meta: DoctypeMeta): string {
 			linkedFieldnames.add(link.fieldname ?? key)
 		}
 	}
-
-	const columns: string[] = []
-	for (const f of meta.fields) {
-		if (f.fieldtype === 'Display') continue
-		if (f.fieldtype === 'Link' && linkedFieldnames.has(f.fieldname)) continue
-		const col = camelToSnake(f.fieldname)
-		columns.push(col !== f.fieldname ? `"${col}" AS "${f.fieldname}"` : `"${f.fieldname}"`)
-	}
-
-	return columns.join(', ')
+	return collectColumns(meta.fields, linkedFieldnames).join(', ')
 }
 
 /**

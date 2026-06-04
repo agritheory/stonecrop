@@ -1,5 +1,6 @@
 [
 	{
+		"fieldtype": "Fieldset",
 		"component": "AFieldset",
 		"collapsible": true,
 		"label": "Schema",
@@ -64,6 +65,7 @@
 		]
 	},
 	{
+		"fieldtype": "Fieldset",
 		"component": "AFieldset",
 		"collapsible": true,
 		"label": "Events",

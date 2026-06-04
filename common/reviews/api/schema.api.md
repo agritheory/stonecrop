@@ -26,7 +26,7 @@ export type ActionDefinition = z.infer<typeof ActionDefinition>;
 export function buildScalarMap(customScalars?: Record<string, Partial<FieldTemplate>>): Record<string, FieldTemplate>;
 
 // @public
-export const BUILTIN_FIELD_TYPES: readonly ["Data", "Text", "Int", "Float", "Decimal", "Check", "Date", "Time", "Datetime", "Duration", "DateRange", "JSON", "Code", "Link", "Attach", "Currency", "Quantity", "Select", "PrimaryKey"];
+export const BUILTIN_FIELD_TYPES: readonly ["Data", "Text", "Int", "Float", "Decimal", "Check", "Date", "Time", "Datetime", "Duration", "DateRange", "JSON", "Code", "Link", "Attach", "Currency", "Quantity", "Select", "PrimaryKey", "Fieldset", "Display"];
 
 // @public
 export type BuiltinFieldType = (typeof BUILTIN_FIELD_TYPES)[number];
@@ -154,6 +154,7 @@ export const DoctypeMeta: z.ZodObject<{
         validation: z.ZodOptional<z.ZodObject<{
             errorMessage: z.ZodString;
         }, z.core.$loose>>;
+        schema: z.ZodOptional<z.ZodArray<z.ZodRecord<z.ZodString, z.ZodUnknown>>>;
     }, z.core.$strip>>;
     links: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodObject<{
         target: z.ZodString;
@@ -245,6 +246,7 @@ export const FieldMeta: z.ZodObject<{
     validation: z.ZodOptional<z.ZodObject<{
         errorMessage: z.ZodString;
     }, z.core.$loose>>;
+    schema: z.ZodOptional<z.ZodArray<z.ZodRecord<z.ZodString, z.ZodUnknown>>>;
 }, z.core.$strip>;
 
 // @public
