@@ -115,6 +115,22 @@ beforeAll(async () => {
 				},
 			},
 		},
+		ScProduct: {
+			name: 'ScProduct',
+			fields: [
+				{ fieldname: 'id', fieldtype: 'PrimaryKey', label: 'ID' },
+				{
+					fieldname: 'info_fieldset',
+					fieldtype: 'Fieldset',
+					component: 'AFieldset',
+					schema: [
+						{ fieldname: 'productName', fieldtype: 'Data', label: 'Name' },
+						{ fieldname: 'price', fieldtype: 'Int', label: 'Price' },
+						{ fieldname: 'priceDisplay', fieldtype: 'Display', label: 'Formatted Price' },
+					],
+				},
+			],
+		},
 	})
 
 	pool = new Pool({ connectionString: databaseUrl, max: 1 })
@@ -376,5 +392,31 @@ describe('Fieldset container fields', { tags: ['integration', 'graphql'] }, () =
 		const records = (result as any).data?.stonecropRecords
 		expect(records?.data[0].gadgetName).toBe('Gadget One')
 		expect(records?.data[0].parts).toBeUndefined()
+	})
+
+	it('excludes Display fields inside a fieldset from the SELECT column list', async () => {
+		// ScProduct has a `priceDisplay` Display field inside a Fieldset.
+		// sc_product has no price_display column — if collectColumns includes Display fields,
+		// this throws "column price_display does not exist".
+		const result = await runQuery(`query { stonecropRecords(doctype: "ScProduct") { data } }`)
+		expect((result as any).errors).toBeUndefined()
+		const records = (result as any).data?.stonecropRecords
+		expect(records?.data).toHaveLength(1)
+		expect(records?.data[0].productName).toBe('Product A')
+		expect(records?.data[0].price).toBe(100)
+		expect(records?.data[0].priceDisplay).toBeUndefined()
+	})
+
+	it('rejects a filter by fieldset container name', async () => {
+		// basicInfo_fieldset is a Fieldset container in ScWidget — it has no DB column.
+		// knownFields must be built from flattenFields so container names are never
+		// accepted as filter fields. Before the fix, this would attempt a WHERE clause
+		// on a non-existent column.
+		const result = await runQuery(
+			`query { stonecropRecords(doctype: "ScWidget", filters: { basicInfo_fieldset: "anything" }) { data } }`
+		)
+		const errors = (result as any).errors
+		expect(errors).toBeDefined()
+		expect(errors[0].message).toContain('Unknown filter field')
 	})
 })

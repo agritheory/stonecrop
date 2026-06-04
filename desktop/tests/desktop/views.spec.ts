@@ -315,6 +315,67 @@ describe('Desktop FSM state reading', { tags: ['component'] }, () => {
 	})
 })
 
+describe('Desktop – fieldset flattening in records view', { tags: ['component'] }, () => {
+	it('flattens fieldset children into flat columns when rendering the records table schema', async () => {
+		const registry = new Registry()
+		const stonecrop = new Stonecrop(registry)
+
+		// Doctype with a Fieldset container wrapping the data fields
+		const doctype = buildDoctype('widget', 'draft', { draft: {} }, [
+			{
+				fieldname: 'info_fieldset',
+				fieldtype: 'Fieldset',
+				label: 'Info',
+				component: 'AFieldset',
+				schema: [
+					{ fieldname: 'color', fieldtype: 'Data', label: 'Color', component: 'ATextInput' },
+					{ fieldname: 'weight', fieldtype: 'Data', label: 'Weight', component: 'ATextInput' },
+				],
+			} as any,
+		])
+		registry.addDoctype(doctype)
+
+		// Row data has flat keys (matching the fieldset children), not the container fieldname
+		stonecrop.addRecord('widget', 'w-1', { id: 'w-1', title: 'Widget', color: 'red', weight: '10g' })
+
+		const adapter: RouteAdapter = {
+			getCurrentDoctype: () => 'widget',
+			getCurrentRecordId: () => '',
+			getCurrentView: () => 'records',
+			navigate: vi.fn(),
+		}
+
+		const wrapper = mount(Desktop, {
+			props: { routeAdapter: adapter },
+			global: {
+				plugins: [makeStonecropPlugin(registry, stonecrop)],
+				stubs: {
+					SheetNav: true,
+					CommandPalette: true,
+					ActionSet: true,
+				},
+			},
+		})
+
+		await nextTick()
+
+		// AForm receives currentViewSchema as :schema; inspect through AForm's props
+		const aform = wrapper.findComponent({ name: 'AForm' })
+		const schema = aform.props('schema') as any[]
+		expect(schema).toBeDefined()
+		expect(schema.length).toBeGreaterThan(0)
+
+		// The records_table schema should NOT contain the fieldset container
+		const tableField = schema[0]
+		const tableSchema: any[] = tableField?.schema ?? []
+		const fieldnames = tableSchema.map((c: any) => c.fieldname)
+
+		expect(fieldnames).not.toContain('info_fieldset')
+		expect(fieldnames).toContain('color')
+		expect(fieldnames).toContain('weight')
+	})
+})
+
 describe('Desktop – breadcrumb edge cases', { tags: ['component'] }, () => {
 	it('shows "New Record" breadcrumb for a new record', async () => {
 		const registry = new Registry()
