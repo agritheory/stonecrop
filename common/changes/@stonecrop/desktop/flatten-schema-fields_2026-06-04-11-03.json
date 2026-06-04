@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/desktop",
+      "comment": "add flatten schema fields function",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/desktop"
+}

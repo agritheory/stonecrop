@@ -445,6 +445,21 @@ const createNewRecord = async () => {
 	await doNavigate({ view: 'record', doctype: routeDoctype.value, recordId: newId })
 }
 
+// Flatten Fieldset containers into individual columns for list/table views.
+// A Fieldset groups form fields visually but has no DB column; its children are the
+// actual data fields and should appear as flat columns in a list view.
+const flattenFieldsets = (fields: SchemaTypes[]): SchemaTypes[] => {
+	const result: SchemaTypes[] = []
+	for (const field of fields) {
+		if ('fieldtype' in field && field.fieldtype === 'Fieldset' && 'schema' in field && Array.isArray(field.schema)) {
+			result.push(...flattenFieldsets(field.schema as SchemaTypes[]))
+		} else {
+			result.push(field)
+		}
+	}
+	return result
+}
+
 // Schema generator functions - moved here to be available to computed properties
 const getDoctypesSchema = (): SchemaTypes[] => {
 	if (!availableDoctypes.length) return []
@@ -533,7 +548,10 @@ const getRecordsSchema = (): SchemaTypes[] => {
 			fieldname: 'records_table',
 			component: 'ATable',
 			kind: 'table',
-			schema: [...(schema as ColumnSchema[]), { fieldname: 'actions', label: 'Actions', fieldtype: 'Data' }],
+			schema: [
+				...(flattenFieldsets(schema) as ColumnSchema[]),
+				{ fieldname: 'actions', label: 'Actions', fieldtype: 'Data' },
+			],
 			config: {
 				view: 'list',
 				fullWidth: true,
