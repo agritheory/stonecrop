@@ -417,7 +417,6 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 					{
 						kind: 'fieldset' as const,
 						fieldname: 'address_section',
-						fieldtype: 'Fieldset',
 						component: 'AFieldset',
 						schema: [{ kind: 'field' as const, fieldname: 'address', fieldtype: 'Link', options: 'address' }],
 					},
@@ -469,7 +468,6 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 					{
 						kind: 'fieldset' as const,
 						fieldname: 'contact_section',
-						fieldtype: 'Fieldset',
 						component: 'AFieldset',
 						schema: [
 							{ kind: 'field' as const, fieldname: 'phone', fieldtype: 'Data', component: 'ATextInput' },
@@ -496,7 +494,6 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 					{
 						kind: 'fieldset' as const,
 						fieldname: 'section',
-						fieldtype: 'Fieldset',
 						component: 'AFieldset',
 						schema: [{ kind: 'field' as const, fieldname: 'orphan', fieldtype: 'Link', component: 'ALink' }],
 					},
@@ -520,7 +517,6 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 					{
 						kind: 'fieldset' as const,
 						fieldname: 'section',
-						fieldtype: 'Fieldset',
 						component: 'AFieldset',
 						schema: [{ kind: 'field' as const, fieldname: 'missing_link', fieldtype: 'Link', options: 'nonexistent' }],
 					},
@@ -545,7 +541,6 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 					{
 						kind: 'fieldset' as const,
 						fieldname: 'address_section',
-						fieldtype: 'Fieldset',
 						component: 'AFieldset',
 						schema: [
 							{ kind: 'field' as const, fieldname: 'label', fieldtype: 'Data', component: 'ATextInput' },
@@ -588,13 +583,11 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 					{
 						kind: 'fieldset' as const,
 						fieldname: 'outer_section',
-						fieldtype: 'Fieldset',
 						component: 'AFieldset',
 						schema: [
 							{
 								kind: 'fieldset' as const,
 								fieldname: 'inner_section',
-								fieldtype: 'Fieldset',
 								component: 'AFieldset',
 								schema: [{ kind: 'field' as const, fieldname: 'address', fieldtype: 'Link', options: 'address' }],
 							},

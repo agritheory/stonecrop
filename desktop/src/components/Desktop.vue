@@ -159,14 +159,9 @@ const currentViewData = computed<Record<string, any>>({
 			const doctype = stonecrop.value.registry.registry[currentDoctype.value]
 			if (doctype) {
 				for (const field of doctype.getSchemaArray()) {
-					if (
-						'fieldtype' in field &&
-						field.fieldtype === 'Fieldset' &&
-						'schema' in field &&
-						Array.isArray(field.schema)
-					) {
+					if (field.kind === 'fieldset') {
 						const nested: Record<string, any> = {}
-						for (const child of field.schema as any[]) {
+						for (const child of field.schema) {
 							if (child.fieldname) nested[child.fieldname] = flat[child.fieldname]
 						}
 						flat[field.fieldname] = nested
@@ -192,7 +187,7 @@ const currentViewData = computed<Record<string, any>>({
 			const fieldsetNames = new Set<string>()
 			if (doctype) {
 				for (const field of doctype.getSchemaArray()) {
-					if ('fieldtype' in field && field.fieldtype === 'Fieldset') {
+					if (field.kind === 'fieldset') {
 						fieldsetNames.add(field.fieldname)
 					}
 				}
@@ -535,14 +530,11 @@ const createNewRecord = async () => {
 // Flatten Fieldset containers into individual columns for list/table views.
 // A Fieldset groups form fields visually but has no DB column; its children are the
 // actual data fields and should appear as flat columns in a list view.
-const flattenFieldsets = (fields: SchemaTypes[]): SchemaTypes[] => {
-	const result: SchemaTypes[] = []
+const flattenFieldsets = (fields: ResolvedField[]): ResolvedField[] => {
+	const result: ResolvedField[] = []
 	for (const field of fields) {
-		const f = field as any
-		// Check both kind === 'fieldset' (422+ convention) and fieldtype === 'Fieldset' (transitional)
-		const isFieldset = (f.kind === 'fieldset' || f.fieldtype === 'Fieldset') && 'schema' in f && Array.isArray(f.schema)
-		if (isFieldset) {
-			result.push(...flattenFieldsets(f.schema as SchemaTypes[]))
+		if (field.kind === 'fieldset') {
+			result.push(...flattenFieldsets(field.schema))
 		} else {
 			result.push(field)
 		}

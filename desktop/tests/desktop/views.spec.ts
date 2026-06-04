@@ -323,13 +323,13 @@ describe('Desktop – fieldset flattening in records view', { tags: ['component'
 		// Doctype with a Fieldset container wrapping the data fields
 		const doctype = buildDoctype('widget', 'draft', { draft: {} }, [
 			{
+				kind: 'fieldset' as const,
 				fieldname: 'info_fieldset',
-				fieldtype: 'Fieldset',
 				label: 'Info',
 				component: 'AFieldset',
 				schema: [
-					{ fieldname: 'color', fieldtype: 'Data', label: 'Color', component: 'ATextInput' },
-					{ fieldname: 'weight', fieldtype: 'Data', label: 'Weight', component: 'ATextInput' },
+					{ kind: 'field' as const, fieldname: 'color', fieldtype: 'Data', label: 'Color', component: 'ATextInput' },
+					{ kind: 'field' as const, fieldname: 'weight', fieldtype: 'Data', label: 'Weight', component: 'ATextInput' },
 				],
 			} as any,
 		])
@@ -383,13 +383,13 @@ describe('Desktop – currentViewData fieldset nesting', { tags: ['component'] }
 
 		const doctype = buildDoctype('gadget', 'draft', { draft: {} }, [
 			{
+				kind: 'fieldset' as const,
 				fieldname: 'info_fieldset',
-				fieldtype: 'Fieldset',
 				label: 'Info',
 				component: 'AFieldset',
 				schema: [
-					{ fieldname: 'color', fieldtype: 'Data', label: 'Color', component: 'ATextInput' },
-					{ fieldname: 'weight', fieldtype: 'Data', label: 'Weight', component: 'ATextInput' },
+					{ kind: 'field' as const, fieldname: 'color', fieldtype: 'Data', label: 'Color', component: 'ATextInput' },
+					{ kind: 'field' as const, fieldname: 'weight', fieldtype: 'Data', label: 'Weight', component: 'ATextInput' },
 				],
 			} as any,
 		])
@@ -428,13 +428,13 @@ describe('Desktop – currentViewData fieldset nesting', { tags: ['component'] }
 
 		const doctype = buildDoctype('gadget', 'draft', { draft: {} }, [
 			{
+				kind: 'fieldset' as const,
 				fieldname: 'info_fieldset',
-				fieldtype: 'Fieldset',
 				label: 'Info',
 				component: 'AFieldset',
 				schema: [
-					{ fieldname: 'color', fieldtype: 'Data', label: 'Color', component: 'ATextInput' },
-					{ fieldname: 'weight', fieldtype: 'Data', label: 'Weight', component: 'ATextInput' },
+					{ kind: 'field' as const, fieldname: 'color', fieldtype: 'Data', label: 'Color', component: 'ATextInput' },
+					{ kind: 'field' as const, fieldname: 'weight', fieldtype: 'Data', label: 'Weight', component: 'ATextInput' },
 				],
 			} as any,
 		])
