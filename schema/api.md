@@ -824,7 +824,7 @@ The complete list of field types built into Stonecrop. User apps can use any str
 **Type:**
 
 ```typescript
-export const BUILTIN_FIELD_TYPES: readonly ["Data", "Text", "Int", "Float", "Decimal", "Check", "Date", "Time", "Datetime", "Duration", "DateRange", "JSON", "Code", "Link", "Attach", "Currency", "Quantity", "Select", "PrimaryKey", "Fieldset", "LongText", "Display"]
+export const BUILTIN_FIELD_TYPES: readonly ["Data", "Text", "Int", "Float", "Decimal", "Check", "Date", "Time", "Datetime", "Duration", "DateRange", "JSON", "Code", "Link", "Attach", "Currency", "Quantity", "Select", "PrimaryKey", "Fieldset", "TextBox", "Display"]
 ```
 
 ### Cardinality

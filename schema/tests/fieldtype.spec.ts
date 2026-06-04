@@ -27,8 +27,8 @@ describe('fieldtype', { tags: ['unit'] }, () => {
 			expect(getDefaultComponent('Link')).toBe('ALink')
 		})
 
-		it('should return correct component for LongText field', () => {
-			expect(getDefaultComponent('LongText')).toBe('ATextboxInput')
+		it('should return correct component for TextBox field', () => {
+			expect(getDefaultComponent('TextBox')).toBe('ATextboxInput')
 		})
 
 		it('should fallback to ATextInput for unknown builtin fieldtype', () => {
@@ -59,7 +59,7 @@ describe('fieldtype', { tags: ['unit'] }, () => {
 				'Currency',
 				'Quantity',
 				'Select',
-				'LongText',
+				'TextBox',
 			]
 
 			for (const type of expectedTypes) {
@@ -107,7 +107,7 @@ describe('fieldtype', { tags: ['unit'] }, () => {
 			expect(resolveComponent('Select')).toBe('ADropdown')
 			expect(resolveComponent('Phone')).toBe('ATextInput') // unknown → fallback
 			expect(resolveComponent('HTML')).toBe('ATextInput') // unknown → fallback
-			expect(resolveComponent('LongText')).toBe('ATextboxInput') // known → specific component
+			expect(resolveComponent('TextBox')).toBe('ATextboxInput') // known → specific component
 		})
 	})
 

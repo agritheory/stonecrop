@@ -26,7 +26,7 @@ export const BUILTIN_FIELD_TYPES = [
 	'Quantity', // Quantity with unit
 	'Select', // Dropdown selection
 	'PrimaryKey', // Primary key field — used by the middleware to identify the record's PK column
-	'LongText', // Very long text, rendered with a textarea
+	'TextBox', // Very long text, rendered with a textarea
 	'Fieldset', // UI grouping container — no DB column; children are flat columns
 	'Display', // Computed/read-only field — no DB column; excluded from SQL SELECT
 ] as const
@@ -114,7 +114,7 @@ export const TYPE_MAP: Record<BuiltinFieldType, FieldTemplate> = {
 
 	// Identity — PK fields are typically hidden; no interactive component is needed
 	PrimaryKey: { component: 'ATextInput', fieldtype: 'PrimaryKey' },
-	LongText: { component: 'ATextboxInput', fieldtype: 'LongText' },
+	TextBox: { component: 'ATextboxInput', fieldtype: 'TextBox' },
 
 	// Layout — UI grouping containers and computed fields with no backing DB column
 	Fieldset: { component: 'AFieldset', fieldtype: 'Fieldset' },
