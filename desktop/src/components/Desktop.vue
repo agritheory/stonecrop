@@ -120,7 +120,29 @@ const currentViewData = computed<Record<string, any>>({
 			// Return a plain shallow copy so AForm mutations don't propagate directly into
 			// the HST reactive object, which would bypass field-trigger diffing and cause
 			// setupDeepReactivity to fire triggers for all fields on every keystroke.
-			return { ...record?.get('') }
+			const flat: Record<string, any> = { ...record?.get('') }
+
+			// AFieldset receives data[fieldsetFieldname] as its data prop, so the fieldset's
+			// children must be grouped under the fieldset key. The server returns flat SQL rows,
+			// so we nest fieldset children here before AForm renders them.
+			const doctype = stonecrop.value.registry.registry[currentDoctype.value]
+			if (doctype) {
+				for (const field of doctype.getSchemaArray()) {
+					if (
+						'fieldtype' in field &&
+						field.fieldtype === 'Fieldset' &&
+						'schema' in field &&
+						Array.isArray(field.schema)
+					) {
+						const nested: Record<string, any> = {}
+						for (const child of field.schema as any[]) {
+							if (child.fieldname) nested[child.fieldname] = flat[child.fieldname]
+						}
+						flat[field.fieldname] = nested
+					}
+				}
+			}
+			return flat
 		} catch {
 			return {}
 		}
@@ -131,9 +153,38 @@ const currentViewData = computed<Record<string, any>>({
 		}
 
 		try {
+			// AForm emits nested data for fieldsets: { fieldsetKey: { childA: val } }.
+			// HST and the server both expect flat rows, so flatten fieldset values back before writing.
+			const doctype = stonecrop.value.registry.registry[currentDoctype.value]
+			const fieldsetNames = new Set<string>()
+			if (doctype) {
+				for (const field of doctype.getSchemaArray()) {
+					if ('fieldtype' in field && field.fieldtype === 'Fieldset') {
+						fieldsetNames.add(field.fieldname)
+					}
+				}
+			}
+
+			// Two-pass flatten: non-fieldset keys first, then fieldset children.
+			// Fieldset children must be applied last — AForm may emit stale flat copies
+			// of fieldset children alongside the updated nested value, and the nested
+			// value must win regardless of key insertion order.
+			const flatData: Record<string, any> = {}
+			const fieldsetValues: Record<string, any>[] = []
+			for (const [key, value] of Object.entries(newData)) {
+				if (fieldsetNames.has(key) && value && typeof value === 'object' && !Array.isArray(value)) {
+					fieldsetValues.push(value)
+				} else {
+					flatData[key] = value
+				}
+			}
+			for (const nestedValue of fieldsetValues) {
+				Object.assign(flatData, nestedValue)
+			}
+
 			// Only update fields that actually changed to avoid triggering actions for unchanged fields
 			const hstStore = stonecrop.value.getStore()
-			for (const [fieldname, value] of Object.entries(newData)) {
+			for (const [fieldname, value] of Object.entries(flatData)) {
 				const fieldPath = `${currentDoctype.value}.${currentRecordId.value}.${fieldname}`
 				const currentValue = hstStore.has(fieldPath) ? hstStore.get(fieldPath) : undefined
 				if (currentValue !== value) {

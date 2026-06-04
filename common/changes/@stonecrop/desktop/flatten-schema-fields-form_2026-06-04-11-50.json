@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/desktop",
+      "comment": "flatten schema data for render",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/desktop"
+}
