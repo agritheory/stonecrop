@@ -2,6 +2,18 @@
   "name": "@stonecrop/desktop",
   "entries": [
     {
+      "version": "0.13.8",
+      "tag": "@stonecrop/desktop_v0.13.8",
+      "date": "Thu, 04 Jun 2026 12:04:15 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "flatten schema data for render"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.13.7",
       "tag": "@stonecrop/desktop_v0.13.7",
       "date": "Thu, 04 Jun 2026 11:09:19 GMT",
