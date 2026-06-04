@@ -376,6 +376,113 @@ describe('Desktop – fieldset flattening in records view', { tags: ['component'
 	})
 })
 
+describe('Desktop – currentViewData fieldset nesting', { tags: ['component'] }, () => {
+	it('nests flat HST data under fieldset keys so AForm can bind to them', async () => {
+		const registry = new Registry()
+		const stonecrop = new Stonecrop(registry)
+
+		const doctype = buildDoctype('gadget', 'draft', { draft: {} }, [
+			{
+				fieldname: 'info_fieldset',
+				fieldtype: 'Fieldset',
+				label: 'Info',
+				component: 'AFieldset',
+				schema: [
+					{ fieldname: 'color', fieldtype: 'Data', label: 'Color', component: 'ATextInput' },
+					{ fieldname: 'weight', fieldtype: 'Data', label: 'Weight', component: 'ATextInput' },
+				],
+			} as any,
+		])
+		registry.addDoctype(doctype)
+
+		// Record stored with FLAT data — as the server returns it
+		stonecrop.addRecord('gadget', 'g-1', { id: 'g-1', color: 'red', weight: '10g' })
+
+		const adapter: RouteAdapter = {
+			getCurrentDoctype: () => 'gadget',
+			getCurrentRecordId: () => 'g-1',
+			getCurrentView: () => 'record',
+			navigate: vi.fn(),
+		}
+
+		const wrapper = mount(Desktop, {
+			props: { routeAdapter: adapter },
+			global: {
+				plugins: [makeStonecropPlugin(registry, stonecrop)],
+				stubs: { AForm: true, SheetNav: true, CommandPalette: true, ActionSet: true },
+			},
+		})
+
+		await nextTick()
+
+		const aform = wrapper.findComponent({ name: 'AForm' })
+		const data = aform.props('data') as Record<string, any>
+
+		// AFieldset receives data[fieldsetKey] — must be a nested object with the children
+		expect(data['info_fieldset']).toEqual({ color: 'red', weight: '10g' })
+	})
+
+	it('flattens nested fieldset data back to flat HST keys on set, with fieldset values winning over stale flat copies', async () => {
+		const registry = new Registry()
+		const stonecrop = new Stonecrop(registry)
+
+		const doctype = buildDoctype('gadget', 'draft', { draft: {} }, [
+			{
+				fieldname: 'info_fieldset',
+				fieldtype: 'Fieldset',
+				label: 'Info',
+				component: 'AFieldset',
+				schema: [
+					{ fieldname: 'color', fieldtype: 'Data', label: 'Color', component: 'ATextInput' },
+					{ fieldname: 'weight', fieldtype: 'Data', label: 'Weight', component: 'ATextInput' },
+				],
+			} as any,
+		])
+		registry.addDoctype(doctype)
+		stonecrop.addRecord('gadget', 'g-1', { id: 'g-1', color: 'red', weight: '10g' })
+
+		const adapter: RouteAdapter = {
+			getCurrentDoctype: () => 'gadget',
+			getCurrentRecordId: () => 'g-1',
+			getCurrentView: () => 'record',
+			navigate: vi.fn(),
+		}
+
+		const wrapper = mount(Desktop, {
+			props: { routeAdapter: adapter },
+			global: {
+				plugins: [makeStonecropPlugin(registry, stonecrop)],
+				stubs: { AForm: true, SheetNav: true, CommandPalette: true, ActionSet: true },
+			},
+		})
+
+		await nextTick()
+
+		// Simulate what AForm emits after the user changes color inside the fieldset:
+		// it emits the full data including stale flat copy ('red') alongside the updated
+		// nested value ('blue'). The nested value must win.
+		const aform = wrapper.findComponent({ name: 'AForm' })
+		await aform.vm.$emit('update:data', {
+			id: 'g-1',
+			color: 'red', // stale flat copy
+			weight: '10g', // stale flat copy
+			info_fieldset: { color: 'blue', weight: '10g' }, // updated nested value
+		})
+		await nextTick()
+
+		// HST must store the NESTED value ('blue'), not the stale flat copy ('red')
+		const record = stonecrop.getRecordById('gadget', 'g-1')
+		expect(record?.get('color')).toBe('blue')
+		expect(record?.get('weight')).toBe('10g')
+
+		// Use HSTNode.has() to distinguish "key absent" from "key present with undefined value".
+		// record?.get('info_fieldset') would return undefined for both — has() is unambiguous.
+		const store = stonecrop.getStore()
+		expect(store.has('gadget.g-1.info_fieldset')).toBe(false) // truly absent
+		expect(store.has('gadget.g-1.color')).toBe(true) // present with correct value
+	})
+})
+
 describe('Desktop – breadcrumb edge cases', { tags: ['component'] }, () => {
 	it('shows "New Record" breadcrumb for a new record', async () => {
 		const registry = new Registry()

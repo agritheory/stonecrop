@@ -165,13 +165,21 @@ const currentViewData = computed<Record<string, any>>({
 				}
 			}
 
+			// Two-pass flatten: non-fieldset keys first, then fieldset children.
+			// Fieldset children must be applied last — AForm may emit stale flat copies
+			// of fieldset children alongside the updated nested value, and the nested
+			// value must win regardless of key insertion order.
 			const flatData: Record<string, any> = {}
+			const fieldsetValues: Record<string, any>[] = []
 			for (const [key, value] of Object.entries(newData)) {
 				if (fieldsetNames.has(key) && value && typeof value === 'object' && !Array.isArray(value)) {
-					Object.assign(flatData, value)
+					fieldsetValues.push(value)
 				} else {
 					flatData[key] = value
 				}
+			}
+			for (const nestedValue of fieldsetValues) {
+				Object.assign(flatData, nestedValue)
 			}
 
 			// Only update fields that actually changed to avoid triggering actions for unchanged fields
