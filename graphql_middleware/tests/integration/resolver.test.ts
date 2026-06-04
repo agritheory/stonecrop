@@ -69,6 +69,68 @@ beforeAll(async () => {
 				{ kind: 'field', fieldname: 'item_id', fieldtype: 'Data', label: 'Item ID' },
 			],
 		},
+		ScWidget: {
+			name: 'ScWidget',
+			fields: [
+				{ kind: 'field', fieldname: 'id', fieldtype: 'PrimaryKey', label: 'ID' },
+				{
+					kind: 'fieldset',
+					fieldname: 'basicInfo_fieldset',
+					component: 'AFieldset',
+					schema: [
+						{ kind: 'field', fieldname: 'itemName', fieldtype: 'Data', label: 'Name' },
+						{ kind: 'field', fieldname: 'itemColor', fieldtype: 'Data', label: 'Color' },
+					],
+				},
+			],
+		},
+		ScPart: {
+			name: 'ScPart',
+			fields: [
+				{ kind: 'field', fieldname: 'id', fieldtype: 'PrimaryKey', label: 'ID' },
+				{ kind: 'field', fieldname: 'gadget_id', fieldtype: 'Data', label: 'Gadget ID' },
+				{ kind: 'field', fieldname: 'partName', fieldtype: 'Data', label: 'Part Name' },
+			],
+		},
+		ScGadget: {
+			name: 'ScGadget',
+			fields: [
+				{ kind: 'field', fieldname: 'id', fieldtype: 'PrimaryKey', label: 'ID' },
+				{
+					kind: 'fieldset',
+					fieldname: 'info_fieldset',
+					component: 'AFieldset',
+					schema: [
+						{ kind: 'field', fieldname: 'gadgetName', fieldtype: 'Data', label: 'Name' },
+						{ kind: 'field', fieldname: 'parts', fieldtype: 'Link', options: 'ScPart' },
+					],
+				},
+			],
+			links: {
+				parts: {
+					target: 'ScPart',
+					cardinality: 'noneOrMany' as const,
+					backlink: 'gadget_id',
+					fetch: { method: 'sync' as const },
+				},
+			},
+		},
+		ScProduct: {
+			name: 'ScProduct',
+			fields: [
+				{ kind: 'field', fieldname: 'id', fieldtype: 'PrimaryKey', label: 'ID' },
+				{
+					kind: 'fieldset',
+					fieldname: 'info_fieldset',
+					component: 'AFieldset',
+					schema: [
+						{ kind: 'field', fieldname: 'productName', fieldtype: 'Data', label: 'Name' },
+						{ kind: 'field', fieldname: 'price', fieldtype: 'Int', label: 'Price' },
+						{ kind: 'field', fieldname: 'priceDisplay', fieldtype: 'Data', mode: 'display', label: 'Formatted Price' },
+					],
+				},
+			],
+		},
 	})
 
 	pool = new Pool({ connectionString: databaseUrl, max: 1 })
@@ -278,5 +340,83 @@ describe('stonecropMeta', { tags: ['integration', 'graphql'] }, () => {
 	it('returns null for unknown doctype', async () => {
 		const result = await runQuery(`query { stonecropMeta(doctype: "DoesNotExist") { name } }`)
 		expect((result as any).data?.stonecropMeta).toBeNull()
+	})
+})
+
+// ===========================================================================
+// Fieldset container fields
+// ===========================================================================
+
+describe('Fieldset container fields', { tags: ['integration', 'graphql'] }, () => {
+	it('fetches records and returns fieldset child data', async () => {
+		const result = await runQuery(`query { stonecropRecords(doctype: "ScWidget") { data } }`)
+		const records = (result as any).data?.stonecropRecords
+		expect((result as any).errors).toBeUndefined()
+		expect(records?.data).toHaveLength(2)
+		expect(records?.data[0].itemName).toBe('Widget A')
+		expect(records?.data[0].itemColor).toBe('blue')
+	})
+
+	it('fetches a single record with fieldset children via stonecropRecord', async () => {
+		const result = await runQuery(`query { stonecropRecord(doctype: "ScWidget", id: "1") { data } }`)
+		expect((result as any).errors).toBeUndefined()
+		const data = (result as any).data?.stonecropRecord?.data
+		expect(data?.itemName).toBe('Widget A')
+		expect(data?.itemColor).toBe('blue')
+	})
+
+	it('filters records by a fieldset child field', async () => {
+		const result = await runQuery(
+			`query { stonecropRecords(doctype: "ScWidget", filters: { itemColor: "blue" }) { data } }`
+		)
+		expect((result as any).errors).toBeUndefined()
+		const records = (result as any).data?.stonecropRecords
+		expect(records?.data).toHaveLength(1)
+		expect(records?.data[0].itemName).toBe('Widget A')
+	})
+
+	it('orders records by a fieldset child field', async () => {
+		const result = await runQuery(`query { stonecropRecords(doctype: "ScWidget", orderBy: "itemName_DESC") { data } }`)
+		expect((result as any).errors).toBeUndefined()
+		const data = (result as any).data?.stonecropRecords?.data
+		expect(data[0].itemName).toBe('Widget B')
+		expect(data[1].itemName).toBe('Widget A')
+	})
+
+	it('excludes Link fields inside a fieldset from the SELECT column list', async () => {
+		// ScGadget has a `parts` Link field nested inside a Fieldset.
+		// If collectColumns incorrectly includes it, this query throws
+		// "column parts does not exist" — it should return cleanly instead.
+		const result = await runQuery(`query { stonecropRecords(doctype: "ScGadget") { data } }`)
+		expect((result as any).errors).toBeUndefined()
+		const records = (result as any).data?.stonecropRecords
+		expect(records?.data[0].gadgetName).toBe('Gadget One')
+		expect(records?.data[0].parts).toBeUndefined()
+	})
+
+	it('excludes Display fields inside a fieldset from the SELECT column list', async () => {
+		// ScProduct has a `priceDisplay` Display field inside a Fieldset.
+		// sc_product has no price_display column — if collectColumns includes Display fields,
+		// this throws "column price_display does not exist".
+		const result = await runQuery(`query { stonecropRecords(doctype: "ScProduct") { data } }`)
+		expect((result as any).errors).toBeUndefined()
+		const records = (result as any).data?.stonecropRecords
+		expect(records?.data).toHaveLength(1)
+		expect(records?.data[0].productName).toBe('Product A')
+		expect(records?.data[0].price).toBe(100)
+		expect(records?.data[0].priceDisplay).toBeUndefined()
+	})
+
+	it('rejects a filter by fieldset container name', async () => {
+		// basicInfo_fieldset is a Fieldset container in ScWidget — it has no DB column.
+		// knownFields must be built from flattenFields so container names are never
+		// accepted as filter fields. Before the fix, this would attempt a WHERE clause
+		// on a non-existent column.
+		const result = await runQuery(
+			`query { stonecropRecords(doctype: "ScWidget", filters: { basicInfo_fieldset: "anything" }) { data } }`
+		)
+		const errors = (result as any).errors
+		expect(errors).toBeDefined()
+		expect(errors[0].message).toContain('Unknown filter field')
 	})
 })

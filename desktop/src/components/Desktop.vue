@@ -151,7 +151,29 @@ const currentViewData = computed<Record<string, any>>({
 			// Return a plain shallow copy so AForm mutations don't propagate directly into
 			// the HST reactive object, which would bypass field-trigger diffing and cause
 			// setupDeepReactivity to fire triggers for all fields on every keystroke.
-			return { ...record?.get('') }
+			const flat: Record<string, any> = { ...record?.get('') }
+
+			// AFieldset receives data[fieldsetFieldname] as its data prop, so the fieldset's
+			// children must be grouped under the fieldset key. The server returns flat SQL rows,
+			// so we nest fieldset children here before AForm renders them.
+			const doctype = stonecrop.value.registry.registry[currentDoctype.value]
+			if (doctype) {
+				for (const field of doctype.getSchemaArray()) {
+					if (
+						'fieldtype' in field &&
+						field.fieldtype === 'Fieldset' &&
+						'schema' in field &&
+						Array.isArray(field.schema)
+					) {
+						const nested: Record<string, any> = {}
+						for (const child of field.schema as any[]) {
+							if (child.fieldname) nested[child.fieldname] = flat[child.fieldname]
+						}
+						flat[field.fieldname] = nested
+					}
+				}
+			}
+			return flat
 		} catch {
 			return {}
 		}
@@ -164,9 +186,41 @@ const currentViewData = computed<Record<string, any>>({
 		}
 
 		try {
-			// Only update fields that actually changed to avoid triggering actions for unchanged fields
+			// AForm emits nested data for fieldsets: { fieldsetKey: { childA: val } }.
+			// HST and the server both expect flat rows, so flatten fieldset values back before writing.
+			const doctype = stonecrop.value.registry.registry[currentDoctype.value]
+			const fieldsetNames = new Set<string>()
+			if (doctype) {
+				for (const field of doctype.getSchemaArray()) {
+					if ('fieldtype' in field && field.fieldtype === 'Fieldset') {
+						fieldsetNames.add(field.fieldname)
+					}
+				}
+			}
+
+			// Two-pass flatten: non-fieldset keys first, then fieldset children.
+			// Fieldset children must be applied last — AForm may emit stale flat copies
+			// of fieldset children alongside the updated nested value, and the nested
+			// value must win regardless of key insertion order.
+			const flatData: Record<string, any> = {}
+			const fieldsetValues: Record<string, any>[] = []
+			for (const [key, value] of Object.entries(newData)) {
+				if (fieldsetNames.has(key) && value && typeof value === 'object' && !Array.isArray(value)) {
+					fieldsetValues.push(value)
+				} else {
+					flatData[key] = value
+				}
+			}
+			for (const nestedValue of fieldsetValues) {
+				Object.assign(flatData, nestedValue)
+			}
+
+			// Only update fields that actually changed. Never write undefined — AForm may emit
+			// schema fields absent from the record as undefined; writing them would silently
+			// clear values that exist in HST. Explicit null is allowed (intentional clear).
 			const hstStore = stonecrop.value.getStore()
-			for (const [fieldname, value] of Object.entries(newData)) {
+			for (const [fieldname, value] of Object.entries(flatData)) {
+				if (value === undefined) continue
 				const fieldPath = `${currentDoctype.value}.${currentRecordId.value}.${fieldname}`
 				const currentValue = hstStore.has(fieldPath) ? hstStore.get(fieldPath) : undefined
 				if (currentValue !== value) {
@@ -478,6 +532,24 @@ const createNewRecord = async () => {
 	await doNavigate({ view: 'record', doctype: routeDoctype.value, recordId: newId })
 }
 
+// Flatten Fieldset containers into individual columns for list/table views.
+// A Fieldset groups form fields visually but has no DB column; its children are the
+// actual data fields and should appear as flat columns in a list view.
+const flattenFieldsets = (fields: SchemaTypes[]): SchemaTypes[] => {
+	const result: SchemaTypes[] = []
+	for (const field of fields) {
+		const f = field as any
+		// Check both kind === 'fieldset' (422+ convention) and fieldtype === 'Fieldset' (transitional)
+		const isFieldset = (f.kind === 'fieldset' || f.fieldtype === 'Fieldset') && 'schema' in f && Array.isArray(f.schema)
+		if (isFieldset) {
+			result.push(...flattenFieldsets(f.schema as SchemaTypes[]))
+		} else {
+			result.push(field)
+		}
+	}
+	return result
+}
+
 // Schema generator functions - moved here to be available to computed properties
 const getDoctypesSchema = (): ResolvedField[] => {
 	if (!availableDoctypes?.length) return []
@@ -546,7 +618,10 @@ const getRecordsSchema = (): ResolvedField[] => {
 			kind: 'table' as const,
 			fieldname: 'records_table',
 			component: 'ATable',
-			schema: [...(schema as ColumnSchema[]), { fieldname: 'actions', label: 'Actions', fieldtype: 'Data' }],
+			schema: [
+				...(flattenFieldsets(schema) as ColumnSchema[]),
+				{ fieldname: 'actions', label: 'Actions', fieldtype: 'Data' },
+			],
 			config: { view: 'list' as const, fullWidth: true },
 		} satisfies ResolvedTable,
 	]

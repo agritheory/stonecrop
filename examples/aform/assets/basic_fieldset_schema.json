@@ -1,34 +1,30 @@
 [
 	{
-		"kind": "fieldset",
 		"fieldname": "basic_fieldset",
+		"fieldtype": "Fieldset",
 		"component": "AFieldset",
 		"collapsible": true,
 		"label": "Basic Fieldset",
 		"schema": [
 			{
-				"kind": "field",
 				"fieldname": "first_name",
 				"fieldtype": "Data",
 				"component": "ATextInput",
 				"label": "First Name"
 			},
 			{
-				"kind": "field",
 				"fieldname": "middle_name",
 				"fieldtype": "Data",
 				"component": "ATextInput",
 				"label": "Middle Name"
 			},
 			{
-				"kind": "field",
 				"fieldname": "last_name",
 				"fieldtype": "Data",
 				"component": "ATextInput",
 				"label": "Last Name"
 			},
 			{
-				"kind": "field",
 				"fieldname": "age",
 				"fieldtype": "Int",
 				"component": "ANumericInput",
