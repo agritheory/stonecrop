@@ -108,20 +108,20 @@ Vue component exported from @stonecrop/aform.
 import { AFormLink } from '@stonecrop/aform'
 ```
 
-### ALongText
-
-Vue component exported from @stonecrop/aform.
-
-```typescript
-import { ALongText } from '@stonecrop/aform'
-```
-
 ### ANumericInput
 
 Vue component exported from @stonecrop/aform.
 
 ```typescript
 import { ANumericInput } from '@stonecrop/aform'
+```
+
+### ATextboxInput
+
+Vue component exported from @stonecrop/aform.
+
+```typescript
+import { ATextboxInput } from '@stonecrop/aform'
 ```
 
 ### ATextInput

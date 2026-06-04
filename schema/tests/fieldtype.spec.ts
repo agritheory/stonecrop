@@ -28,7 +28,7 @@ describe('fieldtype', { tags: ['unit'] }, () => {
 		})
 
 		it('should return correct component for LongText field', () => {
-			expect(getDefaultComponent('LongText')).toBe('ALongText')
+			expect(getDefaultComponent('LongText')).toBe('ATextboxInput')
 		})
 
 		it('should fallback to ATextInput for unknown builtin fieldtype', () => {
@@ -107,7 +107,7 @@ describe('fieldtype', { tags: ['unit'] }, () => {
 			expect(resolveComponent('Select')).toBe('ADropdown')
 			expect(resolveComponent('Phone')).toBe('ATextInput') // unknown → fallback
 			expect(resolveComponent('HTML')).toBe('ATextInput') // unknown → fallback
-			expect(resolveComponent('LongText')).toBe('ALongText') // known → specific component
+			expect(resolveComponent('LongText')).toBe('ATextboxInput') // known → specific component
 		})
 	})
 })

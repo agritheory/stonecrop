@@ -112,7 +112,7 @@ export const TYPE_MAP: Record<BuiltinFieldType, FieldTemplate> = {
 
 	// Identity — PK fields are typically hidden; no interactive component is needed
 	PrimaryKey: { component: 'ATextInput', fieldtype: 'PrimaryKey' },
-	LongText: { component: 'ALongText', fieldtype: 'LongText' },
+	LongText: { component: 'ATextboxInput', fieldtype: 'LongText' },
 }
 
 /**

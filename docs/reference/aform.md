@@ -118,7 +118,7 @@ import { AFormLink } from '@stonecrop/aform'
 Vue component exported from @stonecrop/aform.
 
 ```typescript
-import { ALongText } from '@stonecrop/aform'
+import { ATextboxInput } from '@stonecrop/aform'
 ```
 
 ### ANumericInput

@@ -18,7 +18,7 @@ import AForm from './components/AForm.vue'
 import AFormLink from './components/form/AFormLink.vue'
 import ANumericInput from './components/form/ANumericInput.vue'
 import ATextInput from './components/form/ATextInput.vue'
-import ALongText from './components/form/ALongText.vue'
+import ATextboxInput from './components/form/ATextboxInput.vue'
 import Login from './components/utilities/Login.vue'
 export type * from './types'
 
@@ -44,7 +44,7 @@ function install(app: App /* options */) {
 	app.component('AFormLink', AFormLink)
 	app.component('ANumericInput', ANumericInput)
 	app.component('ATextInput', ATextInput)
-	app.component('ALongText', ALongText)
+	app.component('ATextboxInput', ATextboxInput)
 	app.component('ADuration', ADuration)
 }
 
@@ -52,7 +52,7 @@ export {
 	ACheckbox,
 	AComboBox,
 	ADate,
-	ALongText,
+	ATextboxInput,
 	ADropdown,
 	ADatePicker,
 	ADateRange,
