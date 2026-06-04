@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/schema",
+      "comment": "add fieldset fieldtype",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/schema"
+}
