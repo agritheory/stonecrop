@@ -122,4 +122,16 @@ describe('fieldtype', { tags: ['unit'] }, () => {
 			expect(TYPE_MAP['Fieldset'].component).toBe('AFieldset')
 		})
 	})
+
+	describe('Display fieldtype', () => {
+		it('is in BUILTIN_FIELD_TYPES', () => {
+			expect(BUILTIN_FIELD_TYPES).toContain('Display')
+			expect(isBuiltinFieldType('Display')).toBe(true)
+		})
+
+		it('has a TYPE_MAP entry that maps to itself', () => {
+			expect(TYPE_MAP['Display']).toBeDefined()
+			expect(TYPE_MAP['Display'].fieldtype).toBe('Display')
+		})
+	})
 })
