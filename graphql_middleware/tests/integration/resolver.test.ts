@@ -336,7 +336,7 @@ describe('Fieldset container fields', { tags: ['integration', 'graphql'] }, () =
 		const result = await runQuery(`query { stonecropRecords(doctype: "ScWidget") { data } }`)
 		const records = (result as any).data?.stonecropRecords
 		expect((result as any).errors).toBeUndefined()
-		expect(records?.data).toHaveLength(1)
+		expect(records?.data).toHaveLength(2)
 		expect(records?.data[0].itemName).toBe('Widget A')
 		expect(records?.data[0].itemColor).toBe('blue')
 	})
@@ -347,6 +347,24 @@ describe('Fieldset container fields', { tags: ['integration', 'graphql'] }, () =
 		const data = (result as any).data?.stonecropRecord?.data
 		expect(data?.itemName).toBe('Widget A')
 		expect(data?.itemColor).toBe('blue')
+	})
+
+	it('filters records by a fieldset child field', async () => {
+		const result = await runQuery(
+			`query { stonecropRecords(doctype: "ScWidget", filters: { itemColor: "blue" }) { data } }`
+		)
+		expect((result as any).errors).toBeUndefined()
+		const records = (result as any).data?.stonecropRecords
+		expect(records?.data).toHaveLength(1)
+		expect(records?.data[0].itemName).toBe('Widget A')
+	})
+
+	it('orders records by a fieldset child field', async () => {
+		const result = await runQuery(`query { stonecropRecords(doctype: "ScWidget", orderBy: "itemName_DESC") { data } }`)
+		expect((result as any).errors).toBeUndefined()
+		const data = (result as any).data?.stonecropRecords?.data
+		expect(data[0].itemName).toBe('Widget B')
+		expect(data[1].itemName).toBe('Widget A')
 	})
 
 	it('excludes Link fields inside a fieldset from the SELECT column list', async () => {

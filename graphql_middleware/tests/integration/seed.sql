@@ -59,7 +59,7 @@ CREATE TABLE sc_widget (
 	item_name text,
 	item_color text
 );
-INSERT INTO sc_widget (id, item_name, item_color) VALUES (1, 'Widget A', 'blue');
+INSERT INTO sc_widget (id, item_name, item_color) VALUES (1, 'Widget A', 'blue'), (2, 'Widget B', 'red');
 
 CREATE TABLE sc_part (
 	id serial PRIMARY KEY,

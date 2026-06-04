@@ -247,7 +247,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 												return { data: [], doctype, count: 0 }
 											}
 
-											const knownFields = new Set(meta.fields.map(f => f.fieldname))
+											const knownFields = new Set(flattenFields(meta.fields).map(f => f.fieldname))
 											const columns = getSqlColumns(meta)
 											const values: unknown[] = []
 
@@ -393,25 +393,35 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 // ===========================================================================
 
 /**
- * Recursively collect quoted SQL column entries from a field list.
- * Fieldset containers (fieldtype === 'Fieldset') have no DB column — their children
- * are recursed into instead. Display fields and declared Link fields are skipped.
+ * Recursively flatten Fieldset containers into a single-level FieldMeta array.
+ * Fieldset entries are replaced by their children; all other fields pass through.
+ * Used by both getSqlColumns (for SELECT) and knownFields (for filter/orderBy validation).
  *
  * TODO(schema-types Phase 4): add f.kind === 'field' narrowing when DoctypeField union lands
  */
-function collectColumns(fields: FieldMeta[], linkedFieldnames: Set<string>): string[] {
-	const columns: string[] = []
+function flattenFields(fields: FieldMeta[]): FieldMeta[] {
+	const result: FieldMeta[] = []
 	for (const f of fields) {
-		if (f.fieldtype === 'Display') continue
 		if (f.fieldtype === 'Fieldset') {
 			const validChildren = (f.schema ?? []).filter(
 				(c): c is FieldMeta => typeof c['fieldname'] === 'string' && typeof c['fieldtype'] === 'string'
 			)
-			if (validChildren.length) {
-				columns.push(...collectColumns(validChildren, linkedFieldnames))
-			}
-			continue
+			result.push(...flattenFields(validChildren))
+		} else {
+			result.push(f)
 		}
+	}
+	return result
+}
+
+/**
+ * Derive a quoted SQL column entry for a single flat field.
+ * Applies camelToSnake and aliases back to the original fieldname.
+ */
+function collectColumns(fields: FieldMeta[], linkedFieldnames: Set<string>): string[] {
+	const columns: string[] = []
+	for (const f of flattenFields(fields)) {
+		if (f.fieldtype === 'Display') continue
 		if (f.fieldtype === 'Link' && linkedFieldnames.has(f.fieldname)) continue
 		const col = camelToSnake(f.fieldname)
 		columns.push(col !== f.fieldname ? `"${col}" AS "${f.fieldname}"` : `"${f.fieldname}"`)
