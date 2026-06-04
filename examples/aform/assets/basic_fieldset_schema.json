@@ -1,7 +1,7 @@
 [
 	{
 		"fieldname": "basic_fieldset",
-		"fieldtype": "Data",
+		"fieldtype": "Fieldset",
 		"component": "AFieldset",
 		"collapsible": true,
 		"label": "Basic Fieldset",
