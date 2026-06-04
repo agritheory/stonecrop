@@ -141,6 +141,11 @@ export const FieldMeta = z
 
 		/** Validation configuration */
 		validation: FieldValidation.optional(),
+
+		// === LAYOUT ===
+
+		/** Nested field definitions for Fieldset containers — UI grouping only, no DB column */
+		schema: z.array(z.record(z.string(), z.unknown())).optional(),
 	})
 	.meta({
 		title: 'FieldMeta',

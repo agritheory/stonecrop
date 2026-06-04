@@ -102,35 +102,33 @@ export function convertGraphQLSchema(
 		const fields = type.getFields()
 		const typeOverrides = options.typeOverrides?.[typeName]
 
-		const allClassifiedFields = Object.entries(fields)
-			.filter(([fieldName, field]) => isEntityField(fieldName, field, type))
-			.map(([fieldName, field]) => {
-				// Check for full custom classification first
-				if (options.classifyField) {
-					const custom = options.classifyField(fieldName, field, type)
-					if (custom !== null && custom !== undefined) {
-						// oxlint-disable-next-line oxc/no-map-spread -- spread required: Object.assign loses _isLink/_graphqlType metadata from custom's inferred type
-						return {
-							fieldname: fieldName,
-							label: custom.label ?? fieldName,
-							component: custom.component ?? 'ATextInput',
-							fieldtype: custom.fieldtype ?? 'Data',
-							...custom,
-						}
+		const filteredEntries = Object.entries(fields).filter(([fieldName, field]) => isEntityField(fieldName, field, type))
+		// oxlint-disable-next-line oxc/no-map-spread -- spread required: Object.assign loses _isLink/_graphqlType metadata
+		const allClassifiedFields = filteredEntries.map(([fieldName, field]) => {
+			// Check for full custom classification first
+			if (options.classifyField) {
+				const custom = options.classifyField(fieldName, field, type)
+				if (custom !== null && custom !== undefined) {
+					return {
+						fieldname: fieldName,
+						label: custom.label ?? fieldName,
+						component: custom.component ?? 'ATextInput',
+						fieldtype: custom.fieldtype ?? 'Data',
+						...custom,
 					}
 				}
+			}
 
-				// Default classification
-				const classified = classifyFieldType(fieldName, field, entityTypes, options)
+			// Default classification
+			const classified = classifyFieldType(fieldName, field, entityTypes, options)
 
-				// Apply per-field overrides
-				if (typeOverrides?.[fieldName]) {
-					// oxlint-disable-next-line oxc/no-map-spread -- spread required: Object.assign loses _isLink/_graphqlType metadata; TypeScript cannot narrow union members after the type is dropped
-					return { ...classified, ...typeOverrides[fieldName] }
-				}
+			// Apply per-field overrides
+			if (typeOverrides?.[fieldName]) {
+				return { ...classified, ...typeOverrides[fieldName] }
+			}
 
-				return classified
-			})
+			return classified
+		})
 
 		// Separate scalar fields from link fields
 		const links: Record<string, LinkDeclaration> = {}

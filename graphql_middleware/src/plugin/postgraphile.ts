@@ -393,13 +393,38 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 // ===========================================================================
 
 /**
+ * Recursively collect quoted SQL column entries from a field list.
+ * Fieldset containers (fieldtype === 'Fieldset') have no DB column — their children
+ * are recursed into instead. Display fields and declared Link fields are skipped.
+ *
+ * TODO(schema-types Phase 4): add f.kind === 'field' narrowing when DoctypeField union lands
+ */
+function collectColumns(fields: FieldMeta[], linkedFieldnames: Set<string>): string[] {
+	const columns: string[] = []
+	for (const f of fields) {
+		if (f.fieldtype === 'Display') continue
+		if (f.fieldtype === 'Fieldset') {
+			const validChildren = (f.schema ?? []).filter(
+				(c): c is FieldMeta => typeof c['fieldname'] === 'string' && typeof c['fieldtype'] === 'string'
+			)
+			if (validChildren.length) {
+				columns.push(...collectColumns(validChildren, linkedFieldnames))
+			}
+			continue
+		}
+		if (f.fieldtype === 'Link' && linkedFieldnames.has(f.fieldname)) continue
+		const col = camelToSnake(f.fieldname)
+		columns.push(col !== f.fieldname ? `"${col}" AS "${f.fieldname}"` : `"${f.fieldname}"`)
+	}
+	return columns
+}
+
+/**
  * Derive a quoted SQL column list from doctype field definitions.
  * Applies camelToSnake to each fieldname to get the DB column name, then
  * aliases it back to the fieldname so result rows carry API-layer keys.
- * Excludes Display fields (no backing DB column) and Link fields that have an
- * explicit `links` declaration (those are FK references, not scalar columns).
- *
- * TODO(schema-types Phase 4): add f.kind === 'field' narrowing when DoctypeField union lands
+ * Excludes Display fields, Fieldset containers (recursing into their children instead),
+ * and Link fields that have an explicit `links` declaration (FK references, not scalar columns).
  */
 function getSqlColumns(meta: DoctypeMeta): string {
 	const linkedFieldnames = new Set<string>()
@@ -408,16 +433,7 @@ function getSqlColumns(meta: DoctypeMeta): string {
 			linkedFieldnames.add(link.fieldname ?? key)
 		}
 	}
-
-	const columns: string[] = []
-	for (const f of meta.fields) {
-		if (f.fieldtype === 'Display') continue
-		if (f.fieldtype === 'Link' && linkedFieldnames.has(f.fieldname)) continue
-		const col = camelToSnake(f.fieldname)
-		columns.push(col !== f.fieldname ? `"${col}" AS "${f.fieldname}"` : `"${f.fieldname}"`)
-	}
-
-	return columns.join(', ')
+	return collectColumns(meta.fields, linkedFieldnames).join(', ')
 }
 
 /**
