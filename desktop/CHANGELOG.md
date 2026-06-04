@@ -1,6 +1,11 @@
 # Change Log - @stonecrop/desktop
 
-This log was last generated on Tue, 02 Jun 2026 11:07:21 GMT and should not be manually modified.
+This log was last generated on Thu, 04 Jun 2026 09:33:09 GMT and should not be manually modified.
+
+## 0.13.6
+Thu, 04 Jun 2026 09:33:09 GMT
+
+_Version update only_
 
 ## 0.13.5
 Tue, 02 Jun 2026 11:07:21 GMT
